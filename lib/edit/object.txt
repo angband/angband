@@ -2813,7 +2813,7 @@ alloc:20:5 to 60
 combat:0:1d1:0:0:0
 charges:6+d10
 power:3
-effect:BOLT:OLD_SLOW
+effect:BOLT_STATUS:OLD_SLOW
 dice:20
 
 name:381:Confuse Monster
@@ -2884,7 +2884,7 @@ alloc:20:20 to 60
 combat:0:1d1:0:0:0
 charges:6+d8
 power:7
-effect:BOLT:OLD_POLY
+effect:BOLT_STATUS:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -2906,7 +2906,7 @@ alloc:20:15 to 100
 combat:0:1d1:0:0:0
 charges:3+d5
 power:0
-effect:BOLT:OLD_CLONE
+effect:BOLT_STATUS:OLD_CLONE
 
 name:389:Teleport Other
 graphics:-:d
@@ -2916,7 +2916,7 @@ alloc:20:20 to 100
 combat:0:1d1:0:0:0
 charges:6+d5
 power:11
-effect:BOLT:AWAY_ALL
+effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 
@@ -3030,7 +3030,7 @@ alloc:10:3 to 40
 combat:0:1d1:0:0:0
 charges:8+d20
 power:0
-effect:BOLT:OLD_HEAL
+effect:BOLT_STATUS:OLD_HEAL
 dice:4d6
 
 name:398:Haste Monster
@@ -3041,7 +3041,7 @@ alloc:10:3 to 40
 combat:0:1d1:0:0:0
 charges:8+d20
 power:0
-effect:BOLT:OLD_SPEED
+effect:BOLT_STATUS:OLD_SPEED
 dice:100
 
 
@@ -3566,7 +3566,7 @@ properties:30:15:1500
 alloc:20:30 to 100
 combat:0:1d1:0:0:0
 power:3
-effect:BOLT:OLD_SLOW
+effect:BOLT_STATUS:OLD_SLOW
 dice:20
 time:20
 
@@ -3639,7 +3639,7 @@ properties:35:15:1200
 alloc:20:35 to 80
 combat:0:1d1:0:0:0
 power:7
-effect:BOLT:OLD_POLY
+effect:BOLT_STATUS:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 time:25
@@ -3662,7 +3662,7 @@ properties:45:15:5000
 alloc:20:45 to 100
 combat:0:1d1:0:0:0
 power:11
-effect:BOLT:AWAY_ALL
+effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 time:25

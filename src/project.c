@@ -317,26 +317,28 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
  * Note that elements come first, so GF_ACID == ELEM_ACID, etc
  * ------------------------------------------------------------------------ */
 static const struct gf_type {
-	const char *desc;	/* text description (if blind) */
+	const char *desc;	/* text description */
+	const char *blind_desc;	/* text description (if blind) */
 	int num;			/* numerator for resistance */
 	random_value denom;	/* denominator for resistance */
 	bool force_obvious; /* */
  	byte color;			/* */
 } gf_table[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) { d, e, f, TRUE, col },
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) { c, d, e, f, TRUE, col },
 	#define RV(b, x, y, m) {b, x, y, m}
 	#include "list-elements.h"
 	#undef ELEM
 	#undef RV
 
-	#define PROJ_ENV(a, col, desc) { NULL, 0, {0, 0, 0, 0}, FALSE, col },
+	#define PROJ_ENV(a, col, desc) { desc, NULL, 0, {0, 0, 0, 0}, FALSE, col },
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 
-	#define PROJ_MON(a, obv, desc) { NULL, 0, {0, 0, 0, 0}, obv, COLOUR_WHITE }, 
+	#define PROJ_MON(a, obv, desc) \
+		{ desc, NULL, 0, {0, 0, 0, 0}, obv, COLOUR_WHITE }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
-	{ NULL, 0, {0, 0, 0, 0}, FALSE, COLOUR_WHITE }
+	{ NULL, NULL, 0, {0, 0, 0, 0}, FALSE, COLOUR_WHITE }
 };
 
 static const char *gf_name_list[] =
@@ -393,6 +395,14 @@ const char *gf_desc(int type)
 		return 0;
 
 	return gf_table[type].desc;
+}
+
+const char *gf_blind_desc(int type)
+{
+	if (type < 0 || type >= GF_MAX)
+		return 0;
+
+	return gf_table[type].blind_desc;
 }
 
 int gf_name_to_idx(const char *name)

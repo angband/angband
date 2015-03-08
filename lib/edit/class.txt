@@ -303,7 +303,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Polymorph Other:11:7:45:9
-effect:BOLT:OLD_POLY
+effect:BOLT_STATUS:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
@@ -330,7 +330,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Slow Monster:17:9:50:7
-effect:BOLT:OLD_SLOW
+effect:BOLT_STATUS:OLD_SLOW
 dice:20
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
@@ -344,7 +344,7 @@ expr:B:PLAYER_LEVEL:+ 30
 desc:Shoots a radius-2 frost ball.
 
 spell:Teleport Other:23:12:60:8
-effect:BOLT:AWAY_ALL
+effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 desc:Produces a bolt that teleports the first monster in its path
@@ -875,7 +875,7 @@ expr:B:PLAYER_LEVEL:* 8
 desc:Teleports you randomly within the current level.
 
 spell:Teleport Other:20:20:80:16
-effect:BOLT:AWAY_ALL
+effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 desc:Produces a bolt that teleports the first monster in its path
@@ -1219,7 +1219,7 @@ dice:22d40
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Slow Monster:28:20:70:2
-effect:BOLT:OLD_SLOW
+effect:BOLT_STATUS:OLD_SLOW
 dice:20
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
@@ -1227,7 +1227,7 @@ desc:  Uniques are not affected.
 book:magic book:[Sorcery and Evocations]:3:1
 
 spell:Teleport Other:31:25:70:3
-effect:BOLT:AWAY_ALL
+effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 desc:Produces a bolt that teleports the first monster in its path
@@ -1573,7 +1573,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Polymorph Other:21:19:60:3
-effect:BOLT:OLD_POLY
+effect:BOLT_STATUS:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
@@ -1600,7 +1600,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Slow Monster:25:21:65:3
-effect:BOLT:OLD_SLOW
+effect:BOLT_STATUS:OLD_SLOW
 dice:20
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
@@ -1614,7 +1614,7 @@ expr:B:PLAYER_LEVEL:+ 30
 desc:Shoots a radius-2 frost ball.
 
 spell:Teleport Other:31:25:70:3
-effect:BOLT:AWAY_ALL
+effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 desc:Produces a bolt that teleports the first monster in its path
@@ -2099,7 +2099,7 @@ expr:B:PLAYER_LEVEL:* 8
 desc:Teleports you randomly within the current level.
 
 spell:Teleport Other:25:25:80:12
-effect:BOLT:AWAY_ALL
+effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 desc:Produces a bolt that teleports the first monster in its path

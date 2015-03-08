@@ -479,7 +479,7 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 
 	/* Let player know what is going on */
 	if (!seen)
-		msg("You are hit by %s!", gf_desc(typ));
+		msg("You are hit by %s!", gf_blind_desc(typ));
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
 	dam = adjust_dam(player, typ, dam, RANDOMISE,

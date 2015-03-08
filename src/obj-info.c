@@ -23,6 +23,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
+#include "mon-summon.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-info.h"
@@ -1487,11 +1488,13 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				break;
 			}
 			case EFINFO_SEEN: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), "", "");
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+						gf_desc(e->params[0]));
 				break;
 			}
 			case EFINFO_SUMM: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), "");
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+						summon_desc(e->params[0]));
 				break;
 			}
 
@@ -1522,13 +1525,21 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				break;
 			}
 
-			/* Bolts and beams do all sorts of things */
+			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), "", "");
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+						gf_desc(e->params[0]));
+				break;
+			}
+			/* Bolts and beams that damage */
+			case EFINFO_BOLTD: {
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+						gf_desc(e->params[0]), dice_string);
 				break;
 			}
 			case EFINFO_TOUCH: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), "");
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+						gf_desc(e->params[0]));
 				break;
 			}
 			default:strnfmt(desc, sizeof(desc), effect_desc(e)); break;

@@ -25,7 +25,7 @@
  * Flags for summon_specific()
  */
 enum summon_flag {
-	#define S(a, b, c, d, e, f, g) S_##a, 
+	#define S(a, b, c, d, e, f, g, h) S_##a, 
 	#include "list-summon-types.h"
 	#undef S
 };
@@ -36,6 +36,7 @@ struct monster_base *kin_base;
 
 /** Functions **/
 int summon_name_to_idx(const char *name);
+const char *summon_desc(int type);
 int summon_message_type(int summon_type);
 int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call);
 
