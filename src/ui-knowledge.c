@@ -2454,7 +2454,7 @@ void do_cmd_messages(void)
  */
 void do_cmd_inven(void)
 {
-	struct object *obj;
+	struct object *obj = NULL;
 	int ret = 3;
 	int diff = weight_remaining();
 	char buf[80];
@@ -2506,7 +2506,7 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
-	struct object *obj;
+	struct object *obj = NULL;
 	int ret = 3;
 
 	if (!player->upkeep->equip_cnt) {

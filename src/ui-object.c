@@ -1228,9 +1228,13 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	/* Forbid equipment */
 	if (!use_equip) e2 = -1;
 
-	/* Restrict equipment indexes */
-	while ((e1 <= e2) && (!object_test(tester, slot_object(player, e1)))) e1++;
-	while ((e1 <= e2) && (!object_test(tester, slot_object(player, e2)))) e2--;
+	/* Restrict equipment indexes unless starting with no command */
+	if (cmd != CMD_NULL) {
+		while ((e1 <= e2) && (!object_test(tester, slot_object(player, e1))))
+			e1++;
+		while ((e1 <= e2) && (!object_test(tester, slot_object(player, e2))))
+			e2--;
+	}
 
 	/* Accept equipment */
 	if (e1 <= e2) allow_equip = TRUE;
