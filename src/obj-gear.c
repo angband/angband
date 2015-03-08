@@ -654,7 +654,6 @@ void inven_drop(struct object *obj, int amt)
 {
 	int py = player->py;
 	int px = player->px;
-	int num = 0;
 	struct object *dropped;
 
 	char o_name[80];

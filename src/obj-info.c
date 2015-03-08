@@ -31,6 +31,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-timed.h"
 #include "project.h"
 #include "z-textblock.h"
 
@@ -1423,7 +1424,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 	if (aimed)
 		textblock_append(tb, "When aimed, it ");
-	else if (tval_is_food(obj))
+	else if (tval_is_edible(obj))
 		textblock_append(tb, "When eaten, it ");
 	else if (tval_is_potion(obj))
 		textblock_append(tb, "When quaffed, it ");
@@ -1470,12 +1471,19 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				strnfmt(desc, sizeof(desc), effect_desc(e), value.base);
 				break;
 			}
+			case EFINFO_CURE: {
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+							timed_idx_to_desc(e->params[0]));
+				break;
+			}
 			case EFINFO_TIMED: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), "", "");
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+							timed_idx_to_desc(e->params[0]), dice_string);
 				break;
 			}
 			case EFINFO_STAT: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), "");
+				strnfmt(desc, sizeof(desc), effect_desc(e),
+							mod_flags[e->params[0]].name);
 				break;
 			}
 			case EFINFO_SEEN: {

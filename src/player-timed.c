@@ -36,13 +36,14 @@ static bool set_cut(struct player *p, int v);
 
 static timed_effect effects[] =
 {
-	#define TMD(a, b, c, d, e, f, g, h, i, j) { b, c, d, e, f, g, h, i, j },
+	#define TMD(a, b, c, d, e, f, g, h, i, j, k) \
+		{ b, c, d, e, f, g, h, i, j, k },
 	#include "list-player-timed.h"
 	#undef TMD
 };
 
 static const char *timed_name_list[] = {
-	#define TMD(a, b, c, d, e, f, g, h, i, j) #a,
+	#define TMD(a, b, c, d, e, f, g, h, i, j, k) #a,
 	#include "list-player-timed.h"
 	#undef TMD
 	"MAX",
@@ -66,6 +67,14 @@ const char *timed_idx_to_name(int type)
     assert(type < TMD_MAX);
 
     return timed_name_list[type];
+}
+
+const char *timed_idx_to_desc(int type)
+{
+    assert(type >= 0);
+    assert(type < TMD_MAX);
+
+    return effects[type].description;
 }
 
 int timed_protect_flag(int type)

@@ -43,13 +43,14 @@ enum {
  */
 enum
 {
-	#define TMD(a, b, c, d, e, f, g, h, i, j) TMD_##a,
+	#define TMD(a, b, c, d, e, f, g, h, i, j, k) TMD_##a,
 	#include "list-player-timed.h"
 	#undef TMD
 	TMD_MAX
 };
 
 typedef struct {
+	const char *description;
 	const char *on_begin;
 	const char *on_end;
 	const char *on_increase;
@@ -62,6 +63,7 @@ typedef struct {
 
 int timed_name_to_idx(const char *name);
 const char *timed_idx_to_name(int type);
+const char *timed_idx_to_desc(int type);
 int timed_protect_flag(int type);
 bool player_set_timed(struct player *p, int idx, int v, bool notify);
 bool player_inc_timed(struct player *p, int idx, int v, bool notify,
