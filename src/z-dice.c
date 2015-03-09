@@ -57,6 +57,7 @@ typedef enum dice_state_e {
  * Input types for the parser state table.
  */
 typedef enum dice_input_e {
+	DICE_INPUT_AMP,
 	DICE_INPUT_MINUS,
 	DICE_INPUT_BASE,
 	DICE_INPUT_DICE,
@@ -86,6 +87,8 @@ static dice_input_t dice_input_for_char(char c)
 {
 	/* Catch specific characters before checking bigger char categories. */
 	switch (c) {
+		case '&':
+			return DICE_INPUT_AMP;
 		case '-':
 			return DICE_INPUT_MINUS;
 		case '+':
@@ -126,20 +129,20 @@ static dice_state_t dice_parse_state_transition(dice_state_t state,
 												dice_input_t input)
 {
 	static unsigned char state_table[DICE_STATE_MAX][DICE_INPUT_MAX] = {
-		/* Input:    -+dm$DU0 */
-		/*[DICE_STATE_START] = */       /* A */ "B.EHKB..",
-		/*[DICE_STATE_BASE_DIGIT] = */  /* B */ ".CE..B.C",
-		/*[DICE_STATE_FLUSH_BASE] = */  /* C */ "..EHKD..",
-		/*[DICE_STATE_DICE_DIGIT] = */  /* D */ "..E..D..",
-		/*[DICE_STATE_FLUSH_DICE] = */  /* E */ "....KF..",
-		/*[DICE_STATE_SIDE_DIGIT] = */  /* F */ "...H.F.G",
-		/*[DICE_STATE_FLUSH_SIDE] = */  /* G */ "........",
-		/*[DICE_STATE_BONUS] = */       /* H */ "....KI..",
-		/*[DICE_STATE_BONUS_DIGIT] = */ /* I */ ".....I.J",
-		/*[DICE_STATE_FLUSH_BONUS] = */ /* J */ "........",
-		/*[DICE_STATE_VAR] = */         /* K */ "......L.",
-		/*[DICE_STATE_VAR_CHAR] = */    /* L */ ".CEH..LM",
-		/*[DICE_STATE_FLUSH_ALL] = */   /* M */ "........",
+		/* Input:								&-+dm$DU0 */
+		/*[DICE_STATE_START] = */	   /* A */ ".B.EHKB..",
+		/*[DICE_STATE_BASE_DIGIT] = */  /* B */ "..CE..B.C",
+		/*[DICE_STATE_FLUSH_BASE] = */  /* C */ "...EHKD..",
+		/*[DICE_STATE_DICE_DIGIT] = */  /* D */ "...E..D..",
+		/*[DICE_STATE_FLUSH_DICE] = */  /* E */ ".....KF..",
+		/*[DICE_STATE_SIDE_DIGIT] = */  /* F */ "G...H.F.G",
+		/*[DICE_STATE_FLUSH_SIDE] = */  /* G */ "....H....",
+		/*[DICE_STATE_BONUS] = */	   /* H */ ".....KI..",
+		/*[DICE_STATE_BONUS_DIGIT] = */ /* I */ "......I.J",
+		/*[DICE_STATE_FLUSH_BONUS] = */ /* J */ ".........",
+		/*[DICE_STATE_VAR] = */		 /* K */ ".......L.",
+		/*[DICE_STATE_VAR_CHAR] = */	/* L */ "G.CEH..LM",
+		/*[DICE_STATE_FLUSH_ALL] = */   /* M */ "........."
 	};
 
 	if (state == DICE_STATE_MAX || input == DICE_INPUT_MAX)
@@ -342,6 +345,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		 * token buffer.
 		 */
 		switch (input_type) {
+			case DICE_INPUT_AMP:
 			case DICE_INPUT_BASE:
 			case DICE_INPUT_DICE:
 			case DICE_INPUT_VAR:
