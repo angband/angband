@@ -1893,7 +1893,7 @@ desc: you are trespassing in its territory.
 
 name:135:Giant spider
 base:spider
-color:v
+color:V
 info:110:55:8:24:40
 power:10:2:8085:19:35
 blow:BITE:HURT:1d10
@@ -5273,7 +5273,7 @@ desc: disturb it.
 
 name:341:Balance drake
 base:dragon
-color:v
+color:V
 info:110:528:20:84:70
 power:33:3:171832:11:1600
 blow:CLAW:HURT:2d4
@@ -8577,7 +8577,7 @@ desc: the world.
 
 name:484:Nightwing
 base:wraith
-color:v
+color:V
 info:120:1830:20:144:10
 power:61:3:11719182:103:10000
 blow:TOUCH:POISON:6d5
