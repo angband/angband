@@ -707,7 +707,7 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
  * Also, the tag "@xn" will work as well, where "n" is a tag-char,
  * and "x" is the action that tag will work for.
  */
-static int get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
+static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 				   bool quiver_tags)
 {
 	int i;
@@ -1001,6 +1001,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			/* Look up the tag */
 			if (get_tag(&obj, key, item_cmd, item_mode & QUIVER_TAGS)) {
 				selection = obj;
+				Term_keypress(KC_ENTER, 0);
 			} else {
 				bell("Illegal object choice (tag)!");
 				return TRUE;
