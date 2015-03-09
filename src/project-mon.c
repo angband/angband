@@ -558,6 +558,8 @@ static void project_monster_handler_LIGHT_WEAK(project_monster_handler_context_t
 
 static void project_monster_handler_DARK_WEAK(project_monster_handler_context_t *context)
 {
+	context->skipped = TRUE;
+	context->dam = 0;
 }
 
 /* Stone to Mud */
@@ -568,18 +570,26 @@ static void project_monster_handler_KILL_WALL(project_monster_handler_context_t 
 
 static void project_monster_handler_KILL_DOOR(project_monster_handler_context_t *context)
 {
+	context->skipped = TRUE;
+	context->dam = 0;
 }
 
 static void project_monster_handler_KILL_TRAP(project_monster_handler_context_t *context)
 {
+	context->skipped = TRUE;
+	context->dam = 0;
 }
 
 static void project_monster_handler_MAKE_DOOR(project_monster_handler_context_t *context)
 {
+	context->skipped = TRUE;
+	context->dam = 0;
 }
 
 static void project_monster_handler_MAKE_TRAP(project_monster_handler_context_t *context)
 {
+	context->skipped = TRUE;
+	context->dam = 0;
 }
 
 /* Teleport undead (Use "dam" as "power") */
