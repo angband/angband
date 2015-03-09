@@ -400,8 +400,13 @@ static void make_ego_item(struct object *o_ptr, int level)
 	if (o_ptr->artifact || o_ptr->ego) return;
 
 	/* Occasionally boost the generation level of an item */
-	if (level > 0 && one_in_(z_info->great_ego))
+	if (level > 0 && one_in_(z_info->great_ego)) {
 		level = 1 + (level * z_info->max_depth / randint1(z_info->max_depth));
+
+		/* Ensure valid allocation level */
+		if (level >= z_info->max_depth)
+			level = z_info->max_depth - 1;
+	}
 
 	/* Try to get a legal ego type for this item */
 	o_ptr->ego = ego_find_random(o_ptr, level);
