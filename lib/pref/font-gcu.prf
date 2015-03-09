@@ -7,26 +7,9 @@
 
 # open floor
 feat:1:all:0x01:0xb7
-# invisible trap
-feat:2:all:0x01:0xb7
-
-# magma vein
-feat:50:all:0x81:0x2591
-# magma vein
-feat:52:all:0x81:0x2591
-
-# quartz vein
-feat:51:all:0x81:0x2591
-# quartz vein
-feat:53:all:0x81:0x2591
 
 # magma vein with treasure
-feat:54:all:0x83:0x2591
+feat:19:all:0x83:0x2591
 # quartz vein with treasure
-feat:55:all:0x83:0x2591
-
-# granite wall
-feat:56:all:0x81:0x20
-# permanent wall
-feat:57:all:0x84:0x20
+feat:20:all:0x83:0x2591
 

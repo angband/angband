@@ -4,9 +4,7 @@
 
 # open floor
 feat:1:all:0x01:0x1F
-# invisible trap
-feat:2:all:0x01:0x1F
 # magma vein with treasure
-feat:54:all:0x03:0x01
+feat:19:all:0x03:0x01
 # quartz vein with treasure
-feat:55:all:0x03:0x01
+feat:20:all:0x03:0x01
