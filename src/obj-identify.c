@@ -63,7 +63,7 @@ bool easy_know(const struct object *obj)
  */
 bool object_all_flags_are_known(const struct object *obj)
 {
-	return of_is_full(obj->known_flags) ? TRUE : FALSE;
+	return easy_know(obj) || of_is_full(obj->known_flags) ? TRUE : FALSE;
 }
 
 
@@ -75,6 +75,8 @@ bool object_all_flags_are_known(const struct object *obj)
 bool object_all_elements_are_known(const struct object *obj)
 {
 	size_t i;
+
+	if (easy_know(obj)) return TRUE;
 
 	for (i = 0; i < ELEM_MAX; i++)
 		if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
@@ -108,7 +110,7 @@ bool object_all_brands_and_slays_are_known(const struct object *obj)
  */
 bool object_all_miscellaneous_are_known(const struct object *obj)
 {
-	return id_is_full(obj->id_flags) ? TRUE : FALSE;
+	return easy_know(obj) || id_is_full(obj->id_flags) ? TRUE : FALSE;
 }
 
 /**
