@@ -81,20 +81,20 @@ int motion_dir(int y1, int x1, int y2, int x2)
  */
 void look_mon_desc(char *buf, size_t max, int m_idx)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
+	monster_type *mon = cave_monster(cave, m_idx);
 
 	bool living = TRUE;
 
 	/* Determine if the monster is "living" (vs "undead") */
-	if (monster_is_unusual(m_ptr->race)) living = FALSE;
+	if (monster_is_unusual(mon->race)) living = FALSE;
 
 	/* Assess health */
-	if (m_ptr->hp >= m_ptr->maxhp) {
+	if (mon->hp >= mon->maxhp) {
 		/* No damage */
 		my_strcpy(buf, (living ? "unhurt" : "undamaged"), max);
 	} else {
 		/* Calculate a health "percentage" */
-		int perc = 100L * m_ptr->hp / m_ptr->maxhp;
+		int perc = 100L * mon->hp / mon->maxhp;
 
 		if (perc >= 60)
 			my_strcpy(buf, (living ? "somewhat wounded" : "somewhat damaged"),
@@ -108,10 +108,10 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 	}
 
 	/* Effect status */
-	if (m_ptr->m_timed[MON_TMD_SLEEP]) my_strcat(buf, ", asleep", max);
-	if (m_ptr->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
-	if (m_ptr->m_timed[MON_TMD_FEAR]) my_strcat(buf, ", afraid", max);
-	if (m_ptr->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);
+	if (mon->m_timed[MON_TMD_SLEEP]) my_strcat(buf, ", asleep", max);
+	if (mon->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
+	if (mon->m_timed[MON_TMD_FEAR]) my_strcat(buf, ", afraid", max);
+	if (mon->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);
 }
 
 
@@ -198,9 +198,13 @@ void target_set_location(int y, int x)
 {
 	/* Legal target */
 	if (square_in_bounds_fully(cave, y, x)) {
+		struct monster *mon = square_monster(cave, y, x);
+
 		/* Save target info */
 		target_set = TRUE;
 		target_who = NULL;
+		if (mon && target_able(mon))
+			target_who = mon;
 		target_y = y;
 		target_x = x;
 		return;
@@ -324,16 +328,16 @@ bool target_accept(int y, int x)
 
 	/* Visible monsters */
 	if (cave->squares[y][x].mon > 0) {
-		monster_type *m_ptr = square_monster(cave, y, x);
+		monster_type *mon = square_monster(cave, y, x);
 
 		/* Visible monsters */
-		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
-			!mflag_has(m_ptr->mflag, MFLAG_UNAWARE))
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
+			!mflag_has(mon->mflag, MFLAG_UNAWARE))
 			return (TRUE);
 	}
 
-    /* Traps */
-    if (square_isvisibletrap(cave, y, x))
+	/* Traps */
+	if (square_isvisibletrap(cave, y, x))
 		return(TRUE);
 
 	/* Scan all objects in the grid */
@@ -460,7 +464,7 @@ struct point_set *target_get_monsters(int mode)
 bool target_set_closest(int mode)
 {
 	int y, x;
-	monster_type *m_ptr;
+	monster_type *mon;
 	char m_name[80];
 	struct point_set *targets;
 
@@ -480,24 +484,24 @@ bool target_set_closest(int mode)
 	/* Find the first monster in the queue */
 	y = targets->pts[0].y;
 	x = targets->pts[0].x;
-	m_ptr = square_monster(cave, y, x);
+	mon = square_monster(cave, y, x);
 	
 	/* Target the monster, if possible */
-	if (!target_able(m_ptr)) {
+	if (!target_able(mon)) {
 		msg("No Available Target.");
 		point_set_dispose(targets);
 		return FALSE;
 	}
 
 	/* Target the monster */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL);
 	if (!(mode & TARGET_QUIET))
 		msg("%s is targeted.", m_name);
 
 	/* Set up target information */
-	monster_race_track(player->upkeep, m_ptr->race);
-	health_track(player->upkeep, m_ptr);
-	target_set_monster(m_ptr);
+	monster_race_track(player->upkeep, mon->race);
+	health_track(player->upkeep, mon);
+	target_set_monster(mon);
 
 	point_set_dispose(targets);
 	return TRUE;
