@@ -369,7 +369,7 @@ flavor:118:0x89:0x87
 # Zinc wand
 flavor:119:0x89:0x84
 
-# Aluminum-Plated wand
+# Aluminium-Plated wand
 flavor:120:0x89:0x8B
 
 # Copper-Plated wand
@@ -423,7 +423,7 @@ flavor:136:0x89:0x91
 # Pewter wand
 flavor:137:0x89:0x8D
 
-# Aluminum rod
+# Aluminium rod
 flavor:138:0x89:0x8D
 
 # Cast Iron rod
@@ -474,7 +474,7 @@ flavor:153:0x89:0x8B
 # Zinc rod
 flavor:154:0x89:0x8E
 
-# Aluminum-Plated rod
+# Aluminium-Plated rod
 flavor:155:0x89:0x8D
 
 # Copper-Plated rod

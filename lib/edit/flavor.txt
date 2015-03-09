@@ -182,7 +182,7 @@ flavor:116:White:Titanium
 flavor:117:White:Tungsten
 flavor:118:Light Slate:Zirconium
 flavor:119:Light Slate:Zinc
-flavor:120:Light Blue:Aluminum-Plated
+flavor:120:Light Blue:Aluminium-Plated
 flavor:121:Light Umber:Copper-Plated
 flavor:122:Yellow:Gold-Plated
 flavor:123:Light Umber:Nickel-Plated
@@ -205,7 +205,7 @@ flavor:137:Slate:Pewter
 
 kind:rod:-
 
-flavor:138:Light Blue:Aluminum
+flavor:138:Light Blue:Aluminium
 flavor:139:Light Dark:Cast Iron
 flavor:140:White:Chromium
 flavor:141:Light Umber:Copper
@@ -222,7 +222,7 @@ flavor:151:White:Titanium
 flavor:152:White:Tungsten
 flavor:153:Light Slate:Zirconium
 flavor:154:Light Slate:Zinc
-flavor:155:Light Blue:Aluminum-Plated
+flavor:155:Light Blue:Aluminium-Plated
 flavor:156:Light Umber:Copper-Plated
 flavor:157:Yellow:Gold-Plated
 flavor:158:Light Umber:Nickel-Plated

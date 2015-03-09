@@ -318,7 +318,7 @@ flavor:101:0x89:0xB3
 # Willow staff
 flavor:102:0x89:0xB4
 
-# Aluminum wand
+# Aluminium wand
 flavor:103:0x89:0x80
 
 # Cast Iron wand
@@ -369,7 +369,7 @@ flavor:118:0x89:0xBD
 # Zinc wand
 flavor:119:0x89:0xBE
 
-# Aluminum-Plated wand
+# Aluminium-Plated wand
 flavor:120:0x89:0x8B
 
 # Copper-Plated wand
@@ -423,7 +423,7 @@ flavor:136:0x89:0xC7
 # Pewter wand
 flavor:137:0x89:0xC8
 
-# Aluminum rod
+# Aluminium rod
 flavor:138:0x89:0xC9
 
 # Cast Iron rod
@@ -474,7 +474,7 @@ flavor:153:0x89:0xD8
 # Zinc rod
 flavor:154:0x89:0xD9
 
-# Aluminum-Plated rod
+# Aluminium-Plated rod
 flavor:155:0x89:0xDA
 
 # Copper-Plated rod
