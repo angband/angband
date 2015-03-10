@@ -23,26 +23,34 @@
 #include "ui-input.h"
 #include "ui-menu.h"
 
-/* Cursor colours */
+/**
+ * Cursor colours
+ */
 const byte curs_attrs[2][2] =
 {
 	{ COLOUR_SLATE, COLOUR_BLUE },      /* Greyed row */
 	{ COLOUR_WHITE, COLOUR_L_BLUE }     /* Valid row */
 };
 
-/* Some useful constants */
+/**
+ * Some useful constants
+ */
 const char lower_case[] = "abcdefghijklmnopqrstuvwxyz";
 const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const char all_letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-/* forward declarations */
+/**
+ * Forward declarations
+ */
 static void display_menu_row(struct menu *menu, int pos, int top,
 			     bool cursor, int row, int col, int width);
 static bool menu_calc_size(struct menu *menu);
 static bool is_valid_row(struct menu *menu, int cursor);
 
 
-/* Display an event, with possible preference overrides */
+/**
+ * Display an event, with possible preference overrides
+ */
 static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
 {
 	/* TODO: add preference support */
@@ -88,10 +96,8 @@ static bool menu_action_handle(struct menu *m, const ui_event *event, int oid)
 {
 	menu_action *acts = menu_priv(m);
 
-	if (event->type == EVT_SELECT)
-	{
-		if (!(acts->flags & MN_ACT_GRAYED) && acts[oid].action)
-		{
+	if (event->type == EVT_SELECT) {
+		if (!(acts->flags & MN_ACT_GRAYED) && acts[oid].action) {
 			acts[oid].action(acts[oid].name, m->cursor);
 			return TRUE;
 		}
@@ -101,7 +107,9 @@ static bool menu_action_handle(struct menu *m, const ui_event *event, int oid)
 }
 
 
-/* Virtual function table for action_events */
+/**
+ * Virtual function table for action_events
+ */
 static const menu_iter menu_iter_actions =
 {
 	menu_action_tag,
@@ -139,8 +147,11 @@ static const menu_iter menu_iter_strings =
 /* ================== SKINS ============== */
 
 
-/* Scrolling menu */
-/* Find the position of a cursor given a screen address */
+/*** Scrolling menu ***/
+
+/**
+ * Find the position of a cursor given a screen address
+ */
 static int scrolling_get_cursor(int row, int col, int n, int top, region *loc)
 {
 	int cursor = row - loc->row + top;
@@ -150,7 +161,9 @@ static int scrolling_get_cursor(int row, int col, int n, int top, region *loc)
 }
 
 
-/* Display current view of a skin */
+/**
+ * Display current view of a skin
+ */
 static void display_scrolling(struct menu *menu, int cursor, int *top, region *loc)
 {
 	int col = loc->col;
@@ -171,12 +184,10 @@ static void display_scrolling(struct menu *menu, int cursor, int *top, region *l
 	*top = MIN(*top, n - rows_per_page);
 	*top = MAX(*top, 0);
 
-	for (i = 0; i < rows_per_page; i++)
-	{
+	for (i = 0; i < rows_per_page; i++) {
 		/* Blank all lines */
 		Term_erase(col, row + i, loc->width);
-		if (i < n)
-		{
+		if (i < n) {
 			/* Redraw the line if it's within the number of menu items */
 			bool is_curs = (i == cursor - *top);
 			display_menu_row(menu, i + *top, *top, is_curs, row + i, col,
@@ -209,8 +220,7 @@ static ui_event scroll_process_direction(struct menu *m, int dir)
 		out.type = ddx[dir] < 0 ? EVT_ESCAPE : EVT_SELECT;
 
 	/* Move up or down to the next valid & visible row */
-	else if (ddy[dir])
-	{
+	else if (ddy[dir]) {
 		m->cursor += ddy[dir];
 		out.type = EVT_MOVE;
 	}
@@ -218,7 +228,9 @@ static ui_event scroll_process_direction(struct menu *m, int dir)
 	return out;
 }
 
-/* Virtual function table for scrollable menu skin */
+/**
+ * Virtual function table for scrollable menu skin
+ */
 static const menu_skin menu_skin_scroll =
 {
 	scrolling_get_cursor,
@@ -265,10 +277,8 @@ static void display_columns(struct menu *menu, int cursor, int *top, region *loc
 	if ((colw * cols) > (w - col))
 		colw = (w - col) / cols;
 
-	for (c = 0; c < cols; c++)
-	{
-		for (r = 0; r < rows_per_page; r++)
-		{
+	for (c = 0; c < cols; c++) {
+		for (r = 0; r < rows_per_page; r++) {
 			int pos = c * rows_per_page + r;
 			bool is_cursor = (pos == cursor);
 
@@ -356,14 +366,10 @@ static int get_cursor_key(struct menu *menu, int top, struct keypress key)
 	if (menu->flags & MN_CASELESS_TAGS)
 		key.code = toupper((unsigned char) key.code);
 
-	if (menu->flags & MN_NO_TAGS)
-	{
+	if (menu->flags & MN_NO_TAGS) {
 		return -1;
-	}
-	else if (menu->flags & MN_REL_TAGS)
-	{
-		for (i = 0; i < n; i++)
-		{
+	} else if (menu->flags & MN_REL_TAGS) {
+		for (i = 0; i < n; i++) {
 			char c = menu->skin->get_tag(menu, i);
 
 			if ((menu->flags & MN_CASELESS_TAGS) && c)
@@ -372,11 +378,8 @@ static int get_cursor_key(struct menu *menu, int top, struct keypress key)
 			if (c && c == (char)key.code)
 				return i + menu->top;
 		}
-	}
-	else if (!(menu->flags & MN_PVT_TAGS) && menu->selections)
-	{
-		for (i = 0; menu->selections[i]; i++)
-		{
+	} else if (!(menu->flags & MN_PVT_TAGS) && menu->selections) {
+		for (i = 0; menu->selections[i]; i++) {
 			char c = menu->selections[i];
 
 			if (menu->flags & MN_CASELESS_TAGS)
@@ -385,11 +388,8 @@ static int get_cursor_key(struct menu *menu, int top, struct keypress key)
 			if (c == (char)key.code)
 				return i;
 		}
-	}
-	else if (menu->row_funcs->get_tag)
-	{
-		for (i = 0; i < n; i++)
-		{
+	} else if (menu->row_funcs->get_tag) {
+		for (i = 0; i < n; i++) {
 			int oid = menu->filter_list ? menu->filter_list[i] : i;
 			char c = menu->row_funcs->get_tag(menu, oid);
 
@@ -422,7 +422,9 @@ static menu_row_style_t menu_row_style_for_validity(menu_row_validity_t row_vali
 	return style;
 }
 
-/* Modal display of menu */
+/**
+ * Modal display of menu
+ */
 static void display_menu_row(struct menu *menu, int pos, int top,
                              bool cursor, int row, int col, int width)
 {
@@ -440,8 +442,7 @@ static void display_menu_row(struct menu *menu, int pos, int top,
 	if (row_valid == MN_ROW_HIDDEN)
 		return;
 
-	if (!(flags & MN_NO_TAGS))
-	{
+	if (!(flags & MN_NO_TAGS)) {
 		if (flags & MN_REL_TAGS)
 			sel = menu->skin->get_tag(menu, pos);
 		else if (menu->selections && !(flags & MN_PVT_TAGS))
@@ -450,8 +451,7 @@ static void display_menu_row(struct menu *menu, int pos, int top,
 			sel = menu->row_funcs->get_tag(menu, oid);
 	}
 
-	if (sel)
-	{
+	if (sel) {
 		menu_row_style_t style = menu_row_style_for_validity(row_valid);
 		byte color = curs_attrs[style][0 != (cursor)];
 		Term_putstr(col, row, 3, color, format("%c) ", sel));
@@ -496,7 +496,7 @@ void menu_refresh(struct menu *menu, bool reset_screen)
 
 /*** MENU RUNNING AND INPUT HANDLING CODE ***/
 
-/*
+/**
  * Handle mouse input in a menu.
  * 
  * Mouse output is either moving, selecting, escaping, or nothing.  Returns
@@ -509,21 +509,18 @@ bool menu_handle_mouse(struct menu *menu, const ui_event *in,
 
 	if (in->mouse.button == 2) {
 		out->type = EVT_ESCAPE;
-	} else
-	if (!region_inside(&menu->active, in)) {
+	} else if (!region_inside(&menu->active, in)) {
 		/* A click to the left of the active region is 'back' */
 		if (!region_inside(&menu->active, in) &&
 				in->mouse.x < menu->active.col)
 			out->type = EVT_ESCAPE;
-	} else
-	{
+	} else {
 		int count = menu->filter_list ? menu->filter_count : menu->count;
 
 		new_cursor = menu->skin->get_cursor(in->mouse.y, in->mouse.x,
 				count, menu->top, &menu->active);
 	
-		if (is_valid_row(menu, new_cursor))
-		{
+		if (is_valid_row(menu, new_cursor)) {
 			if (new_cursor == menu->cursor || !(menu->flags & MN_DBL_TAP))
 				out->type = EVT_SELECT;
 			else
@@ -545,8 +542,7 @@ bool menu_handle_mouse(struct menu *menu, const ui_event *in,
  */
 static bool menu_handle_action(struct menu *m, const ui_event *in)
 {
-	if (m->row_funcs->row_handler)
-	{
+	if (m->row_funcs->row_handler) {
 		int oid = m->cursor;
 		if (m->filter_list)
 			oid = m->filter_list[m->cursor];
@@ -572,61 +568,45 @@ bool menu_handle_keypress(struct menu *menu, const ui_event *in,
 
 	/* Get the new cursor position from the menu item tags */
 	int new_cursor = get_cursor_key(menu, menu->top, in->key);
-	if (new_cursor >= 0 && is_valid_row(menu, new_cursor))
-	{
+	if (new_cursor >= 0 && is_valid_row(menu, new_cursor)) {
 		if (!(menu->flags & MN_DBL_TAP) || new_cursor == menu->cursor)
 			out->type = EVT_SELECT;
 		else
 			out->type = EVT_MOVE;
 
 		menu->cursor = new_cursor;
-	}
-
-	/* Escape stops us here */
-	else if (in->key.code == ESCAPE)
+	} else if (in->key.code == ESCAPE) {
+		/* Escape stops us here */
 		out->type = EVT_ESCAPE;
-
-	/* Menus with no rows can't be navigated or used, so eat all keypresses */
-	else if (count <= 0)
+	} else if (count <= 0) {
+		/* Menus with no rows can't be navigated or used, so eat keypresses */
 		eat = TRUE;
-
-	/* Try existing, known keys */
-	else if (in->key.code == ' ')
-	{
+	} else if (in->key.code == ' ') {
+		/* Try existing, known keys */
 		int rows = menu->active.page_rows;
 		int total = count;
 
-		if (rows < total)
-		{
+		if (rows < total) {
 			/* Go to start of next page */
 			menu->cursor += menu->active.page_rows;
 			if (menu->cursor >= total - 1) menu->cursor = 0;
 			menu->top = menu->cursor;
 	
 			out->type = EVT_MOVE;
-		}
-		else
-		{
+		} else {
 			eat = TRUE;
 		}
-	}
-
-	else if (in->key.code == KC_ENTER)
+	} else if (in->key.code == KC_ENTER) {
 		out->type = EVT_SELECT;
-
-	/* Try directional movement */
-	else
-	{
+	} else {
+		/* Try directional movement */
 		int dir = target_dir(in->key);
 
-		if (dir)
-		{
+		if (dir) {
 			*out = menu->skin->process_dir(menu, dir);
 
-			if (out->type == EVT_MOVE)
-			{
-				while (!is_valid_row(menu, menu->cursor))
-				{
+			if (out->type == EVT_MOVE) {
+				while (!is_valid_row(menu, menu->cursor)) {
 					/* Loop around */
 					if (menu->cursor > count - 1)
 						menu->cursor = 0;
@@ -646,7 +626,7 @@ bool menu_handle_keypress(struct menu *menu, const ui_event *in,
 }
 
 
-/* 
+/**
  * Run a menu.
  *
  * If popup is true, the screen is saved before the menu is drawn, and
@@ -665,8 +645,7 @@ ui_event menu_select(struct menu *menu, int notify, bool popup)
 		screen_save();
 
 	/* Stop on first unhandled event */
-	while (!(in.type & notify))
-	{
+	while (!(in.type & notify)) {
 		ui_event out = EVENT_EMPTY;
 
 		menu_refresh(menu, popup);
@@ -770,10 +749,8 @@ void menu_ensure_cursor_valid(struct menu *m)
 	int row;
 	int count = m->filter_list ? m->filter_count : m->count;
 
-	for (row = m->cursor; row < count; row++)
-	{
-		if (is_valid_row(m, row))
-		{
+	for (row = m->cursor; row < count; row++) {
+		if (is_valid_row(m, row)) {
 			m->cursor = row;
 			return;
 		}
@@ -791,21 +768,18 @@ static bool menu_calc_size(struct menu *menu)
 	/* Calculate term-relative positions */
 	menu->active = region_calculate(menu->boundary);
 
-	if (menu->title)
-	{
+	if (menu->title) {
 		menu->active.row += 2;
 		menu->active.page_rows -= 2;
 		menu->active.col += 4;
 	}
 
-	if (menu->header)
-	{
+	if (menu->header) {
 		menu->active.row++;
 		menu->active.page_rows--;
 	}
 
-	if (menu->prompt)
-	{
+	if (menu->prompt) {
 		if (menu->active.page_rows > 1) {
 			menu->active.page_rows--;
 		} else {
@@ -965,7 +939,7 @@ void menu_dynamic_add(struct menu *m, const char *text, int value)
 
 void menu_dynamic_add_label_valid(struct menu *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid)
 {
-	if(label && m->selections && (m->selections == label_list)) {
+	if (label && m->selections && (m->selections == label_list)) {
 		label_list[m->count] = label;
 	}
 	menu_dynamic_add_valid(m,text,value, valid);
