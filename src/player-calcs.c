@@ -2138,7 +2138,7 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 		}
 
 		/* Priest weapon penalty for non-blessed edged weapons */
-		if (player_has(PF_BLESS_WEAPON) && !player_of_has(player, OF_BLESSED) &&
+		if (player_has(PF_BLESS_WEAPON) && !of_has(player, OF_BLESSED) &&
 			tval_is_pointy(obj)) {
 			/* Reduce the real bonuses */
 			state->to_h -= 2;

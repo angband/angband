@@ -251,7 +251,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Nethr",	-1,					-1,				ELEM_NETHER,-1 },
 	{ "Chaos",	-1,					-1,				ELEM_CHAOS,	-1 },
 	{ "Disen",	-1,					-1,				ELEM_DISEN,	-1 },
-	{ "pFear",	-1,					OF_PROT_FEAR,	-1,			-1 },
+	{ "pFear",	-1,					OF_PROT_FEAR,	-1,			TMD_BOLD },
 	{ "pBlnd",	-1,					OF_PROT_BLIND,	-1,			-1 },
 	{ "pConf",	-1,					OF_PROT_CONF,	-1,			TMD_OPP_CONF },
 	{ "pStun",	-1,					OF_PROT_STUN,	-1,			-1 },
@@ -323,8 +323,13 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 				known = TRUE;
 
 				/* Timed flags only in the player column */
-				if (rec[i].tmd_flag >= 0)
+				if (rec[i].tmd_flag >= 0) {
 	 				timed = player->timed[rec[i].tmd_flag] ? TRUE : FALSE;
+					/* There has to be one special case... */
+					if ((rec[i].tmd_flag == TMD_AFRAID) &&
+						(player->timed[TMD_TERROR]))
+						timed = TRUE;
+				}
 			}
 
 			/* Set which (if any) symbol and color are used */
