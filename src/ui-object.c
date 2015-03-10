@@ -1000,8 +1000,15 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 		else if ((key >= '0') && (key <= '9')) {
 			/* Look up the tag */
 			if (get_tag(&obj, key, item_cmd, item_mode & QUIVER_TAGS)) {
-				selection = obj;
-				Term_keypress(KC_ENTER, 0);
+				/* There should be a better way of doing this */
+				int i;
+				for (i = 0; i < num_obj; i++)
+					if (choice[i].object == obj)
+						break;
+				if (i < num_obj)
+					Term_keypress(choice[i].key, 0);
+				else
+					return FALSE;
 			} else {
 				bell("Illegal object choice (tag)!");
 				return TRUE;
