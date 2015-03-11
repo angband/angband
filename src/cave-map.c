@@ -520,7 +520,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			bool light = FALSE;
 			feature_type *f_ptr = &f_info[c->squares[y][x].feat];
 			
-			/* Skip grids with no surrounding floors */
+			/* Skip grids with no surrounding floors or stairs */
 			for (d = 0; d < 9; d++) {
 				/* Extract adjacent (legal) location */
 				int yy = y + ddy_ddd[d];
@@ -530,7 +530,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 				if (!square_in_bounds_fully(c, yy, xx)) continue;
 
 				/* Test */
-				if (square_isfloor(c, yy, xx))
+				if (square_isfloor(c, yy, xx) || square_isstairs(c, yy, xx))
 					light = TRUE;
 			}
 

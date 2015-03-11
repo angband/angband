@@ -238,7 +238,7 @@ bool square_isdoor(struct chunk *c, int y, int x)
 /**
  * True if square is any stair
  */
-bool square_isstairs(struct chunk*c, int y, int x)
+bool square_isstairs(struct chunk *c, int y, int x)
 {
 	int feat = c->squares[y][x].feat;
 	return tf_has(f_info[feat].flags, TF_STAIR);

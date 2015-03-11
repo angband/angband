@@ -1518,9 +1518,11 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 					square_set_feat(c, yy, xx, FEAT_PASS_RUBBLE);
 	}
 
-	/* Place the stairs */
-	find_empty_range(c, &y, 3, z_info->town_hgt - 3, &x, 3,
-					 z_info->town_wid - 3);
+	/* Place the stairs in the north wall */
+	x = rand_spread(z_info->town_wid / 2, z_info->town_wid / 12);
+	y = 2;
+	while (square_isperm(c, y, x)) y++;
+	y--;
 
 	/* Clear previous contents, add down stairs */
 	square_set_feat(c, y, x, FEAT_MORE);
