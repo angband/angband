@@ -196,6 +196,12 @@ feat:23:dark:0x8D:0x95
 # trap detected wall edge
 feat:24:all:0x89:0x85
 
+# lava
+feat:25:all:0xB6:0x9E
+
+# passable rubble
+feat:26:all:0x80:0x9C
+
 
 
 

@@ -99,6 +99,12 @@ feat:23:all:0x81:0x96
 # trap detected wall edge
 feat:24:all:0x81:0x95
 
+# granite wall
+feat:25:all:0x80:0x8F
+
+# rubble
+feat:26:all:0x80:0x98
+
 
 
 # glyph of warding
