@@ -389,6 +389,7 @@ power:25
 name:TELE_AWAY
 hit:100
 effect:TELEPORT
+dice:100
 param:1
 power:25
 
