@@ -74,7 +74,7 @@ int test_magic_missile(void *state) {
 	run_game_loop();
 	cmdq_push(CMD_CAST);
 	cmd_set_arg_choice(cmdq_peek(), "spell", 0);
-	cmd_set_arg_target(cmdq_peek(), "target", 1);
+	cmd_set_arg_target(cmdq_peek(), "target", 2);
 	run_game_loop();
 	noteq(player->csp, player->msp);
 

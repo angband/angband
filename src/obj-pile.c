@@ -229,7 +229,7 @@ void object_delete(struct object *obj)
 	}
 
 	/* If we're tracking the object, stop */
-	if (player && obj == player->upkeep->object)
+	if (player && player->upkeep && obj == player->upkeep->object)
 		player->upkeep->object = NULL;
 
 	mem_free(obj);

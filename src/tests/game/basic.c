@@ -110,10 +110,10 @@ int test_stairs2(void *state) {
 	eq(savefile_load("Test1", FALSE), TRUE);
 
 	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 4);
+	cmd_set_arg_direction(cmdq_peek(), "direction", 2);
 	run_game_loop();
 	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 6);
+	cmd_set_arg_direction(cmdq_peek(), "direction", 8);
 	run_game_loop();
 	cmdq_push(CMD_GO_DOWN);
 	run_game_loop();
@@ -128,7 +128,7 @@ int test_drop_pickup(void *state) {
 	eq(savefile_load("Test1", FALSE), TRUE);
 
 	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 4);
+	cmd_set_arg_direction(cmdq_peek(), "direction", 2);
 	run_game_loop();
 	if (player->upkeep->inven[0]->number > 1) {
 		cmdq_push(CMD_DROP);
@@ -152,7 +152,7 @@ int test_drop_eat(void *state) {
 	num = player->upkeep->inven[0]->number;
 
 	cmdq_push(CMD_WALK);
-	cmd_set_arg_direction(cmdq_peek(), "direction", 4);
+	cmd_set_arg_direction(cmdq_peek(), "direction", 2);
 	run_game_loop();
 	cmdq_push(CMD_DROP);
 	cmd_set_arg_item(cmdq_peek(), "item", player->upkeep->inven[0]);

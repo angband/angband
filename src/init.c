@@ -1,6 +1,6 @@
 /**
  * \file init.c
- * \brief Various game initialistion routines
+ * \brief Various game initialization routines
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -737,7 +737,7 @@ static struct file_parser constants_parser = {
 };
 
 /**
- * Initialise game constants.
+ * Initialize game constants.
  *
  * Assumption: Paths are set up correctly before calling this function.
  */
@@ -745,7 +745,7 @@ void init_game_constants(void)
 {
 	event_signal_message(EVENT_INITSTATUS, 0, "Initializing constants");
 	if (run_parser(&constants_parser))
-		quit_fmt("Cannot initialise constants.");
+		quit_fmt("Cannot initialize constants.");
 }
 
 /**
@@ -3868,7 +3868,7 @@ static struct file_parser flavor_parser = {
 
 
 /**
- * Initialise hints
+ * Initialize hints
  */
 static enum parser_error parse_hint(struct parser *p) {
 	struct hint *h = parser_priv(p);
@@ -3919,7 +3919,7 @@ static struct file_parser hints_parser = {
 };
 
 /**
- * Initialise monster pain messages
+ * Initialize monster pain messages
  */
 static enum parser_error parse_pain_type(struct parser *p) {
 	struct monster_pain *h = parser_priv(p);
@@ -4325,7 +4325,7 @@ static struct {
 };
 
 /**
- * Initialise just the internal arrays.
+ * Initialize just the internal arrays.
  * This should be callable by the test suite, without relying on input, or
  * anything to do with a user or savefiles.
  *
@@ -4339,7 +4339,7 @@ void init_arrays(void)
 
 		event_signal_message(EVENT_INITSTATUS, 0, format("Initializing %s...", pl[i].name));
 		if (run_parser(pl[i].parser))
-			quit_fmt("Cannot initialise %s.", pl[i].name);
+			quit_fmt("Cannot initialize %s.", pl[i].name);
 	}
 }
 
