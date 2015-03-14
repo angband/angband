@@ -409,6 +409,7 @@ static void cleanup_player(void) {
 	mem_free(player->upkeep->quiver);
 	mem_free(player->upkeep->inven);
 	mem_free(player->upkeep);
+	player->upkeep = NULL;
 	object_pile_free(player->gear);
 	object_pile_free(player->gear_k);
 	for (i = 0; i < player->body.count; i++)
@@ -418,6 +419,7 @@ static void cleanup_player(void) {
 	mem_free(player->history);
 
 	mem_free(player);
+	player = NULL;
 }
 
 struct init_module player_module = {
