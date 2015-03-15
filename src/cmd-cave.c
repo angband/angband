@@ -1122,7 +1122,9 @@ void move_player(int dir, bool disarm)
 			/* Disturb */
 			disturb(player, 0);
 			event_signal(EVENT_ENTER_STORE);
+			event_remove_handler_type(EVENT_ENTER_STORE);
 			event_signal(EVENT_LEAVE_STORE);
+			event_remove_handler_type(EVENT_LEAVE_STORE);
 		} else {
 			/* Handle objects (later) */
 			cmdq_push(CMD_AUTOPICKUP);

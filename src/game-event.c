@@ -90,6 +90,18 @@ void event_remove_handler(game_event_type type, game_event_handler *fn, void *us
 	}
 }
 
+void event_remove_handler_type(game_event_type type)
+{
+	struct event_handler_entry *handler = event_handlers[type];
+
+	while (handler) {
+		struct event_handler_entry *next = handler->next;
+		mem_free(handler);
+		handler = next;
+	}
+	event_handlers[type] = NULL;
+}
+
 void event_remove_all_handlers(void)
 {
 	int type;
