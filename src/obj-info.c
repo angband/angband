@@ -1437,7 +1437,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 	/* Print a colourised description */
 	while (e) {
 		char *next_char = desc;
-		random_value value;
+		random_value value = { 0, 0, 0, 0 };
 		char dice_string[20];
 		if (e->dice != NULL)
 			(void) dice_roll(e->dice, &value);
