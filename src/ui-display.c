@@ -219,7 +219,7 @@ static void prt_exp(int row, int col)
 			player->exp;
 
 	/* Format XP */
-	strnfmt(out_val, sizeof(out_val), "%8ld", (long)xp);
+	strnfmt(out_val, sizeof(out_val), "%8d", xp);
 
 
 	if (player->exp >= player->max_exp) {
@@ -240,7 +240,7 @@ static void prt_gold(int row, int col)
 	char tmp[32];
 
 	put_str("AU ", row, col);
-	strnfmt(tmp, sizeof(tmp), "%9ld", (long)player->au);
+	strnfmt(tmp, sizeof(tmp), "%9d", player->au);
 	c_put_str(COLOUR_L_GREEN, tmp, row, col + 3);
 }
 

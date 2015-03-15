@@ -1191,9 +1191,9 @@ void lore_append_exp(textblock *tb, const monster_race *race,
 					 (long)1000 / player->lev + 5) / 10);
 
 	/* Calculate textual representation */
-	strnfmt(buf, sizeof(buf), "%ld", (long)exp_integer);
+	strnfmt(buf, sizeof(buf), "%d", exp_integer);
 	if (exp_fraction)
-		my_strcat(buf, format(".%02ld", (long)exp_fraction), sizeof(buf));
+		my_strcat(buf, format(".%02d", exp_fraction), sizeof(buf));
 
 	/* Mention the experience */
 	textblock_append(tb, " is worth ");
@@ -1213,8 +1213,8 @@ void lore_append_exp(textblock *tb, const monster_race *race,
 	if ((level == 8) || (level == 11) || (level == 18)) article = "an";
 
 	/* Mention the dependance on the player's level */
-	textblock_append(tb, " for %s %lu%s level character.  ", article,
-					 (long)level, ordinal);
+	textblock_append(tb, " for %s %u%s level character.  ", article,
+					 level, ordinal);
 }
 
 /**
