@@ -18,8 +18,8 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
-	mem_free(z_info);
 	player_quests_free((struct player *)state);
+	mem_free(z_info);
 	mem_free(state);
 	return 0;
 }
