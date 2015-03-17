@@ -961,4 +961,30 @@ static struct player TEST_DATA test_player = {
 	.upkeep = &test_player_upkeep,
 };
 
+static struct chunk TEST_DATA test_cave = {
+	.name = "Test",
+	.created_at = 1,
+	.depth = 1,
+
+	.feeling = 0,
+	.obj_rating = 0,
+	.mon_rating = 0,
+	.good_item = FALSE,
+
+	.height = 2,
+	.width = 2,
+
+	.feeling_squares = 0,
+	.feat_count = NULL,
+
+	.feat = NULL,
+	.m_idx = NULL,
+
+	.squares = NULL,
+
+	.monsters = NULL,
+	.mon_max = 1,
+	.mon_cnt = 0,
+	.mon_current = -1,
+};
 #endif /* !UNIT_TEST_DATA */

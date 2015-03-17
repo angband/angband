@@ -36,6 +36,7 @@ static int mdam(struct monster *m)
 static int take1(struct player *p, struct monster *m, int blow, int eff)
 {
 	int old, new;
+	cave = &test_cave;
 	m->race->blow[0].effect = eff;
 	m->race->blow[0].method = blow;
 	p->chp = p->mhp;

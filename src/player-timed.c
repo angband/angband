@@ -171,13 +171,13 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
 
 	/* Check that @ can be affected by this effect */
-	if (check && effects->fail_code) {
+	if (check && effect->fail_code) {
 		/* If the effect is from a monster action, extra stuff happens */
 		struct monster *mon = cave->mon_current > 0 ?
 			cave_monster(cave, cave->mon_current) : NULL;
 
 		/* Determine whether an effect can be prevented by a flag */
-		if (effects->fail_code == TMD_FAIL_FLAG_OBJECT) {
+		if (effect->fail_code == TMD_FAIL_FLAG_OBJECT) {
 			/* Effect is inhibited by an object flag */
 			equip_notice_flag(p, effect->fail);
 			if (mon) 
@@ -187,12 +187,12 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 				msg("You resist the effect!");
 				return FALSE;
 			}
-		} else if (effects->fail_code == TMD_FAIL_FLAG_RESIST) {
+		} else if (effect->fail_code == TMD_FAIL_FLAG_RESIST) {
 			/* Effect is inhibited by a resist */
 			equip_notice_element(p, effect->fail);
 			if (p->state.el_info[effect->fail].res_level > 0)
 				return FALSE;
-		} else if (effects->fail_code == TMD_FAIL_FLAG_VULN) {
+		} else if (effect->fail_code == TMD_FAIL_FLAG_VULN) {
 			/* Effect is inhibited by a vulnerability */
 			equip_notice_element(p, effect->fail);
 			if (p->state.el_info[effect->fail].res_level < 0)
