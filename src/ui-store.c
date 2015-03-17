@@ -467,7 +467,7 @@ static bool store_get_check(const char *prompt)
 static bool store_sell(struct store_context *ctx)
 {
 	int amt;
-	int get_mode = USE_EQUIP | USE_INVEN | USE_FLOOR;
+	int get_mode = USE_EQUIP | USE_INVEN | USE_FLOOR | USE_QUIVER;
 
 	struct store *store = ctx->store;
 
