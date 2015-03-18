@@ -578,7 +578,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		square_excise_object(cave, player->py, player->px, usable);
+		square_excise_object(cave, usable->iy, usable->ix, usable);
 	}
 
 	/* Housekeeping */

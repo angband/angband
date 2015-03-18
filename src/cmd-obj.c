@@ -655,15 +655,15 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	} else if (used && use == USE_TIMEOUT) {
 		obj->timeout += randcalc(obj->time, 0, RANDOMISE);
 	} else if (used && use == USE_SINGLE) {
-		struct object *used;
+		struct object *used_obj;
 
 		/* Destroy an item in the pack */
 		if (object_is_carried(player, obj))
-			used = gear_object_for_use(obj, 1, TRUE);
+			used_obj = gear_object_for_use(obj, 1, TRUE);
 		else
 			/* Destroy an item on the floor */
-			used = floor_object_for_use(obj, 1, TRUE);
-		object_delete(used);
+			used_obj = floor_object_for_use(obj, 1, TRUE);
+		object_delete(used_obj);
 	}
 
 	/* Update the gear */
