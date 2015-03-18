@@ -734,7 +734,7 @@ void do_cmd_fire(struct command *cmd) {
 		return;
 
 	/* Require a usable launcher */
-	if (!bow->tval || !player->state.ammo_tval) {
+	if (!bow || !player->state.ammo_tval) {
 		msg("You have nothing to fire with.");
 		return;
 	}
@@ -804,7 +804,7 @@ void do_cmd_fire_at_nearest(void) {
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 
 	/* Require a usable launcher */
-	if (!bow->tval || !player->state.ammo_tval) {
+	if (!bow || !player->state.ammo_tval) {
 		msg("You have nothing to fire with.");
 		return;
 	}
