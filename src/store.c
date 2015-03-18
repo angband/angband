@@ -1643,7 +1643,7 @@ void do_cmd_buy(struct command *cmd)
 
 	/* Message */
 	if (one_in_(3)) msgt(MSG_STORE5, "%s", ONE_OF(comment_accept));
-	msg("You bought %s for %ld gold.", o_name, (long)price);
+	msg("You bought %s for %d gold.", o_name, price);
 
 	/* Erase the inscription */
 	bought->note = 0;
@@ -1860,8 +1860,7 @@ void do_cmd_sell(struct command *cmd)
 	if (OPT(birth_no_selling)) {
 		msg("You had %s (%c).", o_name, gear_to_label(obj));
 	} else {
-		msg("You sold %s (%c) for %ld gold.", o_name, gear_to_label(obj),
-			(long)price);
+		msg("You sold %s (%c) for %d gold.", o_name, gear_to_label(obj), price);
 
 		/* Analyze the prices (and comment verbally) */
 		purchase_analyze(price, value, dummy);

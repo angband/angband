@@ -338,7 +338,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
         /* Let the player know they were robbed */
         msg("Your purse feels lighter.");
         if (player->au)
-            msg("%ld coins were stolen!", (long)gold);
+            msg("%d coins were stolen!", gold);
         else
             msg("All of your coins were stolen!");
 
