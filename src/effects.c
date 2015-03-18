@@ -160,7 +160,7 @@ static bool project_touch(int dam, int typ, bool aware)
 	int py = player->py;
 	int px = player->px;
 
-	int flg = PROJECT_KILL | PROJECT_HIDE;
+	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE;
 	if (aware) flg |= PROJECT_AWARE;
 	return (project(-1, 1, py, px, dam, typ, flg, 0, 0));
 }
