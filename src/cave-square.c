@@ -473,10 +473,12 @@ bool square_isempty(struct chunk *c, int y, int x) {
 }
 
 /**
- * True if the square is a floor square without items.
+ * True if the square is an untrapped floor square without items.
  */
 bool square_canputitem(struct chunk *c, int y, int x) {
-	return square_isfloor(c, y, x) && !square_object(c, y, x);
+	if (!square_isfloor(c, y, x) || square_isplayertrap(c, y, x))
+		return FALSE;
+	return !square_object(c, y, x);
 }
 
 /**

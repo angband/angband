@@ -757,6 +757,9 @@ void drop_near(struct chunk *c, struct object *j_ptr, int chance, int y, int x,
 			/* Require floor space */
 			if (!square_isfloor(cave, ty, tx)) continue;
 
+			/* Require no trap */
+			if (square_isplayertrap(cave, ty, tx)) continue;
+
 			/* No objects */
 			k = 0;
 			n = 0;
