@@ -820,7 +820,7 @@ info:55:25:40000
 alloc:3:55 to 127
 power:3:1d1:0:0:14
 flags:FREE_ACT | FEATHER | AGGRAVATE
-act:MANA_BOLT:MANA
+act:MANA_BOLT
 time:30+d30
 values:INT[3] | RES_ELEC[1] | RES_DARK[1] | RES_POIS[1] | RES_FIRE[3]
 desc:The iron-shod gauntlets of the Dark Elven smith Eöl, who imbued them 
@@ -844,7 +844,7 @@ alloc:18:10 to 80
 power:1:0d0:5:5:10
 flags:FREE_ACT | SUST_CON
 values:LIGHT[1] | RES_LIGHT[1]
-act:MISSILE:MISSILE
+act:MISSILE
 time:2
 desc:These gloves glow so brightly as to light the way for the wearer and cast 
 desc:magical bolts with great frequency.
@@ -856,7 +856,7 @@ info:1:25:15000
 alloc:40:10 to 60
 power:3:1d1:0:0:14
 flags:REGEN
-act:FIRE_BOLT:FIRE
+act:FIRE_BOLT
 time:8+d8
 values:RES_FIRE[1]
 desc:A set of gauntlets that smoulder with an unnatural heat.
@@ -869,7 +869,7 @@ alloc:5:50 to 127
 power:3:1d1:0:0:14
 flags:SLOW_DIGEST
 values:BRAND_COLD[2] | RES_COLD[1]
-act:COLD_BOLT:COLD
+act:COLD_BOLT
 time:7+d7
 desc:A set of handgear, freezing with unnatural cold.
 
@@ -880,7 +880,7 @@ info:1:25:11000
 alloc:23:10 to 75
 power:3:1d1:0:0:14
 values:LIGHT[1] | RES_ELEC[1] | RES_LIGHT[1]
-act:ELEC_BOLT:ELEC
+act:ELEC_BOLT
 time:6+d6
 desc:A set of handgear with sparks that crackle across its knuckleguards.
 
@@ -891,7 +891,7 @@ info:1:25:12000
 alloc:30:10 to 60
 power:3:1d1:3:3:14
 flags:FEATHER
-act:ACID_BOLT:ACID
+act:ACID_BOLT
 time:5+d5
 values:RES_ACID[1]
 desc:A set of gauntlets that give off a foul, acrid odour yet remain
@@ -916,7 +916,7 @@ info:40:40:110000
 alloc:3:40 to 127
 power:5:1d1:10:10:20
 flags:FREE_ACT
-act:ARROW:ARROW
+act:ARROW
 time:30+d30
 msg:Your {kind} grow{s} magical spikes...
 values:DEX[4] | RES_ACID[1]
@@ -1015,7 +1015,7 @@ info:1:12:12000
 alloc:40:1 to 50
 power:0:2d4:9:12:10
 values:BRAND_FIRE[3] | RES_FIRE[1]
-act:FIRE_BOLT:FIRE
+act:FIRE_BOLT
 time:8+d8
 desc:Instead of a blade, a flame seems to emerge from this dagger's hilt.
 
@@ -1026,7 +1026,7 @@ info:1:12:11000
 alloc:40:1 to 50
 power:0:2d4:9:12:10
 values:BRAND_COLD[3] | RES_COLD[1]
-act:COLD_BOLT:COLD
+act:COLD_BOLT
 time:7+d8
 desc:From the hilt of this dagger springs not so much a blade as an icicle.
 
@@ -1037,7 +1037,7 @@ info:1:12:13000
 alloc:40:1 to 50
 power:0:2d4:9:12:10
 values:BRAND_ELEC[3] | RES_ELEC[1]
-act:ELEC_BOLT:ELEC
+act:ELEC_BOLT
 time:6+d6
 desc:In this dagger is bound the very force of lightning.
 
@@ -1048,7 +1048,7 @@ info:5:12:15000
 alloc:5:5 to 75
 power:0:2d4:14:13:0
 values:BRAND_POIS[3] | SLAY_ORC[3] | SLAY_TROLL[3] | RES_POIS[1] | RES_DISEN[1]
-act:STINKING_CLOUD:POIS:3
+act:STINKING_CLOUD
 time:4+d4
 desc:A large stiletto dagger that glistens with odorless poison, to which the 
 desc:wearer seems oddly immune.
@@ -1061,7 +1061,7 @@ alloc:2:10 to 80
 power:0:3d4:16:14:0
 flags:SEE_INVIS | SLOW_DIGEST | REGEN
 values:DEX[2] | BRAND_COLD[3] | RES_COLD[1]
-act:COLD_BALL50:COLD:2
+act:COLD_BALL50
 time:5+d5
 desc:A frosty dagger wreathed in a nimbus of ice with a hilt of elk horn and 
 desc:an edge to wound the wind.
@@ -1087,7 +1087,7 @@ info:20:150:50000
 alloc:2:20 to 100
 power:0:3d5:20:12:0
 flags:FREE_ACT | FEATHER | SLOW_DIGEST
-act:COLD_BOLT2:COLD
+act:COLD_BOLT2
 time:50
 values:DEX[4] | SLAY_DEMON[3] | SLAY_ORC[3] | RES_COLD[1]
 desc:The beautiful sword of Thingol, justly named "King's Ire".  It glistens 
@@ -1219,7 +1219,7 @@ alloc:1:20 to 127
 power:0:4d5:22:25:0
 flags:PROT_FEAR | BLESSED
 flags:FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN | 
-act:COLD_BALL100:COLD:2
+act:COLD_BALL100
 time:40
 values:SPEED[10] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] |
 values:SLAY_TROLL[2] | SLAY_DEMON[5] | RES_COLD[1] | RES_LIGHT[1]
@@ -1235,7 +1235,7 @@ alloc:3:20 to 127
 power:0:3d5:10:15:10
 flags:PROT_FEAR | FREE_ACT | BLESSED
 flags:SUST_STR | SUST_DEX | SEE_INVIS
-act:FIRE_BOLT72:FIRE:2
+act:FIRE_BOLT72
 time:40
 values:STR[4] | DEX[4] | BRAND_FIRE[3] | SLAY_EVIL[2] | SLAY_TROLL[3]
 values:SLAY_ORC[3] | SLAY_UNDEAD[3] | RES_FIRE[1] | RES_DISEN[1]
@@ -1408,7 +1408,7 @@ info:15:50:140000
 alloc:2:15 to 100
 power:0:3d6:15:25:5
 flags:PROT_FEAR | FREE_ACT | SLOW_DIGEST | BLESSED
-act:COLD_BALL100:COLD:2
+act:COLD_BALL100
 time:35
 values:DEX[4] | WIS[2] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_TROLL[3]
 values:SLAY_ORC[3] | SLAY_UNDEAD[5]| RES_COLD[1]
@@ -1653,7 +1653,7 @@ info:20:150:35000
 alloc:7:20 to 100
 power:0:2d6:15:17:2
 values:BRAND_FIRE[3] | RES_FIRE[3]
-act:FIRE_BOLT72:FIRE:2
+act:FIRE_BOLT72
 time:20
 desc:A famed battle-lord of old with a head as ruddy as embers that can yet rise
 desc: up in wrath.
@@ -1765,7 +1765,7 @@ alloc:4:60 to 127
 power:0:6d3:13:15:0
 # F:DRAIN_HP | 
 flags:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE
-act:FIRE_BALL:FIRE:2
+act:FIRE_BALL
 time:15
 values:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1] | BRAND_FIRE[3]
 values:SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_TROLL[3] | SLAY_GIANT[3] 
@@ -1814,7 +1814,7 @@ info:60:200:35000
 alloc:5:60 to 127
 power:0:4d1:18:18:0
 flags:AGGRAVATE | PROT_BLIND
-act:ARROW:ARROW
+act:ARROW
 time:20+d20
 values:MIGHT[2] | STR[1] | CON[1] | RES_LIGHT[1] | RES_DARK[1] | RES_ELEC[1]
 desc:A great brazen arbalest with arms of gleaming steel.  It shoots quarrels 
