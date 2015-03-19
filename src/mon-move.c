@@ -1271,8 +1271,8 @@ static bool process_monster_try_push(struct chunk *c, struct monster *m_ptr, con
 			/* Note if visible */
 			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
 				mflag_has(m_ptr->mflag, MFLAG_VIEW))
-				msg("%s %s %s.", kill_ok ? "tramples over" : "pushes past",
-					m_name, n_name);
+				msg("%s %s %s.", m_name, kill_ok ? "tramples over" : "pushes past",
+					n_name);
 
 			/* Monster ate another monster */
 			if (kill_ok)
