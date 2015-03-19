@@ -189,7 +189,6 @@ void textui_cmd_suicide(void)
 	}
 
 	cmdq_push(CMD_SUICIDE);
-	textui_quit();
 }
 
 /**
