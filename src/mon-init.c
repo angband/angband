@@ -1012,7 +1012,7 @@ static enum parser_error parse_lore_name(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_lore_t(struct parser *p) {
+static enum parser_error parse_lore_base(struct parser *p) {
 	monster_lore *l = parser_priv(p);
 	struct monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
 
@@ -1045,7 +1045,7 @@ static enum parser_error parse_lore_counts(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_lore_b(struct parser *p) {
+static enum parser_error parse_lore_blow(struct parser *p) {
 	monster_lore *l = parser_priv(p);
 	int method, effect = 0, seen = 0, index = 0;
 	struct random dam;
@@ -1083,7 +1083,7 @@ static enum parser_error parse_lore_b(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_lore_f(struct parser *p) {
+static enum parser_error parse_lore_flags(struct parser *p) {
 	monster_lore *l = parser_priv(p);
 	char *flags;
 	char *s;
@@ -1107,7 +1107,7 @@ static enum parser_error parse_lore_f(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_lore_s(struct parser *p) {
+static enum parser_error parse_lore_spells(struct parser *p) {
 	monster_lore *l = parser_priv(p);
 	char *flags;
 	char *s;
@@ -1256,18 +1256,18 @@ struct parser *init_parse_lore(void) {
 
 	parser_reg(p, "name uint index str name", parse_lore_name);
 	parser_reg(p, "plural ?str plural", ignored);
-	parser_reg(p, "T sym base", parse_lore_t);
-	parser_reg(p, "G char glyph", ignored);
-	parser_reg(p, "C sym color", ignored);
-	parser_reg(p, "I int speed int hp int aaf int ac int sleep", ignored);
-	parser_reg(p, "W int level int rarity int power int mexp", ignored);
+	parser_reg(p, "base sym base", parse_lore_base);
+	parser_reg(p, "glyph char glyph", ignored);
+	parser_reg(p, "color sym color", ignored);
+	parser_reg(p, "info int speed int hp int aaf int ac int sleep", ignored);
+	parser_reg(p, "power int level int rarity int power int scaled int mexp", ignored);
 	parser_reg(p, "counts int sights int deaths int tkills int wake int ignore int innate int spell", parse_lore_counts);
-	parser_reg(p, "B sym method ?sym effect ?rand damage ?int seen ?int index", parse_lore_b);
-	parser_reg(p, "F ?str flags", parse_lore_f);
-	parser_reg(p, "-F ?str flags", ignored);
-	parser_reg(p, "D str desc", ignored);
+	parser_reg(p, "blow sym method ?sym effect ?rand damage ?int seen ?int index", parse_lore_blow);
+	parser_reg(p, "flags ?str flags", parse_lore_flags);
+	parser_reg(p, "flags-off ?str flags", ignored);
+	parser_reg(p, "desc str desc", ignored);
 	parser_reg(p, "spell-freq int freq", ignored);
-	parser_reg(p, "S str spells", parse_lore_s);
+	parser_reg(p, "spells str spells", parse_lore_spells);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_lore_drop);
 	parser_reg(p, "drop-artifact str name", parse_lore_drop_artifact);
 	parser_reg(p, "friends uint chance rand number str name", parse_lore_friends);
@@ -1294,16 +1294,20 @@ static errr finish_parse_lore(struct parser *p) {
 		struct monster_friends *f;
 		int j;
 
-		if (!l->sights) continue;
+		//if (!l->sights) continue;
 
 		/* Base flag knowledge */
-		rf_union(l->flags, r->base->flags);
-		rsf_union(l->spell_flags, r->base->spell_flags);
+		if (r->base) {
+			rf_union(l->flags, r->base->flags);
+			rsf_union(l->spell_flags, r->base->spell_flags);
+		}
 
 		/* Remove blows data for non-blows */
-		for (j = 0; j < z_info->mon_blows_max; j++)
+		for (j = 0; j < z_info->mon_blows_max; j++) {
+			if (!r->blow) break;
 			if (!(r->blow[j].effect || r->blow[j].method))
 				l->blows[j].times_seen = 0;
+		}
 
 	   /* Convert friend names into race pointers - failure leaves NULL race */
 		for (f = l->friends; f; f = f->next) {

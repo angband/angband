@@ -1249,7 +1249,8 @@ static int count_known_monsters(void)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		monster_race *r_ptr = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].sights) continue;
+		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+			continue;
 		if (!r_ptr->name) continue;
 
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) m_count++;
@@ -1281,7 +1282,8 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		monster_race *r_ptr = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].sights) continue;
+		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+			continue;
 		if (!r_ptr->name) continue;
 
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) m_count++;
@@ -1298,7 +1300,8 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++) {
 		monster_race *r_ptr = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].sights) continue;
+		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+			continue;
 		if (!r_ptr->name) continue;
 
 		for (j = 0; j < N_ELEMENTS(monster_group) - 1; j++) {
@@ -2807,7 +2810,7 @@ void do_cmd_query_symbol(void)
 		monster_lore *l_ptr = &l_list[i];
 
 		/* Nothing to recall */
-		if (!OPT(cheat_know) && !l_ptr->sights) continue;
+		if (!OPT(cheat_know) && !l_ptr->all_known && !l_ptr->sights) continue;
 
 		/* Require non-unique monsters if needed */
 		if (norm && rf_has(r_ptr->flags, RF_UNIQUE)) continue;

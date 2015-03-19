@@ -1875,27 +1875,28 @@ void write_lore_entries(ang_file *fff)
 
 		/* Ignore non-existent or unseen monsters */
 		if (!race->name) continue;
-		if (!lore->sights) continue;
+		if (!lore->sights && !lore->all_known) continue;
 
 		/* Output 'name' */
 		file_putf(fff, "name:%d:%s\n", i, race->name);
 
-		/* Output 'T' for template if we're remembering everything */
+		/* Output base if we're remembering everything */
 		if (lore->all_known)
-			file_putf(fff, "T:%s\n", race->base->name);
+			file_putf(fff, "base:%s\n", race->base->name);
 
 		/* Output counts */
 		file_putf(fff, "counts:%d:%d:%d:%d:%d:%d:%d\n", lore->sights,
 				  lore->deaths, lore->tkills, lore->wake, lore->ignore,
 				  lore->cast_innate, lore->cast_spell);
 
-		/* Output 'B' for "Blows" (up to four lines) */
-		for (n = 0; n < 4; n++) {
+		/* Output blow (up to max blows) */
+		for (n = 0; n < z_info->mon_blows_max; n++) {
 			/* End of blows */
-			if (!lore->blow_known[n]) continue;
+			if (!lore->blow_known[n] && !lore->all_known) continue;
+			if (!lore->blows[n].method) continue;
 
 			/* Output blow method */
-			file_putf(fff, "B:%s", r_info_blow_method[lore->blows[n].method]);
+			file_putf(fff, "blow:%s", r_info_blow_method[lore->blows[n].method]);
 
 			/* Output blow effect (may be none) */
 			file_putf(fff, ":%s", r_info_blow_effect[lore->blows[n].effect]);
@@ -1916,12 +1917,13 @@ void write_lore_entries(ang_file *fff)
 			file_putf(fff, "\n");
 		}
 
-		/* Output 'F' for "Flags" */
-		write_flags(fff, "F:", lore->flags, RF_SIZE, r_info_flags);
+		/* Output flags */
+		write_flags(fff, "flags:", lore->flags, RF_SIZE, r_info_flags);
 
-		/* Output 'S' for "Spell Flags" (multiple lines) */
+		/* Output spell flags (multiple lines) */
 		rsf_inter(lore->spell_flags, race->spell_flags);
-		write_flags(fff, "S:", lore->spell_flags, RSF_SIZE, r_info_spell_flags);
+		write_flags(fff, "spells:", lore->spell_flags, RSF_SIZE,
+					r_info_spell_flags);
 
 		/* Output 'drop', 'drop-artifact' */
 		if (lore->drops) {
