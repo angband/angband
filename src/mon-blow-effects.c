@@ -503,7 +503,7 @@ static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *conte
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Drain fuel where applicable */
-	if (!of_has(obj->flags, OF_NO_FUEL) && (obj->timeout > 0)) {
+	if (obj && !of_has(obj->flags, OF_NO_FUEL) && (obj->timeout > 0)) {
 		/* Reduce fuel */
 		obj->timeout -= (250 + randint1(250));
 		if (obj->timeout < 1) obj->timeout = 1;
