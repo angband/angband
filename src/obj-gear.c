@@ -737,9 +737,11 @@ void combine_pack(void)
 		}
 	}
 
+	calc_inventory(player->upkeep, player->gear, player->body);
+
 	/* Redraw stuff */
 	if (redraw) {
-		player->upkeep->redraw |= (PR_INVEN);
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 		player->upkeep->update |= (PU_INVEN);
 	}
 

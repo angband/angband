@@ -289,7 +289,6 @@ void do_cmd_inscribe(struct command *cmd)
 		return;
 
 	obj->note = quark_add(str);
-	string_free((char *)str);
 
 	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);

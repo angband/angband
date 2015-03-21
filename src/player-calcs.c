@@ -1010,33 +1010,38 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		for (current = gear; current; current = current->next) {
 			int i;
 			const char *s;
-			bool already_quivered = FALSE;
+			bool ignore = FALSE;
 
 			/* Ignore non-ammo */
 			if (!tval_is_ammo(current)) continue;
 
-			/* Ammo already stashed stays where it is */
-			for (i = 0; i < z_info->quiver_size; i++)
-				if (upkeep->quiver[i] == current) {
-					already_quivered = TRUE;
-					if (i == quiver_slots)
-						first = current;
-				}
-			if (already_quivered) continue;
-
 			/* Allocate inscribed objects if it's the right slot */
 			if (current->note) {
 				s = strchr(quark_str(current->note), '@');
-				if (s[1] == 'f') {
+				if (s && s[1] == 'f') {
+					int choice = s[2] - '0';
+
 					/* Correct slot, fill it straight away */
-					if (s[2] - '0' == quiver_slots) {
+					if (choice == quiver_slots) {
 						first = current;
 						break;
-					} else if (s[2] - '0' > quiver_slots)
+					} else if ((choice < z_info->quiver_size) &&
+							   (choice > quiver_slots)) {
 						/* Not up to the correct slot yet, so wait */
+						ignore = TRUE;
 						continue;
+					}
 				}
 			}
+
+			/* Ammo already stashed stays where it is */
+			for (i = 0; i < z_info->quiver_size; i++)
+				if (!ignore && (upkeep->quiver[i] == current)) {
+					ignore = TRUE;
+					if (i == quiver_slots)
+						first = current;
+				}
+			if (ignore) continue;
 
 			/* Otherwise choose the first in order */
 			if (earlier_object(first, current, FALSE)) {
