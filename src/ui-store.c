@@ -1150,22 +1150,30 @@ static void refresh_stock(game_event_type type, game_event_data *unused, void *u
 }
 
 /**
- * Enter a store, and interact with it.
+ * Enter a store.
  */
-void textui_enter_store(void)
+void enter_store(game_event_type type, game_event_data *data, void *user)
+{
+	/* Check that we're on a store */
+	if (!square_isshop(cave, player->py, player->px)) {
+		msg("You see no store here.");
+		return;
+	}
+
+	/* Shut down the normal game view */
+	event_signal(EVENT_LEAVE_GAME);
+}
+
+/**
+ * Interact with a store.
+ */
+void use_store(game_event_type type, game_event_data *data, void *user)
 {
 	struct store *store = store_at(cave, player->py, player->px);
 	struct store_context ctx;
 
 	/* Check that we're on a store */
-	if (!store) {
-		msg("You see no store here.");
-		return;
-	}
-
-	/* Shut down the normal game view - it won't be updated - and start
-	   up the store state. */
-	event_signal(EVENT_LEAVE_GAME);
+	if (!store) return;
 
 	/* Forget the view */
 	forget_view(cave);
@@ -1202,12 +1210,6 @@ void textui_enter_store(void)
 	screen_load();
 }
 
-void enter_store(game_event_type type, game_event_data *data, void *user)
-{
-	textui_enter_store();
-	event_remove_handler(EVENT_ENTER_STORE, enter_store, NULL);
-}
-
 void leave_store(game_event_type type, game_event_data *data, void *user)
 {
 	/* Switch back to the normal game view. */
@@ -1221,6 +1223,4 @@ void leave_store(game_event_type type, game_event_data *data, void *user)
 
 	/* Redraw map */
 	player->upkeep->redraw |= (PR_MAP);
-
-	event_remove_handler(EVENT_LEAVE_STORE, leave_store, NULL);
 }

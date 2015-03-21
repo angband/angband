@@ -2420,6 +2420,9 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	/* Allow the player to cheat death, if appropriate */
 	event_remove_handler(EVENT_CHEAT_DEATH, cheat_death, NULL);
 
+	/* Prepare to interact with a store */
+	event_add_handler(EVENT_USE_STORE, use_store, NULL);
+
 	/* If we've gone into a store, we need to know how to leave */
 	event_add_handler(EVENT_LEAVE_STORE, leave_store, NULL);
 

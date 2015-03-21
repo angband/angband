@@ -61,6 +61,7 @@ typedef enum game_event_type
 	EVENT_MESSAGE,
 	EVENT_SOUND,
 	EVENT_BELL,
+	EVENT_USE_STORE,
 	EVENT_STORECHANGED,	/* Triggered on a successful buy/retrieve or sell/drop */
 
 	EVENT_INPUT_FLUSH,
