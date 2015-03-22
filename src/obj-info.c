@@ -771,9 +771,8 @@ static bool describe_blows(textblock *tb, const struct object *obj)
  * Note that the results are meaningless if called on a fake ego object as
  * the actual ego may have different properties.
  */
-static int obj_known_damage(const struct object *obj, int *normal_damage, 
-							struct brand **brand_list, int **brand_damage, 
-							struct slay **slay_list, int **slay_damage, 
+static int obj_known_damage(const struct object *obj, int *normal_damage,
+							struct brand **brand_list, struct slay **slay_list,
 							bool *nonweap_slay)
 {
 	int i;
@@ -872,10 +871,9 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 
 	/* Get the brands */
 	*brand_list = brand_collect(obj, ammo ? bow : NULL, &num_brands, TRUE);
-	if (*brand_list) *brand_damage = mem_zalloc(num_brands * sizeof(int));
 
 	/* Get damage for each brand on the objects */
-	for (i = 0, brand = *brand_list; brand; i++, brand = brand->next) {
+	for (brand = *brand_list; brand; brand = brand->next) {
 		/* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		int melee_adj_mult = ammo ? 0 : 1;
 
@@ -890,15 +888,14 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 		else
 			total_dam *= player->state.num_shots;
 
-		(*brand_damage)[i] = total_dam;
+		brand->damage = total_dam;
 	}
 
 	/* Get the slays */
 	*slay_list = slay_collect(obj, ammo ? bow : NULL, &num_slays, TRUE);
-	if (*slay_list) *slay_damage = mem_zalloc(num_slays * sizeof(int));
 
 	/* Get damage for each slay on the objects */
-	for (i = 0, slay = *slay_list; slay; i++, slay = slay->next) {
+	for (slay = *slay_list; slay; slay = slay->next) {
 		/* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		int melee_adj_mult = ammo ? 0 : 1;
 
@@ -913,7 +910,7 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 		else
 			total_dam *= player->state.num_shots;
 
-		(*slay_damage)[i] = total_dam;
+		slay->damage = total_dam;
 	}
 
 	/* Include bonus damage in stated average */
@@ -940,16 +937,12 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 {
 	bool nonweap_slay = FALSE;
 	int normal_damage;
-	int *brand_damage = NULL;
 	struct brand *brand, *brands = NULL;
-	int *slay_damage = NULL;
 	struct slay *slay, *slays = NULL;
 	int num;
-	int i;
 
 	/* Collect brands and slays */
-	num = obj_known_damage(obj, &normal_damage, &brands, &brand_damage,
-						   &slays, &slay_damage, &nonweap_slay);
+	num = obj_known_damage(obj, &normal_damage, &brands, &slays, &nonweap_slay);
 
 	/* Mention slays and brands from other items */
 	if (nonweap_slay)
@@ -958,37 +951,33 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	textblock_append(tb, "Average damage/round: ");
 
 	/* Output damage for creatures effected by the brands */
-	i = 0;
 	brand = brands;
 	while (brand) {
-		if (brand_damage[i] <= 0)
+		if (brand->damage <= 0)
 			textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
-		else if (brand_damage[i] % 10)
+		else if (brand->damage % 10)
 			textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-							   brand_damage[i] / 10, brand_damage[i] % 10);
+							   brand->damage / 10, brand->damage % 10);
 		else
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d",brand_damage[i] / 10);
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d",brand->damage / 10);
 
 		textblock_append(tb, " vs. creatures not resistant to %s, ",
 						 brand->name);
-		i++;
 		brand = brand->next;
 	}
 
 	/* Output damage for creatures effected by the slays */
-	i = 0;
 	slay = slays;
 	while (slay) {
-		if (slay_damage[i] <= 0)
+		if (slay->damage <= 0)
 			textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
-		else if (slay_damage[i] % 10)
+		else if (slay->damage % 10)
 			textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-							   slay_damage[i] / 10, slay_damage[i] % 10);
+							   slay->damage / 10, slay->damage % 10);
 		else
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d", slay_damage[i] / 10);
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d", slay->damage / 10);
 
 		textblock_append(tb, " vs. %s, ", slay->name);
-		i++;
 		slay = slay->next;
 	}
 
@@ -1006,9 +995,7 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	textblock_append(tb, ".\n");
 
 	free_brand(brands);
-	if (brand_damage) mem_free(brand_damage);
 	free_slay(slays);
-	if (slay_damage) mem_free(slay_damage);
 	return TRUE;
 }
 

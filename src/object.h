@@ -102,6 +102,7 @@ struct brand {
 	char *name;
 	int element;
 	int multiplier;
+	int damage; /* Storage for damage during description */
 	bool known;
 	struct brand *next;
 };
@@ -111,6 +112,7 @@ struct slay {
 	char *name;
 	int race_flag;
 	int multiplier;
+	int damage; /* Storage for damage during description */
 	bool known;
 	struct slay *next;
 };

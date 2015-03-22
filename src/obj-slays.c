@@ -290,7 +290,6 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 	if (!count) return collected_brands;
 
 	/* Allocate and populate */
-	b_new = mem_zalloc(count * sizeof(*b_new));
 	b = obj1->brands;
 	while (b) {
 		/* Skip unknowns if checking for known brands */
