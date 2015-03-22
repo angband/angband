@@ -275,7 +275,7 @@ keymap-act:Q
 keymap-input:0:^C
 
 # Hack -- Swap equipment
-keymap-act:w0\s\s
+keymap-act:w0
 keymap-input:0:x
 
 ##### Roguelike Keyset Mappings #####
