@@ -417,15 +417,18 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
  */
 static bool describe_slays(textblock *tb, const struct object *obj)
 {
-	struct slay *s = obj->slays;
+	int num = 0;
+	struct slay *known_slays = slay_collect(obj, NULL, &num, TRUE);
+	struct slay *s;
 
-	if (!s) return FALSE;
+	if (!known_slays) return FALSE;
 
 	if (tval_is_weapon(obj) || tval_is_fuel(obj))
 		textblock_append(tb, "Slays ");
 	else
 		textblock_append(tb, "It causes your melee attacks to slay ");
 
+	s = known_slays;
 	while (s) {
 		textblock_append(tb, s->name);
 		if (s->multiplier > 3)
@@ -437,6 +440,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
 		s = s->next;
 	}
 
+	free_slay(known_slays);
 	return TRUE;
 }
 
@@ -445,15 +449,18 @@ static bool describe_slays(textblock *tb, const struct object *obj)
  */
 static bool describe_brands(textblock *tb, const struct object *obj)
 {
-	struct brand *b = obj->brands;
+	int num = 0;
+	struct brand *known_brands = brand_collect(obj, NULL, &num, TRUE);
+	struct brand *b;
 
-	if (!b) return FALSE;
+	if (!known_brands) return FALSE;
 
 	if (tval_is_weapon(obj) || tval_is_fuel(obj))
 		textblock_append(tb, "Branded with ");
 	else
 		textblock_append(tb, "It brands your melee attacks with ");
 
+	b = known_brands;
 	while (b) {
 		if (b->multiplier < 3)
 			textblock_append(tb, "weak ");
@@ -465,6 +472,7 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 		b = b->next;
 	}
 
+	free_brand(known_brands);
 	return TRUE;
 }
 
@@ -773,6 +781,8 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
 	int old_blows = 0;
+	struct brand *brand;
+	struct slay *slay;
 
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj);
@@ -865,12 +875,12 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 	if (*brand_list) *brand_damage = mem_zalloc(num_brands * sizeof(int));
 
 	/* Get damage for each brand on the objects */
-	for (i = 0; i < num_brands; i++) {
+	for (i = 0, brand = *brand_list; brand; i++, brand = brand->next) {
 		/* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		int melee_adj_mult = ammo ? 0 : 1;
 
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + (*brand_list)[i].multiplier
+		total_dam = dam * (multiplier + brand->multiplier
 						   - melee_adj_mult) + xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
@@ -881,7 +891,6 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 			total_dam *= player->state.num_shots;
 
 		(*brand_damage)[i] = total_dam;
-		i++;
 	}
 
 	/* Get the slays */
@@ -889,12 +898,12 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 	if (*slay_list) *slay_damage = mem_zalloc(num_slays * sizeof(int));
 
 	/* Get damage for each slay on the objects */
-	for (i = 0; i < num_slays; i++) {
+	for (i = 0, slay = *slay_list; slay; i++, slay = slay->next) {
 		/* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		int melee_adj_mult = ammo ? 0 : 1;
 
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + (*slay_list)[i].multiplier
+		total_dam = dam * (multiplier + slay->multiplier
 						   - melee_adj_mult) + xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
@@ -932,9 +941,9 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	bool nonweap_slay = FALSE;
 	int normal_damage;
 	int *brand_damage = NULL;
-	struct brand *brands = NULL;
+	struct brand *brand, *brands = NULL;
 	int *slay_damage = NULL;
-	struct slay *slays = NULL;
+	struct slay *slay, *slays = NULL;
 	int num;
 	int i;
 
@@ -950,36 +959,38 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 
 	/* Output damage for creatures effected by the brands */
 	i = 0;
-	if (brands)
-		do {
-			if (brand_damage[i] <= 0)
-				textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
-			else if (brand_damage[i] % 10)
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-								   brand_damage[i] / 10, brand_damage[i] % 10);
-			else
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d",brand_damage[i] / 10);
+	brand = brands;
+	while (brand) {
+		if (brand_damage[i] <= 0)
+			textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
+		else if (brand_damage[i] % 10)
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
+							   brand_damage[i] / 10, brand_damage[i] % 10);
+		else
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d",brand_damage[i] / 10);
 
-			textblock_append(tb, " vs. creatures not resistant to %s, ",
-							 brands[i].name);
-			i++;
-		} while (brands[i - 1].next);
+		textblock_append(tb, " vs. creatures not resistant to %s, ",
+						 brand->name);
+		i++;
+		brand = brand->next;
+	}
 
 	/* Output damage for creatures effected by the slays */
 	i = 0;
-	if (slays)
-		do {
-			if (slay_damage[i] <= 0)
-				textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
-			else if (slay_damage[i] % 10)
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-								   slay_damage[i] / 10, slay_damage[i] % 10);
-			else
-				textblock_append_c(tb, COLOUR_L_GREEN, "%d", slay_damage[i] / 10);
+	slay = slays;
+	while (slay) {
+		if (slay_damage[i] <= 0)
+			textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
+		else if (slay_damage[i] % 10)
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
+							   slay_damage[i] / 10, slay_damage[i] % 10);
+		else
+			textblock_append_c(tb, COLOUR_L_GREEN, "%d", slay_damage[i] / 10);
 
-			textblock_append(tb, " vs. %s, ", slays[i].name);
-			i++;
-		} while (slays[i - 1].next);
+		textblock_append(tb, " vs. %s, ", slay->name);
+		i++;
+		slay = slay->next;
+	}
 
 	if (num) textblock_append(tb, "and ");
 
@@ -994,9 +1005,9 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	if (num) textblock_append(tb, " vs. others");
 	textblock_append(tb, ".\n");
 
-	if (brands) mem_free(brands);
+	free_brand(brands);
 	if (brand_damage) mem_free(brand_damage);
-	if (slays) mem_free(slays);
+	free_slay(slays);
 	if (slay_damage) mem_free(slay_damage);
 	return TRUE;
 }

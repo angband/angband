@@ -273,8 +273,10 @@ int slay_count(struct slay *slays)
 struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 							int *total, bool known)
 {
-	int i, count = 0;
-	struct brand *b, *b_new = NULL;
+	int count = 0;
+	struct brand *b, *b_new;
+	struct brand *b_last = NULL;
+	struct brand *collected_brands = NULL;
 
 	/* Count the brands */
 	for (b = obj1->brands; b; b = b->next)
@@ -285,16 +287,13 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 			if (!known || b->known) count++;
 	*total = count;
 
-	if (!count) return b_new;
+	if (!count) return collected_brands;
 
 	/* Allocate and populate */
 	b_new = mem_zalloc(count * sizeof(*b_new));
 	b = obj1->brands;
-	for (i = 0; i < count; i++) {
-		/* Set the next (for later bounds checking) */
-		if (i > 0) b_new[i - 1].next = &b_new[i];
-
-		/* Skip unknowns that should be known */
+	while (b) {
+		/* Skip unknowns if checking for known brands */
 		if (known && !b->known) {
 			/* Move to the next brand */
 			b = b->next;
@@ -303,18 +302,32 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 			if (!b && obj2) b = obj2->brands;
 			continue;
 		}
+
+		b_new = mem_zalloc(sizeof(*b_new));
+
+		/* First one is what we will return */
+		if (!collected_brands)
+			collected_brands = b_new;
+
+		/* Link the allocated brands in a chain */
+		if (b_last)
+			b_last->next = b_new;
+
 		/* Fill in the data */
-		b_new[i].name = string_make(b->name);
-		b_new[i].element = b->element;
-		b_new[i].multiplier = b->multiplier;
+		b_new->name = string_make(b->name);
+		b_new->element = b->element;
+		b_new->multiplier = b->multiplier;
+		b_new->known = b->known;
 
 		/* Move to the next brand */
 		b = b->next;
 
 		/* Move to the second object if we're done with the first */
 		if (!b && obj2) b = obj2->brands;
+
+		b_last = b_new;
 	}
-	return b_new;
+	return collected_brands;
 }
 
 /**
@@ -329,8 +342,10 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
 							  int *total, bool known)
 {
-	int i, count = 0;
-	struct slay *s, *s_new = NULL;
+	int count = 0;
+	struct slay *s, *s_new;
+	struct slay *s_last = NULL;
+	struct slay *collected_slays = NULL;
 
 	/* Count the slays */
 	for (s = obj1->slays; s; s = s->next)
@@ -341,16 +356,12 @@ struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
 			if (!known || s->known) count++;
 	*total = count;
 
-	if (!count) return s_new;
+	if (!count) return collected_slays;
 
 	/* Allocate and populate */
-	s_new = mem_zalloc(count * sizeof(*s_new));
 	s = obj1->slays;
-	for (i = 0; i < count; i++) {
-		/* Set the next (for later bounds checking) */
-		if (i > 0) s_new[i - 1].next = &s_new[i];
-
-		/* Skip unknowns that should be known */
+	while (s) {
+		/* Skip unknowns if we are checking for known slays */
 		if (known && !s->known) {
 			/* Move to the next slay */
 			s = s->next;
@@ -359,18 +370,32 @@ struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
 			if (!s && obj2) s = obj2->slays;
 			continue;
 		}
+
+		s_new = mem_zalloc(sizeof(*s_new));
+
+		/* First one is what we will return */
+		if (!collected_slays)
+			collected_slays = s_new;
+
+		/* Link the allocated slays in a chain */
+		if (s_last)
+			s_last->next = s_new;
+
 		/* Fill in the data */
-		s_new[i].name = string_make(s->name);
-		s_new[i].race_flag = s->race_flag;
-		s_new[i].multiplier = s->multiplier;
+		s_new->name = string_make(s->name);
+		s_new->race_flag = s->race_flag;
+		s_new->multiplier = s->multiplier;
+		s_new->known = s->known;
 
 		/* Move to the next slay */
 		s = s->next;
 
 		/* Move to the second object if we're done with the first */
 		if (!s && obj2) s = obj2->slays;
+
+		s_last = s_new;
 	}
-	return s_new;
+	return collected_slays;
 }
 
 

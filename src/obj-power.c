@@ -391,8 +391,8 @@ static s32b slay_power(const object_type *obj, int p, int verbose,
 		 * total number of monsters.
 		 */
 		if (verbose) {
-			struct brand *brands = NULL;
-			struct slay *slays = NULL;
+			struct brand *b, *brands = NULL;
+			struct slay *s, *slays = NULL;
 			int num_slays;
 			int num_brands;
 
@@ -402,17 +402,17 @@ static s32b slay_power(const object_type *obj, int p, int verbose,
 			brands = brand_collect(obj, NULL, &num_brands, !known);
 			slays = slay_collect(obj, NULL, &num_slays, !known);
 
-			for (i = 0; i < num_brands; i++) {
-				log_obj(format("%sx%d ", brands[i].name,brands[i].multiplier)); 
+			for (b = brands; b; b = b->next) {
+				log_obj(format("%sx%d ", b->name, b->multiplier));
 			}
-			for (i = 0; i < num_slays; i++) {
-				log_obj(format("%sx%d ", slays[i].name, slays[i].multiplier)); 
+			for (s = slays; s; s = s->next) {
+				log_obj(format("%sx%d ", s->name, s->multiplier));
 			}
 			log_obj(format("\nsv is: %d\n", sv));
 			log_obj(format(" and t_m_p is: %d \n", tot_mon_power));
 			log_obj(format("times 1000 is: %d\n", (1000 * sv) / tot_mon_power));
-			if (brands) mem_free(brands);
-			if (slays) mem_free(slays);
+			free_brand(brands);
+			free_slay(slays);
 		}
 
 		/* Add to the cache */
