@@ -40,9 +40,9 @@ bool append_random_slay(struct slay *current, char **name);
 int brand_count(struct brand *brands);
 int slay_count(struct slay *slays);
 struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
-							int *total,	bool known);
+							bool known);
 struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
-							  int *total, bool known);
+						  bool known);
 void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr);
 void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr);
 void improve_attack_modifier(object_type *o_ptr, const monster_type	*m_ptr, 

@@ -417,8 +417,7 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
  */
 static bool describe_slays(textblock *tb, const struct object *obj)
 {
-	int num = 0;
-	struct slay *known_slays = slay_collect(obj, NULL, &num, TRUE);
+	struct slay *known_slays = slay_collect(obj, NULL, TRUE);
 	struct slay *s;
 
 	if (!known_slays) return FALSE;
@@ -449,8 +448,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
  */
 static bool describe_brands(textblock *tb, const struct object *obj)
 {
-	int num = 0;
-	struct brand *known_brands = brand_collect(obj, NULL, &num, TRUE);
+	struct brand *known_brands = brand_collect(obj, NULL, TRUE);
 	struct brand *b;
 
 	if (!known_brands) return FALSE;
@@ -771,7 +769,7 @@ static bool describe_blows(textblock *tb, const struct object *obj)
  * Note that the results are meaningless if called on a fake ego object as
  * the actual ego may have different properties.
  */
-static int obj_known_damage(const struct object *obj, int *normal_damage,
+static bool obj_known_damage(const struct object *obj, int *normal_damage,
 							struct brand **brand_list, struct slay **slay_list,
 							bool *nonweap_slay)
 {
@@ -792,8 +790,6 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 	player_state state;
 	struct slay *s;
 	struct brand *b;
-	int num_slays;
-	int num_brands;
 	int weapon_slot = slot_by_name(player, "weapon");
 	struct object *current_weapon = slot_object(player, weapon_slot);
 
@@ -870,7 +866,7 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 	if (ammo) multiplier = player->state.ammo_mult;
 
 	/* Get the brands */
-	*brand_list = brand_collect(obj, ammo ? bow : NULL, &num_brands, TRUE);
+	*brand_list = brand_collect(obj, ammo ? bow : NULL, TRUE);
 
 	/* Get damage for each brand on the objects */
 	for (brand = *brand_list; brand; brand = brand->next) {
@@ -892,7 +888,7 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 	}
 
 	/* Get the slays */
-	*slay_list = slay_collect(obj, ammo ? bow : NULL, &num_slays, TRUE);
+	*slay_list = slay_collect(obj, ammo ? bow : NULL, TRUE);
 
 	/* Get damage for each slay on the objects */
 	for (slay = *slay_list; slay; slay = slay->next) {
@@ -926,7 +922,7 @@ static int obj_known_damage(const struct object *obj, int *normal_damage,
 
 	*normal_damage = total_dam;
 
-	return num_brands + num_slays;
+	return (*slay_list || *brand_list);
 }
 
 
@@ -939,10 +935,10 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	int normal_damage;
 	struct brand *brand, *brands = NULL;
 	struct slay *slay, *slays = NULL;
-	int num;
+	bool has_brands_or_slays;
 
 	/* Collect brands and slays */
-	num = obj_known_damage(obj, &normal_damage, &brands, &slays, &nonweap_slay);
+	has_brands_or_slays = obj_known_damage(obj, &normal_damage, &brands, &slays, &nonweap_slay);
 
 	/* Mention slays and brands from other items */
 	if (nonweap_slay)
@@ -981,7 +977,7 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 		slay = slay->next;
 	}
 
-	if (num) textblock_append(tb, "and ");
+	if (has_brands_or_slays) textblock_append(tb, "and ");
 
 	if (normal_damage <= 0)
 		textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
@@ -991,7 +987,7 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	else
 		textblock_append_c(tb, COLOUR_L_GREEN, "%d", normal_damage / 10);
 
-	if (num) textblock_append(tb, " vs. others");
+	if (has_brands_or_slays) textblock_append(tb, " vs. others");
 	textblock_append(tb, ".\n");
 
 	free_brand(brands);

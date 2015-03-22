@@ -266,28 +266,15 @@ int slay_count(struct slay *slays)
  * linked array
  * \param obj1 the first object (not NULL)
  * \param obj2 the second object (can be NULL)
- * \param total counts the brands found
  * \param known whether we are after only known brands
  * \return a pointer to the first brand
  */
 struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
-							int *total, bool known)
+							bool known)
 {
-	int count = 0;
 	struct brand *b, *b_new;
 	struct brand *b_last = NULL;
 	struct brand *collected_brands = NULL;
-
-	/* Count the brands */
-	for (b = obj1->brands; b; b = b->next)
-		if (!known || b->known) count++;
-
-	if (obj2)
-		for (b = obj2->brands; b; b = b->next)
-			if (!known || b->known) count++;
-	*total = count;
-
-	if (!count) return collected_brands;
 
 	/* Allocate and populate */
 	b = obj1->brands;
@@ -334,28 +321,15 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
  * linked array
  * \param obj1 the first object (not NULL)
  * \param obj2 the second object (can be NULL)
- * \param total counts the slays found
  * \param known whether we are after only known slays
  * \return a pointer to the first slay
  */
 struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
-							  int *total, bool known)
+						  bool known)
 {
-	int count = 0;
 	struct slay *s, *s_new;
 	struct slay *s_last = NULL;
 	struct slay *collected_slays = NULL;
-
-	/* Count the slays */
-	for (s = obj1->slays; s; s = s->next)
-		if (!known || s->known) count++;
-
-	if (obj2)
-		for (s = obj2->slays; s; s = s->next)
-			if (!known || s->known) count++;
-	*total = count;
-
-	if (!count) return collected_slays;
 
 	/* Allocate and populate */
 	s = obj1->slays;
