@@ -302,8 +302,9 @@ unsigned check_for_inscrip(const struct object *o_ptr, const char *inscrip)
 
 	s = quark_str(o_ptr->note);
 
-	/* Ensure all notes are legal */
-	assert(s);
+	/* Needing this implies there are bad instances of o_ptr->note around,
+	 * but I haven't been able to track down their origins - NRM */
+	if (!s) return;
 
 	do {
 		s = strstr(s, inscrip);
