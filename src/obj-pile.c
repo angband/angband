@@ -535,6 +535,8 @@ void object_copy_amt(struct object *dest, struct object *src, int amt)
  *
  * Where object_copy_amt() makes `amt` new objects, this function leaves the
  * total number unchanged; otherwise the two functions are similar.
+ *
+ * This function should only be used when amt < src->number
  */
 struct object *object_split(struct object *src, int amt)
 {
@@ -544,8 +546,7 @@ struct object *object_split(struct object *src, int amt)
 	object_copy(dest, src);
 
 	/* Check legality */
-	if (src->number < amt)
-		amt = src->number;
+	assert(src->number > amt);
 
 	/* Distribute charges of wands, staves, or rods */
 	distribute_charges(src, dest, amt);

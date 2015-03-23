@@ -302,6 +302,9 @@ unsigned check_for_inscrip(const struct object *o_ptr, const char *inscrip)
 
 	s = quark_str(o_ptr->note);
 
+	/* Ensure all notes are legal */
+	assert(s);
+
 	do {
 		s = strstr(s, inscrip);
 		if (!s) break;
