@@ -166,13 +166,18 @@ void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 	for (y = y1; y <= y2; y++) {
 		square_set_feat(c, y, x1, feat);
 		square_set_feat(c, y, x2, feat);
-		if (flag) generate_mark(c, y, x2, y, x2, flag);
 	}
-
+	if (flag) {
+		generate_mark(c, y1, x1, y2, x1, flag);
+		generate_mark(c, y1, x2, y2, x2, flag);
+	}
 	for (x = x1; x <= x2; x++) {
 		square_set_feat(c, y1, x, feat);
 		square_set_feat(c, y2, x, feat);
-		if (flag) generate_mark(c, y1, x, y2, x, flag);
+	}
+	if (flag) {
+		generate_mark(c, y1, x1, y1, x2, flag);
+		generate_mark(c, y2, x1, y2, x2, flag);
 	}
 }
 

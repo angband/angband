@@ -958,7 +958,10 @@ static void mutate_cavern(struct chunk *c) {
 
     for (y = 1; y < h - 1; y++) {
 		for (x = 1; x < w - 1; x++) {
-			square_set_feat(c, y, x, temp[y * w + x]);
+			if (temp[y * w + x] == FEAT_GRANITE)
+				set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
+			else
+				square_set_feat(c, y, x, temp[y * w + x]);
 		}
     }
 
