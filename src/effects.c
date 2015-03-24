@@ -2077,7 +2077,7 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 		x = m_ptr->fx;
 
 		/* Require line of sight */
-		if (!player_has_los_bold(y, x)) continue;
+		if (!square_isview(cave, y, x)) continue;
 
 		/* Jump directly to the target monster */
 		if (project(-1, 0, y, x, dam, typ, flg, 0, 0)) context->ident = TRUE;
@@ -2133,7 +2133,7 @@ bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
 		}
 
 		/* Speed up monsters in line of sight */
-		if (player_has_los_bold(m_ptr->fy, m_ptr->fx)) {
+		if (square_isview(cave, m_ptr->fy, m_ptr->fx)) {
 			mon_inc_timed(m_ptr, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
 			if (is_mimicking(m_ptr))
 				become_aware(m_ptr);
@@ -2340,7 +2340,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 		if (!m_ptr->race) continue;
 
 		/* Require line of sight */
-		if (!player_has_los_bold(m_ptr->fy, m_ptr->fx)) continue;
+		if (!square_isview(cave, m_ptr->fy, m_ptr->fx)) continue;
 
 		/* Probe visible monsters */
 		if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {

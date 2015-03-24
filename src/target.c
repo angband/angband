@@ -410,7 +410,7 @@ bool target_sighted(void)
 			panel_contains(target_y, target_x) &&
 			 /* either the target is a grid and is visible, or it is a monster
 			  * that is visible */
-			((!target_who && player_can_see_bold(target_y, target_x)) ||
+		((!target_who && square_isseen(cave, target_y, target_x)) ||
 			 (target_who && mflag_has(target_who->mflag, MFLAG_VISIBLE)));
 }
 

@@ -52,7 +52,7 @@ static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t
 	sqinfo_on(cave->squares[y][x].info, SQUARE_GLOW);
 
 	/* Grid is in line of sight */
-	if (player_has_los_bold(y, x)) {
+	if (square_isview(cave, y, x)) {
 		if (!player->timed[TMD_BLIND]) {
 			/* Observe */
 			context->obvious = TRUE;
@@ -79,7 +79,7 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 	}
 
 	/* Grid is in line of sight */
-	if (player_has_los_bold(y, x)) {
+	if (square_isview(cave, y, x)) {
 		/* Observe */
 		context->obvious = TRUE;
 
@@ -171,7 +171,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 		/* Hack -- place an object */
 		if (randint0(100) < 10){
-			if (player_can_see_bold(y, x)) {
+			if (square_isseen(cave, y, x)) {
 				msg("There was something buried in the rubble!");
 				context->obvious = TRUE;
 			}
@@ -214,7 +214,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 	if (square_isplayertrap(cave, y, x) || square_isdoor(cave, y, x))
 	{
 		/* Check line of sight */
-		if (player_has_los_bold(y, x))
+		if (square_isview(cave, y, x))
 		{
 			/* Message */
 			msg("There is a bright flash of light!");
@@ -251,7 +251,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 		place_closed_door(cave, y, x);
 
 		/* Check line of sight */
-		if (player_has_los_bold(y, x))
+		if (square_isview(cave, y, x))
 		{
 			context->obvious = TRUE;
 		}
@@ -261,7 +261,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 	if (square_istrap(cave, y, x))
 	{
 		/* Check line of sight */
-		if (player_has_los_bold(y, x))
+		if (square_isview(cave, y, x))
 		{
 			msg("There is a bright flash of light!");
 			context->obvious = TRUE;
@@ -281,7 +281,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 		square_unlock_door(cave, y, x);
 
 		/* Check line of sound */
-		if (player_has_los_bold(y, x))
+		if (square_isview(cave, y, x))
 		{
 			msg("Click!");
 			context->obvious = TRUE;

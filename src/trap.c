@@ -463,7 +463,7 @@ bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx)
     }
 
     /* Refresh grids that the character can see */
-    if (player_can_see_bold(y, x))
+    if (square_isseen(c, y, x))
 		square_light_spot(c, y, x);
     
     /* Verify traps (remove marker if appropriate) */

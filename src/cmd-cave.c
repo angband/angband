@@ -643,7 +643,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 
 				/* Observe the new object */
 				if (!ignore_item_ok(square_object(cave, y, x)) &&
-					player_can_see_bold(y, x))
+					square_isseen(cave, y, x))
 					msg("You have found something!");
 			} else {
 				/* Message, keep digging */

@@ -656,7 +656,7 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 }
 
 /**
- * update the player's current view
+ * Update the player's current view
  */
 void update_view(struct chunk *c, struct player *p)
 {
@@ -692,32 +692,10 @@ void update_view(struct chunk *c, struct player *p)
 
 
 /**
- * Determine if a "legal" grid is within "los" of the player
- */
-bool player_has_los_bold(int y, int x)
-{
-	if (sqinfo_has(cave->squares[y][x].info, SQUARE_VIEW))
-		return TRUE;
-
-	return FALSE;
-}
-
-/**
- * Determine if a "legal" grid can be "seen" by the player
- */
-bool player_can_see_bold(int y, int x)
-{
-	if (sqinfo_has(cave->squares[y][x].info, SQUARE_SEEN))
-		return TRUE;
-
-	return FALSE;
-}
-
-/**
  * Returns true if the player's grid is dark
  */
 bool no_light(void)
 {
-	return (!player_can_see_bold(player->py, player->px));
+	return (!square_isseen(cave, player->py, player->px));
 }
 

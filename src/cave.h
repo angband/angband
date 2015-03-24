@@ -217,8 +217,6 @@ int distance(int y1, int x1, int y2, int x2);
 bool los(struct chunk *c, int y1, int x1, int y2, int x2);
 void forget_view(struct chunk *c);
 void update_view(struct chunk *c, struct player *p);
-bool player_has_los_bold(int y, int x);
-bool player_can_see_bold(int y, int x);
 bool no_light(void);
 
 /* cave-map.c */

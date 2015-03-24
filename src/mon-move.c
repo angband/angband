@@ -280,7 +280,7 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 	if (c->squares[my][mx].cost > m_ptr->race->aaf) return FALSE;
 
 	/* If the player can see monster, run towards them */
-	if (player_has_los_bold(my, mx)) return FALSE;
+	if (square_isview(c, my, mx)) return FALSE;
 
 	/* Check nearby grids, diagonals first */
 	/* This gives preference to the cardinal directions */
@@ -521,7 +521,7 @@ static const int *dist_offsets_x[10] =
 };
 
 
-/*
+/**
  * Choose a "safe" location near a monster for it to run toward.
  *
  * A location is "safe" if it can be reached quickly and the player
@@ -548,8 +548,7 @@ static bool find_safety(struct chunk *c, struct monster *m_ptr)
 	const int *x_offsets;
 
 	/* Start with adjacent locations, spread further */
-	for (d = 1; d < 10; d++)
-	{
+	for (d = 1; d < 10; d++) {
 		/* Get the lists of points with a distance d from (fx, fy) */
 		y_offsets = dist_offsets_y[d];
 		x_offsets = dist_offsets_x[d];
@@ -557,8 +556,7 @@ static bool find_safety(struct chunk *c, struct monster *m_ptr)
 		/* Check the locations */
 		for (i = 0, dx = x_offsets[0], dy = y_offsets[0];
 		     dx != 0 || dy != 0;
-		     i++, dx = x_offsets[i], dy = y_offsets[i])
-		{
+		     i++, dx = x_offsets[i], dy = y_offsets[i]) {
 			y = fy + dy;
 			x = fx + dx;
 
@@ -572,17 +570,16 @@ static bool find_safety(struct chunk *c, struct monster *m_ptr)
 			if (c->squares[y][x].when < c->squares[py][px].when) continue;
 
 			/* Ignore too-distant grids */
-			if (c->squares[y][x].cost > c->squares[fy][fx].cost + 2 * d) continue;
+			if (c->squares[y][x].cost > c->squares[fy][fx].cost + 2 * d)
+				continue;
 
 			/* Check for absence of shot (more or less) */
-			if (!player_has_los_bold(y,x))
-			{
+			if (!square_isview(c, y, x)) {
 				/* Calculate distance from player */
 				dis = distance(y, x, py, px);
 
 				/* Remember if further than previous */
-				if (dis > gdis)
-				{
+				if (dis > gdis) {
 					gy = y;
 					gx = x;
 					gdis = dis;
@@ -591,8 +588,7 @@ static bool find_safety(struct chunk *c, struct monster *m_ptr)
 		}
 
 		/* Check for success */
-		if (gdis > 0)
-		{
+		if (gdis > 0) {
 			/* Good location */
 			m_ptr->ty = gy;
 			m_ptr->tx = gx;
@@ -655,7 +651,7 @@ static bool find_hiding(struct monster *m_ptr)
 			if (!square_isempty(cave, y, x)) continue;
 
 			/* Check for hidden, available grid */
-			if (!player_has_los_bold(y, x) &&
+			if (!square_isview(cave, y, x) &&
 				projectable(cave, fy, fx, y, x, PROJECT_STOP))
 			{
 				/* Calculate distance from player */
@@ -909,7 +905,7 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 
 	/* Monster can "see" the player (checked backwards) */
-	else if (player_has_los_bold(mon->fy, mon->fx))
+	else if (square_isview(c, mon->fy, mon->fx))
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 
 	/* Monster can "smell" the player from far away (flow) */
@@ -1130,7 +1126,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 		square_destroy_wall(c, ny, nx);
 
 		/* Note changes to viewable region */
-		if (player_has_los_bold(ny, nx))
+		if (square_isview(c, ny, nx))
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Fully update the flow since terrain changed */
@@ -1171,7 +1167,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *m_ptr,
 			}
 		} else {
 			/* Handle viewable doors */
-			if (player_has_los_bold(ny, nx))
+			if (square_isview(c, ny, nx))
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Closed or secret door -- open or bash if allowed */
@@ -1331,7 +1327,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 			/* Only give a message for "take_item" */
 			if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) &&
 				mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
-				player_has_los_bold(ny, nx) && !ignore_item_ok(obj)) {
+				square_isview(c, ny, nx) && !ignore_item_ok(obj)) {
 				/* Dump a message */
 				msg("%s tries to pick up %s, but fails.", m_name, o_name);
 			}
@@ -1339,7 +1335,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 		/* Pick up the item */
 		} else if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM)) {
 			/* Describe observable situations */
-			if (player_has_los_bold(ny, nx) && !ignore_item_ok(obj))
+			if (square_isview(c, ny, nx) && !ignore_item_ok(obj))
 				msg("%s picks up %s.", m_name, o_name);
 
 			/* Carry the object */
@@ -1349,7 +1345,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *m_ptr,
 		/* Destroy the item */
 		} else {
 			/* Describe observable situations */
-			if (player_has_los_bold(ny, nx) && !ignore_item_ok(obj))
+			if (square_isview(c, ny, nx) && !ignore_item_ok(obj))
 				msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 
 			/* Delete the object */

@@ -253,7 +253,7 @@ void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 					flag = TRUE;
 
 					/* Check for LOS so that MFLAG_VIEW is set later */
-					if (player_has_los_bold(fy, fx)) easy = TRUE;
+					if (square_isview(c, fy, fx)) easy = TRUE;
 				}
 			}
 
@@ -263,7 +263,7 @@ void update_mon(struct monster *m_ptr, struct chunk *c, bool full)
 				flag = TRUE;
 
 				/* Check for LOS to that MFLAG_VIEW is set later */
-				if (player_has_los_bold(fy, fx)) easy = TRUE;
+				if (square_isview(c, fy, fx)) easy = TRUE;
 			}
 		}
 

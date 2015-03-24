@@ -533,7 +533,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 	for (i = 0; i < path_n; ++i) {
 		int ny = path_g[i].y;
 		int nx = path_g[i].x;
-		bool see = player_can_see_bold(ny, nx);
+		bool see = square_isseen(cave, ny, nx);
 
 		/* Stop before hitting walls */
 		if (!(square_ispassable(cave, ny, nx)) &&

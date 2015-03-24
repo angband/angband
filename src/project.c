@@ -726,7 +726,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 				/* Only do visuals if requested and within range limit. */
 				if (!blind && !(flg & (PROJECT_HIDE))) {
-					bool seen = player_has_los_bold(y, x);
+					bool seen = square_isview(cave, y, x);
 					bool beam = flg & (PROJECT_BEAM);
 
 					/* Tell the UI to display the bolt */
@@ -929,7 +929,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	if (!blind && !(flg & (PROJECT_HIDE))) {
 		for (i = 0; i < num_grids; i++) {
 			if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
-				player_has_los_bold(blast_grid[i].y, blast_grid[i].x))
+				square_isview(cave, blast_grid[i].y, blast_grid[i].x))
 				player_sees_grid[i] = TRUE;
 			else
 				player_sees_grid[i] = FALSE;
