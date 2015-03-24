@@ -2437,6 +2437,7 @@ alloc:40:25 to 100
 pile:25:2
 power:22
 effect:ENLIGHTENMENT
+dice:1
 
 name:342:*Enlightenment*
 graphics:!:d
@@ -2446,6 +2447,7 @@ alloc:8:70 to 100
 combat:0:1d1:0:0:0
 power:20000
 effect:ENLIGHTENMENT
+dice:1
 effect:GAIN_STAT:INT
 effect:GAIN_STAT:WIS
 effect:DETECT_TRAPS
