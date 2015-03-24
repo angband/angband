@@ -193,13 +193,13 @@ void build_score(high_score *entry, const char *died_from, time_t *death_time)
 	strnfmt(entry->what, sizeof(entry->what), "%s", buildid);
 
 	/* Calculate and save the points */
-	strnfmt(entry->pts, sizeof(entry->pts), "%9lu", (long)total_points());
+	strnfmt(entry->pts, sizeof(entry->pts), "%9u", total_points());
 
 	/* Save the current gold */
-	strnfmt(entry->gold, sizeof(entry->gold), "%9lu", (long)player->au);
+	strnfmt(entry->gold, sizeof(entry->gold), "%9u", player->au);
 
 	/* Save the current turn */
-	strnfmt(entry->turns, sizeof(entry->turns), "%9lu", (long)turn);
+	strnfmt(entry->turns, sizeof(entry->turns), "%9u", turn);
 
 	/* Time of death */
 	if (death_time)
