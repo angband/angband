@@ -42,10 +42,10 @@
 #include "randname.h"
 #include "z-queue.h"
 
-object_base *kb_info;
-object_kind *k_info;
-artifact_type *a_info;
-ego_item_type *e_info;
+struct object_base *kb_info;
+struct object_kind *k_info;
+struct artifact *a_info;
+struct ego_item *e_info;
 struct flavor *flavors;
 
 /**
@@ -173,8 +173,7 @@ void flavor_init(void)
 	flavor_assign_random(TV_POTION);
 
 	/* Scrolls (random titles, always white) */
-	for (i = 0; i < MAX_TITLES; i++)
-	{
+	for (i = 0; i < MAX_TITLES; i++) {
 		char buf[26];
 		char *end = buf + 1;
 		int titlelen = 0;
@@ -183,8 +182,7 @@ void flavor_init(void)
 
 		my_strcpy(buf, "\"", 2);
 		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24, name_sections);
-		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 3))
-		{
+		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 3)) {
 			end[wordlen] = ' ';
 			titlelen += wordlen + 1;
 			end += wordlen + 1;
@@ -195,24 +193,18 @@ void flavor_init(void)
 		buf[titlelen+1] = '\0';
 
 		/* Check the scroll name hasn't already been generated */
-		for (j = 0; j < i; j++)
-		{
-			if (streq(buf, scroll_adj[j]))
-			{
+		for (j = 0; j < i; j++) {
+			if (streq(buf, scroll_adj[j])) {
 				okay = FALSE;
 				break;
 			}
 		}
 
 		if (okay)
-		{
 			my_strcpy(scroll_adj[i], buf, sizeof(scroll_adj[0]));
-		}
 		else
-		{
 			/* Have another go at making a name */
 			i--;
-		}
 	}
 	flavor_assign_random(TV_SCROLL);
 
@@ -220,15 +212,14 @@ void flavor_init(void)
 	Rand_quick = FALSE;
 
 	/* Analyze every object */
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		object_kind *k_ptr = &k_info[i];
+	for (i = 1; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
 
 		/* Skip "empty" objects */
-		if (!k_ptr->name) continue;
+		if (!kind->name) continue;
 
 		/* No flavor yields aware */
-		if (!k_ptr->flavor) k_ptr->aware = TRUE;
+		if (!kind->flavor) kind->aware = TRUE;
 	}
 }
 
@@ -250,17 +241,17 @@ void object_flags(const struct object *obj, bitflag flags[OF_SIZE])
 /**
  * Obtain the flags for an item which are known to the player
  */
-void object_flags_known(const struct object *o_ptr, bitflag flags[OF_SIZE])
+void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE])
 {
-	object_flags(o_ptr, flags);
+	object_flags(obj, flags);
 
-	of_inter(flags, o_ptr->known_flags);
+	of_inter(flags, obj->known_flags);
 
-	if (object_flavor_is_aware(o_ptr))
-		of_union(flags, o_ptr->kind->flags);
+	if (object_flavor_is_aware(obj))
+		of_union(flags, obj->kind->flags);
 
-	if (o_ptr->ego && easy_know(o_ptr))
-		of_union(flags, o_ptr->ego->flags);
+	if (obj->ego && easy_know(obj))
+		of_union(flags, obj->ego->flags);
 }
 
 /**
@@ -282,10 +273,10 @@ bool object_test(item_tester tester, const struct object *obj)
 /**
  * Return true if the item is unknown (has yet to be seen by the player).
  */
-bool is_unknown(const struct object *o_ptr)
+bool is_unknown(const struct object *obj)
 {
 	grid_data gd = { 0 };
-	map_info(o_ptr->iy, o_ptr->ix, &gd);
+	map_info(obj->iy, obj->ix, &gd);
 	return gd.unseen_object;
 }	
 
@@ -293,18 +284,18 @@ bool is_unknown(const struct object *o_ptr)
 /**
  * Looks if "inscrip" is present on the given object.
  */
-unsigned check_for_inscrip(const struct object *o_ptr, const char *inscrip)
+unsigned check_for_inscrip(const struct object *obj, const char *inscrip)
 {
 	unsigned i = 0;
 	const char *s;
 
-	if (!o_ptr->note) return 0;
+	if (!obj->note) return 0;
 
-	s = quark_str(o_ptr->note);
+	s = quark_str(obj->note);
 
-	/* Needing this implies there are bad instances of o_ptr->note around,
+	/* Needing this implies there are bad instances of obj->note around,
 	 * but I haven't been able to track down their origins - NRM */
-	if (!s) return;
+	if (!s) return 0;
 
 	do {
 		s = strstr(s, inscrip);
@@ -328,7 +319,7 @@ struct object_kind *lookup_kind(int tval, int sval)
 
 	/* Look for it */
 	for (k = 0; k < z_info->k_max; k++) {
-		object_kind *kind = &k_info[k];
+		struct object_kind *kind = &k_info[k];
 		if (kind->tval == tval && kind->sval == sval)
 			return kind;
 	}
@@ -354,17 +345,17 @@ int lookup_artifact_name(const char *name)
 {
 	int i;
 	int a_idx = -1;
-	
+
 	/* Look for it */
 	for (i = 1; i < z_info->a_max; i++) {
-		artifact_type *a_ptr = &a_info[i];
+		struct artifact *art = &a_info[i];
 
 		/* Test for equality */
-		if (a_ptr->name && streq(name, a_ptr->name))
+		if (art->name && streq(name, art->name))
 			return i;
 		
 		/* Test for close matches */
-		if (strlen(name) >= 3 && a_ptr->name && my_stristr(a_ptr->name, name)
+		if (strlen(name) >= 3 && art->name && my_stristr(art->name, name)
 			&& a_idx == -1)
 			a_idx = i;
 	}
@@ -388,17 +379,17 @@ int lookup_sval(int tval, const char *name)
 
 	/* Look for it */
 	for (k = 1; k < z_info->k_max; k++) {
-		object_kind *k_ptr = &k_info[k];
+		struct object_kind *kind = &k_info[k];
 		char cmp_name[1024];
 
-		if (!k_ptr || !k_ptr->name) continue;
+		if (!kind || !kind->name) continue;
 
-		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, k_ptr->name, 0,
+		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, kind->name, 0,
 							 FALSE);
 
 		/* Found a match */
-		if (k_ptr->tval == tval && !my_stricmp(cmp_name, name))
-			return k_ptr->sval;
+		if (kind->tval == tval && !my_stricmp(cmp_name, name))
+			return kind->sval;
 	}
 
 	return -1;
@@ -476,11 +467,11 @@ int compare_items(const struct object *o1, const struct object *o2)
 /**
  * Determine if an object has charges
  */
-bool obj_has_charges(const struct object *o_ptr)
+bool obj_has_charges(const struct object *obj)
 {
-	if (!tval_can_have_charges(o_ptr)) return FALSE;
+	if (!tval_can_have_charges(obj)) return FALSE;
 
-	if (o_ptr->pval <= 0) return FALSE;
+	if (obj->pval <= 0) return FALSE;
 
 	return TRUE;
 }
@@ -488,10 +479,10 @@ bool obj_has_charges(const struct object *o_ptr)
 /**
  * Determine if an object is zappable
  */
-bool obj_can_zap(const struct object *o_ptr)
+bool obj_can_zap(const struct object *obj)
 {
 	/* Any rods not charging? */
-	if (tval_can_have_timeout(o_ptr) && number_charging(o_ptr) < o_ptr->number)
+	if (tval_can_have_timeout(obj) && number_charging(obj) < obj->number)
 		return TRUE;
 
 	return FALSE;
@@ -500,20 +491,20 @@ bool obj_can_zap(const struct object *o_ptr)
 /**
  * Determine if an object is activatable
  */
-bool obj_is_activatable(const struct object *o_ptr)
+bool obj_is_activatable(const struct object *obj)
 {
-	return object_effect(o_ptr) ? TRUE : FALSE;
+	return object_effect(obj) ? TRUE : FALSE;
 }
 
 /**
  * Determine if an object can be activated now
  */
-bool obj_can_activate(const struct object *o_ptr)
+bool obj_can_activate(const struct object *obj)
 {
-	if (obj_is_activatable(o_ptr))
+	if (obj_is_activatable(obj))
 	{
 		/* Check the recharge */
-		if (!o_ptr->timeout) return TRUE;
+		if (!obj->timeout) return TRUE;
 	}
 
 	return FALSE;
@@ -541,66 +532,66 @@ bool obj_can_refill(const struct object *obj)
 	return FALSE;
 }
 
-bool obj_can_browse(const struct object *o_ptr)
+bool obj_can_browse(const struct object *obj)
 {
 	int i;
 
 	for (i = 0; i < player->class->magic.num_books; i++) {
 		class_book book = player->class->magic.books[i];
-		if (o_ptr->kind == lookup_kind(book.tval, book.sval))
+		if (obj->kind == lookup_kind(book.tval, book.sval))
 			return TRUE;
 	}
 
 	return FALSE;
 }
 
-bool obj_can_cast_from(const struct object *o_ptr)
+bool obj_can_cast_from(const struct object *obj)
 {
-	return obj_can_browse(o_ptr) &&
-			spell_book_count_spells(o_ptr, spell_okay_to_cast) > 0;
+	return obj_can_browse(obj) &&
+			spell_book_count_spells(obj, spell_okay_to_cast) > 0;
 }
 
-bool obj_can_study(const struct object *o_ptr)
+bool obj_can_study(const struct object *obj)
 {
-	return obj_can_browse(o_ptr) &&
-			spell_book_count_spells(o_ptr, spell_okay_to_study) > 0;
+	return obj_can_browse(obj) &&
+			spell_book_count_spells(obj, spell_okay_to_study) > 0;
 }
 
 
 /* Can only take off non-cursed items */
-bool obj_can_takeoff(const struct object *o_ptr)
+bool obj_can_takeoff(const struct object *obj)
 {
-	return !cursed_p((bitflag *)o_ptr->flags);
+	return !cursed_p((bitflag *)obj->flags);
 }
 
 /* Can only put on wieldable items */
-bool obj_can_wear(const struct object *o_ptr)
+bool obj_can_wear(const struct object *obj)
 {
-	return (wield_slot(o_ptr) >= 0);
+	return (wield_slot(obj) >= 0);
 }
 
 /* Can only fire an item with the right tval */
-bool obj_can_fire(const struct object *o_ptr)
+bool obj_can_fire(const struct object *obj)
 {
-	return o_ptr->tval == player->state.ammo_tval;
+	return obj->tval == player->state.ammo_tval;
 }
 
 /* Can has inscrip pls */
-bool obj_has_inscrip(const struct object *o_ptr)
+bool obj_has_inscrip(const struct object *obj)
 {
-	return (o_ptr->note ? TRUE : FALSE);
+	return (obj->note ? TRUE : FALSE);
 }
 
-bool obj_is_useable(const struct object *o_ptr)
+bool obj_is_useable(const struct object *obj)
 {
-	if (tval_is_useable(o_ptr))
+	if (tval_is_useable(obj))
 		return TRUE;
 
-	if (object_effect(o_ptr))
+	if (object_effect(obj))
 		return TRUE;
 
-	if (tval_is_ammo(o_ptr))
-		return o_ptr->tval == player->state.ammo_tval;
+	if (tval_is_ammo(obj))
+		return obj->tval == player->state.ammo_tval;
 
 	return FALSE;
 }
@@ -610,12 +601,12 @@ bool obj_is_useable(const struct object *o_ptr)
 /**
  * Return an object's effect.
  */
-u16b object_effect(const struct object *o_ptr)
+u16b object_effect(const struct object *obj)
 {
-	if (o_ptr->activation)
-		return o_ptr->activation->effect->index;
-	else if (o_ptr->effect)
-		return o_ptr->effect->index;
+	if (obj->activation)
+		return obj->activation->effect->index;
+	else if (obj->effect)
+		return obj->effect->index;
 	else
 		return 0;
 }
@@ -623,15 +614,16 @@ u16b object_effect(const struct object *o_ptr)
 /**
  * Does the given object need to be aimed?
  */ 
-bool obj_needs_aim(struct object *o_ptr)
+bool obj_needs_aim(struct object *obj)
 {
-	struct effect *effect = o_ptr->effect;
+	struct effect *effect = obj->activation ? obj->activation->effect :
+		obj->effect;
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */
-	return effect_aim(effect) || tval_is_ammo(o_ptr) ||
-			tval_is_wand(o_ptr) ||
-			(tval_is_rod(o_ptr) && !object_flavor_is_aware(o_ptr));
+	return effect_aim(effect) || tval_is_ammo(obj) ||
+			tval_is_wand(obj) ||
+			(tval_is_rod(obj) && !object_flavor_is_aware(obj));
 }
 
 /**
@@ -650,7 +642,7 @@ bool obj_can_fail(const struct object *o)
  * Returns the number of times in 1000 that @ will FAIL
  * - thanks to Ed Graham for the formula
  */
-int get_use_device_chance(const struct object *o_ptr)
+int get_use_device_chance(const struct object *obj)
 {
 	int lev, fail, numerator, denominator;
 
@@ -662,10 +654,10 @@ int get_use_device_chance(const struct object *o_ptr)
 	int diff_max  = 100;
 
 	/* Extract the item level, which is the difficulty rating */
-	if (o_ptr->artifact)
-		lev = o_ptr->artifact->level;
+	if (obj->artifact)
+		lev = obj->artifact->level;
 	else
-		lev = o_ptr->kind->level;
+		lev = obj->kind->level;
 
 	/* TODO: maybe use something a little less convoluted? */
 	numerator   = (skill - lev) - (skill_max - diff_min);
@@ -687,13 +679,13 @@ int get_use_device_chance(const struct object *o_ptr)
 /**
  * Distribute charges of rods, staves, or wands.
  *
- * \param o_ptr is the source item
- * \param q_ptr is the target item, must be of the same type as o_ptr
+ * \param source is the source item
+ * \param dest is the target item, must be of the same type as source
  * \param amt is the number of items that are transfered
  */
-void distribute_charges(struct object *o_ptr, struct object *q_ptr, int amt)
+void distribute_charges(struct object *source, struct object *dest, int amt)
 {
-	int charge_time = randcalc(o_ptr->time, 0, AVERAGE), max_time;
+	int charge_time = randcalc(source->time, 0, AVERAGE), max_time;
 
 	/*
 	 * Hack -- If rods, staves, or wands are dropped, the total maximum
@@ -701,11 +693,11 @@ void distribute_charges(struct object *o_ptr, struct object *q_ptr, int amt)
 	 * If all the items are being dropped, it makes for a neater message
 	 * to leave the original stack's pval alone. -LM-
 	 */
-	if (tval_can_have_charges(o_ptr)) {
-		q_ptr->pval = o_ptr->pval * amt / o_ptr->number;
+	if (tval_can_have_charges(source)) {
+		dest->pval = source->pval * amt / source->number;
 
-		if (amt < o_ptr->number)
-			o_ptr->pval -= q_ptr->pval;
+		if (amt < source->number)
+			source->pval -= dest->pval;
 	}
 
 	/*
@@ -714,16 +706,16 @@ void distribute_charges(struct object *o_ptr, struct object *q_ptr, int amt)
 	 * The dropped stack will accept all time remaining to charge up to
 	 * its maximum.
 	 */
-	if (tval_can_have_timeout(o_ptr)) {
+	if (tval_can_have_timeout(source)) {
 		max_time = charge_time * amt;
 
-		if (o_ptr->timeout > max_time)
-			q_ptr->timeout = max_time;
+		if (source->timeout > max_time)
+			dest->timeout = max_time;
 		else
-			q_ptr->timeout = o_ptr->timeout;
+			dest->timeout = source->timeout;
 
-		if (amt < o_ptr->number)
-			o_ptr->timeout -= q_ptr->timeout;
+		if (amt < source->number)
+			source->timeout -= dest->timeout;
 	}
 }
 
@@ -732,35 +724,35 @@ void distribute_charges(struct object *o_ptr, struct object *q_ptr, int amt)
  * If rods or wand are destroyed, the total maximum timeout or charges of the
  * stack needs to be reduced, unless all the items are being destroyed. -LM-
  */
-void reduce_charges(struct object *o_ptr, int amt)
+void reduce_charges(struct object *obj, int amt)
 {
-	if (tval_can_have_charges(o_ptr) && amt < o_ptr->number)
-		o_ptr->pval -= o_ptr->pval * amt / o_ptr->number;
+	if (tval_can_have_charges(obj) && amt < obj->number)
+		obj->pval -= obj->pval * amt / obj->number;
 
-	if (tval_can_have_timeout(o_ptr) && amt < o_ptr->number)
-		o_ptr->timeout -= o_ptr->timeout * amt / o_ptr->number;
+	if (tval_can_have_timeout(obj) && amt < obj->number)
+		obj->timeout -= obj->timeout * amt / obj->number;
 }
 
 /**
  * Number of items (usually rods) charging
  */
-int number_charging(const struct object *o_ptr)
+int number_charging(const struct object *obj)
 {
 	int charge_time, num_charging;
 
-	charge_time = randcalc(o_ptr->time, 0, AVERAGE);
+	charge_time = randcalc(obj->time, 0, AVERAGE);
 
 	/* Item has no timeout */
 	if (charge_time <= 0) return 0;
 
 	/* No items are charging */
-	if (o_ptr->timeout <= 0) return 0;
+	if (obj->timeout <= 0) return 0;
 
 	/* Calculate number charging based on timeout */
-	num_charging = (o_ptr->timeout + charge_time - 1) / charge_time;
+	num_charging = (obj->timeout + charge_time - 1) / charge_time;
 
 	/* Number charging cannot exceed stack size */
-	if (num_charging > o_ptr->number) num_charging = o_ptr->number;
+	if (num_charging > obj->number) num_charging = obj->number;
 
 	return num_charging;
 }
@@ -769,22 +761,22 @@ int number_charging(const struct object *o_ptr)
  * Allow a stack of charging objects to charge by one unit per charging object
  * Return TRUE if something recharged
  */
-bool recharge_timeout(struct object *o_ptr)
+bool recharge_timeout(struct object *obj)
 {
 	int charging_before, charging_after;
 
 	/* Find the number of charging items */
-	charging_before = number_charging(o_ptr);
+	charging_before = number_charging(obj);
 
 	/* Nothing to charge */	
 	if (charging_before == 0)
 		return FALSE;
 
 	/* Decrease the timeout */
-	o_ptr->timeout -= MIN(charging_before, o_ptr->timeout);
+	obj->timeout -= MIN(charging_before, obj->timeout);
 
 	/* Find the new number of charging items */
-	charging_after = number_charging(o_ptr);
+	charging_after = number_charging(obj);
 
 	/* Return true if at least 1 item obtained a charge */
 	if (charging_after < charging_before)
