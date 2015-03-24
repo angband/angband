@@ -601,14 +601,14 @@ bool obj_is_useable(const struct object *obj)
 /**
  * Return an object's effect.
  */
-u16b object_effect(const struct object *obj)
+struct effect *object_effect(const struct object *obj)
 {
 	if (obj->activation)
-		return obj->activation->effect->index;
+		return obj->activation->effect;
 	else if (obj->effect)
-		return obj->effect->index;
+		return obj->effect;
 	else
-		return 0;
+		return NULL;
 }
 
 /**
@@ -616,8 +616,7 @@ u16b object_effect(const struct object *obj)
  */ 
 bool obj_needs_aim(struct object *obj)
 {
-	struct effect *effect = obj->activation ? obj->activation->effect :
-		obj->effect;
+	struct effect *effect = object_effect(obj);
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */

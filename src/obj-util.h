@@ -26,40 +26,40 @@
 #define MAX_PVAL  32767
 
 void flavor_init(void);
-void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
-void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
+void object_flags(const struct object *obj, bitflag flags[OF_SIZE]);
+void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE]);
 bool object_test(item_tester tester, const struct object *o);
 bool item_test(item_tester tester, int item);
-bool is_unknown(const object_type *o_ptr);
-unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
+bool is_unknown(const struct object *obj);
+unsigned check_for_inscrip(const struct object *obj, const char *inscrip);
 struct object_kind *lookup_kind(int tval, int sval);
 struct object_kind *objkind_byid(int kidx);
 int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
 void object_short_name(char *buf, size_t max, const char *name);
-int compare_items(const object_type *o1, const object_type *o2);
-bool obj_has_charges(const object_type *o_ptr);
-bool obj_can_zap(const object_type *o_ptr);
-bool obj_is_activatable(const object_type *o_ptr);
-bool obj_can_activate(const object_type *o_ptr);
-bool obj_can_refill(const object_type *o_ptr);
-bool obj_can_browse(const object_type *o_ptr);
-bool obj_can_cast_from(const object_type *o_ptr);
-bool obj_can_study(const object_type *o_ptr);
-bool obj_can_takeoff(const object_type *o_ptr);
-bool obj_can_wear(const object_type *o_ptr);
-bool obj_can_fire(const object_type *o_ptr);
-bool obj_has_inscrip(const object_type *o_ptr);
-bool obj_is_useable(const object_type *o_ptr);
-u16b object_effect(const object_type *o_ptr);
-bool obj_needs_aim(object_type *o_ptr);
+int compare_items(const struct object *o1, const struct object *o2);
+bool obj_has_charges(const struct object *obj);
+bool obj_can_zap(const struct object *obj);
+bool obj_is_activatable(const struct object *obj);
+bool obj_can_activate(const struct object *obj);
+bool obj_can_refill(const struct object *obj);
+bool obj_can_browse(const struct object *obj);
+bool obj_can_cast_from(const struct object *obj);
+bool obj_can_study(const struct object *obj);
+bool obj_can_takeoff(const struct object *obj);
+bool obj_can_wear(const struct object *obj);
+bool obj_can_fire(const struct object *obj);
+bool obj_has_inscrip(const struct object *obj);
+bool obj_is_useable(const struct object *obj);
+struct effect *object_effect(const struct object *obj);
+bool obj_needs_aim(struct object *obj);
 bool obj_can_fail(const struct object *o);
 
-int get_use_device_chance(const object_type *o_ptr);
-void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
-void reduce_charges(object_type *o_ptr, int amt);
-int number_charging(const object_type *o_ptr);
-bool recharge_timeout(object_type *o_ptr);
+int get_use_device_chance(const struct object *obj);
+void distribute_charges(struct object *source, struct object *dest, int amt);
+void reduce_charges(struct object *obj, int amt);
+int number_charging(const struct object *obj);
+bool recharge_timeout(struct object *obj);
 bool verify_object(const char *prompt, struct object *obj);
 
 

@@ -1329,8 +1329,7 @@ static bool describe_light(textblock *tb, const struct object *obj,
  * Gives the known effects of using the given item.
  *
  * Fills in:
- *  - the effect id, or OBJ_KNOWN_PRESENT if there is an effect but details
- *    are unknown
+ *  - the effect
  *  - whether the effect can be aimed
  *  -  the minimum and maximum time in game turns for the item to recharge 
  *     (or zero if it does not recharge)
@@ -1338,7 +1337,9 @@ static bool describe_light(textblock *tb, const struct object *obj,
  *
  * Return FALSE if the object has no effect.
  */
-static bool obj_known_effect(const struct object *obj, int *effect, bool *aimed, int *min_recharge, int *max_recharge, int *failure_chance)
+static bool obj_known_effect(const struct object *obj, struct effect **effect,
+								 bool *aimed, int *min_recharge,
+								 int *max_recharge, int *failure_chance)
 {
 	random_value timeout = {0, 0, 0, 0};
 
@@ -1353,17 +1354,17 @@ static bool obj_known_effect(const struct object *obj, int *effect, bool *aimed,
 		timeout = obj->time;
 	} else if (object_effect(obj)) {
 		/* Don't know much - be vague */
-		*effect = OBJ_KNOWN_PRESENT;
+		*effect = NULL;
 
-		if (!obj->artifact && effect_aim(obj->effect))
+		if (!obj->artifact && effect_aim(object_effect(obj)))
 			*aimed = TRUE;
-					
+
 		return TRUE;
 	} else {
 		/* No effect - no info */
 		return FALSE;
 	}
-	
+
 	if (randcalc(timeout, 0, MAXIMISE) > 0)	{
 		*min_recharge = randcalc(timeout, 0, MINIMISE);
 		*max_recharge = randcalc(timeout, 0, MAXIMISE);
@@ -1385,9 +1386,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		bool only_artifacts, bool subjective)
 {
 	char desc[200];
-	struct effect *e;
-
-	int effect = 0;
+	struct effect *effect = NULL;
 	bool aimed = FALSE;
 	int min_time, max_time, failure_chance;
 
@@ -1395,11 +1394,12 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 	if (only_artifacts && !obj->artifact)
 		return FALSE;
 
-	if (obj_known_effect(obj, &effect, &aimed, &min_time, &max_time, &failure_chance) == FALSE)
+	if (obj_known_effect(obj, &effect, &aimed, &min_time, &max_time,
+							 &failure_chance) == FALSE)
 		return FALSE;
 
-	/* We don't know much */
-	if (effect == OBJ_KNOWN_PRESENT) {
+	/* Effect not known, mouth platitudes */
+	if (!effect && object_effect(obj)) {
 		if (aimed)
 			textblock_append(tb, "It can be aimed.\n");
 		else if (tval_is_edible(obj))
@@ -1413,9 +1413,9 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		return TRUE;
 	}
 
-	/* Obtain the description */
-	e = obj->effect;
-	if (!effect_desc(e)) return FALSE;
+	/* Now get the proper description */
+	effect = object_effect(obj);
+	if (!effect_desc(effect)) return FALSE;
 
 	if (aimed)
 		textblock_append(tb, "When aimed, it ");
@@ -1429,12 +1429,12 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 	    textblock_append(tb, "When activated, it ");
 
 	/* Print a colourised description */
-	while (e) {
+	while (effect) {
 		char *next_char = desc;
 		random_value value = { 0, 0, 0, 0 };
 		char dice_string[20];
-		if (e->dice != NULL)
-			(void) dice_roll(e->dice, &value);
+		if (effect->dice != NULL)
+			(void) dice_roll(effect->dice, &value);
 
 		/* Get the possible dice strings */
 		if (value.dice && value.base)
@@ -1447,7 +1447,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			strnfmt(dice_string, sizeof(dice_string), "%d", value.base);
 
 		/* Check all the possible types of description format */
-		switch (base_descs[e->index].efinfo_flag) {
+		switch (base_descs[effect->index].efinfo_flag) {
 			/* Healing sometimes has a minimum percentage */
 			case EFINFO_HEAL: {
 				char min_string[50];
@@ -1456,87 +1456,89 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 							" (or %d%%, whichever is greater)", value.m_bonus);
 				else
 					strnfmt(min_string, sizeof(min_string), "");
-				strnfmt(desc, sizeof(desc), effect_desc(e), dice_string,
+				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string,
 						min_string);
 				break;
 			}
 
 			/* Nourishment is just a flat amount */
 			case EFINFO_FEED: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), value.base);
+				strnfmt(desc, sizeof(desc), effect_desc(effect), value.base);
 				break;
 			}
 			case EFINFO_CURE: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-							timed_idx_to_desc(e->params[0]));
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+							timed_idx_to_desc(effect->params[0]));
 				break;
 			}
 			case EFINFO_TIMED: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-							timed_idx_to_desc(e->params[0]), dice_string);
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+							timed_idx_to_desc(effect->params[0]), dice_string);
 				break;
 			}
 			case EFINFO_STAT: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-							mod_flags[e->params[0]].name);
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+							mod_flags[effect->params[0]].name);
 				break;
 			}
 			case EFINFO_SEEN: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-						gf_desc(e->params[0]));
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						gf_desc(effect->params[0]));
 				break;
 			}
 			case EFINFO_SUMM: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-						summon_desc(e->params[0]));
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						summon_desc(effect->params[0]));
 				break;
 			}
 
 			/* Only currently used for the player, but can handle monsters */
 			case EFINFO_TELE: {
-				if (e->params[0])
-					strnfmt(desc, sizeof(desc), effect_desc(e), "a monster", 
-						value.base);
+				if (effect->params[0])
+					strnfmt(desc, sizeof(desc), effect_desc(effect),
+							"a monster", value.base);
 				else
-					strnfmt(desc, sizeof(desc), effect_desc(e), "you",
+					strnfmt(desc, sizeof(desc), effect_desc(effect), "you",
 							value.base);
 				break;
 			}
 			case EFINFO_QUAKE: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), e->params[1]);
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						effect->params[1]);
 				break;
 			}
 			case EFINFO_LIGHT: {
-				strnfmt(desc, sizeof(desc), effect_desc(e), dice_string,
-						e->params[1]);
+				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string,
+						effect->params[1]);
 				break;
 			}
 
 			/* Object generated balls are elemental */
 			case EFINFO_BALL: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-						elements[e->params[0]].name, e->params[1], dice_string);
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						elements[effect->params[0]].name, effect->params[1],
+						dice_string);
 				break;
 			}
 
 			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-						gf_desc(e->params[0]));
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						gf_desc(effect->params[0]));
 				break;
 			}
 			/* Bolts and beams that damage */
 			case EFINFO_BOLTD: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-						gf_desc(e->params[0]), dice_string);
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						gf_desc(effect->params[0]), dice_string);
 				break;
 			}
 			case EFINFO_TOUCH: {
-				strnfmt(desc, sizeof(desc), effect_desc(e),
-						gf_desc(e->params[0]));
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						gf_desc(effect->params[0]));
 				break;
 			}
-			default:strnfmt(desc, sizeof(desc), effect_desc(e)); break;
+			default:strnfmt(desc, sizeof(desc), effect_desc(effect)); break;
 		}
 		do {
 			if (isdigit((unsigned char) *next_char))
@@ -1544,13 +1546,13 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			else
 				textblock_append(tb, "%c", *next_char);
 		} while (*next_char++);
-		if (e->next) {
-			if (e->next->next)
+		if (effect->next) {
+			if (effect->next->next)
 				textblock_append(tb, ", ");
 			else
 				textblock_append(tb, " and ");
 		}
-		e = e->next;
+		effect = effect->next;
 	}
 
 	textblock_append(tb, ".\n");

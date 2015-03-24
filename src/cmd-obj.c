@@ -538,7 +538,7 @@ enum use {
 static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					int snd)
 {
-	struct effect *effect;
+	struct effect *effect = object_effect(obj);
 	bool ident = FALSE, used = FALSE;
 	bool was_aware;
 	int dir = 5;
@@ -561,11 +561,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* track the object used */
 	track_object(player->upkeep, obj);
 
-	/* Figure out effect to use */
-	if (obj->activation)
-		effect = obj->activation->effect;
-	else
-		effect = obj->effect;
+	/* Verify effect */
+	assert(effect);
 
 	/* Check for unknown objects to prevent wasted player turns. */
 	if (effect->index == EF_IDENTIFY &&
