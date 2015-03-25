@@ -86,6 +86,7 @@ bool square_trap_flag(struct chunk *c, int y, int x, int flag);
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);
 bool trap_check_hit(int power);
 void hit_trap(int y, int x);
+bool square_player_trap_allowed(struct chunk *c, int y, int x);
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
 void square_free_trap(struct chunk *c, int y, int x);
 void wipe_trap_list(struct chunk *c);

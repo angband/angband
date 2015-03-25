@@ -73,7 +73,7 @@ name:2:closed door
 graphics:+:U
 priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
-info:0:0
+info:0:5
 
 name:3:open door
 graphics:':U

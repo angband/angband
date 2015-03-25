@@ -726,6 +726,12 @@ void square_excise_pile(struct chunk *c, int y, int x) {
 }
 
 
+/**
+ * Set the terrain type for a square.
+ *
+ * This should be the only function that sets terrain, apart from the savefile
+ * loading code.
+ */
 void square_set_feat(struct chunk *c, int y, int x, int feat)
 {
 	int current_feat = c->squares[y][x].feat;
@@ -743,6 +749,10 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 
 	/* Make the new terrain feel at home */
 	if (character_dungeon) {
+		/* Remove traps if necessary */
+		if (!square_player_trap_allowed(c, y, x))
+			square_destroy_trap(c, y, x);
+
 		square_note_spot(c, y, x);
 		square_light_spot(c, y, x);
 	} else {
