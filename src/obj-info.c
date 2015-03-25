@@ -1462,7 +1462,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 
 			/* Nourishment is just a flat amount */
-			case EFINFO_FEED: {
+			case EFINFO_CONST: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect), value.base);
 				break;
 			}
@@ -1538,7 +1538,14 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						gf_desc(effect->params[0]));
 				break;
 			}
-			default:strnfmt(desc, sizeof(desc), effect_desc(effect)); break;
+			case EFINFO_NONE: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect));
+				break;
+			}
+			default: {
+				msg("Bad effect description passed to describe_effect(). Please report this bug.");
+				return FALSE;
+			}
 		}
 		do {
 			if (isdigit((unsigned char) *next_char))
