@@ -626,7 +626,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		gold = TRUE;
 
 	/* Do we succeed? */
-	okay = (digging_chances[square_digging(cave, y, x)] > randint0(1600));
+	okay = (digging_chances[square_digging(cave, y, x) - 1] > randint0(1600));
 
 	/* Success */
 	if (okay && twall(y, x)) {
