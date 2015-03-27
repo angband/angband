@@ -681,9 +681,6 @@ void inven_drop(struct object *obj, int amt)
 	/* Drop it near the player */
 	drop_near(cave, dropped, 0, py, px, FALSE);
 
-	player->upkeep->notice |= (PN_IGNORE | PN_COMBINE);
-	notice_stuff(player->upkeep);
-
 	event_signal(EVENT_INVENTORY);
 }
 
