@@ -374,7 +374,7 @@ static struct file_parser room_parser = {
 
 
 /* Parsing functions for vault.txt */
-static enum parser_error parse_v_n(struct parser *p) {
+static enum parser_error parse_vault_n(struct parser *p) {
 	struct vault *h = parser_priv(p);
 	struct vault *v = mem_zalloc(sizeof *v);
 
@@ -385,29 +385,73 @@ static enum parser_error parse_v_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_v_x(struct parser *p) {
+static enum parser_error parse_vault_type(struct parser *p) {
+	struct vault *v = parser_priv(p);
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->typ = parser_getuint(p, "type");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_vault_rating(struct parser *p) {
+	struct vault *v = parser_priv(p);
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->rat = parser_getint(p, "rating");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_vault_rows(struct parser *p) {
+	struct vault *v = parser_priv(p);
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->hgt = parser_getuint(p, "height");
+	/* Make sure vaults are no higher than the room profiles allow. */
+	if (v->typ == 6 && (v->hgt > 22))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	if (v->typ == 7 && (v->hgt > 44))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_vault_columns(struct parser *p) {
+	struct vault *v = parser_priv(p);
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->wid = parser_getuint(p, "width");
+	/* Make sure vaults are no wider than the room profiles allow. */
+	if (v->typ == 6 && (v->wid > 33))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	if (v->typ == 7 && (v->wid > 66))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_vault_min_depth(struct parser *p) {
+	struct vault *v = parser_priv(p);
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->min_lev = parser_getuint(p, "min_lev");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_vault_max_depth(struct parser *p) {
 	struct vault *v = parser_priv(p);
 	int max_lev;
 
 	if (!v)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	v->typ = parser_getuint(p, "type");
-	v->rat = parser_getint(p, "rating");
-	v->hgt = parser_getuint(p, "height");
-	v->wid = parser_getuint(p, "width");
-	v->min_lev = parser_getuint(p, "min_lev");
 	max_lev = parser_getuint(p, "max_lev");
 	v->max_lev = max_lev ? max_lev : z_info->max_depth;
-
-	/* Make sure vaults are no bigger than the room profiles allow. */
-	if (v->typ == 6 && (v->wid > 33 || v->hgt > 22))
-		return PARSE_ERROR_VAULT_TOO_BIG;
-	if (v->typ == 7 && (v->wid > 66 || v->hgt > 44))
-		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_v_d(struct parser *p) {
+static enum parser_error parse_vault_d(struct parser *p) {
 	struct vault *v = parser_priv(p);
 
 	if (!v)
@@ -416,26 +460,31 @@ static enum parser_error parse_v_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_v(void) {
+struct parser *init_parse_vault(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N uint index str name", parse_v_n);
-	parser_reg(p, "X uint type int rating uint height uint width uint min_lev uint max_lev", parse_v_x);
-	parser_reg(p, "D str text", parse_v_d);
+	parser_reg(p, "N uint index str name", parse_vault_n);
+	parser_reg(p, "type uint type", parse_vault_type);
+	parser_reg(p, "rating int rating", parse_vault_rating);
+	parser_reg(p, "rows uint height", parse_vault_rows);
+	parser_reg(p, "columns uint width", parse_vault_columns);
+	parser_reg(p, "min-depth uint min_lev", parse_vault_min_depth);
+	parser_reg(p, "max-depth uint max_lev", parse_vault_max_depth);
+	parser_reg(p, "D str text", parse_vault_d);
 	return p;
 }
 
-static errr run_parse_v(struct parser *p) {
+static errr run_parse_vault(struct parser *p) {
 	return parse_file(p, "vault");
 }
 
-static errr finish_parse_v(struct parser *p) {
+static errr finish_parse_vault(struct parser *p) {
 	vaults = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
 
-static void cleanup_v(void)
+static void cleanup_vault(void)
 {
 	struct vault *v, *next;
 	for (v = vaults; v; v = next) {
@@ -446,12 +495,12 @@ static void cleanup_v(void)
 	}
 }
 
-static struct file_parser v_parser = {
+static struct file_parser vault_parser = {
 	"vault",
-	init_parse_v,
-	run_parse_v,
-	finish_parse_v,
-	cleanup_v
+	init_parse_vault,
+	run_parse_vault,
+	finish_parse_vault,
+	cleanup_vault
 };
 
 static void run_template_parser(void) {
@@ -467,7 +516,7 @@ static void run_template_parser(void) {
 
 	/* Initialize vault info */
 	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (vaults)");
-	if (run_parser(&v_parser))
+	if (run_parser(&vault_parser))
 		quit("Cannot initialize vaults");
 }
 
