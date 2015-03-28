@@ -139,7 +139,7 @@ graphics:~:u
 type:light
 properties:1:22:2
 alloc:70:1 to 40
-power:0:1d1:0:0:0
+combat:0:1d1:0:0:0
 flags:BURNS_OUT | EASY_KNOW
 values:LIGHT[1]
 
@@ -148,7 +148,7 @@ graphics:~:U
 type:light
 properties:3:50:35
 alloc:70:5 to 100
-power:0:1d1:0:0:0
+combat:0:1d1:0:0:0
 flags:TAKES_FUEL | EASY_KNOW | IGNORE_FIRE
 values:LIGHT[2]
 
@@ -157,7 +157,7 @@ graphics:!:y
 type:flask
 properties:1:20:3
 alloc:50:1 to 100
-power:0:1d4:0:0:0
+combat:0:1d4:0:0:0
 values:BRAND_FIRE[3]
 pval:7500
 desc:It can be used to fuel a lantern with 7500 turns of light, up to
