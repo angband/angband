@@ -62,12 +62,12 @@ int test_hgt0(void *state) {
 }
 
 int test_wid0(void *state) {
-	enum parser_error r = parser_parse(state, "columns:20");
+	enum parser_error r = parser_parse(state, "columns:6");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
 	v = parser_priv(state);
-	eq(v->wid, 20);
+	eq(v->wid, 6);
 	require(v);
 	ok;
 }

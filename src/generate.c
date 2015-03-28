@@ -454,10 +454,15 @@ static enum parser_error parse_vault_max_depth(struct parser *p) {
 
 static enum parser_error parse_vault_d(struct parser *p) {
 	struct vault *v = parser_priv(p);
+	const char *desc;
 
 	if (!v)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	v->text = string_append(v->text, parser_getstr(p, "text"));
+	desc = parser_getstr(p, "text");
+	if (strlen(desc) != v->wid)
+		return PARSE_ERROR_VAULT_DESC_WRONG_LENGTH;
+	else
+		v->text = string_append(v->text, desc);
 	return PARSE_ERROR_NONE;
 }
 
