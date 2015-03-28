@@ -11,7 +11,7 @@
 
 # === Understanding vault.txt ===
 
-# N:serial number:vault name
+# name:vault name
 # type:room type
 # rating:rating for level feeling calculation
 # rows:number of rows
@@ -19,9 +19,6 @@
 # min-depth:minimum depth this vault can appear (0 if no minimum)
 # max-depth:maximum depth this vault can appear (0 if no maximum)
 # D:lines giving full layout of vault using symbols below
-
-# 'N' indicates the beginning of an entry. The serial number must
-# increase for each new vault.
 
 # Lesser vaults are room type 6 and have a maximum x-y size
 # of 33x22; greater vaults are room type 7 and have a maximum size of 66x44.
@@ -71,7 +68,7 @@
 ### Simple Vaults (type 6) -- maximum size 44x22 ###
 
 
-N:1:Round
+name:Round
 type:6
 rating:5
 rows:12
@@ -92,7 +89,7 @@ D:    %%%..##..%%%
 D:       %%%%%%       
 
 
-N:2:Octagon1
+name:Octagon1
 type:6
 rating:5
 rows:14
@@ -115,7 +112,7 @@ D:  %%.##########.%%
 D:   %%%%%%%%%%%%%%   
 
 
-N:3:Octagon2
+name:Octagon2
 type:6
 rating:5
 rows:12
@@ -136,7 +133,7 @@ D: %%%%..........%%%%
 D:    %%%%%%%%%%%%    
 
 
-N:4:Square1
+name:Square1
 type:6
 rating:5
 rows:12
@@ -157,7 +154,7 @@ D:%&........2.......&%
 D:%%%%%%%%%%%%%%%%%%%%
 
 
-N:5:Square2
+name:Square2
 type:6
 rating:5
 rows:12
@@ -178,7 +175,7 @@ D:%4################4%
 D:%%%%%%%%%%%%%%%%%%%%
 
 
-N:6:Planet X
+name:Planet X
 type:6
 rating:10
 rows:13
@@ -200,7 +197,7 @@ D:%.............%
 D:%%%%%%%%%%%%%%%
 
 
-N:7:Turnabout
+name:Turnabout
 type:6
 rating:10
 rows:12
@@ -221,7 +218,7 @@ D:#.............#
 D:###############
 
 
-N:9:Cross
+name:Cross
 type:6
 rating:10
 rows:13
@@ -243,7 +240,7 @@ D:%########++########%
 D:%%%%%%%%%%%%%%%%%%%%
 
 
-N:10:Central
+name:Central
 type:6
 rating:12
 rows:10
@@ -262,7 +259,7 @@ D:#4#^^^^^^#4#
 D:############
 
 
-N:11:Camouflaged
+name:Camouflaged
 type:6
 rating:10
 rows:9
@@ -279,7 +276,7 @@ D:%#44444449@%
 D:%@@@@@@@@@@%
 D:%%%%%%%%%%%%
 
-N:12:X^2
+name:X^2
 type:6
 rating:8
 rows:13
@@ -300,7 +297,7 @@ D:%.#####.#####.%
 D:%.............%
 D:%%%%%%%%%%%%%%%
 
-N:13:Rock-Hard
+name:Rock-Hard
 type:6
 rating:10
 rows:11
@@ -320,7 +317,7 @@ D:%..................%
 D:%%%%%%%%%%%%%%%%%%%%
 
 
-N:14:Miniature Cell
+name:Miniature Cell
 type:6
 rating:5
 rows:5
@@ -334,7 +331,7 @@ D:%#9#%
 D:%%%%%
 
 
-N:15:Interlock
+name:Interlock
 type:6
 rating:10
 rows:12
@@ -356,7 +353,7 @@ D:%%%%%%%%%%%%%%%%%
 
 ### Medium Vaults (type 7)###
 
-N:20:Rooms
+name:Rooms
 type:7
 rating:12
 rows:13
@@ -378,7 +375,7 @@ D:%.................%
 D:%%%%%%%%%%%%%%%%%%%
 
 
-N:21:DiagonalLeft
+name:DiagonalLeft
 type:7
 rating:12
 rows:12
@@ -399,7 +396,7 @@ D:  %%...##4449##4449%
 D:   %%%%%%%%%%%%%%%%%
 
 
-N:22:DiagonalRight
+name:DiagonalRight
 type:7
 rating:12
 rows:12
@@ -420,7 +417,7 @@ D:%9444##9444##...%%
 D:%%%%%%%%%%%%%%%%%   
 
 
-N:23:Workaround
+name:Workaround
 type:7
 rating:15
 rows:19
@@ -447,7 +444,7 @@ D:%.@@..@@@@@@@@@..@@.%
 D:%...................%
 D:%%%%%%%%%%%%%%%%%%%%%
 
-N:24:Snake Maze
+name:Snake Maze
 type:7
 rating:15
 rows:21
@@ -477,7 +474,7 @@ D:%.....................%
 D:%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:25:Crown
+name:Crown
 type:7
 rating:20
 rows:19
@@ -505,7 +502,7 @@ D:%..........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:26:Funnel
+name:Funnel
 type:7
 rating:15
 rows:21
@@ -535,7 +532,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:27:Pigeonholed
+name:Pigeonholed
 type:7
 rating:15
 rows:17
@@ -560,7 +557,7 @@ D:%.#######################.%
 D:%.......4....4....4.......%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:28:Skull
+name:Skull
 type:7
 rating:12
 rows:17
@@ -585,7 +582,7 @@ D:%..@..4..4..4..@..%
 D:%.................%
 D:%%%%%%%%%%%%%%%%%%%
 
-N:29:Hallway
+name:Hallway
 type:7
 rating:15
 rows:11
@@ -604,7 +601,7 @@ D:%.@@@@@@@@@@@@@@@@@@@@@@@@@@@.%
 D:%.............................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:30:Lair
+name:Lair
 type:7
 rating:15
 rows:15
@@ -627,7 +624,7 @@ D:  %%...@@@@@@@@@...%%
 D:    %%%.........%%%    
 D:       %%%%%%%%%       
 
-N:31:Disguised 2x2
+name:Disguised 2x2
 type:7
 rating:15
 rows:11
@@ -646,7 +643,7 @@ D:%.#+#################+#.%
 D:%.......................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:32:Disguised Checkerboard
+name:Disguised Checkerboard
 type:7
 rating:15
 rows:11
@@ -665,7 +662,7 @@ D:%.#####################.%
 D:%.......................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:33:Infinity
+name:Infinity
 type:7
 rating:15
 rows:9
@@ -682,7 +679,7 @@ D: %...@@@@@@@@@...@@@@@@@@@...%
 D:  %%%.........%%%.........%%%  
 D:     %%%%%%%%%   %%%%%%%%%     
 
-N:34:Pac-Man
+name:Pac-Man
 type:7
 rating:5
 rows:21
@@ -713,7 +710,7 @@ D:#@@@@@@@@@@@@@@@@@@@#
 
 ### Greater vaults (type 8) -- maximum size 66x44 ###
 
-N:40:Huge
+name:Huge
 type:8
 rating:45
 rows:17
@@ -739,7 +736,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:41:Large
+name:Large
 type:8
 rating:35
 rows:18
@@ -766,7 +763,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:42:Butterfly
+name:Butterfly
 type:8
 rating:25
 rows:18
@@ -793,7 +790,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:43:Chambers
+name:Chambers
 type:8
 rating:25
 rows:15
@@ -817,7 +814,7 @@ D:%2+..^..^..^..^..^..^..^..^..^..^..^.+2%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:44:The I in the Storm
+name:The I in the Storm
 type:8
 rating:40
 rows:25
@@ -851,7 +848,7 @@ D:%@@@@@@@@@@@@@@@@@@@#@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:45:The Bank From Hell
+name:The Bank From Hell
 type:8
 rating:30
 rows:20
@@ -880,7 +877,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:46:Roundabouts One
+name:Roundabouts One
 type:8
 rating:15
 rows:21
@@ -910,7 +907,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:47:Roundabout Two
+name:Roundabout Two
 type:8
 rating:25
 rows:25
@@ -944,7 +941,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:48:Huge - Modified
+name:Huge - Modified
 type:8
 rating:45
 rows:17
@@ -970,7 +967,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:49:Mirrored Quartet
+name:Mirrored Quartet
 type:8
 rating:20
 rows:21
@@ -1000,7 +997,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:50:False Wall
+name:False Wall
 type:8
 rating:20
 rows:15
@@ -1024,7 +1021,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:51:Divisi
+name:Divisi
 type:8
 rating:35
 rows:31
@@ -1064,7 +1061,7 @@ D:%.....................................................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:52:Curlicues One
+name:Curlicues One
 type:8
 rating:15
 rows:23
@@ -1096,7 +1093,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:53:Bubbles
+name:Bubbles
 type:8
 rating:35
 rows:25
@@ -1130,7 +1127,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:54:Symmet
+name:Symmet
 type:8
 rating:20
 rows:23
@@ -1162,7 +1159,7 @@ D:%...........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:55:V-vault
+name:V-vault
 type:8
 rating:25
 rows:23
@@ -1194,7 +1191,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@##@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:56:Twisted Cube
+name:Twisted Cube
 type:8
 rating:20
 rows:24
@@ -1227,7 +1224,7 @@ D:%.......................................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:57:Jigsaw
+name:Jigsaw
 type:8
 rating:25
 rows:16
@@ -1252,7 +1249,7 @@ D:%...............................................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:58:Hourglass
+name:Hourglass
 type:8
 rating:24
 rows:37
@@ -1298,7 +1295,7 @@ D:%.........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:59:Mazer
+name:Mazer
 type:8
 rating:26
 rows:35
@@ -1342,7 +1339,7 @@ D:%.............................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:60:Orb
+name:Orb
 type:8
 rating:16
 rows:27
@@ -1378,7 +1375,7 @@ D:%.........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:61:Interstices
+name:Interstices
 type:8
 rating:22
 rows:19
@@ -1406,7 +1403,7 @@ D:%...........................................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:62:Sphere
+name:Sphere
 type:8
 rating:25
 rows:25
@@ -1440,7 +1437,7 @@ D:%.............................................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:63:Hellpit
+name:Hellpit
 type:8
 rating:20
 rows:19
@@ -1468,7 +1465,7 @@ D:%..........................................................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:64:Target Practice
+name:Target Practice
 type:8
 rating:20
 rows:20
@@ -1497,7 +1494,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:65:Castle Death
+name:Castle Death
 type:8
 rating:35
 rows:20
@@ -1526,7 +1523,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:66:The Reward is Worth It
+name:The Reward is Worth It
 type:8
 rating:20
 rows:16
@@ -1552,7 +1549,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ### Interesting Rooms (type 5) ###
 
-N:101:Round
+name:Round
 type:5
 rating:0
 rows:9
@@ -1569,7 +1566,7 @@ D:%%.......%%
 D: %%...1.%% 
 D:  %%%%%%%  
 
-N:102:House 1
+name:House 1
 type:5
 rating:0
 rows:9
@@ -1586,7 +1583,7 @@ D:%......#...%
 D:%......#...%
 D:%%%%%%%%%%%%
 
-N:103:House 2
+name:House 2
 type:5
 rating:0
 rows:9
@@ -1603,7 +1600,7 @@ D:%1.#.#.#.+..%
 D:%..#.....#..%
 D:%%%%%%%%%%%%%
 
-N:104:House 3
+name:House 3
 type:5
 rating:0
 rows:8
@@ -1619,7 +1616,7 @@ D:%#+####+#%
 D:%.#....#.%
 D:%%%%%%%%%%
 
-N:105:House 4
+name:House 4
 type:5
 rating:0
 rows:11
@@ -1638,7 +1635,7 @@ D:%...#.#+###%
 D:%.1........%
 D:%%%%%%%%%%%%
 
-N:106:Crescent
+name:Crescent
 type:5
 rating:0
 rows:10
@@ -1656,7 +1653,7 @@ D: %%....###1%
 D:  %%%%....%%
 D:     %%%%%% 
 
-N:107:Moot hall
+name:Moot hall
 type:5
 rating:0
 rows:11
@@ -1675,7 +1672,7 @@ D:%....##....%
 D:%#.#....#.#%
 D:%%%%%%%%%%%%
 
-N:108:Small atrium -ES-
+name:Small atrium -ES-
 type:5
 rating:0
 rows:11
@@ -1694,7 +1691,7 @@ D:%...h......%
 D:%%%........%
 D:  %%%%%%%%%%
 
-N:109:Hourglass
+name:Hourglass
 type:5
 rating:0
 rows:11
@@ -1713,7 +1710,7 @@ D:%....1..%
 D:%.......%
 D:%%%%%%%%%
 
-N:110:Birds of a feather
+name:Birds of a feather
 type:5
 rating:0
 rows:5
@@ -1726,7 +1723,7 @@ D:%BBB%
 D:%BBB%
 D:%%%%%
 
-N:111:Catacomb
+name:Catacomb
 type:5
 rating:0
 rows:11
@@ -1745,7 +1742,7 @@ D:%#.###.###.#%
 D:%#.........#%
 D:%%%%%%%%%%%%%
 
-N:112:Pillars
+name:Pillars
 type:5
 rating:0
 rows:11
@@ -1764,7 +1761,7 @@ D:%.#.....#........%
 D:%..........#.....%
 D:%%%%%%%%%%%%%%%%%%
 
-N:113:Cross
+name:Cross
 type:5
 rating:0
 rows:11
@@ -1783,7 +1780,7 @@ D:%%%%...#...%%%%
 D:   %.......%   
 D:   %%%%%%%%%   
 
-N:114:Cross/diamond
+name:Cross/diamond
 type:5
 rating:0
 rows:11
@@ -1802,7 +1799,7 @@ D:   %%#....#%%
 D:     %%..%%      
 D:      %%%%       
 
-N:115:Rayed sun
+name:Rayed sun
 type:5
 rating:0
 rows:11
@@ -1821,7 +1818,7 @@ D:%.#..#..#.%
 D:%...1.....%
 D:%%%%%%%%%%%
 
-N:116:Thrown-together squares
+name:Thrown-together squares
 type:5
 rating:0
 rows:11
@@ -1840,7 +1837,7 @@ D: %....######4#%
 D: %....%%%%%###%   
 D: %%%%%%   %%%%%   
 
-N:117:Diagonal 1
+name:Diagonal 1
 type:5
 rating:0
 rows:11
@@ -1859,7 +1856,7 @@ D: %......%
 D:%......%    
 D:%%%%%%%%    
 
-N:118:Diagonal 2
+name:Diagonal 2
 type:5
 rating:0
 rows:11
@@ -1878,7 +1875,7 @@ D:   %%....1.%
 D:    %......%
 D:    %%%%%%%%
 
-N:119:Triple diamond
+name:Triple diamond
 type:5
 rating:0
 rows:10
@@ -1896,7 +1893,7 @@ D: %...% %...% %....%%
 D: %%.%% %%.%% %%.%%% 
 D:  %%%   %%%   %%%   
 
-N:120:Baby dragon hatchery -ES-
+name:Baby dragon hatchery -ES-
 type:5
 rating:0
 rows:11
@@ -1915,7 +1912,7 @@ D:%.....=....%
 D:%..........%
 D:%%%%%%%%%%%%
 
-N:121:Four pointed star
+name:Four pointed star
 type:5
 rating:0
 rows:11
@@ -1934,7 +1931,7 @@ D:%%...%%% %%%.1.%%
 D:%..%%%     %%%..%
 D:%%%%         %%%%
 
-N:122:Oblong
+name:Oblong
 type:5
 rating:0
 rows:9
@@ -1951,7 +1948,7 @@ D:%%%..................%%%
 D:  %%%%............%%%%  
 D:     %%%%%%%%%%%%%%     
 
-N:123:Easy maze
+name:Easy maze
 type:5
 rating:0
 rows:11
@@ -1970,7 +1967,7 @@ D:%.@@.@@@@@@@@.%
 D:%..@@@........%
 D:%%%%%%%%%%%%%%%
 
-N:124:Chambered diamond
+name:Chambered diamond
 type:5
 rating:0
 rows:10
@@ -1988,7 +1985,7 @@ D: %%#....#%%
 D:  %%....%%  
 D:   %%%%%%   
 
-N:125:Poor village
+name:Poor village
 type:5
 rating:0
 rows:11
@@ -2007,7 +2004,7 @@ D:%.#####..#####...........%
 D:%........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:126:Tree, crown, and seven stars
+name:Tree, crown, and seven stars
 type:5
 rating:0
 rows:11
@@ -2026,7 +2023,7 @@ D:%...@......@@@...........%
 D:%.........#####...@......%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:127:Just plain big
+name:Just plain big
 type:5
 rating:0
 rows:11
@@ -2045,7 +2042,7 @@ D:%......1........................%
 D:%...............................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:128:Eye
+name:Eye
 type:5
 rating:0
 rows:11
@@ -2064,7 +2061,7 @@ D:%........@@@@@@@@........%
 D:%........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:129:Sectioned off
+name:Sectioned off
 type:5
 rating:0
 rows:11
@@ -2083,7 +2080,7 @@ D:%.......####..+....%
 D:%.1.....%%%%%%%....%
 D:%%%%%%%%%     %%%%%%
 
-N:130:Twisted
+name:Twisted
 type:5
 rating:0
 rows:10
@@ -2101,7 +2098,7 @@ D:%.........#########.@@@@..%%
 D:%.......###########......%% 
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%  
 
-N:131:Little eruption
+name:Little eruption
 type:5
 rating:0
 rows:10
@@ -2119,7 +2116,7 @@ D: %%#.`..#:uu`...#%
 D:  %:`:::.#:..:%%%%
 D:  %%%%%%%%%%%%%   
 
-N:132:Little eruption+
+name:Little eruption+
 type:5
 rating:0
 rows:10
@@ -2137,7 +2134,7 @@ D: %%#.`..#:U.`U..#%
 D:  %:`:::.#:..:%%%%
 D:  %%%%%%%%%%%%%   
 
-N:133:Flies around the honeypot
+name:Flies around the honeypot
 type:5
 rating:0
 rows:7
@@ -2152,7 +2149,7 @@ D:%...F.F..%
 D:%.F......%
 D:%%%%%%%%%%
 
-N:134:Akela's Pack
+name:Akela's Pack
 type:5
 rating:0
 rows:11
@@ -2171,7 +2168,7 @@ D:%;..CC.:#C#:..C.C.;%
 D:%;;;..:#####:...;.;%
 D:%%%%%%%%%%%%%%%%%%%%
 
-N:135:Pride Rock
+name:Pride Rock
 type:5
 rating:0
 rows:11
@@ -2190,7 +2187,7 @@ D:%.......f...........f..%
 D:%.f.........f..........%
 D:%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:136:Party of adventurers
+name:Party of adventurers
 type:5
 rating:0
 rows:6
@@ -2204,7 +2201,7 @@ D:%.........p....%
 D:%......h....p..%
 D:%%%%%%%%%%%%%%%%
 
-N:137:Hermitage - DRL
+name:Hermitage - DRL
 type:5
 rating:0
 rows:11
@@ -2223,7 +2220,7 @@ D:%.......;...%
 D:%%%.......%%%
 D:  %%%%%%%%%  
 
-N:138:Interesting Roon (Lesser Forge) - DRL
+name:Interesting Roon (Lesser Forge) - DRL
 type:5
 rating:0
 rows:11
@@ -2242,7 +2239,7 @@ D: %%%......``......%%%
 D:   %%%%........%%%%   
 D:      %%%%%%%%%%      
 
-N:139:Ruined Lesser Forge - DRL
+name:Ruined Lesser Forge - DRL
 type:5
 rating:0
 rows:11
@@ -2261,7 +2258,7 @@ D: %%%.:...#``....::%%%
 D:   %%%%.:......%%%%   
 D:      %%%%%%%%%%      
 
-N:140:Small Fountain - DRL
+name:Small Fountain - DRL
 type:5
 rating:0
 rows:9
@@ -2278,7 +2275,7 @@ D: %%.;/..1./;.%%
 D:  %%.;....;.%%  
 D:   %%%%%%%%%%   
 
-N:141:Not-So-Small Fountain - DRL 
+name:Not-So-Small Fountain - DRL 
 type:5
 rating:0
 rows:11
@@ -2297,7 +2294,7 @@ D:   %%%%%%%%.;///////;.%%%%%%%%
 D:          %%.........%%          
 D:           %%%%%%%%%%%           
 
-N:142:E-W Library - DRL
+name:E-W Library - DRL
 type:5
 rating:0
 rows:11
@@ -2316,7 +2313,7 @@ D:%.################.%
 D:%..1...............%
 D:%%%%%%%%%%%%%%%%%%%%
 
-N:143:N-S Library - DRL
+name:N-S Library - DRL
 type:5
 rating:0
 rows:10
@@ -2334,7 +2331,7 @@ D:%.#.#.#.#.#.#.#.%
 D:%.........1.....%
 D:%%%%%%%%%%%%%%%%%
 
-N:144:Mad Alchemist's Lab
+name:Mad Alchemist's Lab
 type:5
 rating:5
 rows:9
@@ -2351,7 +2348,7 @@ D:%.##############..+..#:...#.:%
 D:%..................::...+....%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:145:Spider Wood
+name:Spider Wood
 type:5
 rating:0
 rows:11
@@ -2370,7 +2367,7 @@ D:%%;;;;;;;;;;;;;;;;;;%%
 D:%;;;;;;;;;;;;;;;;;%%%          
 D:%%%%%%%%%%%%%%%%%%%            
 
-N:146:Crevasse
+name:Crevasse
 type:5
 rating:0
 rows:7
@@ -2385,7 +2382,7 @@ D:%`````U%%%%
 D:%`%%%%%%     
 D:%%%          
 
-N:147:Ant nest
+name:Ant nest
 type:5
 rating:0
 rows:11
@@ -2404,7 +2401,7 @@ D:%.....:::..a..%
 D:%.............%
 D:%%%%%%%%%%%%%%%
 
-N:148:Tavern - DRL
+name:Tavern - DRL
 type:5
 rating:0
 rows:11
@@ -2423,7 +2420,7 @@ D:%..::...::..%
 D:%%.........%%
 D: %%%%%%%%%%% 
 
-N:149:Reservoir - DRL
+name:Reservoir - DRL
 type:5
 rating:0
 rows:11
@@ -2442,7 +2439,7 @@ D:%./////////////////////.%
 D:%............1...1......%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:150:Orchard - DRL
+name:Orchard - DRL
 type:5
 rating:0
 rows:11
@@ -2461,7 +2458,7 @@ D:%.;...;...;...;...;...;...;...;.%
 D:%...............................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:151:Spider Nest - DRL
+name:Spider Nest - DRL
 type:5
 rating:0
 rows:10
@@ -2479,7 +2476,7 @@ D:%.;....;......&....S...:%
 D:%...:......S......;.....%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:152:Gauntlet 1 - DRL
+name:Gauntlet 1 - DRL
 type:5
 rating:3
 rows:3
@@ -2490,7 +2487,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%...+.1.+.1.+.1.+.1.+.1.+.1.+...%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:153:Gauntlet 2 - DRL
+name:Gauntlet 2 - DRL
 type:5
 rating:3
 rows:7
@@ -2505,7 +2502,7 @@ D:%.#.#.#.#.#.#.#.#.#.#.#.#.#.#.%
 D:%.+.#.+.#.+.#.+.#.+.#.+.#.+.#.%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:154:Semicircular 1 - DRL
+name:Semicircular 1 - DRL
 type:5
 rating:0
 rows:8
@@ -2521,7 +2518,7 @@ D:  %%%.....////.....%%%
 D:    %%%%........%%%%    
 D:       %%%%%%%%%%       
 
-N:155:Semicircular 2 - DRL
+name:Semicircular 2 - DRL
 type:5
 rating:0
 rows:8
@@ -2537,7 +2534,7 @@ D:%%.../.....##...../...%%
 D:%.../..&.%%%%%%.1../...%
 D:%%%%%%%%%%    %%%%%%%%%%
 
-N:156:Plague Pit - DRL
+name:Plague Pit - DRL
 type:5
 rating:0
 rows:8
@@ -2553,7 +2550,7 @@ D:  %%%%..s...r.&.#:....%
 D:     %%%%%%%.#.z...%%%%
 D:           %%%%%%%%%   
 
-N:157:Lesser Altar - DRL
+name:Lesser Altar - DRL
 type:5
 rating:0
 rows:11
@@ -2572,7 +2569,7 @@ D: %%..#.#.#..%%
 D:  %%%.....%%%  
 D:    %%%%%%%    
 
-N:158:Barracks - DRL
+name:Barracks - DRL
 type:5
 rating:0
 rows:10
@@ -2590,7 +2587,7 @@ D:%.&+.......+&.%
 D:%p.%%%%%%%%%.p%
 D:%%%%       %%%%
 
-N:159:Deep Crypt
+name:Deep Crypt
 type:5
 rating:0
 rows:11
@@ -2609,7 +2606,7 @@ D:%#...s.......#%
 D:%W#W#W#L#G#G#W%
 D:%%%%%%%%%%%%%%%
 
-N:160:Zoo
+name:Zoo
 type:5
 rating:0
 rows:11
@@ -2629,7 +2626,7 @@ D:%S#.....#.C.#.;f.%
 D:%%%%%%%%%%%%%%%%%%
 
 # An example of an interesting room whose depth needs to be precisely controlled.
-N:161:Yeek Warren
+name:Yeek Warren
 type:5
 rating:0
 rows:11
@@ -2648,7 +2645,7 @@ D:%//....y###y#..#.###.%
 D:%//;#y###.....##.....%
 D:%%%%%%%%%%%%%%%%%%%%%%
 
-N:162:Centipedes Galore
+name:Centipedes Galore
 type:5
 rating:0
 rows:11
@@ -2667,7 +2664,7 @@ D:     %....####...c.#######..%
 D:     %%%.%%%%%%...%%%%%%%%..%
 D:       %%%    %%%%%      %%%%
 
-N:163:Room of doors -ES-
+name:Room of doors -ES-
 type:5
 rating:0
 rows:8
@@ -2684,7 +2681,7 @@ D:%+++++++++%
 D:%%%%%%%%%%%
 
 ## This is really a lesser vault for young adventurers
-N:164:Kobold den
+name:Kobold den
 type:5
 rating:5
 rows:18
@@ -2710,7 +2707,7 @@ D: %%..######+#####.......##########..%%%
 D:   %..............%%%%.............%%  
 D:   %%%%%%%%%%%%%%%%  %%%%%%%%%%%%%%%   
 
-N:165:Giant's Armoury
+name:Giant's Armoury
 type:5
 rating:5
 rows:13
@@ -2735,7 +2732,7 @@ D:    %%%%%%%%%
 
 ### Here is a rather large interesting room.  As long as most ###
 ### interesting rooms are small, it should be OK.             ###
-N:171:A little on the wild side
+name:A little on the wild side
 type:5
 rating:10
 rows:40
@@ -2786,7 +2783,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ### Lesser Vaults (type 4) ###
 
-N:175:Orc-hold
+name:Orc-hold
 type:4
 rating:10
 rows:15
@@ -2809,7 +2806,7 @@ D:%.::::::::::::::::.%
 D:%.C................%
 D:%%%%%%%%%%%%%%%%%%%%
 
-N:176:Dragon's Den
+name:Dragon's Den
 type:4
 rating:5
 rows:11
@@ -2829,7 +2826,7 @@ D:%.@@@@@.@@@@@.%
 D:%%%%%%%%%%%%%%%
 
 
-N:177:Castellated
+name:Castellated
 type:4
 rating:5
 rows:12
@@ -2850,7 +2847,7 @@ D:%...%%%..##..%%%...%
 D:%%%%% %%%%%%%% %%%%%
 
 
-N:178:Stars
+name:Stars
 type:4
 rating:4
 rows:14
@@ -2873,7 +2870,7 @@ D:%.......#...#.......%
 D:%%%%%%%%%%%%%%%%%%%%%
 
 
-N:179:Maze
+name:Maze
 type:4
 rating:6
 rows:12
@@ -2894,7 +2891,7 @@ D: %%%%@@@@@@@@@@%%%%
 D:    %%%%%%%%%%%%    
 
 
-N:180:Tower
+name:Tower
 type:4
 rating:6
 rows:12
@@ -2916,7 +2913,7 @@ D:%%%%%%%%%%%%%%%%%%%%
 
 
 #### From Zangband ####
-N:181:Celtic
+name:Celtic
 type:4
 rating:6
 rows:17
@@ -2942,7 +2939,7 @@ D:%...................%
 D:%%%%%%%%%%%%%%%%%%%%%
 
 
-N:182:Treasure trove
+name:Treasure trove
 type:4
 rating:8
 rows:9
@@ -2961,7 +2958,7 @@ D:%%%%%%%%%
 
 
 
-N:183:Script 'L'
+name:Script 'L'
 type:4
 rating:8
 rows:20
@@ -2990,7 +2987,7 @@ D:%......4...........%
 D:%%%%%%%%%%%%%%%%%%%%
 
 
-N:188:Diamond
+name:Diamond
 type:4
 rating:4
 rows:13
@@ -3012,7 +3009,7 @@ D:     %.%
 D:      %      
 
 
-N:190:Baba Yaga's Rookery -ES-
+name:Baba Yaga's Rookery -ES-
 type:4
 rating:0
 rows:16
@@ -3036,7 +3033,7 @@ D:%6#p7?=pp..#%
 D:%###########%
 D:%%%%%%%%%%%%%
 
-N:191:Maltese cross
+name:Maltese cross
 type:4
 rating:5
 rows:16
@@ -3061,7 +3058,7 @@ D:     %.######.%
 D:     %%%%%%%%%%     
 
 
-N:192:Eagle
+name:Eagle
 type:4
 rating:5
 rows:12
@@ -3083,7 +3080,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ### Medium Vaults (type 3) ###
 
-N:193:...and let slip the dogs of war
+name:...and let slip the dogs of war
 type:3
 rating:5
 rows:20
@@ -3112,7 +3109,7 @@ D:%...........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:194:Graveyard - DRL
+name:Graveyard - DRL
 type:3
 rating:15
 rows:22
@@ -3142,7 +3139,7 @@ D:%.:.:.:s:.#......^......#+#..^.%%
 D:%%%%....................#W#..%%% 
 D:   %%%%%%%%%%%%%%%%%%%%%%%%%%%   
 
-N:195:Human Town - DRL
+name:Human Town - DRL
 type:3
 rating:10
 rows:22
@@ -3172,7 +3169,7 @@ D:%/..#####.###############.#$^+^,%
 D:%/........................#$^#,,%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:196:Keep - DRL
+name:Keep - DRL
 type:3
 rating:15
 rows:22
@@ -3202,7 +3199,7 @@ D:%./////////////////////////////.%
 D:%4.............................4%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:197:Greater Forge - DRL
+name:Greater Forge - DRL
 type:3
 rating:18
 rows:22
@@ -3232,7 +3229,7 @@ D:%.``##..6.....##``.%
 D:%...........6......%
 D:%%%%%%%%%%%%%%%%%%%%
 
-N:198:Mage's Workshop - DRL
+name:Mage's Workshop - DRL
 type:3
 rating:15
 rows:15
@@ -3255,7 +3252,7 @@ D:%#^#.......+6^.^.#...%
 D:%!.#.......#=#=#=#...%
 D:%%%%%%%%%%%%%%%%%%%%%%
 
-N:199:Greater Altar - DRL
+name:Greater Altar - DRL
 type:3
 rating:15
 rows:19
@@ -3282,7 +3279,7 @@ D:    %%%...#....#....#...%%%
 D:      %%%%...........%%%%      
 D:         %%%%%%%%%%%%%         
 
-N:200:Wild Area - DRL
+name:Wild Area - DRL
 type:3
 rating:15
 rows:13
@@ -3303,7 +3300,7 @@ D:%....4:...;..4..4.;./4..%
 D:%%.;.#...4.....;..../.;%%
 D: %%%%%%%%%%%%%%%%%%%%%%% 
 
-N:201:Volcanic Area - DRL
+name:Volcanic Area - DRL
 type:3
 rating:0
 rows:15
@@ -3326,7 +3323,7 @@ D:%%##.4.`:....##...%
 D:%..:.:....:...%%%%%
 D:%%%%%%%%%%%%%%%    
 
-N:202:Orc Town -ES-
+name:Orc Town -ES-
 type:3
 rating:10
 rows:22
@@ -3356,7 +3353,7 @@ D:%w..#..#wI..w#I..#.o%
 D:%w.w#ww#I...w#I.I#..%
 D:%%%%%%%%%%%%%%%%%%%%%
 
-N:203:Water-Troll Swamp
+name:Water-Troll Swamp
 type:3
 rating:10
 rows:22
@@ -3386,7 +3383,7 @@ D:%/T;.../..;//..T..T;//.;...//%
 D:%.....//..T..;.....T.//...T./%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:204:Fire Festival
+name:Fire Festival
 type:3
 rating:15
 rows:22
@@ -3416,7 +3413,7 @@ D:%%...######`....U%%%%%%%%%````%
 D:%..U.%%%%%`..U..%%       %%``%%  
 D:%%%%%%   %%%%%%%%         %%%%   
 
-N:205:Haunted Bat Cave -ES-
+name:Haunted Bat Cave -ES-
 type:3
 rating:5
 rows:22
@@ -3446,7 +3443,7 @@ D:%@@@*#b....####bb%%%%
 D:%%%#bb.%%%.%%%%%%%    
 D:  %%%%%% %%%          
 
-N:206:The Hall of Eyes -ES-
+name:The Hall of Eyes -ES-
 type:3
 rating:8
 rows:16
@@ -3470,7 +3467,7 @@ D:%@@@~@@@%
 D:%%%@@@%%%
 D:  %%%%%  
 
-N:207:Mirrored script "B"s
+name:Mirrored script "B"s
 type:3
 rating:15
 rows:23
@@ -3503,7 +3500,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ### Greater Vaults (type 2) ###
 
-N:221:Huge castle
+name:Huge castle
 type:2
 rating:40
 rows:31
@@ -3546,7 +3543,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This vault has an entrance on only one side.  It is therefore careful 
 # to set the width to a figure that leaves room between the vault and 
 # the dungeon wall.
-N:222:Town
+name:Town
 type:2
 rating:25
 rows:17
@@ -3574,7 +3571,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #### From Zangband ####
 
-N:223:Mortuary temple of Set
+name:Mortuary temple of Set
 type:2
 rating:30
 rows:25
@@ -3607,7 +3604,7 @@ D:%.@@@@@@@@@@@@@@+@@@@@@@@@@@+@@@.%
 D:%................................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:225:Chest
+name:Chest
 type:2
 rating:30
 rows:13
@@ -3629,7 +3626,7 @@ D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:229:The Plains of Air
+name:The Plains of Air
 type:2
 rating:10
 rows:42
@@ -3680,7 +3677,7 @@ D:    %%%       %...%                   %%%%%%%%%
 D:              %%%%%                                             
 
 
-N:230:The Mirrormere
+name:The Mirrormere
 type:2
 rating:35
 rows:33
@@ -3723,7 +3720,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
-N:231:Large Mine - DRL
+name:Large Mine - DRL
 type:2
 rating:20
 rows:43
@@ -3774,7 +3771,7 @@ D:%###############.............##....22...############@@@@@@@@@@@@@%
 D:%@@@@@##############...##########################@@@@%%%%%%%%%%%%%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%            
 
-N:232:Dungeon City - DRL
+name:Dungeon City - DRL
 type:2
 rating:30
 rows:44
@@ -3826,7 +3823,7 @@ D:%@.....//#56#.......#111#...........//#4+4+.+4^+^+^6#...........@%
 D:%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-N:233:The Cracks of Doom - DRL
+name:The Cracks of Doom - DRL
 type:2
 rating:15
 rows:30
@@ -3865,7 +3862,7 @@ D:                    %%%%%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@``%
 D:                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:234:Small Labyrinth - DRL
+name:Small Labyrinth - DRL
 type:2
 rating:15
 rows:21
@@ -3896,7 +3893,7 @@ D:             %%%%%%%%%%
 
 # This will probably be even tougher than fighting Morgoth.
 # On the other hand, the rewards are /immense/.
-N:235:High Temple of the Underworld
+name:High Temple of the Underworld
 type:2
 rating:45
 rows:40
@@ -3947,7 +3944,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 ## FAangband Symbol - beautiful vault by HallucinationMushroom
-N:236:Golden Flower 
+name:Golden Flower 
 type:2
 rating:15
 rows:23

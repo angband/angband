@@ -201,7 +201,7 @@ struct room_profile {
  */
 struct vault {
     struct vault *next; /*!< Pointer to next vault template */
-    unsigned int vidx;  /*!< Vault index */
+
     char *name;         /*!< Vault name */
     char *text;         /*!< Grid by grid description of vault layout */
 

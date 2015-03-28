@@ -17,14 +17,13 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_n0(void *state) {
-	enum parser_error r = parser_parse(state, "N:1:round");
+int test_name0(void *state) {
+	enum parser_error r = parser_parse(state, "name:round");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
 	v = parser_priv(state);
 	require(v);
-	eq(v->vidx, 1);
 	require(streq(v->name, "round"));
 	ok;
 }
@@ -110,7 +109,7 @@ int test_d0(void *state) {
 
 const char *suite_name = "parse/v-info";
 struct test tests[] = {
-	{ "n0", test_n0 },
+	{ "name0", test_name0 },
 	{ "typ0", test_typ0 },
 	{ "rat0", test_rat0 },
 	{ "hgt0", test_hgt0 },

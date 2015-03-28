@@ -373,12 +373,13 @@ static struct file_parser room_parser = {
 };
 
 
-/* Parsing functions for vault.txt */
-static enum parser_error parse_vault_n(struct parser *p) {
+/**
+ * Parsing functions for vault.txt
+ */
+static enum parser_error parse_vault_name(struct parser *p) {
 	struct vault *h = parser_priv(p);
 	struct vault *v = mem_zalloc(sizeof *v);
 
-	v->vidx = parser_getuint(p, "index");
 	v->name = string_make(parser_getstr(p, "name"));
 	v->next = h;
 	parser_setpriv(p, v);
@@ -463,7 +464,7 @@ static enum parser_error parse_vault_d(struct parser *p) {
 struct parser *init_parse_vault(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N uint index str name", parse_vault_n);
+	parser_reg(p, "name str name", parse_vault_name);
 	parser_reg(p, "type uint type", parse_vault_type);
 	parser_reg(p, "rating int rating", parse_vault_rating);
 	parser_reg(p, "rows uint height", parse_vault_rows);
