@@ -64,9 +64,11 @@ static const struct {
 
 static const struct {
 	const char *name;
+	int max_height;
+	int max_width;
 	room_builder builder;
 } room_builders[] = {
-	#define ROOM(a, b) { a, build_##b },
+	#define ROOM(a, b, c, d) { a, b, c, build_##d },
 	#include "list-rooms.h"
 	#undef ROOM
 };
@@ -406,32 +408,42 @@ static enum parser_error parse_vault_rating(struct parser *p) {
 
 static enum parser_error parse_vault_rows(struct parser *p) {
 	struct vault *v = parser_priv(p);
+	size_t i;
 
 	if (!v)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	v->hgt = parser_getuint(p, "height");
+
 	/* Make sure vaults are no higher than the room profiles allow. */
-	if (strstr(v->typ, "Lesser vault") && (v->hgt > 22))
-		return PARSE_ERROR_VAULT_TOO_BIG;
-	if (strstr(v->typ, "Medium vault") && (v->hgt > 22))
-		return PARSE_ERROR_VAULT_TOO_BIG;
-	if (strstr(v->typ, "Greater vault") && (v->hgt > 44))
+	for (i = 0; i < N_ELEMENTS(room_builders); i++)
+		if (streq(v->typ, room_builders[i].name))
+			break;
+
+	if (i == N_ELEMENTS(room_builders))
+		return PARSE_ERROR_NO_ROOM_FOUND;
+
+	if (room_builders[i].max_height && (v->hgt > room_builders[i].max_height))
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_vault_columns(struct parser *p) {
 	struct vault *v = parser_priv(p);
+	size_t i;
 
 	if (!v)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	v->wid = parser_getuint(p, "width");
+
 	/* Make sure vaults are no wider than the room profiles allow. */
-	if (strstr(v->typ, "Lesser vault") && (v->wid > 22))
-		return PARSE_ERROR_VAULT_TOO_BIG;
-	if (strstr(v->typ, "Medium vault") && (v->wid > 33))
-		return PARSE_ERROR_VAULT_TOO_BIG;
-	if (strstr(v->typ, "Greater vault") && (v->wid > 66))
+	for (i = 0; i < N_ELEMENTS(room_builders); i++)
+		if (streq(v->typ, room_builders[i].name))
+			break;
+
+	if (i == N_ELEMENTS(room_builders))
+		return PARSE_ERROR_NO_ROOM_FOUND;
+
+	if (room_builders[i].max_width && (v->wid > room_builders[i].max_width))
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }

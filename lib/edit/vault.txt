@@ -20,8 +20,7 @@
 # max-depth:maximum depth this vault can appear (0 if no maximum)
 # D:lines giving full layout of vault using symbols below
 
-# Lesser vaults are room type 6 and have a maximum x-y size
-# of 33x22; greater vaults are room type 7 and have a maximum size of 66x44.
+# Maximum sizes of vault types are given in list-rooms.h
 
 # 'D' lines describe the layout of the vault. Lines must be padded
 # with spaces to fill the dimensions specified. Vaults are described

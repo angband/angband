@@ -1,24 +1,31 @@
 /**
  * \file list-rooms.h
  * \brief matches dungeon room names to their building functions
+ *
+ * Fields:
+ * name: name as appears in edit files
+ * rows: Maximum number of rows (for vaults)
+ * cols: Maximum number of columns (for vaults)
+ * builder: name of room building function (with build_ prepended)
  */
 
-ROOM("simple room",			simple)
-ROOM("moria room",			moria)
-ROOM("large room",			large)
-ROOM("crossed room",		crossed)
-ROOM("circular room",		circular)
-ROOM("overlap room",		overlap)
-ROOM("room template",		template)
-ROOM("Interesting room",	interesting)
-ROOM("monster pit",			pit)
-ROOM("monster nest",		nest)
-ROOM("huge room",			huge)
-ROOM("room of chambers",	room_of_chambers)
-ROOM("Lesser vault",		lesser_vault)
-ROOM("Medium vault",		medium_vault)
-ROOM("Greater vault",		greater_vault)
-ROOM("Lesser vault (new)",	lesser_vault)
-ROOM("Medium vault (new)",	medium_vault)
-ROOM("Greater vault (new)",	greater_vault)
+/* name						rows	cols	builder */
+ROOM("simple room",			0,		0,		simple)
+ROOM("moria room",			0,		0,		moria)
+ROOM("large room",			0,		0,		large)
+ROOM("crossed room",		0,		0,		crossed)
+ROOM("circular room",		0,		0,		circular)
+ROOM("overlap room",		0,		0,		overlap)
+ROOM("room template",		0,		0,		template)
+ROOM("Interesting room",	0,		0,		interesting)
+ROOM("monster pit",			0,		0,		pit)
+ROOM("monster nest",		0,		0,		nest)
+ROOM("huge room",			0,		0,		huge)
+ROOM("room of chambers",	0,		0,		room_of_chambers)
+ROOM("Lesser vault",		22,		22,		lesser_vault)
+ROOM("Medium vault",		22,		33,		medium_vault)
+ROOM("Greater vault",		44,		66,		greater_vault)
+ROOM("Lesser vault (new)",	22,		22,		lesser_vault)
+ROOM("Medium vault (new)",	22,		33,		medium_vault)
+ROOM("Greater vault (new)",	44,		66,		greater_vault)
 
