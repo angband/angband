@@ -331,19 +331,39 @@ static enum parser_error parse_room_rating(struct parser *p) {
 
 static enum parser_error parse_room_height(struct parser *p) {
 	struct room_template *t = parser_priv(p);
+	size_t i;
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	t->hgt = parser_getuint(p, "height");
+
+	/* Make sure rooms are no higher than the room profiles allow. */
+	for (i = 0; i < N_ELEMENTS(room_builders); i++)
+		if (streq("room template", room_builders[i].name))
+			break;
+	if (i == N_ELEMENTS(room_builders))
+		return PARSE_ERROR_NO_ROOM_FOUND;
+	if (t->wid > room_builders[i].max_height)
+		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_room_width(struct parser *p) {
 	struct room_template *t = parser_priv(p);
+	size_t i;
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	t->wid = parser_getuint(p, "width");
+
+	/* Make sure rooms are no wider than the room profiles allow. */
+	for (i = 0; i < N_ELEMENTS(room_builders); i++)
+		if (streq("room template", room_builders[i].name))
+			break;
+	if (i == N_ELEMENTS(room_builders))
+		return PARSE_ERROR_NO_ROOM_FOUND;
+	if (t->wid > room_builders[i].max_width)
+		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
 
@@ -465,11 +485,9 @@ static enum parser_error parse_vault_rows(struct parser *p) {
 	for (i = 0; i < N_ELEMENTS(room_builders); i++)
 		if (streq(v->typ, room_builders[i].name))
 			break;
-
 	if (i == N_ELEMENTS(room_builders))
 		return PARSE_ERROR_NO_ROOM_FOUND;
-
-	if (room_builders[i].max_height && (v->hgt > room_builders[i].max_height))
+	if (v->hgt > room_builders[i].max_height)
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
@@ -486,11 +504,9 @@ static enum parser_error parse_vault_columns(struct parser *p) {
 	for (i = 0; i < N_ELEMENTS(room_builders); i++)
 		if (streq(v->typ, room_builders[i].name))
 			break;
-
 	if (i == N_ELEMENTS(room_builders))
 		return PARSE_ERROR_NO_ROOM_FOUND;
-
-	if (room_builders[i].max_width && (v->wid > room_builders[i].max_width))
+	if (v->wid > room_builders[i].max_width)
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
@@ -574,17 +590,20 @@ static struct file_parser vault_parser = {
 
 static void run_template_parser(void) {
 	/* Initialize room info */
-	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (dungeon profiles)");
+	event_signal_message(EVENT_INITSTATUS, 0,
+						 "Initializing arrays... (dungeon profiles)");
 	if (run_parser(&profile_parser))
 		quit("Cannot initialize dungeon profiles");
 
 	/* Initialize room info */
-	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (room templates)");
+	event_signal_message(EVENT_INITSTATUS, 0,
+						 "Initializing arrays... (room templates)");
 	if (run_parser(&room_parser))
 		quit("Cannot initialize room templates");
 
 	/* Initialize vault info */
-	event_signal_message(EVENT_INITSTATUS, 0, "Initializing arrays... (vaults)");
+	event_signal_message(EVENT_INITSTATUS, 0,
+						 "Initializing arrays... (vaults)");
 	if (run_parser(&vault_parser))
 		quit("Cannot initialize vaults");
 }
