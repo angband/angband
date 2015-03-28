@@ -205,7 +205,7 @@ struct vault {
     char *name;         /*!< Vault name */
     char *text;         /*!< Grid by grid description of vault layout */
 
-    byte typ;			/*!< Vault type */
+    char *typ;			/*!< Vault type */
 
     byte rat;			/*!< Vault rating */
 
@@ -277,7 +277,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 									int x2, bool light, int feat, 
 									bool special_ok);
 
-struct vault *random_vault(int depth, int typ);
+struct vault *random_vault(int depth, const char *typ);
 bool build_vault(struct chunk *c, int y0, int x0, struct vault *v);
 
 bool build_simple(struct chunk *c, int y0, int x0);
@@ -332,7 +332,8 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin);
 bool mon_restrict(const char *monster_type, int depth, bool unique_ok);
 void spread_monsters(struct chunk *c, const char *type, int depth, int num, 
 					 int y0, int x0, int dy, int dx, byte origin);
-void get_vault_monsters(struct chunk *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2);
+void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
+						const char *data, int y1, int y2, int x1, int x2);
 void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2, char *name, int area);
 
 

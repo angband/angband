@@ -29,13 +29,13 @@ int test_name0(void *state) {
 }
 
 int test_typ0(void *state) {
-	enum parser_error r = parser_parse(state, "type:6");
+	enum parser_error r = parser_parse(state, "type:Lesser vault");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
 	v = parser_priv(state);
 	require(v);
-	eq(v->typ, 6);
+	require(streq(v->typ, "Lesser vault"));
 	ok;
 }
 

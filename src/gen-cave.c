@@ -2058,8 +2058,8 @@ struct chunk *vault_chunk(struct player *p)
 	struct vault *v;
 	struct chunk *c;
 
-	if (one_in_(2)) v = random_vault(p->depth, 2);
-	else v = random_vault(p->depth, 8);
+	if (one_in_(2)) v = random_vault(p->depth, "Greater vault (new)");
+	else v = random_vault(p->depth, "Greater vault");
 
 	/* Make the chunk */
 	c = cave_new(v->hgt, v->wid);

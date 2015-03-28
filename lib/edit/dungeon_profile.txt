@@ -73,13 +73,13 @@ streamer:5:2:3:90:2:40
 cutoff:100
 
 # Greater vaults only have rarity 0 but they have other checks
-room:greater vault:44:66:35:0:0:100
+room:Greater vault:44:66:35:0:0:100
 
 # Very rare rooms (rarity = 2)
 room:monster pit:11:33:5:1:2:8
 room:monster nest:11:33:5:1:2:16
-room:medium vault:22:33:30:0:2:38
-room:lesser vault:22:33:20:0:2:55
+room:Medium vault:22:33:30:0:2:38
+room:Lesser vault:22:33:20:0:2:55
 
 # Unusual rooms (rarity = 1)
 room:large room:11:33:3:0:1:15
@@ -99,18 +99,18 @@ streamer:5:2:3:90:2:40
 cutoff:-1
 
 # Really big rooms only have rarity 0 but they have other checks
-room:greater vault:44:66:35:0:0:100
+room:Greater vault:44:66:35:0:0:100
 room:huge room:44:66:40:0:0:100
 
 # Very rare rooms (rarity = 2)
 room:room of chambers:44:66:10:0:2:4
 room:monster pit:11:33:5:1:2:12
 room:monster nest:11:33:5:1:2:20
-room:medium vault:22:33:30:0:2:40
-room:lesser vault:22:33:20:0:2:60
+room:Medium vault:22:33:30:0:2:40
+room:Lesser vault:22:33:20:0:2:60
 
 # Unusual rooms (rarity = 1)
-room:interesting room:44:55:0:0:1:10
+room:Interesting room:44:55:0:0:1:10
 room:large room:11:33:3:0:1:25
 room:crossed room:11:33:3:0:1:40
 room:circular room:22:22:1:0:1:55
@@ -128,15 +128,15 @@ streamer:5:2:3:90:2:40
 cutoff:-1
 
 # Really big rooms only have rarity 0 but they have other checks
-room:greater vault:44:66:35:0:0:100
+room:Greater vault:44:66:35:0:0:100
 
 # Very rare rooms (rarity = 2)
 room:room of chambers:44:66:10:0:2:4
 room:monster pit:11:33:5:1:2:12
 room:monster nest:11:33:5:1:2:20
-room:medium vault:22:33:30:0:2:40
-room:lesser vault:22:33:20:0:2:60
-room:interesting room:44:55:0:0:2:100
+room:Medium vault:22:33:30:0:2:40
+room:Lesser vault:22:33:20:0:2:60
+room:Interesting room:44:55:0:0:2:100
 
 # Normal moria-style rooms (rarity = 0)
 room:moria room:11:33:1:0:0:100
@@ -149,18 +149,18 @@ streamer:5:2:3:90:2:40
 cutoff:-1
 
 # Really big rooms only have rarity 0 but they have other checks
-room:greater vault:44:66:35:0:0:100
+room:Greater vault:44:66:35:0:0:100
 room:huge room:44:66:40:0:0:100
 
 # Very rare rooms (rarity = 2)
 room:room of chambers:44:66:10:0:2:4
 room:monster pit:11:33:5:1:2:12
 room:monster nest:11:33:5:1:2:20
-room:medium vault:22:33:30:0:2:40
-room:lesser vault:22:33:20:0:2:60
+room:Medium vault:22:33:30:0:2:40
+room:Lesser vault:22:33:20:0:2:60
 
 # Unusual rooms (rarity = 1)
-room:interesting room:44:55:0:0:1:10
+room:Interesting room:44:55:0:0:1:10
 room:large room:11:33:3:0:1:25
 room:crossed room:11:33:3:0:1:40
 room:circular room:22:22:1:0:1:55

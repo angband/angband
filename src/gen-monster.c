@@ -268,7 +268,8 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
  * \param x1
  * \param x2 the limits of the vault
  */
-void get_vault_monsters(struct chunk *c, char racial_symbol[], byte vault_type, const char *data, int y1, int y2, int x1, int x2)
+void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
+						const char *data, int y1, int y2, int x1, int x2)
 {
     int i, y, x, depth;
     const char *t;
@@ -280,11 +281,11 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], byte vault_type, 
 				  sizeof(racial_symbol[i]));
 
 		/* Determine level of monster */
-		if (vault_type == 6)
+		if (strstr(vault_type, "Lesser vault"))
 			depth = player->depth + 2;
-		else if (vault_type == 7)
+		else if (strstr(vault_type, "Medium vault"))
 			depth = player->depth + 4;
-		else if (vault_type == 8)
+		else if (strstr(vault_type, "Greater vault"))
 			depth = player->depth + 6;
 		else
 			depth = player->depth;

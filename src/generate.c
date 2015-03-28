@@ -391,7 +391,7 @@ static enum parser_error parse_vault_type(struct parser *p) {
 
 	if (!v)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	v->typ = parser_getuint(p, "type");
+	v->typ = string_make(parser_getstr(p, "type"));
 	return PARSE_ERROR_NONE;
 }
 
@@ -411,9 +411,11 @@ static enum parser_error parse_vault_rows(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	v->hgt = parser_getuint(p, "height");
 	/* Make sure vaults are no higher than the room profiles allow. */
-	if (v->typ == 6 && (v->hgt > 22))
+	if (strstr(v->typ, "Lesser vault") && (v->hgt > 22))
 		return PARSE_ERROR_VAULT_TOO_BIG;
-	if (v->typ == 7 && (v->hgt > 44))
+	if (strstr(v->typ, "Medium vault") && (v->hgt > 22))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	if (strstr(v->typ, "Greater vault") && (v->hgt > 44))
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
@@ -425,9 +427,11 @@ static enum parser_error parse_vault_columns(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	v->wid = parser_getuint(p, "width");
 	/* Make sure vaults are no wider than the room profiles allow. */
-	if (v->typ == 6 && (v->wid > 33))
+	if (strstr(v->typ, "Lesser vault") && (v->wid > 22))
 		return PARSE_ERROR_VAULT_TOO_BIG;
-	if (v->typ == 7 && (v->wid > 66))
+	if (strstr(v->typ, "Medium vault") && (v->wid > 33))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	if (strstr(v->typ, "Greater vault") && (v->wid > 66))
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
@@ -470,7 +474,7 @@ struct parser *init_parse_vault(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_vault_name);
-	parser_reg(p, "type uint type", parse_vault_type);
+	parser_reg(p, "type str type", parse_vault_type);
 	parser_reg(p, "rating int rating", parse_vault_rating);
 	parser_reg(p, "rows uint height", parse_vault_rows);
 	parser_reg(p, "columns uint width", parse_vault_columns);
