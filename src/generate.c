@@ -38,6 +38,7 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "monster.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "parser.h"
@@ -357,10 +358,14 @@ static enum parser_error parse_room_doors(struct parser *p) {
 
 static enum parser_error parse_room_tval(struct parser *p) {
 	struct room_template *t = parser_priv(p);
+	int tval;
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	t->tval = parser_getuint(p, "tval");
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	t->tval = tval;
 	return PARSE_ERROR_NONE;
 }
 
@@ -382,7 +387,7 @@ static struct parser *init_parse_room(void) {
 	parser_reg(p, "rows uint height", parse_room_height);
 	parser_reg(p, "columns uint width", parse_room_width);
 	parser_reg(p, "doors uint doors", parse_room_doors);
-	parser_reg(p, "tval uint tval", parse_room_tval);
+	parser_reg(p, "tval sym tval", parse_room_tval);
 	parser_reg(p, "D str text", parse_room_d);
 	return p;
 }

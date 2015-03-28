@@ -1681,7 +1681,7 @@ rating:1
 rows:9
 columns:9
 doors:4
-tval:80
+tval:mushroom
 D:%%%%%%%%%
 D:%.......%
 D:%.##1##.%
@@ -1698,7 +1698,7 @@ rating:1
 rows:7
 columns:11
 doors:1
-tval:70
+tval:scroll
 D:%%%%%%%%%%%
 D:%.........%
 D:%.###.###.%
@@ -1713,7 +1713,7 @@ rating:1
 rows:7
 columns:11
 doors:3
-tval:16
+tval:shot
 D:###########
 D:#..1[[[2..#
 D:#..##3##..#
@@ -1728,7 +1728,7 @@ rating:1
 rows:7
 columns:11
 doors:3
-tval:17
+tval:arrow
 D:###########
 D:#..1[[[2..#
 D:#..##3##..#
@@ -1743,7 +1743,7 @@ rating:1
 rows:7
 columns:11
 doors:3
-tval:18
+tval:bolt
 D:###########
 D:#..1[[[2..#
 D:#..##3##..#
@@ -1758,7 +1758,7 @@ rating:1
 rows:9
 columns:11
 doors:1
-tval:75
+tval:potion
 D:###########
 D:##[[.#.[[##
 D:####+#+####
@@ -1775,7 +1775,7 @@ rating:1
 rows:11
 columns:11
 doors:4
-tval:7
+tval:chest
 D:%%%%%%%%%%%
 D:%.........%
 D:%...#2#...%
@@ -1794,7 +1794,7 @@ rating:1
 rows:7
 columns:12
 doors:1
-tval:91
+tval:prayer book
 D:############
 D:#.#.#.#....#
 D:%.#.#.#..#[#
@@ -1809,7 +1809,7 @@ rating:1
 rows:7
 columns:12
 doors:1
-tval:90
+tval:magic book
 D:#####%%#####
 D:#..........#
 D:%...####...%
