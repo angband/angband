@@ -300,29 +300,67 @@ static struct file_parser profile_parser = {
 /**
  * Parsing functions for room_template.txt
  */
-static enum parser_error parse_room_n(struct parser *p) {
+static enum parser_error parse_room_name(struct parser *p) {
 	struct room_template *h = parser_priv(p);
 	struct room_template *t = mem_zalloc(sizeof *t);
 
-	t->tidx = parser_getuint(p, "index");
 	t->name = string_make(parser_getstr(p, "name"));
 	t->next = h;
 	parser_setpriv(p, t);
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_room_x(struct parser *p) {
+static enum parser_error parse_room_type(struct parser *p) {
 	struct room_template *t = parser_priv(p);
 
 	if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	t->typ = parser_getuint(p, "type");
-	t->rat = parser_getint(p, "rating");
-	t->hgt = parser_getuint(p, "height");
-	t->wid = parser_getuint(p, "width");
-	t->dor = parser_getuint(p, "doors");
-	t->tval = parser_getuint(p, "tval");
+	return PARSE_ERROR_NONE;
+}
 
+static enum parser_error parse_room_rating(struct parser *p) {
+	struct room_template *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->rat = parser_getint(p, "rating");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_room_height(struct parser *p) {
+	struct room_template *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->hgt = parser_getuint(p, "height");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_room_width(struct parser *p) {
+	struct room_template *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->wid = parser_getuint(p, "width");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_room_doors(struct parser *p) {
+	struct room_template *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->dor = parser_getuint(p, "doors");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_room_tval(struct parser *p) {
+	struct room_template *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->tval = parser_getuint(p, "tval");
 	return PARSE_ERROR_NONE;
 }
 
@@ -338,9 +376,13 @@ static enum parser_error parse_room_d(struct parser *p) {
 static struct parser *init_parse_room(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str name", parse_room_n);
-	parser_reg(p, "X uint type int rating uint height uint width uint doors uint tval", parse_room_x);
+	parser_reg(p, "name str name", parse_room_name);
+	parser_reg(p, "type uint type", parse_room_type);
+	parser_reg(p, "rating int rating", parse_room_rating);
+	parser_reg(p, "rows uint height", parse_room_height);
+	parser_reg(p, "columns uint width", parse_room_width);
+	parser_reg(p, "doors uint doors", parse_room_doors);
+	parser_reg(p, "tval uint tval", parse_room_tval);
 	parser_reg(p, "D str text", parse_room_d);
 	return p;
 }

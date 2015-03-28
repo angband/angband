@@ -223,7 +223,7 @@ struct vault {
  */
 typedef struct room_template {
     struct room_template *next; /*!< Pointer to next room template */
-    unsigned int tidx;  /*!< Template index */
+
     char *name;         /*!< Room name */
     char *text;         /*!< Grid by grid description of room layout */
 
