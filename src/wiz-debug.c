@@ -1294,6 +1294,9 @@ static void do_cmd_wiz_jump(void)
 
 	/* New depth */
 	dungeon_change_level(depth);
+
+	/* Hack - should be handled by redoing how debug commands work - NRM */
+	cmdq_push(CMD_HOLD);
 }
 
 
