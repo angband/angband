@@ -18,7 +18,7 @@ appear:0:0:0
 flags:RUNE | VISIBLE | FLOOR
 desc:A magical rune which monsters cannot pass without difficulty.
 
-name:16:door lock:door lock
+name:4:door lock:door lock
 graphics: :w
 appear:0:0:0
 flags:LOCK | INVISIBLE

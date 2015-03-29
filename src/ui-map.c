@@ -87,7 +87,8 @@ static void hallucinatory_object(int *a, wchar_t *c)
 static void get_trap_graphics(struct chunk *c, grid_data *g, int *a, wchar_t *w)
 {
     /* Trap is visible */
-    if (trf_has(g->trap->flags, TRF_VISIBLE)) {
+    if (trf_has(g->trap->flags, TRF_VISIBLE) ||
+		trf_has(g->trap->flags, TRF_RUNE)) {
 		/* Get the graphics */
 		*a = trap_x_attr[g->lighting][g->trap->kind->tidx];
 		*w = trap_x_char[g->lighting][g->trap->kind->tidx];

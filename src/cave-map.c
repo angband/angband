@@ -125,7 +125,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 
 		/* Scan the square trap list */
 		while (trap) {
-			if (trf_has(trap->flags, TRF_TRAP)) {
+			if (trf_has(trap->flags, TRF_TRAP) ||
+				trf_has(trap->flags, TRF_RUNE)) {
 				/* Accept the trap */
 				g->trap = trap;
 				break;
