@@ -853,7 +853,7 @@ bool store_check_num(struct store *store, const struct object *obj)
  * Also note that it may not correctly "adapt" to "knowledge" becoming
  * known: the player may have to pick stuff up and drop it again.
  */
-static void home_carry(struct object *obj)
+void home_carry(struct object *obj)
 {
 	struct object *temp_obj;
 	struct store *store = &stores[STORE_HOME];

@@ -1006,8 +1006,12 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 			}
 
 			/* Accept any valid items */
-			if (store->stock_num < z_info->store_inven_max && obj->kind)
-				store_carry(store, obj);
+			if (store->stock_num < z_info->store_inven_max && obj->kind) {
+				if (store->sidx == STORE_HOME)
+					home_carry(obj);
+				else
+					store_carry(store, obj);
+			}
 		}
 	}
 
