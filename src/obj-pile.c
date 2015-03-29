@@ -900,6 +900,9 @@ void push_object(int y, int x)
 		obj = next;
 	}
 
+	/* Disassociate the objects from the square */
+	cave->squares[y][x].obj = NULL;
+
 	/* Set feature to an open door */
 	square_force_floor(cave, y, x);
 	square_add_door(cave, y, x, FALSE);
