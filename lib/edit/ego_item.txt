@@ -1148,7 +1148,7 @@ desc:Ammunition of Wounding often has unusually high to-hit and to-dam values.
 name:125:of Backbiting
 info:0:0:0:0
 alloc:0:10 to 80
-combat:-d25:-d25:0
+combat:-26+d25:-26+d25:0
 type:shot
 type:arrow
 type:bolt

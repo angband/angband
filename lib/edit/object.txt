@@ -1719,7 +1719,7 @@ type:amulet
 properties:15:3:10
 alloc:20:15 to 40
 flags:FREE_ACT | EASY_KNOW
-values:SPEED[-d2]
+values:SPEED[-3+1d2]
 
 
 
