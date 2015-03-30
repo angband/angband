@@ -662,6 +662,15 @@ void inven_drop(struct object *obj, int amt)
 	if (amt <= 0)
 		return;
 
+	/* This should not happen - ask for report */
+	if (!pile_contains(player->gear, obj)) {
+		/* Describe the dropped object */
+		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+
+		msg("Bug - attempt to drop %s when not held!", o_name);
+		return;
+	}
+
 	/* Not too many */
 	if (amt > obj->number) amt = obj->number;
 
