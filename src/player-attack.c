@@ -622,6 +622,8 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 					}
 				}
 			}
+			/* Stop the missile */
+			break;
 		}
 
 		/* Stop if non-projectable but passable */
