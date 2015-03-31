@@ -103,7 +103,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	/* Granite */
 	if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x)) {
 		/* Message */
-		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK)) {
+		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK)) {
 			msg("The wall turns into mud!");
 			context->obvious = TRUE;
 		}
@@ -119,7 +119,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	else if (square_iswall(cave, y, x) && square_hasgoldvein(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
+		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
 		{
 			msg("The vein turns into mud!");
 			msg("You have found something!");
@@ -140,7 +140,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
+		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
 		{
 			msg("The vein turns into mud!");
 			context->obvious = TRUE;
@@ -157,7 +157,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	else if (square_isrubble(cave, y, x))
 	{
 		/* Message */
-		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
+		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
 		{
 			msg("The rubble turns into mud!");
 			context->obvious = TRUE;
@@ -184,7 +184,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	else if (square_isdoor(cave, y, x))
 	{
 		/* Hack -- special message */
-		if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
+		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
 		{
 			msg("The door turns into mud!");
 			context->obvious = TRUE;
@@ -309,7 +309,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	square_add_door(cave, y, x, TRUE);
 
 	/* Observe */
-	if (sqinfo_on(cave->squares[y][x].info, SQUARE_MARK))
+	if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
 		context->obvious = TRUE;
 
 	/* Update the visuals */
