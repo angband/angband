@@ -328,6 +328,7 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 
 	/* Create a trap */
 	place_trap(cave, y, x, -1, cave->depth);
+	context->obvious = TRUE;
 }
 
 static void project_feature_handler_ACID(project_feature_handler_context_t *context)

@@ -211,6 +211,9 @@ bool effect_handler_HEAL_HP(effect_handler_context_t *context)
 	if ((context->value.m_bonus <= 0) && (context->value.base <= 0))
 		return (TRUE);
 
+	/* Slight hack to ID !Life */
+	if (context->value.base >= 5000) context->ident = TRUE;
+
 	/* No healing needed */
 	if (player->chp >= player->mhp) return (TRUE);
 
@@ -388,8 +391,8 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context, FALSE);
 	if (context->p2)
 		amount = player->timed[context->p1] / context->p2;
-	player_dec_timed(player, context->p1, amount, TRUE);
-	context->ident = TRUE;
+	if (player_dec_timed(player, context->p1, amount, TRUE))
+		context->ident = TRUE;
 	return TRUE;
 
 }
@@ -400,8 +403,8 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
-	player_set_food(player, amount);
-	context->ident = TRUE;
+	if (player_set_food(player, amount))
+		context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3255,8 +3258,8 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	if (project(source, rad, ty, tx, dam, context->p1, flg, 0, 0))
-		context->ident = TRUE;
+	(void) project(source, rad, ty, tx, dam, context->p1, flg, 0, 0);
+	context->ident = TRUE;
 
 	return TRUE;
 }
@@ -3305,8 +3308,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	if (project(source, rad, ty, tx, dam, type, flg, 0, 0))
-		context->ident = TRUE;
+	(void) project(source, rad, ty, tx, dam, type, flg, 0, 0);
+	context->ident = TRUE;
 
 	return TRUE;
 }
@@ -3359,15 +3362,19 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 
 	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
 
+	/* Describe */
+	if (!player->timed[TMD_BLIND])
+		msg("Light shoots in all directions!");
+
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
 		ty = py + 99 * ddy[i];
 		tx = px + 99 * ddx[i];
 
 		/* Aim at the target */
-		if (project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0))
-			context->ident = TRUE;
+		(void) project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0);
 	}
+	context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3394,9 +3401,9 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 		tx = px + 99 * ddx[i];
 
 		/* Aim at the target, explode */
-		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
-			context->ident = TRUE;
+		(void) project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0);
 	}
+	context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3409,8 +3416,8 @@ bool effect_handler_BOLT(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, TRUE);
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	if (project_aimed(context->p1, context->dir, dam, flg))
-		context->ident = TRUE;
+	(void) project_aimed(context->p1, context->dir, dam, flg);
+	context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3423,8 +3430,8 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, TRUE);
 	int flg = PROJECT_BEAM | PROJECT_KILL;
-	if (project_aimed(context->p1, context->dir, dam, flg))
-		context->ident = TRUE;
+	(void) project_aimed(context->p1, context->dir, dam, flg);
+	context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3537,13 +3544,11 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 
 	char o_name[80];
 
-	context->ident = TRUE;
-
 	/* Curse the body armor */
 	obj = equipped_item_by_slot_name(player, "body");
 
 	/* Nothing to curse */
-	if (!obj) return (FALSE);
+	if (!obj) return (TRUE);
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
@@ -3575,6 +3580,8 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
+	context->ident = TRUE;
+
 	return (TRUE);
 }
 
@@ -3588,13 +3595,11 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 
 	char o_name[80];
 
-	context->ident = TRUE;
-
 	/* Curse the weapon */
 	obj = equipped_item_by_slot_name(player, "weapon");
 
 	/* Nothing to curse */
-	if (!obj) return (FALSE);
+	if (!obj) return (TRUE);
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
@@ -3626,6 +3631,8 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 		/* Window stuff */
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
+
+	context->ident = TRUE;
 
 	/* Notice */
 	return (TRUE);

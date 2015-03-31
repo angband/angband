@@ -733,6 +733,7 @@ static void project_monster_handler_OLD_SLEEP(project_monster_handler_context_t 
 /* Drain Life */
 static void project_monster_handler_OLD_DRAIN(project_monster_handler_context_t *context)
 {
+	if (context->seen) context->obvious = TRUE;
 	if (context->seen) {
 		rf_on(context->l_ptr->flags, RF_UNDEAD);
 		rf_on(context->l_ptr->flags, RF_DEMON);

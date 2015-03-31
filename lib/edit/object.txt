@@ -186,6 +186,7 @@ properties:0:8:3
 alloc:40:0 to 50
 pile:100:1d5
 power:0
+msg:That tastes good.
 effect:NOURISH
 dice:6000
 desc:This nutritious but fairly bland food is familiar to anyone contemplating
@@ -198,6 +199,7 @@ properties:1:2:2
 alloc:40:5 to 60
 pile:100:2d3
 power:0
+msg:That tastes good.
 effect:NOURISH
 dice:2500
 desc:A strange fungal growth, prone to moving if not observed.  Not very tasty
@@ -210,6 +212,7 @@ properties:5:3:10
 alloc:40:30 to 100
 pile:10:1d3
 power:4
+msg:That tastes good.
 effect:NOURISH
 dice:7500
 effect:CURE:POISONED
@@ -233,6 +236,7 @@ graphics:,:y
 type:food
 properties:0:5:1
 power:0
+msg:That tastes great!
 effect:NOURISH
 dice:250
 effect:TIMED_INC:CONFUSED
@@ -244,6 +248,7 @@ graphics:,:r
 type:food
 properties:0:10:2
 power:0
+msg:That tastes great!  A fine vintage.
 effect:NOURISH
 dice:250
 effect:TIMED_INC:BOLD
@@ -3024,7 +3029,7 @@ alloc:50:50 to 100
 combat:0:1d1:0:0:0
 charges:3+d3
 power:11
-effect:BOLT:OLD_DRAIN
+effect:BOLT_STATUS:OLD_DRAIN
 dice:150
 
 name:396:Annihilation
@@ -3036,7 +3041,7 @@ combat:0:1d1:0:0:0
 charges:1+d2
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:BOLT:OLD_DRAIN
+effect:BOLT_STATUS:OLD_DRAIN
 dice:250
 
 
@@ -3671,7 +3676,7 @@ properties:75:15:3600
 alloc:20:75 to 100
 combat:0:1d1:0:0:0
 power:11
-effect:BOLT:OLD_DRAIN
+effect:BOLT_STATUS:OLD_DRAIN
 dice:150
 time:23
 
