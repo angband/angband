@@ -2168,6 +2168,7 @@ properties:30:4:8000
 alloc:30:30 to 100
 pile:10:2
 power:20000
+effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
 
 name:311:Intelligence
@@ -2177,6 +2178,7 @@ properties:30:4:8000
 alloc:30:30 to 100
 pile:10:2
 power:20000
+effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
 
 name:312:Wisdom
@@ -2186,6 +2188,7 @@ properties:30:4:8000
 alloc:30:30 to 100
 pile:10:2
 power:20000
+effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
 
 name:313:Dexterity
@@ -2195,6 +2198,7 @@ properties:30:4:8000
 alloc:30:30 to 100
 pile:10:2
 power:20000
+effect:RESTORE_STAT:DEX
 effect:GAIN_STAT:DEX
 
 name:314:Constitution
@@ -2204,6 +2208,7 @@ properties:30:4:8000
 alloc:30:30 to 100
 pile:10:2
 power:20000
+effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
 
 ### 315, sval 6
@@ -2215,10 +2220,15 @@ properties:40:4:50000
 alloc:20:40 to 100
 combat:0:1d1:0:0:0
 power:20000
+effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
+effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
+effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
+effect:RESTORE_STAT:DEX
 effect:GAIN_STAT:DEX
+effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
 
 name:317:Experience
@@ -2383,6 +2393,7 @@ properties:3:4:1000
 alloc:30:20 to 40
 pile:10:2
 power:30
+effect:RESTORE_STAT:STR
 effect:GAIN_STAT:STR
 effect:LOSE_RANDOM_STAT:STR
 
@@ -2393,6 +2404,7 @@ properties:20:4:1000
 alloc:30:20 to 40
 pile:10:2
 power:25
+effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
 effect:LOSE_RANDOM_STAT:INT
 
@@ -2403,6 +2415,7 @@ properties:20:4:1000
 alloc:30:20 to 40
 pile:10:2
 power:25
+effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
 effect:LOSE_RANDOM_STAT:WIS
 
@@ -2413,6 +2426,7 @@ properties:5:4:1000
 alloc:30:20 to 40
 pile:10:2
 power:25
+effect:RESTORE_STAT:DEX
 effect:GAIN_STAT:DEX
 effect:LOSE_RANDOM_STAT:DEX
 
@@ -2423,6 +2437,7 @@ properties:10:4:1000
 alloc:30:20 to 40
 pile:10:2
 power:30
+effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
 effect:LOSE_RANDOM_STAT:CON
 
@@ -2448,7 +2463,9 @@ combat:0:1d1:0:0:0
 power:20000
 effect:ENLIGHTENMENT
 dice:1
+effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
+effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
 effect:DETECT_TRAPS
 dice:22d40
