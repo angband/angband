@@ -588,6 +588,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		if (obj->activation) {
 			msgt(snd, "You activate it.");
 			activation_message(obj);
+		} else if (obj->kind->effect_msg) {
+			msgt(snd, obj->kind->effect_msg);
 		} else {
 			/* Make a noise! */
 			sound(snd);
