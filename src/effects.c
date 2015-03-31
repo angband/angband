@@ -309,9 +309,8 @@ bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 bool effect_handler_NOURISH(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
-	player_set_food(player, player->food + amount);
-
-	context->ident = TRUE;
+	if (player_set_food(player, player->food + amount))
+		context->ident = TRUE;
 	return TRUE;
 }
 
