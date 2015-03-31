@@ -294,10 +294,15 @@ alloc:25:20 to 100
 pile:13:1d3
 power:15
 effect:RESTORE_STAT:STR
+param:1
 effect:RESTORE_STAT:INT
+param:1
 effect:RESTORE_STAT:WIS
+param:1
 effect:RESTORE_STAT:DEX
+param:1
 effect:RESTORE_STAT:CON
+param:1
 effect:NOURISH
 dice:500
 
