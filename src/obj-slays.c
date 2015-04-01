@@ -93,6 +93,7 @@ void copy_slay(struct slay **dest, struct slay *source)
 		os->name = string_make(s->name);
 		os->race_flag = s->race_flag;
 		os->multiplier = s->multiplier;
+		os->known = s->known;
 		os->next = *dest;
 		*dest = os;
 		s = s->next;
@@ -114,6 +115,7 @@ void copy_brand(struct brand **dest, struct brand *source)
 		ob->name = string_make(b->name);
 		ob->element = b->element;
 		ob->multiplier = b->multiplier;
+		ob->known = b->known;
 		ob->next = *dest;
 		*dest = ob;
 		b = b->next;
