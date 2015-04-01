@@ -385,6 +385,7 @@ static void object_absorb_merge(struct object *o_ptr, const struct object *j_ptr
 
 	/* Blend all knowledge */
 	of_union(o_ptr->known_flags, j_ptr->known_flags);
+	of_union(o_ptr->id_flags, j_ptr->id_flags);
 
 	/* Merge inscriptions */
 	if (j_ptr->note)
