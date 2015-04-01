@@ -528,7 +528,9 @@ static bool store_will_buy(struct store *store, const struct object *obj)
 		if (!buy->flag) return TRUE;
 
 		/* OK if the object is known to have the flag */
-		if (object_flag_is_known(obj, buy->flag)) return TRUE;
+		if (of_has(obj->flags, buy->flag) &&
+			object_flag_is_known(obj, buy->flag))
+			return TRUE;
 	}
 
 	/* Not on the list */
