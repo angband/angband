@@ -1059,6 +1059,9 @@ void move_player(int dir, bool disarm)
 			cmd_set_repeat(99);
 
 		do_cmd_alter_aux(dir);
+	} else if (player->upkeep->running && square_isknowntrap(cave, y, x)) {
+		/* Stop running before known traps */
+		disturb(player, 0);
 	} else if (!square_ispassable(cave, y, x)) {
 		/* Disturb the player */
 		disturb(player, 0);

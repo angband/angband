@@ -803,7 +803,7 @@ void run_step(int dir)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Move the player */
-	move_player(run_cur_dir, TRUE);
+	move_player(run_cur_dir, FALSE);
 
 	/* Prepare the next step */
 	if (player->upkeep->running) {
