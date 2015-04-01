@@ -1091,6 +1091,14 @@ void object_notice_sensing(struct object *obj)
 	/* Hackish - NRM */
 	if (object_add_id_flag(obj, ID_AC))
 		object_check_for_ident(obj);
+
+	/* For unflavoured objects we can rule out some things */
+	if (!obj->artifact && !object_ego_is_visible(obj) &&
+		!obj->kind->flavor) {
+		object_know_all_flags(obj);
+		object_know_all_elements(obj);
+		object_know_brands_and_slays(obj);
+	}
 }
 
 
