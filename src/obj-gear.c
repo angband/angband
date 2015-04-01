@@ -637,8 +637,8 @@ void inven_takeoff(struct object *obj)
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, I2A(slot));
 
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
-	player->upkeep->notice |= (PN_IGNORE | PN_COMBINE);
-
+	player->upkeep->notice |= (PN_IGNORE);
+	combine_pack();
 	return;
 }
 
