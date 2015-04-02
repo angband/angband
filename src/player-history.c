@@ -273,8 +273,8 @@ bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 			hist_on(type, HIST_ARTIFACT_UNKNOWN);
 			if (!found)
 				hist_on(type, HIST_ARTIFACT_LOST);
-			history_add_full(type, artifact, player->depth, player->lev, turn,
-							 buf);
+			history_add_full(type, artifact, player->depth, player->lev,
+							 player->total_energy / 100, buf);
 		} else {
 			return FALSE;
 		}
