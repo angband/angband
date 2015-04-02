@@ -132,10 +132,6 @@ bool object_all_but_flavor_is_known(const struct object *obj)
  */
 bool object_is_known(const struct object *obj)
 {
-	int i;
-
-	for (i = 0; i < OBJ_MOD_MAX; i++)
-		if (!object_this_mod_is_visible(obj, i)) return FALSE;
 	if (!object_flavor_is_aware(obj)) return FALSE;
 	return object_all_but_flavor_is_known(obj) ? TRUE : FALSE;
 }
@@ -721,15 +717,14 @@ void object_notice_on_wield(struct object *obj)
 	bool obvious = FALSE;
 	int i;
 
-	/* Only deal with un-ID'd items */
-	if (object_is_known(obj)) return;
-
 	/* EASY_KNOW jewelry is now known */
-	if (object_flavor_is_aware(obj) && easy_know(obj))
-	{
+	if (object_flavor_is_aware(obj) && easy_know(obj)) {
 		object_notice_everything(obj);
 		return;
 	}
+
+	/* Only deal with un-ID'd items */
+	if (object_is_known(obj)) return;
 
 	/* Worn means tried (for flavored wearables) */
 	object_flavor_tried(obj);
