@@ -2154,6 +2154,10 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 		}
 	}
 
+	/* Call individual functions for other state fields */
+	calc_torch();
+	calc_mana();
+
 	return;
 }
 
