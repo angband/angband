@@ -130,7 +130,7 @@ int inven_damage(struct player *p, int type, int cperc)
 				reduce_charges(obj, amt);
 
 				/* Destroy "amt" items */
-				destroyed = gear_object_for_use(obj, 1, FALSE);
+				destroyed = gear_object_for_use(obj, amt, FALSE);
 				object_delete(destroyed);
 
 				/* Count the casualties */

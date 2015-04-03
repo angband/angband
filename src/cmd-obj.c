@@ -665,9 +665,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		object_delete(used_obj);
 	}
 
-	/* Update the gear */
-	player->upkeep->update |= PU_INVEN;
-	
 	/* Hack to make Glyph of Warding work properly */
 	if (square_trap_specific(cave, py, px, rune->tidx)) {
 		/* Push objects off the grid */
@@ -887,9 +884,6 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 		} else
 			/* Empty a single lantern */
 			obj->timeout = 0;
-
-		/* Update the gear */
-		player->upkeep->update |= (PU_INVEN);
 
 		/* Combine the pack (later) */
 		player->upkeep->notice |= (PN_COMBINE);

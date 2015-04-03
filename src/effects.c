@@ -2038,9 +2038,6 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 		if (t > 0) obj->pval += 2 + randint1(t);
 	}
 
-	/* Update the gear */
-	player->upkeep->update |= (PU_INVEN);
-
 	/* Combine the pack (later) */
 	player->upkeep->notice |= (PN_COMBINE);
 

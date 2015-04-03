@@ -409,8 +409,11 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message)
 	/* Change the weight */
 	player->upkeep->total_weight -= (num * obj->weight);
 
+	/* Update the gear */
+	calc_inventory(player->upkeep, player->gear, player->body);
+
 	/* Housekeeping */
-	player->upkeep->update |= (PU_BONUS | PU_MANA | PU_INVEN | PU_TORCH);
+	player->upkeep->update |= (PU_BONUS | PU_MANA | PU_TORCH);
 	player->upkeep->notice |= (PN_COMBINE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
@@ -657,6 +660,7 @@ void inven_drop(struct object *obj, int amt)
 	struct object *dropped;
 
 	char o_name[80];
+	char label;
 
 	/* Error check */
 	if (amt <= 0)
@@ -670,6 +674,9 @@ void inven_drop(struct object *obj, int amt)
 		msg("Bug - attempt to drop %s when not held!", o_name);
 		return;
 	}
+
+	/* Get where the object is now */
+	label = gear_to_label(obj);
 
 	/* Not too many */
 	if (amt > obj->number) amt = obj->number;
@@ -685,12 +692,13 @@ void inven_drop(struct object *obj, int amt)
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, gear_to_label(obj));
+	msg("You drop %s (%c).", o_name, label);
 
 	/* Drop it near the player */
 	drop_near(cave, dropped, 0, py, px, FALSE);
 
 	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 }
 
 
