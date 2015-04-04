@@ -1087,8 +1087,7 @@ void object_notice_sensing(struct object *obj)
 		object_check_for_ident(obj);
 
 	/* For unflavoured objects we can rule out some things */
-	if (!obj->artifact && !object_ego_is_visible(obj) &&
-		!obj->kind->flavor) {
+	if (!obj->artifact && !obj->ego && !obj->kind->flavor) {
 		object_know_all_flags(obj);
 		object_know_all_elements(obj);
 		object_know_brands_and_slays(obj);
