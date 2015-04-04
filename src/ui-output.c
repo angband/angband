@@ -414,6 +414,8 @@ s16b screen_save_depth;
  */
 void screen_save(void)
 {
+	player->upkeep->redraw |= PR_MAP;
+	redraw_stuff(player->upkeep);
 	event_signal(EVENT_MESSAGE_FLUSH);
 	Term_save();
 	screen_save_depth++;
@@ -427,10 +429,6 @@ void screen_load(void)
 	event_signal(EVENT_MESSAGE_FLUSH);
 	Term_load();
 	screen_save_depth--;
-
-	/* Redraw big graphics */
-	if (screen_save_depth == 0 && (tile_width > 1 || tile_height > 1))
-		Term_redraw();
 }
 
 bool textui_map_is_visible(void)
