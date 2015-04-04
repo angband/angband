@@ -86,7 +86,7 @@ void do_cmd_redraw(void)
 	player->upkeep->update |= (PU_TORCH | PU_INVEN);
 
 	/* Update stuff */
-	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 
 	/* Fully update the visuals */
 	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);

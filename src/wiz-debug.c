@@ -1699,7 +1699,7 @@ static void do_cmd_wiz_advance(void)
 	/* Artifacts: 3, 5, 12, ...*/
 	
 	/* Update stuff */
-	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 
 	/* Redraw everything */
 	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |

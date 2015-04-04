@@ -584,7 +584,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
 	}
 
 	/* Housekeeping */
-	player->upkeep->update |= (PU_BONUS | PU_MANA | PU_INVEN);
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 	player->upkeep->notice |= (PN_COMBINE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 

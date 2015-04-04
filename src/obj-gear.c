@@ -342,8 +342,11 @@ bool gear_excise_object(struct object *obj)
 			player->body.slots[i].obj = NULL;
 	}
 
+	/* Update the gear */
+	calc_inventory(player->upkeep, player->gear, player->body);
+
 	/* Housekeeping */
-	player->upkeep->update |= (PU_BONUS | PU_MANA | PU_INVEN);
+	player->upkeep->update |= (PU_BONUS);
 	player->upkeep->notice |= (PN_COMBINE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
@@ -409,11 +412,8 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message)
 	/* Change the weight */
 	player->upkeep->total_weight -= (num * obj->weight);
 
-	/* Update the gear */
-	calc_inventory(player->upkeep, player->gear, player->body);
-
 	/* Housekeeping */
-	player->upkeep->update |= (PU_BONUS | PU_MANA | PU_TORCH);
+	player->upkeep->update |= (PU_BONUS);
 	player->upkeep->notice |= (PN_COMBINE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 

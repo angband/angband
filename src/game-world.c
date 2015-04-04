@@ -673,8 +673,7 @@ void on_new_level(void)
 	event_signal(EVENT_NEW_LEVEL_DISPLAY);
 
 	/* Update player */
-	player->upkeep->update |=
-		(PU_BONUS | PU_HP | PU_MANA | PU_SPELLS | PU_INVEN);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS | PU_INVEN);
 	player->upkeep->notice |= (PN_COMBINE);
 	notice_stuff(player->upkeep);
 	update_stuff(player->upkeep);

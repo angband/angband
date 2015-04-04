@@ -418,7 +418,7 @@ void wield_item(struct object *obj, int slot)
 
 	/* Recalculate bonuses, torch, mana, gear */
 	player->upkeep->notice |= (PN_IGNORE | PN_COMBINE);
-	player->upkeep->update |= (PU_BONUS | PU_TORCH | PU_MANA | PU_INVEN);
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
 

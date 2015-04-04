@@ -2183,7 +2183,7 @@ static void new_level_display_update(game_event_type type,
 	Term_clear();
 
 	/* Update stuff */
-	player->upkeep->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 
 	/* Calculate torch radius */
 	player->upkeep->update |= (PU_TORCH);
