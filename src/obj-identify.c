@@ -520,7 +520,7 @@ void object_notice_ego(struct object *obj)
 	/* Learn ego flags */
 	of_union(obj->known_flags, obj->ego->flags);
 
-	/* Learn ego element properties */
+	/* Learn ego element properties (note random ones aren't learned) */
 	for (i = 0; i < ELEM_MAX; i++)
 		if (obj->ego->el_info[i].res_level != 0)
 			obj->el_info[i].flags |= EL_INFO_KNOWN;
@@ -528,18 +528,13 @@ void object_notice_ego(struct object *obj)
 	/* Learn all flags except random abilities */
 	of_setall(learned_flags);
 
-	/* Random ego extras */
+	/* Don't learn random ego extras */
 	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
 		create_mask(xtra_flags, FALSE, OFT_SUST, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
 	} else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER)) {
 		create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
 		of_diff(learned_flags, xtra_flags);
-	} else if (kf_has(obj->ego->kind_flags, KF_RAND_HI_RES)) {
-		for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++)
-			if ((obj->ego->el_info[i].res_level == 1) &&
-				!(obj->el_info[i].flags & EL_INFO_RANDOM))
-				obj->el_info[i].flags |= EL_INFO_KNOWN;
 	}
 
 	of_union(obj->known_flags, learned_flags);
@@ -1049,11 +1044,11 @@ bool object_high_resist_is_possible(const struct object *obj)
 
 	/* Look at all the high resists */
 	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++) {
-		/* Object doesn't have it - not interesting */
-		if (obj->el_info[i].res_level <= 0) continue;
+		/* Object has the resist */
+		if (obj->el_info[i].res_level <= 0) return TRUE;
 
-		/* Element properties known */
-		if (obj->el_info[i].flags & EL_INFO_KNOWN) continue;
+		/* Element properties unknown */
+		if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return TRUE;
 
 		/* Has a resist, or doubt remains */
 		return TRUE;
