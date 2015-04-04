@@ -1387,6 +1387,8 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		*choice = NULL;
 	}
 
+	/* Clean up */
+	player->upkeep->command_wrk = 0;
 	mem_free(floor_list);
 
 	/* Result */
