@@ -429,6 +429,38 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message)
 }
 
 /**
+ * Check if we have space to put an item in a new quiver slot without 
+ * increasing the number of pack slots used 
+ */
+static bool new_quiver_slot_okay(const object_type *obj)
+{
+	int i, quiver_count = 0;
+	bool empty_slot = FALSE;
+
+	/* Must be ammo */
+	if (!tval_is_ammo(obj)) return FALSE;
+
+	/* Count the current space */
+	for (i = 0; i < z_info->quiver_size; i++) {
+		struct object *quiver_obj = player->upkeep->quiver[i];
+		if (quiver_obj)
+			quiver_count += quiver_obj->number;
+		else
+			empty_slot = TRUE;
+	}
+
+	/* Check for free quiver slots */
+	if (!empty_slot) return FALSE;
+
+	/* Check we won't need another pack slot */
+	quiver_count = ((quiver_count - 1) % z_info->stack_size) + 1;
+	if (quiver_count + obj->number > z_info->stack_size) return FALSE;
+
+	/* Good to go */
+	return TRUE;
+}
+
+/**
  * Check if we have space for an item in the pack without overflow
  */
 bool inven_carry_okay(const object_type *obj)
@@ -438,6 +470,9 @@ bool inven_carry_okay(const object_type *obj)
 
 	/* Check if it can stack */
 	if (inven_stack_okay(obj)) return TRUE;
+
+	/* Check if we can add a quiver slot */
+	if (new_quiver_slot_okay(obj)) return TRUE;
 
 	/* Nope */
 	return FALSE;
