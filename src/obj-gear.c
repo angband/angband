@@ -791,10 +791,9 @@ bool pack_is_overfull(void)
 /**
  * Overflow an item from the pack, if it is overfull.
  */
-void pack_overflow(void)
+void pack_overflow(struct object *obj)
 {
 	int i;
-	struct object *obj = NULL;
 	char o_name[80];
 
 	if (!pack_is_overfull()) return;
@@ -805,13 +804,15 @@ void pack_overflow(void)
 	/* Warning */
 	msg("Your pack overflows!");
 
-	/* Find the last inventory item */
+	/* Get the last proper item */
 	for (i = 1; i <= z_info->pack_size; i++)
 		if (!player->upkeep->inven[i])
 			break;
 
-	/* Last object was the previous index */
-	obj = player->upkeep->inven[i - 1];
+	/* Drop the last inventory item unless requested otherwise */
+	if (!obj) {
+		obj = player->upkeep->inven[i - 1];
+	}
 
 	/* Rule out weirdness (like pack full, but inventory empty) */
 	assert(obj != NULL);
@@ -820,7 +821,7 @@ void pack_overflow(void)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, I2A(i - 1));
+	msg("You drop %s.", o_name);
 
 	/* Excise the object and drop it (carefully) near the player */
 	gear_excise_object(obj);
@@ -828,9 +829,9 @@ void pack_overflow(void)
 
 	/* Describe */
 	if (obj->artifact)
-		msg("You no longer have the %s (%c).", o_name, I2A(i - 1));
+		msg("You no longer have the %s.", o_name);
 	else
-		msg("You no longer have %s (%c).", o_name, I2A(i - 1));
+		msg("You no longer have %s.", o_name);
 
 	/* Notice stuff (if needed) */
 	if (player->upkeep->notice) notice_stuff(player->upkeep);

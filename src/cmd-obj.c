@@ -338,7 +338,7 @@ void do_cmd_takeoff(struct command *cmd)
 		return;
 
 	inven_takeoff(obj);
-	pack_overflow();
+	pack_overflow(obj);
 	player->upkeep->energy_use = z_info->move_energy / 2;
 }
 
@@ -348,13 +348,13 @@ void do_cmd_takeoff(struct command *cmd)
  */
 void wield_item(struct object *obj, int slot)
 {
-	struct object *wielded;
+	struct object *wielded, *old = player->body.slots[slot].obj;
 
 	const char *fmt;
 	char o_name[80];
 
 	/* Increase equipment counter if empty slot */
-	if (player->body.slots[slot].obj == NULL)
+	if (old == NULL)
 		player->upkeep->equip_cnt++;
 
 	/* Take a turn */
@@ -414,7 +414,7 @@ void wield_item(struct object *obj, int slot)
 	}
 
 	/* See if we have to overflow the pack */
-	pack_overflow();
+	pack_overflow(old);
 
 	/* Recalculate bonuses, torch, mana, gear */
 	player->upkeep->notice |= (PN_IGNORE | PN_COMBINE);

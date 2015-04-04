@@ -56,7 +56,7 @@ void inven_drop(struct object *obj, int amt);
 void combine_pack(void);
 bool pack_is_full(void);
 bool pack_is_overfull(void);
-void pack_overflow(void);
+void pack_overflow(struct object *obj);
 
 
 #endif /* OBJECT_GEAR_H */
