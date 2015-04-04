@@ -1200,7 +1200,7 @@ static void ego_menu(const char *unused, int also_unused)
 		}
 
 		/* Find appropriate ignore types */
-		for (itype = ITYPE_NONE; itype < ITYPE_MAX; itype++)
+		for (itype = ITYPE_NONE + 1; itype < ITYPE_MAX; itype++)
 			for (tval = 1; tval < TV_MAX; tval++) {
 				/* Skip invalid types */
 				if (!tval_table[tval]) continue;
@@ -1305,6 +1305,14 @@ static int cmp_ignore(const void *a, const void *b)
 }
 
 /**
+ * Determine if an item is a valid choice
+ */
+int quality_validity(struct menu *menu, int oid)
+{
+	return oid ? 1 : 0;
+}
+
+/**
  * Display an entry in the menu.
  */
 static void quality_display(struct menu *menu, int oid, bool cursor, int row,
@@ -1319,8 +1327,8 @@ static void quality_display(struct menu *menu, int oid, bool cursor, int row,
 
 	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 
-
-	c_put_str(attr, format("%-20s : %s", name, level_name), row, col);
+	if (oid)
+		c_put_str(attr, format("%-20s : %s", name, level_name), row, col);
 }
 
 
@@ -1389,7 +1397,8 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 static void quality_menu(void *unused, const char *also_unused)
 {
 	struct menu menu;
-	menu_iter menu_f = { NULL, NULL, quality_display, quality_action, NULL };
+	menu_iter menu_f = { NULL, quality_validity, quality_display,
+						 quality_action, NULL };
 	region area = { 0, 0, 0, 0 };
 
 	/* Save screen */

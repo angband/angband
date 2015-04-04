@@ -136,7 +136,7 @@ void ignore_birth_init(void)
 		k_info[i].ignore = FALSE;
 
 	/* Clear the ignore bytes */
-	for (i = 0; i < ITYPE_MAX; i++)
+	for (i = ITYPE_NONE; i < ITYPE_MAX; i++)
 		ignore_level[i] = IGNORE_NONE;
 }
 
@@ -630,7 +630,7 @@ const char *ignore_name_for_type(ignore_type_t type)
 {
 	size_t i;
 
-	for (i = 0; i < ITYPE_MAX; i++) {
+	for (i = ITYPE_NONE + 1; i < ITYPE_MAX; i++) {
 		if (quality_choices[i].enum_val == type)
 			return quality_choices[i].name;
 	}
