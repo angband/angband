@@ -1097,7 +1097,7 @@ title:Rogue
 title:Thief
 title:Master Thief
 
-magic:1:350:1:9
+magic:5:350:1:9
 
 book:magic book:[Magic for Beginners]:6:1
 
@@ -1425,7 +1425,7 @@ title:Pathfinder
 title:Ranger
 title:Ranger Lord
 
-magic:1:400:1:9
+magic:3:400:1:9
 
 book:magic book:[Magic for Beginners]:7:1
 
