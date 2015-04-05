@@ -1307,7 +1307,7 @@ int mana_per_level(struct player *p)
  *
  * This function induces status messages.
  */
-static void calc_mana(void)
+static void calc_mana(bool message)
 {
 	int i, msp, levels, cur_wgt, max_wgt;
 
@@ -1407,22 +1407,25 @@ static void calc_mana(void)
 	/* Hack -- handle partial mode */
 	if (player->upkeep->only_partial) return;
 
-	/* Take note when "glove state" changes */
-	if (old_cumber_glove != player->state.cumber_glove) {
-		/* Message */
-		if (player->state.cumber_glove)
-			msg("Your covered hands feel unsuitable for spellcasting.");
-		else
-			msg("Your hands feel more suitable for spellcasting.");
-	}
+	/* Print change messages if requested */
+	if (message) {
+		/* Take note when "glove state" changes */
+		if (old_cumber_glove != player->state.cumber_glove) {
+			/* Message */
+			if (player->state.cumber_glove)
+				msg("Your covered hands feel unsuitable for spellcasting.");
+			else
+				msg("Your hands feel more suitable for spellcasting.");
+		}
 
-	/* Take note when "armor state" changes */
-	if (old_cumber_armor != player->state.cumber_armor) {
-		/* Message */
-		if (player->state.cumber_armor)
-			msg("The weight of your armor encumbers your movement.");
-		else
-			msg("You feel able to move more freely.");
+		/* Take note when "armor state" changes */
+		if (old_cumber_armor != player->state.cumber_armor) {
+			/* Message */
+			if (player->state.cumber_armor)
+				msg("The weight of your armor encumbers your movement.");
+			else
+				msg("You feel able to move more freely.");
+		}
 	}
 }
 
@@ -2156,7 +2159,7 @@ void calc_bonuses(struct object *gear, player_state *state, bool known_only)
 
 	/* Call individual functions for other state fields */
 	calc_torch();
-	calc_mana();
+	calc_mana(FALSE);
 
 	return;
 }
@@ -2389,7 +2392,7 @@ void update_stuff(struct player_upkeep *upkeep)
 
 	if (upkeep->update & (PU_MANA)) {
 		upkeep->update &= ~(PU_MANA);
-		calc_mana();
+		calc_mana(TRUE);
 	}
 
 	if (upkeep->update & (PU_SPELLS)) {
