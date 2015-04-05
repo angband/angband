@@ -473,7 +473,7 @@ void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr)
 void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 							 const struct brand **brand_used, 
 							 const struct slay **slay_used, 
-							 char *verb, bool real, bool known_only)
+							 char *verb, bool range, bool real, bool known_only)
 {
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 	struct brand *b;
@@ -495,6 +495,8 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 							  20);
 				else
 					my_strcpy(verb, brand_names[b->element].melee_verb, 20);
+				if (range)
+					my_strcat(verb, "s", 20);
 			}
 			if (real) {
 				object_notice_brands(o_ptr, m_ptr);
@@ -518,10 +520,17 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 				best_mult = s->multiplier;
 				*brand_used = NULL;
 				*slay_used = s;
-				if (s->multiplier <= 3)
-					my_strcpy(verb, "smite", 20);
-				else
-					my_strcpy(verb, "fiercely smite", 20);
+				if (range) {
+					if (s->multiplier <= 3)
+						my_strcpy(verb, "pierces", 20);
+					else
+						my_strcpy(verb, "deeply pierces", 20);
+				} else {
+					if (s->multiplier <= 3)
+						my_strcpy(verb, "smite", 20);
+					else
+						my_strcpy(verb, "fiercely smite", 20);
+				}
 			}
 			if (real) {
 				object_notice_slays(o_ptr, m_ptr);

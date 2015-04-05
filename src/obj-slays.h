@@ -48,7 +48,7 @@ void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr);
 void improve_attack_modifier(object_type *o_ptr, const monster_type	*m_ptr, 
 							 const struct brand **brand_used, 
 							 const struct slay **slay_used, 
-							 char *verb, bool real, bool known_only);
+							 char *verb, bool range, bool real, bool known_only);
 bool react_to_slay(struct object *obj, const struct monster *mon);
 void wipe_brands(struct brand *brands);
 void wipe_slays(struct slay *slays);

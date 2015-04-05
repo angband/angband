@@ -373,7 +373,7 @@ static s32b slay_power(const object_type *obj, int p, int verbose,
 
 			/* Find the best multiplier against this monster */
 			improve_attack_modifier((object_type *)obj, mon, &b, &s, 
-									verb, FALSE, !known);
+									verb, FALSE, FALSE, !known);
 			if (s)
 				mult = s->multiplier;
 			else if (b)
