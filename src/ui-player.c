@@ -362,7 +362,8 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 
 			/* Set the symbols and print them */
 			if (imm) name_attr = COLOUR_GREEN;
-			else if (res) name_attr = COLOUR_L_BLUE;
+			else if (res && (name_attr != COLOUR_GREEN))
+				name_attr = COLOUR_L_BLUE;
 
 			if (vul) sym = '-';
 			else if (imm) sym = '*';
