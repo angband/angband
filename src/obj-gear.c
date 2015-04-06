@@ -701,14 +701,11 @@ void inven_drop(struct object *obj, int amt)
 	if (amt <= 0)
 		return;
 
-	/* This should not happen - ask for report */
-	if (!pile_contains(player->gear, obj)) {
-		/* Describe the dropped object */
-		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
-
-		msg("Bug - attempt to drop %s when not held!", o_name);
+	/* Check it is still held, in case there were two drop commands queued
+	 * for this item.  This is in theory not ideal, but in practice should
+	 * be safe. */
+	if (!pile_contains(player->gear, obj))
 		return;
-	}
 
 	/* Get where the object is now */
 	label = gear_to_label(obj);
