@@ -1464,15 +1464,17 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	(void) generate_starburst_room(c, 1, 1, c->height - 1, c->width - 1, FALSE,
 								   FEAT_FLOOR, FALSE);
 
-	/* Make everything else permanent wall or lava */
+	/* Make everything else permanent wall or lava, and none of it a room */
 	for (y = 0; y < c->height; y++)
-		for (x = 0; x < c->width; x++)
+		for (x = 0; x < c->width; x++) {
 			if (!square_isfloor(c, y, x)) {
 				if (one_in_(40))
 					square_set_feat(c, y, x, FEAT_LAVA);
 				else
 					square_set_feat(c, y, x, FEAT_PERM);
 			}
+			sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
+		}
 
 	/* Place stores */
 	for (n = 0; n < MAX_STORES; n++) {
