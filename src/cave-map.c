@@ -363,6 +363,9 @@ static void cave_room_aux(struct point_set *seen, int y, int x)
 	if (point_set_contains(seen, y, x))
 		return;
 
+	if (!square_in_bounds(cave, y, x))
+		return;
+
 	if (!square_isroom(cave, y, x))
 		return;
 
