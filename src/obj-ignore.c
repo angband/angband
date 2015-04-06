@@ -129,7 +129,7 @@ void cleanup_ignore(void)
  */
 void ignore_birth_init(void)
 {
-	int i;
+	int i, j;
 
 	/* Reset ignore bits */
 	for (i = 0; i < z_info->k_max; i++)
@@ -138,6 +138,11 @@ void ignore_birth_init(void)
 	/* Clear the ignore bytes */
 	for (i = ITYPE_NONE; i < ITYPE_MAX; i++)
 		ignore_level[i] = IGNORE_NONE;
+
+	/* Clear ego ignore */
+	for (i = 0; i < z_info->e_max; i++)
+		for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
+			ego_ignore_types[i][j] = 0;
 }
 
 
