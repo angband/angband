@@ -132,7 +132,7 @@ void dump_history(ang_file *file)
 	file_putf(file, "[Player history]\n");
 	file_putf(file, "      Turn   Depth  Note\n");
 
-	for (i = 0; i < (max_item + 1); i++) {
+	for (i = 0; i < max_item; i++) {
 		strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
 				history_list[i].turn,
 				history_list[i].dlev * 50,
