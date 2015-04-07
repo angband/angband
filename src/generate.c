@@ -673,16 +673,16 @@ static int calc_obj_feeling(struct chunk *c)
 	x = c->obj_rating / c->depth;
 
 	/* Apply a minimum feeling if there's an artifact on the level */
-	if (c->good_item && x < 64001) return 60;
+	if (c->good_item && x < 641) return 60;
 
-	if (x > 16000000) return 20;
-	if (x > 4000000) return 30;
-	if (x > 1000000) return 40;
-	if (x > 250000) return 50;
-	if (x > 64000) return 60;
-	if (x > 16000) return 70;
-	if (x > 4000) return 80;
-	if (x > 1000) return 90;
+	if (x > 160000) return 20;
+	if (x > 40000) return 30;
+	if (x > 10000) return 40;
+	if (x > 2500) return 50;
+	if (x > 640) return 60;
+	if (x > 160) return 70;
+	if (x > 40) return 80;
+	if (x > 10) return 90;
 	return 100;
 }
 

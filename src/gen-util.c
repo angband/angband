@@ -456,9 +456,9 @@ void place_object(struct chunk *c, int y, int x, int level, bool good, bool grea
     } else {
 		if (new_obj->artifact)
 			c->good_item = TRUE;
-		if (rating > 250000)
-			rating = 250000; /* avoid overflows */
-		c->obj_rating += (rating / 10) * (rating / 10);
+		if (rating > 2500000)
+			rating = 2500000; /* avoid overflows */
+		c->obj_rating += (rating / 100) * (rating / 100);
     }
 }
 
