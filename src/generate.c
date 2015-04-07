@@ -609,6 +609,16 @@ static void run_template_parser(void) {
 }
 
 
+/**
+ * Free the template arrays
+ */
+static void cleanup_template_parser(void)
+{
+	cleanup_parser(&profile_parser);
+	cleanup_parser(&room_parser);
+	cleanup_parser(&vault_parser);
+}
+
 
 /**
  * Place hidden squares that will be used to generate feeling
@@ -926,5 +936,5 @@ void cave_generate(struct chunk **c, struct player *p) {
 struct init_module generate_module = {
 	.name = "generate",
 	.init = run_template_parser,
-	.cleanup = NULL
+	.cleanup = cleanup_template_parser
 };
