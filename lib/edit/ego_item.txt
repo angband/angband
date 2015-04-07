@@ -446,7 +446,7 @@ info:30:3:2000:15
 alloc:10:30 to 127
 combat:0:0:d4
 type:cloak
-flags:SUST_INT | IGNORE_ACID | RAND_HI_RES
+flags:SUST_INT | IGNORE_ACID | RAND_POWER
 values:INT[d2] | STEALTH[d3]
 min-values:INT[1] | STEALTH[1]
 
