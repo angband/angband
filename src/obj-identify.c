@@ -804,7 +804,7 @@ void object_notice_on_wield(struct object *obj)
 		msg("You feel sicklier!");
 	if (obj->modifiers[OBJ_MOD_STEALTH] > 0)
 		msg("You feel stealthier.");
-	else if (obj->modifiers[OBJ_MOD_SPEED] < 0)
+	else if (obj->modifiers[OBJ_MOD_STEALTH] < 0)
 		msg("You feel noisier.");
 	if (obj->modifiers[OBJ_MOD_SPEED] > 0)
 		msg("You feel strangely quick.");
@@ -818,13 +818,15 @@ void object_notice_on_wield(struct object *obj)
 		msg("Your bow tingles in your hands.");
 	else if (obj->modifiers[OBJ_MOD_SHOTS] < 0)
 		msg("Your bow aches in your hands.");
-	if (obj->modifiers[OBJ_MOD_INFRA])
+	if (obj->modifiers[OBJ_MOD_INFRA] > 0)
+		msg("Your eyes tingle.");
+	else if (obj->modifiers[OBJ_MOD_INFRA] < 0)
 		msg("Your eyes tingle.");
 	if (obj->modifiers[OBJ_MOD_LIGHT])
 		msg("It glows!");
 	if (of_has(f, OF_TELEPATHY))
 		msg("Your mind feels strangely sharper!");
-	if (of_has(f, OF_FREE_ACT))
+	if (of_has(f, OF_FREE_ACT) && of_has(obvious_mask, OF_FREE_ACT))
 		msg("You feel mobile!");
 
 	/* Remember the flags */
@@ -903,6 +905,9 @@ static void equip_notice_after_time(void)
 			}
 		}
 	}
+
+	/* Notice new info */
+	event_signal(EVENT_EQUIPMENT);
 }
 
 
