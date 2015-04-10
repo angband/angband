@@ -229,7 +229,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 		if (obj->modifiers[mod_flags[i].flag] != 0 &&	mod_flags[i].name[0]) {
 			count++;
 			/* Either all mods are visible, or none are */
-			if (object_this_mod_is_visible(obj, i))
+			if (object_this_mod_is_visible(obj, mod_flags[i].flag))
 				detail = TRUE;
 		}
 	
@@ -1122,9 +1122,14 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	int slot = wield_slot(obj);
 	struct object *current = slot_object(player, slot);
 
+	/* Doesn't remotely resemble a digger */
 	if (!tval_is_wearable(obj) || 
 		(!tval_is_melee_weapon(obj) && 
 		 (obj->modifiers[OBJ_MOD_TUNNEL] <= 0)))
+		return FALSE;
+
+	/* Player has no digging info */
+	if (!object_this_mod_is_visible(obj, OBJ_MOD_TUNNEL))
 		return FALSE;
 
 	/* Pretend we're wielding the object */
