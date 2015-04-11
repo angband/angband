@@ -1094,6 +1094,9 @@ void do_cmd_accept_character(struct command *cmd)
 	character_generated = TRUE;
 	player->upkeep->playing = TRUE;
 
+	/* Disable repeat command, so we don't try to be born again */
+	cmd_disable_repeat();
+
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
 }

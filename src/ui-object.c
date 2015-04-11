@@ -1314,73 +1314,77 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		else
 			player->upkeep->command_wrk = USE_INVEN;
 
-		/* If inven or equip is on the main screen, and only one of them
-		 * is slated for a subwindow, we should show the opposite there */
-		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
-			/* Unused */
-			if (!angband_term[j]) continue;
+		while (TRUE) {
+			/* If inven or equip is on the main screen, and only one of them
+			 * is slated for a subwindow, we should show the opposite there */
+			for (j = 0; j < ANGBAND_TERM_MAX; j++) {
+				/* Unused */
+				if (!angband_term[j]) continue;
 
-			/* Count windows displaying inven */
-			if (window_flag[j] & (PW_INVEN)) ni++;
+				/* Count windows displaying inven */
+				if (window_flag[j] & (PW_INVEN)) ni++;
 
-			/* Count windows displaying equip */
-			if (window_flag[j] & (PW_EQUIP)) ne++;
-		}
-
-		/* Are we in the situation where toggling makes sense? */
-		if ((ni && !ne) || (!ni && ne)) {
-			if ((player->upkeep->command_wrk == USE_EQUIP) &&
-				((ne && !toggle) || (ni && toggle))) {
-				/* Main screen is equipment, so is subwindow */
-				toggle_inven_equip();
-				toggle = !toggle;
-			} else if ((player->upkeep->command_wrk == USE_INVEN) &&
-					   ((ni && !toggle) || (ne && toggle))) {
-				/* Main screen is inventory, so is subwindow */
-				toggle_inven_equip();
-				toggle = !toggle;
+				/* Count windows displaying equip */
+				if (window_flag[j] & (PW_EQUIP)) ne++;
 			}
+
+			/* Are we in the situation where toggling makes sense? */
+			if ((ni && !ne) || (!ni && ne)) {
+				if ((player->upkeep->command_wrk == USE_EQUIP) &&
+					((ne && !toggle) || (ni && toggle))) {
+					/* Main screen is equipment, so is subwindow */
+					toggle_inven_equip();
+					toggle = !toggle;
+				} else if ((player->upkeep->command_wrk == USE_INVEN) &&
+						   ((ni && !toggle) || (ne && toggle))) {
+					/* Main screen is inventory, so is subwindow */
+					toggle_inven_equip();
+					toggle = !toggle;
+				}
+			}
+
+			/* Redraw */
+			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+
+			/* Redraw windows */
+			redraw_stuff(player->upkeep);
+
+			/* Save screen */
+			screen_save();
+
+			/* Build object list */
+			wipe_obj_list();
+			if (player->upkeep->command_wrk == USE_INVEN)
+				build_obj_list(i2, player->upkeep->inven, tester_m, olist_mode);
+			else if (player->upkeep->command_wrk == USE_EQUIP)
+				build_obj_list(e2, NULL, tester_m, olist_mode);
+			else if (player->upkeep->command_wrk == USE_QUIVER)
+				build_obj_list(q2, player->upkeep->quiver, tester_m,olist_mode);
+			else if (player->upkeep->command_wrk == USE_FLOOR)
+				build_obj_list(f2, floor_list, tester_m, olist_mode);
+
+			/* Show the prompt */
+			if (pmt)
+				prt(pmt, 0, 0);
+
+			/* Get an item choice */
+			*choice = item_menu(cmd, MAX(strlen(pmt), 15), mode);
+
+			/* Fix the screen */
+			screen_load();
+
+			/* Toggle again if needed */
+			if (toggle) toggle_inven_equip();
+
+			/* Update */
+			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+			redraw_stuff(player->upkeep);
+
+			/* Clear the prompt line */
+			prt("", 0, 0);
+
+			break;
 		}
-
-		/* Redraw */
-		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-
-		/* Redraw windows */
-		redraw_stuff(player->upkeep);
-
-		/* Save screen */
-		screen_save();
-
-		/* Build object list */
-		wipe_obj_list();
-		if (player->upkeep->command_wrk == USE_INVEN)
-			build_obj_list(i2, player->upkeep->inven, tester_m, olist_mode);
-		else if (player->upkeep->command_wrk == USE_EQUIP)
-			build_obj_list(e2, NULL, tester_m, olist_mode);
-		else if (player->upkeep->command_wrk == USE_QUIVER)
-			build_obj_list(q2, player->upkeep->quiver, tester_m,olist_mode);
-		else if (player->upkeep->command_wrk == USE_FLOOR)
-			build_obj_list(f2, floor_list, tester_m, olist_mode);
-
-		/* Show the prompt */
-		if (pmt)
-			prt(pmt, 0, 0);
-
-		/* Get an item choice */
-		*choice = item_menu(cmd, MAX(strlen(pmt), 15), mode);
-
-		/* Fix the screen */
-		screen_load();
-
-		/* Toggle again if needed */
-		if (toggle) toggle_inven_equip();
-
-		/* Update */
-		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-		redraw_stuff(player->upkeep);
-
-		/* Clear the prompt line */
-		prt("", 0, 0);
 	} else {
 		/* Warning if needed */
 		if (str) msg("%s", str);
