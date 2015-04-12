@@ -35,7 +35,8 @@ typedef enum
 	/* 'Abstract' events */
 	EVT_ESCAPE	= 0x0010,	/* Get out of this menu */
 	EVT_MOVE	= 0x0020,	/* Menu movement */
-	EVT_SELECT	= 0x0040	/* Menu selection */
+	EVT_SELECT	= 0x0040,	/* Menu selection */
+	EVT_SWITCH	= 0x0080	/* Menu switch */
 } ui_event_type;
 
 

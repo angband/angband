@@ -147,7 +147,8 @@ typedef struct
 typedef enum
 {
 	MN_SKIN_SCROLL = 1,   /**< Ordinary scrollable single-column list */
-	MN_SKIN_COLUMNS = 2   /**< Multicolumn view */
+	MN_SKIN_OBJECT = 2,   /**< Special single-column list for object choice */
+	MN_SKIN_COLUMNS = 3   /**< Multicolumn view */
 } skin_id;
 
 
@@ -193,7 +194,10 @@ enum
 	MN_DBL_TAP = 0x10,
 
 	/* no select events to be triggered */
-	MN_NO_ACTION = 0x20
+	MN_NO_ACTION = 0x20,
+
+	/* Tags can be selected via an inscription */
+	MN_INSCRIP_TAGS = 0x40
 };
 
 
@@ -208,9 +212,16 @@ struct menu
 	/* Keyboard shortcuts for menu selection-- shouldn't overlap cmd_keys */
 	const char *selections; 
 
+	/* Menu selections corresponding to inscriptions */
+	char *inscriptions; 
+
 	/* String of characters that when pressed, menu handler should be called */
 	/* Mustn't overlap with 'selections' or some items may be unselectable */
 	const char *cmd_keys;
+
+	/* String of characters that when pressed, return an EVT_SWITCH */
+	/* Mustn't overlap with previous blah blah */
+	const char *switch_keys;
 
   	/* auxiliary browser help function */
 	void (*browse_hook)(int oid, void *db, const region *loc);

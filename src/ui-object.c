@@ -642,6 +642,7 @@ struct object **floor_list;
 static olist_detail_t olist_mode = 0;
 int item_mode;
 cmd_code item_cmd;
+bool newmenu = FALSE;
 
 /**
  * ------------------------------------------------------------------------
@@ -940,11 +941,7 @@ void get_item_display(struct menu *menu, int oid, bool cursor, int row,
 bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 {
 	struct object_menu_data *choice = menu_priv(menu);
-	struct object *obj;
 	char key = event->key.code;
-	int prompt_size = MAX(strlen(prompt), 15);
-
-	bool refresh = FALSE;
 
 	if (event->type == EVT_SELECT) {
 		selection = choice[oid].object;
@@ -956,15 +953,11 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			if ((item_mode & USE_INVEN)
 				&& (player->upkeep->command_wrk != USE_INVEN)) {
 				player->upkeep->command_wrk = USE_INVEN;
-				wipe_obj_list();
-				build_obj_list(i2, player->upkeep->inven, tester_m, olist_mode);
-				refresh = TRUE;
+				newmenu = TRUE;
 			} else if ((item_mode & USE_EQUIP) &&
 					   (player->upkeep->command_wrk != USE_EQUIP)) {
 				player->upkeep->command_wrk = USE_EQUIP;
-				wipe_obj_list();
-				build_obj_list(e2, NULL, tester_m, olist_mode);
-				refresh = TRUE;
+				newmenu = TRUE;
 			} else {
 				bell("Cannot switch item selector!");
 			}
@@ -977,10 +970,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			} else {
 				/* Toggle to quiver */
 				player->upkeep->command_wrk = (USE_QUIVER);
-				wipe_obj_list();
-				build_obj_list(q2, player->upkeep->quiver, tester_m,
-							   olist_mode);
-				refresh = TRUE;
+				newmenu = TRUE;
 			}
 		}
 
@@ -991,80 +981,8 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			} else {
 				/* Toggle to floor */
 				player->upkeep->command_wrk = (USE_FLOOR);
-				wipe_obj_list();
-				build_obj_list(f2, floor_list, tester_m, olist_mode);
-				refresh = TRUE;
+				newmenu = TRUE;
 			}
-		}
-
-		else if ((key >= '0') && (key <= '9')) {
-			/* Look up the tag */
-			if (get_tag(&obj, key, item_cmd, item_mode & QUIVER_TAGS)) {
-				/* There should be a better way of doing this */
-				int i;
-				for (i = 0; i < num_obj; i++)
-					if (choice[i].object == obj)
-						break;
-				if (i < num_obj)
-					Term_keypress(choice[i].key, 0);
-				else
-					return FALSE;
-			} else {
-				bell("Illegal object choice (tag)!");
-				return TRUE;
-			}
-		}
-
-		/* Redraw the menu */
-		if (refresh) {
-			int ex_offset_ctr = 0;
-
-			/* Load screen */
-			screen_load();
-			Term_fresh();
-
-			/* Save screen */
-			screen_save();
-
-			/* Menu data and header */
-			menu_setpriv(menu, num_obj, items);
-			menu_header();
-			menu->header = (const char *)header;
-			set_obj_names(FALSE);
-			if (item_mode & OLIST_QUIVER && player->upkeep->quiver[0] != NULL)
-				max_len = MAX(max_len, 24);
-
-			/* Width of extra fields */
-			if (olist_mode & OLIST_WEIGHT) {
-				ex_width += 9;
-				ex_offset_ctr += 9;
-			}
-			if (olist_mode & OLIST_PRICE) {
-				ex_width += 9;
-				ex_offset_ctr += 9;
-			}
-			if (olist_mode & OLIST_FAIL) {
-				ex_width += 10;
-				ex_offset_ctr += 10;
-			}
-
-			/* Redo the layout */
-			area.page_rows = menu->count + 1;
-			area.row = 1;
-			area.col = MIN(Term->wid - 1 - (int) max_len - ex_width,
-						   prompt_size - 2);
-			if (area.col <= 3)
-				area.col = 0;
-			ex_offset = MIN(max_len,
-							(size_t)(Term->wid - 1 - ex_width - area.col));
-			while (strlen(header) < max_len + ex_width + ex_offset_ctr) {
-				my_strcat(header, " ", sizeof(header));
-				if (strlen(header) > sizeof(header) - 2) break;
-			}
-			area.width = MAX(max_len, strlen(header));
-			menu_layout(menu, &area);
-			menu_refresh(menu, TRUE);
-			redraw_stuff(player->upkeep);
 		}
 	}
 
@@ -1078,17 +996,33 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 {
 	menu_iter menu_f = { get_item_tag, get_item_validity, get_item_display,
 						 get_item_action, 0 };
-	struct menu *m = menu_new(MN_SKIN_SCROLL, &menu_f);
+	struct menu *m = menu_new(MN_SKIN_OBJECT, &menu_f);
 	ui_event evt = { 0 };
 	int ex_offset_ctr = 0;
+	int row, inscrip;
+	struct object *obj = NULL;
 
 	/* Set up the menu */
 	menu_setpriv(m, num_obj, items);
-	menu_header();
-	m->header = (const char *)header;
 	m->selections = lower_case;
-	m->flags = MN_PVT_TAGS;
-	m->cmd_keys = "/.-0123456789";
+	m->switch_keys = "/.-";
+	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS);
+
+	/* Get inscriptions */
+	m->inscriptions = mem_zalloc(10 * sizeof(char));
+	for (inscrip = 0; inscrip < 10; inscrip++) {
+		/* Look up the tag */
+		if (get_tag(&obj, (char)inscrip + '0', item_cmd,
+					item_mode & QUIVER_TAGS)) {
+			int i;
+			for (i = 0; i < num_obj; i++)
+				if (items[i].object == obj)
+						break;
+
+			if (i < num_obj)
+				m->inscriptions[inscrip] = get_item_tag(m, i);
+		}
+	}
 
 	/* Set up the item list variables */
 	selection = NULL;
@@ -1122,15 +1056,56 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 		if (strlen(header) > sizeof(header) - 2) break;
 	}
 	area.width = MAX(max_len, strlen(header));
+
+	for (row = area.row; row <= area.page_rows; row++)
+		prt("", row, MAX(0, area.col - 1));
+
 	menu_layout(m, &area);
 
 	/* Choose */
 	evt = menu_select(m, 0, TRUE);
 
+	/* Clean up */
+	mem_free(m->inscriptions);
 	mem_free(m);
 
+	/* Deal with menu switch */
+	if (evt.type == EVT_SWITCH && !newmenu) {
+		bool left = evt.key.code == ARROW_LEFT;
+
+		if (player->upkeep->command_wrk == USE_EQUIP) {
+			if (!left) {
+				if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
+				else if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
+				else if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
+			}
+		} else if (player->upkeep->command_wrk == USE_INVEN) {
+			if (left) {
+				if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+			} else {
+				if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
+				else if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
+			}
+		} else if (player->upkeep->command_wrk == USE_QUIVER) {
+			if (left) {
+				if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
+				else if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+			} else {
+				if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
+			}
+		} else if (player->upkeep->command_wrk == USE_FLOOR) {
+			if (left) {
+				if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
+				else if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
+				else if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+			}
+		}
+
+		newmenu = TRUE;
+	}
+
 	/* Result */
-	return (evt.type == EVT_ESCAPE) ? NULL : selection;
+	return selection;
 }
 
 
@@ -1282,10 +1257,6 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	/* Require at least one legal choice */
 	if (allow_inven || allow_equip || allow_quiver || allow_floor) {
-		int j;
-		int ni = 0;
-		int ne = 0;
-
 		/* Start where requested if possible */
 		if ((player->upkeep->command_wrk == USE_EQUIP) && allow_equip)
 			player->upkeep->command_wrk = USE_EQUIP;
@@ -1315,6 +1286,10 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 			player->upkeep->command_wrk = USE_INVEN;
 
 		while (TRUE) {
+			int j;
+			int ni = 0;
+			int ne = 0;
+
 			/* If inven or equip is on the main screen, and only one of them
 			 * is slated for a subwindow, we should show the opposite there */
 			for (j = 0; j < ANGBAND_TERM_MAX; j++) {
@@ -1330,16 +1305,24 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 			/* Are we in the situation where toggling makes sense? */
 			if ((ni && !ne) || (!ni && ne)) {
-				if ((player->upkeep->command_wrk == USE_EQUIP) &&
-					((ne && !toggle) || (ni && toggle))) {
-					/* Main screen is equipment, so is subwindow */
-					toggle_inven_equip();
-					toggle = !toggle;
-				} else if ((player->upkeep->command_wrk == USE_INVEN) &&
-						   ((ni && !toggle) || (ne && toggle))) {
-					/* Main screen is inventory, so is subwindow */
-					toggle_inven_equip();
-					toggle = !toggle;
+				if (player->upkeep->command_wrk == USE_EQUIP) {
+					if ((ne && !toggle) || (ni && toggle)) {
+						/* Main screen is equipment, so is subwindow */
+						toggle_inven_equip();
+						toggle = !toggle;
+					}
+				} else if (player->upkeep->command_wrk == USE_INVEN) {
+					if ((ni && !toggle) || (ne && toggle)) {
+						/* Main screen is inventory, so is subwindow */
+						toggle_inven_equip();
+						toggle = !toggle;
+					}
+				} else {
+					/* Quiver or floor, go back to the original */
+					if (toggle) {
+						toggle_inven_equip();
+						toggle = !toggle;
+					}
 				}
 			}
 
@@ -1364,17 +1347,20 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 				build_obj_list(f2, floor_list, tester_m, olist_mode);
 
 			/* Show the prompt */
-			if (pmt)
+			menu_header();
+			if (pmt) {
 				prt(pmt, 0, 0);
+				prt(header, 0, strlen(pmt) + 1);
+			}
+
+			/* No menu change request */
+			newmenu = FALSE;
 
 			/* Get an item choice */
 			*choice = item_menu(cmd, MAX(strlen(pmt), 15), mode);
 
 			/* Fix the screen */
 			screen_load();
-
-			/* Toggle again if needed */
-			if (toggle) toggle_inven_equip();
 
 			/* Update */
 			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
@@ -1383,7 +1369,11 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 			/* Clear the prompt line */
 			prt("", 0, 0);
 
-			break;
+			/* We have a selection, or are backing out */
+			if (*choice || !newmenu) {
+				if (toggle) toggle_inven_equip();
+				break;
+			}
 		}
 	} else {
 		/* Warning if needed */

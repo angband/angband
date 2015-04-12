@@ -240,6 +240,101 @@ static const menu_skin menu_skin_scroll =
 };
 
 
+/*** Object menu skin ***/
+
+/**
+ * Find the position of a cursor given a screen address
+ */
+static int object_skin_get_cursor(int row, int col, int n, int top, region *loc)
+{
+	int cursor = row - loc->row + top;
+	if (cursor >= n) cursor = n - 1;
+
+	return cursor;
+}
+
+
+/**
+ * Display current view of a skin
+ */
+static void object_skin_display(struct menu *menu, int cursor, int *top, region *loc)
+{
+	int col = loc->col;
+	int row = loc->row;
+	int rows_per_page = loc->page_rows;
+	int n = menu->filter_list ? menu->filter_count : menu->count;
+	int i;
+
+	/* Keep a certain distance from the top when possible */
+	if ((cursor <= *top) && (*top > 0))
+		*top = cursor - 1;
+
+	/* Keep a certain distance from the bottom when possible */
+	if (cursor >= *top + (rows_per_page - 1))
+		*top = cursor - (rows_per_page - 1) + 1;
+
+	/* Limit the top to legal places */
+	*top = MIN(*top, n - rows_per_page);
+	*top = MAX(*top, 0);
+
+	for (i = 0; i < rows_per_page; i++) {
+		/* Blank all lines */
+		Term_erase(col, row + i, loc->width);
+		if (i < n) {
+			/* Redraw the line if it's within the number of menu items */
+			bool is_curs = (i == cursor - *top);
+			display_menu_row(menu, i + *top, *top, is_curs, row + i, col,
+							loc->width);
+		}
+	}
+
+	if (menu->cursor >= 0)
+		Term_gotoxy(col + menu->cursor_x_offset, row + cursor - *top);
+}
+
+static char object_skin_get_tag(struct menu *menu, int pos)
+{
+	if (menu->selections)
+		return menu->selections[pos - menu->top];
+
+	return 0;
+}
+
+static ui_event object_skin_process_direction(struct menu *m, int dir)
+{
+	ui_event out = EVENT_EMPTY;
+
+	/* Reject diagonals */
+	if (ddx[dir] && ddy[dir])
+		;
+
+	/* Prepare to switch menus */
+	else if (ddx[dir]) {
+		out.type = EVT_SWITCH;
+		out.key.code = ddx[dir] < 0 ? ARROW_LEFT : ARROW_RIGHT;
+	}
+
+	/* Move up or down to the next valid & visible row */
+	else if (ddy[dir]) {
+		m->cursor += ddy[dir];
+		out.type = EVT_MOVE;
+	}
+
+	return out;
+}
+
+/**
+ * Virtual function table for object menu skin
+ */
+static const menu_skin menu_skin_object =
+{
+	object_skin_get_cursor,
+	object_skin_display,
+	object_skin_get_tag,
+	object_skin_process_direction
+};
+
+
 /*** Multi-column menus ***/
 
 static int columns_get_cursor(int row, int col, int n, int top, region *loc)
@@ -365,6 +460,9 @@ static int get_cursor_key(struct menu *menu, int top, struct keypress key)
 
 	if (menu->flags & MN_CASELESS_TAGS)
 		key.code = toupper((unsigned char) key.code);
+
+	if ((menu->flags & MN_INSCRIP_TAGS) && isdigit((unsigned char)key.code))
+		key.code = menu->inscriptions[D2I(key.code)];
 
 	if (menu->flags & MN_NO_TAGS) {
 		return -1;
@@ -640,7 +738,7 @@ ui_event menu_select(struct menu *menu, int notify, bool popup)
 
 	assert(menu->active.width != 0 && menu->active.page_rows != 0);
 
-	notify |= (EVT_SELECT | EVT_ESCAPE);
+	notify |= (EVT_SELECT | EVT_ESCAPE | EVT_SWITCH);
 	if (popup)
 		screen_save();
 
@@ -658,10 +756,20 @@ ui_event menu_select(struct menu *menu, int notify, bool popup)
 			}
 			menu_handle_mouse(menu, &in, &out);
 		} else if (in.type == EVT_KBRD) {
+			/* Command key */
 			if (!no_act && menu->cmd_keys &&
-					strchr(menu->cmd_keys, (char)in.key.code) &&
-					menu_handle_action(menu, &in))
+				strchr(menu->cmd_keys, (char)in.key.code) &&
+				menu_handle_action(menu, &in))
 				continue;
+
+			/* Switch key */
+			if (!no_act && menu->switch_keys &&
+				strchr(menu->switch_keys, (char)in.key.code)) {
+				menu_handle_action(menu, &in);
+				if (popup)
+					screen_load();
+				return in;
+			}
 
 			menu_handle_keypress(menu, &in, &out);
 		} else if (in.type == EVT_RESIZE) {
@@ -718,6 +826,9 @@ static const menu_skin *menu_find_skin(skin_id id)
 	{
 		case MN_SKIN_SCROLL:
 			return &menu_skin_scroll;
+
+		case MN_SKIN_OBJECT:
+			return &menu_skin_object;
 
 		case MN_SKIN_COLUMNS:
 			return &menu_skin_column;
