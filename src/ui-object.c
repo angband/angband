@@ -699,8 +699,8 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 
 
 /**
- * Find the "first" inventory object with the given "tag" - now first in the
- * gear array, which is really arbitrary - NRM.
+ * Find the first object in the object list with the given "tag".  The object
+ * list needs to be built before this function is called.
  *
  * A "tag" is a char "n" appearing as "@n" anywhere in the
  * inscription of an object.
@@ -712,8 +712,6 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 				   bool quiver_tags)
 {
 	int i;
-	struct object *obj;
-	const char *s;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
@@ -723,13 +721,15 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 			*tagged_obj = player->upkeep->quiver[i];
 			return TRUE;
 		}
-		return FALSE;
 	}
 
-	/* Check every object */
-	for (obj = player->gear; obj; obj = obj->next) {
+	/* Check every object in the object list */
+	for (i = 0; i < num_obj; i++) {
+		const char *s;
+		struct object *obj = items[i].object;
+
 		/* Skip non-objects */
-		assert(obj->kind);
+		if (!obj) continue;
 
 		/* Skip empty inscriptions */
 		if (!obj->note) continue;
