@@ -281,7 +281,7 @@ s16b mod_slot_mult(int mod, int slot)
 	if (mod == OBJ_MOD_SHOTS) {
 		if (slot == EQUIP_WEAPON) return 0;
 		if (slot == EQUIP_BOW) return 1;
-		return 3;
+		return 4;
 	}
 
 	/* Extra might only works on bows */

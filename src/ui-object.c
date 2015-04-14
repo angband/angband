@@ -699,8 +699,8 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 
 
 /**
- * Find the "first" inventory object with the given "tag" - now first in the
- * gear array, which is really arbitrary - NRM.
+ * Find the first object in the object list with the given "tag".  The object
+ * list needs to be built before this function is called.
  *
  * A "tag" is a char "n" appearing as "@n" anywhere in the
  * inscription of an object.
@@ -712,8 +712,6 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 				   bool quiver_tags)
 {
 	int i;
-	struct object *obj;
-	const char *s;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
@@ -723,13 +721,15 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 			*tagged_obj = player->upkeep->quiver[i];
 			return TRUE;
 		}
-		return FALSE;
 	}
 
-	/* Check every object */
-	for (obj = player->gear; obj; obj = obj->next) {
+	/* Check every object in the object list */
+	for (i = 0; i < num_obj; i++) {
+		const char *s;
+		struct object *obj = items[i].object;
+
 		/* Skip non-objects */
-		assert(obj->kind);
+		if (!obj) continue;
 
 		/* Skip empty inscriptions */
 		if (!obj->note) continue;
@@ -942,9 +942,13 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 {
 	struct object_menu_data *choice = menu_priv(menu);
 	char key = event->key.code;
+	bool is_harmless = item_mode & IS_HARMLESS ? TRUE : FALSE;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	if (event->type == EVT_SELECT) {
-		selection = choice[oid].object;
+		if (get_item_allow(choice[oid].object, cmd_lookup_key(item_cmd, mode),
+						   item_cmd, is_harmless))
+			selection = choice[oid].object;
 	}
 
 	if (event->type == EVT_KBRD) {
@@ -990,6 +994,49 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 }
 
 /**
+ * Show quiver missiles in full inventory
+ */
+static void item_menu_browser(int oid, void *data, const region *area)
+{
+	char tmp_val[80];
+	int count, j, i = num_obj;
+	int quiver_slots = (player->upkeep->quiver_cnt + z_info->stack_size - 1)
+		/ z_info->stack_size;
+
+	/* Set up to output below the menu */
+	text_out_hook = text_out_to_screen;
+	text_out_wrap = 0;
+	text_out_indent = area->col - 1;
+	text_out_pad = 1;
+	Term_gotoxy(area->col, area->row + area->page_rows);
+
+	/* Quiver may take multiple lines */
+	for (j = 0; j < quiver_slots; j++, i++) {
+		const char *fmt = "in Quiver: %d missile%s\n";
+		char letter = I2A(i);
+
+		/* Number of missiles in this "slot" */
+		if (j == quiver_slots - 1)
+			count = player->upkeep->quiver_cnt - (z_info->stack_size *
+													  (quiver_slots - 1));
+		else
+			count = z_info->stack_size;
+
+		/* Print the (disabled) label */
+		strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);
+		text_out_c(COLOUR_SLATE, tmp_val, area->row + i, area->col);
+
+		/* Print the count */
+		strnfmt(tmp_val, sizeof(tmp_val), fmt, count,
+				count == 1 ? "" : "s");
+		text_out_c(COLOUR_L_UMBER, tmp_val, area->row + i, area->col + 3);
+	}
+
+	text_out_pad = 0;
+	text_out_indent = 0;
+}
+
+/**
  * Display list items to choose from
  */
 struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
@@ -1007,6 +1054,8 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	m->selections = lower_case;
 	m->switch_keys = "/.-";
 	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS);
+	if (olist_mode & OLIST_QUIVER && player->upkeep->command_wrk == USE_INVEN)
+		m->browse_hook = item_menu_browser;
 
 	/* Get inscriptions */
 	m->inscriptions = mem_zalloc(10 * sizeof(char));
@@ -1184,6 +1233,9 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	if (mode & SHOW_EMPTY)
 		olist_mode |= OLIST_SEMPTY;
+
+	if (mode & SHOW_QUIVER)
+		olist_mode |= OLIST_QUIVER;
 
 	/* Paranoia XXX XXX XXX */
 	event_signal(EVENT_MESSAGE_FLUSH);
