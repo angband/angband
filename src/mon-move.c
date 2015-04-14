@@ -78,7 +78,6 @@ static byte side_dirs[20][8] = {
 	{9, 8, 6, 7, 3, 4, 2, 1}
 };
 
-
 /**
  * Calculate minimum and desired combat ranges.  -BR-
  */
@@ -262,10 +261,11 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 	int best_when = 0;
 	int best_cost = 999;
 	int best_direction = 0;
+	bool found_direction = FALSE;
 
 	int py = player->py, px = player->px;
 	int my = m_ptr->fy, mx = m_ptr->fx;
-
+    
 	/* Only use this algorithm for passwall monsters if near permanent walls,
 	 * to avoid getting snagged */
 	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL,
@@ -274,11 +274,9 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 
 	/* If the player has never been near this grid, abort */
 	if (c->squares[my][mx].when == 0) return FALSE;
-
 	/* Monster is too far away to notice the player */
 	if (c->squares[my][mx].cost > z_info->max_flow_depth) return FALSE;
 	if (c->squares[my][mx].cost > m_ptr->race->aaf) return FALSE;
-
 	/* If the player can see monster, run towards them */
 	if (square_isview(c, my, mx)) return FALSE;
 
@@ -303,11 +301,12 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 		best_when = c->squares[y][x].when;
 		best_cost = c->squares[y][x].cost;
 		best_direction = i;
+		found_direction = TRUE;
 	}
-
+	
 	/* Save the location to flow toward */
  	/* We multiply by 16 to angle slightly toward the player's actual location */
-	if (best_direction) {
+	if (found_direction) {
 		m_ptr->ty = py + 16 * ddy_ddd[best_direction];
 		m_ptr->tx = px + 16 * ddx_ddd[best_direction];
 		return TRUE;
