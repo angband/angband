@@ -942,9 +942,11 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 {
 	struct object_menu_data *choice = menu_priv(menu);
 	char key = event->key.code;
+	bool is_harmless = item_mode & IS_HARMLESS ? TRUE : FALSE;
 
 	if (event->type == EVT_SELECT) {
-		selection = choice[oid].object;
+		if (get_item_allow(choice[oid].object, key, item_cmd, is_harmless))
+			selection = choice[oid].object;
 	}
 
 	if (event->type == EVT_KBRD) {
