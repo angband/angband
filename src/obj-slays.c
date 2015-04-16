@@ -163,15 +163,15 @@ void free_brand(struct brand *source)
  */
 bool append_random_brand(struct brand *current, char **name)
 {
-	int pick;
+	int pick, mult = 2 + randint0(2);
 	struct brand *b, *b_last = NULL;
 
 	pick = randint0(N_ELEMENTS(brand_names));
 	for (b = current; b; b = b->next) {
-		/* If we get the same one, fail */
+		/* If we get the same one or a smaller multiplier, fail */
 		if (streq(b->name, brand_names[pick].name) &&
 			(b->element == pick) && 
-			(b->multiplier == 3))
+			(b->multiplier >= mult))
 			return FALSE;
 
 		/* Remember the last one */
@@ -182,7 +182,7 @@ bool append_random_brand(struct brand *current, char **name)
 	b = mem_zalloc(sizeof(*b));
 	b->name = string_make(brand_names[pick].name);
 	b->element = pick;
-	b->multiplier = 3;
+	b->multiplier = mult;
 	if (b_last) b_last->next = b;
 	*name = b->name;
 
