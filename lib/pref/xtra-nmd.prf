@@ -43,7 +43,7 @@ monster:<player>:0x9B:0x92
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Hobbit] ]
 monster:<player>:0x9B:0x93
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Gnome] ]
-monster:<player>:0x9B:0x9C
+monster:<player>:0x9B:0x94
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Dwarf] ]
 monster:<player>:0x9B:0x95
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Half-Orc] ]
