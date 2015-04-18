@@ -1123,7 +1123,11 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 		bool left = evt.key.code == ARROW_LEFT;
 
 		if (player->upkeep->command_wrk == USE_EQUIP) {
-			if (!left) {
+			if (left) {
+				if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
+				else if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
+				else if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
+			} else {
 				if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
 				else if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
 				else if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
@@ -1131,22 +1135,32 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 		} else if (player->upkeep->command_wrk == USE_INVEN) {
 			if (left) {
 				if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+				else if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
+				else if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
 			} else {
 				if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
 				else if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
+				else if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
 			}
 		} else if (player->upkeep->command_wrk == USE_QUIVER) {
 			if (left) {
 				if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
 				else if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+				else if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
 			} else {
 				if (f1 <= f2) player->upkeep->command_wrk = USE_FLOOR;
+				else if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+				else if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
 			}
 		} else if (player->upkeep->command_wrk == USE_FLOOR) {
 			if (left) {
 				if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
 				else if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
 				else if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+			} else {
+				if (e1 <= e2) player->upkeep->command_wrk = USE_EQUIP;
+				else if (i1 <= i2) player->upkeep->command_wrk = USE_INVEN;
+				else if (q1 <= q2) player->upkeep->command_wrk = USE_QUIVER;
 			}
 		}
 
