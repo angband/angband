@@ -1866,10 +1866,9 @@ properties:50:5:500
 alloc:40:50 to 100
 pile:25:2
 power:22
-effect:ENCHANT:TOHIT
+effect:ENCHANT:TOBOTH
 dice:1d3
-effect:ENCHANT:TODAM
-dice:1d3
+
 
 name:274:*Enchant Armour*
 graphics:?:w

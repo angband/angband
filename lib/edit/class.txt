@@ -1007,9 +1007,7 @@ desc:  A failed attempt to recharge destroys one wand or staff from the stack.
 #D:  Permanent curses are not affected.
 
 spell:Enchant Weapon:35:50:80:230
-effect:ENCHANT:TOHIT
-dice:1d4
-effect:ENCHANT:TODAM
+effect:ENCHANT:TOBOTH
 dice:1d4
 desc:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
 desc: Also gives a chance to break a curse.
@@ -1354,10 +1352,7 @@ expr:B:PLAYER_LEVEL:/ 20 - 1
 desc:Attempts to improve the armour class bonus of a piece of armour.
 
 spell:Enchant Weapon:33:55:90:90
-effect:ENCHANT:TOHIT
-dice:$B+1d4
-expr:B:PLAYER_LEVEL:/ 20 - 1
-effect:ENCHANT:TODAM
+effect:ENCHANT:TOBOTH
 dice:$B+1d4
 expr:B:PLAYER_LEVEL:/ 20 - 1
 desc:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
@@ -1783,10 +1778,7 @@ expr:B:PLAYER_LEVEL:/ 20 - 1
 desc:Attempts to improve the armour class bonus of a piece of armour.
 
 spell:Enchant Weapon:34:50:90:60
-effect:ENCHANT:TOHIT
-dice:$B+1d4
-expr:B:PLAYER_LEVEL:/ 20 - 1
-effect:ENCHANT:TODAM
+effect:ENCHANT:TOBOTH
 dice:$B+1d4
 expr:B:PLAYER_LEVEL:/ 20 - 1
 desc:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
@@ -2203,9 +2195,7 @@ desc: level and decrease with level of wand or staff and number of charges.
 desc:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 spell:Enchant Weapon:40:70:80:200
-effect:ENCHANT:TOHIT
-dice:1d4
-effect:ENCHANT:TODAM
+effect:ENCHANT:TOBOTH
 dice:1d4
 desc:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
 desc: Also gives a chance to break a curse.
