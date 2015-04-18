@@ -1094,7 +1094,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	}
 
 	/* Set up the menu region */
-	area.page_rows = m->count + 1;
+	area.page_rows = m->count;
 	area.row = 1;
 	area.col = MIN(Term->wid - 1 - (int) max_len - ex_width, prompt_size - 2);
 	if (area.col <= 3)
