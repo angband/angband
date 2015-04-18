@@ -35,8 +35,8 @@ void copy_slay(struct slay **dest, struct slay *source);
 void copy_brand(struct brand **dest, struct brand *source);
 void free_slay(struct slay *source);
 void free_brand(struct brand *source);
-bool append_random_brand(struct brand *current, char **name);
-bool append_random_slay(struct slay *current, char **name);
+bool append_random_brand(struct brand **current, char **name);
+bool append_random_slay(struct slay **current, char **name);
 int brand_count(struct brand *brands);
 int slay_count(struct slay *slays);
 struct brand *brand_collect(const object_type *obj1, const object_type *obj2,

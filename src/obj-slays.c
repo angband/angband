@@ -161,13 +161,13 @@ void free_brand(struct brand *source)
  * \param current the list of brands the object already has
  * \param name the name to report for randart logging
  */
-bool append_random_brand(struct brand *current, char **name)
+bool append_random_brand(struct brand **current, char **name)
 {
 	int pick, mult = 2 + randint0(2);
 	struct brand *b, *b_last = NULL;
 
 	pick = randint0(N_ELEMENTS(brand_names));
-	for (b = current; b; b = b->next) {
+	for (b = *current; b; b = b->next) {
 		/* If we get the same one or a smaller multiplier, fail */
 		if (streq(b->name, brand_names[pick].name) &&
 			(b->element == pick) && 
@@ -183,7 +183,10 @@ bool append_random_brand(struct brand *current, char **name)
 	b->name = string_make(brand_names[pick].name);
 	b->element = pick;
 	b->multiplier = mult;
-	if (b_last) b_last->next = b;
+	if (b_last)
+		b_last->next = b;
+	else
+		*current = b;
 	*name = b->name;
 
 	return TRUE;
@@ -196,13 +199,13 @@ bool append_random_brand(struct brand *current, char **name)
  * \param current the list of slays the object already has
  * \param name the name to report for randart logging
  */
-bool append_random_slay(struct slay *current, char **name)
+bool append_random_slay(struct slay **current, char **name)
 {
 	int pick;
 	struct slay *s, *s_last = NULL;
 
 	pick = randint0(N_ELEMENTS(slay_names));
-	for (s = current; s; s = s->next) {
+	for (s = *current; s; s = s->next) {
 		/* If we get the same race, check the multiplier */
 		if (streq(s->name, slay_names[pick].name) &&
 			(s->race_flag == slay_names[pick].race_flag)) {
@@ -224,7 +227,10 @@ bool append_random_slay(struct slay *current, char **name)
 	s->name = string_make(slay_names[pick].name);
 	s->race_flag = slay_names[pick].race_flag;
 	s->multiplier = slay_names[pick].multiplier;
-	if (s_last) s_last->next = s;
+	if (s_last)
+		s_last->next = s;
+	else
+		*current = s;
 	*name = s->name;
 
 	return TRUE;

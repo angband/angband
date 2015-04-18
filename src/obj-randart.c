@@ -1691,7 +1691,7 @@ static void add_brand(artifact_type *a_ptr)
 	char *name;
 
 	for (count = 0; count < MAX_TRIES; count++) {
-		if (!append_random_brand(a_ptr->brands, &name)) continue;
+		if (!append_random_brand(&a_ptr->brands, &name)) continue;
 		file_putf(log_file, "Adding brand: %s\n", name);
 		return;
 	}
@@ -1706,7 +1706,7 @@ static void add_slay(artifact_type *a_ptr)
 	char *name;
 
 	for (count = 0; count < MAX_TRIES; count++) {
-		if (!append_random_slay(a_ptr->slays, &name)) continue;
+		if (!append_random_slay(&a_ptr->slays, &name)) continue;
 		file_putf(log_file, "Adding slay: %s\n", name);
 		return;
 	}
