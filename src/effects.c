@@ -1626,6 +1626,7 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
  */
 #define ENCH_TOHIT   0x01
 #define ENCH_TODAM   0x02
+#define ENCH_TOBOTH  0x03
 #define ENCH_TOAC	0x04
 
 /**
@@ -1782,6 +1783,10 @@ bool enchant(object_type *o_ptr, int n, int eflag)
  * Enchant an item (in the inventory or on the floor)
  * Note that "num_ac" requires armour, else weapon
  * Returns TRUE if attempted, FALSE if cancelled
+ *
+ * Enchanting with the TOBOTH flag will try to enchant
+ * both to_hit and to_dam with the same flag.  This
+ * may not be the most desirable behavior (ACB).
  */
 bool enchant_spell(int num_hit, int num_dam, int num_ac)
 {
@@ -1810,8 +1815,9 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 			   ((obj->number > 1) ? "" : "s"));
 
 	/* Enchant */
-	if (enchant(obj, num_hit, ENCH_TOHIT)) okay = TRUE;
-	if (enchant(obj, num_dam, ENCH_TODAM)) okay = TRUE;
+	if (enchant(obj, num_hit, ENCH_TOBOTH)) okay = TRUE;
+	else if (enchant(obj, num_hit, ENCH_TOHIT)) okay = TRUE;
+	else if (enchant(obj, num_dam, ENCH_TODAM)) okay = TRUE;
 	if (enchant(obj, num_ac, ENCH_TOAC)) okay = TRUE;
 
 	/* Failure */
@@ -1902,11 +1908,15 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	bool used = context->aware ? FALSE : TRUE;
 	context->ident = TRUE;
 
-	if (context->p1 & ENCH_TOHIT) {
+	if (context->p1 & ENCH_TOBOTH) {
+		if (enchant_spell(value, value, 0))
+			used = TRUE;
+	}
+	else if (context->p1 & ENCH_TOHIT) {
 		if (enchant_spell(value, 0, 0))
 			used = TRUE;
 	}
-	if (context->p1 & ENCH_TODAM) {
+	else if (context->p1 & ENCH_TODAM) {
 		if (enchant_spell(0, value, 0))
 			used = TRUE;
 	}
@@ -4286,7 +4296,9 @@ int effect_param(const char *type)
 			return val;
 
 		/* Enchant type name - not worth a separate function */
-		if (streq(type, "TOHIT"))
+		if (streq(type, "TOBOTH"))
+			val = ENCH_TOBOTH;
+		else if (streq(type, "TOHIT"))
 			val = ENCH_TOHIT;
 		else if (streq(type, "TODAM"))
 			val = ENCH_TODAM;
