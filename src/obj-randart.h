@@ -1,6 +1,6 @@
 /**
-   \file obj-randart.h
-   \brief Random artifact generation
+ * \file obj-randart.h
+ * \brief Random artifact generation
  *
  * Copyright (c) 1998 Greg Wooledge, Ben Harrison, Robert Ruhlmann
  * Copyright (c) 2001 Chris Carr, Chris Robertson
