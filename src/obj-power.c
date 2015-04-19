@@ -346,7 +346,7 @@ static s32b slay_power(const object_type *obj, int p, int verbose,
 	}
 
 	/* If there are no slays or brands return */
-	if (num_slays + num_brands == 0)
+	if ((num_slays + num_brands + num_kills) == 0)
 		return p;
 
 	/* Look in the cache to see if we know this one yet */
