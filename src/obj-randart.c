@@ -2386,6 +2386,41 @@ static void do_curse(struct artifact *art)
 }
 
 /**
+ * Revert an artifact to where it started
+ */
+static void revert_artifact(struct artifact *art, struct artifact old_art,
+							struct brand *brands, struct slay *slays)
+{
+	/* Go to the last existing brand and remove everything after it */
+	if (brands) {
+		struct brand *b = art->brands;
+		while (brands->next) {
+			b = b->next;
+			brands = brands->next;
+		}
+		if (b->next) {
+			free_brand(b->next);
+			b->next = NULL;
+		}
+	}
+
+	/* Go to the last existing slay and remove everything after it */
+	if (slays) {
+		struct slay *s = art->slays;
+		while (slays->next) {
+			s = s->next;
+			slays = slays->next;
+		}
+		if (s->next) {
+			free_slay(s->next);
+			s->next = NULL;
+		}
+	}
+
+	*art = old_art;
+}
+
+/**
  * Scramble an artifact.  Regular artifacts have their base type changed at
  * random, whereas special artifacts keep theirs.
  *
@@ -2420,8 +2455,7 @@ static void scramble_artifact(int a_idx)
 	power = base_power[a_idx];
 
 	/* If it has a restricted ability then don't randomize it. */
-	if (power > INHIBIT_POWER)
-	{
+	if (power > INHIBIT_POWER) {
 		file_putf(log_file, "Skipping artifact number %d - too powerful to randomize!", a_idx);
 		return;
 	}
@@ -2542,7 +2576,7 @@ static void scramble_artifact(int a_idx)
 	ap = artifact_power(a_idx, TRUE);
 	if (ap > (power * 23) / 20 + 1)	{
 		/* too powerful -- put it back */
-		*art = a_old;
+		revert_artifact(art, a_old, NULL, NULL);
 		file_putf(log_file, "--- Supercharge is too powerful! Rolling back.\n");
 	}
 
@@ -2564,7 +2598,7 @@ static void scramble_artifact(int a_idx)
 			/* Otherwise go back and try again */
 			else {
 				file_putf(log_file, "Inhibited ability added - rolling back\n");
-				*art = a_old;
+				revert_artifact(art, a_old, NULL, NULL);
 			}
 		} while (!success);
 
@@ -2576,8 +2610,13 @@ static void scramble_artifact(int a_idx)
 		 * original's in terms of overall power/usefulness.
 		 */
 		for (tries = 0; tries < MAX_TRIES; tries++) {
+			struct brand *b = NULL;
+			struct slay *s = NULL;
+
 			/* Copy artifact info temporarily. */
 			a_old = *art;
+			copy_brand(&b, art->brands);
+			copy_slay(&s, art->slays);
 
 			add_ability(art, power);
 			ap = artifact_power(a_idx, TRUE);
@@ -2585,7 +2624,9 @@ static void scramble_artifact(int a_idx)
 			/* CR 11/14/01 - pushed both limits up by about 5% */
 			if (ap > (power * 23) / 20 + 1) {
 				/* too powerful -- put it back */
-				*art = a_old;
+				revert_artifact(art, a_old, b, s);
+				free_brand(b);
+				free_slay(s);
 				file_putf(log_file, "--- Too powerful!  Rolling back.\n");
 				continue;
 			} else if (ap >= (power * 19) / 20) {	/* just right */
