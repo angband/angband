@@ -236,9 +236,9 @@ typedef struct
  */
 static const element_type elements[] =
 {
-    #define ELEM(a, b, c, d, e, f, g, h, i, col) {ELEM_##a, b},
-    #include "list-elements.h"
-    #undef ELEM
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) {ELEM_##a, b},
+	#include "list-elements.h"
+	#undef ELEM
 };
 
 void fake_pvals_to_mods(struct artifact *a)
@@ -1815,7 +1815,7 @@ static void add_activation(artifact_type *a_ptr, s32b target_power)
 	/* Work out the maximum allowed activation power */
 	for (i = 0; i < z_info->act_max; i++) {
 		struct activation *act = &activations[i];
-		if (act->power > max_effect)
+		if ((act->power > max_effect) && (act->power < INHIBIT_POWER))
 			max_effect = act->power;
 	}
 
@@ -1828,7 +1828,8 @@ static void add_activation(artifact_type *a_ptr, s32b target_power)
 		 * Check that activation is useful but not exploitable,
 		 * and roughly proportionate to the overall power
 		 */
-		if (100 * p / max_effect > 50 *	target_power / max_power &&
+		if (p < INHIBIT_POWER &&
+			100 * p / max_effect > 50 * target_power / max_power &&
 			100 * p / max_effect < 200 * target_power / max_power) {
 			file_putf(log_file, "Adding activation effect %d\n", x);
 			a_ptr->activation = &activations[x];
