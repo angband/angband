@@ -2546,7 +2546,9 @@ static void scramble_artifact(int a_idx)
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 			art->modifiers[i] = 0;
 		wipe_brands(art->brands);
+		art->brands = NULL;
 		wipe_slays(art->slays);
+		art->slays = NULL;
 
 		/* Clear the activations for rings and amulets but not lights */
 		if ((art->tval != TV_LIGHT) && art->activation)
