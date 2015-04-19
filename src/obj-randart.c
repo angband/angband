@@ -269,7 +269,7 @@ void mods_to_fake_pvals(struct artifact *a)
 			for (j = 0; j < 3; j++) {
 				/* If the mod value is already there, refer to it */
 				if (a->modifiers[i] == fake_pval[j]) {
-					a->modifiers[i] = j;
+					a->modifiers[i] = j + 1;
 					break;
 				}
 				/* If that failed, and we have a zero position, use that */
