@@ -215,6 +215,7 @@ bool append_random_slay(struct slay **current, char **name)
 
 			/* Greater multiplier, increase and accept */
 			s->multiplier = slay_names[pick].multiplier;
+			*name = s->name;
 			return TRUE;
 		}
 
