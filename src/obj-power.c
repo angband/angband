@@ -287,8 +287,8 @@ static int extra_shots_power(const object_type *obj, int p, bool known)
 			return p;
 		} else if (obj->modifiers[OBJ_MOD_SHOTS] > 0) {
 			int q = obj->modifiers[OBJ_MOD_SHOTS];
-			p += q;
-			log_obj(format("Add %d power for extra shots, total is %d\n",q, p));
+			p = p * (1 + q);
+			log_obj(format("Multiplying power by %d for extra shots, total is %d\n", 1 + q, p));
 		}
 	}
 	return p;
