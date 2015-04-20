@@ -296,6 +296,7 @@ static s32b artifact_power(int a_idx, bool translate)
 	struct object obj;
 	char buf[256];
 	bool fail = FALSE;
+	s32b power;
 
 	file_putf(log_file, "********** ENTERING EVAL POWER ********\n");
 	file_putf(log_file, "Artifact index is %d\n", a_idx);
@@ -311,7 +312,11 @@ static s32b artifact_power(int a_idx, bool translate)
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
-	return object_power(&obj, verbose, log_file, TRUE);
+	power = object_power(&obj, verbose, log_file, TRUE);
+
+	if (obj.slays) free_slay(obj.slays);
+	if (obj.brands) free_brand(obj.brands);
+	return power;
 }
 
 
@@ -2396,6 +2401,12 @@ static void copy_artifact(struct artifact *a_src_ptr,
 {
 	int i;
 
+	if (a_dst_ptr->slays) {
+		free_slay(a_dst_ptr->slays);
+	}
+	if (a_dst_ptr->brands) {
+		free_brand(a_dst_ptr->brands);
+	}
 	/* Copy the structure */
 	memcpy(a_dst_ptr, a_src_ptr, sizeof(struct artifact));
 
