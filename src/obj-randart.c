@@ -2642,6 +2642,14 @@ static void scramble_artifact(int a_idx)
 			 */
 			file_putf(log_file, "Warning!  Couldn't get appropriate power level on artifact.\n");
 	}
+
+	/* Cleanup a_old */
+	if (a_old->slays) {
+		free_slay(a_old->slays);
+	}
+	if (a_old->brands) {
+		free_brand(a_old->brands);
+	}
 	mem_free(a_old);
 
 	/* Set depth and rarity info according to power */
