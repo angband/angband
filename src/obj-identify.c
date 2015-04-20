@@ -63,7 +63,9 @@ bool easy_know(const struct object *obj)
  */
 bool object_all_flags_are_known(const struct object *obj)
 {
-	return easy_know(obj) || of_is_full(obj->known_flags) ? TRUE : FALSE;
+	if (of_is_empty(obj->flags)) return TRUE;
+
+	return easy_know(obj) || of_is_subset(obj->known_flags, obj->flags) ? TRUE : FALSE;
 }
 
 
@@ -79,7 +81,9 @@ bool object_all_elements_are_known(const struct object *obj)
 	if (easy_know(obj)) return TRUE;
 
 	for (i = 0; i < ELEM_MAX; i++)
-		if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
+		/* Only check if the flags are set if there's someting to look at */
+		if (obj->el_info[i].res_level != 0)
+			if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
 
 	return TRUE;
 }
@@ -106,11 +110,21 @@ bool object_all_brands_and_slays_are_known(const struct object *obj)
 /**
  * Is the player aware of all of an object's miscellaneous proerties?
  *
+ * Hack, there's no good way right now to only check the flags that have
+ * actual properties.  Or at least I don't know how to do it.  For now
+ * this needs to be brute forced until rune-based ID comes into play (ACB)
+ *
  * \param obj is the object
  */
 bool object_all_miscellaneous_are_known(const struct object *obj)
 {
-	return easy_know(obj) || id_is_full(obj->id_flags) ? TRUE : FALSE;
+	if ((obj->to_a) && !id_has(obj->id_flags, ID_TO_A)) return FALSE;
+	if ((obj->to_h) && !id_has(obj->id_flags, ID_TO_H)) return FALSE;
+	if ((obj->to_d) && !id_has(obj->id_flags, ID_TO_D)) return FALSE;
+	if ((obj->effect) && !id_has(obj->id_flags, ID_EFFECT)) return FALSE;
+	if ((obj->pval) && !id_has(obj->id_flags, ID_PVAL)) return FALSE;
+	
+	return TRUE;
 }
 
 /**
@@ -119,11 +133,13 @@ bool object_all_miscellaneous_are_known(const struct object *obj)
  * \param obj is the object
  */
 bool object_all_but_flavor_is_known(const struct object *obj)
-{
+{		
+	if (streq(obj->kind->name, "Accuracy"))
 	if (!object_all_flags_are_known(obj)) return FALSE;
 	if (!object_all_elements_are_known(obj)) return FALSE;
 	if (!object_all_brands_and_slays_are_known(obj)) return FALSE;
 	if (!object_all_miscellaneous_are_known(obj)) return FALSE;
+
 	return TRUE;
 }
 
@@ -595,8 +611,8 @@ void object_notice_attack_plusses(struct object *obj)
 
 	assert(obj && obj->kind);
 
-	if (object_attack_plusses_are_visible(obj)) return;
-
+	if (object_attack_plusses_are_visible(obj) && object_flavor_is_aware(obj)) return;
+	
 	/* This looks silly while these only ever appear together */
 	to_hit = object_add_id_flag(obj, ID_TO_H);
 	to_dam = object_add_id_flag(obj, ID_TO_D);
@@ -613,6 +629,8 @@ void object_notice_attack_plusses(struct object *obj)
 		msgt(MSG_PSEUDOID, "Your %s glow%s.", o_name,
 			 ((obj->number > 1) ? "" : "s"));
 
+	if (object_all_but_flavor_is_known(obj)) object_flavor_aware(obj);
+			 
 	player->upkeep->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
