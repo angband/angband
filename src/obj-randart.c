@@ -24,6 +24,7 @@
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-randart.h"
 #include "obj-slays.h"
@@ -2386,38 +2387,35 @@ static void do_curse(struct artifact *art)
 }
 
 /**
- * Revert an artifact to where it started
+ * Copy artifact fields from a_src_ptr to a_dst_ptr, and fake pvals from
+ * fake_pval_src to fake_pval_dst
  */
-static void revert_artifact(struct artifact *art, struct artifact old_art,
-							struct brand *brands, struct slay *slays)
+
+static void copy_artifact(struct artifact *a_src_ptr, 
+	struct artifact *a_dst_ptr, int *fake_pval_src, int *fake_pval_dst)
 {
-	/* Go to the last existing brand and remove everything after it */
-	if (brands) {
-		struct brand *b = art->brands;
-		while (brands->next) {
-			b = b->next;
-			brands = brands->next;
-		}
-		if (b->next) {
-			free_brand(b->next);
-			b->next = NULL;
-		}
+	int i;
+
+	/* Copy the structure */
+	memcpy(a_dst_ptr, a_src_ptr, sizeof(struct artifact));
+
+	a_dst_ptr->next = NULL;
+	a_dst_ptr->slays = NULL;
+	a_dst_ptr->brands = NULL;
+	a_dst_ptr->activation = NULL;
+	a_dst_ptr->alt_msg = NULL;
+
+	if (a_src_ptr->slays) {
+		copy_slay(&a_dst_ptr->slays, a_src_ptr->slays);
+	}
+	if (a_src_ptr->brands) {
+		copy_brand(&a_dst_ptr->brands, a_src_ptr->brands);
 	}
 
-	/* Go to the last existing slay and remove everything after it */
-	if (slays) {
-		struct slay *s = art->slays;
-		while (slays->next) {
-			s = s->next;
-			slays = slays->next;
-		}
-		if (s->next) {
-			free_slay(s->next);
-			s->next = NULL;
-		}
+	/* Save contents of fake_pval */
+	for (i = 0; i < 3; i++) {
+		fake_pval_dst[i] = fake_pval_src[i];
 	}
-
-	*art = old_art;
 }
 
 /**
@@ -2432,7 +2430,7 @@ static void scramble_artifact(int a_idx)
 {
 	struct artifact *art = &a_info[a_idx];
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
-	struct artifact a_old;
+	struct artifact *a_old = mem_zalloc(sizeof *a_old);
 	s32b power;
 	int tries = 0;
 	byte alloc_old, base_alloc_old, alloc_new;
@@ -2440,6 +2438,7 @@ static void scramble_artifact(int a_idx)
 	bool curse_me = FALSE;
 	bool success = FALSE;
 	int i;
+	int fake_pval_save[3] = {0, 0, 0};
 
 	bool special_artifact = kf_has(kind->kind_flags, KF_INSTA_ART);
 
@@ -2569,21 +2568,21 @@ static void scramble_artifact(int a_idx)
 	build_freq_table(art, art_freq);
 
 	/* Copy artifact info temporarily. */
-	a_old = *art;
+	copy_artifact(art, a_old, fake_pval, fake_pval_save);
 
 	/* Give this artifact a shot at being supercharged */
 	try_supercharge(art, power);
 	ap = artifact_power(a_idx, TRUE);
 	if (ap > (power * 23) / 20 + 1)	{
 		/* too powerful -- put it back */
-		revert_artifact(art, a_old, NULL, NULL);
+		copy_artifact(a_old, art, fake_pval_save, fake_pval);
 		file_putf(log_file, "--- Supercharge is too powerful! Rolling back.\n");
 	}
 
 	/* First draft: add two abilities, then curse it three times. */
 	if (curse_me) {
 		/* Copy artifact info temporarily. */
-		a_old = *art;
+		copy_artifact(art, a_old, fake_pval, fake_pval_save);
 		do {
 			add_ability(art, power);
 			add_ability(art, power);
@@ -2598,7 +2597,7 @@ static void scramble_artifact(int a_idx)
 			/* Otherwise go back and try again */
 			else {
 				file_putf(log_file, "Inhibited ability added - rolling back\n");
-				revert_artifact(art, a_old, NULL, NULL);
+				copy_artifact(a_old, art, fake_pval_save, fake_pval);
 			}
 		} while (!success);
 
@@ -2610,13 +2609,8 @@ static void scramble_artifact(int a_idx)
 		 * original's in terms of overall power/usefulness.
 		 */
 		for (tries = 0; tries < MAX_TRIES; tries++) {
-			struct brand *b = NULL;
-			struct slay *s = NULL;
-
 			/* Copy artifact info temporarily. */
-			a_old = *art;
-			copy_brand(&b, art->brands);
-			copy_slay(&s, art->slays);
+			copy_artifact(art, a_old, fake_pval, fake_pval_save);
 
 			add_ability(art, power);
 			ap = artifact_power(a_idx, TRUE);
@@ -2624,9 +2618,7 @@ static void scramble_artifact(int a_idx)
 			/* CR 11/14/01 - pushed both limits up by about 5% */
 			if (ap > (power * 23) / 20 + 1) {
 				/* too powerful -- put it back */
-				revert_artifact(art, a_old, b, s);
-				free_brand(b);
-				free_slay(s);
+				copy_artifact(a_old, art, fake_pval_save, fake_pval);
 				file_putf(log_file, "--- Too powerful!  Rolling back.\n");
 				continue;
 			} else if (ap >= (power * 19) / 20) {	/* just right */
@@ -2648,6 +2640,7 @@ static void scramble_artifact(int a_idx)
 			 */
 			file_putf(log_file, "Warning!  Couldn't get appropriate power level on artifact.\n");
 	}
+	mem_free(a_old);
 
 	/* Set depth and rarity info according to power */
 	/* This is currently very tricky for special artifacts */
