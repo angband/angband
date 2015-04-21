@@ -166,17 +166,17 @@ s16b flag_slot_mult(int flag, int slot)
 	case OFT_BAD:
 	case OFT_CURSE: return 1;
 		/* Light-specific */
-	case OFT_LIGHT: return (slot == EQUIP_LIGHT) ? 1 : 0;
+	case OFT_LIGHT: return (slot_type_is(slot, EQUIP_LIGHT)) ? 1 : 0;
 		/* Melee weapon specific */
-	case OFT_MELEE: return (slot == EQUIP_WEAPON) ? 1 : 0;
+	case OFT_MELEE: return (slot_type_is(slot, EQUIP_WEAPON)) ? 1 : 0;
 		/* Miscellaneous flags are a mixed bag */
 	case OFT_MISC: {
 		/* Weapon and bow slot are more useful for other purposes */
-		if ((slot == EQUIP_WEAPON) || (slot == EQUIP_BOW)) return 1;
+		if ((slot_type_is(slot, EQUIP_WEAPON)) || (slot_type_is(slot, EQUIP_BOW))) return 1;
 		/* SD and FF are a bit lame */
 		if ((flag == OF_FEATHER) || (flag == OF_SLOW_DIGEST)) return 1;
 		/* FA on gloves is really nice */
-		if ((flag == OF_FREE_ACT) && (slot == EQUIP_GLOVES)) return 5;
+		if ((flag == OF_FREE_ACT) && (slot_type_is(slot, EQUIP_GLOVES))) return 5;
 		/* All the major powers are good */
 		return 2;
 	}
