@@ -41,10 +41,12 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 
 	/* If an actual player exists, get their actual resist */
 	if (p && p->race) {
-		resist = p->state.el_info[type].res_level;
+		/* Ice is a special case */
+		int res_type = GF_ICE ? GF_COLD: type;
+		resist = p->state.el_info[res_type].res_level;
 
 		/* Notice element stuff */
-		equip_notice_element(p, type);
+		equip_notice_element(p, res_type);
 	}
 
 	if (resist == 3) /* immune */
