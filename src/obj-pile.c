@@ -696,8 +696,8 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
  *
  * Objects which fail to be carried by the floor are deleted.
  */
-void drop_near(struct chunk *c, struct object *j_ptr, int chance, int y, int x,
-			   bool verbose)
+void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
+			   int x, bool verbose)
 {
 	int i, k, n, d, s;
 
@@ -706,20 +706,21 @@ void drop_near(struct chunk *c, struct object *j_ptr, int chance, int y, int x,
 	int dy, dx;
 	int ty, tx;
 
-	struct object *o_ptr;
+	struct object *obj;
 
 	char o_name[80];
 
 	bool flag = FALSE;
+	bool ignorable = ignore_item_ok(dropped);
 
 	/* Describe object */
-	object_desc(o_name, sizeof(o_name), j_ptr, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), dropped, ODESC_BASE);
 
 	/* Handle normal "breakage" */
-	if (!j_ptr->artifact && (randint0(100) < chance)) {
+	if (!dropped->artifact && (randint0(100) < chance)) {
 		/* Message */
 		msg("The %s %s.", o_name,
-			VERB_AGREEMENT(j_ptr->number, "breaks", "break"));
+			VERB_AGREEMENT(dropped->number, "breaks", "break"));
 
 		/* Failure */
 		return;
@@ -767,13 +768,13 @@ void drop_near(struct chunk *c, struct object *j_ptr, int chance, int y, int x,
 			n = 0;
 
 			/* Scan objects in that grid */
-			for (o_ptr = square_object(c, ty, tx); o_ptr; o_ptr = o_ptr->next) {
+			for (obj = square_object(c, ty, tx); obj; obj = obj->next) {
 				/* Check for possible combination */
-				if (object_similar(o_ptr, j_ptr, OSTACK_FLOOR))
+				if (object_similar(obj, dropped, OSTACK_FLOOR))
 					comb = TRUE;
 
 				/* Count objects */
-				if (!ignore_item_ok(o_ptr))
+				if (!ignore_item_ok(obj))
 					k++;
 				else
 					n++;
@@ -814,10 +815,10 @@ void drop_near(struct chunk *c, struct object *j_ptr, int chance, int y, int x,
 	}
 
 	/* Handle lack of space */
-	if (!flag && !j_ptr->artifact) {
+	if (!flag && !dropped->artifact) {
 		/* Message */
 		msg("The %s %s.", o_name,
-			VERB_AGREEMENT(j_ptr->number, "disappears", "disappear"));
+			VERB_AGREEMENT(dropped->number, "disappears", "disappear"));
 
 		/* Debug */
 		if (player->wizard) msg("Breakage (no floor space).");
@@ -850,15 +851,15 @@ void drop_near(struct chunk *c, struct object *j_ptr, int chance, int y, int x,
 	}
 
 	/* Give it to the floor */
-	if (!floor_carry(c, by, bx, j_ptr, FALSE)) {
+	if (!floor_carry(c, by, bx, dropped, FALSE)) {
 		/* Message */
 		msg("The %s %s.", o_name,
-			VERB_AGREEMENT(j_ptr->number, "disappears", "disappear"));
+			VERB_AGREEMENT(dropped->number, "disappears", "disappear"));
 
 		/* Debug */
 		if (player->wizard) msg("Breakage (too many objects).");
 
-		if (j_ptr->artifact) j_ptr->artifact->created = FALSE;
+		if (dropped->artifact) dropped->artifact->created = FALSE;
 
 		/* Failure */
 		return;
@@ -868,7 +869,7 @@ void drop_near(struct chunk *c, struct object *j_ptr, int chance, int y, int x,
 	sound(MSG_DROP);
 
 	/* Message when an object falls under the player */
-	if (verbose && (cave->squares[by][bx].mon < 0) && !ignore_item_ok(j_ptr))
+	if (verbose && (cave->squares[by][bx].mon < 0) && !ignorable)
 		msg("You feel something roll beneath your feet.");
 }
 
