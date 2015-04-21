@@ -216,6 +216,12 @@ static bool monster_spell_is_projectable(int index)
 	return (info->type & (RST_BOLT | RST_BALL | RST_BREATH)) ? TRUE : FALSE;
 }
 
+static bool monster_spell_is_breath(int index)
+{
+	const struct mon_spell_info *info = &mon_spell_info_table[index];
+	return (info->type & (RST_BREATH)) ? TRUE : FALSE;
+}
+
 /**
  * Determine the damage of a spell attack which ignores monster hp
  * (i.e. bolts and balls, including arrows/boulders/storms/etc.)
@@ -279,7 +285,7 @@ static int mon_spell_dam(int index, int hp, const monster_race *race, aspect dam
 {
 	const struct monster_spell *spell = monster_spell_by_index(index);
 
-	if (monster_spell_is_projectable(index))
+	if (monster_spell_is_breath(index))
 		return breath_dam(spell->effect->params[0], hp);
 	else
 		return nonhp_dam(spell, race, dam_aspect);
