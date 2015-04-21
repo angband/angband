@@ -1661,7 +1661,7 @@ void do_cmd_buy(struct command *cmd)
 		obj->pval -= bought->pval;
 
 	/* Give it to the player */
-	(void) inven_carry(player, bought, TRUE);
+	(void) inven_carry(player, bought, TRUE, TRUE);
 
 	/* Handle stuff */
 	handle_stuff(player->upkeep);
@@ -1739,7 +1739,7 @@ void do_cmd_retrieve(struct command *cmd)
 	distribute_charges(obj, picked_item, amt);
 	
 	/* Give it to the player */
-	(void) inven_carry(player, picked_item, TRUE);
+	(void) inven_carry(player, picked_item, TRUE, TRUE);
 
 	/* Handle stuff */
 	handle_stuff(player->upkeep);
