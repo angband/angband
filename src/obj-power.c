@@ -691,7 +691,7 @@ static int element_power(const object_type *obj, int p, bool known)
 			}
 		} else if (obj->el_info[i].res_level == 3) {
 			if (el_powers[i].im_power != 0) {
-				q = (el_powers[i].im_power);
+				q = (el_powers[i].im_power + el_powers[i].res_power);
 				p += q;
 				log_obj(format("Add %d power for immunity to %s, total is %d\n",
 							   q, el_powers[i].name, p));
@@ -701,7 +701,7 @@ static int element_power(const object_type *obj, int p, bool known)
 		/* Track combinations of element properties */
 		for (j = 0; j < N_ELEMENTS(element_sets); j++)
 			if ((element_sets[j].type == el_powers[i].type) &&
-				(element_sets[j].res_level == obj->el_info[i].res_level))
+				(element_sets[j].res_level <= obj->el_info[i].res_level))
 				element_sets[j].count++;
 	}
 
@@ -734,8 +734,12 @@ static int effects_power(const object_type *obj, int p, bool known)
 	int q = 0;
 
 	if (known || object_effect_is_known(obj))	{
-		if (obj->kind->power)
+		if (obj->artifact && obj->artifact->activation &&
+			obj->artifact->activation->power) {
+			q = obj->artifact->activation->power;
+		} else if (obj->kind->power) {
 			q = obj->kind->power;
+		}
 
 		if (q) {
 			p += q;
