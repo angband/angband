@@ -215,6 +215,7 @@ bool append_random_slay(struct slay **current, char **name)
 
 			/* Greater multiplier, increase and accept */
 			s->multiplier = slay_names[pick].multiplier;
+			*name = s->name;
 			return TRUE;
 		}
 
@@ -575,8 +576,10 @@ bool react_to_slay(struct object *obj, const struct monster *mon)
  *
  * \param brand1
  * \param brand2 the lists being compared
+ * \param known_equal whether the brands need to have the same known status
  */
-bool brands_are_equal(struct brand *brand1, struct brand *brand2)
+bool brands_are_equal(struct brand *brand1, struct brand *brand2,
+					  bool known_equal)
 {
 	struct brand *b1, *b2;
 	int count = 0, match = 0;
@@ -588,6 +591,7 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 			if (!streq(b1->name, b2->name)) continue;
 			if (b1->element != b2->element) continue;
 			if (b1->multiplier != b2->multiplier) continue;
+			if (known_equal && (b1->known != b2->known)) continue;
 
 			/* Count if the same */
 			match++;
@@ -611,8 +615,9 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2)
  *
  * \param slay1
  * \param slay2 the lists being compared
+ * \param known_equal whether the slays need to have the same known status
  */
-bool slays_are_equal(struct slay *slay1, struct slay *slay2)
+bool slays_are_equal(struct slay *slay1, struct slay *slay2, bool known_equal)
 {
 	struct slay *s1, *s2;
 	int count = 0, match = 0;
@@ -624,6 +629,7 @@ bool slays_are_equal(struct slay *slay1, struct slay *slay2)
 			if (!streq(s1->name, s2->name)) continue;
 			if (s1->race_flag != s2->race_flag) continue;
 			if (s1->multiplier != s2->multiplier) continue;
+			if (known_equal && (s1->known != s2->known)) continue;
 
 			/* Count if the same */
 			match++;
@@ -680,8 +686,8 @@ s32b check_slay_cache(const object_type *obj)
 	int i = 0;
 
 	while ((slay_cache[i].brands != NULL) && (slay_cache[i].slays != NULL)) {
-		if (brands_are_equal(obj->brands, slay_cache[i].brands) &&
-			slays_are_equal(obj->slays, slay_cache[i].slays)) 
+		if (brands_are_equal(obj->brands, slay_cache[i].brands, TRUE) &&
+			slays_are_equal(obj->slays, slay_cache[i].slays, TRUE)) 
 			break;
 		i++;
 	}
@@ -701,8 +707,8 @@ bool fill_slay_cache(const object_type *obj, s32b value)
 	int i = 0;
 
 	while ((slay_cache[i].brands != NULL) && (slay_cache[i].slays != NULL)) {
-		if (brands_are_equal(obj->brands, slay_cache[i].brands) &&
-			slays_are_equal(obj->slays, slay_cache[i].slays)) {
+		if (brands_are_equal(obj->brands, slay_cache[i].brands, TRUE) &&
+			slays_are_equal(obj->slays, slay_cache[i].slays, TRUE)) {
 			slay_cache[i].value = value;
 			return TRUE;
 		}
@@ -740,8 +746,10 @@ errr create_slay_cache(struct ego_item *items)
 		/* Check previously scanned combinations */
 		for (j = 0; j < i; j++) {
 			if (!dupcheck[j].brands && !dupcheck[j].slays) continue;
-			if (!brands_are_equal(e_ptr->brands, dupcheck[j].brands)) continue;
-			if (!slays_are_equal(e_ptr->slays, dupcheck[j].slays)) continue;
+			if (!brands_are_equal(e_ptr->brands, dupcheck[j].brands, FALSE))
+				continue;
+			if (!slays_are_equal(e_ptr->slays, dupcheck[j].slays, FALSE))
+				continue;
 
 			/* Both equal, we don't want this one */
 			break;

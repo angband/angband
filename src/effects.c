@@ -1815,7 +1815,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 			   ((obj->number > 1) ? "" : "s"));
 
 	/* Enchant */
-	if (enchant(obj, num_hit, ENCH_TOBOTH)) okay = TRUE;
+	if (num_dam && enchant(obj, num_hit, ENCH_TOBOTH)) okay = TRUE;
 	else if (enchant(obj, num_hit, ENCH_TOHIT)) okay = TRUE;
 	else if (enchant(obj, num_dam, ENCH_TODAM)) okay = TRUE;
 	if (enchant(obj, num_ac, ENCH_TOAC)) okay = TRUE;
@@ -1908,7 +1908,8 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	bool used = context->aware ? FALSE : TRUE;
 	context->ident = TRUE;
 
-	if (context->p1 & ENCH_TOBOTH) {
+
+	if ((context->p1 & ENCH_TOBOTH) == ENCH_TOBOTH) {
 		if (enchant_spell(value, value, 0))
 			used = TRUE;
 	}

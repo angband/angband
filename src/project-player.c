@@ -179,7 +179,7 @@ static void project_player_handler_COLD(project_player_handler_context_t *contex
 
 static void project_player_handler_POIS(project_player_handler_context_t *context)
 {
-	if (!player_inc_timed(player, TMD_POISONED, 10 + randint0(context->dam),
+	if (!player_inc_timed(player, TMD_POISONED, 10 + randint1(context->dam),
 						  TRUE, TRUE))
 		msg("You resist the effect!");
 }
@@ -218,7 +218,8 @@ static void project_player_handler_SHARD(project_player_handler_context_t *conte
 {
 	/* Cuts */
 	if (!player_resists(player, ELEM_SHARD))
-		(void)player_inc_timed(player, TMD_CUT, context->dam, TRUE, FALSE);
+		(void)player_inc_timed(player, TMD_CUT, randint1(context->dam),
+							   TRUE, FALSE);
 }
 
 static void project_player_handler_NEXUS(project_player_handler_context_t *context)
@@ -301,7 +302,7 @@ static void project_player_handler_WATER(project_player_handler_context_t *conte
 	(void)player_inc_timed(player, TMD_CONFUSED, 5 + randint1(5), TRUE, TRUE);
 
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint0(40), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_STUN, randint1(40), TRUE, TRUE);
 }
 
 static void project_player_handler_ICE(project_player_handler_context_t *context)
@@ -316,7 +317,7 @@ static void project_player_handler_ICE(project_player_handler_context_t *context
 		msg("You resist the effect!");
 
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint0(15), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_STUN, randint1(15), TRUE, TRUE);
 }
 
 static void project_player_handler_GRAVITY(project_player_handler_context_t *context)
@@ -349,7 +350,7 @@ static void project_player_handler_INERTIA(project_player_handler_context_t *con
 static void project_player_handler_FORCE(project_player_handler_context_t *context)
 {
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint0(20), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_STUN, randint1(20), TRUE, TRUE);
 }
 
 static void project_player_handler_TIME(project_player_handler_context_t *context)

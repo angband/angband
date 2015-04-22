@@ -376,10 +376,10 @@ void wield_item(struct object *obj, int slot)
 	} else
 		wielded = obj;
 
-	/* Carry floor items */
+	/* Carry floor items, don't allow combining */
 	if (square_holds_object(cave, player->py, player->px, wielded)) {
 		square_excise_object(cave, player->py, player->px, wielded);
-		inven_carry(player, wielded, FALSE);
+		inven_carry(player, wielded, FALSE, FALSE);
 	}
 
 	/* Wear the new stuff */
@@ -878,7 +878,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 
 			/* Carry or drop */
 			if (object_is_carried(player, obj))
-				inven_carry(player, used, TRUE);
+				inven_carry(player, used, TRUE, TRUE);
 			else
 				drop_near(cave, used, 0, player->py, player->px, FALSE);
 		} else

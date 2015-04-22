@@ -50,7 +50,8 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message);
 bool inven_carry_okay(const struct object *obj);
 bool inven_stack_okay(const struct object *o_ptr);
 void inven_item_charges(struct object *obj);
-bool inven_carry(struct player *p, struct object *obj, bool message);
+bool inven_carry(struct player *p, struct object *obj, bool absorb,
+				 bool message);
 void inven_takeoff(struct object *item);
 void inven_drop(struct object *obj, int amt);
 void combine_pack(void);

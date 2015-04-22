@@ -551,7 +551,8 @@ void inven_item_charges(struct object *obj)
  * it is placed into the inventory, but takes no responsibility for removing
  * the object from any other pile it was in.
  */
-bool inven_carry(struct player *p, struct object *obj, bool message)
+bool inven_carry(struct player *p, struct object *obj, bool absorb,
+				 bool message)
 {
 	struct object *gear_obj;
 	char o_name[80];
@@ -559,39 +560,41 @@ bool inven_carry(struct player *p, struct object *obj, bool message)
 	/* Apply an autoinscription */
 	apply_autoinscription(obj);
 
-	/* Check for combining */
-	for (gear_obj = p->gear; gear_obj; gear_obj = gear_obj->next) {
-		/* Can't stack equipment */
-		if (object_is_equipped(p->body, gear_obj))
-			continue;
+	/* Check for combining, if appropriate */
+	if (absorb) {
+		for (gear_obj = p->gear; gear_obj; gear_obj = gear_obj->next) {
+			/* Can't stack equipment */
+			if (object_is_equipped(p->body, gear_obj))
+				continue;
 
-		/* Check if the two items can be combined */
-		if (object_similar(gear_obj, obj, OSTACK_PACK)) {
-			/* Increase the weight */
-			p->upkeep->total_weight += (obj->number * obj->weight);
+			/* Check if the two items can be combined */
+			if (object_similar(gear_obj, obj, OSTACK_PACK)) {
+				/* Increase the weight */
+				p->upkeep->total_weight += (obj->number * obj->weight);
 
-			/* Combine the items */
-			object_absorb(gear_obj, obj);
+				/* Combine the items */
+				object_absorb(gear_obj, obj);
 
-			/* Describe the combined object */
-			object_desc(o_name, sizeof(o_name), gear_obj,
-						ODESC_PREFIX | ODESC_FULL);
+				/* Describe the combined object */
+				object_desc(o_name, sizeof(o_name), gear_obj,
+							ODESC_PREFIX | ODESC_FULL);
 
-			/* Recalculate bonuses */
-			p->upkeep->update |= (PU_BONUS | PU_INVEN);
+				/* Recalculate bonuses */
+				p->upkeep->update |= (PU_BONUS | PU_INVEN);
 
-			/* Redraw stuff */
-			p->upkeep->redraw |= (PR_INVEN);
+				/* Redraw stuff */
+				p->upkeep->redraw |= (PR_INVEN);
 
-			/* Inventory will need updating */
-			update_stuff(player->upkeep);
+				/* Inventory will need updating */
+				update_stuff(player->upkeep);
 
-			/* Optionally, display a message */
-			if (message)
-				msg("You have %s (%c).", o_name, gear_to_label(gear_obj));
+				/* Optionally, display a message */
+				if (message)
+					msg("You have %s (%c).", o_name, gear_to_label(gear_obj));
 
-			/* Success */
-			return TRUE;
+				/* Success */
+				return TRUE;
+			}
 		}
 	}
 

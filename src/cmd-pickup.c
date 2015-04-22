@@ -155,7 +155,7 @@ static void player_pickup_aux(struct object *obj, bool domsg)
 
 	/* Carry the object */
 	square_excise_object(cave, player->py, player->px, obj);
-	inven_carry(player, obj, domsg);
+	inven_carry(player, obj, TRUE, domsg);
 }
 
 /**
