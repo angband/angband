@@ -994,7 +994,7 @@ name:69:Scout
 base:person
 color:W
 info:110:27:20:12:50
-power:4:1:2100:32:18
+power:4:1:3276:46:18
 blow:HIT:HURT:1d5
 blow:HIT:HURT:1d5
 flags:MALE | HAS_LIGHT
@@ -1014,7 +1014,7 @@ name:70:Gallant
 base:person
 color:w
 info:110:27:20:24:100
-power:4:1:4032:62:18
+power:4:1:4032:57:18
 blow:HIT:HURT:1d7
 blow:HIT:HURT:1d7
 flags:MALE | HAS_LIGHT
@@ -1057,7 +1057,7 @@ name:73:Giant white rat
 base:rodent
 color:W
 info:110:3:8:8:30
-power:4:1:330:5:1
+power:4:1:330:4:1
 blow:BITE:POISON:1d3
 flags:MULTIPLY
 flags:RAND_25
@@ -1067,7 +1067,7 @@ name:74:Blue worm mass
 base:worm
 color:b
 info:100:23:7:14:10
-power:4:1:945:14:5
+power:4:1:945:13:5
 blow:CRAWL:COLD:1d4
 flags:COLD_BLOOD | WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50
@@ -1078,7 +1078,7 @@ name:75:Large grey snake
 base:snake
 color:s
 info:100:27:6:61:100
-power:4:1:195:3:14
+power:4:1:195:2:14
 blow:BITE:HURT:1d5
 blow:CRUSH:HURT:1d8
 flags:RAND_25
@@ -1088,7 +1088,7 @@ name:94:Kobold archer
 base:kobold
 color:W
 info:110:24:20:24:70
-power:4:1:616:9:20
+power:4:1:1624:23:20
 blow:HIT:HURT:1d9
 flags:DROP_40
 spell-freq:5
@@ -1113,7 +1113,7 @@ name:560:Raven
 base:bird
 color:D
 info:120:12:40:14:0
-power:4:2:396:6:10
+power:4:2:396:5:10
 blow:BITE:HURT:1d4
 blow:BITE:HURT:1d4
 desc:Larger than a crow, and pitch black.
@@ -1124,7 +1124,7 @@ name:76:Bullroarer the Hobbit
 base:humanoid
 color:U
 info:120:60:16:12:30
-power:5:3:3520:41:90
+power:5:3:3520:39:90
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 flags:UNIQUE | MALE
@@ -1137,7 +1137,7 @@ name:78:Green naga
 base:naga
 color:g
 info:110:41:18:48:120
-power:5:1:2150:25:30
+power:5:1:2150:23:30
 blow:CRUSH:HURT:1d8
 blow:SPIT:ACID:2d6
 flags:DROP_60
@@ -1173,7 +1173,7 @@ plural:Green jellies
 base:jelly
 color:g
 info:120:99:2:1:99
-power:5:1:840:10:18
+power:5:1:840:9:18
 blow:TOUCH:ACID:1d2
 flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_ACID | HURT_COLD | NO_CONF | NO_SLEEP
@@ -1183,7 +1183,7 @@ name:82:Large kobold
 base:kobold
 color:b
 info:110:65:20:48:70
-power:5:1:2132:25:25
+power:5:1:2132:23:25
 blow:HIT:HURT:1d10
 flags:DROP_60
 friends-base:50:1d2:kobold
@@ -1213,7 +1213,7 @@ name:85:Disenchanter eye
 base:eye
 color:v
 info:100:32:2:7:10
-power:5:2:170:2:20
+power:5:2:170:1:20
 blow:GAZE:DISENCHANT
 flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_DISEN | NO_FEAR
@@ -1226,7 +1226,7 @@ name:86:Red worm mass
 base:worm
 color:r
 info:100:23:7:14:10
-power:5:1:3442:40:6
+power:5:1:3442:38:6
 blow:CRAWL:FIRE:1d6
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50 | BASH_DOOR
@@ -1248,7 +1248,7 @@ plural:Giant white dragon flies
 base:dragon fly
 color:w
 info:110:14:12:30:1
-power:5:2:352:4:15
+power:5:2:352:3:15
 blow:BITE:COLD:1d6
 flags:IM_COLD
 spell-freq:10
@@ -1260,7 +1260,7 @@ plural:Giant green dragon flies
 base:dragon fly
 color:g
 info:110:14:12:30:1
-power:5:2:168:2:16
+power:5:2:168:1:16
 blow:BITE:POISON:1d6
 flags:RAND_25
 flags:IM_POIS
@@ -1273,7 +1273,7 @@ plural:Rot jellies
 base:jelly
 color:u
 info:120:90:2:36:99
-power:5:1:1350:16:15
+power:5:1:1350:15:15
 blow:TOUCH:EAT_FOOD:2d3
 blow:TOUCH:LOSE_WIS:2d3
 flags:NEVER_MOVE
@@ -1551,7 +1551,7 @@ name:111:Wormtongue, Agent of Saruman
 base:person
 color:B
 info:110:250:20:45:10
-power:8:1:34572:174:150
+power:8:1:34572:167:150
 blow:HIT:HURT:1d5
 blow:HIT:HURT:1d5
 blow:TOUCH:EAT_GOLD
@@ -1571,7 +1571,7 @@ name:112:Lagduf, the Snaga
 base:orc
 color:y
 info:110:190:20:48:50
-power:8:2:12535:63:80
+power:8:2:12535:60:80
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d9
@@ -1599,7 +1599,7 @@ name:115:Giant salamander
 base:reptile
 color:y
 info:110:24:6:60:80
-power:8:1:1605:8:50
+power:8:1:1605:7:50
 blow:BITE:FIRE:3d6
 flags:RAND_25
 flags:IM_FIRE
@@ -1635,7 +1635,7 @@ name:119:Lemure
 base:minor demon
 color:U
 info:110:65:20:48:80
-power:8:3:2880:14:16
+power:8:3:2880:13:16
 blow:HIT:HURT:1d8
 flags:OPEN_DOOR | BASH_DOOR
 flags:NO_FEAR
@@ -1745,7 +1745,7 @@ name:127:Baby blue dragon
 base:dragon
 color:b
 info:110:88:20:36:70
-power:9:2:3888:12:35
+power:9:2:3888:11:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1761,7 +1761,7 @@ name:128:Baby white dragon
 base:dragon
 color:w
 info:110:88:20:36:70
-power:9:2:3888:12:35
+power:9:2:3888:11:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1777,7 +1777,7 @@ name:129:Baby green dragon
 base:dragon
 color:g
 info:110:88:20:36:70
-power:9:2:3996:12:35
+power:9:2:3996:11:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1809,7 +1809,7 @@ name:131:Baby red dragon
 base:dragon
 color:r
 info:110:88:20:36:70
-power:9:2:3888:12:35
+power:9:2:3888:11:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1834,7 +1834,7 @@ name:133:Brodda, the Easterling
 base:person
 color:U
 info:110:210:20:37:40
-power:9:2:17936:55:100
+power:9:2:17936:53:100
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
@@ -1848,7 +1848,7 @@ name:134:King cobra
 base:snake
 color:g
 info:110:44:8:45:10
-power:9:2:2619:8:28
+power:9:2:2619:7:28
 blow:SPIT:BLIND:1d2
 blow:BITE:POISON:3d4
 flags:RAND_50
@@ -1859,7 +1859,7 @@ name:575:Baby gold dragon
 base:dragon
 color:y
 info:110:88:20:36:70
-power:9:2:4018:12:35
+power:9:2:4018:11:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1874,7 +1874,7 @@ name:563:Cave bear
 base:quadruped
 color:u
 info:110:36:10:52:30
-power:9:1:1320:4:25
+power:9:1:1320:3:25
 blow:CLAW:HURT:1d6
 blow:CLAW:HURT:1d6
 blow:BITE:HURT:1d8
@@ -1908,7 +1908,7 @@ name:136:Dark elven mage
 base:humanoid
 color:r
 info:120:39:20:24:30
-power:10:1:3780:9:50
+power:10:1:3864:9:50
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 flags:MALE | EVIL
@@ -2112,7 +2112,7 @@ name:151:Baby multi-hued dragon
 base:dragon
 color:v
 info:110:114:20:36:70
-power:11:2:16700:33:45
+power:11:2:16700:32:45
 blow:CLAW:HURT:1d4
 blow:CLAW:HURT:1d4
 blow:BITE:HURT:1d6
@@ -2152,7 +2152,7 @@ name:154:Gnome mage
 base:humanoid
 color:r
 info:110:32:18:30:20
-power:11:2:6069:12:38
+power:11:2:6069:11:38
 blow:HIT:HURT:1d5
 flags:MALE | EVIL
 flags:DROP_60
@@ -2422,7 +2422,7 @@ name:173:Boldor, King of the Yeeks
 base:yeek
 color:P
 info:120:180:18:28:10
-power:13:3:150696:130:200
+power:13:3:150696:128:200
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d8
@@ -2466,7 +2466,7 @@ name:176:Illusionist
 base:person
 color:I
 info:120:54:20:15:20
-power:13:2:106284:92:50
+power:13:2:106284:90:50
 blow:HIT:HURT:2d2
 flags:MALE | EVIL | SMART | HAS_LIGHT
 flags:DROP_1
@@ -2487,7 +2487,7 @@ name:177:Druid
 base:person
 color:G
 info:110:78:20:15:20
-power:13:2:29232:25:50
+power:13:2:29232:24:50
 blow:HIT:HURT:2d4
 blow:HIT:HURT:2d4
 flags:MALE | EVIL | SMART | HAS_LIGHT
@@ -2506,7 +2506,7 @@ name:178:Black orc
 base:orc
 color:D
 info:110:66:20:54:60
-power:13:1:10146:8:45
+power:13:1:12312:10:45
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 flags:DROP_20
@@ -2625,7 +2625,7 @@ name:189:Wererat
 base:rodent
 color:D
 info:110:90:10:15:20
-power:15:2:8976:5:45
+power:15:2:8928:5:45
 blow:CLAW:HURT:1d8
 blow:CLAW:HURT:1d8
 blow:BITE:HURT:2d6
@@ -2910,7 +2910,7 @@ name:226:Uruk
 base:orc
 color:B
 info:110:70:20:75:30
-power:16:1:14640:8:60
+power:16:1:16920:9:60
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 flags:DROP_20
@@ -3055,7 +3055,7 @@ name:206:Orc captain
 base:orc
 color:o
 info:110:110:20:88:30
-power:18:3:71442:32:80
+power:18:3:78624:35:80
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
@@ -3633,7 +3633,7 @@ name:249:Uglúk, the Uruk
 base:orc
 color:b
 info:110:720:20:114:20
-power:22:3:206337:56:600
+power:22:3:206337:55:600
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d5
@@ -3882,7 +3882,7 @@ name:272:Vampire bat
 base:bat
 color:D
 info:120:50:12:60:10
-power:24:2:7956:2:150
+power:24:2:7956:1:150
 blow:BITE:EXP_40:1d4
 blow:BITE:EXP_40:1d4
 flags:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
@@ -3894,7 +3894,7 @@ name:273:Sangahyando of Umbar
 base:person
 color:U
 info:110:800:25:96:25
-power:24:2:254912:64:400
+power:24:2:254912:63:400
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -3913,7 +3913,7 @@ name:274:Angamaitë of Umbar
 base:person
 color:U
 info:110:800:25:96:25
-power:24:2:254912:64:400
+power:24:2:254912:63:400
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -3992,7 +3992,7 @@ plural:Pukelmen
 base:golem
 color:m
 info:110:520:12:120:20
-power:25:3:246176:50:600
+power:25:3:142556:29:600
 blow:HIT:HURT:1d12
 blow:HIT:HURT:3d6
 flags:COLD_BLOOD
@@ -4257,7 +4257,7 @@ name:290:Mîm, Betrayer of Turin
 base:humanoid
 color:I
 info:120:1100:20:96:20
-power:27:4:3666658:535:1000
+power:27:4:3588644:530:1000
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
@@ -4293,7 +4293,7 @@ plural:Piles of creeping adamantite coins
 base:creeping coins
 color:G
 info:120:260:5:60:10
-power:27:3:298920:43:60
+power:27:3:298920:44:60
 blow:BITE:POISON:3d4
 blow:TOUCH:POISON:3d5
 blow:HIT:HURT:1d12
@@ -4409,7 +4409,7 @@ name:300:Colbran
 base:golem
 color:b
 info:120:520:12:120:20
-power:27:2:529084:77:900
+power:27:2:343374:50:900
 blow:HIT:ELEC:3d8
 blow:HIT:ELEC:3d8
 flags:COLD_BLOOD | HAS_LIGHT
@@ -4457,7 +4457,7 @@ name:199:Frost giant
 base:giant
 color:w
 info:110:256:20:60:50
-power:28:1:201120:22:180
+power:28:1:201120:23:180
 blow:HIT:COLD:5d8
 blow:HIT:COLD:5d8
 flags:DROP_40
@@ -4472,7 +4472,7 @@ name:301:Spirit naga
 base:naga
 color:w
 info:110:240:20:90:120
-power:28:2:148785:16:60
+power:28:2:148785:17:60
 blow:CRUSH:HURT:2d8
 blow:CRUSH:HURT:2d8
 blow:BITE:HURT:1d8
@@ -4493,7 +4493,7 @@ name:302:5-headed hydra
 base:hydra
 color:g
 info:120:450:20:120:50
-power:28:2:1063448:121:650
+power:28:2:961524:111:650
 blow:BITE:POISON:4d4
 blow:BITE:POISON:4d4
 blow:BITE:POISON:4d4
@@ -4510,7 +4510,7 @@ name:303:Black knight
 base:person
 color:s
 info:120:165:20:105:30
-power:28:1:285948:32:240
+power:28:1:285948:33:240
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -4534,7 +4534,7 @@ name:304:Uldor the Accursed
 base:person
 color:U
 info:110:1000:20:84:40
-power:28:4:261630:29:600
+power:28:4:261630:30:600
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -4588,7 +4588,7 @@ name:307:Draebor, the Imp
 base:minor demon
 color:v
 info:120:520:20:75:10
-power:28:5:900340:102:750
+power:28:5:1115100:128:750
 blow:HIT:POISON:3d4
 blow:HIT:POISON:3d4
 blow:HIT:HURT:3d4
@@ -4611,7 +4611,7 @@ name:308:Basilisk
 base:reptile
 color:s
 info:120:310:15:108:30
-power:28:3:367744:41:300
+power:28:3:367744:42:300
 blow:GAZE:PARALYZE
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
@@ -4680,7 +4680,7 @@ name:566:Beorn, the Shape-Changer
 base:quadruped
 color:p
 info:120:1400:25:72:25
-power:28:3:1099644:125:1000
+power:28:3:1099644:127:1000
 blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:4d8
@@ -4733,7 +4733,7 @@ base:mimic
 glyph:=
 color:w
 info:120:180:30:72:100
-power:29:3:65280:6:200
+power:29:3:60588:6:200
 blow:HIT:POISON:3d4
 blow:HIT:POISON:3d4
 blow:HIT:POISON:3d4
@@ -4828,7 +4828,7 @@ name:318:Mithril golem
 base:golem
 color:B
 info:110:640:12:150:30
-power:30:4:327128:29:500
+power:30:4:327128:30:500
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:5d5
@@ -4855,7 +4855,7 @@ name:321:Manticore
 base:hybrid
 color:y
 info:120:220:12:22:20
-power:30:2:63308:5:300
+power:30:2:83300:7:300
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
@@ -4920,7 +4920,7 @@ name:610:Ogre chieftain
 base:ogre
 color:b
 info:120:240:20:66:30
-power:30:5:434928:39:600
+power:30:5:434928:40:600
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
@@ -4941,7 +4941,7 @@ name:600:Ghast
 base:zombie
 color:u
 info:120:165:30:60:20
-power:30:3:712140:64:130
+power:30:3:712140:65:130
 blow:CLAW:PARALYZE:2d4
 blow:CLAW:PARALYZE:2d4
 blow:BITE:LOSE_CON:2d4
@@ -4965,7 +4965,7 @@ name:326:Ghost
 base:ghost
 color:w
 info:120:59:20:36:10
-power:31:1:80640:6:350
+power:31:1:80640:7:350
 blow:WAIL:TERRIFY
 blow:TOUCH:EXP_20
 blow:CLAW:LOSE_INT:1d6
@@ -5044,7 +5044,7 @@ name:297:Lokkak, the Ogre Chieftain
 base:ogre
 color:v
 info:120:1500:20:120:20
-power:32:2:1023600:82:1500
+power:32:2:1023600:81:1500
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
@@ -5063,7 +5063,7 @@ name:329:Nexus quylthulg
 base:quylthulg
 color:P
 info:110:65:10:1:1
-power:32:1:11044:0:300
+power:32:1:55044:4:300
 flags:IM_NEXUS
 spell-freq:1
 spells:BLINK | TELE_AWAY
@@ -5326,7 +5326,7 @@ name:349:Fire elemental
 base:elemental
 color:r
 info:110:135:12:60:50
-power:33:2:42196:2:350
+power:33:2:43274:2:350
 blow:HIT:FIRE:4d6
 blow:HIT:FIRE:4d6
 flags:HAS_LIGHT
@@ -5378,7 +5378,7 @@ plural:Maiar
 base:ainu
 color:B
 info:110:528:30:81:255
-power:34:4:829920:44:1000
+power:34:4:829920:43:1000
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
@@ -5410,7 +5410,7 @@ name:343:Bert the Stone Troll
 base:troll
 color:s
 info:120:1100:20:84:50
-power:34:7:995076:52:2000
+power:34:7:1127124:59:2000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:BITE:HURT:3d10
@@ -5429,7 +5429,7 @@ name:344:Bill the Stone Troll
 base:troll
 color:s
 info:120:1100:20:84:50
-power:34:7:995076:52:2000
+power:34:7:1127124:59:2000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:BITE:HURT:3d10
@@ -5448,7 +5448,7 @@ name:345:Tom the Stone Troll
 base:troll
 color:s
 info:120:1100:20:84:50
-power:34:7:995076:52:2000
+power:34:7:1127124:59:2000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:BITE:HURT:3d10
@@ -5531,7 +5531,7 @@ plural:Liches
 base:lich
 color:o
 info:110:264:20:72:60
-power:34:2:317148:16:1000
+power:34:2:335124:17:1000
 blow:TOUCH:EXP_40
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:2d8
@@ -5559,7 +5559,7 @@ name:359:Earth elemental
 base:elemental
 color:u
 info:100:165:10:90:50
-power:34:2:104710:5:375
+power:34:2:103861:5:375
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -5575,7 +5575,7 @@ name:360:Air elemental
 base:elemental
 color:B
 info:120:90:12:60:50
-power:34:2:44880:2:390
+power:34:2:44472:2:390
 blow:HIT:HURT:1d10
 blow:HIT:CONFUSE:1d4
 blow:HIT:HURT:1d10
@@ -5608,7 +5608,7 @@ name:375:Mature white dragon
 base:dragon
 color:w
 info:110:352:20:84:70
-power:34:1:301032:16:1200
+power:34:1:301032:15:1200
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:4d8
@@ -5626,7 +5626,7 @@ name:384:Mature blue dragon
 base:dragon
 color:b
 info:110:352:20:84:70
-power:34:1:301032:16:1200
+power:34:1:301032:15:1200
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:4d8
@@ -5827,7 +5827,7 @@ base:mimic
 glyph:~
 color:s
 info:110:308:30:48:0
-power:35:4:69600:3:250
+power:35:4:50460:2:250
 blow:BITE:POISON:4d4
 blow:BITE:POISON:4d4
 blow:BUTT:CONFUSE:4d4
@@ -5918,7 +5918,7 @@ name:370:Ooze elemental
 base:elemental
 color:g
 info:110:72:10:120:50
-power:36:3:37570:1:300
+power:36:3:42500:1:300
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
@@ -5935,7 +5935,7 @@ name:371:Smoke elemental
 base:elemental
 color:D
 info:120:83:10:120:50
-power:36:3:35476:1:375
+power:36:3:40964:1:375
 blow:ENGULF:HURT:2d6
 blow:ENGULF:HURT:2d6
 flags:BASH_DOOR | KILL_BODY | KILL_ITEM
@@ -6043,7 +6043,7 @@ name:389:Bodak
 base:minor demon
 color:r
 info:110:193:10:81:90
-power:36:2:58212:1:750
+power:36:2:58476:1:750
 blow:HIT:FIRE:4d6
 blow:HIT:FIRE:4d6
 blow:GAZE:EXP_20
@@ -6082,7 +6082,7 @@ name:392:Lorgan, Chief of the Easterlings
 base:person
 color:P
 info:120:1800:25:120:10
-power:36:2:4865912:160:1200
+power:36:2:4865912:159:1200
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:3d8
@@ -6105,7 +6105,7 @@ name:393:Demonologist
 base:person
 color:i
 info:120:246:20:75:20
-power:36:2:999996:33:700
+power:36:2:999996:32:700
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
@@ -6208,7 +6208,7 @@ name:590:Gauth
 base:eye
 color:D
 info:110:264:20:75:25
-power:36:2:139620:4:600
+power:36:2:165038:5:600
 blow:GAZE:DISENCHANT:5d2
 blow:GAZE:DISENCHANT:5d2
 blow:GAZE:DRAIN_CHARGES:5d2
@@ -6229,7 +6229,7 @@ name:390:Ice elemental
 base:elemental
 color:w
 info:110:193:10:90:50
-power:37:3:82287:2:650
+power:37:3:78719:2:650
 blow:TOUCH:COLD:4d3
 blow:HIT:HURT:4d6
 blow:TOUCH:COLD:4d3
@@ -6283,7 +6283,7 @@ name:397:Magma elemental
 base:elemental
 color:o
 info:110:193:10:105:50
-power:37:3:312988:9:950
+power:37:3:339014:10:950
 blow:HIT:FIRE:3d7
 blow:HIT:HURT:4d6
 blow:HIT:FIRE:3d7
@@ -6445,7 +6445,7 @@ name:408:Castamir the Usurper
 base:person
 color:V
 info:120:880:20:108:40
-power:38:5:2206620:60:1600
+power:38:5:2206620:59:1600
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -6531,7 +6531,7 @@ plural:Erinyes
 base:major demon
 color:u
 info:110:210:20:75:70
-power:38:2:30814:0:1000
+power:38:2:29394:0:1000
 blow:HIT:HURT:3d4
 blow:TOUCH:LOSE_STR:1d5
 flags:FEMALE
@@ -6645,7 +6645,7 @@ name:426:7-headed hydra
 base:hydra
 color:G
 info:120:550:20:135:35
-power:39:2:1578448:37:2000
+power:39:2:1578448:36:2000
 blow:BITE:POISON:3d9
 blow:BITE:POISON:3d9
 blow:BITE:POISON:3d9
@@ -6687,7 +6687,7 @@ name:333:Storm giant
 base:giant
 color:B
 info:120:700:20:90:30
-power:40:1:3334476:882:1000
+power:40:1:3143604:880:1000
 blow:HIT:ELEC:10d8
 blow:HIT:ELEC:10d8
 flags:HAS_LIGHT
@@ -6707,7 +6707,7 @@ name:411:Ancient blue dragon
 base:ancient dragon
 color:b
 info:120:633:20:108:80
-power:40:1:990660:262:2000
+power:40:1:990660:277:2000
 blow:CLAW:HURT:4d8
 blow:CLAW:HURT:4d8
 blow:BITE:ELEC:7d8
@@ -6722,7 +6722,7 @@ name:413:Beholder
 base:eye
 color:U
 info:120:1400:30:96:10
-power:40:3:3244032:858:6000
+power:40:3:1580832:442:6000
 blow:GAZE:EXP_20:2d6
 blow:GAZE:DRAIN_CHARGES:2d6
 blow:GAZE:LOSE_INT:2d6
@@ -6742,7 +6742,7 @@ name:424:Ancient white dragon
 base:ancient dragon
 color:w
 info:120:633:20:108:80
-power:40:1:990660:262:2000
+power:40:1:990660:277:2000
 blow:CLAW:HURT:4d8
 blow:CLAW:HURT:4d8
 blow:BITE:COLD:7d8
@@ -6757,7 +6757,7 @@ name:425:Ancient green dragon
 base:ancient dragon
 color:g
 info:120:633:20:108:80
-power:40:1:1353484:358:2000
+power:40:1:1353484:379:2000
 blow:CLAW:HURT:4d8
 blow:CLAW:HURT:4d8
 blow:BITE:POISON:7d8
@@ -6785,7 +6785,7 @@ name:432:Spirit troll
 base:ghost
 color:G
 info:110:880:20:108:5
-power:40:3:676647:179:900
+power:40:3:676647:189:900
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
@@ -6798,7 +6798,7 @@ name:434:9-headed hydra
 base:hydra
 color:r
 info:120:650:20:114:20
-power:40:2:1331424:352:3000
+power:40:2:1331424:372:3000
 blow:BITE:FIRE:3d10
 blow:BITE:FIRE:3d10
 blow:BITE:FIRE:3d10
@@ -6817,7 +6817,7 @@ name:435:Enchantress
 base:person
 color:i
 info:130:457:20:72:10
-power:40:4:891648:235:2100
+power:40:4:891648:249:2100
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d8
@@ -6840,7 +6840,7 @@ name:437:Sorcerer
 base:person
 color:R
 info:130:457:20:72:10
-power:40:2:1883142:498:2150
+power:40:2:1639332:459:2150
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
@@ -6868,7 +6868,7 @@ name:438:Xaren
 base:xorn
 color:s
 info:120:280:20:96:10
-power:40:1:416784:110:1200
+power:40:1:416784:116:1200
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
@@ -6882,7 +6882,7 @@ name:439:Giant roc
 base:bird
 color:u
 info:110:560:20:84:10
-power:40:3:617192:163:1000
+power:40:3:617192:172:1000
 blow:CRUSH:HURT:8d12
 blow:CRUSH:HURT:8d12
 blow:HIT:ELEC:12d12
@@ -6896,7 +6896,7 @@ name:440:Uvatha the Horseman
 base:wraith
 color:p
 info:120:1800:90:72:10
-power:40:3:1886738:499:10000
+power:40:3:1886738:528:10000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:EXP_80:4d6
@@ -6911,7 +6911,7 @@ name:441:Minotaur
 base:hybrid
 color:s
 info:130:550:13:30:10
-power:40:2:599592:158:2100
+power:40:2:599592:167:2100
 blow:BUTT:HURT:4d6
 blow:BUTT:HURT:4d6
 blow:BUTT:HURT:2d6
@@ -6924,7 +6924,7 @@ name:442:Medusa, the Gorgon
 base:naga
 color:v
 info:120:2400:30:120:5
-power:40:3:11828544:3129:9000
+power:40:3:6466704:1811:9000
 blow:GAZE:EXP_80
 blow:GAZE:PARALYZE
 blow:HIT:HURT:8d6
@@ -6948,7 +6948,7 @@ name:447:Vrock
 base:major demon
 color:s
 info:110:352:20:75:70
-power:40:2:764568:202:2000
+power:40:2:764568:214:2000
 blow:HIT:HURT:3d4
 blow:CRUSH:HURT:8d12
 blow:CRUSH:HURT:8d12
@@ -6963,7 +6963,7 @@ name:448:Death quasit
 base:minor demon
 color:D
 info:130:387:20:96:0
-power:40:3:996216:263:1000
+power:40:3:996216:279:1000
 blow:BITE:LOSE_DEX:3d6
 blow:CLAW:HURT:3d3
 blow:CLAW:HURT:3d3
@@ -6982,7 +6982,7 @@ name:470:Patriarch
 base:person
 color:G
 info:120:457:20:90:20
-power:40:2:2912760:770:1800
+power:40:2:2912760:815:1800
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d5
@@ -7009,7 +7009,7 @@ name:612:Troll chieftain
 base:troll
 color:P
 info:120:792:30:60:20
-power:40:5:1625190:429:3000
+power:40:5:1625190:455:3000
 blow:HIT:HURT:2d12
 blow:HIT:HURT:2d12
 blow:BITE:HURT:3d6
@@ -7034,7 +7034,7 @@ name:429:Ancient black dragon
 base:ancient dragon
 color:s
 info:120:880:20:108:80
-power:41:1:1702880:241:2500
+power:41:1:1702880:251:2500
 blow:CLAW:HURT:4d9
 blow:CLAW:HURT:4d9
 blow:BITE:ACID:7d9
@@ -7049,7 +7049,7 @@ name:444:Ancient red dragon
 base:ancient dragon
 color:r
 info:120:880:20:108:80
-power:41:1:1593840:226:2500
+power:41:1:1593840:235:2500
 blow:CLAW:HURT:4d9
 blow:CLAW:HURT:4d9
 blow:BITE:FIRE:7d9
@@ -7066,7 +7066,7 @@ name:445:Ancient gold dragon
 base:ancient dragon
 color:y
 info:120:880:20:108:80
-power:41:1:1320032:187:2500
+power:41:1:1320032:195:2500
 blow:CLAW:HURT:4d9
 blow:CLAW:HURT:4d9
 blow:BITE:HURT:7d9
@@ -7081,7 +7081,7 @@ name:450:Dark elven sorcerer
 base:humanoid
 color:R
 info:130:700:20:84:10
-power:41:2:2433042:345:3000
+power:41:2:2433042:359:3000
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
@@ -7105,7 +7105,7 @@ plural:Master liches
 base:lich
 color:r
 info:120:1584:20:96:50
-power:41:2:5463060:774:10000
+power:41:2:5463060:807:10000
 blow:TOUCH:EXP_80
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:2d12
@@ -7124,7 +7124,7 @@ name:452:Hezrou
 base:major demon
 color:g
 info:110:457:20:60:70
-power:41:3:164124:23:2500
+power:41:3:141282:20:2500
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 flags:DROP_1
@@ -7139,7 +7139,7 @@ name:454:Gorlim, Betrayer of Barahir
 base:person
 color:z
 info:120:1600:20:144:40
-power:41:3:21714132:3079:7000
+power:41:3:10539092:1557:7000
 blow:HIT:HURT:8d6
 blow:HIT:HURT:8d6
 blow:HIT:DISENCHANT:6d8
@@ -7162,7 +7162,7 @@ name:582:Ranger Chieftain
 base:person
 color:W
 info:120:880:20:72:10
-power:41:2:6299298:893:1600
+power:41:2:5624478:831:1600
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -7193,7 +7193,7 @@ name:361:Hellhound
 base:canine
 color:r
 info:120:352:25:120:10
-power:42:2:1367700:167:600
+power:42:2:1367700:174:600
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
@@ -7210,7 +7210,7 @@ name:383:Rogrog the Black Troll
 base:troll
 color:D
 info:120:2000:20:105:30
-power:42:3:3111372:381:5000
+power:42:3:3452544:440:5000
 blow:HIT:HURT:6d7
 blow:HIT:HURT:6d7
 blow:BITE:HURT:4d10
@@ -7233,7 +7233,7 @@ name:428:Vampire lord
 base:vampire
 color:b
 info:120:1400:20:84:10
-power:42:1:6023592:739:1800
+power:42:1:6023592:769:1800
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:BITE:EXP_80:4d6
@@ -7254,7 +7254,7 @@ name:416:Vargo, Tyrant of Fire
 base:elemental
 color:R
 info:120:2400:12:75:30
-power:43:3:8722056:857:4000
+power:43:3:5058144:515:4000
 blow:HIT:FIRE:4d6
 blow:HIT:FIRE:4d6
 blow:HIT:FIRE:4d6
@@ -7272,7 +7272,7 @@ name:422:Waldern, King of Water
 base:elemental
 color:V
 info:120:2500:12:120:30
-power:43:3:8892068:873:4250
+power:43:3:5184568:528:4250
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -7291,7 +7291,7 @@ name:449:Adunaphel the Quiet
 base:wraith
 color:p
 info:120:2100:90:72:10
-power:43:3:11768640:1156:13000
+power:43:3:7467456:761:13000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:TOUCH:EXP_80:5d6
@@ -7312,7 +7312,7 @@ plural:Glabrezu
 base:major demon
 color:U
 info:110:616:20:60:70
-power:43:2:84896:8:3000
+power:43:2:64430:6:3000
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 flags:DROP_60
@@ -7328,7 +7328,7 @@ name:462:Ancient multi-hued dragon
 base:ancient dragon
 color:v
 info:120:1848:25:120:80
-power:43:1:10552836:1037:13000
+power:43:1:10552836:1076:13000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:HURT:7d10
@@ -7346,7 +7346,7 @@ name:466:Quaker, Master of Earth
 base:elemental
 color:U
 info:110:2800:10:145:50
-power:43:3:27419660:2694:4500
+power:43:3:24137128:2461:4500
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
@@ -7365,7 +7365,7 @@ name:468:Ariel, Queen of Air
 base:elemental
 color:Z
 info:130:2700:12:75:30
-power:43:3:14291040:1404:4750
+power:43:3:6520800:665:4750
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:CONFUSE:4d4
@@ -7384,7 +7384,7 @@ name:616:Multi-hued hound
 base:zephyr hound
 color:v
 info:110:220:25:48:0
-power:43:6:513633:50:600
+power:43:6:513633:52:600
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:4d4
@@ -7404,7 +7404,7 @@ name:436:Knight Templar
 base:person
 color:w
 info:120:1056:20:72:10
-power:44:2:6445725:420:2000
+power:44:2:6445725:433:2000
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -7433,7 +7433,7 @@ name:469:11-headed hydra
 base:hydra
 color:R
 info:120:950:20:120:20
-power:44:2:2376232:154:6000
+power:44:2:2338192:157:6000
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
@@ -7452,7 +7452,7 @@ name:471:Dreadmaster
 base:ghost
 color:y
 info:120:1056:20:120:10
-power:44:2:3344070:217:8000
+power:44:2:3344070:224:8000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:LOSE_STR:3d4
@@ -7473,7 +7473,7 @@ name:472:Drolem
 base:golem
 color:g
 info:120:2200:25:195:80
-power:44:3:15453810:1007:12000
+power:44:3:15453810:1038:12000
 blow:CLAW:HURT:3d10
 blow:CLAW:HURT:3d10
 blow:BITE:POISON:5d10
@@ -7495,7 +7495,7 @@ name:415:Blue Wizard
 base:ainu
 color:b
 info:120:1320:30:68:255
-power:45:6:12823420:367:5000
+power:45:6:7730530:248:5000
 blow:HIT:HURT:4d6
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -7515,7 +7515,7 @@ name:431:Rotting quylthulg
 base:quylthulg
 color:u
 info:120:420:20:1:0
-power:45:1:188160:5:3000
+power:45:1:188160:6:3000
 spell-freq:2
 spells:BLINK | TPORT
 spells:S_UNDEAD
@@ -7525,7 +7525,7 @@ name:443:Death drake
 base:ancient dragon
 color:G
 info:120:1848:25:120:80
-power:45:2:8653560:247:10000
+power:45:2:8653560:278:10000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:EXP_80:7d10
@@ -7543,7 +7543,7 @@ name:446:Great crystal drake
 base:ancient dragon
 color:u
 info:120:1848:25:120:80
-power:45:2:5341952:152:10000
+power:45:2:5341952:171:10000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:HURT:7d10
@@ -7562,7 +7562,7 @@ name:453:Akhorahil the Blind
 base:wraith
 color:p
 info:120:2400:90:84:10
-power:45:3:7589736:217:15000
+power:45:3:4128608:132:15000
 blow:HIT:HURT:7d6
 blow:HIT:HURT:7d6
 blow:GAZE:EXP_80:6d6
@@ -7601,7 +7601,7 @@ name:459:Undead beholder
 base:eye
 color:u
 info:120:2376:30:120:10
-power:45:3:53310312:1526:8000
+power:45:3:18311832:588:8000
 blow:GAZE:EXP_40:3d6
 blow:GAZE:DRAIN_CHARGES:3d6
 blow:GAZE:LOSE_INT:3d6
@@ -7626,7 +7626,7 @@ name:463:Ethereal dragon
 base:ancient dragon
 color:o
 info:120:1848:25:120:80
-power:45:2:8747452:250:10000
+power:45:2:8747452:281:10000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:CONFUSE:7d10
@@ -7644,7 +7644,7 @@ name:488:Demonic quylthulg
 base:quylthulg
 color:r
 info:120:420:20:1:0
-power:45:1:188160:5:3000
+power:45:1:188160:6:3000
 spell-freq:2
 spells:BLINK | TPORT
 spells:S_DEMON
@@ -7655,7 +7655,7 @@ name:507:Draconic quylthulg
 base:quylthulg
 color:g
 info:120:420:20:1:0
-power:45:1:188160:5:3000
+power:45:1:188160:6:3000
 spell-freq:2
 spells:BLINK | TPORT
 spells:S_DRAGON
@@ -7666,7 +7666,7 @@ name:601:Greater basilisk
 base:reptile
 color:D
 info:120:1010:25:120:15
-power:45:2:3220160:92:10000
+power:45:2:3220160:103:10000
 blow:GAZE:PARALYZE:3d12
 blow:GAZE:PARALYZE:3d12
 blow:BITE:POISON:2d12
@@ -7683,7 +7683,7 @@ name:583:Berserker
 base:person
 color:u
 info:120:1320:20:96:10
-power:45:2:5428224:155:2500
+power:45:2:5428224:174:2500
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
@@ -7709,7 +7709,7 @@ plural:Cyclopes
 base:giant
 color:u
 info:120:1050:20:144:20
-power:45:2:1418400:40:1500
+power:45:2:1418400:45:1500
 blow:HIT:HURT:9d9
 blow:HIT:HURT:9d9
 flags:DROP_1
@@ -7725,7 +7725,7 @@ name:473:Scatha the Worm
 base:ancient dragon
 color:W
 info:120:2200:30:156:70
-power:46:2:7867520:225:17000
+power:46:2:7867520:252:17000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:CLAW:COLD:4d14
@@ -7747,7 +7747,7 @@ name:465:Marilith
 base:major demon
 color:y
 info:120:1232:20:112:60
-power:47:2:988200:26:7000
+power:47:2:988200:29:7000
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -7764,7 +7764,7 @@ name:479:Death mold
 base:mold
 color:D
 info:140:1050:200:72:0
-power:47:1:1274463:34:1000
+power:47:1:1274463:38:1000
 blow:SPORE:DISENCHANT:7d7
 blow:SPORE:DISENCHANT:7d7
 blow:SPORE:DISENCHANT:7d7
@@ -7781,7 +7781,7 @@ name:480:Itangast the Fire Drake
 base:ancient dragon
 color:R
 info:120:2200:30:144:70
-power:47:2:7800232:211:20000
+power:47:2:7800232:236:20000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:FIRE:4d14
@@ -7802,7 +7802,7 @@ name:457:Ren the Unclean
 base:wraith
 color:p
 info:120:2700:90:84:10
-power:48:3:11910910:294:18000
+power:48:3:6178700:169:18000
 blow:HIT:HURT:7d7
 blow:HIT:HURT:7d7
 blow:TOUCH:EXP_80:6d7
@@ -7825,7 +7825,7 @@ name:475:Smaug the Golden
 base:ancient dragon
 color:R
 info:120:2400:30:195:120
-power:48:2:9976928:246:23000
+power:48:2:9976928:274:23000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:FIRE:5d14
@@ -7846,7 +7846,7 @@ name:603:Elder aranea
 base:spider
 color:r
 info:120:1050:20:78:50
-power:48:5:17014920:420:2500
+power:48:5:17014920:467:2500
 blow:CLAW:POISON:5d8
 blow:CLAW:POISON:5d8
 blow:BITE:POISON:5d6
@@ -7870,7 +7870,7 @@ name:562:Winged Horror
 base:bird
 color:p
 info:120:1013:30:96:5
-power:48:3:1867328:46:4000
+power:48:3:1867328:51:4000
 blow:CLAW:HURT:3d8
 blow:CLAW:HURT:3d8
 blow:BITE:EXP_40:4d6
@@ -7889,7 +7889,7 @@ name:467:Lesser Balrog
 base:major demon
 color:p
 info:120:1760:20:75:50
-power:49:2:4042872:94:10000
+power:49:2:4042872:105:10000
 blow:HIT:FIRE:4d12
 blow:HIT:FIRE:4d12
 blow:CRUSH:HURT:3d12
@@ -7908,7 +7908,7 @@ name:594:Eöl, the Dark Elf
 base:humanoid
 color:v
 info:130:2400:20:150:40
-power:49:2:50498424:1185:25000
+power:49:2:15267804:397:25000
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
@@ -7938,7 +7938,7 @@ name:482:Master mystic
 base:person
 color:o
 info:130:968:30:72:5
-power:50:3:33808104:735:6000
+power:50:3:33808104:809:6000
 blow:KICK:HURT:10d2
 blow:KICK:HURT:10d2
 blow:HIT:PARALYZE:20d1
@@ -7963,7 +7963,7 @@ name:483:The Balrog of Moria
 base:major demon
 color:v
 info:130:3000:20:150:20
-power:50:3:19615806:426:30000
+power:50:3:19615806:469:30000
 blow:HIT:FIRE:6d12
 blow:HIT:FIRE:6d12
 blow:CRUSH:HURT:5d12
@@ -7988,7 +7988,7 @@ name:485:Nether hound
 base:zephyr hound
 color:G
 info:120:330:30:120:0
-power:51:4:899100:18:5000
+power:51:4:899100:20:5000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8006,7 +8006,7 @@ name:486:Time hound
 base:zephyr hound
 color:B
 info:130:330:30:120:0
-power:51:4:1648350:34:5000
+power:51:4:1648350:37:5000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8026,7 +8026,7 @@ name:487:Plasma hound
 base:zephyr hound
 color:R
 info:120:330:30:120:0
-power:51:4:1336320:27:5000
+power:51:4:1336320:30:5000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8046,7 +8046,7 @@ name:491:Harowen the Black Hand
 base:person
 color:Z
 info:140:2500:40:108:0
-power:51:3:11544723:239:20000
+power:51:3:11544723:263:20000
 blow:TOUCH:EAT_GOLD:5d5
 blow:TOUCH:EAT_ITEM:5d5
 blow:HIT:BLIND:10d5
@@ -8067,7 +8067,7 @@ name:464:Ji Indur Dawndeath
 base:wraith
 color:p
 info:120:3200:90:84:10
-power:52:3:16002250:332:22000
+power:52:3:7712820:175:22000
 blow:HIT:HURT:8d7
 blow:HIT:HURT:8d7
 blow:TOUCH:EXP_40:6d7
@@ -8091,7 +8091,7 @@ plural:Chaos vortices
 base:vortex
 color:v
 info:120:315:100:96:0
-power:53:3:140448:2:4000
+power:53:3:140448:3:4000
 blow:ENGULF:CONFUSE:5d5
 blow:ENGULF:CONFUSE:5d5
 blow:ENGULF:CONFUSE:5d5
@@ -8107,7 +8107,7 @@ plural:Storms of Unmagic
 base:vortex
 color:v
 info:120:315:50:48:0
-power:53:3:138688:2:4000
+power:53:3:138688:3:4000
 blow:ENGULF:DRAIN_CHARGES:5d5
 blow:ENGULF:DISENCHANT:5d5
 flags:RAND_25
@@ -8124,7 +8124,7 @@ name:497:The Phoenix
 base:bird
 color:r
 info:120:3600:60:156:0
-power:54:3:35177112:609:40000
+power:54:3:35177112:664:40000
 blow:BITE:FIRE:12d6
 blow:BITE:FIRE:12d6
 blow:HIT:FIRE:9d12
@@ -8148,7 +8148,7 @@ plural:Demiliches
 base:lich
 color:U
 info:120:2816:20:150:40
-power:54:2:12605604:218:12500
+power:54:2:12605604:238:12500
 blow:TOUCH:EXP_80
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:4d12
@@ -8165,7 +8165,7 @@ name:596:Elder vampire
 base:vampire
 color:r
 info:120:2640:20:108:10
-power:54:3:23219648:402:4500
+power:54:3:23219648:438:4500
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:BITE:EXP_80:5d6
@@ -8188,7 +8188,7 @@ name:330:Shelob, Spider of Darkness
 base:spider
 color:D
 info:120:3500:30:180:20
-power:55:3:20818548:274:27000
+power:55:3:20818548:306:27000
 blow:CLAW:POISON:5d6
 blow:CLAW:POISON:5d6
 blow:BITE:PARALYZE:5d10
@@ -8214,7 +8214,7 @@ plural:Istari
 base:ainu
 color:y
 info:130:1800:30:140:255
-power:55:5:41707953:549:10000
+power:55:5:21321468:313:10000
 blow:GAZE:TERRIFY:4d4
 blow:GAZE:TERRIFY:4d4
 blow:HIT:HURT:8d6
@@ -8236,7 +8236,7 @@ plural:Dracoliches
 base:ancient dragon
 color:G
 info:120:3080:25:144:80
-power:55:2:11020392:145:18000
+power:55:2:11020392:162:18000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:EXP_80:7d14
@@ -8255,7 +8255,7 @@ name:478:Dracolisk
 base:ancient dragon
 color:i
 info:120:3080:25:144:80
-power:55:2:12030936:158:14000
+power:55:2:12030936:177:14000
 blow:BITE:HURT:4d12
 blow:BITE:HURT:4d12
 blow:BITE:FIRE:7d14
@@ -8274,7 +8274,7 @@ name:611:Ar-Pharazôn the Golden
 base:person
 color:y
 info:130:4000:30:54:255
-power:55:1:27002235:355:32500
+power:55:1:27002235:397:32500
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
@@ -8296,7 +8296,7 @@ plural:Barbazu
 base:major demon
 color:G
 info:120:700:25:90:70
-power:55:4:3410214:44:3000
+power:55:4:3410214:50:3000
 blow:HIT:HURT:4d10
 blow:HIT:HURT:4d10
 blow:HIT:LOSE_CON:10d2
@@ -8317,7 +8317,7 @@ name:433:Lesser titan
 base:giant
 color:y
 info:120:2100:30:96:15
-power:56:3:9754096:121:6000
+power:56:3:9754096:135:6000
 blow:HIT:CONFUSE:9d9
 blow:HIT:CONFUSE:9d9
 blow:HIT:CONFUSE:9d9
@@ -8336,7 +8336,7 @@ name:474:Dwar, Dog Lord of Waw
 base:wraith
 color:p
 info:120:4000:90:108:10
-power:56:3:17587044:219:25000
+power:56:3:9754668:135:25000
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:BITE:EXP_40:6d7
@@ -8358,7 +8358,7 @@ name:493:Grand master mystic
 base:person
 color:o
 info:130:1936:30:96:5
-power:57:3:76622994:862:15000
+power:57:3:76622994:951:15000
 blow:KICK:HURT:20d2
 blow:KICK:HURT:10d2
 blow:HIT:PARALYZE:20d1
@@ -8383,7 +8383,7 @@ name:499:Hand druj
 base:skeleton
 color:y
 info:130:528:20:132:10
-power:57:2:1449621:16:12000
+power:57:2:1677591:20:12000
 flags:SMART | ATTR_FLICKER
 flags:NEVER_BLOW | NEVER_MOVE
 flags:FORCE_SLEEP
@@ -8398,7 +8398,7 @@ name:504:The Lernaean Hydra
 base:hydra
 color:v
 info:120:4500:20:168:20
-power:57:2:35848176:403:20000
+power:57:2:35848176:445:20000
 blow:BITE:POISON:8d6
 blow:BITE:POISON:8d6
 blow:BITE:FIRE:12d6
@@ -8424,7 +8424,7 @@ name:490:Baphomet the Minotaur Lord
 base:hybrid
 color:v
 info:130:4700:30:144:30
-power:58:4:66492126:688:24000
+power:58:4:45962694:535:24000
 blow:BUTT:HURT:12d13
 blow:BUTT:HURT:12d13
 blow:HIT:HURT:10d10
@@ -8446,7 +8446,7 @@ name:500:Eye druj
 base:skeleton
 color:r
 info:130:880:20:108:10
-power:58:2:12369546:128:15000
+power:58:2:8071866:94:15000
 flags:SMART | ATTR_FLICKER
 flags:NEVER_BLOW | NEVER_MOVE
 flags:IM_FIRE
@@ -8465,7 +8465,7 @@ name:495:Ethereal hound
 base:zephyr hound
 color:G
 info:120:480:30:120:0
-power:59:5:3244188:31:7000
+power:59:5:3244188:35:7000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8484,7 +8484,7 @@ name:501:Skull druj
 base:skeleton
 color:o
 info:130:1232:20:144:10
-power:59:2:5948703:58:18000
+power:59:2:7170813:78:18000
 flags:SMART | ATTR_FLICKER
 flags:NEVER_BLOW | NEVER_MOVE
 flags:IM_FIRE
@@ -8501,7 +8501,7 @@ name:508:Fundin Bluecloak
 base:humanoid
 color:Z
 info:130:5000:25:234:10
-power:59:2:73925439:727:20000
+power:59:2:73925439:812:20000
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
@@ -8532,7 +8532,7 @@ plural:Aether vortices
 base:vortex
 color:v
 info:130:420:100:48:0
-power:60:4:1298160:12:5000
+power:60:4:1298160:14:5000
 blow:ENGULF:ELEC:5d5
 blow:ENGULF:FIRE:5d5
 blow:ENGULF:ACID:5d5
@@ -8551,7 +8551,7 @@ name:514:Saruman of Many Colours
 base:person
 color:v
 info:120:5000:100:120:0
-power:60:1:78104250:758:35000
+power:60:1:64118768:694:35000
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:HURT:5d5
@@ -8579,7 +8579,7 @@ name:484:Nightwing
 base:wraith
 color:V
 info:120:1830:20:144:10
-power:61:3:11719182:103:10000
+power:61:3:7463584:73:10000
 blow:TOUCH:POISON:6d5
 blow:TOUCH:POISON:6d5
 blow:HIT:DISENCHANT:6d8
@@ -8603,7 +8603,7 @@ name:509:Arien, Maia of the Sun
 base:ainu
 color:R
 info:130:5500:40:192:10
-power:61:3:257650146:2272:25000
+power:61:3:118168011:1170:25000
 blow:HIT:FIRE:4d12
 blow:HIT:FIRE:4d12
 blow:HIT:HURT:10d10
@@ -8627,7 +8627,7 @@ name:568:Bile Demon
 base:major demon
 color:R
 info:120:2464:40:135:40
-power:61:2:7459496:65:12000
+power:61:2:7459496:73:12000
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:CRUSH:ACID:9d9
@@ -8649,7 +8649,7 @@ name:510:Ossë, Herald of Ulmo
 base:ainu
 color:w
 info:130:6000:40:204:10
-power:62:3:290338686:2416:30000
+power:62:3:109723851:1023:30000
 blow:HIT:EXP_80:10d5
 blow:HIT:EXP_80:10d5
 blow:HIT:HURT:10d10
@@ -8674,7 +8674,7 @@ name:515:Dreadlord
 base:ghost
 color:r
 info:120:2640:20:180:10
-power:62:2:43088760:358:20000
+power:62:2:43088760:402:20000
 blow:HIT:EXP_40:6d6
 blow:HIT:EXP_40:6d6
 blow:HIT:LOSE_STR:4d6
@@ -8700,7 +8700,7 @@ name:489:Great Storm Wyrm
 base:ancient dragon
 color:b
 info:120:3080:30:225:30
-power:63:2:14615640:104:20000
+power:63:2:14615640:115:20000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:ELEC:6d14
@@ -8720,7 +8720,7 @@ name:496:Great Ice Wyrm
 base:ancient dragon
 color:w
 info:120:3080:30:225:30
-power:63:2:14615640:104:20000
+power:63:2:14615640:115:20000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:COLD:6d14
@@ -8740,7 +8740,7 @@ name:576:Great Swamp Wyrm
 base:ancient dragon
 color:g
 info:120:3080:30:225:30
-power:63:2:18100908:128:20000
+power:63:2:18100908:143:20000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:POISON:6d14
@@ -8762,7 +8762,7 @@ name:492:Hoarmurath of Dir
 base:wraith
 color:p
 info:120:4500:90:120:10
-power:64:3:20332536:131:30000
+power:64:3:12519024:89:30000
 blow:HIT:HURT:9d9
 blow:HIT:HURT:9d9
 blow:TOUCH:EXP_80:6d7
@@ -8783,7 +8783,7 @@ name:513:Radagast the Brown
 base:ainu
 color:u
 info:130:7500:40:216:10
-power:64:3:366299388:2364:35000
+power:64:3:147549168:1054:35000
 blow:HIT:DISENCHANT:6d8
 blow:HIT:FIRE:6d8
 blow:HIT:BLIND:10d10
@@ -8810,7 +8810,7 @@ name:518:Chaos hound
 base:zephyr hound
 color:v
 info:120:930:30:120:0
-power:64:4:2478744:15:10000
+power:64:4:2478744:17:10000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8830,7 +8830,7 @@ plural:Archliches
 base:lich
 color:B
 info:120:3520:20:180:40
-power:64:2:44295300:285:20000
+power:64:2:44295300:316:20000
 blow:TOUCH:EXP_80
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:8d12
@@ -8851,7 +8851,7 @@ name:532:The Mouth of Sauron
 base:person
 color:v
 info:130:7000:60:120:10
-power:65:3:177730767:65198:38000
+power:65:3:76757142:31889:38000
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DRAIN_CHARGES:5d5
@@ -8875,7 +8875,7 @@ name:569:Osyluth
 base:major demon
 color:W
 info:130:2288:20:112:30
-power:65:2:30652440:11244:13000
+power:65:2:26129160:10855:13000
 blow:HIT:LOSE_WIS:6d6
 blow:HIT:LOSE_CON:6d6
 blow:BITE:POISON:8d8
@@ -8899,7 +8899,7 @@ name:477:Greater titan
 base:giant
 color:o
 info:120:3344:30:150:15
-power:66:3:22621704:5638:23500
+power:66:3:22621704:6160:23500
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
@@ -8919,7 +8919,7 @@ name:516:The Cat Lord
 base:feline
 color:v
 info:130:4800:100:240:0
-power:66:3:41720448:10398:30000
+power:66:3:41720448:11361:30000
 blow:CLAW:CONFUSE:12d12
 blow:CLAW:LOSE_DEX:2d12
 blow:CLAW:BLIND:10d5
@@ -8943,7 +8943,7 @@ name:505:Thuringwethil, the Vampire Messenger
 base:vampire
 color:v
 info:130:5000:20:174:10
-power:67:4:36549954:3222:23000
+power:67:4:36549954:3986:23000
 blow:BITE:EXP_80:6d6
 blow:BITE:EXP_80:6d6
 blow:HIT:CONFUSE:6d6
@@ -8963,7 +8963,7 @@ name:506:Great Hell Wyrm
 base:ancient dragon
 color:r
 info:120:3344:30:225:30
-power:67:2:16012880:1411:23000
+power:67:2:16012880:1746:23000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:FIRE:6d14
@@ -8983,7 +8983,7 @@ name:591:Beholder hive-mother
 base:eye
 color:b
 info:120:3080:30:96:10
-power:67:3:32547452:2869:17000
+power:67:3:10964762:1195:17000
 blow:BITE:EXP_80:6d6
 blow:GAZE:PARALYZE:5d5
 blow:GAZE:LOSE_INT:5d5
@@ -9004,7 +9004,7 @@ name:578:Great Bile Wyrm
 base:ancient dragon
 color:s
 info:120:3080:30:225:30
-power:67:2:15291360:1348:23000
+power:67:2:15291360:1667:23000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:ACID:6d14
@@ -9025,7 +9025,7 @@ plural:Great Wyrms of Thunder
 base:ancient dragon
 color:y
 info:120:3080:30:225:30
-power:67:2:10264226:904:23000
+power:67:2:10264226:1119:23000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:HURT:6d14
@@ -9046,7 +9046,7 @@ name:517:Jabberwock
 base:hybrid
 color:v
 info:130:2816:35:187:100
-power:68:3:19769400:1183:19000
+power:68:3:19769400:1412:19000
 blow:CLAW:HURT:10d10
 blow:CLAW:HURT:10d10
 blow:BITE:HURT:10d10
@@ -9065,7 +9065,7 @@ name:522:Tselakus, the Dreadlord
 base:ghost
 color:R
 info:130:6500:20:180:10
-power:68:2:93748278:5614:35000
+power:68:2:93748278:6700:35000
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:HIT:LOSE_STR:4d6
@@ -9088,7 +9088,7 @@ name:608:Bone golem
 base:golem
 color:D
 info:120:3080:20:255:20
-power:68:3:13894254:832:23000
+power:68:3:13894254:993:23000
 blow:HIT:DISENCHANT:8d8
 blow:HIT:DISENCHANT:8d8
 blow:HIT:LOSE_STR:6d6
@@ -9110,7 +9110,7 @@ name:498:Nightcrawler
 base:wraith
 color:D
 info:120:2440:20:192:10
-power:69:3:26521722:1136:15000
+power:69:3:16603272:856:15000
 blow:STING:LOSE_CON:8d8
 blow:STING:LOSE_CON:8d8
 blow:BITE:ACID:10d10
@@ -9135,7 +9135,7 @@ name:585:Polyphemus, the Blind Cyclops
 base:giant
 color:g
 info:130:5300:40:210:20
-power:69:3:55450836:2376:29000
+power:69:3:47796504:2466:29000
 blow:HIT:HURT:11d10
 blow:HIT:HURT:11d10
 blow:HIT:SHATTER:11d10
@@ -9158,7 +9158,7 @@ name:570:Gelugon
 base:major demon
 color:w
 info:130:3080:20:150:30
-power:69:3:22826832:978:14000
+power:69:3:22826832:1177:14000
 blow:CLAW:COLD:6d8
 blow:CLAW:COLD:6d8
 blow:BITE:COLD:9d9
@@ -9188,7 +9188,7 @@ name:481:Glaurung, Father of the Dragons
 base:ancient dragon
 color:v
 info:130:7500:30:210:20
-power:70:3:104535276:4480:50000
+power:70:3:104535276:5393:50000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:POISON:8d14
@@ -9212,7 +9212,7 @@ name:525:Greater demonic quylthulg
 base:quylthulg
 color:R
 info:120:1320:20:1:0
-power:71:2:1843548:68:10500
+power:71:2:1843548:81:10500
 flags:ATTR_FLICKER
 spell-freq:2
 spells:BLINK | TELE_TO
@@ -9223,7 +9223,7 @@ name:526:Greater draconic quylthulg
 base:quylthulg
 color:G
 info:120:1320:20:1:0
-power:71:2:2914548:108:10500
+power:71:2:2914548:128:10500
 flags:ATTR_FLICKER
 spell-freq:2
 spells:BLINK | TELE_TO
@@ -9235,7 +9235,7 @@ name:527:Greater rotting quylthulg
 base:quylthulg
 color:U
 info:120:1320:20:1:0
-power:71:2:2914548:108:10500
+power:71:2:2914548:128:10500
 flags:ATTR_FLICKER
 spell-freq:2
 spells:BLINK | TELE_TO
@@ -9249,7 +9249,7 @@ name:494:Khamûl, the Black Easterling
 base:wraith
 color:p
 info:120:5000:90:120:10
-power:72:3:126820302:3676:40000
+power:72:3:46160742:1558:40000
 blow:HIT:HURT:9d10
 blow:HIT:HURT:9d10
 blow:TOUCH:EXP_40:7d7
@@ -9271,7 +9271,7 @@ name:571:Horned Reaper
 base:major demon
 color:B
 info:130:3344:40:180:20
-power:72:3:76595022:2220:18000
+power:72:3:76595022:2586:18000
 blow:HIT:HURT:11d11
 blow:HIT:HURT:11d11
 blow:HIT:HURT:11d11
@@ -9294,7 +9294,7 @@ name:512:Nightwalker
 base:wraith
 color:D
 info:130:1650:20:210:10
-power:73:3:29614635:746:20000
+power:73:3:22488528:667:20000
 blow:HIT:DISENCHANT:10d10
 blow:HIT:DISENCHANT:10d10
 blow:HIT:DISENCHANT:8d8
@@ -9319,7 +9319,7 @@ name:529:Omarax, the Eye Tyrant
 base:eye
 color:v
 info:130:6500:30:96:10
-power:73:3:209155002:5269:25000
+power:73:3:80347827:2383:25000
 blow:GAZE:DISENCHANT:6d6
 blow:GAZE:DRAIN_CHARGES:6d6
 blow:GAZE:LOSE_INT:6d6
@@ -9343,7 +9343,7 @@ name:524:Black reaver
 base:lich
 color:D
 info:120:3960:20:255:40
-power:74:3:48899904:992:23000
+power:74:3:25899432:637:23000
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:LOSE_STR:4d6
@@ -9363,7 +9363,7 @@ name:531:Aether hound
 base:zephyr hound
 color:v
 info:120:1230:30:120:0
-power:74:5:18507852:375:10000
+power:74:5:18507852:455:10000
 blow:CLAW:HURT:3d12
 blow:CLAW:HURT:3d12
 blow:BITE:HURT:3d12
@@ -9389,7 +9389,7 @@ plural:Great Wyrms of Chaos
 base:ancient dragon
 color:v
 info:120:3960:40:255:20
-power:75:2:20895160:316:29000
+power:75:2:20895160:376:29000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:HURT:7d14
@@ -9411,7 +9411,7 @@ plural:Great Wyrms of Law
 base:ancient dragon
 color:B
 info:120:3960:40:255:20
-power:75:2:20106240:304:29000
+power:75:2:20106240:361:29000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:HURT:7d14
@@ -9432,7 +9432,7 @@ name:530:Ungoliant, the Unlight
 base:spider
 color:D
 info:130:13000:40:240:10
-power:75:1:206283822:3125:35000
+power:75:1:206283822:3712:35000
 blow:CLAW:POISON:8d6
 blow:CLAW:POISON:8d6
 blow:BITE:PARALYZE:8d10
@@ -9456,7 +9456,7 @@ name:609:Bronze golem
 base:golem
 color:o
 info:120:3520:20:255:20
-power:75:3:23684250:358:26000
+power:75:3:23684250:426:26000
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
@@ -9480,7 +9480,7 @@ name:533:Master quylthulg
 base:quylthulg
 color:B
 info:120:2640:30:1:0
-power:76:2:11622688:165:15000
+power:76:2:11622688:195:15000
 flags:ATTR_FLICKER
 spell-freq:1
 spells:BLINK | TELE_TO
@@ -9492,7 +9492,7 @@ name:586:Atlas, the Titan
 base:giant
 color:s
 info:120:6000:30:192:15
-power:76:3:193055884:2755:37000
+power:76:3:193055884:3250:37000
 blow:HIT:SHATTER:13d13
 blow:HIT:CONFUSE:13d13
 blow:HIT:SHATTER:13d13
@@ -9513,7 +9513,7 @@ name:528:Feagwath, the Undead Sorcerer
 base:lich
 color:v
 info:130:5000:20:127:10
-power:77:2:113497650:1450:30000
+power:77:2:56214525:836:30000
 blow:TOUCH:EXP_80:6d12
 blow:TOUCH:DRAIN_CHARGES:6d12
 blow:TOUCH:LOSE_DEX:6d12
@@ -9539,7 +9539,7 @@ name:572:Pit Fiend
 base:major demon
 color:o
 info:130:3520:30:180:20
-power:77:3:38728080:494:22000
+power:77:3:38728080:576:22000
 blow:CLAW:FIRE:6d10
 blow:CLAW:FIRE:6d10
 blow:BITE:POISON:5d10
@@ -9570,7 +9570,7 @@ plural:Great Wyrms of Balance
 base:ancient dragon
 color:P
 info:120:4400:40:255:20
-power:79:2:26625536:248:31000
+power:79:2:26625536:284:31000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:HURT:7d14
@@ -9593,7 +9593,7 @@ plural:Great Wyrms of Many Colours
 base:ancient dragon
 color:v
 info:120:4400:40:255:20
-power:79:2:48368640:451:31000
+power:79:2:48368640:516:31000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:HURT:7d14
@@ -9612,7 +9612,7 @@ name:534:Qlzqqlzuup, the Emperor Quylthulg
 base:quylthulg
 color:v
 info:130:5000:30:1:0
-power:79:3:41034156:382:20000
+power:79:3:41034156:438:20000
 flags:UNIQUE
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:ATTR_MULTI
@@ -9627,7 +9627,7 @@ name:573:Greater Balrog
 base:major demon
 color:P
 info:130:4400:40:210:20
-power:79:3:47749419:445:25000
+power:79:3:47749419:510:25000
 blow:HIT:FIRE:8d12
 blow:HIT:FIRE:8d12
 blow:CRUSH:HURT:7d12
@@ -9658,7 +9658,7 @@ name:535:The Witch-King of Angmar
 base:wraith
 color:p
 info:130:6000:90:144:10
-power:80:3:160596300:1498:60000
+power:80:3:67390410:719:60000
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:HIT:EXP_80:7d7
@@ -9684,7 +9684,7 @@ name:595:Maeglin, the Traitor of Gondolin
 base:humanoid
 color:p
 info:130:6000:70:144:20
-power:81:2:46840116:437:35000
+power:81:2:46840116:500:35000
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
@@ -9708,7 +9708,7 @@ name:536:Pazuzu, Lord of Air
 base:major demon
 color:Z
 info:140:5500:40:150:10
-power:82:2:299721438:2796:30000
+power:82:2:181221522:1935:30000
 blow:HIT:ELEC:12d12
 blow:HIT:ELEC:12d12
 blow:HIT:ELEC:12d12
@@ -9731,7 +9731,7 @@ name:541:Draugluin, Sire of All Werewolves
 base:canine
 color:m
 info:130:7000:80:135:10
-power:83:2:41286672:385:40000
+power:83:2:41286672:441:40000
 blow:CLAW:HURT:6d8
 blow:CLAW:HURT:6d8
 blow:BITE:POISON:6d6
@@ -9755,7 +9755,7 @@ name:538:Cantoras, the Skeletal Lord
 base:skeleton
 color:W
 info:140:7500:20:180:40
-power:84:2:272604763:2543:45000
+power:84:2:115555779:1234:45000
 blow:GAZE:EXP_80:5d5
 blow:GAZE:EXP_80:5d5
 blow:TOUCH:POISON:5d5
@@ -9780,7 +9780,7 @@ name:511:Ancalagon the Black
 base:ancient dragon
 color:D
 info:130:10000:40:255:20
-power:85:3:250067514:2333:45000
+power:85:3:250067514:2671:45000
 blow:CLAW:HURT:6d12
 blow:CLAW:HURT:6d12
 blow:BITE:HURT:10d14
@@ -9806,7 +9806,7 @@ name:539:The Tarrasque
 base:reptile
 color:v
 info:130:8500:50:222:20
-power:86:2:87792786:819:35000
+power:86:2:87792786:937:35000
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:TOUCH:DRAIN_CHARGES
@@ -9828,7 +9828,7 @@ name:587:Kronos, Lord of the Titans
 base:giant
 color:v
 info:120:7000:30:180:15
-power:87:3:115734260:1079:42000
+power:87:3:115734260:1236:42000
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
@@ -9857,7 +9857,7 @@ name:540:Lungorthin, the Balrog of White Fire
 base:major demon
 color:v
 info:130:7000:20:187:10
-power:88:2:54078102:504:37000
+power:88:2:54078102:577:37000
 blow:HIT:FIRE:8d12
 blow:HIT:FIRE:8d12
 blow:CRUSH:HURT:8d12
@@ -9887,7 +9887,7 @@ name:543:Huan, Wolfhound of the Valar
 base:canine
 color:W
 info:130:8000:50:192:10
-power:90:1:116542248:112384:40000
+power:90:1:116542248:129347:40000
 blow:CLAW:COLD:9d12
 blow:CLAW:COLD:9d12
 blow:BITE:COLD:9d12
@@ -9908,7 +9908,7 @@ name:544:Carcharoth, the Jaws of Thirst
 base:canine
 color:p
 info:130:8000:50:192:10
-power:90:1:112536600:108521:40000
+power:90:1:112536600:124901:40000
 blow:CLAW:FIRE:9d12
 blow:CLAW:FIRE:9d12
 blow:BITE:FIRE:9d12
@@ -9931,7 +9931,7 @@ name:542:Vecna, the Emperor Lich
 base:lich
 color:p
 info:130:6000:100:120:0
-power:92:3:250483254:241546:45000
+power:92:3:136696854:151716:45000
 blow:HIT:EXP_80:7d12
 blow:HIT:LOSE_DEX:7d12
 blow:HIT:DRAIN_CHARGES:7d12
@@ -9963,7 +9963,7 @@ name:545:Gothmog, the High Captain of Balrogs
 base:major demon
 color:v
 info:130:8000:100:168:0
-power:95:1:75804294:73099:43000
+power:95:1:75804294:84133:43000
 blow:HIT:FIRE:9d12
 blow:HIT:FIRE:9d12
 blow:CRUSH:HURT:8d12
@@ -9994,7 +9994,7 @@ name:546:Sauron, the Sorcerer
 base:person
 color:p
 info:130:10500:100:192:0
-power:99:1:550252773:530619:50000
+power:99:1:325801098:361599:50000
 blow:HIT:DISENCHANT:10d12
 blow:HIT:DISENCHANT:10d12
 blow:HIT:DRAIN_CHARGES:8d12
@@ -10022,7 +10022,7 @@ name:547:Morgoth, Lord of Darkness
 base:Morgoth
 color:D
 info:140:20000:100:180:0
-power:100:1:1909219731:1841099:60000
+power:100:1:1536744111:1705598:60000
 blow:HIT:SHATTER:20d10
 blow:HIT:SHATTER:20d10
 blow:HIT:LOSE_ALL:10d12
