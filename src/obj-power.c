@@ -947,7 +947,7 @@ s32b object_value(const object_type *obj, int qty, int verbose)
 	s32b value;
 
 	/* Known items use the actual value */
-	if (object_is_known(obj))	{
+	if (object_is_known(obj)) {
 		if (cursed_p((bitflag *)obj->flags)) return (0L);
 
 		value = object_value_real(obj, qty, verbose, TRUE);
