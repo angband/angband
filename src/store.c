@@ -78,8 +78,8 @@ static const char *obj_flags[] = {
  */
 struct store *store_at(struct chunk *c, int y, int x)
 {
-	if (square_isshop(c, player->py, player->px))
-		return &stores[square_shopnum(cave, player->py, player->px)-1];
+	if (square_isshop(c, y, x))
+		return &stores[square_shopnum(cave, y, x) - 1];
 
 	return NULL;
 }
@@ -560,7 +560,7 @@ static bool store_will_buy(struct store *store, const struct object *obj)
 int price_item(struct store *store, const struct object *obj,
 			   bool store_buying, int qty)
 {
-	int adjust;
+	int adjust = 100;
 	int price;
 	struct owner *proprietor;
 
@@ -580,8 +580,6 @@ int price_item(struct store *store, const struct object *obj,
 	/* The black market is always a worse deal */
 	if (store->sidx == STORE_B_MARKET)
 		adjust = 150;
-	else
-		adjust = 100;
 
 	/* Shop is buying */
 	if (store_buying) {
@@ -599,8 +597,15 @@ int price_item(struct store *store, const struct object *obj,
 		/* Check for no_selling option */
 		if (OPT(birth_no_selling)) return (0L);
 	} else {
-		/* Shop is selling */
-		if (adjust < 100) adjust = 100;
+		/* Recalculate if the player doesn't know the flavour */
+		if (!obj->kind->aware) {
+			obj->kind->aware = TRUE;
+			if (tval_can_have_charges(obj))
+				price = object_value(obj, qty, FALSE);
+			else
+				price = object_value(obj, 1, FALSE);
+			obj->kind->aware = FALSE;
+		}
 
 		/* Black market sucks */
 		if (store->sidx == STORE_B_MARKET)

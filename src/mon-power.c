@@ -86,14 +86,16 @@ static long eval_max_dam(monster_race *r_ptr, int ridx)
 	}
 
 	/* Check attacks */
-	for (i = 0; i < 4; i++) {
-		/* Extract the attack infomation */
-		int effect = r_ptr->blow[i].effect;
-		int method = r_ptr->blow[i].method;
-		random_value dice = r_ptr->blow[i].dice;
+	for (i = 0; i < z_info->mon_blows_max; i++) {
+		int effect, method;
+		random_value dice;
 
-		/* Hack -- no more attacks */
-		if (!method) continue;
+		if (!r_ptr->blow) break;
+
+		/* Extract the attack infomation */
+		effect = r_ptr->blow[i].effect;
+		method = r_ptr->blow[i].method;
+		dice = r_ptr->blow[i].dice;
 
 		/* Assume maximum damage*/
 		atk_dam = eval_blow_effect(effect, dice, r_ptr->level);
