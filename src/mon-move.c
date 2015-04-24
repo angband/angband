@@ -700,13 +700,13 @@ static int choose_direction(int dy, int dx)
 	if (ay > (ax * 2)) {
 		/* Choose between directions '8' and '2' */
 		if (dy > 0) {
-			/* We're heading up */
-			dir = 8;
+			/* We're heading down */
+			dir = 2;
 			if ((dx > 0) || (dx == 0 && turn % 2 == 0))
 				dir += 10;
 		} else {
 			/* We're heading down */
-			dir = 2;
+			dir = 8;
 			if ((dx < 0) || (dx == 0 && turn % 2 == 0))
 				dir += 10;
 		}
@@ -728,33 +728,33 @@ static int choose_direction(int dy, int dx)
 		}
 	}
 
-	/* We want to move up and sideways */
+	/* We want to move down and sideways */
 	else if (dy > 0) {
-		/* Choose between directions '7' and '9' */
+		/* Choose between directions '1' and '3' */
 		if (dx > 0) {
-			/* We're heading up and left */
-			dir = 7;
+			/* We're heading down and left */
+			dir = 1;
 			if ((ay < ax) || (ay == ax && turn % 2 == 0))
 				dir += 10;
 		} else {
-			/* We're heading up and right */
-			dir = 9;
+			/* We're heading down and right */
+			dir = 3;
 			if ((ay > ax) || (ay == ax && turn % 2 == 0))
 				dir += 10;
 		}
 	}
 
-	/* We want to move down and sideways */
+	/* We want to move up and sideways */
 	else {
-		/* Choose between directions '1' and '3' */
+		/* Choose between directions '7' and '9' */
 		if (dx > 0) {
-			/* We're heading down and left */
-			dir = 1;
+			/* We're heading up and left */
+			dir = 7;
 			if ((ay > ax) || (ay == ax && turn % 2 == 0))
 				dir += 10;
 		} else {
-			/* We're heading down and right */
-			dir = 3;
+			/* We're heading up and right */
+			dir = 9;
 			if ((ay < ax) || (ay == ax && turn % 2 == 0))
 				dir += 10;
 		}
