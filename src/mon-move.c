@@ -1416,7 +1416,7 @@ static void process_monster(struct chunk *c, struct monster *m_ptr)
 		int d = (stagger ? ddd[randint0(8)] : side_dirs[dir][i]);
 
 		/* Get the destination */
-		int ny = oy + ddy[d];
+		int ny = oy - ddy[d];
 		int nx = ox + ddx[d];
 
 		/* Check if we can move */
