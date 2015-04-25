@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "mon-util.h"
 #include "obj-identify.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 
@@ -150,7 +151,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	p->upkeep->redraw |= (PR_STATUS | effect->flag_redraw);
 
 	/* Handle stuff */
-	handle_stuff(p->upkeep);
+	handle_stuff(p);
 
 	/* Result */
 	return TRUE;
@@ -336,7 +337,7 @@ static bool set_stun(struct player *p, int v)
 	disturb(player, 0);
 	p->upkeep->update |= (PU_BONUS);
 	p->upkeep->redraw |= (PR_STATUS);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Result */
 	return (TRUE);
@@ -493,7 +494,7 @@ static bool set_cut(struct player *p, int v)
 	disturb(player, 0);
 	p->upkeep->update |= (PU_BONUS);
 	p->upkeep->redraw |= (PR_STATUS);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Result */
 	return (TRUE);
@@ -587,7 +588,7 @@ bool player_set_food(struct player *p, int v)
 	disturb(player, 0);
 	p->upkeep->update |= (PU_BONUS);
 	p->upkeep->redraw |= (PR_STATUS);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Result */
 	return (TRUE);

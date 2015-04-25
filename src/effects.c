@@ -39,6 +39,7 @@
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -464,7 +465,7 @@ bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 
 	/* Recalculate bonuses */
 	player->upkeep->update |= (PU_BONUS);
-	update_stuff(player->upkeep);
+	update_stuff(player);
 
 	/* Message */
 	if (context->p2)
@@ -575,7 +576,7 @@ bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 		player_exp_gain(player, player->max_exp - player->exp);
 
 		/* Recalculate max. hitpoints */
-		update_stuff(player->upkeep);
+		update_stuff(player);
 
 		/* Did something */
 		context->ident = TRUE;
@@ -819,7 +820,7 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 
 	/* Redraw status line */
 	player->upkeep->redraw |= PR_STATUS;
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	return TRUE;
 }
@@ -2650,7 +2651,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	return TRUE;
 }
@@ -2721,7 +2722,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	return TRUE;
 }

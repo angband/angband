@@ -27,6 +27,7 @@
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "project.h"
 #include "target.h"
@@ -390,7 +391,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				health_track(player->upkeep, m_ptr);
 
 				/* Hack -- handle stuff */
-				handle_stuff(player->upkeep);
+				handle_stuff(player);
 
 				/* Interact */
 				while (1) {
@@ -581,7 +582,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			boring = FALSE;
 
 			track_object(player->upkeep, floor_list[0]);
-			handle_stuff(player->upkeep);
+			handle_stuff(player);
 
 			/* If there is more than one item... */
 			if (floor_num > 1)
@@ -632,7 +633,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 							}
 							if (0 <= pos && pos < floor_num) {
 								track_object(player->upkeep, floor_list[pos]);
-								handle_stuff(player->upkeep);
+								handle_stuff(player);
 								continue;
 							}
 							rdone = 1;
@@ -985,7 +986,7 @@ bool target_set_interactive(int mode, int x, int y)
 			x = targets->pts[m].x;
 
 			/* Adjust panel if needed */
-			if (adjust_panel_help(y, x, help)) handle_stuff(player->upkeep);
+			if (adjust_panel_help(y, x, help)) handle_stuff(player);
 		
 			/* Update help */
 			if (help) {
@@ -1101,7 +1102,7 @@ bool target_set_interactive(int mode, int x, int y)
 						verify_panel();
 
 						/* Handle stuff */
-						handle_stuff(player->upkeep);
+						handle_stuff(player);
 
 						y = player->py;
 						x = player->px;
@@ -1150,7 +1151,7 @@ bool target_set_interactive(int mode, int x, int y)
 						/* Redraw main window */
 						player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
 						Term_clear();
-						handle_stuff(player->upkeep);
+						handle_stuff(player);
 						if (!help)
 							prt("Press '?' for help.", help_prompt_loc, 0);
 					
@@ -1199,7 +1200,7 @@ bool target_set_interactive(int mode, int x, int y)
 						}
 
 						/* Handle stuff */
-						handle_stuff(player->upkeep);
+						handle_stuff(player);
 					}
 				}
 
@@ -1294,7 +1295,7 @@ bool target_set_interactive(int mode, int x, int y)
 					/* Adjust panel if needed */
 					if (adjust_panel_help(y, x, help)) {
 						/* Handle stuff */
-						handle_stuff(player->upkeep);
+						handle_stuff(player);
 
 						/* Recalculate interesting grids */
 						point_set_dispose(targets);
@@ -1341,7 +1342,7 @@ bool target_set_interactive(int mode, int x, int y)
 						verify_panel();
 
 						/* Handle stuff */
-						handle_stuff(player->upkeep);
+						handle_stuff(player);
 
 						y = player->py;
 						x = player->px;
@@ -1402,7 +1403,7 @@ bool target_set_interactive(int mode, int x, int y)
 						/* Redraw main window */
 						player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
 						Term_clear();
-						handle_stuff(player->upkeep);
+						handle_stuff(player);
 						if (!help)
 							prt("Press '?' for help.", help_prompt_loc, 0);
 					
@@ -1441,7 +1442,7 @@ bool target_set_interactive(int mode, int x, int y)
 				/* Adjust panel if needed */
 				if (adjust_panel_help(y, x, help)) {
 					/* Handle stuff */
-					handle_stuff(player->upkeep);
+					handle_stuff(player);
 
 					/* Recalculate interesting grids */
 					point_set_dispose(targets);
@@ -1468,7 +1469,7 @@ bool target_set_interactive(int mode, int x, int y)
 	verify_panel();
 
 	/* Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	mem_free(path_attr);
 	mem_free(path_char);

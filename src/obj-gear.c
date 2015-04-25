@@ -28,6 +28,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-util.h"
 
 static const struct slot_info {
@@ -586,7 +587,7 @@ bool inven_carry(struct player *p, struct object *obj, bool absorb,
 				p->upkeep->redraw |= (PR_INVEN);
 
 				/* Inventory will need updating */
-				update_stuff(player->upkeep);
+				update_stuff(player);
 
 				/* Optionally, display a message */
 				if (message)
@@ -617,14 +618,14 @@ bool inven_carry(struct player *p, struct object *obj, bool absorb,
 	p->upkeep->redraw |= (PR_INVEN);
 
 	/* Inventory will need updating */
-	update_stuff(player->upkeep);
+	update_stuff(player);
 
 	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
 	if (!object_is_known(obj)) {
-		if (player_has(PF_KNOW_MUSHROOM) && tval_is_mushroom(obj)) {
+		if (player_has(player, PF_KNOW_MUSHROOM) && tval_is_mushroom(obj)) {
 			do_ident_item(obj);
 			msg("Mushrooms for breakfast!");
-		} else if (player_has(PF_KNOW_ZAPPER) && tval_is_zapper(obj))
+		} else if (player_has(player, PF_KNOW_ZAPPER) && tval_is_zapper(obj))
 			do_ident_item(obj);
 	}
 
@@ -869,11 +870,11 @@ void pack_overflow(struct object *obj)
 		msg("You no longer have %s.", o_name);
 
 	/* Notice stuff (if needed) */
-	if (player->upkeep->notice) notice_stuff(player->upkeep);
+	if (player->upkeep->notice) notice_stuff(player);
 
 	/* Update stuff (if needed) */
-	if (player->upkeep->update) update_stuff(player->upkeep);
+	if (player->upkeep->update) update_stuff(player);
 
 	/* Redraw stuff (if needed) */
-	if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+	if (player->upkeep->redraw) redraw_stuff(player);
 }

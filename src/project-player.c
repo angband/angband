@@ -22,6 +22,7 @@
 #include "mon-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"

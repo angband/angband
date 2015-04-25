@@ -22,6 +22,7 @@
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "parser.h"
+#include "player-calcs.h"
 #include "player-quest.h"
 
 /**

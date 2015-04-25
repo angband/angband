@@ -31,6 +31,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"

@@ -26,6 +26,7 @@
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
+#include "player-calcs.h"
 #include "project.h"
 
 /**

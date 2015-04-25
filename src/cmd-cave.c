@@ -34,6 +34,7 @@
 #include "obj-ignore.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-path.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -1392,7 +1393,7 @@ void do_cmd_rest(struct command *cmd)
 
 	/* Redraw the state */
 	player->upkeep->redraw |= (PR_STATE);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Prepare to continue, or cancel and clean up */
 	if (player_resting_count(player) > 0) {

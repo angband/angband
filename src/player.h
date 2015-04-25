@@ -25,7 +25,60 @@
 #include "obj-properties.h"
 #include "object.h"
 #include "option.h"
-#include "player-calcs.h"
+
+
+/**
+ * Indexes of the various "stats" (hard-coded by savefiles, etc).
+ */
+enum
+{
+	#define STAT(a, b, c, d, e, f, g, h) STAT_##a,
+	#include "list-stats.h"
+	#undef STAT
+
+	STAT_MAX
+};
+
+
+/**
+ * Player race and class flags
+ */
+enum
+{
+	#define PF(a,b,c) PF_##a,
+	#include "list-player-flags.h"
+	#undef PF
+	PF_MAX
+};
+
+#define PF_SIZE                FLAG_SIZE(PF_MAX)
+
+#define pf_has(f, flag)        flag_has_dbg(f, PF_SIZE, flag, #f, #flag)
+#define pf_next(f, flag)       flag_next(f, PF_SIZE, flag)
+#define pf_is_empty(f)         flag_is_empty(f, PF_SIZE)
+#define pf_is_full(f)          flag_is_full(f, PF_SIZE)
+#define pf_is_inter(f1, f2)    flag_is_inter(f1, f2, PF_SIZE)
+#define pf_is_subset(f1, f2)   flag_is_subset(f1, f2, PF_SIZE)
+#define pf_is_equal(f1, f2)    flag_is_equal(f1, f2, PF_SIZE)
+#define pf_on(f, flag)         flag_on_dbg(f, PF_SIZE, flag, #f, #flag)
+#define pf_off(f, flag)        flag_off(f, PF_SIZE, flag)
+#define pf_wipe(f)             flag_wipe(f, PF_SIZE)
+#define pf_setall(f)           flag_setall(f, PF_SIZE)
+#define pf_negate(f)           flag_negate(f, PF_SIZE)
+#define pf_copy(f1, f2)        flag_copy(f1, f2, PF_SIZE)
+#define pf_union(f1, f2)       flag_union(f1, f2, PF_SIZE)
+#define pf_comp_union(f1, f2)  flag_comp_union(f1, f2, PF_SIZE)
+#define pf_inter(f1, f2)       flag_inter(f1, f2, PF_SIZE)
+#define pf_diff(f1, f2)        flag_diff(f1, f2, PF_SIZE)
+
+#define player_has(p, flag)       (pf_has(p->race->pflags, (flag)) || pf_has(p->class->pflags, (flag)))
+
+
+/**
+ * The range of possible indexes into tables based upon stats.
+ * Currently things range from 3 to 18/220 = 40.
+ */
+#define STAT_RANGE 38
 
 
 /**
@@ -64,8 +117,36 @@ enum
 #define NOSCORE_DEBUG		0x0008
 #define NOSCORE_JUMPING     0x0010
 
-extern struct player_body *bodies;
+/**
+ * Skill indexes
+ */
+enum
+{
+	SKILL_DISARM,			/* Skill: Disarming */
+	SKILL_DEVICE,			/* Skill: Magic Devices */
+	SKILL_SAVE,				/* Skill: Saving throw */
+	SKILL_STEALTH,			/* Skill: Stealth factor */
+	SKILL_SEARCH,			/* Skill: Searching ability */
+	SKILL_SEARCH_FREQUENCY,	/* Skill: Searching frequency */
+	SKILL_TO_HIT_MELEE,		/* Skill: To hit (normal) */
+	SKILL_TO_HIT_BOW,		/* Skill: To hit (shooting) */
+	SKILL_TO_HIT_THROW,		/* Skill: To hit (throwing) */
+	SKILL_DIGGING,			/* Skill: Digging */
 
+	SKILL_MAX
+};
+
+/* Terrain that the player has a chance of digging through */
+enum
+{
+	DIGGING_RUBBLE = 0,
+	DIGGING_MAGMA,
+	DIGGING_QUARTZ,
+	DIGGING_GRANITE,
+	DIGGING_DOORS,
+	
+	DIGGING_MAX
+};
 
 /**
  * ------------------------------------------------------------------------
@@ -87,106 +168,24 @@ struct quest
 };
 
 /**
- * Most of the "player" information goes here.
- *
- * This stucture gives us a large collection of player variables.
- *
- * This entire structure is wiped when a new character is born.
- *
- * This structure is more or less laid out so that the information
- * which must be saved in the savefile precedes all the information
- * which can be recomputed as needed.
+ * Player body info
  */
-typedef struct player {
-	s16b py;			/* Player location */
-	s16b px;			/* Player location */
+struct equip_slot {
+	struct equip_slot *next;
 
-	const struct player_race *race;
-	const struct player_class *class;
+	u16b type;
+	char *name;
+	struct object *obj;
+};
 
-	byte hitdie;		/* Hit dice (sides) */
-	byte expfact;		/* Experience factor */
+struct player_body {
+	struct player_body *next;
+	char *name;
+	u16b count;
+	struct equip_slot *slots;
+};
 
-	s16b age;			/* Characters age */
-	s16b ht;			/* Height */
-	s16b wt;			/* Weight */
-
-	s32b au;			/* Current Gold */
-
-	s16b max_depth;		/* Max depth */
-	s16b depth;			/* Cur depth */
-
-	s16b max_lev;		/* Max level */
-	s16b lev;			/* Cur level */
-
-	s32b max_exp;		/* Max experience */
-	s32b exp;			/* Cur experience */
-	u16b exp_frac;		/* Cur exp frac (times 2^16) */
-
-	s16b mhp;			/* Max hit pts */
-	s16b chp;			/* Cur hit pts */
-	u16b chp_frac;		/* Cur hit frac (times 2^16) */
-
-	s16b msp;			/* Max mana pts */
-	s16b csp;			/* Cur mana pts */
-	u16b csp_frac;		/* Cur mana frac (times 2^16) */
-
-	s16b stat_max[STAT_MAX];	/* Current "maximal" stat values */
-	s16b stat_cur[STAT_MAX];	/* Current "natural" stat values */
-
-	s16b *timed;		/* Timed effects */
-
-	s16b word_recall;	/* Word of recall counter */
-	s16b deep_descent;	/* Deep Descent counter */
-
-	s16b energy;		/* Current energy */
-	u32b total_energy;	/* Total energy used (including resting) */
-	u32b resting_turn;	/* Number of player turns spent resting */
-
-	s16b food;			/* Current nutrition */
-
-	byte confusing;		/* Glowing hands */
-	byte searching;		/* Currently searching */
-	byte unignoring;	/* Unignoring */
-
-	byte *spell_flags; /* Spell flags */
-	byte *spell_order;	/* Spell order */
-
-	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
-
-	char died_from[80];		/* Cause of death */
-	char *history;			/* Player history */
-	struct quest *quests;	/* Quest history */
-	u16b total_winner;		/* Total winner */
-
-	u16b noscore;			/* Cheating flags */
-
-	bool is_dead;			/* Player is dead */
-
-	bool wizard;			/* Player is in wizard mode */
-
-	/* Generation fields (for quick start) */
-	s32b au_birth;          /* Birth gold when option birth_money is false */
-	s16b stat_birth[STAT_MAX]; /* Birth "natural" stat values */
-	s16b ht_birth;          /* Birth Height */
-	s16b wt_birth;          /* Birth Weight */
-
-	/* Variable and calculatable player state */
-	player_state state;
-	player_state known_state;
-
-	/* Tracking of various temporary player-related values */
-	player_upkeep *upkeep;
-
-	/* Real gear */
-	struct object *gear;
-	/* Known gear */
-	struct object *gear_k;
-
-	struct player_body body;
-} player_type;
-
-
+extern struct player_body *bodies;
 
 /**
  * Player racial info
@@ -383,6 +382,199 @@ typedef struct {
 	
 	byte name_suffix;		/* numeric suffix for player name */
 } player_other;
+
+
+/**
+ * All the variable state that changes when you put on/take off equipment.
+ * Player flags are not currently variable, but useful here so monsters can
+ * learn them.
+ */
+typedef struct player_state {
+	s16b speed;		/* Current speed */
+
+	s16b num_blows;		/* Number of blows x100 */
+	s16b num_shots;		/* Number of shots */
+
+	byte ammo_mult;		/* Ammo multiplier */
+	byte ammo_tval;		/* Ammo variety */
+
+	s16b stat_add[STAT_MAX];	/* Equipment stat bonuses */
+	s16b stat_ind[STAT_MAX];	/* Indexes into stat tables */
+	s16b stat_use[STAT_MAX];	/* Current modified stats */
+	s16b stat_top[STAT_MAX];	/* Maximal modified stats */
+
+	s16b ac;			/* Base ac */
+	s16b to_a;			/* Bonus to ac */
+	s16b to_h;			/* Bonus to hit */
+	s16b to_d;			/* Bonus to dam */
+
+	s16b see_infra;		/* Infravision range */
+
+	s16b cur_light;		/* Radius of light (if any) */
+
+	s16b skills[SKILL_MAX];	/* Skills */
+
+	int noise;			/* Derived from stealth */
+
+	bool heavy_wield;	/* Heavy weapon */
+	bool heavy_shoot;	/* Heavy shooter */
+	bool icky_wield;	/* Icky weapon shooter */
+
+	bool cumber_armor;	/* Mana draining armor */
+	bool cumber_glove;	/* Mana draining gloves */
+
+	bitflag flags[OF_SIZE];	/* Status flags from race and items */
+	bitflag pflags[PF_SIZE];	/* Player intrinsic flags */
+	struct element_info el_info[ELEM_MAX]; /* Resists from race and items */
+} player_state;
+
+/**
+ * Temporary, derived, player-related variables used during play but not saved
+ *
+ * Some of these probably should go to the UI
+ */
+typedef struct player_upkeep {
+	bool playing;			/* True if player is playing */
+	bool autosave;			/* True if autosave is pending */
+	bool generate_level;	/* True if level needs regenerating */
+	bool only_partial;		/* True if only partial updates are needed */
+
+	int energy_use;			/* Energy use this turn */
+	int new_spells;			/* Number of spells available */
+
+	struct monster *health_who;			/* Health bar trackee */
+	struct monster_race *monster_race;	/* Monster race trackee */
+	struct object *object;				/* Object trackee */
+	struct object_kind *object_kind;	/* Object kind trackee */
+
+	u32b notice;		/* Bit flags for pending actions such as 
+						 * reordering inventory, ignoring, etc. */
+	u32b update;		/* Bit flags for recalculations needed 
+						 * such as HP, or visible area */
+	u32b redraw;	    /* Bit flags for things that /have/ changed,
+						 * and just need to be redrawn by the UI,
+						 * such as HP, Speed, etc.*/
+
+	int command_wrk;		/* Used by the UI to decide whether
+							 * to start off showing equipment or
+							 * inventory listings when offering
+							 * a choice.  See obj-ui.c */
+
+	bool create_up_stair;		/* Create up stair on next level */
+	bool create_down_stair;		/* Create down stair on next level */
+
+	int running;				/* Running counter */
+	bool running_withpathfind;	/* Are we using the pathfinder ? */
+	bool running_firststep;		/* Is this our first step running? */
+
+	struct object **quiver;		/* Quiver objects */
+	struct object **inven;		/* Inventory objects */
+	int total_weight;			/* Total weight being carried */
+	int inven_cnt;				/* Number of items in inventory */
+	int equip_cnt;				/* Number of items in equipment */
+	int quiver_cnt;				/* Number of items in the quiver */
+} player_upkeep;
+
+
+/**
+ * Most of the "player" information goes here.
+ *
+ * This stucture gives us a large collection of player variables.
+ *
+ * This entire structure is wiped when a new character is born.
+ *
+ * This structure is more or less laid out so that the information
+ * which must be saved in the savefile precedes all the information
+ * which can be recomputed as needed.
+ */
+typedef struct player {
+	s16b py;			/* Player location */
+	s16b px;			/* Player location */
+
+	const struct player_race *race;
+	const struct player_class *class;
+
+	byte hitdie;		/* Hit dice (sides) */
+	byte expfact;		/* Experience factor */
+
+	s16b age;			/* Characters age */
+	s16b ht;			/* Height */
+	s16b wt;			/* Weight */
+
+	s32b au;			/* Current Gold */
+
+	s16b max_depth;		/* Max depth */
+	s16b depth;			/* Cur depth */
+
+	s16b max_lev;		/* Max level */
+	s16b lev;			/* Cur level */
+
+	s32b max_exp;		/* Max experience */
+	s32b exp;			/* Cur experience */
+	u16b exp_frac;		/* Cur exp frac (times 2^16) */
+
+	s16b mhp;			/* Max hit pts */
+	s16b chp;			/* Cur hit pts */
+	u16b chp_frac;		/* Cur hit frac (times 2^16) */
+
+	s16b msp;			/* Max mana pts */
+	s16b csp;			/* Cur mana pts */
+	u16b csp_frac;		/* Cur mana frac (times 2^16) */
+
+	s16b stat_max[STAT_MAX];	/* Current "maximal" stat values */
+	s16b stat_cur[STAT_MAX];	/* Current "natural" stat values */
+
+	s16b *timed;		/* Timed effects */
+
+	s16b word_recall;	/* Word of recall counter */
+	s16b deep_descent;	/* Deep Descent counter */
+
+	s16b energy;		/* Current energy */
+	u32b total_energy;	/* Total energy used (including resting) */
+	u32b resting_turn;	/* Number of player turns spent resting */
+
+	s16b food;			/* Current nutrition */
+
+	byte confusing;		/* Glowing hands */
+	byte searching;		/* Currently searching */
+	byte unignoring;	/* Unignoring */
+
+	byte *spell_flags; /* Spell flags */
+	byte *spell_order;	/* Spell order */
+
+	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
+
+	char died_from[80];		/* Cause of death */
+	char *history;			/* Player history */
+	struct quest *quests;	/* Quest history */
+	u16b total_winner;		/* Total winner */
+
+	u16b noscore;			/* Cheating flags */
+
+	bool is_dead;			/* Player is dead */
+
+	bool wizard;			/* Player is in wizard mode */
+
+	/* Generation fields (for quick start) */
+	s32b au_birth;          /* Birth gold when option birth_money is false */
+	s16b stat_birth[STAT_MAX]; /* Birth "natural" stat values */
+	s16b ht_birth;          /* Birth Height */
+	s16b wt_birth;          /* Birth Weight */
+
+	/* Variable and calculatable player state */
+	struct player_state state;
+	struct player_state known_state;
+
+	/* Tracking of various temporary player-related values */
+	struct player_upkeep *upkeep;
+
+	/* Real gear */
+	struct object *gear;
+	/* Known gear */
+	struct object *gear_k;
+
+	struct player_body body;
+} player_type;
 
 
 /**

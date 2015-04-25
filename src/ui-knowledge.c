@@ -35,6 +35,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "store.h"
 #include "target.h"
@@ -901,7 +902,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		menu_refresh(inactive_menu, FALSE);
 		menu_refresh(active_menu, FALSE);
 
-		handle_stuff(player->upkeep);
+		handle_stuff(player);
 
 		if (tile_picker) {
 		        bigcurs = TRUE;
@@ -1206,7 +1207,7 @@ static void mon_lore(int oid)
 
 	/* Update the monster recall window */
 	monster_race_track(player->upkeep, r_ptr);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	tb = textblock_new();
 	lore_description(tb, r_ptr, l_ptr, FALSE);
@@ -1449,7 +1450,7 @@ static void desc_art_fake(int a_idx)
 	}
 
 	/* Hack -- Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr,
@@ -1768,7 +1769,7 @@ static void desc_obj_fake(int k_idx)
 
 	/* Update the object recall window */
 	track_object_kind(player->upkeep, kind);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, EXTREMIFY);
@@ -1780,7 +1781,7 @@ static void desc_obj_fake(int k_idx)
 	if (!kind->flavor) object_notice_everything(obj);
 
 	/* Hack -- Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	tb = object_info(obj, OINFO_NONE);
 	object_desc(header, sizeof(header), obj,
@@ -2459,7 +2460,7 @@ void do_cmd_inven(void)
 {
 	struct object *obj = NULL;
 	int ret = 3;
-	int diff = weight_remaining();
+	int diff = weight_remaining(player);
 	char buf[80];
 
 	if (player->upkeep->inven[0] == NULL) {
@@ -2636,7 +2637,7 @@ void do_cmd_locate(void)
 		change_panel(dir);
 
 		/* Handle stuff */
-		handle_stuff(player->upkeep);
+		handle_stuff(player);
 	}
 
 	/* Verify panel */
@@ -2871,7 +2872,7 @@ void do_cmd_query_symbol(void)
 		monster_race_track(player->upkeep, r_ptr);
 
 		/* Hack -- Handle stuff */
-		handle_stuff(player->upkeep);
+		handle_stuff(player);
 
 		tb = textblock_new();
 		lore_title(tb, r_ptr);

@@ -23,6 +23,7 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-util.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "project.h"
 
@@ -618,7 +619,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int *dam_at_dist = malloc((z_info->max_range + 1) * sizeof(*dam_at_dist));
 
 	/* Flush any pending output */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* No projection path - jump to target */
 	if (flg & (PROJECT_JUMP)) {
@@ -1040,7 +1041,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Update stuff if needed */
 	if (player->upkeep->update)
-		update_stuff(player->upkeep);
+		update_stuff(player);
 
 	free(dam_at_dist);
 

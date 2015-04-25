@@ -22,6 +22,7 @@
 #include "mon-lore.h"
 #include "mon-msg.h"
 #include "mon-util.h"
+#include "player-calcs.h"
 
 static u16b size_mon_hist = 0;
 static u16b size_mon_msg = 0;

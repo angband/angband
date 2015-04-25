@@ -26,6 +26,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-calcs.h"
 
 
 typedef struct

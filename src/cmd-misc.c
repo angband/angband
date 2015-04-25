@@ -25,6 +25,7 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-util.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "obj-util.h"
 #include "target.h"

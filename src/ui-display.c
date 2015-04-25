@@ -33,6 +33,7 @@
 #include "obj-gear.h"
 #include "obj-pile.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "player.h"
@@ -1216,7 +1217,7 @@ void idle_update(void)
 
 	/* Animate and redraw if necessary */
 	do_animation();
-	redraw_stuff(player->upkeep);
+	redraw_stuff(player);
 
 	/* Refresh the main screen */
 	Term_fresh();
@@ -1312,7 +1313,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 			/* Flush all the grids at this radius */
 			Term_fresh();
 			if (player->upkeep->redraw)
-				redraw_stuff(player->upkeep);
+				redraw_stuff(player);
 
 			/* Delay to show this radius appearing */
 			if (drawn) {
@@ -1342,7 +1343,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 		/* Flush the explosion */
 		Term_fresh();
 		if (player->upkeep->redraw)
-			redraw_stuff(player->upkeep);
+			redraw_stuff(player);
 	}
 }
 
@@ -1377,12 +1378,12 @@ static void display_bolt(game_event_type type, game_event_data *data,
 		move_cursor_relative(y, x);
 		Term_fresh();
 		if (player->upkeep->redraw)
-			redraw_stuff(player->upkeep);
+			redraw_stuff(player);
 		Term_xtra(TERM_XTRA_DELAY, msec);
 		event_signal_point(EVENT_MAP, x, y);
 		Term_fresh();
 		if (player->upkeep->redraw)
-			redraw_stuff(player->upkeep);
+			redraw_stuff(player);
 
 		/* Display "beam" grids */
 		if (beam) {
@@ -1423,13 +1424,13 @@ static void display_missile(game_event_type type, game_event_data *data,
 		move_cursor_relative(y, x);
 
 		Term_fresh();
-		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+		if (player->upkeep->redraw) redraw_stuff(player);
 
 		Term_xtra(TERM_XTRA_DELAY, msec);
 		event_signal_point(EVENT_MAP, x, y);
 
 		Term_fresh();
-		if (player->upkeep->redraw) redraw_stuff(player->upkeep);
+		if (player->upkeep->redraw) redraw_stuff(player);
 	} else {
 		/* Delay anyway for consistency */
 		Term_xtra(TERM_XTRA_DELAY, msec);
@@ -2189,7 +2190,7 @@ static void new_level_display_update(game_event_type type,
 	player->upkeep->update |= (PU_TORCH);
 
 	/* Update stuff */
-	update_stuff(player->upkeep);
+	update_stuff(player);
 
 	/* Fully update the visuals (and monster distances) */
 	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_DISTANCE);
@@ -2204,10 +2205,10 @@ static void new_level_display_update(game_event_type type,
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
 
 	/* Update stuff */
-	update_stuff(player->upkeep);
+	update_stuff(player);
 
 	/* Redraw stuff */
-	redraw_stuff(player->upkeep);
+	redraw_stuff(player);
 
 	/* Hack -- Kill partial update mode */
 	player->upkeep->only_partial = FALSE;
@@ -2380,7 +2381,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 {
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
-	redraw_stuff(player->upkeep);
+	redraw_stuff(player);
 
 	/* React to changes */
 	Term_xtra(TERM_XTRA_REACT, 0);

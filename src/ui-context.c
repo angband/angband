@@ -32,6 +32,7 @@
 #include "obj-info.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
@@ -220,7 +221,7 @@ static int context_menu_player_2(int mx, int my)
 
 static void context_menu_player_display_floor(void)
 {
-	int diff = weight_remaining();
+	int diff = weight_remaining(player);
 	struct object *obj;
 
 	/* There is an item on the floor, select from there */

@@ -24,6 +24,7 @@
 #include "mon-lore.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-path.h"
 #include "player-util.h"
 #include "savefile.h"
@@ -439,7 +440,7 @@ void save_game(void)
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	/* Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Message */
 	prt("Saving game...", 0, 0);
@@ -494,7 +495,7 @@ void close_game(void)
 	event_signal(EVENT_LEAVE_GAME);
 
 	/* Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Flush the messages */
 	event_signal(EVENT_MESSAGE_FLUSH);

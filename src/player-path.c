@@ -24,6 +24,7 @@
 #include "mon-util.h"
 #include "obj-ignore.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-path.h"
 #include "player-util.h"
 

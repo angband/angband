@@ -19,8 +19,8 @@
 #include "init.h"
 #include "obj-pile.h"
 #include "obj-util.h"
-#include "player.h"
 #include "player-birth.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "player-quest.h"
 #include "player-spell.h"
@@ -227,7 +227,7 @@ static void adjust_level(struct player *p, bool verbose)
 
 	p->upkeep->redraw |= PR_EXP;
 
-	handle_stuff(p->upkeep);
+	handle_stuff(p);
 
 	while ((p->lev > 1) &&
 	       (p->exp < (player_exp[p->lev-2] * p->expfact / 100L)))
@@ -266,7 +266,7 @@ static void adjust_level(struct player *p, bool verbose)
 
 	p->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 	p->upkeep->redraw |= (PR_LEV | PR_TITLE | PR_EXP | PR_STATS);
-	handle_stuff(p->upkeep);
+	handle_stuff(p);
 }
 
 void player_exp_gain(struct player *p, s32b amount)
@@ -296,7 +296,7 @@ void player_flags(struct player *p, bitflag f[OF_SIZE])
 	memcpy(f, p->race->flags, sizeof(p->race->flags));
 
 	/* Some classes become immune to fear at a certain plevel */
-	if (player_has(PF_BRAVERY_30) && p->lev >= 30)
+	if (player_has(p, PF_BRAVERY_30) && p->lev >= 30)
 		of_on(f, OF_PROT_FEAR);
 }
 

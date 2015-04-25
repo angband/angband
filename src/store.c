@@ -1669,7 +1669,7 @@ void do_cmd_buy(struct command *cmd)
 	(void) inven_carry(player, bought, TRUE, TRUE);
 
 	/* Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Remove the bought objects from the store if it's not a staple */
 	if (!store_is_staple(store, obj->kind)) {
@@ -1747,7 +1747,7 @@ void do_cmd_retrieve(struct command *cmd)
 	(void) inven_carry(player, picked_item, TRUE, TRUE);
 
 	/* Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 	
 	/* Reduce or remove the item */
 	store_delete(store, obj, amt);
@@ -1879,10 +1879,10 @@ void do_cmd_sell(struct command *cmd)
 	player->upkeep->notice |= PN_IGNORE;
 
 	/* Notice if pack items need to be combined or reordered */
-	notice_stuff(player->upkeep);
+	notice_stuff(player);
 
 	/* Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* The store gets that (known) object */
 	store_carry(store, sold_item);
@@ -1943,7 +1943,7 @@ void do_cmd_stash(struct command *cmd)
 	msg("You drop %s (%c).", o_name, gear_to_label(obj));
 	
 	/* Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 	
 	/* Let the home carry it */
 	home_carry(dropped);

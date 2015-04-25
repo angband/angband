@@ -29,6 +29,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -731,7 +732,7 @@ void object_notice_on_wield(struct object *obj)
 	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* special case FA, needed for mages wielding gloves */
-	if (player_has(PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
+	if (player_has(player, PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
 		(obj->modifiers[OBJ_MOD_DEX] <= 0) && 
 		!kf_has(obj->kind->kind_flags, KF_SPELLS_OK))
 		of_on(obvious_mask, OF_FREE_ACT);
@@ -1126,7 +1127,7 @@ obj_pseudo_t object_pseudo(const struct object *obj)
 	create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* FA on gloves is obvious to mage casters */
-	if (player_has(PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
+	if (player_has(player, PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
 		(obj->modifiers[OBJ_MOD_DEX] <= 0) && 
 		!kf_has(obj->kind->kind_flags, KF_SPELLS_OK))
 		of_on(f2, OF_FREE_ACT);
@@ -1265,7 +1266,7 @@ void sense_inventory(void)
 	}
 
 	/* Get improvement rate */
-	if (player_has(PF_PSEUDO_ID_IMPROV))
+	if (player_has(player, PF_PSEUDO_ID_IMPROV))
 		rate = player->class->sense_base /
 			(player->lev * player->lev + player->class->sense_div);
 	else

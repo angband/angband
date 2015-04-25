@@ -27,6 +27,7 @@
 #include "obj-tval.h"
 #include "obj-pile.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "player-spell.h"
 #include "player-timed.h"
@@ -155,7 +156,7 @@ void death_knowledge(void)
 
 	/* Hack -- Recalculate bonuses */
 	player->upkeep->update |= (PU_BONUS);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 }
 
 /*

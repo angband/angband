@@ -35,6 +35,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "player-util.h"
 #include "trap.h"

@@ -27,6 +27,7 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-birth.h"
+#include "player-calcs.h"
 #include "player-spell.h"
 #include "store.h"
 #include "target.h"

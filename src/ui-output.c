@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "cave.h"
+#include "player-calcs.h"
 #include "ui-input.h"
 #include "ui-output.h"
 #include "z-textblock.h"
@@ -415,7 +416,7 @@ s16b screen_save_depth;
 void screen_save(void)
 {
 	player->upkeep->redraw |= PR_MAP;
-	redraw_stuff(player->upkeep);
+	redraw_stuff(player);
 	event_signal(EVENT_MESSAGE_FLUSH);
 	Term_save();
 	screen_save_depth++;
@@ -510,7 +511,7 @@ bool modify_panel(term *t, int wy, int wx)
 		player->upkeep->redraw |= (PR_MAP);
 
 		/* Redraw for big graphics */
-		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(player->upkeep);
+		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(player);
 
 		/* Changed */
 		return (TRUE);

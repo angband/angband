@@ -35,6 +35,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -502,7 +503,7 @@ static void show_obj_list(olist_detail_t mode)
 void show_inven(int mode, item_tester tester)
 {
 	int i, last_slot = -1;
-	int diff = weight_remaining();
+	int diff = weight_remaining(player);
 
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
@@ -1398,7 +1399,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 			/* Redraw windows */
-			redraw_stuff(player->upkeep);
+			redraw_stuff(player);
 
 			/* Save screen */
 			screen_save();
@@ -1432,7 +1433,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 			/* Update */
 			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-			redraw_stuff(player->upkeep);
+			redraw_stuff(player);
 
 			/* Clear the prompt line */
 			prt("", 0, 0);

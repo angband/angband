@@ -23,6 +23,7 @@
 #include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "trap.h"
 
@@ -275,7 +276,7 @@ static void cave_light(struct point_set *ps)
 	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update stuff */
-	update_stuff(player->upkeep);
+	update_stuff(player);
 
 	/* Process the grids */
 	for (i = 0; i < ps->n; i++)
@@ -342,7 +343,7 @@ static void cave_unlight(struct point_set *ps)
 	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update stuff */
-	update_stuff(player->upkeep);
+	update_stuff(player);
 
 	/* Process the grids */
 	for (i = 0; i < ps->n; i++)

@@ -33,6 +33,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "store.h"
 #include "target.h"
@@ -983,8 +984,8 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 				cmdq_pop(CMD_STORE);
 
 				/* Notice and handle stuff */
-				notice_stuff(player->upkeep);
-				handle_stuff(player->upkeep);
+				notice_stuff(player);
+				handle_stuff(player);
 
 				/* Display the store */
 				store_display_recalc(ctx);
@@ -1064,8 +1065,8 @@ static bool store_menu_handle(struct menu *m, const ui_event *event, int oid)
 		}
 
 		/* Notice and handle stuff */
-		notice_stuff(player->upkeep);
-		handle_stuff(player->upkeep);
+		notice_stuff(player);
+		handle_stuff(player);
 
 		return processed;
 	}

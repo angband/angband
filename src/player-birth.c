@@ -35,12 +35,12 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-birth.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
-#include "player.h"
 #include "savefile.h"
 #include "store.h"
 
@@ -293,7 +293,7 @@ static void get_bonuses(void)
 	player->upkeep->update |= (PU_BONUS | PU_HP);
 
 	/* Update stuff */
-	update_stuff(player->upkeep);
+	update_stuff(player);
 
 	/* Fully healed */
 	player->chp = player->mhp;

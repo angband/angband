@@ -34,6 +34,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -1047,7 +1048,7 @@ void do_cmd_study_book(struct command *cmd)
 
 	book = object_to_book(book_obj);
 	track_object(player->upkeep, book_obj);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Check the player can study at all atm */
 	if (!player_can_study(player, TRUE))
@@ -1077,7 +1078,7 @@ void do_cmd_study_book(struct command *cmd)
  */
 void do_cmd_study(struct command *cmd)
 {
-	if (player_has(PF_CHOOSE_SPELLS))
+	if (player_has(player, PF_CHOOSE_SPELLS))
 		do_cmd_study_spell(cmd);
 	else
 		do_cmd_study_book(cmd);

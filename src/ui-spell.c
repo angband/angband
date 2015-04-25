@@ -23,6 +23,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-calcs.h"
 #include "player-spell.h"
 #include "ui-menu.h"
 #include "ui-output.h"
@@ -277,7 +278,7 @@ void textui_spell_browse(void)
 
 	/* Track the object kind */
 	track_object(player->upkeep, obj);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	textui_book_browse(obj);
 }
@@ -294,7 +295,7 @@ int textui_get_spell_from_book(const char *verb, struct object *book,
 	struct menu *m;
 
 	track_object(player->upkeep, book);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	m = spell_menu_new(book, spell_filter);
 	if (m) {

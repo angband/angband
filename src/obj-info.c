@@ -32,6 +32,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "project.h"
 #include "z-textblock.h"
@@ -634,7 +635,7 @@ static int obj_known_blows(const struct object *obj, int max_num,
 	player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player->gear, &state, TRUE);
+	calc_bonuses(player, &state, TRUE);
 
 	/* Stop pretending */
 	player->body.slots[weapon_slot].obj = current_weapon;
@@ -676,7 +677,7 @@ static int obj_known_blows(const struct object *obj, int max_num,
 
 			state.stat_ind[STAT_STR] += str_plus;
 			state.stat_ind[STAT_DEX] += dex_plus;
-			new_blows = calc_blows(obj, &state, extra_blows);
+			new_blows = calc_blows(player, obj, &state, extra_blows);
 			state.stat_ind[STAT_STR] -= str_plus;
 			state.stat_ind[STAT_DEX] -= dex_plus;
 
@@ -798,7 +799,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player->gear, &state, TRUE);
+	calc_bonuses(player, &state, TRUE);
 
 	/* Stop pretending */
 	player->body.slots[weapon_slot].obj = current_weapon;
@@ -1042,7 +1043,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 		/* Calculate the player's hypothetical state */
-		calc_bonuses(player->gear, &state, TRUE);
+		calc_bonuses(player, &state, TRUE);
 
 		/* Stop pretending */
 		player->body.slots[weapon_slot].obj = current;
@@ -1136,7 +1137,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	player->body.slots[slot].obj = obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player->gear, &state, TRUE);
+	calc_bonuses(player, &state, TRUE);
 
 	/* Stop pretending */
 	player->body.slots[slot].obj = current;

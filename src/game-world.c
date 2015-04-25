@@ -28,6 +28,7 @@
 #include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "target.h"
@@ -556,8 +557,8 @@ static void process_player_cleanup(void)
 	}
 
 	/* Hack - update needed first because inventory may have changed */
-	update_stuff(player->upkeep);
-	redraw_stuff(player->upkeep);
+	update_stuff(player);
+	redraw_stuff(player);
 }
 
 
@@ -586,8 +587,8 @@ void process_player(void)
 	/* Repeat until energy is reduced */
 	do {
 		/* Refresh */
-		notice_stuff(player->upkeep);
-		handle_stuff(player->upkeep);
+		notice_stuff(player);
+		handle_stuff(player);
 		event_signal(EVENT_REFRESH);
 
 		/* Hack -- Pack Overflow */
@@ -597,7 +598,7 @@ void process_player(void)
 		player->upkeep->energy_use = 0;
 
 		/* Dwarves detect treasure */
-		if (player_has(PF_SEE_ORE)) {
+		if (player_has(player, PF_SEE_ORE)) {
 			/* Only if they are in good shape */
 			if (!player->timed[TMD_IMAGE] &&
 				!player->timed[TMD_CONFUSED] &&
@@ -638,7 +639,7 @@ void process_player(void)
 			 !player->upkeep->generate_level);
 
 	/* Notice stuff (if needed) */
-	notice_stuff(player->upkeep);
+	notice_stuff(player);
 }
 
 /**
@@ -675,9 +676,9 @@ void on_new_level(void)
 	/* Update player */
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS | PU_INVEN);
 	player->upkeep->notice |= (PN_COMBINE);
-	notice_stuff(player->upkeep);
-	update_stuff(player->upkeep);
-	redraw_stuff(player->upkeep);
+	notice_stuff(player);
+	update_stuff(player);
+	redraw_stuff(player);
 
 	/* Refresh */
 	event_signal(EVENT_REFRESH);
@@ -697,9 +698,9 @@ void on_new_level(void)
  */
 static void on_leave_level(void) {
 	/* Any pending processing */
-	notice_stuff(player->upkeep);
-	update_stuff(player->upkeep);
-	redraw_stuff(player->upkeep);
+	notice_stuff(player);
+	update_stuff(player);
+	redraw_stuff(player);
 
 	/* Forget the view */
 	forget_view(cave);
@@ -755,8 +756,8 @@ void run_game_loop(void)
 	/* Now that the player's turn is fully complete, we run the main loop 
 	 * until player input is needed again */
 	while (TRUE) {
-		notice_stuff(player->upkeep);
-		handle_stuff(player->upkeep);
+		notice_stuff(player);
+		handle_stuff(player);
 		event_signal(EVENT_REFRESH);
 
 		/* Process the rest of the world, give the player energy and 
@@ -772,8 +773,8 @@ void run_game_loop(void)
 			reset_monsters();
 
 			/* Refresh */
-			notice_stuff(player->upkeep);
-			handle_stuff(player->upkeep);
+			notice_stuff(player);
+			handle_stuff(player);
 			event_signal(EVENT_REFRESH);
 			if (player->is_dead || !player->upkeep->playing)
 				return;
@@ -783,8 +784,8 @@ void run_game_loop(void)
 				process_world(cave);
 
 				/* Refresh */
-				notice_stuff(player->upkeep);
-				handle_stuff(player->upkeep);
+				notice_stuff(player);
+				handle_stuff(player);
 				event_signal(EVENT_REFRESH);
 				if (player->is_dead || !player->upkeep->playing)
 					return;

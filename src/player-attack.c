@@ -36,6 +36,7 @@
 #include "obj-slays.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-util.h"
 #include "project.h"
 #include "target.h"
@@ -523,7 +524,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 	path_n = project_path(path_g, range, y, x, ty, tx, 0);
 
 	/* Hack -- Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Start at the player */
 	x = player->px;

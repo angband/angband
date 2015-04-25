@@ -25,6 +25,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-calcs.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -313,24 +314,18 @@ s16b spell_chance(int spell)
 
 	/* Not enough mana to cast */
 	if (s_ptr->smana > player->csp)
-	{
 		chance += 5 * (s_ptr->smana - player->csp);
-	}
 
 	/* Extract the minimum failure rate due to realm */
 	minfail = min_fail(player);
 
 	/* Non mage/priest characters never get better than 5 percent */
-	if (!player_has(PF_ZERO_FAIL) && minfail < 5)
-	{
+	if (!player_has(player, PF_ZERO_FAIL) && minfail < 5)
 		minfail = 5;
-	}
 
 	/* Priest prayer penalty for "edged" weapons (before minfail) */
 	if (player->state.icky_wield)
-	{
 		chance += 25;
-	}
 
 	/* Fear makes spells harder (before minfail) */
 	/* Note that spells that remove fear have a much lower fail rate than
@@ -362,23 +357,20 @@ s16b spell_chance(int spell)
 void spell_learn(int spell)
 {
 	int i;
-	const char *p = player->class->magic.spell_realm->spell_noun;
+	const char *noun = player->class->magic.spell_realm->spell_noun;
 
 	/* Learn the spell */
 	player->spell_flags[spell] |= PY_SPELL_LEARNED;
 
 	/* Find the next open entry in "spell_order[]" */
 	for (i = 0; i < player->class->magic.total_spells; i++)
-	{
-		/* Stop at the first empty space */
 		if (player->spell_order[i] == 99) break;
-	}
 
 	/* Add the spell to the known list */
 	player->spell_order[i] = spell;
 
 	/* Mention the result */
-	msgt(MSG_STUDY, "You have learned the %s of %s.", p,
+	msgt(MSG_STUDY, "You have learned the %s of %s.", noun,
 		 spell_by_index(spell)->name);
 
 	/* One less spell available */
@@ -386,11 +378,8 @@ void spell_learn(int spell)
 
 	/* Message if needed */
 	if (player->upkeep->new_spells)
-	{
-		/* Message */
-		msg("You can learn %d more %s%s.", player->upkeep->new_spells, p, 
+		msg("You can learn %d more %s%s.", player->upkeep->new_spells, noun, 
 			PLURAL(player->upkeep->new_spells));
-	}
 
 	/* Redraw Study Status */
 	player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
@@ -399,7 +388,7 @@ void spell_learn(int spell)
 static int beam_chance(void)
 {
 	int plev = player->lev;
-	return (player_has(PF_BEAM) ? plev : (plev / 2));
+	return (player_has(player, PF_BEAM) ? plev : (plev / 2));
 }
 
 /**

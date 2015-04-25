@@ -20,94 +20,18 @@
 #ifndef PLAYER_CALCS_H
 #define PLAYER_CALCS_H
 
-/**
- * Indexes of the various "stats" (hard-coded by savefiles, etc).
- */
-enum
-{
-	#define STAT(a, b, c, d, e, f, g, h) STAT_##a,
-	#include "list-stats.h"
-	#undef STAT
-
-	STAT_MAX
-};
-
+#include "player.h"
 
 /**
- * Player race and class flags
- */
-enum
-{
-	#define PF(a,b,c) PF_##a,
-	#include "list-player-flags.h"
-	#undef PF
-	PF_MAX
-};
-
-#define PF_SIZE                FLAG_SIZE(PF_MAX)
-
-#define pf_has(f, flag)        flag_has_dbg(f, PF_SIZE, flag, #f, #flag)
-#define pf_next(f, flag)       flag_next(f, PF_SIZE, flag)
-#define pf_is_empty(f)         flag_is_empty(f, PF_SIZE)
-#define pf_is_full(f)          flag_is_full(f, PF_SIZE)
-#define pf_is_inter(f1, f2)    flag_is_inter(f1, f2, PF_SIZE)
-#define pf_is_subset(f1, f2)   flag_is_subset(f1, f2, PF_SIZE)
-#define pf_is_equal(f1, f2)    flag_is_equal(f1, f2, PF_SIZE)
-#define pf_on(f, flag)         flag_on_dbg(f, PF_SIZE, flag, #f, #flag)
-#define pf_off(f, flag)        flag_off(f, PF_SIZE, flag)
-#define pf_wipe(f)             flag_wipe(f, PF_SIZE)
-#define pf_setall(f)           flag_setall(f, PF_SIZE)
-#define pf_negate(f)           flag_negate(f, PF_SIZE)
-#define pf_copy(f1, f2)        flag_copy(f1, f2, PF_SIZE)
-#define pf_union(f1, f2)       flag_union(f1, f2, PF_SIZE)
-#define pf_comp_union(f1, f2)  flag_comp_union(f1, f2, PF_SIZE)
-#define pf_inter(f1, f2)       flag_inter(f1, f2, PF_SIZE)
-#define pf_diff(f1, f2)        flag_diff(f1, f2, PF_SIZE)
-
-#define player_has(flag)       (pf_has(player->race->pflags, (flag)) || pf_has(player->class->pflags, (flag)))
-
-
-/**
- * Skill indexes
- */
-enum
-{
-	SKILL_DISARM,			/* Skill: Disarming */
-	SKILL_DEVICE,			/* Skill: Magic Devices */
-	SKILL_SAVE,				/* Skill: Saving throw */
-	SKILL_STEALTH,			/* Skill: Stealth factor */
-	SKILL_SEARCH,			/* Skill: Searching ability */
-	SKILL_SEARCH_FREQUENCY,	/* Skill: Searching frequency */
-	SKILL_TO_HIT_MELEE,		/* Skill: To hit (normal) */
-	SKILL_TO_HIT_BOW,		/* Skill: To hit (shooting) */
-	SKILL_TO_HIT_THROW,		/* Skill: To hit (throwing) */
-	SKILL_DIGGING,			/* Skill: Digging */
-
-	SKILL_MAX
-};
-
-/* Terrain that the player has a chance of digging through */
-enum
-{
-	DIGGING_RUBBLE = 0,
-	DIGGING_MAGMA,
-	DIGGING_QUARTZ,
-	DIGGING_GRANITE,
-	DIGGING_DOORS,
-	
-	DIGGING_MAX
-};
-
-/*
- * Bit flags for the "player->notice" variable
+ * Bit flags for the "player->upkeep->notice" variable
  */
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
 #define PN_IGNORE       0x00000008L    /* Ignore stuff */
 #define PN_MON_MESSAGE	0x00000010L	   /* flush monster pain messages */
 
 
-/*
- * Bit flags for the "player->update" variable
+/**
+ * Bit flags for the "player->upkeep->update" variable
  */
 #define PU_BONUS		0x00000001L	/* Calculate bonuses */
 #define PU_TORCH		0x00000002L	/* Calculate torch radius */
@@ -124,8 +48,8 @@ enum
 #define PU_INVEN		0x00001000L	/* Update inventory */
 
 
-/*
- * Bit flags for the "player->redraw" variable
+/**
+ * Bit flags for the "player->upkeep->redraw" variable
  */
 #define PR_MISC			0x00000001L	/* Display Race/Class */
 #define PR_TITLE		0x00000002L	/* Display Title */
@@ -162,121 +86,6 @@ enum
 #define PR_EXTRA \
 	(PR_STATUS | PR_STATE | PR_STUDY)
 
-/**
- * The range of possible indexes into tables based upon stats.
- * Currently things range from 3 to 18/220 = 40.
- */
-#define STAT_RANGE 38
-
-
-/*** Structures ***/
-
-struct equip_slot {
-	struct equip_slot *next;
-
-	u16b type;
-	char *name;
-	struct object *obj;
-};
-
-struct player_body {
-	struct player_body *next;
-	char *name;
-	u16b count;
-	struct equip_slot *slots;
-};
-
-/**
- * All the variable state that changes when you put on/take off equipment.
- * Player flags are not currently variable, but useful here so monsters can
- * learn them.
- */
-typedef struct player_state {
-	s16b speed;		/* Current speed */
-
-	s16b num_blows;		/* Number of blows x100 */
-	s16b num_shots;		/* Number of shots */
-
-	byte ammo_mult;		/* Ammo multiplier */
-	byte ammo_tval;		/* Ammo variety */
-
-	s16b stat_add[STAT_MAX];	/* Equipment stat bonuses */
-	s16b stat_ind[STAT_MAX];	/* Indexes into stat tables */
-	s16b stat_use[STAT_MAX];	/* Current modified stats */
-	s16b stat_top[STAT_MAX];	/* Maximal modified stats */
-
-	s16b ac;			/* Base ac */
-	s16b to_a;			/* Bonus to ac */
-	s16b to_h;			/* Bonus to hit */
-	s16b to_d;			/* Bonus to dam */
-
-	s16b see_infra;		/* Infravision range */
-
-	s16b cur_light;		/* Radius of light (if any) */
-
-	s16b skills[SKILL_MAX];	/* Skills */
-
-	int noise;			/* Derived from stealth */
-
-	bool heavy_wield;	/* Heavy weapon */
-	bool heavy_shoot;	/* Heavy shooter */
-	bool icky_wield;	/* Icky weapon shooter */
-
-	bool cumber_armor;	/* Mana draining armor */
-	bool cumber_glove;	/* Mana draining gloves */
-
-	bitflag flags[OF_SIZE];	/* Status flags from race and items */
-	bitflag pflags[PF_SIZE];	/* Player intrinsic flags */
-	struct element_info el_info[ELEM_MAX]; /* Resists from race and items */
-} player_state;
-
-/**
- * Temporary, derived, player-related variables used during play but not saved
- *
- * Some of these probably should go to the UI
- */
-typedef struct player_upkeep {
-	bool playing;			/* True if player is playing */
-	bool autosave;			/* True if autosave is pending */
-	bool generate_level;	/* True if level needs regenerating */
-	bool only_partial;		/* True if only partial updates are needed */
-
-	int energy_use;			/* Energy use this turn */
-	int new_spells;			/* Number of spells available */
-
-	struct monster *health_who;			/* Health bar trackee */
-	struct monster_race *monster_race;	/* Monster race trackee */
-	struct object *object;				/* Object trackee */
-	struct object_kind *object_kind;	/* Object kind trackee */
-
-	u32b notice;		/* Bit flags for pending actions such as 
-						 * reordering inventory, ignoring, etc. */
-	u32b update;		/* Bit flags for recalculations needed 
-						 * such as HP, or visible area */
-	u32b redraw;	    /* Bit flags for things that /have/ changed,
-						 * and just need to be redrawn by the UI,
-						 * such as HP, Speed, etc.*/
-
-	int command_wrk;		/* Used by the UI to decide whether
-							 * to start off showing equipment or
-							 * inventory listings when offering
-							 * a choice.  See obj-ui.c */
-
-	bool create_up_stair;		/* Create up stair on next level */
-	bool create_down_stair;		/* Create down stair on next level */
-
-	int running;				/* Running counter */
-	bool running_withpathfind;	/* Are we using the pathfinder ? */
-	bool running_firststep;		/* Is this our first step running? */
-
-	struct object **quiver;		/* Quiver objects */
-	struct object **inven;		/* Inventory objects */
-	int total_weight;			/* Total weight being carried */
-	int inven_cnt;				/* Number of items in inventory */
-	int equip_cnt;				/* Number of items in equipment */
-	int quiver_cnt;				/* Number of items in the quiver */
-} player_upkeep;
-
 
 extern const byte adj_str_blow[STAT_RANGE];
 extern const byte adj_dex_safe[STAT_RANGE];
@@ -287,9 +96,10 @@ bool earlier_object(struct object *orig, struct object *new, bool store);
 int equipped_item_slot(struct player_body body, struct object *obj);
 void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 					struct player_body body);
-void calc_bonuses(object_type inventory[], player_state *state, bool known_only);
+void calc_bonuses(struct player *p, player_state *state, bool known_only);
 void calc_digging_chances(player_state *state, int chances[DIGGING_MAX]);
-int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
+int calc_blows(struct player *p, const object_type *o_ptr, player_state *state,
+			   int extra_blows);
 
 void health_track(struct player_upkeep *upkeep, struct monster *m_ptr);
 void monster_race_track(struct player_upkeep *upkeep, 
@@ -298,10 +108,10 @@ void track_object(struct player_upkeep *upkeep, struct object *obj);
 void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind);
 bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj);
 
-void notice_stuff(struct player_upkeep *upkeep);
-void update_stuff(struct player_upkeep *upkeep);
-void redraw_stuff(struct player_upkeep *upkeep);
-void handle_stuff(struct player_upkeep *upkeep);
-int weight_remaining(void);
+void notice_stuff(struct player *p);
+void update_stuff(struct player *p);
+void redraw_stuff(struct player *p);
+void handle_stuff(struct player *p);
+int weight_remaining(struct player *p);
 
 #endif /* !PLAYER_CALCS_H */

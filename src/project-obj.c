@@ -27,6 +27,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 
 /**
  * Destroys a type of item on a given percent chance.

@@ -37,6 +37,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -709,7 +710,7 @@ static void wiz_create_item(bool art)
 	
 	/* Redraw map */
 	player->upkeep->redraw |= (PR_MAP | PR_ITEMLIST);
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 }
 
@@ -1360,7 +1361,7 @@ static void do_cmd_rerate(void)
 	player->upkeep->redraw |= (PR_HP);
 
 	/* Handle stuff */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Message */
 	msg("Current Life Rating is %d/100.", percent);
@@ -1707,7 +1708,7 @@ static void do_cmd_wiz_advance(void)
 			PR_ITEMLIST);
 
 	/* Hack -- update */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 }
 

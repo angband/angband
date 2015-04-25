@@ -24,6 +24,7 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "project.h"
 #include "target.h"

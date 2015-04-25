@@ -28,6 +28,7 @@
 #include "obj-gear.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
@@ -100,7 +101,7 @@ void do_cmd_redraw(void)
 	Term_clear();
 
 	/* Hack -- update */
-	handle_stuff(player->upkeep);
+	handle_stuff(player);
 
 	/* Place the cursor on the player */
 	if (0 != character_dungeon)
