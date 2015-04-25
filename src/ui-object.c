@@ -643,6 +643,7 @@ static olist_detail_t olist_mode = 0;
 int item_mode;
 cmd_code item_cmd;
 bool newmenu = FALSE;
+bool allow_all = FALSE;
 
 /**
  * ------------------------------------------------------------------------
@@ -791,7 +792,7 @@ static void menu_header(void)
 	bool use_inven = ((item_mode & USE_INVEN) ? TRUE : FALSE);
 	bool use_equip = ((item_mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_quiver = ((item_mode & USE_QUIVER) ? TRUE : FALSE);
-	bool allow_floor = (f1 <= f2);
+	bool allow_floor = ((f1 <= f2) || allow_all);
 
 	/* Viewing inventory */
 	if (player->upkeep->command_wrk == USE_INVEN) {
@@ -954,11 +955,11 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 	if (event->type == EVT_KBRD) {
 		if (key == '/') {
 			/* Toggle if allowed */
-			if ((item_mode & USE_INVEN)
+			if (((item_mode & USE_INVEN) || allow_all)
 				&& (player->upkeep->command_wrk != USE_INVEN)) {
 				player->upkeep->command_wrk = USE_INVEN;
 				newmenu = TRUE;
-			} else if ((item_mode & USE_EQUIP) &&
+			} else if (((item_mode & USE_EQUIP) || allow_all) &&
 					   (player->upkeep->command_wrk != USE_EQUIP)) {
 				player->upkeep->command_wrk = USE_EQUIP;
 				newmenu = TRUE;
@@ -969,7 +970,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 
 		else if (key == '.') {
 			/* No toggle allowed */
-			if (q1 > q2) {
+			if ((q1 > q2) && !allow_all){
 				bell("Cannot select quiver!");
 			} else {
 				/* Toggle to quiver */
@@ -980,7 +981,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 
 		else if (key == '-') {
 			/* No toggle allowed */
-			if (f1 > f2) {
+			if ((f1 > f2) && !allow_all) {
 				bell("Cannot select floor!");
 			} else {
 				/* Toggle to floor */
@@ -1235,6 +1236,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	item_cmd = cmd;
 	tester_m = tester;
 	prompt = pmt;
+	allow_all = str ? FALSE : TRUE;
 
 	/* Object list display modes */
 	if (mode & SHOW_FAIL)
@@ -1268,7 +1270,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		i2--;
 
 	/* Accept inventory */
-	if (i1 <= i2) allow_inven = TRUE;
+	if ((i1 <= i2) || allow_all) allow_inven = TRUE;
 
 	/* Full equipment */
 	e1 = 0;
@@ -1286,7 +1288,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	}
 
 	/* Accept equipment */
-	if (e1 <= e2) allow_equip = TRUE;
+	if ((e1 <= e2) || allow_all) allow_equip = TRUE;
 
 	/* Restrict quiver indexes */
 	q1 = 0;
@@ -1302,7 +1304,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		q2--;
 
 	/* Accept quiver */
-	if (q1 <= q2) allow_quiver = TRUE;
+	if ((q1 <= q2) || allow_all) allow_quiver = TRUE;
 
 	/* Scan all non-gold objects in the grid */
 	floor_num = scan_floor(floor_list, floor_max, py, px, 0x0B, tester);
@@ -1319,7 +1321,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	while ((f1 <= f2) && (!object_test(tester, floor_list[f2]))) f2--;
 
 	/* Accept floor */
-	if (f1 <= f2) allow_floor = TRUE;
+	if ((f1 <= f2) || allow_all) allow_floor = TRUE;
 
 	/* Require at least one legal choice */
 	if (allow_inven || allow_equip || allow_quiver || allow_floor) {
