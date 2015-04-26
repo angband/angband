@@ -549,22 +549,23 @@ int rd_quests(void)
 {
 	int i;
 	u16b tmp16u;
-	
+
 	/* Load the Quests */
 	rd_u16b(&tmp16u);
 	if (tmp16u > z_info->quest_max) {
 		note(format("Too many (%u) quests!", tmp16u));
 		return (-1);
 	}
-	
+
 	/* Load the Quests */
 	player_quests_reset(player);
 	for (i = 0; i < tmp16u; i++) {
+		u16b cur_num;
 		rd_byte(&player->quests[i].level);
-		rd_u16b(&tmp16u);
-		player->quests[i].cur_num = tmp16u;
+		rd_u16b(&cur_num);
+		player->quests[i].cur_num = cur_num;
 	}
-	
+
 	return 0;
 }
 

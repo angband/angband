@@ -145,7 +145,7 @@ bool is_quest(int level)
 	if (!level) return FALSE;
 
 	for (i = 0; i < z_info->quest_max; i++)
-		if (quests[i].level == level)
+		if (player->quests[i].level == level)
 			return TRUE;
 
 	return FALSE;
