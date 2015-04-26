@@ -2376,7 +2376,7 @@ static void ui_leave_init(game_event_type type, game_event_data *data,
 	Term_fresh();
 }
 
-static void ui_enter_game(game_event_type type, game_event_data *data,
+static void ui_enter_world(game_event_type type, game_event_data *data,
 						  void *user)
 {
 	/* Redraw stuff */
@@ -2423,18 +2423,6 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	/* Display a physical missile */
 	event_add_handler(EVENT_MISSILE, display_missile, NULL);
 
-	/* Display a message to the player */
-	event_add_handler(EVENT_MESSAGE, display_message, NULL);
-
-	/* Display a message and make a noise to the player */
-	event_add_handler(EVENT_BELL, bell_message, NULL);
-
-	/* Tell the UI to ignore all pending input */
-	event_add_handler(EVENT_INPUT_FLUSH, flush, NULL);
-
-	/* Print all waiting messages */
-	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
-
 	/* Check to see if the player has tried to cancel game processing */
 	event_add_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
 
@@ -2457,7 +2445,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data,
 	screen_save_depth--;
 }
 
-static void ui_leave_game(game_event_type type, game_event_data *data,
+static void ui_leave_world(game_event_type type, game_event_data *data,
 						  void *user)
 {
 	/* Disallow big cursor */
@@ -2497,18 +2485,6 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	/* Display a physical missile */
 	event_remove_handler(EVENT_MISSILE, display_missile, NULL);
 
-	/* Display a message to the player */
-	event_remove_handler(EVENT_MESSAGE, display_message, NULL);
-
-	/* Display a message and make a noise to the player */
-	event_remove_handler(EVENT_BELL, bell_message, NULL);
-
-	/* Tell the UI to ignore all pending input */
-	event_remove_handler(EVENT_INPUT_FLUSH, flush, NULL);
-
-	/* Print all waiting messages */
-	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
-
 	/* Check to see if the player has tried to cancel game processing */
 	event_remove_handler(EVENT_CHECK_INTERRUPT, check_for_player_interrupt, NULL);
 
@@ -2537,6 +2513,38 @@ static void ui_leave_game(game_event_type type, game_event_data *data,
 	screen_save_depth++;
 }
 
+static void ui_enter_game(game_event_type type, game_event_data *data,
+						  void *user)
+{
+	/* Display a message to the player */
+	event_add_handler(EVENT_MESSAGE, display_message, NULL);
+
+	/* Display a message and make a noise to the player */
+	event_add_handler(EVENT_BELL, bell_message, NULL);
+
+	/* Tell the UI to ignore all pending input */
+	event_add_handler(EVENT_INPUT_FLUSH, flush, NULL);
+
+	/* Print all waiting messages */
+	event_add_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
+}
+
+static void ui_leave_game(game_event_type type, game_event_data *data,
+						  void *user)
+{
+	/* Display a message to the player */
+	event_remove_handler(EVENT_MESSAGE, display_message, NULL);
+
+	/* Display a message and make a noise to the player */
+	event_remove_handler(EVENT_BELL, bell_message, NULL);
+
+	/* Tell the UI to ignore all pending input */
+	event_remove_handler(EVENT_INPUT_FLUSH, flush, NULL);
+
+	/* Print all waiting messages */
+	event_remove_handler(EVENT_MESSAGE_FLUSH, message_flush, NULL);
+}
+
 void init_display(void)
 {
 	event_add_handler(EVENT_ENTER_INIT, ui_enter_init, NULL);
@@ -2544,6 +2552,9 @@ void init_display(void)
 
 	event_add_handler(EVENT_ENTER_GAME, ui_enter_game, NULL);
 	event_add_handler(EVENT_LEAVE_GAME, ui_leave_game, NULL);
+
+	event_add_handler(EVENT_ENTER_WORLD, ui_enter_world, NULL);
+	event_add_handler(EVENT_LEAVE_WORLD, ui_leave_world, NULL);
 
 	ui_init_birthstate_handlers();
 }

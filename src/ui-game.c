@@ -377,6 +377,7 @@ static void start_game(bool new_game)
 	/* Tell the UI we've started. */
 	event_signal(EVENT_LEAVE_INIT);
 	event_signal(EVENT_ENTER_GAME);
+	event_signal(EVENT_ENTER_WORLD);
 
 	/* Save not required yet. */
 	player->upkeep->autosave = FALSE;
@@ -491,8 +492,8 @@ void save_game(void)
  */
 void close_game(void)
 {
-	/* Tell the UI we're done with the game state */
-	event_signal(EVENT_LEAVE_GAME);
+	/* Tell the UI we're done with the world */
+	event_signal(EVENT_LEAVE_WORLD);
 
 	/* Handle stuff */
 	handle_stuff(player);
@@ -541,6 +542,9 @@ void close_game(void)
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
+
+	/* Tell the UI we're done with the game state */
+	event_signal(EVENT_LEAVE_GAME);
 
 	/* Allow suspending now */
 	signals_handle_tstp();

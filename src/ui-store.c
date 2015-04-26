@@ -1162,7 +1162,7 @@ void enter_store(game_event_type type, game_event_data *data, void *user)
 	}
 
 	/* Shut down the normal game view */
-	event_signal(EVENT_LEAVE_GAME);
+	event_signal(EVENT_LEAVE_WORLD);
 }
 
 /**
@@ -1214,7 +1214,7 @@ void use_store(game_event_type type, game_event_data *data, void *user)
 void leave_store(game_event_type type, game_event_data *data, void *user)
 {
 	/* Switch back to the normal game view. */
-	event_signal(EVENT_ENTER_GAME);
+	event_signal(EVENT_ENTER_WORLD);
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
