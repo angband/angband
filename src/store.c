@@ -1650,6 +1650,9 @@ void do_cmd_buy(struct command *cmd)
 	/* Combine the pack (later) */
 	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
 
+	/* Describe the object (fully) again for the message */
+	object_desc(o_name, sizeof(o_name), bought, ODESC_PREFIX | ODESC_FULL);
+
 	/* Message */
 	if (one_in_(3)) msgt(MSG_STORE5, "%s", ONE_OF(comment_accept));
 	msg("You bought %s for %d gold.", o_name, price);
