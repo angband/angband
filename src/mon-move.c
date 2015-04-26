@@ -238,7 +238,7 @@ static bool near_permwall(const monster_type *m_ptr, struct chunk *c)
 }
 
 
-/*
+/**
  * Choose the best direction for "flowing".
  *
  * Note that ghosts and rock-eaters generally don't flow because they can move
@@ -266,15 +266,18 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 
 	int py = player->py, px = player->px;
 	int my = m_ptr->fy, mx = m_ptr->fx;
-    
+
 	/* Only use this algorithm for passwall monsters if near permanent walls,
 	 * to avoid getting snagged */
 	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL,
 				   FLAG_END) && !near_permwall(m_ptr, c))
 		return (FALSE);
 
-	/* If the player has never been near this grid, abort */
-	if (c->squares[my][mx].when == 0) return FALSE;
+	/* The player is not currently near the monster grid */
+	if (c->squares[my][mx].when < c->squares[py][px].when)
+		/* If the player has never been near this grid, abort */
+		if (c->squares[my][mx].when == 0) return FALSE;
+
 	/* Monster is too far away to notice the player */
 	if (c->squares[my][mx].cost > z_info->max_flow_depth) return FALSE;
 	if (c->squares[my][mx].cost > m_ptr->race->aaf) return FALSE;
@@ -283,8 +286,7 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 
 	/* Check nearby grids, diagonals first */
 	/* This gives preference to the cardinal directions */
-	for (i = 7; i >= 0; i--)
-	{
+	for (i = 7; i >= 0; i--) {
 		/* Get the location */
 		int y = my + ddy_ddd[i];
 		int x = mx + ddx_ddd[i];
@@ -304,19 +306,29 @@ static bool get_moves_flow(struct chunk *c, struct monster *m_ptr)
 		best_direction = i;
 		found_direction = TRUE;
 	}
-	
+
 	/* Save the location to flow toward */
- 	/* We multiply by 16 to angle slightly toward the player's actual location */
+	/* Multiply by 16 to angle slightly toward the player's actual location */
 	if (found_direction) {
-		m_ptr->ty = py + 16 * ddy_ddd[best_direction];
-		m_ptr->tx = px + 16 * ddx_ddd[best_direction];
+		int dy = 0, dx = 0;
+
+		/* Ridiculous - actually multiply by whatever doesn't underflow the 
+		 * byte for ty and tx.  Really should do a better solution - NRM */
+		for (i = 0; i < 16; i++)
+			if ((py + dy > 0) && (px + dx > 0)) {
+				dy += ddy_ddd[best_direction];
+				dx += ddx_ddd[best_direction];
+			}
+
+		m_ptr->ty = py + dy;
+		m_ptr->tx = px + dx;
 		return TRUE;
 	}
 
 	return FALSE;
 }
 
-/*
+/**
  * Provide a location to flee to, but give the player a wide berth.
  *
  * A monster may wish to flee to a location that is behind the player,
@@ -341,8 +353,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr)
 	if (c->squares[my][mx].cost > m_ptr->race->aaf) return FALSE;
 
 	/* Check nearby grids, diagonals first */
-	for (i = 7; i >= 0; i--)
-	{
+	for (i = 7; i >= 0; i--) {
 		int dis, score;
 
 		/* Get the location */
@@ -350,7 +361,8 @@ static bool get_moves_fear(struct chunk *c, struct monster *m_ptr)
 		int x = mx + ddx_ddd[i];
 
 		/* Ignore illegal & older locations */
-		if (c->squares[y][x].when == 0 || c->squares[y][x].when < best_when) continue;
+		if (c->squares[y][x].when == 0 || c->squares[y][x].when < best_when)
+			continue;
 
 		/* Calculate distance of this grid from our target */
 		dis = distance(y, x, m_ptr->ty, m_ptr->tx);
@@ -605,7 +617,7 @@ static bool find_safety(struct chunk *c, struct monster *m_ptr)
 
 
 
-/*
+/**
  * Choose a good hiding place near a monster for it to run toward.
  *
  * Pack monsters will use this to "ambush" the player and lure him out
@@ -630,8 +642,7 @@ static bool find_hiding(struct monster *m_ptr)
 	min = distance(py, px, fy, fx) * 3 / 4 + 2;
 
 	/* Start with adjacent locations, spread further */
-	for (d = 1; d < 10; d++)
-	{
+	for (d = 1; d < 10; d++) {
 		/* Get the lists of points with a distance d from (fx, fy) */
 		y_offsets = dist_offsets_y[d];
 		x_offsets = dist_offsets_x[d];
@@ -639,8 +650,7 @@ static bool find_hiding(struct monster *m_ptr)
 		/* Check the locations */
 		for (i = 0, dx = x_offsets[0], dy = y_offsets[0];
 		     dx != 0 || dy != 0;
-		     i++, dx = x_offsets[i], dy = y_offsets[i])
-		{
+		     i++, dx = x_offsets[i], dy = y_offsets[i]) {
 			y = fy + dy;
 			x = fx + dx;
 
@@ -652,14 +662,12 @@ static bool find_hiding(struct monster *m_ptr)
 
 			/* Check for hidden, available grid */
 			if (!square_isview(cave, y, x) &&
-				projectable(cave, fy, fx, y, x, PROJECT_STOP))
-			{
+				projectable(cave, fy, fx, y, x, PROJECT_STOP)) {
 				/* Calculate distance from player */
 				dis = distance(y, x, py, px);
 
 				/* Remember if closer than previous */
-				if (dis < gdis && dis >= min)
-				{
+				if (dis < gdis && dis >= min) {
 					gy = y;
 					gx = x;
 					gdis = dis;
@@ -668,8 +676,7 @@ static bool find_hiding(struct monster *m_ptr)
 		}
 
 		/* Check for success */
-		if (gdis < 999)
-		{
+		if (gdis < 999) {
 			/* Good location */
 			m_ptr->ty = gy;
 			m_ptr->tx = gx;
@@ -706,7 +713,7 @@ static int choose_direction(int dy, int dx)
 			if ((dx > 0) || (dx == 0 && turn % 2 == 0))
 				dir += 10;
 		} else {
-			/* We're heading down */
+			/* We're heading up */
 			dir = 8;
 			if ((dx < 0) || (dx == 0 && turn % 2 == 0))
 				dir += 10;
@@ -717,13 +724,13 @@ static int choose_direction(int dy, int dx)
 	else if (ax > (ay * 2)) {
 		/* Choose between directions '4' and '6' */
 		if (dx > 0) {
-			/* We're heading left */
-			dir = 4;
+			/* We're heading right */
+			dir = 6;
 			if ((dy < 0) || (dy == 0 && turn % 2 == 0))
 				dir += 10;
 		} else {
-			/* We're heading right */
-			dir = 6;
+			/* We're heading left */
+			dir = 4;
 			if ((dy > 0) || (dy == 0 && turn % 2 == 0))
 				dir += 10;
 		}
@@ -733,13 +740,13 @@ static int choose_direction(int dy, int dx)
 	else if (dy > 0) {
 		/* Choose between directions '1' and '3' */
 		if (dx > 0) {
-			/* We're heading down and left */
-			dir = 1;
+			/* We're heading down and right */
+			dir = 3;
 			if ((ay < ax) || (ay == ax && turn % 2 == 0))
 				dir += 10;
 		} else {
-			/* We're heading down and right */
-			dir = 3;
+			/* We're heading down and left */
+			dir = 1;
 			if ((ay > ax) || (ay == ax && turn % 2 == 0))
 				dir += 10;
 		}
@@ -749,13 +756,13 @@ static int choose_direction(int dy, int dx)
 	else {
 		/* Choose between directions '7' and '9' */
 		if (dx > 0) {
-			/* We're heading up and left */
-			dir = 7;
+			/* We're heading up and right */
+			dir = 9;
 			if ((ay > ax) || (ay == ax && turn % 2 == 0))
 				dir += 10;
 		} else {
-			/* We're heading up and right */
-			dir = 9;
+			/* We're heading up and left */
+			dir = 7;
 			if ((ay < ax) || (ay == ax && turn % 2 == 0))
 				dir += 10;
 		}
@@ -765,7 +772,7 @@ static int choose_direction(int dy, int dx)
 }
 
 
-/*
+/**
  * Choose "logical" directions for monster movement
  */
 static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
@@ -786,12 +793,12 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
 	/* Flow towards the player */
 	if (get_moves_flow(c, m_ptr)) {
 		/* Extract the "pseudo-direction" */
-		y = m_ptr->fy - m_ptr->ty;
-		x = m_ptr->fx - m_ptr->tx;
+		y = m_ptr->ty - m_ptr->fy;
+		x = m_ptr->tx - m_ptr->fx;
 	} else {
 		/* Head straight for the player */
-		y = m_ptr->fy - player->py;
-		x = m_ptr->fx - player->px;
+		y = player->py - m_ptr->fy;
+		x = player->px - m_ptr->fx;
 	}
 
 	/* Normal animal packs try to get the player out of corridors. */
@@ -817,8 +824,8 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
 			/* Find hiding place */
 			if (find_hiding(m_ptr)) {
 				done = TRUE;
-				y = m_ptr->fy - m_ptr->ty;
-				x = m_ptr->fx - m_ptr->tx;
+				y = m_ptr->ty - m_ptr->fy;
+				x = m_ptr->tx - m_ptr->fx;
 			}
 		}
 	}
@@ -833,8 +840,8 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
 		} else {
 			/* Set a course for the safe place */
 			get_moves_fear(c, m_ptr);
-			y = m_ptr->fy - m_ptr->ty;
-			x = m_ptr->fx - m_ptr->tx;
+			y = m_ptr->ty - m_ptr->fy;
+			x = m_ptr->tx - m_ptr->fx;
 		}
 
 		done = TRUE;
@@ -852,18 +859,18 @@ static bool get_moves(struct chunk *c, struct monster *m_ptr, int *dir)
 				/* Pick squares near player (pseudo-randomly) */
 				yy = py + ddy_ddd[(tmp + i) & 7];
 				xx = px + ddx_ddd[(tmp + i) & 7];
-				
+
 				/* Ignore filled grids */
 				if (!square_isempty(cave, yy, xx)) continue;
-				
+
 				/* Try to fill this hole */
 				break;
 			}
 		}
 
 		/* Extract the new "pseudo-direction" */
-		y = m_ptr->fy - yy;
-		x = m_ptr->fx - xx;
+		y = yy - m_ptr->fy;
+		x = xx - m_ptr->fx;
 	}
 
 	/* Check for no move */
