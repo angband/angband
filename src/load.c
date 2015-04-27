@@ -235,7 +235,7 @@ static struct object *rd_item(void)
 
 	/* Lookup ego, set effect */
 	obj->ego = lookup_ego(ego_idx);
-	if (obj->ego)
+	if (obj->ego && obj->ego->effect)
 		obj->effect = obj->ego->effect;
 	else
 		obj->effect = obj->kind->effect;
