@@ -175,6 +175,7 @@ void delete_monster_idx(int m_idx)
 
 	/* Delete mimicked objects */
 	if (mon->mimicked_obj) {
+		square_excise_object(cave, y, x, mon->mimicked_obj);
 		object_delete(mon->mimicked_obj);
 	}
 
