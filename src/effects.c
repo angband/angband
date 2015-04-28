@@ -1909,6 +1909,7 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	bool used = context->aware ? FALSE : TRUE;
 	context->ident = TRUE;
 
+
 	if ((context->p1 & ENCH_TOBOTH) == ENCH_TOBOTH) {
 		if (enchant_spell(value, value, 0))
 			used = TRUE;

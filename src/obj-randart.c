@@ -1697,6 +1697,7 @@ static void add_brand(struct artifact *art)
 	char *name;
 
 	for (count = 0; count < MAX_TRIES; count++) {
+
 		if (!append_random_brand(&art->brands, &name)) continue;
 		file_putf(log_file, "Adding brand: %s\n", name);
 		return;
