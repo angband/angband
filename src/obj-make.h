@@ -27,12 +27,13 @@
  */
 #define NO_MINIMUM 	255
 
-void ego_apply_magic(struct object *o_ptr, int level);
-void copy_artifact_data(struct object *o_ptr, const struct artifact *a_ptr);
+void ego_apply_magic(struct object *obj, int level);
+void copy_artifact_data(struct object *obj, const struct artifact *art);
 bool make_fake_artifact(struct object *obj, struct artifact *artifact);
-void object_prep(struct object *o_ptr, struct object_kind *kind, int lev,
+void id_set_aware(struct object *obj);
+void object_prep(struct object *obj, struct object_kind *kind, int lev,
 				 aspect rand_aspect);
-int apply_magic(struct object *o_ptr, int lev, bool okay, bool good,
+int apply_magic(struct object *obj, int lev, bool okay, bool good,
 				bool great, bool extra_roll);
 bool kind_is_good(const object_kind *kind);
 struct object_kind *get_obj_num(int level, bool good, int tval);

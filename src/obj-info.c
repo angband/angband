@@ -570,7 +570,7 @@ static void get_known_elements(const struct object *obj, const oinfo_detail_t mo
 	/* Grab the object flags */
 	for (i = 0; i < N_ELEMENTS(elements); i++) {
 		/* Report fake egos or known element info */
-		if ((mode & OINFO_EGO) || (obj->el_info[i].flags & EL_INFO_KNOWN)) {
+		if ((mode & OINFO_EGO) || object_element_is_known(obj, i)) {
 			el_info[i].res_level = obj->el_info[i].res_level;
 			el_info[i].flags = obj->el_info[i].flags;
 		} else {

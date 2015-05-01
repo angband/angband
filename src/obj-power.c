@@ -666,7 +666,7 @@ static int element_power(const object_type *obj, int p, bool known)
 
 	/* Analyse each element for ignore, vulnerability, resistance or immunity */
 	for (i = 0; i < N_ELEMENTS(el_powers); i++) {
-		if (!known && !(obj->el_info[i].flags & EL_INFO_KNOWN)) continue;
+		if (!known && !object_element_is_known(obj, i)) continue;
 
 		if (obj->el_info[i].flags & EL_INFO_IGNORE) {
 			if (el_powers[i].ignore_power != 0) {

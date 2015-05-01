@@ -1525,7 +1525,7 @@ graphics:=:d
 type:ring
 properties:0:2:100
 alloc:50:10 to 50
-flags:PROT_FEAR
+flags:PROT_FEAR | EASY_KNOW
 values:STEALTH[-2]
 
 ### 222, sval 33
@@ -1728,7 +1728,7 @@ graphics:":d
 type:amulet
 properties:15:3:10
 alloc:20:15 to 40
-flags:FREE_ACT | EASY_KNOW
+flags:FREE_ACT
 values:SPEED[-3+1d2]
 
 

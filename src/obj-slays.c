@@ -168,11 +168,16 @@ bool append_random_brand(struct brand **current, char **name)
 
 	pick = randint0(N_ELEMENTS(brand_names));
 	for (b = *current; b; b = b->next) {
-		/* If we get the same one or a smaller multiplier, fail */
-		if (streq(b->name, brand_names[pick].name) &&
-			(b->element == pick) && 
-			(b->multiplier >= mult))
-			return FALSE;
+		/* If we get the same one, check the multiplier */
+		if (streq(b->name, brand_names[pick].name) && (b->element == pick)) {
+			/* Same multiplier or smaller, fail */
+			if (b->multiplier >= mult)
+				return FALSE;
+
+			/* Greater multiplier, increase and accept */
+			b->multiplier = mult;
+			return TRUE;
+		}
 
 		/* Remember the last one */
 		b_last = b;

@@ -266,89 +266,99 @@ void object_pile_free(struct object *obj)
  * Chests, and activatable items, except rods, never stack (for various
  * reasons).
  */
-bool object_stackable(const struct object *o_ptr, const struct object *j_ptr,
+bool object_stackable(const struct object *obj1, const struct object *obj2,
 					  object_stack_t mode)
 {
 	int i;
 
 	/* Equipment items don't stack */
-	if (object_is_equipped(player->body, o_ptr))
+	if (object_is_equipped(player->body, obj1))
 		return FALSE;
-	if (object_is_equipped(player->body, j_ptr))
+	if (object_is_equipped(player->body, obj2))
 		return FALSE;
 
 	/* If either item is unknown, do not stack */
-	if (mode & OSTACK_LIST && o_ptr->marked == MARK_AWARE) return FALSE;
-	if (mode & OSTACK_LIST && j_ptr->marked == MARK_AWARE) return FALSE;
+	if (mode & OSTACK_LIST && obj1->marked == MARK_AWARE) return FALSE;
+	if (mode & OSTACK_LIST && obj2->marked == MARK_AWARE) return FALSE;
 
 	/* Hack -- identical items cannot be stacked */
-	if (o_ptr == j_ptr) return FALSE;
+	if (obj1 == obj2) return FALSE;
 
 	/* Require identical object kinds */
-	if (o_ptr->kind != j_ptr->kind) return FALSE;
+	if (obj1->kind != obj2->kind) return FALSE;
 
 	/* Different flags don't stack */
-	if (!of_is_equal(o_ptr->flags, j_ptr->flags)) return FALSE;
+	if (!of_is_equal(obj1->flags, obj2->flags)) return FALSE;
+
+	/* Different elements don't stack */
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (obj1->el_info[i].res_level != obj2->el_info[i].res_level)
+			return FALSE;
+		if ((obj1->el_info[i].flags & (EL_INFO_HATES | EL_INFO_IGNORE)) !=
+			(obj2->el_info[i].flags & (EL_INFO_HATES | EL_INFO_IGNORE)))
+			return FALSE;
+	}
 
 	/* Artifacts never stack */
-	if (o_ptr->artifact || j_ptr->artifact) return FALSE;
+	if (obj1->artifact || obj2->artifact) return FALSE;
 
 	/* Analyze the items */
-	if (tval_is_chest(o_ptr)) {
+	if (tval_is_chest(obj1)) {
 		/* Chests never stack */
 		return FALSE;
 	}
-	else if (tval_is_food(o_ptr) || tval_is_potion(o_ptr) ||
-		tval_is_scroll(o_ptr) || tval_is_rod(o_ptr)) {
+	else if (tval_is_food(obj1) || tval_is_potion(obj1) ||
+		tval_is_scroll(obj1) || tval_is_rod(obj1)) {
 		/* Food, potions, scrolls and rods all stack nicely,
 		   since the kinds are identical, either both will be
 		   aware or both will be unaware */
-	} else if (tval_can_have_charges(o_ptr) || tval_is_money(o_ptr)) {
+	} else if (tval_can_have_charges(obj1) || tval_is_money(obj1)) {
 		/* Gold, staves and wands stack most of the time */
 		/* Too much gold or too many charges */
-		if (o_ptr->pval + j_ptr->pval > MAX_PVAL)
+		if (obj1->pval + obj2->pval > MAX_PVAL)
 			return FALSE;
 
 		/* ... otherwise ok */
-	} else if (tval_is_weapon(o_ptr) || tval_is_armor(o_ptr) ||
-		tval_is_jewelry(o_ptr) || tval_is_light(o_ptr)) {
-		bool o_is_known = object_is_known(o_ptr);
-		bool j_is_known = object_is_known(j_ptr);
+	} else if (tval_is_weapon(obj1) || tval_is_armor(obj1) ||
+		tval_is_jewelry(obj1) || tval_is_light(obj1)) {
+		bool obj1_is_known = object_is_known(obj1);
+		bool obj2_is_known = object_is_known(obj2);
 
 		/* Require identical values */
-		if (o_ptr->ac != j_ptr->ac) return FALSE;
-		if (o_ptr->dd != j_ptr->dd) return FALSE;
-		if (o_ptr->ds != j_ptr->ds) return FALSE;
+		if (obj1->ac != obj2->ac) return FALSE;
+		if (obj1->dd != obj2->dd) return FALSE;
+		if (obj1->ds != obj2->ds) return FALSE;
 
 		/* Require identical bonuses */
-		if (o_ptr->to_h != j_ptr->to_h) return FALSE;
-		if (o_ptr->to_d != j_ptr->to_d) return FALSE;
-		if (o_ptr->to_a != j_ptr->to_a) return FALSE;
+		if (obj1->to_h != obj2->to_h) return FALSE;
+		if (obj1->to_d != obj2->to_d) return FALSE;
+		if (obj1->to_a != obj2->to_a) return FALSE;
 
 		/* Require all identical modifiers */
 		for (i = 0; i < OBJ_MOD_MAX; i++)
-			if (o_ptr->modifiers[i] != j_ptr->modifiers[i])
+			if (obj1->modifiers[i] != obj2->modifiers[i])
 				return (FALSE);
 
 		/* Require identical ego-item types */
-		if (o_ptr->ego != j_ptr->ego) return FALSE;
+		if (obj1->ego != obj2->ego) return FALSE;
 
 		/* Hack - Never stack recharging wearables ... */
-		if ((o_ptr->timeout || j_ptr->timeout) &&
-			!tval_is_light(o_ptr)) return FALSE;
+		if ((obj1->timeout || obj2->timeout) &&
+			!tval_is_light(obj1)) return FALSE;
 
 		/* ... and lights must have same amount of fuel */
-		else if ((o_ptr->timeout != j_ptr->timeout) &&
-				 tval_is_light(o_ptr)) return FALSE;
+		else if ((obj1->timeout != obj2->timeout) &&
+				 tval_is_light(obj1)) return FALSE;
 
 		/* Prevent unIDd items stacking with IDd items in the object list */
-		if (mode & OSTACK_LIST && (o_is_known != j_is_known)) return FALSE;
+		if (mode & OSTACK_LIST && (obj1_is_known != obj2_is_known))
+			return FALSE;
 	} else {
 		/* Anything else probably okay */
 	}
 
 	/* Require compatible inscriptions */
-	if (o_ptr->note && j_ptr->note && (o_ptr->note != j_ptr->note))
+	if (obj1->note && obj2->note && (obj1->note != obj2->note))
 		return FALSE;
 
 	/* They must be similar enough */
@@ -358,16 +368,16 @@ bool object_stackable(const struct object *o_ptr, const struct object *j_ptr,
 /**
  * Return whether each stack of objects can be merged into one stack.
  */
-bool object_similar(const struct object *o_ptr, const struct object *j_ptr,
+bool object_similar(const struct object *obj1, const struct object *obj2,
 					object_stack_t mode)
 {
-	int total = o_ptr->number + j_ptr->number;
+	int total = obj1->number + obj2->number;
 
 	/* Check against stacking limit - except in stores which absorb anyway */
 	if (!(mode & OSTACK_STORE) && (total > z_info->stack_size))
 		return FALSE;
 
-	return object_stackable(o_ptr, j_ptr, mode);
+	return object_stackable(obj1, obj2, mode);
 }
 
 /**
@@ -380,37 +390,37 @@ bool object_similar(const struct object *o_ptr, const struct object *j_ptr,
  *
 * These assumptions are enforced by the "object_similar()" code.
  */
-static void object_absorb_merge(struct object *o_ptr, const struct object *j_ptr)
+static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 {
 	int total;
 
 	/* Blend all knowledge */
-	of_union(o_ptr->known_flags, j_ptr->known_flags);
-	of_union(o_ptr->id_flags, j_ptr->id_flags);
+	of_union(obj1->known_flags, obj2->known_flags);
+	of_union(obj1->id_flags, obj2->id_flags);
 
 	/* Merge inscriptions */
-	if (j_ptr->note)
-		o_ptr->note = j_ptr->note;
+	if (obj2->note)
+		obj1->note = obj2->note;
 
 	/* Combine timeouts for rod stacking */
-	if (tval_can_have_timeout(o_ptr))
-		o_ptr->timeout += j_ptr->timeout;
+	if (tval_can_have_timeout(obj1))
+		obj1->timeout += obj2->timeout;
 
 	/* Combine pvals for wands and staves */
-	if (tval_can_have_charges(o_ptr) || tval_is_money(o_ptr)) {
-		total = o_ptr->pval + j_ptr->pval;
-		o_ptr->pval = total >= MAX_PVAL ? MAX_PVAL : total;
+	if (tval_can_have_charges(obj1) || tval_is_money(obj1)) {
+		total = obj1->pval + obj2->pval;
+		obj1->pval = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
 	/* Combine origin data as best we can */
-	if (o_ptr->origin != j_ptr->origin ||
-		o_ptr->origin_depth != j_ptr->origin_depth ||
-		o_ptr->origin_xtra != j_ptr->origin_xtra) {
+	if (obj1->origin != obj2->origin ||
+		obj1->origin_depth != obj2->origin_depth ||
+		obj1->origin_xtra != obj2->origin_xtra) {
 		int act = 2;
 
-		if (o_ptr->origin_xtra && j_ptr->origin_xtra) {
-			monster_race *r_ptr = &r_info[o_ptr->origin_xtra];
-			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
+		if (obj1->origin_xtra && obj2->origin_xtra) {
+			monster_race *r_ptr = &r_info[obj1->origin_xtra];
+			monster_race *s_ptr = &r_info[obj2->origin_xtra];
 
 			bool r_uniq = rf_has(r_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
 			bool s_uniq = rf_has(s_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
@@ -422,18 +432,18 @@ static void object_absorb_merge(struct object *o_ptr, const struct object *j_ptr
 
 		switch (act)
 		{
-				/* Overwrite with j_ptr */
+				/* Overwrite with obj2 */
 			case 1:
 			{
-				o_ptr->origin = j_ptr->origin;
-				o_ptr->origin_depth = j_ptr->origin_depth;
-				o_ptr->origin_xtra = j_ptr->origin_xtra;
+				obj1->origin = obj2->origin;
+				obj1->origin_depth = obj2->origin_depth;
+				obj1->origin_xtra = obj2->origin_xtra;
 			}
 
 				/* Set as "mixed" */
 			case 2:
 			{
-				o_ptr->origin = ORIGIN_MIXED;
+				obj1->origin = ORIGIN_MIXED;
 			}
 		}
 	}
@@ -442,29 +452,29 @@ static void object_absorb_merge(struct object *o_ptr, const struct object *j_ptr
 /**
  * Merge a smaller stack into a larger stack, leaving two uneven stacks.
  */
-void object_absorb_partial(struct object *o_ptr, struct object *j_ptr)
+void object_absorb_partial(struct object *obj1, struct object *obj2)
 {
-	int smallest = MIN(o_ptr->number, j_ptr->number);
-	int largest = MAX(o_ptr->number, j_ptr->number);
+	int smallest = MIN(obj1->number, obj2->number);
+	int largest = MAX(obj1->number, obj2->number);
 	int difference = (z_info->stack_size) - largest;
-	o_ptr->number = largest + difference;
-	j_ptr->number = smallest - difference;
+	obj1->number = largest + difference;
+	obj2->number = smallest - difference;
 
-	object_absorb_merge(o_ptr, j_ptr);
+	object_absorb_merge(obj1, obj2);
 }
 
 /**
  * Merge two stacks into one stack.
  */
-void object_absorb(struct object *o_ptr, struct object *j_ptr)
+void object_absorb(struct object *obj1, struct object *obj2)
 {
-	int total = o_ptr->number + j_ptr->number;
+	int total = obj1->number + obj2->number;
 
 	/* Add together the item counts */
-	o_ptr->number = (total < z_info->stack_size ? total : z_info->stack_size);
+	obj1->number = (total < z_info->stack_size ? total : z_info->stack_size);
 
-	object_absorb_merge(o_ptr, j_ptr);
-	object_delete(j_ptr);
+	object_absorb_merge(obj1, obj2);
+	object_delete(obj2);
 }
 
 /**

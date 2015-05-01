@@ -25,6 +25,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-make.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -64,9 +65,7 @@ bool easy_know(const struct object *obj)
  */
 bool object_all_flags_are_known(const struct object *obj)
 {
-	if (of_is_empty(obj->flags)) return TRUE;
-
-	return easy_know(obj) || of_is_subset(obj->known_flags, obj->flags) ? TRUE : FALSE;
+	return easy_know(obj) || of_is_full(obj->known_flags) ? TRUE : FALSE;
 }
 
 
@@ -79,12 +78,8 @@ bool object_all_elements_are_known(const struct object *obj)
 {
 	size_t i;
 
-	if (easy_know(obj)) return TRUE;
-
 	for (i = 0; i < ELEM_MAX; i++)
-		/* Only check if the flags are set if there's someting to look at */
-		if (obj->el_info[i].res_level != 0)
-			if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
+		if (!object_element_is_known(obj, i)) return FALSE;
 
 	return TRUE;
 }
@@ -111,21 +106,11 @@ bool object_all_brands_and_slays_are_known(const struct object *obj)
 /**
  * Is the player aware of all of an object's miscellaneous proerties?
  *
- * Hack, there's no good way right now to only check the flags that have
- * actual properties.  Or at least I don't know how to do it.  For now
- * this needs to be brute forced until rune-based ID comes into play (ACB)
- *
  * \param obj is the object
  */
 bool object_all_miscellaneous_are_known(const struct object *obj)
 {
-	if ((obj->to_a) && !id_has(obj->id_flags, ID_TO_A)) return FALSE;
-	if ((obj->to_h) && !id_has(obj->id_flags, ID_TO_H)) return FALSE;
-	if ((obj->to_d) && !id_has(obj->id_flags, ID_TO_D)) return FALSE;
-	if ((obj->effect) && !id_has(obj->id_flags, ID_EFFECT)) return FALSE;
-	if ((obj->pval) && !id_has(obj->id_flags, ID_PVAL)) return FALSE;
-	
-	return TRUE;
+	return easy_know(obj) || id_is_full(obj->id_flags) ? TRUE : FALSE;
 }
 
 /**
@@ -134,8 +119,7 @@ bool object_all_miscellaneous_are_known(const struct object *obj)
  * \param obj is the object
  */
 bool object_all_but_flavor_is_known(const struct object *obj)
-{		
-	if (streq(obj->kind->name, "Accuracy"))
+{
 	if (!object_all_flags_are_known(obj)) return FALSE;
 	if (!object_all_elements_are_known(obj)) return FALSE;
 	if (!object_all_brands_and_slays_are_known(obj)) return FALSE;
@@ -367,27 +351,13 @@ bool object_check_for_ident(struct object *obj)
  */
 void object_flavor_aware(struct object *obj)
 {
-	int i, y, x;
+	int y, x;
 
 	if (obj->kind->aware) return;
 	obj->kind->aware = TRUE;
 
-	/* Charges or food value (pval) and effect now known */
-	id_on(obj->id_flags, ID_PVAL);
-	id_on(obj->id_flags, ID_EFFECT);
-
-	/* Jewelry with fixed bonuses gets more info now */
-	if (tval_is_jewelry(obj)) {
-		if (!randcalc_varies(obj->kind->to_h)) 
-			id_on(obj->id_flags, ID_TO_H);
-		if (!randcalc_varies(obj->kind->to_d))
-			id_on(obj->id_flags, ID_TO_D);
-		if (!randcalc_varies(obj->kind->to_a))
-			id_on(obj->id_flags, ID_TO_A);
-		for (i = 0; i < OBJ_MOD_MAX; i++)
-			if (!randcalc_varies(obj->kind->modifiers[i]))
-				id_on(obj->id_flags, ID_MOD_MIN + i);
-	}
+	/* A bunch of ID flags are now known */
+	id_set_aware(obj);
 
 	/* Fix ignore/autoinscribe */
 	if (kind_is_ignored_unaware(obj->kind))
@@ -556,8 +526,18 @@ void object_notice_ego(struct object *obj)
 
 	of_union(obj->known_flags, learned_flags);
 
-	if (object_add_id_flag(obj, ID_EGO_ITEM))
-	{
+    /* Learn all element properties except random high resists */
+    for (i = 0; i < ELEM_MAX; i++) {
+        /* Don't learn random ego high resists */
+        if (obj->el_info[i].flags & EL_INFO_RANDOM)
+            continue;
+
+        /* Learn all element properties */
+        if (obj->el_info[i].res_level)
+            obj->el_info[i].flags |= EL_INFO_KNOWN;
+    }
+
+	if (object_add_id_flag(obj, ID_EGO_ITEM)) {
 		/* if you know the ego, you know which it is of excellent or splendid */
 		object_notice_sensing(obj);
 		object_check_for_ident(obj);
@@ -612,8 +592,9 @@ void object_notice_attack_plusses(struct object *obj)
 
 	assert(obj && obj->kind);
 
-	if (object_attack_plusses_are_visible(obj) && object_flavor_is_aware(obj)) return;
-	
+	if (object_attack_plusses_are_visible(obj) && object_flavor_is_aware(obj))
+		return;
+
 	/* This looks silly while these only ever appear together */
 	to_hit = object_add_id_flag(obj, ID_TO_H);
 	to_dam = object_add_id_flag(obj, ID_TO_D);
@@ -631,7 +612,7 @@ void object_notice_attack_plusses(struct object *obj)
 			 ((obj->number > 1) ? "" : "s"));
 
 	if (object_all_but_flavor_is_known(obj)) object_flavor_aware(obj);
-			 
+
 	player->upkeep->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
@@ -646,7 +627,7 @@ bool object_notice_element(struct object *obj, int element)
 	if (element < 0 || element >= ELEM_MAX) return FALSE;
 
 	/* Already known */
-	if (obj->el_info[element].flags & EL_INFO_KNOWN)
+	if (object_element_is_known(obj, element))
 		return FALSE;
 
 	/* Learn about this element */
@@ -989,7 +970,7 @@ void equip_notice_element(struct player *p, int element)
 		if (!obj) continue;
 
 		/* Already known */
-		if (obj->el_info[element].flags & EL_INFO_KNOWN) continue;
+		if (object_element_is_known(obj, element)) continue;
 
 		/* Notice the element properties */
 		object_notice_element(obj, element);
@@ -1072,7 +1053,7 @@ bool object_high_resist_is_possible(const struct object *obj)
 		if (obj->el_info[i].res_level <= 0) return TRUE;
 
 		/* Element properties unknown */
-		if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return TRUE;
+		if (!object_element_is_known(obj, i)) return TRUE;
 
 		/* Has a resist, or doubt remains */
 		return TRUE;
