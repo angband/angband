@@ -1306,7 +1306,7 @@ static bool describe_light(textblock *tb, const struct object *obj,
 	bool uses_fuel = FALSE;
 	int refuel_turns = 0;
 
-	bool terse = mode & OINFO_TERSE;
+	bool terse = mode & OINFO_TERSE ? TRUE : FALSE;
 
 	if (!obj_known_light(obj, mode, &rad, &uses_fuel, &refuel_turns))
 		return FALSE;
@@ -1729,9 +1729,9 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	bool something = FALSE;
 	bool known = object_all_but_flavor_is_known(obj);
 
-	bool terse = mode & OINFO_TERSE;
-	bool subjective = mode & OINFO_SUBJ;
-	bool ego = mode & OINFO_EGO;
+	bool terse = mode & OINFO_TERSE ? TRUE : FALSE;
+	bool subjective = mode & OINFO_SUBJ ? TRUE : FALSE;
+	bool ego = mode & OINFO_EGO ? TRUE : FALSE;
 	textblock *tb = textblock_new();
 
 	/* Unaware objects get simple descriptions */

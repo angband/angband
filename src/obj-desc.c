@@ -672,9 +672,9 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 {
-	bool prefix = mode & ODESC_PREFIX;
-	bool spoil = mode & ODESC_SPOIL;
-	bool terse = mode & ODESC_TERSE;
+	bool prefix = mode & ODESC_PREFIX ? TRUE : FALSE;
+	bool spoil = mode & ODESC_SPOIL ? TRUE : FALSE;
+	bool terse = mode & ODESC_TERSE ? TRUE : FALSE;
 	bool known;
 
 	size_t end = 0;
