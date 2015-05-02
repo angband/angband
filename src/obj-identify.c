@@ -1050,16 +1050,13 @@ bool object_high_resist_is_possible(const struct object *obj)
 	/* Look at all the high resists */
 	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++) {
 		/* Object has the resist */
-		if (obj->el_info[i].res_level <= 0) return TRUE;
+		if (obj->el_info[i].res_level > 0) return TRUE;
 
 		/* Element properties unknown */
 		if (!object_element_is_known(obj, i)) return TRUE;
-
-		/* Has a resist, or doubt remains */
-		return TRUE;
 	}
 
-	/* No doubt left */
+	/* No possibilities */
 	return FALSE;
 }
 
