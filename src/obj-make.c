@@ -747,9 +747,6 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 	obj->effect = k->effect;
 	obj->time = k->time;
 
-	/* Weight is always known */
-	id_on(obj->id_flags, ID_WEIGHT);
-
 	/* Default number */
 	obj->number = 1;
 

@@ -158,8 +158,8 @@ bool object_is_known_not_artifact(const struct object *obj)
  */
 bool object_was_worn(const struct object *obj)
 {
-	/* A hack, OK for now as ID_STR is only gained on wield or identify - NRM */
-	return id_has(obj->id_flags, ID_STR) ? TRUE : FALSE;
+	/* Not really in keeping, but it works for now */
+	return id_has(obj->id_flags, ID_WORN) ? TRUE : FALSE;
 }
 
 /**
@@ -711,6 +711,9 @@ void object_notice_on_wield(struct object *obj)
 	bitflag f[OF_SIZE], f2[OF_SIZE], obvious_mask[OF_SIZE];
 	bool obvious = FALSE;
 	int i;
+
+	/* Always set the worn flag */
+	id_on(obj->id_flags, ID_WORN);
 
 	/* EASY_KNOW jewelry is now known */
 	if (object_flavor_is_aware(obj) && easy_know(obj)) {
