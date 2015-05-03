@@ -417,13 +417,19 @@ extern void hit_trap(int y, int x)
 static void remove_trap_aux(struct chunk *c, struct trap *trap, int y, int x,
 							bool domsg)
 {
-    /* We are deleting a rune */
-    if (trf_has(trap->flags, TRF_RUNE)) {
-		if (domsg)
-			msg("You have removed the %s.", trap->kind->name);
-    } else if (domsg)
-		/* We are disarming a trap */
-		msgt(MSG_DISARM, "You have disarmed the %s.", trap->kind->name);
+	/* Message if needed */
+	if (domsg) {
+		/* We are deleting a rune */
+		if (trf_has(trap->flags, TRF_RUNE)) {
+			if (c->mon_current < 0) {
+				/* Removed by player */
+				msg("You have removed the %s.", trap->kind->name);
+			}
+		} else {
+			/* We are disarming a trap */
+			msgt(MSG_DISARM, "You have disarmed the %s.", trap->kind->name);
+		}
+	}
 
     /* Wipe the trap */
 	mem_free(trap);
