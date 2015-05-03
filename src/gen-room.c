@@ -1907,10 +1907,8 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			case '4':
 			case '5':
 			case '6': {
-
 				/* Check if this is chosen random door position */
-
-				doorpos = atoi(t);
+				doorpos = (int) (*t - '0');
 
 				if (doorpos == rnddoors)
 					place_secret_door(c, y, x);
