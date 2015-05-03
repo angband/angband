@@ -1296,10 +1296,10 @@ static void calc_spells(struct player *p)
 /**
  * Get the player's max spell points per effective level
  */
-int mana_per_level(struct player *p)
+int mana_per_level(struct player *p, struct player_state *state)
 {
 	int stat = p->class->magic.spell_realm->stat;
-	return adj_mag_mana[p->state.stat_ind[stat]];
+	return adj_mag_mana[state->stat_ind[stat]];
 }
 
 /**
@@ -1326,7 +1326,7 @@ static void calc_mana(struct player *p, struct player_state *state)
 	levels = (p->lev - p->class->magic.spell_first) + 1;
 	if (levels > 0) {
 		msp = 1;
-		msp += mana_per_level(p) * levels / 100;
+		msp += mana_per_level(p, state) * levels / 100;
 	} else {
 		levels = 0;
 		msp = 0;
