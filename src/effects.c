@@ -3252,6 +3252,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		source = cave->mon_current;
 		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
 		flg |= PROJECT_PLAY;
+		flg &= ~(PROJECT_STOP);
 	} else {
 		if (context->p3) rad += player->lev / context->p3;
 		source = -1;
@@ -3298,6 +3299,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
 		flg |= PROJECT_PLAY;
+		flg &= ~(PROJECT_STOP);
 
 		/* Breath parameters for monsters are monster-dependent */
 		dam = breath_dam(type, mon->hp); 
