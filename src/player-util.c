@@ -159,7 +159,7 @@ void death_knowledge(void)
 	handle_stuff(player);
 }
 
-/*
+/**
  * Modify a stat value by a "modifier", return new value
  *
  * Stats go up: 3,4,...,17,18,18/10,18/20,...,18/220
@@ -172,26 +172,19 @@ s16b modify_stat_value(int value, int amount)
 {
 	int i;
 
-	/* Reward */
-	if (amount > 0)
-	{
+	/* Reward or penalty */
+	if (amount > 0) {
 		/* Apply each point */
-		for (i = 0; i < amount; i++)
-		{
+		for (i = 0; i < amount; i++) {
 			/* One point at a time */
 			if (value < 18) value++;
 
 			/* Ten "points" at a time */
 			else value += 10;
 		}
-	}
-
-	/* Penalty */
-	else if (amount < 0)
-	{
+	} else if (amount < 0) {
 		/* Apply each point */
-		for (i = 0; i < (0 - amount); i++)
-		{
+		for (i = 0; i < (0 - amount); i++) {
 			/* Ten points at a time */
 			if (value >= 18+10) value -= 10;
 

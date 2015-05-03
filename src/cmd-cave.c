@@ -1391,8 +1391,7 @@ void do_cmd_rest(struct command *cmd)
 	/* Take a turn */
 	player_resting_step_turn(player);
 
-	/* Redraw the state */
-	player->upkeep->redraw |= (PR_STATE);
+	/* Redraw the state if requested */
 	handle_stuff(player);
 
 	/* Prepare to continue, or cancel and clean up */
