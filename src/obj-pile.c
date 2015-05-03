@@ -652,11 +652,8 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 		n++;
 	}
 
-	/* Option -- disallow stacking */
-	if (OPT(birth_no_stacking) && n) return (0);
-
 	/* The stack is already too large */
-	if (n >= z_info->floor_size) {
+	if (n >= z_info->floor_size || (OPT(birth_no_stacking) && n)) {
 		/* Delete the oldest ignored object */
 		struct object *ignore = floor_get_oldest_ignored(y, x);
 
