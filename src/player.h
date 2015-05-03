@@ -463,6 +463,8 @@ typedef struct player_upkeep {
 	bool create_up_stair;		/* Create up stair on next level */
 	bool create_down_stair;		/* Create down stair on next level */
 
+	int resting;				/* Resting counter */
+
 	int running;				/* Running counter */
 	bool running_withpathfind;	/* Are we using the pathfinder ? */
 	bool running_firststep;		/* Is this our first step running? */

@@ -626,9 +626,6 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 	return FALSE;
 }
 
-/* Resting counter */
-int resting;
-
 /**
  * Return TRUE if the provided count is one of the conditional REST_ flags.
  */
@@ -649,7 +646,8 @@ bool player_resting_is_special(s16b count)
  */
 bool player_is_resting(struct player *p)
 {
-	return resting > 0 || player_resting_is_special(resting);
+	return (p->upkeep->resting > 0 ||
+			player_resting_is_special(p->upkeep->resting));
 }
 
 /**
@@ -657,7 +655,7 @@ bool player_is_resting(struct player *p)
  */
 s16b player_resting_count(struct player *p)
 {
-	return resting;
+	return p->upkeep->resting;
 }
 
 /**
@@ -677,22 +675,22 @@ void player_resting_set_count(struct player *p, s16b count)
 {
 	/* Cancel if player is disturbed */
 	if (player_rest_disturb) {
-		resting = 0;
+		p->upkeep->resting = 0;
 		player_rest_disturb = FALSE;
 		return;
 	}
 
 	/* Ignore if the rest count is negative. */
 	if ((count < 0) && !player_resting_is_special(count)) {
-		resting = 0;
+		p->upkeep->resting = 0;
 		return;
 	}
 
 	/* Save the rest code */
-	resting = count;
+	p->upkeep->resting = count;
 
 	/* Truncate overlarge values */
-	if (resting > 9999) resting = 9999;
+	if (p->upkeep->resting > 9999) p->upkeep->resting = 9999;
 }
 
 /**
@@ -712,7 +710,7 @@ void player_resting_cancel(struct player *p)
 bool player_resting_can_regenerate(struct player *p)
 {
 	return player_turns_rested >= REST_REQUIRED_FOR_REGEN ||
-		player_resting_is_special(resting);
+		player_resting_is_special(p->upkeep->resting);
 }
 
 /**
@@ -723,9 +721,9 @@ bool player_resting_can_regenerate(struct player *p)
 void player_resting_step_turn(struct player *p)
 {
 	/* Timed rest */
-	if (resting > 0) {
+	if (p->upkeep->resting > 0) {
 		/* Reduce rest count */
-		resting--;
+		p->upkeep->resting--;
 
 		/* Redraw the state */
 		p->upkeep->redraw |= (PR_STATE);
@@ -746,12 +744,12 @@ void player_resting_step_turn(struct player *p)
 void player_resting_complete_special(struct player *p)
 {
 	/* Complete resting */
-	if (player_resting_is_special(resting)) {
-		if (resting == REST_ALL_POINTS) {
+	if (player_resting_is_special(p->upkeep->resting)) {
+		if (p->upkeep->resting == REST_ALL_POINTS) {
 			if ((p->chp == p->mhp) && (p->csp == p->msp))
 				/* Stop resting */
 				disturb(p, 0);
-		} else if (resting == REST_COMPLETE) {
+		} else if (p->upkeep->resting == REST_COMPLETE) {
 			if ((p->chp == p->mhp) && (p->csp == p->msp) &&
 				!p->timed[TMD_BLIND] && !p->timed[TMD_CONFUSED] &&
 				!p->timed[TMD_POISONED] && !p->timed[TMD_AFRAID] &&
@@ -761,7 +759,7 @@ void player_resting_complete_special(struct player *p)
 				!p->word_recall)
 				/* Stop resting */
 				disturb(p, 0);
-		} else if (resting == REST_SOME_POINTS) {
+		} else if (p->upkeep->resting == REST_SOME_POINTS) {
 			if ((p->chp == p->mhp) || (p->csp == p->msp))
 				/* Stop resting */
 				disturb(p, 0);
