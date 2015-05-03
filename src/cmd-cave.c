@@ -1403,7 +1403,7 @@ void do_cmd_rest(struct command *cmd)
 		cmdq_push(CMD_REST);
 		cmd_set_arg_choice(cmdq_peek(), "choice", n);
 	} else {
-		player_resting_cancel(player);
+		player_resting_cancel(player, FALSE);
 	}
 
 }

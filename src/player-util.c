@@ -696,11 +696,11 @@ void player_resting_set_count(struct player *p, s16b count)
 /**
  * Cancel current rest.
  */
-void player_resting_cancel(struct player *p)
+void player_resting_cancel(struct player *p, bool disturb)
 {
 	player_resting_set_count(p, 0);
 	player_turns_rested = 0;
-	player_rest_disturb = TRUE;
+	player_rest_disturb = disturb;
 }
 
 /**
@@ -841,7 +841,7 @@ void disturb(struct player *p, int stop_search)
 
 	/* Cancel Resting */
 	if (player_is_resting(p)) {
-		player_resting_cancel(p);
+		player_resting_cancel(p, TRUE);
 		p->upkeep->redraw |= PR_STATE;
 	}
 

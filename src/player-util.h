@@ -69,7 +69,7 @@ bool player_resting_is_special(s16b count);
 bool player_is_resting(struct player *p);
 s16b player_resting_count(struct player *p);
 void player_resting_set_count(struct player *p, s16b count);
-void player_resting_cancel(struct player *p);
+void player_resting_cancel(struct player *p, bool disturb);
 bool player_resting_can_regenerate(struct player *p);
 void player_resting_step_turn(struct player *p);
 void player_resting_complete_special(struct player *p);
