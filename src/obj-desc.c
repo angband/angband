@@ -335,7 +335,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
 		strnfcat(buf, max, &end, " %s", o_ptr->artifact->name);
 
-	else if ((spoil && o_ptr->ego) || object_ego_is_visible(o_ptr))
+	else if (((spoil && o_ptr->ego) || object_ego_is_visible(o_ptr)) &&
+			 !(mode & ODESC_NOEGO))
 		strnfcat(buf, max, &end, " %s", o_ptr->ego->name);
 
 	else if (aware && !o_ptr->artifact &&

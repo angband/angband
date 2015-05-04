@@ -1589,7 +1589,8 @@ void textui_cmd_ignore_menu(struct object *obj)
 				kind_is_ignored_unaware(obj->kind);
 
 		char tmp[70];
-		object_desc(tmp, sizeof(tmp), obj, ODESC_BASE | ODESC_PLURAL);
+		object_desc(tmp, sizeof(tmp), obj,
+					ODESC_NOEGO | ODESC_BASE | ODESC_PLURAL);
 		if (!ignored) {
 			strnfmt(out_val, sizeof out_val, "All %s", tmp);
 			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);

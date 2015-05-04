@@ -37,7 +37,8 @@ enum {
 	ODESC_PREFIX = 0x40,   /* */
 
 	ODESC_CAPITAL = 0x80,	/*!< Capitalise object name */
-	ODESC_TERSE = 0x100  	/*!< Make terse names */
+	ODESC_TERSE = 0x100,  	/*!< Make terse names */
+	ODESC_NOEGO = 0x200  	/*!< Don't show ego names */
 };
 
 

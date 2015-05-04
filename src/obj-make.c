@@ -416,8 +416,11 @@ static void make_ego_item(struct object *obj, int level)
 		ego_apply_magic(obj, level);
 
 	/* Ego lights are always known as such (why? - NRM) */
-	if (tval_is_light(obj))
+	/* Might as well make them known not artifacts as well - NRM */
+	if (tval_is_light(obj)) {
 		id_on(obj->id_flags, ID_EGO_ITEM);
+		id_on(obj->id_flags, ID_ARTIFACT);
+	}
 
 	return;
 }
