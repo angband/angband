@@ -65,7 +65,8 @@ bool easy_know(const struct object *obj)
  */
 bool object_all_flags_are_known(const struct object *obj)
 {
-	return easy_know(obj) || of_is_full(obj->known_flags) ? TRUE : FALSE;
+	return easy_know(obj) || of_is_subset(obj->known_flags, obj->flags)
+		? TRUE : FALSE;
 }
 
 
@@ -79,7 +80,9 @@ bool object_all_elements_are_known(const struct object *obj)
 	size_t i;
 
 	for (i = 0; i < ELEM_MAX; i++)
-		if (!object_element_is_known(obj, i)) return FALSE;
+		/* Only check if the flags are set if there's someting to look at */
+		if (obj->el_info[i].res_level != 0)
+			if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
 
 	return TRUE;
 }
