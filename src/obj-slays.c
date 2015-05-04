@@ -176,6 +176,7 @@ bool append_random_brand(struct brand **current, char **name)
 
 			/* Greater multiplier, increase and accept */
 			b->multiplier = mult;
+			*name = b->name;
 			return TRUE;
 		}
 
