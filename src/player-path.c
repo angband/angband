@@ -803,8 +803,8 @@ void run_step(int dir)
 	/* Take time */
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Move the player */
-	move_player(run_cur_dir, FALSE);
+	/* Move the player; running straight into a trap == trying to disarm */
+	move_player(run_cur_dir, dir ? TRUE : FALSE);
 
 	/* Prepare the next step */
 	if (player->upkeep->running) {
