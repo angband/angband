@@ -676,7 +676,6 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	bool prefix = mode & ODESC_PREFIX ? TRUE : FALSE;
 	bool spoil = mode & ODESC_SPOIL ? TRUE : FALSE;
 	bool terse = mode & ODESC_TERSE ? TRUE : FALSE;
-	bool known;
 
 	size_t end = 0;
 
@@ -684,10 +683,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	if (!o_ptr)
 		return strnfmt(buf, max, "(nothing)");
 
-	known = object_is_known(o_ptr) || spoil;
-
-	/* We've seen it at least once now we're aware of it */
-	if (known && o_ptr->ego && !spoil) o_ptr->ego->everseen = TRUE;
+	/* Egos whose name we know are seen */
+	if (object_name_is_visible(o_ptr) && o_ptr->ego && !spoil)
+		o_ptr->ego->everseen = TRUE;
 
 
 	/*** Some things get really simple descriptions ***/
