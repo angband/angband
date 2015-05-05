@@ -905,7 +905,7 @@ const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x
 	int f = f_info[c->squares[y][x].feat].mimic;
 
 	if (!square_ismark(c, y, x) && !square_isseen(c, y, x))
-		return "unknown_grid";
+		return "unknown grid";
 
 	return f_info[f].name;
 }

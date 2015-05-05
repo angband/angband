@@ -3033,7 +3033,7 @@ alloc:50:50 to 100
 combat:0:1d1:0:0:0
 charges:3+d3
 power:11
-effect:BOLT_STATUS:OLD_DRAIN
+effect:BOLT_STATUS_DAM:OLD_DRAIN
 dice:150
 
 name:396:Annihilation
@@ -3045,7 +3045,7 @@ combat:0:1d1:0:0:0
 charges:1+d2
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:BOLT_STATUS:OLD_DRAIN
+effect:BOLT_STATUS_DAM:OLD_DRAIN
 dice:250
 
 
@@ -3680,7 +3680,7 @@ properties:75:15:3600
 alloc:20:75 to 100
 combat:0:1d1:0:0:0
 power:11
-effect:BOLT_STATUS:OLD_DRAIN
+effect:BOLT_STATUS_DAM:OLD_DRAIN
 dice:150
 time:23
 

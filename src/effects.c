@@ -3494,9 +3494,24 @@ bool effect_handler_ALTER(effect_handler_context_t *context)
  * Cast a bolt spell
  * Stop if we hit a monster, as a bolt
  * Affect monsters (not grids or objects)
- * The same as BOLT, but done as a separate function to aid descriptions
+ * Like BOLT, but only identifies on noticing an effect
  */
 bool effect_handler_BOLT_STATUS(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, TRUE);
+	int flg = PROJECT_STOP | PROJECT_KILL;
+	if (project_aimed(context->p1, context->dir, dam, flg))
+		context->ident = TRUE;
+	return TRUE;
+}
+
+/**
+ * Cast a bolt spell
+ * Stop if we hit a monster, as a bolt
+ * Affect monsters (not grids or objects)
+ * The same as BOLT_STATUS, but done as a separate function to aid descriptions
+ */
+bool effect_handler_BOLT_STATUS_DAM(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, TRUE);
 	int flg = PROJECT_STOP | PROJECT_KILL;
