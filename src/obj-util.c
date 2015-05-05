@@ -521,7 +521,7 @@ bool obj_can_refill(const struct object *obj)
 	if (of_has(obj->flags, OF_NO_FUEL)) return FALSE;
 
 	/* A lantern can be refueled from a flask or another lantern */
-	if (of_has(light->flags, OF_TAKES_FUEL)) {
+	if (light && of_has(light->flags, OF_TAKES_FUEL)) {
 		if (tval_is_fuel(obj))
 			return TRUE;
 		else if (tval_is_light(obj) && of_has(obj->flags, OF_TAKES_FUEL) &&
