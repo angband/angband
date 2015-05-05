@@ -923,6 +923,14 @@ int edit_text(char *buffer, int buflen) {
 				}
 				break;
 
+			case KC_END:
+				cursor = MAX(0, len);
+				break;
+
+			case KC_HOME:
+				cursor = 0;
+				break;
+
 			case KC_BACKSPACE:
 			case KC_DELETE: {
 				/* Refuse to backspace into oblivion */
