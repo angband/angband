@@ -1419,42 +1419,47 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		return TRUE;
 	}
 
-	/* Now get the proper description */
-	effect = object_effect(obj);
-	if (!effect_desc(effect)) return FALSE;
+	/* Activations get a special message */
+	if (obj->activation && obj->activation->desc) {
+		textblock_append(tb, "When activated, it ");
+		textblock_append(tb, obj->activation->desc);
+	} else {
+		/* Get descriptions for all the effects */
+		effect = object_effect(obj);
+		if (!effect_desc(effect)) return FALSE;
 
-	if (aimed)
-		textblock_append(tb, "When aimed, it ");
-	else if (tval_is_edible(obj))
-		textblock_append(tb, "When eaten, it ");
-	else if (tval_is_potion(obj))
-		textblock_append(tb, "When quaffed, it ");
-	else if (tval_is_scroll(obj))
-	    textblock_append(tb, "When read, it ");
-	else
-	    textblock_append(tb, "When activated, it ");
-
-	/* Print a colourised description */
-	while (effect) {
-		char *next_char = desc;
-		random_value value = { 0, 0, 0, 0 };
-		char dice_string[20];
-		if (effect->dice != NULL)
-			(void) dice_roll(effect->dice, &value);
-
-		/* Get the possible dice strings */
-		if (value.dice && value.base)
-			strnfmt(dice_string, sizeof(dice_string), "%d+%dd%d",
-					value.base, value.dice, value.sides);
-		else if (value.dice)
-			strnfmt(dice_string, sizeof(dice_string), "%dd%d",
-					value.dice, value.sides);
+		if (aimed)
+			textblock_append(tb, "When aimed, it ");
+		else if (tval_is_edible(obj))
+			textblock_append(tb, "When eaten, it ");
+		else if (tval_is_potion(obj))
+			textblock_append(tb, "When quaffed, it ");
+		else if (tval_is_scroll(obj))
+			textblock_append(tb, "When read, it ");
 		else
-			strnfmt(dice_string, sizeof(dice_string), "%d", value.base);
+			textblock_append(tb, "When activated, it ");
 
-		/* Check all the possible types of description format */
-		switch (base_descs[effect->index].efinfo_flag) {
-			/* Healing sometimes has a minimum percentage */
+		/* Print a colourised description */
+		while (effect) {
+			char *next_char = desc;
+			random_value value = { 0, 0, 0, 0 };
+			char dice_string[20];
+			if (effect->dice != NULL)
+				(void) dice_roll(effect->dice, &value);
+
+			/* Get the possible dice strings */
+			if (value.dice && value.base)
+				strnfmt(dice_string, sizeof(dice_string), "%d+%dd%d",
+						value.base, value.dice, value.sides);
+			else if (value.dice)
+				strnfmt(dice_string, sizeof(dice_string), "%dd%d",
+						value.dice, value.sides);
+			else
+				strnfmt(dice_string, sizeof(dice_string), "%d", value.base);
+
+			/* Check all the possible types of description format */
+			switch (base_descs[effect->index].efinfo_flag) {
+				/* Healing sometimes has a minimum percentage */
 			case EFINFO_HEAL: {
 				char min_string[50];
 				if (value.m_bonus)
@@ -1552,20 +1557,22 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				msg("Bad effect description passed to describe_effect(). Please report this bug.");
 				return FALSE;
 			}
+			}
+
+			do {
+				if (isdigit((unsigned char) *next_char))
+					textblock_append_c(tb, COLOUR_L_GREEN, "%c", *next_char);
+				else
+					textblock_append(tb, "%c", *next_char);
+			} while (*next_char++);
+			if (effect->next) {
+				if (effect->next->next)
+					textblock_append(tb, ", ");
+				else
+					textblock_append(tb, " and ");
+			}
+			effect = effect->next;
 		}
-		do {
-			if (isdigit((unsigned char) *next_char))
-				textblock_append_c(tb, COLOUR_L_GREEN, "%c", *next_char);
-			else
-				textblock_append(tb, "%c", *next_char);
-		} while (*next_char++);
-		if (effect->next) {
-			if (effect->next->next)
-				textblock_append(tb, ", ");
-			else
-				textblock_append(tb, " and ");
-		}
-		effect = effect->next;
 	}
 
 	textblock_append(tb, ".\n");
