@@ -339,8 +339,8 @@ bool object_check_for_ident(struct object *obj)
 		}
 	}
 
-	/* We still know all the flags, so we still know if it's an ego */
-	if (obj->ego)
+	/* We still know all the flags, so if it's worn if it's an ego */
+	if (obj->ego && object_was_worn(obj))
 		object_notice_ego(obj);
 
 	return FALSE;
