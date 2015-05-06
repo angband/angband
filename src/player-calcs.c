@@ -1054,9 +1054,13 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		if (first) {
 			upkeep->quiver[quiver_slots++] = first;
 			upkeep->quiver_cnt += first->number;
-		}
-		else
+
+			/* Notice stuff as if wielded if it's first time in the quiver */
+			if (!object_was_worn(first))
+				object_notice_on_wield(first);
+		} else {
 			upkeep->quiver[quiver_slots++] = NULL;
+		}
 	}
 
 	/* Fill the inventory */
