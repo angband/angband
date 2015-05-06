@@ -1005,7 +1005,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 	/* Fill the quiver */
 	upkeep->quiver_cnt = 0;
 	while (quiver_slots < z_info->quiver_size) {
-		struct object *current, *first = NULL;
+		struct object *current, *first = NULL, *backup = NULL;
 
 		/* Find the first quiver object not yet allocated */
 		for (current = gear; current; current = current->next) {
@@ -1036,15 +1036,24 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			}
 
 			/* Ammo already stashed stays where it is */
-			for (i = 0; i < z_info->quiver_size; i++)
-				if (!ignore && (upkeep->quiver[i] == current)) {
-					ignore = TRUE;
-					if (i == quiver_slots)
-						first = current;
+			for (i = 0; i < z_info->quiver_size; i++) {
+				if (upkeep->quiver[i] == current) {
+					/* It already has a slot, so ignore it... */
+					if (!ignore) {
+						ignore = TRUE;
+						if (i == quiver_slots)
+							first = current;
+					}
+					/* ...but remember one in case we need it */
+					if (!backup && (i > quiver_slots))
+						backup = current;
 				}
+			}
+
+			/* Don't move this one (for now, at least) */
 			if (ignore) continue;
 
-			/* Otherwise choose the first in order */
+			/* If this one's still possible, choose the first in order */
 			if (earlier_object(first, current, FALSE)) {
 				first = current;
 			}
@@ -1058,6 +1067,10 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			/* Notice stuff as if wielded if it's first time in the quiver */
 			if (!object_was_worn(first))
 				object_notice_on_wield(first);
+		} else if (backup) {
+			/* We have a quivered item which can move up */
+			upkeep->quiver[quiver_slots++] = backup;
+			upkeep->quiver_cnt += backup->number;
 		} else {
 			upkeep->quiver[quiver_slots++] = NULL;
 		}
