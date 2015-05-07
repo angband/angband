@@ -81,8 +81,9 @@ bool object_all_elements_are_known(const struct object *obj)
 
 	for (i = 0; i < ELEM_MAX; i++)
 		/* Only check if the flags are set if there's someting to look at */
-		if (obj->el_info[i].res_level != 0)
-			if (!(obj->el_info[i].flags & EL_INFO_KNOWN)) return FALSE;
+		if ((obj->el_info[i].res_level != 0) &&
+			!object_element_is_known(obj, i))
+			return FALSE;
 
 	return TRUE;
 }
