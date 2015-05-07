@@ -40,6 +40,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-history.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -2834,6 +2835,18 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 
 			/* Destroy any grid that isn't a permament wall */
 			if (!square_isperm(cave, y, x)) {
+				/* Deal with artifacts */
+				struct object *obj = square_object(cave, y, x);
+				while (obj) {
+					if (obj->artifact) {
+						if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
+							obj->artifact->created = FALSE;
+						else
+							history_lose_artifact(obj->artifact);
+					}
+					obj = obj->next;
+				}
+
 				/* Delete objects */
 				square_excise_pile(cave, y, x);
 				square_destroy(cave, y, x);

@@ -537,7 +537,7 @@ static struct object *make_artifact_special(int level)
 		copy_artifact_data(new_obj, art);
 
 		/* Mark the artifact as "created" */
-		art->created = 1;
+		art->created = TRUE;
 
 		/* Success */
 		return new_obj;
@@ -620,7 +620,7 @@ static bool make_artifact(struct object *obj)
 
 	if (obj->artifact) {
 		copy_artifact_data(obj, obj->artifact);
-		obj->artifact->created = 1;
+		obj->artifact->created = TRUE;
 		return TRUE;
 	}
 

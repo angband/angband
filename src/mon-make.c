@@ -680,7 +680,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 				drop->artifact->sval), level, RANDOMISE);
 			i_ptr->artifact = drop->artifact;
 			copy_artifact_data(i_ptr, i_ptr->artifact);
-			i_ptr->artifact->created = 1;
+			i_ptr->artifact->created = TRUE;
 		} else {
 			object_prep(i_ptr, drop->kind, level, RANDOMISE);
 			apply_magic(i_ptr, level, TRUE, good, great, extra_roll);
@@ -696,7 +696,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		if (monster_carry(c, mon, i_ptr))
 			any = TRUE;
 		else {
-			i_ptr->artifact->created = 0;
+			i_ptr->artifact->created = FALSE;
 			mem_free(i_ptr);
 		}
 	}
@@ -719,7 +719,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		if (monster_carry(c, mon, i_ptr))
 			any = TRUE;
 		else {
-			i_ptr->artifact->created = 0;
+			i_ptr->artifact->created = FALSE;
 			mem_free(i_ptr);
 		}
 	}

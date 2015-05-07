@@ -38,10 +38,12 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "monster.h"
+#include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "parser.h"
+#include "player-history.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"
@@ -894,8 +896,24 @@ void cave_generate(struct chunk **c, struct player *p) {
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
 	/* Free the old cave, use the new one */
-	if (*c)
+	if (*c) {
+		/* Deal with artifacts */
+		for (y = 0; y < (*c)->height; y++) {
+			for (x = 0; x < (*c)->width; x++) {
+				struct object *obj = square_object(*c, y, x);
+				while (obj) {
+					if (obj->artifact) {
+						if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
+							obj->artifact->created = FALSE;
+						else
+							history_lose_artifact(obj->artifact);
+					}
+					obj = obj->next;
+				}
+			}
+		}
 		cave_free(*c);
+	}
 	*c = chunk;
 
 	/* Place dungeon squares to trigger feeling (not in town) */
