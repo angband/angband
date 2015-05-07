@@ -765,11 +765,8 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			/* Require line of sight */
 			if (!los(cave, y, x, ty, tx)) continue;
 
-			/* Require floor space */
-			if (!square_isfloor(cave, ty, tx)) continue;
-
-			/* Require no trap */
-			if (square_isplayertrap(cave, ty, tx)) continue;
+			/* Require available floor space */
+			if (!square_canputitem(cave, ty, tx)) continue;
 
 			/* No objects */
 			k = 0;
@@ -897,6 +894,8 @@ void push_object(int y, int x)
 
 	struct queue *queue = q_new(z_info->floor_size);
 
+	bool glyph = square_iswarded(cave, y, x);
+
 	/* Push all objects on the square, stripped of pile info, into the queue */
 	while (obj) {
 		struct object *next = obj->next;
@@ -926,8 +925,10 @@ void push_object(int y, int x)
 		drop_near(cave, obj, 0, y, x, FALSE);
 	}
 
-	/* Reset cave feature */
+	/* Reset cave feature and rune if needed */
 	square_set_feat(cave, y, x, feat_old->fidx);
+	if (glyph)
+		square_add_ward(cave, y, x);
 
 	q_free(queue);
 }
