@@ -115,9 +115,10 @@ static void grid_get_attr(grid_data *g, int *a)
 		if (g->trapborder)
 			*a = (g->in_view ? COLOUR_L_GREEN : COLOUR_GREEN);
 
-		/* Only apply lighting effects when the attr is white --
-		 * this is to stop e.g. doors going grey when out of LOS */
-		if (*a == COLOUR_WHITE) {
+		/* Only apply lighting effects when the attr is white and it's a 
+		 * floor or wall */
+		if ((*a == COLOUR_WHITE) &&
+			(tf_has(f_ptr->flags, TF_FLOOR) || feat_is_wall(g->f_idx))) {
 			/* If it's a floor tile then we'll tint based on lighting. */
 			if (tf_has(f_ptr->flags, TF_TORCH))
 				switch (g->lighting) {
