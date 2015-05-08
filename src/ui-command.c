@@ -80,32 +80,36 @@ void do_cmd_redraw(void)
 	/* Hack -- React to changes */
 	Term_xtra(TERM_XTRA_REACT, 0);
 
-	/* Combine the pack (later) */
-	player->upkeep->notice |= (PN_COMBINE);
+	if (character_dungeon) {
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
 
-	/* Update torch, gear */
-	player->upkeep->update |= (PU_TORCH | PU_INVEN);
+		/* Update torch, gear */
+		player->upkeep->update |= (PU_TORCH | PU_INVEN);
 
-	/* Update stuff */
-	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+		/* Update stuff */
+		player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 
-	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		/* Fully update the visuals */
+		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
-	/* Redraw everything */
-	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |
-							   PR_EQUIP | PR_MESSAGE | PR_MONSTER |
-							   PR_OBJECT | PR_MONLIST | PR_ITEMLIST);
+		/* Redraw everything */
+		player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |
+								   PR_EQUIP | PR_MESSAGE | PR_MONSTER |
+								   PR_OBJECT | PR_MONLIST | PR_ITEMLIST);
+	}
 
 	/* Clear screen */
 	Term_clear();
 
-	/* Hack -- update */
-	handle_stuff(player);
+	if (character_dungeon) {
+		/* Hack -- update */
+		handle_stuff(player);
 
-	/* Place the cursor on the player */
-	if (0 != character_dungeon)
-		move_cursor_relative(player->px, player->py);
+		/* Place the cursor on the player */
+		if (0 != character_dungeon)
+			move_cursor_relative(player->px, player->py);
+	}
 
 	/* Redraw every window */
 	for (j = 0; j < ANGBAND_TERM_MAX; j++) {
