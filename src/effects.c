@@ -2261,7 +2261,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 	context->ident = TRUE;
 
 	if (!get_com("Choose a monster race (by symbol) to banish: ", &typ))
-		return TRUE;
+		return FALSE;
 
 	/* Delete the monsters of that "type" */
 	for (i = 1; i < cave_monster_max(cave); i++) {
