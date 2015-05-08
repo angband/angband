@@ -294,9 +294,12 @@ static void rd_monster(struct chunk *c, monster_type *mon)
 			square_obj = square_obj->next;
 		}
 
-		/* Set the mimicked object, or quit on failure */
-		assert(square_obj);
-		mon->mimicked_obj = square_obj;
+		/* Set the mimicked object - this should be attached to the pile,
+		 * but appears not to be sometimes (maybe to do with lots of objects
+		 * and monsters around), so we hack it in.  Not ideal - NRM */
+		mon->mimicked_obj = obj;
+		if (!square_obj)
+			floor_carry(c, mon->fy, mon->fx, obj, FALSE);
 	}
 
 	/* Read all the held objects (order is unimportant) */
