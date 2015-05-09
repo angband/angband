@@ -342,7 +342,7 @@ trap:31:torch:0x83:0xB4
 ##### Non-kind (contains the "pile" picture) #####
 
 # <pile>
-object:0:0:131:159
+object:none:<pile>:131:159
 
 
 

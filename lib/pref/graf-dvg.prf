@@ -801,14 +801,13 @@ monster:Multi-hued hound:0x90:0xCD
 ##### Non-kind (contains the "pile" picture) #####
 
 # <pile>
-object:0:0:0x87:0xB6
+object:none:<pile>:0x87:0xB6
 
-# <unknown object>
-object:0:1:0x96:0xAE
+# <unknown item>
+object:none:<unknown item>:0x96:0xAE
 
 # <unknown treasure>
-object:0:2:0x96:0xAF
-
+object:none:<unknown treasure>:0x96:0xAF
 
 
 

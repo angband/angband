@@ -378,7 +378,7 @@ int lookup_sval(int tval, const char *name)
 		return r;
 
 	/* Look for it */
-	for (k = 1; k < z_info->k_max; k++) {
+	for (k = 0; k < z_info->k_max; k++) {
 		struct object_kind *kind = &k_info[k];
 		char cmp_name[1024];
 

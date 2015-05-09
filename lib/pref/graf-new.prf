@@ -311,7 +311,7 @@ trap:31:dark:0x81:0x84
 ##### Non-kind (contains the "pile" picture) #####
 
 # Pile
-object:0:0:182:147
+object:none:<pile>:182:147
 
 
 

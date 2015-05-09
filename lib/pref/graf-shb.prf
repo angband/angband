@@ -167,13 +167,13 @@ trap:31:all:0x95:0xFD
 ##### Non-kind (contains the "pile" picture) #####
 
 # <pile>
-object:0:0:0x87:0xB6
+object:none:<pile>:0x87:0xB6
 
-# <unknown object>
-object:0:1:0x89:0xB6
+# <unknown item>
+object:none:<unknown item>:0x89:0xB6
 
 # <unknown treasure>
-object:0:2:0x88:0xC0
+object:none:<unknown treasure>:0x88:0xC0
 
 ##### Various Stuff #####
 
