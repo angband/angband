@@ -1025,7 +1025,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 	}
 
 	if (ammo)
-		*range = 6 + 2 * player->state.ammo_mult * 10;;
+		*range = 10 * MIN(6 + 2 * player->state.ammo_mult, z_info->max_range);
 
 	/* Note the impact flag */
 	*impactful = of_has(f, OF_IMPACT);
