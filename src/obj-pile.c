@@ -765,8 +765,13 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			/* Require line of sight */
 			if (!los(cave, y, x, ty, tx)) continue;
 
-			/* Require available floor space */
-			if (!square_canputitem(cave, ty, tx)) continue;
+			/* Require floor space */
+			if (!square_isfloor(cave, ty, tx)) continue;
+
+			/* Require no trap or rune */
+			if (square_isplayertrap(cave, ty, tx) ||
+				square_iswarded(cave, ty, tx))
+				continue;
 
 			/* No objects */
 			k = 0;
