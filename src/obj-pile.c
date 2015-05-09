@@ -592,6 +592,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
 	} else {
 		usable = obj;
 		square_excise_object(cave, usable->iy, usable->ix, usable);
+		cmd_disable_repeat();
 	}
 
 	/* Housekeeping */
