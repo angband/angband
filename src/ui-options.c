@@ -1182,7 +1182,7 @@ static void ego_menu(const char *unused, int also_unused)
 	int i;
 
 	/* Create the array */
-	choice = mem_zalloc(z_info->e_max * sizeof(ego_desc));
+	choice = mem_zalloc(z_info->e_max * ITYPE_MAX * sizeof(ego_desc));
 
 	/* Get the valid ego-items */
 	for (i = 0; i < z_info->e_max; i++) {
