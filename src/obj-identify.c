@@ -1123,6 +1123,7 @@ obj_pseudo_t object_pseudo(const struct object *obj)
 {
 	int i;
 	bitflag flags[OF_SIZE], f2[OF_SIZE];
+	struct brand *b;
 
 	/* Get the known and obvious flags on the object,
 	 * not including curses or properties of the kind.
@@ -1157,6 +1158,15 @@ obj_pseudo_t object_pseudo(const struct object *obj)
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		if ((obj->modifiers[i] != obj->kind->modifiers[i].base) &&
 			object_this_mod_is_visible(obj, i))
+			return INSCRIP_SPLENDID;
+
+	/* Any remaining obvious-on-wield flags also mean splendid */
+	if (!of_is_empty(flags))
+		return INSCRIP_SPLENDID;
+
+	/* Known brands are also splendid */
+	for (b = obj->brands; b; b = b->next)
+		if (b->known)
 			return INSCRIP_SPLENDID;
 
 	if (!object_is_known(obj) && !object_was_sensed(obj))
