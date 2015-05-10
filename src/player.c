@@ -409,8 +409,9 @@ static void cleanup_player(void) {
 	mem_free(player->upkeep);
 	player->upkeep = NULL;
 
-	/* Free the things that are only there if there is a loaded player */
-	if (player) {
+	/* Free the things that are only there if there is a loaded player -
+	 * checking if there are quests will suffice */
+	if (player->quests) {
 		player_quests_free(player);
 		player_spells_free(player);
 		object_pile_free(player->gear);

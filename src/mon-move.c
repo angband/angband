@@ -1179,6 +1179,8 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 				square_set_door_lock(c, ny, nx, k - 1);
 			}
 		} else {
+			bool mark = sqinfo_has(c->squares[ny][nx].info, SQUARE_MARK);
+
 			/* Handle viewable doors */
 			if (square_isview(c, ny, nx))
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1194,6 +1196,11 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 				return TRUE;
 			} else if (rf_has(mon->race->flags, RF_OPEN_DOOR)) {
 				square_open_door(c, ny, nx);
+			}
+			/* Handle knowledge of doors */
+			if (mark) {
+				sqinfo_on(c->squares[ny][nx].info, SQUARE_MARK);
+				square_light_spot(c, ny, nx);
 			}
 		}
 	}
