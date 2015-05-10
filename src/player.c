@@ -402,22 +402,27 @@ static void init_player(void) {
 static void cleanup_player(void) {
 	int i;
 
-	player_quests_free(player);
-	player_spells_free(player);
-
+	/* Free the things that are always initialised */
 	mem_free(player->timed);
 	mem_free(player->upkeep->quiver);
 	mem_free(player->upkeep->inven);
 	mem_free(player->upkeep);
 	player->upkeep = NULL;
-	object_pile_free(player->gear);
-	object_pile_free(player->gear_k);
-	for (i = 0; i < player->body.count; i++)
-		string_free(player->body.slots[i].name);
-	mem_free(player->body.slots);
-	string_free(player->body.name);
-	mem_free(player->history);
 
+	/* Free the things that are only there if there is a loaded player */
+	if (player) {
+		player_quests_free(player);
+		player_spells_free(player);
+		object_pile_free(player->gear);
+		object_pile_free(player->gear_k);
+		for (i = 0; i < player->body.count; i++)
+			string_free(player->body.slots[i].name);
+		mem_free(player->body.slots);
+		string_free(player->body.name);
+		mem_free(player->history);
+	}
+
+	/* Free the basic player struct */
 	mem_free(player);
 	player = NULL;
 }
