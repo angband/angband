@@ -1010,6 +1010,7 @@ static void item_menu_browser(int oid, void *data, const region *area)
 	text_out_wrap = 0;
 	text_out_indent = area->col - 1;
 	text_out_pad = 1;
+	prt("", area->row + area->page_rows, MAX(0, area->col - 1));
 	Term_gotoxy(area->col, area->row + area->page_rows);
 
 	/* Quiver may take multiple lines */
@@ -1108,7 +1109,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	}
 	area.width = MAX(max_len, strlen(header));
 
-	for (row = area.row; row <= area.page_rows; row++)
+	for (row = area.row; row < area.row + area.page_rows; row++)
 		prt("", row, MAX(0, area.col - 1));
 
 	menu_layout(m, &area);
