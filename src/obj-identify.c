@@ -1121,6 +1121,7 @@ void object_sense_artifact(struct object *obj)
  */
 obj_pseudo_t object_pseudo(const struct object *obj)
 {
+	int i;
 	bitflag flags[OF_SIZE], f2[OF_SIZE];
 
 	/* Get the known and obvious flags on the object,
@@ -1150,12 +1151,13 @@ obj_pseudo_t object_pseudo(const struct object *obj)
 	if (tval_is_jewelry(obj))
 		return INSCRIP_NULL;
 
-	/* XXX Should also check for flags with pvals where the pval exceeds
-	 * the base pval for things like picks of digging, though for now acid
-	 * brand gets those
-	 */
-	if (!of_is_empty(flags))
-		return INSCRIP_SPLENDID;
+	/* Check modifiers for splendid - anything different from kind base
+	 * modifier is splendid (in fact, kind base modifiers are currently
+	 * constant for all relevant objects) */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if ((obj->modifiers[i] != obj->kind->modifiers[i].base) &&
+			object_this_mod_is_visible(obj, i))
+			return INSCRIP_SPLENDID;
 
 	if (!object_is_known(obj) && !object_was_sensed(obj))
 		return INSCRIP_NULL;
