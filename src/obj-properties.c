@@ -267,6 +267,9 @@ int mod_mult(int mod)
  */
 s16b mod_slot_mult(int mod, int slot)
 {
+	/* Ammo gets -1 as a slot, and always has muliplier 1 */
+	if (slot == -1) return 1;
+
 	/* Gloves with DEX are good */
 	if ((mod == OBJ_MOD_DEX) && (slot_type_is(slot, EQUIP_GLOVES))) return 2;
 

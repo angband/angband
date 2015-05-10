@@ -86,7 +86,10 @@ int slot_by_type(struct player *p, int type, bool full)
 
 bool slot_type_is(int slot, int type)
 {
-	return player->body.slots[slot].type == type ? TRUE : FALSE;
+	/* Assume default body if no player */
+	struct player_body body = player ? player->body : bodies[0];
+
+	return body.slots[slot].type == type ? TRUE : FALSE;
 }
 
 struct object *slot_object(struct player *p, int slot)
