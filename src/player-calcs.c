@@ -2529,6 +2529,9 @@ void redraw_stuff(struct player *p)
 
 	p->upkeep->redraw = 0;
 
+	/* Bit of a hack - don't update while resting, makes it over qiucker */
+	if (player_is_resting(p)) return;
+
 	/*
 	 * Do any plotting, etc. delayed from earlier - this set of updates
 	 * is over.
