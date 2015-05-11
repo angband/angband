@@ -817,7 +817,7 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
  * and so is called whenever things like race or class are chosen.
  */
 void player_generate(struct player *p, const struct player_race *r,
-					 const struct player_class *c)
+					 const struct player_class *c, bool old_history)
 {
 	if (!c)
 		c = p->class;
@@ -845,7 +845,8 @@ void player_generate(struct player *p, const struct player_race *r,
 	/* Roll for age/height/weight */
 	get_ahw(p);
 
-	p->history = get_history(p->race->history);
+	if (!old_history)
+		p->history = get_history(p->race->history);
 }
 
 
@@ -859,7 +860,7 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 	if (use_quickstart && quickstart_prev)
 		load_roller_data(quickstart_prev, NULL);
 
-	player_generate(player, NULL, NULL);
+	player_generate(player, NULL, NULL, use_quickstart && quickstart_prev);
 
 	player->depth = 0;
 
@@ -882,7 +883,7 @@ void do_cmd_birth_init(struct command *cmd)
 		save_roller_data(&quickstart_prev);
 		quickstart_allowed = TRUE;
 	} else {
-		player_generate(player, player_id2race(0), player_id2class(0));
+		player_generate(player, player_id2race(0), player_id2class(0), FALSE);
 		quickstart_allowed = FALSE;
 	}
 
@@ -913,7 +914,7 @@ void do_cmd_choose_race(struct command *cmd)
 {
 	int choice;
 	cmd_get_arg_choice(cmd, "choice", &choice);
-	player_generate(player, player_id2race(choice), NULL);
+	player_generate(player, player_id2race(choice), NULL, FALSE);
 
 	reset_stats(stats, points_spent, &points_left, FALSE);
 	generate_stats(stats, points_spent, &points_left);
@@ -924,7 +925,7 @@ void do_cmd_choose_class(struct command *cmd)
 {
 	int choice;
 	cmd_get_arg_choice(cmd, "choice", &choice);
-	player_generate(player, NULL, player_id2class(choice));
+	player_generate(player, NULL, player_id2class(choice), FALSE);
 
 	reset_stats(stats, points_spent, &points_left, FALSE);
 	generate_stats(stats, points_spent, &points_left);

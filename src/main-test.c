@@ -99,7 +99,7 @@ static void c_player_birth(char *rest) {
 		return;
 	}
 
-	player_generate(player, r, c);
+	player_generate(player, r, c, FALSE);
 }
 
 static void c_player_class(char *rest) {

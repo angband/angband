@@ -98,7 +98,7 @@ static bool quickstart_allowed = FALSE;
  * ------------------------------------------------------------------------ */
 static enum birth_stage textui_birth_quickstart(void)
 {
-	const char *prompt = "['Y' to use this character, 'N' to start afresh, 'C' to change name]";
+	const char *prompt = "['Y' to use this character, 'N' to start afresh, 'C' to change name or history]";
 
 	enum birth_stage next = BIRTH_QUICKSTART;
 
