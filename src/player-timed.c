@@ -194,10 +194,12 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 			if (p->state.el_info[effect->fail].res_level > 0)
 				return FALSE;
 		} else if (effect->fail_code == TMD_FAIL_FLAG_VULN) {
-			/* Effect is inhibited by a vulnerability */
-			equip_notice_element(p, effect->fail);
-			if (p->state.el_info[effect->fail].res_level < 0)
+			/* Effect is inhibited by a vulnerability 
+			 * the asymmetry with resists is OK for now - NRM */
+			if (p->state.el_info[effect->fail].res_level < 0) {
+				equip_notice_element(p, effect->fail);
 				return FALSE;
+			}
 		}
 
 		/* Special case */

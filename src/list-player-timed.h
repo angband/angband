@@ -9,6 +9,7 @@
  *
  * Fields:
  * symbol - the effect name
+ * description - the effect description
  * on_begin - the message on beginning the effect
  * on_end - the message on ending the effect
  * on_increase - the message on the effect increasing
@@ -21,7 +22,7 @@
  * fail - the actual flag that causes the failure
  */
 
-/* symbol		on_begin									on_end											on_increase									on_decrease									flag_redraw							flag_update										msg				code fail */
+/* symbol		description					on_begin									on_end											on_increase									on_decrease									flag_redraw							flag_update										msg				code fail */
 TMD(FAST,		"haste",					"You feel yourself moving faster!",			"You feel yourself slow down.",					NULL,										NULL,										0,									PU_BONUS,										MSG_SPEED,		0,	0)
 TMD(SLOW,		"slowness",					"You feel yourself moving slower!",			"You feel yourself speed up.",					NULL,										NULL,										0,									PU_BONUS,										MSG_SLOW,		TMD_FAIL_FLAG_OBJECT,	OF_FREE_ACT)
 TMD(BLIND,		"blindness",				"You are blind.",							"You blink and your eyes clear.",				NULL,										NULL,										PR_MAP,								PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS,	MSG_BLIND,		TMD_FAIL_FLAG_OBJECT,	OF_PROT_BLIND ) 
