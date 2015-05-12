@@ -2529,8 +2529,8 @@ void redraw_stuff(struct player *p)
 
 	p->upkeep->redraw = 0;
 
-	/* Bit of a hack - don't update while resting, makes it over qiucker */
-	if (player_is_resting(p)) return;
+	/* Hack - don't update while resting or running, makes it over quicker */
+	if (player_is_resting(p) || p->upkeep->running) return;
 
 	/*
 	 * Do any plotting, etc. delayed from earlier - this set of updates
