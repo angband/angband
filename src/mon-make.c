@@ -342,8 +342,8 @@ void compact_monsters(int num_to_compact)
  * This is an efficient method of simulating multiple calls to the
  * "delete_monster()" function, with no visual effects.
  *
- * Note that we do not delete the objects the monsters are carrying;
- * that must be taken care of separately via wipe_o_list().
+ * Note that we must delete the objects the monsters are carrying, but we
+ * do nothing with mimicked objects.
  */
 void wipe_mon_list(struct chunk *c, struct player *p)
 {
@@ -356,7 +356,10 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 		/* Skip dead monsters */
 		if (!mon->race) continue;
 
-		/* Hack -- Reduce the racial counter */
+		/* Delete all the objects */
+		object_pile_free(mon->held_obj);
+
+		/* Reduce the racial counter */
 		mon->race->cur_num--;
 
 		/* Monster is gone */

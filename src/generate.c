@@ -812,13 +812,44 @@ const struct cave_profile *choose_profile(int depth)
 }
 
 /**
+ * Clear the dungeon, ready for generation to begin.
+ */
+static void cave_clear(struct chunk *c, struct player *p)
+{
+	int x, y;
+
+	/* Clear the monsters */
+	wipe_mon_list(c, p);
+
+	/* Deal with artifacts */
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			struct object *obj = square_object(c, y, x);
+			while (obj) {
+				if (obj->artifact) {
+					if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
+						obj->artifact->created = FALSE;
+					else
+						history_lose_artifact(obj->artifact);
+				}
+				obj = obj->next;
+			}
+		}
+	}
+	/* Free the chunk */
+	cave_free(c);
+}
+
+
+/**
  * Generate a random level.
  *
  * Confusingly, this function also generate the town level (level 0).
  * \param c is the level we're going to end up with, in practice the global cave
  * \param p is the current player struct, in practice the global player
  */
-void cave_generate(struct chunk **c, struct player *p) {
+void cave_generate(struct chunk **c, struct player *p)
+{
 	const char *error = "no generation";
 	int y, x, tries = 0;
 	struct chunk *chunk;
@@ -896,24 +927,8 @@ void cave_generate(struct chunk **c, struct player *p) {
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
 	/* Free the old cave, use the new one */
-	if (*c) {
-		/* Deal with artifacts */
-		for (y = 0; y < (*c)->height; y++) {
-			for (x = 0; x < (*c)->width; x++) {
-				struct object *obj = square_object(*c, y, x);
-				while (obj) {
-					if (obj->artifact) {
-						if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
-							obj->artifact->created = FALSE;
-						else
-							history_lose_artifact(obj->artifact);
-					}
-					obj = obj->next;
-				}
-			}
-		}
-		cave_free(*c);
-	}
+	if (*c)
+		cave_clear(*c, p);
 	*c = chunk;
 
 	/* Place dungeon squares to trigger feeling (not in town) */

@@ -22,6 +22,7 @@
 #include "game-world.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "mon-make.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
@@ -539,6 +540,9 @@ void close_game(void)
 				predict_score();
 		}
 	}
+
+	/* Wipe the monster list */
+	wipe_mon_list(cave, player);
 
 	/* Hack -- Decrease "icky" depth */
 	screen_save_depth--;
