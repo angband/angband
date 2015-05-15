@@ -3253,7 +3253,7 @@ static void process_menus(WORD wCmd)
 				/* Save the game */
 				save_game();
 			}
-			quit(NULL);
+			textui_quit();
 			break;
 		}
 
