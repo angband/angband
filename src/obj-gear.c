@@ -111,14 +111,19 @@ struct object *equipped_item_by_slot_name(struct player *p, const char *name)
 	return slot_object(p, slot_by_name(p, name));
 }
 
-bool object_is_equipped(struct player_body body, const struct object *obj)
+int object_slot(struct player_body body, const struct object *obj)
 {
 	int i;
 
 	for (i = 0; i < body.count; i++)
 		if (obj == body.slots[i].obj) break;
 
-	return (i < body.count) ? TRUE : FALSE;
+	return i;
+}
+
+bool object_is_equipped(struct player_body body, const struct object *obj)
+{
+	return (object_slot(body, obj) < body.count);
 }
 
 bool object_is_carried(struct player *p, const struct object *obj)

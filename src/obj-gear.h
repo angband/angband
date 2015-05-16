@@ -37,6 +37,7 @@ int slot_by_name(struct player *p, const char *name);
 bool slot_type_is(int slot, int type);
 struct object *slot_object(struct player *p, int slot);
 struct object *equipped_item_by_slot_name(struct player *p, const char *name);
+int object_slot(struct player_body body, const struct object *obj);
 bool object_is_equipped(struct player_body body, const struct object *obj);
 bool object_is_carried(struct player *p, const struct object *obj);
 const char *equip_mention(struct player *p, int slot);

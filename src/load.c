@@ -941,8 +941,8 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 		player->upkeep->total_weight += (obj->number * obj->weight);
 
 		/* If it's equipment, wield it */
-		if (code == EQUIP_CODE) {
-			player->body.slots[wield_slot(obj)].obj = obj;
+		if (code < player->body.count) {
+			player->body.slots[code].obj = obj;
 			player->upkeep->equip_cnt++;
 		}
 

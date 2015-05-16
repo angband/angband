@@ -576,11 +576,8 @@ static void wr_gear_aux(struct object *gear)
 		/* Skip non-objects */
 		assert(obj->kind);
 
-		/* Write code for equipment or other gear*/
-		if (object_is_equipped(player->body, obj))
-			wr_byte(EQUIP_CODE);
-		else
-			wr_byte(INVEN_CODE);
+		/* Write code for equipment or other gear */
+		wr_byte(object_slot(player->body, obj));
 
 		/* Dump object */
 		wr_item(obj);
