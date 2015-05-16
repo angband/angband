@@ -196,14 +196,13 @@ static void wr_monster(const monster_type *mon)
 	for (j = 0; j < ELEM_MAX; j++)
 		wr_s16b(mon->known_pstate.el_info[j].res_level);
 
-	/* Write mimicked object if any */
+	/* Write mimicked object marker, if any */
 	if (mon->mimicked_obj) {
-		wr_byte(1);
-		wr_item(mon->mimicked_obj);
+		wr_u16b(mon->midx);
 	} else
-		wr_byte(0);
+		wr_u16b(0);
 
-	/* Write all objects, followed by a dummy as a marker */
+	/* Write all held objects, followed by a dummy as a marker */
 	while (obj) {
 		wr_item(obj);
 		obj = obj->next;

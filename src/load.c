@@ -254,6 +254,7 @@ static struct object *rd_item(void)
 static void rd_monster(struct chunk *c, monster_type *mon)
 {
 	byte tmp8u;
+	u16b tmp16u;
 	s16b r_idx;
 	size_t j;
 
@@ -283,23 +284,18 @@ static void rd_monster(struct chunk *c, monster_type *mon)
 	for (j = 0; j < elem_max; j++)
 		rd_s16b(&mon->known_pstate.el_info[j].res_level);
 
-	rd_byte(&tmp8u);
-	if (tmp8u) {
-		/* Find the mimicked object */
-		struct object *obj = rd_item();
+	rd_u16b(&tmp16u);
+
+	if (tmp16u) {
+		/* Find and set the mimicked object */
 		struct object *square_obj = square_object(c, mon->fy, mon->fx);
 
 		while (square_obj) {
-			if (square_obj->mimicking_m_idx == obj->mimicking_m_idx) break;
+			if (square_obj->mimicking_m_idx == tmp16u) break;
 			square_obj = square_obj->next;
 		}
-
-		/* Set the mimicked object - this should be attached to the pile,
-		 * but appears not to be sometimes (maybe to do with lots of objects
-		 * and monsters around), so we hack it in.  Not ideal - NRM */
-		mon->mimicked_obj = obj;
-		if (!square_obj)
-			floor_carry(c, mon->fy, mon->fx, obj, FALSE);
+		assert(square_obj);
+		mon->mimicked_obj = square_obj;
 	}
 
 	/* Read all the held objects (order is unimportant) */
