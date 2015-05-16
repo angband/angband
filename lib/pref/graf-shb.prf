@@ -195,7 +195,7 @@ object:food:Pint of Fine Wine:0x82:0x81
 
 ### The shrooms, an interesting collection ###
 
-# Graphics are sourced from flavor entries in flvr-dvg.prf
+# Graphics are sourced from flavor entries in flvr-shb.prf
 
 ##### Weapons #####
 
@@ -350,11 +350,11 @@ object:shield:Mithril Shield:0x80:0xA0
 
 ##### Rings #####
 
-# Graphics are sourced from flavor entries in flvr-dvg.prf
+# Graphics are sourced from flavor entries in flvr-shb.prf
 
 ##### Amulets #####
 
-# Graphics are sourced from flavor entries in flvr-dvg.prf
+# Graphics are sourced from flavor entries in flvr-shb.prf
 
 ##### Scrolls #####
 
@@ -428,19 +428,19 @@ object:scroll:Trap Creation:0x87:0xE1
 
 ##### Potions #####
 
-# Graphics are sourced from flavor entries in flvr-dvg.prf
+# Graphics are sourced from flavor entries in flvr-shb.prf
 
 ##### Wands #####
 
-# Graphics are sourced from flavor entries in flvr-dvg.prf
+# Graphics are sourced from flavor entries in flvr-shb.prf
 
 ##### Staves #####
 
-# Graphics are sourced from flavor entries in flvr-dvg.prf
+# Graphics are sourced from flavor entries in flvr-shb.prf
 
 ##### Rods #####
 
-# Graphics are sourced from flavor entries in flvr-dvg.prf
+# Graphics are sourced from flavor entries in flvr-shb.prf
 
 ##### Basic Books #####
 
