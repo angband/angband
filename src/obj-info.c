@@ -1617,12 +1617,19 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 {
 	char loot_spot[80];
 	char name[80];
+	int origin;
 	const char *droppee;
 	const char *article;
 
 	/* Only give this info in chardumps if wieldable */
 	if (terse && !obj_can_wear(obj))
 		return FALSE;
+
+	/* Set the origin - care needed for mimics */
+	if ((obj->origin == ORIGIN_DROP_MIMIC) && (obj->mimicking_m_idx != 0))
+		origin = ORIGIN_FLOOR;
+	else
+		origin = obj->origin;
 
 	/* Name the place of origin */
 	if (obj->origin_depth)
@@ -1645,14 +1652,14 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 	}
 
 	/* Print an appropriate description */
-	switch (origins[obj->origin].args)
+	switch (origins[origin].args)
 	{
 		case -1: return FALSE;
-		case 0: textblock_append(tb, origins[obj->origin].desc); break;
-		case 1: textblock_append(tb, origins[obj->origin].desc, loot_spot);
+		case 0: textblock_append(tb, origins[origin].desc); break;
+		case 1: textblock_append(tb, origins[origin].desc, loot_spot);
 				break;
 		case 2:
-			textblock_append(tb, origins[obj->origin].desc, name, loot_spot);
+			textblock_append(tb, origins[origin].desc, name, loot_spot);
 			break;
 	}
 

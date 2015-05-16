@@ -805,9 +805,10 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 			object_prep(obj, kind, new_mon->race->level, RANDOMISE);
 			apply_magic(obj, new_mon->race->level, TRUE, FALSE, FALSE, FALSE);
 			obj->number = 1;
+			obj->origin = ORIGIN_DROP_MIMIC;
+			obj->origin_depth = player->depth;
 		}
 
-		obj->origin = origin;
 		obj->mimicking_m_idx = m_idx;
 		new_mon->mimicked_obj = obj;
 		floor_carry(c, y, x, obj, FALSE);
