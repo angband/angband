@@ -415,10 +415,11 @@ void wield_item(struct object *obj, int slot)
 	}
 
 	/* See if we have to overflow the pack */
+	combine_pack();
 	pack_overflow(old);
 
 	/* Recalculate bonuses, torch, mana, gear */
-	player->upkeep->notice |= (PN_IGNORE | PN_COMBINE);
+	player->upkeep->notice |= (PN_IGNORE);
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
