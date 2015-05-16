@@ -3252,8 +3252,9 @@ static void process_menus(WORD wCmd)
 
 				/* Save the game */
 				save_game();
+				close_game();
 			}
-			textui_quit();
+			quit(NULL);
 			break;
 		}
 
