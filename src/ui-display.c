@@ -319,8 +319,10 @@ static void prt_sp(int row, int col)
 	char cur_sp[32], max_sp[32];
 	byte color = player_sp_attr(player);
 
-	/* Do not show mana unless we have some */
-	if (!player->msp) return;
+	/* Do not show mana unless we should have some */
+	if (player_has(player, PF_NO_MANA) || 
+		(player->lev < player->class->magic.spell_first))
+		return;
 
 	put_str("SP ", row, col);
 
