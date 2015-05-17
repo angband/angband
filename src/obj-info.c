@@ -1579,14 +1579,14 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 	if (min_time || max_time) {
 		/* Sometimes adjust for player speed */
-		int divisor = turn_energy(player->state.speed);
-		if (!subjective) divisor = 10;
+		int multiplier = turn_energy(player->state.speed);
+		if (!subjective) multiplier = 10;
 
 		textblock_append(tb, "Takes ");
 
 		/* Correct for player speed */
-		min_time = (min_time * 10) / divisor;
-		max_time = (max_time * 10) / divisor;
+		min_time = (min_time * multiplier) / 10;
+		max_time = (max_time * multiplier) / 10;
 
 		textblock_append_c(tb, COLOUR_L_GREEN, "%d", min_time);
 
