@@ -798,6 +798,7 @@ static bool store_process_command_key(struct keypress kp)
 
 		case 'e': do_cmd_equip(); break;
 		case 'i': do_cmd_inven(); break;
+		case '|': do_cmd_quiver(); break;
 		case KTRL('E'): toggle_inven_equip(); break;
 		case 'C': do_cmd_change_name(); break;
 		case KTRL('P'): do_cmd_messages(); break;

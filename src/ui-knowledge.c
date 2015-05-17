@@ -2468,7 +2468,7 @@ void do_cmd_inven(void)
 		return;
 	}
 
-	/* Hack -- Start in "inventory" mode */
+	/* Start in "inventory" mode */
 	player->upkeep->command_wrk = (USE_INVEN);
 
 	/* Loop this menu until an object context menu says differently */
@@ -2518,7 +2518,7 @@ void do_cmd_equip(void)
 		return;
 	}
 
-	/* Hack -- Start in "inventory" mode */
+	/* Start in "equipment" mode */
 	player->upkeep->command_wrk = (USE_EQUIP);
 
 	/* Loop this menu until an object context menu says differently */
@@ -2537,6 +2537,55 @@ void do_cmd_equip(void)
 				track_object(player->upkeep, obj);
 
 				while ((ret = context_menu_object(obj)) == 2);
+
+				/* Stay in "equipment" mode */
+				player->upkeep->command_wrk = (USE_EQUIP);
+			}
+		} else {
+			/* Load screen */
+			screen_load();
+
+			ret = -1;
+		}
+	}
+}
+
+
+/**
+ * Display equipment
+ */
+void do_cmd_quiver(void)
+{
+	struct object *obj = NULL;
+	int ret = 3;
+
+	if (player->upkeep->quiver[0] == NULL) {
+		msg("You have nothing in your quiver.");
+		return;
+	}
+
+	/* Start in "quiver" mode */
+	player->upkeep->command_wrk = (USE_QUIVER);
+
+	/* Loop this menu until an object context menu says differently */
+	while (ret == 3) {
+		/* Save screen */
+		screen_save();
+
+		/* Get an item to use a context command on (Display the quiver) */
+		if (get_item(&obj, "Select Item:", NULL, CMD_NULL, NULL,
+					 GET_ITEM_PARAMS)) {
+			/* Load screen */
+			screen_load();
+
+			if (obj && obj->kind) {
+				/* Track the object */
+				track_object(player->upkeep, obj);
+
+				while ((ret = context_menu_object(obj)) == 2);
+
+				/* Stay in "quiver" mode */
+				player->upkeep->command_wrk = (USE_QUIVER);
 			}
 		} else {
 			/* Load screen */
