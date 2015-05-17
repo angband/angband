@@ -328,7 +328,7 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 	if (square_iswarded(cave, y, x)) return;
 
 	/* Create a trap */
-	place_trap(cave, y, x, -1, cave->depth);
+	square_add_trap(cave, y, x);
 	context->obvious = TRUE;
 }
 

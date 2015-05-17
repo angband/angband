@@ -683,7 +683,7 @@ static void vault_trap_aux(struct chunk *c, int y, int x, int yd, int xd)
 		find_nearby_grid(c, &y1, y, yd, &x1, x, xd);
 		if (!square_isempty(c, y1, x1)) continue;
 
-		place_trap(c, y1, x1, -1, c->depth);
+		square_add_trap(c, y1, x1);
 		break;
     }
 }
