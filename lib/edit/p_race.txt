@@ -23,8 +23,8 @@
 # skill-dig:base
 # info:hitdie:expbase:infra
 # history:history:agebase:agemod
-# height:hgtmale:modhgtmale:hgtfemale:modhgtfemale
-# weight:wgtmale:modwgtmale:wgtfemale:modwgtfemale
+# height:hgt:modhgt
+# weight:wgt:modwgt
 # flags:object flags
 
 # 'name' indicates the beginning of an entry. The serial number must
@@ -107,7 +107,7 @@ skill-throw:15
 skill-dig:0
 info:9:120:3
 history:5:75:75
-height:60:4:54:4
+height:57:4
 weight:90:10
 obj-flags:SUST_DEX
 values:RES_LIGHT[1]
