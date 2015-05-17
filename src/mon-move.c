@@ -1192,15 +1192,19 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 				msg("You hear a door burst open!");
 				disturb(player, 0);
 
+				if (mark) {
+					sqinfo_on(c->squares[ny][nx].info, SQUARE_MARK);
+					square_light_spot(c, ny, nx);
+				}
+
 				/* Fall into doorway */
 				return TRUE;
 			} else if (rf_has(mon->race->flags, RF_OPEN_DOOR)) {
 				square_open_door(c, ny, nx);
-			}
-			/* Handle knowledge of doors */
-			if (mark) {
-				sqinfo_on(c->squares[ny][nx].info, SQUARE_MARK);
-				square_light_spot(c, ny, nx);
+				if (mark) {
+					sqinfo_on(c->squares[ny][nx].info, SQUARE_MARK);
+					square_light_spot(c, ny, nx);
+				}
 			}
 		}
 	}
