@@ -1339,6 +1339,12 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 			continue;
 		}
 
+		/* Skip mimicked objects */
+		if (obj->mimicking_m_idx) {
+			obj = next;
+			continue;
+		}
+
 		/* Get the object name */
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 

@@ -1375,7 +1375,7 @@ effect:BREATH:SOUND:2
 dice:230
 effect:BREATH:SHARD:2
 dice:230
-desc:allows you to breathe sound/shards for 230 damage
+desc:allows you to breathe sound or shards for 230 damage
 
 name:DRAGON_BALANCE
 aim:1
