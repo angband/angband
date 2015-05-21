@@ -1424,6 +1424,8 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		textblock_append(tb, "When activated, it ");
 		textblock_append(tb, obj->activation->desc);
 	} else {
+		int random_choices = 0;
+
 		/* Get descriptions for all the effects */
 		effect = object_effect(obj);
 		if (!effect_desc(effect)) return FALSE;
@@ -1442,10 +1444,15 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		/* Print a colourised description */
 		while (effect) {
 			char *next_char = desc;
+			int roll;
 			random_value value = { 0, 0, 0, 0 };
 			char dice_string[20];
 			if (effect->dice != NULL)
-				(void) dice_roll(effect->dice, &value);
+				roll = dice_roll(effect->dice, &value);
+
+			/* Deal with special random effect */
+			if (effect->index == EF_RANDOM)
+				random_choices = roll + 1;
 
 			/* Get the possible dice strings */
 			if (value.dice && value.base)
@@ -1565,7 +1572,15 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				else
 					textblock_append(tb, "%c", *next_char);
 			} while (*next_char++);
-			if (effect->next) {
+
+			/* Random choices need special treatment */
+			if (random_choices >= 1) {
+				if (random_choices > 2)
+					textblock_append(tb, ", ");
+				else if (random_choices == 2)
+					textblock_append(tb, " or ");
+				random_choices--;
+			} else if (effect->next) {
 				if (effect->next->next)
 					textblock_append(tb, ", ");
 				else
