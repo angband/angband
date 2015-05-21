@@ -277,30 +277,40 @@ int slay_count(struct slay *slays)
 
 
 /**
- * Collect the (optionally known) brands from one or two objects into a
- * linked array
- * \param obj1 the first object (not NULL)
- * \param obj2 the second object (can be NULL)
+ * Collect the (optionally known) brands from a set of brands and an object
+ * into a linked array
+ * \param b the set of brands (can be NULL)
+ * \param obj the object (can be NULL)
  * \param known whether we are after only known brands
  * \return a pointer to the first brand
  */
-struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
+struct brand *brand_collect(struct brand *b, const object_type *obj,
 							bool known)
 {
-	struct brand *b, *b_new;
+	bool moved = FALSE;
+	struct brand *b_new;
 	struct brand *b_last = NULL;
 	struct brand *collected_brands = NULL;
 
+	/* Use the object if there are no given brands */
+	if (!b && obj) {
+		b = obj->brands;
+		moved = TRUE;
+	}
+
 	/* Allocate and populate */
-	b = obj1->brands;
 	while (b) {
 		/* Skip unknowns if checking for known brands */
 		if (known && !b->known) {
 			/* Move to the next brand */
 			b = b->next;
 
-			/* Move to the second object if we're done with the first */
-			if (!b && obj2) b = obj2->brands;
+			/* Move to object if we're done with the given brands */
+			if (!b && !moved && obj) {
+				b = obj->brands;
+				moved = TRUE;
+			}
+
 			continue;
 		}
 
@@ -323,8 +333,11 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 		/* Move to the next brand */
 		b = b->next;
 
-		/* Move to the second object if we're done with the first */
-		if (!b && obj2) b = obj2->brands;
+		/* Move to the object if we're done with the given brands */
+		if (!b && !moved && obj) {
+			b = obj->brands;
+			moved = TRUE;
+		}
 
 		b_last = b_new;
 	}
@@ -332,30 +345,40 @@ struct brand *brand_collect(const object_type *obj1, const object_type *obj2,
 }
 
 /**
- * Collect the (optionally known) slays from one or two objects into a
- * linked array
- * \param obj1 the first object (not NULL)
- * \param obj2 the second object (can be NULL)
+ * Collect the (optionally known) slays from a set of slays and an object
+ * into a linked array
+ * \param s the set of slays (can be NULL)
+ * \param obj the object (can be NULL)
  * \param known whether we are after only known slays
  * \return a pointer to the first slay
  */
-struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
+struct slay *slay_collect(struct slay *s, const object_type *obj,
 						  bool known)
 {
-	struct slay *s, *s_new;
+	bool moved = FALSE;
+	struct slay *s_new;
 	struct slay *s_last = NULL;
 	struct slay *collected_slays = NULL;
 
+	/* Use the object if there are no given slays */
+	if (!s && !moved && obj) {
+		s = obj->slays;
+		moved = TRUE;
+	}
+
 	/* Allocate and populate */
-	s = obj1->slays;
 	while (s) {
 		/* Skip unknowns if we are checking for known slays */
 		if (known && !s->known) {
 			/* Move to the next slay */
 			s = s->next;
 
-			/* Move to the second object if we're done with the first */
-			if (!s && obj2) s = obj2->slays;
+			/* Move to the object if we're done with the given slays */
+			if (!s && !moved && obj) {
+				s = obj->slays;
+				moved = TRUE;
+			}
+
 			continue;
 		}
 
@@ -378,8 +401,11 @@ struct slay *slay_collect(const object_type *obj1, const object_type *obj2,
 		/* Move to the next slay */
 		s = s->next;
 
-		/* Move to the second object if we're done with the first */
-		if (!s && obj2) s = obj2->slays;
+		/* Move to the object if we're done with the given slays */
+		if (!s && !moved && obj) {
+			s = obj->slays;
+			moved = TRUE;
+		}
 
 		s_last = s_new;
 	}

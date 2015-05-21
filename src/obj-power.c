@@ -397,8 +397,8 @@ static s32b slay_power(const object_type *obj, int p, int verbose,
 			/* Write info about the slay combination and multiplier */
 			log_obj("Slay multiplier for: ");
 
-			brands = brand_collect(obj, NULL, !known);
-			slays = slay_collect(obj, NULL, !known);
+			brands = brand_collect(obj->brands, NULL, !known);
+			slays = slay_collect(obj->slays, NULL, !known);
 
 			for (b = brands; b; b = b->next) {
 				log_obj(format("%sx%d ", b->name, b->multiplier));

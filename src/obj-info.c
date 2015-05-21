@@ -418,7 +418,7 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
  */
 static bool describe_slays(textblock *tb, const struct object *obj)
 {
-	struct slay *known_slays = slay_collect(obj, NULL, TRUE);
+	struct slay *known_slays = slay_collect(obj->slays, NULL, TRUE);
 	struct slay *s;
 
 	if (!known_slays) return FALSE;
@@ -449,7 +449,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
  */
 static bool describe_brands(textblock *tb, const struct object *obj)
 {
-	struct brand *known_brands = brand_collect(obj, NULL, TRUE);
+	struct brand *known_brands = brand_collect(obj->brands, NULL, TRUE);
 	struct brand *b;
 
 	if (!known_brands) return FALSE;
@@ -840,11 +840,21 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 			dam += (bow->to_d * 10);
 	}
 
+	if (ammo) multiplier = player->state.ammo_mult;
+
+	/* Get the brands */
+	*brand_list = brand_collect(obj->brands, ammo ? bow : NULL, TRUE);
+
+	/* Get the slays */
+	*slay_list = slay_collect(obj->slays, ammo ? bow : NULL, TRUE);
+
 	/* Melee weapons may get slays and brands from other items */
 	*nonweap_slay = FALSE;
 	if (weapon)	{
 		for (i = 2; i < player->body.count; i++) {
 			struct object *obj = slot_object(player, i);
+			struct brand *new_brand;
+			struct slay *new_slay;
 			if (!obj)
 				continue;
 
@@ -860,14 +870,17 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 					break;
 				}
 			}
-			if (*nonweap_slay) break;
+			if (!(*nonweap_slay)) continue;
+
+			/* Replace the old lists with new ones */
+			new_brand = brand_collect(*brand_list, obj, TRUE);
+			new_slay = slay_collect(*slay_list, obj, TRUE);
+			free_brand(*brand_list);
+			free_slay(*slay_list);
+			*brand_list = new_brand;
+			*slay_list = new_slay;
 		}
 	}
-
-	if (ammo) multiplier = player->state.ammo_mult;
-
-	/* Get the brands */
-	*brand_list = brand_collect(obj, ammo ? bow : NULL, TRUE);
 
 	/* Get damage for each brand on the objects */
 	for (brand = *brand_list; brand; brand = brand->next) {
@@ -887,9 +900,6 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 		brand->damage = total_dam;
 	}
-
-	/* Get the slays */
-	*slay_list = slay_collect(obj, ammo ? bow : NULL, TRUE);
 
 	/* Get damage for each slay on the objects */
 	for (slay = *slay_list; slay; slay = slay->next) {
