@@ -1339,7 +1339,7 @@ dice:25+d25
 desc:Cures 10 points of damage, removes fear and grants you heroism
 desc: (resistance to fear, and a bonus of +12 to-hit) for 25+1d25 turns.
 
-spell:Bereserker:28:20:60:60
+spell:Berserker:28:20:60:60
 effect:HEAL_HP
 dice:30
 effect:CURE:AFRAID
