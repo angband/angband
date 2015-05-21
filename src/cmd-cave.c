@@ -615,16 +615,13 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	bool more = FALSE;
 	int digging_chances[DIGGING_MAX];
 	bool okay = FALSE;
-	bool gold = FALSE;
+	bool gold = square_hasgoldvein(cave, y, x);
+	bool rubble = square_isrubble(cave, y, x);
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(y, x)) return (FALSE);
 
 	calc_digging_chances(&player->state, digging_chances);
-
-	/* Found gold */
-	if (square_hasgoldvein(cave, y, x))
-		gold = TRUE;
 
 	/* Do we succeed? */
 	okay = (digging_chances[square_digging(cave, y, x) - 1] > randint0(1600));
@@ -632,7 +629,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	/* Success */
 	if (okay && twall(y, x)) {
 		/* Rubble is a special case - could be handled more generally NRM */
-		if (square_isrubble(cave, y, x)) {
+		if (rubble) {
 			/* Message */
 			msg("You have removed the rubble.");
 
@@ -646,11 +643,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 				if (!ignore_item_ok(square_object(cave, y, x)) &&
 					square_isseen(cave, y, x))
 					msg("You have found something!");
-			} else {
-				/* Message, keep digging */
-				msg("You dig in the rubble.");
-				more = TRUE;
-			}
+			} 
 		} else if (gold) {
 			/* Found treasure */
 			place_gold(cave, y, x, player->depth, ORIGIN_FLOOR);
@@ -660,7 +653,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		}
 	} else {
 		/* Failure, continue digging */
-		if (square_isrubble(cave, y, x))
+		if (rubble)
 			msg("You dig in the rubble.");
 		else
 			msg("You tunnel into the %s.",
