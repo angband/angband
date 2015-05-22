@@ -985,7 +985,9 @@ static bool get_file_text(const char *suggested_name, char *path, size_t len)
 		return FALSE;
 
 	/* Tell the user where it's saved to. */
-	msg("Saving as %s.", path);
+	prt(format("Saving as %s.", path), 0, 0);
+	anykey();
+	prt("", 0, 0);
 
 	return TRUE;
 }
