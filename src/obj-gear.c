@@ -706,7 +706,7 @@ void inven_drop(struct object *obj, int amt)
 	int px = player->px;
 	struct object *dropped;
 
-	char o_name[80];
+	char name[80];
 	char label;
 
 	/* Error check */
@@ -730,16 +730,32 @@ void inven_drop(struct object *obj, int amt)
 		inven_takeoff(obj);
 
 	/* Get the object */
-	dropped = gear_object_for_use(obj, amt, TRUE);
+	dropped = gear_object_for_use(obj, amt, FALSE);
 
 	/* Describe the dropped object */
-	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);
+	object_desc(name, sizeof(name), dropped, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, label);
+	msg("You drop %s (%c).", name, label);
 
 	/* Drop it near the player */
 	drop_near(cave, dropped, 0, py, px, FALSE);
+
+	/* Describe what's left */
+	if (obj->artifact) {
+			object_desc(name, sizeof(name), obj, ODESC_FULL | ODESC_SINGULAR);
+			msg("You no longer have the %s (%c).", name, label);
+	} else if (obj == dropped) {
+		/* Play silly games to get the right description */
+		int number = obj->number;
+		obj->number = 0;
+		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+		msg("You have %s (%c).", name, label);
+		obj->number = number;
+	} else {
+		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+		msg("You have %s (%c).", name, label);
+	}
 
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
