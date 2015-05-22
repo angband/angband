@@ -432,6 +432,7 @@ void do_cmd_wield(struct command *cmd)
 {
 	struct object *equip_obj;
 	char o_name[80];
+	const char *act;
 
 	unsigned n;
 
@@ -489,6 +490,25 @@ void do_cmd_wield(struct command *cmd)
 		/* Forget it */
 		if (!get_check(format("Really take off %s? ", o_name))) return;
 	}
+
+	/* Describe the object */
+	object_desc(o_name, sizeof(o_name), equip_obj, ODESC_PREFIX | ODESC_FULL);
+
+	/* Took off weapon */
+	if (slot_type_is(slot, EQUIP_WEAPON))
+		act = "You were wielding";
+	/* Took off bow */
+	else if (slot_type_is(slot, EQUIP_BOW))
+		act = "You were holding";
+	/* Took off light */
+	else if (slot_type_is(slot, EQUIP_LIGHT))
+		act = "You were holding";
+	/* Took off something else */
+	else
+		act = "You were wearing";
+
+	/* Message */
+	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, gear_to_label(equip_obj));
 
 	wield_item(obj, slot);
 }
