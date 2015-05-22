@@ -1858,10 +1858,6 @@ void do_cmd_sell(struct command *cmd)
 	/* Take a proper copy of the now known-about object. */
 	sold_item = gear_object_for_use(obj, amt, FALSE);
 
-	/* Allocate charges between those wands, staves, or rods
-	 * sold and retained, unless all are being sold. */
-	distribute_charges(obj, sold_item, amt);
-
 	/* Get the "actual" value */
 	value = object_value(sold_item, amt, FALSE);
 
@@ -1936,9 +1932,6 @@ void do_cmd_stash(struct command *cmd)
 	/* Now get the real item */
 	dropped = gear_object_for_use(obj, amt, FALSE);
 
-	/* Distribute charges of wands/staves/rods */
-	distribute_charges(obj, dropped, amt);
-	
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);
 
