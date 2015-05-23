@@ -60,7 +60,7 @@ int test_obj_piles(void *state) {
 	eq(pile_contains(pile, o3), FALSE);
 	ptreq(pile_last_item(pile), o2);
 	ptreq(pile_last_item(pile)->prev, o1);
-	object_delete(o3);
+	object_delete(&o3);
 
 	/* Now put it back, and add another */
 	o3 = object_new();

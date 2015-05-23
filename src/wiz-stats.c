@@ -1111,7 +1111,7 @@ void monster_death_stats(int m_idx)
 		get_obj_data(obj, mon->fy, mon->fx, TRUE, uniq);
 
 		/* Delete the object */
-		object_delete(obj);
+		object_delete(&obj);
 
 		/* Next */
 		obj = next;
@@ -1410,7 +1410,7 @@ static void scan_for_objects(void)
 
 				/* Delete the object */
 				square_excise_object(cave, y, x, obj);
-				object_delete(obj);
+				object_delete(&obj);
 			}
 		}
 	}

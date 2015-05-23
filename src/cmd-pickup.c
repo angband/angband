@@ -83,7 +83,7 @@ static void player_pickup_gold(void)
 
 		/* Delete the gold */
 		square_excise_object(cave, player->py, player->px, obj);
-		object_delete(obj);
+		object_delete(&obj);
 		obj = next;
 	}
 

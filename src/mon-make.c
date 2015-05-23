@@ -169,14 +169,14 @@ void delete_monster_idx(int m_idx)
 			obj->artifact->created = FALSE;
 
 		/* Delete the object */
-		object_delete(obj);
+		object_delete(&obj);
 		obj = next;
 	}
 
 	/* Delete mimicked objects */
 	if (mon->mimicked_obj) {
 		square_excise_object(cave, y, x, mon->mimicked_obj);
-		object_delete(mon->mimicked_obj);
+		object_delete(&mon->mimicked_obj);
 	}
 
 	/* Wipe the Monster */
@@ -1317,10 +1317,8 @@ void monster_death(struct monster *mon, bool stats)
 					rf_has(mon->race->flags, RF_UNIQUE));
 
 	/* Delete any mimicked objects */
-	if (mon->mimicked_obj) {
-		object_delete(mon->mimicked_obj);
-		mon->mimicked_obj = NULL;
-	}
+	if (mon->mimicked_obj)
+		object_delete(&mon->mimicked_obj);
 
 	/* Drop objects being carried */
 	while (obj) {

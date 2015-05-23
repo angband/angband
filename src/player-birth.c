@@ -507,6 +507,7 @@ static void player_outfit(struct player *p)
 
 		object_flavor_aware(obj);
 		object_notice_everything(obj);
+		apply_autoinscription(obj);
 
 		inven_carry(p, obj, TRUE, FALSE);
 		si->kind->everseen = TRUE;

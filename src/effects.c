@@ -2028,6 +2028,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	/* Back-fire */
 	if ((i <= 1) || one_in_(i)) {
 		struct object *destroyed;
+		bool none_left = FALSE;
 
 		msg("The recharge backfires!");
 		msg("There is a bright flash of light.");
@@ -2037,10 +2038,10 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 
 		/* Reduce and describe inventory */
 		if (object_is_carried(player, obj))
-			destroyed = gear_object_for_use(obj, 1, TRUE);
+			destroyed = gear_object_for_use(obj, 1, TRUE, &none_left);
 		else
-			destroyed = floor_object_for_use(obj, 1, TRUE);
-		object_delete(destroyed);
+			destroyed = floor_object_for_use(obj, 1, TRUE, &none_left);
+		object_delete(&destroyed);
 	} else {
 		/* Extract a "power" */
 		t = (strength / (lev + 2)) + 1;

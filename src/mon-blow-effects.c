@@ -405,6 +405,7 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 		struct object *obj, *stolen;
 		char o_name[80];
 		bool split = FALSE;
+		bool none_left = FALSE;
 
         /* Pick an item */
 		int index = randint0(z_info->pack_size);
@@ -430,7 +431,7 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 			o_name, I2A(index));
 
         /* Steal and carry */
-		stolen = gear_object_for_use(obj, 1, FALSE);
+		stolen = gear_object_for_use(obj, 1, FALSE, &none_left);
         (void)monster_carry(cave, context->m_ptr, stolen);
 
         /* Obvious */
@@ -460,6 +461,7 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		int index = randint0(z_info->pack_size);
 		struct object *obj, *eaten;
 		char o_name[80];
+		bool none_left = FALSE;
 
 		/* Get the item */
 		obj = context->p->upkeep->inven[index];
@@ -481,8 +483,8 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		}
 
 		/* Steal and eat */
-		eaten = gear_object_for_use(obj, 1, FALSE);
-		object_delete(eaten);
+		eaten = gear_object_for_use(obj, 1, FALSE, &none_left);
+		object_delete(&eaten);
 
 		/* Obvious */
 		context->obvious = TRUE;

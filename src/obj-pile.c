@@ -201,13 +201,11 @@ struct object *object_new(void)
 }
 
 /**
- * Delete an object and free its memory
- *
- * Note that the pointer obj is *not* set to NULL by this function, so
- * it should *not* be used as an object again without being re-assigned
+ * Delete an object and free its memory, and set its pointer to NULL
  */
-void object_delete(struct object *obj)
+void object_delete(struct object **obj_address)
 {
+	struct object *obj = *obj_address;
 	struct object *prev = obj->prev;
 	struct object *next = obj->next;
 
@@ -234,6 +232,7 @@ void object_delete(struct object *obj)
 		player->upkeep->object = NULL;
 
 	mem_free(obj);
+	*obj_address = NULL;
 }
 
 /**
@@ -245,7 +244,7 @@ void object_pile_free(struct object *obj)
 
 	while (current) {
 		next = current->next;
-		object_delete(current);
+		object_delete(&current);
 		current = next;
 	}
 }
@@ -474,7 +473,7 @@ void object_absorb(struct object *obj1, struct object *obj2)
 	obj1->number = (total < z_info->stack_size ? total : z_info->stack_size);
 
 	object_absorb_merge(obj1, obj2);
-	object_delete(obj2);
+	object_delete(&obj2);
 }
 
 /**
@@ -578,7 +577,8 @@ struct object *object_split(struct object *src, int amt)
  *
  * Optionally describe what remains.
  */
-struct object *floor_object_for_use(struct object *obj, int num, bool message)
+struct object *floor_object_for_use(struct object *obj, int num, bool message,
+									bool *none_left)
 {
 	struct object *usable;
 	char name[80];
@@ -592,6 +592,13 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message)
 	} else {
 		usable = obj;
 		square_excise_object(cave, usable->iy, usable->ix, usable);
+		*none_left = TRUE;
+
+		/* Stop tracking item */
+		if (tracked_object_is(player->upkeep, obj))
+			track_object(player->upkeep, NULL);
+
+		/* Inventory has changed, so disable repeat command */ 
 		cmd_disable_repeat();
 	}
 
@@ -660,7 +667,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 
 		if (ignore) {
 			square_excise_object(c, y, x, ignore);
-			object_delete(ignore);
+			object_delete(&ignore);
 		} else
 			return FALSE;
 	}

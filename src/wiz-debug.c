@@ -488,7 +488,7 @@ static void get_art_name(char *buf, int max, int a_idx)
 	/* Create the artifact description */
 	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL);
 
-	object_delete(obj);
+	object_delete(&obj);
 }
 
 /**
@@ -998,7 +998,7 @@ static void wiz_statistics(struct object *obj, int level)
 				other++;
 
 			/* Nuke the test object */
-			object_delete(test_obj);
+			object_delete(&test_obj);
 		}
 
 		/* Final dump */

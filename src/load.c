@@ -229,7 +229,7 @@ static struct object *rd_item(void)
 
 	/* Check we have a kind and a valid artifact index */
 	if (!obj->tval || !obj->kind || art_idx >= z_info->a_max) {
-		object_delete(obj);
+		object_delete(&obj);
 		return NULL;
 	}
 

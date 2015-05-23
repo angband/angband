@@ -367,7 +367,6 @@ void object_flavor_aware(struct object *obj)
 	if (kind_is_ignored_unaware(obj->kind))
 		kind_ignore_when_aware(obj->kind);
 	player->upkeep->notice |= PN_IGNORE;
-	apply_autoinscription(obj);
 
 	/* Quit if no dungeon yet */
 	if (!cave) return;
@@ -492,6 +491,7 @@ void object_notice_everything(struct object *obj)
 
 	/* Know everything else */
 	object_know_all_but_flavor(obj);
+	apply_autoinscription(obj);
 }
 
 
@@ -774,8 +774,10 @@ void object_notice_on_wield(struct object *obj)
 	if (tval_is_jewelry(obj))
 	{
 		/* Learn the flavor of jewelry with obvious flags */
-		if (obvious)
+		if (obvious) {
 			object_flavor_aware(obj);
+			apply_autoinscription(obj);
+		}
 
 		/* Learn all flags and elements on any aware non-artifact jewelry */
 		if (object_flavor_is_aware(obj) && !obj->artifact) {
@@ -842,6 +844,24 @@ void object_notice_on_wield(struct object *obj)
 
 
 /**
+ * Notice object properties that become obvious on use, mark it as
+ * aware and reward the player with some experience.
+ */
+void object_notice_on_use(struct object *obj)
+{
+	/* Object level */
+	int lev = obj->kind->level;
+
+	object_flavor_aware(obj);
+	object_notice_effect(obj);
+	if (tval_is_rod(obj))
+		object_notice_everything(obj);
+	player_exp_gain(player, (lev + (player->lev / 2)) / player->lev);
+
+	player->upkeep->notice |= PN_IGNORE;
+}
+
+/**
  * ------------------------------------------------------------------------
  * Equipment knowledge improvers
  * These add to the player's knowledge of objects in their equipment
@@ -905,6 +925,7 @@ static void equip_notice_after_time(void)
 					/* Jewelry with a noticeable flag is obvious */
 					object_flavor_aware(obj);
 					object_check_for_ident(obj);
+					apply_autoinscription(obj);
 				}
 			} else {
 				/* Notice the flag is absent */
@@ -947,6 +968,7 @@ void equip_notice_flag(struct player *p, int flag)
 			if (tval_is_jewelry(obj)) {
 				object_flavor_aware(obj);
 				object_check_for_ident(obj);
+				apply_autoinscription(obj);
 			}
 
 			/* Message */
@@ -994,6 +1016,7 @@ void equip_notice_element(struct player *p, int element)
 		if (tval_is_jewelry(obj)) {
 			object_flavor_aware(obj);
 			object_check_for_ident(obj);
+			apply_autoinscription(obj);
 		}
 	}
 }

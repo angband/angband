@@ -600,7 +600,7 @@ void become_aware(struct monster *mon)
 				monster_carry(cave, mon, obj);
 			else {
 				/* Otherwise delete the mimicked object */
-				object_delete(obj);
+				object_delete(&obj);
 			}
 		}
 

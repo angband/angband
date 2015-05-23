@@ -378,7 +378,8 @@ void gear_insert_end(struct object *obj)
  *
  * Optionally describe what remains.
  */
-struct object *gear_object_for_use(struct object *obj, int num, bool message)
+struct object *gear_object_for_use(struct object *obj, int num, bool message,
+								   bool *none_left)
 {
 	struct object *usable;
 	char name[80];
@@ -409,6 +410,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message)
 		/* We're using the entire stack */
 		usable = obj;
 		gear_excise_object(usable);
+		*none_left = TRUE;
 
 		/* Stop tracking item */
 		if (tracked_object_is(player->upkeep, obj))
@@ -705,6 +707,7 @@ void inven_drop(struct object *obj, int amt)
 	int py = player->py;
 	int px = player->px;
 	struct object *dropped;
+	bool none_left = FALSE;
 
 	char name[80];
 	char label;
@@ -730,7 +733,7 @@ void inven_drop(struct object *obj, int amt)
 		inven_takeoff(obj);
 
 	/* Get the object */
-	dropped = gear_object_for_use(obj, amt, FALSE);
+	dropped = gear_object_for_use(obj, amt, FALSE, &none_left);
 
 	/* Describe the dropped object */
 	object_desc(name, sizeof(name), dropped, ODESC_PREFIX | ODESC_FULL);
@@ -745,7 +748,7 @@ void inven_drop(struct object *obj, int amt)
 	if (obj->artifact) {
 			object_desc(name, sizeof(name), obj, ODESC_FULL | ODESC_SINGULAR);
 			msg("You no longer have the %s (%c).", name, label);
-	} else if (obj == dropped) {
+	} else if (none_left) {
 		/* Play silly games to get the right description */
 		int number = obj->number;
 		obj->number = 0;

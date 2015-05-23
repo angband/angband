@@ -110,6 +110,7 @@ int inven_damage(struct player *p, int type, int cperc)
 			/* Some casualities */
 			if (amt) {
 				struct object *destroyed;
+				bool none_left = FALSE;
 
 				/* Get a description */
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
@@ -131,8 +132,8 @@ int inven_damage(struct player *p, int type, int cperc)
 				reduce_charges(obj, amt);
 
 				/* Destroy "amt" items */
-				destroyed = gear_object_for_use(obj, amt, FALSE);
-				object_delete(destroyed);
+				destroyed = gear_object_for_use(obj, amt, FALSE, &none_left);
+				object_delete(&destroyed);
 
 				/* Count the casualties */
 				k += amt;
@@ -468,7 +469,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ)
 
 				/* Delete the object */
 				square_excise_object(cave, y, x, obj);
-				object_delete(obj);
+				object_delete(&obj);
 
 				/* Redraw */
 				square_light_spot(cave, y, x);

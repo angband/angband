@@ -301,17 +301,8 @@ void do_cmd_inscribe(struct command *cmd)
  */
 void do_cmd_autoinscribe(struct command *cmd)
 {
-	int py = player->py;
-	int px = player->px;
-	struct object *obj;
-
-	/* Autoinscribe each object on the floor beneath the player */
-	for (obj = square_object(cave, py, px); obj; obj = obj->next)
-		apply_autoinscription(obj);
-
-	/* Autoinscribe each object in the inventory */
-	for (obj = player->gear; obj; obj = obj->next)
-		apply_autoinscription(obj);
+	autoinscribe_ground();
+	autoinscribe_pack();
 
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 }
@@ -563,6 +554,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	struct effect *effect = object_effect(obj);
 	bool ident = FALSE, used = FALSE;
 	bool was_aware;
+	bool none_left = FALSE;
 	int dir = 5;
 	int px = player->px, py = player->py;
 	enum use;
@@ -634,34 +626,15 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* If the item is a null pointer or has been wiped, be done now */
 	if (!obj) return;
 
-	if (ident) object_notice_effect(obj);
-
 	/* Use the turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Mark as tried and redisplay */
-	player->upkeep->notice |= (PN_COMBINE);
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
-
-	/*
-	 * If the player becomes aware of the item's function, then mark it as
-	 * aware and reward the player with some experience.  Otherwise, mark
-	 * it as "tried".
-	 */
+	/* ID the object by use if appropriate, otherwise, mark it as "tried" */
 	if (ident && !was_aware) {
-		/* Object level */
-		int lev = obj->kind->level;
-
-		object_flavor_aware(obj);
-		if (tval_is_rod(obj)) object_notice_everything(obj);
-		player_exp_gain(player, (lev + (player->lev / 2)) / player->lev);
-		player->upkeep->notice |= PN_IGNORE;
+		object_notice_on_use(obj);
 	} else if (used) {
 		object_flavor_tried(obj);
 	}
-
-	/* If there are no more of the item left, then we're done. */
-	if (!obj->number) return;
 
 	/* Chargeables act differently to single-used items when not used up */
 	if (used && use == USE_CHARGE) {
@@ -680,12 +653,20 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 
 		/* Destroy an item in the pack */
 		if (object_is_carried(player, obj))
-			used_obj = gear_object_for_use(obj, 1, TRUE);
+			used_obj = gear_object_for_use(obj, 1, TRUE, &none_left);
 		else
 			/* Destroy an item on the floor */
-			used_obj = floor_object_for_use(obj, 1, TRUE);
-		object_delete(used_obj);
+			used_obj = floor_object_for_use(obj, 1, TRUE, &none_left);
+		object_delete(&used_obj);
 	}
+
+	/* Autoinscribe if we still have any */
+	if (!none_left)
+		apply_autoinscription(obj);
+
+	/* Mark as tried and redisplay */
+	player->upkeep->notice |= (PN_COMBINE);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
 
 	/* Hack to make Glyph of Warding work properly */
 	if (square_trap_specific(cave, py, px, rune->tidx)) {
@@ -914,13 +895,14 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 		player->upkeep->redraw |= (PR_INVEN);
 	} else { /* Refilled from a flask */
 		struct object *used;
+		bool none_left = FALSE;
 
 		/* Decrease the item from the pack or the floor */
 		if (object_is_carried(player, obj))
-			used = gear_object_for_use(obj, 1, TRUE);
+			used = gear_object_for_use(obj, 1, TRUE, &none_left);
 		else
-			used = floor_object_for_use(obj, 1, TRUE);
-		object_delete(used);
+			used = floor_object_for_use(obj, 1, TRUE, &none_left);
+		object_delete(&used);
 	}
 
 	/* Recalculate torch */

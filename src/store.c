@@ -815,7 +815,7 @@ static void store_object_absorb(struct object *old, struct object *new)
 	}
 
 	/* Fully absorbed */
-	object_delete(new);
+	object_delete(&new);
 }
 
 
@@ -968,7 +968,7 @@ void store_delete(struct store *s, struct object *obj, int amt)
 		obj->number -= amt;
 	} else {
 		pile_excise(&s->stock, obj);
-		object_delete(obj);
+		object_delete(&obj);
 		s->stock_num--;
 	}
 }
@@ -1168,12 +1168,12 @@ static bool store_create_random(struct store *store)
 		/* Reject if item is 'damaged' (i.e. negative mods) */
 		if (tval_is_weapon(obj)) {
 			if ((obj->to_h < 0) || (obj->to_d < 0)) {
-				object_delete(obj);
+				object_delete(&obj);
 				continue;
 			}
 		} else if (tval_is_armor(obj)) {
 			if (obj->to_a < 0) {
-				object_delete(obj);
+				object_delete(&obj);
 				continue;
 			}
 		}
@@ -1186,13 +1186,13 @@ static bool store_create_random(struct store *store)
 
 		/* Black markets have expensive tastes */
 		if ((store->sidx == STORE_B_MARKET) && !black_market_ok(obj)) {
-			object_delete(obj);
+			object_delete(&obj);
 			continue;
 		}
 
 		/* No "worthless" items */
 		if (object_value(obj, 1, FALSE) < 1)  {
-			object_delete(obj);
+			object_delete(&obj);
 			continue;
 		}
 
@@ -1201,7 +1201,7 @@ static bool store_create_random(struct store *store)
 
 		/* Attempt to carry the object */
 		if (!store_carry(store, obj)) {
-			object_delete(obj);
+			object_delete(&obj);
 			continue;
 		}
 
@@ -1622,7 +1622,7 @@ void do_cmd_buy(struct command *cmd)
 	/* Ensure we have room */
 	if (!inven_carry_okay(bought)) {
 		msg("You cannot carry that many items.");
-		object_delete(bought);
+		object_delete(&bought);
 		return;
 	}
 
@@ -1634,7 +1634,7 @@ void do_cmd_buy(struct command *cmd)
 
 	if (price > player->au) {
 		msg("You cannot afford that purchase.");
-		object_delete(bought);
+		object_delete(&bought);
 		return;
 	}
 
@@ -1670,6 +1670,7 @@ void do_cmd_buy(struct command *cmd)
 
 	/* Give it to the player */
 	(void) inven_carry(player, bought, TRUE, TRUE);
+	apply_autoinscription(bought);
 
 	/* Handle stuff */
 	handle_stuff(player);
@@ -1739,7 +1740,7 @@ void do_cmd_retrieve(struct command *cmd)
 	/* Ensure we have room */
 	if (!inven_carry_okay(picked_item)) {
 		msg("You cannot carry that many items.");
-		object_delete(picked_item);
+		object_delete(&picked_item);
 		return;
 	}
 
@@ -1794,6 +1795,7 @@ void do_cmd_sell(struct command *cmd)
 	char o_name[120];
 
 	struct object *obj, *sold_item;
+	bool none_left = FALSE;
 
 	/* Get arguments */
 	/* XXX-AS fill this out, split into cmd-store.c */
@@ -1856,7 +1858,7 @@ void do_cmd_sell(struct command *cmd)
 	object_notice_everything(obj);
 
 	/* Take a proper copy of the now known-about object. */
-	sold_item = gear_object_for_use(obj, amt, FALSE);
+	sold_item = gear_object_for_use(obj, amt, FALSE, &none_left);
 
 	/* Get the "actual" value */
 	value = object_value(sold_item, amt, FALSE);
@@ -1902,6 +1904,7 @@ void do_cmd_stash(struct command *cmd)
 	char o_name[120];
 
 	struct object *obj, *dropped;
+	bool none_left = FALSE;
 
 	if (cmd_get_arg_item(cmd, "item", &obj))
 		return;
@@ -1930,17 +1933,17 @@ void do_cmd_stash(struct command *cmd)
 	}
 
 	/* Now get the real item */
-	dropped = gear_object_for_use(obj, amt, FALSE);
+	dropped = gear_object_for_use(obj, amt, FALSE, &none_left);
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
 	msg("You drop %s (%c).", o_name, gear_to_label(obj));
-	
+
 	/* Handle stuff */
 	handle_stuff(player);
-	
+
 	/* Let the home carry it */
 	home_carry(dropped);
 

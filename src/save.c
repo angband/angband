@@ -208,7 +208,7 @@ static void wr_monster(const monster_type *mon)
 		obj = obj->next;
 	}
 	wr_item(dummy);
-	object_delete(dummy);
+	object_delete(&dummy);
 }
 
 /**

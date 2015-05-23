@@ -494,6 +494,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 	int tx = x + 99 * ddx[dir];
 
 	bool hit_target = FALSE;
+	bool none_left = FALSE;
 
 	struct object *missile;
 
@@ -634,9 +635,9 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 
 	/* Get the missile */
 	if (object_is_carried(player, obj))
-		missile = gear_object_for_use(obj, 1, TRUE);
+		missile = gear_object_for_use(obj, 1, TRUE, &none_left);
 	else
-		missile = floor_object_for_use(obj, 1, TRUE);
+		missile = floor_object_for_use(obj, 1, TRUE, &none_left);
 
 	/* Drop (or break) near that location */
 	drop_near(cave, missile, breakage_chance(missile, hit_target), y, x, TRUE);

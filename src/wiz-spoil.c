@@ -185,7 +185,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	else if (tval_is_armor(obj))
 		strnfmt(dam, dam_len, "%d", obj->ac);
 
-	object_delete(obj);
+	object_delete(&obj);
 }
 
 
@@ -386,7 +386,7 @@ static void spoil_artifact(const char *fname)
 
 			/* Attempt to "forge" the artifact */
 			if (!make_fake_artifact(obj, art)) {
-				object_delete(obj);
+				object_delete(&obj);
 				continue;
 			}
 
@@ -426,7 +426,7 @@ static void spoil_artifact(const char *fname)
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);
-			object_delete(obj);
+			object_delete(&obj);
 		}
 	}
 

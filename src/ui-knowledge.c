@@ -1788,7 +1788,7 @@ static void desc_obj_fake(int k_idx)
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
-	object_delete(obj);
+	object_delete(&obj);
 	textblock_free(tb);
 }
 
