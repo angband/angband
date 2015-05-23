@@ -89,13 +89,32 @@ void copy_slay(struct slay **dest, struct slay *source)
 	struct slay *s = source;
 
 	while (s) {
-		struct slay *os = mem_zalloc(sizeof *os);
-		os->name = string_make(s->name);
-		os->race_flag = s->race_flag;
-		os->multiplier = s->multiplier;
-		os->known = s->known;
-		os->next = *dest;
-		*dest = os;
+		struct slay *new_s, *check_s = *dest;
+		bool dupe = FALSE;
+
+		/* Check for dupes */
+		while (check_s) {
+			if (streq(check_s->name, s->name) &&
+				(check_s->race_flag == s->race_flag) &&
+				(check_s->multiplier = s->multiplier)) {
+				dupe = TRUE;
+				break;
+			}
+			check_s = check_s->next;
+		}
+		if (dupe) {
+			s = s->next;
+			continue;
+		}
+
+		/* Copy */
+		new_s = mem_zalloc(sizeof *new_s);
+		new_s->name = string_make(s->name);
+		new_s->race_flag = s->race_flag;
+		new_s->multiplier = s->multiplier;
+		new_s->known = s->known;
+		new_s->next = *dest;
+		*dest = new_s;
 		s = s->next;
 	}
 }
@@ -111,13 +130,32 @@ void copy_brand(struct brand **dest, struct brand *source)
 	struct brand *b = source;
 
 	while (b) {
-		struct brand *ob = mem_zalloc(sizeof *ob);
-		ob->name = string_make(b->name);
-		ob->element = b->element;
-		ob->multiplier = b->multiplier;
-		ob->known = b->known;
-		ob->next = *dest;
-		*dest = ob;
+		struct brand *new_b, *check_b = *dest;
+		bool dupe = FALSE;
+
+		/* Check for dupes */
+		while (check_b) {
+			if (check_b && streq(check_b->name, b->name) &&
+				(check_b->element == b->element) &&
+				(check_b->multiplier = b->multiplier)) {
+				dupe = TRUE;
+				break;
+			}
+			check_b = check_b->next;
+		}
+		if (dupe) {
+			b = b->next;
+			continue;
+		}
+
+		/* Copy */
+		new_b = mem_zalloc(sizeof *new_b);
+		new_b->name = string_make(b->name);
+		new_b->element = b->element;
+		new_b->multiplier = b->multiplier;
+		new_b->known = b->known;
+		new_b->next = *dest;
+		*dest = new_b;
 		b = b->next;
 	}
 }
