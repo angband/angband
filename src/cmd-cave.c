@@ -633,8 +633,8 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			/* Message */
 			msg("You have removed the rubble.");
 
-			/* Place an object */
-			if (randint0(100) < 10)	{
+			/* Place an object (except in town) */
+			if ((randint0(100) < 10) && player->depth) {
 				/* Create a simple object */
 				place_object(cave, y, x, player->depth, FALSE, FALSE,
 							 ORIGIN_RUBBLE, 0);

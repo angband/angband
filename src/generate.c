@@ -577,6 +577,7 @@ static void cleanup_vault(void)
 	for (v = vaults; v; v = next) {
 		next = v->next;
 		mem_free(v->name);
+		mem_free(v->typ);
 		mem_free(v->text);
 		mem_free(v);
 	}
