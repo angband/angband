@@ -2163,13 +2163,6 @@ static void new_level_display_update(game_event_type type,
 	Term->offset_y = z_info->dungeon_hgt;
 	Term->offset_x = z_info->dungeon_wid;
 
-
-	/*
-	 * Because changing levels doesn't take a turn and PR_MONLIST might not be
-	 * set for a few game turns, manually force an update on level change.
-	 */
-	monster_list_force_subwindow_update();
-
 	/* If autosave is pending, do it now. */
 	if (player->upkeep->autosave) {
 		save_game();
@@ -2205,6 +2198,10 @@ static void new_level_display_update(game_event_type type,
 
 	/* Redraw "statusy" things */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
+
+	/* Because changing levels doesn't take a turn and PR_MONLIST might not be
+	 * set for a few game turns, manually force an update on level change. */
+	monster_list_force_subwindow_update();
 
 	/* Update stuff */
 	update_stuff(player);
