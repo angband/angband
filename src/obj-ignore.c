@@ -168,7 +168,7 @@ const char *get_autoinscription(struct object_kind *kind)
 int apply_autoinscription(struct object *obj)
 {
 	char o_name[80];
-	const char *note = get_autoinscription(obj->kind);
+	const char *note = obj ? get_autoinscription(obj->kind) : NULL;
 
 	/* Don't inscribe unaware objects */
 	if (!note || !object_flavor_is_aware(obj))

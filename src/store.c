@@ -1670,7 +1670,6 @@ void do_cmd_buy(struct command *cmd)
 
 	/* Give it to the player */
 	(void) inven_carry(player, bought, TRUE, TRUE);
-	apply_autoinscription(bought);
 
 	/* Handle stuff */
 	handle_stuff(player);
