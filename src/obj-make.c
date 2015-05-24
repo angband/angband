@@ -447,7 +447,8 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 	obj->to_d = art->to_d;
 	obj->weight = art->weight;
 	obj->activation = art->activation;
-	obj->time = art->time;
+	if (art->time.base != 0)
+		obj->time = art->time;
 	of_union(obj->flags, art->flags);
 	copy_slay(&obj->slays, art->slays);
 	copy_brand(&obj->brands, art->brands);
