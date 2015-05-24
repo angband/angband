@@ -741,24 +741,25 @@ void inven_drop(struct object *obj, int amt)
 	/* Message */
 	msg("You drop %s (%c).", name, label);
 
-	/* Drop it near the player */
-	drop_near(cave, dropped, 0, py, px, FALSE);
-
 	/* Describe what's left */
-	if (obj->artifact) {
-			object_desc(name, sizeof(name), obj, ODESC_FULL | ODESC_SINGULAR);
-			msg("You no longer have the %s (%c).", name, label);
+	if (dropped->artifact) {
+		object_desc(name, sizeof(name), dropped,
+					ODESC_FULL | ODESC_SINGULAR);
+		msg("You no longer have the %s (%c).", name, label);
 	} else if (none_left) {
 		/* Play silly games to get the right description */
-		int number = obj->number;
-		obj->number = 0;
-		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+		int number = dropped->number;
+		dropped->number = 0;
+		object_desc(name, sizeof(name), dropped, ODESC_PREFIX | ODESC_FULL);
 		msg("You have %s (%c).", name, label);
-		obj->number = number;
+		dropped->number = number;
 	} else {
 		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
 		msg("You have %s (%c).", name, label);
 	}
+
+	/* Drop it near the player */
+	drop_near(cave, dropped, 0, py, px, FALSE);
 
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
