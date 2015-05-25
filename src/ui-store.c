@@ -739,21 +739,21 @@ static void store_menu_set_selections(struct menu *menu, bool knowledge_menu)
 	if (knowledge_menu) {
 		if (OPT(rogue_like_commands)) {
 			/* These two can't intersect! */
-			menu->cmd_keys = "?Ieilx";
+			menu->cmd_keys = "?|Ieilx";
 			menu->selections = "abcdfghjkmnopqrstuvwyz134567";
 		} else {
 			/* These two can't intersect! */
-			menu->cmd_keys = "?Ieil";
+			menu->cmd_keys = "?|Ieil";
 			menu->selections = "abcdfghjkmnopqrstuvwxyz13456";
 		}
 	} else {
 		if (OPT(rogue_like_commands)) {
 			/* These two can't intersect! */
-			menu->cmd_keys = "\x04\x05\x10?={}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D, \x05 = ^E */
+			menu->cmd_keys = "\x04\x05\x10?={|}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D, \x05 = ^E */
 			menu->selections = "abcfmnoqrtuvyz13456790ABDFGH";
 		} else {
 			/* These two can't intersect! */
-			menu->cmd_keys = "\x05\x010?={}~CEIbdegiklpstwx"; /* \x05 = ^E, \x10 = ^p */
+			menu->cmd_keys = "\x05\x010?={|}~CEIbdegiklpstwx"; /* \x05 = ^E, \x10 = ^p */
 			menu->selections = "acfhjmnoqruvyz13456790ABDFGH";
 		}
 	}
