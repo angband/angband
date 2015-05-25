@@ -969,7 +969,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			}
 		}
 
-		else if (key == '.') {
+		else if (key == '|') {
 			/* No toggle allowed */
 			if ((q1 > q2) && !allow_all){
 				bell("Cannot select quiver!");
@@ -1055,7 +1055,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	/* Set up the menu */
 	menu_setpriv(m, num_obj, items);
 	m->selections = lower_case;
-	m->switch_keys = "/.-";
+	m->switch_keys = "/|-";
 	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS);
 	if (olist_mode & OLIST_QUIVER && player->upkeep->command_wrk == USE_INVEN)
 		m->browse_hook = item_menu_browser;
