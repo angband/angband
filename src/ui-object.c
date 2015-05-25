@@ -815,7 +815,7 @@ static void menu_header(void)
 
 		/* Indicate legality of quiver */
 		if (use_quiver)
-			my_strcat(out_val, " . for Quiver,", sizeof(out_val));
+			my_strcat(out_val, " | for Quiver,", sizeof(out_val));
 
 		/* Indicate legality of the "floor" */
 		if (allow_floor)
@@ -842,7 +842,7 @@ static void menu_header(void)
 
 		/* Indicate legality of quiver */
 		if (use_quiver)
-			my_strcat(out_val, " . for Quiver,", sizeof(out_val));
+			my_strcat(out_val, " | for Quiver,", sizeof(out_val));
 
 		/* Indicate legality of the "floor" */
 		if (allow_floor)
@@ -896,7 +896,7 @@ static void menu_header(void)
 
 		/* Indicate legality of quiver */
 		if (use_quiver)
-			my_strcat(out_val, " . for Quiver,", sizeof(out_val));
+			my_strcat(out_val, " | for Quiver,", sizeof(out_val));
 	}
 
 	/* Finish the header */
