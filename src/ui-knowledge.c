@@ -2559,7 +2559,7 @@ void do_cmd_quiver(void)
 	struct object *obj = NULL;
 	int ret = 3;
 
-	if (player->upkeep->quiver[0] == NULL) {
+	if (player->upkeep->quiver_cnt == 0) {
 		msg("You have nothing in your quiver.");
 		return;
 	}
