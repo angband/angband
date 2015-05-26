@@ -464,7 +464,9 @@ static bool new_quiver_slot_okay(const object_type *obj)
 	if (!empty_slot) return FALSE;
 
 	/* Check we won't need another pack slot */
-	quiver_count = ((quiver_count - 1) % z_info->stack_size) + 1;
+	quiver_count += z_info->stack_size;
+	while (quiver_count > z_info->stack_size)
+		quiver_count -= z_info->stack_size;
 	if (quiver_count + obj->number > z_info->stack_size) return FALSE;
 
 	/* Good to go */
