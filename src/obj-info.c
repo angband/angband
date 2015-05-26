@@ -1461,7 +1461,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		/* Print a colourised description */
 		while (effect) {
 			char *next_char = desc;
-			int roll;
+			int roll = 0;
 			random_value value = { 0, 0, 0, 0 };
 			char dice_string[20];
 			if (effect->dice != NULL)
