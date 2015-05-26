@@ -798,8 +798,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 		}
 
 		if (tval_is_money_k(kind)) {
-			obj = make_gold(player->depth,
-							  lookup_kind(TV_GOLD, kind->sval)->name);
+			obj = make_gold(player->depth, kind->name);
 		} else {
 			obj = object_new();
 			object_prep(obj, kind, new_mon->race->level, RANDOMISE);

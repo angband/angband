@@ -552,8 +552,7 @@ static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid
 
 		/* Create the item */
 		if (tval_is_money_k(kind))
-			obj = make_gold(player->depth,
-							lookup_kind(TV_GOLD, kind->sval)->name);
+			obj = make_gold(player->depth, kind->name);
 		else {
 			/* Get object */
 			obj = object_new();
@@ -1639,7 +1638,7 @@ static void wiz_test_kind(int tval)
 
 		/* Create the item */
 		if (tval == TV_GOLD)
-			obj = make_gold(player->depth, lookup_kind(TV_GOLD, sval)->name);
+			obj = make_gold(player->depth, kind->name);
 		else {
 			obj = object_new();
 			object_prep(obj, kind, player->depth, RANDOMISE);
