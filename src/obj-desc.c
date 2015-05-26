@@ -508,9 +508,7 @@ static size_t obj_desc_mods(const object_type *o_ptr, char *buf, size_t max,
 	size_t end, bool spoil)
 {
 	int i, j, num_mods = 0;
-
-	/* Show maximum of (a fairly arbitrary) 4 modifiers */
-	int mods[4] = { 0, 0, 0, 0 };
+	int mods[OBJ_MOD_MAX] = { 0 };
 
 	/* Run through possible modifiers and store distinct ones */
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
@@ -530,9 +528,6 @@ static size_t obj_desc_mods(const object_type *o_ptr, char *buf, size_t max,
 			/* Add another mod if needed */
 			if (j == num_mods)
 				mods[num_mods++] = o_ptr->modifiers[i];
-
-			/* Quit if we've reached our limit */
-			if (num_mods == 4) break;
 		}
 	}
 
