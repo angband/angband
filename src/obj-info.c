@@ -221,9 +221,17 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 	size_t count = 0, i;
 	bool detail = FALSE;
 
-	/* Don't give exact pluses for faked ego items as each real one 
-	   will be different */
+	/* Don't give exact plusses for faked ego items as each real one will
+	 * be different */
 	bool suppress_details = mode & OINFO_EGO ? TRUE : FALSE;
+
+	/* Fact of but not size of mods is known for egos and flavoured items
+	 * the player is aware of */
+	bool known_effect = FALSE;
+	if (object_ego_is_visible(obj))
+		known_effect = TRUE;
+	if (tval_can_have_flavor_k(obj->kind) && object_flavor_is_aware(obj))
+		known_effect = TRUE;
 
 	/* See what we've got */
 	for (i = 0; i < N_ELEMENTS(mod_flags); i++)
@@ -245,8 +253,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 		if (detail && !suppress_details) {
 			int attr = (val > 0) ? COLOUR_L_GREEN : COLOUR_RED;
 			textblock_append_c(tb, attr, "%+i %s.\n", val, desc);
-		} 
-		else
+		} else if (known_effect)
 			textblock_append(tb, "Affects your %s\n", desc);
 	}
 
