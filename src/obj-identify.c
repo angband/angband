@@ -1009,7 +1009,7 @@ void equip_notice_element(struct player *p, int element)
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
-			msg("Your %s glows", o_name);
+			msg("Your %s glows.", o_name);
 		}
 
 		/* Jewelry with a noticeable element is obvious */

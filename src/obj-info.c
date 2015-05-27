@@ -1393,7 +1393,7 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 		*max_recharge = randcalc(timeout, 0, MAXIMISE);
 	}
 
-	if (tval_is_food(obj) || tval_is_potion(obj) || tval_is_scroll(obj)) {
+	if (tval_is_edible(obj) || tval_is_potion(obj) || tval_is_scroll(obj)) {
 		*failure_chance = 0;
 	} else {
 		*failure_chance = get_use_device_chance(obj);
