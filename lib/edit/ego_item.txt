@@ -766,7 +766,17 @@ info:0:6:3500:18
 alloc:100:1 to 30
 type:sword
 type:polearm
-type:hafted
+item:hafted:Whip
+item:hafted:Ball-and-Chain
+item:hafted:Morning Star
+item:hafted:Flail
+item:hafted:Two-Handed Great Flail
+item:hafted:Mace
+item:hafted:Lead-Filled Mace
+item:hafted:Quarterstaff
+item:hafted:War Hammer
+item:hafted:Maul
+item:hafted:Great Hammer
 values:SLAY_UNDEAD[3]
 
 name:83:of Slay Demon
@@ -836,7 +846,17 @@ info:0:20:8000:24
 alloc:30:10 to 60
 type:sword
 type:polearm
-type:hafted
+item:hafted:Whip
+item:hafted:Ball-and-Chain
+item:hafted:Morning Star
+item:hafted:Flail
+item:hafted:Two-Handed Great Flail
+item:hafted:Mace
+item:hafted:Lead-Filled Mace
+item:hafted:Quarterstaff
+item:hafted:War Hammer
+item:hafted:Maul
+item:hafted:Great Hammer
 flags:SEE_INVIS
 values:WIS[d2] | SLAY_UNDEAD[5]
 min-values:WIS[0]
@@ -1200,7 +1220,6 @@ item:dragon armor:Law Dragon Scale Mail
 item:dragon armor:Gold Dragon Scale Mail
 item:dragon armor:Chaos Dragon Scale Mail
 item:dragon armor:Balance Dragon Scale Mail
-item:dragon armor:Power Dragon Scale Mail
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 
 name:131:of Elvenkind
@@ -1212,7 +1231,6 @@ item:dragon armor:Law Dragon Scale Mail
 item:dragon armor:Gold Dragon Scale Mail
 item:dragon armor:Chaos Dragon Scale Mail
 item:dragon armor:Balance Dragon Scale Mail
-item:dragon armor:Power Dragon Scale Mail
 values:STEALTH[d2] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 min-values:STEALTH[0]
 flags:RAND_HI_RES
