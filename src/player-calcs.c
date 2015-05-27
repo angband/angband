@@ -1104,7 +1104,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			}
 
 	/* Copy the current pack */
-	for (i = 0; i < upkeep->inven_cnt; i++)
+	for (i = 0; i < z_info->pack_size; i++)
 		old_pack[i] = upkeep->inven[i];
 
 	/* Prepare to fill the inventory */
