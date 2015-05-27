@@ -973,8 +973,6 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 	}
 
 	/* Objects sort by decreasing value */
-	//if (orig->kind->cost > new->kind->cost) return FALSE;
-	//if (orig->kind->cost < new->kind->cost) return TRUE;
 	if (object_value_real(orig, 1, FALSE, FALSE) >
 		object_value_real(new, 1, FALSE, FALSE))
 		return FALSE;
@@ -1008,9 +1006,20 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 					struct player_body body)
 {
 	int i;
+	struct object **old_quiver = mem_zalloc(z_info->quiver_size *
+												sizeof(struct object *));
+	struct object **old_pack = mem_zalloc(z_info->pack_size *
+											  sizeof(struct object *));
 
-	/* Fill the quiver */
+	/* Prepare to fill the quiver */
 	upkeep->quiver_cnt = 0;
+
+	/* Copy the current quiver */
+	for (i = 0; i < z_info->quiver_size; i++)
+		if (upkeep->quiver[i])
+			old_quiver[i] = upkeep->quiver[i];
+		else
+			old_quiver[i] = NULL;
 
 	/* First, allocate inscribed items */
 	for (i = 0; i < z_info->quiver_size; i++) {
@@ -1086,8 +1095,21 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			object_notice_on_wield(first);
 	}
 
-	/* Fill the inventory */
+	/* Note reordering */
+	if (character_dungeon)
+		for (i = 0; i < z_info->quiver_size; i++)
+			if (old_quiver[i] && (upkeep->quiver[i] != old_quiver[i])) {
+				msg("You re-arrange your quiver.");
+				break;
+			}
+
+	/* Copy the current pack */
+	for (i = 0; i < upkeep->inven_cnt; i++)
+		old_pack[i] = upkeep->inven[i];
+
+	/* Prepare to fill the inventory */
 	upkeep->inven_cnt = 0;
+
 	while (upkeep->inven_cnt <= z_info->pack_size) {
 		struct object *current, *first = NULL;
 		for (current = gear; current; current = current->next) {
@@ -1118,6 +1140,17 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		/* Allocate */
 		upkeep->inven[upkeep->inven_cnt++] = first;
 	}
+
+	/* Note reordering */
+	if (character_dungeon)
+		for (i = 0; i < z_info->pack_size; i++)
+			if (old_pack[i] && (upkeep->inven[i] != old_pack[i])) {
+				msg("You re-arrange your pack.");
+				break;
+			}
+
+	mem_free(old_quiver);
+	mem_free(old_pack);
 }
 
 static void update_inventory(struct player *p)

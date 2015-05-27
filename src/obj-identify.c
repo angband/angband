@@ -1238,6 +1238,9 @@ void do_ident_item(struct object *obj)
 	object_notice_everything(obj);
 	apply_autoinscription(obj);
 
+	/* Update the gear */
+	calc_inventory(player->upkeep, player->gear, player->body);
+
 	/* Set ignore flag */
 	player->upkeep->notice |= PN_IGNORE;
 
