@@ -1656,8 +1656,14 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 			}
 
 			/* Count and put into the list */
-			for (j = 0; j < N_ELEMENTS(object_text_order); j++) {
+			for (j = 0; j < TV_MAX; j++) {
 				int gid = obj_group_order[j];
+
+				/* Ignore duplicates */
+				if ((j > 0) && (gid == default_join[e_count - 1].gid)
+					&& (i == default_join[e_count - 1].oid))
+					continue;
+
 				if (tval[obj_group_order[j]]) {
 					egoitems[e_count] = e_count;
 					default_join[e_count].oid = i;
