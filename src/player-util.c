@@ -653,7 +653,7 @@ s16b player_resting_count(struct player *p)
 
 /**
  * In order to prevent the regeneration bonus from the first few turns, we have
- * to store the original number of turns the user entered. Otherwise, the first
+ * to store the number of turns the player has rested. Otherwise, the first
  * few turns will have the bonus and the last few will not.
  */
 static int player_turns_rested = 0;
@@ -758,6 +758,29 @@ void player_resting_complete_special(struct player *p)
 				disturb(p, 0);
 		}
 	}
+}
+
+/* Record the player's last rest count for repeating */
+static int player_resting_repeat_count = 0;
+
+/**
+ * Get the number of resting turns to repeat.
+ *
+ * \param count is the number of turns requested for rest most recently.
+ */
+int player_get_resting_repeat_count(struct player *p)
+{
+	return player_resting_repeat_count;
+}
+
+/**
+ * Set the number of resting turns to repeat.
+ *
+ * \param count is the number of turns requested for rest most recently.
+ */
+void player_set_resting_repeat_count(struct player *p, s16b count)
+{
+	player_resting_repeat_count = count;
 }
 
 /**

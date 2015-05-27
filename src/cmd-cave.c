@@ -1374,6 +1374,13 @@ void do_cmd_rest(struct command *cmd)
 	if (!player_is_resting(player)) {
 		player->searching = FALSE;
 		player->upkeep->update |= (PU_BONUS);
+
+		/* If a number of turns was entered, remember it */
+		if (n > 1)
+			player_set_resting_repeat_count(player, n);
+		else if (n == 1)
+			/* If we're repeating the command, use the same count */
+			n = player_get_resting_repeat_count(player);
 	}
 
 	/* Set the counter, and stop if told to */
@@ -1394,6 +1401,7 @@ void do_cmd_rest(struct command *cmd)
 	} else if (player_resting_is_special(n)) {
 		cmdq_push(CMD_REST);
 		cmd_set_arg_choice(cmdq_peek(), "choice", n);
+		player_set_resting_repeat_count(player, 0);
 	} else {
 		player_resting_cancel(player, FALSE);
 	}

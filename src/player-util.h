@@ -73,6 +73,8 @@ void player_resting_cancel(struct player *p, bool disturb);
 bool player_resting_can_regenerate(struct player *p);
 void player_resting_step_turn(struct player *p);
 void player_resting_complete_special(struct player *p);
+int player_get_resting_repeat_count(struct player *p);
+void player_set_resting_repeat_count(struct player *p, s16b count);
 bool player_of_has(struct player *p, int flag);
 bool player_resists(struct player *p, int element);
 bool player_is_immune(struct player *p, int element);
