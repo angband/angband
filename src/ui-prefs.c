@@ -650,6 +650,33 @@ static enum parser_error parse_prefs_monster(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_prefs_monster_base(struct parser *p)
+{
+	const char *name;
+	struct monster_base *mb;
+	size_t i;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	mb = lookup_monster_base(name);
+	if (!mb)
+		return PARSE_ERROR_NO_KIND_FOUND;
+
+	for (i = 0; i < z_info->r_max; i++) {
+		monster_race *race = &r_info[i];
+
+		if (race->base != mb) continue;
+
+		monster_x_attr[race->ridx] = (byte)parser_getint(p, "attr");
+		monster_x_char[race->ridx] = (wchar_t)parser_getint(p, "char");
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_prefs_trap(struct parser *p)
 {
 	int idx;
@@ -973,6 +1000,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "? str expr", parse_prefs_expr);
 	parser_reg(p, "object sym tval sym sval int attr int char", parse_prefs_object);
 	parser_reg(p, "monster sym name int attr int char", parse_prefs_monster);
+	parser_reg(p, "monster-base sym name int attr int char", parse_prefs_monster_base);
 	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
 	parser_reg(p, "trap uint idx sym lighting int attr int char", parse_prefs_trap);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
