@@ -677,19 +677,45 @@ static enum parser_error parse_prefs_monster_base(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static void set_trap_graphic(int trap_idx, int light_idx, byte attr, char ch) {
+	if (light_idx < LIGHTING_MAX) {
+		trap_x_attr[light_idx][trap_idx] = attr;
+		trap_x_char[light_idx][trap_idx] = ch;
+	} else {
+		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++) {
+			trap_x_attr[light_idx][trap_idx] = attr;
+			trap_x_char[light_idx][trap_idx] = ch;
+		}
+	}
+}
+
 static enum parser_error parse_prefs_trap(struct parser *p)
 {
-	int idx;
+	const char *idx_sym;
 	const char *lighting;
+	int trap_idx;
 	int light_idx;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getuint(p, "idx");
-	if (idx >= z_info->trap_max)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	/* idx can be "*" or a number */
+	idx_sym = parser_getsym(p, "idx");
+
+	if (!strcmp(idx_sym, "*")) {
+		trap_idx = -1;
+	} else {
+		char *z = NULL;
+		trap_idx = strtoul(idx_sym, NULL, 0);
+		if (z == idx_sym || *idx_sym == '-') {
+			return PARSE_ERROR_NOT_NUMBER;
+		}
+
+		if (trap_idx >= z_info->trap_max) {
+			return PARSE_ERROR_OUT_OF_BOUNDS;
+		}
+	}
 
 	lighting = parser_getsym(p, "lighting");
 	if (streq(lighting, "torch"))
@@ -705,14 +731,15 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 	else
 		return PARSE_ERROR_INVALID_LIGHTING;
 
-	if (light_idx < LIGHTING_MAX) {
-		trap_x_attr[light_idx][idx] = (byte)parser_getint(p, "attr");
-		trap_x_char[light_idx][idx] = (wchar_t)parser_getint(p, "char");
-	} else {
-		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++) {
-			trap_x_attr[light_idx][idx] = (byte)parser_getint(p, "attr");
-			trap_x_char[light_idx][idx] = (wchar_t)parser_getint(p, "char");
+	if (trap_idx == -1) {
+		size_t i;
+		for (i = 0; i < z_info->trap_max; i++) {
+			set_trap_graphic(i, light_idx,
+					parser_getint(p, "attr"), parser_getint(p, "char"));
 		}
+	} else {
+		set_trap_graphic(trap_idx, light_idx,
+				parser_getint(p, "attr"), parser_getint(p, "char"));
 	}
 
 	return PARSE_ERROR_NONE;
@@ -1002,7 +1029,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "monster sym name int attr int char", parse_prefs_monster);
 	parser_reg(p, "monster-base sym name int attr int char", parse_prefs_monster_base);
 	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
-	parser_reg(p, "trap uint idx sym lighting int attr int char", parse_prefs_trap);
+	parser_reg(p, "trap sym idx sym lighting int attr int char", parse_prefs_trap);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "flavor uint idx int attr int char", parse_prefs_flavor);
 	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);
