@@ -700,7 +700,7 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 		light_idx = LIGHTING_LIT;
 	else if (streq(lighting, "dark"))
 		light_idx = LIGHTING_DARK;
-	else if (streq(lighting, "all"))
+	else if (streq(lighting, "*"))
 		light_idx = LIGHTING_MAX;
 	else
 		return PARSE_ERROR_INVALID_LIGHTING;
@@ -741,7 +741,7 @@ static enum parser_error parse_prefs_feat(struct parser *p)
 		light_idx = LIGHTING_LIT;
 	else if (streq(lighting, "dark"))
 		light_idx = LIGHTING_DARK;
-	else if (streq(lighting, "all"))
+	else if (streq(lighting, "*"))
 		light_idx = LIGHTING_MAX;
 	else
 		return PARSE_ERROR_INVALID_LIGHTING;
