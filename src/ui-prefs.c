@@ -588,6 +588,7 @@ static enum parser_error parse_prefs_object(struct parser *p)
 {
 	int tvi, svi;
 	object_kind *kind;
+	const char *sval;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
@@ -597,16 +598,34 @@ static enum parser_error parse_prefs_object(struct parser *p)
 	if (tvi < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	svi = lookup_sval(tvi, parser_getsym(p, "sval"));
-	if (svi < 0)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
+	sval = parser_getsym(p, "sval");
 
-	kind = lookup_kind(tvi, svi);
-	if (!kind)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
+	if (!strcmp(sval, "*")) {
+		byte attr = parser_getint(p, "attr");
+		wchar_t chr = parser_getint(p, "char");
+		size_t i;
 
-	kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
-	kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");
+		for (i = 0; i < z_info->k_max; i++) {
+			struct object_kind *kind = &k_info[i];
+
+			if (kind->tval != tvi)
+				continue;
+
+			kind_x_attr[kind->kidx] = attr;
+			kind_x_char[kind->kidx] = chr;
+		}
+	} else {
+		svi = lookup_sval(tvi, sval);
+		if (svi < 0)
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+		kind = lookup_kind(tvi, svi);
+		if (!kind)
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+		kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
+		kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");
+	}
 
 	return PARSE_ERROR_NONE;
 }
