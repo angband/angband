@@ -1906,7 +1906,7 @@ void brand_object(object_type *obj, const char *name)
 bool effect_handler_ENCHANT(effect_handler_context_t *context)
 {
 	int value = randcalc(context->value, player->depth, RANDOMISE);
-	bool used = context->aware ? FALSE : TRUE;
+	bool used = FALSE;
 	context->ident = TRUE;
 
 	if ((context->p1 & ENCH_TOBOTH) == ENCH_TOBOTH) {
@@ -1944,7 +1944,7 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 {
 	struct object *obj;
 	const char *q, *s;
-	bool used = context->aware ? FALSE : TRUE;
+	bool used = FALSE;
 
 	context->ident = TRUE;
 
@@ -2005,7 +2005,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	int i, t, lev;
 	int strength = context->value.base;
 	object_type *obj;
-	bool used = context->ident ? FALSE : TRUE;
+	bool used = FALSE;
 	const char *q, *s;
 
 	/* Immediately obvious */
@@ -3710,7 +3710,7 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 {
 	struct object *obj;
 	const char *q, *s;
-	bool used = context->aware ? FALSE : TRUE;
+	bool used = FALSE;
 
 	/* Select the brand */
 	const char *brand = one_in_(3) ? "Flame" : (one_in_(2) ? "Frost" : "Venom");
@@ -3742,7 +3742,7 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 {
 	object_type *obj;
 	const char *q, *s;
-	bool used = context->aware ? FALSE : TRUE;
+	bool used = FALSE;
 
 	context->ident = TRUE;
 
