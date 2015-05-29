@@ -588,6 +588,7 @@ static enum parser_error parse_prefs_object(struct parser *p)
 {
 	int tvi, svi;
 	object_kind *kind;
+	const char *sval;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
@@ -597,16 +598,34 @@ static enum parser_error parse_prefs_object(struct parser *p)
 	if (tvi < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	svi = lookup_sval(tvi, parser_getsym(p, "sval"));
-	if (svi < 0)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
+	sval = parser_getsym(p, "sval");
 
-	kind = lookup_kind(tvi, svi);
-	if (!kind)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
+	if (!strcmp(sval, "*")) {
+		byte attr = parser_getint(p, "attr");
+		wchar_t chr = parser_getint(p, "char");
+		size_t i;
 
-	kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
-	kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");
+		for (i = 0; i < z_info->k_max; i++) {
+			struct object_kind *kind = &k_info[i];
+
+			if (kind->tval != tvi)
+				continue;
+
+			kind_x_attr[kind->kidx] = attr;
+			kind_x_char[kind->kidx] = chr;
+		}
+	} else {
+		svi = lookup_sval(tvi, sval);
+		if (svi < 0)
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+		kind = lookup_kind(tvi, svi);
+		if (!kind)
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+		kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
+		kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");
+	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -631,19 +650,72 @@ static enum parser_error parse_prefs_monster(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_prefs_monster_base(struct parser *p)
+{
+	const char *name;
+	struct monster_base *mb;
+	size_t i;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	mb = lookup_monster_base(name);
+	if (!mb)
+		return PARSE_ERROR_NO_KIND_FOUND;
+
+	for (i = 0; i < z_info->r_max; i++) {
+		monster_race *race = &r_info[i];
+
+		if (race->base != mb) continue;
+
+		monster_x_attr[race->ridx] = (byte)parser_getint(p, "attr");
+		monster_x_char[race->ridx] = (wchar_t)parser_getint(p, "char");
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static void set_trap_graphic(int trap_idx, int light_idx, byte attr, char ch) {
+	if (light_idx < LIGHTING_MAX) {
+		trap_x_attr[light_idx][trap_idx] = attr;
+		trap_x_char[light_idx][trap_idx] = ch;
+	} else {
+		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++) {
+			trap_x_attr[light_idx][trap_idx] = attr;
+			trap_x_char[light_idx][trap_idx] = ch;
+		}
+	}
+}
+
 static enum parser_error parse_prefs_trap(struct parser *p)
 {
-	int idx;
+	const char *idx_sym;
 	const char *lighting;
+	int trap_idx;
 	int light_idx;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getuint(p, "idx");
-	if (idx >= z_info->trap_max)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	/* idx can be "*" or a number */
+	idx_sym = parser_getsym(p, "idx");
+
+	if (!strcmp(idx_sym, "*")) {
+		trap_idx = -1;
+	} else {
+		char *z = NULL;
+		trap_idx = strtoul(idx_sym, NULL, 0);
+		if (z == idx_sym || *idx_sym == '-') {
+			return PARSE_ERROR_NOT_NUMBER;
+		}
+
+		if (trap_idx >= z_info->trap_max) {
+			return PARSE_ERROR_OUT_OF_BOUNDS;
+		}
+	}
 
 	lighting = parser_getsym(p, "lighting");
 	if (streq(lighting, "torch"))
@@ -654,19 +726,20 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 		light_idx = LIGHTING_LIT;
 	else if (streq(lighting, "dark"))
 		light_idx = LIGHTING_DARK;
-	else if (streq(lighting, "all"))
+	else if (streq(lighting, "*"))
 		light_idx = LIGHTING_MAX;
 	else
 		return PARSE_ERROR_INVALID_LIGHTING;
 
-	if (light_idx < LIGHTING_MAX) {
-		trap_x_attr[light_idx][idx] = (byte)parser_getint(p, "attr");
-		trap_x_char[light_idx][idx] = (wchar_t)parser_getint(p, "char");
-	} else {
-		for (light_idx = 0; light_idx < LIGHTING_MAX; light_idx++) {
-			trap_x_attr[light_idx][idx] = (byte)parser_getint(p, "attr");
-			trap_x_char[light_idx][idx] = (wchar_t)parser_getint(p, "char");
+	if (trap_idx == -1) {
+		size_t i;
+		for (i = 0; i < z_info->trap_max; i++) {
+			set_trap_graphic(i, light_idx,
+					parser_getint(p, "attr"), parser_getint(p, "char"));
 		}
+	} else {
+		set_trap_graphic(trap_idx, light_idx,
+				parser_getint(p, "attr"), parser_getint(p, "char"));
 	}
 
 	return PARSE_ERROR_NONE;
@@ -695,7 +768,7 @@ static enum parser_error parse_prefs_feat(struct parser *p)
 		light_idx = LIGHTING_LIT;
 	else if (streq(lighting, "dark"))
 		light_idx = LIGHTING_DARK;
-	else if (streq(lighting, "all"))
+	else if (streq(lighting, "*"))
 		light_idx = LIGHTING_MAX;
 	else
 		return PARSE_ERROR_INVALID_LIGHTING;
@@ -954,8 +1027,9 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "? str expr", parse_prefs_expr);
 	parser_reg(p, "object sym tval sym sval int attr int char", parse_prefs_object);
 	parser_reg(p, "monster sym name int attr int char", parse_prefs_monster);
+	parser_reg(p, "monster-base sym name int attr int char", parse_prefs_monster_base);
 	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
-	parser_reg(p, "trap uint idx sym lighting int attr int char", parse_prefs_trap);
+	parser_reg(p, "trap sym idx sym lighting int attr int char", parse_prefs_trap);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "flavor uint idx int attr int char", parse_prefs_flavor);
 	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);
