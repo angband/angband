@@ -1006,6 +1006,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 					struct player_body body)
 {
 	int i;
+	int old_inven_cnt = upkeep->inven_cnt;
 	struct object **old_quiver = mem_zalloc(z_info->quiver_size *
 												sizeof(struct object *));
 	struct object **old_pack = mem_zalloc(z_info->pack_size *
@@ -1110,23 +1111,24 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 	/* Prepare to fill the inventory */
 	upkeep->inven_cnt = 0;
 
-	while (upkeep->inven_cnt <= z_info->pack_size) {
+	for (i = 0; i <= z_info->pack_size; i++) {
 		struct object *current, *first = NULL;
 		for (current = gear; current; current = current->next) {
 			bool possible = TRUE;
+			int j;
 
 			/* Skip equipment */
 			if (object_is_equipped(body, current))
 				possible = FALSE;
 
 			/* Skip quivered objects */
-			for (i = 0; i < z_info->quiver_size; i++)
-				if (upkeep->quiver[i] == current)
+			for (j = 0; j < z_info->quiver_size; j++)
+				if (upkeep->quiver[j] == current)
 					possible = FALSE;
 
 			/* Skip objects already allocated to the inventory */
-			for (i = 0; i < upkeep->inven_cnt; i++)
-				if (upkeep->inven[i] == current)
+			for (j = 0; j < upkeep->inven_cnt; j++)
+				if (upkeep->inven[j] == current)
 					possible = FALSE;
 
 			/* If still possible, choose the first in order */
@@ -1138,11 +1140,13 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		}
 
 		/* Allocate */
-		upkeep->inven[upkeep->inven_cnt++] = first;
+		upkeep->inven[i] = first;
+		if (first)
+			upkeep->inven_cnt++;
 	}
 
 	/* Note reordering */
-	if (character_dungeon)
+	if (character_dungeon && (upkeep->inven_cnt == old_inven_cnt))
 		for (i = 0; i < z_info->pack_size; i++)
 			if (old_pack[i] && (upkeep->inven[i] != old_pack[i])) {
 				msg("You re-arrange your pack.");
