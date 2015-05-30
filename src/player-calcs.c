@@ -1148,7 +1148,8 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 	/* Note reordering */
 	if (character_dungeon && (upkeep->inven_cnt == old_inven_cnt))
 		for (i = 0; i < z_info->pack_size; i++)
-			if (old_pack[i] && (upkeep->inven[i] != old_pack[i])) {
+			if (old_pack[i] && (upkeep->inven[i] != old_pack[i]) &&
+				!object_is_equipped(body, old_pack[i])) {
 				msg("You re-arrange your pack.");
 				break;
 			}
