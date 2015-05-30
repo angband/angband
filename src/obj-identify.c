@@ -519,6 +519,9 @@ void object_notice_ego(struct object *obj)
 	/* Learn all flags except random abilities */
 	of_setall(learned_flags);
 
+	/* Learn all brands and slays */
+	object_know_brands_and_slays(obj);
+
 	/* Don't learn random ego extras */
 	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
 		create_mask(xtra_flags, FALSE, OFT_SUST, OFT_MAX);
