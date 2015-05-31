@@ -782,6 +782,10 @@ void square_add_stairs(struct chunk *c, int y, int x, int depth) {
 		down = 1;
 	else if (is_quest(depth) || depth >= z_info->max_depth - 1)
 		down = 0;
+
+	/* Remove any traps */
+	square_destroy_trap(c, y, x);
+
 	square_set_feat(c, y, x, down ? FEAT_MORE : FEAT_LESS);
 }
 
