@@ -1062,7 +1062,7 @@ bool get_com_ex(const char *prompt, ui_event *command)
 void pause_line(struct term *term)
 {
 	prt("", term->hgt - 1, 0);
-	put_str("[Press any key to continue]", term->hgt - 1, 23);
+	put_str("[Press any key to continue]", term->hgt - 1, (Term->wid - 27) / 2);
 	(void)anykey();
 	prt("", term->hgt - 1, 0);
 }

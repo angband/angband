@@ -5142,7 +5142,8 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	initialized = TRUE;
 
 	/* Prompt the user */
-	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
+	prt("[Choose 'New' or 'Open' from the 'File' menu]",
+		(Term->hgt - 23) / 5 + 23, (Term->wid - 45) / 2);
 	Term_fresh();
 
 	/* Process messages forever */

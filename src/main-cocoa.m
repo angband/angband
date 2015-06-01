@@ -1100,7 +1100,8 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     Term_flush();
 
     /* Prompt the user */
-    prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
+    prt("[Choose 'New' or 'Open' from the 'File' menu]",
+		(Term->hgt - 23) / 5 + 23, (Term->wid - 45) / 2);
     Term_fresh();
 
     /*

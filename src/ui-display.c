@@ -2070,9 +2070,10 @@ static void splashscreen_note(game_event_type type, game_event_data *data,
 		/* Advance one line (wrap if needed) */
 		if (++y >= 24) y = 2;
 	} else {
-		Term_erase(0, 23, 255);
-		Term_putstr(20, 23, -1, COLOUR_WHITE,
-					format("[%s]", data->message.msg));
+		char *s = format("[%s]", data->message.msg);
+		Term_erase(0, (Term->hgt - 23) / 5 + 23, 255);
+		Term_putstr((Term->wid - strlen(s)) / 2, (Term->hgt - 23) / 5 + 23, -1,
+					COLOUR_WHITE, s);
 	}
 
 	Term_fresh();
@@ -2107,6 +2108,10 @@ static void show_splashscreen(game_event_type type, game_event_data *data,
 
 	/* Dump */
 	if (fp) {
+		/* Centre the splashscreen - assume news.txt has width 80, height 23 */
+		text_out_indent = (Term->wid - 80) / 2;
+		Term_gotoxy(0, (Term->hgt - 23) / 5);
+
 		/* Dump the file to the screen */
 		while (file_getl(fp, buf, sizeof(buf))) {
 			char *version_marker = strstr(buf, "$VERSION");
@@ -2119,6 +2124,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data,
 			text_out("\n");
 		}
 
+		text_out_indent = 0;
 		file_close(fp);
 	}
 
