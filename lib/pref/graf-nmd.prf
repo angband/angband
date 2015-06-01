@@ -99,11 +99,11 @@ feat:23:*:0x81:0x96
 # trap detected wall edge
 feat:24:*:0x81:0x95
 
-# granite wall
-feat:25:*:0x80:0x8F
+# lava
+feat:25:*:0x80:0x93
 
-# rubble
-feat:26:*:0x80:0x98
+# passable rubble
+feat:26:*:0x80:0x99
 
 
 
@@ -230,9 +230,9 @@ object:flask:Flask of oil:0x89:0x83
 object:food:Ration of Food:0x89:0x88
 object:food:Slime Mold:0x89:0x89
 object:food:Piece of Elvish Waybread:0x89:0x8A
-object:food:Hard Biscuit:0x89:0x88
-object:food:Flask of Whisky:0x89:0x83
-object:food:Pint of Fine Wine:0x89:0x83
+object:food:Hard Biscuit:0x89:0x8D
+object:food:Flask of Whisky:0x89:0x8B
+object:food:Pint of Fine Wine:0x89:0x8C
 
 
 ### The shrooms, an interesting collection ###
