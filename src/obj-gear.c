@@ -792,14 +792,16 @@ static bool inven_can_stack_partial(const object_type *o_ptr,
  */
 void combine_pack(void)
 {
-	struct object *obj1, *obj2;
+	struct object *obj1, *obj2, *prev;
 	bool display_message = FALSE;
 	bool redraw = FALSE;
 
 	/* Combine the pack (backwards) */
-	for (obj1 = gear_last_item(); obj1; obj1 = obj1->prev) {
+	obj1 = gear_last_item();
+	while (obj1) {
 		assert(obj1->kind);
 		assert(!tval_is_money(obj1));
+		prev = obj1->prev;
 
 		/* Scan the items above that item */
 		for (obj2 = player->gear; obj2 && obj2 != obj1; obj2 = obj2->next) {
@@ -810,6 +812,7 @@ void combine_pack(void)
 				display_message = TRUE;
 				redraw = TRUE;
 				object_absorb(obj2, obj1);
+				break;
 			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
 				/* Setting this to TRUE spams the combine message. */
 				display_message = FALSE;
@@ -818,6 +821,7 @@ void combine_pack(void)
 				break;
 			}
 		}
+		obj1 = prev;
 	}
 
 	calc_inventory(player->upkeep, player->gear, player->body);
