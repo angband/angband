@@ -469,7 +469,7 @@ bool square_isopen(struct chunk *c, int y, int x) {
  * True if the square is empty (an open square without any items).
  */
 bool square_isempty(struct chunk *c, int y, int x) {
-	if (square_isplayertrap(c, y, x) return FALSE;
+	if (square_isplayertrap(c, y, x)) return FALSE;
 	return square_isopen(c, y, x) && !square_object(c, y, x);
 }
 
