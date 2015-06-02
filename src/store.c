@@ -1243,10 +1243,12 @@ static void store_maint(struct store *s)
 
 	/* Destroy crappy black market items */
 	if (s->sidx == STORE_B_MARKET) {
-		struct object *obj;
-		for (obj = s->stock; obj; obj = obj->next) {
+		struct object *obj = s->stock;
+		while (obj) {
+			struct object *next = obj->next;
 			if (!black_market_ok(obj))
 				store_delete(s, obj, obj->number);
+			obj = next;
 		}
 	}
 
