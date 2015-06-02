@@ -399,9 +399,6 @@ static void place_rubble(struct chunk *c, int y, int x)
  */
 static void place_stairs(struct chunk *c, int y, int x, int feat)
 {
-	/* Remove any traps */
-	square_destroy_trap(c, y, x);
-
     if (!c->depth)
 		square_set_feat(c, y, x, FEAT_MORE);
     else if (is_quest(c->depth) || c->depth >= z_info->max_depth - 1)

@@ -446,17 +446,10 @@ static void remove_trap_aux(struct chunk *c, struct trap *trap, int y, int x,
 bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx)
 {
     bool trap_exists;
-	struct trap **trap_slot = mem_zalloc(sizeof(*trap_slot));
+	struct trap **trap_slot = &c->squares[y][x].trap;
 	struct trap *next_trap;
 
-	/* Check carefully for existence of traps */
-	if (!c->squares || !c->squares[y][x].trap) {
-		mem_free(trap_slot);
-		return FALSE;
-	}
-
 	/* Look at the traps in this grid */
-	*trap_slot = c->squares[y][x].trap;
 	while (*trap_slot) {
 		/* Get the next trap (may be NULL) */
 		next_trap = (*trap_slot)->next;
@@ -483,7 +476,6 @@ bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx)
     trap_exists = square_verify_trap(c, y, x, 0);
 
     /* Report whether any traps exist in this grid */
-	mem_free(trap_slot);
     return (!trap_exists);
 }
 
