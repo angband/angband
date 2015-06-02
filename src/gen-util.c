@@ -417,7 +417,8 @@ static void place_stairs(struct chunk *c, int y, int x, int feat)
 void place_random_stairs(struct chunk *c, int y, int x)
 {
     int feat = randint0(100) < 50 ? FEAT_LESS : FEAT_MORE;
-    if (square_canputitem(c, y, x)) place_stairs(c, y, x, feat);
+    if (square_canputitem(c, y, x) && !square_isplayertrap(c, y, x))
+		place_stairs(c, y, x, feat);
 }
 
 
