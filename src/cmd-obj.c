@@ -413,6 +413,9 @@ void wield_item(struct object *obj, int slot)
 	player->upkeep->notice |= (PN_IGNORE);
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+
+	/* Disable repeats */
+	cmd_disable_repeat();
 }
 
 
