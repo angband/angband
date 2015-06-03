@@ -1373,6 +1373,7 @@ static NSMenuItem *superitem(NSMenuItem *self)
     CGFloat newRows = floor( (contentRect.size.height - (borderSize.height * 2.0)) / tileSize.height );
     CGFloat newColumns = ceil( (contentRect.size.width - (borderSize.width * 2.0)) / tileSize.width );
 
+    if (newRows < 1 || newColumns < 1) return;
     self->cols = newColumns;
     self->rows = newRows;
     [self resizeOverdrawCache];
@@ -1699,8 +1700,11 @@ static void Term_init_cocoa(term *t)
     if( termIdx < (int)[terminalDefaults count] )
     {
         NSDictionary *term = [terminalDefaults objectAtIndex: termIdx];
-        rows = [[term valueForKey: AngbandTerminalRowsDefaultsKey] integerValue];
-        columns = [[term valueForKey: AngbandTerminalColumnsDefaultsKey] integerValue];
+        NSInteger defaultRows = [[term valueForKey: AngbandTerminalRowsDefaultsKey] integerValue];
+        NSInteger defaultColumns = [[term valueForKey: AngbandTerminalColumnsDefaultsKey] integerValue];
+
+        if (defaultRows > 0) rows = defaultRows;
+        if (defaultColumns > 0) columns = defaultColumns;
     }
 
     context->cols = columns;
@@ -1714,10 +1718,21 @@ static void Term_init_cocoa(term *t)
     if (termIdx == 0)
     {
         [window setTitle:@"Angband"];
+
+        /* Set minimum size (80x24) */
+        NSSize minsize;
+        minsize.width = 80 * context->tileSize.width + context->borderSize.width * 2.0;
+        minsize.height = 24 * context->tileSize.height + context->borderSize.height * 2.0;
+        [window setContentMinSize:minsize];
     }
     else
     {
         [window setTitle:[NSString stringWithFormat:@"Term %d", termIdx]];
+        /* Set minimum size (1x1) */
+        NSSize minsize;
+        minsize.width = context->tileSize.width + context->borderSize.width * 2.0;
+        minsize.height = context->tileSize.height + context->borderSize.height * 2.0;
+        [window setContentMinSize:minsize];
     }
     
     
