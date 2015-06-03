@@ -1396,6 +1396,7 @@ static NSMenuItem *superitem(NSMenuItem *self)
             [mutableTerminals release];
             [mutableTerm release];
         }
+        [[NSUserDefaults standardUserDefaults] synchronize];
     }
 
     term *old = Term;
