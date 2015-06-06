@@ -893,9 +893,10 @@ void square_force_floor(struct chunk *c, int y, int x) {
 	square_set_feat(c, y, x, FEAT_FLOOR);
 }
 
+/* Note that this returns the STORE_ index, which is one less than shopnum */
 int square_shopnum(struct chunk *c, int y, int x) {
 	if (square_isshop(c, y, x))
-		return f_info[c->squares[y][x].feat].shopnum;
+		return f_info[c->squares[y][x].feat].shopnum - 1;
 	return -1;
 }
 
