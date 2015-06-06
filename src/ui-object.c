@@ -325,6 +325,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
 	bool equip = list ? FALSE : TRUE;
+	bool quiver = list == player->upkeep->quiver ? TRUE : FALSE;
 
 	/* Build the object list */
 	for (i = 0; i <= last; i++) {
@@ -333,7 +334,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 		/* Acceptable items get a label */
 		if (object_test(tester, obj) ||	(obj && tval_is_money(obj) && gold_ok))
 			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
-					I2A(i));
+					quiver ? I2D(i) : I2A(i));
 
 		/* Unacceptable items are still sometimes shown */
 		else if ((!obj && show_empty) || in_term)
@@ -349,7 +350,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 			my_strcap(buf);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
-		} else if (in_term && (list == player->upkeep->quiver)) {
+		} else if (in_term && quiver) {
 			strnfmt(buf, sizeof(buf), "Slot %-9d: ", i);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
@@ -1054,7 +1055,10 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 
 	/* Set up the menu */
 	menu_setpriv(m, num_obj, items);
-	m->selections = lower_case;
+	if (player->upkeep->command_wrk == USE_QUIVER)
+		m->selections = "012345789";
+	else
+		m->selections = lower_case;
 	m->switch_keys = "/|-";
 	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS);
 	if (olist_mode & OLIST_QUIVER && player->upkeep->command_wrk == USE_INVEN)

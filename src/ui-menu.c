@@ -461,7 +461,8 @@ static int get_cursor_key(struct menu *menu, int top, struct keypress key)
 	if (menu->flags & MN_CASELESS_TAGS)
 		key.code = toupper((unsigned char) key.code);
 
-	if ((menu->flags & MN_INSCRIP_TAGS) && isdigit((unsigned char)key.code))
+	if ((menu->flags & MN_INSCRIP_TAGS) && isdigit((unsigned char)key.code)
+		&& menu->inscriptions[D2I(key.code)])
 		key.code = menu->inscriptions[D2I(key.code)];
 
 	if (menu->flags & MN_NO_TAGS) {
