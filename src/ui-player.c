@@ -481,7 +481,7 @@ static void display_player_sust_info(void)
 {
 	int i, row, col, stat;
 
-	object_type *o_ptr;
+	struct object *obj;
 	bitflag f[OF_SIZE];
 
 	byte a;
@@ -500,15 +500,15 @@ static void display_player_sust_info(void)
 	/* Process equipment */
 	for (i = 0; i < player->body.count; ++i) {
 		/* Get the object */
-		o_ptr = slot_object(player, i);
+		obj = slot_object(player, i);
 
-		if (!o_ptr) {
+		if (!obj) {
 			col++;
 			continue;
 		}
 
 		/* Get the "known" flags */
-		object_flags_known(o_ptr, f);
+		object_flags_known(obj, f);
 
 		/* Initialize color based on sign of modifier. */
 		for (stat = OBJ_MOD_MIN_STAT; stat < OBJ_MOD_MIN_STAT + STAT_MAX;
@@ -518,20 +518,20 @@ static void display_player_sust_info(void)
 			c = '.';
 
 			/* Boosted or reduced */
-			if (o_ptr->modifiers[stat] > 0) {
+			if (obj->modifiers[stat] > 0) {
 				/* Good */
 				a = COLOUR_L_GREEN;
 
 				/* Label boost */
-				if (o_ptr->modifiers[stat] < 10)
-						c = I2D(o_ptr->modifiers[stat]);
-			} else if (o_ptr->modifiers[stat] > 0) {
+				if (obj->modifiers[stat] < 10)
+						c = I2D(obj->modifiers[stat]);
+			} else if (obj->modifiers[stat] > 0) {
 				/* Bad */
 				a = COLOUR_RED;
 
 				/* Label boost */
-				if (o_ptr->modifiers[stat] > -10)
-					c = I2D(-(o_ptr->modifiers[stat]));
+				if (obj->modifiers[stat] > -10)
+					c = I2D(-(obj->modifiers[stat]));
 			}
 
 			/* Sustain */
@@ -543,8 +543,8 @@ static void display_player_sust_info(void)
 				if (c == '.') c = 's';
 			}
 
-			if ((c == '.') && o_ptr && 
-				!object_flag_is_known(o_ptr, sustain_flag(stat)))
+			if ((c == '.') && obj && 
+				!object_flag_is_known(obj, sustain_flag(stat)))
 				c = '?';
 
 			/* Dump proper character */
@@ -912,8 +912,9 @@ void write_character_dump(ang_file *fff)
 	int a;
 	wchar_t c;
 
-	struct store *st_ptr = &stores[STORE_HOME];
-
+	struct store *home = &stores[STORE_HOME];
+	struct object **home_list = mem_zalloc(sizeof(struct object *) *
+										   z_info->store_inven_max);
 	char o_name[80];
 
 	char buf[1024];
@@ -1045,7 +1046,7 @@ void write_character_dump(ang_file *fff)
 	file_putf(fff, "\n\n  [Character Quiver]\n\n");
 	for (i = 0; i < z_info->quiver_size; i++) {
 		struct object *obj = player->upkeep->quiver[i];
-		if (!obj) break;
+		if (!obj) continue;
 
 		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 		file_putf(fff, "%c) %s\n", gear_to_label(obj), o_name);
@@ -1054,13 +1055,15 @@ void write_character_dump(ang_file *fff)
 	file_putf(fff, "\n\n");
 
 	/* Dump the Home -- if anything there */
-	if (st_ptr->stock_num) {
-		struct object *obj;
+	store_stock_list(home, home_list, z_info->store_inven_max);
+	if (home->stock_num) {
 		/* Header */
 		file_putf(fff, "  [Home Inventory]\n\n");
 
 		/* Dump all available items */
-		for (obj = st_ptr->stock, i = 0; obj; obj = obj->next, i++) {
+		for (i = 0; i < z_info->store_inven_max; i++) {
+			struct object *obj = home_list[i];
+			if (!obj) break;
 			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 			file_putf(fff, "%c) %s\n", I2A(i), o_name);
 
@@ -1101,6 +1104,8 @@ void write_character_dump(ang_file *fff)
 		/* Skip some lines */
 		file_putf(fff, "\n");
 	}
+
+	mem_free(home_list);
 }
 
 /**
