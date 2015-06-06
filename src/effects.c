@@ -4373,6 +4373,9 @@ bool effect_do(struct effect *effect, bool *ident, bool aware, int dir, int beam
 			effect = effect->next;
 			while (choice--)
 				effect = effect->next;
+
+			/* Roll the damage */
+			(void) dice_roll(effect->dice, &value);
 		}
 
 		/* Handle the effect */
