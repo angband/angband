@@ -1794,6 +1794,7 @@ void do_cmd_sell(struct command *cmd)
 	struct store *store = store_at(cave, player->py, player->px);
 	int price, dummy, value;
 	char o_name[120];
+	char label;
 
 	struct object *obj, *sold_item;
 	bool none_left = FALSE;
@@ -1833,6 +1834,9 @@ void do_cmd_sell(struct command *cmd)
 		return;
 	}
 
+	/* Get the label */
+	label = gear_to_label(obj);
+
 	price = price_item(store, &dummy_item, TRUE, amt);
 
 	/* Get some money */
@@ -1869,9 +1873,9 @@ void do_cmd_sell(struct command *cmd)
 
 	/* Describe the result (in message buffer) */
 	if (OPT(birth_no_selling)) {
-		msg("You had %s (%c).", o_name, gear_to_label(obj));
+		msg("You had %s (%c).", o_name, label);
 	} else {
-		msg("You sold %s (%c) for %d gold.", o_name, gear_to_label(obj), price);
+		msg("You sold %s (%c) for %d gold.", o_name, label, price);
 
 		/* Analyze the prices (and comment verbally) */
 		purchase_analyze(price, value, dummy);

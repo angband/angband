@@ -776,9 +776,6 @@ static bool store_process_command_key(struct keypress kp)
 {
 	int cmd = 0;
 
-	/* Hack -- no flush needed */
-	msg_flag = FALSE;
-
 	/* Process the keycode */
 	switch (kp.code) {
 		case 'T': /* roguelike */
