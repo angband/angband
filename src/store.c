@@ -1803,7 +1803,7 @@ void do_cmd_sell(struct command *cmd)
 	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK)
 		return;
 
-	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
+	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
 		return;
 
 	/* Cannot remove cursed objects */

@@ -734,8 +734,7 @@ int context_menu_object(struct object *obj)
 	}
 
 	if (object_is_carried(player, obj)) {
-		if (!square_isshop(cave, player->py, player->px) ||
-			square_shopnum(cave, player->py, player->px) == STORE_HOME) {
+		if (!square_isshop(cave, player->py, player->px)) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (obj->number > 1) {
@@ -744,6 +743,17 @@ int context_menu_object(struct object *obj)
 				menu_dynamic_add_label(m, "Drop All", cmdkey,
 									   MENU_VALUE_DROP_ALL, labels);
 			}
+		} else if (square_shopnum(cave, player->py, player->px) == STORE_HOME) {
+			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
+
+			if (obj->number > 1) {
+				/* 'D' is used for ignore in rogue keymap, so swap letters. */
+				cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'D' : 'k';
+				menu_dynamic_add_label(m, "Drop All", cmdkey,
+									   MENU_VALUE_DROP_ALL, labels);
+			}
+		} else if (store_will_buy_tester(obj)) {
+			ADD_LABEL("Sell", CMD_DROP, MN_ROW_VALID);
 		}
 	} else {
 		menu_row_validity_t valid = (inven_carry_okay(obj)) ?
@@ -879,7 +889,10 @@ int context_menu_object(struct object *obj)
 		if (selected == CMD_DROP &&
 			square_isshop(cave, player->py, player->px)) {
 			struct command *gc = cmdq_peek();
-			gc->code = CMD_STASH;
+			if (square_shopnum(cave, player->py, player->px) == STORE_HOME)
+				gc->code = CMD_STASH;
+			else
+				gc->code = CMD_SELL;
 		}
 	}
 
