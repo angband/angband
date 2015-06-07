@@ -2158,7 +2158,7 @@ static void display_trap(int col, int row, bool cursor, int oid )
 	struct trap_kind *trap = &trap_info[oid];
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
-	c_prt(attr, trap->name, row, col);
+	c_prt(attr, trap->desc, row, col);
 
 	if (tile_height == 1) {
 		/* Display symbols */
@@ -2234,8 +2234,23 @@ static wchar_t *t_xchar(int oid)
 }
 static void trap_lore(int oid)
 {
-	(void)oid; /* noop */
+	struct trap_kind *trap = &trap_info[oid];
+	textblock *tb = textblock_new();
+	char *title = string_make(trap->desc);
+
+	if (trap->text) {
+		my_strcap(title);
+		textblock_append_c(tb, COLOUR_L_BLUE, title);
+		textblock_append(tb, "\n");
+		textblock_append(tb, trap->text);
+		textblock_append(tb, "\n");
+		textui_textblock_show(tb, SCREEN_REGION, NULL);
+		textblock_free(tb);
+	}
+
+	string_free(title);
 }
+
 static const char *trap_prompt(int oid)
 {
 	(void)oid;
