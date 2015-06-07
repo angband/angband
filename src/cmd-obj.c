@@ -841,7 +841,7 @@ void do_cmd_use(struct command *cmd)
 
 	if (tval_is_ammo(obj))				do_cmd_fire(cmd);
 	else if (tval_is_potion(obj))		do_cmd_quaff_potion(cmd);
-	else if (tval_is_food(obj))			do_cmd_eat_food(cmd);
+	else if (tval_is_edible(obj))		do_cmd_eat_food(cmd);
 	else if (tval_is_rod(obj))			do_cmd_zap_rod(cmd);
 	else if (tval_is_wand(obj))			do_cmd_aim_wand(cmd);
 	else if (tval_is_staff(obj))		do_cmd_use_staff(cmd);

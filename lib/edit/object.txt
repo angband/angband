@@ -111,7 +111,7 @@
 # activatable item.
 
 # 'pval' is for pval - an auxiliary value that can mean food value, launcher
-# multiplier or turns of light. A pval can  take a random value.
+# multiplier or turns of light. A pval can take a random value.
 
 # 'desc' is for description. As many desc: lines may be used as are needed
 # to describe the object. Note that lines will need spaces at their

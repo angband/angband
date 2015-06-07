@@ -767,7 +767,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 		obj->pval = randcalc(k->charge, lev, rand_aspect);
 
 	/* Assign pval for food, oil and launchers */
-	if (tval_is_food(obj) || tval_is_potion(obj) || tval_is_fuel(obj) ||
+	if (tval_is_edible(obj) || tval_is_potion(obj) || tval_is_fuel(obj) ||
 		tval_is_launcher(obj))
 		obj->pval
 			= randcalc(k->pval, lev, rand_aspect);
