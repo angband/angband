@@ -2068,7 +2068,21 @@ static wchar_t *f_xchar(int oid)
 }
 static void feat_lore(int oid)
 {
-	(void)oid; /* noop */
+	struct feature *feat = &f_info[oid];
+	textblock *tb = textblock_new();
+	char *title = string_make(feat->name);
+
+	if (feat->desc) {
+		my_strcap(title);
+		textblock_append_c(tb, COLOUR_L_BLUE, title);
+		textblock_append(tb, "\n");
+		textblock_append(tb, feat->desc);
+		textblock_append(tb, "\n");
+		textui_textblock_show(tb, SCREEN_REGION, NULL);
+		textblock_free(tb);
+	}
+
+	string_free(title);
 }
 static const char *feat_prompt(int oid)
 {

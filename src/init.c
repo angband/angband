@@ -2185,7 +2185,7 @@ static errr finish_parse_trap(struct parser *p) {
 			z_info->trap_max = t->tidx;
 		t = t->next;
 	}
-	
+
 	z_info->trap_max += 1;
 	trap_info = mem_zalloc((z_info->trap_max) * sizeof(*t));
     for (t = parser_priv(p); t; t = t->next) {
@@ -2317,6 +2317,14 @@ static enum parser_error parse_feat_info(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_feat_desc(struct parser *p) {
+    struct feature *f = parser_priv(p);
+    assert(f);
+
+    f->desc = string_append(f->desc, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_feat(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2326,6 +2334,7 @@ struct parser *init_parse_feat(void) {
 	parser_reg(p, "priority uint priority", parse_feat_priority);
 	parser_reg(p, "flags ?str flags", parse_feat_flags);
 	parser_reg(p, "info int shopnum int dig", parse_feat_info);
+    parser_reg(p, "desc str text", parse_feat_desc);
 	return p;
 }
 
@@ -2368,6 +2377,7 @@ static errr finish_parse_feat(struct parser *p) {
 static void cleanup_feat(void) {
 	int idx;
 	for (idx = 0; idx < z_info->f_max; idx++) {
+		string_free(f_info[idx].desc);
 		string_free(f_info[idx].name);
 	}
 	mem_free(f_info);

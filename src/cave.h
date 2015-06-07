@@ -88,6 +88,7 @@ enum
 typedef struct feature
 {
 	char *name;
+	char *desc;
 	int fidx;
 
 	struct feature *next;
