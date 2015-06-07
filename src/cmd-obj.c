@@ -55,6 +55,7 @@ static int check_devices(struct object *obj)
 	int fail;
 	const char *action;
 	const char *what = NULL;
+	bool activated = FALSE;
 
 	/* Get the right string */
 	if (tval_is_rod(obj)) {
@@ -67,6 +68,7 @@ static int check_devices(struct object *obj)
 		what = "staff";
 	} else {
 		action = "activate it";
+		activated = TRUE;
 	}
 
 	/* Figure out how hard the item is to use */
@@ -85,6 +87,10 @@ static int check_devices(struct object *obj)
 		msg("The %s has no charges left.", what);
 		return FALSE;
 	}
+
+	/* Notice activations */
+	if (activated)
+		object_notice_effect(obj);
 
 	return TRUE;
 }
