@@ -39,6 +39,7 @@
 #include "player-history.h"
 #include "store.h"
 #include "target.h"
+#include "trap.h"
 #include "ui-context.h"
 #include "ui-history.h"
 #include "ui-menu.h"
@@ -159,16 +160,15 @@ static int feat_order(int feat)
 	switch (f_ptr->d_char)
 	{
 		case L'.': 				return 0;
-		case L'^': 				return 1;
-		case L'\'': case L'+': 	return 2;
-		case L'<': case L'>':	return 3;
-		case L'#':				return 4;
-		case L'*': case L'%' :	return 5;
-		case L';': case L':' :	return 6;
+		case L'\'': case L'+': 	return 1;
+		case L'<': case L'>':	return 2;
+		case L'#':				return 3;
+		case L'*': case L'%' :	return 4;
+		case L';': case L':' :	return 5;
 
 		default:
 		{
-			return 8;
+			return 6;
 		}
 	}
 }
@@ -1995,7 +1995,6 @@ void textui_browse_object_knowledge(const char *name, int row)
 static const char *feature_group_text[] =
 {
 	"Floors",
-	"Traps",
 	"Doors",
 	"Stairs",
 	"Walls",
@@ -2133,6 +2132,169 @@ static void do_cmd_knowledge_features(const char *name, int row)
 	mem_free(features);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * TRAPS
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Description of each feature group.
+ */
+static const char *trap_group_text[] =
+{
+	"Runes",
+	"Locks",
+	"Traps",
+	"Other",
+	NULL
+};
+
+
+/**
+ * Display the features in a group.
+ */
+static void display_trap(int col, int row, bool cursor, int oid )
+{
+	struct trap_kind *trap = &trap_info[oid];
+	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+
+	c_prt(attr, trap->name, row, col);
+
+	if (tile_height == 1) {
+		/* Display symbols */
+		col = 65;
+		col += big_pad(col, row, trap_x_attr[LIGHTING_DARK][trap->tidx],
+				trap_x_char[LIGHTING_DARK][trap->tidx]);
+		col += big_pad(col, row, trap_x_attr[LIGHTING_LIT][trap->tidx],
+				trap_x_char[LIGHTING_LIT][trap->tidx]);
+		col += big_pad(col, row, trap_x_attr[LIGHTING_TORCH][trap->tidx],
+				trap_x_char[LIGHTING_TORCH][trap->tidx]);
+		col += big_pad(col, row, trap_x_attr[LIGHTING_LOS][trap->tidx],
+				trap_x_char[LIGHTING_LOS][trap->tidx]);
+	}
+}
+
+static int trap_order(int trap)
+{
+	const struct trap_kind *t = &trap_info[trap];
+
+	if (trf_has(t->flags, TRF_RUNE))
+		return 0;
+	else if (trf_has(t->flags, TRF_LOCK))
+		return 1;
+	else if (trf_has(t->flags, TRF_TRAP))
+		return 2;
+	else
+		return 3;
+}
+
+static int t_cmp_tkind(const void *a, const void *b)
+{
+	const int a_val = *(const int *)a;
+	const int b_val = *(const int *)b;
+	const struct trap_kind *ta = &trap_info[a_val];
+	const struct trap_kind *tb = &trap_info[b_val];
+
+	/* Group by */
+	int c = trap_order(a_val) - trap_order(b_val);
+	if (c) return c;
+
+	/* Order by name */
+	if (ta->name) {
+		if (tb->name)
+			return strcmp(ta->name, tb->name);
+		else
+			return 1;
+	} else if (tb->name) {
+		return -1;
+	}
+
+	return 0;
+}
+
+static const char *tkind_name(int gid)
+{
+	return trap_group_text[gid];
+}
+
+
+/**
+ * Disgusting hack to allow 4 in 1 editing of trap visuals
+ */
+static enum grid_light_level t_uik_lighting = LIGHTING_LIT;
+
+/* XXX needs *better* retooling for multi-light terrain */
+static byte *t_xattr(int oid)
+{
+	return &trap_x_attr[t_uik_lighting][oid];
+}
+static wchar_t *t_xchar(int oid)
+{
+	return &trap_x_char[t_uik_lighting][oid];
+}
+static void trap_lore(int oid)
+{
+	(void)oid; /* noop */
+}
+static const char *trap_prompt(int oid)
+{
+	(void)oid;
+	return ", 'l' to cycle lighting";
+}
+
+/**
+ * Special key actions for cycling lighting
+ */
+static void t_xtra_act(struct keypress ch, int oid)
+{
+	/* XXX must be a better way to cycle this */
+	if (ch.code == 'l') {
+		switch (t_uik_lighting) {
+				case LIGHTING_LIT:  t_uik_lighting = LIGHTING_TORCH; break;
+                case LIGHTING_TORCH: t_uik_lighting = LIGHTING_LOS; break;
+				case LIGHTING_LOS:  t_uik_lighting = LIGHTING_DARK; break;
+				default:	t_uik_lighting = LIGHTING_LIT; break;
+		}		
+	} else if (ch.code == 'L') {
+		switch (t_uik_lighting) {
+				case LIGHTING_DARK:  t_uik_lighting = LIGHTING_LOS; break;
+                case LIGHTING_LOS: t_uik_lighting = LIGHTING_TORCH; break;
+				case LIGHTING_LIT:  t_uik_lighting = LIGHTING_DARK; break;
+				default:	t_uik_lighting = LIGHTING_LIT; break;
+		}
+	}
+	
+}
+
+
+/**
+ * Interact with trap visuals.
+ */
+static void do_cmd_knowledge_traps(const char *name, int row)
+{
+	group_funcs tkind_f = {tkind_name, t_cmp_tkind, trap_order, 0,
+						   N_ELEMENTS(trap_group_text), FALSE};
+
+	member_funcs trap_f = {display_trap, trap_lore, t_xchar, t_xattr,
+						   trap_prompt, t_xtra_act, 0};
+
+	int *traps;
+	int t_count = 0;
+	int i;
+
+	traps = mem_zalloc(z_info->trap_max * sizeof(int));
+
+	for (i = 0; i < z_info->trap_max; i++) {
+		if (!trap_info[i].name) continue;
+
+		traps[t_count++] = i;
+	}
+
+	display_knowledge("traps", traps, t_count, tkind_f, trap_f,
+					  "                    Sym");
+	mem_free(traps);
+}
+
 
 /**
  * ------------------------------------------------------------------------
@@ -2165,6 +2327,7 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items },
 { 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
 { 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
+{ 0, 0, "Display trap knowledge",          do_cmd_knowledge_traps  },
 { 0, 0, "Display contents of general store", do_cmd_knowledge_store     },
 { 0, 0, "Display contents of armourer",      do_cmd_knowledge_store     },
 { 0, 0, "Display contents of weaponsmith",   do_cmd_knowledge_store     },
