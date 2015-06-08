@@ -2330,9 +2330,12 @@ static void do_cmd_knowledge_traps(const char *name, int row)
  * Main knowledge menus
  * ------------------------------------------------------------------------ */
 
+/* The first row of the knowledge_actions menu which does store knowledge */
+#define STORE_KNOWLEDGE_ROW 6
+
 static void do_cmd_knowledge_store(const char *name, int row)
 {
-	textui_store_knowledge(row - 5);
+	textui_store_knowledge(row - STORE_KNOWLEDGE_ROW);
 }
 
 static void do_cmd_knowledge_scores(const char *name, int row)
