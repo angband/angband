@@ -2201,6 +2201,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 		 * were dead S_HI_UNDEAD is used instead */
 		if ((!count) &&
 			((summon_type == S_WRAITH) || (summon_type == S_UNIQUE))) {
+			attempts = 0;
 			summon_type = S_HI_UNDEAD;
 			while ((val < player->depth * rlev) && (attempts < summon_max)) {
 				int temp;
