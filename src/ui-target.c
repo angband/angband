@@ -535,7 +535,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				}
 
 				/* Pick proper indefinite article */
-				s3 = (is_a_vowel(trap->kind->name[0])) ? "an " : "a ";
+				s3 = (is_a_vowel(trap->kind->desc[0])) ? "an " : "a ";
 
 				/* Describe, and prompt for recall */
 				if (player->wizard) {
@@ -546,7 +546,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 							(int)cave->squares[y][x].when);
 				} else {
 					strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.", 
-							s1, s2, s3, trap->kind->name, coords);
+							s1, s2, s3, trap->kind->desc, coords);
 				}
 
 				prt(out_val, 0, 0);

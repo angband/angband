@@ -84,7 +84,7 @@ appear:0:1:0
 flags:TRAP | FLOOR 
 effect:TRAP_RUNE_TELEPORT
 dice:100
-desc:A portal to another area.
+desc:A magical rune which teleports you to a random location.
 
 # 0x16 --> visible trap -- spot -- fire
 
@@ -144,7 +144,7 @@ desc:A trap which shoots damaging darts.
 
 # 0x1C --> visible trap -- gas -- blind
 
-name:28:gas trap:blinding gas
+name:28:gas trap:blinding gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR 
@@ -153,7 +153,7 @@ desc:A trap that releases gas to blind you.
 
 # 0x1D --> visible trap -- gas -- confuse
 
-name:29:gas trap:confusion gas
+name:29:gas trap:confusion gas trap
 graphics:^:g
 appear:0:1:0
 flags:TRAP | FLOOR 
@@ -162,7 +162,7 @@ desc:A trap that releases gas to confuse you.
 
 # 0x1E --> visible trap -- gas -- poison
 
-name:30:gas trap:poison gas
+name:30:gas trap:poison gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR 
@@ -171,7 +171,7 @@ desc:A trap that releases gas to poison you.
 
 # 0x1F --> visible trap -- gas -- sleep
 
-name:31:gas trap:sleep gas
+name:31:gas trap:sleep gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR 
