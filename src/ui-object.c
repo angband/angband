@@ -952,27 +952,33 @@ static void item_menu_browser(int oid, void *data, const region *area)
 	prt("", area->row + area->page_rows, MAX(0, area->col - 1));
 	Term_gotoxy(area->col, area->row + area->page_rows);
 
-	/* Quiver may take multiple lines */
-	for (j = 0; j < quiver_slots; j++, i++) {
-		const char *fmt = "in Quiver: %d missile%s\n";
-		char letter = I2A(i);
+	/* If we're printing pack slots the quiver takes up */
+	if (olist_mode & OLIST_QUIVER && player->upkeep->command_wrk == USE_INVEN) {
+		/* Quiver may take multiple lines */
+		for (j = 0; j < quiver_slots; j++, i++) {
+			const char *fmt = "in Quiver: %d missile%s\n";
+			char letter = I2A(i);
 
-		/* Number of missiles in this "slot" */
-		if (j == quiver_slots - 1)
-			count = player->upkeep->quiver_cnt - (z_info->stack_size *
+			/* Number of missiles in this "slot" */
+			if (j == quiver_slots - 1)
+				count = player->upkeep->quiver_cnt - (z_info->stack_size *
 													  (quiver_slots - 1));
-		else
-			count = z_info->stack_size;
+			else
+				count = z_info->stack_size;
 
-		/* Print the (disabled) label */
-		strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);
-		text_out_c(COLOUR_SLATE, tmp_val, area->row + i, area->col);
+			/* Print the (disabled) label */
+			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);
+			text_out_c(COLOUR_SLATE, tmp_val, area->row + i, area->col);
 
-		/* Print the count */
-		strnfmt(tmp_val, sizeof(tmp_val), fmt, count,
-				count == 1 ? "" : "s");
-		text_out_c(COLOUR_L_UMBER, tmp_val, area->row + i, area->col + 3);
+			/* Print the count */
+			strnfmt(tmp_val, sizeof(tmp_val), fmt, count,
+					count == 1 ? "" : "s");
+			text_out_c(COLOUR_L_UMBER, tmp_val, area->row + i, area->col + 3);
+		}
 	}
+
+	/* Always print a blank line */
+	prt("", area->row + i, MAX(0, area->col - 1));
 
 	text_out_pad = 0;
 	text_out_indent = 0;
@@ -999,8 +1005,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 		m->selections = lower_case;
 	m->switch_keys = "/|-";
 	m->flags = (MN_PVT_TAGS | MN_INSCRIP_TAGS);
-	if (olist_mode & OLIST_QUIVER && player->upkeep->command_wrk == USE_INVEN)
-		m->browse_hook = item_menu_browser;
+	m->browse_hook = item_menu_browser;
 
 	/* Get inscriptions */
 	m->inscriptions = mem_zalloc(10 * sizeof(char));
