@@ -1188,6 +1188,9 @@ static bool do_cmd_walk_test(int y, int x)
 		else if (square_iscloseddoor(cave, y, x))
 			/* Door */
 			return TRUE;
+		else if (square_isbright(cave, y, x))
+			/* Lava */
+			msgt(MSG_HITWALL, "The heat of the lava turns you away!");
 		else
 			/* Wall */
 			msgt(MSG_HITWALL, "There is a wall in the way!");
