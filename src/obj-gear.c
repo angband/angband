@@ -325,7 +325,7 @@ char gear_to_label(struct object *obj)
 
 	/* Check the quiver */
 	for (i = 0; i < z_info->quiver_size; i++)
-		if (player->upkeep->quiver[i] == obj) return I2A(i);
+		if (player->upkeep->quiver[i] == obj) return I2D(i);
 
 	/* Check the inventory */
 	for (i = 0; i < z_info->pack_size; i++)
@@ -474,6 +474,20 @@ static bool new_quiver_slot_okay(const object_type *obj)
 }
 
 /**
+ * Check if an object is in the quiver
+ */
+static bool object_is_in_quiver(const object_type *obj)
+{
+	int i;
+
+	for (i = 0; i < z_info->quiver_size; i++)
+		if (obj == player->upkeep->quiver[i])
+			return TRUE;
+
+	return FALSE;
+}
+
+/**
  * Check if we have space for an item in the pack without overflow
  */
 bool inven_carry_okay(const object_type *obj)
@@ -605,6 +619,10 @@ bool inven_carry(struct player *p, struct object *obj, bool absorb,
 				if (message)
 					msg("You have %s (%c).", o_name, gear_to_label(gear_obj));
 
+				/* Sound for quiver objects */
+				if (object_is_in_quiver(gear_obj))
+					sound(MSG_QUIVER);
+
 				/* Success */
 				return TRUE;
 			}
@@ -649,6 +667,10 @@ bool inven_carry(struct player *p, struct object *obj, bool absorb,
 		/* Message */
 		msg("You have %s (%c).", o_name, gear_to_label(obj));
 	}
+
+	/* Sound for quiver objects */
+	if (object_is_in_quiver(obj))
+		sound(MSG_QUIVER);
 
 	return TRUE;
 }
@@ -710,6 +732,7 @@ void inven_drop(struct object *obj, int amt)
 	int px = player->px;
 	struct object *dropped;
 	bool none_left = FALSE;
+	bool quiver = FALSE;
 
 	char name[80];
 	char label;
@@ -726,6 +749,10 @@ void inven_drop(struct object *obj, int amt)
 
 	/* Get where the object is now */
 	label = gear_to_label(obj);
+
+	/* Is it in the quiver? */
+	if (object_is_in_quiver(obj))
+		quiver = TRUE;
 
 	/* Not too many */
 	if (amt > obj->number) amt = obj->number;
@@ -762,6 +789,10 @@ void inven_drop(struct object *obj, int amt)
 
 	/* Drop it near the player */
 	drop_near(cave, dropped, 0, py, px, FALSE);
+
+	/* Sound for quiver objects */
+	if (quiver)
+		sound(MSG_QUIVER);
 
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);

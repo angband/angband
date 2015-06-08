@@ -132,68 +132,6 @@ wchar_t object_char(const struct object *obj)
 }
 
 /**
- * Convert a label into an item in the inventory.
- *
- * Return NULL if the label does not indicate a real item.
- */
-struct object *label_to_inven(int c)
-{
-	int i;
-
-	/* Convert */
-	i = (islower((unsigned char)c) ? A2I(c) : -1);
-
-	/* Verify the index */
-	if ((i < 0) || (i > z_info->pack_size)) return NULL;
-
-	/* Return the object */
-	return player->upkeep->inven[i];
-}
-
-
-/**
- * Convert a label into an item in the equipment.
- *
- * Return NULL if the label does not indicate a real item.
- */
-struct object *label_to_equip(int c)
-{
-	int i;
-
-	/* Convert */
-	i = (islower((unsigned char)c) ? A2I(c) : -1);
-
-	/* Verify the index */
-	if ((i < 0) || (i >= player->body.count))
-		return NULL;
-
-	/* Return the object */
-	return slot_object(player, i);
-}
-
-
-/**
- * Convert a label into an item in the equipment or quiver.
- *
- * Return NULL if the label does not indicate a real item.
- */
-struct object *label_to_quiver(int c)
-{
-	int i;
-
-	/* Convert */
-	i = (islower((unsigned char)c) ? A2I(c) : -1);
-
-	/* Verify the index */
-	if ((i < 0) || (i >= z_info->quiver_size))
-		return NULL;
-
-	/* Return the index */
-	return player->upkeep->quiver[i];
-}
-
-
-/**
  * Display an object.  Each object may be prefixed with a label.
  * Used by show_inven(), show_equip(), show_quiver() and show_floor().
  * Mode flags are documented in object.h
