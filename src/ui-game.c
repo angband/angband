@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "game-world.h"
+#include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -357,6 +358,25 @@ void check_for_player_interrupt(game_event_type type, game_event_data *data,
 	}
 }
 
+void pre_turn_refresh(void)
+{
+	term *old = Term;
+	if (character_dungeon) {
+		/* Redraw everything */
+		player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |
+								   PR_EQUIP | PR_MONSTER |
+								   PR_OBJECT | PR_MONLIST | PR_ITEMLIST);
+		handle_stuff(player);
+
+		move_cursor_relative(player->px, player->py);
+
+		Term_activate(angband_term[0]);
+		Term_redraw();
+		Term_fresh();
+		Term_activate(old);
+	}
+}
+
 /**
  * Start actually playing a game, either by loading a savefile or creating
  * a new character
@@ -401,6 +421,8 @@ void play_game(bool new_game)
 	/* Get commands from the user, then process the game world until the
 	 * command queue is empty and a new player command is needed */
 	while (!player->is_dead && player->upkeep->playing) {
+		if (current_graphics_mode && current_graphics_mode->overdrawRow)
+			pre_turn_refresh();
 		cmd_get_hook(CMD_GAME);
 		run_game_loop();
 	}
