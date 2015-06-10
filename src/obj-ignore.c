@@ -616,9 +616,11 @@ void ignore_drop(void)
 			}
 
 			/* We're allowed to drop it. */
-			cmdq_push(CMD_DROP);
-			cmd_set_arg_item(cmdq_peek(), "item", obj);
-			cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
+			if (!square_isshop(cave, player->py, player->px)) {
+				cmdq_push(CMD_DROP);
+				cmd_set_arg_item(cmdq_peek(), "item", obj);
+				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
+			}
 		}
 	}
 
