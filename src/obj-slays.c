@@ -34,6 +34,7 @@ static struct slay_cache *slay_cache;
 struct brand_info {
 	const char* name;
 	const char *active_verb;
+	const char *active_verb_plural;
 	const char *melee_verb;
 	const char *melee_verb_weak;
 	int resist_flag;
@@ -46,11 +47,11 @@ struct brand_info {
  * in obj-randart.c
  */
 const struct brand_info brand_names[] = {
-	{ "acid", "spits", "dissolve", "corrode", RF_IM_ACID },
-	{ "lightning", "crackles", "shock", "zap", RF_IM_ELEC },
-	{ "fire", "flares", "burn", "singe", RF_IM_FIRE },
-	{ "cold", "grows cold", "freeze", "chill", RF_IM_COLD },
-	{ "poison", "seethes", "poison", "sicken", RF_IM_POIS }
+	{ "acid", "spits", "spit", "dissolve", "corrode", RF_IM_ACID },
+	{ "lightning", "crackles", "crackle", "shock", "zap", RF_IM_ELEC },
+	{ "fire", "flares", "flare", "burn", "singe", RF_IM_FIRE },
+	{ "cold", "grows cold", "grow cold", "freeze", "chill", RF_IM_COLD },
+	{ "poison", "seethes", "seethe", "poison", "sicken", RF_IM_POIS }
 };
 
 struct slay_info {
@@ -484,8 +485,12 @@ void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr)
 {
 	char o_name[40];
 	struct brand *b;
+	bool plural = (o_ptr->number > 1) ? TRUE : FALSE;
 
 	for (b = o_ptr->brands; b; b = b->next) {
+		const char *verb = plural ? brand_names[b->element].active_verb_plural :
+			brand_names[b->element].active_verb;
+
 		/* Already know it */
 		if (b->known) continue;
 
@@ -497,8 +502,13 @@ void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr)
 		/* Learn */
 		b->known = TRUE;
 		object_notice_ego(o_ptr);
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SINGULAR);
-		msg("Your %s %s!", o_name, brand_names[b->element].active_verb);
+		if (plural)
+			object_desc(o_name, sizeof(o_name), o_ptr,
+						ODESC_BASE | ODESC_PLURAL);
+		else
+			object_desc(o_name, sizeof(o_name), o_ptr,
+						ODESC_BASE | ODESC_SINGULAR);
+		msg("Your %s %s!", o_name, verb);
 	}
 
 	object_check_for_ident(o_ptr);
