@@ -362,16 +362,13 @@ void pre_turn_refresh(void)
 {
 	term *old = Term;
 	if (character_dungeon) {
-		/* Redraw everything */
-		player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |
-								   PR_EQUIP | PR_MONSTER |
-								   PR_OBJECT | PR_MONLIST | PR_ITEMLIST);
+		/* Redraw map */
+		player->upkeep->redraw |= PR_MAP;
 		handle_stuff(player);
 
 		move_cursor_relative(player->px, player->py);
 
 		Term_activate(angband_term[0]);
-		Term_redraw();
 		Term_fresh();
 		Term_activate(old);
 	}
