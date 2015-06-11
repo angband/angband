@@ -414,8 +414,7 @@ dice:$B
 expr:B:FOOD_FAINT:- 1
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
-effect:NOURISH
-dice:500
+effect:CURE:POISONED
 
 
 ##### Weapons #####
@@ -2353,6 +2352,7 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
+effect:CURE:IMAGE
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
 effect:RESTORE_STAT:WIS
@@ -2842,7 +2842,7 @@ alloc:20:5 to 60
 combat:0:1d1:0:0:0
 charges:6+d10
 power:3
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_AWARE:OLD_SLOW
 dice:20
 
 name:381:Confuse Monster
@@ -2913,7 +2913,7 @@ alloc:20:20 to 60
 combat:0:1d1:0:0:0
 charges:6+d8
 power:7
-effect:BOLT_STATUS:OLD_POLY
+effect:BOLT_AWARE:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -3595,7 +3595,7 @@ properties:30:15:1500
 alloc:20:30 to 100
 combat:0:1d1:0:0:0
 power:3
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_AWARE:OLD_SLOW
 dice:20
 time:20
 

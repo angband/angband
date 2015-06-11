@@ -136,6 +136,7 @@ effect:CURE:POISONED
 effect:CURE:STUN
 effect:CURE:AMNESIA
 effect:CURE:CONFUSED
+effect:CURE:IMAGE
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
 effect:RESTORE_STAT:WIS
@@ -1063,7 +1064,7 @@ desc:confuses a target monster
 name:MON_SLOW
 aim:1
 power:3
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_AWARE:OLD_SLOW
 dice:20
 desc:attempts to magically slow a single monster
 
@@ -1113,7 +1114,7 @@ desc:destroys traps and doors
 name:POLYMORPH
 aim:1
 power:7
-effect:BOLT_STATUS:OLD_POLY
+effect:BOLT_AWARE:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:polymorphs a monster into another kind of creature
@@ -1271,6 +1272,7 @@ dice:$B
 expr:B:FOOD_FAINT:- 1
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
+effect:CURE:POISONED
 desc:makes you very hungry but restores constitution and strength
 
 name:RING_ACID
