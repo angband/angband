@@ -721,7 +721,6 @@ static bool run_test(void)
 void run_step(int dir)
 {
 	int x, y;
-	bool keep_running = TRUE;
 
 	/* Start or continue run */
 	if (dir) {
@@ -800,23 +799,14 @@ void run_step(int dir)
 	/* Decrease counter if it hasn't been cancelled */
 	if (player->upkeep->running)
 		player->upkeep->running--;
+	else if (!player->upkeep->running_withpathfind)
+		return;
 
 	/* Take time */
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Check for continued running */
-	if (run_test())
-		keep_running = FALSE;
-
 	/* Move the player; running straight into a trap == trying to disarm */
 	move_player(run_cur_dir, dir ? TRUE : FALSE);
-
-	/* Stop now if we have to */
-	if (!keep_running) {
-		/* Disturb */
-		disturb(player, 0);
-		return;
-	}
 
 	/* Prepare the next step */
 	if (player->upkeep->running) {
