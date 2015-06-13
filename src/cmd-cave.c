@@ -309,6 +309,8 @@ static bool do_cmd_open_aux(int y, int x)
 			square_open_door(cave, y, x);
 
 			/* Update the visuals */
+			sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+			square_light_spot(cave, y, x);
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Experience */
@@ -326,6 +328,8 @@ static bool do_cmd_open_aux(int y, int x)
 	} else {
 		/* Closed door */
 		square_open_door(cave, y, x);
+		sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+		square_light_spot(cave, y, x);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 		sound(MSG_OPENDOOR);
 	}
@@ -470,8 +474,10 @@ static bool do_cmd_close_aux(int y, int x)
 	{
 		msg("The door appears to be broken.");
 	} else {
-		/* Open door */
+		/* Close door */
 		square_close_door(cave, y, x);
+		sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+		square_light_spot(cave, y, x);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 		sound(MSG_SHUTDOOR);
 	}
