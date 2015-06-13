@@ -4270,6 +4270,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 				msg_flag = FALSE;
 				save_game();
+				close_game();
 			}
 
 			quit(NULL);
@@ -4288,6 +4289,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 				/* Hack -- Forget messages */
 				msg_flag = FALSE;
 				save_game();
+				close_game();
 			}
 
 			quit(NULL);
