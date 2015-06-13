@@ -361,17 +361,23 @@ void check_for_player_interrupt(game_event_type type, game_event_data *data,
 void pre_turn_refresh(void)
 {
 	term *old = Term;
+	int j;
 	if (character_dungeon) {
 		/* Redraw map */
-		player->upkeep->redraw |= PR_MAP;
+		player->upkeep->redraw |= (PR_MAP | PR_STATE);
+		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 		handle_stuff(player);
 
 		move_cursor_relative(player->px, player->py);
 
-		Term_activate(angband_term[0]);
-		Term_fresh();
-		Term_activate(old);
+		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
+			if (!angband_term[j]) continue;
+
+			Term_activate(angband_term[j]);
+			Term_fresh();
+		}
 	}
+	Term_activate(old);
 }
 
 /**
