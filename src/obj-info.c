@@ -1332,14 +1332,16 @@ static bool describe_light(textblock *tb, const struct object *obj,
 	textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
 	textblock_append(tb, " light.");
 
-	if (!obj->artifact && !uses_fuel)
-		textblock_append(tb, "  No fuel required.");
+	if (tval_is_light(obj)) {
+		if (!obj->artifact && !uses_fuel)
+			textblock_append(tb, "  No fuel required.");
 
-	if (!terse) {
-		if (refuel_turns)
-			textblock_append(tb, "  Refills other lanterns up to %d turns of fuel.", refuel_turns);
-		else
-			textblock_append(tb, "  Cannot be refueled.");
+		if (!terse) {
+			if (refuel_turns)
+				textblock_append(tb, "  Refills other lanterns up to %d turns of fuel.", refuel_turns);
+			else
+				textblock_append(tb, "  Cannot be refueled.");
+		}
 	}
 
 	textblock_append(tb, "\n");
