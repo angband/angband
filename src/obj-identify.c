@@ -1013,13 +1013,13 @@ void equip_notice_element(struct player *p, int element)
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 			msg("Your %s glows.", o_name);
-		}
 
-		/* Jewelry with a noticeable element is obvious */
-		if (tval_is_jewelry(obj)) {
-			object_flavor_aware(obj);
-			object_check_for_ident(obj);
-			apply_autoinscription(obj);
+			/* Jewelry with a noticeable element is obvious */
+			if (tval_is_jewelry(obj)) {
+				object_flavor_aware(obj);
+				object_check_for_ident(obj);
+				apply_autoinscription(obj);
+			}
 		}
 	}
 }
