@@ -366,6 +366,23 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 }
 
 /**
+ * Extend a (positive or negative) player status condition unresistably.
+ * If context->p2 is set, increase by that amount if the status exists already
+ */
+bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, FALSE);
+
+	if (!player->timed[context->p1] || !context->p2)
+		player_inc_timed(player, context->p1, amount, TRUE, FALSE);
+	else
+		player_inc_timed(player, context->p1, context->p2, TRUE, FALSE);
+	context->ident = TRUE;
+	return TRUE;
+
+}
+
+/**
  * Extend a (positive or negative) monster status condition.
  */
 bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)

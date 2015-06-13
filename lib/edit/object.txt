@@ -2686,7 +2686,7 @@ effect:SET_NOURISH
 dice:$B
 expr:B:FOOD_STARVE:- 1
 effect:CURE:POISONED
-effect:TIMED_INC:PARALYZED
+effect:TIMED_INC_NO_RES:PARALYZED
 dice:4
 
 
