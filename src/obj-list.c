@@ -25,6 +25,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "project.h"
 
 /**
  * Allocate a new object list.
@@ -122,8 +123,9 @@ void object_list_reset(object_list_t *list)
 		return;
 
 	memset(list->entries, 0, list->entries_size * sizeof(object_list_entry_t));
-	list->total_entries = 0;
-	list->total_objects = 0;
+	memset(&list->total_entries, 0, OBJECT_LIST_SECTION_MAX * sizeof(u16b));
+	memset(&list->total_objects, 0, OBJECT_LIST_SECTION_MAX * sizeof(u16b));
+	list->distinct_entries = 0;
 	list->creation_turn = 0;
 	list->sorted = FALSE;
 }
@@ -163,6 +165,10 @@ void object_list_collect(object_list_t *list)
 	/* Scan each object in the dungeon. */
 	for (y = 1; y < cave->height; y++) {
 		for (x = 1; x < cave->width; x++) {
+			bool los = projectable(cave, player->py, player->px, y, x,
+								   PROJECT_NONE);
+			int field = (los) ? OBJECT_LIST_SECTION_LOS :
+				OBJECT_LIST_SECTION_NO_LOS;
 			struct object *obj = square_object(cave, y, x);
 			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
 				object_list_entry_t *entry = NULL;
@@ -176,10 +182,13 @@ void object_list_collect(object_list_t *list)
 				/* Find or add a list entry. */
 				for (entry_index = 0; entry_index < (int)list->entries_size;
 					 entry_index++) {
+					int j;
+
 					if (list->entries[entry_index].object == NULL) {
 						/* We found an empty slot, so add this object here. */
 						list->entries[entry_index].object = obj;
-						list->entries[entry_index].count = 0;
+						for (j = 0; j < OBJECT_LIST_SECTION_MAX; j++)
+							list->entries[entry_index].count[j] = 0;
 						list->entries[entry_index].dy = y - player->py;
 						list->entries[entry_index].dx = x - player->px;
 						entry = &list->entries[entry_index];
@@ -196,9 +205,9 @@ void object_list_collect(object_list_t *list)
 
 				/* We only know the number of objects we've actually seen */
 				if (obj->marked == MARK_SEEN)
-					entry->count += obj->number;
+					entry->count[field] += obj->number;
 				else
-					entry->count = 1;
+					entry->count[field] = 1;
 
 				/* Store the distance to the object in the stack that is
 				 * closest to the player. */
@@ -219,10 +228,17 @@ void object_list_collect(object_list_t *list)
 		if (list->entries[i].object == NULL)
 			continue;
 
-		if (list->entries[i].count > 0)
-			list->total_entries++;
-		
-		list->total_objects += list->entries[i].count;
+		if (list->entries[i].count[OBJECT_LIST_SECTION_LOS] > 0)
+			list->total_entries[OBJECT_LIST_SECTION_LOS]++;
+
+		if (list->entries[i].count[OBJECT_LIST_SECTION_NO_LOS] > 0)
+			list->total_entries[OBJECT_LIST_SECTION_NO_LOS]++;
+
+		list->total_objects[OBJECT_LIST_SECTION_LOS] +=
+			list->entries[i].count[OBJECT_LIST_SECTION_LOS];
+		list->total_objects[OBJECT_LIST_SECTION_NO_LOS] +=
+			list->entries[i].count[OBJECT_LIST_SECTION_NO_LOS];
+		list->distinct_entries++;
 	}
 
 	list->creation_turn = turn;
@@ -283,7 +299,7 @@ void object_list_sort(object_list_t *list,
 	if (list->sorted)
 		return;
 
-	elements = list->total_entries;
+	elements = list->distinct_entries;
 
 	if (elements <= 1)
 		return;
@@ -343,6 +359,8 @@ void object_list_format_name(const object_list_entry_t *entry,
 	const char *chunk;
 	char *source;
 	bool has_singular_prefix;
+	bool los = FALSE;
+	int field;
 	byte old_number;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
@@ -370,6 +388,11 @@ void object_list_format_name(const object_list_entry_t *entry,
 	if (entry->object->marked == MARK_AWARE)
 		has_singular_prefix = TRUE;
 
+	/* Work out if the object is in view */
+	los = projectable(cave, player->py, player->px, entry->object->iy,
+					  entry->object->ix, PROJECT_NONE);
+	field = los ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
+
 	/*
 	 * Because each entry points to a specific object and not something more
 	 * general, the number of similar objects we counted has to be swapped in.
@@ -377,13 +400,13 @@ void object_list_format_name(const object_list_entry_t *entry,
 	 * object_desc is more flexible.
 	 */
 	old_number = entry->object->number;
-	entry->object->number = entry->count;
+	entry->object->number = entry->count[field];
 	object_desc(name, sizeof(name), entry->object, ODESC_PREFIX | ODESC_FULL);
 	entry->object->number = old_number;
 
 	/* The source string for strtok() needs to be set properly, depending on
 	 * when we use it. */
-	if (!has_singular_prefix && entry->count == 1) {
+	if (!has_singular_prefix && entry->count[field] == 1) {
 		chunk = " ";
 		source = name;
 	}

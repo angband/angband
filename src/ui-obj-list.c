@@ -49,9 +49,11 @@
  * \param max_width_result is returned with the width needed to format the list
  * without truncation.
  */
-static void object_list_format_section(const object_list_t *list, textblock *tb,
+static void object_list_format_section(const object_list_t *list,
+									   textblock *tb,
+									   object_list_section_t section,
 									   int lines_to_display, int max_width,
-									   const char *prefix,
+									   const char *prefix, bool show_others,
 									   size_t *max_width_result)
 {
 	int remaining_object_total = 0;
@@ -60,14 +62,15 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 	int total;
 	char line_buffer[200];
 	const char *punctuation = (lines_to_display == 0) ? "." : ":";
+	const char *others = (show_others) ? "other " : "";
 	size_t max_line_length = 0;
 
 	if (list == NULL || list->entries == NULL)
 		return;
 
-	total = list->total_entries;
+	total = list->distinct_entries;
 
-	if (list->total_entries == 0) {
+	if (list->total_entries[section] == 0) {
 		max_line_length = strnfmt(line_buffer, sizeof(line_buffer),
 								  "%s no objects.\n", prefix);
 
@@ -82,8 +85,10 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 	}
 
 	max_line_length = strnfmt(line_buffer, sizeof(line_buffer),
-							  "%s %d object%s%s\n", prefix, list->total_entries,
-							  PLURAL(list->total_entries), punctuation);
+							  "%s %d %sobject%s%s\n", prefix,
+							  list->total_entries[section], others,
+							  PLURAL(list->total_entries[section]),
+							  punctuation);
 
 	if (tb != NULL)
 		textblock_append(tb, "%s", line_buffer);
@@ -98,7 +103,7 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 
 		line_buffer[0] = '\0';
 
-		if (list->entries[entry_index].count == 0)
+		if (list->entries[entry_index].count[section] == 0)
 			continue;
 
 		/* Build the location string. */
@@ -160,7 +165,8 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 
 	/* Bail since we don't have enough room to display the remaining count or
 	 * since we've displayed them all. */
-	if (lines_to_display <= 0 || lines_to_display >= list->total_entries)
+	if (lines_to_display <= 0 ||
+		lines_to_display >= list->total_entries[section])
 		return;
 
 	/* Count the remaining objects, starting where we left off in the above
@@ -223,8 +229,10 @@ static void object_list_format_textblock(const object_list_t *list,
 {
 	int header_lines = 1;
 	int lines_remaining;
-	int lines_to_display;
-	size_t max_line_width = 0;
+	int los_lines_to_display;
+	int no_los_lines_to_display;
+	size_t max_los_line = 0;
+	size_t max_no_los_line = 0;
 
 	if (list == NULL || list->entries == NULL)
 		return;
@@ -233,24 +241,54 @@ static void object_list_format_textblock(const object_list_t *list,
 								   max_height_result, max_width_result))
 		return;
 
-	lines_to_display = list->total_entries;
+	los_lines_to_display = list->total_entries[OBJECT_LIST_SECTION_LOS];
+	no_los_lines_to_display = list->total_entries[OBJECT_LIST_SECTION_NO_LOS];
+                                                          
+	if (list->total_entries[OBJECT_LIST_SECTION_NO_LOS] > 0)
+		header_lines += 2;
 
-	if (max_height_result != NULL)
-		*max_height_result = header_lines + lines_to_display;
+ 	if (max_height_result != NULL)
+		*max_height_result = header_lines + los_lines_to_display + 
+			no_los_lines_to_display;
 
-	lines_remaining = max_lines - header_lines;
+	lines_remaining = max_lines - header_lines - 
+		list->total_entries[OBJECT_LIST_SECTION_LOS];
 
-	if (lines_remaining < list->total_entries)
-		lines_to_display = MAX(lines_remaining - 1, 0);
+	/* Remove non-los lines as needed */
+	if (lines_remaining < list->total_entries[OBJECT_LIST_SECTION_NO_LOS])
+		no_los_lines_to_display = MAX(lines_remaining - 1, 0);
 
-	if (header_lines >= max_lines)
-		lines_to_display = 0;
+	/* If we don't even have enough room for the NO_LOS header, start removing
+	 * LOS lines, leaving one for the "...others". */
+	if (lines_remaining < 0)
+		los_lines_to_display = list->total_entries[OBJECT_LIST_SECTION_LOS] -
+                        abs(lines_remaining) - 1;
 
-	object_list_format_section(list, tb, lines_to_display, max_width,
-							   "You can see", &max_line_width);
+	/* Display only headers if we don't have enough space. */
+	if (header_lines >= max_lines) {
+		los_lines_to_display = 0;
+		no_los_lines_to_display = 0;
+	}
+        
+	object_list_format_section(list, tb, OBJECT_LIST_SECTION_LOS,
+							   los_lines_to_display, max_width,
+							   "You can see", FALSE, &max_los_line);
 
+	if (list->total_entries[OBJECT_LIST_SECTION_NO_LOS] > 0) {
+         bool show_others = list->total_objects[OBJECT_LIST_SECTION_LOS] > 0;
+
+         if (tb != NULL)
+			 textblock_append(tb, "\n");
+
+         object_list_format_section(list, tb, OBJECT_LIST_SECTION_NO_LOS,
+									no_los_lines_to_display, max_width,
+									"You are aware of", show_others,
+									&max_no_los_line);
+	}
+
+                                                                        
 	if (max_width_result != NULL)
-		*max_width_result = max_line_width;
+		*max_width_result = MAX(max_los_line, max_no_los_line);
 }
 
 /**

@@ -21,18 +21,25 @@
 
 #define MAX_ITEMLIST 2560
 
+typedef enum object_list_section_e {
+	OBJECT_LIST_SECTION_LOS = 0,
+	OBJECT_LIST_SECTION_NO_LOS,
+	OBJECT_LIST_SECTION_MAX,
+} object_list_section_t;
+
 typedef struct object_list_entry_s {
 	object_type *object;
-	u16b count;
+	u16b count[OBJECT_LIST_SECTION_MAX];
 	s16b dx, dy;
 } object_list_entry_t;
 
 typedef struct object_list_s {
 	object_list_entry_t *entries;
 	size_t entries_size;
+	u16b distinct_entries;
 	s32b creation_turn;
-	u16b total_entries;
-	u16b total_objects;
+	u16b total_entries[OBJECT_LIST_SECTION_MAX];
+	u16b total_objects[OBJECT_LIST_SECTION_MAX];
 	bool sorted;
 } object_list_t;
 
