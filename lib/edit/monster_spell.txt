@@ -401,6 +401,7 @@ power:40
 name:DARKNESS
 hit:100
 effect:DARKEN_AREA
+dice:10
 param:3
 power:5
 

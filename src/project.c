@@ -403,7 +403,10 @@ const char *gf_blind_desc(int type)
 	if (type < 0 || type >= GF_MAX)
 		return 0;
 
-	return gf_table[type].blind_desc;
+	if (gf_table[type].blind_desc)
+		return gf_table[type].blind_desc;
+	else
+		return "something";
 }
 
 int gf_name_to_idx(const char *name)

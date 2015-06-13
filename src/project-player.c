@@ -408,11 +408,45 @@ static void project_player_handler_ARROW(project_player_handler_context_t *conte
 {
 }
 
+static void project_player_handler_LIGHT_WEAK(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_DARK_WEAK(project_player_handler_context_t *context)
+{
+	if (player_resists(player, ELEM_DARK)) {
+		msg("You resist the effect!");
+		return;
+	}
+
+	(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), TRUE, TRUE);
+}
+
+static void project_player_handler_KILL_WALL(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_KILL_DOOR(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_KILL_TRAP(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MAKE_DOOR(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MAKE_TRAP(project_player_handler_context_t *context)
+{
+}
+
 static const project_player_handler_f player_handlers[] = {
 	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_player_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, desc) NULL,
+	#define PROJ_ENV(a, col, desc) project_player_handler_##a,
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 	#define PROJ_MON(a, obv, desc) NULL, 

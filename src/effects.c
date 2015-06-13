@@ -3223,18 +3223,23 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, FALSE);
 	int rad = context->p2;
+	int source = (cave->mon_current > 0) ? cave->mon_current : -1;
 
-	int flg = PROJECT_GRID | PROJECT_KILL;
+	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_PLAY;
 
 	/* Message */
 	if (!player->timed[TMD_BLIND])
 		msg("Darkness surrounds you.");
 
 	/* Hook into the "project()" function */
-	(void)project(-1, rad, py, px, dam, GF_DARK_WEAK, flg, 0, 0);
+	(void)project(source, rad, py, px, dam, GF_DARK_WEAK, flg, 0, 0);
 
 	/* Darken the room */
 	light_room(py, px, FALSE);
+
+	/* Hack - blind the player directly if player-cast */
+	if ((source == -1) && !player_resists(player, ELEM_DARK))
+		(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), TRUE, TRUE);
 
 	/* Assume seen */
 	context->ident = TRUE;
