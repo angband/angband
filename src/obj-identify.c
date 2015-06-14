@@ -1114,6 +1114,7 @@ void object_notice_sensing(struct object *obj)
 	if (obj->artifact) {
 		obj->artifact->seen = obj->artifact->everseen = TRUE;
 		id_on(obj->id_flags, ID_ARTIFACT);
+		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
 	}
 
 	object_notice_curses(obj);
