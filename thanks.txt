@@ -8,28 +8,58 @@ so we can fix it. :)
 This version
 ============
 
- * Erik Osheim (d_m)
- * Robert Au (myshkin)
- * Chris Carr (magnate)
- * Andi Sidwell (takkaria)
+Code contribution:
+
  * Aaron Bader (fizzix)
- * Brett Reid (blubaron)
- * Peter Denison (noz)
- * Elly Jones
+ * Antony Sidwell (ajps)
+ * Andi Sidwell (takkaria)
  * Bardur Arantsson
  * Ben Semmler
- * Brett Reid
- * Gabe Cunningham
- * Han Boetes
- * Janeene Beeforth
+ * Chris Carr (magnate)
+ * Elly Fong-Jones
+ * Erik Osheim (d_m)
+ * Jagath Samarabandu
+ * Jose Antonio Dura
+ * LostTemplar
+ * Michel Carroll
  * Nick McConnell
- * "Seebs"
+ * Nomad
+ * Peter Denison (noz)
  * PowerWyrm
+ * Robert Au (myshkin)
+ * Rydelfox
+ * Timothy Collett
+
+Beta testing:
+
+ * Ingwe Ingweron
+ * Nomad
+ * MattB
+ * Thraalbeast
+ * tumbleweed
+ * AndyHK
+ * Rhonwyn
+ * Jungle_Boy
+ * Darin
+ * StMicah
+ * debo
+ * pen
+ * topazg
+ * wobbly
+ * DeusIrae
+ * Timo Pietilä
+ * ranger jeff
+ * passer_by
+ * Runaway1956
+ * mrrstark
+ * Estie
+ * shreesh
+
 
 Previous maintainers
 ====================
 
-Angband 3.0.8 - 3.5.0:
+Angband 3.0.8 - 3.5.1:
   Andi Sidwell <andi at takkaria.org>
 
 Angband 2.9.0 - 3.0.6:
