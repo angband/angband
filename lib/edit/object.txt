@@ -1951,7 +1951,7 @@ properties:40:5:200
 alloc:40:40 to 100
 pile:25:2
 power:9
-effect:PROJECT_LOS:DISP_UNDEAD
+effect:PROJECT_LOS:DISP_UNDEAD:1
 dice:60
 
 name:283:Banishment
@@ -3146,7 +3146,7 @@ alloc:20:10 to 100
 combat:0:1d2:0:0:0
 charges:6+d5
 power:10
-effect:PROJECT_LOS:OLD_CONF
+effect:PROJECT_LOS_AWARE:OLD_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -3169,7 +3169,7 @@ alloc:20:10 to 100
 combat:0:1d2:0:0:0
 charges:6+d5
 power:8
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS_AWARE:OLD_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -3270,7 +3270,7 @@ alloc:50:50 to 100
 combat:0:1d2:0:0:0
 charges:4+d3
 power:9
-effect:PROJECT_LOS:DISP_EVIL
+effect:PROJECT_LOS:DISP_EVIL:1
 dice:60
 
 name:415:Banishment
@@ -3291,7 +3291,7 @@ alloc:20:70 to 100
 combat:0:1d2:0:0:0
 charges:1+d3
 power:11
-effect:PROJECT_LOS:DISP_ALL
+effect:PROJECT_LOS:DISP_ALL:1
 dice:120
 
 name:417:Holiness

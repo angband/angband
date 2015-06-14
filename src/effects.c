@@ -2091,6 +2091,42 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
 
+	/* Affect all (nearby) monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		monster_type *m_ptr = cave_monster(cave, i);
+
+		/* Paranoia -- Skip dead monsters */
+		if (!m_ptr->race) continue;
+
+		/* Location */
+		y = m_ptr->fy;
+		x = m_ptr->fx;
+
+		/* Require line of sight */
+		if (!square_isview(cave, y, x)) continue;
+
+		/* Jump directly to the target monster */
+		if (project(-1, 0, y, x, dam, typ, flg, 0, 0)) context->ident = TRUE;
+	}
+
+	/* Result */
+	return TRUE;
+}
+
+/**
+ * Just like PROJECT_LOS except the player's awareness of an object using
+ * this effect is relevant.
+ *
+ * Note that affected monsters are NOT auto-tracked by this usage.
+ */
+bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int dam = effect_calculate_value(context, context->p2 ? TRUE : FALSE);
+	int typ = context->p1;
+
+	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
+
 	if (context->aware) flg |= PROJECT_AWARE;
 
 	/* Affect all (nearby) monsters */
