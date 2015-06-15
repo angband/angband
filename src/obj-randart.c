@@ -2822,7 +2822,8 @@ char *artifact_gen_name(struct artifact *a, const char ***words) {
 		strnfmt(buf, sizeof(buf), "(The One Ring)");
 	else if (kf_has(kind->kind_flags, KF_QUEST_ART))
 		strnfmt(buf, sizeof(buf), a->name);
-	else if (one_in_(3))
+	else if (strstr(kind->name, "Ring of") || one_in_(3))
+		/* Hack - the activation message for rings of power assumes this */
 		strnfmt(buf, sizeof(buf), "'%s'", word);
 	else
 		strnfmt(buf, sizeof(buf), "of %s", word);
