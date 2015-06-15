@@ -14,9 +14,9 @@ Code contribution:
  * Antony Sidwell (ajps)
  * Andi Sidwell (takkaria)
  * Bardur Arantsson
- * Ben Semmler
+ * Ben Semmler (molybdenum)
  * Chris Carr (magnate)
- * Elly Fong-Jones
+ * Elly Fong-Jones (elly)
  * Erik Osheim (d_m)
  * Jagath Samarabandu
  * Jose Antonio Dura
@@ -54,6 +54,11 @@ Beta testing:
  * mrrstark
  * Estie
  * shreesh
+ * elliptic
+ * Gorbad
+ * letslaugh
+ * ShadowTechnology
+ * bryan.g.hutchinson
 
 
 Previous maintainers
