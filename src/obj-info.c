@@ -1377,6 +1377,8 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 	if (object_effect_is_known(obj)) {
 		*effect = object_effect(obj);
 		timeout = obj->time;
+		if (effect_aim(*effect))
+			*aimed = TRUE;;
 	} else if (object_effect(obj)) {
 		/* Don't know much - be vague */
 		*effect = NULL;
