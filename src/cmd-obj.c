@@ -157,7 +157,10 @@ static void activation_message(struct object *obj)
 	/* See if we have a message */
 	if (!obj->activation) return;
 	if (!obj->activation->message) return;
-	in_cursor = obj->activation->message;
+	if (obj->artifact && obj->artifact->alt_msg)
+		in_cursor = obj->artifact->alt_msg;
+	else
+		in_cursor = obj->activation->message;
 
 	next = strchr(in_cursor, '{');
 	while (next) {
