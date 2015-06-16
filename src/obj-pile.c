@@ -608,9 +608,15 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 	/* Print a message if requested and there is anything left */
-	if (message && (usable != obj)) {
+	if (message) {
+		if (usable == obj)
+			obj->number--;
+
 		/* Get a description */
 		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+
+		if (usable == obj)
+			obj->number++;
 
 		/* Print a message */
 		msg("You see %s.", name);
