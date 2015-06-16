@@ -155,6 +155,8 @@ static bool object_list_should_ignore_object(const object_type *object)
 void object_list_collect(object_list_t *list)
 {
 	int i, y, x;
+	int py = player->py;
+	int px = player->px;
 
 	if (list == NULL || list->entries == NULL)
 		return;
@@ -165,8 +167,8 @@ void object_list_collect(object_list_t *list)
 	/* Scan each object in the dungeon. */
 	for (y = 1; y < cave->height; y++) {
 		for (x = 1; x < cave->width; x++) {
-			bool los = projectable(cave, player->py, player->px, y, x,
-								   PROJECT_NONE);
+			bool los = projectable(cave, py, px, y, x, PROJECT_NONE) || 
+				((y == py) && (x == px));
 			int field = (los) ? OBJECT_LIST_SECTION_LOS :
 				OBJECT_LIST_SECTION_NO_LOS;
 			struct object *obj = square_object(cave, y, x);
@@ -362,6 +364,10 @@ void object_list_format_name(const object_list_entry_t *entry,
 	bool los = FALSE;
 	int field;
 	byte old_number;
+	int py = player->py;
+	int px = player->px;
+	int iy = entry->object->iy;
+	int ix = entry->object->ix;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
 		return;
@@ -389,8 +395,8 @@ void object_list_format_name(const object_list_entry_t *entry,
 		has_singular_prefix = TRUE;
 
 	/* Work out if the object is in view */
-	los = projectable(cave, player->py, player->px, entry->object->iy,
-					  entry->object->ix, PROJECT_NONE);
+	los = projectable(cave, py, px, iy, ix, PROJECT_NONE) || 
+		((iy == py) && (ix == px));
 	field = los ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
 
 	/*
