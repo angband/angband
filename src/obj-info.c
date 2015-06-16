@@ -1611,15 +1611,19 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 					textblock_append(tb, "%c", *next_char);
 			} while (*next_char++);
 
-			/* Random choices need special treatment */
+			/* Random choices need special treatment - note that this code
+			 * assumes that RANDOM and the random choices will be the last
+			 * effect in the object/activation description */
 			if (random_choices >= 1) {
-				if (random_choices > 2)
+				if (effect->index == EF_RANDOM)
+					;
+				else if (random_choices > 2)
 					textblock_append(tb, ", ");
 				else if (random_choices == 2)
 					textblock_append(tb, " or ");
 				random_choices--;
 			} else if (effect->next) {
-				if (effect->next->next)
+				if (effect->next->next && (effect->next->index != EF_RANDOM))
 					textblock_append(tb, ", ");
 				else
 					textblock_append(tb, " and ");

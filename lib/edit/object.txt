@@ -383,12 +383,12 @@ alloc:10:10 to 40
 pile:70:1d4
 power:5
 effect:RESTORE_MANA
+effect:NOURISH
+dice:500
 effect:RANDOM
 dice:2
 effect:DRAIN_STAT:STR
 effect:DRAIN_STAT:CON
-effect:NOURISH
-dice:500
 
 name:25:Sprinting
 graphics:,:d
