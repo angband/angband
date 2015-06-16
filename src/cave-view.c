@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "init.h"
 #include "monster.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 
 /**
@@ -538,8 +539,10 @@ static void update_one(struct chunk *c, int y, int x, int blind)
 			sqinfo_off(c->squares[y][x].info, SQUARE_FEEL);
 			/* Don't display feeling if it will display for the new level */
 			if ((c->feeling_squares == z_info->feeling_need) &&
-				!player->upkeep->only_partial)
+				!player->upkeep->only_partial) {
 				display_feeling(TRUE);
+				player->upkeep->redraw |= PR_FEELING;
+			}
 		}
 
 		square_note_spot(c, y, x);

@@ -75,6 +75,7 @@
 #define PR_OBJECT		0x00200000L /* Display object recall */
 #define PR_MONLIST		0x00400000L /* Display monster list */
 #define PR_ITEMLIST     0x00800000L /* Display item list */
+#define PR_FEELING      0x01000000L /* Display level feeling */
 
 /* Display Basic Info */
 #define PR_BASIC \

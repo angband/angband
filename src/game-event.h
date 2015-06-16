@@ -43,6 +43,7 @@ typedef enum game_event_type
 	EVENT_STUDYSTATUS,	/* "Study" availability */
 	EVENT_STATUS,		/* Status */
 	EVENT_DETECTIONSTATUS,	/* Trap detection status */
+	EVENT_FEELING,		/* Object level feeling */
 	EVENT_STATE,		/* The three 'R's: Resting, Repeating and
 				   Searching */
 

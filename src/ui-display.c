@@ -85,6 +85,7 @@ static game_event_type statusline_events[] =
 	EVENT_STATUS,
 	EVENT_DETECTIONSTATUS,
 	EVENT_STATE,
+	EVENT_FEELING,
 };
 
 /**
