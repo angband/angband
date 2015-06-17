@@ -142,6 +142,7 @@ Original Keyset Command Summary
   \\   (special - bypass keymap)        ~     Check knowledge
   \`   (special - escape)               ?     Help
   /    Identify symbol                 
+  |    Quiver list
 ====== ============================= ====== ============================
 
 .. |*| replace:: \*
@@ -208,6 +209,7 @@ Roguelike Keyset Command Summary
   \`    (special - escape)              ?    Help
   /    Identify symbol                 
   TAB  Fire default ammo at target 
+  |    Quiver list
 ====== ============================= ====== ============================
 
 Special Keys
@@ -284,26 +286,18 @@ Selection of Objects
 Many commands will also prompt for a particular object to be used.
 For example, the command to read a scroll will ask you which of the
 scrolls that you are carrying that you wish to read.  In such cases, the
-selection is made by typing a letter of the alphabet.  The prompt will
-indicate the possible letters, and will also allow you to type the key
-'*', which causes all of the available options to be described.  The list
-of choices will also be shown in the Choice window, if you are using a
-windows environment and windows are turned on.  Often you will be able to
-press '/' to select an object from your equipment instead of your
-inventory.  Pressing 'space' once will have the same effect as '*', and
-the second time will cancel the command and run the 'i' or 'e' command.
+selection is made by typing a letter of the alphabet (or a number if choosing
+from the quiver).  The prompt will indicate the possible letters/numbers,
+and you will also be shown a list of the appropriate items.  Often you will
+be able to press '/' to switch between inventory and equipment, or '|' to
+select the quiver, or '-' to select the floor.  Using the right arrow also
+rotates selection between equipment, inventory, quiver, floor and back to
+equipment; the left arrow rotates in the opposite direction.
  
 The particular object may be selected by an upper case or a lower case
 letter. If lower case is used, the selection takes place immediately. If
 upper case is used, then the particular option is described, and you are
 given the option of confirming or retracting that choice. Upper case
-selection is thus safer, but requires an extra key stroke. Also see the
-'!*' and '!x' inscriptions, below.
+selection is thus safer, but requires an extra key stroke.
 
-For many commands, you can also use '-' to select an object on the floor
-where you are standing. This lets you read scrolls or quaff potions, for
-example, off the dungeon floor without picking them up.
-
-If you enter a number between 0 and 9, the first item engraved with '@#'
-where '#' is the number you entered will be selected. See the section
-"Using Inscriptions" for more detail.
+For more information on selecting object, see the file 'customize.txt'.

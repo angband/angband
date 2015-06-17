@@ -338,9 +338,9 @@ Paladin
 Stats
 =====
 
-After gender, race and class are selected, you will be able to decide 
-what stat levels your character will have, by allocating a finite number 
-of "points" between the six statistics.  These points can be allocated 
+After race and class are selected, you will be able to decide what stat
+levels your character will have, by allocating a finite number of
+"points" between the six statistics.  These points can be allocated 
 by selection or with a random roller (as described below in the "Stat 
 Rollers" section).  Each race/class combination also has a recommended 
 default setting for these statistics.  Statistics can be permanently 

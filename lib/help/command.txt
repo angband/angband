@@ -41,15 +41,20 @@ Inventory list ('i')
  
 Equipment list ('e')
   Use this command to display a list of the objects currently being used by
-  your character. Your character has 12 slots for equipment and 10 slots
-  for ammunition (the quiver). Each equipment slot corresponds to a
-  different location on the body, and each of which may contain only a
-  single object at a time, and each of which may only contain objects of
-  the proper "type", and which include WIELD (weapon), BOW (missile
-  launcher), LEFT (ring), RIGHT (ring), NECK (amulet), LIGHT (light
-  source), BODY (armor), OUTER (cloak), ARM (shield), HEAD (helmet), HANDS
-  (gloves), FEET (boots). You must be wielding/wearing certain objects to
-  take advantage of their special powers.
+  your character. The standard body (which all races currently have) has
+  12 slots for equipment. Each equipment slot corresponds to a different
+  location on the body, and each of which may contain only a single object at
+  a time, and each of which may only contain objects of the proper "type".
+  For the standard body these are WEAPON (weapon), BOW (missile launcher),
+  RING (ring) (two of these), AMULET (amulet), LIGHT (light source),
+  BODY_ARMOR (armor), CLOAK (cloak), SHIELD (shield), HAT (helmet),
+  GLOVES (gloves), BOOTS (boots).   You must be wielding/wearing certain
+  objects to take advantage of their special powers.
+
+Quiver list ('|')
+  Missiles that you carry will automatically be put in your quiver.  The
+  quiver has 10 slots; it also takes up inventory space, so every 40 missiles
+  will reduce your number of inventory slots by 1.
 
 Drop an item ('d')
   This drops an item from your inventory or equipment onto the dungeon
