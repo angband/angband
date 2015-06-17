@@ -3950,6 +3950,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 41) {
 		p1 = GF_OLD_CONF;
+		value.base = plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 46) {
 		p1 = GF_POIS;
@@ -4015,7 +4016,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 		handler = effect_handler_EARTHQUAKE;
 	} else if (die < 106) {
 		p2 = 15;
-		handler = effect_handler_EARTHQUAKE;
+		handler = effect_handler_DESTRUCTION;
 	} else if (die < 108) {
 		handler = effect_handler_BANISH;
 	} else if (die < 110) {
@@ -4042,8 +4043,8 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 
 	/* RARE */
 	effect_simple(EF_PROJECT_LOS, "150", GF_DISP_ALL, 0, 0, ident);
-	effect_simple(EF_PROJECT_LOS, "0", GF_OLD_SLOW, 0, 0, ident);
-	effect_simple(EF_PROJECT_LOS, "0", GF_OLD_SLEEP, 0, 0, ident);
+	effect_simple(EF_PROJECT_LOS, "20", GF_OLD_SLOW, 0, 0, ident);
+	effect_simple(EF_PROJECT_LOS, "40", GF_OLD_SLEEP, 0, 0, ident);
 	effect_simple(EF_HEAL_HP, "300", 0, 0, 0, ident);
 	mem_free(ident);
 

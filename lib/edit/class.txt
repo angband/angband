@@ -1181,6 +1181,8 @@ desc: light-sensitive monster in its path.
 
 spell:Wonder:20:10:70:20
 effect:WONDER
+dice:$B+1d100
+expr:B:PLAYER_LEVEL:/ 5
 desc:Invokes a random spell effect.
 
 book:magic book:[Incantations and Illusions]:6:1
@@ -1536,6 +1538,8 @@ desc:  The chance to get a beam goes up with your character level.
 
 spell:Wonder:15:18:80:10
 effect:WONDER
+dice:$B+1d100
+expr:B:PLAYER_LEVEL:/ 5
 desc:Invokes a random spell effect.
 
 book:magic book:[Incantations and Illusions]:9:1
