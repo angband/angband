@@ -3935,12 +3935,12 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 		handler = effect_handler_BOLT;
 	} else if (die < 14) {
 		p1 = GF_OLD_SPEED;
-		value.dice = 4;
-		value.sides = 6;
+		value.base = 100;
 		handler = effect_handler_BOLT;
 	} else if (die < 26) {
 		p1 = GF_OLD_HEAL;
-		value.base = 100;
+		value.dice = 4;
+		value.sides = 6;
 		handler = effect_handler_BOLT;
 	} else if (die < 31) {
 		p1 = GF_OLD_POLY;
