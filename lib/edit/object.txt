@@ -352,6 +352,7 @@ effect:TIMED_SET:TERROR
 dice:79+1d41
 effect:NOURISH
 dice:500
+desc:It allows you to run for your life.
 
 name:22:Stoneskin
 graphics:,:d
@@ -401,6 +402,7 @@ effect:TIMED_INC:SPRINT
 dice:100
 effect:NOURISH
 dice:500
+desc:It hastes you for a while, but then makes you slower for a while afterward.
 
 name:26:Purging
 graphics:,:d
@@ -415,6 +417,7 @@ expr:B:FOOD_FAINT:- 1
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:CON
 effect:CURE:POISONED
+desc:It makes you very hungry but otherwise healthy.
 
 
 ##### Weapons #####
