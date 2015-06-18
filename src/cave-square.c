@@ -519,7 +519,7 @@ bool square_ispassable(struct chunk *c, int y, int x) {
  * This function is the logical negation of square_iswall().
  */
 bool square_isprojectable(struct chunk *c, int y, int x) {
-	assert(square_in_bounds(c, y, x));
+	if (!square_in_bounds(c, y, x)) return FALSE;
 	return feat_is_projectable(c->squares[y][x].feat);
 }
 
