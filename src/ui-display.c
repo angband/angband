@@ -2375,9 +2375,6 @@ static void ui_leave_init(game_event_type type, game_event_data *data,
 	/* Flash a message */
 	prt("Please wait...", 0, 0);
 
-	/* Allow big cursor */
-	smlcurs = FALSE;
-
 	/* Flush the message */
 	Term_fresh();
 }
@@ -2385,6 +2382,9 @@ static void ui_leave_init(game_event_type type, game_event_data *data,
 static void ui_enter_world(game_event_type type, game_event_data *data,
 						  void *user)
 {
+	/* Allow big cursor */
+	smlcurs = FALSE;
+
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
 	redraw_stuff(player);
