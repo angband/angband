@@ -980,6 +980,12 @@ static void item_menu_browser(int oid, void *data, const region *area)
 	/* Always print a blank line */
 	prt("", area->row + i, MAX(0, area->col - 1));
 
+	/* Blank out whole tiles */
+	while ((tile_height > 1) && ((area->row + i) % tile_height != 0)) {
+		i++;
+		prt("", area->row + i, MAX(0, area->col - 1));
+	}
+
 	text_out_pad = 0;
 	text_out_indent = 0;
 }
