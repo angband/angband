@@ -802,7 +802,7 @@ desc:Cures 30% of your wounds (min 50hp), cures all stunning and heals all
 desc: cut damage, poison and amnesia.
 
 spell:Turn Undead:15:12:50:5
-effect:PROJECT_LOS:TURN_UNDEAD
+effect:PROJECT_LOS_AWARE:TURN_UNDEAD
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare each undead monster within line of sight,
@@ -816,7 +816,7 @@ dice:48+d48
 desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 48+1d48 turns.
 
 spell:Dispel Undead:17:14:55:7
-effect:PROJECT_LOS:TURN_UNDEAD
+effect:PROJECT_LOS_AWARE:DISP_UNDEAD
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each undead monster within line of sight.
@@ -834,7 +834,7 @@ desc:Cures 35% of your max hp (min 300), cures all stunning and heals all cut
 desc: damage, poison and amnesia.
 
 spell:Dispel Evil:25:20:70:12
-effect:PROJECT_LOS:DISP_EVIL
+effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each evil monster within line of sight.
@@ -850,7 +850,7 @@ desc:  The glyph will remain where it is, until a monster succeeds in
 desc: breaking it, or until you leave the level.
 
 spell:Holy Word:39:32:95:20
-effect:PROJECT_LOS:DISP_EVIL
+effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
 expr:S:PLAYER_LEVEL:* 4
 effect:HEAL_HP
@@ -1031,19 +1031,19 @@ desc: is already branded, has a slay, is broken, or is cursed.
 book:prayer book:[Wrath of God]:5:2
 
 spell:Dispel Undead:15:7:70:25
-effect:PROJECT_LOS:TURN_UNDEAD
+effect:PROJECT_LOS_AWARE:DISP_UNDEAD
 dice:d$S
 expr:S:PLAYER_LEVEL:* 4
 desc:Inflicts unresistable damage on each undead monster within line of sight.
 
 spell:Dispel Evil:20:10:75:60
-effect:PROJECT_LOS:DISP_EVIL
+effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
 expr:S:PLAYER_LEVEL:* 4
 desc:Inflicts unresistable damage on each evil monster within line of sight.
 
 spell:Banish Evil:25:25:80:250
-effect:PROJECT_LOS:AWAY_EVIL
+effect:PROJECT_LOS_AWARE:AWAY_EVIL
 dice:100
 desc:Teleports away each evil monster within line of sight.
 
@@ -2050,7 +2050,7 @@ desc:Cures 30% of your wounds (min 50hp), cures all stunning and heals all
 desc: cut damage, poison and amnesia.
 
 spell:Turn Undead:27:21:50:3
-effect:PROJECT_LOS:TURN_UNDEAD
+effect:PROJECT_LOS_AWARE:TURN_UNDEAD
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare each undead monster within line of sight,
@@ -2064,7 +2064,7 @@ dice:48+d48
 desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 48+1d48 turns.
 
 spell:Dispel Undead:31:24:60:3
-effect:PROJECT_LOS:TURN_UNDEAD
+effect:PROJECT_LOS_AWARE:DISP_UNDEAD
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each undead monster within line of sight.
@@ -2082,7 +2082,7 @@ desc:Cures 35% of your max hp (min 300), cures all stunning and heals all cut
 desc: damage, poison and amnesia.
 
 spell:Dispel Evil:35:32:70:4
-effect:PROJECT_LOS:DISP_EVIL
+effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each evil monster within line of sight.
@@ -2227,13 +2227,13 @@ desc: is already branded, has a slay, is broken, or is cursed.
 book:prayer book:[Wrath of God]:3:2
 
 spell:Dispel Undead:20:13:70:20
-effect:PROJECT_LOS:TURN_UNDEAD
+effect:PROJECT_LOS_AWARE:DISP_UNDEAD
 dice:d$S
 expr:S:PLAYER_LEVEL:* 4
 desc:Inflicts unresistable damage on each undead monster within line of sight.
 
 spell:Banish Evil:30:35:80:200
-effect:PROJECT_LOS:AWAY_EVIL
+effect:PROJECT_LOS_AWARE:AWAY_EVIL
 dice:100
 desc:Teleports away each evil monster within line of sight.
 
