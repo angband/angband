@@ -588,43 +588,75 @@ static enum parser_error parse_prefs_object(struct parser *p)
 {
 	int tvi, svi;
 	object_kind *kind;
-	const char *sval;
+	const char *tval, *sval;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	tvi = tval_find_idx(parser_getsym(p, "tval"));
-	if (tvi < 0)
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
-
+	tval = parser_getsym(p, "tval");
 	sval = parser_getsym(p, "sval");
-
-	if (!strcmp(sval, "*")) {
+	if (!strcmp(tval, "*")) {
+		/* object:*:* means handle all objects and flavors */
 		byte attr = parser_getint(p, "attr");
 		wchar_t chr = parser_getint(p, "char");
 		size_t i;
+		struct flavor *flavor;
+
+		if (strcmp(sval, "*"))
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
 		for (i = 0; i < z_info->k_max; i++) {
 			struct object_kind *kind = &k_info[i];
 
-			if (kind->tval != tvi)
-				continue;
-
 			kind_x_attr[kind->kidx] = attr;
 			kind_x_char[kind->kidx] = chr;
 		}
+
+		for (flavor = flavors; flavor; flavor = flavor->next) {
+			flavor_x_attr[flavor->fidx] = attr;
+			flavor_x_char[flavor->fidx] = chr;
+		}
 	} else {
-		svi = lookup_sval(tvi, sval);
-		if (svi < 0)
-			return PARSE_ERROR_UNRECOGNISED_SVAL;
+		tvi = tval_find_idx(tval);
+		if (tvi < 0)
+			return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-		kind = lookup_kind(tvi, svi);
-		if (!kind)
-			return PARSE_ERROR_UNRECOGNISED_SVAL;
+		/* object:tval:* means handle all objects and flavors with this tval */
+		if (!strcmp(sval, "*")) {
+			byte attr = parser_getint(p, "attr");
+			wchar_t chr = parser_getint(p, "char");
+			size_t i;
+			struct flavor *flavor;
 
-		kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
-		kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");
+			for (i = 0; i < z_info->k_max; i++) {
+				struct object_kind *kind = &k_info[i];
+
+				if (kind->tval != tvi)
+					continue;
+
+				kind_x_attr[kind->kidx] = attr;
+				kind_x_char[kind->kidx] = chr;
+			}
+
+			for (flavor = flavors; flavor; flavor = flavor->next)
+				if (flavor->tval == tvi) {
+					flavor_x_attr[flavor->fidx] = attr;
+					flavor_x_char[flavor->fidx] = chr;
+				}
+
+		} else {
+			svi = lookup_sval(tvi, sval);
+			if (svi < 0)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+			kind = lookup_kind(tvi, svi);
+			if (!kind)
+				return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+			kind_x_attr[kind->kidx] = (byte)parser_getint(p, "attr");
+			kind_x_char[kind->kidx] = (wchar_t)parser_getint(p, "char");
+		}
 	}
 
 	return PARSE_ERROR_NONE;
