@@ -200,9 +200,8 @@ static void sf_put(byte v)
 
 static byte sf_get(void)
 {
-	assert(buffer != NULL);
-	assert(buffer_size > 0);
-	assert(buffer_pos < buffer_size);
+	if ((buffer == NULL) || (buffer_size <= 0) || (buffer_pos >= buffer_size))
+		quit("Broken savefile - probably from a development version");
 
 	buffer_check += buffer[buffer_pos];
 

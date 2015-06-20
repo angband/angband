@@ -112,7 +112,8 @@ static struct object *rd_item(void)
 
 	rd_u16b(&tmp16u);
 	rd_byte(&ver);
-	assert(tmp16u == 0xffff);
+	if (tmp16u != 0xffff)
+		return NULL;
 
 	/* Location */
 	rd_byte(&obj->iy);
@@ -251,7 +252,7 @@ static struct object *rd_item(void)
 /**
  * Read a monster
  */
-static void rd_monster(struct chunk *c, monster_type *mon)
+static bool rd_monster(struct chunk *c, struct monster *mon)
 {
 	byte tmp8u;
 	u16b tmp16u;
@@ -294,7 +295,8 @@ static void rd_monster(struct chunk *c, monster_type *mon)
 			if (square_obj->mimicking_m_idx == tmp16u) break;
 			square_obj = square_obj->next;
 		}
-		assert(square_obj);
+		if (!square_obj)
+			return FALSE;
 		mon->mimicked_obj = square_obj;
 	}
 
@@ -306,6 +308,8 @@ static void rd_monster(struct chunk *c, monster_type *mon)
 
 		pile_insert(&mon->held_obj, obj);
 	}
+
+	return TRUE;
 }
 
 
@@ -647,7 +651,11 @@ int rd_player(void)
 
 	/* Read the stat info */
 	rd_byte(&stat_max);
-	assert(stat_max <= STAT_MAX);
+	if (stat_max > STAT_MAX) {
+		note(format("Too many stats (%d).", stat_max));
+		return -1;
+	}
+
 	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_max[i]);
 	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_cur[i]);
 	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_birth[i]);
@@ -1169,15 +1177,18 @@ static int rd_monsters_aux(struct chunk *c)
 
 	/* Read the monsters */
 	for (i = 1; i < limit; i++) {
-		monster_type *mon;
-		monster_type monster_type_body;
+		struct monster *mon;
+		struct monster monster_body;
 
 		/* Get local monster */
-		mon = &monster_type_body;
+		mon = &monster_body;
 		memset(mon, 0, sizeof(*mon));
 
 		/* Read the monster */
-		rd_monster(c, mon);
+		if (!rd_monster(c, mon)) {
+			note(format("Cannot read monster %d", i));
+			return (-1);
+		}
 
 		/* Place monster in dungeon */
 		if (place_monster(c, mon->fy, mon->fx, mon, 0) != i) {
