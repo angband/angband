@@ -4872,8 +4872,6 @@ static void hook_quit(const char *str)
  *  Initialize
  * ------------------------------------------------------------------------ */
 
-#define USE_PRIVATE_PATHS 1
-
 /**
  * Init some stuff
  */

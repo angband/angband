@@ -379,7 +379,11 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 #else /* !PRIVATE_USER_PATH */
 
+#ifdef MACH_O_CARBON
+	ANGBAND_DIR_USER = string_make(datapath);
+#else /* !MACH_O_CARBON */
 	ANGBAND_DIR_USER = string_make(format("%suser", datapath));
+#endif /* MACH_O_CARBON */
 
 #endif /* PRIVATE_USER_PATH */
 
