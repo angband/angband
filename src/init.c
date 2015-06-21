@@ -362,7 +362,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	ANGBAND_DIR_GAMEDATA = string_make(format("%sgamedata", configpath));
 	ANGBAND_DIR_CUSTOMIZE = string_make(format("%scustomize", configpath));
 	ANGBAND_DIR_HELP = string_make(format("%shelp", libpath));
-	ANGBAND_DIR_SCREENS = string_make(format("%sfile", libpath));
+	ANGBAND_DIR_SCREENS = string_make(format("%sscreens", libpath));
 	ANGBAND_DIR_FONTS = string_make(format("%sfonts", libpath));
 	ANGBAND_DIR_TILES = string_make(format("%stiles", libpath));
 	ANGBAND_DIR_SOUNDS = string_make(format("%ssounds", libpath));
