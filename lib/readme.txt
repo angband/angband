@@ -1,9 +1,9 @@
 The "lib" directory contains all of Angband's special sub-directories.
 
 
-=== Directory "lib/apex" ===
+=== Directory "lib/scores" ===
 
-The "lib/apex" directory contains the "high score" files.
+The "lib/scores" directory contains the "high score" files.
 
 The "scores.raw" file contains the "high score" table, in a "semi-binary" form,
 that is, all the bytes in the file are normal ascii values, but this includes

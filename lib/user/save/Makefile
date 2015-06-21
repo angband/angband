@@ -1,7 +1,7 @@
-MKPATH=../../mk/
+MKPATH=../../../mk/
 include $(MKPATH)buildsys.mk
 
-PACKAGE = save
+PACKAGE = user/save
 
 install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \

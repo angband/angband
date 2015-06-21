@@ -118,20 +118,18 @@ struct angband_constants *z_info;
 
 extern const char *ANGBAND_SYS;
 
-extern char *ANGBAND_DIR_APEX;
-extern char *ANGBAND_DIR_EDIT;
-extern char *ANGBAND_DIR_FILE;
+extern char *ANGBAND_DIR_GAMEDATA;
+extern char *ANGBAND_DIR_CUSTOMIZE;
 extern char *ANGBAND_DIR_HELP;
-extern char *ANGBAND_DIR_INFO;
-extern char *ANGBAND_DIR_SAVE;
-extern char *ANGBAND_DIR_PREF;
+extern char *ANGBAND_DIR_SCREENS;
+extern char *ANGBAND_DIR_FONTS;
+extern char *ANGBAND_DIR_TILES;
+extern char *ANGBAND_DIR_SOUNDS;
+extern char *ANGBAND_DIR_ICONS;
 extern char *ANGBAND_DIR_USER;
-extern char *ANGBAND_DIR_XTRA;
-
-extern char *ANGBAND_DIR_XTRA_FONT;
-extern char *ANGBAND_DIR_XTRA_GRAF;
-extern char *ANGBAND_DIR_XTRA_SOUND;
-extern char *ANGBAND_DIR_XTRA_ICON;
+extern char *ANGBAND_DIR_SAVE;
+extern char *ANGBAND_DIR_SCORES;
+extern char *ANGBAND_DIR_INFO;
 
 extern struct parser *init_parse_artifact(void);
 extern struct parser *init_parse_class(void);

@@ -131,7 +131,8 @@ Query the dungeon ('q')
   Light up all the grids with a given square flag (see src/list-square-flags.h).
 
 Query terrain ('F')
-  Light up all the grids with a given terrain type (see lib/edit/terrain.txt).
+  Light up all the grids with a given terrain type
+  (see lib/gamedata/terrain.txt).
 		
 Collect stats ('f' or 'S')
   Collects stats on monsters and objects present on level generation.  Requests

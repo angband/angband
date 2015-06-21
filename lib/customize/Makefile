@@ -9,4 +9,4 @@ CONFIG = \
        keys-gcu.prf \
        message.prf pref.prf user.prf
 
-PACKAGE = pref
+PACKAGE = customize

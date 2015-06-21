@@ -26,17 +26,11 @@
  * and 6.0, Cygwin 1.0, Borland C++ 5.5 command line tools, and lcc-win32.
  *
  *
- * See also "main-dos.c" and "main-ibm.c".
+ * The "lib/customize/font-win.prf" contains attr/char mappings for use with the
+ * normal "*.fon" font files in the "lib/fonts/" directory.
  *
- *
- * The "lib/pref/pref-win.prf" file contains keymaps, macro definitions,
- * and/or color redefinitions.
- *
- * The "lib/pref/font-win.prf" contains attr/char mappings for use with the
- * normal "*.fon" font files in the "lib/xtra/font/" directory.
- *
- * The "lib/pref/graf-win.prf" contains attr/char mappings for use with the
- * special "*.bmp" bitmap files in the "lib/xtra/graf/" directory, which
+ * The "lib/customize/graf-win.prf" contains attr/char mappings for use with the
+ * special "*.png" graphics files in the "lib/tiles/" directory, which
  * are activated by a menu item.
  *
  *
@@ -46,10 +40,6 @@
  *
  * A simpler method is needed for selecting the "tile size" for windows.
  * XXX XXX XXX
- *
- * Special "Windows Help Files" can be placed into "lib/xtra/help/" for
- * use with the "winhelp.exe" program.  These files *may* be available
- * at the ftp site somewhere, but I have not seen them.  XXX XXX XXX
  *
  * ToDo: The screensaver mode should implement ScreenSaverConfigureDialog,
  * DefScreenSaverProc, and ScreenSaverProc.
@@ -943,7 +933,7 @@ static void load_sound_prefs(void)
 	char *zz[SAMPLE_MAX];
 
 	/* Access the sound.cfg */
-	path_build(ini_path, sizeof(ini_path), ANGBAND_DIR_XTRA_SOUND, "sound.cfg");
+	path_build(ini_path, sizeof(ini_path), ANGBAND_DIR_SOUNDS, "sound.cfg");
 
 	for (i = 0; i < MSG_MAX; i++) {
 		const char *sound_name = message_sound_name(i);
@@ -958,7 +948,7 @@ static void load_sound_prefs(void)
 
 		for (j = 0; j < num; j++) {
 			/* Access the sound */
-			path_build(wav_path, sizeof(wav_path), ANGBAND_DIR_XTRA_SOUND,
+			path_build(wav_path, sizeof(wav_path), ANGBAND_DIR_SOUNDS,
 					   zz[j]);
 
 			/* Save the sound filename, if it exists */
@@ -1143,7 +1133,7 @@ static bool init_graphics(void)
 	}
 
 	/* Access the bitmap file */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, name);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_TILES, name);
 
 	/* Load the image or quit */
 	if (alphablend) {
@@ -1271,7 +1261,7 @@ static void term_remove_font(const char *name)
 	char buf[1024];
 
 	/* Build path to the file */
-	my_strcpy(buf, ANGBAND_DIR_XTRA_FONT, sizeof(buf));
+	my_strcpy(buf, ANGBAND_DIR_FONTS, sizeof(buf));
 	my_strcat(buf, "\\", sizeof(buf));
 	my_strcat(buf, name, sizeof(buf));
 
@@ -1413,7 +1403,7 @@ static void term_change_font(term_data *td)
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFile = tmp;
 	ofn.nMaxFile = 128;
-	ofn.lpstrInitialDir = ANGBAND_DIR_XTRA_FONT;
+	ofn.lpstrInitialDir = ANGBAND_DIR_FONTS;
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 	ofn.lpstrDefExt = "fon";
 
@@ -1422,7 +1412,7 @@ static void term_change_font(term_data *td)
 		/* Force the font */
 		if (term_force_font(td, tmp)) {
 			/* Access the standard font file */
-			path_build(tmp, sizeof(tmp), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT);
+			path_build(tmp, sizeof(tmp), ANGBAND_DIR_FONTS, DEFAULT_FONT);
 
 			/* Force the use of that font */
 			(void)term_force_font(td, tmp);
@@ -1805,7 +1795,7 @@ static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
 	if (i == 0) return;
 
 	/* Build the path */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_SOUND,
+	path_build(buf, sizeof(buf), ANGBAND_DIR_SOUNDS,
 			   sound_file[v][Rand_simple(i)]);
 
 	/* Check for file type */
@@ -2633,12 +2623,12 @@ static void init_windows(void)
 		td = &data[i];
 
 		/* Access the standard font file */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, td->font_want);
+		path_build(buf, sizeof(buf), ANGBAND_DIR_FONTS, td->font_want);
 
 		/* Activate the chosen font */
 		if (term_force_font(td, buf)) {
 			/* Access the standard font file */
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT);
+			path_build(buf, sizeof(buf), ANGBAND_DIR_FONTS, DEFAULT_FONT);
 
 			/* Force the use of that font */
 			(void)term_force_font(td, buf);
@@ -4882,6 +4872,7 @@ static void hook_quit(const char *str)
  *  Initialize
  * ------------------------------------------------------------------------ */
 
+#define USE_PRIVATE_PATHS 1
 
 /**
  * Init some stuff
@@ -4948,32 +4939,36 @@ static void init_stuff(void)
 	init_file_paths(path, path, path);
 
 	/* Hack -- Validate the paths */
-	validate_dir(ANGBAND_DIR_APEX);
-	validate_dir(ANGBAND_DIR_EDIT);
-	validate_dir(ANGBAND_DIR_FILE);
+	validate_dir(ANGBAND_DIR_GAMEDATA);
+	validate_dir(ANGBAND_DIR_CUSTOMIZE);
 	validate_dir(ANGBAND_DIR_HELP);
-	validate_dir(ANGBAND_DIR_PREF);
-	validate_dir(ANGBAND_DIR_SAVE);
+	validate_dir(ANGBAND_DIR_SCREENS);
+	validate_dir(ANGBAND_DIR_FONTS);
+	validate_dir(ANGBAND_DIR_TILES);
+	validate_dir(ANGBAND_DIR_SOUNDS);
+	validate_dir(ANGBAND_DIR_ICONS);
 	validate_dir(ANGBAND_DIR_USER);
-	validate_dir(ANGBAND_DIR_XTRA);
+	validate_dir(ANGBAND_DIR_SAVE);
+	validate_dir(ANGBAND_DIR_SCORES);
+	validate_dir(ANGBAND_DIR_INFO);
 
 	/* Build the filename */
-	path_build(path, sizeof(path), ANGBAND_DIR_FILE, "news.txt");
+	path_build(path, sizeof(path), ANGBAND_DIR_SCREENS, "news.txt");
 
 	/* Hack -- Validate the "news.txt" file */
 	validate_file(path);
 
 	/* Build the filename */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT);
+	path_build(path, sizeof(path), ANGBAND_DIR_FONTS, DEFAULT_FONT);
 
 	/* Hack -- Validate the basic font */
 	validate_file(path);
 
 	/* Validate the "graf" directory */
-	validate_dir(ANGBAND_DIR_XTRA_GRAF);
+	validate_dir(ANGBAND_DIR_TILES);
 
 	/* Validate the "sound" directory */
-	validate_dir(ANGBAND_DIR_XTRA_SOUND);
+	validate_dir(ANGBAND_DIR_SOUNDS);
 }
 
 

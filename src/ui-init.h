@@ -15,11 +15,6 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  *
- * This file is used to initialize various variables and arrays for the
- * Angband game.
- *
- * Several of the arrays for Angband are built from "template" files in
- * the "lib/edit" directory.
  */
 
 

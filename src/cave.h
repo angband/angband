@@ -170,7 +170,7 @@ struct chunk {
 	int mon_current;
 };
 
-/*** Feature Indexes (see "lib/edit/terrain.txt") ***/
+/*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/
 
 /* Nothing */
 int FEAT_NONE;

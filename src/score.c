@@ -43,7 +43,7 @@ size_t highscore_read(high_score scores[], size_t sz)
 	/* Wipe current scores */
 	memset(scores, 0, sz * sizeof(high_score));
 
-	path_build(fname, sizeof(fname), ANGBAND_DIR_APEX, "scores.raw");
+	path_build(fname, sizeof(fname), ANGBAND_DIR_SCORES, "scores.raw");
 	scorefile = file_open(fname, MODE_READ, FTYPE_TEXT);
 
 	if (!scorefile) return TRUE;
@@ -121,10 +121,10 @@ static void highscore_write(const high_score scores[], size_t sz)
 	char new_name[1024];
 	char lok_name[1024];
 
-	path_build(old_name, sizeof(old_name), ANGBAND_DIR_APEX, "scores.old");
-	path_build(cur_name, sizeof(cur_name), ANGBAND_DIR_APEX, "scores.raw");
-	path_build(new_name, sizeof(new_name), ANGBAND_DIR_APEX, "scores.new");
-	path_build(lok_name, sizeof(lok_name), ANGBAND_DIR_APEX, "scores.lok");
+	path_build(old_name, sizeof(old_name), ANGBAND_DIR_SCORES, "scores.old");
+	path_build(cur_name, sizeof(cur_name), ANGBAND_DIR_SCORES, "scores.raw");
+	path_build(new_name, sizeof(new_name), ANGBAND_DIR_SCORES, "scores.new");
+	path_build(lok_name, sizeof(lok_name), ANGBAND_DIR_SCORES, "scores.lok");
 
 
 	/* Read in and add new score */

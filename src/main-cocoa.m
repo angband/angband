@@ -971,6 +971,8 @@ static int compare_advances(const void *ap, const void *bp)
 #endif
 }
 
+#define USE_PRIVATE_PATHS 1
+
 /**
  * Give Angband the base paths that should be used for the various directories
  * it needs. It will create any needed directories.
@@ -2632,12 +2634,8 @@ static void load_sounds(void)
 	char buffer[2048];
 	ang_file *fff;
     
-	/* Build the "sound" path */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "sound");
-	ANGBAND_DIR_XTRA_SOUND = string_make(path);
-    
 	/* Find and open the config file */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_SOUND, "sound.cfg");
+	path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, "sound.cfg");
 	fff = file_open(path, MODE_READ, -1);
     
 	/* Handle errors */
@@ -2721,7 +2719,7 @@ static void load_sounds(void)
             if (! sound)
             {
                 /* We have to load the sound. Build the path to the sample */
-                path_build(path, sizeof(path), ANGBAND_DIR_XTRA_SOUND, cur_token);
+                path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, cur_token);
                 if (file_exists(path))
                 {
                     

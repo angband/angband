@@ -653,7 +653,7 @@ errr parse_file(struct parser *p, const char *filename) {
 
 	/* If no custom file, just load the standard one */
 	if (!fh) {
-		path_build(path, sizeof(path), ANGBAND_DIR_EDIT,
+		path_build(path, sizeof(path), ANGBAND_DIR_GAMEDATA,
 				   format("%s.txt", filename));
 		fh = file_open(path, MODE_READ, FTYPE_TEXT);
 	}

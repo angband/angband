@@ -56,15 +56,15 @@
  *
  *
  * Other files used by this port:
- * - The game must have a collection of bitmap .fon files in /lib/xtra/font.
+ * - The game must have a collection of bitmap .fon files in /lib/fonts.
  *
- * - It also needs some bitmapped (.bmp) graphics files in /lib/xtra/graf, 
- *   such as "16x16.bmp" and "16x16m.bmp".
+ * - It also needs some .png graphics files in /lib/tiles, 
+ *   such as "16x16.png" and "16x16m.bmp".
  *
- * - The "lib/pref/pref-sdl.prf" file contains keymaps, macro definitions,
+ * - The "lib/customize/pref-sdl.prf" file contains keymaps, macro definitions,
  *   and/or color redefinitions.
- * - The "lib/pref/font-sdl.prf" contains attr/char mappings for use with the
- *   normal "*.fon" font files in the "lib/xtra/font/" directory.
+ * - The "lib/customize/font-sdl.prf" contains attr/char mappings for use with
+ *   the normal "*.fon" font files in the "lib/fonts/" directory.
  *
  *
  *
@@ -141,8 +141,7 @@ static bool fullscreen = FALSE;
 static int overdraw = 0;
 static int overdraw_max = 0;
 
-/* XXXXXXXXX */
-static char *ANGBAND_DIR_USER_SDL;
+static char *sdl_settings_file;
 
 /**
  * Used as 'system' font
@@ -448,7 +447,7 @@ static errr sdl_CheckFont(const char *fontname, int *width, int *height)
 	TTF_Font *ttf_font;
 
 	/* Build the path */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, fontname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_FONTS, fontname);
 
 	/* Attempt to load it */
 	ttf_font = TTF_OpenFont(buf, 0);
@@ -490,7 +489,7 @@ static errr sdl_FontCreate(sdl_Font *font, const char *fontname, SDL_Surface *su
 	TTF_Font *ttf_font;
 
 	/* Build the path */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, fontname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_FONTS, fontname);
 
 	/* Attempt to load it */
 	ttf_font = TTF_OpenFont(buf, 0);
@@ -978,7 +977,7 @@ static void hook_quit(const char *str)
 
 	save_prefs();
 
-	string_free(ANGBAND_DIR_USER_SDL);
+	string_free(sdl_settings_file);
 
 	/* Free the surfaces of the windows */
 	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
@@ -1746,8 +1745,8 @@ static void ResizeWin(term_window* win, int w, int h)
 			quit(format("Unable to find font '%s'.\n"
 						"Note that there are new extended font files ending in 'x' in %s.\n"
 					    "Please check %s and edit if necessary.",
-					    win->req_font, ANGBAND_DIR_XTRA_FONT,
-						ANGBAND_DIR_USER_SDL));
+					    win->req_font, ANGBAND_DIR_FONTS,
+						sdl_settings_file));
 	}
 
 	/* Get the amount of columns & rows */
@@ -1871,9 +1870,7 @@ static errr load_prefs(void)
 
 	/* Build the path */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "sdlinit.txt");
-
-	/* XXXXX */
-	ANGBAND_DIR_USER_SDL = string_make(buf);
+	sdl_settings_file = string_make(buf);
 
 	/* Open the file */
 	fff = file_open(buf, MODE_READ, -1);
@@ -1946,7 +1943,7 @@ static errr save_prefs(void)
 	int i;
 
 	/* Open the file */
-	fff = file_open(ANGBAND_DIR_USER_SDL, MODE_WRITE, FTYPE_TEXT);
+	fff = file_open(sdl_settings_file, MODE_WRITE, FTYPE_TEXT);
 
 	/* Check it */
 	if (!fff) return (1);
@@ -3322,7 +3319,7 @@ static errr load_gfx(void)
 	if (!filename) return (0);
 
 	/* Find and load the file into a temporary surface */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, filename);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_TILES, filename);
 	temp = IMG_Load(buf);
 	if (!temp) return (1);
 
@@ -3354,7 +3351,7 @@ static void init_gfx(void)
 		
 		/* Check the graphic file */
 		if (graphics_modes[i].file[0]) {
-			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF,
+			path_build(path, sizeof(path), ANGBAND_DIR_TILES,
 					   graphics_modes[i].file);
 
 			if (!file_exists(path)) {
@@ -3492,7 +3489,7 @@ static void init_sdl_local(void)
 	sdl_FontCreate(&SystemFont, DEFAULT_FONT_FILE, AppWin);
 
 	/* Get the icon for display in the About box */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_ICON, "att-128.png");
+	path_build(path, sizeof(path), ANGBAND_DIR_ICONS, "att-128.png");
 	if (file_exists(path))
 		mratt = IMG_Load(path);
 }
@@ -3539,7 +3536,7 @@ static void init_paths(void)
 	ang_dir *dir;
 
 	/* Build the filename */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT_FILE);
+	path_build(path, sizeof(path), ANGBAND_DIR_FONTS, DEFAULT_FONT_FILE);
 
 	/* Hack -- Validate the basic font */
 	validate_file(path);
@@ -3548,7 +3545,7 @@ static void init_paths(void)
 		FontList[i] = NULL;
 
 	/* Open the fonts directory */
-	dir = my_dopen(ANGBAND_DIR_XTRA_FONT);
+	dir = my_dopen(ANGBAND_DIR_FONTS);
 	if (!dir) return;
 
 	/* Read every font to the limit */

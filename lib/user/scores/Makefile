@@ -1,7 +1,7 @@
-MKPATH=../../mk/
+MKPATH=../../../mk/
 include $(MKPATH)buildsys.mk
 
-PACKAGE = apex
+PACKAGE = user/scores
 
 install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \

@@ -73,7 +73,7 @@ static void print_tomb(void)
 	(void)time(&death_time);
 
 	/* Open the death file */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "dead.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_SCREENS, "dead.txt");
 	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	if (fp) {
@@ -120,7 +120,7 @@ static void display_winner(void)
 	int width = 0;
 
 
-	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "crown.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_SCREENS, "crown.txt");
 	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	Term_clear();

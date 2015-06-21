@@ -18,8 +18,8 @@
  * This file is used to initialize various variables and arrays for the
  * Angband game.
  *
- * Several of the arrays for Angband are built from "template" files in
- * the "lib/edit" directory.
+ * Several of the arrays for Angband are built from data files in the
+ * "lib/gamedata" directory.
  */
 
 
@@ -69,26 +69,21 @@ struct angband_constants *z_info;
  */
 const char *ANGBAND_SYS = "xxx";
 
-/*
+/**
  * Various directories. These are no longer necessarily all subdirs of "lib"
  */
-char *ANGBAND_DIR_APEX;
-char *ANGBAND_DIR_EDIT;
-char *ANGBAND_DIR_FILE;
+char *ANGBAND_DIR_GAMEDATA;
+char *ANGBAND_DIR_CUSTOMIZE;
 char *ANGBAND_DIR_HELP;
-char *ANGBAND_DIR_INFO;
-char *ANGBAND_DIR_SAVE;
-char *ANGBAND_DIR_PREF;
+char *ANGBAND_DIR_SCREENS;
+char *ANGBAND_DIR_FONTS;
+char *ANGBAND_DIR_TILES;
+char *ANGBAND_DIR_SOUNDS;
+char *ANGBAND_DIR_ICONS;
 char *ANGBAND_DIR_USER;
-char *ANGBAND_DIR_XTRA;
-
-/*
- * Various xtra/ subdirectories.
- */
-char *ANGBAND_DIR_XTRA_FONT;
-char *ANGBAND_DIR_XTRA_GRAF;
-char *ANGBAND_DIR_XTRA_SOUND;
-char *ANGBAND_DIR_XTRA_ICON;
+char *ANGBAND_DIR_SAVE;
+char *ANGBAND_DIR_SCORES;
+char *ANGBAND_DIR_INFO;
 
 static struct history_chart *histories;
 
@@ -327,7 +322,7 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
  *
  * Various command line options may allow some of the important
  * directories to be changed to user-specified directories, most
- * importantly, the "apex" and "user" and "save" directories,
+ * importantly, the "scores" and "user" and "save" directories,
  * but this is done after this function, see "main.c".
  *
  * In general, the initial path should end in the appropriate "PATH_SEP"
@@ -348,36 +343,30 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	/*** Free everything ***/
 
 	/* Free the sub-paths */
-	string_free(ANGBAND_DIR_APEX);
-	string_free(ANGBAND_DIR_EDIT);
-	string_free(ANGBAND_DIR_FILE);
+	string_free(ANGBAND_DIR_GAMEDATA);
+	string_free(ANGBAND_DIR_CUSTOMIZE);
 	string_free(ANGBAND_DIR_HELP);
-	string_free(ANGBAND_DIR_INFO);
-	string_free(ANGBAND_DIR_SAVE);
-	string_free(ANGBAND_DIR_PREF);
+	string_free(ANGBAND_DIR_SCREENS);
+	string_free(ANGBAND_DIR_FONTS);
+	string_free(ANGBAND_DIR_TILES);
+	string_free(ANGBAND_DIR_SOUNDS);
+	string_free(ANGBAND_DIR_ICONS);
 	string_free(ANGBAND_DIR_USER);
-	string_free(ANGBAND_DIR_XTRA);
-
-	string_free(ANGBAND_DIR_XTRA_FONT);
-	string_free(ANGBAND_DIR_XTRA_GRAF);
-	string_free(ANGBAND_DIR_XTRA_SOUND);
-	string_free(ANGBAND_DIR_XTRA_ICON);
+	string_free(ANGBAND_DIR_SAVE);
+	string_free(ANGBAND_DIR_SCORES);
+	string_free(ANGBAND_DIR_INFO);
 
 	/*** Prepare the paths ***/
 
 	/* Build path names */
-	ANGBAND_DIR_EDIT = string_make(format("%sedit", configpath));
-	ANGBAND_DIR_FILE = string_make(format("%sfile", libpath));
+	ANGBAND_DIR_GAMEDATA = string_make(format("%sgamedata", configpath));
+	ANGBAND_DIR_CUSTOMIZE = string_make(format("%scustomize", configpath));
 	ANGBAND_DIR_HELP = string_make(format("%shelp", libpath));
-	ANGBAND_DIR_INFO = string_make(format("%sinfo", libpath));
-	ANGBAND_DIR_PREF = string_make(format("%spref", configpath));
-	ANGBAND_DIR_XTRA = string_make(format("%sxtra", libpath));
-
-	/* Build xtra/ paths */
-	ANGBAND_DIR_XTRA_FONT = string_make(format("%s" PATH_SEP "font", ANGBAND_DIR_XTRA));
-	ANGBAND_DIR_XTRA_GRAF = string_make(format("%s" PATH_SEP "graf", ANGBAND_DIR_XTRA));
-	ANGBAND_DIR_XTRA_SOUND = string_make(format("%s" PATH_SEP "sound", ANGBAND_DIR_XTRA));
-	ANGBAND_DIR_XTRA_ICON = string_make(format("%s" PATH_SEP "icon", ANGBAND_DIR_XTRA));
+	ANGBAND_DIR_SCREENS = string_make(format("%sfile", libpath));
+	ANGBAND_DIR_FONTS = string_make(format("%sfonts", libpath));
+	ANGBAND_DIR_TILES = string_make(format("%stiles", libpath));
+	ANGBAND_DIR_SOUNDS = string_make(format("%ssounds", libpath));
+	ANGBAND_DIR_ICONS = string_make(format("%sicons", libpath));
 
 #ifdef PRIVATE_USER_PATH
 
@@ -394,11 +383,15 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 #endif /* PRIVATE_USER_PATH */
 
+	/* Build the path to the user info directory */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "info");
+	ANGBAND_DIR_INFO = string_make(buf);
+
 #ifdef USE_PRIVATE_PATHS
 
     /* Build the path to the score and save directories */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
-	ANGBAND_DIR_APEX = string_make(buf);
+	ANGBAND_DIR_SCORES = string_make(buf);
 
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
 	ANGBAND_DIR_SAVE = string_make(buf);
@@ -406,7 +399,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 #else /* !USE_PRIVATE_PATHS */
 
 	/* Build pathnames */
-	ANGBAND_DIR_APEX = string_make(format("%sapex", datapath));
+	ANGBAND_DIR_SCORES = string_make(format("%sscores", datapath));
 	ANGBAND_DIR_SAVE = string_make(format("%ssave", datapath));
 
 #endif /* USE_PRIVATE_PATHS */
@@ -415,7 +408,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 /**
  * Create any missing directories. We create only those dirs which may be
- * empty (user/, save/, apex/, info/, help/). The others are assumed 
+ * empty (user/, save/, scores/, info/, help/). The others are assumed 
  * to contain required files and therefore must exist at startup 
  * (edit/, pref/, file/, xtra/).
  *
@@ -431,7 +424,7 @@ void create_needed_dirs(void)
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_SAVE, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
-	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_APEX, "");
+	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_SCORES, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_INFO, "");
@@ -4492,18 +4485,16 @@ void cleanup_angband(void)
 	vformat_kill();
 
 	/* Free the directories */
-	string_free(ANGBAND_DIR_APEX);
-	string_free(ANGBAND_DIR_EDIT);
-	string_free(ANGBAND_DIR_FILE);
+	string_free(ANGBAND_DIR_GAMEDATA);
+	string_free(ANGBAND_DIR_CUSTOMIZE);
 	string_free(ANGBAND_DIR_HELP);
-	string_free(ANGBAND_DIR_INFO);
-	string_free(ANGBAND_DIR_SAVE);
-	string_free(ANGBAND_DIR_PREF);
+	string_free(ANGBAND_DIR_SCREENS);
+	string_free(ANGBAND_DIR_FONTS);
+	string_free(ANGBAND_DIR_TILES);
+	string_free(ANGBAND_DIR_SOUNDS);
+	string_free(ANGBAND_DIR_ICONS);
 	string_free(ANGBAND_DIR_USER);
-	string_free(ANGBAND_DIR_XTRA);
-
-	string_free(ANGBAND_DIR_XTRA_FONT);
-	string_free(ANGBAND_DIR_XTRA_GRAF);
-	string_free(ANGBAND_DIR_XTRA_SOUND);
-	string_free(ANGBAND_DIR_XTRA_ICON);
+	string_free(ANGBAND_DIR_SAVE);
+	string_free(ANGBAND_DIR_SCORES);
+	string_free(ANGBAND_DIR_INFO);
 }

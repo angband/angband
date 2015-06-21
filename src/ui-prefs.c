@@ -1213,7 +1213,8 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 	/* This supports the old behavior: look for a file first in 'pref/', and
 	 * if not found there, then 'user/'. */
 	root_success = process_pref_file_layered(name, quiet, user,
-											 ANGBAND_DIR_PREF, ANGBAND_DIR_USER,
+											 ANGBAND_DIR_CUSTOMIZE,
+											 ANGBAND_DIR_USER,
 											 &used_fallback);
 
 	/* Next, we want to force a check for the file in the user/ directory.

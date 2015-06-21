@@ -5,7 +5,7 @@
 #
 # This file includes, if appropriate, various "sub-files".
 #
-# See "lib/help/command.txt" and "src/files.c" for more information.
+# See "lib/help/command.txt" for more information.
 #
 # Format:
 # message:<message-type>:<color>
@@ -23,7 +23,7 @@
 
 # I included all possible message types here for future-proofing, 
 # although some of them are only used as sound-effects at the moment. 
-# sound.cfg can be found in /lib/extra/sound (Twilight).
+# sound.cfg can be found in /lib/sounds (Twilight).
 
 # MSG_GENERIC
 message:GENERIC:w

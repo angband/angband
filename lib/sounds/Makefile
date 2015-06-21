@@ -1,4 +1,4 @@
-MKPATH=../../../mk/
+MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
 DATA = sound.cfg \
@@ -74,5 +74,5 @@ DATA = sound.cfg \
 	mco_mouse_squeaks.mp3		plm_door_squeaky.mp3		sum_lion_growl.mp3  \
 	mco_rubber_thud.mp3		plm_door_wooden.mp3		sum_piano_scrape.mp3
 
-PACKAGE = xtra/sound
+PACKAGE = sounds
 

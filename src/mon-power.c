@@ -343,7 +343,7 @@ void write_monster_entries(ang_file *fff)
 	ang_file *old;
 	char buf[1024];
 
-	path_build(buf, sizeof(buf), ANGBAND_DIR_EDIT, "monster.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_GAMEDATA, "monster.txt");
 	old = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	while (file_getl(old, buf, sizeof(buf))) {

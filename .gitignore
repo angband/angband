@@ -3,7 +3,7 @@ autom4te.cache/
 config.log
 config.status
 configure
-lib/apex/scores.*
+lib/scores/scores.*
 *.out
 *.exe
 lib/save/1000.*

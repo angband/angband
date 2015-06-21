@@ -122,11 +122,11 @@ PLIST = cocoa/$(NAME)-Cocoa.xml
 ICONFILES = cocoa/$(NAME)_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
 
 LIBFILES = \
-  ../lib/edit/*.txt \
-  ../lib/file/*.txt \
+  ../lib/gamedata/*.txt \
+  ../lib/screens/*.txt \
   ../lib/help/*.txt \
   ../lib/help/*.hlp \
-  ../lib/pref/*.prf \
+  ../lib/customize/*.prf \
 
 install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@echo making directories...
@@ -135,28 +135,28 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@mkdir -p $(APPBIN)
 	@mkdir -p $(APPRES)
 	@mkdir -p $(APPRES)/English.lproj/MainMenu.nib 
-	@mkdir -p $(APPRES)/lib/edit
-	@mkdir -p $(APPRES)/lib/file
+	@mkdir -p $(APPRES)/lib/gamedata
+	@mkdir -p $(APPRES)/lib/screens
 	@mkdir -p $(APPRES)/lib/help
-	@mkdir -p $(APPRES)/lib/pref
+	@mkdir -p $(APPRES)/lib/customize
 	@mkdir -p $(APPRES)/lib/script
-	@mkdir -p $(APPRES)/lib/xtra/graf
-	@mkdir -p $(APPRES)/lib/xtra/sound
+	@mkdir -p $(APPRES)/lib/tiles
+	@mkdir -p $(APPRES)/lib/sounds
 
 	@echo copying files...
-	@cp ../lib/edit/*.txt $(APPRES)/lib/edit
-	@cp ../lib/file/*.txt $(APPRES)/lib/file
+	@cp ../lib/gamedata/*.txt $(APPRES)/lib/gamedata
+	@cp ../lib/screens/*.txt $(APPRES)/lib/screens
 	@cp ../lib/help/*.txt $(APPRES)/lib/help
 	@cp ../lib/help/*.hlp $(APPRES)/lib/help
-	@cp ../lib/pref/*.prf $(APPRES)/lib/pref
+	@cp ../lib/customize/*.prf $(APPRES)/lib/customize
 
 	# 'optionally' install sound and graphics tiles, if present
 	# TODO: read the tile pngs from $(APPRES)/lib/xtra/graf/
 	# so we can just recursively copy that directory.
-	-cp ../lib/xtra/graf/graphics.txt $(APPRES)/lib/xtra/graf
-	-cp ../lib/xtra/graf/*.png $(APPRES)/
-	-cp ../lib/xtra/sound/*.mp3 $(APPRES)/lib/xtra/sound
-	-cp ../lib/xtra/sound/sound.cfg $(APPRES)/lib/xtra/sound
+	-cp ../lib/tiles/graphics.txt $(APPRES)/lib/tiles
+	-cp ../lib/tiles/*.png $(APPRES)/
+	-cp ../lib/sounds/*.mp3 $(APPRES)/lib/sounds
+	-cp ../lib/sounds/sound.cfg $(APPRES)/lib/sounds
 
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)

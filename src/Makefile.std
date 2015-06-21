@@ -32,9 +32,6 @@
 SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 #SYS_gcu = -DUSE_GCU -lcurses -ltermcap
 
-# Support the GTK2 graphical tookit (main-gtk.c)
-#SYS_gtk = -rdynamic -export-dynamic -DUSE_GTK $(shell pkg-config libglade-2.0 gtk+-2.0 --libs --cflags)
-
 # Support SDL frontend
 # SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf -lSDL_image
 
@@ -114,11 +111,10 @@ docs: doc/index.html
 # Clean up old junk
 clean:
 	-rm -f $(OBJS) $(EXE)
-	-rm -f ../lib/data/*.raw
 
 # make a distribution
-DIRS = lib/apex lib/bone lib/data lib/edit lib/file lib/help lib/info \
-       lib/pref lib/save lib/user lib/xtra/sound lib/xtra/graf lib/xtra/font
+DIRS = lib/gamedata lib/customize lib/help lib/screens lib/fonts lib/tiles \
+       lib/sounds lib/icons lib/user lib/user/save lib/user/scores lib/user/info
 
 TMPDIR = ./$(EXE)-$(VERSION)
 dist:
@@ -126,14 +122,14 @@ dist:
 	@echo making directories...
 	@for i in $(DIRS) ; do mkdir -p $(TMPDIR)/$$i ; done
 	@echo copying files...
-	@cp ../lib/edit/*.txt $(TMPDIR)/lib/edit
-	@cp ../lib/file/*.txt $(TMPDIR)/lib/file
+	@cp ../lib/gamedata/*.txt $(TMPDIR)/lib/gamedata
+	@cp ../lib/screens/*.txt $(TMPDIR)/lib/screens
 	@cp ../lib/help/*.txt ../lib/help/*.hlp $(TMPDIR)/lib/help
-	@cp ../lib/pref/*.prf $(TMPDIR)/lib/pref
-	@cp ../lib/xtra/font/*.txt $(TMPDIR)/lib/xtra/font
+	@cp ../lib/customize/*.prf $(TMPDIR)/lib/customize
+	@cp ../lib/fonts/*.txt $(TMPDIR)/lib/fonts
 	@echo attempting to install sound and graphics
-	@-cp ../lib/xtra/sound/*.wav $(TMPDIR)/lib/xtra/sound
-	@-cp ../lib/xtra/graf/*.bmp $(TMPDIR)/lib/xtra/graf
+	@-cp ../lib/sounds/*.mp3 $(TMPDIR)/lib/sounds
+	@-cp ../lib/tiles/*.png $(TMPDIR)/lib/tiles
 	@cp ../changes.txt ../readme.txt $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
 	tar czf ../$(EXE)-$(VERSION).tar.gz $(TMPDIR)

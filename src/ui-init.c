@@ -18,8 +18,8 @@
  * This file is used to initialize various variables and arrays for the
  * Angband game.
  *
- * Several of the arrays for Angband are built from "template" files in
- * the "lib/edit" directory.
+ * Several of the arrays for Angband are built from data files in the
+ * "lib/gamedata" directory.
  */
 
 

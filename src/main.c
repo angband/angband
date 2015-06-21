@@ -170,13 +170,16 @@ static const struct {
 	char **path;
 	bool setgid_ok;
 } change_path_values[] = {
-	{ "apex", &ANGBAND_DIR_APEX, TRUE },
-	{ "edit", &ANGBAND_DIR_EDIT, FALSE },
-	{ "file", &ANGBAND_DIR_FILE, FALSE },
+	{ "scores", &ANGBAND_DIR_SCORES, TRUE },
+	{ "gamedata", &ANGBAND_DIR_GAMEDATA, FALSE },
+	{ "screens", &ANGBAND_DIR_SCREENS, FALSE },
 	{ "help", &ANGBAND_DIR_HELP, TRUE },
 	{ "info", &ANGBAND_DIR_INFO, TRUE },
-	{ "pref", &ANGBAND_DIR_PREF, TRUE },
-	{ "xtra", &ANGBAND_DIR_XTRA, TRUE },
+	{ "pref", &ANGBAND_DIR_CUSTOMIZE, TRUE },
+	{ "fonts", &ANGBAND_DIR_FONTS, TRUE },
+	{ "tiles", &ANGBAND_DIR_TILES, TRUE },
+	{ "sounds", &ANGBAND_DIR_SOUNDS, TRUE },
+	{ "icons", &ANGBAND_DIR_ICONS, TRUE },
 	{ "user", &ANGBAND_DIR_USER, TRUE },
 	{ "save", &ANGBAND_DIR_SAVE, FALSE },
 };

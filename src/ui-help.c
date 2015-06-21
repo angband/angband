@@ -22,7 +22,7 @@
 #include "ui-output.h"
 #include "ui-term.h"
 
-/*
+/**
  * Make a string lower case.
  */
 static void string_lower(char *buf)
@@ -34,7 +34,7 @@ static void string_lower(char *buf)
 }
 
 
-/*
+/**
  * Recursive file perusal.
  *
  * Return FALSE on "?", otherwise TRUE.
@@ -116,10 +116,8 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	n = strlen(filename);
 
 	/* Extract the tag from the filename */
-	for (i = 0; i < n; i++)
-	{
-		if (filename[i] == '#')
-		{
+	for (i = 0; i < n; i++) {
+		if (filename[i] == '#') {
 			filename[i] = '\0';
 			tag = filename + i + 1;
 			break;
@@ -129,9 +127,8 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	/* Redirect the name */
 	name = filename;
 
-	/* Hack XXX XXX XXX */
-	if (what)
-	{
+	/* Currently unused facility to show and describe arbitrary files */
+	if (what) {
 		my_strcpy(caption, what, sizeof(caption));
 
 		my_strcpy(path, name, sizeof(path));
@@ -139,8 +136,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	}
 
 	/* Look in "help" */
-	if (!fff)
-	{
+	if (!fff) {
 		strnfmt(caption, sizeof(caption), "Help file '%s'", name);
 
 		path_build(path, sizeof(path), ANGBAND_DIR_HELP, name);
@@ -148,17 +144,15 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	}
 
 	/* Look in "info" */
-	if (!fff)
-	{
-		strnfmt(caption, sizeof(caption), "Info file '%s'", name);
+	if (!fff) {
+		strnfmt(caption, sizeof(caption), "User info file '%s'", name);
 
 		path_build(path, sizeof(path), ANGBAND_DIR_INFO, name);
 		fff = file_open(path, MODE_READ, FTYPE_TEXT);
 	}
 
 	/* Oops */
-	if (!fff)
-	{
+	if (!fff) {
 		/* Message */
 		msg("Cannot open '%s'.", name);
 		event_signal(EVENT_MESSAGE_FLUSH);
@@ -169,26 +163,23 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 
 	/* Pre-Parse the file */
-	while (TRUE)
-	{
+	while (TRUE) {
 		/* Read a line or stop */
 		if (!file_getl(fff, buf, sizeof(buf))) break;
 
-		/* Skip lines if we are inside a RST directive*/
-		if(skip_lines){
-			if(contains_only_spaces(buf))
-				skip_lines=FALSE;
+		/* Skip lines if we are inside a RST directive */
+		if (skip_lines){
+			if (contains_only_spaces(buf))
+				skip_lines = FALSE;
 			continue;
 		}
 
 		/* Parse a very small subset of RST */
 		/* TODO: should be more flexible */
-		if (prefix(buf, ".. "))
-		{
+		if (prefix(buf, ".. ")) {
 			/* parse ".. menu:: [x] filename.txt" (with exact spacing)*/
-			if(prefix(buf+strlen(".. "), "menu:: [") && 
-                           buf[strlen(".. menu:: [x")]==']')
-			{
+			if (prefix(buf+strlen(".. "), "menu:: [") && 
+                           buf[strlen(".. menu:: [x")]==']') {
 				/* This is a menu file */
 				menu = TRUE;
 
@@ -197,19 +188,16 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 				/* Store the menu item (if valid) */
 				if ((k >= 0) && (k < 26))
-					my_strcpy(hook[k], buf + strlen(".. menu:: [x] "), sizeof(hook[0]));
-			}
-			/* parse ".. _some_hyperlink_target:" */
-			else if (buf[strlen(".. ")] == '_')
-			{
-				if (tag)
-				{
+					my_strcpy(hook[k], buf + strlen(".. menu:: [x] "),
+							  sizeof(hook[0]));
+			} else if (buf[strlen(".. ")] == '_') {
+				/* parse ".. _some_hyperlink_target:" */
+				if (tag) {
 					/* Remove the closing '>' of the tag */
 					buf[strlen(buf) - 1] = '\0';
 
 					/* Compare with the requested tag */
-					if (streq(buf + strlen(".. _"), tag))
-					{
+					if (streq(buf + strlen(".. _"), tag)) {
 						/* Remember the tagged line */
 						line = next;
 					}
@@ -230,8 +218,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 
 	/* Display the file */
-	while (TRUE)
-	{
+	while (TRUE) {
 		/* Clear screen */
 		Term_clear();
 
@@ -241,9 +228,9 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		if (line < 0) line = 0;
 
 		skip_lines = FALSE;
+
 		/* Re-open the file if needed */
-		if (next > line)
-		{
+		if (next > line) {
 			/* Close it */
 			file_close(fff);
 
@@ -257,21 +244,19 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 
 		/* Goto the selected line */
-		while (next < line)
-		{
+		while (next < line) {
 			/* Get a line */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
 			/* Skip lines if we are inside a RST directive*/
-			if(skip_lines){
-				if(contains_only_spaces(buf))
+			if (skip_lines) {
+				if (contains_only_spaces(buf))
 					skip_lines=FALSE;
 				continue;
 			}
 
 			/* Skip RST directives */
-			if (prefix(buf, ".. "))
-			{
+			if (prefix(buf, ".. ")) {
 				skip_lines=TRUE;
 				continue;
 			}
@@ -282,24 +267,22 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 
 		/* Dump the next lines of the file */
-		for (i = 0; i < hgt - 4; )
-		{
+		for (i = 0; i < hgt - 4; ) {
 			/* Hack -- track the "first" line */
 			if (!i) line = next;
 
 			/* Get a line of the file or stop */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
-			/* Skip lines if we are inside a RST directive*/
-			if(skip_lines){
-				if(contains_only_spaces(buf))
-					skip_lines=FALSE;
+			/* Skip lines if we are inside a RST directive */
+			if (skip_lines) {
+				if (contains_only_spaces(buf))
+					skip_lines = FALSE;
 				continue;
 			}
 
 			/* Skip RST directives */
-			if (prefix(buf, ".. "))
-			{
+			if (prefix(buf, ".. ")) {
 				skip_lines=TRUE;
 				continue;
 			}
@@ -329,13 +312,11 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			Term_putstr(0, i+2, -1, COLOUR_WHITE, buf);
 
 			/* Highlight "shower" */
-			if (shower[0])
-			{
+			if (shower[0]) {
 				const char *str = lc_buf;
 
 				/* Display matches */
-				while ((str = strstr(str, shower)) != NULL)
-				{
+				while ((str = strstr(str, shower)) != NULL) {
 					int len = strlen(shower);
 
 					/* Display the match */
@@ -352,8 +333,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		}
 
 		/* Hack -- failed search */
-		if (find)
-		{
+		if (find) {
 			bell("Search string not found!");
 			line = back;
 			find = NULL;
@@ -366,24 +346,15 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		           caption, line, line + hgt - 4, size), 0, 0);
 
 
-		/* Prompt -- menu screen */
-		if (menu)
-		{
-			/* Wait for it */
+		/* Prompt */
+		if (menu) {
+			/* Menu screen */
 			prt("[Press a Letter, or ESC to exit.]", hgt - 1, 0);
-		}
-
-		/* Prompt -- small files */
-		else if (size <= hgt - 4)
-		{
-			/* Wait for it */
+		} else if (size <= hgt - 4) {
+			/* Small files */
 			prt("[Press ESC to exit.]", hgt - 1, 0);
-		}
-
-		/* Prompt -- large files */
-		else
-		{
-			/* Wait for it */
+		} else {
+			/* Large files */
 			prt("[Press Space to advance, or ESC to exit.]", hgt - 1, 0);
 		}
 
@@ -395,13 +366,10 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 		/* Toggle case sensitive on/off */
 		if (ch.code == '!')
-		{
 			case_sensitive = !case_sensitive;
-		}
 
 		/* Try showing */
-		if (ch.code == '&')
-		{
+		if (ch.code == '&') {
 			/* Get "shower" */
 			prt("Show: ", hgt - 1, 0);
 			(void)askfor_aux(shower, sizeof(shower), NULL);
@@ -411,12 +379,10 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		}
 
 		/* Try finding */
-		if (ch.code == '/')
-		{
+		if (ch.code == '/') {
 			/* Get "finder" */
 			prt("Find: ", hgt - 1, 0);
-			if (askfor_aux(finder, sizeof(finder), NULL))
-			{
+			if (askfor_aux(finder, sizeof(finder), NULL)) {
 				/* Find it */
 				find = finder;
 				back = line;
@@ -431,8 +397,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		}
 
 		/* Go to a specific line */
-		if (ch.code == '#')
-		{
+		if (ch.code == '#') {
 			char tmp[80] = "0";
 
 			prt("Goto Line: ", hgt - 1, 0);
@@ -441,13 +406,11 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		}
 
 		/* Go to a specific file */
-		if (ch.code == '%')
-		{
+		if (ch.code == '%') {
 			char ftmp[80] = "help.hlp";
 
 			prt("Goto File: ", hgt - 1, 0);
-			if (askfor_aux(ftmp, sizeof(ftmp), NULL))
-			{
+			if (askfor_aux(ftmp, sizeof(ftmp), NULL)) {
 				if (!show_file(ftmp, NULL, 0, mode))
 					ch.code = ESCAPE;
 			}
@@ -483,14 +446,12 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		}
 
 		/* Recurse on letters */
-		if (menu && isalpha((unsigned char)ch.code))
-		{
+		if (menu && isalpha((unsigned char)ch.code)) {
 			/* Extract the requested menu item */
 			k = A2I(ch.code);
 
 			/* Verify the menu item */
-			if ((k >= 0) && (k <= 25) && hook[k][0])
-			{
+			if ((k >= 0) && (k <= 25) && hook[k][0]) {
 				/* Recurse on that file */
 				if (!show_file(hook[k], NULL, 0, mode)) ch.code = ESCAPE;
 			}
@@ -508,7 +469,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 }
 
 
-/*
+/**
  * Peruse the On-Line-Help
  */
 void do_cmd_help(void)

@@ -80,7 +80,7 @@ confirmation.
 Note that spoiler files are not distributed with the source since they may
 spoil the game for new players (hence their name). If you want to use them,
 you can obtain them from various places as with the source and executables.
-Spoiler files may be placed into the "lib/info" directory, or into a user
+Spoiler files may be placed into the "lib/user/info" directory, or into a user
 specified external directory, to allow access via the "online help" system.
 
 Remember to tell all your friends about how much you like Angband...

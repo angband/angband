@@ -120,7 +120,7 @@ static errr finish_parse_grafmode(struct parser *p) {
 			graphics_modes[i].pNext = &(graphics_modes[i+1]);
 		}
 	}
-	
+
 	/* Hardcode the no graphics option */
 	graphics_modes[count].pNext = NULL;
 	graphics_modes[count].grafID = GRAPHICS_NONE;
@@ -130,12 +130,12 @@ static errr finish_parse_grafmode(struct parser *p) {
 	strncpy(graphics_modes[count].pref, "none", 8);
 	strncpy(graphics_modes[count].file, "", 32);
 	strncpy(graphics_modes[count].menuname, "None", 32);
-	
+
 	graphics_mode_high_id = max;
 
 	/* Set the default graphics mode to be no graphics */
 	current_graphics_mode = &(graphics_modes[count]);
-	
+
 	if (p) {
 		mode = parser_priv(p);
 		while (mode) {
@@ -168,7 +168,7 @@ bool init_graphics_modes(const char *filename) {
 	int line_no = 0;
 
 	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, filename);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_TILES, filename);
 
 	f = file_open(buf, MODE_READ, FTYPE_TEXT);
 	if (!f) {

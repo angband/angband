@@ -6,4 +6,4 @@ CONFIG = activation.txt artifact.txt body.txt class.txt constants.txt \
  monster_base.txt monster_spell.txt names.txt object.txt object_base.txt \
  p_race.txt store.txt  terrain.txt vault.txt hints.txt pain.txt pit.txt \
  quest.txt room_template.txt trap.txt
-PACKAGE = edit
+PACKAGE = gamedata

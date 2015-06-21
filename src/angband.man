@@ -98,7 +98,7 @@ Use <sys> core code (e.g. gcu for console mode, x11 or sdl for graphics)
 .TP
 .BR \-d<lib>=<path>  
 Define a \'lib\' dir sub-path. Valid values of lib are help info user
-bone save data apex xtra edit file
+save data scores xtra edit file
 .PD
 .SH "GETTING STARTED"
 To start with, you can just say angband \-uTest, and that creates a

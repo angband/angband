@@ -138,14 +138,8 @@ static bool sound_sdl_init(bool no_cache)
 	    return FALSE;
 
 
-	/* Build the "sound" path */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "sound");
-	if (ANGBAND_DIR_XTRA_SOUND)
-		mem_free(ANGBAND_DIR_XTRA_SOUND);
-	ANGBAND_DIR_XTRA_SOUND = string_make(path);
-
 	/* Find and open the config file */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_SOUND, "sound.cfg");
+	path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, "sound.cfg");
 	fff = file_open(path, MODE_READ, -1);
 
 	/* Handle errors */
@@ -208,7 +202,7 @@ static bool sound_sdl_init(bool no_cache)
 			if (num >= MAX_SAMPLES) break;
 
 			/* Build the path to the sample */
-			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_SOUND, cur_token);
+			path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, cur_token);
 			if (!file_exists(path)) goto next_token;
 
 			if (!got_file_type) {

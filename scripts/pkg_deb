@@ -37,5 +37,5 @@ git checkout-index --prefix=$TAG1/ -a &&
 	./autogen.sh &&
 	rm -rf autogen.sh autom4te.cache &&
 	cd .. &&
-	tar --exclude .gitignore --exclude *.dll --exclude *.mp3 --exclude lib/xtra/graf/64x64.png -czvf ../$OUT $TAG1 &&
+	tar --exclude .gitignore --exclude *.dll --exclude *.mp3 --exclude lib/tiles/64x64.png -czvf ../$OUT $TAG1 &&
 	rm -rf $TAG1

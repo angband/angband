@@ -34,7 +34,7 @@ extern int arg_graphics_nice;
  * Just a big list of what to do for a specific screen resolution.
  *
  * Note: graphics modes are hardcoded, using info from 
- * angband/lib/xtra/graf/graphics.txt at the time of this writing
+ * angband/lib/tiles/graphics.txt at the time of this writing
  *
  * Return values:    0 - Success
  *                  -1 - Invalid argument
