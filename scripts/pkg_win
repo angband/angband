@@ -39,6 +39,11 @@ mkdir lib/help
 mkdir lib/screens
 mkdir lib/fonts
 mkdir lib/tiles
+mkdir lib/tiles/adam-bolt
+mkdir lib/tiles/gervais
+mkdir lib/tiles/nomad
+mkdir lib/tiles/old
+mkdir lib/tiles/shockbolt
 mkdir lib/sounds
 mkdir lib/icons
 mkdir lib/user
@@ -72,8 +77,13 @@ cp ../lib/customize/*.prf lib/customize
 
 cp ../lib/fonts/*.fon lib/fonts
 
-cp ../lib/tiles/* lib/tiles
-rm lib/tiles/Makefile lib/tiles/*/Makefile
+cp ../lib/tiles/*.txt lib/tiles
+cp ../lib/tiles/adam-bolt/* lib/tiles/adam-bolt
+cp ../lib/tiles/gervais/* lib/tiles/gervais
+cp ../lib/tiles/nomad/* lib/tiles/nomad
+cp ../lib/tiles/old/* lib/tiles/old
+cp ../lib/tiles/shockbolt/* lib/tiles/shockbolt
+rm lib/tiles/*/Makefile
 
 cp ../lib/sounds/sound.cfg lib/sounds
 cp ../lib/sounds/*.mp3 lib/sounds
