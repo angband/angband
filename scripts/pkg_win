@@ -88,8 +88,8 @@ rm lib/tiles/*/Makefile
 cp ../lib/sounds/sound.cfg lib/sounds
 cp ../lib/sounds/*.mp3 lib/sounds
 
-cp ../lib/user/info*.txt lib/user/info
-cp ../lib/user/info*.hlp lib/user/info
+cp ../lib/user/info/*.txt lib/user/info
+cp ../lib/user/info/*.hlp lib/user/info
 
 cd ..
 zip -9 -r $OUT $DIR

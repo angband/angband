@@ -1129,9 +1129,8 @@ static bool init_graphics(void)
 
 		current_graphics_mode = mode;
 	} else {
-		wid = 8;
-		hgt = 8;
-		name = "8x8.png";
+		plog("could not find graphics mode");
+		return FALSE;
 	}
 
 	/* Access the bitmap file */
