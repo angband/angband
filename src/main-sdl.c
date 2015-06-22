@@ -3319,7 +3319,7 @@ static errr load_gfx(void)
 	if (!filename) return (0);
 
 	/* Find and load the file into a temporary surface */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_TILES, filename);
+	path_build(buf, sizeof(buf), current_graphics_mode->path, filename);
 	temp = IMG_Load(buf);
 	if (!temp) return (1);
 
@@ -3589,7 +3589,7 @@ int init_sdl(int argc, char *argv[])
 	init_paths();
 
 	/* load possible graphics modes */
-	init_graphics_modes("graphics.txt");
+	init_graphics_modes();
 	GfxButtons = mem_zalloc(sizeof(int) * (graphics_mode_high_id+1));
 
 	/* Load prefs */

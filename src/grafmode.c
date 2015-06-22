@@ -45,6 +45,19 @@ static enum parser_error parse_graf_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_graf_d(struct parser *p) {
+	graphics_mode *mode = parser_priv(p);
+	const char *dir = parser_getsym(p, "dirname");
+	if (!mode) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+
+	/* Build a usable path */
+	path_build(mode->path, sizeof(mode->path), ANGBAND_DIR_TILES, dir);
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_graf_i(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
 	if (!mode) {
@@ -82,6 +95,7 @@ static struct parser *init_parse_grafmode(void) {
 
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str menuname", parse_graf_n);
+	parser_reg(p, "D sym dirname", parse_graf_d);
 	parser_reg(p, "I uint wid uint hgt str filename", parse_graf_i);
 	parser_reg(p, "P str prefname", parse_graf_p);
 	parser_reg(p, "X uint alpha uint row uint max", parse_graf_x);
@@ -128,6 +142,7 @@ static errr finish_parse_grafmode(struct parser *p) {
 	graphics_modes[count].overdrawRow = 0;
 	graphics_modes[count].overdrawMax = 0;
 	strncpy(graphics_modes[count].pref, "none", 8);
+	strncpy(graphics_modes[count].path, "", 32);
 	strncpy(graphics_modes[count].file, "", 32);
 	strncpy(graphics_modes[count].menuname, "None", 32);
 
@@ -158,7 +173,7 @@ static void print_error(const char *name, struct parser *p) {
 	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
-bool init_graphics_modes(const char *filename) {
+bool init_graphics_modes(void) {
 	char buf[1024];
 
 	ang_file *f;
@@ -168,7 +183,7 @@ bool init_graphics_modes(const char *filename) {
 	int line_no = 0;
 
 	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_TILES, filename);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_TILES, "list.txt");
 
 	f = file_open(buf, MODE_READ, FTYPE_TEXT);
 	if (!f) {
@@ -203,7 +218,7 @@ void close_graphics_modes(void) {
 	}
 }
 
-graphics_mode* get_graphics_mode(byte id) {
+graphics_mode *get_graphics_mode(byte id) {
 	graphics_mode *test = graphics_modes;
 	while (test) {
 		if (test->grafID == id) {

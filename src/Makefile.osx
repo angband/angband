@@ -151,10 +151,8 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@cp ../lib/customize/*.prf $(APPRES)/lib/customize
 
 	# 'optionally' install sound and graphics tiles, if present
-	# TODO: read the tile pngs from $(APPRES)/lib/xtra/graf/
-	# so we can just recursively copy that directory.
-	-cp ../lib/tiles/graphics.txt $(APPRES)/lib/tiles
-	-cp ../lib/tiles/*.png $(APPRES)/
+	-cp -r ../lib/tiles/ $(APPRES)/lib/tiles
+	-rm $(APPRES)/lib/tiles/Makefile $(APPRES)/lib/tiles/*/Makefile
 	-cp ../lib/sounds/*.mp3 $(APPRES)/lib/sounds
 	-cp ../lib/sounds/sound.cfg $(APPRES)/lib/sounds
 

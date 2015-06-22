@@ -1098,6 +1098,7 @@ static bool init_graphics(void)
 	char buf[1024];
 	int wid, hgt;
 	const char *name;
+	const char *path;
 	graphics_mode *mode = NULL;
 
 	if (arg_graphics) {
@@ -1119,6 +1120,7 @@ static bool init_graphics(void)
 			return FALSE;
 		}
 
+		path = mode->path;
 		name = mode->file;
 
 		overdraw = mode->overdrawRow;
@@ -1133,7 +1135,7 @@ static bool init_graphics(void)
 	}
 
 	/* Access the bitmap file */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_TILES, name);
+	path_build(buf, sizeof(buf), path, name);
 
 	/* Load the image or quit */
 	if (alphablend) {
@@ -5095,7 +5097,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	}
 
 	/* load the possible graphics modes */
-	if (!init_graphics_modes("graphics.txt")) {
+	if (!init_graphics_modes()) {
 		plog_fmt("Graphics list load failed");
 	}
 

@@ -18,7 +18,7 @@
 int setup_tests(void **state) {
 	set_file_paths();
 	init_angband();
-	init_graphics_modes("graphics.txt");
+	init_graphics_modes();
 	textui_prefs_init();
 	return 0;
 }

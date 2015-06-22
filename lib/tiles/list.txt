@@ -5,6 +5,7 @@
 # === Understanding dungeons.txt ===
 
 # N: serial number : pref file name
+# D: directory name
 # I: tile width : tile height : tileset file name
 # M: menu name
 # X: alphblending : start row : end row of double high tiles
@@ -12,6 +13,8 @@
 # 'N' indicates the beginning of an entry. The serial number must
 # increase for each new item. The pref file name is the name used
 # on load to load the right pref file set for this tile set.
+
+# 'D' is for the pathname to the directory storing this mode's files.
 
 # 'I' is for image information - tile width and height are the dimensions,
 # in pixels, of an individual tile in the set. filename is the name of the
@@ -29,26 +32,31 @@
 
 
 N:1:Original Tiles
+D:old
 I:8:8:8x8.png
 P:graf-xxx.prf
 X:0:0:0
 
 N:2:Adam Bolt's tiles
+D:adam-bolt
 I:16:16:16x16.png
 P:graf-new.prf
 X:0:0:0
 
 N:3:David Gervais' tiles
+D:gervais
 I:32:32:32x32.png
 P:graf-dvg.prf
 X:0:0:0
 
 N:4:Nomad's tiles
+D:nomad
 I:16:16:8x16.png
 P:graf-nmd.prf
 X:0:0:0
 
 N:5:Shockbolt's tiles
+D:shockbolt
 I:64:64:64x64.png
 P:graf-shb.prf
 X:1:29:31

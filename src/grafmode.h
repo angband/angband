@@ -49,6 +49,7 @@ typedef struct _graphics_mode {
 	byte overdrawMax;
 	u16b cell_width;
 	u16b cell_height;
+	char path[256];
 	char pref[32];
 	char file[32];
 	char menuname[32];
@@ -58,7 +59,7 @@ extern graphics_mode *graphics_modes;
 extern graphics_mode *current_graphics_mode;
 extern int graphics_mode_high_id;
 
-bool init_graphics_modes(const char *filename);
+bool init_graphics_modes();
 void close_graphics_modes(void);
 graphics_mode* get_graphics_mode(byte id);
 

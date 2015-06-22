@@ -70,8 +70,8 @@ cp ../lib/customize/*.prf lib/customize
 
 cp ../lib/fonts/*.fon lib/fonts
 
-cp ../lib/tiles/*.png lib/tiles
-cp ../lib/tiles/graphics.txt lib/tiles
+cp ../lib/tiles/* lib/tiles
+rm lib/tiles/Makefile lib/tiles/*/Makefile
 
 cp ../lib/sounds/sound.cfg lib/sounds
 cp ../lib/sounds/*.mp3 lib/sounds

@@ -1115,6 +1115,50 @@ static void print_error(const char *name, struct parser *p) {
 	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
+
+/**
+ * Process the user pref file with a given path.
+ *
+ * \param name is the name of the pref file.
+ * \param quiet means "don't complain about not finding the file".
+ * \param user should be TRUE if the pref file is user-specific and not a game
+ * default.
+ */
+static bool process_pref_file_named(const char *path, bool quiet, bool user) {
+	ang_file *f = file_open(path, MODE_READ, -1);
+	errr e = 0;
+
+	if (!f) {
+		if (!quiet)
+			msg("Cannot open '%s'.", path);
+
+		e = PARSE_ERROR_INTERNAL; /* signal failure to callers */
+	} else {
+		char line[1024];
+		int line_no = 0;
+
+		struct parser *p = init_parse_prefs(user);
+		while (file_getl(f, line, sizeof line)) {
+			line_no++;
+
+			e = parser_parse(p, line);
+			if (e != PARSE_ERROR_NONE) {
+				print_error(path, p);
+				break;
+			}
+		}
+		finish_parse_prefs(p);
+
+		file_close(f);
+		mem_free(parser_priv(p));
+		parser_destroy(p);
+	}
+
+	/* Result */
+	return e == PARSE_ERROR_NONE;
+}
+
+
 /**
  * Process the user pref file with a given name and search paths.
  *
@@ -1136,12 +1180,6 @@ static bool process_pref_file_layered(const char *name, bool quiet, bool user,
 {
 	char buf[1024];
 
-	ang_file *f;
-	struct parser *p;
-	errr e = 0;
-
-	int line_no = 0;
-
 	assert(base_search_path != NULL);
 
 	/* Build the filename */
@@ -1157,35 +1195,9 @@ static bool process_pref_file_layered(const char *name, bool quiet, bool user,
 			*used_fallback = TRUE;
 	}
 
-	f = file_open(buf, MODE_READ, -1);
-	if (!f) {
-		if (!quiet)
-			msg("Cannot open '%s'.", buf);
-
-		e = PARSE_ERROR_INTERNAL; /* signal failure to callers */
-	} else {
-		char line[1024];
-
-		p = init_parse_prefs(user);
-		while (file_getl(f, line, sizeof line)) {
-			line_no++;
-
-			e = parser_parse(p, line);
-			if (e != PARSE_ERROR_NONE) {
-				print_error(buf, p);
-				break;
-			}
-		}
-		finish_parse_prefs(p);
-
-		file_close(f);
-		mem_free(parser_priv(p));
-		parser_destroy(p);
-	}
-
-	/* Result */
-	return e == PARSE_ERROR_NONE;
+	return process_pref_file_named(buf, quiet, user);
 }
+
 
 /**
  * Look for a pref file at its base location (falling back to another path if
@@ -1300,9 +1312,14 @@ void reset_visuals(bool load_prefs)
 	if (use_graphics) {
 		/* if we have a graphics mode, see if the mode has a pref file name */
 		graphics_mode *mode = get_graphics_mode(use_graphics);
+		char buf[2014];
+
 		assert(mode);
 
-		(void)process_pref_file(mode->pref, FALSE, FALSE);
+		/* Build path to the pref file */
+		path_build(buf, sizeof buf, mode->path, mode->pref);
+
+		process_pref_file_named(buf, FALSE, FALSE);
 	} else {
 		/* Normal symbols */
 		process_pref_file("font.prf", FALSE, FALSE);
