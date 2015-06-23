@@ -1229,6 +1229,12 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 											 ANGBAND_DIR_USER,
 											 &used_fallback);
 
+	/* If not found, do a check of the current graphics directory */
+	if (!root_success && current_graphics_mode)
+		root_success = process_pref_file_layered(name, quiet, user,
+												 current_graphics_mode->path,
+												 NULL, NULL);
+
 	/* Next, we want to force a check for the file in the user/ directory.
 	 * However, since we used the user directory as a fallback in the previous
 	 * check, we only want to do this if the fallback wasn't used. This cuts
