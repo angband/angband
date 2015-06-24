@@ -1,29 +1,29 @@
-# File: graphics.txt
+# File: list.txt
 
 # This file is used to initialize a list of graphics modes
 
-# === Understanding dungeons.txt ===
+# === Understanding list.txt ===
 
-# N: serial number : pref file name
-# D: directory name
-# I: tile width : tile height : tileset file name
-# M: menu name
-# X: alphblending : start row : end row of double high tiles
+# name: serial number : pref file name
+# directory: directory name
+# size: tile width : tile height : tileset file name
+# pref: preference file name
+# extra: alphblending : start row : end row of double high tiles
 
-# 'N' indicates the beginning of an entry. The serial number must
+# 'name' indicates the beginning of an entry. The serial number must
 # increase for each new item. The pref file name is the name used
 # on load to load the right pref file set for this tile set.
 
-# 'D' is for the pathname to the directory storing this mode's files.
+# 'directory' is for the pathname to the directory storing this mode's files.
 
-# 'I' is for image information - tile width and height are the dimensions,
+# 'size' is for image information - tile width and height are the dimensions,
 # in pixels, of an individual tile in the set. filename is the name of the
 # image file to load.
 
-# 'M' is for menu name - the name the graphics mode is listed under when
-# selecting it from a graphical menu.
+# 'pref' is for preference file name - the name of the preference file which
+# allocates tiles to game items.
 
-# 'X' is for extra information - alpha is a flag if the tileset needs to use
+# 'extra' is for extra information - alpha is a flag if the tileset needs to use
 # alpha blending. double high tiles are ones that have twice the tile height
 # as a typical tile. start row is the first row that uses double high tiles.
 # End row is the last row that uses double high tiles. start row and end row
@@ -31,32 +31,32 @@
 # bottom half of the double row.
 
 
-N:1:Original Tiles
-D:old
-I:8:8:8x8.png
-P:graf-xxx.prf
-X:0:0:0
+name:1:Original Tiles
+directory:old
+size:8:8:8x8.png
+pref:graf-xxx.prf
+extra:0:0:0
 
-N:2:Adam Bolt's tiles
-D:adam-bolt
-I:16:16:16x16.png
-P:graf-new.prf
-X:0:0:0
+name:2:Adam Bolt's tiles
+directory:adam-bolt
+size:16:16:16x16.png
+pref:graf-new.prf
+extra:0:0:0
 
-N:3:David Gervais' tiles
-D:gervais
-I:32:32:32x32.png
-P:graf-dvg.prf
-X:0:0:0
+name:3:David Gervais' tiles
+directory:gervais
+size:32:32:32x32.png
+pref:graf-dvg.prf
+extra:0:0:0
 
-N:4:Nomad's tiles
-D:nomad
-I:16:16:8x16.png
-P:graf-nmd.prf
-X:0:0:0
+name:4:Nomad's tiles
+directory:nomad
+size:16:16:8x16.png
+pref:graf-nmd.prf
+extra:0:0:0
 
-N:5:Shockbolt's tiles
-D:shockbolt
-I:64:64:64x64.png
-P:graf-shb.prf
-X:1:29:31
+name:5:Shockbolt's tiles
+directory:shockbolt
+size:64:64:64x64.png
+pref:graf-shb.prf
+extra:1:29:31

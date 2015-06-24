@@ -25,7 +25,7 @@ graphics_mode *graphics_modes;
 graphics_mode *current_graphics_mode = NULL;
 int graphics_mode_high_id;
 
-static enum parser_error parse_graf_n(struct parser *p) {
+static enum parser_error parse_graf_name(struct parser *p) {
 	graphics_mode *list = parser_priv(p);
 	graphics_mode *mode = mem_zalloc(sizeof(graphics_mode));
 	if (!mode) {
@@ -45,7 +45,7 @@ static enum parser_error parse_graf_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_graf_d(struct parser *p) {
+static enum parser_error parse_graf_directory(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
 	const char *dir = parser_getsym(p, "dirname");
 	if (!mode) {
@@ -58,7 +58,7 @@ static enum parser_error parse_graf_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_graf_i(struct parser *p) {
+static enum parser_error parse_graf_size(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
 	if (!mode) {
 		return PARSE_ERROR_INVALID_VALUE;
@@ -69,7 +69,7 @@ static enum parser_error parse_graf_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_graf_p(struct parser *p) {
+static enum parser_error parse_graf_pref(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
 	if (!mode) {
 		return PARSE_ERROR_INVALID_VALUE;
@@ -78,7 +78,7 @@ static enum parser_error parse_graf_p(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_graf_x(struct parser *p) {
+static enum parser_error parse_graf_extra(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
 	if (!mode) {
 		return PARSE_ERROR_INVALID_VALUE;
@@ -93,12 +93,11 @@ static struct parser *init_parse_grafmode(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str menuname", parse_graf_n);
-	parser_reg(p, "D sym dirname", parse_graf_d);
-	parser_reg(p, "I uint wid uint hgt str filename", parse_graf_i);
-	parser_reg(p, "P str prefname", parse_graf_p);
-	parser_reg(p, "X uint alpha uint row uint max", parse_graf_x);
+	parser_reg(p, "name uint index str menuname", parse_graf_name);
+	parser_reg(p, "directory sym dirname", parse_graf_directory);
+	parser_reg(p, "size uint wid uint hgt str filename", parse_graf_size);
+	parser_reg(p, "pref str prefname", parse_graf_pref);
+	parser_reg(p, "extra uint alpha uint row uint max", parse_graf_extra);
 
 	return p;
 }
