@@ -1875,15 +1875,11 @@ static void Term_nuke_cocoa(term *t)
  * Returns the CGImageRef corresponding to an image with the given name in the
  * resource directory, transferring ownership to the caller
  */
-static CGImageRef create_angband_image(NSString *name)
+static CGImageRef create_angband_image(NSString *path)
 {
     CGImageRef decodedImage = NULL, result = NULL;
     
-    /* Get the path to the image */
-    NSBundle *bundle = [NSBundle bundleForClass:[AngbandView class]];
-    NSString *path = [bundle pathForImageResource:name];
-    
-    /* Try using ImageIO to load it */
+    /* Try using ImageIO to load the image */
     if (path)
     {
         NSURL *url = [[NSURL alloc] initFileURLWithPath:path isDirectory:NO];
@@ -1970,9 +1966,8 @@ static errr Term_xtra_cocoa_react(void)
         /* Try creating the image if we want one */
         if (new_mode != NULL)
         {
-            NSString *img_name = [NSString stringWithCString:new_mode->file 
-                                                encoding:NSMacOSRomanStringEncoding];
-            pict_image = create_angband_image(img_name);
+            NSString *img_path = [NSString stringWithFormat:@"%s/%s", new_mode->path, new_mode->file];
+            pict_image = create_angband_image(img_path);
 
             /* If we failed to create the image, set the new desired mode to
 			 * NULL */
