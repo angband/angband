@@ -886,6 +886,10 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 	if (square_monster(c, y, x))
 		return FALSE;
 
+	/* Not where the player already is */
+	if ((player->py == y) && (player->px == x))
+		return FALSE;
+
 	/* Prevent monsters from being placed where they cannot walk, but allow other feature types */
 	if (!square_is_monster_walkable(c, y, x))
 		return FALSE;
