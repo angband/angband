@@ -959,15 +959,13 @@ static int compare_advances(const void *ap, const void *bp)
  */
 + (NSString *)angbandDocumentsPath
 {
-    /* Angband requires the trailing slash, so we'll just add it here; NSString
-	 * won't care about it when we use the base path for other things */
     NSString *documents = [NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES ) lastObject];
 
 #if defined(SAFE_DIRECTORY)
     NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
-    return [[documents stringByAppendingPathComponent: versionedDirectory] stringByAppendingString: @"/"];
+    return [documents stringByAppendingPathComponent: versionedDirectory];
 #else
-    return [[documents stringByAppendingPathComponent: AngbandDirectoryNameBase] stringByAppendingString: @"/"];
+    return [documents stringByAppendingPathComponent: AngbandDirectoryNameBase];
 #endif
 }
 
