@@ -334,7 +334,7 @@ power:5
 name:BLIND
 hit:100
 effect:TIMED_INC:BLIND
-dice:11+1d8
+dice:11+1d4
 power:10
 
 name:CONF
