@@ -18,6 +18,8 @@ helptab = "class='selected'"
 <li><a href="command">Command descriptions</a>
 <li><a href="option">Option descriptions</a>
 <li><a href="customize">Customising the game</a>
+<li><a href="modifying">Modifying the game</a>
 <li><a href="version">Historic information</a>
+<li><a href="copying">Licence information</a>
 <li><a href="readme">README for Angband 3.4</a>
 </ul>
