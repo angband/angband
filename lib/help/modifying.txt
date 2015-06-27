@@ -29,8 +29,8 @@ dungeon level and town dimensions.
 object_base.txt
 ```````````````
 This file contains the names and common properties of the basic object classes
- - scroll, sword, ring, and so on.  All objects have an object base.  Each
-object base is assigned a “tval” - a numeric index.  The tvals are defined in
+- scroll, sword, ring, and so on.  All objects have an object base.  Each
+object base is assigned a 'tval' - a numeric index.  The tvals are defined in
 src/list-tvals.h.  While adding new object bases is possible, it is unlikely to
 do much without deeper changes to the game.
 
@@ -40,7 +40,7 @@ object.txt
 This file contains the names, properties and description of all the object
 types that appear in Angband.  New object kinds can easily be added to this
 file, or existing ones edited.  Each object defined by this file has an object
-base, and is also allocated another numeric index called an “sval”.  A
+base, and is also allocated another numeric index called an 'sval'.  A
 tval-sval pair completely identifies an object - since the tval and sval are
 saved to savefiles, removing or adding objects is likely to render existing
 save files unusable.

@@ -76,8 +76,7 @@ Teleport ('t')
   Teleports you up to 100 spaces away.
 		
 Teleport to target ('b')
-  Teleports you to the last space you targeted (or close to it, if the pace
-  is occupied).
+  Teleports you to the targeted grid (or close to it, if the space is occupied).
 		
 Character Improvement
 =====================
@@ -108,7 +107,7 @@ Summon monster ('n')
   You must give the name exactly as in 'monster.txt'. You may optionally
   give a command-count, in which case this command summons the monster with
   that number nearby instead of prompting you for a name.
-		
+
 Summon random monster ('s')
   Summons a random monster next to you. If given a command-count, summons
   that many monsters instead.
