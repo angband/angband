@@ -969,8 +969,6 @@ static int compare_advances(const void *ap, const void *bp)
 #endif
 }
 
-#define USE_PRIVATE_PATHS 1
-
 /**
  * Give Angband the base paths that should be used for the various directories
  * it needs. It will create any needed directories.
