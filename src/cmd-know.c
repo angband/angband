@@ -478,15 +478,24 @@ void do_cmd_inven(void)
 void do_cmd_equip(void)
 {
 	int item;
+	int last_slot = 0;
 	int ret = 3;
+	object_type *o_ptr;
 
-	/* Check inventory, since get_item() will default to inventory list when equipment is empty. */
-	if (!p_ptr->inventory[0].kind) {
+	/* Find the last occupied equipment slot */
+	for (item = INVEN_WIELD; item < ALL_INVEN_TOTAL; item++)
+	{
+		o_ptr = &p_ptr->inventory[item];
+		if (o_ptr->kind) last_slot = item;
+	}
+
+	/* If no equipment slot is filled, nothing is being worn */
+	if (!last_slot) {
 		msg("You are not wielding or wearing anything.");
 		return;
 	}
 
-	/* Hack -- Start in "inventory" mode */
+	/* Hack -- Start in "equipment" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
 
 	/* Loop this menu until an object context menu says differently */

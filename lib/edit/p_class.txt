@@ -25,7 +25,7 @@
 # increase for each new class.
 
 # 'S' is for the stat modifiers - strength, intelligence, wisdom,
-# dexterity, constitution, charisma.
+# dexterity, constitution.
 
 # 'C' is for the base skills - disarming, magic devices, saving throws,
 # stealth, searching ability, searching frequency, to hit (normal),

@@ -126,6 +126,9 @@ Miscellaneous
 
 Create a trap ('T')		
   Creates a random trap on your square.
+
+Quit without saving ('X')
+  Quits the game without saving (prompts first).
 		
 Undocumented
 ============

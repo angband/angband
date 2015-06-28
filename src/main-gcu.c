@@ -668,7 +668,7 @@ static errr Term_xtra_gcu_react(void) {
 	if (ascii_walls) {
 		int i;
 		ascii_walls = FALSE;
-		for (i = 0; i < 3; i++) {
+		for (i = 0; i < 4; i++) {
 			// magma as %:D
 			f_info[50].x_char[i] = f_info[52].x_char[i] = 0x23;
 			f_info[50].x_attr[i] = f_info[52].x_attr[i] = 0x01;
@@ -802,11 +802,21 @@ static errr Term_text_gcu(int x, int y, int n, int a, const wchar_t *s) {
 	if (can_use_color) {
 		/* the lower 7 bits of the attribute indicate the fg/bg */
 		int attr = a & 127;
+		int color = colortable[attr];
 
 		/* the high bit of the attribute indicates a reversed fg/bg */
-		int flip = a > 127 ? A_REVERSE : A_NORMAL;
+		bool reversed = a > 127;
 
-		wattrset(td->win, colortable[attr] | flip);
+		/* the following check for A_BRIGHT is to avoid #1813 */
+		int mode;
+		if (reversed && (color & A_BRIGHT))
+			mode = (color & ~A_BRIGHT) | A_BLINK | A_REVERSE;
+		else if (reversed)
+			mode = color | A_REVERSE;
+		else
+			mode = color | A_NORMAL;
+
+		wattrset(td->win, mode);
 		mvwaddnwstr(td->win, y, x, s, n);
 		wattrset(td->win, A_NORMAL);
 		return 0;
@@ -867,6 +877,13 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 }
 
 static void hook_quit(const char *str) {
+	int i;
+
+	for (i = 0; i < term_count; i++) {
+		if (angband_term[i]) {
+			term_nuke(angband_term[i]);
+		}
+	}
 	endwin();
 }
 

@@ -341,14 +341,12 @@ static byte object_list_entry_line_attribute(const object_list_entry_t *entry)
  * \param entry is the object list entry that has a name to be formatted.
  * \param line_buffer is the buffer to format into.
  * \param size is the size of line_buffer.
- * \param full_width is the maximum formatted width allowed.
  */
-static void object_list_format_name(const object_list_entry_t *entry, char *line_buffer, size_t size, size_t full_width)
+static void object_list_format_name(const object_list_entry_t *entry, char *line_buffer, size_t size)
 {
 	char name[80];
 	const char *chunk;
 	char *source;
-	size_t name_width = MIN(full_width, size);
 	bool has_singular_prefix;
 	byte old_number;
 
@@ -400,7 +398,7 @@ static void object_list_format_name(const object_list_entry_t *entry, char *line
 
 	/* Get the rest of the name and clip it to fit the max width. */
 	chunk = strtok(source, "\0");
-	my_strcat(line_buffer, chunk, name_width + 1);
+	my_strcat(line_buffer, chunk, size);
 }
 
 /**
@@ -469,13 +467,14 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 		strnfmt(location, sizeof(location), " %d %s %d %s", abs(list->entries[entry_index].dy), direction_y, abs(list->entries[entry_index].dx), direction_x);
 
 		/* Get width available for object name: 2 for char and space; location includes padding; last -1 for some reason? */
-		full_width = max_width - 2 - strlen(location) - 1;
+		full_width = max_width - 2 - utf8_strlen(location) - 1;
 
 		/* Add the object count and clip the object name to fit. */
-		object_list_format_name(&list->entries[entry_index], line_buffer, sizeof(line_buffer), full_width);
+		object_list_format_name(&list->entries[entry_index], line_buffer, sizeof(line_buffer));
+		utf8_clipto(line_buffer, full_width);
 
 		/* Calculate the width of the line for dynamic sizing; use a fixed max width for location and object char. */
-		max_line_length = MAX(max_line_length, strlen(line_buffer) + 12 + 2);
+		max_line_length = MAX(max_line_length, utf8_strlen(line_buffer) + 12 + 2);
 
 		/* textblock_append_pict will safely add the object symbol, regardless of ASCII/graphics mode. */
 		if (tb != NULL && tile_width == 1 && tile_height == 1) {
@@ -497,7 +496,7 @@ static void object_list_format_section(const object_list_t *list, textblock *tb,
 			 * Hack - Because object name strings are UTF8, we have to add additional padding for
 			 * any raw bytes that might be consolidated into one displayed character.
 			 */
-			full_width += strlen(line_buffer) - Term_mbstowcs(NULL, line_buffer, 0);
+			full_width += strlen(line_buffer) - utf8_strlen(line_buffer);
 			line_attr = object_list_entry_line_attribute(&list->entries[entry_index]);
 			textblock_append_c(tb, line_attr, "%-*s%s\n", full_width, line_buffer, location);
 		}

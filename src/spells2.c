@@ -463,7 +463,7 @@ bool set_recall(void)
 	}
 
 	/* Redraw status line */
-	p_ptr->redraw = PR_STATUS;
+	p_ptr->redraw |= PR_STATUS;
 	handle_stuff(p_ptr);
 
 	return TRUE;
@@ -1501,6 +1501,9 @@ bool spell_identify_unknown_available(void)
 		}
 	}
 
+	/* Reset the item tester to avoid bizarre behaviour of UI-only commands */
+	item_tester_hook = NULL;
+
 	return unidentified_inventory || floor_num > 0;
 }
 
@@ -1761,8 +1764,12 @@ void aggravate_monsters(struct monster *who)
 		}
 
 		/* Speed up monsters in line of sight */
-		if (player_has_los_bold(m_ptr->fy, m_ptr->fx))
+		if (player_has_los_bold(m_ptr->fy, m_ptr->fx)) {
 			mon_inc_timed(m_ptr, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
+			if (is_mimicking(m_ptr)) {
+				become_aware(m_ptr);
+			}
+		}
 	}
 
 	/* Messages */

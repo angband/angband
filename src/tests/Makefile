@@ -13,7 +13,7 @@ include $(patsubst %,%/suite.mk,$(SUITES))
 TESTOBJS  := $(patsubst %,%.o,$(TESTPROGS))
 TESTPROGS := $(patsubst %,bin/%,$(TESTPROGS))
 
-TESTOBJS += test-utils.o unit-test.o
+TESTOBJS += unit-test.o
 
 build : $(TESTPROGS)
 
@@ -23,13 +23,13 @@ run : build
 %.o : %.c
 	@$(CC) $(CFLAGS) -c -o $@ $^
 
-bin/% : %.o ../angband.o test-utils.o unit-test.o
+bin/% : %.o ../angband.o unit-test.o
 	@mkdir -p $(shell echo "$$(dirname $@)")
 	@$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LDADD) $(LIBS)
 	@echo "  CC $@"
 
 clean :
-	$(RM) $(TESTPROGS) $(TESTOBJS)
+	$(RM) bin/*/* $(TESTOBJS)
 
 .PHONY : all clean
 .PRECIOUS : %.o

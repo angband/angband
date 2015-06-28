@@ -100,7 +100,7 @@ EFFECT(ENCHANT_ARMOR,  FALSE, 12,	"attempts to magically enhance a piece of armo
 EFFECT(ENCHANT_ARMOR2, FALSE, 15,	"attempts to magically enhance a piece of armour with high chance of success.  Also gives a chance to break a curse")
 EFFECT(RESTORE_ITEM,   FALSE, 10,	"restores an item after disenchantment or damage")
 EFFECT(IDENTIFY,       FALSE,  9,	"reveals to you the extent of an item's magical powers")
-EFFECT(REMOVE_CURSE,   FALSE,  8,	"removes all ordinary curses from all equipped items")
+EFFECT(REMOVE_CURSE,   FALSE, INHIBIT_POWER,	"removes all ordinary curses from all equipped items")
 EFFECT(REMOVE_CURSE2,  FALSE, 20,	"removes all curses from all equipped items")
 EFFECT(LIGHT,          FALSE,  4,	"lights up an area and inflicts 2d8 damage on light-sensitive creatures")
 EFFECT(SUMMON_MON,     FALSE,  0,	"summons monsters at the current dungeon level")
@@ -128,7 +128,7 @@ EFFECT(BLESSING,       FALSE,  6,	"increases your AC and to-hit bonus for 1d12+6
 EFFECT(BLESSING2,      FALSE,  7,	"increases your AC and to-hit bonus for 1d24+12 turns")
 EFFECT(BLESSING3,      FALSE,  8,	"increases your AC and to-hit bonus for 1d48+24 turns")
 EFFECT(RECALL,         FALSE, 15,	"returns you from the dungeon or takes you to the dungeon after a short delay")
-EFFECT(DEEP_DESCENT,   FALSE, 19,	"teleports you five levels down")
+EFFECT(DEEP_DESCENT,   FALSE, 19,	"teleports you up to five dungeon levels lower than the lowest point you have reached so far")
 
 EFFECT(EARTHQUAKES,    FALSE,  5,	"causes an earthquake around you")
 EFFECT(DESTRUCTION2,   FALSE, 12,	"destroys an area around you in the shape of a circle radius 15, and blinds you for 1d10+10 turns")

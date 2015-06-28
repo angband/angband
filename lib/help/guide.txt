@@ -54,24 +54,25 @@ because it doesn't add significant HP until well above 18.
 
 Example character::
 
-  [Angband 3.1.1 dev Character Dump]
-  Name   Anar                                     Self  RB  CB  EB   Best
-  Sex    Female       Age            120   STR:     18  +1  +2  +0  18/30
-  Race   High-Elf     Height         107   INT:     11  +3  +2  +0     16
-  Class  Ranger       Weight         200   WIS:     10  -1  +0  +0      9
-  Title  Runner       Social     Unknown   DEX:     15  +3  +1  +0  18/10
-  HP     15/15        Maximize         Y   CON:     16  +1  +1  +0     18
-  SP     0/0                               CHR:     10  +5  +1  +0     16
- 
+  [Angband 3.5.0 Character Dump]
 
-  Level                1   Armor      [0,+2]     Saving Throw         50%
-  Cur Exp              0   Fight     (+4,+3)     Stealth        Excellent
-  Max Exp              0   Melee     (+4,+3)     Fighting            Good
-  Adv Exp             23   Shoot     (+4,+0)     Shooting       Excellent
-  MaxDepth          Town   Blows      3/turn     Disarming            35%
-  Turns              881   Shots      1/turn     Magic Device      Superb
-  Gold                70   Infra       40 ft     Perception       1 in 20
-  Burden        40.7 lbs   Speed      Normal     Searching            27%
+ Name   Anar         Age            102          Self  RB  CB  EB   Best
+ Sex    Female       Height       5'11"   STR:     17  +1  +0  +0     18
+ Race   High-Elf     Weight    14st 0lb   INT:     10  +3  +2  +0     15
+ Class  Ranger       Turns used:          WIS:     10  -1  -2  +0      7
+ Title  Runner       Game             1   DEX:     18  +3  +1  +0  18/40
+ HP     14/14        Standard         0   CON:     10  +1  -1  +0     10
+ SP     0/0          Resting          0
+
+ Level                  1    Armor        [0,+2]    Saving Throw     49%
+ Cur Exp                0                           Stealth         Good
+ Max Exp                0    Melee        1d4,+2    Disarming        36%
+ Adv Exp               23    To-hit        23,+4    Magic Devices     55
+                             Blows      2.0/turn    Perception   1 in 20
+ Gold                 139                           Searching        27%
+ Burden          18.5 lbs    Shoot to-dam     +0    Infravision    40 ft
+ Speed             Normal    To-hit        33,+4
+ Max Depth           Town    Shots        1/turn
 
 
 A Fighting Chance

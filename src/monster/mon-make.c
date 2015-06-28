@@ -634,6 +634,10 @@ void player_place(struct cave *c, struct player *p, int y, int x)
 
 	/* Mark cave grid */
 	c->m_idx[y][x] = -1;
+
+	/* Clear stair creation */
+	p->create_down_stair = FALSE;
+	p->create_up_stair = FALSE;
 }
 
 /**

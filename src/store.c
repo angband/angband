@@ -676,8 +676,7 @@ static struct store *current_store(void)
  *  store_buying == TRUE  means the shop is buying, player selling
  *               == FALSE means the shop is selling, player buying
  *
- * This function takes into account the player's charisma, but
- * never lets a shop-keeper lose money in a transaction.
+ * This function never lets a shop-keeper lose money in a transaction.
  *
  * The "greed" value should exceed 100 when the player is "buying" the
  * object, and should be less than 100 when the player is "selling" it.
@@ -706,7 +705,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 	if (price <= 0) return (0L);
 
 
-	/* Add in the charisma factor */
+	/* The black market is always a worse deal */
 	if (store->sidx == STORE_B_MARKET)
 		adjust = 150;
 	else
@@ -2489,6 +2488,7 @@ static bool store_will_buy_tester(const object_type *o_ptr)
 			case TV_WAND:
 				if (!store_can_carry(store, o_ptr->kind) && object_is_known(o_ptr))
 					return FALSE;
+				break;
 
 			default:
 				if (object_is_known(o_ptr))

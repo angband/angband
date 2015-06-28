@@ -864,6 +864,11 @@ menu_type *menu_new_action(menu_action *acts, size_t n)
 	return m;
 }
 
+void menu_free(menu_type *m)
+{
+	mem_free(m);
+}
+
 void menu_set_cursor_x_offset(menu_type *m, int offset)
 {
 	/* This value is used in the menu skin's display_list() function. */
@@ -1009,7 +1014,7 @@ int menu_dynamic_select(menu_type *m)
 void menu_dynamic_free(menu_type *m)
 {
 	struct menu_entry *entry = menu_priv(m);
-	if (entry) {
+	while (entry) {
 		struct menu_entry *next = entry->next;
 		string_free(entry->text);
 		mem_free(entry);

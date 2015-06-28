@@ -2877,6 +2877,9 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 				/* Note changes to viewable region */
 				if (player_has_los_bold(ny, nx)) do_view = TRUE;
+
+				/* Fully update the flow since terrain changed */
+				p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 			}
 
 			/* Handle doors and secret doors */
@@ -3167,18 +3170,9 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		if (do_turn) break;
 	}
 
-	if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
-		do_view = TRUE;
-
 	/* Notice changes in view */
-	if (do_view) {
-		/* Update the visuals */
+	if (do_view)
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-		/* Fully update the flow XXX XXX XXX */
-		p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-	}
-
 
 	/* Hack -- get "bold" if out of options */
 	if (!do_turn && !do_move && m_ptr->m_timed[MON_TMD_FEAR])

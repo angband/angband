@@ -375,6 +375,10 @@ static void run_room_parser(void) {
 		quit("Cannot initialize room templates");
 }
 
+static void cleanup_room_parser(void) {
+	cleanup_parser(&room_parser);
+}
+
 /**
  * Shuffle an array using Knuth's shuffle.
  */
@@ -542,14 +546,12 @@ static void new_player_spot(struct cave *c, struct player *p)
 	cave_find_in_range(c, &y, 0, c->height, &x, 0, c->width, cave_isstart);
 
 	/* Create stairs the player came down if allowed and necessary */
-	if (OPT(birth_no_stairs)) {
-	} else if (p->create_down_stair) {
+	if (OPT(birth_no_stairs))
+		;
+	else if (p->create_down_stair)
 		cave_set_feat(c, y, x, FEAT_MORE);
-		p->create_down_stair = FALSE;
-	} else if (p->create_up_stair) {
+	else if (p->create_up_stair)
 		cave_set_feat(c, y, x, FEAT_LESS);
-		p->create_up_stair = FALSE;
-	}
 
 	player_place(c, p, y, x);
 }
@@ -3990,5 +3992,5 @@ void cave_generate(struct cave *c, struct player *p) {
 struct init_module generate_module = {
 	.name = "generate",
 	.init = run_room_parser,
-	.cleanup = NULL
+	.cleanup = cleanup_room_parser,
 };

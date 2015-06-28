@@ -41,6 +41,7 @@
 #include "quest.h"
 #include "randname.h"
 #include "squelch.h"
+#include "ui-options.h"
 
 /*
  * Structure (not array) of size limits
@@ -2987,6 +2988,7 @@ void cleanup_angband(void)
 	quest_free();
 
 	FREE(p_ptr->inventory);
+	FREE(p_ptr->history);
 
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);
@@ -3003,6 +3005,9 @@ void cleanup_angband(void)
 
 	/* Free the history */
 	history_clear();
+
+	/* Cleanup any options menus */
+	cleanup_options();
 
 	/* Free the "quarks" */
 	quarks_free();
