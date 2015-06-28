@@ -1,4 +1,4 @@
-Angband 3.5.1
+Angband 4.0.0
 =============
 
 Angband is a graphical dungeon adventure game that uses textual characters
