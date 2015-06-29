@@ -1,0 +1,3 @@
+url.rewrite-once  = (
+"^/release/$" => "/release/4.0.0.html",
+)
