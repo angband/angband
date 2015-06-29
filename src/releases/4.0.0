@@ -1,0 +1,111 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]
+ - [OS X][3] (10.5+)
+
+[1]:http://rephial.org/downloads/4.0/angband-4.0.0.tar.gz "Source tarball, 20M"
+[2]:http://rephial.org/downloads/4.0/angband-4.0.0-win.zip "Windows port, 19M zip file"
+[3]:http://rephial.org/downloads/4.0/Angband-4.0.0-osx.dmg "Max OS X port, 19M .dmg file"
+
+Background
+==========
+Soon before the release of 3.5.0, a community discussion had led to Nick McConnell becoming maintainer, with the intent of co-ordinating a major rewrite of the codebase and a mantra of "no gameplay changes until after the restructure".  After a lengthy period of beta-testing, Angband 4.0.0 was released on Monday 29 June 2015.
+
+Summary of Changes
+==================
+Core-UI split
+-------------
+* split the game into core and UI, and stop anything in the core from depending on anything in the UI
+
+Modifiability
+-------------
+* put many of the game constants in a text file rather than being compiled in, so they are user alterable
+* text data files cleaned up and documented
+* help file for modifying added - lib/help/modifying.txt
+
+Dungeon generation
+------------------
+* allow saving of dungeon levels and the town
+* allow generation of dungeon levels piece by piece
+* generalise level generation algorithms
+* allow more control over monster generation for thematic purposes
+* allow regions where restrictions apply (eg no ESP or no mapping)
+* there is a 'squares' array containing the terrain, locality info, traps, objects, flow info and monster on each grid
+
+Player knowledge
+----------------
+* duplicate the dungeon level "cave" struct, so that there is a reality version and a player version
+
+Objects
+-------
+* replace pvals (aside from fuel, food etc) by an array of values
+* separate resistances, immunities etc from flags to allow for more values of resistance
+* separate brands and slays from flags to allow more variablilty
+* remove hard-coding of object tvals and svals, so objects can be safely added and moved around in object.txt
+* handle special artifacts straight from artifact.txt, so an unrecognised object kind (like Phial) automatically has a new object kind defined for it
+* put artifact activations in a text file
+* put objects in linked lists tied to the grid, store, monster or player that holds them, rather than indexed in a level-wide list
+
+Inventory, quiver, equipment
+----------------------------
+* make ordering of the inventory and quiver a UI construct only
+* use a Poschengband-style equipment template to specify equipment slots (so there is a standard player body, but more could be added)
+
+Monster memory
+--------------
+* make this a separate file, with full memory obtainable by copying monster.txt
+
+Terrain/traps
+-------------
+* multiple gameplay-identical terrain types now handled by temporary flags during generation
+* a full terrain flag system to allow easier addition/removal of terrain types
+* make traps separate entities, not terrain
+* make locked/jammed doors just closed doors with a trap
+* remove code reliance on the numerical value of terrain types
+
+Squelch->Ignoring
+-----------------
+* remove all references to 'squelch', replace with 'ignore'
+* add ignore by ego type
+* emphasise the philosophy that the items are still there, just ignored
+
+ID
+--
+* have a separate field for every learnable property of an item
+* remove the IDENT_* flags
+
+Effects
+-------
+* have all effects performed by a single function, and definable from text files
+
+Monster attacks
+---------------
+* put elemental spell effects back in the projection code rather than the spellcasting code
+* put blow effects into seprate handler functions
+
+Player spells
+-------------
+* generalise to make it easier to introduce new realms, classes, etc
+* have all spell info defined by a text data file
+
+Projection
+----------
+* have separate functions to handle effects on terrain, objects, player, monsters
+* clarify different types of projection
+* allow for cone-shaped breaths
+* allow for a wider variety of effects (eg player/monsters pushed by force)
+
+Stats, power, etc
+-----------------
+* refine and generalise stats where possible
+* attempt to clarify all the (frankly) fudge factors so they can more easily be seen and adjusted
+
+General code stuff
+------------------
+* rename files to be more sensible, or create new ones where needed
+* update debug commands to reflect the current game
+* move data into list-*.h files or edit files where appropriate
+* remove archaic stuff
+* document!
