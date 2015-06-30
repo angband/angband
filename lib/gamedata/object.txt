@@ -2706,9 +2706,9 @@ pile:70:1d3
 power:8
 effect:RANDOM
 dice:2
-effect:BREATH:FIRE:2
+effect:BREATH:FIRE:20
 dice:80
-effect:BREATH:COLD:2
+effect:BREATH:COLD:20
 dice:80
 
 
@@ -2988,7 +2988,7 @@ combat:0:1d1:0:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:13
-effect:BREATH:FIRE:3
+effect:BREATH:FIRE:30
 dice:200
 
 name:393:Dragon's Frost
@@ -3000,7 +3000,7 @@ combat:0:1d1:0:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:BREATH:COLD:3
+effect:BREATH:COLD:30
 dice:160
 
 name:394:Dragon's Breath
@@ -3014,15 +3014,15 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:3
+effect:BREATH:ACID:30
 dice:200
-effect:BREATH:ELEC:3
+effect:BREATH:ELEC:30
 dice:160
-effect:BREATH:FIRE:3
+effect:BREATH:FIRE:30
 dice:200
-effect:BREATH:COLD:3
+effect:BREATH:COLD:30
 dice:160
-effect:BREATH:POIS:3
+effect:BREATH:POIS:30
 dice:120
 
 
@@ -3975,7 +3975,7 @@ combat:16:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ACID[1]
 power:11
-effect:BREATH:ACID:2
+effect:BREATH:ACID:20
 dice:120
 time:50
 
@@ -3988,7 +3988,7 @@ combat:12:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ELEC[1]
 power:18
-effect:BREATH:ELEC:2
+effect:BREATH:ELEC:20
 dice:150
 time:50
 
@@ -4001,7 +4001,7 @@ combat:14:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_COLD[1]
 power:10
-effect:BREATH:COLD:2
+effect:BREATH:COLD:20
 dice:100
 time:50
 
@@ -4014,7 +4014,7 @@ combat:24:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_FIRE[1]
 power:20
-effect:BREATH:FIRE:2
+effect:BREATH:FIRE:20
 dice:200
 time:50
 
@@ -4027,7 +4027,7 @@ combat:20:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_POIS[1]
 power:19
-effect:BREATH:POIS:2
+effect:BREATH:POIS:20
 dice:150
 time:50
 
@@ -4042,15 +4042,15 @@ values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 power:20
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:2
+effect:BREATH:ACID:20
 dice:250
-effect:BREATH:ELEC:2
+effect:BREATH:ELEC:20
 dice:250
-effect:BREATH:FIRE:2
+effect:BREATH:FIRE:20
 dice:250
-effect:BREATH:COLD:2
+effect:BREATH:COLD:20
 dice:250
-effect:BREATH:POIS:2
+effect:BREATH:POIS:20
 dice:250
 time:50
 
@@ -4065,9 +4065,9 @@ values:RES_LIGHT[1] | RES_DARK[1]
 power:21
 effect:RANDOM
 dice:2
-effect:BREATH:LIGHT:2
+effect:BREATH:LIGHT:20
 dice:200
-effect:BREATH:DARK:2
+effect:BREATH:DARK:20
 dice:200
 time:50
 
@@ -4082,9 +4082,9 @@ values:RES_SOUND[1] | RES_SHARD[1]
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:230
-effect:BREATH:SHARD:2
+effect:BREATH:SHARD:20
 dice:230
 time:50
 
@@ -4097,7 +4097,7 @@ combat:28:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_SOUND[1]
 power:19
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:150
 time:50
 
@@ -4112,9 +4112,9 @@ values:RES_CHAOS[1] | RES_DISEN[1]
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:CHAOS:2
+effect:BREATH:CHAOS:20
 dice:220
-effect:BREATH:DISEN:2
+effect:BREATH:DISEN:20
 dice:220
 time:50
 
@@ -4129,13 +4129,13 @@ values:RES_SOUND[1] | RES_SHARD[1] | RES_CHAOS[1] | RES_DISEN[1]
 power:24
 effect:RANDOM
 dice:4
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:250
-effect:BREATH:SHARD:2
+effect:BREATH:SHARD:20
 dice:250
-effect:BREATH:CHAOS:2
+effect:BREATH:CHAOS:20
 dice:250
-effect:BREATH:DISEN:2
+effect:BREATH:DISEN:20
 dice:250
 time:50
 
@@ -4151,7 +4151,7 @@ values:RES_ACID[1] | RES_FIRE[1] | RES_COLD[1] | RES_ELEC[1] | RES_POIS[1]
 values:RES_DISEN[1] | RES_SOUND[1] | RES_SHARD[1]
 values:RES_LIGHT[1] | RES_DARK[1] | RES_CHAOS[1]
 power:25
-effect:BREATH:MISSILE:2
+effect:BREATH:MISSILE:20
 dice:300
 time:50
 

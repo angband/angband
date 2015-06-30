@@ -581,7 +581,7 @@ const char *gf_idx_to_name(int type)
  * and "update_view()" and "update_monsters()" need to be called.
  */
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
-			 int degrees_of_arc, byte diameter_of_source)
+			 int degrees_of_arc, int diameter_of_source)
 {
 	int i, j, k, dist_from_centre;
 
