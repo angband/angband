@@ -3366,11 +3366,9 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 
 /**
- * Breathe an element
- * Stop if we hit a monster or the player, act as a ball (for now)
- * Allow target mode to pass over monsters
+ * Breathe an element, in a cone from the breather
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 radius
+ * context->p1 is element, context->p2 degrees of arc
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
@@ -3378,20 +3376,27 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, TRUE);
 	int type = context->p1;
-	int rad = context->p2;
+	int rad = 0;
 	int source;
 
 	int ty = py + ddy[context->dir];
 	int tx = px + ddx[context->dir];
 
-	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	/* Diameter of source of energy is normally, but not always, 20. */
+	int diameter_of_source = 20;
+	int degrees_of_arc = context->p2;
+
+	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Radius of zero means no fixed limit. */
+	if (rad == 0)
+		rad = z_info->max_range;
 
 	/* Player or monster? */
 	if (cave->mon_current > 0) {
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
 		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 		/* Breath parameters for monsters are monster-dependent */
 		dam = breath_dam(type, mon->hp); 
@@ -3402,14 +3407,24 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	}
 
 	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
-
+	if ((context->dir == 5) && target_okay() && source == -1)
 		target_get(&tx, &ty);
+
+	/* Calculate the effective diameter of the energy source, if necessary. */
+	if (degrees_of_arc < 60) {
+		if (degrees_of_arc == 0)
+			diameter_of_source = rad * 10;
+		else
+			diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
 	}
 
+	/* Max */
+	if (diameter_of_source > 250)
+		diameter_of_source = 250;
+
 	/* Aim at the target, explode */
-	if (project(source, rad, ty, tx, dam, type, flg, 0, 0, context->obj))
+	if (project(source, rad, ty, tx, dam, type, flg, degrees_of_arc,
+				diameter_of_source, context->obj))
 		context->ident = TRUE;
 
 	return TRUE;

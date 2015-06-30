@@ -75,7 +75,7 @@ message-miss:{name} fires a seeker arrow, but misses.
 name:BR_ACID
 msgt:BR_ACID
 hit:100
-effect:BREATH:ACID:2
+effect:BREATH:ACID:30
 power:20
 lore:acid
 message-vis:{name} breathes acid.
@@ -84,7 +84,7 @@ message-invis:You hear an acrid roar.
 name:BR_ELEC
 msgt:BR_ELEC
 hit:100
-effect:BREATH:ELEC:2
+effect:BREATH:ELEC:30
 power:10
 lore:lightning
 message-vis:{name} breathes lightning.
@@ -93,7 +93,7 @@ message-invis:You hear a crackling roar.
 name:BR_FIRE
 msgt:BR_FIRE
 hit:100
-effect:BREATH:FIRE:2
+effect:BREATH:FIRE:30
 power:10
 message-vis:{name} breathes fire.
 message-invis:You hear a scorching roar.
@@ -102,7 +102,7 @@ lore:fire
 name:BR_COLD
 msgt:BR_FROST
 hit:100
-effect:BREATH:COLD:2
+effect:BREATH:COLD:30
 power:10
 lore:frost
 message-vis:{name} breathes frost.
@@ -111,7 +111,7 @@ message-invis:You hear a whooshing roar.
 name:BR_POIS
 msgt:BR_GAS
 hit:100
-effect:BREATH:POIS:2
+effect:BREATH:POIS:30
 power:125d100M1
 lore:poison
 message-vis:{name} breathes poison.
@@ -120,7 +120,7 @@ message-invis:You hear a sickening roar.
 name:BR_NETH
 msgt:BR_NETHER
 hit:100
-effect:BREATH:NETHER:2
+effect:BREATH:NETHER:30
 power:d2000M2
 lore:nether
 message-vis:{name} breathes nether.
@@ -129,7 +129,7 @@ message-invis:You hear an eerie roar.
 name:BR_LIGHT
 msgt:BR_LIGHT
 hit:100
-effect:BREATH:LIGHT:2
+effect:BREATH:LIGHT:30
 power:10
 lore:light
 message-vis:{name} breathes light.
@@ -138,7 +138,7 @@ message-invis:You hear a humming roar.
 name:BR_DARK
 msgt:BR_DARK
 hit:100
-effect:BREATH:DARK:2
+effect:BREATH:DARK:30
 power:10
 lore:darkness
 message-vis:{name} breathes darkness.
@@ -147,7 +147,7 @@ message-invis:You hear a hushing roar.
 name:BR_SOUN
 msgt:BR_SOUND
 hit:100
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:30
 power:20
 lore:sound
 message-vis:{name} breathes sound.
@@ -156,7 +156,7 @@ message-invis:You hear an echoing roar.
 name:BR_CHAO
 msgt:BR_CHAOS
 hit:100
-effect:BREATH:CHAOS:2
+effect:BREATH:CHAOS:30
 power:d2000M2
 lore:chaos
 message-vis:{name} breathes chaos.
@@ -165,7 +165,7 @@ message-invis:You hear a cacophonous roar.
 name:BR_DISE
 msgt:BR_DISEN
 hit:100
-effect:BREATH:DISEN:2
+effect:BREATH:DISEN:30
 power:50
 lore:disenchantment
 message-vis:{name} breathes disenchantment.
@@ -174,7 +174,7 @@ message-invis:You hear a dissipating roar.
 name:BR_NEXU
 msgt:BR_NEXUS
 hit:100
-effect:BREATH:NEXUS:2
+effect:BREATH:NEXUS:30
 power:20
 lore:nexus
 message-vis:{name} breathes nexus.
@@ -183,7 +183,7 @@ message-invis:You hear a tearing roar.
 name:BR_TIME
 msgt:BR_TIME
 hit:100
-effect:BREATH:TIME:2
+effect:BREATH:TIME:30
 power:d2000M2
 lore:time
 message-vis:{name} breathes time.
@@ -192,7 +192,7 @@ message-invis:You remember hearing a roar.
 name:BR_INER
 msgt:BR_INERTIA
 hit:100
-effect:BREATH:INERTIA:2
+effect:BREATH:INERTIA:30
 power:30
 lore:inertia
 message-vis:{name} breathes inertia.
@@ -201,7 +201,7 @@ message-invis:You hear a thrumming roar.
 name:BR_GRAV
 msgt:BR_GRAVITY
 hit:100
-effect:BREATH:GRAVITY:2
+effect:BREATH:GRAVITY:30
 power:30
 lore:gravity
 message-vis:{name} breathes gravity.
@@ -210,7 +210,7 @@ message-invis:You hear a heavy roar.
 name:BR_SHAR
 msgt:BR_SHARDS
 hit:100
-effect:BREATH:SHARD:2
+effect:BREATH:SHARD:30
 power:5+125d1
 lore:shards
 message-vis:{name} breathes shards.
@@ -219,7 +219,7 @@ message-invis:You hear a shattering roar.
 name:BR_PLAS
 msgt:BR_PLASMA
 hit:100
-effect:BREATH:PLASMA:2
+effect:BREATH:PLASMA:30
 power:30
 lore:plasma
 message-vis:{name} breathes plasma.
@@ -228,7 +228,7 @@ message-invis:You hear a hissing roar.
 name:BR_WALL
 msgt:BR_FORCE
 hit:100
-effect:BREATH:FORCE:2
+effect:BREATH:FORCE:30
 power:30
 lore:force
 message-vis:{name} breathes force.
@@ -236,7 +236,7 @@ message-invis:You hear a staccato roar.
 
 name:BR_MANA
 hit:100
-effect:BREATH:MANA:2
+effect:BREATH:MANA:30
 power:100
 lore:mana
 message-vis:{name} breathes raw magic.
