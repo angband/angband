@@ -1,16 +1,14 @@
-Angband 4.2.0
-=============
+This is an unfinished rewrite of FAangband based on Angband version 4.
 
-Angband is a graphical dungeon adventure game that uses textual characters
-to represent the walls and floors of a dungeon and the inhabitants therein, 
-in the vein of games like NetHack and Rogue.  If you need help in-game,
-press '?'.
+For the existing, functional FAangband, see 
+https://github.com/NickMcConnell/FAangband
 
-For more information, somewhere to upload your characters and screenshots,
-and discuss the game, try http://angband.oook.cz/.
+FAangband README
+================
 
-If you're compiling the game yourself, read http://trac.rephial.org/wiki/Compiling.
+First Age Angband is a variant of Angband (http://rephial.org/).
 
-Enjoy!
+For descriptions, see the wiki here, or the main FAangband web page
+(http://angband.oook.cz/faangband/).
 
--- The Angband Dev Team
+For other Angband-related things, see the ladder(http://angband.oook.cz/).
