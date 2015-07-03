@@ -365,8 +365,14 @@ static void project_player_handler_INERTIA(project_player_handler_context_t *con
 
 static void project_player_handler_FORCE(project_player_handler_context_t *context)
 {
+	char grids_away[5];
+
 	/* Stun */
 	(void)player_inc_timed(player, TMD_STUN, randint1(20), TRUE, TRUE);
+
+	/* Thrust player away. */
+	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
+	effect_simple(EF_THRUST_AWAY, grids_away, context->y, context->x, 0, NULL);
 }
 
 static void project_player_handler_TIME(project_player_handler_context_t *context)

@@ -514,8 +514,17 @@ static void project_monster_handler_FORCE(project_monster_handler_context_t *con
 {
 	int player_amount = (randint1(15) + context->r + player->lev / 5) / (context->r + 1);
 	int monster_amount = (randint1(15) + context->r) / (context->r + 1);
+	char grids_away[5];
 	project_monster_timed_damage(context, MON_TMD_STUN, player_amount, monster_amount);
 	project_monster_breath(context, RSF_BR_WALL, 3);
+
+	/* Prevent thursting force breathers. */
+	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_WALL))
+		return;
+
+	/* Thrust monster away. */
+	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
+	effect_simple(EF_THRUST_AWAY, grids_away, context->y, context->x, 0, NULL);
 }
 
 /* Time -- breathers resist */
