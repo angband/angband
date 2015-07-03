@@ -3348,7 +3348,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 /**
  * Breathe an element, in a cone from the breather
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 degrees of arc
+ * context->p1 is element, context->p2 degrees of arc, context->p3 radius
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
@@ -3356,13 +3356,14 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, TRUE);
 	int type = context->p1;
-	int rad = 0;
+	int rad = context->p3;
 	int source;
 
 	int ty = py + 99 * ddy[context->dir];
 	int tx = px + 99 * ddx[context->dir];
 
-	/* Diameter of source of energy is normally, but not always, 20. */
+	/* Diameter of source starts at 20, so full strength only adjacent to
+	 * the breather. */
 	int diameter_of_source = 20;
 	int degrees_of_arc = context->p2;
 
@@ -3378,9 +3379,13 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		source = cave->mon_current;
 		flg |= PROJECT_PLAY;
 
-		/* Breath parameters for monsters are monster-dependent */
-		dam = breath_dam(type, mon->hp); 
-		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
+		dam = breath_dam(type, mon->hp);
+
+		/* Powerful monsters breathe wider arcs */
+		if (rf_has(mon->race->flags, RF_POWERFUL)) {
+			diameter_of_source *= 2;
+			degrees_of_arc *= 2;
+		}
 	} else {
 		msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
 		source = -1;
@@ -3390,11 +3395,15 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if ((context->dir == 5) && target_okay() && source == -1)
 		target_get(&tx, &ty);
 
-	/* Calculate the effective diameter of the energy source, if necessary. */
+	/* Diameter of the energy source. */
 	if (degrees_of_arc < 60) {
 		if (degrees_of_arc == 0)
+			/* This handles finite length beams */
 			diameter_of_source = rad * 10;
 		else
+			/* Narrower cone means energy drops off less quickly. 30 degree
+			 * breaths are still full strength 3 grids from the breather,
+			 * and 20 degree breaths are still full strength at 5 grids. */
 			diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
 	}
 
@@ -3402,7 +3411,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if (diameter_of_source > 250)
 		diameter_of_source = 250;
 
-	/* Aim at the target, explode */
+	/* Breathe at the target */
 	(void) project(source, rad, ty, tx, dam, type, flg, degrees_of_arc,
 				   diameter_of_source);
 	context->ident = TRUE;
