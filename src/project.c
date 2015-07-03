@@ -528,14 +528,12 @@ const char *gf_idx_to_name(int type)
  *   degrees_of_arc of zero, arcs act like beams of defined length.
  *
  * diameter_of_source controls how quickly explosions lose strength with dis-
- *   tance from the target.  Most ball spells have a source diameter of 10, 
- *   which means that they do 1/2 damage at range 1, 1/3 damage at range 2, 
- *   and so on.   Caster-centered balls usually have a source diameter of 20, 
- *   which allows them to do full damage to all adjacent grids.   Arcs have 
- *   source diameters ranging up to 20, which allows the spell designer to 
+ *   tance from the target.  Most ball spells have a source diameter of 10,
+ *   which means that they do 1/2 damage at range 1, 1/3 damage at range 2,
+ *   and so on.   Caster-centered balls usually have a source diameter of 20,
+ *   which allows them to do full damage to all adjacent grids.   Arcs have
+ *   source diameters ranging up from 20, which allows the spell designer to
  *   fine-tune how quickly a breath loses strength outwards from the breather.
- *   It is expected, but not required, that wide arcs lose strength more 
- *   quickly over distance.
  *
  *
  * Implementation notes:
@@ -898,7 +896,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		}
 
 		/* If a particular diameter for the source of the explosion's energy is 
-		 * given, calculate an adjusted damage. */
+		 * given, it is full strength to that diameter and then reduces. */
 		else {
 			dam_temp = (diameter_of_source * dam) / ((i + 1) * 10);
 			if (dam_temp > (u32b) dam)
