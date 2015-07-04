@@ -1595,9 +1595,11 @@ int calc_blows(struct player *p, const object_type *o_ptr, player_state *state, 
 	int div;
 	int blow_energy;
 
+	int weight = (o_ptr == NULL) ? 0 : o_ptr->weight;
+	int min_weight = p->class->min_weight;
+
 	/* Enforce a minimum "weight" (tenth pounds) */
-	div = ((o_ptr->weight < p->class->min_weight) ?
-		   p->class->min_weight : o_ptr->weight);
+	div = (weight < min_weight) ? min_weight : weight;
 
 	/* Get the strength vs weight */
 	str_index = adj_str_blow[state->stat_ind[STAT_STR]] *
@@ -2185,6 +2187,8 @@ void calc_bonuses(struct player *p, player_state *state, bool known_only)
 			/* Icky weapon */
 			state->icky_wield = TRUE;
 		}
+	} else {
+		state->num_blows = calc_blows(p, NULL, state, extra_blows);
 	}
 
 	/* Call individual functions for other state fields */
