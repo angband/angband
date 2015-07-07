@@ -679,10 +679,11 @@ bool inven_carry(struct player *p, struct object *obj, bool absorb,
 /**
  * Take off a non-cursed equipment item
  *
- * Note that only one item at a time can be wielded per slot.
- *
  * Note that taking off an item when "full" may cause that item
  * to fall to the ground.
+ *
+ * Note also that this function does not try to combine the taken off item
+ * with other inventory items - that must be done by the calling function.
  */
 void inven_takeoff(struct object *obj)
 {
@@ -714,7 +715,6 @@ void inven_takeoff(struct object *obj)
 
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 	player->upkeep->notice |= (PN_IGNORE);
-	combine_pack();
 	return;
 }
 
@@ -757,7 +757,7 @@ void inven_drop(struct object *obj, int amt)
 	/* Not too many */
 	if (amt > obj->number) amt = obj->number;
 
-	/* Take off equipment */
+	/* Take off equipment, don't combine */
 	if (object_is_equipped(player->body, obj))
 		inven_takeoff(obj);
 
