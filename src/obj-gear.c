@@ -345,6 +345,9 @@ bool gear_excise_object(struct object *obj)
 
 	pile_excise(&player->gear, obj);
 
+	/* Change the weight */
+	player->upkeep->total_weight -= (obj->number * obj->weight);
+
 	/* Make sure it isn't still equipped */
 	for (i = 0; i < player->body.count; i++) {
 		if (slot_object(player, i) == obj)
@@ -406,6 +409,9 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 	/* Split off a usable object if necessary */
 	if (obj->number > num) {
 		usable = object_split(obj, num);
+
+		/* Change the weight */
+		player->upkeep->total_weight -= (num * obj->weight);
 	} else {
 		/* We're using the entire stack */
 		usable = obj;
@@ -419,9 +425,6 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 		/* Inventory has changed, so disable repeat command */ 
 		cmd_disable_repeat();
 	}
-
-	/* Change the weight */
-	player->upkeep->total_weight -= (num * obj->weight);
 
 	/* Housekeeping */
 	player->upkeep->update |= (PU_BONUS);
