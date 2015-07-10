@@ -209,6 +209,11 @@ static void project_player_handler_DARK(project_player_handler_context_t *contex
 
 static void project_player_handler_SOUND(project_player_handler_context_t *context)
 {
+	if (player_resists(player, ELEM_SOUND)) {
+		msg("You resist the effect!");
+		return;
+	}
+
 	/* Stun */
 	if (!player_of_has(player, OF_PROT_STUN)) {
 		int duration = 5 + randint1(context->dam / 3);
@@ -219,10 +224,14 @@ static void project_player_handler_SOUND(project_player_handler_context_t *conte
 
 static void project_player_handler_SHARD(project_player_handler_context_t *context)
 {
+	if (player_resists(player, ELEM_SHARD)) {
+		msg("You resist the effect!");
+		return;
+	}
+
 	/* Cuts */
-	if (!player_resists(player, ELEM_SHARD))
-		(void)player_inc_timed(player, TMD_CUT, randint1(context->dam),
-							   TRUE, FALSE);
+	(void)player_inc_timed(player, TMD_CUT, randint1(context->dam), TRUE,
+						   FALSE);
 }
 
 static void project_player_handler_NEXUS(project_player_handler_context_t *context)
@@ -257,6 +266,8 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 
 static void project_player_handler_NETHER(project_player_handler_context_t *context)
 {
+	int drain = 200 + (player->exp / 100) * z_info->life_drain_percent;
+
 	if (player_resists(player, ELEM_NETHER) ||
 		player_of_has(player, OF_HOLD_LIFE)) {
 		msg("You resist the effect!");
@@ -265,7 +276,7 @@ static void project_player_handler_NETHER(project_player_handler_context_t *cont
 
 	/* Life draining */
 	msg("You feel your life force draining away!");
-	player_exp_lose(player, 200 + (player->exp / 100) * z_info->life_drain_percent, FALSE);
+	player_exp_lose(player, drain, FALSE);
 }
 
 static void project_player_handler_CHAOS(project_player_handler_context_t *context)
@@ -282,9 +293,10 @@ static void project_player_handler_CHAOS(project_player_handler_context_t *conte
 	(void)player_inc_timed(player, TMD_CONFUSED, 10 + randint0(20), TRUE, TRUE);
 
 	/* Life draining */
-	if (player_of_has(player, OF_HOLD_LIFE)) {
+	if (!player_of_has(player, OF_HOLD_LIFE)) {
+		int drain = 5000 + (player->exp / 100) * z_info->life_drain_percent;
 		msg("You feel your life force draining away!");
-		player_exp_lose(player, 5000 + (player->exp / 100) * z_info->life_drain_percent, FALSE);
+		player_exp_lose(player, drain, FALSE);
 	}
 }
 
@@ -358,18 +370,16 @@ static void project_player_handler_FORCE(project_player_handler_context_t *conte
 
 static void project_player_handler_TIME(project_player_handler_context_t *context)
 {
-	/* Life draining */
 	if (one_in_(2)) {
+		/* Life draining */
+		int drain = 100 + (player->exp / 100) * z_info->life_drain_percent;
 		msg("You feel your life force draining away!");
-		player_exp_lose(player, 100 + (player->exp / 100) * z_info->life_drain_percent, FALSE);
-	}
-
-	/* Drain some stats */
-	else if (!one_in_(5))
+		player_exp_lose(player, drain, FALSE);
+	} else if (!one_in_(5)) {
+		/* Drain some stats */
 		project_player_drain_stats(2);
-
-	/* Drain all stats */
-	else {
+	} else {
+		/* Drain all stats */
 		int i;
 		msg("You're not as powerful as you used to be...");
 
