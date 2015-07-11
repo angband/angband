@@ -1569,7 +1569,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						elements[effect->params[0]].name, effect->params[1],
 						dice_string);
 				if (boost)
-					my_strcat(desc, format(" boosted by %d per cent", boost),
+					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
 				break;
 			}
@@ -1585,7 +1585,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
 						gf_desc(effect->params[0]), dice_string);
 				if (boost)
-					my_strcat(desc, format(" boosted by %d per cent", boost),
+					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
 				break;
 			}
