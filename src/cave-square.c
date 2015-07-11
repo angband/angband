@@ -621,7 +621,7 @@ bool square_isknowntrap(struct chunk *c, int y, int x)
  */
 bool square_changeable(struct chunk *c, int y, int x)
 {
-	object_type *obj;
+	struct object *obj;
 
 	/* Forbid perma-grids */
 	if (square_isperm(c, y, x) || square_isshop(c, y, x) ||

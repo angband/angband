@@ -109,14 +109,14 @@ static void create_indices()
 
 	for (i = 0; i < z_info->k_max; i++) {
 
-		object_type object_type_body;
-		object_type *o_ptr = &object_type_body;
-		object_kind *kind = &k_info[i];
-		o_ptr->tval = kind->tval;
+		struct object object_type_body;
+		struct object *obj = &object_type_body;
+		struct object_kind *kind = &k_info[i];
+		obj->tval = kind->tval;
 
 		if (! kind->name) continue;
 
-		if (tval_has_variable_power(o_ptr))
+		if (tval_has_variable_power(obj))
 			wearables_index[i] = ++wearable_count;
 		else
 			consumables_index[i] = ++consumable_count;
@@ -249,14 +249,14 @@ static void kill_all_monsters(int level)
 	int i;
 
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
-		monster_type *m_ptr = cave_monster(cave, i);
+		struct monster *mon = cave_monster(cave, i);
 
-		level_data[level].monsters[m_ptr->race->ridx]++;
+		level_data[level].monsters[mon->race->ridx]++;
 
-		monster_death(m_ptr, TRUE);
+		monster_death(mon, TRUE);
 
-		if (rf_has(m_ptr->race->flags, RF_UNIQUE))
-			m_ptr->race->max_num = 0;
+		if (rf_has(mon->race->flags, RF_UNIQUE))
+			mon->race->max_num = 0;
 	}
 }
 
@@ -270,10 +270,10 @@ static void unkill_uniques(void)
 	}
 
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *r_ptr = &r_info[i];
+		struct monster_race *race = &r_info[i];
 
-		if (rf_has(r_ptr->flags, RF_UNIQUE))
-			r_ptr->max_num = 1;
+		if (rf_has(race->flags, RF_UNIQUE))
+			race->max_num = 1;
 	}
 }
 
@@ -433,29 +433,29 @@ static int stats_dump_artifacts(void)
 	if (err) return err;
 
 	for (idx = 0; idx < z_info->a_max; idx++) {
-		artifact_type *a_ptr = &a_info[idx];
+		struct artifact *art = &a_info[idx];
 
-		if (!a_ptr->name) continue;
+		if (!art->name) continue;
 
 		err = sqlite3_bind_int(info_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 2, a_ptr->name, 
-			strlen(a_ptr->name), SQLITE_STATIC);
+		err = sqlite3_bind_text(info_stmt, 2, art->name, 
+			strlen(art->name), SQLITE_STATIC);
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 13, 2, 
-			a_ptr->tval, a_ptr->sval, a_ptr->weight,
-			a_ptr->cost, a_ptr->alloc_prob, a_ptr->alloc_min,
-			a_ptr->alloc_max, a_ptr->ac, a_ptr->dd,
-			a_ptr->ds, a_ptr->to_h, a_ptr->to_d, a_ptr->to_a);
+			art->tval, art->sval, art->weight,
+			art->cost, art->alloc_prob, art->alloc_min,
+			art->alloc_max, art->ac, art->dd,
+			art->ds, art->to_h, art->to_d, art->to_a);
 		STATS_DB_STEP_RESET(info_stmt)
 
-		err = stats_dump_oflags(flags_stmt, idx, a_ptr->flags);
+		err = stats_dump_oflags(flags_stmt, idx, art->flags);
 		if (err) return err;
 
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 		{
 			err = stats_db_bind_ints(mods_stmt, 3, 0, idx, i, 
-									 a_ptr->modifiers[i]);
+									 art->modifiers[i]);
 				if (err) return err;
 				STATS_DB_STEP_RESET(mods_stmt)
 		}
@@ -486,58 +486,43 @@ static int stats_dump_egos(void)
 	err = stats_db_stmt_prep(&mods_stmt, sql_buf);
 	if (err) return err;
 
-	//strnfmt(sql_buf, 256, "INSERT INTO ego_type_map VALUES (?,?,?,?);");
-	//err = stats_db_stmt_prep(&type_stmt, sql_buf);
-	//if (err) return err;
-
 	for (idx = 0; idx < z_info->e_max; idx++) {
-		ego_item_type *e_ptr = &e_info[idx];
+		struct ego_item *ego = &e_info[idx];
 
-		if (!e_ptr->name) continue;
+		if (!ego->name) continue;
 
 		err = sqlite3_bind_int(info_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 2, e_ptr->name, 
-			strlen(e_ptr->name), SQLITE_STATIC);
+		err = sqlite3_bind_text(info_stmt, 2, ego->name, 
+			strlen(ego->name), SQLITE_STATIC);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 3, e_ptr->to_h); 
+		err = stats_db_bind_rv(info_stmt, 3, ego->to_h); 
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 4, e_ptr->to_d); 
+		err = stats_db_bind_rv(info_stmt, 4, ego->to_d); 
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 5, e_ptr->to_a); 
+		err = stats_db_bind_rv(info_stmt, 5, ego->to_a); 
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 8, 5, 
-			e_ptr->cost, e_ptr->level, e_ptr->rarity,
-			e_ptr->rating, e_ptr->min_to_h, 
-			e_ptr->min_to_d, e_ptr->min_to_a);
+			ego->cost, ego->level, ego->rarity,
+			ego->rating, ego->min_to_h, 
+			ego->min_to_d, ego->min_to_a);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
 
-		err = stats_dump_oflags(flags_stmt, idx, e_ptr->flags);
+		err = stats_dump_oflags(flags_stmt, idx, ego->flags);
 		if (err) return err;
 
 		for (i = 0; i < OBJ_MOD_MAX; i++) {
 			err = stats_db_bind_ints(mods_stmt, 3, 0, idx, i, 
-									 e_ptr->min_modifiers[i]);
+									 ego->min_modifiers[i]);
 				if (err) return err;
 				STATS_DB_STEP_RESET(mods_stmt)
 		}
-
-		//for (i = 0; i < EGO_TVALS_MAX; i++)
-		//{
-		//	err = stats_db_bind_ints(type_stmt, 4, 0,
-		//		idx, e_ptr->tval[i], e_ptr->min_sval[i], 
-		//		e_ptr->max_sval[i]);
-		//	if (err) return err;
-		//	STATS_DB_STEP_RESET(type_stmt)
-		//}
-
 	}
 
 	STATS_DB_FINALIZE(info_stmt)
 	STATS_DB_FINALIZE(flags_stmt)
 	STATS_DB_FINALIZE(mods_stmt)
-		//STATS_DB_FINALIZE(type_stmt)
 
 	return SQLITE_OK;
 }
@@ -561,40 +546,40 @@ static int stats_dump_objects(void)
 	if (err) return err;
 
 	for (idx = 0; idx < z_info->k_max; idx++) {
-		object_kind *k_ptr = &k_info[idx];
+		struct object_kind *kind = &k_info[idx];
 
-		if (!k_ptr->name) continue;
+		if (!kind->name) continue;
 
 		err = sqlite3_bind_int(info_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 2, k_ptr->name, 
-			strlen(k_ptr->name), SQLITE_STATIC);
+		err = sqlite3_bind_text(info_stmt, 2, kind->name, 
+			strlen(kind->name), SQLITE_STATIC);
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 13, 2,
-			k_ptr->tval, k_ptr->sval, k_ptr->level, k_ptr->weight,
-			k_ptr->cost, k_ptr->ac, k_ptr->dd, k_ptr->ds,
-			k_ptr->alloc_prob, k_ptr->alloc_min,
-			k_ptr->alloc_max, k_ptr->gen_mult_prob, k_ptr->stack_size);
+			kind->tval, kind->sval, kind->level, kind->weight,
+			kind->cost, kind->ac, kind->dd, kind->ds,
+			kind->alloc_prob, kind->alloc_min,
+			kind->alloc_max, kind->gen_mult_prob, kind->stack_size);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 17, k_ptr->to_h);
+		err = stats_db_bind_rv(info_stmt, 17, kind->to_h);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 18, k_ptr->to_d);
+		err = stats_db_bind_rv(info_stmt, 18, kind->to_d);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 19, k_ptr->to_a);
+		err = stats_db_bind_rv(info_stmt, 19, kind->to_a);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 20, k_ptr->charge);
+		err = stats_db_bind_rv(info_stmt, 20, kind->charge);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 21, k_ptr->time);
+		err = stats_db_bind_rv(info_stmt, 21, kind->time);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
 
-		err = stats_dump_oflags(flags_stmt, idx, k_ptr->flags);
+		err = stats_dump_oflags(flags_stmt, idx, kind->flags);
 		if (err) return err;
 
 		for (i = 0; i < OBJ_MOD_MAX; i++) {
 			err = stats_db_bind_ints(mods_stmt, 2, 0, idx, i);
 				if (err) return err;
-				err = stats_db_bind_rv(mods_stmt, 3, k_ptr->modifiers[i]);
+				err = stats_db_bind_rv(mods_stmt, 3, kind->modifiers[i]);
 				if (err) return err;
 				STATS_DB_STEP_RESET(mods_stmt)
 		}
@@ -615,20 +600,20 @@ static int stats_dump_objects(void)
 
 	idx = 0;
 	for (idx = 0; idx < TV_MAX; idx++) {
-		object_base *kb_ptr = &kb_info[idx];
+		struct object_base *base = &kb_info[idx];
 
-		if (!kb_ptr->name) continue;
+		if (!base->name) continue;
 
 		err = sqlite3_bind_int(info_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 2, kb_ptr->name,
-			strlen(kb_ptr->name), SQLITE_STATIC);
+		err = sqlite3_bind_text(info_stmt, 2, base->name,
+			strlen(base->name), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
 
-		for (flag = of_next(kb_ptr->flags, FLAG_START);
+		for (flag = of_next(base->flags, FLAG_START);
 			flag != FLAG_END;
-			flag = of_next(kb_ptr->flags, flag + 1)) {
+			flag = of_next(base->flags, flag + 1)) {
 			err = stats_db_bind_ints(flags_stmt, 2, 0,
 				idx, flag);
 			if (err) return err;
@@ -647,7 +632,7 @@ static int stats_dump_monsters(void)
 	int err, idx, flag;
 	char sql_buf[256];
 	sqlite3_stmt *info_stmt, *flags_stmt, *spell_flags_stmt;
-	monster_base *rb_ptr;
+	struct monster_base *base;
 
 	strnfmt(sql_buf, 256, "INSERT INTO monster_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?);");
 	err = stats_db_stmt_prep(&info_stmt, sql_buf);
@@ -662,36 +647,36 @@ static int stats_dump_monsters(void)
 	if (err) return err;
 
 	for (idx = 0; idx < z_info->r_max; idx++) {
-		monster_race *r_ptr = &r_info[idx];
+		struct monster_race *race = &r_info[idx];
 
 		/* Skip empty entries */
-		if (!r_ptr->name) continue;
+		if (!race->name) continue;
 
 		err = stats_db_bind_ints(info_stmt, 10, 0, idx,
-			r_ptr->ac, r_ptr->sleep, r_ptr->speed, r_ptr->mexp,
-			r_ptr->avg_hp, r_ptr->freq_innate, r_ptr->freq_spell,
-			r_ptr->level, r_ptr->rarity);
+			race->ac, race->sleep, race->speed, race->mexp,
+			race->avg_hp, race->freq_innate, race->freq_spell,
+			race->level, race->rarity);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 11, r_ptr->name,
-			strlen(r_ptr->name), SQLITE_STATIC);
+		err = sqlite3_bind_text(info_stmt, 11, race->name,
+			strlen(race->name), SQLITE_STATIC);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 12, r_ptr->base->name,
-			strlen(r_ptr->base->name), SQLITE_STATIC);
+		err = sqlite3_bind_text(info_stmt, 12, race->base->name,
+			strlen(race->base->name), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
 
-		for (flag = rf_next(r_ptr->flags, FLAG_START);
+		for (flag = rf_next(race->flags, FLAG_START);
 			flag != FLAG_END;
-			flag = rf_next(r_ptr->flags, flag + 1))
+			flag = rf_next(race->flags, flag + 1))
 		{
 			err = stats_db_bind_ints(flags_stmt, 2, 0, idx, flag);
 			if (err) return err;
 			STATS_DB_STEP_RESET(flags_stmt)
 		}
 
-		for (flag = rsf_next(r_ptr->spell_flags, FLAG_START);
+		for (flag = rsf_next(race->spell_flags, FLAG_START);
 			flag != FLAG_END;
-			flag = rsf_next(r_ptr->spell_flags, flag + 1))
+			flag = rsf_next(race->spell_flags, flag + 1))
 		{
 			err = stats_db_bind_ints(spell_flags_stmt, 2, 0, 
 				idx, flag);
@@ -713,23 +698,23 @@ static int stats_dump_monsters(void)
 	err = stats_db_stmt_prep(&spell_flags_stmt, sql_buf);
 	if (err) return err;
 
-	for (rb_ptr = rb_info, idx = 0; rb_ptr; rb_ptr = rb_ptr->next, idx++) {
-		for (flag = rf_next(rb_ptr->flags, FLAG_START);
+	for (base = rb_info, idx = 0; base; base = base->next, idx++) {
+		for (flag = rf_next(base->flags, FLAG_START);
 			flag != FLAG_END;
-			flag = rf_next(rb_ptr->flags, flag + 1)) {
-			err = sqlite3_bind_text(flags_stmt, 1, rb_ptr->name,
-				strlen(rb_ptr->name), SQLITE_STATIC);
+			flag = rf_next(base->flags, flag + 1)) {
+			err = sqlite3_bind_text(flags_stmt, 1, base->name,
+				strlen(base->name), SQLITE_STATIC);
 			if (err) return err;
 			err = sqlite3_bind_int(flags_stmt, 2, flag);
 			if (err) return err;
 			STATS_DB_STEP_RESET(flags_stmt)
 		}
 
-		for (flag = rsf_next(rb_ptr->spell_flags, FLAG_START);
+		for (flag = rsf_next(base->spell_flags, FLAG_START);
 			flag != FLAG_END;
-			flag = rsf_next(rb_ptr->spell_flags, flag + 1)) {
+			flag = rsf_next(base->spell_flags, flag + 1)) {
 			err = sqlite3_bind_text(spell_flags_stmt, 1, 
-				rb_ptr->name, strlen(rb_ptr->name), 
+				base->name, strlen(base->name), 
 				SQLITE_STATIC);
 			if (err) return err;
 			err = sqlite3_bind_int(spell_flags_stmt, 2, flag);
@@ -1490,7 +1475,7 @@ static void stats_cleanup_angband_run(void)
 static errr run_stats(void)
 {
 	u32b run;
-	artifact_type *a_info_save;
+	struct artifact *a_info_save;
 	unsigned int i;
 	int err;
 	bool status; 
@@ -1501,11 +1486,11 @@ static errr run_stats(void)
 	create_indices();
 	alloc_memory();
 	if (randarts) {
-		a_info_save = mem_zalloc(z_info->a_max * sizeof(artifact_type));
+		a_info_save = mem_zalloc(z_info->a_max * sizeof(struct artifact));
 		for (i = 0; i < z_info->a_max; i++) {
 			if (!a_info[i].name) continue;
 
-			memcpy(&a_info_save[i], &a_info[i], sizeof(artifact_type));
+			memcpy(&a_info_save[i], &a_info[i], sizeof(struct artifact));
 		}
 	}
 
@@ -1524,7 +1509,7 @@ static errr run_stats(void)
 
 		if (randarts)
 			for (i = 0; i < z_info->a_max; i++)
-				memcpy(&a_info[i], &a_info_save[i], sizeof(artifact_type));
+				memcpy(&a_info[i], &a_info_save[i], sizeof(struct artifact));
 
 		initialize_character();
 		unkill_uniques();

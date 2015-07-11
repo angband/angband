@@ -491,7 +491,7 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	bool obvious = TRUE;
 
 	/* Source monster */
-	monster_type *m_ptr;
+	struct monster *mon;
 
 	/* Monster name (for damage) */
 	char killer[80];
@@ -514,16 +514,16 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	if (cave->squares[y][x].mon == who) return (FALSE);
 
 	/* Source monster */
-	m_ptr = cave_monster(cave, who);
+	mon = cave_monster(cave, who);
 
 	/* Player blind-ness */
 	blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Extract the "see-able-ness" */
-	seen = (!blind && mflag_has(m_ptr->mflag, MFLAG_VISIBLE));
+	seen = (!blind && mflag_has(mon->mflag, MFLAG_VISIBLE));
 
 	/* Get the monster's real name */
-	monster_desc(killer, sizeof(killer), m_ptr, MDESC_DIED_FROM);
+	monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
 
 	/* Let player know what is going on */
 	if (!seen)

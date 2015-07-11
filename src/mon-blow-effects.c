@@ -85,7 +85,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 
 	if (pure_element) {
 		/* Learn about the player */
-		update_smart_learn(context->m_ptr, context->p, 0, 0, type);
+		update_smart_learn(context->mon, context->p, 0, 0, type);
 	}
 }
 
@@ -123,7 +123,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 	}
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, of_flag, 0, -1);
+	update_smart_learn(context->mon, context->p, of_flag, 0, -1);
 }
 
 /**
@@ -157,7 +157,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
-	update_smart_learn(context->m_ptr, context->p, OF_HOLD_LIFE, 0, -1);
+	update_smart_learn(context->mon, context->p, OF_HOLD_LIFE, 0, -1);
 
 	if (player_of_has(context->p, OF_HOLD_LIFE) && (randint0(100) < chance)) {
 		msg("You keep hold of your life force!");
@@ -218,7 +218,7 @@ static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 		context->obvious = TRUE;
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, 0, 0, ELEM_POIS);
+	update_smart_learn(context->mon, context->p, 0, 0, ELEM_POIS);
 }
 
 /**
@@ -234,7 +234,7 @@ static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *cont
 		effect_simple(EF_DISENCHANT, "0", 0, 0, 0, &context->obvious);
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, 0, 0, ELEM_DISEN);
+	update_smart_learn(context->mon, context->p, 0, 0, ELEM_DISEN);
 }
 
 /**
@@ -243,7 +243,7 @@ static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *cont
 static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *context)
 {
 	struct object *obj;
-	struct monster *monster = context->m_ptr;
+	struct monster *monster = context->mon;
 	struct player *player = context->p;
 	int tries;
 	int unpower = 0, newcharge;
@@ -348,7 +348,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
             int amt;
 
             /* Create a new temporary object */
-            object_type *obj = object_new();
+            struct object *obj = object_new();
             object_prep(obj, money_kind("gold", gold), 0, MINIMISE);
 
             /* Amount of gold to put in this object */
@@ -362,7 +362,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
 			obj->origin_depth = player->depth;
 
             /* Give the gold to the monster */
-            monster_carry(cave, context->m_ptr, obj);
+            monster_carry(cave, context->mon, obj);
         }
 
         /* Redraw gold */
@@ -432,7 +432,7 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 
         /* Steal and carry */
 		stolen = gear_object_for_use(obj, 1, FALSE, &none_left);
-        (void)monster_carry(cave, context->m_ptr, stolen);
+        (void)monster_carry(cave, context->mon, stolen);
 
         /* Obvious */
         context->obvious = TRUE;
@@ -727,7 +727,7 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 		context->obvious = TRUE;
 
 	/* Learn about the player */
-	update_smart_learn(context->m_ptr, context->p, 0, 0, ELEM_CHAOS);
+	update_smart_learn(context->mon, context->p, 0, 0, ELEM_CHAOS);
 }
 
 /**

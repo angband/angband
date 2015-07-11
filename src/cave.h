@@ -85,8 +85,7 @@ enum
  * At the moment this isn't very much, but eventually a primitive flag-based
  * information system will be used here.
  */
-typedef struct feature
-{
+struct feature {
 	char *name;
 	char *desc;
 	int fidx;
@@ -103,9 +102,9 @@ typedef struct feature
 
 	byte d_attr;   /**< Default feature attribute */
 	wchar_t d_char;/**< Default feature character */
-} feature_type;
+};
 
-extern feature_type *f_info;
+extern struct feature *f_info;
 
 enum grid_light_level
 {
@@ -116,8 +115,7 @@ enum grid_light_level
 	LIGHTING_MAX
 };
 
-typedef struct
-{
+struct grid_data {
 	u32b m_idx;				/* Monster index */
 	u32b f_idx;				/* Feature index */
 	struct object_kind *first_kind;	/* The kind of the first item on the grid */
@@ -131,7 +129,7 @@ typedef struct
 	bool is_player;
 	bool hallucinate;
 	bool trapborder;
-} grid_data;
+};
 
 struct square {
 	byte feat;
@@ -221,7 +219,7 @@ void update_view(struct chunk *c, struct player *p);
 bool no_light(void);
 
 /* cave-map.c */
-void map_info(unsigned x, unsigned y, grid_data *g);
+void map_info(unsigned x, unsigned y, struct grid_data *g);
 void square_note_spot(struct chunk *c, int y, int x);
 void square_light_spot(struct chunk *c, int y, int x);
 void light_room(int y1, int x1, bool light);
@@ -247,7 +245,7 @@ bool feat_is_monster_walkable(int feat);
 bool feat_is_shop(int feat);
 bool feat_is_passable(int feat);
 bool feat_is_projectable(int feat);
-bool feat_isbright(feature_type *f_ptr);
+bool feat_is_bright(int feat);
 
 /* SQUARE FEATURE PREDICATES */
 bool square_isfloor(struct chunk *c, int y, int x);

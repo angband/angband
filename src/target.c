@@ -82,7 +82,7 @@ int motion_dir(int y1, int x1, int y2, int x2)
  */
 void look_mon_desc(char *buf, size_t max, int m_idx)
 {
-	monster_type *mon = cave_monster(cave, m_idx);
+	struct monster *mon = cave_monster(cave, m_idx);
 
 	bool living = TRUE;
 
@@ -319,7 +319,7 @@ s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
  */
 bool target_accept(int y, int x)
 {
-	object_type *obj;
+	struct object *obj;
 
 	/* Player grids are always interesting */
 	if (cave->squares[y][x].mon < 0) return (TRUE);
@@ -329,7 +329,7 @@ bool target_accept(int y, int x)
 
 	/* Visible monsters */
 	if (cave->squares[y][x].mon > 0) {
-		monster_type *mon = square_monster(cave, y, x);
+		struct monster *mon = square_monster(cave, y, x);
 
 		/* Visible monsters */
 		if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
@@ -465,7 +465,7 @@ struct point_set *target_get_monsters(int mode)
 bool target_set_closest(int mode)
 {
 	int y, x;
-	monster_type *mon;
+	struct monster *mon;
 	char m_name[80];
 	struct point_set *targets;
 

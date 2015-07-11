@@ -40,10 +40,10 @@ enum chest_query {
 	CHEST_TRAPPED
 };
 
-byte chest_trap_type(const object_type *o_ptr);
-bool is_trapped_chest(const object_type *o_ptr);
-bool is_locked_chest(const object_type *o_ptr);
-void unlock_chest(object_type *o_ptr);
+byte chest_trap_type(const struct object *obj);
+bool is_trapped_chest(const struct object *obj);
+bool is_locked_chest(const struct object *obj);
+void unlock_chest(struct object *obj);
 struct object *chest_check(int y, int x, enum chest_query check_type);
 int count_chests(int *y, int *x, enum chest_query check_type);
 bool do_cmd_open_chest(int y, int x, struct object *obj);

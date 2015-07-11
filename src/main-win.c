@@ -2441,7 +2441,7 @@ static void windows_map_aux(void)
 	/* Draw the map */
 	for (x = min_x; x < max_x; x++) {
 		for (y = min_y; y < max_y; y++) {
-			grid_data g;
+			struct grid_data g;
 
 			map_info(y, x, &g);
 			grid_data_as_text(&g, &a, &c, &ta, &tc);

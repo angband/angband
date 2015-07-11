@@ -149,8 +149,7 @@ extern struct activation *activations;
 /**
  * Information about object types, like rods, wands, etc.
  */
-typedef struct object_base
-{
+struct object_base {
 	char *name;
 
 	int tval;
@@ -164,9 +163,9 @@ typedef struct object_base
 
 	int break_perc;
 	int num_svals;
-} object_base;
+};
 
-extern object_base *kb_info;
+extern struct object_base *kb_info;
 
 /**
  * Information about object kinds, including player knowledge.
@@ -174,12 +173,11 @@ extern object_base *kb_info;
  * TODO: split out the user-changeable bits into a separate struct so this
  * one can be read-only.
  */
-typedef struct object_kind
-{
+struct object_kind {
 	char *name;
 	char *text;
 
-	object_base *base;
+	struct object_base *base;
 
 	struct object_kind *next;
 	u32b kidx;
@@ -237,9 +235,9 @@ typedef struct object_kind
 
 	byte ignore;  	/**< Ignore settings */
 	bool everseen; 	/**< Kind has been seen (to despoilify ignore menus) */
-} object_kind;
+};
 
-extern object_kind *k_info;
+extern struct object_kind *k_info;
 
 /**
  * Information about artifacts.
@@ -249,8 +247,7 @@ extern object_kind *k_info;
  * TODO: Fix this max_num/cur_num crap and just have a big boolean array of
  * which artifacts have been created and haven't, so this can become read-only.
  */
-typedef struct artifact
-{
+struct artifact {
 	char *name;
 	char *text;
 
@@ -295,12 +292,12 @@ typedef struct artifact
 	char *alt_msg;
 
 	random_value time;	/**< Recharge time (if appropriate) */
-} artifact_type;
+};
 
 /**
  * The artifact arrays
  */
-extern artifact_type *a_info;
+extern struct artifact *a_info;
 
 
 /**
@@ -314,8 +311,7 @@ struct ego_poss_item {
 /**
  * Information about ego-items.
  */
-typedef struct ego_item
-{
+struct ego_item {
 	struct ego_item *next;
 
 	char *name;
@@ -357,12 +353,12 @@ typedef struct ego_item
 	random_value time;		/**< Recharge time (rods/activation) */
 
 	bool everseen;			/* Do not spoil ignore menus */
-} ego_item_type;
+};
 
 /*
  * The ego-item arrays
  */
-extern ego_item_type *e_info;
+extern struct ego_item *e_info;
 
 
 /*
@@ -391,8 +387,7 @@ extern ego_item_type *e_info;
  * around between player and monster inventories and the floor on a fairly
  * regular basis, and care must be taken when handling such objects.
  */
-typedef struct object
-{
+struct object {
 	struct object_kind *kind;
 	struct ego_item *ego;
 	struct artifact *artifact;
@@ -445,7 +440,7 @@ typedef struct object
 	u16b origin_xtra;   /* Extra information about origin */
 
 	quark_t note; 		/* Inscription index */
-} object_type;
+};
 
 struct flavor
 {

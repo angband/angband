@@ -67,9 +67,9 @@ struct monster_race *lookup_monster(const char *name)
 /**
  * Return the monster base matching the given name.
  */
-monster_base *lookup_monster_base(const char *name)
+struct monster_base *lookup_monster_base(const char *name)
 {
-	monster_base *base;
+	struct monster_base *base;
 
 	/* Look for it */
 	for (base = rb_info; base; base = base->next) {
@@ -85,7 +85,7 @@ monster_base *lookup_monster_base(const char *name)
  *
  * Accepts a variable-length list of name strings. The list must end with NULL.
  */
-bool match_monster_bases(const monster_base *base, ...)
+bool match_monster_bases(const struct monster_base *base, ...)
 {
 	bool ok = FALSE;
 	va_list vp;
@@ -179,7 +179,7 @@ bool monster_is_unusual(struct monster_race *race)
  */
 void update_mon(struct monster *mon, struct chunk *c, bool full)
 {
-	monster_lore *lore;
+	struct monster_lore *lore;
 
 	int d;
 
@@ -313,7 +313,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 	/* If a mimic looks like an ignored item, it's not seen */
 	if (is_mimicking(mon)) {
-		object_type *obj = mon->mimicked_obj;
+		struct object *obj = mon->mimicked_obj;
 		if (ignore_item_ok(obj))
 			easy = flag = FALSE;
 	}
@@ -571,7 +571,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
  */
 void become_aware(struct monster *mon)
 {
-	monster_lore *lore = get_lore(mon->race);
+	struct monster_lore *lore = get_lore(mon->race);
 
 	if (mflag_has(mon->mflag, MFLAG_UNAWARE)) {
 		mflag_off(mon->mflag, MFLAG_UNAWARE);

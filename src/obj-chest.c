@@ -108,9 +108,9 @@ static const byte chest_traps[64] =
 /**
  * The type of trap a chest has
  */
-byte chest_trap_type(const struct object *o_ptr)
+byte chest_trap_type(const struct object *obj)
 {
-	s16b trap_value = o_ptr->pval;
+	s16b trap_value = obj->pval;
 
 	if (trap_value >= 0)
 		return chest_traps[trap_value];
@@ -121,38 +121,38 @@ byte chest_trap_type(const struct object *o_ptr)
 /**
  * Determine if a chest is trapped
  */
-bool is_trapped_chest(const struct object *o_ptr)
+bool is_trapped_chest(const struct object *obj)
 {
-	if (!tval_is_chest(o_ptr))
+	if (!tval_is_chest(obj))
 		return FALSE;
 
 	/* Disarmed or opened chests are not trapped */
-	if (o_ptr->pval <= 0)
+	if (obj->pval <= 0)
 		return FALSE;
 
 	/* Some chests simply don't have traps */
-	return (chest_traps[o_ptr->pval] != 0);
+	return (chest_traps[obj->pval] != 0);
 }
 
 
 /**
  * Determine if a chest is locked or trapped
  */
-bool is_locked_chest(const struct object *o_ptr)
+bool is_locked_chest(const struct object *obj)
 {
-	if (!tval_is_chest(o_ptr))
+	if (!tval_is_chest(obj))
 		return FALSE;
 
 	/* Disarmed or opened chests are not locked */
-	return (o_ptr->pval > 0);
+	return (obj->pval > 0);
 }
 
 /**
  * Unlock a chest
  */
-void unlock_chest(struct object *o_ptr)
+void unlock_chest(struct object *obj)
 {
-	o_ptr->pval = (0 - o_ptr->pval);
+	obj->pval = (0 - obj->pval);
 }
 
 /**

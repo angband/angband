@@ -417,7 +417,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	/* Number (max 45) of arcs. */
 	int arc_num;
 
-	feature_type *f_ptr = &f_info[feat];
+	struct feature *f = &f_info[feat];
 
 	/* Make certain the room does not cross the dungeon edge. */
 	if ((!square_in_bounds(c, y1, x1)) || (!square_in_bounds(c, y2, x2)))
@@ -467,7 +467,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 		 * If floor, extend a "corridor" between room centers, to ensure 
 		 * that the rooms are connected together.
 		 */
-		if (tf_has(f_ptr->flags, TF_FLOOR)) {
+		if (tf_has(f->flags, TF_FLOOR)) {
 			for (y = (y1 + tmp_ay) / 2; y <= (tmp_by + y2) / 2; y++) {
 				for (x = (x1 + tmp_ax) / 2; x <= (tmp_bx + x2) / 2; x++) {
 					square_set_feat(c, y, x, feat);
@@ -582,7 +582,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 		/* Keep variability under control. */
 		if ((!make_cloverleaf) && (i != 0) && (i != arc_num - 1)) {
 			/* Water edges must be quite smooth. */
-			if (tf_has(f_ptr->flags, TF_SMOOTH)) {
+			if (tf_has(f->flags, TF_SMOOTH)) {
 				if (arc[i][1] > arc[i - 1][1] + 2)
 					arc[i][1] = arc[i - 1][1] + 2;
 
@@ -650,11 +650,11 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 					if (max_dist >= dist) {
 						/* If new feature is not passable, or floor, always 
 						 * place it. */
-						if ((tf_has(f_ptr->flags, TF_FLOOR))
-							|| (!tf_has(f_ptr->flags, TF_PASSABLE))) {
+						if ((tf_has(f->flags, TF_FLOOR))
+							|| (!tf_has(f->flags, TF_PASSABLE))) {
 							square_set_feat(c, y, x, feat);
 
-							if (tf_has(f_ptr->flags, TF_FLOOR))
+							if (tf_has(f->flags, TF_FLOOR))
 								sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
 							else
 								sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
@@ -669,7 +669,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 						 * place it only over floor. */
 						else {
 							/* Replace old feature entirely in some cases. */
-							if (tf_has(f_ptr->flags, TF_SMOOTH)) {
+							if (tf_has(f->flags, TF_SMOOTH)) {
 								if (tf_has(f_info[c->squares[y][x].feat].flags, 
 										   TF_FLOOR))
 									square_set_feat(c, y, x, feat);
@@ -699,7 +699,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	 * If we placed floors or dungeon granite, all dungeon granite next
 	 * to floors needs to become outer wall.
 	 */
-	if ((tf_has(f_ptr->flags, TF_FLOOR)) || (feat == FEAT_GRANITE)) {
+	if ((tf_has(f->flags, TF_FLOOR)) || (feat == FEAT_GRANITE)) {
 		for (y = y1 + 1; y < y2; y++) {
 			for (x = x1 + 1; x < x2; x++) {
 				/* Floor grids only */
@@ -1382,7 +1382,7 @@ bool build_large(struct chunk *c, int y0, int x0)
  * \return the race is acceptable
  * Requires dun->pit_type to be set.
  */
-bool mon_pit_hook(monster_race *race)
+bool mon_pit_hook(struct monster_race *race)
 {
 	bool match_base = TRUE;
 	bool match_color = TRUE;
@@ -1453,7 +1453,7 @@ void set_pit_type(int depth, int type)
 	
 	for (i = 0; i < z_info->pit_max; i++) {
 		int offset, dist;
-		pit_profile *pit = &pit_info[i];
+		struct pit_profile *pit = &pit_info[i];
 		
 		/* Skip empty pits or pits of the wrong room type */
 		if (type && (!pit->name || pit->room_type != type)) continue;
@@ -1501,7 +1501,7 @@ bool build_nest(struct chunk *c, int y0, int x0)
 	int y, x, y1, x1, y2, x2;
 	int i;
 	int alloc_obj;
-	monster_race *what[64];
+	struct monster_race *what[64];
 	bool empty = FALSE;
 	int light = FALSE;
 	int size_vary = randint0(4);
@@ -1575,7 +1575,7 @@ bool build_nest(struct chunk *c, int y0, int x0)
 	for (y = y1; y <= y2; y++) {
 		for (x = x1; x <= x2; x++) {
 			/* Figure out what monster is being used, and place that monster */
-			monster_race *race = what[randint0(64)];
+			struct monster_race *race = what[randint0(64)];
 			place_new_monster(c, y, x, race, FALSE, FALSE, ORIGIN_DROP_PIT);
 
 			/* Occasionally place an item, making it good 1/3 of the time */
@@ -1625,7 +1625,7 @@ bool build_nest(struct chunk *c, int y0, int x0)
  */
 bool build_pit(struct chunk *c, int y0, int x0)
 {
-	monster_race *what[16];
+	struct monster_race *what[16];
 	int i, j, y, x, y1, x1, y2, x2;
 	bool empty = FALSE;
 	int light = FALSE;
@@ -1699,7 +1699,7 @@ bool build_pit(struct chunk *c, int y0, int x0)
 
 			/* Bubble */
 			if (p1 > p2) {
-				monster_race *tmp = what[i1];
+				struct monster_race *tmp = what[i1];
 				what[i1] = what[i2];
 				what[i2] = tmp;
 			}
@@ -1938,20 +1938,19 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
  * \param typ the room template type (currently unused)
  * \return success
  */
-static bool build_room_template_type(struct chunk*c, int y0, int x0, int typ)
+static bool build_room_template_type(struct chunk *c, int y0, int x0, int typ)
 {
-	room_template_type *trap = random_room_template(typ);
+	struct room_template *room = random_room_template(typ);
 	
-	if (trap == NULL) {
-		/*quit_fmt("got NULL from random_room_template(%d)", typ);*/
+	if (room == NULL)
 		return FALSE;
-	}
 
 	/* Build the room */
-	if (!build_room_template(c, y0, x0, trap->hgt, trap->wid, trap->dor, trap->text, trap->tval))
+	if (!build_room_template(c, y0, x0, room->hgt, room->wid, room->dor,
+							 room->text, room->tval))
 		return FALSE;
 
-	ROOM_LOG("Room template (%s)", trap->name);
+	ROOM_LOG("Room template (%s)", room->name);
 
 	return TRUE;
 }
@@ -2230,20 +2229,20 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
  */
 static bool build_vault_type(struct chunk *c, int y0, int x0, const char *typ)
 {
-	struct vault *v_ptr = random_vault(c->depth, typ);
-	if (v_ptr == NULL) {
+	struct vault *v = random_vault(c->depth, typ);
+	if (v == NULL) {
 		/*quit_fmt("got NULL from random_vault(%s)", typ);*/
 		return FALSE;
 	}
 
 	/* Build the vault */
-	if (!build_vault(c, y0, x0, v_ptr))
+	if (!build_vault(c, y0, x0, v))
 		return FALSE;
 
-	ROOM_LOG("%s (%s)", typ, v_ptr->name);
+	ROOM_LOG("%s (%s)", typ, v->name);
 
 	/* Boost the rating */
-	c->mon_rating += v_ptr->rat;
+	c->mon_rating += v->rat;
 
 	return TRUE;
 }

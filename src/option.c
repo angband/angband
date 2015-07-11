@@ -19,19 +19,17 @@
 #include "init.h"
 #include "option.h"
 
-typedef struct {
-	const char *name;
-	const char *description;
-	int type;
-	bool normal;
-} option_entry;
-
 /**
  * Option screen interface
  */
 int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] = { {0} };
 
-static option_entry options[OPT_MAX] = {
+static struct option_entry {
+	const char *name;
+	const char *description;
+	int type;
+	bool normal;
+} options[OPT_MAX] = {
 	#define OP(a, b, c, d)    { #a, b, OP_##c, d },
 	#include "list-options.h"
 	#undef OP

@@ -16,7 +16,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-extern void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tcp);
+extern void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp,
+							  int *tap, wchar_t *tcp);
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(wchar_t c, byte a, int y, int x);
 extern void prt_map(void);

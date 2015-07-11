@@ -22,12 +22,12 @@
 #include "monster.h"
 
 /** Functions **/
-monster_race *lookup_monster(const char *name);
-monster_base *lookup_monster_base(const char *name);
+struct monster_race *lookup_monster(const char *name);
+struct monster_base *lookup_monster_base(const char *name);
 bool monster_is_nonliving(struct monster_race *race);
 bool monster_is_unusual(struct monster_race *race);
-bool match_monster_bases(const monster_base *base, ...);
-void update_mon(struct monster *m_ptr, struct chunk *c, bool full);
+bool match_monster_bases(const struct monster_base *base, ...);
+void update_mon(struct monster *mon, struct chunk *c, bool full);
 void update_monsters(bool full);
 bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj);
 void monster_swap(int y1, int x1, int y2, int x2);

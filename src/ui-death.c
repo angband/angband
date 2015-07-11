@@ -216,7 +216,7 @@ static void death_info(const char *title, int row)
 	/* Home -- if anything there */
 	if (home->stock) {
 		int page;
-		object_type *obj = home->stock;
+		struct object *obj = home->stock;
 
 		/* Display contents of the home */
 		for (page = 1; obj; page++) {

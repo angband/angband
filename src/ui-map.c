@@ -40,14 +40,14 @@ static void hallucinatory_monster(int *a, wchar_t *c)
 {
 	while (1) {
 		/* Select a random monster */
-		monster_race *r_ptr = &r_info[randint0(z_info->r_max)];
+		struct monster_race *race = &r_info[randint0(z_info->r_max)];
 		
 		/* Skip non-entries */
-		if (!r_ptr->name) continue;
+		if (!race->name) continue;
 		
 		/* Retrieve attr/char */
-		*a = monster_x_attr[r_ptr->ridx];
-		*c = monster_x_char[r_ptr->ridx];
+		*a = monster_x_attr[race->ridx];
+		*c = monster_x_char[race->ridx];
 		return;
 	}
 }
@@ -61,14 +61,14 @@ static void hallucinatory_object(int *a, wchar_t *c)
 	
 	while (1) {
 		/* Select a random object */
-		object_kind *k_ptr = &k_info[randint0(z_info->k_max - 1) + 1];
+		struct object_kind *kind = &k_info[randint0(z_info->k_max - 1) + 1];
 
 		/* Skip non-entries */
-		if (!k_ptr->name) continue;
+		if (!kind->name) continue;
 		
 		/* Retrieve attr/char (HACK - without flavors) */
-		*a = kind_x_attr[k_ptr->kidx];
-		*c = kind_x_char[k_ptr->kidx];
+		*a = kind_x_attr[kind->kidx];
+		*c = kind_x_char[kind->kidx];
 		
 		/* HACK - Skip empty entries */
 		if (*a == 0 || *c == 0) continue;
@@ -84,7 +84,8 @@ static void hallucinatory_object(int *a, wchar_t *c)
  * We should probably have better handling of stacked traps, but that can
  * wait until we do, in fact, have stacked traps under normal conditions.
  */
-static void get_trap_graphics(struct chunk *c, grid_data *g, int *a, wchar_t *w)
+static void get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
+							  wchar_t *w)
 {
     /* Trap is visible */
     if (trf_has(g->trap->flags, TRF_VISIBLE) ||
@@ -98,9 +99,9 @@ static void get_trap_graphics(struct chunk *c, grid_data *g, int *a, wchar_t *w)
 /**
  * Apply text lighting effects
  */
-static void grid_get_attr(grid_data *g, int *a)
+static void grid_get_attr(struct grid_data *g, int *a)
 {
-    feature_type *f_ptr = &f_info[g->f_idx];
+    struct feature *feat = &f_info[g->f_idx];
 
 	/* Save the high-bit, since it's used for attr inversion in GCU */
 	int a0 = *a & 0x80;
@@ -118,9 +119,9 @@ static void grid_get_attr(grid_data *g, int *a)
 		/* Only apply lighting effects when the attr is white and it's a 
 		 * floor or wall */
 		if ((*a == COLOUR_WHITE) &&
-			(tf_has(f_ptr->flags, TF_FLOOR) || feat_is_wall(g->f_idx))) {
+			(tf_has(feat->flags, TF_FLOOR) || feat_is_wall(g->f_idx))) {
 			/* If it's a floor tile then we'll tint based on lighting. */
-			if (tf_has(f_ptr->flags, TF_TORCH))
+			if (tf_has(feat->flags, TF_TORCH))
 				switch (g->lighting) {
 					case LIGHTING_TORCH: *a = COLOUR_YELLOW; break;
 					case LIGHTING_LIT: *a = COLOUR_L_DARK; break;
@@ -185,17 +186,18 @@ static void grid_get_attr(grid_data *g, int *a)
  * This will probably be done outside of the current text->graphics mappings
  * though.
  */
-void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tcp)
+void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
+					   wchar_t *tcp)
 {
-	feature_type *f_ptr = &f_info[g->f_idx];
+	struct feature *feat = &f_info[g->f_idx];
 
-	int a = feat_x_attr[g->lighting][f_ptr->fidx];
-	wchar_t c = feat_x_char[g->lighting][f_ptr->fidx];
+	int a = feat_x_attr[g->lighting][feat->fidx];
+	wchar_t c = feat_x_char[g->lighting][feat->fidx];
 
 	/* Check for trap detection boundaries */
 	if (use_graphics == GRAPHICS_NONE)
 		grid_get_attr(g, &a);
-	else if (g->trapborder && tf_has(f_ptr->flags, TF_FLOOR)
+	else if (g->trapborder && tf_has(feat->flags, TF_FLOOR)
 			 && (g->m_idx || g->first_kind)) {
 		/* if there is an object or monster here, and this is a plain floor
 		 * display the border here rather than an overlay below */
@@ -246,14 +248,14 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 			/* Just pick a random monster to display. */
 			hallucinatory_monster(&a, &c);
 		} else if (!is_mimicking(cave_monster(cave, g->m_idx)))	{
-			monster_type *m_ptr = cave_monster(cave, g->m_idx);
+			struct monster *mon = cave_monster(cave, g->m_idx);
 
 			byte da;
 			wchar_t dc;
 
 			/* Desired attr & char */
-			da = monster_x_attr[m_ptr->race->ridx];
-			dc = monster_x_char[m_ptr->race->ridx];
+			da = monster_x_attr[mon->race->ridx];
+			dc = monster_x_char[mon->race->ridx];
 
 			/* Special handling of attrs and/or chars */
 			if (da & 0x80) {
@@ -261,44 +263,44 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 				a = da;
 				c = dc;
 			} else if (OPT(purple_uniques) && 
-					   rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+					   rf_has(mon->race->flags, RF_UNIQUE)) {
 				/* Turn uniques purple if desired (violet, actually) */
 				a = COLOUR_VIOLET;
 				c = dc;
-			} else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI) ||
-					   rf_has(m_ptr->race->flags, RF_ATTR_FLICKER) ||
-					   rf_has(m_ptr->race->flags, RF_ATTR_RAND)) {
+			} else if (rf_has(mon->race->flags, RF_ATTR_MULTI) ||
+					   rf_has(mon->race->flags, RF_ATTR_FLICKER) ||
+					   rf_has(mon->race->flags, RF_ATTR_RAND)) {
 				/* Multi-hued monster */
-				a = m_ptr->attr ? m_ptr->attr : da;
+				a = mon->attr ? mon->attr : da;
 				c = dc;
-			} else if (!flags_test(m_ptr->race->flags, RF_SIZE,
+			} else if (!flags_test(mon->race->flags, RF_SIZE,
 								   RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END)) {
 				/* Normal monster (not "clear" in any way) */
 				a = da;
 				/* Desired attr & char. da is not used, should a be set to it?*/
-				/*da = monster_x_attr[m_ptr->race->ridx];*/
-				dc = monster_x_char[m_ptr->race->ridx];
+				/*da = monster_x_attr[mon->race->ridx];*/
+				dc = monster_x_char[mon->race->ridx];
 				c = dc;
 			} else if (a & 0x80) {
 				/* Hack -- Bizarre grid under monster */
 				a = da;
 				c = dc;
-			} else if (!rf_has(m_ptr->race->flags, RF_CHAR_CLEAR)) {
+			} else if (!rf_has(mon->race->flags, RF_CHAR_CLEAR)) {
 				/* Normal char, Clear attr, monster */
 				c = dc;
-			} else if (!rf_has(m_ptr->race->flags, RF_ATTR_CLEAR)) {
+			} else if (!rf_has(mon->race->flags, RF_ATTR_CLEAR)) {
 				/* Normal attr, Clear char, monster */
 				a = da;
 			}
 
 			/* Store the drawing attr so we can use it elsewhere */
-			m_ptr->attr = a;
+			mon->attr = a;
 		}
 	} else if (g->is_player) {
-		monster_race *r_ptr = &r_info[0];
+		struct monster_race *race = &r_info[0];
 
 		/* Get the "player" attr */
-		a = monster_x_attr[r_ptr->ridx];
+		a = monster_x_attr[race->ridx];
 		if ((OPT(hp_changes_color)) && !(a & 0x80)) {
 			switch(player->chp * 10 / player->mhp)
 			{
@@ -342,7 +344,7 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 		}
 
 		/* Get the "player" char */
-		c = monster_x_char[r_ptr->ridx];
+		c = monster_x_char[race->ridx];
 	} else if (g->trapborder && (g->f_idx) && !(g->first_kind)
 			   && (use_graphics != GRAPHICS_NONE)) {
 		/* No overlay is used, so we can use the trap border overlay */
@@ -547,7 +549,7 @@ static void prt_map_aux(void)
 {
 	int a, ta;
 	wchar_t c, tc;
-	grid_data g;
+	struct grid_data g;
 
 	int y, x;
 	int vy, vx;
@@ -602,7 +604,7 @@ void prt_map(void)
 {
 	int a, ta;
 	wchar_t c, tc;
-	grid_data g;
+	struct grid_data g;
 
 	int y, x;
 	int vy, vx;
@@ -657,14 +659,14 @@ void display_map(int *cy, int *cx)
 	int row, col;
 
 	int x, y;
-	grid_data g;
+	struct grid_data g;
 
 	int a, ta;
 	wchar_t c, tc;
 
 	byte tp;
 
-	monster_race *r_ptr = &r_info[0];
+	struct monster_race *race = &r_info[0];
 
 	/* Priority array */
 	byte **mp = mem_zalloc(cave->height * sizeof(byte*));
@@ -745,8 +747,8 @@ void display_map(int *cy, int *cx)
 		row = row - (row % tile_height);
 
 	/* Get the "player" tile */
-	ta = monster_x_attr[r_ptr->ridx];
-	tc = monster_x_char[r_ptr->ridx];
+	ta = monster_x_attr[race->ridx];
+	tc = monster_x_char[race->ridx];
 
 	/* Draw the player */
 	Term_putch(col + 1, row + 1, ta, tc);

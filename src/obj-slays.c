@@ -323,7 +323,7 @@ int slay_count(struct slay *slays)
  * \param known whether we are after only known brands
  * \return a pointer to the first brand
  */
-struct brand *brand_collect(struct brand *b, const object_type *obj,
+struct brand *brand_collect(struct brand *b, const struct object *obj,
 							bool known)
 {
 	bool moved = FALSE;
@@ -391,7 +391,7 @@ struct brand *brand_collect(struct brand *b, const object_type *obj,
  * \param known whether we are after only known slays
  * \return a pointer to the first slay
  */
-struct slay *slay_collect(struct slay *s, const object_type *obj,
+struct slay *slay_collect(struct slay *s, const struct object *obj,
 						  bool known)
 {
 	bool moved = FALSE;
@@ -478,16 +478,16 @@ bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 /**
  * Notice any brands on a particular object which affect a particular monster.
  *
- * \param o_ptr is the object on which we are noticing brands
- * \param m_ptr the monster we are hitting, if there is one
+ * \param obj is the object on which we are noticing brands
+ * \param mon the monster we are hitting, if there is one
  */
-void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr)
+void object_notice_brands(struct object *obj, const struct monster *mon)
 {
 	char o_name[40];
 	struct brand *b;
-	bool plural = (o_ptr->number > 1) ? TRUE : FALSE;
+	bool plural = (obj->number > 1) ? TRUE : FALSE;
 
-	for (b = o_ptr->brands; b; b = b->next) {
+	for (b = obj->brands; b; b = b->next) {
 		const char *verb = plural ? brand_names[b->element].active_verb_plural :
 			brand_names[b->element].active_verb;
 
@@ -495,60 +495,59 @@ void object_notice_brands(object_type *o_ptr, const monster_type *m_ptr)
 		if (b->known) continue;
 
 		/* Not applicable */
-		if (m_ptr && rf_has(m_ptr->race->flags,
+		if (mon && rf_has(mon->race->flags,
 						brand_names[b->element].resist_flag))
 			continue;
 
 		/* Learn */
 		b->known = TRUE;
-		object_notice_ego(o_ptr);
+		object_notice_ego(obj);
 		if (plural)
-			object_desc(o_name, sizeof(o_name), o_ptr,
-						ODESC_BASE | ODESC_PLURAL);
+			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_PLURAL);
 		else
-			object_desc(o_name, sizeof(o_name), o_ptr,
+			object_desc(o_name, sizeof(o_name), obj,
 						ODESC_BASE | ODESC_SINGULAR);
 		msg("Your %s %s!", o_name, verb);
 	}
 
-	object_check_for_ident(o_ptr);
+	object_check_for_ident(obj);
 }
 
 /**
  * Notice any slays on a particular object which affect a particular monster.
  *
- * \param o_ptr is the object on which we are noticing slays
- * \param m_ptr the monster we are trying to slay
+ * \param obj is the object on which we are noticing slays
+ * \param mon the monster we are trying to slay
  */
-void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr)
+void object_notice_slays(struct object *obj, const struct monster *mon)
 {
 	char o_name[40];
 	struct slay *s;
 
-	for (s = o_ptr->slays; s; s = s->next) {
+	for (s = obj->slays; s; s = s->next) {
 		/* Already know it */
 		if (s->known) continue;
 
 		/* Not applicable */
-		if (!react_to_specific_slay(s, m_ptr))
+		if (!react_to_specific_slay(s, mon))
 			continue;
 
 		/* Learn */
 		s->known = TRUE;
-		object_notice_ego(o_ptr);
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SINGULAR);
+		object_notice_ego(obj);
+		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_SINGULAR);
 		msg("Your %s glows%s!", o_name, s->multiplier > 3 ? " brightly" : "");
 	}
 
-	object_check_for_ident(o_ptr);
+	object_check_for_ident(obj);
 }
 
 
 /**
  * Extract the multiplier from a given object hitting a given monster.
  *
- * \param o_ptr is the object being used to attack
- * \param m_ptr is the monster being attacked
+ * \param obj is the object being used to attack
+ * \param mon is the monster being attacked
  * \param brand_used is the brand that gave the best multiplier, or NULL
  * \param slay_used is the slay that gave the best multiplier, or NULL
  * \param verb is the verb used in the attack ("smite", etc)
@@ -557,22 +556,22 @@ void object_notice_slays(object_type *o_ptr, const monster_type *m_ptr)
  * \param known_only is whether we are using all the brands and slays, or only
  * the ones we *already* know about
  */
-void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
+void improve_attack_modifier(struct object *obj, const struct monster *mon,
 							 const struct brand **brand_used, 
 							 const struct slay **slay_used, 
 							 char *verb, bool range, bool real, bool known_only)
 {
-	monster_lore *l_ptr = get_lore(m_ptr->race);
+	struct monster_lore *lore = get_lore(mon->race);
 	struct brand *b;
 	struct slay *s;
 	int best_mult = 1;
 
 	/* Brands */
-	for (b = o_ptr->brands; b; b = b->next) {
+	for (b = obj->brands; b; b = b->next) {
 		if (known_only && !b->known) continue;
 
 		/* If the monster is vulnerable, record and learn from real attacks */
-		if (!rf_has(m_ptr->race->flags,
+		if (!rf_has(mon->race->flags,
 					brand_names[b->element].resist_flag)) {
 			if (best_mult < b->multiplier) {
 				best_mult = b->multiplier;
@@ -586,23 +585,23 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 					my_strcat(verb, "s", 20);
 			}
 			if (real) {
-				object_notice_brands(o_ptr, m_ptr);
-				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
-					rf_on(l_ptr->flags, brand_names[b->element].resist_flag);
+				object_notice_brands(obj, mon);
+				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+					rf_on(lore->flags, brand_names[b->element].resist_flag);
 			}
 		}
 
 		/* Brand is known, attack is real, learn about the monster */
-		if (b->known && mflag_has(m_ptr->mflag, MFLAG_VISIBLE) && real)
-			rf_on(l_ptr->flags, brand_names[b->element].resist_flag);
+		if (b->known && mflag_has(mon->mflag, MFLAG_VISIBLE) && real)
+			rf_on(lore->flags, brand_names[b->element].resist_flag);
 	}
 
 	/* Slays */
-	for (s = o_ptr->slays; s; s = s->next) {
+	for (s = obj->slays; s; s = s->next) {
 		if (known_only && !s->known) continue;
 
 		/* If the monster is vulnerable, record and learn from real attacks */
-		if (react_to_specific_slay(s, m_ptr)) {
+		if (react_to_specific_slay(s, mon)) {
 			if (best_mult < s->multiplier) {
 				best_mult = s->multiplier;
 				*brand_used = NULL;
@@ -620,15 +619,15 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
 				}
 			}
 			if (real) {
-				object_notice_slays(o_ptr, m_ptr);
-				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
-					rf_on(l_ptr->flags, s->race_flag);
+				object_notice_slays(obj, mon);
+				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+					rf_on(lore->flags, s->race_flag);
 			}
 		}
 
 		/* Slay is known, attack is real, learn about the monster */
-		if (s->known && mflag_has(m_ptr->mflag, MFLAG_VISIBLE) && real)
-			rf_on(l_ptr->flags, s->race_flag);
+		if (s->known && mflag_has(mon->mflag, MFLAG_VISIBLE) && real)
+			rf_on(lore->flags, s->race_flag);
 	}
 }
 
@@ -761,7 +760,7 @@ void wipe_slays(struct slay *slays)
  * \param obj is the object the combination is on
  * \return the power value of the combination
  */
-s32b check_slay_cache(const object_type *obj)
+s32b check_slay_cache(const struct object *obj)
 {
 	int i = 0;
 
@@ -782,7 +781,7 @@ s32b check_slay_cache(const object_type *obj)
  * \param obj is the object the combination is on
  * \param value is the value of the slay flags on the object
  */
-bool fill_slay_cache(const object_type *obj, s32b value)
+bool fill_slay_cache(const struct object *obj, s32b value)
 {
 	int i = 0;
 
@@ -812,23 +811,23 @@ errr create_slay_cache(struct ego_item *items)
     int j;
     int count = 0;
     struct slay_cache *dupcheck;
-    ego_item_type *e_ptr;
+    struct ego_item *ego;
 
     /* Calculate necessary size of slay_cache */
     dupcheck = mem_zalloc(z_info->e_max * sizeof(struct slay_cache));
 
     for (i = 0; i < z_info->e_max; i++) {
-        e_ptr = items + i;
+        ego = items + i;
 
         /* Only consider things with brands and slays */
-        if (!e_ptr->brands && !e_ptr->slays) continue;
+        if (!ego->brands && !ego->slays) continue;
 
 		/* Check previously scanned combinations */
 		for (j = 0; j < i; j++) {
 			if (!dupcheck[j].brands && !dupcheck[j].slays) continue;
-			if (!brands_are_equal(e_ptr->brands, dupcheck[j].brands, FALSE))
+			if (!brands_are_equal(ego->brands, dupcheck[j].brands, FALSE))
 				continue;
-			if (!slays_are_equal(e_ptr->slays, dupcheck[j].slays, FALSE))
+			if (!slays_are_equal(ego->slays, dupcheck[j].slays, FALSE))
 				continue;
 
 			/* Both equal, we don't want this one */
@@ -840,8 +839,8 @@ errr create_slay_cache(struct ego_item *items)
 
 		/* msg("Found a new slay combo on an ego item"); */
 		count++;
-		copy_brand(&dupcheck[i].brands, e_ptr->brands);
-		copy_slay(&dupcheck[i].slays, e_ptr->slays);
+		copy_brand(&dupcheck[i].brands, ego->brands);
+		copy_slay(&dupcheck[i].slays, ego->slays);
 	}
 
     /* Allocate slay_cache with an extra empty element for an iteration stop */

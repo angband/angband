@@ -211,10 +211,10 @@ const char *equip_describe(struct player *p, int slot)
  * For items where multiple slots could work (e.g. rings), the function
  * will try to return an open slot if possible.
  */
-int wield_slot(const struct object *o_ptr)
+int wield_slot(const struct object *obj)
 {
 	/* Slot for equipment */
-	switch (o_ptr->tval)
+	switch (obj->tval)
 	{
 		case TV_BOW: return slot_by_type(player, EQUIP_BOW, FALSE);
 		case TV_AMULET: return slot_by_type(player, EQUIP_AMULET, FALSE);
@@ -224,15 +224,15 @@ int wield_slot(const struct object *o_ptr)
 		case TV_BOOTS: return slot_by_type(player, EQUIP_BOOTS, FALSE);
 	}
 
-	if (tval_is_melee_weapon(o_ptr))
+	if (tval_is_melee_weapon(obj))
 		return slot_by_type(player, EQUIP_WEAPON, FALSE);
-	else if (tval_is_ring(o_ptr))
+	else if (tval_is_ring(obj))
 		return slot_by_type(player, EQUIP_RING, FALSE);
-	else if (tval_is_light(o_ptr))
+	else if (tval_is_light(obj))
 		return slot_by_type(player, EQUIP_LIGHT, FALSE);
-	else if (tval_is_body_armor(o_ptr))
+	else if (tval_is_body_armor(obj))
 		return slot_by_type(player, EQUIP_BODY_ARMOR, FALSE);
-	else if (tval_is_head_armor(o_ptr))
+	else if (tval_is_head_armor(obj))
 		return slot_by_type(player, EQUIP_HAT, FALSE);
 
 	/* No slot available */
@@ -249,7 +249,7 @@ int wield_slot(const struct object *o_ptr)
 int minus_ac(struct player *p)
 {
 	int i, count = 0;
-	object_type *obj = NULL;
+	struct object *obj = NULL;
 
 	char o_name[80];
 
@@ -446,7 +446,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
  * Check if we have space to put an item in a new quiver slot without 
  * increasing the number of pack slots used 
  */
-static bool new_quiver_slot_okay(const object_type *obj)
+static bool new_quiver_slot_okay(const struct object *obj)
 {
 	int i, quiver_count = 0;
 	bool empty_slot = FALSE;
@@ -479,7 +479,7 @@ static bool new_quiver_slot_okay(const object_type *obj)
 /**
  * Check if an object is in the quiver
  */
-static bool object_is_in_quiver(const object_type *obj)
+static bool object_is_in_quiver(const struct object *obj)
 {
 	int i;
 
@@ -493,7 +493,7 @@ static bool object_is_in_quiver(const object_type *obj)
 /**
  * Check if we have space for an item in the pack without overflow
  */
-bool inven_carry_okay(const object_type *obj)
+bool inven_carry_okay(const struct object *obj)
 {
 	/* Empty slot? */
 	if (pack_slots_used(player) < z_info->pack_size) return TRUE;
@@ -511,7 +511,7 @@ bool inven_carry_okay(const object_type *obj)
 /**
  * Check to see if an item is stackable in the inventory
  */
-bool inven_stack_okay(const object_type *o_ptr)
+bool inven_stack_okay(const struct object *obj)
 {
 	struct object *gear_obj;
 	int new_number;
@@ -526,7 +526,7 @@ bool inven_stack_okay(const object_type *o_ptr)
 			continue;
 
 		/* Check if the two items can be combined */
-		if (object_similar(gear_obj, o_ptr, OSTACK_PACK))
+		if (object_similar(gear_obj, obj, OSTACK_PACK))
 			break;
 	}
 
@@ -534,10 +534,10 @@ bool inven_stack_okay(const object_type *o_ptr)
 	if (!gear_obj) return FALSE;
 
 	/* Add it and see what happens */
-	gear_obj->number += o_ptr->number;
+	gear_obj->number += obj->number;
 	extra_slot = (gear_obj->number > z_info->stack_size);
 	new_number = pack_slots_used(player);
-	gear_obj->number -= o_ptr->number;
+	gear_obj->number -= obj->number;
 
 	/* Analyse the results */
 	if (new_number + (extra_slot ? 1 : 0) > z_info->pack_size)
@@ -806,19 +806,19 @@ void inven_drop(struct object *obj, int amt)
 /**
  * Return whether each stack of objects can be merged into two uneven stacks.
  */
-static bool inven_can_stack_partial(const object_type *o_ptr,
-									const object_type *j_ptr,
+static bool inven_can_stack_partial(const struct object *obj1,
+									const struct object *obj2,
 									object_stack_t mode)
 {
 	if (!(mode & OSTACK_STORE)) {
-		int total = o_ptr->number + j_ptr->number;
+		int total = obj1->number + obj2->number;
 		int remainder = total - (z_info->stack_size);
 
 		if (remainder > z_info->stack_size)
 			return FALSE;
 	}
 
-	return object_stackable(o_ptr, j_ptr, mode);
+	return object_stackable(obj1, obj2, mode);
 }
 
 /**

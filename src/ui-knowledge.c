@@ -155,9 +155,9 @@ static int default_group_id(int oid)
  */
 static int feat_order(int feat)
 {
-	feature_type *f_ptr = &f_info[feat];
+	struct feature *f = &f_info[feat];
 
-	switch (f_ptr->d_char)
+	switch (f->d_char)
 	{
 		case L'.': 				return 0;
 		case L'\'': case L'+': 	return 1;
@@ -1114,38 +1114,38 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	int r_idx = default_item_id(oid);
 
 	/* Access the race */
-	monster_race *r_ptr = &r_info[r_idx];
-	monster_lore *l_ptr = &l_list[r_idx];
+	struct monster_race *race = &r_info[r_idx];
+	struct monster_lore *lore = &l_list[r_idx];
 
 	/* Choose colors */
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	byte a = monster_x_attr[r_ptr->ridx];
-	wchar_t c = monster_x_char[r_ptr->ridx];
+	byte a = monster_x_attr[race->ridx];
+	wchar_t c = monster_x_char[race->ridx];
 
 	if ((tile_height != 1) && (a & 0x80)) {
-		a = r_ptr->d_attr;
-		c = r_ptr->d_char;
+		a = race->d_attr;
+		c = race->d_char;
 		/* If uniques are purple, make it so */
-		if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
+		if (OPT(purple_uniques) && rf_has(race->flags, RF_UNIQUE))
 			a = COLOUR_VIOLET;
 	}
 	/* If uniques are purple, make it so */
 	else if (OPT(purple_uniques) && !(a & 0x80) &&
-			 rf_has(r_ptr->flags, RF_UNIQUE))
+			 rf_has(race->flags, RF_UNIQUE))
 		a = COLOUR_VIOLET;
 
 	/* Display the name */
-	c_prt(attr, r_ptr->name, row, col);
+	c_prt(attr, race->name, row, col);
 
 	/* Display symbol */
 	big_pad(66, row, a, c);
 
 	/* Display kills */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-		put_str(format("%s", (r_ptr->max_num == 0)?  " dead" : "alive"),
+	if (rf_has(race->flags, RF_UNIQUE))
+		put_str(format("%s", (race->max_num == 0)?  " dead" : "alive"),
 				row, 70);
 	else
-		put_str(format("%5d", l_ptr->pkills), row, 70);
+		put_str(format("%5d", lore->pkills), row, 70);
 }
 
 
@@ -1153,8 +1153,8 @@ static int m_cmp_race(const void *a, const void *b)
 {
 	const int a_val = *(const int *)a;
 	const int b_val = *(const int *)b;
-	const monster_race *r_a = &r_info[default_item_id(a_val)];
-	const monster_race *r_b = &r_info[default_item_id(b_val)];
+	const struct monster_race *r_a = &r_info[default_item_id(a_val)];
+	const struct monster_race *r_b = &r_info[default_item_id(b_val)];
 	int gid = default_group_id(a_val);
 
 	/* Group by */
@@ -1195,22 +1195,22 @@ static const char *race_name(int gid)
 static void mon_lore(int oid)
 {
 	int r_idx;
-	monster_race *r_ptr;
-	const monster_lore *l_ptr;
+	struct monster_race *race;
+	const struct monster_lore *lore;
 	textblock *tb;
 
 	r_idx = default_item_id(oid);
 
 	assert(r_idx);
-	r_ptr = &r_info[r_idx];
-	l_ptr = get_lore(r_ptr);
+	race = &r_info[r_idx];
+	lore = get_lore(race);
 
 	/* Update the monster recall window */
-	monster_race_track(player->upkeep, r_ptr);
+	monster_race_track(player->upkeep, race);
 	handle_stuff(player);
 
 	tb = textblock_new();
-	lore_description(tb, r_ptr, l_ptr, FALSE);
+	lore_description(tb, race, lore, FALSE);
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
 }
@@ -1249,16 +1249,16 @@ static int count_known_monsters(void)
 	size_t j;
 
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *r_ptr = &r_info[i];
+		struct monster_race *race = &r_info[i];
 		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
 			continue;
-		if (!r_ptr->name) continue;
+		if (!race->name) continue;
 
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) m_count++;
+		if (rf_has(race->flags, RF_UNIQUE)) m_count++;
 
 		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++) {
 			const wchar_t *pat = monster_group[j].chars;
-			if (wcschr(pat, r_ptr->d_char)) m_count++;
+			if (wcschr(pat, race->d_char)) m_count++;
 		}
 	}
 
@@ -1282,16 +1282,16 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	size_t j;
 
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *r_ptr = &r_info[i];
+		struct monster_race *race = &r_info[i];
 		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
 			continue;
-		if (!r_ptr->name) continue;
+		if (!race->name) continue;
 
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) m_count++;
+		if (rf_has(race->flags, RF_UNIQUE)) m_count++;
 
 		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++) {
 			const wchar_t *pat = monster_group[j].chars;
-			if (wcschr(pat, r_ptr->d_char)) m_count++;
+			if (wcschr(pat, race->d_char)) m_count++;
 		}
 	}
 
@@ -1300,16 +1300,16 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *r_ptr = &r_info[i];
+		struct monster_race *race = &r_info[i];
 		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
 			continue;
-		if (!r_ptr->name) continue;
+		if (!race->name) continue;
 
 		for (j = 0; j < N_ELEMENTS(monster_group) - 1; j++) {
 			const wchar_t *pat = monster_group[j].chars;
-			if (j == 0 && !rf_has(r_ptr->flags, RF_UNIQUE))
+			if (j == 0 && !rf_has(race->flags, RF_UNIQUE))
 				continue;
-			else if (j > 0 && !wcschr(pat, r_ptr->d_char))
+			else if (j > 0 && !wcschr(pat, race->d_char))
 				continue;
 
 			monsters[m_count] = m_count;
@@ -1372,11 +1372,11 @@ static int *obj_group_order = NULL;
 
 static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 {
-	object_type object_type_body = { 0 };
-	object_type *o_ptr = &object_type_body;
+	struct object object_type_body = { 0 };
+	struct object *obj = &object_type_body;
 
-	make_fake_artifact(o_ptr, &a_info[a_idx]);
-	object_desc(o_name, namelen, o_ptr,
+	make_fake_artifact(obj, &a_info[a_idx]);
+	object_desc(o_name, namelen, obj,
 			ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 }
 
@@ -1425,35 +1425,35 @@ static struct object *find_artifact(struct artifact *artifact)
  */
 static void desc_art_fake(int a_idx)
 {
-	object_type *o_ptr;
-	object_type object_type_body = { 0 };
+	struct object *obj;
+	struct object object_type_body = { 0 };
 
 	char header[120];
 
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
 
-	o_ptr = find_artifact(&a_info[a_idx]);
+	obj = find_artifact(&a_info[a_idx]);
 
 	/* If it's been lost, make a fake artifact for it */
-	if (!o_ptr) {
-		o_ptr = &object_type_body;
+	if (!obj) {
+		obj = &object_type_body;
 
-		make_fake_artifact(o_ptr, &a_info[a_idx]);
-		id_on(o_ptr->id_flags, ID_ARTIFACT);
+		make_fake_artifact(obj, &a_info[a_idx]);
+		id_on(obj->id_flags, ID_ARTIFACT);
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
-		if (history_is_artifact_known(o_ptr->artifact))
+		if (history_is_artifact_known(obj->artifact))
 			/* Be very careful not to influence anything but this object */
-			object_know_all_but_flavor(o_ptr);
+			object_know_all_but_flavor(obj);
 	}
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player);
 
-	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr,
+	tb = object_info(obj, OINFO_NONE);
+	object_desc(header, sizeof(header), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
@@ -1464,8 +1464,8 @@ static int a_cmp_tval(const void *a, const void *b)
 {
 	const int a_val = *(const int *)a;
 	const int b_val = *(const int *)b;
-	const artifact_type *a_a = &a_info[a_val];
-	const artifact_type *a_b = &a_info[b_val];
+	const struct artifact *a_a = &a_info[a_val];
+	const struct artifact *a_b = &a_info[b_val];
 
 	/* Group by */
 	int ta = obj_group_order[a_a->tval];
@@ -1494,7 +1494,7 @@ static int art2gid(int oid)
  */
 static bool artifact_is_known(int a_idx)
 {
-	object_type *o_ptr;
+	struct object *obj;
 
 	if (!a_info[a_idx].name)
 		return FALSE;
@@ -1506,10 +1506,10 @@ static bool artifact_is_known(int a_idx)
 		return FALSE;
 
 	/* Check all objects to see if it exists but hasn't been IDed */
-	o_ptr = find_artifact(&a_info[a_idx]);
-	if (!o_ptr)
+	obj = find_artifact(&a_info[a_idx]);
+	if (!obj)
 		return FALSE;
-	if (!object_is_known_artifact(o_ptr))
+	if (!object_is_known_artifact(obj))
 		return FALSE;
 
 	return TRUE;
@@ -1578,13 +1578,13 @@ static const char *ego_grp_name(int gid)
 static void display_ego_item(int col, int row, bool cursor, int oid)
 {
 	/* Access the object */
-	ego_item_type *e_ptr = &e_info[default_item_id(oid)];
+	struct ego_item *ego = &e_info[default_item_id(oid)];
 
 	/* Choose a color */
-	byte attr = curs_attrs[0 != (int)e_ptr->everseen][0 != (int)cursor];
+	byte attr = curs_attrs[0 != (int)ego->everseen][0 != (int)cursor];
 
 	/* Display the name */
-	c_prt(attr, e_ptr->name, row, col);
+	c_prt(attr, ego->name, row, col);
 }
 
 /**
@@ -1612,8 +1612,8 @@ static int e_cmp_tval(const void *a, const void *b)
 {
 	const int a_val = *(const int *)a;
 	const int b_val = *(const int *)b;
-	const ego_item_type *ea = &e_info[default_item_id(a_val)];
-	const ego_item_type *eb = &e_info[default_item_id(b_val)];
+	const struct ego_item *ea = &e_info[default_item_id(a_val)];
+	const struct ego_item *eb = &e_info[default_item_id(b_val)];
 
 	/* Group by */
 	int c = default_group_id(a_val) - default_group_id(b_val);
@@ -1645,7 +1645,7 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 
 	/* Look at all the ego items */
 	for (i = 0; i < z_info->e_max; i++)	{
-		ego_item_type *ego = &e_info[i];
+		struct ego_item *ego = &e_info[i];
 		if (ego->everseen || OPT(cheat_xtra)) {
 			size_t j;
 			int *tval = mem_zalloc(N_ELEMENTS(object_text_order) * sizeof(int));
@@ -1653,7 +1653,7 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 
 			/* Note the tvals which are possible for this ego */
 			for (poss = ego->poss_items; poss; poss = poss->next) {
-				object_kind *kind = &k_info[poss->kidx];
+				struct object_kind *kind = &k_info[poss->kidx];
 				tval[obj_group_order[kind->tval]]++;
 			}
 
@@ -1692,7 +1692,7 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
  * to be an artifact*.  Behaviour is distinctly unfriendly if passed
  * flavours which don't correspond to an artifact.
  */
-static int get_artifact_from_kind(object_kind *kind)
+static int get_artifact_from_kind(struct object_kind *kind)
 {
 	int i;
 
@@ -1712,7 +1712,7 @@ static int get_artifact_from_kind(object_kind *kind)
  */
 static void display_object(int col, int row, bool cursor, int oid)
 {
-	object_kind *kind = &k_info[oid];
+	struct object_kind *kind = &k_info[oid];
 	const char *inscrip = get_autoinscription(kind);
 
 	char o_name[80];
@@ -1804,8 +1804,8 @@ static int o_cmp_tval(const void *a, const void *b)
 {
 	const int a_val = *(const int *)a;
 	const int b_val = *(const int *)b;
-	const object_kind *k_a = &k_info[a_val];
-	const object_kind *k_b = &k_info[b_val];
+	const struct object_kind *k_a = &k_info[a_val];
+	const struct object_kind *k_b = &k_info[b_val];
 
 	/* Group by */
 	int ta = obj_group_order[k_a->tval];
@@ -1847,7 +1847,7 @@ static int obj2gid(int oid)
 
 static wchar_t *o_xchar(int oid)
 {
-	object_kind *kind = objkind_byid(oid);
+	struct object_kind *kind = objkind_byid(oid);
 
 	if (!kind->flavor || kind->aware)
 		return &kind_x_char[kind->kidx];
@@ -1857,7 +1857,7 @@ static wchar_t *o_xchar(int oid)
 
 static byte *o_xattr(int oid)
 {
-	object_kind *kind = objkind_byid(oid);
+	struct object_kind *kind = objkind_byid(oid);
 
 	if (!kind->flavor || kind->aware)
 		return &kind_x_attr[kind->kidx];
@@ -1870,16 +1870,16 @@ static byte *o_xattr(int oid)
  */
 static const char *o_xtra_prompt(int oid)
 {
-	object_kind *k = objkind_byid(oid);
+	struct object_kind *kind = objkind_byid(oid);
 
 	const char *no_insc = ", 's' to toggle ignore, 'r'ecall, '{'";
 	const char *with_insc = ", 's' to toggle ignore, 'r'ecall, '{', '}'";
 
 	/* Forget it if we've never seen the thing */
-	if (k->flavor && !k->aware)
+	if (kind->flavor && !kind->aware)
 		return "";
 
-	return k->note ? with_insc : no_insc;
+	return kind->note ? with_insc : no_insc;
 }
 
 /**
@@ -1887,7 +1887,7 @@ static const char *o_xtra_prompt(int oid)
  */
 static void o_xtra_act(struct keypress ch, int oid)
 {
-	object_kind *k = objkind_byid(oid);
+	struct object_kind *k = objkind_byid(oid);
 
 	/* Toggle ignore */
 	if (ignore_tval(k->tval) && (ch.code == 's' || ch.code == 'S')) {
@@ -1961,7 +1961,7 @@ void textui_browse_object_knowledge(const char *name, int row)
 	int *objects;
 	int o_count = 0;
 	int i;
-	object_kind *kind;
+	struct object_kind *kind;
 
 	objects = mem_zalloc(z_info->k_max * sizeof(int));
 
@@ -2013,22 +2013,22 @@ static const char *feature_group_text[] =
  */
 static void display_feature(int col, int row, bool cursor, int oid )
 {
-	feature_type *f_ptr = &f_info[oid];
+	struct feature *feat = &f_info[oid];
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
-	c_prt(attr, f_ptr->name, row, col);
+	c_prt(attr, feat->name, row, col);
 
 	if (tile_height == 1) {
 		/* Display symbols */
 		col = 65;
-		col += big_pad(col, row, feat_x_attr[LIGHTING_DARK][f_ptr->fidx],
-				feat_x_char[LIGHTING_DARK][f_ptr->fidx]);
-		col += big_pad(col, row, feat_x_attr[LIGHTING_LIT][f_ptr->fidx],
-				feat_x_char[LIGHTING_LIT][f_ptr->fidx]);
-		col += big_pad(col, row, feat_x_attr[LIGHTING_TORCH][f_ptr->fidx],
-				feat_x_char[LIGHTING_TORCH][f_ptr->fidx]);
-		col += big_pad(col, row, feat_x_attr[LIGHTING_LOS][f_ptr->fidx],
-				feat_x_char[LIGHTING_LOS][f_ptr->fidx]);
+		col += big_pad(col, row, feat_x_attr[LIGHTING_DARK][feat->fidx],
+				feat_x_char[LIGHTING_DARK][feat->fidx]);
+		col += big_pad(col, row, feat_x_attr[LIGHTING_LIT][feat->fidx],
+				feat_x_char[LIGHTING_LIT][feat->fidx]);
+		col += big_pad(col, row, feat_x_attr[LIGHTING_TORCH][feat->fidx],
+				feat_x_char[LIGHTING_TORCH][feat->fidx]);
+		col += big_pad(col, row, feat_x_attr[LIGHTING_LOS][feat->fidx],
+				feat_x_char[LIGHTING_LOS][feat->fidx]);
 	}
 }
 
@@ -2037,8 +2037,8 @@ static int f_cmp_fkind(const void *a, const void *b)
 {
 	const int a_val = *(const int *)a;
 	const int b_val = *(const int *)b;
-	const feature_type *fa = &f_info[a_val];
-	const feature_type *fb = &f_info[b_val];
+	const struct feature *fa = &f_info[a_val];
+	const struct feature *fb = &f_info[b_val];
 
 	/* Group by */
 	int c = feat_order(a_val) - feat_order(b_val);
@@ -2963,7 +2963,7 @@ int cmp_monsters(const void *a, const void *b)
 static void lookup_symbol(char sym, char *buf, size_t max)
 {
 	int i;
-	monster_base *race;
+	struct monster_base *race;
 
 	/* Look through items */
 	/* Note: We currently look through all items, and grab the tval when we
@@ -3061,20 +3061,20 @@ void do_cmd_query_symbol(void)
 
 	/* Collect matching monsters */
 	for (n = 0, i = 1; i < z_info->r_max - 1; i++) {
-		monster_race *r_ptr = &r_info[i];
-		monster_lore *l_ptr = &l_list[i];
+		struct monster_race *race = &r_info[i];
+		struct monster_lore *lore = &l_list[i];
 
 		/* Nothing to recall */
-		if (!OPT(cheat_know) && !l_ptr->all_known && !l_ptr->sights) continue;
+		if (!OPT(cheat_know) && !lore->all_known && !lore->sights) continue;
 
 		/* Require non-unique monsters if needed */
-		if (norm && rf_has(r_ptr->flags, RF_UNIQUE)) continue;
+		if (norm && rf_has(race->flags, RF_UNIQUE)) continue;
 
 		/* Require unique monsters if needed */
-		if (uniq && !rf_has(r_ptr->flags, RF_UNIQUE)) continue;
+		if (uniq && !rf_has(race->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
-		if (all || char_matches_key(r_ptr->d_char, sym)) who[n++] = i;
+		if (all || char_matches_key(race->d_char, sym)) who[n++] = i;
 	}
 
 	/* Nothing to recall */
@@ -3119,17 +3119,17 @@ void do_cmd_query_symbol(void)
 
 		/* Extract a race */
 		int r_idx = who[i];
-		monster_race *r_ptr = &r_info[r_idx];
-		monster_lore *l_ptr = &l_list[r_idx];
+		struct monster_race *race = &r_info[r_idx];
+		struct monster_lore *lore = &l_list[r_idx];
 
 		/* Hack -- Auto-recall */
-		monster_race_track(player->upkeep, r_ptr);
+		monster_race_track(player->upkeep, race);
 
 		/* Hack -- Handle stuff */
 		handle_stuff(player);
 
 		tb = textblock_new();
-		lore_title(tb, r_ptr);
+		lore_title(tb, race);
 
 		/* Line break is needed for proper display */
 		textblock_append(tb, " [(r)ecall, ESC]\n");
@@ -3141,7 +3141,7 @@ void do_cmd_query_symbol(void)
 			/* Ignore keys during recall presentation, otherwise, the 'r' key
 			 * acts like a toggle and instead of a one-off command */
 			if (recall)
-				lore_show_interactive(r_ptr, l_ptr);
+				lore_show_interactive(race, lore);
 			else
 				query = inkey();
 

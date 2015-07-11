@@ -67,12 +67,11 @@ enum
 /**
  * Structure to describe ego item short name. 
  */
-typedef struct ego_desc
-{
+struct ego_desc {
   s16b e_idx;
   u16b itype;
   const char *short_name;
-} ego_desc;
+};
 
 /*
  * Ignore flags
@@ -117,6 +116,6 @@ extern byte ignore_level[];
 extern const size_t ignore_size;
 
 /* ui-options.c */
-int ego_item_name(char *buf, size_t buf_size, ego_desc *desc);
+int ego_item_name(char *buf, size_t buf_size, struct ego_desc *desc);
 
 #endif /* !OBJ_IGNORE_H */

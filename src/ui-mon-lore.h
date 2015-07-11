@@ -19,9 +19,12 @@
 #ifndef UI_MONSTER_LORE_H
 #define UI_MONSTER_LORE_H
 
-void lore_title(textblock *tb, const monster_race *r_ptr);
-void lore_description(textblock *tb, const monster_race *race, const monster_lore *original_lore, bool spoilers);
-void lore_show_interactive(const monster_race *race, const monster_lore *lore);
-void lore_show_subwindow(const monster_race *race, const monster_lore *lore);
+void lore_title(textblock *tb, const struct monster_race *race);
+void lore_description(textblock *tb, const struct monster_race *race,
+					  const struct monster_lore *original_lore, bool spoilers);
+void lore_show_interactive(const struct monster_race *race,
+						   const struct monster_lore *lore);
+void lore_show_subwindow(const struct monster_race *race,
+						 const struct monster_lore *lore);
 
 #endif /* UI_MONSTER_LORE_H */

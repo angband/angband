@@ -268,7 +268,7 @@ static const struct {
 /**
  * Return the player's chance to hit with a particular weapon.
  */
-int py_attack_hit_chance(const object_type *weapon)
+int py_attack_hit_chance(const struct object *weapon)
 {
 	int chance, bonus = player->state.to_h;
 
@@ -427,7 +427,7 @@ void py_attack(int y, int x)
 	int blow_energy = 100 * z_info->move_energy / player->state.num_blows;
 	int blows = 0;
 	bool fear = FALSE;
-	monster_type *m_ptr = square_monster(cave, y, x);
+	struct monster *mon = square_monster(cave, y, x);
 	
 	/* disturb the player */
 	disturb(player, 0);
@@ -446,12 +446,12 @@ void py_attack(int y, int x)
 	}
 	
 	/* Hack - delay fear messages */
-	if (fear && mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
+	if (fear && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
 		char m_name[80];
 		/* Don't set monster_desc flags, since add_monster_message does string
 		 * processing on m_name */
-		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
-		add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+		add_monster_message(m_name, mon, MON_MSG_FLEE_IN_TERROR, TRUE);
 	}
 }
 
@@ -551,11 +551,11 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 
 		/* Try the attack on the monster at (x, y) if any */
 		if (cave->squares[y][x].mon > 0) {
-			monster_type *m_ptr = square_monster(cave, y, x);
-			int visible = mflag_has(m_ptr->mflag, MFLAG_VISIBLE);
+			struct monster *mon = square_monster(cave, y, x);
+			int visible = mflag_has(mon->mflag, MFLAG_VISIBLE);
 
 			bool fear = FALSE;
-			const char *note_dies = monster_is_unusual(m_ptr->race) ? 
+			const char *note_dies = monster_is_unusual(mon->race) ? 
 				" is destroyed." : " dies.";
 
 			struct attack_result result = attack(obj, y, x);
@@ -594,7 +594,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 						if (OPT(show_damage))
 							dmg_text = format(" (%d)", dmg);
 
-						monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_OBJE);
+						monster_desc(m_name, sizeof(m_name), mon, MDESC_OBJE);
 
 						if (ranged_hit_types[j].text)
 							msgt(msg_type, "Your %s %s %s%s. %s", o_name, 
@@ -606,20 +606,20 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 					}
 					
 					/* Track this monster */
-					if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
-						monster_race_track(player->upkeep, m_ptr->race);
-						health_track(player->upkeep, m_ptr);
+					if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+						monster_race_track(player->upkeep, mon->race);
+						health_track(player->upkeep, mon);
 					}
 				}
 
 				/* Hit the monster, check for death */
-				if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
-					message_pain(m_ptr, dmg);
-					if (fear && mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
+				if (!mon_take_hit(mon, dmg, &fear, note_dies)) {
+					message_pain(mon, dmg);
+					if (fear && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
 						char m_name[80];
-						monster_desc(m_name, sizeof(m_name), m_ptr, 
+						monster_desc(m_name, sizeof(m_name), mon, 
 									 MDESC_DEFAULT);
-						add_monster_message(m_name, m_ptr, 
+						add_monster_message(m_name, mon, 
 											MON_MSG_FLEE_IN_TERROR, TRUE);
 					}
 				}

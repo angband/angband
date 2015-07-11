@@ -74,9 +74,9 @@
  * may turn into different objects, monsters into different monsters, and
  * terrain may be objects, monsters, or stay the same.
  */
-void map_info(unsigned y, unsigned x, grid_data *g)
+void map_info(unsigned y, unsigned x, struct grid_data *g)
 {
-	object_type *obj;
+	struct object *obj;
 
 	assert(x < (unsigned) cave->width);
 	assert(y < (unsigned) cave->height);
@@ -160,8 +160,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Monsters */
 	if (g->m_idx > 0) {
 		/* If the monster isn't "visible", make sure we don't list it.*/
-		monster_type *m_ptr = cave_monster(cave, g->m_idx);
-		if (!mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) g->m_idx = 0;
+		struct monster *mon = cave_monster(cave, g->m_idx);
+		if (!mflag_has(mon->mflag, MFLAG_VISIBLE)) g->m_idx = 0;
 	}
 
 	/* Rare random hallucination on non-outer walls */
@@ -213,7 +213,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
  */
 void square_note_spot(struct chunk *c, int y, int x)
 {
-	object_type *obj;
+	struct object *obj;
 
 	/* Require "seen" flag */
 	if (!square_isseen(c, y, x))
@@ -292,19 +292,19 @@ static void cave_light(struct point_set *ps)
 		{
 			int chance = 25;
 
-			monster_type *m_ptr = square_monster(cave, y, x);
+			struct monster *mon = square_monster(cave, y, x);
 
 			/* Stupid monsters rarely wake up */
-			if (rf_has(m_ptr->race->flags, RF_STUPID)) chance = 10;
+			if (rf_has(mon->race->flags, RF_STUPID)) chance = 10;
 
 			/* Smart monsters always wake up */
-			if (rf_has(m_ptr->race->flags, RF_SMART)) chance = 100;
+			if (rf_has(mon->race->flags, RF_SMART)) chance = 100;
 
 			/* Sometimes monsters wake up */
-			if (m_ptr->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))
+			if (mon->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))
 			{
 				/* Wake up! */
-				mon_clear_timed(m_ptr, MON_TMD_SLEEP,
+				mon_clear_timed(mon, MON_TMD_SLEEP,
 					MON_TMD_FLG_NOTIFY, FALSE);
 
 			}
@@ -523,7 +523,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 		for (x = 0; x < c->width; x++) {
 			int d;
 			bool light = FALSE;
-			feature_type *f_ptr = &f_info[c->squares[y][x].feat];
+			struct feature *feat = &f_info[c->squares[y][x].feat];
 			
 			/* Skip grids with no surrounding floors or stairs */
 			for (d = 0; d < 9; d++) {
@@ -542,7 +542,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			if (!light) continue;
 
 			/* Only interesting grids at night */
-			if (daytime || !tf_has(f_ptr->flags, TF_FLOOR)) {
+			if (daytime || !tf_has(feat->flags, TF_FLOOR)) {
 				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 				sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
 			} else {

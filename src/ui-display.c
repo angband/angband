@@ -1060,7 +1060,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 	/* Single point to be redrawn */
 	else {
-		grid_data g;
+		struct grid_data g;
 		int a, ta;
 		wchar_t c, tc;
 
@@ -1178,21 +1178,20 @@ static void do_animation(void)
 {
 	int i;
 
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
+	for (i = 1; i < cave_monster_max(cave); i++) {
 		byte attr;
-		monster_type *m_ptr = cave_monster(cave, i);
+		struct monster *mon = cave_monster(cave, i);
 
-		if (!m_ptr || !m_ptr->race || !mflag_has(m_ptr->mflag, MFLAG_VISIBLE))
+		if (!mon || !mon->race || !mflag_has(mon->mflag, MFLAG_VISIBLE))
 			continue;
-		else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI))
+		else if (rf_has(mon->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
-		else if (rf_has(m_ptr->race->flags, RF_ATTR_FLICKER))
-			attr = get_flicker(monster_x_attr[m_ptr->race->ridx]);
+		else if (rf_has(mon->race->flags, RF_ATTR_FLICKER))
+			attr = get_flicker(monster_x_attr[mon->race->ridx]);
 		else
 			continue;
 
-		m_ptr->attr = attr;
+		mon->attr = attr;
 		player->upkeep->redraw |= (PR_MAP | PR_MONLIST);
 	}
 
@@ -2316,7 +2315,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 		for (i = 0; i < floor_num; i++) {
 			/* Since the messages are detailed, we use MARK_SEEN to match
 			 * description. */
-			object_type *obj = floor_list[i];
+			struct object *obj = floor_list[i];
 			obj->marked = MARK_SEEN;
 		}
 	}

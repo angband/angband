@@ -171,13 +171,13 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
 static int pick_trap(int feat, int trap_level)
 {
     int trap_index = 0;
-    feature_type *f_ptr = &f_info[feat];
+    struct feature *f = &f_info[feat];
 	
     struct trap_kind *kind;
     bool trap_is_okay = FALSE;
 	
     /* Paranoia */
-    if (!tf_has(f_ptr->flags, TF_TRAP))
+    if (!tf_has(f->flags, TF_TRAP))
 		return -1;
 	
     /* Try to create a trap appropriate to the level.  Make certain that at
@@ -200,7 +200,7 @@ static int pick_trap(int feat, int trap_level)
 		trap_is_okay = TRUE;
 
 		/* Floor? */
-		if (tf_has(f_ptr->flags, TF_FLOOR) && !trf_has(kind->flags, TRF_FLOOR))
+		if (tf_has(f->flags, TF_FLOOR) && !trf_has(kind->flags, TRF_FLOOR))
 			trap_is_okay = FALSE;
 
 		/* Check legality of trapdoors. */

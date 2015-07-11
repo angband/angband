@@ -40,11 +40,10 @@
 /**
  * Describes a flag-name pair.
  */
-typedef struct
-{
+struct flag_type {
 	int flag;
 	const char *name;
-} flag_type;
+};
 
 /**
  * Describes the number of blows possible for given stat bonuses
@@ -61,14 +60,14 @@ struct blow_info {
 
 /*** Big fat data tables ***/
 
-static const flag_type elements[] =
+static const struct flag_type elements[] =
 {
 	#define ELEM(a, b, c, d, e, f, g, h, i, col)	{ ELEM_##a, c },
     #include "list-elements.h"
     #undef ELEM
 };
 
-static const flag_type mod_flags[] =
+static const struct flag_type mod_flags[] =
 {
 	#define STAT(a, b, c, d, e, f, g, h) { OBJ_MOD_##a, h },
 	#include "list-stats.h"
@@ -78,7 +77,7 @@ static const flag_type mod_flags[] =
 	#undef OBJ_MOD
 };
 
-static const flag_type protect_flags[] =
+static const struct flag_type protect_flags[] =
 {
 	{ OF_PROT_FEAR, "fear" },
 	{ OF_PROT_BLIND, "blindness" },
@@ -86,14 +85,14 @@ static const flag_type protect_flags[] =
 	{ OF_PROT_STUN,  "stunning" },
 };
 
-static const flag_type sustain_flags[] =
+static const struct flag_type sustain_flags[] =
 {
 	#define STAT(a, b, c, d, e, f, g, h) { OF_##c, h },
 	#include "list-stats.h"
 	#undef STAT
 };
 
-static const flag_type misc_flags[] =
+static const struct flag_type misc_flags[] =
 {
 	{ OF_BLESSED, "Blessed by the gods" },
 	{ OF_SLOW_DIGEST, "Slows your metabolism" },
@@ -159,7 +158,7 @@ static void info_out_list(textblock *tb, const char *list[], size_t count)
 /**
  * Fills recepticle with all the flags in `flags` that are in the given `list`.
  */
-static size_t flag_info_collect(const flag_type list[], size_t max,
+static size_t flag_info_collect(const struct flag_type list[], size_t max,
 								const bitflag flags[OF_SIZE],
 								const char *recepticle[])
 {
@@ -496,7 +495,7 @@ static bool describe_brands(textblock *tb, const struct object *obj)
  * This code written according to the KISS principle.  650 adds
  * are cheaper than a FOV call and get the job done fine.
  */
-static void calculate_melee_crits(player_state *state, int weight,
+static void calculate_melee_crits(struct player_state *state, int weight,
 		int plus, int *mult, int *add, int *div)
 {
 	int k, to_crit = weight + 5*(state->to_h + plus) + 3*player->lev;
@@ -525,7 +524,7 @@ static void calculate_melee_crits(player_state *state, int weight,
 /**
  * Missile crits follow the same approach as melee crits.
  */
-static void calculate_missile_crits(player_state *state, int weight,
+static void calculate_missile_crits(struct player_state *state, int weight,
 		int plus, int *mult, int *add, int *div)
 {
 	int k, to_crit = weight + 4*(state->to_h + plus) + 2*player->lev;
@@ -629,7 +628,7 @@ static int obj_known_blows(const struct object *obj, int max_num,
 	int str_plus_bound;
 	int i;
 
-	player_state state;
+	struct player_state state;
 
 	int weapon_slot = slot_by_name(player, "weapon");
 	struct object *current_weapon = slot_object(player, weapon_slot);
@@ -795,7 +794,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	              (bow);
 	int multiplier = 1;
 
-	player_state state;
+	struct player_state state;
 	struct slay *s;
 	struct brand *b;
 	int weapon_slot = slot_by_name(player, "weapon");
@@ -1052,7 +1051,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 
 	/* Is the weapon too heavy? */
 	if (weapon) {
-		player_state state;
+		struct player_state state;
 		int weapon_slot = slot_by_name(player, "weapon");
 		struct object *current = equipped_item_by_slot_name(player, "weapon");
 
@@ -1134,7 +1133,7 @@ static bool describe_combat(textblock *tb, const struct object *obj)
  */
 static bool obj_known_digging(struct object *obj, int deciturns[])
 {
-	player_state state;
+	struct player_state state;
 	int i;
 	int chances[DIGGING_MAX];
 	int slot = wield_slot(obj);
@@ -1882,7 +1881,7 @@ textblock *object_info(const struct object *obj, oinfo_detail_t mode)
  */
 textblock *object_info_ego(struct ego_item *ego)
 {
-	object_kind *kind = NULL;
+	struct object_kind *kind = NULL;
 	struct object obj = { 0 };
 	size_t i;
 

@@ -35,8 +35,17 @@ static bool set_stun(struct player *p, int v);
 static bool set_cut(struct player *p, int v);
 
 
-static timed_effect effects[] =
-{
+static struct timed_effect {
+	const char *description;
+	const char *on_begin;
+	const char *on_end;
+	const char *on_increase;
+	const char *on_decrease;
+	u32b flag_redraw, flag_update;
+	int msg;
+	int fail_code;
+	int fail;
+} effects[] = {
 	#define TMD(a, b, c, d, e, f, g, h, i, j, k) \
 		{ b, c, d, e, f, g, h, i, j, k },
 	#include "list-player-timed.h"
@@ -88,7 +97,7 @@ int timed_protect_flag(int type)
  */
 bool player_set_timed(struct player *p, int idx, int v, bool notify)
 {
-	timed_effect *effect;
+	struct timed_effect *effect;
 
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -163,7 +172,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
  */
 bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 {
-	timed_effect *effect;
+	struct timed_effect *effect;
 
 	/* Find the effect */
 	effect = &effects[idx];

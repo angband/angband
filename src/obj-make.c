@@ -640,7 +640,7 @@ static bool make_artifact(struct object *obj)
  */
 bool make_fake_artifact(struct object *obj, struct artifact *artifact)
 {
-	object_kind *kind;
+	struct object_kind *kind;
 
 	/* Don't bother with empty artifacts */
 	if (!artifact->tval) return FALSE;
@@ -915,7 +915,7 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
  * the actual object to be cursed.  We do explicitly forbid objects
  * which are known to be boring or which start out somewhat damaged.
  */
-bool kind_is_good(const object_kind *kind)
+bool kind_is_good(const struct object_kind *kind)
 {
 	/* Some item types are (almost) always good */
 	switch (kind->tval)
@@ -1067,7 +1067,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 						   bool extra_roll, s32b *value, int tval)
 {
 	int base;
-	object_kind *kind;
+	struct object_kind *kind;
 	struct object *new_obj;
 
 	/* Try to make a special artifact */

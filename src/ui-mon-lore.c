@@ -34,7 +34,7 @@
  * \param tb is the textblock we are placing the title into.
  * \param race is the monster race we are describing.
  */
-void lore_title(textblock *tb, const monster_race *race)
+void lore_title(textblock *tb, const struct monster_race *race)
 {
 	byte standard_attr, optional_attr;
 	wchar_t standard_char, optional_char;
@@ -85,11 +85,11 @@ void lore_title(textblock *tb, const monster_race *race)
  *        information without subjective information and monster flavor,
  *        while `FALSE` only shows what the player knows.
  */
-void lore_description(textblock *tb, const monster_race *race,
-					  const monster_lore *original_lore, bool spoilers)
+void lore_description(textblock *tb, const struct monster_race *race,
+					  const struct monster_lore *original_lore, bool spoilers)
 {
-	monster_lore mutable_lore;
-	monster_lore *lore = &mutable_lore;
+	struct monster_lore mutable_lore;
+	struct monster_lore *lore = &mutable_lore;
 	bitflag known_flags[RF_SIZE];
 	int melee_colors[RBE_MAX], spell_colors[RSF_MAX];
 
@@ -99,7 +99,7 @@ void lore_description(textblock *tb, const monster_race *race,
 	get_attack_colors(melee_colors, spell_colors);
 
 	/* Hack -- create a copy of the monster-memory that we can modify */
-	memcpy(lore, original_lore, sizeof(monster_lore));
+	memcpy(lore, original_lore, sizeof(struct monster_lore));
 
 	/* Now get the known monster flags */
 	monster_flags_known(race, lore, known_flags);
@@ -161,7 +161,8 @@ void lore_description(textblock *tb, const monster_race *race,
  * \param race is the monster race we are describing.
  * \param lore is the known information about the monster race.
  */
-void lore_show_interactive(const monster_race *race, const monster_lore *lore)
+void lore_show_interactive(const struct monster_race *race,
+						   const struct monster_lore *lore)
 {
 	textblock *tb;
 	assert(race && lore);
@@ -183,7 +184,8 @@ void lore_show_interactive(const monster_race *race, const monster_lore *lore)
  * \param race is the monster race we are describing.
  * \param lore is the known information about the monster race.
  */
-void lore_show_subwindow(const monster_race *race, const monster_lore *lore)
+void lore_show_subwindow(const struct monster_race *race,
+						 const struct monster_lore *lore)
 {
 	int y;
 	textblock *tb;

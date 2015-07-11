@@ -989,12 +989,12 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 			/* Track if possible */
 			if (cave->squares[y][x].mon > 0) {
-				monster_type *m_ptr = square_monster(cave, y, x);
+				struct monster *mon = square_monster(cave, y, x);
 
 				/* Recall and track */
-				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
-					monster_race_track(player->upkeep, m_ptr->race);
-					health_track(player->upkeep, m_ptr);
+				if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+					monster_race_track(player->upkeep, mon->race);
+					health_track(player->upkeep, mon);
 				}
 			}
 		}

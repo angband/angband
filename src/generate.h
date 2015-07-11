@@ -59,13 +59,13 @@ struct pit_color_profile {
 struct pit_forbidden_monster {
     struct pit_forbidden_monster *next;
 
-    monster_race *race;
+    struct monster_race *race;
 };
 
 /**
  * Profile for choosing monsters for pits, nests or other themed areas
  */
-typedef struct pit_profile {
+struct pit_profile {
     struct pit_profile *next; /*!< Pointer to next pit profile */
 
     int pit_idx;              /**< Index in pit_info */
@@ -81,7 +81,7 @@ typedef struct pit_profile {
     struct pit_monster_profile *bases;     /**< List of vaild monster bases */
     struct pit_color_profile *colors;      /**< List of valid monster colors */
     struct pit_forbidden_monster *forbidden_monsters; /**< Forbidden monsters */
-} pit_profile;
+};
 
 extern struct pit_profile *pit_info;
 
@@ -126,7 +126,7 @@ struct dun_data {
     int pit_num;
 
 	/*!< Current pit profile in use */
-	pit_profile *pit_type;
+	struct pit_profile *pit_type;
 };
 
 
@@ -197,7 +197,7 @@ struct room_profile {
 
 
 /*
- * Information about "vault generation"
+ * Information about vault generation
  */
 struct vault {
     struct vault *next; /*!< Pointer to next vault template */
@@ -218,10 +218,10 @@ struct vault {
 
 
 
-/*
- * Information about "room generation"
+/**
+ * Information about template room generation
  */
-typedef struct room_template {
+struct room_template {
     struct room_template *next; /*!< Pointer to next room template */
 
     char *name;         /*!< Room name */
@@ -235,7 +235,7 @@ typedef struct room_template {
     byte wid;			/*!< Room width */
     byte dor;           /*!< Random door options */
     byte tval;			/*!< tval for objects in this room */
-} room_template_type;
+};
 
 struct dun_data *dun;
 struct vault *vaults;
@@ -285,7 +285,7 @@ bool build_circular(struct chunk *c, int y0, int x0);
 bool build_overlap(struct chunk *c, int y0, int x0);
 bool build_crossed(struct chunk *c, int y0, int x0);
 bool build_large(struct chunk *c, int y0, int x0);
-bool mon_pit_hook(monster_race *r_ptr);
+bool mon_pit_hook(struct monster_race *race);
 void set_pit_type(int depth, int type);
 bool build_nest(struct chunk *c, int y0, int x0);
 bool build_pit(struct chunk *c, int y0, int x0);

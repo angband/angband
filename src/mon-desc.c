@@ -39,30 +39,30 @@ void plural_aux(char *name, size_t max)
  * followed by either a singular or plural version of the race name as
  * appropriate.
  */
-void get_mon_name(char *output_name, size_t max, const monster_race *r_ptr,
-				  int num)
+void get_mon_name(char *output_name, size_t max,
+				  const struct monster_race *race, int num)
 {
-	assert(r_ptr);
+	assert(race);
 
     /* Unique names don't have a number */
-	if (rf_has(r_ptr->flags, RF_UNIQUE)) {
+	if (rf_has(race->flags, RF_UNIQUE)) {
 		my_strcpy(output_name, "[U] ", max);
-        my_strcat(output_name, r_ptr->name, max);
+        my_strcat(output_name, race->name, max);
         return;
     }
 
     my_strcpy(output_name, format("%3d ", num), max);
 
     if (num == 1) {
-        my_strcat(output_name, r_ptr->name, max);
+        my_strcat(output_name, race->name, max);
         return;
     }
 
-    if (r_ptr->plural != NULL) {
-        my_strcat(output_name, r_ptr->plural, max);
+    if (race->plural != NULL) {
+        my_strcat(output_name, race->plural, max);
     } else {
         char race_name[80];
-		my_strcpy(race_name, r_ptr->name, sizeof(race_name));
+		my_strcpy(race_name, race->name, sizeof(race_name));
         plural_aux(race_name, sizeof(race_name));
         my_strcat(output_name, race_name, max);
     }

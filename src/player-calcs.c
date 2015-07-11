@@ -1186,7 +1186,7 @@ static void calc_spells(struct player *p)
 	int num_allowed, num_known, num_total = p->class->magic.total_spells;
 	int percent_spells;
 
-	const class_spell *s_ptr;
+	const struct class_spell *spell;
 
 	s16b old_spells;
 
@@ -1236,10 +1236,10 @@ static void calc_spells(struct player *p)
 		if (j >= 99) continue;
 
 		/* Get the spell */
-		s_ptr = spell_by_index(j);
+		spell = spell_by_index(j);
 
 		/* Skip spells we are allowed to know */
-		if (s_ptr->slevel <= p->lev) continue;
+		if (spell->slevel <= p->lev) continue;
 
 		/* Is it known? */
 		if (p->spell_flags[j] & PY_SPELL_LEARNED) {
@@ -1250,7 +1250,7 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have forgotten the %s of %s.", noun, s_ptr->name);
+			msg("You have forgotten the %s of %s.", noun, spell->name);
 
 			/* One more can be learned */
 			p->upkeep->new_spells++;
@@ -1269,7 +1269,7 @@ static void calc_spells(struct player *p)
 		if (j >= 99) continue;
 
 		/* Get the spell */
-		s_ptr = spell_by_index(j);
+		spell = spell_by_index(j);
 
 		/* Forget it (if learned) */
 		if (p->spell_flags[j] & PY_SPELL_LEARNED) {
@@ -1280,7 +1280,7 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have forgotten the %s of %s.", noun, s_ptr->name);
+			msg("You have forgotten the %s of %s.", noun, spell->name);
 
 			/* One more can be learned */
 			p->upkeep->new_spells++;
@@ -1299,10 +1299,10 @@ static void calc_spells(struct player *p)
 		if (j >= 99) break;
 
 		/* Get the spell */
-		s_ptr = spell_by_index(j);
+		spell = spell_by_index(j);
 
 		/* Skip spells we cannot remember */
-		if (s_ptr->slevel > p->lev) continue;
+		if (spell->slevel > p->lev) continue;
 
 		/* First set of spells */
 		if (p->spell_flags[j] & PY_SPELL_FORGOTTEN) {
@@ -1313,7 +1313,7 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] |= PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have remembered the %s of %s.", noun, s_ptr->name);
+			msg("You have remembered the %s of %s.", noun, spell->name);
 
 			/* One less can be learned */
 			p->upkeep->new_spells--;
@@ -1326,11 +1326,11 @@ static void calc_spells(struct player *p)
 	/* Count spells that can be learned */
 	for (j = 0; j < num_total; j++) {
 		/* Get the spell */
-		s_ptr = spell_by_index(j);
+		spell = spell_by_index(j);
 
 		/* Skip spells we cannot remember or don't exist */
-		if (!s_ptr) continue;
-		if (s_ptr->slevel > p->lev || s_ptr->slevel == 0) continue;
+		if (!spell) continue;
+		if (spell->slevel > p->lev || spell->slevel == 0) continue;
 
 		/* Skip spells we already know */
 		if (p->spell_flags[j] & PY_SPELL_LEARNED)
@@ -1374,9 +1374,8 @@ int mana_per_level(struct player *p, struct player_state *state)
  */
 static void calc_mana(struct player *p, struct player_state *state)
 {
-	int i, msp, levels, cur_wgt, max_wgt;
-
-	object_type *o_ptr;
+	int i, msp, levels, cur_wgt, max_wgt; 
+	struct object *obj;
 
 	/* Hack -- Must be literate */
 	if (!p->class->magic.total_spells) {
@@ -1402,12 +1401,12 @@ static void calc_mana(struct player *p, struct player_state *state)
 		state->cumber_glove = FALSE;
 
 		/* Get the gloves */
-		o_ptr = equipped_item_by_slot_name(p, "hands");
+		obj = equipped_item_by_slot_name(p, "hands");
 
 		/* Normal gloves hurt mage-type spells */
-		if (o_ptr && !of_has(o_ptr->flags, OF_FREE_ACT) && 
-			!kf_has(o_ptr->kind->kind_flags, KF_SPELLS_OK) &&
-			(o_ptr->modifiers[OBJ_MOD_DEX] <= 0)) {
+		if (obj && !of_has(obj->flags, OF_FREE_ACT) && 
+			!kf_has(obj->kind->kind_flags, KF_SPELLS_OK) &&
+			(obj->modifiers[OBJ_MOD_DEX] <= 0)) {
 			/* Encumbered */
 			state->cumber_glove = TRUE;
 
@@ -1531,21 +1530,21 @@ static void calc_torch(struct player *p, struct player_state *state)
 	/* Examine all wielded objects, use the brightest */
 	for (i = 0; i < p->body.count; i++) {
 		int amt = 0;
-		object_type *o_ptr = slot_object(p, i);
+		struct object *obj = slot_object(p, i);
 
 		/* Skip empty slots */
-		if (!o_ptr) continue;
+		if (!obj) continue;
 
 		/* Light radius is now a modifier */
-		amt = o_ptr->modifiers[OBJ_MOD_LIGHT];
+		amt = obj->modifiers[OBJ_MOD_LIGHT];
 
 		/* Cursed objects emit no light */
-		if (of_has(o_ptr->flags, OF_LIGHT_CURSE))
+		if (of_has(obj->flags, OF_LIGHT_CURSE))
 			amt = 0;
 
 		/* Examine actual lights */
-		if (tval_is_light(o_ptr) && !of_has(o_ptr->flags, OF_NO_FUEL) &&
-				o_ptr->timeout == 0)
+		if (tval_is_light(obj) && !of_has(obj->flags, OF_NO_FUEL) &&
+				obj->timeout == 0)
 			/* Lights without fuel provide no light */
 			amt = 0;
 
@@ -1562,7 +1561,7 @@ static void calc_torch(struct player *p, struct player_state *state)
  * Populates `chances` with the player's chance of digging through
  * the diggable terrain types in one turn out of 1600.
  */
-void calc_digging_chances(player_state *state, int chances[DIGGING_MAX])
+void calc_digging_chances(struct player_state *state, int chances[DIGGING_MAX])
 {
 	int i;
 
@@ -1581,21 +1580,22 @@ void calc_digging_chances(player_state *state, int chances[DIGGING_MAX])
 /**
  * Calculate the blows a player would get.
  *
- * \param o_ptr is the object for which we are calculating blows
+ * \param obj is the object for which we are calculating blows
  * \param state is the player state for which we are calculating blows
  * \param extra_blows is the number of +blows available from this object and
  * this state
  *
  * N.B. state->num_blows is now 100x the number of blows.
  */
-int calc_blows(struct player *p, const object_type *o_ptr, player_state *state, int extra_blows)
+int calc_blows(struct player *p, const struct object *obj,
+			   struct player_state *state, int extra_blows)
 {
 	int blows;
 	int str_index, dex_index;
 	int div;
 	int blow_energy;
 
-	int weight = (o_ptr == NULL) ? 0 : o_ptr->weight;
+	int weight = (obj == NULL) ? 0 : obj->weight;
 	int min_weight = p->class->min_weight;
 
 	/* Enforce a minimum "weight" (tenth pounds) */
@@ -1624,7 +1624,7 @@ int calc_blows(struct player *p, const object_type *o_ptr, player_state *state, 
 /**
  * Computes current weight limit.
  */
-static int weight_limit(player_state *state)
+static int weight_limit(struct player_state *state)
 {
 	int i;
 
@@ -1674,7 +1674,7 @@ int weight_remaining(struct player *p)
  * information of objects; thus it returns what the player _knows_
  * the character state to be.
  */
-void calc_bonuses(struct player *p, player_state *state, bool known_only)
+void calc_bonuses(struct player *p, struct player_state *state, bool known_only)
 {
 	int i, j, hold;
 
@@ -2205,8 +2205,8 @@ static void update_bonuses(struct player *p)
 {
 	int i;
 
-	player_state state = p->state;
-	player_state known_state = p->known_state;
+	struct player_state state = p->state;
+	struct player_state known_state = p->known_state;
 
 
 	/* ------------------------------------
@@ -2340,16 +2340,16 @@ static void update_bonuses(struct player *p)
 /**
  * Track the given monster
  */
-void health_track(struct player_upkeep *upkeep, struct monster *m_ptr)
+void health_track(struct player_upkeep *upkeep, struct monster *mon)
 {
-	upkeep->health_who = m_ptr;
+	upkeep->health_who = mon;
 	upkeep->redraw |= PR_HEALTH;
 }
 
 /**
  * Track the given monster race
  */
-void monster_race_track(struct player_upkeep *upkeep, monster_race *race)
+void monster_race_track(struct player_upkeep *upkeep, struct monster_race *race)
 {
 	/* Save this monster ID */
 	upkeep->monster_race = race;

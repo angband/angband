@@ -25,7 +25,7 @@
 /**
  * Monster "lore" information
  */
-typedef struct
+typedef struct monster_lore
 {
 	int ridx;				/* Index of monster race */
 
@@ -68,51 +68,54 @@ typedef struct
 /**
  * Array[z_info->r_max] of monster lore
  */
-extern monster_lore *l_list;
+extern struct monster_lore *l_list;
 
 void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX]);
-void lore_append_kills(textblock *tb, const monster_race *race,
-					   const monster_lore *lore,
+void lore_append_kills(textblock *tb, const struct monster_race *race,
+					   const struct monster_lore *lore,
 					   const bitflag known_flags[RF_SIZE]);
-void lore_append_flavor(textblock *tb, const monster_race *race,
+void lore_append_flavor(textblock *tb, const struct monster_race *race,
 						bool append_utf8);
-void lore_append_movement(textblock *tb, const monster_race *race,
-						  const monster_lore *lore,
+void lore_append_movement(textblock *tb, const struct monster_race *race,
+						  const struct monster_lore *lore,
 						  bitflag known_flags[RF_SIZE]);
-void lore_append_toughness(textblock *tb, const monster_race *race,
-						   const monster_lore *lore,
+void lore_append_toughness(textblock *tb, const struct monster_race *race,
+						   const struct monster_lore *lore,
 						   bitflag known_flags[RF_SIZE]);
-void lore_append_exp(textblock *tb, const monster_race *race,
-					 const monster_lore *lore,
+void lore_append_exp(textblock *tb, const struct monster_race *race,
+					 const struct monster_lore *lore,
 					 bitflag known_flags[RF_SIZE]);
-void lore_append_drop(textblock *tb, const monster_race *race,
-					  const monster_lore *lore,
+void lore_append_drop(textblock *tb, const struct monster_race *race,
+					  const struct monster_lore *lore,
 					  bitflag known_flags[RF_SIZE]);
-void lore_append_abilities(textblock *tb, const monster_race *race,
-						   const monster_lore *lore,
+void lore_append_abilities(textblock *tb, const struct monster_race *race,
+						   const struct monster_lore *lore,
 						   bitflag known_flags[RF_SIZE]);
-void lore_append_awareness(textblock *tb, const monster_race *race,
-						   const monster_lore *lore,
+void lore_append_awareness(textblock *tb, const struct monster_race *race,
+						   const struct monster_lore *lore,
 						   bitflag known_flags[RF_SIZE]);
-void lore_append_friends(textblock *tb, const monster_race *race,
-						 const monster_lore *lore,
+void lore_append_friends(textblock *tb, const struct monster_race *race,
+						 const struct monster_lore *lore,
 						 bitflag known_flags[RF_SIZE]);
-void lore_append_spells(textblock *tb, const monster_race *race,
-						const monster_lore *lore,
+void lore_append_spells(textblock *tb, const struct monster_race *race,
+						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE],
 						const int spell_colors[RSF_MAX]);
-void lore_append_attack(textblock *tb, const monster_race *race,
-						const monster_lore *lore,
+void lore_append_attack(textblock *tb, const struct monster_race *race,
+						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE],
 						const int melee_colors[RBE_MAX]);
-void lore_update(const monster_race *race, monster_lore *lore);
-void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
-void wipe_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
+void lore_update(const struct monster_race *race, struct monster_lore *lore);
+void cheat_monster_lore(const struct monster_race *race,
+						struct monster_lore *lore);
+void wipe_monster_lore(const struct monster_race *race,
+					   struct monster_lore *lore);
 void lore_do_probe(struct monster *m);
-void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr,
+void monster_flags_known(const struct monster_race *race,
+						 const struct monster_lore *lore,
 						 bitflag flags[RF_SIZE]);
-void lore_treasure(struct monster *m_ptr, int num_item, int num_gold);
-monster_lore *get_lore(const monster_race *race);
+void lore_treasure(struct monster *mon, int num_item, int num_gold);
+struct monster_lore *get_lore(const struct monster_race *race);
 bool lore_save(const char *name);
 
 #endif /* MONSTER_LORE_H */

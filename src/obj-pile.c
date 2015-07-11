@@ -418,14 +418,14 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 		int act = 2;
 
 		if (obj1->origin_xtra && obj2->origin_xtra) {
-			monster_race *r_ptr = &r_info[obj1->origin_xtra];
-			monster_race *s_ptr = &r_info[obj2->origin_xtra];
+			struct monster_race *race1 = &r_info[obj1->origin_xtra];
+			struct monster_race *race2 = &r_info[obj2->origin_xtra];
 
-			bool r_uniq = rf_has(r_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
-			bool s_uniq = rf_has(s_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool r1_uniq = rf_has(race1->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool r2_uniq = rf_has(race2->flags, RF_UNIQUE) ? TRUE : FALSE;
 
-			if (r_uniq && !s_uniq) act = 0;
-			else if (s_uniq && !r_uniq) act = 1;
+			if (r1_uniq && !r2_uniq) act = 0;
+			else if (r2_uniq && !r1_uniq) act = 1;
 			else act = 2;
 		}
 

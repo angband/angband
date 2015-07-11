@@ -1633,7 +1633,7 @@ static void wiz_test_kind(int tval)
 
 	for (sval = 0; sval < 255; sval++) {
 		/* This spams failure messages, but that's the downside of wizardry */
-		object_kind *kind = lookup_kind(tval, sval);
+		struct object_kind *kind = lookup_kind(tval, sval);
 		if (!kind) continue;
 
 		/* Create the item */

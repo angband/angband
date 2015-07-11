@@ -174,7 +174,7 @@ void dump_monsters(ang_file *fff)
 	int i;
 
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *race = &r_info[i];
+		struct monster_race *race = &r_info[i];
 		byte attr = monster_x_attr[i];
 		wint_t chr = monster_x_char[i];
 
@@ -195,13 +195,13 @@ void dump_objects(ang_file *fff)
 	file_putf(fff, "# Objects\n");
 
 	for (i = 1; i < z_info->k_max; i++) {
-		object_kind *k_ptr = &k_info[i];
+		struct object_kind *kind = &k_info[i];
 		char name[120] = "";
 
-		if (!k_ptr->name || !k_ptr->tval) continue;
+		if (!kind->name || !kind->tval) continue;
 
-		object_short_name(name, sizeof name, k_ptr->name);
-		file_putf(fff, "object:%s:%s:%d:%d\n", tval_find_name(k_ptr->tval),
+		object_short_name(name, sizeof name, kind->name);
+		file_putf(fff, "object:%s:%s:%d:%d\n", tval_find_name(kind->tval),
 				name, kind_x_attr[i], kind_x_char[i]);
 	}
 }
@@ -233,16 +233,16 @@ void dump_features(ang_file *fff)
 	int i;
 
 	for (i = 0; i < z_info->f_max; i++) {
-		feature_type *f_ptr = &f_info[i];
+		struct feature *feat = &f_info[i];
 		size_t j;
 
 		/* Skip non-entries */
-		if (!f_ptr->name) continue;
+		if (!feat->name) continue;
 
 		/* Skip mimic entries -- except invisible trap */
-		if (f_ptr->mimic != i) continue;
+		if (feat->mimic != i) continue;
 
-		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
+		file_putf(fff, "# Terrain: %s\n", feat->name);
 		for (j = 0; j < LIGHTING_MAX; j++) {
 			byte attr = feat_x_attr[j][i];
 			wint_t chr = feat_x_char[j][i];
@@ -587,7 +587,7 @@ static enum parser_error parse_prefs_expr(struct parser *p)
 static enum parser_error parse_prefs_object(struct parser *p)
 {
 	int tvi, svi;
-	object_kind *kind;
+	struct object_kind *kind;
 	const char *tval, *sval;
 
 	struct prefs_data *d = parser_priv(p);
@@ -665,7 +665,7 @@ static enum parser_error parse_prefs_object(struct parser *p)
 static enum parser_error parse_prefs_monster(struct parser *p)
 {
 	const char *name;
-	monster_race *monster;
+	struct monster_race *monster;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
@@ -698,7 +698,7 @@ static enum parser_error parse_prefs_monster_base(struct parser *p)
 		return PARSE_ERROR_NO_KIND_FOUND;
 
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *race = &r_info[i];
+		struct monster_race *race = &r_info[i];
 
 		if (race->base != mb) continue;
 
@@ -900,7 +900,7 @@ static enum parser_error parse_prefs_flavor(struct parser *p)
 static enum parser_error parse_prefs_inscribe(struct parser *p)
 {
 	int tvi, svi;
-	object_kind *kind;
+	struct object_kind *kind;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
@@ -1267,31 +1267,31 @@ void reset_visuals(bool load_prefs)
 
 	/* Extract default attr/char code for features */
 	for (i = 0; i < z_info->f_max; i++) {
-		feature_type *f_ptr = &f_info[i];
+		struct feature *feat = &f_info[i];
 
 		/* Assume we will use the underlying values */
 		for (j = 0; j < LIGHTING_MAX; j++) {
-			feat_x_attr[j][i] = f_ptr->d_attr;
-			feat_x_char[j][i] = f_ptr->d_char;
+			feat_x_attr[j][i] = feat->d_attr;
+			feat_x_char[j][i] = feat->d_char;
 		}
 	}
 
 	/* Extract default attr/char code for objects */
 	for (i = 0; i < z_info->k_max; i++) {
-		object_kind *k_ptr = &k_info[i];
+		struct object_kind *kind = &k_info[i];
 
 		/* Default attr/char */
-		kind_x_attr[i] = k_ptr->d_attr;
-		kind_x_char[i] = k_ptr->d_char;
+		kind_x_attr[i] = kind->d_attr;
+		kind_x_char[i] = kind->d_char;
 	}
 
 	/* Extract default attr/char code for monsters */
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *r_ptr = &r_info[i];
+		struct monster_race *race = &r_info[i];
 
 		/* Default attr/char */
-		monster_x_attr[i] = r_ptr->d_attr;
-		monster_x_char[i] = r_ptr->d_char;
+		monster_x_attr[i] = race->d_attr;
+		monster_x_char[i] = race->d_char;
 	}
 
 	/* Extract default attr/char code for traps */

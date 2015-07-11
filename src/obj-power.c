@@ -141,7 +141,7 @@ void log_obj(char *message)
 /**
  * Calculate the multiplier we'll get with a given bow type.
  */
-static int bow_multiplier(const object_type *obj)
+static int bow_multiplier(const struct object *obj)
 {
 	int mult = 1;
 
@@ -157,7 +157,7 @@ static int bow_multiplier(const object_type *obj)
 /**
  * To damage power
  */
-static int to_damage_power(const object_type *obj)
+static int to_damage_power(const struct object *obj)
 {
 	int p;
 
@@ -179,7 +179,7 @@ static int to_damage_power(const object_type *obj)
 /**
  * Damage dice power or equivalent
  */
-static int damage_dice_power(const object_type *obj)
+static int damage_dice_power(const struct object *obj)
 {
 	int dice = 0;
 
@@ -204,7 +204,7 @@ static int damage_dice_power(const object_type *obj)
 /**
  * Add ammo damage for launchers, get multiplier and rescale
  */
-static int ammo_damage_power(const object_type *obj, int p)
+static int ammo_damage_power(const struct object *obj, int p)
 {
 	int q = 0;
 	int launcher = -1;
@@ -229,7 +229,7 @@ static int ammo_damage_power(const object_type *obj, int p)
 /**
  * Add launcher bonus for ego ammo, multiply for launcher and rescale
  */
-static int launcher_ammo_damage_power(const object_type *obj, int p)
+static int launcher_ammo_damage_power(const struct object *obj, int p)
 {
 	int ammo_type = 0;
 
@@ -248,7 +248,7 @@ static int launcher_ammo_damage_power(const object_type *obj, int p)
 /**
  * Add power for extra blows
  */
-static int extra_blows_power(const object_type *obj, int p, bool known)
+static int extra_blows_power(const struct object *obj, int p, bool known)
 {
 	int q = p;
 
@@ -275,7 +275,7 @@ static int extra_blows_power(const object_type *obj, int p, bool known)
 /**
  * Add power for extra shots - note that we cannot handle negative shots
  */
-static int extra_shots_power(const object_type *obj, int p, bool known)
+static int extra_shots_power(const struct object *obj, int p, bool known)
 {
 	if (obj->modifiers[OBJ_MOD_SHOTS] == 0)
 		return p;
@@ -298,7 +298,7 @@ static int extra_shots_power(const object_type *obj, int p, bool known)
 /**
  * Add power for extra might
  */
-static int extra_might_power(const object_type *obj, int p, int mult,
+static int extra_might_power(const struct object *obj, int p, int mult,
 							 bool known)
 {
 	if (known || object_this_mod_is_visible(obj, OBJ_MOD_MIGHT)) {
@@ -319,7 +319,7 @@ static int extra_might_power(const object_type *obj, int p, int mult,
 /**
  * Calculate the rating for a given slay combination
  */
-static s32b slay_power(const object_type *obj, int p, int verbose,
+static s32b slay_power(const struct object *obj, int p, int verbose,
 					   int dice_pwr, bool known)
 {
 	u32b sv = 0;
@@ -363,7 +363,7 @@ static s32b slay_power(const object_type *obj, int p, int verbose,
 		 * monsters, which we'll divide out later).
 		 */
 		for (i = 0; i < z_info->r_max; i++)	{
-			monster_type *mon = mem_zalloc(sizeof(*mon));
+			struct monster *mon = mem_zalloc(sizeof(*mon));
 			const struct brand *b = NULL;
 			const struct slay *s = NULL;
 			char verb[20];
@@ -372,7 +372,7 @@ static s32b slay_power(const object_type *obj, int p, int verbose,
 			mon->race = &r_info[i];
 
 			/* Find the best multiplier against this monster */
-			improve_attack_modifier((object_type *)obj, mon, &b, &s, 
+			improve_attack_modifier((struct object *)obj, mon, &b, &s, 
 									verb, FALSE, FALSE, !known);
 			if (s)
 				mult = s->multiplier;
@@ -458,7 +458,7 @@ static s32b slay_power(const object_type *obj, int p, int verbose,
  * Melee weapons assume MAX_BLOWS per turn, so we must divide by MAX_BLOWS
  * to get equal ratings for launchers.
  */
-static int rescale_bow_power(const object_type *obj, int p)
+static int rescale_bow_power(const struct object *obj, int p)
 {
 	if (wield_slot(obj) == slot_by_name(player, "shooting")) {
 		p /= MAX_BLOWS;
@@ -470,7 +470,7 @@ static int rescale_bow_power(const object_type *obj, int p)
 /**
  * Add power for +to_hit
  */
-static int to_hit_power(const object_type *obj, int p)
+static int to_hit_power(const struct object *obj, int p)
 {
 	int q = (obj->to_h * TO_HIT_POWER / 2);
 	p += q;
@@ -482,7 +482,7 @@ static int to_hit_power(const object_type *obj, int p)
 /**
  * Add power for base AC and adjust for weight
  */
-static int ac_power(const object_type *obj, int p)
+static int ac_power(const struct object *obj, int p)
 {
 	int q = 0;
 
@@ -514,7 +514,7 @@ static int ac_power(const object_type *obj, int p)
 /**
  * Add power for +to_ac
  */
-static int to_ac_power(const object_type *obj, int p)
+static int to_ac_power(const struct object *obj, int p)
 {
 	int q;
 
@@ -545,7 +545,7 @@ static int to_ac_power(const object_type *obj, int p)
 /**
  * Add base power for jewelry
  */
-static int jewelry_power(const object_type *obj, int p)
+static int jewelry_power(const struct object *obj, int p)
 {
 	if (tval_is_jewelry(obj)) {
 		p += BASE_JEWELRY_POWER;
@@ -558,7 +558,7 @@ static int jewelry_power(const object_type *obj, int p)
 /**
  * Add power for modifiers
  */
-static int modifier_power(const object_type *obj, int p, bool known)
+static int modifier_power(const struct object *obj, int p, bool known)
 {
 	int i, k = 1, extra_stat_bonus = 0, q;
 
@@ -595,7 +595,7 @@ static int modifier_power(const object_type *obj, int p, bool known)
 /**
  * Add power for non-derived flags (derived flags have flag_power 0)
  */
-static int flags_power(const object_type *obj, int p, int verbose,
+static int flags_power(const struct object *obj, int p, int verbose,
 					   ang_file *log_file, bool known)
 {
 	size_t i, j;
@@ -655,7 +655,7 @@ static int flags_power(const object_type *obj, int p, int verbose,
 /**
  * Add power for elemental properties
  */
-static int element_power(const object_type *obj, int p, bool known)
+static int element_power(const struct object *obj, int p, bool known)
 {
 	size_t i, j;
 	int q;
@@ -729,7 +729,7 @@ static int element_power(const object_type *obj, int p, bool known)
 /**
  * Add power for effect
  */
-static int effects_power(const object_type *obj, int p, bool known)
+static int effects_power(const struct object *obj, int p, bool known)
 {
 	int q = 0;
 
@@ -753,7 +753,7 @@ static int effects_power(const object_type *obj, int p, bool known)
 /**
  * Evaluate the object's overall power level.
  */
-s32b object_power(const object_type* obj, int verbose, ang_file *log_file,
+s32b object_power(const struct object* obj, int verbose, ang_file *log_file,
 				  bool known)
 {
 	s32b p = 0, dice_pwr = 0;
@@ -809,7 +809,7 @@ s32b object_power(const object_type* obj, int verbose, ang_file *log_file,
  * Return the "value" of an "unknown" item
  * Make a guess at the value of non-aware items
  */
-static s32b object_value_base(const object_type *obj)
+static s32b object_value_base(const struct object *obj)
 {
 	/* Use template cost for aware objects */
 	if (object_flavor_is_aware(obj) || object_all_but_flavor_is_known(obj))
@@ -848,7 +848,7 @@ static s32b object_value_base(const object_type *obj)
  * are priced according to their power rating. All ammo, and normal (non-ego)
  * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
-s32b object_value_real(const object_type *obj, int qty, int verbose,
+s32b object_value_real(const struct object *obj, int qty, int verbose,
 					   bool known)
 {
 	s32b value, total_value;
@@ -942,7 +942,7 @@ s32b object_value_real(const object_type *obj, int qty, int verbose,
  * Never notice unknown bonuses or properties, including curses,
  * since that would give the player information they did not have.
  */
-s32b object_value(const object_type *obj, int qty, int verbose)
+s32b object_value(const struct object *obj, int qty, int verbose)
 {
 	s32b value;
 
@@ -953,24 +953,24 @@ s32b object_value(const object_type *obj, int qty, int verbose)
 		value = object_value_real(obj, qty, verbose, TRUE);
 	} else if (tval_has_variable_power(obj)) {
 		/* Variable power items are assessed by what is known about them */
-		object_type object_type_body;
-		object_type *j_ptr = &object_type_body;
+		struct object object_type_body;
+		struct object *temp_obj = &object_type_body;
 
 		/* Hack -- Felt cursed items */
 		if (object_was_sensed(obj) && cursed_p((bitflag *)obj->flags))
 			return (0L);
 
-		memcpy(j_ptr, obj, sizeof(object_type));
+		memcpy(temp_obj, obj, sizeof(struct object));
 
-		/* give j_ptr only the flags known to be in obj */
-		object_flags_known(obj, j_ptr->flags);
+		/* give temp_obj only the flags known to be in obj */
+		object_flags_known(obj, temp_obj->flags);
 
 		if (!object_attack_plusses_are_visible(obj))
-			j_ptr->to_h = j_ptr->to_d = 0;
+			temp_obj->to_h = temp_obj->to_d = 0;
 		if (!object_defence_plusses_are_visible(obj))
-			j_ptr->to_a = 0;
+			temp_obj->to_a = 0;
 
-		value = object_value_real(j_ptr, qty, verbose, FALSE);
+		value = object_value_real(temp_obj, qty, verbose, FALSE);
 	} else
 		/* Unknown constant-price items just get a base value */
 		value = object_value_base(obj) * qty;

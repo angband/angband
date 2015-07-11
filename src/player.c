@@ -42,7 +42,7 @@ player_other *op_ptr = &player_other_body;
 /**
  * Pointer to the player struct
  */
-player_type *player;
+struct player *player;
 
 struct player_body *bodies;
 struct player_race *races;
@@ -390,7 +390,7 @@ static void init_player(void) {
 	player = mem_zalloc(sizeof *player);
 
 	/* Allocate player sub-structs */
-	player->upkeep = mem_zalloc(sizeof(player_upkeep));
+	player->upkeep = mem_zalloc(sizeof(struct player_upkeep));
 	player->upkeep->inven = mem_zalloc((z_info->pack_size + 1) * sizeof(struct object *));
 	player->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(struct object *));
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));

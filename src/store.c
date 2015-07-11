@@ -175,7 +175,7 @@ static enum parser_error parse_normal(struct parser *p) {
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
 	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
 
-	object_kind *kind = lookup_kind(tval, sval);
+	struct object_kind *kind = lookup_kind(tval, sval);
 	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
@@ -198,7 +198,7 @@ static enum parser_error parse_always(struct parser *p) {
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
 	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
 
-	object_kind *kind = lookup_kind(tval, sval);
+	struct object_kind *kind = lookup_kind(tval, sval);
 	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
@@ -366,14 +366,14 @@ struct init_module store_module = {
 /**
  * Check if a given item kind is an always-stocked item.
  */
-static bool store_is_staple(struct store *s, object_kind *k) {
+static bool store_is_staple(struct store *s, struct object_kind *k) {
 	size_t i;
 
 	assert(s);
 	assert(k);
 
 	for (i = 0; i < s->always_num; i++) {
-		object_kind *l = s->always_table[i];
+		struct object_kind *l = s->always_table[i];
 		if (k == l)
 			return TRUE;
 	}
@@ -977,7 +977,7 @@ void store_delete(struct store *s, struct object *obj, int amt)
 /**
  * Find a given object kind in the store.
  */
-static struct object *store_find_kind(struct store *s, object_kind *k) {
+static struct object *store_find_kind(struct store *s, struct object_kind *k) {
 	struct object *obj;
 
 	assert(s);
@@ -1109,7 +1109,7 @@ static bool black_market_ok(const struct object *obj)
 /**
  * Get a choice from the store allocation table, in tables.c
  */
-static object_kind *store_get_choice(struct store *store)
+static struct object_kind *store_get_choice(struct store *store)
 {
 	/* Choose a random entry from the store's table */
 	return store->normal_table[randint0(store->normal_num)];
@@ -1217,7 +1217,8 @@ static bool store_create_random(struct store *store)
  * Helper function: create an item with the given tval,sval pair, add it to the
  * store st.  Return the item in the inventory.
  */
-static struct object *store_create_item(struct store *store, object_kind *kind)
+static struct object *store_create_item(struct store *store,
+										struct object_kind *kind)
 {
 	struct object *obj = object_new();
 
@@ -1299,7 +1300,7 @@ static void store_maint(struct store *s)
 	if (s->always_num) {
 		size_t i;
 		for (i = 0; i < s->always_num; i++) {
-			object_kind *kind = s->always_table[i];
+			struct object_kind *kind = s->always_table[i];
 			struct object *obj = store_find_kind(s, kind);
 
 			/* Create the item if it doesn't exist */

@@ -239,8 +239,8 @@ void monster_list_collect(monster_list_t *list)
  */
 int monster_list_standard_compare(const void *a, const void *b)
 {
-	const monster_race *ar = ((monster_list_entry_t *)a)->race;
-	const monster_race *br = ((monster_list_entry_t *)b)->race;
+	const struct monster_race *ar = ((monster_list_entry_t *)a)->race;
+	const struct monster_race *br = ((monster_list_entry_t *)b)->race;
 
 	/* If this happens, something might be wrong in the collect function. */
 	if (ar == NULL || br == NULL)
