@@ -471,7 +471,7 @@ book:magic book:[Mordenkainen's Escapes]:5:1
 spell:Door Creation:13:9:40:12
 effect:TOUCH:MAKE_DOOR
 desc:A door is created on each empty floor space that is directly
-desc: adjacent to you.  These doors are closed, but not locked
+desc: adjacent to you.  These doors are closed, but not locked.
 
 spell:Stair Creation:24:20:50:20
 effect:CREATE_STAIRS
@@ -1305,7 +1305,7 @@ book:magic book:[Mordenkainen's Escapes]:4:1
 spell:Door Creation:17:7:30:15
 effect:TOUCH:MAKE_DOOR
 desc:A door is created on each empty floor space that is directly
-desc: adjacent to you.  These doors are closed, but not locked
+desc: adjacent to you.  These doors are closed, but not locked.
 
 spell:Stair Creation:25:12:40:25
 effect:CREATE_STAIRS
@@ -1684,8 +1684,6 @@ spell:Shield:35:30:75:80
 effect:TIMED_INC:SHIELD
 dice:30+d20
 desc:Grants you +50 to AC for 30+1d20 turns.
-dice:30+d20
-desc:Grants you +50 to AC for 30+1d20 turns.
 
 book:magic book:[Raal's Tome of Destruction]:4:1
 
@@ -1725,7 +1723,7 @@ book:magic book:[Mordenkainen's Escapes]:5:1
 spell:Door Creation:20:17:20:25
 effect:TOUCH:MAKE_DOOR
 desc:A door is created on each empty floor space that is directly
-desc: adjacent to you.  These doors are closed, but not locked
+desc: adjacent to you.  These doors are closed, but not locked.
 
 spell:Stair Creation:32:32:50:40
 effect:CREATE_STAIRS
