@@ -1279,6 +1279,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 	int gf_type = data->explosion.gf_type;
 	int num_grids = data->explosion.num_grids;
 	int *distance_to_grid = data->explosion.distance_to_grid;
+	bool drawing = data->explosion.drawing;
 	bool *player_sees_grid = data->explosion.player_sees_grid;
 	struct loc *blast_grid = data->explosion.blast_grid;
 	struct loc centre = data->explosion.centre;
@@ -1320,7 +1321,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 				redraw_stuff(player);
 
 			/* Delay to show this radius appearing */
-			if (drawn) {
+			if (drawn || drawing) {
 				Term_xtra(TERM_XTRA_DELAY, msec);
 			}
 
@@ -1359,15 +1360,13 @@ static void display_bolt(game_event_type type, game_event_data *data,
 {
 	int msec = op_ptr->delay_factor;
 	int gf_type = data->bolt.gf_type;
+	bool drawing = data->bolt.drawing;
 	bool seen = data->bolt.seen;
 	bool beam = data->bolt.beam;
 	int oy = data->bolt.oy;
 	int ox = data->bolt.ox;
 	int y = data->bolt.y;
 	int x = data->bolt.x;
-
-	/* Assume the player has seen nothing */
-	bool visual = FALSE;
 
 	/* Only do visuals if the player can "see" the bolt */
 	if (seen) {
@@ -1398,13 +1397,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 			/* Visual effects */
 			print_rel(c, a, y, x);
 		}
-
-		/* Hack -- Activate delay */
-		visual = TRUE;
-	}
-
-	/* Hack -- delay anyway for consistency */
-	else if (visual) {
+	} else if (drawing) {
 		/* Delay for consistency */
 		Term_xtra(TERM_XTRA_DELAY, msec);
 	}
@@ -1435,9 +1428,6 @@ static void display_missile(game_event_type type, game_event_data *data,
 
 		Term_fresh();
 		if (player->upkeep->redraw) redraw_stuff(player);
-	} else {
-		/* Delay anyway for consistency */
-		Term_xtra(TERM_XTRA_DELAY, msec);
 	}
 }
 

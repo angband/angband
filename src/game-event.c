@@ -194,6 +194,7 @@ void event_signal_blast(game_event_type type,
 						int gf_type,
 						int num_grids,
 						int *distance_to_grid,
+						bool drawing,
 						bool *player_sees_grid,
 						struct loc *blast_grid,
 						struct loc centre)
@@ -202,6 +203,7 @@ void event_signal_blast(game_event_type type,
 	data.explosion.gf_type = gf_type;
 	data.explosion.num_grids = num_grids;
 	data.explosion.distance_to_grid = distance_to_grid;
+	data.explosion.drawing = drawing;
 	data.explosion.player_sees_grid = player_sees_grid;
 	data.explosion.blast_grid = blast_grid;
 	data.explosion.centre = centre;
@@ -211,6 +213,7 @@ void event_signal_blast(game_event_type type,
 
 void event_signal_bolt(game_event_type type,
 					   int gf_type,
+					   bool drawing,
 					   bool seen,
 					   bool beam,
 					   int oy,
@@ -220,6 +223,7 @@ void event_signal_bolt(game_event_type type,
 {
 	game_event_data data;
 	data.bolt.gf_type = gf_type;
+	data.bolt.drawing = drawing;
 	data.bolt.seen = seen;
 	data.bolt.beam = beam;
 	data.bolt.oy = oy;

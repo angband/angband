@@ -597,6 +597,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	/* Assume the player sees nothing */
 	bool notice = FALSE;
 
+	/* Notify the UI if it can draw this projection */
+	bool drawing = FALSE;
+
 	/* Is the player blind? */
 	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
@@ -734,7 +737,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 					bool beam = flg & (PROJECT_BEAM);
 
 					/* Tell the UI to display the bolt */
-					event_signal_bolt(EVENT_BOLT, typ, seen, beam, oy, ox, y, x);
+					event_signal_bolt(EVENT_BOLT, typ, drawing, seen, beam, oy,
+									  ox, y, x);
 				}
 			}
 	}
@@ -942,7 +946,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Tell the UI to display the blast */
 	event_signal_blast(EVENT_EXPLOSION, typ, num_grids, distance_to_grid,
-					   player_sees_grid, blast_grid, centre);
+					   drawing, player_sees_grid, blast_grid, centre);
 
 	/* Check objects */
 	if (flg & (PROJECT_ITEM)) {
