@@ -213,13 +213,12 @@ static void get_stats(int stat_use[STAT_MAX])
 {
 	int i, j;
 
-	int dice[18];
-
+	int dice[3 * STAT_MAX];
 
 	/* Roll and verify some stats */
 	while (TRUE) {
 		/* Roll some dice */
-		for (j = i = 0; i < 18; i++) {
+		for (j = i = 0; i < 3 * STAT_MAX; i++) {
 			/* Roll the dice */
 			dice[i] = randint1(3 + i % 3);
 
@@ -228,7 +227,7 @@ static void get_stats(int stat_use[STAT_MAX])
 		}
 
 		/* Verify totals */
-		if ((j > 42) && (j < 54)) break;
+		if ((j > 7 * STAT_MAX) && (j < 9 * STAT_MAX)) break;
 	}
 
 	/* Roll the stats */

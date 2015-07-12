@@ -24,9 +24,6 @@
 typedef unsigned int uint;
 #include "win-term.h"
 
-extern int arg_graphics;
-extern int arg_graphics_nice;
-
 
 /**
  * Default window layout function

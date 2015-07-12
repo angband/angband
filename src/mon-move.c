@@ -1313,21 +1313,26 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 		const char *m_name, int nx, int ny)
 {
 	struct monster_lore *lore = get_lore(mon->race);
-	struct object *obj = square_object(c, ny, nx);
+	struct object *obj;
+	bool visible = mflag_has(mon->mflag, MFLAG_VISIBLE);
 
-	bool is_item = obj ? TRUE : FALSE;;
-	if (is_item && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
-		rf_on(lore->flags, RF_TAKE_ITEM);
-		rf_on(lore->flags, RF_KILL_ITEM);
+	/* Learn about item pickup behavior */
+	for (obj = square_object(c, ny, nx); obj; obj = obj->next) {
+		if (!tval_is_money(obj) && visible) {
+			rf_on(lore->flags, RF_TAKE_ITEM);
+			rf_on(lore->flags, RF_KILL_ITEM);
+			break;
+		}
 	}
 
 	/* Abort if can't pickup/kill */
 	if (!rf_has(mon->race->flags, RF_TAKE_ITEM) &&
-			!rf_has(mon->race->flags, RF_KILL_ITEM)) {
+		!rf_has(mon->race->flags, RF_KILL_ITEM)) {
 		return;
 	}
 
 	/* Take or kill objects on the floor */
+	obj = square_object(c, ny, nx);
 	while (obj) {
 		char o_name[80];
 		bool safe = obj->artifact ? TRUE : FALSE;
@@ -1355,8 +1360,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 		/* The object cannot be picked up by the monster */
 		if (safe) {
 			/* Only give a message for "take_item" */
-			if (rf_has(mon->race->flags, RF_TAKE_ITEM) &&
-				mflag_has(mon->mflag, MFLAG_VISIBLE) &&
+			if (rf_has(mon->race->flags, RF_TAKE_ITEM) && visible &&
 				square_isview(c, ny, nx) && !ignore_item_ok(obj)) {
 				/* Dump a message */
 				msg("%s tries to pick up %s, but fails.", m_name, o_name);
