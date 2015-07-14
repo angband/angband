@@ -6,13 +6,13 @@ pageclass = "class='front'"
 </section>
 
 <section id="downloads">
-<p><a id="download" href="/downloads/4.0/angband-4.0.0-win.zip" download onclick="downloadClick(this.pathname);"><b>Download</b><br>
-<span class="sub">version 4.0.0, <span id="os">Windows</span></span></a>
+<p><a id="download" href="/downloads/4.0/angband-4.0.1-win.zip" download onclick="downloadClick(this.pathname);"><b>Download</b><br>
+<span class="sub">version 4.0.1, <span id="os">Windows</span></span></a>
 
 <p class="other">Also available:
-<a id="osx" href="/downloads/4.0/Angband-4.0.0-osx.dmg" download onclick="downloadClick(this.pathname);">OS X</a> |
+<a id="osx" href="/downloads/4.0/Angband-4.0.1-osx.dmg" download onclick="downloadClick(this.pathname);">OS X</a> |
 <a id="android" href="https://play.google.com/store/apps/details?id=org.angdroid.angband" onclick="downloadClick('/downloads/3.5/android');">Android</a> |
-<a id="source" href="/downloads/4.0/angband-4.0.0.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
+<a id="source" href="/downloads/4.0/angband-4.0.1.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
 
 <a href="/release">Read about the changes in this version</a>
 </section>
