@@ -519,7 +519,7 @@ static void project_monster_handler_FORCE(project_monster_handler_context_t *con
 	project_monster_breath(context, RSF_BR_WALL, 3);
 
 	/* Prevent thursting force breathers. */
-	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_WALL))
+	if (rsf_has(context->mon->race->spell_flags, RSF_BR_WALL))
 		return;
 
 	/* Thrust monster away. */
