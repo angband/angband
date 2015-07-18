@@ -218,7 +218,7 @@ static enum parser_error parse_mon_spell_effect(struct parser *p) {
 			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
 
 		/* Check for a value */
-		val = effect_param(type);
+	val = effect_param(new_effect->index, type);
 		if (val < 0)
 			return PARSE_ERROR_INVALID_VALUE;
 		else

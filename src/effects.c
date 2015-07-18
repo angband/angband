@@ -4358,47 +4358,83 @@ effect_index effect_lookup(const char *name)
 /**
  * Translate a string to an effect parameter index
  */
-int effect_param(const char *type)
+int effect_param(int index, const char *type)
 {
-	int val;
+	int val = -1;
 
-	/* If not a numerical value, run through the possibilities */
+	/* If not a numerical value, assign according to effect index */
 	if (sscanf(type, "%d", &val) != 1) {
+		switch (index) {
+				/* Projection name */
+			case EF_PROJECT_LOS:
+			case EF_PROJECT_LOS_AWARE:
+			case EF_BALL:
+			case EF_BREATH:
+			case EF_SWARM:
+			case EF_STAR:
+			case EF_STAR_BALL:
+			case EF_BOLT:
+			case EF_BEAM:
+			case EF_BOLT_OR_BEAM:
+			case EF_LINE:
+			case EF_ALTER:
+			case EF_BOLT_STATUS:
+			case EF_BOLT_STATUS_DAM:
+			case EF_BOLT_AWARE:
+			case EF_TOUCH:
+			case EF_TOUCH_AWARE: {
+				val = gf_name_to_idx(type);
+				break;
+			}
 
-		/* Projection name */
-		val = gf_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Timed effect name */
+			case EF_CURE:
+			case EF_TIMED_SET:
+			case EF_TIMED_INC:
+			case EF_TIMED_INC_NO_RES:
+			case EF_TIMED_DEC: {
+				val = timed_name_to_idx(type);
+				break;
+			}
 
-		/* Timed effect name */
-		val = timed_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Monster timed effect name */
+			case EF_MON_TIMED_INC: {
+				val = mon_timed_name_to_idx(type);
+				break;
+			}
 
-		/* Monster timed effect name */
-		val = mon_timed_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Summon name */
+			case EF_SUMMON: {
+				val = summon_name_to_idx(type);
+				break;
+			}
 
-		/* Summon name */
-		val = summon_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Stat name */
+			case EF_RESTORE_STAT:
+			case EF_DRAIN_STAT:
+			case EF_LOSE_RANDOM_STAT:
+			case EF_GAIN_STAT: {
+				val = stat_name_to_idx(type);
+				break;
+			}
 
-		/* Stat name */
-		val = stat_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Enchant type name - not worth a separate function */
+			case EF_ENCHANT: {
+				if (streq(type, "TOBOTH"))
+					val = ENCH_TOBOTH;
+				else if (streq(type, "TOHIT"))
+					val = ENCH_TOHIT;
+				else if (streq(type, "TODAM"))
+					val = ENCH_TODAM;
+				else if (streq(type, "TOAC"))
+					val = ENCH_TOAC;
+				break;
+			}
 
-		/* Enchant type name - not worth a separate function */
-		if (streq(type, "TOBOTH"))
-			val = ENCH_TOBOTH;
-		else if (streq(type, "TOHIT"))
-			val = ENCH_TOHIT;
-		else if (streq(type, "TODAM"))
-			val = ENCH_TODAM;
-		else if (streq(type, "TOAC"))
-			val = ENCH_TOAC;
+				/* Anything else shoulcn't be calling this */
+			default:
+				;
+		}
 	}
 
 	return val;

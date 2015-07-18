@@ -1751,7 +1751,7 @@ void do_cmd_wiz_effect(void)
 	/* Get the name */
 	if (askfor_aux(name, sizeof(name), NULL)) {
 		/* See if an effect parameter was entered */
-		p1 = effect_param(name);
+		p1 = effect_param(index, name);
 		if (p1 == -1) p1 = 0;
 	}
 

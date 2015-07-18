@@ -346,18 +346,7 @@ bool make_attack_spell(struct monster *mon)
 
 	/* Cast the spell. */
 	disturb(player, 1);
-
-	/* Special case RSF_HASTE until TMD_* and MON_TMD_* are rationalised */
-	if (thrown_spell == RSF_HASTE) {
-		if (blind)
-			msg("%s mumbles.", m_name);
-		else
-			msg("%s concentrates on %s body.", m_name, m_poss);
-
-		(void)mon_inc_timed(mon, MON_TMD_FAST, 50, 0, FALSE);
-	} else {
-		do_mon_spell(thrown_spell, mon, seen);
-	}
+	do_mon_spell(thrown_spell, mon, seen);
 
 	/* Remember what the monster did to us */
 	if (seen) {
