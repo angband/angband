@@ -24,6 +24,7 @@
 #include "init.h"
 #include "obj-gear.h"
 #include "obj-util.h"
+#include "player-calcs.h"
 #include "player-path.h"
 #include "randname.h"
 #include "target.h"
@@ -503,6 +504,7 @@ void bell_message(game_event_type unused, game_event_data *data, void *user)
 	Term_fresh();
 
 	display_message(unused, data, user);
+	player->upkeep->redraw |= PR_MESSAGE;
 }
 
 /**
