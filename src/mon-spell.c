@@ -34,14 +34,8 @@
 static const struct mon_spell_info {
 	u16b index;				/* Numerical index (RSF_FOO) */
 	int type;				/* Type bitflag */
-	const char *desc;		/* Verbal description */
-	int msgt;				/* Flag for message colouring */
-	bool save;				/* Does this attack allow a saving throw? */
-	const char *verb;		/* Description of the attack */
-	const char *blind_verb;	/* Description of the attack if unseen */
-	const char *lore_desc;	/* Description of the attack used in lore text */
 } mon_spell_info_table[] = {
-    #define RSF(a, b, c, d, e, f, g, h)	{ RSF_##a, b, c, d, e, f, g, h },
+    #define RSF(a, b)	{ RSF_##a, b },
     #include "list-mon-spells.h"
     #undef RSF
 };
@@ -55,6 +49,92 @@ static const struct breath_damage {
     #include "list-elements.h"
     #undef ELEM
 };
+
+typedef enum {
+	SPELL_TAG_NONE,
+	SPELL_TAG_NAME,
+	SPELL_TAG_PRONOUN
+} spell_tag_t;
+
+static spell_tag_t spell_tag_lookup(const char *tag)
+{
+	if (strncmp(tag, "name", 4) == 0)
+		return SPELL_TAG_NAME;
+	else if (strncmp(tag, "pronoun", 7) == 0)
+		return SPELL_TAG_PRONOUN;
+	else
+		return SPELL_TAG_NONE;
+}
+
+/**
+ * Print a monster spell message.
+ *
+ * We fill in the monster name and/or pronoun where necessary in
+ * the message to replace instances of {name} or {pronoun}.
+ */
+static void spell_message(struct monster *mon,
+						  const struct monster_spell *spell,
+						  bool seen, bool hits)
+{
+	char buf[1024] = "\0";
+	char m_name[80], m_poss[80];
+	const char *next;
+	const char *s;
+	const char *tag;
+	const char *in_cursor;
+	size_t end = 0;
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+	/* Get the monster possessive ("his"/"her"/"its") */
+	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
+
+	/* Get the message */
+	if (!seen)
+		in_cursor = spell->blind_message;
+	else if (!hits)
+		in_cursor = spell->miss_message;
+	else
+		in_cursor = spell->message;
+
+	next = strchr(in_cursor, '{');
+	while (next) {
+		/* Copy the text leading up to this { */
+		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor); 
+
+		s = next + 1;
+		while (*s && isalpha((unsigned char) *s)) s++;
+
+		/* Valid tag */
+		if (*s == '}') {
+			/* Start the tag after the { */
+			tag = next + 1;
+			in_cursor = s + 1;
+
+			switch(spell_tag_lookup(tag)) {
+			case SPELL_TAG_NAME:
+				strnfcat(buf, sizeof(buf), &end, m_name);
+				break;
+			case SPELL_TAG_PRONOUN:
+				strnfcat(buf, sizeof(buf), &end, m_poss);
+				break;
+			default:
+				break;
+			}
+		} else
+			/* An invalid tag, skip it */
+			in_cursor = next + 1;
+
+		next = strchr(in_cursor, '{');
+	}
+	strnfcat(buf, 1024, &end, in_cursor);
+
+	if (spell->msgt)
+		msgt(spell->msgt, "%s", buf);
+	else
+		msg("%s", buf);
+}
 
 static const struct monster_spell *monster_spell_by_index(int index)
 {
@@ -83,7 +163,6 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
 
 	const struct monster_spell *spell = monster_spell_by_index(index);
-	const struct mon_spell_info *info = &mon_spell_info_table[index];
 
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
@@ -98,20 +177,12 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 
 	/* Tell the player what's going on */
 	disturb(player, 1);
-
-	if (!seen)
-		msg("Something %s.", info->blind_verb);
-	else if (!hits) {
-		msg("%s %s %s, but misses.", m_name, info->verb, info->desc);
-		return;
-	} else if (info->msgt)
-		msgt(info->msgt, "%s %s %s.", m_name, info->verb, info->desc);
-	else
-		msg("%s %s %s.", m_name, info->verb, info->desc);
+	spell_message(mon, spell, seen, hits);
 
 	/* Try a saving throw if available */
-	if (info->save && randint0(100) < player->state.skills[SKILL_SAVE]) {
-		msg("You avoid the effects!");
+	if (spell->save_message &&
+		randint0(100) < player->state.skills[SKILL_SAVE]) {
+		msg("%s", spell->save_message);
 		return;
 	}
 
@@ -319,7 +390,7 @@ int best_spell_power(const struct monster_race *race, int resist)
 
 			/* For all attack forms the player can save against, damage
 			 * is halved */
-			if (info->save)
+			if (spell->save_message)
 				dam /= 2;
 
 			/* Get the spell */
@@ -367,10 +438,11 @@ static bool mon_spell_has_damage(int index)
 
 const char *mon_spell_lore_description(int index)
 {
+	const struct monster_spell *spell = monster_spell_by_index(index);
 	if (!mon_spell_is_valid(index))
 		return "";
 
-	return mon_spell_info_table[index].lore_desc;
+	return spell->lore_desc;
 }
 
 int mon_spell_lore_damage(int index, const struct monster_race *race,

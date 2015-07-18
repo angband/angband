@@ -392,7 +392,7 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 		cave_monster(cave, cave->mon_current) : NULL;
 
 	if (mon) {
-		mon_inc_timed(mon, context->p1, amount, MON_TMD_FLG_NOTIFY, FALSE);
+		mon_inc_timed(mon, context->p1, amount, 0, FALSE);
 		context->ident = TRUE;
 	}
 	return TRUE;
