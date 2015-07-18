@@ -10,7 +10,8 @@
 # message-invis - Message printed when spell is cast by an unseen monster,
 #                 e.g. Something utters a terrible incantation!
 # message-save - Message printed when player saves if the spell allows a save.
-#                Note that this message must be present for the player to get a #                save.
+#                Note that this message must be present for the player to get a 
+#                save.
 # message-miss - Message printed when a known/visible monster misses the spell
 #                attack against the player.
 # hit - to-hit chance (100 = always, 0 = never)

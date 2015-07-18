@@ -350,6 +350,8 @@ void write_monster_entries(ang_file *fff)
 		else
 			file_putf(fff, "%s\n", buf);
 	}
+
+	file_close(old);
 }
 
 /**
@@ -364,6 +366,7 @@ errr eval_monster_power(struct monster_race *racelist)
 	ang_file *mon_fp;
 	char buf[1024];
 	bool dump = FALSE;
+	bool wrote = TRUE;
 
 	/* Allocate arrays */
 	power = mem_zalloc(z_info->r_max * sizeof(long));
@@ -652,7 +655,7 @@ errr eval_monster_power(struct monster_race *racelist)
 
 	if (text_lines_to_file(buf, write_monster_entries)) {
 		msg("Failed to create file %s.new", buf);
-		return -1;
+		wrote = FALSE;
 	}
 
 	/* Free power arrays */
@@ -664,5 +667,5 @@ errr eval_monster_power(struct monster_race *racelist)
 	mem_free(power);
 
 	/* Success */
-	return 0;
+	return wrote ? 0 : -1;
 }

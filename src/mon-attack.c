@@ -102,7 +102,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 
 		/* Use the memorized info */
 		of_copy(ai_flags, mon->known_pstate.flags);
-		of_copy(ai_pflags, mon->known_pstate.pflags);
+		pf_copy(ai_pflags, mon->known_pstate.pflags);
 		if (!of_is_empty(ai_flags) || !pf_is_empty(ai_pflags))
 			know_something = TRUE;
 
