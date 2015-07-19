@@ -337,7 +337,7 @@ bool make_attack_spell(struct monster *mon)
 		failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
-	if ((thrown_spell >= MIN_NONINNATE_SPELL) && (randint0(100) < failrate)) {
+	if (!mon_spell_is_innate(thrown_spell) && (randint0(100) < failrate)) {
 		/* Message */
 		msg("%s tries to cast a spell, but fails.", m_name);
 
@@ -353,11 +353,11 @@ bool make_attack_spell(struct monster *mon)
 		rsf_on(lore->spell_flags, thrown_spell);
 
 		/* Innate spell */
-		if (thrown_spell < MIN_NONINNATE_SPELL) {
+		if (mon_spell_is_innate(thrown_spell)) {
 			if (lore->cast_innate < MAX_UCHAR)
 				lore->cast_innate++;
 		} else {
-		/* Bolt or Ball, or Special spell */
+			/* Bolt or Ball, or Special spell */
 			if (lore->cast_spell < MAX_UCHAR)
 				lore->cast_spell++;
 		}

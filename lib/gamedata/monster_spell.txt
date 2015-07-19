@@ -4,9 +4,8 @@
 # msgt - message type
 # lore - Description printed in monster recall after "It can",
 #        e.g. cause critical wounds
-# message-vis - Message printed when spell is cast by a visible monster
-#               (use {name}s for the monster's name),
-#               e.g. {name}s points at you, incanting terribly!
+# message-vis - Message printed when spell is cast by a visible monster,
+#               e.g. {name} points at you, incanting terribly!
 # message-invis - Message printed when spell is cast by an unseen monster,
 #                 e.g. Something utters a terrible incantation!
 # message-save - Message printed when player saves if the spell allows a save.
@@ -24,8 +23,9 @@
 #		sides = rlev-dependent power
 #		m_bonus: 1 means power is proportional to rlev, 2 means inverse
 
-# {name} is a marker that will be replaced with the name of the acting monster
-# when the message is displayed.
+# {name} and {pronoun} are markers that will be replaced with the acting
+# monster's name and his/her/its when the message is displayed,
+# e.g. {name} concentrates on {pronoun} body.
 
 name:SHRIEK
 msgt:SHRIEK

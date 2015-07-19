@@ -37,11 +37,9 @@ enum mon_spell_type {
     RST_HEAL    = 0x040,
     RST_TACTIC  = 0x080,    /* Get a better position */
     RST_ESCAPE  = 0x100,
-    RST_SUMMON  = 0x200
+    RST_SUMMON  = 0x200,
+    RST_INNATE  = 0x400
 };
-
-/* Minimum flag which can fail - needs fixing NRM */
-#define MIN_NONINNATE_SPELL    (FLAG_START + 26)
 
 /** Macros **/
 #define rsf_has(f, flag)       flag_has_dbg(f, RSF_SIZE, flag, #f, #flag)
@@ -81,6 +79,7 @@ void set_spells(bitflag *f, int types);
 int best_spell_power(const struct monster_race *race, int resist);
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 				  struct element_info *el, const struct monster_race *race);
+bool mon_spell_is_innate(int index);
 const char *mon_spell_lore_description(int index);
 int mon_spell_lore_damage(int index, const struct monster_race *race,
 						  bool know_hp);
