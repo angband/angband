@@ -88,24 +88,25 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Dead player */
 	if (p->chp < 0) {
 		/* Allow cheating */
-		if ((p->wizard || OPT(cheat_live)) && !get_check("Die? "))
+		if ((p->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
 			event_signal(EVENT_CHEAT_DEATH);
+		} else {
+			/* Hack -- Note death */
+			msgt(MSG_DEATH, "You die.");
+			event_signal(EVENT_MESSAGE_FLUSH);
 
-		/* Hack -- Note death */
-		msgt(MSG_DEATH, "You die.");
-		event_signal(EVENT_MESSAGE_FLUSH);
+			/* Note cause of death */
+			my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
 
-		/* Note cause of death */
-		my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
+			/* No longer a winner */
+			p->total_winner = FALSE;
 
-		/* No longer a winner */
-		p->total_winner = FALSE;
+			/* Note death */
+			p->is_dead = TRUE;
 
-		/* Note death */
-		p->is_dead = TRUE;
-
-		/* Dead */
-		return;
+			/* Dead */
+			return;
+		}
 	}
 
 	/* Hitpoint warning */
