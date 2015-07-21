@@ -273,7 +273,7 @@ int py_attack_hit_chance(const struct object *weapon)
 	int chance, bonus = player->state.to_h;
 
 	if (weapon)
-		bonus += player->state.to_h;
+		bonus += weapon->to_h;
 	chance = player->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
 	return chance;
 }
