@@ -3346,11 +3346,9 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 
 /**
- * Breathe an element
- * Stop if we hit a monster or the player, act as a ball (for now)
- * Allow target mode to pass over monsters
+ * Breathe an element, in a cone from the breather
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 radius
+ * context->p1 is element, context->p2 degrees of arc, context->p3 radius
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
@@ -3358,38 +3356,64 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, TRUE);
 	int type = context->p1;
-	int rad = context->p2;
+	int rad = context->p3;
 	int source;
 
 	int ty = py + 99 * ddy[context->dir];
 	int tx = px + 99 * ddx[context->dir];
 
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	/* Diameter of source starts at 20, so full strength only adjacent to
+	 * the breather. */
+	int diameter_of_source = 20;
+	int degrees_of_arc = context->p2;
+
+	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Radius of zero means no fixed limit. */
+	if (rad == 0)
+		rad = z_info->max_range;
 
 	/* Player or monster? */
 	if (cave->mon_current > 0) {
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
 		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP);
 
-		/* Breath parameters for monsters are monster-dependent */
-		dam = breath_dam(type, mon->hp); 
-		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
+		dam = breath_dam(type, mon->hp);
+
+		/* Powerful monsters breathe wider arcs */
+		if (rf_has(mon->race->flags, RF_POWERFUL)) {
+			diameter_of_source *= 2;
+			degrees_of_arc *= 2;
+		}
 	} else {
 		msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
 		source = -1;
 	}
 
 	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP);
-
+	if ((context->dir == 5) && target_okay() && source == -1)
 		target_get(&tx, &ty);
+
+	/* Diameter of the energy source. */
+	if (degrees_of_arc < 60) {
+		if (degrees_of_arc == 0)
+			/* This handles finite length beams */
+			diameter_of_source = rad * 10;
+		else
+			/* Narrower cone means energy drops off less quickly. 30 degree
+			 * breaths are still full strength 3 grids from the breather,
+			 * and 20 degree breaths are still full strength at 5 grids. */
+			diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
 	}
 
-	/* Aim at the target, explode */
-	(void) project(source, rad, ty, tx, dam, type, flg, 0, 0);
+	/* Max */
+	if (diameter_of_source > 250)
+		diameter_of_source = 250;
+
+	/* Breathe at the target */
+	(void) project(source, rad, ty, tx, dam, type, flg, degrees_of_arc,
+				   diameter_of_source);
 	context->ident = TRUE;
 
 	return TRUE;
