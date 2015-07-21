@@ -497,6 +497,15 @@ void save_game(void)
 	if (!prefs_save(path, option_dump, "Dump window settings"))
 		prt("Failed to save subwindow preferences", 0, 0);
 
+	/* Refresh */
+	Term_fresh();
+
+	/* Save monster memory to user directory */
+	if (!lore_save("lore.txt")) {
+		msg("lore save failed!");
+		event_signal(EVENT_MESSAGE_FLUSH);
+	}
+
 	/* Allow suspend again */
 	signals_handle_tstp();
 
@@ -536,12 +545,6 @@ void close_game(void)
 
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;
-
-	/* Save monster memory to user directory */
-	if (!lore_save("lore.txt")) {
-		msg("lore save failed!");
-		event_signal(EVENT_MESSAGE_FLUSH);
-	}
 
 	/* Handle death or life */
 	if (player->is_dead) {
