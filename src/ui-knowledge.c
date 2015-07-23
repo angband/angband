@@ -1398,9 +1398,8 @@ static void display_artifact(int col, int row, bool cursor, int oid)
  */
 static struct object *find_artifact(struct artifact *artifact)
 {
-	int y, x;
+	int y, x, i;
 	struct object *obj;
-	struct store *s;
 
 	for (y = 1; y < cave->height; y++)
 		for (x = 1; x < cave->width; x++)
@@ -1412,10 +1411,12 @@ static struct object *find_artifact(struct artifact *artifact)
 		if (obj->artifact == artifact)
 			return obj;
 
-	for (s = stores; s; s = s->next)
+	for (i = 0; i < MAX_STORES; i++) {
+		struct store *s = &stores[i];
 		for (obj = s->stock; obj; obj = obj->next)
 			if (obj->artifact == artifact)
 				return obj;
+	}
 
 	return NULL;
 }
@@ -1507,9 +1508,7 @@ static bool artifact_is_known(int a_idx)
 
 	/* Check all objects to see if it exists but hasn't been IDed */
 	obj = find_artifact(&a_info[a_idx]);
-	if (!obj)
-		return FALSE;
-	if (!object_is_known_artifact(obj))
+	if (obj && !object_is_known_artifact(obj))
 		return FALSE;
 
 	return TRUE;
