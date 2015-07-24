@@ -3313,10 +3313,10 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	int rad = context->p2 ? context->p2 : 2;
 	int source;
 
-	int ty = py + 99 * ddy[context->dir];
-	int tx = px + 99 * ddx[context->dir];
+	int ty = py + ddy[context->dir];
+	int tx = px + ddx[context->dir];
 
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Player or monster? */
 	if (cave->mon_current > 0) {
@@ -3324,7 +3324,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		source = cave->mon_current;
 		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
 		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP);
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 	} else {
 		if (context->p3) rad += player->lev / context->p3;
 		source = -1;
@@ -3332,7 +3332,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 	/* Ask for a target if no direction given */
 	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP);
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 		target_get(&tx, &ty);
 	}
@@ -3361,17 +3361,17 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int rad = context->p2;
 	int source;
 
-	int ty = py + 99 * ddy[context->dir];
-	int tx = px + 99 * ddx[context->dir];
+	int ty = py + ddy[context->dir];
+	int tx = px + ddx[context->dir];
 
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Player or monster? */
 	if (cave->mon_current > 0) {
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
 		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP);
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 		/* Breath parameters for monsters are monster-dependent */
 		dam = breath_dam(type, mon->hp); 
@@ -3383,7 +3383,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 	/* Ask for a target if no direction given */
 	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP);
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 		target_get(&tx, &ty);
 	}
@@ -3409,14 +3409,17 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	int num = context->value.m_bonus;
 
-	int ty = py + 99 * ddy[context->dir];
-	int tx = px + 99 * ddx[context->dir];
+	int ty = py + ddy[context->dir];
+	int tx = px + ddx[context->dir];
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Ask for a target if no direction given (early detonation) */
-	if ((context->dir == 5) && target_okay())
+	if ((context->dir == 5) && target_okay()) {
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
+
 		target_get(&tx, &ty);
+	}
 
 	while (num--) {
 		/* Aim at the target.  Hurt items on floor. */
@@ -3441,7 +3444,7 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 
 	s16b ty, tx;
 
-	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
+	int flg = PROJECT_THRU | PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
 
 	/* Describe */
 	if (!player->timed[TMD_BLIND])
@@ -3449,8 +3452,8 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
-		ty = py + 99 * ddy[i];
-		tx = px + 99 * ddx[i];
+		ty = py + ddy_ddd[i];
+		tx = px + ddx_ddd[i];
 
 		/* Aim at the target */
 		(void) project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0);
@@ -3474,12 +3477,12 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 
 	s16b ty, tx;
 
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	int flg = PROJECT_STOP | PROJECT_THRU | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
-		ty = py + 99 * ddy[i];
-		tx = px + 99 * ddx[i];
+		ty = py + ddy_ddd[i];
+		tx = px + ddx_ddd[i];
 
 		/* Aim at the target, explode */
 		(void) project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0);
@@ -3865,13 +3868,13 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		case 6:
 		{
 			/* Mana Ball */
-			int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-			int ty = player->py + 99 * ddy[context->dir];
-			int tx = player->px + 99 * ddx[context->dir];
+			int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+			int ty = player->py + ddy[context->dir];
+			int tx = player->px + ddx[context->dir];
 
 			/* Ask for a target if no direction given */
 			if ((context->dir == 5) && target_okay()) {
-				flg &= ~(PROJECT_STOP);
+				flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 				target_get(&tx, &ty);
 			}
