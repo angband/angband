@@ -458,7 +458,6 @@ void savefile_set_name(const char *fname)
  */
 void save_game(void)
 {
-	char name[80];
 	char path[1024];
 
 	/* Disturb the player */
@@ -492,8 +491,7 @@ void save_game(void)
 	Term_fresh();
 
 	/* Save the window prefs */
-	strnfmt(name, sizeof(name), "%s.prf", player_safe_name(player, TRUE));
-	path_build(path, sizeof(path), ANGBAND_DIR_USER, name);
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, "window.prf");
 	if (!prefs_save(path, option_dump, "Dump window settings"))
 		prt("Failed to save subwindow preferences", 0, 0);
 

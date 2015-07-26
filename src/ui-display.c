@@ -2325,6 +2325,9 @@ static void process_character_pref_files(void)
 	bool found;
 	char buf[1024];
 
+	/* Process the "window.prf" file */
+	process_pref_file("window.prf", TRUE, TRUE);
+
 	/* Process the "user.prf" file */
 	process_pref_file("user.prf", TRUE, TRUE);
 
