@@ -419,6 +419,10 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
+			case 'f':
+				arg_force_name = TRUE;
+				break;
+
 			case 'm':
 				if (!*arg) goto usage;
 				mstr = arg;

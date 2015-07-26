@@ -62,6 +62,9 @@ extern const char help_sdl[];
 extern const char help_test[];
 extern const char help_stats[];
 
+//phantom server play
+extern bool arg_force_name;
+
 
 struct module
 {

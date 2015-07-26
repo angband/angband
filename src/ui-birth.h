@@ -22,4 +22,7 @@
 void ui_init_birthstate_handlers(void);
 int textui_do_birth(void);
 
+//phantom
+bool arg_force_name;
+
 #endif
