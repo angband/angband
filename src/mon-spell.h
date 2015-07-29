@@ -75,7 +75,7 @@ enum mon_spell_type {
 int breath_dam(int element, int hp);
 void do_mon_spell(int index, struct monster *mon, bool seen);
 bool test_spells(bitflag *f, int types);
-void set_spells(bitflag *f, int types);
+void ignore_spells(bitflag *f, int types);
 int best_spell_power(const struct monster_race *race, int resist);
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 				  struct element_info *el, const struct monster_race *race);

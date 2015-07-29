@@ -284,7 +284,7 @@ bool make_attack_spell(struct monster *mon)
 	    randint0(100) < 50)
 
 		/* Require intelligent spells */
-		set_spells(f, RST_HASTE | RST_ANNOY | RST_ESCAPE | RST_HEAL | RST_TACTIC | RST_SUMMON);
+		ignore_spells(f, RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK | RST_INNATE);
 
 	/* Remove the "ineffective" spells */
 	remove_bad_spells(mon, f);
@@ -296,13 +296,13 @@ bool make_attack_spell(struct monster *mon)
 			!projectable(cave, mon->fy, mon->fx, py, px, PROJECT_STOP))
 
 			/* Remove spells that will only hurt friends */
-			set_spells(f, ~RST_BOLT);
+			ignore_spells(f, RST_BOLT);
 
 		/* Check for a possible summon */
 		if (!(summon_possible(mon->fy, mon->fx)))
 
 			/* Remove summoning spells */
-			set_spells(f, ~RST_SUMMON);
+			ignore_spells(f, RST_SUMMON);
 	}
 
 	/* No spells left */

@@ -249,17 +249,17 @@ bool test_spells(bitflag *f, int types)
 }
 
 /**
- * Set a spell bitflag to allow only a specific set of spell types.
+ * Set a spell bitflag to ignore a specific set of spell types.
  *
  * \param f is the set of spell flags we're pruning
- * \param types is the spell type(s) we're allowing
+ * \param types is the spell type(s) we're ignoring
  */
-void set_spells(bitflag *f, int types)
+void ignore_spells(bitflag *f, int types)
 {
 	const struct mon_spell_info *info;
 
 	for (info = mon_spell_types; info->index < RSF_MAX; info++)
-		if (rsf_has(f, info->index) && !(info->type & types))
+		if (rsf_has(f, info->index) && (info->type & types))
 			rsf_off(f, info->index);
 
 	return;
