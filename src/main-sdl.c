@@ -3351,7 +3351,7 @@ static void init_gfx(void)
 		
 		/* Check the graphic file */
 		if (graphics_modes[i].file[0]) {
-			path_build(path, sizeof(path), ANGBAND_DIR_TILES,
+			path_build(path, sizeof(path), graphics_modes[i].path,
 					   graphics_modes[i].file);
 
 			if (!file_exists(path)) {
