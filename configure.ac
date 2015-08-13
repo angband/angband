@@ -12,6 +12,8 @@ AC_SUBST(PACKAGE, angband)
 
 AC_CONFIG_HEADERS(src/autoconf.h)
 
+AC_CONFIG_MACRO_DIR([m4])
+
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
