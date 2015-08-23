@@ -128,9 +128,6 @@ int inven_damage(struct player *p, int type, int cperc)
 				if (damage)
 					continue;
 
-				/* Reduce charges if some devices are destroyed */
-				reduce_charges(obj, amt);
-
 				/* Destroy "amt" items */
 				destroyed = gear_object_for_use(obj, amt, FALSE, &none_left);
 				object_delete(&destroyed);

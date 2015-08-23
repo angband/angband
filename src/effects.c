@@ -2050,9 +2050,6 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 		msg("The recharge backfires!");
 		msg("There is a bright flash of light.");
 
-		/* Reduce the charges of rods/wands/staves */
-		reduce_charges(obj, 1);
-
 		/* Reduce and describe inventory */
 		if (object_is_carried(player, obj))
 			destroyed = gear_object_for_use(obj, 1, TRUE, &none_left);

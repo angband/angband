@@ -720,19 +720,6 @@ void distribute_charges(struct object *source, struct object *dest, int amt)
 
 
 /**
- * If rods or wand are destroyed, the total maximum timeout or charges of the
- * stack needs to be reduced, unless all the items are being destroyed. -LM-
- */
-void reduce_charges(struct object *obj, int amt)
-{
-	if (tval_can_have_charges(obj) && amt < obj->number)
-		obj->pval -= obj->pval * amt / obj->number;
-
-	if (tval_can_have_timeout(obj) && amt < obj->number)
-		obj->timeout -= obj->timeout * amt / obj->number;
-}
-
-/**
  * Number of items (usually rods) charging
  */
 int number_charging(const struct object *obj)

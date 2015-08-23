@@ -412,7 +412,25 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 
 		/* Change the weight */
 		player->upkeep->total_weight -= (num * obj->weight);
+
+		/* Describe if necessary */
+		if (message) 
+			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
 	} else {
+		/* Describe if necessary */
+		if (message) {
+			/* Artifacts */
+			if (artifact) {
+				object_desc(name, sizeof(name), obj,
+							ODESC_FULL | ODESC_SINGULAR);
+			} else {
+				/* Describe zero amount */
+				obj->number = 0;
+				object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+				obj->number = num;
+			}
+		}
+
 		/* We're using the entire stack */
 		usable = obj;
 		gear_excise_object(usable);

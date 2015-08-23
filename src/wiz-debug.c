@@ -1016,8 +1016,6 @@ static void wiz_statistics(struct object *obj, int level)
  */
 static void wiz_quantity_item(struct object *obj, bool carried)
 {
-	int tmp_int;
-
 	char tmp_val[3];
 
 	/* Never duplicate artifacts */
@@ -1029,7 +1027,7 @@ static void wiz_quantity_item(struct object *obj, bool carried)
 	/* Query */
 	if (get_string("Quantity: ", tmp_val, 3)) {
 		/* Extract */
-		tmp_int = atoi(tmp_val);
+		int tmp_int = atoi(tmp_val);
 
 		/* Paranoia */
 		if (tmp_int < 1) tmp_int = 1;
@@ -1045,7 +1043,11 @@ static void wiz_quantity_item(struct object *obj, bool carried)
 		}
 
 		/* Adjust charges/timeouts for devices */
-		reduce_charges(obj, (obj->number - tmp_int));
+		if (tval_can_have_charges(obj))
+			obj->pval = obj->pval * tmp_int / obj->number;
+
+		if (tval_can_have_timeout(obj))
+			obj->timeout = obj->timeout * tmp_int / obj->number;
 
 		/* Accept modifications */
 		obj->number = tmp_int;
