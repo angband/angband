@@ -54,6 +54,7 @@ bool inven_stack_okay(const struct object *obj);
 void inven_item_charges(struct object *obj);
 bool inven_carry(struct player *p, struct object *obj, bool absorb,
 				 bool message);
+void inven_wield(struct object *obj, int slot);
 void inven_takeoff(struct object *item);
 void inven_drop(struct object *obj, int amt);
 void combine_pack(void);

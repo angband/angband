@@ -57,7 +57,6 @@ void do_cmd_uninscribe(struct command *cmd);
 void do_cmd_inscribe(struct command *cmd);
 void do_cmd_autoinscribe(struct command *cmd);
 void do_cmd_takeoff(struct command *cmd);
-void wield_item(struct object *obj, int slot);
 void do_cmd_wield(struct command *cmd);
 void do_cmd_drop(struct command *cmd);
 void do_cmd_read_scroll(struct command *cmd);
