@@ -972,13 +972,22 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 		}
 	}
 
-	/* Objects sort by decreasing value */
-	if (object_value_real(orig, 1, FALSE, FALSE) >
-		object_value_real(new, 1, FALSE, FALSE))
-		return FALSE;
-	if (object_value_real(orig, 1, FALSE, FALSE) <
-		object_value_real(new, 1, FALSE, FALSE))
-		return TRUE;
+	/* Objects sort by decreasing value, except ammo */
+	if (tval_is_ammo(orig)) {
+		if (object_value_real(orig, 1, FALSE, FALSE) <
+			object_value_real(new, 1, FALSE, FALSE))
+			return FALSE;
+		if (object_value_real(orig, 1, FALSE, FALSE) >
+			object_value_real(new, 1, FALSE, FALSE))
+			return TRUE;
+	} else {
+		if (object_value_real(orig, 1, FALSE, FALSE) >
+			object_value_real(new, 1, FALSE, FALSE))
+			return FALSE;
+		if (object_value_real(orig, 1, FALSE, FALSE) <
+			object_value_real(new, 1, FALSE, FALSE))
+			return TRUE;
+	}
 
 	/* No preference */
 	return FALSE;
