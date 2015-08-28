@@ -58,7 +58,7 @@ struct trap_kind *lookup_trap(const char *desc)
  */
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
 {
-    struct trap *trap = c->squares[y][x].trap;
+    struct trap *trap = square_trap(c, y, x);
 	
     /* First, check the trap marker */
     if (!square_istrap(c, y, x))
@@ -81,7 +81,7 @@ bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
  */
 bool square_trap_flag(struct chunk *c, int y, int x, int flag)
 {
-    struct trap *trap = c->squares[y][x].trap;
+    struct trap *trap = square_trap(c, y, x);
 
     /* First, check the trap marker */
     if (!square_istrap(c, y, x))
@@ -109,7 +109,7 @@ bool square_trap_flag(struct chunk *c, int y, int x, int flag)
  */
 static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
 {
-    struct trap *trap = c->squares[y][x].trap;
+    struct trap *trap = square_trap(c, y, x);
     bool trap_exists = FALSE;
 
     /* Scan the square trap list */
@@ -162,7 +162,7 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
 		return FALSE;
 
     /* Check the feature trap flag */
-    return (tf_has(f_info[c->squares[y][x].feat].flags, TF_TRAP));
+    return (tf_has(square_feat(c, y, x)->flags, TF_TRAP));
 }
 
 /**
@@ -245,7 +245,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 
 	/* Allocate a new trap for this grid (at the front of the list) */
 	new_trap = mem_zalloc(sizeof(*new_trap));
-	new_trap->next = c->squares[y][x].trap;
+	new_trap->next = square_trap(c, y, x);
 	c->squares[y][x].trap = new_trap;
 
 	/* Set the details */
@@ -267,7 +267,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
  */
 void square_free_trap(struct chunk *c, int y, int x)
 {
-	struct trap *next, *trap = c->squares[y][x].trap;
+	struct trap *next, *trap = square_trap(c, y, x);
 
 	while (trap) {
 		next = trap->next;
@@ -282,7 +282,7 @@ void square_free_trap(struct chunk *c, int y, int x)
 bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
 {
     int found_trap = 0;
-	struct trap *trap = c->squares[y][x].trap;
+	struct trap *trap = square_trap(c, y, x);
     
     /* Check there is a player trap */
     if (!square_isplayertrap(c, y, x))
@@ -344,7 +344,7 @@ int num_traps(struct chunk *c, int y, int x, int vis)
 	struct trap *trap;
 
 	/* Look at the traps in this grid */
-	for (trap = c->squares[y][x].trap; trap; trap = trap->next) {
+	for (trap = square_trap(c, y, x); trap; trap = trap->next) {
 		/* Require that trap be capable of affecting the character */
 		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
 	    
@@ -391,7 +391,7 @@ extern void hit_trap(int y, int x)
 
 
 	/* Look at the traps in this grid */
-	for (trap = cave->squares[y][x].trap; trap; trap = trap->next) {
+	for (trap = square_trap(cave, y, x); trap; trap = trap->next) {
 		/* Require that trap be capable of affecting the character */
 		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
 	    
@@ -446,10 +446,14 @@ static void remove_trap_aux(struct chunk *c, struct trap *trap, int y, int x,
 bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx)
 {
     bool trap_exists;
-	struct trap **trap_slot = &c->squares[y][x].trap;
+	struct trap **trap_slot = NULL;
 	struct trap *next_trap;
 
+	/* Bounds check */
+	assert(square_in_bounds(c, y, x));
+
 	/* Look at the traps in this grid */
+	trap_slot = &c->squares[y][x].trap;
 	while (*trap_slot) {
 		/* Get the next trap (may be NULL) */
 		next_trap = (*trap_slot)->next;
@@ -496,7 +500,7 @@ void square_set_door_lock(struct chunk *c, int y, int x, int power)
 		place_trap(c, y, x, lock->tidx, 0);
 
 	/* Set the power (of all locks - there should be only one) */
-	trap = c->squares[y][x].trap;
+	trap = square_trap(c, y, x);
 	while (trap) {
 		if (trap->kind == lock)
 			trap->xtra = power;
@@ -521,7 +525,7 @@ int square_door_power(struct chunk *c, int y, int x)
 		return 0;
 
 	/* Get the power and return it */
-	trap = c->squares[y][x].trap;
+	trap = square_trap(c, y, x);
 	while (trap) {
 		if (trap->kind == lock)
 			return trap->xtra;

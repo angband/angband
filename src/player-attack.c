@@ -533,6 +533,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 
 	/* Project along the path */
 	for (i = 0; i < path_n; ++i) {
+		struct monster *mon = NULL;
 		int ny = path_g[i].y;
 		int nx = path_g[i].x;
 		bool see = square_isseen(cave, ny, nx);
@@ -550,8 +551,8 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 		event_signal_missile(EVENT_MISSILE, obj, see, y, x);
 
 		/* Try the attack on the monster at (x, y) if any */
-		if (cave->squares[y][x].mon > 0) {
-			struct monster *mon = square_monster(cave, y, x);
+		mon = square_monster(cave, y, x);
+		if (mon) {
 			int visible = mflag_has(mon->mflag, MFLAG_VISIBLE);
 
 			bool fear = FALSE;

@@ -141,6 +141,7 @@ void delete_monster_idx(int m_idx)
 	/* Monster location */
 	y = mon->fy;
 	x = mon->fx;
+	assert(square_in_bounds(cave, y, x));
 
 	/* Hack -- Reduce the racial counter */
 	mon->race->cur_num--;
