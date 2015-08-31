@@ -858,19 +858,19 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	*nonweap_slay = FALSE;
 	if (weapon)	{
 		for (i = 2; i < player->body.count; i++) {
-			struct object *obj = slot_object(player, i);
+			struct object *slot_obj = slot_object(player, i);
 			struct brand *new_brand;
 			struct slay *new_slay;
-			if (!obj)
+			if (!slot_obj)
 				continue;
 
-			for (s = obj->slays; s; s = s->next) {
+			for (s = slot_obj->slays; s; s = s->next) {
 				if (s->known) {
 					*nonweap_slay = TRUE;
 					break;
 				}
 			}
-			for (b = obj->brands; b; b = b->next) {
+			for (b = slot_obj->brands; b; b = b->next) {
 				if (b->known) {
 					*nonweap_slay = TRUE;
 					break;
@@ -879,8 +879,8 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 			if (!(*nonweap_slay)) continue;
 
 			/* Replace the old lists with new ones */
-			new_brand = brand_collect(*brand_list, obj, TRUE);
-			new_slay = slay_collect(*slay_list, obj, TRUE);
+			new_brand = brand_collect(*brand_list, slot_obj, TRUE);
+			new_slay = slay_collect(*slay_list, slot_obj, TRUE);
 			free_brand(*brand_list);
 			free_slay(*slay_list);
 			*brand_list = new_brand;

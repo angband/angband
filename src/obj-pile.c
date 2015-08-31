@@ -481,6 +481,12 @@ void object_absorb(struct object *obj1, struct object *obj2)
  */
 void object_wipe(struct object *obj)
 {
+	/* Free slays and brands */
+	if (obj->slays)
+		free_slay(obj->slays);
+	if (obj->brands)
+		free_brand(obj->brands);
+
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));
 }
