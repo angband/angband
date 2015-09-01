@@ -811,7 +811,21 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 
 		obj->mimicking_m_idx = m_idx;
 		new_mon->mimicked_obj = obj;
-		floor_carry(c, y, x, obj, FALSE);
+
+		/* Put the object on the floor if it goes, otherwise no mimicry */
+		if (!floor_carry(c, y, x, obj, FALSE)) {
+			/* Clear the mimicry */
+			obj->mimicking_m_idx = 0;
+			new_mon->mimicked_obj = NULL;
+
+			/* Give the object to the monster if appropriate */
+			if (rf_has(new_mon->race->flags, RF_MIMIC_INV)) {
+				monster_carry(c, new_mon, obj);
+			} else {
+				/* Otherwise delete the mimicked object */
+				object_delete(&obj);
+			}
+		}
 	}
 
 	/* Result */

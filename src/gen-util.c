@@ -449,10 +449,10 @@ void place_object(struct chunk *c, int y, int x, int level, bool good, bool grea
     new_obj->origin_depth = c->depth;
 
     /* Give it to the floor */
-    /* XXX Should this be done in floor_carry? */
     if (!floor_carry(c, y, x, new_obj, FALSE)) {
 		if (new_obj->artifact)
 			new_obj->artifact->created = FALSE;
+		object_delete(&new_obj);
 		return;
     } else {
 		if (new_obj->artifact)
@@ -485,7 +485,8 @@ void place_gold(struct chunk *c, int y, int x, int level, byte origin)
     money->origin = origin;
     money->origin_depth = level;
 
-    floor_carry(c, y, x, money, FALSE);
+    if (!floor_carry(c, y, x, money, FALSE))
+		object_delete(&money);
 }
 
 
