@@ -128,7 +128,7 @@ extern bool suffix(const char *s, const char *t);
 /**
  * Skip occurrences of a characters
  */
-extern void strskip(char *s, const char c);
+extern void strskip(char *s, const char c, const char e);
 extern void strescape(char *s, const char c);
 
 /**

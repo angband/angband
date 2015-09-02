@@ -51,7 +51,7 @@ Equipment list ('e')
   GLOVES (gloves), BOOTS (boots).   You must be wielding/wearing certain
   objects to take advantage of their special powers.
 
-Quiver list ('|')
+Quiver list ('\|')
   Missiles that you carry will automatically be put in your quiver.  The
   quiver has 10 slots; it also takes up inventory space, so every 40 missiles
   will reduce your number of inventory slots by 1.

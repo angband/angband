@@ -290,32 +290,48 @@ bool prefix_i(const char *s, const char *t)
 }
 
 /**
- * Rewrite string s in-place "skipping" every occurrence of character c
+ * Rewrite string s in-place "skipping" every occurrence of character c except
+ * those preceded by character e
  */
-void strskip(char *s, const char c){
-	char *in=s;
-	char *out=s;
-	while(*in){
-		if(*in!=c){
-			*out=*in;
+void strskip(char *s, const char c, const char e) {
+	char *in = s;
+	char *out = s;
+	bool escapeseen = FALSE;
+	while (*in) {
+		if ((*in != c) && ((*in != e) || escapeseen)) {
+			if (escapeseen) {
+				/* Not escaping anything */
+				*out = e;
+				out++;
+			}
+			*out = *in;
 			out++;
+			escapeseen = FALSE;
+		} else if (*in == e) {
+			/* Maybe escaping something */
+			escapeseen = TRUE;
+		} else if (escapeseen) {
+			/* Add the escaped character */
+			*out = *in;
+			out++;
+			escapeseen = FALSE;
 		}
 		in++;
 	}
-	*out=0;
+	*out = 0;
 }
 
 /**
  * Rewrite string s in-place removing escape character c
  * note that pairs of c will leave one instance of c in out
  */
-void strescape(char *s, const char c){
-	char *in=s;
-	char *out=s;
+void strescape(char *s, const char c) {
+	char *in = s;
+	char *out = s;
 	bool escapenext = FALSE;
-	while(*in){
-		if(*in!=c || escapenext){
-			*out=*in;
+	while (*in) {
+		if (*in != c || escapenext) {
+			*out = *in;
 			out++;
 			escapenext = FALSE;
 		} else if (*in == c) {
@@ -323,7 +339,7 @@ void strescape(char *s, const char c){
 		}
 		in++;
 	}
-	*out=0;
+	*out = 0;
 }
 
 /**
