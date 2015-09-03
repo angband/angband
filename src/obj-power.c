@@ -953,7 +953,7 @@ s32b object_value(const struct object *obj, int qty, int verbose)
 		value = object_value_real(obj, qty, verbose, TRUE);
 	} else if (tval_has_variable_power(obj)) {
 		/* Variable power items are assessed by what is known about them */
-		struct object object_type_body;
+		struct object object_type_body = { 0 };
 		struct object *temp_obj = &object_type_body;
 
 		/* Hack -- Felt cursed items */
