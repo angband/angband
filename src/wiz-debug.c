@@ -1199,6 +1199,17 @@ void wiz_cheat_death(void)
 		player->word_recall = 0;
 	}
 
+	/* Cancel deep descent */
+	if (player->deep_descent)
+	{
+		/* Message */
+		msg("The air around you stops swirling...");
+		event_signal(EVENT_MESSAGE_FLUSH);
+
+		/* Hack -- Prevent recall */
+		player->deep_descent = 0;
+	}
+
 	/* Note cause of death XXX XXX XXX */
 	my_strcpy(player->died_from, "Cheating death", sizeof(player->died_from));
 

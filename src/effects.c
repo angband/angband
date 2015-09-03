@@ -858,6 +858,11 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 		msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
 		player->deep_descent = 3 + randint1(4);
 		context->ident = TRUE;
+
+		/* Redraw status line */
+		player->upkeep->redraw |= PR_STATUS;
+		handle_stuff(player);
+
 		return TRUE;
 	} else {
 		msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");

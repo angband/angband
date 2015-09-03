@@ -720,6 +720,20 @@ static size_t prt_recall(int row, int col)
 
 
 /**
+ * Print deep descent status.
+ */
+static size_t prt_descent(int row, int col)
+{
+	if (player->deep_descent) {
+		c_put_str(COLOUR_WHITE, "Descent", row, col);
+		return sizeof "Descent";
+	}
+
+	return 0;
+}
+
+
+/**
  * Print cut indicator.
  */
 static size_t prt_cut(int row, int col)
@@ -1009,7 +1023,7 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_unignore, prt_recall, prt_state, prt_cut, 
+{ prt_level_feeling, prt_unignore, prt_recall, prt_descent, prt_state, prt_cut, 
   prt_stun, prt_hunger, prt_study, prt_tmd, prt_dtrap };
 
 
