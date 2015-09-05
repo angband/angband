@@ -353,12 +353,17 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 	/* Delete all the monsters */
 	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--) {
 		struct monster *mon = cave_monster(c, m_idx);
+		struct object *obj = mon ? mon->held_obj : NULL;
 
 		/* Skip dead monsters */
 		if (!mon->race) continue;
 
-		/* Delete all the objects */
-		object_pile_free(mon->held_obj);
+		/* Delete all the objects, first handling artifacts */
+		if (obj) {
+			if (obj->artifact && !object_was_sensed(obj))
+				obj->artifact->created = FALSE;
+			object_pile_free(obj);
+		}
 
 		/* Reduce the racial counter */
 		mon->race->cur_num--;
@@ -701,6 +706,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 			any = TRUE;
 		else {
 			obj->artifact->created = FALSE;
+			object_wipe(obj);
 			mem_free(obj);
 		}
 	}
@@ -724,6 +730,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 			any = TRUE;
 		else {
 			obj->artifact->created = FALSE;
+			object_wipe(obj);
 			mem_free(obj);
 		}
 	}
