@@ -1,0 +1,42 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]
+ - [OS X][3] (10.5+)
+
+[1]:http://rephial.org/downloads/4.0/angband-4.0.2.tar.gz "Source tarball, 20M"
+[2]:http://rephial.org/downloads/4.0/angband-4.0.2-win.zip "Windows port, 19M zip file"
+[3]:http://rephial.org/downloads/4.0/Angband-4.0.2-osx.dmg "Max OS X port, 19M .dmg file"
+
+Background
+==========
+Version 4.0.2 had more bugfixes and an improvement of monster spell messages, and was released on Sunday 6 September 2015.
+
+Changes
+=======
+ * New monster spell messages - thanks Elsairon
+ * Put subwindow options in a separate file so they work for all characters
+ * Order quiver ammo from worst to best
+ * Make resting and statusline display for deep descent work like for recall 
+
+Bugfixes
+========
+ * Stop wrong timed effect happening
+ * Make cheating death work
+ * Make monster lore saving always work
+ * Correct melee hit chance calculation
+ * Make artifact knowledge show correctly
+ * Fix starlight effect (plus some other potential projection issues)
+ * Make monster lore save properly after probing
+ * Give correct path to tiles in the SDL port
+ * Stop monsters shooting other monsters
+ * Calculate timed effects (notably temporary resists) properly
+ * Limit visual updates during running and resting, speeding these up
+ * Track the equipment count correctly
+ * Stop the charges from a destroyed device being deducted twice
+ * Small changes to build system to work better for servers and BSD
+ * Improve bounds checking for grids, preventing some crashes
+ * Make the quiver command symbol appear in help file display
+ * Fix lack of artifacts
+ * Several other minor code improvements
