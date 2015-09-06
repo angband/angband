@@ -5,8 +5,8 @@ Credits
 If your name should be included in this file and it's not, please email us
 so we can fix it. :)
 
-This version
-============
+Version 4.0.x
+=============
 
 Code contribution:
 
@@ -16,15 +16,19 @@ Code contribution:
  * Bardur Arantsson
  * Ben Semmler (molybdenum)
  * Chris Carr (magnate)
+ * Christian Heckendorf
  * Elly Fong-Jones (elly)
+ * Elsairon
  * Erik Osheim (d_m)
  * Jagath Samarabandu
  * Jose Antonio Dura
+ * Kevin J. Fletcher
  * LostTemplar
  * Michel Carroll
  * Nick McConnell
  * Nomad
  * Peter Denison (noz)
+ * phantom-voltage
  * PowerWyrm
  * Robert Au (myshkin)
  * Rydelfox
