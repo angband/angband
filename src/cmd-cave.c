@@ -46,6 +46,8 @@
  */
 void do_cmd_go_up(struct command *cmd)
 {
+	int ascend_to;
+
 	/* Verify stairs */
 	if (!square_isupstairs(cave, player->py, player->px)) {
 		msg("I see no up staircase here.");
@@ -55,6 +57,13 @@ void do_cmd_go_up(struct command *cmd)
 	/* Force descend */
 	if (OPT(birth_force_descend)) {
 		msg("Nothing happens!");
+		return;
+	}
+	
+	ascend_to = dungeon_get_next_level(player->depth, -1);
+	
+	if (ascend_to == player->depth) {
+		msg("You can't go up from here!");
 		return;
 	}
 
@@ -67,9 +76,9 @@ void do_cmd_go_up(struct command *cmd)
 	/* Create a way back */
 	player->upkeep->create_up_stair = FALSE;
 	player->upkeep->create_down_stair = TRUE;
-
+	
 	/* Change level */
-	dungeon_change_level(player->depth - 1);
+	dungeon_change_level(ascend_to);
 }
 
 
@@ -78,7 +87,7 @@ void do_cmd_go_up(struct command *cmd)
  */
 void do_cmd_go_down(struct command *cmd)
 {
-	int descend_to = player->depth + 1;
+	int descend_to = dungeon_get_next_level(player->depth, 1);
 
 	/* Verify stairs */
 	if (!square_isdownstairs(cave, player->py, player->px)) {
