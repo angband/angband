@@ -2790,6 +2790,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 {
 	bool up = TRUE, down = TRUE;
+	int target_depth;
 
 	context->ident = TRUE;
 
@@ -2820,14 +2821,18 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	/* Now actually do the level change */
 	if (up) {
 		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-		dungeon_change_level(player->depth - 1);
+		target_depth = dungeon_get_next_level(player->depth, -1);
+		dungeon_change_level(target_depth);
 	} else if (down) {
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
-		if (OPT(birth_force_descend))
-			dungeon_change_level(player->max_depth + 1);
-		else
-			dungeon_change_level(player->depth + 1);
+		if (OPT(birth_force_descend)) {
+			target_depth = dungeon_get_next_level(player->max_depth, 1);
+			dungeon_change_level(target_depth);
+		} else {
+			target_depth = dungeon_get_next_level(player->depth, 1);
+			dungeon_change_level(target_depth);
+		}
 	} else {
 		msg("Nothing happens.");
 	}
@@ -4072,7 +4077,7 @@ bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 	}
 	equip_notice_flag(player, OF_FEATHER);
 
-	dungeon_change_level(player->depth + 1);
+	dungeon_change_level(dungeon_get_next_level(player->depth, 1));
 	return TRUE;
 }
 
