@@ -793,7 +793,8 @@ bool effect_handler_REMOVE_ALL_CURSE(effect_handler_context_t *context)
  */
 bool effect_handler_RECALL(effect_handler_context_t *context)
 {
-	context->ident = TRUE;
+	int target_depth;
+	context->ident = TRUE;	
 
 	/* No recall */
 	if (OPT(birth_no_recall) && !player->total_winner) {
@@ -808,8 +809,9 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	}
 
 	/* Warn the player if they're descending to an unrecallable level */
+	target_depth = dungeon_get_next_level(player->max_depth, 1);
 	if (OPT(birth_force_descend) && !(player->depth) &&
-			(is_quest(player->max_depth + 1))) {
+			(is_quest(target_depth))) {
 		if (!get_check("Are you sure you want to descend? ")) {
 			return FALSE;
 		}
