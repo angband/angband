@@ -2847,23 +2847,22 @@ static void quit_calmly(void)
 {
     /* Quit immediately if game's not started */
     if (!game_in_progress || !character_generated) quit(NULL);
-    
+
     /* Save the game and Quit (if it's safe) */
     if (inkey_flag)
     {
-        /* Hack -- Forget messages */
+        /* Hack -- Forget messages and term */
         msg_flag = FALSE;
-        
+		Term->mapped_flag = FALSE;
+
         /* Save the game */
-        save_game();
         record_current_savefile();
 		close_game();
-        
-        
+
         /* Quit */
         quit(NULL);
     }
-    
+
     /* Wait until inkey_flag is set */
 }
 
