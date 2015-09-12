@@ -466,7 +466,7 @@ void process_world(struct chunk *c)
                 if (OPT(birth_force_descend) &&
 					player->max_depth < z_info->max_depth - 1 &&
 					!is_quest(player->max_depth)) {
-                    player->max_depth = player->max_depth + 1;
+                    player->max_depth = dungeon_get_next_level(player->max_depth, 1);
                 }
 
 				/* New depth - back to max depth or 1, whichever is deeper */
@@ -482,15 +482,12 @@ void process_world(struct chunk *c)
 
 		/* Activate the recall */
 		if (player->deep_descent == 0) {
+			int target_increment;
 			int target_depth = player->max_depth;
 
 			/* Calculate target depth */
-			for (i = 5; i > 0; i--) {
-				if (is_quest(target_depth)) break;
-				if (target_depth >= z_info->max_depth - 1) break;
-				
-				target_depth++;
-			}
+			target_increment = (4 / z_info->stair_skip) + 1;
+			target_depth = dungeon_get_next_level(player->depth, target_increment);
 
 			disturb(player, 0);
 
