@@ -2575,7 +2575,9 @@ void redraw_stuff(struct player *p)
 	if (!map_is_visible()) return;
 
 	/* Hack - rarely update while resting or running, makes it over quicker */
-	if ((player_resting_count(p) % 100) || (p->upkeep->running % 100)) return;
+	if (((player_resting_count(p) % 100) || (p->upkeep->running % 100))
+		&& !(p->upkeep->redraw & PR_MESSAGE))
+		return;
 
 	/* For each listed flag, send the appropriate signal to the UI */
 	for (i = 0; i < N_ELEMENTS(redraw_events); i++) {
