@@ -1102,14 +1102,13 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	if (new_obj->number > z_info->stack_size)
 		new_obj->number = z_info->stack_size;
 
-	/* Return value, increased for uncursed out-of-depth objects */
+	/* Get the value */
 	if (value)
 		*value = object_value_real(new_obj, new_obj->number, FALSE, TRUE);
 
-	/* This seems to imply objects get less value from being > 1 but < 5
-	 * levels out of depth - should it be *value +=... - NRM */
+	/* Boost of 20% per level OOD for uncursed objects */
 	if (!cursed_p(new_obj->flags) && (kind->alloc_min > c->depth)) {
-		if (value) *value = (kind->alloc_min - c->depth) * (*value / 5);
+		if (value) *value += (kind->alloc_min - c->depth) * (*value / 5);
 	}
 
 	return new_obj;
