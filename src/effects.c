@@ -2797,8 +2797,10 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	context->ident = TRUE;
 
 	/* Resist hostile teleport */
-	if (cave->mon_current && player_resists(player, ELEM_NEXUS))
+	if (cave->mon_current && player_resists(player, ELEM_NEXUS)) {
 		msg("You resist the effect!");
+		return TRUE;
+	}
 
 	/* No going up with force_descend or in the town */
 	if (OPT(birth_force_descend) || !player->depth)
