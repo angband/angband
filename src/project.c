@@ -934,14 +934,13 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	}
 
 	/* Establish which grids are visible - no blast visuals with PROJECT_HIDE */
-	if (!blind && !(flg & (PROJECT_HIDE))) {
-		for (i = 0; i < num_grids; i++) {
-			if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
-				square_isview(cave, blast_grid[i].y, blast_grid[i].x))
-				player_sees_grid[i] = TRUE;
-			else
-				player_sees_grid[i] = FALSE;
-		}
+	for (i = 0; i < num_grids; i++) {
+		if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
+			square_isview(cave, blast_grid[i].y, blast_grid[i].x) &&
+			!blind && !(flg & (PROJECT_HIDE)))
+			player_sees_grid[i] = TRUE;
+		else
+			player_sees_grid[i] = FALSE;
 	}
 
 	/* Tell the UI to display the blast */
