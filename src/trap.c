@@ -402,6 +402,9 @@ extern void hit_trap(int y, int x)
 		effect = trap->kind->effect;
 		effect_do(effect, &ident, FALSE, 0, 0, 0);
 
+		/* Trap may have gone */
+		if (!square_trap(cave, y, x)) break;
+
 		/* Trap becomes visible (always XXX) */
 		trf_on(trap->flags, TRF_VISIBLE);
 		sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
