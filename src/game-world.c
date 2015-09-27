@@ -487,7 +487,7 @@ void process_world(struct chunk *c)
 
 			/* Calculate target depth */
 			target_increment = (4 / z_info->stair_skip) + 1;
-			target_depth = dungeon_get_next_level(player->depth, target_increment);
+			target_depth = dungeon_get_next_level(player->max_depth, target_increment);
 
 			disturb(player, 0);
 
