@@ -1394,23 +1394,38 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 }
 
 /**
- * Look for an artifact, either on the ground, in inventory or store
+ * Look for an artifact
  */
 static struct object *find_artifact(struct artifact *artifact)
 {
 	int y, x, i;
 	struct object *obj;
 
+	/* Ground objects */
 	for (y = 1; y < cave->height; y++)
 		for (x = 1; x < cave->width; x++)
 			for (obj = square_object(cave, y, x); obj; obj = obj->next)
 				if (obj->artifact == artifact)
 					return obj;
 
+	/* Player objects */
 	for (obj = player->gear; obj; obj = obj->next)
 		if (obj->artifact == artifact)
 			return obj;
 
+	/* Monster objects */
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+		struct monster *mon = cave_monster(cave, i);
+		obj = mon ? mon->held_obj : NULL;
+
+		while (obj) {
+			if (obj->artifact == artifact)
+				return obj;
+			obj = obj->next;
+		}
+	}
+
+	/* Store objects */
 	for (i = 0; i < MAX_STORES; i++) {
 		struct store *s = &stores[i];
 		for (obj = s->stock; obj; obj = obj->next)

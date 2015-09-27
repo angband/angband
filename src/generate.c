@@ -917,7 +917,10 @@ void cave_generate(struct chunk **c, struct player *p)
 		if (cave_monster_max(chunk) >= z_info->level_monster_max)
 			error = "too many monsters";
 
-		if (error) ROOM_LOG("Generation restarted: %s.", error);
+		if (error) {
+			ROOM_LOG("Generation restarted: %s.", error);
+			cave_clear(chunk, p);
+		}
 
 		mem_free(dun->cent);
 		mem_free(dun->door);
