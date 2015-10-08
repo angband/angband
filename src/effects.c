@@ -2797,7 +2797,7 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	context->ident = TRUE;
 
 	/* Resist hostile teleport */
-	if (cave->mon_current && player_resists(player, ELEM_NEXUS)) {
+	if ((cave->mon_current > 0) && player_resists(player, ELEM_NEXUS)) {
 		msg("You resist the effect!");
 		return TRUE;
 	}
