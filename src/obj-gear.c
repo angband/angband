@@ -599,7 +599,7 @@ void inven_item_charges(struct object *obj)
  * it is placed into the inventory, but takes no responsibility for removing
  * the object from any other pile it was in.
  */
-bool inven_carry(struct player *p, struct object *obj, bool absorb,
+void inven_carry(struct player *p, struct object *obj, bool absorb,
 				 bool message)
 {
 	struct object *gear_obj;
@@ -645,14 +645,13 @@ bool inven_carry(struct player *p, struct object *obj, bool absorb,
 					sound(MSG_QUIVER);
 
 				/* Success */
-				return TRUE;
+				return;
 			}
 		}
 	}
 
 	/* Paranoia */
-	if (pack_slots_used(p) > z_info->pack_size)
-		return FALSE;
+	assert(pack_slots_used(p) <= z_info->pack_size);
 
 	/* Add to the end of the list */
 	gear_insert_end(obj);
@@ -692,8 +691,6 @@ bool inven_carry(struct player *p, struct object *obj, bool absorb,
 	/* Sound for quiver objects */
 	if (object_is_in_quiver(obj))
 		sound(MSG_QUIVER);
-
-	return TRUE;
 }
 
 
