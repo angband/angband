@@ -123,8 +123,8 @@ void object_list_reset(object_list_t *list)
 		return;
 
 	memset(list->entries, 0, list->entries_size * sizeof(object_list_entry_t));
-	memset(&list->total_entries, 0, OBJECT_LIST_SECTION_MAX * sizeof(u16b));
-	memset(&list->total_objects, 0, OBJECT_LIST_SECTION_MAX * sizeof(u16b));
+	memset(list->total_entries, 0, OBJECT_LIST_SECTION_MAX * sizeof(u16b));
+	memset(list->total_objects, 0, OBJECT_LIST_SECTION_MAX * sizeof(u16b));
 	list->distinct_entries = 0;
 	list->creation_turn = 0;
 	list->sorted = FALSE;

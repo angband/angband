@@ -1006,7 +1006,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	/* Set up the menu */
 	menu_setpriv(m, num_obj, items);
 	if (player->upkeep->command_wrk == USE_QUIVER)
-		m->selections = "012345789";
+		m->selections = "0123456789";
 	else
 		m->selections = lower_case;
 	m->switch_keys = "/|-";
