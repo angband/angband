@@ -5273,7 +5273,7 @@ desc: disturb it.
 
 name:341:Balance drake
 base:dragon
-color:V
+color:P
 info:110:528:20:84:70
 power:33:3:171832:11:1600
 blow:CLAW:HURT:2d4

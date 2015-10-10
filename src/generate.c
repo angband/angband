@@ -345,7 +345,7 @@ static enum parser_error parse_room_height(struct parser *p) {
 			break;
 	if (i == N_ELEMENTS(room_builders))
 		return PARSE_ERROR_NO_ROOM_FOUND;
-	if (t->wid > room_builders[i].max_height)
+	if (t->hgt > room_builders[i].max_height)
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
