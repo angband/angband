@@ -687,6 +687,8 @@ static enum parser_error parse_prefs_monster_base(struct parser *p)
 	const char *name;
 	struct monster_base *mb;
 	size_t i;
+	byte a;
+	wchar_t c;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
@@ -696,14 +698,16 @@ static enum parser_error parse_prefs_monster_base(struct parser *p)
 	mb = lookup_monster_base(name);
 	if (!mb)
 		return PARSE_ERROR_NO_KIND_FOUND;
+	a = (byte)parser_getint(p, "attr");
+	c = (wchar_t)parser_getint(p, "char");
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
 
 		if (race->base != mb) continue;
 
-		monster_x_attr[race->ridx] = (byte)parser_getint(p, "attr");
-		monster_x_char[race->ridx] = (wchar_t)parser_getint(p, "char");
+		monster_x_attr[race->ridx] = a;
+		monster_x_char[race->ridx] = c;
 	}
 
 	return PARSE_ERROR_NONE;
