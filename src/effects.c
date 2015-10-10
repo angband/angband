@@ -3349,8 +3349,8 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	(void) project(source, rad, ty, tx, dam, context->p1, flg, 0, 0);
-	context->ident = TRUE;
+	if (project(source, rad, ty, tx, dam, context->p1, flg, 0, 0))
+		context->ident = TRUE;
 
 	return TRUE;
 }
@@ -3400,8 +3400,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	(void) project(source, rad, ty, tx, dam, type, flg, 0, 0);
-	context->ident = TRUE;
+	if (project(source, rad, ty, tx, dam, type, flg, 0, 0))
+		context->ident = TRUE;
 
 	return TRUE;
 }
@@ -3467,9 +3467,9 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target */
-		(void) project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0);
+		if (project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0))
+			context->ident = TRUE;
 	}
-	context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3496,9 +3496,9 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target, explode */
-		(void) project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0);
+		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
+			context->ident = TRUE;
 	}
-	context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3512,7 +3512,8 @@ bool effect_handler_BOLT(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	int flg = PROJECT_STOP | PROJECT_KILL;
 	(void) project_aimed(context->p1, context->dir, dam, flg);
-	context->ident = TRUE;
+	if (!player->timed[TMD_BLIND])
+		context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3526,7 +3527,8 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	int flg = PROJECT_BEAM | PROJECT_KILL;
 	(void) project_aimed(context->p1, context->dir, dam, flg);
-	context->ident = TRUE;
+	if (!player->timed[TMD_BLIND])
+		context->ident = TRUE;
 	return TRUE;
 }
 
