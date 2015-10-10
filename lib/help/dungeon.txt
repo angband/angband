@@ -51,7 +51,7 @@ Features that block line of sight
 '#'   A secret door              '#'    A wall
 '+'   A closed door              '%'    A mineral vein
 '+'   A locked door              '*'    A mineral vein with treasure
-'+'   A jammed door              ':'    A pile of rubble
+':'   A pile of rubble
 ===== =========================  =====  ==================================
 
 Objects
@@ -119,7 +119,7 @@ urchins, young children who will mob an adventurer for money, and seem to
 come out of the woodwork when excited. Blubbering idiots are a constant
 annoyance, but not harmful. Public drunks wander about the town singing,
 and are of no threat to anyone. Sneaky rogues hang about watching for a
-likely victim to mug. And finally, no town would be complete without a warm
+likely victim to mug. And finally, no town would be complete without a swarm
 of half drunk warriors, who take offense or become annoyed just for the fun
 of it. (There are assumed to be other people in the town, but they are not
 represented on the screen as they do not interact with the player in any
@@ -169,11 +169,10 @@ bargain, they simply throw the item away. You can use this feature to learn
 item flavors.
 
 The General Store ('1')
-  The General Store sells foods, some clothing, torches, scrolls of phase
-  door, scrolls of word of recall, oil, shovels, picks, and spikes. All of
-  these items and some others can be sold back to the General store for
-  money. The general store restocks like every store, but the inventory
-  types never change.
+  The General Store sells foods, some clothing, torches, oil, shovels and
+  picks. All of these items and some others can be sold back to the general
+  store for money. The general store restocks like every store, but the
+  inventory types never change.
 
 The Armoury ('2')
   The Armoury is where the town's armour is fashioned. All sorts of
@@ -186,7 +185,7 @@ The Weaponsmith's Shop ('3')
   The Weaponsmith's Shop is where the town's weapons are fashioned. Hand
   and missile weapons may be purchased and sold here, along with arrows,
   bolts, and shots. As with the armoury, not all weapon types will be
-  tocked here, unless they are sold to the shop by the player first.
+  stocked here, unless they are sold to the shop by the player first.
 
 The Temple ('4')
   The Temple deals in basic potions and scrolls, some approved priestly 
@@ -331,7 +330,7 @@ you may not be aware of all its powers. Note that these inscriptions are
 fake, and cannot be removed. 
 
 Only weapons and armor will receive these pseudo-identifications. Wands,
-taves, rods, scrolls, potions and mushrooms can only get the '{tried}'
+staves, rods, scrolls, potions and mushrooms can only get the '{tried}'
 label. However, if using or consuming the item creates an obvious effect,
 you will learn the flavor.
 
@@ -411,7 +410,7 @@ radius. If you cast one of these spells, there will be a 'Dtrap' green
 label on the bottom of the screen, below the dungeon map. At some point in
 the dungeon you may see a line of green squares on the floor. This line
 represents the extent of your detection. Beyond the green line you are no
-longer in the afe region.
+longer in the safe region.
 
 Some monsters have the ability to create new traps on the level that may be
 hidden, even if the player is in a detected zone. The detection only finds
@@ -450,7 +449,7 @@ Level and object feelings
 =========================
 
 Unless you have disabled the option to get feelings you will get a message 
-upon entering a dungeon giving you a general feel of how dungerous that 
+upon entering a dungeon giving you a general feel of how dangerous that 
 level is.
 
 The possible messages are :
@@ -503,11 +502,11 @@ If your character has killed Sauron (a difficult task), who lives on level
 you to finally reach level 100. Morgoth lurks on this level of his dungeon,
 and you will not be able to go below his level until you have killed him.
 Try to avoid wandering around on level 100 unless you are ready for him,
-ince he has a habit of coming at you across the dungeon, the Mighty Hammer
+since he has a habit of coming at you across the dungeon, the Mighty Hammer
 'Grond' in hand, to slay you for your impudence.
 
 If you should actually survive the attempt of killing Morgoth, you will
-receive the status of WINNER. You may continue to explore, and may even ave
+receive the status of WINNER. You may continue to explore, and may even save
 the game and play more later, but since you have defeated the toughest
 creature alive, there is really not much point. Unless you wish to listen
 to the rumors of a powerful ring buried somewhere in the dungeon, or a suit

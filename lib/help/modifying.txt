@@ -63,7 +63,7 @@ names.txt
 `````````
 This file contains lists of words which are used to generate names for random
 character names, random artifacts and scrolls.  Again, in the case of a change
-of theme, this is a good way of 
+of theme, this is a good way of displaying the new theme.
 
 activation.txt
 ``````````````
@@ -104,9 +104,9 @@ monster responds to attack.
 
 pit.txt
 ```````
-Dungeon levels can contain pits - rooms full of a particular selesction of
+Dungeon levels can contain pits - rooms full of a particular selection of
 monsters.  This file defines these selections.  They can also be used, for
-example, to generate partial or complete dungein levels with themed monsters.
+example, to generate partial or complete dungeon levels with themed monsters.
 
 class.txt
 `````````
@@ -129,7 +129,7 @@ history.txt
 ```````````
 This file is for creating the player background found on the character screen.
 If a new race is introduced, a selection of background information for it will
-ned to be added.
+need to be added.
 
 hints.txt
 `````````

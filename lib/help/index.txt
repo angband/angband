@@ -27,9 +27,13 @@ The Angband Manual
 
 .. include:: customize.txt
 
+.. include:: modifying.txt
+
 .. include:: debug.txt
 
 .. include:: version.txt
+
+.. include:: copying.txt
 
 .. include:: ../../thanks.txt
 

@@ -50,7 +50,7 @@ Using Inscriptions
 ==================
 
 Inscriptions are notes you can mark on objects using the '{' command.  You can
-use this to give the game comamnds about the object, which are listed below.
+use this to give the game commands about the object, which are listed below.
 You can also set up the game to automatically inscribe certain items whenever
 you find them, using the object knowledge screens, accessed using '~'.
 
