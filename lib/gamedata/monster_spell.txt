@@ -298,7 +298,7 @@ effect:BALL:POIS:2
 dice:12d2
 power:125d100M1
 lore:produce poison balls
-message-vis:{name} casts a ball of poison.
+message-vis:{name} creates a cloud of poison.
 message-invis:Something mumbles.
 
 name:BA_NETH
@@ -318,8 +318,8 @@ dice:50+1d$S
 expr:S:MONSTER_LEVEL:* 5 / 2
 power:20
 lore:produce water balls
-message-vis:{name} casts a ball of water.
-message-invis:Something mumbles.
+message-vis:{name} creates a whirlpool of water.
+message-invis:Something gurgles.
 
 name:BA_MANA
 hit:100
@@ -393,7 +393,7 @@ hit:100
 effect:DAMAGE
 dice:8d8
 lore:cause serious wounds
-message-vis:{name} points at you and curses horribly
+message-vis:{name} points at you and curses horribly!
 message-invis:Something curses horribly!
 message-save:Your body pulsates briefly.
 
@@ -584,7 +584,7 @@ dice:50
 power:70
 lore:haste-self
 message-vis:{name} concentrates on {pronoun} body.
-message-invis:{name} mutters.
+message-invis:Something mutters.
 
 name:HEAL
 hit:100
@@ -613,7 +613,7 @@ expr:B:MAX_SIGHT:* 2 + 5
 power:15
 lore:teleport-self
 message-vis:{name} tries to teleport away.
-message-invis:makes a soft 'pop'.
+message-invis:Something makes a soft 'pop'.
 
 name:TELE_TO
 msgt:TELEPORT
@@ -682,7 +682,7 @@ dice:8
 power:d200M1
 lore:summon similar monsters
 message-vis:{name} summons {pronoun} kin.
-message-invis:You hear something appear nearby!
+message-invis:You hear some things appear nearby!
 
 name:S_MONSTER
 msgt:SUM_MONSTER
