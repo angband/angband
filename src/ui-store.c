@@ -132,6 +132,8 @@ static const char *random_hint(void)
  * general attitude.
  *
  * Taken and modified from Sangband 1.0.
+ *
+ * Note that each comment_hint should have exactly one %s
  */
 static void prt_welcome(const struct owner *proprietor)
 {
