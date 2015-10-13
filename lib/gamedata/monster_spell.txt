@@ -204,7 +204,7 @@ hit:100
 effect:BREATH:GRAVITY:2
 power:30
 lore:gravity
-message-vis:{name} breathes gravity
+message-vis:{name} breathes gravity.
 message-invis:You hear a heavy roar.
 
 name:BR_SHAR
@@ -339,7 +339,7 @@ expr:B:MONSTER_LEVEL:* 5
 power:10
 lore:invoke darkness storms
 message-vis:{name} invokes a storm of darkness.
-message-invis:Something mumbles.
+message-invis:Something mumbles loudly.
 
 name:DRAIN_MANA
 hit:100
@@ -602,7 +602,7 @@ effect:TELEPORT
 dice:10
 power:15
 lore:blink-self
-message-vis:{name} casts a phase door.
+message-vis:{name} blinks.
 message-invis:Something mutters.
 
 name:TPORT
@@ -612,7 +612,7 @@ dice:$B
 expr:B:MAX_SIGHT:* 2 + 5
 power:15
 lore:teleport-self
-message-vis:{name} tries to teleport away.
+message-vis:{name} teleports away.
 message-invis:Something makes a soft 'pop'.
 
 name:TELE_TO
@@ -633,7 +633,7 @@ param:1
 power:25
 lore:teleport away
 message-vis:{name} commands you to go away.
-message-invis:Something commands you to go away
+message-invis:Something commands you to go away.
 
 name:TELE_LEVEL
 msgt:TPLEVEL
