@@ -103,12 +103,10 @@ void do_cmd_go_down(struct command *cmd)
 
 	/* Warn a force_descend player if they're going to a quest level */
 	if (OPT(birth_force_descend)) {
-		if (is_quest(player->max_depth + 1) &&
+		descend_to = dungeon_get_next_level(player->max_depth, 1);
+		if (is_quest(descend_to) &&
 			!get_check("Are you sure you want to descend?"))
 			return;
-
-		/* Don't overshoot */
-		descend_to = MIN(player->max_depth + 1, z_info->max_depth - 1);
 	}
 
 	/* Hack -- take a turn */

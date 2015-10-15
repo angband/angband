@@ -50,8 +50,8 @@ int dungeon_get_next_level(int dlev, int added)
 	target_level = dlev + added * z_info->stair_skip;
 	
 	/* Don't allow levels below max */
-	if (target_level > z_info->max_depth) 
-		target_level = z_info->max_depth;
+	if (target_level > z_info->max_depth - 1)
+		target_level = z_info->max_depth - 1;
 
 	/* Don't allow levels above the town */
 	if (target_level < 0) target_level = 0;

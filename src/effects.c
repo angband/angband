@@ -846,9 +846,11 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 
 bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 {
-	int i, target_depth = player->max_depth;
+	int i, target_increment, target_depth = player->max_depth;
 
 	/* Calculate target depth */
+	target_increment = (4 / z_info->stair_skip) + 1;
+	target_depth = dungeon_get_next_level(player->max_depth, target_increment);
 	for (i = 5; i > 0; i--) {
 		if (is_quest(target_depth)) break;
 		if (target_depth >= z_info->max_depth - 1) break;
@@ -2792,7 +2794,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 {
 	bool up = TRUE, down = TRUE;
-	int target_depth;
+	int target_depth = dungeon_get_next_level(player->max_depth, 1);
 
 	context->ident = TRUE;
 
@@ -2807,7 +2809,7 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 		up = FALSE;
 
 	/* No forcing player down to quest levels if they can't leave */
-	if (!up && is_quest(player->max_depth + 1))
+	if (!up && is_quest(target_depth))
 		down = FALSE;
 
 	/* Can't leave quest levels or go down deeper than the dungeon */
@@ -4071,9 +4073,15 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	return TRUE;
 }
 
-
 bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 {
+	int target_depth = dungeon_get_next_level(player->depth, 1);
+
+	if (target_depth == player->depth) {
+		msg("You feel quite certain something really awful just happened...");
+		return TRUE;
+	}
+
 	msg("You fall through a trap door!");
 	if (player_of_has(player, OF_FEATHER)) {
 		msg("You float gently down to the next level.");
@@ -4083,7 +4091,7 @@ bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 	}
 	equip_notice_flag(player, OF_FEATHER);
 
-	dungeon_change_level(dungeon_get_next_level(player->depth, 1));
+	dungeon_change_level(target_depth);
 	return TRUE;
 }
 
