@@ -2699,11 +2699,8 @@ void do_cmd_inven(void)
 
 		/* Prompt for a command */
 		strnfmt(buf, sizeof(buf),
-				format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
-					   player->upkeep->total_weight / 10,
-					   player->upkeep->total_weight % 10,
-					   abs(diff) / 10, abs(diff) % 10,
-					   (diff < 0 ? "overweight" : "remaining")), 0, 0);
+				format("(%d.%d lb %s) Select: ", abs(diff) / 10, abs(diff) % 10,
+					   (diff < 0 ? "over" : "left")), 0, 0);
 
 		/* Get an item to use a context command on (Display the inventory) */
 		if (get_item(&obj, buf, NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
