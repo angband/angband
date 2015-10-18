@@ -520,38 +520,42 @@ static void process_player_cleanup(void)
 		/* Increment the total energy counter */
 		player->total_energy += player->upkeep->energy_use;
 
-		/* Hack -- constant hallucination */
-		if (player->timed[TMD_IMAGE])
-			player->upkeep->redraw |= (PR_MAP);
+		/* Do nothing else if player has auto-dropped stuff */
+		if (!player->upkeep->dropping) {
+			/* Hack -- constant hallucination */
+			if (player->timed[TMD_IMAGE])
+				player->upkeep->redraw |= (PR_MAP);
 
-		/* Shimmer multi-hued monsters */
-		for (i = 1; i < cave_monster_max(cave); i++) {
-			struct monster *mon = cave_monster(cave, i);
-			if (!mon->race)
-				continue;
-			if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
-				continue;
-			square_light_spot(cave, mon->fy, mon->fx);
-		}
+			/* Shimmer multi-hued monsters */
+			for (i = 1; i < cave_monster_max(cave); i++) {
+				struct monster *mon = cave_monster(cave, i);
+				if (!mon->race)
+					continue;
+				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
+					continue;
+				square_light_spot(cave, mon->fy, mon->fx);
+			}
 
-		/* Clear NICE flag, and show marked monsters */
-		for (i = 1; i < cave_monster_max(cave); i++) {
-			struct monster *mon = cave_monster(cave, i);
-			mflag_off(mon->mflag, MFLAG_NICE);
-			if (mflag_has(mon->mflag, MFLAG_MARK)) {
-				if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
-					mflag_off(mon->mflag, MFLAG_MARK);
-					update_mon(mon, cave, FALSE);
+			/* Clear NICE flag, and show marked monsters */
+			for (i = 1; i < cave_monster_max(cave); i++) {
+				struct monster *mon = cave_monster(cave, i);
+				mflag_off(mon->mflag, MFLAG_NICE);
+				if (mflag_has(mon->mflag, MFLAG_MARK)) {
+					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
+						mflag_off(mon->mflag, MFLAG_MARK);
+						update_mon(mon, cave, FALSE);
+					}
 				}
 			}
 		}
 	}
 
-	/* Clear SHOW flag */
+	/* Clear SHOW flag and player drop status */
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		struct monster *mon = cave_monster(cave, i);
 		mflag_off(mon->mflag, MFLAG_SHOW);
 	}
+	player->upkeep->dropping = FALSE;
 
 	/* Hack - update needed first because inventory may have changed */
 	update_stuff(player);

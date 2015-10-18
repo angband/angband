@@ -438,6 +438,7 @@ struct player_upkeep {
 	bool autosave;			/* True if autosave is pending */
 	bool generate_level;	/* True if level needs regenerating */
 	bool only_partial;		/* True if only partial updates are needed */
+	bool dropping;			/* True if auto-drop is in progress */
 
 	int energy_use;			/* Energy use this turn */
 	int new_spells;			/* Number of spells available */
