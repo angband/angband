@@ -39,7 +39,7 @@
 int inven_damage(struct player *p, int type, int cperc)
 {
 	int j, k, amt;
-	struct object *obj;
+	struct object *obj = p->gear;
 	char o_name[80];
 	bool damage;
 
@@ -51,12 +51,18 @@ int inven_damage(struct player *p, int type, int cperc)
 	k = 0;
 
 	/* Scan through the gear */
-	for (obj = p->gear; obj; obj = obj->next) {
-		if (object_is_equipped(p->body, obj))
+	while (obj) {
+		struct object *next = obj->next;
+		if (object_is_equipped(p->body, obj)) {
+			obj = next;
 			continue;
+		}
 
 		/* Hack -- for now, skip artifacts */
-		if (obj->artifact) continue;
+		if (obj->artifact) {
+			obj = next;
+			continue;
+		}
 
 		/* Give this item slot a shot at death if it is vulnerable */
 		if ((obj->el_info[type].flags & EL_INFO_HATES) &&
@@ -78,8 +84,10 @@ int inven_damage(struct player *p, int type, int cperc)
 
 					/* Damaged! */
 					damage = TRUE;
-				} else
+				} else {
+					obj = next;
 					continue;
+				}
 			} else if (tval_is_armor(obj)) {
 				/* Chance to damage it */
 				if (randint0(10000) < cperc) {
@@ -88,8 +96,10 @@ int inven_damage(struct player *p, int type, int cperc)
 
 					/* Damaged! */
 					damage = TRUE;
-				} else
+				} else {
+					obj = next;
 					continue;
+				}
 			} else if (tval_is_rod(obj)) {
 				chance = (chance / 4);
 			}
@@ -136,6 +146,7 @@ int inven_damage(struct player *p, int type, int cperc)
 				k += amt;
 			}
 		}
+		obj = next;
 	}
 
 	/* Return the casualty count */
