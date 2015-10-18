@@ -185,7 +185,7 @@ static void player_pickup_aux(struct object *obj, bool domsg)
  * \param obj is the object to pick up.
  * \param menu is whether to present a menu to the player
  */
-static byte player_pickup_item(bool menu)
+static byte player_pickup_item(struct object *obj, bool menu)
 {
 	int py = player->py;
 	int px = player->px;
@@ -210,6 +210,14 @@ static byte player_pickup_item(bool menu)
 
 	/* Nothing else to pick up -- return */
 	if (!square_object(cave, py, px)) {
+		mem_free(floor_list);
+		return objs_picked_up;
+	}
+
+	/* We're given an object - pick it up */
+	if (obj) {
+		player_pickup_aux(obj, domsg);
+		objs_picked_up = 1;
 		mem_free(floor_list);
 		return objs_picked_up;
 	}
@@ -269,7 +277,7 @@ static byte player_pickup_item(bool menu)
 	 * up.  Force the display of a menu in all cases.
 	 */
 	if (call_function_again)
-		objs_picked_up += player_pickup_item(TRUE);
+		objs_picked_up += player_pickup_item(NULL, TRUE);
 
 	mem_free(floor_list);
 
@@ -326,9 +334,13 @@ int do_autopickup(void)
 void do_cmd_pickup(struct command *cmd)
 {
 	int energy_cost = 0;
+	struct object *obj = NULL;
+
+	/* See if we have an item already */
+	(void) cmd_get_arg_item(cmd, "item", &obj);
 
 	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += player_pickup_item(FALSE) * z_info->move_energy / 10;
+	energy_cost += player_pickup_item(obj, FALSE) * z_info->move_energy / 10;
 
 	/* Limit */
 	if (energy_cost > z_info->move_energy) energy_cost = z_info->move_energy;
