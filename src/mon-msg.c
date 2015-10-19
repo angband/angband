@@ -47,7 +47,9 @@ static const char *msg_repository[] = {
 	#undef MON_MSG
 };
 
-
+/* Ugly hack to get calculations right for meteor swarm hitting multiple
+ * similar monsters - NRM */
+static struct monster *meteor_hack_list[8] = { 0 };
 
 /**
  * Adds to the message queue a message describing a monster's reaction
@@ -191,7 +193,7 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural,
  */
 static bool redundant_monster_message(struct monster *mon, int msg_code)
 {
-	int i;
+	int i, j;
 
 	assert(mon);
 	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
@@ -200,8 +202,12 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
 	if (!size_mon_hist) return FALSE;
 
 	for (i = 0; i < size_mon_hist; i++) {
-		/* Not the same monster */
-		if (mon != mon_message_hist[i].mon) continue;
+		/* Check the meteor hack list */
+		for (j = 0; j < 8; j++)
+			if (mon == meteor_hack_list[j]) break;
+
+		/* Not the same (or other used) monster */
+		if ((mon != mon_message_hist[i].mon) && (j == 8)) continue;
 
 		/* Not the same code */
 		if (msg_code != mon_message_hist[i].message_code) continue;
@@ -223,7 +229,7 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
 bool add_monster_message(const char *mon_name, struct monster *mon,
 		int msg_code, bool delay)
 {
-	int i;
+	int i, j;
 	byte mon_flags = 0;
 
 	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
@@ -253,6 +259,14 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 			if (mon_msg[i].mon_count < MAX_UCHAR) {
 				/* Stack the message */
 				++(mon_msg[i].mon_count);
+
+				/* Add this one to the meteor hack list */
+				for (j = 0; j < 8; j++) {
+					if (meteor_hack_list[j] == NULL) {
+						meteor_hack_list[j] = mon;
+						break;
+					}
+				}
 			}
    
 			/* Success */
@@ -423,6 +437,10 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 		/* Show the message */
 		msgt(type, "%s", buf);
    }
+
+	/* Clear the meteor hack list */
+	for (i = 0; i < 8; i++)
+		meteor_hack_list[i] = NULL;
 }
 
 /**
