@@ -262,6 +262,8 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 
 				/* Add this one to the meteor hack list */
 				for (j = 0; j < 8; j++) {
+					if (meteor_hack_list[j] == mon)
+						break;
 					if (meteor_hack_list[j] == NULL) {
 						meteor_hack_list[j] = mon;
 						break;

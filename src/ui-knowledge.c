@@ -2681,8 +2681,6 @@ void do_cmd_inven(void)
 {
 	struct object *obj = NULL;
 	int ret = 3;
-	int diff = weight_remaining(player);
-	char buf[80];
 
 	if (player->upkeep->inven[0] == NULL) {
 		msg("You have nothing in your inventory.");
@@ -2697,13 +2695,9 @@ void do_cmd_inven(void)
 		/* Save screen */
 		screen_save();
 
-		/* Prompt for a command */
-		strnfmt(buf, sizeof(buf),
-				format("(%d.%d lb %s) Select: ", abs(diff) / 10, abs(diff) % 10,
-					   (diff < 0 ? "over" : "left")), 0, 0);
-
 		/* Get an item to use a context command on (Display the inventory) */
-		if (get_item(&obj, buf, NULL, CMD_NULL, NULL, GET_ITEM_PARAMS)) {
+		if (get_item(&obj, "Select Item:", NULL, CMD_NULL, NULL,
+					 GET_ITEM_PARAMS)) {
 			/* Load screen */
 			screen_load();
 
@@ -2744,7 +2738,7 @@ void do_cmd_equip(void)
 		/* Save screen */
 		screen_save();
 
-		/* Get an item to use a context command on (Display the inventory) */
+		/* Get an item to use a context command on (Display the equipment) */
 		if (get_item(&obj, "Select Item:", NULL, CMD_NULL, NULL,
 					 GET_ITEM_PARAMS)) {
 			/* Load screen */
