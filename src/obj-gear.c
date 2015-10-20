@@ -350,8 +350,10 @@ bool gear_excise_object(struct object *obj)
 
 	/* Make sure it isn't still equipped */
 	for (i = 0; i < player->body.count; i++) {
-		if (slot_object(player, i) == obj)
+		if (slot_object(player, i) == obj) {
 			player->body.slots[i].obj = NULL;
+			player->upkeep->equip_cnt--;
+		}
 	}
 
 	/* Update the gear */
