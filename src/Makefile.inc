@@ -1318,9 +1318,9 @@ depgen:
  list-magic-realms.h buildid.h game-world.h cave.h list-square-flags.h \
  list-terrain-flags.h init.h parser.h list-parser-errors.h obj-desc.h \
  obj-gear.h list-equip-slots.h obj-identify.h obj-info.h z-textblock.h \
- obj-util.h player-timed.h list-player-timed.h player-util.h store.h \
- cmd-core.h ui-display.h ui-history.h ui-input.h ui-event.h ui-term.h \
- ui-menu.h ui-output.h ui-object.h ui-player.h
+ obj-util.h player-calcs.h player-timed.h list-player-timed.h \
+ player-util.h store.h cmd-core.h ui-display.h ui-history.h ui-input.h \
+ ui-event.h ui-term.h ui-menu.h ui-output.h ui-object.h ui-player.h
 ./ui-prefs.o: ui-prefs.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  list-message.h option.h z-file.h list-options.h player.h guid.h \

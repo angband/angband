@@ -30,11 +30,12 @@ Code contribution:
  * Peter Denison (noz)
  * phantom-voltage
  * PowerWyrm
+ * redlumf
  * Robert Au (myshkin)
  * Rydelfox
  * Timothy Collett
 
-Beta testing:
+Beta testing and bug reporting/fixing:
 
  * Ingwe Ingweron
  * Nomad
@@ -63,7 +64,16 @@ Beta testing:
  * letslaugh
  * ShadowTechnology
  * bryan.g.hutchinson
+ * Werbaer
+ * fph
+ * yyt16384
+ * kandrc
+ * Nivra
+ * Tarrasque
 
+Insanity checking:
+
+ * Luke McConnell
 
 Previous maintainers
 ====================

@@ -54,10 +54,6 @@ struct blow_info {
 	int centiblows;
 };
 
-/* Denotes the property being present, but specifics being unknown */
-#define OBJ_KNOWN_PRESENT -1
-
-
 /*** Big fat data tables ***/
 
 static const struct flag_type elements[] =
