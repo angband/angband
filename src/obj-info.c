@@ -1220,54 +1220,6 @@ static bool describe_digger(textblock *tb, const struct object *obj)
 }
 
 /**
- * Gives the known nutritional value of the given object.
- *
- * Returns the number of player deciturns it will nourish for or -1 if 
- * the exact value not known.
- */
-static int obj_known_food(const struct object *obj)
-{
-	if (tval_can_have_nourishment(obj) && obj->pval) {
-		if (object_is_known(obj)) {
-			return obj->pval / 2;
-		} else {
-			return OBJ_KNOWN_PRESENT;
-		}
-	}
-
-	return 0;
-}
-
-/**
- * Describes a food item
- */
-static bool describe_food(textblock *tb, const struct object *obj,
-		bool subjective)
-{
-	int nourishment = obj_known_food(obj);
-
-	if (nourishment) {
-		/* Sometimes adjust for player speed */
-		int multiplier = turn_energy(player->state.speed);
-		if (!subjective) multiplier = 10;
-
-		if (nourishment == OBJ_KNOWN_PRESENT) {
-			textblock_append(tb, "Provides some nourishment.\n");
-		} else {
-			textblock_append(tb, "Nourishes for around ");
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d", nourishment *
-				multiplier / 10);
-			textblock_append(tb, " turns.\n");
-		}
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-/**
  * Gives the known light-sourcey characteristics of the given object.
  *
  * Fills in the radius of the light in `rad`, whether it uses fuel and
@@ -1512,7 +1464,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 			/* Nourishment is just a flat amount */
 			case EFINFO_CONST: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect), value.base);
+				strnfmt(desc, sizeof(desc), effect_desc(effect), value.base/2);
 				break;
 			}
 			case EFINFO_CURE: {
@@ -1852,7 +1804,6 @@ static textblock *object_info_out(const struct object *obj, int mode)
 			textblock_append(tb, "\n");
 		}
 		
-		if (!terse && describe_food(tb, obj, subjective)) something = TRUE;
 		if (!terse && subjective && describe_digger(tb, obj)) something = TRUE;
 	}
 

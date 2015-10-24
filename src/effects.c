@@ -602,12 +602,13 @@ bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 	return (TRUE);
 }
 
+/* Note the divisor of 2, a slight hack to simplify food description */
 bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
 	if (player->exp < PY_MAX_EXP) {
 		msg("You feel more experienced.");
-		player_exp_gain(player, amount);
+		player_exp_gain(player, amount / 2);
 		context->ident = TRUE;
 	}
 	return TRUE;
