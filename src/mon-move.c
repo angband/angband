@@ -1141,7 +1141,6 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 	/* Monster destroys walls (and doors) */
 	else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
 		/* Forget the wall */
-		sqinfo_off(c->squares[ny][nx].info, SQUARE_MARK);
 		square_forget(c, ny, nx);
 
 		/* Notice */
@@ -1202,7 +1201,6 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 				disturb(player, 0);
 
 				if (known) {
-					sqinfo_on(c->squares[ny][nx].info, SQUARE_MARK);
 					square_memorize(cave, ny, nx);
 					square_light_spot(c, ny, nx);
 				}
@@ -1212,7 +1210,6 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 			} else if (rf_has(mon->race->flags, RF_OPEN_DOOR)) {
 				square_open_door(c, ny, nx);
 				if (known) {
-					sqinfo_on(c->squares[ny][nx].info, SQUARE_MARK);
 					square_memorize(cave, ny, nx);
 					square_light_spot(c, ny, nx);
 				}
@@ -1238,7 +1235,6 @@ static bool process_monster_glyph(struct chunk *c, struct monster *mon,
 			msg("The rune of protection is broken!");
 
 		/* Forget the rune */
-		sqinfo_off(c->squares[ny][nx].info, SQUARE_MARK);
 		square_forget(c, ny, nx);
 
 		/* Break the rune */

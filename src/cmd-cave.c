@@ -316,7 +316,6 @@ static bool do_cmd_open_aux(int y, int x)
 			square_open_door(cave, y, x);
 
 			/* Update the visuals */
-			sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 			square_memorize(cave, y, x);
 			square_light_spot(cave, y, x);
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -336,7 +335,6 @@ static bool do_cmd_open_aux(int y, int x)
 	} else {
 		/* Closed door */
 		square_open_door(cave, y, x);
-		sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 		square_memorize(cave, y, x);
 		square_light_spot(cave, y, x);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -485,7 +483,6 @@ static bool do_cmd_close_aux(int y, int x)
 	} else {
 		/* Close door */
 		square_close_door(cave, y, x);
-		sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 		square_memorize(cave, y, x);
 		square_light_spot(cave, y, x);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -603,7 +600,6 @@ static bool twall(int y, int x)
 	sound(MSG_DIG);
 
 	/* Forget the wall */
-	sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 	square_forget(cave, y, x);
 
 	/* Remove the feature */
@@ -871,7 +867,6 @@ static bool do_cmd_disarm_aux(int y, int x)
 		player_exp_gain(player, power);
 
 		/* Forget the trap */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 		square_forget(cave, y, x);
 
 		/* Remove the trap */
@@ -1083,17 +1078,14 @@ void move_player(int dir, bool disarm)
 			if (square_isrubble(cave, y, x)) {
 				msgt(MSG_HITWALL,
 					 "You feel a pile of rubble blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
 			} else if (square_iscloseddoor(cave, y, x)) {
 				msgt(MSG_HITWALL, "You feel a door blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
 			} else {
 				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
 				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
 			}
