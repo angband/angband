@@ -270,7 +270,6 @@ bool square_isplayer(struct chunk *c, int y, int x);
 bool square_isknown(struct chunk *c, int y, int x);
 
 /* SQUARE INFO PREDICATES */
-bool square_ismark(struct chunk *c, int y, int x);
 bool square_isglow(struct chunk *c, int y, int x);
 bool square_isvault(struct chunk *c, int y, int x);
 bool square_isroom(struct chunk *c, int y, int x);

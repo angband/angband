@@ -294,14 +294,6 @@ bool square_isknown(struct chunk *c, int y, int x) {
  */
 
 /**
- * True if a square's terrain is memorized by the player
- */
-bool square_ismark(struct chunk *c, int y, int x) {
-	assert(square_in_bounds(c, y, x));
-	return sqinfo_has(c->squares[y][x].info, SQUARE_MARK);
-}
-
-/**
  * True if the square is lit
  */
 bool square_isglow(struct chunk *c, int y, int x) {

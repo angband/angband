@@ -225,7 +225,6 @@ void square_note_spot(struct chunk *c, int y, int x)
 		return;
 
 	/* Memorize this grid */
-	sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
 	square_memorize(c, y, x);
 }
 
@@ -335,10 +334,8 @@ static void cave_unlight(struct point_set *ps)
 		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
-		if (square_isfloor(cave, y, x)) {
-			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		if (square_isfloor(cave, y, x))
 			square_forget(cave, y, x);
-		}
 	}
 
 	/* Fully update the visuals */
@@ -449,7 +446,6 @@ void wiz_light(struct chunk *c, bool full)
 					/* Memorize normal features */
 					if (!square_isfloor(c, yy, xx) || 
 						square_isvisibletrap(c, yy, xx)) {
-						sqinfo_on(c->squares[yy][xx].info, SQUARE_MARK);
 						square_memorize(c, yy, xx);
 					}
 				}
@@ -490,7 +486,6 @@ void wiz_dark(void)
 
 			/* Process the grid */
 			square_forget(cave, y, x);
-			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 			sqinfo_off(cave->squares[y][x].info, SQUARE_DTRAP);
 			sqinfo_off(cave->squares[y][x].info, SQUARE_DEDGE);
 
@@ -547,11 +542,9 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			/* Only interesting grids at night */
 			if (daytime || !tf_has(feat->flags, TF_FLOOR)) {
 				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
-				sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
 				square_memorize(c, y, x);
 			} else {
 				sqinfo_off(c->squares[y][x].info, SQUARE_GLOW);
-				sqinfo_off(c->squares[y][x].info, SQUARE_MARK);
 				square_forget(c, y, x);
 			}
 		}
@@ -566,7 +559,6 @@ void cave_illuminate(struct chunk *c, bool daytime)
 				int yy = y + ddy_ddd[i];
 				int xx = x + ddx_ddd[i];
 				sqinfo_on(c->squares[yy][xx].info, SQUARE_GLOW);
-				sqinfo_on(c->squares[yy][xx].info, SQUARE_MARK);
 				square_memorize(c, yy, xx);
 			}
 		}

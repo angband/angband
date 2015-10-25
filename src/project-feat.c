@@ -75,10 +75,8 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
-		if (square_isfloor(cave, y, x)) {
-			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		if (square_isfloor(cave, y, x))
 			square_forget(cave, y, x);
-		}
 	}
 
 	/* Grid is in line of sight */
@@ -112,7 +110,6 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 		square_forget(cave, y, x);
 
 		/* Destroy the wall */
@@ -126,7 +123,6 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 		square_forget(cave, y, x);
 
 		/* Destroy the wall */
@@ -142,7 +138,6 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 		square_forget(cave, y, x);
 
 		/* Destroy the wall */
@@ -155,7 +150,6 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 		square_forget(cave, y, x);
 
 		/* Destroy the rubble */
@@ -178,7 +172,6 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Forget the wall */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 		square_forget(cave, y, x);
 
 		/* Destroy the feature */
@@ -212,7 +205,6 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 		}
 
 		/* Forget the door */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 		square_forget(cave, y, x);
 
 		/* Destroy the feature */
@@ -247,7 +239,6 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 		}
 
 		/* Forget the trap */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
 		square_forget(cave, y, x);
 
 		/* Destroy the trap */

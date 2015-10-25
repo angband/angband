@@ -1471,7 +1471,6 @@ static void do_cmd_wiz_query(void)
 	/* Extract a flag */
 	switch (cmd)
 	{
-		case 'm': flag = (SQUARE_MARK); break;
 		case 'g': flag = (SQUARE_GLOW); break;
 		case 'r': flag = (SQUARE_ROOM); break;
 		case 'a': flag = (SQUARE_VAULT); break;
@@ -1500,8 +1499,8 @@ static void do_cmd_wiz_query(void)
 			/* Given flag, show only those grids */
 			if (flag && !sqinfo_has(cave->squares[y][x].info, flag)) continue;
 
-			/* Given no flag, show unknown grids */
-			if (!flag && (square_isknown(cave, y, x))) continue;
+			/* Given no flag, show known grids */
+			if (!flag && (!square_isknown(cave, y, x))) continue;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
