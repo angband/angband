@@ -922,10 +922,11 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 			if (!square_seemslikewall(cave, y, x)) {
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
-				/* Memorize normal features */
+				/* Memorize normal features, mark grids as processed */
 				if (!square_isfloor(cave, y, x)) {
 					square_memorize(cave, y, x);
 					square_light_spot(cave, y, x);
+					square_mark(cave, y, x);
 				}
 
 				/* Memorize known walls */
@@ -933,15 +934,29 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 					int yy = y + ddy_ddd[i];
 					int xx = x + ddx_ddd[i];
 
-					/* Memorize walls (etc) */
+					/* Memorize walls (etc), mark grids as processed */
 					if (square_seemslikewall(cave, yy, xx)) {
 						square_memorize(cave, yy, xx);
 						square_light_spot(cave, yy, xx);
+						square_mark(cave, yy, xx);
 					}
 				}
 			}
+
+			/* Forget unprocessed grids in the mapping area */
+			if (!square_ismark(cave, y, x))
+				square_forget(cave, y, x);
 		}
 	}
+
+	/* Unmark grids */
+	for (y = y1 - 1; y < y2 + 1; y++) {
+		for (x = x1 - 1; x < x2 + 1; x++) {
+			if (!square_in_bounds(cave, y, x)) continue;
+			square_unmark(cave, y, x);
+		}
+	}
+
 	/* Notice */
 	context->ident = TRUE;
 
@@ -2902,9 +2917,6 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			/* Don't remove stairs */
 			if (square_isstairs(cave, y, x)) continue;
 
-			/* Lose knowledge (keeping knowledge of stairs) */
-			square_forget(cave, y, x);
-
 			/* Destroy any grid that isn't a permament wall */
 			if (!square_isperm(cave, y, x)) {
 				/* Deal with artifacts */
@@ -3015,9 +3027,8 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_ROOM);
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
 
-			/* Lose light and knowledge */
+			/* Lose light */
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
-			square_forget(cave, yy, xx);
 
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;
