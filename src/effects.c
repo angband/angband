@@ -925,6 +925,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 				/* Memorize normal features */
 				if (!square_isfloor(cave, y, x)) {
 					sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+					square_memorize(cave, y, x);
 					square_light_spot(cave, y, x);
 				}
 
@@ -936,7 +937,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 					/* Memorize walls (etc) */
 					if (square_seemslikewall(cave, yy, xx)) {
 						sqinfo_on(cave->squares[yy][xx].info, SQUARE_MARK);
-						cave_k->squares[yy][xx].feat = cave->squares[yy][xx].feat;
+						square_memorize(cave, yy, xx);
 						square_light_spot(cave, yy, xx);
 					}
 				}
@@ -1081,7 +1082,8 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 			if (square_isdoor(cave, y, x)) {
 				/* Hack -- Memorize */
 				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+				square_memorize(cave, y, x);
+
 				/* Redraw */
 				square_light_spot(cave, y, x);
 
@@ -1134,7 +1136,8 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 			if (square_isstairs(cave, y, x)) {
 				/* Hack -- Memorize */
 				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+				square_memorize(cave, y, x);
+
 				/* Redraw */
 				square_light_spot(cave, y, x);
 
@@ -1189,6 +1192,7 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 			if (square_hasgoldvein(cave, y, x)) {
 				/* Hack -- Memorize */
 				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+				square_memorize(cave, y, x);
 
 				/* Redraw */
 				square_light_spot(cave, y, x);
@@ -2905,6 +2909,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 
 			/* Lose knowledge (keeping knowledge of stairs) */
 			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+			square_forget(cave, y, x);
 
 			/* Destroy any grid that isn't a permament wall */
 			if (!square_isperm(cave, y, x)) {
@@ -3019,6 +3024,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			/* Lose light and knowledge */
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_MARK);
+			square_forget(cave, yy, xx);
 
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;
@@ -4177,6 +4183,7 @@ bool effect_handler_TRAP_RUNE_SUMMON(effect_handler_context_t *context)
 	/* Remove trap */
 	sqinfo_off(cave->squares[player->py][player->px].info, SQUARE_MARK);
 	square_destroy_trap(cave, player->py, player->px);
+	square_forget(cave, player->py, player->px);
 
 	for (i = 0; i < num; i++)
 		(void)summon_specific(player->py, player->px, player->depth, 0, TRUE,

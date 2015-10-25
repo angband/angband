@@ -75,8 +75,10 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
-		if (square_isfloor(cave, y, x))
+		if (square_isfloor(cave, y, x)) {
 			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+			square_forget(cave, y, x);
+		}
 	}
 
 	/* Grid is in line of sight */
@@ -101,27 +103,23 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	/* Permanent walls */
 	if (square_isperm(cave, y, x)) return;
 
-	/* Granite */
+	/* Different treatment for different walls */
 	if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x)) {
 		/* Message */
-		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK)) {
+		if (square_isknown(cave, y, x)) {
 			msg("The wall turns into mud!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the wall */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		square_forget(cave, y, x);
 
 		/* Destroy the wall */
 		square_destroy_wall(cave, y, x);
-	}
-
-	/* Quartz / Magma with treasure */
-	else if (square_iswall(cave, y, x) && square_hasgoldvein(cave, y, x))
-	{
+	} else if (square_iswall(cave, y, x) && square_hasgoldvein(cave, y, x)) {
 		/* Message */
-		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
-		{
+		if (square_isknown(cave, y, x)) {
 			msg("The vein turns into mud!");
 			msg("You have found something!");
 			context->obvious = TRUE;
@@ -129,43 +127,36 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 		/* Forget the wall */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		square_forget(cave, y, x);
 
 		/* Destroy the wall */
 		square_destroy_wall(cave, y, x);
 
 		/* Place some gold */
 		place_gold(cave, y, x, player->depth, ORIGIN_FLOOR);
-	}
-
-	/* Quartz / Magma */
-	else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x))
-	{
+	} else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x)) {
 		/* Message */
-		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
-		{
+		if (square_isknown(cave, y, x)) {
 			msg("The vein turns into mud!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the wall */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		square_forget(cave, y, x);
 
 		/* Destroy the wall */
 		square_destroy_wall(cave, y, x);
-	}
-
-	/* Rubble */
-	else if (square_isrubble(cave, y, x))
-	{
+	} else if (square_isrubble(cave, y, x)) {
 		/* Message */
-		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
-		{
+		if (square_isknown(cave, y, x)) {
 			msg("The rubble turns into mud!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the wall */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		square_forget(cave, y, x);
 
 		/* Destroy the rubble */
 		square_destroy_rubble(cave, y, x);
@@ -179,20 +170,16 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 			place_object(cave, y, x, player->depth, FALSE, FALSE,
 						 ORIGIN_RUBBLE, 0);
 		}
-	}
-
-	/* Destroy doors (and secret doors) */
-	else if (square_isdoor(cave, y, x))
-	{
+	} else if (square_isdoor(cave, y, x)) {
 		/* Hack -- special message */
-		if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
-		{
+		if (square_isknown(cave, y, x)) {
 			msg("The door turns into mud!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the wall */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		square_forget(cave, y, x);
 
 		/* Destroy the feature */
 		square_destroy_door(cave, y, x);
@@ -212,25 +199,21 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 	const int y = context->y;
 
 	/* Destroy all doors and traps */
-	if (square_isplayertrap(cave, y, x) || square_isdoor(cave, y, x))
-	{
+	if (square_isplayertrap(cave, y, x) || square_isdoor(cave, y, x)) {
 		/* Check line of sight */
-		if (square_isview(cave, y, x))
-		{
+		if (square_isview(cave, y, x)) {
 			/* Message */
 			msg("There is a bright flash of light!");
 			context->obvious = TRUE;
 
 			/* Visibility change */
 			if (square_isdoor(cave, y, x))
-			{
-				/* Update the visuals */
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-			}
 		}
 
 		/* Forget the door */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		square_forget(cave, y, x);
 
 		/* Destroy the feature */
 		if (square_isdoor(cave, y, x))
@@ -247,43 +230,34 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 	const int y = context->y;
 
 	/* Reveal secret doors */
-	if (square_issecretdoor(cave, y, x))
-	{
+	if (square_issecretdoor(cave, y, x)) {
 		place_closed_door(cave, y, x);
 
 		/* Check line of sight */
 		if (square_isview(cave, y, x))
-		{
 			context->obvious = TRUE;
-		}
 	}
 
-	/* Destroy traps */
-	if (square_istrap(cave, y, x))
-	{
+	/* Destroy traps, unlock doors */
+	if (square_istrap(cave, y, x)) {
 		/* Check line of sight */
-		if (square_isview(cave, y, x))
-		{
+		if (square_isview(cave, y, x)) {
 			msg("There is a bright flash of light!");
 			context->obvious = TRUE;
 		}
 
 		/* Forget the trap */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		square_forget(cave, y, x);
 
 		/* Destroy the trap */
 		square_destroy_trap(cave, y, x);
-	}
-
-	/* Locked doors are unlocked */
-	else if (square_islockeddoor(cave, y, x))
-	{
+	} else if (square_islockeddoor(cave, y, x)) {
 		/* Unlock the door */
 		square_unlock_door(cave, y, x);
 
 		/* Check line of sound */
-		if (square_isview(cave, y, x))
-		{
+		if (square_isview(cave, y, x)) {
 			msg("Click!");
 			context->obvious = TRUE;
 		}
@@ -310,7 +284,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	square_add_door(cave, y, x, TRUE);
 
 	/* Observe */
-	if (sqinfo_has(cave->squares[y][x].info, SQUARE_MARK))
+	if (square_isknown(cave, y, x))
 		context->obvious = TRUE;
 
 	/* Update the visuals */

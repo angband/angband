@@ -251,7 +251,7 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), boo
 		if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 		/* Must have knowledge */
-		if (!square_ismark(cave, yy, xx)) continue;
+		if (!square_isknown(cave, yy, xx)) continue;
 
 		/* Not looking for this feature */
 		if (!((*test)(cave, yy, xx))) continue;

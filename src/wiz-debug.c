@@ -1498,10 +1498,10 @@ static void do_cmd_wiz_query(void)
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Given flag, show only those grids */
-			if (!sqinfo_has(cave->squares[y][x].info, flag)) continue;
+			if (flag && !sqinfo_has(cave->squares[y][x].info, flag)) continue;
 
 			/* Given no flag, show unknown grids */
-			if (!flag && (!square_ismark(cave, y, x))) continue;
+			if (!flag && (square_isknown(cave, y, x))) continue;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
