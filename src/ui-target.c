@@ -842,12 +842,12 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;
 
-		else if ((!square_isprojectable(cave, y,x) && square_ismark(cave, y, x))
-				 || square_isseen(cave, y, x))
+		else if ((!square_isprojectable(cave, y, x) &&
+				  square_isknown(cave, y, x)) || square_isseen(cave, y, x))
 			/* Known walls are blue. */
 			colour = COLOUR_BLUE;
 
-		else if (!square_ismark(cave, y, x) && !square_isseen(cave, y, x))
+		else if (!square_isknown(cave, y, x) && !square_isseen(cave, y, x))
 			/* Unknown squares are grey. */
 			colour = COLOUR_L_DARK;
 

@@ -278,6 +278,14 @@ bool square_isplayer(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the the player knows the terrain of the square
+ */
+bool square_isknown(struct chunk *c, int y, int x) {
+	if (c != cave) return FALSE;
+	return cave_k->squares[y][x].feat == FEAT_NONE ? FALSE : TRUE;
+}
+
+/**
  * SQUARE INFO PREDICATES
  *
  * These functions tell whether a square is marked with one of the SQUARE_*
@@ -920,11 +928,16 @@ int square_digging(struct chunk *c, int y, int x) {
 }
 
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x) {
-	int f = f_info[c->squares[y][x].feat].mimic;
-
-	if (!square_ismark(c, y, x) && !square_isseen(c, y, x))
-		return "unknown grid";
-
+	int f = f_info[cave_k->squares[y][x].feat].mimic;
 	return f_info[f].name;
 }
 
+void square_memorize(struct chunk *c, int y, int x) {
+	if (c != cave) return;
+	cave_k->squares[y][x].feat = c->squares[y][x].feat;
+}
+
+void square_forget(struct chunk *c, int y, int x) {
+	if (c != cave) return;
+	cave_k->squares[y][x].feat = FEAT_NONE;
+}
