@@ -270,6 +270,7 @@ bool square_isplayer(struct chunk *c, int y, int x);
 bool square_isknown(struct chunk *c, int y, int x);
 
 /* SQUARE INFO PREDICATES */
+bool square_ismark(struct chunk *c, int y, int x);
 bool square_isglow(struct chunk *c, int y, int x);
 bool square_isvault(struct chunk *c, int y, int x);
 bool square_isroom(struct chunk *c, int y, int x);
@@ -355,6 +356,8 @@ const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x
 
 void square_memorize(struct chunk *c, int y, int x);
 void square_forget(struct chunk *c, int y, int x);
+void square_mark(struct chunk *c, int y, int x);
+void square_unmark(struct chunk *c, int y, int x);
 
 /* cave.c */
 void set_terrain(void);

@@ -294,6 +294,14 @@ bool square_isknown(struct chunk *c, int y, int x) {
  */
 
 /**
+ * True if the square is marked
+ */
+bool square_ismark(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->squares[y][x].info, SQUARE_MARK);
+}
+
+/**
  * True if the square is lit
  */
 bool square_isglow(struct chunk *c, int y, int x) {
@@ -932,4 +940,12 @@ void square_memorize(struct chunk *c, int y, int x) {
 void square_forget(struct chunk *c, int y, int x) {
 	if (c != cave) return;
 	cave_k->squares[y][x].feat = FEAT_NONE;
+}
+
+void square_mark(struct chunk *c, int y, int x) {
+	sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
+}
+
+void square_unmark(struct chunk *c, int y, int x) {
+	sqinfo_off(c->squares[y][x].info, SQUARE_MARK);
 }

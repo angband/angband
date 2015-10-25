@@ -115,9 +115,9 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	}
 
 	/* Use known feature */
-/*	g->f_idx = cave_k->squares[y][x].feat;
+	g->f_idx = cave_k->squares[y][x].feat;
 	if (f_info[g->f_idx].mimic)
-		g->f_idx = f_info[g->f_idx].mimic;*/
+		g->f_idx = f_info[g->f_idx].mimic;
 
     /* There is a trap in this square */
     if (square_istrap(cave, y, x) && square_isknown(cave, y, x)) {

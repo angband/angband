@@ -134,10 +134,7 @@ static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
 		/* No traps */
 		sqinfo_off(c->squares[y][x].info, SQUARE_TRAP);
 
-		/* No reason to remember this square, ... */
-		square_forget(c, y, x);
-
-		/* ... unless certain conditions apply */
+		/* Take note */
 		square_note_spot(c, y, x);
     }
 

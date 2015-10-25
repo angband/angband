@@ -1140,10 +1140,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 
 	/* Monster destroys walls (and doors) */
 	else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
-		/* Forget the wall */
-		square_forget(c, ny, nx);
-
-		/* Notice */
+		/* Remove the wall */
 		square_destroy_wall(c, ny, nx);
 
 		/* Note changes to viewable region */
@@ -1187,8 +1184,6 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 				square_set_door_lock(c, ny, nx, k - 1);
 			}
 		} else {
-			bool known = square_isknown(c, ny, nx);
-
 			/* Handle viewable doors */
 			if (square_isview(c, ny, nx))
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1200,19 +1195,10 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 				msg("You hear a door burst open!");
 				disturb(player, 0);
 
-				if (known) {
-					square_memorize(cave, ny, nx);
-					square_light_spot(c, ny, nx);
-				}
-
 				/* Fall into doorway */
 				return TRUE;
 			} else if (rf_has(mon->race->flags, RF_OPEN_DOOR)) {
 				square_open_door(c, ny, nx);
-				if (known) {
-					square_memorize(cave, ny, nx);
-					square_light_spot(c, ny, nx);
-				}
 			}
 		}
 	}
@@ -1231,11 +1217,12 @@ static bool process_monster_glyph(struct chunk *c, struct monster *mon,
 	/* Break the ward */
 	if (randint1(z_info->glyph_hardness) < mon->race->level) {
 		/* Describe observable breakage */
-		if (square_isknown(c, ny, nx))
+		if (square_isseen(c, ny, nx)) {
 			msg("The rune of protection is broken!");
 
-		/* Forget the rune */
-		square_forget(c, ny, nx);
+			/* Forget the rune */
+			square_forget(c, ny, nx);
+		}
 
 		/* Break the rune */
 		square_remove_ward(c, ny, nx);
