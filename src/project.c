@@ -964,10 +964,11 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Check monsters */
 	if (flg & (PROJECT_KILL)) {
-		/* Mega-Hack */
-		project_m_n = 0;
-		project_m_x = 0;
-		project_m_y = 0;
+		bool was_obvious = false;
+		bool did_hit = false;
+		int num_hit = 0;
+		int last_hit_x = 0;
+		int last_hit_y = 0;
 
 		/* Scan for monsters */
 		for (i = 0; i < num_grids; i++) {
@@ -979,16 +980,23 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			if (!square_isproject(cave, y, x)) continue;
 
 			/* Affect the monster in the grid */
-			if (project_m(who, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ, flg))
+			project_m(who, distance_to_grid[i], y, x,
+			          dam_at_dist[distance_to_grid[i]], typ, flg,
+			          &did_hit, &was_obvious);
+			if (was_obvious)
 				notice = TRUE;
+			if (did_hit) {
+				num_hit++;
+				last_hit_x = x;
+				last_hit_y = y;
+			}
 		}
 
 		/* Player affected one monster (without "jumping") */
-		if ((who < 0) && (project_m_n == 1) && !(flg & (PROJECT_JUMP))) {
+		if ((who < 0) && (num_hit == 1) && !(flg & (PROJECT_JUMP))) {
 			/* Location */
-			x = project_m_x;
-			y = project_m_y;
+			x = last_hit_x;
+			y = last_hit_y;
 
 			/* Track if possible */
 			if (cave->squares[y][x].mon > 0) {

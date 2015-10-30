@@ -66,14 +66,11 @@ enum
 #define PROJECT_ARC   0x400
 #define PROJECT_PLAY  0x800
 
-int project_m_n;
-int project_m_x;
-int project_m_y;
-
 bool project_f(int who, int r, int y, int x, int dam, int typ);
 int inven_damage(struct player *p, int type, int cperc);
 bool project_o(int who, int r, int y, int x, int dam, int typ);
-bool project_m(int who, int r, int y, int x, int dam, int typ, int flg);
+void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
+               bool *did_hit, bool *was_obvious);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
 bool project_p(int who, int r, int y, int x, int dam, int typ);
 
