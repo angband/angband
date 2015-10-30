@@ -759,13 +759,6 @@ static const project_monster_handler_f monster_handlers[] = {
 	NULL
 };
 
-/*
- * Mega-Hack -- track "affected" monsters (see "project()" comments)
- */
-int project_m_n;
-int project_m_x;
-int project_m_y;
-
 
 /**
  * Deal damage to a monster from another monster.
@@ -1039,7 +1032,8 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  *
  * Hack -- effects on grids which are memorized but not in view are also seen.
  */
-bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
+void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
+               bool *did_hit, bool *was_obvious)
 {
 	struct monster *mon;
 	struct monster_lore *lore;
@@ -1082,14 +1076,17 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 		{0, 0, 0, 0, 0, 0},
 	};
 
+	*did_hit = FALSE;
+	*was_obvious = FALSE;
+
 	/* Walls protect monsters */
-	if (!square_isprojectable(cave, y,x)) return (FALSE);
+	if (!square_isprojectable(cave, y,x)) return;
 
 	/* No monster here */
-	if (!(m_idx > 0)) return (FALSE);
+	if (!(m_idx > 0)) return;
 
 	/* Never affect projector */
-	if (m_idx == who) return (FALSE);
+	if (m_idx == who) return;
 
 	/* Obtain monster info */
 	mon = cave_monster(cave, m_idx);
@@ -1110,7 +1107,7 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 
 		/* Skip monsters with the same race */
 		if (caster->race == mon->race)
-			return (FALSE);
+			return;
 	}
 
 	/* Get monster name and possessive here, in case of polymorphing. */
@@ -1132,7 +1129,7 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	obvious = context.obvious;
 
 	/* Absolutely no effect */
-	if (context.skipped) return (FALSE);
+	if (context.skipped) return;
 
 	/* Extract method of death, if the monster will be killed. */
 	if (dam > mon->hp)
@@ -1173,11 +1170,9 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	}
 
 	/* Track it */
-	project_m_n++;
-	project_m_x = x;
-	project_m_y = y;
+	*did_hit = true;
 
 	/* Return "Anything seen?" */
-	return (obvious);
+	*was_obvious = !!obvious;
 }
 
