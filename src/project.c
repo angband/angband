@@ -966,7 +966,6 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	if (flg & (PROJECT_KILL)) {
 		bool was_obvious = false;
 		bool did_hit = false;
-		/* Mega-Hack */
 		int num_hit = 0;
 		int last_hit_x = 0;
 		int last_hit_y = 0;
