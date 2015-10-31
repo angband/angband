@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "effects.h"
 #include "init.h"
 #include "mon-init.h"
 #include "mon-lore.h"

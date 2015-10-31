@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "effects.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"

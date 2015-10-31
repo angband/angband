@@ -410,6 +410,8 @@ static const project_object_handler_f object_handlers[] = {
  * \param x the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
  * \param typ is the projection (GF_) type
+ * \param protected_obj is an object that should not be affected by the 
+ *        projection, typically the object that created it
  * \return whether the effects were obvious
  *
  * Note that this function determines if the player can see anything that
@@ -417,7 +419,8 @@ static const project_object_handler_f object_handlers[] = {
  *
  * Hack -- effects on objects which are memorized but not in view are also seen.
  */
-bool project_o(int who, int r, int y, int x, int dam, int typ)
+bool project_o(int who, int r, int y, int x, int dam, int typ,
+			   const struct object *protected_obj)
 {
 	struct object *obj = square_object(cave, y, x);
 	bool obvious = FALSE;
@@ -447,7 +450,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ)
 			object_handler(&context);
 
 		obvious = context.obvious;
-		do_kill = context.do_kill;
+		do_kill = context.do_kill && (obj != protected_obj);
 		ignore = context.ignore;
 		note_kill = context.note_kill;
 

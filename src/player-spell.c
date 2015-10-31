@@ -410,7 +410,7 @@ bool spell_cast(int spell_index, int dir)
 		msg("You failed to concentrate hard enough!");
 	} else {
 		/* Cast the spell */
-		if (!effect_do(spell->effect, ident, TRUE, dir, beam, FALSE)) {
+		if (!effect_do(spell->effect, NULL, ident, TRUE, dir, beam, FALSE)) {
 			mem_free(ident);
 			return FALSE;
 		}

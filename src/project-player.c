@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "effects.h"
 #include "init.h"
 #include "mon-desc.h"
 #include "obj-gear.h"

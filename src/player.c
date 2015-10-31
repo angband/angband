@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "effects.h"
 #include "init.h"
 #include "obj-pile.h"
 #include "obj-util.h"

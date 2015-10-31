@@ -447,6 +447,7 @@ const char *gf_idx_to_name(int type)
  *   \param flg: Extra bit flags that control projection behavior
  *   \param degrees_of_arc: How wide an arc spell is (in degrees).
  *   \param diameter_of_source: how wide the source diameter is.
+ *   \param obj: An object that the projection ignores
  *
  *   \return TRUE if any effects of the projection were observed, else FALSE
  *
@@ -581,7 +582,8 @@ const char *gf_idx_to_name(int type)
  * and "update_view()" and "update_monsters()" need to be called.
  */
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
-			 int degrees_of_arc, byte diameter_of_source)
+			 int degrees_of_arc, byte diameter_of_source,
+			 const struct object *obj)
 {
 	int i, j, k, dist_from_centre;
 
@@ -957,7 +959,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 			/* Affect the object in the grid */
 			if (project_o(who, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ))
+						  dam_at_dist[distance_to_grid[i]], typ, obj))
 				notice = TRUE;
 		}
 	}

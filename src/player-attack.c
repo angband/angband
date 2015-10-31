@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "effects.h"
 #include "game-event.h"
 #include "game-input.h"
 #include "init.h"

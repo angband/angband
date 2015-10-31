@@ -10,7 +10,6 @@
 #include "z-bitflag.h"
 #include "z-dice.h"
 #include "obj-properties.h"
-#include "effects.h"
 
 
 /*** Game constants ***/
@@ -96,6 +95,14 @@ enum {
 
 
 /*** Structures ***/
+
+/* Effect */
+struct effect {
+	struct effect *next;
+	u16b index;		/**< The effect index */
+	dice_t *dice;	/**< Dice expression used in the effect */
+	int params[3];	/**< Extra parameters to be passed to the handler */
+};
 
 /* Brand type */
 struct brand {

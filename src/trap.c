@@ -400,7 +400,7 @@ extern void hit_trap(int y, int x)
 
 		/* Fire off the trap */
 		effect = trap->kind->effect;
-		effect_do(effect, &ident, FALSE, 0, 0, 0);
+		effect_do(effect, NULL, &ident, FALSE, 0, 0, 0);
 
 		/* Trap may have gone */
 		if (!square_trap(cave, y, x)) break;

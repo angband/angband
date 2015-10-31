@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "effects.h"
 #include "init.h"
 #include "monster.h"
 #include "mon-attack.h"

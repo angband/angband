@@ -68,7 +68,8 @@ enum
 
 bool project_f(int who, int r, int y, int x, int dam, int typ);
 int inven_damage(struct player *p, int type, int cperc);
-bool project_o(int who, int r, int y, int x, int dam, int typ);
+bool project_o(int who, int r, int y, int x, int dam, int typ,
+			   const struct object *protected_obj);
 void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
                bool *did_hit, bool *was_obvious);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
@@ -90,6 +91,7 @@ const char *gf_blind_desc(int type);
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
-			 int degrees_of_arc, byte diameter_of_source);
+			 int degrees_of_arc, byte diameter_of_source,
+			 const struct object *obj);
 
 #endif /* !PROJECT_H */

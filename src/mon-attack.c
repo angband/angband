@@ -22,6 +22,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "effects.h"
 #include "init.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
