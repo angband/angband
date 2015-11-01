@@ -775,10 +775,10 @@ int rd_ignore(void)
 	u16b file_e_max;
 	u16b itype_size;
 	u16b inscriptions;
-	
+
 	/* Read how many ignore bytes we have */
 	rd_byte(&tmp8u);
-	
+
 	/* Check against current number */
 	if (tmp8u != ignore_size) {
 		strip_bytes(tmp8u);
@@ -786,7 +786,7 @@ int rd_ignore(void)
 		for (i = 0; i < ignore_size; i++)
 			rd_byte(&ignore_level[i]);
 	}
-		
+
 	/* Read the number of saved ego-item */
 	rd_u16b(&file_e_max);
 	rd_u16b(&itype_size);
@@ -794,7 +794,7 @@ int rd_ignore(void)
 		note(format("Too many (%u) ignore bytes!", itype_size));
 		return (-1);
 	}
-		
+
 	for (i = 0; i < file_e_max; i++) {
 		if (i < z_info->e_max) {
 			bitflag flags, itypes[itype_size];
@@ -804,24 +804,27 @@ int rd_ignore(void)
 			e_info[i].everseen = (flags & 0x02) ? TRUE : FALSE;
 
 			/* Read and extract the ignore flags */
-			for (j = 0; j < ITYPE_SIZE; j++)
+			for (j = 0; j < itype_size; j++)
 				rd_byte(&itypes[j]);
 
-			for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
-				if (itype_has(itypes, j))
-					ego_ignore_toggle(i, j);
+			/* If number of ignore types has changed, don't set anything */
+			if (itype_size == ITYPE_SIZE) {
+				for (j = ITYPE_NONE; j < ITYPE_MAX; j++)
+					if (itype_has(itypes, j))
+						ego_ignore_toggle(i, j);
+			}
 		}
 	}
-	
+
 	/* Read the current number of auto-inscriptions */
 	rd_u16b(&inscriptions);
-	
+
 	/* Read the autoinscriptions array */
 	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
 		s16b kidx;
 		struct object_kind *k;
-		
+
 		rd_s16b(&kidx);
 		k = objkind_byid(kidx);
 		if (!k)
@@ -829,7 +832,7 @@ int rd_ignore(void)
 		rd_string(tmp, sizeof(tmp));
 		k->note = quark_add(tmp);
 	}
-	
+
 	return 0;
 }
 

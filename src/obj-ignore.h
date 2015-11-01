@@ -97,7 +97,7 @@ void autoinscribe_pack(void);
 void object_ignore_flavor_of(const struct object *obj);
 ignore_type_t ignore_type_of(const struct object *obj);
 byte ignore_level_of(const struct object *obj);
-bool tval_has_ignore_type(int tval, ignore_type_t itype);
+bool ego_has_ignore_type(struct ego_item *ego, ignore_type_t itype);
 void kind_ignore_clear(struct object_kind *kind);
 void ego_ignore(struct object *obj);
 void ego_ignore_clear(struct object *obj);

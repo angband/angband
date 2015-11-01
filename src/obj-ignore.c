@@ -42,31 +42,44 @@ typedef struct
  */
 static quality_ignore_struct quality_mapping[] =
 {
-	{ ITYPE_GREAT,			TV_SWORD,		"Chaos" },
-	{ ITYPE_GREAT,			TV_POLEARM,		"Slicing" },
-	{ ITYPE_GREAT,			TV_HAFTED,		"Disruption" },
-	{ ITYPE_SHARP,			TV_SWORD,		"" },
-	{ ITYPE_SHARP,			TV_POLEARM,		"" },
-	{ ITYPE_BLUNT,			TV_HAFTED,		"" },
-	{ ITYPE_SHOOTER,		TV_BOW,			"" },
-	{ ITYPE_SHOT,			TV_SHOT,		"" },
-	{ ITYPE_ARROW,			TV_ARROW,		"" },
-	{ ITYPE_BOLT,			TV_BOLT,		"" },
-	{ ITYPE_ROBE,			TV_SOFT_ARMOR,	"Robe" },
-	{ ITYPE_DRAGON_ARMOR,	TV_DRAG_ARMOR,	"" },
-	{ ITYPE_BODY_ARMOR,		TV_HARD_ARMOR,	"" },
-	{ ITYPE_BODY_ARMOR,		TV_SOFT_ARMOR,	"" },
-	{ ITYPE_ELVEN_CLOAK,	TV_CLOAK,		"Elven" },
-	{ ITYPE_CLOAK,			TV_CLOAK,		"" },
-	{ ITYPE_SHIELD,			TV_SHIELD,		"" },
-	{ ITYPE_HEADGEAR,		TV_HELM,		"" },
-	{ ITYPE_HEADGEAR,		TV_CROWN,		"" },
-	{ ITYPE_HANDGEAR,		TV_GLOVES,		"" },
-	{ ITYPE_FEET,			TV_BOOTS,		"" },
-	{ ITYPE_DIGGER,			TV_DIGGING,		"" },
-	{ ITYPE_RING,			TV_RING,		"" },
-	{ ITYPE_AMULET,			TV_AMULET,		"" },
-	{ ITYPE_LIGHT, 			TV_LIGHT, 		"" },
+	{ ITYPE_GREAT,					TV_SWORD,		"Chaos" },
+	{ ITYPE_GREAT,					TV_POLEARM,		"Slicing" },
+	{ ITYPE_GREAT,					TV_HAFTED,		"Disruption" },
+	{ ITYPE_SHARP,					TV_SWORD,		"" },
+	{ ITYPE_SHARP,					TV_POLEARM,		"" },
+	{ ITYPE_BLUNT,					TV_HAFTED,		"" },
+	{ ITYPE_SLING,					TV_BOW,			"Sling" },
+	{ ITYPE_BOW,					TV_BOW,			"Bow" },
+	{ ITYPE_CROSSBOW,				TV_BOW,			"Crossbow" },
+	{ ITYPE_SHOT,					TV_SHOT,		"" },
+	{ ITYPE_ARROW,					TV_ARROW,		"" },
+	{ ITYPE_BOLT,					TV_BOLT,		"" },
+	{ ITYPE_ROBE,					TV_SOFT_ARMOR,	"Robe" },
+	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Black" },
+	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Blue" },
+	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"White" },
+	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Red" },
+	{ ITYPE_BASIC_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Green" },
+	{ ITYPE_MULTI_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Multi" },
+	{ ITYPE_HIGH_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Pseudo" },
+	{ ITYPE_HIGH_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Law" },
+	{ ITYPE_HIGH_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Gold" },
+	{ ITYPE_HIGH_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Chaos" },
+	{ ITYPE_BALANCE_DRAGON_ARMOR,	TV_DRAG_ARMOR,	"Balance" },
+	{ ITYPE_POWER_DRAGON_ARMOR,		TV_DRAG_ARMOR,	"Power" },
+	{ ITYPE_BODY_ARMOR,				TV_HARD_ARMOR,	"" },
+	{ ITYPE_BODY_ARMOR,				TV_SOFT_ARMOR,	"" },
+	{ ITYPE_ELVEN_CLOAK,			TV_CLOAK,		"Elven" },
+	{ ITYPE_CLOAK,					TV_CLOAK,		"" },
+	{ ITYPE_SHIELD,					TV_SHIELD,		"" },
+	{ ITYPE_HEADGEAR,				TV_HELM,		"" },
+	{ ITYPE_HEADGEAR,				TV_CROWN,		"" },
+	{ ITYPE_HANDGEAR,				TV_GLOVES,		"" },
+	{ ITYPE_FEET,					TV_BOOTS,		"" },
+	{ ITYPE_DIGGER,					TV_DIGGING,		"" },
+	{ ITYPE_RING,					TV_RING,		"" },
+	{ ITYPE_AMULET,					TV_AMULET,		"" },
+	{ ITYPE_LIGHT, 					TV_LIGHT, 		"" },
 };
 
 
@@ -289,17 +302,24 @@ ignore_type_t ignore_type_of(const struct object *obj)
 }
 
 /**
- * Find whether an ignore type is valid for a given tval
+ * Find whether an ignore type is valid for a given ego item
  */
-bool tval_has_ignore_type(int tval, ignore_type_t itype)
+bool ego_has_ignore_type(struct ego_item *ego, ignore_type_t itype)
 {
-	size_t i;
+	struct ego_poss_item *poss;
 
-	/* Find the appropriate ignore group */
-	for (i = 0; i < N_ELEMENTS(quality_mapping); i++)
-		if ((quality_mapping[i].tval == tval) &&
-			(quality_mapping[i].ignore_type == itype))
-			return TRUE;
+	/* Go through all the possible items */
+	for (poss = ego->poss_items; poss; poss = poss->next) {
+		size_t i;
+		struct object_kind *kind = &k_info[poss->kidx];
+
+		/* Check the appropriate ignore group */
+		for (i = 0; i < N_ELEMENTS(quality_mapping); i++)
+			if ((quality_mapping[i].tval == kind->tval) &&
+				(quality_mapping[i].ignore_type == itype) &&
+				strstr(kind->name, quality_mapping[i].identifier))
+				return TRUE;
+	}
 
 	return FALSE;
 }

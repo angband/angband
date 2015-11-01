@@ -1172,7 +1172,6 @@ static void ego_menu(const char *unused, int also_unused)
 	int max_num = 0;
 	struct ego_item *ego;
 	struct ego_desc *choice;
-	struct ego_poss_item *poss;
 
 	struct menu menu;
 	menu_iter menu_f = { 0, 0, ego_display, ego_action, 0 };
@@ -1186,37 +1185,23 @@ static void ego_menu(const char *unused, int also_unused)
 
 	/* Get the valid ego-items */
 	for (i = 0; i < z_info->e_max; i++) {
-		int itype, tval;
-		int tval_table[TV_MAX] = { 0 };
+		int itype;
 		ego = &e_info[i];
 
 		/* Only valid known ego-items allowed */
 		if (!ego->name || !ego->everseen)
 			continue;
 
-		/* Note the tvals which are possible for this ego */
-		for (poss = ego->poss_items; poss; poss = poss->next) {
-			struct object_kind *kind = &k_info[poss->kidx];
-			tval_table[kind->tval]++;
-		}
-
 		/* Find appropriate ignore types */
 		for (itype = ITYPE_NONE + 1; itype < ITYPE_MAX; itype++)
-			for (tval = 1; tval < TV_MAX; tval++) {
-				/* Skip invalid types */
-				if (!tval_table[tval]) continue;
-				if (tval_has_ignore_type(tval, itype)) {
+			if (ego_has_ignore_type(ego, itype)) {
 
-					/* Fill in the details */
-					choice[max_num].e_idx = i;
-					choice[max_num].itype = itype;
-					choice[max_num].short_name = strip_ego_name(ego->name);
+				/* Fill in the details */
+				choice[max_num].e_idx = i;
+				choice[max_num].itype = itype;
+				choice[max_num].short_name = strip_ego_name(ego->name);
 
-					++max_num;
-
-					/* Done with this tval */
-					break;
-				}
+				++max_num;
 			}
 	}
 
@@ -1329,7 +1314,7 @@ static void quality_display(struct menu *menu, int oid, bool cursor, int row,
 	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 
 	if (oid)
-		c_put_str(attr, format("%-20s : %s", name, level_name), row, col);
+		c_put_str(attr, format("%-30s : %s", name, level_name), row, col);
 }
 
 
@@ -1353,7 +1338,7 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 {
 	struct menu menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
-	region area = { 27, 2, 29, IGNORE_MAX };
+	region area = { 37, 2, 29, IGNORE_MAX };
 	ui_event evt;
 	int count;
 
