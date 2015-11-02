@@ -340,6 +340,7 @@ void ego_apply_magic(struct object *obj, int level)
 
 	/* Apply flags */
 	of_union(obj->flags, obj->ego->flags);
+	of_diff(obj->flags, obj->ego->flags_off);
 
 	/* Add slays and brands */
 	copy_slay(&obj->slays, obj->ego->slays);

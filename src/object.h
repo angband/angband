@@ -329,6 +329,7 @@ struct ego_item {
 	int cost;						/* Ego-item "cost" */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
+	bitflag flags_off[OF_SIZE];		/**< Flags to remove */
 	bitflag kind_flags[KF_SIZE];	/**< Kind flags */
 
 	random_value modifiers[OBJ_MOD_MAX];

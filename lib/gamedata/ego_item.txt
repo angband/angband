@@ -22,6 +22,7 @@
 # type: tval
 # item: tval : sval
 # flag: flag | flag | etc.
+# flags-off: flag | flag | etc
 # values: label[value] | label[value] | etc.
 # min-values: label[value] | label[value] | etc.
 
@@ -75,6 +76,11 @@
 # src/list-object-flags.h) or kind flags (src/list-kind-flags.h).  As many
 # flags: lines may be used as are needed to specify all the flags, and
 # flags are separated by the '|' symbol.
+
+# 'flags-off' is for flags to remove from the base object. For example, in
+# object.txt, lanterns are given TAKES_FUEL. We don't want (Everburning)
+# lanterns to take fuel, so we add a 'flags-off:TAKES_FUEL' line to subtract
+# that flag.
 
 # 'values' is for object modifiers which take a value - stats, slays, brands,
 # resistances and so on.  An example is SLAY_UNDEAD[3], which denotes that
@@ -936,6 +942,7 @@ info:0:3:2500:10
 alloc:100:1 to 30
 item:light:Lantern
 flags:NO_FUEL
+flags-off:TAKES_FUEL
 
 #imported from S
 name:99:of True Sight
