@@ -250,8 +250,10 @@ void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE])
 	if (object_flavor_is_aware(obj))
 		of_union(flags, obj->kind->flags);
 
-	if (obj->ego && easy_know(obj))
+	if (obj->ego && easy_know(obj)) {
 		of_union(flags, obj->ego->flags);
+		of_diff(flags, obj->ego->flags_off);
+	}
 }
 
 /**

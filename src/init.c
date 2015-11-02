@@ -2591,15 +2591,15 @@ static enum parser_error parse_ego_time(struct parser *p) {
 
 static enum parser_error parse_ego_flags(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
-	char *s;
+	char *flags;
 	char *t;
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (!parser_hasval(p, "flags"))
 		return PARSE_ERROR_NONE;
-	s = string_make(parser_getstr(p, "flags"));
-	t = strtok(s, " |");
+	flags = string_make(parser_getstr(p, "flags"));
+	t = strtok(flags, " |");
 	while (t) {
 		bool found = FALSE;
 		if (!grab_flag(e->flags, OF_SIZE, obj_flags, t))
@@ -2612,8 +2612,28 @@ static enum parser_error parse_ego_flags(struct parser *p) {
 			break;
 		t = strtok(NULL, " |");
 	}
-	mem_free(s);
+	mem_free(flags);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_ego_flags_off(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	char *flags;
+	char *t;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	t = strtok(flags, " |");
+	while (t) {
+		if (grab_flag(e->flags_off, OF_SIZE, obj_flags, t))
+			return PARSE_ERROR_INVALID_FLAG;
+		t = strtok(NULL, " |");
+	}
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_ego_values(struct parser *p) {
@@ -2728,6 +2748,7 @@ struct parser *init_parse_ego(void) {
 	parser_reg(p, "dice str dice", parse_ego_dice);
 	parser_reg(p, "time rand time", parse_ego_time);
 	parser_reg(p, "flags ?str flags", parse_ego_flags);
+	parser_reg(p, "flags-off ?str flags", parse_ego_flags_off);
 	parser_reg(p, "values str values", parse_ego_values);
 	parser_reg(p, "min-values str min_values", parse_ego_min_val);
 	parser_reg(p, "desc str text", parse_ego_desc);
