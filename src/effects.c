@@ -1205,7 +1205,7 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 		if (gold_buried)
 			msg("You sense the presence of buried treasure!");
 		else if (context->aware)
-			msg("You sense no treasure.");
+			msg("You sense no buried treasure.");
 	}
 
 	return TRUE;

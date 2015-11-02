@@ -5123,9 +5123,6 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Set the sound hook */
 	event_add_handler(EVENT_SOUND, Term_xtra_win_sound, NULL);
 
-	/* Did the user double click on a save file? */
-	check_for_save_file(lpCmdLine);
-
 	/* Set command hook */
 	cmd_get_hook = textui_get_cmd;
 
@@ -5136,6 +5133,9 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	textui_init();
 
 	initialized = TRUE;
+
+	/* Did the user double click on a save file? */
+	check_for_save_file(lpCmdLine);
 
 	/* Prompt the user */
 	prt("[Choose 'New' or 'Open' from the 'File' menu]",
