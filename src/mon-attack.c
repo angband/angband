@@ -565,6 +565,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				obvious = context.obvious;
 				blinked = context.blinked;
 				damage = context.damage;
+				do_break = context.do_break;
 			} else {
 				msg("ERROR: Effect handler not found for %d.", effect);
 			}

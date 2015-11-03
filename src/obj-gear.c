@@ -931,7 +931,6 @@ void combine_pack(void)
 {
 	struct object *obj1, *obj2, *prev;
 	bool display_message = FALSE;
-	bool redraw = FALSE;
 
 	/* Combine the pack (backwards) */
 	obj1 = gear_last_item();
@@ -947,13 +946,11 @@ void combine_pack(void)
 			/* Can we drop "obj1" onto "obj2"? */
 			if (object_similar(obj2, obj1, OSTACK_PACK)) {
 				display_message = TRUE;
-				redraw = TRUE;
 				object_absorb(obj2, obj1);
 				break;
 			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
 				/* Setting this to TRUE spams the combine message. */
 				display_message = FALSE;
-				redraw = TRUE;
 				object_absorb_partial(obj2, obj1);
 				break;
 			}
@@ -963,11 +960,9 @@ void combine_pack(void)
 
 	calc_inventory(player->upkeep, player->gear, player->body);
 
-	/* Redraw stuff */
-	if (redraw) {
-		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-		player->upkeep->update |= (PU_INVEN);
-	}
+	/* Redraw gear */
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 
 	/* Message */
 	if (display_message) {
