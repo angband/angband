@@ -491,7 +491,8 @@ void object_notice_everything(struct object *obj)
 
 	/* Know everything else */
 	object_know_all_but_flavor(obj);
-	apply_autoinscription(obj);
+	if (!player->is_dead)
+		apply_autoinscription(obj);
 }
 
 
