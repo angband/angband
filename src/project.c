@@ -1035,6 +1035,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			if (project_p(who, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ)) {
 				notice = TRUE;
+				if (player->is_dead)
+					return notice;
 				break;
 			}
 		}
