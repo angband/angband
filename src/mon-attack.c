@@ -570,6 +570,11 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				msg("ERROR: Effect handler not found for %d.", effect);
 			}
 
+			/* Don't cut or stun if player is dead */
+			if (p->is_dead) {
+				do_cut = FALSE;
+				do_stun = FALSE;
+			}
 
 			/* Hack -- only one of cut or stun */
 			if (do_cut && do_stun) {
