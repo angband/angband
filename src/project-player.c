@@ -537,7 +537,7 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 		take_hit(player, dam, killer);
 
 	/* Handle side effects */
-	if (player_handler != NULL)
+	if ((player_handler != NULL) && !player->is_dead)
 		player_handler(&context);
 
 	obvious = context.obvious;
