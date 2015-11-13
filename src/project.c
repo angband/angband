@@ -974,12 +974,20 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 		/* Scan for monsters */
 		for (i = 0; i < num_grids; i++) {
+			struct monster *mon = NULL;
+
 			/* Get the grid location */
 			y = blast_grid[i].y;
 			x = blast_grid[i].x;
 			
 			/* Check this monster hasn't been processed already */
-			if (!square_isproject(cave, y, x)) continue;
+			if (!square_isproject(cave, y, x))
+				continue;
+
+			/* Check there is actually a monster here */
+			mon = square_monster(cave, y, x);
+			if (mon == NULL)
+				continue;
 
 			/* Affect the monster in the grid */
 			project_m(who, distance_to_grid[i], y, x,
@@ -989,8 +997,10 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				notice = TRUE;
 			if (did_hit) {
 				num_hit++;
-				last_hit_x = x;
-				last_hit_y = y;
+
+				/* Monster location may have been updated by project_m() */
+				last_hit_x = mon->fx;
+				last_hit_y = mon->fy;
 			}
 		}
 
