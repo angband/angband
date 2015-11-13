@@ -1150,18 +1150,14 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 	mon = context.mon;
 	obvious = context.obvious;
 
-	/* Verify this code XXX XXX XXX */
 	/* Check for NULL, since polymorph can occasionally return NULL. */
 	if (mon != NULL) {
 		/* Update the monster */
-		if (!mon_died) update_mon(mon, cave, FALSE);
+		if (!mon_died)
+			update_mon(mon, cave, FALSE);
 
-		/* Hack -- get new location in case of teleport */
-		y = mon->fy;
-		x = mon->fx;
-
-		/* Redraw the monster grid */
-		square_light_spot(cave, y, x);
+		/* Redraw the (possibly new) monster grid */
+		square_light_spot(cave, mon->fy, mon->fx);
 
 		/* Update monster recall window */
 		if (player->upkeep->monster_race == mon->race) {
