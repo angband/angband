@@ -157,9 +157,6 @@ struct chunk {
 	u16b feeling_squares; /* How many feeling squares the player has visited */
 	int *feat_count;
 
-	byte **feat;
-	s16b **m_idx;
-
 	struct square **squares;
 
 	struct monster *monsters;
