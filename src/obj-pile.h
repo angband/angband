@@ -38,6 +38,7 @@ typedef enum
 
 struct object *object_new(void);
 void list_object(struct chunk *c, struct object *obj);
+void delist_object(struct chunk *c, struct object *obj);
 void object_delete(struct object **obj_address);
 void object_pile_free(struct object *obj);
 

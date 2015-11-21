@@ -211,12 +211,15 @@ void list_object(struct chunk *c, struct object *obj)
 	for (i = 1; i < c->obj_max; i++)
 		if (c->objects[i] == NULL) {
 			c->objects[i] = obj;
+			obj->oidx = i;
 			return;
 		}
 
 	/* Extend the list */
-	c->objects = mem_realloc(c->objects, c->obj_max + OBJECT_LIST_INCR + 1);
+	c->objects = mem_realloc(c->objects, (c->obj_max + OBJECT_LIST_INCR + 1)
+							 * sizeof(struct object*));
 	c->objects[c->obj_max] = obj;
+	obj->oidx = c->obj_max;
 	for (i = c->obj_max + 1; i <= c->obj_max + OBJECT_LIST_INCR; i++)
 		c->objects[i] = NULL;
 	c->obj_max += OBJECT_LIST_INCR;
@@ -229,6 +232,7 @@ void delist_object(struct chunk *c, struct object *obj)
 {
 	assert(c->objects[obj->oidx] == obj);
 	c->objects[obj->oidx] = NULL;
+	obj->oidx = 0;
 }
 
 /**
