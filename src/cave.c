@@ -130,6 +130,9 @@ struct chunk *cave_new(int height, int width) {
 			c->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 	}
 
+	c->objects = mem_zalloc(OBJECT_LIST_SIZE * sizeof(struct object*));
+	c->obj_max = OBJECT_LIST_SIZE - 1;
+
 	c->monsters = mem_zalloc(z_info->level_monster_max *sizeof(struct monster));
 	c->mon_max = 1;
 	c->mon_current = -1;
@@ -157,6 +160,7 @@ void cave_free(struct chunk *c) {
 	mem_free(c->squares);
 
 	mem_free(c->feat_count);
+	mem_free(c->objects);
 	mem_free(c->monsters);
 	if (c->name)
 		string_free(c->name);

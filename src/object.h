@@ -403,6 +403,8 @@ struct object {
 	struct object *prev;	/* Previous object in a pile */
 	struct object *next;	/* Next object in a pile */
 
+	u16b oidx;			/* Item list index, if any */
+
 	byte iy;			/* Y-position on map, or zero */
 	byte ix;			/* X-position on map, or zero */
 
