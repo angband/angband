@@ -742,6 +742,7 @@ void inven_wield(struct object *obj, int slot)
 	/* Carry floor items, don't allow combining */
 	if (square_holds_object(cave, player->py, player->px, wielded)) {
 		square_excise_object(cave, player->py, player->px, wielded);
+		delist_object(cave, wielded);
 		inven_carry(player, wielded, FALSE, FALSE);
 	}
 

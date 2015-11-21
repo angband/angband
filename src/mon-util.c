@@ -436,6 +436,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 		/* Check for combination */
 		if (object_similar(held_obj, obj, OSTACK_MONSTER)) {
 			/* Combine the items */
+			delist_object(c, obj);
 			object_absorb(held_obj, obj);
 
 			/* Result */
@@ -453,6 +454,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 	obj->held_m_idx = mon->midx;
 
 	/* Add the object to the monster's inventory */
+	list_object(c, obj);
 	pile_insert(&mon->held_obj, obj);
 
 	/* Result */
@@ -600,6 +602,7 @@ void become_aware(struct monster *mon)
 				monster_carry(cave, mon, obj);
 			else {
 				/* Otherwise delete the mimicked object */
+				delist_object(cave, obj);
 				object_delete(&obj);
 			}
 		}

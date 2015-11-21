@@ -480,6 +480,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 
 				/* Delete the object */
 				square_excise_object(cave, y, x, obj);
+				delist_object(cave, obj);
 				object_delete(&obj);
 
 				/* Redraw */
