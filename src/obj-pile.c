@@ -201,6 +201,37 @@ struct object *object_new(void)
 }
 
 /**
+ * Enter an object in the list of objects for the current level/chunk
+ */
+void list_object(struct chunk *c, struct object *obj)
+{
+	int i;
+
+	/* Put object in a hole */
+	for (i = 1; i < c->obj_max; i++)
+		if (c->objects[i] == NULL) {
+			c->objects[i] = obj;
+			return;
+		}
+
+	/* Extend the list */
+	c->objects = mem_realloc(c->objects, c->obj_max + OBJECT_LIST_INCR + 1);
+	c->objects[c->obj_max] = obj;
+	for (i = c->obj_max + 1; i <= c->obj_max + OBJECT_LIST_INCR; i++)
+		c->objects[i] = NULL;
+	c->obj_max += OBJECT_LIST_INCR;
+}
+
+/**
+ * Remove an object from the list of objects for the current level/chunk
+ */
+void delist_object(struct chunk *c, struct object *obj)
+{
+	assert(c->objects[obj->oidx] == obj);
+	c->objects[obj->oidx] = NULL;
+}
+
+/**
  * Delete an object and free its memory, and set its pointer to NULL
  */
 void object_delete(struct object **obj_address)

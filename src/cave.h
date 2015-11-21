@@ -159,6 +159,9 @@ struct chunk {
 
 	struct square **squares;
 
+	struct object **objects;
+	u16b obj_max;
+
 	struct monster *monsters;
 	u16b mon_max;
 	u16b mon_cnt;

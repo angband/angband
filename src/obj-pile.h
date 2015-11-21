@@ -19,6 +19,9 @@
 #include "cave.h"
 #include "player.h"
 
+#define OBJECT_LIST_SIZE  128
+#define OBJECT_LIST_INCR  128
+
 /**
  * Modes for stacking by object_similar()
  */
@@ -34,6 +37,7 @@ typedef enum
 } object_stack_t;
 
 struct object *object_new(void);
+void list_object(struct chunk *c, struct object *obj);
 void object_delete(struct object **obj_address);
 void object_pile_free(struct object *obj);
 
