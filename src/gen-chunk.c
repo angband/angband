@@ -350,7 +350,8 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 								* sizeof(struct object*));
 	for (i = 0; i <= source->obj_max; i++) {
 		dest->objects[dest->obj_max + i] = source->objects[i];
-		dest->objects[dest->obj_max + i]->oidx = dest->obj_max + i;
+		if (dest->objects[dest->obj_max + i] != NULL)
+			dest->objects[dest->obj_max + i]->oidx = dest->obj_max + i;
 	}
 	dest->obj_max += source->obj_max + 1;
 

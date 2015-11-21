@@ -201,11 +201,18 @@ struct object *object_new(void)
 }
 
 /**
- * Enter an object in the list of objects for the current level/chunk
+ * Enter an object in the list of objects for the current level/chunk.  This
+ * function is robust against listing of duplicates or non-objects
  */
 void list_object(struct chunk *c, struct object *obj)
 {
 	int i;
+
+	/* Check for duplicates and objects already deleted or combined */
+	if (!obj) return;
+	for (i = 1; i < c->obj_max; i++)
+		if (c->objects[i] == obj)
+			return;
 
 	/* Put object in a hole */
 	for (i = 1; i < c->obj_max; i++)
@@ -226,10 +233,12 @@ void list_object(struct chunk *c, struct object *obj)
 }
 
 /**
- * Remove an object from the list of objects for the current level/chunk
+ * Remove an object from the list of objects for the current level/chunk.  This
+ * function is robust against delisting of unlisted objects.
  */
 void delist_object(struct chunk *c, struct object *obj)
 {
+	if (!obj->oidx) return;
 	assert(c->objects[obj->oidx] == obj);
 	c->objects[obj->oidx] = NULL;
 	obj->oidx = 0;
@@ -633,6 +642,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 	} else {
 		usable = obj;
 		square_excise_object(cave, usable->iy, usable->ix, usable);
+		delist_object(cave, usable);
 		*none_left = TRUE;
 
 		/* Stop tracking item */
@@ -713,6 +723,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 		/* Delete the oldest ignored object */
 		if (ignore) {
 			square_excise_object(c, y, x, ignore);
+			delist_object(c, ignore);
 			object_delete(&ignore);
 		} else
 			return FALSE;
@@ -756,7 +767,9 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
  * the object can combine, stack, or be placed.  Artifacts will try very
  * hard to be placed, including "teleporting" to a useful grid if needed.
  *
- * Objects which fail to be carried by the floor are deleted.
+ * Objects which fail to be carried by the floor are deleted.  This function
+ * attempts to add successfully dropped objects to, and to remove failures
+ * from, the object list (as dropped items may or may not be already listed).
  */
 void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			   int x, bool verbose)
@@ -785,6 +798,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			VERB_AGREEMENT(dropped->number, "breaks", "break"));
 
 		/* Failure */
+		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
 	}
@@ -889,6 +903,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (player->wizard) msg("Breakage (no floor space).");
 
 		/* Failure */
+		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
 	}
@@ -928,9 +943,13 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (dropped->artifact) dropped->artifact->created = FALSE;
 
 		/* Failure */
+		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
 	}
+
+	/* Record in the level list */
+	list_object(c, dropped);
 
 	/* Sound */
 	sound(MSG_DROP);

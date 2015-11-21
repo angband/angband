@@ -170,6 +170,7 @@ void delete_monster_idx(int m_idx)
 			obj->artifact->created = FALSE;
 
 		/* Delete the object */
+		delist_object(cave, obj);
 		object_delete(&obj);
 		obj = next;
 	}
@@ -177,6 +178,7 @@ void delete_monster_idx(int m_idx)
 	/* Delete mimicked objects */
 	if (mon->mimicked_obj) {
 		square_excise_object(cave, y, x, mon->mimicked_obj);
+		delist_object(cave, mon->mimicked_obj);
 		object_delete(&mon->mimicked_obj);
 	}
 
@@ -707,9 +709,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		obj->number = randint0(drop->max - drop->min) + drop->min;
 
 		/* Try to carry */
-		if (monster_carry(c, mon, obj))
+		if (monster_carry(c, mon, obj)) {
 			any = TRUE;
-		else {
+		} else {
 			obj->artifact->created = FALSE;
 			object_wipe(obj);
 			mem_free(obj);
@@ -731,9 +733,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 		obj->origin_xtra = mon->race->ridx;
 
 		/* Try to carry */
-		if (monster_carry(c, mon, obj))
+		if (monster_carry(c, mon, obj)) {
 			any = TRUE;
-		else {
+		} else {
 			obj->artifact->created = FALSE;
 			object_wipe(obj);
 			mem_free(obj);

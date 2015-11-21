@@ -1379,6 +1379,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 
 			/* Delete the object */
 			square_excise_object(c, ny, nx, obj);
+			delist_object(c, obj);
 			object_delete(&obj);
 		}
 
