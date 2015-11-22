@@ -131,7 +131,7 @@ static NSFont *default_font;
     
     /* The buffered image */
     CGLayerRef angbandLayer;
-    
+
     /* The font of this context */
     NSFont *angbandViewFont;
     
@@ -629,6 +629,16 @@ static int compare_advances(const void *ap, const void *bp)
     
     CGLayerRelease(angbandLayer);
     
+    /* Use the highest monitor scale factor on the system to work out what
+     * scale to draw at - not the recommended method, but works where we
+     * can't easily get the monitor the current draw is occurring on. */
+    float angbandLayerScale = 1.0;
+    if ([[NSScreen mainScreen] respondsToSelector:@selector(backingScaleFactor)]) {
+        for (NSScreen *screen in [NSScreen screens]) {
+            angbandLayerScale = fmax(angbandLayerScale, [screen backingScaleFactor]);
+        }
+    }
+
     /* Make a bitmap context as an example for our layer */
     CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
     CGContextRef exampleCtx = CGBitmapContextCreate(NULL, 1, 1, 8 /* bits per component */, 48 /* bytesPerRow */, cs, kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host);
