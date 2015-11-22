@@ -72,6 +72,8 @@ static void wr_item(const struct object *obj)
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
 
+	wr_u16b(obj->oidx);
+
 	/* Location */
 	wr_byte(obj->iy);
 	wr_byte(obj->ix);
@@ -713,6 +715,7 @@ static void wr_objects_aux(struct chunk *c)
 		return;
 	
 	/* Write the objects */
+	wr_u16b(c->obj_max);
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			struct object *obj = c->squares[y][x].obj;

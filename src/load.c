@@ -115,6 +115,8 @@ static struct object *rd_item(void)
 	if (tmp16u != 0xffff)
 		return NULL;
 
+	rd_u16b(&obj->oidx);
+
 	/* Location */
 	rd_byte(&obj->iy);
 	rd_byte(&obj->ix);
@@ -307,6 +309,8 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 			break;
 
 		pile_insert(&mon->held_obj, obj);
+		assert(obj->oidx);
+		c->objects[obj->oidx] = obj;
 	}
 
 	return TRUE;
@@ -1140,9 +1144,18 @@ static int rd_dungeon_aux(struct chunk **c)
  */
 static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 {
+	int i;
+
 	/* Only if the player's alive */
 	if (player->is_dead)
 		return 0;
+
+	/* Make the object list */
+	rd_u16b(&c->obj_max);
+	c->objects = mem_realloc(c->objects,
+							 (c->obj_max + 1) * sizeof(struct object*));
+	for (i = 0; i <= c->obj_max; i++)
+		c->objects[i] = NULL;
 
 	/* Read the dungeon items until one isn't returned */
 	while (TRUE) {
@@ -1155,6 +1168,8 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 					obj->iy, obj->ix));
 			return -1;
 		}
+		assert(obj->oidx);
+		c->objects[obj->oidx] = obj;
 	}
 
 	return 0;
