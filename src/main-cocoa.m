@@ -132,6 +132,9 @@ static NSFont *default_font;
     /* The buffered image */
     CGLayerRef angbandLayer;
 
+    /* Scaling factor for the buffered image */
+    float angbandLayerScale;
+
     /* The font of this context */
     NSFont *angbandViewFont;
     
@@ -623,16 +626,13 @@ static int compare_advances(const void *ap, const void *bp)
             size = [activeView bounds].size;
         }
     }
-    
-    size.width = fmax(1, ceil(size.width));
-    size.height = fmax(1, ceil(size.height));
-    
+
     CGLayerRelease(angbandLayer);
     
     /* Use the highest monitor scale factor on the system to work out what
      * scale to draw at - not the recommended method, but works where we
      * can't easily get the monitor the current draw is occurring on. */
-    float angbandLayerScale = 1.0;
+    angbandLayerScale = 1.0;
     if ([[NSScreen mainScreen] respondsToSelector:@selector(backingScaleFactor)]) {
         for (NSScreen *screen in [NSScreen screens]) {
             angbandLayerScale = fmax(angbandLayerScale, [screen backingScaleFactor]);
@@ -643,8 +643,17 @@ static int compare_advances(const void *ap, const void *bp)
     CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
     CGContextRef exampleCtx = CGBitmapContextCreate(NULL, 1, 1, 8 /* bits per component */, 48 /* bytesPerRow */, cs, kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host);
     CGColorSpaceRelease(cs);
+
+    /* Create the layer at the appropriate size */
+    size.width = fmax(1, ceil(size.width * angbandLayerScale));
+    size.height = fmax(1, ceil(size.height * angbandLayerScale));
     angbandLayer = CGLayerCreateWithContext(exampleCtx, *(CGSize *)&size, NULL);
+
     CFRelease(exampleCtx);
+
+    /* Set the new context of the layer to draw at the correct scale */
+    CGContextRef ctx = CGLayerGetContext(angbandLayer);
+    CGContextScaleCTM(ctx, angbandLayerScale, angbandLayerScale);
 
     [self lockFocus];
     [[NSColor blackColor] set];
