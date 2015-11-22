@@ -746,11 +746,32 @@ void cave_update_flow(struct chunk *c)
 	}
 }
 
-/* Make map features known */
-void cave_known (void)
+/**
+ * Make map features known, except walls surrounded by wall
+ */
+void cave_known(void)
 {
-	int y,x;
-	for (y = 0; y < cave->height; y++)
-		for (x = 0; x < cave->width; x++)
-			cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+	int y, x;
+	for (y = 0; y < cave->height; y++) {
+		for (x = 0; x < cave->width; x++) {
+			int d;
+			int xx, yy;
+			int count = 0;
+
+			/* Check around the grid */
+			for (d = 0; d < 8; d++) {
+				/* Extract adjacent location */
+				yy = y + ddy_ddd[d];
+				xx = x + ddx_ddd[d];
+
+				/* Don't count projectable squares */
+				if (!square_isprojectable(cave, yy, xx))
+					++count;
+			}
+
+			/* Internal walls not known */
+			if (count < 8)
+				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+		}
+	}
 }
