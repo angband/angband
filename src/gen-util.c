@@ -218,8 +218,8 @@ bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred)
  * \param pred square_predicate specifying what we're looking for
  * \return success
  */
-static bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2,
-							   int *x, int x1, int x2, square_predicate pred)
+bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1,
+						int x2, square_predicate pred)
 {
     return _find_in_range(c, y, y1, y2, x, x1, x2, pred);
 }

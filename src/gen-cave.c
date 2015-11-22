@@ -1454,7 +1454,7 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
  */
 static void town_gen_layout(struct chunk *c, struct player *p)
 {
-	int y, x, n, num = 3 + randint0(3);
+	int y, x, n, num_lava = 3 + randint0(3), num_rubble = 3 + randint0(3);
 
 	/* Create walls */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
@@ -1464,17 +1464,68 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	(void) generate_starburst_room(c, 1, 1, c->height - 1, c->width - 1, FALSE,
 								   FEAT_FLOOR, FALSE);
 
-	/* Make everything else permanent wall or lava, and none of it a room */
+	/* Make everything else permanent wall, and none of it a room */
 	for (y = 0; y < c->height; y++)
 		for (x = 0; x < c->width; x++) {
-			if (!square_isfloor(c, y, x)) {
-				if (one_in_(40))
-					square_set_feat(c, y, x, FEAT_LAVA);
-				else
-					square_set_feat(c, y, x, FEAT_PERM);
-			}
-			sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
+			if (square_isfloor(c, y, x))
+				sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
+			else
+				square_set_feat(c, y, x, FEAT_PERM);
 		}
+
+	/* Make some lava tendrils */
+	for (n = 0; n < 3 + num_lava; n++) {
+		int yy, xx;
+
+		/* Find an edge wall */
+		while (TRUE) {
+			int d;
+
+			/* Pick a random permanent wall */
+			y = randint1(c->height - 2);
+			x = randint1(c->width - 2);
+			if (square_isfloor(c, y, x)) continue;
+
+			/* Check for an adjacent floor */
+			for (d = 0; d < 8; d++) {
+				yy = y + ddy_ddd[d];
+				xx = x + ddx_ddd[d];
+				if (square_isfloor(c, yy, xx))
+					break;
+			}
+			if (d == 8) continue;
+
+			break;
+		}
+
+		square_set_feat(c, y, x, FEAT_LAVA);
+
+		/* Try to extend the tendril */
+		while (TRUE) {
+			int yyy, xxx;
+
+			/* Find another end */
+			cave_find_in_range(c, &yy, MAX(y - 2, 1), MIN(y + 2, c->height - 2),
+							   &xx, MAX(x - 2, 1), MIN(x + 2, c->width - 2),
+							   square_isperm);
+			square_set_feat(c, yy, xx, FEAT_LAVA);
+			yyy = yy;
+			xxx = xx;
+
+			/* Join up */
+			while ((yyy != y) || (xxx != x)) {
+				if (yyy < y) yyy++;
+				else if (yyy > y) yyy--;
+				if (xxx < x) xxx++;
+				else if (xxx > x) xxx--;
+				square_set_feat(c, yyy, xxx, FEAT_LAVA);
+			}
+			y = yy;
+			x = xx;
+
+			if (!one_in_(3)) break;
+		}
+	}
 
 	/* Place stores */
 	for (n = 0; n < MAX_STORES; n++) {
@@ -1499,7 +1550,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	}
 
 	/* Place a few piles of rubble */
-	for (n = 0; n < num; n++) {
+	for (n = 0; n < num_rubble; n++) {
 		bool enough_space = FALSE;
 		int xx, yy;
 
