@@ -132,9 +132,6 @@ static NSFont *default_font;
     /* The buffered image */
     CGLayerRef angbandLayer;
 
-    /* Scaling factor for the buffered image */
-    float angbandLayerScale;
-
     /* The font of this context */
     NSFont *angbandViewFont;
     
@@ -632,7 +629,7 @@ static int compare_advances(const void *ap, const void *bp)
     /* Use the highest monitor scale factor on the system to work out what
      * scale to draw at - not the recommended method, but works where we
      * can't easily get the monitor the current draw is occurring on. */
-    angbandLayerScale = 1.0;
+    float angbandLayerScale = 1.0;
     if ([[NSScreen mainScreen] respondsToSelector:@selector(backingScaleFactor)]) {
         for (NSScreen *screen in [NSScreen screens]) {
             angbandLayerScale = fmax(angbandLayerScale, [screen backingScaleFactor]);
