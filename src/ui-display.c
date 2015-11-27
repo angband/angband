@@ -2322,16 +2322,6 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 		screen_load();
 	}
 
-	/* Update the map to display the items that are felt during blindness. */
-	if (blind) {
-		for (i = 0; i < floor_num; i++) {
-			/* Since the messages are detailed, we use MARK_SEEN to match
-			 * description. */
-			struct object *obj = floor_list[i];
-			obj->marked = MARK_SEEN;
-		}
-	}
-
 	mem_free(floor_list);
 }
 

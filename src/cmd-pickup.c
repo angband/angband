@@ -37,6 +37,7 @@
 #include "player-attack.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "trap.h"
 
@@ -249,6 +250,14 @@ static byte player_pickup_item(struct object *obj, bool menu)
 
 	if (!can_pickup) {
 	    /* Can't pick up, but probably want to know what's there. */
+		if ((player->timed[TMD_BLIND]) || (no_light())) {
+			for (i = 0; i < floor_num; i++) {
+				/* Since the messages are detailed, we use MARK_SEEN to match
+				 * description. */
+				struct object *obj = floor_list[i];
+				obj->marked = MARK_SEEN;
+			}
+		}
 	    event_signal(EVENT_SEEFLOOR);
 		mem_free(floor_list);
 	    return objs_picked_up;
@@ -378,6 +387,21 @@ void do_cmd_autopickup(struct command *cmd)
 	if (player->upkeep->energy_use > z_info->move_energy)
 		player->upkeep->energy_use = z_info->move_energy;
 
-	/* Look at what's left */
+	/* Look at or feel what's left */
+	if ((player->timed[TMD_BLIND]) || (no_light())) {
+		int floor_max = z_info->floor_size;
+		struct object **floor_list = mem_zalloc(floor_max *
+												sizeof(*floor_list));
+		int i, floor_num = 0;
+		floor_num = scan_floor(floor_list, floor_max, player->py, player->px,
+							   0x09, FALSE);
+		for (i = 0; i < floor_num; i++) {
+			/* Since the messages are detailed, we use MARK_SEEN to match
+			 * description. */
+			struct object *obj = floor_list[i];
+			obj->marked = MARK_SEEN;
+		}
+		mem_free(floor_list);
+	}
 	event_signal(EVENT_SEEFLOOR);
 }
