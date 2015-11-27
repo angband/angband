@@ -32,6 +32,7 @@
 #include "obj-chest.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
@@ -1363,8 +1364,24 @@ void do_cmd_hold(struct command *cmd)
 
 		/* Turn will be taken exiting the shop */
 		player->upkeep->energy_use = 0;
-	} else
+	} else {
+		if ((player->timed[TMD_BLIND]) || (no_light())) {
+			int floor_max = z_info->floor_size;
+			struct object **floor_list = mem_zalloc(floor_max *
+													sizeof(*floor_list));
+			int i, floor_num = 0;
+			floor_num = scan_floor(floor_list, floor_max, player->py,
+								   player->px, 0x09, FALSE);
+			for (i = 0; i < floor_num; i++) {
+				/* Since the messages are detailed, we use MARK_SEEN to match
+				 * description. */
+				struct object *obj = floor_list[i];
+				obj->marked = MARK_SEEN;
+			}
+			mem_free(floor_list);
+		}
 	    event_signal(EVENT_SEEFLOOR);
+	}
 }
 
 
