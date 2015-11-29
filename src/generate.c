@@ -852,7 +852,7 @@ static void cave_clear(struct chunk *c, struct player *p)
 void cave_generate(struct chunk **c, struct player *p)
 {
 	const char *error = "no generation";
-	int y, x, tries = 0;
+	int i, y, x, tries = 0;
 	struct chunk *chunk;
 
 	assert(c);
@@ -959,6 +959,11 @@ void cave_generate(struct chunk **c, struct player *p)
 	if (cave_k)
 		cave_free(cave_k);
 	cave_k = cave_new(cave->height, cave->width);
+	cave_k->objects = mem_realloc(cave_k->objects,
+								  ((*c)->obj_max + 1) * sizeof(struct object*));
+	cave_k->obj_max = (*c)->obj_max;
+	for (i = 0; i <= cave_k->obj_max; i++)
+		cave_k->objects[i] = NULL;
 	if (!cave->depth)
 		cave_known();
 

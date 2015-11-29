@@ -70,3 +70,5 @@ int scan_floor(struct object **items, int max_size, int y, int x, int mode,
 int scan_items(struct object **item_list, size_t item_list_max, int mode,
 			   item_tester tester);
 bool item_is_available(struct object *obj, bool (*tester)(const struct object *), int mode);
+void floor_pile_sense(struct chunk *c, int y, int x);
+void floor_pile_know(struct chunk *c, int y, int x);

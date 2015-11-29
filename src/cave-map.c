@@ -21,6 +21,7 @@
 #include "init.h"
 #include "monster.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -212,14 +213,12 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
  */
 void square_note_spot(struct chunk *c, int y, int x)
 {
-	struct object *obj;
+	/* Require "seen" flag and the current level */
+	if (c != cave) return;
+	if (!square_isseen(c, y, x)) return;
 
-	/* Require "seen" flag */
-	if (!square_isseen(c, y, x))
-		return;
-
-	for (obj = square_object(c, y, x); obj; obj = obj->next)
-		obj->marked = MARK_SEEN;
+	/* Make the player know precisely what is on this grid */
+	floor_pile_know(c, y, x);
 
 	if (square_isknown(c, y, x))
 		return;
@@ -431,8 +430,6 @@ void wiz_light(struct chunk *c, bool full)
 	/* Scan all grids */
 	for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
-			struct object *obj;
-
 			/* Process all non-walls */
 			if (!square_seemslikewall(c, y, x)) {
 				/* Scan all neighbors */
@@ -452,14 +449,10 @@ void wiz_light(struct chunk *c, bool full)
 			}
 
 			/* Memorize objects */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-				/* Skip dead objects */
-				assert(obj->kind);
-
-				/* Memorize it */
-				if (obj->marked < MARK_SEEN)
-					obj->marked = full ? MARK_SEEN : MARK_AWARE;
-			}
+			if (full)
+				floor_pile_know(c, y, x);
+			else
+				floor_pile_sense(c, y, x);
 		}
 	}
 
