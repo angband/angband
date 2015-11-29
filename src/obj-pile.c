@@ -1165,3 +1165,111 @@ bool item_is_available(struct object *obj, bool (*tester)(const struct object *)
 	return FALSE;
 }
 
+/**
+ * Sense the existence of objects on a grid in the current level
+ */
+void floor_pile_sense(struct chunk *c, int y, int x)
+{
+	struct object *obj;
+	int none = tval_find_idx("none");
+	int item = lookup_sval(none, "<unknown item>");
+	int gold = lookup_sval(none, "<unknown treasure>");
+
+	if (c != cave) return;
+
+	/* Sense every item on this grid */
+	for (obj = square_object(c, y, x); obj; obj = obj->next) {
+		struct object *known_obj = cave_k->objects[obj->oidx];
+
+		/* Make new sensed objects where necessary */
+		if (known_obj == NULL) {
+			/* Make and list the new object */
+			struct object *new_obj = object_new();
+			cave_k->objects[obj->oidx] = new_obj;
+			new_obj->oidx = obj->oidx;
+
+			/* Give it a fake kind */
+			if (tval_is_money(obj))
+				new_obj->kind = lookup_kind(none, gold);
+			else
+				new_obj->kind = lookup_kind(none, item);
+
+			/* Attach it to the current floor pile */
+			new_obj->iy = y;
+			new_obj->ix = x;
+			pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
+		}
+
+		if (obj->marked == MARK_UNAWARE)
+			obj->marked = MARK_AWARE;
+	}
+}
+
+/**
+ * Update the player's knowledge of the objects on a grid in the current level
+ */
+void floor_pile_know(struct chunk *c, int y, int x)
+{
+	struct object *obj;
+
+	if (c != cave) return;
+
+	/* Know every item on this grid */
+	for (obj = square_object(c, y, x); obj; obj = obj->next) {
+		struct object *known_obj = cave_k->objects[obj->oidx];
+
+		/* Make new known objects, fully know sensed ones, relocate old ones */
+		if (known_obj == NULL) {
+			/* Make and list the new object */
+			struct object *new_obj = object_new();
+			object_copy(new_obj, obj);
+			cave_k->objects[obj->oidx] = new_obj;
+			new_obj->oidx = obj->oidx;
+
+			/* Attach it to the current floor pile */
+			new_obj->iy = y;
+			new_obj->ix = x;
+			pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
+		} else if (known_obj->kind != obj->kind) {
+			/* Detach from any old pile (possibly the correct one) */
+			if (known_obj->iy && known_obj->ix &&
+				pile_contains(square_object(cave_k, known_obj->iy,
+											known_obj->ix), known_obj))
+				square_excise_object(cave_k, known_obj->iy, known_obj->ix,
+									 known_obj);
+
+			/* Copy over actual details */
+			object_copy(known_obj, obj);
+
+			/* Attach it to the current floor pile */
+			known_obj->iy = y;
+			known_obj->ix = x;
+			known_obj->held_m_idx = 0;
+			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
+		} else if (!pile_contains(square_object(cave_k, y, x), known_obj)) {
+			/* Detach from any old pile */
+			if (known_obj->iy && known_obj->ix &&
+				pile_contains(square_object(cave_k, known_obj->iy,
+											known_obj->ix), known_obj))
+				square_excise_object(cave_k, known_obj->iy, known_obj->ix,
+									 known_obj);
+
+			/* Attach it to the current floor pile */
+			known_obj->iy = y;
+			known_obj->ix = x;
+			known_obj->held_m_idx = 0;
+			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
+		}
+
+		obj->marked = MARK_SEEN;
+	}
+
+	/* Remove known location of anything not on this grid */
+	obj = square_object(cave_k, y, x);
+	while (obj) {
+		struct object *next = obj->next;
+		if (!pile_contains(square_object(c, y, x), c->objects[obj->oidx]))
+			square_excise_object(cave_k, y, x, obj);
+		obj = next;
+	}
+}

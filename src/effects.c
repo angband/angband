@@ -1263,11 +1263,7 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 			context->ident = TRUE;
 
 			/* Mark the pile as aware */
-			while (obj) {
-				if (obj->marked == MARK_UNAWARE)
-					obj->marked = MARK_AWARE;
-				obj = obj->next;
-			}
+			floor_pile_sense(cave, y, x);
 
 			/* Redraw */
 			square_light_spot(cave, y, x);
@@ -1321,11 +1317,8 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 				context->ident = TRUE;
 			}
 
-			/* Markthe pile as seen */
-			while (obj) {
-				obj->marked = MARK_SEEN;
-				obj = obj->next;
-			}
+			/* Mark the pile as seen */
+			floor_pile_know(cave, y, x);
 
 			/* Redraw */
 			square_light_spot(cave, y, x);

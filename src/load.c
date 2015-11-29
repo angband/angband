@@ -1163,11 +1163,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		if (!obj)
 			break;
 
-		if	(!floor_carry(c, obj->iy, obj->ix, obj, TRUE)) {
-			note(format("Cannot place object at row %d, column %d!",
-					obj->iy, obj->ix));
-			return -1;
-		}
+		pile_insert_end(&c->squares[obj->iy][obj->ix].obj, obj);
 		assert(obj->oidx);
 		c->objects[obj->oidx] = obj;
 	}
