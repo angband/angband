@@ -78,6 +78,9 @@
 void map_info(unsigned y, unsigned x, struct grid_data *g)
 {
 	struct object *obj;
+	int none = tval_find_idx("none");
+	int item = lookup_sval(none, "<unknown item>");
+	int gold = lookup_sval(none, "<unknown treasure>");
 
 	assert(x < (unsigned) cave->width);
 	assert(y < (unsigned) cave->height);
@@ -137,23 +140,18 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
     }
 
 	/* Objects */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-		if (obj->marked == MARK_AWARE) {
-
-			/* Distinguish between unseen money and objects */
-			if (tval_is_money(obj)) {
-				g->unseen_money = TRUE;
-			} else {
-				g->unseen_object = TRUE;
-			}
-
-		} else if (obj->marked == MARK_SEEN && !ignore_item_ok(obj)) {
-			if (!g->first_kind) {
-				g->first_kind = obj->kind;
-			} else {
-				g->multiple_objects = TRUE;
-				break;
-			}
+	for (obj = square_object(cave_k, y, x); obj; obj = obj->next) {
+		if (obj->kind == lookup_kind(none, gold)) {
+			g->unseen_money = TRUE;
+		} else if (obj->kind == lookup_kind(none, item)) {
+			g->unseen_object = TRUE;
+		} else if (ignore_item_ok(obj)) {
+			/* Item stays hidden */
+		} else if (!g->first_kind) {
+			g->first_kind = obj->kind;
+		} else {
+			g->multiple_objects = TRUE;
+			break;
 		}
 	}
 
