@@ -168,8 +168,9 @@ static void path_process(char *buf, size_t len, size_t *cur_len,
 size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 {
 	size_t cur_len = 0;
-	buf[0] = '\0';
 	int starts_with_separator;
+
+	buf[0] = '\0';
 
 	if (!leaf || !leaf[0]) {
 		if (base && base[0])
@@ -187,7 +188,7 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 	 */
 	starts_with_separator = (!base || !base[0]) || prefix(leaf, PATH_SEP);
 #if defined(UNIX)
-	starts_with_separator = starts_with_separator || leaf[0] == ‘~’;
+	starts_with_separator = starts_with_separator || leaf[0] == '~';
 #endif
 	if (starts_with_separator) {
 		path_process(buf, len, &cur_len, leaf);
