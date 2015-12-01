@@ -843,7 +843,6 @@ int rd_misc(void)
 	
 	/* Read the randart seed */
 	rd_u32b(&seed_randart);
-	if (OPT(birth_randarts)) do_randart(seed_randart, TRUE);
 
 	/* Read the flavors seed */
 	rd_u32b(&seed_flavor);
@@ -857,6 +856,8 @@ int rd_misc(void)
 	/* Read "death" */
 	rd_byte(&tmp8u);
 	player->is_dead = tmp8u;
+	if (!player->is_dead && OPT(birth_randarts))
+		do_randart(seed_randart, TRUE);
 
 	/* Current turn */
 	rd_s32b(&turn);
