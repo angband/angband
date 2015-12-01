@@ -2406,7 +2406,8 @@ static void copy_artifact(struct artifact *a_src,
 	a_dst->next = NULL;
 	a_dst->slays = NULL;
 	a_dst->brands = NULL;
-	a_dst->activation = NULL;
+	if (a_dst->tval != TV_LIGHT)
+		a_dst->activation = NULL;
 	a_dst->alt_msg = NULL;
 
 	if (a_src->slays) {
