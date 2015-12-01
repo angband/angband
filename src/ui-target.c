@@ -963,6 +963,9 @@ bool target_set_interactive(int mode, int x, int y)
 	/* Cancel target */
 	target_set_monster(0);
 
+	/* Prevent animations */
+	msg_flag = TRUE;
+
 	/* Calculate the window location for the help prompt */
 	Term_get_size(&wid, &hgt);
 	help_prompt_loc = hgt - 1;
@@ -1473,6 +1476,9 @@ bool target_set_interactive(int mode, int x, int y)
 
 	mem_free(path_attr);
 	mem_free(path_char);
+
+	/* Allow animations again */
+	msg_flag = FALSE;
 
 	/* Failure to set target */
 	if (!target_is_set()) return (FALSE);
