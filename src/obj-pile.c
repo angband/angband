@@ -616,13 +616,13 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 	/* Print a message if requested and there is anything left */
 	if (message) {
 		if (usable == obj)
-			obj->number--;
+			obj->number = 0;
 
 		/* Get a description */
 		object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
 
 		if (usable == obj)
-			obj->number++;
+			obj->number = num;
 
 		/* Print a message */
 		msg("You see %s.", name);
