@@ -2573,6 +2573,7 @@ pile:25:2
 power:4
 effect:TIMED_INC:OPP_POIS
 dice:10+1d10
+effect:CURE:POISONED
 
 name:350:True Seeing
 graphics:!:d
