@@ -49,8 +49,8 @@ bool gear_excise_object(struct object *obj);
 struct object *gear_last_item(void);
 struct object *gear_object_for_use(struct object *obj, int num, bool message,
 								   bool *none_left);
+int inven_carry_num(const struct object *obj, bool stack);
 bool inven_carry_okay(const struct object *obj);
-bool inven_stack_okay(const struct object *obj);
 void inven_item_charges(struct object *obj);
 void inven_carry(struct player *p, struct object *obj, bool absorb,
 				 bool message);
