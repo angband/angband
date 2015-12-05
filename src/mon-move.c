@@ -281,8 +281,13 @@ static bool get_moves_flow(struct chunk *c, struct monster *mon)
 	/* Monster is too far away to notice the player */
 	if (c->squares[my][mx].cost > z_info->max_flow_depth) return FALSE;
 	if (c->squares[my][mx].cost > mon->race->aaf) return FALSE;
-	/* If the player can see monster, run towards them */
-	if (square_isview(c, my, mx)) return FALSE;
+
+	/* If the player can see monster, set target and run towards them */
+	if (square_isview(c, my, mx)) {
+		mon->ty = player->py;
+		mon->tx = player->px;
+		return FALSE;
+	}
 
 	/* Check nearby grids, diagonals first */
 	/* This gives preference to the cardinal directions */
