@@ -631,6 +631,9 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 				amt++;
 		}
 
+		/* Limit to the number that can be carried */
+		amt = MIN(amt, inven_carry_num(obj, FALSE));
+
 		/* Find the number of this item in the inventory */
 		if (!object_flavor_is_aware(obj))
 			num = 0;
