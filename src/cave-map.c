@@ -463,44 +463,6 @@ void wiz_light(struct chunk *c, bool full)
 
 
 /**
- * Forget the dungeon map (ala "Thinking of Maud...").
- */
-void wiz_dark(void)
-{
-	int y, x;
-
-
-	/* Forget every grid */
-	for (y = 0; y < cave->height; y++) {
-		for (x = 0; x < cave->width; x++) {
-			struct object *obj;
-
-			/* Process the grid */
-			square_forget(cave, y, x);
-			sqinfo_off(cave->squares[y][x].info, SQUARE_DTRAP);
-			sqinfo_off(cave->squares[y][x].info, SQUARE_DEDGE);
-
-			/* Forget all objects */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-				/* Skip dead objects */
-				assert(obj->kind);
-
-				/* Forget the object */
-				obj->marked = MARK_UNAWARE;
-			}
-		}
-	}
-
-	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Redraw map, monster list */
-	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
-}
-
-
-
-/**
  * Light or Darken the town
  */
 void cave_illuminate(struct chunk *c, bool daytime)
