@@ -224,7 +224,6 @@ void square_note_spot(struct chunk *c, int y, int x);
 void square_light_spot(struct chunk *c, int y, int x);
 void light_room(int y1, int x1, bool light);
 void wiz_light(struct chunk *c, bool full);
-void wiz_dark(void);
 void cave_illuminate(struct chunk *c, bool daytime);
 void cave_update_flow(struct chunk *c);
 void cave_forget_flow(struct chunk *c);
