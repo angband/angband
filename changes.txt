@@ -1,5 +1,34 @@
 Welcome to the changelog for Angband 4.0. This file tracks the changes made since 3.5.1.
 
+Angband 4.0.4
+=============
+
+More bugfixes, *maybe* the last of the 4.0.x series.
+
+Changes
+-------
+ - Remove some global variables
+ - Allow ego types to remove flags from base types
+ - Make Potions of Resist Poison also cure poison
+ - Improve pickup of partial stacks
+ - Disturb on first getting the object feeling
+ - Minor code improvements
+
+Bugfixes
+--------
+ - Stop crashes where use of an object destroys the object
+ - Let Windows port accept a filename from the command line again
+ - Speed up inventory/equipment refresh
+ - Let hit to shatter move the player again
+ - Stop autoinscriptions preventing object spoiler generation
+ - Make study indicator work for books on the ground
+ - Stop status effects happening after the player's death
+ - Make randart lights keep the original activations
+ - Make all new randart sets based on the standard artifacts
+ - Stop animations interfering with the target path
+ - Allow group monsters to melee the player in open areas again
+ - Make info for spells like Banish Evil say "power" rather than "dam"
+
 Angband 4.0.3
 =============
 

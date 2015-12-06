@@ -20,6 +20,7 @@ Code contribution:
  * Elly Fong-Jones (elly)
  * Elsairon
  * Erik Osheim (d_m)
+ * flaviommedeiros
  * Jagath Samarabandu
  * Jose Antonio Dura
  * Kevin J. Fletcher
@@ -70,10 +71,9 @@ Beta testing and bug reporting/fixing:
  * kandrc
  * Nivra
  * Tarrasque
-
-Insanity checking:
-
- * Luke McConnell
+ * Egavactip
+ * zog
+ * troycheek
 
 Previous maintainers
 ====================
