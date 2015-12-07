@@ -231,7 +231,7 @@ static struct object *rd_item(void)
 	obj->kind = lookup_kind(obj->tval, obj->sval);
 
 	/* Check we have a kind and a valid artifact index */
-	if (!obj->tval || !obj->kind || art_idx >= z_info->a_max) {
+	if ((!obj->tval && !obj->sval) || !obj->kind || art_idx >= z_info->a_max) {
 		object_delete(&obj);
 		return NULL;
 	}
