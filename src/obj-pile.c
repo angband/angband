@@ -1189,10 +1189,12 @@ void floor_pile_sense(struct chunk *c, int y, int x)
 			new_obj->oidx = obj->oidx;
 
 			/* Give it a fake kind */
+			new_obj->tval = none;
 			if (tval_is_money(obj))
-				new_obj->kind = lookup_kind(none, gold);
+				new_obj->sval = gold;
 			else
-				new_obj->kind = lookup_kind(none, item);
+				new_obj->sval = item;
+			new_obj->kind = lookup_kind(new_obj->tval, new_obj->sval);
 
 			/* Attach it to the current floor pile */
 			new_obj->iy = y;
