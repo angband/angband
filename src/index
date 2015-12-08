@@ -1,8 +1,9 @@
 pageclass = "class='front'"
-<link href='http://fonts.googleapis.com/css?family=Libre+Baskerville:400,700' rel='stylesheet' type='text/css'>
 
 <section id="intro">
-<p>Angband is a free, single-player dungeon exploration game.  You play an adventurer: seeking riches, fighting monsters, and preparing for a final battle with Morgoth, the Lord of Darkness.</p>
+<p class="lede">Angband is a free, single-player dungeon exploration game.
+
+<p>You play an adventurer seeking riches, fighting monsters, and preparing for a final battle with Morgoth, the Lord of Darkness.</p>
 </section>
 
 <section id="downloads">

@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <title><@title@> - rephial.org</title>
 <meta charset="utf-8">
+
+<link href='https://fonts.googleapis.com/css?family=Libre+Baskerville:700,400|Open+Sans' rel='stylesheet' type='text/css'>
 <link rel="stylesheet" href="/css/style.css" type="text/css">
 <link rel="shortcut icon" href="/img/favicon.png" type="image/png">
-<meta name="viewport" content="width=600">
+<meta name="viewport" content="width=device-width">
 
 <body <@pageclass@>>
-<div id="header">
-<div class="container">
-<h1><a href="/"><img src='/img/header.png' alt="Angband"></a></h1>
-<ul id="nav">
-<li <@helptab@>><a href="/help">Help &amp; Manual</a>
-<li <@abouttab@>><a href="/develop">About</a>
-<li <@releasetab@>><a href="/release">Download</a>
-</ul>
-</div>
-<div id="dummy">  </div>
-</div>
+
+<header>
+	<div class="container">
+		<h1><a href="/"><img src='/img/header.png' alt="Angband"></a></h1>
+		<ul id="nav">
+			<a href="/help" <@helptab@>><li>Help &amp; Manual</li></a>
+			<a href="/develop" <@abouttab@>><li>About</li></a>
+			<a href="/release" <@releasetab@>><li>Download</li></a>
+		</ul>
+	</div>
+	<div id="dummy">  </div>
+</header>
 
 <div id="content">
-<div class="container">
-<@content@>
-</div>
+	<div class="container">
+		<@content@>
+	</div>
 </div>
 
 <script src='http://www.google-analytics.com/ga.js' type='text/javascript'></script>

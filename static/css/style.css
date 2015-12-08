@@ -1,8 +1,12 @@
 body { 
-  background: rgb(186, 206, 215); 
+  background: #efefef;
   color: black; 
-  font: 16px/22px Helvetica, Arial, sans-serif; 
+  font: 16px/24px 'Open Sans', Helvetica, Arial, sans-serif;
   margin: 0; padding: 0; 
+}
+
+.front, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Libre Baskerville';
 }
 
 h1 { 
@@ -15,58 +19,68 @@ h1 {
 /* Make sure that the 'g' hangs over the to of the navbar */
 h1 img { background: none; position: relative;  z-index: 2; }
 
+img { border: 0; }
+
+header {
+  padding-top: 3px;
+  border-bottom: 2px solid rgb(54, 89, 112);
+  background-color: rgb(221, 231, 235);
+  background-image: -webkit-linear-gradient(to bottom, rgb(221, 231, 235) 0%, rgb(186, 206, 215) 80px);
+  background-image: linear-gradient(to bottom, rgb(221, 231, 235) 0%, rgb(186, 206, 215) 80px);
+}
+
+header a { text-decoration: none; }
+header a:hover { text-decoration: underline; }
 
 #nav { 
   display: block;
   padding: 0 0 2px 0; /* IE wants padding here as well as on the li elements */
-  margin: 0;
+  margin: -6px 0 0 0;
   font-size: 110%; 
-  font-family: sans-serif; 
+  font-family: 'Open Sans', sans-serif;
 }
 
-#dummy { clear: both; padding: 0; margin: 0; height: 0; }
-
-#nav li { 
+#nav a {
   display: block; 
   position: relative;
   z-index: 1;
   float: right;
-  padding: 2px 1em; 
+  padding: 5px 1em;
   margin: 0 2px;
+  background-color: rgb(54, 89, 112);
 }
 
-#nav li.selected { 
-  background: rgb(221, 231, 235); 
-  border-bottom: 2px solid rgb(221, 231, 235);
-/*  background-color: white; */
-  border-top: 2px solid rgb(54,89,112); 
-  border-left: 2px solid rgb(54,89,112); 
-  border-right: 2px solid rgb(54,89,112);
-  margin: -2px 0;
+#nav a { color: white; }
+#nav a:hover { text-decoration: none; }
+
+#nav a:hover, #nav a.selected {
+  background-color: rgba(54, 89, 112, 0.8);
 }
 
-
-#header { 
-  padding-top: 3px;
-  border-bottom: 2px solid rgb(54, 89, 112); 
-/*  background: rgb(163, 189, 202); */
-  background: rgb(255, 255, 255);
+#nav a li {
+  display: inline-block;
+  margin-bottom: 0;
 }
 
-#header a { text-decoration: none; }
-#header a:hover { text-decoration: underline; }
+@media all and (max-width: 750px) {
 
-img { border: 0; }
+  header, h1 { text-align: center; }
+  h1 { height: 90px; }
+  #nav {
+    display: inline-block;
+    margin-top: 0;
+  }
+  #nav li {
+    display: inline-block;
+    float: none;
+  }
 
-#content {
-	background-color: rgb(221, 231, 235);
-	background-image: -webkit-linear-gradient(to bottom, rgb(221, 231, 235) 0%, rgb(186, 206, 215) 300px);
-	background-image: linear-gradient(to bottom, rgb(221, 231, 235) 0%, rgb(186, 206, 215) 300px);
-	min-height: 450px;
 }
 
+#dummy { clear: both; padding: 0; margin: 0; height: 0; }
+
+#content { padding: 1em 0; margin-top: 0.5em; }
 #content h2 { margin: 0; padding: 0; margin-bottom: 10px; }
-#content { padding: 1em 0; }
 
 #editbar { padding: 6px 0; border-bottom: 2px solid rgb(54, 89, 112); }
 
@@ -74,23 +88,21 @@ img { border: 0; }
 
 /** Front page **/
 
-.front { font-family: 'Libre Baskerville'; }
-
 section { clear: both; margin-bottom: 2em; }
 
-@media all {
-  #intro { font-size: 24px; line-height: 32px; text-align: justify; margin-top: 0; margin-bottom: 1em; }
-  #intro p { margin-top: 0; }
-	#resources { width: 580px; margin: 0 auto; }
+#intro .lede { font-size: 24px; line-height: 32px; margin-bottom: 10px; margin-top: 0; }
 
-  #downloads p { margin-top: 0; }
+#resources { width: 580px; margin: 0 auto; }
 
-	.slot { width: 200px; float: left; }
-	.slot img { border: 5px solid #000; border-radius: 5px; margin: 5px; }
-	.slot p { font-size: 14px; line-height: 18px; margin: 0 10px; }
-}
+#downloads p { margin-top: 0; }
 
-@media all and (max-width: 860px) {
+.slot { width: 200px; float: left; }
+.slot img { border: 5px solid #000; border-radius: 5px; margin: 5px; }
+.slot p { font-size: 14px; line-height: 18px; margin: 0 10px; }
+
+@media all and (max-width: 874px) {
+  #intro { max-width: 35em; margin-left: auto; margin-right: auto; text-align: center; }
+
 	.slots { width: 400px; margin: 0 auto; }
 
 	.slot + .slot + .slot { clear: both; margin-top: 1em; }
@@ -219,15 +231,3 @@ li > p { margin: 0px; padding-bottom: 5px; }
 }
 .footnote + .footnote { border: 0; margin-top: 0; }
 /*.footnote_def { vertical-align: super; font-size: 70% }*/
-
-
-/* Modifications needed for smaller screens */
-@media all and (max-width: 720px) 
-{
-  h1 { height: 84px; }
-}
-
-@media all and (max-device-width: 480px) {
-  html, body { font: 18px/22px "Palatino Linotype", serif; }
-  #intro { font-size: 22px; line-height: 28px; padding: 1em 0 0.2em 0; }
-}
