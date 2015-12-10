@@ -193,6 +193,7 @@ static void load_roller_data(birther *saved, birther *prev_player)
 	for (i = 0; i < STAT_MAX; i++) {
 		player->stat_max[i] = player->stat_cur[i] = player->stat_birth[i]
 			= saved->stat[i];
+		player->stat_map[i] = i;
 	}
 
 	/* Load previous history */
@@ -245,6 +246,9 @@ static void get_stats(int stat_use[STAT_MAX])
 
 		/* Start fully healed */
 		player->stat_cur[i] = player->stat_max[i];
+
+		/* Start with unscrambled stats */
+		player->stat_map[i] = i;
 
 		/* Efficiency -- Apply the racial/class bonuses */
 		stat_use[i] = modify_stat_value(player->stat_max[i], bonus);
@@ -557,9 +561,11 @@ static void recalculate_stats(int *stats, int points_left)
 	int i;
 
 	/* Variable stat maxes */
-	for (i = 0; i < STAT_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++) {
 		player->stat_cur[i] = player->stat_max[i] =
 				player->stat_birth[i] = stats[i];
+		player->stat_map[i] = i;
+	}
 
 	/* Gold is inversely proportional to cost */
 	player->au_birth = z_info->start_gold + (50 * points_left);

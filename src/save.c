@@ -402,10 +402,11 @@ void wr_player(void)
 	wr_s16b(player->ht);
 	wr_s16b(player->wt);
 
-	/* Dump the stats (maximum and current and birth) */
+	/* Dump the stats (maximum and current and birth and swap-mapping) */
 	wr_byte(STAT_MAX);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_max[i]);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_cur[i]);
+	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_map[i]);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_birth[i]);
 
 	wr_s16b(player->ht_birth);

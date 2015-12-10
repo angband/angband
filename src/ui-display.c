@@ -681,6 +681,7 @@ static const struct state_info effects[] =
 	{ TMD_OPP_POIS,  S("RPois"),      COLOUR_GREEN },
 	{ TMD_OPP_CONF,  S("RConf"),      COLOUR_VIOLET },
 	{ TMD_AMNESIA,   S("Amnesiac"),   COLOUR_ORANGE },
+	{ TMD_SCRAMBLE,   S("Scrambled"),   COLOUR_VIOLET },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \
