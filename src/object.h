@@ -402,6 +402,7 @@ struct object {
 
 	struct object *prev;	/* Previous object in a pile */
 	struct object *next;	/* Next object in a pile */
+	struct object *known;	/* Known version of this object */
 
 	u16b oidx;			/* Item list index, if any */
 

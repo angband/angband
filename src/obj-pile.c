@@ -1187,6 +1187,7 @@ void floor_pile_sense(struct chunk *c, int y, int x)
 			struct object *new_obj = object_new();
 			cave_k->objects[obj->oidx] = new_obj;
 			new_obj->oidx = obj->oidx;
+			obj->known = new_obj;
 
 			/* Give it a fake kind */
 			new_obj->tval = none;
@@ -1227,6 +1228,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			object_copy(new_obj, obj);
 			cave_k->objects[obj->oidx] = new_obj;
 			new_obj->oidx = obj->oidx;
+			obj->known = new_obj;
 
 			/* Attach it to the current floor pile */
 			new_obj->iy = y;
