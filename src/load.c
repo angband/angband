@@ -1303,6 +1303,7 @@ int rd_objects(void)
 		return -1;
 	if (rd_objects_aux(rd_item, cave_k))
 		return -1;
+
 	return 0;
 }
 
@@ -1311,10 +1312,18 @@ int rd_objects(void)
  */
 int rd_monsters (void)
 {
+	int i;
+
 	if (rd_monsters_aux(cave))
 		return -1;
 	if (rd_monsters_aux(cave_k))
 		return -1;
+
+	/* Associate known objects */
+	for (i = 0; i < cave_k->obj_max; i++)
+		if (cave->objects[i] && cave_k->objects[i])
+			cave->objects[i]->known = cave_k->objects[i];
+
 	return 0;
 }
 
