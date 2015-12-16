@@ -26,6 +26,10 @@
  * Savefile API
  * ------------------------------------------------------------------------ */
 
+/**
+ * Global "we've just saved" variable
+ */
+bool character_saved;
 
 /**
  * Save to the given location.  Returns TRUE on success, FALSE otherwise.

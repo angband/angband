@@ -27,6 +27,7 @@
 #include "player-calcs.h"
 #include "player-path.h"
 #include "randname.h"
+#include "savefile.h"
 #include "target.h"
 #include "ui-command.h"
 #include "ui-context.h"
