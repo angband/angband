@@ -40,7 +40,6 @@ u32b seed_flavor;		/* Hack -- consistent object colors */
 s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
-bool character_saved;		/* The character was just saved to a savefile */
 
 /**
  * This table allows quick conversion from "speed" to "energy"
