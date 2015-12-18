@@ -389,8 +389,10 @@ void player_update_light(void)
 
 				/* If it's a torch, now is the time to delete it */
 				if (of_has(obj->flags, OF_BURNS_OUT)) {
-					gear_excise_object(obj);
-					object_delete(&obj);
+					bool dummy;
+					struct object *burnt = gear_object_for_use(obj, 1, FALSE,
+															   &dummy);
+					object_delete(&burnt);
 				}
 			} else if ((obj->timeout < 50) && (!(obj->timeout % 20))) {
 				/* The light is getting dim */

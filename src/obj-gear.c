@@ -359,7 +359,7 @@ char gear_to_label(struct object *obj)
  * \param obj the object being tested
  * \return whether an object was removed
  */
-bool gear_excise_object(struct object *obj)
+static bool gear_excise_object(struct object *obj)
 {
 	int i;
 
