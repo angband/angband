@@ -1013,13 +1013,20 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 
 		/* Read the items */
 		for (; num; num--) {
-			struct object *obj = (*rd_item_version)();
+			/* Read the known item */
+			struct object *obj, *known_obj = (*rd_item_version)();
+			if (!known_obj) {
+				note("Error reading known item");
+				return (-1);
+			}
 
 			/* Read the item */
+			obj = (*rd_item_version)();
 			if (!obj) {
 				note("Error reading item");
 				return (-1);
 			}
+			obj->known = known_obj;
 
 			/* Accept any valid items */
 			if (store->stock_num < z_info->store_inven_max && obj->kind) {

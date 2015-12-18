@@ -614,8 +614,10 @@ void wr_stores(void)
 		wr_byte(store->stock_num);
 
 		/* Save the stock */
-		for (obj = store->stock; obj; obj = obj->next)
+		for (obj = store->stock; obj; obj = obj->next) {
+			wr_item(obj->known);
 			wr_item(obj);
+		}
 	}
 }
 
