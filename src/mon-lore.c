@@ -460,13 +460,8 @@ void wipe_monster_lore(const struct monster_race *race, struct monster_lore *lor
 void lore_do_probe(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
-	unsigned i;
-
-	/* Know various things */
-	for (i = 0; i < z_info->mon_blows_max; i++)
-		lore->blow_known[i] = TRUE;
-	rf_setall(lore->flags);
-	rsf_copy(lore->spell_flags, mon->race->spell_flags);
+	
+	lore->all_known = TRUE;
 	lore_update(mon->race, lore);
 
 	/* Update monster recall window */
