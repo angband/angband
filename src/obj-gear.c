@@ -363,6 +363,7 @@ static bool gear_excise_object(struct object *obj)
 {
 	int i;
 
+	pile_excise(&player->gear_k, obj->known);
 	pile_excise(&player->gear, obj);
 
 	/* Change the weight */
@@ -395,6 +396,7 @@ struct object *gear_last_item(void)
 void gear_insert_end(struct object *obj)
 {
 	pile_insert_end(&player->gear, obj);
+	pile_insert_end(&player->gear_k, obj->known);
 }
 
 /**

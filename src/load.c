@@ -975,15 +975,23 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
  */
 int rd_gear(void)
 {
+	struct object *obj, *known_obj;
+
 	/* Get real gear */
 	if (rd_gear_aux(rd_item, &player->gear))
 		return -1;
-	/* Maybe we have to duplicate also upkeep and body */
-	calc_inventory(player->upkeep, player->gear, player->body);
 
 	/* Get known gear */
 	if (rd_gear_aux(rd_item, &player->gear_k))
 		return -1;
+
+	/* Align the two */
+	for (obj = player->gear, known_obj = player->gear_k; obj;
+		 obj = obj->next, known_obj = known_obj->next)
+		obj->known = known_obj;
+
+	/* Maybe we have to duplicate also upkeep and body */
+	calc_inventory(player->upkeep, player->gear, player->body);
 
 	return 0;
 }

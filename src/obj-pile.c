@@ -502,8 +502,14 @@ void object_absorb_partial(struct object *obj1, struct object *obj2)
 	int difference = (z_info->stack_size) - largest;
 	obj1->number = largest + difference;
 	obj2->number = smallest - difference;
+	if (obj1->known && obj2->known) {
+		obj1->known->number = largest + difference;
+		obj2->known->number = smallest - difference;
+	}
 
 	object_absorb_merge(obj1, obj2);
+	if (obj1->known && obj2->known)
+		object_absorb_merge(obj1->known, obj2->known);
 }
 
 /**
@@ -515,8 +521,14 @@ void object_absorb(struct object *obj1, struct object *obj2)
 
 	/* Add together the item counts */
 	obj1->number = (total < z_info->stack_size ? total : z_info->stack_size);
+	if (obj1->known)
+		obj1->known->number = obj1->number;
 
 	object_absorb_merge(obj1, obj2);
+	if (obj1->known && obj2->known) {
+		object_absorb_merge(obj1->known, obj2->known);
+		object_delete(&obj2->known);
+	}
 	object_delete(&obj2);
 }
 
