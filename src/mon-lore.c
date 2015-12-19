@@ -475,6 +475,56 @@ void lore_do_probe(struct monster *mon)
 }
 
 /**
+ * Determine whether the monster is fully known
+ */
+bool lore_is_fully_known(const struct monster_race *race)
+{
+	unsigned i;
+	struct monster_lore *lore = get_lore(race);
+
+	/* Check if already known */
+	if (lore->all_known)
+		return TRUE;
+		
+	if (!lore->armour_known)
+		return FALSE;
+	/* Only check spells if the monster can cast them */
+	if (!lore->spell_freq_known && race->freq_innate + race->freq_spell)
+		return FALSE;
+	if (!lore->drop_known)
+		return FALSE;
+	if (!lore->sleep_known)
+		return FALSE;
+		
+	/* Check if blows are known */
+	for (i = 0; i < z_info->mon_blows_max; i++){
+		/* Only check if the blow exists */
+		if (!race->blow[i].method)
+			break;
+		if (!lore->blow_known[i])
+			return FALSE;
+		
+	}
+		
+	/* Check all the flags */
+	for (i = 0; i < RF_SIZE; i++)
+		if (!lore->flags[i])
+			return FALSE;
+		
+		
+	/* Check spell flags */
+	for (i = 0; i < RSF_SIZE; i++)
+		if (lore->spell_flags[i] != race->spell_flags[i])			
+			return FALSE;
+	
+	/* The player knows everything */
+	lore->all_known = TRUE;
+	lore_update(race, lore);
+	return TRUE;
+}
+	
+	
+/**
  * Take note that the given monster just dropped some treasure
  *
  * Note that learning the "GOOD"/"GREAT" flags gives information
