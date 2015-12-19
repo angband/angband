@@ -488,7 +488,7 @@ static void player_outfit(struct player *p)
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
 		/* Get local object */
-		struct object *obj = object_new();
+		struct object *obj = object_new(), *known_obj;
 		int num = rand_range(si->min, si->max);
 
 		/* Without start_kit, only start with 1 food and 1 light */
@@ -507,6 +507,10 @@ static void player_outfit(struct player *p)
 		object_flavor_aware(obj);
 		object_notice_everything(obj);
 		apply_autoinscription(obj);
+
+		known_obj = object_new();
+		object_copy(known_obj, obj);
+		obj->known = known_obj;
 
 		/* Deduct the cost of the item from starting cash */
 		p->au -= object_value(obj, obj->number, FALSE);
