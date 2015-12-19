@@ -417,7 +417,7 @@ void player_init(struct player *p)
  */
 void wield_all(struct player *p)
 {
-	struct object *obj, *new_pile = NULL;
+	struct object *obj, *new_pile = NULL, *new_known_pile = NULL;
 	int slot;
 
 	/* Scan through the slots */
@@ -440,9 +440,12 @@ void wield_all(struct player *p)
 		if (obj->number > 1) {
 			/* All but one go to the new object */
 			struct object *new = object_split(obj, obj->number - 1);
+			struct object *new_known = object_split(obj->known,
+													obj->known->number - 1);
 
 			/* Add to the pile of new objects to carry */
 			pile_insert(&new_pile, new);
+			pile_insert(&new_known_pile, new_known);
 		}
 
 		/* Wear the new stuff */
@@ -453,9 +456,10 @@ void wield_all(struct player *p)
 	}
 
 	/* Now add the unwielded split objects to the gear */
-	if (new_pile)
+	if (new_pile) {
 		pile_insert_end(&player->gear, new_pile);
-
+		pile_insert_end(&player->gear_k, new_known_pile);
+	}
 	return;
 }
 
