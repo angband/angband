@@ -2075,6 +2075,8 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 			destroyed = gear_object_for_use(obj, 1, TRUE, &none_left);
 		else
 			destroyed = floor_object_for_use(obj, 1, TRUE, &none_left);
+		if (destroyed->known)
+			object_delete(&destroyed->known);
 		object_delete(&destroyed);
 	} else {
 		/* Extract a "power" */

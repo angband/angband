@@ -586,6 +586,8 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		else
 			/* Destroy an item on the floor */
 			used_obj = floor_object_for_use(obj, 1, TRUE, &none_left);
+		if (used_obj->known)
+			object_delete(&used_obj->known);
 		object_delete(&used_obj);
 	}
 
@@ -831,6 +833,8 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 			used = gear_object_for_use(obj, 1, TRUE, &none_left);
 		else
 			used = floor_object_for_use(obj, 1, TRUE, &none_left);
+		if (used->known)
+			object_delete(&used->known);
 		object_delete(&used);
 	}
 

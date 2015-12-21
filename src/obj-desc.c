@@ -671,6 +671,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 	bool prefix = mode & ODESC_PREFIX ? TRUE : FALSE;
 	bool spoil = mode & ODESC_SPOIL ? TRUE : FALSE;
 	bool terse = mode & ODESC_TERSE ? TRUE : FALSE;
+	const struct object *known_obj = obj ? obj->known : NULL;
 
 	size_t end = 0;
 
@@ -682,10 +683,13 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 	if (object_name_is_visible(obj) && obj->ego && !spoil)
 		obj->ego->everseen = TRUE;
 
+	/* When not describing an actual game object, there is no known object,
+	 * so we use the original */
+	if (!known_obj)
+		known_obj = obj;
 
 	/*** Some things get really simple descriptions ***/
-
-	if (obj->marked == MARK_AWARE) {
+	if (obj->kind != known_obj->kind) {
 		if (prefix)
 			return strnfmt(buf, max, "an unknown item");
 		return strnfmt(buf, max, "unknown item");
@@ -701,8 +705,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 	/* Copy the base name to the buffer */
 	end = obj_desc_name(buf, max, end, obj, prefix, mode, spoil, terse);
 
-	if (mode & ODESC_COMBAT)
-	{
+	if (mode & ODESC_COMBAT) {
 		if (tval_is_chest(obj))
 			end = obj_desc_chest(obj, buf, max, end);
 		else if (tval_is_light(obj))
@@ -711,8 +714,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 		end = obj_desc_combat(obj, buf, max, end, spoil);
 	}
 
-	if (mode & ODESC_EXTRA)
-	{
+	if (mode & ODESC_EXTRA) {
 		end = obj_desc_mods(obj, buf, max, end, spoil);
 
 		end = obj_desc_charges(obj, buf, max, end, mode);

@@ -82,6 +82,11 @@ static void player_pickup_gold(void)
 		total_gold += (s32b)obj->pval;
 
 		/* Delete the gold */
+		if (obj->known) {
+			square_excise_object(cave_k, player->py, player->px, obj->known);
+			delist_object(cave_k, obj->known);
+			object_delete(&obj->known);
+		}
 		square_excise_object(cave, player->py, player->px, obj);
 		delist_object(cave, obj);
 		object_delete(&obj);
@@ -161,7 +166,11 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 	/* Carry the object, prompting for number if necessary */
 	if (max == obj->number) {
 		square_excise_object(cave, player->py, player->px, obj);
+		if (obj->known)
+			square_excise_object(cave_k, player->py, player->px, obj->known);
 		delist_object(cave, obj);
+		if (obj->known)
+			delist_object(cave_k, obj->known);
 		inven_carry(player, obj, TRUE, domsg);
 	} else {
 		int num;

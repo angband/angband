@@ -558,7 +558,7 @@ static bool run_test(void)
 		/* Visible objects abort running */
 		for (obj = square_object(cave, row, col); obj; obj = obj->next)
 			/* Visible object */
-			if (obj->marked && !ignore_item_ok(obj)) return (TRUE);
+			if (obj->known && !ignore_item_ok(obj)) return (TRUE);
 
 		/* Assume unknown */
 		inv = TRUE;
@@ -792,7 +792,7 @@ void run_step(int dir)
 				/* Visible objects abort running */
 				for (obj = square_object(cave, y, x); obj; obj = obj->next)
 					/* Visible object */
-					if (obj->marked && !ignore_item_ok(obj)) {
+					if (obj->known && !ignore_item_ok(obj)) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = FALSE;
 					return;

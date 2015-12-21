@@ -515,7 +515,7 @@ static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid
 {
 	int *choices = menu_priv(m);
 	struct object_kind *kind;
-	struct object *obj;
+	struct object *obj, *known_obj;
 
 	if (e->type != EVT_SELECT)
 		return TRUE;
@@ -566,6 +566,11 @@ static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid
 	/* Mark as cheat, and where created */
 	obj->origin = ORIGIN_CHEAT;
 	obj->origin_depth = player->depth;
+
+	/* Make a known object */
+	known_obj = object_new();
+	object_copy(known_obj, obj);
+	obj->known = known_obj;
 
 	/* Drop the object from heaven */
 	drop_near(cave, obj, 0, player->py, player->px, TRUE);
@@ -1641,7 +1646,7 @@ static void wiz_test_kind(int tval)
 	int px = player->px;
 	int sval;
 
-	struct object *obj;
+	struct object *obj, *known_obj;
 
 	for (sval = 0; sval < 255; sval++) {
 		/* This spams failure messages, but that's the downside of wizardry */
@@ -1662,6 +1667,11 @@ static void wiz_test_kind(int tval)
 			obj->origin = ORIGIN_CHEAT;
 			obj->origin_depth = player->depth;
 		}
+
+		/* Make a known object */
+		known_obj = object_new();
+		object_copy(known_obj, obj);
+		obj->known = known_obj;
 
 		/* Drop the object from heaven */
 		drop_near(cave, obj, 0, py, px, TRUE);
