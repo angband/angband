@@ -1325,8 +1325,11 @@ void floor_pile_know(struct chunk *c, int y, int x)
 	obj = square_object(cave_k, y, x);
 	while (obj) {
 		struct object *next = obj->next;
-		if (!pile_contains(square_object(c, y, x), c->objects[obj->oidx]))
+		if (!pile_contains(square_object(c, y, x), c->objects[obj->oidx])) {
 			square_excise_object(cave_k, y, x, obj);
+			obj->iy = 0;
+			obj->ix = 0;
+		}
 		obj = next;
 	}
 }

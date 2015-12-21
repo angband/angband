@@ -1178,7 +1178,8 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		if (!obj)
 			break;
 
-		pile_insert_end(&c->squares[obj->iy][obj->ix].obj, obj);
+		if (square_in_bounds_fully(c, obj->iy, obj->ix))
+			pile_insert_end(&c->squares[obj->iy][obj->ix].obj, obj);
 		assert(obj->oidx);
 		c->objects[obj->oidx] = obj;
 	}
@@ -1193,10 +1194,6 @@ static int rd_monsters_aux(struct chunk *c)
 {
 	int i;
 	u16b limit;
-
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
 
 	/* Read the monster count */
 	rd_u16b(&limit);
@@ -1328,6 +1325,10 @@ int rd_objects(void)
 int rd_monsters (void)
 {
 	int i;
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
 
 	if (rd_monsters_aux(cave))
 		return -1;
