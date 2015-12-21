@@ -392,6 +392,8 @@ void player_update_light(void)
 					bool dummy;
 					struct object *burnt = gear_object_for_use(obj, 1, FALSE,
 															   &dummy);
+					if (burnt->known)
+						object_delete(&burnt->known);
 					object_delete(&burnt);
 				}
 			} else if ((obj->timeout < 50) && (!(obj->timeout % 20))) {

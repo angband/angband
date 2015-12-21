@@ -137,7 +137,7 @@ static bool object_list_should_ignore_object(const struct object *object)
 {
 	assert(object->kind);
 
-	if (!object->marked)
+	if (!object->known)
 		return TRUE;
 
 	if (!is_unknown(object) && ignore_item_ok(object))
@@ -206,7 +206,7 @@ void object_list_collect(object_list_t *list)
 					return;
 
 				/* We only know the number of objects we've actually seen */
-				if (obj->marked == MARK_SEEN)
+				if (obj->kind == obj->known->kind)
 					entry->count[field] += obj->number;
 				else
 					entry->count[field] = 1;
@@ -391,7 +391,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 			break;
 	}
 
-	if (entry->object->marked == MARK_AWARE)
+	if (entry->object->kind == entry->object->known->kind)
 		has_singular_prefix = TRUE;
 
 	/* Work out if the object is in view */

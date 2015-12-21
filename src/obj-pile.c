@@ -321,8 +321,8 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		return FALSE;
 
 	/* If either item is unknown, do not stack */
-	if (mode & OSTACK_LIST && obj1->marked == MARK_AWARE) return FALSE;
-	if (mode & OSTACK_LIST && obj2->marked == MARK_AWARE) return FALSE;
+	if (mode & OSTACK_LIST && obj1->kind != obj1->known->kind) return FALSE;
+	if (mode & OSTACK_LIST && obj2->kind != obj2->known->kind) return FALSE;
 
 	/* Hack -- identical items cannot be stacked */
 	if (obj1 == obj2) return FALSE;
@@ -613,22 +613,36 @@ void object_copy_amt(struct object *dest, struct object *src, int amt)
  */
 struct object *object_split(struct object *src, int amt)
 {
-	struct object *dest = object_new();
+	struct object *dest = object_new(), *dest_known;
 
 	/* Get a copy of the object */
 	object_copy(dest, src);
+
+	/* Prepare a new known object if necessary */
+	if (src->known) {
+		dest_known = object_new();
+		object_copy(dest_known, src->known);
+		dest->known = dest_known;
+	}
 
 	/* Check legality */
 	assert(src->number > amt);
 
 	/* Distribute charges of wands, staves, or rods */
 	distribute_charges(src, dest, amt);
+	if (src->known)
+		distribute_charges(src->known, dest->known, amt);
 
 	/* Modify quantity */
 	dest->number = amt;
 	src->number -= amt;
 	if (src->note)
 		dest->note = src->note;
+	if (src->known) {
+		dest->known->number = amt;
+		src->known->number -= amt;
+		dest->known->note = src->known->note;
+	}
 
 	return dest;
 }
@@ -653,6 +667,8 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
+		square_excise_object(cave_k, usable->iy, usable->ix, usable->known);
+		delist_object(cave_k, usable->known);
 		square_excise_object(cave, usable->iy, usable->ix, usable);
 		delist_object(cave, usable);
 		*none_left = TRUE;
@@ -749,10 +765,22 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	drop->held_m_idx = 0;
 
 	/* Link to the first or last object in the pile */
-	if (last)
+	if (last) {
 		pile_insert_end(&c->squares[y][x].obj, drop);
-	else
+		if (c == cave && square_isseen(c, y, x) && drop->known)
+			pile_insert_end(&cave_k->squares[y][x].obj, drop->known);
+	} else {
 		pile_insert(&c->squares[y][x].obj, drop);
+		if (c == cave && square_isseen(c, y, x) && drop->known)
+			pile_insert(&cave_k->squares[y][x].obj, drop->known);
+	}
+
+	/* Record in the level list */
+	list_object(c, drop);
+	if (c == cave && square_isseen(c, y, x) && drop->known) {
+		cave_k->objects[drop->oidx] = drop->known;
+		drop->known->oidx = drop->oidx;
+	}
 
 	/* Redraw */
 	square_note_spot(c, y, x);
@@ -810,6 +838,10 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			VERB_AGREEMENT(dropped->number, "breaks", "break"));
 
 		/* Failure */
+		if (c == cave && dropped->known) {
+			delist_object(cave_k, dropped->known);
+			object_delete(&dropped->known);
+		}
 		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
@@ -915,6 +947,10 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (player->wizard) msg("Breakage (no floor space).");
 
 		/* Failure */
+		if (c == cave && dropped->known) {
+			delist_object(cave_k, dropped->known);
+			object_delete(&dropped->known);
+		}
 		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
@@ -955,13 +991,14 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (dropped->artifact) dropped->artifact->created = FALSE;
 
 		/* Failure */
+		if (c == cave && dropped->known) {
+			delist_object(cave_k, dropped->known);
+			object_delete(&dropped->known);
+		}
 		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
 	}
-
-	/* Record in the level list */
-	list_object(c, dropped);
 
 	/* Sound */
 	sound(MSG_DROP);
@@ -1074,7 +1111,7 @@ int scan_floor(struct object **items, int max_size, int y, int x, int mode,
 		if ((mode & 0x01) && !object_test(tester, obj)) continue;
 
 		/* Marked */
-		if ((mode & 0x02) && (!obj->marked)) continue;
+		if ((mode & 0x02) && (!obj->known)) continue;
 
 		/* Visible */
 		if ((mode & 0x08) && !is_unknown(obj) && ignore_item_ok(obj))
@@ -1214,9 +1251,6 @@ void floor_pile_sense(struct chunk *c, int y, int x)
 			new_obj->ix = x;
 			pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
 		}
-
-		if (obj->marked == MARK_UNAWARE)
-			obj->marked = MARK_AWARE;
 	}
 }
 
@@ -1235,17 +1269,25 @@ void floor_pile_know(struct chunk *c, int y, int x)
 
 		/* Make new known objects, fully know sensed ones, relocate old ones */
 		if (known_obj == NULL) {
-			/* Make and list the new object */
-			struct object *new_obj = object_new();
-			object_copy(new_obj, obj);
+			/* Make and/or list the new object */
+			struct object *new_obj;
+
+			/* Check whether we need to make a new one or list the old one */
+			if (obj->known) {
+				new_obj = obj->known;
+			} else {
+				new_obj = object_new();
+				object_copy(new_obj, obj);
+				obj->known = new_obj;
+			}
 			cave_k->objects[obj->oidx] = new_obj;
 			new_obj->oidx = obj->oidx;
-			obj->known = new_obj;
 
 			/* Attach it to the current floor pile */
 			new_obj->iy = y;
 			new_obj->ix = x;
-			pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
+			if (!pile_contains(square_object(cave_k, y, x), new_obj))
+				pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
 		} else if (known_obj->kind != obj->kind) {
 			/* Detach from any old pile (possibly the correct one) */
 			if (known_obj->iy && known_obj->ix &&
@@ -1261,7 +1303,8 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			known_obj->iy = y;
 			known_obj->ix = x;
 			known_obj->held_m_idx = 0;
-			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
+			if (!pile_contains(square_object(cave_k, y, x), known_obj))
+				pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
 		} else if (!pile_contains(square_object(cave_k, y, x), known_obj)) {
 			/* Detach from any old pile */
 			if (known_obj->iy && known_obj->ix &&
@@ -1276,8 +1319,6 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			known_obj->held_m_idx = 0;
 			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
 		}
-
-		obj->marked = MARK_SEEN;
 	}
 
 	/* Remove known location of anything not on this grid */

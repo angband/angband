@@ -1751,13 +1751,14 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	bool subjective = mode & OINFO_SUBJ ? TRUE : FALSE;
 	bool ego = mode & OINFO_EGO ? TRUE : FALSE;
 	textblock *tb = textblock_new();
+	const struct object *known_obj = obj->known ? obj->known : obj;
 
 	/* Unaware objects get simple descriptions */
-	if (obj->marked == MARK_AWARE) {
+	if (obj->kind != known_obj->kind) {
 		textblock_append(tb, "\n\nYou do not know what this is.\n");
 		return tb;
 	}
-	
+
 	/* Grab the object flags */
 	get_known_flags(obj, mode, flags);
 
@@ -1767,8 +1768,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (subjective) describe_origin(tb, obj, terse);
 	if (!terse) describe_flavor_text(tb, obj, ego);
 
-	if (!known)
-	{
+	if (!known)	{
 		textblock_append(tb, "You do not know the full extent of this item's powers.\n");
 		something = TRUE;
 	}

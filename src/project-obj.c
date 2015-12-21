@@ -140,6 +140,8 @@ int inven_damage(struct player *p, int type, int cperc)
 
 				/* Destroy "amt" items */
 				destroyed = gear_object_for_use(obj, amt, FALSE, &none_left);
+				if (destroyed->known)
+					object_delete(&destroyed->known);
 				object_delete(&destroyed);
 
 				/* Count the casualties */
@@ -351,7 +353,7 @@ static void project_object_handler_KILL_DOOR(project_object_handler_context_t *c
 		object_notice_everything((struct object * const)context->obj);
 
 		/* Notice */
-		if (context->obj->marked > MARK_UNAWARE && !ignore_item_ok(context->obj)) {
+		if (context->obj->known && !ignore_item_ok(context->obj)) {
 			msg("Click!");
 			context->obvious = TRUE;
 		}
@@ -370,7 +372,7 @@ static void project_object_handler_KILL_TRAP(project_object_handler_context_t *c
 		object_notice_everything((struct object * const)context->obj);
 
 		/* Notice */
-		if (context->obj->marked > MARK_UNAWARE && !ignore_item_ok(context->obj)) {
+		if (context->obj->known && !ignore_item_ok(context->obj)) {
 			msg("Click!");
 			context->obvious = TRUE;
 		}
@@ -459,7 +461,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 			char o_name[80];
 
 			/* Effect "observed" */
-			if (obj->marked && !ignore_item_ok(obj)) {
+			if (obj->known && !ignore_item_ok(obj)) {
 				obvious = TRUE;
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 			}
@@ -467,7 +469,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 			/* Artifacts, and other objects, get to resist */
 			if (obj->artifact || ignore) {
 				/* Observe the resist */
-				if (obj->marked && !ignore_item_ok(obj))
+				if (obj->known && !ignore_item_ok(obj))
 					msg("The %s %s unaffected!", o_name,
 						VERB_AGREEMENT(obj->number, "is", "are"));
 			} else if (obj->mimicking_m_idx) {
@@ -475,7 +477,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 				become_aware(cave_monster(cave, obj->mimicking_m_idx));
 			} else {
 				/* Describe if needed */
-				if (obj->marked && note_kill && !ignore_item_ok(obj))
+				if (obj->known && note_kill && !ignore_item_ok(obj))
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */

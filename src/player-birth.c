@@ -440,12 +440,10 @@ void wield_all(struct player *p)
 		if (obj->number > 1) {
 			/* All but one go to the new object */
 			struct object *new = object_split(obj, obj->number - 1);
-			struct object *new_known = object_split(obj->known,
-													obj->known->number - 1);
 
 			/* Add to the pile of new objects to carry */
 			pile_insert(&new_pile, new);
-			pile_insert(&new_known_pile, new_known);
+			pile_insert(&new_known_pile, new->known);
 		}
 
 		/* Wear the new stuff */

@@ -809,7 +809,7 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		int y = path_g[i].y;
 		int x = path_g[i].x;
 		struct monster *mon = square_monster(cave, y, x);
-		struct object *obj = square_object(cave, y, x);
+		struct object *obj = square_object(cave_k, y, x);
 
 		/*
 		 * As path[] is a straight line and the screen is oblong,
@@ -838,7 +838,7 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 			else
 				/* Visible monsters are red. */
 				colour = COLOUR_L_RED;
-		} else if (obj && obj->marked)
+		} else if (obj)
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;
 

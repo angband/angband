@@ -521,6 +521,8 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 
 		/* Steal and eat */
 		eaten = gear_object_for_use(obj, 1, FALSE, &none_left);
+		if (eaten->known)
+			object_delete(&eaten->known);
 		object_delete(&eaten);
 
 		/* Obvious */
