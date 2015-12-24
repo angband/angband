@@ -147,7 +147,7 @@ static struct object *rd_item(void)
 	rd_byte(&obj->origin);
 	rd_byte(&obj->origin_depth);
 	rd_u16b(&obj->origin_xtra);
-	rd_byte(&obj->ignore);
+	rd_byte(&obj->notice);
 
 	for (i = 0; i < of_size; i++)
 		rd_byte(&obj->flags[i]);

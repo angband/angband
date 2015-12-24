@@ -435,7 +435,6 @@ struct object {
 
 	byte number;		/* Number of items */
 	bitflag notice;		/* Attention paid to the object */
-	byte ignore;		/* Object is ignored */
 
 	s16b held_m_idx;	/* Monster holding us (if any) */
 	s16b mimicking_m_idx; /* Monster mimicking us (if any) */

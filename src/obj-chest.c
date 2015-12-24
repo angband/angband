@@ -426,7 +426,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 	 * might as well ignore it here
 	 */
 	if (obj->pval == 0)
-		obj->ignore = TRUE;
+		obj->known->notice |= OBJ_NOTICE_IGNORE;
 
 	/* Redraw chest, to be on the safe side (it may have been ignored) */
 	square_light_spot(cave, y, x);
