@@ -85,15 +85,6 @@ enum {
 };
 
 
-/* Values for struct object->marked */
-enum {
-	MARK_UNAWARE = 0,
-	MARK_AWARE = 1,
-	MARK_SEEN = 2
-};
-
-
-
 /*** Structures ***/
 
 /* Effect */
@@ -110,7 +101,6 @@ struct brand {
 	int element;
 	int multiplier;
 	int damage; /* Storage for damage during description */
-	bool known;
 	struct brand *next;
 };
 
@@ -120,15 +110,13 @@ struct slay {
 	int race_flag;
 	int multiplier;
 	int damage; /* Storage for damage during description */
-	bool known;
 	struct slay *next;
 };
 
 enum {
-	EL_INFO_KNOWN = 0x01,
-	EL_INFO_HATES = 0x02,
-	EL_INFO_IGNORE = 0x04,
-	EL_INFO_RANDOM = 0x08,
+	EL_INFO_HATES = 0x01,
+	EL_INFO_IGNORE = 0x02,
+	EL_INFO_RANDOM = 0x04,
 };
 
 /* Element info type */
@@ -368,6 +356,14 @@ struct ego_item {
  */
 extern struct ego_item *e_info;
 
+/**
+ * Flags for the obj->notice field
+ */
+enum {
+	OBJ_NOTICE_WORN = 0x01,
+	OBJ_NOTICE_SENSED = 0x02,
+	OBJ_NOTICE_IGNORE = 0x04,
+};
 
 /*
  * Object information, for a specific object.
@@ -417,8 +413,6 @@ struct object {
 	s16b weight;		/* Item weight */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
-	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
-	bitflag id_flags[ID_SIZE];		/**< Object property ID flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
@@ -440,7 +434,7 @@ struct object {
 	s16b timeout;		/* Timeout Counter */
 
 	byte number;		/* Number of items */
-	byte marked;		/* Object is marked */
+	bitflag notice;		/* Attention paid to the object */
 	byte ignore;		/* Object is ignored */
 
 	s16b held_m_idx;	/* Monster holding us (if any) */

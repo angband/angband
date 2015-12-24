@@ -113,7 +113,6 @@ void copy_slay(struct slay **dest, struct slay *source)
 		new_s->name = string_make(s->name);
 		new_s->race_flag = s->race_flag;
 		new_s->multiplier = s->multiplier;
-		new_s->known = s->known;
 		new_s->next = *dest;
 		*dest = new_s;
 		s = s->next;
@@ -154,7 +153,6 @@ void copy_brand(struct brand **dest, struct brand *source)
 		new_b->name = string_make(b->name);
 		new_b->element = b->element;
 		new_b->multiplier = b->multiplier;
-		new_b->known = b->known;
 		new_b->next = *dest;
 		*dest = new_b;
 		b = b->next;
@@ -316,15 +314,12 @@ int slay_count(struct slay *slays)
 
 
 /**
- * Collect the (optionally known) brands from a set of brands and an object
- * into a linked array
+ * Collect the brands from a set of brands and an object into a linked array
  * \param b the set of brands (can be NULL)
  * \param obj the object (can be NULL)
- * \param known whether we are after only known brands
  * \return a pointer to the first brand
  */
-struct brand *brand_collect(struct brand *b, const struct object *obj,
-							bool known)
+struct brand *brand_collect(struct brand *b, const struct object *obj)
 {
 	bool moved = FALSE;
 	struct brand *b_new;
@@ -339,20 +334,6 @@ struct brand *brand_collect(struct brand *b, const struct object *obj,
 
 	/* Allocate and populate */
 	while (b) {
-		/* Skip unknowns if checking for known brands */
-		if (known && !b->known) {
-			/* Move to the next brand */
-			b = b->next;
-
-			/* Move to object if we're done with the given brands */
-			if (!b && !moved && obj) {
-				b = obj->brands;
-				moved = TRUE;
-			}
-
-			continue;
-		}
-
 		b_new = mem_zalloc(sizeof(*b_new));
 
 		/* First one is what we will return */
@@ -367,7 +348,6 @@ struct brand *brand_collect(struct brand *b, const struct object *obj,
 		b_new->name = string_make(b->name);
 		b_new->element = b->element;
 		b_new->multiplier = b->multiplier;
-		b_new->known = b->known;
 
 		/* Move to the next brand */
 		b = b->next;
@@ -384,15 +364,12 @@ struct brand *brand_collect(struct brand *b, const struct object *obj,
 }
 
 /**
- * Collect the (optionally known) slays from a set of slays and an object
- * into a linked array
+ * Collect the slays from a set of slays and an object into a linked array
  * \param s the set of slays (can be NULL)
  * \param obj the object (can be NULL)
- * \param known whether we are after only known slays
  * \return a pointer to the first slay
  */
-struct slay *slay_collect(struct slay *s, const struct object *obj,
-						  bool known)
+struct slay *slay_collect(struct slay *s, const struct object *obj)
 {
 	bool moved = FALSE;
 	struct slay *s_new;
@@ -407,20 +384,6 @@ struct slay *slay_collect(struct slay *s, const struct object *obj,
 
 	/* Allocate and populate */
 	while (s) {
-		/* Skip unknowns if we are checking for known slays */
-		if (known && !s->known) {
-			/* Move to the next slay */
-			s = s->next;
-
-			/* Move to the object if we're done with the given slays */
-			if (!s && !moved && obj) {
-				s = obj->slays;
-				moved = TRUE;
-			}
-
-			continue;
-		}
-
 		s_new = mem_zalloc(sizeof(*s_new));
 
 		/* First one is what we will return */
@@ -435,7 +398,6 @@ struct slay *slay_collect(struct slay *s, const struct object *obj,
 		s_new->name = string_make(s->name);
 		s_new->race_flag = s->race_flag;
 		s_new->multiplier = s->multiplier;
-		s_new->known = s->known;
 
 		/* Move to the next slay */
 		s = s->next;
@@ -484,23 +446,37 @@ bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 void object_notice_brands(struct object *obj, const struct monster *mon)
 {
 	char o_name[40];
-	struct brand *b;
+	struct brand *b, *kb, *new_b;
 	bool plural = (obj->number > 1) ? TRUE : FALSE;
+
+	assert(obj->known);
 
 	for (b = obj->brands; b; b = b->next) {
 		const char *verb = plural ? brand_names[b->element].active_verb_plural :
 			brand_names[b->element].active_verb;
 
 		/* Already know it */
-		if (b->known) continue;
+		for (kb = obj->known->brands; kb; kb = kb->next) {
+			if ((kb->name == b->name) && (kb->element == b->element) &&
+				(kb->multiplier == b->multiplier))
+				break;
+		}
+		if (kb) continue;
 
 		/* Not applicable */
 		if (mon && rf_has(mon->race->flags,
 						brand_names[b->element].resist_flag))
 			continue;
 
-		/* Learn */
-		b->known = TRUE;
+		/* Copy over the new known brand */
+		new_b = mem_zalloc(sizeof *new_b);
+		new_b->name = string_make(b->name);
+		new_b->element = b->element;
+		new_b->multiplier = b->multiplier;
+		new_b->next = obj->known->brands;
+		obj->known->brands = new_b;
+
+		/* Notice */
 		object_notice_ego(obj);
 		if (plural)
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_PLURAL);
@@ -522,18 +498,30 @@ void object_notice_brands(struct object *obj, const struct monster *mon)
 void object_notice_slays(struct object *obj, const struct monster *mon)
 {
 	char o_name[40];
-	struct slay *s;
+	struct slay *s, *ks, *new_s;
 
 	for (s = obj->slays; s; s = s->next) {
 		/* Already know it */
-		if (s->known) continue;
+		for (ks = obj->known->slays; ks; ks = ks->next) {
+			if ((ks->name == s->name) && (ks->race_flag == s->race_flag) &&
+				(ks->multiplier == s->multiplier))
+				break;
+		}
+		if (ks) continue;
 
 		/* Not applicable */
 		if (!react_to_specific_slay(s, mon))
 			continue;
 
-		/* Learn */
-		s->known = TRUE;
+		/* Copy over the new known brand */
+		new_s = mem_zalloc(sizeof *new_s);
+		new_s->name = string_make(s->name);
+		new_s->race_flag = s->race_flag;
+		new_s->multiplier = s->multiplier;
+		new_s->next = obj->known->slays;
+		obj->known->slays = new_s;
+
+		/* Notice */
 		object_notice_ego(obj);
 		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_SINGULAR);
 		msg("Your %s glows%s!", o_name, s->multiplier > 3 ? " brightly" : "");
@@ -559,17 +547,17 @@ void object_notice_slays(struct object *obj, const struct monster *mon)
 void improve_attack_modifier(struct object *obj, const struct monster *mon,
 							 const struct brand **brand_used, 
 							 const struct slay **slay_used, 
-							 char *verb, bool range, bool real, bool known_only)
+							 char *verb, bool range, bool real)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	struct brand *b;
 	struct slay *s;
 	int best_mult = 1;
 
+	if (!obj) return;
+
 	/* Brands */
 	for (b = obj->brands; b; b = b->next) {
-		if (known_only && !b->known) continue;
-
 		/* If the monster is vulnerable, record and learn from real attacks */
 		if (!rf_has(mon->race->flags,
 					brand_names[b->element].resist_flag)) {
@@ -591,15 +579,13 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 			}
 		}
 
-		/* Brand is known, attack is real, learn about the monster */
-		if (b->known && mflag_has(mon->mflag, MFLAG_VISIBLE) && real)
+		/* Attack is real, learn about the monster */
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE) && real)
 			rf_on(lore->flags, brand_names[b->element].resist_flag);
 	}
 
 	/* Slays */
 	for (s = obj->slays; s; s = s->next) {
-		if (known_only && !s->known) continue;
-
 		/* If the monster is vulnerable, record and learn from real attacks */
 		if (react_to_specific_slay(s, mon)) {
 			if (best_mult < s->multiplier) {
@@ -625,8 +611,8 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 			}
 		}
 
-		/* Slay is known, attack is real, learn about the monster */
-		if (s->known && mflag_has(mon->mflag, MFLAG_VISIBLE) && real)
+		/* Attack is real, learn about the monster */
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE) && real)
 			rf_on(lore->flags, s->race_flag);
 	}
 }
@@ -655,34 +641,35 @@ bool react_to_slay(struct object *obj, const struct monster *mon)
  *
  * \param brand1
  * \param brand2 the lists being compared
- * \param known_equal whether the brands need to have the same known status
  */
-bool brands_are_equal(struct brand *brand1, struct brand *brand2,
-					  bool known_equal)
+bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 {
-	struct brand *b1, *b2;
+	struct brand *b1 = brand1, *b2;
 	int count = 0, match = 0;
 
-	for (b1 = brand1; b1; b1 = b1->next) {
+	while (b1) {
 		count++;
-		for (b2 = brand2; b2; b2 = b2->next) {
-			/* Go to the next one if any differences */
-			if (!streq(b1->name, b2->name)) continue;
-			if (b1->element != b2->element) continue;
-			if (b1->multiplier != b2->multiplier) continue;
-			if (known_equal && (b1->known != b2->known)) continue;
-
+		b2 = brand2;
+		while (b2) {
 			/* Count if the same */
-			match++;
+			if (streq(b1->name, b2->name) && (b1->element == b2->element) &&
+				(b1->multiplier == b2->multiplier))
+				match++;
+			b2 = b2->next;
 		}
 
 		/* Fail if we didn't find a match */
 		if (match != count) return FALSE;
+
+		b1 = b1->next;
 	}
 
 	/* Now count back and make sure brand2 isn't strictly bigger */
-	for (b2 = brand2; b2; b2 = b2->next)
+	b2 = brand2;
+	while (b2) {
 		count--;
+		b2 = b2->next;
+	}
 
 	if (count != 0) return FALSE;
 
@@ -694,33 +681,35 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2,
  *
  * \param slay1
  * \param slay2 the lists being compared
- * \param known_equal whether the slays need to have the same known status
  */
-bool slays_are_equal(struct slay *slay1, struct slay *slay2, bool known_equal)
+bool slays_are_equal(struct slay *slay1, struct slay *slay2)
 {
-	struct slay *s1, *s2;
+	struct slay *s1 = slay1, *s2;
 	int count = 0, match = 0;
 
-	for (s1 = slay1; s1; s1 = s1->next) {
+	while (s1) {
 		count++;
-		for (s2 = slay2; s2; s2 = s2->next) {
-			/* Go to the next one if any differences */
-			if (!streq(s1->name, s2->name)) continue;
-			if (s1->race_flag != s2->race_flag) continue;
-			if (s1->multiplier != s2->multiplier) continue;
-			if (known_equal && (s1->known != s2->known)) continue;
-
+		s2 = slay2;
+		while (s2) {
 			/* Count if the same */
-			match++;
+			if (streq(s1->name, s2->name) && (s1->race_flag == s2->race_flag) &&
+				(s1->multiplier == s2->multiplier))
+				match++;
+			s2 = s2->next;
 		}
 
 		/* Fail if we didn't find a match */
 		if (match != count) return FALSE;
+
+		s1 = s1->next;
 	}
 
 	/* Now count back and make sure slay2 isn't strictly bigger */
-	for (s2 = slay2; s2; s2 = s2->next)
+	s2 = slay2;
+	while (s2) {
 		count--;
+		s2 = s2->next;
+	}
 
 	if (count != 0) return FALSE;
 
@@ -765,8 +754,8 @@ s32b check_slay_cache(const struct object *obj)
 	int i = 0;
 
 	while ((slay_cache[i].brands != NULL) || (slay_cache[i].slays != NULL)) {
-		if (brands_are_equal(obj->brands, slay_cache[i].brands, TRUE) &&
-			slays_are_equal(obj->slays, slay_cache[i].slays, TRUE)) 
+		if (brands_are_equal(obj->brands, slay_cache[i].brands) &&
+			slays_are_equal(obj->slays, slay_cache[i].slays)) 
 			break;
 		i++;
 	}
@@ -786,8 +775,8 @@ bool fill_slay_cache(const struct object *obj, s32b value)
 	int i = 0;
 
 	while ((slay_cache[i].brands != NULL) || (slay_cache[i].slays != NULL)) {
-		if (brands_are_equal(obj->brands, slay_cache[i].brands, TRUE) &&
-			slays_are_equal(obj->slays, slay_cache[i].slays, TRUE)) {
+		if (brands_are_equal(obj->brands, slay_cache[i].brands) &&
+			slays_are_equal(obj->slays, slay_cache[i].slays)) {
 			slay_cache[i].value = value;
 			return TRUE;
 		}
@@ -825,9 +814,9 @@ errr create_slay_cache(struct ego_item *items)
 		/* Check previously scanned combinations */
 		for (j = 0; j < i; j++) {
 			if (!dupcheck[j].brands && !dupcheck[j].slays) continue;
-			if (!brands_are_equal(ego->brands, dupcheck[j].brands, FALSE))
+			if (!brands_are_equal(ego->brands, dupcheck[j].brands))
 				continue;
-			if (!slays_are_equal(ego->slays, dupcheck[j].slays, FALSE))
+			if (!slays_are_equal(ego->slays, dupcheck[j].slays))
 				continue;
 
 			/* Both equal, we don't want this one */

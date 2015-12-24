@@ -444,9 +444,6 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 		}
 	}
 
-	/* Forget mark */
-	obj->marked = FALSE;
-
 	/* Forget location */
 	obj->iy = obj->ix = 0;
 

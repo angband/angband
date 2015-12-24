@@ -1242,7 +1242,6 @@ static enum parser_error parse_object_values(struct parser *p) {
 			b->name = string_make(brand_names[index]);
 			b->element = index;
 			b->multiplier = value;
-			b->known = TRUE;
 			b->next = k->brands;
 			k->brands = b;
 		}
@@ -1253,7 +1252,6 @@ static enum parser_error parse_object_values(struct parser *p) {
 			s->name = string_make(slay_names[index]);
 			s->race_flag = index;
 			s->multiplier = value;
-			s->known = TRUE;
 			s->next = k->slays;
 			k->slays = s;
 		} else if (!grab_base_and_int(&value, &name, t)) {
@@ -1262,7 +1260,6 @@ static enum parser_error parse_object_values(struct parser *p) {
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(name);
 			s->multiplier = value;
-			s->known = TRUE;
 			s->next = k->slays;
 			k->slays = s;
 		}

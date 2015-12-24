@@ -61,7 +61,6 @@ byte hist_size = 0;
  */
 byte obj_mod_max = 0;
 byte of_size = 0;
-byte id_size = 0;
 byte elem_max = 0;
 
 /**
@@ -104,8 +103,9 @@ static struct object *rd_item(void)
 	byte tmp8u;
 	u16b tmp16u;
 	s16b tmp16s;
-	byte ego_idx;
-	byte art_idx;
+	u32b ego_idx;
+	u32b art_idx;
+	byte effect;
 	size_t i;
 	char buf[128];
 	byte ver = 1;
@@ -129,8 +129,9 @@ static struct object *rd_item(void)
 	rd_byte(&obj->number);
 	rd_s16b(&obj->weight);
 
-	rd_byte(&art_idx);
-	rd_byte(&ego_idx);
+	rd_u32b(&art_idx);
+	rd_u32b(&ego_idx);
+	rd_byte(&effect);
 
 	rd_s16b(&obj->timeout);
 
@@ -143,8 +144,6 @@ static struct object *rd_item(void)
 	rd_byte(&obj->dd);
 	rd_byte(&obj->ds);
 
-	rd_byte(&obj->marked);
-
 	rd_byte(&obj->origin);
 	rd_byte(&obj->origin_depth);
 	rd_u16b(&obj->origin_xtra);
@@ -152,14 +151,6 @@ static struct object *rd_item(void)
 
 	for (i = 0; i < of_size; i++)
 		rd_byte(&obj->flags[i]);
-
-	of_wipe(obj->known_flags);
-
-	for (i = 0; i < of_size; i++)
-		rd_byte(&obj->known_flags[i]);
-
-	for (i = 0; i < id_size; i++)
-		rd_byte(&obj->id_flags[i]);
 
 	for (i = 0; i < obj_mod_max; i++) {
 		rd_s16b(&obj->modifiers[i]);
@@ -176,8 +167,6 @@ static struct object *rd_item(void)
 		b->element = tmp16s;
 		rd_s16b(&tmp16s);
 		b->multiplier = tmp16s;
-		rd_byte(&tmp8u);
-		b->known = tmp8u ? TRUE : FALSE;
 		b->next = obj->brands;
 		obj->brands = b;
 		rd_byte(&tmp8u);
@@ -194,8 +183,6 @@ static struct object *rd_item(void)
 		s->race_flag = tmp16s;
 		rd_s16b(&tmp16s);
 		s->multiplier = tmp16s;
-		rd_byte(&tmp8u);
-		s->known = tmp8u ? TRUE : FALSE;
 		s->next = obj->slays;
 		obj->slays = s;
 		rd_byte(&tmp8u);
@@ -230,21 +217,35 @@ static struct object *rd_item(void)
 	/* Lookup item kind */
 	obj->kind = lookup_kind(obj->tval, obj->sval);
 
-	/* Check we have a kind and a valid artifact index */
-	if ((!obj->tval && !obj->sval) || !obj->kind || art_idx >= z_info->a_max) {
+	/* Check we have a kind */
+	if ((!obj->tval && !obj->sval) || !obj->kind) {
 		object_delete(&obj);
 		return NULL;
 	}
 
-	/* Lookup ego, set effect */
+	/* Lookup ego */
 	obj->ego = lookup_ego(ego_idx);
-	if (obj->ego && obj->ego->effect)
-		obj->effect = obj->ego->effect;
-	else
-		obj->effect = obj->kind->effect;
+	if (ego_idx == EGO_ART_KNOWN)
+		obj->ego = (struct ego_item *)1;
 
-	if (art_idx > 0)
+	/* Set artifact, fail if invalid index */
+	if (art_idx == EGO_ART_KNOWN) {
+		obj->artifact = (struct artifact *)1;
+	} else if (art_idx >= z_info->a_max) {
+		object_delete(&obj);
+		return NULL;
+	} else if (art_idx > 0) {
 		obj->artifact = &a_info[art_idx];
+	}
+
+	/* Set effect */
+	if (effect == 1)
+		obj->effect = (struct effect *)1;
+	else if (effect && obj->ego)
+		obj->effect = obj->ego->effect;
+
+	if (effect && !obj->effect)
+		obj->effect = obj->kind->effect;
 
 	/* Success */
 	return obj;
@@ -506,13 +507,6 @@ int rd_object_memory(void)
 	rd_byte(&of_size);
 	if (of_size > OF_SIZE) {
 	        note(format("Too many (%u) object flags!", of_size));
-		return (-1);
-	}
-
-	/* Identify flags */
-	rd_byte(&id_size);
-	if (id_size > ID_SIZE) {
-	        note(format("Too many (%u) identify flags!", id_size));
 		return (-1);
 	}
 

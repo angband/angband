@@ -1441,8 +1441,8 @@ static struct object *find_artifact(struct artifact *artifact)
  */
 static void desc_art_fake(int a_idx)
 {
-	struct object *obj;
-	struct object object_type_body = { 0 };
+	struct object *obj, *known_obj;
+	struct object object_body = { 0 }, known_object_body = { 0 };
 	bool fake = FALSE;
 
 	char header[120];
@@ -1455,10 +1455,12 @@ static void desc_art_fake(int a_idx)
 	/* If it's been lost, make a fake artifact for it */
 	if (!obj) {
 		fake = TRUE;
-		obj = &object_type_body;
+		obj = &object_body;
+		known_obj = &known_object_body;
+		obj->known = known_obj;
 
 		make_fake_artifact(obj, &a_info[a_idx]);
-		id_on(obj->id_flags, ID_ARTIFACT);
+		known_obj->artifact = (struct artifact *)1;
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
@@ -1473,8 +1475,10 @@ static void desc_art_fake(int a_idx)
 	tb = object_info(obj, OINFO_NONE);
 	object_desc(header, sizeof(header), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
-	if (fake)
+	if (fake) {
 		object_wipe(obj);
+		object_wipe(known_obj);
+	}
 
 	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
