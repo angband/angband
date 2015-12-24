@@ -31,48 +31,6 @@ enum
 #define ELEM_HIGH_MAX  ELEM_DISEN
 
 /**
- * Identify flags
- */
-enum
-{
-	ID_NONE,
-	#define STAT(a, b, c, d, e, f, g, h) ID_##a,
-	#include "list-stats.h"
-	#undef STAT
-	#define OBJ_MOD(a, b, c, d) ID_##a,
-	#include "list-object-modifiers.h"
-	#undef OBJ_MOD
-	#define ID(a) ID_##a,
-	#include "list-identify-flags.h"
-	#undef ID
-	ID_MAX
-};
-
-#define ID_MOD_MIN  ID_STR
-#define ID_MISC_MIN ID_ARTIFACT
-
-#define ID_SIZE                	FLAG_SIZE(ID_MAX)
-
-#define id_has(f, flag)        	flag_has_dbg(f, ID_SIZE, flag, #f, #flag)
-#define id_next(f, flag)       	flag_next(f, ID_SIZE, flag)
-#define id_is_empty(f)         	flag_is_empty(f, ID_SIZE)
-#define id_is_full(f)          	flag_is_full(f, ID_SIZE)
-#define id_is_inter(f1, f2)    	flag_is_inter(f1, f2, ID_SIZE)
-#define id_is_subset(f1, f2)   	flag_is_subset(f1, f2, ID_SIZE)
-#define id_is_equal(f1, f2)    	flag_is_equal(f1, f2, ID_SIZE)
-#define id_on(f, flag)         	flag_on_dbg(f, ID_SIZE, flag, #f, #flag)
-#define id_off(f, flag)        	flag_off(f, ID_SIZE, flag)
-#define id_wipe(f)             	flag_wipe(f, ID_SIZE)
-#define id_setall(f)           	flag_setall(f, ID_SIZE)
-#define id_negate(f)           	flag_negate(f, ID_SIZE)
-#define id_copy(f1, f2)        	flag_copy(f1, f2, ID_SIZE)
-#define id_union(f1, f2)       	flag_union(f1, f2, ID_SIZE)
-#define id_comp_union(f1, f2)  	flag_comp_union(f1, f2, ID_SIZE)
-#define id_inter(f1, f2)       	flag_inter(f1, f2, ID_SIZE)
-#define id_diff(f1, f2)        	flag_diff(f1, f2, ID_SIZE)
-
-
-/**
  * Object origin kinds
  */
 
