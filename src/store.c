@@ -909,7 +909,8 @@ struct object *store_carry(struct store *store, struct object *obj)
 	value = object_value(obj, 1, FALSE);
 
 	/* Cursed/Worthless items "disappear" when sold */
-	if (value <= 0) return NULL;
+	if (value <= 0)
+		return NULL;
 
 	/* Erase the inscription & pseudo-ID bit */
 	obj->note = 0;
@@ -940,10 +941,6 @@ struct object *store_carry(struct store *store, struct object *obj)
 				obj->pval = charges;
 		}
 	}
-
-	/* Update known object */
-	known_obj->timeout = obj->timeout;
-	known_obj->pval = obj->pval;
 
 	for (temp_obj = store->stock; temp_obj; temp_obj = temp_obj->next) {
 		/* Can the existing items be incremented? */
@@ -1191,31 +1188,32 @@ static bool store_create_random(struct store *store)
 			}
 		}
 
+		/*** Post-generation filters ***/
+
+		/* Make a known object */
+		known_obj = object_new();
+		obj->known = known_obj;
+
 		/* Know everything but flavor, no origin yet */
 		object_know_all_but_flavor(obj);
 		obj->origin = ORIGIN_NONE;
 
-		/*** Post-generation filters ***/
-
 		/* Black markets have expensive tastes */
 		if ((store->sidx == STORE_B_MARKET) && !black_market_ok(obj)) {
+			object_delete(&known_obj);
 			object_delete(&obj);
 			continue;
 		}
 
 		/* No "worthless" items */
 		if (object_value(obj, 1, FALSE) < 1)  {
+			object_delete(&known_obj);
 			object_delete(&obj);
 			continue;
 		}
 
 		/* Mass produce and/or apply discount */
 		mass_produce(obj);
-
-		/* Make a known object */
-		known_obj = object_new();
-		object_copy(known_obj, obj);
-		obj->known = known_obj;
 
 		/* Attempt to carry the object */
 		if (!store_carry(store, obj)) {
@@ -1246,10 +1244,9 @@ static struct object *store_create_item(struct store *store,
 	object_prep(obj, kind, 0, RANDOMISE);
 
 	/* Know everything but flavor, no origin yet */
+	obj->known = known_obj;
 	object_know_all_but_flavor(obj);
 	obj->origin = ORIGIN_NONE;
-	object_copy(known_obj, obj);
-	obj->known = known_obj;
 
 	/* Attempt to carry the object */
 	return store_carry(store, obj);
@@ -1693,7 +1690,7 @@ void do_cmd_buy(struct command *cmd)
 
 	/* Make a known object */
 	known_obj = object_new();
-	object_copy(known_obj, bought);
+	object_copy(known_obj, obj->known);
 	bought->known = known_obj;
 
 	/* Give it to the player */
@@ -1775,7 +1772,7 @@ void do_cmd_retrieve(struct command *cmd)
 
 	/* Make a known object */
 	known_obj = object_new();
-	object_copy(known_obj, picked_item);
+	object_copy(known_obj, obj->known);
 	picked_item->known = known_obj;
 
 	/* Give it to the player */

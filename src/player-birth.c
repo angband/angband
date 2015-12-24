@@ -506,13 +506,11 @@ static void player_outfit(struct player *p)
 		obj->number = num;
 		obj->origin = ORIGIN_BIRTH;
 
-		object_flavor_aware(obj);
+		known_obj = object_new();
+		obj->known = known_obj;
+
 		object_notice_everything(obj);
 		apply_autoinscription(obj);
-
-		known_obj = object_new();
-		object_copy(known_obj, obj);
-		obj->known = known_obj;
 
 		/* Deduct the cost of the item from starting cash */
 		p->au -= object_value(obj, obj->number, FALSE);

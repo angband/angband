@@ -55,6 +55,7 @@ bool object_defence_plusses_are_visible(const struct object *obj);
 bool object_flag_is_known(const struct object *obj, int flag);
 bool object_element_is_known(const struct object *obj, int element);
 bool object_this_mod_is_visible(const struct object *obj, int mod);
+void object_set_base_known(struct object *obj);
 bool object_check_for_ident(struct object *obj);
 void object_flavor_aware(struct object *obj);
 void object_flavor_tried(struct object *obj);

@@ -438,8 +438,20 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 	int total;
 
 	/* Blend all knowledge */
-	of_union(obj1->known_flags, obj2->known_flags);
-	of_union(obj1->id_flags, obj2->id_flags);
+	if (obj1->known && obj2->known) {
+		of_union(obj1->known->flags, obj2->known->flags);
+		if (obj2->known->ego)
+			obj1->known->ego = (struct ego_item *)1;
+		obj1->known->pval |= obj2->known->pval;
+		obj1->known->dd |= obj2->known->dd;
+		obj1->known->ds |= obj2->known->ds;
+		obj1->known->ac |= obj2->known->ac;
+		obj1->known->to_a |= obj2->known->to_a;
+		obj1->known->to_h |= obj2->known->to_h;
+		obj1->known->to_d |= obj2->known->to_d;
+		if (obj2->known->effect)
+			obj1->known->effect = (struct effect *)1;
+	}
 
 	/* Merge inscriptions */
 	if (obj2->note)
@@ -1277,8 +1289,8 @@ void floor_pile_know(struct chunk *c, int y, int x)
 				new_obj = obj->known;
 			} else {
 				new_obj = object_new();
-				object_copy(new_obj, obj);
 				obj->known = new_obj;
+				object_set_base_known(obj);
 			}
 			cave_k->objects[obj->oidx] = new_obj;
 			new_obj->oidx = obj->oidx;
@@ -1289,6 +1301,9 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			if (!pile_contains(square_object(cave_k, y, x), new_obj))
 				pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
 		} else if (known_obj->kind != obj->kind) {
+			/* Make sure knowledge is correct */
+			assert(known_obj = obj->known);
+
 			/* Detach from any old pile (possibly the correct one) */
 			if (known_obj->iy && known_obj->ix &&
 				pile_contains(square_object(cave_k, known_obj->iy,
@@ -1297,7 +1312,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 									 known_obj);
 
 			/* Copy over actual details */
-			object_copy(known_obj, obj);
+			object_set_base_known(obj);
 
 			/* Attach it to the current floor pile */
 			known_obj->iy = y;
@@ -1306,6 +1321,9 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			if (!pile_contains(square_object(cave_k, y, x), known_obj))
 				pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
 		} else if (!pile_contains(square_object(cave_k, y, x), known_obj)) {
+			/* Make sure knowledge is correct */
+			assert(known_obj = obj->known);
+
 			/* Detach from any old pile */
 			if (known_obj->iy && known_obj->ix &&
 				pile_contains(square_object(cave_k, known_obj->iy,

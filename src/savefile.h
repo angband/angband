@@ -20,6 +20,7 @@
 
 #define FINISHED_CODE 255
 #define ITEM_VERSION	5
+#define EGO_ART_KNOWN 0xffffffff
 
 /**
  * ------------------------------------------------------------------------

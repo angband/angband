@@ -100,8 +100,8 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
 
 	/* Artifacts are special */
-	if (obj->artifact && (aware || id_has(obj->id_flags, ID_ARTIFACT) ||
-							terse || !obj->kind->flavor))
+	if (obj->artifact && (aware || object_is_known_artifact(obj) || terse ||
+						  !obj->kind->flavor))
 		return obj->kind->name;
 
 	/* Analyze the object */
@@ -325,10 +325,10 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	 * (not a known/visible artifact) and
 	 * (not one in stack or forced plural) */
 	end = obj_desc_name_format(buf, max, end, basename, modstr,
-			!(mode & ODESC_SINGULAR) &&
-			!(obj->artifact &&
-			  (object_name_is_visible(obj) || known)) &&
-			(obj->number != 1 || (mode & ODESC_PLURAL)));
+							   !(mode & ODESC_SINGULAR) &&
+							   !(obj->artifact &&
+								 (object_name_is_visible(obj) || known)) &&
+							   (obj->number != 1 || (mode & ODESC_PLURAL)));
 
 	/** Append extra names of various kinds **/
 
@@ -340,7 +340,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		strnfcat(buf, max, &end, " %s", obj->ego->name);
 
 	else if (aware && !obj->artifact &&
-			(obj->kind->flavor || obj->kind->tval == TV_SCROLL)) {
+			 (obj->kind->flavor || obj->kind->tval == TV_SCROLL)) {
 		if (terse)
 			strnfcat(buf, max, &end, " '%s'", obj->kind->name);
 		else
@@ -371,22 +371,15 @@ static size_t obj_desc_chest(const struct object *obj, char *buf, size_t max,
 	if (!tval_is_chest(obj)) return end;
 	if (!known) return end;
 
-	/* May be "empty" */
-	if (!obj->pval)
+	/* May be empty, disarmed or trapped */
+	if (!obj->pval) {
 		strnfcat(buf, max, &end, " (empty)");
-
-	/* May be "disarmed" */
-	else if (!is_locked_chest(obj))
-	{
+	} else if (!is_locked_chest(obj)) {
 		if (chest_trap_type(obj) != 0)
 			strnfcat(buf, max, &end, " (disarmed)");
 		else
 			strnfcat(buf, max, &end, " (unlocked)");
-	}
-
-	/* Describe the traps, if any */
-	else
-	{
+	} else {
 		/* Describe the traps */
 		switch (chest_trap_type(obj))
 		{
@@ -479,10 +472,10 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 			strnfcat(buf, max, &end, " [%d,%+d]", obj->ac, obj->to_a);
 		else if (obj->to_a)
 			strnfcat(buf, max, &end, " [%+d]", obj->to_a);
-	}
-	else if (obj_desc_show_armor(obj))
+	} else if (obj_desc_show_armor(obj)) {
 		strnfcat(buf, max, &end, " [%d]",
 				 object_was_sensed(obj) ? obj->ac : obj->kind->ac);
+	}
 
 	return end;
 }
@@ -552,23 +545,16 @@ static size_t obj_desc_charges(const struct object *obj, char *buf, size_t max,
 {
 	bool aware = object_flavor_is_aware(obj) || (mode & ODESC_STORE);
 
-	/* Wands and Staffs have charges */
-	if (aware && tval_can_have_charges(obj))
+	/* Wands and staffs have charges, others may be charging */
+	if (aware && tval_can_have_charges(obj)) {
 		strnfcat(buf, max, &end, " (%d charge%s)", obj->pval,
 				 PLURAL(obj->pval));
-
-	/* Charging things */
-	else if (obj->timeout > 0)
-	{
+	} else if (obj->timeout > 0) {
 		if (tval_is_rod(obj) && obj->number > 1)
-		{
 			strnfcat(buf, max, &end, " (%d charging)", number_charging(obj));
-		}
-		/* Artifacts, single rods */
 		else if (!(tval_is_light(obj) && !obj->artifact))
-		{
+			/* Artifacts, single rods */
 			strnfcat(buf, max, &end, " (charging)");
-		}
 	}
 
 	return end;
@@ -594,19 +580,19 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 	/* Use special inscription, if any */
 	if (!object_is_known(obj)) {
 		if (feel) {
-			/* cannot tell excellent vs strange vs splendid until wield */
+			/* Cannot tell excellent vs strange vs splendid until wield */
 			if (!object_was_worn(obj) && obj->ego)
 				u[n++] = "ego";
 			else
 				u[n++] = inscrip_text[feel];
-		} 
-		else if (tval_can_have_charges(obj) && (obj->pval == 0))
+		} else if (tval_can_have_charges(obj) && (obj->pval == 0)) {
 			u[n++] = "empty";
-		else if (object_was_worn(obj))
+		} else if (object_was_worn(obj)) {
 			u[n++] = (tval_is_weapon(obj)) ? "wielded" : "worn";
-		else if (!object_flavor_is_aware(obj) &&
-				 object_flavor_was_tried(obj))
+		} else if (!object_flavor_is_aware(obj) &&
+				   object_flavor_was_tried(obj)) {
 			u[n++] = "tried";
+		}
 	}
 
 	/* Note curses */
@@ -618,15 +604,13 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 	if (ignore_item_ok(obj))
 		u[n++] = "ignore";
 
-	if (n)
-	{
+	if (n) {
 		int i;
-		for (i = 0; i < n; i++)
-		{
+		for (i = 0; i < n; i++) {
 			if (i == 0)
 				strnfcat(buf, max, &end, " {");
 			strnfcat(buf, max, &end, "%s", u[i]);
-			if (i < n-1)
+			if (i < n - 1)
 				strnfcat(buf, max, &end, ", ");
 		}
 
@@ -671,7 +655,6 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 	bool prefix = mode & ODESC_PREFIX ? TRUE : FALSE;
 	bool spoil = mode & ODESC_SPOIL ? TRUE : FALSE;
 	bool terse = mode & ODESC_TERSE ? TRUE : FALSE;
-	const struct object *known_obj = obj ? obj->known : NULL;
 
 	size_t end = 0;
 
@@ -683,13 +666,8 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 	if (object_name_is_visible(obj) && obj->ego && !spoil)
 		obj->ego->everseen = TRUE;
 
-	/* When not describing an actual game object, there is no known object,
-	 * so we use the original */
-	if (!known_obj)
-		known_obj = obj;
-
 	/*** Some things get really simple descriptions ***/
-	if (obj->kind != known_obj->kind) {
+	if (obj->known && obj->kind != obj->known->kind) {
 		if (prefix)
 			return strnfmt(buf, max, "an unknown item");
 		return strnfmt(buf, max, "unknown item");

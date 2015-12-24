@@ -447,7 +447,7 @@ static void wiz_display_item(const struct object *obj, bool all)
 	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
 	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
 	prt_binary(f, 0, 22, j, '*', 28);
-	prt_binary(obj->known_flags, 0, 23, j, '+', 28);
+	prt_binary(obj->known->flags, 0, 23, j, '+', 28);
 }
 
 
@@ -569,7 +569,6 @@ static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid
 
 	/* Make a known object */
 	known_obj = object_new();
-	object_copy(known_obj, obj);
 	obj->known = known_obj;
 
 	/* Drop the object from heaven */
@@ -832,6 +831,7 @@ static void wiz_reroll_item(struct object *obj)
 		/* Record the old pile info */
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
+		struct object *known_obj = obj->known;
 
 		/* Free slays and brands on the old object by hand */
 		free_slay(obj->slays);
@@ -841,6 +841,7 @@ static void wiz_reroll_item(struct object *obj)
 		object_copy(obj, new);
 		obj->prev = prev;
 		obj->next = next;
+		obj->known = known_obj;
 
 		/* Mark as cheat */
 		obj->origin = ORIGIN_CHEAT;
@@ -1670,7 +1671,6 @@ static void wiz_test_kind(int tval)
 
 		/* Make a known object */
 		known_obj = object_new();
-		object_copy(known_obj, obj);
 		obj->known = known_obj;
 
 		/* Drop the object from heaven */

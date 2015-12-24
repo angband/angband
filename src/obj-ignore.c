@@ -553,6 +553,10 @@ bool object_is_ignored(const struct object *obj)
 {
 	byte type;
 
+	/* objects that aren't yet known can't be ignored */
+	if (!obj->known)
+		return FALSE;
+
 	/* Do ignore individual objects that marked ignore */
 	if (obj->ignore)
 		return TRUE;

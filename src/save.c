@@ -86,11 +86,30 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->number);
 	wr_s16b(obj->weight);
 
-	if (obj->artifact) wr_byte(obj->artifact->aidx);
-	else wr_byte(0);
+	if (obj->artifact) {
+		if (obj->artifact != (struct artifact *)1)
+			wr_u32b(obj->artifact->aidx);
+		else
+			wr_u32b(EGO_ART_KNOWN);
+	} else {
+		wr_u32b(0);
+	}
 
-	if (obj->ego) wr_byte(obj->ego->eidx);
-	else wr_byte(0);
+	if (obj->ego) {
+		if (obj->ego != (struct ego_item *)1)
+			wr_u32b(obj->ego->eidx);
+		else
+			wr_u32b(EGO_ART_KNOWN);
+	} else {
+		wr_u32b(0);
+	}
+
+	if (obj->effect == (struct effect *)1)
+		wr_byte(1);
+	else if (obj->effect)
+		wr_byte(2);
+	else
+		wr_byte(0);
 
 	wr_s16b(obj->timeout);
 
@@ -101,8 +120,6 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->dd);
 	wr_byte(obj->ds);
 
-	wr_byte(obj->marked);
-
 	wr_byte(obj->origin);
 	wr_byte(obj->origin_depth);
 	wr_u16b(obj->origin_xtra);
@@ -110,12 +127,6 @@ static void wr_item(const struct object *obj)
 
 	for (i = 0; i < OF_SIZE; i++)
 		wr_byte(obj->flags[i]);
-
-	for (i = 0; i < OF_SIZE; i++)
-		wr_byte(obj->known_flags[i]);
-
-	for (i = 0; i < ID_SIZE; i++)
-		wr_byte(obj->id_flags[i]);
 
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		wr_s16b(obj->modifiers[i]);
@@ -127,7 +138,6 @@ static void wr_item(const struct object *obj)
 		wr_string(b->name);
 		wr_s16b(b->element);
 		wr_s16b(b->multiplier);
-		wr_byte(b->known ? 1 : 0);
 		wr_byte(b->next ? 1 : 0);
 	}
 
@@ -137,7 +147,6 @@ static void wr_item(const struct object *obj)
 		wr_string(s->name);
 		wr_s16b(s->race_flag);
 		wr_s16b(s->multiplier);
-		wr_byte(s->known ? 1 : 0);
 		wr_byte(s->next ? 1 : 0);
 	}
 
@@ -331,7 +340,6 @@ void wr_object_memory(void)
 
 	wr_u16b(z_info->k_max);
 	wr_byte(OF_SIZE);
-	wr_byte(ID_SIZE);
 	wr_byte(OBJ_MOD_MAX);
 	wr_byte(ELEM_MAX);
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
