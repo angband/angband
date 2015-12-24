@@ -1542,7 +1542,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 	m->selections = lower_case;
 
 	/* Basic ignore option */
-	if (!obj->ignore) {
+	if (!(obj->known->notice & OBJ_NOTICE_IGNORE)) {
 		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
 	} else {
 		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
@@ -1619,9 +1619,9 @@ void textui_cmd_ignore_menu(struct object *obj)
 	screen_load();
 
 	if (selected == IGNORE_THIS_ITEM) {
-		obj->ignore = TRUE;
+		obj->known->notice |= OBJ_NOTICE_IGNORE;
 	} else if (selected == UNIGNORE_THIS_ITEM) {
-		obj->ignore = FALSE;
+		obj->known->notice &= ~(OBJ_NOTICE_IGNORE);
 	} else if (selected == IGNORE_THIS_FLAVOR) {
 		object_ignore_flavor_of(obj);
 	} else if (selected == UNIGNORE_THIS_FLAVOR) {

@@ -123,7 +123,7 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->origin);
 	wr_byte(obj->origin_depth);
 	wr_u16b(obj->origin_xtra);
-	wr_byte(obj->ignore);
+	wr_byte(obj->notice);
 
 	for (i = 0; i < OF_SIZE; i++)
 		wr_byte(obj->flags[i]);
