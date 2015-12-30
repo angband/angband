@@ -2393,6 +2393,16 @@ void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind)
 }
 
 /**
+ * Cancel all object tracking
+ */
+void track_object_cancel(struct player_upkeep *upkeep)
+{
+	upkeep->object = NULL;
+	upkeep->object_kind = NULL;
+	upkeep->redraw |= (PR_OBJECT);
+}
+
+/**
  * Is the given item tracked?
  */
 bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj)
@@ -2569,36 +2579,41 @@ static const struct flag_event_trigger redraw_events[] =
 void redraw_stuff(struct player *p)
 {
 	size_t i;
+	u32b redraw = p->upkeep->redraw;
 
 	/* Redraw stuff */
-	if (!p->upkeep->redraw) return;
+	if (!redraw) return;
 
 	/* Character is not ready yet, no screen updates */
 	if (!character_generated) return;
 
-	/* Map is not shown, no screen updates */
-	if (!map_is_visible()) return;
+	/* Map is not shown, subwindow updates only */
+	if (!map_is_visible()) 
+		redraw &= PR_SUBWINDOW;
 
 	/* Hack - rarely update while resting or running, makes it over quicker */
 	if (((player_resting_count(p) % 100) || (p->upkeep->running % 100))
-		&& !(p->upkeep->redraw & PR_MESSAGE))
+		&& !(redraw & PR_MESSAGE))
 		return;
 
 	/* For each listed flag, send the appropriate signal to the UI */
 	for (i = 0; i < N_ELEMENTS(redraw_events); i++) {
 		const struct flag_event_trigger *hnd = &redraw_events[i];
 
-		if (p->upkeep->redraw & hnd->flag)
+		if (redraw & hnd->flag)
 			event_signal(hnd->event);
 	}
 
 	/* Then the ones that require parameters to be supplied. */
-	if (p->upkeep->redraw & PR_MAP) {
+	if (redraw & PR_MAP) {
 		/* Mark the whole map to be redrawn */
 		event_signal_point(EVENT_MAP, -1, -1);
 	}
 
-	p->upkeep->redraw = 0;
+	p->upkeep->redraw &= ~redraw;
+
+	/* Map is not shown, subwindow updates only */
+	if (!map_is_visible()) return;
 
 	/*
 	 * Do any plotting, etc. delayed from earlier - this set of updates

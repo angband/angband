@@ -659,7 +659,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 	size_t end = 0;
 
 	/* Simple description for null item */
-	if (!obj)
+	if (!obj || !obj->known)
 		return strnfmt(buf, max, "(nothing)");
 
 	/* Egos whose name we know are seen */

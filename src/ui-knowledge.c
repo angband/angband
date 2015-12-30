@@ -1783,7 +1783,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 static void desc_obj_fake(int k_idx)
 {
 	struct object_kind *kind = &k_info[k_idx];
-	struct object *obj = object_new();
+	struct object_kind *old_kind = player->upkeep->object_kind;
+	struct object *old_obj = player->upkeep->object;
+	struct object *obj = object_new(), *known_obj = object_new();
 
 	char header[120];
 
@@ -1803,6 +1805,7 @@ static void desc_obj_fake(int k_idx)
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, EXTREMIFY);
+	obj->known = known_obj;
 
 	/* Hack -- its in the store */
 	if (kind->aware) object_know_all_but_flavor(obj);
@@ -1818,8 +1821,17 @@ static void desc_obj_fake(int k_idx)
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
+	object_delete(&known_obj);
 	object_delete(&obj);
 	textblock_free(tb);
+
+	/* Restore the old trackee */
+	if (old_kind)
+		track_object_kind(player->upkeep, old_kind);
+	else if (old_obj)
+		track_object(player->upkeep, old_obj);
+	else
+		track_object_cancel(player->upkeep);
 }
 
 static int o_cmp_tval(const void *a, const void *b)
