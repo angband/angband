@@ -373,8 +373,7 @@ byte ignore_level_of(const struct object *obj)
 	object_flags_known(obj, f);
 
 	/* Deal with jewelry specially. */
-	if (tval_is_jewelry(obj))
-	{
+	if (tval_is_jewelry(obj)) {
 		/* CC: average jewelry has at least one known positive modifier */
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 			if ((object_this_mod_is_visible(obj, i)) && 
@@ -392,8 +391,7 @@ byte ignore_level_of(const struct object *obj)
 	}
 
 	/* And lights */
-	if (tval_is_light(obj))
-	{
+	if (tval_is_light(obj)) {
 		create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 		if (of_is_inter(f, f2))
 			return IGNORE_ALL;
@@ -475,9 +473,7 @@ byte ignore_level_of(const struct object *obj)
 				/* do not handle any other possible pseudo values */
 				assert(0);
 		}
-	}
-	else
-	{
+	} else {
 		if (object_was_worn(obj))
 			value = IGNORE_EXCELLENT_NO_SPL; /* object would be sensed if it were splendid */
 		else if (object_is_known_not_artifact(obj))
