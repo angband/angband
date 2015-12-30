@@ -609,6 +609,7 @@ void become_aware(struct monster *mon)
 		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
 
+	square_note_spot(cave, mon->fy, mon->fx);
 	square_light_spot(cave, mon->fy, mon->fx);
 }
 

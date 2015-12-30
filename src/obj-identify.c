@@ -1172,6 +1172,7 @@ bool object_high_resist_is_possible(const struct object *obj)
  */
 bool object_was_sensed(const struct object *obj)
 {
+	if (!obj->known) return FALSE;
 	return obj->known->notice & OBJ_NOTICE_SENSED ? TRUE : FALSE;
 }
 
@@ -1206,7 +1207,7 @@ void object_notice_sensing(struct object *obj)
  */
 void object_sense_artifact(struct object *obj)
 {
-	obj->known->artifact = obj->artifact;
+	obj->known->artifact = (struct artifact *)1;
 	if (obj->artifact)
 		object_notice_sensing(obj);
 }
