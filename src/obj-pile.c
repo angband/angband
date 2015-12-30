@@ -214,13 +214,18 @@ void list_object(struct chunk *c, struct object *obj)
 		if (c->objects[i] == obj)
 			return;
 
-	/* Put object in a hole */
-	for (i = 1; i < c->obj_max; i++)
+	/* Put objects in holes in the object list */
+	for (i = 1; i < c->obj_max; i++) {
+		/* If there is a known object, skip this slot */
+		if ((c == cave) && cave_k->objects[i]) continue;
+
+		/* Put the object in a hole */
 		if (c->objects[i] == NULL) {
 			c->objects[i] = obj;
 			obj->oidx = i;
 			return;
 		}
+	}
 
 	/* Extend the list */
 	c->objects = mem_realloc(c->objects, (c->obj_max + OBJECT_LIST_INCR + 1)
@@ -437,7 +442,7 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 {
 	int total;
 
-	/* Blend all knowledge */
+	/* First object gains any extra knowledge from second */
 	if (obj1->known && obj2->known) {
 		of_union(obj1->known->flags, obj2->known->flags);
 		if (obj2->known->ego)
@@ -514,14 +519,8 @@ void object_absorb_partial(struct object *obj1, struct object *obj2)
 	int difference = (z_info->stack_size) - largest;
 	obj1->number = largest + difference;
 	obj2->number = smallest - difference;
-	if (obj1->known && obj2->known) {
-		obj1->known->number = largest + difference;
-		obj2->known->number = smallest - difference;
-	}
 
 	object_absorb_merge(obj1, obj2);
-	if (obj1->known && obj2->known)
-		object_absorb_merge(obj1->known, obj2->known);
 }
 
 /**
@@ -533,14 +532,8 @@ void object_absorb(struct object *obj1, struct object *obj2)
 
 	/* Add together the item counts */
 	obj1->number = (total < z_info->stack_size ? total : z_info->stack_size);
-	if (obj1->known)
-		obj1->known->number = obj1->number;
 
 	object_absorb_merge(obj1, obj2);
-	if (obj1->known && obj2->known) {
-		object_absorb_merge(obj1->known, obj2->known);
-		object_delete(&obj2->known);
-	}
 	object_delete(&obj2);
 }
 

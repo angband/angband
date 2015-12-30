@@ -634,8 +634,9 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 				/* Increase the weight */
 				p->upkeep->total_weight += (obj->number * obj->weight);
 
-				/* Combine the items */
+				/* Combine the items, and their known versions */
 				object_absorb(gear_obj, obj);
+				object_absorb(gear_obj->known, obj->known);
 
 				/* Describe the combined object */
 				object_desc(o_name, sizeof(o_name), gear_obj,
@@ -961,11 +962,13 @@ void combine_pack(void)
 			if (object_similar(obj2, obj1, OSTACK_PACK)) {
 				display_message = TRUE;
 				object_absorb(obj2, obj1);
+				object_absorb(obj2->known, obj1->known);
 				break;
 			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
 				/* Setting this to TRUE spams the combine message. */
 				display_message = FALSE;
 				object_absorb_partial(obj2, obj1);
+				object_absorb_partial(obj2->known, obj1->known);
 				break;
 			}
 		}
