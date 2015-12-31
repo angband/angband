@@ -571,10 +571,9 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		if (square_isvisibletrap(cave, y, x))
 			break;
 	
-		/* Assume not floored */
-		floor_num = scan_floor(floor_list, floor_max, y, x, 0x0A, NULL);
-
-		/* Scan all marked objects in the grid */
+		/* Scan all sensed objects in the grid */
+		floor_num = scan_floor(floor_list, floor_max, y, x,
+							   OFLOOR_SENSE | OFLOOR_VISIBLE, NULL);
 		if ((floor_num > 0) &&
 		    (!(player->timed[TMD_BLIND]) ||
 			 (y == player->py && x == player->px))) {

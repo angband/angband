@@ -36,6 +36,18 @@ typedef enum
 	OSTACK_QUIVER  = 0x20  /* Quiver */
 } object_stack_t;
 
+/**
+ * Modes for floor scanning by scan_floor()
+ */
+typedef enum
+{
+	OFLOOR_NONE    = 0x00, /* No options */
+	OFLOOR_TEST    = 0x01, /* Verify item tester */
+	OFLOOR_SENSE   = 0x02, /* Sensed or known items only */
+	OFLOOR_TOP     = 0x04, /* Only the top item */
+	OFLOOR_VISIBLE = 0x08, /* Visible items only */
+} object_floor_t;
+
 struct object *object_new(void);
 void list_object(struct chunk *c, struct object *obj);
 void delist_object(struct chunk *c, struct object *obj);
@@ -65,8 +77,8 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			   int x, bool verbose);
 void push_object(int y, int x);
 void floor_item_charges(struct object *obj);
-int scan_floor(struct object **items, int max_size, int y, int x, int mode,
-			   item_tester tester);
+int scan_floor(struct object **items, int max_size, int y, int x,
+			   object_floor_t mode, item_tester tester);
 int scan_items(struct object **item_list, size_t item_list_max, int mode,
 			   item_tester tester);
 bool item_is_available(struct object *obj, bool (*tester)(const struct object *), int mode);

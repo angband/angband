@@ -1087,18 +1087,12 @@ void floor_item_charges(struct object *obj)
 
 
 /**
- * Get the indexes of objects at a given floor location. -TNB-
+ * Get the objects at a given floor location. -TNB-
  *
- * Return the number of object indexes acquired.
- *
- * Valid flags are any combination of the bits:
- *   0x01 -- Verify item tester
- *   0x02 -- Marked items only
- *   0x04 -- Only the top item
- *   0x08 -- Visible items only
+ * Return the number of objects acquired.
  */
-int scan_floor(struct object **items, int max_size, int y, int x, int mode,
-			   item_tester tester)
+int scan_floor(struct object **items, int max_size, int y, int x,
+			   object_floor_t mode, item_tester tester)
 {
 	struct object *obj;
 
@@ -1113,20 +1107,20 @@ int scan_floor(struct object **items, int max_size, int y, int x, int mode,
 		if (num >= max_size) break;
 
 		/* Item tester */
-		if ((mode & 0x01) && !object_test(tester, obj)) continue;
+		if ((mode & OFLOOR_TEST) && !object_test(tester, obj)) continue;
 
-		/* Marked */
-		if ((mode & 0x02) && (!obj->known)) continue;
+		/* Sensed or known */
+		if ((mode & OFLOOR_SENSE) && (!obj->known)) continue;
 
 		/* Visible */
-		if ((mode & 0x08) && !is_unknown(obj) && ignore_item_ok(obj))
+		if ((mode & OFLOOR_VISIBLE) && !is_unknown(obj) && ignore_item_ok(obj))
 			continue;
 
 		/* Accept this item */
 		items[num++] = obj;
 
 		/* Only one */
-		if (mode & 0x04) break;
+		if (mode & OFLOOR_TOP) break;
 	}
 
 	return num;
@@ -1183,7 +1177,8 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 	/* Scan all non-gold objects in the grid */
 	if (use_floor) {
 		floor_num = scan_floor(floor_list, floor_max, player->py, player->px,
-							   0x0B, tester);
+							   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE,
+							   tester);
 
 		for (i = 0; i < floor_num && item_num < item_max; i++)
 			item_list[item_num++] = floor_list[i];
