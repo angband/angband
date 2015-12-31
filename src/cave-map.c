@@ -145,7 +145,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 			g->unseen_money = TRUE;
 		} else if (obj->kind == lookup_kind(none, item)) {
 			g->unseen_object = TRUE;
-		} else if (ignore_item_ok(cave->objects[obj->oidx])) {
+		} else if (ignore_known_item_ok(obj)) {
 			/* Item stays hidden (note silly check of original object) */
 		} else if (!g->first_kind) {
 			g->first_kind = obj->kind;
