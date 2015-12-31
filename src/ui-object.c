@@ -1271,7 +1271,8 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		item_mode -= USE_QUIVER;
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x0B, tester);
+	floor_num = scan_floor(floor_list, floor_max, py, px,
+						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE, tester);
 
 	/* Full floor */
 	f1 = 0;

@@ -2261,8 +2261,8 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 	bool can_pickup = FALSE;
 	int i;
 
-	/* Scan all marked objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x09, FALSE);
+	/* Scan all visible, sensed objects in the grid */
+	floor_num = scan_floor(floor_list, floor_max, py, px, OFLOOR_SENSE, NULL);
 	if (floor_num == 0) {
 		mem_free(floor_list);
 		return;

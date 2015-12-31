@@ -227,7 +227,8 @@ static bool spell_identify_unknown_available(void)
 	struct object *obj;
 	bool unidentified_gear = FALSE;
 
-	floor_num = scan_floor(floor_list, floor_max, player->py, player->px, 0x0B,
+	floor_num = scan_floor(floor_list, floor_max, player->py, player->px,
+						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE,
 						   item_tester_unknown);
 
 	for (obj = player->gear; obj; obj = obj->next) {
