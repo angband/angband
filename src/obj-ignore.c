@@ -601,6 +601,27 @@ bool ignore_item_ok(const struct object *obj)
 }
 
 /**
+ * Determines if the known version of an object is eligible for ignoring.
+ */
+bool ignore_known_item_ok(const struct object *obj)
+{
+	struct object *base_obj;
+	bool ignore_ok = FALSE;
+
+	if (player->unignoring)
+		return FALSE;
+
+	/* Make a fake real object and check its ignore properties */
+	base_obj = object_new();
+	object_copy(base_obj, obj);
+	base_obj->known = obj;
+	ignore_ok = object_is_ignored(base_obj);
+
+	object_delete(&base_obj);
+	return ignore_ok;
+}
+
+/**
  * Drop all {ignore}able items.
  */
 void ignore_drop(void)
