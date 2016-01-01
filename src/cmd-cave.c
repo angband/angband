@@ -1139,7 +1139,8 @@ void move_player(int dir, bool disarm)
 			event_signal(EVENT_LEAVE_STORE);
 			event_remove_handler_type(EVENT_LEAVE_STORE);
 		} else {
-			/* Handle objects (later) */
+			/* Know objects, queue autopickup */
+			floor_pile_know(cave, player->py, player->px);
 			cmdq_push(CMD_AUTOPICKUP);
 		}
 

@@ -2257,9 +2257,6 @@ static void check_panel(game_event_type type, game_event_data *data, void *user)
 static void see_floor_items(game_event_type type, game_event_data *data,
 							void *user)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int floor_max = z_info->floor_size;
 	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num = 0;
@@ -2270,7 +2267,8 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 	int i;
 
 	/* Scan all visible, sensed objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px, OFLOOR_SENSE, NULL);
+	floor_num = scan_floor(floor_list, floor_max,
+						   OFLOOR_SENSE | OFLOOR_VISIBLE, NULL);
 	if (floor_num == 0) {
 		mem_free(floor_list);
 		return;

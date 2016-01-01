@@ -251,7 +251,7 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	}
 
 	/* Tally objects that can be at least partially picked up.*/
-	floor_num = scan_floor(floor_list, floor_max, py, px, OFLOOR_VISIBLE, NULL);
+	floor_num = scan_floor(floor_list, floor_max, OFLOOR_VISIBLE, NULL);
 	for (i = 0; i < floor_num; i++)
 	    if (inven_carry_okay(floor_list[i]))
 			can_pickup++;
@@ -389,5 +389,4 @@ void do_cmd_autopickup(struct command *cmd)
 
 	/* Look at or feel what's left */
 	event_signal(EVENT_SEEFLOOR);
-	floor_pile_know(cave, player->py, player->px);
 }

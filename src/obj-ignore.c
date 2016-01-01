@@ -23,6 +23,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -602,23 +603,20 @@ bool ignore_item_ok(const struct object *obj)
 
 /**
  * Determines if the known version of an object is eligible for ignoring.
+ *
+ * This function should only be called on known version of items which have a
+ * (real or imaginary) listed base item in the current level
  */
 bool ignore_known_item_ok(const struct object *obj)
 {
-	struct object *base_obj;
-	bool ignore_ok = FALSE;
+	struct object *base_obj = cave->objects[obj->oidx];
 
 	if (player->unignoring)
 		return FALSE;
 
-	/* Make a fake real object and check its ignore properties */
-	base_obj = object_new();
-	object_copy(base_obj, obj);
-	base_obj->known = obj;
-	ignore_ok = object_is_ignored(base_obj);
-
-	object_delete(&base_obj);
-	return ignore_ok;
+	/* Get the real object and check its ignore properties */
+	assert(base_obj);
+	return object_is_ignored(base_obj);
 }
 
 /**
