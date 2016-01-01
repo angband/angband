@@ -436,7 +436,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 		/* Check for combination */
 		if (object_similar(held_obj, obj, OSTACK_MONSTER)) {
 			/* Combine the items */
-			delist_object(c, obj);
+			//delist_object(c, obj);
 			object_absorb(held_obj, obj);
 
 			/* Result */

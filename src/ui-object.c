@@ -1166,9 +1166,6 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 					 cmd_code cmd, item_tester tester, int mode)
 {
-	int py = player->py;
-	int px = player->px;
-
 	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
@@ -1271,7 +1268,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		item_mode -= USE_QUIVER;
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px,
+	floor_num = scan_floor(floor_list, floor_max,
 						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE, tester);
 
 	/* Full floor */

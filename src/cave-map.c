@@ -146,7 +146,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 		} else if (obj->kind == lookup_kind(none, item)) {
 			g->unseen_object = TRUE;
 		} else if (ignore_known_item_ok(obj)) {
-			/* Item stays hidden (note silly check of original object) */
+			/* Item stays hidden */
 		} else if (!g->first_kind) {
 			g->first_kind = obj->kind;
 		} else {

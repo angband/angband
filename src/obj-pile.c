@@ -280,6 +280,19 @@ void object_delete(struct object **obj_address)
 	if (player && player->upkeep && obj == player->upkeep->object)
 		player->upkeep->object = NULL;
 
+	/* Orphan rather than actually delete if we still have a known object */
+	if (obj->known) {
+		obj->iy = 0;
+		obj->ix = 0;
+		obj->held_m_idx = 0;
+		obj->mimicking_m_idx = 0;
+
+		/* Object is now purely imaginary to the player */
+		obj->known->notice |= OBJ_NOTICE_IMAGINED;
+
+		return;
+	}
+
 	mem_free(obj);
 	*obj_address = NULL;
 }
@@ -1087,22 +1100,23 @@ void floor_item_charges(struct object *obj)
 
 
 /**
- * Get the objects at a given floor location. -TNB-
+ * Get a list of the objects at the player's location.
  *
  * Return the number of objects acquired.
  */
-int scan_floor(struct object **items, int max_size, int y, int x,
-			   object_floor_t mode, item_tester tester)
+int scan_floor(struct object **items, int max_size, object_floor_t mode,
+			   item_tester tester)
 {
 	struct object *obj;
-
+	int py = player->py;
+	int px = player->px;
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(cave, y, x)) return 0;
+	if (!square_in_bounds(cave, py, px)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(cave, py, px); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
@@ -1121,6 +1135,39 @@ int scan_floor(struct object **items, int max_size, int y, int x,
 
 		/* Only one */
 		if (mode & OFLOOR_TOP) break;
+	}
+
+	return num;
+}
+
+/**
+ * Get a list of the known objects at the given location.
+ *
+ * Return the number of objects acquired.
+ */
+int scan_distant_floor(struct object **items, int max_size, int y, int x)
+{
+	struct object *obj;
+	int none = tval_find_idx("none");
+	int item = lookup_sval(none, "<unknown item>");
+	int num = 0;
+
+	/* Sanity */
+	if (!square_in_bounds(cave_k, y, x)) return 0;
+
+	/* Scan all objects in the grid */
+	for (obj = square_object(cave_k, y, x); obj; obj = obj->next) {
+		/* Enforce limit */
+		if (num >= max_size) break;
+
+		/* Known */
+		if (obj->kind == lookup_kind(none, item)) continue;
+
+		/* Visible */
+		if (ignore_known_item_ok(obj)) continue;
+
+		/* Accept this item's base object */
+		items[num++] = cave->objects[obj->oidx];
 	}
 
 	return num;
@@ -1176,7 +1223,7 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 
 	/* Scan all non-gold objects in the grid */
 	if (use_floor) {
-		floor_num = scan_floor(floor_list, floor_max, player->py, player->px,
+		floor_num = scan_floor(floor_list, floor_max,
 							   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE,
 							   tester);
 
@@ -1331,10 +1378,20 @@ void floor_pile_know(struct chunk *c, int y, int x)
 	obj = square_object(cave_k, y, x);
 	while (obj) {
 		struct object *next = obj->next;
+		assert(c->objects[obj->oidx]);
 		if (!pile_contains(square_object(c, y, x), c->objects[obj->oidx])) {
+			struct object *original = c->objects[obj->oidx];
 			square_excise_object(cave_k, y, x, obj);
 			obj->iy = 0;
 			obj->ix = 0;
+
+			/* Delete objects which no longer exist anywhere */
+			if (obj->notice & OBJ_NOTICE_IMAGINED) {
+				delist_object(cave_k, obj);
+				object_delete(&obj);
+				delist_object(c, original);
+				object_delete(&original);
+			}
 		}
 		obj = next;
 	}
