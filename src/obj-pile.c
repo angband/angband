@@ -1339,6 +1339,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			/* Attach it to the current floor pile */
 			new_obj->iy = y;
 			new_obj->ix = x;
+			new_obj->number = obj->number;
 			if (!pile_contains(square_object(cave_k, y, x), new_obj))
 				pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
 		} else if (known_obj->kind != obj->kind) {
