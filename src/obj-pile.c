@@ -281,7 +281,8 @@ void object_delete(struct object **obj_address)
 		player->upkeep->object = NULL;
 
 	/* Orphan rather than actually delete if we still have a known object */
-	if (obj->known) {
+	if (obj->oidx && (obj == cave->objects[obj->oidx]) &&
+		cave_k->objects[obj->oidx]) {
 		obj->iy = 0;
 		obj->ix = 0;
 		obj->held_m_idx = 0;
@@ -748,6 +749,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 {
 	int n = 0;
 	struct object *obj, *ignore = floor_get_oldest_ignored(y, x);
+	struct object *known = drop->known;
 
 	/* Scan objects in that grid for combination */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
@@ -783,21 +785,25 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	drop->held_m_idx = 0;
 
 	/* Link to the first or last object in the pile */
-	if (last) {
+	if (last)
 		pile_insert_end(&c->squares[y][x].obj, drop);
-		if (c == cave && square_isseen(c, y, x) && drop->known)
-			pile_insert_end(&cave_k->squares[y][x].obj, drop->known);
-	} else {
+	else
 		pile_insert(&c->squares[y][x].obj, drop);
-		if (c == cave && square_isseen(c, y, x) && drop->known)
-			pile_insert(&cave_k->squares[y][x].obj, drop->known);
-	}
 
 	/* Record in the level list */
 	list_object(c, drop);
-	if (c == cave && square_isseen(c, y, x) && drop->known) {
-		cave_k->objects[drop->oidx] = drop->known;
-		drop->known->oidx = drop->oidx;
+	if (c == cave && square_isseen(c, y, x) && known) {
+		pile_insert_end(&cave_k->squares[y][x].obj, known);
+		if (known->iy && known->ix &&
+			pile_contains(square_object(cave_k, known->iy, known->ix), known)) {
+			square_excise_object(cave_k, known->iy, known->ix, known);
+			square_light_spot(c, known->iy, known->ix);
+		}
+		cave_k->objects[drop->oidx] = known;
+		known->oidx = drop->oidx;
+		known->iy = y;
+		known->ix = x;
+		known->held_m_idx = 0;
 	}
 
 	/* Redraw */
@@ -1389,6 +1395,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			if (obj->notice & OBJ_NOTICE_IMAGINED) {
 				delist_object(cave_k, obj);
 				object_delete(&obj);
+				original->known = NULL;
 				delist_object(c, original);
 				object_delete(&original);
 			}
