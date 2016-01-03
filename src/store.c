@@ -113,6 +113,7 @@ void cleanup_stores(void)
 		struct store *store = &stores[i];
 
 		/* Free the store inventory */
+		object_pile_free(store->stock_k);
 		object_pile_free(store->stock);
 		mem_free(store->always_table);
 		mem_free(store->normal_table);
@@ -947,6 +948,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 		if (object_similar(temp_obj, obj, OSTACK_STORE)) {
 			/* Absorb (some of) the object */
 			store_object_absorb(temp_obj->known, known_obj);
+			obj->known = NULL;
 			store_object_absorb(temp_obj, obj);
 
 			/* All done */
@@ -1201,6 +1203,7 @@ static bool store_create_random(struct store *store)
 		/* Black markets have expensive tastes */
 		if ((store->sidx == STORE_B_MARKET) && !black_market_ok(obj)) {
 			object_delete(&known_obj);
+			obj->known = NULL;
 			object_delete(&obj);
 			continue;
 		}
@@ -1208,6 +1211,7 @@ static bool store_create_random(struct store *store)
 		/* No "worthless" items */
 		if (object_value(obj, 1, FALSE) < 1)  {
 			object_delete(&known_obj);
+			obj->known = NULL;
 			object_delete(&obj);
 			continue;
 		}
@@ -1217,8 +1221,9 @@ static bool store_create_random(struct store *store)
 
 		/* Attempt to carry the object */
 		if (!store_carry(store, obj)) {
-			object_delete(&obj);
 			object_delete(&known_obj);
+			obj->known = NULL;
+			object_delete(&obj);
 			continue;
 		}
 
