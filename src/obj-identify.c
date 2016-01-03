@@ -328,6 +328,7 @@ void object_set_base_known(struct object *obj)
 	obj->known->kind = obj->kind;
 	obj->known->tval = obj->tval;
 	obj->known->sval = obj->sval;
+	obj->known->number = obj->number;
 	obj->known->dd = 1;
 	obj->known->ds = 1;
 
