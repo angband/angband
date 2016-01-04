@@ -1008,6 +1008,9 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 
 				/* Identify once */
 				if (!object_is_known(obj)) {
+					/* Hack - know the pile */
+					floor_pile_know(cave, y, x);
+
 					/* Know the trap */
 					object_notice_everything(obj);
 
