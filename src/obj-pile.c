@@ -793,11 +793,13 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	/* Record in the level list */
 	list_object(c, drop);
 	if (c == cave && square_isseen(c, y, x) && known) {
+		int iy = known->iy;
+		int ix = known->ix;
+
 		pile_insert_end(&cave_k->squares[y][x].obj, known);
-		if (known->iy && known->ix &&
-			pile_contains(square_object(cave_k, known->iy, known->ix), known)) {
-			square_excise_object(cave_k, known->iy, known->ix, known);
-			square_light_spot(c, known->iy, known->ix);
+		if (iy && ix && square_holds_object(cave_k, iy, ix, known)) {
+			square_excise_object(cave_k, iy, ix, known);
+			square_light_spot(c, iy, ix);
 		}
 		cave_k->objects[drop->oidx] = known;
 		known->oidx = drop->oidx;
@@ -1244,26 +1246,11 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 
 /**
  * Check if the given item is available for the player to use.
- *
- * 'mode' defines which areas we should look at, a la scan_items().
  */
-bool item_is_available(struct object *obj, bool (*tester)(const struct object *), int mode)
+bool item_is_available(struct object *obj)
 {
-	int item_max = z_info->pack_size + z_info->quiver_size +
-		player->body.count + z_info->floor_size;
-	struct object **item_list = mem_zalloc(item_max * sizeof(struct object *));
-	int item_num;
-	int i;
-
-	item_num = scan_items(item_list, item_max, mode, tester);
-
-	for (i = 0; i < item_num; i++)
-		if (item_list[i] == obj) {
-			mem_free(item_list);
-			return TRUE;
-		}
-
-	mem_free(item_list);
+	if (object_is_carried(player, obj)) return TRUE;
+	if (square_holds_object(cave, player->py, player->px, obj)) return TRUE;
 	return FALSE;
 }
 
@@ -1340,18 +1327,18 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			new_obj->iy = y;
 			new_obj->ix = x;
 			new_obj->number = obj->number;
-			if (!pile_contains(square_object(cave_k, y, x), new_obj))
+			if (!square_holds_object(cave_k, y, x, new_obj))
 				pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
 		} else if (known_obj->kind != obj->kind) {
+			int iy = known_obj->iy;
+			int ix = known_obj->ix;
+
 			/* Make sure knowledge is correct */
 			assert(known_obj = obj->known);
 
 			/* Detach from any old pile (possibly the correct one) */
-			if (known_obj->iy && known_obj->ix &&
-				pile_contains(square_object(cave_k, known_obj->iy,
-											known_obj->ix), known_obj))
-				square_excise_object(cave_k, known_obj->iy, known_obj->ix,
-									 known_obj);
+			if (iy && ix && square_holds_object(cave_k, iy, ix, known_obj))
+				square_excise_object(cave_k, iy, ix, known_obj);
 
 			/* Copy over actual details */
 			object_set_base_known(obj);
@@ -1360,18 +1347,18 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			known_obj->iy = y;
 			known_obj->ix = x;
 			known_obj->held_m_idx = 0;
-			if (!pile_contains(square_object(cave_k, y, x), known_obj))
+			if (!square_holds_object(cave_k, y, x, known_obj))
 				pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
-		} else if (!pile_contains(square_object(cave_k, y, x), known_obj)) {
+		} else if (!square_holds_object(cave_k, y, x, known_obj)) {
+			int iy = known_obj->iy;
+			int ix = known_obj->ix;
+
 			/* Make sure knowledge is correct */
 			assert(known_obj = obj->known);
 
 			/* Detach from any old pile */
-			if (known_obj->iy && known_obj->ix &&
-				pile_contains(square_object(cave_k, known_obj->iy,
-											known_obj->ix), known_obj))
-				square_excise_object(cave_k, known_obj->iy, known_obj->ix,
-									 known_obj);
+			if (iy && ix && square_holds_object(cave_k, iy, ix, known_obj))
+				square_excise_object(cave_k, iy, ix, known_obj);
 
 			/* Attach it to the current floor pile */
 			known_obj->iy = y;
@@ -1386,7 +1373,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 	while (obj) {
 		struct object *next = obj->next;
 		assert(c->objects[obj->oidx]);
-		if (!pile_contains(square_object(c, y, x), c->objects[obj->oidx])) {
+		if (!square_holds_object(c, y, x, c->objects[obj->oidx])) {
 			struct object *original = c->objects[obj->oidx];
 			square_excise_object(cave_k, y, x, obj);
 			obj->iy = 0;
