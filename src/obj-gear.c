@@ -732,7 +732,7 @@ void inven_wield(struct object *obj, int slot)
 		wielded = object_split(obj, 1);
 
 		/* If it's a gear object, give the split item a list entry */
-		if (pile_contains(player->gear, obj)) {
+		if (object_is_carried(player, obj)) {
 			wielded->next = obj->next;
 			obj->next = wielded;
 			wielded->prev = obj;
@@ -866,7 +866,7 @@ void inven_drop(struct object *obj, int amt)
 	/* Check it is still held, in case there were two drop commands queued
 	 * for this item.  This is in theory not ideal, but in practice should
 	 * be safe. */
-	if (!pile_contains(player->gear, obj))
+	if (!object_is_carried(player, obj))
 		return;
 
 	/* Get where the object is now */

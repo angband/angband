@@ -192,6 +192,14 @@ int apply_autoinscription(struct object *obj)
 	if (obj->note)
 		return 0;
 
+	/* Don't inscribe unless the player can reach it */
+	if (!item_is_available(obj))
+		return 0;
+
+	/* Don't inscribe if ignored */
+	if (ignore_item_ok(obj))
+		return 0;
+
 	/* Get an object description */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 

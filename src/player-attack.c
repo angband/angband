@@ -745,7 +745,7 @@ void do_cmd_fire(struct command *cmd) {
 	}
 
 	/* Check the item being fired is usable by the player. */
-	if (!item_is_available(obj, NULL, USE_QUIVER | USE_INVEN | USE_FLOOR)) {
+	if (!item_is_available(obj)) {
 		msg("That item is not within your reach.");
 		return;
 	}
