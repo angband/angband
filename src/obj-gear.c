@@ -719,6 +719,7 @@ void inven_wield(struct object *obj, int slot)
 
 	const char *fmt;
 	char o_name[80];
+	bool dummy = FALSE;
 
 	/* Increase equipment counter if empty slot */
 	if (old == NULL)
@@ -729,27 +730,41 @@ void inven_wield(struct object *obj, int slot)
 
 	/* Split off a new object if necessary */
 	if (obj->number > 1) {
-		/* Split off a new single object */
-		wielded = object_split(obj, 1);
-
-		/* If it's a gear object, give the split item a list entry */
+		/* It's either a gear object or a floor object */
 		if (object_is_carried(player, obj)) {
+			wielded = gear_object_for_use(obj, 1, FALSE, &dummy);
+
+			/* The new item needs new gear and known gear entries */
 			wielded->next = obj->next;
 			obj->next = wielded;
 			wielded->prev = obj;
 			if (wielded->next)
 				(wielded->next)->prev = wielded;
+			wielded->known->next = obj->known->next;
+			obj->known->next = wielded->known;
+			wielded->known->prev = obj->known;
+			if (wielded->known->next)
+				(wielded->known->next)->prev = wielded->known;
+		} else {
+			/* Get a floor item and carry it */
+			wielded = floor_object_for_use(obj, 1, FALSE, &dummy);
+			inven_carry(player, wielded, FALSE, FALSE);
 		}
-	} else
+	} else {
+		int py = player->py;
+		int px = player->px;
+
+		/* Just use the object directly */
 		wielded = obj;
 
-	/* Carry floor items, don't allow combining */
-	if (square_holds_object(cave, player->py, player->px, wielded)) {
-		square_excise_object(cave_k, player->py, player->px, wielded->known);
-		delist_object(cave_k, wielded->known);
-		square_excise_object(cave, player->py, player->px, wielded);
-		delist_object(cave, wielded);
-		inven_carry(player, wielded, FALSE, FALSE);
+		/* Carry floor items, don't allow combining */
+		if (square_holds_object(cave, py, px, wielded)) {
+			square_excise_object(cave_k, py, px, wielded->known);
+			delist_object(cave_k, wielded->known);
+			square_excise_object(cave, py, px, wielded);
+			delist_object(cave, wielded);
+			inven_carry(player, wielded, FALSE, FALSE);
+		}
 	}
 
 	/* Wear the new stuff */
