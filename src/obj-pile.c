@@ -245,6 +245,10 @@ void delist_object(struct chunk *c, struct object *obj)
 {
 	if (!obj->oidx) return;
 	assert(c->objects[obj->oidx] == obj);
+
+	/* Don't delist an actual object if it still has a listed known object */
+	if ((c == cave) && cave_k->objects[obj->oidx]) return;
+
 	c->objects[obj->oidx] = NULL;
 	obj->oidx = 0;
 }
