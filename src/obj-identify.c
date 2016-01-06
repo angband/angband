@@ -505,7 +505,13 @@ void object_know_all_elements(struct object *obj)
 void object_know_brands_and_slays(struct object *obj)
 {
 	assert(obj->known);
+
+	/* Wipe all previous known and know everything */
+	free_brand(obj->known->brands);
+	obj->known->brands = NULL;
 	copy_brand(&obj->known->brands, obj->brands);
+	free_slay(obj->known->slays);
+	obj->known->slays = NULL;
 	copy_slay(&obj->known->slays, obj->slays);
 }
 
