@@ -580,7 +580,7 @@ void object_notice_everything(struct object *obj)
 	object_flavor_aware(obj);
 
 	/* Artifact has now been seen */
-	if (obj->artifact) {
+	if (obj->artifact && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) {
 		obj->artifact->seen = obj->artifact->everseen = TRUE;
 		history_add_artifact(obj->artifact, TRUE, TRUE);
 	}
