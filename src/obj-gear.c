@@ -728,10 +728,10 @@ void inven_wield(struct object *obj, int slot)
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Split off a new object if necessary */
-	if (obj->number > 1) {
-		/* It's either a gear object or a floor object */
-		if (object_is_carried(player, obj)) {
+	/* It's either a gear object or a floor object */
+	if (object_is_carried(player, obj)) {
+		/* Split off a new object if necessary */
+		if (obj->number > 1) {
 			wielded = gear_object_for_use(obj, 1, FALSE, &dummy);
 
 			/* The new item needs new gear and known gear entries */
@@ -746,25 +746,13 @@ void inven_wield(struct object *obj, int slot)
 			if (wielded->known->next)
 				(wielded->known->next)->prev = wielded->known;
 		} else {
-			/* Get a floor item and carry it */
-			wielded = floor_object_for_use(obj, 1, FALSE, &dummy);
-			inven_carry(player, wielded, FALSE, FALSE);
+			/* Just use the object directly */
+			wielded = obj;
 		}
 	} else {
-		int py = player->py;
-		int px = player->px;
-
-		/* Just use the object directly */
-		wielded = obj;
-
-		/* Carry floor items, don't allow combining */
-		if (square_holds_object(cave, py, px, wielded)) {
-			square_excise_object(cave_k, py, px, wielded->known);
-			delist_object(cave_k, wielded->known);
-			square_excise_object(cave, py, px, wielded);
-			delist_object(cave, wielded);
-			inven_carry(player, wielded, FALSE, FALSE);
-		}
+		/* Get a floor item and carry it */
+		wielded = floor_object_for_use(obj, 1, FALSE, &dummy);
+		inven_carry(player, wielded, FALSE, FALSE);
 	}
 
 	/* Wear the new stuff */
