@@ -343,9 +343,6 @@ int do_autopickup(void)
 			/* Hack -- disturb */
 			disturb(player, 0);
 
-			/* Autoinscribe */
-			apply_autoinscription(obj);
-
 			/* Automatically pick up items into the backpack */
 			if (auto_pickup_okay(obj)) {
 				/* Pick up the object (as much as possible) with message */

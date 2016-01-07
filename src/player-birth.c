@@ -508,9 +508,7 @@ static void player_outfit(struct player *p)
 
 		known_obj = object_new();
 		obj->known = known_obj;
-
 		object_notice_everything(obj);
-		apply_autoinscription(obj);
 
 		/* Deduct the cost of the item from starting cash */
 		p->au -= object_value(obj, obj->number, FALSE);
