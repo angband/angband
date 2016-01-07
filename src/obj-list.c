@@ -135,13 +135,15 @@ void object_list_reset(object_list_t *list)
  */
 static bool object_list_should_ignore_object(const struct object *obj)
 {
-	assert(obj->kind);
-	assert(cave->objects[obj->oidx]);
+	struct object *base_obj = cave->objects[obj->oidx];
 
-	if (!is_unknown(cave->objects[obj->oidx]) && ignore_known_item_ok(obj))
+	assert(obj->kind);
+	assert(base_obj);
+
+	if (!is_unknown(base_obj) && ignore_known_item_ok(obj))
 		return TRUE;
 
-	if (tval_is_money(obj))
+	if (tval_is_money(base_obj))
 		return TRUE;
 
 	return FALSE;
