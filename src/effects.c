@@ -943,8 +943,8 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 				}
 			}
 
-			/* Forget unprocessed grids in the mapping area */
-			if (!square_ismark(cave, y, x))
+			/* Forget unprocessed, unknown grids in the mapping area */
+			if (!square_ismark(cave, y, x) && !square_isknown(cave, y, x))
 				square_forget(cave, y, x);
 		}
 	}
