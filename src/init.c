@@ -4494,10 +4494,14 @@ void cleanup_angband(void)
 	mem_free(chunk_list);
 
 	/* Free the main cave */
-	if (cave)
-		cave_free(cave);
-	if (cave_k)
+	if (cave_k) {
 		cave_free(cave_k);
+		cave_k = NULL;
+	}
+	if (cave) {
+		cave_free(cave);
+		cave = NULL;
+	}
 
 	/* Free the history */
 	history_clear();
