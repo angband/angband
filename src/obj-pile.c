@@ -262,12 +262,6 @@ void object_delete(struct object **obj_address)
 	struct object *prev = obj->prev;
 	struct object *next = obj->next;
 
-	/* Free slays and brands */
-	if (obj->slays)
-		free_slay(obj->slays);
-	if (obj->brands)
-		free_brand(obj->brands);
-
 	/* Check any next and previous objects */
 	if (next) {
 		if (prev) {
@@ -297,6 +291,12 @@ void object_delete(struct object **obj_address)
 
 		return;
 	}
+
+	/* Free slays and brands */
+	if (obj->slays)
+		free_slay(obj->slays);
+	if (obj->brands)
+		free_brand(obj->brands);
 
 	mem_free(obj);
 	*obj_address = NULL;
