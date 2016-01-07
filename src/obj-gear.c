@@ -619,9 +619,6 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 	struct object *gear_obj;
 	char o_name[80];
 
-	/* Apply an autoinscription */
-	apply_autoinscription(obj);
-
 	/* Check for combining, if appropriate */
 	if (absorb) {
 		for (gear_obj = p->gear; gear_obj; gear_obj = gear_obj->next) {
@@ -671,6 +668,9 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 	/* Add to the end of the list */
 	gear_insert_end(obj);
+
+	/* Apply an autoinscription */
+	apply_autoinscription(obj);
 
 	/* Remove cave object details */
 	obj->held_m_idx = 0;
