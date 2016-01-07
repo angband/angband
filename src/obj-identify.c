@@ -542,11 +542,17 @@ void object_know_all_miscellaneous(struct object *obj)
  */
 void object_know_all_but_flavor(struct object *obj)
 {
+	int i;
+
 	assert(obj->known);
 	/* Make sure the tval, sval and kind are known */
 	obj->known->tval = obj->tval;
 	obj->known->sval = obj->sval;
 	obj->known->kind = obj->kind;
+
+	/* Know all modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		obj->known->modifiers[i] = 1;
 
 	/* Know all flags there are to be known */
 	object_know_all_flags(obj);
