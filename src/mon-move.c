@@ -1497,8 +1497,12 @@ static void process_monster(struct chunk *c, struct monster *mon)
 			did_something = TRUE;
 		}
 
-		/* Scan all objects in the grid */
-		process_monster_grab_objects(c, mon, m_name, nx, ny);
+		/* Scan all objects in the grid, if we reached it */
+		if (mon == square_monster(c, ny, nx)) {
+			monster_desc(m_name, sizeof(m_name), mon,
+						 MDESC_CAPITAL | MDESC_IND_HID);
+			process_monster_grab_objects(c, mon, m_name, nx, ny);
+		}
 	}
 
 	if (did_something) {
