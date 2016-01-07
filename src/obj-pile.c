@@ -1254,7 +1254,8 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 bool item_is_available(struct object *obj)
 {
 	if (object_is_carried(player, obj)) return TRUE;
-	if (square_holds_object(cave, player->py, player->px, obj)) return TRUE;
+	if (cave && square_holds_object(cave, player->py, player->px, obj))
+		return TRUE;
 	return FALSE;
 }
 
