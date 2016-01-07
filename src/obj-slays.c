@@ -457,7 +457,7 @@ void object_notice_brands(struct object *obj, const struct monster *mon)
 
 		/* Already know it */
 		for (kb = obj->known->brands; kb; kb = kb->next) {
-			if ((kb->name == b->name) && (kb->element == b->element) &&
+			if (streq(kb->name, b->name) && (kb->element == b->element) &&
 				(kb->multiplier == b->multiplier))
 				break;
 		}
@@ -503,7 +503,7 @@ void object_notice_slays(struct object *obj, const struct monster *mon)
 	for (s = obj->slays; s; s = s->next) {
 		/* Already know it */
 		for (ks = obj->known->slays; ks; ks = ks->next) {
-			if ((ks->name == s->name) && (ks->race_flag == s->race_flag) &&
+			if (streq(ks->name, s->name) && (ks->race_flag == s->race_flag) &&
 				(ks->multiplier == s->multiplier))
 				break;
 		}
