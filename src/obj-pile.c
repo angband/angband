@@ -279,7 +279,7 @@ void object_delete(struct object **obj_address)
 		player->upkeep->object = NULL;
 
 	/* Orphan rather than actually delete if we still have a known object */
-	if (obj->oidx && (obj == cave->objects[obj->oidx]) &&
+	if (cave && cave_k && obj->oidx && (obj == cave->objects[obj->oidx]) &&
 		cave_k->objects[obj->oidx]) {
 		obj->iy = 0;
 		obj->ix = 0;
