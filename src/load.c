@@ -311,6 +311,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 
 		pile_insert(&mon->held_obj, obj);
 		assert(obj->oidx);
+		assert(c->objects[obj->oidx] == NULL);
 		c->objects[obj->oidx] = obj;
 	}
 
@@ -1175,6 +1176,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		if (square_in_bounds_fully(c, obj->iy, obj->ix))
 			pile_insert_end(&c->squares[obj->iy][obj->ix].obj, obj);
 		assert(obj->oidx);
+		assert(c->objects[obj->oidx] == NULL);
 		c->objects[obj->oidx] = obj;
 	}
 

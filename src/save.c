@@ -736,15 +736,18 @@ static void wr_objects_aux(struct chunk *c)
 		}
 	}
 
-	/* Write known objects we don't know the location of */
-	if (c == cave_k)
-		for (i = 1; i < c->obj_max; i++) {
-			struct object *obj = c->objects[i];
-			if (!obj) continue;
-			if (square_in_bounds_fully(c, obj->iy, obj->ix)) continue;
-			assert(obj->oidx == i);
-			wr_item(obj);
-		}
+	/* Write known objects we don't know the location of, and imagined versions
+	 * of known objects */
+	for (i = 1; i < c->obj_max; i++) {
+		struct object *obj = c->objects[i];
+		if (!obj) continue;
+		if (square_in_bounds_fully(c, obj->iy, obj->ix)) continue;
+		if (obj->held_m_idx) continue;
+		if (obj->mimicking_m_idx) continue;
+		if (obj->known && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) continue;
+		assert(obj->oidx == i);
+		wr_item(obj);
+	}
 
 	/* Write a dummy record as a marker */
 	dummy = mem_zalloc(sizeof(*dummy));

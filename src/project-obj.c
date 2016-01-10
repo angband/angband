@@ -486,6 +486,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 				object_delete(&obj);
 
 				/* Redraw */
+				square_note_spot(cave, y, x);
 				square_light_spot(cave, y, x);
 			}
 		}
