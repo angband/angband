@@ -201,6 +201,31 @@ struct object *object_new(void)
 }
 
 /**
+ * Check that both the object lists are consistent and relate to locations of
+ * objects correctly
+ */
+void object_lists_check_integrity(struct chunk *c)
+{
+	int i;
+	for (i = 0; i < c->obj_max; i++) {
+		struct object *obj = c->objects[i];
+		struct object *known_obj = cave_k->objects[i];
+		if (obj) {
+			assert(obj->oidx == i);
+			if (obj->iy && obj->ix)
+				assert(pile_contains(c->squares[obj->iy][obj->ix].obj, obj));
+		}
+		if (known_obj) {
+			assert (obj);
+			assert(known_obj == obj->known);
+			if (known_obj->iy && known_obj->ix)
+				assert (pile_contains(cave_k->squares[known_obj->iy][known_obj->ix].obj, known_obj));
+			assert (known_obj->oidx == i);
+		}
+	}
+}
+
+/**
  * Enter an object in the list of objects for the current level/chunk.  This
  * function is robust against listing of duplicates or non-objects
  */
@@ -673,6 +698,11 @@ struct object *object_split(struct object *src, int amt)
 		dest->known->note = src->known->note;
 	}
 
+	/* Remove any index */
+	if (dest->known)
+		dest->known->oidx = 0;
+	dest->oidx = 0;
+
 	return dest;
 }
 
@@ -811,7 +841,10 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 			square_excise_object(cave_k, iy, ix, known);
 			square_light_spot(c, iy, ix);
 		}
-		cave_k->objects[drop->oidx] = known;
+		if (cave_k->objects[drop->oidx])
+			assert(cave_k->objects[drop->oidx] == known);
+		else
+			cave_k->objects[drop->oidx] = known;
 		known->oidx = drop->oidx;
 		known->iy = y;
 		known->ix = x;
@@ -1314,6 +1347,8 @@ void floor_pile_know(struct chunk *c, int y, int x)
 
 	if (c != cave) return;
 
+	object_lists_check_integrity(c);
+
 	/* Know every item on this grid */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
 		struct object *known_obj = cave_k->objects[obj->oidx];
@@ -1345,7 +1380,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			int ix = known_obj->ix;
 
 			/* Make sure knowledge is correct */
-			assert(known_obj = obj->known);
+			assert(known_obj == obj->known);
 
 			/* Detach from any old pile (possibly the correct one) */
 			if (iy && ix && square_holds_object(cave_k, iy, ix, known_obj))
@@ -1365,7 +1400,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			int ix = known_obj->ix;
 
 			/* Make sure knowledge is correct */
-			assert(known_obj = obj->known);
+			assert(known_obj == obj->known);
 
 			/* Detach from any old pile */
 			if (iy && ix && square_holds_object(cave_k, iy, ix, known_obj))
