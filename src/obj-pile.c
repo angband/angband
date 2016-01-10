@@ -895,7 +895,6 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 	char o_name[80];
 
 	bool flag = FALSE;
-	bool ignorable = ignore_item_ok(dropped);
 
 	/* Describe object */
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_BASE);
@@ -1073,7 +1072,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 	sound(MSG_DROP);
 
 	/* Message when an object falls under the player */
-	if (verbose && (cave->squares[by][bx].mon < 0) && !ignorable)
+	if (verbose && (cave->squares[by][bx].mon < 0) && !ignore_item_ok(dropped))
 		msg("You feel something roll beneath your feet.");
 }
 
