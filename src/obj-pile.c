@@ -324,9 +324,11 @@ void object_delete(struct object **obj_address)
 		free_brand(obj->brands);
 
 	/* Remove from any lists */
-	if (cave_k && cave_k->objects && obj->oidx)
+	if (cave_k && cave_k->objects && obj->oidx
+		&& (obj == cave_k->objects[obj->oidx]))
 		cave_k->objects[obj->oidx] = NULL;
-	if (cave && cave->objects && obj->oidx)
+	if (cave && cave->objects && obj->oidx
+		&& (obj == cave->objects[obj->oidx]))
 		cave->objects[obj->oidx] = NULL;
 
 	mem_free(obj);
@@ -1320,6 +1322,7 @@ void floor_pile_sense(struct chunk *c, int y, int x)
 			cave_k->objects[obj->oidx] = new_obj;
 			new_obj->oidx = obj->oidx;
 			obj->known = new_obj;
+			new_obj->number = 1;
 
 			/* Give it a fake kind */
 			new_obj->tval = none;
@@ -1400,6 +1403,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 
 			/* Make sure knowledge is correct */
 			assert(known_obj == obj->known);
+			known_obj->number = obj->number;
 
 			/* Detach from any old pile */
 			if (iy && ix && square_holds_object(cave_k, iy, ix, known_obj))
