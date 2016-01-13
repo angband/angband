@@ -930,6 +930,10 @@ void cave_generate(struct chunk **c, struct player *p)
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
+	/* Free old known level */
+	if (cave_k && (*c == cave))
+		cave_free(cave_k);
+
 	/* Free the old cave, use the new one */
 	if (*c)
 		cave_clear(*c, p);
@@ -955,17 +959,17 @@ void cave_generate(struct chunk **c, struct player *p)
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
-	/* Free old and allocate new known level */
-	if (cave_k)
-		cave_free(cave_k);
-	cave_k = cave_new(cave->height, cave->width);
-	cave_k->objects = mem_realloc(cave_k->objects,
-								  ((*c)->obj_max + 1) * sizeof(struct object*));
-	cave_k->obj_max = (*c)->obj_max;
-	for (i = 0; i <= cave_k->obj_max; i++)
-		cave_k->objects[i] = NULL;
-	if (!cave->depth)
-		cave_known();
+	/* Allocate new known level */
+	if (*c == cave) {
+		cave_k = cave_new((*c)->height, (*c)->width);
+		cave_k->objects = mem_realloc(cave_k->objects, ((*c)->obj_max + 1)
+									  * sizeof(struct object*));
+		cave_k->obj_max = (*c)->obj_max;
+		for (i = 0; i <= cave_k->obj_max; i++)
+			cave_k->objects[i] = NULL;
+		if (!((*c)->depth))
+			cave_known();
+	}
 
 	(*c)->created_at = turn;
 }
