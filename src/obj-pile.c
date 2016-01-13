@@ -791,7 +791,6 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 {
 	int n = 0;
 	struct object *obj, *ignore = floor_get_oldest_ignored(y, x);
-	struct object *known = drop->known;
 
 	/* Scan objects in that grid for combination */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
@@ -834,24 +833,6 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 
 	/* Record in the level list */
 	list_object(c, drop);
-	if (c == cave && square_isseen(c, y, x) && known) {
-		int iy = known->iy;
-		int ix = known->ix;
-
-		pile_insert_end(&cave_k->squares[y][x].obj, known);
-		if (iy && ix && square_holds_object(cave_k, iy, ix, known)) {
-			square_excise_object(cave_k, iy, ix, known);
-			square_light_spot(c, iy, ix);
-		}
-		if (cave_k->objects[drop->oidx])
-			assert(cave_k->objects[drop->oidx] == known);
-		else
-			cave_k->objects[drop->oidx] = known;
-		known->oidx = drop->oidx;
-		known->iy = y;
-		known->ix = x;
-		known->held_m_idx = 0;
-	}
 
 	/* Redraw */
 	square_note_spot(c, y, x);
