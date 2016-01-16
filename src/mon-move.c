@@ -1364,7 +1364,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 		/* Pick up the item */
 		} else if (rf_has(mon->race->flags, RF_TAKE_ITEM)) {
 			/* Describe observable situations */
-			if (square_isview(c, ny, nx) && !ignore_item_ok(obj))
+			if (square_isseen(c, ny, nx) && !ignore_item_ok(obj))
 				msg("%s picks up %s.", m_name, o_name);
 
 			/* Carry the object */
@@ -1375,7 +1375,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 		/* Destroy the item */
 		} else {
 			/* Describe observable situations */
-			if (square_isview(c, ny, nx) && !ignore_item_ok(obj))
+			if (square_isseen(c, ny, nx) && !ignore_item_ok(obj))
 				msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 
 			/* Delete the object */
