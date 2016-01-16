@@ -327,6 +327,7 @@ void object_delete(struct object **obj_address)
 	if (cave_k && cave_k->objects && obj->oidx
 		&& (obj == cave_k->objects[obj->oidx]))
 		cave_k->objects[obj->oidx] = NULL;
+
 	if (cave && cave->objects && obj->oidx
 		&& (obj == cave->objects[obj->oidx]))
 		cave->objects[obj->oidx] = NULL;
