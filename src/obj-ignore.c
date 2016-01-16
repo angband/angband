@@ -192,8 +192,8 @@ int apply_autoinscription(struct object *obj)
 	if (obj->note)
 		return 0;
 
-	/* Don't inscribe unless the player can reach it */
-	if (!item_is_available(obj))
+	/* Don't inscribe unless the player is carrying it */
+	if (!object_is_carried(player, obj))
 		return 0;
 
 	/* Don't inscribe if ignored */
