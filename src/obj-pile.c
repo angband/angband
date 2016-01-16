@@ -1086,6 +1086,8 @@ void push_object(int y, int x)
 		/* Orphan the object */
 		obj->next = NULL;
 		obj->prev = NULL;
+		obj->iy = 0;
+		obj->ix = 0;
 
 		/* Next object */
 		obj = next;
