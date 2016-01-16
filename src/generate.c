@@ -931,8 +931,10 @@ void cave_generate(struct chunk **c, struct player *p)
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
 	/* Free old known level */
-	if (cave_k && (*c == cave))
+	if (cave_k && (*c == cave)) {
 		cave_free(cave_k);
+		cave_k = NULL;
+	}
 
 	/* Free the old cave, use the new one */
 	if (*c)
