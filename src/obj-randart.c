@@ -2695,6 +2695,10 @@ static void scramble_artifact(int a_idx)
 	/* Write the mods back in */
 	fake_pvals_to_mods(art);
 
+	/* Ensure diggers keep a basic digging bonus */
+	if (art->modifiers[OBJ_MOD_TUNNEL] < kind->modifiers[OBJ_MOD_TUNNEL].base)
+		art->modifiers[OBJ_MOD_TUNNEL] = kind->modifiers[OBJ_MOD_TUNNEL].base;
+
 	file_putf(log_file, "New depths are min %d, max %d\n", art->alloc_min,
 			  art->alloc_max);
 	file_putf(log_file, "Power-based alloc_prob is %d\n", art->alloc_prob);
