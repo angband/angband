@@ -97,8 +97,8 @@ bool earlier_object(struct object *orig, struct object *new, bool store);
 int equipped_item_slot(struct player_body body, struct object *obj);
 void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 					struct player_body body);
-void calc_bonuses(struct player *p, struct player_state *state,
-				  bool known_only);
+void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
+				  bool update);
 void calc_digging_chances(struct player_state *state, int chances[DIGGING_MAX]);
 int calc_blows(struct player *p, const struct object *obj,
 			   struct player_state *state, int extra_blows);

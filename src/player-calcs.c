@@ -1381,7 +1381,7 @@ int mana_per_level(struct player *p, struct player_state *state)
  *
  * This function induces status messages.
  */
-static void calc_mana(struct player *p, struct player_state *state)
+static void calc_mana(struct player *p, struct player_state *state, bool update)
 {
 	int i, msp, levels, cur_wgt, max_wgt; 
 	struct object *obj;
@@ -1459,6 +1459,9 @@ static void calc_mana(struct player *p, struct player_state *state)
 	/* Mana can never be negative */
 	if (msp < 0) msp = 0;
 
+	/* Return if no updates */
+	if (!update) return;
+
 	/* Maximum mana has changed */
 	if (p->msp != msp) {
 		/* Save new limit */
@@ -1520,7 +1523,8 @@ static void calc_hitpoints(struct player *p)
  *
  * Note that a cursed light source no longer emits light.
  */
-static void calc_torch(struct player *p, struct player_state *state)
+static void calc_torch(struct player *p, struct player_state *state,
+					   bool update)
 {
 	int i;
 
@@ -1528,7 +1532,7 @@ static void calc_torch(struct player *p, struct player_state *state)
 	state->cur_light = 0;
 
 	/* Ascertain lightness if in the town */
-	if (!p->depth && is_daytime()) {
+	if (!p->depth && is_daytime() && update) {
 		/* Update the visuals if necessary*/
 		if (p->state.cur_light != state->cur_light)
 			p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1683,7 +1687,8 @@ int weight_remaining(struct player *p)
  * information of objects; thus it returns what the player _knows_
  * the character state to be.
  */
-void calc_bonuses(struct player *p, struct player_state *state, bool known_only)
+void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
+				  bool update)
 {
 	int i, j, hold;
 
@@ -2201,8 +2206,8 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only)
 	}
 
 	/* Call individual functions for other state fields */
-	calc_torch(p, state);
-	calc_mana(p, state);
+	calc_torch(p, state, update);
+	calc_mana(p, state, update);
 
 	return;
 }
@@ -2222,8 +2227,8 @@ static void update_bonuses(struct player *p)
 	 * Calculate bonuses
 	 * ------------------------------------ */
 
-	calc_bonuses(p, &state, FALSE);
-	calc_bonuses(p, &known_state, TRUE);
+	calc_bonuses(p, &state, FALSE, TRUE);
+	calc_bonuses(p, &known_state, TRUE, TRUE);
 
 
 	/* ------------------------------------
@@ -2452,7 +2457,7 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_TORCH)) {
 		p->upkeep->update &= ~(PU_TORCH);
-		calc_torch(p, &p->state);
+		calc_torch(p, &p->state, TRUE);
 	}
 
 	if (p->upkeep->update & (PU_HP)) {
@@ -2462,7 +2467,7 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_MANA)) {
 		p->upkeep->update &= ~(PU_MANA);
-		calc_mana(p, &p->state);
+		calc_mana(p, &p->state, TRUE);
 	}
 
 	if (p->upkeep->update & (PU_SPELLS)) {

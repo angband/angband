@@ -637,7 +637,7 @@ static int obj_known_blows(const struct object *obj, int max_num,
 	player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player, &state, TRUE);
+	calc_bonuses(player, &state, TRUE, FALSE);
 
 	/* Stop pretending */
 	player->body.slots[weapon_slot].obj = current_weapon;
@@ -801,7 +801,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player, &state, TRUE);
+	calc_bonuses(player, &state, TRUE, FALSE);
 
 	/* Stop pretending */
 	player->body.slots[weapon_slot].obj = current_weapon;
@@ -1055,7 +1055,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 		/* Calculate the player's hypothetical state */
-		calc_bonuses(player, &state, TRUE);
+		calc_bonuses(player, &state, TRUE, FALSE);
 
 		/* Stop pretending */
 		player->body.slots[weapon_slot].obj = current;
@@ -1149,7 +1149,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	player->body.slots[slot].obj = obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player, &state, TRUE);
+	calc_bonuses(player, &state, TRUE, FALSE);
 
 	/* Stop pretending */
 	player->body.slots[slot].obj = current;
