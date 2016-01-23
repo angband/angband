@@ -1453,25 +1453,34 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 		/* Extract monster name */
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
-		/* Death */
+		/* Death message */
 		if (note) {
-			/* Death by Missile/Spell attack */
 			if (strlen(note) <= 1) {
-				/* Be silent */
+				/* Death by Spell attack - messages handled by project_m() */
 			} else {
 				char *str = format("%s%s", m_name, note);
 				my_strcap(str);
+
+				/* Make sure to flush any monster messages first */
+				notice_stuff(player);
+
+				/* Death by Missile attack */
 				msgt(soundfx, "%s", str);
 			}
-		} else if (!mflag_has(mon->mflag, MFLAG_VISIBLE))
-			/* Death by physical attack -- invisible monster */
-			msgt(soundfx, "You have killed %s.", m_name);
-		else if (monster_is_unusual(mon->race))
-			/* Death by Physical attack -- non-living monster */
-			msgt(soundfx, "You have destroyed %s.", m_name);
-		else
-			/* Death by Physical attack -- living monster */
-			msgt(soundfx, "You have slain %s.", m_name);
+		} else {
+			/* Make sure to flush any monster messages first */
+			notice_stuff(player);
+
+			if (!mflag_has(mon->mflag, MFLAG_VISIBLE))
+				/* Death by physical attack -- invisible monster */
+				msgt(soundfx, "You have killed %s.", m_name);
+			else if (monster_is_unusual(mon->race))
+				/* Death by Physical attack -- non-living monster */
+				msgt(soundfx, "You have destroyed %s.", m_name);
+			else
+				/* Death by Physical attack -- living monster */
+				msgt(soundfx, "You have slain %s.", m_name);
+		}
 
 		/* Player level */
 		div = player->lev;
