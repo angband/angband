@@ -798,12 +798,12 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	/* Hurt the monster */
 	mon->hp -= dam;
 
-	/* Dead monster */
+	/* Dead or damaged monster */
 	if (mon->hp < 0) {
 		/* Give detailed messages if destroyed */
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 
-		/* dump the note*/
+		/* Death message */
 		add_monster_message(m_name, mon, die_msg, FALSE);
 
 		/* Generate treasure, etc */
@@ -813,7 +813,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		delete_monster_idx(m_idx);
 
 		mon_died = TRUE;
-	} else if (!is_mimicking(mon)) { /* Damaged monster */
+	} else if (!is_mimicking(mon)) {
 		/* Give detailed messages if visible or destroyed */
 		if ((hurt_msg != MON_MSG_NONE) && seen)
 			add_monster_message(m_name, mon, hurt_msg, FALSE);
@@ -847,10 +847,12 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	struct monster *mon = context->mon;
 
 	/*
-	 * The monster is going to be killed, so display a specific death message
-	 * before mon_take_hit() displays its own message that the player has
-	 * killed/destroyed the monster. If the monster is not visible to
-	 * the player, use a generic message.
+	 * The monster is going to be killed, so display a specific death message.
+	 * If the monster is not visible to the player, use a generic message.
+	 *
+	 * Note that mon_take_hit() below is passed a zero-length string, which
+	 * ensures it doesn't print any death message and allows correct ordering
+	 * of messages.
 	 */
 	if (dam > mon->hp) {
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
@@ -1131,10 +1133,6 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 
 	/* Absolutely no effect */
 	if (context.skipped) return;
-
-	/* Extract method of death, if the monster will be killed. */
-	if (dam > mon->hp)
-		context.hurt_msg = context.die_msg;
 
 	/* Apply damage to the monster, based on who did the damage. */
 	if (who > 0)
