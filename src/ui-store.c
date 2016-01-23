@@ -1226,6 +1226,9 @@ void use_store(game_event_type type, game_event_data *data, void *user)
 
 void leave_store(game_event_type type, game_event_data *data, void *user)
 {
+	/* Disable repeats */
+	cmd_disable_repeat();
+
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_ENTER_WORLD);
 
