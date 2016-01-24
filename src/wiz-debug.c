@@ -520,7 +520,7 @@ static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid
 {
 	int *choices = menu_priv(m);
 	struct object_kind *kind;
-	struct object *obj, *known_obj;
+	struct object *obj;
 
 	if (e->type != EVT_SELECT)
 		return TRUE;
@@ -571,10 +571,6 @@ static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid
 	/* Mark as cheat, and where created */
 	obj->origin = ORIGIN_CHEAT;
 	obj->origin_depth = player->depth;
-
-	/* Make a known object */
-	known_obj = object_new();
-	obj->known = known_obj;
 
 	/* Drop the object from heaven */
 	drop_near(cave, obj, 0, player->py, player->px, TRUE);
