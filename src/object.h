@@ -191,6 +191,9 @@ struct object_kind {
 };
 
 extern struct object_kind *k_info;
+extern struct object_kind *unknown_item_kind;
+extern struct object_kind *unknown_gold_kind;
+extern struct object_kind *pile_kind;
 
 /**
  * Information about artifacts.
@@ -254,7 +257,7 @@ extern struct artifact *a_info;
 
 
 /**
- * Stricture for possible object kinds for an ego item
+ * Structure for possible object kinds for an ego item
  */
 struct ego_poss_item {
 	u32b kidx;
