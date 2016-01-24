@@ -78,9 +78,6 @@
 void map_info(unsigned y, unsigned x, struct grid_data *g)
 {
 	struct object *obj;
-	int none = tval_find_idx("none");
-	int item = lookup_sval(none, "<unknown item>");
-	int gold = lookup_sval(none, "<unknown treasure>");
 
 	assert(x < (unsigned) cave->width);
 	assert(y < (unsigned) cave->height);
@@ -141,9 +138,9 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 
 	/* Objects */
 	for (obj = square_object(cave_k, y, x); obj; obj = obj->next) {
-		if (obj->kind == lookup_kind(none, gold)) {
+		if (obj->kind == unknown_gold_kind) {
 			g->unseen_money = TRUE;
-		} else if (obj->kind == lookup_kind(none, item)) {
+		} else if (obj->kind == unknown_item_kind) {
 			g->unseen_object = TRUE;
 		} else if (ignore_known_item_ok(obj)) {
 			/* Item stays hidden */

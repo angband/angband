@@ -1184,8 +1184,6 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
 int scan_distant_floor(struct object **items, int max_size, int y, int x)
 {
 	struct object *obj;
-	int none = tval_find_idx("none");
-	int item = lookup_sval(none, "<unknown item>");
 	int num = 0;
 
 	/* Sanity */
@@ -1197,7 +1195,7 @@ int scan_distant_floor(struct object **items, int max_size, int y, int x)
 		if (num >= max_size) break;
 
 		/* Known */
-		if (obj->kind == lookup_kind(none, item)) continue;
+		if (obj->kind == unknown_item_kind) continue;
 
 		/* Visible */
 		if (ignore_known_item_ok(obj)) continue;
@@ -1289,9 +1287,6 @@ bool item_is_available(struct object *obj)
 void floor_pile_sense(struct chunk *c, int y, int x)
 {
 	struct object *obj;
-	int none = tval_find_idx("none");
-	int item = lookup_sval(none, "<unknown item>");
-	int gold = lookup_sval(none, "<unknown treasure>");
 
 	if (c != cave) return;
 
@@ -1309,12 +1304,10 @@ void floor_pile_sense(struct chunk *c, int y, int x)
 			new_obj->number = 1;
 
 			/* Give it a fake kind */
-			new_obj->tval = none;
 			if (tval_is_money(obj))
-				new_obj->sval = gold;
+				new_obj->kind = unknown_gold_kind;
 			else
-				new_obj->sval = item;
-			new_obj->kind = lookup_kind(new_obj->tval, new_obj->sval);
+				new_obj->kind = unknown_item_kind;
 
 			/* Attach it to the current floor pile */
 			new_obj->iy = y;

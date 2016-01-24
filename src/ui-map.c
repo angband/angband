@@ -194,10 +194,6 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 	int a = feat_x_attr[g->lighting][feat->fidx];
 	wchar_t c = feat_x_char[g->lighting][feat->fidx];
-	int none = tval_find_idx("none");
-	int pile = lookup_sval(none, "<pile>");
-	int item = lookup_sval(none, "<unknown item>");
-	int gold = lookup_sval(none, "<unknown treasure>");
 
 	/* Check for trap detection boundaries */
 	if (use_graphics == GRAPHICS_NONE)
@@ -223,14 +219,14 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	if (g->unseen_money) {
 	
 		/* $$$ gets an orange star*/
-		a = object_kind_attr(lookup_kind(none, gold));
-		c = object_kind_char(lookup_kind(none, gold));
+		a = object_kind_attr(unknown_gold_kind);
+		c = object_kind_char(unknown_gold_kind);
 		
 	} else if (g->unseen_object) {	
 	
 		/* Everything else gets a red star */    
-		a = object_kind_attr(lookup_kind(none, item));
-		c = object_kind_char(lookup_kind(none, item));
+		a = object_kind_attr(unknown_item_kind);
+		c = object_kind_char(unknown_item_kind);
 		
 	} else if (g->first_kind) {
 		if (g->hallucinate) {
@@ -238,8 +234,8 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 			hallucinatory_object(&a, &c);
 		} else if (g->multiple_objects) {
 			/* Get the "pile" feature instead */
-			a = object_kind_attr(lookup_kind(none, pile));
-			c = object_kind_char(lookup_kind(none, pile));
+			a = object_kind_attr(pile_kind);
+			c = object_kind_char(pile_kind);
 		} else {
 			/* Normal attr and char */
 			a = object_kind_attr(g->first_kind);
