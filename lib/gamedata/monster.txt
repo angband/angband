@@ -7954,7 +7954,7 @@ spells:HEAL
 spells:S_ANIMAL
 drop:prayer book:[Chants and Blessings]:8:1:1
 drop:prayer book:[Exorcism and Dispelling]:8:1:1
-friends:50:2d4:spider
+friends-base:50:2d4:spider
 desc:A lord of all that is natural, skilled in the mystic ways.  He is a master
 desc: of martial arts and is at one with nature, able to summon help from the
 desc: wild if need be.
@@ -8374,7 +8374,7 @@ spells:HEAL | MIND_BLAST
 spells:S_ANIMAL | S_HOUND | S_SPIDER
 drop:prayer book:[Chants and Blessings]:5:1:1
 drop:prayer book:[Exorcism and Dispelling]:15:1:1
-friends:80:3d5:spider
+friends-base:80:3d5:spider
 desc:He is one of the few true masters of the art, being extremely skillful in
 desc: all forms of unarmed combat and controlling the world's natural creatures
 desc: with disdainful ease.
