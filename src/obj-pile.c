@@ -1065,8 +1065,10 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 	sound(MSG_DROP);
 
 	/* Message when an object falls under the player */
-	if (verbose && (cave->squares[by][bx].mon < 0) && !ignore_item_ok(dropped))
-		msg("You feel something roll beneath your feet.");
+	if (verbose && (cave->squares[by][bx].mon < 0))
+		/* Check the item still exists and isn't ignored */
+		if (c->objects[dropped->oidx] && !ignore_item_ok(dropped))
+			msg("You feel something roll beneath your feet.");
 }
 
 /**
