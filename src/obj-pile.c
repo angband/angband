@@ -204,16 +204,17 @@ struct object *object_new(void)
  * Check that both the object lists are consistent and relate to locations of
  * objects correctly
  */
-void object_lists_check_integrity(struct chunk *c)
+void object_lists_check_integrity(void)
 {
 	int i;
-	for (i = 0; i < c->obj_max; i++) {
-		struct object *obj = c->objects[i];
+	assert(cave->obj_max == cave_k->obj_max);
+	for (i = 0; i < cave->obj_max; i++) {
+		struct object *obj = cave->objects[i];
 		struct object *known_obj = cave_k->objects[i];
 		if (obj) {
 			assert(obj->oidx == i);
 			if (obj->iy && obj->ix)
-				assert(pile_contains(c->squares[obj->iy][obj->ix].obj, obj));
+				assert(pile_contains(cave->squares[obj->iy][obj->ix].obj, obj));
 		}
 		if (known_obj) {
 			assert (obj);
@@ -231,7 +232,7 @@ void object_lists_check_integrity(struct chunk *c)
  */
 void list_object(struct chunk *c, struct object *obj)
 {
-	int i;
+	int i, newsize;
 
 	/* Check for duplicates and objects already deleted or combined */
 	if (!obj) return;
@@ -253,13 +254,21 @@ void list_object(struct chunk *c, struct object *obj)
 	}
 
 	/* Extend the list */
-	c->objects = mem_realloc(c->objects, (c->obj_max + OBJECT_LIST_INCR + 1)
-							 * sizeof(struct object*));
+	newsize = (c->obj_max + OBJECT_LIST_INCR + 1) * sizeof(struct object*);
+	c->objects = mem_realloc(c->objects, newsize);
 	c->objects[c->obj_max] = obj;
 	obj->oidx = c->obj_max;
 	for (i = c->obj_max + 1; i <= c->obj_max + OBJECT_LIST_INCR; i++)
 		c->objects[i] = NULL;
 	c->obj_max += OBJECT_LIST_INCR;
+
+	/* If we're on the current level, extend the known list */
+	if (c == cave) {
+		cave_k->objects = mem_realloc(cave_k->objects, newsize);
+		for (i = cave_k->obj_max; i <= c->obj_max; i++)
+			c->objects[i] = NULL;
+		cave_k->obj_max = c->obj_max;
+	}
 }
 
 /**
@@ -1326,7 +1335,7 @@ void floor_pile_know(struct chunk *c, int y, int x)
 
 	if (c != cave) return;
 
-	object_lists_check_integrity(c);
+	object_lists_check_integrity();
 
 	/* Know every item on this grid */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
