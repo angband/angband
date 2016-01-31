@@ -180,7 +180,7 @@ static void object_list_format_section(const object_list_t *list,
 /**
  * Allow the standard list formatted to be bypassed for special cases.
  *
- * Returning TRUE will bypass any other formatteding in
+ * Returning true will bypass any other formatteding in
  * object_list_format_textblock().
  *
  * \param list is the object list to format.
@@ -192,14 +192,14 @@ static void object_list_format_section(const object_list_t *list,
  * format the list without truncation.
  * \param max_width_result is returned with the width needed to format the list
  * without truncation.
- * \return TRUE if further formatting should be bypassed.
+ * \return true if further formatting should be bypassed.
  */
 static bool object_list_format_special(const object_list_t *list, textblock *tb,
 									   int max_lines, int max_width,
 									   size_t *max_height_result,
 									   size_t *max_width_result)
 {
-	return FALSE;
+	return false;
 }
 
 /**
@@ -209,7 +209,7 @@ static bool object_list_format_special(const object_list_t *list, textblock *tb,
  * by passing in a
  * NULL textblock. This function calls object_list_format_special() first; if
  * that function
- * returns TRUE, it will bypass normal list formatting.
+ * returns true, it will bypass normal list formatting.
  *
  * \param list is the object list to format.
  * \param tb is the textblock to produce or NULL if only the dimensions need to
@@ -272,7 +272,7 @@ static void object_list_format_textblock(const object_list_t *list,
         
 	object_list_format_section(list, tb, OBJECT_LIST_SECTION_LOS,
 							   los_lines_to_display, max_width,
-							   "You can see", FALSE, &max_los_line);
+							   "You can see", false, &max_los_line);
 
 	if (list->total_entries[OBJECT_LIST_SECTION_NO_LOS] > 0) {
          bool show_others = list->total_objects[OBJECT_LIST_SECTION_LOS] > 0;

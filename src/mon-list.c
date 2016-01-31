@@ -97,13 +97,13 @@ monster_list_t *monster_list_shared_instance(void)
 }
 
 /**
- * Return TRUE if the list needs to be updated. Usually this is each turn or if
+ * Return true if the list needs to be updated. Usually this is each turn or if
  * the number of cave monsters changes.
  */
 static bool monster_list_needs_update(const monster_list_t *list)
 {
 	if (list == NULL || list->entries == NULL)
-		return FALSE;
+		return false;
 
 	return list->creation_turn != turn ||
 		(int)list->entries_size < cave_monster_max(cave);
@@ -132,7 +132,7 @@ void monster_list_reset(monster_list_t *list)
 	memset(list->total_monsters, 0, MONSTER_LIST_SECTION_MAX * sizeof(u16b));
 	list->distinct_entries = 0;
 	list->creation_turn = 0;
-	list->sorted = FALSE;
+	list->sorted = false;
 }
 
 /**
@@ -150,7 +150,7 @@ void monster_list_collect(monster_list_t *list)
 		struct monster *mon = cave_monster(cave, i);
 		monster_list_entry_t *entry = NULL;
 		int j, field;
-		bool los = FALSE;
+		bool los = false;
 
 		/* Only consider visible, known monsters */
 		if (!mflag_has(mon->mflag, MFLAG_VISIBLE) ||
@@ -230,7 +230,7 @@ void monster_list_collect(monster_list_t *list)
 	}
 
 	list->creation_turn = turn;
-	list->sorted = FALSE;
+	list->sorted = false;
 }
 
 /**
@@ -283,7 +283,7 @@ void monster_list_sort(monster_list_t *list,
 		return;
 
 	sort(list->entries, elements, sizeof(list->entries[0]), compare);
-	list->sorted = TRUE;
+	list->sorted = true;
 }
 
 /**

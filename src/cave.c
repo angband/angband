@@ -181,7 +181,7 @@ void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_l
 
 
 	/* Pick a location */
-	while (TRUE)
+	while (true)
 	{
 		/* Pick a new location */
 		ny = rand_spread(y, d);

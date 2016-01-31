@@ -68,12 +68,12 @@ typedef enum
  * You can use these macros for part of the above conditions.
  */
 #define MODS_INCLUDE_CONTROL(v) \
-	(((v) >= 0x01 && (v) <= 0x1F) ? FALSE : TRUE)
+	(((v) >= 0x01 && (v) <= 0x1F) ? false : true)
 
 #define MODS_INCLUDE_SHIFT(v) \
 	((((v) >= 0x21 && (v) <= 0x2F) || \
 			((v) >= 0x3A && (v) <= 0x60) || \
-			((v) >= 0x7B && (v) <= 0x7E)) ? FALSE : TRUE)
+			((v) >= 0x7B && (v) <= 0x7E)) ? false : true)
 
 
 /**
@@ -82,10 +82,10 @@ typedef enum
  * KC_MOD_CONTROL unset.  Otherwise, leave the keycode alone and set
  * KC_MOD_CONTROL in mods.
  *
- * This macro returns TRUE in the former case and FALSE in the latter.
+ * This macro returns true in the former case and false in the latter.
  */
 #define ENCODE_KTRL(v) \
-	(((v) >= 0x40 && (v) <= 0x5F) ? TRUE : FALSE)
+	(((v) >= 0x40 && (v) <= 0x5F) ? true : false)
 
 
 /**

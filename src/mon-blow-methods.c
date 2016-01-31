@@ -37,7 +37,7 @@ bool monster_blow_method_cut(monster_blow_method_t method)
 	};
 
 	if (method >= RBM_MAX)
-		return FALSE;
+		return false;
 
 	return blow_cuts[method];
 }
@@ -58,7 +58,7 @@ bool monster_blow_method_stun(monster_blow_method_t method)
 	};
 
 	if (method >= RBM_MAX)
-		return FALSE;
+		return false;
 
 	return blow_stuns[method];
 }
@@ -173,7 +173,7 @@ bool monster_blow_method_miss(monster_blow_method_t method)
 	};
 
 	if (method >= RBM_MAX)
-		return FALSE;
+		return false;
 
 	return blow_misses[method];
 }
@@ -194,7 +194,7 @@ bool monster_blow_method_physical(monster_blow_method_t method)
 	};
 
 	if (method >= RBM_MAX)
-		return FALSE;
+		return false;
 
 	return blow_physicals[method];
 }

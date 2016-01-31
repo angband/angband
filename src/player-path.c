@@ -55,7 +55,7 @@ static int dir_search[8] = {2,4,6,8,1,3,7,9};
 static bool is_valid_pf(int y, int x)
 {
 	/* Unvisited means allowed */
-	if (!square_ismark(cave, y, x)) return (TRUE);
+	if (!square_ismark(cave, y, x)) return (true);
 
 	/* Require open space */
 	return (square_ispassable(cave, y, x));
@@ -83,7 +83,7 @@ static void fill_terrain_info(void)
 }
 
 #define MARK_DISTANCE(c,d) if ((c <= MAX_PF_LENGTH) && (c > d)) \
-							{ c = d; try_again = (TRUE); }
+							{ c = d; try_again = (true); }
 
 bool findpath(int y, int x)
 {
@@ -104,7 +104,7 @@ bool findpath(int y, int x)
 		terrain[y - oy][x - ox] = MAX_PF_LENGTH;
 	} else {
 		bell("Target out of range.");
-		return (FALSE);
+		return (false);
 	}
 
 	/* 
@@ -112,7 +112,7 @@ bool findpath(int y, int x)
 	 * inefficient pathfinding algorithm
 	 */
 	do {
-		try_again = FALSE;
+		try_again = false;
 
 		for (j = oy + 1; j < ey - 1; j++) {
 			for (i = ox + 1; i < ex - 1; i++) {
@@ -133,7 +133,7 @@ bool findpath(int y, int x)
 		}
 
 		if (terrain[y - oy][x - ox] < MAX_PF_LENGTH)
-			try_again = FALSE;
+			try_again = false;
 
 	}
 	while (try_again) ;
@@ -141,7 +141,7 @@ bool findpath(int y, int x)
 	/* Failure */
 	if (terrain[y - oy][x - ox] == MAX_PF_LENGTH) {
 		bell("Target space unreachable.");
-		return (FALSE);
+		return (false);
 	}
 
 	/* Success */
@@ -168,7 +168,7 @@ bool findpath(int y, int x)
 
 	pf_result_index--;
 
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -401,17 +401,17 @@ static int see_wall(int dir, int y, int x)
 	x += ddx[dir];
 
 	/* Illegal grids are not known walls XXX XXX XXX */
-	if (!square_in_bounds(cave, y, x)) return (FALSE);
+	if (!square_in_bounds(cave, y, x)) return (false);
 
 	/* Non-wall grids are not known walls */
 	if (!square_seemslikewall(cave, y, x))
-		return FALSE;
+		return false;
 
 	/* Unknown walls are not known walls */
-	if (!square_ismark(cave, y, x)) return (FALSE);
+	if (!square_ismark(cave, y, x)) return (false);
 
 	/* Default */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -440,7 +440,7 @@ static void run_init(int dir)
 	bool shortleft, shortright;
 
 	/* Mark that we're starting a run */
-	player->upkeep->running_firststep = TRUE;
+	player->upkeep->running_firststep = true;
 
 	/* Save the direction */
 	run_cur_dir = dir;
@@ -449,15 +449,15 @@ static void run_init(int dir)
 	run_old_dir = dir;
 
 	/* Assume looking for open area */
-	run_open_area = TRUE;
+	run_open_area = true;
 
 	/* Assume not looking for breaks */
-	run_break_right = FALSE;
-	run_break_left = FALSE;
+	run_break_right = false;
+	run_break_left = false;
 
 	/* Assume no nearby walls */
-	deepleft = deepright = FALSE;
-	shortright = shortleft = FALSE;
+	deepleft = deepright = false;
+	shortright = shortleft = false;
 
 	/* Find the destination grid */
 	row = py + ddy[dir];
@@ -468,26 +468,26 @@ static void run_init(int dir)
 
 	/* Check for nearby or distant wall */
 	if (see_wall(cycle[i+1], py, px)) {
-		run_break_left = TRUE;
-		shortleft = TRUE;
+		run_break_left = true;
+		shortleft = true;
 	} else if (see_wall(cycle[i+1], row, col)) {
-		run_break_left = TRUE;
-		deepleft = TRUE;
+		run_break_left = true;
+		deepleft = true;
 	}
 
 	/* Check for nearby or distant wall */
 	if (see_wall(cycle[i-1], py, px)) {
-		run_break_right = TRUE;
-		shortright = TRUE;
+		run_break_right = true;
+		shortright = true;
 	} else if (see_wall(cycle[i-1], row, col)) {
-		run_break_right = TRUE;
-		deepright = TRUE;
+		run_break_right = true;
+		deepright = true;
 	}
 
 	/* Looking for a break */
 	if (run_break_left && run_break_right) {
 		/* Not looking for open area */
-		run_open_area = FALSE;
+		run_open_area = false;
 
 		/* Angled or blunt corridor entry */
 		if (dir & 0x01) {
@@ -508,7 +508,7 @@ static void run_init(int dir)
 /**
  * Update the current "run" path
  *
- * Return TRUE if the running should be stopped
+ * Return true if the running should be stopped
  */
 static bool run_test(void)
 {
@@ -552,26 +552,26 @@ static bool run_test(void)
 			struct monster *mon = square_monster(cave, row, col);
 
 			/* Visible monster */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE)) return (TRUE);
+			if (mflag_has(mon->mflag, MFLAG_VISIBLE)) return (true);
 		}
 
 		/* Visible objects abort running */
 		for (obj = square_object(cave, row, col); obj; obj = obj->next)
 			/* Visible object */
-			if (obj->marked && !ignore_item_ok(obj)) return (TRUE);
+			if (obj->marked && !ignore_item_ok(obj)) return (true);
 
 		/* Assume unknown */
-		inv = TRUE;
+		inv = true;
 
 		/* Check memorized grids */
 		if (square_ismark(cave, row, col)) {
 			bool notice = square_isinteresting(cave, row, col);
 
 			/* Interesting feature */
-			if (notice) return (TRUE);
+			if (notice) return (true);
 
 			/* The grid is "visible" */
-			inv = FALSE;
+			inv = false;
 		}
 
 		/* Analyze unknown grids and floors */
@@ -584,10 +584,10 @@ static bool run_test(void)
 				option = new_dir;
 			} else if (option2) {
 				/* Three new directions. Stop running. */
-				return (TRUE);
+				return (true);
 			} else if (option != cycle[chome[prev_dir] + i - 1]) {
 				/* Two non-adjacent new directions.  Stop running. */
-				return (TRUE);
+				return (true);
 			} else if (new_dir & 0x01) {
 				/* Two new (adjacent) directions (case 1) */
 				option2 = new_dir;
@@ -600,10 +600,10 @@ static bool run_test(void)
 			if (run_open_area) {
 				if (i < 0) {
 					/* Break to the right */
-					run_break_right = TRUE;
+					run_break_right = true;
 				} else if (i > 0) {
 					/* Break to the left */
-					run_break_left = TRUE;
+					run_break_left = true;
 				}
 			}
 		}
@@ -630,7 +630,7 @@ static bool run_test(void)
 			
 			/* Visible monster */
 			if (mflag_has(mon->mflag, MFLAG_VISIBLE) && !is_mimicking(mon))
-				return (TRUE);
+				return (true);
 		}
 	}
 
@@ -649,12 +649,12 @@ static bool run_test(void)
 			    (square_ispassable(cave, row, col))) {
 				/* Looking to break right */
 				if (run_break_right) {
-					return (TRUE);
+					return (true);
 				}
 			} else { /* Obstacle */
 				/* Looking to break left */
 				if (run_break_left) {
-					return (TRUE);
+					return (true);
 				}
 			}
 		}
@@ -672,19 +672,19 @@ static bool run_test(void)
 			    (square_ispassable(cave, row, col))) {
 				/* Looking to break left */
 				if (run_break_left) {
-					return (TRUE);
+					return (true);
 				}
 			} else { /* Obstacle */
 				/* Looking to break right */
 				if (run_break_right) {
-					return (TRUE);
+					return (true);
 				}
 			}
 		}
 	} else { /* Not looking for open area */
 		/* No options */
 		if (!option) {
-			return (TRUE);
+			return (true);
 		} else if (!option2) { /* One option */
 			/* Primary option */
 			run_cur_dir = option;
@@ -703,11 +703,11 @@ static bool run_test(void)
 
 	/* About to hit a known wall, stop */
 	if (see_wall(run_cur_dir, py, px))
-		return (TRUE);
+		return (true);
 
 
 	/* Failure */
-	return (FALSE);
+	return (false);
 }
 
 
@@ -742,7 +742,7 @@ void run_step(int dir)
 		} else if (pf_result_index < 0) {
 			/* Pathfinding, and the path is finished */
 			disturb(player, 0);
-			player->upkeep->running_withpathfind = FALSE;
+			player->upkeep->running_withpathfind = false;
 			return;
 		} else {
 			int y = player->py + ddy[pf_result[pf_result_index] - '0'];
@@ -753,7 +753,7 @@ void run_step(int dir)
 				if (square_ismark(cave, y, x) &&
 					!square_ispassable(cave, y, x)) {
 					disturb(player, 0);
-					player->upkeep->running_withpathfind = FALSE;
+					player->upkeep->running_withpathfind = false;
 					return;
 				}
 			} else if (pf_result_index > 0) {
@@ -773,7 +773,7 @@ void run_step(int dir)
 				if (square_ismark(cave, y, x) &&
 					!square_ispassable(cave, y, x)) {
 					disturb(player, 0);
-					player->upkeep->running_withpathfind = FALSE;
+					player->upkeep->running_withpathfind = false;
 					return;
 				}
 
@@ -784,7 +784,7 @@ void run_step(int dir)
 					/* Visible monster */
 					if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
 						disturb(player, 0);
-						player->upkeep->running_withpathfind = FALSE;
+						player->upkeep->running_withpathfind = false;
 						return;
 					}
 				}
@@ -794,7 +794,7 @@ void run_step(int dir)
 					/* Visible object */
 					if (obj->marked && !ignore_item_ok(obj)) {
 					disturb(player, 0);
-					player->upkeep->running_withpathfind = FALSE;
+					player->upkeep->running_withpathfind = false;
 					return;
 				}
 
@@ -805,7 +805,7 @@ void run_step(int dir)
 				/* Known wall, so run the direction we were going */
 				if (square_ismark(cave, y, x) &&
 					!square_ispassable(cave, y, x)) {
-					player->upkeep->running_withpathfind = FALSE;
+					player->upkeep->running_withpathfind = false;
 					run_init(pf_result[pf_result_index] - '0');
 				}
 			}
@@ -825,7 +825,7 @@ void run_step(int dir)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Move the player; running straight into a trap == trying to disarm */
-	move_player(run_cur_dir, dir ? TRUE : FALSE);
+	move_player(run_cur_dir, dir ? true : false);
 
 	/* Prepare the next step */
 	if (player->upkeep->running) {

@@ -69,7 +69,7 @@ static bool option_is_cheat(int opt)
 }
 
 /**
- * Set an option, return TRUE if successful
+ * Set an option, return true if successful
  */
 bool option_set(const char *name, int val)
 {
@@ -80,14 +80,14 @@ bool option_set(const char *name, int val)
 		if (!options[opt].name || !streq(options[opt].name, name))
 			continue;
 
-		op_ptr->opt[opt] = val ? TRUE : FALSE;
+		op_ptr->opt[opt] = val ? true : false;
 		if (val && option_is_cheat(opt))
-			op_ptr->opt[opt + 1] = TRUE;
+			op_ptr->opt[opt + 1] = true;
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**

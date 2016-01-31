@@ -83,7 +83,7 @@ static HPALETTE PASCAL NEAR MakeDIBPalette(LPBITMAPINFOHEADER lpInfo)
 		npPal = (PLOGPALETTE)LocalAlloc(LMEM_FIXED, sizeof(LOGPALETTE) +
 		                                 (WORD)lpInfo->biClrUsed * sizeof(PALETTEENTRY));
 		if (!npPal)
-			return (FALSE);
+			return (false);
 
 		npPal->palVersion = 0x300;
 		npPal->palNumEntries = (WORD)lpInfo->biClrUsed;
@@ -121,15 +121,15 @@ static HPALETTE PASCAL NEAR MakeDIBPalette(LPBITMAPINFOHEADER lpInfo)
  * Given a DIB, create a bitmap and corresponding palette to be used for a
  * device-dependent representation of the image.
  *
- * Returns TRUE on success (phPal and phBitmap are filled with appropriate
- * handles.  Caller is responsible for freeing objects) and FALSE on failure
+ * Returns true on success (phPal and phBitmap are filled with appropriate
+ * handles.  Caller is responsible for freeing objects) and false on failure
  * (unable to create objects, both pointer are invalid).
  */
-static BOOL NEAR PASCAL MakeBitmapAndPalette(HDC hDC, HANDLE hDIB,
+static bool NEAR PASCAL MakeBitmapAndPalette(HDC hDC, HANDLE hDIB,
                                              HPALETTE * phPal, HBITMAP * phBitmap)
 {
 	LPBITMAPINFOHEADER lpInfo;
-	BOOL result = FALSE;
+	bool result = false;
 	HBITMAP hBitmap;
 	HPALETTE hPalette, hOldPal;
 	LPSTR lpBits;
@@ -138,7 +138,7 @@ static BOOL NEAR PASCAL MakeBitmapAndPalette(HDC hDC, HANDLE hDIB,
 	if ((hPalette = MakeDIBPalette(lpInfo)) != 0)
 	{
 		/* Need to realize palette for converting DIB to bitmap. */
-		hOldPal = SelectPalette(hDC, hPalette, TRUE);
+		hOldPal = SelectPalette(hDC, hPalette, true);
 		RealizePalette(hDC);
 
 		lpBits = ((LPSTR)lpInfo + (WORD)lpInfo->biSize +
@@ -146,7 +146,7 @@ static BOOL NEAR PASCAL MakeBitmapAndPalette(HDC hDC, HANDLE hDIB,
 		hBitmap = CreateDIBitmap(hDC, lpInfo, CBM_INIT, lpBits,
 		                         (LPBITMAPINFO)lpInfo, DIB_RGB_COLORS);
 
-		SelectPalette(hDC, hOldPal, TRUE);
+		SelectPalette(hDC, hOldPal, true);
 		RealizePalette(hDC);
 
 		if (!hBitmap)
@@ -157,7 +157,7 @@ static BOOL NEAR PASCAL MakeBitmapAndPalette(HDC hDC, HANDLE hDIB,
 		{
 			*phBitmap = hBitmap;
 			*phPal = hPalette;
-			result = TRUE;
+			result = true;
 		}
 	}
 	return (result);
@@ -170,32 +170,32 @@ static BOOL NEAR PASCAL MakeBitmapAndPalette(HDC hDC, HANDLE hDIB,
  * loads the DIB.  Once the DIB is loaded, the function also creates a bitmap
  * and palette out of the DIB for a device-dependent form.
  *
- * Returns TRUE if the DIB is loaded and the bitmap/palette created, in which
+ * Returns true if the DIB is loaded and the bitmap/palette created, in which
  * case, the DIBINIT structure pointed to by pInfo is filled with the appropriate
- * handles, and FALSE if something went wrong.
+ * handles, and false if something went wrong.
  */
-BOOL ReadDIB(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo)
+bool ReadDIB(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo)
 {
 	HFILE fh;
 	LPBITMAPINFOHEADER lpbi;
 	OFSTRUCT of;
 	BITMAPFILEHEADER bf;
 	WORD nNumColors;
-	BOOL result = FALSE;
+	bool result = false;
 	DWORD offBits;
 	HDC hDC;
-	BOOL bCoreHead = FALSE;
+	bool bCoreHead = false;
 
 	/* Open the file and get a handle to it's BITMAPINFO */
 	fh = OpenFile(lpFileName, &of, OF_READ);
 	if (fh == -1)
-		return (FALSE);
+		return (false);
 
 	pInfo->hDIB = GlobalAlloc(GHND, (DWORD)(sizeof(BITMAPINFOHEADER) +
 	                          256 * sizeof(RGBQUAD)));
 
 	if (!pInfo->hDIB)
-		return (FALSE);
+		return (false);
 
 	lpbi = (LPBITMAPINFOHEADER)GlobalLock(pInfo->hDIB);
 
@@ -217,7 +217,7 @@ BOOL ReadDIB(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo)
 		lpbi->biPlanes = ((LPBITMAPCOREHEADER)lpbi)->bcPlanes;
 		lpbi->biHeight = ((LPBITMAPCOREHEADER)lpbi)->bcHeight;
 		lpbi->biWidth = ((LPBITMAPCOREHEADER)lpbi)->bcWidth;
-		bCoreHead = TRUE;
+		bCoreHead = true;
 	}
 	else
 	{
@@ -312,7 +312,7 @@ BOOL ReadDIB(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo)
 		else
 		{
 			ReleaseDC(hWnd,hDC);
-			result = TRUE;
+			result = true;
 		}
 	}
 	else

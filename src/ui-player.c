@@ -301,9 +301,9 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			byte attr = COLOUR_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
 
-			bool res = FALSE, imm = FALSE, vul = FALSE;
-			bool timed = FALSE;
-			bool known = FALSE;
+			bool res = false, imm = false, vul = false;
+			bool timed = false;
+			bool known = false;
 
 			/* Wipe flagset */
 			of_wipe(f);
@@ -318,18 +318,18 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 				else if (rec[i].flag != -1)
 					known = object_flag_is_known(obj, rec[i].flag);
 				else
-					known = TRUE;
+					known = true;
 			} else if (j == player->body.count) {
 				player_flags(player, f);
-				known = TRUE;
+				known = true;
 
 				/* Timed flags only in the player column */
 				if (rec[i].tmd_flag >= 0) {
-	 				timed = player->timed[rec[i].tmd_flag] ? TRUE : FALSE;
+	 				timed = player->timed[rec[i].tmd_flag] ? true : false;
 					/* There has to be one special case... */
 					if ((rec[i].tmd_flag == TMD_AFRAID) &&
 						(player->timed[TMD_TERROR]))
-						timed = TRUE;
+						timed = true;
 				}
 			}
 
@@ -846,11 +846,11 @@ static const struct {
 } panels[] =
 {
 	/*   x  y wid rows */
-	{ {  1, 1, 40, 7 }, TRUE,  get_panel_topleft },	/* Name, Class, ... */
-	{ { 21, 1, 18, 3 }, FALSE, get_panel_misc },	/* Age, ht, wt, ... */
-	{ {  1, 9, 24, 9 }, FALSE, get_panel_midleft },	/* Cur Exp, Max Exp, ... */
-	{ { 29, 9, 19, 9 }, FALSE, get_panel_combat },
-	{ { 52, 9, 20, 8 }, FALSE, get_panel_skills },
+	{ {  1, 1, 40, 7 }, true,  get_panel_topleft },	/* Name, Class, ... */
+	{ { 21, 1, 18, 3 }, false, get_panel_misc },	/* Age, ht, wt, ... */
+	{ {  1, 9, 24, 9 }, false, get_panel_midleft },	/* Cur Exp, Max Exp, ... */
+	{ { 29, 9, 19, 9 }, false, get_panel_combat },
+	{ { 52, 9, 20, 8 }, false, get_panel_skills },
 };
 
 void display_player_xtra_info(void)
@@ -1124,16 +1124,16 @@ void write_character_dump(ang_file *fff)
  *
  * \param path is the path to the filename
  *
- * \returns TRUE on success, FALSE otherwise.
+ * \returns true on success, false otherwise.
  */
 bool dump_save(const char *path)
 {
 	if (text_lines_to_file(path, write_character_dump)) {
 		msg("Failed to create file %s.new", path);
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1151,7 +1151,7 @@ void do_cmd_change_name(void)
 
 	const char *p;
 
-	bool more = TRUE;
+	bool more = true;
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
@@ -1172,7 +1172,7 @@ void do_cmd_change_name(void)
 
 		if ((ke.type == EVT_KBRD)||(ke.type == EVT_BUTTON)) {
 			switch (ke.key.code) {
-				case ESCAPE: more = FALSE; break;
+				case ESCAPE: more = false; break;
 				case 'c': {
 					char namebuf[32] = "";
 
@@ -1189,7 +1189,7 @@ void do_cmd_change_name(void)
 					char fname[80];
 
 					strnfmt(fname, sizeof fname, "%s.txt",
-							player_safe_name(player, FALSE));
+							player_safe_name(player, false));
 
 					if (get_file(fname, buf, sizeof buf))
 					{
@@ -1218,7 +1218,7 @@ void do_cmd_change_name(void)
 				mode = (mode + 1) % INFO_SCREENS;
 			} else if (ke.mouse.button == 2) {
 				/* exit the screen */
-				more = FALSE;
+				more = false;
 			} else {
 				/* Flip backwards through the screens */			
 				mode = (mode - 1) % INFO_SCREENS;

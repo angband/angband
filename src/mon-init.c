@@ -1096,7 +1096,7 @@ static enum parser_error parse_lore_base(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
 	/* Know everything */
-	l->all_known = TRUE;
+	l->all_known = true;
 	rf_setall(l->flags);
 
 	return PARSE_ERROR_NONE;

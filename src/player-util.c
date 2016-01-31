@@ -78,10 +78,10 @@ void dungeon_change_level(int dlev)
 		store_update();
 
 	/* Leaving, make new level */
-	player->upkeep->generate_level = TRUE;
+	player->upkeep->generate_level = true;
 
 	/* Save the game when we arrive on the new level. */
-	player->upkeep->autosave = TRUE;
+	player->upkeep->autosave = true;
 }
 
 
@@ -127,10 +127,10 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 			my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
 
 			/* No longer a winner */
-			p->total_winner = FALSE;
+			p->total_winner = false;
 
 			/* Note death */
-			p->is_dead = TRUE;
+			p->is_dead = true;
 
 			/* Dead */
 			return;
@@ -270,7 +270,7 @@ void player_regen_hp(void)
 
 	/* check for overflow */
 	if ((player->chp < 0) && (old_chp > 0))
-		player->chp = MAX_SHORT;
+		player->chp = SHRT_MAX;
 	new_chp_frac = (new_chp & 0xFFFF) + player->chp_frac;	/* mod 65536 */
 	if (new_chp_frac >= 0x10000L) {
 		player->chp_frac = (u16b)(new_chp_frac - 0x10000L);
@@ -324,7 +324,7 @@ void player_regen_mana(void)
 
 	/* check for overflow */
 	if ((player->csp < 0) && (old_csp > 0)) {
-		player->csp = MAX_SHORT;
+		player->csp = SHRT_MAX;
 	}
 	new_mana_frac = (new_mana & 0xFFFF) + player->csp_frac;	/* mod 65536 */
 	if (new_mana_frac >= 0x10000L) {
@@ -358,15 +358,15 @@ void player_update_light(void)
 
 	/* Burn some fuel in the current light */
 	if (obj && tval_is_light(obj)) {
-		bool burn_fuel = TRUE;
+		bool burn_fuel = true;
 
 		/* Turn off the wanton burning of light during the day in the town */
 		if (!player->depth && is_daytime())
-			burn_fuel = FALSE;
+			burn_fuel = false;
 
 		/* If the light has the NO_FUEL flag, well... */
 		if (of_has(obj->flags, OF_NO_FUEL))
-		    burn_fuel = FALSE;
+		    burn_fuel = false;
 
 		/* Use some fuel (except on artifacts, or during the day) */
 		if (burn_fuel && obj->timeout > 0) {
@@ -406,10 +406,10 @@ void player_update_light(void)
 
 
 /**
- * Return TRUE if the player can cast a spell.
+ * Return true if the player can cast a spell.
  *
  * \param p is the player
- * \param show_msg should be set to TRUE if a failure message should be
+ * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
 bool player_can_cast(struct player *p, bool show_msg)
@@ -419,7 +419,7 @@ bool player_can_cast(struct player *p, bool show_msg)
 		if (show_msg)
 			msg("You cannot pray or produce magics.");
 
-		return FALSE;
+		return false;
 	}
 
 	if (p->timed[TMD_BLIND] || no_light())
@@ -427,7 +427,7 @@ bool player_can_cast(struct player *p, bool show_msg)
 		if (show_msg)
 			msg("You cannot see!");
 
-		return FALSE;
+		return false;
 	}
 
 	if (p->timed[TMD_CONFUSED])
@@ -435,23 +435,23 @@ bool player_can_cast(struct player *p, bool show_msg)
 		if (show_msg)
 			msg("You are too confused!");
 
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
- * Return TRUE if the player can study a spell.
+ * Return true if the player can study a spell.
  *
  * \param p is the player
- * \param show_msg should be set to TRUE if a failure message should be
+ * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
 bool player_can_study(struct player *p, bool show_msg)
 {
 	if (!player_can_cast(p, show_msg))
-		return FALSE;
+		return false;
 
 	if (!p->upkeep->new_spells)
 	{
@@ -460,17 +460,17 @@ bool player_can_study(struct player *p, bool show_msg)
 			msg("You cannot learn any new %ss!", name);
 		}
 
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
- * Return TRUE if the player can read scrolls or books.
+ * Return true if the player can read scrolls or books.
  *
  * \param p is the player
- * \param show_msg should be set to TRUE if a failure message should be
+ * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
 bool player_can_read(struct player *p, bool show_msg)
@@ -479,38 +479,38 @@ bool player_can_read(struct player *p, bool show_msg)
 		if (show_msg)
 			msg("You can't see anything.");
 
-		return FALSE;
+		return false;
 	}
 
 	if (no_light()) {
 		if (show_msg)
 			msg("You have no light to read by.");
 
-		return FALSE;
+		return false;
 	}
 
 	if (p->timed[TMD_CONFUSED]) {
 		if (show_msg)
 			msg("You are too confused to read!");
 
-		return FALSE;
+		return false;
 	}
 
 	if (p->timed[TMD_AMNESIA]) {
 		if (show_msg)
 			msg("You can't remember how to read!");
 
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
- * Return TRUE if the player can fire something with a launcher.
+ * Return true if the player can fire something with a launcher.
  *
  * \param p is the player
- * \param show_msg should be set to TRUE if a failure message should be
+ * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
 bool player_can_fire(struct player *p, bool show_msg)
@@ -523,17 +523,17 @@ bool player_can_fire(struct player *p, bool show_msg)
 		if (show_msg)
 			msg("You have nothing to fire with.");
 
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
- * Return TRUE if the player can refuel their light source.
+ * Return true if the player can refuel their light source.
  *
  * \param p is the player
- * \param show_msg should be set to TRUE if a failure message should be
+ * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
 bool player_can_refuel(struct player *p, bool show_msg)
@@ -541,12 +541,12 @@ bool player_can_refuel(struct player *p, bool show_msg)
 	struct object *obj = equipped_item_by_slot_name(player, "light");
 
 	if (obj && of_has(obj->flags, OF_TAKES_FUEL))
-		return TRUE;
+		return true;
 
 	if (show_msg)
 		msg("Your light cannot be refuelled.");
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -554,7 +554,7 @@ bool player_can_refuel(struct player *p, bool show_msg)
  */
 bool player_can_cast_prereq(void)
 {
-	return player_can_cast(player, TRUE);
+	return player_can_cast(player, true);
 }
 
 /**
@@ -562,7 +562,7 @@ bool player_can_cast_prereq(void)
  */
 bool player_can_study_prereq(void)
 {
-	return player_can_study(player, TRUE);
+	return player_can_study(player, true);
 }
 
 /**
@@ -570,7 +570,7 @@ bool player_can_study_prereq(void)
  */
 bool player_can_read_prereq(void)
 {
-	return player_can_read(player, TRUE);
+	return player_can_read(player, true);
 }
 
 /**
@@ -578,7 +578,7 @@ bool player_can_read_prereq(void)
  */
 bool player_can_fire_prereq(void)
 {
-	return player_can_fire(player, TRUE);
+	return player_can_fire(player, true);
 }
 
 /**
@@ -586,11 +586,11 @@ bool player_can_fire_prereq(void)
  */
 bool player_can_refuel_prereq(void)
 {
-	return player_can_refuel(player, TRUE);
+	return player_can_refuel(player, true);
 }
 
 /**
- * Return TRUE if the player has access to a book that has unlearned spells.
+ * Return true if the player has access to a book that has unlearned spells.
  *
  * \param p is the player
  */
@@ -604,7 +604,7 @@ bool player_book_has_unlearned_spells(struct player *p)
 	/* Check if the player can learn new spells */
 	if (!p->upkeep->new_spells) {
 		mem_free(item_list);
-		return FALSE;
+		return false;
 	}
 
 	/* Check through all available books */
@@ -619,18 +619,18 @@ bool player_book_has_unlearned_spells(struct player *p)
 			if (spell_okay_to_study(book->spells[j].sidx)) {
 				/* There is a spell the player can study */
 				mem_free(item_list);
-				return TRUE;
+				return true;
 			}
 	}
 
 	mem_free(item_list);
-	return FALSE;
+	return false;
 }
 
 /**
  * Apply confusion, if needed, to a direction
  *
- * Display a message and return TRUE if direction changes.
+ * Display a message and return true if direction changes.
  */
 bool player_confuse_dir(struct player *p, int *dp, bool too)
 {
@@ -648,14 +648,14 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 			msg("You are confused.");
 
 		*dp = dir;
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
- * Return TRUE if the provided count is one of the conditional REST_ flags.
+ * Return true if the provided count is one of the conditional REST_ flags.
  */
 bool player_resting_is_special(s16b count)
 {
@@ -663,14 +663,14 @@ bool player_resting_is_special(s16b count)
 		case REST_COMPLETE:
 		case REST_ALL_POINTS:
 		case REST_SOME_POINTS:
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
- * Return TRUE if the player is resting.
+ * Return true if the player is resting.
  */
 bool player_is_resting(struct player *p)
 {
@@ -692,7 +692,7 @@ s16b player_resting_count(struct player *p)
  * few turns will have the bonus and the last few will not.
  */
 static int player_turns_rested = 0;
-static bool player_rest_disturb = FALSE;
+static bool player_rest_disturb = false;
 
 /**
  * Set the number of resting turns.
@@ -704,7 +704,7 @@ void player_resting_set_count(struct player *p, s16b count)
 	/* Cancel if player is disturbed */
 	if (player_rest_disturb) {
 		p->upkeep->resting = 0;
-		player_rest_disturb = FALSE;
+		player_rest_disturb = false;
 		return;
 	}
 
@@ -732,7 +732,7 @@ void player_resting_cancel(struct player *p, bool disturb)
 }
 
 /**
- * Return TRUE if the player should get a regeneration bonus for the current
+ * Return true if the player should get a regeneration bonus for the current
  * rest.
  */
 bool player_resting_can_regenerate(struct player *p)
@@ -867,8 +867,8 @@ void player_place(struct chunk *c, struct player *p, int y, int x)
 	c->squares[y][x].mon = -1;
 
 	/* Clear stair creation */
-	p->upkeep->create_down_stair = FALSE;
-	p->upkeep->create_up_stair = FALSE;
+	p->upkeep->create_down_stair = false;
+	p->upkeep->create_up_stair = false;
 }
 
 
@@ -892,7 +892,7 @@ void disturb(struct player *p, int stop_search)
 
 	/* Cancel Resting */
 	if (player_is_resting(p)) {
-		player_resting_cancel(p, TRUE);
+		player_resting_cancel(p, true);
 		p->upkeep->redraw |= PR_STATE;
 	}
 
@@ -908,7 +908,7 @@ void disturb(struct player *p, int stop_search)
 
 	/* Cancel searching if requested */
 	if (stop_search && p->searching) {
-		p->searching = FALSE;
+		p->searching = false;
 		p->upkeep->update |= PU_BONUS;
 		p->upkeep->redraw |= PR_STATE;
 	}

@@ -487,7 +487,7 @@ static infoclr *clr[MAX_COLORS * BG_MAX];
  * ------------------------------------------------------------------------ */
 
 
-static bool gamma_table_ready = FALSE;
+static bool gamma_table_ready = false;
 static int gamma_val = 0;
 
 
@@ -504,7 +504,7 @@ static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 		const char *str = getenv("ANGBAND_X11_GAMMA");
 		if (str != NULL) gamma_val = atoi(str);
 
-		gamma_table_ready = TRUE;
+		gamma_table_ready = true;
 
 		/* Only need to build the table if gamma exists */
 		if (gamma_val) build_gamma_table(gamma_val);
@@ -1599,11 +1599,11 @@ static void react_keypress(XKeyEvent *ev)
 	char buf[128];
 
 	/* Extract "modifier flags" */
-	int mc = (ev->state & ControlMask) ? TRUE : FALSE;
-	int ms = (ev->state & ShiftMask) ? TRUE : FALSE;
-	int mo = (ev->state & m->alt_mask) ? TRUE : FALSE;
-	int mx = (ev->state & m->super_mask) ? TRUE : FALSE;
-	int kp = FALSE;
+	int mc = (ev->state & ControlMask) ? true : false;
+	int ms = (ev->state & ShiftMask) ? true : false;
+	int mo = (ev->state & m->alt_mask) ? true : false;
+	int mx = (ev->state & m->super_mask) ? true : false;
+	int kp = false;
 
 	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
 
@@ -1634,36 +1634,36 @@ static void react_keypress(XKeyEvent *ev)
 		case XK_Break: ch = KC_BREAK; break;
 
 		/* keypad */
-		case XK_KP_0: ch = '0'; kp = TRUE; break;
-		case XK_KP_1: ch = '1'; kp = TRUE; break;
-		case XK_KP_2: ch = '2'; kp = TRUE; break;
-		case XK_KP_3: ch = '3'; kp = TRUE; break;
-		case XK_KP_4: ch = '4'; kp = TRUE; break;
-		case XK_KP_5: ch = '5'; kp = TRUE; break;
-		case XK_KP_6: ch = '6'; kp = TRUE; break;
-		case XK_KP_7: ch = '7'; kp = TRUE; break;
-		case XK_KP_8: ch = '8'; kp = TRUE; break;
-		case XK_KP_9: ch = '9'; kp = TRUE; break;
+		case XK_KP_0: ch = '0'; kp = true; break;
+		case XK_KP_1: ch = '1'; kp = true; break;
+		case XK_KP_2: ch = '2'; kp = true; break;
+		case XK_KP_3: ch = '3'; kp = true; break;
+		case XK_KP_4: ch = '4'; kp = true; break;
+		case XK_KP_5: ch = '5'; kp = true; break;
+		case XK_KP_6: ch = '6'; kp = true; break;
+		case XK_KP_7: ch = '7'; kp = true; break;
+		case XK_KP_8: ch = '8'; kp = true; break;
+		case XK_KP_9: ch = '9'; kp = true; break;
 
-		case XK_KP_Decimal: ch = '.'; kp = TRUE; break;
-		case XK_KP_Divide: ch = '/'; kp = TRUE; break;
-		case XK_KP_Multiply: ch = '*'; kp = TRUE; break;
-		case XK_KP_Subtract: ch = '-'; kp = TRUE; break;
-		case XK_KP_Add: ch = '+'; kp = TRUE; break;
-		case XK_KP_Enter: ch = KC_ENTER; kp = TRUE; break;
-		case XK_KP_Equal: ch = '='; kp = TRUE; break;
+		case XK_KP_Decimal: ch = '.'; kp = true; break;
+		case XK_KP_Divide: ch = '/'; kp = true; break;
+		case XK_KP_Multiply: ch = '*'; kp = true; break;
+		case XK_KP_Subtract: ch = '-'; kp = true; break;
+		case XK_KP_Add: ch = '+'; kp = true; break;
+		case XK_KP_Enter: ch = KC_ENTER; kp = true; break;
+		case XK_KP_Equal: ch = '='; kp = true; break;
 
-		case XK_KP_Delete: ch = KC_DELETE; kp = TRUE; break;
-		case XK_KP_Home: ch = KC_HOME; kp = TRUE; break;
-		case XK_KP_Left: ch = ARROW_LEFT; kp = TRUE; break;
-		case XK_KP_Up: ch = ARROW_UP; kp = TRUE; break;
-		case XK_KP_Right: ch = ARROW_RIGHT; kp = TRUE; break;
-		case XK_KP_Down: ch = ARROW_DOWN; kp = TRUE; break;
-		case XK_KP_Page_Up: ch = KC_PGUP; kp = TRUE; break;
-		case XK_KP_Page_Down: ch = KC_PGDOWN; kp = TRUE; break;
-		case XK_KP_End: ch = KC_END; kp = TRUE; break;
-		case XK_KP_Insert: ch = KC_INSERT; kp = TRUE; break;
-		case XK_KP_Begin: ch = KC_BEGIN; kp = TRUE; break;
+		case XK_KP_Delete: ch = KC_DELETE; kp = true; break;
+		case XK_KP_Home: ch = KC_HOME; kp = true; break;
+		case XK_KP_Left: ch = ARROW_LEFT; kp = true; break;
+		case XK_KP_Up: ch = ARROW_UP; kp = true; break;
+		case XK_KP_Right: ch = ARROW_RIGHT; kp = true; break;
+		case XK_KP_Down: ch = ARROW_DOWN; kp = true; break;
+		case XK_KP_Page_Up: ch = KC_PGUP; kp = true; break;
+		case XK_KP_Page_Down: ch = KC_PGDOWN; kp = true; break;
+		case XK_KP_End: ch = KC_END; kp = true; break;
+		case XK_KP_Insert: ch = KC_INSERT; kp = true; break;
+		case XK_KP_Begin: ch = KC_BEGIN; kp = true; break;
 
 		case XK_F1: ch = KC_F1; break;
 		case XK_F2: ch = KC_F2; break;
@@ -1830,14 +1830,14 @@ static errr CheckEvent(bool wait)
 		case MapNotify:
 		{
 			Infowin->mapped = 1;
-			Term->mapped_flag = TRUE;
+			Term->mapped_flag = true;
 			break;
 		}
 
 		case UnmapNotify:
 		{
 			Infowin->mapped = 0;
-			Term->mapped_flag = FALSE;
+			Term->mapped_flag = false;
 			break;
 		}
 
@@ -1865,14 +1865,14 @@ static errr CheckEvent(bool wait)
 
 			if (window == 0) {
 				/* Hack the main window must be at least 80x24 */
-				force_resize = FALSE;
+				force_resize = false;
 				if (cols < 80) {
 					cols = 80;
-					force_resize = TRUE;
+					force_resize = true;
 				}
 				if (rows < 24) {
 					rows = 24;
-					force_resize = TRUE;
+					force_resize = true;
 				}
 
 				/* Resize the windows if any "change" is needed */
@@ -1987,7 +1987,7 @@ static errr Term_xtra_x11(int n, int v)
 		case TERM_XTRA_EVENT: return (CheckEvent(v));
 
 		/* Flush the events XXX */
-		case TERM_XTRA_FLUSH: while (!CheckEvent(FALSE)); return (0);
+		case TERM_XTRA_FLUSH: while (!CheckEvent(false)); return (0);
 
 		/* Handle change in the "level" */
 		case TERM_XTRA_LEVEL: return (Term_xtra_x11_level(v));
@@ -2462,14 +2462,14 @@ static errr term_data_init(term_data *td, int i)
 	term_init(t, cols, rows, num);
 
 	/* Use a "soft" cursor */
-	t->soft_cursor = TRUE;
+	t->soft_cursor = true;
 
 	/* Erase with "white space" */
 	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';
 
 	/* Differentiate between BS/^h, Tab/^i, etc. */
-	t->complex_input = TRUE;
+	t->complex_input = true;
 
 	/* Hooks */
 	t->xtra_hook = Term_xtra_x11;

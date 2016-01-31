@@ -724,10 +724,10 @@ bool labyrinth_check(int depth)
 	int chance = 2;
 
 	/* If we're too shallow then don't do it */
-	if (depth < 13) return FALSE;
+	if (depth < 13) return false;
 
 	/* Don't try this on quest levels, kids... */
-	if (is_quest(depth)) return FALSE;
+	if (is_quest(depth)) return false;
 
 	/* Certain numbers increase the chance of having a labyrinth */
 	if (depth % 3 == 0) chance += 1;
@@ -737,10 +737,10 @@ bool labyrinth_check(int depth)
 	if (depth % 13 == 0) chance += 1;
 
 	/* Only generate the level if we pass a check */
-	if (randint0(100) >= chance) return FALSE;
+	if (randint0(100) >= chance) return false;
 
 	/* Successfully ran the gauntlet! */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -829,7 +829,7 @@ static void cave_clear(struct chunk *c, struct player *p)
 			while (obj) {
 				if (obj->artifact) {
 					if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
-						obj->artifact->created = FALSE;
+						obj->artifact->created = false;
 					else
 						history_lose_artifact(obj->artifact);
 				}
@@ -864,7 +864,7 @@ void cave_generate(struct chunk **c, struct player *p)
 		error = NULL;
 
 		/* Mark the dungeon as being unready (to avoid artifact loss, etc) */
-		character_dungeon = FALSE;
+		character_dungeon = false;
 
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
@@ -899,7 +899,7 @@ void cave_generate(struct chunk **c, struct player *p)
 	
 				/* Pick a location and place the monster */
 				find_empty(chunk, &y, &x);
-				place_new_monster(chunk, y, x, race, TRUE, TRUE, ORIGIN_DROP);
+				place_new_monster(chunk, y, x, race, true, true, ORIGIN_DROP);
 			}
 		}
 
@@ -942,7 +942,7 @@ void cave_generate(struct chunk **c, struct player *p)
 	/* Save the town */
 	else if (!chunk_find_name("Town")) {
 		struct chunk *town = chunk_write(0, 0, z_info->town_hgt,
-										 z_info->town_wid, FALSE, FALSE, FALSE);
+										 z_info->town_wid, false, false, false);
 		town->name = string_make("Town");
 		chunk_list_add(town);
 	}
@@ -953,7 +953,7 @@ void cave_generate(struct chunk **c, struct player *p)
 	chunk_validate_objects(*c);
 
 	/* The dungeon is ready */
-	character_dungeon = TRUE;
+	character_dungeon = true;
 
 	/* Free old and allocate new known level */
 	if (cave_k)

@@ -166,7 +166,7 @@ static bool _find_in_range(struct chunk *c, int *y, int y1, int y2, int *x,
     int yd = y2 - y1;
     int xd = x2 - x1;
     int i, n = yd * xd;
-    bool found = FALSE;
+    bool found = false;
 
     /* Allocate the squares, and randomize their order */
     int *squares = mem_alloc(n * sizeof(int));
@@ -181,7 +181,7 @@ static bool _find_in_range(struct chunk *c, int *y, int y1, int y2, int *x,
 
 		*y = (k / xd) + y1;
 		*x = (k % xd) + x1;
-		if (pred(c, *y, *x)) found = TRUE;
+		if (pred(c, *y, *x)) found = true;
     }
 
 	mem_free(squares);
@@ -325,9 +325,9 @@ void rand_dir(int *rdir, int *cdir)
  */
 static bool square_isstart(struct chunk *c, int y, int x)
 {
-    if (!square_isempty(c, y, x)) return FALSE;
-    if (square_isvault(c, y, x)) return FALSE;
-    return TRUE;
+    if (!square_isempty(c, y, x)) return false;
+    if (square_isvault(c, y, x)) return false;
+    return true;
 }
 
 
@@ -442,21 +442,21 @@ void place_object(struct chunk *c, int y, int x, int level, bool good, bool grea
 
     if (!square_canputitem(c, y, x)) return;
 
-    new_obj = make_object(c, level, good, great, FALSE, &rating, tval);
+    new_obj = make_object(c, level, good, great, false, &rating, tval);
 	if (!new_obj) return;
 
     new_obj->origin = origin;
     new_obj->origin_depth = c->depth;
 
     /* Give it to the floor */
-    if (!floor_carry(c, y, x, new_obj, FALSE)) {
+    if (!floor_carry(c, y, x, new_obj, false)) {
 		if (new_obj->artifact)
-			new_obj->artifact->created = FALSE;
+			new_obj->artifact->created = false;
 		object_delete(&new_obj);
 		return;
     } else {
 		if (new_obj->artifact)
-			c->good_item = TRUE;
+			c->good_item = true;
 		if (rating > 2500000)
 			rating = 2500000; /* avoid overflows */
 		c->obj_rating += (rating / 100) * (rating / 100);
@@ -485,7 +485,7 @@ void place_gold(struct chunk *c, int y, int x, int level, byte origin)
     money->origin = origin;
     money->origin_depth = level;
 
-    if (!floor_carry(c, y, x, money, FALSE))
+    if (!floor_carry(c, y, x, money, false))
 		object_delete(&money);
 }
 
@@ -552,7 +552,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int walls)
     /* Place "num" stairs */
     for (i = 0; i < num; i++) {
 		/* Place some stairs */
-		for (done = FALSE; !done; ) {
+		for (done = false; !done; ) {
 			/* Try several times, then decrease "walls" */
 			for (j = 0; !done && j <= 1000; j++) {
 				find_empty(c, &y, &x);
@@ -560,7 +560,7 @@ void alloc_stairs(struct chunk *c, int feat, int num, int walls)
 				if (next_to_walls(c, y, x) < walls) continue;
 
 				place_stairs(c, y, x, feat);
-				done = TRUE;
+				done = true;
 			}
 
 			/* Require fewer walls */
@@ -620,18 +620,18 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
 		if (set & SET_ROOM && square_isroom(c, y, x)) break;
     }
 
-    if (tries == 2000) return FALSE;
+    if (tries == 2000) return false;
 
     /* Place something */
     switch (typ) {
     case TYP_RUBBLE: place_rubble(c, y, x); break;
     case TYP_TRAP: place_trap(c, y, x, -1, depth); break;
     case TYP_GOLD: place_gold(c, y, x, depth, origin); break;
-    case TYP_OBJECT: place_object(c, y, x, depth, FALSE, FALSE, origin, 0); break;
-    case TYP_GOOD: place_object(c, y, x, depth, TRUE, FALSE, origin, 0); break;
-    case TYP_GREAT: place_object(c, y, x, depth, TRUE, TRUE, origin, 0); break;
+    case TYP_OBJECT: place_object(c, y, x, depth, false, false, origin, 0); break;
+    case TYP_GOOD: place_object(c, y, x, depth, true, false, origin, 0); break;
+    case TYP_GREAT: place_object(c, y, x, depth, true, true, origin, 0); break;
     }
-    return TRUE;
+    return true;
 }
 
 /**
@@ -658,7 +658,7 @@ void vault_objects(struct chunk *c, int y, int x, int depth, int num)
 
 			/* Place an item or gold */
 			if (randint0(100) < 75)
-				place_object(c, j, k, depth, FALSE, FALSE, ORIGIN_SPECIAL, 0);
+				place_object(c, j, k, depth, false, false, ORIGIN_SPECIAL, 0);
 			else
 				place_gold(c, j, k, depth, ORIGIN_VAULT);
 
@@ -727,13 +727,13 @@ void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
 			int d = 1;
 
 			/* Pick a nearby location */
-			scatter(c, &y, &x, y1, x1, d, TRUE);
+			scatter(c, &y, &x, y1, x1, d, true);
 
 			/* Require "empty" floor grids */
 			if (!square_isempty(c, y, x)) continue;
 
 			/* Place the monster (allow groups) */
-			pick_and_place_monster(c, y, x, depth, TRUE, TRUE, ORIGIN_DROP_SPECIAL);
+			pick_and_place_monster(c, y, x, depth, true, true, ORIGIN_DROP_SPECIAL);
 
 			break;
 		}

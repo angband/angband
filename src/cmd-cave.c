@@ -74,8 +74,8 @@ void do_cmd_go_up(struct command *cmd)
 	msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
 
 	/* Create a way back */
-	player->upkeep->create_up_stair = FALSE;
-	player->upkeep->create_down_stair = TRUE;
+	player->upkeep->create_up_stair = false;
+	player->upkeep->create_down_stair = true;
 	
 	/* Change level */
 	dungeon_change_level(ascend_to);
@@ -116,8 +116,8 @@ void do_cmd_go_down(struct command *cmd)
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
 
 	/* Create a way back */
-	player->upkeep->create_up_stair = TRUE;
-	player->upkeep->create_down_stair = FALSE;
+	player->upkeep->create_up_stair = true;
+	player->upkeep->create_down_stair = false;
 
 	/* Change level */
 	dungeon_change_level(descend_to);
@@ -135,7 +135,7 @@ bool search(bool verbose)
 	int py = player->py;
 	int px = player->px;
 	int y, x, chance;
-	bool found = FALSE;
+	bool found = false;
 	struct object *obj;
 
 	/* Start with base search ability */
@@ -156,7 +156,7 @@ bool search(bool verbose)
 			disturb(player, 0);
 		}
 
-		return FALSE;
+		return false;
 	}
 
 	/* Search the nearby grids, which are always in bounds */
@@ -165,17 +165,17 @@ bool search(bool verbose)
 			/* Sometimes, notice things */
 			if (randint0(100) < chance) {
 				if (square_issecrettrap(cave, y, x)) {
-					found = TRUE;
+					found = true;
 
 					/* Reveal trap, display a message */
-					if (square_reveal_trap(cave, y, x, chance, TRUE))
+					if (square_reveal_trap(cave, y, x, chance, true))
 						/* Disturb */
 						disturb(player, 0);
 				}
 
 				/* Secret door */
 				if (square_issecretdoor(cave, y, x)) {
-					found = TRUE;
+					found = true;
 
 					/* Message */
 					msg("You have found a secret door.");
@@ -194,7 +194,7 @@ bool search(bool verbose)
 
 					/* Identify once */
 					if (!object_is_known(obj)) {
-						found = TRUE;
+						found = true;
 
 						/* Message */
 						msg("You have discovered a trap on the chest!");
@@ -217,7 +217,7 @@ bool search(bool verbose)
 			msg("You found nothing.");
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -228,7 +228,7 @@ bool search(bool verbose)
 void do_cmd_search(struct command *cmd)
 {
 	/* Only take a turn if attempted */
-	if (search(TRUE))
+	if (search(true))
 		player->upkeep->energy_use = z_info->move_energy;
 }
 
@@ -240,12 +240,12 @@ void do_cmd_toggle_search(struct command *cmd)
 {
 	if (player->searching) {
 		/* Stop searching */
-		player->searching = FALSE;
+		player->searching = false;
 		player->upkeep->update |= (PU_BONUS);
 		player->upkeep->redraw |= (PR_STATE);
 	} else {
 		/* Start searching */
-		player->searching = TRUE;
+		player->searching = true;
 		player->upkeep->update |= (PU_BONUS);
 		player->upkeep->redraw |= (PR_STATE | PR_SPEED);
 	}
@@ -260,16 +260,16 @@ static bool do_cmd_open_test(int y, int x)
 	/* Must have knowledge */
 	if (!square_ismark(cave, y, x)) {
 		msg("You see nothing there.");
-		return FALSE;
+		return false;
 	}
 
 	/* Must be a closed door */
 	if (!square_iscloseddoor(cave, y, x)) {
 		msgt(MSG_NOTHING_TO_OPEN, "You see nothing there to open.");
-		return FALSE;
+		return false;
 	}
 
-	return (TRUE);
+	return (true);
 }
 
 
@@ -278,15 +278,15 @@ static bool do_cmd_open_test(int y, int x)
  *
  * Assume there is no monster blocking the destination
  *
- * Returns TRUE if repeated commands may continue
+ * Returns true if repeated commands may continue
  */
 static bool do_cmd_open_aux(int y, int x)
 {
 	int i, j;
-	bool more = FALSE;
+	bool more = false;
 
 	/* Verify legality */
-	if (!do_cmd_open_test(y, x)) return (FALSE);
+	if (!do_cmd_open_test(y, x)) return (false);
 
 	/* Locked door */
 	if (square_islockeddoor(cave, y, x)) {
@@ -330,7 +330,7 @@ static bool do_cmd_open_aux(int y, int x)
 			msgt(MSG_LOCKPICK_FAIL, "You failed to pick the lock.");
 
 			/* We may keep trying */
-			more = TRUE;
+			more = true;
 		}
 	} else {
 		/* Closed door */
@@ -357,7 +357,7 @@ void do_cmd_open(struct command *cmd)
 {
 	int y, x, dir;
 	struct object *obj;
-	bool more = FALSE;
+	bool more = false;
 	int err;
 	struct monster *m;
 
@@ -367,13 +367,13 @@ void do_cmd_open(struct command *cmd)
 		int y, x;
 		int n_closed_doors, n_locked_chests;
 
-		n_closed_doors = count_feats(&y, &x, square_iscloseddoor, FALSE);
+		n_closed_doors = count_feats(&y, &x, square_iscloseddoor, false);
 		n_locked_chests = count_chests(&y, &x, CHEST_OPENABLE);
 
 		if (n_closed_doors + n_locked_chests == 1) {
 			dir = coords_to_dir(y, x);
 			cmd_set_arg_direction(cmd, "direction", dir);
-		} else if (cmd_get_direction(cmd, "direction", &dir, FALSE)) {
+		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
 			return;
 		}
 	}
@@ -396,7 +396,7 @@ void do_cmd_open(struct command *cmd)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE)) {
+	if (player_confuse_dir(player, &dir, false)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
@@ -413,7 +413,7 @@ void do_cmd_open(struct command *cmd)
 			become_aware(m);
 
 			/* Mimic wakes up */
-			mon_clear_timed(m, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_clear_timed(m, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
 		} else {
 			/* Message */
 			msg("There is a monster in the way!");
@@ -445,7 +445,7 @@ static bool do_cmd_close_test(int y, int x)
 		msg("You see nothing there.");
 
 		/* Nope */
-		return (FALSE);
+		return (false);
 	}
 
  	/* Require open/broken door */
@@ -454,11 +454,11 @@ static bool do_cmd_close_test(int y, int x)
 		msg("You see nothing there to close.");
 
 		/* Nope */
-		return (FALSE);
+		return (false);
 	}
 
 	/* Okay */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -467,14 +467,14 @@ static bool do_cmd_close_test(int y, int x)
  *
  * Assume there is no monster blocking the destination
  *
- * Returns TRUE if repeated commands may continue
+ * Returns true if repeated commands may continue
  */
 static bool do_cmd_close_aux(int y, int x)
 {
-	bool more = FALSE;
+	bool more = false;
 
 	/* Verify legality */
-	if (!do_cmd_close_test(y, x)) return (FALSE);
+	if (!do_cmd_close_test(y, x)) return (false);
 
 	/* Broken door */
 	if (square_isbrokendoor(cave, y, x))
@@ -502,7 +502,7 @@ void do_cmd_close(struct command *cmd)
 	int y, x, dir;
 	int err;
 
-	bool more = FALSE;
+	bool more = false;
 
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
@@ -510,10 +510,10 @@ void do_cmd_close(struct command *cmd)
 		int y, x;
 
 		/* Count open doors */
-		if (count_feats(&y, &x, square_isopendoor, FALSE) == 1) {
+		if (count_feats(&y, &x, square_isopendoor, false) == 1) {
 			dir = coords_to_dir(y, x);
 			cmd_set_arg_direction(cmd, "direction", dir);
-		} else if (cmd_get_direction(cmd, "direction", &dir, FALSE)) {
+		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
 			return;
 		}
 	}
@@ -533,7 +533,7 @@ void do_cmd_close(struct command *cmd)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE)) {
+	if (player_confuse_dir(player, &dir, false)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
@@ -560,23 +560,23 @@ static bool do_cmd_tunnel_test(int y, int x)
 	/* Must have knowledge */
 	if (!square_ismark(cave, y, x)) {
 		msg("You see nothing there.");
-		return (FALSE);
+		return (false);
 	}
 
 	/* Titanium */
 	if (square_isperm(cave, y, x)) {
 		msg("This seems to be permanent rock.");
-		return (FALSE);
+		return (false);
 	}
 
 	/* Must be a wall/door/etc */
 	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, y, x))) {
 		msg("You see nothing there to tunnel.");
-		return (FALSE);
+		return (false);
 	}
 
 	/* Okay */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -594,7 +594,7 @@ static bool twall(int y, int x)
 {
 	/* Paranoia -- Require a wall or door or some such */
 	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, y, x)))
-		return (FALSE);
+		return (false);
 
 	/* Sound */
 	sound(MSG_DIG);
@@ -612,7 +612,7 @@ static bool twall(int y, int x)
 	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Result */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -621,18 +621,18 @@ static bool twall(int y, int x)
  *
  * Assumes that no monster is blocking the destination.
  * Uses twall() (above) to do all "terrain feature changing".
- * Returns TRUE if repeated commands may continue.
+ * Returns true if repeated commands may continue.
  */
 static bool do_cmd_tunnel_aux(int y, int x)
 {
-	bool more = FALSE;
+	bool more = false;
 	int digging_chances[DIGGING_MAX];
-	bool okay = FALSE;
+	bool okay = false;
 	bool gold = square_hasgoldvein(cave, y, x);
 	bool rubble = square_isrubble(cave, y, x);
 
 	/* Verify legality */
-	if (!do_cmd_tunnel_test(y, x)) return (FALSE);
+	if (!do_cmd_tunnel_test(y, x)) return (false);
 
 	calc_digging_chances(&player->state, digging_chances);
 
@@ -649,7 +649,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			/* Place an object (except in town) */
 			if ((randint0(100) < 10) && player->depth) {
 				/* Create a simple object */
-				place_object(cave, y, x, player->depth, FALSE, FALSE,
+				place_object(cave, y, x, player->depth, false, false,
 							 ORIGIN_RUBBLE, 0);
 
 				/* Observe the new object */
@@ -671,10 +671,10 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		else
 			msg("You tunnel into the %s.",
 				square_apparent_name(cave, player, y, x));
-		more = TRUE;
+		more = true;
 		if (square_issecretdoor(cave, y, x))
 			/* Occasional Search XXX XXX */
-			if (randint0(100) < 25) search(FALSE);
+			if (randint0(100) < 25) search(false);
 	}
 
 	/* Result */
@@ -691,10 +691,10 @@ static bool do_cmd_tunnel_aux(int y, int x)
 void do_cmd_tunnel(struct command *cmd)
 {
 	int y, x, dir;
-	bool more = FALSE;
+	bool more = false;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, "direction", &dir, FALSE))
+	if (cmd_get_direction(cmd, "direction", &dir, false))
 		return;
 
 	/* Get location */
@@ -712,7 +712,7 @@ void do_cmd_tunnel(struct command *cmd)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE)) {
+	if (player_confuse_dir(player, &dir, false)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
@@ -739,21 +739,21 @@ static bool do_cmd_disarm_test(int y, int x)
 	/* Must have knowledge */
 	if (!square_ismark(cave, y, x)) {
 		msg("You see nothing there.");
-		return FALSE;
+		return false;
 	}
 
 	/* Look for a closed, unlocked door to lock */
 	if (square_iscloseddoor(cave, y, x) && !square_islockeddoor(cave, y, x))
-		return TRUE;
+		return true;
 
 	/* Look for a trap */
 	if (!square_isknowntrap(cave, y, x)) {
 		msg("You see nothing there to disarm.");
-		return FALSE;
+		return false;
 	}
 
 	/* Okay */
-	return TRUE;
+	return true;
 }
 
 
@@ -762,15 +762,15 @@ static bool do_cmd_disarm_test(int y, int x)
  *
  * Assume there is no monster blocking the destination
  *
- * Returns TRUE if repeated commands may continue
+ * Returns true if repeated commands may continue
  */
 static bool do_cmd_lock_door(int y, int x)
 {
 	int i, j, power;
-	bool more = FALSE;
+	bool more = false;
 
 	/* Verify legality */
-	if (!do_cmd_disarm_test(y, x)) return FALSE;
+	if (!do_cmd_disarm_test(y, x)) return false;
 
 	/* Get the "disarm" factor */
 	i = player->state.skills[SKILL_DISARM];
@@ -802,7 +802,7 @@ static bool do_cmd_lock_door(int y, int x)
 		msg("You failed to lock the door.");
 
 		/* We may keep trying */
-		more = TRUE;
+		more = true;
 	}
 	/* Failure */
 	else
@@ -818,17 +818,17 @@ static bool do_cmd_lock_door(int y, int x)
  *
  * Assume there is no monster blocking the destination
  *
- * Returns TRUE if repeated commands may continue
+ * Returns true if repeated commands may continue
  */
 static bool do_cmd_disarm_aux(int y, int x)
 {
 	int i, j, power;
     struct trap *trap = cave->squares[y][x].trap;
-	bool more = FALSE;
+	bool more = false;
 
 
 	/* Verify legality */
-	if (!do_cmd_disarm_test(y, x)) return (FALSE);
+	if (!do_cmd_disarm_test(y, x)) return (false);
 
 
     /* Choose first player trap */
@@ -838,7 +838,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		trap = trap->next;
 	}
 	if (!trap)
-		return FALSE;
+		return false;
 
 	/* Get the "disarm" factor */
 	i = player->state.skills[SKILL_DISARM];
@@ -875,7 +875,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		/* Failure -- Keep trying */
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to disarm the %s.", trap->kind->name);
-		more = TRUE;
+		more = true;
 	} else {
 		/* Failure -- Set off the trap */
 		msg("You set off the %s!", trap->kind->name);
@@ -898,7 +898,7 @@ void do_cmd_disarm(struct command *cmd)
 	int err;
 
 	struct object *obj;
-	bool more = FALSE;
+	bool more = false;
 
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
@@ -906,7 +906,7 @@ void do_cmd_disarm(struct command *cmd)
 		int y, x;
 		int n_traps, n_chests;
 
-		n_traps = count_feats(&y, &x, square_isknowntrap, TRUE);
+		n_traps = count_feats(&y, &x, square_isknowntrap, true);
 		n_chests = count_chests(&y, &x, CHEST_TRAPPED);
 
 		if (n_traps + n_chests == 1) {
@@ -936,7 +936,7 @@ void do_cmd_disarm(struct command *cmd)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE)) {
+	if (player_confuse_dir(player, &dir, false)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
@@ -979,7 +979,7 @@ void do_cmd_disarm(struct command *cmd)
 void do_cmd_alter_aux(int dir)
 {
 	int y, x;
-	bool more = FALSE;
+	bool more = false;
 
 	/* Get location */
 	y = player->py + ddy[dir];
@@ -989,7 +989,7 @@ void do_cmd_alter_aux(int dir)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Apply confusion */
-	if (player_confuse_dir(player, &dir, FALSE)) {
+	if (player_confuse_dir(player, &dir, false)) {
 		/* Get location */
 		y = player->py + ddy[dir];
 		x = player->px + ddx[dir];
@@ -1021,7 +1021,7 @@ void do_cmd_alter(struct command *cmd)
 	int dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, "direction", &dir, FALSE) != CMD_OK)
+	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
 
 	do_cmd_alter_aux(dir);
@@ -1055,7 +1055,7 @@ void move_player(int dir, bool disarm)
 			become_aware(mon);
 
 			/* Mimic wakes up */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
 
 		} else {
 			py_attack(y, x);
@@ -1125,7 +1125,7 @@ void move_player(int dir, bool disarm)
 		if (player->searching ||
 				(player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
 				one_in_(50 - player->state.skills[SKILL_SEARCH_FREQUENCY]))
-			search(FALSE);
+			search(false);
 
 		/* Handle store doors, or notice objects */
 		if (square_isshop(cave, player->py, player->px)) {
@@ -1159,7 +1159,7 @@ void move_player(int dir, bool disarm)
 		}
 	}
 
-	player->upkeep->running_firststep = FALSE;
+	player->upkeep->running_firststep = false;
 }
 
 /**
@@ -1183,15 +1183,15 @@ static bool do_cmd_walk_test(int y, int x)
 			msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
 
 			/* Nope */
-			return (FALSE);
+			return (false);
 		}
 
-		return (TRUE);
+		return (true);
 	}
 
 	/* If we don't know the grid, allow attempts to walk into it */
 	if (!square_ismark(cave, y, x))
-		return TRUE;
+		return true;
 
 	/* Require open space */
 	if (!square_ispassable(cave, y, x)) {
@@ -1200,7 +1200,7 @@ static bool do_cmd_walk_test(int y, int x)
 			msgt(MSG_HITWALL, "There is a pile of rubble in the way!");
 		else if (square_iscloseddoor(cave, y, x))
 			/* Door */
-			return TRUE;
+			return true;
 		else if (square_isbright(cave, y, x))
 			/* Lava */
 			msgt(MSG_HITWALL, "The heat of the lava turns you away!");
@@ -1212,11 +1212,11 @@ static bool do_cmd_walk_test(int y, int x)
 		disturb(player, 0);
 
 		/* Nope */
-		return (FALSE);
+		return (false);
 	}
 
 	/* Okay */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -1228,12 +1228,12 @@ void do_cmd_walk(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, "direction", &dir, FALSE) != CMD_OK)
+	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
 
 	/* Apply confusion if necessary */
 	/* Confused movements use energy no matter what */
-	if (player_confuse_dir(player, &dir, FALSE))
+	if (player_confuse_dir(player, &dir, false))
 		player->upkeep->energy_use = z_info->move_energy;
 	
 	/* Verify walkability */
@@ -1244,7 +1244,7 @@ void do_cmd_walk(struct command *cmd)
 
 	player->upkeep->energy_use = z_info->move_energy;
 
-	move_player(dir, TRUE);
+	move_player(dir, true);
 }
 
 
@@ -1256,11 +1256,11 @@ void do_cmd_jump(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, "direction", &dir, FALSE) != CMD_OK)
+	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
 
 	/* Apply confusion if necessary */
-	if (player_confuse_dir(player, &dir, FALSE))
+	if (player_confuse_dir(player, &dir, false))
 		player->upkeep->energy_use = z_info->move_energy;
 
 	/* Verify walkability */
@@ -1271,7 +1271,7 @@ void do_cmd_jump(struct command *cmd)
 
 	player->upkeep->energy_use = z_info->move_energy;
 
-	move_player(dir, FALSE);
+	move_player(dir, false);
 }
 
 
@@ -1285,10 +1285,10 @@ void do_cmd_run(struct command *cmd)
 	int x, y, dir;
 
 	/* Get arguments */
-	if (cmd_get_direction(cmd, "direction", &dir, FALSE) != CMD_OK)
+	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
 
-	if (player_confuse_dir(player, &dir, TRUE))
+	if (player_confuse_dir(player, &dir, true))
 		return;
 
 	/* Get location */
@@ -1323,7 +1323,7 @@ void do_cmd_pathfind(struct command *cmd)
 		player->upkeep->running = 1000;
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
-		player->upkeep->running_withpathfind = TRUE;
+		player->upkeep->running_withpathfind = true;
 		run_step(0);
 	}
 }
@@ -1342,11 +1342,11 @@ void do_cmd_hold(struct command *cmd)
 	/* Spontaneous Searching */
 	if ((player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
 	    one_in_(50 - player->state.skills[SKILL_SEARCH_FREQUENCY]))
-		search(FALSE);
+		search(false);
 
 	/* Continuous Searching */
 	if (player->searching)
-		search(FALSE);
+		search(false);
 
 	/* Pick things up, not using extra energy */
 	do_autopickup();
@@ -1388,7 +1388,7 @@ void do_cmd_rest(struct command *cmd)
 
 	/* Do some upkeep on the first turn of rest */
 	if (!player_is_resting(player)) {
-		player->searching = FALSE;
+		player->searching = false;
 		player->upkeep->update |= (PU_BONUS);
 
 		/* If a number of turns was entered, remember it */
@@ -1419,7 +1419,7 @@ void do_cmd_rest(struct command *cmd)
 		cmd_set_arg_choice(cmdq_peek(), "choice", n);
 		player_set_resting_repeat_count(player, 0);
 	} else {
-		player_resting_cancel(player, FALSE);
+		player_resting_cancel(player, false);
 	}
 
 }
@@ -1532,6 +1532,6 @@ void display_feeling(bool obj_only)
 
 void do_cmd_feeling(void)
 {
-	display_feeling(FALSE);
+	display_feeling(false);
 }
 

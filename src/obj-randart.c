@@ -288,7 +288,7 @@ static s32b artifact_power(int a_idx, bool translate)
 {
 	struct object obj;
 	char buf[256];
-	bool fail = FALSE;
+	bool fail = false;
 	s32b power;
 
 	file_putf(log_file, "********** ENTERING EVAL POWER ********\n");
@@ -296,7 +296,7 @@ static s32b artifact_power(int a_idx, bool translate)
 
 	if (translate) fake_pvals_to_mods(&a_info[a_idx]);
 	if (!make_fake_artifact(&obj, &a_info[a_idx]))
-		fail = TRUE;
+		fail = true;
 	if (translate) mods_to_fake_pvals(&a_info[a_idx]);
 
 	if (fail) return 0;
@@ -305,7 +305,7 @@ static s32b artifact_power(int a_idx, bool translate)
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
-	power = object_power(&obj, verbose, log_file, TRUE);
+	power = object_power(&obj, verbose, log_file, true);
 
 	if (obj.slays) free_slay(obj.slays);
 	if (obj.brands) free_brand(obj.brands);
@@ -330,7 +330,7 @@ static void store_base_power(void)
 	j = 0;
 
 	for (i = 0; i < z_info->a_max; i++, j++) {
-		base_power[i] = artifact_power(i, FALSE);
+		base_power[i] = artifact_power(i, false);
 
 		/* capture power stats, ignoring cursed and uber arts */
 		if (base_power[i] > max_power && base_power[i] < INHIBIT_POWER)
@@ -1474,12 +1474,12 @@ static void parse_frequencies(void)
 static bool add_flag(struct artifact *art, int flag)
 {
 	if (of_has(art->flags, flag))
-		return FALSE;
+		return false;
 
 	of_on(art->flags, flag);
 	file_putf(log_file, "Adding ability: %s\n", flag_name(flag));
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1488,12 +1488,12 @@ static bool add_flag(struct artifact *art, int flag)
 static bool add_resist(struct artifact *art, int element)
 {
 	if (art->el_info[element].res_level > 0)
-		return FALSE;
+		return false;
 
 	art->el_info[element].res_level = 1;
 	file_putf(log_file, "Adding resistance to %s\n", elements[element].name);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1525,14 +1525,14 @@ static void add_pval_mod(struct artifact *art, int mod)
 static bool add_fixed_pval_mod(struct artifact *art, int mod)
 {
 	if (art->modifiers[mod])
-		return FALSE;
+		return false;
 
 	art->modifiers[mod] = 1;
 	do_mod(art);
 	file_putf(log_file, "Adding ability: %s (now %+d)\n", mod_name(mod), 
 			  fake_pval[0]);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1548,14 +1548,14 @@ static bool add_first_pval_mod(struct artifact *art, int mod)
 		file_putf(log_file, "Adding ability: %s (first time) (now %+d)\n", 
 				  mod_name(mod), fake_pval[0]);
 
-		return TRUE;
+		return true;
 	}
 
 	do_mod(art);
 	file_putf(log_file, "Adding ability: %s (now %+d)\n", mod_name(mod), 
 			  fake_pval[0]);
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -1564,7 +1564,7 @@ static bool add_first_pval_mod(struct artifact *art, int mod)
 static void add_stat(struct artifact *art)
 {
 	int r;
-	bool success = FALSE;
+	bool success = false;
 
 	/* Break out if all stats are raised to avoid an infinite loop */
 	if (art->modifiers[OBJ_MOD_STR] && 
@@ -1591,7 +1591,7 @@ static void add_stat(struct artifact *art)
 static void add_sustain(struct artifact *art)
 {
 	int r;
-	bool success = FALSE;
+	bool success = false;
 
 	/* Break out if all stats are sustained to avoid an infinite loop */
 	if (flags_test_all(art->flags, OF_SIZE, OF_SUST_STR, OF_SUST_INT,
@@ -1642,7 +1642,7 @@ static void add_high_resist(struct artifact *art)
 	size_t i;
 	int r, temp;
 	int count = 0;
-	bool success = FALSE;
+	bool success = false;
 
 	temp = 0;
 	for (i = 0; i < N_ELEMENTS(art_idx_high_resist); i++)
@@ -2440,8 +2440,8 @@ static void scramble_artifact(int a_idx)
 	int tries = 0;
 	byte alloc_old, base_alloc_old, alloc_new;
 	s32b ap = 0;
-	bool curse_me = FALSE;
-	bool success = FALSE;
+	bool curse_me = false;
+	bool success = false;
 	int i;
 	int fake_pval_save[3] = {0, 0, 0};
 
@@ -2466,7 +2466,7 @@ static void scramble_artifact(int a_idx)
 
 	mods_to_fake_pvals(art);
 
-	if (power < 0) curse_me = TRUE;
+	if (power < 0) curse_me = true;
 
 	file_putf(log_file, "+++++++++++++++++ CREATING NEW ARTIFACT ++++++++++++++++++\n");
 	file_putf(log_file, "Artifact %d: power = %d\n", a_idx, power);
@@ -2507,7 +2507,7 @@ static void scramble_artifact(int a_idx)
 				file_putf(log_file, "Cursing base item to help get a match.\n");
 				do_curse(art);
 			}
-			ap2 = artifact_power(a_idx, TRUE);
+			ap2 = artifact_power(a_idx, true);
 			count++;
 			/*
 			 * Calculate the proper rarity based on the new type.  We attempt
@@ -2579,7 +2579,7 @@ static void scramble_artifact(int a_idx)
 
 	/* Give this artifact a shot at being supercharged */
 	try_supercharge(art, power);
-	ap = artifact_power(a_idx, TRUE);
+	ap = artifact_power(a_idx, true);
 	if (ap > (power * 23) / 20 + 1)	{
 		/* too powerful -- put it back */
 		copy_artifact(a_old, art, fake_pval_save, fake_pval);
@@ -2597,10 +2597,10 @@ static void scramble_artifact(int a_idx)
 			do_curse(art);
 			do_curse(art);
 			remove_contradictory(art);
-			ap = artifact_power(a_idx, TRUE);
+			ap = artifact_power(a_idx, true);
 			/* Accept if it doesn't have any inhibited abilities */
 			if (ap < INHIBIT_POWER)
-				success = TRUE;
+				success = true;
 			/* Otherwise go back and try again */
 			else {
 				file_putf(log_file, "Inhibited ability added - rolling back\n");
@@ -2620,7 +2620,7 @@ static void scramble_artifact(int a_idx)
 			copy_artifact(art, a_old, fake_pval, fake_pval_save);
 
 			add_ability(art, power);
-			ap = artifact_power(a_idx, TRUE);
+			ap = artifact_power(a_idx, true);
 
 			/* CR 11/14/01 - pushed both limits up by about 5% */
 			if (ap > (power * 23) / 20 + 1) {
@@ -2709,8 +2709,8 @@ static void scramble_artifact(int a_idx)
 }
 
 /**
- * Return TRUE if the whole set of random artifacts meets certain
- * criteria.  Return FALSE if we fail to meet those criteria (which will
+ * Return true if the whole set of random artifacts meets certain
+ * criteria.  Return false if we fail to meet those criteria (which will
  * restart the whole process).
  */
 static bool artifacts_acceptable(void)
@@ -2781,9 +2781,9 @@ static bool artifacts_acceptable(void)
 			file_putf(log_file, "Restarting generation process: not enough%s",
 					  types);
 		}
-		return FALSE;
+		return false;
 	} else
-		return TRUE;
+		return true;
 }
 
 /**
@@ -2887,7 +2887,7 @@ errr do_randart(u32b randart_seed, bool full)
 
 	/* Prepare to use the Angband "simple" RNG. */
 	Rand_value = randart_seed;
-	Rand_quick = TRUE;
+	Rand_quick = true;
 
 	/* Only do all the following if full randomization requested */
 	if (full) {
@@ -2946,7 +2946,7 @@ errr do_randart(u32b randart_seed, bool full)
 	}
 
 	/* When done, resume use of the Angband "complex" RNG. */
-	Rand_quick = FALSE;
+	Rand_quick = false;
 
 	return (err);
 }

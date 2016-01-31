@@ -166,11 +166,11 @@ bool chunk_list_remove(char *name)
 			if (newsize)
 				chunk_list = (struct chunk **) mem_realloc(chunk_list, newsize);
 
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -199,9 +199,9 @@ bool chunk_find(struct chunk *c)
 	int i;
 
 	for (i = 0; i < chunk_list_max; i++)
-		if (c == chunk_list[i]) return TRUE;
+		if (c == chunk_list[i]) return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -258,10 +258,10 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 	/* Check bounds */
 	if (rotate % 1) {
 		if ((w + y0 > dest->height) || (h + x0 > dest->width))
-			return FALSE;
+			return false;
 	} else {
 		if ((h + y0 > dest->height) || (w + x0 > dest->width))
-			return FALSE;
+			return false;
 	}
 
 	/* Write the location stuff */
@@ -349,9 +349,9 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 	dest->mon_rating += source->mon_rating;
 
 	if (source->good_item)
-		dest->good_item = TRUE;
+		dest->good_item = true;
 
-	return TRUE;
+	return true;
 }
 
 /**

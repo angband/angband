@@ -50,7 +50,7 @@ bool get_string(const char *prompt, char *buf, size_t len)
 	if (get_string_hook)
 		return get_string_hook(prompt, buf, len);
 	else
-		return FALSE;
+		return false;
 }
 
 /**
@@ -84,7 +84,7 @@ bool get_check(const char *prompt)
 	if (get_check_hook)
 		return get_check_hook(prompt);
 	else
-		return FALSE;
+		return false;
 }
 
 /**
@@ -100,7 +100,7 @@ bool get_com(const char *prompt, char *command)
 	if (get_com_hook)
 		return get_com_hook(prompt, command);
 	else
-		return FALSE;
+		return false;
 }
 
 
@@ -109,7 +109,7 @@ bool get_com(const char *prompt, char *command)
  *
  * \param dir is a pointer to an integer representing the chosen direction
  * \param allow_none can be set to true to allow the null direction
- * \return TRUE if a direction was chosen, otherwise return FALSE.
+ * \return true if a direction was chosen, otherwise return false.
  */
 bool get_rep_dir(int *dir, bool allow_none)
 {
@@ -117,14 +117,14 @@ bool get_rep_dir(int *dir, bool allow_none)
 	if (get_rep_dir_hook)
 		return get_rep_dir_hook(dir, allow_none);
 	else
-		return FALSE;
+		return false;
 }
 
 /**
  * Get an "aiming" direction from the user.
  *
  * \param dir is a pointer to an integer representing the chosen direction
- * \return TRUE if a direction was chosen, otherwise return FALSE.
+ * \return true if a direction was chosen, otherwise return false.
  */
 bool get_aim_dir(int *dir)
 {
@@ -132,7 +132,7 @@ bool get_aim_dir(int *dir)
 	if (get_aim_dir_hook)
 		return get_aim_dir_hook(dir);
 	else
-		return FALSE;
+		return false;
 }
 
 /**
@@ -172,10 +172,10 @@ int get_spell(const char *verb, item_tester book_filter,
  * \param tester is the function (if any) used to test for valid objects
  * \param mode gives more information on where the object can be chosen from
  *
- * If a legal item is selected , we save it in "obj" and return TRUE.
+ * If a legal item is selected , we save it in "obj" and return true.
  * If no item is available, we do nothing to "obj", and we display a
- *   warning message, using "str" if available, and return FALSE.
- * If no item is selected, we do nothing to "obj", and return FALSE.
+ *   warning message, using "str" if available, and return false.
+ * If no item is selected, we do nothing to "obj", and return false.
  */
 bool get_item(struct object **choice, const char *pmt, const char *str,
 			  cmd_code cmd, item_tester tester, int mode)
@@ -184,7 +184,7 @@ bool get_item(struct object **choice, const char *pmt, const char *str,
 	if (get_item_hook)
 		return get_item_hook(choice, pmt, str, cmd, tester, mode);
 	else
-		return FALSE;
+		return false;
 }
 
 /**
@@ -206,7 +206,7 @@ bool panel_contains(unsigned int y, unsigned int x)
 	if (panel_contains_hook)
 		return panel_contains_hook(y, x);
 	else
-		return TRUE;
+		return true;
 }
 
 /**
@@ -218,5 +218,5 @@ bool map_is_visible(void)
 	if (map_is_visible_hook)
 		return map_is_visible_hook();
 	else
-		return TRUE;
+		return true;
 }

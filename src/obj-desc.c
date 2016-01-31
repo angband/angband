@@ -52,7 +52,7 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
 
 /**
  * Puts a very stripped-down version of an object's name into buf.
- * If easy_know is TRUE, then the IDed names are used, otherwise
+ * If easy_know is true, then the IDed names are used, otherwise
  * flavours, scroll names, etc will be used.
  *
  * Just truncates if the buffer isn't big enough.
@@ -66,7 +66,7 @@ void object_kind_name(char *buf, size_t max, const struct object_kind *kind,
 
 	/* Use proper name (Healing, or whatever) */
 	else
-		obj_desc_name_format(buf, max, 0, kind->name, NULL, FALSE);
+		obj_desc_name_format(buf, max, 0, kind->name, NULL, false);
 }
 
 
@@ -96,8 +96,8 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 {
 	bool show_flavor = !terse && obj->kind->flavor;
 
-	if (mode & ODESC_STORE) show_flavor = FALSE;
-	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
+	if (mode & ODESC_STORE) show_flavor = false;
+	if (aware && !OPT(show_flavors)) show_flavor = false;
 
 	/* Artifacts are special */
 	if (obj->artifact && (aware || id_has(obj->id_flags, ID_ARTIFACT) ||
@@ -187,7 +187,7 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 
 	else if (*basename == '&')
 	{
-		bool an = FALSE;
+		bool an = false;
 		const char *lookahead = basename + 1;
 
 		while (*lookahead == ' ') lookahead++;
@@ -195,11 +195,11 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 		if (*lookahead == '#')
 		{
 			if (modstr && is_a_vowel(*modstr))
-				an = TRUE;
+				an = true;
 		}
 		else if (is_a_vowel(*lookahead))
 		{
-			an = TRUE;
+			an = true;
 		}
 
 		if (!terse)
@@ -315,7 +315,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	const char *modstr = obj_desc_get_modstr(obj->kind);
 
 	if (aware && !obj->kind->everseen && !spoil)
-		obj->kind->everseen = TRUE;
+		obj->kind->everseen = true;
 
 	if (prefix)
 		end = obj_desc_name_prefix(buf, max, end, obj, known,
@@ -355,9 +355,9 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
  */
 static bool obj_desc_show_armor(const struct object *obj)
 {
-	if (obj->ac || tval_is_armor(obj)) return TRUE;
+	if (obj->ac || tval_is_armor(obj)) return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -610,7 +610,7 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 	}
 
 	/* Note curses */
-	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+	create_mask(f2, false, OFT_CURSE, OFT_MAX);
 	if (of_is_inter(flags_known, f2))
 		u[n++] = "cursed";
 
@@ -661,16 +661,16 @@ static size_t obj_desc_aware(const struct object *obj, char *buf, size_t max,
  * ODESC_STORE turns off ignore markers, for in-store display.
  * ODESC_SPOIL treats the object as fully identified.
  *
- * Setting 'prefix' to TRUE prepends a 'the', 'a' or the number in the stack,
+ * Setting 'prefix' to true prepends a 'the', 'a' or the number in the stack,
  * respectively.
  *
  * \returns The number of bytes used of the buffer.
  */
 size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 {
-	bool prefix = mode & ODESC_PREFIX ? TRUE : FALSE;
-	bool spoil = mode & ODESC_SPOIL ? TRUE : FALSE;
-	bool terse = mode & ODESC_TERSE ? TRUE : FALSE;
+	bool prefix = mode & ODESC_PREFIX ? true : false;
+	bool spoil = mode & ODESC_SPOIL ? true : false;
+	bool terse = mode & ODESC_TERSE ? true : false;
 
 	size_t end = 0;
 
@@ -680,7 +680,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 
 	/* Egos whose name we know are seen */
 	if (object_name_is_visible(obj) && obj->ego && !spoil)
-		obj->ego->everseen = TRUE;
+		obj->ego->everseen = true;
 
 
 	/*** Some things get really simple descriptions ***/

@@ -664,7 +664,7 @@ static errr CheckEvents(bool wait)
 
   /* Mouse */
   if (IS_MEVENT(e)) 
-    handle_touch(EVENT_X(e) + 1, EVENT_Y(e), 1, TRUE);
+    handle_touch(EVENT_X(e) + 1, EVENT_Y(e), 1, true);
 
   /* Undefined */
   else if ((EVENT_C(e) & 0x7F) == 0)
@@ -713,7 +713,7 @@ static errr Term_xtra_nds(int n, int v)
 	/*
 	 * Flush all pending events 
 	 */
-	while (!CheckEvents(FALSE)); 
+	while (!CheckEvents(false)); 
 	
 	return (0);
       }
@@ -1114,27 +1114,27 @@ static void term_data_link(int i)
   /* A "soft" cursor must be explicitly "drawn" by the program */
   /* while a "hard" cursor has some "physical" existance and is */
   /* moved whenever text is drawn on the screen.  See "term.c". */
-  t->soft_cursor = TRUE;
+  t->soft_cursor = true;
   
   /* Use "Term_pict()" for all attr/char pairs XXX XXX XXX */
   /* See the "Term_pict_xxx()" function above. */
-  /* td->t->always_pict = TRUE; */
+  /* td->t->always_pict = true; */
   
   /* Use "Term_pict()" for some attr/char pairs XXX XXX XXX */
   /* See the "Term_pict_xxx()" function above. */
-  t->higher_pict = TRUE;
+  t->higher_pict = true;
   
   /* Use "Term_text()" even for "black" text XXX XXX XXX */
   /* See the "Term_text_xxx()" function above. */
-  /* t->always_text = TRUE; */
+  /* t->always_text = true; */
   
   /* Ignore the "TERM_XTRA_BORED" action XXX XXX XXX */
   /* This may make things slightly more efficient. */
-  t->never_bored = TRUE;
+  t->never_bored = true;
   
   /* Ignore the "TERM_XTRA_FROSH" action XXX XXX XXX */
   /* This may make things slightly more efficient. */
-  /* td->t->never_frosh = TRUE; */
+  /* td->t->never_frosh = true; */
   
   /* Prepare the init/nuke hooks */
   t->init_hook = Term_init_nds;
@@ -1166,7 +1166,7 @@ errr init_nds(void)
   /* Initialize "term_data" structures */
   
   int i;
-  bool none = TRUE;
+  bool none = true;
   
   term_data *td;
 
@@ -1183,7 +1183,7 @@ errr init_nds(void)
     {
       /* Link */
       term_data_link(i);
-      none = FALSE;
+      none = false;
       
       /* Set global pointer */
       angband_term[0] = Term;
@@ -1291,12 +1291,12 @@ bool nds_load_kbd() {
       {
 	sprintf(buf,"Error opening %s (errno=%d)\n",files[i],errno);
 	nds_fatal_err(buf);
-	return FALSE;
+	return false;
       }
   }
 #undef NUM_FILES
   
-  return TRUE;
+  return true;
 }
 
 void kbd_init() {
@@ -1506,14 +1506,14 @@ bool nds_load_tiles()
     sprintf(buf, "Error loading default tileset %s %s\n", DEF_TILE_FILE,
 	    strerror(died2));
     nds_fatal_err(buf);
-    return FALSE;
+    return false;
     }
   
   
  finish:
   NDS_SCREEN_ROWS = 168 / TILE_HEIGHT;
   NDS_SCREEN_COLS = 256 / TILE_WIDTH;
-  return TRUE;
+  return true;
 }
 
 /*
@@ -1565,7 +1565,7 @@ void nds_exit(int code) {
  */
 int main(int argc, char *argv[])
 {
-  bool new_game = FALSE;
+  bool new_game = false;
   int i;
 
   /* Initialize the machine itself  */
@@ -1652,7 +1652,7 @@ int main(int argc, char *argv[])
       swap_font(false);
     }
   
-  use_graphics = TRUE;
+  use_graphics = true;
 
   if (!nds_load_tiles()) 
     {
@@ -1687,7 +1687,7 @@ int main(int argc, char *argv[])
   draw_tile(8, 2, 35);
 
   /* About to start */
-  game_start = TRUE;
+  game_start = true;
   
   while (game_start)
     {

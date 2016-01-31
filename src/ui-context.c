@@ -87,7 +87,7 @@ static int context_menu_player_2(int mx, int my)
 	struct menu *m;
 	int selected;
 	char *labels;
-	bool allowed = TRUE;
+	bool allowed = true;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 
@@ -122,7 +122,7 @@ static int context_menu_player_2(int mx, int my)
 	menu_dynamic_add_label(m, "Commands", '?', MENU_VALUE_HELP, labels);
 
 	/* Hack -- no flush needed */
-	msg_flag = FALSE;
+	msg_flag = false;
 	screen_save();
 
 	menu_dynamic_calc_location(m, mx, my);
@@ -151,7 +151,7 @@ static int context_menu_player_2(int mx, int my)
 		case MENU_VALUE_OBJECTS:
 		case MENU_VALUE_OPTIONS:
 		case CMD_TOGGLE_SEARCH:
-			allowed = TRUE;
+			allowed = true;
 			break;
 
 		case CMD_IGNORE:
@@ -162,7 +162,7 @@ static int context_menu_player_2(int mx, int my)
 		default:
 			/* Invalid command; prevent anything from happening. */
 			bell("Invalid context menu command.");
-			allowed = FALSE;
+			allowed = false;
 			break;
 	}
 
@@ -255,7 +255,7 @@ int context_menu_player(int mx, int my)
 	struct menu *m;
 	int selected;
 	char *labels;
-	bool allowed = TRUE;
+	bool allowed = true;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 	struct object *obj;
@@ -271,7 +271,7 @@ int context_menu_player(int mx, int my)
 	ADD_LABEL("Use", CMD_USE, MN_ROW_VALID);
 
 	/* if player can cast, add casting option */
-	if (player_can_cast(player, FALSE)) {
+	if (player_can_cast(player, false)) {
 		ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 	}
 
@@ -318,7 +318,7 @@ int context_menu_player(int mx, int my)
 	menu_dynamic_add_label(m, "Other", ' ', MENU_VALUE_OTHER, labels);
 
 	/* Hack -- no flush needed */
-	msg_flag = FALSE;
+	msg_flag = false;
 	screen_save();
 
 	menu_dynamic_calc_location(m, mx, my);
@@ -361,13 +361,13 @@ int context_menu_player(int mx, int my)
 		case MENU_VALUE_OTHER:
 		case MENU_VALUE_FLOOR:
 		case MENU_VALUE_CENTER_MAP:
-			allowed = TRUE;
+			allowed = true;
 			break;
 
 		default:
 			/* Invalid command; prevent anything from happening. */
 			bell("Invalid context menu command.");
-			allowed = FALSE;
+			allowed = false;
 			break;
 	}
 
@@ -431,7 +431,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	struct menu *m;
 	int selected;
 	char *labels;
-	bool allowed = TRUE;
+	bool allowed = true;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 	struct object *square_obj = square_object(c, y, x);
@@ -455,7 +455,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 	ADD_LABEL("Use Item On", CMD_USE, MN_ROW_VALID);
 
-	if (player_can_cast(player, FALSE))
+	if (player_can_cast(player, false))
 		ADD_LABEL("Cast On", CMD_CAST, MN_ROW_VALID);
 
 	if (adjacent) {
@@ -503,14 +503,14 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		ADD_LABEL("Run Towards", CMD_RUN, MN_ROW_VALID);
 	}
 
-	if (player_can_fire(player, FALSE)) {
+	if (player_can_fire(player, false)) {
 		ADD_LABEL("Fire On", CMD_FIRE, MN_ROW_VALID);
 	}
 
 	ADD_LABEL("Throw To", CMD_THROW, MN_ROW_VALID);
 
 	/* Hack -- no flush needed */
-	msg_flag = FALSE;
+	msg_flag = false;
 	screen_save();
 
 	menu_dynamic_calc_location(m, mx, my);
@@ -566,7 +566,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		case MENU_VALUE_LOOK:
 		case MENU_VALUE_RECALL:
 		case CMD_PATHFIND:
-			allowed = TRUE;
+			allowed = true;
 			break;
 
 		case CMD_SEARCH:
@@ -590,7 +590,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		default:
 			/* Invalid command; prevent anything from happening. */
 			bell("Invalid context menu command.");
-			allowed = FALSE;
+			allowed = false;
 			break;
 	}
 
@@ -666,7 +666,7 @@ int context_menu_object(struct object *obj)
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
 
-	bool allowed = TRUE;
+	bool allowed = true;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 
@@ -683,13 +683,13 @@ int context_menu_object(struct object *obj)
 	menu_dynamic_add_label(m, "Inspect", 'I', MENU_VALUE_INSPECT, labels);
 
 	if (obj_can_browse(obj)) {
-		if (obj_can_cast_from(obj) && player_can_cast(player, FALSE))
+		if (obj_can_cast_from(obj) && player_can_cast(player, false))
 			ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 
-		if (obj_can_study(obj) && player_can_study(player, FALSE))
+		if (obj_can_study(obj) && player_can_study(player, false))
 			ADD_LABEL("Study", CMD_STUDY, MN_ROW_VALID);
 
-		if (player_can_read(player, FALSE))
+		if (player_can_read(player, false))
 			ADD_LABEL("Browse", CMD_BROWSE_SPELL, MN_ROW_VALID);
 	} else if (obj_is_useable(obj)) {
 		if (tval_is_wand(obj)) {
@@ -705,7 +705,7 @@ int context_menu_object(struct object *obj)
 				MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Use", CMD_USE_STAFF, valid);
 		} else if (tval_is_scroll(obj)) {
-			menu_row_validity_t valid = (player_can_read(player, FALSE)) ?
+			menu_row_validity_t valid = (player_can_read(player, false)) ?
 				MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Read", CMD_READ_SCROLL, valid);
 		} else if (tval_is_potion(obj)) {
@@ -780,7 +780,7 @@ int context_menu_object(struct object *obj)
 	area.width = -(r.width + 2);
 
 	/* Hack -- no flush needed */
-	msg_flag = FALSE;
+	msg_flag = false;
 	screen_save();
 
 	/* Display info */
@@ -853,12 +853,12 @@ int context_menu_object(struct object *obj)
 		case CMD_USE:
 			/* Check for inscriptions that trigger confirmation. */
 			allowed = key_confirm_command(cmdkey) &&
-				get_item_allow(obj, cmdkey, selected, FALSE);
+				get_item_allow(obj, cmdkey, selected, false);
 			break;
 		default:
 			/* Invalid command; prevent anything from happening. */
 			bell("Invalid context menu command.");
-			allowed = FALSE;
+			allowed = false;
 			break;
 	}
 
@@ -1173,7 +1173,7 @@ static bool cmd_menu(struct command_list *list, void *selection_p)
 	window_make(21, 3, 62, 17);
 
 	/* Select an entry */
-	evt = menu_select(&menu, 0, TRUE);
+	evt = menu_select(&menu, 0, true);
 
 	/* Load de screen */
 	screen_load();
@@ -1181,7 +1181,7 @@ static bool cmd_menu(struct command_list *list, void *selection_p)
 	if (evt.type == EVT_SELECT)
 		*selection = &list->list[menu.cursor];
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1191,7 +1191,7 @@ static bool cmd_list_action(struct menu *m, const ui_event *event, int oid)
 	if (event->type == EVT_SELECT)
 		return cmd_menu(&cmds_all[oid], menu_priv(m));
 	else
-		return FALSE;
+		return false;
 }
 
 static void cmd_list_entry(struct menu *menu, int oid, bool cursor, int row,
@@ -1236,7 +1236,7 @@ struct cmd_info *textui_action_menu_choose(void)
 	screen_save();
 	window_make(19, 4, 58, 11);
 
-	menu_select(command_menu, 0, TRUE);
+	menu_select(command_menu, 0, true);
 
 	screen_load();
 

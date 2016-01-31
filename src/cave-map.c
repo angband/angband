@@ -43,10 +43,10 @@
  *    player doesn't know it).
  *  - g->first_kind is set to the object_kind of the first object in a grid
  *    that the player knows about, or NULL for no objects.
- *  - g->muliple_objects is TRUE if there is more than one object in the
+ *  - g->muliple_objects is true if there is more than one object in the
  *    grid that the player knows and cares about (to facilitate any special
  *    floor stack symbol that might be used).
- *  - g->in_view is TRUE if the player can currently see the grid - this can
+ *  - g->in_view is true if the player can currently see the grid - this can
  *    be used to indicate field-of-view, such as through the OPT(view_bright_light)
  *    option.
  *  - g->lighting is set to indicate the lighting level for the grid:
@@ -55,8 +55,8 @@
  *    light source, and LIGHTING_LOS for grids in the player's line of sight.
  *    Note that lighting is always LIGHTING_LIT for known "interesting" grids
  *    like walls.
- *  - g->is_player is TRUE if the player is on the given grid.
- *  - g->hallucinate is TRUE if the player is hallucinating something "strange"
+ *  - g->is_player is true if the player is on the given grid.
+ *  - g->hallucinate is true if the player is hallucinating something "strange"
  *    for this grid - this should pick a random monster to show if the m_idx
  *    is non-zero, and a random object if first_kind is non-zero.
  * 
@@ -84,21 +84,21 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;
 	g->trap = NULL;
-	g->multiple_objects = FALSE;
+	g->multiple_objects = false;
 	g->lighting = LIGHTING_DARK;
-	g->unseen_object = FALSE;
-	g->unseen_money = FALSE;
+	g->unseen_object = false;
+	g->unseen_money = false;
 
 	/* Use real feature (remove later) */
 	g->f_idx = cave->squares[y][x].feat;
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = f_info[g->f_idx].mimic;
 
-	g->in_view = (square_isseen(cave, y, x)) ? TRUE : FALSE;
-	g->is_player = (cave->squares[y][x].mon < 0) ? TRUE : FALSE;
+	g->in_view = (square_isseen(cave, y, x)) ? true : false;
+	g->is_player = (cave->squares[y][x].mon < 0) ? true : false;
 	g->m_idx = (g->is_player) ? 0 : cave->squares[y][x].mon;
-	g->hallucinate = player->timed[TMD_IMAGE] ? TRUE : FALSE;
-	g->trapborder = (square_isdedge(cave, y, x)) ? TRUE : FALSE;
+	g->hallucinate = player->timed[TMD_IMAGE] ? true : false;
+	g->trapborder = (square_isdedge(cave, y, x)) ? true : false;
 
 	if (g->in_view) {
 		g->lighting = LIGHTING_LOS;
@@ -142,16 +142,16 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 
 			/* Distinguish between unseen money and objects */
 			if (tval_is_money(obj)) {
-				g->unseen_money = TRUE;
+				g->unseen_money = true;
 			} else {
-				g->unseen_object = TRUE;
+				g->unseen_object = true;
 			}
 
 		} else if (obj->marked == MARK_SEEN && !ignore_item_ok(obj)) {
 			if (!g->first_kind) {
 				g->first_kind = obj->kind;
 			} else {
-				g->multiple_objects = TRUE;
+				g->multiple_objects = true;
 				break;
 			}
 		}
@@ -172,7 +172,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 			/* if hallucinating, we just need first_kind to not be NULL */
 			g->first_kind = k_info;
 		else
-			g->hallucinate = FALSE;
+			g->hallucinate = false;
 	}
 
 	assert((int) g->f_idx <= FEAT_PASS_RUBBLE);
@@ -305,7 +305,7 @@ static void cave_light(struct point_set *ps)
 			{
 				/* Wake up! */
 				mon_clear_timed(mon, MON_TMD_SLEEP,
-					MON_TMD_FLG_NOTIFY, FALSE);
+					MON_TMD_FLG_NOTIFY, false);
 
 			}
 		}
@@ -422,7 +422,7 @@ void light_room(int y1, int x1, bool light)
  * Light up the dungeon using "claravoyance"
  *
  * This function "illuminates" every grid in the dungeon, memorizes all
- * "objects" (or notes the existence of an object "if" full is TRUE),
+ * "objects" (or notes the existence of an object "if" full is true),
  * and memorizes all grids as with magic mapping.
  */
 void wiz_light(struct chunk *c, bool full)
@@ -522,7 +522,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 	for (y = 0; y < c->height; y++)
 		for (x = 0; x < c->width; x++) {
 			int d;
-			bool light = FALSE;
+			bool light = false;
 			struct feature *feat = &f_info[c->squares[y][x].feat];
 			
 			/* Skip grids with no surrounding floors or stairs */
@@ -536,7 +536,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 
 				/* Test */
 				if (square_isfloor(c, yy, xx) || square_isstairs(c, yy, xx))
-					light = TRUE;
+					light = true;
 			}
 
 			if (!light) continue;

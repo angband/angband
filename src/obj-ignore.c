@@ -147,7 +147,7 @@ void ignore_birth_init(void)
 
 	/* Reset ignore bits */
 	for (i = 0; i < z_info->k_max; i++)
-		k_info[i].ignore = FALSE;
+		k_info[i].ignore = false;
 
 	/* Clear the ignore bytes */
 	for (i = ITYPE_NONE; i < ITYPE_MAX; i++)
@@ -318,10 +318,10 @@ bool ego_has_ignore_type(struct ego_item *ego, ignore_type_t itype)
 			if ((quality_mapping[i].tval == kind->tval) &&
 				(quality_mapping[i].ignore_type == itype) &&
 				strstr(kind->name, quality_mapping[i].identifier))
-				return TRUE;
+				return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -368,7 +368,7 @@ byte ignore_level_of(const struct object *obj)
 	byte value = 0;
 	bitflag f[OF_SIZE], f2[OF_SIZE];
 	int i;
-	bool negative_mod = FALSE;
+	bool negative_mod = false;
 
 	object_flags_known(obj, f);
 
@@ -394,7 +394,7 @@ byte ignore_level_of(const struct object *obj)
 	/* And lights */
 	if (tval_is_light(obj))
 	{
-		create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
+		create_mask(f2, true, OFID_WIELD, OFT_MAX);
 		if (of_is_inter(f, f2))
 			return IGNORE_ALL;
 		if ((obj->to_h > 0) || (obj->to_d > 0) || (obj->to_a > 0))
@@ -413,7 +413,7 @@ byte ignore_level_of(const struct object *obj)
 			break;
 
 		if (obj->modifiers[i] < 0)
-			negative_mod = TRUE;
+			negative_mod = true;
 	}
 
 	if ((i == OBJ_MOD_MAX) && negative_mod)
@@ -501,14 +501,14 @@ void kind_ignore_clear(struct object_kind *kind)
 void ego_ignore(struct object *obj)
 {
 	assert(obj->ego);
-	ego_ignore_types[obj->ego->eidx][ignore_type_of(obj)] = TRUE;
+	ego_ignore_types[obj->ego->eidx][ignore_type_of(obj)] = true;
 	player->upkeep->notice |= PN_IGNORE;
 }
 
 void ego_ignore_clear(struct object *obj)
 {
 	assert(obj->ego);
-	ego_ignore_types[obj->ego->eidx][ignore_type_of(obj)] = FALSE;
+	ego_ignore_types[obj->ego->eidx][ignore_type_of(obj)] = false;
 	player->upkeep->notice |= PN_IGNORE;
 }
 
@@ -525,12 +525,12 @@ bool ego_is_ignored(int e_idx, int itype)
 
 bool kind_is_ignored_aware(const struct object_kind *kind)
 {
-	return (kind->ignore & IGNORE_IF_AWARE) ? TRUE : FALSE;
+	return (kind->ignore & IGNORE_IF_AWARE) ? true : false;
 }
 
 bool kind_is_ignored_unaware(const struct object_kind *kind)
 {
-	return (kind->ignore & IGNORE_IF_UNAWARE) ? TRUE : FALSE;
+	return (kind->ignore & IGNORE_IF_UNAWARE) ? true : false;
 }
 
 void kind_ignore_when_aware(struct object_kind *kind)
@@ -555,38 +555,38 @@ bool object_is_ignored(const struct object *obj)
 
 	/* Do ignore individual objects that marked ignore */
 	if (obj->ignore)
-		return TRUE;
+		return true;
 
 	/* Don't ignore artifacts unless marked to be ignored */
 	if (obj->artifact ||
 		check_for_inscrip(obj, "!k") || check_for_inscrip(obj, "!*"))
-		return FALSE;
+		return false;
 
 	/* Do ignoring by kind */
 	if (object_flavor_is_aware(obj) ?
 		 kind_is_ignored_aware(obj->kind) :
 		 kind_is_ignored_unaware(obj->kind))
-		return TRUE;
+		return true;
 
 	/* Ignore ego items if known */
 	if (object_ego_is_visible(obj) &&
 		ego_is_ignored(obj->ego->eidx, ignore_type_of(obj)))
-		return TRUE;
+		return true;
 
 	type = ignore_type_of(obj);
 	if (type == ITYPE_MAX)
-		return FALSE;
+		return false;
 
 	/* Ignore items known not to be special */
 	if (object_is_known_not_artifact(obj) &&
 		ignore_level[type] == IGNORE_ALL)
-		return TRUE;
+		return true;
 
 	/* Get result based on the feeling and the ignore_level */
 	if (ignore_level_of(obj) <= ignore_level[type])
-		return TRUE;
+		return true;
 	else
-		return FALSE;
+		return false;
 }
 
 /**
@@ -595,7 +595,7 @@ bool object_is_ignored(const struct object *obj)
 bool ignore_item_ok(const struct object *obj)
 {
 	if (player->unignoring)
-		return FALSE;
+		return false;
 
 	return object_is_ignored(obj);
 }
@@ -637,7 +637,7 @@ void ignore_drop(void)
 
 			/* We're allowed to drop it. */
 			if (!square_isshop(cave, player->py, player->px)) {
-				player->upkeep->dropping = TRUE;
+				player->upkeep->dropping = true;
 				cmdq_push(CMD_DROP);
 				cmd_set_arg_item(cmdq_peek(), "item", obj);
 				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);

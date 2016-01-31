@@ -81,9 +81,9 @@ void lore_title(textblock *tb, const struct monster_race *race)
  * \param tb is the textblock we are placing the description into.
  * \param race is the monster race we are describing.
  * \param original_lore is the known information about the monster race.
- * \param spoilers indicates what information is used; `TRUE` will display full
+ * \param spoilers indicates what information is used; `true` will display full
  *        information without subjective information and monster flavor,
- *        while `FALSE` only shows what the player knows.
+ *        while `false` only shows what the player knows.
  */
 void lore_description(textblock *tb, const struct monster_race *race,
 					  const struct monster_lore *original_lore, bool spoilers)
@@ -174,7 +174,7 @@ void lore_show_interactive(const struct monster_race *race,
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	tb = textblock_new();
-	lore_description(tb, race, lore, FALSE);
+	lore_description(tb, race, lore, false);
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
 }
@@ -202,7 +202,7 @@ void lore_show_subwindow(const struct monster_race *race,
 		Term_erase(0, y, 255);
 
 	tb = textblock_new();
-	lore_description(tb, race, lore, FALSE);
+	lore_description(tb, race, lore, false);
 	textui_textblock_place(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
 }

@@ -42,7 +42,7 @@
  *
  * \param context is information for the current attack.
  * \param type is the GF_ constant for the element.
- * \param pure_element should be TRUE if no side effects (mostly a hack
+ * \param pure_element should be true if no side effects (mostly a hack
  * for poison).
  */
 static void melee_effect_elemental(melee_effect_handler_context_t *context,
@@ -52,7 +52,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 
 	if (pure_element) {
 		/* Obvious */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 
 	switch (type) {
@@ -119,12 +119,12 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 		if (save_msg != NULL)
 			msg("%s", save_msg);
 
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 	else {
 		/* Increase timer for type. */
-		if (player_inc_timed(context->p, type, amount, TRUE, TRUE))
-			context->obvious = TRUE;
+		if (player_inc_timed(context->p, type, amount, true, true))
+			context->obvious = true;
 	}
 
 	/* Learn about the player */
@@ -162,7 +162,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 									int chance, int drain_amount)
 {
 	/* Obvious */
-	context->obvious = TRUE;
+	context->obvious = true;
 
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
@@ -179,10 +179,10 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 			(context->p->exp/100) * z_info->life_drain_percent;
 		if (player_of_has(context->p, OF_HOLD_LIFE)) {
 			msg("You feel your life slipping away!");
-			player_exp_lose(context->p, d / 10, FALSE);
+			player_exp_lose(context->p, d / 10, false);
 		} else {
 			msg("You feel your life draining away!");
-			player_exp_lose(context->p, d, FALSE);
+			player_exp_lose(context->p, d, false);
 		}
 	}
 }
@@ -193,7 +193,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 static void melee_effect_handler_NONE(melee_effect_handler_context_t *context)
 {
 	/* Hack -- Assume obvious */
-	context->obvious = TRUE;
+	context->obvious = true;
 
 	/* Hack -- No damage */
 	context->damage = 0;
@@ -205,7 +205,7 @@ static void melee_effect_handler_NONE(melee_effect_handler_context_t *context)
 static void melee_effect_handler_HURT(melee_effect_handler_context_t *context)
 {
 	/* Obvious */
-	context->obvious = TRUE;
+	context->obvious = true;
 
 	/* Hack -- Player armor reduces total damage */
 	context->damage = adjust_dam_armor(context->damage, context->ac);
@@ -218,12 +218,12 @@ static void melee_effect_handler_HURT(melee_effect_handler_context_t *context)
  * Melee effect handler: Poison the player.
  *
  * We can't use melee_effect_timed(), because this is both and elemental attack
- * and a status attack. Note the FALSE value for pure_element for
+ * and a status attack. Note the false value for pure_element for
  * melee_effect_elemental().
  */
 static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_POIS, FALSE);
+	melee_effect_elemental(context, GF_POIS, false);
 
 	/* Player is dead */
 	if (context->p->is_dead)
@@ -231,8 +231,8 @@ static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 
 	/* Take "poison" effect */
 	if (player_inc_timed(context->p, TMD_POISONED, 5 + randint1(context->rlev),
-						 TRUE, TRUE))
-		context->obvious = TRUE;
+						 true, true))
+		context->obvious = true;
 
 	/* Learn about the player */
 	update_smart_learn(context->mon, context->p, 0, 0, ELEM_POIS);
@@ -304,7 +304,7 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
 
 			msg("Energy drains from your pack!");
 
-			context->obvious = TRUE;
+			context->obvious = true;
 
 			/* Don't heal more than max hp */
 			heal = MIN(heal, monster->maxhp - monster->hp);
@@ -343,7 +343,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
 		return;
 
     /* Obvious */
-    context->obvious = TRUE;
+    context->obvious = true;
 
     /* Attempt saving throw (unless paralyzed) based on dex and level */
     if (!player->timed[TMD_PARALYZED] &&
@@ -353,7 +353,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
         msg("You quickly protect your money pouch!");
 
         /* Occasional blink anyway */
-        if (randint0(3)) context->blinked = TRUE;
+        if (randint0(3)) context->blinked = true;
     } else {
         s32b gold = (player->au / 10) + randint1(25);
         if (gold < 2) gold = 2;
@@ -398,7 +398,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
         player->upkeep->redraw |= (PR_GOLD);
 
         /* Blink away */
-        context->blinked = TRUE;
+        context->blinked = true;
     }
 }
 
@@ -424,10 +424,10 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
         msg("You grab hold of your backpack!");
 
         /* Occasional "blink" anyway */
-        context->blinked = TRUE;
+        context->blinked = true;
 
         /* Obvious */
-        context->obvious = TRUE;
+        context->obvious = true;
 
         /* Done */
         return;
@@ -437,8 +437,8 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
     for (tries = 0; tries < 10; tries++) {
 		struct object *obj, *stolen;
 		char o_name[80];
-		bool split = FALSE;
-		bool none_left = FALSE;
+		bool split = false;
+		bool none_left = false;
 
         /* Pick an item */
 		int index = randint0(z_info->pack_size);
@@ -457,21 +457,21 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 
 		/* Is it one of a stack being stolen? */
 		if (obj->number > 1)
-			split = TRUE;
+			split = true;
 
         /* Message */
         msg("%s %s (%c) was stolen!", (split ? "One of your" : "Your"),
 			o_name, I2A(index));
 
         /* Steal and carry */
-		stolen = gear_object_for_use(obj, 1, FALSE, &none_left);
+		stolen = gear_object_for_use(obj, 1, false, &none_left);
         (void)monster_carry(cave, context->mon, stolen);
 
         /* Obvious */
-        context->obvious = TRUE;
+        context->obvious = true;
 
         /* Blink away */
-        context->blinked = TRUE;
+        context->blinked = true;
 
         /* Done */
         break;
@@ -498,7 +498,7 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		int index = randint0(z_info->pack_size);
 		struct object *obj, *eaten;
 		char o_name[80];
-		bool none_left = FALSE;
+		bool none_left = false;
 
 		/* Get the item */
 		obj = context->p->upkeep->inven[index];
@@ -520,11 +520,11 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		}
 
 		/* Steal and eat */
-		eaten = gear_object_for_use(obj, 1, FALSE, &none_left);
+		eaten = gear_object_for_use(obj, 1, false, &none_left);
 		object_delete(&eaten);
 
 		/* Obvious */
-		context->obvious = TRUE;
+		context->obvious = true;
 
 		/* Done */
 		break;
@@ -555,7 +555,7 @@ static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *conte
 		/* Notice */
 		if (!context->p->timed[TMD_BLIND]) {
 			msg("Your light dims.");
-			context->obvious = TRUE;
+			context->obvious = true;
 		}
 
 		/* Redraw stuff */
@@ -568,7 +568,7 @@ static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *conte
  */
 static void melee_effect_handler_ACID(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_ACID, TRUE);
+	melee_effect_elemental(context, GF_ACID, true);
 }
 
 /**
@@ -576,7 +576,7 @@ static void melee_effect_handler_ACID(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_ELEC(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_ELEC, TRUE);
+	melee_effect_elemental(context, GF_ELEC, true);
 }
 
 /**
@@ -584,7 +584,7 @@ static void melee_effect_handler_ELEC(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_FIRE(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_FIRE, TRUE);
+	melee_effect_elemental(context, GF_FIRE, true);
 }
 
 /**
@@ -592,7 +592,7 @@ static void melee_effect_handler_FIRE(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_COLD(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_COLD, TRUE);
+	melee_effect_elemental(context, GF_COLD, true);
 }
 
 /**
@@ -601,7 +601,7 @@ static void melee_effect_handler_COLD(melee_effect_handler_context_t *context)
 static void melee_effect_handler_BLIND(melee_effect_handler_context_t *context)
 {
 	melee_effect_timed(context, TMD_BLIND, 10 + randint1(context->rlev),
-					   OF_PROT_BLIND, FALSE, NULL);
+					   OF_PROT_BLIND, false, NULL);
 }
 
 /**
@@ -610,7 +610,7 @@ static void melee_effect_handler_BLIND(melee_effect_handler_context_t *context)
 static void melee_effect_handler_CONFUSE(melee_effect_handler_context_t *context)
 {
 	melee_effect_timed(context, TMD_CONFUSED, 3 + randint1(context->rlev),
-					   OF_PROT_CONF, FALSE, NULL);
+					   OF_PROT_CONF, false, NULL);
 }
 
 /**
@@ -619,7 +619,7 @@ static void melee_effect_handler_CONFUSE(melee_effect_handler_context_t *context
 static void melee_effect_handler_TERRIFY(melee_effect_handler_context_t *context)
 {
 	melee_effect_timed(context, TMD_AFRAID, 3 + randint1(context->rlev),
-					   OF_PROT_FEAR, TRUE, "You stand your ground!");
+					   OF_PROT_FEAR, true, "You stand your ground!");
 }
 
 /**
@@ -632,7 +632,7 @@ static void melee_effect_handler_PARALYZE(melee_effect_handler_context_t *contex
 		context->damage = 1;
 
 	melee_effect_timed(context, TMD_PARALYZED, 3 + randint1(context->rlev),
-					   OF_FREE_ACT, TRUE, "You resist the effects!");
+					   OF_FREE_ACT, true, "You resist the effects!");
 }
 
 /**
@@ -701,7 +701,7 @@ static void melee_effect_handler_LOSE_ALL(melee_effect_handler_context_t *contex
 static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context)
 {
 	/* Obvious */
-	context->obvious = TRUE;
+	context->obvious = true;
 
 	/* Hack -- Reduce damage based on the player armor class */
 	context->damage = adjust_dam_armor(context->damage, context->ac);
@@ -723,7 +723,7 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 		/* Stop the blows if the player is pushed away */
 		if ((px_old != context->p->px) ||
 			(py_old != context->p->py))
-			context->do_break = TRUE;
+			context->do_break = true;
 	}
 }
 
@@ -776,8 +776,8 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 
 	/* Increase "image" */
 	if (player_inc_timed(context->p, TMD_IMAGE, 3 + randint1(context->rlev / 2),
-						 TRUE, TRUE))
-		context->obvious = TRUE;
+						 true, true))
+		context->obvious = true;
 
 	/* Learn about the player */
 	update_smart_learn(context->mon, context->p, 0, 0, ELEM_CHAOS);

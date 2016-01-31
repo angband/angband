@@ -85,7 +85,7 @@ typedef enum {
 #define rand_spread(A, D) ((A) + (randint0(1 + (D) + (D))) - (D))
 
 /**
- * Return TRUE one time in `x`.
+ * Return true one time in `x`.
  */
 #define one_in_(x) (!randint0(x))
 

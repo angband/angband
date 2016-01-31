@@ -175,7 +175,7 @@ static struct object *rd_item(void)
 		rd_s16b(&tmp16s);
 		b->multiplier = tmp16s;
 		rd_byte(&tmp8u);
-		b->known = tmp8u ? TRUE : FALSE;
+		b->known = tmp8u ? true : false;
 		b->next = obj->brands;
 		obj->brands = b;
 		rd_byte(&tmp8u);
@@ -193,7 +193,7 @@ static struct object *rd_item(void)
 		rd_s16b(&tmp16s);
 		s->multiplier = tmp16s;
 		rd_byte(&tmp8u);
-		s->known = tmp8u ? TRUE : FALSE;
+		s->known = tmp8u ? true : false;
 		s->next = obj->slays;
 		obj->slays = s;
 		rd_byte(&tmp8u);
@@ -296,12 +296,12 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 			square_obj = square_obj->next;
 		}
 		if (!square_obj)
-			return FALSE;
+			return false;
 		mon->mimicked_obj = square_obj;
 	}
 
 	/* Read all the held objects (order is unimportant) */
-	while (TRUE) {
+	while (true) {
 		struct object *obj = rd_item();
 		if (!obj)
 			break;
@@ -309,7 +309,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		pile_insert(&mon->held_obj, obj);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -364,7 +364,7 @@ int rd_randomizer(void)
 	for (i = 0; i < 59 - RAND_DEG; i++)
 		rd_u32b(&noop);
 
-	Rand_quick = FALSE;
+	Rand_quick = false;
 
 	return 0;
 }
@@ -535,9 +535,9 @@ int rd_object_memory(void)
 
 		rd_byte(&tmp8u);
 
-		kind->aware = (tmp8u & 0x01) ? TRUE : FALSE;
-		kind->tried = (tmp8u & 0x02) ? TRUE : FALSE;
-		kind->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
+		kind->aware = (tmp8u & 0x01) ? true : false;
+		kind->tried = (tmp8u & 0x02) ? true : false;
+		kind->everseen = (tmp8u & 0x08) ? true : false;
 
 		if (tmp8u & 0x04) kind_ignore_when_aware(kind);
 		if (tmp8u & 0x10) kind_ignore_when_unaware(kind);
@@ -801,7 +801,7 @@ int rd_ignore(void)
 			
 			/* Read and extract the everseen flag */
 			rd_byte(&flags);
-			e_info[i].everseen = (flags & 0x02) ? TRUE : FALSE;
+			e_info[i].everseen = (flags & 0x02) ? true : false;
 
 			/* Read and extract the ignore flags */
 			for (j = 0; j < itype_size; j++)
@@ -857,7 +857,7 @@ int rd_misc(void)
 	rd_byte(&tmp8u);
 	player->is_dead = tmp8u;
 	if (!player->is_dead && OPT(birth_randarts))
-		do_randart(seed_randart, TRUE);
+		do_randart(seed_randart, true);
 
 	/* Current turn */
 	rd_s32b(&turn);
@@ -1145,12 +1145,12 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		return 0;
 
 	/* Read the dungeon items until one isn't returned */
-	while (TRUE) {
+	while (true) {
 		struct object *obj = (*rd_item_version)();
 		if (!obj)
 			break;
 
-		if	(!floor_carry(c, obj->iy, obj->ix, obj, TRUE)) {
+		if	(!floor_carry(c, obj->iy, obj->ix, obj, true)) {
 			note(format("Cannot place object at row %d, column %d!",
 					obj->iy, obj->ix));
 			return -1;
@@ -1216,7 +1216,7 @@ static int rd_traps_aux(struct chunk *c)
     rd_byte(&trf_size);
 
 	/* Read traps until one has no location */
-	while (TRUE) {
+	while (true) {
 		trap = mem_zalloc(sizeof(*trap));
 		rd_trap(trap);
 		y = trap->fy;
@@ -1273,7 +1273,7 @@ int rd_dungeon(void)
 	player_place(cave, player, py, px);
 
 	/* The dungeon is ready */
-	character_dungeon = TRUE;
+	character_dungeon = true;
 
 	/* Read known cave */
 	if (rd_dungeon_aux(&cave_k))

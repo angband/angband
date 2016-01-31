@@ -69,8 +69,8 @@ const char *summon_desc(int type)
  * Decide if a monster race is "okay" to summon.
  *
  * Compares the given monster to the monster type specified by
- * summon_specific_type. Returns TRUE if the monster is eligible to
- * be summoned, FALSE otherwise. 
+ * summon_specific_type. Returns true if the monster is eligible to
+ * be summoned, false otherwise. 
  */
 static bool summon_specific_okay(struct monster_race *race)
 {
@@ -79,23 +79,23 @@ static bool summon_specific_okay(struct monster_race *race)
 
 	/* Forbid uniques? */
 	if (!info->unique_allowed && unique)
-		return FALSE;
+		return false;
 
 	/* A valid base and no match means disallowed */
 	if (info->base1 && !match_monster_bases(race->base, info->base1,
 											info->base2, info->base3, NULL))
-		return FALSE;
+		return false;
 
 	/* A valid race flag and no match means disallowed */
 	if (info->race_flag && !rf_has(race->flags, info->race_flag))
-		return FALSE;
+		return false;
 
 	/* Special case - summon kin */
 	if (summon_specific_type == S_KIN)
 		return (!unique && race->base == kin_base);
 
 	/* If we made it here, we're fine */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -114,19 +114,19 @@ bool can_call_monster(int y, int x, struct monster *mon)
 	int oy, ox;
 
 	/* Skip dead monsters */
-	if (!mon->race) return (FALSE);
+	if (!mon->race) return (false);
 
 	/* Only consider callable monsters */
-	if (!summon_specific_okay(mon->race)) return (FALSE);
+	if (!summon_specific_okay(mon->race)) return (false);
 
 	/* Extract monster location */
 	oy = mon->fy;
 	ox = mon->fx;
 
 	/* Make sure the summoned monster is not in LOS of the summoner */
-	if (los(cave, y, x, oy, ox)) return (FALSE);
+	if (los(cave, y, x, oy, ox)) return (false);
 
-	return (TRUE);
+	return (true);
 }
 
 
@@ -184,7 +184,7 @@ int call_monster(int y, int x)
 	monster_swap(oy, ox, y, x);
 
 	/* Wake it up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
 
 	/* Set it's energy to 0 */
 	mon->energy = 0;
@@ -195,7 +195,7 @@ int call_monster(int y, int x)
 
 /**
  * Places a monster (of the specified "type") near the given
- * location.  Return TRUE iff a monster was actually summoned.
+ * location.  Return true iff a monster was actually summoned.
  *
  * We will attempt to place the monster up to 10 times before giving up.
  *
@@ -230,7 +230,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		int d = (i / 15) + 1;
 
 		/* Pick a location */
-		scatter(cave, &y, &x, y1, x1, d, TRUE);
+		scatter(cave, &y, &x, y1, x1, d, true);
 
 		/* Require "empty" floor grid */
 		if (!square_isempty(cave, y, x)) continue;
@@ -266,7 +266,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 	if (!race) return (0);
 
 	/* Attempt to place the monster (awake, don't allow groups) */
-	if (!place_new_monster(cave, y, x, race, FALSE, FALSE, ORIGIN_DROP_SUMMON))
+	if (!place_new_monster(cave, y, x, race, false, false, ORIGIN_DROP_SUMMON))
 		return (0);
 
 	/* Success, return the level of the monster */
@@ -278,7 +278,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		mon->energy = 0;
 		if (mon->race->speed > player->state.speed)
 			mon_inc_timed(mon, MON_TMD_SLOW, 1,
-				MON_TMD_FLG_NOMESSAGE, FALSE);
+				MON_TMD_FLG_NOMESSAGE, false);
 	}
 
 	return (mon->race->level);

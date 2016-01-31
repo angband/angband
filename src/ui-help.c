@@ -37,7 +37,7 @@ static void string_lower(char *buf)
 /**
  * Recursive file perusal.
  *
- * Return FALSE on "?", otherwise TRUE.
+ * Return false on "?", otherwise true.
  *
  * This function could be made much more efficient with the use of "seek"
  * functionality, especially when moving backwards through a file, or
@@ -59,10 +59,10 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	int back = 0;
 
 	/* This screen has sub-screens */
-	bool menu = FALSE;
+	bool menu = false;
 
 	/* Case sensitive search */
-	bool case_sensitive = FALSE;
+	bool case_sensitive = false;
 
 	/* Current help file */
 	ang_file *fff = NULL;
@@ -99,8 +99,8 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 	int wid, hgt;
 	
-	/* TRUE if we are inside a RST block that should be skipped */
-	bool skip_lines = FALSE;
+	/* true if we are inside a RST block that should be skipped */
+	bool skip_lines = false;
 
 
 
@@ -158,19 +158,19 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		event_signal(EVENT_MESSAGE_FLUSH);
 
 		/* Oops */
-		return (TRUE);
+		return (true);
 	}
 
 
 	/* Pre-Parse the file */
-	while (TRUE) {
+	while (true) {
 		/* Read a line or stop */
 		if (!file_getl(fff, buf, sizeof(buf))) break;
 
 		/* Skip lines if we are inside a RST directive */
 		if (skip_lines){
 			if (contains_only_spaces(buf))
-				skip_lines = FALSE;
+				skip_lines = false;
 			continue;
 		}
 
@@ -181,7 +181,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			if (prefix(buf+strlen(".. "), "menu:: [") && 
                            buf[strlen(".. menu:: [x")]==']') {
 				/* This is a menu file */
-				menu = TRUE;
+				menu = true;
 
 				/* Extract the menu item */
 				k = A2I(buf[strlen(".. menu:: [")]);
@@ -205,7 +205,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			}
 
 			/* Skip this and enter skip mode*/
-			skip_lines = TRUE;
+			skip_lines = true;
 			continue;
 		}
 
@@ -218,7 +218,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 
 	/* Display the file */
-	while (TRUE) {
+	while (true) {
 		/* Clear screen */
 		Term_clear();
 
@@ -227,7 +227,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		if (line > (size - (hgt - 4))) line = size - (hgt - 4);
 		if (line < 0) line = 0;
 
-		skip_lines = FALSE;
+		skip_lines = false;
 
 		/* Re-open the file if needed */
 		if (next > line) {
@@ -236,7 +236,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 			/* Hack -- Re-Open the file */
 			fff = file_open(path, MODE_READ, FTYPE_TEXT);
-			if (!fff) return (TRUE);
+			if (!fff) return (true);
 
 			/* File has been restarted */
 			next = 0;
@@ -251,13 +251,13 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Skip lines if we are inside a RST directive*/
 			if (skip_lines) {
 				if (contains_only_spaces(buf))
-					skip_lines=FALSE;
+					skip_lines=false;
 				continue;
 			}
 
 			/* Skip RST directives */
 			if (prefix(buf, ".. ")) {
-				skip_lines=TRUE;
+				skip_lines=true;
 				continue;
 			}
 
@@ -277,13 +277,13 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Skip lines if we are inside a RST directive */
 			if (skip_lines) {
 				if (contains_only_spaces(buf))
-					skip_lines = FALSE;
+					skip_lines = false;
 				continue;
 			}
 
 			/* Skip RST directives */
 			if (prefix(buf, ".. ")) {
-				skip_lines=TRUE;
+				skip_lines=true;
 				continue;
 			}
 

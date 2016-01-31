@@ -82,7 +82,7 @@ static int menu_action_valid(struct menu *m, int oid)
 	if (acts[oid].flags & MN_ACT_HIDDEN)
 		return 2;
 
-	return acts[oid].name ? TRUE : FALSE;
+	return acts[oid].name ? true : false;
 }
 
 static void menu_action_display(struct menu *m, int oid, bool cursor, int row, int col, int width)
@@ -100,11 +100,11 @@ static bool menu_action_handle(struct menu *m, const ui_event *event, int oid)
 	if (event->type == EVT_SELECT) {
 		if (!(acts->flags & MN_ACT_GRAYED) && acts[oid].action) {
 			acts[oid].action(acts[oid].name, m->cursor);
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -440,14 +440,14 @@ static bool is_valid_row(struct menu *menu, int cursor)
 	int count = menu->filter_list ? menu->filter_count : menu->count;
 
 	if (cursor < 0 || cursor >= count)
-		return FALSE;
+		return false;
 
 	oid = menu->filter_list ? menu->filter_list[cursor] : cursor;
 
 	if (menu->row_funcs->valid_row)
 		return menu->row_funcs->valid_row(menu, oid);
 
-	return TRUE;
+	return true;
 }
 
 static bool no_valid_row(struct menu *menu, int count)
@@ -456,9 +456,9 @@ static bool no_valid_row(struct menu *menu, int count)
 
 	for (i = 0; i < count; i++)
 		if (is_valid_row(menu, i))
-			return FALSE;
+			return false;
 
-	return TRUE;
+	return true;
 }
 
 /* 
@@ -611,7 +611,7 @@ void menu_refresh(struct menu *menu, bool reset_screen)
  * Handle mouse input in a menu.
  * 
  * Mouse output is either moving, selecting, escaping, or nothing.  Returns
- * TRUE if something changes as a result of the click.
+ * true if something changes as a result of the click.
  */
 bool menu_handle_mouse(struct menu *menu, const ui_event *in,
 		ui_event *out)
@@ -648,7 +648,7 @@ bool menu_handle_mouse(struct menu *menu, const ui_event *in,
 /**
  * Handle any menu command keys / SELECT events.
  *
- * Returns TRUE if the key was handled at all (including if it's not handled
+ * Returns true if the key was handled at all (including if it's not handled
  * and just ignored).
  */
 static bool menu_handle_action(struct menu *m, const ui_event *in)
@@ -661,20 +661,20 @@ static bool menu_handle_action(struct menu *m, const ui_event *in)
 		return m->row_funcs->row_handler(m, in, oid);
 	}
 
-	return FALSE;
+	return false;
 }
 
 
 /**
  * Handle navigation keypresses.
  *
- * Returns TRUE if they key was intelligible as navigation, regardless of
+ * Returns true if they key was intelligible as navigation, regardless of
  * whether any action was taken.
  */
 bool menu_handle_keypress(struct menu *menu, const ui_event *in,
 		ui_event *out)
 {
-	bool eat = FALSE;
+	bool eat = false;
 	int count = menu->filter_list ? menu->filter_count : menu->count;
 
 	/* Get the new cursor position from the menu item tags */
@@ -691,7 +691,7 @@ bool menu_handle_keypress(struct menu *menu, const ui_event *in,
 		out->type = EVT_ESCAPE;
 	} else if (count <= 0) {
 		/* Menus with no rows can't be navigated or used, so eat keypresses */
-		eat = TRUE;
+		eat = true;
 	} else if (in->key.code == ' ') {
 		/* Try existing, known keys */
 		int rows = menu->active.page_rows;
@@ -705,7 +705,7 @@ bool menu_handle_keypress(struct menu *menu, const ui_event *in,
 	
 			out->type = EVT_MOVE;
 		} else {
-			eat = TRUE;
+			eat = true;
 		}
 	} else if (in->key.code == KC_ENTER) {
 		out->type = EVT_SELECT;
@@ -747,7 +747,7 @@ bool menu_handle_keypress(struct menu *menu, const ui_event *in,
 ui_event menu_select(struct menu *menu, int notify, bool popup)
 {
 	ui_event in = EVENT_EMPTY;
-	bool no_act = (menu->flags & MN_NO_ACTION) ? TRUE : FALSE;
+	bool no_act = (menu->flags & MN_NO_ACTION) ? true : false;
 
 	assert(menu->active.width != 0 && menu->active.page_rows != 0);
 
@@ -1124,7 +1124,7 @@ void menu_dynamic_calc_location(struct menu *m, int mx, int my)
 
 int menu_dynamic_select(struct menu *m)
 {
-	ui_event e = menu_select(m, 0, TRUE);
+	ui_event e = menu_select(m, 0, true);
 	struct menu_entry *entry;
 	int cursor = m->cursor;
 

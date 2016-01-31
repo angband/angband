@@ -222,7 +222,7 @@ static int random_high_resist(struct object *obj, int *resist)
 	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++)
 		if (obj->el_info[i].res_level == 0) count++;
 
-	if (count == 0) return FALSE;
+	if (count == 0) return false;
 
 	/* Pick one */
 	r = randint0(count);
@@ -232,12 +232,12 @@ static int random_high_resist(struct object *obj, int *resist)
 		if (obj->el_info[i].res_level != 0) continue;
 		if (r == 0) {
 			*resist = i;
-			return TRUE;
+			return true;
 		}
 		r--;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -313,11 +313,11 @@ void ego_apply_magic(struct object *obj, int level)
 
 	/* Extra powers */
 	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
-		create_mask(newf, FALSE, OFT_SUST, OFT_MAX);
+		create_mask(newf, false, OFT_SUST, OFT_MAX);
 		of_on(obj->flags, get_new_attr(obj->flags, newf));
 	}
 	else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER)) {
-		create_mask(newf, FALSE, OFT_PROT, OFT_MISC, OFT_MAX);
+		create_mask(newf, false, OFT_PROT, OFT_MISC, OFT_MAX);
 		of_on(obj->flags, get_new_attr(obj->flags, newf));
 	}
 	else if (kf_has(obj->ego->kind_flags, KF_RAND_HI_RES))
@@ -539,7 +539,7 @@ static struct object *make_artifact_special(int level)
 		copy_artifact_data(new_obj, art);
 
 		/* Mark the artifact as "created" */
-		art->created = TRUE;
+		art->created = true;
 
 		/* Success */
 		return new_obj;
@@ -562,22 +562,22 @@ static struct object *make_artifact_special(int level)
 static bool make_artifact(struct object *obj)
 {
 	int i;
-	bool art_ok = TRUE;
+	bool art_ok = true;
 
 	/* Make sure birth no artifacts isn't set */
-	if (OPT(birth_no_artifacts)) art_ok = FALSE;
+	if (OPT(birth_no_artifacts)) art_ok = false;
 
 	/* Special handling of quest artifacts */
 	if (kf_has(obj->kind->kind_flags, KF_QUEST_ART))
-		art_ok = TRUE;
+		art_ok = true;
 
-	if (!art_ok) return (FALSE);
+	if (!art_ok) return (false);
 
 	/* No artifacts in the town */
-	if (!player->depth) return (FALSE);
+	if (!player->depth) return (false);
 
 	/* Paranoia -- no "plural" artifacts */
-	if (obj->number != 1) return (FALSE);
+	if (obj->number != 1) return (false);
 
 	/* Check the artifact list (skip the "specials") */
 	for (i = 0; !obj->artifact && i < z_info->a_max; i++) {
@@ -622,11 +622,11 @@ static bool make_artifact(struct object *obj)
 
 	if (obj->artifact) {
 		copy_artifact_data(obj, obj->artifact);
-		obj->artifact->created = TRUE;
-		return TRUE;
+		obj->artifact->created = true;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -644,11 +644,11 @@ bool make_fake_artifact(struct object *obj, struct artifact *artifact)
 	struct object_kind *kind;
 
 	/* Don't bother with empty artifacts */
-	if (!artifact->tval) return FALSE;
+	if (!artifact->tval) return false;
 
 	/* Get the "kind" index */
 	kind = lookup_kind(artifact->tval, artifact->sval);
-	if (!kind) return FALSE;
+	if (!kind) return false;
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, MAXIMISE);
@@ -660,7 +660,7 @@ bool make_fake_artifact(struct object *obj, struct artifact *artifact)
 	copy_artifact_data(obj, artifact);
 
 	/* Success */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -812,7 +812,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
  * random bonuses,
  *
  * The `good` argument forces the item to be at least `good`, and the `great`
- * argument does likewise.  Setting `allow_artifacts` to TRUE allows artifacts
+ * argument does likewise.  Setting `allow_artifacts` to true allows artifacts
  * to be created here.
  *
  * If `good` or `great` are not set, then the `lev` argument controls the
@@ -932,8 +932,8 @@ bool kind_is_good(const struct object_kind *kind)
 		case TV_HELM:
 		case TV_CROWN:
 		{
-			if (randcalc(kind->to_a, 0, MINIMISE) < 0) return (FALSE);
-			return TRUE;
+			if (randcalc(kind->to_a, 0, MINIMISE) < 0) return (false);
+			return true;
 		}
 
 		/* Weapons -- Good unless damaged */
@@ -943,25 +943,25 @@ bool kind_is_good(const struct object_kind *kind)
 		case TV_POLEARM:
 		case TV_DIGGING:
 		{
-			if (randcalc(kind->to_h, 0, MINIMISE) < 0) return (FALSE);
-			if (randcalc(kind->to_d, 0, MINIMISE) < 0) return (FALSE);
-			return TRUE;
+			if (randcalc(kind->to_h, 0, MINIMISE) < 0) return (false);
+			if (randcalc(kind->to_d, 0, MINIMISE) < 0) return (false);
+			return true;
 		}
 
 		/* Ammo -- Arrows/Bolts are good */
 		case TV_BOLT:
 		case TV_ARROW:
 		{
-			return TRUE;
+			return true;
 		}
 	}
 
 	/* Anything with the GOOD flag */
 	if (kf_has(kind->kind_flags, KF_GOOD))
-		return TRUE;
+		return true;
 
 	/* Assume not good */
-	return (FALSE);
+	return (false);
 }
 
 
@@ -1075,12 +1075,12 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	if (one_in_(good ? 10 : 1000)) {
 		new_obj = make_artifact_special(lev);
 		if (new_obj) {
-			if (value) *value = object_value_real(new_obj, 1, FALSE, TRUE);
+			if (value) *value = object_value_real(new_obj, 1, false, true);
 			return new_obj;
 		}
 
 		/* If we failed to make an artifact, the player gets a good item */
-		good = TRUE;
+		good = true;
 	}
 
 	/* Base level for the object */
@@ -1094,7 +1094,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	/* Make the object, prep it and apply magic */
 	new_obj = object_new();
 	object_prep(new_obj, kind, lev, RANDOMISE);
-	apply_magic(new_obj, lev, TRUE, good, great, extra_roll);
+	apply_magic(new_obj, lev, true, good, great, extra_roll);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))
@@ -1105,7 +1105,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 
 	/* Get the value */
 	if (value)
-		*value = object_value_real(new_obj, new_obj->number, FALSE, TRUE);
+		*value = object_value_real(new_obj, new_obj->number, false, true);
 
 	/* Boost of 20% per level OOD for uncursed objects */
 	if (!cursed_p(new_obj->flags) && (kind->alloc_min > c->depth)) {
@@ -1126,14 +1126,14 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 	/* Acquirement */
 	while (num--) {
 		/* Make a good (or great) object (if possible) */
-		nice_obj = make_object(cave, level, TRUE, great, TRUE, NULL, 0);
+		nice_obj = make_object(cave, level, true, great, true, NULL, 0);
 		if (!nice_obj) continue;
 
 		nice_obj->origin = ORIGIN_ACQUIRE;
 		nice_obj->origin_depth = player->depth;
 
 		/* Drop the object */
-		drop_near(cave, nice_obj, 0, y1, x1, TRUE);
+		drop_near(cave, nice_obj, 0, y1, x1, true);
 	}
 }
 
@@ -1182,7 +1182,7 @@ struct object *make_gold(int lev, char *coin_type)
 	struct object *new_gold = mem_zalloc(sizeof(*new_gold)); 
 
 	/* Increase the range to infinite, moving the average to 110% */
-	while (one_in_(100) && value * 10 <= MAX_SHORT)
+	while (one_in_(100) && value * 10 <= SHRT_MAX)
 		value *= 10;
 
 	/* Prepare a gold object */
@@ -1193,8 +1193,8 @@ struct object *make_gold(int lev, char *coin_type)
 		value = value * MIN(5, player->depth);
 
 	/* Cap gold at max short (or alternatively make pvals s32b) */
-	if (value > MAX_SHORT)
-		value = MAX_SHORT;
+	if (value > SHRT_MAX)
+		value = SHRT_MAX;
 
 	new_gold->pval = value;
 

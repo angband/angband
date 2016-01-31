@@ -556,12 +556,12 @@ static void update_sidebar(game_event_type type, game_event_data *data,
 	for (i = 0, row = 1; i < N_ELEMENTS(side_handlers); i++) {
 		const struct side_handler_t *hnd = &side_handlers[i];
 		int priority = hnd->priority;
-		bool from_bottom = FALSE;
+		bool from_bottom = false;
 
 		/* Negative means print from bottom */
 		if (priority < 0) {
 			priority = -priority;
-			from_bottom = TRUE;
+			from_bottom = true;
 		}
 
 		/* If this is high enough priority, display it */
@@ -1286,8 +1286,8 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a,
 static void display_explosion(game_event_type type, game_event_data *data,
 							  void *user)
 {
-	bool new_radius = FALSE;
-	bool drawn = FALSE;
+	bool new_radius = false;
+	bool drawn = false;
 	int i, y, x;
 	int msec = op_ptr->delay_factor;
 	int gf_type = data->explosion.gf_type;
@@ -1309,7 +1309,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 			byte a;
 			wchar_t c;
 
-			drawn = TRUE;
+			drawn = true;
 
 			/* Obtain the explosion pict */
 			bolt_pict(y, x, y, x, gf_type, &a, &c);
@@ -1323,9 +1323,9 @@ static void display_explosion(game_event_type type, game_event_data *data,
 
 		/* Check for new radius, taking care not to overrun array */
 		if (i == num_grids - 1)
-			new_radius = TRUE;
+			new_radius = true;
 		else if (distance_to_grid[i + 1] > distance_to_grid[i])
-			new_radius = TRUE;
+			new_radius = true;
 
 		/* We have all the grids at the current radius, so draw it */
 		if (new_radius) {
@@ -1339,7 +1339,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 				Term_xtra(TERM_XTRA_DELAY, msec);
 			}
 
-			new_radius = FALSE;
+			new_radius = false;
 		}
 	}
 
@@ -1451,7 +1451,7 @@ static void display_missile(game_event_type type, game_event_data *data,
  * ------------------------------------------------------------------------ */
 
 /**
- * TRUE when we're supposed to display the equipment in the inventory 
+ * true when we're supposed to display the equipment in the inventory 
  * window, or vice-versa.
  */
 static bool flip_inven;
@@ -1683,7 +1683,7 @@ static void update_minimap_subwindow(game_event_type type,
 		/* Restore */
 		Term_activate(old);
 
-		flags->needs_redraw = FALSE;
+		flags->needs_redraw = false;
 	} else if (type == EVENT_DUNGEONLEVEL) {
 		/* XXX map_height and map_width need to be kept in sync with
 		 * display_map() */
@@ -1694,7 +1694,7 @@ static void update_minimap_subwindow(game_event_type type,
 		/* Clear the entire term if the new map isn't going to fit the
 		 * entire thing */
 		if (cave->height <= map_height || cave->width <= map_width) {
-			flags->needs_redraw = TRUE;
+			flags->needs_redraw = true;
 		}
 	}
 }
@@ -1868,7 +1868,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 									   game_event_handler *fn, void *user);
 
 	/* Decide whether to register or deregister an evenrt handler */
-	if (new_state == FALSE) {
+	if (new_state == false) {
 		register_or_deregister = event_remove_handler;
 		set_register_or_deregister = event_remove_handler_set;
 	} else {
@@ -2159,7 +2159,7 @@ static void repeated_command_display(game_event_type type,
 									 game_event_data *data, void *user)
 {
 	/* Assume messages were seen */
-	msg_flag = FALSE;
+	msg_flag = false;
 
 	/* Clear the top line */
 	prt("", 0, 0);
@@ -2178,14 +2178,14 @@ static void new_level_display_update(game_event_type type,
 	/* If autosave is pending, do it now. */
 	if (player->upkeep->autosave) {
 		save_game();
-		player->upkeep->autosave = FALSE;
+		player->upkeep->autosave = false;
 	}
 
 	/* Choose panel */
 	verify_panel();
 
 	/* Hack -- Invoke partial update mode */
-	player->upkeep->only_partial = TRUE;
+	player->upkeep->only_partial = true;
 
 	/* Clear */
 	Term_clear();
@@ -2222,7 +2222,7 @@ static void new_level_display_update(game_event_type type,
 	redraw_stuff(player);
 
 	/* Hack -- Kill partial update mode */
-	player->upkeep->only_partial = FALSE;
+	player->upkeep->only_partial = false;
 
 	/* Refresh */
 	Term_fresh();
@@ -2258,11 +2258,11 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 	bool blind = ((player->timed[TMD_BLIND]) || (no_light()));
 
 	const char *p = "see";
-	bool can_pickup = FALSE;
+	bool can_pickup = false;
 	int i;
 
 	/* Scan all marked objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x09, FALSE);
+	floor_num = scan_floor(floor_list, floor_max, py, px, 0x09, false);
 	if (floor_num == 0) {
 		mem_free(floor_list);
 		return;
@@ -2271,7 +2271,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 	/* Can we pick any up? */
 	for (i = 0; i < floor_num; i++)
 	    if (inven_carry_okay(floor_list[i]))
-			can_pickup = TRUE;
+			can_pickup = true;
 
 	/* One object */
 	if (floor_num == 1) {
@@ -2340,14 +2340,14 @@ static void process_character_pref_files(void)
 	char buf[1024];
 
 	/* Process the "window.prf" file */
-	process_pref_file("window.prf", TRUE, TRUE);
+	process_pref_file("window.prf", true, true);
 
 	/* Process the "user.prf" file */
-	process_pref_file("user.prf", TRUE, TRUE);
+	process_pref_file("user.prf", true, true);
 
 	/* Process the pref file based on the character name */
-	strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(player, TRUE));
-	found = process_pref_file(buf, TRUE, TRUE);
+	strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(player, true));
+	found = process_pref_file(buf, true, true);
 
     /* Try pref file using savefile name if we fail using character name */
     if (!found) {
@@ -2356,7 +2356,7 @@ static void process_character_pref_files(void)
 
 		my_strcpy(filename, &savefile[filename_index], sizeof(filename));
 		strnfmt(buf, sizeof(buf), "%s.prf", filename);
-		process_pref_file(buf, TRUE, TRUE);
+		process_pref_file(buf, true, true);
     }
 }
 
@@ -2374,7 +2374,7 @@ static void ui_leave_init(game_event_type type, game_event_data *data,
 						  void *user)
 {
 	/* Reset visuals, then load prefs */
-	reset_visuals(TRUE);
+	reset_visuals(true);
 	process_character_pref_files();
 
 	/* Remove our splashscreen handlers */
@@ -2391,7 +2391,7 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 						  void *user)
 {
 	/* Allow big cursor */
-	smlcurs = FALSE;
+	smlcurs = false;
 
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
@@ -2463,7 +2463,7 @@ static void ui_leave_world(game_event_type type, game_event_data *data,
 						  void *user)
 {
 	/* Disallow big cursor */
-	smlcurs = TRUE;
+	smlcurs = true;
 
 	/* Because of the "flexible" sidebar, all these things trigger
 	   the same function. */

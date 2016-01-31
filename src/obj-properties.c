@@ -121,7 +121,7 @@ bool cursed_p(const bitflag *f)
 	bitflag f2[OF_SIZE];
 
 	of_wipe(f2);
-	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+	create_mask(f2, false, OFT_CURSE, OFT_MAX);
 
 	return of_is_inter(f, f2);
 }

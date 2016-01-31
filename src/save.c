@@ -651,7 +651,7 @@ static void wr_dungeon_aux(struct chunk *c)
 				tmp8u = c->squares[y][x].info[i];
 
 				/* If the run is broken, or too full, flush it */
-				if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {
+				if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
 					wr_byte((byte)count);
 					wr_byte((byte)prev_char);
 					prev_char = tmp8u;
@@ -679,7 +679,7 @@ static void wr_dungeon_aux(struct chunk *c)
 			tmp8u = c->squares[y][x].feat;
 
 			/* If the run is broken, or too full, flush it */
-			if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {
+			if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
 				wr_byte((byte)count);
 				wr_byte((byte)prev_char);
 				prev_char = tmp8u;

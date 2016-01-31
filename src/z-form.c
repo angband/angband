@@ -212,7 +212,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 	s = fmt;
 
 	/* Scan the format string */
-	while (TRUE) {
+	while (true) {
 		/* All done */
 		if (!*s) break;
 
@@ -270,10 +270,10 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 		/* Save the "percent" */
 		aux[q++] = '%';
 
-		do_long = FALSE;
+		do_long = false;
 
 		/* Build the "aux" string */
-		while (TRUE) {
+		while (true) {
 			/* Error -- format sequence is not terminated */
 			if (!*s) {
 				/* Terminate the buffer */
@@ -300,7 +300,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					aux[q++] = *s++;
 
 					/* Note the "long" flag */
-					do_long = TRUE;
+					do_long = true;
 				} else {
 					/* Save the character */
 					aux[q++] = *s++;
