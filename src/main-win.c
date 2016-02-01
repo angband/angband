@@ -1777,7 +1777,7 @@ static MCIDEVICEID pDevice[MSG_MAX][SAMPLE_MAX];
 static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
 								void *user)
 {
-	int i;
+	int i, j;
 	char buf[1024];
 	MCI_OPEN_PARMS op;
 	MCI_PLAY_PARMS pp;
@@ -1797,8 +1797,8 @@ static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
 	if (i == 0) return;
 
 	/* Build the path */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_SOUNDS,
-			   sound_file[v][Rand_simple(i)]);
+	j = Rand_simple(i);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_SOUNDS, sound_file[v][j]);
 
 	/* Check for file type */
 	if (streq(buf + strlen(buf) - 3, "mp3")) {
