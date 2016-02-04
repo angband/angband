@@ -1133,7 +1133,15 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 			Term_big_queue_char(t, vx, vy, a, c, COLOUR_WHITE, ' ');
 	}
 
-	/* Refresh the main screen */
+	/* Refresh the main screen unless the map needs to center */
+	if (player->upkeep->update & (PU_PANEL) && OPT(center_player)) {
+		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 : t->hgt / 2;
+		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 : t->wid / 2;
+
+		if (panel_should_modify(t, player->py - hgt, player->px - wid))
+			return;
+	}
+
 	Term_fresh();
 }
 

@@ -104,6 +104,7 @@ bool textui_map_is_visible(void);
  * Miscellaneous things
  * ------------------------------------------------------------------------ */
 void window_make(int origin_x, int origin_y, int end_x, int end_y);
+bool panel_should_modify(term *t, int wy, int wx);
 bool modify_panel(term *t, int wy, int wx);
 bool change_panel(int dir);
 void verify_panel(void);
