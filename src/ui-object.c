@@ -144,7 +144,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	int ex_offset_ctr;
 	char buf[80];
 	struct object *obj = items[obj_num].object;
-	bool show_label = (mode & OLIST_WINDOW || player->is_dead) ? TRUE : FALSE;
+	bool show_label = mode & (OLIST_WINDOW | OLIST_DEATH) ? TRUE : FALSE;
 	int label_size = show_label ? strlen(items[obj_num].label) : 0;
 	int equip_label_size = strlen(items[obj_num].equip_label);
 
@@ -261,6 +261,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 	char buf[80];
 	bool gold_ok = (mode & OLIST_GOLD) ? TRUE : FALSE;
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool dead = (mode & OLIST_DEATH) ? TRUE : FALSE;
 	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
 	bool equip = list ? FALSE : TRUE;
 	bool quiver = list == player->upkeep->quiver ? TRUE : FALSE;
@@ -288,7 +289,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 			my_strcap(buf);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
-		} else if (in_term && quiver) {
+		} else if ((in_term || dead) && quiver) {
 			strnfmt(buf, sizeof(buf), "Slot %-9d: ", i);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));

@@ -35,7 +35,8 @@ typedef enum {
 	OLIST_WEIGHT = 0x08,	/* Show item weight */
 	OLIST_PRICE  = 0x10,	/* Show item price */
 	OLIST_FAIL   = 0x20,	/* Show device failure */
-	OLIST_SEMPTY = 0x40
+	OLIST_SEMPTY = 0x40,
+	OLIST_DEATH  = 0x80
 } olist_detail_t;
 
 
@@ -45,6 +46,7 @@ byte object_attr(const struct object *obj);
 wchar_t object_char(const struct object *obj);
 void show_inven(int mode, item_tester tester);
 void show_equip(int mode, item_tester tester);
+void show_quiver(int mode, item_tester tester);
 void show_floor(struct object **floor_list, int floor_num, int mode,
 				item_tester tester);
 bool textui_get_item(struct object **choice, const char *pmt, const char *str,
