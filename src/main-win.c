@@ -513,7 +513,7 @@ static char *analyze_font(char *path, int *wp, int *hp)
 
 
 /**
- * Check for existance of a directory
+ * Check for existence of a directory
  */
 static bool check_dir(const char *s)
 {
@@ -1812,7 +1812,7 @@ static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
 
 			/* Open command */
 			mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT,
-						   (DWORD)&op);
+						   (size_t)&op);
 			pDevice[v][j] = op.wDeviceID;
 		}
 
@@ -1822,7 +1822,7 @@ static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
 		pp.dwCallback = 0;
 		pp.dwFrom = 0;
 		mciSendCommand(pDevice[v][j], MCI_PLAY, MCI_NOTIFY | MCI_FROM,
-					   (DWORD)&pp);
+					   (size_t)&pp);
 	} else {
 		/* If another sound is currently playing, stop it */
 		PlaySound(NULL, 0, SND_PURGE);
