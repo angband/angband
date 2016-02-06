@@ -77,15 +77,25 @@
 #define PR_ITEMLIST     0x00800000L /* Display item list */
 #define PR_FEELING      0x01000000L /* Display level feeling */
 
-/* Display Basic Info */
+/**
+ * Display Basic Info
+ */
 #define PR_BASIC \
 	(PR_MISC | PR_TITLE | PR_STATS | PR_LEV |\
 	 PR_EXP | PR_GOLD | PR_ARMOR | PR_HP |\
 	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_SPEED)
 
-/* Display Extra Info */
+/**
+ * Display Extra Info
+ */
 #define PR_EXTRA \
 	(PR_STATUS | PR_STATE | PR_STUDY)
+
+/**
+ * Display Subwindow Info
+ */
+#define PR_SUBWINDOW \
+	(PR_MONSTER | PR_OBJECT | PR_MONLIST | PR_ITEMLIST)
 
 
 extern const byte adj_str_blow[STAT_RANGE];
@@ -108,6 +118,7 @@ void monster_race_track(struct player_upkeep *upkeep,
 						struct monster_race *race);
 void track_object(struct player_upkeep *upkeep, struct object *obj);
 void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind);
+void track_object_cancel(struct player_upkeep *upkeep);
 bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj);
 
 void notice_stuff(struct player *p);

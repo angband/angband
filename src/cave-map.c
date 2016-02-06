@@ -21,6 +21,7 @@
 #include "init.h"
 #include "monster.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -107,21 +108,20 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 			g->lighting = LIGHTING_TORCH;
 
 		/* Remember seen feature */
-		cave_k->squares[y][x].feat = cave->squares[y][x].feat;
-	} else if (!square_ismark(cave, y, x)) {
+		square_memorize(cave, y, x);
+	} else if (!square_isknown(cave, y, x)) {
 		g->f_idx = FEAT_NONE;
-		//cave_k->squares[y][x].feat = FEAT_NONE;
 	} else if (square_isglow(cave, y, x)) {
 		g->lighting = LIGHTING_LIT;
 	}
 
 	/* Use known feature */
-/*	g->f_idx = cave_k->squares[y][x].feat;
+	g->f_idx = cave_k->squares[y][x].feat;
 	if (f_info[g->f_idx].mimic)
-		g->f_idx = f_info[g->f_idx].mimic;*/
+		g->f_idx = f_info[g->f_idx].mimic;
 
     /* There is a trap in this square */
-    if (square_istrap(cave, y, x) && square_ismark(cave, y, x)) {
+    if (square_istrap(cave, y, x) && square_isknown(cave, y, x)) {
 		struct trap *trap = cave->squares[y][x].trap;
 
 		/* Scan the square trap list */
@@ -137,23 +137,18 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
     }
 
 	/* Objects */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-		if (obj->marked == MARK_AWARE) {
-
-			/* Distinguish between unseen money and objects */
-			if (tval_is_money(obj)) {
-				g->unseen_money = true;
-			} else {
-				g->unseen_object = true;
-			}
-
-		} else if (obj->marked == MARK_SEEN && !ignore_item_ok(obj)) {
-			if (!g->first_kind) {
-				g->first_kind = obj->kind;
-			} else {
-				g->multiple_objects = true;
-				break;
-			}
+	for (obj = square_object(cave_k, y, x); obj; obj = obj->next) {
+		if (obj->kind == unknown_gold_kind) {
+			g->unseen_money = TRUE;
+		} else if (obj->kind == unknown_item_kind) {
+			g->unseen_object = TRUE;
+		} else if (ignore_known_item_ok(obj)) {
+			/* Item stays hidden */
+		} else if (!g->first_kind) {
+			g->first_kind = obj->kind;
+		} else {
+			g->multiple_objects = TRUE;
+			break;
 		}
 	}
 
@@ -213,20 +208,18 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
  */
 void square_note_spot(struct chunk *c, int y, int x)
 {
-	struct object *obj;
+	/* Require "seen" flag and the current level */
+	if (c != cave) return;
+	if (!square_isseen(c, y, x)) return;
 
-	/* Require "seen" flag */
-	if (!square_isseen(c, y, x))
-		return;
+	/* Make the player know precisely what is on this grid */
+	floor_pile_know(c, y, x);
 
-	for (obj = square_object(c, y, x); obj; obj = obj->next)
-		obj->marked = MARK_SEEN;
-
-	if (square_ismark(c, y, x))
+	if (square_isknown(c, y, x))
 		return;
 
 	/* Memorize this grid */
-	sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
+	square_memorize(c, y, x);
 }
 
 
@@ -336,7 +329,7 @@ static void cave_unlight(struct point_set *ps)
 
 		/* Hack -- Forget "boring" grids */
 		if (square_isfloor(cave, y, x))
-			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+			square_forget(cave, y, x);
 	}
 
 	/* Fully update the visuals */
@@ -432,8 +425,6 @@ void wiz_light(struct chunk *c, bool full)
 	/* Scan all grids */
 	for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
-			struct object *obj;
-
 			/* Process all non-walls */
 			if (!square_seemslikewall(c, y, x)) {
 				/* Scan all neighbors */
@@ -447,21 +438,16 @@ void wiz_light(struct chunk *c, bool full)
 					/* Memorize normal features */
 					if (!square_isfloor(c, yy, xx) || 
 						square_isvisibletrap(c, yy, xx)) {
-						sqinfo_on(c->squares[yy][xx].info, SQUARE_MARK);
-						cave_k->squares[yy][xx].feat = c->squares[yy][xx].feat;
+						square_memorize(c, yy, xx);
 					}
 				}
 			}
 
 			/* Memorize objects */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-				/* Skip dead objects */
-				assert(obj->kind);
-
-				/* Memorize it */
-				if (obj->marked < MARK_SEEN)
-					obj->marked = full ? MARK_SEEN : MARK_AWARE;
-			}
+			if (full)
+				floor_pile_know(c, y, x);
+			else
+				floor_pile_sense(c, y, x);
 		}
 	}
 
@@ -471,44 +457,6 @@ void wiz_light(struct chunk *c, bool full)
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
-
-
-/**
- * Forget the dungeon map (ala "Thinking of Maud...").
- */
-void wiz_dark(void)
-{
-	int y, x;
-
-
-	/* Forget every grid */
-	for (y = 0; y < cave->height; y++) {
-		for (x = 0; x < cave->width; x++) {
-			struct object *obj;
-
-			/* Process the grid */
-			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
-			sqinfo_off(cave->squares[y][x].info, SQUARE_DTRAP);
-			sqinfo_off(cave->squares[y][x].info, SQUARE_DEDGE);
-
-			/* Forget all objects */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-				/* Skip dead objects */
-				assert(obj->kind);
-
-				/* Forget the object */
-				obj->marked = MARK_UNAWARE;
-			}
-		}
-	}
-
-	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Redraw map, monster list */
-	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
-}
-
 
 
 /**
@@ -544,10 +492,10 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			/* Only interesting grids at night */
 			if (daytime || !tf_has(feat->flags, TF_FLOOR)) {
 				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
-				sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
+				square_memorize(c, y, x);
 			} else {
 				sqinfo_off(c->squares[y][x].info, SQUARE_GLOW);
-				sqinfo_off(c->squares[y][x].info, SQUARE_MARK);
+				square_forget(c, y, x);
 			}
 		}
 			
@@ -561,7 +509,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 				int yy = y + ddy_ddd[i];
 				int xx = x + ddx_ddd[i];
 				sqinfo_on(c->squares[yy][xx].info, SQUARE_GLOW);
-				sqinfo_on(c->squares[yy][xx].info, SQUARE_MARK);
+				square_memorize(c, yy, xx);
 			}
 		}
 	}
@@ -748,11 +696,32 @@ void cave_update_flow(struct chunk *c)
 	}
 }
 
-/* Make map features known */
-void cave_known (void)
+/**
+ * Make map features known, except walls surrounded by wall
+ */
+void cave_known(void)
 {
-	int y,x;
-	for (y = 0; y < cave->height; y++)
-		for (x = 0; x < cave->width; x++)
-			cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+	int y, x;
+	for (y = 0; y < cave->height; y++) {
+		for (x = 0; x < cave->width; x++) {
+			int d;
+			int xx, yy;
+			int count = 0;
+
+			/* Check around the grid */
+			for (d = 0; d < 8; d++) {
+				/* Extract adjacent location */
+				yy = y + ddy_ddd[d];
+				xx = x + ddx_ddd[d];
+
+				/* Don't count projectable squares */
+				if (!square_isprojectable(cave, yy, xx))
+					++count;
+			}
+
+			/* Internal walls not known */
+			if (count < 8)
+				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+		}
+	}
 }

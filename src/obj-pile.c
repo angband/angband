@@ -201,6 +201,93 @@ struct object *object_new(void)
 }
 
 /**
+ * Check that both the object lists are consistent and relate to locations of
+ * objects correctly
+ */
+void object_lists_check_integrity(void)
+{
+	int i;
+	assert(cave->obj_max == cave_k->obj_max);
+	for (i = 0; i < cave->obj_max; i++) {
+		struct object *obj = cave->objects[i];
+		struct object *known_obj = cave_k->objects[i];
+		if (obj) {
+			assert(obj->oidx == i);
+			if (obj->iy && obj->ix)
+				assert(pile_contains(cave->squares[obj->iy][obj->ix].obj, obj));
+		}
+		if (known_obj) {
+			assert (obj);
+			assert(known_obj == obj->known);
+			if (known_obj->iy && known_obj->ix)
+				assert (pile_contains(cave_k->squares[known_obj->iy][known_obj->ix].obj, known_obj));
+			assert (known_obj->oidx == i);
+		}
+	}
+}
+
+/**
+ * Enter an object in the list of objects for the current level/chunk.  This
+ * function is robust against listing of duplicates or non-objects
+ */
+void list_object(struct chunk *c, struct object *obj)
+{
+	int i, newsize;
+
+	/* Check for duplicates and objects already deleted or combined */
+	if (!obj) return;
+	for (i = 1; i < c->obj_max; i++)
+		if (c->objects[i] == obj)
+			return;
+
+	/* Put objects in holes in the object list */
+	for (i = 1; i < c->obj_max; i++) {
+		/* If there is a known object, skip this slot */
+		if ((c == cave) && cave_k->objects[i]) continue;
+
+		/* Put the object in a hole */
+		if (c->objects[i] == NULL) {
+			c->objects[i] = obj;
+			obj->oidx = i;
+			return;
+		}
+	}
+
+	/* Extend the list */
+	newsize = (c->obj_max + OBJECT_LIST_INCR + 1) * sizeof(struct object*);
+	c->objects = mem_realloc(c->objects, newsize);
+	c->objects[c->obj_max] = obj;
+	obj->oidx = c->obj_max;
+	for (i = c->obj_max + 1; i <= c->obj_max + OBJECT_LIST_INCR; i++)
+		c->objects[i] = NULL;
+	c->obj_max += OBJECT_LIST_INCR;
+
+	/* If we're on the current level, extend the known list */
+	if (c == cave) {
+		cave_k->objects = mem_realloc(cave_k->objects, newsize);
+		for (i = cave_k->obj_max; i <= c->obj_max; i++)
+			c->objects[i] = NULL;
+		cave_k->obj_max = c->obj_max;
+	}
+}
+
+/**
+ * Remove an object from the list of objects for the current level/chunk.  This
+ * function is robust against delisting of unlisted objects.
+ */
+void delist_object(struct chunk *c, struct object *obj)
+{
+	if (!obj->oidx) return;
+	assert(c->objects[obj->oidx] == obj);
+
+	/* Don't delist an actual object if it still has a listed known object */
+	if ((c == cave) && cave_k->objects[obj->oidx]) return;
+
+	c->objects[obj->oidx] = NULL;
+	obj->oidx = 0;
+}
+
+/**
  * Delete an object and free its memory, and set its pointer to NULL
  */
 void object_delete(struct object **obj_address)
@@ -208,12 +295,6 @@ void object_delete(struct object **obj_address)
 	struct object *obj = *obj_address;
 	struct object *prev = obj->prev;
 	struct object *next = obj->next;
-
-	/* Free slays and brands */
-	if (obj->slays)
-		free_slay(obj->slays);
-	if (obj->brands)
-		free_brand(obj->brands);
 
 	/* Check any next and previous objects */
 	if (next) {
@@ -230,6 +311,35 @@ void object_delete(struct object **obj_address)
 	/* If we're tracking the object, stop */
 	if (player && player->upkeep && obj == player->upkeep->object)
 		player->upkeep->object = NULL;
+
+	/* Orphan rather than actually delete if we still have a known object */
+	if (cave && cave_k && obj->oidx && (obj == cave->objects[obj->oidx]) &&
+		cave_k->objects[obj->oidx]) {
+		obj->iy = 0;
+		obj->ix = 0;
+		obj->held_m_idx = 0;
+		obj->mimicking_m_idx = 0;
+
+		/* Object is now purely imaginary to the player */
+		obj->known->notice |= OBJ_NOTICE_IMAGINED;
+
+		return;
+	}
+
+	/* Free slays and brands */
+	if (obj->slays)
+		free_slay(obj->slays);
+	if (obj->brands)
+		free_brand(obj->brands);
+
+	/* Remove from any lists */
+	if (cave_k && cave_k->objects && obj->oidx
+		&& (obj == cave_k->objects[obj->oidx]))
+		cave_k->objects[obj->oidx] = NULL;
+
+	if (cave && cave->objects && obj->oidx
+		&& (obj == cave->objects[obj->oidx]))
+		cave->objects[obj->oidx] = NULL;
 
 	mem_free(obj);
 	*obj_address = NULL;
@@ -277,8 +387,8 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		return false;
 
 	/* If either item is unknown, do not stack */
-	if (mode & OSTACK_LIST && obj1->marked == MARK_AWARE) return false;
-	if (mode & OSTACK_LIST && obj2->marked == MARK_AWARE) return false;
+	if (mode & OSTACK_LIST && obj1->kind != obj1->known->kind) return FALSE;
+	if (mode & OSTACK_LIST && obj2->kind != obj2->known->kind) return FALSE;
 
 	/* Hack -- identical items cannot be stacked */
 	if (obj1 == obj2) return false;
@@ -393,9 +503,21 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 {
 	int total;
 
-	/* Blend all knowledge */
-	of_union(obj1->known_flags, obj2->known_flags);
-	of_union(obj1->id_flags, obj2->id_flags);
+	/* First object gains any extra knowledge from second */
+	if (obj1->known && obj2->known) {
+		of_union(obj1->known->flags, obj2->known->flags);
+		if (obj2->known->ego)
+			obj1->known->ego = (struct ego_item *)1;
+		obj1->known->pval |= obj2->known->pval;
+		obj1->known->dd |= obj2->known->dd;
+		obj1->known->ds |= obj2->known->ds;
+		obj1->known->ac |= obj2->known->ac;
+		obj1->known->to_a |= obj2->known->to_a;
+		obj1->known->to_h |= obj2->known->to_h;
+		obj1->known->to_d |= obj2->known->to_d;
+		if (obj2->known->effect)
+			obj1->known->effect = (struct effect *)1;
+	}
 
 	/* Merge inscriptions */
 	if (obj2->note)
@@ -557,22 +679,41 @@ void object_copy_amt(struct object *dest, struct object *src, int amt)
  */
 struct object *object_split(struct object *src, int amt)
 {
-	struct object *dest = object_new();
+	struct object *dest = object_new(), *dest_known;
 
 	/* Get a copy of the object */
 	object_copy(dest, src);
+
+	/* Prepare a new known object if necessary */
+	if (src->known) {
+		dest_known = object_new();
+		object_copy(dest_known, src->known);
+		dest->known = dest_known;
+	}
 
 	/* Check legality */
 	assert(src->number > amt);
 
 	/* Distribute charges of wands, staves, or rods */
 	distribute_charges(src, dest, amt);
+	if (src->known)
+		distribute_charges(src->known, dest->known, amt);
 
 	/* Modify quantity */
 	dest->number = amt;
 	src->number -= amt;
 	if (src->note)
 		dest->note = src->note;
+	if (src->known) {
+		dest->known->number = amt;
+		src->known->number -= amt;
+		dest->known->note = src->known->note;
+	}
+
+	/* Remove any index */
+	if (dest->known)
+		dest->known->oidx = 0;
+	dest->oidx = 0;
 
 	return dest;
 }
@@ -597,8 +738,11 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
+		square_excise_object(cave_k, usable->iy, usable->ix, usable->known);
+		delist_object(cave_k, usable->known);
 		square_excise_object(cave, usable->iy, usable->ix, usable);
-		*none_left = true;
+		delist_object(cave, usable);
+		*none_left = TRUE;
 
 		/* Stop tracking item */
 		if (tracked_object_is(player->upkeep, obj))
@@ -678,6 +822,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 		/* Delete the oldest ignored object */
 		if (ignore) {
 			square_excise_object(c, y, x, ignore);
+			delist_object(c, ignore);
 			object_delete(&ignore);
 		} else
 			return false;
@@ -695,6 +840,9 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 		pile_insert_end(&c->squares[y][x].obj, drop);
 	else
 		pile_insert(&c->squares[y][x].obj, drop);
+
+	/* Record in the level list */
+	list_object(c, drop);
 
 	/* Redraw */
 	square_note_spot(c, y, x);
@@ -721,7 +869,9 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
  * the object can combine, stack, or be placed.  Artifacts will try very
  * hard to be placed, including "teleporting" to a useful grid if needed.
  *
- * Objects which fail to be carried by the floor are deleted.
+ * Objects which fail to be carried by the floor are deleted.  This function
+ * attempts to add successfully dropped objects to, and to remove failures
+ * from, the object list (as dropped items may or may not be already listed).
  */
 void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			   int x, bool verbose)
@@ -737,8 +887,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 
 	char o_name[80];
 
-	bool flag = false;
-	bool ignorable = ignore_item_ok(dropped);
+	bool flag = FALSE;
 
 	/* Describe object */
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_BASE);
@@ -750,6 +899,11 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			VERB_AGREEMENT(dropped->number, "breaks", "break"));
 
 		/* Failure */
+		if (c == cave && dropped->known) {
+			delist_object(cave_k, dropped->known);
+			object_delete(&dropped->known);
+		}
+		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
 	}
@@ -854,6 +1008,11 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (player->wizard) msg("Breakage (no floor space).");
 
 		/* Failure */
+		if (c == cave && dropped->known) {
+			delist_object(cave_k, dropped->known);
+			object_delete(&dropped->known);
+		}
+		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
 	}
@@ -893,6 +1052,11 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (dropped->artifact) dropped->artifact->created = false;
 
 		/* Failure */
+		if (c == cave && dropped->known) {
+			delist_object(cave_k, dropped->known);
+			object_delete(&dropped->known);
+		}
+		delist_object(c, dropped);
 		object_delete(&dropped);
 		return;
 	}
@@ -901,8 +1065,10 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 	sound(MSG_DROP);
 
 	/* Message when an object falls under the player */
-	if (verbose && (cave->squares[by][bx].mon < 0) && !ignorable)
-		msg("You feel something roll beneath your feet.");
+	if (verbose && (cave->squares[by][bx].mon < 0))
+		/* Check the item still exists and isn't ignored */
+		if (c->objects[dropped->oidx] && !ignore_item_ok(dropped))
+			msg("You feel something roll beneath your feet.");
 }
 
 /**
@@ -931,6 +1097,8 @@ void push_object(int y, int x)
 		/* Orphan the object */
 		obj->next = NULL;
 		obj->prev = NULL;
+		obj->iy = 0;
+		obj->ix = 0;
 
 		/* Next object */
 		obj = next;
@@ -979,46 +1147,72 @@ void floor_item_charges(struct object *obj)
 
 
 /**
- * Get the indexes of objects at a given floor location. -TNB-
+ * Get a list of the objects at the player's location.
  *
- * Return the number of object indexes acquired.
- *
- * Valid flags are any combination of the bits:
- *   0x01 -- Verify item tester
- *   0x02 -- Marked items only
- *   0x04 -- Only the top item
- *   0x08 -- Visible items only
+ * Return the number of objects acquired.
  */
-int scan_floor(struct object **items, int max_size, int y, int x, int mode,
+int scan_floor(struct object **items, int max_size, object_floor_t mode,
 			   item_tester tester)
 {
 	struct object *obj;
-
+	int py = player->py;
+	int px = player->px;
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(cave, y, x)) return 0;
+	if (!square_in_bounds(cave, py, px)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(cave, py, px); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
 		/* Item tester */
-		if ((mode & 0x01) && !object_test(tester, obj)) continue;
+		if ((mode & OFLOOR_TEST) && !object_test(tester, obj)) continue;
 
-		/* Marked */
-		if ((mode & 0x02) && (!obj->marked)) continue;
+		/* Sensed or known */
+		if ((mode & OFLOOR_SENSE) && (!obj->known)) continue;
 
 		/* Visible */
-		if ((mode & 0x08) && !is_unknown(obj) && ignore_item_ok(obj))
+		if ((mode & OFLOOR_VISIBLE) && !is_unknown(obj) && ignore_item_ok(obj))
 			continue;
 
 		/* Accept this item */
 		items[num++] = obj;
 
 		/* Only one */
-		if (mode & 0x04) break;
+		if (mode & OFLOOR_TOP) break;
+	}
+
+	return num;
+}
+
+/**
+ * Get a list of the known objects at the given location.
+ *
+ * Return the number of objects acquired.
+ */
+int scan_distant_floor(struct object **items, int max_size, int y, int x)
+{
+	struct object *obj;
+	int num = 0;
+
+	/* Sanity */
+	if (!square_in_bounds(cave_k, y, x)) return 0;
+
+	/* Scan all objects in the grid */
+	for (obj = square_object(cave_k, y, x); obj; obj = obj->next) {
+		/* Enforce limit */
+		if (num >= max_size) break;
+
+		/* Known */
+		if (obj->kind == unknown_item_kind) continue;
+
+		/* Visible */
+		if (ignore_known_item_ok(obj)) continue;
+
+		/* Accept this item's base object */
+		items[num++] = cave->objects[obj->oidx];
 	}
 
 	return num;
@@ -1074,8 +1268,9 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 
 	/* Scan all non-gold objects in the grid */
 	if (use_floor) {
-		floor_num = scan_floor(floor_list, floor_max, player->py, player->px,
-							   0x0B, tester);
+		floor_num = scan_floor(floor_list, floor_max,
+							   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE,
+							   tester);
 
 		for (i = 0; i < floor_num && item_num < item_max; i++)
 			item_list[item_num++] = floor_list[i];
@@ -1088,26 +1283,148 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 
 /**
  * Check if the given item is available for the player to use.
- *
- * 'mode' defines which areas we should look at, a la scan_items().
  */
-bool item_is_available(struct object *obj, bool (*tester)(const struct object *), int mode)
+bool item_is_available(struct object *obj)
 {
-	int item_max = z_info->pack_size + z_info->quiver_size +
-		player->body.count + z_info->floor_size;
-	struct object **item_list = mem_zalloc(item_max * sizeof(struct object *));
-	int item_num;
-	int i;
-
-	item_num = scan_items(item_list, item_max, mode, tester);
-
-	for (i = 0; i < item_num; i++)
-		if (item_list[i] == obj) {
-			mem_free(item_list);
-			return true;
-		}
-
-	mem_free(item_list);
-	return false;
+	if (object_is_carried(player, obj)) return TRUE;
+	if (cave && square_holds_object(cave, player->py, player->px, obj))
+		return TRUE;
+	return FALSE;
 }
 
+/**
+ * Sense the existence of objects on a grid in the current level
+ */
+void floor_pile_sense(struct chunk *c, int y, int x)
+{
+	struct object *obj;
+
+	if (c != cave) return;
+
+	/* Sense every item on this grid */
+	for (obj = square_object(c, y, x); obj; obj = obj->next) {
+		struct object *known_obj = cave_k->objects[obj->oidx];
+
+		/* Make new sensed objects where necessary */
+		if (known_obj == NULL) {
+			/* Make and list the new object */
+			struct object *new_obj = object_new();
+			cave_k->objects[obj->oidx] = new_obj;
+			new_obj->oidx = obj->oidx;
+			obj->known = new_obj;
+			new_obj->number = 1;
+
+			/* Give it a fake kind */
+			if (tval_is_money(obj))
+				new_obj->kind = unknown_gold_kind;
+			else
+				new_obj->kind = unknown_item_kind;
+
+			/* Attach it to the current floor pile */
+			new_obj->iy = y;
+			new_obj->ix = x;
+			pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
+		}
+	}
+}
+
+/**
+ * Update the player's knowledge of the objects on a grid in the current level
+ */
+void floor_pile_know(struct chunk *c, int y, int x)
+{
+	struct object *obj;
+
+	if (c != cave) return;
+
+	object_lists_check_integrity();
+
+	/* Know every item on this grid */
+	for (obj = square_object(c, y, x); obj; obj = obj->next) {
+		struct object *known_obj = cave_k->objects[obj->oidx];
+
+		/* Make new known objects, fully know sensed ones, relocate old ones */
+		if (known_obj == NULL) {
+			/* Make and/or list the new object */
+			struct object *new_obj;
+
+			/* Check whether we need to make a new one or list the old one */
+			if (obj->known) {
+				new_obj = obj->known;
+			} else {
+				new_obj = object_new();
+				obj->known = new_obj;
+				object_set_base_known(obj);
+			}
+			cave_k->objects[obj->oidx] = new_obj;
+			new_obj->oidx = obj->oidx;
+
+			/* Attach it to the current floor pile */
+			new_obj->iy = y;
+			new_obj->ix = x;
+			new_obj->number = obj->number;
+			if (!square_holds_object(cave_k, y, x, new_obj))
+				pile_insert_end(&cave_k->squares[y][x].obj, new_obj);
+		} else if (known_obj->kind != obj->kind) {
+			int iy = known_obj->iy;
+			int ix = known_obj->ix;
+
+			/* Make sure knowledge is correct */
+			assert(known_obj == obj->known);
+
+			/* Detach from any old pile (possibly the correct one) */
+			if (iy && ix && square_holds_object(cave_k, iy, ix, known_obj))
+				square_excise_object(cave_k, iy, ix, known_obj);
+
+			/* Copy over actual details */
+			object_set_base_known(obj);
+
+			/* Attach it to the current floor pile */
+			known_obj->iy = y;
+			known_obj->ix = x;
+			known_obj->held_m_idx = 0;
+			if (!square_holds_object(cave_k, y, x, known_obj))
+				pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
+		} else if (!square_holds_object(cave_k, y, x, known_obj)) {
+			int iy = known_obj->iy;
+			int ix = known_obj->ix;
+
+			/* Make sure knowledge is correct */
+			assert(known_obj == obj->known);
+			known_obj->number = obj->number;
+
+			/* Detach from any old pile */
+			if (iy && ix && square_holds_object(cave_k, iy, ix, known_obj))
+				square_excise_object(cave_k, iy, ix, known_obj);
+
+			/* Attach it to the current floor pile */
+			known_obj->iy = y;
+			known_obj->ix = x;
+			known_obj->held_m_idx = 0;
+			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
+		}
+	}
+
+	/* Remove known location of anything not on this grid */
+	obj = square_object(cave_k, y, x);
+	while (obj) {
+		struct object *next = obj->next;
+		assert(c->objects[obj->oidx]);
+		if (!square_holds_object(c, y, x, c->objects[obj->oidx])) {
+			struct object *original = c->objects[obj->oidx];
+			square_excise_object(cave_k, y, x, obj);
+			obj->iy = 0;
+			obj->ix = 0;
+
+			/* Delete objects which no longer exist anywhere */
+			if (obj->notice & OBJ_NOTICE_IMAGINED) {
+				delist_object(cave_k, obj);
+				object_delete(&obj);
+				original->known = NULL;
+				delist_object(c, original);
+				object_delete(&original);
+			}
+		}
+		obj = next;
+	}
+}

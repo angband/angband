@@ -23,6 +23,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -189,6 +190,14 @@ int apply_autoinscription(struct object *obj)
 
 	/* Don't re-inscribe if it's already inscribed */
 	if (obj->note)
+		return 0;
+
+	/* Don't inscribe unless the player is carrying it */
+	if (!object_is_carried(player, obj))
+		return 0;
+
+	/* Don't inscribe if ignored */
+	if (ignore_item_ok(obj))
 		return 0;
 
 	/* Get an object description */
@@ -373,8 +382,7 @@ byte ignore_level_of(const struct object *obj)
 	object_flags_known(obj, f);
 
 	/* Deal with jewelry specially. */
-	if (tval_is_jewelry(obj))
-	{
+	if (tval_is_jewelry(obj)) {
 		/* CC: average jewelry has at least one known positive modifier */
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 			if ((object_this_mod_is_visible(obj, i)) && 
@@ -392,9 +400,8 @@ byte ignore_level_of(const struct object *obj)
 	}
 
 	/* And lights */
-	if (tval_is_light(obj))
-	{
-		create_mask(f2, true, OFID_WIELD, OFT_MAX);
+	if (tval_is_light(obj)) {
+		create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 		if (of_is_inter(f, f2))
 			return IGNORE_ALL;
 		if ((obj->to_h > 0) || (obj->to_d > 0) || (obj->to_a > 0))
@@ -475,9 +482,7 @@ byte ignore_level_of(const struct object *obj)
 				/* do not handle any other possible pseudo values */
 				assert(0);
 		}
-	}
-	else
-	{
+	} else {
 		if (object_was_worn(obj))
 			value = IGNORE_EXCELLENT_NO_SPL; /* object would be sensed if it were splendid */
 		else if (object_is_known_not_artifact(obj))
@@ -553,9 +558,13 @@ bool object_is_ignored(const struct object *obj)
 {
 	byte type;
 
+	/* Objects that aren't yet known can't be ignored */
+	if (!obj->known)
+		return FALSE;
+
 	/* Do ignore individual objects that marked ignore */
-	if (obj->ignore)
-		return true;
+	if (obj->known->notice & OBJ_NOTICE_IGNORE)
+		return TRUE;
 
 	/* Don't ignore artifacts unless marked to be ignored */
 	if (obj->artifact ||
@@ -598,6 +607,24 @@ bool ignore_item_ok(const struct object *obj)
 		return false;
 
 	return object_is_ignored(obj);
+}
+
+/**
+ * Determines if the known version of an object is eligible for ignoring.
+ *
+ * This function should only be called on known version of items which have a
+ * (real or imaginary) listed base item in the current level
+ */
+bool ignore_known_item_ok(const struct object *obj)
+{
+	struct object *base_obj = cave->objects[obj->oidx];
+
+	if (player->unignoring)
+		return FALSE;
+
+	/* Get the real object and check its ignore properties */
+	assert(base_obj);
+	return object_is_ignored(base_obj);
 }
 
 /**

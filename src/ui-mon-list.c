@@ -339,12 +339,21 @@ void monster_list_show_subwindow(int height, int width)
 {
 	textblock *tb;
 	monster_list_t *list;
+	int i;
 
 	if (height < 1 || width < 1)
 		return;
 
 	tb = textblock_new();
 	list = monster_list_shared_instance();
+
+	/* Force an update if detected monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		if (mflag_has(cave_monster(cave, i)->mflag, MFLAG_MARK)) {
+			list->creation_turn = -1;
+			break;
+		}
+	}
 
 	monster_list_reset(list);
 	monster_list_collect(list);

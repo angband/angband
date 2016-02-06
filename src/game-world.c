@@ -40,7 +40,6 @@ u32b seed_flavor;		/* Hack -- consistent object colors */
 s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
-bool character_saved;		/* The character was just saved to a savefile */
 
 /**
  * This table allows quick conversion from "speed" to "energy"
@@ -161,10 +160,8 @@ static void recharged_notice(const struct object *obj, bool all)
  */
 static void recharge_objects(void)
 {
-	int y, x;
-
+	int i;
 	bool discharged_stack;
-
 	struct object *obj;
 
 	/* Recharge carried gear */
@@ -206,13 +203,15 @@ static void recharge_objects(void)
 		}
 	}
 
-	/* Recharge the ground */
-	for (y = 1; y < cave->height; y++)
-		for (x = 1; x < cave->width; x++)
-			for (obj = square_object(cave, y, x); obj; obj = obj->next)
-				/* Recharge rods on the ground */
-				if (tval_can_have_timeout(obj))
-					recharge_timeout(obj);
+	/* Recharge other level objects */
+	for (i = 1; i < cave->obj_max; i++) {
+		obj = cave->objects[i];
+		if (!obj) continue;
+
+		/* Recharge rods */
+		if (tval_can_have_timeout(obj))
+			recharge_timeout(obj);
+	}
 }
 
 

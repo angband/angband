@@ -88,7 +88,7 @@ Original Keyset Command Summary
 
 ====== ============================= ====== ============================
   a    Aim a wand                      A    Activate an object 
-  b    Browse a book                   B    Bash a door
+  b    Browse a book                   B    (unused)
   c    Close a door                    C    Character description
   d    Drop an item                    D    Disarm a trap or lock a door
   e    Equipment list                  E    Eat some food
@@ -96,7 +96,7 @@ Original Keyset Command Summary
   g    Get objects on floor            G    Gain new spells/prayers
   h    Fire default ammo at target     H    (unused)
   i    Inventory list                  I    Observe an item
-  j    Jam a door                      J    (unused)
+  j    (unused)                        J    (unused)
   k    Ignore an item                  K    Toggle ignore
   l    Look around                     L    Locate player on map
   m    Cast a spell                    M    Full dungeon map
@@ -158,7 +158,7 @@ Roguelike Keyset Command Summary
   c    Close a door                    C    Character description
   d    Drop an item                    D    Disarm a trap or lock a door
   e    Equipment list                  E    Eat some food
-  f    Bash a door (force)             F    Fuel your lantern/torch
+  f    (unused)                        F    Fuel your lantern/torch
   g    Get objects on floor            G    Gain new spells/prayers
   h    (walk - west)                   H    (run - west)
   i    Inventory list                  I    Observe an item
@@ -171,7 +171,7 @@ Roguelike Keyset Command Summary
   p    Cast a spell                    P    Browse a book
   q    Quaff a potion                  Q    Quit (commit suicide)
   r    Read a scroll                   R    Rest for a period
-  s    Search for traps/doors          S    Jam a door (Spike)
+  s    Search for traps/doors          S    (unused)
   t    Fire an item                    T    Take off equipment
   u    (walk - north east)             U    (run - north east)
   v    Throw an item                   V    Version info

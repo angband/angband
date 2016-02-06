@@ -227,7 +227,8 @@ static bool spell_identify_unknown_available(void)
 	struct object *obj;
 	bool unidentified_gear = false;
 
-	floor_num = scan_floor(floor_list, floor_max, player->py, player->px, 0x0B,
+	floor_num = scan_floor(floor_list, floor_max,
+						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE,
 						   item_tester_unknown);
 
 	for (obj = player->gear; obj; obj = obj->next) {
@@ -585,7 +586,9 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			used_obj = gear_object_for_use(obj, 1, true, &none_left);
 		else
 			/* Destroy an item on the floor */
-			used_obj = floor_object_for_use(obj, 1, true, &none_left);
+			used_obj = floor_object_for_use(obj, 1, TRUE, &none_left);
+		if (used_obj->known)
+			object_delete(&used_obj->known);
 		object_delete(&used_obj);
 	}
 
@@ -830,7 +833,9 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 		if (object_is_carried(player, obj))
 			used = gear_object_for_use(obj, 1, true, &none_left);
 		else
-			used = floor_object_for_use(obj, 1, true, &none_left);
+			used = floor_object_for_use(obj, 1, TRUE, &none_left);
+		if (used->known)
+			object_delete(&used->known);
 		object_delete(&used);
 	}
 

@@ -922,10 +922,11 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 			if (!square_seemslikewall(cave, y, x)) {
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
-				/* Memorize normal features */
+				/* Memorize normal features, mark grids as processed */
 				if (!square_isfloor(cave, y, x)) {
-					sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+					square_memorize(cave, y, x);
 					square_light_spot(cave, y, x);
+					square_mark(cave, y, x);
 				}
 
 				/* Memorize known walls */
@@ -933,16 +934,29 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 					int yy = y + ddy_ddd[i];
 					int xx = x + ddx_ddd[i];
 
-					/* Memorize walls (etc) */
+					/* Memorize walls (etc), mark grids as processed */
 					if (square_seemslikewall(cave, yy, xx)) {
-						sqinfo_on(cave->squares[yy][xx].info, SQUARE_MARK);
-						cave_k->squares[yy][xx].feat = cave->squares[yy][xx].feat;
+						square_memorize(cave, yy, xx);
 						square_light_spot(cave, yy, xx);
+						square_mark(cave, yy, xx);
 					}
 				}
 			}
+
+			/* Forget unprocessed, unknown grids in the mapping area */
+			if (!square_ismark(cave, y, x) && !square_isknown(cave, y, x))
+				square_forget(cave, y, x);
 		}
 	}
+
+	/* Unmark grids */
+	for (y = y1 - 1; y < y2 + 1; y++) {
+		for (x = x1 - 1; x < x2 + 1; x++) {
+			if (!square_in_bounds(cave, y, x)) continue;
+			square_unmark(cave, y, x);
+		}
+	}
+
 	/* Notice */
 	context->ident = true;
 
@@ -994,6 +1008,9 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 
 				/* Identify once */
 				if (!object_is_known(obj)) {
+					/* Hack - know the pile */
+					floor_pile_know(cave, y, x);
+
 					/* Know the trap */
 					object_notice_everything(obj);
 
@@ -1079,9 +1096,9 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 
 			/* Detect doors */
 			if (square_isdoor(cave, y, x)) {
-				/* Hack -- Memorize */
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+				/* Memorize */
+				square_memorize(cave, y, x);
+
 				/* Redraw */
 				square_light_spot(cave, y, x);
 
@@ -1132,9 +1149,9 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 
 			/* Detect stairs */
 			if (square_isstairs(cave, y, x)) {
-				/* Hack -- Memorize */
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+				/* Memorize */
+				square_memorize(cave, y, x);
+
 				/* Redraw */
 				square_light_spot(cave, y, x);
 
@@ -1187,8 +1204,8 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 
 			/* Magma/Quartz + Known Gold */
 			if (square_hasgoldvein(cave, y, x)) {
-				/* Hack -- Memorize */
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+				/* Memorize */
+				square_memorize(cave, y, x);
 
 				/* Redraw */
 				square_light_spot(cave, y, x);
@@ -1249,11 +1266,7 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 			context->ident = true;
 
 			/* Mark the pile as aware */
-			while (obj) {
-				if (obj->marked == MARK_UNAWARE)
-					obj->marked = MARK_AWARE;
-				obj = obj->next;
-			}
+			floor_pile_sense(cave, y, x);
 
 			/* Redraw */
 			square_light_spot(cave, y, x);
@@ -1307,11 +1320,8 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 				context->ident = true;
 			}
 
-			/* Markthe pile as seen */
-			while (obj) {
-				obj->marked = MARK_SEEN;
-				obj = obj->next;
-			}
+			/* Mark the pile as seen */
+			floor_pile_know(cave, y, x);
 
 			/* Redraw */
 			square_light_spot(cave, y, x);
@@ -2067,7 +2077,9 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 		if (object_is_carried(player, obj))
 			destroyed = gear_object_for_use(obj, 1, true, &none_left);
 		else
-			destroyed = floor_object_for_use(obj, 1, true, &none_left);
+			destroyed = floor_object_for_use(obj, 1, TRUE, &none_left);
+		if (destroyed->known)
+			object_delete(&destroyed->known);
 		object_delete(&destroyed);
 	} else {
 		/* Extract a "power" */
@@ -2903,9 +2915,6 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			/* Don't remove stairs */
 			if (square_isstairs(cave, y, x)) continue;
 
-			/* Lose knowledge (keeping knowledge of stairs) */
-			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
-
 			/* Destroy any grid that isn't a permament wall */
 			if (!square_isperm(cave, y, x)) {
 				/* Deal with artifacts */
@@ -3016,9 +3025,8 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_ROOM);
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
 
-			/* Lose light and knowledge */
+			/* Lose light */
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
-			sqinfo_off(cave->squares[yy][xx].info, SQUARE_MARK);
 
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;
@@ -3366,11 +3374,9 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 
 /**
- * Breathe an element
- * Stop if we hit a monster or the player, act as a ball (for now)
- * Allow target mode to pass over monsters
+ * Breathe an element, in a cone from the breather
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 radius
+ * context->p1 is element, context->p2 degrees of arc, context->p3 radius
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
@@ -3378,39 +3384,65 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, true);
 	int type = context->p1;
-	int rad = context->p2;
+	int rad = context->p3;
 	int source;
 
 	int ty = py + ddy[context->dir];
 	int tx = px + ddx[context->dir];
 
-	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	/* Diameter of source starts at 20, so full strength only adjacent to
+	 * the breather. */
+	int diameter_of_source = 20;
+	int degrees_of_arc = context->p2;
+
+	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Radius of zero means no fixed limit. */
+	if (rad == 0)
+		rad = z_info->max_range;
 
 	/* Player or monster? */
 	if (cave->mon_current > 0) {
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
 		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-		/* Breath parameters for monsters are monster-dependent */
-		dam = breath_dam(type, mon->hp); 
-		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
+		dam = breath_dam(type, mon->hp);
+
+		/* Powerful monsters breathe wider arcs */
+		if (rf_has(mon->race->flags, RF_POWERFUL)) {
+			diameter_of_source *= 2;
+			degrees_of_arc *= 2;
+		}
 	} else {
 		msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
 		source = -1;
 	}
 
 	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
-
+	if ((context->dir == 5) && target_okay() && source == -1)
 		target_get(&tx, &ty);
+
+	/* Diameter of the energy source. */
+	if (degrees_of_arc < 60) {
+		if (degrees_of_arc == 0)
+			/* This handles finite length beams */
+			diameter_of_source = rad * 10;
+		else
+			/* Narrower cone means energy drops off less quickly. 30 degree
+			 * breaths are still full strength 3 grids from the breather,
+			 * and 20 degree breaths are still full strength at 5 grids. */
+			diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
 	}
 
-	/* Aim at the target, explode */
-	if (project(source, rad, ty, tx, dam, type, flg, 0, 0, context->obj))
-		context->ident = true;
+	/* Max */
+	if (diameter_of_source > 250)
+		diameter_of_source = 250;
+
+	/* Breathe at the target */
+	if (project(source, rad, ty, tx, dam, type, flg, degrees_of_arc,
+				diameter_of_source, context->obj))
+		context->ident = TRUE;
 
 	return true;
 }
@@ -4175,8 +4207,8 @@ bool effect_handler_TRAP_RUNE_SUMMON(effect_handler_context_t *context)
 	msgt(MSG_SUM_MONSTER, "You are enveloped in a cloud of smoke!");
 
 	/* Remove trap */
-	sqinfo_off(cave->squares[player->py][player->px].info, SQUARE_MARK);
 	square_destroy_trap(cave, player->py, player->px);
+	square_forget(cave, player->py, player->px);
 
 	for (i = 0; i < num; i++)
 		(void)summon_specific(player->py, player->px, player->depth, 0, true,

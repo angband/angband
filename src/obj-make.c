@@ -416,13 +416,6 @@ static void make_ego_item(struct object *obj, int level)
 	if (obj->ego)
 		ego_apply_magic(obj, level);
 
-	/* Ego lights are always known as such (why? - NRM) */
-	/* Might as well make them known not artifacts as well - NRM */
-	if (tval_is_light(obj)) {
-		id_on(obj->id_flags, ID_EGO_ITEM);
-		id_on(obj->id_flags, ID_ARTIFACT);
-	}
-
 	return;
 }
 
@@ -709,28 +702,6 @@ static void apply_magic_armour(struct object *obj, int level, int power)
 
 
 /**
- * Set some ID flags for items where the flavour is already known
- */
-void id_set_aware(struct object *obj)
-{
-	int i;
-
-	/* Know pval and effect */
-	id_on(obj->id_flags, ID_PVAL);
-	id_on(obj->id_flags, ID_EFFECT);
-
-	/* Jewelry with fixed bonuses gets more info now */
-	if (tval_is_jewelry(obj)) {
-		if (!randcalc_varies(obj->kind->to_h)) id_on(obj->id_flags, ID_TO_H);
-		if (!randcalc_varies(obj->kind->to_d)) id_on(obj->id_flags, ID_TO_D);
-		if (!randcalc_varies(obj->kind->to_a)) id_on(obj->id_flags, ID_TO_A);
-		for (i = 0; i < OBJ_MOD_MAX; i++)
-			if (!randcalc_varies(obj->kind->modifiers[i]))
-				id_on(obj->id_flags, ID_MOD_MIN + i);
-	}
-}
-
-/**
  * Wipe an object clean and make it a standard object of the specified kind.
  */
 void object_prep(struct object *obj, struct object_kind *k, int lev,
@@ -795,15 +766,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 		obj->el_info[i].res_level = k->el_info[i].res_level;
 		obj->el_info[i].flags = k->el_info[i].flags;
 		obj->el_info[i].flags |= k->base->el_info[i].flags;
-
-		/* Unresistables have no hidden properties */
-		if (i > ELEM_HIGH_MAX)
-			obj->el_info[i].flags |= EL_INFO_KNOWN;
 	}
-
-	/* Extra info for flavour-aware items */
-	if (obj->kind->flavor && obj->kind->aware)
-		id_set_aware(obj);
 }
 
 

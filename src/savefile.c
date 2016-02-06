@@ -68,6 +68,10 @@
  * - 
  */
 
+/**
+ * Global "we've just saved" variable
+ */
+bool character_saved;
 
 /**
  * Magic bits at beginning of savefile

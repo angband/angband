@@ -134,10 +134,7 @@ static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
 		/* No traps */
 		sqinfo_off(c->squares[y][x].info, SQUARE_TRAP);
 
-		/* No reason to mark this square, ... */
-		sqinfo_off(c->squares[y][x].info, SQUARE_MARK);
-
-		/* ... unless certain conditions apply */
+		/* Take note */
 		square_note_spot(c, y, x);
     }
 
@@ -300,7 +297,7 @@ bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
 		if (!trf_has(trap->flags, TRF_VISIBLE)) {
 			/* See the trap */
 			trf_on(trap->flags, TRF_VISIBLE);
-			sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
+			square_memorize(c, y, x);
 
 			/* We found a trap */
 			found_trap++;
@@ -322,7 +319,7 @@ bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
 		}
 
 		/* Memorize */
-		sqinfo_on(c->squares[y][x].info, SQUARE_MARK);
+		square_memorize(c, y, x);
 
 		/* Redraw */
 		square_light_spot(c, y, x);
@@ -407,7 +404,7 @@ extern void hit_trap(int y, int x)
 
 		/* Trap becomes visible (always XXX) */
 		trf_on(trap->flags, TRF_VISIBLE);
-		sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+		square_memorize(cave, y, x);
 	}
 
     /* Verify traps (remove marker if appropriate) */

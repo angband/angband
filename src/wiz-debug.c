@@ -447,7 +447,7 @@ static void wiz_display_item(const struct object *obj, bool all)
 	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
 	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
 	prt_binary(f, 0, 22, j, '*', 28);
-	prt_binary(obj->known_flags, 0, 23, j, '+', 28);
+	prt_binary(obj->known->flags, 0, 23, j, '+', 28);
 }
 
 
@@ -462,7 +462,7 @@ static const region wiz_create_item_area = { 0, 0, 0, 0 };
  */
 static void get_art_name(char *buf, int max, int a_idx)
 {
-	struct object *obj;
+	struct object *obj, *known_obj;
 	struct object_kind *kind;
 	struct artifact *art = &a_info[a_idx];
 
@@ -483,11 +483,16 @@ static void get_art_name(char *buf, int max, int a_idx)
 	obj->artifact = art;
 
 	/* Make it known to us */
+	known_obj = object_new();
+	obj->known = known_obj;
+	known_obj->notice |= OBJ_NOTICE_IMAGINED;
 	object_notice_everything(obj);
 
 	/* Create the artifact description */
 	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL);
 
+	object_delete(&known_obj);
+	obj->known = NULL;
 	object_delete(&obj);
 }
 
@@ -827,6 +832,7 @@ static void wiz_reroll_item(struct object *obj)
 		/* Record the old pile info */
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
+		struct object *known_obj = obj->known;
 
 		/* Free slays and brands on the old object by hand */
 		free_slay(obj->slays);
@@ -836,6 +842,7 @@ static void wiz_reroll_item(struct object *obj)
 		object_copy(obj, new);
 		obj->prev = prev;
 		obj->next = next;
+		obj->known = known_obj;
 
 		/* Mark as cheat */
 		obj->origin = ORIGIN_CHEAT;
@@ -1471,7 +1478,6 @@ static void do_cmd_wiz_query(void)
 	/* Extract a flag */
 	switch (cmd)
 	{
-		case 'm': flag = (SQUARE_MARK); break;
 		case 'g': flag = (SQUARE_GLOW); break;
 		case 'r': flag = (SQUARE_ROOM); break;
 		case 'a': flag = (SQUARE_VAULT); break;
@@ -1498,10 +1504,10 @@ static void do_cmd_wiz_query(void)
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Given flag, show only those grids */
-			if (!sqinfo_has(cave->squares[y][x].info, flag)) continue;
+			if (flag && !sqinfo_has(cave->squares[y][x].info, flag)) continue;
 
-			/* Given no flag, show unknown grids */
-			if (!flag && (!square_ismark(cave, y, x))) continue;
+			/* Given no flag, show known grids */
+			if (!flag && (!square_isknown(cave, y, x))) continue;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
@@ -1642,7 +1648,7 @@ static void wiz_test_kind(int tval)
 	int px = player->px;
 	int sval;
 
-	struct object *obj;
+	struct object *obj, *known_obj;
 
 	for (sval = 0; sval < 255; sval++) {
 		/* This spams failure messages, but that's the downside of wizardry */
@@ -1663,6 +1669,10 @@ static void wiz_test_kind(int tval)
 			obj->origin = ORIGIN_CHEAT;
 			obj->origin_depth = player->depth;
 		}
+
+		/* Make a known object */
+		known_obj = object_new();
+		obj->known = known_obj;
 
 		/* Drop the object from heaven */
 		drop_near(cave, obj, 0, py, px, true);

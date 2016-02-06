@@ -31,48 +31,6 @@ enum
 #define ELEM_HIGH_MAX  ELEM_DISEN
 
 /**
- * Identify flags
- */
-enum
-{
-	ID_NONE,
-	#define STAT(a, b, c, d, e, f, g, h) ID_##a,
-	#include "list-stats.h"
-	#undef STAT
-	#define OBJ_MOD(a, b, c, d) ID_##a,
-	#include "list-object-modifiers.h"
-	#undef OBJ_MOD
-	#define ID(a) ID_##a,
-	#include "list-identify-flags.h"
-	#undef ID
-	ID_MAX
-};
-
-#define ID_MOD_MIN  ID_STR
-#define ID_MISC_MIN ID_ARTIFACT
-
-#define ID_SIZE                	FLAG_SIZE(ID_MAX)
-
-#define id_has(f, flag)        	flag_has_dbg(f, ID_SIZE, flag, #f, #flag)
-#define id_next(f, flag)       	flag_next(f, ID_SIZE, flag)
-#define id_is_empty(f)         	flag_is_empty(f, ID_SIZE)
-#define id_is_full(f)          	flag_is_full(f, ID_SIZE)
-#define id_is_inter(f1, f2)    	flag_is_inter(f1, f2, ID_SIZE)
-#define id_is_subset(f1, f2)   	flag_is_subset(f1, f2, ID_SIZE)
-#define id_is_equal(f1, f2)    	flag_is_equal(f1, f2, ID_SIZE)
-#define id_on(f, flag)         	flag_on_dbg(f, ID_SIZE, flag, #f, #flag)
-#define id_off(f, flag)        	flag_off(f, ID_SIZE, flag)
-#define id_wipe(f)             	flag_wipe(f, ID_SIZE)
-#define id_setall(f)           	flag_setall(f, ID_SIZE)
-#define id_negate(f)           	flag_negate(f, ID_SIZE)
-#define id_copy(f1, f2)        	flag_copy(f1, f2, ID_SIZE)
-#define id_union(f1, f2)       	flag_union(f1, f2, ID_SIZE)
-#define id_comp_union(f1, f2)  	flag_comp_union(f1, f2, ID_SIZE)
-#define id_inter(f1, f2)       	flag_inter(f1, f2, ID_SIZE)
-#define id_diff(f1, f2)        	flag_diff(f1, f2, ID_SIZE)
-
-
-/**
  * Object origin kinds
  */
 
@@ -83,15 +41,6 @@ enum {
 
 	ORIGIN_MAX
 };
-
-
-/* Values for struct object->marked */
-enum {
-	MARK_UNAWARE = 0,
-	MARK_AWARE = 1,
-	MARK_SEEN = 2
-};
-
 
 
 /*** Structures ***/
@@ -110,7 +59,6 @@ struct brand {
 	int element;
 	int multiplier;
 	int damage; /* Storage for damage during description */
-	bool known;
 	struct brand *next;
 };
 
@@ -120,15 +68,13 @@ struct slay {
 	int race_flag;
 	int multiplier;
 	int damage; /* Storage for damage during description */
-	bool known;
 	struct slay *next;
 };
 
 enum {
-	EL_INFO_KNOWN = 0x01,
-	EL_INFO_HATES = 0x02,
-	EL_INFO_IGNORE = 0x04,
-	EL_INFO_RANDOM = 0x08,
+	EL_INFO_HATES = 0x01,
+	EL_INFO_IGNORE = 0x02,
+	EL_INFO_RANDOM = 0x04,
 };
 
 /* Element info type */
@@ -245,6 +191,9 @@ struct object_kind {
 };
 
 extern struct object_kind *k_info;
+extern struct object_kind *unknown_item_kind;
+extern struct object_kind *unknown_gold_kind;
+extern struct object_kind *pile_kind;
 
 /**
  * Information about artifacts.
@@ -308,7 +257,7 @@ extern struct artifact *a_info;
 
 
 /**
- * Stricture for possible object kinds for an ego item
+ * Structure for possible object kinds for an ego item
  */
 struct ego_poss_item {
 	u32b kidx;
@@ -368,6 +317,15 @@ struct ego_item {
  */
 extern struct ego_item *e_info;
 
+/**
+ * Flags for the obj->notice field
+ */
+enum {
+	OBJ_NOTICE_WORN = 0x01,
+	OBJ_NOTICE_SENSED = 0x02,
+	OBJ_NOTICE_IGNORE = 0x04,
+	OBJ_NOTICE_IMAGINED = 0x08,
+};
 
 /*
  * Object information, for a specific object.
@@ -402,6 +360,9 @@ struct object {
 
 	struct object *prev;	/* Previous object in a pile */
 	struct object *next;	/* Next object in a pile */
+	struct object *known;	/* Known version of this object */
+
+	u16b oidx;			/* Item list index, if any */
 
 	byte iy;			/* Y-position on map, or zero */
 	byte ix;			/* X-position on map, or zero */
@@ -414,8 +375,6 @@ struct object {
 	s16b weight;		/* Item weight */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
-	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
-	bitflag id_flags[ID_SIZE];		/**< Object property ID flags */
 
 	s16b modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
@@ -437,8 +396,7 @@ struct object {
 	s16b timeout;		/* Timeout Counter */
 
 	byte number;		/* Number of items */
-	byte marked;		/* Object is marked */
-	byte ignore;		/* Object is ignored */
+	bitflag notice;		/* Attention paid to the object */
 
 	s16b held_m_idx;	/* Monster holding us (if any) */
 	s16b mimicking_m_idx; /* Monster mimicking us (if any) */

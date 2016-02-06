@@ -109,6 +109,7 @@ void kind_ignore_when_aware(struct object_kind *kind);
 void kind_ignore_when_unaware(struct object_kind *kind);
 bool object_is_ignored(const struct object *obj);
 bool ignore_item_ok(const struct object *obj);
+bool ignore_known_item_ok(const struct object *obj);
 void ignore_drop(void);
 const char *ignore_name_for_type(ignore_type_t type);
 

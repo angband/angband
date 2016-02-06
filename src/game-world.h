@@ -27,7 +27,6 @@ u32b seed_flavor;
 s32b turn;
 bool character_generated;
 bool character_dungeon;
-bool character_saved;
 const byte extract_energy[200];
 
 bool is_daytime(void);

@@ -113,6 +113,7 @@ void cleanup_stores(void)
 		struct store *store = &stores[i];
 
 		/* Free the store inventory */
+		object_pile_free(store->stock_k);
 		object_pile_free(store->stock);
 		mem_free(store->always_table);
 		mem_free(store->normal_table);
@@ -880,6 +881,7 @@ void home_carry(struct object *obj)
 
 	/* Insert the new object */
 	pile_insert(&store->stock, obj);
+	pile_insert(&store->stock_k, obj->known);
 	store->stock_num++;
 }
 
@@ -900,7 +902,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 {
 	unsigned int i;
 	u32b value;
-	struct object *temp_obj;
+	struct object *temp_obj, *known_obj = obj->known;
 
 	struct object_kind *kind = obj->kind;
 
@@ -908,10 +910,12 @@ struct object *store_carry(struct store *store, struct object *obj)
 	value = object_value(obj, 1, false);
 
 	/* Cursed/Worthless items "disappear" when sold */
-	if (value <= 0) return NULL;
+	if (value <= 0)
+		return NULL;
 
 	/* Erase the inscription & pseudo-ID bit */
 	obj->note = 0;
+	known_obj->note = 0;
 
 	/* Some item types require maintenance */
 	if (tval_is_light(obj)) {
@@ -943,6 +947,8 @@ struct object *store_carry(struct store *store, struct object *obj)
 		/* Can the existing items be incremented? */
 		if (object_similar(temp_obj, obj, OSTACK_STORE)) {
 			/* Absorb (some of) the object */
+			store_object_absorb(temp_obj->known, known_obj);
+			obj->known = NULL;
 			store_object_absorb(temp_obj, obj);
 
 			/* All done */
@@ -956,6 +962,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 
 	/* Insert the new object */
 	pile_insert(&store->stock, obj);
+	pile_insert(&store->stock_k, known_obj);
 	store->stock_num++;
 
 	return obj;
@@ -964,11 +971,16 @@ struct object *store_carry(struct store *store, struct object *obj)
 
 void store_delete(struct store *s, struct object *obj, int amt)
 {
+	struct object *known_obj = obj->known;
+
 	if (obj->number > amt) {
 		obj->number -= amt;
+		known_obj->number -= amt;
 	} else {
 		pile_excise(&s->stock, obj);
 		object_delete(&obj);
+		pile_excise(&s->stock_k, known_obj);
+		object_delete(&known_obj);
 		s->stock_num--;
 	}
 }
@@ -1140,7 +1152,7 @@ static bool store_create_random(struct store *store)
 	/* Consider up to six items */
 	for (tries = 0; tries < 6; tries++) {
 		struct object_kind *kind;
-		struct object *obj;
+		struct object *obj, *known_obj;
 
 		/* Work out the level for objects to be generated at */
 		level = rand_range(min_level, max_level);
@@ -1178,20 +1190,28 @@ static bool store_create_random(struct store *store)
 			}
 		}
 
+		/*** Post-generation filters ***/
+
+		/* Make a known object */
+		known_obj = object_new();
+		obj->known = known_obj;
+
 		/* Know everything but flavor, no origin yet */
 		object_know_all_but_flavor(obj);
 		obj->origin = ORIGIN_NONE;
 
-		/*** Post-generation filters ***/
-
 		/* Black markets have expensive tastes */
 		if ((store->sidx == STORE_B_MARKET) && !black_market_ok(obj)) {
+			object_delete(&known_obj);
+			obj->known = NULL;
 			object_delete(&obj);
 			continue;
 		}
 
 		/* No "worthless" items */
-		if (object_value(obj, 1, false) < 1)  {
+		if (object_value(obj, 1, FALSE) < 1)  {
+			object_delete(&known_obj);
+			obj->known = NULL;
 			object_delete(&obj);
 			continue;
 		}
@@ -1201,6 +1221,8 @@ static bool store_create_random(struct store *store)
 
 		/* Attempt to carry the object */
 		if (!store_carry(store, obj)) {
+			object_delete(&known_obj);
+			obj->known = NULL;
 			object_delete(&obj);
 			continue;
 		}
@@ -1221,11 +1243,13 @@ static struct object *store_create_item(struct store *store,
 										struct object_kind *kind)
 {
 	struct object *obj = object_new();
+	struct object *known_obj = object_new();
 
 	/* Create a new object of the chosen kind */
 	object_prep(obj, kind, 0, RANDOMISE);
 
 	/* Know everything but flavor, no origin yet */
+	obj->known = known_obj;
 	object_know_all_but_flavor(obj);
 	obj->origin = ORIGIN_NONE;
 
@@ -1307,8 +1331,9 @@ static void store_maint(struct store *s)
 			if (!obj)
 				obj = store_create_item(s, kind);
 
-			/* Snsure a full stack */
+			/* Ensure a full stack */
 			obj->number = z_info->stack_size;
+			obj->known->number = z_info->stack_size;
 		}
 	}
 
@@ -1337,7 +1362,8 @@ static void store_maint(struct store *s)
 			store_create_random(s);
 
 		if (!restock_attempts)
-			quit_fmt("Unable to (re-)stock store %d. Please report this bug", s->sidx + 1);
+			quit_fmt("Unable to (re-)stock store %d. Please report this bug",
+					 s->sidx + 1);
 	}
 }
 
@@ -1347,13 +1373,11 @@ static void store_maint(struct store *s)
 void store_update(void)
 {
 	if (OPT(cheat_xtra)) msg("Updating Shops...");
-	while (daycount--)
-	{
+	while (daycount--) {
 		int n;
 
 		/* Maintain each shop (except home) */
-		for (n = 0; n < MAX_STORES; n++)
-		{
+		for (n = 0; n < MAX_STORES; n++) {
 			/* Skip the home */
 			if (n == STORE_HOME) continue;
 
@@ -1362,14 +1386,12 @@ void store_update(void)
 		}
 
 		/* Sometimes, shuffle the shop-keepers */
-		if (one_in_(z_info->store_shuffle))
-		{
+		if (one_in_(z_info->store_shuffle)) {
 			/* Message */
 			if (OPT(cheat_xtra)) msg("Shuffling a Shopkeeper...");
 
 			/* Pick a random shop (except home) */
-			while (1)
-			{
+			while (1) {
 				n = randint0(MAX_STORES);
 				if (n != STORE_HOME) break;
 			}
@@ -1593,8 +1615,7 @@ void do_cmd_buy(struct command *cmd)
 {
 	int amt;
 
-	struct object *obj;	
-	struct object *bought = mem_zalloc(sizeof(*bought));
+	struct object *obj, *bought, *known_obj;
 
 	char o_name[80];
 	int price;
@@ -1620,6 +1641,7 @@ void do_cmd_buy(struct command *cmd)
 		return;
 
 	/* Get desired object */
+	bought = object_new();
 	object_copy_amt(bought, obj, amt);
 
 	/* Ensure we have room */
@@ -1671,6 +1693,11 @@ void do_cmd_buy(struct command *cmd)
 	if (tval_can_have_charges(obj))
 		obj->pval -= bought->pval;
 
+	/* Make a known object */
+	known_obj = object_new();
+	object_copy(known_obj, obj->known);
+	bought->known = known_obj;
+
 	/* Give it to the player */
 	inven_carry(player, bought, true, true);
 
@@ -1713,8 +1740,7 @@ void do_cmd_retrieve(struct command *cmd)
 {
 	int amt;
 
-	struct object *obj;	
-	struct object *picked_item;
+	struct object *obj, *known_obj, *picked_item;
 
 	struct store *store = store_at(cave, player->py, player->px);
 
@@ -1748,7 +1774,12 @@ void do_cmd_retrieve(struct command *cmd)
 
 	/* Distribute charges of wands, staves, or rods */
 	distribute_charges(obj, picked_item, amt);
-	
+
+	/* Make a known object */
+	known_obj = object_new();
+	object_copy(known_obj, obj->known);
+	picked_item->known = known_obj;
+
 	/* Give it to the player */
 	inven_carry(player, picked_item, true, true);
 

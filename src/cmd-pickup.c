@@ -82,7 +82,13 @@ static void player_pickup_gold(void)
 		total_gold += (s32b)obj->pval;
 
 		/* Delete the gold */
+		if (obj->known) {
+			square_excise_object(cave_k, player->py, player->px, obj->known);
+			delist_object(cave_k, obj->known);
+			object_delete(&obj->known);
+		}
 		square_excise_object(cave, player->py, player->px, obj);
+		delist_object(cave, obj);
 		object_delete(&obj);
 		obj = next;
 	}
@@ -159,8 +165,13 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 
 	/* Carry the object, prompting for number if necessary */
 	if (max == obj->number) {
+		if (obj->known) {
+			square_excise_object(cave_k, player->py, player->px, obj->known);
+			delist_object(cave_k, obj->known);
+		}
 		square_excise_object(cave, player->py, player->px, obj);
-		inven_carry(player, obj, true, domsg);
+		delist_object(cave, obj);
+		inven_carry(player, obj, TRUE, domsg);
 	} else {
 		int num;
 		bool dummy;
@@ -240,14 +251,14 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	}
 
 	/* Tally objects that can be at least partially picked up.*/
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x08, NULL);
+	floor_num = scan_floor(floor_list, floor_max, OFLOOR_VISIBLE, NULL);
 	for (i = 0; i < floor_num; i++)
 	    if (inven_carry_okay(floor_list[i]))
 			can_pickup++;
 
 	if (!can_pickup) {
-	    /* Can't pick up, but probably want to know what's there. */
 	    event_signal(EVENT_SEEFLOOR);
+		floor_pile_know(cave, py, px);
 		mem_free(floor_list);
 	    return objs_picked_up;
 	}
@@ -376,6 +387,6 @@ void do_cmd_autopickup(struct command *cmd)
 	if (player->upkeep->energy_use > z_info->move_energy)
 		player->upkeep->energy_use = z_info->move_energy;
 
-	/* Look at what's left */
+	/* Look at or feel what's left */
 	event_signal(EVENT_SEEFLOOR);
 }

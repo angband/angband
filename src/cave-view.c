@@ -298,11 +298,6 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
  * "vaults", and thus which grids cannot serve as the destinations of player 
  * teleportation.
  *
- * The "SQUARE_MARK" flag is used to determine which grids have been memorized 
- * by the player.  This flag is used by the "map_info()" function to determine
- * if a grid should be displayed. This flag is used in a few other places to 
- * determine if the player can * "know" about a given grid.
- *
  * The "SQUARE_GLOW" flag is used to determine which grids are "permanently 
  * illuminated".  This flag is used by the update_view() function to help 
  * determine which viewable flags may be "seen" by the player.  This flag 
@@ -344,16 +339,6 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
  * during the "update_view()" function.  This flag is used to "spread" light
  * or darkness through a room.  This flag is used by the "monster flow code".
  * This flag must always be cleared by any code which sets it.
- *
- * Note that the "SQUARE_MARK" flag is used for many reasons, some of which
- * are strictly for optimization purposes.  The "SQUARE_MARK" flag means that
- * even if the player cannot "see" the grid, he "knows" about the terrain in
- * that grid.  This is used to "memorize" grids when they are first "seen" by
- * the player, and to allow certain grids to be "detected" by certain magic.
- *
- * Objects are "memorized" in a different way, using a special "marked" flag
- * on the object itself, which is set when an object is observed or detected.
- * This allows objects to be "memorized" independant of the terrain features.
  *
  * The "update_view()" function is an extremely important function.  It is
  * called only when the player moves, significant terrain changes, or the

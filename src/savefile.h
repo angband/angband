@@ -20,12 +20,17 @@
 
 #define FINISHED_CODE 255
 #define ITEM_VERSION	5
+#define EGO_ART_KNOWN 0xffffffff
 
 /**
  * ------------------------------------------------------------------------
  * Savefile API
  * ------------------------------------------------------------------------ */
 
+/**
+ * Global "we've just saved" variable
+ */
+bool character_saved;
 
 /**
  * Save to the given location.  Returns true on success, false otherwise.

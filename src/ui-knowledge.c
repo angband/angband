@@ -1441,9 +1441,9 @@ static struct object *find_artifact(struct artifact *artifact)
  */
 static void desc_art_fake(int a_idx)
 {
-	struct object *obj;
-	struct object object_type_body = { 0 };
-	bool fake = false;
+	struct object *obj, *known_obj;
+	struct object object_body = { 0 }, known_object_body = { 0 };
+	bool fake = FALSE;
 
 	char header[120];
 
@@ -1454,11 +1454,13 @@ static void desc_art_fake(int a_idx)
 
 	/* If it's been lost, make a fake artifact for it */
 	if (!obj) {
-		fake = true;
-		obj = &object_type_body;
+		fake = TRUE;
+		obj = &object_body;
+		known_obj = &known_object_body;
+		obj->known = known_obj;
 
 		make_fake_artifact(obj, &a_info[a_idx]);
-		id_on(obj->id_flags, ID_ARTIFACT);
+		known_obj->artifact = (struct artifact *)1;
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
@@ -1473,8 +1475,10 @@ static void desc_art_fake(int a_idx)
 	tb = object_info(obj, OINFO_NONE);
 	object_desc(header, sizeof(header), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
-	if (fake)
+	if (fake) {
 		object_wipe(obj);
+		object_wipe(known_obj);
+	}
 
 	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
@@ -1779,7 +1783,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 static void desc_obj_fake(int k_idx)
 {
 	struct object_kind *kind = &k_info[k_idx];
-	struct object *obj = object_new();
+	struct object_kind *old_kind = player->upkeep->object_kind;
+	struct object *old_obj = player->upkeep->object;
+	struct object *obj = object_new(), *known_obj = object_new();
 
 	char header[120];
 
@@ -1799,6 +1805,7 @@ static void desc_obj_fake(int k_idx)
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, EXTREMIFY);
+	obj->known = known_obj;
 
 	/* Hack -- its in the store */
 	if (kind->aware) object_know_all_but_flavor(obj);
@@ -1814,8 +1821,17 @@ static void desc_obj_fake(int k_idx)
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
+	object_delete(&known_obj);
 	object_delete(&obj);
 	textblock_free(tb);
+
+	/* Restore the old trackee */
+	if (old_kind)
+		track_object_kind(player->upkeep, old_kind);
+	else if (old_obj)
+		track_object(player->upkeep, old_obj);
+	else
+		track_object_cancel(player->upkeep);
 }
 
 static int o_cmp_tval(const void *a, const void *b)

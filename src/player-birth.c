@@ -417,7 +417,7 @@ void player_init(struct player *p)
  */
 void wield_all(struct player *p)
 {
-	struct object *obj, *new_pile = NULL;
+	struct object *obj, *new_pile = NULL, *new_known_pile = NULL;
 	int slot;
 
 	/* Scan through the slots */
@@ -443,6 +443,7 @@ void wield_all(struct player *p)
 
 			/* Add to the pile of new objects to carry */
 			pile_insert(&new_pile, new);
+			pile_insert(&new_known_pile, new->known);
 		}
 
 		/* Wear the new stuff */
@@ -453,9 +454,10 @@ void wield_all(struct player *p)
 	}
 
 	/* Now add the unwielded split objects to the gear */
-	if (new_pile)
+	if (new_pile) {
 		pile_insert_end(&player->gear, new_pile);
-
+		pile_insert_end(&player->gear_k, new_known_pile);
+	}
 	return;
 }
 
@@ -488,7 +490,7 @@ static void player_outfit(struct player *p)
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
 		/* Get local object */
-		struct object *obj = object_new();
+		struct object *obj = object_new(), *known_obj;
 		int num = rand_range(si->min, si->max);
 
 		/* Without start_kit, only start with 1 food and 1 light */
@@ -504,9 +506,9 @@ static void player_outfit(struct player *p)
 		obj->number = num;
 		obj->origin = ORIGIN_BIRTH;
 
-		object_flavor_aware(obj);
+		known_obj = object_new();
+		obj->known = known_obj;
 		object_notice_everything(obj);
-		apply_autoinscription(obj);
 
 		/* Deduct the cost of the item from starting cash */
 		p->au -= object_value(obj, obj->number, false);

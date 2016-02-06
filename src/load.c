@@ -61,7 +61,6 @@ byte hist_size = 0;
  */
 byte obj_mod_max = 0;
 byte of_size = 0;
-byte id_size = 0;
 byte elem_max = 0;
 
 /**
@@ -104,8 +103,9 @@ static struct object *rd_item(void)
 	byte tmp8u;
 	u16b tmp16u;
 	s16b tmp16s;
-	byte ego_idx;
-	byte art_idx;
+	u32b ego_idx;
+	u32b art_idx;
+	byte effect;
 	size_t i;
 	char buf[128];
 	byte ver = 1;
@@ -114,6 +114,8 @@ static struct object *rd_item(void)
 	rd_byte(&ver);
 	if (tmp16u != 0xffff)
 		return NULL;
+
+	rd_u16b(&obj->oidx);
 
 	/* Location */
 	rd_byte(&obj->iy);
@@ -127,8 +129,9 @@ static struct object *rd_item(void)
 	rd_byte(&obj->number);
 	rd_s16b(&obj->weight);
 
-	rd_byte(&art_idx);
-	rd_byte(&ego_idx);
+	rd_u32b(&art_idx);
+	rd_u32b(&ego_idx);
+	rd_byte(&effect);
 
 	rd_s16b(&obj->timeout);
 
@@ -141,23 +144,13 @@ static struct object *rd_item(void)
 	rd_byte(&obj->dd);
 	rd_byte(&obj->ds);
 
-	rd_byte(&obj->marked);
-
 	rd_byte(&obj->origin);
 	rd_byte(&obj->origin_depth);
 	rd_u16b(&obj->origin_xtra);
-	rd_byte(&obj->ignore);
+	rd_byte(&obj->notice);
 
 	for (i = 0; i < of_size; i++)
 		rd_byte(&obj->flags[i]);
-
-	of_wipe(obj->known_flags);
-
-	for (i = 0; i < of_size; i++)
-		rd_byte(&obj->known_flags[i]);
-
-	for (i = 0; i < id_size; i++)
-		rd_byte(&obj->id_flags[i]);
 
 	for (i = 0; i < obj_mod_max; i++) {
 		rd_s16b(&obj->modifiers[i]);
@@ -174,8 +167,6 @@ static struct object *rd_item(void)
 		b->element = tmp16s;
 		rd_s16b(&tmp16s);
 		b->multiplier = tmp16s;
-		rd_byte(&tmp8u);
-		b->known = tmp8u ? true : false;
 		b->next = obj->brands;
 		obj->brands = b;
 		rd_byte(&tmp8u);
@@ -192,8 +183,6 @@ static struct object *rd_item(void)
 		s->race_flag = tmp16s;
 		rd_s16b(&tmp16s);
 		s->multiplier = tmp16s;
-		rd_byte(&tmp8u);
-		s->known = tmp8u ? true : false;
 		s->next = obj->slays;
 		obj->slays = s;
 		rd_byte(&tmp8u);
@@ -228,21 +217,35 @@ static struct object *rd_item(void)
 	/* Lookup item kind */
 	obj->kind = lookup_kind(obj->tval, obj->sval);
 
-	/* Check we have a kind and a valid artifact index */
-	if (!obj->tval || !obj->kind || art_idx >= z_info->a_max) {
+	/* Check we have a kind */
+	if ((!obj->tval && !obj->sval) || !obj->kind) {
 		object_delete(&obj);
 		return NULL;
 	}
 
-	/* Lookup ego, set effect */
+	/* Lookup ego */
 	obj->ego = lookup_ego(ego_idx);
-	if (obj->ego && obj->ego->effect)
-		obj->effect = obj->ego->effect;
-	else
-		obj->effect = obj->kind->effect;
+	if (ego_idx == EGO_ART_KNOWN)
+		obj->ego = (struct ego_item *)1;
 
-	if (art_idx > 0)
+	/* Set artifact, fail if invalid index */
+	if (art_idx == EGO_ART_KNOWN) {
+		obj->artifact = (struct artifact *)1;
+	} else if (art_idx >= z_info->a_max) {
+		object_delete(&obj);
+		return NULL;
+	} else if (art_idx > 0) {
 		obj->artifact = &a_info[art_idx];
+	}
+
+	/* Set effect */
+	if (effect == 1)
+		obj->effect = (struct effect *)1;
+	else if (effect && obj->ego)
+		obj->effect = obj->ego->effect;
+
+	if (effect && !obj->effect)
+		obj->effect = obj->kind->effect;
 
 	/* Success */
 	return obj;
@@ -307,6 +310,9 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 			break;
 
 		pile_insert(&mon->held_obj, obj);
+		assert(obj->oidx);
+		assert(c->objects[obj->oidx] == NULL);
+		c->objects[obj->oidx] = obj;
 	}
 
 	return true;
@@ -502,13 +508,6 @@ int rd_object_memory(void)
 	rd_byte(&of_size);
 	if (of_size > OF_SIZE) {
 	        note(format("Too many (%u) object flags!", of_size));
-		return (-1);
-	}
-
-	/* Identify flags */
-	rd_byte(&id_size);
-	if (id_size > ID_SIZE) {
-	        note(format("Too many (%u) identify flags!", id_size));
 		return (-1);
 	}
 
@@ -971,15 +970,23 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
  */
 int rd_gear(void)
 {
+	struct object *obj, *known_obj;
+
 	/* Get real gear */
 	if (rd_gear_aux(rd_item, &player->gear))
 		return -1;
-	/* Maybe we have to duplicate also upkeep and body */
-	calc_inventory(player->upkeep, player->gear, player->body);
 
 	/* Get known gear */
 	if (rd_gear_aux(rd_item, &player->gear_k))
 		return -1;
+
+	/* Align the two */
+	for (obj = player->gear, known_obj = player->gear_k; obj;
+		 obj = obj->next, known_obj = known_obj->next)
+		obj->known = known_obj;
+
+	/* Maybe we have to duplicate also upkeep and body */
+	calc_inventory(player->upkeep, player->gear, player->body);
 
 	return 0;
 }
@@ -1009,13 +1016,20 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 
 		/* Read the items */
 		for (; num; num--) {
-			struct object *obj = (*rd_item_version)();
+			/* Read the known item */
+			struct object *obj, *known_obj = (*rd_item_version)();
+			if (!known_obj) {
+				note("Error reading known item");
+				return (-1);
+			}
 
 			/* Read the item */
+			obj = (*rd_item_version)();
 			if (!obj) {
 				note("Error reading item");
 				return (-1);
 			}
+			obj->known = known_obj;
 
 			/* Accept any valid items */
 			if (store->stock_num < z_info->store_inven_max && obj->kind) {
@@ -1140,9 +1154,18 @@ static int rd_dungeon_aux(struct chunk **c)
  */
 static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 {
+	int i;
+
 	/* Only if the player's alive */
 	if (player->is_dead)
 		return 0;
+
+	/* Make the object list */
+	rd_u16b(&c->obj_max);
+	c->objects = mem_realloc(c->objects,
+							 (c->obj_max + 1) * sizeof(struct object*));
+	for (i = 0; i <= c->obj_max; i++)
+		c->objects[i] = NULL;
 
 	/* Read the dungeon items until one isn't returned */
 	while (true) {
@@ -1150,11 +1173,11 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		if (!obj)
 			break;
 
-		if	(!floor_carry(c, obj->iy, obj->ix, obj, true)) {
-			note(format("Cannot place object at row %d, column %d!",
-					obj->iy, obj->ix));
-			return -1;
-		}
+		if (square_in_bounds_fully(c, obj->iy, obj->ix))
+			pile_insert_end(&c->squares[obj->iy][obj->ix].obj, obj);
+		assert(obj->oidx);
+		assert(c->objects[obj->oidx] == NULL);
+		c->objects[obj->oidx] = obj;
 	}
 
 	return 0;
@@ -1167,10 +1190,6 @@ static int rd_monsters_aux(struct chunk *c)
 {
 	int i;
 	u16b limit;
-
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
 
 	/* Read the monster count */
 	rd_u16b(&limit);
@@ -1292,6 +1311,7 @@ int rd_objects(void)
 		return -1;
 	if (rd_objects_aux(rd_item, cave_k))
 		return -1;
+
 	return 0;
 }
 
@@ -1300,10 +1320,22 @@ int rd_objects(void)
  */
 int rd_monsters (void)
 {
+	int i;
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
 	if (rd_monsters_aux(cave))
 		return -1;
 	if (rd_monsters_aux(cave_k))
 		return -1;
+
+	/* Associate known objects */
+	for (i = 0; i < cave_k->obj_max; i++)
+		if (cave->objects[i] && cave_k->objects[i])
+			cave->objects[i]->known = cave_k->objects[i];
+
 	return 0;
 }
 

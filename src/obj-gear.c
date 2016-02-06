@@ -359,10 +359,11 @@ char gear_to_label(struct object *obj)
  * \param obj the object being tested
  * \return whether an object was removed
  */
-bool gear_excise_object(struct object *obj)
+static bool gear_excise_object(struct object *obj)
 {
 	int i;
 
+	pile_excise(&player->gear_k, obj->known);
 	pile_excise(&player->gear, obj);
 
 	/* Change the weight */
@@ -395,6 +396,7 @@ struct object *gear_last_item(void)
 void gear_insert_end(struct object *obj)
 {
 	pile_insert_end(&player->gear, obj);
+	pile_insert_end(&player->gear_k, obj->known);
 }
 
 /**
@@ -617,9 +619,6 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 	struct object *gear_obj;
 	char o_name[80];
 
-	/* Apply an autoinscription */
-	apply_autoinscription(obj);
-
 	/* Check for combining, if appropriate */
 	if (absorb) {
 		for (gear_obj = p->gear; gear_obj; gear_obj = gear_obj->next) {
@@ -632,7 +631,9 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 				/* Increase the weight */
 				p->upkeep->total_weight += (obj->number * obj->weight);
 
-				/* Combine the items */
+				/* Combine the items, and their known versions */
+				object_absorb(gear_obj->known, obj->known);
+				obj->known = NULL;
 				object_absorb(gear_obj, obj);
 
 				/* Describe the combined object */
@@ -668,10 +669,13 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 	/* Add to the end of the list */
 	gear_insert_end(obj);
 
+	/* Apply an autoinscription */
+	apply_autoinscription(obj);
+
 	/* Remove cave object details */
 	obj->held_m_idx = 0;
 	obj->iy = obj->ix = 0;
-	obj->marked = false;
+	obj->known->iy = obj->known->ix = 0;
 
 	/* Update the inventory */
 	p->upkeep->total_weight += (obj->number * obj->weight);
@@ -715,6 +719,7 @@ void inven_wield(struct object *obj, int slot)
 
 	const char *fmt;
 	char o_name[80];
+	bool dummy = FALSE;
 
 	/* Increase equipment counter if empty slot */
 	if (old == NULL)
@@ -723,26 +728,31 @@ void inven_wield(struct object *obj, int slot)
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Split off a new object if necessary */
-	if (obj->number > 1) {
-		/* Split off a new single object */
-		wielded = object_split(obj, 1);
+	/* It's either a gear object or a floor object */
+	if (object_is_carried(player, obj)) {
+		/* Split off a new object if necessary */
+		if (obj->number > 1) {
+			wielded = gear_object_for_use(obj, 1, FALSE, &dummy);
 
-		/* If it's a gear object, give the split item a list entry */
-		if (pile_contains(player->gear, obj)) {
+			/* The new item needs new gear and known gear entries */
 			wielded->next = obj->next;
 			obj->next = wielded;
 			wielded->prev = obj;
 			if (wielded->next)
 				(wielded->next)->prev = wielded;
+			wielded->known->next = obj->known->next;
+			obj->known->next = wielded->known;
+			wielded->known->prev = obj->known;
+			if (wielded->known->next)
+				(wielded->known->next)->prev = wielded->known;
+		} else {
+			/* Just use the object directly */
+			wielded = obj;
 		}
-	} else
-		wielded = obj;
-
-	/* Carry floor items, don't allow combining */
-	if (square_holds_object(cave, player->py, player->px, wielded)) {
-		square_excise_object(cave, player->py, player->px, wielded);
-		inven_carry(player, wielded, false, false);
+	} else {
+		/* Get a floor item and carry it */
+		wielded = floor_object_for_use(obj, 1, FALSE, &dummy);
+		inven_carry(player, wielded, FALSE, FALSE);
 	}
 
 	/* Wear the new stuff */
@@ -860,7 +870,7 @@ void inven_drop(struct object *obj, int amt)
 	/* Check it is still held, in case there were two drop commands queued
 	 * for this item.  This is in theory not ideal, but in practice should
 	 * be safe. */
-	if (!pile_contains(player->gear, obj))
+	if (!object_is_carried(player, obj))
 		return;
 
 	/* Get where the object is now */
@@ -955,12 +965,15 @@ void combine_pack(void)
 
 			/* Can we drop "obj1" onto "obj2"? */
 			if (object_similar(obj2, obj1, OSTACK_PACK)) {
-				display_message = true;
+				display_message = TRUE;
+				object_absorb(obj2->known, obj1->known);
+				obj1->known = NULL;
 				object_absorb(obj2, obj1);
 				break;
 			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
-				/* Setting this to true spams the combine message. */
-				display_message = false;
+				/* Setting this to TRUE spams the combine message. */
+				display_message = FALSE;
+				object_absorb_partial(obj2->known, obj1->known);
 				object_absorb_partial(obj2, obj1);
 				break;
 			}

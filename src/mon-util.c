@@ -443,9 +443,6 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 		}
 	}
 
-	/* Forget mark */
-	obj->marked = false;
-
 	/* Forget location */
 	obj->iy = obj->ix = 0;
 
@@ -453,6 +450,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 	obj->held_m_idx = mon->midx;
 
 	/* Add the object to the monster's inventory */
+	list_object(c, obj);
 	pile_insert(&mon->held_obj, obj);
 
 	/* Result */
@@ -600,6 +598,7 @@ void become_aware(struct monster *mon)
 				monster_carry(cave, mon, obj);
 			else {
 				/* Otherwise delete the mimicked object */
+				delist_object(cave, obj);
 				object_delete(&obj);
 			}
 		}
@@ -609,6 +608,7 @@ void become_aware(struct monster *mon)
 		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
 
+	square_note_spot(cave, mon->fy, mon->fx);
 	square_light_spot(cave, mon->fy, mon->fx);
 }
 

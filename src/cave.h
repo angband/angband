@@ -157,10 +157,10 @@ struct chunk {
 	u16b feeling_squares; /* How many feeling squares the player has visited */
 	int *feat_count;
 
-	byte **feat;
-	s16b **m_idx;
-
 	struct square **squares;
+
+	struct object **objects;
+	u16b obj_max;
 
 	struct monster *monsters;
 	u16b mon_max;
@@ -224,7 +224,6 @@ void square_note_spot(struct chunk *c, int y, int x);
 void square_light_spot(struct chunk *c, int y, int x);
 void light_room(int y1, int x1, bool light);
 void wiz_light(struct chunk *c, bool full);
-void wiz_dark(void);
 void cave_illuminate(struct chunk *c, bool daytime);
 void cave_update_flow(struct chunk *c);
 void cave_forget_flow(struct chunk *c);
@@ -267,6 +266,7 @@ bool square_isupstairs(struct chunk *c, int y, int x);
 bool square_isdownstairs(struct chunk *c, int y, int x);
 bool square_isshop(struct chunk *c, int y, int x);
 bool square_isplayer(struct chunk *c, int y, int x);
+bool square_isknown(struct chunk *c, int y, int x);
 
 /* SQUARE INFO PREDICATES */
 bool square_ismark(struct chunk *c, int y, int x);
@@ -352,6 +352,11 @@ void square_force_floor(struct chunk *c, int y, int x);
 int square_shopnum(struct chunk *c, int y, int x);
 int square_digging(struct chunk *c, int y, int x);
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x);
+
+void square_memorize(struct chunk *c, int y, int x);
+void square_forget(struct chunk *c, int y, int x);
+void square_mark(struct chunk *c, int y, int x);
+void square_unmark(struct chunk *c, int y, int x);
 
 /* cave.c */
 void set_terrain(void);

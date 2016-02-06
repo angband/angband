@@ -144,7 +144,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	int ex_offset_ctr;
 	char buf[80];
 	struct object *obj = items[obj_num].object;
-	bool show_label = (mode & OLIST_WINDOW || player->is_dead) ? true : false;
+	bool show_label = mode & (OLIST_WINDOW | OLIST_DEATH) ? TRUE : FALSE;
 	int label_size = show_label ? strlen(items[obj_num].label) : 0;
 	int equip_label_size = strlen(items[obj_num].equip_label);
 
@@ -259,11 +259,12 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 	int i;
 	struct object *obj;
 	char buf[80];
-	bool gold_ok = (mode & OLIST_GOLD) ? true : false;
-	bool in_term = (mode & OLIST_WINDOW) ? true : false;
-	bool show_empty = (mode & OLIST_SEMPTY) ? true : false;
-	bool equip = list ? false : true;
-	bool quiver = list == player->upkeep->quiver ? true : false;
+	bool gold_ok = (mode & OLIST_GOLD) ? TRUE : FALSE;
+	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool dead = (mode & OLIST_DEATH) ? TRUE : FALSE;
+	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
+	bool equip = list ? FALSE : TRUE;
+	bool quiver = list == player->upkeep->quiver ? TRUE : FALSE;
 
 	/* Build the object list */
 	for (i = 0; i <= last; i++) {
@@ -288,7 +289,7 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 			my_strcap(buf);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
-		} else if (in_term && quiver) {
+		} else if ((in_term || dead) && quiver) {
 			strnfmt(buf, sizeof(buf), "Slot %-9d: ", i);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
@@ -1166,14 +1167,11 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 					 cmd_code cmd, item_tester tester, int mode)
 {
-	int py = player->py;
-	int px = player->px;
-
-	bool use_inven = ((mode & USE_INVEN) ? true : false);
-	bool use_equip = ((mode & USE_EQUIP) ? true : false);
-	bool use_quiver = ((mode & USE_QUIVER) ? true : false);
-	bool use_floor = ((mode & USE_FLOOR) ? true : false);
-	bool quiver_tags = ((mode & QUIVER_TAGS) ? true : false);
+	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
+	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
+	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
+	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
+	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 
 	bool allow_inven = false;
 	bool allow_equip = false;
@@ -1271,7 +1269,8 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		item_mode -= USE_QUIVER;
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x0B, tester);
+	floor_num = scan_floor(floor_list, floor_max,
+						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE, tester);
 
 	/* Full floor */
 	f1 = 0;
@@ -1454,8 +1453,9 @@ void display_object_recall(struct object *obj)
  */
 void display_object_kind_recall(struct object_kind *kind)
 {
-	struct object object = { 0 };
+	struct object object = { 0 }, known_obj = { 0 };
 	object_prep(&object, kind, 0, EXTREMIFY);
+	object.known = &known_obj;
 	if (kind->aware)
 		object_notice_everything(&object);
 
@@ -1542,7 +1542,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 	m->selections = lower_case;
 
 	/* Basic ignore option */
-	if (!obj->ignore) {
+	if (!(obj->known->notice & OBJ_NOTICE_IGNORE)) {
 		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
 	} else {
 		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
@@ -1619,9 +1619,9 @@ void textui_cmd_ignore_menu(struct object *obj)
 	screen_load();
 
 	if (selected == IGNORE_THIS_ITEM) {
-		obj->ignore = true;
+		obj->known->notice |= OBJ_NOTICE_IGNORE;
 	} else if (selected == UNIGNORE_THIS_ITEM) {
-		obj->ignore = false;
+		obj->known->notice &= ~(OBJ_NOTICE_IGNORE);
 	} else if (selected == IGNORE_THIS_FLAVOR) {
 		object_ignore_flavor_of(obj);
 	} else if (selected == UNIGNORE_THIS_FLAVOR) {

@@ -32,6 +32,7 @@
 #include "obj-chest.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-pile.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
@@ -258,7 +259,7 @@ void do_cmd_toggle_search(struct command *cmd)
 static bool do_cmd_open_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!square_ismark(cave, y, x)) {
+	if (!square_isknown(cave, y, x)) {
 		msg("You see nothing there.");
 		return false;
 	}
@@ -316,7 +317,7 @@ static bool do_cmd_open_aux(int y, int x)
 			square_open_door(cave, y, x);
 
 			/* Update the visuals */
-			sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+			square_memorize(cave, y, x);
 			square_light_spot(cave, y, x);
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
@@ -335,7 +336,7 @@ static bool do_cmd_open_aux(int y, int x)
 	} else {
 		/* Closed door */
 		square_open_door(cave, y, x);
-		sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+		square_memorize(cave, y, x);
 		square_light_spot(cave, y, x);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 		sound(MSG_OPENDOOR);
@@ -440,7 +441,7 @@ void do_cmd_open(struct command *cmd)
 static bool do_cmd_close_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!square_ismark(cave, y, x)) {
+	if (!square_isknown(cave, y, x)) {
 		/* Message */
 		msg("You see nothing there.");
 
@@ -483,7 +484,7 @@ static bool do_cmd_close_aux(int y, int x)
 	} else {
 		/* Close door */
 		square_close_door(cave, y, x);
-		sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+		square_memorize(cave, y, x);
 		square_light_spot(cave, y, x);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 		sound(MSG_SHUTDOOR);
@@ -558,7 +559,7 @@ void do_cmd_close(struct command *cmd)
 static bool do_cmd_tunnel_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!square_ismark(cave, y, x)) {
+	if (!square_isknown(cave, y, x)) {
 		msg("You see nothing there.");
 		return (false);
 	}
@@ -600,7 +601,7 @@ static bool twall(int y, int x)
 	sound(MSG_DIG);
 
 	/* Forget the wall */
-	sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+	square_forget(cave, y, x);
 
 	/* Remove the feature */
 	square_tunnel_wall(cave, y, x);
@@ -737,7 +738,7 @@ void do_cmd_tunnel(struct command *cmd)
 static bool do_cmd_disarm_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!square_ismark(cave, y, x)) {
+	if (!square_isknown(cave, y, x)) {
 		msg("You see nothing there.");
 		return false;
 	}
@@ -867,7 +868,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		player_exp_gain(player, power);
 
 		/* Forget the trap */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
+		square_forget(cave, y, x);
 
 		/* Remove the trap */
 		square_destroy_trap(cave, y, x);
@@ -1060,7 +1061,7 @@ void move_player(int dir, bool disarm)
 		} else {
 			py_attack(y, x);
 		}
-	} else if (disarm && square_ismark(cave, y, x) && alterable) {
+	} else if (disarm && square_isknown(cave, y, x) && alterable) {
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
 			cmd_set_repeat(99);
@@ -1074,19 +1075,19 @@ void move_player(int dir, bool disarm)
 		disturb(player, 0);
 
 		/* Notice unknown obstacles, mention known obstacles */
-		if (!square_ismark(cave, y, x)) {
+		if (!square_isknown(cave, y, x)) {
 			if (square_isrubble(cave, y, x)) {
 				msgt(MSG_HITWALL,
 					 "You feel a pile of rubble blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
 			} else if (square_iscloseddoor(cave, y, x)) {
 				msgt(MSG_HITWALL, "You feel a door blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
 			} else {
 				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
+				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
 			}
 		} else {
@@ -1138,7 +1139,8 @@ void move_player(int dir, bool disarm)
 			event_signal(EVENT_LEAVE_STORE);
 			event_remove_handler_type(EVENT_LEAVE_STORE);
 		} else {
-			/* Handle objects (later) */
+			/* Know objects, queue autopickup */
+			floor_pile_know(cave, player->py, player->px);
 			cmdq_push(CMD_AUTOPICKUP);
 		}
 
@@ -1190,8 +1192,8 @@ static bool do_cmd_walk_test(int y, int x)
 	}
 
 	/* If we don't know the grid, allow attempts to walk into it */
-	if (!square_ismark(cave, y, x))
-		return true;
+	if (!square_isknown(cave, y, x))
+		return TRUE;
 
 	/* Require open space */
 	if (!square_ispassable(cave, y, x)) {
@@ -1363,8 +1365,10 @@ void do_cmd_hold(struct command *cmd)
 
 		/* Turn will be taken exiting the shop */
 		player->upkeep->energy_use = 0;
-	} else
+	} else {
 	    event_signal(EVENT_SEEFLOOR);
+		floor_pile_know(cave, player->py, player->px);
+	}
 }
 
 

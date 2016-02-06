@@ -1002,9 +1002,6 @@ static struct chunk TEST_DATA test_cave = {
 	.feeling_squares = 0,
 	.feat_count = NULL,
 
-	.feat = NULL,
-	.m_idx = NULL,
-
 	.squares = NULL,
 
 	.monsters = NULL,

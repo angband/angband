@@ -230,16 +230,16 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 
 	/* See what we've got */
 	for (i = 0; i < N_ELEMENTS(mod_flags); i++)
-		if (obj->modifiers[mod_flags[i].flag] != 0 &&	mod_flags[i].name[0]) {
+		if (obj->modifiers[mod_flags[i].flag] != 0 && mod_flags[i].name[0]) {
 			count++;
 			/* Either all mods are visible, or none are */
 			if (object_this_mod_is_visible(obj, mod_flags[i].flag))
 				detail = true;
 		}
-	
+
 	if (!count)
-		return false;
-	
+		return FALSE;
+
 	for (i = 0; i < N_ELEMENTS(mod_flags); i++) {
 		const char *desc = mod_flags[i].name;
 		int val = obj->modifiers[mod_flags[i].flag];
@@ -273,8 +273,7 @@ static bool describe_elements(textblock *tb,
 	for (i = 0; i < N_ELEMENTS(elements); i++)
 		list[i] = (el_info[i].res_level == 3);
 	count = element_info_collect(list, i_descs);
-	if (count)
-	{
+	if (count) {
 		textblock_append(tb, "Provides immunity to ");
 		info_out_list(tb, i_descs, count);
 		prev = true;
@@ -284,8 +283,7 @@ static bool describe_elements(textblock *tb,
 	for (i = 0; i < N_ELEMENTS(elements); i++)
 		list[i] = (el_info[i].res_level == 1);
 	count = element_info_collect(list, r_descs);
-	if (count)
-	{
+	if (count) {
 		textblock_append(tb, "Provides resistance to ");
 		info_out_list(tb, r_descs, count);
 		prev = true;
@@ -295,8 +293,7 @@ static bool describe_elements(textblock *tb,
 	for (i = 0; i < N_ELEMENTS(elements); i++)
 		list[i] = (el_info[i].res_level == -1);
 	count = element_info_collect(list, v_descs);
-	if (count)
-	{
+	if (count) {
 		textblock_append(tb, "Makes you vulnerable to ");
 		info_out_list(tb, v_descs, count);
 		prev = true;
@@ -420,17 +417,15 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
  */
 static bool describe_slays(textblock *tb, const struct object *obj)
 {
-	struct slay *known_slays = slay_collect(obj->slays, NULL, true);
-	struct slay *s;
+	struct slay *s = obj->known->slays;
 
-	if (!known_slays) return false;
+	if (!s) return FALSE;
 
 	if (tval_is_weapon(obj) || tval_is_fuel(obj))
 		textblock_append(tb, "Slays ");
 	else
 		textblock_append(tb, "It causes your melee attacks to slay ");
 
-	s = known_slays;
 	while (s) {
 		textblock_append(tb, s->name);
 		if (s->multiplier > 3)
@@ -442,8 +437,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
 		s = s->next;
 	}
 
-	free_slay(known_slays);
-	return true;
+	return TRUE;
 }
 
 /**
@@ -451,17 +445,15 @@ static bool describe_slays(textblock *tb, const struct object *obj)
  */
 static bool describe_brands(textblock *tb, const struct object *obj)
 {
-	struct brand *known_brands = brand_collect(obj->brands, NULL, true);
-	struct brand *b;
+	struct brand *b = obj->known->brands;
 
-	if (!known_brands) return false;
+	if (!b) return FALSE;
 
 	if (tval_is_weapon(obj) || tval_is_fuel(obj))
 		textblock_append(tb, "Branded with ");
 	else
 		textblock_append(tb, "It brands your melee attacks with ");
 
-	b = known_brands;
 	while (b) {
 		if (b->multiplier < 3)
 			textblock_append(tb, "weak ");
@@ -473,8 +465,7 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 		b = b->next;
 	}
 
-	free_brand(known_brands);
-	return true;
+	return TRUE;
 }
 
 /**
@@ -569,7 +560,7 @@ static void get_known_elements(const struct object *obj, const oinfo_detail_t mo
 {
 	size_t i;
 
-	/* Grab the object flags */
+	/* Grab the element info */
 	for (i = 0; i < N_ELEMENTS(elements); i++) {
 		/* Report fake egos or known element info */
 		if ((mode & OINFO_EGO) || object_element_is_known(obj, i)) {
@@ -791,8 +782,6 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	int multiplier = 1;
 
 	struct player_state state;
-	struct slay *s;
-	struct brand *b;
 	int weapon_slot = slot_by_name(player, "weapon");
 	struct object *current_weapon = slot_object(player, weapon_slot);
 
@@ -845,10 +834,10 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	if (ammo) multiplier = player->state.ammo_mult;
 
 	/* Get the brands */
-	*brand_list = brand_collect(obj->brands, ammo ? bow : NULL, true);
+	*brand_list = brand_collect(obj->known->brands, ammo ? bow->known : NULL);
 
 	/* Get the slays */
-	*slay_list = slay_collect(obj->slays, ammo ? bow : NULL, true);
+	*slay_list = slay_collect(obj->known->slays, ammo ? bow->known : NULL);
 
 	/* Melee weapons may get slays and brands from other items */
 	*nonweap_slay = false;
@@ -860,23 +849,14 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 			if (!slot_obj)
 				continue;
 
-			for (s = slot_obj->slays; s; s = s->next) {
-				if (s->known) {
-					*nonweap_slay = true;
-					break;
-				}
-			}
-			for (b = slot_obj->brands; b; b = b->next) {
-				if (b->known) {
-					*nonweap_slay = true;
-					break;
-				}
-			}
-			if (!(*nonweap_slay)) continue;
+			if (slot_obj->known->brands || slot_obj->known->slays)
+				*nonweap_slay = TRUE;
+			else
+				continue;
 
 			/* Replace the old lists with new ones */
-			new_brand = brand_collect(*brand_list, slot_obj, true);
-			new_slay = slay_collect(*slay_list, slot_obj, true);
+			new_brand = brand_collect(*brand_list, slot_obj->known);
+			new_slay = slay_collect(*slay_list, slot_obj->known);
 			free_brand(*brand_list);
 			free_slay(*slay_list);
 			*brand_list = new_brand;
@@ -951,7 +931,8 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	bool has_brands_or_slays;
 
 	/* Collect brands and slays */
-	has_brands_or_slays = obj_known_damage(obj, &normal_damage, &brands, &slays, &nonweap_slay);
+	has_brands_or_slays = obj_known_damage(obj, &normal_damage, &brands, &slays,
+										   &nonweap_slay);
 
 	/* Mention slays and brands from other items */
 	if (nonweap_slay)
@@ -1073,13 +1054,13 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 {
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj);
-	bool ammo   = (player->state.ammo_tval == obj->tval) &&
-	              (bow);
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
 
 	int range, break_chance;
 	bool impactful, thrown_effect, too_heavy;
 
-	obj_known_misc_combat(obj, &thrown_effect, &range, &impactful, &break_chance, &too_heavy);
+	obj_known_misc_combat(obj, &thrown_effect, &range, &impactful,
+						  &break_chance, &too_heavy);
 
 	if (!weapon && !ammo) {
 		if (thrown_effect) {
@@ -1136,10 +1117,9 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	struct object *current = slot_object(player, slot);
 
 	/* Doesn't remotely resemble a digger */
-	if (!tval_is_wearable(obj) || 
-		(!tval_is_melee_weapon(obj) && 
-		 (obj->modifiers[OBJ_MOD_TUNNEL] <= 0)))
-		return false;
+	if (!tval_is_wearable(obj) ||
+		(!tval_is_melee_weapon(obj) && (obj->modifiers[OBJ_MOD_TUNNEL] <= 0)))
+		return FALSE;
 
 	/* Player has no digging info */
 	if (!object_this_mod_is_visible(obj, OBJ_MOD_TUNNEL))
@@ -1172,9 +1152,9 @@ static bool describe_digger(textblock *tb, const struct object *obj)
 {
 	int i;
 	int deciturns[DIGGING_MAX];
-	/* Avoid compliler warning */
 	struct object *obj1 = (struct object *) obj;
-	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
+	static const char *names[4] = { "rubble", "magma veins", "quartz veins",
+									"granite" };
 
 	/* Get useful info or print nothing */
 	if (!obj_known_digging(obj1, deciturns)) return false;
@@ -1683,30 +1663,24 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 static void describe_flavor_text(textblock *tb, const struct object *obj,
 	bool ego)
 {
-	/* Display the known artifact description */
+	/* Display the known artifact or object description */
 	if (!OPT(birth_randarts) && obj->artifact &&
-			object_is_known(obj) && obj->artifact->text)
+		object_is_known(obj) && obj->artifact->text) {
 		textblock_append(tb, "%s\n\n", obj->artifact->text);
 
-	/* Display the known object description */
-	else if (object_flavor_is_aware(obj) || object_is_known(obj) || ego)
-	{
-		bool did_desc = false;
+	} else if (object_flavor_is_aware(obj) || object_is_known(obj) || ego) {
+		bool did_desc = FALSE;
 
-		if (!ego && obj->kind->text)
-		{
+		if (!ego && obj->kind->text) {
 			textblock_append(tb, "%s", obj->kind->text);
 			did_desc = true;
 		}
 
 		/* Display an additional ego-item description */
-		if ((ego || object_ego_is_visible(obj)) && obj->ego->text)
-		{
+		if ((ego || object_ego_is_visible(obj)) && obj->ego->text) {
 			if (did_desc) textblock_append(tb, "  ");
 			textblock_append(tb, "%s\n\n", obj->ego->text);
-		}
-		else if (did_desc)
-		{
+		} else if (did_desc) {
 			textblock_append(tb, "\n\n");
 		}
 	}
@@ -1725,8 +1699,7 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 			num = i;
 	}
 
-	if (num < 3)
-	{
+	if (num < 3) {
 		const char *xtra[] = { "sustain", "higher resistance", "ability" };
 		textblock_append(tb, "It provides one random %s.  ", xtra[num]);
 
@@ -1751,13 +1724,14 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	bool subjective = mode & OINFO_SUBJ ? true : false;
 	bool ego = mode & OINFO_EGO ? true : false;
 	textblock *tb = textblock_new();
+	const struct object *known_obj = obj->known ? obj->known : obj;
 
 	/* Unaware objects get simple descriptions */
-	if (obj->marked == MARK_AWARE) {
+	if (obj->kind != known_obj->kind) {
 		textblock_append(tb, "\n\nYou do not know what this is.\n");
 		return tb;
 	}
-	
+
 	/* Grab the object flags */
 	get_known_flags(obj, mode, flags);
 
@@ -1767,8 +1741,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (subjective) describe_origin(tb, obj, terse);
 	if (!terse) describe_flavor_text(tb, obj, ego);
 
-	if (!known)
-	{
+	if (!known)	{
 		textblock_append(tb, "You do not know the full extent of this item's powers.\n");
 		something = true;
 	}

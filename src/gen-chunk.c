@@ -345,6 +345,16 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 	for (i = 0; i < z_info->f_max + 1; i++)
 		dest->feat_count[i] += source->feat_count[i];
 
+	dest->objects = mem_realloc(dest->objects,
+								(dest->obj_max + source->obj_max + 2)
+								* sizeof(struct object*));
+	for (i = 0; i <= source->obj_max; i++) {
+		dest->objects[dest->obj_max + i] = source->objects[i];
+		if (dest->objects[dest->obj_max + i] != NULL)
+			dest->objects[dest->obj_max + i]->oidx = dest->obj_max + i;
+	}
+	dest->obj_max += source->obj_max + 1;
+
 	dest->obj_rating += source->obj_rating;
 	dest->mon_rating += source->mon_rating;
 
@@ -355,7 +365,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 }
 
 /**
- * Validate that the chunk contains no NULL objects. 
+ * Validate that the chunk contains no NULL objects.
  * Only checks for nonzero tval.
  * \param c is the chunk to validate.
  */

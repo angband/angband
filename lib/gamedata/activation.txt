@@ -1160,15 +1160,15 @@ aim:1
 power:12
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:3
+effect:BREATH:ACID:30
 dice:200
-effect:BREATH:ELEC:3
+effect:BREATH:ELEC:30
 dice:160
-effect:BREATH:FIRE:3
+effect:BREATH:FIRE:30
 dice:200
-effect:BREATH:COLD:3
+effect:BREATH:COLD:30
 dice:160
-effect:BREATH:POIS:3
+effect:BREATH:POIS:30
 dice:120
 desc:shoots a large ball of one of the base elements for 120-200 damage
 
@@ -1206,9 +1206,9 @@ aim:1
 power:8
 effect:RANDOM
 dice:2
-effect:BREATH:FIRE
+effect:BREATH:FIRE:30
 dice:80
-effect:BREATH:COLD
+effect:BREATH:COLD:30
 dice:80
 desc:causes you to breathe either cold or flames for 80 damage
 
@@ -1317,21 +1317,21 @@ desc:grants electricity resistance for d20+20 turns and creates a lightning ball
 name:DRAGON_BLUE
 aim:1
 power:18
-effect:BREATH:ELEC:2
+effect:BREATH:ELEC:20
 dice:150
 desc:allows you to breathe lightning for 150 damage
 
 name:DRAGON_GREEN
 aim:1
 power:19
-effect:BREATH:POIS:2
+effect:BREATH:POIS:20
 dice:150
 desc:allows you to breathe poison gas for 150 damage
 
 name:DRAGON_RED
 aim:1
 power:20
-effect:BREATH:FIRE:2
+effect:BREATH:FIRE:20
 dice:200
 desc:allows you to breathe fire for 200 damage
 
@@ -1340,22 +1340,22 @@ aim:1
 power:20
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:2
+effect:BREATH:ACID:20
 dice:250
-effect:BREATH:ELEC:2
+effect:BREATH:ELEC:20
 dice:250
-effect:BREATH:FIRE:2
+effect:BREATH:FIRE:20
 dice:250
-effect:BREATH:COLD:2
+effect:BREATH:COLD:20
 dice:250
-effect:BREATH:POIS:2
+effect:BREATH:POIS:20
 dice:250
 desc:allows you to breathe the elements for 250 damage
 
 name:DRAGON_GOLD
 aim:1
 power:19
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:150
 desc:allows you to breathe sound for 150 damage
 
@@ -1364,9 +1364,9 @@ aim:1
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:CHAOS:2
+effect:BREATH:CHAOS:20
 dice:220
-effect:BREATH:DISEN:2
+effect:BREATH:DISEN:20
 dice:220
 desc:allows you to breathe chaos or disenchantment for 220 damage
 
@@ -1375,9 +1375,9 @@ aim:1
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:230
-effect:BREATH:SHARD:2
+effect:BREATH:SHARD:20
 dice:230
 desc:allows you to breathe sound or shards for 230 damage
 
@@ -1386,13 +1386,13 @@ aim:1
 power:24
 effect:RANDOM
 dice:4
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:250
-effect:BREATH:SHARD:2
+effect:BREATH:SHARD:20
 dice:250
-effect:BREATH:CHAOS:2
+effect:BREATH:CHAOS:20
 dice:250
-effect:BREATH:DISEN:2
+effect:BREATH:DISEN:20
 dice:250
 desc:allows you to breathe balance for 250 damage
 
@@ -1401,15 +1401,15 @@ aim:1
 power:21
 effect:RANDOM
 dice:2
-effect:BREATH:LIGHT:2
+effect:BREATH:LIGHT:20
 dice:200
-effect:BREATH:DARK:2
+effect:BREATH:DARK:20
 dice:200
 desc:allows you to breathe light or darkness for 200 damage
 
 name:DRAGON_POWER
 aim:1
 power:25
-effect:BREATH:MISSILE:2
+effect:BREATH:MISSILE:20
 dice:300
 desc:allows you to breathe for 300 damage

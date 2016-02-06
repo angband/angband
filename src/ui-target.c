@@ -233,13 +233,13 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 
 	while (1) {
 		if (recall) {
-			display_object_recall_interactive(obj);
+			display_object_recall_interactive(cave->objects[obj->oidx]);
 			press = inkey_m();
 		} else {
 			char o_name[80];
 
 			/* Obtain an object description */
-			object_desc(o_name, sizeof(o_name), obj,
+			object_desc(o_name, sizeof(o_name), cave->objects[obj->oidx],
 						ODESC_PREFIX | ODESC_FULL);
 
 			/* Describe the object */
@@ -571,10 +571,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		if (square_isvisibletrap(cave, y, x))
 			break;
 	
-		/* Assume not floored */
-		floor_num = scan_floor(floor_list, floor_max, y, x, 0x0A, NULL);
-
-		/* Scan all marked objects in the grid */
+		/* Scan all sensed objects in the grid */
+		floor_num = scan_distant_floor(floor_list, floor_max, y, x);
 		if ((floor_num > 0) &&
 		    (!(player->timed[TMD_BLIND]) ||
 			 (y == player->py && x == player->px))) {
@@ -809,7 +807,7 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		int y = path_g[i].y;
 		int x = path_g[i].x;
 		struct monster *mon = square_monster(cave, y, x);
-		struct object *obj = square_object(cave, y, x);
+		struct object *obj = square_object(cave_k, y, x);
 
 		/*
 		 * As path[] is a straight line and the screen is oblong,
@@ -838,16 +836,16 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 			else
 				/* Visible monsters are red. */
 				colour = COLOUR_L_RED;
-		} else if (obj && obj->marked)
+		} else if (obj)
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;
 
-		else if ((!square_isprojectable(cave, y,x) && square_ismark(cave, y, x))
-				 || square_isseen(cave, y, x))
+		else if ((!square_isprojectable(cave, y, x) &&
+				  square_isknown(cave, y, x)) || square_isseen(cave, y, x))
 			/* Known walls are blue. */
 			colour = COLOUR_BLUE;
 
-		else if (!square_ismark(cave, y, x) && !square_isseen(cave, y, x))
+		else if (!square_isknown(cave, y, x) && !square_isseen(cave, y, x))
 			/* Unknown squares are grey. */
 			colour = COLOUR_L_DARK;
 

@@ -55,7 +55,7 @@ static int dir_search[8] = {2,4,6,8,1,3,7,9};
 static bool is_valid_pf(int y, int x)
 {
 	/* Unvisited means allowed */
-	if (!square_ismark(cave, y, x)) return (true);
+	if (!square_isknown(cave, y, x)) return (TRUE);
 
 	/* Require open space */
 	return (square_ispassable(cave, y, x));
@@ -408,7 +408,7 @@ static int see_wall(int dir, int y, int x)
 		return false;
 
 	/* Unknown walls are not known walls */
-	if (!square_ismark(cave, y, x)) return (false);
+	if (!square_isknown(cave, y, x)) return (FALSE);
 
 	/* Default */
 	return (true);
@@ -558,13 +558,13 @@ static bool run_test(void)
 		/* Visible objects abort running */
 		for (obj = square_object(cave, row, col); obj; obj = obj->next)
 			/* Visible object */
-			if (obj->marked && !ignore_item_ok(obj)) return (true);
+			if (obj->known && !ignore_item_ok(obj)) return (TRUE);
 
 		/* Assume unknown */
 		inv = true;
 
 		/* Check memorized grids */
-		if (square_ismark(cave, row, col)) {
+		if (square_isknown(cave, row, col)) {
 			bool notice = square_isinteresting(cave, row, col);
 
 			/* Interesting feature */
@@ -645,7 +645,7 @@ static bool run_test(void)
 
 			/* Unknown grid or non-wall */
 			/* Was: square_ispassable(cave, row, col) */
-			if (!square_ismark(cave, row, col) ||
+			if (!square_isknown(cave, row, col) ||
 			    (square_ispassable(cave, row, col))) {
 				/* Looking to break right */
 				if (run_break_right) {
@@ -668,7 +668,7 @@ static bool run_test(void)
 
 			/* Unknown grid or non-wall */
 			/* Was: square_ispassable(cave, row, col) */
-			if (!square_ismark(cave, row, col) ||
+			if (!square_isknown(cave, row, col) ||
 			    (square_ispassable(cave, row, col))) {
 				/* Looking to break left */
 				if (run_break_left) {
@@ -750,7 +750,7 @@ void run_step(int dir)
 
 			if (pf_result_index == 0) {
 				/* Known wall */
-				if (square_ismark(cave, y, x) &&
+				if (square_isknown(cave, y, x) &&
 					!square_ispassable(cave, y, x)) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = false;
@@ -770,7 +770,7 @@ void run_step(int dir)
 				x = player->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if (square_ismark(cave, y, x) &&
+				if (square_isknown(cave, y, x) &&
 					!square_ispassable(cave, y, x)) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = false;
@@ -792,7 +792,7 @@ void run_step(int dir)
 				/* Visible objects abort running */
 				for (obj = square_object(cave, y, x); obj; obj = obj->next)
 					/* Visible object */
-					if (obj->marked && !ignore_item_ok(obj)) {
+					if (obj->known && !ignore_item_ok(obj)) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = false;
 					return;
@@ -803,7 +803,7 @@ void run_step(int dir)
 				x = x + ddx[pf_result[pf_result_index - 1] - '0'];
 
 				/* Known wall, so run the direction we were going */
-				if (square_ismark(cave, y, x) &&
+				if (square_isknown(cave, y, x) &&
 					!square_ispassable(cave, y, x)) {
 					player->upkeep->running_withpathfind = false;
 					run_init(pf_result[pf_result_index] - '0');

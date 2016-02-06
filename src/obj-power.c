@@ -334,18 +334,22 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	struct slay *slays = obj->slays;
 
 	/* Count the known brands and slays */
+	if (!known && obj->known) {
+		brands = obj->known->brands;
+		slays = obj->known->slays;
+	} else {
+		brands = NULL;
+		slays = NULL;
+	}
 	while (brands) {
-		if (known || brands->known)
-			num_brands++;
+		num_brands++;
 		brands = brands->next;
 	}
 	while (slays) {
-		if (known || slays->known) {
-			if (slays->multiplier <= 3)
-				num_slays++;
-			else
-				num_kills++;
-		}
+		if (slays->multiplier <= 3)
+			num_slays++;
+		else
+			num_kills++;
 		slays = slays->next;
 	}
 
@@ -368,6 +372,8 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		 */
 		tot_mon_power = 0;
 		for (i = 0; i < z_info->r_max; i++)	{
+			struct object *checked_obj = known ? (struct object *)obj :
+				obj->known;
 			struct monster *mon = mem_zalloc(sizeof(*mon));
 			const struct brand *b = NULL;
 			const struct slay *s = NULL;
@@ -377,8 +383,8 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 			mon->race = &r_info[i];
 
 			/* Find the best multiplier against this monster */
-			improve_attack_modifier((struct object *)obj, mon, &b, &s, 
-									verb, false, false, !known);
+			improve_attack_modifier(checked_obj, mon, &b, &s, verb, FALSE,
+									FALSE);
 			if (s)
 				mult = s->multiplier;
 			else if (b)
@@ -402,8 +408,13 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 			/* Write info about the slay combination and multiplier */
 			log_obj("Slay multiplier for: ");
 
-			brands = brand_collect(obj->brands, NULL, !known);
-			slays = slay_collect(obj->slays, NULL, !known);
+			if (known) {
+				brands = brand_collect(obj->brands, NULL);
+				slays = slay_collect(obj->slays, NULL);
+			} else if (obj->known) {
+				brands = brand_collect(obj->known->brands, NULL);
+				slays = slay_collect(obj->known->slays, NULL);
+			}
 
 			for (b = brands; b; b = b->next) {
 				log_obj(format("%sx%d ", b->name, b->multiplier));

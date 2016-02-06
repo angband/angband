@@ -936,6 +936,11 @@ static struct file_parser object_base_parser = {
  * Parsing functions for object.txt
  */
 
+/* Generic object kinds */
+struct object_kind *unknown_item_kind;
+struct object_kind *unknown_gold_kind;
+struct object_kind *pile_kind;
+
 static enum parser_error parse_object_name(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -1242,7 +1247,6 @@ static enum parser_error parse_object_values(struct parser *p) {
 			b->name = string_make(brand_names[index]);
 			b->element = index;
 			b->multiplier = value;
-			b->known = true;
 			b->next = k->brands;
 			k->brands = b;
 		}
@@ -1253,7 +1257,6 @@ static enum parser_error parse_object_values(struct parser *p) {
 			s->name = string_make(slay_names[index]);
 			s->race_flag = index;
 			s->multiplier = value;
-			s->known = true;
 			s->next = k->slays;
 			k->slays = s;
 		} else if (!grab_base_and_int(&value, &name, t)) {
@@ -1262,7 +1265,6 @@ static enum parser_error parse_object_values(struct parser *p) {
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(name);
 			s->multiplier = value;
-			s->known = true;
 			s->next = k->slays;
 			k->slays = s;
 		}
@@ -1849,6 +1851,7 @@ static errr run_parse_artifact(struct parser *p) {
 
 static errr finish_parse_artifact(struct parser *p) {
 	struct artifact *a, *n;
+	int none;
 
 	/* scan the list for the max id */
 	z_info->a_max = 0;
@@ -1872,6 +1875,13 @@ static errr finish_parse_artifact(struct parser *p) {
 		mem_free(a);
 	}
 	z_info->a_max += 1;
+
+	/* Now we're done with object kinds, record kinds for generic objects */
+	none = tval_find_idx("none");
+	unknown_item_kind = lookup_kind(none, lookup_sval(none, "<unknown item>"));
+	unknown_gold_kind = lookup_kind(none,
+									lookup_sval(none, "<unknown treasure>"));
+	pile_kind = lookup_kind(none, lookup_sval(none, "<pile>"));
 
 	parser_destroy(p);
 	return 0;
@@ -4497,10 +4507,14 @@ void cleanup_angband(void)
 	mem_free(chunk_list);
 
 	/* Free the main cave */
-	if (cave)
-		cave_free(cave);
-	if (cave_k)
+	if (cave_k) {
 		cave_free(cave_k);
+		cave_k = NULL;
+	}
+	if (cave) {
+		cave_free(cave);
+		cave = NULL;
+	}
 
 	/* Free the history */
 	history_clear();

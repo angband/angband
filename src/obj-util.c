@@ -245,7 +245,7 @@ void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE])
 {
 	object_flags(obj, flags);
 
-	of_inter(flags, obj->known_flags);
+	of_inter(flags, obj->known->flags);
 
 	if (object_flavor_is_aware(obj))
 		of_union(flags, obj->kind->flags);

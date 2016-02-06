@@ -1133,7 +1133,15 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 			Term_big_queue_char(t, vx, vy, a, c, COLOUR_WHITE, ' ');
 	}
 
-	/* Refresh the main screen */
+	/* Refresh the main screen unless the map needs to center */
+	if (player->upkeep->update & (PU_PANEL) && OPT(center_player)) {
+		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 : t->hgt / 2;
+		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 : t->wid / 2;
+
+		if (panel_should_modify(t, player->py - hgt, player->px - wid))
+			return;
+	}
+
 	Term_fresh();
 }
 
@@ -2249,9 +2257,6 @@ static void check_panel(game_event_type type, game_event_data *data, void *user)
 static void see_floor_items(game_event_type type, game_event_data *data,
 							void *user)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int floor_max = z_info->floor_size;
 	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num = 0;
@@ -2261,8 +2266,9 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 	bool can_pickup = false;
 	int i;
 
-	/* Scan all marked objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x09, false);
+	/* Scan all visible, sensed objects in the grid */
+	floor_num = scan_floor(floor_list, floor_max,
+						   OFLOOR_SENSE | OFLOOR_VISIBLE, NULL);
 	if (floor_num == 0) {
 		mem_free(floor_list);
 		return;
@@ -2312,16 +2318,6 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 
 		/* Restore screen */
 		screen_load();
-	}
-
-	/* Update the map to display the items that are felt during blindness. */
-	if (blind) {
-		for (i = 0; i < floor_num; i++) {
-			/* Since the messages are detailed, we use MARK_SEEN to match
-			 * description. */
-			struct object *obj = floor_list[i];
-			obj->marked = MARK_SEEN;
-		}
 	}
 
 	mem_free(floor_list);

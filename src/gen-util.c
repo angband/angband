@@ -455,6 +455,7 @@ void place_object(struct chunk *c, int y, int x, int level, bool good, bool grea
 		object_delete(&new_obj);
 		return;
     } else {
+		list_object(c, new_obj);
 		if (new_obj->artifact)
 			c->good_item = true;
 		if (rating > 2500000)
@@ -487,6 +488,8 @@ void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 
     if (!floor_carry(c, y, x, money, false))
 		object_delete(&money);
+	else
+		list_object(c, money);
 }
 
 
