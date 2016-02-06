@@ -982,8 +982,10 @@ static struct player TEST_DATA test_player = {
 	.history = "no history",
 	.is_dead = 0,
 	.wizard = 0,
-	.gear = NULL,
 	.upkeep = &test_player_upkeep,
+	.gear = NULL,
+	.gear_k = NULL,
+	.obj_k = NULL,
 };
 
 static struct chunk TEST_DATA test_cave = {
