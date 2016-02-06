@@ -89,7 +89,7 @@ H:You always get the first move when entering a level.
 H:Regeneration makes you hungry more quickly.
 H:If you're in extreme need of food, curing potions might do you good.
 H:Under great weights of loot, you'll be less quick of foot.
-H:You're never invicible. Never forget that.
+H:You're never invincible. Never forget that.
 H:Always carry around an escape that you can use while blind and confused.
 H:Staying on a level too long can cause awake random monsters to spawn.
 H:Wands and staves sell for a good price even with 0 charges.
