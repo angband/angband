@@ -575,6 +575,8 @@ struct player {
 	struct object *gear;
 	/* Known gear */
 	struct object *gear_k;
+	/* Object knowledge ("runes") */
+	struct object *obj_k;
 
 	struct player_body body;
 };
