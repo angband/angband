@@ -139,7 +139,7 @@ static const struct monster_spell *monster_spell_by_index(int index)
 void do_mon_spell(int index, struct monster *mon, bool seen)
 {
 	char m_name[80];
-	bool ident, hits = FALSE;
+	bool ident, hits = false;
 
 	/* Extract the monster level */
 	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
@@ -151,9 +151,9 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 
 	/* See if it hits */
 	if (spell->hit == 100)
-		hits = TRUE;
+		hits = true;
 	else if (spell->hit == 0)
-		hits = FALSE;
+		hits = false;
 	else
 		hits = check_hit(player, spell->hit, rlev);
 
@@ -171,7 +171,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	}
 
 	/* Do effects */
-	effect_do(spell->effect, NULL, &ident, TRUE, 0, 0, 0);
+	effect_do(spell->effect, NULL, &ident, true, 0, 0, 0);
 
 	return;
 }
@@ -213,18 +213,18 @@ static bool mon_spell_is_valid(int index)
 static bool monster_spell_is_projectable(int index)
 {
 	return (mon_spell_types[index].type &
-			(RST_BOLT | RST_BALL | RST_BREATH)) ? TRUE : FALSE;
+			(RST_BOLT | RST_BALL | RST_BREATH)) ? true : false;
 }
 
 static bool monster_spell_is_breath(int index)
 {
-	return (mon_spell_types[index].type & RST_BREATH) ? TRUE : FALSE;
+	return (mon_spell_types[index].type & RST_BREATH) ? true : false;
 }
 
 static bool mon_spell_has_damage(int index)
 {
 	return (mon_spell_types[index].type &
-			(RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK)) ? TRUE : FALSE;
+			(RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK)) ? true : false;
 }
 
 bool mon_spell_is_innate(int index)
@@ -234,7 +234,7 @@ bool mon_spell_is_innate(int index)
 
 /**
  * Test a spell bitflag for a type of spell.
- * Returns TRUE if any desired type is among the flagset
+ * Returns true if any desired type is among the flagset
  *
  * \param f is the set of spell flags we're testing
  * \param types is the spell type(s) we're looking for
@@ -245,9 +245,9 @@ bool test_spells(bitflag *f, int types)
 
 	for (info = mon_spell_types; info->index < RSF_MAX; info++)
 		if (rsf_has(f, info->index) && (info->type & types))
-			return TRUE;
+			return true;
 
-	return FALSE;
+	return false;
 }
 
 /**

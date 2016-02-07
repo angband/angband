@@ -56,7 +56,7 @@ static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t
 	if (square_isview(cave, y, x)) {
 		if (!player->timed[TMD_BLIND]) {
 			/* Observe */
-			context->obvious = TRUE;
+			context->obvious = true;
 		}
 
 		/* Fully update the visuals */
@@ -77,7 +77,7 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 	/* Grid is in line of sight */
 	if (square_isview(cave, y, x)) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 
 		/* Fully update the visuals */
 		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
@@ -154,9 +154,9 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		if (randint0(100) < 10){
 			if (square_isseen(cave, y, x)) {
 				msg("There was something buried in the rubble!");
-				context->obvious = TRUE;
+				context->obvious = true;
 			}
-			place_object(cave, y, x, player->depth, FALSE, FALSE,
+			place_object(cave, y, x, player->depth, false, false,
 						 ORIGIN_RUBBLE, 0);
 		}
 	} else if (square_isdoor(cave, y, x)) {
@@ -192,7 +192,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 		if (square_isview(cave, y, x)) {
 			/* Message */
 			msg("There is a bright flash of light!");
-			context->obvious = TRUE;
+			context->obvious = true;
 
 			/* Visibility change */
 			if (square_isdoor(cave, y, x))
@@ -230,7 +230,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 		/* Check line of sight */
 		if (square_isview(cave, y, x)) {
 			msg("There is a bright flash of light!");
-			context->obvious = TRUE;
+			context->obvious = true;
 		}
 
 		/* Destroy the trap */
@@ -242,7 +242,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 		/* Check line of sound */
 		if (square_isview(cave, y, x)) {
 			msg("Click!");
-			context->obvious = TRUE;
+			context->obvious = true;
 		}
 	}
 }
@@ -264,7 +264,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 		push_object(y,x);
 
 	/* Create closed door */
-	square_add_door(cave, y, x, TRUE);
+	square_add_door(cave, y, x, true);
 
 	/* Observe */
 	if (square_isknown(cave, y, x))
@@ -286,7 +286,7 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 
 	/* Create a trap */
 	square_add_trap(cave, y, x);
-	context->obvious = TRUE;
+	context->obvious = true;
 }
 
 static void project_feature_handler_ACID(project_feature_handler_context_t *context)
@@ -295,7 +295,7 @@ static void project_feature_handler_ACID(project_feature_handler_context_t *cont
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -305,7 +305,7 @@ static void project_feature_handler_ELEC(project_feature_handler_context_t *cont
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -315,7 +315,7 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -325,7 +325,7 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -335,7 +335,7 @@ static void project_feature_handler_POIS(project_feature_handler_context_t *cont
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -357,7 +357,7 @@ static void project_feature_handler_SOUND(project_feature_handler_context_t *con
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -367,7 +367,7 @@ static void project_feature_handler_SHARD(project_feature_handler_context_t *con
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -377,7 +377,7 @@ static void project_feature_handler_NEXUS(project_feature_handler_context_t *con
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -387,7 +387,7 @@ static void project_feature_handler_NETHER(project_feature_handler_context_t *co
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -397,7 +397,7 @@ static void project_feature_handler_CHAOS(project_feature_handler_context_t *con
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -407,7 +407,7 @@ static void project_feature_handler_DISEN(project_feature_handler_context_t *con
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -417,7 +417,7 @@ static void project_feature_handler_WATER(project_feature_handler_context_t *con
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -427,7 +427,7 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -437,7 +437,7 @@ static void project_feature_handler_GRAVITY(project_feature_handler_context_t *c
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -447,7 +447,7 @@ static void project_feature_handler_INERTIA(project_feature_handler_context_t *c
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -457,7 +457,7 @@ static void project_feature_handler_FORCE(project_feature_handler_context_t *con
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -467,7 +467,7 @@ static void project_feature_handler_TIME(project_feature_handler_context_t *cont
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -477,7 +477,7 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -487,7 +487,7 @@ static void project_feature_handler_METEOR(project_feature_handler_context_t *co
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -497,7 +497,7 @@ static void project_feature_handler_MISSILE(project_feature_handler_context_t *c
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -507,7 +507,7 @@ static void project_feature_handler_MANA(project_feature_handler_context_t *cont
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -517,7 +517,7 @@ static void project_feature_handler_HOLY_ORB(project_feature_handler_context_t *
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -527,7 +527,7 @@ static void project_feature_handler_ARROW(project_feature_handler_context_t *con
 	if (square_isview(cave, context->y, context->x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
-		context->obvious = TRUE;
+		context->obvious = true;
 	}
 }
 
@@ -565,7 +565,7 @@ static const project_feature_handler_f feature_handlers[] = {
  */
 bool project_f(int who, int r, int y, int x, int dam, int typ)
 {
-	bool obvious = FALSE;
+	bool obvious = false;
 
 	project_feature_handler_context_t context = {
 		who,

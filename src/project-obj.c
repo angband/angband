@@ -71,7 +71,7 @@ int inven_damage(struct player *p, int type, int cperc)
 			int chance = cperc;
 
 			/* Track if it is damaged instead of destroyed */
-			damage = FALSE;
+			damage = false;
 
 			/* Analyze the type to see if we just damage it
 			 * - we also check for rods to reduce chance */
@@ -83,7 +83,7 @@ int inven_damage(struct player *p, int type, int cperc)
 					obj->to_d--;
 
 					/* Damaged! */
-					damage = TRUE;
+					damage = true;
 				} else {
 					obj = next;
 					continue;
@@ -95,7 +95,7 @@ int inven_damage(struct player *p, int type, int cperc)
 					obj->to_a--;
 
 					/* Damaged! */
-					damage = TRUE;
+					damage = true;
 				} else {
 					obj = next;
 					continue;
@@ -120,7 +120,7 @@ int inven_damage(struct player *p, int type, int cperc)
 			/* Some casualities */
 			if (amt) {
 				struct object *destroyed;
-				bool none_left = FALSE;
+				bool none_left = false;
 
 				/* Get a description */
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
@@ -191,11 +191,11 @@ static void project_object_elemental(project_object_handler_context_t *context,
 									 const char *plural_verb)
 {
 	if (context->obj->el_info[element].flags & EL_INFO_HATES) {
-		context->do_kill = TRUE;
+		context->do_kill = true;
 		context->note_kill = VERB_AGREEMENT(context->obj->number,
 											singular_verb, plural_verb);
 		context->ignore = (context->obj->el_info[element].flags &
-						   EL_INFO_IGNORE) ? TRUE : FALSE;
+						   EL_INFO_IGNORE) ? true : false;
 	}
 }
 
@@ -312,7 +312,7 @@ static void project_object_handler_MISSILE(project_object_handler_context_t *con
 /* Mana -- destroys everything */
 static void project_object_handler_MANA(project_object_handler_context_t *context)
 {
-	context->do_kill = TRUE;
+	context->do_kill = true;
 	context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
 }
 
@@ -320,7 +320,7 @@ static void project_object_handler_MANA(project_object_handler_context_t *contex
 static void project_object_handler_HOLY_ORB(project_object_handler_context_t *context)
 {
 	if (cursed_p(context->obj->flags)) {
-		context->do_kill = TRUE;
+		context->do_kill = true;
 		context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
 	}
 }
@@ -355,7 +355,7 @@ static void project_object_handler_KILL_DOOR(project_object_handler_context_t *c
 		/* Notice */
 		if (context->obj->known && !ignore_item_ok(context->obj)) {
 			msg("Click!");
-			context->obvious = TRUE;
+			context->obvious = true;
 		}
 	}
 }
@@ -374,7 +374,7 @@ static void project_object_handler_KILL_TRAP(project_object_handler_context_t *c
 		/* Notice */
 		if (context->obj->known && !ignore_item_ok(context->obj)) {
 			msg("Click!");
-			context->obvious = TRUE;
+			context->obvious = true;
 		}
 	}
 }
@@ -425,12 +425,12 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 			   const struct object *protected_obj)
 {
 	struct object *obj = square_object(cave, y, x);
-	bool obvious = FALSE;
+	bool obvious = false;
 
 	/* Scan all objects in the grid */
 	while (obj) {
-		bool ignore = FALSE;
-		bool do_kill = FALSE;
+		bool ignore = false;
+		bool do_kill = false;
 		const char *note_kill = NULL;
 		struct object *next = obj->next;
 		project_object_handler_context_t context = {

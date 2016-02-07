@@ -170,18 +170,18 @@ static const struct {
 	char **path;
 	bool setgid_ok;
 } change_path_values[] = {
-	{ "scores", &ANGBAND_DIR_SCORES, TRUE },
-	{ "gamedata", &ANGBAND_DIR_GAMEDATA, FALSE },
-	{ "screens", &ANGBAND_DIR_SCREENS, FALSE },
-	{ "help", &ANGBAND_DIR_HELP, TRUE },
-	{ "info", &ANGBAND_DIR_INFO, TRUE },
-	{ "pref", &ANGBAND_DIR_CUSTOMIZE, TRUE },
-	{ "fonts", &ANGBAND_DIR_FONTS, TRUE },
-	{ "tiles", &ANGBAND_DIR_TILES, TRUE },
-	{ "sounds", &ANGBAND_DIR_SOUNDS, TRUE },
-	{ "icons", &ANGBAND_DIR_ICONS, TRUE },
-	{ "user", &ANGBAND_DIR_USER, TRUE },
-	{ "save", &ANGBAND_DIR_SAVE, FALSE },
+	{ "scores", &ANGBAND_DIR_SCORES, true },
+	{ "gamedata", &ANGBAND_DIR_GAMEDATA, false },
+	{ "screens", &ANGBAND_DIR_SCREENS, false },
+	{ "help", &ANGBAND_DIR_HELP, true },
+	{ "info", &ANGBAND_DIR_INFO, true },
+	{ "pref", &ANGBAND_DIR_CUSTOMIZE, true },
+	{ "fonts", &ANGBAND_DIR_FONTS, true },
+	{ "tiles", &ANGBAND_DIR_TILES, true },
+	{ "sounds", &ANGBAND_DIR_SOUNDS, true },
+	{ "icons", &ANGBAND_DIR_ICONS, true },
+	{ "user", &ANGBAND_DIR_USER, true },
+	{ "save", &ANGBAND_DIR_SAVE, false },
 };
 
 /**
@@ -324,12 +324,12 @@ int main(int argc, char *argv[])
 {
 	int i;
 
-	bool done = FALSE;
+	bool done = false;
 
 	const char *mstr = NULL;
 	const char *soundstr = NULL;
 
-	bool args = TRUE;
+	bool args = true;
 
 	/* Save the "program name" XXX XXX XXX */
 	argv0 = argv[0];
@@ -375,19 +375,19 @@ int main(int argc, char *argv[])
 				exit(0);
 
 			case 'n':
-				new_game = TRUE;
+				new_game = true;
 				break;
 
 			case 'w':
-				arg_wizard = TRUE;
+				arg_wizard = true;
 				break;
 
 			case 'p':
-				arg_power = TRUE;
+				arg_power = true;
 				break;
 
 			case 'r':
-				arg_rebalance = TRUE;
+				arg_rebalance = true;
 				break;
 
 			case 'g':
@@ -411,7 +411,7 @@ int main(int argc, char *argv[])
 				 * can do whatever the hell they want.
 				 */
 #ifdef SETGID
-				savefile_set_name(player_safe_name(player, FALSE));
+				savefile_set_name(player_safe_name(player, false));
 #else
 				savefile_set_name(arg);
 #endif /* SETGID */
@@ -420,7 +420,7 @@ int main(int argc, char *argv[])
 			}
 
 			case 'f':
-				arg_force_name = TRUE;
+				arg_force_name = true;
 				break;
 
 			case 'm':
@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
 				argv[i] = argv[0];
 				argc = argc - i;
 				argv = argv + i;
-				args = FALSE;
+				args = false;
 				break;
 
 			default:
@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
 		if (!mstr || (streq(mstr, modules[i].name))) {
 			ANGBAND_SYS = modules[i].name;
 			if (0 == modules[i].init(argc, argv)) {
-				done = TRUE;
+				done = true;
 				break;
 			}
 		}
@@ -524,7 +524,7 @@ int main(int argc, char *argv[])
 		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
 
 		/* Set the savefile to load */
-		savefile_set_name(player_safe_name(player, FALSE));
+		savefile_set_name(player_safe_name(player, false));
 	}
 
 	/* Create any missing directories */

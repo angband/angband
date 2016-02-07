@@ -937,60 +937,60 @@ const byte blows_table[12][12] =
 bool earlier_object(struct object *orig, struct object *new, bool store)
 {
 	/* Check we have actual objects */
-	if (!new) return FALSE;
-	if (!orig) return TRUE;
+	if (!new) return false;
+	if (!orig) return true;
 
 	if (!store) {
 		/* Readable books always come first */
-		if (obj_can_browse(orig) && !obj_can_browse(new)) return FALSE;
-		if (!obj_can_browse(orig) && obj_can_browse(new)) return TRUE;
+		if (obj_can_browse(orig) && !obj_can_browse(new)) return false;
+		if (!obj_can_browse(orig) && obj_can_browse(new)) return true;
 	}
 
 	/* Objects sort by decreasing type */
-	if (orig->tval > new->tval) return FALSE;
-	if (orig->tval < new->tval) return TRUE;
+	if (orig->tval > new->tval) return false;
+	if (orig->tval < new->tval) return true;
 
 	if (!store) {
 		/* Non-aware (flavored) items always come last (default to orig) */
-		if (!object_flavor_is_aware(new)) return FALSE;
-		if (!object_flavor_is_aware(orig)) return TRUE;
+		if (!object_flavor_is_aware(new)) return false;
+		if (!object_flavor_is_aware(orig)) return true;
 	}
 
 	/* Objects sort by increasing sval */
-	if (orig->sval < new->sval) return FALSE;
-	if (orig->sval > new->sval) return TRUE;
+	if (orig->sval < new->sval) return false;
+	if (orig->sval > new->sval) return true;
 
 	if (!store) {
 		/* Unidentified objects always come last (default to orig) */
-		if (!object_is_known(new)) return FALSE;
-		if (!object_is_known(orig)) return TRUE;
+		if (!object_is_known(new)) return false;
+		if (!object_is_known(orig)) return true;
 
 		/* Lights sort by decreasing fuel */
 		if (tval_is_light(orig)) {
-			if (orig->pval > new->pval) return FALSE;
-			if (orig->pval < new->pval) return TRUE;
+			if (orig->pval > new->pval) return false;
+			if (orig->pval < new->pval) return true;
 		}
 	}
 
 	/* Objects sort by decreasing value, except ammo */
 	if (tval_is_ammo(orig)) {
-		if (object_value_real(orig, 1, FALSE, FALSE) <
-			object_value_real(new, 1, FALSE, FALSE))
-			return FALSE;
-		if (object_value_real(orig, 1, FALSE, FALSE) >
-			object_value_real(new, 1, FALSE, FALSE))
-			return TRUE;
+		if (object_value_real(orig, 1, false, false) <
+			object_value_real(new, 1, false, false))
+			return false;
+		if (object_value_real(orig, 1, false, false) >
+			object_value_real(new, 1, false, false))
+			return true;
 	} else {
-		if (object_value_real(orig, 1, FALSE, FALSE) >
-			object_value_real(new, 1, FALSE, FALSE))
-			return FALSE;
-		if (object_value_real(orig, 1, FALSE, FALSE) <
-			object_value_real(new, 1, FALSE, FALSE))
-			return TRUE;
+		if (object_value_real(orig, 1, false, false) >
+			object_value_real(new, 1, false, false))
+			return false;
+		if (object_value_real(orig, 1, false, false) <
+			object_value_real(new, 1, false, false))
+			return true;
 	}
 
 	/* No preference */
-	return FALSE;
+	return false;
 }
 
 int equipped_item_slot(struct player_body body, struct object *item)
@@ -1076,7 +1076,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 		/* Find the first quiver object not yet allocated */
 		for (current = gear; current; current = current->next) {
-			bool already = FALSE;
+			bool already = false;
 
 			/* Ignore non-ammo */
 			if (!tval_is_ammo(current)) continue;
@@ -1084,11 +1084,11 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			/* Ignore stuff already quivered */
 			for (j = 0; j < z_info->quiver_size; j++)
 				if (upkeep->quiver[j] == current)
-					already = TRUE;
+					already = true;
 			if (already) continue;
 
 			/* Choose the first in order */
-			if (earlier_object(first, current, FALSE)) {
+			if (earlier_object(first, current, false)) {
 				first = current;
 			}
 		}
@@ -1123,27 +1123,27 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 	for (i = 0; i <= z_info->pack_size; i++) {
 		struct object *current, *first = NULL;
 		for (current = gear; current; current = current->next) {
-			bool possible = TRUE;
+			bool possible = true;
 			int j;
 
 			/* Skip equipment */
 			if (object_is_equipped(body, current))
-				possible = FALSE;
+				possible = false;
 
 			/* Skip quivered objects */
 			for (j = 0; j < z_info->quiver_size; j++)
 				if (upkeep->quiver[j] == current)
-					possible = FALSE;
+					possible = false;
 
 			/* Skip objects already allocated to the inventory */
 			for (j = 0; j < upkeep->inven_cnt; j++)
 				if (upkeep->inven[j] == current)
-					possible = FALSE;
+					possible = false;
 
 			/* If still possible, choose the first in order */
 			if (!possible)
 				continue;
-			else if (earlier_object(first, current, FALSE)) {
+			else if (earlier_object(first, current, false)) {
 				first = current;
 			}
 		}
@@ -1407,7 +1407,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	/* Process gloves for those disturbed by them */
 	if (player_has(p, PF_CUMBER_GLOVE)) {
 		/* Assume player is not encumbered by gloves */
-		state->cumber_glove = FALSE;
+		state->cumber_glove = false;
 
 		/* Get the gloves */
 		obj = equipped_item_by_slot_name(p, "hands");
@@ -1417,7 +1417,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 			!kf_has(obj->kind->kind_flags, KF_SPELLS_OK) &&
 			(obj->modifiers[OBJ_MOD_DEX] <= 0)) {
 			/* Encumbered */
-			state->cumber_glove = TRUE;
+			state->cumber_glove = true;
 
 			/* Reduce mana */
 			msp = (3 * msp) / 4;
@@ -1425,7 +1425,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	}
 
 	/* Assume player not encumbered by armor */
-	state->cumber_armor = FALSE;
+	state->cumber_armor = false;
 
 	/* Weigh the armor */
 	cur_wgt = 0;
@@ -1450,7 +1450,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	/* Heavy armor penalizes mana */
 	if (((cur_wgt - max_wgt) / 10) > 0) {
 		/* Encumbered */
-		state->cumber_armor = TRUE;
+		state->cumber_armor = true;
 
 		/* Reduce mana */
 		msp -= ((cur_wgt - max_wgt) / 10);
@@ -1724,9 +1724,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* Base resists */
 	for (i = 0; i < ELEM_MAX; i++) {
-		vuln[i] = FALSE;
+		vuln[i] = false;
 		if (p->race->el_info[i].res_level == -1)
-			vuln[i] = TRUE;
+			vuln[i] = true;
 		else
 			state->el_info[i].res_level = p->race->el_info[i].res_level;
 	}
@@ -1808,7 +1808,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 				/* Note vulnerability for later processing */
 				if (obj->el_info[j].res_level == -1)
-					vuln[i] = TRUE;
+					vuln[i] = true;
 
 				/* OK because res_level has not included vulnerability yet */
 				if (obj->el_info[j].res_level > state->el_info[j].res_level)
@@ -2109,7 +2109,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	obj = equipped_item_by_slot_name(p, "shooting");
 
 	/* Assume not heavy */
-	state->heavy_shoot = FALSE;
+	state->heavy_shoot = false;
 
 	/* Analyze launcher */
 	if (obj) {
@@ -2118,7 +2118,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->to_h += 2 * (hold - obj->weight / 10);
 			
 			/* Heavy Bow */
-			state->heavy_shoot = TRUE;
+			state->heavy_shoot = true;
 		}
 
 		/* Get to shoot */
@@ -2167,10 +2167,10 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	obj = equipped_item_by_slot_name(p, "weapon");
 
 	/* Assume not heavy */
-	state->heavy_wield = FALSE;
+	state->heavy_wield = false;
 
 	/* Assume no pointy problem */
-	state->icky_wield = FALSE;
+	state->icky_wield = false;
 
 	if (obj) {
 		/* It is hard to hold a heavy weapon */
@@ -2179,7 +2179,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->to_h += 2 * (hold - obj->weight / 10);
 			
 			/* Heavy weapon */
-			state->heavy_wield = TRUE;
+			state->heavy_wield = true;
 		}
 
 		/* Normal weapons */
@@ -2199,7 +2199,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->to_d -= 2;
 
 			/* Icky weapon */
-			state->icky_wield = TRUE;
+			state->icky_wield = true;
 		}
 	} else {
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
@@ -2227,8 +2227,8 @@ static void update_bonuses(struct player *p)
 	 * Calculate bonuses
 	 * ------------------------------------ */
 
-	calc_bonuses(p, &state, FALSE, TRUE);
-	calc_bonuses(p, &known_state, TRUE, TRUE);
+	calc_bonuses(p, &state, false, true);
+	calc_bonuses(p, &known_state, true, true);
 
 
 	/* ------------------------------------
@@ -2467,7 +2467,7 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_TORCH)) {
 		p->upkeep->update &= ~(PU_TORCH);
-		calc_torch(p, &p->state, TRUE);
+		calc_torch(p, &p->state, true);
 	}
 
 	if (p->upkeep->update & (PU_HP)) {
@@ -2477,7 +2477,7 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_MANA)) {
 		p->upkeep->update &= ~(PU_MANA);
-		calc_mana(p, &p->state, TRUE);
+		calc_mana(p, &p->state, true);
 	}
 
 	if (p->upkeep->update & (PU_SPELLS)) {
@@ -2516,12 +2516,12 @@ void update_stuff(struct player *p)
 	if (p->upkeep->update & (PU_DISTANCE)) {
 		p->upkeep->update &= ~(PU_DISTANCE);
 		p->upkeep->update &= ~(PU_MONSTERS);
-		update_monsters(TRUE);
+		update_monsters(true);
 	}
 
 	if (p->upkeep->update & (PU_MONSTERS)) {
 		p->upkeep->update &= ~(PU_MONSTERS);
-		update_monsters(FALSE);
+		update_monsters(false);
 	}
 
 

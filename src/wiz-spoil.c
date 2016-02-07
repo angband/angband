@@ -162,7 +162,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	object_notice_everything(obj);
 
 	/* Value */
-	(*val) = object_value(obj, 1, FALSE);
+	(*val) = object_value(obj, 1, false);
 
 	/* Description (too brief) */
 	if (buf)
@@ -220,7 +220,7 @@ static void spoil_obj_desc(const char *fname)
 	        "------", "---", "---", "----");
 
 	/* List the groups */
-	for (i = 0; TRUE; i++) {
+	for (i = 0; true; i++) {
 		/* Write out the group title */
 		if (group_item[i].name) {
 			/* Hack -- bubble-sort by cost and then level */
@@ -418,8 +418,8 @@ static void spoil_artifact(const char *fname)
 			 */
 			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %d, %d.%d lbs\n",
 				art->alloc_min, art->alloc_max,
-				art->alloc_prob, object_power(obj, FALSE,
-				NULL, TRUE), (art->weight / 10),
+				art->alloc_prob, object_power(obj, false,
+				NULL, true), (art->weight / 10),
 				(art->weight % 10));
 
 			if (OPT(birth_randarts)) text_out("%s.\n", art->text);
@@ -646,7 +646,7 @@ static void spoil_mon_info(const char *fname)
 		textblock_append(tb, "Exp:%ld\n", (long)(race->mexp));
 
 		/* Normal description (with automatic line breaks) */
-		lore_description(tb, race, lore, TRUE);
+		lore_description(tb, race, lore, true);
 		textblock_append(tb, "\n");
 
 		textblock_to_file(tb, fh, 0, 75);
@@ -704,6 +704,6 @@ void do_cmd_spoilers(void)
 	screen_save();
 	clear_from(0);
 	menu_layout(spoil_menu, &SCREEN_REGION);
-	menu_select(spoil_menu, 0, FALSE);
+	menu_select(spoil_menu, 0, false);
 	screen_load();
 }

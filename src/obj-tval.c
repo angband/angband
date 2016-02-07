@@ -128,9 +128,9 @@ bool tval_is_body_armor(const struct object *obj)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -145,9 +145,9 @@ bool tval_is_ammo(const struct object *obj)
 		case TV_SHOT:
 		case TV_ARROW:
 		case TV_BOLT:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -166,9 +166,9 @@ bool tval_is_useable(const struct object *obj)
 		case TV_POTION:
 		case TV_FOOD:
 		case TV_MUSHROOM:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -178,9 +178,9 @@ bool tval_can_have_failure(const struct object *obj)
 		case TV_STAFF:
 		case TV_WAND:
 		case TV_ROD:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -200,9 +200,9 @@ bool tval_is_weapon(const struct object *obj)
 		case TV_BOLT:
 		case TV_ARROW:
 		case TV_SHOT:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -218,9 +218,9 @@ bool tval_is_armor(const struct object *obj)
 		case TV_HELM:
 		case TV_BOOTS:
 		case TV_GLOVES:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -231,9 +231,9 @@ bool tval_is_melee_weapon(const struct object *obj)
 		case TV_HAFTED:
 		case TV_POLEARM:
 		case TV_DIGGING:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -260,9 +260,9 @@ bool tval_has_variable_power(const struct object *obj)
 		case TV_LIGHT:
 		case TV_AMULET:
 		case TV_RING:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -286,9 +286,9 @@ bool tval_is_wearable(const struct object *obj)
 		case TV_LIGHT:
 		case TV_AMULET:
 		case TV_RING:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -297,9 +297,9 @@ bool tval_is_edible(const struct object *obj)
 	switch (obj->tval) {
 		case TV_FOOD:
 		case TV_MUSHROOM:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -314,9 +314,9 @@ bool tval_can_have_flavor_k(const struct object_kind *kind)
 		case TV_POTION:
 		case TV_MUSHROOM:
 		case TV_SCROLL:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 
@@ -325,9 +325,9 @@ bool tval_is_book_k(const struct object_kind *kind)
 	switch (kind->tval) {
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
-			return TRUE;
+			return true;
 		default:
-			return FALSE;
+			return false;
 	}
 }
 

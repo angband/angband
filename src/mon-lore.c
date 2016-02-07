@@ -393,7 +393,7 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 		if (!race->blow) break;
 		if (lore->blow_known[i] || lore->blows[i].times_seen ||
 			lore->all_known) {
-			lore->blow_known[i] = TRUE;
+			lore->blow_known[i] = true;
 			lore->blows[i].method = race->blow[i].method;
 			lore->blows[i].effect = race->blow[i].effect;
 			lore->blows[i].dice = race->blow[i].dice;
@@ -402,8 +402,8 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 
 	/* Killing a monster reveals some properties */
 	if ((lore->tkills > 0) || lore->all_known) {
-		lore->armour_known = TRUE;
-		lore->drop_known = TRUE;
+		lore->armour_known = true;
+		lore->drop_known = true;
 		flags_set(lore->flags, RF_SIZE, RF_RACE_MASK, FLAG_END);
 		flags_set(lore->flags, RF_SIZE, RF_DROP_MASK, FLAG_END);
 		rf_on(lore->flags, RF_FORCE_DEPTH);
@@ -411,13 +411,13 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 
 	/* Awareness */
 	if ((((int)lore->wake * (int)lore->wake) > race->sleep) ||
-	    (lore->ignore == MAX_UCHAR) || lore->all_known ||
+	    (lore->ignore == UCHAR_MAX) || lore->all_known ||
 	    ((race->sleep == 0) && (lore->tkills >= 10)))
-		lore->sleep_known = TRUE;
+		lore->sleep_known = true;
 
 	/* Spellcasting frequency */
 	if ((lore->cast_innate + lore->cast_spell > 100) || lore->all_known)
-		lore->spell_freq_known = TRUE;
+		lore->spell_freq_known = true;
 }
 
 /**
@@ -431,7 +431,7 @@ void cheat_monster_lore(const struct monster_race *race, struct monster_lore *lo
 	assert(lore);
 
 	/* Full knowledge */
-	lore->all_known = TRUE;
+	lore->all_known = true;
 	lore_update(race, lore);
 
 	/* Know all the flags */
@@ -461,7 +461,7 @@ void lore_do_probe(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	
-	lore->all_known = TRUE;
+	lore->all_known = true;
 	lore_update(mon->race, lore);
 
 	/* Update monster recall window */
@@ -479,17 +479,17 @@ bool lore_is_fully_known(const struct monster_race *race)
 
 	/* Check if already known */
 	if (lore->all_known)
-		return TRUE;
+		return true;
 		
 	if (!lore->armour_known)
-		return FALSE;
+		return false;
 	/* Only check spells if the monster can cast them */
 	if (!lore->spell_freq_known && race->freq_innate + race->freq_spell)
-		return FALSE;
+		return false;
 	if (!lore->drop_known)
-		return FALSE;
+		return false;
 	if (!lore->sleep_known)
-		return FALSE;
+		return false;
 		
 	/* Check if blows are known */
 	for (i = 0; i < z_info->mon_blows_max; i++){
@@ -497,25 +497,25 @@ bool lore_is_fully_known(const struct monster_race *race)
 		if (!race->blow[i].method)
 			break;
 		if (!lore->blow_known[i])
-			return FALSE;
+			return false;
 		
 	}
 		
 	/* Check all the flags */
 	for (i = 0; i < RF_SIZE; i++)
 		if (!lore->flags[i])
-			return FALSE;
+			return false;
 		
 		
 	/* Check spell flags */
 	for (i = 0; i < RSF_SIZE; i++)
 		if (lore->spell_flags[i] != race->spell_flags[i])			
-			return FALSE;
+			return false;
 	
 	/* The player knows everything */
-	lore->all_known = TRUE;
+	lore->all_known = true;
 	lore_update(race, lore);
-	return TRUE;
+	return true;
 }
 	
 	
@@ -619,7 +619,7 @@ static const char *lore_describe_blow_effect(int effect)
 static const char *lore_describe_awareness(s16b awareness)
 {
 	/* Value table ordered descending, for priority. Terminator is
-	 * {MAX_SHORT, NULL}. */
+	 * {SHRT_MAX, NULL}. */
 	static const struct lore_awareness {
 		s16b threshold;
 		const char *description;
@@ -634,11 +634,11 @@ static const char *lore_describe_awareness(s16b awareness)
 		{3,		"is observant of"},
 		{1,		"is very observant of"},
 		{0,		"is vigilant for"},
-		{MAX_SHORT,	NULL},
+		{SHRT_MAX,	NULL},
 	};
 	const struct lore_awareness *current = lore_awareness_description;
 
-	while (current->threshold != MAX_SHORT && current->description != NULL) {
+	while (current->threshold != SHRT_MAX && current->description != NULL) {
 		if (awareness > current->threshold)
 			return current->description;
 
@@ -660,7 +660,7 @@ static const char *lore_describe_awareness(s16b awareness)
 static const char *lore_describe_speed(byte speed)
 {
 	/* Value table ordered descending, for priority. Terminator is
-	 * {MAX_UCHAR, NULL}. */
+	 * {UCHAR_MAX, NULL}. */
 	static const struct lore_speed {
 		byte threshold;
 		const char *description;
@@ -672,11 +672,11 @@ static const char *lore_describe_speed(byte speed)
 		{99,	"slowly"},
 		{89,	"very slowly"},
 		{0,		"incredibly slowly"},
-		{MAX_UCHAR,	NULL},
+		{UCHAR_MAX,	NULL},
 	};
 	const struct lore_speed *current = lore_speed_description;
 
-	while (current->threshold != MAX_UCHAR && current->description != NULL) {
+	while (current->threshold != UCHAR_MAX && current->description != NULL) {
 		if (speed > current->threshold)
 			return current->description;
 
@@ -708,7 +708,7 @@ static monster_sex_t lore_monster_sex(const struct monster_race *race)
  *
  * \param sex is the gender value (as provided by `lore_monster_sex()`.
  * \param title_case indicates whether the initial letter should be
- * capitalized; `TRUE` is capitalized, `FALSE` is not.
+ * capitalized; `true` is capitalized, `false` is not.
  */
 static const char *lore_pronoun_nominative(monster_sex_t sex, bool title_case)
 {
@@ -737,7 +737,7 @@ static const char *lore_pronoun_nominative(monster_sex_t sex, bool title_case)
  *
  * \param sex is the gender value (as provided by `lore_monster_sex()`.
  * \param title_case indicates whether the initial letter should be
- * capitalized; `TRUE` is capitalized, `FALSE` is not.
+ * capitalized; `true` is capitalized, `false` is not.
  */
 static const char *lore_pronoun_possessive(monster_sex_t sex, bool title_case)
 {
@@ -946,7 +946,7 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
 					   const bitflag known_flags[RF_SIZE])
 {
 	monster_sex_t msex = MON_SEX_NEUTER;
-	bool out = TRUE;
+	bool out = true;
 
 	assert(tb && race && lore);
 
@@ -956,13 +956,13 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
 	/* Treat uniques differently */
 	if (rf_has(known_flags, RF_UNIQUE)) {
 		/* Hack -- Determine if the unique is "dead" */
-		bool dead = (race->max_num == 0) ? TRUE : FALSE;
+		bool dead = (race->max_num == 0) ? true : false;
 
 		/* We've been killed... */
 		if (lore->deaths) {
 			/* Killed ancestors */
 			textblock_append(tb, "%s has slain %d of your ancestors",
-							 lore_pronoun_nominative(msex, TRUE), lore->deaths);
+							 lore_pronoun_nominative(msex, true), lore->deaths);
 
 			/* But we've also killed it */
 			if (dead)
@@ -977,7 +977,7 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, "You have slain this foe.  ");
 		} else {
 			/* Alive and never killed us */
-			out = FALSE;
+			out = false;
 		}
 	} else if (lore->deaths) { /* Not unique, but killed us */
 		/* Dead ancestors */
@@ -988,7 +988,7 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
 		} else if (lore->tkills) { /* Some kills past lives */
 			textblock_append(tb, "and your ancestors have exterminated at least %d of the creatures.  ", lore->tkills);
 		} else { /* No kills */
-			textblock_append_c(tb, COLOUR_RED, "and %s is not ever known to have been defeated.  ", lore_pronoun_nominative(msex, FALSE));
+			textblock_append_c(tb, COLOUR_RED, "and %s is not ever known to have been defeated.  ", lore_pronoun_nominative(msex, false));
 		}
 	} else { /* Normal monsters */
 		if (lore->pkills) { /* Killed some this life */
@@ -1166,7 +1166,7 @@ void lore_append_toughness(textblock *tb, const struct monster_race *race,
 	if (lore->armour_known) {
 		/* Armor */
 		textblock_append(tb, "%s has an armor rating of ",
-						 lore_pronoun_nominative(msex, TRUE));
+						 lore_pronoun_nominative(msex, true));
 		textblock_append_c(tb, COLOUR_L_BLUE, "%d", race->ac);
 
 		/* Hitpoints */
@@ -1291,7 +1291,7 @@ void lore_append_drop(textblock *tb, const struct monster_race *race,
 	msex = lore_monster_sex(race);
 
 	/* Count maximum drop */
-	n = mon_create_drop_count(race, TRUE);
+	n = mon_create_drop_count(race, true);
 
 	/* Drops gold and/or items */
 	if (n > 0) {
@@ -1299,7 +1299,7 @@ void lore_append_drop(textblock *tb, const struct monster_race *race,
 		bool only_gold = rf_has(known_flags, RF_ONLY_GOLD);
 
 		textblock_append(tb, "%s may carry",
-						 lore_pronoun_nominative(msex, TRUE));
+						 lore_pronoun_nominative(msex, true));
 
 		/* Count drops */
 		if (n == 1)
@@ -1352,7 +1352,7 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	int list_index;
 	const char *descs[64];
 	const char *initial_pronoun;
-	bool prev = FALSE;
+	bool prev = false;
 	monster_sex_t msex = MON_SEX_NEUTER;
 
 	/* "Local" macros for easier reading; undef'd at end of function */
@@ -1366,7 +1366,7 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	/* Extract a gender (if applicable) and get a pronoun for the start of
 	 * sentences */
 	msex = lore_monster_sex(race);
-	initial_pronoun = lore_pronoun_nominative(msex, TRUE);
+	initial_pronoun = lore_pronoun_nominative(msex, true);
 
 	/* Collect special abilities. */
 	list_index = 0;
@@ -1406,7 +1406,7 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	if (rf_has(known_flags, RF_REGENERATE))
 		textblock_append(tb, "%s regenerates quickly.  ", initial_pronoun);
 	if (rf_has(known_flags, RF_HAS_LIGHT))
-		textblock_append(tb, "%s illuminates %s surroundings.  ", initial_pronoun, lore_pronoun_possessive(msex, FALSE));
+		textblock_append(tb, "%s illuminates %s surroundings.  ", initial_pronoun, lore_pronoun_possessive(msex, false));
 
 	/* Collect susceptibilities */
 	list_index = 0;
@@ -1418,7 +1418,7 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	if (list_index > 0) {
 		textblock_append(tb, "%s is hurt by ", initial_pronoun);
 		lore_append_list(tb, descs, list_index, COLOUR_VIOLET, "and");
-		prev = TRUE;
+		prev = true;
 	}
 
 	/* Collect immunities and resistances */
@@ -1446,7 +1446,7 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, "%s resists ", initial_pronoun);
 
 		lore_append_list(tb, descs, list_index, COLOUR_L_UMBER, "and");
-		prev = TRUE;
+		prev = true;
 	}
 
 	/* Collect known but average susceptibilities */
@@ -1474,7 +1474,7 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, "%s does not resist ", initial_pronoun);
 
 		lore_append_list(tb, descs, list_index, COLOUR_L_UMBER, "or");
-		prev = TRUE;
+		prev = true;
 	}
 
 	/* Collect non-effects */
@@ -1492,7 +1492,7 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, "%s cannot be ", initial_pronoun);
 
 		lore_append_list(tb, descs, list_index, COLOUR_L_UMBER, "or");
-		prev = TRUE;
+		prev = true;
 	}
 
 	if (prev)
@@ -1527,8 +1527,8 @@ void lore_append_awareness(textblock *tb, const struct monster_race *race,
 	{
 		const char *aware = lore_describe_awareness(race->sleep);
 		textblock_append(tb, "%s %s intruders, which %s may notice from ",
-						 lore_pronoun_nominative(msex, TRUE), aware,
-						 lore_pronoun_nominative(msex, FALSE));
+						 lore_pronoun_nominative(msex, true), aware,
+						 lore_pronoun_nominative(msex, false));
 		textblock_append_c(tb, COLOUR_L_BLUE, "%d", 10 * race->aaf);
 		textblock_append(tb, " feet.  ");
 	}
@@ -1558,7 +1558,7 @@ void lore_append_friends(textblock *tb, const struct monster_race *race,
 	/* Describe friends */
 	if (race->friends || race->friends_base) {
 		textblock_append(tb, "%s may appear with other monsters",
-						 lore_pronoun_nominative(msex, TRUE));
+						 lore_pronoun_nominative(msex, true));
 		if (rf_has(known_flags, RF_GROUP_AI))
 			textblock_append(tb, " and hunts in packs");
 		textblock_append(tb, ".  ");
@@ -1586,8 +1586,8 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 {
 	int i, average_frequency;
 	monster_sex_t msex = MON_SEX_NEUTER;
-	bool breath = FALSE;
-	bool magic = FALSE;
+	bool breath = false;
+	bool magic = false;
 	int list_index;
 	static const int list_size = 64;
 	const char *initial_pronoun;
@@ -1609,7 +1609,7 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 	/* Extract a gender (if applicable) and get a pronoun for the start of
 	 * sentences */
 	msex = lore_monster_sex(race);
-	initial_pronoun = lore_pronoun_nominative(msex, TRUE);
+	initial_pronoun = lore_pronoun_nominative(msex, true);
 
 	/* Collect innate attacks */
 	LORE_RESET_LISTS();
@@ -1650,7 +1650,7 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_MANA);
 
 	if (list_index > 0) {
-		breath = TRUE;
+		breath = true;
 		textblock_append(tb, "%s may ", initial_pronoun);
 		textblock_append_c(tb, COLOUR_L_RED, "breathe ");
 		lore_append_spell_descriptions(tb, name_list, color_list, damage_list,
@@ -1733,7 +1733,7 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_UNIQUE);
 
 	if (list_index > 0) {
-		magic = TRUE;
+		magic = true;
 
 		/* Intro */
 		if (breath)
@@ -1810,7 +1810,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 	/* Notice lack of attacks */
 	if (rf_has(known_flags, RF_NEVER_BLOW)) {
 		textblock_append(tb, "%s has no physical attacks.  ",
-						 lore_pronoun_nominative(msex, TRUE));
+						 lore_pronoun_nominative(msex, true));
 		return;
 	}
 
@@ -1827,7 +1827,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 	/* Describe the lack of knowledge */
 	if (total_attacks == 0) {
 		textblock_append(tb, "Nothing is known about %s attack.  ",
-						 lore_pronoun_possessive(msex, FALSE));
+						 lore_pronoun_possessive(msex, false));
 		return;
 	}
 
@@ -1850,7 +1850,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		/* Introduce the attack description */
 		if (described_count == 0)
 			textblock_append(tb, "%s can ",
-							 lore_pronoun_nominative(msex, TRUE));
+							 lore_pronoun_nominative(msex, true));
 		else if (described_count < total_attacks - 1)
 			textblock_append(tb, ", ");
 		else
@@ -2039,7 +2039,7 @@ void write_lore_entries(ang_file *fff)
  *
  * \param name is the filename
  *
- * \returns TRUE on success, FALSE otherwise.
+ * \returns true on success, false otherwise.
  */
 bool lore_save(const char *name)
 {
@@ -2050,8 +2050,8 @@ bool lore_save(const char *name)
 
 	if (text_lines_to_file(path, write_lore_entries)) {
 		msg("Failed to create file %s.new", path);
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }

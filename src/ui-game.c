@@ -277,7 +277,7 @@ cmd_code cmd_lookup(unsigned char key, int mode)
 void textui_process_command(void)
 {
 	int count = 0;
-	bool done = TRUE;
+	bool done = true;
 	ui_event e = textui_get_command(&count);
 	struct cmd_info *cmd = NULL;
 	unsigned char key = '\0';
@@ -387,7 +387,7 @@ void pre_turn_refresh(void)
 static void start_game(bool new_game)
 {
 	/* Player will be resuscitated if living in the savefile */
-	player->is_dead = TRUE;
+	player->is_dead = true;
 
 	/* Try loading */
 	if (file_exists(savefile) && !savefile_load(savefile, arg_wizard))
@@ -395,7 +395,7 @@ static void start_game(bool new_game)
 
 	/* No living character loaded */
 	if (player->is_dead || new_game) {
-		character_generated = FALSE;
+		character_generated = false;
 		textui_do_birth();
 	}
 
@@ -405,7 +405,7 @@ static void start_game(bool new_game)
 	event_signal(EVENT_ENTER_WORLD);
 
 	/* Save not required yet. */
-	player->upkeep->autosave = FALSE;
+	player->upkeep->autosave = false;
 
 	/* Enter the level, generating a new one if needed */
 	if (!character_dungeon)

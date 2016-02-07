@@ -89,9 +89,9 @@ const byte extract_energy[200] =
 bool is_daytime(void)
 {
 	if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2)) 
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -114,10 +114,10 @@ static void recharged_notice(const struct object *obj, bool all)
 
 	const char *s;
 
-	bool notify = FALSE;
+	bool notify = false;
 
 	if (OPT(notify_recharge)) {
-		notify = TRUE;
+		notify = true;
 	} else if (obj->note) {
 		/* Find a '!' */
 		s = strchr(quark_str(obj->note), '!');
@@ -126,7 +126,7 @@ static void recharged_notice(const struct object *obj, bool all)
 		while (s) {
 			/* Find another '!' */
 			if (s[1] == '!') {
-				notify = TRUE;
+				notify = true;
 				break;
 			}
 
@@ -174,7 +174,7 @@ static void recharge_objects(void)
 			/* Recharge activatable objects */
 			if (recharge_timeout(obj)) {
 				/* Message if an item recharged */
-				recharged_notice(obj, TRUE);
+				recharged_notice(obj, true);
 
 				/* Window stuff */
 				player->upkeep->redraw |= (PR_EQUIP);
@@ -182,17 +182,17 @@ static void recharge_objects(void)
 		} else {
 			/* Recharge the inventory */
 			discharged_stack =
-				(number_charging(obj) == obj->number) ? TRUE : FALSE;
+				(number_charging(obj) == obj->number) ? true : false;
 
 			/* Recharge rods, and update if any rods are recharged */
 			if (tval_can_have_timeout(obj) && recharge_timeout(obj)) {
 				/* Entire stack is recharged */
 				if (obj->timeout == 0)
-					recharged_notice(obj, TRUE);
+					recharged_notice(obj, true);
 
 				/* Previously exhausted stack has acquired a charge */
 				else if (discharged_stack)
-					recharged_notice(obj, FALSE);
+					recharged_notice(obj, false);
 
 				/* Combine pack */
 				player->upkeep->notice |= (PN_COMBINE);
@@ -269,7 +269,7 @@ static void decrease_timeouts(void)
 			}
 		}
 		/* Decrement the effect */
-		player_dec_timed(player, i, decr, FALSE);
+		player_dec_timed(player, i, decr, false);
 	}
 
 	return;
@@ -329,7 +329,7 @@ void process_world(struct chunk *c)
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))
 		(void)pick_and_place_distant_monster(cave, loc(player->px, player->py),
-											 z_info->max_sight + 5, TRUE,
+											 z_info->max_sight + 5, true,
 											 player->depth);
 
 	/*** Damage over Time ***/
@@ -387,7 +387,7 @@ void process_world(struct chunk *c)
 
 			/* Faint (bypass free action) */
 			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
-								   TRUE, FALSE);
+								   true, false);
 		}
 	}
 
@@ -422,7 +422,7 @@ void process_world(struct chunk *c)
 		if ((player->exp > 0) && one_in_(10)) {
 			s32b d = damroll(10, 6) +
 				(player->exp / 100) * z_info->life_drain_percent;
-			player_exp_lose(player, d / 10, FALSE);
+			player_exp_lose(player, d / 10, false);
 		}
 
 		equip_notice_flag(player, OF_DRAIN_EXP);
@@ -543,7 +543,7 @@ static void process_player_cleanup(void)
 				if (mflag_has(mon->mflag, MFLAG_MARK)) {
 					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
 						mflag_off(mon->mflag, MFLAG_MARK);
-						update_mon(mon, cave, FALSE);
+						update_mon(mon, cave, false);
 					}
 				}
 			}
@@ -555,7 +555,7 @@ static void process_player_cleanup(void)
 		struct monster *mon = cave_monster(cave, i);
 		mflag_off(mon->mflag, MFLAG_SHOW);
 	}
-	player->upkeep->dropping = FALSE;
+	player->upkeep->dropping = false;
 
 	/* Hack - update needed first because inventory may have changed */
 	update_stuff(player);
@@ -686,7 +686,7 @@ void on_new_level(void)
 
 	/* Announce (or repeat) the feeling */
 	if (player->depth)
-		display_feeling(FALSE);
+		display_feeling(false);
 
 	/* Give player minimum energy to start a new level, but do not reduce
 	 * higher value from savefile for level in progress */
@@ -756,7 +756,7 @@ void run_game_loop(void)
 
 	/* Now that the player's turn is fully complete, we run the main loop 
 	 * until player input is needed again */
-	while (TRUE) {
+	while (true) {
 		notice_stuff(player);
 		handle_stuff(player);
 		event_signal(EVENT_REFRESH);
@@ -807,7 +807,7 @@ void run_game_loop(void)
 			cave_generate(&cave, player);
 			on_new_level();
 
-			player->upkeep->generate_level = FALSE;
+			player->upkeep->generate_level = false;
 		}
 
 		/* If the player has enough energy to move they now do so, after

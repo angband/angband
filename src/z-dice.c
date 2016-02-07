@@ -167,10 +167,10 @@ static void dice_reset(dice_t *dice)
 	dice->y = 0;
 	dice->m = 0;
 
-	dice->ex_b = FALSE;
-	dice->ex_x = FALSE;
-	dice->ex_y = FALSE;
-	dice->ex_m = FALSE;
+	dice->ex_b = false;
+	dice->ex_x = false;
+	dice->ex_y = false;
+	dice->ex_m = false;
 
 	if (dice->expressions == NULL)
 		return;
@@ -304,7 +304,7 @@ int dice_bind_expression(dice_t *dice, const char *name,
  *
  * \param dice is the dice object to parse the string into.
  * \param string is the string to be parsed.
- * \return TRUE if parsing was successful, FALSE if not.
+ * \return true if parsing was successful, false if not.
  */
 bool dice_parse_string(dice_t *dice, const char *string)
 {
@@ -323,7 +323,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 	} last_seen = DICE_SEEN_NONE;
 
 	if (dice == NULL || string == NULL)
-		return FALSE;
+		return false;
 
 	/* Reset all internal state, since this object might be reused. */
 	dice_reset(dice);
@@ -394,7 +394,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 
 		/* Illegal transition. */
 		if (state >= DICE_STATE_MAX)
-			return FALSE;
+			return false;
 
 		/*
 		 * Default flushing to true, since there are more states that don't
@@ -402,7 +402,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		 * work, since the parser isn't that complex. A more complex parser
 		 * would have more explicit states for variable names.
 		 */
-		flush = TRUE;
+		flush = true;
 
 		switch (state) {
 			case DICE_STATE_FLUSH_BASE:
@@ -445,7 +445,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 
 			default:
 				/* We're in a state that shouldn't flush anything. */
-				flush = FALSE;
+				flush = false;
 				break;
 		}
 
@@ -457,15 +457,15 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		 */
 		if (flush && strlen(token) > 0) {
 			int value = 0;
-			bool is_variable = FALSE;
+			bool is_variable = false;
 
 			if (isupper(token[0])) {
 				value = dice_add_variable(dice, token);
-				is_variable = TRUE;
+				is_variable = true;
 			}
 			else {
 				value = (int)strtol(token, NULL, 0);
-				is_variable = FALSE;
+				is_variable = false;
 			}
 
 			switch (last_seen) {
@@ -494,7 +494,7 @@ bool dice_parse_string(dice_t *dice, const char *string)
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -597,7 +597,7 @@ int dice_roll(dice_t *dice, random_value *v)
 bool dice_test_values(dice_t *dice, int base, int dice_count, int sides,
 					  int bonus)
 {
-	bool success = TRUE;
+	bool success = true;
 	success &= dice->b == base;
 	success &= dice->x == dice_count;
 	success &= dice->y == sides;
@@ -611,10 +611,10 @@ bool dice_test_values(dice_t *dice, int base, int dice_count, int sides,
 bool dice_test_variables(dice_t *dice, const char *base, const char *dice_name,
 						 const char *sides, const char *bonus)
 {
-	bool success = TRUE;
+	bool success = true;
 
 	if (dice->expressions == NULL)
-		return FALSE;
+		return false;
 
 	if (base == NULL)
 		success &= !dice->ex_b;

@@ -51,8 +51,8 @@ static void player_pickup_gold(void)
 	struct object *obj = square_object(cave, player->py, player->px), *next;
 
 	int sound_msg;
-	bool verbal = FALSE;
-	bool at_most_one = TRUE;
+	bool verbal = false;
+	bool at_most_one = true;
 
 	/* Pick up all the ordinary gold objects */
 	while (obj) {
@@ -70,13 +70,13 @@ static void player_pickup_gold(void)
 
 		/* Multiple types if we have a second name, otherwise record the name */
 		if (total_gold && !streq(kind->name, name))
-			at_most_one = FALSE;
+			at_most_one = false;
 		else
 			my_strcpy(name, kind->name, sizeof(name));
 
 		/* Remember whether feedback message is in order */
 		if (!ignore_item_ok(obj))
-			verbal = TRUE;
+			verbal = true;
 
 		/* Increment total value */
 		total_gold += (s32b)obj->pval;
@@ -133,11 +133,11 @@ static void player_pickup_gold(void)
  */
 static bool auto_pickup_okay(const struct object *obj)
 {
-	if (!inven_carry_okay(obj)) return FALSE;
-	if (OPT(pickup_always) || check_for_inscrip(obj, "=g")) return TRUE;
-	if (OPT(pickup_inven) && inven_carry_num(obj, TRUE)) return TRUE;
+	if (!inven_carry_okay(obj)) return false;
+	if (OPT(pickup_always) || check_for_inscrip(obj, "=g")) return true;
+	if (OPT(pickup_inven) && inven_carry_num(obj, true)) return true;
 
-	return FALSE;
+	return false;
 }
 
 
@@ -147,7 +147,7 @@ static bool auto_pickup_okay(const struct object *obj)
  */
 static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 {
-	int max = inven_carry_num(obj, FALSE);
+	int max = inven_carry_num(obj, false);
 
 	/* Confirm at least some of the object can be picked up */
 	if (max == 0)
@@ -161,7 +161,7 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 
 	/* Log artifacts if found */
 	if (obj->artifact)
-		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
+		history_add_artifact(obj->artifact, object_is_known(obj), true);
 
 	/* Carry the object, prompting for number if necessary */
 	if (max == obj->number) {
@@ -182,8 +182,8 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 		else
 			num = get_quantity(NULL, max);
 		if (!num) return;
-		picked_up = floor_object_for_use(obj, num, FALSE, &dummy);
-		inven_carry(player, picked_up, TRUE, domsg);
+		picked_up = floor_object_for_use(obj, num, false, &dummy);
+		inven_carry(player, picked_up, true, domsg);
 	}
 }
 
@@ -226,9 +226,9 @@ static byte player_pickup_item(struct object *obj, bool menu)
 
 	int i;
 	int can_pickup = 0;
-	bool call_function_again = FALSE;
+	bool call_function_again = false;
 
-	bool domsg = TRUE;
+	bool domsg = true;
 
 	/* Objects picked up.  Used to determine time cost of command. */
 	byte objs_picked_up = 0;
@@ -266,7 +266,7 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	/* Use a menu interface for multiple objects, or pickup single objects */
 	if (!menu && !current) {
 		if (floor_num > 1)
-			menu = TRUE;
+			menu = true;
 		else
 			current = floor_list[0];
 	}
@@ -285,10 +285,10 @@ static byte player_pickup_item(struct object *obj, bool menu)
 		}
 
 		current = obj;
-		call_function_again = TRUE;
+		call_function_again = true;
 
 		/* With a list, we do not need explicit pickup messages */
-		domsg = TRUE;
+		domsg = true;
 	}
 
 	/* Pick up object, if legal */
@@ -305,7 +305,7 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	 * up.  Force the display of a menu in all cases.
 	 */
 	if (call_function_again)
-		objs_picked_up += player_pickup_item(NULL, TRUE);
+		objs_picked_up += player_pickup_item(NULL, true);
 
 	mem_free(floor_list);
 
@@ -346,7 +346,7 @@ int do_autopickup(void)
 			/* Automatically pick up items into the backpack */
 			if (auto_pickup_okay(obj)) {
 				/* Pick up the object (as much as possible) with message */
-				player_pickup_aux(obj, inven_carry_num(obj, TRUE), TRUE);
+				player_pickup_aux(obj, inven_carry_num(obj, true), true);
 				objs_picked_up++;
 			}
 		}
@@ -368,7 +368,7 @@ void do_cmd_pickup(struct command *cmd)
 	(void) cmd_get_arg_item(cmd, "item", &obj);
 
 	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += player_pickup_item(obj, FALSE) * z_info->move_energy / 10;
+	energy_cost += player_pickup_item(obj, false) * z_info->move_energy / 10;
 
 	/* Limit */
 	if (energy_cost > z_info->move_energy) energy_cost = z_info->move_energy;

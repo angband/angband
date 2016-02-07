@@ -78,7 +78,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max,
 					 char *word_buf, size_t buflen, const char ***sections)
 {
 	size_t lnum = 0;
-	bool found_word = FALSE;
+	bool found_word = false;
 
 	static name_probs lprobs;
 	static randname_type cached_type = RANDNAME_NUM_TYPES;
@@ -108,7 +108,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max,
 		int c_prev = S_WORD;
 		int c_cur = S_WORD;
 		int tries = 0;
-		bool contains_vowel = FALSE;
+		bool contains_vowel = false;
 		lnum = 0;
 
 		/* We start the word again if we run out of space or have
@@ -140,7 +140,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max,
 				   position. */
 				if (lnum >= min && contains_vowel) {
 					*cp = '\0';
-					found_word = TRUE;
+					found_word = true;
 				} else {
 					tries++;
 				}
@@ -149,7 +149,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max,
 				*cp = I2A(c_next);
 
 				if (is_a_vowel(*cp))
-					contains_vowel = TRUE;
+					contains_vowel = true;
 
 				cp++;
 				lnum++;
@@ -184,10 +184,10 @@ bool is_a_vowel(int ch)
 		case 'i':
 		case 'o':
 		case 'u':
-			 return (TRUE);
+			 return (true);
 	}
 
-	return (FALSE);
+	return (false);
 }
 
 int main(int argc, char *argv[])

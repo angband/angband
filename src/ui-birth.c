@@ -90,7 +90,7 @@ enum birth_rollers
 
 
 static void point_based_start(void);
-static bool quickstart_allowed = FALSE;
+static bool quickstart_allowed = false;
 
 /**
  * ------------------------------------------------------------------------
@@ -461,7 +461,7 @@ static void setup_menus(void)
 
 	/* Race menu. */
 	init_birth_menu(&race_menu, n, player->race ? player->race->ridx : 0,
-	                &race_region, TRUE, race_help);
+	                &race_region, true, race_help);
 	mdata = race_menu.menu_data;
 
 	for (i = 0, r = races; r; r = r->next, i++)
@@ -474,7 +474,7 @@ static void setup_menus(void)
 
 	/* Class menu similar to race. */
 	init_birth_menu(&class_menu, n, player->class ? player->class->cidx : 0,
-	                &class_region, TRUE, class_help);
+	                &class_region, true, class_help);
 	mdata = class_menu.menu_data;
 
 	for (i = 0, c = classes; c; c = c->next, i++)
@@ -482,7 +482,7 @@ static void setup_menus(void)
 	mdata->hint = "Class affects stats, skills, and other character traits.";
 		
 	/* Roller menu straightforward */
-	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, FALSE,
+	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, false,
 					NULL);
 	mdata = roller_menu.menu_data;
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
@@ -576,7 +576,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 
 	while (next == BIRTH_RESET) {
 		/* Display the menu, wait for a selection of some sort to be made. */
-		cx = menu_select(current_menu, EVT_KBRD, FALSE);
+		cx = menu_select(current_menu, EVT_KBRD, false);
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
 		   use of "back" (left arrow key or equivalent) to step back in 
@@ -600,7 +600,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 					 */
 					point_based_start();
 					cmdq_push(CMD_RESET_STATS);
-					cmd_set_arg_choice(cmdq_peek(), "choice", TRUE);
+					cmd_set_arg_choice(cmdq_peek(), "choice", true);
 					next = current + 1;
 				}
 			} else {
@@ -615,7 +615,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 				cmdq_push(choice_command);
 				cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
 
-				menu_refresh(current_menu, FALSE);
+				menu_refresh(current_menu, false);
 				next = current + 1;
 			} else if (cx.key.code == '=') {
 				do_cmd_options_birth();
@@ -645,13 +645,13 @@ static enum birth_stage roller_command(bool first_call)
 	enum birth_stage next = BIRTH_ROLLER;
 
 	/* Used to keep track of whether we've rolled a character before or not. */
-	static bool prev_roll = FALSE;
+	static bool prev_roll = false;
 
 	/* Display the player - a bit cheaty, but never mind. */
 	display_player(0);
 
 	if (first_call)
-		prev_roll = FALSE;
+		prev_roll = false;
 
 	/* Prepare a prompt (must squeeze everything in) */
 	strnfcat(prompt, sizeof (prompt), &promptlen, "['r' to reroll");
@@ -675,7 +675,7 @@ static enum birth_stage roller_command(bool first_call)
 	} else if ((ch.code == ' ') || (ch.code == 'r')) {
 		/* Reroll this character */
 		cmdq_push(CMD_ROLL_STATS);
-		prev_roll = TRUE;
+		prev_roll = true;
 	} else if (prev_roll && (ch.code == 'p')) {
 		/* Previous character */
 		cmdq_push(CMD_PREV_STATS);
@@ -798,7 +798,7 @@ static enum birth_stage point_based_command(void)
 		next = BIRTH_BACK;
 	} else if (ch.code == 'r' || ch.code == 'R') {
 		cmdq_push(CMD_RESET_STATS);
-		cmd_set_arg_choice(cmdq_peek(), "choice", FALSE);
+		cmd_set_arg_choice(cmdq_peek(), "choice", false);
 	} else if (ch.code == KC_ENTER) {
 		/* Done */
 		next = BIRTH_NAME_CHOICE;
@@ -875,7 +875,7 @@ void get_screen_loc(size_t cursor, int *x, int *y, size_t n_lines, size_t *line_
 
 int edit_text(char *buffer, int buflen) {
 	int len = strlen(buffer);
-	bool done = FALSE;
+	bool done = false;
 	int cursor = 0;
 
 	while (!done) {
@@ -907,7 +907,7 @@ int edit_text(char *buffer, int buflen) {
 				return -1;
 
 			case KC_ENTER:
-				done = TRUE;
+				done = true;
 				break;
 
 			case ARROW_LEFT:
@@ -1100,7 +1100,7 @@ int textui_do_birth(void)
 	enum birth_stage roller = BIRTH_RESET;
 	enum birth_stage next = current_stage;
 
-	bool done = FALSE;
+	bool done = false;
 
 	cmdq_push(CMD_BIRTH_INIT);
 	cmdq_execute(CMD_BIRTH);
@@ -1128,7 +1128,7 @@ int textui_do_birth(void)
 				display_player(0);
 				next = textui_birth_quickstart();
 				if (next == BIRTH_COMPLETE)
-					done = TRUE;
+					done = true;
 				break;
 			}
 
@@ -1143,13 +1143,13 @@ int textui_do_birth(void)
 				print_menu_instructions();
 
 				if (current_stage > BIRTH_RACE_CHOICE) {
-					menu_refresh(&race_menu, FALSE);
+					menu_refresh(&race_menu, false);
 					menu = &class_menu;
 					command = CMD_CHOOSE_CLASS;
 				}
 
 				if (current_stage > BIRTH_CLASS_CHOICE) {
-					menu_refresh(&class_menu, FALSE);
+					menu_refresh(&class_menu, false);
 					menu = &roller_menu;
 				}
 
@@ -1227,7 +1227,7 @@ int textui_do_birth(void)
 					next = BIRTH_HISTORY_CHOICE;
 
 				if (next == BIRTH_COMPLETE)
-					done = TRUE;
+					done = true;
 
 				break;
 			}
@@ -1266,7 +1266,7 @@ static void ui_leave_birthscreen(game_event_type type, game_event_data *data,
 {
 	/* Set the savefile name if it's not already set */
 	if (!savefile[0])
-		savefile_set_name(player_safe_name(player, TRUE));
+		savefile_set_name(player_safe_name(player, true));
 
 	free_birth_menus();
 }

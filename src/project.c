@@ -292,20 +292,20 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
 	grid_n = project_path(grid_g, z_info->max_range, y1, x1, y2, x2, flg);
 
 	/* No grid is ever projectable from itself */
-	if (!grid_n) return (FALSE);
+	if (!grid_n) return (false);
 
 	/* Final grid */
 	y = grid_g[grid_n - 1].y;
 	x = grid_g[grid_n - 1].x;
 
 	/* May not end in a wall grid */
-	if (!square_ispassable(c, y, x)) return (FALSE);
+	if (!square_ispassable(c, y, x)) return (false);
 
 	/* May not end in an unrequested grid */
-	if ((y != y2) || (x != x2)) return (FALSE);
+	if ((y != y2) || (x != x2)) return (false);
 
 	/* Assume okay */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -325,13 +325,13 @@ static const struct gf_type {
 	bool force_obvious; /* */
  	byte color;			/* */
 } gf_table[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) { c, d, e, f, TRUE, col },
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) { c, d, e, f, true, col },
 	#define RV(b, x, y, m) {b, x, y, m}
 	#include "list-elements.h"
 	#undef ELEM
 	#undef RV
 
-	#define PROJ_ENV(a, col, desc) { desc, NULL, 0, {0, 0, 0, 0}, FALSE, col },
+	#define PROJ_ENV(a, col, desc) { desc, NULL, 0, {0, 0, 0, 0}, false, col },
 	#include "list-project-environs.h"
 	#undef PROJ_ENV
 
@@ -339,7 +339,7 @@ static const struct gf_type {
 		{ desc, NULL, 0, {0, 0, 0, 0}, obv, COLOUR_WHITE }, 
 	#include "list-project-monsters.h"
 	#undef PROJ_MON
-	{ NULL, NULL, 0, {0, 0, 0, 0}, FALSE, COLOUR_WHITE }
+	{ NULL, NULL, 0, {0, 0, 0, 0}, false, COLOUR_WHITE }
 };
 
 static const char *gf_name_list[] =
@@ -360,7 +360,7 @@ static const char *gf_name_list[] =
 bool gf_force_obvious(int type)
 {
 	if (type < 0 || type >= GF_MAX)
-		return FALSE;
+		return false;
 
 	return gf_table[type].force_obvious;
 }
@@ -449,7 +449,7 @@ const char *gf_idx_to_name(int type)
  *   \param diameter_of_source: how wide the source diameter is.
  *   \param obj: An object that the projection ignores
  *
- *   \return TRUE if any effects of the projection were observed, else FALSE
+ *   \return true if any effects of the projection were observed, else false
  *
  *
  * At present, there are five major types of projections:
@@ -595,13 +595,13 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int n1x = 0;
 
 	/* Assume the player sees nothing */
-	bool notice = FALSE;
+	bool notice = false;
 
 	/* Notify the UI if it can draw this projection */
-	bool drawing = FALSE;
+	bool drawing = false;
 
 	/* Is the player blind? */
-	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
+	bool blind = (player->timed[TMD_BLIND] ? true : false);
 
 	/* Number of grids in the "path" */
 	int num_path_grids = 0;
@@ -938,9 +938,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
 			square_isview(cave, blast_grid[i].y, blast_grid[i].x) &&
 			!blind && !(flg & (PROJECT_HIDE)))
-			player_sees_grid[i] = TRUE;
+			player_sees_grid[i] = true;
 		else
-			player_sees_grid[i] = FALSE;
+			player_sees_grid[i] = false;
 	}
 
 	/* Tell the UI to display the blast */
@@ -958,7 +958,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			/* Affect the object in the grid */
 			if (project_o(who, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ, obj))
-				notice = TRUE;
+				notice = true;
 		}
 	}
 
@@ -992,7 +992,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			          dam_at_dist[distance_to_grid[i]], typ, flg,
 			          &did_hit, &was_obvious);
 			if (was_obvious)
-				notice = TRUE;
+				notice = true;
 			if (did_hit) {
 				num_hit++;
 
@@ -1032,7 +1032,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			/* Affect the player, or keep scanning */
 			if (project_p(who, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ)) {
-				notice = TRUE;
+				notice = true;
 				if (player->is_dead)
 					return notice;
 				break;
@@ -1051,7 +1051,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			/* Affect the feature in that grid */
 			if (project_f(who, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ))
-				notice = TRUE;
+				notice = true;
 		}
 	}
 

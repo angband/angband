@@ -111,7 +111,7 @@ static bool spell_menu_handler(struct menu *m, const ui_event *e, int oid)
 
 	if (e->type == EVT_SELECT) {
 		d->selected_spell = d->spells[oid];
-		return d->browse ? TRUE : FALSE;
+		return d->browse ? true : false;
 	}
 	else if (e->type == EVT_KBRD) {
 		if (e->key.code == '?') {
@@ -119,7 +119,7 @@ static bool spell_menu_handler(struct menu *m, const ui_event *e, int oid)
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -176,8 +176,8 @@ static struct menu *spell_menu_new(const struct object *obj,
 	/* Copy across private data */
 	d->is_valid = is_valid;
 	d->selected_spell = -1;
-	d->browse = FALSE;
-	d->show_description = FALSE;
+	d->browse = false;
+	d->show_description = false;
 
 	menu_setpriv(m, d->n_spells, d);
 
@@ -222,7 +222,7 @@ static int spell_menu_select(struct menu *m, const char *noun, const char *verb)
 	my_strcap(buf);
 	prt(buf, 0, 0);
 
-	menu_select(m, 0, TRUE);
+	menu_select(m, 0, true);
 	screen_load();
 
 	return d->selected_spell;
@@ -240,8 +240,8 @@ static void spell_menu_browse(struct menu *m, const char *noun)
 	region_erase_bordered(&m->active);
 	prt(format("Browsing %ss. ('?' to toggle description)", noun), 0, 0);
 
-	d->browse = TRUE;
-	menu_select(m, 0, TRUE);
+	d->browse = true;
+	menu_select(m, 0, true);
 
 	screen_load();
 }

@@ -391,10 +391,10 @@ s16b expression_add_operations_string(expression_t *expression,
 bool expression_test_copy(const expression_t *a, const expression_t *b)
 {
 	size_t i;
-	bool success = TRUE;
+	bool success = true;
 
 	if (a == NULL || b == NULL)
-		return FALSE;
+		return false;
 
 	success &= (a != b);
 	success &= (a->base_value == b->base_value);
@@ -403,7 +403,7 @@ bool expression_test_copy(const expression_t *a, const expression_t *b)
 	success &= (a->operations != b->operations);
 
 	if (a->operation_count != b->operation_count)
-		return FALSE;
+		return false;
 
 	for (i = 0; i < a->operation_count; i++) {
 		success &= (a->operations[i].operand == b->operations[i].operand);

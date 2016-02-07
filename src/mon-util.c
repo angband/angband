@@ -87,7 +87,7 @@ struct monster_base *lookup_monster_base(const char *name)
  */
 bool match_monster_bases(const struct monster_base *base, ...)
 {
-	bool ok = FALSE;
+	bool ok = false;
 	va_list vp;
 	char *name;
 
@@ -187,13 +187,13 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	int fy, fx;
 
 	/* Seen at all */
-	bool flag = FALSE;
+	bool flag = false;
 
 	/* Seen by vision */
-	bool easy = FALSE;
+	bool easy = false;
 
 	/* ESP permitted */
-	bool telepathy_ok = TRUE;
+	bool telepathy_ok = true;
 
 	assert(mon != NULL);
 
@@ -228,12 +228,12 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	}
 
 	/* Detected */
-	if (mflag_has(mon->mflag, MFLAG_MARK)) flag = TRUE;
+	if (mflag_has(mon->mflag, MFLAG_MARK)) flag = true;
 
 	/* Check if telepathy works */
 	if (square_isno_esp(c, fy, fx) ||
 		square_isno_esp(c, player->py, player->px))
-		telepathy_ok = FALSE;
+		telepathy_ok = false;
 
 	/* Nearby */
 	if (d <= z_info->max_sight) {
@@ -250,20 +250,20 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 				/* One in ten individuals are detectable */
 				if ((mon->midx % 10) == 5) {
 					/* Detectable */
-					flag = TRUE;
+					flag = true;
 
 					/* Check for LOS so that MFLAG_VIEW is set later */
-					if (square_isview(c, fy, fx)) easy = TRUE;
+					if (square_isview(c, fy, fx)) easy = true;
 				}
 			}
 
 			/* Normal mind, allow telepathy */
 			else {
 				/* Detectable */
-				flag = TRUE;
+				flag = true;
 
 				/* Check for LOS to that MFLAG_VIEW is set later */
-				if (square_isview(c, fy, fx)) easy = TRUE;
+				if (square_isview(c, fy, fx)) easy = true;
 			}
 		}
 
@@ -277,12 +277,12 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 				/* Handle "warm blooded" monsters */
 				if (!rf_has(mon->race->flags, RF_COLD_BLOOD)) {
 					/* Easy to see */
-					easy = flag = TRUE;
+					easy = flag = true;
 				}
 			}
 
 			/* See if the monster is emitting light */
-			/*if (rf_has(mon->race->flags, RF_HAS_LIGHT)) easy = flag = TRUE;*/
+			/*if (rf_has(mon->race->flags, RF_HAS_LIGHT)) easy = flag = true;*/
 
 			/* Use "illumination" */
 			if (square_isseen(c, fy, fx)) {
@@ -298,14 +298,14 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 					if (player_of_has(player, OF_SEE_INVIS))
 					{
 						/* Easy to see */
-						easy = flag = TRUE;
+						easy = flag = true;
 					}
 				}
 
 				/* Handle "normal" monsters */
 				else {
 					/* Easy to see */
-					easy = flag = TRUE;
+					easy = flag = true;
 				}
 			}
 		}
@@ -315,7 +315,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	if (is_mimicking(mon)) {
 		struct object *obj = mon->mimicked_obj;
 		if (ignore_item_ok(obj))
-			easy = flag = FALSE;
+			easy = flag = false;
 	}
 
 	/* The monster is now visible */
@@ -338,7 +338,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 				player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Hack -- Count "fresh" sightings */
-			if (lore->sights < MAX_SHORT)
+			if (lore->sights < SHRT_MAX)
 				lore->sights++;
 
 			/* Window stuff */
@@ -424,7 +424,7 @@ void update_monsters(bool full)
 /**
  * Add the given object to the given monster's inventory.
  *
- * Currently always returns TRUE - it is left as a bool rather than
+ * Currently always returns true - it is left as a bool rather than
  * void in case a limit on monster inventory size is proposed in future.
  */
 bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
@@ -439,7 +439,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 			object_absorb(held_obj, obj);
 
 			/* Result */
-			return TRUE;
+			return true;
 		}
 	}
 
@@ -454,7 +454,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 	pile_insert(&mon->held_obj, obj);
 
 	/* Result */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -483,7 +483,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		mon->fx = x2;
 
 		/* Update monster */
-		update_mon(mon, cave, TRUE);
+		update_mon(mon, cave, true);
 
 		/* Radiate light? */
 		if (rf_has(mon->race->flags, RF_HAS_LIGHT))
@@ -524,7 +524,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		mon->fx = x1;
 
 		/* Update monster */
-		update_mon(mon, cave, TRUE);
+		update_mon(mon, cave, true);
 
 		/* Radiate light? */
 		if (rf_has(mon->race->flags, RF_HAS_LIGHT))
@@ -613,7 +613,7 @@ void become_aware(struct monster *mon)
 }
 
 /**
- * Returns TRUE if the given monster is currently mimicking an item.
+ * Returns true if the given monster is currently mimicking an item.
  */
 bool is_mimicking(struct monster *mon)
 {

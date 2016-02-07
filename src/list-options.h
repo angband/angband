@@ -10,87 +10,87 @@
 /* name                   description
 type     normal */
 OP(none,                  "",
-SPECIAL, FALSE)
+SPECIAL, false)
 OP(rogue_like_commands,   "Use the roguelike command keyset",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(use_sound,             "Use sound",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(show_damage,           "Show damage player deals to monsters",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(use_old_target,        "Use old target by default",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(pickup_always,         "Always pickup items",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(pickup_inven,          "Always pickup items matching inventory",
-INTERFACE, TRUE)
+INTERFACE, true)
 OP(show_flavors,          "Show flavors in object descriptions",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(show_target,           "Highlight target with cursor",
-INTERFACE, TRUE)
+INTERFACE, true)
 OP(disturb_near,          "Disturb whenever viewable monster moves",
-INTERFACE, TRUE)
+INTERFACE, true)
 OP(solid_walls,           "Show walls as solid blocks",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(hybrid_walls,          "Show walls with shaded background",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(view_yellow_light,     "Color: Illuminate torchlight in yellow",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(animate_flicker,       "Color: Shimmer multi-colored things",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(center_player,         "Center map continuously",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(purple_uniques,        "Color: Show unique monsters in purple",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(auto_more,             "Automatically clear '-more-' prompts",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(hp_changes_color,      "Color: Player color indicates % hit points",
-INTERFACE, TRUE)
+INTERFACE, true)
 OP(mouse_movement,        "Allow mouse clicks to move the player",
-INTERFACE, TRUE)
+INTERFACE, true)
 OP(notify_recharge,       "Notify on object recharge",
-INTERFACE, FALSE)
+INTERFACE, false)
 OP(cheat_hear,            "Cheat: Peek into monster creation",
-CHEAT, FALSE)
+CHEAT, false)
 OP(score_hear,            "Score: Peek into monster creation",
-SCORE, FALSE)
+SCORE, false)
 OP(cheat_room,            "Cheat: Peek into dungeon creation",
-CHEAT, FALSE)
+CHEAT, false)
 OP(score_room,            "Score: Peek into dungeon creation",
-SCORE, FALSE)
+SCORE, false)
 OP(cheat_xtra,            "Cheat: Peek into something else",
-CHEAT, FALSE)
+CHEAT, false)
 OP(score_xtra,            "Score: Peek into something else",
-SCORE, FALSE)
+SCORE, false)
 OP(cheat_know,            "Cheat: Know complete monster info",
-CHEAT, FALSE)
+CHEAT, false)
 OP(score_know,            "Score: Know complete monster info",
-SCORE, FALSE)
+SCORE, false)
 OP(cheat_live,            "Cheat: Allow player to avoid death",
-CHEAT, FALSE)
+CHEAT, false)
 OP(score_live,            "Score: Allow player to avoid death",
-SCORE, FALSE)
+SCORE, false)
 OP(birth_randarts,        "Randomise the artifacts (except a very few)",
-BIRTH, FALSE)
+BIRTH, false)
 OP(birth_no_recall,       "Word of Recall has no effect",
-BIRTH, FALSE)
+BIRTH, false)
 OP(birth_no_artifacts,    "Restrict creation of artifacts",
-BIRTH, FALSE)
+BIRTH, false)
 OP(birth_no_stacking,     "Don't stack objects on the floor",
-BIRTH, FALSE)
+BIRTH, false)
 OP(birth_no_preserve,     "Lose artifacts when leaving level",
-BIRTH, FALSE)
+BIRTH, false)
 OP(birth_no_stairs,       "Don't generate connected stairs",
-BIRTH, FALSE)
+BIRTH, false)
 OP(birth_no_feelings,     "Don't show level feelings",
-BIRTH, FALSE)
+BIRTH, false)
 OP(birth_no_selling,      "Increase gold drops but disable selling",
-BIRTH, TRUE)
+BIRTH, true)
 OP(birth_keep_randarts,   "Use previous set of randarts",
-BIRTH, TRUE)
+BIRTH, true)
 OP(birth_start_kit,       "Start with a kit of useful gear",
-BIRTH, TRUE)
+BIRTH, true)
 OP(birth_ai_learn,        "Monsters learn from their mistakes",
-BIRTH, FALSE)
+BIRTH, false)
 OP(birth_force_descend,   "Force player descent",
-BIRTH, FALSE)
+BIRTH, false)
 

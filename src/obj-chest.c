@@ -126,15 +126,15 @@ byte chest_trap_type(const struct object *obj)
 bool is_trapped_chest(const struct object *obj)
 {
 	if (!tval_is_chest(obj))
-		return FALSE;
+		return false;
 
 	/* Ignore if requested */
 	if (ignore_item_ok(obj))
-		return FALSE;
+		return false;
 
 	/* Disarmed or opened chests are not trapped */
 	if (obj->pval <= 0)
-		return FALSE;
+		return false;
 
 	/* Some chests simply don't have traps */
 	return (chest_traps[obj->pval] != 0);
@@ -147,11 +147,11 @@ bool is_trapped_chest(const struct object *obj)
 bool is_locked_chest(const struct object *obj)
 {
 	if (!tval_is_chest(obj))
-		return FALSE;
+		return false;
 
 	/* Ignore if requested */
 	if (ignore_item_ok(obj))
-		return FALSE;
+		return false;
 
 	/* Disarmed or opened chests are not locked */
 	return (obj->pval > 0);
@@ -254,7 +254,7 @@ static void chest_death(int y, int x, struct object *chest)
 	struct object *treasure;
 
 	/* Small chests often hold "gold" */
-	tiny = strstr(chest->kind->name, "Small") ? TRUE : FALSE;
+	tiny = strstr(chest->kind->name, "Small") ? true : false;
 
 	/* Determine how much to drop (see above) */
 	if (strstr(chest->kind->name, "wooden"))
@@ -282,7 +282,7 @@ static void chest_death(int y, int x, struct object *chest)
 
 		/* Otherwise drop an item, as long as it isn't a chest */
 		else {
-			treasure = make_object(cave, value, FALSE, FALSE, FALSE, NULL, 0);
+			treasure = make_object(cave, value, false, false, false, NULL, 0);
 			if (!treasure) continue;
 			if (tval_is_chest(treasure)) {
 				mem_free(treasure);
@@ -295,7 +295,7 @@ static void chest_death(int y, int x, struct object *chest)
 		treasure->origin_depth = chest->origin_depth;
 
 		/* Drop it in the dungeon */
-		drop_near(cave, treasure, 0, y, x, TRUE);
+		drop_near(cave, treasure, 0, y, x, true);
 	}
 
 	/* Empty */
@@ -369,20 +369,20 @@ static void chest_trap(int y, int x, struct object *obj)
  *
  * Assume there is no monster blocking the destination
  *
- * Returns TRUE if repeated commands may continue
+ * Returns true if repeated commands may continue
  */
 bool do_cmd_open_chest(int y, int x, struct object *obj)
 {
 	int i, j;
 
-	bool flag = TRUE;
+	bool flag = true;
 
-	bool more = FALSE;
+	bool more = false;
 
 	/* Attempt to unlock it */
 	if (obj->pval > 0) {
 		/* Assume locked, and thus not open */
-		flag = FALSE;
+		flag = false;
 
 		/* Get the "disarm" factor */
 		i = player->state.skills[SKILL_DISARM];
@@ -401,10 +401,10 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 		if (randint0(100) < j) {
 			msgt(MSG_LOCKPICK, "You have picked the lock.");
 			player_exp_gain(player, 1);
-			flag = TRUE;
+			flag = true;
 		} else {
 			/* We may continue repeating */
-			more = TRUE;
+			more = true;
 			event_signal(EVENT_INPUT_FLUSH);
 			msgt(MSG_LOCKPICK_FAIL, "You failed to pick the lock.");
 		}
@@ -441,13 +441,13 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
  *
  * Assume there is no monster blocking the destination
  *
- * Returns TRUE if repeated commands may continue
+ * Returns true if repeated commands may continue
  */
 bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 {
 	int i, j;
 
-	bool more = FALSE;
+	bool more = false;
 
 	/* Get the "disarm" factor */
 	i = player->state.skills[SKILL_DISARM];
@@ -475,7 +475,7 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 		obj->pval = (0 - obj->pval);
 	} else if ((i > 5) && (randint1(i) > 5)) {
 		/* Failure -- Keep trying */
-		more = TRUE;
+		more = true;
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to disarm the chest.");
 	} else {

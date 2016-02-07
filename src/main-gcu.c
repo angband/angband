@@ -37,8 +37,8 @@
  * Include the proper "header" file
  */
 #ifdef USE_NCURSES
-# ifdef HAVE_STDBOOL_H
-#  define NCURSES_ENABLE_STDBOOL_H 0
+# ifdef HAVE_STDbool_H
+#  define NCURSES_ENABLE_STDbool_H 0
 # endif
 
 # include <ncurses.h>
@@ -142,7 +142,7 @@ static int active = 0;
 /**
  * Software flag -- we are allowed to use color
  */
-static int can_use_color = FALSE;
+static int can_use_color = false;
 
 /**
  * Simple Angband to Curses color conversion table
@@ -150,8 +150,8 @@ static int can_use_color = FALSE;
 static int colortable[BASIC_COLORS];
 
 /* Screen info: use one big Term 0, or other subwindows? */
-static bool bold_extended = FALSE;
-static bool ascii_walls = FALSE;
+static bool bold_extended = false;
+static bool ascii_walls = false;
 static int term_count = 4;
 
 /**
@@ -519,13 +519,13 @@ static errr Term_xtra_gcu_event(int v) {
 		cbreak();
 	} else {
 		/* Do not wait for it */
-		nodelay(stdscr, TRUE);
+		nodelay(stdscr, true);
 
 		/* Check for keypresses */
 		i = getch();
 
 		/* Wait for it next time */
-		nodelay(stdscr, FALSE);
+		nodelay(stdscr, false);
 
 		/* None ready */
 		if (i == ERR) return (1);
@@ -567,7 +567,7 @@ static errr Term_xtra_gcu_event(int v) {
 	 * with various terminal emulators (I'm looking at you PuTTY).
 	 */
 	if (i == 27) { /* ESC */
-		nodelay(stdscr, TRUE);
+		nodelay(stdscr, true);
 		j = getch();
 		switch (j) {
 			case 'O': {
@@ -595,7 +595,7 @@ static errr Term_xtra_gcu_event(int v) {
 			case ERR: break;
 			default: ungetch(j);
 		}
-		nodelay(stdscr, FALSE);
+		nodelay(stdscr, false);
 	}
 
 #ifdef KEY_DOWN
@@ -671,7 +671,7 @@ static int create_color(int i, int scale) {
 static errr Term_xtra_gcu_react(void) {
 	if (ascii_walls) {
 		int i;
-		ascii_walls = FALSE;
+		ascii_walls = false;
 		for (i = 0; i < 4; i++) {
 			// magma as %:D
 			feat_x_char[i][FEAT_MAGMA] = 0x23;
@@ -752,7 +752,7 @@ static errr Term_xtra_gcu(int n, int v) {
 		case TERM_XTRA_EVENT: return Term_xtra_gcu_event(v);
 
 		/* Flush events */
-		case TERM_XTRA_FLUSH: while (!Term_xtra_gcu_event(FALSE)); return 0;
+		case TERM_XTRA_FLUSH: while (!Term_xtra_gcu_event(false)); return 0;
 
 		/* Delay */
 		case TERM_XTRA_DELAY: if (v > 0) usleep(1000 * v); return 0;
@@ -852,14 +852,14 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 	term_init(t, cols, rows, 256);
 
 	/* Avoid bottom right corner */
-	t->icky_corner = TRUE;
+	t->icky_corner = true;
 
 	/* Erase with "white space" */
 	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';
 
 	/* Differentiate between BS/^h, Tab/^i, etc. */
-	t->complex_input = TRUE;
+	t->complex_input = true;
 
 	/* Set some hooks */
 	t->init_hook = Term_init_gcu;
@@ -914,9 +914,9 @@ errr init_gcu(int argc, char **argv) {
 		if (prefix(argv[i], "-b")) {
 			term_count = 1;
 		} else if (prefix(argv[i], "-B")) {
-			bold_extended = TRUE;
+			bold_extended = true;
 		} else if (prefix(argv[i], "-a")) {
-			ascii_walls = TRUE;
+			ascii_walls = true;
 		} else if (prefix(argv[i], "-n")) {
 			term_count = atoi(&argv[i][2]);
 			if (term_count > MAX_TERM_DATA) term_count = MAX_TERM_DATA;
@@ -1000,7 +1000,7 @@ errr init_gcu(int argc, char **argv) {
 #endif
 
 	/* Paranoia -- Assume no waiting */
-	nodelay(stdscr, FALSE);
+	nodelay(stdscr, false);
 
 	/* Prepare */
 	cbreak();
@@ -1008,7 +1008,7 @@ errr init_gcu(int argc, char **argv) {
 	nonl();
 
 	/* Tell curses to rewrite escape sequences to KEY_UP and friends */
-	keypad(stdscr, TRUE);
+	keypad(stdscr, true);
 
 	/* Extract the game keymap */
 	keymap_game_prepare();

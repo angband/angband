@@ -272,10 +272,10 @@ static void remove_tiles(int col, int row, bool *picker_ptr, int width,
 	int i;
 
 	/* No more big cursor */
-	bigcurs = FALSE;
+	bigcurs = false;
 
 	/* Cancel visual list */
-	*picker_ptr = FALSE;
+	*picker_ptr = false;
 
 	/* Clear the display lines */
 	for (i = 0; i < height; i++)
@@ -337,21 +337,21 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			if (ke.mouse.button)
 			  remove_tiles(col, row, tile_picker_ptr, width, height);
 
-			return TRUE;
+			return true;
 		} else if (ke.mouse.button == 2) {
 			/* Cancel change */
 			*cur_attr_ptr = attr_old;
 			*cur_char_ptr = char_old;
 			remove_tiles(col, row, tile_picker_ptr, width, height);
 
-			return TRUE;
+			return true;
 		} else {
-			return FALSE;
+			return false;
 		}
 	}
 
 	if (ke.type != EVT_KBRD)
-		return FALSE;
+		return false;
 
 
 	switch (ke.key.code)
@@ -364,7 +364,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 				*cur_char_ptr = char_old;
 				remove_tiles(col, row, tile_picker_ptr, width, height);
 
-				return TRUE;
+				return true;
 			}
 
 			break;
@@ -375,7 +375,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			if (*tile_picker_ptr) {
 				/* Accept change */
 				remove_tiles(col, row, tile_picker_ptr, width, height);
-				return TRUE;
+				return true;
 			}
 
 			break;
@@ -390,8 +390,8 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 					break;
 
 			if (!*tile_picker_ptr) {
-				*tile_picker_ptr = TRUE;
-				bigcurs = TRUE;
+				*tile_picker_ptr = true;
+				bigcurs = true;
 
 				*attr_top_ptr = (byte)MAX(0, (int)*cur_attr_ptr - frame_top);
 				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
@@ -405,7 +405,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 				remove_tiles(col, row, tile_picker_ptr, width, height);
 			}
 
-			return TRUE;
+			return true;
 		}
 
 		case 'C':
@@ -415,7 +415,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			attr_idx = *cur_attr_ptr;
 			char_idx = *cur_char_ptr;
 
-			return TRUE;
+			return true;
 		}
 
 		case 'P':
@@ -433,7 +433,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
 			}
 
-			return TRUE;
+			return true;
 		}
 
 		default:
@@ -445,7 +445,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			if (!*tile_picker_ptr)
 				break;
 
-			bigcurs = TRUE;
+			bigcurs = true;
 
 			/* Restrict direction */
 			if ((a == 0) && (ddy[d] < 0)) d = 0;
@@ -481,12 +481,12 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			 * otherwise it will be interpreted as a change object
 			 * selection command with messy results.
 			 */
-			return TRUE;
+			return true;
 		}
 	}
 
 	/* Tile picker command is not used */
-	return FALSE;
+	return false;
 }
 
 
@@ -528,7 +528,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 
 		int mx = logical_width(ke.mouse.x - col);
 		
-		if (ke.mouse.y != row + height/2) return FALSE;
+		if (ke.mouse.y != row + height/2) return false;
 		
 		if ((mx >= 0) && (mx < MAX_COLORS) && (ke.mouse.button == 1)) {
 		        /* Set the visual */
@@ -537,14 +537,14 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 			/* Accept change */
 			remove_tiles(col, row, glyph_picker_ptr, width, height);
 			
-			return TRUE;
+			return true;
 		} else {
-		        return FALSE;
+		        return false;
 		}
 	}
 
 	if (ke.type != EVT_KBRD)
-	        return FALSE;
+	        return false;
 
 
 	switch (ke.key.code)
@@ -557,7 +557,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 				*cur_char_ptr = char_old;
 				remove_tiles(col, row, glyph_picker_ptr, width, height);
 				
-				return TRUE;
+				return true;
 			}
 
 			break;
@@ -568,7 +568,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 		    if (*glyph_picker_ptr) {
 			    /* Accept change */
 			    remove_tiles(col, row, glyph_picker_ptr, width, height);
-			    return TRUE;
+			    return true;
 		    }
 		    
 		    break;
@@ -578,7 +578,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 	    case 'v':
 	    {
 		    if (!*glyph_picker_ptr) {
-			    *glyph_picker_ptr = TRUE;
+			    *glyph_picker_ptr = true;
 
 			    attr_old = *cur_attr_ptr;
 			    char_old = *cur_char_ptr;
@@ -589,7 +589,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 			    remove_tiles(col, row, glyph_picker_ptr, width, height);
 		    }
 
-		    return TRUE;
+		    return true;
 	    }
 
 	    case 'i':
@@ -597,7 +597,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 	    {
 		    if (*glyph_picker_ptr) {
 			    char code_point[6];
-			    bool res = FALSE;
+			    bool res = false;
 	
 			    /* Ask the user for a code point */
 			    Term_gotoxy(col, row + height/2 + 2);
@@ -608,7 +608,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 				    unsigned long int point = strtoul(code_point,
 													  (char **)NULL, 16);
 				    *cur_char_ptr = (wchar_t) point;
-				    return TRUE;
+				    return true;
 			    }
 		    }
 		    
@@ -640,12 +640,12 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 		     * otherwise it will be interpreted as a change object
 		     * selection command with messy results.
 		     */
-		    return TRUE;
+		    return true;
 	    }
 	}
 
 	/* Glyph picker command is not used */
-	return FALSE;
+	return false;
 }
 
 static void display_group_member(struct menu *menu, int oid,
@@ -714,8 +714,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	/* display state variables */
 	bool tiles = (current_graphics_mode != NULL);
-	bool tile_picker = FALSE;
-	bool glyph_picker = FALSE;
+	bool tile_picker = false;
+	bool glyph_picker = false;
 	byte attr_top = 0;
 	byte char_left = 0;
 
@@ -733,10 +733,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int panel = 0;
 
 	void *swapspace;
-	bool do_swap = FALSE;
+	bool do_swap = false;
 
-	bool flag = FALSE;
-	bool redraw = TRUE;
+	bool flag = false;
+	bool redraw = true;
 
 	int browser_rows;
 	int wid, hgt;
@@ -751,7 +751,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	browser_rows = hgt - 8;
 
 	/* Disable the roguelike commands for the duration */
-	OPT(rogue_like_commands) = FALSE;
+	OPT(rogue_like_commands) = false;
 
 	/* Determine if using tiles or not */
 	if (tiles) tiles = (current_graphics_mode->grafID != 0);
@@ -807,7 +807,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	menu_layout(&object_menu, &object_region);
 	object_menu.flags |= MN_DBL_TAP;
 
-	o_funcs.is_visual = FALSE;
+	o_funcs.is_visual = false;
 
 	/* Save screen */
 	screen_save();
@@ -817,7 +817,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* Panels are -- text panels, two menus, and visual browser */
 	/* with "pop-up menu" for lore */
 	while ((!flag) && (grp_cnt)) {
-		bool recall = FALSE;
+		bool recall = false;
 
 		if (redraw) {
 			/* Print the title bits */
@@ -839,7 +839,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 			/* Reset redraw flag */
-			redraw = FALSE;
+			redraw = false;
 		}
 
 		if (g_cur != grp_old) {
@@ -855,13 +855,13 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		/* HACK ... */
 		if (!(tile_picker || glyph_picker)) {
 			/* ... The object menu may be browsing the entire group... */
-			o_funcs.is_visual = FALSE;
+			o_funcs.is_visual = false;
 			menu_set_filter(&object_menu, obj_list + g_offset[g_cur],
 							g_o_count);
 			object_menu.cursor = o_cur;
 		} else {
 			/* ... or just a single element in the group. */
-			o_funcs.is_visual = TRUE;
+			o_funcs.is_visual = true;
 			menu_set_filter(&object_menu, obj_list + o_cur + g_offset[g_cur],
 							1);
 			object_menu.cursor = 0;
@@ -886,7 +886,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		}
 
 		if (do_swap) {
-			do_swap = FALSE;
+			do_swap = false;
 			swap(active_menu, inactive_menu);
 			swap(active_cursor, inactive_cursor);
 			panel = 1 - panel;
@@ -899,13 +899,13 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			                object_region.col);
 		}
 
-		menu_refresh(inactive_menu, FALSE);
-		menu_refresh(active_menu, FALSE);
+		menu_refresh(inactive_menu, false);
+		menu_refresh(active_menu, false);
 
 		handle_stuff(player);
 
 		if (tile_picker) {
-		        bigcurs = TRUE;
+		        bigcurs = true;
 			display_tiles(g_name_len + 3, 7, browser_rows - 1,
 				      wid - (g_name_len + 3), attr_top, 
 				      char_left);
@@ -970,7 +970,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_KBRD:
 			{
 				if (ke.key.code == 'r' || ke.key.code == 'R')
-					recall = TRUE;
+					recall = true;
 				else if (o_funcs.xtra_act)
 					o_funcs.xtra_act(ke.key, oid);
 
@@ -992,9 +992,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_ESCAPE:
 			{
 				if (panel == 1)
-					do_swap = TRUE;
+					do_swap = true;
 				else
-					flag = TRUE;
+					flag = true;
 
 				break;
 			}
@@ -1002,9 +1002,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_SELECT:
 			{
 				if (panel == 0)
-					do_swap = TRUE;
+					do_swap = true;
 				else if (panel == 1 && oid >= 0 && o_cur == active_menu->cursor)
-					recall = TRUE;
+					recall = true;
 				break;
 			}
 
@@ -1025,7 +1025,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			if (oid >= 0)
 				o_funcs.lore(oid);
 
-			redraw = TRUE;
+			redraw = true;
 		}
 	}
 
@@ -1210,7 +1210,7 @@ static void mon_lore(int oid)
 	handle_stuff(player);
 
 	tb = textblock_new();
-	lore_description(tb, race, lore, FALSE);
+	lore_description(tb, race, lore, false);
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
 }
@@ -1271,7 +1271,7 @@ static int count_known_monsters(void)
 static void do_cmd_knowledge_monsters(const char *name, int row)
 {
 	group_funcs r_funcs = {race_name, m_cmp_race, default_group_id, mon_summary,
-						   N_ELEMENTS(monster_group), FALSE};
+						   N_ELEMENTS(monster_group), false};
 
 	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr,
 							recall_prompt, 0, 0};
@@ -1521,20 +1521,20 @@ static bool artifact_is_known(int a_idx)
 	struct object *obj;
 
 	if (!a_info[a_idx].name)
-		return FALSE;
+		return false;
 
 	if (player->wizard)
-		return TRUE;
+		return true;
 
 	if (!a_info[a_idx].created)
-		return FALSE;
+		return false;
 
 	/* Check all objects to see if it exists but hasn't been IDed */
 	obj = find_artifact(&a_info[a_idx]);
 	if (obj && !object_is_known_artifact(obj))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1571,7 +1571,7 @@ static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
 static void do_cmd_knowledge_artifacts(const char *name, int row)
 {
 	/* HACK -- should be TV_MAX */
-	group_funcs obj_f = {kind_name, a_cmp_tval, art2gid, 0, TV_MAX, FALSE};
+	group_funcs obj_f = {kind_name, a_cmp_tval, art2gid, 0, TV_MAX, false};
 	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, recall_prompt,
 						  0, 0};
 
@@ -1651,7 +1651,7 @@ static int e_cmp_tval(const void *a, const void *b)
 static void do_cmd_knowledge_ego_items(const char *name, int row)
 {
 	group_funcs obj_f =
-		{ego_grp_name, e_cmp_tval, default_group_id, 0, TV_MAX, FALSE};
+		{ego_grp_name, e_cmp_tval, default_group_id, 0, TV_MAX, false};
 
 	member_funcs ego_f =
 		{display_ego_item, desc_ego_fake, 0, 0, recall_prompt, 0, 0};
@@ -1988,7 +1988,7 @@ static void o_xtra_act(struct keypress ch, int oid)
  */
 void textui_browse_object_knowledge(const char *name, int row)
 {
-	group_funcs kind_f = {kind_name, o_cmp_tval, obj2gid, 0, TV_MAX, FALSE};
+	group_funcs kind_f = {kind_name, o_cmp_tval, obj2gid, 0, TV_MAX, false};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr,
 						  o_xtra_prompt, o_xtra_act, 0};
 
@@ -2157,7 +2157,7 @@ static void f_xtra_act(struct keypress ch, int oid)
 static void do_cmd_knowledge_features(const char *name, int row)
 {
 	group_funcs fkind_f = {fkind_name, f_cmp_fkind, feat_order, 0,
-						   N_ELEMENTS(feature_group_text), FALSE};
+						   N_ELEMENTS(feature_group_text), false};
 
 	member_funcs feat_f = {display_feature, feat_lore, f_xchar, f_xattr,
 						   feat_prompt, f_xtra_act, 0};
@@ -2338,7 +2338,7 @@ static void t_xtra_act(struct keypress ch, int oid)
 static void do_cmd_knowledge_traps(const char *name, int row)
 {
 	group_funcs tkind_f = {tkind_name, t_cmp_tkind, trap_order, 0,
-						   N_ELEMENTS(trap_group_text), FALSE};
+						   N_ELEMENTS(trap_group_text), false};
 
 	member_funcs trap_f = {display_trap, trap_lore, t_xchar, t_xattr,
 						   trap_prompt, t_xtra_act, 0};
@@ -2479,7 +2479,7 @@ void textui_browse_knowledge(void)
 	menu_layout(&knowledge_menu, &knowledge_region);
 
 	clear_from(0);
-	menu_select(&knowledge_menu, 0, FALSE);
+	menu_select(&knowledge_menu, 0, false);
 
 	screen_load();
 }
@@ -2519,7 +2519,7 @@ void do_cmd_messages(void)
 {
 	ui_event ke;
 
-	bool more = TRUE;
+	bool more = true;
 
 	int i, j, n, q;
 	int wid, hgt;
@@ -2608,13 +2608,13 @@ void do_cmd_messages(void)
 					i = (i >= 20) ? (i - 20) : 0;
 				}
 			} else if (ke.mouse.button == 2) {
-				more = FALSE;
+				more = false;
 			}
 		} else if (ke.type == EVT_KBRD) {
 			switch (ke.key.code) {
 				case ESCAPE:
 				{
-					more = FALSE;
+					more = false;
 					break;
 				}
 
@@ -3052,11 +3052,11 @@ void do_cmd_query_symbol(void)
 	char sym;
 	struct keypress query;
 
-	bool all = FALSE;
-	bool uniq = FALSE;
-	bool norm = FALSE;
+	bool all = false;
+	bool uniq = false;
+	bool norm = false;
 
-	bool recall = FALSE;
+	bool recall = false;
 
 	u16b *who;
 
@@ -3066,13 +3066,13 @@ void do_cmd_query_symbol(void)
 
 	/* Describe */
 	if (sym == KTRL('A')) {
-		all = TRUE;
+		all = true;
 		my_strcpy(buf, "Full monster list.", sizeof(buf));
 	} else if (sym == KTRL('U')) {
-		all = uniq = TRUE;
+		all = uniq = true;
 		my_strcpy(buf, "Unique monster list.", sizeof(buf));
 	} else if (sym == KTRL('N')) {
-		all = norm = TRUE;
+		all = norm = true;
 		my_strcpy(buf, "Non-unique monster list.", sizeof(buf));
 	} else {
 		lookup_symbol(sym, buf, sizeof(buf));

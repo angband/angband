@@ -154,7 +154,7 @@ void flavor_init(void)
 	int i, j;
 
 	/* Hack -- Use the "simple" RNG */
-	Rand_quick = TRUE;
+	Rand_quick = true;
 
 	/* Hack -- Induce consistant flavors */
 	Rand_value = seed_flavor;
@@ -178,7 +178,7 @@ void flavor_init(void)
 		char *end = buf + 1;
 		int titlelen = 0;
 		int wordlen;
-		bool okay = TRUE;
+		bool okay = true;
 
 		my_strcpy(buf, "\"", 2);
 		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24, name_sections);
@@ -195,7 +195,7 @@ void flavor_init(void)
 		/* Check the scroll name hasn't already been generated */
 		for (j = 0; j < i; j++) {
 			if (streq(buf, scroll_adj[j])) {
-				okay = FALSE;
+				okay = false;
 				break;
 			}
 		}
@@ -209,7 +209,7 @@ void flavor_init(void)
 	flavor_assign_random(TV_SCROLL);
 
 	/* Hack -- Use the "complex" RNG */
-	Rand_quick = FALSE;
+	Rand_quick = false;
 
 	/* Analyze every object */
 	for (i = 1; i < z_info->k_max; i++) {
@@ -219,7 +219,7 @@ void flavor_init(void)
 		if (!kind->name) continue;
 
 		/* No flavor yields aware */
-		if (!kind->flavor) kind->aware = TRUE;
+		if (!kind->flavor) kind->aware = true;
 	}
 }
 
@@ -262,10 +262,10 @@ void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE])
 bool object_test(item_tester tester, const struct object *obj)
 {
 	/* Require object */
-	if (!obj) return FALSE;
+	if (!obj) return false;
 
 	/* Ignore gold */
-	if (tval_is_money(obj)) return FALSE;
+	if (tval_is_money(obj)) return false;
 
 	/* Pass without a tester, or tail-call the tester if it exists */
 	return !tester || tester(obj);
@@ -387,7 +387,7 @@ int lookup_sval(int tval, const char *name)
 		if (!kind || !kind->name) continue;
 
 		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, kind->name, 0,
-							 FALSE);
+							 false);
 
 		/* Found a match */
 		if (kind->tval == tval && !my_stricmp(cmp_name, name))
@@ -471,11 +471,11 @@ int compare_items(const struct object *o1, const struct object *o2)
  */
 bool obj_has_charges(const struct object *obj)
 {
-	if (!tval_can_have_charges(obj)) return FALSE;
+	if (!tval_can_have_charges(obj)) return false;
 
-	if (obj->pval <= 0) return FALSE;
+	if (obj->pval <= 0) return false;
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -485,9 +485,9 @@ bool obj_can_zap(const struct object *obj)
 {
 	/* Any rods not charging? */
 	if (tval_can_have_timeout(obj) && number_charging(obj) < obj->number)
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -495,7 +495,7 @@ bool obj_can_zap(const struct object *obj)
  */
 bool obj_is_activatable(const struct object *obj)
 {
-	return object_effect(obj) ? TRUE : FALSE;
+	return object_effect(obj) ? true : false;
 }
 
 /**
@@ -506,10 +506,10 @@ bool obj_can_activate(const struct object *obj)
 	if (obj_is_activatable(obj))
 	{
 		/* Check the recharge */
-		if (!obj->timeout) return TRUE;
+		if (!obj->timeout) return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -520,18 +520,18 @@ bool obj_can_refill(const struct object *obj)
 	const struct object *light = equipped_item_by_slot_name(player, "light");
 
 	/* Need fuel? */
-	if (of_has(obj->flags, OF_NO_FUEL)) return FALSE;
+	if (of_has(obj->flags, OF_NO_FUEL)) return false;
 
 	/* A lantern can be refueled from a flask or another lantern */
 	if (light && of_has(light->flags, OF_TAKES_FUEL)) {
 		if (tval_is_fuel(obj))
-			return TRUE;
+			return true;
 		else if (tval_is_light(obj) && of_has(obj->flags, OF_TAKES_FUEL) &&
 				 obj->timeout > 0) 
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 bool obj_can_browse(const struct object *obj)
@@ -541,10 +541,10 @@ bool obj_can_browse(const struct object *obj)
 	for (i = 0; i < player->class->magic.num_books; i++) {
 		struct class_book book = player->class->magic.books[i];
 		if (obj->kind == lookup_kind(book.tval, book.sval))
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 bool obj_can_cast_from(const struct object *obj)
@@ -581,21 +581,21 @@ bool obj_can_fire(const struct object *obj)
 /* Can has inscrip pls */
 bool obj_has_inscrip(const struct object *obj)
 {
-	return (obj->note ? TRUE : FALSE);
+	return (obj->note ? true : false);
 }
 
 bool obj_is_useable(const struct object *obj)
 {
 	if (tval_is_useable(obj))
-		return TRUE;
+		return true;
 
 	if (object_effect(obj))
-		return TRUE;
+		return true;
 
 	if (tval_is_ammo(obj))
 		return obj->tval == player->state.ammo_tval;
 
-	return FALSE;
+	return false;
 }
 
 /*** Generic utility functions ***/
@@ -633,9 +633,9 @@ bool obj_needs_aim(struct object *obj)
 bool obj_can_fail(const struct object *o)
 {
 	if (tval_can_have_failure(o))
-		return TRUE;
+		return true;
 
-	return wield_slot(o) == -1 ? FALSE : TRUE;
+	return wield_slot(o) == -1 ? false : true;
 }
 
 
@@ -747,7 +747,7 @@ int number_charging(const struct object *obj)
 
 /**
  * Allow a stack of charging objects to charge by one unit per charging object
- * Return TRUE if something recharged
+ * Return true if something recharged
  */
 bool recharge_timeout(struct object *obj)
 {
@@ -758,7 +758,7 @@ bool recharge_timeout(struct object *obj)
 
 	/* Nothing to charge */	
 	if (charging_before == 0)
-		return FALSE;
+		return false;
 
 	/* Decrease the timeout */
 	obj->timeout -= MIN(charging_before, obj->timeout);
@@ -768,9 +768,9 @@ bool recharge_timeout(struct object *obj)
 
 	/* Return true if at least 1 item obtained a charge */
 	if (charging_after < charging_before)
-		return TRUE;
+		return true;
 	else
-		return FALSE;
+		return false;
 }
 
 /**

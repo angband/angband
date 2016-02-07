@@ -42,7 +42,7 @@ static const struct slot_info {
 	#define EQUIP(a, b, c, d, e, f) { EQUIP_##a, b, c, d, e, f },
 	#include "list-equip-slots.h"
 	#undef EQUIP
-	{ EQUIP_MAX, FALSE, FALSE, NULL, NULL, NULL }
+	{ EQUIP_MAX, false, false, NULL, NULL, NULL }
 };
 
 int slot_by_name(struct player *p, const char *name)
@@ -89,7 +89,7 @@ bool slot_type_is(int slot, int type)
 	/* Assume default body if no player */
 	struct player_body body = player ? player->body : bodies[0];
 
-	return body.slots[slot].type == type ? TRUE : FALSE;
+	return body.slots[slot].type == type ? true : false;
 }
 
 struct object *slot_object(struct player *p, int slot)
@@ -140,9 +140,9 @@ static bool object_is_in_quiver(struct player *p, const struct object *obj)
 
 	for (i = 0; i < z_info->quiver_size; i++)
 		if (obj == p->upkeep->quiver[i])
-			return TRUE;
+			return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -236,24 +236,24 @@ int wield_slot(const struct object *obj)
 	/* Slot for equipment */
 	switch (obj->tval)
 	{
-		case TV_BOW: return slot_by_type(player, EQUIP_BOW, FALSE);
-		case TV_AMULET: return slot_by_type(player, EQUIP_AMULET, FALSE);
-		case TV_CLOAK: return slot_by_type(player, EQUIP_CLOAK, FALSE);
-		case TV_SHIELD: return slot_by_type(player, EQUIP_SHIELD, FALSE);
-		case TV_GLOVES: return slot_by_type(player, EQUIP_GLOVES, FALSE);
-		case TV_BOOTS: return slot_by_type(player, EQUIP_BOOTS, FALSE);
+		case TV_BOW: return slot_by_type(player, EQUIP_BOW, false);
+		case TV_AMULET: return slot_by_type(player, EQUIP_AMULET, false);
+		case TV_CLOAK: return slot_by_type(player, EQUIP_CLOAK, false);
+		case TV_SHIELD: return slot_by_type(player, EQUIP_SHIELD, false);
+		case TV_GLOVES: return slot_by_type(player, EQUIP_GLOVES, false);
+		case TV_BOOTS: return slot_by_type(player, EQUIP_BOOTS, false);
 	}
 
 	if (tval_is_melee_weapon(obj))
-		return slot_by_type(player, EQUIP_WEAPON, FALSE);
+		return slot_by_type(player, EQUIP_WEAPON, false);
 	else if (tval_is_ring(obj))
-		return slot_by_type(player, EQUIP_RING, FALSE);
+		return slot_by_type(player, EQUIP_RING, false);
 	else if (tval_is_light(obj))
-		return slot_by_type(player, EQUIP_LIGHT, FALSE);
+		return slot_by_type(player, EQUIP_LIGHT, false);
 	else if (tval_is_body_armor(obj))
-		return slot_by_type(player, EQUIP_BODY_ARMOR, FALSE);
+		return slot_by_type(player, EQUIP_BODY_ARMOR, false);
 	else if (tval_is_head_armor(obj))
-		return slot_by_type(player, EQUIP_HAT, FALSE);
+		return slot_by_type(player, EQUIP_HAT, false);
 
 	/* No slot available */
 	return (-1);
@@ -274,7 +274,7 @@ int minus_ac(struct player *p)
 	char o_name[80];
 
 	/* Avoid crash during monster power calculations */
-	if (!p->gear) return FALSE;
+	if (!p->gear) return false;
 
 	/* Count the armor slots */
 	for (i = 0; i < player->body.count; i++) {
@@ -305,10 +305,10 @@ int minus_ac(struct player *p)
 	obj = slot_object(player, i);
 
 	/* Nothing to damage */
-	if (!obj) return (FALSE);
+	if (!obj) return (false);
 
 	/* No damage left to be done */
-	if (obj->ac + obj->to_a <= 0) return (FALSE);
+	if (obj->ac + obj->to_a <= 0) return (false);
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
@@ -316,7 +316,7 @@ int minus_ac(struct player *p)
 	/* Object resists */
 	if (obj->el_info[ELEM_ACID].flags & EL_INFO_IGNORE) {
 		msg("Your %s is unaffected!", o_name);
-		return (TRUE);
+		return (true);
 	}
 
 	/* Message */
@@ -329,7 +329,7 @@ int minus_ac(struct player *p)
 	p->upkeep->redraw |= (PR_EQUIP);
 
 	/* Item was damaged */
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -385,7 +385,7 @@ static bool gear_excise_object(struct object *obj)
 	player->upkeep->notice |= (PN_COMBINE);
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
-	return TRUE;
+	return true;
 }
 
 struct object *gear_last_item(void)
@@ -458,7 +458,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 		/* We're using the entire stack */
 		usable = obj;
 		gear_excise_object(usable);
-		*none_left = TRUE;
+		*none_left = true;
 
 		/* Stop tracking item */
 		if (tracked_object_is(player->upkeep, obj))
@@ -575,7 +575,7 @@ int inven_carry_num(const struct object *obj, bool stack)
  */
 bool inven_carry_okay(const struct object *obj)
 {
-	return (inven_carry_num(obj, FALSE) == 0) ? FALSE : TRUE;
+	return (inven_carry_num(obj, false) == 0) ? false : true;
 }
 
 /**
@@ -857,8 +857,8 @@ void inven_drop(struct object *obj, int amt)
 	int py = player->py;
 	int px = player->px;
 	struct object *dropped;
-	bool none_left = FALSE;
-	bool quiver = FALSE;
+	bool none_left = false;
+	bool quiver = false;
 
 	char name[80];
 	char label;
@@ -878,7 +878,7 @@ void inven_drop(struct object *obj, int amt)
 
 	/* Is it in the quiver? */
 	if (object_is_in_quiver(player, obj))
-		quiver = TRUE;
+		quiver = true;
 
 	/* Not too many */
 	if (amt > obj->number) amt = obj->number;
@@ -888,7 +888,7 @@ void inven_drop(struct object *obj, int amt)
 		inven_takeoff(obj);
 
 	/* Get the object */
-	dropped = gear_object_for_use(obj, amt, FALSE, &none_left);
+	dropped = gear_object_for_use(obj, amt, false, &none_left);
 
 	/* Describe the dropped object */
 	object_desc(name, sizeof(name), dropped, ODESC_PREFIX | ODESC_FULL);
@@ -914,7 +914,7 @@ void inven_drop(struct object *obj, int amt)
 	}
 
 	/* Drop it near the player */
-	drop_near(cave, dropped, 0, py, px, FALSE);
+	drop_near(cave, dropped, 0, py, px, false);
 
 	/* Sound for quiver objects */
 	if (quiver)
@@ -938,7 +938,7 @@ static bool inven_can_stack_partial(const struct object *obj1,
 		int remainder = total - (z_info->stack_size);
 
 		if (remainder > z_info->stack_size)
-			return FALSE;
+			return false;
 	}
 
 	return object_stackable(obj1, obj2, mode);
@@ -950,7 +950,7 @@ static bool inven_can_stack_partial(const struct object *obj1,
 void combine_pack(void)
 {
 	struct object *obj1, *obj2, *prev;
-	bool display_message = FALSE;
+	bool display_message = false;
 
 	/* Combine the pack (backwards) */
 	obj1 = gear_last_item();
@@ -1001,7 +1001,7 @@ void combine_pack(void)
  */
 bool pack_is_full(void)
 {
-	return pack_slots_used(player) == z_info->pack_size ? TRUE : FALSE;
+	return pack_slots_used(player) == z_info->pack_size ? true : false;
 }
 
 /**
@@ -1010,7 +1010,7 @@ bool pack_is_full(void)
  */
 bool pack_is_overfull(void)
 {
-	return pack_slots_used(player) > z_info->pack_size ? TRUE : FALSE;
+	return pack_slots_used(player) > z_info->pack_size ? true : false;
 }
 
 /**
@@ -1050,7 +1050,7 @@ void pack_overflow(struct object *obj)
 
 	/* Excise the object and drop it (carefully) near the player */
 	gear_excise_object(obj);
-	drop_near(cave, obj, 0, player->py, player->px, FALSE);
+	drop_near(cave, obj, 0, player->py, player->px, false);
 
 	/* Describe */
 	if (obj->artifact)

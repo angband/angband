@@ -966,7 +966,7 @@ s32b object_value(const struct object *obj, int qty, int verbose)
 	if (object_is_known(obj)) {
 		if (cursed_p((bitflag *)obj->flags)) return (0L);
 
-		value = object_value_real(obj, qty, verbose, TRUE);
+		value = object_value_real(obj, qty, verbose, true);
 	} else if (tval_has_variable_power(obj)) {
 		/* Variable power items are assessed by what is known about them */
 		struct object object_type_body = { 0 };
@@ -986,7 +986,7 @@ s32b object_value(const struct object *obj, int qty, int verbose)
 		if (!object_defence_plusses_are_visible(obj))
 			temp_obj->to_a = 0;
 
-		value = object_value_real(temp_obj, qty, verbose, FALSE);
+		value = object_value_real(temp_obj, qty, verbose, false);
 	} else
 		/* Unknown constant-price items just get a base value */
 		value = object_value_base(obj) * qty;

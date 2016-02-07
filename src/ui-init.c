@@ -45,7 +45,7 @@ void textui_init(void)
 
 	/* Initialize graphics info and basic pref data */
 	event_signal_message(EVENT_INITSTATUS, 0, "Loading basic pref file...");
-	(void)process_pref_file("pref.prf", FALSE, FALSE);
+	(void)process_pref_file("pref.prf", false, false);
 
 	/* Sneakily init command list */
 	cmd_init();
@@ -74,7 +74,7 @@ void textui_init(void)
 		plog("Main window is too small - please make it bigger.");
 
 	/* Hack -- Turn off the cursor */
-	(void)Term_set_cursor(FALSE);
+	(void)Term_set_cursor(false);
 
 	/* initialize window options that will be overridden by the savefile */
 	memset(window_flag, 0, sizeof(u32b)*ANGBAND_TERM_MAX);

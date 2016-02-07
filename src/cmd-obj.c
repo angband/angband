@@ -55,7 +55,7 @@ static int check_devices(struct object *obj)
 	int fail;
 	const char *action;
 	const char *what = NULL;
-	bool activated = FALSE;
+	bool activated = false;
 
 	/* Get the right string */
 	if (tval_is_rod(obj)) {
@@ -68,7 +68,7 @@ static int check_devices(struct object *obj)
 		what = "staff";
 	} else {
 		action = "activate it";
-		activated = TRUE;
+		activated = true;
 	}
 
 	/* Figure out how hard the item is to use */
@@ -78,21 +78,21 @@ static int check_devices(struct object *obj)
 	if (randint1(1000) < fail) {
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to %s properly.", action);
-		return FALSE;
+		return false;
 	}
 
 	/* Notice empty staffs */
 	if (what && obj->pval <= 0) {
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("The %s has no charges left.", what);
-		return FALSE;
+		return false;
 	}
 
 	/* Notice activations */
 	if (activated)
 		object_notice_effect(obj);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -181,7 +181,7 @@ static void activation_message(struct object *obj)
 				end += object_desc(buf, 1024, obj, ODESC_PREFIX | ODESC_BASE); 
 				break;
 			case ART_TAG_KIND:
-				object_kind_name(&buf[end], 1024-end, obj->kind, TRUE);
+				object_kind_name(&buf[end], 1024-end, obj->kind, true);
 				end += strlen(&buf[end]);
 				break;
 			case ART_TAG_VERB:
@@ -212,11 +212,11 @@ static void activation_message(struct object *obj)
  */
 static bool item_tester_unknown(const struct object *obj)
 {
-	return object_is_known(obj) ? FALSE : TRUE;
+	return object_is_known(obj) ? false : true;
 }
 
 /**
- * Return TRUE if there are any objects available to identify (whether on
+ * Return true if there are any objects available to identify (whether on
  * floor or in gear)
  */
 static bool spell_identify_unknown_available(void)
@@ -225,7 +225,7 @@ static bool spell_identify_unknown_available(void)
 	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num;
 	struct object *obj;
-	bool unidentified_gear = FALSE;
+	bool unidentified_gear = false;
 
 	floor_num = scan_floor(floor_list, floor_max,
 						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE,
@@ -233,7 +233,7 @@ static bool spell_identify_unknown_available(void)
 
 	for (obj = player->gear; obj; obj = obj->next) {
 		if (object_test(item_tester_unknown, obj)) {
-			unidentified_gear = TRUE;
+			unidentified_gear = true;
 			break;
 		}
 	}
@@ -482,9 +482,9 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					int snd)
 {
 	struct effect *effect = object_effect(obj);
-	bool ident = FALSE, used = FALSE;
+	bool ident = false, used = false;
 	bool was_aware;
-	bool none_left = FALSE;
+	bool none_left = false;
 	int dir = 5;
 	int px = player->px, py = player->py;
 	enum use;
@@ -497,7 +497,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		if (cmd_get_target(cmd, "target", &dir) != CMD_OK)
 			return;
 
-		player_confuse_dir(player, &dir, FALSE);
+		player_confuse_dir(player, &dir, false);
 	}
 
 	was_aware = object_flavor_is_aware(obj);
@@ -583,7 +583,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 
 		/* Destroy an item in the pack */
 		if (object_is_carried(player, obj))
-			used_obj = gear_object_for_use(obj, 1, TRUE, &none_left);
+			used_obj = gear_object_for_use(obj, 1, true, &none_left);
 		else
 			/* Destroy an item on the floor */
 			used_obj = floor_object_for_use(obj, 1, TRUE, &none_left);
@@ -617,7 +617,7 @@ void do_cmd_read_scroll(struct command *cmd)
 	struct object *obj;
 
 	/* Check player can use scroll */
-	if (!player_can_read(player, TRUE))
+	if (!player_can_read(player, true))
 		return;
 
 	/* Get the scroll */
@@ -813,9 +813,9 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 
 			/* Carry or drop */
 			if (object_is_carried(player, obj))
-				inven_carry(player, used, TRUE, TRUE);
+				inven_carry(player, used, true, true);
 			else
-				drop_near(cave, used, 0, player->py, player->px, FALSE);
+				drop_near(cave, used, 0, player->py, player->px, false);
 		} else
 			/* Empty a single lantern */
 			obj->timeout = 0;
@@ -827,11 +827,11 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 		player->upkeep->redraw |= (PR_INVEN);
 	} else { /* Refilled from a flask */
 		struct object *used;
-		bool none_left = FALSE;
+		bool none_left = false;
 
 		/* Decrease the item from the pack or the floor */
 		if (object_is_carried(player, obj))
-			used = gear_object_for_use(obj, 1, TRUE, &none_left);
+			used = gear_object_for_use(obj, 1, true, &none_left);
 		else
 			used = floor_object_for_use(obj, 1, TRUE, &none_left);
 		if (used->known)
@@ -896,7 +896,7 @@ void do_cmd_cast(struct command *cmd)
 	const struct class_spell *spell;
 
 	/* Check the player can cast spells at all */
-	if (!player_can_cast(player, TRUE))
+	if (!player_can_cast(player, true))
 		return;
 
 	/* Get arguments */
@@ -909,7 +909,7 @@ void do_cmd_cast(struct command *cmd)
 
 	if (spell_needs_aim(spell_index)) {
 		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
-			player_confuse_dir(player, &dir, FALSE);
+			player_confuse_dir(player, &dir, false);
 		else
 			return;
 	}
@@ -949,7 +949,7 @@ void do_cmd_study_spell(struct command *cmd)
 	int spell_index;
 
 	/* Check the player can study at all atm */
-	if (!player_can_study(player, TRUE))
+	if (!player_can_study(player, true))
 		return;
 
 	if (cmd_get_spell(cmd, "spell", &spell_index,
@@ -988,7 +988,7 @@ void do_cmd_study_book(struct command *cmd)
 	handle_stuff(player);
 
 	/* Check the player can study at all atm */
-	if (!player_can_study(player, TRUE))
+	if (!player_can_study(player, true))
 		return;
 
 	for (i = 0; i < book->num_spells; i++) {

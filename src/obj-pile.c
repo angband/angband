@@ -185,11 +185,11 @@ bool pile_contains(const struct object *top, const struct object *obj)
 
 	while (pile_obj) {
 		if (obj == pile_obj)
-			return TRUE;
+			return true;
 		pile_obj = pile_obj->next;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -382,39 +382,39 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 
 	/* Equipment items don't stack */
 	if (object_is_equipped(player->body, obj1))
-		return FALSE;
+		return false;
 	if (object_is_equipped(player->body, obj2))
-		return FALSE;
+		return false;
 
 	/* If either item is unknown, do not stack */
 	if (mode & OSTACK_LIST && obj1->kind != obj1->known->kind) return FALSE;
 	if (mode & OSTACK_LIST && obj2->kind != obj2->known->kind) return FALSE;
 
 	/* Hack -- identical items cannot be stacked */
-	if (obj1 == obj2) return FALSE;
+	if (obj1 == obj2) return false;
 
 	/* Require identical object kinds */
-	if (obj1->kind != obj2->kind) return FALSE;
+	if (obj1->kind != obj2->kind) return false;
 
 	/* Different flags don't stack */
-	if (!of_is_equal(obj1->flags, obj2->flags)) return FALSE;
+	if (!of_is_equal(obj1->flags, obj2->flags)) return false;
 
 	/* Different elements don't stack */
 	for (i = 0; i < ELEM_MAX; i++) {
 		if (obj1->el_info[i].res_level != obj2->el_info[i].res_level)
-			return FALSE;
+			return false;
 		if ((obj1->el_info[i].flags & (EL_INFO_HATES | EL_INFO_IGNORE)) !=
 			(obj2->el_info[i].flags & (EL_INFO_HATES | EL_INFO_IGNORE)))
-			return FALSE;
+			return false;
 	}
 
 	/* Artifacts never stack */
-	if (obj1->artifact || obj2->artifact) return FALSE;
+	if (obj1->artifact || obj2->artifact) return false;
 
 	/* Analyze the items */
 	if (tval_is_chest(obj1)) {
 		/* Chests never stack */
-		return FALSE;
+		return false;
 	}
 	else if (tval_is_edible(obj1) || tval_is_potion(obj1) ||
 		tval_is_scroll(obj1) || tval_is_rod(obj1)) {
@@ -425,7 +425,7 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		/* Gold, staves and wands stack most of the time */
 		/* Too much gold or too many charges */
 		if (obj1->pval + obj2->pval > MAX_PVAL)
-			return FALSE;
+			return false;
 
 		/* ... otherwise ok */
 	} else if (tval_is_weapon(obj1) || tval_is_armor(obj1) ||
@@ -434,44 +434,44 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		bool obj2_is_known = object_is_known(obj2);
 
 		/* Require identical values */
-		if (obj1->ac != obj2->ac) return FALSE;
-		if (obj1->dd != obj2->dd) return FALSE;
-		if (obj1->ds != obj2->ds) return FALSE;
+		if (obj1->ac != obj2->ac) return false;
+		if (obj1->dd != obj2->dd) return false;
+		if (obj1->ds != obj2->ds) return false;
 
 		/* Require identical bonuses */
-		if (obj1->to_h != obj2->to_h) return FALSE;
-		if (obj1->to_d != obj2->to_d) return FALSE;
-		if (obj1->to_a != obj2->to_a) return FALSE;
+		if (obj1->to_h != obj2->to_h) return false;
+		if (obj1->to_d != obj2->to_d) return false;
+		if (obj1->to_a != obj2->to_a) return false;
 
 		/* Require all identical modifiers */
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 			if (obj1->modifiers[i] != obj2->modifiers[i])
-				return (FALSE);
+				return (false);
 
 		/* Require identical ego-item types */
-		if (obj1->ego != obj2->ego) return FALSE;
+		if (obj1->ego != obj2->ego) return false;
 
 		/* Hack - Never stack recharging wearables ... */
 		if ((obj1->timeout || obj2->timeout) &&
-			!tval_is_light(obj1)) return FALSE;
+			!tval_is_light(obj1)) return false;
 
 		/* ... and lights must have same amount of fuel */
 		else if ((obj1->timeout != obj2->timeout) &&
-				 tval_is_light(obj1)) return FALSE;
+				 tval_is_light(obj1)) return false;
 
 		/* Prevent unIDd items stacking with IDd items in the object list */
 		if (mode & OSTACK_LIST && (obj1_is_known != obj2_is_known))
-			return FALSE;
+			return false;
 	} else {
 		/* Anything else probably okay */
 	}
 
 	/* Require compatible inscriptions */
 	if (obj1->note && obj2->note && (obj1->note != obj2->note))
-		return FALSE;
+		return false;
 
 	/* They must be similar enough */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -484,7 +484,7 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 
 	/* Check against stacking limit - except in stores which absorb anyway */
 	if (!(mode & OSTACK_STORE) && (total > z_info->stack_size))
-		return FALSE;
+		return false;
 
 	return object_stackable(obj1, obj2, mode);
 }
@@ -543,8 +543,8 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 			struct monster_race *race1 = &r_info[obj1->origin_xtra];
 			struct monster_race *race2 = &r_info[obj2->origin_xtra];
 
-			bool r1_uniq = rf_has(race1->flags, RF_UNIQUE) ? TRUE : FALSE;
-			bool r2_uniq = rf_has(race2->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool r1_uniq = rf_has(race1->flags, RF_UNIQUE) ? true : false;
+			bool r2_uniq = rf_has(race2->flags, RF_UNIQUE) ? true : false;
 
 			if (r1_uniq && !r2_uniq) act = 0;
 			else if (r2_uniq && !r1_uniq) act = 1;
@@ -810,7 +810,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 			object_absorb(obj, drop);
 
 			/* Result */
-			return TRUE;
+			return true;
 		}
 
 		/* Count objects */
@@ -825,7 +825,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 			delist_object(c, ignore);
 			object_delete(&ignore);
 		} else
-			return FALSE;
+			return false;
 	}
 
 	/* Location */
@@ -849,7 +849,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	square_light_spot(c, y, x);
 
 	/* Result */
-	return TRUE;
+	return true;
 }
 
 
@@ -921,7 +921,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 	/* Scan local grids */
 	for (dy = -3; dy <= 3; dy++) {
 		for (dx = -3; dx <= 3; dx++) {
-			bool comb = FALSE;
+			bool comb = false;
 
 			/* Calculate actual distance */
 			d = (dy * dy) + (dx * dx);
@@ -955,7 +955,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			for (obj = square_object(c, ty, tx); obj; obj = obj->next) {
 				/* Check for possible combination */
 				if (object_similar(obj, dropped, OSTACK_FLOOR))
-					comb = TRUE;
+					comb = true;
 
 				/* Count objects */
 				if (!ignore_item_ok(obj))
@@ -994,7 +994,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			bx = tx;
 
 			/* Okay */
-			flag = TRUE;
+			flag = true;
 		}
 	}
 
@@ -1037,11 +1037,11 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		bx = tx;
 
 		/* Okay */
-		flag = TRUE;
+		flag = true;
 	}
 
 	/* Give it to the floor */
-	if (!floor_carry(c, by, bx, dropped, FALSE)) {
+	if (!floor_carry(c, by, bx, dropped, false)) {
 		/* Message */
 		msg("The %s %s.", o_name,
 			VERB_AGREEMENT(dropped->number, "disappears", "disappear"));
@@ -1049,7 +1049,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		/* Debug */
 		if (player->wizard) msg("Breakage (too many objects).");
 
-		if (dropped->artifact) dropped->artifact->created = FALSE;
+		if (dropped->artifact) dropped->artifact->created = false;
 
 		/* Failure */
 		if (c == cave && dropped->known) {
@@ -1109,7 +1109,7 @@ void push_object(int y, int x)
 
 	/* Set feature to an open door */
 	square_force_floor(cave, y, x);
-	square_add_door(cave, y, x, FALSE);
+	square_add_door(cave, y, x, false);
 
 	/* Drop objects back onto the floor */
 	while (q_len(queue) > 0) {
@@ -1117,7 +1117,7 @@ void push_object(int y, int x)
 		obj = q_pop_ptr(queue);
 
 		/* Drop the object */
-		drop_near(cave, obj, 0, y, x, FALSE);
+		drop_near(cave, obj, 0, y, x, false);
 	}
 
 	/* Reset cave feature and rune if needed */
@@ -1236,10 +1236,10 @@ int scan_distant_floor(struct object **items, int max_size, int y, int x)
 int scan_items(struct object **item_list, size_t item_max, int mode,
 			   item_tester tester)
 {
-	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
-	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
-	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
-	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
+	bool use_inven = ((mode & USE_INVEN) ? true : false);
+	bool use_equip = ((mode & USE_EQUIP) ? true : false);
+	bool use_quiver = ((mode & USE_QUIVER) ? true : false);
+	bool use_floor = ((mode & USE_FLOOR) ? true : false);
 
 	int floor_max = z_info->floor_size;
 	struct object **floor_list = mem_zalloc(floor_max * sizeof(struct object *));

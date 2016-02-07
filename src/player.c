@@ -151,7 +151,7 @@ bool player_stat_inc(struct player *p, int stat)
 	int v = p->stat_cur[stat];
 
 	if (v >= 18 + 100)
-		return FALSE;
+		return false;
 	if (v < 18) {
 		p->stat_cur[stat]++;
 	} else if (v < 18 + 90) {
@@ -169,12 +169,12 @@ bool player_stat_inc(struct player *p, int stat)
 		p->stat_max[stat] = p->stat_cur[stat];
 	
 	p->upkeep->update |= PU_BONUS;
-	return TRUE;
+	return true;
 }
 
 bool player_stat_dec(struct player *p, int stat, bool permanent)
 {
-	int cur, max, res = FALSE;
+	int cur, max, res = false;
 
 	cur = p->stat_cur[stat];
 	max = p->stat_max[stat];
@@ -275,7 +275,7 @@ void player_exp_gain(struct player *p, s32b amount)
 	p->exp += amount;
 	if (p->exp < p->max_exp)
 		p->max_exp += amount / 10;
-	adjust_level(p, TRUE);
+	adjust_level(p, true);
 }
 
 void player_exp_lose(struct player *p, s32b amount, bool permanent)
@@ -285,7 +285,7 @@ void player_exp_lose(struct player *p, s32b amount, bool permanent)
 	p->exp -= amount;
 	if (permanent)
 		p->max_exp -= amount;
-	adjust_level(p, TRUE);
+	adjust_level(p, true);
 }
 
 /**

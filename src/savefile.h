@@ -33,12 +33,12 @@
 bool character_saved;
 
 /**
- * Save to the given location.  Returns TRUE on success, FALSE otherwise.
+ * Save to the given location.  Returns true on success, false otherwise.
  */
 bool savefile_save(const char *path);
 
 /**
- * Load the savefile given.  Returns TRUE on succcess, FALSE otherwise.
+ * Load the savefile given.  Returns true on succcess, false otherwise.
  */
 bool savefile_load(const char *path, bool cheat_death);
 

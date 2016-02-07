@@ -112,7 +112,7 @@ static void project_player_drain_stats(int num)
 		}
 
 		msg("You're not as %s as you used to be...", act);
-		player_stat_dec(player, k, FALSE);
+		player_stat_dec(player, k, false);
 	}
 
 	return;
@@ -184,7 +184,7 @@ static void project_player_handler_COLD(project_player_handler_context_t *contex
 static void project_player_handler_POIS(project_player_handler_context_t *context)
 {
 	if (!player_inc_timed(player, TMD_POISONED, 10 + randint1(context->dam),
-						  TRUE, TRUE))
+						  true, true))
 		msg("You resist the effect!");
 }
 
@@ -195,7 +195,7 @@ static void project_player_handler_LIGHT(project_player_handler_context_t *conte
 		return;
 	}
 
-	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true);
 }
 
 static void project_player_handler_DARK(project_player_handler_context_t *context)
@@ -205,7 +205,7 @@ static void project_player_handler_DARK(project_player_handler_context_t *contex
 		return;
 	}
 
-	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true);
 }
 
 static void project_player_handler_SOUND(project_player_handler_context_t *context)
@@ -219,7 +219,7 @@ static void project_player_handler_SOUND(project_player_handler_context_t *conte
 	if (!player_of_has(player, OF_PROT_STUN)) {
 		int duration = 5 + randint1(context->dam / 3);
 		if (duration > 35) duration = 35;
-		(void)player_inc_timed(player, TMD_STUN, duration, TRUE, TRUE);
+		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
 	}
 }
 
@@ -231,8 +231,8 @@ static void project_player_handler_SHARD(project_player_handler_context_t *conte
 	}
 
 	/* Cuts */
-	(void)player_inc_timed(player, TMD_CUT, randint1(context->dam), TRUE,
-						   FALSE);
+	(void)player_inc_timed(player, TMD_CUT, randint1(context->dam), true,
+						   false);
 }
 
 static void project_player_handler_NEXUS(project_player_handler_context_t *context)
@@ -277,7 +277,7 @@ static void project_player_handler_NETHER(project_player_handler_context_t *cont
 
 	/* Life draining */
 	msg("You feel your life force draining away!");
-	player_exp_lose(player, drain, FALSE);
+	player_exp_lose(player, drain, false);
 }
 
 static void project_player_handler_CHAOS(project_player_handler_context_t *context)
@@ -288,16 +288,16 @@ static void project_player_handler_CHAOS(project_player_handler_context_t *conte
 	}
 
 	/* Hallucination */
-	(void)player_inc_timed(player, TMD_IMAGE, randint1(10), TRUE, FALSE);
+	(void)player_inc_timed(player, TMD_IMAGE, randint1(10), true, false);
 
 	/* Confusion */
-	(void)player_inc_timed(player, TMD_CONFUSED, 10 + randint0(20), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_CONFUSED, 10 + randint0(20), true, true);
 
 	/* Life draining */
 	if (!player_of_has(player, OF_HOLD_LIFE)) {
 		int drain = 5000 + (player->exp / 100) * z_info->life_drain_percent;
 		msg("You feel your life force draining away!");
-		player_exp_lose(player, drain, FALSE);
+		player_exp_lose(player, drain, false);
 	}
 }
 
@@ -315,10 +315,10 @@ static void project_player_handler_DISEN(project_player_handler_context_t *conte
 static void project_player_handler_WATER(project_player_handler_context_t *context)
 {
 	/* Confusion */
-	(void)player_inc_timed(player, TMD_CONFUSED, 5 + randint1(5), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_CONFUSED, 5 + randint1(5), true, true);
 
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint1(40), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_STUN, randint1(40), true, true);
 }
 
 static void project_player_handler_ICE(project_player_handler_context_t *context)
@@ -328,12 +328,12 @@ static void project_player_handler_ICE(project_player_handler_context_t *context
 
 	/* Cuts */
 	if (!player_resists(player, ELEM_SHARD))
-		(void)player_inc_timed(player, TMD_CUT, damroll(5, 8), TRUE, FALSE);
+		(void)player_inc_timed(player, TMD_CUT, damroll(5, 8), true, false);
 	else
 		msg("You resist the effect!");
 
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint1(15), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_STUN, randint1(15), true, true);
 }
 
 static void project_player_handler_GRAVITY(project_player_handler_context_t *context)
@@ -347,20 +347,20 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 	}
 
 	/* Slow */
-	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), TRUE, FALSE);
+	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), true, false);
 
 	/* Stun */
 	if (!player_of_has(player, OF_PROT_STUN)) {
 		int duration = 5 + randint1(context->dam / 3);
 		if (duration > 35) duration = 35;
-		(void)player_inc_timed(player, TMD_STUN, duration, TRUE, TRUE);
+		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
 	}
 }
 
 static void project_player_handler_INERTIA(project_player_handler_context_t *context)
 {
 	/* Slow */
-	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), TRUE, FALSE);
+	(void)player_inc_timed(player, TMD_SLOW, 4 + randint0(4), true, false);
 }
 
 static void project_player_handler_FORCE(project_player_handler_context_t *context)
@@ -381,7 +381,7 @@ static void project_player_handler_TIME(project_player_handler_context_t *contex
 		/* Life draining */
 		int drain = 100 + (player->exp / 100) * z_info->life_drain_percent;
 		msg("You feel your life force draining away!");
-		player_exp_lose(player, drain, FALSE);
+		player_exp_lose(player, drain, false);
 	} else if (!one_in_(5)) {
 		/* Drain some stats */
 		project_player_drain_stats(2);
@@ -391,7 +391,7 @@ static void project_player_handler_TIME(project_player_handler_context_t *contex
 		msg("You're not as powerful as you used to be...");
 
 		for (i = 0; i < STAT_MAX; i++)
-			player_stat_dec(player, i, FALSE);
+			player_stat_dec(player, i, false);
 	}
 }
 
@@ -401,7 +401,7 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 	if (!player_of_has(player, OF_PROT_STUN)) {
 		int duration = 5 + randint1(context->dam * 3 / 4);
 		if (duration > 35) duration = 35;
-		(void)player_inc_timed(player, TMD_STUN, duration, TRUE, TRUE);
+		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
 	}
 }
 
@@ -436,7 +436,7 @@ static void project_player_handler_DARK_WEAK(project_player_handler_context_t *c
 		return;
 	}
 
-	(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), true, true);
 }
 
 static void project_player_handler_KILL_WALL(project_player_handler_context_t *context)
@@ -490,12 +490,12 @@ static const project_player_handler_f player_handlers[] = {
  * is reduced in project() before being passed in here.  This can happen if a
  * monster breathes at the player and hits a wall instead.
  *
- * We assume the player is aware of some effect, and always return "TRUE".
+ * We assume the player is aware of some effect, and always return "true".
  */
 bool project_p(int who, int r, int y, int x, int dam, int typ)
 {
 	bool blind, seen;
-	bool obvious = TRUE;
+	bool obvious = true;
 
 	/* Source monster */
 	struct monster *mon;
@@ -515,16 +515,16 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	};
 
 	/* No player here */
-	if (!(cave->squares[y][x].mon < 0)) return (FALSE);
+	if (!(cave->squares[y][x].mon < 0)) return (false);
 
 	/* Never affect projector */
-	if (cave->squares[y][x].mon == who) return (FALSE);
+	if (cave->squares[y][x].mon == who) return (false);
 
 	/* Source monster */
 	mon = cave_monster(cave, who);
 
 	/* Player blind-ness */
-	blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
+	blind = (player->timed[TMD_BLIND] ? true : false);
 
 	/* Extract the "see-able-ness" */
 	seen = (!blind && mflag_has(mon->mflag, MFLAG_VISIBLE));

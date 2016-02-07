@@ -793,10 +793,10 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 };
 
 static bool TEST_DATA test_blows_known[4] = {
-	TRUE,
-	FALSE,
-	FALSE,
-	FALSE,
+	true,
+	false,
+	false,
+	false,
 };
 
 static struct monster_race TEST_DATA test_r_human = {
@@ -853,12 +853,12 @@ static monster_lore TEST_DATA test_lore = {
 	.friends = NULL,
 	.friends_base = NULL,
 	.mimic_kinds = NULL,
-	.all_known = FALSE,
+	.all_known = false,
 	.blow_known = &test_blows_known[0],
-	.armour_known = FALSE,
-	.drop_known = FALSE,
-	.sleep_known = FALSE,
-	.spell_freq_known = FALSE
+	.armour_known = false,
+	.drop_known = false,
+	.sleep_known = false,
+	.spell_freq_known = false
 };
 
 #undef _NOBLOW
@@ -994,7 +994,7 @@ static struct chunk TEST_DATA test_cave = {
 	.feeling = 0,
 	.obj_rating = 0,
 	.mon_rating = 0,
-	.good_item = FALSE,
+	.good_item = false,
 
 	.height = 2,
 	.width = 2,
