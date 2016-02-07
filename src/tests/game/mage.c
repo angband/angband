@@ -62,7 +62,7 @@ int test_magic_missile(void *state) {
 	cmdq_push(CMD_ACCEPT_CHARACTER);
 	cmdq_execute(CMD_BIRTH);
 
-	eq(player->is_dead, FALSE);
+	eq(player->is_dead, false);
 	cave_generate(&cave, player);
 	on_new_level();
 	notnull(cave);

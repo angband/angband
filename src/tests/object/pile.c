@@ -1,4 +1,4 @@
-/* object/util */
+/* object/pile */
 
 #include <stdio.h>
 
@@ -24,22 +24,22 @@ int test_obj_piles(void *state) {
 	struct object *o4 = object_new();
 
 	pile_insert(&pile, o1);
-	eq(pile_contains(pile, o1), TRUE);
-	eq(pile_contains(pile, o2), FALSE);
+	eq(pile_contains(pile, o1), true);
+	eq(pile_contains(pile, o2), false);
 	ptreq(pile, o1);
 	ptreq(pile_last_item(pile), o1);
 
 	pile_insert_end(&pile, o2);
-	eq(pile_contains(pile, o1), TRUE);
-	eq(pile_contains(pile, o2), TRUE);
-	eq(pile_contains(pile, o3), FALSE);
+	eq(pile_contains(pile, o1), true);
+	eq(pile_contains(pile, o2), true);
+	eq(pile_contains(pile, o3), false);
 	ptreq(pile, o1);
 	ptreq(pile_last_item(pile), o2);
 
 	pile_insert_end(&pile, o3);
-	eq(pile_contains(pile, o1), TRUE);
-	eq(pile_contains(pile, o2), TRUE);
-	eq(pile_contains(pile, o3), TRUE);
+	eq(pile_contains(pile, o1), true);
+	eq(pile_contains(pile, o2), true);
+	eq(pile_contains(pile, o3), true);
 	ptreq(pile, o1);
 	ptreq(pile_last_item(pile)->prev, o2);
 	ptreq(pile_last_item(pile), o3);
@@ -49,7 +49,7 @@ int test_obj_piles(void *state) {
 	/* From the top */
 	pile_excise(&pile, o1);
 	ptreq(pile, o2);
-	eq(pile_contains(pile, o1), FALSE);
+	eq(pile_contains(pile, o1), false);
 
 	/* Now put it back */
 	pile_insert(&pile, o1);
@@ -57,7 +57,7 @@ int test_obj_piles(void *state) {
 	/* From the end */
 	pile_excise(&pile, o3);
 	ptreq(pile, o1);
-	eq(pile_contains(pile, o3), FALSE);
+	eq(pile_contains(pile, o3), false);
 	ptreq(pile_last_item(pile), o2);
 	ptreq(pile_last_item(pile)->prev, o1);
 	object_delete(&o3);

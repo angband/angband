@@ -15,14 +15,14 @@ int test_breakage_chance(void *state) {
 	int c;
 
 	object_prep(&obj, &test_longsword, 1, AVERAGE);
-	c = breakage_chance(&obj, TRUE);
+	c = breakage_chance(&obj, true);
 	eq(c, 50);
-	c = breakage_chance(&obj, FALSE);
+	c = breakage_chance(&obj, false);
 	eq(c, 25);
 	obj.artifact = &test_artifact_sword;
-	c = breakage_chance(&obj, TRUE);
+	c = breakage_chance(&obj, true);
 	eq(c, 0);
-	c = breakage_chance(&obj, FALSE);
+	c = breakage_chance(&obj, false);
 	eq(c, 0);
 	ok;
 }
