@@ -2077,7 +2077,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 		if (object_is_carried(player, obj))
 			destroyed = gear_object_for_use(obj, 1, true, &none_left);
 		else
-			destroyed = floor_object_for_use(obj, 1, TRUE, &none_left);
+			destroyed = floor_object_for_use(obj, 1, true, &none_left);
 		if (destroyed->known)
 			object_delete(&destroyed->known);
 		object_delete(&destroyed);
@@ -3442,7 +3442,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	/* Breathe at the target */
 	if (project(source, rad, ty, tx, dam, type, flg, degrees_of_arc,
 				diameter_of_source, context->obj))
-		context->ident = TRUE;
+		context->ident = true;
 
 	return true;
 }

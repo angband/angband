@@ -1815,8 +1815,6 @@ static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
 						   (size_t)&op);
 			pDevice[v][j] = op.wDeviceID;
 		}
-
-	   pDevice = op.wDeviceID;
 		
 		/* Play command */
 		pp.dwCallback = 0;

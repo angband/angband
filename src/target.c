@@ -340,11 +340,11 @@ bool target_accept(int y, int x)
 	/* Scan all objects in the grid */
 	for (obj = square_object(cave_k, y, x); obj; obj = obj->next)
 		/* Memorized object */
-		if (!ignore_item_ok(obj)) return (TRUE);
+		if (!ignore_item_ok(obj)) return (true);
 
 	/* Interesting memorized features */
 	if (square_isknown(cave, y, x) && square_isinteresting(cave, y, x))
-		return (TRUE);
+		return (true);
 
 	/* Nope */
 	return (false);

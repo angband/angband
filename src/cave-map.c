@@ -139,15 +139,15 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	/* Objects */
 	for (obj = square_object(cave_k, y, x); obj; obj = obj->next) {
 		if (obj->kind == unknown_gold_kind) {
-			g->unseen_money = TRUE;
+			g->unseen_money = true;
 		} else if (obj->kind == unknown_item_kind) {
-			g->unseen_object = TRUE;
+			g->unseen_object = true;
 		} else if (ignore_known_item_ok(obj)) {
 			/* Item stays hidden */
 		} else if (!g->first_kind) {
 			g->first_kind = obj->kind;
 		} else {
-			g->multiple_objects = TRUE;
+			g->multiple_objects = true;
 			break;
 		}
 	}

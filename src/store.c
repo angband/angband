@@ -1209,7 +1209,7 @@ static bool store_create_random(struct store *store)
 		}
 
 		/* No "worthless" items */
-		if (object_value(obj, 1, FALSE) < 1)  {
+		if (object_value(obj, 1, false) < 1)  {
 			object_delete(&known_obj);
 			obj->known = NULL;
 			object_delete(&obj);

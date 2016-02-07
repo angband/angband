@@ -1193,7 +1193,7 @@ static bool do_cmd_walk_test(int y, int x)
 
 	/* If we don't know the grid, allow attempts to walk into it */
 	if (!square_isknown(cave, y, x))
-		return TRUE;
+		return true;
 
 	/* Require open space */
 	if (!square_ispassable(cave, y, x)) {

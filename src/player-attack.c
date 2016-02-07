@@ -351,10 +351,10 @@ static bool py_attack_real(int y, int x, bool *fear)
 		for (j = 2; j < player->body.count; j++) {
 			struct object *obj = slot_object(player, j);
 			if (obj)
-				improve_attack_modifier(obj, mon, &b, &s, verb, FALSE, TRUE);
+				improve_attack_modifier(obj, mon, &b, &s, verb, false, true);
 		}
 
-		improve_attack_modifier(obj, mon, &b, &s, verb, FALSE, TRUE);
+		improve_attack_modifier(obj, mon, &b, &s, verb, false, true);
 
 		dmg = melee_damage(obj, b, s);
 		dmg = critical_norm(obj->weight, obj->to_h, dmg, &msg_type);
@@ -667,8 +667,8 @@ static struct attack_result make_ranged_shot(struct object *ammo, int y, int x)
 
 	result.success = true;
 
-	improve_attack_modifier(ammo, mon, &b, &s, result.hit_verb, TRUE, TRUE);
-	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, TRUE, TRUE);
+	improve_attack_modifier(ammo, mon, &b, &s, result.hit_verb, true, true);
+	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, true, true);
 
 	result.dmg = ranged_damage(ammo, bow, b, s, multiplier);
 	result.dmg = critical_shot(ammo->weight, ammo->to_h, result.dmg,
@@ -701,7 +701,7 @@ static struct attack_result make_ranged_throw(struct object *obj, int y, int x)
 
 	result.success = true;
 
-	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, TRUE, TRUE);
+	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, true, true);
 
 	result.dmg = ranged_damage(obj, NULL, b, s, multiplier);
 	result.dmg = critical_norm(obj->weight, obj->to_h, result.dmg,

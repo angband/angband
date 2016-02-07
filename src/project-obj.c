@@ -139,7 +139,7 @@ int inven_damage(struct player *p, int type, int cperc)
 					continue;
 
 				/* Destroy "amt" items */
-				destroyed = gear_object_for_use(obj, amt, FALSE, &none_left);
+				destroyed = gear_object_for_use(obj, amt, false, &none_left);
 				if (destroyed->known)
 					object_delete(&destroyed->known);
 				object_delete(&destroyed);
@@ -462,7 +462,7 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 
 			/* Effect "observed" */
 			if (obj->known && !ignore_item_ok(obj)) {
-				obvious = TRUE;
+				obvious = true;
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 			}
 

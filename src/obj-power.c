@@ -383,8 +383,8 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 			mon->race = &r_info[i];
 
 			/* Find the best multiplier against this monster */
-			improve_attack_modifier(checked_obj, mon, &b, &s, verb, FALSE,
-									FALSE);
+			improve_attack_modifier(checked_obj, mon, &b, &s, verb, false,
+									false);
 			if (s)
 				mult = s->multiplier;
 			else if (b)

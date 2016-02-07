@@ -101,7 +101,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		/* Message */
 		if (square_isseen(cave, y, x)) {
 			msg("The wall turns into mud!");
-			context->obvious = TRUE;
+			context->obvious = true;
 
 			/* Forget the wall */
 			square_forget(cave, y, x);
@@ -114,7 +114,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		if (square_isseen(cave, y, x)) {
 			msg("The vein turns into mud!");
 			msg("You have found something!");
-			context->obvious = TRUE;
+			context->obvious = true;
 
 			/* Forget the wall */
 			square_forget(cave, y, x);
@@ -129,7 +129,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		/* Message */
 		if (square_isseen(cave, y, x)) {
 			msg("The vein turns into mud!");
-			context->obvious = TRUE;
+			context->obvious = true;
 
 			/* Forget the wall */
 			square_forget(cave, y, x);
@@ -141,7 +141,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		/* Message */
 		if (square_isseen(cave, y, x)) {
 			msg("The rubble turns into mud!");
-			context->obvious = TRUE;
+			context->obvious = true;
 
 			/* Forget the wall */
 			square_forget(cave, y, x);
@@ -163,7 +163,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		/* Hack -- special message */
 		if (square_isseen(cave, y, x)) {
 			msg("The door turns into mud!");
-			context->obvious = TRUE;
+			context->obvious = true;
 
 			/* Forget the wall */
 			square_forget(cave, y, x);
@@ -222,7 +222,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 
 		/* Check line of sight */
 		if (square_isseen(cave, y, x))
-			context->obvious = TRUE;
+			context->obvious = true;
 	}
 
 	/* Destroy traps, unlock doors */
@@ -268,7 +268,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 
 	/* Observe */
 	if (square_isknown(cave, y, x))
-		context->obvious = TRUE;
+		context->obvious = true;
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);

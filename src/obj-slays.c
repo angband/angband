@@ -447,7 +447,7 @@ void object_notice_brands(struct object *obj, const struct monster *mon)
 {
 	char o_name[40];
 	struct brand *b, *kb, *new_b;
-	bool plural = (obj->number > 1) ? TRUE : FALSE;
+	bool plural = (obj->number > 1) ? true : false;
 
 	assert(obj->known);
 
@@ -659,7 +659,7 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 		}
 
 		/* Fail if we didn't find a match */
-		if (match != count) return FALSE;
+		if (match != count) return false;
 
 		b1 = b1->next;
 	}
@@ -699,7 +699,7 @@ bool slays_are_equal(struct slay *slay1, struct slay *slay2)
 		}
 
 		/* Fail if we didn't find a match */
-		if (match != count) return FALSE;
+		if (match != count) return false;
 
 		s1 = s1->next;
 	}

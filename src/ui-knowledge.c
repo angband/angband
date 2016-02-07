@@ -1443,7 +1443,7 @@ static void desc_art_fake(int a_idx)
 {
 	struct object *obj, *known_obj;
 	struct object object_body = { 0 }, known_object_body = { 0 };
-	bool fake = FALSE;
+	bool fake = false;
 
 	char header[120];
 
@@ -1454,7 +1454,7 @@ static void desc_art_fake(int a_idx)
 
 	/* If it's been lost, make a fake artifact for it */
 	if (!obj) {
-		fake = TRUE;
+		fake = true;
 		obj = &object_body;
 		known_obj = &known_object_body;
 		obj->known = known_obj;

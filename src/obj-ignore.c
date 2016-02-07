@@ -401,7 +401,7 @@ byte ignore_level_of(const struct object *obj)
 
 	/* And lights */
 	if (tval_is_light(obj)) {
-		create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
+		create_mask(f2, true, OFID_WIELD, OFT_MAX);
 		if (of_is_inter(f, f2))
 			return IGNORE_ALL;
 		if ((obj->to_h > 0) || (obj->to_d > 0) || (obj->to_a > 0))
@@ -560,11 +560,11 @@ bool object_is_ignored(const struct object *obj)
 
 	/* Objects that aren't yet known can't be ignored */
 	if (!obj->known)
-		return FALSE;
+		return false;
 
 	/* Do ignore individual objects that marked ignore */
 	if (obj->known->notice & OBJ_NOTICE_IGNORE)
-		return TRUE;
+		return true;
 
 	/* Don't ignore artifacts unless marked to be ignored */
 	if (obj->artifact ||
@@ -620,7 +620,7 @@ bool ignore_known_item_ok(const struct object *obj)
 	struct object *base_obj = cave->objects[obj->oidx];
 
 	if (player->unignoring)
-		return FALSE;
+		return false;
 
 	/* Get the real object and check its ignore properties */
 	assert(base_obj);

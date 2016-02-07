@@ -719,7 +719,7 @@ void inven_wield(struct object *obj, int slot)
 
 	const char *fmt;
 	char o_name[80];
-	bool dummy = FALSE;
+	bool dummy = false;
 
 	/* Increase equipment counter if empty slot */
 	if (old == NULL)
@@ -732,7 +732,7 @@ void inven_wield(struct object *obj, int slot)
 	if (object_is_carried(player, obj)) {
 		/* Split off a new object if necessary */
 		if (obj->number > 1) {
-			wielded = gear_object_for_use(obj, 1, FALSE, &dummy);
+			wielded = gear_object_for_use(obj, 1, false, &dummy);
 
 			/* The new item needs new gear and known gear entries */
 			wielded->next = obj->next;
@@ -751,8 +751,8 @@ void inven_wield(struct object *obj, int slot)
 		}
 	} else {
 		/* Get a floor item and carry it */
-		wielded = floor_object_for_use(obj, 1, FALSE, &dummy);
-		inven_carry(player, wielded, FALSE, FALSE);
+		wielded = floor_object_for_use(obj, 1, false, &dummy);
+		inven_carry(player, wielded, false, false);
 	}
 
 	/* Wear the new stuff */
@@ -965,14 +965,14 @@ void combine_pack(void)
 
 			/* Can we drop "obj1" onto "obj2"? */
 			if (object_similar(obj2, obj1, OSTACK_PACK)) {
-				display_message = TRUE;
+				display_message = true;
 				object_absorb(obj2->known, obj1->known);
 				obj1->known = NULL;
 				object_absorb(obj2, obj1);
 				break;
 			} else if (inven_can_stack_partial(obj2, obj1, OSTACK_PACK)) {
-				/* Setting this to TRUE spams the combine message. */
-				display_message = FALSE;
+				/* Setting this to true spams the combine message. */
+				display_message = false;
 				object_absorb_partial(obj2->known, obj1->known);
 				object_absorb_partial(obj2, obj1);
 				break;

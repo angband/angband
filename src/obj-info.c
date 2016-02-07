@@ -238,7 +238,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 		}
 
 	if (!count)
-		return FALSE;
+		return false;
 
 	for (i = 0; i < N_ELEMENTS(mod_flags); i++) {
 		const char *desc = mod_flags[i].name;
@@ -419,7 +419,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
 {
 	struct slay *s = obj->known->slays;
 
-	if (!s) return FALSE;
+	if (!s) return false;
 
 	if (tval_is_weapon(obj) || tval_is_fuel(obj))
 		textblock_append(tb, "Slays ");
@@ -437,7 +437,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
 		s = s->next;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -447,7 +447,7 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 {
 	struct brand *b = obj->known->brands;
 
-	if (!b) return FALSE;
+	if (!b) return false;
 
 	if (tval_is_weapon(obj) || tval_is_fuel(obj))
 		textblock_append(tb, "Branded with ");
@@ -465,7 +465,7 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 		b = b->next;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -850,7 +850,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 				continue;
 
 			if (slot_obj->known->brands || slot_obj->known->slays)
-				*nonweap_slay = TRUE;
+				*nonweap_slay = true;
 			else
 				continue;
 
@@ -1119,7 +1119,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	/* Doesn't remotely resemble a digger */
 	if (!tval_is_wearable(obj) ||
 		(!tval_is_melee_weapon(obj) && (obj->modifiers[OBJ_MOD_TUNNEL] <= 0)))
-		return FALSE;
+		return false;
 
 	/* Player has no digging info */
 	if (!object_this_mod_is_visible(obj, OBJ_MOD_TUNNEL))
@@ -1669,7 +1669,7 @@ static void describe_flavor_text(textblock *tb, const struct object *obj,
 		textblock_append(tb, "%s\n\n", obj->artifact->text);
 
 	} else if (object_flavor_is_aware(obj) || object_is_known(obj) || ego) {
-		bool did_desc = FALSE;
+		bool did_desc = false;
 
 		if (!ego && obj->kind->text) {
 			textblock_append(tb, "%s", obj->kind->text);

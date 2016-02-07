@@ -368,7 +368,7 @@ static void project_player_handler_FORCE(project_player_handler_context_t *conte
 	char grids_away[5];
 
 	/* Stun */
-	(void)player_inc_timed(player, TMD_STUN, randint1(20), TRUE, TRUE);
+	(void)player_inc_timed(player, TMD_STUN, randint1(20), true, true);
 
 	/* Thrust player away. */
 	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);

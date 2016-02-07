@@ -141,10 +141,10 @@ static bool object_list_should_ignore_object(const struct object *obj)
 	assert(base_obj);
 
 	if (!is_unknown(base_obj) && ignore_known_item_ok(obj))
-		return TRUE;
+		return true;
 
 	if (tval_is_money(base_obj))
-		return TRUE;
+		return true;
 
 	return false;
 }
@@ -171,7 +171,7 @@ void object_list_collect(object_list_t *list)
 		int current_distance;
 		int entry_distance;
 		int y, x, field;
-		bool los = FALSE;
+		bool los = false;
 		struct object *obj = cave_k->objects[i];
 
 		/* Skip unfilled entries, unknown objects and monster-held objects */
@@ -403,7 +403,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 		case TV_DRAG_ARMOR:
 			if ((object_name_is_visible(base_obj) || object_is_known(base_obj))
 				&& entry->object->artifact)
-				has_singular_prefix = TRUE;
+				has_singular_prefix = true;
 			else
 				has_singular_prefix = false;				
 			break;
@@ -413,7 +413,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 	}
 
 	if (entry->object->kind == base_obj->kind)
-		has_singular_prefix = TRUE;
+		has_singular_prefix = true;
 
 	/* Work out if the object is in view */
 	los = projectable(cave, py, px, iy, ix, PROJECT_NONE) || 

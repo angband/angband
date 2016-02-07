@@ -171,7 +171,7 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 		}
 		square_excise_object(cave, player->py, player->px, obj);
 		delist_object(cave, obj);
-		inven_carry(player, obj, TRUE, domsg);
+		inven_carry(player, obj, true, domsg);
 	} else {
 		int num;
 		bool dummy;

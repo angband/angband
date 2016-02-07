@@ -586,7 +586,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			used_obj = gear_object_for_use(obj, 1, true, &none_left);
 		else
 			/* Destroy an item on the floor */
-			used_obj = floor_object_for_use(obj, 1, TRUE, &none_left);
+			used_obj = floor_object_for_use(obj, 1, true, &none_left);
 		if (used_obj->known)
 			object_delete(&used_obj->known);
 		object_delete(&used_obj);
@@ -833,7 +833,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 		if (object_is_carried(player, obj))
 			used = gear_object_for_use(obj, 1, true, &none_left);
 		else
-			used = floor_object_for_use(obj, 1, TRUE, &none_left);
+			used = floor_object_for_use(obj, 1, true, &none_left);
 		if (used->known)
 			object_delete(&used->known);
 		object_delete(&used);

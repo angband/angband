@@ -387,8 +387,8 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		return false;
 
 	/* If either item is unknown, do not stack */
-	if (mode & OSTACK_LIST && obj1->kind != obj1->known->kind) return FALSE;
-	if (mode & OSTACK_LIST && obj2->kind != obj2->known->kind) return FALSE;
+	if (mode & OSTACK_LIST && obj1->kind != obj1->known->kind) return false;
+	if (mode & OSTACK_LIST && obj2->kind != obj2->known->kind) return false;
 
 	/* Hack -- identical items cannot be stacked */
 	if (obj1 == obj2) return false;
@@ -742,7 +742,7 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		delist_object(cave_k, usable->known);
 		square_excise_object(cave, usable->iy, usable->ix, usable);
 		delist_object(cave, usable);
-		*none_left = TRUE;
+		*none_left = true;
 
 		/* Stop tracking item */
 		if (tracked_object_is(player->upkeep, obj))
@@ -887,7 +887,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 
 	char o_name[80];
 
-	bool flag = FALSE;
+	bool flag = false;
 
 	/* Describe object */
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_BASE);
@@ -1286,10 +1286,10 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
  */
 bool item_is_available(struct object *obj)
 {
-	if (object_is_carried(player, obj)) return TRUE;
+	if (object_is_carried(player, obj)) return true;
 	if (cave && square_holds_object(cave, player->py, player->px, obj))
-		return TRUE;
-	return FALSE;
+		return true;
+	return false;
 }
 
 /**

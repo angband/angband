@@ -281,8 +281,8 @@ bool square_isplayer(struct chunk *c, int y, int x) {
  * True if the the player knows the terrain of the square
  */
 bool square_isknown(struct chunk *c, int y, int x) {
-	if (c != cave) return FALSE;
-	return cave_k->squares[y][x].feat == FEAT_NONE ? FALSE : TRUE;
+	if (c != cave) return false;
+	return cave_k->squares[y][x].feat == FEAT_NONE ? false : true;
 }
 
 /**

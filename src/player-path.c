@@ -55,7 +55,7 @@ static int dir_search[8] = {2,4,6,8,1,3,7,9};
 static bool is_valid_pf(int y, int x)
 {
 	/* Unvisited means allowed */
-	if (!square_isknown(cave, y, x)) return (TRUE);
+	if (!square_isknown(cave, y, x)) return (true);
 
 	/* Require open space */
 	return (square_ispassable(cave, y, x));
@@ -408,7 +408,7 @@ static int see_wall(int dir, int y, int x)
 		return false;
 
 	/* Unknown walls are not known walls */
-	if (!square_isknown(cave, y, x)) return (FALSE);
+	if (!square_isknown(cave, y, x)) return (false);
 
 	/* Default */
 	return (true);
@@ -558,7 +558,7 @@ static bool run_test(void)
 		/* Visible objects abort running */
 		for (obj = square_object(cave, row, col); obj; obj = obj->next)
 			/* Visible object */
-			if (obj->known && !ignore_item_ok(obj)) return (TRUE);
+			if (obj->known && !ignore_item_ok(obj)) return (true);
 
 		/* Assume unknown */
 		inv = true;

@@ -710,9 +710,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 		/* Try to carry */
 		if (monster_carry(c, mon, obj)) {
-			any = TRUE;
+			any = true;
 		} else {
-			obj->artifact->created = FALSE;
+			obj->artifact->created = false;
 			object_wipe(obj);
 			mem_free(obj);
 		}
@@ -734,9 +734,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 		/* Try to carry */
 		if (monster_carry(c, mon, obj)) {
-			any = TRUE;
+			any = true;
 		} else {
-			obj->artifact->created = FALSE;
+			obj->artifact->created = false;
 			object_wipe(obj);
 			mem_free(obj);
 		}
@@ -827,7 +827,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 		new_mon->mimicked_obj = obj;
 
 		/* Put the object on the floor if it goes, otherwise no mimicry */
-		if (floor_carry(c, y, x, obj, FALSE)) {
+		if (floor_carry(c, y, x, obj, false)) {
 			list_object(c, obj);
 		} else {
 			/* Clear the mimicry */
