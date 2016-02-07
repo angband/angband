@@ -27,7 +27,7 @@
 #ifdef WINDOWS
 # include <windows.h>
 # include <io.h>
-# include <dirent.h>
+# include <direct.h>
 #endif
 
 #ifdef HAVE_FCNTL_H
@@ -45,7 +45,7 @@
 #endif
 
 #ifdef WINDOWS
-# define my_mkdir(path, perms) mkdir(path, perms)
+# define my_mkdir(path, perms) mkdir(path)
 #elif defined(HAVE_MKDIR) || defined(MACH_O_CARBON)
 # define my_mkdir(path, perms) mkdir(path, perms)
 #else
