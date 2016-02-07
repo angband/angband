@@ -36,7 +36,7 @@
 
 #ifdef HAVE_DIRENT_H
 # include <sys/types.h>
-# include <dirent.h>
+# include <direct.h>
 #endif
 
 #ifdef HAVE_STAT
