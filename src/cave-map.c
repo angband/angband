@@ -697,7 +697,7 @@ void cave_update_flow(struct chunk *c)
 }
 
 /**
- * Make map features known, except walls surrounded by wall
+ * Make map features known, except wall/lava surrounded by wall/lava
  */
 void cave_known(void)
 {
@@ -714,8 +714,9 @@ void cave_known(void)
 				yy = y + ddy_ddd[d];
 				xx = x + ddx_ddd[d];
 
-				/* Don't count projectable squares */
-				if (!square_isprojectable(cave, yy, xx))
+				/* Don't count projectable or lava squares */
+				if (!square_isprojectable(cave, yy, xx) ||
+					square_isbright(cave, yy, xx))
 					++count;
 			}
 
