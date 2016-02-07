@@ -65,9 +65,9 @@ bool easy_know(const struct object *obj)
  */
 bool object_all_flags_are_known(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
+	if (!obj->known) return false;
 	return easy_know(obj) || of_is_subset(obj->known->flags, obj->flags)
-		? TRUE : FALSE;
+		? true : false;
 }
 
 
@@ -97,11 +97,11 @@ bool object_all_elements_are_known(const struct object *obj)
  */
 bool object_all_brands_and_slays_are_known(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
+	if (!obj->known) return false;
 	if (!brands_are_equal(obj->brands, obj->known->brands))
-		return FALSE;
+		return false;
 	if (!slays_are_equal(obj->slays, obj->known->slays))
-		return FALSE;
+		return false;
 
 	return true;
 }
@@ -113,19 +113,19 @@ bool object_all_brands_and_slays_are_known(const struct object *obj)
  */
 bool object_all_miscellaneous_are_known(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
-	if (easy_know(obj)) return TRUE;
-	if (!obj->known->artifact) return FALSE;
-	if (!obj->known->ego) return FALSE;
-	if (!obj->known->pval) return FALSE;
-	if (!obj->known->dd) return FALSE;
-	if (!obj->known->ds) return FALSE;
-	if (!obj->known->ac) return FALSE;
-	if (!obj->known->to_a) return FALSE;
-	if (!obj->known->to_h) return FALSE;
-	if (!obj->known->to_d) return FALSE;
-	if (!obj->known->effect) return FALSE;
-	return TRUE;
+	if (!obj->known) return false;
+	if (easy_know(obj)) return true;
+	if (!obj->known->artifact) return false;
+	if (!obj->known->ego) return false;
+	if (!obj->known->pval) return false;
+	if (!obj->known->dd) return false;
+	if (!obj->known->ds) return false;
+	if (!obj->known->ac) return false;
+	if (!obj->known->to_a) return false;
+	if (!obj->known->to_h) return false;
+	if (!obj->known->to_d) return false;
+	if (!obj->known->effect) return false;
+	return true;
 }
 
 /**
@@ -135,11 +135,11 @@ bool object_all_miscellaneous_are_known(const struct object *obj)
  */
 bool object_all_but_flavor_is_known(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
-	if (!object_all_flags_are_known(obj)) return FALSE;
-	if (!object_all_elements_are_known(obj)) return FALSE;
-	if (!object_all_brands_and_slays_are_known(obj)) return FALSE;
-	if (!object_all_miscellaneous_are_known(obj)) return FALSE;
+	if (!obj->known) return false;
+	if (!object_all_flags_are_known(obj)) return false;
+	if (!object_all_elements_are_known(obj)) return false;
+	if (!object_all_brands_and_slays_are_known(obj)) return false;
+	if (!object_all_miscellaneous_are_known(obj)) return false;
 
 	return true;
 }
@@ -158,7 +158,7 @@ bool object_is_known(const struct object *obj)
  */
 bool object_is_known_artifact(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
+	if (!obj->known) return false;
 	return (obj->artifact && obj->known->artifact);
 }
 
@@ -167,7 +167,7 @@ bool object_is_known_artifact(const struct object *obj)
  */
 bool object_is_known_not_artifact(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
+	if (!obj->known) return false;
 	return (!obj->artifact && obj->known->artifact);
 }
 
@@ -176,8 +176,8 @@ bool object_is_known_not_artifact(const struct object *obj)
  */
 bool object_was_worn(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
-	return obj->known->notice & OBJ_NOTICE_WORN ? TRUE : FALSE;
+	if (!obj->known) return false;
+	return obj->known->notice & OBJ_NOTICE_WORN ? true : false;
 }
 
 /**
@@ -205,7 +205,7 @@ bool object_effect_is_known(const struct object *obj)
 {
 	assert(obj->kind);
 	if (easy_know(obj) || (obj->known && obj->known->effect))
-		return TRUE;
+		return true;
 
 	return false;
 }
@@ -217,7 +217,7 @@ bool object_name_is_visible(const struct object *obj)
 {
 	bool ego = obj->ego && obj->known && obj->known->ego;
 	bool art = obj->artifact && obj->known && obj->known->artifact;
-	return (ego || art) ? TRUE : FALSE;
+	return (ego || art) ? true : false;
 }
 
 /**
@@ -226,7 +226,7 @@ bool object_name_is_visible(const struct object *obj)
 bool object_ego_is_visible(const struct object *obj)
 {
 	if (obj->ego && obj->known && obj->known->ego)
-		return TRUE;
+		return true;
 
 	return false;
 }
@@ -236,10 +236,10 @@ bool object_ego_is_visible(const struct object *obj)
  */
 bool object_attack_plusses_are_visible(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
+	if (!obj->known) return false;
 	/* Bonuses have been revealed or for sale */
 	if (obj->known->to_h && obj->known->to_d)
-		return TRUE;
+		return true;
 
 	return false;
 }
@@ -249,10 +249,10 @@ bool object_attack_plusses_are_visible(const struct object *obj)
  */
 bool object_defence_plusses_are_visible(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
+	if (!obj->known) return false;
 	/* Bonuses have been revealed or for sale */
 	if (obj->known->to_a)
-		return TRUE;
+		return true;
 
 	return false;
 }
@@ -264,7 +264,7 @@ bool object_defence_plusses_are_visible(const struct object *obj)
 bool object_flag_is_known(const struct object *obj, int flag)
 {
 	if (easy_know(obj) || (obj->known && of_has(obj->known->flags, flag)))
-		return TRUE;
+		return true;
 
 	return false;
 }
@@ -278,7 +278,7 @@ bool object_element_is_known(const struct object *obj, int element)
 
 	if (easy_know(obj) ||
 		(obj->known && obj->known->el_info[element].res_level))
-		return TRUE;
+		return true;
 
 	return false;
 }
@@ -291,9 +291,9 @@ bool object_this_mod_is_visible(const struct object *obj, int mod)
 {
 	assert(obj->kind);
 
-	if (!obj->known) return FALSE;
+	if (!obj->known) return false;
 	if (obj->known->modifiers[mod])
-		return TRUE;
+		return true;
 
 	return false;
 }
@@ -440,13 +440,13 @@ void object_flavor_aware(struct object *obj)
 	 * floor objects of this kind */
 	for (y = 1; y < cave->height; y++) {
 		for (x = 1; x < cave->width; x++) {
-			bool light = FALSE;
+			bool light = false;
 			const struct object *floor_obj;
 
 			for (floor_obj = square_object(cave, y, x); floor_obj;
 				 floor_obj = floor_obj->next)
 				if (floor_obj->kind == obj->kind) {
-					light = TRUE;
+					light = true;
 					break;
 				}
 
@@ -587,8 +587,8 @@ void object_notice_everything(struct object *obj)
 
 	/* Artifact has now been seen */
 	if (obj->artifact && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) {
-		obj->artifact->seen = obj->artifact->everseen = TRUE;
-		history_add_artifact(obj->artifact, TRUE, TRUE);
+		obj->artifact->seen = obj->artifact->everseen = true;
+		history_add_artifact(obj->artifact, true, true);
 	}
 
 	/* Know everything else */
@@ -745,7 +745,7 @@ void object_notice_attack_plusses(struct object *obj)
 bool object_notice_element(struct object *obj, int element)
 {
 	assert(obj->known);
-	if (element < 0 || element >= ELEM_MAX) return FALSE;
+	if (element < 0 || element >= ELEM_MAX) return false;
 
 	/* Already known */
 	if (object_element_is_known(obj, element))
@@ -769,7 +769,7 @@ bool object_notice_flag(struct object *obj, int flag)
 {
 	assert(obj->known);
 	if (of_has(obj->known->flags, flag))
-		return FALSE;
+		return false;
 
 	of_on(obj->known->flags, flag);
 	object_check_for_ident(obj);
@@ -787,7 +787,7 @@ bool object_notice_flags(struct object *obj, bitflag flags[OF_SIZE])
 {
 	assert(obj->known);
 	if (of_is_subset(obj->known->flags, flags))
-		return FALSE;
+		return false;
 
 	of_union(obj->known->flags, flags);
 	object_check_for_ident(obj);
@@ -873,12 +873,12 @@ void object_notice_on_wield(struct object *obj)
 	of_diff(obvious_mask, f2);
 
 	/* Learn about obvious flags */
-	if (of_is_inter(f, obvious_mask)) obvious = TRUE;
+	if (of_is_inter(f, obvious_mask)) obvious = true;
 	of_union(obj->known->flags, obvious_mask);
 
 	/* Notice all modifiers */
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (obj->modifiers[i]) obvious = TRUE;
+		if (obj->modifiers[i]) obvious = true;
 		obj->known->modifiers[i] = 1;
 	}
 
@@ -1226,8 +1226,8 @@ bool object_high_resist_is_possible(const struct object *obj)
  */
 bool object_was_sensed(const struct object *obj)
 {
-	if (!obj->known) return FALSE;
-	return obj->known->notice & OBJ_NOTICE_SENSED ? TRUE : FALSE;
+	if (!obj->known) return false;
+	return obj->known->notice & OBJ_NOTICE_SENSED ? true : false;
 }
 
 /**
@@ -1240,8 +1240,8 @@ void object_notice_sensing(struct object *obj)
 		return;
 
 	if (obj->artifact) {
-		obj->artifact->seen = obj->artifact->everseen = TRUE;
-		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
+		obj->artifact->seen = obj->artifact->everseen = true;
+		history_add_artifact(obj->artifact, object_is_known(obj), true);
 	}
 
 	object_notice_curses(obj);
