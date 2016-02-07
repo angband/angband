@@ -17,6 +17,7 @@
  */
 
 #include <windows.h>
+#include <stdbool.h>
 #include "png.h"
 
 /**
@@ -31,15 +32,15 @@
 /**
  * Save a window to a PNG file.
  *
- * Returns TRUE if the PNG file is written, and FALSE if something went wrong.
+ * Returns true if the PNG file is written, and false if something went wrong.
  */
-BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
+bool SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 {
 	png_structp png_ptr;
 	png_infop info_ptr;
 	png_bytep *row_pointers = NULL;
 
-	BOOL noerror = TRUE;
+	bool noerror = true;
 
 	png_byte color_type;
 	png_byte bit_depth;
@@ -54,15 +55,15 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 
 	/* Make sure that we have a window pointer */
 	if (hWnd == NULL) {
-		return (FALSE);
+		return (false);
 	}
 	c = strrchr(lpFileName, '.');
 	if (!c) {
-		return (FALSE);
+		return (false);
 	}
 	c += 1;
 	if ((strncmp(c, "png", 3) != 0) && (strncmp(c, "PNG", 3) != 0)) {
-		return (FALSE);
+		return (false);
 	}
 
 	if (!GetClientRect(hWnd, &rect)) {
@@ -78,14 +79,14 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 	/* Open the file and test it for being a png */
 	fp = fopen(lpFileName, "wb");
 	if (!fp) {
-		return (FALSE);
+		return (false);
 	}
 
 	/* Create the png structure */
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png_ptr) {
 		fclose(fp);
-		return (FALSE);
+		return (false);
 	}
 
 	/* Create the info structure */
@@ -93,7 +94,7 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 		info_ptr = png_create_info_struct(png_ptr);
 		if (!info_ptr) {
 			png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-			noerror = FALSE;
+			noerror = false;
 		}
 	}
 
@@ -116,14 +117,14 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 		/* Setup error handling for read */
 		row_pointers = (png_bytep*) malloc(sizeof(png_bytep)*height);
 		if (!row_pointers)
-			noerror = FALSE;
+			noerror = false;
 
 		if (noerror) {
 			for (y = 0; y < height; ++y) {
 				row_pointers[y] = (png_bytep) malloc(sizeof(png_bytep) *
 													 width * channels);
 				if (!row_pointers[y]) {
-					noerror = FALSE;
+					noerror = false;
 					break;
 				}
 			}
@@ -199,7 +200,7 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 	}
 
 	if (!noerror)
-		return (FALSE);
+		return (false);
 
-	return (TRUE);
+	return (true);
 }

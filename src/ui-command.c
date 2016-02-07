@@ -238,7 +238,7 @@ void textui_cmd_rest(void)
  */
 void textui_quit(void)
 {
-	player->upkeep->playing = FALSE;
+	player->upkeep->playing = false;
 }
 
 
@@ -265,7 +265,7 @@ void do_cmd_load_screen(void)
 	int i, y, x;
 	int a = 0;
 	wchar_t c = L' ';
-	bool okay = TRUE;
+	bool okay = true;
 	ang_file *fp;
 	char buf[1024];
 
@@ -283,7 +283,7 @@ void do_cmd_load_screen(void)
 	/* Load the screen */
 	for (y = 0; okay && (y < 24); y++) {
 		/* Get a line of data */
-		if (!file_getl(fp, buf, sizeof(buf))) okay = FALSE;
+		if (!file_getl(fp, buf, sizeof(buf))) okay = false;
 
 		/* Show each row */
 		for (x = 0; x < 79; x++) {
@@ -294,12 +294,12 @@ void do_cmd_load_screen(void)
 	}
 
 	/* Get the blank line */
-	if (!file_getl(fp, buf, sizeof(buf))) okay = FALSE;
+	if (!file_getl(fp, buf, sizeof(buf))) okay = false;
 
 	/* Dump the screen */
 	for (y = 0; okay && (y < 24); y++) {
 		/* Get a line of data */
-		if (!file_getl(fp, buf, sizeof(buf))) okay = FALSE;
+		if (!file_getl(fp, buf, sizeof(buf))) okay = false;
 
 		/* Dump each row */
 		for (x = 0; x < 79; x++) {
@@ -602,13 +602,13 @@ static void do_cmd_save_screen_html(int mode)
 	file_close(fff);
 
 	/* Dump the screen with raw character attributes */
-	reset_visuals(FALSE);
+	reset_visuals(false);
 	do_cmd_redraw();
 	html_screenshot(tmp_val, mode);
 
 	/* Recover current graphics settings */
-	reset_visuals(TRUE);
-	process_pref_file(file_name, TRUE, FALSE);
+	reset_visuals(true);
+	process_pref_file(file_name, true, false);
 	file_delete(file_name);
 	do_cmd_redraw();
 

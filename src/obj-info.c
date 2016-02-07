@@ -201,9 +201,9 @@ static bool describe_curses(textblock *tb, const struct object *obj,
 	else if (of_has(flags, OF_LIGHT_CURSE))
 		textblock_append_c(tb, COLOUR_L_RED, "Cursed.\n");
 	else
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -214,19 +214,19 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 						   oinfo_detail_t mode)
 {
 	size_t count = 0, i;
-	bool detail = FALSE;
+	bool detail = false;
 
 	/* Don't give exact plusses for faked ego items as each real one will
 	 * be different */
-	bool suppress_details = mode & OINFO_EGO ? TRUE : FALSE;
+	bool suppress_details = mode & OINFO_EGO ? true : false;
 
 	/* Fact of but not size of mods is known for egos and flavoured items
 	 * the player is aware of */
-	bool known_effect = FALSE;
+	bool known_effect = false;
 	if (object_ego_is_visible(obj))
-		known_effect = TRUE;
+		known_effect = true;
 	if (tval_can_have_flavor_k(obj->kind) && object_flavor_is_aware(obj))
-		known_effect = TRUE;
+		known_effect = true;
 
 	/* See what we've got */
 	for (i = 0; i < N_ELEMENTS(mod_flags); i++)
@@ -234,11 +234,11 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 			count++;
 			/* Either all mods are visible, or none are */
 			if (object_this_mod_is_visible(obj, mod_flags[i].flag))
-				detail = TRUE;
+				detail = true;
 		}
 
 	if (!count)
-		return FALSE;
+		return false;
 
 	for (i = 0; i < N_ELEMENTS(mod_flags); i++) {
 		const char *desc = mod_flags[i].name;
@@ -252,7 +252,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 			textblock_append(tb, "Affects your %s\n", desc);
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -267,7 +267,7 @@ static bool describe_elements(textblock *tb,
 	const char *v_descs[N_ELEMENTS(elements)];
 	size_t i, count;
 
-	bool list[N_ELEMENTS(elements)], prev = FALSE;
+	bool list[N_ELEMENTS(elements)], prev = false;
 
 	/* Immunities */
 	for (i = 0; i < N_ELEMENTS(elements); i++)
@@ -276,7 +276,7 @@ static bool describe_elements(textblock *tb,
 	if (count) {
 		textblock_append(tb, "Provides immunity to ");
 		info_out_list(tb, i_descs, count);
-		prev = TRUE;
+		prev = true;
 	}
 
 	/* Resistances */
@@ -286,7 +286,7 @@ static bool describe_elements(textblock *tb,
 	if (count) {
 		textblock_append(tb, "Provides resistance to ");
 		info_out_list(tb, r_descs, count);
-		prev = TRUE;
+		prev = true;
 	}
 
 	/* Vulnerabilities */
@@ -296,7 +296,7 @@ static bool describe_elements(textblock *tb,
 	if (count) {
 		textblock_append(tb, "Makes you vulnerable to ");
 		info_out_list(tb, v_descs, count);
-		prev = TRUE;
+		prev = true;
 	}
 
 	return prev;
@@ -316,12 +316,12 @@ static bool describe_protects(textblock *tb, const bitflag flags[OF_SIZE])
 			flags, p_descs);
 
 	if (!count)
-		return FALSE;
+		return false;
 
 	textblock_append(tb, "Provides protection from ");
 	info_out_list(tb, p_descs, count);
 
-	return  TRUE;
+	return  true;
 }
 
 /**
@@ -338,12 +338,12 @@ static bool describe_ignores(textblock *tb, const struct element_info el_info[])
 	count = element_info_collect(list, descs);
 
 	if (!count)
-		return FALSE;
+		return false;
 
 	textblock_append(tb, "Cannot be harmed by ");
 	info_out_list(tb, descs, count);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -360,12 +360,12 @@ static bool describe_hates(textblock *tb, const struct element_info el_info[])
 	count = element_info_collect(list, descs);
 
 	if (!count)
-		return FALSE;
+		return false;
 
 	textblock_append(tb, "Can be destroyed by ");
 	info_out_list(tb, descs, count);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -379,12 +379,12 @@ static bool describe_sustains(textblock *tb, const bitflag flags[OF_SIZE])
 									 flags, descs);
 
 	if (!count)
-		return FALSE;
+		return false;
 
 	textblock_append(tb, "Sustains ");
 	info_out_list(tb, descs, count);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -394,14 +394,14 @@ static bool describe_sustains(textblock *tb, const bitflag flags[OF_SIZE])
 static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
 {
 	size_t i;
-	bool printed = FALSE;
+	bool printed = false;
 
 	for (i = 0; i < N_ELEMENTS(misc_flags); i++)
 	{
 		if (of_has(flags, misc_flags[i].flag))
 		{
 			textblock_append(tb, "%s.  ", misc_flags[i].name);
-			printed = TRUE;
+			printed = true;
 		}
 	}
 
@@ -419,7 +419,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
 {
 	struct slay *s = obj->known->slays;
 
-	if (!s) return FALSE;
+	if (!s) return false;
 
 	if (tval_is_weapon(obj) || tval_is_fuel(obj))
 		textblock_append(tb, "Slays ");
@@ -437,7 +437,7 @@ static bool describe_slays(textblock *tb, const struct object *obj)
 		s = s->next;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -447,7 +447,7 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 {
 	struct brand *b = obj->known->brands;
 
-	if (!b) return FALSE;
+	if (!b) return false;
 
 	if (tval_is_weapon(obj) || tval_is_fuel(obj))
 		textblock_append(tb, "Branded with ");
@@ -465,7 +465,7 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 		b = b->next;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -628,7 +628,7 @@ static int obj_known_blows(const struct object *obj, int max_num,
 	player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player, &state, TRUE, FALSE);
+	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
 	player->body.slots[weapon_slot].obj = current_weapon;
@@ -718,7 +718,7 @@ static bool describe_blows(textblock *tb, const struct object *obj)
 	int num_entries = 0;
 
 	num_entries = obj_known_blows(obj, STAT_RANGE * 2, blow_info);
-	if (num_entries == 0) return FALSE;
+	if (num_entries == 0) return false;
 
 	/* First entry is always current blows (+0, +0) */
 	textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d ",
@@ -744,7 +744,7 @@ static bool describe_blows(textblock *tb, const struct object *obj)
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -790,7 +790,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player, &state, TRUE, FALSE);
+	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
 	player->body.slots[weapon_slot].obj = current_weapon;
@@ -840,7 +840,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	*slay_list = slay_collect(obj->known->slays, ammo ? bow->known : NULL);
 
 	/* Melee weapons may get slays and brands from other items */
-	*nonweap_slay = FALSE;
+	*nonweap_slay = false;
 	if (weapon)	{
 		for (i = 2; i < player->body.count; i++) {
 			struct object *slot_obj = slot_object(player, i);
@@ -850,7 +850,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 				continue;
 
 			if (slot_obj->known->brands || slot_obj->known->slays)
-				*nonweap_slay = TRUE;
+				*nonweap_slay = true;
 			else
 				continue;
 
@@ -924,7 +924,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
  */
 static bool describe_damage(textblock *tb, const struct object *obj)
 {
-	bool nonweap_slay = FALSE;
+	bool nonweap_slay = false;
 	int normal_damage;
 	struct brand *brand, *brands = NULL;
 	struct slay *slay, *slays = NULL;
@@ -986,7 +986,7 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 
 	free_brand(brands);
 	free_slay(slays);
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1005,7 +1005,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 	              (bow);
 	bitflag f[OF_SIZE];
 
-	*thrown_effect = *impactful = *too_heavy = FALSE;
+	*thrown_effect = *impactful = *too_heavy = false;
 	*range = *break_chance = 0;
 
 	get_known_flags(obj, 0, f);
@@ -1014,7 +1014,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		/* Potions can have special text */
 		if (tval_is_potion(obj) && obj->dd != 0 && obj->ds != 0 &&
 			object_flavor_is_aware(obj))
-			*thrown_effect = TRUE;
+			*thrown_effect = true;
 	}
 
 	if (ammo)
@@ -1024,7 +1024,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 	*impactful = of_has(f, OF_IMPACT);
 
 	/* Add breakage chance */
-	*break_chance = breakage_chance(obj, TRUE);
+	*break_chance = breakage_chance(obj, true);
 
 	/* Is the weapon too heavy? */
 	if (weapon) {
@@ -1036,7 +1036,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 		/* Calculate the player's hypothetical state */
-		calc_bonuses(player, &state, TRUE, FALSE);
+		calc_bonuses(player, &state, true, false);
 
 		/* Stop pretending */
 		player->body.slots[weapon_slot].obj = current;
@@ -1065,9 +1065,9 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 	if (!weapon && !ammo) {
 		if (thrown_effect) {
 			textblock_append(tb, "It can be thrown at creatures with damaging effect.\n");
-			return TRUE;
+			return true;
 		} else
-			return FALSE;
+			return false;
 	}
 
 	textblock_append_c(tb, COLOUR_L_WHITE, "Combat info:\n");
@@ -1094,7 +1094,7 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 	}
 
 	/* Something has been said */
-	return TRUE;
+	return true;
 }
 
 
@@ -1105,7 +1105,7 @@ static bool describe_combat(textblock *tb, const struct object *obj)
  * take to dig through each type of diggable terrain, and must be at least 
  * [DIGGING_MAX].
  *
- * Returns FALSE if the object has no effect on digging, or if the specifics
+ * Returns false if the object has no effect on digging, or if the specifics
  * are meaningless (i.e. the object is an ego template, not a real item).
  */
 static bool obj_known_digging(struct object *obj, int deciturns[])
@@ -1119,17 +1119,17 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	/* Doesn't remotely resemble a digger */
 	if (!tval_is_wearable(obj) ||
 		(!tval_is_melee_weapon(obj) && (obj->modifiers[OBJ_MOD_TUNNEL] <= 0)))
-		return FALSE;
+		return false;
 
 	/* Player has no digging info */
 	if (!object_this_mod_is_visible(obj, OBJ_MOD_TUNNEL))
-		return FALSE;
+		return false;
 
 	/* Pretend we're wielding the object */
 	player->body.slots[slot].obj = obj;
 
 	/* Calculate the player's hypothetical state */
-	calc_bonuses(player, &state, TRUE, FALSE);
+	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
 	player->body.slots[slot].obj = current;
@@ -1142,7 +1142,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 		deciturns[i] = chance ? (16000 / chance) : 0;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1157,7 +1157,7 @@ static bool describe_digger(textblock *tb, const struct object *obj)
 									"granite" };
 
 	/* Get useful info or print nothing */
-	if (!obj_known_digging(obj1, deciturns)) return FALSE;
+	if (!obj_known_digging(obj1, deciturns)) return false;
 
 	for (i = DIGGING_RUBBLE; i < DIGGING_DOORS; i++) {
 		if (i == 0 && deciturns[0] > 0) {
@@ -1192,7 +1192,7 @@ static bool describe_digger(textblock *tb, const struct object *obj)
 				(i == 3) ? ".\n" : ", ");
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1201,7 +1201,7 @@ static bool describe_digger(textblock *tb, const struct object *obj)
  * Fills in the radius of the light in `rad`, whether it uses fuel and
  * how many turns light it can refuel in similar items.
  *
- * Return FALSE if the object is not known to be a light source (which 
+ * Return false if the object is not known to be a light source (which 
  * includes it not actually being a light source).
  */
 static bool obj_known_light(const struct object *obj, oinfo_detail_t mode, int *rad, bool *uses_fuel, int *refuel_turns)
@@ -1213,22 +1213,22 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode, int *
 	get_known_flags(obj, mode, flags);
 
 	if (!is_light && (obj->modifiers[OBJ_MOD_LIGHT] <= 0))
-		return FALSE;
+		return false;
 
 	/* Prevent unidentified objects (especially artifact lights) from showing
 	 * bad radius and refueling info. */
 	if (!object_is_known(obj))
-		return FALSE;
+		return false;
 
 	/* Work out radius */
 	*rad = obj->modifiers[OBJ_MOD_LIGHT];
 
-	no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
+	no_fuel = of_has(flags, OF_NO_FUEL) ? true : false;
 
 	if (no_fuel || obj->artifact) {
-		*uses_fuel = FALSE;
+		*uses_fuel = false;
 	} else {
-		*uses_fuel = TRUE;
+		*uses_fuel = true;
 	}
 
 	if (is_light && of_has(flags, OF_TAKES_FUEL)) {
@@ -1237,7 +1237,7 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode, int *
 		*refuel_turns = 0;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1247,13 +1247,13 @@ static bool describe_light(textblock *tb, const struct object *obj,
 		oinfo_detail_t mode)
 {
 	int rad = 0;
-	bool uses_fuel = FALSE;
+	bool uses_fuel = false;
 	int refuel_turns = 0;
 
-	bool terse = mode & OINFO_TERSE ? TRUE : FALSE;
+	bool terse = mode & OINFO_TERSE ? true : false;
 
 	if (!obj_known_light(obj, mode, &rad, &uses_fuel, &refuel_turns))
-		return FALSE;
+		return false;
 
 	textblock_append(tb, "Radius ");
 	textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
@@ -1273,7 +1273,7 @@ static bool describe_light(textblock *tb, const struct object *obj,
 
 	textblock_append(tb, "\n");
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1287,7 +1287,7 @@ static bool describe_light(textblock *tb, const struct object *obj,
  *     (or zero if it does not recharge)
  *  - the percentage chance of the effect failing when used
  *
- * Return FALSE if the object has no effect.
+ * Return false if the object has no effect.
  */
 static bool obj_known_effect(const struct object *obj, struct effect **effect,
 								 bool *aimed, int *min_recharge,
@@ -1299,24 +1299,24 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 	*min_recharge = 0;
 	*max_recharge = 0;
 	*failure_chance = 0;
-	*aimed = FALSE;
+	*aimed = false;
 
 	if (object_effect_is_known(obj)) {
 		*effect = object_effect(obj);
 		timeout = obj->time;
 		if (effect_aim(*effect))
-			*aimed = TRUE;;
+			*aimed = true;;
 	} else if (object_effect(obj)) {
 		/* Don't know much - be vague */
 		*effect = NULL;
 
 		if (!obj->artifact && effect_aim(object_effect(obj)))
-			*aimed = TRUE;
+			*aimed = true;
 
-		return TRUE;
+		return true;
 	} else {
 		/* No effect - no info */
-		return FALSE;
+		return false;
 	}
 
 	if (randcalc(timeout, 0, MAXIMISE) > 0)	{
@@ -1330,7 +1330,7 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 		*failure_chance = get_use_device_chance(obj);
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1341,16 +1341,16 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 {
 	char desc[200];
 	struct effect *effect = NULL;
-	bool aimed = FALSE;
+	bool aimed = false;
 	int min_time, max_time, failure_chance;
 
 	/* Sometimes we only print artifact activation info */
 	if (only_artifacts && !obj->artifact)
-		return FALSE;
+		return false;
 
 	if (obj_known_effect(obj, &effect, &aimed, &min_time, &max_time,
-							 &failure_chance) == FALSE)
-		return FALSE;
+							 &failure_chance) == false)
+		return false;
 
 	/* Effect not known, mouth platitudes */
 	if (!effect && object_effect(obj)) {
@@ -1364,7 +1364,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			textblock_append(tb, "It can be read.\n");
 		else textblock_append(tb, "It can be activated.\n");
 
-		return TRUE;
+		return true;
 	}
 
 	/* Activations get a special message */
@@ -1376,7 +1376,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 		/* Get descriptions for all the effects */
 		effect = object_effect(obj);
-		if (!effect_desc(effect)) return FALSE;
+		if (!effect_desc(effect)) return false;
 
 		if (aimed)
 			textblock_append(tb, "When aimed, it ");
@@ -1527,7 +1527,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			default: {
 				msg("Bad effect description passed to describe_effect(). Please report this bug.");
-				return FALSE;
+				return false;
 			}
 			}
 
@@ -1591,7 +1591,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			(1000 - failure_chance) / 10, (1000 - failure_chance) % 10);
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1607,7 +1607,7 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 
 	/* Only give this info in chardumps if wieldable */
 	if (terse && !obj_can_wear(obj))
-		return FALSE;
+		return false;
 
 	/* Set the origin - care needed for mimics */
 	if ((obj->origin == ORIGIN_DROP_MIMIC) && (obj->mimicking_m_idx != 0))
@@ -1638,7 +1638,7 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 	/* Print an appropriate description */
 	switch (origins[origin].args)
 	{
-		case -1: return FALSE;
+		case -1: return false;
 		case 0: textblock_append(tb, origins[origin].desc); break;
 		case 1: textblock_append(tb, origins[origin].desc, loot_spot);
 				break;
@@ -1649,7 +1649,7 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 
 	textblock_append(tb, "\n\n");
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1669,11 +1669,11 @@ static void describe_flavor_text(textblock *tb, const struct object *obj,
 		textblock_append(tb, "%s\n\n", obj->artifact->text);
 
 	} else if (object_flavor_is_aware(obj) || object_is_known(obj) || ego) {
-		bool did_desc = FALSE;
+		bool did_desc = false;
 
 		if (!ego && obj->kind->text) {
 			textblock_append(tb, "%s", obj->kind->text);
-			did_desc = TRUE;
+			did_desc = true;
 		}
 
 		/* Display an additional ego-item description */
@@ -1703,10 +1703,10 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 		const char *xtra[] = { "sustain", "higher resistance", "ability" };
 		textblock_append(tb, "It provides one random %s.  ", xtra[num]);
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1717,12 +1717,12 @@ static textblock *object_info_out(const struct object *obj, int mode)
 {
 	bitflag flags[OF_SIZE];
 	struct element_info el_info[N_ELEMENTS(elements)];
-	bool something = FALSE;
+	bool something = false;
 	bool known = object_all_but_flavor_is_known(obj);
 
-	bool terse = mode & OINFO_TERSE ? TRUE : FALSE;
-	bool subjective = mode & OINFO_SUBJ ? TRUE : FALSE;
-	bool ego = mode & OINFO_EGO ? TRUE : FALSE;
+	bool terse = mode & OINFO_TERSE ? true : false;
+	bool subjective = mode & OINFO_SUBJ ? true : false;
+	bool ego = mode & OINFO_EGO ? true : false;
 	textblock *tb = textblock_new();
 	const struct object *known_obj = obj->known ? obj->known : obj;
 
@@ -1743,37 +1743,37 @@ static textblock *object_info_out(const struct object *obj, int mode)
 
 	if (!known)	{
 		textblock_append(tb, "You do not know the full extent of this item's powers.\n");
-		something = TRUE;
+		something = true;
 	}
 
-	if (describe_curses(tb, obj, flags)) something = TRUE;
-	if (describe_stats(tb, obj, mode)) something = TRUE;
-	if (describe_slays(tb, obj)) something = TRUE;
-	if (describe_brands(tb, obj)) something = TRUE;
-	if (describe_elements(tb, el_info)) something = TRUE;
-	if (describe_protects(tb, flags)) something = TRUE;
-	if (describe_ignores(tb, el_info)) something = TRUE;
-	if (describe_hates(tb, el_info)) something = TRUE;
-	if (describe_sustains(tb, flags)) something = TRUE;
-	if (describe_misc_magic(tb, flags)) something = TRUE;
-	if (describe_light(tb, obj, mode)) something = TRUE;
-	if (ego && describe_ego(tb, obj->ego)) something = TRUE;
+	if (describe_curses(tb, obj, flags)) something = true;
+	if (describe_stats(tb, obj, mode)) something = true;
+	if (describe_slays(tb, obj)) something = true;
+	if (describe_brands(tb, obj)) something = true;
+	if (describe_elements(tb, el_info)) something = true;
+	if (describe_protects(tb, flags)) something = true;
+	if (describe_ignores(tb, el_info)) something = true;
+	if (describe_hates(tb, el_info)) something = true;
+	if (describe_sustains(tb, flags)) something = true;
+	if (describe_misc_magic(tb, flags)) something = true;
+	if (describe_light(tb, obj, mode)) something = true;
+	if (ego && describe_ego(tb, obj->ego)) something = true;
 	if (something) textblock_append(tb, "\n");
 
 	/* Skip all the very specific information where we are giving general
 	   ego knowledge rather than for a single item - abilities can vary */
 	if (!ego) {
 		if (describe_effect(tb, obj, terse, subjective)) {
-			something = TRUE;
+			something = true;
 			textblock_append(tb, "\n");
 		}
 		
 		if (subjective && describe_combat(tb, obj)) {
-			something = TRUE;
+			something = true;
 			textblock_append(tb, "\n");
 		}
 		
-		if (!terse && subjective && describe_digger(tb, obj)) something = TRUE;
+		if (!terse && subjective && describe_digger(tb, obj)) something = true;
 	}
 
 	/* Don't append anything in terse (for chararacter dump) */
@@ -1788,7 +1788,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
  * Provide information on an item, including how it would affect the current
  * player's state.
  *
- * returns TRUE if anything is printed.
+ * returns true if anything is printed.
  */
 textblock *object_info(const struct object *obj, oinfo_detail_t mode)
 {

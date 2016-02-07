@@ -91,14 +91,14 @@ void copy_slay(struct slay **dest, struct slay *source)
 
 	while (s) {
 		struct slay *new_s, *check_s = *dest;
-		bool dupe = FALSE;
+		bool dupe = false;
 
 		/* Check for dupes */
 		while (check_s) {
 			if (streq(check_s->name, s->name) &&
 				(check_s->race_flag == s->race_flag) &&
 				(check_s->multiplier = s->multiplier)) {
-				dupe = TRUE;
+				dupe = true;
 				break;
 			}
 			check_s = check_s->next;
@@ -131,14 +131,14 @@ void copy_brand(struct brand **dest, struct brand *source)
 
 	while (b) {
 		struct brand *new_b, *check_b = *dest;
-		bool dupe = FALSE;
+		bool dupe = false;
 
 		/* Check for dupes */
 		while (check_b) {
 			if (check_b && streq(check_b->name, b->name) &&
 				(check_b->element == b->element) &&
 				(check_b->multiplier = b->multiplier)) {
-				dupe = TRUE;
+				dupe = true;
 				break;
 			}
 			check_b = check_b->next;
@@ -209,12 +209,12 @@ bool append_random_brand(struct brand **current, char **name)
 		if (streq(b->name, brand_names[pick].name) && (b->element == pick)) {
 			/* Same multiplier or smaller, fail */
 			if (b->multiplier >= mult)
-				return FALSE;
+				return false;
 
 			/* Greater multiplier, increase and accept */
 			b->multiplier = mult;
 			*name = b->name;
-			return TRUE;
+			return true;
 		}
 
 		/* Remember the last one */
@@ -232,7 +232,7 @@ bool append_random_brand(struct brand **current, char **name)
 		*current = b;
 	*name = b->name;
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -254,12 +254,12 @@ bool append_random_slay(struct slay **current, char **name)
 			(s->race_flag == slay_names[pick].race_flag)) {
 			/* Same multiplier or smaller, fail */
 			if (slay_names[pick].multiplier <= s->multiplier)
-				return FALSE;
+				return false;
 
 			/* Greater multiplier, increase and accept */
 			s->multiplier = slay_names[pick].multiplier;
 			*name = s->name;
-			return TRUE;
+			return true;
 		}
 
 		/* Remember the last one */
@@ -277,7 +277,7 @@ bool append_random_slay(struct slay **current, char **name)
 		*current = s;
 	*name = s->name;
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -321,7 +321,7 @@ int slay_count(struct slay *slays)
  */
 struct brand *brand_collect(struct brand *b, const struct object *obj)
 {
-	bool moved = FALSE;
+	bool moved = false;
 	struct brand *b_new;
 	struct brand *b_last = NULL;
 	struct brand *collected_brands = NULL;
@@ -329,7 +329,7 @@ struct brand *brand_collect(struct brand *b, const struct object *obj)
 	/* Use the object if there are no given brands */
 	if (!b && obj) {
 		b = obj->brands;
-		moved = TRUE;
+		moved = true;
 	}
 
 	/* Allocate and populate */
@@ -355,7 +355,7 @@ struct brand *brand_collect(struct brand *b, const struct object *obj)
 		/* Move to the object if we're done with the given brands */
 		if (!b && !moved && obj) {
 			b = obj->brands;
-			moved = TRUE;
+			moved = true;
 		}
 
 		b_last = b_new;
@@ -371,7 +371,7 @@ struct brand *brand_collect(struct brand *b, const struct object *obj)
  */
 struct slay *slay_collect(struct slay *s, const struct object *obj)
 {
-	bool moved = FALSE;
+	bool moved = false;
 	struct slay *s_new;
 	struct slay *s_last = NULL;
 	struct slay *collected_slays = NULL;
@@ -379,7 +379,7 @@ struct slay *slay_collect(struct slay *s, const struct object *obj)
 	/* Use the object if there are no given slays */
 	if (!s && !moved && obj) {
 		s = obj->slays;
-		moved = TRUE;
+		moved = true;
 	}
 
 	/* Allocate and populate */
@@ -405,7 +405,7 @@ struct slay *slay_collect(struct slay *s, const struct object *obj)
 		/* Move to the object if we're done with the given slays */
 		if (!s && !moved && obj) {
 			s = obj->slays;
-			moved = TRUE;
+			moved = true;
 		}
 
 		s_last = s_new;
@@ -422,18 +422,18 @@ struct slay *slay_collect(struct slay *s, const struct object *obj)
  */
 bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 {
-	if (!slay->name) return FALSE;
-	if (!mon->race->base) return FALSE;
+	if (!slay->name) return false;
+	if (!mon->race->base) return false;
 
 	/* Check the race flag */
 	if (rf_has(mon->race->flags, slay->race_flag))
-		return TRUE;
+		return true;
 
 	/* Check for monster base */
 	if (streq(slay->name, mon->race->base->name))
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 
@@ -447,7 +447,7 @@ void object_notice_brands(struct object *obj, const struct monster *mon)
 {
 	char o_name[40];
 	struct brand *b, *kb, *new_b;
-	bool plural = (obj->number > 1) ? TRUE : FALSE;
+	bool plural = (obj->number > 1) ? true : false;
 
 	assert(obj->known);
 
@@ -630,10 +630,10 @@ bool react_to_slay(struct object *obj, const struct monster *mon)
 
 	for (s = obj->slays; s; s = s->next) {
 		if (react_to_specific_slay(s, mon))
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -659,7 +659,7 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 		}
 
 		/* Fail if we didn't find a match */
-		if (match != count) return FALSE;
+		if (match != count) return false;
 
 		b1 = b1->next;
 	}
@@ -671,9 +671,9 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 		b2 = b2->next;
 	}
 
-	if (count != 0) return FALSE;
+	if (count != 0) return false;
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -699,7 +699,7 @@ bool slays_are_equal(struct slay *slay1, struct slay *slay2)
 		}
 
 		/* Fail if we didn't find a match */
-		if (match != count) return FALSE;
+		if (match != count) return false;
 
 		s1 = s1->next;
 	}
@@ -711,9 +711,9 @@ bool slays_are_equal(struct slay *slay1, struct slay *slay2)
 		s2 = s2->next;
 	}
 
-	if (count != 0) return FALSE;
+	if (count != 0) return false;
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -765,7 +765,7 @@ s32b check_slay_cache(const struct object *obj)
 
 
 /**
- * Fill in a value in the slay cache. Return TRUE if a change is made.
+ * Fill in a value in the slay cache. Return true if a change is made.
  *
  * \param obj is the object the combination is on
  * \param value is the value of the slay flags on the object
@@ -778,12 +778,12 @@ bool fill_slay_cache(const struct object *obj, s32b value)
 		if (brands_are_equal(obj->brands, slay_cache[i].brands) &&
 			slays_are_equal(obj->slays, slay_cache[i].slays)) {
 			slay_cache[i].value = value;
-			return TRUE;
+			return true;
 		}
 		i++;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**

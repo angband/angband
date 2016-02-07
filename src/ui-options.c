@@ -53,7 +53,7 @@ static bool get_pref_path(const char *what, int row, char *buf, size_t max)
 	prt("File: ", row + 2, 0);
 
 	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, TRUE));
+	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, true));
 	
 	/* Get a filename */
 	ok = askfor_aux(ftmp, sizeof ftmp, NULL);
@@ -118,7 +118,7 @@ static void option_toggle_display(struct menu *m, int oid, bool cursor,
 static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		int oid)
 {
-	bool next = FALSE;
+	bool next = false;
 
 	if (event->type == EVT_SELECT) {
 		/* Hack -- birth options can not be toggled after birth */
@@ -129,11 +129,11 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		}
 	} else if (event->type == EVT_KBRD) {
 		if (event->key.code == 'y' || event->key.code == 'Y') {
-			option_set(option_name(oid), TRUE);
-			next = TRUE;
+			option_set(option_name(oid), true);
+			next = true;
 		} else if (event->key.code == 'n' || event->key.code == 'N') {
-			option_set(option_name(oid), FALSE);
-			next = TRUE;
+			option_set(option_name(oid), false);
+			next = true;
 		} else if (event->key.code == 't' || event->key.code == 'T') {
 			option_set(option_name(oid), !op_ptr->opt[oid]);
 		} else if (event->key.code == '?') {
@@ -141,10 +141,10 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
 			screen_load();
 		} else {
-			return FALSE;
+			return false;
 		}
 	} else {
-		return FALSE;
+		return false;
 	}
 
 	if (next) {
@@ -152,7 +152,7 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		m->cursor = (m->cursor + m->filter_count) % m->filter_count;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -209,7 +209,7 @@ static void option_toggle_menu(const char *name, int page)
 	screen_save();
 
 	clear_from(0);
-	menu_select(m, 0, FALSE);
+	menu_select(m, 0, false);
 
 	screen_load();
 
@@ -397,7 +397,7 @@ static struct keypress keymap_get_trigger(void)
 	buf[0] = inkey();
 
 	/* Convert to ascii */
-	keypress_to_text(tmp, sizeof(tmp), buf, FALSE);
+	keypress_to_text(tmp, sizeof(tmp), buf, false);
 
 	/* Hack -- display the trigger */
 	Term_addstr(-1, COLOUR_WHITE, tmp);
@@ -445,7 +445,7 @@ static void ui_keymap_query(const char *title, int row)
 		inkey();
 	} else {
 		/* Analyze the current action */
-		keypress_to_text(tmp, sizeof(tmp), act, FALSE);
+		keypress_to_text(tmp, sizeof(tmp), act, false);
 	
 		/* Display the current action */
 		prt("Found: ", 15, 0);
@@ -458,7 +458,7 @@ static void ui_keymap_query(const char *title, int row)
 
 static void ui_keymap_create(const char *title, int row)
 {
-	bool done = FALSE;
+	bool done = false;
 	size_t n = 0;
 
 	struct keypress c;
@@ -484,7 +484,7 @@ static void ui_keymap_create(const char *title, int row)
 		if (n == 0) color = COLOUR_YELLOW;
 		if (n == KEYMAP_ACTION_MAX) color = COLOUR_L_RED;
 
-		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
+		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, false);
 		c_prt(color, format("Action: %s", tmp), 15, 0);
 
 		c_prt(COLOUR_L_BLUE, "  Press '$' when finished.", 17, 0);
@@ -495,7 +495,7 @@ static void ui_keymap_create(const char *title, int row)
 		kp = inkey();
 
 		if (kp.code == '$') {
-			done = TRUE;
+			done = true;
 			continue;
 		}
 
@@ -530,7 +530,7 @@ static void ui_keymap_create(const char *title, int row)
 	}
 
 	if (c.code && get_check("Save this keymap? ")) {
-		keymap_add(mode, c, keymap_buffer, TRUE);
+		keymap_add(mode, c, keymap_buffer, true);
 		prt("Keymap added.  Press any key to continue.", 17, 0);
 		inkey();
 	}
@@ -566,7 +566,7 @@ static void keymap_browse_hook(int oid, void *db, const region *loc)
 
 	/* Show current action */
 	prt("Current action (if any) shown below:", 13, 0);
-	keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
+	keypress_to_text(tmp, sizeof(tmp), keymap_buffer, false);
 	prt(tmp, 14, 0);
 }
 
@@ -597,7 +597,7 @@ static void do_cmd_keymaps(const char *title, int row)
 	}
 
 	menu_layout(keymap_menu, &loc);
-	menu_select(keymap_menu, 0, FALSE);
+	menu_select(keymap_menu, 0, false);
 
 	screen_load();
 }
@@ -637,7 +637,7 @@ static void visuals_dump_flavors(const char *title, int row)
 static void visuals_reset(const char *title, int row)
 {
 	/* Reset */
-	reset_visuals(TRUE);
+	reset_visuals(true);
 
 	/* Message */
 	prt("", 0, 0);
@@ -685,7 +685,7 @@ static void do_cmd_visuals(const char *title, int row)
 	}
 
 	menu_layout(visual_menu, &SCREEN_REGION);
-	menu_select(visual_menu, 0, FALSE);
+	menu_select(visual_menu, 0, false);
 
 	screen_load();
 }
@@ -836,7 +836,7 @@ static void do_cmd_colors(const char *title, int row)
 	}
 
 	menu_layout(color_menu, &SCREEN_REGION);
-	menu_select(color_menu, 0, FALSE);
+	menu_select(color_menu, 0, false);
 
 	screen_load();
 }
@@ -871,7 +871,7 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 									   firsttime);
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -994,12 +994,12 @@ static void do_cmd_pref_file_hack(long row)
 	prt("File: ", row + 2, 0);
 
 	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, TRUE));
+	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, true));
 
 	/* Ask for a file (or cancel) */
 	if (askfor_aux(ftmp, sizeof ftmp, NULL)) {
 		/* Process the given filename */
-		if (process_pref_file(ftmp, FALSE, TRUE) == FALSE) {
+		if (process_pref_file(ftmp, false, true) == false) {
 			/* Mention failure */
 			prt("", 0, 0);
 			msg("Failed to load '%s'!", ftmp);
@@ -1158,10 +1158,10 @@ static bool ego_action(struct menu * menu, const ui_event * event, int oid)
 	if (event->type == EVT_SELECT) {
 		ego_ignore_toggle(choice[oid].e_idx, choice[oid].itype);
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -1242,7 +1242,7 @@ static void ego_menu(const char *unused, int also_unused)
 	menu_layout(&menu, &area);
 
 	/* Select an entry */
-	(void) menu_select(&menu, cursor, FALSE);
+	(void) menu_select(&menu, cursor, false);
 
 	/* Free memory */
 	mem_free(choice);
@@ -1366,7 +1366,7 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2,
 				area.row + area.page_rows);
 
-	evt = menu_select(&menu, 0, TRUE);
+	evt = menu_select(&menu, 0, true);
 
 	/* Set the new value appropriately */
 	if (evt.type == EVT_SELECT)
@@ -1374,7 +1374,7 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 
 	/* Load and finish */
 	screen_load();
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1398,7 +1398,7 @@ static void quality_menu(void *unused, const char *also_unused)
 	menu_layout(&menu, &area);
 
 	/* Select an entry */
-	menu_select(&menu, 0, FALSE);
+	menu_select(&menu, 0, false);
 
 	/* Load screen */
 	screen_load();
@@ -1454,10 +1454,10 @@ bool ignore_tval(int tval)
 	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
 	{
 		if (tval == sval_dependent[i].tval)
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1505,10 +1505,10 @@ static bool ignore_sval_menu_action(struct menu *m, const ui_event *event,
 			kind->ignore ^= IGNORE_IF_UNAWARE;
 
 		player->upkeep->notice |= PN_IGNORE;
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 static const menu_iter ignore_sval_menu =
@@ -1544,7 +1544,7 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
 		if (!kind->aware) {
 			/* can unaware ignore anything */
 			choice[num].kind = kind;
-			choice[num++].aware = FALSE;
+			choice[num++].aware = false;
 		}
 
 		if ((kind->everseen && !kf_has(kind->kind_flags, KF_INSTA_ART)) || 
@@ -1554,7 +1554,7 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
 			 * do not require awareness for aware ignore, so people can set 
 			 * at game start */
 			choice[num].kind = kind;
-			choice[num++].aware = TRUE;
+			choice[num++].aware = true;
 		}
 	}
 
@@ -1578,7 +1578,7 @@ static bool sval_menu(int tval, const char *desc)
 
 	int n_choices = ignore_collect_kind(tval, &choices);
 	if (!n_choices)
-		return FALSE;
+		return false;
 
 	/* Sort by name in ignore menus except for categories of items that are
 	 * aware from the start */
@@ -1611,19 +1611,19 @@ static bool sval_menu(int tval, const char *desc)
 	menu->cmd_keys = "Tt";
 	menu_layout(menu, &area);
 	menu_set_cursor_x_offset(menu, 1); /* Place cursor in brackets. */
-	menu_select(menu, 0, FALSE);
+	menu_select(menu, 0, false);
 
 	/* Free memory */
 	mem_free(choices);
 
 	/* Load screen */
 	screen_load();
-	return TRUE;
+	return true;
 }
 
 
 /**
- * Returns TRUE if there's anything to display a menu of
+ * Returns true if there's anything to display a menu of
  */
 static bool seen_tval(int tval)
 {
@@ -1637,11 +1637,11 @@ static bool seen_tval(int tval)
 		if (!kind->everseen) continue;
 		if (kind->tval != tval) continue;
 
-		 return TRUE;
+		 return true;
 	}
 
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1731,10 +1731,10 @@ static bool handle_options_item(struct menu *menu, const ui_event *event,
 			extra_item_options[oid].action();
 		}
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1764,7 +1764,7 @@ void do_cmd_options_item(const char *title, int row)
 
 	screen_save();
 	clear_from(0);
-	menu_select(&menu, 0, FALSE);
+	menu_select(&menu, 0, false);
 	screen_load();
 
 	player->upkeep->notice |= PN_IGNORE;
@@ -1821,7 +1821,7 @@ void do_cmd_options(void)
 	clear_from(0);
 
 	menu_layout(option_menu, &SCREEN_REGION);
-	menu_select(option_menu, 0, FALSE);
+	menu_select(option_menu, 0, false);
 
 	screen_load();
 }

@@ -46,7 +46,7 @@ size_t highscore_read(high_score scores[], size_t sz)
 	path_build(fname, sizeof(fname), ANGBAND_DIR_SCORES, "scores.raw");
 	scorefile = file_open(fname, MODE_READ, FTYPE_TEXT);
 
-	if (!scorefile) return TRUE;
+	if (!scorefile) return true;
 
 	for (i = 0; i < sz; i++)
 		if (file_read(scorefile, (char *)&scores[i], sizeof(high_score)) <= 0)

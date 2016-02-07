@@ -66,7 +66,7 @@
 static int randarts = 0;
 static int no_selling = 0;
 static u32b num_runs = 1;
-static bool quiet = FALSE;
+static bool quiet = false;
 static int nextkey = 0;
 static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
@@ -181,8 +181,8 @@ static void generate_player_for_stats()
 {
 	OPT(birth_randarts) = randarts;
 	OPT(birth_no_selling) = no_selling;
-	OPT(birth_no_stacking) = FALSE;
-	OPT(auto_more) = TRUE;
+	OPT(birth_no_stacking) = false;
+	OPT(auto_more) = true;
 
 	player->wizard = 1; /* Set wizard mode on */
 
@@ -223,7 +223,7 @@ static void initialize_character(void)
 	}
 
 	seed = (time(NULL));
-	Rand_quick = FALSE;
+	Rand_quick = false;
 	Rand_state_init(seed);
 
 	player_init(player);
@@ -234,13 +234,13 @@ static void initialize_character(void)
 
 	if (randarts)
 	{
-		do_randart(seed_randart, TRUE);
+		do_randart(seed_randart, true);
 	}
 
 	store_reset();
 	flavor_init();
-	player->upkeep->playing = TRUE;
-	player->upkeep->autosave = FALSE;
+	player->upkeep->playing = true;
+	player->upkeep->autosave = false;
 	cave_generate(&cave, player);
 }
 
@@ -253,7 +253,7 @@ static void kill_all_monsters(int level)
 
 		level_data[level].monsters[mon->race->ridx]++;
 
-		monster_death(mon, TRUE);
+		monster_death(mon, true);
 
 		if (rf_has(mon->race->flags, RF_UNIQUE))
 			mon->race->max_num = 0;
@@ -287,7 +287,7 @@ static void reset_artifacts(void)
 	}
 
 	for (i = 0; i < z_info->a_max; i++)
-		a_info[i].created = FALSE;
+		a_info[i].created = false;
 
 }
 
@@ -305,7 +305,7 @@ static void log_all_objects(int level)
 				/* Mark object as fully known */
 				object_notice_everything(obj);
 
-/*				o_power = object_power(obj, FALSE, NULL, TRUE); */
+/*				o_power = object_power(obj, false, NULL, true); */
 
 				/* Capture gold amounts */
 				if (tval_is_money(obj))
@@ -741,13 +741,13 @@ static int stats_dump_lists(void)
 	 * description field. */
 	info_entry effects[] =
 	{
-		{ EF_NONE, FALSE, NULL },
+		{ EF_NONE, false, NULL },
 		#define F(x) effect_handler_##x
 		#define EFFECT(x, a, b, c, d, e)    { EF_##x, a, #x },
 		#include "list-effects.h"
 		#undef EFFECT
 		#undef F
-		{ EF_MAX, FALSE, NULL }
+		{ EF_MAX, false, NULL }
 	};
 
 	char *r_info_flags[] =
@@ -1656,8 +1656,8 @@ static void term_data_link(int i) {
 	term_init(t, 80, 24, 256);
 
 	/* Ignore some actions for efficiency and safety */
-	t->never_bored = TRUE;
-	t->never_frosh = TRUE;
+	t->never_bored = true;
+	t->never_frosh = true;
 
 	t->init_hook = term_init_stats;
 	t->nuke_hook = term_nuke_stats;
@@ -1697,7 +1697,7 @@ errr init_stats(int argc, char *argv[]) {
 			continue;
 		}
 		if (streq(argv[i], "-q")) {
-			quiet = TRUE;
+			quiet = true;
 			continue;
 		}
 		if (prefix(argv[i], "-n")) {

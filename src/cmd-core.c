@@ -49,66 +49,66 @@ struct command_info
 
 static const struct command_info game_cmds[] =
 {
-	{ CMD_LOADFILE, "load a savefile", NULL, FALSE, 0 },
-	{ CMD_NEWGAME, "start a new game", NULL, FALSE, 0 },
+	{ CMD_LOADFILE, "load a savefile", NULL, false, 0 },
+	{ CMD_NEWGAME, "start a new game", NULL, false, 0 },
 
-	{ CMD_BIRTH_INIT, "start the character birth process", do_cmd_birth_init, FALSE, 0 },
-	{ CMD_BIRTH_RESET, "go back to the beginning", do_cmd_birth_reset, FALSE, 0 },
-	{ CMD_CHOOSE_RACE, "select race", do_cmd_choose_race, FALSE, 0 },
-	{ CMD_CHOOSE_CLASS, "select class", do_cmd_choose_class, FALSE, 0 },
-	{ CMD_BUY_STAT, "buy points in a stat", do_cmd_buy_stat, FALSE, 0 },
-	{ CMD_SELL_STAT, "sell points in a stat", do_cmd_sell_stat, FALSE, 0 },
-	{ CMD_RESET_STATS, "reset stats", do_cmd_reset_stats, FALSE, 0 },
-	{ CMD_ROLL_STATS, "roll new stats", do_cmd_roll_stats, FALSE, 0 },
-	{ CMD_PREV_STATS, "use previously rolled stats", do_cmd_prev_stats, FALSE, 0 },
-	{ CMD_NAME_CHOICE, "choose name", do_cmd_choose_name, FALSE, 0 },
-	{ CMD_HISTORY_CHOICE, "write history", do_cmd_choose_history, FALSE, 0 },
-	{ CMD_ACCEPT_CHARACTER, "accept character", do_cmd_accept_character, FALSE, 0 },
+	{ CMD_BIRTH_INIT, "start the character birth process", do_cmd_birth_init, false, 0 },
+	{ CMD_BIRTH_RESET, "go back to the beginning", do_cmd_birth_reset, false, 0 },
+	{ CMD_CHOOSE_RACE, "select race", do_cmd_choose_race, false, 0 },
+	{ CMD_CHOOSE_CLASS, "select class", do_cmd_choose_class, false, 0 },
+	{ CMD_BUY_STAT, "buy points in a stat", do_cmd_buy_stat, false, 0 },
+	{ CMD_SELL_STAT, "sell points in a stat", do_cmd_sell_stat, false, 0 },
+	{ CMD_RESET_STATS, "reset stats", do_cmd_reset_stats, false, 0 },
+	{ CMD_ROLL_STATS, "roll new stats", do_cmd_roll_stats, false, 0 },
+	{ CMD_PREV_STATS, "use previously rolled stats", do_cmd_prev_stats, false, 0 },
+	{ CMD_NAME_CHOICE, "choose name", do_cmd_choose_name, false, 0 },
+	{ CMD_HISTORY_CHOICE, "write history", do_cmd_choose_history, false, 0 },
+	{ CMD_ACCEPT_CHARACTER, "accept character", do_cmd_accept_character, false, 0 },
 
-	{ CMD_GO_UP, "go up stairs", do_cmd_go_up, FALSE, 0 },
-	{ CMD_GO_DOWN, "go down stairs", do_cmd_go_down, FALSE, 0 },
-	{ CMD_SEARCH, "search", do_cmd_search, TRUE, 10 },
-	{ CMD_TOGGLE_SEARCH, "toggle search mode", do_cmd_toggle_search, FALSE, 0 },
-	{ CMD_WALK, "walk", do_cmd_walk, TRUE, 0 },
-	{ CMD_RUN, "run", do_cmd_run, FALSE, 0 },
-	{ CMD_JUMP, "jump", do_cmd_jump, FALSE, 0 },
-	{ CMD_OPEN, "open", do_cmd_open, TRUE, 99 },
-	{ CMD_CLOSE, "close", do_cmd_close, TRUE, 99 },
-	{ CMD_TUNNEL, "tunnel", do_cmd_tunnel, TRUE, 99 },
-	{ CMD_HOLD, "stay still", do_cmd_hold, TRUE, 0 },
-	{ CMD_DISARM, "disarm", do_cmd_disarm, TRUE, 99 },
-	{ CMD_ALTER, "alter", do_cmd_alter, TRUE, 99 },
-	{ CMD_REST, "rest", do_cmd_rest, FALSE, 0 },
-	{ CMD_SLEEP, "sleep", do_cmd_sleep, FALSE, 0 },
-	{ CMD_PATHFIND, "walk", do_cmd_pathfind, FALSE, 0 },
-	{ CMD_PICKUP, "pickup", do_cmd_pickup, FALSE, 0 },
-	{ CMD_AUTOPICKUP, "autopickup", do_cmd_autopickup, FALSE, 0 },
-	{ CMD_WIELD, "wear or wield", do_cmd_wield, FALSE, 0 },
-	{ CMD_TAKEOFF, "take off", do_cmd_takeoff, FALSE, 0 },
-	{ CMD_DROP, "drop", do_cmd_drop, FALSE, 0 },
-	{ CMD_UNINSCRIBE, "un-inscribe", do_cmd_uninscribe, FALSE, 0 },
-	{ CMD_AUTOINSCRIBE, "autoinscribe", do_cmd_autoinscribe, FALSE, 0 },
-	{ CMD_EAT, "eat", do_cmd_eat_food, FALSE, 0 },
-	{ CMD_QUAFF, "quaff", do_cmd_quaff_potion, FALSE, 0 },
-	{ CMD_USE_ROD, "zap", do_cmd_zap_rod, FALSE, 0 },
-	{ CMD_USE_STAFF, "use", do_cmd_use_staff, FALSE, 0 },
-	{ CMD_USE_WAND, "aim", do_cmd_aim_wand, FALSE, 0 },
-	{ CMD_READ_SCROLL, "read", do_cmd_read_scroll, FALSE, 0 },
-	{ CMD_ACTIVATE, "activate", do_cmd_activate, FALSE, 0 },
-	{ CMD_REFILL, "refuel with", do_cmd_refill, FALSE, 0 },
-	{ CMD_FIRE, "fire", do_cmd_fire, FALSE, 0 },
-	{ CMD_THROW, "throw", do_cmd_throw, FALSE, 0 },
-	{ CMD_INSCRIBE, "inscribe", do_cmd_inscribe, FALSE, 0 },
-	{ CMD_STUDY, "study", do_cmd_study, FALSE, 0 },
-	{ CMD_CAST, "cast", do_cmd_cast, FALSE, 0 },
-	{ CMD_SELL, "sell", do_cmd_sell, FALSE, 0 },
-	{ CMD_STASH, "stash", do_cmd_stash, FALSE, 0 },
-	{ CMD_BUY, "buy", do_cmd_buy, FALSE, 0 },
-	{ CMD_RETRIEVE, "retrieve", do_cmd_retrieve, FALSE, 0 },
-	{ CMD_USE, "use", do_cmd_use, FALSE, 0 },
-	{ CMD_SUICIDE, "commit suicide", do_cmd_suicide, FALSE, 0 },
-	{ CMD_HELP, "help", NULL, FALSE, 0 },
-	{ CMD_REPEAT, "repeat", NULL, FALSE, 0 },
+	{ CMD_GO_UP, "go up stairs", do_cmd_go_up, false, 0 },
+	{ CMD_GO_DOWN, "go down stairs", do_cmd_go_down, false, 0 },
+	{ CMD_SEARCH, "search", do_cmd_search, true, 10 },
+	{ CMD_TOGGLE_SEARCH, "toggle search mode", do_cmd_toggle_search, false, 0 },
+	{ CMD_WALK, "walk", do_cmd_walk, true, 0 },
+	{ CMD_RUN, "run", do_cmd_run, false, 0 },
+	{ CMD_JUMP, "jump", do_cmd_jump, false, 0 },
+	{ CMD_OPEN, "open", do_cmd_open, true, 99 },
+	{ CMD_CLOSE, "close", do_cmd_close, true, 99 },
+	{ CMD_TUNNEL, "tunnel", do_cmd_tunnel, true, 99 },
+	{ CMD_HOLD, "stay still", do_cmd_hold, true, 0 },
+	{ CMD_DISARM, "disarm", do_cmd_disarm, true, 99 },
+	{ CMD_ALTER, "alter", do_cmd_alter, true, 99 },
+	{ CMD_REST, "rest", do_cmd_rest, false, 0 },
+	{ CMD_SLEEP, "sleep", do_cmd_sleep, false, 0 },
+	{ CMD_PATHFIND, "walk", do_cmd_pathfind, false, 0 },
+	{ CMD_PICKUP, "pickup", do_cmd_pickup, false, 0 },
+	{ CMD_AUTOPICKUP, "autopickup", do_cmd_autopickup, false, 0 },
+	{ CMD_WIELD, "wear or wield", do_cmd_wield, false, 0 },
+	{ CMD_TAKEOFF, "take off", do_cmd_takeoff, false, 0 },
+	{ CMD_DROP, "drop", do_cmd_drop, false, 0 },
+	{ CMD_UNINSCRIBE, "un-inscribe", do_cmd_uninscribe, false, 0 },
+	{ CMD_AUTOINSCRIBE, "autoinscribe", do_cmd_autoinscribe, false, 0 },
+	{ CMD_EAT, "eat", do_cmd_eat_food, false, 0 },
+	{ CMD_QUAFF, "quaff", do_cmd_quaff_potion, false, 0 },
+	{ CMD_USE_ROD, "zap", do_cmd_zap_rod, false, 0 },
+	{ CMD_USE_STAFF, "use", do_cmd_use_staff, false, 0 },
+	{ CMD_USE_WAND, "aim", do_cmd_aim_wand, false, 0 },
+	{ CMD_READ_SCROLL, "read", do_cmd_read_scroll, false, 0 },
+	{ CMD_ACTIVATE, "activate", do_cmd_activate, false, 0 },
+	{ CMD_REFILL, "refuel with", do_cmd_refill, false, 0 },
+	{ CMD_FIRE, "fire", do_cmd_fire, false, 0 },
+	{ CMD_THROW, "throw", do_cmd_throw, false, 0 },
+	{ CMD_INSCRIBE, "inscribe", do_cmd_inscribe, false, 0 },
+	{ CMD_STUDY, "study", do_cmd_study, false, 0 },
+	{ CMD_CAST, "cast", do_cmd_cast, false, 0 },
+	{ CMD_SELL, "sell", do_cmd_sell, false, 0 },
+	{ CMD_STASH, "stash", do_cmd_stash, false, 0 },
+	{ CMD_BUY, "buy", do_cmd_buy, false, 0 },
+	{ CMD_RETRIEVE, "retrieve", do_cmd_retrieve, false, 0 },
+	{ CMD_USE, "use", do_cmd_use, false, 0 },
+	{ CMD_SUICIDE, "commit suicide", do_cmd_suicide, false, 0 },
+	{ CMD_HELP, "help", NULL, false, 0 },
+	{ CMD_REPEAT, "repeat", NULL, false, 0 },
 };
 
 const char *cmd_verb(cmd_code cmd)
@@ -148,8 +148,8 @@ static int cmd_head = 0;
 static int cmd_tail = 0;
 static struct command cmd_queue[CMD_QUEUE_SIZE];
 
-static bool repeat_prev_allowed = FALSE;
-static bool repeating = FALSE;
+static bool repeat_prev_allowed = false;
+static bool repeating = false;
 
 struct command *cmdq_peek(void)
 {
@@ -210,12 +210,12 @@ void process_command(cmd_context ctx, struct command *cmd)
 			cmd_set_repeat(game_cmds[idx].auto_repeat_n);
 	} else {
 		cmd->nrepeats = 0;
-		repeating = FALSE;
+		repeating = false;
 	}
 
 	/* The command gets to unset this if it isn't appropriate for
 	 * the user to repeat it. */
-	repeat_prev_allowed = TRUE;
+	repeat_prev_allowed = true;
 
 	cmd->context = ctx;
 
@@ -245,12 +245,12 @@ bool cmdq_pop(cmd_context c)
 			cmd_tail = 0;
 	} else {
 		/* Failure to get a command. */
-		return FALSE;
+		return false;
 	}
 
 	/* Now process it */
 	process_command(c, cmd);
-	return TRUE;
+	return true;
 }
 
 /**
@@ -303,7 +303,7 @@ void cmd_cancel_repeat(void)
 	if (cmd->nrepeats || repeating) {
 		/* Cancel */
 		cmd->nrepeats = 0;
-		repeating = FALSE;
+		repeating = false;
 
 		/* Redraw the state (later) */
 		player->upkeep->redraw |= (PR_STATE);
@@ -318,8 +318,8 @@ void cmd_set_repeat(int nrepeats)
 	struct command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
 
 	cmd->nrepeats = nrepeats;
-	if (nrepeats) repeating = TRUE;
-	else repeating = FALSE;
+	if (nrepeats) repeating = true;
+	else repeating = false;
 
 	/* Redraw the state (later) */
 	player->upkeep->redraw |= (PR_STATE);
@@ -340,7 +340,7 @@ int cmd_get_nrepeats(void)
  */
 void cmd_disable_repeat(void)
 {
-	repeat_prev_allowed = FALSE;
+	repeat_prev_allowed = false;
 }
 
 /**
@@ -460,7 +460,7 @@ int cmd_get_spell(struct command *cmd, const char *arg, int *spell,
 	/* See if we've been provided with this one */
 	if (cmd_get_arg_choice(cmd, arg, spell) == CMD_OK) {
 		/* Ensure it passes the filter */
-		if (!spell_filter || spell_filter(*spell) == TRUE)
+		if (!spell_filter || spell_filter(*spell) == true)
 			return CMD_OK;
 	}
 

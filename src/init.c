@@ -220,22 +220,22 @@ static bool grab_element_flag(struct element_info *info, const char *flag_name)
 	size_t i;
 
 	if (2 != sscanf(flag_name, "%[^_]_%s", prefix, suffix))
-		return FALSE;
+		return false;
 
 	/* Ignore or hate */
 	for (i = 0; i < ELEM_MAX; i++)
 		if (streq(suffix, elements[i])) {
 			if (streq(prefix, "IGNORE")) {
 				info[i].flags |= EL_INFO_IGNORE;
-				return TRUE;
+				return true;
 			}
 			if (streq(prefix, "HATES")) {
 				info[i].flags |= EL_INFO_HATES;
-				return TRUE;
+				return true;
 			}
 		}
 
-	return FALSE;
+	return false;
 }
 
 static struct history_chart *findchart(struct history_chart *hs, unsigned int idx) {
@@ -856,13 +856,13 @@ static enum parser_error parse_object_base_flags(struct parser *p) {
 	s = string_make(parser_getstr(p, "flags"));
 	t = strtok(s, " |");
 	while (t) {
-		bool found = FALSE;
+		bool found = false;
 		if (!grab_flag(kb->flags, OF_SIZE, obj_flags, t))
-			found = TRUE;
+			found = true;
 		if (!grab_flag(kb->kind_flags, KF_SIZE, kind_flags, t))
-			found = TRUE;
+			found = true;
 		if (grab_element_flag(kb->el_info, t))
-			found = TRUE;
+			found = true;
 		if (!found)
 			break;
 		t = strtok(NULL, " |");
@@ -1051,13 +1051,13 @@ static enum parser_error parse_object_flags(struct parser *p) {
 
 	t = strtok(s, " |");
 	while (t) {
-		bool found = FALSE;
+		bool found = false;
 		if (!grab_flag(k->flags, OF_SIZE, obj_flags, t))
-			found = TRUE;
+			found = true;
 		if (!grab_flag(k->kind_flags, KF_SIZE, kind_flags, t))
-			found = TRUE;
+			found = true;
 		if (grab_element_flag(k->el_info, t))
-			found = TRUE;
+			found = true;
 		if (!found)
 			break;
 		t = strtok(NULL, " |");
@@ -1237,12 +1237,12 @@ static enum parser_error parse_object_values(struct parser *p) {
 		int value = 0;
 		int index = 0;
 		char *name;
-		bool found = FALSE;
+		bool found = false;
 		if (!grab_rand_value(k->modifiers, obj_mods, t))
-			found = TRUE;
+			found = true;
 		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
 			struct brand *b;
-			found = TRUE;
+			found = true;
 			b = mem_zalloc(sizeof *b);
 			b->name = string_make(brand_names[index]);
 			b->element = index;
@@ -1252,7 +1252,7 @@ static enum parser_error parse_object_values(struct parser *p) {
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
 			struct slay *s;
-			found = TRUE;
+			found = true;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(slay_names[index]);
 			s->race_flag = index;
@@ -1261,7 +1261,7 @@ static enum parser_error parse_object_values(struct parser *p) {
 			k->slays = s;
 		} else if (!grab_base_and_int(&value, &name, t)) {
 			struct slay *s;
-			found = TRUE;
+			found = true;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(name);
 			s->multiplier = value;
@@ -1269,7 +1269,7 @@ static enum parser_error parse_object_values(struct parser *p) {
 			k->slays = s;
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
-			found = TRUE;
+			found = true;
 			k->el_info[index].res_level = value;
 		}
 		if (!found)
@@ -1389,7 +1389,7 @@ static enum parser_error parse_act_aim(struct parser *p) {
 	assert(act);
 
 	val = parser_getuint(p, "aim");
-	act->aim = val ? TRUE : FALSE;
+	act->aim = val ? true : false;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1720,11 +1720,11 @@ static enum parser_error parse_artifact_flags(struct parser *p) {
 
 	t = strtok(s, " |");
 	while (t) {
-		bool found = FALSE;
+		bool found = false;
 		if (!grab_flag(a->flags, OF_SIZE, obj_flags, t))
-			found = TRUE;
+			found = true;
 		if (grab_element_flag(a->el_info, t))
-			found = TRUE;
+			found = true;
 		if (!found)
 			break;
 		t = strtok(NULL, " |");
@@ -1770,15 +1770,15 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		bool found = FALSE;
+		bool found = false;
 		int value = 0;
 		int index = 0;
 		char *name;
 		if (!grab_int_value(a->modifiers, obj_mods, t))
-			found = TRUE;
+			found = true;
 		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
 			struct brand *b;
-			found = TRUE;
+			found = true;
 			b = mem_zalloc(sizeof *b);
 			b->name = string_make(brand_names[index]);
 			b->element = index;
@@ -1788,7 +1788,7 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
 			struct slay *s;
-			found = TRUE;
+			found = true;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(slay_names[index]);
 			s->race_flag = index;
@@ -1797,7 +1797,7 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 			a->slays = s;
 		} else if (!grab_base_and_int(&value, &name, t)) {
 			struct slay *s;
-			found = TRUE;
+			found = true;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(name);
 			s->multiplier = value;
@@ -1805,7 +1805,7 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 			a->slays = s;
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
-			found = TRUE;
+			found = true;
 			a->el_info[index].res_level = value;
 		}
 		if (!found)
@@ -2468,7 +2468,7 @@ static enum parser_error parse_ego_type(struct parser *p) {
 	struct ego_poss_item *poss;
 	int i;
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
-	bool found_one_kind = FALSE;
+	bool found_one_kind = false;
 
 	struct ego_item *e = parser_priv(p);
 	if (!e)
@@ -2483,7 +2483,7 @@ static enum parser_error parse_ego_type(struct parser *p) {
 		poss->kidx = i;
 		poss->next = e->poss_items;
 		e->poss_items = poss;
-		found_one_kind = TRUE;
+		found_one_kind = true;
 	}
 
 	if (!found_one_kind)
@@ -2611,13 +2611,13 @@ static enum parser_error parse_ego_flags(struct parser *p) {
 	flags = string_make(parser_getstr(p, "flags"));
 	t = strtok(flags, " |");
 	while (t) {
-		bool found = FALSE;
+		bool found = false;
 		if (!grab_flag(e->flags, OF_SIZE, obj_flags, t))
-			found = TRUE;
+			found = true;
 		if (!grab_flag(e->kind_flags, KF_SIZE, kind_flags, t))
-			found = TRUE;
+			found = true;
 		if (grab_element_flag(e->el_info, t))
-			found = TRUE;
+			found = true;
 		if (!found)
 			break;
 		t = strtok(NULL, " |");
@@ -2660,15 +2660,15 @@ static enum parser_error parse_ego_values(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		bool found = FALSE;
+		bool found = false;
 		int value = 0;
 		int index = 0;
 		char *name;
 		if (!grab_rand_value(e->modifiers, obj_mods, t))
-			found = TRUE;
+			found = true;
 		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
 			struct brand *b;
-			found = TRUE;
+			found = true;
 			b = mem_zalloc(sizeof *b);
 			b->name = string_make(brand_names[index]);
 			b->element = index;
@@ -2678,7 +2678,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
 			struct slay *s;
-			found = TRUE;
+			found = true;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(slay_names[index]);
 			s->race_flag = index;
@@ -2687,7 +2687,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 			e->slays = s;
 		} else if (!grab_base_and_int(&value, &name, t)) {
 			struct slay *s;
-			found = TRUE;
+			found = true;
 			s = mem_zalloc(sizeof *s);
 			s->name = string_make(name);
 			s->multiplier = value;
@@ -2695,7 +2695,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 			e->slays = s;
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
-			found = TRUE;
+			found = true;
 			e->el_info[index].res_level = value;
 		}
 		if (!found)
@@ -2722,9 +2722,9 @@ static enum parser_error parse_ego_min_val(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		bool found = FALSE;
+		bool found = false;
 		if (!grab_int_value(e->min_modifiers, obj_mods, t))
-			found = TRUE;
+			found = true;
 		if (!found)
 			break;
 
@@ -3156,9 +3156,9 @@ static enum parser_error parse_p_race_values(struct parser *p) {
 	while (t) {
 		int value = 0;
 		int index = 0;
-		bool found = FALSE;
+		bool found = false;
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
-			found = TRUE;
+			found = true;
 			r->el_info[index].res_level = value;
 		}
 		if (!found)
@@ -4486,7 +4486,7 @@ bool init_angband(void)
 	event_signal_message(EVENT_INITSTATUS, 0, "Getting the dice rolling...");
 	Rand_init();
 
-	return TRUE;
+	return true;
 }
 
 /**

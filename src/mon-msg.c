@@ -65,7 +65,7 @@ void message_pain(struct monster *mon, int dam)
 
 	/* Notice non-damage */
 	if (dam == 0) {
-		add_monster_message(m_name, mon, msg_code, FALSE);
+		add_monster_message(m_name, mon, msg_code, false);
 		return;
 	}
 
@@ -90,7 +90,7 @@ void message_pain(struct monster *mon, int dam)
 	else
 		msg_code = MON_MSG_0;
 
-	add_monster_message(m_name, mon, msg_code, FALSE);
+	add_monster_message(m_name, mon, msg_code, false);
 }
 
 #define SINGULAR_MON   1
@@ -185,7 +185,7 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural,
 /**
  * Tracks which monster has had which pain message stored, so redundant
  * messages don't happen due to monster attacks hitting other monsters.
- * Returns TRUE if the message is redundant.
+ * Returns true if the message is redundant.
  */
 static bool redundant_monster_message(struct monster *mon, int msg_code)
 {
@@ -195,7 +195,7 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
 	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
 
 	/* No messages yet */
-	if (!size_mon_hist) return FALSE;
+	if (!size_mon_hist) return false;
 
 	for (i = 0; i < size_mon_hist; i++) {
 		/* Not the same monster */
@@ -205,10 +205,10 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
 		if (msg_code != mon_message_hist[i].message_code) continue;
 
 		/* We have a match. */
-		return (TRUE);
+		return (true);
 	}
 
-	return (FALSE);
+	return (false);
 }
 
 
@@ -216,7 +216,7 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
  * Stack a codified message for the given monster race. You must supply
  * the description of some monster of this race. You can also supply
  * different monster descriptions for the same race.
- * Return TRUE on success.
+ * Return true on success.
  */
 bool add_monster_message(const char *mon_name, struct monster *mon,
 		int msg_code, bool delay)
@@ -226,7 +226,7 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 
 	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
 
-	if (redundant_monster_message(mon, msg_code)) return (FALSE);
+	if (redundant_monster_message(mon, msg_code)) return (false);
 
 	/* Paranoia */
 	if (!mon_name || !mon_name[0]) mon_name = "it";
@@ -248,23 +248,23 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 			(mon_msg[i].mon_flags == mon_flags) &&
 			(mon_msg[i].msg_code == msg_code)) {
 			/* Can we increment the counter? */
-			if (mon_msg[i].mon_count < MAX_UCHAR)
+			if (mon_msg[i].mon_count < UCHAR_MAX)
 				/* Stack the message */
 				++(mon_msg[i].mon_count);
    
 			/* Record which monster had this message stored */
-			if (size_mon_hist >= MAX_STORED_MON_CODES) return (TRUE);
+			if (size_mon_hist >= MAX_STORED_MON_CODES) return (true);
 			mon_message_hist[size_mon_hist].mon = mon;
 			mon_message_hist[size_mon_hist].message_code = msg_code;
 			size_mon_hist++;
 
 			/* Success */
-			return (TRUE);
+			return (true);
 		}
 	}
    
 	/* The message isn't stored. Check free space */
-	if (size_mon_msg >= MAX_STORED_MON_MSG) return (FALSE);
+	if (size_mon_msg >= MAX_STORED_MON_MSG) return (false);
 
 	/* Assign the message data to the free slot */
 	mon_msg[i].race = mon->race;
@@ -278,7 +278,7 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 	/* Force all death messages to go at the end of the group for
 	 * logical presentation */
 	if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
-		mon_msg[i].delay = TRUE;
+		mon_msg[i].delay = true;
 		mon_msg[i].delay_tag = MON_DELAY_TAG_DEATH;
 	}
 
@@ -288,13 +288,13 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 	player->upkeep->notice |= PN_MON_MESSAGE;
 
 	/* Record which monster had this message stored */
-	if (size_mon_hist >= MAX_STORED_MON_CODES) return (TRUE);
+	if (size_mon_hist >= MAX_STORED_MON_CODES) return (true);
 	mon_message_hist[size_mon_hist].mon = mon;
 	mon_message_hist[size_mon_hist].message_code = msg_code;
 	size_mon_hist++;
 
 	/* Success */
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -434,9 +434,9 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 void flush_all_monster_messages(void)
 {
 	/* Flush regular messages, then delayed messages */
-	flush_monster_messages(FALSE, MON_DELAY_TAG_DEFAULT);
-	flush_monster_messages(TRUE, MON_DELAY_TAG_DEFAULT);
-	flush_monster_messages(TRUE, MON_DELAY_TAG_DEATH);
+	flush_monster_messages(false, MON_DELAY_TAG_DEFAULT);
+	flush_monster_messages(true, MON_DELAY_TAG_DEFAULT);
+	flush_monster_messages(true, MON_DELAY_TAG_DEATH);
 
 	/* Delete all the stacked messages and history */
 	size_mon_msg = 0;

@@ -562,30 +562,30 @@ static void term_data_link(int i)
 	/* A "soft" cursor must be explicitly "drawn" by the program */
 	/* while a "hard" cursor has some "physical" existance and is */
 	/* moved whenever text is drawn on the screen.  See "ui-term.c". */
-	/* t->soft_cursor = TRUE; */
+	/* t->soft_cursor = true; */
 
 	/* Avoid the "corner" of the window XXX XXX XXX */
-	/* t->icky_corner = TRUE; */
+	/* t->icky_corner = true; */
 
 	/* Use "Term_pict()" for all attr/char pairs XXX XXX XXX */
 	/* See the "Term_pict_xxx()" function above. */
-	/* t->always_pict = TRUE; */
+	/* t->always_pict = true; */
 
 	/* Use "Term_pict()" for some attr/char pairs XXX XXX XXX */
 	/* See the "Term_pict_xxx()" function above. */
-	/* t->higher_pict = TRUE; */
+	/* t->higher_pict = true; */
 
 	/* Use "Term_text()" even for "black" text XXX XXX XXX */
 	/* See the "Term_text_xxx()" function above. */
-	/* t->always_text = TRUE; */
+	/* t->always_text = true; */
 
 	/* Ignore the "TERM_XTRA_BORED" action XXX XXX XXX */
 	/* This may make things slightly more efficient. */
-	/* t->never_bored = TRUE; */
+	/* t->never_bored = true; */
 
 	/* Ignore the "TERM_XTRA_FROSH" action XXX XXX XXX */
 	/* This may make things slightly more efficient. */
-	/* t->never_frosh = TRUE; */
+	/* t->never_frosh = true; */
 
 	/* Erase with "white space" XXX XXX XXX */
 	/* t->attr_blank = COLOUR_WHITE; */
@@ -655,8 +655,8 @@ errr init_xxx(int argc, char **argv)
  *
  * These systems usually have some form of "event loop", run forever
  * as the last step of "main()", which handles things like menus and
- * window movement, and calls "play_game(FALSE)" to load a game after
- * initializing "savefile" to a filename, or "play_game(TRUE)" to make
+ * window movement, and calls "play_game(false)" to load a game after
+ * initializing "savefile" to a filename, or "play_game(true)" to make
  * a new game.  The event loop would also be triggered by "Term_xtra()"
  * (the TERM_XTRA_EVENT action), in which case the event loop would not
  * actually "loop", but would run once and return.
@@ -747,7 +747,7 @@ int main(int argc, char *argv[])
 	/* Allow auto-startup XXX XXX XXX */
 
 	/* Event loop forever XXX XXX XXX */
-	while (TRUE) CheckEvents(TRUE);
+	while (true) CheckEvents(true);
 }
 
 

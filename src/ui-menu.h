@@ -345,7 +345,7 @@ void menu_refresh(struct menu *menu, bool reset_screen);
  * 
  * XXX remove 'notify'
  *
- * If popup is TRUE, the screen background is saved before starting the menu,
+ * If popup is true, the screen background is saved before starting the menu,
  * and restored before each redraw. This allows variably-sized information
  * at the bottom of the menu.
  */

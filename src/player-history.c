@@ -78,13 +78,13 @@ static bool history_set_num(size_t num)
 		num = HISTORY_MAX;
 
 	if (num <= history_size)
-		return FALSE;
+		return false;
 
 	/* Reallocate the list */
 	history_list = mem_realloc(history_list, num * sizeof(struct history_info));
 	history_size = num;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -109,11 +109,11 @@ static bool history_know_artifact(struct artifact *artifact)
 		if (history_list[i].a_idx == artifact->aidx) {
 			hist_wipe(history_list[i].type);
 			hist_on(history_list[i].type, HIST_ARTIFACT_KNOWN);
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -129,15 +129,15 @@ bool history_lose_artifact(struct artifact *artifact)
 	while (i--) {
 		if (history_list[i].a_idx == artifact->aidx) {
 			hist_on(history_list[i].type, HIST_ARTIFACT_LOST);
-			return TRUE;
+			return true;
 		}
 	}
 
 	/* If we lost an artifact that didn't previously have a history, then we
 	 * missed it */
-	history_add_artifact(artifact, FALSE, FALSE);
+	history_add_artifact(artifact, false, false);
 
-	return FALSE;
+	return false;
 }
 
 
@@ -146,7 +146,7 @@ bool history_lose_artifact(struct artifact *artifact)
  * ("HIST_xxx" in player-history.h), and artifact number `id` (0 for
  * everything else).
  *
- * Return TRUE on success.
+ * Return true on success.
  */
 bool history_add_full(bitflag *type, struct artifact *artifact, s16b dlev,
 		s16b clev, s32b turnno, const char *text)
@@ -156,7 +156,7 @@ bool history_add_full(bitflag *type, struct artifact *artifact, s16b dlev,
 		history_init(HISTORY_BIRTH_SIZE);
 	else if ((history_ctr == history_size) &&
 			 !history_set_num(history_size + 10))
-		return FALSE;
+		return false;
 
 	/* History list exists and is not full.  Add an entry at the current
 	 * counter location. */
@@ -170,7 +170,7 @@ bool history_add_full(bitflag *type, struct artifact *artifact, s16b dlev,
 
 	history_ctr++;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -179,7 +179,7 @@ bool history_add_full(bitflag *type, struct artifact *artifact, s16b dlev,
  * ("HIST_xxx" in player-history.h), and artifact number `id` (0 for
  * everything else).
  *
- * Return TRUE on success.
+ * Return true on success.
  */
 bool history_add(const char *event, int type, struct artifact *artifact)
 {
@@ -192,7 +192,7 @@ bool history_add(const char *event, int type, struct artifact *artifact)
 
 
 /**
- * Returns TRUE if the artifact is KNOWN in the history log.
+ * Returns true if the artifact is KNOWN in the history log.
  */
 bool history_is_artifact_known(struct artifact *artifact)
 {
@@ -202,15 +202,15 @@ bool history_is_artifact_known(struct artifact *artifact)
 	while (i--) {
 		if (hist_has(history_list[i].type, HIST_ARTIFACT_KNOWN) &&
 				history_list[i].a_idx == artifact->aidx)
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
 /**
- * Returns TRUE if the artifact denoted by a_idx is an active entry in
+ * Returns true if the artifact denoted by a_idx is an active entry in
  * the history log (i.e. is not marked HIST_ARTIFACT_LOST).  This permits
  * proper handling of the case where the player loses an artifact but (in
  * preserve mode) finds it again later.
@@ -227,10 +227,10 @@ static bool history_is_artifact_logged(struct artifact *artifact)
 			continue;
 
 		if (history_list[i].a_idx == artifact->aidx)
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -280,11 +280,11 @@ bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 			history_add_full(type, artifact, player->depth, player->lev,
 							 player->total_energy / 100, buf);
 		} else {
-			return FALSE;
+			return false;
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 

@@ -134,10 +134,10 @@ static void handle_signal_simple(int sig)
 		my_strcpy(player->died_from, "Interrupting", sizeof(player->died_from));
 
 		/* Commit suicide */
-		player->is_dead = TRUE;
+		player->is_dead = true;
 
 		/* Stop playing */
-		player->upkeep->playing = FALSE;
+		player->upkeep->playing = false;
 
 		/* Close stuff */
 		close_game();

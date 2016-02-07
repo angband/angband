@@ -42,7 +42,7 @@ void history_display(void)
 	char buf[120];
 	static size_t first_item = 0;
 	size_t i;
-	bool active = TRUE;
+	bool active = true;
 
 	Term_get_size(&wid, &hgt);
 
@@ -108,7 +108,7 @@ void history_display(void)
 			}
 
 			case ESCAPE:
-				active = FALSE;
+				active = false;
 				break;
 		}
 	}

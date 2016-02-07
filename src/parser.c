@@ -119,7 +119,7 @@ static void parser_freeold(struct parser *p) {
 }
 
 static bool parse_random(const char *str, random_value *bonus) {
-	bool negative = FALSE;
+	bool negative = false;
 
 	char buffer[50];
 	int i = 0, b, dn, ds, mb;
@@ -129,7 +129,7 @@ static bool parse_random(const char *str, random_value *bonus) {
 
 	/* Entire value may be negated */
 	if (str[0] == '-') {
-		negative = TRUE;
+		negative = true;
 		i++;
 	}
 
@@ -138,7 +138,7 @@ static bool parse_random(const char *str, random_value *bonus) {
 
 	/* Check for invalid negative numbers */
 	if (NULL != strstr(buffer, "-"))
-		return FALSE;
+		return false;
 
 	/*
 	 * Add a sentinal value at the end of the string.
@@ -181,7 +181,7 @@ static bool parse_random(const char *str, random_value *bonus) {
 			   eov == end_chr) {
 		dn = 0; ds = 0; mb = 0;
 	} else {
-		return FALSE;
+		return false;
 	}
 
 	/* Assign the values */
@@ -200,7 +200,7 @@ static bool parse_random(const char *str, random_value *bonus) {
 		bonus->base -= bonus->dice * (bonus->sides + 1);
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -514,9 +514,9 @@ bool parser_hasval(struct parser *p, const char *name) {
 	struct parser_value *v;
 	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next) {
 		if (!strcmp(v->spec.name, name))
-			return TRUE;
+			return true;
 	}
-	return FALSE;
+	return false;
 }
 
 static struct parser_value *parser_getval(struct parser *p, const char *name) {
@@ -711,18 +711,18 @@ bool find_value_arg(char *value_name, char *string, int *num)
 	if (string) {
 		/* Get the dice */
 		if (1 != sscanf(t + 1, "%s", string))
-			return FALSE;
+			return false;
 	} else if (num) {
 		/* Get the value */
 		if (1 != sscanf(t + 1, "%d", num))
-			return FALSE;
-	} else return FALSE;
+			return false;
+	} else return false;
 
 	/* Terminate the string */
 	*t = '\0';
 
 	/* Success */
-	return TRUE;
+	return true;
 }
 
 /**

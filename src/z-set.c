@@ -71,11 +71,11 @@ bool set_del(struct set *s, void *p) {
 
 	i = _set_find(s, p);
 	if (i < 0)
-		return FALSE;
+		return false;
 	/* overwrite elem i with the last elem, drop the size of the set
 	 * if the elem to delete is the last elem, this is a noop */
 	s->elems[i] = s->elems[--s->filled];
-	return TRUE;
+	return true;
 }
 
 size_t set_size(struct set *s) {

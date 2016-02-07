@@ -365,8 +365,8 @@ errr eval_monster_power(struct monster_race *racelist)
 	struct monster_race *race = NULL;
 	ang_file *mon_fp;
 	char buf[1024];
-	bool dump = FALSE;
-	bool wrote = TRUE;
+	bool dump = false;
+	bool wrote = true;
 
 	/* Allocate arrays */
 	power = mem_zalloc(z_info->r_max * sizeof(long));
@@ -655,7 +655,7 @@ errr eval_monster_power(struct monster_race *racelist)
 
 	if (text_lines_to_file(buf, write_monster_entries)) {
 		msg("Failed to create file %s.new", buf);
-		wrote = FALSE;
+		wrote = false;
 	}
 
 	/* Free power arrays */

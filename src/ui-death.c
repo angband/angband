@@ -155,7 +155,7 @@ static void death_file(const char *title, int row)
 	char buf[1024];
 	char ftmp[80];
 
-	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(player, FALSE));
+	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(player, false));
 
 	if (get_file(ftmp, buf, sizeof buf)) {
 		bool success;
@@ -366,7 +366,7 @@ static menu_action death_actions[] =
 void death_screen(void)
 {
 	struct menu *death_menu;
-	bool done = FALSE;
+	bool done = false;
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	/* Winner */
@@ -392,7 +392,7 @@ void death_screen(void)
 
 	while (!done)
 	{
-		ui_event e = menu_select(death_menu, EVT_KBRD, FALSE);
+		ui_event e = menu_select(death_menu, EVT_KBRD, false);
 		if (e.type == EVT_KBRD)
 		{
 			if (e.key.code == KTRL('X')) break;

@@ -274,15 +274,15 @@ bool square_isshop(struct chunk *c, int y, int x)
  * True if the square contains the player
  */
 bool square_isplayer(struct chunk *c, int y, int x) {
-	return c->squares[y][x].mon < 0 ? TRUE : FALSE;
+	return c->squares[y][x].mon < 0 ? true : false;
 }
 
 /**
  * True if the the player knows the terrain of the square
  */
 bool square_isknown(struct chunk *c, int y, int x) {
-	if (c != cave) return FALSE;
-	return cave_k->squares[y][x].feat == FEAT_NONE ? FALSE : TRUE;
+	if (c != cave) return false;
+	return cave_k->squares[y][x].feat == FEAT_NONE ? false : true;
 }
 
 /**
@@ -477,7 +477,7 @@ bool square_isopen(struct chunk *c, int y, int x) {
  * True if the square is empty (an open square without any items).
  */
 bool square_isempty(struct chunk *c, int y, int x) {
-	if (square_isplayertrap(c, y, x)) return FALSE;
+	if (square_isplayertrap(c, y, x)) return false;
 	return square_isopen(c, y, x) && !square_object(c, y, x);
 }
 
@@ -486,9 +486,9 @@ bool square_isempty(struct chunk *c, int y, int x) {
  */
 bool square_canputitem(struct chunk *c, int y, int x) {
 	if (!square_isfloor(c, y, x))
-		return FALSE;
+		return false;
 	if (square_iswarded(c, y, x) || square_isplayertrap(c, y, x))
-		return FALSE;
+		return false;
 	return !square_object(c, y, x);
 }
 
@@ -527,7 +527,7 @@ bool square_ispassable(struct chunk *c, int y, int x) {
  * This function is the logical negation of square_iswall().
  */
 bool square_isprojectable(struct chunk *c, int y, int x) {
-	if (!square_in_bounds(c, y, x)) return FALSE;
+	if (!square_in_bounds(c, y, x)) return false;
 	return feat_is_projectable(c->squares[y][x].feat);
 }
 
@@ -634,15 +634,15 @@ bool square_changeable(struct chunk *c, int y, int x)
 	/* Forbid perma-grids */
 	if (square_isperm(c, y, x) || square_isshop(c, y, x) ||
 		square_isstairs(c, y, x))
-		return (FALSE);
+		return (false);
 
 	/* Check objects */
 	for (obj = square_object(c, y, x); obj; obj = obj->next)
 		/* Forbid artifact grids */
-		if (obj->artifact) return (FALSE);
+		if (obj->artifact) return (false);
 
 	/* Accept */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -652,19 +652,19 @@ bool square_changeable(struct chunk *c, int y, int x)
 bool square_dtrap_edge(struct chunk *c, int y, int x) 
 { 
 	/* Check if the square is a dtrap in the first place */ 
-	if (!square_isdtrap(c, y, x)) return FALSE;
+	if (!square_isdtrap(c, y, x)) return false;
 
  	/* Check for non-dtrap adjacent grids */ 
 	if (square_in_bounds_fully(c, y + 1, x) && (!square_isdtrap(c, y + 1, x)))
-		return TRUE;
+		return true;
 	if (square_in_bounds_fully(c, y, x + 1) && (!square_isdtrap(c, y, x + 1)))
-		return TRUE;
+		return true;
 	if (square_in_bounds_fully(c, y - 1, x) && (!square_isdtrap(c, y - 1, x)))
-		return TRUE;
+		return true;
 	if (square_in_bounds_fully(c, y, x - 1) && (!square_isdtrap(c, y, x - 1)))
-		return TRUE;
+		return true;
 
-	return FALSE; 
+	return false; 
 }
 
 
@@ -725,7 +725,7 @@ struct trap *square_trap(struct chunk *c, int y, int x)
 }
 
 /**
- * Return TRUE if the given object is on the floor at this grid
+ * Return true if the given object is on the floor at this grid
  */
 bool square_holds_object(struct chunk *c, int y, int x, struct object *obj) {
 	assert(square_in_bounds(c, y, x));
@@ -814,7 +814,7 @@ void square_add_door(struct chunk *c, int y, int x, bool closed) {
 
 void square_open_door(struct chunk *c, int y, int x)
 {
-	square_remove_trap(c, y, x, FALSE, -1);
+	square_remove_trap(c, y, x, false, -1);
 	square_set_feat(c, y, x, FEAT_OPEN);
 }
 
@@ -825,7 +825,7 @@ void square_close_door(struct chunk *c, int y, int x)
 
 void square_smash_door(struct chunk *c, int y, int x)
 {
-	square_remove_trap(c, y, x, FALSE, -1);
+	square_remove_trap(c, y, x, false, -1);
 	square_set_feat(c, y, x, FEAT_BROKEN);
 }
 
@@ -836,13 +836,13 @@ void square_unlock_door(struct chunk *c, int y, int x) {
 
 void square_destroy_door(struct chunk *c, int y, int x) {
 	assert(square_isdoor(c, y, x));
-	square_remove_trap(c, y, x, FALSE, -1);
+	square_remove_trap(c, y, x, false, -1);
 	square_set_feat(c, y, x, FEAT_FLOOR);
 }
 
 void square_destroy_trap(struct chunk *c, int y, int x)
 {
-	square_remove_trap(c, y, x, FALSE, -1);
+	square_remove_trap(c, y, x, false, -1);
 }
 
 void square_tunnel_wall(struct chunk *c, int y, int x)
@@ -891,7 +891,7 @@ void square_remove_ward(struct chunk *c, int y, int x)
 {
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 	assert(square_iswarded(c, y, x));
-	square_remove_trap(c, y, x, TRUE, rune->tidx);
+	square_remove_trap(c, y, x, true, rune->tidx);
 }
 
 /**

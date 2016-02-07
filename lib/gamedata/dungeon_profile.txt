@@ -52,6 +52,7 @@
 
 ## Town
 name:town
+streamer:1:1:0:0:0:0
 params:1:0:200:0
 cutoff:-1
 

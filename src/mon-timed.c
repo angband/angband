@@ -56,7 +56,7 @@ int mon_timed_name_to_idx(const char *name)
 /**
  * Determines whether the given monster successfully resists the given effect.
  *
- * If MON_TMD_FLG_NOFAIL is set in `flag`, this returns FALSE.
+ * If MON_TMD_FLG_NOFAIL is set in `flag`, this returns false.
  * Then we determine if the monster resists the effect for some racial
  * reason. For example, the monster might have the NO_SLEEP flag, in which
  * case it always resists sleep. Or if it breathes chaos, it always resists
@@ -81,20 +81,20 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 	lore = get_lore(mon->race);
 	
 	/* Hasting never fails */
-	if (ef_idx == MON_TMD_FAST) return (FALSE);
+	if (ef_idx == MON_TMD_FAST) return (false);
 	
 	/* Some effects are marked to never fail */
-	if (flag & MON_TMD_FLG_NOFAIL) return (FALSE);
+	if (flag & MON_TMD_FLG_NOFAIL) return (false);
 
 	/* A sleeping monster resists further sleeping */
-	if (ef_idx == MON_TMD_SLEEP && mon->m_timed[ef_idx]) return (TRUE);
+	if (ef_idx == MON_TMD_SLEEP && mon->m_timed[ef_idx]) return (true);
 
 	/* If the monster resists innately, learn about it */
 	if (rf_has(mon->race->flags, effect->flag_resist)) {
 		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 			rf_on(lore->flags, effect->flag_resist);
 
-		return (TRUE);
+		return (true);
 	}
 
 	/* Monsters with specific breaths resist stunning */
@@ -109,7 +109,7 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 				rsf_on(lore->spell_flags, RSF_BR_WALL);
 		}
 
-		return (TRUE);
+		return (true);
 	}
 
 	/* Monsters with specific breaths resist confusion */
@@ -120,13 +120,13 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 			if (rsf_has(mon->race->spell_flags, RSF_BR_CHAO))
 				rsf_on(lore->spell_flags, RSF_BR_CHAO);
 
-		return (TRUE);
+		return (true);
 	}
 
 	/* Inertia breathers resist slowing */
 	if (ef_idx == MON_TMD_SLOW && rsf_has(mon->race->spell_flags, RSF_BR_INER)){
 		rsf_on(lore->spell_flags, RSF_BR_INER);
-		return (TRUE);
+		return (true);
 	}
 
 	/* Calculate the chance of the monster making its saving throw. */
@@ -138,13 +138,13 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 	else
 		resist_chance = mon->race->level + 40 - (timer / 2);
 
-	if (randint0(100) < resist_chance) return (TRUE);
+	if (randint0(100) < resist_chance) return (true);
 
 	/* Uniques are doubly hard to affect */
 	if (rf_has(mon->race->flags, RF_UNIQUE))
-		if (randint0(100) < resist_chance) return (TRUE);
+		if (randint0(100) < resist_chance) return (true);
 
-	return (FALSE);
+	return (false);
 }
 
 /**
@@ -157,14 +157,14 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
  *
  * Set a timed monster event to 'v'.  Give messages if the right flags are set.
  * Check if the monster is able to resist the spell.  Mark the lore.
- * Returns TRUE if the monster was affected.
- * Return FALSE if the monster was unaffected.
+ * Returns true if the monster was affected.
+ * Return false if the monster was unaffected.
  */
 static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
 						  u16b flag, bool id)
 {
-	bool check_resist = FALSE;
-	bool resisted = FALSE;
+	bool check_resist = false;
+	bool resisted = false;
 
 	struct mon_timed_effect *effect;
 
@@ -181,7 +181,7 @@ static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
 
 	/* No change */
 	if (old_timer == timer)
-		return FALSE;
+		return false;
 
 	if (timer == 0) {
 		/* Turning off, usually mention */
@@ -191,11 +191,11 @@ static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
 		/* Turning on, usually mention */
 		flag |= MON_TMD_FLG_NOTIFY;
 		m_note = effect->message_begin;
-		check_resist = TRUE;
+		check_resist = true;
 	} else if (timer > old_timer) {
 		/* Different message for increases, but don't automatically mention. */
 		m_note = effect->message_increase;
-		check_resist = TRUE;
+		check_resist = true;
 	} /* Decreases don't get a message */
 
 	/* Determine if the monster resisted or not, if appropriate */
@@ -220,7 +220,7 @@ static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
 			 !mflag_has(mon->mflag, MFLAG_UNAWARE)) || id)) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
-		add_monster_message(m_name, mon, m_note, TRUE);
+		add_monster_message(m_name, mon, m_note, true);
 	}
 
 	return !resisted;
@@ -235,7 +235,7 @@ static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
  * If this function would put an effect timer over that cap, it sets it for
  * that cap instead.
  *
- * Returns TRUE if the monster's timer changed.
+ * Returns true if the monster's timer changed.
  */
 bool mon_inc_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
 				   bool id)
@@ -252,8 +252,8 @@ bool mon_inc_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
 	if ((!mon->m_timed[ef_idx]) && (timer < 2)) timer = 2;
 
 	/* New counter amount - prevent overflow */
-	if (MAX_SHORT - timer < mon->m_timed[ef_idx])
-		timer = MAX_SHORT;
+	if (SHRT_MAX - timer < mon->m_timed[ef_idx])
+		timer = SHRT_MAX;
 	else
 		timer += mon->m_timed[ef_idx];
 
@@ -271,7 +271,7 @@ bool mon_inc_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
  * If a timer would be set to a negative number, it is set to 0 instead.
  * Note that decreasing a timed effect should never fail.
  *
- * Returns TRUE if the monster's timer changed.
+ * Returns true if the monster's timer changed.
  */
 bool mon_dec_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
 				   bool id)
@@ -293,13 +293,13 @@ bool mon_dec_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
 /**
  * Clears the timed effect `ef_idx`.
  *
- * Returns TRUE if the monster's timer was changed.
+ * Returns true if the monster's timer was changed.
  */
 bool mon_clear_timed(struct monster *mon, int ef_idx, u16b flag, bool id)
 {
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 
-	if (!mon->m_timed[ef_idx]) return FALSE;
+	if (!mon->m_timed[ef_idx]) return false;
 
 	/* Clearing never fails */
 	flag |= MON_TMD_FLG_NOFAIL;

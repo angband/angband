@@ -136,7 +136,7 @@ static int full_w;
 static int full_h;
 
 /* Want fullscreen? */
-static bool fullscreen = FALSE;
+static bool fullscreen = false;
 
 static int overdraw = 0;
 static int overdraw_max = 0;
@@ -365,7 +365,7 @@ static int MoreSnapMinus;	/* Decrease snap range */
 static bool Moving;				/* Moving a window */
 static bool Sizing;				/* Sizing a window */
 static SDL_Rect SizingSpot;		/* Rect to descibe the sizing area */
-static bool Sizingshow = FALSE;	/* Is the resize thingy displayed? */
+static bool Sizingshow = false;	/* Is the resize thingy displayed? */
 static SDL_Rect SizingRect;		/* Rect to describe the current resize window */
 
 #include "grafmode.h"
@@ -398,13 +398,13 @@ static SDL_Rect *RECT(int x, int y, int w, int h, SDL_Rect *rect)
  */
 static bool point_in(SDL_Rect *rect, int x, int y)
 {
-	if (x < rect->x) return (FALSE);
-	if (y < rect->y) return (FALSE);
-	if (x >= rect->x + rect->w) return (FALSE);
-	if (y >= rect->y + rect->h) return (FALSE);
+	if (x < rect->x) return (false);
+	if (y < rect->y) return (false);
+	if (x >= rect->x + rect->w) return (false);
+	if (y >= rect->y + rect->h) return (false);
 
 	/* Must be inside */
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -630,7 +630,7 @@ static void sdl_ButtonMove(sdl_Button *button, int x, int y)
 {
 	button->pos.x = x;
 	button->pos.y = y;
-	button->owner->need_update = TRUE;
+	button->owner->need_update = true;
 }
 
 /**
@@ -640,7 +640,7 @@ static void sdl_ButtonSize(sdl_Button *button, int w, int h)
 {
 	button->pos.w = w;
 	button->pos.h = h;
-	button->owner->need_update = TRUE;
+	button->owner->need_update = true;
 }
 
 /**
@@ -649,7 +649,7 @@ static void sdl_ButtonSize(sdl_Button *button, int w, int h)
 static void sdl_ButtonCaption(sdl_Button *button, const char *s)
 {
 	my_strcpy(button->caption, s, sizeof(button->caption));
-	button->owner->need_update = TRUE;
+	button->owner->need_update = true;
 }
 
 /**
@@ -660,7 +660,7 @@ static void sdl_ButtonVisible(sdl_Button *button, bool visible)
 	if (button->visible != visible) {
 		button->visible = visible;
 		
-		button->owner->need_update = TRUE;
+		button->owner->need_update = true;
 	}
 }
 
@@ -683,7 +683,7 @@ static void sdl_ButtonBankInit(sdl_ButtonBank *bank, sdl_Window *window)
 	bank->window = window;
 	bank->buttons = mem_zalloc(MAX_BUTTONS * sizeof(sdl_Button));
 	bank->used = mem_zalloc(MAX_BUTTONS * sizeof(bool));
-	bank->need_update = TRUE;
+	bank->need_update = true;
 }
 
 /**
@@ -710,7 +710,7 @@ static void sdl_ButtonBankDrawAll(sdl_ButtonBank *bank)
 		
 		sdl_ButtonDraw(button);
 	}
-	bank->need_update = FALSE;
+	bank->need_update = false;
 }
 
 /**
@@ -731,7 +731,7 @@ static int sdl_ButtonBankNew(sdl_ButtonBank *bank)
 	new_button = &bank->buttons[i];
 
 	/* Mark the button as used */
-	bank->used[i] = TRUE;
+	bank->used[i] = true;
 
 	/* Clear it */
 	memset(new_button, 0, sizeof(sdl_Button));
@@ -783,13 +783,13 @@ static void sdl_ButtonBankRemove(sdl_ButtonBank *bank, int idx)
 	button = &bank->buttons[idx];
 
 	/* Hide it */
-	button->visible = FALSE;
+	button->visible = false;
 
 	/* Draw it */
-	bank->need_update = TRUE;
+	bank->need_update = true;
 
 	/* Forget */
-	bank->used[idx] = FALSE;
+	bank->used[idx] = false;
 }
 
 #endif
@@ -812,15 +812,15 @@ static bool sdl_ButtonBankMouseDown(sdl_ButtonBank *bank, int x, int y)
 		
 		/* Check the coordinates */
 		if (point_in(&button->pos, x, y)) {
-			button->selected = TRUE;
+			button->selected = true;
 			
 			/* Draw it */
-			bank->need_update = TRUE;
+			bank->need_update = true;
 			
-			return (TRUE);
+			return (true);
 		}
 	}
-	return (FALSE);
+	return (false);
 }
 
 /**
@@ -846,27 +846,27 @@ static bool sdl_ButtonBankMouseUp(sdl_ButtonBank *bank, int x, int y)
 				if (button->activate) (*button->activate)(button);
 				
 				/* Now not selected */
-				button->selected = FALSE;
+				button->selected = false;
 				
 				/* Draw it */
-				bank->need_update = TRUE;
+				bank->need_update = true;
 				
-				return (TRUE);
+				return (true);
 			}
 		} else {
 			/* This button was 'selected' but the release of the */
 			/* mouse button was outside the area of this button */
 			if (button->selected) {
 				/* Now not selected */
-				button->selected = FALSE;
+				button->selected = false;
 				
 				/* Draw it */
-				bank->need_update = TRUE;
+				bank->need_update = true;
 			}
 		}
 	}
 
-	return (FALSE);
+	return (false);
 }
 
 /**
@@ -900,8 +900,8 @@ static void sdl_WindowInit(sdl_Window* window, int w, int h, SDL_Surface *owner,
 										   owner->format->Amask);
 	sdl_ButtonBankInit(&window->buttons, window);
 	sdl_FontCreate(&window->font, fontname, window->surface);
-	window->visible = TRUE;
-	window->need_update = TRUE;
+	window->visible = true;
+	window->need_update = true;
 }
 
 
@@ -935,7 +935,7 @@ static void sdl_WindowUpdate(sdl_Window* window)
 		
 		sdl_ButtonBankDrawAll(&window->buttons);
 		
-		window->need_update = FALSE;
+		window->need_update = false;
 		
 		memset(&Event, 0, sizeof(SDL_Event));
 		
@@ -1186,8 +1186,8 @@ static void sdl_BlitAll(void)
 
 static void RemovePopUp(void)
 {
-	PopUp.visible = FALSE;
-	popped = FALSE;
+	PopUp.visible = false;
+	popped = false;
 	sdl_BlitAll();
 }
 
@@ -1211,10 +1211,10 @@ static void SetStatusButtons(void)
 	sdl_ButtonCaption(button, angband_term_name[SelectedTerm]);
 
 	if (!win->visible) {
-		sdl_ButtonVisible(fontbutton, FALSE);
+		sdl_ButtonVisible(fontbutton, false);
 		sdl_ButtonCaption(visbutton, "No");
 	} else {
-		sdl_ButtonVisible(fontbutton, TRUE);
+		sdl_ButtonVisible(fontbutton, true);
 		sdl_ButtonCaption(fontbutton, win->font.name);
 		sdl_ButtonCaption(visbutton, "Yes");
 	}
@@ -1265,7 +1265,7 @@ static void AboutActivate(sdl_Button *sender)
 	PopUp.top = (AppWin->h / 2) - height / 2;
 	PopUp.draw_extra = AboutDraw;
 
-	popped = TRUE;
+	popped = true;
 }
 
 static void SelectTerm(sdl_Button *sender)
@@ -1298,11 +1298,11 @@ static void TermActivate(sdl_Button *sender)
 		sdl_ButtonSize(button, width - 2 , h);
 		sdl_ButtonMove(button, 1, i * (h + 1));
 		sdl_ButtonCaption(button, angband_term_name[i]);
-		sdl_ButtonVisible(button, TRUE);
+		sdl_ButtonVisible(button, true);
 		button->tag = i;
 		button->activate = SelectTerm;
 	}
-	popped = TRUE;
+	popped = true;
 }
 
 static void ResizeWin(term_window* win, int w, int h);
@@ -1315,12 +1315,12 @@ static void VisibleActivate(sdl_Button *sender)
 	if (SelectedTerm == 0) return;
 
 	if (window->visible) {
-		window->visible = FALSE;
+		window->visible = false;
 		term_windowFree(window);
 		angband_term[SelectedTerm] = NULL;
 		
 	} else {
-		window->visible = TRUE;
+		window->visible = true;
 		ResizeWin(window, window->width, window->height);
 		
 	}
@@ -1380,14 +1380,14 @@ static void FontActivate(sdl_Button *sender)
 		sdl_ButtonSize(button, width - 2 , h);
 		sdl_ButtonMove(button, 1, i * (h + 1));
 		sdl_ButtonCaption(button, FontList[i]);
-		sdl_ButtonVisible(button, TRUE);
+		sdl_ButtonVisible(button, true);
 		button->activate = SelectFont;
 	}
-	popped = TRUE;
+	popped = true;
 }
 
 static errr load_gfx(void);
-static bool do_update = FALSE;
+static bool do_update = false;
 
 static void SelectGfx(sdl_Button *sender)
 {
@@ -1397,22 +1397,22 @@ static void SelectGfx(sdl_Button *sender)
 static void AcceptChanges(sdl_Button *sender)
 {
 	sdl_Button *button;
-	bool do_video_reset = FALSE;
+	bool do_video_reset = false;
 
 	if (use_graphics != SelectedGfx) {
-		do_update = TRUE;
+		do_update = true;
 		use_graphics = SelectedGfx;
 	}
 
 	if (use_graphics) {
-		arg_graphics = TRUE;
+		arg_graphics = true;
 		load_gfx();
 	} else {
 		current_graphics_mode = NULL;
-		arg_graphics = FALSE;
+		arg_graphics = false;
 		tile_width = 1;
 		tile_height = 1;
-		reset_visuals(TRUE);
+		reset_visuals(true);
 	}
 
 	/* Invalidate all the gfx surfaces */
@@ -1436,7 +1436,7 @@ static void AcceptChanges(sdl_Button *sender)
 	if (button->tag != fullscreen) {
 		fullscreen = !fullscreen;
 		
-		do_video_reset = TRUE;
+		do_video_reset = true;
 	}
 
 	
@@ -1459,7 +1459,7 @@ static void AcceptChanges(sdl_Button *sender)
 		SDL_PushEvent(&Event);
 	}
 
-	do_update = FALSE;
+	do_update = false;
 
 }
 
@@ -1479,7 +1479,7 @@ static void SnapChange(sdl_Button *sender)
 	SnapRange += sender->tag;
 	if (SnapRange < 0) SnapRange = 0;
 	if (SnapRange > 20) SnapRange = 20;
-	PopUp.need_update = TRUE;
+	PopUp.need_update = true;
 }
 
 static void WidthChange(sdl_Button *sender)
@@ -1487,7 +1487,7 @@ static void WidthChange(sdl_Button *sender)
 	tile_width += sender->tag;
 	if (tile_width < 1) tile_width = 1;
 	if (tile_width > 12) tile_width = 12;
-	do_update = TRUE;
+	do_update = true;
 }
 
 static void HeightChange(sdl_Button *sender)
@@ -1495,7 +1495,7 @@ static void HeightChange(sdl_Button *sender)
 	tile_height += sender->tag;
 	if (tile_height < 1) tile_height = 1;
 	if (tile_height > 8) tile_height = 8;
-	do_update = TRUE;
+	do_update = true;
 }
 
 static void MoreDraw(sdl_Window *win)
@@ -1519,18 +1519,18 @@ static void MoreDraw(sdl_Window *win)
 		sdl_WindowText(win, colour, 20, y, format("Tile width is %d.",
 												  tile_width));
 		sdl_ButtonMove(button, 200, y);
-		sdl_ButtonVisible(button, TRUE);
+		sdl_ButtonVisible(button, true);
 	} else {
-		sdl_ButtonVisible(button, FALSE);
+		sdl_ButtonVisible(button, false);
 	}
 
 	button = sdl_ButtonBankGet(&win->buttons, MoreWidthPlus);
 	if (SelectedGfx) {
 		sdl_ButtonMove(button, 230, y);
-		sdl_ButtonVisible(button, TRUE);
+		sdl_ButtonVisible(button, true);
 		y += 20;
 	} else {
-		sdl_ButtonVisible(button, FALSE);
+		sdl_ButtonVisible(button, false);
 	}
 
 	button = sdl_ButtonBankGet(&win->buttons, MoreHeightMinus);
@@ -1538,18 +1538,18 @@ static void MoreDraw(sdl_Window *win)
 		sdl_WindowText(win, colour, 20, y, format("Tile height is %d.",
 												  tile_height));
 		sdl_ButtonMove(button, 200, y);
-		sdl_ButtonVisible(button, TRUE);
+		sdl_ButtonVisible(button, true);
 	} else {
-		sdl_ButtonVisible(button, FALSE);
+		sdl_ButtonVisible(button, false);
 	}
 
 	button = sdl_ButtonBankGet(&win->buttons, MoreHeightPlus);
 	if (SelectedGfx) {
 		sdl_ButtonMove(button, 230, y);
-		sdl_ButtonVisible(button, TRUE);
+		sdl_ButtonVisible(button, true);
 		y += 20;
 	} else {
-		sdl_ButtonVisible(button, FALSE);
+		sdl_ButtonVisible(button, false);
 	}
 
 	sdl_WindowText(win, colour, 20, y, "Selected Graphics:");
@@ -1612,7 +1612,7 @@ static void MoreActivate(sdl_Button *sender)
 	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
 	sdl_ButtonCaption(button, "+");
 	button->tag = 1;
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	button->activate = WidthChange;
 
 	MoreWidthMinus = sdl_ButtonBankNew(&PopUp.buttons);
@@ -1623,7 +1623,7 @@ static void MoreActivate(sdl_Button *sender)
 	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
 	sdl_ButtonCaption(button, "-");
 	button->tag = -1;
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	button->activate = WidthChange;
 
 	MoreHeightPlus = sdl_ButtonBankNew(&PopUp.buttons);
@@ -1634,7 +1634,7 @@ static void MoreActivate(sdl_Button *sender)
 	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
 	sdl_ButtonCaption(button, "+");
 	button->tag = 1;
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	button->activate = HeightChange;
 
 	MoreHeightMinus = sdl_ButtonBankNew(&PopUp.buttons);
@@ -1645,7 +1645,7 @@ static void MoreActivate(sdl_Button *sender)
 	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
 	sdl_ButtonCaption(button, "-");
 	button->tag = -1;
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	button->activate = HeightChange;
 
 	SelectedGfx = use_graphics;
@@ -1662,7 +1662,7 @@ static void MoreActivate(sdl_Button *sender)
 		button->unsel_colour = ucolour;
 		button->sel_colour = scolour;
 		sdl_ButtonSize(button, 50 , PopUp.font.height + 2);
-		sdl_ButtonVisible(button, TRUE);
+		sdl_ButtonVisible(button, true);
 		sdl_ButtonCaption(button, mode->menuname);
 		button->tag = mode->grafID;
 		button->activate = SelectGfx;
@@ -1676,7 +1676,7 @@ static void MoreActivate(sdl_Button *sender)
 	button->unsel_colour = ucolour;
 	button->sel_colour = scolour;
 	sdl_ButtonSize(button, 50 , PopUp.font.height + 2);
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	sdl_ButtonCaption(button, fullscreen ? "On" : "Off");
 	button->tag = fullscreen;
 	button->activate = FlipTag;
@@ -1689,7 +1689,7 @@ static void MoreActivate(sdl_Button *sender)
 	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
 	sdl_ButtonCaption(button, "+");
 	button->tag = 1;
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	button->activate = SnapChange;
 
 	MoreSnapMinus = sdl_ButtonBankNew(&PopUp.buttons);
@@ -1700,7 +1700,7 @@ static void MoreActivate(sdl_Button *sender)
 	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
 	sdl_ButtonCaption(button, "-");
 	button->tag = -1;
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	button->activate = SnapChange;
 
 	MoreOK = sdl_ButtonBankNew(&PopUp.buttons);
@@ -1709,12 +1709,12 @@ static void MoreActivate(sdl_Button *sender)
 	button->unsel_colour = ucolour;
 	button->sel_colour = scolour;
 	sdl_ButtonSize(button, 50 , PopUp.font.height + 2);
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	sdl_ButtonCaption(button, "OK");
 	sdl_ButtonMove(button, width / 2 - 25, height - 40);
 	button->activate = AcceptChanges;
 
-	popped = TRUE;
+	popped = true;
 }
 
 static errr Term_xtra_sdl_clear(void);
@@ -1825,7 +1825,7 @@ static void ResizeWin(term_window* win, int w, int h)
 		SizingSpot.y = win->top + win->height - 10;
 	}
 
-	StatusBar.need_update = TRUE;
+	StatusBar.need_update = true;
 
 	/* HACK - Redraw all windows */
 	if (character_dungeon) do_cmd_redraw();
@@ -1856,7 +1856,7 @@ static errr load_prefs(void)
 			win->width = 600;
 			win->height = 380;
 			win->keys = 1024;
-			win->visible = TRUE;
+			win->visible = true;
 		} else {
 			win->top = 400 + (i * 10);
 			win->left = (i - 1) * 10;
@@ -1864,7 +1864,7 @@ static errr load_prefs(void)
 			win->height = 200;
 			win->keys = 32;
 			
-			win->visible = FALSE;
+			win->visible = false;
 		}
 	}
 
@@ -1897,7 +1897,7 @@ static errr load_prefs(void)
 			fullscreen = atoi(s);
 		} else if (strstr(buf, "Graphics")) {
 			use_graphics = atoi(s);
-			if (use_graphics) arg_graphics = TRUE;
+			if (use_graphics) arg_graphics = true;
 		} else if (strstr(buf, "TileWidth")) {
 			tile_width = atoi(s);
 		} else if (strstr(buf, "TileHeight")) {
@@ -2112,12 +2112,12 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				if (point_in(&SizingSpot, mouse.x, mouse.y)) {
 					if (!Sizingshow) {
 						/* Indicate the hotspot */
-						Sizingshow = TRUE;
+						Sizingshow = true;
 						DrawSizeWidget();
 					}
 				} else if (Sizingshow) {
 					SDL_Rect rc;
-					Sizingshow = FALSE;
+					Sizingshow = false;
 					RECT(win->width - 10, win->height - 10, 10, 10, &rc);
 					set_update_rect(win, &rc);
 					sdl_BlitWin(win);
@@ -2137,7 +2137,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 			int idx = sdl_LocateWin(mouse.x, mouse.y);
 			
 			if (event->button.button == SDL_BUTTON_LEFT) {
-				bool just_gained_focus = FALSE;
+				bool just_gained_focus = false;
 				mouse.left = 1;
 				mouse.leftx = event->button.x;
 				mouse.lefty = event->button.y;
@@ -2166,7 +2166,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				/* The 'focused' window has changed */
 				if (idx != SelectedTerm) {
 					TermFocus(idx);
-					just_gained_focus = TRUE;
+					just_gained_focus = true;
 				}
 
 				/* A button press has happened on the focused term window */
@@ -2175,7 +2175,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				/* Check for mouse press in the title bar... */
 				if (mouse.y < win->top + win->title_height) {
 					/* Let's get moving */
-					Moving = TRUE;
+					Moving = true;
 					
 					/* BringToTop(idx); */
 					
@@ -2185,7 +2185,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				} else if (point_in(&SizingSpot, mouse.x, mouse.y)) {
 					/* ...or the little hotspot in the bottom right corner... */					
 					/* Let's get sizing */
-					Sizing = TRUE;
+					Sizing = true;
 					
 					/* Create the sizing rectangle */
 					RECT(win->left, win->top, win->width, win->height,
@@ -2229,7 +2229,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 
 				/* Right-click always cancels the popup */
 				if (popped) {
-					popped = FALSE;
+					popped = false;
 				} else if (idx != -1) {
 					/* Process right clicks inside a term_window */
 					int x, y;
@@ -2286,7 +2286,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				
 				/* Finish moving */
 				if (Moving) 	{
-					Moving = FALSE;
+					Moving = false;
 					
 					/* Update */
 					sdl_BlitAll();
@@ -2296,7 +2296,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				if (Sizing) {
 					/* Sort out the window */
 					ResizeWin(&windows[SelectedTerm], SizingRect.w, SizingRect.h);
-					Sizing = FALSE;
+					Sizing = false;
 					
 					/* Update */
 					sdl_BlitAll();
@@ -2329,7 +2329,7 @@ static void sdl_keypress(SDL_keysym keysym)
 	bool ma = (keysym.mod & KMOD_ALT) > 0;
 	bool mm = (keysym.mod & KMOD_META) > 0;
 	bool mg = (keysym.mod & KMOD_MODE) > 0;
-	bool kp = FALSE;
+	bool kp = false;
 
 	byte mods = (ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
 
@@ -2339,23 +2339,23 @@ static void sdl_keypress(SDL_keysym keysym)
 	/* Handle all other valid SDL keys */
 	switch (key_sym) {
 		/* keypad */
-		case SDLK_KP0: ch = '0'; kp = TRUE; break;
-		case SDLK_KP1: ch = '1'; kp = TRUE; break;
-		case SDLK_KP2: ch = '2'; kp = TRUE; break;
-		case SDLK_KP3: ch = '3'; kp = TRUE; break;
-		case SDLK_KP4: ch = '4'; kp = TRUE; break;
-		case SDLK_KP5: ch = '5'; kp = TRUE; break;
-		case SDLK_KP6: ch = '6'; kp = TRUE; break;
-		case SDLK_KP7: ch = '7'; kp = TRUE; break;
-		case SDLK_KP8: ch = '8'; kp = TRUE; break;
-		case SDLK_KP9: ch = '9'; kp = TRUE; break;
-		case SDLK_KP_PERIOD: ch = '.'; kp = TRUE; break;
-		case SDLK_KP_DIVIDE: ch = '/'; kp = TRUE; break;
-		case SDLK_KP_MULTIPLY: ch = '*'; kp = TRUE; break;
-		case SDLK_KP_MINUS: ch = '-'; kp = TRUE; break;
-		case SDLK_KP_PLUS: ch = '+'; kp = TRUE; break;
-		case SDLK_KP_ENTER: ch = KC_ENTER; kp = TRUE; break;
-		case SDLK_KP_EQUALS: ch = '='; kp = TRUE; break;
+		case SDLK_KP0: ch = '0'; kp = true; break;
+		case SDLK_KP1: ch = '1'; kp = true; break;
+		case SDLK_KP2: ch = '2'; kp = true; break;
+		case SDLK_KP3: ch = '3'; kp = true; break;
+		case SDLK_KP4: ch = '4'; kp = true; break;
+		case SDLK_KP5: ch = '5'; kp = true; break;
+		case SDLK_KP6: ch = '6'; kp = true; break;
+		case SDLK_KP7: ch = '7'; kp = true; break;
+		case SDLK_KP8: ch = '8'; kp = true; break;
+		case SDLK_KP9: ch = '9'; kp = true; break;
+		case SDLK_KP_PERIOD: ch = '.'; kp = true; break;
+		case SDLK_KP_DIVIDE: ch = '/'; kp = true; break;
+		case SDLK_KP_MULTIPLY: ch = '*'; kp = true; break;
+		case SDLK_KP_MINUS: ch = '-'; kp = true; break;
+		case SDLK_KP_PLUS: ch = '+'; kp = true; break;
+		case SDLK_KP_ENTER: ch = KC_ENTER; kp = true; break;
+		case SDLK_KP_EQUALS: ch = '='; kp = true; break;
 
 		/* have have these to get consistent ctrl-shift behaviour */
 		case SDLK_0: if ((!ms || mc || ma) && !mg) ch = '0'; break;
@@ -2482,7 +2482,7 @@ static errr sdl_HandleEvent(SDL_Event *event)
 			/* We are playing a game with an active character */
 			if (character_generated && inkey_flag) {
 				/* Hack -- Forget messages */
-				msg_flag = FALSE;
+				msg_flag = false;
 				
 				/* Save the game */
 				save_game();
@@ -3164,20 +3164,20 @@ static void term_data_link_sdl(term_window *win)
 	/* Initialize the term */
 	term_init(t, win->cols, win->rows, win->keys);
 
-	t->higher_pict = TRUE;
+	t->higher_pict = true;
 
 	/* Use a "software" cursor */
-	t->soft_cursor = TRUE;
+	t->soft_cursor = true;
 
 	/* Erase with "white space" */
 	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';
 
 	/* Never refresh one row */
-	t->never_frosh = TRUE;
+	t->never_frosh = true;
 
 	/* Differentiate between BS/^h, Tab/^i, etc. */
-	t->complex_input = TRUE;
+	t->complex_input = true;
 
 	/* Ignore the init/nuke hooks */
 
@@ -3205,7 +3205,7 @@ static void init_morewindows(void)
 	sdl_Button *button;
 	int x;
 
-	popped = FALSE;
+	popped = false;
 
 	/* Make sure */
 	sdl_WindowFree(&PopUp);
@@ -3226,7 +3226,7 @@ static void init_morewindows(void)
 	sdl_ButtonSize(button, StatusBar.font.width * strlen(buf) + 5,
 				   StatusHeight - 2);
 	sdl_ButtonMove(button, 1, 1);
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	sdl_ButtonCaption(button, buf);
 	button->activate = AboutActivate;
 
@@ -3239,7 +3239,7 @@ static void init_morewindows(void)
 	sdl_ButtonSize(button, 60, StatusHeight - 2);
 	x = 100 + (StatusBar.font.width * 5);
 	sdl_ButtonMove(button, x, 1);
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	button->activate = TermActivate;
 
 	/* Another new button */
@@ -3250,7 +3250,7 @@ static void init_morewindows(void)
 	sdl_ButtonSize(button, 60,  StatusHeight - 2);
 	x = 200 + (StatusBar.font.width * 8);
 	sdl_ButtonMove(button, x, 1);
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	button->activate = VisibleActivate;
 
 	/* Another new button */
@@ -3269,7 +3269,7 @@ static void init_morewindows(void)
 	/* Initialize the 'more' button */
 	sdl_ButtonSize(button, 60,  StatusHeight - 2);
 	sdl_ButtonMove(button, 400, 1);
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 	sdl_ButtonCaption(button, "Options");
 	button->activate = MoreActivate;
 
@@ -3282,7 +3282,7 @@ static void init_morewindows(void)
 	sdl_ButtonMove(button, AppWin->w - 61, 1);
 	sdl_ButtonCaption(button, "Quit");
 	button->activate = QuitActivate;
-	sdl_ButtonVisible(button, TRUE);
+	sdl_ButtonVisible(button, true);
 
 	SetStatusButtons();
 
@@ -3331,7 +3331,7 @@ static errr load_gfx(void)
 	overdraw_max = current_graphics_mode->overdrawMax;
 
 	/* Reset the graphics mapping for this tileset */
-	if (character_dungeon) reset_visuals(TRUE);
+	if (character_dungeon) reset_visuals(true);
 
 	/* All good */
 	return (0);
@@ -3368,7 +3368,7 @@ static void init_gfx(void)
 	/* Check availability (default to no graphics) */
 	if (!current_graphics_mode->file[0]) {
 		use_graphics = GRAPHICS_NONE;
-		arg_graphics = FALSE;
+		arg_graphics = false;
 		tile_width = 1;
 		tile_height = 1;
 	}

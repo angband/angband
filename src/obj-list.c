@@ -100,15 +100,15 @@ object_list_t *object_list_shared_instance(void)
 }
 
 /**
- * Return TRUE if the list needs to be updated. Usually this is each turn.
+ * Return true if the list needs to be updated. Usually this is each turn.
  */
 static bool object_list_needs_update(const object_list_t *list)
 {
 	if (list == NULL || list->entries == NULL)
-		return FALSE;
+		return false;
 
 	/* For now, always update when requested. */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -127,11 +127,11 @@ void object_list_reset(object_list_t *list)
 	memset(list->total_objects, 0, OBJECT_LIST_SECTION_MAX * sizeof(u16b));
 	list->distinct_entries = 0;
 	list->creation_turn = 0;
-	list->sorted = FALSE;
+	list->sorted = false;
 }
 
 /**
- * Return TRUE if the object should be omitted from the object list.
+ * Return true if the object should be omitted from the object list.
  */
 static bool object_list_should_ignore_object(const struct object *obj)
 {
@@ -141,12 +141,12 @@ static bool object_list_should_ignore_object(const struct object *obj)
 	assert(base_obj);
 
 	if (!is_unknown(base_obj) && ignore_known_item_ok(obj))
-		return TRUE;
+		return true;
 
 	if (tval_is_money(base_obj))
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -171,7 +171,7 @@ void object_list_collect(object_list_t *list)
 		int current_distance;
 		int entry_distance;
 		int y, x, field;
-		bool los = FALSE;
+		bool los = false;
 		struct object *obj = cave_k->objects[i];
 
 		/* Skip unfilled entries, unknown objects and monster-held objects */
@@ -257,7 +257,7 @@ void object_list_collect(object_list_t *list)
 	}
 
 	list->creation_turn = turn;
-	list->sorted = FALSE;
+	list->sorted = false;
 }
 
 /**
@@ -320,7 +320,7 @@ void object_list_sort(object_list_t *list,
 		return;
 
 	sort(list->entries, elements, sizeof(list->entries[0]), compare);
-	list->sorted = TRUE;
+	list->sorted = true;
 }
 
 /**
@@ -377,7 +377,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 	const char *chunk;
 	char *source;
 	bool has_singular_prefix;
-	bool los = FALSE;
+	bool los = false;
 	int field;
 	byte old_number;
 	int py = player->py;
@@ -403,17 +403,17 @@ void object_list_format_name(const object_list_entry_t *entry,
 		case TV_DRAG_ARMOR:
 			if ((object_name_is_visible(base_obj) || object_is_known(base_obj))
 				&& entry->object->artifact)
-				has_singular_prefix = TRUE;
+				has_singular_prefix = true;
 			else
-				has_singular_prefix = FALSE;				
+				has_singular_prefix = false;				
 			break;
 		default:
-			has_singular_prefix = TRUE;
+			has_singular_prefix = true;
 			break;
 	}
 
 	if (entry->object->kind == base_obj->kind)
-		has_singular_prefix = TRUE;
+		has_singular_prefix = true;
 
 	/* Work out if the object is in view */
 	los = projectable(cave, py, px, iy, ix, PROJECT_NONE) || 

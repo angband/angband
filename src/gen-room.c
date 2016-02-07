@@ -409,7 +409,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	int degree_first, center_of_arc, degree;
 
 	/* Special variant room.  Discovered by accident. */
-	bool make_cloverleaf = FALSE;
+	bool make_cloverleaf = false;
 
 	/* Holds first degree of arc, maximum effect distance in arc. */
 	int arc[45][2];
@@ -421,11 +421,11 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 
 	/* Make certain the room does not cross the dungeon edge. */
 	if ((!square_in_bounds(c, y1, x1)) || (!square_in_bounds(c, y2, x2)))
-		return (FALSE);
+		return (false);
 
 	/* Robustness -- test sanity of input coordinates. */
 	if ((y1 + 2 >= y2) || (x1 + 2 >= x2))
-		return (FALSE);
+		return (false);
 
 
 	/* Get room height and width. */
@@ -447,7 +447,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 
 		/* Make the first room. */
 		(void) generate_starburst_room(c, y1, x1, tmp_ay, tmp_ax, light, feat,
-									   FALSE);
+									   false);
 
 
 		/* Get top_right borders of the second room. */
@@ -460,7 +460,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 
 		/* Make the second room. */
 		(void) generate_starburst_room(c, tmp_by, tmp_bx, y2, x2, light, feat,
-									   FALSE);
+									   false);
 
 
 		/* 
@@ -498,11 +498,11 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 
 			/* Make the third room. */
 			(void) generate_starburst_room(c, tmp_cy1, tmp_cx1, tmp_cy2,
-										   tmp_cx2, light, feat, FALSE);
+										   tmp_cx2, light, feat, false);
 		}
 
 		/* Return. */
-		return (TRUE);
+		return (true);
 	}
 
 
@@ -519,7 +519,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	/* Make a cloverleaf room sometimes. */
 	if ((special_ok) && (height > 10) && (randint0(20) == 0)) {
 		arc_num = 12;
-		make_cloverleaf = TRUE;
+		make_cloverleaf = true;
 	}
 
 	/* Usually, we make a normal starburst. */
@@ -729,7 +729,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	}
 
 	/* Success */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -750,8 +750,8 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
  *
  * Be careful to include the edges of the room in height and width!
  *
- * Return TRUE and values for the center of the room if all went well.
- * Otherwise, return FALSE.
+ * Return true and values for the center of the room if all went well.
+ * Otherwise, return false.
  */
 static bool find_space(int *y, int *x, int height, int width)
 {
@@ -766,7 +766,7 @@ static bool find_space(int *y, int *x, int height, int width)
 
 	/* We'll allow twenty-five guesses. */
 	for (i = 0; i < 25; i++) {
-		filled = FALSE;
+		filled = false;
 
 		/* Pick a top left block at random */
 		by1 = randint0(dun->row_blocks);
@@ -784,7 +784,7 @@ static bool find_space(int *y, int *x, int height, int width)
 		for (by = by1; by <= by2; by++) {
 			for (bx = bx1; bx <= bx2; bx++) {
 				if (dun->room_map[by][bx])
-					filled = TRUE;
+					filled = true;
 			}
 		}
 
@@ -805,16 +805,16 @@ static bool find_space(int *y, int *x, int height, int width)
 		/* Reserve some blocks */
 		for (by = by1; by <= by2; by++) {
 			for (bx = bx1; bx <= bx2; bx++) {
-				dun->room_map[by][bx] = TRUE;
+				dun->room_map[by][bx] = true;
 			}
 		}
 
 		/* Success. */
-		return (TRUE);
+		return (true);
 	}
 
 	/* Failure. */
-	return (FALSE);
+	return (false);
 }
 
 /**
@@ -830,12 +830,12 @@ bool build_circular(struct chunk *c, int y0, int x0)
 	int radius = 2 + randint1(2) + randint1(3);
 
 	/* Occasional light */
-	bool light = c->depth <= randint1(25) ? TRUE : FALSE;
+	bool light = c->depth <= randint1(25) ? true : false;
 
 	/* Find and reserve lots of space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, 2 * radius + 10, 2 * radius + 10))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Generate outer walls and inner floors */
@@ -861,7 +861,7 @@ bool build_circular(struct chunk *c, int y0, int x0)
 		vault_monsters(c, y0, x0, c->depth + 1, randint0(3));
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -875,7 +875,7 @@ bool build_circular(struct chunk *c, int y0, int x0)
 bool build_simple(struct chunk *c, int y0, int x0)
 {
 	int y, x, y1, x1, y2, x2;
-	int light = FALSE;
+	int light = false;
 
 	/* Pick a room size */
 	int height = 1 + randint1(4) + randint1(3);
@@ -884,7 +884,7 @@ bool build_simple(struct chunk *c, int y0, int x0)
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height + 2, width + 2))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Pick a room size */
@@ -894,7 +894,7 @@ bool build_simple(struct chunk *c, int y0, int x0)
 	x2 = x1 + width - 1;
 
 	/* Occasional light */
-	if (c->depth <= randint1(25)) light = TRUE;
+	if (c->depth <= randint1(25)) light = true;
 
 	/* Generate new room */
 	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
@@ -921,7 +921,7 @@ bool build_simple(struct chunk *c, int y0, int x0)
 			set_marked_granite(c, y2, x, SQUARE_WALL_INNER);
 		}
 	}
-	return TRUE;
+	return true;
 }
 
 
@@ -938,10 +938,10 @@ bool build_overlap(struct chunk *c, int y0, int x0)
 	int y1b, x1b, y2b, x2b;
 	int height, width;
 
-	int light = FALSE;
+	int light = false;
 
 	/* Occasional light */
-	if (c->depth <= randint1(25)) light = TRUE;
+	if (c->depth <= randint1(25)) light = true;
 
 	/* Determine extents of room (a) */
 	y1a = randint1(4);
@@ -962,7 +962,7 @@ bool build_overlap(struct chunk *c, int y0, int x0)
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height + 2, width + 2))
-			return (FALSE);
+			return (false);
 	}
 
 	/* locate room (a) */
@@ -997,7 +997,7 @@ bool build_overlap(struct chunk *c, int y0, int x0)
 	/* Generate inner floors (b) */
 	fill_rectangle(c, y1b, x1b, y2b, x2b, FEAT_FLOOR, SQUARE_NONE);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1025,10 +1025,10 @@ bool build_crossed(struct chunk *c, int y0, int x0)
 
 	int dy, dx, wy, wx;
 
-	int light = FALSE;
+	int light = false;
 
 	/* Occasional light */
-	if (c->depth <= randint1(25)) light = TRUE;
+	if (c->depth <= randint1(25)) light = true;
 
 	/* Pick inner dimension */
 	wy = 1;
@@ -1057,7 +1057,7 @@ bool build_crossed(struct chunk *c, int y0, int x0)
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height + 2, width + 2))
-			return (FALSE);
+			return (false);
 	}
 
 	/* locate room (b) */
@@ -1112,7 +1112,7 @@ bool build_crossed(struct chunk *c, int y0, int x0)
 		generate_hole(c, y1b, x1a, y2b, x2a, FEAT_SECRET);
 
 		/* Place a treasure in the vault */
-		place_object(c, y0, x0, c->depth, FALSE, FALSE, ORIGIN_SPECIAL, 0);
+		place_object(c, y0, x0, c->depth, false, false, ORIGIN_SPECIAL, 0);
 
 		/* Let's guard the treasure well */
 		vault_monsters(c, y0, x0, c->depth + 2, randint0(2) + 3);
@@ -1160,7 +1160,7 @@ bool build_crossed(struct chunk *c, int y0, int x0)
 	}
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1184,15 +1184,15 @@ bool build_large(struct chunk *c, int y0, int x0)
 	int height = 9;
 	int width = 23;
 
-	int light = FALSE;
+	int light = false;
 
 	/* Occasional light */
-	if (c->depth <= randint1(25)) light = TRUE;
+	if (c->depth <= randint1(25)) light = true;
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height + 2, width + 2))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Large room */
@@ -1251,7 +1251,7 @@ bool build_large(struct chunk *c, int y0, int x0)
 
 		/* Object (80%) or Stairs (20%) */
 		if (randint0(100) < 80)
-			place_object(c, y0, x0, c->depth, FALSE, FALSE, ORIGIN_SPECIAL, 0);
+			place_object(c, y0, x0, c->depth, false, false, ORIGIN_SPECIAL, 0);
 		else
 			place_random_stairs(c, y0, x0);
 
@@ -1302,10 +1302,10 @@ bool build_large(struct chunk *c, int y0, int x0)
 
 			/* Objects */
 			if (one_in_(3))
-				place_object(c, y0, x0 - 2, c->depth, FALSE, FALSE,
+				place_object(c, y0, x0 - 2, c->depth, false, false,
 							 ORIGIN_SPECIAL, 0);
 			if (one_in_(3))
-				place_object(c, y0, x0 + 2, c->depth, FALSE, FALSE,
+				place_object(c, y0, x0 + 2, c->depth, false, false,
 							 ORIGIN_SPECIAL, 0);
 		}
 
@@ -1372,7 +1372,7 @@ bool build_large(struct chunk *c, int y0, int x0)
 	}
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1384,47 +1384,47 @@ bool build_large(struct chunk *c, int y0, int x0)
  */
 bool mon_pit_hook(struct monster_race *race)
 {
-	bool match_base = TRUE;
-	bool match_color = TRUE;
+	bool match_base = true;
+	bool match_color = true;
 
 	assert(race);
 	assert(dun->pit_type);
 
 	if (rf_has(race->flags, RF_UNIQUE))
-		return FALSE;
+		return false;
 	else if (!rf_is_subset(race->flags, dun->pit_type->flags))
-		return FALSE;
+		return false;
 	else if (rf_is_inter(race->flags, dun->pit_type->forbidden_flags))
-		return FALSE;
+		return false;
 	else if (!rsf_is_subset(race->spell_flags, dun->pit_type->spell_flags))
-		return FALSE;
+		return false;
 	else if (rsf_is_inter(race->spell_flags, dun->pit_type->forbidden_spell_flags))
-		return FALSE;
+		return false;
 	else if (dun->pit_type->forbidden_monsters) {
 		struct pit_forbidden_monster *monster;
 		for (monster = dun->pit_type->forbidden_monsters; monster; monster = monster->next) {
 			if (race == monster->race)
-				return FALSE;
+				return false;
 		}
 	}
 
 	if (dun->pit_type->bases) {
 		struct pit_monster_profile *bases;
-		match_base = FALSE;
+		match_base = false;
 
 		for (bases = dun->pit_type->bases; bases; bases = bases->next) {
 			if (race->base == bases->base)
-				match_base = TRUE;
+				match_base = true;
 		}
 	}
 	
 	if (dun->pit_type->colors) {
 		struct pit_color_profile *colors;
-		match_color = FALSE;
+		match_color = false;
 
 		for (colors = dun->pit_type->colors; colors; colors = colors->next) {
 			if (race->d_attr == colors->color)
-				match_color = TRUE;
+				match_color = true;
 		}
 	}
 
@@ -1502,8 +1502,8 @@ bool build_nest(struct chunk *c, int y0, int x0)
 	int i;
 	int alloc_obj;
 	struct monster_race *what[64];
-	bool empty = FALSE;
-	int light = FALSE;
+	bool empty = false;
+	int light = false;
 	int size_vary = randint0(4);
 	int height = 9;
 	int width = 11 + 2 * size_vary;
@@ -1511,7 +1511,7 @@ bool build_nest(struct chunk *c, int y0, int x0)
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height + 2, width + 2))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Large room */
@@ -1556,14 +1556,14 @@ bool build_nest(struct chunk *c, int y0, int x0)
 		what[i] = get_mon_num(c->depth + 10);
 
 		/* Notice failure */
-		if (!what[i]) empty = TRUE;
+		if (!what[i]) empty = true;
 	}
 
 	/* Prepare allocation table */
 	get_mon_num_prep(NULL);
 
 	/* Oops */
-	if (empty) return FALSE;
+	if (empty) return false;
 
 	/* Describe */
 	ROOM_LOG("Monster nest (%s)", dun->pit_type->name);
@@ -1576,16 +1576,16 @@ bool build_nest(struct chunk *c, int y0, int x0)
 		for (x = x1; x <= x2; x++) {
 			/* Figure out what monster is being used, and place that monster */
 			struct monster_race *race = what[randint0(64)];
-			place_new_monster(c, y, x, race, FALSE, FALSE, ORIGIN_DROP_PIT);
+			place_new_monster(c, y, x, race, false, false, ORIGIN_DROP_PIT);
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
-				place_object(c, y, x, c->depth + 10, one_in_(3), FALSE,
+				place_object(c, y, x, c->depth + 10, one_in_(3), false,
 							 ORIGIN_PIT, 0);
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1627,8 +1627,8 @@ bool build_pit(struct chunk *c, int y0, int x0)
 {
 	struct monster_race *what[16];
 	int i, j, y, x, y1, x1, y2, x2;
-	bool empty = FALSE;
-	int light = FALSE;
+	bool empty = false;
+	int light = false;
 	int alloc_obj;
 	int height = 9;
 	int width = 15;
@@ -1636,7 +1636,7 @@ bool build_pit(struct chunk *c, int y0, int x0)
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height + 2, width + 2))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Large room */
@@ -1675,7 +1675,7 @@ bool build_pit(struct chunk *c, int y0, int x0)
 		what[i] = get_mon_num(c->depth + 10);
 
 		/* Notice failure */
-		if (!what[i]) empty = TRUE;
+		if (!what[i]) empty = true;
 	}
 
 	/* Prepare allocation table */
@@ -1683,7 +1683,7 @@ bool build_pit(struct chunk *c, int y0, int x0)
 
 	/* Oops */
 	if (empty)
-		return FALSE;
+		return false;
 
 	ROOM_LOG("Monster pit (%s)", dun->pit_type->name);
 
@@ -1715,68 +1715,68 @@ bool build_pit(struct chunk *c, int y0, int x0)
 
 	/* Top and bottom rows (middle) */
 	for (x = x0 - 3; x <= x0 + 3; x++) {
-		place_new_monster(c, y0 - 2, x, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y0 + 2, x, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 - 2, x, what[0], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 + 2, x, what[0], false, false, ORIGIN_DROP_PIT);
 	}
     
 	/* Corners */
 	for (x = x0 - 5; x <= x0 - 4; x++) {
-		place_new_monster(c, y0 - 2, x, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y0 + 2, x, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 - 2, x, what[1], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 + 2, x, what[1], false, false, ORIGIN_DROP_PIT);
 	}
     
 	for (x = x0 + 4; x <= x0 + 5; x++) {
-		place_new_monster(c, y0 - 2, x, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y0 + 2, x, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 - 2, x, what[1], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 + 2, x, what[1], false, false, ORIGIN_DROP_PIT);
 	}
     
 	/* Corners */
 
 	/* Middle columns */
 	for (y = y0 - 1; y <= y0 + 1; y++) {
-		place_new_monster(c, y, x0 - 5, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 5, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 5, what[0], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 5, what[0], false, false, ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 4, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 4, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 4, what[1], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 4, what[1], false, false, ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 3, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 3, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 3, what[2], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 3, what[2], false, false, ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 2, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 2, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 2, what[3], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 2, what[3], false, false, ORIGIN_DROP_PIT);
 	}
     
 	/* Corners around the middle monster */
-	place_new_monster(c, y0 - 1, x0 - 1, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
-	place_new_monster(c, y0 - 1, x0 + 1, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
-	place_new_monster(c, y0 + 1, x0 - 1, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
-	place_new_monster(c, y0 + 1, x0 + 1, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0 - 1, x0 - 1, what[4], false, false, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0 - 1, x0 + 1, what[4], false, false, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0 + 1, x0 - 1, what[4], false, false, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0 + 1, x0 + 1, what[4], false, false, ORIGIN_DROP_PIT);
 
 	/* Above/Below the center monster */
 	for (x = x0 - 1; x <= x0 + 1; x++) {
-		place_new_monster(c, y0 + 1, x, what[5], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y0 - 1, x, what[5], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 + 1, x, what[5], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 - 1, x, what[5], false, false, ORIGIN_DROP_PIT);
 	}
 
 	/* Next to the center monster */
-	place_new_monster(c, y0, x0 + 1, what[6], FALSE, FALSE, ORIGIN_DROP_PIT);
-	place_new_monster(c, y0, x0 - 1, what[6], FALSE, FALSE, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0, x0 + 1, what[6], false, false, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0, x0 - 1, what[6], false, false, ORIGIN_DROP_PIT);
 
 	/* Center monster */
-	place_new_monster(c, y0, x0, what[7], FALSE, FALSE, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0, x0, what[7], false, false, ORIGIN_DROP_PIT);
 
 	/* Place some objects */
 	for (y = y0 - 2; y <= y0 + 2; y++) {
 		for (x = x0 - 9; x <= x0 + 9; x++) {
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
-				place_object(c, y, x, c->depth + 10, one_in_(3), FALSE,
+				place_object(c, y, x, c->depth + 10, one_in_(3), false,
 							 ORIGIN_PIT, 0);
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1801,19 +1801,19 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 	assert(c);
 
 	/* Occasional light */
-	light = c->depth <= randint1(25) ? TRUE : FALSE;
+	light = c->depth <= randint1(25) ? true : false;
 
 	/* Set the random door position here so it generates doors in all squares
 	 * marked with the same number */
 	rnddoors = randint1(doors);
 
 	/* Decide whether optional walls will be generated this time */
-	rndwalls = one_in_(2) ? TRUE : FALSE;
+	rndwalls = one_in_(2) ? true : false;
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, ymax + 2, xmax + 2))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Place dungeon features and objects */
@@ -1864,7 +1864,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 				/* Put something nice in this square
 				 * Object (80%) or Stairs (20%) */
 				if (randint0(100) < 80)
-					place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_SPECIAL, 0);
+					place_object(c, y, x, c->depth, false, false, ORIGIN_SPECIAL, 0);
 				else
 					place_random_stairs(c, y, x);
 
@@ -1898,7 +1898,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			case '[': {
 				
 				/* Place an object of the template's specified tval */
-				place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_SPECIAL, tval);
+				place_object(c, y, x, c->depth, false, false, ORIGIN_SPECIAL, tval);
 				break;
 			}
 			case '1':
@@ -1926,7 +1926,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1943,16 +1943,16 @@ static bool build_room_template_type(struct chunk *c, int y0, int x0, int typ)
 	struct room_template *room = random_room_template(typ);
 	
 	if (room == NULL)
-		return FALSE;
+		return false;
 
 	/* Build the room */
 	if (!build_room_template(c, y0, x0, room->hgt, room->wid, room->dor,
 							 room->text, room->tval))
-		return FALSE;
+		return false;
 
 	ROOM_LOG("Room template (%s)", room->name);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1993,7 +1993,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, v->hgt + 2, v->wid + 2))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Get the room corners */
@@ -2018,7 +2018,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 			assert(square_isempty(c, y, x));
 
 			/* By default vault squares are marked icky */
-			icky = TRUE;
+			icky = true;
 
 			/* Analyze the grid */
 			switch (*t) {
@@ -2028,7 +2028,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				 * vault. We don't mark it icky so that the tunneling
 				 * code knows its allowed to remove this wall. */
 				set_marked_granite(c, y, x, SQUARE_WALL_OUTER);
-				icky = FALSE;
+				icky = false;
 				break;
 			}
 				/* Inner granite wall */
@@ -2050,7 +2050,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				/* Treasure or a trap */
 			case '&': {
 				if (randint0(100) < 75)
-					place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_VAULT, 0);
+					place_object(c, y, x, c->depth, false, false, ORIGIN_VAULT, 0);
 				else
 					place_trap(c, y, x, -1, c->depth);
 				break;
@@ -2100,57 +2100,57 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					/* An ordinary monster, object (sometimes good), or trap. */
 				case '1': {
 					if (one_in_(2))
-						pick_and_place_monster(c, y, x, c->depth , TRUE, TRUE,
+						pick_and_place_monster(c, y, x, c->depth , true, true,
 											   ORIGIN_DROP_VAULT);
 					else if (one_in_(2))
-						place_object(c, y, x, c->depth, one_in_(8) ? TRUE : FALSE, FALSE, ORIGIN_VAULT, 0);
+						place_object(c, y, x, c->depth, one_in_(8) ? true : false, false, ORIGIN_VAULT, 0);
 					else
 						place_trap(c, y, x, -1, c->depth);
 					break;
 				}
 					/* Slightly out of depth monster. */
-				case '2': pick_and_place_monster(c, y, x, c->depth + 5, TRUE, TRUE, ORIGIN_DROP_VAULT); break;
+				case '2': pick_and_place_monster(c, y, x, c->depth + 5, true, true, ORIGIN_DROP_VAULT); break;
 					/* Slightly out of depth object. */
-				case '3': place_object(c, y, x, c->depth + 3, FALSE, FALSE, 
+				case '3': place_object(c, y, x, c->depth + 3, false, false, 
 									   ORIGIN_VAULT, 0); break;
 					/* Monster and/or object */
 				case '4': {
 					if (one_in_(2))
-						pick_and_place_monster(c, y, x, c->depth + 3, TRUE, 
-											   TRUE, ORIGIN_DROP_VAULT);
+						pick_and_place_monster(c, y, x, c->depth + 3, true, 
+											   true, ORIGIN_DROP_VAULT);
 					if (one_in_(2))
-						place_object(c, y, x, c->depth + 7, FALSE, FALSE,
+						place_object(c, y, x, c->depth + 7, false, false,
 									 ORIGIN_VAULT, 0);
 					break;
 				}
 					/* Out of depth object. */
-				case '5': place_object(c, y, x, c->depth + 7, FALSE, FALSE,
+				case '5': place_object(c, y, x, c->depth + 7, false, false,
 									   ORIGIN_VAULT, 0); break;
 					/* Out of depth monster. */
-				case '6': pick_and_place_monster(c, y, x, c->depth + 11, TRUE, TRUE, ORIGIN_DROP_VAULT); break;
+				case '6': pick_and_place_monster(c, y, x, c->depth + 11, true, true, ORIGIN_DROP_VAULT); break;
 					/* Very out of depth object. */
-				case '7': place_object(c, y, x, c->depth + 15, FALSE, FALSE,
+				case '7': place_object(c, y, x, c->depth + 15, false, false,
 									   ORIGIN_VAULT, 0); break;
 					/* Very out of depth monster. */
-				case '0': pick_and_place_monster(c, y, x, c->depth + 20, TRUE, TRUE, ORIGIN_DROP_VAULT); break;
+				case '0': pick_and_place_monster(c, y, x, c->depth + 20, true, true, ORIGIN_DROP_VAULT); break;
 					/* Meaner monster, plus treasure */
 				case '9': {
-					pick_and_place_monster(c, y, x, c->depth + 9, TRUE, TRUE,
+					pick_and_place_monster(c, y, x, c->depth + 9, true, true,
 										   ORIGIN_DROP_VAULT);
-					place_object(c, y, x, c->depth + 7, TRUE, FALSE,
+					place_object(c, y, x, c->depth + 7, true, false,
 								 ORIGIN_VAULT, 0);
 					break;
 				}
 					/* Nasty monster and treasure */
 				case '8': {
-					pick_and_place_monster(c, y, x, c->depth + 40, TRUE, TRUE,
+					pick_and_place_monster(c, y, x, c->depth + 40, true, true,
 										   ORIGIN_DROP_VAULT);
-					place_object(c, y, x, c->depth + 20, TRUE, TRUE,
+					place_object(c, y, x, c->depth + 20, true, true,
 								 ORIGIN_VAULT, 0);
 					break;
 				}
 					/* A chest. */
-				case '~': place_object(c, y, x, c->depth + 5, TRUE, TRUE,
+				case '~': place_object(c, y, x, c->depth + 5, true, true,
 									   ORIGIN_VAULT, TV_CHEST); break;
 					/* Treasure. */
 				case '$': place_gold(c, y, x, c->depth, ORIGIN_VAULT);break;
@@ -2168,7 +2168,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					case 8: tval = TV_HARD_ARMOR; break;
 					case 9: tval = TV_DRAG_ARMOR; break;
 					}
-					place_object(c, y, x, c->depth + 3, TRUE, FALSE,
+					place_object(c, y, x, c->depth + 3, true, false,
 								 ORIGIN_VAULT, tval);
 					break;
 				}
@@ -2181,31 +2181,31 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					case 3: tval = TV_HAFTED; break;
 					case 4: tval = TV_BOW; break;
 					}
-					place_object(c, y, x, c->depth + 3, TRUE, FALSE,
+					place_object(c, y, x, c->depth + 3, true, false,
 								 ORIGIN_VAULT, tval);
 					break;
 				}
 					/* Ring. */
-				case '=': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+				case '=': place_object(c, y, x, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_RING); break;
 					/* Amulet. */
-				case '"': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+				case '"': place_object(c, y, x, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_AMULET); break;
 					/* Potion. */
-				case '!': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+				case '!': place_object(c, y, x, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_POTION); break;
 					/* Scroll. */
-				case '?': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+				case '?': place_object(c, y, x, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_SCROLL); break;
 					/* Staff. */
-				case '_': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+				case '_': place_object(c, y, x, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_STAFF); break;
 					/* Wand or rod. */
-				case '-': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+				case '-': place_object(c, y, x, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, one_in_(2) ? TV_WAND : TV_ROD);
 					break;
 					/* Food or mushroom. */
-				case ',': place_object(c, y, x, c->depth + 3, one_in_(4), FALSE,
+				case ',': place_object(c, y, x, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_FOOD); break;
 				}
 		}
@@ -2214,7 +2214,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 	/* Place specified monsters */
 	get_vault_monsters(c, racial_symbol, v->typ, data, y1, y2, x1, x2);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -2232,19 +2232,19 @@ static bool build_vault_type(struct chunk *c, int y0, int x0, const char *typ)
 	struct vault *v = random_vault(c->depth, typ);
 	if (v == NULL) {
 		/*quit_fmt("got NULL from random_vault(%s)", typ);*/
-		return FALSE;
+		return false;
 	}
 
 	/* Build the vault */
 	if (!build_vault(c, y0, x0, v))
-		return FALSE;
+		return false;
 
 	ROOM_LOG("%s (%s)", typ, v->name);
 
 	/* Boost the rating */
 	c->mon_rating += v->rat;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -2321,7 +2321,7 @@ bool build_greater_vault(struct chunk *c, int y0, int x0)
 	int denominator = 3;
 	
 	/* Only try to build a GV as the first room. */
-	if (dun->cent_n > 0) return FALSE;
+	if (dun->cent_n > 0) return false;
 
 	/* Level 90+ has a 2/3 chance, level 80-89 has 4/9, ... */
 	for(i = 90; i > c->depth; i -= 10) {
@@ -2330,7 +2330,7 @@ bool build_greater_vault(struct chunk *c, int y0, int x0)
 	}
 
 	/* Attempt to pass the depth check and build a GV */
-	if (randint0(denominator) >= numerator) return FALSE;
+	if (randint0(denominator) >= numerator) return false;
 
 	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
 		return build_vault_type(c, y0, x0, "Greater vault (new)");
@@ -2378,7 +2378,7 @@ bool build_moria(struct chunk *c, int y0, int x0)
 		if ((y0 >= c->height) || (x0 >= c->width)) {
 			if (!find_space(&y0, &x0, height, width)) {
 				if (i == 0) continue;  /* Failed first attempt */
-				if (i == 1) return (FALSE);  /* Failed second attempt */
+				if (i == 1) return (false);  /* Failed second attempt */
 			} else break;  /* Success */
 		} else break;   /* Not finding space */
 	}
@@ -2391,8 +2391,8 @@ bool build_moria(struct chunk *c, int y0, int x0)
 
 
 	/* Generate starburst room.  Return immediately if out of bounds. */
-	if (!generate_starburst_room(c, y1, x1, y2, x2, light, FEAT_FLOOR, TRUE)) {
-		return (FALSE);
+	if (!generate_starburst_room(c, y1, x1, y2, x2, light, FEAT_FLOOR, true)) {
+		return (false);
 	}
 
 	/* Sometimes, the room may have rubble in it. */
@@ -2400,11 +2400,11 @@ bool build_moria(struct chunk *c, int y0, int x0)
 		(void) generate_starburst_room(c, y1 + randint0(height / 4),
 									   x1 + randint0(width / 4),
 									   y2 - randint0(height / 4),
-									   x2 - randint0(width / 4), FALSE,
-									   FEAT_RUBBLE, FALSE);
+									   x2 - randint0(width / 4), false,
+									   FEAT_RUBBLE, false);
 
 	/* Success */
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -2588,7 +2588,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 	char name[40];
 
 	/* Deeper in the dungeon, chambers are less likely to be lit. */
-	bool light = (randint0(45) > c->depth) ? TRUE : FALSE;
+	bool light = (randint0(45) > c->depth) ? true : false;
 
 	/* Calculate a level-dependent room size. */
 	height = 20 + m_bonus(20, c->depth);
@@ -2597,7 +2597,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height, width))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Calculate the borders of the room. */
@@ -2608,7 +2608,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 
 	/* Make certain the room does not cross the dungeon edge. */
 	if ((!square_in_bounds(c, y1, x1)) || (!square_in_bounds(c, y2, x2)))
-		return (FALSE);
+		return (false);
 
 	/* Determine how much space we have. */
 	area = ABS(y2 - y1) * ABS(x2 - x1);
@@ -2688,7 +2688,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 	/* Attempt to change every in-room magma grid to open floor. */
 	for (i = 0; i < 100; i++) {
 		/* Assume this run will do no useful work. */
-		bool joy = FALSE;
+		bool joy = false;
 
 		/* Make new doors and tunnels between magma and open floor. */
 		for (y = y1; y < y2; y++) {
@@ -2718,7 +2718,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 
 					/* If we find open floor, place a door. */
 					if (c->squares[yy2][xx2].feat == FEAT_FLOOR) {
-						joy = TRUE;
+						joy = true;
 
 						/* Make a broken door in the wall grid. */
 						square_set_feat(c, yy1, xx1, FEAT_BROKEN);
@@ -2739,7 +2739,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 
 						/* If we /now/ find floor, make a tunnel. */
 						if (c->squares[yy3][xx3].feat == FEAT_FLOOR) {
-							joy = TRUE;
+							joy = true;
 
 							/* Turn both wall grids into floor. */
 							square_set_feat(c, yy1, xx1, FEAT_FLOOR);
@@ -2857,7 +2857,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 	ROOM_LOG("Room of chambers (%s)", strlen(name) ? name : "empty");
 
 	/* Success. */
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -2887,10 +2887,10 @@ bool build_huge(struct chunk *c, int y0, int x0)
 	int width = 45 + randint0(50);
 
 	/* Only try to build a huge room as the first room. */
-	if (dun->cent_n > 0) return FALSE;
+	if (dun->cent_n > 0) return false;
 
 	/* Flat 5% chance */
-	if (!one_in_(20)) return FALSE;
+	if (!one_in_(20)) return false;
 
 	/* This room is usually lit. */
 	light = !one_in_(3);
@@ -2898,7 +2898,7 @@ bool build_huge(struct chunk *c, int y0, int x0)
 	/* Find and reserve some space.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
 		if (!find_space(&y0, &x0, height, width))
-			return (FALSE);
+			return (false);
 	}
 
 	/* Locate the room */
@@ -2908,8 +2908,8 @@ bool build_huge(struct chunk *c, int y0, int x0)
 	x2 = x1 + width - 1;
 
 	/* Make a huge starburst room with optional light. */
-	if (!generate_starburst_room(c, y1, x1, y2, x2, light, FEAT_FLOOR, FALSE))
-		return (FALSE);
+	if (!generate_starburst_room(c, y1, x1, y2, x2, light, FEAT_FLOOR, false))
+		return (false);
 
 
 	/* Often, add rubble to break things up a bit. */
@@ -2930,7 +2930,7 @@ bool build_huge(struct chunk *c, int y0, int x0)
 
 			/* Make the rubble field. */
 			generate_starburst_room(c, y1_tmp, x1_tmp, y2_tmp, x2_tmp,
-									FALSE, FEAT_RUBBLE, FALSE);
+									false, FEAT_RUBBLE, false);
 		}
 	}
 
@@ -2938,7 +2938,7 @@ bool build_huge(struct chunk *c, int y0, int x0)
 	ROOM_LOG("Huge room");
 
 	/* Success. */
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -2971,10 +2971,10 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	int by, bx;
 
 	/* Enforce the room profile's minimum depth */
-	if (c->depth < profile.level) return FALSE;
+	if (c->depth < profile.level) return false;
 
 	/* Only allow at most two pit/nests room per level */
-	if ((dun->pit_num >= z_info->level_pit_max) && (profile.pit)) return FALSE;
+	if ((dun->pit_num >= z_info->level_pit_max) && (profile.pit)) return false;
 
 	/* Expand the number of blocks if we might overflow */
 	if (profile.height % dun->block_hgt) by2++;
@@ -2984,17 +2984,17 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	if (finds_own_space) {
 		/* Try to build a room, pass silly place so room finds its own */
 		if (!profile.builder(c, c->height, c->width))
-			return FALSE;
+			return false;
 	} else {
 		/* Never run off the screen */
-		if (by1 < 0 || by2 >= dun->row_blocks) return FALSE;
-		if (bx1 < 0 || bx2 >= dun->col_blocks) return FALSE;
+		if (by1 < 0 || by2 >= dun->row_blocks) return false;
+		if (bx1 < 0 || bx2 >= dun->col_blocks) return false;
 
 		/* Verify open space */
 		for (by = by1; by <= by2; by++) {
 			for (bx = bx1; bx <= bx2; bx++) {
 				/* previous rooms prevent new ones */
-				if (dun->room_map[by][bx]) return FALSE;
+				if (dun->room_map[by][bx]) return false;
 			}
 		}
 
@@ -3003,7 +3003,7 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 		x = ((bx1 + bx2 + 1) * dun->block_wid) / 2;
 
 		/* Try to build a room */
-		if (!profile.builder(c, y, x)) return FALSE;
+		if (!profile.builder(c, y, x)) return false;
 
 		/* Save the room location */
 		if (dun->cent_n < z_info->level_room_max) {
@@ -3015,7 +3015,7 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 		/* Reserve some blocks */
 		for (by = by1; by < by2; by++) {
 			for (bx = bx1; bx < bx2; bx++) {
-				dun->room_map[by][bx] = TRUE;
+				dun->room_map[by][bx] = true;
 			}
 		}
 	}
@@ -3024,5 +3024,5 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	if (profile.pit) dun->pit_num++;
 
 	/* Success */
-	return TRUE;
+	return true;
 }

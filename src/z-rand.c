@@ -29,10 +29,10 @@
  * algorithm, used with permission. See below for copyright information
  * about the WELL implementation.
  *
- * To use of the "simple" RNG, activate it via "Rand_quick = TRUE" and
+ * To use of the "simple" RNG, activate it via "Rand_quick = true" and
  * "Rand_value = seed". After that it will be automatically used instead of
  * the "complex" RNG. When you are done, you can de-activate it via
- * "Rand_quick = FALSE". You can also choose a new seed.
+ * "Rand_quick = false". You can also choose a new seed.
  */
 
 /* begin WELL RNG
@@ -85,14 +85,14 @@ static u32b WELLRNG1024a (void){
 /**
  * Whether to use the simple RNG or not.
  */
-bool Rand_quick = TRUE;
+bool Rand_quick = true;
 
 /**
  * The current "seed" of the simple RNG.
  */
 u32b Rand_value;
 
-static bool rand_fixed = FALSE;
+static bool rand_fixed = false;
 static u32b rand_fixval = 0;
 
 /**
@@ -142,7 +142,7 @@ void Rand_init(void)
 #endif
 
 		/* Use the complex RNG */
-		Rand_quick = FALSE;
+		Rand_quick = false;
 
 		/* Seed the "complex" RNG */
 		Rand_state_init(seed);
@@ -486,11 +486,11 @@ int randcalc(random_value v, int level, aspect rand_aspect)
 bool randcalc_valid(random_value v, int test)
 {
 	if (test < randcalc(v, 0, MINIMISE))
-		return FALSE;
+		return false;
 	else if (test > randcalc(v, 0, MAXIMISE))
-		return FALSE;
+		return false;
 	else
-		return TRUE;
+		return true;
 }
 
 /**
@@ -503,7 +503,7 @@ bool randcalc_varies(random_value v)
 
 void rand_fix(u32b val)
 {
-	rand_fixed = TRUE;
+	rand_fixed = true;
 	rand_fixval = val;
 }
 

@@ -230,11 +230,11 @@ bool spell_okay_list(bool (*spell_test)(int spell),
 		const int spells[], int n_spells)
 {
 	int i;
-	bool okay = FALSE;
+	bool okay = false;
 
 	for (i = 0; i < n_spells; i++)
 		if (spell_test(spells[i]))
-			okay = TRUE;
+			okay = true;
 
 	return okay;
 }
@@ -410,9 +410,9 @@ bool spell_cast(int spell_index, int dir)
 		msg("You failed to concentrate hard enough!");
 	} else {
 		/* Cast the spell */
-		if (!effect_do(spell->effect, NULL, ident, TRUE, dir, beam, FALSE)) {
+		if (!effect_do(spell->effect, NULL, ident, true, dir, beam, false)) {
 			mem_free(ident);
-			return FALSE;
+			return false;
 		}
 
 		/* A spell was cast */
@@ -449,7 +449,7 @@ bool spell_cast(int spell_index, int dir)
 
 		/* Bypass free action */
 		(void)player_inc_timed(player, TMD_PARALYZED, randint1(5 * oops + 1),
-							   TRUE, FALSE);
+							   true, false);
 
 		/* Damage CON (possibly permanently) */
 		if (randint0(100) < 50) {
@@ -467,7 +467,7 @@ bool spell_cast(int spell_index, int dir)
 	player->upkeep->redraw |= (PR_MANA);
 
 	mem_free(ident);
-	return TRUE;
+	return true;
 }
 
 

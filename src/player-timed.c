@@ -101,10 +101,10 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+	if ((idx < 0) || (idx > TMD_MAX)) return false;
 
 	/* No change */
-	if (p->timed[idx] == v) return FALSE;
+	if (p->timed[idx] == v) return false;
 
 	/* Hack -- call other functions */
 	if (idx == TMD_STUN) return set_stun(p, v);
@@ -112,15 +112,15 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 
 	/* Don't mention effects which already match the player state. */
 	if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID))
-		notify = FALSE;
+		notify = false;
 	else if (idx == TMD_OPP_ELEC && player_is_immune(p, ELEM_ELEC))
-		notify = FALSE;
+		notify = false;
 	else if (idx == TMD_OPP_FIRE && player_is_immune(p, ELEM_FIRE))
-		notify = FALSE;
+		notify = false;
 	else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD))
-		notify = FALSE;
+		notify = false;
 	else if (idx == TMD_OPP_CONF && player_of_has(p, OF_PROT_CONF))
-		notify = FALSE;
+		notify = false;
 
 	/* Find the effect */
 	effect = &effects[idx];
@@ -128,10 +128,10 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	/* Always mention start or finish, otherwise on request */
 	if (v == 0) {
 		msgt(MSG_RECOVER, "%s", effect->on_end);
-		notify = TRUE;
+		notify = true;
 	} else if (p->timed[idx] == 0) {
 		msgt(effect->msg, "%s", effect->on_begin);
-		notify = TRUE;
+		notify = true;
 	} else if (notify) {
 		/* Decrementing */
 		if (p->timed[idx] > v && effect->on_decrease)
@@ -147,10 +147,10 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 
 	/* Sort out the sprint effect */
 	if (idx == TMD_SPRINT && v == 0)
-		player_inc_timed(p, TMD_SLOW, 100, TRUE, FALSE);
+		player_inc_timed(p, TMD_SLOW, 100, true, false);
 
 	/* Nothing to notice */
-	if (!notify) return FALSE;
+	if (!notify) return false;
 
 	/* Disturb */
 	disturb(p, 0);
@@ -163,12 +163,12 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	handle_stuff(p);
 
 	/* Result */
-	return TRUE;
+	return true;
 }
 
 /**
- * Increase the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
- * Check for resistance to the effect if `check` is TRUE.
+ * Increase the timed effect `idx` by `v`.  Mention this if `notify` is true.
+ * Check for resistance to the effect if `check` is true.
  */
 bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 {
@@ -178,7 +178,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	effect = &effects[idx];
 
 	/* Check we have a valid effect */
-	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+	if ((idx < 0) || (idx > TMD_MAX)) return false;
 
 	/* Check that @ can be affected by this effect */
 	if (check && effect->fail_code) {
@@ -195,30 +195,30 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 			if (player_of_has(p, effect->fail)) {
 				if (mon)
 				msg("You resist the effect!");
-				return FALSE;
+				return false;
 			}
 		} else if (effect->fail_code == TMD_FAIL_FLAG_RESIST) {
 			/* Effect is inhibited by a resist */
 			equip_notice_element(p, effect->fail);
 			if (p->state.el_info[effect->fail].res_level > 0)
-				return FALSE;
+				return false;
 		} else if (effect->fail_code == TMD_FAIL_FLAG_VULN) {
 			/* Effect is inhibited by a vulnerability 
 			 * the asymmetry with resists is OK for now - NRM */
 			if (p->state.el_info[effect->fail].res_level < 0) {
 				equip_notice_element(p, effect->fail);
-				return FALSE;
+				return false;
 			}
 		}
 
 		/* Special case */
 		if (idx == TMD_POISONED && p->timed[TMD_OPP_POIS])
-			return FALSE;
+			return false;
 	}
 
 	/* Paralysis should be non-cumulative */
 	if (idx == TMD_PARALYZED && p->timed[TMD_PARALYZED] > 0)
-		return FALSE;
+		return false;
 
 	/* Set v */
 	v = v + p->timed[idx];
@@ -227,12 +227,12 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 }
 
 /**
- * Decrease the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
+ * Decrease the timed effect `idx` by `v`.  Mention this if `notify` is true.
  */
 bool player_dec_timed(struct player *p, int idx, int v, bool notify)
 {
 	/* Check we have a valid effect */
-	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+	if ((idx < 0) || (idx > TMD_MAX)) return false;
 
 	/* Set v */
 	v = p->timed[idx] - v;
@@ -241,7 +241,7 @@ bool player_dec_timed(struct player *p, int idx, int v, bool notify)
 }
 
 /**
- * Clear the timed effect `idx`.  Mention this if `notify` is TRUE.
+ * Clear the timed effect `idx`.  Mention this if `notify` is true.
  */
 bool player_clear_timed(struct player *p, int idx, bool notify)
 {
@@ -259,7 +259,7 @@ static bool set_stun(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
-	bool notice = FALSE;
+	bool notice = false;
 
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -320,7 +320,7 @@ static bool set_stun(struct player *p, int v)
 		}
 
 		/* Notice */
-		notice = TRUE;
+		notice = true;
 	} else if (new_aux < old_aux) {
 		/* Describe the state */
 		switch (new_aux)
@@ -335,14 +335,14 @@ static bool set_stun(struct player *p, int v)
 		}
 
 		/* Notice */
-		notice = TRUE;
+		notice = true;
 	}
 
 	/* Use the value */
 	p->timed[TMD_STUN] = v;
 
 	/* No change */
-	if (!notice) return (FALSE);
+	if (!notice) return (false);
 
 	/* Disturb and update */
 	disturb(player, 0);
@@ -351,7 +351,7 @@ static bool set_stun(struct player *p, int v)
 	handle_stuff(player);
 
 	/* Result */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -364,7 +364,7 @@ static bool set_cut(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
-	bool notice = FALSE;
+	bool notice = false;
 
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -477,7 +477,7 @@ static bool set_cut(struct player *p, int v)
 		}
 
 		/* Notice */
-		notice = TRUE;
+		notice = true;
 	} else if (new_aux < old_aux) {
 		/* Describe the state */
 		switch (new_aux)
@@ -492,14 +492,14 @@ static bool set_cut(struct player *p, int v)
 		}
 
 		/* Notice */
-		notice = TRUE;
+		notice = true;
 	}
 
 	/* Use the value */
 	p->timed[TMD_CUT] = v;
 
 	/* No change */
-	if (!notice) return (FALSE);
+	if (!notice) return (false);
 
 	/* Disturb and update */
 	disturb(player, 0);
@@ -508,7 +508,7 @@ static bool set_cut(struct player *p, int v)
 	handle_stuff(player);
 
 	/* Result */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -530,7 +530,7 @@ bool player_set_food(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
-	bool notice = FALSE;
+	bool notice = false;
 
 	/* Hack -- Force good values */
 	v = MIN(v, PY_FOOD_MAX);
@@ -568,7 +568,7 @@ bool player_set_food(struct player *p, int v)
 		}
 
 		/* Change */
-		notice = TRUE;
+		notice = true;
 	} else if (new_aux < old_aux) {
 		switch (new_aux) {
 			case 0:
@@ -586,14 +586,14 @@ bool player_set_food(struct player *p, int v)
 		}
 
 		/* Change */
-		notice = TRUE;
+		notice = true;
 	}
 
 	/* Use the value */
 	p->food = v;
 
 	/* Nothing to notice */
-	if (!notice) return (FALSE);
+	if (!notice) return (false);
 
 	/* Disturb and update */
 	disturb(player, 0);
@@ -602,7 +602,7 @@ bool player_set_food(struct player *p, int v)
 	handle_stuff(player);
 
 	/* Result */
-	return (TRUE);
+	return (true);
 }
 
 

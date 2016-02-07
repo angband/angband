@@ -115,7 +115,7 @@ void keymap_add(int keymap, struct keypress trigger, struct keypress *actions, b
 
 
 /**
- * Remove a keymap.  Return TRUE if one was removed.
+ * Remove a keymap.  Return true if one was removed.
  */
 bool keymap_remove(int keymap, struct keypress trigger)
 {
@@ -131,13 +131,13 @@ bool keymap_remove(int keymap, struct keypress trigger)
 			else
 				keymaps[keymap] = k->next;
 			mem_free(k);
-			return TRUE;
+			return true;
 		}
 
 		prev = k;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -180,12 +180,12 @@ void keymap_dump(ang_file *fff)
 		if (!k->user) continue;
 
 		/* Encode the action */
-		keypress_to_text(buf, sizeof(buf), k->actions, FALSE);
+		keypress_to_text(buf, sizeof(buf), k->actions, false);
 		file_putf(fff, "keymap-act:%s\n", buf);
 
 		/* Convert the key into a string */
 		key[0] = k->key;
-		keypress_to_text(buf, sizeof(buf), key, TRUE);
+		keypress_to_text(buf, sizeof(buf), key, true);
 		file_putf(fff, "keymap-input:%d:%s\n", mode, buf);
 
 		file_putf(fff, "\n");

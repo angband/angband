@@ -53,10 +53,10 @@ void do_cmd_wizard(void)
 
 	/* Toggle mode */
 	if (player->wizard) {
-		player->wizard = FALSE;
+		player->wizard = false;
 		msg("Wizard mode off.");
 	} else {
-		player->wizard = TRUE;
+		player->wizard = true;
 		msg("Wizard mode on.");
 	}
 
@@ -76,7 +76,7 @@ void do_cmd_wizard(void)
 void do_cmd_suicide(struct command *cmd)
 {
 	/* Commit suicide */
-	player->is_dead = TRUE;
+	player->is_dead = true;
 
 	/* Cause of death */
 	my_strcpy(player->died_from, "Quitting", sizeof(player->died_from));

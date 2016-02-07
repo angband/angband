@@ -30,12 +30,12 @@
 /**
  * Don't cache audio
  */
-static bool no_cache_audio = FALSE;
+static bool no_cache_audio = false;
 
 /**
  * Using mp3s
  */
-static bool use_mp3 = FALSE;
+static bool use_mp3 = false;
 
 /**
  * Arbitary limit on number of samples per event
@@ -107,17 +107,17 @@ static bool open_audio(void)
 	/* Initialize the SDL library */
 	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
 		plog_fmt("Couldn't initialize SDL: %s", SDL_GetError());
-		return FALSE;
+		return false;
 	}
 
 	/* Try to open the audio */
 	if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, 4096) < 0) {
 		plog_fmt("Couldn't open mixer: %s", SDL_GetError());
-		return FALSE;
+		return false;
 	}
 
 	/* Success */
-	return TRUE;
+	return true;
 }
 
 
@@ -135,7 +135,7 @@ static bool sound_sdl_init(bool no_cache)
 
 	/* Initialise the mixer  */
 	if (!open_audio())
-	    return FALSE;
+	    return false;
 
 
 	/* Find and open the config file */
@@ -146,7 +146,7 @@ static bool sound_sdl_init(bool no_cache)
 	if (!fff) {
 		plog_fmt("Failed to open sound config (%s):\n    %s", 
 		          path, strerror(errno));
-		return FALSE;
+		return false;
 	}
 
 	/* Parse the file */
@@ -196,7 +196,7 @@ static bool sound_sdl_init(bool no_cache)
          */
         while (cur_token) {
 			int num = samples[event].num;
-			bool got_file_type = FALSE;
+			bool got_file_type = false;
 
 			/* Don't allow too many samples */
 			if (num >= MAX_SAMPLES) break;
@@ -207,8 +207,8 @@ static bool sound_sdl_init(bool no_cache)
 
 			if (!got_file_type) {
 			        if (streq(path + strlen(path) - 3, "mp3")) {
-				        use_mp3 = TRUE;
-					got_file_type = TRUE;
+				        use_mp3 = true;
+					got_file_type = true;
 				}
 			}
 
@@ -261,7 +261,7 @@ static bool sound_sdl_init(bool no_cache)
 
 
 	/* Success */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -325,7 +325,7 @@ errr init_sound_sdl(int argc, char **argv)
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
 		if (prefix(argv[i], "-c")) {
-			no_cache_audio = TRUE;
+			no_cache_audio = true;
 			plog("Audio cache disabled.");
 			continue;
 		}

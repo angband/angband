@@ -70,7 +70,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 	bitflag f2[RSF_SIZE], ai_flags[OF_SIZE], ai_pflags[PF_SIZE];
 	struct element_info el[ELEM_MAX];
 
-	bool know_something = FALSE;
+	bool know_something = false;
 
 	/* Stupid monsters act randomly */
 	if (rf_has(mon->race->flags, RF_STUPID)) return;
@@ -105,12 +105,12 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 		of_copy(ai_flags, mon->known_pstate.flags);
 		pf_copy(ai_pflags, mon->known_pstate.pflags);
 		if (!of_is_empty(ai_flags) || !pf_is_empty(ai_pflags))
-			know_something = TRUE;
+			know_something = true;
 
 		for (i = 0; i < ELEM_MAX; i++) {
 			el[i].res_level = mon->known_pstate.el_info[i].res_level;
 			if (el[i].res_level != 0)
-				know_something = TRUE;
+				know_something = true;
 		}
 	}
 
@@ -145,11 +145,11 @@ static bool summon_possible(int y1, int x1)
 
 			/* If it's empty floor grid in line of sight, we're good */
 			if (square_isempty(cave, y, x) && los(cave, y1, x1, y, x))
-				return (TRUE);
+				return (true);
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -187,7 +187,7 @@ static int choose_attack_spell(bitflag f[RSF_SIZE])
 /**
  * Creatures can cast spells, shoot missiles, and breathe.
  *
- * Returns "TRUE" if a spell (or whatever) was (successfully) cast.
+ * Returns "true" if a spell (or whatever) was (successfully) cast.
  *
  * XXX XXX XXX This function could use some work, but remember to
  * keep it as optimized as possible, while retaining generic code.
@@ -239,38 +239,38 @@ bool make_attack_spell(struct monster *mon)
 	int py = player->py;
 
 	/* Extract the blind-ness */
-	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
+	bool blind = (player->timed[TMD_BLIND] ? true : false);
 
 	/* Extract the "see-able-ness" */
 	bool seen = (!blind && mflag_has(mon->mflag, MFLAG_VISIBLE));
 
 	/* Assume "normal" target */
-	bool normal = TRUE;
+	bool normal = true;
 
 	/* Cannot cast spells when confused */
-	if (mon->m_timed[MON_TMD_CONF]) return (FALSE);
+	if (mon->m_timed[MON_TMD_CONF]) return (false);
 
 	/* Cannot cast spells when nice */
-	if (mflag_has(mon->mflag, MFLAG_NICE)) return FALSE;
+	if (mflag_has(mon->mflag, MFLAG_NICE)) return false;
 
 	/* Hack -- Extract the spell probability */
 	chance = (mon->race->freq_innate + mon->race->freq_spell) / 2;
 
 	/* Not allowed to cast spells */
-	if (!chance) return FALSE;
+	if (!chance) return false;
 
 	/* Only do spells occasionally */
-	if (randint0(100) >= chance) return FALSE;
+	if (randint0(100) >= chance) return false;
 
 	/* Hack -- require projectable player */
 	if (normal) {
 		/* Check range */
 		if (mon->cdis > z_info->max_range)
-			return FALSE;
+			return false;
 
 		/* Check path */
 		if (!projectable(cave, mon->fy, mon->fx, py, px, PROJECT_NONE))
-			return FALSE;
+			return false;
 	}
 
 	/* Extract the monster level */
@@ -307,7 +307,7 @@ bool make_attack_spell(struct monster *mon)
 	}
 
 	/* No spells left */
-	if (rsf_is_empty(f)) return FALSE;
+	if (rsf_is_empty(f)) return false;
 
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
@@ -322,7 +322,7 @@ bool make_attack_spell(struct monster *mon)
 	thrown_spell = choose_attack_spell(f);
 
 	/* Abort if no spell was chosen */
-	if (!thrown_spell) return FALSE;
+	if (!thrown_spell) return false;
 
 	/* If we see an unaware monster try to cast a spell, become aware of it */
 	if (mflag_has(mon->mflag, MFLAG_UNAWARE))
@@ -342,7 +342,7 @@ bool make_attack_spell(struct monster *mon)
 		/* Message */
 		msg("%s tries to cast a spell, but fails.", m_name);
 
-		return TRUE;
+		return true;
 	}
 
 	/* Cast the spell. */
@@ -355,17 +355,17 @@ bool make_attack_spell(struct monster *mon)
 
 		/* Innate spell */
 		if (mon_spell_is_innate(thrown_spell)) {
-			if (lore->cast_innate < MAX_UCHAR)
+			if (lore->cast_innate < UCHAR_MAX)
 				lore->cast_innate++;
 		} else {
 			/* Bolt or Ball, or Special spell */
-			if (lore->cast_spell < MAX_UCHAR)
+			if (lore->cast_spell < UCHAR_MAX)
 				lore->cast_spell++;
 		}
 	}
 
 	/* Always take note of monsters that kill you */
-	if (player->is_dead && (lore->deaths < MAX_SHORT)) {
+	if (player->is_dead && (lore->deaths < SHRT_MAX)) {
 		lore->deaths++;
 	}
 
@@ -373,7 +373,7 @@ bool make_attack_spell(struct monster *mon)
 	lore_update(mon->race, lore);
 
 	/* A spell was cast */
-	return TRUE;
+	return true;
 }
 
 
@@ -427,7 +427,7 @@ bool check_hit(struct player *p, int power, int level)
 	equip_notice_on_defend(p);
 
 	/* Check if the player was hit */
-	return test_hit(chance, ac, TRUE);
+	return test_hit(chance, ac, true);
 }
 
 /**
@@ -452,7 +452,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	bool blinked;
 
 	/* Not allowed to attack */
-	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (FALSE);
+	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
 
 	/* Total armor */
 	ac = p->state.ac + p->state.to_a;
@@ -468,13 +468,13 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	monster_desc(ddesc, sizeof(ddesc), mon, MDESC_SHOW | MDESC_IND_VIS);
 
 	/* Assume no blink */
-	blinked = FALSE;
+	blinked = false;
 
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
-		bool visible = FALSE;
-		bool obvious = FALSE;
-		bool do_break = FALSE;
+		bool visible = false;
+		bool obvious = false;
+		bool do_break = false;
 
 		int power = 0;
 		int damage = 0;
@@ -496,10 +496,10 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		if (p->is_dead || p->upkeep->generate_level) break;
 
 		/* Extract visibility (before blink) */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) visible = TRUE;
+		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) visible = true;
 
 		/* Extract visibility from carrying light */
-		if (rf_has(mon->race->flags, RF_HAS_LIGHT)) visible = TRUE;
+		if (rf_has(mon->race->flags, RF_HAS_LIGHT)) visible = true;
 
 		/* Extract the attack "power" */
 		power = monster_blow_effect_power(effect);
@@ -538,7 +538,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				msgt(sound_msg, "%s %s", m_name, act);
 
 			/* Hack -- assume all attacks are obvious */
-			obvious = TRUE;
+			obvious = true;
 
 			/* Roll dice */
 			damage = randcalc(dice, rlev, RANDOMISE);
@@ -572,8 +572,8 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 			/* Don't cut or stun if player is dead */
 			if (p->is_dead) {
-				do_cut = FALSE;
-				do_stun = FALSE;
+				do_cut = false;
+				do_stun = false;
 			}
 
 			/* Hack -- only one of cut or stun */
@@ -605,7 +605,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				}
 
 				/* Apply the cut */
-				if (k) (void)player_inc_timed(p, TMD_CUT, k, TRUE, TRUE);
+				if (k) (void)player_inc_timed(p, TMD_CUT, k, true, true);
 			}
 
 			/* Handle stun */
@@ -627,7 +627,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 				/* Apply the stun */
 				if (k)
-					(void)player_inc_timed(p, TMD_STUN, k, TRUE, TRUE);
+					(void)player_inc_timed(p, TMD_STUN, k, true, true);
 			}
 		} else {
 			/* Visible monster missed player, so notify if appropriate. */
@@ -644,7 +644,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Count "obvious" attacks (and ones that cause damage) */
 			if (obvious || damage || (lore->blows[ap_cnt].times_seen > 10)) {
 				/* Count attacks of this type */
-				if (lore->blows[ap_cnt].times_seen < MAX_UCHAR)
+				if (lore->blows[ap_cnt].times_seen < UCHAR_MAX)
 					lore->blows[ap_cnt].times_seen++;
 			}
 		}
@@ -662,14 +662,14 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	}
 
 	/* Always notice cause of death */
-	if (p->is_dead && (lore->deaths < MAX_SHORT))
+	if (p->is_dead && (lore->deaths < SHRT_MAX))
 		lore->deaths++;
 
 	/* Learn lore */
 	lore_update(mon->race, lore);
 
 	/* Assume we attacked */
-	return (TRUE);
+	return (true);
 }
 
 
