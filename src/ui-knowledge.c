@@ -1372,11 +1372,15 @@ static int *obj_group_order = NULL;
 
 static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 {
-	struct object object_type_body = { 0 };
-	struct object *obj = &object_type_body;
+	struct object body = { 0 }, known_body = { 0 };
+	struct object *obj = &body, *known_obj = &known_body;
 
 	make_fake_artifact(obj, &a_info[a_idx]);
+	obj->known = known_obj;
+	known_obj->artifact = (struct artifact *) 1;
+	known_obj->kind = obj->kind;
 	object_desc(o_name, namelen, obj, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
+	object_wipe(known_obj);
 	object_wipe(obj);
 }
 
@@ -1457,10 +1461,11 @@ static void desc_art_fake(int a_idx)
 		fake = true;
 		obj = &object_body;
 		known_obj = &known_object_body;
-		obj->known = known_obj;
 
 		make_fake_artifact(obj, &a_info[a_idx]);
+		obj->known = known_obj;
 		known_obj->artifact = (struct artifact *)1;
+		known_obj->kind = obj->kind;
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
