@@ -144,7 +144,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	int ex_offset_ctr;
 	char buf[80];
 	struct object *obj = items[obj_num].object;
-	bool show_label = mode & (OLIST_WINDOW | OLIST_DEATH) ? TRUE : FALSE;
+	bool show_label = mode & (OLIST_WINDOW | OLIST_DEATH) ? true : false;
 	int label_size = show_label ? strlen(items[obj_num].label) : 0;
 	int equip_label_size = strlen(items[obj_num].equip_label);
 
@@ -259,12 +259,12 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 	int i;
 	struct object *obj;
 	char buf[80];
-	bool gold_ok = (mode & OLIST_GOLD) ? TRUE : FALSE;
-	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
-	bool dead = (mode & OLIST_DEATH) ? TRUE : FALSE;
-	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
-	bool equip = list ? FALSE : TRUE;
-	bool quiver = list == player->upkeep->quiver ? TRUE : FALSE;
+	bool gold_ok = (mode & OLIST_GOLD) ? true : false;
+	bool in_term = (mode & OLIST_WINDOW) ? true : false;
+	bool dead = (mode & OLIST_DEATH) ? true : false;
+	bool show_empty = (mode & OLIST_SEMPTY) ? true : false;
+	bool equip = list ? false : true;
+	bool quiver = list == player->upkeep->quiver ? true : false;
 
 	/* Build the object list */
 	for (i = 0; i <= last; i++) {
@@ -1167,11 +1167,11 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 					 cmd_code cmd, item_tester tester, int mode)
 {
-	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
-	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
-	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
-	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
-	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
+	bool use_inven = ((mode & USE_INVEN) ? true : false);
+	bool use_equip = ((mode & USE_EQUIP) ? true : false);
+	bool use_quiver = ((mode & USE_QUIVER) ? true : false);
+	bool use_floor = ((mode & USE_FLOOR) ? true : false);
+	bool quiver_tags = ((mode & QUIVER_TAGS) ? true : false);
 
 	bool allow_inven = false;
 	bool allow_equip = false;
