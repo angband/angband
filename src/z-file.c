@@ -27,16 +27,18 @@
 #ifdef WINDOWS
 # include <windows.h>
 # include <io.h>
-# include <direct.h>
+# ifndef CYGWIN
+#  include <direct.h>
+# endif
 #endif
 
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
 
-#ifdef HAVE_DIRENT_H
+#if defined (HAVE_DIRENT_H) || defined (CYGWIN)
 # include <sys/types.h>
-# include <direct.h>
+# include <dirent.h>
 #endif
 
 #ifdef HAVE_STAT
@@ -44,9 +46,9 @@
 # include <sys/types.h>
 #endif
 
-#ifdef WINDOWS
+#if defined (WINDOWS) && !defined (CYGWIN)
 # define my_mkdir(path, perms) mkdir(path)
-#elif defined(HAVE_MKDIR) || defined(MACH_O_CARBON)
+#elif defined(HAVE_MKDIR) || defined(MACH_O_CARBON) || defined (CYGWIN)
 # define my_mkdir(path, perms) mkdir(path, perms)
 #else
 # define my_mkdir(path, perms) false
