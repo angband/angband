@@ -1342,7 +1342,7 @@ static errr term_force_font(term_data *td, const char *path)
 
 
 	/* Load the new font */
-	if (AddFontResourceEx(buf, FR_PRIVATE, 0)) return (1);
+	if (!AddFontResourceEx(buf, FR_PRIVATE, 0)) return (1);
 
 	/* Save new font name */
 	td->font_file = string_make(base);
@@ -4434,11 +4434,7 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 		/* XXX XXX XXX */
 		case WM_NCCREATE:
 		{
-#ifdef _WIN64
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (u64b)my_td);
-#else
-			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG)(my_td));
-#endif
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (size_t)(my_td));
 			break;
 		}
 
