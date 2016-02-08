@@ -1341,9 +1341,13 @@ static errr term_force_font(term_data *td, const char *path)
 	if (!file_exists(buf)) return (1);
 
 
-	/* Load the new font */
-	if (!AddFontResourceEx(buf, FR_PRIVATE, 0)) return (1);
-
+	/* Load the new font.  */
+	i = AddFontResourceEx(buf, FR_PRIVATE, 0);
+	/* Hack: WIN64 AddFontResourceEx sometimes quietly succeeds. */
+	if (i == 0 && errno != 0) {	
+		plog("Note: add font failed for %s with error %d\n", buf, errno); 
+		return (1);
+	}
 	/* Save new font name */
 	td->font_file = string_make(base);
 
