@@ -362,6 +362,8 @@ void player_init(struct player *p)
 	}
 	if (p->timed)
 		mem_free(p->timed);
+	if (p->obj_k)
+		mem_free(p->obj_k);
 
 	/* Wipe the player */
 	memset(p, 0, sizeof(struct player));
@@ -401,6 +403,7 @@ void player_init(struct player *p)
 	p->upkeep->quiver = mem_zalloc(z_info->quiver_size *
 								   sizeof(struct object *));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
+	p->obj_k = mem_zalloc(sizeof(struct object));
 
 	/* First turn. */
 	turn = 1;
