@@ -494,8 +494,10 @@ int rd_monster_memory(void)
 
 int rd_object_memory(void)
 {
-	int i;
+	size_t i;
+	byte tmp8u;
 	u16b tmp16u;
+	s16b tmp16s;
 
 	/* Object Memory */
 	rd_u16b(&tmp16u);
@@ -527,7 +529,7 @@ int rd_object_memory(void)
 		return (-1);
 	}
 
-	/* Read the object memory */
+	/* Read the kind knowledge */
 	for (i = 0; i < tmp16u; i++) {
 		byte tmp8u;
 		struct object_kind *kind = &k_info[i];
@@ -542,6 +544,61 @@ int rd_object_memory(void)
 		if (tmp8u & 0x10) kind_ignore_when_unaware(kind);
 	}
 
+	/* Property knowledge */
+	/* Flags */
+	for (i = 0; i < OF_SIZE; i++)
+		rd_byte(&player->obj_k->flags[i]);
+
+	/* Modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		rd_s16b(&player->obj_k->modifiers[i]);
+	}
+
+	/* Elements */
+	for (i = 0; i < ELEM_MAX; i++) {
+		rd_s16b(&player->obj_k->el_info[i].res_level);
+		rd_byte(&player->obj_k->el_info[i].flags);
+	}
+
+	/* Brands */
+	rd_byte(&tmp8u);
+	while (tmp8u) {
+		char buf[40];
+		struct brand *b = mem_zalloc(sizeof *b);
+		rd_string(buf, sizeof(buf));
+		b->name = string_make(buf);
+		rd_s16b(&tmp16s);
+		b->element = tmp16s;
+		rd_s16b(&tmp16s);
+		b->multiplier = tmp16s;
+		b->next = player->obj_k->brands;
+		player->obj_k->brands = b;
+		rd_byte(&tmp8u);
+	}
+
+	/* Read slays */
+	rd_byte(&tmp8u);
+	while (tmp8u) {
+		char buf[40];
+		struct slay *s = mem_zalloc(sizeof *s);
+		rd_string(buf, sizeof(buf));
+		s->name = string_make(buf);
+		rd_s16b(&tmp16s);
+		s->race_flag = tmp16s;
+		rd_s16b(&tmp16s);
+		s->multiplier = tmp16s;
+		s->next = player->obj_k->slays;
+		player->obj_k->slays = s;
+		rd_byte(&tmp8u);
+	}
+
+	/* Combat data */
+	rd_s16b(&player->obj_k->ac);
+	rd_s16b(&player->obj_k->to_a);
+	rd_s16b(&player->obj_k->to_h);
+	rd_s16b(&player->obj_k->to_d);
+	rd_byte(&player->obj_k->dd);
+	rd_byte(&player->obj_k->ds);
 	return 0;
 }
 

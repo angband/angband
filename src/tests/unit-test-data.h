@@ -933,6 +933,78 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 	.quiver_cnt = 0,
 };
 
+static struct object TEST_DATA test_player_knowledge = {
+	.kind = NULL,
+	.ego = NULL,
+	.artifact = NULL,
+	.prev = NULL,
+	.next = NULL,
+	.known = NULL,
+	.oidx = 0,
+	.iy = 0,
+	.ix = 0,
+	.tval = 0,
+	.sval = 0,
+	.pval = 0,
+	.weight = 0,
+
+	.modifiers = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	.el_info = {
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 }
+	},
+	.brands = NULL,
+	.slays = NULL,
+
+	.ac = 0,
+	.to_h = 0,
+	.to_d = 0,
+	.to_a = 0,
+
+	.dd = 0,
+	.ds = 0,
+
+	.effect = NULL,
+	.effect_msg = NULL,
+	.activation = NULL,
+	.time = { 0, 0, 0, 0, },
+	.timeout = 0,
+
+	.number = 0,
+	.notice = 0,
+
+	.held_m_idx = 0,
+	.mimicking_m_idx = 0,
+	.origin = 0,
+	.origin_depth = 0,
+	.origin_xtra = 0,
+	.note = 0,
+};
+
+
 static struct player TEST_DATA test_player = {
 	.py = 1,
 	.px = 1,
