@@ -18,9 +18,11 @@
 
 #include "angband.h"
 #include "object.h"
+#include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-slays.h"
+#include "obj-util.h"
 #include "player.h"
 #include "store.h"
 
@@ -161,6 +163,8 @@ static void update_player_object_knowledge(struct player *p)
 		for (obj = s->stock; obj; obj = obj->next)
 			player_know_object(p, obj);
 	}
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 }
 
 /**
@@ -286,4 +290,188 @@ void player_learn_dice(struct player *p)
 	p->obj_k->dd = 1;
 	p->obj_k->ds = 1;
 	update_player_object_knowledge(p);
+}
+
+/**
+ * Learn things which happen on defending.
+ *
+ * \param p is the player
+ */
+void equip_learn_on_defend(struct player *p)
+{
+	int i;
+
+	if (p->obj_k->ac && p->obj_k->to_a) return;
+
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = slot_object(p, i);
+		if (obj) {
+			assert(obj->known);
+			if (obj->ac) player_learn_ac(p);
+			if (obj->to_a) player_learn_to_a(p);
+			if (p->obj_k->ac && p->obj_k->to_a) return;
+		}
+	}
+}
+
+/**
+ * Learn attack bonus on making a ranged attack.
+ * Can be applied to the missile or the missile launcher
+ *
+ * \param p is the player
+ */
+void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
+{
+	if (p->obj_k->to_h && p->obj_k->to_d) return;
+
+	assert(obj->known);
+	if (obj->to_h) player_learn_to_h(p);
+	if (obj->to_d) player_learn_to_d(p);
+}
+
+/**
+ * Learn to-hit bonus on making a ranged attack.
+ * Does not apply to weapon or bow
+ *
+ * \param p is the player
+ */
+void equip_learn_on_ranged_attack(struct player *p)
+{
+	int i;
+
+	if (p->obj_k->to_h) return;
+
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = slot_object(p, i);
+		if (i == slot_by_name(p, "weapon")) continue;
+		if (i == slot_by_name(p, "shooting")) continue;
+		if (obj) {
+			assert(obj->known);
+			if (obj->to_h) player_learn_to_h(p);
+			if (p->obj_k->to_h) return;
+		}
+	}
+
+	return;
+}
+
+
+/**
+ * Learn things which happen on making a melee attack.
+ * Does not apply to bow
+ *
+ * \param p is the player
+ */
+void equip_learn_on_melee_attack(struct player *p)
+{
+	int i;
+
+	if (p->obj_k->to_h && p->obj_k->to_d) return;
+
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = slot_object(p, i);
+		if (i == slot_by_name(p, "shooting")) continue;
+		if (obj) {
+			assert(obj->known);
+			if (obj->to_h) player_learn_to_h(p);
+			if (obj->to_d) player_learn_to_d(p);
+			if (p->obj_k->to_h && p->obj_k->to_d) return;
+		}
+	}
+
+	return;
+}
+
+
+/**
+ * Learn a given object flag on wielded items.
+ *
+ * \param p is the player
+ * \param flag is the flag to notice
+ */
+void equip_learn_flag(struct player *p, int flag)
+{
+	int i;
+
+	/* No flag or already known */
+	if (!flag) return;
+	if (of_has(p->obj_k->flags, flag)) return;
+
+	/* All wielded items eligible */
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = slot_object(p, i);
+		if (!obj) continue;
+		assert(obj->known);
+
+		/* Does the object have the flag? */
+		if (of_has(obj->flags, flag)) {
+			char o_name[80];
+			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+
+			/* Learn the flag */
+			player_learn_flag(p, flag);
+
+			/* Message */
+			flag_message(flag, o_name);
+			return;
+		}
+	}
+}
+
+/**
+ * Learn the elemental resistance properties on wielded items.
+ *
+ * \param p is the player
+ * \param element is the element to notice
+ */
+void equip_learn_element(struct player *p, int element)
+{
+	int i;
+
+	/* Invalid element or element already known */
+	if (element < 0 || element >= ELEM_MAX) return;
+	if (p->obj_k->el_info[element].res_level == 1) return;
+
+	/* All wielded items eligible */
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj = slot_object(p, i);
+		if (!obj) continue;
+		assert(obj->known);
+
+		/* Does the object affect the player's resistance to the element? */
+		if (obj->el_info[element].res_level != 0) {
+			char o_name[80];
+			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+
+			/* Learn the element properties */
+			player_learn_element(p, element);
+
+			/* Message */
+			msg("Your %s glows.", o_name);
+			return;
+		}
+	}
+}
+
+/**
+ * Learn things that would be noticed in time.
+ */
+void equip_learn_after_time(struct player *p)
+{
+	int flag;
+	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
+
+	/* Get the timed flags */
+	create_mask(timed_mask, true, OFID_TIMED, OFT_MAX);
+
+	/* Get the unknown timed flags, and return if there are none */
+	object_flags(p->obj_k, f);
+	of_negate(f);
+	of_inter(f, timed_mask);
+	if (of_is_empty(f)) return;
+
+	/* Attempt to learn every flag */
+	for (flag = of_next(f, FLAG_START); flag != FLAG_END;
+		 flag = of_next(f, flag + 1))
+		player_learn_flag(p, flag);
 }
