@@ -20,15 +20,15 @@
 #include "object.h"
 #include "player.h"
 
-void update_player_object_knowledge(struct player *p);
-bool player_learn_flag(struct player *p, int flag);
-bool player_learn_mod(struct player *p, int mod);
-bool player_learn_element(struct player *p, int element);
-bool player_learn_brand(struct player *p, struct brand *b);
-bool player_learn_slay(struct player *p, struct slay *s);
-bool player_learn_ac(struct player *p);
-bool player_learn_to_a(struct player *p);
-bool player_learn_to_h(struct player *p);
-bool player_learn_to_d(struct player *p);
-bool player_learn_dice(struct player *p);
+void player_know_object(struct player *p, struct object *obj);
+void player_learn_flag(struct player *p, int flag);
+void player_learn_mod(struct player *p, int mod);
+void player_learn_element(struct player *p, int element);
+void player_learn_brand(struct player *p, struct brand *b);
+void player_learn_slay(struct player *p, struct slay *s);
+void player_learn_ac(struct player *p);
+void player_learn_to_a(struct player *p);
+void player_learn_to_h(struct player *p);
+void player_learn_to_d(struct player *p);
+void player_learn_dice(struct player *p);
 
