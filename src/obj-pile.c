@@ -217,9 +217,6 @@ void object_lists_check_integrity(void)
 				assert(pile_contains(cave->squares[obj->iy][obj->ix].obj, obj));
 		}
 		if (known_obj) {
-			if (obj == NULL) {
-				plog("Integrity check failed");
-			}
 			assert (obj);
 			assert(known_obj == obj->known);
 			if (known_obj->iy && known_obj->ix)
