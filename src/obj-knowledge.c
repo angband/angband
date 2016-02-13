@@ -28,7 +28,7 @@
 /**
  * Check if a brand is known to the player
  */
-bool player_knows_brand(struct player *p, struct brand *b)
+static bool player_knows_brand(struct player *p, struct brand *b)
 {
 	struct brand *b_check = p->obj_k->brands;
 	while (b_check) {
@@ -43,7 +43,7 @@ bool player_knows_brand(struct player *p, struct brand *b)
 /**
  * Check if a slay is known to the player
  */
-bool player_knows_slay(struct player *p, struct slay *s)
+static bool player_knows_slay(struct player *p, struct slay *s)
 {
 	struct slay *s_check = p->obj_k->slays;
 	while (s_check) {
@@ -142,7 +142,7 @@ void player_know_object(struct player *p, struct object *obj)
 /**
  * Propagate player knowledge of objects to all objects
  */
-void update_player_object_knowledge(struct player *p)
+static void update_player_object_knowledge(struct player *p)
 {
 	int i;
 	struct object *obj;
@@ -166,47 +166,41 @@ void update_player_object_knowledge(struct player *p)
 /**
  * Learn a single flag
  */
-bool player_learn_flag(struct player *p, int flag)
+void player_learn_flag(struct player *p, int flag)
 {
 	/* If the flag was unknown, set it */
 	if (of_on(p->obj_k->flags, flag))
-		return true;
-
-	return false;
+		update_player_object_knowledge(p);
 }
 
 /**
  * Learn a single modifier
  */
-bool player_learn_mod(struct player *p, int mod)
+void player_learn_mod(struct player *p, int mod)
 {
 	/* If the modifier was unknown, set it */
 	if (p->obj_k->modifiers[mod] == 0) {
 		p->obj_k->modifiers[mod] = 1;
-		return true;
+		update_player_object_knowledge(p);
 	}
-
-	return false;
 }
 
 /**
  * Learn a single element
  */
-bool player_learn_element(struct player *p, int element)
+void player_learn_element(struct player *p, int element)
 {
 	/* If the element was unknown, set it */
 	if (p->obj_k->el_info[element].res_level == 0) {
 		p->obj_k->el_info[element].res_level = 1;
-		return true;
+		update_player_object_knowledge(p);
 	}
-
-	return false;
 }
 
 /**
  * Learn a single elemental brand
  */
-bool player_learn_brand(struct player *p, struct brand *b)
+void player_learn_brand(struct player *p, struct brand *b)
 {
 	/* If the brand was unknown, add it to known brands */
 	if (!player_knows_brand(p, b)) {
@@ -219,16 +213,14 @@ bool player_learn_brand(struct player *p, struct brand *b)
 		new_b->next = p->obj_k->brands;
 		p->obj_k->brands = new_b;
 
-		return true;
+		update_player_object_knowledge(p);
 	}
-
-	return false;
 }
 
 /**
  * Learn a single slay
  */
-bool player_learn_slay(struct player *p, struct slay *s)
+void player_learn_slay(struct player *p, struct slay *s)
 {
 	/* If the slay was unknown, add it to known slays */
 	if (!player_knows_slay(p, s)) {
@@ -241,59 +233,57 @@ bool player_learn_slay(struct player *p, struct slay *s)
 		new_s->next = p->obj_k->slays;
 		p->obj_k->slays = new_s;
 
-		return true;
+		update_player_object_knowledge(p);
 	}
-
-	return false;
 }
 
 /**
  * Learn armour class
  */
-bool player_learn_ac(struct player *p)
+void player_learn_ac(struct player *p)
 {
-	if (p->obj_k->ac) return false;
+	if (p->obj_k->ac) return;
 	p->obj_k->ac = 1;
-	return true;
+	update_player_object_knowledge(p);
 }
 
 /**
  * Learn to-armour bonus
  */
-bool player_learn_to_a(struct player *p)
+void player_learn_to_a(struct player *p)
 {
-	if (p->obj_k->to_a) return false;
+	if (p->obj_k->to_a) return;
 	p->obj_k->to_a = 1;
-	return true;
+	update_player_object_knowledge(p);
 }
 
 /**
  * Learn to-hit bonus
  */
-bool player_learn_to_h(struct player *p)
+void player_learn_to_h(struct player *p)
 {
-	if (p->obj_k->to_h) return false;
+	if (p->obj_k->to_h) return;
 	p->obj_k->to_h = 1;
-	return true;
+	update_player_object_knowledge(p);
 }
 
 /**
  * Learn to-damage bonus
  */
-bool player_learn_to_d(struct player *p)
+void player_learn_to_d(struct player *p)
 {
-	if (p->obj_k->to_d) return false;
+	if (p->obj_k->to_d) return;
 	p->obj_k->to_d = 1;
-	return true;
+	update_player_object_knowledge(p);
 }
 
 /**
  * Learn damage dice
  */
-bool player_learn_dice(struct player *p)
+void player_learn_dice(struct player *p)
 {
-	if (p->obj_k->dd && p->obj_k->ds) return false;
+	if (p->obj_k->dd && p->obj_k->ds) return;
 	p->obj_k->dd = 1;
 	p->obj_k->ds = 1;
-	return true;
+	update_player_object_knowledge(p);
 }
