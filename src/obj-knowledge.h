@@ -32,3 +32,10 @@ void player_learn_to_h(struct player *p);
 void player_learn_to_d(struct player *p);
 void player_learn_dice(struct player *p);
 
+void equip_learn_on_defend(struct player *p);
+void missile_learn_on_ranged_attack(struct player *p, struct object *obj);
+void equip_learn_on_ranged_attack(struct player *p);
+void equip_learn_on_melee_attack(struct player *p);
+void equip_learn_flag(struct player *p, int flag);
+void equip_learn_element(struct player *p, int element);
+void equip_learn_after_time(struct player *p);
