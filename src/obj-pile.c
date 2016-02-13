@@ -260,7 +260,6 @@ void list_object(struct chunk *c, struct object *obj)
 	obj->oidx = c->obj_max;
 	for (i = c->obj_max + 1; i <= c->obj_max + OBJECT_LIST_INCR; i++)
 		c->objects[i] = NULL;
-	c->obj_max += OBJECT_LIST_INCR;
 
 	/* If we're on the current level, extend the known list */
 	if (c == cave) {
@@ -269,6 +268,7 @@ void list_object(struct chunk *c, struct object *obj)
 			c->objects[i] = NULL;
 		cave_k->obj_max = c->obj_max;
 	}
+	c->obj_max += OBJECT_LIST_INCR;
 }
 
 /**
