@@ -31,6 +31,7 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
@@ -1403,6 +1404,8 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			known_obj->held_m_idx = 0;
 			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
 		}
+
+		player_know_object(player, obj);
 	}
 
 	/* Remove known location of anything not on this grid */
