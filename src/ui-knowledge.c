@@ -1815,8 +1815,8 @@ static void desc_obj_fake(int k_idx)
 	/* Hack -- its in the store */
 	if (kind->aware) object_know_all_but_flavor(obj);
 
-	/* It's fully know */
-	if (!kind->flavor) object_notice_everything(obj);
+	/* It's fully known */
+	if (!kind->flavor) object_copy(known_obj, obj);
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player);

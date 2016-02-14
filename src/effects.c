@@ -1008,12 +1008,12 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 				if (!is_trapped_chest(obj)) continue;
 
 				/* Identify once */
-				if (!object_is_known(obj)) {
+				if (obj->known->pval != obj->pval) {
 					/* Hack - know the pile */
 					floor_pile_know(cave, y, x);
 
 					/* Know the trap */
-					object_notice_everything(obj);
+					obj->known->pval = obj->pval;
 
 					/* Notice it */
 					disturb(player, 0);
@@ -1937,7 +1937,7 @@ void brand_object(struct object *obj, const char *name)
 		/* Make it an ego item */
 		obj->ego = &e_info[i];
 		ego_apply_magic(obj, 0);
-		object_notice_ego(obj);
+		player_know_object(player, obj);
 
 		/* Update the gear */
 		player->upkeep->update |= (PU_INVEN);

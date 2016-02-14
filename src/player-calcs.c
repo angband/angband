@@ -29,6 +29,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -1056,7 +1057,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 						/* Notice stuff if it's first time in the quiver */
 						if (!object_was_worn(current))
-							object_notice_on_wield(current);
+							object_learn_on_wield(player, current);
 
 						/* Done with this slot */
 						break;
@@ -1102,7 +1103,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 		/* Notice stuff if it's first time in the quiver */
 		if (!object_was_worn(first))
-			object_notice_on_wield(first);
+			object_learn_on_wield(player, first);
 	}
 
 	/* Note reordering */

@@ -302,7 +302,7 @@ static void chest_death(int y, int x, struct object *chest)
 	chest->pval = 0;
 
 	/* Known */
-	object_notice_everything(chest);
+	chest->known->pval = 0;
 }
 
 
