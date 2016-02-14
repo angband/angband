@@ -302,9 +302,6 @@ static void log_all_objects(int level)
 			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
 				/*	u32b o_power = 0; */
 
-				/* Mark object as fully known */
-				object_notice_everything(obj);
-
 /*				o_power = object_power(obj, false, NULL, true); */
 
 				/* Capture gold amounts */
