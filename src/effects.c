@@ -34,6 +34,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -511,7 +512,7 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 	/* Sustain */
 	if (player_of_has(player, flag)) {
 		/* Notice effect */
-		equip_notice_flag(player, flag);
+		equip_learn_flag(player, flag);
 
 		/* Message */
 		msg("You feel very %s for a moment, but the feeling passes.",
@@ -624,7 +625,7 @@ bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
 		player_exp_lose(player, player->exp / 4, false);
 	}
 	context->ident = true;
-	equip_notice_flag(player, OF_HOLD_LIFE);
+	equip_learn_flag(player, OF_HOLD_LIFE);
 	return true;
 }
 
@@ -2940,7 +2941,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 	msg("There is a searing blast of light!");
 
 	/* Blind the player */
-	equip_notice_element(player, ELEM_LIGHT);
+	equip_learn_element(player, ELEM_LIGHT);
 	if (!player_resists(player, ELEM_LIGHT))
 		(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),true, true);
 
@@ -4132,7 +4133,7 @@ bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 		int dam = effect_calculate_value(context, false);
 		take_hit(player, dam, "a trap");
 	}
-	equip_notice_flag(player, OF_FEATHER);
+	equip_learn_flag(player, OF_FEATHER);
 
 	dungeon_change_level(target_depth);
 	return true;
@@ -4147,7 +4148,7 @@ bool effect_handler_TRAP_PIT(effect_handler_context_t *context)
 		int dam = effect_calculate_value(context, false);
 		take_hit(player, dam, "a trap");
 	}
-	equip_notice_flag(player, OF_FEATHER);
+	equip_learn_flag(player, OF_FEATHER);
 	return true;
 }
 
@@ -4170,7 +4171,7 @@ bool effect_handler_TRAP_PIT_SPIKES(effect_handler_context_t *context)
 
 		take_hit(player, dam, "a trap");
 	}
-	equip_notice_flag(player, OF_FEATHER);
+	equip_learn_flag(player, OF_FEATHER);
 	return true;
 }
 
@@ -4195,7 +4196,7 @@ bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
 
 		take_hit(player, dam, "a trap");
 	}
-	equip_notice_flag(player, OF_FEATHER);
+	equip_learn_flag(player, OF_FEATHER);
 	return true;
 }
 

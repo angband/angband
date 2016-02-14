@@ -27,6 +27,7 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -425,7 +426,7 @@ void process_world(struct chunk *c)
 			player_exp_lose(player, d / 10, false);
 		}
 
-		equip_notice_flag(player, OF_DRAIN_EXP);
+		equip_learn_flag(player, OF_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
@@ -440,7 +441,7 @@ void process_world(struct chunk *c)
 	/* Random teleportation */
 	if (player_of_has(player, OF_TELEPORT) && one_in_(50)) {
 		const char *forty = "40";
-		equip_notice_flag(player, OF_TELEPORT);
+		equip_learn_flag(player, OF_TELEPORT);
 		effect_simple(EF_TELEPORT, forty, 0, 1, 0, NULL);
 		disturb(player, 0);
 	}

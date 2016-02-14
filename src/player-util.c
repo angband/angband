@@ -24,8 +24,9 @@
 #include "init.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
-#include "obj-tval.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
@@ -268,7 +269,7 @@ void player_regen_hp(void)
 	new_chp = ((long)player->mhp) * percent + PY_REGEN_HPBASE;
 	player->chp += (s16b)(new_chp >> 16);   /* div 65536 */
 
-	/* check for overflow */
+	/* Check for overflow */
 	if ((player->chp < 0) && (old_chp > 0))
 		player->chp = SHRT_MAX;
 	new_chp_frac = (new_chp & 0xFFFF) + player->chp_frac;	/* mod 65536 */
@@ -288,8 +289,8 @@ void player_regen_hp(void)
 	/* Notice changes */
 	if (old_chp != player->chp) {
 		player->upkeep->redraw |= (PR_HP);
-		equip_notice_flag(player, OF_REGEN);
-		equip_notice_flag(player, OF_IMPAIR_HP);
+		equip_learn_flag(player, OF_REGEN);
+		equip_learn_flag(player, OF_IMPAIR_HP);
 	}
 }
 
@@ -343,8 +344,8 @@ void player_regen_mana(void)
 	/* Notice changes */
 	if (old_csp != player->csp) {
 		player->upkeep->redraw |= (PR_MANA);
-		equip_notice_flag(player, OF_REGEN);
-		equip_notice_flag(player, OF_IMPAIR_MANA);
+		equip_learn_flag(player, OF_REGEN);
+		equip_learn_flag(player, OF_IMPAIR_MANA);
 	}
 }
 
