@@ -41,8 +41,6 @@ int brand_count(struct brand *brands);
 int slay_count(struct slay *slays);
 struct brand *brand_collect(struct brand *b, const struct object *obj2);
 struct slay *slay_collect(struct slay *s, const struct object *obj2);
-void object_notice_brands(struct object *obj, const struct monster *mon);
-void object_notice_slays(struct object *obj, const struct monster *mon);
 void improve_attack_modifier(struct object *obj, const struct monster *mon, 
 							 const struct brand **brand_used, 
 							 const struct slay **slay_used, 

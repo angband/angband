@@ -360,16 +360,13 @@ static bool py_attack_real(int y, int x, bool *fear)
 		dmg = melee_damage(obj, b, s);
 		dmg = critical_norm(obj->weight, obj->to_h, dmg, &msg_type);
 
-		/* Learn by use for the weapon */
-		object_notice_attack_plusses(obj);
-
 		if (player_of_has(player, OF_IMPACT) && dmg > 50) {
 			do_quake = true;
 			equip_learn_flag(player, OF_IMPACT);
 		}
 	}
 
-	/* Learn by use for other equipped items */
+	/* Learn by use */
 	equip_learn_on_melee_attack(player);
 
 	/* Apply the player damage bonuses */

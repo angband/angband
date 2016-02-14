@@ -306,69 +306,77 @@ bool object_this_mod_is_visible(const struct object *obj, int mod)
  * ------------------------------------------------------------------------ */
 
 /**
- * Set some knowledge for items where the flavour is already known
- */
-static void object_id_set_aware(struct object *obj)
-{
-	int i;
-
-	assert(obj->known);
-	/* Know pval and effect */
-	obj->known->pval = 1;
-	obj->known->effect = (struct effect *)1;
-
-	/* Jewelry with fixed bonuses gets more info now */
-	if (tval_is_jewelry(obj)) {
-		if (!randcalc_varies(obj->kind->to_h)) 
-			obj->known->to_h = 1;
-		if (!randcalc_varies(obj->kind->to_d))
-			obj->known->to_d = 1;
-		if (!randcalc_varies(obj->kind->to_a))
-			obj->known->to_a = 1;
-		for (i = 0; i < OBJ_MOD_MAX; i++)
-			if (!randcalc_varies(obj->kind->modifiers[i]))
-				obj->known->modifiers[i] = 1;
-	}
-}
-
-/**
  * Sets the basic details on a known object
  */
 void object_set_base_known(struct object *obj)
 {
-	int i;
-
 	assert(obj->known);
 	obj->known->kind = obj->kind;
 	obj->known->tval = obj->tval;
 	obj->known->sval = obj->sval;
 	obj->known->number = obj->number;
-	obj->known->dd = 1;
-	obj->known->ds = 1;
 
-	/* If the object has no pval or effect, we know that */
-	if (!obj->pval)
-		obj->known->pval = 1;
-	if (!obj->effect)
-		obj->known->effect = (struct effect *)1;
+	/* Aware flavours get info now */
+	if (obj->kind->flavor && obj->kind->aware) {
+		obj->known->pval = obj->pval;
+		obj->known->effect = obj->effect;
+	}
+}
 
-	/* Unresistables have no hidden properties */
-	for (i = ELEM_HIGH_MAX + 1; i < ELEM_MAX; i++)
-		obj->known->el_info[i].res_level = 1;
+/**
+ * Notice the ego on an ego item.
+ */
+void object_notice_ego(struct object *obj)
+{
+	bitflag learned_flags[OF_SIZE];
+	bitflag xtra_flags[OF_SIZE];
+	size_t i;
 
-	/* Ego lights are always known as such (why? - NRM) */
-	/* Might as well make them known not artifacts as well - NRM */
-	if (obj->ego && tval_is_light(obj)) {
-		obj->known->ego = (struct ego_item *)1;
-		obj->known->artifact = (struct artifact *)1;
+	assert(obj->known);
+	if (!obj->ego)
+		return;
+
+	/* Learn ego flags */
+	of_union(obj->known->flags, obj->ego->flags);
+
+	/* Learn ego element properties (note random ones aren't learned) */
+	for (i = 0; i < ELEM_MAX; i++)
+		if (obj->ego->el_info[i].res_level != 0)
+			obj->known->el_info[i].res_level = 1;
+
+	/* Learn all flags except random abilities */
+	of_setall(learned_flags);
+
+	/* Don't learn random ego extras */
+	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
+		create_mask(xtra_flags, false, OFT_SUST, OFT_MAX);
+		of_diff(learned_flags, xtra_flags);
+	} else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER)) {
+		create_mask(xtra_flags, false, OFT_MISC, OFT_PROT, OFT_MAX);
+		of_diff(learned_flags, xtra_flags);
 	}
 
-	/* Aware flavours get info now, easy_know things get everything */
-	if (obj->kind->flavor && obj->kind->aware)
-		object_id_set_aware(obj);
-	if (easy_know(obj))
-		object_notice_everything(obj);
+	of_union(obj->known->flags, learned_flags);
+
+    /* Learn all element properties except random high resists */
+    for (i = 0; i < ELEM_MAX; i++) {
+        /* Don't learn random ego high resists */
+        if (obj->el_info[i].flags & EL_INFO_RANDOM)
+            continue;
+
+        /* Learn all element properties */
+		obj->known->el_info[i].res_level = 1;
+   }
+
+	if (!obj->known->ego) {
+		obj->known->ego = (struct ego_item *)1;
+
+		/* If you know the ego, you know which it is of excellent or splendid */
+		object_notice_sensing(obj);
+		object_check_for_ident(obj);
+	}
 }
+
 
 /**
  * Checks for additional knowledge implied by what the player already knows.
@@ -425,9 +433,6 @@ void object_flavor_aware(struct object *obj)
 	assert(obj->known);
 	if (obj->kind->aware) return;
 	obj->kind->aware = true;
-
-	/* A bunch of things are now known */
-	object_id_set_aware(obj);
 
 	/* Fix ignore/autoinscribe */
 	if (kind_is_ignored_unaware(obj->kind))
@@ -499,24 +504,6 @@ void object_know_all_elements(struct object *obj)
 
 
 /**
- * Make the player aware of all of an object's brands and slays.
- *
- * \param obj is the object to mark
- */
-void object_know_brands_and_slays(struct object *obj)
-{
-	assert(obj->known);
-
-	/* Wipe all previous known and know everything */
-	free_brand(obj->known->brands);
-	obj->known->brands = NULL;
-	copy_brand(&obj->known->brands, obj->brands);
-	free_slay(obj->known->slays);
-	obj->known->slays = NULL;
-	copy_slay(&obj->known->slays, obj->slays);
-}
-
-/**
  * Make the player aware of all of an object's miscellaneous properties.
  *
  * \param obj is the object to mark
@@ -561,9 +548,6 @@ void object_know_all_but_flavor(struct object *obj)
 	/* Know all elemental properties */
 	object_know_all_elements(obj);
 
-	/* Know all brands and slays */
-	object_know_brands_and_slays(obj);
-
 	/* Know everything else */
 	object_know_all_miscellaneous(obj);
 }
@@ -602,159 +586,6 @@ void object_notice_everything(struct object *obj)
 
 
 /**
- * Notice the ego on an ego item.
- */
-void object_notice_ego(struct object *obj)
-{
-	bitflag learned_flags[OF_SIZE];
-	bitflag xtra_flags[OF_SIZE];
-	size_t i;
-
-	assert(obj->known);
-	if (!obj->ego)
-		return;
-
-	/* Learn ego flags */
-	of_union(obj->known->flags, obj->ego->flags);
-
-	/* Learn ego element properties (note random ones aren't learned) */
-	for (i = 0; i < ELEM_MAX; i++)
-		if (obj->ego->el_info[i].res_level != 0)
-			obj->known->el_info[i].res_level = 1;
-
-	/* Learn all flags except random abilities */
-	of_setall(learned_flags);
-
-	/* Learn all brands and slays */
-	object_know_brands_and_slays(obj);
-
-	/* Don't learn random ego extras */
-	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
-		create_mask(xtra_flags, false, OFT_SUST, OFT_MAX);
-		of_diff(learned_flags, xtra_flags);
-	} else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER)) {
-		create_mask(xtra_flags, false, OFT_MISC, OFT_PROT, OFT_MAX);
-		of_diff(learned_flags, xtra_flags);
-	}
-
-	of_union(obj->known->flags, learned_flags);
-
-    /* Learn all element properties except random high resists */
-    for (i = 0; i < ELEM_MAX; i++) {
-        /* Don't learn random ego high resists */
-        if (obj->el_info[i].flags & EL_INFO_RANDOM)
-            continue;
-
-        /* Learn all element properties */
-		obj->known->el_info[i].res_level = 1;
-   }
-
-	if (!obj->known->ego) {
-		obj->known->ego = (struct ego_item *)1;
-
-		/* If you know the ego, you know which it is of excellent or splendid */
-		object_notice_sensing(obj);
-		object_check_for_ident(obj);
-	}
-}
-
-
-/**
- * Notice the "effect" from activating an object.
- *
- * \param obj is the object to become aware of
- */
-void object_notice_effect(struct object *obj)
-{
-	assert(obj->known);
-	if (!obj->known->effect) {
-		obj->known->effect = (struct effect *)1;
-		object_check_for_ident(obj);
-	}
-
-	/* Noticing an effect gains awareness */
-	if (!object_flavor_is_aware(obj))
-		object_flavor_aware(obj);
-}
-
-
-void object_notice_attack_plusses(struct object *obj)
-{
-	char o_name[80];
-
-	assert(obj && obj->kind);
-	assert(obj->known);
-
-	if (object_attack_plusses_are_visible(obj) && object_flavor_is_aware(obj))
-		return;
-
-	/* This looks silly while these only ever appear together */
-	obj->known->dd = 1;
-	obj->known->ds = 1;
-	obj->known->to_h = 1;
-	obj->known->to_d = 1;
-	object_check_for_ident(obj);
-
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-
-	if (equipped_item_by_slot_name(player, "weapon") == obj)
-		msgt(MSG_PSEUDOID,
-			 "You know more about the %s you are using.", o_name);
-	else if ((obj->to_d || obj->to_h) &&
-			 !(tval_is_body_armor(obj) && (obj->to_h < 0)))
-		msgt(MSG_PSEUDOID, "Your %s glow%s.", o_name,
-			 ((obj->number > 1) ? "" : "s"));
-
-	if (object_all_but_flavor_is_known(obj)) object_flavor_aware(obj);
-
-	player->upkeep->update |= (PU_BONUS);
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
-}
-
-
-/**
- * Notice elemental resistance properties for an element on an object
- */
-bool object_notice_element(struct object *obj, int element)
-{
-	assert(obj->known);
-	if (element < 0 || element >= ELEM_MAX) return false;
-
-	/* Already known */
-	if (object_element_is_known(obj, element))
-		return false;
-
-	/* Learn about this element */
-	obj->known->el_info[element].res_level = 1;
-
-	object_check_for_ident(obj);
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
-
-	return true;
-}
-
-
-/**
- * Notice a single flag - returns true if anything new was learned
- */
-bool object_notice_flag(struct object *obj, int flag)
-{
-	assert(obj->known);
-	if (of_has(obj->known->flags, flag))
-		return false;
-
-	of_on(obj->known->flags, flag);
-	object_check_for_ident(obj);
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
-
-	return true;
-}
-
-
-/**
  * Notice a set of flags - returns true if anything new was learned
  */
 bool object_notice_flags(struct object *obj, bitflag flags[OF_SIZE])
@@ -770,7 +601,6 @@ bool object_notice_flags(struct object *obj, bitflag flags[OF_SIZE])
 
 	return true;
 }
-
 
 /**
  * Notice curses on an object.
@@ -945,7 +775,7 @@ void object_notice_on_use(struct object *obj)
 	int lev = obj->kind->level;
 
 	object_flavor_aware(obj);
-	object_notice_effect(obj);
+	obj->known->effect = obj->effect;
 	if (tval_is_rod(obj))
 		object_notice_everything(obj);
 	player_exp_gain(player, (lev + (player->lev / 2)) / player->lev);
@@ -1013,7 +843,6 @@ void object_notice_sensing(struct object *obj)
 	if (!obj->artifact && !obj->ego && !obj->kind->flavor) {
 		object_know_all_flags(obj);
 		object_know_all_elements(obj);
-		object_know_brands_and_slays(obj);
 	}
 }
 
