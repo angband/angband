@@ -30,6 +30,7 @@
 #include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -1198,6 +1199,7 @@ static bool store_create_random(struct store *store)
 
 		/* Know everything but flavor, no origin yet */
 		object_know_all_but_flavor(obj);
+		player_know_object(player, obj);
 		obj->origin = ORIGIN_NONE;
 
 		/* Black markets have expensive tastes */
@@ -1251,6 +1253,7 @@ static struct object *store_create_item(struct store *store,
 	/* Know everything but flavor, no origin yet */
 	obj->known = known_obj;
 	object_know_all_but_flavor(obj);
+	player_know_object(player, obj);
 	obj->origin = ORIGIN_NONE;
 
 	/* Attempt to carry the object */
