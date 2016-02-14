@@ -31,6 +31,10 @@
 
 
 /**
+ * ------------------------------------------------------------------------
+ * Functions used for applying knowledge to objects
+ * ------------------------------------------------------------------------ */
+/**
  * Check if a brand is known to the player
  */
 bool player_knows_brand(struct player *p, struct brand *b)
@@ -59,6 +63,42 @@ bool player_knows_slay(struct player *p, struct slay *s)
 	}
 
 	return false;
+}
+
+/**
+ * Check if an ego item type is known to the player
+ */
+bool player_knows_ego(struct player *p, struct ego_item *ego)
+{
+	int i;
+	struct brand *b;
+	struct slay *s;
+
+	if (!ego) return false;
+
+	/* All flags known */
+	if (!of_is_subset(p->obj_k->flags, ego->flags)) return false;
+
+	/* All modifiers known */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (randcalc(ego->modifiers[i], MAX_RAND_DEPTH, MAXIMISE) &&
+			!p->obj_k->modifiers[i])
+			return false;
+
+	/* All elements known */
+	for (i = 0; i < ELEM_MAX; i++)
+		if (ego->el_info[i].res_level && !p->obj_k->el_info[i].res_level)
+			return false;
+
+	/* All brands known */
+	for (b = ego->brands; b; b = b->next)
+		if (!player_knows_brand(p, b)) return false;
+
+	/* All slays known */
+	for (s = ego->slays; s; s = s->next)
+		if (!player_knows_slay(p, s)) return false;
+
+	return true;
 }
 
 /**
@@ -141,6 +181,10 @@ void player_know_object(struct player *p, struct object *obj)
 	obj->known->to_d = p->obj_k->to_d * obj->to_d;
 	obj->known->dd = p->obj_k->dd * obj->dd;
 	obj->known->ds = p->obj_k->ds * obj->ds;
+
+	/* Set ego type if known */
+	if (player_knows_ego(p, obj->ego))
+		obj->known->ego = obj->ego;
 }
 
 /**
@@ -169,6 +213,10 @@ static void update_player_object_knowledge(struct player *p)
 	event_signal(EVENT_EQUIPMENT);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Functions for increasing player knowledge
+ * ------------------------------------------------------------------------ */
 /**
  * Learn a single flag
  */
@@ -295,6 +343,10 @@ void player_learn_dice(struct player *p)
 	update_player_object_knowledge(p);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Functions for learning about equipment properties
+ * ------------------------------------------------------------------------ */
 /**
  * Learn things which happen on defending.
  *
@@ -484,6 +536,10 @@ void equip_learn_after_time(struct player *p)
 		player_learn_flag(p, flag);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Functions for learning from the behaviour of indvidual objects
+ * ------------------------------------------------------------------------ */
 /**
  * Learn object properties that become obvious on wielding or wearing
  */
