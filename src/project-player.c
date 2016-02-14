@@ -23,6 +23,7 @@
 #include "mon-desc.h"
 #include "obj-gear.h"
 #include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -48,7 +49,7 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 		resist = p->state.el_info[res_type].res_level;
 
 		/* Notice element stuff */
-		equip_notice_element(p, res_type);
+		equip_learn_element(p, res_type);
 	}
 
 	if (resist == 3) /* immune */
