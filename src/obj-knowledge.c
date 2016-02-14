@@ -30,7 +30,7 @@
 /**
  * Check if a brand is known to the player
  */
-static bool player_knows_brand(struct player *p, struct brand *b)
+bool player_knows_brand(struct player *p, struct brand *b)
 {
 	struct brand *b_check = p->obj_k->brands;
 	while (b_check) {
@@ -45,7 +45,7 @@ static bool player_knows_brand(struct player *p, struct brand *b)
 /**
  * Check if a slay is known to the player
  */
-static bool player_knows_slay(struct player *p, struct slay *s)
+bool player_knows_slay(struct player *p, struct slay *s)
 {
 	struct slay *s_check = p->obj_k->slays;
 	while (s_check) {
@@ -68,6 +68,7 @@ void player_know_object(struct player *p, struct object *obj)
 	struct slay *s, *s_known;
 
 	/* Unseen or only sensed objects don't get any ID */
+	if (!obj) return;
 	if (!obj->known) return;
 	if (obj->kind != obj->known->kind) return;
 
@@ -106,7 +107,6 @@ void player_know_object(struct player *p, struct object *obj)
 				b_known = obj->known->brands;
 			}
 		}
-		b = b->next;
 	}
 
 	/* Reset slays */
@@ -129,7 +129,6 @@ void player_know_object(struct player *p, struct object *obj)
 				s_known = obj->known->slays;
 			}
 		}
-		s = s->next;
 	}
 
 	/* Set combat details */
@@ -322,9 +321,11 @@ void equip_learn_on_defend(struct player *p)
  */
 void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
 {
-	if (p->obj_k->to_h && p->obj_k->to_d) return;
+	if (p->obj_k->to_h && p->obj_k->to_d && p->obj_k->dd && p->obj_k->ds)
+		return;
 
 	assert(obj->known);
+	player_learn_dice(player);
 	if (obj->to_h) player_learn_to_h(p);
 	if (obj->to_d) player_learn_to_d(p);
 }
@@ -347,6 +348,7 @@ void equip_learn_on_ranged_attack(struct player *p)
 		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj) {
 			assert(obj->known);
+			player_learn_dice(player);
 			if (obj->to_h) player_learn_to_h(p);
 			if (p->obj_k->to_h) return;
 		}
@@ -366,13 +368,15 @@ void equip_learn_on_melee_attack(struct player *p)
 {
 	int i;
 
-	if (p->obj_k->to_h && p->obj_k->to_d) return;
+	if (p->obj_k->to_h && p->obj_k->to_d && p->obj_k->dd && p->obj_k->ds)
+		return;
 
 	for (i = 0; i < p->body.count; i++) {
 		struct object *obj = slot_object(p, i);
 		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj) {
 			assert(obj->known);
+			player_learn_dice(player);
 			if (obj->to_h) player_learn_to_h(p);
 			if (obj->to_d) player_learn_to_d(p);
 			if (p->obj_k->to_h && p->obj_k->to_d) return;

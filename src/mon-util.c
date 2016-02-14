@@ -28,6 +28,7 @@
 #include "obj-desc.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -637,9 +638,9 @@ void update_smart_learn(struct monster *m, struct player *p, int flag,
 	/* Sanity check */
 	if (!flag && !element_ok) return;
 
-	/* anything a monster might learn, the player should learn */
-	if (flag) equip_notice_flag(p, flag);
-	if (element_ok) equip_notice_element(p, element);
+	/* Anything a monster might learn, the player should learn */
+	if (flag) equip_learn_flag(p, flag);
+	if (element_ok) equip_learn_element(p, element);
 
 	/* Not allowed to learn */
 	if (!OPT(birth_ai_learn)) return;
