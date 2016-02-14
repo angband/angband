@@ -25,6 +25,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -759,7 +760,7 @@ void inven_wield(struct object *obj, int slot)
 	player->body.slots[slot].obj = wielded;
 
 	/* Do any ID-on-wield */
-	object_notice_on_wield(wielded);
+	object_learn_on_wield(player, wielded);
 
 	/* Where is the item now */
 	if (tval_is_melee_weapon(wielded))

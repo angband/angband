@@ -90,7 +90,7 @@ static int check_devices(struct object *obj)
 
 	/* Notice activations */
 	if (activated)
-		object_notice_effect(obj);
+		obj->known->effect = obj->effect;
 
 	return true;
 }

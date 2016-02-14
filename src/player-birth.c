@@ -512,7 +512,7 @@ static void player_outfit(struct player *p)
 
 		known_obj = object_new();
 		obj->known = known_obj;
-		object_notice_everything(obj);
+		object_set_base_known(obj);
 		player_know_object(p, obj);
 
 		/* Deduct the cost of the item from starting cash */

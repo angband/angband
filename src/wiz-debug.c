@@ -485,8 +485,8 @@ static void get_art_name(char *buf, int max, int a_idx)
 	/* Make it known to us */
 	known_obj = object_new();
 	obj->known = known_obj;
+	object_copy(known_obj, obj);
 	known_obj->notice |= OBJ_NOTICE_IMAGINED;
-	object_notice_everything(obj);
 
 	/* Create the artifact description */
 	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL);
