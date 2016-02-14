@@ -71,11 +71,6 @@ bool object_notice_curses(struct object *obj);
 void object_notice_on_firing(struct object *obj);
 void object_notice_on_wield(struct object *obj);
 void object_notice_on_use(struct object *obj);
-void equip_notice_on_defend(struct player *p);
-void equip_notice_flag(struct player *p, int flag);
-void equip_notice_element(struct player *p, int element);
-void equip_notice_to_hit_on_attack(struct player *p);
-void equip_notice_on_attack(struct player *p);
 
 /* Ostracism line */
 bool object_high_resist_is_possible(const struct object *obj);

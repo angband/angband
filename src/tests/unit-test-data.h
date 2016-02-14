@@ -1057,7 +1057,7 @@ static struct player TEST_DATA test_player = {
 	.upkeep = &test_player_upkeep,
 	.gear = NULL,
 	.gear_k = NULL,
-	.obj_k = NULL,
+	.obj_k = &test_player_knowledge,
 };
 
 static struct chunk TEST_DATA test_cave = {

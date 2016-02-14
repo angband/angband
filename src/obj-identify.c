@@ -25,6 +25,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -677,33 +678,6 @@ void object_notice_effect(struct object *obj)
 }
 
 
-static void object_notice_defence_plusses(struct player *p, struct object *obj)
-{
-	assert(obj && obj->kind);
-	assert(obj->known);
-
-	if (object_defence_plusses_are_visible(obj))
-		return;
-
-	if (!obj->known->to_a) {
-		obj->known->to_a = 1;
-		object_check_for_ident(obj);
-	}
-
-	if (obj->ac || obj->to_a) {
-		char o_name[80];
-
-		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-		msgt(MSG_PSEUDOID, "You know more about the %s you are wearing.",
-			 o_name);
-	}
-
-	p->upkeep->update |= (PU_BONUS);
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
-}
-
-
 void object_notice_attack_plusses(struct object *obj)
 {
 	char o_name[80];
@@ -882,9 +856,6 @@ void object_notice_on_wield(struct object *obj)
 		obj->known->modifiers[i] = 1;
 	}
 
-	/* Notice any brands */
-	object_notice_brands(obj, NULL);
-
 	/* Automatically sense artifacts upon wield */
 	object_sense_artifact(obj);
 
@@ -981,216 +952,6 @@ void object_notice_on_use(struct object *obj)
 
 	player->upkeep->notice |= PN_IGNORE;
 }
-
-/**
- * ------------------------------------------------------------------------
- * Equipment knowledge improvers
- * These add to the player's knowledge of objects in their equipment
- * ------------------------------------------------------------------------ */
-/**
- * Notice things which happen on defending.
- */
-void equip_notice_on_defend(struct player *p)
-{
-	int i;
-
-	for (i = 0; i < p->body.count; i++) {
-		struct object *obj = slot_object(p, i);
-		if (obj) {
-			assert(obj->known);
-			object_notice_defence_plusses(p, obj);
-		}
-	}
-
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
-}
-
-
-/**
- * Notice things about an object that would be noticed in time.
- */
-static void equip_notice_after_time(void)
-{
-	int i;
-	int flag;
-
-	struct object *obj;
-	char o_name[80];
-
-	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
-	bool redraw = false;
-
-	create_mask(timed_mask, true, OFID_TIMED, OFT_MAX);
-
-	/* Check every item the player is wearing */
-	for (i = 0; i < player->body.count; i++) {
-		obj = slot_object(player, i);
-		if (!obj) continue;
-
-		assert(obj->known);
-		if (object_is_known(obj)) continue;
-
-		/* Check for timed notice flags */
-		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-		object_flags(obj, f);
-		of_inter(f, timed_mask);
-
-		for (flag = of_next(f, FLAG_START); flag != FLAG_END;
-			 flag = of_next(f, flag + 1)) {
-			if (!of_has(obj->known->flags, flag)) {
-				/* Message */
-				flag_message(flag, o_name);
-
-				/* Notice the flag */
-				object_notice_flag(obj, flag);
-				redraw = true;
-
-				if (tval_is_jewelry(obj) &&
-					 (!object_effect(obj) || object_effect_is_known(obj))) {
-					/* Jewelry with a noticeable flag is obvious */
-					object_flavor_aware(obj);
-					object_check_for_ident(obj);
-					apply_autoinscription(obj);
-				}
-			}
-		}
-	}
-
-	/* Notice new info */
-	if (redraw) event_signal(EVENT_EQUIPMENT);
-}
-
-
-/**
- * Notice a given special flag on wielded items.
- *
- * \param p is the player
- * \param flag is the flag to notice
- */
-void equip_notice_flag(struct player *p, int flag)
-{
-	int i;
-
-	/* Sanity check */
-	if (!flag) return;
-
-	/* All wielded items eligible */
-	for (i = 0; i < p->body.count; i++) {
-		struct object *obj = slot_object(p, i);
-		if (!obj) continue;
-
-		assert(obj->known);
-		if (of_has(obj->flags, flag) && !of_has(obj->known->flags, flag)) {
-			char o_name[80];
-			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-
-			/* Notice the flag */
-			object_notice_flag(obj, flag);
-
-			/* Jewelry with a noticeable flag is obvious */
-			if (tval_is_jewelry(obj)) {
-				object_flavor_aware(obj);
-				object_check_for_ident(obj);
-				apply_autoinscription(obj);
-			}
-
-			/* Message */
-			flag_message(flag, o_name);
-		} else {
-			/* Notice that flag is absent */
-			object_notice_flag(obj, flag);
-		}
-	}
-
-	return;
-}
-
-/**
- * Notice the elemental resistance properties on wielded items.
- *
- * \param p is the player
- * \param element is the element to notice
- */
-void equip_notice_element(struct player *p, int element)
-{
-	int i;
-
-	if (element < 0 || element >= ELEM_MAX) return;
-
-	for (i = 0; i < p->body.count; i++) {
-		struct object *obj = slot_object(p, i);
-		if (!obj) continue;
-		assert(obj->known);
-
-		/* Already known */
-		if (object_element_is_known(obj, element)) continue;
-
-		/* Notice the element properties */
-		object_notice_element(obj, element);
-
-		/* Comment if it actually does something */
-		if (obj->el_info[element].res_level != 0) {
-			char o_name[80];
-			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-
-			msg("Your %s glows.", o_name);
-
-			/* Jewelry with a noticeable element is obvious */
-			if (tval_is_jewelry(obj)) {
-				object_flavor_aware(obj);
-				object_check_for_ident(obj);
-				apply_autoinscription(obj);
-			}
-		}
-	}
-}
-
-/**
- * Notice to-hit bonus on attacking.
- *
- * Used e.g. for ranged attacks where the item's to_d is not involved.
- * Does not apply to weapon or bow which should be done separately
- */
-void equip_notice_to_hit_on_attack(struct player *p)
-{
-	int i;
-
-	for (i = 0; i < p->body.count; i++) {
-		struct object *obj = slot_object(p, i);
-		if (i == slot_by_name(p, "weapon")) continue;
-		if (i == slot_by_name(p, "shooting")) continue;
-		if (obj && obj->to_h) {
-			assert(obj->known);
-			object_notice_attack_plusses(obj);
-		}
-	}
-
-	return;
-}
-
-
-/**
- * Notice things which happen on attacking.
- * Does not apply to weapon or bow which should be done separately
- */
-void equip_notice_on_attack(struct player *p)
-{
-	int i;
-
-	for (i = 0; i < p->body.count; i++) {
-		struct object *obj = slot_object(p, i);
-		if (i == slot_by_name(p, "weapon")) continue;
-		if (i == slot_by_name(p, "shooting")) continue;
-		if (obj) {
-			assert(obj->known);
-			object_notice_attack_plusses(obj);
-		}
-	}
-
-	return;
-}
-
 
 /**
  * ------------------------------------------------------------------------
@@ -1433,7 +1194,7 @@ void sense_inventory(void)
 
 	/* Notice some things after a while */
 	if (turn >= (object_last_wield + 3000)) {
-		equip_notice_after_time();
+		equip_learn_after_time(player);
 		object_last_wield = 0;
 	}
 

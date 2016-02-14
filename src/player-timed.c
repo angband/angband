@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "mon-util.h"
 #include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -189,7 +190,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 		/* Determine whether an effect can be prevented by a flag */
 		if (effect->fail_code == TMD_FAIL_FLAG_OBJECT) {
 			/* Effect is inhibited by an object flag */
-			equip_notice_flag(p, effect->fail);
+			equip_learn_flag(p, effect->fail);
 			if (mon) 
 				update_smart_learn(mon, player, effect->fail, 0, -1);
 			if (player_of_has(p, effect->fail)) {
@@ -199,14 +200,14 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 			}
 		} else if (effect->fail_code == TMD_FAIL_FLAG_RESIST) {
 			/* Effect is inhibited by a resist */
-			equip_notice_element(p, effect->fail);
+			equip_learn_element(p, effect->fail);
 			if (p->state.el_info[effect->fail].res_level > 0)
 				return false;
 		} else if (effect->fail_code == TMD_FAIL_FLAG_VULN) {
 			/* Effect is inhibited by a vulnerability 
 			 * the asymmetry with resists is OK for now - NRM */
 			if (p->state.el_info[effect->fail].res_level < 0) {
-				equip_notice_element(p, effect->fail);
+				equip_learn_element(p, effect->fail);
 				return false;
 			}
 		}
