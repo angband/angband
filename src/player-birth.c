@@ -27,6 +27,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -512,6 +513,7 @@ static void player_outfit(struct player *p)
 		known_obj = object_new();
 		obj->known = known_obj;
 		object_notice_everything(obj);
+		player_know_object(p, obj);
 
 		/* Deduct the cost of the item from starting cash */
 		p->au -= object_value(obj, obj->number, false);
