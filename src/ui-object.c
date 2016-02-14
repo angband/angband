@@ -1456,8 +1456,6 @@ void display_object_kind_recall(struct object_kind *kind)
 	struct object object = { 0 }, known_obj = { 0 };
 	object_prep(&object, kind, 0, EXTREMIFY);
 	object.known = &known_obj;
-	if (kind->aware)
-		object_notice_everything(&object);
 
 	display_object_recall(&object);
 }

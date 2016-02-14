@@ -349,11 +349,9 @@ static void project_object_handler_KILL_DOOR(project_object_handler_context_t *c
 		/* Disarm or Unlock */
 		unlock_chest((struct object * const)context->obj);
 
-		/* Identify */
-		object_notice_everything((struct object * const)context->obj);
-
 		/* Notice */
 		if (context->obj->known && !ignore_item_ok(context->obj)) {
+			context->obj->known->pval = context->obj->pval;
 			msg("Click!");
 			context->obvious = true;
 		}
@@ -368,11 +366,9 @@ static void project_object_handler_KILL_TRAP(project_object_handler_context_t *c
 		/* Disarm or Unlock */
 		unlock_chest((struct object * const)context->obj);
 
-		/* Identify */
-		object_notice_everything((struct object * const)context->obj);
-
 		/* Notice */
 		if (context->obj->known && !ignore_item_ok(context->obj)) {
+			context->obj->known->pval = context->obj->pval;
 			msg("Click!");
 			context->obvious = true;
 		}

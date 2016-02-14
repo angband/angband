@@ -142,7 +142,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 					  char *wgt, size_t wgt_len, int *lev, s32b *val, int k)
 {
 	struct object_kind *kind = &k_info[k];
-	struct object *obj = object_new();
+	struct object *obj = object_new(), *known_obj = object_new();
 	int i;
 
 	/* Prepare a fake item */
@@ -159,7 +159,8 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	(*lev) = kind->level;
 
 	/* Make known */
-	object_notice_everything(obj);
+	object_copy(known_obj, obj);
+	obj->known = known_obj;
 
 	/* Value */
 	(*val) = object_value(obj, 1, false);
@@ -185,6 +186,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	else if (tval_is_armor(obj))
 		strnfmt(dam, dam_len, "%d", obj->ac);
 
+	object_delete(&known_obj);
 	object_delete(&obj);
 }
 

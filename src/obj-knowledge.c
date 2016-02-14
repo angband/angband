@@ -20,10 +20,13 @@
 #include "object.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
+#include "obj-identify.h"
 #include "obj-knowledge.h"
 #include "obj-slays.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "player.h"
+#include "player-history.h"
 #include "store.h"
 
 
@@ -184,6 +187,7 @@ void player_learn_mod(struct player *p, int mod)
 	/* If the modifier was unknown, set it */
 	if (p->obj_k->modifiers[mod] == 0) {
 		p->obj_k->modifiers[mod] = 1;
+		//mod_message(mod);
 		update_player_object_knowledge(p);
 	}
 }
@@ -479,3 +483,63 @@ void equip_learn_after_time(struct player *p)
 		 flag = of_next(f, flag + 1))
 		player_learn_flag(p, flag);
 }
+
+/**
+ * Learn object properties that become obvious on wielding or wearing
+ */
+void object_learn_on_wield(struct player *p, struct object *obj)
+{
+	bitflag f[OF_SIZE], f2[OF_SIZE], obvious_mask[OF_SIZE];
+	int i, flag;
+
+	assert(obj->known);
+	/* Always set the worn flag */
+	obj->known->notice |= OBJ_NOTICE_WORN;
+
+	/* Worn means tried (for flavored wearables) */
+	object_flavor_tried(obj);
+
+	/* Get the obvious object flags */
+	create_mask(obvious_mask, true, OFID_WIELD, OFT_MAX);
+
+	/* Special case FA, needed for mages wielding gloves */
+	if (player_has(p, PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
+		(obj->modifiers[OBJ_MOD_DEX] <= 0) && 
+		!kf_has(obj->kind->kind_flags, KF_SPELLS_OK))
+		of_on(obvious_mask, OF_FREE_ACT);
+
+	/* Extract the flags */
+	object_flags(obj, f);
+
+	/* Find obvious flags - curses left for special message later */
+	create_mask(f2, false, OFT_CURSE, OFT_MAX);
+	of_diff(obvious_mask, f2);
+
+	/* Learn about obvious, previously unknown flags */
+	of_inter(f, obvious_mask);
+	for (flag = of_next(f, FLAG_START); flag != FLAG_END;
+		 flag = of_next(f, flag + 1)) {
+		char o_name[80];
+		if (of_has(p->obj_k->flags, flag)) continue;
+		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+
+		/* Learn the flag */
+		player_learn_flag(p, flag);
+
+		/* Message */
+		flag_message(flag, o_name);
+	}
+
+	/* Learn all modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (obj->modifiers[i] && !p->obj_k->modifiers[i])
+			player_learn_mod(p, i);
+
+	/* Automatically sense artifacts upon wield */
+	obj->known->artifact = obj->artifact;
+
+	/* Note artifacts when found */
+	if (obj->artifact)
+		history_add_artifact(obj->artifact, object_is_known(obj), true);
+}
+

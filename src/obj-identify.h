@@ -61,15 +61,7 @@ void object_flavor_aware(struct object *obj);
 void object_flavor_tried(struct object *obj);
 void object_know_all_but_flavor(struct object *obj);
 void object_notice_everything(struct object *obj);
-void object_notice_ego(struct object *obj);
-void object_notice_effect(struct object *obj);
-void object_notice_attack_plusses(struct object *obj);
-bool object_notice_element(struct object *obj, int element);
-bool object_notice_flag(struct object *obj, int flag);
-bool object_notice_flags(struct object *obj, bitflag flags[OF_SIZE]);
 bool object_notice_curses(struct object *obj);
-void object_notice_on_firing(struct object *obj);
-void object_notice_on_wield(struct object *obj);
 void object_notice_on_use(struct object *obj);
 
 /* Ostracism line */
