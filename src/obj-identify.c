@@ -116,16 +116,16 @@ bool object_all_miscellaneous_are_known(const struct object *obj)
 {
 	if (!obj->known) return false;
 	if (easy_know(obj)) return true;
-	if (!obj->known->artifact) return false;
-	if (!obj->known->ego) return false;
-	if (!obj->known->pval) return false;
-	if (!obj->known->dd) return false;
-	if (!obj->known->ds) return false;
-	if (!obj->known->ac) return false;
-	if (!obj->known->to_a) return false;
-	if (!obj->known->to_h) return false;
-	if (!obj->known->to_d) return false;
-	if (!obj->known->effect) return false;
+	if (obj->known->artifact != obj->artifact) return false;
+	if (obj->known->ego != obj->ego) return false;
+	if (obj->known->pval != obj->pval) return false;
+	if (obj->known->dd != obj->dd) return false;
+	if (obj->known->ds != obj->ds) return false;
+	if (obj->known->ac != obj->ac) return false;
+	if (obj->known->to_a != obj->to_a) return false;
+	if (obj->known->to_h != obj->to_h) return false;
+	if (obj->known->to_d != obj->to_d) return false;
+	if (obj->known->effect != obj->effect) return false;
 	return true;
 }
 
@@ -146,7 +146,7 @@ bool object_all_but_flavor_is_known(const struct object *obj)
 }
 
 /**
- * \returns whether an object should be treated as fully known (e.g. ID'd)
+ * \returns whether an object should be treated as fully known
  */
 bool object_is_known(const struct object *obj)
 {
@@ -205,7 +205,7 @@ bool object_flavor_was_tried(const struct object *obj)
 bool object_effect_is_known(const struct object *obj)
 {
 	assert(obj->kind);
-	if (easy_know(obj) || (obj->known && obj->known->effect))
+	if (obj->effect == obj->known->effect)
 		return true;
 
 	return false;
@@ -264,7 +264,7 @@ bool object_defence_plusses_are_visible(const struct object *obj)
  */
 bool object_flag_is_known(const struct object *obj, int flag)
 {
-	if (easy_know(obj) || (obj->known && of_has(obj->known->flags, flag)))
+	if (obj->known && of_has(obj->known->flags, flag))
 		return true;
 
 	return false;
@@ -277,8 +277,7 @@ bool object_element_is_known(const struct object *obj, int element)
 {
 	if (element < 0 || element >= ELEM_MAX) return false;
 
-	if (easy_know(obj) ||
-		(obj->known && obj->known->el_info[element].res_level))
+	if (obj->known && obj->known->el_info[element].res_level)
 		return true;
 
 	return false;
@@ -324,61 +323,6 @@ void object_set_base_known(struct object *obj)
 }
 
 /**
- * Notice the ego on an ego item.
- */
-void object_notice_ego(struct object *obj)
-{
-	bitflag learned_flags[OF_SIZE];
-	bitflag xtra_flags[OF_SIZE];
-	size_t i;
-
-	assert(obj->known);
-	if (!obj->ego)
-		return;
-
-	/* Learn ego flags */
-	of_union(obj->known->flags, obj->ego->flags);
-
-	/* Learn ego element properties (note random ones aren't learned) */
-	for (i = 0; i < ELEM_MAX; i++)
-		if (obj->ego->el_info[i].res_level != 0)
-			obj->known->el_info[i].res_level = 1;
-
-	/* Learn all flags except random abilities */
-	of_setall(learned_flags);
-
-	/* Don't learn random ego extras */
-	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
-		create_mask(xtra_flags, false, OFT_SUST, OFT_MAX);
-		of_diff(learned_flags, xtra_flags);
-	} else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER)) {
-		create_mask(xtra_flags, false, OFT_MISC, OFT_PROT, OFT_MAX);
-		of_diff(learned_flags, xtra_flags);
-	}
-
-	of_union(obj->known->flags, learned_flags);
-
-    /* Learn all element properties except random high resists */
-    for (i = 0; i < ELEM_MAX; i++) {
-        /* Don't learn random ego high resists */
-        if (obj->el_info[i].flags & EL_INFO_RANDOM)
-            continue;
-
-        /* Learn all element properties */
-		obj->known->el_info[i].res_level = 1;
-   }
-
-	if (!obj->known->ego) {
-		obj->known->ego = (struct ego_item *)1;
-
-		/* If you know the ego, you know which it is of excellent or splendid */
-		object_notice_sensing(obj);
-		object_check_for_ident(obj);
-	}
-}
-
-
-/**
  * Checks for additional knowledge implied by what the player already knows.
  *
  * \param obj is the object to check
@@ -412,10 +356,6 @@ bool object_check_for_ident(struct object *obj)
 			return true;
 		}
 	}
-
-	/* We still know all the flags, so if it's worn if it's an ego */
-	if (obj->ego && object_was_worn(obj))
-		object_notice_ego(obj);
 
 	return false;
 }

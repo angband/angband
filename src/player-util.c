@@ -170,12 +170,14 @@ void death_knowledge(void)
 
 	for (obj = player->gear; obj; obj = obj->next) {
 		object_flavor_aware(obj);
-		object_notice_everything(obj);
+		object_wipe(obj->known);
+		object_copy(obj->known, obj);
 	}
 
 	for (obj = home->stock; obj; obj = obj->next) {
 		object_flavor_aware(obj);
-		object_notice_everything(obj);
+		object_wipe(obj->known);
+		object_copy(obj->known, obj);
 	}
 
 	history_unmask_unknown();
