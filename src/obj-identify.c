@@ -357,7 +357,7 @@ bool object_check_for_ident(struct object *obj)
 			if (!object_this_mod_is_visible(obj, i))
 				break;
 		if (i == OBJ_MOD_MAX) {
-			object_notice_everything(obj);
+			//object_notice_everything(obj);
 			return true;
 		}
 	}
@@ -422,115 +422,6 @@ void object_flavor_tried(struct object *obj)
 }
 
 /**
- * Make the player aware of all of an object's flags.
- *
- * \param obj is the object to mark
- */
-void object_know_all_flags(struct object *obj)
-{
-	assert(obj->known);
-	of_setall(obj->known->flags);
-}
-
-
-/**
- * Make the player aware of all of an object's elemental properties.
- *
- * \param obj is the object to mark
- */
-void object_know_all_elements(struct object *obj)
-{
-	size_t i;
-
-	assert(obj->known);
-	for (i = 0; i < ELEM_MAX; i++)
-		obj->known->el_info[i].res_level = 1;
-}
-
-
-/**
- * Make the player aware of all of an object's miscellaneous properties.
- *
- * \param obj is the object to mark
- */
-void object_know_all_miscellaneous(struct object *obj)
-{
-	assert(obj->known);
-	obj->known->artifact = (struct artifact *)1;
-	obj->known->ego = (struct ego_item *)1;
-	obj->known->pval = 1;
-	obj->known->dd = 1;
-	obj->known->ds = 1;
-	obj->known->ac = 1;
-	obj->known->to_a = 1;
-	obj->known->to_h = 1;
-	obj->known->to_d = 1;
-	obj->known->effect = (struct effect *)1;
-}
-
-/**
- * Make the player aware of all of an object' properties except flavor.
- *
- * \param obj is the object to mark
- */
-void object_know_all_but_flavor(struct object *obj)
-{
-	int i;
-
-	assert(obj->known);
-	/* Make sure the tval, sval and kind are known */
-	obj->known->tval = obj->tval;
-	obj->known->sval = obj->sval;
-	obj->known->kind = obj->kind;
-
-	/* Know all modifiers */
-	for (i = 0; i < OBJ_MOD_MAX; i++)
-		obj->known->modifiers[i] = 1;
-
-	/* Know all flags there are to be known */
-	object_know_all_flags(obj);
-
-	/* Know all elemental properties */
-	object_know_all_elements(obj);
-
-	/* Know everything else */
-	object_know_all_miscellaneous(obj);
-}
-
-
-
-/**
- * Mark as object as fully known, a.k.a identified. 
- *
- * \param obj is the object to mark as identified
- */
-void object_notice_everything(struct object *obj)
-{
-	assert(obj->known);
-	/* Make sure the tval, sval and kind are known */
-	obj->known->tval = obj->tval;
-	obj->known->sval = obj->sval;
-	obj->known->kind = obj->kind;
-
-	/* Mark as known */
-	object_flavor_aware(obj);
-
-	/* Artifact has now been seen */
-	if (obj->artifact && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) {
-		obj->artifact->seen = obj->artifact->everseen = true;
-		history_add_artifact(obj->artifact, true, true);
-	}
-
-	/* Know everything else */
-	obj->known->notice |= OBJ_NOTICE_SENSED;
-	object_know_all_but_flavor(obj);
-	if (!player->is_dead)
-		apply_autoinscription(obj);
-}
-
-
-
-/**
  * Notice a set of flags - returns true if anything new was learned
  */
 bool object_notice_flags(struct object *obj, bitflag flags[OF_SIZE])
@@ -568,146 +459,13 @@ bool object_notice_curses(struct object *obj)
 	/* Give knowledge of which curses are present */
 	object_notice_flags(obj, f);
 
-	object_check_for_ident(obj);
+//	object_check_for_ident(obj);
 
 	player->upkeep->notice |= PN_IGNORE;
 
 	return !of_is_empty(f);
 }
 
-
-/**
- * Notice object properties that become obvious on wielding or wearing
- */
-void object_notice_on_wield(struct object *obj)
-{
-	bitflag f[OF_SIZE], f2[OF_SIZE], obvious_mask[OF_SIZE];
-	bool obvious = false;
-	int i;
-
-	assert(obj->known);
-	/* Always set the worn flag, and know arnour class */
-	obj->known->notice |= OBJ_NOTICE_WORN;
-	obj->known->ac = 1;
-
-	/* EASY_KNOW jewelry is now known */
-	if (object_flavor_is_aware(obj) && easy_know(obj)) {
-		object_notice_everything(obj);
-		return;
-	}
-
-	/* Only deal with un-ID'd items */
-	if (object_is_known(obj)) return;
-
-	/* Worn means tried (for flavored wearables) */
-	object_flavor_tried(obj);
-
-	/* Save time of wield for later */
-	object_last_wield = turn;
-
-	/* Get the obvious object flags */
-	create_mask(obvious_mask, true, OFID_WIELD, OFT_MAX);
-
-	/* special case FA, needed for mages wielding gloves */
-	if (player_has(player, PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
-		(obj->modifiers[OBJ_MOD_DEX] <= 0) && 
-		!kf_has(obj->kind->kind_flags, KF_SPELLS_OK))
-		of_on(obvious_mask, OF_FREE_ACT);
-
-	/* Extract the flags */
-	object_flags(obj, f);
-
-	/* Find obvious flags - curses left for special message later */
-	create_mask(f2, false, OFT_CURSE, OFT_MAX);
-	of_diff(obvious_mask, f2);
-
-	/* Learn about obvious flags */
-	if (of_is_inter(f, obvious_mask)) obvious = true;
-	of_union(obj->known->flags, obvious_mask);
-
-	/* Notice all modifiers */
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (obj->modifiers[i]) obvious = true;
-		obj->known->modifiers[i] = 1;
-	}
-
-	/* Automatically sense artifacts upon wield */
-	object_sense_artifact(obj);
-
-	/* Note artifacts when found */
-	if (obj->artifact)
-		history_add_artifact(obj->artifact, object_is_known(obj), true);
-
-	/* Special cases for jewellery (because the flavor isn't the whole story) */
-	if (tval_is_jewelry(obj)) {
-		/* Learn the flavor of jewelry with obvious flags */
-		if (obvious) {
-			object_flavor_aware(obj);
-			apply_autoinscription(obj);
-		}
-
-		/* Learn all flags and elements on any aware non-artifact jewelry */
-		if (object_flavor_is_aware(obj) && !obj->artifact) {
-			object_know_all_flags(obj);
-			object_know_all_elements(obj);
-		}
-	}
-
-	object_check_for_ident(obj);
-
-	if (!obvious) return;
-
-	/* Special messages for individual properties */
-	if (obj->modifiers[OBJ_MOD_STR] > 0)
-		msg("You feel stronger!");
-	else if (obj->modifiers[OBJ_MOD_STR] < 0)
-		msg("You feel weaker!");
-	if (obj->modifiers[OBJ_MOD_INT] > 0)
-		msg("You feel smarter!");
-	else if (obj->modifiers[OBJ_MOD_INT] < 0)
-		msg("You feel more stupid!");
-	if (obj->modifiers[OBJ_MOD_WIS] > 0)
-		msg("You feel wiser!");
-	else if (obj->modifiers[OBJ_MOD_WIS] < 0)
-		msg("You feel more naive!");
-	if (obj->modifiers[OBJ_MOD_DEX] > 0)
-		msg("You feel more dextrous!");
-	else if (obj->modifiers[OBJ_MOD_DEX] < 0)
-		msg("You feel clumsier!");
-	if (obj->modifiers[OBJ_MOD_CON] > 0)
-		msg("You feel healthier!");
-	else if (obj->modifiers[OBJ_MOD_CON] < 0)
-		msg("You feel sicklier!");
-	if (obj->modifiers[OBJ_MOD_STEALTH] > 0)
-		msg("You feel stealthier.");
-	else if (obj->modifiers[OBJ_MOD_STEALTH] < 0)
-		msg("You feel noisier.");
-	if (obj->modifiers[OBJ_MOD_SPEED] > 0)
-		msg("You feel strangely quick.");
-	else if (obj->modifiers[OBJ_MOD_SPEED] < 0)
-		msg("You feel strangely sluggish.");
-	if (obj->modifiers[OBJ_MOD_BLOWS] > 0)
-		msg("Your weapon tingles in your hands.");
-	else if (obj->modifiers[OBJ_MOD_BLOWS] < 0)
-		msg("Your weapon aches in your hands.");
-	if (obj->modifiers[OBJ_MOD_SHOTS] > 0)
-		msg("Your bow tingles in your hands.");
-	else if (obj->modifiers[OBJ_MOD_SHOTS] < 0)
-		msg("Your bow aches in your hands.");
-	if (obj->modifiers[OBJ_MOD_INFRA] > 0)
-		msg("Your eyes tingle.");
-	else if (obj->modifiers[OBJ_MOD_INFRA] < 0)
-		msg("Your eyes tingle.");
-	if (obj->modifiers[OBJ_MOD_LIGHT])
-		msg("It glows!");
-	if (of_has(f, OF_TELEPATHY))
-		msg("Your mind feels strangely sharper!");
-	if (of_has(f, OF_FREE_ACT) && of_has(obvious_mask, OF_FREE_ACT))
-		msg("You feel mobile!");
-
-	/* Remember the flags */
-	object_notice_sensing(obj);
-}
 
 
 /**
@@ -721,8 +479,6 @@ void object_notice_on_use(struct object *obj)
 
 	object_flavor_aware(obj);
 	obj->known->effect = obj->effect;
-	if (tval_is_rod(obj))
-		object_notice_everything(obj);
 	player_exp_gain(player, (lev + (player->lev / 2)) / player->lev);
 
 	player->upkeep->notice |= PN_IGNORE;
@@ -784,11 +540,6 @@ void object_notice_sensing(struct object *obj)
 	obj->known->notice |= OBJ_NOTICE_SENSED;
 	object_check_for_ident(obj);
 
-	/* For unflavoured objects we can rule out some things */
-	if (!obj->artifact && !obj->ego && !obj->kind->flavor) {
-		object_know_all_flags(obj);
-		object_know_all_elements(obj);
-	}
 }
 
 
@@ -901,7 +652,7 @@ void do_ident_item(struct object *obj)
 	assert(obj->known);
     /* Identify and apply autoinscriptions. */
 	object_flavor_aware(obj);
-	object_notice_everything(obj);
+	//object_notice_everything(obj);
 	apply_autoinscription(obj);
 
 	/* Update the gear */
@@ -1028,7 +779,7 @@ void sense_inventory(void)
 
 		/* Average pseudo-ID means full ID */
 		if (feel == INSCRIP_AVERAGE) {
-			object_notice_everything(obj);
+			//object_notice_everything(obj);
 
 			msgt(MSG_PSEUDOID, "You feel the %s (%c) %s %s average...",
 				 o_name, gear_to_label(obj),

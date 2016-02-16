@@ -305,3 +305,4 @@ s16b mod_slot_mult(int mod, int slot)
 	return 1;
 }
 
+

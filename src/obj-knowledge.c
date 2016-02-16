@@ -541,6 +541,81 @@ void equip_learn_after_time(struct player *p)
  * Functions for learning from the behaviour of indvidual objects
  * ------------------------------------------------------------------------ */
 /**
+ * Print a message when an object modifier is identified by use.
+ *
+ * \param mod is the modifier being noticed
+ * \param name is the object name 
+ */
+void mod_message(struct object *obj, int mod)
+{
+	/* Special messages for individual properties */
+	switch (mod) {
+	case OBJ_MOD_STR:
+		if (obj->modifiers[OBJ_MOD_STR] > 0)
+			msg("You feel stronger!");
+		else if (obj->modifiers[OBJ_MOD_STR] < 0)
+			msg("You feel weaker!");
+		break;
+	case OBJ_MOD_INT:
+		if (obj->modifiers[OBJ_MOD_INT] > 0)
+			msg("You feel smarter!");
+		else if (obj->modifiers[OBJ_MOD_INT] < 0)
+			msg("You feel more stupid!");
+		break;
+	case OBJ_MOD_WIS:
+		if (obj->modifiers[OBJ_MOD_WIS] > 0)
+			msg("You feel wiser!");
+		else if (obj->modifiers[OBJ_MOD_WIS] < 0)
+			msg("You feel more naive!");
+		break;
+	case OBJ_MOD_DEX:
+		if (obj->modifiers[OBJ_MOD_DEX] > 0)
+			msg("You feel more dextrous!");
+		else if (obj->modifiers[OBJ_MOD_DEX] < 0)
+			msg("You feel clumsier!");
+		break;
+	case OBJ_MOD_CON:
+		if (obj->modifiers[OBJ_MOD_CON] > 0)
+			msg("You feel healthier!");
+		else if (obj->modifiers[OBJ_MOD_CON] < 0)
+			msg("You feel sicklier!");
+		break;
+	case OBJ_MOD_STEALTH:
+		if (obj->modifiers[OBJ_MOD_STEALTH] > 0)
+			msg("You feel stealthier.");
+		else if (obj->modifiers[OBJ_MOD_STEALTH] < 0)
+			msg("You feel noisier.");
+		break;
+	case OBJ_MOD_SPEED:
+		if (obj->modifiers[OBJ_MOD_SPEED] > 0)
+			msg("You feel strangely quick.");
+		else if (obj->modifiers[OBJ_MOD_SPEED] < 0)
+			msg("You feel strangely sluggish.");
+		break;
+	case OBJ_MOD_BLOWS:
+		if (obj->modifiers[OBJ_MOD_BLOWS] > 0)
+			msg("Your weapon tingles in your hands.");
+		else if (obj->modifiers[OBJ_MOD_BLOWS] < 0)
+			msg("Your weapon aches in your hands.");
+		break;
+	case OBJ_MOD_SHOTS:
+		if (obj->modifiers[OBJ_MOD_SHOTS] > 0)
+			msg("Your bow tingles in your hands.");
+		else if (obj->modifiers[OBJ_MOD_SHOTS] < 0)
+			msg("Your bow aches in your hands.");
+		break;
+	case OBJ_MOD_INFRA:
+		msg("Your eyes tingle.");
+		break;
+	case OBJ_MOD_LIGHT:
+		msg("It glows!");
+		break;
+	default:
+		break;
+	}
+}
+
+/**
  * Learn object properties that become obvious on wielding or wearing
  */
 void object_learn_on_wield(struct player *p, struct object *obj)
@@ -588,8 +663,13 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 
 	/* Learn all modifiers */
 	for (i = 0; i < OBJ_MOD_MAX; i++)
-		if (obj->modifiers[i] && !p->obj_k->modifiers[i])
+		if (obj->modifiers[i] && !p->obj_k->modifiers[i]) {
+			/* Learn the mod */
 			player_learn_mod(p, i);
+
+			/* Message */
+			mod_message(obj, i);
+		}
 
 	/* Automatically sense artifacts upon wield */
 	obj->known->artifact = obj->artifact;
