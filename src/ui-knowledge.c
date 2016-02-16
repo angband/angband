@@ -1376,9 +1376,9 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 	struct object *obj = &body, *known_obj = &known_body;
 
 	make_fake_artifact(obj, &a_info[a_idx]);
+	object_wipe(known_obj);
+	object_copy(known_obj, obj);
 	obj->known = known_obj;
-	known_obj->artifact = (struct artifact *) 1;
-	known_obj->kind = obj->kind;
 	object_desc(o_name, namelen, obj, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 	object_wipe(known_obj);
 	object_wipe(obj);
@@ -1464,14 +1464,14 @@ static void desc_art_fake(int a_idx)
 
 		make_fake_artifact(obj, &a_info[a_idx]);
 		obj->known = known_obj;
-		known_obj->artifact = (struct artifact *)1;
+		known_obj->artifact = obj->artifact;
 		known_obj->kind = obj->kind;
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
 		if (history_is_artifact_known(obj->artifact))
 			/* Be very careful not to influence anything but this object */
-			object_know_all_but_flavor(obj);
+			object_copy(known_obj, obj);
 	}
 
 	/* Hack -- Handle stuff */
@@ -1812,11 +1812,8 @@ static void desc_obj_fake(int k_idx)
 	object_prep(obj, kind, 0, EXTREMIFY);
 	obj->known = known_obj;
 
-	/* Hack -- its in the store */
-	if (kind->aware) object_know_all_but_flavor(obj);
-
 	/* It's fully known */
-	if (!kind->flavor) object_copy(known_obj, obj);
+	if (kind->aware || !kind->flavor) object_copy(known_obj, obj);
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player);

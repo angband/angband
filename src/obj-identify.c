@@ -315,6 +315,11 @@ void object_set_base_known(struct object *obj)
 	obj->known->sval = obj->sval;
 	obj->known->number = obj->number;
 
+	/* Generic dice and ac */
+	obj->known->dd = obj->kind->dd * player->obj_k->dd;
+	obj->known->ds = obj->kind->ds * player->obj_k->ds;
+	obj->known->ac = obj->kind->ac * player->obj_k->ac;
+
 	/* Aware flavours get info now */
 	if (obj->kind->flavor && obj->kind->aware) {
 		obj->known->pval = obj->pval;
