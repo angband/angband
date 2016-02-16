@@ -28,6 +28,7 @@
 #include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -1810,7 +1811,7 @@ textblock *object_info(const struct object *obj, oinfo_detail_t mode)
 textblock *object_info_ego(struct ego_item *ego)
 {
 	struct object_kind *kind = NULL;
-	struct object obj = { 0 };
+	struct object obj = { 0 }, known_obj = { 0 };
 	size_t i;
 
 	for (i = 0; i < z_info->k_max; i++) {
@@ -1827,7 +1828,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.ego = ego;
 	ego_apply_magic(&obj, 0);
 
-	object_know_all_but_flavor(&obj);
+	object_copy(&known_obj, &obj);
 
 	return object_info_out(&obj, OINFO_NONE | OINFO_EGO);
 }

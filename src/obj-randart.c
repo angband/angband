@@ -286,7 +286,7 @@ void mods_to_fake_pvals(struct artifact *a)
  */
 static s32b artifact_power(int a_idx, bool translate)
 {
-	struct object obj;
+	struct object obj, known_obj;
 	char buf[256];
 	bool fail = false;
 	s32b power;
@@ -301,14 +301,17 @@ static s32b artifact_power(int a_idx, bool translate)
 
 	if (fail) return 0;
 
+	object_wipe(&known_obj);
+	object_copy(&known_obj, &obj);
+	obj.known = &known_obj;
 	object_desc(buf, 256 * sizeof(char), &obj,
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
 	power = object_power(&obj, verbose, log_file, true);
 
-	if (obj.slays) free_slay(obj.slays);
-	if (obj.brands) free_brand(obj.brands);
+	object_wipe(&known_obj);
+	object_wipe(&obj);
 	return power;
 }
 

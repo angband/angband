@@ -908,7 +908,10 @@ struct object *store_carry(struct store *store, struct object *obj)
 	struct object_kind *kind = obj->kind;
 
 	/* Evaluate the object */
-	value = object_value(obj, 1, false);
+	if (object_is_carried(player, obj))
+		value = object_value(obj, 1, false);
+	else
+		value = object_value_real(obj, 1, false, true);
 
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0)
@@ -1197,8 +1200,8 @@ static bool store_create_random(struct store *store)
 		known_obj = object_new();
 		obj->known = known_obj;
 
-		/* Know everything but flavor, no origin yet */
-		object_know_all_but_flavor(obj);
+		/* Know everything the player knows, no origin yet */
+		object_set_base_known(obj);
 		player_know_object(player, obj);
 		obj->origin = ORIGIN_NONE;
 
@@ -1250,9 +1253,9 @@ static struct object *store_create_item(struct store *store,
 	/* Create a new object of the chosen kind */
 	object_prep(obj, kind, 0, RANDOMISE);
 
-	/* Know everything but flavor, no origin yet */
+	/* Know everything the player knows, no origin yet */
 	obj->known = known_obj;
-	object_know_all_but_flavor(obj);
+	object_set_base_known(obj);
 	player_know_object(player, obj);
 	obj->origin = ORIGIN_NONE;
 
@@ -1669,8 +1672,9 @@ void do_cmd_buy(struct command *cmd)
 	/* Spend the money */
 	player->au -= price;
 
-	/* Completely ID objects on buy */
-	object_flavor_aware(bought);
+	/* Know flavored consumables on buy */
+	if (!tval_is_jewelry(obj))
+		object_flavor_aware(bought);
 
 	/* Update the gear */
 	player->upkeep->update |= (PU_INVEN);

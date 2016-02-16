@@ -182,7 +182,7 @@ void player_know_object(struct player *p, struct object *obj)
 	obj->known->dd = p->obj_k->dd * obj->dd;
 	obj->known->ds = p->obj_k->ds * obj->ds;
 
-	/* Set ego type if known */
+	/* Set ego type, jewellery type if known */
 	if (player_knows_ego(p, obj->ego))
 		obj->known->ego = obj->ego;
 }
