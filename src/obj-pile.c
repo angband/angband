@@ -506,18 +506,9 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 
 	/* First object gains any extra knowledge from second */
 	if (obj1->known && obj2->known) {
-		of_union(obj1->known->flags, obj2->known->flags);
-		if (obj2->known->ego)
-			obj1->known->ego = (struct ego_item *)1;
-		obj1->known->pval |= obj2->known->pval;
-		obj1->known->dd |= obj2->known->dd;
-		obj1->known->ds |= obj2->known->ds;
-		obj1->known->ac |= obj2->known->ac;
-		obj1->known->to_a |= obj2->known->to_a;
-		obj1->known->to_h |= obj2->known->to_h;
-		obj1->known->to_d |= obj2->known->to_d;
 		if (obj2->known->effect)
-			obj1->known->effect = (struct effect *)1;
+			obj1->known->effect = obj1->effect;
+		player_know_object(player, obj1);
 	}
 
 	/* Merge inscriptions */
@@ -1405,7 +1396,9 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
 		}
 
-		player_know_object(player, obj);
+		/* If it's the player grid, know every object */
+		if ((y == player->py) && (x == player->px))
+			player_know_object(player, obj);
 	}
 
 	/* Remove known location of anything not on this grid */

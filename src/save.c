@@ -86,28 +86,18 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->number);
 	wr_s16b(obj->weight);
 
-	if (obj->artifact) {
-		if (obj->artifact != (struct artifact *)1)
-			wr_u32b(obj->artifact->aidx);
-		else
-			wr_u32b(EGO_ART_KNOWN);
-	} else {
+	if (obj->artifact)
+		wr_u32b(obj->artifact->aidx);
+	else
 		wr_u32b(0);
-	}
 
-	if (obj->ego) {
-		if (obj->ego != (struct ego_item *)1)
+	if (obj->ego)
 			wr_u32b(obj->ego->eidx);
-		else
-			wr_u32b(EGO_ART_KNOWN);
-	} else {
+	else
 		wr_u32b(0);
-	}
 
-	if (obj->effect == (struct effect *)1)
+	if (obj->effect)
 		wr_byte(1);
-	else if (obj->effect)
-		wr_byte(2);
 	else
 		wr_byte(0);
 

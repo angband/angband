@@ -343,7 +343,6 @@ static const grouper group_artifact[] =
 static void spoil_artifact(const char *fname)
 {
 	int i, j;
-	struct object *obj;
 	char buf[1024];
 
 	/* Build the filename */
@@ -379,28 +378,30 @@ static void spoil_artifact(const char *fname)
 			struct artifact *art = &a_info[j];
 			char buf2[80];
 			char *temp;
+			struct object *obj, *known_obj;
 
 			/* We only want objects in the current group */
 			if (art->tval != group_artifact[i].tval) continue;
 
 			/* Get local object */
 			obj = object_new();
+			known_obj = object_new();
 
 			/* Attempt to "forge" the artifact */
 			if (!make_fake_artifact(obj, art)) {
+				object_delete(&known_obj);
 				object_delete(&obj);
 				continue;
 			}
 
 			/* Grab artifact name */
+			object_copy(known_obj, obj);
+			obj->known = known_obj;
 			object_desc(buf2, sizeof(buf2), obj, ODESC_PREFIX |
 				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL);
 
 			/* Print name and underline */
 			spoiler_underline(buf2, '-');
-
-			/* Cheat extra knowledge */
-			object_know_all_but_flavor(obj); 
 
 			/* Temporarily blank the artifact flavour text - spoilers
 			   spoil the mechanics, not the atmosphere. */
@@ -428,6 +429,7 @@ static void spoil_artifact(const char *fname)
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);
+			object_delete(&known_obj);
 			object_delete(&obj);
 		}
 	}
