@@ -1326,8 +1326,6 @@ static errr term_force_font(term_data *td, const char *path)
 		td->font_file = NULL;
 	}
 
-
-
 	/* Local copy */
 	my_strcpy(buf, path, sizeof(buf));
 
@@ -1340,10 +1338,13 @@ static errr term_force_font(term_data *td, const char *path)
 	/* Verify file */
 	if (!file_exists(buf)) return (1);
 
-
-	/* Load the new font */
-	if (!AddFontResourceEx(buf, FR_PRIVATE, 0)) return (1);
-
+	/* Load the new font.  */
+	errno = 0;
+	i = AddFontResourceEx(buf, FR_PRIVATE, 0);
+	/* Hack: WIN64 AddFontResourceEx sometimes quietly succeeds. */
+	if (i == 0 && errno != 0) {
+		return (1);
+	}
 	/* Save new font name */
 	td->font_file = string_make(base);
 
