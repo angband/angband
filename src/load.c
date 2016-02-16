@@ -225,13 +225,9 @@ static struct object *rd_item(void)
 
 	/* Lookup ego */
 	obj->ego = lookup_ego(ego_idx);
-	if (ego_idx == EGO_ART_KNOWN)
-		obj->ego = (struct ego_item *)1;
 
 	/* Set artifact, fail if invalid index */
-	if (art_idx == EGO_ART_KNOWN) {
-		obj->artifact = (struct artifact *)1;
-	} else if (art_idx >= z_info->a_max) {
+	if (art_idx >= z_info->a_max) {
 		object_delete(&obj);
 		return NULL;
 	} else if (art_idx > 0) {
@@ -239,9 +235,7 @@ static struct object *rd_item(void)
 	}
 
 	/* Set effect */
-	if (effect == 1)
-		obj->effect = (struct effect *)1;
-	else if (effect && obj->ego)
+	if (effect && obj->ego)
 		obj->effect = obj->ego->effect;
 
 	if (effect && !obj->effect)
