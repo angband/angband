@@ -59,8 +59,6 @@ void object_set_base_known(struct object *obj);
 bool object_check_for_ident(struct object *obj);
 void object_flavor_aware(struct object *obj);
 void object_flavor_tried(struct object *obj);
-void object_know_all_but_flavor(struct object *obj);
-void object_notice_everything(struct object *obj);
 bool object_notice_curses(struct object *obj);
 void object_notice_on_use(struct object *obj);
 
