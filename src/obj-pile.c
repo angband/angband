@@ -431,8 +431,8 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		/* ... otherwise ok */
 	} else if (tval_is_weapon(obj1) || tval_is_armor(obj1) ||
 		tval_is_jewelry(obj1) || tval_is_light(obj1)) {
-		bool obj1_is_known = object_is_known(obj1);
-		bool obj2_is_known = object_is_known(obj2);
+		bool obj1_is_known = object_fully_known((struct object *)obj1);
+		bool obj2_is_known = object_fully_known((struct object *)obj2);
 
 		/* Require identical values */
 		if (obj1->ac != obj2->ac) return false;
@@ -1129,7 +1129,7 @@ void floor_item_charges(struct object *obj)
 	if (!tval_can_have_charges(obj)) return;
 
 	/* Require known item */
-	if (!object_is_known(obj)) return;
+	if (!object_flavor_is_aware(obj)) return;
 
 	/* Print a message */
 	msg("There %s %d charge%s remaining.", (obj->pval != 1) ? "are" : "is",
