@@ -63,7 +63,6 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 {
 	int i;
 	struct object *obj;
-	bool known;
 	bitflag f[OF_SIZE];
 	struct player_state st = player->known_state;
 	int tmp_col;
@@ -76,19 +75,16 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 
 	/* Scan for potentially vulnerable items */
 	for (obj = player->gear; obj; obj = obj->next) {
+		assert(obj->known);
 		object_flags_known(obj, f);
 
-		/* Don't reveal the nature of an object.
-		 * Assume the player is conservative with unknown items. */
-		known = object_is_known(obj);
-
 		/* Drain charges - requires a charged item */
-		if ((!known || obj->pval > 0) && tval_can_have_charges(obj))
+		if ((obj->pval > 0) && tval_can_have_charges(obj))
 			melee_colors[RBE_DRAIN_CHARGES] = COLOUR_L_RED;
 
 		/* Steal item - requires non-artifacts */
-		if (!object_is_equipped(player->body, obj) && (!known || !obj->artifact)
-			&& player->lev + adj_dex_safe[st.stat_ind[STAT_DEX]] < 100)
+		if (!object_is_equipped(player->body, obj) && !obj->known->artifact &&
+			player->lev + adj_dex_safe[st.stat_ind[STAT_DEX]] < 100)
 			melee_colors[RBE_EAT_ITEM] = COLOUR_L_RED;
 
 		/* Eat food - requries food */
@@ -101,10 +97,10 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 			melee_colors[RBE_EAT_LIGHT] = COLOUR_YELLOW;
 
 		/* Disenchantment - requires an enchanted item */
-		if (object_is_equipped(player->body, obj) && (!known || obj->to_a > 0 ||
-				obj->to_h > 0 || obj->to_d > 0) &&
-				(st.el_info[ELEM_DISEN].res_level <= 0))
-		{
+		if (object_is_equipped(player->body, obj) &&
+			(obj->known->to_a > 0 || obj->known->to_h > 0 ||
+			 obj->known->to_d > 0) &&
+			(st.el_info[ELEM_DISEN].res_level <= 0)) {
 			melee_colors[RBE_DISENCHANT] = COLOUR_L_RED;
 			spell_colors[RSF_BR_DISE] = COLOUR_L_RED;
 		}

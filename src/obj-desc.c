@@ -96,7 +96,8 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 {
 	bool show_flavor = !terse && obj->kind->flavor;
 
-	if (mode & ODESC_STORE) show_flavor = false;
+	if ((mode & ODESC_STORE) && (aware || !tval_is_jewelry(obj)))
+		show_flavor = false;
 	if (aware && !OPT(show_flavors)) show_flavor = false;
 
 	/* Artifacts are special */
@@ -529,11 +530,10 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 		u[n++] = quark_str(obj->note);
 
 	/* Use special inscription, if any */
-	if (!object_is_known(obj)) {
+	if (!object_flavor_is_aware(obj)) {
 		if (tval_can_have_charges(obj) && (obj->pval == 0)) {
 			u[n++] = "empty";
-		} else if (!object_flavor_is_aware(obj) &&
-				   object_flavor_was_tried(obj)) {
+		} else if (object_flavor_was_tried(obj)) {
 			u[n++] = "tried";
 		}
 	}
@@ -643,7 +643,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 	if (mode & ODESC_EXTRA) {
 		end = obj_desc_mods(obj->known, buf, max, end);
 
-		end = obj_desc_charges(obj->known, buf, max, end, mode);
+		end = obj_desc_charges(obj, buf, max, end, mode);
 
 		if (mode & ODESC_STORE)
 			end = obj_desc_aware(obj->known, buf, max, end);

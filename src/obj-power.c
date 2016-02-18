@@ -253,26 +253,24 @@ static int launcher_ammo_damage_power(const struct object *obj, int p)
 /**
  * Add power for extra blows
  */
-static int extra_blows_power(const struct object *obj, int p, bool known)
+static int extra_blows_power(const struct object *obj, int p)
 {
 	int q = p;
 
 	if (obj->modifiers[OBJ_MOD_BLOWS] == 0)
 		return p;
 
-	if (known || object_this_mod_is_visible(obj, OBJ_MOD_BLOWS)) {
-		if (obj->modifiers[OBJ_MOD_BLOWS] >= INHIBIT_BLOWS) {
-			p += INHIBIT_POWER;
-			log_obj("INHIBITING - too many extra blows - quitting\n");
-			return p;
-		} else {
-			p = p * (MAX_BLOWS + obj->modifiers[OBJ_MOD_BLOWS]) / MAX_BLOWS;
-			/* Add boost for assumed off-weapon damage */
-			p += (NONWEAP_DAMAGE * obj->modifiers[OBJ_MOD_BLOWS]
-				  * DAMAGE_POWER / 2);
-			log_obj(format("Add %d power for extra blows, total is %d\n", 
-								p - q, p));
-		}
+	if (obj->modifiers[OBJ_MOD_BLOWS] >= INHIBIT_BLOWS) {
+		p += INHIBIT_POWER;
+		log_obj("INHIBITING - too many extra blows - quitting\n");
+		return p;
+	} else {
+		p = p * (MAX_BLOWS + obj->modifiers[OBJ_MOD_BLOWS]) / MAX_BLOWS;
+		/* Add boost for assumed off-weapon damage */
+		p += (NONWEAP_DAMAGE * obj->modifiers[OBJ_MOD_BLOWS]
+			  * DAMAGE_POWER / 2);
+		log_obj(format("Add %d power for extra blows, total is %d\n",
+					   p - q, p));
 	}
 	return p;
 }
@@ -280,21 +278,20 @@ static int extra_blows_power(const struct object *obj, int p, bool known)
 /**
  * Add power for extra shots - note that we cannot handle negative shots
  */
-static int extra_shots_power(const struct object *obj, int p, bool known)
+static int extra_shots_power(const struct object *obj, int p)
 {
 	if (obj->modifiers[OBJ_MOD_SHOTS] == 0)
 		return p;
 
-	if (known || object_this_mod_is_visible(obj, OBJ_MOD_SHOTS)) {
-		if (obj->modifiers[OBJ_MOD_SHOTS] >= INHIBIT_SHOTS) {
-			p += INHIBIT_POWER;
-			log_obj("INHIBITING - too many extra shots - quitting\n");
-			return p;
-		} else if (obj->modifiers[OBJ_MOD_SHOTS] > 0) {
-			int q = obj->modifiers[OBJ_MOD_SHOTS];
-			p = p * (1 + q);
-			log_obj(format("Multiplying power by %d for extra shots, total is %d\n", 1 + q, p));
-		}
+	if (obj->modifiers[OBJ_MOD_SHOTS] >= INHIBIT_SHOTS) {
+		p += INHIBIT_POWER;
+		log_obj("INHIBITING - too many extra shots - quitting\n");
+		return p;
+	} else if (obj->modifiers[OBJ_MOD_SHOTS] > 0) {
+		int q = obj->modifiers[OBJ_MOD_SHOTS];
+		p = p * (1 + q);
+		log_obj(format("Multiplying power by %d for extra shots, total is %d\n",
+					   1 + q, p));
 	}
 	return p;
 }
@@ -303,19 +300,16 @@ static int extra_shots_power(const struct object *obj, int p, bool known)
 /**
  * Add power for extra might
  */
-static int extra_might_power(const struct object *obj, int p, int mult,
-							 bool known)
+static int extra_might_power(const struct object *obj, int p, int mult)
 {
-	if (known || object_this_mod_is_visible(obj, OBJ_MOD_MIGHT)) {
-		if (obj->modifiers[OBJ_MOD_MIGHT] >= INHIBIT_MIGHT) {
-			p += INHIBIT_POWER;
-			log_obj("INHIBITING - too much extra might - quitting\n");
-			return p;
-		} else {
-			mult += obj->modifiers[OBJ_MOD_MIGHT];
-		}
-		log_obj(format("Mult after extra might is %d\n", mult));
+	if (obj->modifiers[OBJ_MOD_MIGHT] >= INHIBIT_MIGHT) {
+		p += INHIBIT_POWER;
+		log_obj("INHIBITING - too much extra might - quitting\n");
+		return p;
+	} else {
+		mult += obj->modifiers[OBJ_MOD_MIGHT];
 	}
+	log_obj(format("Mult after extra might is %d\n", mult));
 	p *= mult;
 	log_obj(format("After multiplying power for might, total is %d\n", p));
 	return p;
@@ -325,7 +319,7 @@ static int extra_might_power(const struct object *obj, int p, int mult,
  * Calculate the rating for a given slay combination
  */
 static s32b slay_power(const struct object *obj, int p, int verbose,
-					   int dice_pwr, bool known)
+					   int dice_pwr)
 {
 	u32b sv = 0;
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
@@ -333,14 +327,7 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	struct brand *brands = obj->brands;
 	struct slay *slays = obj->slays;
 
-	/* Count the known brands and slays */
-	if (!known && obj->known) {
-		brands = obj->known->brands;
-		slays = obj->known->slays;
-	} else {
-		brands = NULL;
-		slays = NULL;
-	}
+	/* Count the brands and slays */
 	while (brands) {
 		num_brands++;
 		brands = brands->next;
@@ -372,8 +359,7 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		 */
 		tot_mon_power = 0;
 		for (i = 0; i < z_info->r_max; i++)	{
-			struct object *checked_obj = known ? (struct object *)obj :
-				obj->known;
+			struct object *obj1 = (struct object *) obj;
 			struct monster *mon = mem_zalloc(sizeof(*mon));
 			const struct brand *b = NULL;
 			const struct slay *s = NULL;
@@ -383,8 +369,7 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 			mon->race = &r_info[i];
 
 			/* Find the best multiplier against this monster */
-			improve_attack_modifier(checked_obj, mon, &b, &s, verb, false,
-									false);
+			improve_attack_modifier(obj1, mon, &b, &s, verb, false,	false);
 			if (s)
 				mult = s->multiplier;
 			else if (b)
@@ -408,13 +393,8 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 			/* Write info about the slay combination and multiplier */
 			log_obj("Slay multiplier for: ");
 
-			if (known) {
-				brands = brand_collect(obj->brands, NULL);
-				slays = slay_collect(obj->slays, NULL);
-			} else if (obj->known) {
-				brands = brand_collect(obj->known->brands, NULL);
-				slays = slay_collect(obj->known->slays, NULL);
-			}
+			brands = brand_collect(obj->brands, NULL);
+			slays = slay_collect(obj->slays, NULL);
 
 			for (b = brands; b; b = b->next) {
 				log_obj(format("%sx%d ", b->name, b->multiplier));
@@ -574,16 +554,13 @@ static int jewelry_power(const struct object *obj, int p)
 /**
  * Add power for modifiers
  */
-static int modifier_power(const struct object *obj, int p, bool known)
+static int modifier_power(const struct object *obj, int p)
 {
 	int i, k = 1, extra_stat_bonus = 0, q;
 
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (known || object_this_mod_is_visible(obj, i)) {
-			k = obj->modifiers[i];
-			extra_stat_bonus += (k * mod_mult(i));
-		}
-		else continue;
+		k = obj->modifiers[i];
+		extra_stat_bonus += (k * mod_mult(i));
 
 		if (mod_power(i)) {
 			q = (k * mod_power(i) * mod_slot_mult(i, wield_slot(obj)));
@@ -612,17 +589,14 @@ static int modifier_power(const struct object *obj, int p, bool known)
  * Add power for non-derived flags (derived flags have flag_power 0)
  */
 static int flags_power(const struct object *obj, int p, int verbose,
-					   ang_file *log_file, bool known)
+					   ang_file *log_file)
 {
 	size_t i, j;
 	int q;
 	bitflag flags[OF_SIZE];
 
 	/* Extract the flags */
-	if (known)
-		object_flags(obj, flags);
-	else
-		object_flags_known(obj, flags);
+	object_flags(obj, flags);
 
 	/* Log the flags in human-readable form */
 	if (verbose)
@@ -671,7 +645,7 @@ static int flags_power(const struct object *obj, int p, int verbose,
 /**
  * Add power for elemental properties
  */
-static int element_power(const struct object *obj, int p, bool known)
+static int element_power(const struct object *obj, int p)
 {
 	size_t i, j;
 	int q;
@@ -682,8 +656,6 @@ static int element_power(const struct object *obj, int p, bool known)
 
 	/* Analyse each element for ignore, vulnerability, resistance or immunity */
 	for (i = 0; i < N_ELEMENTS(el_powers); i++) {
-		if (!known && !object_element_is_known(obj, i)) continue;
-
 		if (obj->el_info[i].flags & EL_INFO_IGNORE) {
 			if (el_powers[i].ignore_power != 0) {
 				q = (el_powers[i].ignore_power);
@@ -745,23 +717,21 @@ static int element_power(const struct object *obj, int p, bool known)
 /**
  * Add power for effect
  */
-static int effects_power(const struct object *obj, int p, bool known)
+static int effects_power(const struct object *obj, int p)
 {
 	int q = 0;
 
-	if (known || object_effect_is_known(obj))	{
-		if (obj->artifact && obj->artifact->activation &&
-			obj->artifact->activation->power) {
-			q = obj->artifact->activation->power;
-		} else if (obj->kind->power) {
-			q = obj->kind->power;
-		}
+	if (obj->artifact && obj->artifact->activation &&
+		obj->artifact->activation->power) {
+		q = obj->artifact->activation->power;
+	} else if (obj->kind->power) {
+		q = obj->kind->power;
+	}
 
-		if (q) {
-			p += q;
-			log_obj(format("Add %d power for item activation, total is %d\n",
-						   q, p));
-		}
+	if (q) {
+		p += q;
+		log_obj(format("Add %d power for item activation, total is %d\n",
+					   q, p));
 	}
 	return p;
 }
@@ -769,20 +739,13 @@ static int effects_power(const struct object *obj, int p, bool known)
 /**
  * Evaluate the object's overall power level.
  */
-s32b object_power(const struct object* obj, int verbose, ang_file *log_file,
-				  bool known)
+s32b object_power(const struct object* obj, int verbose, ang_file *log_file)
 {
 	s32b p = 0, dice_pwr = 0;
 	int mult = 1;
 
 	/* Set the log file */
 	object_log = log_file;
-
-	/* Known status */
-	if (known)
-		log_obj("Object is deemed known\n");
-	else
-		log_obj("Object may not be fully known\n");
 
 	/* Get all the attack power */
 	p = to_damage_power(obj);
@@ -792,13 +755,13 @@ s32b object_power(const struct object* obj, int verbose, ang_file *log_file,
 	p += ammo_damage_power(obj, p);
 	mult = bow_multiplier(obj);
 	p = launcher_ammo_damage_power(obj, p);
-	p = extra_blows_power(obj, p, known);
+	p = extra_blows_power(obj, p);
 	if (p > INHIBIT_POWER) return p;
-	p = extra_shots_power(obj, p, known);
+	p = extra_shots_power(obj, p);
 	if (p > INHIBIT_POWER) return p;
-	p = extra_might_power(obj, p, mult, known);
+	p = extra_might_power(obj, p, mult);
 	if (p > INHIBIT_POWER) return p;
-	p = slay_power(obj, p, verbose, dice_pwr, known);
+	p = slay_power(obj, p, verbose, dice_pwr);
 	p = rescale_bow_power(obj, p);
 	p = to_hit_power(obj, p);
 
@@ -810,10 +773,10 @@ s32b object_power(const struct object* obj, int verbose, ang_file *log_file,
 	p = jewelry_power(obj, p);
 
 	/* Other object properties */
-	p = modifier_power(obj, p, known);
-	p = flags_power(obj, p, verbose, object_log, known);
-	p = element_power(obj, p, known);
-	p = effects_power(obj, p, known);
+	p = modifier_power(obj, p);
+	p = flags_power(obj, p, verbose, object_log);
+	p = element_power(obj, p);
+	p = effects_power(obj, p);
 
 	log_obj(format("FINAL POWER IS %d\n", p));
 
@@ -864,8 +827,7 @@ static s32b object_value_base(const struct object *obj)
  * are priced according to their power rating. All ammo, and normal (non-ego)
  * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
-s32b object_value_real(const struct object *obj, int qty, int verbose,
-					   bool known)
+s32b object_value_real(const struct object *obj, int qty, int verbose)
 {
 	s32b value, total_value;
 
@@ -893,7 +855,7 @@ s32b object_value_real(const struct object *obj, int qty, int verbose,
 		file_putf(log_file, "object is %s\n", obj->kind->name);
 
 		/* Calculate power and value */
-		power = object_power(obj, verbose, log_file, known);
+		power = object_power(obj, verbose, log_file);
 		value = SGN(power) * ((a * power * power) + (b * power));
 
 		/* Rescale for expendables */
@@ -962,35 +924,17 @@ s32b object_value(const struct object *obj, int qty, int verbose)
 {
 	s32b value;
 
-	/* Known items use the actual value */
-	if (object_is_known(obj)) {
-		if (cursed_p((bitflag *)obj->flags)) return (0L);
-
-		value = object_value_real(obj, qty, verbose, true);
-	} else if (tval_has_variable_power(obj)) {
-		/* Variable power items are assessed by what is known about them */
-		struct object object_type_body = { 0 };
-		struct object *temp_obj = &object_type_body;
-
+	/* Variable power items are assessed by what is known about them */
+	if (tval_has_variable_power(obj) && obj->known) {
 		/* Hack -- Felt cursed items */
 		if (object_was_sensed(obj) && cursed_p((bitflag *)obj->flags))
 			return (0L);
 
-		memcpy(temp_obj, obj, sizeof(struct object));
-
-		/* give temp_obj only the flags known to be in obj */
-		object_flags_known(obj, temp_obj->flags);
-
-		if (!object_attack_plusses_are_visible(obj))
-			temp_obj->to_h = temp_obj->to_d = 0;
-		if (!object_defence_plusses_are_visible(obj))
-			temp_obj->to_a = 0;
-
-		value = object_value_real(temp_obj, qty, verbose, false);
-	} else
+		value = object_value_real(obj->known, qty, verbose);
+	} else {
 		/* Unknown constant-price items just get a base value */
 		value = object_value_base(obj) * qty;
-
+	}
 
 	/* Return the final value */
 	return (value);
