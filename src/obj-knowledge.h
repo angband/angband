@@ -23,6 +23,7 @@
 bool player_knows_brand(struct player *p, struct brand *b);
 bool player_knows_slay(struct player *p, struct slay *s);
 bool player_knows_ego(struct player *p, struct ego_item *ego);
+bool object_fully_known(struct object *obj);
 void player_know_object(struct player *p, struct object *obj);
 void player_learn_flag(struct player *p, int flag);
 void player_learn_mod(struct player *p, int mod);

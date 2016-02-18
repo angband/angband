@@ -340,19 +340,19 @@ byte object_list_entry_line_attribute(const object_list_entry_t *entry)
 	base_obj = cave->objects[entry->object->oidx];
 
 	if (is_unknown(base_obj))
-	/* unknown object */
+		/* unknown object */
 		attr = COLOUR_RED;
-	else if (base_obj->artifact && object_is_known(base_obj))
-	/* known artifact */
+	else if (base_obj->known->artifact)
+		/* known artifact */
 		attr = COLOUR_VIOLET;
 	else if (!object_flavor_is_aware(base_obj))
-	/* unaware of kind */
+		/* unaware of kind */
 		attr = COLOUR_L_RED;
 	else if (base_obj->kind->cost == 0)
-	/* worthless */
+		/* worthless */
 		attr = COLOUR_SLATE;
 	else
-	/* default */
+		/* default */
 		attr = COLOUR_WHITE;
 
 	return attr;
@@ -401,8 +401,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 			break;
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-			if ((object_name_is_visible(base_obj) || object_is_known(base_obj))
-				&& entry->object->artifact)
+			if (base_obj->known->artifact && entry->object->artifact)
 				has_singular_prefix = true;
 			else
 				has_singular_prefix = false;				

@@ -962,9 +962,9 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 	if (orig->sval > new->sval) return true;
 
 	if (!store) {
-		/* Unidentified objects always come last (default to orig) */
-		if (!object_is_known(new)) return false;
-		if (!object_is_known(orig)) return true;
+		/* Unaware objects always come last (default to orig) */
+		if (new->kind->flavor && !object_flavor_is_aware(new)) return false;
+		if (orig->kind->flavor && !object_flavor_is_aware(orig)) return true;
 
 		/* Lights sort by decreasing fuel */
 		if (tval_is_light(orig)) {
@@ -975,18 +975,18 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 
 	/* Objects sort by decreasing value, except ammo */
 	if (tval_is_ammo(orig)) {
-		if (object_value_real(orig, 1, false, false) <
-			object_value_real(new, 1, false, false))
+		if (object_value(orig, 1, false) <
+			object_value(new, 1, false))
 			return false;
-		if (object_value_real(orig, 1, false, false) >
-			object_value_real(new, 1, false, false))
+		if (object_value(orig, 1, false) >
+			object_value(new, 1, false))
 			return true;
 	} else {
-		if (object_value_real(orig, 1, false, false) >
-			object_value_real(new, 1, false, false))
+		if (object_value(orig, 1, false) >
+			object_value(new, 1, false))
 			return false;
-		if (object_value_real(orig, 1, false, false) <
-			object_value_real(new, 1, false, false))
+		if (object_value(orig, 1, false) <
+			object_value(new, 1, false))
 			return true;
 	}
 
@@ -1804,9 +1804,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		/* Affect resists */
 		for (j = 0; j < ELEM_MAX; j++)
-			if (!known_only || object_is_known(obj) ||
-				object_element_is_known(obj, j)) {
-
+			if (!known_only || obj->known->el_info[j].res_level) {
 				/* Note vulnerability for later processing */
 				if (obj->el_info[j].res_level == -1)
 					vuln[i] = true;
@@ -1820,8 +1818,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->ac += obj->ac;
 
 		/* Apply the bonuses to armor class */
-		if (!known_only || object_is_known(obj) ||
-			object_defence_plusses_are_visible(obj))
+		if (!known_only || obj->known->to_a)
 			state->to_a += obj->to_a;
 
 		/* Do not apply weapon and bow bonuses until combat calculations */
@@ -1829,12 +1826,10 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		if (slot_type_is(i, EQUIP_BOW)) continue;
 
 		/* Apply the bonuses to hit/damage */
-		if (!known_only || object_is_known(obj) ||
-			object_attack_plusses_are_visible(obj))
-		{
+		if (!known_only || obj->known->to_h)
 			state->to_h += obj->to_h;
+		if (!known_only || obj->known->to_d)
 			state->to_d += obj->to_d;
-		}
 	}
 
 

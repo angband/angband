@@ -420,10 +420,9 @@ static void spoil_artifact(const char *fname)
 			 * its power rating.
 			 */
 			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %d, %d.%d lbs\n",
-				art->alloc_min, art->alloc_max,
-				art->alloc_prob, object_power(obj, false,
-				NULL, true), (art->weight / 10),
-				(art->weight % 10));
+					 art->alloc_min, art->alloc_max, art->alloc_prob,
+					 object_power(obj, false, NULL), (art->weight / 10),
+					 (art->weight % 10));
 
 			if (OPT(birth_randarts)) text_out("%s.\n", art->text);
 

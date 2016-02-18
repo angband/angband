@@ -532,8 +532,9 @@ void object_notice_sensing(struct object *obj)
 		return;
 
 	if (obj->artifact) {
+		bool known = (obj->known != NULL) && (obj->known->artifact != NULL);
 		obj->artifact->seen = obj->artifact->everseen = true;
-		history_add_artifact(obj->artifact, object_is_known(obj), true);
+		history_add_artifact(obj->artifact, known, true);
 	}
 
 	object_notice_curses(obj);
@@ -549,7 +550,7 @@ void object_notice_sensing(struct object *obj)
 void object_sense_artifact(struct object *obj)
 {
 	assert(obj->known);
-	obj->known->artifact = (struct artifact *)1;
+	obj->known->artifact = obj->artifact;
 	if (obj->artifact)
 		object_notice_sensing(obj);
 }
