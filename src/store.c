@@ -572,9 +572,9 @@ int price_item(struct store *store, const struct object *obj,
 
 	/* Get the value of the stack of wands, or a single item */
 	if (tval_can_have_charges(obj))
-		price = object_value(obj, qty, false);
+		price = object_value_real(obj, qty, false);
 	else
-		price = object_value(obj, 1, false);
+		price = object_value_real(obj, 1, false);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
@@ -911,7 +911,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 	if (object_is_carried(player, obj))
 		value = object_value(obj, 1, false);
 	else
-		value = object_value_real(obj, 1, false, true);
+		value = object_value_real(obj, 1, false);
 
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0)
@@ -1214,7 +1214,7 @@ static bool store_create_random(struct store *store)
 		}
 
 		/* No "worthless" items */
-		if (object_value(obj, 1, false) < 1)  {
+		if (object_value_real(obj, 1, false) < 1)  {
 			object_delete(&known_obj);
 			obj->known = NULL;
 			object_delete(&obj);
@@ -1511,7 +1511,7 @@ int find_inven(const struct object *obj)
 				break;
 			}
 
-			/* Weapons and Armor */
+			/* Wearables */
 			case TV_BOW:
 			case TV_DIGGING:
 			case TV_HAFTED:
@@ -1526,31 +1526,13 @@ int find_inven(const struct object *obj)
 			case TV_SOFT_ARMOR:
 			case TV_HARD_ARMOR:
 			case TV_DRAG_ARMOR:
-			{
-				/* Fall through */
-			}
-
-			/* Rings, Amulets, Lights */
 			case TV_RING:
 			case TV_AMULET:
 			case TV_LIGHT:
-			{
-				/* Require both items to be known */
-				if (!object_is_known(obj) || !object_is_known(gear_obj))
-					continue;
-
-				/* Fall through */
-			}
-
-			/* Missiles */
 			case TV_BOLT:
 			case TV_ARROW:
 			case TV_SHOT:
 			{
-				/* Require identical knowledge of both items */
-				if (object_is_known(obj) != object_is_known(gear_obj))
-					continue;
-
 				/* Require identical "bonuses" */
 				if (obj->to_h != gear_obj->to_h)
 					continue;
@@ -1592,10 +1574,6 @@ int find_inven(const struct object *obj)
 			/* Various */
 			default:
 			{
-				/* Require knowledge */
-				if (!object_is_known(obj) || !object_is_known(gear_obj))
-					continue;
-
 				/* Probably okay */
 				break;
 			}
@@ -1812,10 +1790,11 @@ bool store_will_buy_tester(const struct object *obj)
 
 	if (OPT(birth_no_selling)) {
 		if (tval_can_have_charges(obj)) {
-			if (!store_can_carry(store, obj->kind) && object_is_known(obj))
+			if (!store_can_carry(store, obj->kind) &&
+				object_flavor_is_aware(obj))
 				return false;
 		} else {
-			if (object_is_known(obj))
+			if (object_flavor_is_aware(obj))
 				return false;
 		}
 	}

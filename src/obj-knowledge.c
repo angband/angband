@@ -102,6 +102,43 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 }
 
 /**
+ * Check if an object is fully known to the player
+ */
+bool object_fully_known(struct object *obj)
+{
+	int i;
+
+	/* No known object */
+	if (!obj->known) return false;
+
+	/* Not all flags known */
+	if (!of_is_equal(obj->flags, obj->known->flags)) return false;
+
+	/* Not all modifiers known */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (obj->modifiers[i] != obj->known->modifiers[i])
+			return false;
+
+	/* Not all elements known */
+	for (i = 0; i < ELEM_MAX; i++)
+		if (obj->el_info[i].res_level != obj->known->el_info[i].res_level)
+			return false;
+
+	/* Not all brands known */
+	if (!brands_are_equal(obj->brands, obj->known->brands))
+		return false;
+
+	/* Not all slays known */
+	if (!slays_are_equal(obj->slays, obj->known->slays))
+		return false;
+
+	/* Effect not known */
+	if (obj->effect != obj->known->effect) return false;
+
+	return true;
+}
+
+/**
  * Transfer player object knowledge to an object
  */
 void player_know_object(struct player *p, struct object *obj)
@@ -185,6 +222,8 @@ void player_know_object(struct player *p, struct object *obj)
 	/* Set ego type, jewellery type if known */
 	if (player_knows_ego(p, obj->ego))
 		obj->known->ego = obj->ego;
+	if (object_fully_known(obj) && tval_is_jewelry(obj))
+		object_flavor_aware(obj);
 }
 
 /**
@@ -676,6 +715,6 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 
 	/* Note artifacts when found */
 	if (obj->artifact)
-		history_add_artifact(obj->artifact, object_is_known(obj), true);
+		history_add_artifact(obj->artifact, true, true);
 }
 

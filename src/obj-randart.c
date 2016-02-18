@@ -308,7 +308,7 @@ static s32b artifact_power(int a_idx, bool translate)
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
-	power = object_power(&obj, verbose, log_file, true);
+	power = object_power(&obj, verbose, log_file);
 
 	object_wipe(&known_obj);
 	object_wipe(&obj);

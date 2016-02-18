@@ -1211,14 +1211,14 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode, int *
 	bool no_fuel;
 	bool is_light = tval_is_light(obj);
 
-	get_known_flags(obj, mode, flags);
+	assert(obj->known);
 
 	if (!is_light && (obj->modifiers[OBJ_MOD_LIGHT] <= 0))
 		return false;
 
 	/* Prevent unidentified objects (especially artifact lights) from showing
 	 * bad radius and refueling info. */
-	if (!object_is_known(obj))
+	if (obj->known->modifiers[OBJ_MOD_LIGHT] == 0)
 		return false;
 
 	/* Work out radius */
@@ -1674,10 +1674,10 @@ static void describe_flavor_text(textblock *tb, const struct object *obj,
 {
 	/* Display the known artifact or object description */
 	if (!OPT(birth_randarts) && obj->artifact &&
-		object_is_known(obj) && obj->artifact->text) {
+		obj->known->artifact && obj->artifact->text) {
 		textblock_append(tb, "%s\n\n", obj->artifact->text);
 
-	} else if (object_flavor_is_aware(obj) || object_is_known(obj) || ego) {
+	} else if (object_flavor_is_aware(obj) || ego) {
 		bool did_desc = false;
 
 		if (!ego && obj->kind->text) {
