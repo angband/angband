@@ -104,7 +104,7 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 /**
  * Check if an object is fully known to the player
  */
-bool object_fully_known(struct object *obj)
+bool object_fully_known(const struct object *obj)
 {
 	int i;
 
@@ -710,8 +710,9 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 			mod_message(obj, i);
 		}
 
-	/* Automatically sense artifacts upon wield */
+	/* Automatically sense artifacts upon wield, mark as assessed */
 	obj->known->artifact = obj->artifact;
+	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 
 	/* Note artifacts when found */
 	if (obj->artifact)

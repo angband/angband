@@ -1944,13 +1944,6 @@ void get_debug_command(void)
 			break;
 		}
 
-		/* Identify */
-		case 'i':
-		{
-			effect_simple(EF_IDENTIFY, "0", 0, 0, 0, NULL);
-			break;
-		}
-
 		/* Go up or down in the dungeon */
 		case 'j':
 		{

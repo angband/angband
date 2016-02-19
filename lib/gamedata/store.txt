@@ -168,7 +168,6 @@ slots:6:10
 turnover:9
 always:scroll:Word of Recall
 always:scroll:Phase Door
-normal:scroll:Identify
 normal:scroll:Monster Confusion
 normal:scroll:Magic Mapping
 normal:scroll:Trap Detection
@@ -209,7 +208,6 @@ normal:wand:Magic Missile
 normal:wand:Stinking Cloud
 normal:wand:Wonder
 normal:staff:Teleportation
-normal:staff:Identify
 normal:staff:Light
 normal:staff:Mapping
 normal:staff:Detect Invisible

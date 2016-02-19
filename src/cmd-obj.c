@@ -207,41 +207,6 @@ static void activation_message(struct object *obj)
 }
 
 
-/**
- * Unknown item hook for get_item()
- */
-static bool item_tester_unknown(const struct object *obj)
-{
-	return object_is_known(obj) ? false : true;
-}
-
-/**
- * Return true if there are any objects available to identify (whether on
- * floor or in gear)
- */
-static bool spell_identify_unknown_available(void)
-{
-	int floor_max = z_info->floor_size;
-	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
-	int floor_num;
-	struct object *obj;
-	bool unidentified_gear = false;
-
-	floor_num = scan_floor(floor_list, floor_max,
-						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE,
-						   item_tester_unknown);
-
-	for (obj = player->gear; obj; obj = obj->next) {
-		if (object_test(item_tester_unknown, obj)) {
-			unidentified_gear = true;
-			break;
-		}
-	}
-
-	return unidentified_gear || floor_num > 0;
-}
-
-
 
 /**
  * ------------------------------------------------------------------------
@@ -508,13 +473,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Verify effect */
 	assert(effect);
 
-	/* Check for unknown objects to prevent wasted player turns. */
-	if (effect->index == EF_IDENTIFY &&
-		!spell_identify_unknown_available()) {
-		msg("You have nothing to identify.");
-		return;
-	}
-
 	/* Check for use if necessary, and execute the effect */
 	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(obj)) {
 		int beam = beam_chance(obj->tval);
@@ -538,10 +496,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			/* Make a noise! */
 			sound(snd);
 		}
-
-		/* A bit of a hack to make ID work better.
-			-- Check for "obvious" effects beforehand. */
-		if (effect->index == EF_IDENTIFY) object_flavor_aware(obj);
 
 		/* Boost damage effects if skill > difficulty */
 		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
@@ -916,12 +870,6 @@ void do_cmd_cast(struct command *cmd)
 
 	/* Get the spell */
 	spell = spell_by_index(spell_index);
-
-	/* Check for unknown objects to prevent wasted player turns. */
-	if (spell_is_identify(spell_index) && !spell_identify_unknown_available()) {
-		msg("You have nothing to identify.");
-		return;
-	}
 
 	/* Verify "dangerous" spells */
 	if (spell->smana > player->csp) {
