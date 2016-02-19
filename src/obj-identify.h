@@ -56,19 +56,10 @@ bool object_flag_is_known(const struct object *obj, int flag);
 bool object_element_is_known(const struct object *obj, int element);
 bool object_this_mod_is_visible(const struct object *obj, int mod);
 void object_set_base_known(struct object *obj);
-bool object_check_for_ident(struct object *obj);
 void object_flavor_aware(struct object *obj);
 void object_flavor_tried(struct object *obj);
 bool object_notice_curses(struct object *obj);
 void object_notice_on_use(struct object *obj);
 
-/* Ostracism line */
-bool object_high_resist_is_possible(const struct object *obj);
-bool object_was_sensed(const struct object *obj);
-void object_notice_sensing(struct object *obj);
-void object_sense_artifact(struct object *obj);
-obj_pseudo_t object_pseudo(const struct object *obj);
-void do_ident_item(struct object *obj);
-void sense_inventory(void);
 
 #endif /* OBJECT_IDENTIFY_H */

@@ -166,7 +166,7 @@ void delete_monster_idx(int m_idx)
 		/* Preserve unseen artifacts (we assume they were created as this
 		 * monster's drop) - this will cause unintended behaviour in preserve
 		 * off mode if monsters can pick up artifacts */
-		if (obj->artifact && !object_was_sensed(obj))
+		if (obj->artifact && !(obj->known && obj->known->artifact))
 			obj->artifact->created = false;
 
 		/* Delete the object */
@@ -365,7 +365,7 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 			/* Go through all held objects and check for artifacts */
 			struct object *obj = held_obj;
 			while (obj) {
-				if (obj->artifact && !object_was_sensed(obj))
+				if (obj->artifact && !(obj->known && obj->known->artifact))
 					obj->artifact->created = false;
 				obj = obj->next;
 			}

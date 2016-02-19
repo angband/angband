@@ -1532,6 +1532,8 @@ void textui_cmd_ignore_menu(struct object *obj)
 	struct menu *m;
 	region r;
 	int selected;
+	byte value;
+	int type;
 
 	if (!obj)
 		return;
@@ -1584,21 +1586,17 @@ void textui_cmd_ignore_menu(struct object *obj)
 	}
 
 	/* Quality ignoring */
-	if (object_was_sensed(obj) || object_was_worn(obj) ||
-			object_is_known_not_artifact(obj)) {
-		byte value = ignore_level_of(obj);
-		int type = ignore_type_of(obj);
+	value = ignore_level_of(obj);
+	type = ignore_type_of(obj);
 
-		if (tval_is_jewelry(obj) &&
-					ignore_level_of(obj) != IGNORE_BAD)
-			value = IGNORE_MAX;
+	if (tval_is_jewelry(obj) &&	ignore_level_of(obj) != IGNORE_BAD)
+		value = IGNORE_MAX;
 
-		if (value != IGNORE_MAX && type != ITYPE_MAX) {
-			strnfmt(out_val, sizeof out_val, "All %s %s",
-					quality_values[value].name, ignore_name_for_type(type));
+	if (value != IGNORE_MAX && type != ITYPE_MAX) {
+		strnfmt(out_val, sizeof out_val, "All %s %s",
+				quality_values[value].name, ignore_name_for_type(type));
 
-			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
-		}
+		menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
 	}
 
 	/* Work out display region */
