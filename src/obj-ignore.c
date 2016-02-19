@@ -23,6 +23,7 @@
 #include "obj-gear.h"
 #include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -101,8 +102,6 @@ quality_name_struct quality_values[IGNORE_MAX] =
 	{ IGNORE_BAD,				"bad" },
 	{ IGNORE_AVERAGE,			"average" },
 	{ IGNORE_GOOD,				"good" },
-	{ IGNORE_EXCELLENT_NO_HI,	"excellent with no high resists" },
-	{ IGNORE_EXCELLENT_NO_SPL,	"excellent but not splendid" },
 	{ IGNORE_ALL,				"non-artifact" },
 };
 
@@ -375,117 +374,47 @@ static int is_object_good(const struct object *obj)
 byte ignore_level_of(const struct object *obj)
 {
 	byte value = 0;
-	bitflag f[OF_SIZE], f2[OF_SIZE];
 	int i;
-	bool negative_mod = false;
 
-	object_flags_known(obj, f);
+	if (!obj->known) return IGNORE_MAX;
 
-	/* Deal with jewelry specially. */
+	/* Deal with jewelry specially - only bad or average */
 	if (tval_is_jewelry(obj)) {
-		/* CC: average jewelry has at least one known positive modifier */
+		/* One positive modifier means not bad*/
 		for (i = 0; i < OBJ_MOD_MAX; i++)
-			if ((object_this_mod_is_visible(obj, i)) && 
-				(obj->modifiers[i] > 0))
+			if (obj->known->modifiers[i] > 0)
 				return IGNORE_AVERAGE;
 
-		if ((obj->to_h > 0) || (obj->to_d > 0) || (obj->to_a > 0))
+		/* One positive combat value means not bad, one negative means bad */
+		if ((obj->known->to_h > 0) || (obj->known->to_d > 0) ||
+			(obj->known->to_a > 0))
 			return IGNORE_AVERAGE;
-		if ((object_attack_plusses_are_visible(obj) &&
-				((obj->to_h < 0) || (obj->to_d < 0))) ||
-		    	(object_defence_plusses_are_visible(obj) && obj->to_a < 0))
+		if ((obj->known->to_h < 0) || (obj->known->to_d < 0) ||
+			(obj->known->to_a < 0))
 			return IGNORE_BAD;
 
 		return IGNORE_AVERAGE;
 	}
 
-	/* And lights */
-	if (tval_is_light(obj)) {
-		create_mask(f2, true, OFID_WIELD, OFT_MAX);
-		if (of_is_inter(f, f2))
-			return IGNORE_ALL;
-		if ((obj->to_h > 0) || (obj->to_d > 0) || (obj->to_a > 0))
-			return IGNORE_GOOD;
-		if ((obj->to_h < 0) || (obj->to_d < 0) || (obj->to_a < 0))
-			return IGNORE_BAD;
+	/* Now just do bad, average, good, ego */
+	if (object_fully_known(obj)) {
+		int isgood = is_object_good(obj);
 
-		return IGNORE_AVERAGE;
-	}
-
-	/* We need to redefine "bad" 
-	 * At the moment we use "all modifiers known and negative" */
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (!object_this_mod_is_visible(obj, i) ||
-			(obj->modifiers[i] > 0))
-			break;
-
-		if (obj->modifiers[i] < 0)
-			negative_mod = true;
-	}
-
-	if ((i == OBJ_MOD_MAX) && negative_mod)
-		return IGNORE_BAD;
-
-	if (object_was_sensed(obj)) {
-		obj_pseudo_t pseudo = object_pseudo(obj);
-
-		switch (pseudo) {
-			case INSCRIP_AVERAGE: {
-				value = IGNORE_AVERAGE;
-				break;
-			}
-
-			case INSCRIP_EXCELLENT: {
-				/* have to assume splendid until you have tested it */
-				if (object_was_worn(obj)) {
-					if (object_high_resist_is_possible(obj))
-						value = IGNORE_EXCELLENT_NO_SPL;
-					else
-						value = IGNORE_EXCELLENT_NO_HI;
-				} else {
-					value = IGNORE_ALL;
-				}
-				break;
-			}
-
-			case INSCRIP_SPLENDID:
-				value = IGNORE_ALL;
-				break;
-			case INSCRIP_NULL:
-			case INSCRIP_SPECIAL:
-				value = IGNORE_MAX;
-				break;
-
-			/* This is the interesting case */
-			case INSCRIP_STRANGE:
-			case INSCRIP_MAGICAL: {
-				value = IGNORE_GOOD;
-
-				if ((object_attack_plusses_are_visible(obj) ||
-						randcalc_valid(obj->kind->to_h, obj->to_h) ||
-						randcalc_valid(obj->kind->to_d, obj->to_d)) &&
-				    	(object_defence_plusses_are_visible(obj) ||
-						randcalc_valid(obj->kind->to_a, obj->to_a))) {
-					int isgood = is_object_good(obj);
-					if (isgood > 0) {
-						value = IGNORE_GOOD;
-					} else if (isgood < 0) {
-						value = IGNORE_BAD;
-					} else {
-						value = IGNORE_AVERAGE;
-					}
-				}
-				break;
-			}
-
-			default:
-				/* do not handle any other possible pseudo values */
-				assert(0);
+		/* Values for items not egos or artifacts, may be updated */
+		if (isgood > 0) {
+			value = IGNORE_GOOD;
+		} else if (isgood < 0) {
+			value = IGNORE_BAD;
+		} else {
+			value = IGNORE_AVERAGE;
 		}
+
+		if (obj->ego)
+			value = IGNORE_ALL;
+		else if (obj->artifact)
+			value = IGNORE_MAX;
 	} else {
-		if (object_was_worn(obj))
-			value = IGNORE_EXCELLENT_NO_SPL; /* object would be sensed if it were splendid */
-		else if (object_is_known_not_artifact(obj))
+		if ((obj->known->notice & OBJ_NOTICE_ASSESSED) && !obj->artifact)
 			value = IGNORE_ALL;
 		else
 			value = IGNORE_MAX;

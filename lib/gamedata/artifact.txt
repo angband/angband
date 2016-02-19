@@ -1703,8 +1703,8 @@ info:20:150:20000
 alloc:5:20 to 100
 power:0:1d9:13:15:0
 flags:SEE_INVIS
-act:IDENTIFY
-time:10
+act:DETECT_OBJECTS
+time:50+d50
 values:INT[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | RES_LIGHT[1]
 desc:The radiant golden staff of an Istar of legend; this wizard's companion 
 desc:grants keen sight and clear knowledge of many hidden things.

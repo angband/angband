@@ -925,16 +925,11 @@ s32b object_value(const struct object *obj, int qty, int verbose)
 	s32b value;
 
 	/* Variable power items are assessed by what is known about them */
-	if (tval_has_variable_power(obj) && obj->known) {
-		/* Hack -- Felt cursed items */
-		if (object_was_sensed(obj) && cursed_p((bitflag *)obj->flags))
-			return (0L);
-
+	if (tval_has_variable_power(obj) && obj->known)
 		value = object_value_real(obj->known, qty, verbose);
-	} else {
+	else
 		/* Unknown constant-price items just get a base value */
 		value = object_value_base(obj) * qty;
-	}
 
 	/* Return the final value */
 	return (value);

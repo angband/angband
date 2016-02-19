@@ -52,8 +52,6 @@ EFFECT(DETECT_EVIL,					false,	NULL,		0,		EFINFO_NONE,	"detects evil creatures n
 EFFECT(CREATE_STAIRS,				false,	NULL,		0,		EFINFO_NONE,	"creates a staircase beneath your feet")
 EFFECT(DISENCHANT,					false,	NULL,		0,		EFINFO_NONE,	"disenchants one of your wielded items")
 EFFECT(ENCHANT,						false,	NULL,		0,		EFINFO_NONE,	"attempts to magically enhance an item")
-EFFECT(IDENTIFY,					false,	NULL,		0,		EFINFO_NONE,	"reveals to you the extent of an item's magical powers")
-EFFECT(IDENTIFY_PACK,				false,	NULL,		0,		EFINFO_NONE,	"identifies all items in your pack")
 EFFECT(RECHARGE,					false,	NULL,		0,		EFINFO_NONE,	"tries to recharge a wand or staff, destroying the wand or staff on failure")
 EFFECT(PROJECT_LOS,					false,	"power",	2,		EFINFO_SEEN,	"%s which are in line of sight")
 EFFECT(PROJECT_LOS_AWARE,			false,	"power",	2,		EFINFO_SEEN,	"%s which are in line of sight")

@@ -69,7 +69,7 @@
 # accept randomized values.
 
 # 'alloc' is for allocation - depth and rarity, in pairs. It is used to
-# ensure that certain vital items such as food and identify scrolls
+# ensure that certain vital items such as food and recall scrolls
 # are found throughout the dungeon. The "allocation" depth need not
 # match the depth as specified in the "properties:" line.
 
@@ -1986,15 +1986,6 @@ power:7
 effect:SET_NOURISH
 dice:16999
 
-name:286:Identify
-graphics:?:w
-type:scroll
-properties:1:5:100
-alloc:60:5 to 100
-pile:100:2d3
-power:9
-effect:IDENTIFY
-
 name:289:Light
 graphics:?:w
 type:scroll
@@ -2494,7 +2485,6 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:500d500
 effect:DETECT_VISIBLE_MONSTERS
 dice:500d500
-effect:IDENTIFY_PACK
 
 
 ### Buffs ###
@@ -3396,16 +3386,6 @@ power:20
 effect:RESTORE_STAT:INT
 effect:RESTORE_MANA
 
-name:424:Identify
-graphics:_:d
-type:staff
-properties:10:50:600
-alloc:50:10 to 100
-combat:0:1d2:0:0:0
-charges:5+d15
-power:9
-effect:IDENTIFY
-
 
 
 ##### Rods #####
@@ -3743,17 +3723,6 @@ flags:IGNORE_ELEC
 power:15
 effect:RECALL
 time:60
-
-name:456:Identify
-graphics:-:d
-type:rod
-properties:50:15:10000
-alloc:15:50 to 100
-combat:0:1d1:0:0:0
-flags:IGNORE_ELEC
-power:9
-effect:IDENTIFY
-time:10
 
 name:457:Speed
 graphics:-:d

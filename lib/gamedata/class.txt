@@ -309,10 +309,6 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
 desc:  Uniques are not affected.
 
-spell:Identify:11:7:25:6
-effect:IDENTIFY
-desc:Reveals the powers of an object.
-
 spell:Reveal Monsters:15:6:40:6
 effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
@@ -932,10 +928,6 @@ dice:22d40
 desc:Detects all treasure, objects, doors, stairs, traps, and monsters
 desc: in the immediate area.
 
-spell:Perception:20:20:80:20
-effect:IDENTIFY
-desc:Reveals the powers of an object.
-
 spell:Probing:25:40:80:150
 effect:PROBE
 desc:Probes each monster within line of sight, giving information on the
@@ -1208,10 +1200,6 @@ dice:20+1d30
 desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
-
-spell:Identify:18:18:60:2
-effect:IDENTIFY
-desc:Reveals the powers of an object.
 
 spell:Reveal Monsters:20:11:50:4
 effect:DETECT_INVISIBLE_MONSTERS
@@ -1581,10 +1569,6 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
 desc:  Uniques are not affected.
-
-spell:Identify:23:25:90:3
-effect:IDENTIFY
-desc:Reveals the powers of an object.
 
 spell:Reveal Monsters:25:17:50:4
 effect:DETECT_INVISIBLE_MONSTERS
@@ -2146,10 +2130,6 @@ effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
 desc:Detects all treasure, objects, doors, stairs, traps, and monsters
 desc: in the immediate area.
-
-spell:Perception:25:25:80:16
-effect:IDENTIFY
-desc:Reveals the powers of an object.
 
 spell:Probing:30:15:80:135
 effect:PROBE

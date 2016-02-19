@@ -157,8 +157,9 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 	/* Set ignore status */
 	player->upkeep->notice |= PN_IGNORE;
 
-	/* Automatically sense artifacts */
-	object_sense_artifact(obj);
+	/* Automatically notice artifacts, mark as assessed */
+	obj->known->artifact = obj->artifact;
+	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 
 	/* Log artifacts if found */
 	if (obj->artifact)

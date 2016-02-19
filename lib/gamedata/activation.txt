@@ -450,6 +450,12 @@ effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
 desc:detects treasure, traps, doors, stairs, and all creatures nearby
 
+name:DETECT_OBJECTS
+aim:0
+power:10
+effect:DETECT_OBJECTS
+dice:22d40
+desc:detects all objects in the immediate area.
 
 name:ENCHANT_TOHIT
 aim:0
@@ -485,12 +491,6 @@ power:15
 effect:ENCHANT:TOAC
 dice:2+1d3
 desc:attempts to magically enhance a piece of armour with high chance of success.  Also gives a chance to break a curse
-
-name:IDENTIFY
-aim:0
-power:9
-effect:IDENTIFY
-desc:reveals to you the extent of an item's magical powers
 
 name:REMOVE_CURSE
 aim:0
