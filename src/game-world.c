@@ -432,8 +432,9 @@ void process_world(struct chunk *c)
 	/* Recharge activatable objects and rods */
 	recharge_objects();
 
-	/* Feel the inventory */
-	sense_inventory();
+	/* Notice things after time */
+	if (!(turn % 1000))
+		equip_learn_after_time(player);
 
 
 	/*** Involuntary Movement ***/

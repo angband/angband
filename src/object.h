@@ -322,7 +322,7 @@ extern struct ego_item *e_info;
  */
 enum {
 	OBJ_NOTICE_WORN = 0x01,
-	OBJ_NOTICE_SENSED = 0x02,
+	OBJ_NOTICE_ASSESSED = 0x02,
 	OBJ_NOTICE_IGNORE = 0x04,
 	OBJ_NOTICE_IMAGINED = 0x08,
 };

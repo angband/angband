@@ -1989,59 +1989,6 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	return used;
 }
 
-/**
- * Hopefully this is OK now
- */
-static bool item_tester_unknown(const struct object *obj)
-{
-	return object_is_known(obj) ? false : true;
-}
-
-/**
- * Identify an unknown item
- */
-bool effect_handler_IDENTIFY(effect_handler_context_t *context)
-{
-	struct object *obj;
-	const char *q, *s;
-	bool used = false;
-
-	context->ident = true;
-
-	/* Get an item */
-	q = "Identify which item? ";
-	s = "You have nothing to identify.";
-	if (!get_item(&obj, q, s, 0, item_tester_unknown,
-				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return used;
-
-	/* Identify the object */
-	do_ident_item(obj);
-
-	return true;
-}
-
-/**
- * Identify everything worn or carried by the player
- */
-bool effect_handler_IDENTIFY_PACK(effect_handler_context_t *context)
-{
-	struct object *obj;
-
-	context->ident = true;
-
-	/* Simply identify and know every item */
-	for (obj = player->gear; obj; obj = obj->next) {
-		/* Aware and Known */
-		if (object_is_known(obj)) continue;
-
-		/* Identify it */
-		do_ident_item(obj);
-	}
-
-	return true;
-}
-
 /*
  * Hook for "get_item()".  Determine if something is rechargable.
  */
@@ -2941,7 +2888,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				struct object *obj = square_object(cave, y, x);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
+						if (!OPT(birth_no_preserve) && 
+							!(obj->known && obj->known->artifact))
 							obj->artifact->created = false;
 						else
 							history_lose_artifact(obj->artifact);

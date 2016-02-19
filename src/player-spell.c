@@ -471,12 +471,6 @@ bool spell_cast(int spell_index, int dir)
 }
 
 
-bool spell_is_identify(int spell_index)
-{
-	const struct class_spell *spell = spell_by_index(spell_index);
-	return (spell->effect->index == EF_IDENTIFY);
-}
-
 bool spell_needs_aim(int spell_index)
 {
 	const struct class_spell *spell = spell_by_index(spell_index);

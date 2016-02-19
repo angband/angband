@@ -781,9 +781,6 @@ void inven_wield(struct object *obj, int slot)
 	if (cursed_p(wielded->flags)) {
 		/* Warn the player */
 		msgt(MSG_CURSED, "Oops! It feels deathly cold!");
-
-		/* Sense the object */
-		object_notice_curses(wielded);
 	}
 
 	/* See if we have to overflow the pack */
