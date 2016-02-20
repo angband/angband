@@ -452,6 +452,7 @@ void wield_all(struct player *p)
 
 		/* Wear the new stuff */
 		p->body.slots[slot].obj = obj;
+		object_learn_on_wield(p, obj);
 
 		/* Increment the equip counter by hand */
 		p->upkeep->equip_cnt++;
@@ -476,6 +477,7 @@ static void player_outfit(struct player *p)
 	char buf[80];
 	int i;
 	const struct start_item *si;
+	struct object *obj, *known_obj;
 
 	/* Player needs a body */
 	memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
@@ -493,8 +495,6 @@ static void player_outfit(struct player *p)
 
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
-		/* Get local object */
-		struct object *obj = object_new(), *known_obj;
 		int num = rand_range(si->min, si->max);
 
 		/* Without start_kit, only start with 1 food and 1 light */
@@ -505,7 +505,8 @@ static void player_outfit(struct player *p)
 			num = 1;
 		}
 
-		/* Prepare the item */
+		/* Prepare a new item */
+		obj = object_new();
 		object_prep(obj, si->kind, 0, MINIMISE);
 		obj->number = num;
 		obj->origin = ORIGIN_BIRTH;
@@ -514,7 +515,6 @@ static void player_outfit(struct player *p)
 		obj->known = known_obj;
 		object_set_base_known(obj);
 		object_flavor_aware(obj);
-		player_know_object(p, obj);
 
 		/* Deduct the cost of the item from starting cash */
 		p->au -= object_value(obj, obj->number, false);
@@ -530,6 +530,10 @@ static void player_outfit(struct player *p)
 
 	/* Now try wielding everything */
 	wield_all(p);
+
+	/* Update knowledge */
+	for (obj = p->gear; obj; obj = obj->next)
+		player_know_object(p, obj);
 }
 
 
