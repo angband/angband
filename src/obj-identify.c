@@ -264,8 +264,11 @@ bool object_defence_plusses_are_visible(const struct object *obj)
  */
 bool object_flag_is_known(const struct object *obj, int flag)
 {
-	if (obj->known && of_has(obj->known->flags, flag))
-		return true;
+	/* Object fully known means OK */
+	if (object_fully_known(obj)) return true;
+
+	/* Player knows the flag means OK */
+	if (of_has(player->obj_k->flags, flag)) return true;
 
 	return false;
 }
@@ -277,8 +280,11 @@ bool object_element_is_known(const struct object *obj, int element)
 {
 	if (element < 0 || element >= ELEM_MAX) return false;
 
-	if (obj->known && obj->known->el_info[element].res_level)
-		return true;
+	/* Object fully known means OK */
+	if (object_fully_known(obj)) return true;
+
+	/* Player knows the element means OK */
+	if (player->obj_k->el_info[element].res_level) return true;
 
 	return false;
 }

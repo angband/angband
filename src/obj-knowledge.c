@@ -143,7 +143,7 @@ bool object_fully_known(const struct object *obj)
  */
 void player_know_object(struct player *p, struct object *obj)
 {
-	int i;
+	int i, flag;
 	struct brand *b, *b_known;
 	struct slay *s, *s_known;
 
@@ -153,7 +153,11 @@ void player_know_object(struct player *p, struct object *obj)
 	if (obj->kind != obj->known->kind) return;
 
 	/* Set object flags */
-	(void) of_inter(obj->known->flags, p->obj_k->flags);
+	for (flag = of_next(p->obj_k->flags, FLAG_START); flag != FLAG_END;
+		 flag = of_next(p->obj_k->flags, flag + 1)) {
+		if (of_has(obj->flags, flag))
+			of_on(obj->known->flags, flag);
+	}
 
 	/* Set modifiers */
 	for (i = 0; i < OBJ_MOD_MAX; i++)
@@ -235,11 +239,12 @@ static void update_player_object_knowledge(struct player *p)
 	struct object *obj;
 
 	/* Level objects */
-	for (i = 0; i < cave->obj_max; i++)
-		player_know_object(p, cave->objects[i]);
+	if (cave)
+		for (i = 0; i < cave->obj_max; i++)
+			player_know_object(p, cave->objects[i]);
 
 	/* Player objects */
-	for (obj = player->gear; obj; obj = obj->next)
+	for (obj = p->gear; obj; obj = obj->next)
 		player_know_object(p, obj);
 
 	/* Store objects */
@@ -697,7 +702,7 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 		player_learn_flag(p, flag);
 
 		/* Message */
-		flag_message(flag, o_name);
+		if (p->upkeep->playing) flag_message(flag, o_name);
 	}
 
 	/* Learn all modifiers */
@@ -707,7 +712,7 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 			player_learn_mod(p, i);
 
 			/* Message */
-			mod_message(obj, i);
+			if (p->upkeep->playing) mod_message(obj, i);
 		}
 }
 
