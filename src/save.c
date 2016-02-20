@@ -92,7 +92,7 @@ static void wr_item(const struct object *obj)
 		wr_u32b(0);
 
 	if (obj->ego)
-			wr_u32b(obj->ego->eidx);
+		wr_u32b(obj->ego->eidx);
 	else
 		wr_u32b(0);
 
