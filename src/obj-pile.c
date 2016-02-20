@@ -1396,9 +1396,19 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
 		}
 
-		/* If it's the player grid, know every object */
-		if ((y == player->py) && (x == player->px))
+		/* If it's the player grid, know every object, recognise artifacts */
+		if ((y == player->py) && (x == player->px)) {
 			player_know_object(player, obj);
+
+			/* Automatically notice artifacts, mark as assessed */
+			obj->known->artifact = obj->artifact;
+			obj->known->notice |= OBJ_NOTICE_ASSESSED;
+
+			/* Log artifacts if found */
+			if (obj->artifact)
+				history_add_artifact(obj->artifact, true, true);
+		}
+
 	}
 
 	/* Remove known location of anything not on this grid */

@@ -148,7 +148,6 @@ static bool auto_pickup_okay(const struct object *obj)
 static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 {
 	int max = inven_carry_num(obj, false);
-	bool known = (obj->known != NULL) && (obj->known->artifact != NULL);
 
 	/* Confirm at least some of the object can be picked up */
 	if (max == 0)
@@ -156,14 +155,6 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 
 	/* Set ignore status */
 	player->upkeep->notice |= PN_IGNORE;
-
-	/* Automatically notice artifacts, mark as assessed */
-	obj->known->artifact = obj->artifact;
-	obj->known->notice |= OBJ_NOTICE_ASSESSED;
-
-	/* Log artifacts if found */
-	if (obj->artifact)
-		history_add_artifact(obj->artifact, known, true);
 
 	/* Carry the object, prompting for number if necessary */
 	if (max == obj->number) {
