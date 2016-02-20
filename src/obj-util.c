@@ -230,10 +230,7 @@ void flavor_init(void)
 void object_flags(const struct object *obj, bitflag flags[OF_SIZE])
 {
 	of_wipe(flags);
-
-	if (!obj)
-		return;
-
+	if (!obj) return;
 	of_copy(flags, obj->flags);
 }
 
