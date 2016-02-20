@@ -339,6 +339,7 @@ void object_flavor_aware(struct object *obj)
 	assert(obj->known);
 	if (obj->kind->aware) return;
 	obj->kind->aware = true;
+	obj->known->effect = obj->effect;
 
 	/* Fix ignore/autoinscribe */
 	if (kind_is_ignored_unaware(obj->kind))
