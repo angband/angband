@@ -709,13 +709,5 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 			/* Message */
 			mod_message(obj, i);
 		}
-
-	/* Automatically sense artifacts upon wield, mark as assessed */
-	obj->known->artifact = obj->artifact;
-	obj->known->notice |= OBJ_NOTICE_ASSESSED;
-
-	/* Note artifacts when found */
-	if (obj->artifact)
-		history_add_artifact(obj->artifact, true, true);
 }
 
