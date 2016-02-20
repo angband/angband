@@ -221,6 +221,8 @@ static void project_player_handler_SOUND(project_player_handler_context_t *conte
 		int duration = 5 + randint1(context->dam / 3);
 		if (duration > 35) duration = 35;
 		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+	} else {
+		equip_learn_flag(player, OF_PROT_STUN);
 	}
 }
 
@@ -273,6 +275,7 @@ static void project_player_handler_NETHER(project_player_handler_context_t *cont
 	if (player_resists(player, ELEM_NETHER) ||
 		player_of_has(player, OF_HOLD_LIFE)) {
 		msg("You resist the effect!");
+		equip_learn_flag(player, OF_HOLD_LIFE);
 		return;
 	}
 
@@ -299,6 +302,8 @@ static void project_player_handler_CHAOS(project_player_handler_context_t *conte
 		int drain = 5000 + (player->exp / 100) * z_info->life_drain_percent;
 		msg("You feel your life force draining away!");
 		player_exp_lose(player, drain, false);
+	} else {
+		equip_learn_flag(player, OF_HOLD_LIFE);
 	}
 }
 
@@ -355,6 +360,8 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 		int duration = 5 + randint1(context->dam / 3);
 		if (duration > 35) duration = 35;
 		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+	} else {
+		equip_learn_flag(player, OF_PROT_STUN);
 	}
 }
 
@@ -403,6 +410,8 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 		int duration = 5 + randint1(context->dam * 3 / 4);
 		if (duration > 35) duration = 35;
 		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+	} else {
+		equip_learn_flag(player, OF_PROT_STUN);
 	}
 }
 

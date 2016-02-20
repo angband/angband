@@ -50,10 +50,9 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 {
 	int physical_dam, elemental_dam;
 
-	if (pure_element) {
+	if (pure_element)
 		/* Obvious */
 		context->obvious = true;
-	}
 
 	switch (type) {
 		case GF_ACID: msg("You are covered in acid!");
@@ -120,8 +119,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 			msg("%s", save_msg);
 
 		context->obvious = true;
-	}
-	else {
+	} else {
 		/* Increase timer for type. */
 		if (player_inc_timed(context->p, type, amount, true, true))
 			context->obvious = true;
