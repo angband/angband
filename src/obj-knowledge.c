@@ -20,12 +20,13 @@
 #include "object.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player.h"
+#include "player-calcs.h"
 #include "player-history.h"
 #include "store.h"
 
@@ -132,6 +133,29 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 }
 
 /**
+ * Checks whether the player is aware of the object's effect when used
+ *
+ * \param obj is the object
+ */
+bool object_effect_is_known(const struct object *obj)
+{
+	if (obj->effect == obj->known->effect) return true;
+
+	return false;
+}
+
+/**
+ * Checks whether the object is known to be an artifact
+ *
+ * \param obj is the object
+ */
+bool object_is_known_artifact(const struct object *obj)
+{
+	if (!obj->known) return false;
+	return obj->known->artifact ? true : false;
+}
+
+/**
  * Check if an object is fully known to the player
  *
  * \param obj is the object
@@ -165,9 +189,43 @@ bool object_fully_known(const struct object *obj)
 		return false;
 
 	/* Effect not known */
-	if (obj->effect != obj->known->effect) return false;
+	if (!object_effect_is_known(obj)) return false;
 
 	return true;
+}
+
+/**
+ * Checks whether the player knows whether an object has a given flag
+ *
+ * \param obj is the object
+ */
+bool object_flag_is_known(const struct object *obj, int flag)
+{
+	/* Object fully known means OK */
+	if (object_fully_known(obj)) return true;
+
+	/* Player knows the flag means OK */
+	if (of_has(player->obj_k->flags, flag)) return true;
+
+	return false;
+}
+
+/**
+ * Checks whether the player knows the given element properties of an object
+ *
+ * \param obj is the object
+ */
+bool object_element_is_known(const struct object *obj, int element)
+{
+	if (element < 0 || element >= ELEM_MAX) return false;
+
+	/* Object fully known means OK */
+	if (object_fully_known(obj)) return true;
+
+	/* Player knows the element means OK */
+	if (player->obj_k->el_info[element].res_level) return true;
+
+	return false;
 }
 
 /**
@@ -175,6 +233,29 @@ bool object_fully_known(const struct object *obj)
  * Object knowledge propagators
  * These functions transfer player knowledge to objects
  * ------------------------------------------------------------------------ */
+/**
+ * Sets the basic details on a known object
+ */
+void object_set_base_known(struct object *obj)
+{
+	assert(obj->known);
+	obj->known->kind = obj->kind;
+	obj->known->tval = obj->tval;
+	obj->known->sval = obj->sval;
+	obj->known->number = obj->number;
+
+	/* Generic dice and ac */
+	obj->known->dd = obj->kind->dd * player->obj_k->dd;
+	obj->known->ds = obj->kind->ds * player->obj_k->ds;
+	obj->known->ac = obj->kind->ac * player->obj_k->ac;
+
+	/* Aware flavours get info now */
+	if (obj->kind->flavor && obj->kind->aware) {
+		obj->known->pval = obj->pval;
+		obj->known->effect = obj->effect;
+	}
+}
+
 /**
  * Transfer player object knowledge to an object
  *
@@ -725,8 +806,12 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	int i, flag;
 
 	assert(obj->known);
-	/* Always set the worn flag */
-	obj->known->notice |= OBJ_NOTICE_WORN;
+
+	/* Check the worn flag */
+	if (obj->known->notice & OBJ_NOTICE_WORN)
+		return;
+	else
+		obj->known->notice |= OBJ_NOTICE_WORN;
 
 	/* Worn means tried (for flavored wearables) */
 	object_flavor_tried(obj);
@@ -774,6 +859,25 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 }
 
 /**
+ * Learn object properties that become obvious on use, mark it as
+ * aware and reward the player with some experience.
+ *
+ * \param p is the player
+ * \param obj is the used object
+ */
+void object_learn_on_use(struct player *p, struct object *obj)
+{
+	/* Object level */
+	int lev = obj->kind->level;
+
+	object_flavor_aware(obj);
+	obj->known->effect = obj->effect;
+	player_exp_gain(p, (lev + (p->lev / 2)) / p->lev);
+
+	p->upkeep->notice |= PN_IGNORE;
+}
+
+/**
  * Learn attack bonus on making a ranged attack.
  * Can be applied to the missile or the missile launcher
  *
@@ -789,5 +893,101 @@ void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
 	player_learn_dice(player);
 	if (obj->to_h) player_learn_to_h(p);
 	if (obj->to_d) player_learn_to_d(p);
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Object kind functions
+ * These deal with knowledge of an object's kind
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Checks whether an object counts as "known" due to EASY_KNOW status
+ *
+ * \param obj is the object
+ */
+bool easy_know(const struct object *obj)
+{
+	assert(obj->kind);
+	if (obj->kind->aware && kf_has(obj->kind->kind_flags, KF_EASY_KNOW))
+		return true;
+	else
+		return false;
+}
+
+/**
+ * Checks whether the player is aware of the object's flavour
+ *
+ * \param obj is the object
+ */
+bool object_flavor_is_aware(const struct object *obj)
+{
+	assert(obj->kind);
+	return obj->kind->aware;
+}
+
+/**
+ * Checks whether the player has tried to use other objects of the same kind
+ *
+ * \param obj is the object
+ */
+bool object_flavor_was_tried(const struct object *obj)
+{
+	assert(obj->kind);
+	return obj->kind->tried;
+}
+
+/**
+ * Mark an object's flavour as as one the player is aware of.
+ *
+ * \param obj is the object whose flavour should be marked as aware
+ */
+void object_flavor_aware(struct object *obj)
+{
+	int y, x;
+
+	assert(obj->known);
+	if (obj->kind->aware) return;
+	obj->kind->aware = true;
+	obj->known->effect = obj->effect;
+
+	/* Fix ignore/autoinscribe */
+	if (kind_is_ignored_unaware(obj->kind))
+		kind_ignore_when_aware(obj->kind);
+	player->upkeep->notice |= PN_IGNORE;
+
+	/* Quit if no dungeon yet */
+	if (!cave) return;
+
+	/* Some objects change tile on awareness, so update display for all
+	 * floor objects of this kind */
+	for (y = 1; y < cave->height; y++) {
+		for (x = 1; x < cave->width; x++) {
+			bool light = false;
+			const struct object *floor_obj;
+
+			for (floor_obj = square_object(cave, y, x); floor_obj;
+				 floor_obj = floor_obj->next)
+				if (floor_obj->kind == obj->kind) {
+					light = true;
+					break;
+				}
+
+			if (light) square_light_spot(cave, y, x);
+		}
+	}
+}
+
+
+/**
+ * Mark an object's flavour as tried.
+ *
+ * \param obj is the object whose flavour should be marked
+ */
+void object_flavor_tried(struct object *obj)
+{
+	assert(obj);
+	assert(obj->kind);
+	obj->kind->tried = true;
 }
 

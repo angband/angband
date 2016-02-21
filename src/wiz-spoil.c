@@ -24,7 +24,6 @@
 #include "mon-lore.h"
 #include "monster.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-make.h"
 #include "obj-pile.h"

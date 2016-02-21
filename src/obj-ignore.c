@@ -21,7 +21,6 @@
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
@@ -514,8 +513,8 @@ bool object_is_ignored(const struct object *obj)
 	if (type == ITYPE_MAX)
 		return false;
 
-	/* Ignore items known not to be special */
-	if (object_is_known_not_artifact(obj) &&
+	/* Ignore items known not to be artifacts */
+	if ((obj->known->notice & OBJ_NOTICE_ASSESSED) && !obj->artifact &&
 		ignore_level[type] == IGNORE_ALL)
 		return true;
 

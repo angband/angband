@@ -5,8 +5,7 @@
  * index: the stat number
  * power: base power rating for the stat as an object modifier
  * mult: weight of this stat as an object modifier relative to others
- * message: what is printed when the stat is IDd (but see also obj-identify.c 
- * and list-slays.h)
+ * message: what is printed when the stat is IDd (but see also list-slays.h)
  */
 /* index       	power	sustain			sust_p	mult		pos adj		neg adj		name */
 STAT(STR,        9,		SUST_STR,		9,		13,			"strong",	"weak",		"strength")

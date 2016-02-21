@@ -38,7 +38,6 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "monster.h"
-#include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"

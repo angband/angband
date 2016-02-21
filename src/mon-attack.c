@@ -31,7 +31,6 @@
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
-#include "obj-identify.h"
 #include "obj-knowledge.h"
 #include "player-attack.h"
 #include "player-timed.h"

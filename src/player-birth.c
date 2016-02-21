@@ -25,7 +25,6 @@
 #include "mon-lore.h"
 #include "monster.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
