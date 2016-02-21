@@ -424,10 +424,10 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 	}
 
 	/* Show armor bonuses */
-	if (obj->to_a) {
+	if (player->obj_k->to_a) {
 		if (obj_desc_show_armor(obj))
 			strnfcat(buf, max, &end, " [%d,%+d]", obj->ac, obj->to_a);
-		else 
+		else if (obj->to_a)
 			strnfcat(buf, max, &end, " [%+d]", obj->to_a);
 	} else if (obj_desc_show_armor(obj)) {
 		strnfcat(buf, max, &end, " [%d]", obj->ac);
@@ -531,16 +531,15 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 
 	/* Use special inscription, if any */
 	if (!object_flavor_is_aware(obj)) {
-		if (tval_can_have_charges(obj) && (obj->pval == 0)) {
+		if (tval_can_have_charges(obj) && (obj->pval == 0))
 			u[n++] = "empty";
-		} else if (object_flavor_was_tried(obj)) {
+		if (object_flavor_was_tried(obj))
 			u[n++] = "tried";
-		}
 	}
 
 	/* Note curses */
 	create_mask(f, false, OFT_CURSE, OFT_MAX);
-	if (of_is_inter(obj->flags, f))
+	if (obj->known && of_is_inter(obj->known->flags, f))
 		u[n++] = "cursed";
 
 	/* Note ignore */
@@ -648,7 +647,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 		if (mode & ODESC_STORE)
 			end = obj_desc_aware(obj->known, buf, max, end);
 		else
-			end = obj_desc_inscrip(obj->known, buf, max, end);
+			end = obj_desc_inscrip(obj, buf, max, end);
 	}
 
 	return end;
