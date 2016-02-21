@@ -25,7 +25,6 @@
 #include "mon-make.h"
 #include "mon-timed.h"
 #include "mon-util.h"
-#include "obj-identify.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"

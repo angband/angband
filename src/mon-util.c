@@ -26,7 +26,6 @@
 #include "mon-list.h"
 #include "mon-util.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"

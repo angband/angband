@@ -26,9 +26,9 @@
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -515,7 +515,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 
 	/* ID the object by use if appropriate, otherwise, mark it as "tried" */
 	if (ident && !was_aware) {
-		object_notice_on_use(obj);
+		object_learn_on_use(player, obj);
 	} else if (used) {
 		object_flavor_tried(obj);
 	}

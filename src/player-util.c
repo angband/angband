@@ -23,7 +23,6 @@
 #include "game-world.h"
 #include "init.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
