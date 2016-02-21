@@ -22,7 +22,6 @@
 #include "effects.h"
 #include "mon-lore.h"
 #include "obj-chest.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-make.h"
 #include "obj-pile.h"

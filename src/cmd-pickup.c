@@ -29,7 +29,6 @@
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
