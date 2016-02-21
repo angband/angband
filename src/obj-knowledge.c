@@ -32,8 +32,10 @@
 
 /**
  * ------------------------------------------------------------------------
- * Functions used for applying knowledge to objects
+ * Object knowledge predicates
+ * These tell how much the player knows about an object
  * ------------------------------------------------------------------------ */
+
 /**
  * Check if a brand is known to the player
  */
