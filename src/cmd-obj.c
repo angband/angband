@@ -89,8 +89,12 @@ static int check_devices(struct object *obj)
 	}
 
 	/* Notice activations */
-	if (activated)
-		obj->known->effect = obj->effect;
+	if (activated) {
+		if (obj->effect)
+			obj->known->effect = obj->effect;
+		else if (obj->activation)
+			obj->known->activation = obj->activation;
+	}
 
 	return true;
 }
