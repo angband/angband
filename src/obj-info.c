@@ -25,8 +25,8 @@
 #include "monster.h"
 #include "mon-summon.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
@@ -1713,7 +1713,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	bitflag flags[OF_SIZE];
 	struct element_info el_info[N_ELEMENTS(elements)];
 	bool something = false;
-	bool known = object_all_but_flavor_is_known(obj);
+	bool known = object_fully_known(obj);
 
 	bool terse = mode & OINFO_TERSE ? true : false;
 	bool subjective = mode & OINFO_SUBJ ? true : false;

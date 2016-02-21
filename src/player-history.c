@@ -238,8 +238,7 @@ static bool history_is_artifact_logged(struct artifact *artifact)
  * Adding artifacts to the history list is trickier than other operations.
  * This is a wrapper function that gets some of the logic out of places
  * where it really doesn't belong.  Call this to add an artifact to the history
- * list or make the history entry visible--history_add_artifact will make that
- * determination depending on what object_is_known returns for the artifact.
+ * list or make the history entry visible.
  */
 bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 {

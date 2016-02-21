@@ -30,7 +30,6 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-chest.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-util.h"

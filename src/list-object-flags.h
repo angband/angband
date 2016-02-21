@@ -10,8 +10,8 @@
  * id: when the flag is IDd
  * type: what type of flag is it?
  * power: base power rating for the flag (0 means it is unused or derived)
- * message: what is printed when the flag is IDd (but see also obj-identify.c)
- *          - must be "" or contain exactly one %s
+ * message: what is printed when the flag is IDd 
+ *  - must be "" or contain exactly one %s
  */
 /* index       	id				type		power	message */
 OF(PROT_FEAR,   OFID_NORMAL,	OFT_PROT,	6,		"Your %s glows.")

@@ -18,7 +18,7 @@
  */
 #include "angband.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "obj-power.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -791,7 +791,7 @@ s32b object_power(const struct object* obj, int verbose, ang_file *log_file)
 static s32b object_value_base(const struct object *obj)
 {
 	/* Use template cost for aware objects */
-	if (object_flavor_is_aware(obj) || object_all_but_flavor_is_known(obj))
+	if (object_flavor_is_aware(obj))
 		return obj->kind->cost;
 
 	/* Analyze the type */
