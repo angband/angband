@@ -41,7 +41,6 @@ extern s32b object_last_wield;
 
 bool easy_know(const struct object *obj);
 bool object_all_but_flavor_is_known(const struct object *obj);
-bool object_is_known(const struct object *obj);
 bool object_is_known_artifact(const struct object *obj);
 bool object_is_known_not_artifact(const struct object *obj);
 bool object_was_worn(const struct object *obj);

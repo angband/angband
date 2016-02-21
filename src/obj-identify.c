@@ -146,15 +146,6 @@ bool object_all_but_flavor_is_known(const struct object *obj)
 }
 
 /**
- * \returns whether an object should be treated as fully known
- */
-bool object_is_known(const struct object *obj)
-{
-	if (!object_flavor_is_aware(obj)) return false;
-	return object_all_but_flavor_is_known(obj) ? true : false;
-}
-
-/**
  * \returns whether the object is known to be an artifact
  */
 bool object_is_known_artifact(const struct object *obj)

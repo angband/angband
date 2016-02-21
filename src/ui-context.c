@@ -464,7 +464,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 				  MN_ROW_VALID);
 
 		if (obj && !ignore_item_ok(obj)) {
-			if (object_is_known(obj)) {
+			if (obj->known->pval) {
 				if (is_locked_chest(obj)) {
 					ADD_LABEL("Disarm Chest", CMD_DISARM, MN_ROW_VALID);
 					ADD_LABEL("Open Chest", CMD_OPEN, MN_ROW_VALID);
