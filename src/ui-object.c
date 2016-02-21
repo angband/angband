@@ -1567,7 +1567,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 	}
 
 	/* Ego ignoring */
-	if (object_ego_is_visible(obj)) {
+	if (obj->known->ego) {
 		struct ego_desc choice;
 		struct ego_item *ego = obj->ego;
 		char tmp[80] = "";
