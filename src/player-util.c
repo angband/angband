@@ -167,16 +167,17 @@ void death_knowledge(void)
 		player->au += 10000000L;
 	}
 
+	player_learn_everything(player);
 	for (obj = player->gear; obj; obj = obj->next) {
 		object_flavor_aware(obj);
-		object_wipe(obj->known);
-		object_copy(obj->known, obj);
+		obj->known->effect = obj->effect;
+		obj->known->activation = obj->activation;
 	}
 
 	for (obj = home->stock; obj; obj = obj->next) {
 		object_flavor_aware(obj);
-		object_wipe(obj->known);
-		object_copy(obj->known, obj);
+		obj->known->effect = obj->effect;
+		obj->known->activation = obj->activation;
 	}
 
 	history_unmask_unknown();
