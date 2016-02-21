@@ -29,15 +29,37 @@
 #include "player-history.h"
 #include "store.h"
 
+/**
+ * Overview
+ * ========
+ * This file deals with the new "rune-based ID" system.  This system operates
+ * as follows:
+ * - struct player has an object struct attached to it (obj_k) which contains
+ *   the player's knowledge of object properties (runes)
+ * - whenever the player learns a rune, 
+ *   - if it's an object flag, that flag is set in obj_k
+ *   - if it's an integer value, that value in obj_k is set to 1
+ *   - if it's element info, the res_level value is set to 1
+ *   - if it's a brand, a brand is added to obj_k with the relevant element
+ *   - if it's a slay, a slay is added to obj_k with the right race flag or name
+ * - every object has a known version which is filled in with details as the
+ *   player learns them
+ * - whenever the player learns a rune, that knowledge is applied to the known
+ *   version of every object that the player has picked up or walked over
+ *   or seen in a shop
+ */
 
 /**
  * ------------------------------------------------------------------------
  * Object knowledge predicates
- * These tell how much the player knows about an object
+ * These functions tell how much the player knows about an object
  * ------------------------------------------------------------------------ */
 
 /**
  * Check if a brand is known to the player
+ *
+ * \param p is the player
+ * \param b is the brand
  */
 bool player_knows_brand(struct player *p, struct brand *b)
 {
@@ -53,6 +75,9 @@ bool player_knows_brand(struct player *p, struct brand *b)
 
 /**
  * Check if a slay is known to the player
+ *
+ * \param p is the player
+ * \param s is the slay
  */
 bool player_knows_slay(struct player *p, struct slay *s)
 {
@@ -69,6 +94,9 @@ bool player_knows_slay(struct player *p, struct slay *s)
 
 /**
  * Check if an ego item type is known to the player
+ *
+ * \param p is the player
+ * \param ego is the ego item type
  */
 bool player_knows_ego(struct player *p, struct ego_item *ego)
 {
@@ -105,6 +133,8 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 
 /**
  * Check if an object is fully known to the player
+ *
+ * \param obj is the object
  */
 bool object_fully_known(const struct object *obj)
 {
@@ -141,7 +171,15 @@ bool object_fully_known(const struct object *obj)
 }
 
 /**
+ * ------------------------------------------------------------------------
+ * Object knowledge propagators
+ * These functions transfer player knowledge to objects
+ * ------------------------------------------------------------------------ */
+/**
  * Transfer player object knowledge to an object
+ *
+ * \param p is the player
+ * \param obj is the object
  */
 void player_know_object(struct player *p, struct object *obj)
 {
@@ -234,6 +272,8 @@ void player_know_object(struct player *p, struct object *obj)
 
 /**
  * Propagate player knowledge of objects to all objects
+ *
+ * \param p is the player
  */
 static void update_player_object_knowledge(struct player *p)
 {
@@ -261,10 +301,14 @@ static void update_player_object_knowledge(struct player *p)
 
 /**
  * ------------------------------------------------------------------------
- * Functions for increasing player knowledge
+ * Object knowledge learners
+ * These functions are for increasing player knowledge of object properties
  * ------------------------------------------------------------------------ */
 /**
  * Learn a single flag
+ *
+ * \param p is the player
+ * \param flag is the object flag 
  */
 void player_learn_flag(struct player *p, int flag)
 {
@@ -275,19 +319,24 @@ void player_learn_flag(struct player *p, int flag)
 
 /**
  * Learn a single modifier
+ *
+ * \param p is the player
+ * \param mod is the modifier
  */
 void player_learn_mod(struct player *p, int mod)
 {
 	/* If the modifier was unknown, set it */
 	if (p->obj_k->modifiers[mod] == 0) {
 		p->obj_k->modifiers[mod] = 1;
-		//mod_message(mod);
 		update_player_object_knowledge(p);
 	}
 }
 
 /**
  * Learn a single element
+ *
+ * \param p is the player
+ * \param element is the element about which all info is being learnt
  */
 void player_learn_element(struct player *p, int element)
 {
@@ -300,6 +349,9 @@ void player_learn_element(struct player *p, int element)
 
 /**
  * Learn a single elemental brand
+ *
+ * \param p is the player
+ * \param b is the brand being learnt (known for any multiplier)
  */
 void player_learn_brand(struct player *p, struct brand *b)
 {
@@ -320,6 +372,9 @@ void player_learn_brand(struct player *p, struct brand *b)
 
 /**
  * Learn a single slay
+ *
+ * \param p is the player
+ * \param s is the slay being learnt (known for any multiplier)
  */
 void player_learn_slay(struct player *p, struct slay *s)
 {
@@ -330,7 +385,7 @@ void player_learn_slay(struct player *p, struct slay *s)
 		new_s->name = string_make(s->name);
 		new_s->race_flag = s->race_flag;
 
-		/* Attach the new brand */
+		/* Attach the new slay */
 		new_s->next = p->obj_k->slays;
 		p->obj_k->slays = new_s;
 
@@ -340,6 +395,8 @@ void player_learn_slay(struct player *p, struct slay *s)
 
 /**
  * Learn armour class
+ *
+ * \param p is the player
  */
 void player_learn_ac(struct player *p)
 {
@@ -350,6 +407,8 @@ void player_learn_ac(struct player *p)
 
 /**
  * Learn to-armour bonus
+ *
+ * \param p is the player
  */
 void player_learn_to_a(struct player *p)
 {
@@ -360,6 +419,8 @@ void player_learn_to_a(struct player *p)
 
 /**
  * Learn to-hit bonus
+ *
+ * \param p is the player
  */
 void player_learn_to_h(struct player *p)
 {
@@ -370,6 +431,8 @@ void player_learn_to_h(struct player *p)
 
 /**
  * Learn to-damage bonus
+ *
+ * \param p is the player
  */
 void player_learn_to_d(struct player *p)
 {
@@ -380,6 +443,8 @@ void player_learn_to_d(struct player *p)
 
 /**
  * Learn damage dice
+ *
+ * \param p is the player
  */
 void player_learn_dice(struct player *p)
 {
@@ -392,6 +457,8 @@ void player_learn_dice(struct player *p)
 /**
  * ------------------------------------------------------------------------
  * Functions for learning about equipment properties
+ * These functions are for gaining object knowledge from the behaviour of 
+ * the player's equipment
  * ------------------------------------------------------------------------ */
 /**
  * Learn things which happen on defending.
@@ -413,23 +480,6 @@ void equip_learn_on_defend(struct player *p)
 			if (p->obj_k->ac && p->obj_k->to_a) return;
 		}
 	}
-}
-
-/**
- * Learn attack bonus on making a ranged attack.
- * Can be applied to the missile or the missile launcher
- *
- * \param p is the player
- */
-void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
-{
-	if (p->obj_k->to_h && p->obj_k->to_d && p->obj_k->dd && p->obj_k->ds)
-		return;
-
-	assert(obj->known);
-	player_learn_dice(player);
-	if (obj->to_h) player_learn_to_h(p);
-	if (obj->to_d) player_learn_to_d(p);
 }
 
 /**
@@ -561,6 +611,8 @@ void equip_learn_element(struct player *p, int element)
 
 /**
  * Learn things that would be noticed in time.
+ *
+ * \param p is the player
  */
 void equip_learn_after_time(struct player *p)
 {
@@ -589,8 +641,8 @@ void equip_learn_after_time(struct player *p)
 /**
  * Print a message when an object modifier is identified by use.
  *
+ * \param obj is the object 
  * \param mod is the modifier being noticed
- * \param name is the object name 
  */
 void mod_message(struct object *obj, int mod)
 {
@@ -663,6 +715,9 @@ void mod_message(struct object *obj, int mod)
 
 /**
  * Learn object properties that become obvious on wielding or wearing
+ *
+ * \param p is the player
+ * \param obj is the wielded object
  */
 void object_learn_on_wield(struct player *p, struct object *obj)
 {
@@ -716,5 +771,23 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 			/* Message */
 			if (p->upkeep->playing) mod_message(obj, i);
 		}
+}
+
+/**
+ * Learn attack bonus on making a ranged attack.
+ * Can be applied to the missile or the missile launcher
+ *
+ * \param p is the player
+ * \param obj is the missile or launcher
+ */
+void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
+{
+	if (p->obj_k->to_h && p->obj_k->to_d && p->obj_k->dd && p->obj_k->ds)
+		return;
+
+	assert(obj->known);
+	player_learn_dice(player);
+	if (obj->to_h) player_learn_to_h(p);
+	if (obj->to_d) player_learn_to_d(p);
 }
 
