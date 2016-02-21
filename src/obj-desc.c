@@ -340,10 +340,10 @@ static bool obj_desc_show_armor(const struct object *obj)
 static size_t obj_desc_chest(const struct object *obj, char *buf, size_t max,
 							 size_t end)
 {
-	bool known = object_is_known(obj);
-
 	if (!tval_is_chest(obj)) return end;
-	if (!known) return end;
+
+	/* The chest is unopened, but we know nothing about its trap/lock */
+	if (obj->pval && !obj->known->pval) return end;
 
 	/* May be empty, disarmed or trapped */
 	if (!obj->pval) {
