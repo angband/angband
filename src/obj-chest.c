@@ -189,7 +189,7 @@ struct object *chest_check(int y, int x, enum chest_query check_type)
 				return obj;
 			break;
 		case CHEST_TRAPPED:
-			if (is_trapped_chest(obj) && object_is_known(obj))
+			if (is_trapped_chest(obj) && obj->known && obj->known->pval)
 				return obj;
 			break;
 		}
@@ -463,7 +463,7 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 	if (j < 2) j = 2;
 
 	/* Must find the trap first. */
-	if (!object_is_known(obj)) {
+	if (!obj->known->pval) {
 		msg("I don't see any traps.");
 	} else if (!is_trapped_chest(obj)) {
 		/* Already disarmed/unlocked or no traps */
