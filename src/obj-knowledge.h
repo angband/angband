@@ -42,6 +42,7 @@ void player_learn_to_a(struct player *p);
 void player_learn_to_h(struct player *p);
 void player_learn_to_d(struct player *p);
 void player_learn_dice(struct player *p);
+void player_learn_everything(struct player *p);
 
 void equip_learn_on_defend(struct player *p);
 void equip_learn_on_ranged_attack(struct player *p);
