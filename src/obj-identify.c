@@ -212,54 +212,6 @@ bool object_effect_is_known(const struct object *obj)
 }
 
 /**
- * \returns whether any ego or artifact name is available to the player
- */
-bool object_name_is_visible(const struct object *obj)
-{
-	bool ego = obj->ego && obj->known && obj->known->ego;
-	bool art = obj->artifact && obj->known && obj->known->artifact;
-	return (ego || art) ? true : false;
-}
-
-/**
- * \returns whether both the object is both an ego and the player knows it is
- */
-bool object_ego_is_visible(const struct object *obj)
-{
-	if (obj->ego && obj->known && obj->known->ego)
-		return true;
-
-	return false;
-}
-
-/**
- * \returns whether the object's attack plusses are known
- */
-bool object_attack_plusses_are_visible(const struct object *obj)
-{
-	if (!obj->known) return false;
-	/* Bonuses have been revealed or for sale */
-	if (obj->known->to_h && obj->known->to_d)
-		return true;
-
-	return false;
-}
-
-/**
- * \returns whether the object's defence bonuses are known
- */
-bool object_defence_plusses_are_visible(const struct object *obj)
-{
-	if (!obj->known) return false;
-	/* Bonuses have been revealed or for sale */
-	if (obj->known->to_a)
-		return true;
-
-	return false;
-}
-
-
-/**
  * \returns whether the player knows whether an object has a given flag
  */
 bool object_flag_is_known(const struct object *obj, int flag)
@@ -289,20 +241,6 @@ bool object_element_is_known(const struct object *obj, int element)
 	return false;
 }
 
-
-/**
- * \returns whether a specific modifier is known to the player
- */
-bool object_this_mod_is_visible(const struct object *obj, int mod)
-{
-	assert(obj->kind);
-
-	if (!obj->known) return false;
-	if (obj->known->modifiers[mod])
-		return true;
-
-	return false;
-}
 
 /**
  * ------------------------------------------------------------------------
