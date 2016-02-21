@@ -618,7 +618,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 				ignore_item_ok(obj) ? " {ignore}" : "");
 
 	/* Egos and kinds whose name we know are seen */
-	if (object_name_is_visible(obj) && obj->ego && !spoil)
+	if (obj->known->ego && !spoil)
 		obj->ego->everseen = true;
 
 	if (object_flavor_is_aware(obj) && !spoil)
