@@ -3382,7 +3382,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int dam = effect_calculate_value(context, true);
+	int dam = effect_calculate_value(context, false);
 	int type = context->p1;
 	int rad = context->p3;
 	int source;

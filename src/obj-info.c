@@ -1501,6 +1501,14 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				break;
 			}
 
+			/* Object generated breaths are elemental */
+			case EFINFO_BREATH: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						elements[effect->params[0]].name, effect->params[1],
+						dice_string);
+				break;
+			}
+
 			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),

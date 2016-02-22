@@ -1170,7 +1170,7 @@ effect:BREATH:COLD:30
 dice:160
 effect:BREATH:POIS:30
 dice:120
-desc:shoots a large ball of one of the base elements for 120-200 damage
+desc:shoots a large cone of one of the base elements for 120-200 damage
 
 name:STAFF_MAGI
 aim:0

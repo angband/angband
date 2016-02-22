@@ -1,6 +1,6 @@
 /**
-   \file obj-info.h
-   \brief Object description code.
+ * \file obj-info.h
+ * \brief Object description code.
  *
  * Copyright (c) 2010 Andi Sidwell
  * Copyright (c) 2004 Robert Ruehlmann
@@ -49,6 +49,7 @@ enum {
 	EFINFO_QUAKE,
 	EFINFO_LIGHT,
 	EFINFO_BALL,
+	EFINFO_BREATH,
 	EFINFO_BOLT,
 	EFINFO_BOLTD,
 	EFINFO_TOUCH
