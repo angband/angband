@@ -266,7 +266,7 @@ void list_object(struct chunk *c, struct object *obj)
 	if (c == cave) {
 		cave_k->objects = mem_realloc(cave_k->objects, newsize);
 		for (i = cave_k->obj_max; i <= c->obj_max; i++)
-			c->objects[i] = NULL;
+			cave_k->objects[i] = NULL;
 		cave_k->obj_max = c->obj_max;
 	}
 }
