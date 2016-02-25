@@ -460,8 +460,9 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 		if (do_kill) {
 			char o_name[80];
 
-			/* Effect "observed" */
-			if (obj->known && !ignore_item_ok(obj)) {
+			/* Effect observed */
+			if (obj->known && !ignore_item_ok(obj) &&
+				square_isseen(cave, y, x)) {
 				obvious = true;
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 			}
@@ -469,15 +470,16 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 			/* Artifacts, and other objects, get to resist */
 			if (obj->artifact || ignore) {
 				/* Observe the resist */
-				if (obj->known && !ignore_item_ok(obj))
+				if (obvious && obj->known && !ignore_item_ok(obj))
 					msg("The %s %s unaffected!", o_name,
 						VERB_AGREEMENT(obj->number, "is", "are"));
 			} else if (obj->mimicking_m_idx) {
 				/* Reveal mimics */
-				become_aware(cave_monster(cave, obj->mimicking_m_idx));
+				if (obvious)
+					become_aware(cave_monster(cave, obj->mimicking_m_idx));
 			} else {
 				/* Describe if needed */
-				if (obj->known && note_kill && !ignore_item_ok(obj))
+				if (obvious && obj->known && note_kill && !ignore_item_ok(obj))
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */

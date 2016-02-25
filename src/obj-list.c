@@ -412,7 +412,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 			break;
 	}
 
-	if (entry->object->kind == base_obj->kind)
+	if (entry->object->kind != base_obj->kind)
 		has_singular_prefix = true;
 
 	/* Work out if the object is in view */
