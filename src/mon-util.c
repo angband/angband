@@ -585,7 +585,7 @@ void become_aware(struct monster *mon)
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 			/* Print a message */
-			if (square_isview(cave, obj->iy, obj->ix))
+			if (square_isseen(cave, obj->iy, obj->ix))
 				msg("The %s was really a monster!", o_name);
 
 			/* Clear the mimicry */
