@@ -931,6 +931,8 @@ struct object *store_carry(struct store *store, struct object *obj)
 		}
 	} else if (tval_can_have_timeout(obj)) {
 		obj->timeout = 0;
+	} else if (tval_is_launcher(obj)) {
+		obj->known->pval = obj->pval;
 	} else if (tval_can_have_charges(obj)) {
 		/* If the store can stock this item kind, we recharge */
 		if (store_can_carry(store, obj->kind)) {
