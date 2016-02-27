@@ -407,8 +407,7 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 		strnfcat(buf, max, &end, " (%dd%d)", obj->dd, obj->ds);
 
 	/* Display shooting power as part of the multiplier */
-	if (kf_has(obj->kind->kind_flags, KF_SHOW_MULT) &&
-		player->obj_k->modifiers[OBJ_MOD_MIGHT])
+	if (kf_has(obj->kind->kind_flags, KF_SHOW_MULT))
 		strnfcat(buf, max, &end, " (x%d)",
 				 obj->pval + obj->modifiers[OBJ_MOD_MIGHT]);
 
