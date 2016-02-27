@@ -327,9 +327,6 @@ void wr_monster_memory(void)
 void wr_object_memory(void)
 {
 	int k_idx;
-	size_t i;
-	struct brand *b;
-	struct slay *s;
 
 	wr_u16b(z_info->k_max);
 	wr_byte(OF_SIZE);
@@ -349,48 +346,6 @@ void wr_object_memory(void)
 
 		wr_byte(tmp8u);
 	}
-
-	/* Property knowledge */
-	/* Flags */
-	for (i = 0; i < OF_SIZE; i++)
-		wr_byte(player->obj_k->flags[i]);
-
-	/* Modifiers */
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		wr_s16b(player->obj_k->modifiers[i]);
-	}
-
-	/* Elements */
-	for (i = 0; i < ELEM_MAX; i++) {
-		wr_s16b(player->obj_k->el_info[i].res_level);
-		wr_byte(player->obj_k->el_info[i].flags);
-	}
-
-	/* Brands */
-	wr_byte(player->obj_k->brands ? 1 : 0);
-	for (b = player->obj_k->brands; b; b = b->next) {
-		wr_string(b->name);
-		wr_s16b(b->element);
-		wr_s16b(b->multiplier);
-		wr_byte(b->next ? 1 : 0);
-	}
-
-	/* Slays */
-	wr_byte(player->obj_k->slays ? 1 : 0);
-	for (s = player->obj_k->slays; s; s = s->next) {
-		wr_string(s->name);
-		wr_s16b(s->race_flag);
-		wr_s16b(s->multiplier);
-		wr_byte(s->next ? 1 : 0);
-	}
-
-	/* Combat data */
-	wr_s16b(player->obj_k->ac);
-	wr_s16b(player->obj_k->to_a);
-	wr_s16b(player->obj_k->to_h);
-	wr_s16b(player->obj_k->to_d);
-	wr_byte(player->obj_k->dd);
-	wr_byte(player->obj_k->ds);
 }
 
 
@@ -573,6 +528,10 @@ void wr_ignore(void)
 
 void wr_misc(void)
 {
+	size_t i;
+	struct brand *b;
+	struct slay *s;
+
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
 
@@ -588,6 +547,51 @@ void wr_misc(void)
 
 	/* Current turn */
 	wr_s32b(turn);
+
+	/* Property knowledge */
+	if (player->is_dead)
+		return;
+
+	/* Flags */
+	for (i = 0; i < OF_SIZE; i++)
+		wr_byte(player->obj_k->flags[i]);
+
+	/* Modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		wr_s16b(player->obj_k->modifiers[i]);
+	}
+
+	/* Elements */
+	for (i = 0; i < ELEM_MAX; i++) {
+		wr_s16b(player->obj_k->el_info[i].res_level);
+		wr_byte(player->obj_k->el_info[i].flags);
+	}
+
+	/* Brands */
+	wr_byte(player->obj_k->brands ? 1 : 0);
+	for (b = player->obj_k->brands; b; b = b->next) {
+		wr_string(b->name);
+		wr_s16b(b->element);
+		wr_s16b(b->multiplier);
+		wr_byte(b->next ? 1 : 0);
+	}
+
+	/* Slays */
+	wr_byte(player->obj_k->slays ? 1 : 0);
+	for (s = player->obj_k->slays; s; s = s->next) {
+		wr_string(s->name);
+		wr_s16b(s->race_flag);
+		wr_s16b(s->multiplier);
+		wr_byte(s->next ? 1 : 0);
+	}
+
+	/* Combat data */
+	wr_s16b(player->obj_k->ac);
+	wr_s16b(player->obj_k->to_a);
+	wr_s16b(player->obj_k->to_h);
+	wr_s16b(player->obj_k->to_d);
+	wr_byte(player->obj_k->dd);
+	wr_byte(player->obj_k->ds);
 }
 
 
