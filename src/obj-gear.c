@@ -324,6 +324,8 @@ int minus_ac(struct player *p)
 
 	/* Damage the item */
 	obj->to_a--;
+	if (p->obj_k->to_a)
+		obj->known->to_a = obj->to_a;
 
 	p->upkeep->update |= (PU_BONUS);
 	p->upkeep->redraw |= (PR_EQUIP);
