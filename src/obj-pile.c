@@ -1399,6 +1399,10 @@ void floor_pile_know(struct chunk *c, int y, int x)
 		if ((y == player->py) && (x == player->px)) {
 			player_know_object(player, obj);
 
+			/* Get the pval for anything but chests */
+			if (!tval_is_chest(obj))
+				obj->known->pval = obj->pval;
+
 			/* Automatically notice artifacts, mark as assessed */
 			obj->known->artifact = obj->artifact;
 			obj->known->notice |= OBJ_NOTICE_ASSESSED;
@@ -1407,7 +1411,6 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			if (obj->artifact)
 				history_add_artifact(obj->artifact, true, true);
 		}
-
 	}
 
 	/* Remove known location of anything not on this grid */
