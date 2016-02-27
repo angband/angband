@@ -573,6 +573,7 @@ void player_learn_everything(struct player *p)
 
 	/* Cover more brands and slays than exist */
 	free_brand(p->obj_k->brands);
+	p->obj_k->brands = NULL;
 	for (i = 0; i < ELEM_MAX; i++) {
 		struct brand *new_b = mem_zalloc(sizeof *new_b);
 		new_b->name = string_make(brand_names[i]);
@@ -581,6 +582,7 @@ void player_learn_everything(struct player *p)
 		p->obj_k->brands = new_b;
 	}
 	free_slay(p->obj_k->slays);
+	p->obj_k->slays = NULL;
 	for (i = 0; i < RF_MAX; i++) {
 		struct slay *new_s = mem_zalloc(sizeof *new_s);
 		new_s->name = string_make(slay_names[i]);
