@@ -1007,7 +1007,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 				if (!is_trapped_chest(obj)) continue;
 
 				/* Identify once */
-				if (obj->known->pval != obj->pval) {
+				if (!obj->known || obj->known->pval != obj->pval) {
 					/* Hack - know the pile */
 					floor_pile_know(cave, y, x);
 
