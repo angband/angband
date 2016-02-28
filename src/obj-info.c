@@ -226,7 +226,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 
 	/* Don't give exact plusses for faked ego items as each real one will
 	 * be different */
-	bool suppress_details = mode & OINFO_EGO ? true : false;
+	bool suppress_details = mode & (OINFO_EGO | OINFO_FAKE) ? true : false;
 
 	/* Fact of but not size of mods is known for egos and flavoured items
 	 * the player is aware of */
@@ -1816,6 +1816,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	ego_apply_magic(&obj, 0);
 
 	object_copy(&known_obj, &obj);
+	obj.known = &known_obj;
 
 	return object_info_out(&obj, OINFO_NONE | OINFO_EGO);
 }
