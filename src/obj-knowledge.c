@@ -167,6 +167,11 @@ bool object_fully_known(const struct object *obj)
 	/* No known object */
 	if (!obj->known) return false;
 
+	/* Not all combat details known */
+	if (obj->known->to_a != obj->to_a) return false;
+	if (obj->known->to_h != obj->to_h) return false;
+	if (obj->known->to_d != obj->to_d) return false;
+
 	/* Not all flags known */
 	if (!of_is_equal(obj->flags, obj->known->flags)) return false;
 
