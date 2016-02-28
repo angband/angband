@@ -1810,17 +1810,18 @@ static void desc_obj_fake(int k_idx)
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, EXTREMIFY);
-	obj->known = known_obj;
 
 	/* It's fully known */
-	if (kind->aware || !kind->flavor) object_copy(known_obj, obj);
+	if (kind->aware || !kind->flavor)
+		object_copy(known_obj, obj);
+	obj->known = known_obj;
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player);
 
-	tb = object_info(obj, OINFO_NONE);
+	tb = object_info(obj, OINFO_FAKE);
 	object_desc(header, sizeof(header), obj,
-			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
+			ODESC_PREFIX | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
 	object_delete(&known_obj);

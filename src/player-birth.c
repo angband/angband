@@ -342,6 +342,27 @@ static void get_ahw(struct player *p)
 
 
 /**
+ * Creates the player's body
+ */
+static void player_embody(struct player *p)
+{
+	char buf[80];
+	int i;
+
+	assert(p->race);
+
+	memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
+	my_strcpy(buf, bodies[p->race->body].name, sizeof(buf));
+	p->body.name = string_make(buf);
+	p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
+	for (i = 0; i < p->body.count; i++) {
+		p->body.slots[i].type = bodies[p->race->body].slots[i].type;
+		my_strcpy(buf, bodies[p->race->body].slots[i].name, sizeof(buf));
+		p->body.slots[i].name = string_make(buf);
+	}
+}
+
+/**
  * Get the player's starting money
  */
 static void get_money(void)
@@ -473,21 +494,8 @@ void wield_all(struct player *p)
  */
 static void player_outfit(struct player *p)
 {
-	char buf[80];
-	int i;
 	const struct start_item *si;
 	struct object *obj, *known_obj;
-
-	/* Player needs a body */
-	memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
-	my_strcpy(buf, bodies[p->race->body].name, sizeof(buf));
-	p->body.name = string_make(buf);
-	p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
-	for (i = 0; i < p->body.count; i++) {
-		p->body.slots[i].type = bodies[p->race->body].slots[i].type;
-		my_strcpy(buf, bodies[p->race->body].slots[i].name, sizeof(buf));
-		p->body.slots[i].name = string_make(buf);
-	}
 
 	/* Currently carrying nothing */
 	p->upkeep->total_weight = 0;
@@ -1076,11 +1084,11 @@ void do_cmd_accept_character(struct command *cmd)
 	message_add("  ", MSG_GENERIC);
 	message_add(" ", MSG_GENERIC);
 
+	/* Embody */
+	player_embody(player);
+
 	/* Give the player some money */
 	get_money();
-
-	/* Outfit the player, if they can sell the stuff */
-	player_outfit(player);
 
 	/* Initialise the spells */
 	player_spells_init(player);
@@ -1099,6 +1107,9 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Seed for flavors */
 	seed_flavor = randint0(0x10000000);
 	flavor_init();
+
+	/* Outfit the player, if they can sell the stuff */
+	player_outfit(player);
 
 	/* Stop the player being quite so dead */
 	player->is_dead = false;
