@@ -301,7 +301,6 @@ static s32b artifact_power(int a_idx, bool translate)
 
 	if (fail) return 0;
 
-	object_wipe(&known_obj);
 	object_copy(&known_obj, &obj);
 	obj.known = &known_obj;
 	object_desc(buf, 256 * sizeof(char), &obj,
