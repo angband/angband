@@ -269,7 +269,7 @@ dice:$B+1d100
 expr:B:PLAYER_LEVEL:/ 5
 desc:Invokes a random spell effect.
 
-book:magic book:[Incantations and Illusions]:9:1
+book:magic book:[Incantations and Illusions]:8:1
 
 spell:Satisfy Hunger:9:7:45:8
 effect:SET_NOURISH
@@ -902,7 +902,7 @@ desc: same dungeon depth) will be generated.  This has exactly the same
 desc: side effects as leaving and re-entering the level through a stair,
 desc: except that you won't start on a square with a stair.
 
-book:prayer book:[Godly Insights]:5:2
+book:prayer book:[Godly Insights]:4:2
 
 spell:Detect Monsters:3:3:50:2
 effect:DETECT_VISIBLE_MONSTERS
@@ -1177,7 +1177,7 @@ dice:$B+1d100
 expr:B:PLAYER_LEVEL:/ 5
 desc:Invokes a random spell effect.
 
-book:magic book:[Incantations and Illusions]:6:1
+book:magic book:[Incantations and Illusions]:5:1
 
 spell:Satisfy Hunger:25:12:95:1
 effect:SET_NOURISH
@@ -1530,7 +1530,7 @@ dice:$B+1d100
 expr:B:PLAYER_LEVEL:/ 5
 desc:Invokes a random spell effect.
 
-book:magic book:[Incantations and Illusions]:9:1
+book:magic book:[Incantations and Illusions]:8:1
 
 spell:Satisfy Hunger:17:17:55:3
 effect:SET_NOURISH
@@ -2105,7 +2105,7 @@ desc: of recall again.
 desc:  This prayer has no effect when the option to restrict the use of
 desc: stairs and recall is set, unless Morgoth is dead.
 
-book:prayer book:[Godly Insights]:4:2
+book:prayer book:[Godly Insights]:3:2
 
 spell:Detect Monsters:5:5:50:1
 effect:DETECT_VISIBLE_MONSTERS
