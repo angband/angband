@@ -1655,14 +1655,17 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 		/* Disenchant to-hit */
 		if (obj->to_h > 0) obj->to_h--;
 		if ((obj->to_h > 5) && (randint0(100) < 20)) obj->to_h--;
+		obj->known->to_h = obj->to_h;
 
 		/* Disenchant to-dam */
 		if (obj->to_d > 0) obj->to_d--;
 		if ((obj->to_d > 5) && (randint0(100) < 20)) obj->to_d--;
+		obj->known->to_d = obj->to_d;
 	} else {
 		/* Disenchant to-ac */
 		if (obj->to_a > 0) obj->to_a--;
 		if ((obj->to_a > 5) && (randint0(100) < 20)) obj->to_a--;
+		obj->known->to_a = obj->to_a;
 	}
 
 	/* Message */
@@ -1820,6 +1823,12 @@ bool enchant(struct object *obj, int n, int eflag)
 		if ((eflag & ENCH_TODAM) && enchant2(obj, &obj->to_d)) res = true;
 		if ((eflag & ENCH_TOAC)  && enchant2(obj, &obj->to_a)) res = true;
 	}
+
+	/* Update knowledge */
+	assert(obj->known);
+	obj->known->to_h = obj->to_h;
+	obj->known->to_d = obj->to_d;
+	obj->known->to_a = obj->to_a;
 
 	/* Failure */
 	if (!res) return (false);
