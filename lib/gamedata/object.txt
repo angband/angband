@@ -1986,6 +1986,10 @@ power:7
 effect:SET_NOURISH
 dice:16999
 
+### 286
+### 287
+### 288
+
 name:289:Light
 graphics:?:w
 type:scroll
@@ -3723,6 +3727,8 @@ flags:IGNORE_ELEC
 power:15
 effect:RECALL
 time:60
+
+### 456
 
 name:457:Speed
 graphics:-:d
