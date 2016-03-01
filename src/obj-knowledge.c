@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "init.h"
 #include "object.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
@@ -1043,3 +1044,56 @@ void object_flavor_tried(struct object *obj)
 	obj->kind->tried = true;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Functions for assessing how much knowledge the player has
+ * ------------------------------------------------------------------------ */
+/**
+ * Count the object properties ("runes") the player knows, or all of them
+ */
+int count_runes(struct player *p, bool all)
+{
+	int i, count = 0;
+	struct brand *b;
+	struct slay *s;
+
+	if (p->obj_k->dd || all) count++;
+	if (p->obj_k->ac || all) count++;
+	if (p->obj_k->to_a || all) count++;
+	if (p->obj_k->to_h || all) count++;
+	if (p->obj_k->to_d || all) count++;
+	for (i = 1; i < OF_MAX; i++)
+		if (of_has(p->obj_k->flags, i) || all) count++;
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (p->obj_k->modifiers[i]  || all) count++;
+	for (i = 0; i < ELEM_MAX; i++)
+		if (p->obj_k->el_info[i].res_level || all) count++;
+	for (b = game_brands; b; b = b->next) 
+		if (player_knows_brand(p, b) || all) count++;
+	for (s = game_slays; s; s = s->next)
+		if (player_knows_slay(p, s) || all) count++;
+
+	return count;
+}
+
+/**
+ * Count the object flavors the player knows, or all of them
+ */
+int count_flavors(struct player *p, bool all)
+{
+	int i, count = 0;
+
+	for (i = 0; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+
+		/* Skip empty and flavorless objects, and jewellery */
+		if (!kind->name) continue;
+		if (!kind->flavor) continue;
+		if ((kind->tval == TV_RING) || (kind->tval == TV_AMULET)) continue;
+
+		/* Count */
+		if (kind->aware || all) count++;
+	}
+
+	return count;
+}
