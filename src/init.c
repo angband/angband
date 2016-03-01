@@ -64,6 +64,12 @@
  */
 struct angband_constants *z_info;
 
+/**
+ * Structures to hold all brands and slays possible in the game
+ */
+struct brand *game_brands;
+struct slay *game_slays;
+
 /*
  * Hack -- The special Angband "System Suffix"
  * This variable is used to choose an appropriate "pref-xxx" file
@@ -304,6 +310,73 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	kf_on(dummy->kind_flags, KF_INSTA_ART);
 
 	return PARSE_ERROR_NONE;
+}
+
+void add_game_brand(struct brand *b)
+{
+	struct brand *known_b = game_brands;
+
+	if (!known_b) {
+		/* Copy the name and element */
+		game_brands = mem_zalloc(sizeof(struct brand));
+		game_brands->name = string_make(b->name);
+		game_brands->element = b->element;
+		return;
+	}
+
+	while (known_b) {
+		/* Same element is all we need */
+		if (known_b->element == b->element) return;
+
+		/* Not found, so add it */
+		if (!known_b->next) {
+			/* Copy the name and element */
+			struct brand *new_b = mem_zalloc(sizeof *new_b);
+			new_b->name = string_make(b->name);
+			new_b->element = b->element;
+
+			/* Attach the new brand */
+			new_b->next = game_brands;
+			game_brands = new_b;
+			return;
+		}
+
+		known_b = known_b->next;
+	}
+}
+
+void add_game_slay(struct slay *s)
+{
+	struct slay *known_s = game_slays;
+
+	if (!known_s) {
+		/* Copy the name and race flag */
+		game_slays = mem_zalloc(sizeof(struct slay));
+		game_slays->name = string_make(s->name);
+		game_slays->race_flag = s->race_flag;
+		return;
+	}
+
+	while (known_s) {
+		/* Name and race flag need to be the same */
+		if (streq(known_s->name, s->name) &&
+			(known_s->race_flag == s->race_flag)) return;
+
+		/* Not found, so add it */
+		if (!known_s->next) {
+			/* Copy the name and race flag */
+			struct slay *new_s = mem_zalloc(sizeof *new_s);
+			new_s->name = string_make(s->name);
+			new_s->race_flag = s->race_flag;
+
+			/* Attach the new slay */
+			new_s->next = game_slays;
+			game_slays = new_s;
+			return;
+		}
+
+		known_s = known_s->next;
+	}
 }
 
 /**
@@ -1249,6 +1322,7 @@ static enum parser_error parse_object_values(struct parser *p) {
 			b->multiplier = value;
 			b->next = k->brands;
 			k->brands = b;
+			add_game_brand(b);
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
 			struct slay *s;
@@ -1259,6 +1333,7 @@ static enum parser_error parse_object_values(struct parser *p) {
 			s->multiplier = value;
 			s->next = k->slays;
 			k->slays = s;
+			add_game_slay(s);
 		} else if (!grab_base_and_int(&value, &name, t)) {
 			struct slay *s;
 			found = true;
@@ -1267,6 +1342,7 @@ static enum parser_error parse_object_values(struct parser *p) {
 			s->multiplier = value;
 			s->next = k->slays;
 			k->slays = s;
+			add_game_slay(s);
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;
@@ -1785,6 +1861,7 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 			b->multiplier = value;
 			b->next = a->brands;
 			a->brands = b;
+			add_game_brand(b);
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
 			struct slay *s;
@@ -1795,6 +1872,7 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 			s->multiplier = value;
 			s->next = a->slays;
 			a->slays = s;
+			add_game_slay(s);
 		} else if (!grab_base_and_int(&value, &name, t)) {
 			struct slay *s;
 			found = true;
@@ -1803,6 +1881,7 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 			s->multiplier = value;
 			s->next = a->slays;
 			a->slays = s;
+			add_game_slay(s);
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;
@@ -2675,6 +2754,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 			b->multiplier = value;
 			b->next = e->brands;
 			e->brands = b;
+			add_game_brand(b);
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
 			struct slay *s;
@@ -2685,6 +2765,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 			s->multiplier = value;
 			s->next = e->slays;
 			e->slays = s;
+			add_game_slay(s);
 		} else if (!grab_base_and_int(&value, &name, t)) {
 			struct slay *s;
 			found = true;
@@ -2693,6 +2774,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 			s->multiplier = value;
 			s->next = e->slays;
 			e->slays = s;
+			add_game_slay(s);
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;

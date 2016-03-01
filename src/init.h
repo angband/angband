@@ -17,6 +17,7 @@
 #include "z-file.h"
 #include "z-rand.h"
 #include "parser.h"
+#include "object.h"
 
 /**
  * Information about maximal indices of certain arrays.
@@ -151,6 +152,8 @@ extern struct parser *init_parse_hints(void);
 extern struct parser *init_parse_trap(void);
 extern struct parser *init_parse_quest(void);
 
+void add_game_brand(struct brand *b);
+void add_game_slay(struct slay *s);
 extern void init_file_paths(const char *config, const char *lib, const char *data);
 extern void init_game_constants(void);
 extern void init_arrays(void);

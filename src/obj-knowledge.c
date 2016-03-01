@@ -540,20 +540,6 @@ void player_learn_dice(struct player *p)
 	update_player_object_knowledge(p);
 }
 
-static const char *brand_names[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) b,
-	#include "list-elements.h"
-	#undef ELEM
-	NULL
-};
-
-static const char *slay_names[] = {
-	#define RF(a, b, c) b,
-	#include "list-mon-race-flags.h"
-	#undef RF
-	NULL
-};
-
 /**
  * Learn absolutely everything
  *
@@ -562,7 +548,8 @@ static const char *slay_names[] = {
 void player_learn_everything(struct player *p)
 {
 	int i;
-	struct monster_base *base;
+	struct brand *b = game_brands;
+	struct slay *s = game_slays;
 
 	player_learn_ac(p);
 	player_learn_to_a(p);
@@ -576,30 +563,26 @@ void player_learn_everything(struct player *p)
 	for (i = 0; i < ELEM_MAX; i++)
 		player_learn_element(p, i);
 
-	/* Cover more brands and slays than exist */
+	/* Cover all game brands and slays */
 	free_brand(p->obj_k->brands);
 	p->obj_k->brands = NULL;
-	for (i = 0; i < ELEM_MAX; i++) {
+	while (b) {
 		struct brand *new_b = mem_zalloc(sizeof *new_b);
-		new_b->name = string_make(brand_names[i]);
-		new_b->element = i;
+		new_b->name = string_make(b->name);
+		new_b->element = b->element;
 		new_b->next = p->obj_k->brands;
 		p->obj_k->brands = new_b;
+		b = b->next;
 	}
 	free_slay(p->obj_k->slays);
 	p->obj_k->slays = NULL;
-	for (i = 0; i < RF_MAX; i++) {
+	while (s) {
 		struct slay *new_s = mem_zalloc(sizeof *new_s);
-		new_s->name = string_make(slay_names[i]);
-		new_s->race_flag = i;
+		new_s->name = string_make(s->name);
+		new_s->race_flag = s->race_flag;
 		new_s->next = p->obj_k->slays;
 		p->obj_k->slays = new_s;
-	}
-	for (base = rb_info; base; base = base->next) {
-		struct slay *new_s = mem_zalloc(sizeof *new_s);
-		new_s->name = string_make(base->name);
-		new_s->next = p->obj_k->slays;
-		p->obj_k->slays = new_s;
+		s = s->next;
 	}
 	update_player_object_knowledge(p);
 }
