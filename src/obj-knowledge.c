@@ -848,6 +848,77 @@ void mod_message(struct object *obj, int mod)
 }
 
 /**
+ * Learn the first unknown rune on an object
+ *
+ * \param p is the player
+ * \param obj is the object
+ */
+void object_learn_unknown_rune(struct player *p, struct object *obj)
+{
+	int i, flag;
+	struct brand *b;
+	struct slay *s;
+
+	/* Combat details */
+	if (obj->known->dd != obj->dd) {
+		player_learn_dice(p);
+		return;
+	}
+	if (obj->known->ac != obj->ac) {
+		player_learn_to_a(p);
+		return;
+	}
+	if (obj->known->to_a != obj->to_a) {
+		player_learn_to_a(p);
+		return;
+	}
+	if (obj->known->to_h != obj->to_h) {
+		player_learn_to_h(p);
+		return;
+	}
+	if (obj->known->to_d != obj->to_d) {
+		player_learn_to_d(p);
+		return;
+	}
+
+	/* Flags */
+	for (flag = of_next(obj->flags, FLAG_START); flag != FLAG_END;
+		 flag = of_next(obj->flags, flag + 1))
+		if (!of_has(p->obj_k->flags, flag)) {
+			player_learn_flag(p, flag);
+			return;
+		}
+
+	/* Modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		if (obj->modifiers[i] != obj->known->modifiers[i]) {
+			player_learn_mod(p, i);
+			return;
+		}
+
+	/* Elements */
+	for (i = 0; i < ELEM_MAX; i++)
+		if (obj->el_info[i].res_level != obj->known->el_info[i].res_level) {
+			player_learn_element(p, i);
+			return;
+		}
+
+	/* Brands */
+	for (b = obj->brands; b; b = b->next)
+		if (!player_knows_brand(p, b)) {
+			player_learn_brand(p, b);
+			return;
+		}
+
+	/* Slays */
+	for (s = obj->slays; s; s = s->next)
+		if (!player_knows_slay(p, s)) {
+			player_learn_slay(p, s);
+			return;
+		}
+}
+
+/**
  * Learn object properties that become obvious on wielding or wearing
  *
  * \param p is the player
@@ -909,6 +980,10 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 			/* Message */
 			if (p->upkeep->playing) mod_message(obj, i);
 		}
+
+	/* Learn more if overall knowledge is too low */
+	while (player_can_learn_unknown_rune(p) && !object_fully_known(obj))
+		object_learn_unknown_rune(p, obj);
 }
 
 /**
@@ -1096,4 +1171,26 @@ int count_flavors(struct player *p, bool all)
 	}
 
 	return count;
+}
+
+
+/**
+ * Does the player's rune knowledge need updating?
+ */
+bool player_can_learn_unknown_rune(struct player *p)
+{
+	if (count_runes(p, false) * PY_KNOW_LEVEL < count_runes(p, true) * p->lev)
+		return true;
+	return false;
+}
+
+/**
+ * Does the player's flavor knowledge need updating?
+ */
+bool player_can_learn_unknown_flavor(struct player *p)
+{
+	if (count_flavors(p, false) * PY_MAX_LEVEL <
+		count_flavors(p, true) * p->lev)
+		return true;
+	return false;
 }

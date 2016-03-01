@@ -51,6 +51,7 @@ void equip_learn_flag(struct player *p, int flag);
 void equip_learn_element(struct player *p, int element);
 void equip_learn_after_time(struct player *p);
 
+void object_learn_unknown_rune(struct player *p, struct object *obj);
 void object_learn_on_wield(struct player *p, struct object *obj);
 void object_learn_on_use(struct player *p, struct object *obj);
 void missile_learn_on_ranged_attack(struct player *p, struct object *obj);
@@ -63,3 +64,5 @@ void object_flavor_tried(struct object *obj);
 
 int count_runes(struct player *p, bool all);
 int count_flavors(struct player *p, bool all);
+bool player_can_learn_unknown_rune(struct player *p);
+bool player_can_learn_unknown_flavor(struct player *p);
