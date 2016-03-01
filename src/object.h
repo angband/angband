@@ -62,6 +62,8 @@ struct brand {
 	struct brand *next;
 };
 
+extern struct brand *game_brands;
+
 /* Slay type */
 struct slay {
 	char *name;
@@ -70,6 +72,8 @@ struct slay {
 	int damage; /* Storage for damage during description */
 	struct slay *next;
 };
+
+extern struct slay *game_slays;
 
 enum {
 	EL_INFO_HATES = 0x01,
