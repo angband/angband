@@ -232,6 +232,9 @@ bool append_random_brand(struct brand **current, char **name)
 		*current = b;
 	*name = b->name;
 
+	/* Append to the game list */
+	add_game_brand(b);
+
 	return true;
 }
 
@@ -276,6 +279,9 @@ bool append_random_slay(struct slay **current, char **name)
 	else
 		*current = s;
 	*name = s->name;
+
+	/* Append to the game list */
+	add_game_slay(s);
 
 	return true;
 }
