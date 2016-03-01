@@ -60,3 +60,6 @@ bool object_flavor_is_aware(const struct object *obj);
 bool object_flavor_was_tried(const struct object *obj);
 void object_flavor_aware(struct object *obj);
 void object_flavor_tried(struct object *obj);
+
+int count_runes(struct player *p, bool all);
+int count_flavors(struct player *p, bool all);
