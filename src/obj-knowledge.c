@@ -157,11 +157,11 @@ bool object_is_known_artifact(const struct object *obj)
 }
 
 /**
- * Check if an object is fully known to the player
+ * Check if all the runes on an object are known to the player
  *
  * \param obj is the object
  */
-bool object_fully_known(const struct object *obj)
+bool object_runes_known(const struct object *obj)
 {
 	int i;
 
@@ -169,6 +169,8 @@ bool object_fully_known(const struct object *obj)
 	if (!obj->known) return false;
 
 	/* Not all combat details known */
+	if (obj->known->dd != obj->dd) return false;
+	if (obj->known->ac != obj->ac) return false;
 	if (obj->known->to_a != obj->to_a) return false;
 	if (obj->known->to_h != obj->to_h) return false;
 	if (obj->known->to_d != obj->to_d) return false;
@@ -194,11 +196,25 @@ bool object_fully_known(const struct object *obj)
 	if (!slays_are_equal(obj->slays, obj->known->slays))
 		return false;
 
+	return true;
+}
+
+/**
+ * Check if an object is fully known to the player
+ *
+ * \param obj is the object
+ */
+bool object_fully_known(const struct object *obj)
+{
+	/* Not all runes known */
+	if (!object_runes_known(obj)) return false;
+
 	/* Effect not known */
 	if (!object_effect_is_known(obj)) return false;
 
 	return true;
 }
+
 
 /**
  * Checks whether the player knows whether an object has a given flag
@@ -865,7 +881,7 @@ void object_learn_unknown_rune(struct player *p, struct object *obj)
 		return;
 	}
 	if (obj->known->ac != obj->ac) {
-		player_learn_to_a(p);
+		player_learn_ac(p);
 		return;
 	}
 	if (obj->known->to_a != obj->to_a) {
@@ -982,7 +998,7 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 		}
 
 	/* Learn more if overall knowledge is too low */
-	while (player_can_learn_unknown_rune(p) && !object_fully_known(obj))
+	while (player_can_learn_unknown_rune(p) && !object_runes_known(obj))
 		object_learn_unknown_rune(p, obj);
 }
 
