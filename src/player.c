@@ -20,6 +20,7 @@
 #include "init.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "player-birth.h"
 #include "player-calcs.h"
@@ -263,9 +264,11 @@ static void adjust_level(struct player *p, bool verbose)
 		effect_simple(EF_RESTORE_STAT, "0", STAT_CON, 1, 0, NULL);
 
 		/* Learn more if overall knowledge is too low */
-		for (obj = p->gear; obj; obj = obj->next)
-			while (player_can_learn_unknown_rune(p) && !object_fully_known(obj))
+		for (obj = p->gear; obj; obj = obj->next) {
+			if (!tval_is_wearable(obj)) continue;
+			while (player_can_learn_unknown_rune(p) && !object_runes_known(obj))
 				object_learn_unknown_rune(p, obj);
+		}
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&
