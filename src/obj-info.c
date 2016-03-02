@@ -1713,7 +1713,6 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	bitflag flags[OF_SIZE];
 	struct element_info el_info[N_ELEMENTS(elements)];
 	bool something = false;
-	bool known = object_fully_known(obj);
 
 	bool terse = mode & OINFO_TERSE ? true : false;
 	bool subjective = mode & OINFO_SUBJ ? true : false;
@@ -1737,7 +1736,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (subjective) describe_origin(tb, obj, terse);
 	if (!terse) describe_flavor_text(tb, obj, ego);
 
-	if (!known)	{
+	if (!object_fully_known(obj) &&	(obj->known->notice & OBJ_NOTICE_ASSESSED)) {
 		textblock_append(tb, "You do not know the full extent of this item's powers.\n");
 		something = true;
 	}
