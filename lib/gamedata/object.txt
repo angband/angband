@@ -1826,7 +1826,14 @@ power:6
 effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 
-### 268
+name:268:Identify
+graphics:?:w
+type:scroll
+properties:1:5:15
+alloc:50:5 to 70
+power:6
+effect:IDENTIFY
+
 ### 269
 
 ### Enchantments ###
