@@ -182,7 +182,7 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 		strnfcat(buf, max, &end, "no more ");
 	} else if (obj->number > 1) {
 		strnfcat(buf, max, &end, "%d ", obj->number);
-	} else if (obj->artifact) {
+	} else if (object_is_known_artifact(obj)) {
 		strnfcat(buf, max, &end, "the ");
 	} else if (*basename == '&') {
 		bool an = false;
@@ -309,7 +309,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	end = obj_desc_name_format(buf, max, end, basename, modstr, plural);
 
 	/* Append extra names of various kinds */
-	if (obj->artifact)
+	if (object_is_known_artifact(obj))
 		strnfcat(buf, max, &end, " %s", obj->artifact->name);
 	else if (obj->known->ego && !(mode & ODESC_NOEGO))
 		strnfcat(buf, max, &end, " %s", obj->ego->name);
@@ -410,6 +410,9 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 	if (kf_has(obj->kind->kind_flags, KF_SHOW_MULT))
 		strnfcat(buf, max, &end, " (x%d)",
 				 obj->pval + obj->modifiers[OBJ_MOD_MIGHT]);
+
+	/* No more if the object hasn't been assessed */
+	if (!(obj->notice & OBJ_NOTICE_ASSESSED)) return end;
 
 	/* Show weapon bonuses if there are any, and always for weapons */
 	if (player->obj_k->to_h && player->obj_k->to_d) {
