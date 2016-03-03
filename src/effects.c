@@ -1496,6 +1496,37 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 	return true;
 }
 
+/**
+ * Selects items that have at least one unknown rune.
+ */
+static bool item_tester_unknown(const struct object *obj)
+{
+    return object_runes_known(obj) ? false : true;
+}
+
+/**
+ * Identify an unknown rune of an item.
+ */
+bool effect_handler_IDENTIFY(effect_handler_context_t *context)
+{
+    struct object *obj;
+    const char *q, *s;
+    bool used = false;
+
+    context->ident = true;
+
+    /* Get an item */
+    q = "Identify which item? ";
+    s = "You have nothing to identify.";
+    if (!get_item(&obj, q, s, 0, item_tester_unknown,
+                  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+        return used;
+
+    /* Identify the object */
+    object_learn_unknown_rune(player, obj);
+
+    return true;
+}
 
 
 /**
