@@ -301,7 +301,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			byte attr = COLOUR_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
 
-			bool res = false, imm = false, vul = false;
+			bool res = false, imm = false, vul = false, rune = false;
 			bool timed = false;
 			bool known = false;
 
@@ -344,8 +344,10 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 					if (rec[i].mod == OBJ_MOD_TUNNEL)
 						res = (player->race->r_skills[SKILL_DIGGING] > 0);
 				}
+				rune = (player->obj_k->modifiers[rec[i].mod] == 1);
 			} else if (rec[i].flag != -1) {
 				res = of_has(f, rec[i].flag);
+				rune = of_has(player->obj_k->flags, rec[i].flag);
 			} else if (rec[i].element != -1) {
 				if (j != player->body.count) {
 					imm = obj && known &&
@@ -359,10 +361,12 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 					res = player->race->el_info[rec[i].element].res_level == 1;
 					vul = player->race->el_info[rec[i].element].res_level == -1;
 				}
+				rune = (player->obj_k->el_info[rec[i].element].res_level == 1);
 			}
 
 			/* Set the symbols and print them */
 			if (imm) name_attr = COLOUR_GREEN;
+			else if (!rune) name_attr = COLOUR_SLATE;
 			else if (res && (name_attr != COLOUR_GREEN))
 				name_attr = COLOUR_L_BLUE;
 
@@ -370,7 +374,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
 			else if (timed) { sym = '!'; attr = COLOUR_L_GREEN; }
-			else if ((j < player->body.count) && obj && !known)
+			else if ((j < player->body.count) && obj && !known && !rune)
 				sym = '?';
 
 			Term_addch(attr, sym);
