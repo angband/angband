@@ -598,16 +598,6 @@ int price_item(struct store *store, const struct object *obj,
 		/* Check for no_selling option */
 		if (OPT(birth_no_selling)) return (0L);
 	} else {
-		/* Recalculate if the player doesn't know the flavour */
-		if (!obj->kind->aware) {
-			obj->kind->aware = true;
-			if (tval_can_have_charges(obj))
-				price = object_value(obj, qty, false);
-			else
-				price = object_value(obj, 1, false);
-			obj->kind->aware = false;
-		}
-
 		/* Black market sucks */
 		if (store->sidx == STORE_B_MARKET)
 			price = price * 2;
