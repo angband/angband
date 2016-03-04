@@ -966,6 +966,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 		return NULL;
 
 	/* Insert the new object */
+	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	pile_insert(&store->stock, obj);
 	pile_insert(&store->stock_k, known_obj);
 	store->stock_num++;
