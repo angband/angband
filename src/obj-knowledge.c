@@ -113,9 +113,6 @@ static const char *m_rune[] =
 	#undef OBJ_MOD
 };
 
-static char **b_rune;
-static char **s_rune;
-
 static void init_rune(void)
 {
 	int i, count, brands = 0, slays = 0;
@@ -136,13 +133,9 @@ static void init_rune(void)
 	for (i = 0; i <= ELEM_HIGH_MAX; i++)
 		count++;
 	for (b = game_brands; b; b = b->next)
-		brands++;
-	count += brands;
-	b_rune = mem_zalloc(brands * sizeof(char *));
+		count++;
 	for (s = game_slays; s; s = s->next)
-		slays++;
-	count += slays;
-	s_rune = mem_zalloc(slays * sizeof(char *));
+		count++;
 
 	/* Now allocate and fill the rune list */
 	rune_max = count;
@@ -165,37 +158,14 @@ static void init_rune(void)
 		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, m_rune[i] };
 	for (i = 0; i <= ELEM_HIGH_MAX; i++)
 		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, e_rune[i] };
-	brands = 0;
-	for (b = game_brands; b; b = b->next) {
-		b_rune[brands] = string_make(format("%s brand", b->name));
-		rune_list[count++] = (struct rune) { RUNE_VAR_BRAND, brands,
-											 b_rune[brands++] };
-	}
-	slays = 0;
-	for (s = game_slays; s; s = s->next) {
-		s_rune[slays] = string_make(format("slay %s", s->name));
-		rune_list[count++] = (struct rune) { RUNE_VAR_SLAY, slays,
-											 s_rune[slays++] };
-	}
-
+	for (b = game_brands; b; b = b->next)
+		rune_list[count++] = (struct rune) { RUNE_VAR_BRAND, brands++, b->name};
+	for (s = game_slays; s; s = s->next)
+		rune_list[count++] = (struct rune) { RUNE_VAR_SLAY, slays++, s->name };
 }
 
 static void cleanup_rune(void)
 {
-	struct brand *b;
-	struct slay *s;
-	int brands = 0, slays = 0;
-
-	for (b = game_brands; b; b = b->next) {
-		string_free(b_rune[brands]);
-		brands++;
-	}
-	mem_free(b_rune);
-	for (s = game_slays; s; s = s->next) {
-		string_free(s_rune[slays]);
-		slays++;
-	}
-	mem_free(s_rune);
 	mem_free(rune_list);
 }
 
@@ -317,8 +287,6 @@ bool object_runes_known(const struct object *obj)
 	if (!obj->known) return false;
 
 	/* Not all combat details known */
-	if (obj->known->dd != obj->dd) return false;
-	if (obj->known->ac != obj->ac) return false;
 	if (obj->known->to_a != obj->to_a) return false;
 	if (obj->known->to_h != obj->to_h) return false;
 	if (obj->known->to_d != obj->to_d) return false;
@@ -647,18 +615,6 @@ void player_learn_slay(struct player *p, struct slay *s)
 }
 
 /**
- * Learn armour class
- *
- * \param p is the player
- */
-void player_learn_ac(struct player *p)
-{
-	if (p->obj_k->ac) return;
-	p->obj_k->ac = 1;
-	update_player_object_knowledge(p);
-}
-
-/**
  * Learn to-armour bonus
  *
  * \param p is the player
@@ -695,19 +651,6 @@ void player_learn_to_d(struct player *p)
 }
 
 /**
- * Learn damage dice
- *
- * \param p is the player
- */
-void player_learn_dice(struct player *p)
-{
-	if (p->obj_k->dd && p->obj_k->ds) return;
-	p->obj_k->dd = 1;
-	p->obj_k->ds = 1;
-	update_player_object_knowledge(p);
-}
-
-/**
  * Learn absolutely everything
  *
  * \param p is the player
@@ -718,11 +661,9 @@ void player_learn_everything(struct player *p)
 	struct brand *b = game_brands;
 	struct slay *s = game_slays;
 
-	player_learn_ac(p);
 	player_learn_to_a(p);
 	player_learn_to_h(p);
 	player_learn_to_d(p);
-	player_learn_dice(p);
 	for (i = 1; i < OF_MAX; i++)
 		player_learn_flag(p, i);
 	for (i = 0; i < OBJ_MOD_MAX; i++)
@@ -769,15 +710,14 @@ void equip_learn_on_defend(struct player *p)
 {
 	int i;
 
-	if (p->obj_k->ac && p->obj_k->to_a) return;
+	if (p->obj_k->to_a) return;
 
 	for (i = 0; i < p->body.count; i++) {
 		struct object *obj = slot_object(p, i);
 		if (obj) {
 			assert(obj->known);
-			if (obj->ac) player_learn_ac(p);
 			if (obj->to_a) player_learn_to_a(p);
-			if (p->obj_k->ac && p->obj_k->to_a) return;
+			if (p->obj_k->to_a) return;
 		}
 	}
 }
@@ -800,7 +740,6 @@ void equip_learn_on_ranged_attack(struct player *p)
 		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj) {
 			assert(obj->known);
-			player_learn_dice(player);
 			if (obj->to_h) player_learn_to_h(p);
 			if (p->obj_k->to_h) return;
 		}
@@ -820,7 +759,7 @@ void equip_learn_on_melee_attack(struct player *p)
 {
 	int i;
 
-	if (p->obj_k->to_h && p->obj_k->to_d && p->obj_k->dd && p->obj_k->ds)
+	if (p->obj_k->to_h && p->obj_k->to_d)
 		return;
 
 	for (i = 0; i < p->body.count; i++) {
@@ -828,7 +767,6 @@ void equip_learn_on_melee_attack(struct player *p)
 		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj) {
 			assert(obj->known);
-			player_learn_dice(player);
 			if (obj->to_h) player_learn_to_h(p);
 			if (obj->to_d) player_learn_to_d(p);
 			if (p->obj_k->to_h && p->obj_k->to_d) return;
@@ -1014,74 +952,155 @@ void mod_message(struct object *obj, int mod)
 }
 
 /**
- * Learn the first unknown rune on an object
+ * Get a random unknown rune from an object
+ *
+ * \param p is the player
+ * \param obj is the object
+ * \return the index into the rune list, or -1 for no unknown runes
+ */
+int object_find_unknown_rune(struct player *p, struct object *obj)
+{
+	int i, num = 0;
+	int *poss_runes = mem_zalloc(rune_max * sizeof(int));
+
+	if (object_runes_known(obj)) return -1;
+
+	for (i = 0; i < rune_max; i++) {
+		struct rune *r = &rune_list[i];
+
+		switch (r->variety) {
+			/* Combat runes - just check them all */
+		case RUNE_VAR_COMBAT: {
+			if ((r->index == COMBAT_RUNE_TO_A) &&
+				(obj->known->to_a != obj->to_a))
+				poss_runes[num++] = i;
+			else if ((r->index == COMBAT_RUNE_TO_H)
+					 && (obj->known->to_h != obj->to_h))
+				poss_runes[num++] = i;
+			else if ((r->index == COMBAT_RUNE_TO_D)
+					 && (obj->known->to_d != obj->to_d))
+				poss_runes[num++] = i;
+			break;
+		}
+			/* Flag runes */
+		case RUNE_VAR_FLAG: {
+			if (of_has(obj->flags, r->index) &&
+				!of_has(obj->known->flags, r->index))
+				poss_runes[num++] = i;
+			break;
+		}
+			/* Mod runes */
+		case RUNE_VAR_MOD: {
+			if (obj->modifiers[r->index] != obj->known->modifiers[r->index])
+				poss_runes[num++] = i;
+			break;
+		}
+			/* Element runes */
+		case RUNE_VAR_RESIST: {
+			if (obj->el_info[r->index].res_level !=
+				obj->known->el_info[r->index].res_level)
+				poss_runes[num++] = i;
+			break;
+		}
+			/* Brand runes */
+		case RUNE_VAR_BRAND: {
+			struct brand *b;
+			for (b = obj->brands; b; b = b->next)
+				if (streq(b->name, r->name)) break;
+
+			/* Brand not on the object, or known */
+			if (!b) break;
+			if (player_knows_brand(p, b)) break;
+
+			/* If we're here we have an unknown brand */
+				poss_runes[num++] = i;
+			break;
+		}
+			/* Slay runes */
+		case RUNE_VAR_SLAY: {
+			struct slay *s;
+			for (s = obj->slays; s; s = s->next)
+				if (streq(s->name, r->name)) break;
+
+			/* Slay not on the object, or known */
+			if (!s) break;
+			if (player_knows_slay(p, s)) break;
+
+			/* If we're here we have an unknown brand */
+			poss_runes[num++] = i;
+			break;
+		}
+		default: break;
+		}
+	}
+
+	/* Grab a random rune from among the unknowns  */
+	if (num)
+		return poss_runes[randint0(num)];
+
+	return -1;
+}
+
+/**
+ * Learn a random unknown rune from an object
  *
  * \param p is the player
  * \param obj is the object
  */
 void object_learn_unknown_rune(struct player *p, struct object *obj)
 {
-	int i, flag;
-	struct brand *b;
-	struct slay *s;
+	struct rune *r;
 
-	/* Combat details */
-	if (obj->known->dd != obj->dd) {
-		player_learn_dice(p);
-		return;
+	/* Get a random unknown rune from the object */
+	int i = object_find_unknown_rune(p, obj);
+
+	/* No unknown runes */
+	if (i < 0) return;
+
+	/* Get and analyse the rune */
+	r = &rune_list[i];
+	switch (r->variety) {
+	case RUNE_VAR_COMBAT: {
+		if (r->index == COMBAT_RUNE_TO_A)
+			player_learn_to_a(p);
+		else if (r->index == COMBAT_RUNE_TO_H)
+			player_learn_to_h(p);
+		else if (r->index == COMBAT_RUNE_TO_D)
+			player_learn_to_d(p);
+			break;
 	}
-	if (obj->known->ac != obj->ac) {
-		player_learn_ac(p);
-		return;
+	case RUNE_VAR_FLAG: {
+		player_learn_flag(p, r->index);
+		break;
 	}
-	if (obj->known->to_a != obj->to_a) {
-		player_learn_to_a(p);
-		return;
+	case RUNE_VAR_MOD: {
+		player_learn_mod(p, r->index);
+		break;
 	}
-	if (obj->known->to_h != obj->to_h) {
-		player_learn_to_h(p);
-		return;
+	case RUNE_VAR_RESIST: {
+		player_learn_element(p, r->index);
+		break;
 	}
-	if (obj->known->to_d != obj->to_d) {
-		player_learn_to_d(p);
-		return;
+	case RUNE_VAR_BRAND: {
+		int num;
+		struct brand *b;
+		for (b = game_brands, num = 0; b; b = b->next, num++)
+			if (num == r->index) break;
+		assert(b != NULL);
+		player_learn_brand(p, b);
+		break;
 	}
-
-	/* Flags */
-	for (flag = of_next(obj->flags, FLAG_START); flag != FLAG_END;
-		 flag = of_next(obj->flags, flag + 1))
-		if (!of_has(p->obj_k->flags, flag)) {
-			player_learn_flag(p, flag);
-			return;
-		}
-
-	/* Modifiers */
-	for (i = 0; i < OBJ_MOD_MAX; i++)
-		if (obj->modifiers[i] != obj->known->modifiers[i]) {
-			player_learn_mod(p, i);
-			return;
-		}
-
-	/* Elements */
-	for (i = 0; i < ELEM_MAX; i++)
-		if (obj->el_info[i].res_level != obj->known->el_info[i].res_level) {
-			player_learn_element(p, i);
-			return;
-		}
-
-	/* Brands */
-	for (b = obj->brands; b; b = b->next)
-		if (!player_knows_brand(p, b)) {
-			player_learn_brand(p, b);
-			return;
-		}
-
-	/* Slays */
-	for (s = obj->slays; s; s = s->next)
-		if (!player_knows_slay(p, s)) {
-			player_learn_slay(p, s);
-			return;
-		}
+	case RUNE_VAR_SLAY: {
+		int num;
+		struct slay *s;
+		for (s = game_slays, num = 0; s; s = s->next, num++)
+			if (num == r->index) break;
+		assert(s != NULL);
+		player_learn_slay(p, s);
+		break;
+	}
+	default: break;
+	}
 }
 
 /**
@@ -1180,11 +1199,10 @@ void object_learn_on_use(struct player *p, struct object *obj)
  */
 void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
 {
-	if (p->obj_k->to_h && p->obj_k->to_d && p->obj_k->dd && p->obj_k->ds)
+	if (p->obj_k->to_h && p->obj_k->to_d)
 		return;
 
 	assert(obj->known);
-	player_learn_dice(player);
 	if (obj->to_h) player_learn_to_h(p);
 	if (obj->to_d) player_learn_to_d(p);
 }
@@ -1298,8 +1316,6 @@ int count_runes(struct player *p, bool all)
 	struct brand *b;
 	struct slay *s;
 
-	if (p->obj_k->dd || all) count++;
-	if (p->obj_k->ac || all) count++;
 	if (p->obj_k->to_a || all) count++;
 	if (p->obj_k->to_h || all) count++;
 	if (p->obj_k->to_d || all) count++;
