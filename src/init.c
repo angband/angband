@@ -4518,6 +4518,7 @@ static struct init_module arrays_module = {
 
 extern struct init_module z_quark_module;
 extern struct init_module generate_module;
+extern struct init_module rune_module;
 extern struct init_module obj_make_module;
 extern struct init_module ignore_module;
 extern struct init_module mon_make_module;
@@ -4533,6 +4534,7 @@ static struct init_module *modules[] = {
 	&player_module,
 	&arrays_module,
 	&generate_module,
+	&rune_module,
 	&obj_make_module,
 	&ignore_module,
 	&mon_make_module,
