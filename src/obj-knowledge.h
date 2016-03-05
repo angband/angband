@@ -20,6 +20,29 @@
 #include "object.h"
 #include "player.h"
 
+enum rune_variety {
+	RUNE_VAR_COMBAT,
+	RUNE_VAR_FLAG,
+	RUNE_VAR_MOD,
+	RUNE_VAR_RESIST,
+	RUNE_VAR_BRAND,
+	RUNE_VAR_SLAY
+};
+
+
+enum combat_runes {
+	COMBAT_RUNE_TO_A = 0,
+	COMBAT_RUNE_TO_H,
+	COMBAT_RUNE_TO_D,
+	COMBAT_RUNE_MAX
+};
+
+struct rune {
+	enum rune_variety variety;
+	int index;
+	const char *name;
+};
+
 bool player_knows_brand(struct player *p, struct brand *b);
 bool player_knows_slay(struct player *p, struct slay *s);
 bool player_knows_ego(struct player *p, struct ego_item *ego);
