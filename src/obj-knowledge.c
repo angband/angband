@@ -23,6 +23,7 @@
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
+#include "obj-properties.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -50,6 +51,153 @@
  *   version of every object that the player has picked up or walked over
  *   or seen in a shop
  */
+
+/**
+ * Describes a flag-name pair.
+ */
+struct flag_type {
+	int flag;
+	const char *name;
+};
+
+static int rune_max;
+static struct rune *rune_list;
+static char *c_rune[] = {
+	"enchantment to armor",
+	"enchatment to hit",
+	"enchantment to damage"
+};
+
+static const struct flag_type flag_names[] =
+{
+	{ OF_SUST_STR, "sustain strength" },
+	{ OF_SUST_INT, "sustain intelligence" },
+	{ OF_SUST_WIS, "sustain wisdom" },
+	{ OF_SUST_DEX, "sustain dexterity" },
+	{ OF_SUST_CON, "sustain constitution" },
+	{ OF_PROT_FEAR, "protection from fear" },
+	{ OF_PROT_BLIND, "protection from blindness" },
+	{ OF_PROT_CONF, "protection from confusion" },
+	{ OF_PROT_STUN,  "protection from stunning" },
+	{ OF_BLESSED, "blessed" },
+	{ OF_IMPACT, "earthquake" },
+	{ OF_SLOW_DIGEST, "slow digestion" },
+	{ OF_IMPAIR_HP, "impair hitpoint recovery" },
+	{ OF_IMPAIR_MANA, "impair mana recovery" },
+	{ OF_AFRAID, "fear" },
+	{ OF_FEATHER, "feather falling" },
+	{ OF_REGEN, "regeneration" },
+	{ OF_FREE_ACT, "free action" },
+	{ OF_HOLD_LIFE, "hold life" },
+	{ OF_TELEPATHY, "telepathy" },
+	{ OF_SEE_INVIS, "see invisible" },
+	{ OF_AGGRAVATE, "aggravate" },
+	{ OF_DRAIN_EXP, "drain experience" },
+	{ OF_TELEPORT, "random teleportation" },
+};
+
+static const char *e_rune[] =
+{
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) c,
+    #include "list-elements.h"
+    #undef ELEM
+};
+
+static const char *m_rune[] =
+{
+	#define STAT(a, b, c, d, e, f, g, h) h,
+	#include "list-stats.h"
+	#undef STAT
+	#define OBJ_MOD(a, b, c, d) d,
+	#include "list-object-modifiers.h"
+	#undef OBJ_MOD
+};
+
+static char **b_rune;
+static char **s_rune;
+
+static void init_rune(void)
+{
+	int i, count, brands = 0, slays = 0;
+	struct brand *b;
+	struct slay *s;
+
+	/* Count runes (combat runes are fixed) */
+	count = COMBAT_RUNE_MAX;
+	for (i = 1; i < OF_MAX; i++) {
+		if (obj_flag_type(i) == OFT_LIGHT) continue;
+		if (obj_flag_type(i) == OFT_CURSE) continue;
+		count++;
+	}
+	/* Remove when flag names are dealt with better - NRM */
+	assert((count - COMBAT_RUNE_MAX) == N_ELEMENTS(flag_names));
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		count++;
+	for (i = 0; i <= ELEM_HIGH_MAX; i++)
+		count++;
+	for (b = game_brands; b; b = b->next)
+		brands++;
+	count += brands;
+	b_rune = mem_zalloc(brands * sizeof(char *));
+	for (s = game_slays; s; s = s->next)
+		slays++;
+	count += slays;
+	s_rune = mem_zalloc(slays * sizeof(char *));
+
+	/* Now allocate and fill the rune list */
+	rune_max = count;
+	rune_list = mem_zalloc(rune_max * sizeof(struct rune));
+	count = 0;
+	for (i = 0; i < COMBAT_RUNE_MAX; i++)
+		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, c_rune[i] };
+	for (i = 1; i < OF_MAX; i++) {
+		size_t j;
+		if (obj_flag_type(i) == OFT_LIGHT) continue;
+		if (obj_flag_type(i) == OFT_CURSE) continue;
+
+		/* Find the rune name */
+		for (j = 0; j < N_ELEMENTS(flag_names); j++)
+			if (i == flag_names[j].flag) break;
+		rune_list[count++] = (struct rune) { RUNE_VAR_FLAG, i,
+											 flag_names[j].name };
+	}
+	for (i = 0; i < OBJ_MOD_MAX; i++)
+		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, m_rune[i] };
+	for (i = 0; i <= ELEM_HIGH_MAX; i++)
+		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, e_rune[i] };
+	brands = 0;
+	for (b = game_brands; b; b = b->next) {
+		b_rune[brands] = string_make(format("%s brand", b->name));
+		rune_list[count++] = (struct rune) { RUNE_VAR_BRAND, brands,
+											 b_rune[brands++] };
+	}
+	slays = 0;
+	for (s = game_slays; s; s = s->next) {
+		s_rune[slays] = string_make(format("slay %s", s->name));
+		rune_list[count++] = (struct rune) { RUNE_VAR_SLAY, slays,
+											 s_rune[slays++] };
+	}
+
+}
+
+static void cleanup_rune(void)
+{
+	struct brand *b;
+	struct slay *s;
+	int brands = 0, slays = 0;
+
+	for (b = game_brands; b; b = b->next) {
+		string_free(b_rune[brands]);
+		brands++;
+	}
+	mem_free(b_rune);
+	for (s = game_slays; s; s = s->next) {
+		string_free(s_rune[slays]);
+		slays++;
+	}
+	mem_free(s_rune);
+	mem_free(rune_list);
+}
 
 /**
  * ------------------------------------------------------------------------
@@ -1212,3 +1360,9 @@ bool player_can_learn_unknown_flavor(struct player *p)
 		return true;
 	return false;
 }
+
+struct init_module rune_module = {
+	.name = "rune",
+	.init = init_rune,
+	.cleanup = cleanup_rune
+};
