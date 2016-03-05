@@ -504,6 +504,11 @@ static void player_outfit(struct player *p)
 	/* Currently carrying nothing */
 	p->upkeep->total_weight = 0;
 
+	/* Give the player basic weapon and armour knowledge */
+	p->obj_k->dd = 1;
+	p->obj_k->ds = 1;
+	p->obj_k->ac = 1;
+
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
 		int num = rand_range(si->min, si->max);
