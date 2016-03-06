@@ -57,16 +57,8 @@ void object_set_base_known(struct object *obj);
 void player_know_object(struct player *p, struct object *obj);
 void update_player_object_knowledge(struct player *p);
 
-void player_learn_flag(struct player *p, int flag);
-void player_learn_mod(struct player *p, int mod);
-void player_learn_element(struct player *p, int element);
 void player_learn_brand(struct player *p, struct brand *b);
 void player_learn_slay(struct player *p, struct slay *s);
-void player_learn_ac(struct player *p);
-void player_learn_to_a(struct player *p);
-void player_learn_to_h(struct player *p);
-void player_learn_to_d(struct player *p);
-void player_learn_dice(struct player *p);
 void player_learn_everything(struct player *p);
 
 void equip_learn_on_defend(struct player *p);
@@ -86,8 +78,3 @@ bool object_flavor_is_aware(const struct object *obj);
 bool object_flavor_was_tried(const struct object *obj);
 void object_flavor_aware(struct object *obj);
 void object_flavor_tried(struct object *obj);
-
-int count_runes(struct player *p, bool all);
-int count_flavors(struct player *p, bool all);
-bool player_can_learn_unknown_rune(struct player *p);
-bool player_can_learn_unknown_flavor(struct player *p);
