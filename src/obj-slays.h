@@ -1,6 +1,6 @@
 /**
-  \file obj-slays.h
-  \brief Structures and functions for dealing with slays and brands
+ * \file obj-slays.h
+ * \brief Structures and functions for dealing with slays and brands
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
  *

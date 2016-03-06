@@ -33,8 +33,6 @@ static struct slay_cache *slay_cache;
 
 struct brand_info {
 	const char* name;
-	const char *active_verb;
-	const char *active_verb_plural;
 	const char *melee_verb;
 	const char *melee_verb_weak;
 	int resist_flag;
@@ -47,11 +45,11 @@ struct brand_info {
  * in obj-randart.c
  */
 const struct brand_info brand_names[] = {
-	{ "acid", "spits", "spit", "dissolve", "corrode", RF_IM_ACID },
-	{ "lightning", "crackles", "crackle", "shock", "zap", RF_IM_ELEC },
-	{ "fire", "flares", "flare", "burn", "singe", RF_IM_FIRE },
-	{ "cold", "grows cold", "grow cold", "freeze", "chill", RF_IM_COLD },
-	{ "poison", "seethes", "seethe", "poison", "sicken", RF_IM_POIS }
+	{ "acid", "dissolve", "corrode", RF_IM_ACID },
+	{ "lightning", "shock", "zap", RF_IM_ELEC },
+	{ "fire", "burn", "singe", RF_IM_FIRE },
+	{ "cold", "freeze", "chill", RF_IM_COLD },
+	{ "poison", "poison", "sicken", RF_IM_POIS }
 };
 
 struct slay_info {
@@ -444,67 +442,6 @@ bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 
 
 /**
- * Notice a brand on a particular object which affects a particular monster.
- *
- * \param obj is the object on which we are noticing brands
- * \param mon the monster we are hitting
- * \param b is the brand we are learning
- */
-static void object_notice_brand(struct object *obj, const struct monster *mon,
-								struct brand *b)
-{
-	struct monster_lore *lore = get_lore(mon->race);
-
-	/* Learn about the brand */
-	if (!player_knows_brand(player, b)) {
-		char o_name[40];
-		bool plural = (obj->number > 1) ? true : false;
-		const char *verb = plural ?	brand_names[b->element].active_verb_plural :
-			brand_names[b->element].active_verb;
-
-		if (plural)
-			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_PLURAL);
-		else
-			object_desc(o_name, sizeof(o_name), obj,
-						ODESC_BASE | ODESC_SINGULAR);
-		msg("Your %s %s!", o_name, verb);
-		player_learn_brand(player, b);
-		update_player_object_knowledge(player);
-	}
-
-	/* Learn about the monster */
-	if (mflag_has(mon->mflag, MFLAG_VISIBLE))
-		rf_on(lore->flags, brand_names[b->element].resist_flag);
-}
-
-/**
- * Notice any slays on a particular object which affect a particular monster.
- *
- * \param obj is the object on which we are noticing slays
- * \param mon the monster we are trying to slay
- */
-static void object_notice_slay(struct object *obj, const struct monster *mon,
-							   struct slay *s)
-{
-	struct monster_lore *lore = get_lore(mon->race);
-
-	/* Learn about the slay */
-	if (!player_knows_slay(player, s)) {
-		char o_name[40];
-
-		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_SINGULAR);
-		msg("Your %s glows%s!", o_name, s->multiplier > 3 ? " brightly" : "");
-		player_learn_slay(player, s);
-		update_player_object_knowledge(player);
-	}
-
-	/* Learn about the monster */
-	if (mflag_has(mon->mflag, MFLAG_VISIBLE))
-		rf_on(lore->flags, s->race_flag);
-}
-
-
-/**
  * Extract the multiplier from a given object hitting a given monster.
  *
  * \param obj is the object being used to attack
@@ -546,8 +483,16 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 					my_strcat(verb, "s", 20);
 			}
 			/* Learn from real attacks */
-			if (real)
-				object_notice_brand(obj, mon, b);
+			if (real) {
+				struct monster_lore *lore = get_lore(mon->race);
+
+				/* Learn about the brand */
+				object_learn_brand(player, obj, b);
+
+				/* Learn about the monster */
+				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+					rf_on(lore->flags, brand_names[b->element].resist_flag);
+			}
 		}
 	}
 
@@ -573,8 +518,16 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				}
 			}
 			/* Learn from real attacks */
-			if (real)
-				object_notice_slay(obj, mon, s);
+			if (real) {
+				struct monster_lore *lore = get_lore(mon->race);
+
+				/* Learn about the slay */
+				object_learn_slay(player, obj, s);
+
+				/* Learn about the monster */
+				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+					rf_on(lore->flags, s->race_flag);
+			}
 		}
 	}
 }
