@@ -1509,6 +1509,14 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
     return true;
 }
 
+/**
+ * Identify an unknown rune
+ */
+bool effect_handler_LEARN_RANDOM_RUNE(effect_handler_context_t *context)
+{
+    player_learn_random_rune(player);
+    return true;
+}
 
 /**
  * Detect evil monsters around the player.  The height to detect above and

@@ -59,6 +59,7 @@ void update_player_object_knowledge(struct player *p);
 
 void player_learn_brand(struct player *p, struct brand *b);
 void player_learn_slay(struct player *p, struct slay *s);
+bool player_learn_random_rune(struct player *p);
 void player_learn_everything(struct player *p);
 
 void equip_learn_on_defend(struct player *p);
