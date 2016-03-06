@@ -55,6 +55,7 @@ bool object_element_is_known(const struct object *obj, int element);
 
 void object_set_base_known(struct object *obj);
 void player_know_object(struct player *p, struct object *obj);
+void update_player_object_knowledge(struct player *p);
 
 void player_learn_flag(struct player *p, int flag);
 void player_learn_mod(struct player *p, int mod);

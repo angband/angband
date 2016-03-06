@@ -469,6 +469,7 @@ static void object_notice_brand(struct object *obj, const struct monster *mon,
 						ODESC_BASE | ODESC_SINGULAR);
 		msg("Your %s %s!", o_name, verb);
 		player_learn_brand(player, b);
+		update_player_object_knowledge(player);
 	}
 
 	/* Learn about the monster */
@@ -494,6 +495,7 @@ static void object_notice_slay(struct object *obj, const struct monster *mon,
 		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_SINGULAR);
 		msg("Your %s glows%s!", o_name, s->multiplier > 3 ? " brightly" : "");
 		player_learn_slay(player, s);
+		update_player_object_knowledge(player);
 	}
 
 	/* Learn about the monster */
