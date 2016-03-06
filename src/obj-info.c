@@ -69,7 +69,7 @@ static const struct flag_type elements[] =
 
 static const char *mod_names[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) h,
+	#define STAT(a, b, c, d, e, f, g, h, i) h,
 	#include "list-stats.h"
 	#undef STAT
 	#define OBJ_MOD(a, b, c, d) d,
@@ -87,7 +87,7 @@ static const struct flag_type protect_flags[] =
 
 static const struct flag_type sustain_flags[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) { OF_##c, h },
+	#define STAT(a, b, c, d, e, f, g, h, i) { OF_##c, h },
 	#include "list-stats.h"
 	#undef STAT
 };

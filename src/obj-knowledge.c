@@ -73,32 +73,15 @@ static char *c_rune[] = {
 	"enchantment to damage"
 };
 
-static const struct flag_type flag_names[] =
+static const struct flag_type f_rune[] =
 {
-	{ OF_SUST_STR, "sustain strength" },
-	{ OF_SUST_INT, "sustain intelligence" },
-	{ OF_SUST_WIS, "sustain wisdom" },
-	{ OF_SUST_DEX, "sustain dexterity" },
-	{ OF_SUST_CON, "sustain constitution" },
-	{ OF_PROT_FEAR, "protection from fear" },
-	{ OF_PROT_BLIND, "protection from blindness" },
-	{ OF_PROT_CONF, "protection from confusion" },
-	{ OF_PROT_STUN,  "protection from stunning" },
-	{ OF_BLESSED, "blessed" },
-	{ OF_IMPACT, "earthquake" },
-	{ OF_SLOW_DIGEST, "slow digestion" },
-	{ OF_IMPAIR_HP, "impair hitpoint recovery" },
-	{ OF_IMPAIR_MANA, "impair mana recovery" },
-	{ OF_AFRAID, "fear" },
-	{ OF_FEATHER, "feather falling" },
-	{ OF_REGEN, "regeneration" },
-	{ OF_FREE_ACT, "free action" },
-	{ OF_HOLD_LIFE, "hold life" },
-	{ OF_TELEPATHY, "telepathy" },
-	{ OF_SEE_INVIS, "see invisible" },
-	{ OF_AGGRAVATE, "aggravate" },
-	{ OF_DRAIN_EXP, "drain experience" },
-	{ OF_TELEPORT, "random teleportation" },
+	{ OF_NONE, "" },
+	#define STAT(a, b, c, d, e, f, g, h, i) { OF_##c, i },
+	#include "list-stats.h"
+	#undef STAT
+	#define OF(a, b, c, d, e, f) { OF_##a, e },
+	#include "list-object-flags.h"
+	#undef OF
 };
 
 static const char *e_rune[] =
@@ -110,7 +93,7 @@ static const char *e_rune[] =
 
 static const char *m_rune[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) h,
+	#define STAT(a, b, c, d, e, f, g, h, i) h,
 	#include "list-stats.h"
 	#undef STAT
 	#define OBJ_MOD(a, b, c, d) d,
@@ -129,13 +112,12 @@ static void init_rune(void)
 
 	/* Count runes (combat runes are fixed) */
 	count = COMBAT_RUNE_MAX;
-	for (i = 1; i < OF_MAX; i++) {
+	for (i = 0; i < OF_MAX; i++) {
+		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
 		if (obj_flag_type(i) == OFT_CURSE) continue;
 		count++;
 	}
-	/* Remove when flag names are dealt with better - NRM */
-	assert((count - COMBAT_RUNE_MAX) == N_ELEMENTS(flag_names));
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		count++;
 	for (i = 0; i <= ELEM_HIGH_MAX; i++)
@@ -151,16 +133,12 @@ static void init_rune(void)
 	count = 0;
 	for (i = 0; i < COMBAT_RUNE_MAX; i++)
 		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, c_rune[i] };
-	for (i = 1; i < OF_MAX; i++) {
-		size_t j;
+	for (i = 0; i < OF_MAX; i++) {
+		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
 		if (obj_flag_type(i) == OFT_CURSE) continue;
 
-		/* Find the rune name */
-		for (j = 0; j < N_ELEMENTS(flag_names); j++)
-			if (i == flag_names[j].flag) break;
-		rune_list[count++] = (struct rune) { RUNE_VAR_FLAG, i,
-											 flag_names[j].name };
+		rune_list[count++] = (struct rune) { RUNE_VAR_FLAG, i, f_rune[i].name };
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, m_rune[i] };

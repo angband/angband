@@ -31,10 +31,10 @@
  */
 enum {
 	OF_NONE,
-    #define STAT(a, b, c, d, e, f, g, h) OF_##c,
+	#define STAT(a, b, c, d, e, f, g, h, i) OF_##c,
     #include "list-stats.h"
     #undef STAT
-    #define OF(a, b, c, d, e) OF_##a,
+	#define OF(a, b, c, d, e, f) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -52,7 +52,7 @@ enum {
  * The object modifiers
  */
 enum {
-    #define STAT(a, b, c, d, e, f, g, h) OBJ_MOD_##a,
+	#define STAT(a, b, c, d, e, f, g, h, i) OBJ_MOD_##a,
     #include "list-stats.h"
     #undef STAT
     #define OBJ_MOD(a, b, c, d) OBJ_MOD_##a,
