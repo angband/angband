@@ -570,13 +570,16 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 
 
 /**
- * Add "unseen" to the end of unaware items in stores
+ * Add "unseen" to the end of unaware items in stores,
+ * and "??" to not fully known unflavored items 
  */
 static size_t obj_desc_aware(const struct object *obj, char *buf, size_t max,
 							 size_t end)
 {
 	if (!object_flavor_is_aware(obj))
 		strnfcat(buf, max, &end, " {unseen}");
+	else if (!object_fully_known(obj))
+		strnfcat(buf, max, &end, " {??}");
 
 	return end;
 }
@@ -651,7 +654,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 		end = obj_desc_charges(obj, buf, max, end, mode);
 
 		if (mode & ODESC_STORE)
-			end = obj_desc_aware(obj->known, buf, max, end);
+			end = obj_desc_aware(obj, buf, max, end);
 		else
 			end = obj_desc_inscrip(obj, buf, max, end);
 	}

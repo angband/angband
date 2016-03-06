@@ -30,6 +30,7 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
+#include "obj-properties.h"
 #include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -498,16 +499,21 @@ void wield_all(struct player *p)
  */
 static void player_outfit(struct player *p)
 {
+	int i;
 	const struct start_item *si;
 	struct object *obj, *known_obj;
 
 	/* Currently carrying nothing */
 	p->upkeep->total_weight = 0;
 
-	/* Give the player basic weapon and armour knowledge */
+	/* Give the player obvious object knowledge */
 	p->obj_k->dd = 1;
 	p->obj_k->ds = 1;
 	p->obj_k->ac = 1;
+	for (i = 0; i < OF_MAX; i++) {
+		if (obj_flag_type(i) == OFT_LIGHT) of_on(p->obj_k->flags, i);
+		if (obj_flag_type(i) == OFT_CURSE) of_on(p->obj_k->flags, i);
+	}
 
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
