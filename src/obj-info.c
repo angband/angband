@@ -1276,6 +1276,7 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 								 int *max_recharge, int *failure_chance)
 {
 	random_value timeout = {0, 0, 0, 0};
+	bool store_consumable = object_is_in_store(obj) && tval_is_useable(obj);
 
 	*effect = 0;
 	*min_recharge = 0;
@@ -1283,7 +1284,7 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 	*failure_chance = 0;
 	*aimed = false;
 
-	if (object_effect_is_known(obj)) {
+	if (object_effect_is_known(obj) || store_consumable) {
 		*effect = object_effect(obj);
 		timeout = obj->time;
 		if (effect_aim(*effect))
@@ -1736,7 +1737,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (subjective) describe_origin(tb, obj, terse);
 	if (!terse) describe_flavor_text(tb, obj, ego);
 
-	if (!object_fully_known(obj) &&	(obj->known->notice & OBJ_NOTICE_ASSESSED)) {
+	if (!object_fully_known(obj) &&	(obj->known->notice & OBJ_NOTICE_ASSESSED) && !tval_is_useable(obj)) {
 		textblock_append(tb, "You do not know the full extent of this item's powers.\n");
 		something = true;
 	}
