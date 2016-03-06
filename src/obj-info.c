@@ -250,7 +250,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 		const char *desc = mod_names[i];
 		int val = obj->modifiers[i];
 		if (!val) continue;
-		if (!mod_names[i]) continue;
+		if (!mod_names[i][0]) continue;
 
 		/* Actual object */
 		if (detail && !suppress_details) {
