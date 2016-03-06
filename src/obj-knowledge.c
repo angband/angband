@@ -600,6 +600,127 @@ void player_learn_slay(struct player *p, struct slay *s)
 }
 
 /**
+ * Return true if the rune with the specified index is known to the player.
+ * Set it if indicated. If it is set, then it is automatically known.
+ */
+static bool player_rune_learned_set(struct player *p, size_t i, bool set)
+{
+	struct rune *r = &rune_list[i];
+	switch (r->variety) {
+		/* Combat runes */
+		case RUNE_VAR_COMBAT: {
+			if (r->index == COMBAT_RUNE_TO_A) {
+				if (!p->obj_k->to_a) {
+					if (set) {
+						p->obj_k->to_a = 1;
+						return true;
+					}
+				} else {
+					return true;
+				}
+			} else if (r->index == COMBAT_RUNE_TO_H) {
+				if (!p->obj_k->to_h) {
+					if (set) {
+						p->obj_k->to_h = 1;
+						return true;
+					}
+				} else {
+					return true;
+				}
+			} else if (r->index == COMBAT_RUNE_TO_D) {
+				if (!p->obj_k->to_d) {
+					if (set) {
+						p->obj_k->to_d = 1;
+						return true;
+					}
+				} else {
+					return true;
+				}
+			}
+			return false;
+		}
+		/* Flag runes */
+		case RUNE_VAR_FLAG: {
+			if (of_has(p->obj_k->flags, r->index)) {
+				return true;
+			} else if (set) {
+				return of_on(p->obj_k->flags, r->index);
+			}
+			return false;
+		}
+		/* Mod runes */
+		case RUNE_VAR_MOD: {
+			if (!p->obj_k->modifiers[r->index]) {
+				if (set) {
+					p->obj_k->modifiers[r->index] = 1;
+					return true;
+				}
+			} else {
+				return true;
+			}
+			return false;
+		}
+		/* Element runes */
+		case RUNE_VAR_RESIST: {
+			if (!p->obj_k->el_info[r->index].res_level) {
+				if (set) {
+					p->obj_k->el_info[r->index].res_level = 1;
+					return true;
+				}
+			} else {
+				return true;
+			}
+			return false;
+		}
+		/* Brand runes */
+		case RUNE_VAR_BRAND: {
+			int num;
+			struct brand *b;
+			for (b = game_brands, num = 0; b; b = b->next, num++)
+				if (num == r->index) break;
+			assert(b != NULL);
+
+			/* If the brand was unknown, add it to known brands */
+			if (!player_knows_brand(p, b) && set) {
+				/* Copy the name and element */
+				struct brand *new_b = mem_zalloc(sizeof *new_b);
+				new_b->name = string_make(b->name);
+				new_b->element = b->element;
+
+				/* Attach the new brand */
+				new_b->next = p->obj_k->brands;
+				p->obj_k->brands = new_b;
+			}
+			return player_knows_brand(p, b);
+		}
+		/* Slay runes */
+		case RUNE_VAR_SLAY: {
+			int num;
+			struct slay *s;
+			for (s = game_slays, num = 0; s; s = s->next, num++)
+				if (num == r->index) break;
+			assert(s != NULL);
+
+			/* If the slay was unknown, add it to known slays */
+			if (!player_knows_slay(p, s) && set) {
+				/* Copy the name and race flag */
+				struct slay *new_s = mem_zalloc(sizeof *new_s);
+				new_s->name = string_make(s->name);
+				new_s->race_flag = s->race_flag;
+
+				/* Attach the new slay */
+				new_s->next = p->obj_k->slays;
+				p->obj_k->slays = new_s;
+			}
+			return player_knows_slay(p, s);
+		}
+		default: {
+			return false;
+		}
+	}
+}
+
+/**
  * Learn a given rune
  *
  * \param p is the player
@@ -611,98 +732,7 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 	struct rune *r = &rune_list[i];
 	bool learned = false;
 
-	switch (r->variety) {
-		/* Combat runes */
-	case RUNE_VAR_COMBAT: {
-		if (r->index == COMBAT_RUNE_TO_A) {
-			if (!p->obj_k->to_a) {
-				p->obj_k->to_a = 1;
-				learned = true;
-			}
-		} else if (r->index == COMBAT_RUNE_TO_H) {
-			if (!p->obj_k->to_h) {
-				p->obj_k->to_h = 1;
-				learned = true;
-			}
-		} else if (r->index == COMBAT_RUNE_TO_D) {
-			if (!p->obj_k->to_d) {
-				p->obj_k->to_d = 1;
-				learned = true;
-			}
-		}
-		break;
-	}
-		/* Flag runes */
-	case RUNE_VAR_FLAG: {
-		if (of_on(p->obj_k->flags, r->index))
-			learned = true;
-		break;
-	}
-		/* Mod runes */
-	case RUNE_VAR_MOD: {
-		if (!p->obj_k->modifiers[r->index]) {
-			p->obj_k->modifiers[r->index] = 1;
-			learned = true;
-		}
-		break;
-	}
-		/* Element runes */
-	case RUNE_VAR_RESIST: {
-		if (!p->obj_k->el_info[r->index].res_level) {
-			p->obj_k->el_info[r->index].res_level = 1;
-			learned = true;
-		}
-		break;
-	}
-		/* Brand runes */
-	case RUNE_VAR_BRAND: {
-		int num;
-		struct brand *b;
-		for (b = game_brands, num = 0; b; b = b->next, num++)
-			if (num == r->index) break;
-		assert(b != NULL);
-
-		/* If the brand was unknown, add it to known brands */
-		if (!player_knows_brand(p, b)) {
-			/* Copy the name and element */
-			struct brand *new_b = mem_zalloc(sizeof *new_b);
-			new_b->name = string_make(b->name);
-			new_b->element = b->element;
-
-			/* Attach the new brand */
-			new_b->next = p->obj_k->brands;
-			p->obj_k->brands = new_b;
-			learned = true;
-		}
-		break;
-	}
-		/* Slay runes */
-	case RUNE_VAR_SLAY: {
-		int num;
-		struct slay *s;
-		for (s = game_slays, num = 0; s; s = s->next, num++)
-			if (num == r->index) break;
-		assert(s != NULL);
-
-		/* If the slay was unknown, add it to known slays */
-		if (!player_knows_slay(p, s)) {
-			/* Copy the name and race flag */
-			struct slay *new_s = mem_zalloc(sizeof *new_s);
-			new_s->name = string_make(s->name);
-			new_s->race_flag = s->race_flag;
-
-			/* Attach the new slay */
-			new_s->next = p->obj_k->slays;
-			p->obj_k->slays = new_s;
-			learned = true;
-		}
-		break;
-	}
-	default: {
-		learned = false;
-		break;
-	}
-	}
+    learned = player_rune_learned_set(p, i, true);
 
 	/* Nothing learned */
 	if (!learned) return;
@@ -721,6 +751,39 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 	/* Update knowledge */
 	update_player_object_knowledge(p);
+}
+
+/**
+ * Learn an unknown rune at random. Return true if a rune is learned.
+ */
+bool player_learn_random_rune(struct player *p)
+{
+	int numUnknown = 0;
+	size_t i;
+	size_t newRune;
+	// Count how many unknown runes there are.
+	for (i = 0; i < rune_max; i++) {
+		if (!player_rune_learned_set(player, i, false)) {
+			numUnknown++;
+		}
+	}
+	if (numUnknown == 0) {
+		msg("You already know every rune.");
+		return false;
+	}
+	// Select a random unknown rune to learn.
+	newRune = randint0(numUnknown);
+	for (i = 0; i < rune_max; i++) {
+		if (!player_rune_learned_set(player, i, false)) {
+			if (newRune == 0) {
+				player_learn_rune(player, i, true);
+				break;
+			} else {
+				newRune--;
+			}
+		}
+	}
+	return true;
 }
 
 /**
