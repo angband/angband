@@ -103,7 +103,7 @@ static const struct flag_type flag_names[] =
 
 static const char *e_rune[] =
 {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) c,
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) b,
     #include "list-elements.h"
     #undef ELEM
 };
@@ -713,6 +713,8 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 			msg("You have learned the rune of %s brand.", r->name);
 		else if (r->variety == RUNE_VAR_SLAY)
 			msg("You have learned the rune of slay %s.", r->name);
+		else if (r->variety == RUNE_VAR_RESIST)
+			msg("You have learned the rune of resist %s.", r->name);
 		else
 			msg("You have learned the rune of %s.", r->name);
 	}
