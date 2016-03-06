@@ -53,6 +53,11 @@
  */
 
 /**
+ * ------------------------------------------------------------------------
+ * Object knowledge data
+ * This section covers initialisation, access and cleanup of rune data
+ * ------------------------------------------------------------------------ */
+/**
  * Describes a flag-name pair.
  */
 struct flag_type {
@@ -60,7 +65,7 @@ struct flag_type {
 	const char *name;
 };
 
-static int rune_max;
+static size_t rune_max;
 static struct rune *rune_list;
 static char *c_rune[] = {
 	"enchantment to armor",
@@ -113,6 +118,9 @@ static const char *m_rune[] =
 	#undef OBJ_MOD
 };
 
+/**
+ * Initialise the rune module
+ */
 static void init_rune(void)
 {
 	int i, count, brands = 0, slays = 0;
@@ -164,10 +172,35 @@ static void init_rune(void)
 		rune_list[count++] = (struct rune) { RUNE_VAR_SLAY, slays++, s->name };
 }
 
+/**
+ * Get a rune by variety and index
+ */
+static int rune_index(size_t variety, int index)
+{
+	size_t i;
+
+	/* Look for the rune */
+	for (i = 0; i < rune_max; i++)
+		if ((rune_list[i].variety == variety) && (rune_list[i].index == index))
+			return i;
+
+	/* Can't find it */
+	return -1;
+}
+
+/**
+ * Cleanup the rune module
+ */
 static void cleanup_rune(void)
 {
 	mem_free(rune_list);
 }
+
+struct init_module rune_module = {
+	.name = "rune",
+	.init = init_rune,
+	.cleanup = cleanup_rune
+};
 
 /**
  * ------------------------------------------------------------------------
@@ -501,6 +534,11 @@ void update_player_object_knowledge(struct player *p)
 	int i;
 	struct object *obj;
 
+	/* Hack - REMOVE THIS AFTER COMP 186 - NRM */
+	p->obj_k->dd = 1;
+	p->obj_k->ds = 1;
+	p->obj_k->ac = 1;
+
 	/* Level objects */
 	if (cave)
 		for (i = 0; i < cave->obj_max; i++)
@@ -525,49 +563,6 @@ void update_player_object_knowledge(struct player *p)
  * Object knowledge learners
  * These functions are for increasing player knowledge of object properties
  * ------------------------------------------------------------------------ */
-/**
- * Learn a single flag
- *
- * \param p is the player
- * \param flag is the object flag 
- */
-void player_learn_flag(struct player *p, int flag)
-{
-	/* If the flag was unknown, set it */
-	if (of_on(p->obj_k->flags, flag))
-		update_player_object_knowledge(p);
-}
-
-/**
- * Learn a single modifier
- *
- * \param p is the player
- * \param mod is the modifier
- */
-void player_learn_mod(struct player *p, int mod)
-{
-	/* If the modifier was unknown, set it */
-	if (p->obj_k->modifiers[mod] == 0) {
-		p->obj_k->modifiers[mod] = 1;
-		update_player_object_knowledge(p);
-	}
-}
-
-/**
- * Learn a single element
- *
- * \param p is the player
- * \param element is the element about which all info is being learnt
- */
-void player_learn_element(struct player *p, int element)
-{
-	/* If the element was unknown, set it */
-	if (p->obj_k->el_info[element].res_level == 0) {
-		p->obj_k->el_info[element].res_level = 1;
-		update_player_object_knowledge(p);
-	}
-}
-
 /**
  * Learn a single elemental brand, assuming it is unknown
  *
@@ -605,49 +600,13 @@ void player_learn_slay(struct player *p, struct slay *s)
 }
 
 /**
- * Learn to-armour bonus
- *
- * \param p is the player
- */
-void player_learn_to_a(struct player *p)
-{
-	if (p->obj_k->to_a) return;
-	p->obj_k->to_a = 1;
-	update_player_object_knowledge(p);
-}
-
-/**
- * Learn to-hit bonus
- *
- * \param p is the player
- */
-void player_learn_to_h(struct player *p)
-{
-	if (p->obj_k->to_h) return;
-	p->obj_k->to_h = 1;
-	update_player_object_knowledge(p);
-}
-
-/**
- * Learn to-damage bonus
- *
- * \param p is the player
- */
-void player_learn_to_d(struct player *p)
-{
-	if (p->obj_k->to_d) return;
-	p->obj_k->to_d = 1;
-	update_player_object_knowledge(p);
-}
-
-/**
  * Learn a given rune
  *
  * \param p is the player
  * \param i is the rune index
  * \param message is whether or not to print a message
  */
-void player_learn_rune(struct player *p, int i, bool message)
+static void player_learn_rune(struct player *p, size_t i, bool message)
 {
 	struct rune *r = &rune_list[i];
 	bool learned = false;
@@ -751,11 +710,11 @@ void player_learn_rune(struct player *p, int i, bool message)
 	/* Give a message */
 	if (message) {
 		if (r->variety == RUNE_VAR_BRAND)
-			msg("You have learned the rune of %s brand", r->name);
+			msg("You have learned the rune of %s brand.", r->name);
 		else if (r->variety == RUNE_VAR_SLAY)
-			msg("You have learned the rune of slay %s", r->name);
+			msg("You have learned the rune of slay %s.", r->name);
 		else
-			msg("You have learned the rune of %s", r->name);
+			msg("You have learned the rune of %s.", r->name);
 	}
 
 	/* Update knowledge */
@@ -769,7 +728,7 @@ void player_learn_rune(struct player *p, int i, bool message)
  */
 void player_learn_everything(struct player *p)
 {
-	int i;
+	size_t i;
 
 	for (i = 0; i < rune_max; i++)
 		player_learn_rune(p, i, false);
@@ -796,7 +755,10 @@ void equip_learn_on_defend(struct player *p)
 		struct object *obj = slot_object(p, i);
 		if (obj) {
 			assert(obj->known);
-			if (obj->to_a) player_learn_to_a(p);
+			if (obj->to_a) {
+				int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_A);
+				player_learn_rune(p, index, true);
+			}
 			if (p->obj_k->to_a) return;
 		}
 	}
@@ -820,7 +782,10 @@ void equip_learn_on_ranged_attack(struct player *p)
 		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj) {
 			assert(obj->known);
-			if (obj->to_h) player_learn_to_h(p);
+			if (obj->to_h) {
+				int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
+				player_learn_rune(p, index, true);
+			}
 			if (p->obj_k->to_h) return;
 		}
 	}
@@ -847,8 +812,14 @@ void equip_learn_on_melee_attack(struct player *p)
 		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj) {
 			assert(obj->known);
-			if (obj->to_h) player_learn_to_h(p);
-			if (obj->to_d) player_learn_to_d(p);
+			if (obj->to_h) {
+				int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
+				player_learn_rune(p, index, true);
+			}
+			if (obj->to_d) {
+				int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_D);
+				player_learn_rune(p, index, true);
+			}
 			if (p->obj_k->to_h && p->obj_k->to_d) return;
 		}
 	}
@@ -882,11 +853,11 @@ void equip_learn_flag(struct player *p, int flag)
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
-			/* Learn the flag */
-			player_learn_flag(p, flag);
-
 			/* Message */
 			flag_message(flag, o_name);
+
+			/* Learn the flag */
+			player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
 			return;
 		}
 	}
@@ -917,11 +888,11 @@ void equip_learn_element(struct player *p, int element)
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
-			/* Learn the element properties */
-			player_learn_element(p, element);
-
 			/* Message */
 			msg("Your %s glows.", o_name);
+
+			/* Learn the element properties */
+			player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), true);
 			return;
 		}
 	}
@@ -949,7 +920,7 @@ void equip_learn_after_time(struct player *p)
 	/* Attempt to learn every flag */
 	for (flag = of_next(f, FLAG_START); flag != FLAG_END;
 		 flag = of_next(f, flag + 1))
-		player_learn_flag(p, flag);
+		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
 }
 
 /**
@@ -1040,7 +1011,7 @@ void mod_message(struct object *obj, int mod)
  */
 int object_find_unknown_rune(struct player *p, struct object *obj)
 {
-	int i, num = 0;
+	size_t i, num = 0;
 	int *poss_runes = mem_zalloc(rune_max * sizeof(int));
 
 	if (object_runes_known(obj)) return -1;
@@ -1186,7 +1157,7 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 		/* Learn the flag */
-		player_learn_flag(p, flag);
+		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
 
 		/* Message */
 		if (p->upkeep->playing) flag_message(flag, o_name);
@@ -1195,16 +1166,12 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	/* Learn all modifiers */
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		if (obj->modifiers[i] && !p->obj_k->modifiers[i]) {
-			/* Learn the mod */
-			player_learn_mod(p, i);
-
 			/* Message */
 			if (p->upkeep->playing) mod_message(obj, i);
-		}
 
-	/* Learn more if overall knowledge is too low */
-	while (player_can_learn_unknown_rune(p) && !object_runes_known(obj))
-		object_learn_unknown_rune(p, obj);
+			/* Learn the mod */
+			player_learn_rune(p, rune_index(RUNE_VAR_MOD, i), true);
+		}
 }
 
 /**
@@ -1239,8 +1206,14 @@ void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
 		return;
 
 	assert(obj->known);
-	if (obj->to_h) player_learn_to_h(p);
-	if (obj->to_d) player_learn_to_d(p);
+	if (obj->to_h) {
+		int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
+		player_learn_rune(p, index, true);
+	}
+	if (obj->to_d) {
+		int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_D);
+		player_learn_rune(p, index, true);
+	}
 }
 
 /**
@@ -1338,83 +1311,3 @@ void object_flavor_tried(struct object *obj)
 	assert(obj->kind);
 	obj->kind->tried = true;
 }
-
-/**
- * ------------------------------------------------------------------------
- * Functions for assessing how much knowledge the player has
- * ------------------------------------------------------------------------ */
-/**
- * Count the object properties ("runes") the player knows, or all of them
- */
-int count_runes(struct player *p, bool all)
-{
-	int i, count = 0;
-	struct brand *b;
-	struct slay *s;
-
-	if (p->obj_k->to_a || all) count++;
-	if (p->obj_k->to_h || all) count++;
-	if (p->obj_k->to_d || all) count++;
-	for (i = 1; i < OF_MAX; i++)
-		if (of_has(p->obj_k->flags, i) || all) count++;
-	for (i = 0; i < OBJ_MOD_MAX; i++)
-		if (p->obj_k->modifiers[i]  || all) count++;
-	for (i = 0; i < ELEM_MAX; i++)
-		if (p->obj_k->el_info[i].res_level || all) count++;
-	for (b = game_brands; b; b = b->next) 
-		if (player_knows_brand(p, b) || all) count++;
-	for (s = game_slays; s; s = s->next)
-		if (player_knows_slay(p, s) || all) count++;
-
-	return count;
-}
-
-/**
- * Count the object flavors the player knows, or all of them
- */
-int count_flavors(struct player *p, bool all)
-{
-	int i, count = 0;
-
-	for (i = 0; i < z_info->k_max; i++) {
-		struct object_kind *kind = &k_info[i];
-
-		/* Skip empty and flavorless objects, and jewellery */
-		if (!kind->name) continue;
-		if (!kind->flavor) continue;
-		if ((kind->tval == TV_RING) || (kind->tval == TV_AMULET)) continue;
-
-		/* Count */
-		if (kind->aware || all) count++;
-	}
-
-	return count;
-}
-
-
-/**
- * Does the player's rune knowledge need updating?
- */
-bool player_can_learn_unknown_rune(struct player *p)
-{
-	if (count_runes(p, false) * PY_KNOW_LEVEL < count_runes(p, true) * p->lev)
-		return true;
-	return false;
-}
-
-/**
- * Does the player's flavor knowledge need updating?
- */
-bool player_can_learn_unknown_flavor(struct player *p)
-{
-	if (count_flavors(p, false) * PY_MAX_LEVEL <
-		count_flavors(p, true) * p->lev)
-		return true;
-	return false;
-}
-
-struct init_module rune_module = {
-	.name = "rune",
-	.init = init_rune,
-	.cleanup = cleanup_rune
-};
