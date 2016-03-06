@@ -518,7 +518,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* ID the object by use if appropriate, otherwise, mark it as "tried" */
-	if (ident && !was_aware) {
+	if (!was_aware && !tval_is_jewelry(obj)) {
 		object_learn_on_use(player, obj);
 	} else if (used) {
 		object_flavor_tried(obj);
