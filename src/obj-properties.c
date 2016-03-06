@@ -30,11 +30,11 @@
 static const struct object_flag object_flag_table[] =
 {
 	{ OF_NONE, OFID_NONE, OFT_NONE, 0, "NONE" },
-	#define STAT(a, b, c, d, e, f, g, h)  \
+	#define STAT(a, b, c, d, e, f, g, h, i)							\
 		{ OF_##c, OFID_NORMAL, OFT_SUST, d, "Your %s glows." },
 	#include "list-stats.h"
 	#undef STAT
-	#define OF(a, b, c, d, e) { OF_##a, b, c, d, e },
+	#define OF(a, b, c, d, e, f) { OF_##a, b, c, d, f },
 	#include "list-object-flags.h"
 	#undef OF
 };
@@ -45,10 +45,10 @@ static const struct object_flag object_flag_table[] =
 static const char *flag_names[] =
 {
 	"NONE",
-    #define STAT(a, b, c, d, e, f, g, h) #c,
+	#define STAT(a, b, c, d, e, f, g, h, i) #c,
     #include "list-stats.h"
     #undef STAT
-    #define OF(a, b, c, d, e) #a,
+	#define OF(a, b, c, d, e, f) #a,
     #include "list-object-flags.h"
     #undef OF
     ""
@@ -60,7 +60,7 @@ static const char *flag_names[] =
  */
 static const struct object_mod object_mod_table[] =
 {
-    #define STAT(a, b, c, d, e, f, g, h) { OBJ_MOD_##a, b, e, h },
+	#define STAT(a, b, c, d, e, f, g, h, i) { OBJ_MOD_##a, b, e, h },
     #include "list-stats.h"
     #undef STAT
     #define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, b, c, d },
@@ -73,7 +73,7 @@ static const struct object_mod object_mod_table[] =
  */
 static const char *mod_names[] =
 {
-    #define STAT(a, b, c, d, e, f, g, h) #a,
+	#define STAT(a, b, c, d, e, f, g, h, i) #a,
     #include "list-stats.h"
     #undef STAT
     #define OBJ_MOD(a, b, c, d) #a,

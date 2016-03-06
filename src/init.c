@@ -103,17 +103,17 @@ static const char *slots[] = {
 
 static const char *obj_flags[] = {
 	"NONE",
-	#define STAT(a, b, c, d, e, f, g, h) #c,
+	#define STAT(a, b, c, d, e, f, g, h, i) #c,
 	#include "list-stats.h"
 	#undef STAT
-	#define OF(a, b, c, d, e) #a,
+	#define OF(a, b, c, d, e, f) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	NULL
 };
 
 static const char *obj_mods[] = {
-	#define STAT(a, b, c, d, e, f, g, h) #a,
+	#define STAT(a, b, c, d, e, f, g, h, i) #a,
 	#include "list-stats.h"
 	#undef STAT
 	#define OBJ_MOD(a, b, c, d) #a,
