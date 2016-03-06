@@ -496,7 +496,7 @@ void player_know_object(struct player *p, struct object *obj)
  *
  * \param p is the player
  */
-static void update_player_object_knowledge(struct player *p)
+void update_player_object_knowledge(struct player *p)
 {
 	int i;
 	struct object *obj;
@@ -569,49 +569,39 @@ void player_learn_element(struct player *p, int element)
 }
 
 /**
- * Learn a single elemental brand
+ * Learn a single elemental brand, assuming it is unknown
  *
  * \param p is the player
  * \param b is the brand being learnt (known for any multiplier)
  */
 void player_learn_brand(struct player *p, struct brand *b)
 {
-	/* If the brand was unknown, add it to known brands */
-	if (!player_knows_brand(p, b)) {
-		/* Copy the name and element */
-		struct brand *new_b = mem_zalloc(sizeof *new_b);
-		new_b->name = string_make(b->name);
-		new_b->element = b->element;
+	/* Copy the name and element */
+	struct brand *new_b = mem_zalloc(sizeof *new_b);
+	new_b->name = string_make(b->name);
+	new_b->element = b->element;
 
-		/* Attach the new brand */
-		new_b->next = p->obj_k->brands;
-		p->obj_k->brands = new_b;
-
-		update_player_object_knowledge(p);
-	}
+	/* Attach the new brand */
+	new_b->next = p->obj_k->brands;
+	p->obj_k->brands = new_b;
 }
 
 /**
- * Learn a single slay
+ * Learn a single slay, assuming it is unknown
  *
  * \param p is the player
  * \param s is the slay being learnt (known for any multiplier)
  */
 void player_learn_slay(struct player *p, struct slay *s)
 {
-	/* If the slay was unknown, add it to known slays */
-	if (!player_knows_slay(p, s)) {
-		/* Copy the name and race flag */
-		struct slay *new_s = mem_zalloc(sizeof *new_s);
-		new_s->name = string_make(s->name);
-		new_s->race_flag = s->race_flag;
+	/* Copy the name and race flag */
+	struct slay *new_s = mem_zalloc(sizeof *new_s);
+	new_s->name = string_make(s->name);
+	new_s->race_flag = s->race_flag;
 
-		/* Attach the new slay */
-		new_s->next = p->obj_k->slays;
-		p->obj_k->slays = new_s;
-
-		update_player_object_knowledge(p);
-	}
+	/* Attach the new slay */
+	new_s->next = p->obj_k->slays;
+	p->obj_k->slays = new_s;
 }
 
 /**
@@ -651,6 +641,128 @@ void player_learn_to_d(struct player *p)
 }
 
 /**
+ * Learn a given rune
+ *
+ * \param p is the player
+ * \param i is the rune index
+ * \param message is whether or not to print a message
+ */
+void player_learn_rune(struct player *p, int i, bool message)
+{
+	struct rune *r = &rune_list[i];
+	bool learned = false;
+
+	switch (r->variety) {
+		/* Combat runes */
+	case RUNE_VAR_COMBAT: {
+		if (r->index == COMBAT_RUNE_TO_A) {
+			if (!p->obj_k->to_a) {
+				p->obj_k->to_a = 1;
+				learned = true;
+			}
+		} else if (r->index == COMBAT_RUNE_TO_H) {
+			if (!p->obj_k->to_h) {
+				p->obj_k->to_h = 1;
+				learned = true;
+			}
+		} else if (r->index == COMBAT_RUNE_TO_D) {
+			if (!p->obj_k->to_d) {
+				p->obj_k->to_d = 1;
+				learned = true;
+			}
+		}
+		break;
+	}
+		/* Flag runes */
+	case RUNE_VAR_FLAG: {
+		if (of_on(p->obj_k->flags, r->index))
+			learned = true;
+		break;
+	}
+		/* Mod runes */
+	case RUNE_VAR_MOD: {
+		if (!p->obj_k->modifiers[r->index]) {
+			p->obj_k->modifiers[r->index] = 1;
+			learned = true;
+		}
+		break;
+	}
+		/* Element runes */
+	case RUNE_VAR_RESIST: {
+		if (!p->obj_k->el_info[r->index].res_level) {
+			p->obj_k->el_info[r->index].res_level = 1;
+			learned = true;
+		}
+		break;
+	}
+		/* Brand runes */
+	case RUNE_VAR_BRAND: {
+		int num;
+		struct brand *b;
+		for (b = game_brands, num = 0; b; b = b->next, num++)
+			if (num == r->index) break;
+		assert(b != NULL);
+
+		/* If the brand was unknown, add it to known brands */
+		if (!player_knows_brand(p, b)) {
+			/* Copy the name and element */
+			struct brand *new_b = mem_zalloc(sizeof *new_b);
+			new_b->name = string_make(b->name);
+			new_b->element = b->element;
+
+			/* Attach the new brand */
+			new_b->next = p->obj_k->brands;
+			p->obj_k->brands = new_b;
+			learned = true;
+		}
+		break;
+	}
+		/* Slay runes */
+	case RUNE_VAR_SLAY: {
+		int num;
+		struct slay *s;
+		for (s = game_slays, num = 0; s; s = s->next, num++)
+			if (num == r->index) break;
+		assert(s != NULL);
+
+		/* If the slay was unknown, add it to known slays */
+		if (!player_knows_slay(p, s)) {
+			/* Copy the name and race flag */
+			struct slay *new_s = mem_zalloc(sizeof *new_s);
+			new_s->name = string_make(s->name);
+			new_s->race_flag = s->race_flag;
+
+			/* Attach the new slay */
+			new_s->next = p->obj_k->slays;
+			p->obj_k->slays = new_s;
+			learned = true;
+		}
+		break;
+	}
+	default: {
+		learned = false;
+		break;
+	}
+	}
+
+	/* Nothing learned */
+	if (!learned) return;
+
+	/* Give a message */
+	if (message) {
+		if (r->variety == RUNE_VAR_BRAND)
+			msg("You have learned the rune of %s brand", r->name);
+		else if (r->variety == RUNE_VAR_SLAY)
+			msg("You have learned the rune of slay %s", r->name);
+		else
+			msg("You have learned the rune of %s", r->name);
+	}
+
+	/* Update knowledge */
+	update_player_object_knowledge(p);
+}
+
+/**
  * Learn absolutely everything
  *
  * \param p is the player
@@ -658,41 +770,9 @@ void player_learn_to_d(struct player *p)
 void player_learn_everything(struct player *p)
 {
 	int i;
-	struct brand *b = game_brands;
-	struct slay *s = game_slays;
 
-	player_learn_to_a(p);
-	player_learn_to_h(p);
-	player_learn_to_d(p);
-	for (i = 1; i < OF_MAX; i++)
-		player_learn_flag(p, i);
-	for (i = 0; i < OBJ_MOD_MAX; i++)
-		player_learn_mod(p, i);
-	for (i = 0; i < ELEM_MAX; i++)
-		player_learn_element(p, i);
-
-	/* Cover all game brands and slays */
-	free_brand(p->obj_k->brands);
-	p->obj_k->brands = NULL;
-	while (b) {
-		struct brand *new_b = mem_zalloc(sizeof *new_b);
-		new_b->name = string_make(b->name);
-		new_b->element = b->element;
-		new_b->next = p->obj_k->brands;
-		p->obj_k->brands = new_b;
-		b = b->next;
-	}
-	free_slay(p->obj_k->slays);
-	p->obj_k->slays = NULL;
-	while (s) {
-		struct slay *new_s = mem_zalloc(sizeof *new_s);
-		new_s->name = string_make(s->name);
-		new_s->race_flag = s->race_flag;
-		new_s->next = p->obj_k->slays;
-		p->obj_k->slays = new_s;
-		s = s->next;
-	}
-	update_player_object_knowledge(p);
+	for (i = 0; i < rune_max; i++)
+		player_learn_rune(p, i, false);
 }
 
 /**
@@ -1049,58 +1129,14 @@ int object_find_unknown_rune(struct player *p, struct object *obj)
  */
 void object_learn_unknown_rune(struct player *p, struct object *obj)
 {
-	struct rune *r;
-
 	/* Get a random unknown rune from the object */
 	int i = object_find_unknown_rune(p, obj);
 
 	/* No unknown runes */
 	if (i < 0) return;
 
-	/* Get and analyse the rune */
-	r = &rune_list[i];
-	switch (r->variety) {
-	case RUNE_VAR_COMBAT: {
-		if (r->index == COMBAT_RUNE_TO_A)
-			player_learn_to_a(p);
-		else if (r->index == COMBAT_RUNE_TO_H)
-			player_learn_to_h(p);
-		else if (r->index == COMBAT_RUNE_TO_D)
-			player_learn_to_d(p);
-			break;
-	}
-	case RUNE_VAR_FLAG: {
-		player_learn_flag(p, r->index);
-		break;
-	}
-	case RUNE_VAR_MOD: {
-		player_learn_mod(p, r->index);
-		break;
-	}
-	case RUNE_VAR_RESIST: {
-		player_learn_element(p, r->index);
-		break;
-	}
-	case RUNE_VAR_BRAND: {
-		int num;
-		struct brand *b;
-		for (b = game_brands, num = 0; b; b = b->next, num++)
-			if (num == r->index) break;
-		assert(b != NULL);
-		player_learn_brand(p, b);
-		break;
-	}
-	case RUNE_VAR_SLAY: {
-		int num;
-		struct slay *s;
-		for (s = game_slays, num = 0; s; s = s->next, num++)
-			if (num == r->index) break;
-		assert(s != NULL);
-		player_learn_slay(p, s);
-		break;
-	}
-	default: break;
-	}
+	/* Learn the rune */
+	player_learn_rune(p, i, true);
 }
 
 /**
