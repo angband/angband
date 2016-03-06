@@ -564,42 +564,6 @@ void update_player_object_knowledge(struct player *p)
  * These functions are for increasing player knowledge of object properties
  * ------------------------------------------------------------------------ */
 /**
- * Learn a single elemental brand, assuming it is unknown
- *
- * \param p is the player
- * \param b is the brand being learnt (known for any multiplier)
- */
-void player_learn_brand(struct player *p, struct brand *b)
-{
-	/* Copy the name and element */
-	struct brand *new_b = mem_zalloc(sizeof *new_b);
-	new_b->name = string_make(b->name);
-	new_b->element = b->element;
-
-	/* Attach the new brand */
-	new_b->next = p->obj_k->brands;
-	p->obj_k->brands = new_b;
-}
-
-/**
- * Learn a single slay, assuming it is unknown
- *
- * \param p is the player
- * \param s is the slay being learnt (known for any multiplier)
- */
-void player_learn_slay(struct player *p, struct slay *s)
-{
-	/* Copy the name and race flag */
-	struct slay *new_s = mem_zalloc(sizeof *new_s);
-	new_s->name = string_make(s->name);
-	new_s->race_flag = s->race_flag;
-
-	/* Attach the new slay */
-	new_s->next = p->obj_k->slays;
-	p->obj_k->slays = new_s;
-}
-
-/**
  * Learn a given rune
  *
  * \param p is the player
@@ -1194,6 +1158,60 @@ void object_learn_on_use(struct player *p, struct object *obj)
 
 	p->upkeep->notice |= PN_IGNORE;
 }
+
+/**
+ * Notice a brand on a particular object which affects a particular monster.
+ *
+ * \param obj is the object on which we are noticing brands
+ * \param mon the monster we are hitting
+ * \param b is the brand we are learning
+ */
+void object_learn_brand(struct player *p, struct object *obj, struct brand *b)
+{
+	/* Learn about the brand */
+	if (!player_knows_brand(player, b)) {
+		int num = 0;
+		struct brand *b_check = game_brands;
+
+		/* Find the rune index */
+		while (b_check && !streq(b_check->name, b->name)) {
+			num++;
+			b_check = b_check->next;
+		}
+		assert(b_check);
+
+		/* Learn the rune */
+		player_learn_rune(p, rune_index(RUNE_VAR_BRAND, num), true);
+		update_player_object_knowledge(p);
+	}
+}
+
+/**
+ * Notice any slays on a particular object which affect a particular monster.
+ *
+ * \param obj is the object on which we are noticing slays
+ * \param mon the monster we are trying to slay
+ */
+void object_learn_slay(struct player *p, struct object *obj, struct slay *s)
+{
+	/* Learn about the slay */
+	if (!player_knows_slay(player, s)) {
+		int num = 0;
+		struct slay *s_check = game_slays;
+
+		/* Find the rune index */
+		while (s_check && !streq(s_check->name, s->name)) {
+			num++;
+			s_check = s_check->next;
+		}
+		assert(s_check);
+
+		/* Learn the rune */
+		player_learn_rune(p, rune_index(RUNE_VAR_SLAY, num), true);
+		update_player_object_knowledge(p);
+	}
+}
+
 
 /**
  * Learn attack bonus on making a ranged attack.
