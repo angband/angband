@@ -286,6 +286,26 @@ bool object_is_known_artifact(const struct object *obj)
 }
 
 /**
+ * Checks whether the object is known to be an artifact
+ *
+ * \param obj is the object
+ */
+bool object_is_in_store(const struct object *obj)
+{
+	int i;
+	struct object *obj1;
+
+	/* Check all the store objects */
+	for (i = 0; i < MAX_STORES; i++) {
+		struct store *s = &stores[i];
+		for (obj1 = s->stock; obj1; obj1 = obj1->next)
+			if (obj1 == obj) return true;
+	}
+
+	return false;
+}
+
+/**
  * Check if all the runes on an object are known to the player
  *
  * \param obj is the object
@@ -1279,7 +1299,8 @@ bool object_flavor_was_tried(const struct object *obj)
  */
 void object_flavor_aware(struct object *obj)
 {
-	int y, x;
+	int y, x, i;
+	struct object *obj1;
 
 	assert(obj->known);
 	if (obj->kind->aware) return;
@@ -1290,6 +1311,17 @@ void object_flavor_aware(struct object *obj)
 	if (kind_is_ignored_unaware(obj->kind))
 		kind_ignore_when_aware(obj->kind);
 	player->upkeep->notice |= PN_IGNORE;
+
+	/* Update player objects */
+	for (obj1 = player->gear; obj1; obj1 = obj1->next)
+		object_set_base_known(obj1);
+
+	/* Store objects */
+	for (i = 0; i < MAX_STORES; i++) {
+		struct store *s = &stores[i];
+		for (obj1 = s->stock; obj1; obj1 = obj1->next)
+			object_set_base_known(obj1);
+	}
 
 	/* Quit if no dungeon yet */
 	if (!cave) return;
