@@ -871,7 +871,7 @@ void equip_learn_element(struct player *p, int element)
  */
 void equip_learn_after_time(struct player *p)
 {
-	int flag;
+	int i, flag;
 	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
 
 	/* Get the timed flags */
@@ -880,13 +880,29 @@ void equip_learn_after_time(struct player *p)
 	/* Get the unknown timed flags, and return if there are none */
 	object_flags(p->obj_k, f);
 	of_negate(f);
-	of_inter(f, timed_mask);
-	if (of_is_empty(f)) return;
+	of_inter(timed_mask, f);
+	if (of_is_empty(timed_mask)) return;
 
-	/* Attempt to learn every flag */
-	for (flag = of_next(f, FLAG_START); flag != FLAG_END;
-		 flag = of_next(f, flag + 1))
-		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+	/* All wielded items eligible */
+	for (i = 0; i < p->body.count; i++) {
+		char o_name[80];
+		struct object *obj = slot_object(p, i);
+		if (!obj) continue;
+		assert(obj->known);
+
+		/* Get the unknown timed flags for this object */
+		object_flags(obj, f);
+		of_inter(f, timed_mask);
+
+		/* Attempt to learn every flag */
+		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+		for (flag = of_next(f, FLAG_START); flag != FLAG_END;
+			 flag = of_next(f, flag + 1)) {
+			if (!of_has(p->obj_k->flags, flag))
+				flag_message(flag, o_name);
+			player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+		}
+	}
 }
 
 /**
