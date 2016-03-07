@@ -1869,8 +1869,9 @@ void do_cmd_sell(struct command *cmd)
 	/* Get the "apparent" value */
 	dummy = object_value(&dummy_item, amt, false);
 
-	/* Know flavor of original object */
-	object_flavor_aware(obj);
+	/* Know flavor of consumables */
+	if (obj->kind->flavor && !tval_is_jewelry(obj))
+		object_flavor_aware(obj);
 
 	/* Take a proper copy of the now known-about object. */
 	sold_item = gear_object_for_use(obj, amt, false, &none_left);

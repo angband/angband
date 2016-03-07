@@ -542,7 +542,7 @@ static void player_outfit(struct player *p)
 		obj->known->notice |= OBJ_NOTICE_ASSESSED;
 
 		/* Deduct the cost of the item from starting cash */
-		p->au -= object_value(obj, obj->number, false);
+		p->au -= object_value_real(obj, obj->number, false);
 
 		/* Carry the item */
 		inven_carry(p, obj, true, false);

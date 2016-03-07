@@ -420,8 +420,9 @@ void object_set_base_known(struct object *obj)
 	if (tval_is_launcher(obj))
 		obj->known->pval = obj->pval;
 
-	/* Aware flavours get info now */
-	if (obj->kind->flavor && obj->kind->aware) {
+	/* Aware flavours and unflavored non-wearables get info now */
+	if ((obj->kind->aware && obj->kind->flavor) ||
+		(!tval_is_wearable(obj) && !obj->kind->flavor)) {
 		obj->known->pval = obj->pval;
 		obj->known->effect = obj->effect;
 	}
