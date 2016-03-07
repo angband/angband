@@ -517,11 +517,11 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Use the turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* ID the object by use if appropriate, otherwise, mark it as "tried" */
-	if (!was_aware && !tval_is_jewelry(obj)) {
+	/* Possibly learn wearables by activation, ID anything else on single use */
+	if (tval_is_wearable(obj)) {
+		update_player_object_knowledge(player);
+	} else if (!was_aware) {
 		object_learn_on_use(player, obj);
-	} else if (used) {
-		object_flavor_tried(obj);
 	}
 
 	/* Chargeables act differently to single-used items when not used up */
