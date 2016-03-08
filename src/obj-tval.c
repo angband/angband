@@ -106,6 +106,11 @@ bool tval_is_pointy(const struct object *obj)
 	return obj->tval == TV_SWORD || obj->tval == TV_POLEARM;
 }
 
+bool tval_is_digger(const struct object *obj)
+{
+	return obj->tval == TV_DIGGING;
+}
+
 bool tval_can_have_nourishment(const struct object *obj)
 {
 	return obj->tval == TV_FOOD || obj->tval == TV_POTION ||

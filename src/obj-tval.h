@@ -1,6 +1,6 @@
 /**
-   \file obj-tval.h
-   \brief Wrapper functions for tvals.
+ * \file obj-tval.h
+ * \brief Wrapper functions for tvals.
  *
  * Copyright (c) 2014 Ben Semmler
  *
@@ -67,6 +67,7 @@ bool tval_is_melee_weapon(const struct object *obj);
 bool tval_is_money(const struct object *obj);
 bool tval_is_money_k(const struct object_kind *kind);
 bool tval_is_pointy(const struct object *obj);
+bool tval_is_digger(const struct object *obj);
 bool tval_is_potion(const struct object *obj);
 bool tval_is_ring(const struct object *obj);
 bool tval_is_rod(const struct object *obj);

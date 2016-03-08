@@ -1546,8 +1546,12 @@ static void calc_torch(struct player *p, struct player_state *state,
 		/* Skip empty slots */
 		if (!obj) continue;
 
-		/* Light radius is now a modifier */
-		amt = obj->modifiers[OBJ_MOD_LIGHT];
+		/* Light radius - innate plus modifier */
+		if (strstr(obj->kind->name, "Torch"))
+			amt = 1;
+		else if (strstr(obj->kind->name, "Lantern"))
+			amt = 2;
+		amt += obj->modifiers[OBJ_MOD_LIGHT];
 
 		/* Cursed objects emit no light */
 		if (of_has(obj->flags, OF_LIGHT_CURSE))
@@ -1751,6 +1755,8 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* Scan the equipment */
 	for (i = 0; i < p->body.count; i++) {
+		int dig = 0;
+
 		obj = slot_object(p, i);
 
 		/* Skip non-objects */
@@ -1784,8 +1790,17 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		/* Affect infravision */
 		state->see_infra += obj->modifiers[OBJ_MOD_INFRA];
 
-		/* Affect digging (factor of 20) */
-		state->skills[SKILL_DIGGING] += (obj->modifiers[OBJ_MOD_TUNNEL] * 20);
+		/* Affect digging (innate effect, plus bonus, times 20) */
+		if (tval_is_digger(obj)) {
+			if (strstr(obj->kind->name, "Shovel"))
+				dig = 1;
+			else if (strstr(obj->kind->name, "Pick"))
+				dig = 2;
+			else if (strstr(obj->kind->name, "Mattock"))
+				dig = 3;
+		}
+		dig += obj->modifiers[OBJ_MOD_TUNNEL];
+		state->skills[SKILL_DIGGING] += (dig * 20);
 
 		/* Affect speed */
 		state->speed += obj->modifiers[OBJ_MOD_SPEED];

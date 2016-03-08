@@ -141,7 +141,6 @@ properties:1:22:2
 alloc:70:1 to 40
 combat:0:1d1:0:0:0
 flags:BURNS_OUT | EASY_KNOW
-values:LIGHT[1]
 
 name:3:& Lantern~
 graphics:~:U
@@ -150,7 +149,6 @@ properties:3:50:35
 alloc:70:5 to 100
 combat:0:1d1:0:0:0
 flags:TAKES_FUEL | EASY_KNOW | IGNORE_FIRE
-values:LIGHT[2]
 
 name:4:& Flask~ of oil
 graphics:!:y
@@ -881,7 +879,6 @@ type:digger
 properties:1:60:10
 alloc:20:5 to 100
 combat:0:1d2:0:0:0
-values:TUNNEL[1]
 
 name:121:& Pick~
 graphics:\:g
@@ -889,7 +886,6 @@ type:digger
 properties:30:180:300
 alloc:20:30 to 100
 combat:0:1d3:0:0:0
-values:TUNNEL[2]
 
 name:122:& Mattock~
 graphics:\:D
@@ -897,7 +893,6 @@ type:digger
 properties:50:250:700
 alloc:20:50 to 100
 combat:0:1d8:0:0:0
-values:TUNNEL[3]
 
 
 ##### Armor #####
