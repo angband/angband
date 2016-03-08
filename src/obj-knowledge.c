@@ -69,7 +69,7 @@ static size_t rune_max;
 static struct rune *rune_list;
 static char *c_rune[] = {
 	"enchantment to armor",
-	"enchatment to hit",
+	"enchantment to hit",
 	"enchantment to damage"
 };
 

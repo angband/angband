@@ -557,8 +557,7 @@ static void player_outfit(struct player *p)
 	wield_all(p);
 
 	/* Update knowledge */
-	for (obj = p->gear; obj; obj = obj->next)
-		player_know_object(p, obj);
+	update_player_object_knowledge(p);
 }
 
 

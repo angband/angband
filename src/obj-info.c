@@ -238,7 +238,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 
 	/* See what we've got */
 	for (i = 0; i < N_ELEMENTS(mod_names); i++)
-		if (obj->known->modifiers[i] && mod_names[i][0]) {
+		if (obj->known->modifiers[i]) {
 			count++;
 			detail = true;
 		}
@@ -250,7 +250,6 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 		const char *desc = mod_names[i];
 		int val = obj->modifiers[i];
 		if (!val) continue;
-		if (!mod_names[i][0]) continue;
 
 		/* Actual object */
 		if (detail && !suppress_details) {
@@ -1107,7 +1106,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 		return false;
 
 	/* Player has no digging info */
-	if (!obj->known->modifiers[OBJ_MOD_TUNNEL])
+	if (!tval_is_digger(obj) && !obj->known->modifiers[OBJ_MOD_TUNNEL])
 		return false;
 
 	/* Pretend we're wielding the object */
@@ -1198,13 +1197,17 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
 	if (!is_light && (obj->modifiers[OBJ_MOD_LIGHT] <= 0))
 		return false;
 
+	/* Work out radius */
+	if (strstr(obj->kind->name, "Torch"))
+		*rad = 1;
+	else if (strstr(obj->kind->name, "Lantern"))
+		*rad = 1;
+	*rad += obj->known->modifiers[OBJ_MOD_LIGHT];
+
 	/* Prevent unidentified objects (especially artifact lights) from showing
 	 * bad radius and refueling info. */
-	if (obj->known->modifiers[OBJ_MOD_LIGHT] == 0)
+	if (*rad == 0)
 		return false;
-
-	/* Work out radius */
-	*rad = obj->modifiers[OBJ_MOD_LIGHT];
 
 	no_fuel = of_has(obj->known->flags, OF_NO_FUEL) ? true : false;
 
