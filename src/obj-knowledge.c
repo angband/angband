@@ -1116,6 +1116,12 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	/* Get the obvious object flags */
 	create_mask(obvious_mask, true, OFID_WIELD, OFT_MAX);
 
+	/* Make sustains obvious for items with that stat bonus */
+	for (i = 0; i < STAT_MAX; i++)
+		/* Sustains are the first flags, stats are the first modifiers */
+		if ((obj_flag_type(i + 1) == OFT_SUST) && obj->modifiers[i])
+			of_on(obvious_mask, i + 1);
+
 	/* Special case FA, needed for mages wielding gloves */
 	if (player_has(p, PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
 		(obj->modifiers[OBJ_MOD_DEX] <= 0) && 
