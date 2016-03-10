@@ -1106,7 +1106,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 		return false;
 
 	/* Player has no digging info */
-	if (!tval_is_digger(obj) && !obj->known->modifiers[OBJ_MOD_TUNNEL])
+	if (!tval_is_melee_weapon(obj) && !obj->known->modifiers[OBJ_MOD_TUNNEL])
 		return false;
 
 	/* Pretend we're wielding the object */
@@ -1201,7 +1201,7 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
 	if (strstr(obj->kind->name, "Torch"))
 		*rad = 1;
 	else if (strstr(obj->kind->name, "Lantern"))
-		*rad = 1;
+		*rad = 2;
 	*rad += obj->known->modifiers[OBJ_MOD_LIGHT];
 
 	/* Prevent unidentified objects (especially artifact lights) from showing
@@ -1686,22 +1686,18 @@ static void describe_flavor_text(textblock *tb, const struct object *obj,
  */
 static bool describe_ego(textblock *tb, const struct ego_item *ego)
 {
-	int i, num = 3;
+	if (kf_has(ego->kind_flags, KF_RAND_HI_RES))
+		textblock_append(tb, "It provides one random higher resistance.  ");
+	else if (kf_has(ego->kind_flags, KF_RAND_SUSTAIN))
+		textblock_append(tb, "It provides one random sustain.  ");
+	else if (kf_has(ego->kind_flags, KF_RAND_POWER))
+		textblock_append(tb, "It provides one random ability.  ");
+	else if (kf_has(ego->kind_flags, KF_RAND_RES_POWER))
+		textblock_append(tb, "It provides one random ability or base resistance.  ");
+	else
+		return false;
 
-	/* Hackish */
-	for (i = 0; i < 3; i++) {
-		if (kf_has(ego->kind_flags, KF_RAND_HI_RES + i))
-			num = i;
-	}
-
-	if (num < 3) {
-		const char *xtra[] = { "sustain", "higher resistance", "ability" };
-		textblock_append(tb, "It provides one random %s.  ", xtra[num]);
-
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 
