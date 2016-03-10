@@ -432,7 +432,7 @@ void process_world(struct chunk *c)
 	recharge_objects();
 
 	/* Notice things after time */
-	if (!(turn % 1000))
+	if (!(turn % 100))
 		equip_learn_after_time(player);
 
 
