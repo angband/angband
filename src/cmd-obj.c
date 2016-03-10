@@ -518,10 +518,12 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Possibly learn wearables by activation, ID anything else on single use */
-	if (tval_is_wearable(obj)) {
-		update_player_object_knowledge(player);
-	} else if (!was_aware) {
-		object_learn_on_use(player, obj);
+	if (used) {
+		if (tval_is_wearable(obj)) {
+			update_player_object_knowledge(player);
+		} else if (!was_aware) {
+			object_learn_on_use(player, obj);
+		}
 	}
 
 	/* Chargeables act differently to single-used items when not used up */
