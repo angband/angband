@@ -437,8 +437,8 @@ void object_set_base_known(struct object *obj)
 void player_know_object(struct player *p, struct object *obj)
 {
 	int i, flag;
-	struct brand *b, *b_known;
-	struct slay *s, *s_known;
+	struct brand *b;
+	struct slay *s;
 
 	/* Unseen or only sensed objects don't get any ID */
 	if (!obj) return;
@@ -476,13 +476,8 @@ void player_know_object(struct player *p, struct object *obj)
 			new_b->multiplier = b->multiplier;
 
 			/* Attach the new brand */
-			if (obj->known->brands) {
-				b_known->next = new_b;
-				b_known = b_known->next;
-			} else {
-				obj->known->brands = new_b;
-				b_known = obj->known->brands;
-			}
+			new_b->next = obj->known->brands;
+			obj->known->brands = new_b;
 		}
 	}
 
@@ -498,13 +493,8 @@ void player_know_object(struct player *p, struct object *obj)
 			new_s->multiplier = s->multiplier;
 
 			/* Attach the new slay */
-			if (obj->known->slays) {
-				s_known->next = new_s;
-				s_known = s_known->next;
-			} else {
-				obj->known->slays = new_s;
-				s_known = obj->known->slays;
-			}
+			new_s->next = obj->known->slays;
+			obj->known->slays = new_s;
 		}
 	}
 
