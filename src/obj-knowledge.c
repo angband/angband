@@ -730,6 +730,11 @@ void update_player_object_knowledge(struct player *p)
 		for (obj = s->stock; obj; obj = obj->next)
 			player_know_object(p, obj);
 	}
+
+	/* Update */
+	if (cave)
+		autoinscribe_ground();
+	autoinscribe_pack();
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
