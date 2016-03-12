@@ -101,7 +101,8 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 	if (aware && !OPT(show_flavors)) show_flavor = false;
 
 	/* Artifacts are special */
-	if (obj->artifact)
+	if (obj->artifact && (aware || object_is_known_artifact(obj) || terse ||
+						  !obj->kind->flavor))
 		return obj->kind->name;
 
 	/* Analyze the object */
