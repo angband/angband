@@ -133,13 +133,6 @@ static void init_rune(void)
 	count = 0;
 	for (i = 0; i < COMBAT_RUNE_MAX; i++)
 		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, c_rune[i] };
-	for (i = 0; i < OF_MAX; i++) {
-		if (obj_flag_type(i) == OFT_NONE) continue;
-		if (obj_flag_type(i) == OFT_LIGHT) continue;
-		if (obj_flag_type(i) == OFT_CURSE) continue;
-
-		rune_list[count++] = (struct rune) { RUNE_VAR_FLAG, i, f_rune[i].name };
-	}
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, m_rune[i] };
 	for (i = 0; i <= ELEM_HIGH_MAX; i++)
@@ -148,6 +141,13 @@ static void init_rune(void)
 		rune_list[count++] = (struct rune) { RUNE_VAR_BRAND, brands++, b->name};
 	for (s = game_slays; s; s = s->next)
 		rune_list[count++] = (struct rune) { RUNE_VAR_SLAY, slays++, s->name };
+	for (i = 0; i < OF_MAX; i++) {
+		if (obj_flag_type(i) == OFT_NONE) continue;
+		if (obj_flag_type(i) == OFT_LIGHT) continue;
+		if (obj_flag_type(i) == OFT_CURSE) continue;
+
+		rune_list[count++] = (struct rune) { RUNE_VAR_FLAG, i, f_rune[i].name };
+	}
 }
 
 /**
@@ -179,6 +179,189 @@ struct init_module rune_module = {
 	.init = init_rune,
 	.cleanup = cleanup_rune
 };
+
+/**
+ * ------------------------------------------------------------------------
+ * Rune knowledge functions
+ * These functions provide details about the rune list for use in 
+ * player knowledge screens
+ * ------------------------------------------------------------------------ */
+/**
+ * The number of runes
+ */
+int max_runes(void)
+{
+	return rune_max;
+}
+
+/**
+ * The variety of a rune
+ */
+enum rune_variety rune_variety(size_t i)
+{
+	return rune_list[i].variety;
+}
+
+/**
+ * Reports if the player knows a given rune
+ *
+ * \param p is the player
+ * \param i is the rune index
+ */
+bool player_knows_rune(struct player *p, size_t i)
+{
+	struct rune *r = &rune_list[i];
+
+	switch (r->variety) {
+		/* Combat runes */
+		case RUNE_VAR_COMBAT: {
+			if (r->index == COMBAT_RUNE_TO_A) {
+				if (p->obj_k->to_a)
+					return true;
+			} else if (r->index == COMBAT_RUNE_TO_H) {
+				if (p->obj_k->to_h)
+					return true;
+			} else if (r->index == COMBAT_RUNE_TO_D) {
+				if (p->obj_k->to_d)
+					return true;
+			}
+			break;
+		}
+		/* Mod runes */
+		case RUNE_VAR_MOD: {
+			if (p->obj_k->modifiers[r->index])
+				return true;
+			break;
+		}
+		/* Element runes */
+		case RUNE_VAR_RESIST: {
+			if (p->obj_k->el_info[r->index].res_level)
+				return true;
+			break;
+		}
+		/* Brand runes */
+		case RUNE_VAR_BRAND: {
+			int num;
+			struct brand *b;
+			for (b = game_brands, num = 0; b; b = b->next, num++)
+				if (num == r->index) break;
+			assert(b != NULL);
+
+			if (player_knows_brand(p, b))
+				return true;
+			break;
+		}
+		/* Slay runes */
+		case RUNE_VAR_SLAY: {
+			int num;
+			struct slay *s;
+			for (s = game_slays, num = 0; s; s = s->next, num++)
+				if (num == r->index) break;
+			assert(s != NULL);
+
+			if (player_knows_slay(p, s))
+				return true;
+			break;
+		}
+		/* Flag runes */
+		case RUNE_VAR_FLAG: {
+			if (of_has(p->obj_k->flags, r->index))
+				return true;
+			break;
+		}
+		default: {
+			break;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * The name of a rune
+ */
+char *rune_name(size_t i)
+{
+	struct rune *r = &rune_list[i];
+
+	if (r->variety == RUNE_VAR_BRAND)
+		return format("%s brand", r->name);
+	else if (r->variety == RUNE_VAR_SLAY)
+		return format("slay %s", r->name);
+	else if (r->variety == RUNE_VAR_RESIST)
+		return format("resist %s", r->name);
+	else
+		return format("%s", r->name);
+
+	return NULL;
+}
+
+/**
+ * The description of a rune
+ */
+char *rune_desc(size_t i)
+{
+	struct rune *r = &rune_list[i];
+
+	switch (r->variety) {
+		/* Combat runes */
+		case RUNE_VAR_COMBAT: {
+			if (r->index == COMBAT_RUNE_TO_A)
+				return "Object magically increases the player's armor class";
+			else if (r->index == COMBAT_RUNE_TO_H)
+				return "Object magically increases the player's chance to hit";
+			else if (r->index == COMBAT_RUNE_TO_D)
+				return "Object magically increases the player's damage";
+			break;
+		}
+		/* Mod runes */
+		case RUNE_VAR_MOD: {
+			return format("Object gives the player a magical bonus to %s.",
+						  r->name);
+			break;
+		}
+		/* Element runes */
+		case RUNE_VAR_RESIST: {
+			return format("Object affects the player's resistance to %s.",
+						  r->name);
+			break;
+		}
+		/* Brand runes */
+		case RUNE_VAR_BRAND: {
+			int num;
+			struct brand *b;
+			for (b = game_brands, num = 0; b; b = b->next, num++)
+				if (num == r->index) break;
+			assert(b != NULL);
+
+			return format("Object brands the player's attacks with %s.",
+						  r->name);
+			break;
+		}
+		/* Slay runes */
+		case RUNE_VAR_SLAY: {
+			int num;
+			struct slay *s;
+			for (s = game_slays, num = 0; s; s = s->next, num++)
+				if (num == r->index) break;
+			assert(s != NULL);
+
+			return format("Object makes the player's attacks against %s more powerful.", r->name);
+			break;
+		}
+		/* Flag runes */
+		case RUNE_VAR_FLAG: {
+			return format("Object gives the player the property of %s.",
+						  r->name);
+			break;
+		}
+		default: {
+			break;
+		}
+	}
+
+	return NULL;
+}
 
 /**
  * ------------------------------------------------------------------------
@@ -566,111 +749,103 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 	switch (r->variety) {
 		/* Combat runes */
-	case RUNE_VAR_COMBAT: {
-		if (r->index == COMBAT_RUNE_TO_A) {
-			if (!p->obj_k->to_a) {
-				p->obj_k->to_a = 1;
-				learned = true;
+		case RUNE_VAR_COMBAT: {
+			if (r->index == COMBAT_RUNE_TO_A) {
+				if (!p->obj_k->to_a) {
+					p->obj_k->to_a = 1;
+					learned = true;
+				}
+			} else if (r->index == COMBAT_RUNE_TO_H) {
+				if (!p->obj_k->to_h) {
+					p->obj_k->to_h = 1;
+					learned = true;
+				}
+			} else if (r->index == COMBAT_RUNE_TO_D) {
+				if (!p->obj_k->to_d) {
+					p->obj_k->to_d = 1;
+					learned = true;
+				}
 			}
-		} else if (r->index == COMBAT_RUNE_TO_H) {
-			if (!p->obj_k->to_h) {
-				p->obj_k->to_h = 1;
-				learned = true;
-			}
-		} else if (r->index == COMBAT_RUNE_TO_D) {
-			if (!p->obj_k->to_d) {
-				p->obj_k->to_d = 1;
-				learned = true;
-			}
+			break;
 		}
-		break;
-	}
-		/* Flag runes */
-	case RUNE_VAR_FLAG: {
-		if (of_on(p->obj_k->flags, r->index))
-			learned = true;
-		break;
-	}
 		/* Mod runes */
-	case RUNE_VAR_MOD: {
-		if (!p->obj_k->modifiers[r->index]) {
-			p->obj_k->modifiers[r->index] = 1;
-			learned = true;
+		case RUNE_VAR_MOD: {
+			if (!p->obj_k->modifiers[r->index]) {
+				p->obj_k->modifiers[r->index] = 1;
+				learned = true;
+			}
+			break;
 		}
-		break;
-	}
 		/* Element runes */
-	case RUNE_VAR_RESIST: {
-		if (!p->obj_k->el_info[r->index].res_level) {
-			p->obj_k->el_info[r->index].res_level = 1;
-			learned = true;
+		case RUNE_VAR_RESIST: {
+			if (!p->obj_k->el_info[r->index].res_level) {
+				p->obj_k->el_info[r->index].res_level = 1;
+				learned = true;
+			}
+			break;
 		}
-		break;
-	}
 		/* Brand runes */
-	case RUNE_VAR_BRAND: {
-		int num;
-		struct brand *b;
-		for (b = game_brands, num = 0; b; b = b->next, num++)
-			if (num == r->index) break;
-		assert(b != NULL);
+		case RUNE_VAR_BRAND: {
+			int num;
+			struct brand *b;
+			for (b = game_brands, num = 0; b; b = b->next, num++)
+				if (num == r->index) break;
+			assert(b != NULL);
 
-		/* If the brand was unknown, add it to known brands */
-		if (!player_knows_brand(p, b)) {
-			/* Copy the name and element */
-			struct brand *new_b = mem_zalloc(sizeof *new_b);
-			new_b->name = string_make(b->name);
-			new_b->element = b->element;
+			/* If the brand was unknown, add it to known brands */
+			if (!player_knows_brand(p, b)) {
+				/* Copy the name and element */
+				struct brand *new_b = mem_zalloc(sizeof *new_b);
+				new_b->name = string_make(b->name);
+				new_b->element = b->element;
 
-			/* Attach the new brand */
-			new_b->next = p->obj_k->brands;
-			p->obj_k->brands = new_b;
-			learned = true;
+				/* Attach the new brand */
+				new_b->next = p->obj_k->brands;
+				p->obj_k->brands = new_b;
+				learned = true;
+			}
+			break;
 		}
-		break;
-	}
 		/* Slay runes */
-	case RUNE_VAR_SLAY: {
-		int num;
-		struct slay *s;
-		for (s = game_slays, num = 0; s; s = s->next, num++)
-			if (num == r->index) break;
-		assert(s != NULL);
+		case RUNE_VAR_SLAY: {
+			int num;
+			struct slay *s;
+			for (s = game_slays, num = 0; s; s = s->next, num++)
+				if (num == r->index) break;
+			assert(s != NULL);
 
-		/* If the slay was unknown, add it to known slays */
-		if (!player_knows_slay(p, s)) {
-			/* Copy the name and race flag */
-			struct slay *new_s = mem_zalloc(sizeof *new_s);
-			new_s->name = string_make(s->name);
-			new_s->race_flag = s->race_flag;
+			/* If the slay was unknown, add it to known slays */
+			if (!player_knows_slay(p, s)) {
+				/* Copy the name and race flag */
+				struct slay *new_s = mem_zalloc(sizeof *new_s);
+				new_s->name = string_make(s->name);
+				new_s->race_flag = s->race_flag;
 
-			/* Attach the new slay */
-			new_s->next = p->obj_k->slays;
-			p->obj_k->slays = new_s;
-			learned = true;
+				/* Attach the new slay */
+				new_s->next = p->obj_k->slays;
+				p->obj_k->slays = new_s;
+				learned = true;
+			}
+			break;
 		}
-		break;
-	}
-	default: {
-		learned = false;
-		break;
-	}
+		/* Flag runes */
+		case RUNE_VAR_FLAG: {
+			if (of_on(p->obj_k->flags, r->index))
+				learned = true;
+			break;
+		}
+		default: {
+			learned = false;
+			break;
+		}
 	}
 
 	/* Nothing learned */
 	if (!learned) return;
 
 	/* Give a message */
-	if (message) {
-		if (r->variety == RUNE_VAR_BRAND)
-			msg("You have learned the rune of %s brand.", r->name);
-		else if (r->variety == RUNE_VAR_SLAY)
-			msg("You have learned the rune of slay %s.", r->name);
-		else if (r->variety == RUNE_VAR_RESIST)
-			msg("You have learned the rune of resist %s.", r->name);
-		else
-			msg("You have learned the rune of %s.", r->name);
-	}
+	if (message)
+		msg("You have learned the rune of %s.", rune_name(i));
 
 	/* Update knowledge */
 	update_player_object_knowledge(p);
@@ -908,68 +1083,68 @@ void mod_message(struct object *obj, int mod)
 {
 	/* Special messages for individual properties */
 	switch (mod) {
-	case OBJ_MOD_STR:
-		if (obj->modifiers[OBJ_MOD_STR] > 0)
-			msg("You feel stronger!");
-		else if (obj->modifiers[OBJ_MOD_STR] < 0)
-			msg("You feel weaker!");
-		break;
-	case OBJ_MOD_INT:
-		if (obj->modifiers[OBJ_MOD_INT] > 0)
-			msg("You feel smarter!");
-		else if (obj->modifiers[OBJ_MOD_INT] < 0)
-			msg("You feel more stupid!");
-		break;
-	case OBJ_MOD_WIS:
-		if (obj->modifiers[OBJ_MOD_WIS] > 0)
-			msg("You feel wiser!");
-		else if (obj->modifiers[OBJ_MOD_WIS] < 0)
-			msg("You feel more naive!");
-		break;
-	case OBJ_MOD_DEX:
-		if (obj->modifiers[OBJ_MOD_DEX] > 0)
-			msg("You feel more dextrous!");
-		else if (obj->modifiers[OBJ_MOD_DEX] < 0)
-			msg("You feel clumsier!");
-		break;
-	case OBJ_MOD_CON:
-		if (obj->modifiers[OBJ_MOD_CON] > 0)
-			msg("You feel healthier!");
-		else if (obj->modifiers[OBJ_MOD_CON] < 0)
-			msg("You feel sicklier!");
-		break;
-	case OBJ_MOD_STEALTH:
-		if (obj->modifiers[OBJ_MOD_STEALTH] > 0)
-			msg("You feel stealthier.");
-		else if (obj->modifiers[OBJ_MOD_STEALTH] < 0)
-			msg("You feel noisier.");
-		break;
-	case OBJ_MOD_SPEED:
-		if (obj->modifiers[OBJ_MOD_SPEED] > 0)
-			msg("You feel strangely quick.");
-		else if (obj->modifiers[OBJ_MOD_SPEED] < 0)
-			msg("You feel strangely sluggish.");
-		break;
-	case OBJ_MOD_BLOWS:
-		if (obj->modifiers[OBJ_MOD_BLOWS] > 0)
-			msg("Your weapon tingles in your hands.");
-		else if (obj->modifiers[OBJ_MOD_BLOWS] < 0)
-			msg("Your weapon aches in your hands.");
-		break;
-	case OBJ_MOD_SHOTS:
-		if (obj->modifiers[OBJ_MOD_SHOTS] > 0)
-			msg("Your bow tingles in your hands.");
-		else if (obj->modifiers[OBJ_MOD_SHOTS] < 0)
-			msg("Your bow aches in your hands.");
-		break;
-	case OBJ_MOD_INFRA:
-		msg("Your eyes tingle.");
-		break;
-	case OBJ_MOD_LIGHT:
-		msg("It glows!");
-		break;
-	default:
-		break;
+		case OBJ_MOD_STR:
+			if (obj->modifiers[OBJ_MOD_STR] > 0)
+				msg("You feel stronger!");
+			else if (obj->modifiers[OBJ_MOD_STR] < 0)
+				msg("You feel weaker!");
+			break;
+		case OBJ_MOD_INT:
+			if (obj->modifiers[OBJ_MOD_INT] > 0)
+				msg("You feel smarter!");
+			else if (obj->modifiers[OBJ_MOD_INT] < 0)
+				msg("You feel more stupid!");
+			break;
+		case OBJ_MOD_WIS:
+			if (obj->modifiers[OBJ_MOD_WIS] > 0)
+				msg("You feel wiser!");
+			else if (obj->modifiers[OBJ_MOD_WIS] < 0)
+				msg("You feel more naive!");
+			break;
+		case OBJ_MOD_DEX:
+			if (obj->modifiers[OBJ_MOD_DEX] > 0)
+				msg("You feel more dextrous!");
+			else if (obj->modifiers[OBJ_MOD_DEX] < 0)
+				msg("You feel clumsier!");
+			break;
+		case OBJ_MOD_CON:
+			if (obj->modifiers[OBJ_MOD_CON] > 0)
+				msg("You feel healthier!");
+			else if (obj->modifiers[OBJ_MOD_CON] < 0)
+				msg("You feel sicklier!");
+			break;
+		case OBJ_MOD_STEALTH:
+			if (obj->modifiers[OBJ_MOD_STEALTH] > 0)
+				msg("You feel stealthier.");
+			else if (obj->modifiers[OBJ_MOD_STEALTH] < 0)
+				msg("You feel noisier.");
+			break;
+		case OBJ_MOD_SPEED:
+			if (obj->modifiers[OBJ_MOD_SPEED] > 0)
+				msg("You feel strangely quick.");
+			else if (obj->modifiers[OBJ_MOD_SPEED] < 0)
+				msg("You feel strangely sluggish.");
+			break;
+		case OBJ_MOD_BLOWS:
+			if (obj->modifiers[OBJ_MOD_BLOWS] > 0)
+				msg("Your weapon tingles in your hands.");
+			else if (obj->modifiers[OBJ_MOD_BLOWS] < 0)
+				msg("Your weapon aches in your hands.");
+			break;
+		case OBJ_MOD_SHOTS:
+			if (obj->modifiers[OBJ_MOD_SHOTS] > 0)
+				msg("Your bow tingles in your hands.");
+			else if (obj->modifiers[OBJ_MOD_SHOTS] < 0)
+				msg("Your bow aches in your hands.");
+			break;
+		case OBJ_MOD_INFRA:
+			msg("Your eyes tingle.");
+			break;
+		case OBJ_MOD_LIGHT:
+			msg("It glows!");
+			break;
+		default:
+			break;
 	}
 }
 
@@ -992,67 +1167,67 @@ int object_find_unknown_rune(struct player *p, struct object *obj)
 
 		switch (r->variety) {
 			/* Combat runes - just check them all */
-		case RUNE_VAR_COMBAT: {
-			if ((r->index == COMBAT_RUNE_TO_A) &&
-				(obj->known->to_a != obj->to_a))
-				poss_runes[num++] = i;
-			else if ((r->index == COMBAT_RUNE_TO_H)
-					 && (obj->known->to_h != obj->to_h))
-				poss_runes[num++] = i;
-			else if ((r->index == COMBAT_RUNE_TO_D)
-					 && (obj->known->to_d != obj->to_d))
-				poss_runes[num++] = i;
-			break;
-		}
-			/* Flag runes */
-		case RUNE_VAR_FLAG: {
-			if (of_has(obj->flags, r->index) &&
-				!of_has(obj->known->flags, r->index))
-				poss_runes[num++] = i;
-			break;
-		}
+			case RUNE_VAR_COMBAT: {
+				if ((r->index == COMBAT_RUNE_TO_A) &&
+					(obj->known->to_a != obj->to_a))
+					poss_runes[num++] = i;
+				else if ((r->index == COMBAT_RUNE_TO_H)
+						 && (obj->known->to_h != obj->to_h))
+					poss_runes[num++] = i;
+				else if ((r->index == COMBAT_RUNE_TO_D)
+						 && (obj->known->to_d != obj->to_d))
+					poss_runes[num++] = i;
+				break;
+			}
 			/* Mod runes */
-		case RUNE_VAR_MOD: {
-			if (obj->modifiers[r->index] != obj->known->modifiers[r->index])
-				poss_runes[num++] = i;
-			break;
-		}
+			case RUNE_VAR_MOD: {
+				if (obj->modifiers[r->index] != obj->known->modifiers[r->index])
+					poss_runes[num++] = i;
+				break;
+			}
 			/* Element runes */
-		case RUNE_VAR_RESIST: {
-			if (obj->el_info[r->index].res_level !=
-				obj->known->el_info[r->index].res_level)
-				poss_runes[num++] = i;
-			break;
-		}
+			case RUNE_VAR_RESIST: {
+				if (obj->el_info[r->index].res_level !=
+					obj->known->el_info[r->index].res_level)
+					poss_runes[num++] = i;
+				break;
+			}
 			/* Brand runes */
-		case RUNE_VAR_BRAND: {
-			struct brand *b;
-			for (b = obj->brands; b; b = b->next)
-				if (streq(b->name, r->name)) break;
+			case RUNE_VAR_BRAND: {
+				struct brand *b;
+				for (b = obj->brands; b; b = b->next)
+					if (streq(b->name, r->name)) break;
 
-			/* Brand not on the object, or known */
-			if (!b) break;
-			if (player_knows_brand(p, b)) break;
+				/* Brand not on the object, or known */
+				if (!b) break;
+				if (player_knows_brand(p, b)) break;
 
-			/* If we're here we have an unknown brand */
+				/* If we're here we have an unknown brand */
 				poss_runes[num++] = i;
-			break;
-		}
+				break;
+			}
 			/* Slay runes */
-		case RUNE_VAR_SLAY: {
-			struct slay *s;
-			for (s = obj->slays; s; s = s->next)
-				if (streq(s->name, r->name)) break;
+			case RUNE_VAR_SLAY: {
+				struct slay *s;
+				for (s = obj->slays; s; s = s->next)
+					if (streq(s->name, r->name)) break;
 
-			/* Slay not on the object, or known */
-			if (!s) break;
-			if (player_knows_slay(p, s)) break;
+				/* Slay not on the object, or known */
+				if (!s) break;
+				if (player_knows_slay(p, s)) break;
 
-			/* If we're here we have an unknown brand */
-			poss_runes[num++] = i;
-			break;
-		}
-		default: break;
+				/* If we're here we have an unknown slay */
+				poss_runes[num++] = i;
+				break;
+			}
+			/* Flag runes */
+			case RUNE_VAR_FLAG: {
+				if (of_has(obj->flags, r->index) &&
+					!of_has(obj->known->flags, r->index))
+					poss_runes[num++] = i;
+				break;
+			}
+			default: break;
 		}
 	}
 
