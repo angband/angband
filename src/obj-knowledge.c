@@ -609,6 +609,10 @@ void object_set_base_known(struct object *obj)
 		obj->known->pval = obj->pval;
 		obj->known->effect = obj->effect;
 	}
+
+	/* Non-jewelry wearables have known activations */
+	if (tval_is_wearable(obj) && !tval_is_jewelry(obj) && obj->kind->effect)
+		obj->known->effect = obj->effect;
 }
 
 /**
