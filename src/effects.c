@@ -922,29 +922,23 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 			if (!square_seemslikewall(cave, y, x)) {
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
-				/* Memorize normal features, mark grids as processed */
-				if (!square_isfloor(cave, y, x)) {
+				/* Memorize normal features */
+				if (!square_isfloor(cave, y, x))
 					square_memorize(cave, y, x);
-					square_light_spot(cave, y, x);
-					square_mark(cave, y, x);
-				}
 
 				/* Memorize known walls */
 				for (i = 0; i < 8; i++) {
 					int yy = y + ddy_ddd[i];
 					int xx = x + ddx_ddd[i];
 
-					/* Memorize walls (etc), mark grids as processed */
-					if (square_seemslikewall(cave, yy, xx)) {
+					/* Memorize walls (etc) */
+					if (square_seemslikewall(cave, yy, xx))
 						square_memorize(cave, yy, xx);
-						square_light_spot(cave, yy, xx);
-						square_mark(cave, yy, xx);
-					}
 				}
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
-			if (!square_ismark(cave, y, x) && !square_isknown(cave, y, x))
+			if (square_isnotknown(cave, y, x))
 				square_forget(cave, y, x);
 		}
 	}
@@ -956,6 +950,12 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 			square_unmark(cave, y, x);
 		}
 	}
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	/* Notice */
 	context->ident = true;
@@ -1038,9 +1038,6 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 			} else {
 				sqinfo_off(cave->squares[y][x].info, SQUARE_DEDGE);
 			}
-
-			/* Redraw */
-			square_light_spot(cave, y, x);
 		}
 	}
 
@@ -1052,8 +1049,11 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 	else
 		msg("You sense no traps.");
 
-	/* Mark the redraw flag */
-	player->upkeep->redraw |= (PR_DTRAP);
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST | PR_DTRAP);
 
 	/* Notice */
 	context->ident = true;
@@ -1099,13 +1099,14 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 				/* Memorize */
 				square_memorize(cave, y, x);
 
-				/* Redraw */
-				square_light_spot(cave, y, x);
-
 				/* Obvious */
 				doors = true;
 				context->ident = true;
 			}
+
+			/* Forget unknown doors in the mapping area */
+			if (square_isdoor(cave_k, y, x) && square_isnotknown(cave, y, x))
+				square_forget(cave, y, x);
 		}
 	}
 
@@ -1114,6 +1115,12 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 		msg("You sense the presence of doors!");
 	else if (context->aware)
 		msg("You sense no doors.");
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	return true;
 }
@@ -1152,9 +1159,6 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 				/* Memorize */
 				square_memorize(cave, y, x);
 
-				/* Redraw */
-				square_light_spot(cave, y, x);
-
 				/* Obvious */
 				stairs = true;
 				context->ident = true;
@@ -1167,6 +1171,12 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 		msg("You sense the presence of stairs!");
 	else if (context->aware)
 		msg("You sense no stairs.");
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	return true;
 }
@@ -1207,9 +1217,6 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 				/* Memorize */
 				square_memorize(cave, y, x);
 
-				/* Redraw */
-				square_light_spot(cave, y, x);
-
 				/* Detect */
 				gold_buried = true;
 				context->ident = true;
@@ -1224,6 +1231,12 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 		else if (context->aware)
 			msg("You sense no buried treasure.");
 	}
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	return true;
 }
@@ -1267,9 +1280,6 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 
 			/* Mark the pile as aware */
 			floor_pile_sense(cave, y, x);
-
-			/* Redraw */
-			square_light_spot(cave, y, x);
 		}
 	}
 
@@ -1277,6 +1287,12 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 		msg("You sense the presence of objects!");
 	else if (context->aware)
 		msg("You sense no objects.");
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	return true;
 }
@@ -1322,9 +1338,6 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 
 			/* Mark the pile as seen */
 			floor_pile_know(cave, y, x);
-
-			/* Redraw */
-			square_light_spot(cave, y, x);
 		}
 	}
 
@@ -1332,6 +1345,12 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 		msg("You detect the presence of objects!");
 	else if (context->aware)
 		msg("You detect no objects.");
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	return true;
 }

@@ -267,6 +267,7 @@ bool square_isdownstairs(struct chunk *c, int y, int x);
 bool square_isshop(struct chunk *c, int y, int x);
 bool square_isplayer(struct chunk *c, int y, int x);
 bool square_isknown(struct chunk *c, int y, int x);
+bool square_isnotknown(struct chunk *c, int y, int x);
 
 /* SQUARE INFO PREDICATES */
 bool square_ismark(struct chunk *c, int y, int x);

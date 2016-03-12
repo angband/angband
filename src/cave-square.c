@@ -286,6 +286,15 @@ bool square_isknown(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the the player's knowledge of the terrain of the square is wrong
+ * or missing
+ */
+bool square_isnotknown(struct chunk *c, int y, int x) {
+	if (c != cave) return false;
+	return (cave_k->squares[y][x].feat != c->squares[y][x].feat);
+}
+
+/**
  * SQUARE INFO PREDICATES
  *
  * These functions tell whether a square is marked with one of the SQUARE_*

@@ -427,6 +427,8 @@ void wiz_light(struct chunk *c, bool full)
 		for (x = 1; x < c->width - 1; x++) {
 			/* Process all non-walls */
 			if (!square_seemslikewall(c, y, x)) {
+				if (!square_in_bounds_fully(c, y, x)) continue;
+
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++) {
 					int yy = y + ddy_ddd[i];
@@ -439,6 +441,7 @@ void wiz_light(struct chunk *c, bool full)
 					if (!square_isfloor(c, yy, xx) || 
 						square_isvisibletrap(c, yy, xx)) {
 						square_memorize(c, yy, xx);
+						square_mark(cave, yy, xx);
 					}
 				}
 			}
@@ -448,6 +451,18 @@ void wiz_light(struct chunk *c, bool full)
 				floor_pile_know(c, y, x);
 			else
 				floor_pile_sense(c, y, x);
+
+			/* Forget unprocessed, unknown grids in the mapping area */
+			if (!square_ismark(c, y, x) && square_isnotknown(c, y, x))
+				square_forget(c, y, x);
+		}
+	}
+
+	/* Unmark grids */
+	for (y = 1; y < c->height - 1; y++) {
+		for (x = 1; x < c->width - 1; x++) {
+			if (!square_in_bounds(c, y, x)) continue;
+			square_unmark(c, y, x);
 		}
 	}
 
