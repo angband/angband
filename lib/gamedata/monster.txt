@@ -5841,12 +5841,12 @@ desc: adventurers within reach of its venomous claws.  The first that most
 desc: adventurers realise of the deception is when the seemingly invitingly open
 desc: lid of the chest suddenly grows teeth and then slams shut on the
 desc: adventurer's hand...
-mimic:chest:1
-mimic:chest:2
-mimic:chest:3
-mimic:chest:5
-mimic:chest:6
-mimic:chest:7
+mimic:chest:Small wooden chest
+mimic:chest:Large wooden chest
+mimic:chest:Small iron chest
+mimic:chest:Large iron chest
+mimic:chest:Small steel chest
+mimic:chest:Large steel chest
 
 name:597:Silent watcher
 base:golem

@@ -805,7 +805,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 		struct object_kind *kind = new_mon->race->mimic_kinds->kind;
 		struct monster_mimic *mimic_kind;
 		int i = 1;
-		
+
 		/* Pick a random object kind to mimic */
 		for (mimic_kind = new_mon->race->mimic_kinds; mimic_kind; 
 				mimic_kind = mimic_kind->next, i++) {
