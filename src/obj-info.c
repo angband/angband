@@ -248,7 +248,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 
 	for (i = 0; i < N_ELEMENTS(mod_names); i++) {
 		const char *desc = mod_names[i];
-		int val = obj->modifiers[i];
+		int val = obj->known->modifiers[i];
 		if (!val) continue;
 
 		/* Actual object */
