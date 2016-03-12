@@ -2025,6 +2025,92 @@ void textui_browse_object_knowledge(const char *name, int row)
 
 /**
  * ------------------------------------------------------------------------
+ * OBJECT RUNES
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Description of each rune group.
+ */
+static const char *rune_group_text[] =
+{
+	"Combat",
+	"Modifiers",
+	"Resists",
+	"Brands",
+	"Slays",
+	"Other",
+	NULL
+};
+
+/**
+ * Display the runes in a group.
+ */
+static void display_rune(int col, int row, bool cursor, int oid )
+{
+	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+
+	c_prt(attr, rune_name(oid), row, col);
+}
+
+
+static const char *rune_var_name(int gid)
+{
+	return rune_group_text[gid];
+}
+
+static int rune_var(int oid)
+{
+	return (int) rune_variety(oid);
+}
+
+static void rune_lore(int oid)
+{
+	textblock *tb = textblock_new();
+	char *title = string_make(rune_name(oid));
+
+	my_strcap(title);
+	textblock_append_c(tb, COLOUR_L_BLUE, title);
+	textblock_append(tb, "\n");
+	textblock_append(tb, rune_desc(oid));
+	textblock_append(tb, "\n");
+	textui_textblock_show(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
+
+	string_free(title);
+}
+
+/**
+ * Display rune knowledge.
+ */
+static void do_cmd_knowledge_runes(const char *name, int row)
+{
+	group_funcs rune_var_f = {rune_var_name, NULL, rune_var, 0,
+							  N_ELEMENTS(rune_group_text), false};
+
+	member_funcs rune_f = {display_rune, rune_lore, NULL, NULL, recall_prompt,
+						   NULL, 0};
+
+	int *runes;
+	int rune_max = max_runes();
+	int rune_count = 0;
+	int i;
+
+	runes = mem_zalloc(rune_max * sizeof(int));
+
+	for (i = 0; i < rune_max; i++) {
+		/* Ignore unknown runes */
+		if (!player_knows_rune(player, i))
+			continue;
+
+		runes[rune_count++] = i;
+	}
+
+	display_knowledge("runes", runes, rune_count, rune_var_f, rune_f, NULL);
+	mem_free(runes);
+}
+
+/**
+ * ------------------------------------------------------------------------
  * TERRAIN FEATURES
  * ------------------------------------------------------------------------ */
 
@@ -2394,6 +2480,7 @@ static void do_cmd_knowledge_history(const char *name, int row)
 static menu_action knowledge_actions[] =
 {
 { 0, 0, "Display object knowledge",   	   textui_browse_object_knowledge },
+{ 0, 0, "Display rune knowledge",   	   do_cmd_knowledge_runes },
 { 0, 0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts },
 { 0, 0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items },
 { 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },

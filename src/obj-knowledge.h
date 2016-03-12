@@ -22,11 +22,11 @@
 
 enum rune_variety {
 	RUNE_VAR_COMBAT,
-	RUNE_VAR_FLAG,
 	RUNE_VAR_MOD,
 	RUNE_VAR_RESIST,
 	RUNE_VAR_BRAND,
-	RUNE_VAR_SLAY
+	RUNE_VAR_SLAY,
+	RUNE_VAR_FLAG
 };
 
 
@@ -42,6 +42,12 @@ struct rune {
 	int index;
 	const char *name;
 };
+
+int max_runes(void);
+enum rune_variety rune_variety(size_t i);
+bool player_knows_rune(struct player *p, size_t i);
+char *rune_name(size_t i);
+char *rune_desc(size_t i);
 
 bool player_knows_brand(struct player *p, struct brand *b);
 bool player_knows_slay(struct player *p, struct slay *s);
