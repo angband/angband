@@ -400,8 +400,10 @@ static size_t obj_desc_chest(const struct object *obj, char *buf, size_t max,
  * class, missile multipler
  */
 static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max, 
-		size_t end)
+							  size_t end, int mode)
 {
+	bool spoil = mode & ODESC_SPOIL ? true : false;
+
 	/* Display damage dice if they are known */
 	if (kf_has(obj->kind->kind_flags, KF_SHOW_DICE) &&
 		(player->obj_k->dd && player->obj_k->ds))
@@ -413,7 +415,7 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 				 obj->pval + obj->modifiers[OBJ_MOD_MIGHT]);
 
 	/* No more if the object hasn't been assessed */
-	if (!(obj->notice & OBJ_NOTICE_ASSESSED)) return end;
+	if (!((obj->notice & OBJ_NOTICE_ASSESSED) || spoil)) return end;
 
 	/* Show weapon bonuses if there are any, and always for weapons */
 	if (player->obj_k->to_h && player->obj_k->to_d) {
@@ -645,7 +647,7 @@ size_t object_desc(char *buf, size_t max, const struct object *obj, int mode)
 		else if (tval_is_light(obj))
 			end = obj_desc_light(obj, buf, max, end);
 
-		end = obj_desc_combat(obj->known, buf, max, end);
+		end = obj_desc_combat(obj->known, buf, max, end, mode);
 	}
 
 	/* Modifiers, charges, flavour details, inscriptions */
