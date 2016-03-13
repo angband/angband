@@ -40,6 +40,7 @@ enum combat_runes {
 struct rune {
 	enum rune_variety variety;
 	int index;
+	quark_t note;
 	const char *name;
 };
 
@@ -48,6 +49,8 @@ enum rune_variety rune_variety(size_t i);
 bool player_knows_rune(struct player *p, size_t i);
 char *rune_name(size_t i);
 char *rune_desc(size_t i);
+quark_t rune_note(size_t i);
+void rune_set_note(size_t i, const char *inscription);
 
 bool player_knows_brand(struct player *p, struct brand *b);
 bool player_knows_slay(struct player *p, struct slay *s);
@@ -55,6 +58,7 @@ bool player_knows_ego(struct player *p, struct ego_item *ego);
 bool object_effect_is_known(const struct object *obj);
 bool object_is_known_artifact(const struct object *obj);
 bool object_is_in_store(const struct object *obj);
+bool object_has_rune(const struct object *obj, int rune_no);
 bool object_runes_known(const struct object *obj);
 bool object_fully_known(const struct object *obj);
 bool object_flag_is_known(const struct object *obj, int flag);

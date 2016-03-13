@@ -132,21 +132,24 @@ static void init_rune(void)
 	rune_list = mem_zalloc(rune_max * sizeof(struct rune));
 	count = 0;
 	for (i = 0; i < COMBAT_RUNE_MAX; i++)
-		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, c_rune[i] };
+		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, 0, c_rune[i] };
 	for (i = 0; i < OBJ_MOD_MAX; i++)
-		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, m_rune[i] };
+		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, 0, m_rune[i] };
 	for (i = 0; i <= ELEM_HIGH_MAX; i++)
-		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, e_rune[i] };
+		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, e_rune[i] };
 	for (b = game_brands; b; b = b->next)
-		rune_list[count++] = (struct rune) { RUNE_VAR_BRAND, brands++, b->name};
+		rune_list[count++] =
+			(struct rune) { RUNE_VAR_BRAND, brands++, 0, b->name};
 	for (s = game_slays; s; s = s->next)
-		rune_list[count++] = (struct rune) { RUNE_VAR_SLAY, slays++, s->name };
+		rune_list[count++] =
+			(struct rune) { RUNE_VAR_SLAY, slays++, 0, s->name };
 	for (i = 0; i < OF_MAX; i++) {
 		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
 		if (obj_flag_type(i) == OFT_CURSE) continue;
 
-		rune_list[count++] = (struct rune) { RUNE_VAR_FLAG, i, f_rune[i].name };
+		rune_list[count++] = (struct rune)
+			{ RUNE_VAR_FLAG, i, 0, f_rune[i].name };
 	}
 }
 
@@ -364,6 +367,27 @@ char *rune_desc(size_t i)
 }
 
 /**
+ * The autoinscription index (if any) of a rune
+ */
+quark_t rune_note(size_t i)
+{
+	return rune_list[i].note;
+}
+
+/**
+ * Set an autoinscription on a rune
+ */
+void rune_set_note(size_t i, const char *inscription)
+{
+	struct rune *r = &rune_list[i];
+
+	if (!inscription)
+		r->note = 0;
+	else
+		r->note = quark_add(inscription);
+}
+
+/**
  * ------------------------------------------------------------------------
  * Object knowledge predicates
  * These functions tell how much the player knows about an object
@@ -483,6 +507,66 @@ bool object_is_in_store(const struct object *obj)
 		struct store *s = &stores[i];
 		for (obj1 = s->stock; obj1; obj1 = obj1->next)
 			if (obj1 == obj) return true;
+	}
+
+	return false;
+}
+
+/**
+ * Check if all the runes on an object are known to the player
+ *
+ * \param obj is the object
+ */
+bool object_has_rune(const struct object *obj, int rune_no)
+{
+	struct rune *r = &rune_list[rune_no];
+
+	switch (r->variety) {
+		/* Combat runes - just check them all */
+		case RUNE_VAR_COMBAT: {
+			if ((r->index == COMBAT_RUNE_TO_A) && (obj->to_a))
+				return true;
+			else if ((r->index == COMBAT_RUNE_TO_H) && (obj->to_h))
+				return true;
+			else if ((r->index == COMBAT_RUNE_TO_D) && (obj->to_d))
+				return true;
+			break;
+		}
+		/* Mod runes */
+		case RUNE_VAR_MOD: {
+			if (obj->modifiers[r->index] != 0)
+				return true;
+			break;
+		}
+		/* Element runes */
+		case RUNE_VAR_RESIST: {
+			if (obj->el_info[r->index].res_level != 0)
+				return true;
+			break;
+		}
+		/* Brand runes */
+		case RUNE_VAR_BRAND: {
+			struct brand *b;
+			for (b = obj->brands; b; b = b->next)
+				if (streq(b->name, r->name))
+					return true;
+			break;
+		}
+		/* Slay runes */
+		case RUNE_VAR_SLAY: {
+			struct slay *s;
+			for (s = obj->slays; s; s = s->next)
+				if (streq(s->name, r->name))
+					return true;
+			break;
+		}
+		/* Flag runes */
+		case RUNE_VAR_FLAG: {
+			if (of_has(obj->flags, r->index))
+				return true;
+			break;
+		}
+		default: break;
 	}
 
 	return false;

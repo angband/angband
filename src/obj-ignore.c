@@ -167,6 +167,60 @@ void ignore_birth_init(void)
 
 
 /**
+ * Make or extend a rune autoinscription
+ */
+static void rune_add_autoinscription(struct object *obj, int i)
+{
+	char current_note[80] = "";
+
+	/* No autoinscription, or already there, don't bother */
+	if (!rune_note(i)) return;
+	if (obj->note && strstr(quark_str(obj->note), quark_str(rune_note(i))))
+		return;
+
+	/* Extend any current note */
+	if (obj->note)
+		my_strcpy(current_note, quark_str(obj->note), sizeof(current_note));
+	my_strcat(current_note, quark_str(rune_note(i)), sizeof(current_note));
+
+	/* Add the inscription */
+	obj->note = quark_add(current_note);
+}
+
+/**
+ * Put a rune autoinscription on all available objects
+ */
+void rune_autoinscribe(int i)
+{
+	struct object *obj;
+	int py = player->py;
+	int px = player->px;
+
+	/* Autoinscribe each object on the ground */
+	if (cave)
+		for (obj = square_object(cave, py, px); obj; obj = obj->next)
+			if (object_has_rune(obj, i))
+				rune_add_autoinscription(obj, i);
+
+	/* Autoinscribe each object in the inventory */
+	for (obj = player->gear; obj; obj = obj->next)
+		if (object_has_rune(obj, i))
+			rune_add_autoinscription(obj, i);
+}
+
+/**
+ * Put all appropriate rune autoinscriptions on an object
+ */
+static void runes_autoinscribe(struct object *obj)
+{
+	int i, rune_max = max_runes();
+
+	for (i = 0; i < rune_max; i++)
+		if (object_has_rune(obj, i))
+			rune_add_autoinscription(obj, i);
+}
+
+/**
  * Return an object kind autoinscription
  */
 const char *get_autoinscription(struct object_kind *kind)
@@ -192,6 +246,9 @@ int apply_autoinscription(struct object *obj)
 		quark_str(obj->kind->note_unaware) &&
 		streq(quark_str(obj->note), quark_str(obj->kind->note_unaware)))
 		obj->note = 0;
+
+	/* Make rune autoinscription go first, for now */
+	runes_autoinscribe(obj);
 
 	/* No note - don't inscribe */
 	if (!note)
@@ -294,7 +351,6 @@ void autoinscribe_pack(void)
 	for (obj = player->gear; obj; obj = obj->next)
 		apply_autoinscription(obj);
 }
-
 
 /**
  * ------------------------------------------------------------------------
