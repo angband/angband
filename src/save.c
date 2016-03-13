@@ -24,6 +24,7 @@
 #include "mon-make.h"
 #include "monster.h"
 #include "object.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
@@ -507,15 +508,15 @@ void wr_ignore(void)
 			wr_byte(itypes[j]);
 	}
 
+	/* Write the current number of aware object auto-inscriptions */
 	n = 0;
 	for (i = 0; i < z_info->k_max; i++)
 		if (k_info[i].note_aware)
 			n++;
 
-	/* Write the current number of aware auto-inscriptions */
 	wr_u16b(n);
 
-	/* Write the aware autoinscriptions array */
+	/* Write the aware object autoinscriptions array */
 	for (i = 0; i < z_info->k_max; i++) {
 		if (k_info[i].note_aware) {
 			wr_s16b(i);
@@ -523,19 +524,36 @@ void wr_ignore(void)
 		}
 	}
 
+	/* Write the current number of unaware object auto-inscriptions */
 	n = 0;
 	for (i = 0; i < z_info->k_max; i++)
 		if (k_info[i].note_unaware)
 			n++;
 
-	/* Write the current number of unaware auto-inscriptions */
 	wr_u16b(n);
 
-	/* Write the unaware autoinscriptions array */
+	/* Write the unaware object autoinscriptions array */
 	for (i = 0; i < z_info->k_max; i++) {
 		if (k_info[i].note_unaware) {
 			wr_s16b(i);
 			wr_string(quark_str(k_info[i].note_unaware));
+		}
+	}
+
+	/* Write the current number of rune auto-inscriptions */
+	j = 0;
+	n = max_runes();
+	for (i = 0; i < n; i++)
+		if (rune_note(i))
+			j++;
+
+	wr_u16b(j);
+
+	/* Write the rune autoinscriptions array */
+	for (i = 0; i < n; i++) {
+		if (rune_note(i)) {
+			wr_s16b(i);
+			wr_string(quark_str(rune_note(i)));
 		}
 	}
 
