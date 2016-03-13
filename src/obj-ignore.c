@@ -171,7 +171,12 @@ void ignore_birth_init(void)
  */
 const char *get_autoinscription(struct object_kind *kind)
 {
-	return kind ? quark_str(kind->note) : NULL;
+	if (!kind)
+		return NULL;
+	else if (kind->aware)
+		return quark_str(kind->note_aware);
+	else 
+		return quark_str(kind->note_unaware);
 }
 
 /**
@@ -182,8 +187,14 @@ int apply_autoinscription(struct object *obj)
 	char o_name[80];
 	const char *note = obj ? get_autoinscription(obj->kind) : NULL;
 
-	/* Don't inscribe unaware objects */
-	if (!note || !object_flavor_is_aware(obj))
+	/* Remove unaware inscription if aware */
+	if (obj->kind->aware && quark_str(obj->note) &&
+		quark_str(obj->kind->note_unaware) &&
+		streq(quark_str(obj->note), quark_str(obj->kind->note_unaware)))
+		obj->note = 0;
+
+	/* No note - don't inscribe */
+	if (!note)
 		return 0;
 
 	/* Don't re-inscribe if it's already inscribed */
@@ -218,9 +229,24 @@ int apply_autoinscription(struct object *obj)
 int remove_autoinscription(s16b kind)
 {
 	struct object_kind *k = objkind_byid(kind);
-	if (!k || !k->note)
+	if (!k)
 		return 0;
-	k->note = 0;
+
+	/* Unaware */
+	if (!k->aware) {
+		if (!k->note_unaware) {
+			return 0;
+		} else {
+			k->note_unaware = 0;
+			return 1;
+		}
+	}
+
+	/* Aware */
+	if (!k->note_aware)
+		return 0;
+
+	k->note_aware = 0;
 	return 1;
 }
 
@@ -235,7 +261,10 @@ int add_autoinscription(s16b kind, const char *inscription)
 		return 0;
 	if (!inscription)
 		return remove_autoinscription(kind);
-	k->note = quark_add(inscription);
+	if (k->aware)
+		k->note_aware = quark_add(inscription);
+	else
+		k->note_unaware = quark_add(inscription);
 	return 1;
 }
 

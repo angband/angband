@@ -1912,11 +1912,11 @@ static const char *o_xtra_prompt(int oid)
 	const char *no_insc = ", 's' to toggle ignore, 'r'ecall, '{'";
 	const char *with_insc = ", 's' to toggle ignore, 'r'ecall, '{', '}'";
 
-	/* Forget it if we've never seen the thing */
-	if (kind->flavor && !kind->aware)
-		return "";
-
-	return kind->note ? with_insc : no_insc;
+	/* Appropriate prompt */
+	if (kind->aware)
+		return kind->note_aware ? with_insc : no_insc;
+	else
+		return kind->note_unaware ? with_insc : no_insc;
 }
 
 /**
@@ -1943,14 +1943,9 @@ static void o_xtra_act(struct keypress ch, int oid)
 		return;
 	}
 
-	/* Forget it if we've never seen the thing */
-	if (k->flavor && !k->aware)
-		return;
-
 	/* Uninscribe */
 	if (ch.code == '}') {
-		if (k->note)
-			remove_autoinscription(oid);
+		remove_autoinscription(oid);
 	} else if (ch.code == '{') {
 		/* Inscribe */
 		char note_text[80] = "";
@@ -1962,13 +1957,13 @@ static void o_xtra_act(struct keypress ch, int oid)
 		prt("Inscribe with: ", 0, 0);
 
 		/* Default note */
-		if (k->note)
+		if (k->note_aware || k->note_unaware)
 			strnfmt(note_text, sizeof(note_text), "%s", get_autoinscription(k));
 
 		/* Get an inscription */
 		if (askfor_aux(note_text, sizeof(note_text), NULL)) {
 			/* Remove old inscription if existent */
-			if (k->note)
+			if (k->note_aware || k->note_unaware)
 				remove_autoinscription(oid);
 
 			/* Add the autoinscription */
