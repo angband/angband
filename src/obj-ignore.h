@@ -1,6 +1,6 @@
 /**
-   \file obj-ignore.h
-   \brief Item ignoring
+ * \file obj-ignore.h
+ * \brief Item ignoring
  *
  * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
  * David Vestal, Pete Mack, Andi Sidwell.
@@ -86,6 +86,7 @@ extern bool **ego_ignore_types;
 
 /* obj-ignore.c */
 void ignore_birth_init(void);
+void rune_autoinscribe(int i);
 const char *get_autoinscription(struct object_kind *kind);
 int apply_autoinscription(struct object *obj);
 int remove_autoinscription(s16b kind);

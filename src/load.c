@@ -29,6 +29,7 @@
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-randart.h"
@@ -809,10 +810,10 @@ int rd_ignore(void)
 		}
 	}
 
-	/* Read the current number of aware auto-inscriptions */
+	/* Read the current number of aware object auto-inscriptions */
 	rd_u16b(&inscriptions);
 
-	/* Read the autoinscriptions array */
+	/* Read the aware object autoinscriptions array */
 	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
 		s16b kidx;
@@ -826,10 +827,10 @@ int rd_ignore(void)
 		k->note_aware = quark_add(tmp);
 	}
 
-	/* Read the current number of unaware auto-inscriptions */
+	/* Read the current number of unaware object auto-inscriptions */
 	rd_u16b(&inscriptions);
 
-	/* Read the autoinscriptions array */
+	/* Read the unaware object autoinscriptions array */
 	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
 		s16b kidx;
@@ -841,6 +842,19 @@ int rd_ignore(void)
 			quit_fmt("objkind_byid(%d) failed", kidx);
 		rd_string(tmp, sizeof(tmp));
 		k->note_unaware = quark_add(tmp);
+	}
+
+	/* Read the current number of rune auto-inscriptions */
+	rd_u16b(&inscriptions);
+
+	/* Read the rune autoinscriptions array */
+	for (i = 0; i < inscriptions; i++) {
+		char tmp[80];
+		s16b runeid;
+
+		rd_s16b(&runeid);
+		rd_string(tmp, sizeof(tmp));
+		rune_set_note(runeid, tmp);
 	}
 
 	return 0;

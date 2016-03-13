@@ -2075,6 +2075,62 @@ static void rune_lore(int oid)
 }
 
 /**
+ * Display special prompt for rune inscription.
+ */
+static const char *rune_xtra_prompt(int oid)
+{
+	const char *no_insc = ", 'r'ecall, '{'";
+	const char *with_insc = ", 'r'ecall, '{', '}'";
+
+	/* Appropriate prompt */
+	return rune_note(oid) ? with_insc : no_insc;
+}
+
+/**
+ * Special key actions for rune inscription.
+ */
+static void rune_xtra_act(struct keypress ch, int oid)
+{
+	/* Uninscribe */
+	if (ch.code == '}') {
+		rune_set_note(oid, NULL);
+	} else if (ch.code == '{') {
+		/* Inscribe */
+		char note_text[80] = "";
+
+		/* Avoid the prompt getting in the way */
+		screen_save();
+
+		/* Prompt */
+		prt("Inscribe with: ", 0, 0);
+
+		/* Default note */
+		if (rune_note(oid))
+			strnfmt(note_text, sizeof(note_text), "%s",
+					quark_str(rune_note(oid)));
+
+		/* Get an inscription */
+		if (askfor_aux(note_text, sizeof(note_text), NULL)) {
+			/* Remove old inscription if existent */
+			if (rune_note(oid))
+				rune_set_note(oid, NULL);
+
+			/* Add the autoinscription */
+			rune_set_note(oid, note_text);
+			rune_autoinscribe(oid);
+
+			/* Redraw gear */
+			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+		}
+
+		/* Reload the screen */
+		screen_load();
+	}
+}
+
+
+
+/**
  * Display rune knowledge.
  */
 static void do_cmd_knowledge_runes(const char *name, int row)
@@ -2082,8 +2138,8 @@ static void do_cmd_knowledge_runes(const char *name, int row)
 	group_funcs rune_var_f = {rune_var_name, NULL, rune_var, 0,
 							  N_ELEMENTS(rune_group_text), false};
 
-	member_funcs rune_f = {display_rune, rune_lore, NULL, NULL, recall_prompt,
-						   NULL, 0};
+	member_funcs rune_f = {display_rune, rune_lore, NULL, NULL,
+						   rune_xtra_prompt, rune_xtra_act, 0};
 
 	int *runes;
 	int rune_max = max_runes();
