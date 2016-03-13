@@ -1072,6 +1072,7 @@ object:scroll:Mass Banishment:0x87:0xE9
 ### Utility ###
 
 object:scroll:Satisfy Hunger:0x87:0xE6
+object:scroll:Identify:0x87:0xCD
 object:scroll:Light:0x87:0xD3
 object:scroll:Word of Recall:0x87:0xDF
 object:scroll:Recharging:0x87:0xDB
