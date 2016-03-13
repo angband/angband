@@ -185,7 +185,8 @@ struct object_kind {
 
 	/** Also saved in savefile **/
 
-	quark_t note; 	/**< Autoinscription quark number */
+	quark_t note_aware; 	/**< Autoinscription quark number */
+	quark_t note_unaware; 	/**< Autoinscription quark number */
 
 	bool aware;		/**< Set if player is aware of the kind's effects */
 	bool tried;		/**< Set if kind has been tried */

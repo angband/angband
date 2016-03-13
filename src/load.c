@@ -809,7 +809,7 @@ int rd_ignore(void)
 		}
 	}
 
-	/* Read the current number of auto-inscriptions */
+	/* Read the current number of aware auto-inscriptions */
 	rd_u16b(&inscriptions);
 
 	/* Read the autoinscriptions array */
@@ -823,7 +823,24 @@ int rd_ignore(void)
 		if (!k)
 			quit_fmt("objkind_byid(%d) failed", kidx);
 		rd_string(tmp, sizeof(tmp));
-		k->note = quark_add(tmp);
+		k->note_aware = quark_add(tmp);
+	}
+
+	/* Read the current number of unaware auto-inscriptions */
+	rd_u16b(&inscriptions);
+
+	/* Read the autoinscriptions array */
+	for (i = 0; i < inscriptions; i++) {
+		char tmp[80];
+		s16b kidx;
+		struct object_kind *k;
+
+		rd_s16b(&kidx);
+		k = objkind_byid(kidx);
+		if (!k)
+			quit_fmt("objkind_byid(%d) failed", kidx);
+		rd_string(tmp, sizeof(tmp));
+		k->note_unaware = quark_add(tmp);
 	}
 
 	return 0;

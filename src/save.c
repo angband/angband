@@ -509,18 +509,34 @@ void wr_ignore(void)
 
 	n = 0;
 	for (i = 0; i < z_info->k_max; i++)
-		if (k_info[i].note)
+		if (k_info[i].note_aware)
 			n++;
 
-	/* Write the current number of auto-inscriptions */
+	/* Write the current number of aware auto-inscriptions */
 	wr_u16b(n);
 
-	/* Write the autoinscriptions array */
+	/* Write the aware autoinscriptions array */
 	for (i = 0; i < z_info->k_max; i++) {
-		if (!k_info[i].note)
-			continue;
-		wr_s16b(i);
-		wr_string(quark_str(k_info[i].note));
+		if (k_info[i].note_aware) {
+			wr_s16b(i);
+			wr_string(quark_str(k_info[i].note_aware));
+		}
+	}
+
+	n = 0;
+	for (i = 0; i < z_info->k_max; i++)
+		if (k_info[i].note_unaware)
+			n++;
+
+	/* Write the current number of unaware auto-inscriptions */
+	wr_u16b(n);
+
+	/* Write the unaware autoinscriptions array */
+	for (i = 0; i < z_info->k_max; i++) {
+		if (k_info[i].note_unaware) {
+			wr_s16b(i);
+			wr_string(quark_str(k_info[i].note_unaware));
+		}
 	}
 
 	return;
