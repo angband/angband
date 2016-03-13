@@ -2456,7 +2456,7 @@ static void do_cmd_knowledge_traps(const char *name, int row)
  * ------------------------------------------------------------------------ */
 
 /* The first row of the knowledge_actions menu which does store knowledge */
-#define STORE_KNOWLEDGE_ROW 6
+#define STORE_KNOWLEDGE_ROW 7
 
 static void do_cmd_knowledge_store(const char *name, int row)
 {
@@ -2539,31 +2539,43 @@ void textui_knowledge_init(void)
 
 
 /**
- * Display the "player knowledge" menu.
+ * Display the "player knowledge" menu, greying out items that won't display
+ * anything.
  */
 void textui_browse_knowledge(void)
 {
-	int i;
-	region knowledge_region = { 0, 0, -1, 18 };
+	int i, rune_max = max_runes();
+	region knowledge_region = { 0, 0, -1, 19 };
 
-	/* Grey out menu items that won't display anything */
+	/* Runes */
+	knowledge_actions[1].flags = MN_ACT_GRAYED;
+	for (i = 0; i < rune_max; i++) {
+		if (player_knows_rune(player, i) || OPT(cheat_xtra)) {
+			knowledge_actions[1].flags = 0;
+		    break;
+		}
+	}
+		
+	/* Artifacts */
 	if (collect_known_artifacts(NULL, 0) > 0)
-		knowledge_actions[1].flags = 0;
+		knowledge_actions[2].flags = 0;
 	else
-		knowledge_actions[1].flags = MN_ACT_GRAYED;
+		knowledge_actions[2].flags = MN_ACT_GRAYED;
 
-	knowledge_actions[2].flags = MN_ACT_GRAYED;
+	/* Ego items */
+	knowledge_actions[3].flags = MN_ACT_GRAYED;
 	for (i = 0; i < z_info->e_max; i++) {
 		if (e_info[i].everseen || OPT(cheat_xtra)) {
-			knowledge_actions[2].flags = 0;
+			knowledge_actions[3].flags = 0;
 			break;
 		}
 	}
 
+	/* Monsters */
 	if (count_known_monsters() > 0)
-		knowledge_actions[3].flags = 0;
+		knowledge_actions[4].flags = 0;
 	else
-		knowledge_actions[3].flags = MN_ACT_GRAYED;
+		knowledge_actions[4].flags = MN_ACT_GRAYED;
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
