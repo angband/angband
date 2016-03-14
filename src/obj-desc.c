@@ -544,7 +544,8 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 
 	/* Note curses */
 	create_mask(f, false, OFT_CURSE, OFT_MAX);
-	if (obj->known && of_is_inter(obj->known->flags, f))
+	if (obj->known && of_is_inter(obj->flags, f) &&
+		of_is_inter(obj->known->flags, f))
 		u[n++] = "cursed";
 
 	/* Note ignore */

@@ -312,7 +312,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			obj = j < player->body.count ? slot_object(player, j) : NULL;
 			if (j < player->body.count && obj) {
 				/* Get known properties */
-				object_flags(obj->known, f);
+				object_flags_known(obj, f);
 				if (rec[i].element != -1)
 					known = object_element_is_known(obj, rec[i].element);
 				else if (rec[i].flag != -1)
