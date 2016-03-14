@@ -23,7 +23,7 @@
 #include "cmd-core.h"
 #include "game-event.h"
 
-bool arg_wizard;
+extern bool arg_wizard;
 extern char savefile[1024];
 
 void cmd_init(void);

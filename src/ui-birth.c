@@ -50,7 +50,6 @@
  * with their character, we send the CMD_ACCEPT_CHARACTER command.
  */
 
-
 /**
  * A local-to-this-file global to hold the most important bit of state
  * between calls to the game proper.  Probably not strictly necessary,
@@ -91,6 +90,7 @@ enum birth_rollers
 
 static void point_based_start(void);
 static bool quickstart_allowed = false;
+bool arg_force_name;
 
 /**
  * ------------------------------------------------------------------------

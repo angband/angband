@@ -25,11 +25,11 @@
 struct player;
 struct monster;
 
-const s16b ddd[9];
-const s16b ddx[10];
-const s16b ddy[10];
-const s16b ddx_ddd[9];
-const s16b ddy_ddd[9];
+extern const s16b ddd[9];
+extern const s16b ddx[10];
+extern const s16b ddy[10];
+extern const s16b ddx_ddd[9];
+extern const s16b ddy_ddd[9];
 
 /**
  * Square flags
@@ -171,45 +171,45 @@ struct chunk {
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/
 
 /* Nothing */
-int FEAT_NONE;
+extern int FEAT_NONE;
 
 /* Various */
-int FEAT_FLOOR;
-int FEAT_CLOSED;
-int FEAT_OPEN;
-int FEAT_BROKEN;
-int FEAT_LESS;
-int FEAT_MORE;
+extern int FEAT_FLOOR;
+extern int FEAT_CLOSED;
+extern int FEAT_OPEN;
+extern int FEAT_BROKEN;
+extern int FEAT_LESS;
+extern int FEAT_MORE;
 
 /* Secret door */
-int FEAT_SECRET;
+extern int FEAT_SECRET;
 
 /* Rubble */
-int FEAT_RUBBLE;
-int FEAT_PASS_RUBBLE;
+extern int FEAT_RUBBLE;
+extern int FEAT_PASS_RUBBLE;
 
 /* Mineral seams */
-int FEAT_MAGMA;
-int FEAT_QUARTZ;
-int FEAT_MAGMA_K;
-int FEAT_QUARTZ_K;
+extern int FEAT_MAGMA;
+extern int FEAT_QUARTZ;
+extern int FEAT_MAGMA_K;
+extern int FEAT_QUARTZ_K;
 
 /* Walls */
-int FEAT_GRANITE;
-int FEAT_PERM;
-int FEAT_LAVA;
+extern int FEAT_GRANITE;
+extern int FEAT_PERM;
+extern int FEAT_LAVA;
 
 /* Special trap detect features  - should be replaced with square flags */
-int FEAT_DTRAP_FLOOR;
-int FEAT_DTRAP_WALL;
+extern int FEAT_DTRAP_FLOOR;
+extern int FEAT_DTRAP_WALL;
 
 
 /* Real cave */
-struct chunk *cave;
+extern struct chunk *cave;
 /* Known cave */
-struct chunk *cave_k;
-struct chunk **chunk_list;
-u16b chunk_list_max;
+extern struct chunk *cave_k;
+extern struct chunk **chunk_list;
+extern u16b chunk_list_max;
 
 /* cave-view.c */
 int distance(int y1, int x1, int y2, int x2);

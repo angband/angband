@@ -61,7 +61,7 @@ struct trap_kind
 	struct effect *effect;		/**< Effect on entry to grid */
 };
 
-struct trap_kind *trap_info;
+extern struct trap_kind *trap_info;
 
 /**
  * An actual trap.

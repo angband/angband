@@ -21,13 +21,13 @@
 
 #include "cave.h"
 
-u16b daycount;
-u32b seed_randart;
-u32b seed_flavor;
-s32b turn;
-bool character_generated;
-bool character_dungeon;
-const byte extract_energy[200];
+extern u16b daycount;
+extern u32b seed_randart;
+extern u32b seed_flavor;
+extern s32b turn;
+extern bool character_generated;
+extern bool character_dungeon;
+extern const byte extract_energy[200];
 
 bool is_daytime(void);
 int turn_energy(int speed);

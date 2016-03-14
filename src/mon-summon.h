@@ -31,7 +31,7 @@ enum summon_flag {
 };
 
 /** Variables **/
-struct monster_base *kin_base;
+extern struct monster_base *kin_base;
 
 
 /** Functions **/

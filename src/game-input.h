@@ -36,22 +36,22 @@
 #define QUIVER_TAGS   0x0200	/* 0-9 are quiver slots when selecting */
 
 
-bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
-int (*get_quantity_hook)(const char *prompt, int max);
-bool (*get_check_hook)(const char *prompt);
-bool (*get_com_hook)(const char *prompt, char *command);
-bool (*get_rep_dir_hook)(int *dir, bool allow_none);
-bool (*get_aim_dir_hook)(int *dir);
-int (*get_spell_from_book_hook)(const char *verb, struct object *book,
-								const char *error,
-								bool (*spell_filter)(int spell));
-int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
-					  const char *error, bool (*spell_filter)(int spell));
-bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
-					  cmd_code cmd, item_tester tester, int mode);
-void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
-bool (*panel_contains_hook)(unsigned int y, unsigned int x);
-bool (*map_is_visible_hook)(void);
+extern bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
+extern int (*get_quantity_hook)(const char *prompt, int max);
+extern bool (*get_check_hook)(const char *prompt);
+extern bool (*get_com_hook)(const char *prompt, char *command);
+extern bool (*get_rep_dir_hook)(int *dir, bool allow_none);
+extern bool (*get_aim_dir_hook)(int *dir);
+extern int (*get_spell_from_book_hook)(const char *verb, struct object *book,
+									   const char *error,
+									   bool (*spell_filter)(int spell));
+extern int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
+							 const char *error, bool (*spell_filter)(int spell));
+extern bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
+							 cmd_code cmd, item_tester tester, int mode);
+extern void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
+extern bool (*panel_contains_hook)(unsigned int y, unsigned int x);
+extern bool (*map_is_visible_hook)(void);
 
 bool get_string(const char *prompt, char *buf, size_t len);
 int get_quantity(const char *prompt, int max);

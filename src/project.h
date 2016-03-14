@@ -77,8 +77,8 @@ bool project_p(int who, int r, int y, int x, int dam, int typ);
 
 
 /* project.c */
-byte gf_to_attr[GF_MAX][BOLT_MAX];
-wchar_t gf_to_char[GF_MAX][BOLT_MAX];
+extern byte gf_to_attr[GF_MAX][BOLT_MAX];
+extern wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 
 int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int flg);
 bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg);

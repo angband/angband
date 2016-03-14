@@ -37,7 +37,7 @@ extern char *argv0;
 /**
  * Aux functions
  */
-size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
+extern size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
 extern void (*plog_aux)(const char *);
 extern void (*quit_aux)(const char *);
 
