@@ -545,7 +545,7 @@ static void get_known_flags(const struct object *obj, const oinfo_detail_t mode,
 	if (mode & OINFO_EGO) {
 			object_flags(obj, flags);
 	} else {
-		object_flags(obj->known, flags);
+		object_flags_known(obj, flags);
 
 		/* Don't include base flags when terse */
 		if (mode & OINFO_TERSE)
@@ -566,7 +566,10 @@ static void get_known_elements(const struct object *obj,
 	/* Grab the element info */
 	for (i = 0; i < N_ELEMENTS(elements); i++) {
 		/* Report fake egos or known element info */
-		el_info[i].res_level = obj->known->el_info[i].res_level;
+		if (player->obj_k->el_info[i].res_level)
+			el_info[i].res_level = obj->known->el_info[i].res_level;
+		else
+			el_info[i].res_level = 0;
 		el_info[i].flags = obj->known->el_info[i].flags;
 
 		/* Ignoring an element: */
@@ -1005,7 +1008,8 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		*range = 10 * MIN(6 + 2 * player->state.ammo_mult, z_info->max_range);
 
 	/* Note the impact flag */
-	*impactful = of_has(obj->known->flags, OF_IMPACT);
+	*impactful = of_has(obj->known->flags, OF_IMPACT) &&
+		of_has(obj->flags, OF_IMPACT);
 
 	/* Add breakage chance */
 	*break_chance = breakage_chance(obj, true);

@@ -589,9 +589,6 @@ bool object_runes_known(const struct object *obj)
 	if (obj->known->to_h != obj->to_h) return false;
 	if (obj->known->to_d != obj->to_d) return false;
 
-	/* Not all flags known */
-	if (!of_is_equal(obj->flags, obj->known->flags)) return false;
-
 	/* Not all modifiers known */
 	for (i = 0; i < OBJ_MOD_MAX; i++)
 		if (obj->modifiers[i] != obj->known->modifiers[i])
@@ -599,7 +596,8 @@ bool object_runes_known(const struct object *obj)
 
 	/* Not all elements known */
 	for (i = 0; i < ELEM_MAX; i++)
-		if (obj->el_info[i].res_level != obj->known->el_info[i].res_level)
+		if ((obj->el_info[i].res_level != 0) &&
+			(obj->known->el_info[i].res_level == 0))
 			return false;
 
 	/* Not all brands known */
@@ -609,6 +607,9 @@ bool object_runes_known(const struct object *obj)
 	/* Not all slays known */
 	if (!slays_are_equal(obj->slays, obj->known->slays))
 		return false;
+
+	/* Not all flags known */
+	if (!of_is_subset(obj->known->flags, obj->flags)) return false;
 
 	return true;
 }
@@ -634,6 +635,7 @@ bool object_fully_known(const struct object *obj)
  * Checks whether the player knows whether an object has a given flag
  *
  * \param obj is the object
+ * \param flag is the flag
  */
 bool object_flag_is_known(const struct object *obj, int flag)
 {
@@ -643,6 +645,9 @@ bool object_flag_is_known(const struct object *obj, int flag)
 	/* Player knows the flag means OK */
 	if (of_has(player->obj_k->flags, flag)) return true;
 
+	/* Object has had a chance to display the flag means OK */
+	if (of_has(obj->known->flags, flag)) return true;
+
 	return false;
 }
 
@@ -650,6 +655,7 @@ bool object_flag_is_known(const struct object *obj, int flag)
  * Checks whether the player knows the given element properties of an object
  *
  * \param obj is the object
+ * \param element is the element
  */
 bool object_element_is_known(const struct object *obj, int element)
 {
@@ -660,6 +666,9 @@ bool object_element_is_known(const struct object *obj, int element)
 
 	/* Player knows the element means OK */
 	if (player->obj_k->el_info[element].res_level) return true;
+
+	/* Object has been exposed to the element means OK */
+	if (obj->known->el_info[element].res_level) return true;
 
 	return false;
 }
@@ -716,12 +725,10 @@ void player_know_object(struct player *p, struct object *obj)
 	if (!obj->known) return;
 	if (obj->kind != obj->known->kind) return;
 
-	/* Set object flags */
-	for (flag = of_next(p->obj_k->flags, FLAG_START); flag != FLAG_END;
-		 flag = of_next(p->obj_k->flags, flag + 1)) {
-		if (of_has(obj->flags, flag))
-			of_on(obj->known->flags, flag);
-	}
+	/* Set combat details */
+	obj->known->to_a = p->obj_k->to_a * obj->to_a;
+	obj->known->to_h = p->obj_k->to_h * obj->to_h;
+	obj->known->to_d = p->obj_k->to_d * obj->to_d;
 
 	/* Set modifiers */
 	for (i = 0; i < OBJ_MOD_MAX; i++)
@@ -769,19 +776,30 @@ void player_know_object(struct player *p, struct object *obj)
 		}
 	}
 
-	/* Set combat details */
-	obj->known->ac = p->obj_k->ac * obj->ac;
-	obj->known->to_a = p->obj_k->to_a * obj->to_a;
-	obj->known->to_h = p->obj_k->to_h * obj->to_h;
-	obj->known->to_d = p->obj_k->to_d * obj->to_d;
-	obj->known->dd = p->obj_k->dd * obj->dd;
-	obj->known->ds = p->obj_k->ds * obj->ds;
+	/* Set object flags */
+	for (flag = of_next(p->obj_k->flags, FLAG_START); flag != FLAG_END;
+		 flag = of_next(p->obj_k->flags, flag + 1)) {
+		if (of_has(obj->flags, flag))
+			of_on(obj->known->flags, flag);
+	}
 
 	/* Set ego type, jewellery type if known */
 	if (player_knows_ego(p, obj->ego))
 		obj->known->ego = obj->ego;
 	if (object_fully_known(obj) && tval_is_jewelry(obj))
 		object_flavor_aware(obj);
+
+	/* Fully known objects have their known element and flag info set to 
+	 * match the actual info, rather than showing what elements and flags
+	 * the would be displaying if they had them */
+	if (object_fully_known(obj)) {
+		for (i = 0; i < ELEM_MAX; i++) {
+			obj->known->el_info[i].res_level = obj->el_info[i].res_level;
+			obj->known->el_info[i].flags = obj->el_info[i].flags;
+		}
+		of_wipe(obj->known->flags);
+		of_copy(obj->known->flags, obj->flags);
+	}
 }
 
 /**
@@ -793,11 +811,6 @@ void update_player_object_knowledge(struct player *p)
 {
 	int i;
 	struct object *obj;
-
-	/* Hack - REMOVE THIS AFTER COMP 186 - NRM */
-	p->obj_k->dd = 1;
-	p->obj_k->ds = 1;
-	p->obj_k->ac = 1;
 
 	/* Level objects */
 	if (cave)
@@ -1082,6 +1095,10 @@ void equip_learn_flag(struct player *p, int flag)
 			/* Learn the flag */
 			player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
 			return;
+		} else if (!object_fully_known(obj)) {
+			/* Objects not fully known yet get marked as having had a chance
+			 * to display the flag */
+			of_on(obj->known->flags, flag);
 		}
 	}
 }
@@ -1117,6 +1134,11 @@ void equip_learn_element(struct player *p, int element)
 			/* Learn the element properties */
 			player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), true);
 			return;
+		} else if (!object_fully_known(obj)) {
+			/* Objects not fully known yet get marked as having had a chance
+			 * to display the element */
+			obj->known->el_info[element].res_level = 1;
+			obj->known->el_info[element].flags = obj->el_info[element].flags;
 		}
 	}
 }
@@ -1158,6 +1180,12 @@ void equip_learn_after_time(struct player *p)
 			if (!of_has(p->obj_k->flags, flag))
 				flag_message(flag, o_name);
 			player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+		}
+
+		if (!object_fully_known(obj)) {
+			/* Objects not fully known yet get marked as having had a chance
+			 * to display all the timed flags */
+			of_union(obj->known->flags, timed_mask);
 		}
 	}
 }
@@ -1255,78 +1283,12 @@ int object_find_unknown_rune(struct player *p, struct object *obj)
 
 	if (object_runes_known(obj)) return -1;
 
-	for (i = 0; i < rune_max; i++) {
-		struct rune *r = &rune_list[i];
-
-		switch (r->variety) {
-			/* Combat runes - just check them all */
-			case RUNE_VAR_COMBAT: {
-				if ((r->index == COMBAT_RUNE_TO_A) &&
-					(obj->known->to_a != obj->to_a))
-					poss_runes[num++] = i;
-				else if ((r->index == COMBAT_RUNE_TO_H)
-						 && (obj->known->to_h != obj->to_h))
-					poss_runes[num++] = i;
-				else if ((r->index == COMBAT_RUNE_TO_D)
-						 && (obj->known->to_d != obj->to_d))
-					poss_runes[num++] = i;
-				break;
-			}
-			/* Mod runes */
-			case RUNE_VAR_MOD: {
-				if (obj->modifiers[r->index] != obj->known->modifiers[r->index])
-					poss_runes[num++] = i;
-				break;
-			}
-			/* Element runes */
-			case RUNE_VAR_RESIST: {
-				if (obj->el_info[r->index].res_level !=
-					obj->known->el_info[r->index].res_level)
-					poss_runes[num++] = i;
-				break;
-			}
-			/* Brand runes */
-			case RUNE_VAR_BRAND: {
-				struct brand *b;
-				for (b = obj->brands; b; b = b->next)
-					if (streq(b->name, r->name)) break;
-
-				/* Brand not on the object, or known */
-				if (!b) break;
-				if (player_knows_brand(p, b)) break;
-
-				/* If we're here we have an unknown brand */
-				poss_runes[num++] = i;
-				break;
-			}
-			/* Slay runes */
-			case RUNE_VAR_SLAY: {
-				struct slay *s;
-				for (s = obj->slays; s; s = s->next)
-					if (streq(s->name, r->name)) break;
-
-				/* Slay not on the object, or known */
-				if (!s) break;
-				if (player_knows_slay(p, s)) break;
-
-				/* If we're here we have an unknown slay */
-				poss_runes[num++] = i;
-				break;
-			}
-			/* Flag runes */
-			case RUNE_VAR_FLAG: {
-				if (of_has(obj->flags, r->index) &&
-					!of_has(obj->known->flags, r->index))
-					poss_runes[num++] = i;
-				break;
-			}
-			default: break;
-		}
-	}
+	for (i = 0; i < rune_max; i++)
+		if (object_has_rune(obj, i) && !player_knows_rune(p, i))
+			poss_runes[num++] = i;
 
 	/* Grab a random rune from among the unknowns  */
-	if (num)
-		return poss_runes[randint0(num)];
+	if (num) return poss_runes[randint0(num)];
 
 	return -1;
 }
@@ -1417,6 +1379,10 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 			/* Learn the mod */
 			player_learn_rune(p, rune_index(RUNE_VAR_MOD, i), true);
 		}
+
+	/* If the object isn't fully known, known object gets the obvious flags */
+	if (!object_fully_known(obj))
+		of_union(obj->known->flags, obvious_mask);
 }
 
 /**
