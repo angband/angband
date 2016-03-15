@@ -54,7 +54,8 @@
 struct pit_profile *pit_info;
 struct vault *vaults;
 struct cave_profile *cave_profiles;
-
+struct dun_data *dun;
+struct room_template *room_templates;
 
 static const struct {
 	const char *name;

@@ -237,9 +237,9 @@ struct room_template {
     byte tval;			/*!< tval for objects in this room */
 };
 
-struct dun_data *dun;
-struct vault *vaults;
-struct room_template *room_templates;
+extern struct dun_data *dun;
+extern struct vault *vaults;
+extern struct room_template *room_templates;
 
 /* gen-cave.c */
 struct chunk *town_gen(struct player *p);
@@ -302,7 +302,7 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 
 
 /* gen-util.c */
-byte get_angle_to_grid[41][41];
+extern byte get_angle_to_grid[41][41];
 
 int yx_to_i(int y, int x, int w);
 void i_to_yx(int i, int w, int *y, int *x);

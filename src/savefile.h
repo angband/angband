@@ -30,7 +30,7 @@
 /**
  * Global "we've just saved" variable
  */
-bool character_saved;
+extern bool character_saved;
 
 /**
  * Save to the given location.  Returns true on success, false otherwise.

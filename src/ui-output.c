@@ -22,6 +22,8 @@
 #include "ui-output.h"
 #include "z-textblock.h"
 
+s16b screen_save_depth;
+
 /**
  * ------------------------------------------------------------------------
  * Regions
