@@ -223,11 +223,11 @@ static void runes_autoinscribe(struct object *obj)
 /**
  * Return an object kind autoinscription
  */
-const char *get_autoinscription(struct object_kind *kind)
+const char *get_autoinscription(struct object_kind *kind, bool aware)
 {
 	if (!kind)
 		return NULL;
-	else if (kind->aware)
+	else if (aware)
 		return quark_str(kind->note_aware);
 	else 
 		return quark_str(kind->note_unaware);
@@ -239,11 +239,11 @@ const char *get_autoinscription(struct object_kind *kind)
 int apply_autoinscription(struct object *obj)
 {
 	char o_name[80];
-	const char *note = obj ? get_autoinscription(obj->kind) : NULL;
+	bool aware = obj->kind->aware;
+	const char *note = obj ? get_autoinscription(obj->kind, aware) : NULL;
 
 	/* Remove unaware inscription if aware */
-	if (obj->kind->aware && quark_str(obj->note) &&
-		quark_str(obj->kind->note_unaware) &&
+	if (aware && quark_str(obj->note) && quark_str(obj->kind->note_unaware) &&
 		streq(quark_str(obj->note), quark_str(obj->kind->note_unaware)))
 		obj->note = 0;
 
@@ -311,14 +311,14 @@ int remove_autoinscription(s16b kind)
 /**
  * Register an object kind autoinscription
  */
-int add_autoinscription(s16b kind, const char *inscription)
+int add_autoinscription(s16b kind, const char *inscription, bool aware)
 {
 	struct object_kind *k = objkind_byid(kind);
 	if (!k)
 		return 0;
 	if (!inscription)
 		return remove_autoinscription(kind);
-	if (k->aware)
+	if (aware)
 		k->note_aware = quark_add(inscription);
 	else
 		k->note_unaware = quark_add(inscription);
