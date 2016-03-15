@@ -217,7 +217,9 @@ void dump_autoinscriptions(ang_file *f) {
 		const char *note;
 
 		if (!k->name || !k->tval) continue;
-		note = get_autoinscription(k);
+
+		/* Only aware autoinscriptions go to the prefs file */
+		note = get_autoinscription(k, true);
 		if (note) {
 			object_short_name(name, sizeof name, k->name);
 			file_putf(f, "inscribe:%s:%s:%s\n", tval_find_name(k->tval), name, note);
@@ -922,7 +924,7 @@ static enum parser_error parse_prefs_inscribe(struct parser *p)
 	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	add_autoinscription(kind->kidx, parser_getstr(p, "text"));
+	add_autoinscription(kind->kidx, parser_getstr(p, "text"), true);
 
 	return PARSE_ERROR_NONE;
 }
