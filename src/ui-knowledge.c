@@ -1740,7 +1740,7 @@ static int get_artifact_from_kind(struct object_kind *kind)
 static void display_object(int col, int row, bool cursor, int oid)
 {
 	struct object_kind *kind = &k_info[oid];
-	const char *inscrip = get_autoinscription(kind);
+	const char *inscrip = get_autoinscription(kind, kind->aware);
 
 	char o_name[80];
 
@@ -1774,7 +1774,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 
 
 	/* Show autoinscription if around */
-	if (aware && inscrip)
+	if (inscrip)
 		c_put_str(COLOUR_YELLOW, inscrip, row, 55);
 
 	if (tile_height == 1) {
@@ -1948,7 +1948,7 @@ static void o_xtra_act(struct keypress ch, int oid)
 		remove_autoinscription(oid);
 	} else if (ch.code == '{') {
 		/* Inscribe */
-		char note_text[80] = "";
+		char text[80] = "";
 
 		/* Avoid the prompt getting in the way */
 		screen_save();
@@ -1958,16 +1958,16 @@ static void o_xtra_act(struct keypress ch, int oid)
 
 		/* Default note */
 		if (k->note_aware || k->note_unaware)
-			strnfmt(note_text, sizeof(note_text), "%s", get_autoinscription(k));
+			strnfmt(text, sizeof(text), "%s", get_autoinscription(k, k->aware));
 
 		/* Get an inscription */
-		if (askfor_aux(note_text, sizeof(note_text), NULL)) {
+		if (askfor_aux(text, sizeof(text), NULL)) {
 			/* Remove old inscription if existent */
 			if (k->note_aware || k->note_unaware)
 				remove_autoinscription(oid);
 
 			/* Add the autoinscription */
-			add_autoinscription(oid, note_text);
+			add_autoinscription(oid, text, k->aware);
 			cmdq_push(CMD_AUTOINSCRIBE);
 
 			/* Redraw gear */
@@ -2043,8 +2043,13 @@ static const char *rune_group_text[] =
 static void display_rune(int col, int row, bool cursor, int oid )
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	const char *inscrip = quark_str(rune_note(oid));
 
 	c_prt(attr, rune_name(oid), row, col);
+
+	/* Show autoinscription if around */
+	if (inscrip)
+		c_put_str(COLOUR_YELLOW, inscrip, row, 47);
 }
 
 
@@ -2156,7 +2161,8 @@ static void do_cmd_knowledge_runes(const char *name, int row)
 		runes[rune_count++] = i;
 	}
 
-	display_knowledge("runes", runes, rune_count, rune_var_f, rune_f, NULL);
+	display_knowledge("runes", runes, rune_count, rune_var_f, rune_f,
+					  "Inscribed");
 	mem_free(runes);
 }
 
