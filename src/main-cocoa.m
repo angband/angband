@@ -3460,7 +3460,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     for( NSInteger i = 1; i < ANGBAND_TERM_MAX; i++ )
     {
         NSString *title = [NSString stringWithFormat: @"Term %ld", (long)i];
-        NSMenuItem *windowItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(selectWindow:) keyEquivalent: @""];
+        NSString *keyEquivalent = [NSString stringWithFormat: @"%ld", (long)i];
+        NSMenuItem *windowItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(selectWindow:) keyEquivalent: keyEquivalent];
         [windowItem setTarget: self];
         [windowItem setTag: AngbandWindowMenuItemTagBase + i];
         [windowsMenu addItem: windowItem];
