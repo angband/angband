@@ -340,6 +340,7 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 void init_file_paths(const char *configpath, const char *libpath, const char *datapath)
 {
 	char buf[1024];
+	char *userpath = NULL;
 
 	/*** Free everything ***/
 
@@ -359,15 +360,20 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 	/*** Prepare the paths ***/
 
-	/* Build path names */
-	ANGBAND_DIR_GAMEDATA = string_make(format("%sgamedata", configpath));
-	ANGBAND_DIR_CUSTOMIZE = string_make(format("%scustomize", configpath));
-	ANGBAND_DIR_HELP = string_make(format("%shelp", libpath));
-	ANGBAND_DIR_SCREENS = string_make(format("%sscreens", libpath));
-	ANGBAND_DIR_FONTS = string_make(format("%sfonts", libpath));
-	ANGBAND_DIR_TILES = string_make(format("%stiles", libpath));
-	ANGBAND_DIR_SOUNDS = string_make(format("%ssounds", libpath));
-	ANGBAND_DIR_ICONS = string_make(format("%sicons", libpath));
+#define BUILD_DIRECTORY_PATH(dest, basepath, dirname) { \
+	path_build(buf, sizeof(buf), (basepath), (dirname)); \
+	dest = string_make(buf); \
+}
+
+	/* Paths generally containing configuration data for Angband. */
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_GAMEDATA, configpath, "gamedata");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_CUSTOMIZE, configpath, "customize");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_HELP, libpath, "help");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCREENS, libpath, "screens");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_FONTS, libpath, "fonts");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_TILES, libpath, "tiles");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SOUNDS, libpath, "sounds");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ICONS, libpath, "icons");
 
 #ifdef PRIVATE_USER_PATH
 
@@ -381,33 +387,39 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 #else /* !PRIVATE_USER_PATH */
 
 #ifdef MACH_O_CARBON
-	ANGBAND_DIR_USER = string_make(datapath);
+	/* Remove any trailing separators, since some deeper path creation functions
+	 * don't like directories with trailing slashes. */
+	if (suffix(datapath, PATH_SEP)) {
+		/* Hacky way to trim the separator. Since this is just for OS X, we can
+		 * assume a one char separator. */
+		int last_char_index = strlen(datapath) - 1;
+		my_strcpy(buf, datapath, sizeof(buf));
+		buf[last_char_index] = '\0';
+		ANGBAND_DIR_USER = string_make(buf);
+	}
+	else {
+		ANGBAND_DIR_USER = string_make(datapath);
+	}
 #else /* !MACH_O_CARBON */
-	ANGBAND_DIR_USER = string_make(format("%suser", datapath));
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_USER, datapath, "user");
 #endif /* MACH_O_CARBON */
 
 #endif /* PRIVATE_USER_PATH */
 
 	/* Build the path to the user info directory */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "info");
-	ANGBAND_DIR_INFO = string_make(buf);
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_INFO, ANGBAND_DIR_USER, "info");
 
 #ifdef USE_PRIVATE_PATHS
-
-    /* Build the path to the score and save directories */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
-	ANGBAND_DIR_SCORES = string_make(buf);
-
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
-	ANGBAND_DIR_SAVE = string_make(buf);
-
+	userpath = ANGBAND_DIR_USER;
 #else /* !USE_PRIVATE_PATHS */
-
-	/* Build pathnames */
-	ANGBAND_DIR_SCORES = string_make(format("%sscores", datapath));
-	ANGBAND_DIR_SAVE = string_make(format("%ssave", datapath));
-
+	userpath = (char *)datapath;
 #endif /* USE_PRIVATE_PATHS */
+
+	/* Build the path to the score and save directories */
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCORES, userpath, "scores");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SAVE, userpath, "save");
+
+#undef BUILD_DIRECTORY_PATH
 }
 
 

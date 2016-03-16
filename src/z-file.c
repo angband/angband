@@ -201,7 +201,12 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 	/* There is both a relative leafname and a base path from which it is
 	 * relative */
 	path_process(buf, len, &cur_len, base);
-	strnfcat(buf, len, &cur_len, "%s", PATH_SEP);
+
+	if (!suffix(base, PATH_SEP)) {
+		/* Append separator if it isn't already in the string. */
+		strnfcat(buf, len, &cur_len, "%s", PATH_SEP);
+	}
+
 	path_process(buf, len, &cur_len, leaf);
 
 	return cur_len;
