@@ -965,8 +965,7 @@ static int compare_advances(const void *ap, const void *bp)
         exit( 0 );
     }
 
-    /* Angband requires the trailing slash for the directory path */
-    return [bundleLibPath stringByAppendingString: @"/"];
+	return bundleLibPath;
 }
 
 /**
@@ -975,14 +974,35 @@ static int compare_advances(const void *ap, const void *bp)
  */
 + (NSString *)angbandDocumentsPath
 {
-    NSString *documents = [NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES ) lastObject];
+	NSString *documents = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
 
 #if defined(SAFE_DIRECTORY)
-    NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
-    return [documents stringByAppendingPathComponent: versionedDirectory];
+	NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
+	return [documents stringByAppendingPathComponent: versionedDirectory];
 #else
-    return [documents stringByAppendingPathComponent: AngbandDirectoryNameBase];
+	return [documents stringByAppendingPathComponent: AngbandDirectoryNameBase];
 #endif
+}
+
+/**
+ * Adjust directory paths as needed to correct for any differences needed by
+ * Angband. \c init_file_paths() currently requires that all paths provided have
+ * a trailing slash and all other platforms honor this.
+ *
+ * \param originalPath The directory path to adjust.
+ * \return A path suitable for Angband or nil if an error occurred.
+ */
+static NSString *AngbandCorrectedDirectoryPath(NSString *originalPath)
+{
+	if ([originalPath length] == 0) {
+		return nil;
+	}
+
+	if (![originalPath hasSuffix: @"/"]) {
+		return [originalPath stringByAppendingString: @"/"];
+	}
+
+	return originalPath;
 }
 
 /**
@@ -991,14 +1011,16 @@ static int compare_advances(const void *ap, const void *bp)
  */
 + (void)prepareFilePathsAndDirectories
 {
-    char libpath[PATH_MAX + 1] = "\0";
-    char basepath[PATH_MAX + 1] = "\0";
+	char libpath[PATH_MAX + 1] = "\0";
+	NSString *libDirectoryPath = AngbandCorrectedDirectoryPath([self libDirectoryPath]);
+	[libDirectoryPath getFileSystemRepresentation: libpath maxLength: sizeof(libpath)];
 
-    [[self libDirectoryPath] getFileSystemRepresentation: libpath maxLength: sizeof(libpath)];
-    [[self angbandDocumentsPath] getFileSystemRepresentation: basepath maxLength: sizeof(basepath)];
+	char basepath[PATH_MAX + 1] = "\0";
+	NSString *angbandDocumentsPath = AngbandCorrectedDirectoryPath([self angbandDocumentsPath]);
+	[angbandDocumentsPath getFileSystemRepresentation: basepath maxLength: sizeof(basepath)];
 
-    init_file_paths( libpath, libpath, basepath );
-    create_needed_dirs();
+	init_file_paths(libpath, libpath, basepath);
+	create_needed_dirs();
 }
 
 #pragma mark -
