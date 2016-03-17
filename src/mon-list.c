@@ -282,7 +282,7 @@ void monster_list_sort(monster_list_t *list,
 	if (elements <= 1)
 		return;
 
-	sort(list->entries, elements, sizeof(list->entries[0]), compare);
+	sort(list->entries, MIN(elements, list->entries_size), sizeof(list->entries[0]), compare);
 	list->sorted = true;
 }
 
