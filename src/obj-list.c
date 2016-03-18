@@ -376,6 +376,10 @@ void object_list_format_name(const object_list_entry_t *entry,
 	struct object *base_obj;
 	int iy;
 	int ix;
+	bool object_is_artifact;
+	bool object_name_visible;
+	bool object_known;
+	bool object_is_recognized_artifact;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
 		return;
@@ -383,20 +387,28 @@ void object_list_format_name(const object_list_entry_t *entry,
 	base_obj = cave->objects[entry->object->oidx];
 	iy = entry->object->iy;
 	ix = entry->object->ix;
+	object_is_artifact = (base_obj->artifact != NULL);
+	object_name_visible = object_name_is_visible(base_obj);
+	object_known = object_is_known(base_obj);
+	object_is_recognized_artifact = (object_is_artifact && (object_name_visible || object_known));
 
 	/* Hack - these don't have a prefix when there is only one, so just pad
 	 * with a space. */
 	switch (entry->object->kind->tval) {
 		case TV_SOFT_ARMOR:
-			has_singular_prefix = (entry->object->kind->sval == lookup_sval(TV_SOFT_ARMOR, "Robe"));
+			if (object_is_recognized_artifact)
+				has_singular_prefix = true;
+			else if (base_obj->kind->sval == lookup_sval(TV_SOFT_ARMOR, "Robe"))
+				has_singular_prefix = true;
+			else
+				has_singular_prefix = false;
 			break;
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-			if ((object_name_is_visible(base_obj) || object_is_known(base_obj))
-				&& entry->object->artifact)
+			if (object_is_recognized_artifact)
 				has_singular_prefix = true;
 			else
-				has_singular_prefix = false;				
+				has_singular_prefix = false;
 			break;
 		default:
 			has_singular_prefix = true;
