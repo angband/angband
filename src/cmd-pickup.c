@@ -375,6 +375,10 @@ void do_cmd_pickup(struct command *cmd)
 
 	/* Charge this amount of energy. */
 	player->upkeep->energy_use = energy_cost;
+
+	/* Redraw the object list using the upkeep flag so that the update can be
+	 * somewhat coalesced. Use event_signal(EVENT_ITEMLIST to force update. */
+	player->upkeep->redraw = (PR_ITEMLIST);
 }
 
 /**
@@ -389,4 +393,8 @@ void do_cmd_autopickup(struct command *cmd)
 
 	/* Look at or feel what's left */
 	event_signal(EVENT_SEEFLOOR);
+
+	/* Redraw the object list using the upkeep flag so that the update can be
+	 * somewhat coalesced. Use event_signal(EVENT_ITEMLIST to force update. */
+	player->upkeep->redraw = (PR_ITEMLIST);
 }
