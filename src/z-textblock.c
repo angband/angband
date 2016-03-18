@@ -226,66 +226,95 @@ static void new_line(size_t **line_starts, size_t **line_lengths,
 }
 
 /**
- * Given a certain width, split a textblock into wrapped lines of text.
+ * Given a certain width, split a textblock into wrapped lines of text. Trailing
+ * empty lines are trimmed.
  *
- * \returns Number of lines in output.
+ * \param tb The textblock to wrap.
+ * \param line_starts On return, an array (indexed by line number) of character
+ *		  indexes to the text of \c tb where each line begins.
+ * \param line_lengths On return, an array (indexed by line number) of line
+ *		  lengths.
+ * \param width The maximum permitted width of each line.
+ * \return Number of lines in output.
  */
-size_t textblock_calculate_lines(textblock *tb,
-		size_t **line_starts, size_t **line_lengths, size_t width)
+size_t textblock_calculate_lines(textblock *tb, size_t **line_starts, size_t **line_lengths, size_t width)
 {
-	const wchar_t *text = tb->text;
+	const wchar_t *text = NULL;
+	size_t text_offset = 0;
+	size_t alloc_lines = 0;
+	size_t total_lines = 0;
+	size_t current_line_index = 0;
+	size_t current_line_length = 0;
+	size_t breaking_char_offset = 0;
 
-	size_t cur_line = 0, n_lines = 0;
+	if (tb == NULL || line_starts == NULL || line_lengths == NULL || width == 0)
+		return 0;
 
-	size_t len = tb->strlen;
-	size_t text_offset;
+	text = textblock_text(tb);
 
-	size_t line_start = 0, line_length = 0;
-	size_t word_start = 0, word_length = 0;
+	if (text == NULL || tb->strlen == 0)
+		return 0;
 
-	assert(width > 0);
+	/* Start a line, since we have at least one. */
+	new_line(line_starts, line_lengths, &alloc_lines, &total_lines, 0, 0);
 
-	for (text_offset = 0; text_offset < len; text_offset++) {
+	while (text_offset < tb->strlen) {
 		if (text[text_offset] == L'\n') {
-			new_line(line_starts, line_lengths, &n_lines, &cur_line,
-					line_start, line_length);
-
-			line_start = text_offset + 1;
-			line_length = 0;
-		} else if (text[text_offset] == L' ') {
-			line_length++;
-
-			word_start = line_length;
-			word_length = 0;
-		} else {
-			line_length++;
-			word_length++;
+			(*line_lengths)[current_line_index] = current_line_length;
+			new_line(line_starts, line_lengths, &alloc_lines, &total_lines, text_offset + 1, 0);
+			current_line_index++;
+			current_line_length = 0;
+		}
+		else if (text[text_offset] == L' ') {
+			breaking_char_offset = text_offset;
+			current_line_length++;
+		}
+		else {
+			current_line_length++;
 		}
 
-		/* special case: if we have a very long word, just slice it */
-		if (word_length == width) {
-			new_line(line_starts, line_lengths, &n_lines, &cur_line,
-					line_start, line_length);
+		if (current_line_length == width) {
+			/* We're out of space on the line and need to break it. */
 
-			line_start += line_length;
-			line_length = 0;
+			size_t const current_line_start = (*line_starts)[current_line_index];
+			size_t next_line_start_offset = 0;
+			size_t adjusted_line_length = 0;
+
+			if (breaking_char_offset > current_line_start) {
+				/* If we found a breaking character on the current line, break
+				 * there and start the next line on the next character. The loop
+				 * then backtracks to add the already-processed characters to
+				 * the next line. */
+				adjusted_line_length = breaking_char_offset - current_line_start;
+				next_line_start_offset = breaking_char_offset + 1;
+				text_offset = breaking_char_offset + 1;
+			}
+			else {
+				/* There was no breaking character on the current line, so we
+				 * just break at the current character. This can happen with a 
+				 * word that takes up the whole line, for example. */
+				adjusted_line_length = width;
+				next_line_start_offset = text_offset + 1;
+				text_offset++;
+			}
+
+			(*line_lengths)[current_line_index] = adjusted_line_length;
+			new_line(line_starts, line_lengths, &alloc_lines, &total_lines, next_line_start_offset, 0);
+			current_line_index++;
+			current_line_length = 0;
 		}
-
-		/* normal wrapping: wrap text at last word */
-		if (line_length == width) {
-			size_t last_word_offset = word_start;
-			while (text[line_start + last_word_offset] != L' ')
-				last_word_offset--;
-
-			new_line(line_starts, line_lengths, &n_lines, &cur_line,
-					line_start, last_word_offset);
-
-			line_start += word_start;
-			line_length = word_length;
+		else {
+			/* There is still space on the line, so just add the character. */
+			(*line_lengths)[current_line_index] = current_line_length;
+			text_offset++;
 		}
 	}
 
-	return cur_line;
+	/* Trim the last line if it doesn't contain any characters. */
+	if ((*line_lengths)[total_lines - 1] == 0)
+		total_lines--;
+
+	return total_lines;
 }
 
 /**
