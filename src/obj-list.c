@@ -205,15 +205,6 @@ void object_list_collect(object_list_t *list)
 				list->entries[entry_index].dx = x - player->px;
 				entry = &list->entries[entry_index];
 				break;
-			} else if (!is_unknown(obj)) {
-				/* Use a matching object if we find one. */
-				struct object *obj1 = cave->objects[obj->oidx];
-				struct object *obj2 = cave->objects[list_obj->oidx];
- 
-				if (object_similar(obj1, obj2, OSTACK_LIST)) {
-					entry = &list->entries[entry_index];
-					break;
-				}
 			}
 		}
 
