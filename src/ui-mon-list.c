@@ -100,6 +100,8 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 		byte line_attr;
 		size_t full_width;
 		size_t name_width;
+		u16b count_in_section = 0;
+		u16b asleep_in_section = 0;
 
 		line_buffer[0] = '\0';
 
@@ -119,10 +121,12 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 		 * space; location includes padding; last -1 for some reason? */
 		full_width = max_width - 2 - utf8_strlen(location) - 1;
 
-		if (list->entries[index].asleep[section] > 1)
-			strnfmt(asleep, sizeof(asleep), " (%d asleep)",
-					list->entries[index].asleep[section]);
-		else if (list->entries[index].asleep[section] == 1)
+		asleep_in_section = list->entries[index].asleep[section];
+		count_in_section = list->entries[index].count[section];
+
+		if (asleep_in_section > 0 && count_in_section > 1)
+			strnfmt(asleep, sizeof(asleep), " (%d asleep)", asleep_in_section);
+		else if (asleep_in_section == 1 && count_in_section == 1)
 			strnfmt(asleep, sizeof(asleep), " (asleep)");
 
 		/* Clip the monster name to fit, and append the sleep tag. */
