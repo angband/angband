@@ -891,7 +891,6 @@ int edit_text(char *buffer, int buflen) {
 		/* Display on screen */
 		clear_from(HIST_INSTRUCT_ROW);
 		textblock_append(tb, buffer);
-		textblock_append(tb, "\n"); /* XXX This shouldn't be necessary */
 		textui_textblock_place(tb, area, NULL);
 
 		n_lines = textblock_calculate_lines(tb,
