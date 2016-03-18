@@ -496,77 +496,79 @@ static void get_art_name(char *buf, int max, int a_idx)
 	object_delete(&obj);
 }
 
-/**
- * Artifact or object kind selection
- */
-static void wiz_create_item_subdisplay(struct menu *m, int oid, bool cursor,
-		int row, int col, int width)
-{
-	int *choices = menu_priv(m);
-	char buf[70];
+#define WIZ_CREATE_ALL_MENU_ITEM -9999
 
-	/* Artifacts */
-	if (choose_artifact) {
-		get_art_name(buf, sizeof(buf), choices[oid]);
-		c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
-	} else {
-		/* Regular objects */
-		object_kind_name(buf, sizeof(buf), &k_info[choices[oid]], true);
-		c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
+/**
+ * Create an instance of an object of a given kind.
+ *
+ * \param kind The base type of object to instantiate.
+ * \return An object of the provided object type.
+ */
+static struct object *wiz_create_item_object_from_kind(struct object_kind *kind)
+{
+	struct object *obj;
+
+	/* Create the item */
+	if (tval_is_money_k(kind))
+		obj = make_gold(player->depth, kind->name);
+	else {
+		/* Get object */
+		obj = object_new();
+		object_prep(obj, kind, player->depth, RANDOMISE);
+
+		/* Apply magic (no messages, no artifacts) */
+		apply_magic(obj, player->depth, false, false, false, false);
 	}
+
+	return obj;
 }
 
-static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid)
+/**
+ * Create an instance of an artifact.
+ *
+ * \param art The artifact to instantiate.
+ * \return An object that represents the artifact.
+ */
+static struct object *wiz_create_item_object_from_artifact(struct artifact *art)
 {
-	int *choices = menu_priv(m);
 	struct object_kind *kind;
 	struct object *obj;
 
-	if (e->type != EVT_SELECT)
-		return true;
+	/* Ignore "empty" artifacts */
+	if (!art->name) return NULL;
 
-	/* Artifacts */
-	if (choose_artifact) {
-		struct artifact *art = &a_info[choices[oid]];
+	/* Acquire the "kind" index */
+	kind = lookup_kind(art->tval, art->sval);
+	if (!kind)
+		return NULL;
 
-		/* Ignore "empty" artifacts */
-		if (!art->name) return false;
+	/* Get object */
+	obj = object_new();
 
-		/* Acquire the "kind" index */
-		kind = lookup_kind(art->tval, art->sval);
-		if (!kind)
-			return false;
+	/* Create the artifact */
+	object_prep(obj, kind, art->alloc_min, RANDOMISE);
 
-		/* Get object */
-		obj = object_new();
+	/* Save the artifact type */
+	obj->artifact = art;
 
-		/* Create the artifact */
-		object_prep(obj, kind, art->alloc_min, RANDOMISE);
+	/* Extract the fields */
+	copy_artifact_data(obj, art);
 
-		/* Save the artifact type */
-		obj->artifact = art;
+	/* Mark that the artifact has been created. */
+	art->created = true;
 
-		/* Extract the fields */
-		copy_artifact_data(obj, art);
+	return obj;
+}
 
-		/* Mark that the artifact has been created. */
-		art->created = true;
-	} else {
-		/* Regular objects */
-		kind = &k_info[choices[oid]];
-
-		/* Create the item */
-		if (tval_is_money_k(kind))
-			obj = make_gold(player->depth, kind->name);
-		else {
-			/* Get object */
-			obj = object_new();
-			object_prep(obj, kind, player->depth, RANDOMISE);
-
-			/* Apply magic (no messages, no artifacts) */
-			apply_magic(obj, player->depth, false, false, false, false);
-		}
-	}
+/**
+ * Drop an object near the player in a manner suitable for debugging.
+ *
+ * \param obj The object to drop.
+ */
+static void wiz_create_item_drop_object(struct object *obj)
+{
+	if (obj == NULL)
+		return;
 
 	/* Mark as cheat, and where created */
 	obj->origin = ORIGIN_CHEAT;
@@ -574,6 +576,113 @@ static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid
 
 	/* Drop the object from heaven */
 	drop_near(cave, obj, 0, player->py, player->px, true);
+}
+
+/**
+ * Drop all possible artifacts or objects by the player.
+ *
+ * \param create_artifacts When true, all artifacts will be created; when false,
+ *		  all regular objects will be created.
+ */
+static void wiz_create_item_all_items(bool create_artifacts)
+{
+	int i;
+	struct object *obj;
+	struct object_kind *kind;
+	struct artifact *art;
+
+	if (create_artifacts) {
+		for (i = 1; i < z_info->a_max; i++) {
+			art = &a_info[i];
+			obj = wiz_create_item_object_from_artifact(art);
+			wiz_create_item_drop_object(obj);
+		}
+	}
+	else {
+		for (i = 1; i < z_info->k_max; i++) {
+			kind = &k_info[i];
+
+			if (kind->base == NULL || kind->base->name == NULL)
+				continue;
+
+			if (kf_has(kind->kind_flags, KF_INSTA_ART))
+				continue;
+
+			obj = wiz_create_item_object_from_kind(kind);
+			wiz_create_item_drop_object(obj);
+		}
+	}
+}
+
+/**
+ * Artifact or object kind selection
+ */
+static void wiz_create_item_subdisplay(struct menu *m, int oid, bool cursor,
+		int row, int col, int width)
+{
+	int *choices = menu_priv(m);
+	int selected = choices[oid];
+	char buf[70];
+
+	if (selected == WIZ_CREATE_ALL_MENU_ITEM) {
+		/* Super big hack: the special flag should be the last menu item, with
+		 * the selected tval stored in the next element. */
+		int current_tval = choices[oid + 1];
+		char name[70];
+
+		object_base_name(name, sizeof(name), current_tval, true);
+		if (choose_artifact)
+			strnfmt(buf, sizeof(buf), "All artifact %s", name);
+		else
+			strnfmt(buf, sizeof(buf), "All %s", name);
+	}
+	else {
+		if (choose_artifact)
+			get_art_name(buf, sizeof(buf), selected);
+		else
+			object_kind_name(buf, sizeof(buf), &k_info[selected], true);
+	}
+
+	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
+}
+
+static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid)
+{
+	int *choices = menu_priv(m);
+	int selected = choices[oid];
+	struct object_kind *kind;
+	struct object *obj;
+	struct artifact *art;
+
+	if (e->type != EVT_SELECT)
+		return true;
+
+	if (selected == WIZ_CREATE_ALL_MENU_ITEM && !choose_artifact) {
+		int cur;
+		for (cur = 0; cur < oid; cur++) {
+			kind = &k_info[choices[cur]];
+			obj = wiz_create_item_object_from_kind(kind);
+			wiz_create_item_drop_object(obj);
+		}
+	}
+	else if (selected == WIZ_CREATE_ALL_MENU_ITEM && choose_artifact) {
+		int cur;
+		for (cur = 0; cur < oid; cur++) {
+			art = &a_info[choices[cur]];
+			obj = wiz_create_item_object_from_artifact(art);
+			wiz_create_item_drop_object(obj);
+		}
+	}
+	else if (selected != WIZ_CREATE_ALL_MENU_ITEM && !choose_artifact) {
+		kind = &k_info[choices[oid]];
+		obj = wiz_create_item_object_from_kind(kind);
+		wiz_create_item_drop_object(obj);
+	}
+	else if (selected != WIZ_CREATE_ALL_MENU_ITEM && choose_artifact) {
+		art = &a_info[choices[oid]];
+		obj = wiz_create_item_object_from_artifact(art);
+		wiz_create_item_drop_object(obj);
+	}
 
 	return false;
 }
@@ -595,7 +704,17 @@ static void wiz_create_item_display(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	char buf[80];
-	object_base_name(buf, sizeof(buf), oid, true);
+
+	if (oid == WIZ_CREATE_ALL_MENU_ITEM) {
+		if (choose_artifact)
+			my_strcpy(buf, "All artifacts", sizeof(buf));
+		else
+			my_strcpy(buf, "All objects", sizeof(buf));
+	}
+	else {
+		object_base_name(buf, sizeof(buf), oid, true);
+	}
+
 	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
@@ -614,6 +733,11 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 
 	if (e->type != EVT_SELECT)
 		return true;
+
+	if (oid == WIZ_CREATE_ALL_MENU_ITEM) {
+		wiz_create_item_all_items(choose_artifact);
+		return false;
+	}
 
 	/* Artifacts */
 	if (choose_artifact) {
@@ -636,6 +760,13 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 			choice[num++] = i;
 		}
 	}
+
+	/* Add a flag for an "All <tval>" item to create all svals of that tval. The
+	 * tval is stored (in a super hacky way) beyond the end of the valid menu
+	 * items. The menu won't render it, but we can still get to it without 
+	 * doing a bunch of work. */
+	choice[num++] = WIZ_CREATE_ALL_MENU_ITEM;
+	choice[num] = oid;
 
 	screen_save();
 	clear_from(0);
@@ -701,6 +832,8 @@ static void wiz_create_item(bool art)
 
 		tvals[n++] = i;
 	}
+
+	tvals[n++] = WIZ_CREATE_ALL_MENU_ITEM;
 
 	screen_save();
 	clear_from(0);
