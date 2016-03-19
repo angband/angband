@@ -704,6 +704,10 @@ static struct attack_result make_ranged_throw(struct object *obj, int y, int x)
 	result.dmg = critical_norm(obj->weight, obj->to_h, result.dmg,
 							   &result.msg_type);
 
+	/* Direct adjustment for exploding things (flasks of oil) */
+	if (of_has(obj->flags, OF_EXPLODE))
+		result.dmg *= 3;
+
 	return result;
 }
 

@@ -140,7 +140,7 @@ type:light
 properties:1:22:2
 alloc:70:1 to 40
 combat:0:1d1:0:0:0
-flags:BURNS_OUT | EASY_KNOW
+flags:BURNS_OUT | LIGHT_1 | EASY_KNOW
 
 name:3:& Lantern~
 graphics:~:U
@@ -148,7 +148,7 @@ type:light
 properties:3:50:35
 alloc:70:5 to 100
 combat:0:1d1:0:0:0
-flags:TAKES_FUEL | EASY_KNOW | IGNORE_FIRE
+flags:TAKES_FUEL | EASY_KNOW | LIGHT_2 | IGNORE_FIRE
 
 name:4:& Flask~ of oil
 graphics:!:y
@@ -156,8 +156,8 @@ type:flask
 properties:1:20:3
 alloc:50:1 to 100
 combat:0:1d4:0:0:0
-values:BRAND_FIRE[3]
 pval:7500
+flags:EXPLODE
 desc:It can be used to fuel a lantern with 7500 turns of light, up to
 desc: a maximum of 15000 turns of light.
 desc:  When thrown, it is considered lit, so it does more than nominal
@@ -879,6 +879,7 @@ type:digger
 properties:1:60:10
 alloc:20:5 to 100
 combat:0:1d2:0:0:0
+flags:DIG_1
 
 name:121:& Pick~
 graphics:\:g
@@ -886,6 +887,7 @@ type:digger
 properties:30:180:300
 alloc:20:30 to 100
 combat:0:1d3:0:0:0
+flags:DIG_2
 
 name:122:& Mattock~
 graphics:\:D
@@ -893,6 +895,7 @@ type:digger
 properties:50:250:700
 alloc:20:50 to 100
 combat:0:1d8:0:0:0
+flags:DIG_3
 
 
 ##### Armor #####
