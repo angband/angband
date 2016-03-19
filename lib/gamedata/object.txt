@@ -1824,8 +1824,9 @@ dice:22d40
 name:268:Identify
 graphics:?:w
 type:scroll
-properties:1:5:15
+properties:1:5:200
 alloc:50:5 to 70
+pile:70:1d4
 power:6
 effect:IDENTIFY
 
