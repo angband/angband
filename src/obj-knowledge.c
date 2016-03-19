@@ -719,6 +719,7 @@ void player_know_object(struct player *p, struct object *obj)
 	int i, flag;
 	struct brand *b;
 	struct slay *s;
+	bool seen = true;
 
 	/* Unseen or only sensed objects don't get any ID */
 	if (!obj) return;
@@ -784,10 +785,29 @@ void player_know_object(struct player *p, struct object *obj)
 	}
 
 	/* Set ego type, jewellery type if known */
-	if (player_knows_ego(p, obj->ego))
+	if (player_knows_ego(p, obj->ego)) {
+		seen = obj->ego->everseen;
 		obj->known->ego = obj->ego;
-	if (object_fully_known(obj) && tval_is_jewelry(obj))
+	}
+
+	if (object_fully_known(obj) && tval_is_jewelry(obj)) {
+		seen = obj->kind->everseen;
 		object_flavor_aware(obj);
+	}
+
+	/* Report on new stuff */
+	if (!seen) {
+		char o_name[80];
+
+		/* Describe the object if it's available */
+		if (object_is_carried(p, obj)) {
+			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+			msg("You have %s (%c).", o_name, gear_to_label(obj));
+		} else if (cave && square_holds_object(cave, p->py, p->px, obj)) {
+			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+			msg("On the ground: %s.", o_name);
+		}
+	}
 
 	/* Fully known objects have their known element and flag info set to 
 	 * match the actual info, rather than showing what elements and flags
