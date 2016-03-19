@@ -1547,9 +1547,9 @@ static void calc_torch(struct player *p, struct player_state *state,
 		if (!obj) continue;
 
 		/* Light radius - innate plus modifier */
-		if (strstr(obj->kind->name, "Torch"))
+		if (of_has(obj->flags, OF_LIGHT_1))
 			amt = 1;
-		else if (strstr(obj->kind->name, "Lantern"))
+		else if (of_has(obj->flags, OF_LIGHT_2))
 			amt = 2;
 		amt += obj->modifiers[OBJ_MOD_LIGHT];
 
@@ -1792,11 +1792,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		/* Affect digging (innate effect, plus bonus, times 20) */
 		if (tval_is_digger(obj)) {
-			if (strstr(obj->kind->name, "Shovel"))
+			if (of_has(obj->flags, OF_DIG_1))
 				dig = 1;
-			else if (strstr(obj->kind->name, "Pick"))
+			else if (of_has(obj->flags, OF_DIG_2))
 				dig = 2;
-			else if (strstr(obj->kind->name, "Mattock"))
+			else if (of_has(obj->flags, OF_DIG_3))
 				dig = 3;
 		}
 		dig += obj->modifiers[OBJ_MOD_TUNNEL];
