@@ -1894,6 +1894,10 @@ void do_cmd_sell(struct command *cmd)
 		purchase_analyze(price, value, dummy);
 	}
 
+	/* Autoinscribe if we still have any */
+	if (!none_left)
+		apply_autoinscription(obj);
+
 	/* Set ignore flag */
 	player->upkeep->notice |= PN_IGNORE;
 
