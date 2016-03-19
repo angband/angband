@@ -166,7 +166,8 @@ s16b flag_slot_mult(int flag, int slot)
 	case OFT_SUST:
 	case OFT_PROT:
 	case OFT_BAD:
-	case OFT_CURSE: return 1;
+	case OFT_CURSE:
+	case OFT_DIG: return 1;
 		/* Light-specific */
 	case OFT_LIGHT: return (slot_type_is(slot, EQUIP_LIGHT)) ? 1 : 0;
 		/* Melee weapon specific */

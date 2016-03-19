@@ -1202,9 +1202,9 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
 		return false;
 
 	/* Work out radius */
-	if (strstr(obj->kind->name, "Torch"))
+	if (of_has(obj->flags, OF_LIGHT_1))
 		*rad = 1;
-	else if (strstr(obj->kind->name, "Lantern"))
+	else if (of_has(obj->flags, OF_LIGHT_2))
 		*rad = 2;
 	*rad += obj->known->modifiers[OBJ_MOD_LIGHT];
 

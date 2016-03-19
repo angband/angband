@@ -116,6 +116,7 @@ static void init_rune(void)
 		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
 		if (obj_flag_type(i) == OFT_CURSE) continue;
+		if (obj_flag_type(i) == OFT_DIG) continue;
 		count++;
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++)
@@ -147,6 +148,7 @@ static void init_rune(void)
 		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
 		if (obj_flag_type(i) == OFT_CURSE) continue;
+		if (obj_flag_type(i) == OFT_DIG) continue;
 
 		rune_list[count++] = (struct rune)
 			{ RUNE_VAR_FLAG, i, 0, f_rune[i].name };
