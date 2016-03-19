@@ -96,7 +96,7 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 {
 	bool show_flavor = !terse && obj->kind->flavor;
 
-	if ((mode & ODESC_STORE) && (aware || !tval_is_jewelry(obj)))
+	if (mode & ODESC_STORE)
 		show_flavor = false;
 	if (aware && !OPT(show_flavors)) show_flavor = false;
 
@@ -291,14 +291,17 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		const struct object *obj, bool prefix, int mode, bool terse)
 {
+	bool store = mode & ODESC_STORE ? true : false;
+	bool spoil = mode & ODESC_SPOIL ? true : false;
+	
 	/* Actual name for flavoured objects if aware, or in store, or spoiled */
-	bool aware = object_flavor_is_aware(obj) || (mode & (ODESC_SPOIL)) ||
-		((mode & (ODESC_STORE)) && !tval_is_jewelry(obj));
+	bool aware = object_flavor_is_aware(obj) || store || spoil;
 	/* Pluralize if (not forced singular) and
 	 * (not a known/visible artifact) and
 	 * (not one in stack or forced plural) */
 	bool plural = !(mode & ODESC_SINGULAR) &&
-		!obj->artifact && (obj->number != 1 || (mode & ODESC_PLURAL));
+		!obj->artifact &&
+		(obj->number != 1 || (mode & ODESC_PLURAL));
 	const char *basename = obj_desc_get_basename(obj, aware, terse, mode);
 	const char *modstr = obj_desc_get_modstr(obj->kind);
 
@@ -312,7 +315,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	/* Append extra names of various kinds */
 	if (object_is_known_artifact(obj))
 		strnfcat(buf, max, &end, " %s", obj->artifact->name);
-	else if (obj->known->ego && !(mode & ODESC_NOEGO))
+	else if ((obj->known->ego && !(mode & ODESC_NOEGO)) || (obj->ego && store))
 		strnfcat(buf, max, &end, " %s", obj->ego->name);
 	else if (aware && !obj->known->artifact &&
 			 (obj->kind->flavor || obj->kind->tval == TV_SCROLL)) {
