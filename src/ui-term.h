@@ -315,6 +315,8 @@ struct term
 #define PW_STATUS           0x00000800L /* Display status */
 #define PW_ITEMLIST         0x00001000L /* Display item list */
 
+#define PW_MAPS (PW_MAP | PW_OVERHEAD)
+
 #define PW_MAX_FLAGS		16
 
 

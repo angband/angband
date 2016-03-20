@@ -1673,6 +1673,8 @@ static void update_minimap_subwindow(game_event_type type,
 {
 	struct minimap_flags *flags = user;
 
+	if (player_resting_count(player) || player->upkeep->running) return;
+
 	if (type == EVENT_END) {
 		term *old = Term;
 		term *t = angband_term[flags->win_idx];

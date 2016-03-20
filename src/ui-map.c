@@ -378,7 +378,7 @@ static void move_cursor_relative_map(int y, int x)
 		if (!t) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & (PW_MAP))) continue;
+		if (!(window_flag[j] & (PW_MAPS))) continue;
 
 		/* Location relative to panel */
 		ky = y - t->offset_y;
@@ -470,7 +470,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
 		if (!t) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & (PW_MAP))) continue;
+		if (!(window_flag[j] & (PW_MAPS))) continue;
 
 		/* Location relative to panel */
 		ky = y - t->offset_y;
@@ -566,7 +566,7 @@ static void prt_map_aux(void)
 		if (!t) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & (PW_MAP))) continue;
+		if (!(window_flag[j] & (PW_MAPS))) continue;
 
 		/* Assume screen */
 		ty = t->offset_y + (t->hgt / tile_height);

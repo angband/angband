@@ -905,8 +905,7 @@ void disturb(struct player *p, int stop_search)
 		p->upkeep->running = 0;
 
 		/* Check for new panel if appropriate */
-		if (OPT(center_player))
-			event_signal(EVENT_PLAYERMOVED);
+		event_signal(EVENT_PLAYERMOVED);
 		p->upkeep->update |= PU_TORCH;
 
 		/* Mark the whole map to be redrawn */
