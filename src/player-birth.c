@@ -1113,6 +1113,10 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Initialise the spells */
 	player_spells_init(player);
 
+	/* Know all runes for ID on walkover */
+	if (OPT(birth_know_runes))
+		player_learn_everything(player);
+
 	/* Initialise the stores */
 	store_reset();
 
