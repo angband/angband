@@ -168,7 +168,7 @@ void object_list_collect(object_list_t *list)
 	for (y = 1; y < cave->height; y++) {
 		for (x = 1; x < cave->width; x++) {
 			bool los;
-			int field;
+			int field = OBJECT_LIST_SECTION_LOS;
 			struct object *obj = square_object(cave, y, x);
 			if (obj) {
 				los = projectable(cave, py, px, y, x, PROJECT_NONE) || 

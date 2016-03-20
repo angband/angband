@@ -1095,7 +1095,7 @@ static enum birth_stage get_confirm_command(void)
 int textui_do_birth(void)
 {
 	enum birth_stage current_stage = BIRTH_RESET;
-	enum birth_stage prev;
+	enum birth_stage prev = BIRTH_BACK;
 	enum birth_stage roller = BIRTH_RESET;
 	enum birth_stage next = current_stage;
 

@@ -58,7 +58,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	png_byte color_type;
 	png_byte bit_depth;
 	int width, height;
-	int y, number_of_passes;
+	int y;
 
 	BOOL update = FALSE;
 	
@@ -106,7 +106,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	color_type = png_get_color_type(png_ptr, info_ptr);
 	bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 	
-	number_of_passes = png_set_interlace_handling(png_ptr);
+	(void) png_set_interlace_handling(png_ptr);
 	if (color_type == PNG_COLOR_TYPE_PALETTE)
 	{
 		png_set_palette_to_rgb(png_ptr);
