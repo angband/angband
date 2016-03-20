@@ -71,8 +71,9 @@ static void fill_terrain_info(void)
 	ex = MIN(player->px + MAX_PF_RADIUS / 2 - 1, cave->width);
 	ey = MIN(player->py + MAX_PF_RADIUS / 2 - 1, cave->height);
 
-	for (i = 0; i < MAX_PF_RADIUS * MAX_PF_RADIUS; i++)
-		terrain[0][i] = -1;
+	for (i = 0; i < MAX_PF_RADIUS; i++)
+		for (j = 0; j < MAX_PF_RADIUS; j++)
+			terrain[i][j] = -1;
 
 	for (j = oy; j < ey; j++)
 		for (i = ox; i < ex; i++)
