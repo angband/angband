@@ -908,6 +908,9 @@ void disturb(struct player *p, int stop_search)
 		if (OPT(center_player))
 			event_signal(EVENT_PLAYERMOVED);
 		p->upkeep->update |= PU_TORCH;
+
+		/* Mark the whole map to be redrawn */
+		event_signal_point(EVENT_MAP, -1, -1);
 	}
 
 	/* Cancel searching if requested */
