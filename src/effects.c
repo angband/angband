@@ -32,8 +32,8 @@
 #include "obj-chest.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -92,7 +92,7 @@ static struct breath_info {
  */
 static const char *desc_stat_pos[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) f,
+	#define STAT(a, b, c, d, e, f, g, h, i) f,
 	#include "list-stats.h"
 	#undef STAT
 };
@@ -103,7 +103,7 @@ static const char *desc_stat_pos[] =
  */
 static const char *desc_stat_neg[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) g,
+	#define STAT(a, b, c, d, e, f, g, h, i) g,
 	#include "list-stats.h"
 	#undef STAT
 };
@@ -511,7 +511,7 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 	/* Sustain */
 	if (player_of_has(player, flag)) {
 		/* Notice effect */
-		equip_notice_flag(player, flag);
+		equip_learn_flag(player, flag);
 
 		/* Message */
 		msg("You feel very %s for a moment, but the feeling passes.",
@@ -624,7 +624,7 @@ bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
 		player_exp_lose(player, player->exp / 4, false);
 	}
 	context->ident = true;
-	equip_notice_flag(player, OF_HOLD_LIFE);
+	equip_learn_flag(player, OF_HOLD_LIFE);
 	return true;
 }
 
@@ -1007,12 +1007,12 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 				if (!is_trapped_chest(obj)) continue;
 
 				/* Identify once */
-				if (!object_is_known(obj)) {
+				if (!obj->known || obj->known->pval != obj->pval) {
 					/* Hack - know the pile */
 					floor_pile_know(cave, y, x);
 
 					/* Know the trap */
-					object_notice_everything(obj);
+					obj->known->pval = obj->pval;
 
 					/* Notice it */
 					disturb(player, 0);
@@ -1496,6 +1496,37 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 	return true;
 }
 
+/**
+ * Selects items that have at least one unknown rune.
+ */
+static bool item_tester_unknown(const struct object *obj)
+{
+    return object_runes_known(obj) ? false : true;
+}
+
+/**
+ * Identify an unknown rune of an item.
+ */
+bool effect_handler_IDENTIFY(effect_handler_context_t *context)
+{
+    struct object *obj;
+    const char *q, *s;
+    bool used = false;
+
+    context->ident = true;
+
+    /* Get an item */
+    q = "Identify which item? ";
+    s = "You have nothing to identify.";
+    if (!get_item(&obj, q, s, 0, item_tester_unknown,
+                  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+        return used;
+
+    /* Identify the object */
+    object_learn_unknown_rune(player, obj);
+
+    return true;
+}
 
 
 /**
@@ -1655,14 +1686,17 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 		/* Disenchant to-hit */
 		if (obj->to_h > 0) obj->to_h--;
 		if ((obj->to_h > 5) && (randint0(100) < 20)) obj->to_h--;
+		obj->known->to_h = obj->to_h;
 
 		/* Disenchant to-dam */
 		if (obj->to_d > 0) obj->to_d--;
 		if ((obj->to_d > 5) && (randint0(100) < 20)) obj->to_d--;
+		obj->known->to_d = obj->to_d;
 	} else {
 		/* Disenchant to-ac */
 		if (obj->to_a > 0) obj->to_a--;
 		if ((obj->to_a > 5) && (randint0(100) < 20)) obj->to_a--;
+		obj->known->to_a = obj->to_a;
 	}
 
 	/* Message */
@@ -1821,6 +1855,12 @@ bool enchant(struct object *obj, int n, int eflag)
 		if ((eflag & ENCH_TOAC)  && enchant2(obj, &obj->to_a)) res = true;
 	}
 
+	/* Update knowledge */
+	assert(obj->known);
+	obj->known->to_h = obj->to_h;
+	obj->known->to_d = obj->to_d;
+	obj->known->to_a = obj->to_a;
+
 	/* Failure */
 	if (!res) return (false);
 
@@ -1936,7 +1976,7 @@ void brand_object(struct object *obj, const char *name)
 		/* Make it an ego item */
 		obj->ego = &e_info[i];
 		ego_apply_magic(obj, 0);
-		object_notice_ego(obj);
+		player_know_object(player, obj);
 
 		/* Update the gear */
 		player->upkeep->update |= (PU_INVEN);
@@ -1986,59 +2026,6 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	}
 
 	return used;
-}
-
-/**
- * Hopefully this is OK now
- */
-static bool item_tester_unknown(const struct object *obj)
-{
-	return object_is_known(obj) ? false : true;
-}
-
-/**
- * Identify an unknown item
- */
-bool effect_handler_IDENTIFY(effect_handler_context_t *context)
-{
-	struct object *obj;
-	const char *q, *s;
-	bool used = false;
-
-	context->ident = true;
-
-	/* Get an item */
-	q = "Identify which item? ";
-	s = "You have nothing to identify.";
-	if (!get_item(&obj, q, s, 0, item_tester_unknown,
-				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return used;
-
-	/* Identify the object */
-	do_ident_item(obj);
-
-	return true;
-}
-
-/**
- * Identify everything worn or carried by the player
- */
-bool effect_handler_IDENTIFY_PACK(effect_handler_context_t *context)
-{
-	struct object *obj;
-
-	context->ident = true;
-
-	/* Simply identify and know every item */
-	for (obj = player->gear; obj; obj = obj->next) {
-		/* Aware and Known */
-		if (object_is_known(obj)) continue;
-
-		/* Identify it */
-		do_ident_item(obj);
-	}
-
-	return true;
 }
 
 /*
@@ -2940,7 +2927,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				struct object *obj = square_object(cave, y, x);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
+						if (!OPT(birth_no_preserve) && 
+							!(obj->known && obj->known->artifact))
 							obj->artifact->created = false;
 						else
 							history_lose_artifact(obj->artifact);
@@ -2959,7 +2947,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 	msg("There is a searing blast of light!");
 
 	/* Blind the player */
-	equip_notice_element(player, ELEM_LIGHT);
+	equip_learn_element(player, ELEM_LIGHT);
 	if (!player_resists(player, ELEM_LIGHT))
 		(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),true, true);
 
@@ -4151,7 +4139,7 @@ bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 		int dam = effect_calculate_value(context, false);
 		take_hit(player, dam, "a trap");
 	}
-	equip_notice_flag(player, OF_FEATHER);
+	equip_learn_flag(player, OF_FEATHER);
 
 	dungeon_change_level(target_depth);
 	return true;
@@ -4166,7 +4154,7 @@ bool effect_handler_TRAP_PIT(effect_handler_context_t *context)
 		int dam = effect_calculate_value(context, false);
 		take_hit(player, dam, "a trap");
 	}
-	equip_notice_flag(player, OF_FEATHER);
+	equip_learn_flag(player, OF_FEATHER);
 	return true;
 }
 
@@ -4189,7 +4177,7 @@ bool effect_handler_TRAP_PIT_SPIKES(effect_handler_context_t *context)
 
 		take_hit(player, dam, "a trap");
 	}
-	equip_notice_flag(player, OF_FEATHER);
+	equip_learn_flag(player, OF_FEATHER);
 	return true;
 }
 
@@ -4214,7 +4202,7 @@ bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
 
 		take_hit(player, dam, "a trap");
 	}
-	equip_notice_flag(player, OF_FEATHER);
+	equip_learn_flag(player, OF_FEATHER);
 	return true;
 }
 

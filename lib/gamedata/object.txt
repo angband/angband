@@ -69,7 +69,7 @@
 # accept randomized values.
 
 # 'alloc' is for allocation - depth and rarity, in pairs. It is used to
-# ensure that certain vital items such as food and identify scrolls
+# ensure that certain vital items such as food and recall scrolls
 # are found throughout the dungeon. The "allocation" depth need not
 # match the depth as specified in the "properties:" line.
 
@@ -140,8 +140,7 @@ type:light
 properties:1:22:2
 alloc:70:1 to 40
 combat:0:1d1:0:0:0
-flags:BURNS_OUT | EASY_KNOW
-values:LIGHT[1]
+flags:BURNS_OUT | LIGHT_1 | EASY_KNOW
 
 name:3:& Lantern~
 graphics:~:U
@@ -149,8 +148,7 @@ type:light
 properties:3:50:35
 alloc:70:5 to 100
 combat:0:1d1:0:0:0
-flags:TAKES_FUEL | EASY_KNOW | IGNORE_FIRE
-values:LIGHT[2]
+flags:TAKES_FUEL | EASY_KNOW | LIGHT_2 | IGNORE_FIRE
 
 name:4:& Flask~ of oil
 graphics:!:y
@@ -158,8 +156,8 @@ type:flask
 properties:1:20:3
 alloc:50:1 to 100
 combat:0:1d4:0:0:0
-values:BRAND_FIRE[3]
 pval:7500
+flags:EXPLODE
 desc:It can be used to fuel a lantern with 7500 turns of light, up to
 desc: a maximum of 15000 turns of light.
 desc:  When thrown, it is considered lit, so it does more than nominal
@@ -881,7 +879,7 @@ type:digger
 properties:1:60:10
 alloc:20:5 to 100
 combat:0:1d2:0:0:0
-values:TUNNEL[1]
+flags:DIG_1
 
 name:121:& Pick~
 graphics:\:g
@@ -889,7 +887,7 @@ type:digger
 properties:30:180:300
 alloc:20:30 to 100
 combat:0:1d3:0:0:0
-values:TUNNEL[2]
+flags:DIG_2
 
 name:122:& Mattock~
 graphics:\:D
@@ -897,7 +895,7 @@ type:digger
 properties:50:250:700
 alloc:20:50 to 100
 combat:0:1d8:0:0:0
-values:TUNNEL[3]
+flags:DIG_3
 
 
 ##### Armor #####
@@ -1826,7 +1824,15 @@ power:6
 effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 
-### 268
+name:268:Identify
+graphics:?:w
+type:scroll
+properties:1:5:200
+alloc:50:5 to 70
+pile:70:1d4
+power:6
+effect:IDENTIFY
+
 ### 269
 
 ### Enchantments ###
@@ -1986,14 +1992,9 @@ power:7
 effect:SET_NOURISH
 dice:16999
 
-name:286:Identify
-graphics:?:w
-type:scroll
-properties:1:5:100
-alloc:60:5 to 100
-pile:100:2d3
-power:9
-effect:IDENTIFY
+### 286
+### 287
+### 288
 
 name:289:Light
 graphics:?:w
@@ -2494,7 +2495,6 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:500d500
 effect:DETECT_VISIBLE_MONSTERS
 dice:500d500
-effect:IDENTIFY_PACK
 
 
 ### Buffs ###
@@ -3396,16 +3396,6 @@ power:20
 effect:RESTORE_STAT:INT
 effect:RESTORE_MANA
 
-name:424:Identify
-graphics:_:d
-type:staff
-properties:10:50:600
-alloc:50:10 to 100
-combat:0:1d2:0:0:0
-charges:5+d15
-power:9
-effect:IDENTIFY
-
 
 
 ##### Rods #####
@@ -3744,16 +3734,7 @@ power:15
 effect:RECALL
 time:60
 
-name:456:Identify
-graphics:-:d
-type:rod
-properties:50:15:10000
-alloc:15:50 to 100
-combat:0:1d1:0:0:0
-flags:IGNORE_ELEC
-power:9
-effect:IDENTIFY
-time:10
+### 456
 
 name:457:Speed
 graphics:-:d

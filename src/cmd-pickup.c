@@ -29,7 +29,6 @@
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -155,13 +154,6 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 
 	/* Set ignore status */
 	player->upkeep->notice |= PN_IGNORE;
-
-	/* Automatically sense artifacts */
-	object_sense_artifact(obj);
-
-	/* Log artifacts if found */
-	if (obj->artifact)
-		history_add_artifact(obj->artifact, object_is_known(obj), true);
 
 	/* Carry the object, prompting for number if necessary */
 	if (max == obj->number) {

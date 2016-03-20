@@ -22,7 +22,6 @@
 #include "obj-chest.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -80,7 +79,11 @@ int inven_damage(struct player *p, int type, int cperc)
 				if (randint0(10000) < cperc) {
 					/* Damage the item */
 					obj->to_h--;
+					if (p->obj_k->to_h)
+						obj->known->to_h = obj->to_h;
 					obj->to_d--;
+					if (p->obj_k->to_d)
+						obj->known->to_d = obj->to_d;
 
 					/* Damaged! */
 					damage = true;
@@ -93,6 +96,8 @@ int inven_damage(struct player *p, int type, int cperc)
 				if (randint0(10000) < cperc) {
 					/* Damage the item */
 					obj->to_a--;
+					if (p->obj_k->to_a)
+						obj->known->to_a = obj->to_a;
 
 					/* Damaged! */
 					damage = true;
@@ -349,11 +354,9 @@ static void project_object_handler_KILL_DOOR(project_object_handler_context_t *c
 		/* Disarm or Unlock */
 		unlock_chest((struct object * const)context->obj);
 
-		/* Identify */
-		object_notice_everything((struct object * const)context->obj);
-
 		/* Notice */
 		if (context->obj->known && !ignore_item_ok(context->obj)) {
+			context->obj->known->pval = context->obj->pval;
 			msg("Click!");
 			context->obvious = true;
 		}
@@ -368,11 +371,9 @@ static void project_object_handler_KILL_TRAP(project_object_handler_context_t *c
 		/* Disarm or Unlock */
 		unlock_chest((struct object * const)context->obj);
 
-		/* Identify */
-		object_notice_everything((struct object * const)context->obj);
-
 		/* Notice */
 		if (context->obj->known && !ignore_item_ok(context->obj)) {
+			context->obj->known->pval = context->obj->pval;
 			msg("Click!");
 			context->obvious = true;
 		}

@@ -27,8 +27,8 @@
 #include "mon-msg.h"
 #include "mon-util.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -961,9 +961,9 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 	if (orig->sval > new->sval) return true;
 
 	if (!store) {
-		/* Unidentified objects always come last (default to orig) */
-		if (!object_is_known(new)) return false;
-		if (!object_is_known(orig)) return true;
+		/* Unaware objects always come last (default to orig) */
+		if (new->kind->flavor && !object_flavor_is_aware(new)) return false;
+		if (orig->kind->flavor && !object_flavor_is_aware(orig)) return true;
 
 		/* Lights sort by decreasing fuel */
 		if (tval_is_light(orig)) {
@@ -974,18 +974,18 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 
 	/* Objects sort by decreasing value, except ammo */
 	if (tval_is_ammo(orig)) {
-		if (object_value_real(orig, 1, false, false) <
-			object_value_real(new, 1, false, false))
+		if (object_value(orig, 1, false) <
+			object_value(new, 1, false))
 			return false;
-		if (object_value_real(orig, 1, false, false) >
-			object_value_real(new, 1, false, false))
+		if (object_value(orig, 1, false) >
+			object_value(new, 1, false))
 			return true;
 	} else {
-		if (object_value_real(orig, 1, false, false) >
-			object_value_real(new, 1, false, false))
+		if (object_value(orig, 1, false) >
+			object_value(new, 1, false))
 			return false;
-		if (object_value_real(orig, 1, false, false) <
-			object_value_real(new, 1, false, false))
+		if (object_value(orig, 1, false) <
+			object_value(new, 1, false))
 			return true;
 	}
 
@@ -1054,9 +1054,8 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 						upkeep->quiver[i] = current;
 						upkeep->quiver_cnt += current->number;
 
-						/* Notice stuff if it's first time in the quiver */
-						if (!object_was_worn(current))
-							object_notice_on_wield(current);
+						/* In the quiver counts as worn */
+						object_learn_on_wield(player, current);
 
 						/* Done with this slot */
 						break;
@@ -1100,9 +1099,8 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		upkeep->quiver[i] = first;
 		upkeep->quiver_cnt += first->number;
 
-		/* Notice stuff if it's first time in the quiver */
-		if (!object_was_worn(first))
-			object_notice_on_wield(first);
+		/* In the quiver counts as worn */
+		object_learn_on_wield(player, first);
 	}
 
 	/* Note reordering */
@@ -1548,8 +1546,12 @@ static void calc_torch(struct player *p, struct player_state *state,
 		/* Skip empty slots */
 		if (!obj) continue;
 
-		/* Light radius is now a modifier */
-		amt = obj->modifiers[OBJ_MOD_LIGHT];
+		/* Light radius - innate plus modifier */
+		if (of_has(obj->flags, OF_LIGHT_1))
+			amt = 1;
+		else if (of_has(obj->flags, OF_LIGHT_2))
+			amt = 2;
+		amt += obj->modifiers[OBJ_MOD_LIGHT];
 
 		/* Cursed objects emit no light */
 		if (of_has(obj->flags, OF_LIGHT_CURSE))
@@ -1753,6 +1755,8 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* Scan the equipment */
 	for (i = 0; i < p->body.count; i++) {
+		int dig = 0;
+
 		obj = slot_object(p, i);
 
 		/* Skip non-objects */
@@ -1786,8 +1790,17 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		/* Affect infravision */
 		state->see_infra += obj->modifiers[OBJ_MOD_INFRA];
 
-		/* Affect digging (factor of 20) */
-		state->skills[SKILL_DIGGING] += (obj->modifiers[OBJ_MOD_TUNNEL] * 20);
+		/* Affect digging (innate effect, plus bonus, times 20) */
+		if (tval_is_digger(obj)) {
+			if (of_has(obj->flags, OF_DIG_1))
+				dig = 1;
+			else if (of_has(obj->flags, OF_DIG_2))
+				dig = 2;
+			else if (of_has(obj->flags, OF_DIG_3))
+				dig = 3;
+		}
+		dig += obj->modifiers[OBJ_MOD_TUNNEL];
+		state->skills[SKILL_DIGGING] += (dig * 20);
 
 		/* Affect speed */
 		state->speed += obj->modifiers[OBJ_MOD_SPEED];
@@ -1803,9 +1816,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		/* Affect resists */
 		for (j = 0; j < ELEM_MAX; j++)
-			if (!known_only || object_is_known(obj) ||
-				object_element_is_known(obj, j)) {
-
+			if (!known_only || obj->known->el_info[j].res_level) {
 				/* Note vulnerability for later processing */
 				if (obj->el_info[j].res_level == -1)
 					vuln[i] = true;
@@ -1819,8 +1830,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->ac += obj->ac;
 
 		/* Apply the bonuses to armor class */
-		if (!known_only || object_is_known(obj) ||
-			object_defence_plusses_are_visible(obj))
+		if (!known_only || obj->known->to_a)
 			state->to_a += obj->to_a;
 
 		/* Do not apply weapon and bow bonuses until combat calculations */
@@ -1828,12 +1838,10 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		if (slot_type_is(i, EQUIP_BOW)) continue;
 
 		/* Apply the bonuses to hit/damage */
-		if (!known_only || object_is_known(obj) ||
-			object_attack_plusses_are_visible(obj))
-		{
+		if (!known_only || obj->known->to_h)
 			state->to_h += obj->to_h;
+		if (!known_only || obj->known->to_d)
 			state->to_d += obj->to_d;
-		}
 	}
 
 

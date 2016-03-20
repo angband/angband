@@ -71,7 +71,11 @@ OP(score_live,            "Score: Allow player to avoid death",
 SCORE, false)
 OP(birth_randarts,        "Randomise the artifacts (except a very few)",
 BIRTH, false)
+OP(birth_keep_randarts,   "Use previous set of randarts",
+BIRTH, true)
 OP(birth_no_recall,       "Word of Recall has no effect",
+BIRTH, false)
+OP(birth_force_descend,   "Force player descent",
 BIRTH, false)
 OP(birth_no_artifacts,    "Restrict creation of artifacts",
 BIRTH, false)
@@ -85,12 +89,10 @@ OP(birth_no_feelings,     "Don't show level feelings",
 BIRTH, false)
 OP(birth_no_selling,      "Increase gold drops but disable selling",
 BIRTH, true)
-OP(birth_keep_randarts,   "Use previous set of randarts",
-BIRTH, true)
 OP(birth_start_kit,       "Start with a kit of useful gear",
 BIRTH, true)
 OP(birth_ai_learn,        "Monsters learn from their mistakes",
 BIRTH, false)
-OP(birth_force_descend,   "Force player descent",
+OP(birth_know_runes,      "Know all runes on birth",
 BIRTH, false)
 

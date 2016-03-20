@@ -23,8 +23,8 @@
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -324,6 +324,8 @@ int minus_ac(struct player *p)
 
 	/* Damage the item */
 	obj->to_a--;
+	if (p->obj_k->to_a)
+		obj->known->to_a = obj->to_a;
 
 	p->upkeep->update |= (PU_BONUS);
 	p->upkeep->redraw |= (PR_EQUIP);
@@ -411,8 +413,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 	struct object *usable;
 	char name[80];
 	char label = gear_to_label(obj);
-	bool artifact = obj->artifact &&
-		(object_is_known(obj) || object_name_is_visible(obj));
+	bool artifact = (obj->known->artifact != NULL);
 
 	/* Bounds check */
 	num = MIN(num, obj->number);
@@ -587,7 +588,7 @@ void inven_item_charges(struct object *obj)
 	if (!tval_can_have_charges(obj)) return;
 
 	/* Require known item */
-	if (!object_is_known(obj)) return;
+	if (!object_flavor_is_aware(obj)) return;
 
 	/* Print a message */
 	msg("You have %d charge%s remaining.", obj->pval,
@@ -687,12 +688,12 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 	update_stuff(player);
 
 	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
-	if (!object_is_known(obj)) {
+	if (!object_flavor_is_aware(obj)) {
 		if (player_has(player, PF_KNOW_MUSHROOM) && tval_is_mushroom(obj)) {
-			do_ident_item(obj);
+			object_flavor_aware(obj);
 			msg("Mushrooms for breakfast!");
 		} else if (player_has(player, PF_KNOW_ZAPPER) && tval_is_zapper(obj))
-			do_ident_item(obj);
+			object_flavor_aware(obj);
 	}
 
 	/* Optionally, display a message */
@@ -759,7 +760,7 @@ void inven_wield(struct object *obj, int slot)
 	player->body.slots[slot].obj = wielded;
 
 	/* Do any ID-on-wield */
-	object_notice_on_wield(wielded);
+	object_learn_on_wield(player, wielded);
 
 	/* Where is the item now */
 	if (tval_is_melee_weapon(wielded))
@@ -781,9 +782,6 @@ void inven_wield(struct object *obj, int slot)
 	if (cursed_p(wielded->flags)) {
 		/* Warn the player */
 		msgt(MSG_CURSED, "Oops! It feels deathly cold!");
-
-		/* Sense the object */
-		object_notice_curses(wielded);
 	}
 
 	/* See if we have to overflow the pack */

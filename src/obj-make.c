@@ -212,6 +212,35 @@ static int get_new_attr(bitflag flags[OF_SIZE], bitflag newf[OF_SIZE])
 }
 
 /**
+ * Get a random new base resist on an item
+ */
+static int random_base_resist(struct object *obj, int *resist)
+{
+	int i, r, count = 0;
+
+	/* Count the available base resists */
+	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
+		if (obj->el_info[i].res_level == 0) count++;
+
+	if (count == 0) return false;
+
+	/* Pick one */
+	r = randint0(count);
+
+	/* Find the one we picked */
+	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++) {
+		if (obj->el_info[i].res_level != 0) continue;
+		if (r == 0) {
+			*resist = i;
+			return true;
+		}
+		r--;
+	}
+
+	return false;
+}
+
+/**
  * Get a random new high resist on an item
  */
 static int random_high_resist(struct object *obj, int *resist)
@@ -308,24 +337,33 @@ static struct ego_item *ego_find_random(struct object *obj, int level)
  */
 void ego_apply_magic(struct object *obj, int level)
 {
-	int i, x, resist = 0;
+	int i, x, resist = 0, pick = 0;
 	bitflag newf[OF_SIZE];
+
+	/* Resist or power? */
+	if (kf_has(obj->ego->kind_flags, KF_RAND_RES_POWER))
+		pick = randint1(3);
 
 	/* Extra powers */
 	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
 		create_mask(newf, false, OFT_SUST, OFT_MAX);
 		of_on(obj->flags, get_new_attr(obj->flags, newf));
-	}
-	else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER)) {
+	} else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER) || (pick == 1)) {
 		create_mask(newf, false, OFT_PROT, OFT_MISC, OFT_MAX);
 		of_on(obj->flags, get_new_attr(obj->flags, newf));
-	}
-	else if (kf_has(obj->ego->kind_flags, KF_RAND_HI_RES))
+	} else if (kf_has(obj->ego->kind_flags, KF_RAND_BASE_RES) || (pick > 1)) {
+		/* Get a base resist if available, mark it as random */
+		if (random_base_resist(obj, &resist)) {
+			obj->el_info[resist].res_level = 1;
+			obj->el_info[resist].flags |= EL_INFO_RANDOM;
+		}
+	} else if (kf_has(obj->ego->kind_flags, KF_RAND_HI_RES)) {
 		/* Get a high resist if available, mark it as random */
 		if (random_high_resist(obj, &resist)) {
 			obj->el_info[resist].res_level = 1;
 			obj->el_info[resist].flags |= EL_INFO_RANDOM;
 		}
+	}
 
 	/* Apply extra obj->ego bonuses */
 	obj->to_h += randcalc(obj->ego->to_h, level, RANDOMISE);
@@ -1038,7 +1076,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	if (one_in_(good ? 10 : 1000)) {
 		new_obj = make_artifact_special(lev);
 		if (new_obj) {
-			if (value) *value = object_value_real(new_obj, 1, false, true);
+			if (value) *value = object_value_real(new_obj, 1, false);
 			return new_obj;
 		}
 
@@ -1068,7 +1106,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 
 	/* Get the value */
 	if (value)
-		*value = object_value_real(new_obj, new_obj->number, false, true);
+		*value = object_value_real(new_obj, new_obj->number, false);
 
 	/* Boost of 20% per level OOD for uncursed objects */
 	if (!cursed_p(new_obj->flags) && (kind->alloc_min > c->depth)) {

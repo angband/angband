@@ -27,8 +27,8 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-info.h"
 #include "obj-make.h"
 #include "obj-pile.h"
@@ -1376,9 +1376,9 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 	struct object *obj = &body, *known_obj = &known_body;
 
 	make_fake_artifact(obj, &a_info[a_idx]);
+	object_wipe(known_obj);
+	object_copy(known_obj, obj);
 	obj->known = known_obj;
-	known_obj->artifact = (struct artifact *) 1;
-	known_obj->kind = obj->kind;
 	object_desc(o_name, namelen, obj, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 	object_wipe(known_obj);
 	object_wipe(obj);
@@ -1464,14 +1464,14 @@ static void desc_art_fake(int a_idx)
 
 		make_fake_artifact(obj, &a_info[a_idx]);
 		obj->known = known_obj;
-		known_obj->artifact = (struct artifact *)1;
+		known_obj->artifact = obj->artifact;
 		known_obj->kind = obj->kind;
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
 		if (history_is_artifact_known(obj->artifact))
 			/* Be very careful not to influence anything but this object */
-			object_know_all_but_flavor(obj);
+			object_copy(known_obj, obj);
 	}
 
 	/* Hack -- Handle stuff */
@@ -1740,7 +1740,7 @@ static int get_artifact_from_kind(struct object_kind *kind)
 static void display_object(int col, int row, bool cursor, int oid)
 {
 	struct object_kind *kind = &k_info[oid];
-	const char *inscrip = get_autoinscription(kind);
+	const char *inscrip = get_autoinscription(kind, kind->aware);
 
 	char o_name[80];
 
@@ -1774,7 +1774,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 
 
 	/* Show autoinscription if around */
-	if (aware && inscrip)
+	if (inscrip)
 		c_put_str(COLOUR_YELLOW, inscrip, row, 55);
 
 	if (tile_height == 1) {
@@ -1810,20 +1810,18 @@ static void desc_obj_fake(int k_idx)
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, EXTREMIFY);
+
+	/* It's fully known */
+	if (kind->aware || !kind->flavor)
+		object_copy(known_obj, obj);
 	obj->known = known_obj;
-
-	/* Hack -- its in the store */
-	if (kind->aware) object_know_all_but_flavor(obj);
-
-	/* It's fully know */
-	if (!kind->flavor) object_notice_everything(obj);
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player);
 
-	tb = object_info(obj, OINFO_NONE);
+	tb = object_info(obj, OINFO_FAKE);
 	object_desc(header, sizeof(header), obj,
-			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
+			ODESC_PREFIX | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
 	object_delete(&known_obj);
@@ -1914,11 +1912,11 @@ static const char *o_xtra_prompt(int oid)
 	const char *no_insc = ", 's' to toggle ignore, 'r'ecall, '{'";
 	const char *with_insc = ", 's' to toggle ignore, 'r'ecall, '{', '}'";
 
-	/* Forget it if we've never seen the thing */
-	if (kind->flavor && !kind->aware)
-		return "";
-
-	return kind->note ? with_insc : no_insc;
+	/* Appropriate prompt */
+	if (kind->aware)
+		return kind->note_aware ? with_insc : no_insc;
+	else
+		return kind->note_unaware ? with_insc : no_insc;
 }
 
 /**
@@ -1945,17 +1943,12 @@ static void o_xtra_act(struct keypress ch, int oid)
 		return;
 	}
 
-	/* Forget it if we've never seen the thing */
-	if (k->flavor && !k->aware)
-		return;
-
 	/* Uninscribe */
 	if (ch.code == '}') {
-		if (k->note)
-			remove_autoinscription(oid);
+		remove_autoinscription(oid);
 	} else if (ch.code == '{') {
 		/* Inscribe */
-		char note_text[80] = "";
+		char text[80] = "";
 
 		/* Avoid the prompt getting in the way */
 		screen_save();
@@ -1964,17 +1957,17 @@ static void o_xtra_act(struct keypress ch, int oid)
 		prt("Inscribe with: ", 0, 0);
 
 		/* Default note */
-		if (k->note)
-			strnfmt(note_text, sizeof(note_text), "%s", get_autoinscription(k));
+		if (k->note_aware || k->note_unaware)
+			strnfmt(text, sizeof(text), "%s", get_autoinscription(k, k->aware));
 
 		/* Get an inscription */
-		if (askfor_aux(note_text, sizeof(note_text), NULL)) {
+		if (askfor_aux(text, sizeof(text), NULL)) {
 			/* Remove old inscription if existent */
-			if (k->note)
+			if (k->note_aware || k->note_unaware)
 				remove_autoinscription(oid);
 
 			/* Add the autoinscription */
-			add_autoinscription(oid, note_text);
+			add_autoinscription(oid, text, k->aware);
 			cmdq_push(CMD_AUTOINSCRIBE);
 
 			/* Redraw gear */
@@ -2023,6 +2016,154 @@ void textui_browse_object_knowledge(const char *name, int row)
 					  "Ignore  Inscribed          Sym");
 
 	mem_free(objects);
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * OBJECT RUNES
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Description of each rune group.
+ */
+static const char *rune_group_text[] =
+{
+	"Combat",
+	"Modifiers",
+	"Resists",
+	"Brands",
+	"Slays",
+	"Other",
+	NULL
+};
+
+/**
+ * Display the runes in a group.
+ */
+static void display_rune(int col, int row, bool cursor, int oid )
+{
+	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	const char *inscrip = quark_str(rune_note(oid));
+
+	c_prt(attr, rune_name(oid), row, col);
+
+	/* Show autoinscription if around */
+	if (inscrip)
+		c_put_str(COLOUR_YELLOW, inscrip, row, 47);
+}
+
+
+static const char *rune_var_name(int gid)
+{
+	return rune_group_text[gid];
+}
+
+static int rune_var(int oid)
+{
+	return (int) rune_variety(oid);
+}
+
+static void rune_lore(int oid)
+{
+	textblock *tb = textblock_new();
+	char *title = string_make(rune_name(oid));
+
+	my_strcap(title);
+	textblock_append_c(tb, COLOUR_L_BLUE, title);
+	textblock_append(tb, "\n");
+	textblock_append(tb, rune_desc(oid));
+	textblock_append(tb, "\n");
+	textui_textblock_show(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
+
+	string_free(title);
+}
+
+/**
+ * Display special prompt for rune inscription.
+ */
+static const char *rune_xtra_prompt(int oid)
+{
+	const char *no_insc = ", 'r'ecall, '{'";
+	const char *with_insc = ", 'r'ecall, '{', '}'";
+
+	/* Appropriate prompt */
+	return rune_note(oid) ? with_insc : no_insc;
+}
+
+/**
+ * Special key actions for rune inscription.
+ */
+static void rune_xtra_act(struct keypress ch, int oid)
+{
+	/* Uninscribe */
+	if (ch.code == '}') {
+		rune_set_note(oid, NULL);
+	} else if (ch.code == '{') {
+		/* Inscribe */
+		char note_text[80] = "";
+
+		/* Avoid the prompt getting in the way */
+		screen_save();
+
+		/* Prompt */
+		prt("Inscribe with: ", 0, 0);
+
+		/* Default note */
+		if (rune_note(oid))
+			strnfmt(note_text, sizeof(note_text), "%s",
+					quark_str(rune_note(oid)));
+
+		/* Get an inscription */
+		if (askfor_aux(note_text, sizeof(note_text), NULL)) {
+			/* Remove old inscription if existent */
+			if (rune_note(oid))
+				rune_set_note(oid, NULL);
+
+			/* Add the autoinscription */
+			rune_set_note(oid, note_text);
+			rune_autoinscribe(oid);
+
+			/* Redraw gear */
+			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+		}
+
+		/* Reload the screen */
+		screen_load();
+	}
+}
+
+
+
+/**
+ * Display rune knowledge.
+ */
+static void do_cmd_knowledge_runes(const char *name, int row)
+{
+	group_funcs rune_var_f = {rune_var_name, NULL, rune_var, 0,
+							  N_ELEMENTS(rune_group_text), false};
+
+	member_funcs rune_f = {display_rune, rune_lore, NULL, NULL,
+						   rune_xtra_prompt, rune_xtra_act, 0};
+
+	int *runes;
+	int rune_max = max_runes();
+	int rune_count = 0;
+	int i;
+
+	runes = mem_zalloc(rune_max * sizeof(int));
+
+	for (i = 0; i < rune_max; i++) {
+		/* Ignore unknown runes */
+		if (!player_knows_rune(player, i))
+			continue;
+
+		runes[rune_count++] = i;
+	}
+
+	display_knowledge("runes", runes, rune_count, rune_var_f, rune_f,
+					  "Inscribed");
+	mem_free(runes);
 }
 
 /**
@@ -2372,7 +2513,7 @@ static void do_cmd_knowledge_traps(const char *name, int row)
  * ------------------------------------------------------------------------ */
 
 /* The first row of the knowledge_actions menu which does store knowledge */
-#define STORE_KNOWLEDGE_ROW 6
+#define STORE_KNOWLEDGE_ROW 7
 
 static void do_cmd_knowledge_store(const char *name, int row)
 {
@@ -2396,6 +2537,7 @@ static void do_cmd_knowledge_history(const char *name, int row)
 static menu_action knowledge_actions[] =
 {
 { 0, 0, "Display object knowledge",   	   textui_browse_object_knowledge },
+{ 0, 0, "Display rune knowledge",   	   do_cmd_knowledge_runes },
 { 0, 0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts },
 { 0, 0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items },
 { 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
@@ -2454,31 +2596,43 @@ void textui_knowledge_init(void)
 
 
 /**
- * Display the "player knowledge" menu.
+ * Display the "player knowledge" menu, greying out items that won't display
+ * anything.
  */
 void textui_browse_knowledge(void)
 {
-	int i;
-	region knowledge_region = { 0, 0, -1, 18 };
+	int i, rune_max = max_runes();
+	region knowledge_region = { 0, 0, -1, 19 };
 
-	/* Grey out menu items that won't display anything */
+	/* Runes */
+	knowledge_actions[1].flags = MN_ACT_GRAYED;
+	for (i = 0; i < rune_max; i++) {
+		if (player_knows_rune(player, i) || OPT(cheat_xtra)) {
+			knowledge_actions[1].flags = 0;
+		    break;
+		}
+	}
+		
+	/* Artifacts */
 	if (collect_known_artifacts(NULL, 0) > 0)
-		knowledge_actions[1].flags = 0;
+		knowledge_actions[2].flags = 0;
 	else
-		knowledge_actions[1].flags = MN_ACT_GRAYED;
+		knowledge_actions[2].flags = MN_ACT_GRAYED;
 
-	knowledge_actions[2].flags = MN_ACT_GRAYED;
+	/* Ego items */
+	knowledge_actions[3].flags = MN_ACT_GRAYED;
 	for (i = 0; i < z_info->e_max; i++) {
 		if (e_info[i].everseen || OPT(cheat_xtra)) {
-			knowledge_actions[2].flags = 0;
+			knowledge_actions[3].flags = 0;
 			break;
 		}
 	}
 
+	/* Monsters */
 	if (count_known_monsters() > 0)
-		knowledge_actions[3].flags = 0;
+		knowledge_actions[4].flags = 0;
 	else
-		knowledge_actions[3].flags = MN_ACT_GRAYED;
+		knowledge_actions[4].flags = MN_ACT_GRAYED;
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);

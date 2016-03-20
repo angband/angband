@@ -32,7 +32,7 @@
  */
 enum
 {
-	#define STAT(a, b, c, d, e, f, g, h) STAT_##a,
+	#define STAT(a, b, c, d, e, f, g, h, i) STAT_##a,
 	#include "list-stats.h"
 	#undef STAT
 
@@ -88,6 +88,7 @@ enum
 
 
 #define PY_MAX_EXP		99999999L	/* Maximum exp */
+#define PY_KNOW_LEVEL	30			/* Level to know all runes */
 #define PY_MAX_LEVEL	50			/* Maximum level */
 
 /**
@@ -526,6 +527,7 @@ struct player {
 
 	s16b stat_max[STAT_MAX];	/* Current "maximal" stat values */
 	s16b stat_cur[STAT_MAX];	/* Current "natural" stat values */
+	s16b stat_map[STAT_MAX];	/* Tracks remapped stats from temp stat swap */
 
 	s16b *timed;		/* Timed effects */
 
@@ -575,6 +577,8 @@ struct player {
 	struct object *gear;
 	/* Known gear */
 	struct object *gear_k;
+	/* Object knowledge ("runes") */
+	struct object *obj_k;
 
 	struct player_body body;
 };

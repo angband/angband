@@ -123,9 +123,9 @@ ANGFILES = \
 	obj-chest.o \
 	obj-desc.o \
 	obj-gear.o \
-	obj-identify.o \
 	obj-ignore.o \
 	obj-info.o \
+	obj-knowledge.o \
 	obj-list.o \
 	obj-make.o \
 	obj-pile.o \

@@ -833,7 +833,7 @@ alloc:40:1 to 45
 type:sword
 type:polearm
 type:hafted
-flags:SLOW_DIGEST
+flags:RAND_RES_POWER
 values:INT[d2] | SLAY_ANIMAL[2]
 min-values:INT[0]
 
@@ -843,7 +843,7 @@ alloc:15:10 to 127
 type:sword
 type:polearm
 type:hafted
-flags:BLESSED | RAND_POWER
+flags:BLESSED | RAND_RES_POWER
 values:WIS[d2] | SLAY_EVIL[2]
 min-values:WIS[0]
 
@@ -863,7 +863,7 @@ item:hafted:Quarterstaff
 item:hafted:War Hammer
 item:hafted:Maul
 item:hafted:Great Hammer
-flags:SEE_INVIS
+flags:RAND_RES_POWER
 values:WIS[d2] | SLAY_UNDEAD[5]
 min-values:WIS[0]
 
@@ -873,7 +873,8 @@ alloc:30:10 to 60
 type:sword
 type:polearm
 type:hafted
-values:INT[d2] | SLAY_DEMON[5] | RES_FIRE[1]
+flags: RAND_RES_POWER
+values:INT[d2] | SLAY_DEMON[5]
 min-values:INT[0]
 
 name:92:of *Slay Orc*
@@ -882,7 +883,7 @@ alloc:60:1 to 40
 type:sword
 type:polearm
 type:hafted
-flags:SUST_DEX
+flags:RAND_RES_POWER
 values:DEX[d2] | SLAY_ORC[3]
 min-values:DEX[0]
 
@@ -892,7 +893,7 @@ alloc:60:1 to 45
 type:sword
 type:polearm
 type:hafted
-flags:REGEN
+flags:RAND_RES_POWER
 values:STR[d2] | SLAY_TROLL[3]
 min-values:STR[0]
 
@@ -902,7 +903,7 @@ alloc:20:1 to 45
 type:sword
 type:polearm
 type:hafted
-flags:SUST_STR
+flags:RAND_RES_POWER
 values:STR[d2] | SLAY_GIANT[3]
 min-values:STR[0]
 
@@ -912,7 +913,7 @@ alloc:30:10 to 60
 type:sword
 type:polearm
 type:hafted
-flags:PROT_FEAR
+flags:RAND_RES_POWER
 values:CON[d2] | SLAY_DRAGON[5]
 min-values:CON[0]
 

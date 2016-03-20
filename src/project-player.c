@@ -22,7 +22,7 @@
 #include "init.h"
 #include "mon-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -48,7 +48,7 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 		resist = p->state.el_info[res_type].res_level;
 
 		/* Notice element stuff */
-		equip_notice_element(p, res_type);
+		equip_learn_element(p, res_type);
 	}
 
 	if (resist == 3) /* immune */
@@ -119,31 +119,35 @@ static void project_player_drain_stats(int num)
 }
 
 /**
- * Swap a random pair of stats
+ * Swap stats at random to temporarily scramble the player's stats.
  */
 static void project_player_swap_stats(void)
 {
-    int max1, cur1, max2, cur2, ii, jj;
+	int max1, cur1, max2, cur2, i, j, swap;
 
-    msg("Your body starts to scramble...");
+	// Fisher-Yates shuffling algorithm.
+	for (i = STAT_MAX - 1; i > 0; --i) {
+		j = randint0(i);
 
-    /* Pick a pair of stats */
-    ii = randint0(STAT_MAX);
-    for (jj = ii; jj == ii; jj = randint0(STAT_MAX)) /* loop */;
+		max1 = player->stat_max[i];
+		cur1 = player->stat_cur[i];
+		max2 = player->stat_max[j];
+		cur2 = player->stat_cur[j];
 
-    max1 = player->stat_max[ii];
-    cur1 = player->stat_cur[ii];
-    max2 = player->stat_max[jj];
-    cur2 = player->stat_cur[jj];
+		player->stat_max[i] = max2;
+		player->stat_cur[i] = cur2;
+		player->stat_max[j] = max1;
+		player->stat_cur[j] = cur1;
 
-    player->stat_max[ii] = max2;
-    player->stat_cur[ii] = cur2;
-    player->stat_max[jj] = max1;
-    player->stat_cur[jj] = cur1;
+		/* Record what we did */
+		swap = player->stat_map[i];
+		player->stat_map[i] = player->stat_map[j];
+		player->stat_map[j] = swap;
+	}
 
-    player->upkeep->update |= (PU_BONUS);
+	player_inc_timed(player, TMD_SCRAMBLE, randint0(20) + 20, true, true);
 
-    return;
+	return;
 }
 
 typedef struct project_player_handler_context_s {
@@ -220,6 +224,8 @@ static void project_player_handler_SOUND(project_player_handler_context_t *conte
 		int duration = 5 + randint1(context->dam / 3);
 		if (duration > 35) duration = 35;
 		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+	} else {
+		equip_learn_flag(player, OF_PROT_STUN);
 	}
 }
 
@@ -245,13 +251,14 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 	}
 
 	/* Stat swap */
-	if (one_in_(7)) {
-		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
-			msg("You avoid the effect!");
-			return;
-		}
-		project_player_swap_stats();
-	} else if (one_in_(3)) { /* Teleport to */
+    if (randint0(100) < player->state.skills[SKILL_SAVE]) {
+        msg("You avoid the effect!");
+    }
+    else {
+        project_player_swap_stats();
+    }
+
+	if (one_in_(3)) { /* Teleport to */
 		effect_simple(EF_TELEPORT_TO, "0", mon->fy, mon->fx, 0, NULL);
 	} else if (one_in_(4)) { /* Teleport level */
 		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
@@ -272,6 +279,7 @@ static void project_player_handler_NETHER(project_player_handler_context_t *cont
 	if (player_resists(player, ELEM_NETHER) ||
 		player_of_has(player, OF_HOLD_LIFE)) {
 		msg("You resist the effect!");
+		equip_learn_flag(player, OF_HOLD_LIFE);
 		return;
 	}
 
@@ -298,6 +306,8 @@ static void project_player_handler_CHAOS(project_player_handler_context_t *conte
 		int drain = 5000 + (player->exp / 100) * z_info->life_drain_percent;
 		msg("You feel your life force draining away!");
 		player_exp_lose(player, drain, false);
+	} else {
+		equip_learn_flag(player, OF_HOLD_LIFE);
 	}
 }
 
@@ -354,6 +364,8 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 		int duration = 5 + randint1(context->dam / 3);
 		if (duration > 35) duration = 35;
 		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+	} else {
+		equip_learn_flag(player, OF_PROT_STUN);
 	}
 }
 
@@ -402,6 +414,8 @@ static void project_player_handler_PLASMA(project_player_handler_context_t *cont
 		int duration = 5 + randint1(context->dam * 3 / 4);
 		if (duration > 35) duration = 35;
 		(void)player_inc_timed(player, TMD_STUN, duration, true, true);
+	} else {
+		equip_learn_flag(player, OF_PROT_STUN);
 	}
 }
 

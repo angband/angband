@@ -21,8 +21,8 @@
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-util.h"
 #include "player.h"
 #include "player-calcs.h"
@@ -272,7 +272,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Sear.",	OBJ_MOD_SEARCH,		-1,				-1, 		-1 },
 	{ "Infra",	OBJ_MOD_INFRA,		-1,				-1,			TMD_SINFRA },
 	{ "Tunn.",	OBJ_MOD_TUNNEL,		-1,				-1, 		-1 },
-	{ "Speed",	OBJ_MOD_SPEED,		-1,				-1,			 TMD_FAST },
+	{ "Speed",	OBJ_MOD_SPEED,		-1,				-1,			TMD_FAST },
 	{ "Blows",	OBJ_MOD_BLOWS,		-1,				-1, 		-1 },
 	{ "Shots",	OBJ_MOD_SHOTS,		-1,				-1, 		-1 },
 	{ "Might",	OBJ_MOD_MIGHT,		-1,				-1, 		-1 },
@@ -301,7 +301,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			byte attr = COLOUR_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
 
-			bool res = false, imm = false, vul = false;
+			bool res = false, imm = false, vul = false, rune = false;
 			bool timed = false;
 			bool known = false;
 
@@ -344,8 +344,10 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 					if (rec[i].mod == OBJ_MOD_TUNNEL)
 						res = (player->race->r_skills[SKILL_DIGGING] > 0);
 				}
+				rune = (player->obj_k->modifiers[rec[i].mod] == 1);
 			} else if (rec[i].flag != -1) {
 				res = of_has(f, rec[i].flag);
+				rune = of_has(player->obj_k->flags, rec[i].flag);
 			} else if (rec[i].element != -1) {
 				if (j != player->body.count) {
 					imm = obj && known &&
@@ -359,10 +361,12 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 					res = player->race->el_info[rec[i].element].res_level == 1;
 					vul = player->race->el_info[rec[i].element].res_level == -1;
 				}
+				rune = (player->obj_k->el_info[rec[i].element].res_level == 1);
 			}
 
 			/* Set the symbols and print them */
 			if (imm) name_attr = COLOUR_GREEN;
+			else if (!rune) name_attr = COLOUR_SLATE;
 			else if (res && (name_attr != COLOUR_GREEN))
 				name_attr = COLOUR_L_BLUE;
 
@@ -370,7 +374,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
 			else if (timed) { sym = '!'; attr = COLOUR_L_GREEN; }
-			else if ((j < player->body.count) && obj && !known)
+			else if ((j < player->body.count) && obj && !known && !rune)
 				sym = '?';
 
 			Term_addch(attr, sym);
@@ -737,8 +741,8 @@ static struct panel *get_panel_combat(void) {
 	/* Melee */
 	obj = equipped_item_by_slot_name(player, "weapon");
 	bth = (player->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
-	dam = player->known_state.to_d + (obj && object_attack_plusses_are_visible(obj) ? obj->to_d : 0);
-	hit = player->known_state.to_h + (obj && object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
+	dam = player->known_state.to_d + (obj ? obj->known->to_d : 0);
+	hit = player->known_state.to_h + (obj ? obj->known->to_h : 0);
 
 	panel_space(p);
 
@@ -755,8 +759,8 @@ static struct panel *get_panel_combat(void) {
 	/* Ranged */
 	obj = equipped_item_by_slot_name(player, "shooting");
 	bth = (player->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
-	hit = player->known_state.to_h + (obj && object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
-	dam = obj && object_attack_plusses_are_visible(obj) ? obj->to_d : 0;
+	hit = player->known_state.to_h + (obj ? obj->known->to_h : 0);
+	dam = obj ? obj->known->to_d : 0;
 
 	panel_space(p);
 	panel_line(p, COLOUR_L_BLUE, "Shoot to-dam", "%+d", dam);

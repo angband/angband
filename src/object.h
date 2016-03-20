@@ -62,6 +62,8 @@ struct brand {
 	struct brand *next;
 };
 
+extern struct brand *game_brands;
+
 /* Slay type */
 struct slay {
 	char *name;
@@ -70,6 +72,8 @@ struct slay {
 	int damage; /* Storage for damage during description */
 	struct slay *next;
 };
+
+extern struct slay *game_slays;
 
 enum {
 	EL_INFO_HATES = 0x01,
@@ -181,7 +185,8 @@ struct object_kind {
 
 	/** Also saved in savefile **/
 
-	quark_t note; 	/**< Autoinscription quark number */
+	quark_t note_aware; 	/**< Autoinscription quark number */
+	quark_t note_unaware; 	/**< Autoinscription quark number */
 
 	bool aware;		/**< Set if player is aware of the kind's effects */
 	bool tried;		/**< Set if kind has been tried */
@@ -322,7 +327,7 @@ extern struct ego_item *e_info;
  */
 enum {
 	OBJ_NOTICE_WORN = 0x01,
-	OBJ_NOTICE_SENSED = 0x02,
+	OBJ_NOTICE_ASSESSED = 0x02,
 	OBJ_NOTICE_IGNORE = 0x04,
 	OBJ_NOTICE_IMAGINED = 0x08,
 };

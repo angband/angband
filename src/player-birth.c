@@ -25,11 +25,12 @@
 #include "mon-lore.h"
 #include "monster.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
+#include "obj-properties.h"
 #include "obj-randart.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -193,6 +194,7 @@ static void load_roller_data(birther *saved, birther *prev_player)
 	for (i = 0; i < STAT_MAX; i++) {
 		player->stat_max[i] = player->stat_cur[i] = player->stat_birth[i]
 			= saved->stat[i];
+		player->stat_map[i] = i;
 	}
 
 	/* Load previous history */
@@ -245,6 +247,9 @@ static void get_stats(int stat_use[STAT_MAX])
 
 		/* Start fully healed */
 		player->stat_cur[i] = player->stat_max[i];
+
+		/* Start with unscrambled stats */
+		player->stat_map[i] = i;
 
 		/* Efficiency -- Apply the racial/class bonuses */
 		stat_use[i] = modify_stat_value(player->stat_max[i], bonus);
@@ -342,6 +347,27 @@ static void get_ahw(struct player *p)
 
 
 /**
+ * Creates the player's body
+ */
+static void player_embody(struct player *p)
+{
+	char buf[80];
+	int i;
+
+	assert(p->race);
+
+	memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
+	my_strcpy(buf, bodies[p->race->body].name, sizeof(buf));
+	p->body.name = string_make(buf);
+	p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
+	for (i = 0; i < p->body.count; i++) {
+		p->body.slots[i].type = bodies[p->race->body].slots[i].type;
+		my_strcpy(buf, bodies[p->race->body].slots[i].name, sizeof(buf));
+		p->body.slots[i].name = string_make(buf);
+	}
+}
+
+/**
  * Get the player's starting money
  */
 static void get_money(void)
@@ -362,6 +388,8 @@ void player_init(struct player *p)
 	}
 	if (p->timed)
 		mem_free(p->timed);
+	if (p->obj_k)
+		mem_free(p->obj_k);
 
 	/* Wipe the player */
 	memset(p, 0, sizeof(struct player));
@@ -401,6 +429,7 @@ void player_init(struct player *p)
 	p->upkeep->quiver = mem_zalloc(z_info->quiver_size *
 								   sizeof(struct object *));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
+	p->obj_k = mem_zalloc(sizeof(struct object));
 
 	/* First turn. */
 	turn = 1;
@@ -448,6 +477,7 @@ void wield_all(struct player *p)
 
 		/* Wear the new stuff */
 		p->body.slots[slot].obj = obj;
+		object_learn_on_wield(p, obj);
 
 		/* Increment the equip counter by hand */
 		p->upkeep->equip_cnt++;
@@ -469,28 +499,25 @@ void wield_all(struct player *p)
  */
 static void player_outfit(struct player *p)
 {
-	char buf[80];
 	int i;
 	const struct start_item *si;
-
-	/* Player needs a body */
-	memcpy(&p->body, &bodies[p->race->body], sizeof(p->body));
-	my_strcpy(buf, bodies[p->race->body].name, sizeof(buf));
-	p->body.name = string_make(buf);
-	p->body.slots = mem_zalloc(p->body.count * sizeof(struct equip_slot));
-	for (i = 0; i < p->body.count; i++) {
-		p->body.slots[i].type = bodies[p->race->body].slots[i].type;
-		my_strcpy(buf, bodies[p->race->body].slots[i].name, sizeof(buf));
-		p->body.slots[i].name = string_make(buf);
-	}
+	struct object *obj, *known_obj;
 
 	/* Currently carrying nothing */
 	p->upkeep->total_weight = 0;
 
+	/* Give the player obvious object knowledge */
+	p->obj_k->dd = 1;
+	p->obj_k->ds = 1;
+	p->obj_k->ac = 1;
+	for (i = 0; i < OF_MAX; i++) {
+		if (obj_flag_type(i) == OFT_LIGHT) of_on(p->obj_k->flags, i);
+		if (obj_flag_type(i) == OFT_CURSE) of_on(p->obj_k->flags, i);
+		if (obj_flag_type(i) == OFT_DIG) of_on(p->obj_k->flags, i);
+	}
+
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
-		/* Get local object */
-		struct object *obj = object_new(), *known_obj;
 		int num = rand_range(si->min, si->max);
 
 		/* Without start_kit, only start with 1 food and 1 light */
@@ -501,17 +528,22 @@ static void player_outfit(struct player *p)
 			num = 1;
 		}
 
-		/* Prepare the item */
+		/* Prepare a new item */
+		obj = object_new();
 		object_prep(obj, si->kind, 0, MINIMISE);
 		obj->number = num;
 		obj->origin = ORIGIN_BIRTH;
 
 		known_obj = object_new();
 		obj->known = known_obj;
-		object_notice_everything(obj);
+		object_set_base_known(obj);
+		object_flavor_aware(obj);
+		obj->known->pval = obj->pval;
+		obj->known->effect = obj->effect;
+		obj->known->notice |= OBJ_NOTICE_ASSESSED;
 
 		/* Deduct the cost of the item from starting cash */
-		p->au -= object_value(obj, obj->number, false);
+		p->au -= object_value_real(obj, obj->number, false);
 
 		/* Carry the item */
 		inven_carry(p, obj, true, false);
@@ -524,6 +556,9 @@ static void player_outfit(struct player *p)
 
 	/* Now try wielding everything */
 	wield_all(p);
+
+	/* Update knowledge */
+	update_player_object_knowledge(p);
 }
 
 
@@ -540,9 +575,11 @@ static void recalculate_stats(int *stats, int points_left)
 	int i;
 
 	/* Variable stat maxes */
-	for (i = 0; i < STAT_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++) {
 		player->stat_cur[i] = player->stat_max[i] =
 				player->stat_birth[i] = stats[i];
+		player->stat_map[i] = i;
+	}
 
 	/* Gold is inversely proportional to cost */
 	player->au_birth = z_info->start_gold + (50 * points_left);
@@ -1067,14 +1104,18 @@ void do_cmd_accept_character(struct command *cmd)
 	message_add("  ", MSG_GENERIC);
 	message_add(" ", MSG_GENERIC);
 
+	/* Embody */
+	player_embody(player);
+
 	/* Give the player some money */
 	get_money();
 
-	/* Outfit the player, if they can sell the stuff */
-	player_outfit(player);
-
 	/* Initialise the spells */
 	player_spells_init(player);
+
+	/* Know all runes for ID on walkover */
+	if (OPT(birth_know_runes))
+		player_learn_everything(player);
 
 	/* Initialise the stores */
 	store_reset();
@@ -1090,6 +1131,9 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Seed for flavors */
 	seed_flavor = randint0(0x10000000);
 	flavor_init();
+
+	/* Outfit the player, if they can sell the stuff */
+	player_outfit(player);
 
 	/* Stop the player being quite so dead */
 	player->is_dead = false;

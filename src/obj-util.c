@@ -29,8 +29,8 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
@@ -230,10 +230,7 @@ void flavor_init(void)
 void object_flags(const struct object *obj, bitflag flags[OF_SIZE])
 {
 	of_wipe(flags);
-
-	if (!obj)
-		return;
-
+	if (!obj) return;
 	of_copy(flags, obj->flags);
 }
 

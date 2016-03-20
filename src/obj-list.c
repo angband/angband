@@ -19,8 +19,8 @@
 #include "angband.h"
 #include "game-world.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-list.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -331,19 +331,19 @@ byte object_list_entry_line_attribute(const object_list_entry_t *entry)
 	base_obj = cave->objects[entry->object->oidx];
 
 	if (is_unknown(base_obj))
-	/* unknown object */
+		/* unknown object */
 		attr = COLOUR_RED;
-	else if (base_obj->artifact && object_is_known(base_obj))
-	/* known artifact */
+	else if (base_obj->known->artifact)
+		/* known artifact */
 		attr = COLOUR_VIOLET;
 	else if (!object_flavor_is_aware(base_obj))
-	/* unaware of kind */
+		/* unaware of kind */
 		attr = COLOUR_L_RED;
 	else if (base_obj->kind->cost == 0)
-	/* worthless */
+		/* worthless */
 		attr = COLOUR_SLATE;
 	else
-	/* default */
+		/* default */
 		attr = COLOUR_WHITE;
 
 	return attr;
@@ -376,9 +376,6 @@ void object_list_format_name(const object_list_entry_t *entry,
 	struct object *base_obj;
 	int iy;
 	int ix;
-	bool object_is_artifact;
-	bool object_name_visible;
-	bool object_known;
 	bool object_is_recognized_artifact;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
@@ -387,10 +384,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 	base_obj = cave->objects[entry->object->oidx];
 	iy = entry->object->iy;
 	ix = entry->object->ix;
-	object_is_artifact = (base_obj->artifact != NULL);
-	object_name_visible = object_name_is_visible(base_obj);
-	object_known = object_is_known(base_obj);
-	object_is_recognized_artifact = (object_is_artifact && (object_name_visible || object_known));
+	object_is_recognized_artifact = object_is_known_artifact(base_obj);
 
 	/* Hack - these don't have a prefix when there is only one, so just pad
 	 * with a space. */

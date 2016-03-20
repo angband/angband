@@ -21,7 +21,7 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "obj-slays.h"
 #include "obj-util.h"
 
@@ -33,8 +33,6 @@ static struct slay_cache *slay_cache;
 
 struct brand_info {
 	const char* name;
-	const char *active_verb;
-	const char *active_verb_plural;
 	const char *melee_verb;
 	const char *melee_verb_weak;
 	int resist_flag;
@@ -47,11 +45,11 @@ struct brand_info {
  * in obj-randart.c
  */
 const struct brand_info brand_names[] = {
-	{ "acid", "spits", "spit", "dissolve", "corrode", RF_IM_ACID },
-	{ "lightning", "crackles", "crackle", "shock", "zap", RF_IM_ELEC },
-	{ "fire", "flares", "flare", "burn", "singe", RF_IM_FIRE },
-	{ "cold", "grows cold", "grow cold", "freeze", "chill", RF_IM_COLD },
-	{ "poison", "seethes", "seethe", "poison", "sicken", RF_IM_POIS }
+	{ "acid", "dissolve", "corrode", RF_IM_ACID },
+	{ "lightning", "shock", "zap", RF_IM_ELEC },
+	{ "fire", "burn", "singe", RF_IM_FIRE },
+	{ "cold", "freeze", "chill", RF_IM_COLD },
+	{ "poison", "poison", "sicken", RF_IM_POIS }
 };
 
 struct slay_info {
@@ -232,6 +230,9 @@ bool append_random_brand(struct brand **current, char **name)
 		*current = b;
 	*name = b->name;
 
+	/* Append to the game list */
+	add_game_brand(b);
+
 	return true;
 }
 
@@ -276,6 +277,9 @@ bool append_random_slay(struct slay **current, char **name)
 	else
 		*current = s;
 	*name = s->name;
+
+	/* Append to the game list */
+	add_game_slay(s);
 
 	return true;
 }
@@ -438,100 +442,6 @@ bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 
 
 /**
- * Notice any brands on a particular object which affect a particular monster.
- *
- * \param obj is the object on which we are noticing brands
- * \param mon the monster we are hitting, if there is one
- */
-void object_notice_brands(struct object *obj, const struct monster *mon)
-{
-	char o_name[40];
-	struct brand *b, *kb, *new_b;
-	bool plural = (obj->number > 1) ? true : false;
-
-	assert(obj->known);
-
-	for (b = obj->brands; b; b = b->next) {
-		const char *verb = plural ? brand_names[b->element].active_verb_plural :
-			brand_names[b->element].active_verb;
-
-		/* Already know it */
-		for (kb = obj->known->brands; kb; kb = kb->next) {
-			if (streq(kb->name, b->name) && (kb->element == b->element) &&
-				(kb->multiplier == b->multiplier))
-				break;
-		}
-		if (kb) continue;
-
-		/* Not applicable */
-		if (mon && rf_has(mon->race->flags,
-						brand_names[b->element].resist_flag))
-			continue;
-
-		/* Copy over the new known brand */
-		new_b = mem_zalloc(sizeof *new_b);
-		new_b->name = string_make(b->name);
-		new_b->element = b->element;
-		new_b->multiplier = b->multiplier;
-		new_b->next = obj->known->brands;
-		obj->known->brands = new_b;
-
-		/* Notice */
-		object_notice_ego(obj);
-		if (plural)
-			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_PLURAL);
-		else
-			object_desc(o_name, sizeof(o_name), obj,
-						ODESC_BASE | ODESC_SINGULAR);
-		msg("Your %s %s!", o_name, verb);
-	}
-
-	object_check_for_ident(obj);
-}
-
-/**
- * Notice any slays on a particular object which affect a particular monster.
- *
- * \param obj is the object on which we are noticing slays
- * \param mon the monster we are trying to slay
- */
-void object_notice_slays(struct object *obj, const struct monster *mon)
-{
-	char o_name[40];
-	struct slay *s, *ks, *new_s;
-
-	for (s = obj->slays; s; s = s->next) {
-		/* Already know it */
-		for (ks = obj->known->slays; ks; ks = ks->next) {
-			if (streq(ks->name, s->name) && (ks->race_flag == s->race_flag) &&
-				(ks->multiplier == s->multiplier))
-				break;
-		}
-		if (ks) continue;
-
-		/* Not applicable */
-		if (!react_to_specific_slay(s, mon))
-			continue;
-
-		/* Copy over the new known brand */
-		new_s = mem_zalloc(sizeof *new_s);
-		new_s->name = string_make(s->name);
-		new_s->race_flag = s->race_flag;
-		new_s->multiplier = s->multiplier;
-		new_s->next = obj->known->slays;
-		obj->known->slays = new_s;
-
-		/* Notice */
-		object_notice_ego(obj);
-		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE | ODESC_SINGULAR);
-		msg("Your %s glows%s!", o_name, s->multiplier > 3 ? " brightly" : "");
-	}
-
-	object_check_for_ident(obj);
-}
-
-
-/**
  * Extract the multiplier from a given object hitting a given monster.
  *
  * \param obj is the object being used to attack
@@ -549,7 +459,6 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 							 const struct slay **slay_used, 
 							 char *verb, bool range, bool real)
 {
-	struct monster_lore *lore = get_lore(mon->race);
 	struct brand *b;
 	struct slay *s;
 	int best_mult = 1;
@@ -558,9 +467,10 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 
 	/* Brands */
 	for (b = obj->brands; b; b = b->next) {
-		/* If the monster is vulnerable, record and learn from real attacks */
+		/* Is the monster is vulnerable? */
 		if (!rf_has(mon->race->flags,
 					brand_names[b->element].resist_flag)) {
+			/* Record the best multiplier */
 			if (best_mult < b->multiplier) {
 				best_mult = b->multiplier;
 				*brand_used = b;
@@ -572,22 +482,25 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				if (range)
 					my_strcat(verb, "s", 20);
 			}
+			/* Learn from real attacks */
 			if (real) {
-				object_notice_brands(obj, mon);
+				struct monster_lore *lore = get_lore(mon->race);
+
+				/* Learn about the brand */
+				object_learn_brand(player, obj, b);
+
+				/* Learn about the monster */
 				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 					rf_on(lore->flags, brand_names[b->element].resist_flag);
 			}
 		}
-
-		/* Attack is real, learn about the monster */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE) && real)
-			rf_on(lore->flags, brand_names[b->element].resist_flag);
 	}
 
 	/* Slays */
 	for (s = obj->slays; s; s = s->next) {
-		/* If the monster is vulnerable, record and learn from real attacks */
+		/* Is the monster is vulnerable? */
 		if (react_to_specific_slay(s, mon)) {
+			/* Record the best multiplier */
 			if (best_mult < s->multiplier) {
 				best_mult = s->multiplier;
 				*brand_used = NULL;
@@ -604,16 +517,18 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 						my_strcpy(verb, "fiercely smite", 20);
 				}
 			}
+			/* Learn from real attacks */
 			if (real) {
-				object_notice_slays(obj, mon);
+				struct monster_lore *lore = get_lore(mon->race);
+
+				/* Learn about the slay */
+				object_learn_slay(player, obj, s);
+
+				/* Learn about the monster */
 				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 					rf_on(lore->flags, s->race_flag);
 			}
 		}
-
-		/* Attack is real, learn about the monster */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE) && real)
-			rf_on(lore->flags, s->race_flag);
 	}
 }
 

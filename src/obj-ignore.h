@@ -1,6 +1,6 @@
 /**
-   \file obj-ignore.h
-   \brief Item ignoring
+ * \file obj-ignore.h
+ * \brief Item ignoring
  *
  * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
  * David Vestal, Pete Mack, Andi Sidwell.
@@ -56,8 +56,6 @@ enum
 	IGNORE_BAD,
 	IGNORE_AVERAGE,
 	IGNORE_GOOD,
-	IGNORE_EXCELLENT_NO_HI,
-	IGNORE_EXCELLENT_NO_SPL,
 	IGNORE_ALL,
 
 	IGNORE_MAX
@@ -88,10 +86,11 @@ extern bool **ego_ignore_types;
 
 /* obj-ignore.c */
 void ignore_birth_init(void);
-const char *get_autoinscription(struct object_kind *kind);
+void rune_autoinscribe(int i);
+const char *get_autoinscription(struct object_kind *kind, bool aware);
 int apply_autoinscription(struct object *obj);
 int remove_autoinscription(s16b kind);
-int add_autoinscription(s16b kind, const char *inscription);
+int add_autoinscription(s16b kind, const char *inscription, bool aware);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
 void object_ignore_flavor_of(const struct object *obj);

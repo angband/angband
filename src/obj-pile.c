@@ -28,9 +28,9 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
@@ -430,8 +430,8 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		/* ... otherwise ok */
 	} else if (tval_is_weapon(obj1) || tval_is_armor(obj1) ||
 		tval_is_jewelry(obj1) || tval_is_light(obj1)) {
-		bool obj1_is_known = object_is_known(obj1);
-		bool obj2_is_known = object_is_known(obj2);
+		bool obj1_is_known = object_fully_known((struct object *)obj1);
+		bool obj2_is_known = object_fully_known((struct object *)obj2);
 
 		/* Require identical values */
 		if (obj1->ac != obj2->ac) return false;
@@ -505,18 +505,9 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 
 	/* First object gains any extra knowledge from second */
 	if (obj1->known && obj2->known) {
-		of_union(obj1->known->flags, obj2->known->flags);
-		if (obj2->known->ego)
-			obj1->known->ego = (struct ego_item *)1;
-		obj1->known->pval |= obj2->known->pval;
-		obj1->known->dd |= obj2->known->dd;
-		obj1->known->ds |= obj2->known->ds;
-		obj1->known->ac |= obj2->known->ac;
-		obj1->known->to_a |= obj2->known->to_a;
-		obj1->known->to_h |= obj2->known->to_h;
-		obj1->known->to_d |= obj2->known->to_d;
 		if (obj2->known->effect)
-			obj1->known->effect = (struct effect *)1;
+			obj1->known->effect = obj1->effect;
+		player_know_object(player, obj1);
 	}
 
 	/* Merge inscriptions */
@@ -1137,7 +1128,7 @@ void floor_item_charges(struct object *obj)
 	if (!tval_can_have_charges(obj)) return;
 
 	/* Require known item */
-	if (!object_is_known(obj)) return;
+	if (!object_flavor_is_aware(obj)) return;
 
 	/* Print a message */
 	msg("There %s %d charge%s remaining.", (obj->pval != 1) ? "are" : "is",
@@ -1402,6 +1393,23 @@ void floor_pile_know(struct chunk *c, int y, int x)
 			known_obj->ix = x;
 			known_obj->held_m_idx = 0;
 			pile_insert_end(&cave_k->squares[y][x].obj, known_obj);
+		}
+
+		/* If it's the player grid, know every object, recognise artifacts */
+		if ((y == player->py) && (x == player->px)) {
+			player_know_object(player, obj);
+
+			/* Get the pval for anything but chests */
+			if (!tval_is_chest(obj))
+				obj->known->pval = obj->pval;
+
+			/* Automatically notice artifacts, mark as assessed */
+			obj->known->artifact = obj->artifact;
+			obj->known->notice |= OBJ_NOTICE_ASSESSED;
+
+			/* Log artifacts if found */
+			if (obj->artifact)
+				history_add_artifact(obj->artifact, true, true);
 		}
 	}
 

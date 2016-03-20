@@ -29,7 +29,6 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -485,8 +484,8 @@ static void get_art_name(char *buf, int max, int a_idx)
 	/* Make it known to us */
 	known_obj = object_new();
 	obj->known = known_obj;
+	object_copy(known_obj, obj);
 	known_obj->notice |= OBJ_NOTICE_IMAGINED;
-	object_notice_everything(obj);
 
 	/* Create the artifact description */
 	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL);
@@ -2077,13 +2076,6 @@ void get_debug_command(void)
 			break;
 		}
 
-		/* Identify */
-		case 'i':
-		{
-			effect_simple(EF_IDENTIFY, "0", 0, 0, 0, NULL);
-			break;
-		}
-
 		/* Go up or down in the dungeon */
 		case 'j':
 		{
@@ -2098,7 +2090,7 @@ void get_debug_command(void)
 			break;
 		}
 
-		/* Work out what the kayer is typing */
+		/* Work out what the player is typing */
 		case 'L': 
 		{
 			do_cmd_keylog();

@@ -27,9 +27,9 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -64,10 +64,10 @@ struct hint *hints;
 
 static const char *obj_flags[] = {
 	"NONE",
-	#define STAT(a, b, c, d, e, f, g, h) #c,
+	#define STAT(a, b, c, d, e, f, g, h, i) #c,
 	#include "list-stats.h"
 	#undef STAT
-	#define OF(a, b, c, d, e) #a,
+	#define OF(a, b, c, d, e, f) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	NULL
@@ -571,9 +571,9 @@ int price_item(struct store *store, const struct object *obj,
 
 	/* Get the value of the stack of wands, or a single item */
 	if (tval_can_have_charges(obj))
-		price = object_value(obj, qty, false);
+		price = object_value_real(obj, qty, false);
 	else
-		price = object_value(obj, 1, false);
+		price = object_value_real(obj, 1, false);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
@@ -598,16 +598,6 @@ int price_item(struct store *store, const struct object *obj,
 		/* Check for no_selling option */
 		if (OPT(birth_no_selling)) return (0L);
 	} else {
-		/* Recalculate if the player doesn't know the flavour */
-		if (!obj->kind->aware) {
-			obj->kind->aware = true;
-			if (tval_can_have_charges(obj))
-				price = object_value(obj, qty, false);
-			else
-				price = object_value(obj, 1, false);
-			obj->kind->aware = false;
-		}
-
 		/* Black market sucks */
 		if (store->sidx == STORE_B_MARKET)
 			price = price * 2;
@@ -907,7 +897,10 @@ struct object *store_carry(struct store *store, struct object *obj)
 	struct object_kind *kind = obj->kind;
 
 	/* Evaluate the object */
-	value = object_value(obj, 1, false);
+	if (object_is_carried(player, obj))
+		value = object_value(obj, 1, false);
+	else
+		value = object_value_real(obj, 1, false);
 
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0)
@@ -928,6 +921,8 @@ struct object *store_carry(struct store *store, struct object *obj)
 		}
 	} else if (tval_can_have_timeout(obj)) {
 		obj->timeout = 0;
+	} else if (tval_is_launcher(obj)) {
+		obj->known->pval = obj->pval;
 	} else if (tval_can_have_charges(obj)) {
 		/* If the store can stock this item kind, we recharge */
 		if (store_can_carry(store, obj->kind)) {
@@ -961,6 +956,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 		return NULL;
 
 	/* Insert the new object */
+	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	pile_insert(&store->stock, obj);
 	pile_insert(&store->stock_k, known_obj);
 	store->stock_num++;
@@ -1196,8 +1192,9 @@ static bool store_create_random(struct store *store)
 		known_obj = object_new();
 		obj->known = known_obj;
 
-		/* Know everything but flavor, no origin yet */
-		object_know_all_but_flavor(obj);
+		/* Know everything the player knows, no origin yet */
+		object_set_base_known(obj);
+		player_know_object(player, obj);
 		obj->origin = ORIGIN_NONE;
 
 		/* Black markets have expensive tastes */
@@ -1209,7 +1206,7 @@ static bool store_create_random(struct store *store)
 		}
 
 		/* No "worthless" items */
-		if (object_value(obj, 1, false) < 1)  {
+		if (object_value_real(obj, 1, false) < 1)  {
 			object_delete(&known_obj);
 			obj->known = NULL;
 			object_delete(&obj);
@@ -1248,9 +1245,10 @@ static struct object *store_create_item(struct store *store,
 	/* Create a new object of the chosen kind */
 	object_prep(obj, kind, 0, RANDOMISE);
 
-	/* Know everything but flavor, no origin yet */
+	/* Know everything the player knows, no origin yet */
 	obj->known = known_obj;
-	object_know_all_but_flavor(obj);
+	object_set_base_known(obj);
+	player_know_object(player, obj);
 	obj->origin = ORIGIN_NONE;
 
 	/* Attempt to carry the object */
@@ -1505,7 +1503,7 @@ int find_inven(const struct object *obj)
 				break;
 			}
 
-			/* Weapons and Armor */
+			/* Wearables */
 			case TV_BOW:
 			case TV_DIGGING:
 			case TV_HAFTED:
@@ -1520,31 +1518,13 @@ int find_inven(const struct object *obj)
 			case TV_SOFT_ARMOR:
 			case TV_HARD_ARMOR:
 			case TV_DRAG_ARMOR:
-			{
-				/* Fall through */
-			}
-
-			/* Rings, Amulets, Lights */
 			case TV_RING:
 			case TV_AMULET:
 			case TV_LIGHT:
-			{
-				/* Require both items to be known */
-				if (!object_is_known(obj) || !object_is_known(gear_obj))
-					continue;
-
-				/* Fall through */
-			}
-
-			/* Missiles */
 			case TV_BOLT:
 			case TV_ARROW:
 			case TV_SHOT:
 			{
-				/* Require identical knowledge of both items */
-				if (object_is_known(obj) != object_is_known(gear_obj))
-					continue;
-
 				/* Require identical "bonuses" */
 				if (obj->to_h != gear_obj->to_h)
 					continue;
@@ -1586,10 +1566,6 @@ int find_inven(const struct object *obj)
 			/* Various */
 			default:
 			{
-				/* Require knowledge */
-				if (!object_is_known(obj) || !object_is_known(gear_obj))
-					continue;
-
 				/* Probably okay */
 				break;
 			}
@@ -1666,9 +1642,6 @@ void do_cmd_buy(struct command *cmd)
 	/* Spend the money */
 	player->au -= price;
 
-	/* Completely ID objects on buy */
-	object_flavor_aware(bought);
-
 	/* Update the gear */
 	player->upkeep->update |= (PU_INVEN);
 
@@ -1700,6 +1673,12 @@ void do_cmd_buy(struct command *cmd)
 
 	/* Give it to the player */
 	inven_carry(player, bought, true, true);
+
+	/* Learn flavor, any effect and all the runes */
+	object_flavor_aware(bought);
+	obj->known->effect = obj->effect;
+	while (!object_fully_known(bought))
+		object_learn_unknown_rune(player, bought);
 
 	/* Handle stuff */
 	handle_stuff(player);
@@ -1805,10 +1784,11 @@ bool store_will_buy_tester(const struct object *obj)
 
 	if (OPT(birth_no_selling)) {
 		if (tval_can_have_charges(obj)) {
-			if (!store_can_carry(store, obj->kind) && object_is_known(obj))
+			if (!store_can_carry(store, obj->kind) &&
+				object_flavor_is_aware(obj))
 				return false;
 		} else {
-			if (object_is_known(obj))
+			if (object_flavor_is_aware(obj))
 				return false;
 		}
 	}
@@ -1891,8 +1871,9 @@ void do_cmd_sell(struct command *cmd)
 	/* Get the "apparent" value */
 	dummy = object_value(&dummy_item, amt, false);
 
-	/* Identify original object */
-	object_notice_everything(obj);
+	/* Know flavor of consumables */
+	if (obj->kind->flavor && !tval_is_jewelry(obj))
+		object_flavor_aware(obj);
 
 	/* Take a proper copy of the now known-about object. */
 	sold_item = gear_object_for_use(obj, amt, false, &none_left);
@@ -1912,6 +1893,10 @@ void do_cmd_sell(struct command *cmd)
 		/* Analyze the prices (and comment verbally) */
 		purchase_analyze(price, value, dummy);
 	}
+
+	/* Autoinscribe if we still have any */
+	if (!none_left)
+		apply_autoinscription(obj);
 
 	/* Set ignore flag */
 	player->upkeep->notice |= PN_IGNORE;

@@ -24,6 +24,7 @@
 #include "mon-make.h"
 #include "monster.h"
 #include "object.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
@@ -86,28 +87,18 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->number);
 	wr_s16b(obj->weight);
 
-	if (obj->artifact) {
-		if (obj->artifact != (struct artifact *)1)
-			wr_u32b(obj->artifact->aidx);
-		else
-			wr_u32b(EGO_ART_KNOWN);
-	} else {
+	if (obj->artifact)
+		wr_u32b(obj->artifact->aidx);
+	else
 		wr_u32b(0);
-	}
 
-	if (obj->ego) {
-		if (obj->ego != (struct ego_item *)1)
-			wr_u32b(obj->ego->eidx);
-		else
-			wr_u32b(EGO_ART_KNOWN);
-	} else {
+	if (obj->ego)
+		wr_u32b(obj->ego->eidx);
+	else
 		wr_u32b(0);
-	}
 
-	if (obj->effect == (struct effect *)1)
+	if (obj->effect)
 		wr_byte(1);
-	else if (obj->effect)
-		wr_byte(2);
 	else
 		wr_byte(0);
 
@@ -342,6 +333,8 @@ void wr_object_memory(void)
 	wr_byte(OF_SIZE);
 	wr_byte(OBJ_MOD_MAX);
 	wr_byte(ELEM_MAX);
+
+	/* Kind knowledge */
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
 		byte tmp8u = 0;
 		struct object_kind *kind = &k_info[k_idx];
@@ -410,10 +403,11 @@ void wr_player(void)
 	wr_s16b(player->ht);
 	wr_s16b(player->wt);
 
-	/* Dump the stats (maximum and current and birth) */
+	/* Dump the stats (maximum and current and birth and swap-mapping) */
 	wr_byte(STAT_MAX);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_max[i]);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_cur[i]);
+	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_map[i]);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_birth[i]);
 
 	wr_s16b(player->ht_birth);
@@ -514,20 +508,53 @@ void wr_ignore(void)
 			wr_byte(itypes[j]);
 	}
 
+	/* Write the current number of aware object auto-inscriptions */
 	n = 0;
 	for (i = 0; i < z_info->k_max; i++)
-		if (k_info[i].note)
+		if (k_info[i].note_aware)
 			n++;
 
-	/* Write the current number of auto-inscriptions */
 	wr_u16b(n);
 
-	/* Write the autoinscriptions array */
+	/* Write the aware object autoinscriptions array */
 	for (i = 0; i < z_info->k_max; i++) {
-		if (!k_info[i].note)
-			continue;
-		wr_s16b(i);
-		wr_string(quark_str(k_info[i].note));
+		if (k_info[i].note_aware) {
+			wr_s16b(i);
+			wr_string(quark_str(k_info[i].note_aware));
+		}
+	}
+
+	/* Write the current number of unaware object auto-inscriptions */
+	n = 0;
+	for (i = 0; i < z_info->k_max; i++)
+		if (k_info[i].note_unaware)
+			n++;
+
+	wr_u16b(n);
+
+	/* Write the unaware object autoinscriptions array */
+	for (i = 0; i < z_info->k_max; i++) {
+		if (k_info[i].note_unaware) {
+			wr_s16b(i);
+			wr_string(quark_str(k_info[i].note_unaware));
+		}
+	}
+
+	/* Write the current number of rune auto-inscriptions */
+	j = 0;
+	n = max_runes();
+	for (i = 0; i < n; i++)
+		if (rune_note(i))
+			j++;
+
+	wr_u16b(j);
+
+	/* Write the rune autoinscriptions array */
+	for (i = 0; i < n; i++) {
+		if (rune_note(i)) {
+			wr_s16b(i);
+			wr_string(quark_str(rune_note(i)));
+		}
 	}
 
 	return;
@@ -536,6 +563,10 @@ void wr_ignore(void)
 
 void wr_misc(void)
 {
+	size_t i;
+	struct brand *b;
+	struct slay *s;
+
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
 
@@ -551,6 +582,51 @@ void wr_misc(void)
 
 	/* Current turn */
 	wr_s32b(turn);
+
+	/* Property knowledge */
+	if (player->is_dead)
+		return;
+
+	/* Flags */
+	for (i = 0; i < OF_SIZE; i++)
+		wr_byte(player->obj_k->flags[i]);
+
+	/* Modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		wr_s16b(player->obj_k->modifiers[i]);
+	}
+
+	/* Elements */
+	for (i = 0; i < ELEM_MAX; i++) {
+		wr_s16b(player->obj_k->el_info[i].res_level);
+		wr_byte(player->obj_k->el_info[i].flags);
+	}
+
+	/* Brands */
+	wr_byte(player->obj_k->brands ? 1 : 0);
+	for (b = player->obj_k->brands; b; b = b->next) {
+		wr_string(b->name);
+		wr_s16b(b->element);
+		wr_s16b(b->multiplier);
+		wr_byte(b->next ? 1 : 0);
+	}
+
+	/* Slays */
+	wr_byte(player->obj_k->slays ? 1 : 0);
+	for (s = player->obj_k->slays; s; s = s->next) {
+		wr_string(s->name);
+		wr_s16b(s->race_flag);
+		wr_s16b(s->multiplier);
+		wr_byte(s->next ? 1 : 0);
+	}
+
+	/* Combat data */
+	wr_s16b(player->obj_k->ac);
+	wr_s16b(player->obj_k->to_a);
+	wr_s16b(player->obj_k->to_h);
+	wr_s16b(player->obj_k->to_d);
+	wr_byte(player->obj_k->dd);
+	wr_byte(player->obj_k->ds);
 }
 
 

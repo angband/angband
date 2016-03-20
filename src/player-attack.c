@@ -32,7 +32,7 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
 #include "obj-util.h"
@@ -359,17 +359,14 @@ static bool py_attack_real(int y, int x, bool *fear)
 		dmg = melee_damage(obj, b, s);
 		dmg = critical_norm(obj->weight, obj->to_h, dmg, &msg_type);
 
-		/* Learn by use for the weapon */
-		object_notice_attack_plusses(obj);
-
 		if (player_of_has(player, OF_IMPACT) && dmg > 50) {
 			do_quake = true;
-			equip_notice_flag(player, OF_IMPACT);
+			equip_learn_flag(player, OF_IMPACT);
 		}
 	}
 
-	/* Learn by use for other equipped items */
-	equip_notice_on_attack(player);
+	/* Learn by use */
+	equip_learn_on_melee_attack(player);
 
 	/* Apply the player damage bonuses */
 	dmg += player_damage_bonus(&player->state);
@@ -569,10 +566,10 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 			if (result.success) {
 				hit_target = true;
 
-				object_notice_attack_plusses(obj);
+				missile_learn_on_ranged_attack(player, obj);
 
 				/* Learn by use for other equipped items */
-				equip_notice_to_hit_on_attack(player);
+				equip_learn_on_ranged_attack(player);
 
 				/* No negative damage; change verb if no damage done */
 				if (dmg <= 0) {
@@ -674,7 +671,7 @@ static struct attack_result make_ranged_shot(struct object *ammo, int y, int x)
 	result.dmg = critical_shot(ammo->weight, ammo->to_h, result.dmg,
 							   &result.msg_type);
 
-	object_notice_attack_plusses(bow);
+	missile_learn_on_ranged_attack(player, bow);
 
 	return result;
 }
@@ -706,6 +703,10 @@ static struct attack_result make_ranged_throw(struct object *obj, int y, int x)
 	result.dmg = ranged_damage(obj, NULL, b, s, multiplier);
 	result.dmg = critical_norm(obj->weight, obj->to_h, result.dmg,
 							   &result.msg_type);
+
+	/* Direct adjustment for exploding things (flasks of oil) */
+	if (of_has(obj->flags, OF_EXPLODE))
+		result.dmg *= 3;
 
 	return result;
 }

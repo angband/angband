@@ -25,9 +25,10 @@
 #include "monster.h"
 #include "mon-summon.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -54,7 +55,10 @@ struct blow_info {
 	int centiblows;
 };
 
-/*** Big fat data tables ***/
+/**
+ * ------------------------------------------------------------------------
+ * Big fat data tables
+ * ------------------------------------------------------------------------ */
 
 static const struct flag_type elements[] =
 {
@@ -63,12 +67,12 @@ static const struct flag_type elements[] =
     #undef ELEM
 };
 
-static const struct flag_type mod_flags[] =
+static const char *mod_names[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) { OBJ_MOD_##a, h },
+	#define STAT(a, b, c, d, e, f, g, h, i) h,
 	#include "list-stats.h"
 	#undef STAT
-	#define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, d },
+	#define OBJ_MOD(a, b, c, d) d,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
 };
@@ -83,7 +87,7 @@ static const struct flag_type protect_flags[] =
 
 static const struct flag_type sustain_flags[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h) { OF_##c, h },
+	#define STAT(a, b, c, d, e, f, g, h, i) { OF_##c, h },
 	#include "list-stats.h"
 	#undef STAT
 };
@@ -129,7 +133,10 @@ static struct {
 };
 
 
-/*** Utility code ***/
+/**
+ * ------------------------------------------------------------------------
+ * List-writiing utility code
+ * ------------------------------------------------------------------------ */
 
 /**
  * Given an array of strings, as so:
@@ -141,8 +148,7 @@ static void info_out_list(textblock *tb, const char *list[], size_t count)
 {
 	size_t i;
 
-	for (i = 0; i < count; i++)
-	{
+	for (i = 0; i < count; i++) {
 		textblock_append(tb, list[i]);
 		if (i != (count - 1)) textblock_append(tb, ", ");
 	}
@@ -160,8 +166,7 @@ static size_t flag_info_collect(const struct flag_type list[], size_t max,
 {
 	size_t i, count = 0;
 
-	for (i = 0; i < max; i++)
-	{
+	for (i = 0; i < max; i++) {
 		if (of_has(flags, list[i].flag))
 			recepticle[count++] = list[i].name;
 	}
@@ -176,8 +181,7 @@ static size_t element_info_collect(const bool list[], const char *recepticle[])
 {
 	size_t i, count = 0;
 
-	for (i = 0; i < N_ELEMENTS(elements); i++)
-	{
+	for (i = 0; i < N_ELEMENTS(elements); i++) {
 		if (list[i])
 			recepticle[count++] = elements[i].name;
 	}
@@ -186,7 +190,11 @@ static size_t element_info_collect(const bool list[], const char *recepticle[])
 }
 
 
-/*** Code that makes use of the data tables ***/
+/**
+ * ------------------------------------------------------------------------
+ * Code that makes use of the data tables to describe aspects of an 
+ * object's information
+ * ------------------------------------------------------------------------ */
 
 /**
  * Describe an item's curses.
@@ -218,37 +226,37 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 
 	/* Don't give exact plusses for faked ego items as each real one will
 	 * be different */
-	bool suppress_details = mode & OINFO_EGO ? true : false;
+	bool suppress_details = mode & (OINFO_EGO | OINFO_FAKE) ? true : false;
 
 	/* Fact of but not size of mods is known for egos and flavoured items
 	 * the player is aware of */
 	bool known_effect = false;
-	if (object_ego_is_visible(obj))
+	if (obj->known->ego)
 		known_effect = true;
 	if (tval_can_have_flavor_k(obj->kind) && object_flavor_is_aware(obj))
 		known_effect = true;
 
 	/* See what we've got */
-	for (i = 0; i < N_ELEMENTS(mod_flags); i++)
-		if (obj->modifiers[mod_flags[i].flag] != 0 && mod_flags[i].name[0]) {
+	for (i = 0; i < N_ELEMENTS(mod_names); i++)
+		if (obj->known->modifiers[i]) {
 			count++;
-			/* Either all mods are visible, or none are */
-			if (object_this_mod_is_visible(obj, mod_flags[i].flag))
-				detail = true;
+			detail = true;
 		}
 
 	if (!count)
 		return false;
 
-	for (i = 0; i < N_ELEMENTS(mod_flags); i++) {
-		const char *desc = mod_flags[i].name;
-		int val = obj->modifiers[mod_flags[i].flag];
+	for (i = 0; i < N_ELEMENTS(mod_names); i++) {
+		const char *desc = mod_names[i];
+		int val = obj->known->modifiers[i];
 		if (!val) continue;
-		if (!mod_flags[i].name[0]) continue;
+
+		/* Actual object */
 		if (detail && !suppress_details) {
 			int attr = (val > 0) ? COLOUR_L_GREEN : COLOUR_RED;
 			textblock_append_c(tb, attr, "%+i %s.\n", val, desc);
 		} else if (known_effect)
+			/* Ego type or jewellery description */
 			textblock_append(tb, "Affects your %s\n", desc);
 	}
 
@@ -397,13 +405,10 @@ static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
 	bool printed = false;
 
 	for (i = 0; i < N_ELEMENTS(misc_flags); i++)
-	{
-		if (of_has(flags, misc_flags[i].flag))
-		{
+		if (of_has(flags, misc_flags[i].flag)) {
 			textblock_append(tb, "%s.  ", misc_flags[i].name);
 			printed = true;
 		}
-	}
 
 	if (printed)
 		textblock_append(tb, "\n");
@@ -485,13 +490,12 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 static void calculate_melee_crits(struct player_state *state, int weight,
 		int plus, int *mult, int *add, int *div)
 {
-	int k, to_crit = weight + 5*(state->to_h + plus) + 3*player->lev;
+	int k, to_crit = weight + 5 * (state->to_h + plus) + 3 * player->lev;
 	to_crit = MIN(5000, MAX(0, to_crit));
 
 	*mult = *add = 0;
 
-	for (k = weight; k < weight + 650; k++)
-	{
+	for (k = weight; k < weight + 650; k++) {
 		if (k <  400) { *mult += 4; *add += 10; continue; }
 		if (k <  700) { *mult += 4; *add += 20; continue; }
 		if (k <  900) { *mult += 6; *add += 30; continue; }
@@ -514,20 +518,19 @@ static void calculate_melee_crits(struct player_state *state, int weight,
 static void calculate_missile_crits(struct player_state *state, int weight,
 		int plus, int *mult, int *add, int *div)
 {
-	int k, to_crit = weight + 4*(state->to_h + plus) + 2*player->lev;
+	int k, to_crit = weight + 4 * (state->to_h + plus) + 2 * player->lev;
 	to_crit = MIN(5000, MAX(0, to_crit));
 
 	*mult = *add = 0;
 
-	for (k = weight; k < weight + 500; k++)
-	{
+	for (k = weight; k < weight + 500; k++) {
 		if (k <  500) { *mult += 2; *add +=  5; continue; }
 		if (k < 1000) { *mult += 2; *add += 10; continue; }
 		                *mult += 3; *add += 15;
 	}
 
-	*mult = 100 + to_crit*(*mult - 500)/(500*50);
-	*add  = *add * to_crit / (500*50);
+	*mult = 100 + to_crit * (*mult - 500) / (500 * 50);
+	*add  = *add * to_crit / (500 * 50);
 	*div  = 100;
 }
 
@@ -535,19 +538,17 @@ static void calculate_missile_crits(struct player_state *state, int weight,
  * Get the object flags the player should know about for the given object/
  * viewing mode combination.
  */
-static void get_known_flags(const struct object *obj, const oinfo_detail_t mode, bitflag flags[OF_SIZE])
+static void get_known_flags(const struct object *obj, const oinfo_detail_t mode,
+							bitflag flags[OF_SIZE])
 {
 	/* Grab the object flags */
 	if (mode & OINFO_EGO) {
-		/* Looking at fake egos needs less info than object_flags_known() */
-		if (flags)
 			object_flags(obj, flags);
 	} else {
-		if (flags)
-			object_flags_known(obj, flags);
+		object_flags_known(obj, flags);
 
 		/* Don't include base flags when terse */
-		if (flags && mode & OINFO_TERSE)
+		if (mode & OINFO_TERSE)
 			of_diff(flags, obj->kind->base->flags);
 	}
 }
@@ -556,20 +557,20 @@ static void get_known_flags(const struct object *obj, const oinfo_detail_t mode,
  * Get the object element info the player should know about for the given
  * object/viewing mode combination.
  */
-static void get_known_elements(const struct object *obj, const oinfo_detail_t mode, struct element_info el_info[])
+static void get_known_elements(const struct object *obj,
+							   const oinfo_detail_t mode,
+							   struct element_info el_info[])
 {
 	size_t i;
 
 	/* Grab the element info */
 	for (i = 0; i < N_ELEMENTS(elements); i++) {
 		/* Report fake egos or known element info */
-		if ((mode & OINFO_EGO) || object_element_is_known(obj, i)) {
-			el_info[i].res_level = obj->el_info[i].res_level;
-			el_info[i].flags = obj->el_info[i].flags;
-		} else {
+		if (player->obj_k->el_info[i].res_level)
+			el_info[i].res_level = obj->known->el_info[i].res_level;
+		else
 			el_info[i].res_level = 0;
-			el_info[i].flags = 0;
-		}
+		el_info[i].flags = obj->known->el_info[i].flags;
 
 		/* Ignoring an element: */
 		if (obj->el_info[i].flags & EL_INFO_IGNORE) {
@@ -644,19 +645,17 @@ static int obj_known_blows(const struct object *obj, int max_num,
 	extra_blows = 0;
 
 	/* Start with blows from the weapon being examined */
-	if (object_this_mod_is_visible(obj, OBJ_MOD_BLOWS))
-		extra_blows += obj->modifiers[OBJ_MOD_BLOWS];
+	extra_blows += obj->known->modifiers[OBJ_MOD_BLOWS];
 
 	/* Then we need to look for extra blows on other items, as
 	 * state does not track these */
 	for (i = 0; i < player->body.count; i++) {
 		struct object *helper = slot_object(player, i);
 
-		if ((i == slot_by_name(player, "weapon")) || !helper || !helper->kind)
+		if ((i == slot_by_name(player, "weapon")) || !helper)
 			continue;
 
-		if (object_this_mod_is_visible(helper, OBJ_MOD_BLOWS))
-			extra_blows += helper->modifiers[OBJ_MOD_BLOWS];
+		extra_blows += helper->known->modifiers[OBJ_MOD_BLOWS];
 	}
 
 	dex_plus_bound = STAT_RANGE - state.stat_ind[STAT_DEX];
@@ -777,8 +776,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj);
-	bool ammo   = (player->state.ammo_tval == obj->tval) &&
-	              (bow);
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
 	int multiplier = 1;
 
 	struct player_state state;
@@ -795,40 +793,31 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	/* Stop pretending */
 	player->body.slots[weapon_slot].obj = current_weapon;
 
-	/* Use displayed dice if real dice not known */
-	if (object_attack_plusses_are_visible(obj)) {
-		dice = obj->dd;
-		sides = obj->ds;
-	} else {
-		dice = obj->kind->dd;
-		sides = obj->kind->ds;
-	}
+	/* Finish if dice not known */
+	dice = obj->known->dd;
+	sides = obj->known->ds;
+	if (!dice || !sides) return false;
 
 	/* Calculate damage */
 	dam = ((sides + 1) * dice * 5);
 
 	if (weapon)	{
 		xtra_postcrit = state.to_d * 10;
-		if (object_attack_plusses_are_visible(obj)) {
-			xtra_precrit += obj->to_d * 10;
-			plus += obj->to_h;
-		}
+		xtra_precrit += obj->known->to_d * 10;
+		plus += obj->known->to_h;
 
-		calculate_melee_crits(&state, obj->weight, plus,
-				&crit_mult, &crit_add, &crit_div);
+		calculate_melee_crits(&state, obj->weight, plus, &crit_mult, &crit_add,
+							  &crit_div);
 
 		old_blows = state.num_blows;
 	} else { /* Ammo */
-		if (object_attack_plusses_are_visible(obj))
-			plus += obj->to_h;
+		plus += obj->known->to_h;
 
-		calculate_missile_crits(&player->state, obj->weight, plus,
-				&crit_mult, &crit_add, &crit_div);
+		calculate_missile_crits(&player->state, obj->weight, plus, &crit_mult,
+								&crit_add, &crit_div);
 
-		if (object_attack_plusses_are_visible(obj))
-			dam += (obj->to_d * 10);
-		if (object_attack_plusses_are_visible(bow))
-			dam += (bow->to_d * 10);
+		dam += (obj->known->to_d * 10);
+		dam += (bow->known->to_d * 10);
 	}
 
 	if (ammo) multiplier = player->state.ammo_mult;
@@ -889,8 +878,8 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		int melee_adj_mult = ammo ? 0 : 1;
 
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + slay->multiplier
-						   - melee_adj_mult) + xtra_precrit;
+		total_dam = dam * (multiplier + slay->multiplier - melee_adj_mult)
+			+ xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
@@ -925,7 +914,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 static bool describe_damage(textblock *tb, const struct object *obj)
 {
 	bool nonweap_slay = false;
-	int normal_damage;
+	int normal_damage = 0;
 	struct brand *brand, *brands = NULL;
 	struct slay *slay, *slays = NULL;
 	bool has_brands_or_slays;
@@ -997,18 +986,16 @@ static bool describe_damage(textblock *tb, const struct object *obj)
  * impact flag set, the percentage chance of breakage and whether it is
  * too heavy to be weilded effectively at the moment.
  */
-static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect, int *range, bool *impactful, int *break_chance, bool *too_heavy)
+static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
+								  int *range, bool *impactful,
+								  int *break_chance, bool *too_heavy)
 {
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj);
-	bool ammo   = (player->state.ammo_tval == obj->tval) &&
-	              (bow);
-	bitflag f[OF_SIZE];
+	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
 
 	*thrown_effect = *impactful = *too_heavy = false;
 	*range = *break_chance = 0;
-
-	get_known_flags(obj, 0, f);
 
 	if (!weapon && !ammo) {
 		/* Potions can have special text */
@@ -1021,7 +1008,8 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		*range = 10 * MIN(6 + 2 * player->state.ammo_mult, z_info->max_range);
 
 	/* Note the impact flag */
-	*impactful = of_has(f, OF_IMPACT);
+	*impactful = of_has(obj->known->flags, OF_IMPACT) &&
+		of_has(obj->flags, OF_IMPACT);
 
 	/* Add breakage chance */
 	*break_chance = breakage_chance(obj, true);
@@ -1122,7 +1110,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 		return false;
 
 	/* Player has no digging info */
-	if (!object_this_mod_is_visible(obj, OBJ_MOD_TUNNEL))
+	if (!tval_is_melee_weapon(obj) && !obj->known->modifiers[OBJ_MOD_TUNNEL])
 		return false;
 
 	/* Pretend we're wielding the object */
@@ -1204,34 +1192,36 @@ static bool describe_digger(textblock *tb, const struct object *obj)
  * Return false if the object is not known to be a light source (which 
  * includes it not actually being a light source).
  */
-static bool obj_known_light(const struct object *obj, oinfo_detail_t mode, int *rad, bool *uses_fuel, int *refuel_turns)
+static bool obj_known_light(const struct object *obj, oinfo_detail_t mode,
+							int *rad, bool *uses_fuel, int *refuel_turns)
 {
-	bitflag flags[OF_SIZE];
 	bool no_fuel;
 	bool is_light = tval_is_light(obj);
-
-	get_known_flags(obj, mode, flags);
 
 	if (!is_light && (obj->modifiers[OBJ_MOD_LIGHT] <= 0))
 		return false;
 
+	/* Work out radius */
+	if (of_has(obj->flags, OF_LIGHT_1))
+		*rad = 1;
+	else if (of_has(obj->flags, OF_LIGHT_2))
+		*rad = 2;
+	*rad += obj->known->modifiers[OBJ_MOD_LIGHT];
+
 	/* Prevent unidentified objects (especially artifact lights) from showing
 	 * bad radius and refueling info. */
-	if (!object_is_known(obj))
+	if (*rad == 0)
 		return false;
 
-	/* Work out radius */
-	*rad = obj->modifiers[OBJ_MOD_LIGHT];
+	no_fuel = of_has(obj->known->flags, OF_NO_FUEL) ? true : false;
 
-	no_fuel = of_has(flags, OF_NO_FUEL) ? true : false;
-
-	if (no_fuel || obj->artifact) {
+	if (no_fuel || obj->known->artifact) {
 		*uses_fuel = false;
 	} else {
 		*uses_fuel = true;
 	}
 
-	if (is_light && of_has(flags, OF_TAKES_FUEL)) {
+	if (is_light && of_has(obj->known->flags, OF_TAKES_FUEL)) {
 		*refuel_turns = z_info->fuel_lamp;
 	} else {
 		*refuel_turns = 0;
@@ -1244,12 +1234,11 @@ static bool obj_known_light(const struct object *obj, oinfo_detail_t mode, int *
  * Describe things that look like lights.
  */
 static bool describe_light(textblock *tb, const struct object *obj,
-		oinfo_detail_t mode)
+						   oinfo_detail_t mode)
 {
 	int rad = 0;
 	bool uses_fuel = false;
 	int refuel_turns = 0;
-
 	bool terse = mode & OINFO_TERSE ? true : false;
 
 	if (!obj_known_light(obj, mode, &rad, &uses_fuel, &refuel_turns))
@@ -1294,6 +1283,7 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 								 int *max_recharge, int *failure_chance)
 {
 	random_value timeout = {0, 0, 0, 0};
+	bool store_consumable = object_is_in_store(obj) && tval_is_useable(obj);
 
 	*effect = 0;
 	*min_recharge = 0;
@@ -1301,7 +1291,7 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 	*failure_chance = 0;
 	*aimed = false;
 
-	if (object_effect_is_known(obj)) {
+	if (object_effect_is_known(obj) || store_consumable) {
 		*effect = object_effect(obj);
 		timeout = obj->time;
 		if (effect_aim(*effect))
@@ -1362,7 +1352,8 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			textblock_append(tb, "It can be drunk.\n");
 		else if (tval_is_scroll(obj))
 			textblock_append(tb, "It can be read.\n");
-		else textblock_append(tb, "It can be activated.\n");
+		else
+			textblock_append(tb, "It can be activated.\n");
 
 		return true;
 	}
@@ -1455,7 +1446,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			case EFINFO_STAT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-							mod_flags[effect->params[0]].name);
+							mod_names[effect->params[0]]);
 				break;
 			}
 			case EFINFO_SEEN: {
@@ -1610,7 +1601,7 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 	char loot_spot[80];
 	char name[80];
 	int origin;
-	const char *droppee;
+	const char *dropper;
 	const char *article;
 
 	/* Only give this info in chardumps if wieldable */
@@ -1632,15 +1623,15 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 
 	/* Name the monster of origin */
 	if (r_info[obj->origin_xtra].ridx)
-		droppee = r_info[obj->origin_xtra].name;
+		dropper = r_info[obj->origin_xtra].name;
 	else
-		droppee = "monster lost to history";
-	article = is_a_vowel(droppee[0]) ? "an " : "a ";
+		dropper = "monster lost to history";
+	article = is_a_vowel(dropper[0]) ? "an " : "a ";
 	if (rf_has(r_info[obj->origin_xtra].flags, RF_UNIQUE))
-		my_strcpy(name, droppee, sizeof(name));
+		my_strcpy(name, dropper, sizeof(name));
 	else {
 		my_strcpy(name, article, sizeof(name));
-		my_strcat(name, droppee, sizeof(name));
+		my_strcat(name, dropper, sizeof(name));
 	}
 
 	/* Print an appropriate description */
@@ -1669,14 +1660,14 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
  * real object)
  */
 static void describe_flavor_text(textblock *tb, const struct object *obj,
-	bool ego)
+								 bool ego)
 {
 	/* Display the known artifact or object description */
 	if (!OPT(birth_randarts) && obj->artifact &&
-		object_is_known(obj) && obj->artifact->text) {
+		obj->known->artifact && obj->artifact->text) {
 		textblock_append(tb, "%s\n\n", obj->artifact->text);
 
-	} else if (object_flavor_is_aware(obj) || object_is_known(obj) || ego) {
+	} else if (object_flavor_is_aware(obj) || ego) {
 		bool did_desc = false;
 
 		if (!ego && obj->kind->text) {
@@ -1685,7 +1676,7 @@ static void describe_flavor_text(textblock *tb, const struct object *obj,
 		}
 
 		/* Display an additional ego-item description */
-		if ((ego || object_ego_is_visible(obj)) && obj->ego->text) {
+		if ((ego || (obj->known->ego != NULL)) && obj->ego->text) {
 			if (did_desc) textblock_append(tb, "  ");
 			textblock_append(tb, "%s\n\n", obj->ego->text);
 		} else if (did_desc) {
@@ -1699,25 +1690,25 @@ static void describe_flavor_text(textblock *tb, const struct object *obj,
  */
 static bool describe_ego(textblock *tb, const struct ego_item *ego)
 {
-	int i, num = 3;
+	if (kf_has(ego->kind_flags, KF_RAND_HI_RES))
+		textblock_append(tb, "It provides one random higher resistance.  ");
+	else if (kf_has(ego->kind_flags, KF_RAND_SUSTAIN))
+		textblock_append(tb, "It provides one random sustain.  ");
+	else if (kf_has(ego->kind_flags, KF_RAND_POWER))
+		textblock_append(tb, "It provides one random ability.  ");
+	else if (kf_has(ego->kind_flags, KF_RAND_RES_POWER))
+		textblock_append(tb, "It provides one random ability or base resistance.  ");
+	else
+		return false;
 
-	/* Hackish */
-	for (i = 0; i < 3; i++) {
-		if (kf_has(ego->kind_flags, KF_RAND_HI_RES + i))
-			num = i;
-	}
-
-	if (num < 3) {
-		const char *xtra[] = { "sustain", "higher resistance", "ability" };
-		textblock_append(tb, "It provides one random %s.  ", xtra[num]);
-
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Output code
+ * ------------------------------------------------------------------------ */
 /**
  * Output object information
  */
@@ -1726,16 +1717,16 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	bitflag flags[OF_SIZE];
 	struct element_info el_info[N_ELEMENTS(elements)];
 	bool something = false;
-	bool known = object_all_but_flavor_is_known(obj);
 
 	bool terse = mode & OINFO_TERSE ? true : false;
 	bool subjective = mode & OINFO_SUBJ ? true : false;
 	bool ego = mode & OINFO_EGO ? true : false;
 	textblock *tb = textblock_new();
-	const struct object *known_obj = obj->known ? obj->known : obj;
+
+	assert(obj->known);
 
 	/* Unaware objects get simple descriptions */
-	if (obj->kind != known_obj->kind) {
+	if (obj->kind != obj->known->kind) {
 		textblock_append(tb, "\n\nYou do not know what this is.\n");
 		return tb;
 	}
@@ -1749,7 +1740,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (subjective) describe_origin(tb, obj, terse);
 	if (!terse) describe_flavor_text(tb, obj, ego);
 
-	if (!known)	{
+	if (!object_fully_known(obj) &&	(obj->known->notice & OBJ_NOTICE_ASSESSED) && !tval_is_useable(obj)) {
 		textblock_append(tb, "You do not know the full extent of this item's powers.\n");
 		something = true;
 	}
@@ -1810,7 +1801,7 @@ textblock *object_info(const struct object *obj, oinfo_detail_t mode)
 textblock *object_info_ego(struct ego_item *ego)
 {
 	struct object_kind *kind = NULL;
-	struct object obj = { 0 };
+	struct object obj = { 0 }, known_obj = { 0 };
 	size_t i;
 
 	for (i = 0; i < z_info->k_max; i++) {
@@ -1827,7 +1818,8 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.ego = ego;
 	ego_apply_magic(&obj, 0);
 
-	object_know_all_but_flavor(&obj);
+	object_copy(&known_obj, &obj);
+	obj.known = &known_obj;
 
 	return object_info_out(&obj, OINFO_NONE | OINFO_EGO);
 }
@@ -1838,7 +1830,8 @@ textblock *object_info_ego(struct ego_item *ego)
  * Provide information on an item suitable for writing to the character dump
  * - keep it brief.
  */
-void object_info_chardump(ang_file *f, const struct object *obj, int indent, int wrap)
+void object_info_chardump(ang_file *f, const struct object *obj, int indent,
+						  int wrap)
 {
 	textblock *tb = object_info_out(obj, OINFO_TERSE | OINFO_SUBJ);
 	textblock_to_file(tb, f, indent, wrap);

@@ -30,7 +30,6 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-chest.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-util.h"
@@ -194,14 +193,14 @@ bool search(bool verbose)
 					if (!is_trapped_chest(obj)) continue;
 
 					/* Identify once */
-					if (!object_is_known(obj)) {
+					if (obj->known->pval != obj->pval) {
 						found = true;
 
 						/* Message */
 						msg("You have discovered a trap on the chest!");
 
 						/* Know the trap */
-						object_notice_everything(obj);
+						obj->known->pval = obj->pval;
 
 						/* Notice it */
 						disturb(player, 0);
