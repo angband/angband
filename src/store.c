@@ -1671,14 +1671,14 @@ void do_cmd_buy(struct command *cmd)
 	object_copy(known_obj, obj->known);
 	bought->known = known_obj;
 
-	/* Give it to the player */
-	inven_carry(player, bought, true, true);
-
 	/* Learn flavor, any effect and all the runes */
 	object_flavor_aware(bought);
-	obj->known->effect = obj->effect;
+	bought->known->effect = bought->effect;
 	while (!object_fully_known(bought))
 		object_learn_unknown_rune(player, bought);
+
+	/* Give it to the player */
+	inven_carry(player, bought, true, true);
 
 	/* Handle stuff */
 	handle_stuff(player);
