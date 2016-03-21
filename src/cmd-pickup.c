@@ -378,7 +378,7 @@ void do_cmd_pickup(struct command *cmd)
 
 	/* Redraw the object list using the upkeep flag so that the update can be
 	 * somewhat coalesced. Use event_signal(EVENT_ITEMLIST to force update. */
-	player->upkeep->redraw = (PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_ITEMLIST);
 }
 
 /**
@@ -396,5 +396,5 @@ void do_cmd_autopickup(struct command *cmd)
 
 	/* Redraw the object list using the upkeep flag so that the update can be
 	 * somewhat coalesced. Use event_signal(EVENT_ITEMLIST to force update. */
-	player->upkeep->redraw = (PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_ITEMLIST);
 }
