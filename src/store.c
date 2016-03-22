@@ -1682,6 +1682,12 @@ void do_cmd_buy(struct command *cmd)
 	/* Give it to the player */
 	inven_carry(player, bought, true, true);
 
+	/* Learn flavor, any effect and all the runes */
+	object_flavor_aware(bought);
+	obj->known->effect = obj->effect;
+	while (!object_fully_known(bought))
+		object_learn_unknown_rune(player, bought);
+
 	/* Handle stuff */
 	handle_stuff(player);
 
