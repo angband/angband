@@ -527,6 +527,9 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 	if (player_stat_dec(player, stat, false)){
 		int dam = effect_calculate_value(context, false);
 
+		/* Notice effect */
+		equip_learn_flag(player, flag);
+
 		/* Message */
 		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[stat]);
 		if (dam)
