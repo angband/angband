@@ -269,7 +269,7 @@ dice:$B+1d100
 expr:B:PLAYER_LEVEL:/ 5
 desc:Invokes a random spell effect.
 
-book:magic book:[Incantations and Illusions]:8:1
+book:magic book:[Incantations and Illusions]:9:1
 
 spell:Satisfy Hunger:9:7:45:8
 effect:SET_NOURISH
@@ -308,6 +308,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
 desc:  Uniques are not affected.
+
+spell:Identify:11:7:25:6
+effect:IDENTIFY
+desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:15:6:40:6
 effect:DETECT_INVISIBLE_MONSTERS
@@ -902,7 +906,7 @@ desc: same dungeon depth) will be generated.  This has exactly the same
 desc: side effects as leaving and re-entering the level through a stair,
 desc: except that you won't start on a square with a stair.
 
-book:prayer book:[Godly Insights]:4:2
+book:prayer book:[Godly Insights]:5:2
 
 spell:Detect Monsters:3:3:50:2
 effect:DETECT_VISIBLE_MONSTERS
@@ -927,6 +931,10 @@ effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
 desc:Detects all treasure, objects, doors, stairs, traps, and monsters
 desc: in the immediate area.
+
+spell:Perception:20:20:80:20
+effect:IDENTIFY
+desc:Reveals an unknown rune on an object.
 
 spell:Probing:25:40:80:150
 effect:PROBE
@@ -1177,7 +1185,7 @@ dice:$B+1d100
 expr:B:PLAYER_LEVEL:/ 5
 desc:Invokes a random spell effect.
 
-book:magic book:[Incantations and Illusions]:5:1
+book:magic book:[Incantations and Illusions]:6:1
 
 spell:Satisfy Hunger:25:12:95:1
 effect:SET_NOURISH
@@ -1200,6 +1208,10 @@ dice:20+1d30
 desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
+
+spell:Identify:18:18:60:2
+effect:IDENTIFY
+desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:20:11:50:4
 effect:DETECT_INVISIBLE_MONSTERS
@@ -1530,7 +1542,7 @@ dice:$B+1d100
 expr:B:PLAYER_LEVEL:/ 5
 desc:Invokes a random spell effect.
 
-book:magic book:[Incantations and Illusions]:8:1
+book:magic book:[Incantations and Illusions]:9:1
 
 spell:Satisfy Hunger:17:17:55:3
 effect:SET_NOURISH
@@ -1569,6 +1581,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
 desc:  Uniques are not affected.
+
+spell:Identify:23:25:90:3
+effect:IDENTIFY
+desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:25:17:50:4
 effect:DETECT_INVISIBLE_MONSTERS
@@ -2105,7 +2121,7 @@ desc: of recall again.
 desc:  This prayer has no effect when the option to restrict the use of
 desc: stairs and recall is set, unless Morgoth is dead.
 
-book:prayer book:[Godly Insights]:3:2
+book:prayer book:[Godly Insights]:4:2
 
 spell:Detect Monsters:5:5:50:1
 effect:DETECT_VISIBLE_MONSTERS
@@ -2130,6 +2146,10 @@ effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
 desc:Detects all treasure, objects, doors, stairs, traps, and monsters
 desc: in the immediate area.
+
+spell:Perception:25:25:80:16
+effect:IDENTIFY
+desc:Reveals an unknown rune on an object.
 
 spell:Probing:30:15:80:135
 effect:PROBE
