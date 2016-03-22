@@ -105,7 +105,7 @@ static bool monster_list_can_update(const monster_list_t *list)
 	if (list == NULL || list->entries == NULL)
 		return false;
 
-	return (int)list->entries_size <= cave_monster_max(cave);
+	return (int)list->entries_size >= cave_monster_max(cave);
 }
 
 /**
