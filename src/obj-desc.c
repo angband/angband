@@ -556,7 +556,7 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 		u[n++] = "ignore";
 
 	/* Note unknown properties */
-	if (!object_fully_known(obj) && (obj->known->notice & OBJ_NOTICE_ASSESSED))
+	if (!object_runes_known(obj) && (obj->known->notice & OBJ_NOTICE_ASSESSED))
 		u[n++] = "??";
 
 	if (n) {
@@ -585,7 +585,7 @@ static size_t obj_desc_aware(const struct object *obj, char *buf, size_t max,
 {
 	if (!object_flavor_is_aware(obj))
 		strnfcat(buf, max, &end, " {unseen}");
-	else if (!object_fully_known(obj))
+	else if (!object_runes_known(obj))
 		strnfcat(buf, max, &end, " {??}");
 
 	return end;
