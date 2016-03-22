@@ -889,6 +889,9 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 
 	bool flag = false;
 
+	/* Only called in the current level */
+	assert(c == cave);
+
 	/* Describe object */
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_BASE);
 
@@ -899,7 +902,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			VERB_AGREEMENT(dropped->number, "breaks", "break"));
 
 		/* Failure */
-		if (c == cave && dropped->known) {
+		if (dropped->known) {
 			delist_object(cave_k, dropped->known);
 			object_delete(&dropped->known);
 		}
@@ -934,17 +937,17 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			tx = x + dx;
 
 			/* Skip illegal grids */
-			if (!square_in_bounds_fully(cave, ty, tx)) continue;
+			if (!square_in_bounds_fully(c, ty, tx)) continue;
 
 			/* Require line of sight */
-			if (!los(cave, y, x, ty, tx)) continue;
+			if (!los(c, y, x, ty, tx)) continue;
 
 			/* Require floor space */
-			if (!square_isfloor(cave, ty, tx)) continue;
+			if (!square_isfloor(c, ty, tx)) continue;
 
 			/* Require no trap or rune */
-			if (square_isplayertrap(cave, ty, tx) ||
-				square_iswarded(cave, ty, tx))
+			if (square_isplayertrap(c, ty, tx) ||
+				square_iswarded(c, ty, tx))
 				continue;
 
 			/* No objects */
@@ -1008,7 +1011,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (player->wizard) msg("Breakage (no floor space).");
 
 		/* Failure */
-		if (c == cave && dropped->known) {
+		if (dropped->known) {
 			delist_object(cave_k, dropped->known);
 			object_delete(&dropped->known);
 		}
@@ -1030,7 +1033,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		}
 
 		/* Require floor space */
-		if (!square_canputitem(cave, ty, tx)) continue;
+		if (!square_canputitem(c, ty, tx)) continue;
 
 		/* Bounce to that location */
 		by = ty;
@@ -1052,7 +1055,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (dropped->artifact) dropped->artifact->created = false;
 
 		/* Failure */
-		if (c == cave && dropped->known) {
+		if (dropped->known) {
 			delist_object(cave_k, dropped->known);
 			object_delete(&dropped->known);
 		}
@@ -1065,7 +1068,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 	sound(MSG_DROP);
 
 	/* Message when an object falls under the player */
-	if (verbose && (cave->squares[by][bx].mon < 0))
+	if (verbose && (c->squares[by][bx].mon < 0))
 		/* Check the item still exists and isn't ignored */
 		if (c->objects[dropped->oidx] && !ignore_item_ok(dropped))
 			msg("You feel something roll beneath your feet.");

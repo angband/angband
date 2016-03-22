@@ -1588,7 +1588,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		if (player->is_dead || player->upkeep->generate_level) break;
 
 		/* Get a 'live' monster */
-		mon = cave_monster(cave, i);
+		mon = cave_monster(c, i);
 		if (!mon->race) continue;
 
 		/* Ignore monsters that have already been handled */
