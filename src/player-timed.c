@@ -370,25 +370,25 @@ static bool set_cut(struct player *p, int v)
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
 	/* Old state */
-	if (p->timed[TMD_CUT] > 1000)
+	if (p->timed[TMD_CUT] > TMD_CUT_DEEP)
 		/* Mortal wound */
 		old_aux = 7;
-	else if (p->timed[TMD_CUT] > 200)
+	else if (p->timed[TMD_CUT] > TMD_CUT_SEVERE)
 		/* Deep gash */
 		old_aux = 6;
-	else if (p->timed[TMD_CUT] > 100)
+	else if (p->timed[TMD_CUT] > TMD_CUT_NASTY)
 		/* Severe cut */
 		old_aux = 5;
-	else if (p->timed[TMD_CUT] > 50)
+	else if (p->timed[TMD_CUT] > TMD_CUT_BAD)
 		/* Nasty cut */
 		old_aux = 4;
-	else if (p->timed[TMD_CUT] > 25)
+	else if (p->timed[TMD_CUT] > TMD_CUT_LIGHT)
 		/* Bad cut */
 		old_aux = 3;
-	else if (p->timed[TMD_CUT] > 10)
+	else if (p->timed[TMD_CUT] > TMD_CUT_GRAZE)
 		/* Light cut */
 		old_aux = 2;
-	else if (p->timed[TMD_CUT] > 0)
+	else if (p->timed[TMD_CUT] > TMD_CUT_NONE)
 		/* Graze */
 		old_aux = 1;
 	else
@@ -396,25 +396,25 @@ static bool set_cut(struct player *p, int v)
 		old_aux = 0;
 
 	/* New state */
-	if (v > 1000)
+	if (v > TMD_CUT_DEEP)
 		/* Mortal wound */
 		new_aux = 7;
-	else if (v > 200)
+	else if (v > TMD_CUT_SEVERE)
 		/* Deep gash */
 		new_aux = 6;
-	else if (v > 100)
+	else if (v > TMD_CUT_NASTY)
 		/* Severe cut */
 		new_aux = 5;
-	else if (v > 50)
+	else if (v > TMD_CUT_BAD)
 		/* Nasty cut */
 		new_aux = 4;
-	else if (v > 25)
+	else if (v > TMD_CUT_LIGHT)
 		/* Bad cut */
 		new_aux = 3;
-	else if (v > 10)
+	else if (v > TMD_CUT_GRAZE)
 		/* Light cut */
 		new_aux = 2;
-	else if (v > 0)
+	else if (v > TMD_CUT_NONE)
 		/* Graze */
 		new_aux = 1;
 	else
