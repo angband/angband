@@ -43,6 +43,8 @@
 
 #include "main.h"
 
+#include "sound.h"
+
 /**
  * List of the available modules in the order they are tried.
  */
@@ -67,22 +69,6 @@ static const struct module modules[] =
 #ifdef USE_STATS
 	{ "stats", help_stats, init_stats },
 #endif /* USE_STATS */
-};
-
-static int init_sound_dummy(int argc, char *argv[]) {
-	return 0;
-}
-
-/**
- * List of sound modules in the order they should be tried.
- */
-static const struct module sound_modules[] =
-{
-#ifdef SOUND_SDL
-	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
-#endif /* SOUND_SDL */
-
-	{ "none", "No sound", init_sound_dummy },
 };
 
 /**
@@ -467,9 +453,7 @@ int main(int argc, char *argv[])
 				}
 				puts("                 Multiple -d options are allowed.");
 				puts("  -s<mod>        Use sound module <sys>:");
-				for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
-					printf("     %s   %s\n", sound_modules[i].name,
-					       sound_modules[i].help);
+				print_sound_help();
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
@@ -532,12 +516,6 @@ int main(int argc, char *argv[])
 
 #endif /* UNIX */
 
-	/* Try the modules in the order specified by sound_modules[] */
-	for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
-		if (!soundstr || streq(soundstr, sound_modules[i].name))
-			if (0 == sound_modules[i].init(argc, argv))
-				break;
-
 	/* Catch nasty signals */
 	signals_init();
 
@@ -548,6 +526,10 @@ int main(int argc, char *argv[])
 	init_display();
 	init_angband();
 	textui_init();
+
+	/* Initialise sound */
+	if (0 != init_sound(soundstr, argc, argv))
+		plog("Failed to initialize sound!");	/* Non-fatal */
 
 	/* Wait for response */
 	pause_line(Term);

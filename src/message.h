@@ -34,7 +34,7 @@ enum {
 /* Functions */
 void messages_init(void);
 void messages_free(void);
-u16b messages_num(void);	
+u16b messages_num(void);
 void message_add(const char *str, u16b type);
 const char *message_str(u16b age);
 u16b message_count(u16b age);
