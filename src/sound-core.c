@@ -141,10 +141,69 @@ static tree_message messages = TREE_INITIALIZER(message_node_compare);
  * populate it by calling load_sound_hook() for each node in the tree
  */
 static u16b next_sound_id;
-static void **sound_data;
+static struct sound_data *sounds_list;
+
+#define SOUND_DATA_ARRAY_INC	10
 
 /* These are the hooks installed by the platform sound module */
 static struct sound_hooks hooks;
+
+/*
+ * If preload_sounds is true, sounds are loaded immediately when assigned to
+ * a message. Otherwise, each sound is only loaded when first played.
+ *
+ * NOTE: Platform sound modules can 'load on play' by never setting the
+ * 'loaded' flag in struct sound_data - This will improve memory footprint,
+ * by result in a loss of performance.
+ */
+bool preload_sounds = false;
+
+/*
+ * Recursive function to delete sound id's from a node in the 'messages' tree
+ */
+static void delete_message_sounds(msg_sound *sound)
+{
+	assert(sound);
+
+	if (sound->next) {
+		delete_message_sounds(sound->next);
+		sound->next = NULL;	/* Paranoia - not strictly needed */
+	}
+
+	mem_free(sound);
+}
+
+static struct sound_data *grow_sound_list(void)
+{
+	int new_size;
+	int i;
+
+	if (!sounds_list) {
+		sounds_list = mem_zalloc(sizeof(struct sound_data) * SOUND_DATA_ARRAY_INC);
+	} else if (0 == (next_sound_id % SOUND_DATA_ARRAY_INC)) {
+		/* Add a new chunk onto the sounds list */
+		new_size = ((next_sound_id / SOUND_DATA_ARRAY_INC) + 1) * SOUND_DATA_ARRAY_INC;
+		sounds_list = mem_realloc(sounds_list, sizeof(struct sound_data) * new_size);
+
+		if (sounds_list)
+			/* Clear the new elements */
+			for (i = next_sound_id; i < (next_sound_id + SOUND_DATA_ARRAY_INC); i++)
+				memset(&sounds_list[i], 0x00, sizeof(struct sound_data));
+	}
+
+	return sounds_list;
+}
+
+/**
+ * Call the platform sound modules 'load sound' function
+ */
+static void load_sound(struct sound_data *sound_data)
+{
+	if (hooks.load_sound_hook) {
+		if(!hooks.load_sound_hook(sound_data))
+			plog_fmt("Failed to load sound: %s", sound_data->name);
+	}
+}
 
 /**
  * Parse a string of sound names provided by the preferences parser and:
@@ -169,6 +228,21 @@ void message_sound_define(u16b message_id, const char *sounds_str)
 	message_node *message_map;
 	msg_sound *new_message_sound;
 
+	/* Do we already have a message->sounds mapping for this message ID? */
+	message_search_node.message_id = message_id;
+
+	message_map = TREE_FIND(&messages, _message_node, message_tree, &message_search_node);
+
+	if (!message_map) {
+		/* No - create one */
+		message_map = message_node_new(message_id);
+		TREE_INSERT(&messages, _message_node, message_tree, message_map);
+	} else {
+		/* Yes - delete the list of sounds previously allocated */
+		delete_message_sounds(message_map->first);
+		message_map->first = NULL;
+	}
+
 	/* sounds_str is a space separated list of sound names */
 	str = cur_token = string_make(sounds_str);
 
@@ -179,19 +253,6 @@ void message_sound_define(u16b message_id, const char *sounds_str)
 		next_token = search + 1;
 	} else {
 		next_token = NULL;
-	}
-
-	if (cur_token) {
-		/* Do we already have a message->sounds mapping for this message ID? */
-		message_search_node.message_id = message_id;
-
-		message_map = TREE_FIND(&messages, _message_node, message_tree, &message_search_node);
-
-		if (!message_map) {
-			/* No - create one */
-			message_map = message_node_new(message_id);
-			TREE_INSERT(&messages, _message_node, message_tree, message_map);
-		}
 	}
 
 	/* Find all the sample names and add them one by one */
@@ -209,6 +270,14 @@ void message_sound_define(u16b message_id, const char *sounds_str)
 			sound_id = next_sound_id;
 			new_sound = sound_node_new(cur_token, sound_id);
 			TREE_INSERT(&sounds, _sound_node, sound_tree, new_sound);
+
+			/* Add the new sound to the sound list and load it */
+			if (grow_sound_list()) {
+				sounds_list[sound_id].name = string_make(cur_token);
+
+				if (preload_sounds)
+					load_sound(&sounds_list[sound_id]);
+			}
 
 			next_sound_id++;
 		}
@@ -251,69 +320,47 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 	message_node *message_map;
 	msg_sound *message_sound;
 
-	int event = data->message.type;
+	if (hooks.play_sound_hook) {
 
-	/* Paranoia */
-	assert(event >= 0);
+		/* Paranoia */
+		assert(data->message.type >= 0);
 
-	message_search_node.message_id = (u16b)event;
+		message_search_node.message_id = (u16b)(data->message.type);
 
-	message_map = TREE_FIND(&messages, _message_node, message_tree, &message_search_node);
+		message_map = TREE_FIND(&messages, _message_node, message_tree, &message_search_node);
 
-	if (!message_map)
-		return; /* No sounds for this message */
+		if (!message_map)
+			return; /* No sounds for this message */
 
-	/* Choose a random event */
-	message_sound = message_map->first;
+		/* Choose a random event */
+		message_sound = message_map->first;
 
-	if (!message_sound)
-		return;	/* Oops */
+		if (!message_sound)
+			return;	/* Oops */
 
-	s = randint0(message_map->num_sounds);
+		s = randint0(message_map->num_sounds);
 
-	/*
-	 * Walk the list - possibly inefficient if you define LOTS of sounds
-	 * for LOTS of messages. Not worth using a more 'efficient' data
-	 * structure
-	 */
-	for (i = 0; i < s; i++)
-		if (message_sound->next)
-			message_sound = message_sound->next;
+		/*
+		 * Walk the list - possibly inefficient if you define LOTS of sounds
+		 * for LOTS of messages. Not worth using a more 'efficient' data
+		 * structure
+		 */
+		for (i = 0; i < s; i++)
+			if (message_sound->next)
+				message_sound = message_sound->next;
 
-	sound_id = message_sound->sound_id;
+		sound_id = message_sound->sound_id;
 
-	assert((sound_id >= 0) && (sound_id < next_sound_id));
+		assert((sound_id >= 0) && (sound_id < next_sound_id));
 
-	hooks.play_sound_hook(sound_data[sound_id]);
-}
+		/* Ensure the sound is loaded before we play it */
+		if (!sounds_list[sound_id].loaded)
+			load_sound(&sounds_list[sound_id]);
 
-/**
- * Call the platform sound modules 'load sound' function
- */
-static void load_sound(sound_node *self, void *ignore)
-{
-	void *plat_data;
-
-	if (hooks.load_sound_hook) {
-		if(!hooks.load_sound_hook(self->sound_name, &plat_data))
-			plog_fmt("Failed to load sound: %s", self->sound_name);
-		else
-			sound_data[self->sound_id] = plat_data;
+		hooks.play_sound_hook(&sounds_list[sound_id]);
 	}
 }
 
-/*
- * Recursive function to delete sound id's from a node in the 'messages' tree
- */
-void delete_message_sound(msg_sound *sound)
-{
-	assert(sound);
-
-	if (sound->next)
-		delete_message_sound(sound->next);
-
-	mem_free(sound);
-}
 /*
  * Shut down the sound system and free resources.
  */
@@ -329,10 +376,12 @@ static void close_audio(void)
 	 * sound
 	 */
 	if (hooks.unload_sound_hook)
-		for (i = 0; i < next_sound_id; i++)
-			hooks.unload_sound_hook(sound_data[i]);
+		for (i = 0; i < next_sound_id; i++) {
+			hooks.unload_sound_hook(&sounds_list[i]);
+			string_free(sounds_list[i].name);
+		}
 
-	mem_free(sound_data);
+	mem_free(sounds_list);
 
 	/* Delete the 'sound names' tree */
 	while (sounds.th_root) {
@@ -342,7 +391,7 @@ static void close_audio(void)
 
 	/* Delete the 'message map' tree */
 	while (messages.th_root) {
-		delete_message_sound(messages.th_root->first);
+		delete_message_sounds(messages.th_root->first);
 		TREE_REMOVE(&messages, _message_node, message_tree, messages.th_root);
 	}
 
@@ -359,10 +408,6 @@ errr init_sound(const char *soundstr, int argc, char **argv)
 {
 	int i = 0;
 	bool done = false;
-
-	/* Only initialise the sound sub-system if we have sounds to play */
-	if (0 == next_sound_id)
-		return 0;	/* It's not a fail if no sounds defined */
 
 	/* Try the modules in the order specified by sound_modules[] */
 	while (sound_modules[i].init && !done) {
@@ -382,12 +427,6 @@ errr init_sound(const char *soundstr, int argc, char **argv)
 
 	if (!hooks.open_audio_hook(argc, argv))
 		return 1;
-
-	/* Allocate the array which stores the platform specific sound data */
-	sound_data = mem_zalloc(sizeof(void *) * next_sound_id);
-
-	/* Walk the 'sound names' tree, calling load_sound() for each node */
-	TREE_FORWARD_APPLY(&sounds, _sound_node, sound_tree, load_sound, NULL);
 
 	/* Enable sound */
 	event_add_handler(EVENT_SOUND, play_sound, NULL);

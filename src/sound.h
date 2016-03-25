@@ -18,15 +18,25 @@
 #ifndef INCLUDED_SOUND_H
 #define INCLUDED_SOUND_H
 
+/*
+ * Structure to held data relation to a sound.
+ * plat_data is platform specific structure used to store any additional
+ * data the platform's sound module needs in order to play the sound (and
+ * release resources when shut down)
+ */
+struct sound_data {
+	char *name;
+	bool loaded;
+	void *plat_data;
+};
+
 struct sound_hooks
 {
 	bool (*open_audio_hook)(int argc, char **argv);
 	bool (*close_audio_hook)(void);
-
-	/* 'data' is a sound module specific struct */
-	bool (*load_sound_hook)(const char *sound_name, void **data);
-	bool (*unload_sound_hook)(void *data);
-	bool (*play_sound_hook)(void *data);
+	bool (*load_sound_hook)(struct sound_data *data);
+	bool (*unload_sound_hook)(struct sound_data *data);
+	bool (*play_sound_hook)(struct sound_data *data);
 };
 
 errr init_sound(const char *soundstr, int argc, char **argv);

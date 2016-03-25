@@ -522,14 +522,13 @@ int main(int argc, char *argv[])
 	/* Set up the command hook */
 	cmd_get_hook = textui_get_cmd;
 
+	/* Initialise sound */
+	init_sound(soundstr, argc, argv);
+
 	/* Set up the display handlers and things. */
 	init_display();
 	init_angband();
 	textui_init();
-
-	/* Initialise sound */
-	if (0 != init_sound(soundstr, argc, argv))
-		plog("Failed to initialize sound!");	/* Non-fatal */
 
 	/* Wait for response */
 	pause_line(Term);
