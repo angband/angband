@@ -861,56 +861,6 @@ static void load_prefs(void)
 	if (data[0].rows < 24) data[0].rows = 24;
 }
 
-
-/**
- * XXX XXX XXX - Taken from files.c.
- *
- * Extract "tokens" from a buffer
- *
- * This function uses "whitespace" as delimiters, and treats any amount of
- * whitespace as a single delimiter.  We will never return any empty tokens.
- * When given an empty buffer, or a buffer containing only "whitespace", we
- * will return no tokens.  We will never extract more than "num" tokens.
- *
- * By running a token through the "text_to_ascii()" function, you can allow
- * that token to include (encoded) whitespace, using "\s" to encode spaces.
- *
- * We save pointers to the tokens in "tokens", and return the number found.
- */
-static s16b tokenize_whitespace(char *buf, s16b num, char **tokens)
-{
-	int k = 0;
-
-	char *s = buf;
-
-
-	/* Process */
-	while (k < num) {
-		char *t;
-
-		/* Skip leading whitespace */
-		for ( ; *s && isspace((unsigned char)*s); ++s) /* loop */;
-
-		/* All done */
-		if (!*s) break;
-
-		/* Find next whitespace, if any */
-		for (t = s; *t && !isspace((unsigned char)*t); ++t) /* loop */;
-
-		/* Nuke and advance (if necessary) */
-		if (*t) *t++ = '\0';
-
-		/* Save the token */
-		tokens[k++] = s;
-
-		/* Advance */
-		s = t;
-	}
-
-	/* Count */
-	return (k);
-}
-
 /**
  * Create the new global palette based on the bitmap palette
  * (if any), and the standard 16 entry palette derived from
@@ -1317,7 +1267,7 @@ static bool close_audio_win(void)
 /**
  * Initialize sound
  */
-static bool init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
+bool init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
 {
 	hooks->open_audio_hook = open_audio_win;
 	hooks->close_audio_hook = close_audio_win;
@@ -4821,7 +4771,7 @@ static void hook_plog(const char *str)
  */
 static void hook_quit(const char *str)
 {
-	int i, j;
+	int i;
 
 
 #ifdef USE_SAVER
