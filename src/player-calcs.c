@@ -2053,10 +2053,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (j > i / 2)
 		state->speed -= ((j - (i / 2)) / (i / 10));
 
-	/* Searching slows the player down */
-	if (p->searching)
-		state->speed -= 10;
-
 	/* Sanity check on extreme speeds */
 	if (state->speed < 0)
 		state->speed = 0;

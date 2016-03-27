@@ -160,28 +160,6 @@ Rest ('R')
   you are fully "healed". This command may take an argument (used for the
   number of turns to rest), and takes some energy.
 
-Searching Commands
-==================
-
-Search ('s')
-  This command can be used to locate hidden traps and secret doors in the
-  spaces adjacent to the player. More than a single turn of searching will
-  be required in most cases, so it is affected by the 'always repeat'
-  option. You should always search a chest before trying to open it, since
-  they are generally trapped. This command can take a count, which is
-  useful if you are fairly sure of finding something eventually, since the
-  command stops as soon as anything is found. This command takes some
-  energy.
-
-Toggle search mode ('S') or Toggle search mode ('#')
-  This command will take you into and out of search mode. When first
-  pressed, the message "Searching" will appear at the bottom of the screen.
-  You are now taking two turns for each command, one for the command and
-  one turn to search. This means that you are taking twice the time to move
-  around the dungeon, and therefore twice the food. Search mode will
-  automatically turn off if you are disturbed. You may also turn off search
-  mode by entering the Search Mode command again.
-
 Alter Commands
 ==============
 

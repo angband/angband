@@ -126,130 +126,64 @@ void do_cmd_go_down(struct command *cmd)
 
 
 /**
- * Search for hidden things.  Returns true if a search was attempted, returns
- * false when the player has a 0% chance of finding anything.  Prints messages
- * for negative confirmation when verbose mode is requested.
+ * Search for hidden things.
  */
-bool search(bool verbose)
+static void search(void)
 {
 	int py = player->py;
 	int px = player->px;
-	int y, x, chance;
-	bool found = false;
+	int y, x;
 	struct object *obj;
 
-	/* Start with base search ability */
-	chance = player->state.skills[SKILL_SEARCH];
-
-	/* Penalize various conditions */
-	if (player->timed[TMD_BLIND] || no_light())
-		chance = chance / 10;
-	if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE])
-		chance = chance / 10;
-
-	/* Prevent fruitless searches */
-	if (chance <= 0) {
-		if (verbose) {
-			msg("You can't make out your surroundings well enough to search.");
-
-			/* Cancel repeat */
-			disturb(player, 0);
-		}
-
-		return false;
-	}
+	/* Various conditions mean no searching */
+	if (player->timed[TMD_BLIND] || no_light() ||
+		player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE])
+		return;
 
 	/* Search the nearby grids, which are always in bounds */
 	for (y = (py - 1); y <= (py + 1); y++) {
 		for (x = (px - 1); x <= (px + 1); x++) {
-			/* Sometimes, notice things */
-			if (randint0(100) < chance) {
-				if (square_issecrettrap(cave, y, x)) {
-					found = true;
-
-					/* Reveal trap, display a message */
-					if (square_reveal_trap(cave, y, x, chance, true))
-						/* Disturb */
-						disturb(player, 0);
-				}
-
-				/* Secret door */
-				if (square_issecretdoor(cave, y, x)) {
-					found = true;
-
-					/* Message */
-					msg("You have found a secret door.");
-
-					/* Pick a door */
-					place_closed_door(cave, y, x);
-
+			/* Notice things */
+			if (square_issecrettrap(cave, y, x)) {
+				/* Reveal trap, display a message */
+				if (square_reveal_trap(cave, y, x, true))
 					/* Disturb */
 					disturb(player, 0);
-				}
+			}
 
-				/* Scan all objects in the grid */
-				for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-					/* Skip if not a trapped chest */
-					if (!is_trapped_chest(obj)) continue;
+			/* Secret door */
+			if (square_issecretdoor(cave, y, x)) {
+				/* Message */
+				msg("You have found a secret door.");
 
-					/* Identify once */
-					if (obj->known->pval != obj->pval) {
-						found = true;
+				/* Pick a door */
+				place_closed_door(cave, y, x);
 
-						/* Message */
-						msg("You have discovered a trap on the chest!");
+				/* Disturb */
+				disturb(player, 0);
+			}
 
-						/* Know the trap */
-						obj->known->pval = obj->pval;
+			/* Scan all objects in the grid */
+			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+				/* Skip if not a trapped chest */
+				if (!is_trapped_chest(obj)) continue;
 
-						/* Notice it */
-						disturb(player, 0);
-					}
+				/* Identify once */
+				if (obj->known->pval != obj->pval) {
+					/* Message */
+					msg("You have discovered a trap on the chest!");
+
+					/* Know the trap */
+					obj->known->pval = obj->pval;
+
+					/* Notice it */
+					disturb(player, 0);
 				}
 			}
 		}
 	}
-
-	if (verbose && !found) {
-		if (chance >= 100)
-			msg("There are no secrets here.");
-		else
-			msg("You found nothing.");
-	}
-
-	return true;
 }
 
-
-
-/**
- * Simple command to "search" for one turn
- */
-void do_cmd_search(struct command *cmd)
-{
-	/* Only take a turn if attempted */
-	if (search(true))
-		player->upkeep->energy_use = z_info->move_energy;
-}
-
-
-/**
- * Toggle search mode
- */
-void do_cmd_toggle_search(struct command *cmd)
-{
-	if (player->searching) {
-		/* Stop searching */
-		player->searching = false;
-		player->upkeep->update |= (PU_BONUS);
-		player->upkeep->redraw |= (PR_STATE);
-	} else {
-		/* Start searching */
-		player->searching = true;
-		player->upkeep->update |= (PU_BONUS);
-		player->upkeep->redraw |= (PR_STATE | PR_SPEED);
-	}
-}
 
 
 /**
@@ -672,9 +606,6 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			msg("You tunnel into the %s.",
 				square_apparent_name(cave, player, y, x));
 		more = true;
-		if (square_issecretdoor(cave, y, x))
-			/* Occasional Search XXX XXX */
-			if (randint0(100) < 25) search(false);
 	}
 
 	/* Result */
@@ -1122,10 +1053,7 @@ void move_player(int dir, bool disarm)
 		x = px = player->px;
 
 		/* Searching */
-		if (player->searching ||
-				(player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-				one_in_(50 - player->state.skills[SKILL_SEARCH_FREQUENCY]))
-			search(false);
+		search();
 
 		/* Handle store doors, or notice objects */
 		if (square_isshop(cave, player->py, player->px)) {
@@ -1340,14 +1268,8 @@ void do_cmd_hold(struct command *cmd)
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Spontaneous Searching */
-	if ((player->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-	    one_in_(50 - player->state.skills[SKILL_SEARCH_FREQUENCY]))
-		search(false);
-
-	/* Continuous Searching */
-	if (player->searching)
-		search(false);
+	/* Searching (probably not necessary - NRM)*/
+	search();
 
 	/* Pick things up, not using extra energy */
 	do_autopickup();
@@ -1391,7 +1313,6 @@ void do_cmd_rest(struct command *cmd)
 
 	/* Do some upkeep on the first turn of rest */
 	if (!player_is_resting(player)) {
-		player->searching = false;
 		player->upkeep->update |= (PU_BONUS);
 
 		/* If a number of turns was entered, remember it */

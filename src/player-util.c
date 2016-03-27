@@ -254,7 +254,7 @@ void player_regen_hp(void)
 	/* Various things speed up regeneration */
 	if (player_of_has(player, OF_REGEN))
 		percent *= 2;
-	if (player->searching || player_resting_can_regenerate(player))
+	if (player_resting_can_regenerate(player))
 		percent *= 2;
 
 	/* Some things slow it down */
@@ -314,7 +314,7 @@ void player_regen_mana(void)
 	/* Various things speed up regeneration */
 	if (player_of_has(player, OF_REGEN))
 		percent *= 2;
-	if (player->searching || player_resting_can_regenerate(player))
+	if (player_resting_can_regenerate(player))
 		percent *= 2;
 
 	/* Some things slow it down */
@@ -913,13 +913,6 @@ void disturb(struct player *p, int stop_search)
 
 		/* Mark the whole map to be redrawn */
 		event_signal_point(EVENT_MAP, -1, -1);
-	}
-
-	/* Cancel searching if requested */
-	if (stop_search && p->searching) {
-		p->searching = false;
-		p->upkeep->update |= PU_BONUS;
-		p->upkeep->redraw |= PR_STATE;
 	}
 
 	/* Flush input */
