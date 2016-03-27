@@ -250,7 +250,7 @@ void message_sound_define(u16b message_id, const char *sounds_str)
 	string_free(str);
 }
 
-enum parser_error parse_prefs_sound(struct parser *p)
+static enum parser_error parse_prefs_sound(struct parser *p)
 {
 	int msg_index;
 	const char *type;
@@ -272,6 +272,12 @@ enum parser_error parse_prefs_sound(struct parser *p)
 
 	return PARSE_ERROR_NONE;
 }
+
+errr register_sound_pref_parser(struct parser *p)
+{
+	return parser_reg(p, "sound sym type str sounds", parse_prefs_sound);
+}
+
 
 /**
  * Play a sound of type "event".

@@ -1062,7 +1062,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "color uint idx int k int r int g int b", parse_prefs_color);
 	parser_reg(p, "window int window uint flag uint value", parse_prefs_window);
 #ifdef SOUND
-	parser_reg(p, "sound sym type str sounds", parse_prefs_sound);
+	register_sound_pref_parser(p);
 #endif
 
 	return p;

@@ -58,9 +58,7 @@ struct sound_hooks
 };
 
 errr init_sound(const char *soundstr, int argc, char **argv);
-
-enum parser_error parse_prefs_sound(struct parser *p);
-
+errr register_sound_pref_parser(struct parser *p);
 void print_sound_help(void);
 
 #endif /* !INCLUDED_SOUND_H */
