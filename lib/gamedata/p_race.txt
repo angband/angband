@@ -15,8 +15,6 @@
 # skill-device:base
 # skill-save:base
 # skill-stealth:base
-# skill-search:base
-# skill-search-freq:base
 # skill-melee:base
 # skill-shoot:base
 # skill-throw:base
@@ -64,8 +62,6 @@ skill-disarm:0
 skill-device:0
 skill-save:0
 skill-stealth:0
-skill-search:0
-skill-search-freq:10
 skill-melee:0
 skill-shoot:0
 skill-throw:0
@@ -81,8 +77,6 @@ skill-disarm:2
 skill-device:3
 skill-save:3
 skill-stealth:1
-skill-search:6
-skill-search-freq:11
 skill-melee:-1
 skill-shoot:5
 skill-throw:5
@@ -99,8 +93,6 @@ skill-disarm:5
 skill-device:6
 skill-save:6
 skill-stealth:2
-skill-search:8
-skill-search-freq:12
 skill-melee:-5
 skill-shoot:15
 skill-throw:15
@@ -118,8 +110,6 @@ skill-disarm:15
 skill-device:18
 skill-save:18
 skill-stealth:4
-skill-search:12
-skill-search-freq:15
 skill-melee:-10
 skill-shoot:20
 skill-throw:20
@@ -137,8 +127,6 @@ skill-disarm:10
 skill-device:22
 skill-save:12
 skill-stealth:3
-skill-search:6
-skill-search-freq:13
 skill-melee:-8
 skill-shoot:12
 skill-throw:12
@@ -156,8 +144,6 @@ skill-disarm:2
 skill-device:9
 skill-save:9
 skill-stealth:-1
-skill-search:7
-skill-search-freq:10
 skill-melee:15
 skill-shoot:0
 skill-throw:0
@@ -175,8 +161,6 @@ skill-disarm:-3
 skill-device:-3
 skill-save:-3
 skill-stealth:-1
-skill-search:0
-skill-search-freq:7
 skill-melee:12
 skill-shoot:-5
 skill-throw:-5
@@ -193,8 +177,6 @@ skill-disarm:-5
 skill-device:-8
 skill-save:-8
 skill-stealth:-2
-skill-search:-1
-skill-search-freq:5
 skill-melee:20
 skill-shoot:-10
 skill-throw:-10
@@ -211,8 +193,6 @@ skill-disarm:4
 skill-device:5
 skill-save:5
 skill-stealth:1
-skill-search:3
-skill-search-freq:13
 skill-melee:15
 skill-shoot:10
 skill-throw:10
@@ -229,8 +209,6 @@ skill-disarm:4
 skill-device:20
 skill-save:20
 skill-stealth:2
-skill-search:3
-skill-search-freq:14
 skill-melee:10
 skill-shoot:25
 skill-throw:25
@@ -248,8 +226,6 @@ skill-disarm:10
 skill-device:5
 skill-save:0
 skill-stealth:3
-skill-search:15
-skill-search-freq:15
 skill-melee:-5
 skill-shoot:10
 skill-throw:10
