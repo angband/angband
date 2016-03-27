@@ -34,10 +34,7 @@
 #include "ui-keymap.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
-
-#ifdef SOUND
 #include "sound.h"
-#endif
 
 int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */
@@ -1069,9 +1066,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "message sym type sym attr", parse_prefs_message);
 	parser_reg(p, "color uint idx int k int r int g int b", parse_prefs_color);
 	parser_reg(p, "window int window uint flag uint value", parse_prefs_window);
-#ifdef SOUND
 	register_sound_pref_parser(p);
-#endif
 
 	return p;
 }
