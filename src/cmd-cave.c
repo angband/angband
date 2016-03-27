@@ -1493,7 +1493,7 @@ void display_feeling(bool obj_only)
 	const char *join;
 
 	/* Don't show feelings for cold-hearted characters */
-	if (OPT(birth_no_feelings)) return;
+	if (!OPT(birth_feelings)) return;
 
 	/* No useful feeling in town */
 	if (!player->depth) {

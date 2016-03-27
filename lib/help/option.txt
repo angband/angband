@@ -196,16 +196,18 @@ Word of Recall has no effect '[birth_no_recall]'
 Restrict the creation of artifacts '[birth_no_artifacts]'
   No artifacts will be created. Ever. Just *how* masochistic are you?
 
-.. _birth_no_stacking:
+.. _birth_stacking:
 
-Don't stack objects on the floor '[birth_no_stacking]'
-  Items dropped on the floor will spread out instead of stacking. Normal
-  items will disappear if there is no empty grid within a radius of three
-  squares.
+Stack objects on the floor '[birth_stacking]'
+  With this option turned on, multiple items can occupy one grid.
 
-.. _birth_no_preserve:
+  With this option off, items dropped on the floor will spread out instead
+  of stacking. Normal items will disappear if there is no empty grid
+  within a radius of three squares.
 
-Lose artifacts when leaving level '[birth_no_preserve]'
+.. _birth_lose_arts:
+
+Lose artifacts when leaving level '[birth_lose_arts]'
   Normally if you leave a level with an unidentified artifact on it you may
   still find it later. With this option on, if you leave a level with an
   artifact on it's gone for the rest of the game whether you knew it was
@@ -213,20 +215,23 @@ Lose artifacts when leaving level '[birth_no_preserve]'
   have already identified (i.e. picked up) - these will always be
   permanently lost if you leave a level without taking them with you.
 
-.. _birth_no_stairs:
+.. _birth_connect_stairs:
 
-Don't generate connected stairs '[birth_no_stairs]'
-  Normally, if you go down stairs, you start the new level on an up
-  staircase, and vice versa (if you go up stairs, you start the next level
-  on a down staircase).  With this option on, you will never start on a
-  staircase - but other staircases up and down elsewhere on the level will
-  still be generated.
+Generate connected stairs '[birth_connect_stairs]'
+  With this option turned on, if you go down stairs, you start the new level
+  on an up staircase, and vice versa (if you go up stairs, you start the next
+  level on a down staircase).
 
-.. _birth_no_feelings:
+  With this option off, you will never start on a staircase - but other
+  staircases up and down elsewhere on the level will still be generated.
 
-Don't show level feelings '[birth_no_feelings]'
-  The "quality" of a level is never revealed, no matter how long you spend
-  on the level.
+.. _birth_feelings:
+
+Show level feelings '[birth_feelings]'
+  With this option turned on, the game will give you hints about what a new
+  level has on it.
+
+  With this option off, these hints will not be shown.
 
 .. _birth_no_selling:
 
@@ -235,7 +240,6 @@ Increase gold drops but disable selling '[birth_no_selling]'
   identify unknown items for you, and will still sell you their wares. To
   balance out income in the game, gold found in the dungeon will be
   increased if this option is on.
-  
 .. _birth_start_kit:
 
 Start with a kit of useful gear '[birth_start_kit]'

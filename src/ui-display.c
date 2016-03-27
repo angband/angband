@@ -869,7 +869,7 @@ static const byte mon_feeling_color[] =
 /**
  * Prints level feelings at status if they are enabled.
  */
-static size_t prt_level_feeling(int row, int col) 
+static size_t prt_level_feeling(int row, int col)
 {
 	u16b obj_feeling;
 	u16b mon_feeling;
@@ -879,7 +879,7 @@ static size_t prt_level_feeling(int row, int col)
 	byte obj_feeling_color_print;
 
 	/* Don't show feelings for cold-hearted characters */
-	if (OPT(birth_no_feelings)) return 0;
+	if (!OPT(birth_feelings)) return 0;
 
 	/* No useful feeling in town */
 	if (!player->depth) return 0;
@@ -888,7 +888,7 @@ static size_t prt_level_feeling(int row, int col)
 	obj_feeling = cave->feeling / 10;
 	mon_feeling = cave->feeling - (10 * obj_feeling);
 
-	/* 
+	/*
 	 *   Convert object feeling to a symbol easier to parse
 	 * for a human.
 	 *   0 -> * "Looks like any other level."

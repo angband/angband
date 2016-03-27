@@ -181,7 +181,7 @@ static void generate_player_for_stats()
 {
 	OPT(birth_randarts) = randarts;
 	OPT(birth_no_selling) = no_selling;
-	OPT(birth_no_stacking) = false;
+	OPT(birth_stacking) = true;
 	OPT(auto_more) = true;
 
 	player->wizard = 1; /* Set wizard mode on */

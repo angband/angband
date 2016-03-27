@@ -2940,7 +2940,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				struct object *obj = square_object(cave, y, x);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
+						if (!OPT(birth_lose_arts) && !object_was_sensed(obj))
 							obj->artifact->created = false;
 						else
 							history_lose_artifact(obj->artifact);

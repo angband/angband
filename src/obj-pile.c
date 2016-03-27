@@ -818,7 +818,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	}
 
 	/* The stack is already too large */
-	if (n >= z_info->floor_size || (OPT(birth_no_stacking) && n)) {
+	if (n >= z_info->floor_size || (!OPT(birth_stacking) && n)) {
 		/* Delete the oldest ignored object */
 		if (ignore) {
 			square_excise_object(c, y, x, ignore);
@@ -971,7 +971,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			if (!comb) k++;
 
 			/* Option -- disallow stacking */
-			if (OPT(birth_no_stacking) && (k > 1)) continue;
+			if (OPT(birth_stacking) && (k > 1)) continue;
 
 			/* Paranoia? */
 			if ((k + n) > z_info->floor_size &&
