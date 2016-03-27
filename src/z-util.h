@@ -165,6 +165,11 @@ extern void sort(void *array, size_t nmemb, size_t smemb,
 		 int (*comp)(const void *a, const void *b));
 
 /**
+ * Create a hash for a string
+ */
+u32b djb2_hash(const char *str);
+
+/**
  * Mathematical functions
  */
 int mean(int *nums, int size);

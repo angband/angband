@@ -466,3 +466,18 @@ void sort(void *base, size_t nmemb, size_t smemb,
 {
 	qsort(base, nmemb, smemb, comp);
 }
+
+u32b djb2_hash(const char *str)
+{
+	u32b hash = 5381;
+	int c = *str;
+
+	while (c)
+	{
+		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+		c = *++str;
+	}
+
+	return hash;
+}
+
