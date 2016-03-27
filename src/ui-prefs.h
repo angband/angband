@@ -24,6 +24,7 @@
 #include "cave.h"
 #include "ui-keymap.h"
 #include "ui-term.h"
+#include "parser.h"
 #include "z-file.h"
 
 extern int use_graphics;
@@ -52,6 +53,8 @@ struct prefs_data
 	bool loaded_window_flag[ANGBAND_TERM_MAX];
 	u32b window_flags[ANGBAND_TERM_MAX];
 };
+
+enum parser_error parse_prefs_dummy(struct parser *p);
 
 void dump_monsters(ang_file *fff);
 void dump_objects(ang_file *fff);

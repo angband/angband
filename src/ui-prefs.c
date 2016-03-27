@@ -1037,6 +1037,11 @@ static enum parser_error parse_prefs_window(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+enum parser_error parse_prefs_dummy(struct parser *p)
+{
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_prefs(bool user)
 {
 	struct parser *p = parser_new();

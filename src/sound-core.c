@@ -275,7 +275,7 @@ static enum parser_error parse_prefs_sound(struct parser *p)
 
 errr register_sound_pref_parser(struct parser *p)
 {
-	return parser_reg(p, "sound sym type str sounds", parse_prefs_sound);
+	return parser_reg(p, SOUND_PRF_FORMAT, parse_prefs_sound);
 }
 
 
