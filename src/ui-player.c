@@ -790,21 +790,6 @@ static struct panel *get_panel_skills(void) {
 	skill = player->state.skills[SKILL_DEVICE];
 	panel_line(p, colour_table[skill / 13], "Magic Devices", "%d", skill);
 
-	/* Search frequency */
-	skill = MAX(player->state.skills[SKILL_SEARCH_FREQUENCY], 1);
-	if (skill >= 50) {
-		panel_line(p, colour_table[10], "Perception", "1 in 1");
-	} else {
-		/* convert to chance of searching */
-		skill = 50 - skill;
-		panel_line(p, colour_table[(100 - skill*2) / 10],
-				"Perception", "1 in %d", skill);
-	}
-
-	/* Searching ability */
-	skill = BOUND(player->state.skills[SKILL_SEARCH], 0, 100);
-	panel_line(p, colour_table[skill / 10], "Searching", "%d%%", skill);
-
 	/* Infravision */
 	panel_line(p, COLOUR_L_GREEN, "Infravision", "%d ft",
 			player->state.see_infra * 10);

@@ -1776,13 +1776,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		/* Affect stealth */
 		state->skills[SKILL_STEALTH] += obj->modifiers[OBJ_MOD_STEALTH];
 
-		/* Affect searching ability (factor of five) */
-		state->skills[SKILL_SEARCH] += (obj->modifiers[OBJ_MOD_SEARCH] * 5);
-
-		/* Affect searching frequency (factor of five) */
-		state->skills[SKILL_SEARCH_FREQUENCY] += 
-			(obj->modifiers[OBJ_MOD_SEARCH] * 5);
-
 		/* Affect infravision */
 		state->see_infra += obj->modifiers[OBJ_MOD_INFRA];
 

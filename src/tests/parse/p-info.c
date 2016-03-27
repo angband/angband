@@ -86,28 +86,6 @@ int test_skill_stealth0(void *state) {
 	ok;
 }
 
-int test_skill_search0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-search:9");
-	struct player_race *pr;
-
-	eq(r, PARSE_ERROR_NONE);
-	pr = parser_priv(state);
-	require(pr);
-	eq(pr->r_skills[SKILL_SEARCH], 9);
-	ok;
-}
-
-int test_skill_search_freq0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-search-freq:2");
-	struct player_race *pr;
-
-	eq(r, PARSE_ERROR_NONE);
-	pr = parser_priv(state);
-	require(pr);
-	eq(pr->r_skills[SKILL_SEARCH_FREQUENCY], 2);
-	ok;
-}
-
 int test_skill_melee0(void *state) {
 	enum parser_error r = parser_parse(state, "skill-melee:4");
 	struct player_race *pr;
@@ -232,8 +210,6 @@ struct test tests[] = {
 	{ "skill_device0", test_skill_device0 },
 	{ "skill_save0", test_skill_save0 },
 	{ "skill_stealth0", test_skill_stealth0 },
-	{ "skill_search0", test_skill_search0 },
-	{ "skill_search_freq0", test_skill_search_freq0 },
 	{ "skill_melee0", test_skill_melee0 },
 	{ "skill_shoot0", test_skill_shoot0 },
 	{ "skill_throw0", test_skill_throw0 },
