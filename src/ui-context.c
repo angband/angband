@@ -107,8 +107,6 @@ static int context_menu_player_2(int mx, int my)
 	menu_dynamic_add_label(m, "Show Object List", ']', MENU_VALUE_OBJECTS,
 						   labels);
 
-	ADD_LABEL("Toggle Searching", CMD_TOGGLE_SEARCH, MN_ROW_VALID);
-
 	/* Ignore toggle has different keys, but we don't have a way to look them
 	 * up (see ui-game.c). */
 	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'K' : 'O';
@@ -149,7 +147,6 @@ static int context_menu_player_2(int mx, int my)
 		case MENU_VALUE_MONSTERS:
 		case MENU_VALUE_OBJECTS:
 		case MENU_VALUE_OPTIONS:
-		case CMD_TOGGLE_SEARCH:
 			allowed = true;
 			break;
 
@@ -183,7 +180,6 @@ static int context_menu_player_2(int mx, int my)
 			break;
 
 		case CMD_IGNORE:
-		case CMD_TOGGLE_SEARCH:
 			cmdkey = cmd_lookup_key(selected, mode);
 			Term_keypress(cmdkey, 0);
 			break;
@@ -282,8 +278,6 @@ int context_menu_player(int mx, int my)
 		ADD_LABEL("Go Down", CMD_GO_DOWN, MN_ROW_VALID);
 	}
 
-	ADD_LABEL("Search", CMD_SEARCH, MN_ROW_VALID);
-
 	/* Looking has different keys, but we don't have a way to look them up
 	 * (see ui-game.c). */
 	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'l' : 'x';
@@ -341,7 +335,6 @@ int context_menu_player(int mx, int my)
 
 		case CMD_USE:
 		case CMD_CAST:
-		case CMD_SEARCH:
 		case CMD_GO_UP:
 		case CMD_GO_DOWN:
 		case CMD_PICKUP:
@@ -381,7 +374,6 @@ int context_menu_player(int mx, int my)
 			Term_keypress(cmdkey, 0);
 			break;
 
-		case CMD_SEARCH:
 		case CMD_GO_UP:
 		case CMD_GO_DOWN:
 		case CMD_PICKUP:
@@ -491,7 +483,6 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			ADD_LABEL("Tunnel", CMD_TUNNEL, MN_ROW_VALID);
 		}
 
-		ADD_LABEL("Search", CMD_SEARCH, MN_ROW_VALID);
 		ADD_LABEL("Walk Towards", CMD_WALK, MN_ROW_VALID);
 	} else {
 		/* ',' is used for ignore in rogue keymap, so we'll just swap letters */
@@ -568,7 +559,6 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			allowed = true;
 			break;
 
-		case CMD_SEARCH:
 		case CMD_ALTER:
 		case CMD_DISARM:
 		case CMD_JUMP:
@@ -613,10 +603,6 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 				lore_show_interactive(mon->race, lore);
 			}
 		}
-			break;
-
-		case CMD_SEARCH:
-			cmdq_push(selected);
 			break;
 
 		case CMD_PATHFIND:
@@ -1027,12 +1013,9 @@ void textui_process_click(ui_event e)
 				cmdq_push(CMD_USE);
 			}
 		} else if (e.mouse.mods & KC_MOD_ALT) {
-			/* alt-click - Search  or show char screen */
+			/* alt-click - show char screen */
 			/* XXX call a platform specific hook */
 			if (e.mouse.button == 1) {
- 				cmdq_push(CMD_SEARCH);
-			} else
-			if (e.mouse.button == 2) {
 				Term_keypress('C',0);
 			}
 		} else {

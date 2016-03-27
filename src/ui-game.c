@@ -96,7 +96,6 @@ struct cmd_info cmd_item[] =
  */
 struct cmd_info cmd_action[] =
 {
-	{ "Search for traps/doors", { 's' }, CMD_SEARCH },
 	{ "Disarm a trap or chest", { 'D' }, CMD_DISARM },
 	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest },
 	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look },
@@ -105,7 +104,6 @@ struct cmd_info cmd_action[] =
 	{ "Dig a tunnel", { 'T', KTRL('T') }, CMD_TUNNEL },
 	{ "Go up staircase", {'<' }, CMD_GO_UP },
 	{ "Go down staircase", { '>' }, CMD_GO_DOWN },
-	{ "Toggle search mode", { 'S', '#' }, CMD_TOGGLE_SEARCH },
 	{ "Open a door or a chest", { 'o' }, CMD_OPEN },
 	{ "Close a door", { 'c' }, CMD_CLOSE },
 	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, do_cmd_fire_at_nearest },

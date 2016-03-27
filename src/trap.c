@@ -276,7 +276,7 @@ void square_free_trap(struct chunk *c, int y, int x)
 /**
  * Reveal some of the player traps in a square
  */
-bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
+bool square_reveal_trap(struct chunk *c, int y, int x, bool domsg)
 {
     int found_trap = 0;
 	struct trap *trap = square_trap(c, y, x);
@@ -301,9 +301,6 @@ bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg)
 
 			/* We found a trap */
 			found_trap++;
-
-			/* If chance is < 100, check for further looking */
-			if ((chance < 100) && (randint1(100) > chance)) break;
 		}
 		trap = trap->next;
 	}
