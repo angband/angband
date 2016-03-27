@@ -1151,10 +1151,10 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 	switch (file_type) {
 		case WIN_MP3:
 			if (!sample)
-				sample = mem_alloc(sizeof(*sample));
+				sample = mem_zalloc(sizeof(*sample));
 
 			/* Open if not already */
-			if (!sample->op.device) {
+			if (!sample->op.wDeviceID) {
 				sample->op.dwCallback = 0;
 				sample->op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
 				sample->op.lpstrElementName = filename;
@@ -1164,7 +1164,7 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 				mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT, (size_t)(&sample->op));
 			}
 
-			data->loaded =  (NULL != sample->op.wDeviceID);
+			data->loaded = (0 != sample->op.wDeviceID);
 
 			if (!data->loaded) {
 				plog_fmt("Sound: Failed to load sound '%s')", data->name);
@@ -1178,7 +1178,7 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 				sample = mem_alloc(sizeof(*sample));
 
 			sample->filename = mem_zalloc(strlen(filename) + 1);
-			my_strcpy(sample->filname, filename, strlen(filename) + 1)
+			my_strcpy(sample->filename, filename, strlen(filename) + 1);
 			data->loaded = true;
 			break;
 
@@ -1205,23 +1205,26 @@ static bool play_sound_win(struct sound_data *data)
 	if (sample) {
 		switch (sample->type)
 			case WIN_MP3:
-				if (sample->device) {
+				if (sample->op.wDeviceID) {
 					/* Play command */
 					pp.dwCallback = 0;
 					pp.dwFrom = 0;
-					mciSendCommand(sample->op.wDeviceID, MCI_PLAY, MCI_NOTIFY | MCI_FROM, (size_t)&pp);
+					return (!mciSendCommand(sample->op.wDeviceID, MCI_PLAY, MCI_NOTIFY | MCI_FROM, (size_t)&pp));
 				}
+				break;
 
 			case WIN_WAV:
 				if (sample->filename)
 				{
 					/* If another sound is currently playing, stop it */
-					PlaySound(NULL, 0, SND_PURGE);
-
-					/* Play the sound, catch errors */
-					PlaySound(sample->filename, 0, SND_FILENAME | SND_ASYNC);
+					if (PlaySound(NULL, 0, SND_PURGE))
+						/* Play the sound, catch errors */
+						return PlaySound(sample->filename, 0, SND_FILENAME | SND_ASYNC);
 				}
-			break;
+				break;
+			default:
+				/* Not supported */
+				break;
 	}
 
 }
@@ -1233,8 +1236,8 @@ static bool unload_sound_win(struct sound_data *data)
 	if (sample) {
 		switch (sample->type) {
 			case WIN_MP3:
-				if (sample->device)
-					mciSendCommand(sample->device, MCI_CLOSE, MCI_WAIT, (size_t)(&sample->op))
+				if (sample->op.wDeviceID)
+					mciSendCommand(sample->op.wDeviceID, MCI_CLOSE, MCI_WAIT, (size_t)(&sample->op));
 
 				break;
 
@@ -1267,7 +1270,7 @@ static bool close_audio_win(void)
 /**
  * Initialize sound
  */
-bool init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
+errr init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
 {
 	hooks->open_audio_hook = open_audio_win;
 	hooks->close_audio_hook = close_audio_win;
