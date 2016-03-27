@@ -998,7 +998,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 			/* Detect traps */
 			if (square_isplayertrap(cave, y, x))
 				/* Reveal trap */
-				if (square_reveal_trap(cave, y, x, 100, false))
+				if (square_reveal_trap(cave, y, x, false))
 					detect = true;
 
 			/* Scan all objects in the grid to look for traps on chests */

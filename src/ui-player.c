@@ -668,7 +668,6 @@ static const char *show_speed(void)
 	int tmp = player->state.speed;
 	if (player->timed[TMD_FAST]) tmp -= 10;
 	if (player->timed[TMD_SLOW]) tmp += 10;
-	if (player->searching) tmp += 10;
 	if (tmp == 110) return "Normal";
 	strnfmt(buffer, sizeof(buffer), "%d", tmp - 110);
 	return buffer;
@@ -814,7 +813,6 @@ static struct panel *get_panel_skills(void) {
 	skill = player->state.speed;
 	if (player->timed[TMD_FAST]) skill -= 10;
 	if (player->timed[TMD_SLOW]) skill += 10;
-	if (player->searching) skill += 10;
 	attr = skill < 110 ? COLOUR_L_UMBER : COLOUR_L_GREEN;
 	panel_line(p, attr, "Speed", "%s", show_speed());
 

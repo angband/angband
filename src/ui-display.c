@@ -445,9 +445,6 @@ static void prt_speed(int row, int col)
 	const char *type = NULL;
 	char buf[32] = "";
 
-	/* Hack -- Visually "undo" the Search Mode Slowdown */
-	if (player->searching) i += 10;
-
 	/* 110 is normal speed, and requires no display */
 	if (i > 110) {
 		attr = COLOUR_L_GREEN;
@@ -765,7 +762,7 @@ static size_t prt_hunger(int row, int col)
 
 
 /**
- * Prints Searching, Resting, or 'count' status
+ * Prints Resting, or 'count' status
  * Display is always exactly 10 characters wide (see below)
  *
  * This function was a major bottleneck when resting, so a lot of
@@ -778,7 +775,7 @@ static size_t prt_state(int row, int col)
 	char text[16] = "";
 
 
-	/* Displayed states are resting, repeating and searching */
+	/* Displayed states are resting and repeating */
 	if (player_is_resting(player)) {
 		int i;
 		int n = player_resting_count(player);
@@ -825,8 +822,6 @@ static size_t prt_state(int row, int col)
 			strnfmt(text, sizeof(text), "Rep. %3d00", nrepeats / 100);
 		else
 			strnfmt(text, sizeof(text), "Repeat %3d", nrepeats);
-	} else if (player->searching) {
-		my_strcpy(text, "Searching ", sizeof(text));
 	}
 
 	/* Display the info (or blanks) */
