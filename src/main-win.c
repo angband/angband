@@ -84,6 +84,7 @@
 
 #if (defined(WINDOWS) && !defined(USE_SDL))
 
+#include "snd-win.h"
 
 #define HAS_CLEANUP
 
@@ -363,20 +364,6 @@ static int overdrawmax = -1;
 
 static int alphablend = 0;
 static BLENDFUNCTION blendfn;
-
-
-/**
- * Flag set once "sound" has been initialized
- */
-static bool can_use_sound = false;
-
-#define SAMPLE_MAX 16
-
-/**
- * An array of sound file names
- */
-static char *sound_file[MSG_MAX][SAMPLE_MAX];
-
 
 /**
  * Full path to ANGBAND.INI
@@ -923,41 +910,6 @@ static s16b tokenize_whitespace(char *buf, s16b num, char **tokens)
 	return (k);
 }
 
-
-static void load_sound_prefs(void)
-{
-	int i, j, num;
-	char tmp[1024];
-	char ini_path[1024];
-	char wav_path[1024];
-	char *zz[SAMPLE_MAX];
-
-	/* Access the sound.cfg */
-	path_build(ini_path, sizeof(ini_path), ANGBAND_DIR_SOUNDS, "sound.cfg");
-
-	for (i = 0; i < MSG_MAX; i++) {
-		const char *sound_name = message_sound_name(i);
-
-		/* Ignore empty sound strings */
-		if (!sound_name[0]) continue;
-
-		GetPrivateProfileString("Sound", sound_name, "", tmp, sizeof(tmp),
-								ini_path);
-
-		num = tokenize_whitespace(tmp, SAMPLE_MAX, zz);
-
-		for (j = 0; j < num; j++) {
-			/* Access the sound */
-			path_build(wav_path, sizeof(wav_path), ANGBAND_DIR_SOUNDS,
-					   zz[j]);
-
-			/* Save the sound filename, if it exists */
-			if (file_exists(wav_path))
-				sound_file[i][j] = string_make(zz[j]);
-		}
-	}
-}
-
 /**
  * Create the new global palette based on the bitmap palette
  * (if any), and the standard 16 entry palette derived from
@@ -1218,23 +1170,165 @@ static bool init_graphics(void)
 }
 
 
+/* Supported file types */
+enum {
+	WIN_NULL = 0,
+	WIN_MP3,
+	WIN_WAV
+};
+
+const struct sound_file_type supported_sound_files[] = { {".mp3", WIN_MP3},
+							 {".wav", WIN_WAV},
+							 {"", WIN_NULL} };
+
+typedef struct
+{
+	win_sound_type	type;
+	MCI_OPEN_PARMS	op;
+	char		*filename;
+} win_sample;
+
+/**
+ * Load a sound
+ */
+static bool load_sound_win(const char *filename, int file_type, struct sound_data *data)
+{
+	win_sample *sample = NULL;
+
+	sample = (win_sample *)(data->plat_data);
+
+	switch (file_type) {
+		case WIN_MP3:
+			if (!sample)
+				sample = mem_alloc(sizeof(*sample));
+
+			/* Open if not already */
+			if (!sample->device) {
+				op.dwCallback = 0;
+				op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
+				op.lpstrElementName = filename;
+				op.lpstrAlias = NULL;
+
+				/* Open command */
+				mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT, (size_t)(&sample->op));
+			}
+
+			data->loaded =  (NULL != sample->op.wDeviceID);
+
+			if (!data->loaded) {
+				plog_fmt("Sound: Failed to load sound '%s')", data->name);
+				mem_free(sample);
+				sample = NULL;
+			}
+			break;
+
+		case WIN_WAV:
+			if (!sample)
+				sample = mem_alloc(sizeof(*sample));
+
+			sample->filename = mem_zalloc(strlen(filename) + 1);
+			my_strcpy(sample->filname, filename, strlen(filename) + 1)
+			data->loaded = true;
+			break;
+
+		default:
+			plog_fmt("Sound: Oops - Unsupported file type");
+			data->loaded = false;
+			break;
+	}
+
+	data->plat_data = (void *)sample;
+
+	return (NULL != sample);
+}
+
+/**
+ * Play a sound
+ */
+static bool play_sound_win(struct sound_data *data)
+{
+	MCI_PLAY_PARMS pp;
+
+	win_sample *sample = (win_sample *)(data->plat_data);
+
+	if (sample) {
+		switch (sample->type)
+			case WIN_MP3:
+				if (sample->device) {
+					/* Play command */
+					pp.dwCallback = 0;
+					pp.dwFrom = 0;
+					mciSendCommand(sample->op.wDeviceID, MCI_PLAY, MCI_NOTIFY | MCI_FROM, (size_t)&pp);
+				}
+
+			case WIN_WAV:
+				if (sample->filename)
+				{
+					/* If another sound is currently playing, stop it */
+					PlaySound(NULL, 0, SND_PURGE);
+
+					/* Play the sound, catch errors */
+					PlaySound(sample->filename, 0, SND_FILENAME | SND_ASYNC);
+				}
+			break;
+	}
+
+}
+
+static bool unload_sound_win(struct sound_data *data)
+{
+	win_sample *sample = (win_sample *)(data->plat_data);
+
+	if (sample) {
+		switch (sample->type) {
+			case WIN_MP3:
+				if (sample->device)
+					mciSendCommand(sample->device, MCI_CLOSE, MCI_NOTIFY)
+					 Mix_FreeChunk(sample->sample_data.chunk);
+
+				break;
+
+			case WIN_WAV:
+				mem_free(sample->filename);
+				break;
+
+			default:
+				break;
+		}
+
+		mem_free(sample);
+		data->plat_data = NULL;
+		data->loaded = false;
+	}
+
+	return true;
+}
+
+static bool open_audio_win(void)
+{
+	return true;
+}
+
+static bool close_audio_win(void)
+{
+	return true;
+}
+
 /**
  * Initialize sound
  */
-static bool init_sound(void)
+static bool init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
 {
-	/* Initialize once */
-	if (!can_use_sound) {
-		/* Load the prefs */
-		load_sound_prefs();
+	hooks->open_audio_hook = open_audio_win;
+	hooks->close_audio_hook = close_audio_win;
+	hooks->load_sound_hook = load_sound_win;
+	hooks->unload_sound_hook = unload_sound_win;
+	hooks->play_sound_hook = play_sound_win;
 
-		/* Sound available */
-		can_use_sound = true;
-	}
-
-	/* Result */
-	return (can_use_sound);
+	/* Success */
+	return (0);
 }
+
 
 
 /**
@@ -1574,16 +1668,6 @@ static errr Term_xtra_win_react(void)
 		if (change) (void)new_palette();
 	}
 
-
-	/* Initialize sound (if needed) */
-	if (OPT(use_sound) && !init_sound()) {
-		/* Warning */
-		plog("Cannot initialize sound!");
-
-		/* Cannot enable */
-		OPT(use_sound) = false;
-	}
-
 	/* Handle "arg_graphics_nice" */
 	if (use_graphics_nice != arg_graphics_nice) {
 		/* Change setting */
@@ -1768,68 +1852,6 @@ static errr Term_xtra_win_noise(void)
 	MessageBeep(MB_ICONASTERISK);
 	return (0);
 }
-
-
-static MCIDEVICEID pDevice[MSG_MAX][SAMPLE_MAX];
-
-/**
- * Hack -- make a sound
- */
-static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
-								void *user)
-{
-	int i, j;
-	char buf[1024];
-	MCI_OPEN_PARMS op;
-	MCI_PLAY_PARMS pp;
-
-	int v = data->message.type;
-
-	/* Illegal sound */
-	if ((v < 0) || (v >= MSG_MAX)) return;
-
-	/* Count the samples */
-	for (i = 0; i < SAMPLE_MAX; i++) {
-		if (!sound_file[v][i])
-			break;
-	}
-
-	/* No sample */
-	if (i == 0) return;
-
-	/* Build the path */
-	j = Rand_simple(i);
-	path_build(buf, sizeof(buf), ANGBAND_DIR_SOUNDS, sound_file[v][j]);
-
-	/* Check for file type */
-	if (streq(buf + strlen(buf) - 3, "mp3")) {
-		/* Open if not already */
-		if (!pDevice[v][j]) {
-			op.dwCallback = 0;
-			op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
-			op.lpstrElementName = buf;
-			op.lpstrAlias = NULL;
-
-			/* Open command */
-			mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT,
-						   (size_t)&op);
-			pDevice[v][j] = op.wDeviceID;
-		}
-		
-		/* Play command */
-		pp.dwCallback = 0;
-		pp.dwFrom = 0;
-		mciSendCommand(pDevice[v][j], MCI_PLAY, MCI_NOTIFY | MCI_FROM,
-					   (size_t)&pp);
-	} else {
-		/* If another sound is currently playing, stop it */
-		PlaySound(NULL, 0, SND_PURGE);
-
-		/* Play the sound, catch errors */
-		PlaySound(buf, 0, SND_FILENAME | SND_ASYNC);
-	}
-}
-
 
 /**
  * Delay for "x" milliseconds
@@ -4836,15 +4858,6 @@ static void hook_quit(const char *str)
 
 	close_graphics_modes();
 
-	/* Free the sound names */
-	for (i = 0; i < MSG_MAX; i++) {
-		for (j = 0; j < SAMPLE_MAX; j++) {
-			if (!sound_file[i][j]) break;
-
-			string_free(sound_file[i][j]);
-		}
-	}
-
 	/*** Free some other stuff ***/
 
 	DeleteObject(hbrYellow);
@@ -5120,11 +5133,11 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	}
 #endif /* USE_SAVER */
 
-	/* Set the sound hook */
-	event_add_handler(EVENT_SOUND, Term_xtra_win_sound, NULL);
-
 	/* Set command hook */
 	cmd_get_hook = textui_get_cmd;
+
+	/* Initialise sound */
+	init_sound("win", 0, NULL);
 
 	/* Set up the display handlers and things. */
 	init_display();

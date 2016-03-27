@@ -28,12 +28,6 @@
 #include "SDL.h"
 #include "SDL_mixer.h"
 
-typedef enum sdl_sample_type {
-	SDL_CHUNK,
-	SDL_MUSIC,
-	SDL_NULL
-} sdl_sample_type;
-
 /**
  * Struct representing all data about an event sample
  */
@@ -44,22 +38,25 @@ typedef struct
 		Mix_Music *music;	/* Sample in MP3 format */
 	} sample_data;
 
-	sdl_sample_type sample_type;
+	int sample_type;
 } sdl_sample;
 
-typedef struct sdl_file_type {
-	const char *extension;
-	sdl_sample_type type;
-} sdl_file_type_t;
+/* Supported file types */
+enum {
+	SDL_NULL = 0,
+	SDL_CHUNK,
+	SDL_MUSIC
+};
 
-/* List of supported file types */
-static const sdl_file_type_t supported_file_types[] = { {".mp3", SDL_MUSIC},
-							{".ogg", SDL_CHUNK},
-							{"", SDL_NULL} };
+
+const struct sound_file_type supported_sound_files[] = { {".mp3", SDL_MUSIC},
+							 {".ogg", SDL_CHUNK},
+							 {"", SDL_NULL} };
+
 /**
  * Initialise SDL and open the mixer.
  */
-static bool open_audio_sdl(int argc, char **argv)
+static bool open_audio_sdl(void)
 {
 	int audio_rate;
 	Uint16 audio_format;
@@ -89,11 +86,11 @@ static bool open_audio_sdl(int argc, char **argv)
 /**
  * Load a sound from file.
  */
-static bool load_sample_sdl(const char *filename_buf, sdl_sample *sample)
+static bool load_sample_sdl(const char *filename, int file_type, sdl_sample *sample)
 {
-	switch (sample->sample_type) {
+	switch (file_type) {
 		case SDL_CHUNK:
-			sample->sample_data.chunk = Mix_LoadWAV(filename_buf);
+			sample->sample_data.chunk = Mix_LoadWAV(filename);
 
 			if (sample->sample_data.chunk)
 				return true;
@@ -101,7 +98,7 @@ static bool load_sample_sdl(const char *filename_buf, sdl_sample *sample)
 			break;
 
 		case SDL_MUSIC:
-			sample->sample_data.music = Mix_LoadMUS(filename_buf);
+			sample->sample_data.music = Mix_LoadMUS(filename);
 
 			if (sample->sample_data.music)
 				return true;
@@ -109,7 +106,7 @@ static bool load_sample_sdl(const char *filename_buf, sdl_sample *sample)
 			break;
 
 		default:
-			plog_fmt("SDL: Oops - Unsupported file type");
+			plog("SDL: Oops - Unsupported file type");
 			break;
 	}
 
@@ -120,55 +117,19 @@ static bool load_sample_sdl(const char *filename_buf, sdl_sample *sample)
  * Load a sound and return a pointer to the associated SDL Sound data
  * structure back to the core sound module.
  */
-static bool load_sound_sdl(struct sound_data *data)
+static bool load_sound_sdl(const char *filename, int file_type, struct sound_data *data)
 {
-	char path[2048];
-	char *filename_buf;
-	size_t filename_buf_size;
-	sdl_sample *sample = NULL;
-	int i = 0;
+	sdl_sample *sample = (sdl_sample *)(data->plat_data);
 
-	/* Build the path to the sample */
-	path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, data->name);
+	if (!sample)
+		sample = mem_zalloc(sizeof(*sample));
 
-	/*
-	 * Create a buffer to store the filename plus three character
-	 * extension (5 = '.' + 3 character extension + '\0'
-	 */
-	filename_buf_size = strlen(path) + 5;
-	filename_buf = mem_zalloc(filename_buf_size);
+	/* Try and load the sample file */
+	data->loaded = load_sample_sdl(filename, file_type, sample);
 
-	while ((SDL_NULL != supported_file_types[i].type) && (!data->loaded)) {
-		my_strcpy(filename_buf, path, filename_buf_size);
-		filename_buf = string_append(filename_buf,
-					     supported_file_types[i].extension);
-
-		if (file_exists(filename_buf)) {
-			if (!sample)
-				sample = mem_zalloc(sizeof(*sample));
-
-			if (sample) {
-				sample->sample_type = supported_file_types[i].type;
-
-				/* Try and load the sample file */
-				if (load_sample_sdl(filename_buf, sample))
-					data->loaded = true;
-
-			} else {
-				/* Out of memory */
-				mem_free(filename_buf);
-				data = NULL;
-				return false;
-			}
-		}
-
-		i++;
-	}
-
-	mem_free(filename_buf);
-
-	if (!data->loaded) {
-		plog_fmt("SDL: Failed to load sound '%s')", data->name);
+	if (data->loaded) {
+		sample->sample_type = file_type;
+	} else {
 		mem_free(sample);
 		sample = NULL;
 	}

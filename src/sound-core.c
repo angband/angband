@@ -23,6 +23,10 @@
 #include "snd-sdl.h"
 #endif
 
+#if (defined(WINDOWS) && !defined(USE_SDL))
+#include "snd-win.h"
+#endif
+
 #define MAX_SOUNDS_PER_MESSAGE	16
 
 struct sound_module
@@ -53,9 +57,18 @@ static const struct sound_module sound_modules[] =
 #ifdef SOUND_SDL
 	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
 #endif /* SOUND_SDL */
+#if (defined(WINDOWS) && !defined(USE_SDL))
+	{ "win", "Windows sound module", init_sound_win },
+#endif
 
 	{ "", "", NULL },
 };
+
+extern struct sound_file_type supported_sound_files[];
+
+//const struct sound_file_type supported_sound_files[] = { {".mp3", 1},
+//							 {".ogg", 2},
+//							 {"", 0} };
 
 /*
  * After processing the preference files, the 'sounds' will contain
@@ -78,7 +91,7 @@ static struct sound_hooks hooks;
  * 'loaded' flag in struct sound_data - This will improve memory footprint,
  * by result in a loss of performance.
  */
-bool preload_sounds = false;
+bool preload_sounds = true;
 
 static struct sound_data *grow_sound_list(void)
 {
@@ -102,13 +115,47 @@ static struct sound_data *grow_sound_list(void)
 }
 
 /**
- * Call the platform sound modules 'load sound' function
+ * Iterate through all the sound types supporting by the platform's sound
+ * module. Call the platform's sound modules 'load sound' function for each
+ * supported file type until the platform's sound module tell us that it
+ * could load the sound.
+ * NOTE: The platform's sound module does not have to load the sound into
+ * memory, it merely has to let us know that it can load the named file.
  */
 static void load_sound(struct sound_data *sound_data)
 {
 	if (hooks.load_sound_hook) {
-		if(!hooks.load_sound_hook(sound_data))
-			plog_fmt("Failed to load sound: %s", sound_data->name);
+		char path[2048];
+		char *filename_buf;
+		size_t filename_buf_size;
+		int i = 0;
+		bool load_success = false;
+
+		/* Build the path to the sound file (minus extension) */
+		path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, sound_data->name);
+
+		/*
+		 * Loop through all the extensions supported by the
+		 * platform's sound module.
+		 */
+		while ((0 != supported_sound_files[i].type) && (!load_success)) {
+			/*
+			 * Create a buffer to store the filename plus extension
+			 */
+			filename_buf_size = strlen(path) + strlen(supported_sound_files[i].extension) + 1;
+			filename_buf = mem_zalloc(filename_buf_size);
+			my_strcpy(filename_buf, path, filename_buf_size);
+			filename_buf = string_append(filename_buf, supported_sound_files[i].extension);
+
+			if (file_exists(filename_buf))
+				load_success = hooks.load_sound_hook(filename_buf, supported_sound_files[i].type, sound_data);
+
+			mem_free(filename_buf);
+			i++;
+		}
+
+		if (!load_success)
+			plog_fmt("Failed to load sound '%s'", sound_data->name);
 	}
 }
 
@@ -218,11 +265,10 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 	int s, sound_id;
 
 	if (hooks.play_sound_hook) {
-
 		/* Paranoia */
 		assert(data->message.type >= 0);
 
-		if (!message_sounds[type].num_sounds)
+		if (!message_sounds[data->message.type].num_sounds)
 			return; /* No sounds for this message */
 
 		s = randint0(message_sounds[data->message.type].num_sounds);
@@ -235,7 +281,9 @@ static void play_sound(game_event_type type, game_event_data *data, void *user)
 		if (!sounds[sound_id].loaded)
 			load_sound(&sounds[sound_id]);
 
-		hooks.play_sound_hook(&sounds[sound_id]);
+		/* Only bother playing it if the platform can */
+		if (sounds[sound_id].loaded)
+			hooks.play_sound_hook(&sounds[sound_id]);
 	}
 }
 
@@ -291,7 +339,7 @@ errr init_sound(const char *soundstr, int argc, char **argv)
 	if (!hooks.open_audio_hook)
 		return 1;
 
-	if (!hooks.open_audio_hook(argc, argv))
+	if (!hooks.open_audio_hook())
 		return 1;
 
 	/* Enable sound */

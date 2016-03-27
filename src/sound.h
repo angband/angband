@@ -20,9 +20,21 @@
 
 /*
  * Structure to held data relation to a sound.
- * plat_data is platform specific structure used to store any additional
- * data the platform's sound module needs in order to play the sound (and
- * release resources when shut down)
+ *  name :      Name of the sound file, without the file extension
+ *
+ *  hash :      Used to speed up searches
+ *
+ *  loaded :    The platform's sound module sets this flag if it has enough
+ *              information to play the sound (this may mean the sound data
+ *              is loaded into memory, or that the full filename has been
+ *              stored in the platform data. It is up to the platform's
+ *              sound module to determine what 'loaded' means. The core
+ *              sound module uses this flag to check if the sound needs to
+ *              be 'loaded' before attempting to play it.
+
+ *  plat_data : Platform specific structure used to store any additional
+ *              data the platform's sound module needs in order to play the
+ *              sound (and release resources when shut down)
  */
 struct sound_data {
 	char *name;
@@ -31,11 +43,16 @@ struct sound_data {
 	void *plat_data;
 };
 
+struct sound_file_type {
+	const char *extension;
+	int type;
+};
+
 struct sound_hooks
 {
-	bool (*open_audio_hook)(int argc, char **argv);
+	bool (*open_audio_hook)(void);
 	bool (*close_audio_hook)(void);
-	bool (*load_sound_hook)(struct sound_data *data);
+	bool (*load_sound_hook)(const char *filename, int file_type, struct sound_data *data);
 	bool (*unload_sound_hook)(struct sound_data *data);
 	bool (*play_sound_hook)(struct sound_data *data);
 };
