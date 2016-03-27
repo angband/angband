@@ -55,6 +55,7 @@ struct sound_hooks
 	bool (*load_sound_hook)(const char *filename, int file_type, struct sound_data *data);
 	bool (*unload_sound_hook)(struct sound_data *data);
 	bool (*play_sound_hook)(struct sound_data *data);
+	const struct sound_file_type *(*supported_files_hook)(void);
 };
 
 errr init_sound(const char *soundstr, int argc, char **argv);

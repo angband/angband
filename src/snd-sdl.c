@@ -45,10 +45,9 @@ enum {
 	SDL_MUSIC
 };
 
-
-const struct sound_file_type supported_sound_files[] = { {".mp3", SDL_MUSIC},
-							 {".ogg", SDL_CHUNK},
-							 {"", SDL_NULL} };
+static const struct sound_file_type supported_sound_files[] = { {".mp3", SDL_MUSIC},
+								{".ogg", SDL_CHUNK},
+								{"", SDL_NULL} };
 
 /**
  * Initialise SDL and open the mixer.
@@ -215,12 +214,19 @@ static bool close_audio_sdl(void)
 	return true;
 }
 
+const struct sound_file_type *supported_files_sdl(void)
+{
+	return supported_sound_files;
+}
+
+
 /**
  * Init the SDL sound module.
  */
 errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv)
 {
 	hooks->open_audio_hook = open_audio_sdl;
+	hooks->supported_files_hook = supported_files_sdl;
 	hooks->close_audio_hook = close_audio_sdl;
 	hooks->load_sound_hook = load_sound_sdl;
 	hooks->unload_sound_hook = unload_sound_sdl;

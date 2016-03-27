@@ -34,7 +34,10 @@
 #include "ui-keymap.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
+
+#ifdef SOUND
 #include "sound.h"
+#endif
 
 int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */

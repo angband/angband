@@ -65,8 +65,6 @@ static const struct sound_module sound_modules[] =
 	{ "", "", NULL },
 };
 
-extern struct sound_file_type supported_sound_files[];
-
 /*
  * After processing the preference files, 'sounds' will contain next_sound_id
  * entries - each representing a sound that needs to be loaded by calling
@@ -118,12 +116,14 @@ static struct sound_data *grow_sound_list(void)
  */
 static void load_sound(struct sound_data *sound_data)
 {
-	if (hooks.load_sound_hook) {
+	if ((hooks.load_sound_hook) && (hooks.supported_files_hook)) {
 		char path[2048];
 		char *filename_buf;
 		size_t filename_buf_size;
 		int i = 0;
 		bool load_success = false;
+
+		const struct sound_file_type *supported_sound_files = hooks.supported_files_hook();
 
 		/* Build the path to the sound file (minus extension) */
 		path_build(path, sizeof(path), ANGBAND_DIR_SOUNDS, sound_data->name);
