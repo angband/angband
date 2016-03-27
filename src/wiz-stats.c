@@ -266,7 +266,7 @@ static const struct stat_data stat_message[] =
 	{ST_ENDGAME_SCROLLS, " Endgame     "},// destruction, banish, mass banish, rune
 	{ST_ACQUIRE_SCROLLS, " Acquire.    "},
 	{ST_RODS, "\n ***RODS***      \n All:        "},
-	{ST_UTILITY_RODS, " Utility     "},//dtrap, dstairs, dobj, light, illum
+	{ST_UTILITY_RODS, " Utility     "},//dobj, light, illum
 	{ST_TELEPOTHER_RODS, " Tele Other  "},
 	{ST_DETECTALL_RODS, " Detect all  "},
 	{ST_ENDGAME_RODS, " Endgame     "},//speed, healing
@@ -786,8 +786,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			/* add to total */
 			add_stats(ST_RODS, vault, mon, number);
 
-			if (strstr(obj->kind->name, "Trap Detection") ||
-				strstr(obj->kind->name, "Treasure Detection") ||
+			if (strstr(obj->kind->name, "Treasure Detection") ||
 				strstr(obj->kind->name, "Door/Stair Location") ||
 				strstr(obj->kind->name, "Illumination") ||
 				strstr(obj->kind->name, "Light")) {

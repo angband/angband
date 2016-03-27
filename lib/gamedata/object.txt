@@ -1794,15 +1794,7 @@ dice:22d40
 effect:SENSE_OBJECTS
 dice:22d40
 
-name:265:Trap Detection
-graphics:?:w
-type:scroll
-properties:5:5:35
-alloc:50:0 to 70
-pile:70:1d3
-power:6
-effect:DETECT_TRAPS
-dice:22d40
+### 265
 
 name:266:Door/Stair Location
 graphics:?:w
@@ -2480,8 +2472,6 @@ effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
 effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
-effect:DETECT_TRAPS
-dice:22d40
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS
@@ -3437,17 +3427,6 @@ effect:DETECT_STAIRS
 dice:22d40
 time:70
 
-name:432:Trap Location
-graphics:-:d
-type:rod
-properties:5:15:1000
-alloc:30:8 to 75
-combat:0:1d1:0:0:0
-power:6
-effect:DETECT_TRAPS
-dice:22d40
-time:50
-
 name:433:Detection
 graphics:-:d
 type:rod
@@ -3456,8 +3435,6 @@ alloc:30:50 to 100
 combat:0:1d1:0:0:0
 flags:IGNORE_ELEC
 power:10
-effect:DETECT_TRAPS
-dice:22d40
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS

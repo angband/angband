@@ -236,27 +236,6 @@ flags:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
 desc:You can dig through most walls but these are impenetrable.  The dungeon is 
 desc:surrounded by these kinds of walls and some special rooms are made of them.
 
-## holder for trap detected border floor tile
-
-name:23:dtrap edge - floor
-graphics:.:G
-priority:5
-flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
-desc:An open floor or bare ground.  Can be walked across by anything, and can 
-desc:hold traps or items.  Does not break line of sight.  It indicates the edge 
-desc:of trap detection.
-
-## holder for trap detected border overlay tile
-
-name:24:dtrap edge - wall
-graphics:#:G
-priority:10
-flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
-info:0:4
-desc:A seam of hard rock.  It can be removed by digging or magic, and passed 
-desc:through by immaterial monsters.  It stops any spells, missiles or line of 
-desc:sight.  It indicates the edge of trap detection.
-
 ## New terrain
 
 name:25:lava flow

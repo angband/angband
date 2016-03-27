@@ -191,14 +191,12 @@ desc:Lights up all squares in a level-dependant area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
-spell:Find Traps, Doors & Stairs:3:3:25:2
-effect:DETECT_TRAPS
-dice:22d40
+spell:Find Doors & Stairs:3:3:25:2
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS
 dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+desc:Detects all doors, and stairs in the immediate area.
 
 spell:Stinking Cloud:3:2:27:3
 effect:BALL:POIS:2
@@ -658,14 +656,12 @@ desc:Lights up all squares in a level-dependant area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
-spell:Find Traps, Doors & Stairs:3:3:27:2
-effect:DETECT_TRAPS
-dice:22d40
+spell:Find Doors & Stairs:3:3:27:2
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS
 dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+desc:Detects all doors, and stairs in the immediate area.
 
 spell:Slow Poison:3:3:28:4
 effect:TIMED_DEC:POISONED:2
@@ -907,8 +903,6 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:10:10:80:20
-effect:DETECT_TRAPS
-dice:22d40
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS
@@ -921,7 +915,7 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:Detects all treasure, objects, doors, stairs, traps, and monsters
+desc:Detects all treasure, objects, doors, stairs and monsters
 desc: in the immediate area.
 
 spell:Perception:20:20:80:20
@@ -1118,14 +1112,12 @@ effect:DETECT_OBJECTS
 dice:22d40
 desc:Detects all objects in the immediate area.
 
-spell:Find Traps, Doors & Stairs:8:3:50:1
-effect:DETECT_TRAPS
-dice:22d40
+spell:Find Doors & Stairs:8:3:50:1
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS
 dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+desc:Detects all doors, and stairs in the immediate area.
 
 spell:Stinking Cloud:21:12:50:10
 effect:BALL:POIS:2
@@ -1458,14 +1450,12 @@ effect:TIMED_DEC:CONFUSED
 dice:20
 desc:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
-spell:Find Traps, Doors & Stairs:5:4:45:2
-effect:DETECT_TRAPS
-dice:22d40
+spell:Find Doors & Stairs:5:4:45:2
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS
 dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+desc:Detects all doors, and stairs in the immediate area.
 
 spell:Stinking Cloud:7:5:40:3
 effect:BALL:POIS:2
@@ -1896,14 +1886,12 @@ desc:Lights up all squares in a level-dependant area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
-spell:Find Traps, Doors & Stairs:7:5:40:3
-effect:DETECT_TRAPS
-dice:22d40
+spell:Find Doors & Stairs:7:5:40:3
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS
 dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+desc:Detects all doors, and stairs in the immediate area.
 
 spell:Slow Poison:9:7:40:3
 effect:TIMED_DEC:POISONED:2
@@ -2116,8 +2104,6 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:15:15:80:12
-effect:DETECT_TRAPS
-dice:22d40
 effect:DETECT_DOORS
 dice:22d40
 effect:DETECT_STAIRS
@@ -2130,7 +2116,7 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:Detects all treasure, objects, doors, stairs, traps, and monsters
+desc:Detects all treasure, objects, doors, stairs and monsters
 desc: in the immediate area.
 
 spell:Perception:25:25:80:16

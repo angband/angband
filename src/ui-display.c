@@ -938,26 +938,6 @@ static size_t prt_level_feeling(int row, int col)
 }
 
 /**
- * Prints trap detection status
- */
-static size_t prt_dtrap(int row, int col)
-{
-	/* The player is in a trap-detected grid */
-	if (square_isdtrap(cave, player->py, player->px)) {
-		/* The player is on the border */
-		if (square_isdedge(cave, player->py, player->px))
-			c_put_str(COLOUR_YELLOW, "DTrap", row, col);
-		else
-			c_put_str(COLOUR_L_GREEN, "DTrap", row, col);
-
-		return 5;
-	}
-
-	return 0;
-}
-
-
-/**
  * Print how many spells the player can study.
  */
 static size_t prt_study(int row, int col)
@@ -1019,7 +999,7 @@ typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
 { prt_level_feeling, prt_unignore, prt_recall, prt_descent, prt_state, prt_cut, 
-  prt_stun, prt_hunger, prt_study, prt_tmd, prt_dtrap };
+  prt_stun, prt_hunger, prt_study, prt_tmd };
 
 
 /**

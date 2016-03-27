@@ -1617,10 +1617,7 @@ static void do_cmd_wiz_query(void)
 		case 's': flag = (SQUARE_SEEN); break;
 		case 'v': flag = (SQUARE_VIEW); break;
 		case 'w': flag = (SQUARE_WASSEEN); break;
-		case 'd': flag = (SQUARE_DTRAP); break;
 		case 'f': flag = (SQUARE_FEEL); break;
-		case 'e': flag = (SQUARE_DEDGE); break;
-		case 'z': flag = (SQUARE_VERT); break;
 		case 't': flag = (SQUARE_TRAP); break;
 		case 'n': flag = (SQUARE_INVIS); break;
 		case 'i': flag = (SQUARE_WALL_INNER); break;
@@ -2001,7 +1998,6 @@ void get_debug_command(void)
 		/* Detect everything */
 		case 'd':
 		{
-			effect_simple(EF_DETECT_TRAPS, "22d40", 0, 0, 0, NULL);
 			effect_simple(EF_DETECT_DOORS, "22d40", 0, 0, 0, NULL);
 			effect_simple(EF_DETECT_STAIRS, "22d40", 0, 0, 0, NULL);
 			effect_simple(EF_DETECT_GOLD, "22d40", 0, 0, 0, NULL);

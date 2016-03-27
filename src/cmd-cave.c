@@ -1031,21 +1031,6 @@ void move_player(int dir, bool disarm)
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
 		}
 	} else {
-		/* See if trap detection status will change */
-		bool old_dtrap = square_isdtrap(cave, py, px);
-		bool new_dtrap = square_isdtrap(cave, y, x);
-
-		/* Note the change in the detect status */
-		if (old_dtrap != new_dtrap)
-			player->upkeep->redraw |= (PR_DTRAP);
-
-		/* Disturb player if the player is about to leave the area */
-		if (player->upkeep->running && !player->upkeep->running_firststep && 
-			old_dtrap && !new_dtrap) {
-			disturb(player, 0);
-			return;
-		}
-
 		/* Move player */
 		monster_swap(py, px, y, x);
 

@@ -93,12 +93,6 @@ feat:22:los:0x80:0x92
 feat:22:lit:0x80:0x90
 feat:22:dark:0x80:0x91
 
-# trap detected floor edge
-feat:23:*:0x81:0x96
-
-# trap detected wall edge
-feat:24:*:0x81:0x95
-
 # lava
 feat:25:*:0x80:0x93
 
@@ -440,7 +434,6 @@ object:scroll:Teleport Level:0x87:0x91
 
 object:scroll:Magic Mapping:0x87:0x91
 object:scroll:Treasure Detection:0x87:0x91
-object:scroll:Trap Detection:0x87:0x91
 object:scroll:Door/Stair Location:0x87:0x91
 object:scroll:Detect Invisible:0x87:0x91
 
