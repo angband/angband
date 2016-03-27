@@ -28,6 +28,10 @@
 #include "ui-prefs.h"
 #include "ui-signals.h"
 
+#ifdef SOUND
+#include "sound.h"
+#endif
+
 /**
  * locale junk
  */
@@ -42,8 +46,6 @@
 #if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL)
 
 #include "main.h"
-
-#include "sound.h"
 
 /**
  * List of the available modules in the order they are tried.
@@ -92,16 +94,6 @@ static void quit_hook(const char *s)
 		term_nuke(angband_term[j]);
 	}
 }
-
-
-
-/**
- * SDL needs a look-in
- */
-#ifdef USE_SDL
-# include "SDL.h"
-#endif
-
 
 /**
  * Initialize and verify the file paths, and the score file.
@@ -313,8 +305,9 @@ int main(int argc, char *argv[])
 	bool done = false;
 
 	const char *mstr = NULL;
+#ifdef SOUND
 	const char *soundstr = NULL;
-
+#endif
 	bool args = true;
 
 	/* Save the "program name" XXX XXX XXX */
@@ -413,12 +406,12 @@ int main(int argc, char *argv[])
 				if (!*arg) goto usage;
 				mstr = arg;
 				continue;
-
+#ifdef SOUND
 			case 's':
 				if (!*arg) goto usage;
 				soundstr = arg;
 				continue;
-
+#endif
 			case 'd':
 				change_path(arg);
 				continue;
@@ -452,8 +445,10 @@ int main(int argc, char *argv[])
 					printf("    %s (default is %s)\n", change_path_values[i].name, *change_path_values[i].path);
 				}
 				puts("                 Multiple -d options are allowed.");
+#ifdef SOUND
 				puts("  -s<mod>        Use sound module <sys>:");
 				print_sound_help();
+#endif
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
@@ -522,8 +517,10 @@ int main(int argc, char *argv[])
 	/* Set up the command hook */
 	cmd_get_hook = textui_get_cmd;
 
+#ifdef SOUND
 	/* Initialise sound */
 	init_sound(soundstr, argc, argv);
+#endif
 
 	/* Set up the display handlers and things. */
 	init_display();

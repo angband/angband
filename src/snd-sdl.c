@@ -22,11 +22,8 @@
 #include "init.h"
 #include "sound.h"
 
-#ifdef SOUND_SDL
-
-
-#include "SDL.h"
-#include "SDL_mixer.h"
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
 
 /**
  * Struct representing all data about an event sample
@@ -232,6 +229,3 @@ errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv)
 	/* Success */
 	return (0);
 }
-
-
-#endif /* SOUND_SDL */

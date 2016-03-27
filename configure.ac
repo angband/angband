@@ -277,11 +277,13 @@ fi
 dnl Windows checking
 if test "$enable_win" = "yes"; then
 	AC_DEFINE(USE_WIN, 1, [Define to 1 if using the Windows interface.])
+	AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
 	CFLAGS="${CFLAGS} -DWINDOWS -static -Iwin/include"
 	LDFLAGS="${LDFLAGS} -Lwin/lib"
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
 dnl Note complete replacement of all main files
 	MAINFILES="\$(WINMAINFILES)"
+	MAINFILES="${MAINFILES} \$(SOUNDFILES)"
 fi
 
 dnl SDL mixer checking
@@ -290,6 +292,7 @@ if test "$enable_sdl_mixer" = "yes"; then
 
 	if test "$found_sdl_mixer" = "yes"; then
 		AC_DEFINE(SOUND_SDL, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
+		AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
 		if test "$with_sdl" = "yes"; then
 			LIBS="${LIBS} -lSDL_mixer"
 		else
@@ -299,6 +302,7 @@ if test "$enable_sdl_mixer" = "yes"; then
 			LIBS="${LIBS} ${SDL_LIBS} -lSDL_mixer"
 		fi
 		MAINFILES="${MAINFILES} \$(SNDSDLFILES)"
+		MAINFILES="${MAINFILES} \$(SOUNDFILES)"
 	fi
 fi
 

@@ -59,7 +59,7 @@ struct sound_hooks
 
 errr init_sound(const char *soundstr, int argc, char **argv);
 
-void message_sound_define(u16b type, const char *sounds);
+enum parser_error parse_prefs_sound(struct parser *p);
 
 void print_sound_help(void);
 

@@ -1120,6 +1120,7 @@ static bool init_graphics(void)
 	return (can_use_graphics);
 }
 
+#ifdef SOUND
 
 /* Supported file types */
 enum {
@@ -1281,7 +1282,7 @@ errr init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
 	/* Success */
 	return (0);
 }
-
+#endif /* SOUND */
 
 
 /**
