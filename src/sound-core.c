@@ -66,14 +66,10 @@ static const struct sound_module sound_modules[] =
 
 extern struct sound_file_type supported_sound_files[];
 
-//const struct sound_file_type supported_sound_files[] = { {".mp3", 1},
-//							 {".ogg", 2},
-//							 {"", 0} };
-
 /*
- * After processing the preference files, the 'sounds' will contain
- * next_sound_id entries - each representing a sound that needs to be loaded
- * by calling load_sound_hook() for each entry.
+ * After processing the preference files, 'sounds' will contain next_sound_id
+ * entries - each representing a sound that needs to be loaded by calling
+ * load_sound_hook() for each entry.
  */
 static u16b next_sound_id;
 static struct sound_data *sounds;
@@ -86,12 +82,8 @@ static struct sound_hooks hooks;
 /*
  * If preload_sounds is true, sounds are loaded immediately when assigned to
  * a message. Otherwise, each sound is only loaded when first played.
- *
- * NOTE: Platform sound modules can 'load on play' by never setting the
- * 'loaded' flag in struct sound_data - This will improve memory footprint,
- * by result in a loss of performance.
  */
-bool preload_sounds = true;
+bool preload_sounds = false;
 
 static struct sound_data *grow_sound_list(void)
 {
@@ -120,7 +112,8 @@ static struct sound_data *grow_sound_list(void)
  * supported file type until the platform's sound module tell us that it
  * could load the sound.
  * NOTE: The platform's sound module does not have to load the sound into
- * memory, it merely has to let us know that it can load the named file.
+ * memory, it merely has to let us know that it can play the sound when
+ * asked to.
  */
 static void load_sound(struct sound_data *sound_data)
 {
@@ -161,8 +154,8 @@ static void load_sound(struct sound_data *sound_data)
 
 /**
  * Parse a string of sound names provided by the preferences parser and:
- *  - Add any new sounds to the 'sound names' tree and allocate them
- *    unique 'sound ids'
+ *  - Allocate a unique 'sound id' to any new sounds and add them to the
+ *    'sounds' array.
  *  - Add each sound assigned to a message type to that message types
  *    'sound map
  */
@@ -175,7 +168,6 @@ void message_sound_define(u16b message_id, const char *sounds_str)
 
 	u16b sound_id;
 
-/*	Fnv32_t hash; */
 	u32b hash;
 	int i;
 	bool found = false;

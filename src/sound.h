@@ -19,8 +19,8 @@
 #define INCLUDED_SOUND_H
 
 /*
- * Structure to held data relation to a sound.
- *  name :      Name of the sound file, without the file extension
+ * Structure to held data relating to a sound.
+ *  name :      Base name of the sound (no path or file extension)
  *
  *  hash :      Used to speed up searches
  *

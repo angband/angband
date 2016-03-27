@@ -84,6 +84,7 @@
 
 #if (defined(WINDOWS) && !defined(USE_SDL))
 
+#include "sound.h"
 #include "snd-win.h"
 
 #define HAS_CLEANUP
@@ -1183,7 +1184,7 @@ const struct sound_file_type supported_sound_files[] = { {".mp3", WIN_MP3},
 
 typedef struct
 {
-	win_sound_type	type;
+	int		type;
 	MCI_OPEN_PARMS	op;
 	char		*filename;
 } win_sample;
@@ -1203,11 +1204,11 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 				sample = mem_alloc(sizeof(*sample));
 
 			/* Open if not already */
-			if (!sample->device) {
-				op.dwCallback = 0;
-				op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
-				op.lpstrElementName = filename;
-				op.lpstrAlias = NULL;
+			if (!sample->op.device) {
+				sample->op.dwCallback = 0;
+				sample->op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
+				sample->op.lpstrElementName = filename;
+				sample->op.lpstrAlias = NULL;
 
 				/* Open command */
 				mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT, (size_t)(&sample->op));
@@ -1283,8 +1284,7 @@ static bool unload_sound_win(struct sound_data *data)
 		switch (sample->type) {
 			case WIN_MP3:
 				if (sample->device)
-					mciSendCommand(sample->device, MCI_CLOSE, MCI_NOTIFY)
-					 Mix_FreeChunk(sample->sample_data.chunk);
+					mciSendCommand(sample->device, MCI_CLOSE, MCI_WAIT, (size_t)(&sample->op))
 
 				break;
 

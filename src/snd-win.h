@@ -15,9 +15,9 @@
  *    and/or other materials provided with the distribution.
  */
 
-#ifndef INCLUDED_Z_SOUND_SDL_H
-#define INCLUDED_Z_SOUND_SDL_H
+#ifndef INCLUDED_SND_WIN_H
+#define INCLUDED_SND_WIN_H
 
 errr init_sound_win(struct sound_hooks *hooks, int argc, char **argv);
 
-#endif /* !INCLUDED_Z_SOUND_H */
+#endif /* !INCLUDED_SND_WIN_H */
