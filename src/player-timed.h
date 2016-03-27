@@ -30,6 +30,17 @@
 #define PY_FOOD_STARVE	100		/* Food value (Starving) */
 
 /**
+ * Player cut timer values
+ */
+#define TMD_CUT_NONE    0
+#define TMD_CUT_GRAZE   10
+#define TMD_CUT_LIGHT   25
+#define TMD_CUT_BAD     50
+#define TMD_CUT_NASTY   100
+#define TMD_CUT_SEVERE  200
+#define TMD_CUT_DEEP    1000
+
+/**
  * Effect failure flag types
  */
 enum {
