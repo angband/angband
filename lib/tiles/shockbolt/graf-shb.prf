@@ -402,7 +402,7 @@ object:scroll:Identify:0x87:0xCD
 object:scroll:Light:0x87:0xD3
 object:scroll:Word of Recall:0x87:0xDF
 object:scroll:Recharging:0x87:0xDB
-object:scroll:Trap/Door Destruction:0x87:0xF2
+object:scroll:Door Destruction:0x87:0xF2
 object:scroll:Deep Descent:0x87:0xF7
 
 ### "Holy" spells ###

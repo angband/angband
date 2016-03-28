@@ -555,12 +555,12 @@ effect:RUNE
 desc:inscribes a glyph of warding beneath you, which monsters cannot move onto
 
 
-name:DESTROY_TDOORS
+name:DESTROY_DOORS
 aim:0
 power:6
 msg:Your {kind} glow{s} bright red...
 effect:TOUCH:KILL_DOOR
-desc:destroys all traps and doors surrounding you
+desc:destroys all doors surrounding you
 
 name:RECHARGE
 aim:0
@@ -1101,17 +1101,17 @@ effect:LINE:LIGHT_WEAK
 dice:6d8
 desc:lights up part of the dungeon in a straight line
 
-name:DISARMING
+name:DISABLE_TRAPS
 aim:1
 power:7
 effect:ALTER:KILL_TRAP
-desc:destroys traps, unlocks doors and reveals all secret doors in a given direction
+desc:disables traps, unlocks doors and reveals all secret doors in a given direction
 
-name:TDOOR_DEST
+name:DOOR_DEST
 aim:1
 power:5
 effect:ALTER:KILL_DOOR
-desc:destroys traps and doors
+desc:destroys doors
 
 name:POLYMORPH
 aim:1

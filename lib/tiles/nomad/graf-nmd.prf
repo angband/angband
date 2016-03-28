@@ -478,7 +478,7 @@ object:scroll:Identify:0x87:0x91
 object:scroll:Light:0x87:0x91
 object:scroll:Word of Recall:0x87:0x91
 object:scroll:Recharging:0x87:0x91
-object:scroll:Trap/Door Destruction:0x87:0x91
+object:scroll:Door Destruction:0x87:0x91
 object:scroll:Deep Descent:0x87:0x91
 
 

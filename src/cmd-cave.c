@@ -1156,6 +1156,10 @@ void do_cmd_walk(struct command *cmd)
 {
 	int x, y, dir;
 
+	/* Don't disarm on movement if the player is trapsafe,
+	 * or the trap is disabled */
+	bool disarm = player->timed[TMD_TRAPSAFE] ? false : true;
+
 	/* Get arguments */
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
@@ -1171,9 +1175,12 @@ void do_cmd_walk(struct command *cmd)
 	if (!do_cmd_walk_test(y, x))
 		return;
 
+	/* Don't disarm if it's a disabled trap */
+	if (square_isdisabledtrap(cave, y, x)) disarm = false;
+
 	player->upkeep->energy_use = z_info->move_energy;
 
-	move_player(dir, true);
+	move_player(dir, disarm);
 }
 
 
