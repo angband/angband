@@ -128,9 +128,12 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 		while (trap) {
 			if (trf_has(trap->flags, TRF_TRAP) ||
 				trf_has(trap->flags, TRF_RUNE)) {
-				/* Accept the trap */
-				g->trap = trap;
-				break;
+				/* Accept the trap - only if not disabled, maybe we need
+				 * a special graphic for this */
+				if (!trap->timeout) {
+					g->trap = trap;
+					break;
+				}
 			}
 			trap = trap->next;
 		}

@@ -75,7 +75,8 @@ struct trap
 	byte fy;					/**< Location of trap */
 	byte fx;
 
-	byte xtra;					/**< Used for door locks, so far */
+	byte power;					/**< Power for door locks */
+	byte timeout;				/**< Timer for disabled traps */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (only this particular trap) */
 };
@@ -91,6 +92,9 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
 void square_free_trap(struct chunk *c, int y, int x);
 void wipe_trap_list(struct chunk *c);
 bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx);
+bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
+							 int t_idx, int time);
+int square_trap_timeout(struct chunk *c, int y, int x, int t_idx);
 void square_set_door_lock(struct chunk *c, int y, int x, int power);
 int square_door_power(struct chunk *c, int y, int x);
 

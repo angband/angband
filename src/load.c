@@ -324,7 +324,8 @@ static void rd_trap(struct trap *trap)
     trap->kind = &trap_info[trap->t_idx];
     rd_byte(&trap->fy);
     rd_byte(&trap->fx);
-    rd_byte(&trap->xtra);
+    rd_byte(&trap->power);
+    rd_byte(&trap->timeout);
 
     for (i = 0; i < trf_size; i++)
 		rd_byte(&trap->flags[i]);
@@ -724,7 +725,6 @@ int rd_player(void)
 	rd_s16b(&player->energy);
 	rd_s16b(&player->word_recall);
 	rd_byte(&player->confusing);
-	strip_bytes(1);
 
 	/* Find the number of timed effects */
 	rd_byte(&num);

@@ -346,21 +346,8 @@ static void project_object_handler_KILL_WALL(project_object_handler_context_t *c
 {
 }
 
-/* Unlock chests */
 static void project_object_handler_KILL_DOOR(project_object_handler_context_t *context)
 {
-	/* Chests are noticed only if trapped or locked */
-	if (is_locked_chest(context->obj)) {
-		/* Disarm or Unlock */
-		unlock_chest((struct object * const)context->obj);
-
-		/* Notice */
-		if (context->obj->known && !ignore_item_ok(context->obj)) {
-			context->obj->known->pval = context->obj->pval;
-			msg("Click!");
-			context->obvious = true;
-		}
-	}
 }
 
 /* Unlock chests */

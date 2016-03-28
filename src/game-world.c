@@ -33,6 +33,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "target.h"
+#include "trap.h"
 
 u16b daycount = 0;
 u32b seed_randart;		/* Hack -- consistent random artifacts */
@@ -281,7 +282,7 @@ static void decrease_timeouts(void)
  */
 void process_world(struct chunk *c)
 {
-	int i;
+	int i, y, x;
 
 	/* Compact the monster list if we're approaching the limit */
 	if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
@@ -434,6 +435,21 @@ void process_world(struct chunk *c)
 	/* Notice things after time */
 	if (!(turn % 100))
 		equip_learn_after_time(player);
+
+	/* Decrease trap timeouts */
+	for (y = 0; y < cave->height; y++) {
+		for (x = 0; x < cave->width; x++) {
+			struct trap *trap = cave->squares[y][x].trap;
+			while (trap) {
+				if (trap->timeout) {
+					trap->timeout--;
+					if (!trap->timeout)
+						square_light_spot(cave, y, x);
+				}
+				trap = trap->next;
+			}
+		}
+	}
 
 
 	/*** Involuntary Movement ***/
