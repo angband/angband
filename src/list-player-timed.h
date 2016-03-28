@@ -53,3 +53,4 @@ TMD(STONESKIN,	"stone skin",				"Your skin turns to stone.",				"A fleshy shade 
 TMD(TERROR,		"terror",					"You feel the need to run away, and fast!",	"The urge to run dissipates.",					NULL,										NULL,										0,									PU_BONUS,										MSG_AFRAID,		0,	0)
 TMD(SPRINT,		"sprinting",				"You start sprinting.",						"You suddenly stop sprinting.",					NULL,										NULL,										0,									PU_BONUS,										MSG_SPEED,		0,	0)
 TMD(BOLD,		"fearlessness",				"You feel bold.",							"You no longer feel bold.",						"You feel even bolder!",					"You feel less bold.",						0,									PU_BONUS,										MSG_BOLD,		0,	0)
+TMD(TRAPSAFE,	"safety from traps",		"You feel safe from traps.",				"You feel vulnerable to traps again.",			"You feel even safer from traps!",			"You feel less safe from traps.",			0,									PU_BONUS,										0,				0,	0)

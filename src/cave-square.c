@@ -616,6 +616,15 @@ bool square_isknowntrap(struct chunk *c, int y, int x)
 }
 
 /**
+ * True if the square is a known, disabled player trap.
+ */
+bool square_isdisabledtrap(struct chunk *c, int y, int x)
+{
+	return square_isvisibletrap(c, y, x) &&
+		(square_trap_timeout(c, y, x, -1) > 0);
+}
+
+/**
  * Determine if a given location may be "destroyed"
  *
  * Used by destruction spells, and for placing stairs, etc.
@@ -814,6 +823,12 @@ void square_destroy_door(struct chunk *c, int y, int x) {
 void square_destroy_trap(struct chunk *c, int y, int x)
 {
 	square_remove_trap(c, y, x, false, -1);
+}
+
+void square_disable_trap(struct chunk *c, int y, int x)
+{
+	if (!square_isplayertrap(c, y, x)) return;
+	square_set_trap_timeout(c, y, x, false, -1, 10);
 }
 
 void square_tunnel_wall(struct chunk *c, int y, int x)

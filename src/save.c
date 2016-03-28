@@ -232,7 +232,8 @@ static void wr_trap(struct trap *trap)
     wr_byte(trap->t_idx);
     wr_byte(trap->fy);
     wr_byte(trap->fx);
-    wr_byte(trap->xtra);
+    wr_byte(trap->power);
+    wr_byte(trap->timeout);
 
     for (i = 0; i < TRF_SIZE; i++)
 		wr_byte(trap->flags[i]);
@@ -465,7 +466,6 @@ void wr_player(void)
 	wr_s16b(player->energy);
 	wr_s16b(player->word_recall);
 	wr_byte(player->confusing);
-	wr_byte(0);
 
 	/* Find the number of timed effects */
 	wr_byte(TMD_MAX);

@@ -180,14 +180,14 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 }
 
-/* Destroy Doors (and traps) */
+/* Destroy Doors */
 static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
 	const int y = context->y;
 
-	/* Destroy all doors and traps */
-	if (square_isplayertrap(cave, y, x) || square_isdoor(cave, y, x)) {
+	/* Destroy all doors */
+	if (square_isdoor(cave, y, x)) {
 		/* Check line of sight */
 		if (square_isview(cave, y, x)) {
 			/* Message */
@@ -195,22 +195,18 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 			context->obvious = true;
 
 			/* Visibility change */
-			if (square_isdoor(cave, y, x))
-				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Forget the door */
 			square_forget(cave, y, x);
 		}
 
 		/* Destroy the feature */
-		if (square_isdoor(cave, y, x))
-			square_destroy_door(cave, y, x);
-		else
-			square_destroy_trap(cave, y, x);
+		square_destroy_door(cave, y, x);
 	}
 }
 
-/* Destroy Traps (and Locks) */
+/* Disable traps, unlock doors */
 static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t *context)
 {
 	const int x = context->x;
@@ -225,16 +221,16 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 			context->obvious = true;
 	}
 
-	/* Destroy traps, unlock doors */
+	/* Disable traps, unlock doors */
 	if (square_istrap(cave, y, x)) {
 		/* Check line of sight */
 		if (square_isview(cave, y, x)) {
-			msg("There is a bright flash of light!");
+			msg("The trap seizes up.");
 			context->obvious = true;
 		}
 
-		/* Destroy the trap */
-		square_destroy_trap(cave, y, x);
+		/* Disable the trap */
+		square_disable_trap(cave, y, x);
 	} else if (square_islockeddoor(cave, y, x)) {
 		/* Unlock the door */
 		square_unlock_door(cave, y, x);

@@ -2017,7 +2017,7 @@ power:11
 effect:RECHARGE
 dice:60
 
-name:292:Trap/Door Destruction
+name:292:Door Destruction
 graphics:?:w
 type:scroll
 properties:10:5:50
@@ -2911,7 +2911,7 @@ effect:BOLT_AWARE:OLD_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
-name:387:Trap/Door Destruction
+name:387:Door Destruction
 graphics:-:d
 type:wand
 properties:10:10:100
@@ -2943,7 +2943,7 @@ effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:MAX_SIGHT:* 5
 
-name:390:Disarming
+name:390:Disable Traps
 graphics:-:d
 type:wand
 properties:20:10:700
@@ -3676,7 +3676,7 @@ dice:$B
 expr:B:MAX_SIGHT:* 5
 time:25
 
-name:452:Disarming
+name:452:Disable Traps
 graphics:-:d
 type:rod
 properties:35:15:2100

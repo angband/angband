@@ -219,9 +219,10 @@ dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
 desc:Fires a lightning beam that hurts each monster in its path.
 
-spell:Trap/Door Destruction:5:5:30:6
+spell:Disable Traps, Destroy Doors:5:5:30:6
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TOUCH:KILL_TRAP
+desc:Disables traps and destroys doors within a 1-square radius of you.
 
 spell:Cure Poison:5:5:35:4
 effect:CURE:POISONED
@@ -978,7 +979,10 @@ book:prayer book:[Holy Infusions]:5:2
 
 spell:Unbarring Ways:5:6:50:40
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TIMED_INC:TRAPSAFE
+dice:10+d10
+desc:Destroys all doors within a 1-square radius of you and renders you safe
+desc: from traps for a short while.
 
 spell:Recharging:15:20:80:25
 effect:RECHARGE
@@ -1134,9 +1138,10 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to confuse a single monster for a level-dependant duration.
 desc:  Uniques and monsters that resist confusion are not affected.
 
-spell:Trap/Door Destruction:14:7:60:2
+spell:Disable Traps, Destroy Doors:14:7:60:2
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TOUCH:KILL_TRAP
+desc:Disables traps and destroys doors within a 1-square radius of you.
 
 spell:Cure Poison:21:9:90:1
 effect:CURE:POISONED
@@ -1478,9 +1483,10 @@ dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
 desc:Fires a lightning beam that hurts each monster in its path.
 
-spell:Trap/Door Destruction:9:8:45:3
+spell:Disable Traps, Destroy Doors:9:8:45:3
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TOUCH:KILL_TRAP
+desc:Disables traps and destroys doors within a 1-square radius of you.
 
 spell:Cure Poison:11:9:45:3
 effect:CURE:POISONED
@@ -2163,7 +2169,10 @@ book:prayer book:[Holy Infusions]:5:2
 
 spell:Unbarring Ways:10:16:50:20
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TIMED_INC:TRAPSAFE
+dice:10+d10
+desc:Destroys all doors within a 1-square radius of you and renders you safe
+desc: from traps for a short while.
 
 spell:Recharging:25:30:80:15
 effect:RECHARGE

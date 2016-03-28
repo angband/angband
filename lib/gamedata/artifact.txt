@@ -475,7 +475,7 @@ info:25:270:40000
 alloc:11:35 to 100
 power:45:1d4:-2:0:20
 flags:PROT_CONF
-act:DESTROY_TDOORS
+act:DESTROY_DOORS
 time:10
 values:INT[2] | WIS[2] | CON[3] | RES_ACID[1] | RES_POIS[1]
 desc:A hauberk, leggings, and sleeves of interlocking steel rings,
