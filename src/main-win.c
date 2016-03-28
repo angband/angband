@@ -1268,12 +1268,18 @@ static bool close_audio_win(void)
 	return true;
 }
 
+const struct sound_file_type *supported_files_win(void)
+{
+	return supported_sound_files;
+}
+
 /**
  * Initialize sound
  */
 errr init_sound_win(struct sound_hooks *hooks, int argc, char **argv)
 {
 	hooks->open_audio_hook = open_audio_win;
+	hooks->supported_files_hook = supported_files_win;
 	hooks->close_audio_hook = close_audio_win;
 	hooks->load_sound_hook = load_sound_win;
 	hooks->unload_sound_hook = unload_sound_win;
