@@ -103,7 +103,7 @@ static void print_tomb(void)
 
 	line++;
 
-	put_str_centred(line++, 8, 8+31, "by %-.24s", ctime(&death_time));
+	put_str_centred(line++, 8, 8+31, "on %-.24s", ctime(&death_time));
 }
 
 
