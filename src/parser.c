@@ -641,6 +641,17 @@ errr run_parser(struct file_parser *fp) {
  * The basic file parsing function
  */
 errr parse_file(struct parser *p, const char *filename) {
+	/* Default behaviour for file parsing is to issue a quit if
+	 * the file isn't found. */
+	return parse_file_quit_not_found(p, filename, true);
+}
+
+/**
+ * The basic file parsing function.  Attempt to load filename through
+ * parser.  If quit_not_found is true and the file is not found,
+ * perform a quit.
+ */
+errr parse_file_quit_not_found(struct parser *p, const char *filename, bool quit_not_found) {
 	char path[1024];
 	char buf[1024];
 	ang_file *fh;
@@ -658,12 +669,12 @@ errr parse_file(struct parser *p, const char *filename) {
 		fh = file_open(path, MODE_READ, FTYPE_TEXT);
 	}
 
-	/* The lore file is optional, lack of others is terminal */
+	/* Some files are optional, lack of others is terminal */
 	if (!fh) {
-		if (streq(filename, "lore"))
-			return PARSE_ERROR_NO_FILE_FOUND;
-		else
+		if (quit_not_found)
 			quit(format("Cannot open '%s.txt'", filename));
+		else
+			return PARSE_ERROR_NO_FILE_FOUND;
 	}
 
 	/* Parse it */
