@@ -586,11 +586,13 @@ static unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
 	
 	if (strcmp(name, "Caps Lock") == 0) return 2;
 	
-	for (int i = 0; i <= XkbNumVirtualMods; i++ ) {
+	for (int i = 0; (!mask) && (i <= XkbNumVirtualMods); i++ ) {
 		char* modStr = XGetAtomName( xkb->dpy, xkb->names->vmods[i] );
-		if( modStr != NULL && strcmp(name, modStr) == 0 ) {
-			XkbVirtualModsToReal( xkb, 1 << i, &mask );
-			return mask;
+		if (modStr) {
+			if (!strcmp(name, modStr))
+				XkbVirtualModsToReal( xkb, 1 << i, &mask );
+
+			XFree(modStr);
 		}
 	}
 	return 0;
@@ -652,8 +654,8 @@ static errr Metadpy_init_2(Display *dpy, const char *name)
 	m->super_mask = Mod4Mask;
 	xkb = XkbGetKeyboard(dpy, XkbAllComponentsMask, XkbUseCoreKbd);
 	if (xkb != NULL) {
-        m->alt_mask = xkb_mask_modifier( xkb, "Alt" );
-        m->super_mask = xkb_mask_modifier( xkb, "Super" );
+		m->alt_mask = xkb_mask_modifier( xkb, "Alt" );
+		m->super_mask = xkb_mask_modifier( xkb, "Super" );
 		XkbFreeKeyboard( xkb, 0, True );
 	}
 
@@ -759,6 +761,7 @@ static errr Infowin_set_name(const char *name)
 	my_strcpy(buf, name, sizeof(buf));
 	st = XStringListToTextProperty(&bp, 1, &tp);
 	if (st) XSetWMName(Metadpy->dpy, Infowin->win, &tp);
+	XFree(tp.value);
 	return (0);
 }
 
@@ -2530,7 +2533,7 @@ static void hook_quit(const char *str)
 	(void)Infoclr_nuke();
 	mem_free(xor);
 
-	for (i = 0; i < MAX_COLORS; ++i) {
+	for (i = 0; i < MAX_COLORS * BG_MAX; ++i) {
 		Infoclr_set(clr[i]);
 		(void)Infoclr_nuke();
 		mem_free(clr[i]);
