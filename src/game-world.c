@@ -257,7 +257,7 @@ static void decrease_timeouts(void)
 			case TMD_CUT:
 			{
 				/* Hack -- check for truly "mortal" wound */
-				decr = (player->timed[i] > 1000) ? 0 : adjust;
+				decr = (player->timed[i] > TMD_CUT_DEEP) ? 0 : adjust;
 				break;
 			}
 
@@ -341,11 +341,11 @@ void process_world(struct chunk *c)
 	/* Take damage from cuts */
 	if (player->timed[TMD_CUT]) {
 		/* Mortal wound or Deep Gash */
-		if (player->timed[TMD_CUT] > 200)
+		if (player->timed[TMD_CUT] > TMD_CUT_SEVERE)
 			i = 3;
 
 		/* Severe cut */
-		else if (player->timed[TMD_CUT] > 100)
+		else if (player->timed[TMD_CUT] > TMD_CUT_NASTY)
 			i = 2;
 
 		/* Other cuts */

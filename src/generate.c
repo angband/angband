@@ -670,8 +670,8 @@ static int calc_obj_feeling(struct chunk *c)
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
 
-	/* Artifacts trigger a special feeling when preserve=no */
-	if (c->good_item && OPT(birth_no_preserve)) return 10;
+	/* Artifacts trigger a special feeling when they can be easily lost */
+	if (c->good_item && OPT(birth_lose_arts)) return 10;
 
 	/* Check the loot adjusted for depth */
 	x = c->obj_rating / c->depth;
@@ -829,7 +829,7 @@ static void cave_clear(struct chunk *c, struct player *p)
 			struct object *obj = square_object(c, y, x);
 			while (obj) {
 				if (obj->artifact) {
-					if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
+					if (!OPT(birth_lose_arts) && !object_was_sensed(obj))
 						obj->artifact->created = false;
 					else
 						history_lose_artifact(obj->artifact);
