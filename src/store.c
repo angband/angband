@@ -285,7 +285,7 @@ struct parser *init_parse_stores(void) {
 }
 
 static errr run_parse_stores(struct parser *p) {
-	return parse_file(p, "store");
+	return parse_file_quit_not_found(p, "store");
 }
 
 static errr finish_parse_stores(struct parser *p) {

@@ -638,12 +638,11 @@ errr run_parser(struct file_parser *fp) {
 }
 
 /**
- * The basic file parsing function
+ * The basic file parsing function.  Attempt to load filename through
+ * parser and perform a quit if the file is not found.
  */
-errr parse_file(struct parser *p, const char *filename) {
-	/* Default behaviour for file parsing is to issue a quit if
-	 * the file isn't found. */
-	return parse_file_quit_not_found(p, filename, true);
+errr parse_file_quit_not_found(struct parser *p, const char *filename) {
+	return parse_file(p, filename, true);
 }
 
 /**
@@ -651,7 +650,7 @@ errr parse_file(struct parser *p, const char *filename) {
  * parser.  If quit_not_found is true and the file is not found,
  * perform a quit.
  */
-errr parse_file_quit_not_found(struct parser *p, const char *filename, bool quit_not_found) {
+errr parse_file(struct parser *p, const char *filename, bool quit_not_found) {
 	char path[1024];
 	char buf[1024];
 	ang_file *fh;

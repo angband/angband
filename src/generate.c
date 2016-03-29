@@ -197,7 +197,7 @@ static struct parser *init_parse_profile(void) {
 }
 
 static errr run_parse_profile(struct parser *p) {
-	return parse_file(p, "dungeon_profile");
+	return parse_file_quit_not_found(p, "dungeon_profile");
 }
 
 static errr finish_parse_profile(struct parser *p) {
@@ -416,7 +416,7 @@ static struct parser *init_parse_room(void) {
 }
 
 static errr run_parse_room(struct parser *p) {
-	return parse_file(p, "room_template");
+	return parse_file_quit_not_found(p, "room_template");
 }
 
 static errr finish_parse_room(struct parser *p) {
@@ -563,7 +563,7 @@ struct parser *init_parse_vault(void) {
 }
 
 static errr run_parse_vault(struct parser *p) {
-	return parse_file(p, "vault");
+	return parse_file_quit_not_found(p, "vault");
 }
 
 static errr finish_parse_vault(struct parser *p) {

@@ -732,7 +732,7 @@ struct parser *init_parse_constants(void) {
 }
 
 static errr run_parse_constants(struct parser *p) {
-	return parse_file(p, "constants");
+	return parse_file_quit_not_found(p, "constants");
 }
 
 static errr finish_parse_constants(struct parser *p) {
@@ -899,7 +899,7 @@ struct parser *init_parse_object_base(void) {
 }
 
 static errr run_parse_object_base(struct parser *p) {
-	return parse_file(p, "object_base");
+	return parse_file_quit_not_found(p, "object_base");
 }
 
 static errr finish_parse_object_base(struct parser *p) {
@@ -1321,7 +1321,7 @@ struct parser *init_parse_object(void) {
 }
 
 static errr run_parse_object(struct parser *p) {
-	return parse_file(p, "object");
+	return parse_file_quit_not_found(p, "object");
 }
 
 static errr finish_parse_object(struct parser *p) {
@@ -1561,7 +1561,7 @@ struct parser *init_parse_act(void) {
 }
 
 static errr run_parse_act(struct parser *p) {
-	return parse_file(p, "activation");
+	return parse_file_quit_not_found(p, "activation");
 }
 
 static errr finish_parse_act(struct parser *p) {
@@ -1858,7 +1858,7 @@ struct parser *init_parse_artifact(void) {
 }
 
 static errr run_parse_artifact(struct parser *p) {
-	return parse_file(p, "artifact");
+	return parse_file_quit_not_found(p, "artifact");
 }
 
 static errr finish_parse_artifact(struct parser *p) {
@@ -1966,7 +1966,7 @@ struct parser *init_parse_names(void) {
 }
 
 static errr run_parse_names(struct parser *p) {
-	return parse_file(p, "names");
+	return parse_file_quit_not_found(p, "names");
 }
 
 static errr finish_parse_names(struct parser *p) {
@@ -2207,7 +2207,7 @@ struct parser *init_parse_trap(void) {
 }
 
 static errr run_parse_trap(struct parser *p) {
-    return parse_file(p, "trap");
+    return parse_file_quit_not_found(p, "trap");
 }
 
 static errr finish_parse_trap(struct parser *p) {
@@ -2375,7 +2375,7 @@ struct parser *init_parse_feat(void) {
 }
 
 static errr run_parse_feat(struct parser *p) {
-	return parse_file(p, "terrain");
+	return parse_file_quit_not_found(p, "terrain");
 }
 
 static errr finish_parse_feat(struct parser *p) {
@@ -2778,7 +2778,7 @@ struct parser *init_parse_ego(void) {
 }
 
 static errr run_parse_ego(struct parser *p) {
-	return parse_file(p, "ego_item");
+	return parse_file_quit_not_found(p, "ego_item");
 }
 
 static errr finish_parse_ego(struct parser *p) {
@@ -2894,7 +2894,7 @@ struct parser *init_parse_body(void) {
 }
 
 static errr run_parse_body(struct parser *p) {
-	return parse_file(p, "body");
+	return parse_file_quit_not_found(p, "body");
 }
 
 static errr finish_parse_body(struct parser *p) {
@@ -3209,7 +3209,7 @@ struct parser *init_parse_p_race(void) {
 }
 
 static errr run_parse_p_race(struct parser *p) {
-	return parse_file(p, "p_race");
+	return parse_file_quit_not_found(p, "p_race");
 }
 
 static errr finish_parse_p_race(struct parser *p) {
@@ -3679,7 +3679,7 @@ struct parser *init_parse_class(void) {
 }
 
 static errr run_parse_class(struct parser *p) {
-	return parse_file(p, "class");
+	return parse_file_quit_not_found(p, "class");
 }
 
 static errr finish_parse_class(struct parser *p) {
@@ -3776,7 +3776,7 @@ struct parser *init_parse_history(void) {
 }
 
 static errr run_parse_history(struct parser *p) {
-	return parse_file(p, "history");
+	return parse_file_quit_not_found(p, "history");
 }
 
 static errr finish_parse_history(struct parser *p) {
@@ -3904,7 +3904,7 @@ struct parser *init_parse_flavor(void) {
 }
 
 static errr run_parse_flavor(struct parser *p) {
-	return parse_file(p, "flavor");
+	return parse_file_quit_not_found(p, "flavor");
 }
 
 static errr finish_parse_flavor(struct parser *p) {
@@ -3958,7 +3958,7 @@ struct parser *init_parse_hints(void) {
 }
 
 static errr run_parse_hints(struct parser *p) {
-	return parse_file(p, "hints");
+	return parse_file_quit_not_found(p, "hints");
 }
 
 static errr finish_parse_hints(struct parser *p) {
@@ -4025,7 +4025,7 @@ struct parser *init_parse_pain(void) {
 }
 
 static errr run_parse_pain(struct parser *p) {
-	return parse_file(p, "pain");
+	return parse_file_quit_not_found(p, "pain");
 }
 
 static errr finish_parse_pain(struct parser *p) {
@@ -4288,7 +4288,7 @@ struct parser *init_parse_pit(void) {
 }
 
 static errr run_parse_pit(struct parser *p) {
-	return parse_file(p, "pit");
+	return parse_file_quit_not_found(p, "pit");
 }
  
 static errr finish_parse_pit(struct parser *p) {
