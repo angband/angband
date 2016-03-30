@@ -159,7 +159,7 @@ title:Arch-Mage
 
 magic:1:300:1:9
 
-book:magic book:[Magic for Beginners]:6:1
+book:magic book:[Magic for Beginners]:5:1
 
 spell:Magic Missile:1:1:22:4
 effect:BOLT_OR_BEAM:MISSILE:-10
@@ -190,13 +190,6 @@ expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependant area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
-
-spell:Find Doors & Stairs:3:3:25:2
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all doors, and stairs in the immediate area.
 
 spell:Stinking Cloud:3:2:27:3
 effect:BALL:POIS:2
@@ -621,7 +614,7 @@ title:Patriarch
 
 magic:1:350:2:9
 
-book:prayer book:[Beginners Handbook]:7:2
+book:prayer book:[Beginners Handbook]:6:2
 
 spell:Detect Evil:1:1:10:4
 effect:DETECT_EVIL
@@ -656,13 +649,6 @@ expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependant area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
-
-spell:Find Doors & Stairs:3:3:27:2
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all doors, and stairs in the immediate area.
 
 spell:Slow Poison:3:3:28:4
 effect:TIMED_DEC:POISONED:2
@@ -904,10 +890,6 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:10:10:80:20
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -916,8 +898,7 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:Detects all treasure, objects, doors, stairs and monsters
-desc: in the immediate area.
+desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Perception:20:20:80:20
 effect:IDENTIFY
@@ -1087,7 +1068,7 @@ title:Master Thief
 
 magic:5:350:1:9
 
-book:magic book:[Magic for Beginners]:6:1
+book:magic book:[Magic for Beginners]:5:1
 
 spell:Detect Monsters:5:1:50:1
 effect:DETECT_VISIBLE_MONSTERS
@@ -1115,13 +1096,6 @@ dice:22d40
 effect:DETECT_OBJECTS
 dice:22d40
 desc:Detects all objects in the immediate area.
-
-spell:Find Doors & Stairs:8:3:50:1
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all doors, and stairs in the immediate area.
 
 spell:Stinking Cloud:21:12:50:10
 effect:BALL:POIS:2
@@ -1413,7 +1387,7 @@ title:Ranger Lord
 
 magic:3:400:1:9
 
-book:magic book:[Magic for Beginners]:7:1
+book:magic book:[Magic for Beginners]:6:1
 
 spell:Magic Missile:3:1:30:1
 effect:BOLT_OR_BEAM:MISSILE:-10
@@ -1454,13 +1428,6 @@ dice:20
 effect:TIMED_DEC:CONFUSED
 dice:20
 desc:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
-
-spell:Find Doors & Stairs:5:4:45:2
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all doors, and stairs in the immediate area.
 
 spell:Stinking Cloud:7:5:40:3
 effect:BALL:POIS:2
@@ -1856,7 +1823,7 @@ title:Paladin Lord
 
 magic:1:400:2:9
 
-book:prayer book:[Beginners Handbook]:7:2
+book:prayer book:[Beginners Handbook]:6:2
 
 spell:Detect Evil:1:1:30:4
 effect:DETECT_EVIL
@@ -1891,13 +1858,6 @@ expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependant area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
-
-spell:Find Doors & Stairs:7:5:40:3
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all doors, and stairs in the immediate area.
 
 spell:Slow Poison:9:7:40:3
 effect:TIMED_DEC:POISONED:2
@@ -2110,10 +2070,6 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:15:15:80:12
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -2122,8 +2078,7 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:Detects all treasure, objects, doors, stairs and monsters
-desc: in the immediate area.
+desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Perception:25:25:80:16
 effect:IDENTIFY

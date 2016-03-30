@@ -400,15 +400,6 @@ effect:SENSE_OBJECTS
 dice:22d40
 desc:detects gold and objects nearby
 
-name:DETECT_DOORSTAIR
-aim:0
-power:6
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:detects doors and stairs nearby
-
 name:DETECT_INVIS
 aim:0
 power:6
@@ -427,10 +418,6 @@ name:DETECT_ALL
 aim:0
 power:10
 msg:{name} forms an image in your mind...
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -677,11 +664,7 @@ aim:0
 power:23
 msg:The {kind} form{s} an image in your mind...
 effect:ENLIGHTENMENT
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:maps the entire level and detects nearby objects, doors, and stairs
+desc:maps the entire level and detects nearby objects
 
 name:PROBING
 aim:0
