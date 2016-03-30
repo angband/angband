@@ -7,7 +7,16 @@
 #appear: rarity: minimum depth: maximum number on level
 #flags: trap flags
 #effect: trap effect
+#dice: dice string for effect
+#expr: dice expression for effect
+#effect: extra effect
+#dice: dice string for extra effect
+#expr: dice expression for extra effect
 #desc: description
+#msg: activation message
+#msg-good: save message
+#msg-bad: fail to save message
+#msg-xtra: extra effect message
 
 name:0:no trap:no trap
 graphics: :w
@@ -32,9 +41,12 @@ name:16:trap door:trap door
 graphics:^:w
 appear:0:2:0
 flags:TRAP | FLOOR | DOWN
-effect:TRAP_DOOR
+effect:DAMAGE
 dice:2d8
+save:FEATHER
 desc:It looks like floor, but step incautiously and you will fall through.
+msg:You fall through a trap door!
+msg-good:You float gently down to the next level.
 
 # 0x11 --> visible trap -- open pit
 
@@ -42,9 +54,12 @@ name:17:pit:pit
 graphics:^:s
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_PIT
+effect:DAMAGE
 dice:2d6
+save:FEATHER
 desc:A hole dug to snare the unwary.
+msg:You fall into a pit!
+msg-good:You float gently to the bottom of the pit.
 
 # 0x12 --> visible trap -- spiked pit
 
@@ -52,9 +67,17 @@ name:18:pit:spiked pit
 graphics:^:s
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_PIT_SPIKES
+effect:DAMAGE
 dice:2d6
+effect-xtra:DAMAGE
+dice-xtra:2d6
+effect-xtra:TIMED_INC:CUT
+dice-xtra:4d6
+save:FEATHER
 desc:A hole dug to snare the unwary, with spikes.
+msg:You fall into a spiked pit!
+msg-good:You float gently to the bottom of the pit, neatly avoiding the spikes.
+msg-xtra:You are impaled!
 
 # 0x13 --> visible trap -- poison pit
 
@@ -62,19 +85,28 @@ name:19:pit:poison pit
 graphics:^:s
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_PIT_POISON
+effect:DAMAGE
 dice:2d6
+effect-xtra:TIMED_INC:CUT
+dice-xtra:4d6
+effect-xtra:TIMED_INC:POISONED
+dice-xtra:8d6
+save:FEATHER
 desc:A hole dug to snare the unwary, with poisoned spikes.
+msg:You fall into a spiked pit!
+msg-good:You float gently to the bottom of the pit, neatly avoiding the spikes.
+msg-xtra:You are impaled on poisonous spikes!
 
 # 0x14 --> visible trap -- rune -- summon
 
 name:20:strange rune:summon rune
 graphics:^:B
 appear:0:3:0
-flags:TRAP | FLOOR 
-effect:TRAP_RUNE_SUMMON
+flags:TRAP | FLOOR | ONETIME
+effect:SUMMON
 dice:2+1d3
 desc:A magical rune which calls up monsters to attack you.
+msg:You are enveloped in a cloud of smoke!
 
 # 0x15 --> visible trap -- rune -- teleport
 
@@ -82,9 +114,10 @@ name:21:strange rune:teleport rune
 graphics:^:o
 appear:0:1:0
 flags:TRAP | FLOOR 
-effect:TRAP_RUNE_TELEPORT
+effect:TELEPORT
 dice:100
 desc:A magical rune which teleports you to a random location.
+msg:You hit a teleport trap!
 
 # 0x16 --> visible trap -- spot -- fire
 
@@ -92,9 +125,10 @@ name:22:discolored spot:fire trap
 graphics:^:u
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_SPOT_FIRE
+effect:SPOT:FIRE:0
 dice:4d6
 desc:A strange coloured spot on the ground - beware its fiery attack.
+msg:You are enveloped in flames!
 
 # 0x17 --> visible trap -- spot -- acid
 
@@ -102,9 +136,10 @@ name:23:discolored spot:acid trap
 graphics:^:u
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_SPOT_ACID
+effect:SPOT:ACID:0
 dice:4d6
 desc:A strange coloured spot on the ground - beware its acidic attack.
+msg:You are splashed with acid!
 
 # 0x18 --> visible trap -- dart -- slow
 
@@ -112,8 +147,13 @@ name:24:dart trap:slow dart
 graphics:^:r
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_DART_SLOW
+effect:DAMAGE
+dice:1d4
+effect:TIMED_INC_NO_RES:SLOW
+dice:20+1d20
 desc:A trap which shoots slowing darts.
+msg-good:A small dart barely misses you.
+msg-bad:A small dart hits you!
 
 # 0x19 --> visible trap -- dart -- lose str
 
@@ -121,8 +161,12 @@ name:25:dart trap:strength loss dart
 graphics:^:r
 appear:0:6:0
 flags:TRAP | FLOOR 
-effect:TRAP_DART_LOSE_STR
+effect:DAMAGE
+dice:1d4
+effect:DRAIN_STAT:STR
 desc:A trap which shoots damaging darts.
+msg-good:A small dart barely misses you.
+msg-bad:A small dart hits you!
 
 # 0x1A --> visible trap -- dart -- lose dex
 
@@ -130,8 +174,12 @@ name:26:dart trap:dexterity loss dart
 graphics:^:r
 appear:0:6:0
 flags:TRAP | FLOOR 
-effect:TRAP_DART_LOSE_DEX
+effect:DAMAGE
+dice:1d4
+effect:DRAIN_STAT:DEX
 desc:A trap which shoots damaging darts.
+msg-good:A small dart barely misses you.
+msg-bad:A small dart hits you!
 
 # 0x1B --> visible trap -- dart -- lose con
 
@@ -139,8 +187,12 @@ name:27:dart trap:constitution loss dart
 graphics:^:r
 appear:0:6:0
 flags:TRAP | FLOOR 
-effect:TRAP_DART_LOSE_CON
+effect:DAMAGE
+dice:1d4
+effect:DRAIN_STAT:CON
 desc:A trap which shoots damaging darts.
+msg-good:A small dart barely misses you.
+msg-bad:A small dart hits you!
 
 # 0x1C --> visible trap -- gas -- blind
 
@@ -148,8 +200,10 @@ name:28:gas trap:blinding gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_GAS_BLIND
+effect:TIMED_INC:BLIND
+dice:25+1d50
 desc:A trap that releases gas to blind you.
+msg:You are surrounded by a black gas!
 
 # 0x1D --> visible trap -- gas -- confuse
 
@@ -157,8 +211,10 @@ name:29:gas trap:confusion gas trap
 graphics:^:g
 appear:0:1:0
 flags:TRAP | FLOOR 
-effect:TRAP_GAS_CONFUSE
+effect:TIMED_INC:CONFUSED
+dice:10+1d20
 desc:A trap that releases gas to confuse you.
+msg:You are surrounded by a gas of scintillating colors!
 
 # 0x1E --> visible trap -- gas -- poison
 
@@ -166,8 +222,10 @@ name:30:gas trap:poison gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_GAS_POISON
+effect:TIMED_INC:POISONED
+dice:10+1d20
 desc:A trap that releases gas to poison you.
+msg:You are surrounded by a pungent green gas!
 
 # 0x1F --> visible trap -- gas -- sleep
 
@@ -175,8 +233,10 @@ name:31:gas trap:sleep gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR 
-effect:TRAP_GAS_SLEEP
+effect:TIMED_INC:PARALYZED
+dice:5+1d10
 desc:A trap that releases gas to put you to sleep.
+msg:You are surrounded by a strange white mist!
 
 # ideas from v4:
 #

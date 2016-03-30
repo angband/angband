@@ -180,19 +180,23 @@ bool effect_handler_RANDOM(effect_handler_context_t *context)
 }
 
 /**
- * Deal damage from the current monster to the player
+ * Deal damage from the current monster or trap to the player
  */
 bool effect_handler_DAMAGE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, false);
 	char ddesc[80];
-	struct monster *mon;
+	struct monster *mon = cave_monster(cave, cave->mon_current);
+	struct trap *trap = square_trap(cave, player->py, player->px);
 
-	/* Get the monster */
-	mon = cave_monster(cave, cave->mon_current);
-
-	/* Get the "died from" name in case this attack kills @ */
-	monster_desc(ddesc, sizeof(ddesc), mon, MDESC_DIED_FROM);
+	if (mon)
+		/* Get the "died from" name in case this attack kills @ */
+		monster_desc(ddesc, sizeof(ddesc), mon, MDESC_DIED_FROM);
+	else if (trap)
+		/* Must be a trap */
+		my_strcpy(ddesc, format("a %s", trap->kind->desc), sizeof(ddesc));
+	else
+		assert(0);
 
 	/* Hit the player */
 	take_hit(player, dam, ddesc);
@@ -3333,6 +3337,26 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 }
 
 /**
+ * Project from the player's grid at the player, act as a ball
+ * Affect the player, grids, objects, and monsters
+ */
+bool effect_handler_SPOT(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, true);
+	int rad = context->p2 ? context->p2 : 0;
+
+	int flg = PROJECT_STOP | PROJECT_PLAY | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Aim at the target, explode */
+	if (project(0, rad, py, px, dam, context->p1, flg, 0, 0, NULL))
+		context->ident = true;
+
+	return true;
+}
+
+/**
  * Cast a ball spell
  * Stop if we hit a monster or the player, act as a ball
  * Allow target mode to pass over monsters
@@ -4121,217 +4145,6 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	return true;
 }
 
-bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
-{
-	int target_depth = dungeon_get_next_level(player->depth, 1);
-
-	if (target_depth == player->depth) {
-		msg("You feel quite certain something really awful just happened...");
-		return true;
-	}
-
-	msg("You fall through a trap door!");
-	if (player_of_has(player, OF_FEATHER)) {
-		msg("You float gently down to the next level.");
-	} else {
-		int dam = effect_calculate_value(context, false);
-		take_hit(player, dam, "a trap");
-	}
-	equip_learn_flag(player, OF_FEATHER);
-
-	dungeon_change_level(target_depth);
-	return true;
-}
-
-bool effect_handler_TRAP_PIT(effect_handler_context_t *context)
-{
-	msg("You fall into a pit!");
-	if (player_of_has(player, OF_FEATHER)) {
-		msg("You float gently to the bottom of the pit.");
-	} else {
-		int dam = effect_calculate_value(context, false);
-		take_hit(player, dam, "a trap");
-	}
-	equip_learn_flag(player, OF_FEATHER);
-	return true;
-}
-
-bool effect_handler_TRAP_PIT_SPIKES(effect_handler_context_t *context)
-{
-	msg("You fall into a spiked pit!");
-
-	if (player_of_has(player, OF_FEATHER)) {
-		msg("You float gently to the floor of the pit.");
-		msg("You carefully avoid touching the spikes.");
-	} else {
-		int dam = effect_calculate_value(context, false);
-
-		/* Extra spike damage */
-		if (one_in_(2)) {
-			msg("You are impaled!");
-			dam *= 2;
-			(void)player_inc_timed(player, TMD_CUT, randint1(dam), true, true);
-		}
-
-		take_hit(player, dam, "a trap");
-	}
-	equip_learn_flag(player, OF_FEATHER);
-	return true;
-}
-
-bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
-{
-	msg("You fall into a spiked pit!");
-
-	if (player_of_has(player, OF_FEATHER)) {
-		msg("You float gently to the floor of the pit.");
-		msg("You carefully avoid touching the spikes.");
-	} else {
-		int dam = effect_calculate_value(context, false);
-
-		/* Extra spike damage */
-		if (one_in_(2)) {
-			msg("You are impaled on poisonous spikes!");
-			(void)player_inc_timed(player, TMD_CUT, randint1(dam * 2),
-								   true, true);
-			(void)player_inc_timed(player, TMD_POISONED, randint1(dam * 4),
-								   true, true);
-		}
-
-		take_hit(player, dam, "a trap");
-	}
-	equip_learn_flag(player, OF_FEATHER);
-	return true;
-}
-
-bool effect_handler_TRAP_RUNE_SUMMON(effect_handler_context_t *context)
-{
-	int i;
-	int num = effect_calculate_value(context, false);
-
-	msgt(MSG_SUM_MONSTER, "You are enveloped in a cloud of smoke!");
-
-	/* Remove trap */
-	square_destroy_trap(cave, player->py, player->px);
-	square_forget(cave, player->py, player->px);
-
-	for (i = 0; i < num; i++)
-		(void)summon_specific(player->py, player->px, player->depth, 0, true,
-							  false);
-
-	return true;
-}
-
-bool effect_handler_TRAP_RUNE_TELEPORT(effect_handler_context_t *context)
-{
-	int radius = effect_calculate_value(context, false);
-	char dist[5];
-	strnfmt(dist, sizeof(dist), "%d", radius);
-	msg("You hit a teleport trap!");
-	effect_simple(EF_TELEPORT, dist, 0, 1, 0, NULL);
-	return true;
-}
-
-bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
-{
-	int dam = effect_calculate_value(context, false);
-	msg("You are enveloped in flames!");
-	dam = adjust_dam(player, GF_FIRE, dam, RANDOMISE, 0);
-	if (dam) {
-		take_hit(player, dam, "a fire trap");
-		inven_damage(player, GF_FIRE, MIN(dam * 5, 300));
-	}
-	return true;
-}
-
-bool effect_handler_TRAP_SPOT_ACID(effect_handler_context_t *context)
-{
-	int dam = effect_calculate_value(context, false);
-	msg("You are splashed with acid!");
-	dam = adjust_dam(player, GF_ACID, dam, RANDOMISE, 0);
-	if (dam) {
-		take_hit(player, dam, "an acid trap");
-		inven_damage(player, GF_ACID, MIN(dam * 5, 300));
-	}
-	return true;
-}
-
-bool effect_handler_TRAP_DART_SLOW(effect_handler_context_t *context)
-{
-	if (trap_check_hit(125)) {
-		msg("A small dart hits you!");
-		take_hit(player, damroll(1, 4), "a trap");
-		(void)player_inc_timed(player, TMD_SLOW, randint0(20) + 20, true, false);
-	} else {
-		msg("A small dart barely misses you.");
-	}
-	return true;
-}
-
-bool effect_handler_TRAP_DART_LOSE_STR(effect_handler_context_t *context)
-{
-	if (trap_check_hit(125)) {
-		msg("A small dart hits you!");
-		take_hit(player, damroll(1, 4), "a trap");
-		effect_simple(EF_DRAIN_STAT, "0", STAT_STR, 0, 0, NULL);
-	} else {
-		msg("A small dart barely misses you.");
-	}
-	return true;
-}
-
-bool effect_handler_TRAP_DART_LOSE_DEX(effect_handler_context_t *context)
-{
-	if (trap_check_hit(125)) {
-		msg("A small dart hits you!");
-		take_hit(player, damroll(1, 4), "a trap");
-		effect_simple(EF_DRAIN_STAT, "0", STAT_DEX, 0, 0, NULL);
-	} else {
-		msg("A small dart barely misses you.");
-	}
-	return true;
-}
-
-bool effect_handler_TRAP_DART_LOSE_CON(effect_handler_context_t *context)
-{
-	if (trap_check_hit(125)) {
-		msg("A small dart hits you!");
-		take_hit(player, damroll(1, 4), "a trap");
-		effect_simple(EF_DRAIN_STAT, "0", STAT_CON, 0, 0, NULL);
-	} else {
-		msg("A small dart barely misses you.");
-	}
-	return true;
-}
-
-bool effect_handler_TRAP_GAS_BLIND(effect_handler_context_t *context)
-{
-	msg("You are surrounded by a black gas!");
-	(void)player_inc_timed(player, TMD_BLIND, randint0(50) + 25, true, true);
-	return true;
-}
-
-bool effect_handler_TRAP_GAS_CONFUSE(effect_handler_context_t *context)
-{
-	msg("You are surrounded by a gas of scintillating colors!");
-	(void)player_inc_timed(player, TMD_CONFUSED, randint0(20) + 10, true, true);
-	return true;
-}
-
-bool effect_handler_TRAP_GAS_POISON(effect_handler_context_t *context)
-{
-	msg("You are surrounded by a pungent green gas!");
-	(void)player_inc_timed(player, TMD_POISONED, randint0(20) + 10, true, true);
-	return true;
-}
-
-bool effect_handler_TRAP_GAS_SLEEP(effect_handler_context_t *context)
-{
-	msg("You are surrounded by a strange white mist!");
-	(void)player_inc_timed(player, TMD_PARALYZED, randint0(10) + 5, true, true);
-	return true;
-}
-
 
 /**
  * Useful things about effects.
@@ -4440,6 +4253,7 @@ int effect_param(int index, const char *type)
 				/* Projection name */
 			case EF_PROJECT_LOS:
 			case EF_PROJECT_LOS_AWARE:
+			case EF_SPOT:
 			case EF_BALL:
 			case EF_BREATH:
 			case EF_SWARM:

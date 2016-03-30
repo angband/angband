@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "init.h"
+#include "obj-knowledge.h"
 #include "player-attack.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -390,6 +391,9 @@ extern void hit_trap(int y, int x)
 
 	/* Look at the traps in this grid */
 	for (trap = square_trap(cave, y, x); trap; trap = trap->next) {
+		int flag;
+		bool saved = false;
+
 		/* Require that trap be capable of affecting the character */
 		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
 		if (trap->timeout) continue;
@@ -397,9 +401,51 @@ extern void hit_trap(int y, int x)
 		/* Disturb the player */
 		disturb(player, 0);
 
-		/* Fire off the trap */
-		effect = trap->kind->effect;
-		effect_do(effect, NULL, &ident, false, 0, 0, 0);
+		/* Give a message */
+		if (trap->kind->msg)
+			msg(trap->kind->msg);
+
+		/* Test for save due to flag */
+		for (flag = of_next(trap->kind->save_flags, FLAG_START);
+			 flag != FLAG_END;
+			 flag = of_next(trap->kind->save_flags, flag + 1))
+			if (player_of_has(player, flag)) {
+				saved = true;
+				equip_learn_flag(player, flag);
+			}
+
+		/* Test for save due to armor (only these have a msg_bad) */
+		if (trap->kind->msg_bad && !trap_check_hit(125))
+			saved = true;
+
+		/* Save, or fire off the trap */
+		if (saved) {
+			if (trap->kind->msg_good)
+				msg(trap->kind->msg_good);
+		} else {
+			if (trap->kind->msg_bad)
+				msg(trap->kind->msg_bad);
+			effect = trap->kind->effect;
+			effect_do(effect, NULL, &ident, false, 0, 0, 0);
+		}
+
+		/* Do any extra effects */
+		if (trap->kind->effect_xtra && one_in_(2)) {
+			if (trap->kind->msg_xtra)
+				msg(trap->kind->msg_xtra);
+			effect = trap->kind->effect_xtra;
+			effect_do(effect, NULL, &ident, false, 0, 0, 0);
+		}
+
+		/* Some traps drop you a dungeon level */
+		if (trf_has(trap->kind->flags, TRF_DOWN))
+			dungeon_change_level(dungeon_get_next_level(player->depth, 1));
+
+		/* Some traps disappear after activating */
+		if (trf_has(trap->kind->flags, TRF_ONETIME)) {
+			square_destroy_trap(cave, y, x);
+			square_forget(cave, y, x);
+		}
 
 		/* Trap may have gone */
 		if (!square_trap(cave, y, x)) break;

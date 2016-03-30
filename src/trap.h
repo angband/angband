@@ -45,6 +45,10 @@ struct trap_kind
 	char *name;					/**< Name  */
 	char *text;					/**< Text  */
 	char *desc;					/**< Short description  */
+	char *msg;					/**< Message on hitting */
+	char *msg_good;				/**< Message on saving */
+	char *msg_bad;				/**< Message on failing to save */
+	char *msg_xtra;				/**< Message on getting an extra effect */
 
 	struct trap_kind *next;
 	int tidx;					/**< Trap kind index */
@@ -57,8 +61,10 @@ struct trap_kind
 	int max_num;				/**< Unused */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (all traps of this kind) */
+	bitflag save_flags[OF_SIZE];/**< Save flags (player with these saves) */
 
 	struct effect *effect;		/**< Effect on entry to grid */
+	struct effect *effect_xtra;	/**< Possible extra effect */
 };
 
 extern struct trap_kind *trap_info;
