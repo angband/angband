@@ -13,7 +13,7 @@ TRF(NONE,		"")
 TRF(RUNE,		"Is a rune")
 TRF(TRAP,		"Is a player trap")
 TRF(VISIBLE,	"Is visible")
-TRF(INVISIBLE,	"Is invisible")
+TRF(INVISIBLE,	"Is invisible") // UNUSED
 TRF(FLOOR,		"Can be set on a floor")
 TRF(DOWN,		"Takes the player down a level")
 TRF(ONETIME,	"Disappears after being activated")

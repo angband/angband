@@ -1,22 +1,56 @@
-#trap.txt
+# File: trap.txt
 
-#This file contains rune and trap definitions
+# This file contains rune and trap definitions
 
-#name: index: name: short description
-#graphics: ASCII char used to represent the feature: color symbol
-#appear: rarity: minimum depth: maximum number on level
-#flags: trap flags
-#effect: trap effect
-#dice: dice string for effect
-#expr: dice expression for effect
-#effect: extra effect
-#dice: dice string for extra effect
-#expr: dice expression for extra effect
-#desc: description
-#msg: activation message
-#msg-good: save message
-#msg-bad: fail to save message
-#msg-xtra: extra effect message
+### Understanding trap.txt ###
+
+# name: index: name: short description
+# graphics: ASCII char used to represent the feature: color symbol
+# appear: rarity: minimum depth: maximum number on level
+# desc: description
+
+# flags: trap flags
+#    These include:
+#    - DOWN: after running effects, drops the player down a dungeon level
+#    - ONEITME: after running effects, trap disappears
+#    - VISIBLE: trap will not be hidden when generated
+#    - FLOOR: * can be set on the floor
+#    - TRAP: * is a trap
+#
+#    Flags marked '*' must be set for a trap to be generated as part of
+#    normal dungeon generation.
+#
+#    See list-trap-flags.h for a full list.
+
+# msg: activation message
+#    This is shown to the user when the trap is triggered.
+
+# save: object flags that provide a saving throw
+# msg-good: save message
+# msg-bad: fail to save message
+#    There are two ways to give the player a chance of avoiding the trap:
+#
+#    1. If the 'save' line is provided, then if player has the flags
+#       specified on the 'save' line, the trap is avoided, and/or
+#    2. If the 'msg-bad' line is provided, then a roll is made against the
+#       player's AC, which if successful avoids the trap.
+#
+#    If the trap is avoided, the 'msg-good' line is printed instead.  If it
+#    isn't, 'msg-bad' is printed.
+
+# effect: trap effect
+# dice: dice string for effect
+# expr: dice expression for effect
+#    If there is no saving throw, or it fails, then these effects are
+#    triggered.
+
+# msg-xtra: extra effect message
+# effect-xtra: extra effect
+# dice-xtra: dice string for extra effect
+# expr-xtra: dice expression for extra effect
+#    If there is no saving throw, or it fails, then these effects are
+#    also triggered 50% of the time.  If they are triggered, the 'msg-xtra'
+#    line is printed, if present.
 
 name:0:no trap:no trap
 graphics: :w
