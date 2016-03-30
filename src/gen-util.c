@@ -535,8 +535,6 @@ void place_random_door(struct chunk *c, int y, int x)
 		square_set_feat(c, y, x, FEAT_OPEN);
     else if (tmp < 40)
 		square_set_feat(c, y, x, FEAT_BROKEN);
-    else if (tmp < 60)
-		square_set_feat(c, y, x, FEAT_SECRET);
     else
 		place_closed_door(c, y, x);
 }
