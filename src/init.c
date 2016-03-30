@@ -2184,11 +2184,161 @@ static enum parser_error parse_trap_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_trap_effect_xtra(struct parser *p) {
+    struct trap_kind *t = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (t->effect_xtra) {
+		effect = t->effect_xtra;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		t->effect_xtra = new_effect;
+
+	/* Fill in the detail */
+	return grab_effect_data(p, new_effect);
+}
+
+static enum parser_error parse_trap_dice_xtra(struct parser *p) {
+	struct trap_kind *t = parser_priv(p);
+	dice_t *dice = NULL;
+	struct effect *effect = t->effect_xtra;
+	const char *string = NULL;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INVALID_DICE;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		effect->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_INVALID_DICE;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_expr_xtra(struct parser *p) {
+	struct trap_kind *t = parser_priv(p);
+	struct effect *effect = t->effect_xtra;
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (effect->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INVALID_EXPRESSION;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
+
+	if (dice_bind_expression(effect->dice, name, expression) < 0)
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_save_flags(struct parser *p) {
+    struct trap_kind *t = parser_priv(p);
+	char *s = string_make(parser_getstr(p, "flags"));
+	char *u;
+	assert(t);
+
+	u = strtok(s, " |");
+	while (u) {
+		bool found = false;
+		if (!grab_flag(t->save_flags, OF_SIZE, obj_flags, u))
+			found = true;
+		if (!found)
+			break;
+		u = strtok(NULL, " |");
+	}
+	mem_free(s);
+	return u ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_trap_desc(struct parser *p) {
     struct trap_kind *t = parser_priv(p);
     assert(t);
 
     t->text = string_append(t->text, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_msg(struct parser *p) {
+    struct trap_kind *t = parser_priv(p);
+    assert(t);
+
+    t->msg = string_append(t->msg, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_msg_good(struct parser *p) {
+    struct trap_kind *t = parser_priv(p);
+    assert(t);
+
+    t->msg_good = string_append(t->msg_good, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_msg_bad(struct parser *p) {
+    struct trap_kind *t = parser_priv(p);
+    assert(t);
+
+    t->msg_bad = string_append(t->msg_bad, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_trap_msg_xtra(struct parser *p) {
+    struct trap_kind *t = parser_priv(p);
+    assert(t);
+
+    t->msg_xtra = string_append(t->msg_xtra, parser_getstr(p, "text"));
     return PARSE_ERROR_NONE;
 }
 
@@ -2202,7 +2352,15 @@ struct parser *init_parse_trap(void) {
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_trap_effect);
 	parser_reg(p, "dice str dice", parse_trap_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_trap_expr);
-    parser_reg(p, "desc str text", parse_trap_desc);
+	parser_reg(p, "effect-xtra sym eff ?sym type ?int xtra", parse_trap_effect_xtra);
+	parser_reg(p, "dice-xtra str dice", parse_trap_dice_xtra);
+	parser_reg(p, "expr-xtra sym name sym base str expr", parse_trap_expr_xtra);
+	parser_reg(p, "save str flags", parse_trap_save_flags);
+	parser_reg(p, "desc str text", parse_trap_desc);
+	parser_reg(p, "msg str text", parse_trap_msg);
+	parser_reg(p, "msg-good str text", parse_trap_msg_good);
+	parser_reg(p, "msg-bad str text", parse_trap_msg_bad);
+	parser_reg(p, "msg-xtra str text", parse_trap_msg_xtra);
     return p;
 }
 
