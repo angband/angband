@@ -27,6 +27,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "trap.h"
 
 /**
  * Adjust damage according to resistance or vulnerability.
@@ -492,7 +493,7 @@ static const project_player_handler_f player_handlers[] = {
  * Called for projections with the PROJECT_PLAY flag set, which includes
  * bolt, beam, ball and breath effects.
  *
- * \param who is the monster list index of the caster
+ * \param who is the monster list index of the caster, or 0 for a trap
  * \param r is the distance from the centre of the effect
  * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
@@ -508,13 +509,15 @@ static const project_player_handler_f player_handlers[] = {
  */
 bool project_p(int who, int r, int y, int x, int dam, int typ)
 {
-	bool blind, seen;
+	bool blind = (player->timed[TMD_BLIND] ? true : false);
+	bool seen = !blind;
 	bool obvious = true;
 
-	/* Source monster */
-	struct monster *mon;
+	/* Source monster or trap */
+	struct monster *mon = cave_monster(cave, who);
+	struct trap *trap = square_trap(cave, player->py, player->px);
 
-	/* Monster name (for damage) */
+	/* Monster or trap name (for damage) */
 	char killer[80];
 
 	project_player_handler_f player_handler = player_handlers[typ];
@@ -529,22 +532,23 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	};
 
 	/* No player here */
-	if (!(cave->squares[y][x].mon < 0)) return (false);
+	if (!square_isplayer(cave, y, x)) return (false);
 
 	/* Never affect projector */
 	if (cave->squares[y][x].mon == who) return (false);
 
-	/* Source monster */
-	mon = cave_monster(cave, who);
+	/* Monster or trap */
+	if (mon) {
+		/* Check it is visible */
+		if (!mflag_has(mon->mflag, MFLAG_VISIBLE))
+			seen = false;
 
-	/* Player blind-ness */
-	blind = (player->timed[TMD_BLIND] ? true : false);
-
-	/* Extract the "see-able-ness" */
-	seen = (!blind && mflag_has(mon->mflag, MFLAG_VISIBLE));
-
-	/* Get the monster's real name */
-	monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
+		/* Get the monster's real name */
+		monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
+	} else {
+		/* Get the trap name */
+		my_strcpy(killer, format("a %s", trap->kind->desc), sizeof(killer));
+	}
 
 	/* Let player know what is going on */
 	if (!seen)
@@ -568,4 +572,3 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	/* Return "Anything seen?" */
 	return (obvious);
 }
-
