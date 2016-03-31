@@ -166,6 +166,8 @@ struct chunk {
 	u16b mon_max;
 	u16b mon_cnt;
 	int mon_current;
+
+	struct trap *trap_current;
 };
 
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/

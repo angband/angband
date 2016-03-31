@@ -397,6 +397,9 @@ extern void hit_trap(int y, int x)
 		/* Require that trap be capable of affecting the character */
 		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
 		if (trap->timeout) continue;
+
+		/* Set this to be the current trap */
+		cave->trap_current = trap;
 	    
 		/* Disturb the player */
 		disturb(player, 0);
@@ -454,6 +457,9 @@ extern void hit_trap(int y, int x)
 		trf_on(trap->flags, TRF_VISIBLE);
 		square_memorize(cave, y, x);
 	}
+
+	/* Clear the current trap */
+	cave->trap_current = NULL;
 
     /* Verify traps (remove marker if appropriate) */
     (void)square_verify_trap(cave, y, x, 0);

@@ -185,21 +185,21 @@ bool effect_handler_RANDOM(effect_handler_context_t *context)
 bool effect_handler_DAMAGE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, false);
-	char ddesc[80];
+	char killer[80];
 	struct monster *mon = cave_monster(cave, cave->mon_current);
-	struct trap *trap = square_trap(cave, player->py, player->px);
+	struct trap *trap = cave->trap_current;
 
-	if (mon)
+	if (mon) {
 		/* Get the "died from" name in case this attack kills @ */
-		monster_desc(ddesc, sizeof(ddesc), mon, MDESC_DIED_FROM);
-	else if (trap)
+		monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
+	} else {
 		/* Must be a trap */
-		my_strcpy(ddesc, format("a %s", trap->kind->desc), sizeof(ddesc));
-	else
-		assert(0);
+		assert(trap);
+		my_strcpy(killer, format("a %s", trap->kind->desc), sizeof(killer));
+	}
 
 	/* Hit the player */
-	take_hit(player, dam, ddesc);
+	take_hit(player, dam, killer);
 
 	return true;
 }
