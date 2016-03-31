@@ -515,7 +515,7 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 
 	/* Source monster or trap */
 	struct monster *mon = cave_monster(cave, who);
-	struct trap *trap = square_trap(cave, player->py, player->px);
+	struct trap *trap = cave->trap_current;
 
 	/* Monster or trap name (for damage) */
 	char killer[80];
@@ -546,6 +546,9 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 		/* Get the monster's real name */
 		monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
 	} else {
+		/* Ensure there's a trap */
+		assert(trap);
+
 		/* Get the trap name */
 		my_strcpy(killer, format("a %s", trap->kind->desc), sizeof(killer));
 	}
