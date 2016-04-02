@@ -1024,23 +1024,6 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 					detect = true;
 				}
 			}
-
-			/* Mark as trap-detected */
-			sqinfo_on(cave->squares[y][x].info, SQUARE_DTRAP);
-		}
-	}
-
-	/* Rescan the map for the new dtrap edge */
-	for (y = y1 - 1; y < y2 + 1; y++) {
-		for (x = x1 - 1; x < x2 + 1; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
-
-			/* See if this grid is on the edge */
-			if (square_dtrap_edge(cave, y, x)) {
-				sqinfo_on(cave->squares[y][x].info, SQUARE_DEDGE);
-			} else {
-				sqinfo_off(cave->squares[y][x].info, SQUARE_DEDGE);
-			}
 		}
 	}
 
@@ -1056,7 +1039,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
-	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST | PR_DTRAP);
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	/* Notice */
 	context->ident = true;

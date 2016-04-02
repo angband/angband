@@ -128,7 +128,6 @@ struct grid_data {
 	bool in_view; 			/* Can the player can currently see the grid? */
 	bool is_player;
 	bool hallucinate;
-	bool trapborder;
 };
 
 struct square {
@@ -200,10 +199,6 @@ extern int FEAT_QUARTZ_K;
 extern int FEAT_GRANITE;
 extern int FEAT_PERM;
 extern int FEAT_LAVA;
-
-/* Special trap detect features  - should be replaced with square flags */
-extern int FEAT_DTRAP_FLOOR;
-extern int FEAT_DTRAP_WALL;
 
 
 /* Real cave */
@@ -279,9 +274,7 @@ bool square_isroom(struct chunk *c, int y, int x);
 bool square_isseen(struct chunk *c, int y, int x);
 bool square_isview(struct chunk *c, int y, int x);
 bool square_wasseen(struct chunk *c, int y, int x);
-bool square_isdtrap(struct chunk *c, int y, int x);
 bool square_isfeel(struct chunk *c, int y, int x);
-bool square_isdedge(struct chunk *c, int y, int x);
 bool square_istrap(struct chunk *c, int y, int x);
 bool square_isinvis(struct chunk *c, int y, int x);
 bool square_iswall_inner(struct chunk *c, int y, int x);
@@ -314,7 +307,6 @@ bool square_issecrettrap(struct chunk *c, int y, int x);
 bool square_isknowntrap(struct chunk *c, int y, int x);
 bool square_isdisabledtrap(struct chunk *c, int y, int x);
 bool square_changeable(struct chunk *c, int y, int x);
-bool square_dtrap_edge(struct chunk *c, int y, int x);
 bool square_in_bounds(struct chunk *c, int y, int x);
 bool square_in_bounds_fully(struct chunk *c, int y, int x);
 

@@ -286,7 +286,6 @@ bool is_unknown(const struct object *obj)
 		.in_view = false,
 		.is_player = false,
 		.hallucinate = false,
-		.trapborder = false
 	};
 	map_info(obj->iy, obj->ix, &gd);
 	return gd.unseen_object;
