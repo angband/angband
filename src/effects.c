@@ -1077,12 +1077,8 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 		for (x = x1; x < x2; x++) {
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
-			/* Detect secret doors - improve later NRM */
-			if (square_issecretdoor(cave, y, x))
-				place_closed_door(cave, y, x);
-
-			/* Detect doors */
-			if (square_isdoor(cave, y, x)) {
+			/* Detect non-secret doors */
+			if (square_isdoor(cave, y, x) && !square_issecretdoor(cave, y, x)) {
 				/* Memorize */
 				square_memorize(cave, y, x);
 

@@ -849,10 +849,10 @@ bool build_circular(struct chunk *c, int y0, int x0)
 		int cd, rd;
 		rand_dir(&rd, &cd);
 
-		/* draw a room with a secret door on a random side */
+		/* draw a room with a closed door on a random side */
 		draw_rectangle(c, y0 - 2, x0 - 2, y0 + 2, x0 + 2,
 					   FEAT_GRANITE, SQUARE_WALL_INNER);
-		square_set_feat(c, y0 + cd * 2, x0 + rd * 2, FEAT_SECRET);
+		place_closed_door(c, y0 + cd * 2, x0 + rd * 2);
 
 		/* Place a treasure in the vault */
 		vault_objects(c, y0, x0, c->depth, randint0(2));
@@ -1142,9 +1142,9 @@ bool build_crossed(struct chunk *c, int y0, int x0)
 				set_marked_granite(c, y2b + 1, x, SQUARE_WALL_INNER);
 			}
 
-			/* Open sides with secret doors */
+			/* Open sides with doors */
 			if (one_in_(3))
-				generate_open(c, y1b-1, x1a-1, y2b+1, x2a+1, FEAT_SECRET);
+				generate_open(c, y1b-1, x1a-1, y2b+1, x2a+1, FEAT_CLOSED);
 
 		} else if (one_in_(3)) {
 			/* Occasionally put a "plus" in the center */
@@ -1223,8 +1223,8 @@ bool build_large(struct chunk *c, int y0, int x0)
 	switch (randint1(5)) {
 		/* An inner room */
 	case 1: {
-		/* Open the inner room with a secret door and place a monster */
-		generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_SECRET);
+		/* Open the inner room with a door and place a monster */
+		generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_CLOSED);
 		vault_monsters(c, y0, x0, c->depth + 2, 1);
 		break;
 	}
@@ -1232,8 +1232,8 @@ bool build_large(struct chunk *c, int y0, int x0)
 
 		/* An inner room with a small inner room */
 	case 2: {
-		/* Open the inner room with a secret door */
-		generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_SECRET);
+		/* Open the inner room with a door */
+		generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_CLOSED);
 
 		/* Place another inner room */
 		draw_rectangle(c, y0-1, x0-1, y0+1, x0+1, 
@@ -1265,7 +1265,7 @@ bool build_large(struct chunk *c, int y0, int x0)
 		/* An inner room with an inner pillar or pillars */
 	case 3: {
 		/* Open the inner room with a secret door */
-		generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
+		generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_CLOSED);
 
 		/* Inner pillar */
 		fill_rectangle(c, y0-1, x0-1, y0+1, x0+1, 
@@ -1316,7 +1316,7 @@ bool build_large(struct chunk *c, int y0, int x0)
 		/* An inner room with a checkerboard */
 	case 4: {
 		/* Open the inner room with a secret door */
-		generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
+		generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_CLOSED);
 
 		/* Checkerboard */
 		for (y = y1; y <= y2; y++)
@@ -1347,16 +1347,16 @@ bool build_large(struct chunk *c, int y0, int x0)
 		/* Doors into the rooms */
 		if (randint0(100) < 50) {
 			int i = randint1(10);
-			place_secret_door(c, y1 - 1, x0 - i);
-			place_secret_door(c, y1 - 1, x0 + i);
-			place_secret_door(c, y2 + 1, x0 - i);
-			place_secret_door(c, y2 + 1, x0 + i);
+			place_closed_door(c, y1 - 1, x0 - i);
+			place_closed_door(c, y1 - 1, x0 + i);
+			place_closed_door(c, y2 + 1, x0 - i);
+			place_closed_door(c, y2 + 1, x0 + i);
 		} else {
 			int i = randint1(3);
-			place_secret_door(c, y0 + i, x1 - 1);
-			place_secret_door(c, y0 - i, x1 - 1);
-			place_secret_door(c, y0 + i, x2 + 1);
-			place_secret_door(c, y0 - i, x2 + 1);
+			place_closed_door(c, y0 + i, x1 - 1);
+			place_closed_door(c, y0 - i, x1 - 1);
+			place_closed_door(c, y0 + i, x2 + 1);
+			place_closed_door(c, y0 - i, x2 + 1);
 		}
 
 		/* Treasure, centered at the center of the cross */
@@ -1539,7 +1539,7 @@ bool build_nest(struct chunk *c, int y0, int x0)
 	draw_rectangle(c, y1-1, x1-1, y2+1, x2+1, FEAT_GRANITE, SQUARE_WALL_INNER);
 
 	/* Open the inner room with a secret door */
-	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
+	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_CLOSED);
 
 	/* Decide on the pit type */
 	set_pit_type(c->depth, 2);
@@ -1658,7 +1658,7 @@ bool build_pit(struct chunk *c, int y0, int x0)
 
 	/* Generate inner walls, and open with a secret door */
 	draw_rectangle(c, y1-1, x1-1, y2+1, x2+1, FEAT_GRANITE, SQUARE_WALL_INNER);
-	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
+	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_CLOSED);
 
 	/* Decide on the pit type */
 	set_pit_type(c->depth, 1);
