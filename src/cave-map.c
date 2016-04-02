@@ -99,7 +99,6 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	g->is_player = (cave->squares[y][x].mon < 0) ? true : false;
 	g->m_idx = (g->is_player) ? 0 : cave->squares[y][x].mon;
 	g->hallucinate = player->timed[TMD_IMAGE] ? true : false;
-	g->trapborder = (square_isdedge(cave, y, x)) ? true : false;
 
 	if (g->in_view) {
 		g->lighting = LIGHTING_LOS;

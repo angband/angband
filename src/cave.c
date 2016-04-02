@@ -53,8 +53,6 @@ int FEAT_QUARTZ_K;
 int FEAT_GRANITE;
 int FEAT_PERM;
 int FEAT_LAVA;
-int FEAT_DTRAP_FLOOR;
-int FEAT_DTRAP_WALL;
 
 /**
  * Global array for looping through the "keypad directions".
@@ -128,8 +126,6 @@ void set_terrain(void)
 	FEAT_GRANITE = lookup_feat("granite wall");
 	FEAT_PERM = lookup_feat("permanent wall");
 	FEAT_LAVA = lookup_feat("lava flow");
-	FEAT_DTRAP_FLOOR = lookup_feat("dtrap edge - floor");
-	FEAT_DTRAP_WALL = lookup_feat("dtrap edge - wall");
 }
 
 /**

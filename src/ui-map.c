@@ -112,11 +112,6 @@ static void grid_get_attr(struct grid_data *g, int *a)
 
 	/* Never play with fg colours for treasure */
 	if (!feat_is_treasure(g->f_idx)) {
-
-		/* Tint trap detection borders */
-		if (g->trapborder)
-			*a = (g->in_view ? COLOUR_L_GREEN : COLOUR_GREEN);
-
 		/* Only apply lighting effects when the attr is white and it's a 
 		 * floor or wall */
 		if ((*a == COLOUR_WHITE) &&
@@ -195,16 +190,9 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	int a = feat_x_attr[g->lighting][feat->fidx];
 	wchar_t c = feat_x_char[g->lighting][feat->fidx];
 
-	/* Check for trap detection boundaries */
+	/* Get the colour for ASCII */
 	if (use_graphics == GRAPHICS_NONE)
 		grid_get_attr(g, &a);
-	else if (g->trapborder && tf_has(feat->flags, TF_FLOOR)
-			 && (g->m_idx || g->first_kind)) {
-		/* if there is an object or monster here, and this is a plain floor
-		 * display the border here rather than an overlay below */
-		a = feat_x_attr[g->lighting][FEAT_DTRAP_FLOOR];
-		c = feat_x_char[g->lighting][FEAT_DTRAP_FLOOR];
-	}
 
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
@@ -346,11 +334,6 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 		/* Get the "player" char */
 		c = monster_x_char[race->ridx];
-	} else if (g->trapborder && (g->f_idx) && !(g->first_kind)
-			   && (use_graphics != GRAPHICS_NONE)) {
-		/* No overlay is used, so we can use the trap border overlay */
-		a = feat_x_attr[g->lighting][FEAT_DTRAP_WALL];
-		c = feat_x_char[g->lighting][FEAT_DTRAP_WALL];
 	}
 
 	/* Result */

@@ -65,7 +65,6 @@
 #define PR_STUDY		0x00000800L	/* Display Extra (Study) */
 #define PR_DEPTH		0x00001000L	/* Display Depth */
 #define PR_STATUS		0x00002000L
-#define PR_DTRAP		0x00004000L /* Trap detection indicator */
 #define PR_STATE		0x00008000L	/* Display Extra (State) */
 #define PR_MAP			0x00010000L	/* Redraw whole map */
 #define PR_INVEN		0x00010000L /* Display inven/equip */
