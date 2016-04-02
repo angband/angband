@@ -405,7 +405,7 @@ static bool possible_doorway(struct chunk *c, int y, int x)
 
 
 /**
- * Places door at y, x position if at least 2 walls found
+ * Places door or trap at y, x position if at least 2 walls found
  * \param c is the current chunk
  * \param y
  * \param x are the co-ordinates
@@ -419,6 +419,8 @@ static void try_door(struct chunk *c, int y, int x)
 
     if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
 		place_random_door(c, y, x);
+    else if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
+		place_trap(c, y, x, -1, c->depth);
 }
 
 
@@ -614,7 +616,7 @@ struct chunk *classic_gen(struct player *p) {
     alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
     /* Place some traps in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
     /* Determine the character location */
     new_player_spot(c, p);
@@ -864,7 +866,7 @@ struct chunk *labyrinth_gen(struct player *p) {
     alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
 
     /* Place some traps in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
     /* Put some monsters in the dungeon */
     for (i = z_info->level_monster_min + randint1(8) + k; i > 0; i--)
@@ -1397,7 +1399,7 @@ struct chunk *cavern_gen(struct player *p) {
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
 
 	/* Place some traps in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Determine the character location */
 	new_player_spot(c, p);
@@ -1803,7 +1805,7 @@ struct chunk *modified_gen(struct player *p) {
     alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
     /* Place some traps in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
     /* Determine the character location */
     new_player_spot(c, p);
@@ -2027,7 +2029,7 @@ struct chunk *moria_gen(struct player *p) {
     alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
     /* Place some traps in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
     /* Determine the character location */
     new_player_spot(c, p);
@@ -2247,7 +2249,7 @@ struct chunk *hard_centre_gen(struct player *p)
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
 
 	/* Place some traps in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Determine the character location */
 	new_player_spot(c, p);
@@ -2375,7 +2377,7 @@ struct chunk *lair_gen(struct player *p) {
     alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
     /* Place some traps in the dungeon */
-    alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+    alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
     /* Put some objects in rooms */
     alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
@@ -2544,7 +2546,7 @@ struct chunk *gauntlet_gen(struct player *p) {
 	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
 	/* Place some traps in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+	alloc_objects(c, SET_CORR, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Put some objects in rooms */
 	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
