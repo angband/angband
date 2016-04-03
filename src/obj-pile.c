@@ -903,6 +903,9 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 
 		/* Failure */
 		if (dropped->known) {
+			if (dropped->known->iy && dropped->known->ix)
+				square_excise_object(cave_k, dropped->known->iy,
+									 dropped->known->ix, dropped->known);
 			delist_object(cave_k, dropped->known);
 			object_delete(&dropped->known);
 		}
@@ -1012,6 +1015,9 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 
 		/* Failure */
 		if (dropped->known) {
+			if (dropped->known->iy && dropped->known->ix)
+				square_excise_object(cave_k, dropped->known->iy,
+									 dropped->known->ix, dropped->known);
 			delist_object(cave_k, dropped->known);
 			object_delete(&dropped->known);
 		}
@@ -1056,6 +1062,9 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 
 		/* Failure */
 		if (dropped->known) {
+			if (dropped->known->iy && dropped->known->ix)
+				square_excise_object(cave_k, dropped->known->iy,
+									 dropped->known->ix, dropped->known);
 			delist_object(cave_k, dropped->known);
 			object_delete(&dropped->known);
 		}
