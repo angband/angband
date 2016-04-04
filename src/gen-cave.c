@@ -416,6 +416,8 @@ static void try_door(struct chunk *c, int y, int x)
 
     if (square_isstrongwall(c, y, x)) return;
     if (square_isroom(c, y, x)) return;
+    if (square_isplayertrap(c, y, x)) return;
+    if (square_isdoor(c, y, x)) return;
 
     if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
 		place_random_door(c, y, x);
