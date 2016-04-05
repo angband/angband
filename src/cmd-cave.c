@@ -225,7 +225,7 @@ static bool do_cmd_open_aux(int y, int x)
 	/* Locked door */
 	if (square_islockeddoor(cave, y, x)) {
 		/* Disarm factor */
-		i = player->state.skills[SKILL_DISARM];
+		i = player->state.skills[SKILL_DISARM_PHYS];
 
 		/* Penalize some conditions */
 		if (player->timed[TMD_BLIND] || no_light())
@@ -704,7 +704,7 @@ static bool do_cmd_lock_door(int y, int x)
 	if (!do_cmd_disarm_test(y, x)) return false;
 
 	/* Get the "disarm" factor */
-	i = player->state.skills[SKILL_DISARM];
+	i = player->state.skills[SKILL_DISARM_PHYS];
 
 	/* Penalize some conditions */
 	if (player->timed[TMD_BLIND] || no_light())
@@ -753,14 +753,12 @@ static bool do_cmd_lock_door(int y, int x)
  */
 static bool do_cmd_disarm_aux(int y, int x)
 {
-	int i, j, power;
+	int skill, power, chance;
     struct trap *trap = cave->squares[y][x].trap;
 	bool more = false;
 
-
 	/* Verify legality */
 	if (!do_cmd_disarm_test(y, x)) return (false);
-
 
     /* Choose first player trap */
 	while (trap) {
@@ -771,44 +769,41 @@ static bool do_cmd_disarm_aux(int y, int x)
 	if (!trap)
 		return false;
 
-	/* Get the "disarm" factor */
-	i = player->state.skills[SKILL_DISARM];
+	/* Get the base disarming skill */
+	if (trf_has(trap->flags, TRF_MAGICAL))
+		skill = player->state.skills[SKILL_DISARM_MAGIC];
+	else
+		skill = player->state.skills[SKILL_DISARM_PHYS];
 
 	/* Penalize some conditions */
-	if (player->timed[TMD_BLIND] || no_light()) i = i / 10;
-	if (player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE]) i = i / 10;
+	if (player->timed[TMD_BLIND] || no_light() || player->timed[TMD_CONFUSED] ||
+		player->timed[TMD_IMAGE])
+		skill = skill / 10;
 
-	/* XXX XXX XXX Variable power? */
+	/* Extract trap power */
+	power = cave->depth / 5;
 
-	/* Extract trap "power" */
-	power = 5;
-
-	/* Extract the difficulty */
-	j = i - power;
+	/* Extract the percentage success */
+	chance = skill - power;
 
 	/* Always have a small chance of success */
-	if (j < 2) j = 2;
+	if (chance < 2) chance = 2;
 
-	/* Success */
-	if (randint0(100) < j) {
-		/* Message */
+	/* Two chances - one to disarm, one not to set the trap off */
+	if (randint0(100) < chance) {
 		msgt(MSG_DISARM, "You have disarmed the %s.", trap->kind->name);
-
-		/* Reward */
 		player_exp_gain(player, power);
 
-		/* Forget the trap */
+		/* Trap is gone */
 		square_forget(cave, y, x);
-
-		/* Remove the trap */
 		square_destroy_trap(cave, y, x);
-	} else if ((i > 5) && (randint1(i) > 5)) {
-		/* Failure -- Keep trying */
+	} else if (randint0(100) < chance) {
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to disarm the %s.", trap->kind->name);
+
+		/* Player can try again */
 		more = true;
 	} else {
-		/* Failure -- Set off the trap */
 		msg("You set off the %s!", trap->kind->name);
 		hit_trap(y, x);
 	}

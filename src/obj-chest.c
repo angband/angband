@@ -384,7 +384,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 		flag = false;
 
 		/* Get the "disarm" factor */
-		i = player->state.skills[SKILL_DISARM];
+		i = player->state.skills[SKILL_DISARM_PHYS];
 
 		/* Penalize some conditions */
 		if (player->timed[TMD_BLIND] || no_light()) i = i / 10;
@@ -449,7 +449,10 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 	bool more = false;
 
 	/* Get the "disarm" factor */
-	i = player->state.skills[SKILL_DISARM];
+	if (obj->pval > 0 && (chest_traps[obj->pval] & CHEST_SUMMON))
+		i = player->state.skills[SKILL_DISARM_MAGIC];
+	else
+		i = player->state.skills[SKILL_DISARM_PHYS];
 
 	/* Penalize some conditions */
 	if (player->timed[TMD_BLIND] || no_light()) i = i / 10;
@@ -472,7 +475,7 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 		msgt(MSG_DISARM, "You have disarmed the chest.");
 		player_exp_gain(player, obj->pval);
 		obj->pval = (0 - obj->pval);
-	} else if ((i > 5) && (randint1(i) > 5)) {
+	} else if (randint0(100) < j) {
 		/* Failure -- Keep trying */
 		more = true;
 		event_signal(EVENT_INPUT_FLUSH);

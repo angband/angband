@@ -603,7 +603,8 @@ static struct player_race TEST_DATA test_race = {
 		[STAT_WIS] = -2,
 	},
 	.r_skills = {
-		[SKILL_DISARM] = 0,
+		[SKILL_DISARM_PHYS] = 0,
+		[SKILL_DISARM_MAGIC] = 0,
 		[SKILL_DEVICE] = 5,
 		[SKILL_SAVE] = 10,
 		[SKILL_STEALTH] = -5,
@@ -684,7 +685,8 @@ static struct player_class TEST_DATA test_class = {
 	},
 
 	.c_skills = {
-		[SKILL_DISARM] = 25,
+		[SKILL_DISARM_PHYS] = 25,
+		[SKILL_DISARM_MAGIC] = 25,
 		[SKILL_DEVICE] = 18,
 		[SKILL_SAVE] = 18,
 		[SKILL_STEALTH] = 1,
@@ -695,7 +697,8 @@ static struct player_class TEST_DATA test_class = {
 	},
 
 	.x_skills = {
-		[SKILL_DISARM] = 10,
+		[SKILL_DISARM_PHYS] = 10,
+		[SKILL_DISARM_MAGIC] = 10,
 		[SKILL_DEVICE] = 7,
 		[SKILL_SAVE] = 10,
 		[SKILL_STEALTH] = 0,

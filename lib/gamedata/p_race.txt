@@ -58,7 +58,8 @@
 
 name:0:Human
 stats:0:0:0:0:0
-skill-disarm:0
+skill-disarm-phys:0
+skill-disarm-magic:0
 skill-device:0
 skill-save:0
 skill-stealth:0
@@ -73,7 +74,8 @@ weight:165:35
 
 name:1:Half-Elf
 stats:0:1:-1:1:-1
-skill-disarm:2
+skill-disarm-phys:2
+skill-disarm-magic:2
 skill-device:3
 skill-save:3
 skill-stealth:1
@@ -89,7 +91,8 @@ obj-flags:SUST_DEX
 
 name:2:Elf
 stats:-1:2:-1:1:-1
-skill-disarm:5
+skill-disarm-phys:5
+skill-disarm-magic:5
 skill-device:6
 skill-save:6
 skill-stealth:2
@@ -106,7 +109,8 @@ values:RES_LIGHT[1]
 
 name:3:Hobbit
 stats:-2:2:1:3:2
-skill-disarm:15
+skill-disarm-phys:15
+skill-disarm-magic:15
 skill-device:18
 skill-save:18
 skill-stealth:4
@@ -123,7 +127,8 @@ player-flags:KNOW_MUSHROOM
 
 name:4:Gnome
 stats:-1:2:0:2:1
-skill-disarm:10
+skill-disarm-phys:10
+skill-disarm-magic:10
 skill-device:22
 skill-save:12
 skill-stealth:3
@@ -140,7 +145,8 @@ player-flags:KNOW_ZAPPER
 
 name:5:Dwarf
 stats:2:-3:2:-2:2
-skill-disarm:2
+skill-disarm-phys:2
+skill-disarm-magic:2
 skill-device:9
 skill-save:9
 skill-stealth:-1
@@ -157,7 +163,8 @@ player-flags:SEE_ORE
 
 name:6:Half-Orc
 stats:2:-1:0:0:1
-skill-disarm:-3
+skill-disarm-phys:-3
+skill-disarm-magic:-3
 skill-device:-3
 skill-save:-3
 skill-stealth:-1
@@ -173,7 +180,8 @@ values:RES_DARK[1]
 
 name:7:Half-Troll
 stats:4:-4:-2:-4:3
-skill-disarm:-5
+skill-disarm-phys:-5
+skill-disarm-magic:-5
 skill-device:-8
 skill-save:-8
 skill-stealth:-2
@@ -189,7 +197,8 @@ obj-flags:SUST_STR | REGEN
 
 name:8:Dunadan
 stats:1:2:2:2:3
-skill-disarm:4
+skill-disarm-phys:4
+skill-disarm-magic:4
 skill-device:5
 skill-save:5
 skill-stealth:1
@@ -205,7 +214,8 @@ obj-flags:SUST_CON
 
 name:9:High-Elf
 stats:1:3:-1:3:1
-skill-disarm:4
+skill-disarm-phys:4
+skill-disarm-magic:4
 skill-device:20
 skill-save:20
 skill-stealth:2
@@ -222,7 +232,8 @@ values:RES_LIGHT[1]
 
 name:10:Kobold
 stats:-1:-1:0:2:2
-skill-disarm:10
+skill-disarm-phys:10
+skill-disarm-magic:10
 skill-device:5
 skill-save:0
 skill-stealth:3

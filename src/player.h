@@ -123,7 +123,8 @@ enum
  */
 enum
 {
-	SKILL_DISARM,			/* Skill: Disarming */
+	SKILL_DISARM_PHYS,		/* Skill: Disarming - physical*/
+	SKILL_DISARM_MAGIC,		/* Skill: Disarming - magical */
 	SKILL_DEVICE,			/* Skill: Magic Devices */
 	SKILL_SAVE,				/* Skill: Saving throw */
 	SKILL_STEALTH,			/* Skill: Stealth factor */

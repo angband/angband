@@ -3237,11 +3237,19 @@ static enum parser_error parse_p_race_stats(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_race_skill_disarm(struct parser *p) {
+static enum parser_error parse_p_race_skill_disarm_phys(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->r_skills[SKILL_DISARM] = parser_getint(p, "disarm");
+	r->r_skills[SKILL_DISARM_PHYS] = parser_getint(p, "disarm");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_skill_disarm_magic(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_DISARM_MAGIC] = parser_getint(p, "disarm");
 	return PARSE_ERROR_NONE;
 }
 
@@ -3412,7 +3420,8 @@ struct parser *init_parse_p_race(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name uint index str name", parse_p_race_name);
 	parser_reg(p, "stats int str int int int wis int dex int con", parse_p_race_stats);
-	parser_reg(p, "skill-disarm int disarm", parse_p_race_skill_disarm);
+	parser_reg(p, "skill-disarm-phys int disarm", parse_p_race_skill_disarm_phys);
+	parser_reg(p, "skill-disarm-magic int disarm", parse_p_race_skill_disarm_magic);
 	parser_reg(p, "skill-device int device", parse_p_race_skill_device);
 	parser_reg(p, "skill-save int save", parse_p_race_skill_save);
 	parser_reg(p, "skill-stealth int stealth", parse_p_race_skill_stealth);
@@ -3488,12 +3497,21 @@ static enum parser_error parse_class_stats(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_class_skill_disarm(struct parser *p) {
+static enum parser_error parse_class_skill_disarm_phys(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->c_skills[SKILL_DISARM] = parser_getint(p, "base");
-	c->x_skills[SKILL_DISARM] = parser_getint(p, "incr");
+	c->c_skills[SKILL_DISARM_PHYS] = parser_getint(p, "base");
+	c->x_skills[SKILL_DISARM_PHYS] = parser_getint(p, "incr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_skill_disarm_magic(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_DISARM_MAGIC] = parser_getint(p, "base");
+	c->x_skills[SKILL_DISARM_MAGIC] = parser_getint(p, "incr");
 	return PARSE_ERROR_NONE;
 }
 
@@ -3856,7 +3874,8 @@ struct parser *init_parse_class(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name uint index str name", parse_class_name);
 	parser_reg(p, "stats int str int int int wis int dex int con", parse_class_stats);
-	parser_reg(p, "skill-disarm int base int incr", parse_class_skill_disarm);
+	parser_reg(p, "skill-disarm-phys int base int incr", parse_class_skill_disarm_phys);
+	parser_reg(p, "skill-disarm-magic int base int incr", parse_class_skill_disarm_magic);
 	parser_reg(p, "skill-device int base int incr", parse_class_skill_device);
 	parser_reg(p, "skill-save int base int incr", parse_class_skill_save);
 	parser_reg(p, "skill-stealth int base int incr", parse_class_skill_stealth);

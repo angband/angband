@@ -43,13 +43,13 @@ int test_stats0(void *state) {
 }
 
 int test_skill_disarm0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-disarm:1");
+	enum parser_error r = parser_parse(state, "skill-disarm-magic:1");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->r_skills[SKILL_DISARM], 1);
+	eq(pr->r_skills[SKILL_DISARM_MAGIC], 1);
 	ok;
 }
 
