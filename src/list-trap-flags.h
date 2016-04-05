@@ -17,4 +17,5 @@ TRF(INVISIBLE,	"Is invisible") // UNUSED
 TRF(FLOOR,		"Can be set on a floor")
 TRF(DOWN,		"Takes the player down a level")
 TRF(ONETIME,	"Disappears after being activated")
+TRF(MAGICAL,	"Has magical activation (absence of this flag means physical)")
 TRF(LOCK,		"Is a door lock")

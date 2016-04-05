@@ -47,14 +47,14 @@ int test_stats0(void *state) {
 }
 
 int test_skill_disarm0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-disarm:30:8");
+	enum parser_error r = parser_parse(state, "skill-disarm-phys:30:8");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	eq(c->c_skills[SKILL_DISARM], 30);
-	eq(c->x_skills[SKILL_DISARM], 8);
+	eq(c->c_skills[SKILL_DISARM_PHYS], 30);
+	eq(c->x_skills[SKILL_DISARM_PHYS], 8);
 	ok;
 }
 

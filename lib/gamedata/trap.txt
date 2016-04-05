@@ -136,7 +136,7 @@ msg-xtra:You are impaled on poisonous spikes!
 name:20:strange rune:summon rune
 graphics:^:B
 appear:0:3:0
-flags:TRAP | FLOOR | ONETIME
+flags:TRAP | FLOOR | ONETIME | MAGICAL
 effect:SUMMON
 dice:2+1d3
 desc:A magical rune which calls up monsters to attack you.
@@ -147,7 +147,7 @@ msg:You are enveloped in a cloud of smoke!
 name:21:strange rune:teleport rune
 graphics:^:o
 appear:0:1:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR | MAGICAL
 effect:TELEPORT
 dice:100
 desc:A magical rune which teleports you to a random location.
@@ -158,7 +158,7 @@ msg:You hit a teleport trap!
 name:22:discolored spot:fire trap
 graphics:^:u
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR | MAGICAL
 effect:SPOT:FIRE:0
 dice:4d6
 desc:A strange coloured spot on the ground - beware its fiery attack.
@@ -169,7 +169,7 @@ msg:You are enveloped in flames!
 name:23:discolored spot:acid trap
 graphics:^:u
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR | MAGICAL
 effect:SPOT:ACID:0
 dice:4d6
 desc:A strange coloured spot on the ground - beware its acidic attack.
@@ -180,7 +180,7 @@ msg:You are splashed with acid!
 name:24:dart trap:slow dart
 graphics:^:r
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR
 effect:DAMAGE
 dice:1d4
 effect:TIMED_INC_NO_RES:SLOW

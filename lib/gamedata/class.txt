@@ -96,7 +96,8 @@
 ############### WARRIOR ###############
 name:0:Warrior
 stats:3:-2:-2:2:2
-skill-disarm:25:10
+skill-disarm-phys:25:15
+skill-disarm-magic:20:10
 skill-device:18:7
 skill-save:18:10
 skill-stealth:0:0
@@ -130,7 +131,8 @@ magic:0:0:0:0
 ############### MAGE ###############
 name:1:Mage
 stats:-3:3:0:0:-2
-skill-disarm:30:7
+skill-disarm-phys:30:10
+skill-disarm-magic:35:12
 skill-device:36:13
 skill-save:30:9
 skill-stealth:2:0
@@ -593,7 +595,8 @@ desc: damage to each monster in its area of effect.
 ############### PRIEST ###############
 name:2:Priest
 stats:-1:-3:3:-1:1
-skill-disarm:25:7
+skill-disarm-phys:25:12
+skill-disarm-magic:25:12
 skill-device:30:10
 skill-save:32:12
 skill-stealth:2:0
@@ -1063,7 +1066,8 @@ desc: undead, a demon, an elemental, a golem, or a vortex.
 ############### ROGUE ###############
 name:3:Rogue
 stats:0:1:-3:3:-1
-skill-disarm:45:15
+skill-disarm-phys:45:20
+skill-disarm-magic:45:20
 skill-device:32:10
 skill-save:28:10
 skill-stealth:3:1
@@ -1390,7 +1394,8 @@ desc:  Uniques or monsters that resist confusion are not affected.
 ############### RANGER ###############
 name:4:Ranger
 stats:0:2:-2:1:-1
-skill-disarm:30:8
+skill-disarm-phys:30:13
+skill-disarm-magic:20:13
 skill-device:32:10
 skill-save:28:10
 skill-stealth:3:0
@@ -1836,7 +1841,8 @@ desc:  This spell has no effect when used in the town.
 ############### PALADIN ###############
 name:5:Paladin
 stats:1:-3:1:-1:2
-skill-disarm:20:7
+skill-disarm-phys:20:12
+skill-disarm-magic:20:10
 skill-device:24:10
 skill-save:25:11
 skill-stealth:0:0
