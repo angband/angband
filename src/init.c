@@ -2185,6 +2185,26 @@ static enum parser_error parse_trap_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
+static enum parser_error parse_trap_param(struct parser *p) {
+	struct trap_kind *t = parser_priv(p);
+	struct effect *effect = t->effect;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->params[1] = parser_getint(p, "p2");
+
+	if (parser_hasval(p, "p3"))
+		effect->params[2] = parser_getint(p, "p3");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_trap_dice(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
 	dice_t *dice = NULL;
@@ -2282,6 +2302,26 @@ static enum parser_error parse_trap_effect_xtra(struct parser *p) {
 
 	/* Fill in the detail */
 	return grab_effect_data(p, new_effect);
+}
+
+static enum parser_error parse_trap_param_xtra(struct parser *p) {
+	struct trap_kind *t = parser_priv(p);
+	struct effect *effect = t->effect_xtra;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->params[1] = parser_getint(p, "p2");
+
+	if (parser_hasval(p, "p3"))
+		effect->params[2] = parser_getint(p, "p3");
+
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_dice_xtra(struct parser *p) {
@@ -2429,9 +2469,11 @@ struct parser *init_parse_trap(void) {
     parser_reg(p, "appear uint rarity uint mindepth uint maxnum", parse_trap_appear);
     parser_reg(p, "flags ?str flags", parse_trap_flags);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_trap_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_trap_param);
 	parser_reg(p, "dice str dice", parse_trap_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_trap_expr);
 	parser_reg(p, "effect-xtra sym eff ?sym type ?int xtra", parse_trap_effect_xtra);
+	parser_reg(p, "param-xtra int p2 ?int p3", parse_trap_param_xtra);
 	parser_reg(p, "dice-xtra str dice", parse_trap_dice_xtra);
 	parser_reg(p, "expr-xtra sym name sym base str expr", parse_trap_expr_xtra);
 	parser_reg(p, "save str flags", parse_trap_save_flags);
