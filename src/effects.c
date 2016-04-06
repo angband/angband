@@ -2465,6 +2465,7 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 	int c_y, c_x;
 
 	int who = (cave->mon_current > 0) ? cave->mon_current : -1;
+	struct trap *trap = cave->trap_current;
 	int t_y = context->p1, t_x = context->p2;
 	int grids_away = effect_calculate_value(context, false);
 
@@ -2474,6 +2475,16 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 	if (who > 0) {
 		c_y = cave_monster(cave, who)->fy;
 		c_x = cave_monster(cave, who)->fx;
+	} else if (trap) {
+		c_y = trap->fy;
+		c_x = trap->fx;
+
+		/* Player gets pushed in a random direction if on the trap */
+		if (c_y == player->py && c_x == player->px) {
+			d = randint0(8);
+			c_y += ddy_ddd[d];
+			c_x += ddx_ddd[d];
+		}
 	} else {
 		c_y = player->py;
 		c_x = player->px;

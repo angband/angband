@@ -417,8 +417,13 @@ extern void hit_trap(int y, int x)
 				equip_learn_flag(player, flag);
 			}
 
-		/* Test for save due to armor (only these have a msg_bad) */
-		if (trap->kind->msg_bad && !trap_check_hit(125))
+		/* Test for save due to armor */
+		if (trf_has(trap->kind->flags, TRF_SAVE_ARMOR) && !trap_check_hit(125))
+			saved = true;
+
+		/* Test for save due to saving throw */
+		if (trf_has(trap->kind->flags, TRF_SAVE_THROW) &&
+			(randint0(100) < player->state.skills[SKILL_SAVE]))
 			saved = true;
 
 		/* Save, or fire off the trap */
