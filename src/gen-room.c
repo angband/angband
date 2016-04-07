@@ -1837,6 +1837,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			case '%': set_marked_granite(c, y, x, SQUARE_WALL_OUTER); break;
 			case '#': set_marked_granite(c, y, x, SQUARE_WALL_SOLID); break;
 			case '+': place_secret_door(c, y, x); break;
+			case '^': place_trap(c, y, x, -1, c->depth); break;
 			case 'x': {
 
 				/* If optional walls are generated, put a wall in this square */
@@ -1870,9 +1871,6 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 
 				/* Some monsters to guard it */
 				vault_monsters(c, y, x, c->depth + 2, randint0(2) + 3);
-
-				/* And some traps too */
-				vault_traps(c, y, x, 4, 4, randint0(3) + 2);
 
 				break;
 			}
