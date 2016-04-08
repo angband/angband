@@ -22,6 +22,9 @@
 #define UI_PREFS_H
 
 #include "cave.h"
+#include "ui-keymap.h"
+#include "ui-term.h"
+#include "parser.h"
 #include "z-file.h"
 
 extern int use_graphics;
@@ -38,6 +41,20 @@ extern byte *trap_x_attr[LIGHTING_MAX];
 extern wchar_t *trap_x_char[LIGHTING_MAX];
 extern byte *flavor_x_attr;
 extern wchar_t *flavor_x_char;
+
+/**
+ * Private data for pref file parsing.
+ */
+struct prefs_data
+{
+	bool bypass;
+	struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
+	bool user;
+	bool loaded_window_flag[ANGBAND_TERM_MAX];
+	u32b window_flags[ANGBAND_TERM_MAX];
+};
+
+enum parser_error parse_prefs_dummy(struct parser *p);
 
 void dump_monsters(ang_file *fff);
 void dump_objects(ang_file *fff);

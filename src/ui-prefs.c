@@ -34,6 +34,7 @@
 #include "ui-keymap.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
+#include "sound.h"
 
 int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */
@@ -391,20 +392,6 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
  * ------------------------------------------------------------------------
  * Pref file parser
  * ------------------------------------------------------------------------ */
-
-
-/**
- * Private data for pref file parsing.
- */
-struct prefs_data
-{
-	bool bypass;
-	struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
-	bool user;
-	bool loaded_window_flag[ANGBAND_TERM_MAX];
-	u32b window_flags[ANGBAND_TERM_MAX];
-};
-
 
 /**
  * Load another file.
@@ -1047,6 +1034,11 @@ static enum parser_error parse_prefs_window(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+enum parser_error parse_prefs_dummy(struct parser *p)
+{
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_prefs(bool user)
 {
 	struct parser *p = parser_new();
@@ -1074,6 +1066,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "message sym type sym attr", parse_prefs_message);
 	parser_reg(p, "color uint idx int k int r int g int b", parse_prefs_color);
 	parser_reg(p, "window int window uint flag uint value", parse_prefs_window);
+	register_sound_pref_parser(p);
 
 	return p;
 }

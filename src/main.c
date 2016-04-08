@@ -28,6 +28,10 @@
 #include "ui-prefs.h"
 #include "ui-signals.h"
 
+#ifdef SOUND
+#include "sound.h"
+#endif
+
 /**
  * locale junk
  */
@@ -69,22 +73,6 @@ static const struct module modules[] =
 #endif /* USE_STATS */
 };
 
-static int init_sound_dummy(int argc, char *argv[]) {
-	return 0;
-}
-
-/**
- * List of sound modules in the order they should be tried.
- */
-static const struct module sound_modules[] =
-{
-#ifdef SOUND_SDL
-	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
-#endif /* SOUND_SDL */
-
-	{ "none", "No sound", init_sound_dummy },
-};
-
 /**
  * A hook for "quit()".
  *
@@ -106,16 +94,6 @@ static void quit_hook(const char *s)
 		term_nuke(angband_term[j]);
 	}
 }
-
-
-
-/**
- * SDL needs a look-in
- */
-#ifdef USE_SDL
-# include "SDL.h"
-#endif
-
 
 /**
  * Initialize and verify the file paths, and the score file.
@@ -327,8 +305,9 @@ int main(int argc, char *argv[])
 	bool done = false;
 
 	const char *mstr = NULL;
+#ifdef SOUND
 	const char *soundstr = NULL;
-
+#endif
 	bool args = true;
 
 	/* Save the "program name" XXX XXX XXX */
@@ -427,12 +406,12 @@ int main(int argc, char *argv[])
 				if (!*arg) goto usage;
 				mstr = arg;
 				continue;
-
+#ifdef SOUND
 			case 's':
 				if (!*arg) goto usage;
 				soundstr = arg;
 				continue;
-
+#endif
 			case 'd':
 				change_path(arg);
 				continue;
@@ -466,10 +445,10 @@ int main(int argc, char *argv[])
 					printf("    %s (default is %s)\n", change_path_values[i].name, *change_path_values[i].path);
 				}
 				puts("                 Multiple -d options are allowed.");
+#ifdef SOUND
 				puts("  -s<mod>        Use sound module <sys>:");
-				for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
-					printf("     %s   %s\n", sound_modules[i].name,
-					       sound_modules[i].help);
+				print_sound_help();
+#endif
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
@@ -532,17 +511,16 @@ int main(int argc, char *argv[])
 
 #endif /* UNIX */
 
-	/* Try the modules in the order specified by sound_modules[] */
-	for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
-		if (!soundstr || streq(soundstr, sound_modules[i].name))
-			if (0 == sound_modules[i].init(argc, argv))
-				break;
-
 	/* Catch nasty signals */
 	signals_init();
 
 	/* Set up the command hook */
 	cmd_get_hook = textui_get_cmd;
+
+#ifdef SOUND
+	/* Initialise sound */
+	init_sound(soundstr, argc, argv);
+#endif
 
 	/* Set up the display handlers and things. */
 	init_display();

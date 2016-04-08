@@ -19,6 +19,8 @@
 #ifndef UI_KEYMAP_H
 #define UI_KEYMAP_H
 
+#include "z-file.h"
+
 /**
  * Maximum number of keypresses a trigger can map to.
 */

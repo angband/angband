@@ -67,6 +67,8 @@ SDLMAINFILES = main-sdl.o
 
 SNDSDLFILES = snd-sdl.o
 
+SOUNDFILES = sound-core.o
+
 TESTMAINFILES = main-test.o
 
 WINMAINFILES = \
