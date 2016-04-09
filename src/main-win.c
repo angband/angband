@@ -1204,7 +1204,7 @@ static bool play_sound_win(struct sound_data *data)
 	win_sample *sample = (win_sample *)(data->plat_data);
 
 	if (sample) {
-		switch (sample->type)
+		switch (sample->type) {
 			case WIN_MP3:
 				if (sample->op.wDeviceID) {
 					/* Play command */
@@ -1226,6 +1226,7 @@ static bool play_sound_win(struct sound_data *data)
 			default:
 				/* Not supported */
 				break;
+		}
 	}
 
 }
