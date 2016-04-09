@@ -40,7 +40,7 @@ endif
 
 # Include list of object files and add system-specific ones
 include Makefile.inc
-MAINFILES="$(WINMAINFILES)"
+MAINFILES="$(WINMAINFILES) $(SOUNDFILES)"
 
 ifdef CONSOLE
   CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -I$(PDCURSES_INC)
