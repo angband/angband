@@ -1229,6 +1229,7 @@ static bool play_sound_win(struct sound_data *data)
 		}
 	}
 
+	return true;
 }
 
 static bool unload_sound_win(struct sound_data *data)
