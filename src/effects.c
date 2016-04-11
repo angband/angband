@@ -2863,6 +2863,38 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 }
 
 /**
+ * The rubble effect
+ *
+ * This causes rubble to fall into empty squares.
+ */
+bool effect_handler_RUBBLE(effect_handler_context_t *context)
+{
+	int d;
+	int y1 = player->py;
+	int x1 = player->px;
+
+	/* Check around (and under) the character */
+	for (d = 0; d < 9; d++)
+	{
+		/* if not searching under player continue */
+		if (d == 8) continue;
+
+		/* Extract adjacent (legal) location */
+		int yy = y1 + ddy_ddd[d];
+		int xx = x1 + ddx_ddd[d];
+
+		if (square_in_bounds_fully(cave, yy, xx) &&
+				square_isempty(cave, yy, xx) &&
+				one_in_(3)) {
+			square_set_feat(cave, yy, xx, FEAT_RUBBLE);
+			context->ident = true;
+		}
+	}
+
+	return true;
+}
+
+/**
  * The destruction effect
  *
  * This effect "deletes" monsters (instead of killing them).

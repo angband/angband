@@ -362,6 +362,7 @@ flags:TRAP | FLOOR
 effect:DAMAGE
 dice:$Dd5
 expr:D:DUNGEON_LEVEL:/ 10 + 1
+effect:RUBBLE
 desc:A trap that drops a boulder on you.
 msg:A rock falls on your head!
 
