@@ -67,8 +67,6 @@ SDLMAINFILES = main-sdl.o
 
 SNDSDLFILES = snd-sdl.o
 
-SOUNDFILES = sound-core.o
-
 TESTMAINFILES = main-test.o
 
 WINMAINFILES = \
@@ -160,6 +158,7 @@ ANGFILES = \
 	score.o \
 	save.o \
 	savefile.o \
+	sound-core.o \
 	store.o \
 	target.o \
 	trap.o \

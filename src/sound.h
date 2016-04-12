@@ -65,11 +65,4 @@ errr init_sound(const char *soundstr, int argc, char **argv);
 errr register_sound_pref_parser(struct parser *p);
 void print_sound_help(void);
 
-#ifndef SOUND
-inline errr register_sound_pref_parser(struct parser *p)
-{
-	return parser_reg(p, SOUND_PRF_FORMAT, parse_prefs_dummy);
-}
-#endif
-
 #endif /* !INCLUDED_SOUND_H */

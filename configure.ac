@@ -283,7 +283,6 @@ if test "$enable_win" = "yes"; then
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
 dnl Note complete replacement of all main files
 	MAINFILES="\$(WINMAINFILES)"
-	MAINFILES="${MAINFILES} \$(SOUNDFILES)"
 fi
 
 dnl SDL mixer checking
@@ -302,7 +301,6 @@ if test "$enable_sdl_mixer" = "yes"; then
 			LIBS="${LIBS} ${SDL_LIBS} -lSDL_mixer"
 		fi
 		MAINFILES="${MAINFILES} \$(SNDSDLFILES)"
-		MAINFILES="${MAINFILES} \$(SOUNDFILES)"
 	fi
 fi
 
