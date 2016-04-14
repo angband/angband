@@ -254,7 +254,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	const int y = context->y;
 
 	/* Require a grid without monsters */
-	if (square_monster(cave, y, x)) return;
+	if (square_monster(cave, y, x) || square_isplayer(cave, y, x)) return;
 
 	/* Require a floor grid */
 	if (!square_isfloor(cave, y, x)) return;
