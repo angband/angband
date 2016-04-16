@@ -240,6 +240,7 @@ Increase gold drops but disable selling '[birth_no_selling]'
   identify unknown items for you, and will still sell you their wares. To
   balance out income in the game, gold found in the dungeon will be
   increased if this option is on.
+
 .. _birth_start_kit:
 
 Start with a kit of useful gear '[birth_start_kit]'
