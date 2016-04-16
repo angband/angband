@@ -76,6 +76,7 @@ extern int parser_getstate(struct parser *p, struct parser_state *s);
 extern void parser_setstate(struct parser *p, unsigned int col, const char *msg);
 
 errr run_parser(struct file_parser *fp);
+errr parse_file_quit_not_found(struct parser *p, const char *filename);
 errr parse_file(struct parser *p, const char *filename);
 void cleanup_parser(struct file_parser *fp);
 int lookup_flag(const char **flag_table, const char *flag_name);

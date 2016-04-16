@@ -84,7 +84,7 @@ struct parser *init_parse_quest(void) {
 }
 
 static errr run_parse_quest(struct parser *p) {
-	return parse_file(p, "quest");
+	return parse_file_quit_not_found(p, "quest");
 }
 
 static errr finish_parse_quest(struct parser *p) {

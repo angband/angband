@@ -638,7 +638,20 @@ errr run_parser(struct file_parser *fp) {
 }
 
 /**
- * The basic file parsing function
+ * The basic file parsing function.  Attempt to load filename through
+ * parser and perform a quit if the file is not found.
+ */
+errr parse_file_quit_not_found(struct parser *p, const char *filename) {
+	errr parse_err = parse_file(p, filename);
+
+	if (parse_err == PARSE_ERROR_NO_FILE_FOUND)
+		quit(format("Cannot open '%s.txt'", filename));
+
+	return parse_err;
+}
+
+/**
+ * The basic file parsing function.
  */
 errr parse_file(struct parser *p, const char *filename) {
 	char path[1024];
@@ -658,13 +671,9 @@ errr parse_file(struct parser *p, const char *filename) {
 		fh = file_open(path, MODE_READ, FTYPE_TEXT);
 	}
 
-	/* The lore file is optional, lack of others is terminal */
-	if (!fh) {
-		if (streq(filename, "lore"))
-			return PARSE_ERROR_NO_FILE_FOUND;
-		else
-			quit(format("Cannot open '%s.txt'", filename));
-	}
+	/* File wasn't found, return the error */
+	if (!fh)
+		return PARSE_ERROR_NO_FILE_FOUND;
 
 	/* Parse it */
 	while (file_getl(fh, buf, sizeof(buf))) {

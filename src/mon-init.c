@@ -359,7 +359,7 @@ struct parser *init_parse_mon_spell(void) {
 }
 
 static errr run_parse_mon_spell(struct parser *p) {
-	return parse_file(p, "monster_spell");
+	return parse_file_quit_not_found(p, "monster_spell");
 }
 
 static errr finish_parse_mon_spell(struct parser *p) {
@@ -507,7 +507,7 @@ static struct parser *init_parse_mon_base(void) {
 }
 
 static errr run_parse_mon_base(struct parser *p) {
-	return parse_file(p, "monster_base");
+	return parse_file_quit_not_found(p, "monster_base");
 }
 
 static errr finish_parse_mon_base(struct parser *p) {
@@ -919,7 +919,7 @@ struct parser *init_parse_monster(void) {
 }
 
 static errr run_parse_monster(struct parser *p) {
-	return parse_file(p, "monster");
+	return parse_file_quit_not_found(p, "monster");
 }
 
 static errr finish_parse_monster(struct parser *p) {
