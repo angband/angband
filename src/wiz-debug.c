@@ -2098,7 +2098,7 @@ void get_debug_command(void)
 			break;
 		}
 
-		/* Work out what the kayer is typing */
+		/* Work out what the player is typing */
 		case 'L': 
 		{
 			do_cmd_keylog();

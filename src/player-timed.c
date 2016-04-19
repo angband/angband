@@ -149,6 +149,23 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	if (idx == TMD_SPRINT && v == 0)
 		player_inc_timed(p, TMD_SLOW, 100, true, false);
 
+	/* Undo stat swap */
+	if (idx == TMD_SCRAMBLE && v == 0) {
+		/* Figure out what stats should be */
+		int new_cur[STAT_MAX];
+		int new_max[STAT_MAX];
+		for (int i = 0; i < STAT_MAX; ++i) {
+			new_cur[player->stat_map[i]] = player->stat_cur[i];
+			new_max[player->stat_map[i]] = player->stat_max[i];
+		}
+		/* Apply new stats and clear the stat_map */
+		for (int i = 0; i < STAT_MAX; ++i) {
+			player->stat_cur[i] = new_cur[i];
+			player->stat_max[i] = new_max[i];
+			player->stat_map[i] = i;
+		}
+	}
+
 	/* Nothing to notice */
 	if (!notify) return false;
 
