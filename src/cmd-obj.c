@@ -521,8 +521,10 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	if (used || use == USE_SINGLE) {
 		if (tval_is_wearable(obj)) {
 			update_player_object_knowledge(player);
-		} else if (!was_aware) {
+		} else if (!was_aware && ident) {
 			object_learn_on_use(player, obj);
+		} else {
+			object_flavor_tried(obj);
 		}
 	}
 

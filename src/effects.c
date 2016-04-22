@@ -216,8 +216,8 @@ bool effect_handler_HEAL_HP(effect_handler_context_t *context)
 	if ((context->value.m_bonus <= 0) && (context->value.base <= 0))
 		return (true);
 
-	/* Slight hack to ID !Life */
-	if (context->value.base >= 5000) context->ident = true;
+	/* Always ID */
+	context->ident = true;
 
 	/* No healing needed */
 	if (player->chp >= player->mhp) return (true);
@@ -249,9 +249,6 @@ bool effect_handler_HEAL_HP(effect_handler_context_t *context)
 		msg("You feel much better.");
 	else
 		msg("You feel very good.");
-
-	/* Notice */
-	context->ident = true;
 
 	return (true);
 }
@@ -305,6 +302,9 @@ bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 		msg("%s recovers %s courage.", m_name, m_poss);
 	}
 
+	/* ID */
+	context->ident = true;
+
 	return true;
 }
 
@@ -334,8 +334,8 @@ bool effect_handler_CRUNCH(effect_handler_context_t *context)
 bool effect_handler_CURE(effect_handler_context_t *context)
 {
 	int type = context->p1;
-	if (player_clear_timed(player, type, true))
-		context->ident = true;
+	(void) player_clear_timed(player, type, true);
+	context->ident = true;
 	return true;
 }
 
@@ -411,8 +411,8 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context, false);
 	if (context->p2)
 		amount = player->timed[context->p1] / context->p2;
-	if (player_dec_timed(player, context->p1, amount, true))
-		context->ident = true;
+	(void) player_dec_timed(player, context->p1, amount, true);
+	context->ident = true;
 	return true;
 
 }
@@ -423,18 +423,18 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	if (player_set_food(player, amount))
-		context->ident = true;
+	(void) player_set_food(player, amount);
+	context->ident = true;
 	return true;
 }
 
 bool effect_handler_CONFUSING(effect_handler_context_t *context)
 {
-	if (player->confusing == 0) {
+	if (!player->confusing) {
 		msg("Your hands begin to glow.");
 		player->confusing = true;
-		context->ident = true;
 	}
+	context->ident = true;
 	return true;
 }
 
@@ -473,6 +473,9 @@ bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 {
 	int stat = context->p1;
 
+	/* ID */
+	context->ident = true;
+
 	/* Check bounds */
 	if (stat < 0 || stat >= STAT_MAX) return false;
 
@@ -491,9 +494,6 @@ bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 	if (context->p2)
 		msg("You feel less %s.", desc_stat_neg[stat]);
 
-	/* Success */
-	context->ident = true;
-
 	return (true);
 }
 
@@ -508,6 +508,9 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 	/* Bounds check */
 	if (flag < 0) return false;
 
+	/* ID */
+	context->ident = true;
+
 	/* Sustain */
 	if (player_of_has(player, flag)) {
 		/* Notice effect */
@@ -516,9 +519,6 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 		/* Message */
 		msg("You feel very %s for a moment, but the feeling passes.",
 				   desc_stat_neg[stat]);
-
-		/* Notice */
-		context->ident = true;
 
 		return (true);
 	}
@@ -534,9 +534,6 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[stat]);
 		if (dam)
 			take_hit(player, dam, "stat drain");
-
-		/* Notice */
-		context->ident = true;
 	}
 
 	return (true);
@@ -552,16 +549,17 @@ bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 	int loss_stat = randint0(STAT_MAX - 1);
 
 	/* Skip the safe stat */
-	if (loss_stat == safe_stat) loss_stat++;
+	if (loss_stat == safe_stat) {
+		loss_stat++;
+	}
 
 	/* Attempt to reduce the stat */
 	if (player_stat_dec(player, loss_stat, true)) {
-		/* Notice */
-		context->ident = true;
-
-		/* Message */
 		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[loss_stat]);
 	}
+
+	/* ID */
+	context->ident = true;
 
 	return (true);
 }
@@ -576,12 +574,11 @@ bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
 
 	/* Attempt to increase */
 	if (player_stat_inc(player, stat)) {
-		/* Message */
 		msg("You feel very %s!", desc_stat_pos[stat]);
-
-		/* Notice */
-		context->ident = true;
 	}
+
+	/* Notice */
+	context->ident = true;
 
 	return (true);
 }
@@ -600,10 +597,10 @@ bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 
 		/* Recalculate max. hitpoints */
 		update_stuff(player);
-
-		/* Did something */
-		context->ident = true;
 	}
+	
+	/* Did something */
+	context->ident = true;
 
 	return (true);
 }
@@ -615,8 +612,9 @@ bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
 	if (player->exp < PY_MAX_EXP) {
 		msg("You feel more experienced.");
 		player_exp_gain(player, amount / 2);
-		context->ident = true;
 	}
+	context->ident = true;
+
 	return true;
 }
 
@@ -695,8 +693,9 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 		} else
 			msg("You feel your head clear somewhat.");
 		player->upkeep->redraw |= (PR_MANA);
-		context->ident = true;
 	}
+	context->ident = true;
+
 	return true;
 }
 
@@ -868,25 +867,22 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 	if (target_depth > player->depth) {
 		msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
 		player->deep_descent = 3 + randint1(4);
-		context->ident = true;
 
 		/* Redraw status line */
 		player->upkeep->redraw |= PR_STATUS;
 		handle_stuff(player);
-
-		return true;
 	} else {
 		msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");
-		context->ident = true;
-		return true;
 	}
+	context->ident = true;
+	return true;
 }
 
 bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
 {
 	msg("The world changes!");
 	dungeon_change_level(player->depth);
-
+	context->ident = true;
 	return true;
 }
 
@@ -1066,7 +1062,8 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 
 /**
  * Detect doors around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player context->value.sides.
+ * player is context->value.dice, the width either side of the player
+ * context->value.sides.
  */
 bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 {
@@ -1104,7 +1101,6 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 
 				/* Obvious */
 				doors = true;
-				context->ident = true;
 			}
 
 			/* Forget unknown doors in the mapping area */
@@ -1124,6 +1120,8 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+
+	context->ident = true;
 
 	return true;
 }
@@ -1164,7 +1162,6 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 
 				/* Obvious */
 				stairs = true;
-				context->ident = true;
 			}
 		}
 	}
@@ -1181,6 +1178,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
+	context->ident = true;
 	return true;
 }
 
@@ -1222,7 +1220,6 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 
 				/* Detect */
 				gold_buried = true;
-				context->ident = true;
 			}
 		}
 	}
@@ -1241,6 +1238,7 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
+	context->ident = true;
 	return true;
 }
 
@@ -1279,7 +1277,6 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 
 			/* Notice an object is detected */
 			objects = true;
-			context->ident = true;
 
 			/* Mark the pile as aware */
 			floor_pile_sense(cave, y, x);
@@ -1297,6 +1294,7 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
+	context->ident = true;
 	return true;
 }
 
@@ -1336,7 +1334,6 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 			/* Notice an object is detected */
 			if (!ignore_item_ok(obj)) {
 				objects = true;
-				context->ident = true;
 			}
 
 			/* Mark the pile as seen */
@@ -1355,6 +1352,7 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
+	context->ident = true;
 	return true;
 }
 
@@ -1414,7 +1412,6 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 
 			/* Detect */
 			monsters = true;
-			context->ident = true;
 		}
 	}
 
@@ -1423,6 +1420,7 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 	else if (context->aware)
 		msg("You sense no monsters.");
 
+	context->ident = true;
 	return true;
 }
 
@@ -1487,7 +1485,6 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 
 			/* Detect */
 			monsters = true;
-			context->ident = true;
 		}
 	}
 
@@ -1496,6 +1493,7 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 	else if (context->aware)
 		msg("You sense no invisible creatures.");
 
+	context->ident = true;
 	return true;
 }
 
@@ -1592,7 +1590,6 @@ bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 
 			/* Detect */
 			monsters = true;
-			context->ident = true;
 		}
 	}
 
@@ -1601,6 +1598,7 @@ bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 	else if (context->aware)
 		msg("You sense no evil creatures.");
 
+	context->ident = true;
 	return true;
 }
 
@@ -1659,6 +1657,9 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 		if (one_in_(count--)) break;
 	}
 
+	/* Notice */
+	context->ident = true;
+
 	/* Get the item */
 	obj = slot_object(player, i);
 
@@ -1677,9 +1678,6 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 		/* Message */
 		msg("Your %s (%c) resist%s disenchantment!", o_name, I2A(i),
 			((obj->number != 1) ? "" : "s"));
-
-		/* Notice */
-		context->ident = true;
 
 		return true;
 	}
@@ -1711,9 +1709,6 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 
 	/* Window stuff */
 	player->upkeep->redraw |= (PR_EQUIP);
-
-	/* Notice */
-	context->ident = true;
 
 	return true;
 }
@@ -2490,7 +2485,7 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 	int t_y = context->p1, t_x = context->p2;
 	int grids_away = effect_calculate_value(context, false);
 
-	/*** Find a suitable endpoint for testing. ***/
+	context->ident = true;
 
 	/* Get location of caster (assumes index of caster is not zero) */
 	if (who > 0) {
