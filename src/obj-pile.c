@@ -1411,7 +1411,10 @@ void floor_pile_know(struct chunk *c, int y, int x)
 		if ((y == player->py) && (x == player->px)) {
 			player_know_object(player, obj);
 
-			/* Get the pval for anything but chests */
+			/* Get the dice, and the pval for anything but chests */
+			obj->known->dd = obj->dd * player->obj_k->dd;
+			obj->known->ds = obj->ds * player->obj_k->ds;
+			obj->known->ac = obj->ac * player->obj_k->ac;
 			if (!tval_is_chest(obj))
 				obj->known->pval = obj->pval;
 
