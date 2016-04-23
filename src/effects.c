@@ -3372,9 +3372,13 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
 		flg |= PROJECT_PLAY;
 		flg &= ~(PROJECT_STOP | PROJECT_THRU);
+	} else if (cave->trap_current) {
+		source = 0;
+		ty = cave->trap_current->fy;
+		tx = cave->trap_current->fx;
 	} else {
-		if (context->p3) rad += player->lev / context->p3;
 		source = -1;
+		if (context->p3) rad += player->lev / context->p3;
 	}
 
 	/* Ask for a target if no direction given */
