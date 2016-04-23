@@ -478,26 +478,29 @@ bool spell_needs_aim(int spell_index)
 	return effect_aim(spell->effect);
 }
 
-static size_t append_random_value_string(char *buffer, size_t size,
-										 random_value *rv)
+static void append_random_value_string(char *buffer, size_t size,
+		size_t *end, random_value *rv)
 {
-	size_t offset = 0;
+	bool show_average = true;
 
 	if (rv->base > 0) {
-		offset += strnfmt(buffer + offset, size - offset, "%d", rv->base);
+		strnfcat(buffer, size, end, "%d", rv->base);
 
 		if (rv->dice > 0 || rv->sides > 0)
-			offset += strnfmt(buffer + offset, size - offset, "+");
+			strnfcat(buffer, size, end, "+");
 	}
 
 	if (rv->dice == 1) {
-		offset += strnfmt(buffer + offset, size - offset, "d%d", rv->sides);
-	}
-	else if (rv->dice > 1) {
-		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice, rv->sides);
+		strnfcat(buffer, size, end, "d%d", rv->sides);
+	} else if (rv->dice > 1) {
+		strnfcat(buffer, size, end, "%dd%d", rv->dice, rv->sides);
+	} else {
+		show_average = false;
 	}
 
-	return offset;
+	if (show_average) {
+		strnfcat(buffer, size, end, " (~%d)", randcalc(*rv, 0, AVERAGE));
+	}
 }
 
 static void spell_append_value_info(int spell_index, char *p, size_t len)
@@ -506,7 +509,7 @@ static void spell_append_value_info(int spell_index, char *p, size_t len)
 	random_value rv;
 	const char *type = NULL;
 	const char *special = NULL;
-	size_t offset = 0;
+	size_t end = 0;
 
 	type = effect_info(spell->effect);
 
@@ -528,11 +531,11 @@ static void spell_append_value_info(int spell_index, char *p, size_t len)
 	if (type == NULL)
 		return;
 
-	offset += strnfmt(p, len, " %s ", type);
-	offset += append_random_value_string(p + offset, len - offset, &rv);
+	strnfcat(p, len, &end, " %s ", type);
+	append_random_value_string(p, len, &end, &rv);
 
 	if (special != NULL)
-		strnfmt(p + offset, len - offset, "%s", special);
+		strnfcat(p, len, &end, "%s", special);
 }
 
 void get_spell_info(int spell_index, char *p, size_t len)
