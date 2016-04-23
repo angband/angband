@@ -240,9 +240,9 @@ static void project_monster_timed_damage(project_monster_handler_context_t *cont
 	if (context->who > 0) {
 		context->mon_timed[type] = monster_amount;
 		context->flag |= MON_TMD_MON_SOURCE;
-	}
-	else
+	} else {
 		context->mon_timed[type] = player_amount;
+	}
 }
 
 /**
@@ -272,14 +272,13 @@ static void project_monster_teleport_away(project_monster_handler_context_t *con
 	if (context->seen) rf_on(context->lore->flags, flag);
 
 	if (rf_has(context->mon->race->flags, flag)) {
-		if (context->seen) context->obvious = true;
 		context->teleport_distance = context->dam;
 		context->hurt_msg = MON_MSG_DISAPPEAR;
-	}
-	else {
+	} else {
 		context->skipped = true;
 	}
 
+	context->obvious = true;
 	context->dam = 0;
 }
 
@@ -298,13 +297,12 @@ static void project_monster_scare(project_monster_handler_context_t *context, in
     if (context->seen) rf_on(context->lore->flags, flag);
 
 	if (rf_has(context->mon->race->flags, flag)) {
-		if (context->seen) context->obvious = true;
         project_monster_timed_no_damage(context, MON_TMD_FEAR);
-	}
-	else {
+	} else {
 		context->skipped = true;
 	}
 
+	context->obvious = true;
 	context->dam = 0;
 }
 
@@ -324,14 +322,14 @@ static void project_monster_dispel(project_monster_handler_context_t *context, i
 	if (context->seen) rf_on(context->lore->flags, flag);
 
 	if (rf_has(context->mon->race->flags, flag)) {
-		if (context->seen) context->obvious = true;
 		context->hurt_msg = MON_MSG_SHUDDER;
 		context->die_msg = MON_MSG_DISSOLVE;
-	}
-	else {
+	} else {
 		context->skipped = true;
 		context->dam = 0;
 	}
+
+	context->obvious = true;
 }
 
 /* Acid */
@@ -979,8 +977,14 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		}
 
 		for (i = 0; i < MON_TMD_MAX; i++) {
-			if (context->mon_timed[i] > 0)
-				context->obvious = mon_inc_timed(mon, i, context->mon_timed[i], context->flag | MON_TMD_FLG_NOTIFY, context->id);
+			if (context->mon_timed[i] > 0) {
+				mon_inc_timed(mon,
+							  i,
+							  context->mon_timed[i],
+							  context->flag | MON_TMD_FLG_NOTIFY,
+							  context->id);
+				context->obvious = true;
+			}
 		}
 	}
 }

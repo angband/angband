@@ -2132,8 +2132,8 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 		if (!square_isview(cave, y, x)) continue;
 
 		/* Jump directly to the target monster */
-		if (project(-1, 0, y, x, dam, typ, flg, 0, 0, context->obj))
-			context->ident = true;
+		(void) project(-1, 0, y, x, dam, typ, flg, 0, 0, context->obj);
+		context->ident = true;
 	}
 
 	/* Result */
@@ -2171,8 +2171,8 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 		if (!square_isview(cave, y, x)) continue;
 
 		/* Jump directly to the target monster */
-		if (project(-1, 0, y, x, dam, typ, flg, 0, 0, context->obj))
-			context->ident = true;
+		(void) project(-1, 0, y, x, dam, typ, flg, 0, 0, context->obj);
+		context->ident = true;
 	}
 
 	/* Result */
