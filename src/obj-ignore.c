@@ -196,6 +196,11 @@ void rune_autoinscribe(int i)
 	int py = player->py;
 	int px = player->px;
 
+	/* Check the player knows the rune */
+	if (!player_knows_rune(player, i)) {
+		return;
+	}
+
 	/* Autoinscribe each object on the ground */
 	if (cave)
 		for (obj = square_object(cave, py, px); obj; obj = obj->next)
@@ -216,7 +221,7 @@ static void runes_autoinscribe(struct object *obj)
 	int i, rune_max = max_runes();
 
 	for (i = 0; i < rune_max; i++)
-		if (object_has_rune(obj, i))
+		if (object_has_rune(obj, i) && player_knows_rune(player, i))
 			rune_add_autoinscription(obj, i);
 }
 
