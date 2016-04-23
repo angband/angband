@@ -3374,6 +3374,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 	} else if (cave->trap_current) {
 		source = 0;
+		flg |= PROJECT_PLAY;
 		ty = cave->trap_current->fy;
 		tx = cave->trap_current->fx;
 	} else {

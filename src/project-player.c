@@ -535,7 +535,7 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	if (!square_isplayer(cave, y, x)) return (false);
 
 	/* Never affect projector */
-	if (cave->squares[y][x].mon == who) return (false);
+	if (who < 0) return (false);
 
 	/* Monster or trap */
 	if (mon) {
