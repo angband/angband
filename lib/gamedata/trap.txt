@@ -56,13 +56,13 @@
 name:0:no trap:no trap
 graphics: :w
 
-name:3:glyph of warding:glyph of warding
+name:1:glyph of warding:glyph of warding
 graphics:;:y
 appear:0:0:0
 flags:RUNE | VISIBLE | FLOOR
 desc:A magical rune which monsters cannot pass without difficulty.
 
-name:4:door lock:door lock
+name:2:door lock:door lock
 graphics: :w
 appear:0:0:0
 flags:LOCK | INVISIBLE
@@ -72,7 +72,7 @@ desc:A device which makes a closed door harder to open.
 
 # trap door
 
-name:16:trap door:trap door
+name:10:trap door:trap door
 graphics:^:w
 appear:0:2:0
 flags:TRAP | FLOOR | DOWN
@@ -85,10 +85,10 @@ msg-good:You float gently down to the next level.
 
 # open pit
 
-name:17:pit:pit
+name:11:pit:pit
 graphics:^:s
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR
 effect:DAMAGE
 dice:2d6
 save:FEATHER
@@ -98,10 +98,10 @@ msg-good:You float gently to the bottom of the pit.
 
 # spiked pit
 
-name:18:pit:spiked pit
+name:12:pit:spiked pit
 graphics:^:s
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR
 effect:DAMAGE
 dice:2d6
 effect-xtra:DAMAGE
@@ -116,10 +116,10 @@ msg-xtra:You are impaled!
 
 # poison pit
 
-name:19:pit:poison pit
+name:13:pit:poison pit
 graphics:^:s
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR
 effect:DAMAGE
 dice:2d6
 effect-xtra:TIMED_INC:CUT
@@ -132,16 +132,54 @@ msg:You fall into a spiked pit!
 msg-good:You float gently to the bottom of the pit, neatly avoiding the spikes.
 msg-xtra:You are impaled on poisonous spikes!
 
-# rune -- summon
+### 14
 
-name:20:strange rune:summon rune
+# rune -- summon (OoD) monster
+
+name:15:strange rune:summon rune
 graphics:^:B
 appear:0:3:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
-effect:SUMMON
+effect:SUMMON:MONSTER:5
+dice:1
+desc:A magical rune which calls a monster to attack you.
+msg:A new foe appears from nowhere!
+
+# rune -- summon monsters
+
+name:16:strange rune:summon rune
+graphics:^:B
+appear:0:3:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON:UNDEAD
 dice:2+1d3
 desc:A magical rune which calls up monsters to attack you.
 msg:You are enveloped in a cloud of smoke!
+
+# rune -- summon undead
+
+name:17:strange rune:call from the grave trap
+graphics:^:B
+appear:0:20:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON:UNDEAD
+dice:1d3M2
+desc:A magical rune which calls the undead to attack you.
+msg:A sense of dread washes over you...
+
+# rune -- summon dragons
+
+name:18:strange rune:dragonsong trap
+graphics:^:B
+appear:0:20:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON:DRAGON
+dice:1d3
+desc:A magical rune which calls dragons to attack you.
+msg:You hear a dragon's call!
+
+### 19
+### 20
 
 # rune -- teleport
 
@@ -234,7 +272,7 @@ msg-bad:A small dart hits you!
 name:28:gas trap:blinding gas trap
 graphics:^:g
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR
 effect:TIMED_INC:BLIND
 dice:25+1d50
 desc:A trap that releases gas to blind you.
@@ -245,7 +283,7 @@ msg:You are surrounded by a black gas!
 name:29:gas trap:confusion gas trap
 graphics:^:g
 appear:0:1:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR
 effect:TIMED_INC:CONFUSED
 dice:10+1d20
 desc:A trap that releases gas to confuse you.
@@ -256,7 +294,7 @@ msg:You are surrounded by a gas of scintillating colors!
 name:30:gas trap:poison gas trap
 graphics:^:g
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR
 effect:TIMED_INC:POISONED
 dice:10+1d20
 desc:A trap that releases gas to poison you.
@@ -267,7 +305,7 @@ msg:You are surrounded by a pungent green gas!
 name:31:gas trap:sleep gas trap
 graphics:^:g
 appear:0:2:0
-flags:TRAP | FLOOR 
+flags:TRAP | FLOOR
 effect:TIMED_INC:PARALYZED
 dice:5+1d10
 desc:A trap that releases gas to put you to sleep.
@@ -358,7 +396,7 @@ msg-bad:Your mind is blasted by psionic energy!
 name:36:dungeon alteration trap:rock fall trap
 graphics:^:U
 appear:0:4:0
-flags:TRAP | FLOOR
+flags:TRAP | FLOOR | ONETIME
 effect:DAMAGE
 dice:$Dd5
 expr:D:DUNGEON_LEVEL:/ 10 + 1
@@ -380,10 +418,73 @@ param:5
 desc:A trap that causes an earthquake.
 msg:The ground shakes.
 
-# ideas from v4:
-#
-# alarm
-# trap spawner
-# earthquake
-# summon2 (dlev26) & 3 (dlev50)
-# phase & teleport-max also
+# dungeon alter - stone to mud
+
+name:38:dungeon alteration trap:area blast trap
+graphics:^:U
+appear:0:40:0
+flags:TRAP | FLOOR | ONETIME
+effect:BALL:KILL_WALL:2
+dice:20
+effect:BALL:FORCE:2
+dice:$B
+expr:B:DUNGEON_LEVEL:+ 0
+effect:RUBBLE
+desc:A trap that clears the surrounding area.
+msg:The trap explodes, blasting the area clear!
+
+### 39
+
+# blinding flash
+
+name:40:trap:blinding flash trap
+graphics:^:light slate
+appear:0:5:0
+flags:TRAP | FLOOR | MAGICAL | ONETIME
+effect:BALL:LIGHT:4
+dice:$Dd8
+expr:D:DUNGEON_LEVEL:/ 10 + 2
+desc:A trap that creates a ball of light.
+msg:A blazing light descends on you!
+
+# mana drain
+# XXX should this have a different message for warriors?
+
+name:41:trap:mana drain trap
+graphics:^:light purple
+appear:0:5:0
+flags:TRAP | FLOOR | MAGICAL
+effect:DRAIN_MANA
+dice:1d$D
+expr:D:DUNGEON_LEVEL:/ 2 + 1
+msg:You feel your energies sap away.
+desc:A trap that drains your mana.
+
+# whirling knifes
+# XXX ideally this would have an effect that wasn't cured in one turn
+#   - maybe make CSW only heal 100 points of cuts?
+
+name:42:trap:knife trap
+graphics:^:red
+appear:0:20:0
+flags:TRAP | FLOOR
+effect:TIMED_INC:CUT
+dice:150
+effect:DAMAGE
+dice:$D
+expr:D:DUNGEON_LEVEL:/ 2
+msg:Blades whirl around you, slicing your skin!
+desc:A trap that wants you to bleed to death.
+
+# petrifier
+
+name:43:pertifying trap
+graphics:^:blue
+appear:0:5:0
+flags:TRAP | FLOOR | MAGICAL
+effect:TIMED_INC:STONESKIN
+dice:20
+effect:TIMED_INC:AFRAID
+dice:1d8
+msg:You feel petrified.
+desc:A trap that terrifies you.
