@@ -211,7 +211,7 @@ enum rune_variety rune_variety(size_t i)
  * Reports if the player knows a given rune
  *
  * \param p is the player
- * \param i is the rune index
+ * \param i is the rune's number in the rune list
  */
 bool player_knows_rune(struct player *p, size_t i)
 {
@@ -528,9 +528,10 @@ bool object_has_standard_to_h(const struct object *obj)
 }
 
 /**
- * Check if all the runes on an object are known to the player
+ * Check if an object has a rune
  *
  * \param obj is the object
+ * \param rune_no is the rune's number in the rune list
  */
 bool object_has_rune(const struct object *obj, int rune_no)
 {
@@ -721,8 +722,8 @@ void object_set_base_known(struct object *obj)
 		obj->known->effect = obj->effect;
 	}
 
-	/* Non-jewelry wearables have known activations */
-	if (tval_is_wearable(obj) && !tval_is_jewelry(obj) && obj->kind->effect)
+	/* Know standard activations for wearables */
+	if (tval_is_wearable(obj) && obj->kind->effect)
 		obj->known->effect = obj->effect;
 }
 
