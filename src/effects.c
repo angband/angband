@@ -2229,6 +2229,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 {
 	int summon_max = effect_calculate_value(context, false);
 	int summon_type = context->p1 ? context->p1 : S_ANY;
+	int level_boost = context->p2;
 	struct monster *mon = cave_monster(cave, cave->mon_current);
 	int message_type = summon_message_type(summon_type);
 	int count = 0, val = 0, attempts = 0;
@@ -2248,8 +2249,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 			int temp;
 
 			/* Get a monster */
-			temp = summon_specific(mon->fy, mon->fx, rlev, summon_type, false,
-								   false);
+			temp = summon_specific(mon->fy, mon->fx, rlev + level_boost,
+					summon_type, false, false);
 
 			val += temp * temp;
 
@@ -2271,8 +2272,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 				int temp;
 
 				/* Get a monster */
-				temp = summon_specific(mon->fy, mon->fx, rlev, summon_type,
-									   false, false);
+				temp = summon_specific(mon->fy, mon->fx, rlev + level_boost,
+						summon_type, false, false);
 
 				val += temp * temp;
 
@@ -2287,8 +2288,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	} else {
 		/* If not a monster summon, it's simple */
 		while (summon_max) {
-			count += summon_specific(player->py, player->px, player->depth,
-									 summon_type, true, false);
+			count += summon_specific(player->py, player->px,
+					player->depth + level_boost, summon_type, true, false);
 			summon_max--;
 		}
 	}
