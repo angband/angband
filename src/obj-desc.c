@@ -420,15 +420,14 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 	/* No more if the object hasn't been assessed */
 	if (!((obj->notice & OBJ_NOTICE_ASSESSED) || spoil)) return end;
 
-	/* Show weapon bonuses if there are any, and always for weapons */
-	if (player->obj_k->to_h && player->obj_k->to_d) {
-		/* Make an exception for body armor with only a to-hit penalty */
-		if (obj->to_h < 0 && obj->to_d == 0 && tval_is_body_armor(obj))
-			strnfcat(buf, max, &end, " (%+d)", obj->to_h);
-
-		/* Otherwise, always use the full tuple */
-		else if (tval_is_weapon(obj) || obj->to_d || obj->to_h)
-			strnfcat(buf, max, &end, " (%+d,%+d)", obj->to_h, obj->to_d);
+	/* Show weapon bonuses if we know of any */
+	if (player->obj_k->to_h && player->obj_k->to_d
+		&& (tval_is_weapon(obj) || obj->to_d ||
+			!object_has_standard_to_h(obj))) {
+		strnfcat(buf, max, &end, " (%+d,%+d)", obj->to_h, obj->to_d);
+	} else if (obj->to_h < 0 && object_has_standard_to_h(obj)) {
+		/* Special treatment for body armor with only a to-hit penalty */
+		strnfcat(buf, max, &end, " (%+d)", obj->to_h);
 	}
 
 	/* Show armor bonuses */

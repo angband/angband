@@ -495,7 +495,7 @@ bool object_is_known_artifact(const struct object *obj)
 }
 
 /**
- * Checks whether the object is known to be an artifact
+ * Checks whether the object is in a store
  *
  * \param obj is the object
  */
@@ -515,6 +515,19 @@ bool object_is_in_store(const struct object *obj)
 }
 
 /**
+ * Checks whether the object has the usual to-hit value
+ *
+ * \param obj is the object
+ */
+bool object_has_standard_to_h(const struct object *obj)
+{
+	if (tval_is_body_armor(obj) && !randcalc_varies(obj->kind->to_h))
+		return (obj->to_h == obj->kind->to_h.base);
+	else
+		return (obj->to_h == 0);
+}
+
+/**
  * Check if all the runes on an object are known to the player
  *
  * \param obj is the object
@@ -528,7 +541,8 @@ bool object_has_rune(const struct object *obj, int rune_no)
 		case RUNE_VAR_COMBAT: {
 			if ((r->index == COMBAT_RUNE_TO_A) && (obj->to_a))
 				return true;
-			else if ((r->index == COMBAT_RUNE_TO_H) && (obj->to_h))
+			else if ((r->index == COMBAT_RUNE_TO_H) &&
+					 !object_has_standard_to_h(obj))
 				return true;
 			else if ((r->index == COMBAT_RUNE_TO_D) && (obj->to_d))
 				return true;
@@ -691,10 +705,12 @@ void object_set_base_known(struct object *obj)
 	obj->known->sval = obj->sval;
 	obj->known->number = obj->number;
 
-	/* Generic dice and ac, and launcher multipliers */
+	/* Generic dice and ac, to_h for armor, and launcher multipliers */
 	obj->known->dd = obj->kind->dd * player->obj_k->dd;
 	obj->known->ds = obj->kind->ds * player->obj_k->ds;
 	obj->known->ac = obj->kind->ac * player->obj_k->ac;
+	if (object_has_standard_to_h(obj))
+		obj->known->to_h = obj->kind->to_h.base;
 	if (tval_is_launcher(obj))
 		obj->known->pval = obj->pval;
 
@@ -730,7 +746,8 @@ void player_know_object(struct player *p, struct object *obj)
 
 	/* Set combat details */
 	obj->known->to_a = p->obj_k->to_a * obj->to_a;
-	obj->known->to_h = p->obj_k->to_h * obj->to_h;
+	if (!object_has_standard_to_h(obj))
+		obj->known->to_h = p->obj_k->to_h * obj->to_h;
 	obj->known->to_d = p->obj_k->to_d * obj->to_d;
 
 	/* Set modifiers */
@@ -1040,7 +1057,7 @@ void equip_learn_on_ranged_attack(struct player *p)
 		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj) {
 			assert(obj->known);
-			if (obj->to_h) {
+			if (!object_has_standard_to_h(obj)) {
 				int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
 				player_learn_rune(p, index, true);
 			}
@@ -1070,7 +1087,7 @@ void equip_learn_on_melee_attack(struct player *p)
 		if (i == slot_by_name(p, "shooting")) continue;
 		if (obj) {
 			assert(obj->known);
-			if (obj->to_h) {
+			if (!object_has_standard_to_h(obj)) {
 				int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
 				player_learn_rune(p, index, true);
 			}
@@ -1493,7 +1510,7 @@ void missile_learn_on_ranged_attack(struct player *p, struct object *obj)
 		return;
 
 	assert(obj->known);
-	if (obj->to_h) {
+	if (!object_has_standard_to_h(obj)) {
 		int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
 		player_learn_rune(p, index, true);
 	}
