@@ -371,12 +371,12 @@ int pathfind_direction_to(struct loc from, struct loc to)
 
 
 
-int run_cur_dir;		/* Direction we are running */
-int run_old_dir;		/* Direction we came from */
-bool run_unused;		/* Unused (padding field) */
-bool run_open_area;		/* Looking for an open area */
-bool run_break_right;	/* Looking for a break (right) */
-bool run_break_left;	/* Looking for a break (left) */
+static int run_cur_dir;		/* Direction we are running */
+static int run_old_dir;		/* Direction we came from */
+static bool run_unused;		/* Unused (padding field) */
+static bool run_open_area;		/* Looking for an open area */
+static bool run_break_right;	/* Looking for a break (right) */
+static bool run_break_left;	/* Looking for a break (left) */
 
 /**
  * Hack -- allow quick "cycling" through the legal directions

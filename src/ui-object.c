@@ -68,12 +68,12 @@ struct object_menu_data {
 	char key;
 };
 
-struct object_menu_data items[MAX_ITEMS];
-int num_obj;
-int num_head;
-size_t max_len;
-int ex_width;
-int ex_offset;
+static struct object_menu_data items[MAX_ITEMS];
+static int num_obj;
+static int num_head;
+static size_t max_len;
+static int ex_width;
+static int ex_offset;
 
 /**
  * ------------------------------------------------------------------------
@@ -570,21 +570,21 @@ void show_floor(struct object **floor_list, int floor_num, int mode,
  * Variables for object selection
  * ------------------------------------------------------------------------ */
 
-item_tester tester_m;
+static item_tester tester_m;
 static region area = { 20, 1, -1, -2 };
 static struct object *selection;
-const char *prompt;
-char header[80];
-int i1, i2;
-int e1, e2;
-int q1, q2;
-int f1, f2;
-struct object **floor_list;
+static const char *prompt;
+static char header[80];
+static int i1, i2;
+static int e1, e2;
+static int q1, q2;
+static int f1, f2;
+static struct object **floor_list;
 static olist_detail_t olist_mode = 0;
-int item_mode;
-cmd_code item_cmd;
-bool newmenu = false;
-bool allow_all = false;
+static int item_mode;
+static cmd_code item_cmd;
+static bool newmenu = false;
+static bool allow_all = false;
 
 /**
  * ------------------------------------------------------------------------

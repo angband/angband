@@ -2332,7 +2332,7 @@ static void cleanup_trap(void)
 	mem_free(trap_info);
 }
 
-struct file_parser trap_parser = {
+static struct file_parser trap_parser = {
     "trap",
     init_parse_trap,
     run_parse_trap,

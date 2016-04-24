@@ -44,7 +44,7 @@ struct brand_info {
  * sorted properly, and there will also need to be a list of possibilities
  * in obj-randart.c
  */
-const struct brand_info brand_names[] = {
+static const struct brand_info brand_names[] = {
 	{ "acid", "dissolve", "corrode", RF_IM_ACID },
 	{ "lightning", "shock", "zap", RF_IM_ELEC },
 	{ "fire", "burn", "singe", RF_IM_FIRE },
@@ -63,7 +63,7 @@ struct slay_info {
  * These should go into obj-randart.c, but can wait for brands to be done
  * (because they're more complicated) - NRM
  */
-const struct slay_info slay_names[] = {
+static const struct slay_info slay_names[] = {
 	{ "evil creatures", RF_EVIL, 2 },
 	{ "animals", RF_ANIMAL, 2 },
 	{ "orcs", RF_ORC, 3 },

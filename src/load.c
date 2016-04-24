@@ -49,32 +49,32 @@
 /**
  * Dungeon constants
  */
-byte square_size = 0;
+static byte square_size = 0;
 
 /**
  * Player constants
  */
-byte hist_size = 0;
+static byte hist_size = 0;
 
 /**
  * Object constants
  */
-byte obj_mod_max = 0;
-byte of_size = 0;
-byte elem_max = 0;
+static byte obj_mod_max = 0;
+static byte of_size = 0;
+static byte elem_max = 0;
 
 /**
  * Monster constants
  */
-byte monster_blow_max = 0;
-byte rf_size = 0;
-byte rsf_size = 0;
-byte mflag_size = 0;
+static byte monster_blow_max = 0;
+static byte rf_size = 0;
+static byte rsf_size = 0;
+static byte mflag_size = 0;
 
 /**
  * Trap constants
  */
-byte trf_size = 0;
+static byte trf_size = 0;
 
 /**
  * Shorthand function pointer for rd_item version

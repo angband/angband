@@ -452,7 +452,7 @@ static void wiz_display_item(const struct object *obj, bool all)
 
 
 /** Object creation code **/
-bool choose_artifact = false;
+static bool choose_artifact = false;
 
 static const region wiz_create_item_area = { 0, 0, 0, 0 };
 

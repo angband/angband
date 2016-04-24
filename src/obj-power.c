@@ -133,7 +133,7 @@ static s16b ability_power[25] =
 	74, 84, 96, 110};
 
 /* Log file declared here for simplicity */
-ang_file *object_log;
+static ang_file *object_log;
 
 /**
  * Log progress info to the object log

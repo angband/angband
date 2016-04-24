@@ -221,7 +221,7 @@ struct activation *activations;
 static int verbose = 1;
 
 /* Fake pvals array for maintaining current behaviour NRM */
-int fake_pval[3] = {0, 0, 0};
+static int fake_pval[3] = {0, 0, 0};
 
 /**
  * Include the elements and names

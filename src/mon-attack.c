@@ -24,6 +24,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "init.h"
+#include "mon-attack.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
 #include "mon-desc.h"

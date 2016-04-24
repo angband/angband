@@ -82,7 +82,7 @@ static struct sound_hooks hooks;
  * If preload_sounds is true, sounds are loaded immediately when assigned to
  * a message. Otherwise, each sound is only loaded when first played.
  */
-bool preload_sounds = false;
+static bool preload_sounds = false;
 
 static struct sound_data *grow_sound_list(void)
 {

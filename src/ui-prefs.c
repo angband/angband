@@ -50,7 +50,7 @@ byte *trap_x_attr[LIGHTING_MAX];
 wchar_t *trap_x_char[LIGHTING_MAX];
 byte *flavor_x_attr;
 wchar_t *flavor_x_char;
-size_t flavor_max = 0;
+static size_t flavor_max = 0;
 
 /**
  * ------------------------------------------------------------------------
