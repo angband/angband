@@ -341,17 +341,17 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 		/* Hallucination messes things up */
 		if (player->timed[TMD_IMAGE]) {
-			const char *name = "something strange";
+			const char *name_strange = "something strange";
 
 			/* Display a message */
 			if (player->wizard)
 				strnfmt(out_val, sizeof(out_val),
 						"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).", s1, s2, s3,
-						name, coords, y, x, (int)cave->squares[y][x].cost,
+						name_strange, coords, y, x, (int)cave->squares[y][x].cost,
 						(int)cave->squares[y][x].when);
 			else
 				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.",
-						s1, s2, s3, name, coords);
+						s1, s2, s3, name_strange, coords);
 
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
@@ -648,10 +648,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			/* Only one object to display */
 			else {
 				/* Get the single object in the list */
-				struct object *obj = floor_list[0];
+				struct object *obj_local = floor_list[0];
 
 				/* Allow user to recall an object */
-				press = target_recall_loop_object(obj, y, x, out_val, s1, s2,
+				press = target_recall_loop_object(obj_local, y, x, out_val, s1, s2,
 												  s3, coords);
 
 				/* Stop on everything but "return"/"space" */
@@ -662,7 +662,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				if ((press.key.code == ' ') && !(mode & (TARGET_LOOK))) break;
 
 				/* Plurals */
-				s1 = VERB_AGREEMENT(obj->number, "It is ", "They are ");
+				s1 = VERB_AGREEMENT(obj_local->number, "It is ", "They are ");
 
 				/* Preposition */
 				s2 = "on ";
@@ -1027,13 +1027,13 @@ bool target_set_interactive(int mode, int x, int y)
 					x = KEY_GRID_X(press);
 					if (press.mouse.mods & KC_MOD_CONTROL) {
 						/* same as keyboard target selection command below */
-						struct monster *m = square_monster(cave, y, x);
+						struct monster *m_local = square_monster(cave, y, x);
 
-						if (target_able(m)) {
+						if (target_able(m_local)) {
 							/* Set up target information */
-							monster_race_track(player->upkeep, m->race);
-							health_track(player->upkeep, m);
-							target_set_monster(m);
+							monster_race_track(player->upkeep, m_local->race);
+							health_track(player->upkeep, m_local);
+							target_set_monster(m_local);
 							done = true;
 						} else {
 							bell("Illegal target!");
@@ -1125,11 +1125,11 @@ bool target_set_interactive(int mode, int x, int y)
 					case '0':
 					case '.':
 					{
-						struct monster *m = square_monster(cave, y, x);
+						struct monster *m_local = square_monster(cave, y, x);
 
-						if (target_able(m)) {
-							health_track(player->upkeep, m);
-							target_set_monster(m);
+						if (target_able(m_local)) {
+							health_track(player->upkeep, m_local);
+							target_set_monster(m_local);
 							done = true;
 						} else {
 							bell("Illegal target!");

@@ -1983,7 +1983,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 {
 	const char *data = v->text;
 	int y1, x1, y2, x2;
-	int x, y, races = 0;
+	int x, y, races_local = 0;
 	const char *t;
 	char racial_symbol[30] = "";
 	bool icky;
@@ -2089,8 +2089,8 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				/* If the symbol is not yet stored, ... */
 				if (!strchr(racial_symbol, *t)) {
 					/* ... store it for later processing. */
-					if (races < 30)
-						racial_symbol[races++] = *t;
+					if (races_local < 30)
+						racial_symbol[races_local++] = *t;
 				}
 			}
 
@@ -2619,22 +2619,22 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 	/* Build the chambers. */
 	for (i = 0; i < num_chambers; i++) {
 		int c_y1, c_x1, c_y2, c_x2;
-		int size, width, height;
+		int size, width_local, height_local;
 
 		/* Determine size of chamber. */
 		size = 3 + randint0(4);
-		width = size + randint0(10);
-		height = size + randint0(4);
+		width_local = size + randint0(10);
+		height_local = size + randint0(4);
 
 		/* Pick an upper-left corner at random. */
-		c_y1 = y1 + randint0(1 + y2 - y1 - height);
-		c_x1 = x1 + randint0(1 + x2 - x1 - width);
+		c_y1 = y1 + randint0(1 + y2 - y1 - height_local);
+		c_x1 = x1 + randint0(1 + x2 - x1 - width_local);
 
 		/* Determine lower-right corner of chamber. */
-		c_y2 = c_y1 + height;
+		c_y2 = c_y1 + height_local;
 		if (c_y2 > y2) c_y2 = y2;
 
-		c_x2 = c_x1 + width;
+		c_x2 = c_x1 + width_local;
 		if (c_x2 > x2) c_x2 = x2;
 
 		/* Make me a (magma filled) chamber. */

@@ -888,19 +888,19 @@ void cave_generate(struct chunk **c, struct player *p)
 
 		/* Ensure quest monsters */
 		if (is_quest(chunk->depth)) {
-			int i;
-			for (i = 1; i < z_info->r_max; i++) {
-				struct monster_race *race = &r_info[i];
-				int y, x;
-				
+			int i2;
+			for (i2 = 1; i2 < z_info->r_max; i2++) {
+				struct monster_race *race = &r_info[i2];
+				int y2, x2;
+
 				/* The monster must be an unseen quest monster of this depth. */
 				if (race->cur_num > 0) continue;
 				if (!rf_has(race->flags, RF_QUESTOR)) continue;
 				if (race->level != chunk->depth) continue;
 	
 				/* Pick a location and place the monster */
-				find_empty(chunk, &y, &x);
-				place_new_monster(chunk, y, x, race, true, true, ORIGIN_DROP);
+				find_empty(chunk, &y2, &x2);
+				place_new_monster(chunk, y2, x2, race, true, true, ORIGIN_DROP);
 			}
 		}
 

@@ -349,9 +349,9 @@ static bool py_attack_real(int y, int x, bool *fear)
 		/* Get the best attack from all slays or
 		 * brands on all non-launcher equipment */
 		for (j = 2; j < player->body.count; j++) {
-			struct object *obj = slot_object(player, j);
-			if (obj)
-				improve_attack_modifier(obj, mon, &b, &s, verb, false, true);
+			struct object *obj_local = slot_object(player, j);
+			if (obj_local)
+				improve_attack_modifier(obj_local, mon, &b, &s, verb, false, true);
 		}
 
 		improve_attack_modifier(obj, mon, &b, &s, verb, false, true);

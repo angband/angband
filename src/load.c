@@ -159,10 +159,10 @@ static struct object *rd_item(void)
 	/* Read brands */
 	rd_byte(&tmp8u);
 	while (tmp8u) {
-		char buf[40];
+		char buf_local[40];
 		struct brand *b = mem_zalloc(sizeof *b);
-		rd_string(buf, sizeof(buf));
-		b->name = string_make(buf);
+		rd_string(buf_local, sizeof(buf_local));
+		b->name = string_make(buf_local);
 		rd_s16b(&tmp16s);
 		b->element = tmp16s;
 		rd_s16b(&tmp16s);
@@ -175,10 +175,10 @@ static struct object *rd_item(void)
 	/* Read slays */
 	rd_byte(&tmp8u);
 	while (tmp8u) {
-		char buf[40];
+		char buf_local[40];
 		struct slay *s = mem_zalloc(sizeof *s);
-		rd_string(buf, sizeof(buf));
-		s->name = string_make(buf);
+		rd_string(buf_local, sizeof(buf_local));
+		s->name = string_make(buf_local);
 		rd_s16b(&tmp16s);
 		s->race_flag = tmp16s;
 		rd_s16b(&tmp16s);

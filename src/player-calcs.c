@@ -1428,7 +1428,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	/* Weigh the armor */
 	cur_wgt = 0;
 	for (i = 0; i < p->body.count; i++) {
-		struct object *obj = slot_object(p, i);
+		struct object *obj_local = slot_object(p, i);
 
 		/* Ignore non-armor */
 		if (slot_type_is(i, EQUIP_WEAPON)) continue;
@@ -1438,8 +1438,8 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 		if (slot_type_is(i, EQUIP_LIGHT)) continue;
 
 		/* Add weight */
-		if (obj)
-			cur_wgt += obj->weight;
+		if (obj_local)
+			cur_wgt += obj_local->weight;
 	}
 
 	/* Determine the weight allowance */

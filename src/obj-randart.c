@@ -2718,7 +2718,7 @@ static void scramble_artifact(int a_idx)
 static bool artifacts_acceptable(void)
 {
 	int swords = 5, polearms = 5, blunts = 5, bows = 4;
-	int bodies = 5, shields = 4, cloaks = 4, hats = 4;
+	int bodies_local = 5, shields = 4, cloaks = 4, hats = 4;
 	int gloves = 4, boots = 4;
 	int i;
 
@@ -2737,7 +2737,7 @@ static bool artifacts_acceptable(void)
 			case TV_SOFT_ARMOR:
 			case TV_HARD_ARMOR:
 			case TV_DRAG_ARMOR:
-				bodies--; break;
+				bodies_local--; break;
 			case TV_SHIELD:
 				shields--; break;
 			case TV_CLOAK:
@@ -2756,7 +2756,7 @@ static bool artifacts_acceptable(void)
 	file_putf(log_file, "Deficit amount for polearms is %d\n", polearms);
 	file_putf(log_file, "Deficit amount for blunts is %d\n", blunts);
 	file_putf(log_file, "Deficit amount for bows is %d\n", bows);
-	file_putf(log_file, "Deficit amount for bodies is %d\n", bodies);
+	file_putf(log_file, "Deficit amount for bodies is %d\n", bodies_local);
 	file_putf(log_file, "Deficit amount for shields is %d\n", shields);
 	file_putf(log_file, "Deficit amount for cloaks is %d\n", cloaks);
 	file_putf(log_file, "Deficit amount for hats is %d\n", hats);
@@ -2764,7 +2764,7 @@ static bool artifacts_acceptable(void)
 	file_putf(log_file, "Deficit amount for boots is %d\n", boots);
 
 	if (swords > 0 || polearms > 0 || blunts > 0 || bows > 0 ||
-	    bodies > 0 || shields > 0 || cloaks > 0 || hats > 0 ||
+	    bodies_local > 0 || shields > 0 || cloaks > 0 || hats > 0 ||
 	    gloves > 0 || boots > 0) {
 		if (verbose) {
 			char types[256];
@@ -2773,7 +2773,7 @@ static bool artifacts_acceptable(void)
 					polearms > 0 ? " polearms" : "",
 					blunts > 0 ? " blunts" : "",
 					bows > 0 ? " bows" : "",
-					bodies > 0 ? " body-armors" : "",
+					bodies_local > 0 ? " body-armors" : "",
 					shields > 0 ? " shields" : "",
 					cloaks > 0 ? " cloaks" : "",
 					hats > 0 ? " hats" : "",

@@ -38,17 +38,17 @@ s32b tot_mon_power;
 static long eval_blow_effect(int effect, random_value atk_dam, int rlev)
 {
 	int adjustment = monster_blow_effect_eval(effect);
-	int power = randcalc(atk_dam, rlev, MAXIMISE);
+	int blow_power = randcalc(atk_dam, rlev, MAXIMISE);
 
 	if (effect == RBE_POISON) {
-		power *= 5;
-		power /= 4;
-		power += rlev;
+		blow_power *= 5;
+		blow_power /= 4;
+		blow_power += rlev;
 	} else {
-		power += adjustment;
+		blow_power += adjustment;
 	}
 
-	return power;
+	return blow_power;
 }
 
 static byte adj_energy(struct monster_race *race)

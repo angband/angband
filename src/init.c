@@ -1337,24 +1337,24 @@ static enum parser_error parse_object_values(struct parser *p) {
 			add_game_brand(b);
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
-			struct slay *s;
+			struct slay *slay;
 			found = true;
-			s = mem_zalloc(sizeof *s);
-			s->name = string_make(slay_names[index]);
-			s->race_flag = index;
-			s->multiplier = value;
-			s->next = k->slays;
-			k->slays = s;
-			add_game_slay(s);
+			slay = mem_zalloc(sizeof *slay);
+			slay->name = string_make(slay_names[index]);
+			slay->race_flag = index;
+			slay->multiplier = value;
+			slay->next = k->slays;
+			k->slays = slay;
+			add_game_slay(slay);
 		} else if (!grab_base_and_int(&value, &name, t)) {
-			struct slay *s;
+			struct slay *slay;
 			found = true;
-			s = mem_zalloc(sizeof *s);
-			s->name = string_make(name);
-			s->multiplier = value;
-			s->next = k->slays;
-			k->slays = s;
-			add_game_slay(s);
+			slay = mem_zalloc(sizeof *slay);
+			slay->name = string_make(name);
+			slay->multiplier = value;
+			slay->next = k->slays;
+			k->slays = slay;
+			add_game_slay(slay);
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;
@@ -1876,24 +1876,24 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 			add_game_brand(b);
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
-			struct slay *s;
+			struct slay *slay;
 			found = true;
-			s = mem_zalloc(sizeof *s);
-			s->name = string_make(slay_names[index]);
-			s->race_flag = index;
-			s->multiplier = value;
-			s->next = a->slays;
-			a->slays = s;
-			add_game_slay(s);
+			slay = mem_zalloc(sizeof *slay);
+			slay->name = string_make(slay_names[index]);
+			slay->race_flag = index;
+			slay->multiplier = value;
+			slay->next = a->slays;
+			a->slays = slay;
+			add_game_slay(slay);
 		} else if (!grab_base_and_int(&value, &name, t)) {
-			struct slay *s;
+			struct slay *slay;
 			found = true;
-			s = mem_zalloc(sizeof *s);
-			s->name = string_make(name);
-			s->multiplier = value;
-			s->next = a->slays;
-			a->slays = s;
-			add_game_slay(s);
+			slay = mem_zalloc(sizeof *slay);
+			slay->name = string_make(name);
+			slay->multiplier = value;
+			slay->next = a->slays;
+			a->slays = slay;
+			add_game_slay(slay);
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;
@@ -2769,24 +2769,24 @@ static enum parser_error parse_ego_values(struct parser *p) {
 			add_game_brand(b);
 		}
 		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
-			struct slay *s;
+			struct slay *slay;
 			found = true;
-			s = mem_zalloc(sizeof *s);
-			s->name = string_make(slay_names[index]);
-			s->race_flag = index;
-			s->multiplier = value;
-			s->next = e->slays;
-			e->slays = s;
-			add_game_slay(s);
+			slay = mem_zalloc(sizeof *slay);
+			slay->name = string_make(slay_names[index]);
+			slay->race_flag = index;
+			slay->multiplier = value;
+			slay->next = e->slays;
+			e->slays = slay;
+			add_game_slay(slay);
 		} else if (!grab_base_and_int(&value, &name, t)) {
-			struct slay *s;
+			struct slay *slay;
 			found = true;
-			s = mem_zalloc(sizeof *s);
-			s->name = string_make(name);
-			s->multiplier = value;
-			s->next = e->slays;
-			e->slays = s;
-			add_game_slay(s);
+			slay = mem_zalloc(sizeof *slay);
+			slay->name = string_make(name);
+			slay->multiplier = value;
+			slay->next = e->slays;
+			e->slays = slay;
+			add_game_slay(slay);
 		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;

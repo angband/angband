@@ -741,8 +741,8 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
     /* Cut out a grid of 1x1 rooms which we will call "cells" */
     for (y = 0; y < h; y += 2) {
 		for (x = 0; x < w; x += 2) {
-			int k = yx_to_i(y, x, w);
-			sets[k] = k;
+			int k_local = yx_to_i(y, x, w);
+			sets[k_local] = k_local;
 			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
 			if (lit) sqinfo_on(c->squares[y + 1][x + 1].info, SQUARE_GLOW);
 		}
@@ -756,14 +756,14 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
      *
      * This is a randomized version of Kruskal's algorithm. */
     for (i = 0; i < n; i++) {
-		int a, b, x, y;
+		int a, b, x_local, y_local;
 
 		j = walls[i];
 
 		/* If this cell isn't an adjoining wall, skip it */
-		i_to_yx(j, w, &y, &x);
-		if ((x < 1 && y < 1) || (x > w - 2 && y > h - 2)) continue;
-		if (x % 2 == y % 2) continue;
+		i_to_yx(j, w, &y_local, &x_local);
+		if ((x_local < 1 && y_local < 1) || (x_local > w - 2 && y_local > h - 2)) continue;
+		if (x_local % 2 == y_local % 2) continue;
 
 		/* Figure out which cells are separated by this wall */
 		lab_get_adjoin(j, w, &a, &b);
@@ -772,8 +772,8 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 		if (sets[a] != sets[b]) {
 			int sa = sets[a];
 			int sb = sets[b];
-			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
-			if (lit) sqinfo_on(c->squares[y + 1][x + 1].info, SQUARE_GLOW);
+			square_set_feat(c, y_local + 1, x_local + 1, FEAT_FLOOR);
+			if (lit) sqinfo_on(c->squares[y_local + 1][x_local + 1].info, SQUARE_GLOW);
 
 			for (k = 0; k < n; k++) {
 				if (sets[k] == sb) sets[k] = sa;

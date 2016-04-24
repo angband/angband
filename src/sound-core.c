@@ -254,21 +254,21 @@ enum parser_error parse_prefs_sound(struct parser *p)
 {
 	int msg_index;
 	const char *type;
-	const char *sounds;
+	const char *sounds_local;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	type = parser_getsym(p, "type");
-	sounds = parser_getstr(p, "sounds");
+	sounds_local = parser_getstr(p, "sounds");
 
 	msg_index = message_lookup_by_name(type);
 
 	if (msg_index < 0)
 		return PARSE_ERROR_INVALID_MESSAGE;
 
-	message_sound_define(msg_index, sounds);
+	message_sound_define(msg_index, sounds_local);
 
 	return PARSE_ERROR_NONE;
 }

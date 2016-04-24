@@ -570,19 +570,19 @@ static const int birth_stat_costs[18 + 1] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
 /* It was feasible to get base 17 in 3 stats with the autoroller */
 #define MAX_BIRTH_POINTS 20 /* 3 * (1+1+1+1+1+1+2) */
 
-static void recalculate_stats(int *stats, int points_left)
+static void recalculate_stats(int *stats_local_local, int points_left_local)
 {
 	int i;
 
 	/* Variable stat maxes */
 	for (i = 0; i < STAT_MAX; i++) {
 		player->stat_cur[i] = player->stat_max[i] =
-				player->stat_birth[i] = stats[i];
+				player->stat_birth[i] = stats_local_local[i];
 		player->stat_map[i] = i;
 	}
 
 	/* Gold is inversely proportional to cost */
-	player->au_birth = z_info->start_gold + (50 * points_left);
+	player->au_birth = z_info->start_gold + (50 * points_left_local);
 
 	/* Update bonuses, hp, etc. */
 	get_bonuses();
@@ -594,51 +594,51 @@ static void recalculate_stats(int *stats, int points_left)
 	event_signal(EVENT_STATS);
 }
 
-static void reset_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
-						int *points_left, bool update_display)
+static void reset_stats(int stats_local[STAT_MAX], int points_spent_local_local[STAT_MAX],
+						int *points_left_local, bool update_display)
 {
 	int i;
 
 	/* Calculate and signal initial stats and points totals. */
-	*points_left = MAX_BIRTH_POINTS;
+	*points_left_local = MAX_BIRTH_POINTS;
 
 	for (i = 0; i < STAT_MAX; i++) {
 		/* Initial stats are all 10 and costs are zero */
-		stats[i] = 10;
-		points_spent[i] = 0;
+		stats_local[i] = 10;
+		points_spent_local_local[i] = 0;
 	}
 
 	/* Use the new "birth stat" values to work out the "other"
 	   stat values (i.e. after modifiers) and tell the UI things have 
 	   changed. */
 	if (update_display) {
-		recalculate_stats(stats, *points_left);
-		event_signal_birthpoints(points_spent, *points_left);	
+		recalculate_stats(stats_local, *points_left_local);
+		event_signal_birthpoints(points_spent_local_local, *points_left_local);	
 	}
 }
 
-static bool buy_stat(int choice, int stats[STAT_MAX],
-					 int points_spent[STAT_MAX], int *points_left,
+static bool buy_stat(int choice, int stats_local[STAT_MAX],
+					 int points_spent_local[STAT_MAX], int *points_left_local,
 					 bool update_display)
 {
 	/* Must be a valid stat, and have a "base" of below 18 to be adjusted */
-	if (!(choice >= STAT_MAX || choice < 0) &&	(stats[choice] < 18)) {
+	if (!(choice >= STAT_MAX || choice < 0) &&	(stats_local[choice] < 18)) {
 		/* Get the cost of buying the extra point (beyond what
 		   it has already cost to get this far). */
-		int stat_cost = birth_stat_costs[stats[choice] + 1];
+		int stat_cost = birth_stat_costs[stats_local[choice] + 1];
 
-		if (stat_cost <= *points_left) {
-			stats[choice]++;
-			points_spent[choice] += stat_cost;
-			*points_left -= stat_cost;
+		if (stat_cost <= *points_left_local) {
+			stats_local[choice]++;
+			points_spent_local[choice] += stat_cost;
+			*points_left_local -= stat_cost;
 
 			if (update_display) {
 				/* Tell the UI the new points situation. */
-				event_signal_birthpoints(points_spent, *points_left);
+				event_signal_birthpoints(points_spent_local, *points_left_local);
 
 				/* Recalculate everything that's changed because
 				   the stat has changed, and inform the UI. */
-				recalculate_stats(stats, *points_left);
+				recalculate_stats(stats_local, *points_left_local);
 			}
 
 			return true;
@@ -650,24 +650,24 @@ static bool buy_stat(int choice, int stats[STAT_MAX],
 }
 
 
-static bool sell_stat(int choice, int stats[STAT_MAX], int points_spent[STAT_MAX],
-	int *points_left, bool update_display)
+static bool sell_stat(int choice, int stats_local[STAT_MAX], int points_spent_local[STAT_MAX],
+	int *points_left_local, bool update_display)
 {
 	/* Must be a valid stat, and we can't "sell" stats below the base of 10. */
-	if (!(choice >= STAT_MAX || choice < 0) && (stats[choice] > 10)) {
-		int stat_cost = birth_stat_costs[stats[choice]];
+	if (!(choice >= STAT_MAX || choice < 0) && (stats_local[choice] > 10)) {
+		int stat_cost = birth_stat_costs[stats_local[choice]];
 
-		stats[choice]--;
-		points_spent[choice] -= stat_cost;
-		*points_left += stat_cost;
+		stats_local[choice]--;
+		points_spent_local[choice] -= stat_cost;
+		*points_left_local += stat_cost;
 
 		if (update_display) {
 			/* Tell the UI the new points situation. */
-			event_signal_birthpoints(points_spent, *points_left);
+			event_signal_birthpoints(points_spent_local, *points_left_local);
 
 			/* Recalculate everything that's changed because
 			   the stat has changed, and inform the UI. */
-			recalculate_stats(stats, *points_left);
+			recalculate_stats(stats_local, *points_left_local);
 	
 			return true;
 		}
@@ -692,8 +692,8 @@ static bool sell_stat(int choice, int stats[STAT_MAX], int points_spent[STAT_MAX
  * 3. If there are any points left, spend as much as possible in order 
  *    on DEX and then the non-spell-stat.
  */
-static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX], 
-						   int *points_left)
+static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STAT_MAX], 
+						   int *points_left_local)
 {
 	int step = 0;
 	int maxed[STAT_MAX] = { 0 };
@@ -710,15 +710,15 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 		caster = true;
 	}
 
-	while (*points_left && step >= 0) {
+	while (*points_left_local && step >= 0) {
 	
 		switch (step) {
 		
 			/* Buy base STR 17 */
 			case 0: {
 			
-				if (!maxed[STAT_STR] && stats[STAT_STR] < 17) {
-					if (!buy_stat(STAT_STR, stats, points_spent, points_left,
+				if (!maxed[STAT_STR] && stats_local[STAT_STR] < 17) {
+					if (!buy_stat(STAT_STR, stats_local, points_spent_local, points_left_local,
 								  false))
 						maxed[STAT_STR] = true;
 				} else {
@@ -737,7 +737,7 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 			case 1: {
 				if (!maxed[STAT_DEX] && player->state.stat_top[STAT_DEX]
 					< 18+10) {
-					if (!buy_stat(STAT_DEX, stats, points_spent, points_left,
+					if (!buy_stat(STAT_DEX, stats_local, points_spent_local, points_left_local,
 								  false))
 						maxed[STAT_DEX] = true;
 				} else {
@@ -750,8 +750,8 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 			/* If we can't get 18/10 dex, sell it back. */
 			case 2: {
 				if (player->state.stat_top[STAT_DEX] < 18+10) {
-					while (stats[STAT_DEX] > 10)
-						sell_stat(STAT_DEX, stats, points_spent, points_left,
+					while (stats_local[STAT_DEX] > 10)
+						sell_stat(STAT_DEX, stats_local, points_spent_local, points_left_local,
 								  false);
 					maxed[STAT_DEX] = false;
 				}
@@ -765,24 +765,24 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 			 */
 			case 3: 
 			{
-				int points_trigger = *points_left / 2;
+				int points_trigger = *points_left_local / 2;
 				
 				if (warrior) {
-					points_trigger = *points_left;
+					points_trigger = *points_left_local;
 				} else {
 					while (!maxed[spell_stat] &&
-						   (caster || stats[spell_stat] < 16) &&
-						   points_spent[spell_stat] < points_trigger) {
+						   (caster || stats_local[spell_stat] < 16) &&
+						   points_spent_local[spell_stat] < points_trigger) {
 
-						if (!buy_stat(spell_stat, stats, points_spent,
-									  points_left, false)) {
+						if (!buy_stat(spell_stat, stats_local, points_spent_local,
+									  points_left_local, false)) {
 							maxed[spell_stat] = true;
 						}
 
-						if (points_spent[spell_stat] > points_trigger) {
+						if (points_spent_local[spell_stat] > points_trigger) {
 						
-							sell_stat(spell_stat, stats, points_spent, 
-									  points_left, false);
+							sell_stat(spell_stat, stats_local, points_spent_local, 
+									  points_left_local, false);
 							maxed[spell_stat] = true;
 						}
 					}
@@ -791,16 +791,16 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 				/* Skip CON for casters because DEX is more important early
 				 * and is handled in 4 */
 				while (!maxed[STAT_CON] &&
-					   !(caster) && stats[STAT_CON] < 16 &&
-					   points_spent[STAT_CON] < points_trigger) {
+					   !(caster) && stats_local[STAT_CON] < 16 &&
+					   points_spent_local[STAT_CON] < points_trigger) {
 					   
-					if (!buy_stat(STAT_CON, stats, points_spent,points_left,
+					if (!buy_stat(STAT_CON, stats_local, points_spent_local,points_left_local,
 								  false)) {
 						maxed[STAT_CON] = true;
 					}
 
-					if (points_spent[STAT_CON] > points_trigger) {
-						sell_stat(STAT_CON, stats, points_spent, points_left,
+					if (points_spent_local[STAT_CON] > points_trigger) {
+						sell_stat(STAT_CON, stats_local, points_spent_local, points_left_local,
 								  false);
 						maxed[STAT_CON] = true;
 					}
@@ -830,7 +830,7 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 				}
 
 				/* Buy until we can't buy any more. */
-				while (buy_stat(next_stat, stats, points_spent, points_left,
+				while (buy_stat(next_stat, stats_local, points_spent_local, points_left_local,
 								false));
 				maxed[next_stat] = true;
 
@@ -845,11 +845,11 @@ static void generate_stats(int stats[STAT_MAX], int points_spent[STAT_MAX],
 		}
 	}
 	/* Tell the UI the new points situation. */
-	event_signal_birthpoints(points_spent, *points_left);
+	event_signal_birthpoints(points_spent_local, *points_left_local);
 
 	/* Recalculate everything that's changed because
 	   the stat has changed, and inform the UI. */
-	recalculate_stats(stats, *points_left);
+	recalculate_stats(stats_local, *points_left_local);
 }
 
 /**
@@ -893,14 +893,14 @@ void player_generate(struct player *p, const struct player_race *r,
 /**
  * Reset everything back to how it would be on loading the game.
  */
-static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
+static void do_birth_reset(bool use_quickstart, birther *quickstart_prev_local)
 {
 	/* If there's quickstart data, we use it to set default
 	   character choices. */
-	if (use_quickstart && quickstart_prev)
-		load_roller_data(quickstart_prev, NULL);
+	if (use_quickstart && quickstart_prev_local)
+		load_roller_data(quickstart_prev_local, NULL);
 
-	player_generate(player, NULL, NULL, use_quickstart && quickstart_prev);
+	player_generate(player, NULL, NULL, use_quickstart && quickstart_prev_local);
 
 	player->depth = 0;
 

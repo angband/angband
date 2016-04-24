@@ -823,8 +823,8 @@ static void wiz_create_item(bool art)
 		if (art) {
 			int j;
 			for (j = 1; j < z_info->a_max; j++) {
-				struct artifact *art = &a_info[j];
-				if (art->tval == i) break;
+				struct artifact *art_local = &a_info[j];
+				if (art_local->tval == i) break;
 			}
 			if (j == z_info->a_max) continue;
 		}

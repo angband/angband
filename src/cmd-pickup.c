@@ -266,17 +266,17 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	/* Display a list if requested. */
 	if (menu && !current) {
 		const char *q, *s;
-		struct object *obj = NULL;
+		struct object *obj_local = NULL;
 
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
-		if (!get_item(&obj, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
+		if (!get_item(&obj_local, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
 			mem_free(floor_list);
 			return (objs_picked_up);
 		}
 
-		current = obj;
+		current = obj_local;
 		call_function_again = true;
 
 		/* With a list, we do not need explicit pickup messages */
