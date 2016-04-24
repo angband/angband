@@ -456,7 +456,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	bool none_left = false;
 	int dir = 5;
 	int px = player->px, py = player->py;
-	enum use;
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 
 	/* Get arguments */
@@ -851,7 +850,7 @@ void do_cmd_refill(struct command *cmd)
  */
 void do_cmd_cast(struct command *cmd)
 {
-	int spell_index, dir;
+	int spell_index, dir = 0;
 
 	const char *verb = player->class->magic.spell_realm->verb;
 	const char *noun = player->class->magic.spell_realm->spell_noun;

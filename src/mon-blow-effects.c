@@ -263,7 +263,7 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
 {
 	struct object *obj;
 	struct monster *monster = context->mon;
-	struct player *player = context->p;
+	struct player *current_player = context->p;
 	int tries;
 	int unpower = 0, newcharge;
 
@@ -271,7 +271,7 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
 	take_hit(context->p, context->damage, context->ddesc);
 
 	/* Player is dead */
-	if (player->is_dead)
+	if (current_player->is_dead)
 		return;
 
 	/* Find an item */
@@ -311,14 +311,14 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
 			monster->hp += heal;
 
 			/* Redraw (later) if needed */
-			if (player->upkeep->health_who == monster)
-				player->upkeep->redraw |= (PR_HEALTH);
+			if (current_player->upkeep->health_who == monster)
+				current_player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Combine the pack */
-			player->upkeep->notice |= (PN_COMBINE);
+			current_player->upkeep->notice |= (PN_COMBINE);
 
 			/* Redraw stuff */
-			player->upkeep->redraw |= (PR_INVEN);
+			current_player->upkeep->redraw |= (PR_INVEN);
 
 			/* Affect only a single inventory slot */
 			break;
@@ -331,33 +331,33 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
  */
 static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *context)
 {
-	struct player *player = context->p;
+	struct player *current_player = context->p;
 
     /* Take damage */
-    take_hit(player, context->damage, context->ddesc);
+    take_hit(current_player, context->damage, context->ddesc);
 
 	/* Player is dead */
-	if (player->is_dead)
+	if (current_player->is_dead)
 		return;
 
     /* Obvious */
     context->obvious = true;
 
     /* Attempt saving throw (unless paralyzed) based on dex and level */
-    if (!player->timed[TMD_PARALYZED] &&
-        (randint0(100) < (adj_dex_safe[player->state.stat_ind[STAT_DEX]]
-						  + player->lev))) {
+    if (!current_player->timed[TMD_PARALYZED] &&
+        (randint0(100) < (adj_dex_safe[current_player->state.stat_ind[STAT_DEX]]
+						  + current_player->lev))) {
         /* Saving throw message */
         msg("You quickly protect your money pouch!");
 
         /* Occasional blink anyway */
         if (randint0(3)) context->blinked = true;
     } else {
-        s32b gold = (player->au / 10) + randint1(25);
+        s32b gold = (current_player->au / 10) + randint1(25);
         if (gold < 2) gold = 2;
-        if (gold > 5000) gold = (player->au / 20) + randint1(3000);
-        if (gold > player->au) gold = player->au;
-        player->au -= gold;
+        if (gold > 5000) gold = (current_player->au / 20) + randint1(3000);
+        if (gold > current_player->au) gold = current_player->au;
+        current_player->au -= gold;
         if (gold <= 0) {
             msg("Nothing was stolen.");
             return;
@@ -365,7 +365,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
 
         /* Let the player know they were robbed */
         msg("Your purse feels lighter.");
-        if (player->au)
+        if (current_player->au)
             msg("%d coins were stolen!", gold);
         else
             msg("All of your coins were stolen!");
@@ -386,14 +386,14 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
             /* Set origin to stolen, so it is not confused with
              * dropped treasure in monster_death */
             obj->origin = ORIGIN_STOLEN;
-			obj->origin_depth = player->depth;
+			obj->origin_depth = current_player->depth;
 
             /* Give the gold to the monster */
             monster_carry(cave, context->mon, obj);
         }
 
         /* Redraw gold */
-        player->upkeep->redraw |= (PR_GOLD);
+        current_player->upkeep->redraw |= (PR_GOLD);
 
         /* Blink away */
         context->blinked = true;

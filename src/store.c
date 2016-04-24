@@ -311,11 +311,11 @@ static struct file_parser store_parser = {
 
 static struct store *flatten_stores(struct store *store_list) {
 	struct store *s;
-	struct store *stores = mem_zalloc(MAX_STORES * sizeof(*stores));
+	struct store *stores_local = mem_zalloc(MAX_STORES * sizeof(*stores_local));
 
 	for (s = store_list; s; s = s->next) {
 		if (s->sidx < MAX_STORES)
-			memcpy(&stores[s->sidx], s, sizeof(*s));
+			memcpy(&stores_local[s->sidx], s, sizeof(*s));
 	}
 
 	while (store_list) {
@@ -326,7 +326,7 @@ static struct store *flatten_stores(struct store *store_list) {
 		store_list = s;
 	}
 
-	return stores;
+	return stores_local;
 }
 
 void store_init(void)

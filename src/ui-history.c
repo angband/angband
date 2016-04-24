@@ -36,8 +36,8 @@ static void print_history_header(void)
  */
 void history_display(void)
 {
-	struct history_info *history_list = NULL;
-	size_t max_item = history_get_list(&history_list);
+	struct history_info *history_list_local = NULL;
+	size_t max_item = history_get_list(&history_list_local);
 	int row, wid, hgt, page_size;
 	char buf[120];
 	static size_t first_item = 0;
@@ -64,11 +64,11 @@ void history_display(void)
 		for (i = first_item; row <= page_size && i < max_item; i++)
 		{
 			strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
-				history_list[i].turn,
-				history_list[i].dlev * 50,
-				history_list[i].event);
+				history_list_local[i].turn,
+				history_list_local[i].dlev * 50,
+				history_list_local[i].event);
 
-			if (hist_has(history_list[i].type, HIST_ARTIFACT_LOST))
+			if (hist_has(history_list_local[i].type, HIST_ARTIFACT_LOST))
 				my_strcat(buf, " (LOST)", sizeof(buf));
 
 			/* Size of header = 3 lines */
@@ -124,8 +124,8 @@ void history_display(void)
  */
 void dump_history(ang_file *file)
 {
-	struct history_info *history_list = NULL;
-	size_t max_item = history_get_list(&history_list);
+	struct history_info *history_list_local = NULL;
+	size_t max_item = history_get_list(&history_list_local);
 	size_t i;
 	char buf[120];
 
@@ -134,11 +134,11 @@ void dump_history(ang_file *file)
 
 	for (i = 0; i < max_item; i++) {
 		strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
-				history_list[i].turn,
-				history_list[i].dlev * 50,
-				history_list[i].event);
+				history_list_local[i].turn,
+				history_list_local[i].dlev * 50,
+				history_list_local[i].event);
 
-		if (hist_has(history_list[i].type, HIST_ARTIFACT_LOST))
+		if (hist_has(history_list_local[i].type, HIST_ARTIFACT_LOST))
 			my_strcat(buf, " (LOST)", sizeof(buf));
 
 		file_putf(file, "%s", buf);

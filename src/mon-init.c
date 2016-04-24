@@ -991,17 +991,17 @@ static errr finish_parse_monster(struct parser *p) {
 
 	/* Convert friend names into race pointers */
 	for (i = 0; i < z_info->r_max; i++) {
-		struct monster_race *r = &r_info[i];
+		struct monster_race *race = &r_info[i];
 		struct monster_friends *f;
-		for (f = r->friends; f; f = f->next) {
+		for (f = race->friends; f; f = f->next) {
 			if (!my_stricmp(f->name, "same"))
-				f->race = r;
+				f->race = race;
 			else
 				f->race = lookup_monster(f->name);
 
 			if (!f->race)
 				quit_fmt("Couldn't find friend named '%s' for monster '%s'",
-						 f->name, r->name);
+						 f->name, race->name);
 
 			string_free(f->name);
 		}
@@ -1121,7 +1121,7 @@ static enum parser_error parse_lore_counts(struct parser *p) {
 static enum parser_error parse_lore_blow(struct parser *p) {
 	struct monster_lore *l = parser_priv(p);
 	int method, effect = 0, seen = 0, index = 0;
-	struct random dam;
+	struct random dam = { 0, 0, 0, 0 };
 
 	if (!l)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;

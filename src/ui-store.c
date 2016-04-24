@@ -475,7 +475,7 @@ static bool store_sell(struct store_context *ctx)
 	struct store *store = ctx->store;
 
 	struct object *obj;
-	struct object object_type_body = { 0 };
+	struct object object_type_body = OBJECT_NULL;
 	struct object *temp_obj = &object_type_body;
 
 	char o_name[120];

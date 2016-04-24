@@ -50,7 +50,7 @@ byte *trap_x_attr[LIGHTING_MAX];
 wchar_t *trap_x_char[LIGHTING_MAX];
 byte *flavor_x_attr;
 wchar_t *flavor_x_char;
-size_t flavor_max = 0;
+static size_t flavor_max = 0;
 
 /**
  * ------------------------------------------------------------------------
@@ -596,10 +596,10 @@ static enum parser_error parse_prefs_object(struct parser *p)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
 		for (i = 0; i < z_info->k_max; i++) {
-			struct object_kind *kind = &k_info[i];
+			struct object_kind *kind_local = &k_info[i];
 
-			kind_x_attr[kind->kidx] = attr;
-			kind_x_char[kind->kidx] = chr;
+			kind_x_attr[kind_local->kidx] = attr;
+			kind_x_char[kind_local->kidx] = chr;
 		}
 
 		for (flavor = flavors; flavor; flavor = flavor->next) {
@@ -619,13 +619,13 @@ static enum parser_error parse_prefs_object(struct parser *p)
 			struct flavor *flavor;
 
 			for (i = 0; i < z_info->k_max; i++) {
-				struct object_kind *kind = &k_info[i];
+				struct object_kind *kind_local = &k_info[i];
 
-				if (kind->tval != tvi)
+				if (kind_local->tval != tvi)
 					continue;
 
-				kind_x_attr[kind->kidx] = attr;
-				kind_x_char[kind->kidx] = chr;
+				kind_x_attr[kind_local->kidx] = attr;
+				kind_x_char[kind_local->kidx] = chr;
 			}
 
 			for (flavor = flavors; flavor; flavor = flavor->next)
@@ -1118,7 +1118,7 @@ static void print_error(const char *name, struct parser *p) {
 /**
  * Process the user pref file with a given path.
  *
- * \param name is the name of the pref file.
+ * \param path is the name of the pref file.
  * \param quiet means "don't complain about not finding the file".
  * \param user should be true if the pref file is user-specific and not a game
  * default.

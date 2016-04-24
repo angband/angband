@@ -274,7 +274,20 @@ bool object_test(item_tester tester, const struct object *obj)
  */
 bool is_unknown(const struct object *obj)
 {
-	struct grid_data gd = { 0 };
+	struct grid_data gd = {
+		.m_idx = 0,
+		.f_idx = 0,
+		.first_kind = NULL,
+		.trap = NULL,
+		.multiple_objects = false,
+		.unseen_object = false,
+		.unseen_money = false,
+		.lighting = LIGHTING_LOS,
+		.in_view = false,
+		.is_player = false,
+		.hallucinate = false,
+		.trapborder = false
+	};
 	map_info(obj->iy, obj->ix, &gd);
 	return gd.unseen_object;
 }	

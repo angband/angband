@@ -259,7 +259,12 @@ bool cmdq_pop(cmd_context c)
  */
 errr cmdq_push_repeat(cmd_code c, int nrepeats)
 {
-	struct command cmd = { 0 };
+	struct command cmd = {
+		.context = CMD_INIT,
+		.code = CMD_NULL,
+		.nrepeats = 0,
+		.arg = { { 0 } }
+	};
 
 	if (cmd_idx(c) == -1)
 		return 1;

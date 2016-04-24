@@ -133,7 +133,7 @@ static s16b ability_power[25] =
 	74, 84, 96, 110};
 
 /* Log file declared here for simplicity */
-ang_file *object_log;
+static ang_file *object_log;
 
 /**
  * Log progress info to the object log
@@ -387,26 +387,26 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		 * total number of monsters.
 		 */
 		if (verbose) {
-			struct brand *b, *brands = NULL;
-			struct slay *s, *slays = NULL;
+			struct brand *b, *verbose_brands = NULL;
+			struct slay *s, *verbose_slays = NULL;
 
 			/* Write info about the slay combination and multiplier */
 			log_obj("Slay multiplier for: ");
 
-			brands = brand_collect(obj->brands, NULL);
-			slays = slay_collect(obj->slays, NULL);
+			verbose_brands = brand_collect(obj->brands, NULL);
+			verbose_slays = slay_collect(obj->slays, NULL);
 
-			for (b = brands; b; b = b->next) {
+			for (b = verbose_brands; b; b = b->next) {
 				log_obj(format("%sx%d ", b->name, b->multiplier));
 			}
-			for (s = slays; s; s = s->next) {
+			for (s = verbose_slays; s; s = s->next) {
 				log_obj(format("%sx%d ", s->name, s->multiplier));
 			}
 			log_obj(format("\nsv is: %d\n", sv));
 			log_obj(format(" and t_m_p is: %d \n", tot_mon_power));
 			log_obj(format("times 1000 is: %d\n", (1000 * sv) / tot_mon_power));
-			free_brand(brands);
-			free_slay(slays);
+			free_brand(verbose_brands);
+			free_slay(verbose_slays);
 		}
 
 		/* Add to the cache */

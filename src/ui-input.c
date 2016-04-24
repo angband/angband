@@ -692,7 +692,7 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 	size_t k = 0;		/* Cursor position */
 	size_t nul = 0;		/* Position of the null byte in the string */
 
-	struct keypress ch = { 0 };
+	struct keypress ch = KEYPRESS_NULL;
 
 	bool done = false;
 	bool firsttime = true;
@@ -1383,7 +1383,7 @@ ui_event textui_get_command(int *count)
 {
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
-	struct keypress tmp[2] = { { 0 }, { 0 } };
+	struct keypress tmp[2] = { KEYPRESS_NULL, KEYPRESS_NULL };
 
 	ui_event ke = EVENT_EMPTY;
 

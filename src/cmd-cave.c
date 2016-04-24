@@ -364,14 +364,14 @@ void do_cmd_open(struct command *cmd)
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
-		int y, x;
+		int y2, x2;
 		int n_closed_doors, n_locked_chests;
 
-		n_closed_doors = count_feats(&y, &x, square_iscloseddoor, false);
-		n_locked_chests = count_chests(&y, &x, CHEST_OPENABLE);
+		n_closed_doors = count_feats(&y2, &x2, square_iscloseddoor, false);
+		n_locked_chests = count_chests(&y2, &x2, CHEST_OPENABLE);
 
 		if (n_closed_doors + n_locked_chests == 1) {
-			dir = coords_to_dir(y, x);
+			dir = coords_to_dir(y2, x2);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
 			return;
@@ -507,11 +507,11 @@ void do_cmd_close(struct command *cmd)
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
-		int y, x;
+		int y2, x2;
 
 		/* Count open doors */
-		if (count_feats(&y, &x, square_isopendoor, false) == 1) {
-			dir = coords_to_dir(y, x);
+		if (count_feats(&y2, &x2, square_isopendoor, false) == 1) {
+			dir = coords_to_dir(y2, x2);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
 			return;
@@ -903,14 +903,14 @@ void do_cmd_disarm(struct command *cmd)
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
-		int y, x;
+		int y2, x2;
 		int n_traps, n_chests;
 
-		n_traps = count_feats(&y, &x, square_isknowntrap, true);
-		n_chests = count_chests(&y, &x, CHEST_TRAPPED);
+		n_traps = count_feats(&y2, &x2, square_isknowntrap, true);
+		n_chests = count_chests(&y2, &x2, CHEST_TRAPPED);
 
 		if (n_traps + n_chests == 1) {
-			dir = coords_to_dir(y, x);
+			dir = coords_to_dir(y2, x2);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, n_chests > 0)) {
 			/* If there are chests to disarm, 5 is allowed as a direction */

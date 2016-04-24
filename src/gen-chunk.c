@@ -39,9 +39,9 @@ u16b chunk_list_max = 0;      /**< current max actual chunk index */
  * Write a chunk to memory and return a pointer to it.  Optionally write
  * monsters, objects and/or traps, and in those cases delete those things from
  * the source chunk
- * \param y0
+ * \param y0 coordinates of the top left corner of the chunk being written
  * \param x0 coordinates of the top left corner of the chunk being written
- * \param height
+ * \param height dimensions of the chunk being written
  * \param width dimensions of the chunk being written
  * \param monsters whether monsters get written
  * \param objects whether objects get written
@@ -207,9 +207,9 @@ bool chunk_find(struct chunk *c)
 /**
  * Transform y, x coordinates by rotation, reflection and translation
  * Stolen from PosChengband
- * \param y
+ * \param y the coordinates being transformed
  * \param x the coordinates being transformed
- * \param y0
+ * \param y0 how much the coordinates are being translated
  * \param x0 how much the coordinates are being translated
  * \param height height of the chunk
  * \param width width of the chunk
@@ -242,9 +242,9 @@ void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
  * objects are copied from the old chunk and not retained there
  * \param dest the chunk where the copy is going
  * \param source the chunk being copied
- * \param y0
- * \param x0 
- * \param rotate 
+ * \param y0 transformation parameters  - see symmetry_transform()
+ * \param x0 transformation parameters  - see symmetry_transform()
+ * \param rotate transformation parameters  - see symmetry_transform()
  * \param reflect transformation parameters  - see symmetry_transform()
  * \return success - fails if the copy would not fit in the destination chunk
  */

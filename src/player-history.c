@@ -242,7 +242,7 @@ static bool history_is_artifact_logged(struct artifact *artifact)
  */
 bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 {
-	struct object body = { 0 }, known_body = { 0 };
+	struct object body = OBJECT_NULL, known_body = OBJECT_NULL;
 	struct object *fake = &body, *known_obj = &known_body;
 
 	char o_name[80];

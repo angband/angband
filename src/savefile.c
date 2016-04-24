@@ -496,16 +496,16 @@ static errr next_blockheader(ang_file *f, struct blockheader *b) {
  * Find the right loader for this block, return it
  */
 static loader_t find_loader(struct blockheader *b,
-							const struct blockinfo *loaders)
+							const struct blockinfo *local_loaders)
 {
 	size_t i = 0;
 
 	/* Find the right loader */
-	for (i = 0; loaders[i].name[0]; i++) {
-		if (!streq(b->name, loaders[i].name)) continue;
-		if (b->version != loaders[i].version) continue;
+	for (i = 0; local_loaders[i].name[0]; i++) {
+		if (!streq(b->name, local_loaders[i].name)) continue;
+		if (b->version != local_loaders[i].version) continue;
 
-		return loaders[i].loader;
+		return local_loaders[i].loader;
 	} 
 
 	return NULL;
@@ -543,7 +543,7 @@ static void skip_block(ang_file *f, struct blockheader *b)
 /**
  * Try to load a savefile
  */
-static bool try_load(ang_file *f, const struct blockinfo *loaders)
+static bool try_load(ang_file *f, const struct blockinfo *local_loaders)
 {
 	struct blockheader b;
 	errr err;
@@ -555,7 +555,7 @@ static bool try_load(ang_file *f, const struct blockinfo *loaders)
 
 	/* Get the next block header */
 	while ((err = next_blockheader(f, &b)) == 0) {
-		loader_t loader = find_loader(&b, loaders);
+		loader_t loader = find_loader(&b, local_loaders);
 		if (!loader) {
 			note("Savefile block can't be read.");
 			note("Maybe try and load the savefile in an earlier version of Angband.");

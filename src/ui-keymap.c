@@ -175,7 +175,7 @@ void keymap_dump(ang_file *fff)
 
 	for (k = keymaps[mode]; k; k = k->next) {
 		char buf[1024];
-		struct keypress key[2] = { { 0 }, { 0 } };
+		struct keypress key[2] = { KEYPRESS_NULL, KEYPRESS_NULL };
 
 		if (!k->user) continue;
 

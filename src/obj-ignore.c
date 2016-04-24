@@ -108,7 +108,7 @@ byte ignore_level[ITYPE_MAX];
 const size_t ignore_size = ITYPE_MAX;
 bool **ego_ignore_types;
 /* Hackish - ego_ignore_types should be initialised with arrays */
-int num_ego_types;
+static int num_ego_types;
 
 
 /**

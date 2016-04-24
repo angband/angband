@@ -41,6 +41,7 @@
 #include "savefile.h"
 #include "target.h"
 #include "ui-birth.h"
+#include "ui-display.h"
 #include "ui-game.h"
 #include "ui-input.h"
 #include "ui-map.h"

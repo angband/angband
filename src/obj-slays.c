@@ -44,7 +44,7 @@ struct brand_info {
  * sorted properly, and there will also need to be a list of possibilities
  * in obj-randart.c
  */
-const struct brand_info brand_names[] = {
+static const struct brand_info brand_names[] = {
 	{ "acid", "dissolve", "corrode", RF_IM_ACID },
 	{ "lightning", "shock", "zap", RF_IM_ELEC },
 	{ "fire", "burn", "singe", RF_IM_FIRE },
@@ -63,7 +63,7 @@ struct slay_info {
  * These should go into obj-randart.c, but can wait for brands to be done
  * (because they're more complicated) - NRM
  */
-const struct slay_info slay_names[] = {
+static const struct slay_info slay_names[] = {
 	{ "evil creatures", RF_EVIL, 2 },
 	{ "animals", RF_ANIMAL, 2 },
 	{ "orcs", RF_ORC, 3 },
@@ -286,7 +286,7 @@ bool append_random_slay(struct slay **current, char **name)
 
 /**
  * Count the brands in a struct brand
- * \param brands 
+ * \param brands The brands to count.
  */
 int brand_count(struct brand *brands)
 {
@@ -302,7 +302,7 @@ int brand_count(struct brand *brands)
 
 /**
  * Count the slays in a struct slay
- * \param slays 
+ * \param slays The slays to count.
  */
 int slay_count(struct slay *slays)
 {
@@ -451,8 +451,6 @@ bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
  * \param verb is the verb used in the attack ("smite", etc)
  * \param real is whether this is a real attack (where we update lore) or a
  *  simulation (where we don't)
- * \param known_only is whether we are using all the brands and slays, or only
- * the ones we *already* know about
  */
 void improve_attack_modifier(struct object *obj, const struct monster *mon,
 							 const struct brand **brand_used, 
@@ -554,7 +552,7 @@ bool react_to_slay(struct object *obj, const struct monster *mon)
 /**
  * Determine whether two lists of brands are the same
  *
- * \param brand1
+ * \param brand1 the lists being compared
  * \param brand2 the lists being compared
  */
 bool brands_are_equal(struct brand *brand1, struct brand *brand2)
@@ -594,7 +592,7 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2)
 /**
  * Determine whether two lists of slays are the same
  *
- * \param slay1
+ * \param slay1 the lists being compared
  * \param slay2 the lists being compared
  */
 bool slays_are_equal(struct slay *slay1, struct slay *slay2)

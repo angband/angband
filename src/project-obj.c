@@ -409,7 +409,7 @@ static const project_object_handler_f object_handlers[] = {
  *
  * \param who is the monster list index of the caster
  * \param r is the distance from the centre of the effect
- * \param y
+ * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
  * \param typ is the projection (GF_) type

@@ -114,7 +114,7 @@ static bool mon_select(struct monster_race *race)
  */
 bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 {
-    int i, j;
+    int i, j = 0;
 
     /* Clear global monster restriction variables. */
     allow_unique = unique_ok;
@@ -187,9 +187,9 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
  * \param type the type of monster (see comments to mon_restrict())
  * \param depth selection depth
  * \param num the number of monsters to try and place - inexact due to groups
- * \param y0
+ * \param y0 the centre of the rectangle for monster placement
  * \param x0 the centre of the rectangle for monster placement
- * \param dy
+ * \param dy the dimensions of the rectangle
  * \param dx the dimensions of the rectangle
  * \param origin the origin for monster drops
  *
@@ -263,9 +263,9 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
  * \param racial_symbol the allowable monster_base symbols
  * \param vault_type the type of vault, which affects monster selection depth
  * \param data the vault text description, which contains the racial symbol
- * \param y1
- * \param y2
- * \param x1
+ * \param y1 the limits of the vault
+ * \param y2 the limits of the vault
+ * \param x1 the limits of the vault
  * \param x2 the limits of the vault
  */
 void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
@@ -318,9 +318,9 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
  * Funtion for placing appropriate monsters in a room of chambers
  *
  * \param c the current chunk being generated
- * \param y1
- * \param x1
- * \param y2
+ * \param y1 the limits of the vault
+ * \param x1 the limits of the vault
+ * \param y2 the limits of the vault
  * \param x2 the limits of the vault
  * \param name the name of the monster type for use in mon_select()
  * \param area the total room area, used for scaling monster quantity

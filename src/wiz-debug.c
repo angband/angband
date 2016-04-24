@@ -204,7 +204,7 @@ static void do_cmd_keylog(void) {
 	int i;
 	char buf[50];
 	char buf2[12];
-	struct keypress keys[2] = {{EVT_NONE, 0}, {EVT_NONE, 0}};
+	struct keypress keys[2] = {KEYPRESS_NULL, KEYPRESS_NULL};
 
 	screen_save();
 
@@ -452,7 +452,7 @@ static void wiz_display_item(const struct object *obj, bool all)
 
 
 /** Object creation code **/
-bool choose_artifact = false;
+static bool choose_artifact = false;
 
 static const region wiz_create_item_area = { 0, 0, 0, 0 };
 
@@ -823,8 +823,8 @@ static void wiz_create_item(bool art)
 		if (art) {
 			int j;
 			for (j = 1; j < z_info->a_max; j++) {
-				struct artifact *art = &a_info[j];
-				if (art->tval == i) break;
+				struct artifact *art_local = &a_info[j];
+				if (art_local->tval == i) break;
 			}
 			if (j == z_info->a_max) continue;
 		}

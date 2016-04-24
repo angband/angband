@@ -68,12 +68,12 @@ struct object_menu_data {
 	char key;
 };
 
-struct object_menu_data items[MAX_ITEMS];
-int num_obj;
-int num_head;
-size_t max_len;
-int ex_width;
-int ex_offset;
+static struct object_menu_data items[MAX_ITEMS];
+static int num_obj;
+static int num_head;
+static size_t max_len;
+static int ex_width;
+static int ex_offset;
 
 /**
  * ------------------------------------------------------------------------
@@ -570,21 +570,21 @@ void show_floor(struct object **floor_list, int floor_num, int mode,
  * Variables for object selection
  * ------------------------------------------------------------------------ */
 
-item_tester tester_m;
+static item_tester tester_m;
 static region area = { 20, 1, -1, -2 };
 static struct object *selection;
-const char *prompt;
-char header[80];
-int i1, i2;
-int e1, e2;
-int q1, q2;
-int f1, f2;
-struct object **floor_list;
+static const char *prompt;
+static char header[80];
+static int i1, i2;
+static int e1, e2;
+static int q1, q2;
+static int f1, f2;
+static struct object **floor_list;
 static olist_detail_t olist_mode = 0;
-int item_mode;
-cmd_code item_cmd;
-bool newmenu = false;
-bool allow_all = false;
+static int item_mode;
+static cmd_code item_cmd;
+static bool newmenu = false;
+static bool allow_all = false;
 
 /**
  * ------------------------------------------------------------------------
@@ -619,17 +619,17 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 
 	/* Choose string for the prompt */
 	if (n) {
-		char prompt[1024];
+		char prompt_buf[1024];
 
 		const char *verb = cmd_verb(cmd);
 		if (!verb)
 			verb = "do that with";
 
-		strnfmt(prompt, sizeof(prompt), "Really %s", verb);
+		strnfmt(prompt_buf, sizeof(prompt_buf), "Really %s", verb);
 
 		/* Prompt for confirmation n times */
 		while (n--) {
-			if (!verify_object(prompt, (struct object *) obj))
+			if (!verify_object(prompt_buf, (struct object *) obj))
 				return (false);
 		}
 	}
@@ -938,7 +938,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 /**
  * Show quiver missiles in full inventory
  */
-static void item_menu_browser(int oid, void *data, const region *area)
+static void item_menu_browser(int oid, void *data, const region *local_area)
 {
 	char tmp_val[80];
 	int count, j, i = num_obj;
@@ -948,10 +948,10 @@ static void item_menu_browser(int oid, void *data, const region *area)
 	/* Set up to output below the menu */
 	text_out_hook = text_out_to_screen;
 	text_out_wrap = 0;
-	text_out_indent = area->col - 1;
+	text_out_indent = local_area->col - 1;
 	text_out_pad = 1;
-	prt("", area->row + area->page_rows, MAX(0, area->col - 1));
-	Term_gotoxy(area->col, area->row + area->page_rows);
+	prt("", local_area->row + local_area->page_rows, MAX(0, local_area->col - 1));
+	Term_gotoxy(local_area->col, local_area->row + local_area->page_rows);
 
 	/* If we're printing pack slots the quiver takes up */
 	if (olist_mode & OLIST_QUIVER && player->upkeep->command_wrk == USE_INVEN) {
@@ -969,22 +969,22 @@ static void item_menu_browser(int oid, void *data, const region *area)
 
 			/* Print the (disabled) label */
 			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);
-			text_out_c(COLOUR_SLATE, tmp_val, area->row + i, area->col);
+			text_out_c(COLOUR_SLATE, tmp_val, local_area->row + i, local_area->col);
 
 			/* Print the count */
 			strnfmt(tmp_val, sizeof(tmp_val), fmt, count,
 					count == 1 ? "" : "s");
-			text_out_c(COLOUR_L_UMBER, tmp_val, area->row + i, area->col + 3);
+			text_out_c(COLOUR_L_UMBER, tmp_val, local_area->row + i, local_area->col + 3);
 		}
 	}
 
 	/* Always print a blank line */
-	prt("", area->row + i, MAX(0, area->col - 1));
+	prt("", local_area->row + i, MAX(0, local_area->col - 1));
 
 	/* Blank out whole tiles */
-	while ((tile_height > 1) && ((area->row + i) % tile_height != 0)) {
+	while ((tile_height > 1) && ((local_area->row + i) % tile_height != 0)) {
 		i++;
-		prt("", area->row + i, MAX(0, area->col - 1));
+		prt("", local_area->row + i, MAX(0, local_area->col - 1));
 	}
 
 	text_out_pad = 0;
@@ -1436,13 +1436,13 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
  */
 void display_object_recall(struct object *obj)
 {
-	char header[120];
+	char header_buf[120];
 
 	textblock *tb = object_info(obj, OINFO_NONE);
-	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header_buf, sizeof(header_buf), obj, ODESC_PREFIX | ODESC_FULL);
 
 	clear_from(0);
-	textui_textblock_place(tb, SCREEN_REGION, header);
+	textui_textblock_place(tb, SCREEN_REGION, header_buf);
 	textblock_free(tb);
 }
 
@@ -1453,7 +1453,7 @@ void display_object_recall(struct object *obj)
  */
 void display_object_kind_recall(struct object_kind *kind)
 {
-	struct object object = { 0 }, known_obj = { 0 };
+	struct object object = OBJECT_NULL, known_obj = OBJECT_NULL;
 	object_prep(&object, kind, 0, EXTREMIFY);
 	object.known = &known_obj;
 
@@ -1469,14 +1469,14 @@ void display_object_kind_recall(struct object_kind *kind)
  */
 void display_object_recall_interactive(struct object *obj)
 {
-	char header[120];
+	char header_buf[120];
 	textblock *tb;
 
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	tb = object_info(obj, OINFO_NONE);
-	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL);
-	textui_textblock_show(tb, SCREEN_REGION, header);
+	object_desc(header_buf, sizeof(header_buf), obj, ODESC_PREFIX | ODESC_FULL);
+	textui_textblock_show(tb, SCREEN_REGION, header_buf);
 	textblock_free(tb);
 }
 
@@ -1485,10 +1485,10 @@ void display_object_recall_interactive(struct object *obj)
  */
 void textui_obj_examine(void)
 {
-	char header[120];
+	char header_buf[120];
 
 	textblock *tb;
-	region area = { 0, 0, 0, 0 };
+	region local_area = { 0, 0, 0, 0 };
 
 	struct object *obj;
 
@@ -1502,10 +1502,10 @@ void textui_obj_examine(void)
 
 	/* Display info */
 	tb = object_info(obj, OINFO_NONE);
-	object_desc(header, sizeof(header), obj,
+	object_desc(header_buf, sizeof(header_buf), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
-	textui_textblock_show(tb, area, header);
+	textui_textblock_show(tb, local_area, header_buf);
 	textblock_free(tb);
 }
 
@@ -1627,10 +1627,10 @@ void textui_cmd_ignore_menu(struct object *obj)
 	} else if (selected == UNIGNORE_THIS_EGO) {
 		ego_ignore_clear(obj);
 	} else if (selected == IGNORE_THIS_QUALITY) {
-		byte value = ignore_level_of(obj);
-		int type = ignore_type_of(obj);
+		byte ignore_value = ignore_level_of(obj);
+		int ignore_type = ignore_type_of(obj);
 
-		ignore_level[type] = value;
+		ignore_level[ignore_type] = ignore_value;
 	}
 
 	player->upkeep->notice |= PN_IGNORE;
