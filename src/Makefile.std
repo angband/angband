@@ -45,7 +45,7 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 
 # Basic compiler stuff
 CC = gcc
-WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wdeclaration-after-statement -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
+WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
 CFLAGS = -O0 -g $(WARNINGS)
 
 # Add additional search directives here
