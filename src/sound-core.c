@@ -167,7 +167,7 @@ void message_sound_define(u16b message_id, const char *sounds_str)
 	char *cur_token;
 	char *next_token;
 
-	u16b sound_id;
+	u16b sound_id = 0;
 
 	u32b hash;
 	int i;

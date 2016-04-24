@@ -114,7 +114,7 @@ static bool mon_select(struct monster_race *race)
  */
 bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 {
-    int i, j;
+    int i, j = 0;
 
     /* Clear global monster restriction variables. */
     allow_unique = unique_ok;

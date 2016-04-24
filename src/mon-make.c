@@ -1112,7 +1112,7 @@ static bool place_monster_base_okay(struct monster_race *race)
 					struct monster_race *friends_race, int total, bool sleep,
 					byte origin)
  {
-	int level_difference, extra_chance, nx, ny;
+	int level_difference, extra_chance, nx = 0, ny = 0;
 	int j;
 	bool is_unique, success = true;
 	

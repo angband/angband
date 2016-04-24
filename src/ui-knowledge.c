@@ -1445,7 +1445,7 @@ static struct object *find_artifact(struct artifact *artifact)
  */
 static void desc_art_fake(int a_idx)
 {
-	struct object *obj, *known_obj;
+	struct object *obj, *known_obj = NULL;
 	struct object object_body = OBJECT_NULL, known_object_body = OBJECT_NULL;
 	bool fake = false;
 

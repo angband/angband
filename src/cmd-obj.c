@@ -851,7 +851,7 @@ void do_cmd_refill(struct command *cmd)
  */
 void do_cmd_cast(struct command *cmd)
 {
-	int spell_index, dir;
+	int spell_index, dir = 0;
 
 	const char *verb = player->class->magic.spell_realm->verb;
 	const char *noun = player->class->magic.spell_realm->spell_noun;

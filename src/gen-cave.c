@@ -700,7 +700,7 @@ static bool lab_is_tunnel(struct chunk *c, int y, int x) {
  */
 struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 {
-    int i, j, k, y, x;
+    int i, j, k, y, x = 0;
     /* This is the number of squares in the labyrinth */
     int n = h * w;
 
@@ -1454,7 +1454,7 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
  */
 static void town_gen_layout(struct chunk *c, struct player *p)
 {
-	int y, x, n, num_lava = 3 + randint0(3), num_rubble = 3 + randint0(3);
+	int y, x = 0, n, num_lava = 3 + randint0(3), num_rubble = 3 + randint0(3);
 
 	/* Create walls */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,

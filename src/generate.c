@@ -854,7 +854,7 @@ void cave_generate(struct chunk **c, struct player *p)
 {
 	const char *error = "no generation";
 	int i, y, x, tries = 0;
-	struct chunk *chunk;
+	struct chunk *chunk = NULL;
 
 	assert(c);
 

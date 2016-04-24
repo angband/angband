@@ -2581,7 +2581,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 {
 	int i, d;
 	int area, num_chambers;
-	int y, x, y1, x1, y2, x2;
+	int y, x = 0, y1, x1, y2, x2;
 
 	int height, width, count;
 
