@@ -77,7 +77,7 @@
 /**
  * Check whether a square has one of the tunnelling helper flags
  * \param c is the current chunk
- * \param y
+ * \param y are the co-ordinates
  * \param x are the co-ordinates
  * \param flag is the relevant flag
  */
@@ -146,9 +146,9 @@ static void build_streamer(struct chunk *c, int feat, int chance)
  * Constructs a tunnel between two points
  *
  * \param c is the current chunk
- * \param row1 
+ * \param row1 are the co-ordinates of the first point
  * \param col1 are the co-ordinates of the first point
- * \param row2
+ * \param row2 are the co-ordinates of the second point
  * \param col2 are the co-ordinates of the second point
  *
  * This function must be called BEFORE any streamers are created, since we use
@@ -357,7 +357,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
  * This routine currently only counts actual "empty floor" grids which are not
  * in rooms.
  * \param c is the current chunk
- * \param y1
+ * \param y1 are the co-ordinates
  * \param x1 are the co-ordinates
  *
  * TODO: count stairs, open doors, closed doors?
@@ -384,7 +384,7 @@ static int next_to_corr(struct chunk *c, int y1, int x1)
 /**
  * Returns whether a doorway can be built in a space.
  * \param c is the current chunk
- * \param y
+ * \param y are the co-ordinates
  * \param x are the co-ordinates
  *
  * To have a doorway, a space must be adjacent to at least two corridors and be
@@ -407,7 +407,7 @@ static bool possible_doorway(struct chunk *c, int y, int x)
 /**
  * Places door at y, x position if at least 2 walls found
  * \param c is the current chunk
- * \param y
+ * \param y are the co-ordinates
  * \param x are the co-ordinates
  */
 static void try_door(struct chunk *c, int y, int x)
@@ -648,7 +648,7 @@ struct chunk *classic_gen(struct player *p) {
  * labyrinth_gen().
  * \param i is the wall index
  * \param w is the width of the labyrinth
- * \param a
+ * \param a are the two cell indices
  * \param b are the two cell indices
  */
 static void lab_get_adjoin(int i, int w, int *a, int *b) {
@@ -667,7 +667,7 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
  * Return whether (x, y) is in a tunnel.
  *
  * \param c is the current chunk
- * \param y
+ * \param y are the co-ordinates
  * \param x are the co-ordinates
  *
  * For our purposes a tunnel is a horizontal or vertical path, not an
@@ -692,7 +692,7 @@ static bool lab_is_tunnel(struct chunk *c, int y, int x) {
  * Build a labyrinth chunk of a given height and width
  *
  * \param depth is the native depth 
- * \param h
+ * \param h are the dimensions of the chunk
  * \param w are the dimensions of the chunk
  * \param lit is whether the labyrinth is lit
  * \param soft is true if we use regular walls, false if permanent walls
@@ -915,7 +915,7 @@ static void init_cavern(struct chunk *c, int density) {
 /**
  * Return the number of walls (0-8) adjacent to this square.
  * \param c is the current chunk
- * \param y
+ * \param y are the co-ordinates
  * \param x are the co-ordinates
  */
 static int count_adj_walls(struct chunk *c, int y, int x) {
@@ -983,7 +983,7 @@ static void array_filler(int data[], int value, int size) {
  * Determine if we need to worry about coloring a point, or can ignore it.
  * \param c is the current chunk
  * \param colors is the array of current point colors
- * \param y
+ * \param y are the co-ordinates
  * \param x are the co-ordinates
  */
 static int ignore_point(struct chunk *c, int colors[], int y, int x) {
@@ -1016,7 +1016,7 @@ static void glow_point(struct chunk *c, int y, int x) {
  * \param c is the current chunk
  * \param colors is the array of current point colors
  * \param counts is the array of current color counts
- * \param y
+ * \param y are the co-ordinates
  * \param x are the co-ordinates
  * \param color is the color we are coloring
  * \param diagonal controls whether we can progress diagonally
@@ -1300,7 +1300,7 @@ void ensure_connectedness(struct chunk *c) {
 /**
  * The cavern generator's main function.
  * \param depth the chunk's native depth
- * \param h
+ * \param h the chunk's dimensions
  * \param w the chunk's dimensions
  * \return a pointer to the generated chunk
  */
@@ -1423,7 +1423,7 @@ struct chunk *cavern_gen(struct player *p) {
  * Builds a store at a given pseudo-location
  * \param c is the current chunk
  * \param n is which shop it is
- * \param yy
+ * \param yy the row and column of this store in the store layout
  * \param xx the row and column of this store in the store layout
  *
  * Currently, there is a main street horizontally through the middle of town,
@@ -1605,7 +1605,7 @@ struct chunk *town_gen(struct player *p)
 /**
  * The main modified generation algorithm
  * \param depth is the chunk's native depth
- * \param height
+ * \param height are the chunk's dimensions
  * \param width are the chunk's dimensions
  * \return a pointer to the generated chunk
  */
@@ -1836,7 +1836,7 @@ struct chunk *modified_gen(struct player *p) {
 /**
  * The main moria generation algorithm
  * \param depth is the chunk's native depth
- * \param height
+ * \param height are the chunk's dimensions
  * \param width are the chunk's dimensions
  * \return a pointer to the generated chunk
  */

@@ -808,7 +808,7 @@ static int player_resting_repeat_count = 0;
 /**
  * Get the number of resting turns to repeat.
  *
- * \param count is the number of turns requested for rest most recently.
+ * \param p The current player.
  */
 int player_get_resting_repeat_count(struct player *p)
 {

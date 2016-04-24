@@ -1118,7 +1118,7 @@ static void print_error(const char *name, struct parser *p) {
 /**
  * Process the user pref file with a given path.
  *
- * \param name is the name of the pref file.
+ * \param path is the name of the pref file.
  * \param quiet means "don't complain about not finding the file".
  * \param user should be true if the pref file is user-specific and not a game
  * default.

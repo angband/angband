@@ -437,17 +437,17 @@ const char *gf_idx_to_name(int type)
  * Generic "beam"/"bolt"/"ball" projection routine.  
  *   -BEN-, some changes by -LM-
  *
- *   \param who: Index of "source" monster (negative for the character)
- *   \param rad: Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
+ *   \param who Index of "source" monster (negative for the character)
+ *   \param rad Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
  *	  length of arc from the source.
- *   \param y
- *   \param x: Target location (or location to travel towards)
- *   \param dam: Base damage to apply to monsters, terrain, objects, or player
- *   \param typ: Type of projection (fire, frost, dispel demons etc.)
- *   \param flg: Extra bit flags that control projection behavior
- *   \param degrees_of_arc: How wide an arc spell is (in degrees).
- *   \param diameter_of_source: how wide the source diameter is.
- *   \param obj: An object that the projection ignores
+ *   \param y Target location (or location to travel towards)
+ *   \param x Target location (or location to travel towards)
+ *   \param dam Base damage to apply to monsters, terrain, objects, or player
+ *   \param typ Type of projection (fire, frost, dispel demons etc.)
+ *   \param flg Extra bit flags that control projection behavior
+ *   \param degrees_of_arc How wide an arc spell is (in degrees).
+ *   \param diameter_of_source how wide the source diameter is.
+ *   \param obj An object that the projection ignores
  *
  *   \return true if any effects of the projection were observed, else false
  *
