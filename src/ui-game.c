@@ -73,22 +73,22 @@ char savefile[1024];
  */
 struct cmd_info cmd_item[] =
 {
-	{ "Inscribe an object", { '{' }, CMD_INSCRIBE },
-	{ "Uninscribe an object", { '}' }, CMD_UNINSCRIBE },
-	{ "Wear/wield an item", { 'w' }, CMD_WIELD },
-	{ "Take off/unwield an item", { 't', 'T'}, CMD_TAKEOFF },
-	{ "Examine an item", { 'I' }, CMD_NULL, textui_obj_examine },
-	{ "Drop an item", { 'd' }, CMD_DROP },
+	{ "Inscribe an object", { '{' }, CMD_INSCRIBE, NULL, NULL },
+	{ "Uninscribe an object", { '}' }, CMD_UNINSCRIBE, NULL, NULL },
+	{ "Wear/wield an item", { 'w' }, CMD_WIELD, NULL, NULL },
+	{ "Take off/unwield an item", { 't', 'T'}, CMD_TAKEOFF, NULL, NULL },
+	{ "Examine an item", { 'I' }, CMD_NULL, textui_obj_examine, NULL },
+	{ "Drop an item", { 'd' }, CMD_DROP, NULL, NULL },
 	{ "Fire your missile weapon", { 'f', 't' }, CMD_FIRE, NULL, player_can_fire_prereq },
-	{ "Use a staff", { 'u', 'Z' }, CMD_USE_STAFF },
-	{ "Aim a wand", {'a', 'z'}, CMD_USE_WAND },
-	{ "Zap a rod", {'z', 'a'}, CMD_USE_ROD },
-	{ "Activate an object", {'A' }, CMD_ACTIVATE },
-	{ "Eat some food", { 'E' }, CMD_EAT },
-	{ "Quaff a potion", { 'q' }, CMD_QUAFF },
+	{ "Use a staff", { 'u', 'Z' }, CMD_USE_STAFF, NULL, NULL },
+	{ "Aim a wand", {'a', 'z'}, CMD_USE_WAND, NULL, NULL },
+	{ "Zap a rod", {'z', 'a'}, CMD_USE_ROD, NULL, NULL },
+	{ "Activate an object", {'A' }, CMD_ACTIVATE, NULL, NULL },
+	{ "Eat some food", { 'E' }, CMD_EAT, NULL, NULL },
+	{ "Quaff a potion", { 'q' }, CMD_QUAFF, NULL, NULL },
 	{ "Read a scroll", { 'r' }, CMD_READ_SCROLL, NULL, player_can_read_prereq },
 	{ "Fuel your light source", { 'F' }, CMD_REFILL, NULL, player_can_refuel_prereq },
-	{ "Use an item", { 'U', 'X' }, CMD_USE }
+	{ "Use an item", { 'U', 'X' }, CMD_USE, NULL, NULL }
 };
 
 /**
@@ -96,21 +96,21 @@ struct cmd_info cmd_item[] =
  */
 struct cmd_info cmd_action[] =
 {
-	{ "Search for traps/doors", { 's' }, CMD_SEARCH },
-	{ "Disarm a trap or chest", { 'D' }, CMD_DISARM },
-	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest },
-	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look },
-	{ "Target monster or location", { '*' }, CMD_NULL, textui_target },
-	{ "Target closest monster", { '\'' }, CMD_NULL, textui_target_closest },
-	{ "Dig a tunnel", { 'T', KTRL('T') }, CMD_TUNNEL },
-	{ "Go up staircase", {'<' }, CMD_GO_UP },
-	{ "Go down staircase", { '>' }, CMD_GO_DOWN },
-	{ "Toggle search mode", { 'S', '#' }, CMD_TOGGLE_SEARCH },
-	{ "Open a door or a chest", { 'o' }, CMD_OPEN },
-	{ "Close a door", { 'c' }, CMD_CLOSE },
-	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, do_cmd_fire_at_nearest },
-	{ "Throw an item", { 'v' }, CMD_THROW },
-	{ "Walk into a trap", { 'W', '-' }, CMD_JUMP, NULL },
+	{ "Search for traps/doors", { 's' }, CMD_SEARCH, NULL, NULL },
+	{ "Disarm a trap or chest", { 'D' }, CMD_DISARM, NULL, NULL },
+	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest, NULL },
+	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look, NULL },
+	{ "Target monster or location", { '*' }, CMD_NULL, textui_target, NULL },
+	{ "Target closest monster", { '\'' }, CMD_NULL, textui_target_closest, NULL },
+	{ "Dig a tunnel", { 'T', KTRL('T') }, CMD_TUNNEL, NULL, NULL },
+	{ "Go up staircase", {'<' }, CMD_GO_UP, NULL, NULL },
+	{ "Go down staircase", { '>' }, CMD_GO_DOWN, NULL, NULL },
+	{ "Toggle search mode", { 'S', '#' }, CMD_TOGGLE_SEARCH, NULL, NULL },
+	{ "Open a door or a chest", { 'o' }, CMD_OPEN, NULL, NULL },
+	{ "Close a door", { 'c' }, CMD_CLOSE, NULL, NULL },
+	{ "Fire at nearest target", { 'h', KC_TAB }, CMD_NULL, do_cmd_fire_at_nearest, NULL },
+	{ "Throw an item", { 'v' }, CMD_THROW, NULL, NULL },
+	{ "Walk into a trap", { 'W', '-' }, CMD_JUMP, NULL, NULL },
 };
 
 /**
@@ -118,11 +118,11 @@ struct cmd_info cmd_action[] =
  */
 struct cmd_info cmd_item_manage[] =
 {
-	{ "Display equipment listing", { 'e' }, CMD_NULL, do_cmd_equip },
-	{ "Display inventory listing", { 'i' }, CMD_NULL, do_cmd_inven },
-	{ "Display quiver listing", { '|' }, CMD_NULL, do_cmd_quiver },
-	{ "Pick up objects", { 'g' }, CMD_PICKUP, NULL },
-	{ "Ignore an item", { 'k', KTRL('D') }, CMD_IGNORE, textui_cmd_ignore },	
+	{ "Display equipment listing", { 'e' }, CMD_NULL, do_cmd_equip, NULL },
+	{ "Display inventory listing", { 'i' }, CMD_NULL, do_cmd_inven, NULL },
+	{ "Display quiver listing", { '|' }, CMD_NULL, do_cmd_quiver, NULL },
+	{ "Pick up objects", { 'g' }, CMD_PICKUP, NULL, NULL },
+	{ "Ignore an item", { 'k', KTRL('D') }, CMD_IGNORE, textui_cmd_ignore, NULL },
 };
 
 /**
@@ -130,22 +130,22 @@ struct cmd_info cmd_item_manage[] =
  */
 struct cmd_info cmd_info[] =
 {
-	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse },
+	{ "Browse a book", { 'b', 'P' }, CMD_BROWSE_SPELL, textui_spell_browse, NULL },
 	{ "Gain new spells", { 'G' }, CMD_STUDY, NULL, player_can_study_prereq },
 	{ "Cast a spell", { 'm' }, CMD_CAST, NULL, player_can_cast_prereq },
 	{ "Cast a spell", { 'p' }, CMD_CAST, NULL, player_can_cast_prereq },
-	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map },
-	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore },
-	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist },
-	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist },
-	{ "Locate player on map", { 'L', 'W' }, CMD_NULL, do_cmd_locate },
-	{ "Help", { '?' }, CMD_NULL, do_cmd_help },
-	{ "Identify symbol", { '/' }, CMD_NULL, do_cmd_query_symbol },
-	{ "Character description", { 'C' }, CMD_NULL, do_cmd_change_name },
-	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge },
-	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling },
-	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one },
-	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages }
+	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map, NULL },
+	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore, NULL },
+	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist, NULL },
+	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist, NULL },
+	{ "Locate player on map", { 'L', 'W' }, CMD_NULL, do_cmd_locate, NULL },
+	{ "Help", { '?' }, CMD_NULL, do_cmd_help, NULL },
+	{ "Identify symbol", { '/' }, CMD_NULL, do_cmd_query_symbol, NULL },
+	{ "Character description", { 'C' }, CMD_NULL, do_cmd_change_name, NULL },
+	{ "Check knowledge", { '~' }, CMD_NULL, textui_browse_knowledge, NULL },
+	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling, NULL },
+	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL },
+	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL }
 };
 
 /**
@@ -153,15 +153,15 @@ struct cmd_info cmd_info[] =
  */
 struct cmd_info cmd_util[] =
 {
-	{ "Interact with options", { '=' }, CMD_NULL, do_cmd_xxx_options },
+	{ "Interact with options", { '=' }, CMD_NULL, do_cmd_xxx_options, NULL },
 
-	{ "Save and don't quit", { KTRL('S') }, CMD_NULL, save_game },
-	{ "Save and quit", { KTRL('X') }, CMD_NULL, textui_quit },
-	{ "Quit (commit suicide)", { 'Q' }, CMD_NULL, textui_cmd_suicide },
-	{ "Redraw the screen", { KTRL('R') }, CMD_NULL, do_cmd_redraw },
+	{ "Save and don't quit", { KTRL('S') }, CMD_NULL, save_game, NULL },
+	{ "Save and quit", { KTRL('X') }, CMD_NULL, textui_quit, NULL },
+	{ "Quit (commit suicide)", { 'Q' }, CMD_NULL, textui_cmd_suicide, NULL },
+	{ "Redraw the screen", { KTRL('R') }, CMD_NULL, do_cmd_redraw, NULL },
 
-	{ "Load \"screen dump\"", { '(' }, CMD_NULL, do_cmd_load_screen },
-	{ "Save \"screen dump\"", { ')' }, CMD_NULL, do_cmd_save_screen }
+	{ "Load \"screen dump\"", { '(' }, CMD_NULL, do_cmd_load_screen, NULL },
+	{ "Save \"screen dump\"", { ')' }, CMD_NULL, do_cmd_save_screen, NULL }
 };
 
 /**
@@ -169,19 +169,19 @@ struct cmd_info cmd_util[] =
  */
 struct cmd_info cmd_hidden[] =
 {
-	{ "Take notes", { ':' }, CMD_NULL, do_cmd_note },
-	{ "Version info", { 'V' }, CMD_NULL, do_cmd_version },
-	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref },
-	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip }, /* XXX */
-	{ "Alter a grid", { '+' }, CMD_ALTER, NULL },
-	{ "Walk", { ';' }, CMD_WALK, NULL },
-	{ "Start running", { '.', ',' }, CMD_RUN, NULL },
-	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL },
-	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map },
-	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard },
-	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL },
-	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL },
-	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, textui_cmd_debug },
+	{ "Take notes", { ':' }, CMD_NULL, do_cmd_note, NULL },
+	{ "Version info", { 'V' }, CMD_NULL, do_cmd_version, NULL },
+	{ "Load a single pref line", { '"' }, CMD_NULL, do_cmd_pref, NULL },
+	{ "Toggle windows", { KTRL('E') }, CMD_NULL, toggle_inven_equip, NULL }, /* XXX */
+	{ "Alter a grid", { '+' }, CMD_ALTER, NULL, NULL },
+	{ "Walk", { ';' }, CMD_WALK, NULL, NULL },
+	{ "Start running", { '.', ',' }, CMD_RUN, NULL, NULL },
+	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL, NULL },
+	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map, NULL },
+	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard, NULL },
+	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL, NULL },
+	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL, NULL },
+	{ "Debug mode commands", { KTRL('A') }, CMD_NULL, textui_cmd_debug, NULL },
 };
 
 /**
@@ -194,7 +194,7 @@ struct command_list cmds_all[] =
 	{ "Information",     cmd_info,        N_ELEMENTS(cmd_info) },
 	{ "Utility",         cmd_util,        N_ELEMENTS(cmd_util) },
 	{ "Hidden",          cmd_hidden,      N_ELEMENTS(cmd_hidden) },
-	{ 0 }
+	{ NULL,              NULL,            0 }
 };
 
 

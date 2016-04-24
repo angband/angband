@@ -1133,7 +1133,7 @@ static void cmd_sub_entry(struct menu *menu, int oid, bool cursor, int row,
 	const struct cmd_info *commands = menu_priv(menu);
 
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
-	struct keypress kp = { EVT_KBRD, commands[oid].key[mode] };
+	struct keypress kp = { EVT_KBRD, commands[oid].key[mode], 0 };
 	char buf[16];
 
 	/* Write the description */

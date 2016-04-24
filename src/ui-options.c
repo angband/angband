@@ -388,7 +388,7 @@ static struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 static struct keypress keymap_get_trigger(void)
 {
 	char tmp[80];
-	struct keypress buf[2] = { { 0 }, { 0 } };
+	struct keypress buf[2] = { KEYPRESS_NULL, KEYPRESS_NULL };
 
 	/* Flush */
 	event_signal(EVENT_INPUT_FLUSH);
@@ -1788,14 +1788,14 @@ static menu_action option_actions[] =
 	{ 0, 'w', "Subwindow setup", do_cmd_options_win },
 	{ 0, 'i', "Item ignoring setup", do_cmd_options_item },
 	{ 0, '{', "Auto-inscription setup", textui_browse_object_knowledge },
-	{ 0 },
+	{ 0, 0, NULL, NULL },
 	{ 0, 'd', "Set base delay factor", do_cmd_delay },
 	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
 	{ 0, 'm', "Set movement delay", do_cmd_lazymove_delay },
-	{ 0 },
+	{ 0, 0, NULL, NULL },
 	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
 	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
-	{ 0 },
+	{ 0, 0, NULL, NULL },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
 	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },
 	{ 0, 'c', "Edit colours (advanced)", do_cmd_colors },

@@ -1372,7 +1372,7 @@ static int *obj_group_order = NULL;
 
 static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 {
-	struct object body = { 0 }, known_body = { 0 };
+	struct object body = OBJECT_NULL, known_body = OBJECT_NULL;
 	struct object *obj = &body, *known_obj = &known_body;
 
 	make_fake_artifact(obj, &a_info[a_idx]);
@@ -1446,7 +1446,7 @@ static struct object *find_artifact(struct artifact *artifact)
 static void desc_art_fake(int a_idx)
 {
 	struct object *obj, *known_obj;
-	struct object object_body = { 0 }, known_object_body = { 0 };
+	struct object object_body = OBJECT_NULL, known_object_body = OBJECT_NULL;
 	bool fake = false;
 
 	char header[120];
@@ -3054,7 +3054,7 @@ void do_cmd_locate(void)
 
 		/* Get a direction */
 		while (!dir) {
-			struct keypress command = { 0 };
+			struct keypress command = KEYPRESS_NULL;
 
 			/* Get a command (or Cancel) */
 			if (!get_com(out_val, (char *)&command.code)) break;

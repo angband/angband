@@ -204,7 +204,7 @@ static void do_cmd_keylog(void) {
 	int i;
 	char buf[50];
 	char buf2[12];
-	struct keypress keys[2] = {{EVT_NONE, 0}, {EVT_NONE, 0}};
+	struct keypress keys[2] = {KEYPRESS_NULL, KEYPRESS_NULL};
 
 	screen_save();
 

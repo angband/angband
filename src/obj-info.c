@@ -1801,7 +1801,7 @@ textblock *object_info(const struct object *obj, oinfo_detail_t mode)
 textblock *object_info_ego(struct ego_item *ego)
 {
 	struct object_kind *kind = NULL;
-	struct object obj = { 0 }, known_obj = { 0 };
+	struct object obj = OBJECT_NULL, known_obj = OBJECT_NULL;
 	size_t i;
 
 	for (i = 0; i < z_info->k_max; i++) {

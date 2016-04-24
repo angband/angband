@@ -11,7 +11,7 @@
  * type - spell type
  */
 /* 	name		type*/
-RSF(NONE,		)
+RSF(NONE,		0)
 RSF(SHRIEK,		RST_ANNOY | RST_INNATE)
 RSF(ARROW_1,	RST_BOLT | RST_INNATE)
 RSF(ARROW_2,	RST_BOLT | RST_INNATE)
