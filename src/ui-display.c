@@ -53,6 +53,7 @@
 #include "ui-prefs.h"
 #include "ui-store.h"
 #include "ui-term.h"
+#include "ui-visuals.h"
 #include "wizard.h"
 
 /**
@@ -1151,48 +1152,10 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
  * Animations.
  * ------------------------------------------------------------------------ */
 
+/**
+ * A counter to select the step color from the flicker table.
+ */
 static byte flicker = 0;
-static byte color_flicker[MAX_COLORS][3] = 
-{
-	{COLOUR_DARK, COLOUR_L_DARK, COLOUR_L_RED},
-	{COLOUR_WHITE, COLOUR_L_WHITE, COLOUR_L_BLUE},
-	{COLOUR_SLATE, COLOUR_WHITE, COLOUR_L_DARK},
-	{COLOUR_ORANGE, COLOUR_YELLOW, COLOUR_L_RED},
-	{COLOUR_RED, COLOUR_L_RED, COLOUR_L_PINK},
-	{COLOUR_GREEN, COLOUR_L_GREEN, COLOUR_L_TEAL},
-	{COLOUR_BLUE, COLOUR_L_BLUE, COLOUR_SLATE},
-	{COLOUR_UMBER, COLOUR_L_UMBER, COLOUR_MUSTARD},
-	{COLOUR_L_DARK, COLOUR_SLATE, COLOUR_L_VIOLET},
-	{COLOUR_WHITE, COLOUR_SLATE, COLOUR_L_WHITE},
-	{COLOUR_L_PURPLE, COLOUR_PURPLE, COLOUR_L_VIOLET},
-	{COLOUR_YELLOW, COLOUR_L_YELLOW, COLOUR_MUSTARD},
-	{COLOUR_L_RED, COLOUR_RED, COLOUR_L_PINK},
-	{COLOUR_L_GREEN, COLOUR_L_TEAL, COLOUR_GREEN},
-	{COLOUR_L_BLUE, COLOUR_DEEP_L_BLUE, COLOUR_BLUE_SLATE},
-	{COLOUR_L_UMBER, COLOUR_UMBER, COLOUR_MUD},
-	{COLOUR_PURPLE, COLOUR_VIOLET, COLOUR_MAGENTA},
-	{COLOUR_VIOLET, COLOUR_L_VIOLET, COLOUR_MAGENTA},
-	{COLOUR_TEAL, COLOUR_L_TEAL, COLOUR_L_GREEN},
-	{COLOUR_MUD, COLOUR_YELLOW, COLOUR_UMBER},
-	{COLOUR_L_YELLOW, COLOUR_WHITE, COLOUR_L_UMBER},
-	{COLOUR_MAGENTA, COLOUR_L_PINK, COLOUR_L_RED},
-	{COLOUR_L_TEAL, COLOUR_L_WHITE, COLOUR_TEAL},
-	{COLOUR_L_VIOLET, COLOUR_L_PURPLE, COLOUR_VIOLET},
-	{COLOUR_L_PINK, COLOUR_L_RED, COLOUR_L_WHITE},
-	{COLOUR_MUSTARD, COLOUR_YELLOW, COLOUR_UMBER},
-	{COLOUR_BLUE_SLATE, COLOUR_BLUE, COLOUR_SLATE},
-	{COLOUR_DEEP_L_BLUE, COLOUR_L_BLUE, COLOUR_BLUE},
-};
-
-static byte get_flicker(byte a)
-{
-	switch(flicker % 3)
-	{
-		case 1: return color_flicker[a][1];
-		case 2: return color_flicker[a][2];
-	}
-	return a;
-}
 
 /**
  * This animates monsters and/or items as necessary.
@@ -1210,7 +1173,8 @@ static void do_animation(void)
 		else if (rf_has(mon->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
 		else if (rf_has(mon->race->flags, RF_ATTR_FLICKER))
-			attr = get_flicker(monster_x_attr[mon->race->ridx]);
+			attr = visuals_flicker_get_attr_for_frame(monster_x_attr[mon->race->ridx],
+													  flicker);
 		else
 			continue;
 

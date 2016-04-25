@@ -58,6 +58,7 @@
 #include "randname.h"
 #include "store.h"
 #include "trap.h"
+#include "ui-visuals.h"
 
 /**
  * Structure (not array) of game constants
@@ -4541,6 +4542,7 @@ static struct init_module *modules[] = {
 	&store_module,
 	&options_module,
 	&monmsg_module,
+	&ui_visuals_module,
 	NULL
 };
 
