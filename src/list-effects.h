@@ -57,7 +57,7 @@ EFFECT(RECHARGE,					false,	NULL,		0,		EFINFO_NONE,	"tries to recharge a wand or
 EFFECT(PROJECT_LOS,					false,	"power",	1,		EFINFO_SEEN,	"%s which are in line of sight")
 EFFECT(PROJECT_LOS_AWARE,			false,	"power",	1,		EFINFO_SEEN,	"%s which are in line of sight")
 EFFECT(ACQUIRE,						false,	NULL,		0,		EFINFO_NONE,	"creates good items nearby")
-EFFECT(AGGRAVATE,					false,	NULL,		0,		EFINFO_NONE,	"awakens all nearby sleeping monsters and hastens all monsters within line of sight")
+EFFECT(WAKE,						false,	NULL,		0,		EFINFO_NONE,	"awakens all nearby sleeping monsters")
 EFFECT(SUMMON,						false,	NULL,		1,		EFINFO_SUMM,	"summons %s at the current dungeon level")
 EFFECT(BANISH,						false,	NULL,		0,		EFINFO_NONE,	"removes all of a given creature type from the level")
 EFFECT(MASS_BANISH,					false,	NULL,		0,		EFINFO_NONE,	"removes all nearby creatures")

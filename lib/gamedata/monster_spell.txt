@@ -30,7 +30,9 @@
 name:SHRIEK
 msgt:SHRIEK
 hit:100
-effect:AGGRAVATE
+effect:WAKE
+effect:PROJECT_LOS:OLD_SPEED
+dice:25
 power:d150M1
 lore:shriek for help
 message-vis:{name} makes a high-pitched shriek.

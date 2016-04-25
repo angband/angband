@@ -317,7 +317,9 @@ name:32:alarm:alarm trap
 graphics:^:R
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL
-effect:AGGRAVATE
+effect:WAKE
+effect:PROJECT_LOS:OLD_SPEED
+dice:25
 desc:A trap that wakes nearby monsters and impels them toward you.
 msg:A high-pitched whistle blares through the dungeon!
 

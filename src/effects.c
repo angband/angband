@@ -2171,53 +2171,50 @@ bool effect_handler_ACQUIRE(effect_handler_context_t *context)
 }
 
 /**
- * Wake up all monsters, and speed up "los" monsters.
- *
- * Possibly the los test should be from the aggravating monster, rather than
- * automatically the player - NRM
+ * Wake up all monsters in line of sight
  */
-bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
+bool effect_handler_WAKE(effect_handler_context_t *context)
 {
 	int i;
 	bool sleep = false;
 	int midx = cave->mon_current;
 	struct monster *who = midx > 0 ? cave_monster(cave, midx) : NULL;
+	struct trap *trap = cave->trap_current;
 
-	/* Immediately obvious if the player did it */
-	if (!who) {
-		msg("There is a high pitched humming noise.");
-		context->ident = true;
-	}
-
-	/* Aggravate everyone nearby */
+	/* Wake everyone nearby */
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		struct monster *mon = cave_monster(cave, i);
+		int radius = z_info->max_sight * 2;
 
 		/* Paranoia -- Skip dead monsters */
 		if (!mon->race) continue;
 
-		/* Skip aggravating monster (or player) */
-		if (mon == who) continue;
-
-		/* Wake up nearby sleeping monsters */
-		if ((mon->cdis < z_info->max_sight * 2) &&
-			mon->m_timed[MON_TMD_SLEEP]) {
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
-			sleep = true;
-			context->ident = true;
+		/* Skip monsters too far away */
+		if (who) {
+			/* Woken by monster */
+			if (distance(who->fy, who->fx, mon->fy, mon->fx) >= radius)
+				continue;
+		} else if (trap) {
+			/* Woken by trap */
+			if (distance(trap->fy, trap->fx, mon->fy, mon->fx) >= radius)
+				continue;
+		} else {
+			/* Woken by player */
+			if (distance(player->py, player->px, mon->fy, mon->fx) >= radius)
+				continue;
 		}
 
-		/* Speed up monsters in line of sight */
-		if (square_isview(cave, mon->fy, mon->fx)) {
-			mon_inc_timed(mon, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, false);
-			if (is_mimicking(mon))
-				become_aware(mon);
-			context->ident = true;
+		/* Wake up nearby sleeping monsters */
+		if (mon->m_timed[MON_TMD_SLEEP]) {
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+			sleep = true;
 		}
 	}
 
 	/* Messages */
 	if (sleep) msg("You hear a sudden stirring in the distance!");
+
+	context->ident = true;
 
 	return true;
 }
