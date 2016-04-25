@@ -707,9 +707,12 @@ void object_set_base_known(struct object *obj)
 	obj->known->number = obj->number;
 
 	/* Generic dice and ac, to_h for armor, and launcher multipliers */
-	obj->known->dd = obj->kind->dd * player->obj_k->dd;
-	obj->known->ds = obj->kind->ds * player->obj_k->ds;
-	obj->known->ac = obj->kind->ac * player->obj_k->ac;
+	if (!obj->known->dd)
+		obj->known->dd = obj->kind->dd * player->obj_k->dd;
+	if (!obj->known->ds)
+		obj->known->ds = obj->kind->ds * player->obj_k->ds;
+	if (!obj->known->ac)
+		obj->known->ac = obj->kind->ac * player->obj_k->ac;
 	if (object_has_standard_to_h(obj))
 		obj->known->to_h = obj->kind->to_h.base;
 	if (tval_is_launcher(obj))
