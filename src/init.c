@@ -63,6 +63,7 @@
 #include "randname.h"
 #include "store.h"
 #include "trap.h"
+#include "ui-visuals.h"
 
 bool play_again = false;
 
@@ -3536,6 +3537,7 @@ static struct init_module *modules[] = {
 	&mon_make_module,
 	&store_module,
 	&options_module,
+	&ui_visuals_module,
 	NULL
 };
 

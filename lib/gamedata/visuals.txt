@@ -1,0 +1,224 @@
+# File: visuals.txt
+#
+# This file is used to initialize various visual attributes in the game.
+#
+# Do not modify this file unless you know exactly what you are doing
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# Color Code/Index/Name
+#
+# d - 0  - Black/Dark
+# w - 1  - White
+# s - 2  - Slate
+# o - 3  - Orange
+# r - 4  - Red
+# g - 5  - Green
+# b - 6  - Blue
+# u - 7  - Umber
+# D - 8  - Light Dark
+# W - 9  - Light Slate
+# P - 10 - Light Purple
+# y - 11 - Yellow
+# R - 12 - Light Red
+# G - 13 - Light Green
+# B - 14 - Light Blue
+# U - 15 - Light Umber
+# p - 16 - Purple
+# v - 17 - Violet
+# t - 18 - Teal
+# m - 19 - Mud
+# Y - 20 - Light Yellow
+# i - 21 - Pink/Magenta
+# T - 22 - Light Teal
+# V - 23 - Light Violet
+# I - 24 - Light Pink
+# M - 25 - Mustard
+# z - 26 - Blue Slate
+# Z - 27 - Deep Light Blue
+
+# Color Flickering
+#
+# Flickering is to support the legacy method for color cycling. The cycle
+# is selected based on the assigned attribute for monster that has the
+# flicker flag set. Thus, the number of flicker cycles is limited to the
+# number of actual colors in the game. The number of steps in the cycle
+# is fixed. Also, only monsters have the ability to flicker.
+#
+# If duplicate entries exist, based on the selection attribute, the last
+# one listed wins. If not enough colors are specified to fill the cycle,
+# the remaining colors will be whatever color is index 0. Colors beyond
+# the maximum number of colors per cycle will be ignored.
+#
+# flicker:<selection attribute>:<name>
+#   selection attribute - the color code that selects this cycle
+#   name - a descriptive name for the cycle
+# flicker-color:<step color>
+#   step code - the color code for this step in the cycle
+
+# COLOUR_DARK, COLOUR_L_DARK, COLOUR_L_RED
+flicker:d:black light-dark light-red
+flicker-color:d
+flicker-color:D
+flicker-color:R
+
+# COLOUR_WHITE, COLOUR_L_WHITE, COLOUR_L_BLUE
+flicker:w:white light-white light-blue
+flicker-color:w
+flicker-color:W
+flicker-color:B
+
+# COLOUR_SLATE, COLOUR_WHITE, COLOUR_L_DARK
+flicker:s:slate white light-dark
+flicker-color:s
+flicker-color:w
+flicker-color:D
+
+# COLOUR_ORANGE, COLOUR_YELLOW, COLOUR_L_RED
+flicker:o:orange yellow light-red
+flicker-color:o
+flicker-color:y
+flicker-color:R
+
+# COLOUR_RED, COLOUR_L_RED, COLOUR_L_PINK
+flicker:r:red light-red light-pink
+flicker-color:r
+flicker-color:R
+flicker-color:I
+
+# COLOUR_GREEN, COLOUR_L_GREEN, COLOUR_L_TEAL
+flicker:g:green light-green light-teal
+flicker-color:g
+flicker-color:G
+flicker-color:T
+
+# COLOUR_BLUE, COLOUR_L_BLUE, COLOUR_SLATE
+flicker:b:blue light-blue slate
+flicker-color:b
+flicker-color:B
+flicker-color:s
+
+# COLOUR_UMBER, COLOUR_L_UMBER, COLOUR_MUSTARD
+flicker:u:umber light-umber mustard
+flicker-color:u
+flicker-color:U
+flicker-color:M
+
+# COLOUR_L_DARK, COLOUR_SLATE, COLOUR_L_VIOLET
+flicker:D:light-dark slate light-violet
+flicker-color:D
+flicker-color:s
+flicker-color:V
+
+# COLOUR_WHITE, COLOUR_SLATE, COLOUR_L_WHITE
+flicker:W:(light slate/light white) white slate light-white
+flicker-color:w
+flicker-color:s
+flicker-color:W
+
+# COLOUR_L_PURPLE, COLOUR_PURPLE, COLOUR_L_VIOLET
+flicker:P:light-purple purple light-violet
+flicker-color:P
+flicker-color:p
+flicker-color:V
+
+# COLOUR_YELLOW, COLOUR_L_YELLOW, COLOUR_MUSTARD
+flicker:y:yellow light-yellow, mustard
+flicker-color:y
+flicker-color:Y
+flicker-color:M
+
+# COLOUR_L_RED, COLOUR_RED, COLOUR_L_PINK
+flicker:R:light-red red light-pink
+flicker-color:R
+flicker-color:r
+flicker-color:I
+
+# COLOUR_L_GREEN, COLOUR_L_TEAL, COLOUR_GREEN
+flicker:G:light-green light-teal green
+flicker-color:G
+flicker-color:T
+flicker-color:g
+
+# COLOUR_L_BLUE, COLOUR_DEEP_L_BLUE, COLOUR_BLUE_SLATE
+flicker:B:light-blue deep-light-blue blue-slate
+flicker-color:B
+flicker-color:Z
+flicker-color:z
+
+# COLOUR_L_UMBER, COLOUR_UMBER, COLOUR_MUD
+flicker:U:light-umber umber mud
+flicker-color:U
+flicker-color:u
+flicker-color:m
+
+# COLOUR_PURPLE, COLOUR_VIOLET, COLOUR_MAGENTA
+flicker:p:purple violet magenta
+flicker-color:p
+flicker-color:v
+flicker-color:i
+
+# COLOUR_VIOLET, COLOUR_L_VIOLET, COLOUR_MAGENTA
+flicker:v:violet light-violet magenta
+flicker-color:v
+flicker-color:V
+flicker-color:i
+
+# COLOUR_TEAL, COLOUR_L_TEAL, COLOUR_L_GREEN
+flicker:t:teal light-teal light-green
+flicker-color:t
+flicker-color:T
+flicker-color:G
+
+# COLOUR_MUD, COLOUR_YELLOW, COLOUR_UMBER
+flicker:m:mud yellow umber
+flicker-color:m
+flicker-color:y
+flicker-color:u
+
+# COLOUR_L_YELLOW, COLOUR_WHITE, COLOUR_L_UMBER
+flicker:Y:light-yellow white light-umber
+flicker-color:Y
+flicker-color:w
+flicker-color:U
+
+# COLOUR_MAGENTA, COLOUR_L_PINK, COLOUR_L_RED
+flicker:i:magenta light-pink light-red
+flicker-color:i
+flicker-color:I
+flicker-color:R
+
+# COLOUR_L_TEAL, COLOUR_L_WHITE, COLOUR_TEAL
+flicker:T:light-teal light-white teal
+flicker-color:T
+flicker-color:W
+flicker-color:t
+
+# COLOUR_L_VIOLET, COLOUR_L_PURPLE, COLOUR_VIOLET
+flicker:V:light-violet light-purple violet
+flicker-color:V
+flicker-color:P
+flicker-color:v
+
+# COLOUR_L_PINK, COLOUR_L_RED, COLOUR_L_WHITE
+flicker:I:light-pink light-red light-white
+flicker-color:I
+flicker-color:R
+flicker-color:W
+
+# COLOUR_MUSTARD, COLOUR_YELLOW, COLOUR_UMBER
+flicker:M:mustard yellow umber
+flicker-color:M
+flicker-color:y
+flicker-color:u
+
+# COLOUR_BLUE_SLATE, COLOUR_BLUE, COLOUR_SLATE
+flicker:z:blue-slate blue slate
+flicker-color:z
+flicker-color:b
+flicker-color:s
+
+# COLOUR_DEEP_L_BLUE, COLOUR_L_BLUE, COLOUR_BLUE
+flicker:Z:deep-light-blue light-blue blue
+flicker-color:Z
+flicker-color:B
+flicker-color:b
