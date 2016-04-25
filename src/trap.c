@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "init.h"
+#include "mon-util.h"
 #include "obj-knowledge.h"
 #include "player-attack.h"
 #include "player-timed.h"
@@ -448,6 +449,10 @@ extern void hit_trap(int y, int x)
 		/* Some traps drop you a dungeon level */
 		if (trf_has(trap->kind->flags, TRF_DOWN))
 			dungeon_change_level(dungeon_get_next_level(player->depth, 1));
+
+		/* Some traps drop you onto them */
+		if (trf_has(trap->kind->flags, TRF_PIT))
+			monster_swap(player->py, player->px, trap->fy, trap->fx);
 
 		/* Some traps disappear after activating */
 		if (trf_has(trap->kind->flags, TRF_ONETIME)) {

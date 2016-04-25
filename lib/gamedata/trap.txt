@@ -88,7 +88,7 @@ msg-good:You float gently down to the next level.
 name:11:pit:pit
 graphics:^:s
 appear:0:2:0
-flags:TRAP | FLOOR
+flags:TRAP | FLOOR | PIT
 effect:DAMAGE
 dice:2d6
 save:FEATHER
@@ -101,7 +101,7 @@ msg-good:You float gently to the bottom of the pit.
 name:12:pit:spiked pit
 graphics:^:s
 appear:0:2:0
-flags:TRAP | FLOOR
+flags:TRAP | FLOOR | PIT
 effect:DAMAGE
 dice:2d6
 effect-xtra:DAMAGE
@@ -119,7 +119,7 @@ msg-xtra:You are impaled!
 name:13:pit:poison pit
 graphics:^:s
 appear:0:2:0
-flags:TRAP | FLOOR
+flags:TRAP | FLOOR | PIT
 effect:DAMAGE
 dice:2d6
 effect-xtra:TIMED_INC:CUT
@@ -151,7 +151,7 @@ name:16:strange rune:summon rune
 graphics:^:B
 appear:0:3:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
-effect:SUMMON:UNDEAD
+effect:SUMMON
 dice:2+1d3
 desc:A magical rune which calls up monsters to attack you.
 msg:You are enveloped in a cloud of smoke!
@@ -313,7 +313,7 @@ msg:You are surrounded by a strange white mist!
 
 # alarm -- aggravation
 
-name:32:alarm:alarm trap
+name:32:alarm:aggravation trap
 graphics:^:R
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL
@@ -373,7 +373,7 @@ msg-bad:Your mind is blasted by psionic energy!
 
 # mental assault -- brain smash
 
-name:35:mind blast trap:brain smashing trap
+name:36:mind blast trap:brain smashing trap
 graphics:^:G
 appear:0:40:0
 flags:TRAP | FLOOR | MAGICAL | SAVE_THROW
@@ -395,7 +395,7 @@ msg-bad:Your mind is blasted by psionic energy!
 
 # dungeon alter -- rock fall
 
-name:36:dungeon alteration trap:rock fall trap
+name:37:dungeon alteration trap:rock fall trap
 graphics:^:U
 appear:0:4:0
 flags:TRAP | FLOOR | ONETIME
@@ -408,7 +408,7 @@ msg:A rock falls on your head!
 
 # dungeon alter -- earthquake
 
-name:37:dungeon alteration trap:earthquake trap
+name:38:dungeon alteration trap:earthquake trap
 graphics:^:U
 appear:0:30:0
 flags:TRAP | FLOOR
@@ -422,7 +422,7 @@ msg:The ground shakes.
 
 # dungeon alter - stone to mud
 
-name:38:dungeon alteration trap:area blast trap
+name:39:dungeon alteration trap:area blast trap
 graphics:^:U
 appear:0:40:0
 flags:TRAP | FLOOR | ONETIME
@@ -434,8 +434,6 @@ expr:B:DUNGEON_LEVEL:+ 0
 effect:RUBBLE
 desc:A trap that clears the surrounding area.
 msg:The trap explodes, blasting the area clear!
-
-### 39
 
 # blinding flash
 
@@ -490,3 +488,13 @@ effect:TIMED_INC:AFRAID
 dice:1d8
 msg:You feel petrified.
 desc:A trap that terrifies you.
+# alarm -- aggravation
+
+name:44:alarm:horn trap
+graphics:^:R
+appear:0:1:0
+flags:TRAP | FLOOR | MAGICAL
+effect:WAKE
+desc:A trap that wakes nearby monsters.
+msg:A horn blast sounds!
+
