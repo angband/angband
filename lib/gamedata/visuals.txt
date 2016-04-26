@@ -222,3 +222,326 @@ flicker:Z:deep-light-blue light-blue blue
 flicker-color:Z
 flicker-color:B
 flicker-color:b
+
+# Color Cycling
+#
+# These color cycles provide a basic mechanism for animating a sequence
+# of colors. Color cycles are specified and selected by a group name and
+# a cycle name; thus, if a color cycle definition uses the group and
+# cycle name of an existing cycle, the old one will be overwritten. The
+# maximum colors per cycle, maximum cycles per group, and maximum number
+# of groups are defined elsewhere.
+#
+# cycle:<group name>:<cycle name>
+#   group name - the name of the group that this cycle belongs in
+#   cycle name - the name of this color cycle
+# cycle-color:<step color>
+#   step code - the color code for this step in the cycle
+
+# Flicker Group
+# These are the original color cycles, just using color cycles.
+
+# COLOUR_DARK, COLOUR_L_DARK, COLOUR_L_RED
+cycle:flicker:d
+cycle-color:d
+cycle-color:D
+cycle-color:R
+
+# COLOUR_WHITE, COLOUR_L_WHITE, COLOUR_L_BLUE
+cycle:flicker:w
+cycle-color:w
+cycle-color:W
+cycle-color:B
+
+# COLOUR_SLATE, COLOUR_WHITE, COLOUR_L_DARK
+cycle:flicker:s
+cycle-color:s
+cycle-color:w
+cycle-color:D
+
+# COLOUR_ORANGE, COLOUR_YELLOW, COLOUR_L_RED
+cycle:flicker:o
+cycle-color:o
+cycle-color:y
+cycle-color:R
+
+# COLOUR_RED, COLOUR_L_RED, COLOUR_L_PINK
+cycle:flicker:r
+cycle-color:r
+cycle-color:R
+cycle-color:I
+
+# COLOUR_GREEN, COLOUR_L_GREEN, COLOUR_L_TEAL
+cycle:flicker:g
+cycle-color:g
+cycle-color:G
+cycle-color:T
+
+# COLOUR_BLUE, COLOUR_L_BLUE, COLOUR_SLATE
+cycle:flicker:b
+cycle-color:b
+cycle-color:B
+cycle-color:s
+
+# COLOUR_UMBER, COLOUR_L_UMBER, COLOUR_MUSTARD
+cycle:flicker:u
+cycle-color:u
+cycle-color:U
+cycle-color:M
+
+# COLOUR_L_DARK, COLOUR_SLATE, COLOUR_L_VIOLET
+cycle:flicker:D
+cycle-color:D
+cycle-color:s
+cycle-color:V
+
+# COLOUR_WHITE, COLOUR_SLATE, COLOUR_L_WHITE
+cycle:flicker:W
+cycle-color:w
+cycle-color:s
+cycle-color:W
+
+# COLOUR_L_PURPLE, COLOUR_PURPLE, COLOUR_L_VIOLET
+cycle:flicker:P
+cycle-color:P
+cycle-color:p
+cycle-color:V
+
+# COLOUR_YELLOW, COLOUR_L_YELLOW, COLOUR_MUSTARD
+cycle:flicker:y
+cycle-color:y
+cycle-color:Y
+cycle-color:M
+
+# COLOUR_L_RED, COLOUR_RED, COLOUR_L_PINK
+cycle:flicker:R
+cycle-color:R
+cycle-color:r
+cycle-color:I
+
+# COLOUR_L_GREEN, COLOUR_L_TEAL, COLOUR_GREEN
+cycle:flicker:G
+cycle-color:G
+cycle-color:T
+cycle-color:g
+
+# COLOUR_L_BLUE, COLOUR_DEEP_L_BLUE, COLOUR_BLUE_SLATE
+cycle:flicker:B
+cycle-color:B
+cycle-color:Z
+cycle-color:z
+
+# COLOUR_L_UMBER, COLOUR_UMBER, COLOUR_MUD
+cycle:flicker:U
+cycle-color:U
+cycle-color:u
+cycle-color:m
+
+# COLOUR_PURPLE, COLOUR_VIOLET, COLOUR_MAGENTA
+cycle:flicker:p
+cycle-color:p
+cycle-color:v
+cycle-color:i
+
+# COLOUR_VIOLET, COLOUR_L_VIOLET, COLOUR_MAGENTA
+cycle:flicker:v
+cycle-color:v
+cycle-color:V
+cycle-color:i
+
+# COLOUR_TEAL, COLOUR_L_TEAL, COLOUR_L_GREEN
+cycle:flicker:t
+cycle-color:t
+cycle-color:T
+cycle-color:G
+
+# COLOUR_MUD, COLOUR_YELLOW, COLOUR_UMBER
+cycle:flicker:m
+cycle-color:m
+cycle-color:y
+cycle-color:u
+
+# COLOUR_L_YELLOW, COLOUR_WHITE, COLOUR_L_UMBER
+cycle:flicker:Y
+cycle-color:Y
+cycle-color:w
+cycle-color:U
+
+# COLOUR_MAGENTA, COLOUR_L_PINK, COLOUR_L_RED
+cycle:flicker:i
+cycle-color:i
+cycle-color:I
+cycle-color:R
+
+# COLOUR_L_TEAL, COLOUR_L_WHITE, COLOUR_TEAL
+cycle:flicker:T
+cycle-color:T
+cycle-color:W
+cycle-color:t
+
+# COLOUR_L_VIOLET, COLOUR_L_PURPLE, COLOUR_VIOLET
+cycle:flicker:V
+cycle-color:V
+cycle-color:P
+cycle-color:v
+
+# COLOUR_L_PINK, COLOUR_L_RED, COLOUR_L_WHITE
+cycle:flicker:I
+cycle-color:I
+cycle-color:R
+cycle-color:W
+
+# COLOUR_MUSTARD, COLOUR_YELLOW, COLOUR_UMBER
+cycle:flicker:M
+cycle-color:M
+cycle-color:y
+cycle-color:u
+
+# COLOUR_BLUE_SLATE, COLOUR_BLUE, COLOUR_SLATE
+cycle:flicker:z
+cycle-color:z
+cycle-color:b
+cycle-color:s
+
+# COLOUR_DEEP_L_BLUE, COLOUR_L_BLUE, COLOUR_BLUE
+cycle:flicker:Z
+cycle-color:Z
+cycle-color:B
+cycle-color:b
+
+# Fancy Group
+# Some fancier color cycles.
+
+# ROYGBIV-ish
+cycle:fancy:rainbow
+cycle-color:r
+cycle-color:R
+cycle-color:o
+cycle-color:M
+cycle-color:y
+cycle-color:G
+cycle-color:Y
+cycle-color:T
+cycle-color:t
+cycle-color:Z
+cycle-color:b
+cycle-color:v
+cycle-color:p
+cycle-color:i
+
+# Bile: stsDusDutD
+cycle:fancy:bile
+cycle-color:s
+cycle-color:t
+cycle-color:s
+cycle-color:D
+cycle-color:u
+cycle-color:s
+cycle-color:D
+cycle-color:u
+cycle-color:t
+cycle-color:D
+
+# Storm: bbwZbbbZbbbbZbb
+cycle:fancy:storm
+cycle-color:b
+cycle-color:b
+cycle-color:w
+cycle-color:Z
+cycle-color:b
+cycle-color:b
+cycle-color:b
+cycle-color:Z
+cycle-color:b
+cycle-color:b
+cycle-color:b
+cycle-color:b
+cycle-color:Z
+cycle-color:b
+cycle-color:b
+
+# Hell: rsRoMymsMyorR
+cycle:fancy:hell
+cycle-color:r
+cycle-color:s
+cycle-color:R
+cycle-color:o
+cycle-color:M
+cycle-color:y
+cycle-color:m
+cycle-color:s
+cycle-color:M
+cycle-color:y
+cycle-color:o
+cycle-color:r
+cycle-color:R
+
+# Ice: wwZzww
+cycle:fancy:ice
+cycle-color:w
+cycle-color:w
+cycle-color:Z
+cycle-color:z
+cycle-color:w
+cycle-color:w
+
+# Swamp: gggUMGMUgmgm
+cycle:fancy:swamp
+cycle-color:g
+cycle-color:g
+cycle-color:g
+cycle-color:U
+cycle-color:M
+cycle-color:G
+cycle-color:M
+cycle-color:U
+cycle-color:g
+cycle-color:m
+cycle-color:g
+cycle-color:m
+
+# Crystal: mmUuMmm
+cycle:fancy:crystal
+cycle-color:m
+cycle-color:m
+cycle-color:U
+cycle-color:u
+cycle-color:M
+cycle-color:m
+cycle-color:m
+
+# Thunder: yyyYMom
+cycle:fancy:thunder
+cycle-color:y
+cycle-color:y
+cycle-color:y
+cycle-color:Y
+cycle-color:M
+cycle-color:o
+cycle-color:m
+
+# Law: BZIZ
+cycle:fancy:law
+cycle-color:B
+cycle-color:Z
+cycle-color:I
+cycle-color:Z
+
+# Balance: IippIiVVIivvIiPP
+cycle:fancy:balance
+cycle-color:I
+cycle-color:i
+cycle-color:p
+cycle-color:p
+cycle-color:I
+cycle-color:i
+cycle-color:V
+cycle-color:V
+cycle-color:I
+cycle-color:i
+cycle-color:v
+cycle-color:v
+cycle-color:I
+cycle-color:i
+cycle-color:P
+cycle-color:P
