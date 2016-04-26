@@ -2,7 +2,7 @@
 Version Information
 ===================
 
-The current version is 3.4.  Detailed information about this version and
+The current version is 4.0.5. Detailed information about this version and
 previous versions can be found at http://rephial.org.  Also additional
 information can be found at the angband forums (http://angband.oook.cz)
 or the newsgroup (rec.games.roguelike.angband).  
@@ -58,7 +58,7 @@ Angband 2.6.1 (and Angband 2.6.2) in late 1994. Some of the changes during
 this period were based on suggestions from the "net", and from various
 related games, including "UMoria 5.5", "PC Angband 1.4", and "FAngband".
 
-Angband 2.6.1 was primarily targetted towards Unix/NeXT machines, and it
+Angband 2.6.1 was primarily targeted towards Unix/NeXT machines, and it
 required the use of the low level "curses" commands for all screen
 manipulation and keypress interaction. Each release had to be ported from
 scratch to any new platforms, normally by creating visual display code that
@@ -97,7 +97,7 @@ of minor tweaks and some new features.
 
 After Angband 2.7.8 was released, Ben created a web site to keep track of
 all the changes made in each version (though a few may have been missed),
-and acquired the use of a new developement ftp server to supplement the
+and acquired the use of a new development ftp server to supplement the
 official "mirror" server. This web site is now permanently located at the
 Official Angband Home Page (http://www.thangorodrim.net/). Unfortunately,
 the next six versions were numbered Angband 2.7.9v1 to Angband 2.7.9v6, but
@@ -225,7 +225,7 @@ an option to improve monster AI (believed to have originally started out
 life in a patch written by Keldon Jones), and a patch to allow easier
 handling of opening and closing doors and disarming traps (by Tim Baker).
 For Angband 2.9.1 has also come such things as the ability to increase the
-size of the editable textfiles and thus the number of monsters, artifacts,
+size of the editable text files and thus the number of monsters, artifacts,
 items, ego-items and vaults in the game (many new vaults were written by
 Chris Weisiger, some by others, and the number of vaults in the game at
 this time was doubled), and much greater customizability of ego-items has

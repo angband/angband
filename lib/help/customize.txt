@@ -12,18 +12,18 @@ Ignore settings
 ================
       
 Angband allows you to ignore specific items that you don't want to see
-anymore. These items are marked 'ignored' and any similar items are hidden from
-view. There are several ways to ignore an item. The easiest way is to choose
-the 's' option when destroying an object. Whenever you destroy an object you
-are forced to confirm the destruction. One of the options is 's'. If you use
-this option, the object is dropped and then hidden from view.
+anymore. These items are marked 'ignored' and any similar items are hidden
+from view. There are several ways to ignore an item. The easiest way is to
+choose the 's' option when destroying an object. Whenever you destroy an
+object you are forced to confirm the destruction. One of the options is 's'.
+If you use this option, the object is dropped and then hidden from view.
 
 Weapons and armor have quality ignore options. These allow you to specify
-what types of weapons and armor you are no longer interested in seeing. There
-is a quality setting for each weapon and armor type. Ignoring weapons and
-armor by destroying the object will prompt you with a question about whether
-you wish to ignore all of that type of armor with a certain quality setting.
-These quality settings are described below:
+what types of weapons and armor you are no longer interested in seeing. 
+There is a quality setting for each weapon and armor type. Ignoring weapons
+and armor by destroying the object will prompt you with a question about
+whether you wish to ignore all of that type of armor with a certain quality
+setting. These quality settings are described below:
 
 bad
   The weapon/armor has negative AC, to-hit or to-dam.
@@ -64,7 +64,8 @@ Inscribing an item with '=g':
 Inscribing an item with '!' followed by a command letter or '*':
 	This means "ask me before using this item".  '!w' means 'ask me before
 	wielding', '!d' means 'ask me before dropping', and so on.  If you
-	inscribe an item with '!*' then the game will confirm any use of an item.
+	inscribe an item with '!*' then the game will confirm any use of an
+	item.
 
 	Say you inscribed your potion of Speed with '!q'.  This would prompt
 	you when you try to drink it to see if you really mean to.  Multiple
@@ -91,24 +92,24 @@ Inscribing an item with '@', followed by a command latter, followed by 0-9:
 	that wand.
 
 	Spellcasters should inscribe their books, so that if they lose them they
-	do not cast the wrong spell.  If you are mage and the beginner's spellbook
-	is the first in your inventory, casting 'maa' will cast magic missile. But
-	if you lose your spellbook, casting 'maa' will cast the first spell in
-	whatever new book is in the top of your inventory. This can be a waste in
-	the best case scenario and exceedingly dangerous in the worst! By
-	inscribing your spellbooks with '@m1', '@m2', etc., if you lose your first
-	spellbook and attempt to cast magic missile by using 'm1a', you cannot
-	accidentally select the wrong spellbook.
+	do not cast the wrong spell.  If you are mage and the beginner's
+	spellbook is the first in your inventory, casting 'maa' will cast magic
+	missile. But if you lose your spellbook, casting 'maa' will cast the
+	first spell in whatever new book is in the top of your inventory. This
+	can be a waste in the best case scenario and exceedingly dangerous in
+	the worst! By inscribing your spellbooks with '@m1', '@m2', etc., if
+	you lose your first spellbook and attempt to cast magic missile by
+	using 'm1a', you cannot accidentally select the wrong spellbook.
 
 Inscribing an item with '^', followed by a command letter:
 	When you wear an item inscribed with '^', the game prompts you before 
-	doing that action.  You might inscribe '^>' on an item if you want to be
-	reminded to take it off before going down stairs.  If the item is in your
-	backpack then the game won't prompt you.
+	doing that action.  You might inscribe '^>' on an item if you want to
+	be reminded to take it off before going down stairs.  If the item is in
+	your backpack then the game won't prompt you.
 
-	Like with '!', you can use '*' for the command letter if you want to game
-	to prompt you every turn whatever you're doing.  This can get very
-	annoying!
+	Like with '!', you can use '*' for the command letter if you want to
+	game to prompt you every turn whatever you're doing.  This can get
+	very annoying!
 
 
 User Pref Files
@@ -198,7 +199,7 @@ For example::
 Special keys include [Escape].
 
 The game will run keymaps in whatever keyset you use (original or roguelike).
-So if you write keymaps for roguelike keys and swith to original keys, they 
+So if you write keymaps for roguelike keys and switch to original keys, they 
 may not work as you expect!  Keymap actions aren't recursive either, so if you
 had a keymap whose trigger was F1, including F1 inside the action wouldn't run
 the keymap action again.
@@ -231,7 +232,7 @@ You can use the "Interact with visuals" menu to change various visual
 information, currently including the choice of what attr/char values are used
 to represent various monsters, objects, or terrain features. Note that in
 combination appropriate support in 'main-xxx.c', and with the use of the
-"use_graphics" flag, you may be able to specify that "graphic bitmaps" hould
+"use_graphics" flag, you may be able to specify that "graphic bitmaps" should
 be used instead of normal "colored characters" for various things.
 
 When interactively modifying the attr/char values for monsters, objects, or

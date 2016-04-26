@@ -89,7 +89,7 @@ Show damage player deals to monsters '[show_damage]'
   
 .. _show_target:
 
-Hightlight target with cursor '[show_target]'
+Highlight target with cursor '[show_target]'
   Highlights the current targeted monster with a cursor.  Useful when 
   combined with "use old target by default"
 
@@ -153,7 +153,7 @@ Randomize the artifacts (except a very few) '[birth_randarts]'
   ones. This is intended primarily for people who have played enough to
   know what most of the standard artifacts do and want some variety. The
   number, findability and power of random artifacts will all match the
-  tandard set - approximately.
+  standard set - approximately.
 
 .. _birth_keep_randarts:
 
@@ -219,8 +219,8 @@ Lose artifacts when leaving level '[birth_lose_arts]'
 
 Generate connected stairs '[birth_connect_stairs]'
   With this option turned on, if you go down stairs, you start the new level
-  on an up staircase, and vice versa (if you go up stairs, you start the next
-  level on a down staircase).
+  on an up staircase, and vice versa (if you go up stairs, you start the
+  next level on a down staircase).
 
   With this option off, you will never start on a staircase - but other
   staircases up and down elsewhere on the level will still be generated.
@@ -306,7 +306,7 @@ Display player (compact)
   stats.
 
 Display map view
-  Display the area around the player or around the target while targetting.
+  Display the area around the player or around the target while targeting.
   This allows using graphical tiles in their original size.
 
 Display messages
@@ -317,7 +317,7 @@ Display overhead view
 
 Display monster recall
   Display a description of the most monster which has been most recently
-  attacked, targetted, or examined in some way.
+  attacked, targeted, or examined in some way.
 
 Display object recall
   Display a description of the most recently selected object. Currently
