@@ -67,9 +67,6 @@ void do_cmd_wizard(void)
 	player->upkeep->redraw |= (PR_TITLE);
 }
 
-
-
-
 /**
  * Commit suicide
  */
@@ -81,17 +78,6 @@ void do_cmd_suicide(struct command *cmd)
 	/* Cause of death */
 	my_strcpy(player->died_from, "Quitting", sizeof(player->died_from));
 }
-
-
-/**
- * Mention the current version
- */
-void do_cmd_version(void)
-{
-	/* Silly message */
-	msg("You are playing %s.  Type '?' for more info.", buildver);
-}
-
 
 /**
  * Record the player's thoughts as a note.

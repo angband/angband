@@ -24,8 +24,8 @@ const char *buildver = VERSION_STRING;
 /**
  * Hack -- Link a copyright message into the executable
  */
-static const char *copyright =
-	"Copyright (c) 1987-2015 Angband contributors.\n"
+const char *copyright =
+	"Copyright (c) 1987-2016 Angband contributors.\n"
 	"\n"
 	"This work is free software; you can redistribute it and/or modify it\n"
 	"under the terms of either:\n"

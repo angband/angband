@@ -22,6 +22,7 @@
 void do_cmd_redraw(void);
 void do_cmd_xxx_options(void);
 void do_cmd_unknown(void);
+void do_cmd_version(void);
 void textui_cmd_suicide(void);
 void textui_cmd_debug(void);
 void do_cmd_load_screen(void);

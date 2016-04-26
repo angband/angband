@@ -144,6 +144,25 @@ void do_cmd_unknown(void)
 
 
 /**
+ * Print the version and copyright notice.
+ */
+void do_cmd_version(void)
+{
+	char header_buf[120];
+
+	textblock *tb = textblock_new();
+	region local_area = { 0, 0, 0, 0 };
+
+	my_strcpy(header_buf,
+			  format("You are playing %s.  Type '?' for more info.", buildver),
+			  sizeof(header_buf));
+	textblock_append(tb, "\n");
+	textblock_append(tb, copyright);
+	textui_textblock_show(tb, local_area, header_buf);
+	textblock_free(tb);
+}
+
+/**
  * Verify use of "debug" mode
  */
 void textui_cmd_debug(void)

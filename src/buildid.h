@@ -31,5 +31,6 @@
 
 extern const char *buildid;
 extern const char *buildver;
+extern const char *copyright;
 
 #endif /* BUILDID */

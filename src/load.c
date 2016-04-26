@@ -66,9 +66,6 @@ static byte elem_max = 0;
 /**
  * Monster constants
  */
-static byte monster_blow_max = 0;
-static byte rf_size = 0;
-static byte rsf_size = 0;
 static byte mflag_size = 0;
 
 /**
