@@ -43,7 +43,7 @@ So, let me recap, the vital points of Angband are:
 From this point, the guide assumes that you are playing a fighting class
 (warrior, ranger, rogue or paladin) and race (Dunedain, High-Elf, Dwarf,
 Half-Orc, Half-Troll.) First, use the 'cost-based' stats selection, and create
-a charcter with 3 or 4 blows (Don't pick a class/race combinations, like Dwarf
+a character with 3 or 4 blows (Don't pick a class/race combinations, like Dwarf
 Ranger, that can only get 2 blows.)
 
 First, set your stats to get maximum blows. If you have a combination with good
@@ -210,7 +210,7 @@ What to avoid
 On Bad Luck
 -----------
 
-This is rule number one of angband: don't take unnecessary risks. If you take
+This is rule number one of Angband: don't take unnecessary risks. If you take
 enough low-probability chances of death, you'll never survive to fight Sauron.
 Such deaths are generally called 'stupid', but that's not always accurate.
 Sometimes it's just bad luck. But given enough chances, you are guaranteed to
@@ -229,7 +229,7 @@ following is intended to state what many perceive to be blatantly obvious,
 hence "you did WHAT!" face-palm deaths. This really should be cleaned up and
 refactored, but placing here for now.
 
-WARNING. I have yet to defeat angband. This is a compilation of some of the
+WARNING. I have yet to defeat Angband. This is a compilation of some of the
 better tips I've learned while trying to explore the depths... (to Level ~35).
 Additional advice would be greatly appreciated!
 

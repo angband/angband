@@ -106,7 +106,7 @@ p_race.txt
   handled as for classes.
 
 body.txt
-  Every player race has a body, which defines what equipment thay can use.
+  Every player race has a body, which defines what equipment they can use.
   Currently there is only one body, which all races use, but this is easily
   changeable for significant effect.
 

@@ -17,7 +17,7 @@ normally stopped by walls, nor can they be shot at with bows and arrows.
 Tunnelling into the wall (using the "tunnel" or "alter" command) will allow
 you to attack any creature in the wall with your main weapon. This applies
 to creatures which "pass through" walls: if they "bore through" walls, the
-wall is no longer there, and the creature can be targetted normally.
+wall is no longer there, and the creature can be targeted normally.
 
 If you are wielding a weapon, the damage for the weapon is used when you
 hit a creature. Otherwise you get a single punch which does minimal damage.
@@ -314,8 +314,8 @@ category, whether cast by the monster or the player.
 
 In addition items on the ground are especially vulnerable to elemental 
 effects.  Potions on the ground will always be destroyed by cold, shards,
-sound and force.  Scrolls, staves, books, and non-metal gear will always get
-destroyed by fire or plasma.  Scrolls, staves, and all non-mithril gear
+sound and force.  Scrolls, staves, books, and non-metal gear will always
+get destroyed by fire or plasma.  Scrolls, staves, and all non-mithril gear
 will be destroyed by acid.  Rings, amulets, wands and rods will be
 destroyed by lightning and plasma.  And finally nearly everything will be
 destroyed by a mana storm if left on the ground. 
@@ -340,7 +340,7 @@ It should be noted that not all of these are actually vital to completing
 the game: indeed, of the above list, only fire, cold, acid, lightning,
 poison and confusion resists are regarded as truly vital, with blindness,
 chaos and nether the next most desirable. Some attack forms are not
-resistable, but thankfully these are rare: resist shards will prevent all
+resistible, but thankfully these are rare: resist shards will prevent all
 other magical attacks which cut (namely ice bolts), and confusion resistance 
 will prevent confusion by a water bolt or ball, but there is no resistance 
 to the physical damage caused by these following attacks: inertia, force, 

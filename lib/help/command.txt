@@ -42,8 +42,8 @@ Inventory list ('i')
 Equipment list ('e')
   Use this command to display a list of the objects currently being used by
   your character. The standard body (which all races currently have) has
-  12 slots for equipment. Each equipment slot corresponds to a different
-  location on the body, and each of which may contain only a single object at
+  12 slots for equipment. Every equipment slot corresponds to a different
+  location on the body, and each of which may contain only one object at
   a time, and each of which may only contain objects of the proper "type".
   For the standard body these are WEAPON (weapon), BOW (missile launcher),
   RING (ring) (two of these), AMULET (amulet), LIGHT (light source),
@@ -53,8 +53,8 @@ Equipment list ('e')
 
 Quiver list ('\|')
   Missiles that you carry will automatically be put in your quiver.  The
-  quiver has 10 slots; it also takes up inventory space, so every 40 missiles
-  will reduce your number of inventory slots by 1.
+  quiver has 10 slots; it also takes up inventory space, so every 40 
+  missiles will reduce your number of inventory slots by 1.
 
 Drop an item ('d')
   This drops an item from your inventory or equipment onto the dungeon
@@ -94,10 +94,10 @@ Movement Commands
 =================
 
 Moving (arrow keys, number keys) or (arrow keys, number keys, 'yuhjklbn')
-  This causes you to move one step in a given direction. If the quare you
+  This causes you to move one step in a given direction. If the square you
   wish to move into is occupied by a monster, you will attack it. If the
   square is occupied by a door or a trap you may attempt to open or disarm
-  it if the appropriate option is set. Preceeding this command with CTRL
+  it if the appropriate option is set. Preceding this command with CTRL
   will cause you to attack in the appropriate direction, but will not move
   your character if no monster is there. These commands take some energy.
 
@@ -404,20 +404,20 @@ Targeting Mode ('*')
   if this is not a "compass" direction) when you are asked for a direction.
   You can set a target using this command, or you can set a new target at
   the "Direction?" prompt when appropriate. At the targeting prompt, you
-  have many options. First of all, targetting mode starts targetting nearby
+  have many options. First of all, targeting mode starts targeting nearby
   monsters which can be reached by "projectable" spells and thrown objects.
   In this mode, you can press 't' (or '5' or '.') to select the
   current monster, pace to advance to the next monster, '-' to back up to
   the previous monster, direction keys to advance to a monster more or less
   in that direction, 'r' to "recall" the current monster, 'q' to exit
-  targetting mode, and 'p' (or 'o') to stop targetting monsters and
-  enter the mode for targetting a location on the floor or in a wall. Note
+  targeting mode, and 'p' (or 'o') to stop targeting monsters and
+  enter the mode for targeting a location on the floor or in a wall. Note
   that if there are no nearby monsters, you will automatically enter this
   mode. Note that hitting 'o' is just like 'p', except that the
   location cursor starts on the last examined monster instead of on the
   player. In this mode, you use the "direction" keys to move around, and
   the 'q' key to quit, and the 't' (or '5' or '.') key to target
-  the cursor location. Note that targetting a location is slightly
+  the cursor location. Note that targeting a location is slightly
   "dangerous", as the target is maintained even if you are far away. To
   cancel an old target, simply hit '*' and then 'ESCAPE' (or 'q').
   Note that when you cast a spell or throw an object at the target

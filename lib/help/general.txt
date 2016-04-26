@@ -80,7 +80,7 @@ confirmation.
 Note that spoiler files are not distributed with the source since they may
 spoil the game for new players (hence their name). If you want to use them,
 you can obtain them from various places as with the source and executables.
-Spoiler files may be placed into the "lib/user/info" directory, or into a user
+Spoiler files may be placed into the "lib/user/info" directory, or a user
 specified external directory, to allow access via the "online help" system.
 
 Remember to tell all your friends about how much you like Angband...
@@ -128,7 +128,7 @@ given symbol represents. Press "/" then '@' now to verify the meaning of
 the '@' symbol.
 
 The solid blocks (which may be '#' symbols on some systems) around the
-edge of the town represent the walls that surround the the town. You cannot
+edge of the town represent the walls that surround the town. You cannot
 leave the town above ground, although some games derived from Angband
 (called "variants") have an overground element.
 
@@ -172,7 +172,7 @@ your character. So far, you have used the 'w' and 't' commands, which
 take energy, and the 'e', 'i', 'l', and '/' commands, which are
 "free" commands, and so do not take any energy. In general, the only
 commands which take energy are the ones which require your character to
-perform ome action in the world of the game, such as moving around,
+perform some action in the world of the game, such as moving around,
 attacking monsters, and interacting with objects.
 
 If there were any monsters near your character while you were experimenting
@@ -240,7 +240,7 @@ flasks of oil and press the 'p' key to purchase some. If you are asked
 how many you want, just hit enter. Any time you are asked a question and 
 there is already something under the cursor, pressing return will accept 
 that choice. Hit enter to accept the price. Many commands work inside the 
-store, for example, use the 'i' command to ee your inventory, with the 
+store, for example, use the 'i' command to see your inventory, with the 
 new flask of oil. Note that your inventory is always kept sorted in a 
 semi-logical order, so the indexes of some of the objects may change as 
 your inventory changes.

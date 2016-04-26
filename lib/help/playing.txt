@@ -131,7 +131,7 @@ Original Keyset Command Summary
   _    Enter store                     ^P    Show previous messages
   |+|    Alter grid                      ^Q    (unused)
   =    Set options                     ^R    Redraw the screen
-  ;    Walk (with pickup)              ^S    Save and dont quit
+  ;    Walk (with pickup)              ^S    Save and don't quit
   :    Take notes                      ^T    (unused)
   '    Target closest monster          ^U    (unused)
   "    Enter a user pref command       ^V    (unused)
@@ -197,7 +197,7 @@ Roguelike Keyset Command Summary
   _    Enter store                     ^P   Show previous messages
   |+|    Alter grid                      ^Q   (unused)
   =    Set options                     ^R   Redraw the screen
-  ;    Walk (with pickup)              ^S   Save and dont quit
+  ;    Walk (with pickup)              ^S   Save and don't quit
   :    Take notes                      ^T   Dig a tunnel
   '    Target closest monster          ^U   (alter - north east)
   "    Enter a user pref command       ^V   Repeat previous command
@@ -222,7 +222,7 @@ control keys, and often, you can disable their special effects.
 If you are playing on a UNIX or similar system, then 'Ctrl-C' will
 interrupt Angband. The second and third interrupt will induce a warning
 bell, and the fourth will induce both a warning bell and a special message,
-ince the fifth will quit the game, after killing your character. Also,
+since the fifth will quit the game, after killing your character. Also,
 'Ctrl-Z' will suspend the game, and return you to the original command
 shell, until you resume the game with the 'fg' command. There is now a
 compilation option to force the game to prevent the "double 'ctrl-z'
@@ -238,7 +238,7 @@ Pressing backslash ('\\') before a command will bypass all keymaps, and
 the next keypress will be interpreted as an "underlying command" key,
 unless it is a caret ('^'), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
-angband keyset. The backslash key is useful for creating actions which are
+Angband keyset. The backslash key is useful for creating actions which are
 not affected by any keymap definitions that may be in force, for example,
 the sequence '\\' + '.' + '6' will always mean "run east", even if the
 '.' key has been mapped to a different underlying command.

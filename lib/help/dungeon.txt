@@ -137,11 +137,11 @@ Town Buildings
 Your character will begin his adventure with some basic supplies, and some
 extra gold with which to purchase more supplies at the town stores.
 
-You may enter any open store to buy items of the appropriate type.  The price
-that the shopkeeper requests is dependent on the price of the item.  By
-default stores will not buy items from the player.  If you choose to play with
-selling enabled, stores have a maximum value; they will not pay more than that
-for any item, regardless of how much it is actually worth.
+You may enter any open store to buy items of the appropriate type.
+The price the shopkeeper requests is dependent on the price of the item.
+By default stores will not buy items from the player.  If you choose to play
+with selling enabled, stores have a maximum value; they will not pay more
+than that for any item, regardless of how much it is actually worth.
 
 Once inside a store, you will see the name and race of the store owner, the
 name of the store, the maximum amount of cash that the store owner will pay
@@ -469,7 +469,7 @@ This feeling also depends on your current dungeon depth. A dungeon you
 feel nervous about at 2000' is way more dangerous than a murderous one
 at 50'.
 
-Once you have explored a certain ammount of the dungeon you will also
+Once you have explored a certain amount of the dungeon you will also
 get a feeling about how good are the objects lying on the floor of the
 dungeon.
 
