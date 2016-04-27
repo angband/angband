@@ -13998,6 +13998,7 @@ spell-freq:5
 spells:BLIND | CONF | SCARE
 spells:BR_CHAO | BR_DISE | BR_SHAR | BR_SOUN
 spells:S_DRAGON | S_HI_DRAGON
+color-cycle:fancy:balance
 desc:A massive dragon, one of the mightiest of dragonkind.  It is thousands of
 desc: years old and seeks to maintain the Cosmic Balance.  It sees you as an
 desc: upstart troublemaker without the wisdom to control your actions.  It will
