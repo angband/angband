@@ -19,14 +19,22 @@
 #include "angband.h"
 #include "game-event.h"
 #include "init.h"
+#include "monster.h"
 #include "parser.h"
 #include "ui-visuals.h"
 #include "z-color.h"
 #include "z-util.h"
 
+/** Max color cycle groups per cycler. */
 static size_t const VISUALS_GROUPS_MAX = 8;
+
+/** Max color cycles per group. */
 static size_t const VISUALS_CYCLES_MAX = 64;
+
+/** Max colors per color cycle. */
 static size_t const VISUALS_STEPS_MAX = 32;
+
+/** Value to mark unused or otherwise invalid colors in a color cycle. */
 static byte const VISUALS_INVALID_COLOR = 0xFF;
 
 /* ----- Fancy Color Cycling ----- */
@@ -149,6 +157,26 @@ static struct visuals_color_cycle *visuals_color_cycle_copy(struct visuals_color
 	}
 
 	return copy;
+}
+
+/**
+ * Return the next color in the cycle for a given frame.
+ *
+ * \param cycle The color cycle to select a color from.
+ * \param frame An arbitrary value used to select the color step.
+ * \return A color or \c BASIC_COLORS if an error occurred.
+ */
+static byte visuals_color_cycle_attr_for_frame(struct visuals_color_cycle const *cycle,
+											   size_t const frame)
+{
+	size_t step = 0;
+
+	if (cycle == NULL) {
+		return BASIC_COLORS;
+	}
+
+	step = frame % cycle->max_steps;
+	return cycle->steps[step];
 }
 
 /**
@@ -298,43 +326,38 @@ static void visuals_cycler_free(struct visuals_cycler *cycler)
 }
 
 /**
- * Get an attribute for a color cycle in a color cycle group from the module
- * table.
+ * Search for a color cycle with the given group and name.
  *
- * \param group_name The color cycle group to search.
- * \param cycle_name The color cycle to use.
- * \param frame An arbitrary value used to select which color in the flicker
- *        cycle to return.
- * \return An attribute in the color cycle, or \c COLOUR_DARK if an error
- *         occurred.
+ * \param cycler The cycler to search.
+ * \param group_name The name of the group to search.
+ * \param cycle_name The name of the color cycle to find.
+ * \return A color cycle or NULL if an error occurred.
  */
-byte visuals_cycler_get_attr_for_frame(const char *group_name,
-									   const char *cycle_name,
-									   size_t const frame)
+static struct visuals_color_cycle *visuals_cycler_cycle_by_name(struct visuals_cycler const *cycler,
+																const char *group_name,
+																const char *cycle_name)
 {
-	struct visuals_cycler *table = visuals_cycler_table;
 	struct visuals_cycle_group *group = NULL;
 	struct visuals_color_cycle *cycle = NULL;
 	size_t i = 0;
-	size_t step = 0;
 
 	if (group_name == NULL || strlen(group_name) == 0) {
-		return COLOUR_DARK;
+		return NULL;
 	}
 
 	if (cycle_name == NULL || strlen(cycle_name) == 0) {
-		return COLOUR_DARK;
+		return NULL;
 	}
 
-	for (i = 0; i < table->max_groups; i++) {
-		if (streq(table->groups[i]->group_name, group_name)) {
-			group = table->groups[i];
+	for (i = 0; i < cycler->max_groups; i++) {
+		if (streq(cycler->groups[i]->group_name, group_name)) {
+			group = cycler->groups[i];
 			break;
 		}
 	}
 
 	if (group == NULL) {
-		return COLOUR_DARK;
+		return NULL;
 	}
 
 	for (i = 0; i < group->max_cycles; i++) {
@@ -344,12 +367,125 @@ byte visuals_cycler_get_attr_for_frame(const char *group_name,
 		}
 	}
 
+	return cycle;
+}
+
+/**
+ * Get an attribute for a color cycle in a color cycle group from the module
+ * table.
+ *
+ * \param group_name The color cycle group to search.
+ * \param cycle_name The color cycle to use.
+ * \param frame An arbitrary value used to select which color in the flicker
+ *        cycle to return.
+ * \return An attribute in the color cycle, or \c BASIC_COLORS if an error
+ *         occurred.
+ */
+byte visuals_cycler_get_attr_for_frame(const char *group_name,
+									   const char *cycle_name,
+									   size_t const frame)
+{
+	struct visuals_cycler *table = visuals_cycler_table;
+	struct visuals_color_cycle *cycle = NULL;
+	cycle = visuals_cycler_cycle_by_name(table, group_name, cycle_name);
+
 	if (cycle == NULL) {
-		return COLOUR_DARK;
+		return BASIC_COLORS;
 	}
 
-	step = frame % cycle->max_steps;
-	return cycle->steps[step];
+	return visuals_color_cycle_attr_for_frame(cycle, frame);
+}
+
+/** A table to quickly map monster races to color cycles. */
+struct {
+	struct visuals_color_cycle **race;
+	size_t max_entries;
+	size_t alloc_size;
+} *visuals_color_cycles_by_race = NULL;
+
+/**
+ * Set a color cycle for a monster race. If a matching color cycle cannot be
+ * found, the monster race will not be color cycled.
+ *
+ * When this module is set up, we don't know how many monster races there will
+ * be, nor is there a maximum permitted number of races. This function will
+ * reallocate the \c visuals_color_cycles_by_race table as needed, using its
+ * allocation increment. This table is initially created in the module init
+ * function.
+ *
+ * \param race The monster race to set the color cycle for.
+ * \param group_name The group of the preferred color cycle.
+ * \param cycle_name The name of the preferred color cycle.
+ */
+void visuals_cycler_set_cycle_for_race(struct monster_race const *race,
+									   const char *group_name,
+									   const char *cycle_name)
+{
+	struct visuals_cycler *table = visuals_cycler_table;
+	struct visuals_color_cycle *cycle = NULL;
+
+	if (race == NULL || group_name == NULL || cycle_name == NULL) {
+		return;
+	}
+
+	if (visuals_color_cycles_by_race == NULL) {
+		return;
+	}
+
+	while (race->ridx >= visuals_color_cycles_by_race->max_entries) {
+		/* Keep reallocating until we can fit the index. This for the case when
+		 * indexes may not be parsed in numerical order. */
+		size_t old_count = visuals_color_cycles_by_race->max_entries;
+		size_t new_count = old_count + visuals_color_cycles_by_race->alloc_size;
+		size_t new_size = new_count * sizeof(*(visuals_color_cycles_by_race->race));
+		visuals_color_cycles_by_race->race = mem_realloc(visuals_color_cycles_by_race->race, new_size);
+		visuals_color_cycles_by_race->max_entries = new_count;
+
+		if (new_count >= 10000) {
+			/* Prevent the list from growing to a ridiculous size. */
+			quit("Allocated too many color cycle/race refs. Check monster info?");
+		}
+	}
+
+	cycle = visuals_cycler_cycle_by_name(table, group_name, cycle_name);
+
+	if (cycle == NULL) {
+		return;
+	}
+
+	visuals_color_cycles_by_race->race[race->ridx] = cycle;
+}
+
+/**
+ * Get an attribute from a monster race's color cycle.
+ *
+ * \param race The race to get an attribute for.
+ * \param frame An arbitrary value used to select which color in the flicker
+ *        cycle to return.
+ * \return An attribute in the color cycle, or \c BASIC_COLORS if an error
+ *         occurred.
+ */
+byte visuals_cycler_get_attr_for_race(struct monster_race const *race,
+									  size_t const frame)
+{
+	struct visuals_color_cycle *cycle = NULL;
+
+	if (race == NULL) {
+		return BASIC_COLORS;
+	}
+
+	if (visuals_color_cycles_by_race == NULL ||
+		race->ridx >= visuals_color_cycles_by_race->max_entries) {
+		return BASIC_COLORS;
+	}
+
+	cycle = visuals_color_cycles_by_race->race[race->ridx];
+
+	if (cycle == NULL) {
+		return BASIC_COLORS;
+	}
+
+	return visuals_color_cycle_attr_for_frame(cycle, frame);
 }
 
 /* ----- Legacy Flicker Cycling ----- */
@@ -491,7 +627,7 @@ static byte visuals_flicker_get_color(struct visuals_flicker *table,
  *        use.
  * \param frame An arbitrary value used to select which color in the flicker
  *        cycle to return.
- * \return An attribute in the flicker cycle, or \c COLOUR_DARK if an error
+ * \return An attribute in the flicker cycle, or \c BASIC_COLORS if an error
  *         occurred.
  */
 byte visuals_flicker_get_attr_for_frame(byte const selection_attr,
@@ -500,11 +636,11 @@ byte visuals_flicker_get_attr_for_frame(byte const selection_attr,
 	size_t color_index = 0;
 
 	if (visuals_flicker_table == NULL) {
-		return COLOUR_DARK;
+		return BASIC_COLORS;
 	}
 
 	if (selection_attr >= visuals_flicker_table->max_cycles) {
-		return COLOUR_DARK;
+		return BASIC_COLORS;
 	}
 
 	color_index = frame % visuals_flicker_table->colors_per_cycle;
@@ -977,6 +1113,19 @@ static void ui_visuals_module_init(void)
 		quit("Unable to allocate flicker table");
 	}
 
+	/* Allocate a lookup table for race to color cycles. */
+	visuals_color_cycles_by_race = mem_zalloc(sizeof(*visuals_color_cycles_by_race));
+
+	if (visuals_color_cycles_by_race == NULL) {
+		quit("Unable to allocate race/color cycle table");
+	}
+
+	/* At this point, we don't know how many entries we'll need, so the table
+	 * will be resized dynamically. */
+	visuals_color_cycles_by_race->max_entries = 0;
+	visuals_color_cycles_by_race->alloc_size = 100;
+
+	/* Parsing will result in the cycler table being set up. */
 	if (run_parser(&visuals_file_parser)) {
 		quit("Cannot initialize visuals");
 	}
@@ -993,6 +1142,16 @@ static void ui_visuals_module_cleanup(void)
 {
 	visuals_flicker_free(visuals_flicker_table);
 	visuals_cycler_free(visuals_cycler_table);
+
+	if (visuals_color_cycles_by_race != NULL) {
+		if (visuals_color_cycles_by_race->race != NULL) {
+			mem_free(visuals_color_cycles_by_race->race);
+			visuals_color_cycles_by_race->race = NULL;
+		}
+
+		mem_free(visuals_color_cycles_by_race);
+		visuals_color_cycles_by_race = NULL;
+	}
 }
 
 /**

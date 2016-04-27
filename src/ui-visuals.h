@@ -27,6 +27,11 @@ static const char *VISUALS_FILE_NAME = "visuals";
 byte visuals_cycler_get_attr_for_frame(const char *group_name,
 									   const char *cycle_name,
 									   size_t const frame);
+void visuals_cycler_set_cycle_for_race(struct monster_race const *race,
+									   const char *group_name,
+									   const char *cycle_name);
+byte visuals_cycler_get_attr_for_race(struct monster_race const *race,
+									  size_t const frame);
 byte visuals_flicker_get_attr_for_frame(byte const selection_attr,
 										size_t const frame);
 
