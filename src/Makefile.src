@@ -191,6 +191,7 @@ ANGFILES = \
 	ui-store.o \
 	ui-target.o \
 	ui-term.o \
+	ui-visuals.o \
 	wiz-debug.o \
 	wiz-spoil.o \
 	wiz-stats.o \
