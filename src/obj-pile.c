@@ -743,6 +743,12 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		cmd_disable_repeat();
 	}
 
+	/* Object no longer has a location */
+	usable->known->iy = 0;
+	usable->known->ix = 0;
+	usable->iy = 0;
+	usable->ix = 0;
+
 	/* Housekeeping */
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 	player->upkeep->notice |= (PN_COMBINE);
@@ -843,6 +849,130 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	return true;
 }
 
+/**
+ * Delete an object when the floor fails to carry it, and attempt to remove
+ * it from the object list
+ */
+static void floor_carry_fail(struct object *drop, bool broke)
+{
+	char o_name[80];
+	char *verb = broke ? VERB_AGREEMENT(drop->number, "breaks", "break")
+		: VERB_AGREEMENT(drop->number, "disappears", "disappear");
+	struct object *known = drop->known;
+
+	object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
+	msg("The %s %s.", o_name, verb);
+
+	if (player->wizard && !broke) {
+		msg("Can't find a grid to drop it.");
+	}
+
+	/* Delete completely */
+	if (known) {
+		if (known->iy && known->ix)
+			square_excise_object(cave_k, known->iy, known->ix, known);
+		delist_object(cave_k, known);
+		object_delete(&known);
+	}
+	delist_object(cave, drop);
+	object_delete(&drop);
+}
+
+/**
+ * Find a grid near the given one for an object to fall on
+ *
+ * We check several locations to see if we can find a location at which
+ * the object can combine, stack, or be placed.  Artifacts will try very
+ * hard to be placed, including "teleporting" to a useful grid if needed.
+ *
+ * If no appropriate grid is found, the given grid is unchanged
+ */
+static void drop_find_grid(struct object *drop, int *y, int *x)
+{
+	int best_score = -1;
+	int best_y = *y;
+	int best_x = *x;
+	int i, dy, dx;
+	struct object *obj;
+
+	/* Scan local grids */
+	for (dy = -3; dy <= 3; dy++) {
+		for (dx = -3; dx <= 3; dx++) {
+			bool combine = false;
+			int dist = (dy * dy) + (dx * dx);
+			int ty = *y + dy;
+			int tx = *x + dx;
+			int num_shown = 0;
+			int num_ignored = 0;
+			int score;
+
+			/* Lots of reasons to say no */
+			if ((dist > 10) ||
+				!square_in_bounds_fully(cave, ty, tx) ||
+				!los(cave, *y, *x, ty, tx) ||
+				!square_isfloor(cave, ty, tx) ||
+				square_isplayertrap(cave, ty, tx) ||
+				square_iswarded(cave, ty, tx))
+				continue;
+
+			/* Analyse the grid for carrying the new object */
+			for (obj = square_object(cave, ty, tx); obj; obj = obj->next) {
+				/* Check for possible combination */
+				if (object_similar(obj, drop, OSTACK_FLOOR))
+					combine = true;
+
+				/* Count objects */
+				if (!ignore_item_ok(obj))
+					num_shown++;
+				else
+					num_ignored++;
+			}
+			if (!combine)
+				num_shown++;
+
+			/* Disallow if the stack size is too big */
+			if ((OPT(birth_stacking) && (num_shown > 1)) ||
+				((num_shown + num_ignored) > z_info->floor_size &&
+				 !floor_get_oldest_ignored(ty, tx)))
+				continue;
+
+			/* Score the location based on how close and how full the grid is */
+			score = 1000 - (dist + num_shown * 5);
+
+			if ((score < best_score) || ((score == best_score) && one_in_(2)))
+				continue;
+
+			best_score = score;
+			best_y = ty;
+			best_x = tx;
+		}
+	}
+
+	/* Return if we have a score, otherwise fail or try harder for artifacts */
+	if (best_score >= 0) {
+		*y = best_y;
+		*x = best_x;
+		return;
+	} else if (!drop->artifact) {
+		return;
+	}
+	for (i = 0; i < 2000; i++) {
+		/* Start bouncing from grid to grid, stopping if we find an empty one */
+		if (i < 1000) {
+			best_y = rand_spread(best_y, 1);
+			best_x = rand_spread(best_x, 1);
+		} else {
+			/* Now go to purely random locations */
+			best_y = randint0(cave->height);
+			best_x = randint0(cave->width);
+		}
+		if (square_canputitem(cave, best_y, best_x)) {
+			*y = best_y;
+			*x = best_x;
+			return;
+		}
+	}
+}
 
 /**
  * Let an object fall to the ground at or near a location.
@@ -855,30 +985,13 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
  *
  * This function will produce a description of a drop event under the player
  * when "verbose" is true.
- *
- * We check several locations to see if we can find a location at which
- * the object can combine, stack, or be placed.  Artifacts will try very
- * hard to be placed, including "teleporting" to a useful grid if needed.
- *
- * Objects which fail to be carried by the floor are deleted.  This function
- * attempts to add successfully dropped objects to, and to remove failures
- * from, the object list (as dropped items may or may not be already listed).
  */
 void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			   int x, bool verbose)
 {
-	int i, k, n, d, s;
-
-	int bs, bn;
-	int by, bx;
-	int dy, dx;
-	int ty, tx;
-
-	struct object *obj;
-
 	char o_name[80];
-
-	bool flag = false;
+	int best_y = y;
+	int best_x = x;
 
 	/* Only called in the current level */
 	assert(c == cave);
@@ -886,192 +999,24 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 	/* Describe object */
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_BASE);
 
-	/* Handle normal "breakage" */
+	/* Handle normal breakage */
 	if (!dropped->artifact && (randint0(100) < chance)) {
-		/* Message */
-		msg("The %s %s.", o_name,
-			VERB_AGREEMENT(dropped->number, "breaks", "break"));
-
-		/* Failure */
-		if (dropped->known) {
-			if (dropped->known->iy && dropped->known->ix)
-				square_excise_object(cave_k, dropped->known->iy,
-									 dropped->known->ix, dropped->known);
-			delist_object(cave_k, dropped->known);
-			object_delete(&dropped->known);
-		}
-		delist_object(c, dropped);
-		object_delete(&dropped);
+		floor_carry_fail(dropped, true);
 		return;
 	}
 
-	/* Score */
-	bs = -1;
-
-	/* Picker */
-	bn = 0;
-
-	/* Default */
-	by = y;
-	bx = x;
-
-	/* Scan local grids */
-	for (dy = -3; dy <= 3; dy++) {
-		for (dx = -3; dx <= 3; dx++) {
-			bool comb = false;
-
-			/* Calculate actual distance */
-			d = (dy * dy) + (dx * dx);
-
-			/* Ignore distant grids */
-			if (d > 10) continue;
-
-			/* Location */
-			ty = y + dy;
-			tx = x + dx;
-
-			/* Skip illegal grids */
-			if (!square_in_bounds_fully(c, ty, tx)) continue;
-
-			/* Require line of sight */
-			if (!los(c, y, x, ty, tx)) continue;
-
-			/* Require floor space */
-			if (!square_isfloor(c, ty, tx)) continue;
-
-			/* Require no trap or rune */
-			if (square_isplayertrap(c, ty, tx) ||
-				square_iswarded(c, ty, tx))
-				continue;
-
-			/* No objects */
-			k = 0;
-			n = 0;
-
-			/* Scan objects in that grid */
-			for (obj = square_object(c, ty, tx); obj; obj = obj->next) {
-				/* Check for possible combination */
-				if (object_similar(obj, dropped, OSTACK_FLOOR))
-					comb = true;
-
-				/* Count objects */
-				if (!ignore_item_ok(obj))
-					k++;
-				else
-					n++;
-			}
-
-			/* Add new object */
-			if (!comb) k++;
-
-			/* Option -- disallow stacking */
-			if (OPT(birth_stacking) && (k > 1)) continue;
-
-			/* Paranoia? */
-			if ((k + n) > z_info->floor_size &&
-				!floor_get_oldest_ignored(ty, tx)) continue;
-
-			/* Calculate score */
-			s = 1000 - (d + k * 5);
-
-			/* Skip bad values */
-			if (s < bs) continue;
-
-			/* New best value */
-			if (s > bs) bn = 0;
-
-			/* Apply the randomizer to equivalent values */
-			if ((++bn >= 2) && (randint0(bn) != 0)) continue;
-
-			/* Keep score */
-			bs = s;
-
-			/* Track it */
-			by = ty;
-			bx = tx;
-
-			/* Okay */
-			flag = true;
-		}
-	}
-
-	/* Handle lack of space */
-	if (!flag && !dropped->artifact) {
-		/* Message */
-		msg("The %s %s.", o_name,
-			VERB_AGREEMENT(dropped->number, "disappears", "disappear"));
-
-		/* Debug */
-		if (player->wizard) msg("Breakage (no floor space).");
-
-		/* Failure */
-		if (dropped->known) {
-			if (dropped->known->iy && dropped->known->ix)
-				square_excise_object(cave_k, dropped->known->iy,
-									 dropped->known->ix, dropped->known);
-			delist_object(cave_k, dropped->known);
-			object_delete(&dropped->known);
-		}
-		delist_object(c, dropped);
-		object_delete(&dropped);
-		return;
-	}
-
-	/* Find a grid */
-	for (i = 0; !flag; i++) {
-		/* Bounce around */
-		if (i < 1000) {
-			ty = rand_spread(by, 1);
-			tx = rand_spread(bx, 1);
-		} else {
-			/* Random locations */
-			ty = randint0(c->height);
-			tx = randint0(c->width);
-		}
-
-		/* Require floor space */
-		if (!square_canputitem(c, ty, tx)) continue;
-
-		/* Bounce to that location */
-		by = ty;
-		bx = tx;
-
-		/* Okay */
-		flag = true;
-	}
-
-	/* Give it to the floor */
-	if (!floor_carry(c, by, bx, dropped, false)) {
-		/* Message */
-		msg("The %s %s.", o_name,
-			VERB_AGREEMENT(dropped->number, "disappears", "disappear"));
-
-		/* Debug */
-		if (player->wizard) msg("Breakage (too many objects).");
-
-		if (dropped->artifact) dropped->artifact->created = false;
-
-		/* Failure */
-		if (dropped->known) {
-			if (dropped->known->iy && dropped->known->ix)
-				square_excise_object(cave_k, dropped->known->iy,
-									 dropped->known->ix, dropped->known);
-			delist_object(cave_k, dropped->known);
-			object_delete(&dropped->known);
-		}
-		delist_object(c, dropped);
-		object_delete(&dropped);
-		return;
-	}
-
-	/* Sound */
-	sound(MSG_DROP);
-
-	/* Message when an object falls under the player */
-	if (verbose && (c->squares[by][bx].mon < 0))
-		/* Check the item still exists and isn't ignored */
-		if (c->objects[dropped->oidx] && !ignore_item_ok(dropped))
+	/* Find the best grid and drop the item, destroying if there's no space */
+	drop_find_grid(dropped, &best_y, &best_x);
+	if (floor_carry(c, best_y, best_x, dropped, false)) {
+		sound(MSG_DROP);
+		if (verbose &&
+			(c->squares[best_y][best_x].mon < 0) &&
+			c->objects[dropped->oidx] &&
+			!ignore_item_ok(dropped))
 			msg("You feel something roll beneath your feet.");
+	} else {
+		floor_carry_fail(dropped, false);
+	}
 }
 
 /**
