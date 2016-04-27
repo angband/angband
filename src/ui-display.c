@@ -1172,9 +1172,22 @@ static void do_animation(void)
 			continue;
 		else if (rf_has(mon->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
-		else if (rf_has(mon->race->flags, RF_ATTR_FLICKER))
-			attr = visuals_flicker_get_attr_for_frame(monster_x_attr[mon->race->ridx],
-													  flicker);
+		else if (rf_has(mon->race->flags, RF_ATTR_FLICKER)) {
+			byte base_attr = monster_x_attr[mon->race->ridx];
+
+			/* Get the color cycled attribute, if available. */
+			attr = visuals_cycler_get_attr_for_race(mon->race, flicker);
+
+			if (attr == BASIC_COLORS) {
+				/* Fall back to the flicker attribute. */
+				attr = visuals_flicker_get_attr_for_frame(base_attr, flicker);
+			}
+
+			if (attr == BASIC_COLORS) {
+				/* Fall back to the static attribute if cycling fails. */
+				attr = base_attr;
+			}
+		}
 		else
 			continue;
 

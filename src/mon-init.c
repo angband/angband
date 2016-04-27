@@ -33,6 +33,7 @@
 #include "object.h"
 #include "parser.h"
 #include "player-spell.h"
+#include "ui-visuals.h"
 
 struct monster_pain *pain_messages;
 struct monster_spell *monster_spells;
@@ -893,6 +894,26 @@ static enum parser_error parse_monster_plural(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_monster_color_cycle(struct parser *p)
+{
+	struct monster_race *r = parser_priv(p);
+	const char *group = parser_getsym(p, "group");
+	const char *cycle = parser_getsym(p, "cycle");
+
+	if (r == NULL)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (group == NULL || strlen(group) == 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (cycle == NULL || strlen(cycle) == 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	visuals_cycler_set_cycle_for_race(r, group, cycle);
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_monster(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -915,6 +936,7 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "friends uint chance rand number str name", parse_monster_friends);
 	parser_reg(p, "friends-base uint chance rand number str name", parse_monster_friends_base);
 	parser_reg(p, "mimic sym tval sym sval", parse_monster_mimic);
+	parser_reg(p, "color-cycle sym group sym cycle", parse_monster_color_cycle);
 	return p;
 }
 

@@ -7554,6 +7554,7 @@ flags:IM_COLD
 spell-freq:5
 spells:CONF | SCARE | SLOW
 spells:BR_SHAR
+color-cycle:fancy:crystal
 desc:A huge crystalline dragon.  Its claws could cut you to shreds and its teeth
 desc: are razor sharp.  Strange colours ripple through it as it moves in the
 desc: light.
@@ -8712,6 +8713,7 @@ flags:IM_ELEC
 spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_ELEC
+color-cycle:fancy:storm
 desc:A vast dragon of power.  Storms and lightning crash around its titanic
 desc: form.  Deep blue scales reflect the flashes and highlight the creature's
 desc: great muscles.  It regards you with contempt.
@@ -8732,6 +8734,7 @@ flags:IM_COLD
 spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_COLD
+color-cycle:fancy:ice
 desc:An immense dragon capable of awesome destruction.  You have never felt such
 desc: extreme cold, or witnessed such an icy stare.  Begone quickly or feel its
 desc: wrath!
@@ -8752,6 +8755,7 @@ flags:IM_POIS
 spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_POIS
+color-cycle:fancy:swamp
 desc:A truly enormous dragon with great powers.  The foul gases issuing from the
 desc: beast nearly make you vomit; and while you may try to hold your breath as
 desc: you fight it, it sees no reason to do likewise.
@@ -8975,6 +8979,7 @@ flags:IM_FIRE
 spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_FIRE
+color-cycle:fancy:hell
 desc:A vast dragon of immense power.  Fire leaps continuously from its huge
 desc: form. The air around it scalds you.  Its slightest glance burns you, and
 desc: you truly realize how insignificant you are.
@@ -9016,6 +9021,7 @@ flags:IM_ACID
 spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_ACID
+color-cycle:fancy:bile
 desc:A huge and very powerful dragon.  Great steaming pools of acid drip from
 desc: its form onto the ground.  You shudder when you see the acid eating away
 desc: the very stones of the dungeon - what could it do to you?
@@ -9036,6 +9042,7 @@ flags:BASH_DOOR
 spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_SOUN
+color-cycle:fancy:thunder
 desc:A dragon of gigantic proportions, with destructive abilities to match.  The
 desc: sheer loudness of its roar leaves you stunned and unable to think clearly
 desc: enough to defend yourself adequately.
@@ -9424,6 +9431,7 @@ spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_SHAR | BR_SOUN
 spells:S_DRAGON | S_HI_DRAGON
+color-cycle:fancy:law
 desc:A massive dragon of powerful intellect.  It seeks to dominate the universe
 desc: and despises all other life.  It sees all who do not obey it as mere
 desc: insects to be crushed underfoot.
@@ -9583,6 +9591,7 @@ spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_CHAO | BR_DISE | BR_SHAR | BR_SOUN
 spells:S_DRAGON | S_HI_DRAGON
+color-cycle:fancy:balance
 desc:A massive dragon, one of the mightiest of dragonkind.  It is thousands of
 desc: years old and seeks to maintain the Cosmic Balance.  It sees you as an
 desc: upstart troublemaker without the wisdom to control your actions.  It will
