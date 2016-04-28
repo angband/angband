@@ -237,70 +237,53 @@ int count_chests(int *y, int *x, enum chest_query check_type)
  *
  * Disperse treasures from the given chest, centered at (x,y).
  *
- * Small chests often contain "gold", while Large chests always contain
- * items.  Wooden chests contain 2 items, Iron chests contain 4 items,
- * and Steel chests contain 6 items.  The "value" of the items in a
- * chest is based on the level on which the chest is generated.
+ * Wooden chests contain 1 item, Iron chests contain 2 items,
+ * and Steel chests contain 3 items.  Small chests now contain good items,
+ * large chests great items, out of depth for the level on which the chest
+ * is generated.
  *
  * Judgment of size and construction of chests is currently made from the name.
  */
 static void chest_death(int y, int x, struct object *chest)
 {
-	int number, value;
-
-	bool tiny;
-
-	struct object *treasure;
-
-	/* Small chests often hold "gold" */
-	tiny = strstr(chest->kind->name, "Small") ? true : false;
-
-	/* Determine how much to drop (see above) */
-	if (strstr(chest->kind->name, "wooden"))
-		number = 2;
-	else if (strstr(chest->kind->name, "iron"))
-		number = 4;
-	else if (strstr(chest->kind->name, "steel"))
-		number = 6;
-	else
-		number = 2 * (randint1(3));
+	int number, level;
+	bool large = strstr(chest->kind->name, "Large") ? true : false;;
 
 	/* Zero pval means empty chest */
-	if (!chest->pval) number = 0;
+	if (!chest->pval)
+		return;
 
-	/* Determine the "value" of the items */
-	value = chest->origin_depth - 10 + 2 * chest->sval;
-	if (value < 1)
-		value = 1;
-
-	/* Drop some objects (non-chests) */
-	for (; number > 0; --number) {
-		/* Small chests often drop gold */
-		if (tiny && (randint0(100) < 75))
-			treasure = make_gold(value, "any");
-
-		/* Otherwise drop an item, as long as it isn't a chest */
-		else {
-			treasure = make_object(cave, value, false, false, false, NULL, 0);
-			if (!treasure) continue;
-			if (tval_is_chest(treasure)) {
-				mem_free(treasure);
-				continue;
-			}
-		}
-
-		/* Record origin */
-		treasure->origin = ORIGIN_CHEST;
-		treasure->origin_depth = chest->origin_depth;
-
-		/* Drop it in the dungeon */
-		drop_near(cave, treasure, 0, y, x, true);
+	/* Determine how much to drop (see above) */
+	if (strstr(chest->kind->name, "wooden")) {
+		number = 1;
+	} else if (strstr(chest->kind->name, "iron")) {
+		number = 2;
+	} else if (strstr(chest->kind->name, "steel")) {
+		number = 3;
+	} else {
+		number = randint1(3);
 	}
 
-	/* Empty */
-	chest->pval = 0;
+	/* Drop some valuable objects (non-chests) */
+	level = chest->origin_depth + 5;
+	while (number > 0) {
+		struct object *treasure;
+		treasure = make_object(cave, level, true, large, false, NULL, 0);
+		if (!treasure)
+			continue;
+		if (tval_is_chest(treasure)) {
+			object_delete(&treasure);
+			continue;
+		}
 
-	/* Known */
+		treasure->origin = ORIGIN_CHEST;
+		treasure->origin_depth = chest->origin_depth;
+		drop_near(cave, treasure, 0, y, x, true);
+		number--;
+	}
+
+	/* Chest is now empty */
+	chest->pval = 0;
 	chest->known->pval = 0;
 }
 

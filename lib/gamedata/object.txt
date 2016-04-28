@@ -3903,49 +3903,45 @@ name:480:& Small wooden chest~
 graphics:~:s
 type:chest
 properties:5:250:20
-alloc:30:5 to 100
+alloc:5:5 to 100
 combat:0:2d3:0:0:0
 
 name:481:& Large wooden chest~
 graphics:~:s
 type:chest
 properties:15:500:60
-alloc:30:15 to 100
+alloc:5:15 to 100
 combat:0:2d5:0:0:0
 
 name:482:& Small iron chest~
 graphics:~:s
 type:chest
 properties:25:300:100
-alloc:30:25 to 100
+alloc:5:25 to 100
 combat:0:2d4:0:0:0
 
 name:483:& Large iron chest~
 graphics:~:s
 type:chest
 properties:35:1000:150
-alloc:30:35 to 100
+alloc:5:35 to 100
 combat:0:2d6:0:0:0
 
 name:484:& Small steel chest~
 graphics:~:s
 type:chest
 properties:45:500:200
-alloc:30:45 to 100
+alloc:5:45 to 100
 combat:0:2d4:0:0:0
 
 name:485:& Large steel chest~
 graphics:~:s
 type:chest
 properties:55:1000:250
-alloc:30:55 to 100
+alloc:5:55 to 100
 combat:0:2d6:0:0:0
 
-name:486:& Ruined chest~
-graphics:~:s
-type:chest
-properties:0:250:0
-#A:100:75 to 100
+### 486
 
 
 
