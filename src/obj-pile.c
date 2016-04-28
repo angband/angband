@@ -855,20 +855,15 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
  */
 static void floor_carry_fail(struct object *drop, bool broke)
 {
-	char o_name[80];
-	char *verb = broke ? VERB_AGREEMENT(drop->number, "breaks", "break")
-		: VERB_AGREEMENT(drop->number, "disappears", "disappear");
 	struct object *known = drop->known;
-
-	object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
-	msg("The %s %s.", o_name, verb);
-
-	if (player->wizard && !broke) {
-		msg("Can't find a grid to drop it.");
-	}
 
 	/* Delete completely */
 	if (known) {
+		char o_name[80];
+		char *verb = broke ? VERB_AGREEMENT(drop->number, "breaks", "break")
+			: VERB_AGREEMENT(drop->number, "disappears", "disappear");
+		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
+		msg("The %s %s.", o_name, verb);
 		if (known->iy && known->ix)
 			square_excise_object(cave_k, known->iy, known->ix, known);
 		delist_object(cave_k, known);
