@@ -126,7 +126,7 @@ void do_cmd_go_down(struct command *cmd)
 
 
 /**
- * Search for hidden things.
+ * Search for traps or secret doors
  */
 static void search(void)
 {
@@ -143,40 +143,27 @@ static void search(void)
 	/* Search the nearby grids, which are always in bounds */
 	for (y = (py - 1); y <= (py + 1); y++) {
 		for (x = (px - 1); x <= (px + 1); x++) {
-			/* Notice things */
+			/* Traps */
 			if (square_issecrettrap(cave, y, x)) {
-				/* Reveal trap, display a message */
 				if (square_reveal_trap(cave, y, x, true))
-					/* Disturb */
 					disturb(player, 0);
 			}
 
-			/* Secret door */
+			/* Secret doors */
 			if (square_issecretdoor(cave, y, x)) {
-				/* Message */
 				msg("You have found a secret door.");
-
-				/* Pick a door */
 				place_closed_door(cave, y, x);
-
-				/* Disturb */
 				disturb(player, 0);
 			}
 
-			/* Scan all objects in the grid */
+			/* Traps on chests */
 			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-				/* Skip if not a trapped chest */
-				if (!is_trapped_chest(obj)) continue;
+				if (!obj->known || !is_trapped_chest(obj))
+					continue;
 
-				/* Identify once */
 				if (obj->known->pval != obj->pval) {
-					/* Message */
 					msg("You have discovered a trap on the chest!");
-
-					/* Know the trap */
 					obj->known->pval = obj->pval;
-
-					/* Notice it */
 					disturb(player, 0);
 				}
 			}
@@ -963,11 +950,8 @@ void do_cmd_alter(struct command *cmd)
  */
 void move_player(int dir, bool disarm)
 {
-	int py = player->py;
-	int px = player->px;
-
-	int y = py + ddy[dir];
-	int x = px + ddx[dir];
+	int y = player->py + ddy[dir];
+	int x = player->px + ddx[dir];
 
 	int m_idx = cave->squares[y][x].mon;
 	struct monster *mon = cave_monster(cave, m_idx);
@@ -996,7 +980,6 @@ void move_player(int dir, bool disarm)
 		/* Stop running before known traps */
 		disturb(player, 0);
 	} else if (!square_ispassable(cave, y, x)) {
-		/* Disturb the player */
 		disturb(player, 0);
 
 		/* Notice unknown obstacles, mention known obstacles */
@@ -1026,18 +1009,10 @@ void move_player(int dir, bool disarm)
 		}
 	} else {
 		/* Move player */
-		monster_swap(py, px, y, x);
-
-		/* New location */
-		y = py = player->py;
-		x = px = player->px;
-
-		/* Searching */
-		search();
+		monster_swap(player->py, player->px, y, x);
 
 		/* Handle store doors, or notice objects */
-		if (square_isshop(cave, player->py, player->px)) {
-			/* Disturb */
+		if (square_isshop(cave, y, x)) {
 			disturb(player, 0);
 			event_signal(EVENT_ENTER_STORE);
 			event_remove_handler_type(EVENT_ENTER_STORE);
@@ -1046,26 +1021,22 @@ void move_player(int dir, bool disarm)
 			event_signal(EVENT_LEAVE_STORE);
 			event_remove_handler_type(EVENT_LEAVE_STORE);
 		} else {
-			/* Know objects, queue autopickup */
-			floor_pile_know(cave, player->py, player->px);
+			floor_pile_know(cave, y, x);
 			cmdq_push(CMD_AUTOPICKUP);
 		}
 
-
 		/* Discover invisible traps, set off visible ones */
 		if (square_issecrettrap(cave, y, x)) {
-			/* Disturb */
 			disturb(player, 0);
-
-			/* Hit the trap. */
 			hit_trap(y, x);
 		} else if (square_isknowntrap(cave, y, x)) {
-			/* Disturb */
 			disturb(player, 0);
-
-			/* Hit the trap */
 			hit_trap(y, x);
 		}
+
+		/* Update view and search */
+		update_view(cave, player);
+		search();
 	}
 
 	player->upkeep->running_firststep = false;
