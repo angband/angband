@@ -45,7 +45,9 @@ enum {
 
 /*** Structures ***/
 
-/* Effect */
+/**
+ * Effect
+ */
 struct effect {
 	struct effect *next;
 	u16b index;		/**< The effect index */
@@ -53,7 +55,9 @@ struct effect {
 	int params[3];	/**< Extra parameters to be passed to the handler */
 };
 
-/* Brand type */
+/**
+ * Brand type
+ */
 struct brand {
 	char *name;
 	int element;
@@ -64,7 +68,9 @@ struct brand {
 
 extern struct brand *game_brands;
 
-/* Slay type */
+/**
+ * Slay type
+ */
 struct slay {
 	char *name;
 	int race_flag;
@@ -81,11 +87,27 @@ enum {
 	EL_INFO_RANDOM = 0x04,
 };
 
-/* Element info type */
+/**
+ * Element info type
+ */
 struct element_info {
 	s16b res_level;
 	bitflag flags;
 };
+
+/**
+ * Curse type
+ */
+struct curse {
+	struct curse *next;
+	char *name;
+	struct object *obj;
+	int power;
+	bool perm;
+	char *desc;
+};
+
+extern struct curse *curses;
 
 /**
  * Activation structure
@@ -332,7 +354,7 @@ enum {
 	OBJ_NOTICE_IMAGINED = 0x08,
 };
 
-/*
+/**
  * Object information, for a specific object.
  *
  * Note that inscriptions are now handled via the "quark_str()" function
@@ -359,58 +381,57 @@ enum {
  * regular basis, and care must be taken when handling such objects.
  */
 struct object {
-	struct object_kind *kind;
-	struct ego_item *ego;
-	struct artifact *artifact;
+	struct object_kind *kind;	/**< Kind of the object */
+	struct ego_item *ego;		/**< Ego item info of the object, if any */
+	struct artifact *artifact;	/**< Artifact info of the object, if any */
 
-	struct object *prev;	/* Previous object in a pile */
-	struct object *next;	/* Next object in a pile */
-	struct object *known;	/* Known version of this object */
+	struct object *prev;	/**< Previous object in a pile */
+	struct object *next;	/**< Next object in a pile */
+	struct object *known;	/**< Known version of this object */
 
-	u16b oidx;			/* Item list index, if any */
+	u16b oidx;				/**< Item list index, if any */
 
-	byte iy;			/* Y-position on map, or zero */
-	byte ix;			/* X-position on map, or zero */
+	byte iy;				/**< Y-position on map, or zero */
+	byte ix;				/**< X-position on map, or zero */
 
-	byte tval;			/* Item type (from kind) */
-	byte sval;			/* Item sub-type (from kind) */
+	byte tval;				/**< Item type (from kind) */
+	byte sval;				/**< Item sub-type (from kind) */
 
-	s16b pval;			/* Item extra-parameter */
+	s16b pval;				/**< Item extra-parameter */
 
-	s16b weight;		/* Item weight */
+	s16b weight;			/**< Item weight */
 
-	bitflag flags[OF_SIZE];			/**< Flags */
+	byte dd;				/**< Number of damage dice */
+	byte ds;				/**< Number of sides on each damage die */
+	s16b ac;				/**< Normal AC */
+	s16b to_a;				/**< Plusses to AC */
+	s16b to_h;				/**< Plusses to hit */
+	s16b to_d;				/**< Plusses to damage */
 
-	s16b modifiers[OBJ_MOD_MAX];
-	struct element_info el_info[ELEM_MAX];
-
-	struct brand *brands;
-	struct slay *slays;
-
-	s16b ac;			/* Normal AC */
-	s16b to_a;			/* Plusses to AC */
-	s16b to_h;			/* Plusses to hit */
-	s16b to_d;			/* Plusses to damage */
-
-	byte dd, ds;		/* Damage dice/sides */
+	bitflag flags[OF_SIZE];	/**< Object flags */
+	s16b modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
+	struct element_info el_info[ELEM_MAX];	/**< Object element info */
+	struct brand *brands;	/**< Linked list of brand structures */
+	struct slay *slays;		/**< Linked list of slay structures */
+	struct curse *curses;	/**< Linked list of curse structures */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
-	char *effect_msg;
+	char *effect_msg;		/**< Message on use */
 	struct activation *activation;	/**< Artifact activation, if applicable */
-	random_value time;	/**< Recharge time (rods/activation) */
-	s16b timeout;		/* Timeout Counter */
+	random_value time;		/**< Recharge time (rods/activation) */
+	s16b timeout;			/**< Timeout Counter */
 
-	byte number;		/* Number of items */
-	bitflag notice;		/* Attention paid to the object */
+	byte number;			/**< Number of items */
+	bitflag notice;			/**< Attention paid to the object */
 
-	s16b held_m_idx;	/* Monster holding us (if any) */
-	s16b mimicking_m_idx; /* Monster mimicking us (if any) */
+	s16b held_m_idx;		/**< Monster holding us (if any) */
+	s16b mimicking_m_idx;	/**< Monster mimicking us (if any) */
 
-	byte origin;		/* How this item was found */
-	byte origin_depth;  /* What depth the item was found at */
-	u16b origin_xtra;   /* Extra information about origin */
+	byte origin;			/**< How this item was found */
+	byte origin_depth;		/**< What depth the item was found at */
+	u16b origin_xtra; 		/**< Extra information about origin */
 
-	quark_t note; 		/* Inscription index */
+	quark_t note; 			/**< Inscription index */
 };
 
 /**
@@ -430,17 +451,18 @@ static struct object const OBJECT_NULL = {
 	.sval = 0,
 	.pval = 0,
 	.weight = 0,
+	.dd = 0,
+	.ds = 0,
+	.ac = 0,
+	.to_a = 0,
+	.to_h = 0,
+	.to_d = 0,
 	.flags = { 0 },
 	.modifiers = { 0 },
 	.el_info = { { 0, 0 } },
 	.brands = NULL,
 	.slays = NULL,
-	.ac = 0,
-	.to_a = 0,
-	.to_h = 0,
-	.to_d = 0,
-	.dd = 0,
-	.ds = 0,
+	.curses = NULL,
 	.effect = NULL,
 	.effect_msg = NULL,
 	.activation = NULL,

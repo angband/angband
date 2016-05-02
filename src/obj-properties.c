@@ -16,7 +16,10 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object.h"
 #include "obj-gear.h"
+
+struct curse *curses;
 
 /**
  * Details of the different object flags in the game.

@@ -1,0 +1,17 @@
+# curse.txt
+
+# name: effect name
+# power: relative power of the effect for object power calculation
+# effect: random effect : parameter (maybe) : paramater (maybe)
+# param:parameter:parameter (if needed)
+# dice:dice string
+# expr:dice expression
+# effect-freq: average frequency of random effect
+# flags: flag | flag | etc.
+# values: label[value] | label[value] | etc.
+# desc: description
+
+name: sticky
+power: -5
+flags: LIGHT_CURSE
+desc: cannot be taken off
