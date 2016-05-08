@@ -103,7 +103,6 @@ struct curse {
 	char *name;
 	struct object *obj;
 	int power;
-	bool perm;
 	char *desc;
 };
 
@@ -185,6 +184,7 @@ struct object_kind {
 
 	struct brand *brands;
 	struct slay *slays;
+	struct curse *curses;	/**< Linked list of curse structures */
 
 	byte d_attr;			/**< Default object attribute */
 	wchar_t d_char;			/**< Default object character */
@@ -260,6 +260,7 @@ struct artifact {
 
 	struct brand *brands;
 	struct slay *slays;
+	struct curse *curses;	/**< Linked list of curse structures */
 
 	int level;			/** Difficulty level for activation */
 
@@ -314,6 +315,7 @@ struct ego_item {
 
 	struct brand *brands;
 	struct slay *slays;
+	struct curse *curses;	/**< Linked list of curse structures */
 
 	int level;				/* Minimum level */
 	int rarity;			/* Object rarity */

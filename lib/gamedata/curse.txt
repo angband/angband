@@ -12,6 +12,5 @@
 # desc: description
 
 name: sticky
-power: -5
 flags: LIGHT_CURSE
 desc: cannot be taken off

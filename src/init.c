@@ -42,6 +42,7 @@
 #include "obj-ignore.h"
 #include "obj-list.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-randart.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -1033,14 +1034,6 @@ static enum parser_error parse_curse_name(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_curse_power(struct parser *p) {
-	struct curse *curse = parser_priv(p);
-	assert(curse);
-
-	curse->power = parser_getint(p, "power");
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_curse_flags(struct parser *p) {
 	struct curse *curse = parser_priv(p);
 	char *s = string_make(parser_getstr(p, "flags"));
@@ -1229,7 +1222,6 @@ struct parser *init_parse_curse(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_curse_name);
-	parser_reg(p, "power int power", parse_curse_power);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_curse_effect);
 	parser_reg(p, "param int p2 ?int p3", parse_curse_param);
 	parser_reg(p, "dice str dice", parse_curse_dice);
@@ -1647,6 +1639,29 @@ static enum parser_error parse_object_values(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_object_curse(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	struct curse *curse = k->curses;
+	char *s;
+	int i;
+
+	assert(k);
+	s = string_make(parser_getstr(p, "name"));
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (streq(s, curses[i].name)) break;
+	}
+	if (i == z_info->curse_max)
+		return PARSE_ERROR_UNRECOGNISED_CURSE;
+
+	k->curses = mem_zalloc(sizeof *curse);
+	k->curses->next = curse;
+	k->curses->name = s;
+	k->curses->power = parser_getint(p, "power");
+	k->curses->obj = object_new();
+	object_copy(k->curses->obj, curses[i].obj);
+	return PARSE_ERROR_NONE;
+}
+
 
 struct parser *init_parse_object(void) {
 	struct parser *p = parser_new();
@@ -1670,6 +1685,7 @@ struct parser *init_parse_object(void) {
 	parser_reg(p, "pval rand pval", parse_object_pval);
 	parser_reg(p, "values str values", parse_object_values);
 	parser_reg(p, "desc str text", parse_object_desc);
+	parser_reg(p, "curse sym name int power", parse_object_curse);
 	return p;
 }
 
@@ -1721,6 +1737,20 @@ static void cleanup_object(void)
 		free_brand(k_info[idx].brands);
 		free_slay(k_info[idx].slays);
 		free_effect(k_info[idx].effect);
+		if (k_info[idx].curses) {
+			struct curse *curse = k_info[idx].curses;
+			while (curse) {
+				struct curse *next = curse->next;
+				mem_free(curse->desc);
+				if (curse->obj) {
+					free_effect(curses->obj->effect);
+					mem_free(curse->obj);
+				}
+				string_free(curse->name);
+				mem_free(curse);
+				curse = next;
+			}
+		}
 	}
 	mem_free(k_info);
 }
@@ -2194,6 +2224,29 @@ static enum parser_error parse_artifact_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_artifact_curse(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	struct curse *curse = a->curses;
+	char *s;
+	int i;
+
+	assert(a);
+	s = string_make(parser_getstr(p, "name"));
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (streq(s, curses[i].name)) break;
+	}
+	if (i == z_info->curse_max)
+		return PARSE_ERROR_UNRECOGNISED_CURSE;
+
+	a->curses = mem_zalloc(sizeof *curse);
+	a->curses->next = curse;
+	a->curses->name = s;
+	a->curses->power = parser_getint(p, "power");
+	a->curses->obj = object_new();
+	object_copy(a->curses->obj, curses[i].obj);
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_artifact(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2210,6 +2263,7 @@ struct parser *init_parse_artifact(void) {
 	parser_reg(p, "msg str text", parse_artifact_msg);
 	parser_reg(p, "values str values", parse_artifact_values);
 	parser_reg(p, "desc str text", parse_artifact_desc);
+	parser_reg(p, "curse sym name int power", parse_artifact_curse);
 	return p;
 }
 
@@ -2264,6 +2318,20 @@ static void cleanup_artifact(void)
 		mem_free(a_info[idx].text);
 		free_brand(a_info[idx].brands);
 		free_slay(a_info[idx].slays);
+		if (a_info[idx].curses) {
+			struct curse *curse = a_info[idx].curses;
+			while (curse) {
+				struct curse *next = curse->next;
+				mem_free(curse->desc);
+				if (curse->obj) {
+					free_effect(curses->obj->effect);
+					mem_free(curse->obj);
+				}
+				string_free(curse->name);
+				mem_free(curse);
+				curse = next;
+			}
+		}
 	}
 	mem_free(a_info);
 }
@@ -3315,6 +3383,31 @@ static enum parser_error parse_ego_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_ego_curse(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	struct curse *curse = e->curses;
+	char *s;
+	int i;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	s = string_make(parser_getsym(p, "name"));
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (streq(s, curses[i].name)) break;
+	}
+	if (i == z_info->curse_max)
+		return PARSE_ERROR_UNRECOGNISED_CURSE;
+
+	e->curses = mem_zalloc(sizeof *curse);
+	e->curses->next = curse;
+	e->curses->name = s;
+	e->curses->power = parser_getint(p, "power");
+	e->curses->obj = object_new();
+	object_copy(e->curses->obj, curses[i].obj);
+	return PARSE_ERROR_NONE;
+}
+
+
 struct parser *init_parse_ego(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -3333,6 +3426,7 @@ struct parser *init_parse_ego(void) {
 	parser_reg(p, "values str values", parse_ego_values);
 	parser_reg(p, "min-values str min_values", parse_ego_min_val);
 	parser_reg(p, "desc str text", parse_ego_desc);
+	parser_reg(p, "curse sym name int power", parse_ego_curse);
 	return p;
 }
 
@@ -3386,6 +3480,20 @@ static void cleanup_ego(void)
 			pn = poss->next;
 			mem_free(poss);
 			poss = pn;
+		}
+		if (e_info[idx].curses) {
+			struct curse *curse = e_info[idx].curses;
+			while (curse) {
+				struct curse *next = curse->next;
+				mem_free(curse->desc);
+				if (curse->obj) {
+					free_effect(curses->obj->effect);
+					mem_free(curse->obj);
+				}
+				string_free(curse->name);
+				mem_free(curse);
+				curse = next;
+			}
 		}
 	}
 	mem_free(e_info);
