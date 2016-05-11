@@ -202,14 +202,16 @@ static size_t element_info_collect(const bool list[], const char *recepticle[])
 static bool describe_curses(textblock *tb, const struct object *obj,
 		const bitflag flags[OF_SIZE])
 {
-	if (of_has(flags, OF_PERMA_CURSE))
-		textblock_append_c(tb, COLOUR_L_RED, "Permanently cursed.\n");
-	else if (of_has(flags, OF_HEAVY_CURSE))
-		textblock_append_c(tb, COLOUR_L_RED, "Heavily cursed.\n");
-	else if (of_has(flags, OF_LIGHT_CURSE))
-		textblock_append_c(tb, COLOUR_L_RED, "Cursed.\n");
-	else
+	struct curse *c = obj->known->curses;
+
+	if (!c)
 		return false;
+	while (c) {
+		textblock_append(tb, "It ");
+		textblock_append_c(tb, COLOUR_L_RED, c->desc);
+		textblock_append(tb, ".\n");
+		c = c->next;
+	}
 
 	return true;
 }

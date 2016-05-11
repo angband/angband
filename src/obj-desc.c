@@ -528,9 +528,8 @@ static size_t obj_desc_charges(const struct object *obj, char *buf, size_t max,
 static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 							   size_t max, size_t end)
 {
-	const char *u[4] = { 0, 0, 0, 0 };
+	const char *u[5] = { 0, 0, 0, 0, 0 };
 	int n = 0;
-	bitflag f[OF_SIZE];
 
 	/* Get inscription */
 	if (obj->note)
@@ -545,9 +544,7 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 	}
 
 	/* Note curses */
-	create_mask(f, false, OFT_CURSE, OFT_MAX);
-	if (obj->known && of_is_inter(obj->flags, f) &&
-		of_is_inter(obj->known->flags, f))
+	if (obj->known->curses)
 		u[n++] = "cursed";
 
 	/* Note ignore */
