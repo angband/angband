@@ -185,6 +185,25 @@ static struct object *rd_item(void)
 		rd_byte(&tmp8u);
 	}
 
+	/* Read curses */
+	rd_byte(&tmp8u);
+	while (tmp8u) {
+		char buf_local[40];
+		byte obj_exists = 0;
+		struct curse *c = mem_zalloc(sizeof *c);
+		rd_string(buf_local, sizeof(buf_local));
+		c->name = string_make(buf_local);
+		rd_byte(&obj_exists);
+		if (obj_exists) {
+			c->obj = rd_item();
+		}
+		rd_s16b(&tmp16s);
+		c->power = tmp16s;
+		c->next = obj->curses;
+		obj->curses = c;
+		rd_byte(&tmp8u);
+	}
+
 	for (i = 0; i < elem_max; i++) {
 		rd_s16b(&obj->el_info[i].res_level);
 		rd_byte(&obj->el_info[i].flags);

@@ -69,6 +69,7 @@ static void wr_item(const struct object *obj)
 	size_t i;
 	struct brand *b;
 	struct slay *s;
+	struct curse *c;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
@@ -139,6 +140,20 @@ static void wr_item(const struct object *obj)
 		wr_s16b(s->race_flag);
 		wr_s16b(s->multiplier);
 		wr_byte(s->next ? 1 : 0);
+	}
+
+	/* Write a sentinel byte */
+	wr_byte(obj->curses ? 1 : 0);
+	for (c = obj->curses; c; c = c->next) {
+		wr_string(c->name);
+		if (c->obj) {
+			wr_byte(1);
+			wr_item(c->obj);
+		} else {
+			wr_byte(0);
+		}
+		wr_s16b(c->power);
+		wr_byte(c->next ? 1 : 0);
 	}
 
 	for (i = 0; i < ELEM_MAX; i++) {
