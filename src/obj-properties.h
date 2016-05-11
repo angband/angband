@@ -191,5 +191,6 @@ int mod_mult(int mod);
 s16b mod_slot_mult(int mod, int slot);
 void copy_curse(struct curse **dest, struct curse *src);
 void free_curse(struct curse *source);
+bool curses_are_equal(struct curse *curse1, struct curse *curse2);
 
 #endif /* !INCLUDED_OBJPROPERTIES_H */

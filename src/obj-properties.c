@@ -369,3 +369,42 @@ void free_curse(struct curse *source)
 	}
 }
 
+/**
+ * Determine whether two lists of curses are the same
+ *
+ * \param curse1 the lists being compared
+ * \param curse2 the lists being compared
+ */
+bool curses_are_equal(struct curse *curse1, struct curse *curse2)
+{
+	struct curse *c1 = curse1, *c2;
+	int count = 0, match = 0;
+
+	while (c1) {
+		count++;
+		c2 = curse2;
+		while (c2) {
+			/* Count if the same */
+			if (streq(c1->name, c2->name))
+				match++;
+			c2 = c2->next;
+		}
+
+		/* Fail if we didn't find a match */
+		if (match != count) return false;
+
+		c1 = c1->next;
+	}
+
+	/* Now count back and make sure curse2 isn't strictly bigger */
+	c2 = curse2;
+	while (c2) {
+		count--;
+		c2 = c2->next;
+	}
+
+	if (count != 0) return false;
+
+	return true;
+}
+

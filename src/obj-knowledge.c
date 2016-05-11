@@ -23,6 +23,7 @@
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
+#include "obj-pile.h"
 #include "obj-properties.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -119,31 +120,51 @@ static void init_rune(void)
 		if (obj_flag_type(i) == OFT_DIG) continue;
 		count++;
 	}
-	for (i = 0; i < OBJ_MOD_MAX; i++)
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		count++;
-	for (i = 0; i <= ELEM_HIGH_MAX; i++)
+	}
+	for (i = 0; i <= ELEM_HIGH_MAX; i++) {
 		count++;
-	for (b = game_brands; b; b = b->next)
+	}
+	for (b = game_brands; b; b = b->next) {
 		count++;
-	for (s = game_slays; s; s = s->next)
+	}
+	for (s = game_slays; s; s = s->next) {
 		count++;
+	}
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (curses[i].name) {
+			count++;
+		}
+	}
 
 	/* Now allocate and fill the rune list */
 	rune_max = count;
 	rune_list = mem_zalloc(rune_max * sizeof(struct rune));
 	count = 0;
-	for (i = 0; i < COMBAT_RUNE_MAX; i++)
+	for (i = 0; i < COMBAT_RUNE_MAX; i++) {
 		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, 0, c_rune[i] };
-	for (i = 0; i < OBJ_MOD_MAX; i++)
+	}
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, 0, m_rune[i] };
-	for (i = 0; i <= ELEM_HIGH_MAX; i++)
+	}
+	for (i = 0; i <= ELEM_HIGH_MAX; i++) {
 		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, e_rune[i] };
-	for (b = game_brands; b; b = b->next)
+	}
+	for (b = game_brands; b; b = b->next) {
 		rune_list[count++] =
 			(struct rune) { RUNE_VAR_BRAND, brands++, 0, b->name};
-	for (s = game_slays; s; s = s->next)
+	}
+	for (s = game_slays; s; s = s->next) {
 		rune_list[count++] =
 			(struct rune) { RUNE_VAR_SLAY, slays++, 0, s->name };
+	}
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (curses[i].name) {
+			rune_list[count++] =
+				(struct rune) { RUNE_VAR_CURSE, i, 0, curses[i].name };
+		}
+	}
 	for (i = 0; i < OF_MAX; i++) {
 		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
@@ -268,6 +289,19 @@ bool player_knows_rune(struct player *p, size_t i)
 				return true;
 			break;
 		}
+		/* Curse runes */
+		case RUNE_VAR_CURSE: {
+			int i;
+			for (i = 0; i < z_info->curse_max; i++) {
+				struct curse *curse;
+				for (curse = p->obj_k->curses; curse; curse = curse->next) {
+					if (streq(curse->name, curses[i].name)) {
+						return true;
+					}
+				}
+			}
+			break;
+		}
 		/* Flag runes */
 		case RUNE_VAR_FLAG: {
 			if (of_has(p->obj_k->flags, r->index))
@@ -293,6 +327,8 @@ char *rune_name(size_t i)
 		return format("%s brand", r->name);
 	else if (r->variety == RUNE_VAR_SLAY)
 		return format("slay %s", r->name);
+	else if (r->variety == RUNE_VAR_CURSE)
+		return format("%s curse", r->name);
 	else if (r->variety == RUNE_VAR_RESIST)
 		return format("resist %s", r->name);
 	else
@@ -352,6 +388,11 @@ char *rune_desc(size_t i)
 			assert(s != NULL);
 
 			return format("Object makes the player's attacks against %s more powerful.", r->name);
+			break;
+		}
+		/* Curse runes */
+		case RUNE_VAR_CURSE: {
+			return curses[i].desc;
 			break;
 		}
 		/* Flag runes */
@@ -433,6 +474,26 @@ bool player_knows_slay(struct player *p, struct slay *s)
 }
 
 /**
+ * Check if a curse is known to the player
+ *
+ * \param p is the player
+ * \param c is the curse
+ */
+bool player_knows_curse(struct player *p, struct curse *c)
+{
+	struct curse *c_check = p->obj_k->curses;
+	while (c_check) {
+		/* Name needs to be the same */
+		if (streq(c_check->name, c->name)) {
+			return true;
+		}
+		c_check = c_check->next;
+	}
+
+	return false;
+}
+
+/**
  * Check if an ego item type is known to the player
  *
  * \param p is the player
@@ -443,6 +504,7 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 	int i;
 	struct brand *b;
 	struct slay *s;
+	struct curse *c;
 
 	if (!ego) return false;
 
@@ -467,6 +529,10 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 	/* All slays known */
 	for (s = ego->slays; s; s = s->next)
 		if (!player_knows_slay(p, s)) return false;
+
+	/* All curses known */
+	for (c = ego->curses; c; c = c->next)
+		if (!player_knows_curse(p, c)) return false;
 
 	return true;
 }
@@ -577,6 +643,14 @@ bool object_has_rune(const struct object *obj, int rune_no)
 					return true;
 			break;
 		}
+		/* Curse runes */
+		case RUNE_VAR_CURSE: {
+			struct curse *c;
+			for (c = obj->curses; c; c = c->next)
+				if (streq(c->name, r->name))
+					return true;
+			break;
+		}
 		/* Flag runes */
 		case RUNE_VAR_FLAG: {
 			if (of_has(obj->flags, r->index))
@@ -623,6 +697,10 @@ bool object_runes_known(const struct object *obj)
 
 	/* Not all slays known */
 	if (!slays_are_equal(obj->slays, obj->known->slays))
+		return false;
+
+	/* Not all curses known */
+	if (!curses_are_equal(obj->curses, obj->known->curses))
 		return false;
 
 	/* Not all flags known */
@@ -741,6 +819,7 @@ void player_know_object(struct player *p, struct object *obj)
 	int i, flag;
 	struct brand *b;
 	struct slay *s;
+	struct curse *c;
 	bool seen = true;
 
 	/* Unseen or only sensed objects don't get any ID */
@@ -797,6 +876,25 @@ void player_know_object(struct player *p, struct object *obj)
 			/* Attach the new slay */
 			new_s->next = obj->known->slays;
 			obj->known->slays = new_s;
+		}
+	}
+
+	/* Reset curses */
+	free_curse(obj->known->curses);
+	obj->known->curses = NULL;
+	for (c = obj->curses; c; c = c->next) {
+		if (player_knows_curse(p, c)) {
+			/* Copy */
+			struct curse *new_c = mem_zalloc(sizeof *new_c);
+			new_c->name = string_make(c->name);
+			if (c->obj) {
+				object_copy(new_c->obj, c->obj);
+			}
+			new_c->power = c->power;
+
+			/* Attach the new curse */
+			new_c->next = obj->known->curses;
+			obj->known->curses = new_c;
 		}
 	}
 
@@ -973,6 +1071,31 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 				/* Attach the new slay */
 				new_s->next = p->obj_k->slays;
 				p->obj_k->slays = new_s;
+				learned = true;
+			}
+			break;
+		}
+		/* Curse runes */
+		case RUNE_VAR_CURSE: {
+			int j;
+			struct curse *c;
+			for (j = 0; j < z_info->curse_max; j++) {
+				c = &curses[j];
+				if (streq(curses[j].name, r->name)) {
+					break;
+				}
+			}
+			assert(j < z_info->curse_max);
+
+			/* If the curse was unknown, add it to known curses */
+			if (!player_knows_curse(p, c)) {
+				/* Copy the name flag */
+				struct curse *new_c = mem_zalloc(sizeof *new_c);
+				new_c->name = string_make(c->name);
+
+				/* Attach the new curse */
+				new_c->next = p->obj_k->curses;
+				p->obj_k->curses = new_c;
 				learned = true;
 			}
 			break;

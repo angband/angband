@@ -26,6 +26,7 @@ enum rune_variety {
 	RUNE_VAR_RESIST,
 	RUNE_VAR_BRAND,
 	RUNE_VAR_SLAY,
+	RUNE_VAR_CURSE,
 	RUNE_VAR_FLAG
 };
 
