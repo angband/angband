@@ -595,10 +595,9 @@ void object_absorb(struct object *obj1, struct object *obj2)
 void object_wipe(struct object *obj)
 {
 	/* Free slays and brands */
-	if (obj->slays)
-		free_slay(obj->slays);
-	if (obj->brands)
-		free_brand(obj->brands);
+	free_slay(obj->slays);
+	free_brand(obj->brands);
+	free_curse(obj->curses);
 
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));
@@ -616,10 +615,9 @@ void object_copy(struct object *dest, const struct object *src)
 	dest->slays = NULL;
 	dest->brands = NULL;
 
-	if (src->slays)
-		copy_slay(&dest->slays, src->slays);
-	if (src->brands)
-		copy_brand(&dest->brands, src->brands);
+	copy_slay(&dest->slays, src->slays);
+	copy_brand(&dest->brands, src->brands);
+	copy_curse(&dest->curses, src->curses);
 
 	/* Detach from any pile */
 	dest->prev = NULL;

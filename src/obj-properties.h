@@ -160,6 +160,19 @@ struct object_mod {
 
 
 /**
+ * Curse type
+ */
+struct curse {
+	struct curse *next;
+	char *name;
+	struct object *obj;
+	int power;
+	char *desc;
+};
+
+extern struct curse *curses;
+
+/**
  * ------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------ */
@@ -176,5 +189,7 @@ const char *mod_name(int mod);
 s32b mod_power(int mod);
 int mod_mult(int mod);
 s16b mod_slot_mult(int mod, int slot);
+void copy_curse(struct curse **dest, struct curse *src);
+void free_curse(struct curse *source);
 
 #endif /* !INCLUDED_OBJPROPERTIES_H */

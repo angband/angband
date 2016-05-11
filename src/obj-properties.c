@@ -1,5 +1,5 @@
 /**
- * \file src/obj-properties.c
+ * \file obj-properties.c
  * \brief functions to deal with object flags and modifiers
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "effects.h"
 #include "object.h"
 #include "obj-gear.h"
 
@@ -309,4 +310,62 @@ s16b mod_slot_mult(int mod, int slot)
 	return 1;
 }
 
+
+/**
+ * Copy all the curses from one structure to another
+ *
+ * \param dest the address the curses are going to
+ * \param source the curses being copied
+ */
+void copy_curse(struct curse **dest, struct curse *source)
+{
+	struct curse *c = source;
+
+	while (c) {
+		struct curse *new_c, *check_c = *dest;
+		bool dupe = false;
+
+		/* Check for dupes */
+		while (check_c) {
+			if (streq(check_c->name, c->name)) {
+				dupe = true;
+				break;
+			}
+			check_c = check_c->next;
+		}
+		if (dupe) {
+			c = c->next;
+			continue;
+		}
+
+		/* Copy */
+		new_c = mem_zalloc(sizeof *new_c);
+		new_c->name = string_make(c->name);
+		new_c->power = c->power;
+		new_c->next = *dest;
+		*dest = new_c;
+		c = c->next;
+	}
+}
+
+/**
+ * Free all the curses in a structure
+ *
+ * \param source the slays being freed
+ */
+void free_curse(struct curse *source)
+{
+	struct curse *c = source, *c_next;
+	while (c) {
+		c_next = c->next;
+		mem_free(c->desc);
+		if (c->obj) {
+			free_effect(c->obj->effect);
+			mem_free(c->obj);
+		}
+		string_free(c->name);
+		mem_free(c);
+		c = c_next;
+	}
+}
 

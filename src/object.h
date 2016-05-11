@@ -96,19 +96,6 @@ struct element_info {
 };
 
 /**
- * Curse type
- */
-struct curse {
-	struct curse *next;
-	char *name;
-	struct object *obj;
-	int power;
-	char *desc;
-};
-
-extern struct curse *curses;
-
-/**
  * Activation structure
  */
 struct activation {

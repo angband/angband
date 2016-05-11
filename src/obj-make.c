@@ -380,9 +380,10 @@ void ego_apply_magic(struct object *obj, int level)
 	of_union(obj->flags, obj->ego->flags);
 	of_diff(obj->flags, obj->ego->flags_off);
 
-	/* Add slays and brands */
+	/* Add slays, brands and curses */
 	copy_slay(&obj->slays, obj->ego->slays);
 	copy_brand(&obj->brands, obj->ego->brands);
+	copy_curse(&obj->curses, obj->ego->curses);
 
 	/* Add resists */
 	for (i = 0; i < ELEM_MAX; i++) {
@@ -484,6 +485,7 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 	of_union(obj->flags, art->flags);
 	copy_slay(&obj->slays, art->slays);
 	copy_brand(&obj->brands, art->brands);
+	copy_curse(&obj->curses, art->curses);
 	for (i = 0; i < ELEM_MAX; i++) {
 		/* Take the larger of artifact and base object resist levels */
 		obj->el_info[i].res_level =
@@ -795,9 +797,10 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 	obj->to_d = randcalc(k->to_d, lev, rand_aspect);
 	obj->to_a = randcalc(k->to_a, lev, rand_aspect);
 
-	/* Default slays and brands */
+	/* Default slays, brands and curses */
 	copy_slay(&obj->slays, k->slays);
 	copy_brand(&obj->brands, k->brands);
+	copy_curse(&obj->curses, k->curses);
 
 	/* Default resists */
 	for (i = 0; i < ELEM_MAX; i++) {
