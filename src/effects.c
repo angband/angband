@@ -634,6 +634,34 @@ bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
 }
 
 /**
+ * Drain some light from the player's light source, if possible
+ */
+bool effect_handler_DRAIN_LIGHT(effect_handler_context_t *context)
+{
+	int drain = effect_calculate_value(context, false);
+
+	int light_slot = slot_by_name(player, "light");
+	struct object *obj = slot_object(player, light_slot);
+
+	if (obj && !of_has(obj->flags, OF_NO_FUEL) && (obj->timeout > 0)) {
+		/* Reduce fuel */
+		obj->timeout -= drain;
+		if (obj->timeout < 1) obj->timeout = 1;
+
+		/* Notice */
+		if (!player->timed[TMD_BLIND]) {
+			msg("Your light dims.");
+			context->ident = true;
+		}
+
+		/* Redraw stuff */
+		player->upkeep->redraw |= (PR_EQUIP);
+	}
+
+	return true;
+}
+
+/**
  * Drain mana from the player, healing the caster.
  */
 bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)

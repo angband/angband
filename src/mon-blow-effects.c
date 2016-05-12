@@ -536,9 +536,6 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *context)
 {
-	int light_slot = slot_by_name(context->p, "light");
-	struct object *obj = slot_object(context->p, light_slot);
-
 	/* Take damage */
 	take_hit(context->p, context->damage, context->ddesc);
 
@@ -546,21 +543,8 @@ static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *conte
 	if (context->p->is_dead)
 		return;
 
-	/* Drain fuel where applicable */
-	if (obj && !of_has(obj->flags, OF_NO_FUEL) && (obj->timeout > 0)) {
-		/* Reduce fuel */
-		obj->timeout -= (250 + randint1(250));
-		if (obj->timeout < 1) obj->timeout = 1;
-
-		/* Notice */
-		if (!context->p->timed[TMD_BLIND]) {
-			msg("Your light dims.");
-			context->obvious = true;
-		}
-
-		/* Redraw stuff */
-		context->p->upkeep->redraw |= (PR_EQUIP);
-	}
+	/* Drain the light source */
+	effect_simple(EF_DRAIN_LIGHT, "250+1d250", 0, 0, 0, &context->obvious);
 }
 
 /**
