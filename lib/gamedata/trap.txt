@@ -136,7 +136,7 @@ msg-xtra:You are impaled on poisonous spikes!
 
 # rune -- summon (OoD) monster
 
-name:15:strange rune:summon rune
+name:15:strange rune:rune of summon foe
 graphics:^:B
 appear:0:3:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -147,7 +147,7 @@ msg:A new foe appears from nowhere!
 
 # rune -- summon monsters
 
-name:16:strange rune:summon rune
+name:16:strange rune:rune of summoning
 graphics:^:B
 appear:0:3:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -158,7 +158,7 @@ msg:You are enveloped in a cloud of smoke!
 
 # rune -- summon undead
 
-name:17:strange rune:call from the grave trap
+name:17:strange rune:rune of necromancy
 graphics:^:B
 appear:0:20:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -169,7 +169,7 @@ msg:A sense of dread washes over you...
 
 # rune -- summon dragons
 
-name:18:strange rune:dragonsong trap
+name:18:strange rune:rune of dragonsong
 graphics:^:B
 appear:0:20:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -178,7 +178,17 @@ dice:1d3
 desc:A magical rune which calls dragons to attack you.
 msg:You hear a dragon's call!
 
-### 19
+# rune -- summon demons
+
+name:19:strange rune:hellhole
+graphics:^:B
+appear:0:20:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON:DEMON
+dice:1+1d3
+desc:A magical rune which calls demons to attack you.
+msg:Demons appear!
+
 ### 20
 
 # rune -- teleport
@@ -395,20 +405,22 @@ msg-bad:Your mind is blasted by psionic energy!
 
 # dungeon alter -- rock fall
 
-name:37:dungeon alteration trap:rock fall trap
+name:37:ancient mechanism:rock fall trap
 graphics:^:U
 appear:0:4:0
 flags:TRAP | FLOOR | ONETIME
 effect:DAMAGE
 dice:$Dd5
 expr:D:DUNGEON_LEVEL:/ 10 + 1
+effect:TIMED_INC_NO_RES:STUN
+dice:2d20
 effect:RUBBLE
 desc:A trap that drops a boulder on you.
 msg:A rock falls on your head!
 
 # dungeon alter -- earthquake
 
-name:38:dungeon alteration trap:earthquake trap
+name:38:ancient mechanism:earthquake trap
 graphics:^:U
 appear:0:30:0
 flags:TRAP | FLOOR
@@ -421,8 +433,9 @@ desc:A trap that causes an earthquake.
 msg:The ground shakes.
 
 # dungeon alter - stone to mud
+# XXX this currently prints loads of annoying messages
 
-name:39:dungeon alteration trap:area blast trap
+name:39:ancient mechanism:area blast trap
 graphics:^:U
 appear:0:40:0
 flags:TRAP | FLOOR | ONETIME
@@ -438,7 +451,7 @@ msg:The trap explodes, blasting the area clear!
 # blinding flash
 
 name:40:trap:blinding flash trap
-graphics:^:light slate
+graphics:^:light yellow
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL | ONETIME
 effect:BALL:LIGHT:4
@@ -447,10 +460,23 @@ expr:D:DUNGEON_LEVEL:/ 10 + 2
 desc:A trap that creates a ball of light.
 msg:A blazing light descends on you!
 
-# mana drain
-# XXX should this have a different message for warriors?
+# blinding trap
 
-name:41:trap:mana drain trap
+name:41:trap:blinding trap
+graphics:^:light slate
+appear:0:5:0
+flags:TRAP | FLOOR | MAGICAL | ONETIME
+effect:BALL:DARK:4
+dice:$Dd8
+expr:D:DUNGEON_LEVEL:/ 10 + 2
+effect:DRAIN_LIGHT
+dice:100+1d100
+desc:A trap that envelops you in darkness.
+msg:Everything starts to fade...
+
+# mana drain
+
+name:42:trap:mana drain trap
 graphics:^:light purple
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL
@@ -460,12 +486,12 @@ expr:D:DUNGEON_LEVEL:/ 2 + 1
 msg:You feel your energies sap away.
 desc:A trap that drains your mana.
 
-# whirling knifes
+# whirling knives
 # XXX ideally this would have an effect that wasn't cured in one turn
 #   - maybe make CSW only heal 100 points of cuts?
 
-name:42:trap:knife trap
-graphics:^:red
+name:43:trap:knife trap
+graphics:^:yellow
 appear:0:20:0
 flags:TRAP | FLOOR
 effect:TIMED_INC:CUT
@@ -474,27 +500,27 @@ effect:DAMAGE
 dice:$D
 expr:D:DUNGEON_LEVEL:/ 2
 msg:Blades whirl around you, slicing your skin!
-desc:A trap that wants you to bleed to death.
+desc:A trap designed to bleed you to death.
 
 # petrifier
 
-name:43:trap:petrifying trap
+name:44:trap:petrifying trap
 graphics:^:blue
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL
 effect:TIMED_INC:STONESKIN
-dice:20
-effect:TIMED_INC:AFRAID
-dice:1d8
-msg:You feel petrified.
-desc:A trap that terrifies you.
+dice:20+1d20
+effect:TIMED_INC:STUN
+dice:20+1d20
+msg:You feel yourself turning to stone!
+desc:A trap that stuns you and gives you stoneskin.
+
 # alarm -- aggravation
 
-name:44:alarm:horn trap
+name:45:alarm:siren
 graphics:^:R
 appear:0:1:0
 flags:TRAP | FLOOR | MAGICAL
 effect:WAKE
 desc:A trap that wakes nearby monsters.
 msg:A horn blast sounds!
-
