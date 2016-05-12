@@ -280,8 +280,10 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), boo
 		++count;
 
 		/* Remember the location of the last door found */
-		*y = yy;
-		*x = xx;
+		if (x && y) {
+			*y = yy;
+			*x = xx;
+		}
 	}
 
 	/* All done */

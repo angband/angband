@@ -2867,27 +2867,44 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
  */
 bool effect_handler_RUBBLE(effect_handler_context_t *context)
 {
-	int d;
-	int y1 = player->py;
-	int x1 = player->px;
+	/*
+	 * First we work out how many grids we want to fill with rubble.  Then we
+	 * check that we can actually do this, by counting the number of grids
+	 * available, limiting the number of rubble grids to this number if
+	 * necessary.
+	 */
+	int rubble_grids = randint1(3);
+	int open_grids = count_feats(NULL, NULL, square_isempty, false);
 
-	/* Check around (and under) the character */
-	for (d = 0; d < 9; d++)
-	{
-		/* if not searching under player continue */
-		if (d == 8) continue;
-
-		/* Extract adjacent (legal) location */
-		int yy = y1 + ddy_ddd[d];
-		int xx = x1 + ddx_ddd[d];
-
-		if (square_in_bounds_fully(cave, yy, xx) &&
-				square_isempty(cave, yy, xx) &&
-				one_in_(3)) {
-			square_set_feat(cave, yy, xx, FEAT_RUBBLE);
-			context->ident = true;
-		}
+	if (rubble_grids > open_grids) {
+		rubble_grids = open_grids;
 	}
+
+	/* Avoid infinite loops */
+	int iterations = 0;
+
+	while (rubble_grids > 0 && iterations < 10) {
+		/* Look around the player */
+		for (int d = 0; d < 9; d++) {
+			/* Ignore the player's location */
+			if (d == 8) continue;
+
+			/* Extract adjacent (legal) location */
+			int yy = player->py + ddy_ddd[d];
+			int xx = player->px + ddx_ddd[d];
+
+			if (square_in_bounds_fully(cave, yy, xx) &&
+					square_isempty(cave, yy, xx) &&
+					one_in_(3)) {
+				square_set_feat(cave, yy, xx, FEAT_RUBBLE);
+				rubble_grids--;
+			}
+		}
+
+		iterations++;
+	}
+
+	context->ident = true;
 
 	return true;
 }
