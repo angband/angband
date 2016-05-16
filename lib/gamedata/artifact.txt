@@ -291,7 +291,6 @@ info:100:2:5000000
 alloc:1:100 to 127
 power:0:0d0:15:15:0
 # F: DRAIN_MANA | DRAIN_HP | 
-flags:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE
 flags:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN | TELEPATHY
 flags:SUST_STR | SUST_DEX | SUST_CON | 
 flags:SUST_INT | SUST_WIS |
@@ -300,6 +299,7 @@ time:200+9d50
 values:STR[5] | INT[5] | WIS[5] | DEX[5] | CON[5] | SPEED[5]
 values:RES_FIRE[3] | RES_COLD[3] | RES_ELEC[3] | RES_ACID[3] | RES_DARK[1]
 values:RES_DISEN[1] | RES_POIS[1] | RES_NETHER[1]
+curse:sticky:100
 desc:"One Ring to rule them all, One Ring to find them, One Ring to bring 
 desc:them all and in the darkness bind them."  Made of massive gold, and 
 desc:inscribed with hidden runes in the foul speech of Mordor, Isildur's Bane 
@@ -592,12 +592,12 @@ base-object:crown:Massive Iron Crown
 info:100:400:10000000
 alloc:0:100 to 100
 power:0:1d1:0:0:0
-flags:PROT_CONF | SEE_INVIS | TELEPATHY | PROT_FEAR | 
-flags:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE | 
+flags:PROT_CONF | SEE_INVIS | TELEPATHY | PROT_FEAR
 values:STR[125] | INT[125] | WIS[125] | DEX[125] | CON[125] | INFRA[125]
 values:LIGHT[1]
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 values:RES_LIGHT[1] | RES_DARK[1] | RES_NEXUS[1] | RES_NETHER[1]
+curse:sticky:100
 desc:Containing much of the power of he who once was mightiest among the Ainur, 
 desc:this plain iron crown has mounted upon it the two remaining Silmarils, 
 desc:greatest treasures of Middle-Earth.
@@ -608,8 +608,9 @@ base-object:crown:Iron Crown
 info:40:20:1
 alloc:8:45 to 100
 power:0:1d1:0:0:20
-flags:FREE_ACT | SEE_INVIS | TELEPATHY | LIGHT_CURSE | HEAVY_CURSE
+flags:FREE_ACT | SEE_INVIS | TELEPATHY
 values:CON[-5] | STR[-3] | DEX[-3]
+curse:sticky:50
 desc:The midnight-hued steel circlet of the sorceress-queen Berúthiel.  It 
 desc:grants extraordinary powers of sight and awareness at a terrible physical 
 desc:cost.
@@ -686,8 +687,9 @@ alloc:18:20 to 75
 power:7:1d3:8:8:10
 # F: DRAIN_HP | 
 flags:PROT_FEAR | 
-flags:SEE_INVIS | FREE_ACT | AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
+flags:SEE_INVIS | FREE_ACT | AGGRAVATE
 values:INT[-3] | WIS[-3]
+curse:sticky:50
 desc:A headpiece, gaudy and barbaric, that betrayed a warrior when he most 
 desc:needed succor.
 
@@ -903,9 +905,9 @@ base-object:gloves:Set of Gauntlets
 info:10:25:0
 alloc:5:10 to 100
 power:3:1d1:-12:-12:0
-flags:FREE_ACT | DRAIN_EXP | 
-flags:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE | 
+flags:FREE_ACT | DRAIN_EXP | AGGRAVATE
 values:STR[-3] | DEX[-3] | RES_FIRE[1] | RES_DISEN[1]
+curse:sticky:50
 desc:A pair of weakening gauntlets, named after Beren, who returned to Thingol 
 desc:having lost to Carcharoth the hand that clasped a Silmaril.
 
@@ -971,10 +973,11 @@ base-object:boots:Pair of Leather Boots
 info:10:20:17000
 alloc:8:15 to 80
 power:2:1d1:-1:-1:0
-flags:FEATHER | LIGHT_CURSE | 
+flags:FEATHER
 act:TELE_PHASE
 time:20
 values:SPEED[3] | INT[2] | DEX[2] | STEALTH[2]
+curse:sticky:0
 desc:A pair of running shoes once used by the treacherous Gríma son of 
 desc:Gálmód, the Wormtongue of Edoras.  They are aptly suited for a 
 desc:messenger, a servant, a spy... or a coward.
@@ -1073,9 +1076,10 @@ info:30:140:100000
 alloc:7:30 to 127
 power:0:5d4:-20:20:0
 # F:DRAIN_HP | 
-flags:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
+flags:AGGRAVATE
 values:CON[5] | SLAY_DRAGON[5] | SLAY_EVIL[2] | SLAY_DEMON[3] | SLAY_TROLL[3]
 values:RES_DISEN[1]
+curse:sticky:50
 desc:This sword has runes of power incused on its ornate hilt, and a single 
 desc:blood channel that gleams coldly blue as you grasp this mighty weapon of 
 desc:peril.
@@ -1167,8 +1171,9 @@ alloc:7:30 to 100
 power:0:3d6:-15:-15:-10
 # F:DRAIN_HP | DRAIN_MANA | 
 flags: SEE_INVIS | HOLD_LIFE | 
-flags:AGGRAVATE | DRAIN_EXP | LIGHT_CURSE | HEAVY_CURSE
+flags:AGGRAVATE | DRAIN_EXP
 values:SPEED[-10] | BRAND_POIS[3] | SLAY_DRAGON[5] | SLAY_UNDEAD[3]
+curse:sticky:50
 desc:A foul, twisted sword with blackened spines and knobs, its very name is 
 desc:a curse upon the lips of Elves and Men.  It is said that it will drink the 
 desc:very lifeblood of its wielder.
@@ -1346,10 +1351,11 @@ info:65:200:100000
 alloc:2:65 to 127
 power:0:4d6:-12:20:0 
 # F:DRAIN_MANA | DRAIN_HP | 
-flags:LIGHT_CURSE | HEAVY_CURSE | DRAIN_EXP | AGGRAVATE | 
+flags:DRAIN_EXP | AGGRAVATE | 
 flags:PROT_BLIND
 values:STEALTH[-4] | WIS[-4] | BRAND_POIS[3]
 values:RES_DARK[1] | RES_LIGHT[1] | RES_NETHER[1]
+curse:sticky:50
 desc:A mighty, heavy black spear, once wielded by the Lord of Darkness 
 desc:himself as he came to Valinor in wrath.  Its envenomed bite pierced 
 desc:the Two Trees with wounds that would not heal.
@@ -1764,12 +1770,13 @@ info:60:90:25000
 alloc:4:60 to 127
 power:0:6d3:13:15:0
 # F:DRAIN_HP | 
-flags:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE
+flags:AGGRAVATE
 act:FIRE_BALL
 time:15
 values:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1] | BRAND_FIRE[3]
 values:SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_TROLL[3] | SLAY_GIANT[3] 
 values:RES_FIRE[3] | RES_ELEC[1] | RES_DARK[1]
+curse:sticky:50
 desc:A great crackling Balrog's whip of flame, this weapon could bring 
 desc:even Ungoliant to heel.
 

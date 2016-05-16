@@ -504,10 +504,10 @@ static bool store_sell(struct store_context *ctx)
 	if (!get_item(&obj, prompt, reject, CMD_DROP, tester, get_mode))
 		return false;
 
-	/* Hack -- Cannot remove cursed objects */
-	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
+	/* Cannot remove stickied objects */
+	if (object_is_equipped(player->body, obj) && !obj_can_takeoff(obj)) {
 		/* Oops */
-		msg("Hmmm, it seems to be cursed.");
+		msg("Hmmm, it seems to be stuck.");
 
 		/* Nope */
 		return false;

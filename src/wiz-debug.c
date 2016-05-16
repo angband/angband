@@ -1202,22 +1202,7 @@ static void wiz_quantity_item(struct object *obj, bool carried)
  */
 static void wiz_tweak_curse(struct object *obj)
 {
-	if (cursed_p(obj->flags)) {
-		bitflag f[OF_SIZE];
-		msg("Resetting existing curses.");
-
-		create_mask(f, false, OFT_CURSE, OFT_MAX);
-		of_diff(obj->flags, f);
-	}
-
-	if (get_check("Set light curse? "))
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, FLAG_END);
-	else if (get_check("Set heavy curse? "))
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
-				  FLAG_END);
-	else if (get_check("Set permanent curse? "))
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
-				  OF_PERMA_CURSE, FLAG_END);
+	// DO SOMETHING - NRM
 }
 
 
@@ -1362,8 +1347,15 @@ void wiz_cheat_death(void)
  */
 static void do_cmd_wiz_cure_all(void)
 {
+	int i;
+
 	/* Remove curses */
-	(void)remove_all_curse();
+	for (i = 0; i < player->body.count; i++) {
+		if (player->body.slots[i].obj) {
+			free_curse(player->body.slots[i].obj->curses);
+			player->body.slots[i].obj->curses = NULL;
+		}
+	}
 
 	/* Restore stats */
 	effect_simple(EF_RESTORE_STAT, "0", STAT_STR, 0, 0, NULL);

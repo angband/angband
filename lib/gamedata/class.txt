@@ -675,7 +675,7 @@ spell:Slow Poison:3:3:28:4
 effect:TIMED_DEC:POISONED:2
 desc:Halves the remaining duration of any current poisoning.
 
-book:prayer book:[Words of Wisdom]:7:2
+book:prayer book:[Words of Wisdom]:8:2
 
 spell:Scare Monster:5:4:29:3
 effect:BOLT_AWARE:TURN_ALL
@@ -716,11 +716,11 @@ effect:SET_NOURISH
 dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
-## get rid of remove_curse in 3.4 until curses are redone
-#spell:Remove Curse:7:6:38:5
-#effect:REMOVE_CURSE
-#D:Removes all ordinary curses from all equipped items.
-#D:  Heavy or permanent curses are not affected.
+
+spell:Remove Curse:7:6:38:5
+effect:REMOVE_CURSE:0
+desc:Removes all ordinary curses from all equipped items.
+desc:  Higher or permanent curses are not affected.
 
 spell:Resist Heat and Cold:7:7:38:5
 effect:TIMED_INC:OPP_COLD
@@ -984,7 +984,7 @@ spell:Remembrance:35:70:90:250
 effect:RESTORE_EXP
 desc:Restores experience points to maximum if it is currently below maximum.
 
-book:prayer book:[Holy Infusions]:5:2
+book:prayer book:[Holy Infusions]:6:2
 
 spell:Unbarring Ways:5:6:50:40
 effect:TOUCH:KILL_DOOR
@@ -1001,11 +1001,11 @@ desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
 desc:  A failed attempt to recharge destroys one wand or staff from the stack.
-## get rid of dispel_curse in 3.4 until curses are redone
-#spell:Dispel Curse:25:40:80:160
-#effect:REMOVE_ALL_CURSE
-#D:Removes all ordinary and heavy curses from all equipped objects.
-#D:  Permanent curses are not affected.
+
+spell:Dispel Curse:25:40:80:160
+effect:REMOVE_CURSE:70
+desc:Removes all ordinary curses from all equipped objects, and attempts to
+desc: remove higher curses.  Permanent curses are not affected.
 
 spell:Enchant Weapon:35:50:80:230
 effect:ENCHANT:TOBOTH
@@ -1921,7 +1921,7 @@ spell:Slow Poison:9:7:40:3
 effect:TIMED_DEC:POISONED:2
 desc:Halves the remaining duration of any current poisoning.
 
-book:prayer book:[Words of Wisdom]:7:2
+book:prayer book:[Words of Wisdom]:8:2
 
 spell:Scare Monster:9:7:40:3
 effect:BOLT_AWARE:TURN_ALL
@@ -1962,18 +1962,16 @@ effect:SET_NOURISH
 dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
-## get rid of remove_curse in 3.4 until curses are redone
-#spell:Remove Curse:13:11:45:4
-#effect:REMOVE_CURSE
-#D:Removes all ordinary curses from all equipped items.
-#D:  Heavy or permanent curses are not affected.
+
+spell:Remove Curse:13:11:45:4
+effect:REMOVE_CURSE:0
+desc:Removes all ordinary curses from all equipped items.
+desc:  Higher or permanent curses are not affected.
 
 spell:Resist Heat and Cold:15:13:45:4
 effect:TIMED_INC:OPP_COLD
 dice:10+d10
 effect:TIMED_INC:OPP_FIRE
-dice:10+d10
-desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 dice:10+d10
 desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 

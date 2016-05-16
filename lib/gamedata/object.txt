@@ -1876,25 +1876,25 @@ power:15
 effect:ENCHANT:TOAC
 dice:2+1d3
 
-## Removed in 3.4 until curses are redone
+
 name:275:Remove Curse
 graphics:?:w
 type:scroll
 properties:10:5:100
-#A:16:10 to 100
+alloc:16:10 to 100
 pile:25:2
 power:8
-effect:REMOVE_CURSE
+effect:REMOVE_CURSE:0
 
-## Removed in 3.4 until curses are redone
+
 name:276:*Remove Curse*
 graphics:?:w
 type:scroll
 properties:50:5:8000
-#A:16:50 to 100
+alloc:16:50 to 100
 pile:25:2
 power:20
-effect:REMOVE_ALL_CURSE
+effect:REMOVE_CURSE:50
 
 ### 277
 
@@ -3365,16 +3365,15 @@ power:10
 effect:TIMED_INC:FAST:5
 dice:20+2d10
 
-## Remove in 3.4 until curses are redone
 name:422:Remove Curse
 graphics:_:d
 type:staff
 properties:40:50:500
-#A:20:40 to 100
+alloc:20:40 to 100
 combat:0:1d2:0:0:0
 charges:4+d3
 power:8
-effect:REMOVE_CURSE
+effect:REMOVE_CURSE:0
 
 name:423:the Magi
 graphics:_:d

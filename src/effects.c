@@ -731,98 +731,106 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 	return true;
 }
 
-/*
- * Hack -- Removes curse from an object.
+/**
+ * Selects items that have at least one removable curse.
  */
-static void uncurse_object(struct object *obj)
+static bool item_tester_uncursable(const struct object *obj)
 {
-	bitflag f[OF_SIZE];
-
-	create_mask(f, false, OFT_CURSE, OFT_MAX);
-
-	of_diff(obj->flags, f);
-}
-
-
-/*
- * Removes curses from items in inventory.
- *
- * \param heavy removes heavy curses if true
- *
- * \returns number of items uncursed
- */
-static int remove_curse_aux(bool heavy)
-{
-	int i, cnt = 0;
-
-	/* Attempt to uncurse items being worn */
-	for (i = 0; i < player->body.count; i++) {
-		struct object *obj = slot_object(player, i);
-
-		if (!obj) continue;
-		if (!cursed_p(obj->flags)) continue;
-
-		/* Heavily cursed items need a special spell */
-		if (of_has(obj->flags, OF_HEAVY_CURSE) && !heavy) continue;
-
-		/* Perma-cursed items can never be removed */
-		if (of_has(obj->flags, OF_PERMA_CURSE)) continue;
-
-		/* Uncurse, and update things */
-		uncurse_object(obj);
-
-		player->upkeep->update |= (PU_BONUS);
-		player->upkeep->redraw |= (PR_EQUIP);
-
-		/* Count the uncursings */
-		cnt++;
+	struct curse *c = obj->known->curses;
+	while (c) {
+		if (c->power < 100) {
+			return true;
+		}
+		c = c->next;
 	}
-
-	/* Return "something uncursed" */
-	return (cnt);
-}
-
-
-/*
- * Remove most curses
- */
-bool remove_curse(void)
-{
-	return (remove_curse_aux(false));
-}
-
-/*
- * Remove all curses
- */
-bool remove_all_curse(void)
-{
-	return (remove_curse_aux(true));
+    return false;
 }
 
 /**
- * Will need revamping with curses - NRM
+ * Removes an individual curse from an object.
+ */
+static void remove_object_curse(struct object *obj, struct curse *curse)
+{
+	struct curse *c = obj->curses;
+	if (streq(c->name, curse->name)) {
+		obj->curses = c->next;
+		c->next = NULL;
+		free_curse(c);
+		return;
+	}
+	while (c) {
+		struct curse *next = c->next;
+		assert(next);
+		if (streq(next->name, curse->name)) {
+			c->next = next->next;
+			next->next = NULL;
+			free_curse(next);
+			msg("The %s curse is removed!", c->name);
+			return;
+		}
+		c = next;
+	}
+}
+
+/**
+ * Attempts to remove all the curses from an object.
+ */
+static void uncurse_object(struct object *obj, int strength)
+{
+	struct curse *c = obj->curses;
+	while (c) {
+		if (c->power >= 100) {
+			/* Curse is permanent */
+		} else if (randint0(strength) >= randint0(c->power)) {
+			/* Successfully removed this curse */
+			remove_object_curse(obj, c);
+		} else if (!of_has(obj->flags, OF_FRAGILE)) {
+			/* Failure to remove, object is now frafile */
+			of_on(obj->flags, OF_FRAGILE);
+		} else if (one_in_(4)) {
+			/* Failure - unlucky fragile object is destroyed */
+			struct object *destroyed;
+			bool none_left = false;
+			msg("There is a bang and a flash!");
+			take_hit(player, damroll(5, 5), "Failed uncursing");
+			if (object_is_carried(player, obj)) {
+				destroyed = gear_object_for_use(obj, 1, false, &none_left);
+				object_delete(&destroyed->known);
+				object_delete(&destroyed);
+			} else {
+				square_excise_object(cave, obj->iy, obj->ix, obj);
+				delist_object(cave, obj);
+				object_delete(&obj);
+			}
+			return;
+		}
+		c = c->next;
+	}
+	player->upkeep->update |= (PU_BONUS);
+	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
+}
+
+
+/**
+ * Attempt to uncurse an object
  */
 bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 {
-	if (remove_curse())
-	{
-		if (!player->timed[TMD_BLIND])
-			msg("The air around your body glows blue for a moment...");
-		else
-			msg("You feel as if someone is watching over you.");
+	int strength = context->value.base;
+	struct object *obj = NULL;
 
-		context->ident = true;
-	}
-	return true;
-}
-
-/**
- * Will need revamping with curses - NRM
- */
-bool effect_handler_REMOVE_ALL_CURSE(effect_handler_context_t *context)
-{
-	remove_all_curse();
 	context->ident = true;
+
+	if (!get_item(&obj,
+				  "Uncurse which item? ",
+				  "You have no curses to remove.",
+				  0,
+				  item_tester_uncursable,
+				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+		return false;
+
+	uncurse_object(obj, strength);
+
 	return true;
 }
 
@@ -1764,40 +1772,15 @@ static bool enchant_score(s16b *score, bool is_artifact)
 }
 
 /**
- * Tries to uncurse a cursed item, if possible
+ * Helper function for enchant() which tries increasing an item's bonuses
  *
- * \returns true if a curse was broken
- */
-static bool enchant_curse(struct object *obj, bool is_artifact)
-{
-	/* If the item isn't cursed (or is perma-cursed) this doesn't work */
-	if (!cursed_p(obj->flags) || of_has(obj->flags, OF_PERMA_CURSE)) 
-		return false;
-
-	/* Artifacts resist enchanting curses away half the time */
-	if (is_artifact && randint0(100) < 50) return false;
-
-	/* Normal items are uncursed 25% of the tiem */
-	if (randint0(100) >= 25) return false;
-
-	/* Uncurse the item */
-	msg("The curse is broken!");
-	uncurse_object(obj);
-	return true;
-}
-
-/**
- * Helper function for enchant() which tries to do the two things that
- * enchanting an item does, namely increasing its bonuses and breaking curses
- *
- * \returns true if a bonus was increased or a curse was broken
+ * \returns true if a bonus was increased
  */
 static bool enchant2(struct object *obj, s16b *score)
 {
 	bool result = false;
 	bool is_artifact = obj->artifact ? true : false;
 	if (enchant_score(score, is_artifact)) result = true;
-	if (enchant_curse(obj, is_artifact)) result = true;
 	return result;
 }
 
@@ -1930,10 +1913,8 @@ void brand_object(struct object *obj, const char *name)
 	struct ego_item *ego;
 	bool ok = false;
 
-	/* you can never modify artifacts / ego-items */
-	/* you can never modify cursed / worthless items */
-	if (obj && !cursed_p(obj->flags) && obj->kind->cost &&
-		!obj->artifact && !obj->ego) {
+	/* You can never modify artifacts, ego items or worthless items */
+	if (obj && obj->kind->cost && !obj->artifact && !obj->ego) {
 		char o_name[80];
 		char brand[20];
 
@@ -3785,21 +3766,23 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
 
 	/* Attempt a saving throw for artifacts */
-	if (obj->artifact && (randint0(100) < 50))
-		/* Cool */
+	if (obj->artifact && (randint0(100) < 50)) {
 		msg("A %s tries to %s, but your %s resists the effects!",
 				   "terrible black aura", "surround your armor", o_name);
-
-	/* not artifact or failed save... */
-	else {
-		/* Oops */
+	} else {
+		int num = randint1(3);
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Take down bonus a wee bit */
 		obj->to_a -= randint1(3);
 
 		/* Curse it */
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+		while (num) {
+			int pick = randint1(z_info->curse_max - 1);
+			int power = 10 * m_bonus(9, player->depth);
+			append_curse(&obj->curses, pick, power);
+			num--;
+		}
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);
@@ -3836,14 +3819,11 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
 
 	/* Attempt a saving throw */
-	if (obj->artifact && (randint0(100) < 50))
-		/* Cool */
+	if (obj->artifact && (randint0(100) < 50)) {
 		msg("A %s tries to %s, but your %s resists the effects!",
 				   "terrible black aura", "surround your weapon", o_name);
-
-	/* not artifact or failed save... */
-	else {
-		/* Oops */
+	} else {
+		int num = randint1(3);
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Hurt it a bit */
@@ -3851,7 +3831,12 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 		obj->to_d = 0 - randint1(3);
 
 		/* Curse it */
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+		while (num) {
+			int pick = randint1(z_info->curse_max - 1);
+			int power = 10 * m_bonus(9, player->depth);
+			append_curse(&obj->curses, pick, power);
+			num--;
+		}
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);

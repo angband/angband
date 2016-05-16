@@ -462,47 +462,48 @@ aim:0
 power:15
 effect:ENCHANT:TOHIT
 dice:1
-desc:attempts to magically enhance a weapon's to-hit bonus.  Also gives a chance to break a curse
+desc:attempts to magically enhance a weapon's to-hit bonus.
 
 name:ENCHANT_TODAM
 aim:0
 power:20
 effect:ENCHANT:TODAM
 dice:1
-desc:attempts to magically enhance a weapon's to-dam bonus.  Also gives a chance to break a curse
+desc:attempts to magically enhance a weapon's to-dam bonus.
 
 name:ENCHANT_WEAPON
 aim:0
 power:22
 effect:ENCHANT:TOBOTH
 dice:1d3
-desc:attempts to magically enhance a weapon both to-hit and to-dam.  Also gives a chance to break a curse
+desc:attempts to magically enhance a weapon both to-hit and to-dam.
 
 name:ENCHANT_ARMOR
 aim:0
 power:12
 effect:ENCHANT:TOAC
 dice:1
-desc:attempts to magically enhance a piece of armour.  Also gives a chance to break a curse
+desc:attempts to magically enhance a piece of armour.
 
 name:ENCHANT_ARMOR2
 aim:0
 power:15
 effect:ENCHANT:TOAC
 dice:2+1d3
-desc:attempts to magically enhance a piece of armour with high chance of success.  Also gives a chance to break a curse
+desc:attempts to magically enhance a piece of armour with high chance of success.
 
 name:REMOVE_CURSE
 aim:0
-power:20000
-effect:REMOVE_CURSE
+power:8
+effect:REMOVE_CURSE:0
 desc:removes all ordinary curses from all equipped items
 
 name:REMOVE_CURSE2
 aim:0
-power:20000
-effect:REMOVE_ALL_CURSE
-desc:removes all curses from all equipped items
+power:20
+effect:REMOVE_CURSE:50
+desc:removes all ordinary curses from all equipped items, and attempts to
+desc: remove higher curses
 
 name:LIGHT
 aim:0

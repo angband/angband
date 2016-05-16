@@ -324,7 +324,7 @@ static void project_object_handler_MANA(project_object_handler_context_t *contex
 /* Holy Orb -- destroys cursed non-artifacts */
 static void project_object_handler_HOLY_ORB(project_object_handler_context_t *context)
 {
-	if (cursed_p(context->obj->flags)) {
+	if (context->obj->curses) {
 		context->do_kill = true;
 		context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
 	}

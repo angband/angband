@@ -1821,9 +1821,9 @@ void do_cmd_sell(struct command *cmd)
 	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
 		return;
 
-	/* Cannot remove cursed objects */
-	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
-		msg("Hmmm, it seems to be cursed.");
+	/* Cannot remove stickied objects */
+	if (object_is_equipped(player->body, obj) && !obj_can_takeoff(obj)) {
+		msg("Hmmm, it seems to be stuck.");
 		return;
 	}
 
@@ -1942,9 +1942,9 @@ void do_cmd_stash(struct command *cmd)
 		return;
 	}
 
-	/* Cannot remove cursed objects */
-	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
-		msg("Hmmm, it seems to be cursed.");
+	/* Cannot remove stickied objects */
+	if (object_is_equipped(player->body, obj) && !obj_can_takeoff(obj)) {
+		msg("Hmmm, it seems to be stuck.");
 		return;
 	}	
 

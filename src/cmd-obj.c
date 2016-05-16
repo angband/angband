@@ -362,10 +362,10 @@ void do_cmd_wield(struct command *cmd)
 		slot = equipped_item_slot(player->body, equip_obj);
 	}
 
-	/* Prevent wielding into a cursed slot */
-	if (cursed_p(equip_obj->flags)) {
+	/* Prevent wielding into a stickied slot */
+	if (!obj_can_takeoff(equip_obj)) {
 		object_desc(o_name, sizeof(o_name), equip_obj, ODESC_BASE);
-		msg("The %s you are %s appears to be cursed.", o_name,
+		msg("You cannot remove the %s you are %s.", o_name,
 			equip_describe(player, slot));
 		return;
 	}
@@ -422,9 +422,9 @@ void do_cmd_drop(struct command *cmd)
 	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
 		return;
 
-	/* Hack -- Cannot remove cursed items */
-	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
-		msg("Hmmm, it seems to be cursed.");
+	/* Cannot remove stickied items */
+	if (object_is_equipped(player->body, obj) && !obj_can_takeoff(obj)) {
+		msg("Hmmm, it seems to be stuck.");
 		return;
 	}
 

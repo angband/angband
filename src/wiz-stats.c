@@ -594,7 +594,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			if (obj->modifiers[OBJ_MOD_CON] != 0)
 				add_stats(ST_CON_ARMOR, vault, mon, number);
 
-			if (of_has(obj->flags, OF_LIGHT_CURSE))
+			if (obj->curses)
 				add_stats(ST_CURSED_ARMOR, vault, mon, number);
 
 			break;
@@ -725,7 +725,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_TELEP_BOWS, vault, mon, number);
 
 			/* is cursed */
-			if (of_has(obj->flags, OF_LIGHT_CURSE))
+			if (obj->curses)
 				add_stats(ST_CURSED_BOWS, vault, mon, number);
 			break;
 		}
@@ -838,7 +838,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			add_stats(ST_RINGS, vault, mon, number);
 
 			/* is it cursed */
-			if (of_has(obj->flags,OF_LIGHT_CURSE))
+			if (obj->curses)
 				add_stats(ST_CURSED_RINGS, vault, mon, number);
 
 			if (strstr(obj->kind->name, "Speed")) {
@@ -886,7 +886,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			}
 
 			/* is cursed */
-			if (of_has(obj->flags, OF_LIGHT_CURSE))
+			if (obj->curses)
 				add_stats(ST_CURSED_AMULETS, vault, mon, number);
 
 			break;

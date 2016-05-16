@@ -17,8 +17,10 @@
  */
 #include "angband.h"
 #include "effects.h"
+#include "init.h"
 #include "object.h"
 #include "obj-gear.h"
+#include "obj-pile.h"
 
 struct curse *curses;
 
@@ -118,20 +120,6 @@ void create_mask(bitflag *f, bool id, ...)
 }
 
 /**
- * Determine whether a flagset includes any curse flags.
- */
-bool cursed_p(const bitflag *f)
-{
-	bitflag f2[OF_SIZE];
-
-	of_wipe(f2);
-	create_mask(f2, false, OFT_CURSE, OFT_MAX);
-
-	return of_is_inter(f, f2);
-}
-
-
-/**
  * Log the names of a flagset to a file.
  *
  * \param f is the set of flags we are logging.
@@ -170,7 +158,6 @@ s16b flag_slot_mult(int flag, int slot)
 	case OFT_SUST:
 	case OFT_PROT:
 	case OFT_BAD:
-	case OFT_CURSE:
 	case OFT_DIG: return 1;
 		/* Light-specific */
 	case OFT_LIGHT: return (slot_type_is(slot, EQUIP_LIGHT)) ? 1 : 0;
@@ -342,6 +329,10 @@ void copy_curse(struct curse **dest, struct curse *source)
 		new_c = mem_zalloc(sizeof *new_c);
 		new_c->name = string_make(c->name);
 		new_c->power = c->power;
+		if (c->obj) {
+			new_c->obj = object_new();
+			object_copy(new_c->obj, c->obj);
+		}
 		new_c->next = *dest;
 		*dest = new_c;
 		c = c->next;
@@ -404,6 +395,47 @@ bool curses_are_equal(struct curse *curse1, struct curse *curse2)
 	}
 
 	if (count != 0) return false;
+
+	return true;
+}
+
+/**
+ * Append a given curse with a given power
+ *
+ * \param current the list of curses the object already has
+ * \param pick the curse to append
+ * \param power the power of the new curse
+ */
+bool append_curse(struct curse **current, int pick, int power)
+{
+	struct curse *c, *c_last = NULL;
+
+	/* Adjust power if our pick is a duplicate */
+	for (c = *current; c; c = c->next) {
+		if (streq(c->name, curses[pick].name)) {
+			if (power > c->power) {
+				c->power = power;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		c_last = c;
+	}
+
+	/* We can add the new one now */
+	c = mem_zalloc(sizeof(*c));
+	c->name = string_make(curses[pick].name);
+	c->power = power;
+	if (curses[pick].obj) {
+		c->obj = object_new();
+		object_copy(c->obj, curses[pick].obj);
+	}
+	if (c_last) {
+		c_last->next = c;
+	} else {
+		*current = c;
+	}
 
 	return true;
 }

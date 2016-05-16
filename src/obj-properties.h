@@ -74,8 +74,7 @@ enum object_flag_type {
 	OFT_MISC,		/* a good property, suitable for ego items */
 	OFT_LIGHT,		/* applicable only to light sources */
 	OFT_MELEE,		/* applicable only to melee weapons */
-	OFT_CURSE,		/* a "sticky" curse */
-	OFT_BAD,		/* an undesirable flag that isn't a curse */
+	OFT_BAD,		/* an undesirable flag */
 	OFT_DIG,		/* applicable only to diggers */
 
 	OFT_MAX
@@ -192,5 +191,6 @@ s16b mod_slot_mult(int mod, int slot);
 void copy_curse(struct curse **dest, struct curse *src);
 void free_curse(struct curse *source);
 bool curses_are_equal(struct curse *curse1, struct curse *curse2);
+bool append_curse(struct curse **current, int pick, int power);
 
 #endif /* !INCLUDED_OBJPROPERTIES_H */

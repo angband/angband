@@ -11,6 +11,6 @@
 # values: label[value] | label[value] | etc.
 # desc: description
 
-name: sticky
-flags: LIGHT_CURSE
-desc: cannot be taken off
+name:sticky
+flags:STICKY
+desc:cannot be taken off

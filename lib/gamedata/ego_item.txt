@@ -190,7 +190,9 @@ combat:0:0:d50
 min-combat:255:0:0
 type:soft armor
 type:hard armor
-flags:AGGRAVATE | LIGHT_CURSE
+flags:AGGRAVATE
+curse:sticky:0
+
 
 ### Robes only ###
 
@@ -296,7 +298,8 @@ info:0:2:0:0
 alloc:10:10 to 80
 combat:0:0:d50
 type:shield
-flags:AGGRAVATE | LIGHT_CURSE
+flags:AGGRAVATE
+curse:sticky:0
 
 
 ### Crowns and Helms ###
@@ -384,7 +387,8 @@ name:35:of Teleportation
 info:0:2:0:0
 alloc:10:10 to 80
 type:helm
-flags:TELEPORT | LIGHT_CURSE
+flags:TELEPORT
+curse:sticky:0
 
 name:36:of Serenity
 info:0:6:4000:20
@@ -405,7 +409,7 @@ name:38:of Dullness
 info:0:2:0:0
 alloc:10:45 to 80
 type:crown
-flags:LIGHT_CURSE
+curse:sticky:0
 values:INT[d5] | WIS[d5]
 min-values:INT[0] | WIS[0]
 
@@ -413,7 +417,7 @@ name:39:of Sickliness
 info:0:2:0:0
 alloc:10:45 to 80
 type:crown
-flags:LIGHT_CURSE
+curse:sticky:0
 values:STR[d5] | DEX[d5] | CON[d5]
 min-values:STR[0] | DEX[0] | CON[0]
 
@@ -459,21 +463,23 @@ info:0:1:0:0
 alloc:10:10 to 80
 combat:d10:d10:0
 type:cloak
-flags:LIGHT_CURSE
+curse:sticky:0
 
 name:45:of Vulnerability
 info:0:1:0:0
 alloc:10:10 to 80
 combat:0:0:d50
 type:cloak
-flags:AGGRAVATE | LIGHT_CURSE
+flags:AGGRAVATE
+curse:sticky:0
 
 name:46:of Irritation
 info:0:1:0:0
 alloc:10:10 to 80
 combat:d15:d15:0
 type:cloak
-flags:AGGRAVATE | LIGHT_CURSE
+flags:AGGRAVATE
+curse:sticky:0
 
 # 47 (unused)
 
@@ -532,7 +538,7 @@ name:54:of Weakness
 info:0:2:0:0
 alloc:10:10 to 80
 type:gloves
-flags:LIGHT_CURSE | 
+curse:sticky:0
 values:STR[d10]
 min-values:STR[0]
 
@@ -540,7 +546,7 @@ name:55:of Clumsiness
 info:0:2:0:0
 alloc:10:10 to 80
 type:gloves
-flags:LIGHT_CURSE | 
+curse:sticky:0
 values:DEX[d10]
 min-values:DEX[0]
 
@@ -597,7 +603,7 @@ alloc:10:10 to 80
 type:boots
 values:SPEED[d5]
 min-values:SPEED[0]
-flags:LIGHT_CURSE | 
+curse:sticky:0
 
 name:63:of Annoyance
 info:0:10:0:0
@@ -605,7 +611,8 @@ alloc:10:10 to 80
 type:boots
 values:SPEED[d10] | STEALTH[d10]
 min-values:SPEED[0] | STEALTH[0]
-flags:AGGRAVATE | LIGHT_CURSE | 
+flags:AGGRAVATE
+curse:sticky:0
 
 
 ### Weapons ###
@@ -977,9 +984,9 @@ alloc:10:10 to 80
 type:sword
 type:polearm
 type:hafted
-flags:SEE_INVIS | AGGRAVATE | HEAVY_CURSE | LIGHT_CURSE
-flags:HOLD_LIFE | DRAIN_EXP
+flags:SEE_INVIS | AGGRAVATE | HOLD_LIFE | DRAIN_EXP
 values:BRAND_POIS[3] | SLAY_UNDEAD[3]
+curse:sticky:50
 
 # 103 (unused)
 
@@ -1053,7 +1060,8 @@ info:0:2:0:0
 alloc:10:10 to 80
 combat:d10:d10:0
 type:bow
-flags:LIGHT_CURSE | DRAIN_EXP | SEE_INVIS
+flags:DRAIN_EXP | SEE_INVIS
+curse:sticky:0
 
 
 ### Ammo ###

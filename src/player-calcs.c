@@ -1553,10 +1553,6 @@ static void calc_torch(struct player *p, struct player_state *state,
 			amt = 2;
 		amt += obj->modifiers[OBJ_MOD_LIGHT];
 
-		/* Cursed objects emit no light */
-		if (of_has(obj->flags, OF_LIGHT_CURSE))
-			amt = 0;
-
 		/* Examine actual lights */
 		if (tval_is_light(obj) && !of_has(obj->flags, OF_NO_FUEL) &&
 				obj->timeout == 0)

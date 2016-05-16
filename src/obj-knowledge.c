@@ -116,7 +116,6 @@ static void init_rune(void)
 	for (i = 0; i < OF_MAX; i++) {
 		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
-		if (obj_flag_type(i) == OFT_CURSE) continue;
 		if (obj_flag_type(i) == OFT_DIG) continue;
 		count++;
 	}
@@ -168,7 +167,6 @@ static void init_rune(void)
 	for (i = 0; i < OF_MAX; i++) {
 		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
-		if (obj_flag_type(i) == OFT_CURSE) continue;
 		if (obj_flag_type(i) == OFT_DIG) continue;
 
 		rune_list[count++] = (struct rune)
@@ -1485,7 +1483,7 @@ void object_learn_unknown_rune(struct player *p, struct object *obj)
  */
 void object_learn_on_wield(struct player *p, struct object *obj)
 {
-	bitflag f[OF_SIZE], f2[OF_SIZE], obvious_mask[OF_SIZE];
+	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
 	int i, flag;
 
 	assert(obj->known);
@@ -1503,10 +1501,12 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	create_mask(obvious_mask, true, OFID_WIELD, OFT_MAX);
 
 	/* Make sustains obvious for items with that stat bonus */
-	for (i = 0; i < STAT_MAX; i++)
+	for (i = 0; i < STAT_MAX; i++) {
 		/* Sustains are the first flags, stats are the first modifiers */
-		if ((obj_flag_type(i + 1) == OFT_SUST) && obj->modifiers[i])
+		if ((obj_flag_type(i + 1) == OFT_SUST) && obj->modifiers[i]) {
 			of_on(obvious_mask, i + 1);
+		}
+	}
 
 	/* Special case FA, needed for mages wielding gloves */
 	if (player_has(p, PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
@@ -1516,10 +1516,6 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 
 	/* Extract the flags */
 	object_flags(obj, f);
-
-	/* Find obvious flags - curses left for special message later */
-	create_mask(f2, false, OFT_CURSE, OFT_MAX);
-	of_diff(obvious_mask, f2);
 
 	/* Learn about obvious, previously unknown flags */
 	of_inter(f, obvious_mask);
@@ -1533,7 +1529,9 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
 
 		/* Message */
-		if (p->upkeep->playing) flag_message(flag, o_name);
+		if (p->upkeep->playing) {
+			flag_message(flag, o_name);
+		}
 	}
 
 	/* Learn all modifiers */

@@ -572,7 +572,7 @@ bool obj_can_study(const struct object *obj)
 /* Can only take off non-cursed items */
 bool obj_can_takeoff(const struct object *obj)
 {
-	return !cursed_p((bitflag *)obj->flags);
+	return !obj_has_flag(obj, OF_STICKY);
 }
 
 /* Can only put on wieldable items */
@@ -591,6 +591,21 @@ bool obj_can_fire(const struct object *obj)
 bool obj_has_inscrip(const struct object *obj)
 {
 	return (obj->note ? true : false);
+}
+
+bool obj_has_flag(const struct object *obj, int flag)
+{
+	struct curse *c = obj->curses;
+	if (of_has(obj->flags, flag)) {
+		return true;
+	}
+	while (c) {
+		if (of_has(c->obj->flags, flag)) {
+			return true;
+		}
+		c = c->next;
+	}
+	return false;
 }
 
 bool obj_is_useable(const struct object *obj)

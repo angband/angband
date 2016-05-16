@@ -1646,8 +1646,8 @@ static enum parser_error parse_object_curse(struct parser *p) {
 	int i;
 
 	assert(k);
-	s = string_make(parser_getstr(p, "name"));
-	for (i = 0; i < z_info->curse_max; i++) {
+	s = string_make(parser_getsym(p, "name"));
+	for (i = 1; i < z_info->curse_max; i++) {
 		if (streq(s, curses[i].name)) break;
 	}
 	if (i == z_info->curse_max)
@@ -2218,8 +2218,8 @@ static enum parser_error parse_artifact_curse(struct parser *p) {
 	int i;
 
 	assert(a);
-	s = string_make(parser_getstr(p, "name"));
-	for (i = 0; i < z_info->curse_max; i++) {
+	s = string_make(parser_getsym(p, "name"));
+	for (i = 1; i < z_info->curse_max; i++) {
 		if (streq(s, curses[i].name)) break;
 	}
 	if (i == z_info->curse_max)
@@ -3366,7 +3366,7 @@ static enum parser_error parse_ego_curse(struct parser *p) {
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	s = string_make(parser_getsym(p, "name"));
-	for (i = 0; i < z_info->curse_max; i++) {
+	for (i = 1; i < z_info->curse_max; i++) {
 		if (streq(s, curses[i].name)) break;
 	}
 	if (i == z_info->curse_max)

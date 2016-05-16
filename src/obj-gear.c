@@ -779,7 +779,7 @@ void inven_wield(struct object *obj, int slot)
 	msgt(MSG_WIELD, fmt, o_name, I2A(slot));
 
 	/* Cursed! */
-	if (cursed_p(wielded->flags)) {
+	if (wielded->curses) {
 		/* Warn the player */
 		msgt(MSG_CURSED, "Oops! It feels deathly cold!");
 	}

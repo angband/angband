@@ -302,9 +302,6 @@ static struct ego_item *ego_find_random(struct object *obj, int level)
             if (!one_in_(ood_chance)) continue;
         }
 
-		/* XXX Ignore cursed items for now */
-		if (cursed_p(ego->flags)) continue;
-
 		for (poss = ego->poss_items; poss; poss = poss->next)
 			if (poss->kidx == obj->kind->kidx) {
 				table[i].prob3 = table[i].prob2;
@@ -1109,7 +1106,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 		*value = object_value_real(new_obj, new_obj->number, false);
 
 	/* Boost of 20% per level OOD for uncursed objects */
-	if (!cursed_p(new_obj->flags) && (kind->alloc_min > c->depth)) {
+	if ((!new_obj->curses) && (kind->alloc_min > c->depth)) {
 		if (value) *value += (kind->alloc_min - c->depth) * (*value / 5);
 	}
 
