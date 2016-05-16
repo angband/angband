@@ -1315,15 +1315,9 @@ alloc:40:75 to 100
 flags:GOOD
 values:SPEED[4+M6]
 
-name:195:Searching
-graphics:=:d
-type:ring
-properties:5:2:250
-alloc:20:5 to 90
-values:SEARCH[1+M5]
-
-### 196, sval 7
-### 197, sval 8
+### 195
+### 196
+### 197
 
 ### Stat sustain rings ###
 
@@ -1341,7 +1335,7 @@ properties:30:2:600
 alloc:20:30 to 100
 flags:SUST_STR | SUST_INT | SUST_WIS | EASY_KNOW
 
-### 200, sval 11
+### 200
 
 
 ### Resistance rings ###
@@ -1362,8 +1356,8 @@ alloc:50:10 to 50
 flags:IGNORE_COLD | IGNORE_FIRE | EASY_KNOW
 values:RES_FIRE[1] | RES_COLD[1]
 
-### 203, sval 14
-### 204, sval 15
+### 203
+### 204
 
 ### Elemental rings ###
 
@@ -1372,9 +1366,9 @@ graphics:=:d
 type:ring
 properties:0:2:400
 alloc:20:25 to 100
-values:SEARCH[1+M5] | LIGHT[1] | RES_LIGHT[1]
+values:LIGHT[1] | RES_LIGHT[1]
 
-### 206, sval 17
+### 206
 
 name:207:Flames
 graphics:=:d
@@ -1436,7 +1430,7 @@ effect:TIMED_INC:OPP_ELEC
 dice:20+1d20
 time:50+d50
 
-### 211, sval 22
+### 211
 
 ### Combat rings ###
 
@@ -1528,7 +1522,7 @@ alloc:50:10 to 50
 flags:PROT_FEAR | EASY_KNOW
 values:STEALTH[-2]
 
-### 222, sval 33
+### 222
 
 ### Misc rings ###
 
@@ -1585,7 +1579,7 @@ alloc:50:20 to 90
 flags:SUST_WIS | 
 values:WIS[1+M5]
 
-### 231, sval 2
+### 231
 
 ### Resistances ###
 
@@ -1633,7 +1627,7 @@ alloc:10:70 to 100
 combat:0:0d0:0:0:d5M5
 flags:FREE_ACT | SEE_INVIS | SUST_INT | PROT_BLIND | GOOD
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-values:SEARCH[1+M3] | INT[1+M3]
+values:INT[1+M3]
 
 name:237:ESP
 graphics:":d
@@ -1642,7 +1636,6 @@ properties:50:3:25000
 alloc:10:60 to 100
 flags:TELEPATHY
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | 
-values:SEARCH[d5M5]
 
 name:238:Devotion
 graphics:":d
@@ -1667,12 +1660,12 @@ type:amulet
 properties:70:3:30000
 alloc:10:70 to 100
 flags:SUST_DEX | GOOD
-values:DEX[1+M4] | SPEED[1+M2] | STEALTH[1+M2] | SEARCH[1+d3M3] | INFRA[1+d3M3]
+values:DEX[1+M4] | SPEED[1+M2] | STEALTH[1+M2] | INFRA[1+d3M3]
 values:RES_NEXUS[1] | RES_POIS[1]
 
-# 241
-# 242
-# 243
+### 241
+### 242
+### 243
 
 ### Ability boosts ###
 
@@ -1690,12 +1683,7 @@ properties:10:3:200
 alloc:30:10 to 70
 values:INFRA[1+M5]
 
-name:246:Searching
-graphics:":d
-type:amulet
-properties:15:3:600
-alloc:20:10 to 40
-values:SEARCH[d5M5]
+### 246
 
 ### Powers ###
 
@@ -1908,7 +1896,7 @@ pile:25:2
 power:20
 effect:REMOVE_ALL_CURSE
 
-### 277, sval 18
+### 277
 
 ### Summoning ###
 
@@ -2227,7 +2215,7 @@ power:20000
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
 
-### 315, sval 6
+### 315
 
 name:316:Augmentation
 graphics:!:d

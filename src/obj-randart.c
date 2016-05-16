@@ -107,7 +107,6 @@ static s16b art_idx_gen[] = {
 	ART_IDX_GEN_STAT,
 	ART_IDX_GEN_SUST,
 	ART_IDX_GEN_STEALTH,
-	ART_IDX_GEN_SEARCH,
 	ART_IDX_GEN_INFRA,
 	ART_IDX_GEN_SPEED,
 	ART_IDX_GEN_IMMUNE,
@@ -1054,12 +1053,6 @@ static void parse_frequencies(void)
 				(artprobs[ART_IDX_GEN_STEALTH])++;
 			}
 			/* Done with stealth */
-		}
-
-		if (art->modifiers[OBJ_MOD_SEARCH] > 0) {
-			/* Handle searching bonus - fully generic this time */
-			file_putf(log_file, "Adding 1 for search bonus - general.\n");
-			(artprobs[ART_IDX_GEN_SEARCH])++;
 		}
 
 		if (art->modifiers[OBJ_MOD_INFRA] > 0) {
@@ -2172,10 +2165,6 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 
 		case ART_IDX_GEN_SUST:
 			add_sustain(art);
-			break;
-
-		case ART_IDX_GEN_SEARCH:
-			add_pval_mod(art, OBJ_MOD_SEARCH);
 			break;
 
 		case ART_IDX_GEN_INFRA:

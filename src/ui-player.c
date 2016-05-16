@@ -269,7 +269,6 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Aggrv",	-1,					OF_AGGRAVATE,	-1, 		-1 },
 
 	{ "Stea.",	OBJ_MOD_STEALTH,	-1,				-1, 		-1 },
-	{ "Sear.",	OBJ_MOD_SEARCH,		-1,				-1, 		-1 },
 	{ "Infra",	OBJ_MOD_INFRA,		-1,				-1,			TMD_SINFRA },
 	{ "Tunn.",	OBJ_MOD_TUNNEL,		-1,				-1, 		-1 },
 	{ "Speed",	OBJ_MOD_SPEED,		-1,				-1,			TMD_FAST },
@@ -277,6 +276,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Shots",	OBJ_MOD_SHOTS,		-1,				-1, 		-1 },
 	{ "Might",	OBJ_MOD_MIGHT,		-1,				-1, 		-1 },
 	{ "Light",	OBJ_MOD_LIGHT,		-1,				-1, 		-1 },
+	{ "",	-1,		-1,				-1, 		-1 },
 };
 
 static void display_resistance_panel(const struct player_flag_record *rec,

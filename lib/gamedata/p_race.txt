@@ -31,10 +31,9 @@
 # 'stats' is for the stat modifiers - strength, intelligence, wisdom,
 # dexterity, constitution.
 
-# 'skill-<skill name>' is for skills that get added at birth.- disarming,
-# magic devices, saving throws, stealth, searching ability,
-# searching frequency, to hit (normal), to hit (bows), to hit (throwing),
-# digging.
+# 'skill-<skill name>' is for skills that get added at birth - physical
+# and magical disarming, magic devices, saving throws, stealth,
+# to hit (normal), to hit (bows), to hit (throwing), digging.
 
 # 'info' is for gameplay info - max. hitpoints gained per level, experience
 # factor in percent, range of infravision in 10 feet.

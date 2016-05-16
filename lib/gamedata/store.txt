@@ -196,7 +196,6 @@ always:magic book:[Magic for Beginners]
 always:magic book:[Conjurings and Tricks]
 always:magic book:[Incantations and Illusions]
 always:magic book:[Sorcery and Evocations]
-normal:ring:Searching
 normal:ring:Feather Falling
 normal:ring:Protection
 normal:amulet:Slow Digestion

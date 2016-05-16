@@ -187,7 +187,7 @@ desc:it rests upon the bearer.
 #F:LIGHT
 #E:CLAIRVOYANCE:50+d50
 #M:The {kind} glow{s} a deep green...
-#V:INT[2] | WIS[2] | SEARCH[3] | INFRA[3] | LIGHT[3] | RES_CHAOS[1]
+#V:INT[2] | WIS[2] | INFRA[3] | LIGHT[3] | RES_CHAOS[1]
 #desc:A great globe with a heart of fire, the Palantír provides the wearer with 
 #desc:sight of far places - at a cost, for those espied upon are aware of it.
 
@@ -580,7 +580,7 @@ base-object:helm:Metal Cap
 info:55:20:45000
 alloc:8:55 to 100
 power:3:1d1:0:0:18
-values:SEARCH[3] | INT[2] | DEX[2]
+values:INT[2] | DEX[2]
 values:RES_FIRE[1] | RES_ACID[1] | RES_DISEN[1] | RES_SHARD[1]
 desc:A metal cap forged by the greatest Noldorin smith of the Second Age, 
 desc:this helm serves equally well in battle or at the forge, and its 
@@ -674,7 +674,7 @@ power:7:1d3:0:0:10
 flags:PROT_BLIND | PROT_CONF | SEE_INVIS
 act:DETECT_ALL
 time:55+d55
-values:INT[2] | WIS[2] | SEARCH[2]
+values:INT[2] | WIS[2]
 desc:A famous forged iron helm granting extraordinary powers of mind and 
 desc:awareness.
 
@@ -687,7 +687,7 @@ power:7:1d3:8:8:10
 # F: DRAIN_HP | 
 flags:PROT_FEAR | 
 flags:SEE_INVIS | FREE_ACT | AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
-values:SEARCH[-5] | INT[-3] | WIS[-3]
+values:INT[-3] | WIS[-3]
 desc:A headpiece, gaudy and barbaric, that betrayed a warrior when he most 
 desc:needed succor.
 
@@ -715,7 +715,7 @@ power:0:1d1:0:0:18
 # F: DRAIN_MANA
 flags:SEE_INVIS | FREE_ACT | PROT_STUN | PROT_BLIND
 # A:ANALYZE:50
-values:INT[3] | SEARCH[3] | DEX[2] | LIGHT[1]
+values:INT[3] | DEX[2] | LIGHT[1]
 values:RES_SHARD[1] | RES_COLD[1] | RES_LIGHT[1] | RES_DARK[1]
 desc:A massive golden crown, set with wondrous jewels of thought and warding, 
 desc:once worn by the kings of ancient Númenor.
@@ -1101,7 +1101,7 @@ info:20:150:40000
 alloc:5:20 to 80
 power:0:2d5:10:15:0
 flags:BLESSED | SLOW_DIGEST
-values:SEARCH[1] | LIGHT[1] | BRAND_FIRE[3] | SLAY_ORC[3] | SLAY_DEMON[3] |
+values:LIGHT[1] | BRAND_FIRE[3] | SLAY_ORC[3] | SLAY_DEMON[3] |
 values:SLAY_EVIL[2] | RES_FIRE[1] | RES_LIGHT[1]
 desc:This fiery, shining blade, mate to Orcrist, earned its sobriquet "Beater" 
 desc:from dying orcs who dared to behold hidden Gondolin.
@@ -1113,7 +1113,7 @@ info:20:150:45000
 alloc:3:20 to 100
 power:0:2d5:12:16:0
 flags:BLESSED | PROT_BLIND | SLOW_DIGEST
-values:SEARCH[1] | LIGHT[1] | BRAND_ELEC[3] | SLAY_ORC[3] | SLAY_TROLL[3] | 
+values:LIGHT[1] | BRAND_ELEC[3] | SLAY_ORC[3] | SLAY_TROLL[3] | 
 values:SLAY_GIANT[3] | RES_ELEC[1]
 desc:Like unto Orcrist and Glamdring, and like them long lost, this sword is 
 desc:continually covered in tiny arcs of captive lightning that flash and dance 
@@ -1126,7 +1126,7 @@ info:20:150:40000
 alloc:5:20 to 80
 power:0:2d5:10:15:0
 flags:BLESSED | SLOW_DIGEST
-values:SEARCH[3] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_ORC[3] |
+values:LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_ORC[3] |
 values:SLAY_DRAGON[3] | RES_COLD[1] | RES_DARK[1]
 desc:This coldly gleaming blade, mate to Glamdring, is called simply "Biter" 
 desc:by orcs who came to know its power all too well.
@@ -1853,7 +1853,7 @@ alloc:12:60 to 100
 power:0:2d8:12:18:0
 act:STONE_TO_MUD
 time:2
-values:TUNNEL[6] | INFRA[4] | SEARCH[4] | STR[4] | SLAY_ORC[3] | SLAY_TROLL[3]
+values:TUNNEL[6] | INFRA[4] | STR[4] | SLAY_ORC[3] | SLAY_TROLL[3]
 values:SLAY_GIANT[3] | SLAY_DRAGON[3] | RES_DARK[1] | RES_DISEN[1]
 desc:A mighty Dwarven mattock, as good for hewing orc-necks as for hewing 
 desc:stone.  Náin, King of the Iron Hills, brought his mattock-wielding 
@@ -1973,7 +1973,7 @@ desc: the main host.
 #info:65:3:90000
 #alloc:3:60 to 127
 #flags:PROT_FEAR | PROT_BLIND | PROT_STUN | PROT_CONF
-#values:SEARCH[4] | SPEED[2] | RES_ELEC[1] | RES_COLD[1]
+#values:SPEED[2] | RES_ELEC[1] | RES_COLD[1]
 #desc:The pendant of Amandil, the last Lord of Andúnië, and mighty
 #desc: ship-captain of Númenor. First among Númenóreans to see
 #desc: Sauron for what he was.

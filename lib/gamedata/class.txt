@@ -40,11 +40,11 @@
 # 'stats' is for the stat modifiers - strength, intelligence, wisdom,
 # dexterity, constitution.
 
-# 'skill-<skill name>' is for skills - disarming, magic devices, saving throws,
-# stealth, searching ability, searching frequency, to hit (normal),
-# to hit (bows), to hit (throwing), digging.  The base entry is what the 
-# gets added to the character's skills at birth, the increments are added to
-# the base skill every ten levels.
+# 'skill-<skill name>' is for skills - physical and magical disarming,
+# magic devices, saving throws, stealth, to hit (normal), to hit (bows),
+# to hit (throwing), digging.  The base entry is what gets added to the
+# character's skills at birth, the increments are added to the base skill
+# every ten levels.
 
 # 'info' is for extra info - max. hitpoints gained per level, experience
 # factor in percent, base chance for pseudo-id (smaller is better),
