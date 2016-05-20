@@ -316,6 +316,8 @@ struct trap *square_trap(struct chunk *c, int y, int x);
 bool square_holds_object(struct chunk *c, int y, int x, struct object *obj);
 void square_excise_object(struct chunk *c, int y, int x, struct object *obj);
 void square_excise_pile(struct chunk *c, int y, int x);
+void square_sense_pile(struct chunk *c, int y, int x);
+void square_know_pile(struct chunk *c, int y, int x);
 
 void square_set_feat(struct chunk *c, int y, int x, int feat);
 
@@ -358,6 +360,9 @@ void square_unmark(struct chunk *c, int y, int x);
 void set_terrain(void);
 struct chunk *cave_new(int height, int width);
 void cave_free(struct chunk *c);
+void list_object(struct chunk *c, struct object *obj);
+void delist_object(struct chunk *c, struct object *obj);
+void object_lists_check_integrity(struct chunk *c, struct chunk *c_k);
 void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los);
 
 struct monster *cave_monster(struct chunk *c, int idx);

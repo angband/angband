@@ -49,8 +49,6 @@ typedef enum
 } object_floor_t;
 
 struct object *object_new(void);
-void list_object(struct chunk *c, struct object *obj);
-void delist_object(struct chunk *c, struct object *obj);
 void object_delete(struct object **obj_address);
 void object_pile_free(struct object *obj);
 
@@ -83,5 +81,3 @@ int scan_distant_floor(struct object **items, int max_size, int y, int x);
 int scan_items(struct object **item_list, size_t item_list_max, int mode,
 			   item_tester tester);
 bool item_is_available(struct object *obj);
-void floor_pile_sense(struct chunk *c, int y, int x);
-void floor_pile_know(struct chunk *c, int y, int x);

@@ -215,7 +215,7 @@ void square_note_spot(struct chunk *c, int y, int x)
 	if (!square_isseen(c, y, x)) return;
 
 	/* Make the player know precisely what is on this grid */
-	floor_pile_know(c, y, x);
+	square_know_pile(c, y, x);
 
 	if (square_isknown(c, y, x))
 		return;
@@ -449,10 +449,11 @@ void wiz_light(struct chunk *c, bool full)
 			}
 
 			/* Memorize objects */
-			if (full)
-				floor_pile_know(c, y, x);
-			else
-				floor_pile_sense(c, y, x);
+			if (full) {
+				square_know_pile(c, y, x);
+			} else {
+				square_sense_pile(c, y, x);
+			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
 			if (!square_ismark(c, y, x) && square_isnotknown(c, y, x))

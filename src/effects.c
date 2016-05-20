@@ -1048,7 +1048,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 				/* Identify once */
 				if (!obj->known || obj->known->pval != obj->pval) {
 					/* Hack - know the pile */
-					floor_pile_know(cave, y, x);
+					square_know_pile(cave, y, x);
 
 					/* Know the trap */
 					obj->known->pval = obj->pval;
@@ -1279,8 +1279,7 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 			objects = true;
 
 			/* Mark the pile as aware */
-			floor_pile_sense(cave, y, x);
-			square_light_spot(cave, y, x);
+			square_sense_pile(cave, y, x);
 		}
 	}
 
@@ -1335,8 +1334,7 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 			}
 
 			/* Mark the pile as seen */
-			floor_pile_know(cave, y, x);
-			square_light_spot(cave, y, x);
+			square_know_pile(cave, y, x);
 		}
 	}
 

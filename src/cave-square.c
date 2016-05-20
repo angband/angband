@@ -21,8 +21,9 @@
 #include "game-world.h"
 #include "init.h"
 #include "monster.h"
-#include "obj-util.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
+#include "obj-util.h"
 #include "object.h"
 #include "trap.h"
 
@@ -727,6 +728,64 @@ void square_excise_pile(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	object_pile_free(square_object(c, y, x));
 	c->squares[y][x].obj = NULL;
+}
+
+/**
+ * Sense the existence of objects on a grid in the current level
+ */
+void square_sense_pile(struct chunk *c, int y, int x)
+{
+	struct object *obj;
+
+	if (c != cave) return;
+
+	/* Sense every item on this grid */
+	for (obj = square_object(c, y, x); obj; obj = obj->next) {
+		object_sense(cave_k, obj);
+	}
+}
+
+/**
+ * Update the player's knowledge of the objects on a grid in the current level
+ */
+void square_know_pile(struct chunk *c, int y, int x)
+{
+	struct object *obj;
+
+	if (c != cave) return;
+
+	object_lists_check_integrity(c, cave_k);
+
+	/* Know every item on this grid, greater knowledge for the player grid */
+	for (obj = square_object(c, y, x); obj; obj = obj->next) {
+		object_see(cave_k, obj);
+		if ((y == player->py) && (x == player->px)) {
+			object_touch(player, obj);
+		}
+	}
+
+	/* Remove known location of anything not on this grid */
+	obj = square_object(cave_k, y, x);
+	while (obj) {
+		struct object *next = obj->next;
+		assert(c->objects[obj->oidx]);
+		if (!square_holds_object(c, y, x, c->objects[obj->oidx])) {
+			struct object *original = c->objects[obj->oidx];
+			square_excise_object(cave_k, y, x, obj);
+			obj->iy = 0;
+			obj->ix = 0;
+
+			/* Delete objects which no longer exist anywhere */
+			if (obj->notice & OBJ_NOTICE_IMAGINED) {
+				delist_object(cave_k, obj);
+				object_delete(&obj);
+				original->known = NULL;
+				delist_object(c, original);
+				object_delete(&original);
+			}
+		}
+		obj = next;
+	}
 }
 
 

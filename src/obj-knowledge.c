@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "init.h"
 #include "object.h"
 #include "obj-desc.h"
@@ -131,7 +132,7 @@ static void init_rune(void)
 	for (s = game_slays; s; s = s->next) {
 		count++;
 	}
-	for (i = 0; i < z_info->curse_max; i++) {
+	for (i = 1; i < z_info->curse_max; i++) {
 		if (curses[i].name) {
 			count++;
 		}
@@ -158,7 +159,7 @@ static void init_rune(void)
 		rune_list[count++] =
 			(struct rune) { RUNE_VAR_SLAY, slays++, 0, s->name };
 	}
-	for (i = 0; i < z_info->curse_max; i++) {
+	for (i = 1; i < z_info->curse_max; i++) {
 		if (curses[i].name) {
 			rune_list[count++] =
 				(struct rune) { RUNE_VAR_CURSE, i, 0, curses[i].name };
@@ -290,10 +291,10 @@ bool player_knows_rune(struct player *p, size_t i)
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
 			int i;
-			for (i = 0; i < z_info->curse_max; i++) {
+			for (i = 1; i < z_info->curse_max; i++) {
 				struct curse *curse;
 				for (curse = p->obj_k->curses; curse; curse = curse->next) {
-					if (streq(curse->name, curses[i].name)) {
+					if (curses[i].name && streq(curse->name, curses[i].name)) {
 						return true;
 					}
 				}
@@ -807,6 +808,139 @@ void object_set_base_known(struct object *obj)
 }
 
 /**
+ * Gain knowledge based on sensing an object on the floor
+ */
+void object_sense(struct chunk *c, struct object *obj)
+{
+	struct object *known_obj = c->objects[obj->oidx];
+	int y = obj->iy;
+	int x = obj->ix;
+
+	/* Make new sensed objects where necessary */
+	if (known_obj == NULL) {
+		/* Make and list the new object */
+		struct object *new_obj = object_new();
+		c->objects[obj->oidx] = new_obj;
+		new_obj->oidx = obj->oidx;
+		obj->known = new_obj;
+		new_obj->number = 1;
+
+		/* Give it a fake kind */
+		if (tval_is_money(obj)) {
+			new_obj->kind = unknown_gold_kind;
+		} else {
+			new_obj->kind = unknown_item_kind;
+		}
+
+		/* Attach it to the current floor pile */
+		new_obj->iy = y;
+		new_obj->ix = x;
+		pile_insert_end(&c->squares[y][x].obj, new_obj);
+	}
+}
+
+
+
+/**
+ * Gain knowledge based on seeing an object on the floor
+ */
+void object_see(struct chunk *c, struct object *obj)
+{
+	struct object *known_obj = c->objects[obj->oidx];
+	int y = obj->iy;
+	int x = obj->ix;
+
+	/* Make new known objects, fully know sensed ones, relocate old ones */
+	if (known_obj == NULL) {
+		/* Make and/or list the new object */
+		struct object *new_obj;
+
+		/* Check whether we need to make a new one or list the old one */
+		if (obj->known) {
+			new_obj = obj->known;
+		} else {
+			new_obj = object_new();
+			obj->known = new_obj;
+			object_set_base_known(obj);
+		}
+		c->objects[obj->oidx] = new_obj;
+		new_obj->oidx = obj->oidx;
+
+		/* Attach it to the current floor pile */
+		new_obj->iy = y;
+		new_obj->ix = x;
+		new_obj->number = obj->number;
+		if (!square_holds_object(c, y, x, new_obj)) {
+			pile_insert_end(&c->squares[y][x].obj, new_obj);
+		}
+	} else if (known_obj->kind != obj->kind) {
+		int iy = known_obj->iy;
+		int ix = known_obj->ix;
+
+		/* Make sure knowledge is correct */
+		assert(known_obj == obj->known);
+
+		/* Detach from any old pile (possibly the correct one) */
+		if (iy && ix && square_holds_object(c, iy, ix, known_obj)) {
+			square_excise_object(c, iy, ix, known_obj);
+		}
+
+		/* Copy over actual details */
+		object_set_base_known(obj);
+
+		/* Attach it to the current floor pile */
+		known_obj->iy = y;
+		known_obj->ix = x;
+		known_obj->held_m_idx = 0;
+		if (!square_holds_object(c, y, x, known_obj)) {
+			pile_insert_end(&c->squares[y][x].obj, known_obj);
+		}
+	} else if (!square_holds_object(c, y, x, known_obj)) {
+		int iy = known_obj->iy;
+		int ix = known_obj->ix;
+
+		/* Make sure knowledge is correct */
+		assert(known_obj == obj->known);
+		known_obj->number = obj->number;
+
+		/* Detach from any old pile */
+		if (iy && ix && square_holds_object(c, iy, ix, known_obj)) {
+			square_excise_object(c, iy, ix, known_obj);
+		}
+
+		/* Attach it to the current floor pile */
+		known_obj->iy = y;
+		known_obj->ix = x;
+		known_obj->held_m_idx = 0;
+		pile_insert_end(&c->squares[y][x].obj, known_obj);
+	}
+}
+
+/**
+ * Gain knowledge based on being an the same square as an object
+ */
+void object_touch(struct player *p, struct object *obj)
+{
+	player_know_object(p, obj);
+
+	/* Get the dice, and the pval for anything but chests */
+	obj->known->dd = obj->dd * p->obj_k->dd;
+	obj->known->ds = obj->ds * p->obj_k->ds;
+	obj->known->ac = obj->ac * p->obj_k->ac;
+	if (!tval_is_chest(obj))
+		obj->known->pval = obj->pval;
+
+	/* Automatically notice artifacts, mark as assessed */
+	obj->known->artifact = obj->artifact;
+	obj->known->notice |= OBJ_NOTICE_ASSESSED;
+
+	/* Log artifacts if found */
+	if (obj->artifact)
+		history_add_artifact(obj->artifact, true, true);
+}
+
+
+/**
  * Transfer player object knowledge to an object
  *
  * \param p is the player
@@ -1077,9 +1211,9 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 		case RUNE_VAR_CURSE: {
 			int j;
 			struct curse *c;
-			for (j = 0; j < z_info->curse_max; j++) {
+			for (j = 1; j < z_info->curse_max; j++) {
 				c = &curses[j];
-				if (streq(curses[j].name, r->name)) {
+				if (curses[j].name && streq(curses[j].name, r->name)) {
 					break;
 				}
 			}

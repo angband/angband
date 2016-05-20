@@ -185,6 +185,93 @@ void cave_free(struct chunk *c) {
 
 
 /**
+ * Enter an object in the list of objects for the current level/chunk.  This
+ * function is robust against listing of duplicates or non-objects
+ */
+void list_object(struct chunk *c, struct object *obj)
+{
+	int i, newsize;
+
+	/* Check for duplicates and objects already deleted or combined */
+	if (!obj) return;
+	for (i = 1; i < c->obj_max; i++)
+		if (c->objects[i] == obj)
+			return;
+
+	/* Put objects in holes in the object list */
+	for (i = 1; i < c->obj_max; i++) {
+		/* If there is a known object, skip this slot */
+		if ((c == cave) && cave_k->objects[i]) continue;
+
+		/* Put the object in a hole */
+		if (c->objects[i] == NULL) {
+			c->objects[i] = obj;
+			obj->oidx = i;
+			return;
+		}
+	}
+
+	/* Extend the list */
+	newsize = (c->obj_max + OBJECT_LIST_INCR + 1) * sizeof(struct object*);
+	c->objects = mem_realloc(c->objects, newsize);
+	c->objects[c->obj_max] = obj;
+	obj->oidx = c->obj_max;
+	for (i = c->obj_max + 1; i <= c->obj_max + OBJECT_LIST_INCR; i++)
+		c->objects[i] = NULL;
+	c->obj_max += OBJECT_LIST_INCR;
+
+	/* If we're on the current level, extend the known list */
+	if (c == cave) {
+		cave_k->objects = mem_realloc(cave_k->objects, newsize);
+		for (i = cave_k->obj_max; i <= c->obj_max; i++)
+			cave_k->objects[i] = NULL;
+		cave_k->obj_max = c->obj_max;
+	}
+}
+
+/**
+ * Remove an object from the list of objects for the current level/chunk.  This
+ * function is robust against delisting of unlisted objects.
+ */
+void delist_object(struct chunk *c, struct object *obj)
+{
+	if (!obj->oidx) return;
+	assert(c->objects[obj->oidx] == obj);
+
+	/* Don't delist an actual object if it still has a listed known object */
+	if ((c == cave) && cave_k->objects[obj->oidx]) return;
+
+	c->objects[obj->oidx] = NULL;
+	obj->oidx = 0;
+}
+
+/**
+ * Check that a pair of object lists are consistent and relate to locations of
+ * objects correctly
+ */
+void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
+{
+	int i;
+	assert(c->obj_max == c_k->obj_max);
+	for (i = 0; i < c->obj_max; i++) {
+		struct object *obj = c->objects[i];
+		struct object *known_obj = c_k->objects[i];
+		if (obj) {
+			assert(obj->oidx == i);
+			if (obj->iy && obj->ix)
+				assert(pile_contains(c->squares[obj->iy][obj->ix].obj, obj));
+		}
+		if (known_obj) {
+			assert (obj);
+			assert(known_obj == obj->known);
+			if (known_obj->iy && known_obj->ix)
+				assert (pile_contains(c_k->squares[known_obj->iy][known_obj->ix].obj, known_obj));
+			assert (known_obj->oidx == i);
+		}
+	}
+}
+
+/**
  * Standard "find me a location" function
  *
  * Obtains a legal location within the given distance of the initial

@@ -250,7 +250,7 @@ static byte player_pickup_item(struct object *obj, bool menu)
 
 	if (!can_pickup) {
 	    event_signal(EVENT_SEEFLOOR);
-		floor_pile_know(cave, py, px);
+		square_know_pile(cave, py, px);
 		mem_free(floor_list);
 	    return objs_picked_up;
 	}
