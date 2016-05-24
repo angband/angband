@@ -226,8 +226,9 @@ void object_delete(struct object **obj_address)
 		player->upkeep->object = NULL;
 
 	/* Orphan rather than actually delete if we still have a known object */
-	if (cave && cave_k && obj->oidx && (obj == cave->objects[obj->oidx]) &&
-		cave_k->objects[obj->oidx]) {
+	if (cave && player && player->cave && obj->oidx &&
+		(obj == cave->objects[obj->oidx]) &&
+		player->cave->objects[obj->oidx]) {
 		obj->iy = 0;
 		obj->ix = 0;
 		obj->held_m_idx = 0;
@@ -246,9 +247,9 @@ void object_delete(struct object **obj_address)
 		free_brand(obj->brands);
 
 	/* Remove from any lists */
-	if (cave_k && cave_k->objects && obj->oidx
-		&& (obj == cave_k->objects[obj->oidx]))
-		cave_k->objects[obj->oidx] = NULL;
+	if (player && player->cave && player->cave->objects && obj->oidx
+		&& (obj == player->cave->objects[obj->oidx]))
+		player->cave->objects[obj->oidx] = NULL;
 
 	if (cave && cave->objects && obj->oidx
 		&& (obj == cave->objects[obj->oidx]))
@@ -640,8 +641,9 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		square_excise_object(cave_k, usable->iy, usable->ix, usable->known);
-		delist_object(cave_k, usable->known);
+		square_excise_object(player->cave, usable->iy, usable->ix,
+							 usable->known);
+		delist_object(player->cave, usable->known);
 		square_excise_object(cave, usable->iy, usable->ix, usable);
 		delist_object(cave, usable);
 		*none_left = true;
@@ -776,8 +778,8 @@ static void floor_carry_fail(struct object *drop, bool broke)
 		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
 		msg("The %s %s.", o_name, verb);
 		if (known->iy && known->ix)
-			square_excise_object(cave_k, known->iy, known->ix, known);
-		delist_object(cave_k, known);
+			square_excise_object(player->cave, known->iy, known->ix, known);
+		delist_object(player->cave, known);
 		object_delete(&known);
 	}
 	delist_object(cave, drop);
@@ -1052,10 +1054,10 @@ int scan_distant_floor(struct object **items, int max_size, int y, int x)
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(cave_k, y, x)) return 0;
+	if (!square_in_bounds(player->cave, y, x)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave_k, y, x); obj; obj = obj->next) {
+	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 

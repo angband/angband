@@ -810,9 +810,9 @@ void object_set_base_known(struct object *obj)
 /**
  * Gain knowledge based on sensing an object on the floor
  */
-void object_sense(struct chunk *c, struct object *obj)
+void object_sense(struct player *p, struct object *obj)
 {
-	struct object *known_obj = c->objects[obj->oidx];
+	struct object *known_obj = p->cave->objects[obj->oidx];
 	int y = obj->iy;
 	int x = obj->ix;
 
@@ -820,7 +820,7 @@ void object_sense(struct chunk *c, struct object *obj)
 	if (known_obj == NULL) {
 		/* Make and list the new object */
 		struct object *new_obj = object_new();
-		c->objects[obj->oidx] = new_obj;
+		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;
 		obj->known = new_obj;
 		new_obj->number = 1;
@@ -835,7 +835,7 @@ void object_sense(struct chunk *c, struct object *obj)
 		/* Attach it to the current floor pile */
 		new_obj->iy = y;
 		new_obj->ix = x;
-		pile_insert_end(&c->squares[y][x].obj, new_obj);
+		pile_insert_end(&p->cave->squares[y][x].obj, new_obj);
 	}
 }
 
@@ -844,9 +844,9 @@ void object_sense(struct chunk *c, struct object *obj)
 /**
  * Gain knowledge based on seeing an object on the floor
  */
-void object_see(struct chunk *c, struct object *obj)
+void object_see(struct player *p, struct object *obj)
 {
-	struct object *known_obj = c->objects[obj->oidx];
+	struct object *known_obj = p->cave->objects[obj->oidx];
 	int y = obj->iy;
 	int x = obj->ix;
 
@@ -863,15 +863,15 @@ void object_see(struct chunk *c, struct object *obj)
 			obj->known = new_obj;
 			object_set_base_known(obj);
 		}
-		c->objects[obj->oidx] = new_obj;
+		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;
 
 		/* Attach it to the current floor pile */
 		new_obj->iy = y;
 		new_obj->ix = x;
 		new_obj->number = obj->number;
-		if (!square_holds_object(c, y, x, new_obj)) {
-			pile_insert_end(&c->squares[y][x].obj, new_obj);
+		if (!square_holds_object(p->cave, y, x, new_obj)) {
+			pile_insert_end(&p->cave->squares[y][x].obj, new_obj);
 		}
 	} else if (known_obj->kind != obj->kind) {
 		int iy = known_obj->iy;
@@ -881,8 +881,8 @@ void object_see(struct chunk *c, struct object *obj)
 		assert(known_obj == obj->known);
 
 		/* Detach from any old pile (possibly the correct one) */
-		if (iy && ix && square_holds_object(c, iy, ix, known_obj)) {
-			square_excise_object(c, iy, ix, known_obj);
+		if (iy && ix && square_holds_object(p->cave, iy, ix, known_obj)) {
+			square_excise_object(p->cave, iy, ix, known_obj);
 		}
 
 		/* Copy over actual details */
@@ -892,10 +892,10 @@ void object_see(struct chunk *c, struct object *obj)
 		known_obj->iy = y;
 		known_obj->ix = x;
 		known_obj->held_m_idx = 0;
-		if (!square_holds_object(c, y, x, known_obj)) {
-			pile_insert_end(&c->squares[y][x].obj, known_obj);
+		if (!square_holds_object(p->cave, y, x, known_obj)) {
+			pile_insert_end(&p->cave->squares[y][x].obj, known_obj);
 		}
-	} else if (!square_holds_object(c, y, x, known_obj)) {
+	} else if (!square_holds_object(p->cave, y, x, known_obj)) {
 		int iy = known_obj->iy;
 		int ix = known_obj->ix;
 
@@ -904,15 +904,15 @@ void object_see(struct chunk *c, struct object *obj)
 		known_obj->number = obj->number;
 
 		/* Detach from any old pile */
-		if (iy && ix && square_holds_object(c, iy, ix, known_obj)) {
-			square_excise_object(c, iy, ix, known_obj);
+		if (iy && ix && square_holds_object(p->cave, iy, ix, known_obj)) {
+			square_excise_object(p->cave, iy, ix, known_obj);
 		}
 
 		/* Attach it to the current floor pile */
 		known_obj->iy = y;
 		known_obj->ix = x;
 		known_obj->held_m_idx = 0;
-		pile_insert_end(&c->squares[y][x].obj, known_obj);
+		pile_insert_end(&p->cave->squares[y][x].obj, known_obj);
 	}
 }
 

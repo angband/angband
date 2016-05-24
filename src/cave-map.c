@@ -115,7 +115,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	}
 
 	/* Use known feature */
-	g->f_idx = cave_k->squares[y][x].feat;
+	g->f_idx = player->cave->squares[y][x].feat;
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = f_info[g->f_idx].mimic;
 
@@ -139,7 +139,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
     }
 
 	/* Objects */
-	for (obj = square_object(cave_k, y, x); obj; obj = obj->next) {
+	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
 		if (obj->kind == unknown_gold_kind) {
 			g->unseen_money = true;
 		} else if (obj->kind == unknown_item_kind) {
@@ -717,7 +717,7 @@ void cave_update_flow(struct chunk *c)
 /**
  * Make map features known, except wall/lava surrounded by wall/lava
  */
-void cave_known(void)
+void cave_known(struct player *p)
 {
 	int y, x;
 	for (y = 0; y < cave->height; y++) {
@@ -740,7 +740,7 @@ void cave_known(void)
 
 			/* Internal walls not known */
 			if (count < 8)
-				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
+				p->cave->squares[y][x].feat = cave->squares[y][x].feat;
 		}
 	}
 }

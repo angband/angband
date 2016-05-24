@@ -1230,7 +1230,7 @@ void do_cmd_hold(struct command *cmd)
 	search();
 
 	/* Pick things up, not using extra energy */
-	do_autopickup();
+	do_autopickup(player);
 
 	/* Enter a store if we are on one, otherwise look at the floor */
 	if (square_isshop(cave, player->py, player->px)) {

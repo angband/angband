@@ -1396,7 +1396,7 @@ int rd_dungeon(void)
 	character_dungeon = true;
 
 	/* Read known cave */
-	if (rd_dungeon_aux(&cave_k))
+	if (rd_dungeon_aux(&player->cave))
 		return 1;
 
 	return 0;
@@ -1410,7 +1410,7 @@ int rd_objects(void)
 {
 	if (rd_objects_aux(rd_item, cave))
 		return -1;
-	if (rd_objects_aux(rd_item, cave_k))
+	if (rd_objects_aux(rd_item, player->cave))
 		return -1;
 
 	return 0;
@@ -1429,13 +1429,13 @@ int rd_monsters (void)
 
 	if (rd_monsters_aux(cave))
 		return -1;
-	if (rd_monsters_aux(cave_k))
+	if (rd_monsters_aux(player->cave))
 		return -1;
 
 	/* Associate known objects */
-	for (i = 0; i < cave_k->obj_max; i++)
-		if (cave->objects[i] && cave_k->objects[i])
-			cave->objects[i]->known = cave_k->objects[i];
+	for (i = 0; i < player->cave->obj_max; i++)
+		if (cave->objects[i] && player->cave->objects[i])
+			cave->objects[i]->known = player->cave->objects[i];
 
 	return 0;
 }
@@ -1447,7 +1447,7 @@ int rd_traps(void)
 {
 	if (rd_traps_aux(cave))
 		return -1;
-	if (rd_traps_aux(cave_k))
+	if (rd_traps_aux(player->cave))
 		return -1;
 	return 0;
 }

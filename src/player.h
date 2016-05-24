@@ -577,6 +577,8 @@ struct player {
 	struct object *gear_k;
 	/* Object knowledge ("runes") */
 	struct object *obj_k;
+	/* Known version of current level */
+	struct chunk *cave;
 
 	struct player_body body;
 };

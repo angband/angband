@@ -338,7 +338,7 @@ bool target_accept(int y, int x)
 		return(true);
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave_k, y, x); obj; obj = obj->next)
+	for (obj = square_object(player->cave, y, x); obj; obj = obj->next)
 		/* Memorized object */
 		if (!ignore_known_item_ok(obj)) return (true);
 

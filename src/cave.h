@@ -201,10 +201,9 @@ extern int FEAT_PERM;
 extern int FEAT_LAVA;
 
 
-/* Real cave */
+/* Current level */
 extern struct chunk *cave;
-/* Known cave */
-extern struct chunk *cave_k;
+/* Stored levels */
 extern struct chunk **chunk_list;
 extern u16b chunk_list_max;
 
@@ -374,6 +373,6 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *cave, int y, int x), 
 void cave_generate(struct chunk **c, struct player *p);
 bool is_quest(int level);
 
-void cave_known(void);
+void cave_known(struct player *p);
 
 #endif /* !CAVE_H */

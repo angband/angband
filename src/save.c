@@ -907,7 +907,7 @@ void wr_dungeon(void)
 
 	/* Write caves */
 	wr_dungeon_aux(cave);
-	wr_dungeon_aux(cave_k);
+	wr_dungeon_aux(player->cave);
 
 	/* Compact the monsters */
 	compact_monsters(0);
@@ -917,19 +917,19 @@ void wr_dungeon(void)
 void wr_objects(void)
 {
 	wr_objects_aux(cave);
-	wr_objects_aux(cave_k);
+	wr_objects_aux(player->cave);
 }
 
 void wr_monsters(void)
 {
 	wr_monsters_aux(cave);
-	wr_monsters_aux(cave_k);
+	wr_monsters_aux(player->cave);
 }
 
 void wr_traps(void)
 {
 	wr_traps_aux(cave);
-	wr_traps_aux(cave_k);
+	wr_traps_aux(player->cave);
 }
 
 /*

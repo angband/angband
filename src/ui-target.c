@@ -807,7 +807,7 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		int y = path_g[i].y;
 		int x = path_g[i].x;
 		struct monster *mon = square_monster(cave, y, x);
-		struct object *obj = square_object(cave_k, y, x);
+		struct object *obj = square_object(player->cave, y, x);
 
 		/*
 		 * As path[] is a straight line and the screen is oblong,

@@ -1118,9 +1118,9 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 			}
 
 			/* Forget unknown doors in the mapping area */
-			if (square_isdoor(cave_k, y, x) && square_isnotknown(cave, y, x)) {
+			if (square_isdoor(player->cave, y, x) &&
+				square_isnotknown(cave, y, x)) {
 				square_forget(cave, y, x);
-				square_light_spot(cave, y, x);
 			}
 		}
 	}

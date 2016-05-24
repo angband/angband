@@ -34,7 +34,6 @@
 
 struct feature *f_info;
 struct chunk *cave = NULL;
-struct chunk *cave_k = NULL;
 
 int FEAT_NONE;
 int FEAT_FLOOR;
@@ -201,7 +200,7 @@ void list_object(struct chunk *c, struct object *obj)
 	/* Put objects in holes in the object list */
 	for (i = 1; i < c->obj_max; i++) {
 		/* If there is a known object, skip this slot */
-		if ((c == cave) && cave_k->objects[i]) continue;
+		if ((c == cave) && player->cave->objects[i]) continue;
 
 		/* Put the object in a hole */
 		if (c->objects[i] == NULL) {
@@ -222,10 +221,10 @@ void list_object(struct chunk *c, struct object *obj)
 
 	/* If we're on the current level, extend the known list */
 	if (c == cave) {
-		cave_k->objects = mem_realloc(cave_k->objects, newsize);
-		for (i = cave_k->obj_max; i <= c->obj_max; i++)
-			cave_k->objects[i] = NULL;
-		cave_k->obj_max = c->obj_max;
+		player->cave->objects = mem_realloc(player->cave->objects, newsize);
+		for (i = player->cave->obj_max; i <= c->obj_max; i++)
+			player->cave->objects[i] = NULL;
+		player->cave->obj_max = c->obj_max;
 	}
 }
 
@@ -239,7 +238,7 @@ void delist_object(struct chunk *c, struct object *obj)
 	assert(c->objects[obj->oidx] == obj);
 
 	/* Don't delist an actual object if it still has a listed known object */
-	if ((c == cave) && cave_k->objects[obj->oidx]) return;
+	if ((c == cave) && player->cave->objects[obj->oidx]) return;
 
 	c->objects[obj->oidx] = NULL;
 	obj->oidx = 0;

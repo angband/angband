@@ -425,6 +425,10 @@ static void cleanup_player(void) {
 		string_free(player->body.name);
 		mem_free(player->history);
 	}
+	if (player->cave) {
+		cave_free(player->cave);
+		player->cave = NULL;
+	}
 
 	/* Free the basic player struct */
 	mem_free(player);

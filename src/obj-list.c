@@ -165,14 +165,14 @@ void object_list_collect(object_list_t *list)
 		return;
 
 	/* Scan each object in the dungeon. */
-	for (i = 1; i < cave_k->obj_max; i++) {
+	for (i = 1; i < player->cave->obj_max; i++) {
 		object_list_entry_t *entry = NULL;
 		int entry_index;
 		int current_distance;
 		int entry_distance;
 		int y, x, field;
 		bool los = false;
-		struct object *obj = cave_k->objects[i];
+		struct object *obj = player->cave->objects[i];
 
 		/* Skip unfilled entries, unknown objects and monster-held objects */
 		if (!obj) continue;

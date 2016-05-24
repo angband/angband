@@ -283,7 +283,7 @@ bool square_isplayer(struct chunk *c, int y, int x) {
  */
 bool square_isknown(struct chunk *c, int y, int x) {
 	if (c != cave) return false;
-	return cave_k->squares[y][x].feat == FEAT_NONE ? false : true;
+	return player->cave->squares[y][x].feat == FEAT_NONE ? false : true;
 }
 
 /**
@@ -292,7 +292,7 @@ bool square_isknown(struct chunk *c, int y, int x) {
  */
 bool square_isnotknown(struct chunk *c, int y, int x) {
 	if (c != cave) return false;
-	return (cave_k->squares[y][x].feat != c->squares[y][x].feat);
+	return (player->cave->squares[y][x].feat != c->squares[y][x].feat);
 }
 
 /**
@@ -741,7 +741,7 @@ void square_sense_pile(struct chunk *c, int y, int x)
 
 	/* Sense every item on this grid */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
-		object_sense(cave_k, obj);
+		object_sense(player, obj);
 	}
 }
 
@@ -754,30 +754,30 @@ void square_know_pile(struct chunk *c, int y, int x)
 
 	if (c != cave) return;
 
-	object_lists_check_integrity(c, cave_k);
+	object_lists_check_integrity(c, player->cave);
 
 	/* Know every item on this grid, greater knowledge for the player grid */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
-		object_see(cave_k, obj);
+		object_see(player, obj);
 		if ((y == player->py) && (x == player->px)) {
 			object_touch(player, obj);
 		}
 	}
 
 	/* Remove known location of anything not on this grid */
-	obj = square_object(cave_k, y, x);
+	obj = square_object(player->cave, y, x);
 	while (obj) {
 		struct object *next = obj->next;
 		assert(c->objects[obj->oidx]);
 		if (!square_holds_object(c, y, x, c->objects[obj->oidx])) {
 			struct object *original = c->objects[obj->oidx];
-			square_excise_object(cave_k, y, x, obj);
+			square_excise_object(player->cave, y, x, obj);
 			obj->iy = 0;
 			obj->ix = 0;
 
 			/* Delete objects which no longer exist anywhere */
 			if (obj->notice & OBJ_NOTICE_IMAGINED) {
-				delist_object(cave_k, obj);
+				delist_object(player->cave, obj);
 				object_delete(&obj);
 				original->known = NULL;
 				delist_object(c, original);
@@ -973,18 +973,18 @@ int square_digging(struct chunk *c, int y, int x) {
 }
 
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x) {
-	int f = f_info[cave_k->squares[y][x].feat].mimic;
+	int f = f_info[player->cave->squares[y][x].feat].mimic;
 	return f_info[f].name;
 }
 
 void square_memorize(struct chunk *c, int y, int x) {
 	if (c != cave) return;
-	cave_k->squares[y][x].feat = c->squares[y][x].feat;
+	player->cave->squares[y][x].feat = c->squares[y][x].feat;
 }
 
 void square_forget(struct chunk *c, int y, int x) {
 	if (c != cave) return;
-	cave_k->squares[y][x].feat = FEAT_NONE;
+	player->cave->squares[y][x].feat = FEAT_NONE;
 }
 
 void square_mark(struct chunk *c, int y, int x) {

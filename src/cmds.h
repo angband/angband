@@ -70,7 +70,7 @@ void do_cmd_study_book(struct command *cmd);
 void do_cmd_study(struct command *cmd);
 
 /* cmd-pickup.c */
-int do_autopickup(void);
+int do_autopickup(struct player *p);
 void do_cmd_pickup(struct command *cmd);
 void do_cmd_autopickup(struct command *cmd);
 
