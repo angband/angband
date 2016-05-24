@@ -241,11 +241,15 @@ void object_flags(const struct object *obj, bitflag flags[OF_SIZE])
 void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE])
 {
 	object_flags(obj, flags);
-
 	of_inter(flags, obj->known->flags);
 
-	if (object_flavor_is_aware(obj))
+	if (!obj->kind) {
+		return;
+	}
+
+	if (object_flavor_is_aware(obj)) {
 		of_union(flags, obj->kind->flags);
+	}
 
 	if (obj->ego && easy_know(obj)) {
 		of_union(flags, obj->ego->flags);

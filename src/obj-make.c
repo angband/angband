@@ -22,8 +22,9 @@
 #include "effects.h"
 #include "init.h"
 #include "obj-gear.h"
-#include "obj-pile.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
+#include "obj-pile.h"
 #include "obj-power.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -1068,6 +1069,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	int base;
 	struct object_kind *kind;
 	struct object *new_obj;
+	struct curse *curse;
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000)) {
@@ -1093,6 +1095,14 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	new_obj = object_new();
 	object_prep(new_obj, kind, lev, RANDOMISE);
 	apply_magic(new_obj, lev, true, good, great, extra_roll);
+
+	/* Add curse knowledge if any */
+	curse = new_obj->curses;
+	while (curse) {
+		curse->obj->known = object_new();
+		player_know_object(player, curse->obj);
+		curse = curse->next;
+	}
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))

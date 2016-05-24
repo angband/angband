@@ -586,10 +586,15 @@ bool object_is_in_store(const struct object *obj)
  */
 bool object_has_standard_to_h(const struct object *obj)
 {
-	if (tval_is_body_armor(obj) && !randcalc_varies(obj->kind->to_h))
+	/* Hack for curse object structures */
+	if (!obj->kind) {
+		return true;
+	}
+	if (tval_is_body_armor(obj) && !randcalc_varies(obj->kind->to_h)) {
 		return (obj->to_h == obj->kind->to_h.base);
-	else
+	} else {
 		return (obj->to_h == 0);
+	}
 }
 
 /**
@@ -977,6 +982,18 @@ void player_know_object(struct player *p, struct object *obj)
 			obj->known->el_info[i].flags = obj->el_info[i].flags;
 		}
 
+	/* Set object flags */
+	for (flag = of_next(p->obj_k->flags, FLAG_START); flag != FLAG_END;
+		 flag = of_next(p->obj_k->flags, flag + 1)) {
+		if (of_has(obj->flags, flag))
+			of_on(obj->known->flags, flag);
+	}
+
+	/* Curse object structures are finished now */
+	if (!obj->kind) {
+		return;
+	}
+
 	/* Reset brands */
 	free_brand(obj->known->brands);
 	obj->known->brands = NULL;
@@ -1015,12 +1032,14 @@ void player_know_object(struct player *p, struct object *obj)
 	free_curse(obj->known->curses);
 	obj->known->curses = NULL;
 	for (c = obj->curses; c; c = c->next) {
+		/* Update knowledge of the curse object first */
+		player_know_object(p, c->obj);
 		if (player_knows_curse(p, c)) {
 			/* Copy */
 			struct curse *new_c = mem_zalloc(sizeof *new_c);
 			new_c->name = string_make(c->name);
 			if (c->obj) {
-				object_copy(new_c->obj, c->obj);
+				object_copy(new_c->obj, c->obj->known);
 			}
 			new_c->power = c->power;
 
@@ -1028,13 +1047,6 @@ void player_know_object(struct player *p, struct object *obj)
 			new_c->next = obj->known->curses;
 			obj->known->curses = new_c;
 		}
-	}
-
-	/* Set object flags */
-	for (flag = of_next(p->obj_k->flags, FLAG_START); flag != FLAG_END;
-		 flag = of_next(p->obj_k->flags, flag + 1)) {
-		if (of_has(obj->flags, flag))
-			of_on(obj->known->flags, flag);
 	}
 
 	/* Set ego type, jewellery type if known */
