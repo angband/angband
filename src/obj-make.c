@@ -683,14 +683,10 @@ bool make_fake_artifact(struct object *obj, struct artifact *artifact)
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, MAXIMISE);
-
-	/* Save the name */
 	obj->artifact = artifact;
-
-	/* Extract the fields */
 	copy_artifact_data(obj, artifact);
+	apply_curse_knowledge(obj);
 
-	/* Success */
 	return (true);
 }
 
@@ -1069,7 +1065,6 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	int base;
 	struct object_kind *kind;
 	struct object *new_obj;
-	struct curse *curse;
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000)) {
@@ -1095,14 +1090,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	new_obj = object_new();
 	object_prep(new_obj, kind, lev, RANDOMISE);
 	apply_magic(new_obj, lev, true, good, great, extra_roll);
-
-	/* Add curse knowledge if any */
-	curse = new_obj->curses;
-	while (curse) {
-		curse->obj->known = object_new();
-		player_know_object(player, curse->obj);
-		curse = curse->next;
-	}
+	apply_curse_knowledge(new_obj);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))

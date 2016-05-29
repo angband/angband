@@ -29,6 +29,7 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -518,6 +519,7 @@ static struct object *wiz_create_item_object_from_kind(struct object_kind *kind)
 
 		/* Apply magic (no messages, no artifacts) */
 		apply_magic(obj, player->depth, false, false, false, false);
+		apply_curse_knowledge(obj);
 	}
 
 	return obj;
@@ -547,12 +549,9 @@ static struct object *wiz_create_item_object_from_artifact(struct artifact *art)
 
 	/* Create the artifact */
 	object_prep(obj, kind, art->alloc_min, RANDOMISE);
-
-	/* Save the artifact type */
 	obj->artifact = art;
-
-	/* Extract the fields */
 	copy_artifact_data(obj, art);
+	apply_curse_knowledge(obj);
 
 	/* Mark that the artifact has been created. */
 	art->created = true;
@@ -973,6 +972,7 @@ static void wiz_reroll_item(struct object *obj)
 
 		/* Copy over - slays and brands OK, pile info needs restoring */
 		object_copy(obj, new);
+		apply_curse_knowledge(obj);
 		obj->prev = prev;
 		obj->next = next;
 		obj->known = known_obj;
@@ -1786,6 +1786,7 @@ static void wiz_test_kind(int tval)
 
 			/* Apply magic (no messages, no artifacts) */
 			apply_magic(obj, player->depth, false, false, false, false);
+			apply_curse_knowledge(obj);
 
 			/* Mark as cheat, and where created */
 			obj->origin = ORIGIN_CHEAT;

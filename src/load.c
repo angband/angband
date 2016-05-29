@@ -189,14 +189,10 @@ static struct object *rd_item(void)
 	rd_byte(&tmp8u);
 	while (tmp8u) {
 		char buf_local[40];
-		byte obj_exists = 0;
 		struct curse *c = mem_zalloc(sizeof *c);
 		rd_string(buf_local, sizeof(buf_local));
 		c->name = string_make(buf_local);
-		rd_byte(&obj_exists);
-		if (obj_exists) {
-			c->obj = rd_item();
-		}
+		c->obj = rd_item();
 		rd_s16b(&tmp16s);
 		c->power = tmp16s;
 		c->next = obj->curses;
@@ -228,7 +224,6 @@ static struct object *rd_item(void)
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) obj->note = quark_add(buf);
-
 
 	/* Lookup item kind */
 	obj->kind = lookup_kind(obj->tval, obj->sval);
@@ -1419,9 +1414,10 @@ int rd_objects(void)
 /**
  * Read the monster list - wrapper functions
  */
-int rd_monsters (void)
+int rd_monsters(void)
 {
 	int i;
+	struct object *obj;
 
 	/* Only if the player's alive */
 	if (player->is_dead)
@@ -1431,6 +1427,24 @@ int rd_monsters (void)
 		return -1;
 	if (rd_monsters_aux(player->cave))
 		return -1;
+
+	/* Add curse info for all objects */
+	if (cave) {
+		for (i = 0; i < cave->obj_max; i++) {
+			if (cave->objects[i]) {
+				apply_curse_knowledge(cave->objects[i]);
+			}
+		}
+	}
+	for (obj = player->gear; obj; obj = obj->next) {
+		apply_curse_knowledge(obj);
+	}
+	for (i = 0; i < MAX_STORES; i++) {
+		struct store *s = &stores[i];
+		for (obj = s->stock; obj; obj = obj->next) {
+			apply_curse_knowledge(obj);
+		}
+	}
 
 	/* Associate known objects */
 	for (i = 0; i < player->cave->obj_max; i++)

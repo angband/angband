@@ -67,6 +67,7 @@ bool object_flag_is_known(const struct object *obj, int flag);
 bool object_element_is_known(const struct object *obj, int element);
 
 void object_set_base_known(struct object *obj);
+void apply_curse_knowledge(struct object *obj);
 void object_sense(struct player *p, struct object *obj);
 void object_see(struct player *p, struct object *obj);
 void object_touch(struct player *p, struct object *obj);

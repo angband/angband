@@ -52,11 +52,11 @@ static const char *flag_names[] =
 {
 	"NONE",
 	#define STAT(a, b, c, d, e, f, g, h, i) #c,
-    #include "list-stats.h"
-    #undef STAT
+	#include "list-stats.h"
+	#undef STAT
 	#define OF(a, b, c, d, e, f) #a,
-    #include "list-object-flags.h"
-    #undef OF
+	#include "list-object-flags.h"
+	#undef OF
     ""
 };
 
@@ -67,11 +67,11 @@ static const char *flag_names[] =
 static const struct object_mod object_mod_table[] =
 {
 	#define STAT(a, b, c, d, e, f, g, h, i) { OBJ_MOD_##a, b, e, h },
-    #include "list-stats.h"
-    #undef STAT
-    #define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, b, c, d },
-    #include "list-object-modifiers.h"
-    #undef OBJ_MOD
+	#include "list-stats.h"
+	#undef STAT
+	#define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, b, c, d },
+	#include "list-object-modifiers.h"
+	#undef OBJ_MOD
 };
 
 /**
@@ -80,12 +80,12 @@ static const struct object_mod object_mod_table[] =
 static const char *mod_names[] =
 {
 	#define STAT(a, b, c, d, e, f, g, h, i) #a,
-    #include "list-stats.h"
-    #undef STAT
-    #define OBJ_MOD(a, b, c, d) #a,
-    #include "list-object-modifiers.h"
-    #undef OBJ_MOD
-    ""
+	#include "list-stats.h"
+	#undef STAT
+	#define OBJ_MOD(a, b, c, d) #a,
+	#include "list-object-modifiers.h"
+	#undef OBJ_MOD
+	""
 };
 
 /**
@@ -297,6 +297,21 @@ s16b mod_slot_mult(int mod, int slot)
 	return 1;
 }
 
+
+/**
+ * Return the index of the curse with the given name
+ */
+int lookup_curse(const char *name)
+{
+	int i;
+
+	for (i = 1; i < z_info->curse_max; i++) {
+		struct curse *curse = &curses[i];
+		if (curse->name && streq(name, curse->name))
+			return i;
+	}
+	return 0;
+}
 
 /**
  * Copy all the curses from one structure to another

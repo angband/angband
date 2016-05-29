@@ -188,6 +188,7 @@ const char *mod_name(int mod);
 s32b mod_power(int mod);
 int mod_mult(int mod);
 s16b mod_slot_mult(int mod, int slot);
+int lookup_curse(const char *name);
 void copy_curse(struct curse **dest, struct curse *src);
 void free_curse(struct curse *source);
 bool curses_are_equal(struct curse *curse1, struct curse *curse2);

@@ -1810,6 +1810,7 @@ static void desc_obj_fake(int k_idx)
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, EXTREMIFY);
+	apply_curse_knowledge(obj);
 
 	/* It's fully known */
 	if (kind->aware || !kind->flavor)

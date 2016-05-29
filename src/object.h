@@ -208,6 +208,7 @@ extern struct object_kind *k_info;
 extern struct object_kind *unknown_item_kind;
 extern struct object_kind *unknown_gold_kind;
 extern struct object_kind *pile_kind;
+extern struct object_kind *curse_object_kind;
 
 /**
  * Information about artifacts.

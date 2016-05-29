@@ -313,6 +313,47 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * Fill in curse object info now that curse_object_kind is defined
+ */
+static void write_curse_kinds(void)
+{
+	int i;
+
+	for (i = 1; i < z_info->curse_max; i++) {
+		struct curse *curse = &curses[i];
+		curse->obj->kind = curse_object_kind;
+		curse->obj->sval = lookup_sval(tval_find_idx("none"), "<curse object>");
+	}
+	for (i = 0; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+		struct curse *curse = kind->curses;
+		while (curse) {
+			curse->obj->kind = curse_object_kind;
+			curse->obj->sval = lookup_sval(0, "<curse object>");
+			curse = curse->next;
+		}
+	}
+	for (i = 0; i < z_info->e_max; i++) {
+		struct ego_item *ego = &e_info[i];
+		struct curse *curse = ego->curses;
+		while (curse) {
+			curse->obj->kind = curse_object_kind;
+			curse->obj->sval = lookup_sval(0, "<curse object>");
+			curse = curse->next;
+		}
+	}
+	for (i = 0; i < z_info->a_max; i++) {
+		struct artifact *art = &a_info[i];
+		struct curse *curse = art->curses;
+		while (curse) {
+			curse->obj->kind = curse_object_kind;
+			curse->obj->sval = lookup_sval(0, "<curse object>");
+			curse = curse->next;
+		}
+	}
+}
+
 void add_game_brand(struct brand *b)
 {
 	struct brand *known_b = game_brands;
@@ -1294,6 +1335,7 @@ static struct file_parser curse_parser = {
 struct object_kind *unknown_item_kind;
 struct object_kind *unknown_gold_kind;
 struct object_kind *pile_kind;
+struct object_kind *curse_object_kind;
 
 static enum parser_error parse_object_name(struct parser *p) {
 	int idx = parser_getint(p, "index");
@@ -2285,13 +2327,14 @@ static errr finish_parse_artifact(struct parser *p) {
 	}
 	z_info->a_max += 1;
 
-	/* Now we're done with object kinds, record kinds for generic objects */
+	/* Now we're done with object kinds, deal with object-like things */
 	none = tval_find_idx("none");
 	unknown_item_kind = lookup_kind(none, lookup_sval(none, "<unknown item>"));
 	unknown_gold_kind = lookup_kind(none,
 									lookup_sval(none, "<unknown treasure>"));
 	pile_kind = lookup_kind(none, lookup_sval(none, "<pile>"));
-
+	curse_object_kind = lookup_kind(none, lookup_sval(none, "<curse object>"));
+	write_curse_kinds();
 	parser_destroy(p);
 	return 0;
 }

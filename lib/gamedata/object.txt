@@ -122,19 +122,27 @@
 
 
 
-##### Non-kind (contains the "pile" picture) #####
+##### Non-kind (things treated like objects) #####
 
 name:0:<pile>
-type:0
+type:none
 graphics:&:w
 
+name:1:<unknown item>
+type:none
+graphics:*:r
 
+name:2:<unknown treasure>
+type:none
+graphics:*:o
 
-##### Various Stuff #####
+name:3:<curse object>
+type:none
+graphics:*:v
 
-### 1
+##### Lights #####
 
-name:2:& Wooden Torch~
+name:5:& Wooden Torch~
 graphics:~:u
 type:light
 properties:1:22:2
@@ -142,7 +150,7 @@ alloc:70:1 to 40
 combat:0:1d1:0:0:0
 flags:BURNS_OUT | LIGHT_1 | EASY_KNOW
 
-name:3:& Lantern~
+name:6:& Lantern~
 graphics:~:U
 type:light
 properties:3:50:35
@@ -150,7 +158,7 @@ alloc:70:5 to 100
 combat:0:1d1:0:0:0
 flags:TAKES_FUEL | EASY_KNOW | LIGHT_2 | IGNORE_FIRE
 
-name:4:& Flask~ of oil
+name:7:& Flask~ of oil
 graphics:!:y
 type:flask
 properties:1:20:3
@@ -163,15 +171,9 @@ desc: a maximum of 15000 turns of light.
 desc:  When thrown, it is considered lit, so it does more than nominal
 desc: damage (which occurs even against creatures resistant to fire).
 
-name:6:<unknown item>
-type:0
-graphics:*:r
+### 8
 
-name:7:<unknown treasure>
-type:0
-graphics:*:o
-
-
+### 9
 
 ##### Food #####
 
