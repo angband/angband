@@ -1379,7 +1379,12 @@ void object_curses_find_to_a(struct player *p, struct object *obj)
 		struct object *test_obj = curse->obj;
 		if (test_obj->to_a != 0) {
 			player_learn_rune(p, index, true);
-			return;
+
+			/* Learn the curse */
+			index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
+			if (index >= 0) {
+				player_learn_rune(p, index, true);
+			}
 		}
 		curse = curse->next;
 	}
@@ -1393,7 +1398,12 @@ void object_curses_find_to_h(struct player *p, struct object *obj)
 		struct object *test_obj = curse->obj;
 		if (test_obj->to_h != 0) {
 			player_learn_rune(p, index, true);
-			return;
+
+			/* Learn the curse */
+			index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
+			if (index >= 0) {
+				player_learn_rune(p, index, true);
+			}
 		}
 		curse = curse->next;
 	}
@@ -1407,7 +1417,12 @@ void object_curses_find_to_d(struct player *p, struct object *obj)
 		struct object *test_obj = curse->obj;
 		if (test_obj->to_d != 0) {
 			player_learn_rune(p, index, true);
-			return;
+
+			/* Learn the curse */
+			index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
+			if (index >= 0) {
+				player_learn_rune(p, index, true);
+			}
 		}
 		curse = curse->next;
 	}

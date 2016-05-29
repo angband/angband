@@ -1075,6 +1075,16 @@ static enum parser_error parse_curse_name(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_curse_combat(struct parser *p) {
+	struct curse *curse = parser_priv(p);
+	assert(curse);
+
+	curse->obj->to_h = parser_getint(p, "to-h");
+	curse->obj->to_d = parser_getint(p, "to-d");
+	curse->obj->to_a = parser_getint(p, "to-a");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_curse_flags(struct parser *p) {
 	struct curse *curse = parser_priv(p);
 	char *s = string_make(parser_getstr(p, "flags"));
@@ -1263,6 +1273,7 @@ struct parser *init_parse_curse(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_curse_name);
+	parser_reg(p, "combat int to-h int to-d int to-a", parse_curse_combat);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_curse_effect);
 	parser_reg(p, "param int p2 ?int p3", parse_curse_param);
 	parser_reg(p, "dice str dice", parse_curse_dice);
