@@ -207,8 +207,10 @@ static bool describe_curses(textblock *tb, const struct object *obj,
 	if (!c)
 		return false;
 	while (c) {
+		int i = lookup_curse(c->name);
+		assert(i);
 		textblock_append(tb, "It ");
-		textblock_append_c(tb, COLOUR_L_RED, c->desc);
+		textblock_append_c(tb, COLOUR_L_RED, curses[i].desc);
 		textblock_append(tb, ".\n");
 		c = c->next;
 	}

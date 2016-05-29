@@ -950,6 +950,18 @@ int rd_misc(void)
 		rd_byte(&tmp8u);
 	}
 
+	/* Read curses */
+	rd_byte(&tmp8u);
+	while (tmp8u) {
+		char buf[40];
+		struct curse *c = mem_zalloc(sizeof *c);
+		rd_string(buf, sizeof(buf));
+		c->name = string_make(buf);
+		c->next = player->obj_k->curses;
+		player->obj_k->curses = c;
+		rd_byte(&tmp8u);
+	}
+
 	/* Combat data */
 	rd_s16b(&player->obj_k->ac);
 	rd_s16b(&player->obj_k->to_a);
