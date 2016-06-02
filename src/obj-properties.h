@@ -190,7 +190,7 @@ int mod_mult(int mod);
 s16b mod_slot_mult(int mod, int slot);
 int lookup_curse(const char *name);
 void copy_curse(struct curse **dest, struct curse *src);
-void free_curse(struct curse *source);
+void free_curse(struct curse *source, bool complete);
 bool curses_are_equal(struct curse *curse1, struct curse *curse2);
 bool append_curse(struct curse **current, int pick, int power);
 

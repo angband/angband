@@ -511,7 +511,7 @@ void object_wipe(struct object *obj)
 	/* Free slays and brands */
 	free_slay(obj->slays);
 	free_brand(obj->brands);
-	free_curse(obj->curses);
+	free_curse(obj->curses, true);
 
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));

@@ -358,14 +358,16 @@ void copy_curse(struct curse **dest, struct curse *source)
  * Free all the curses in a structure
  *
  * \param source the slays being freed
+ * \param complete whether to free the curse objects or not (we don't want to
+ * if we are dealing with the known version of an object)
  */
-void free_curse(struct curse *source)
+void free_curse(struct curse *source, bool complete)
 {
 	struct curse *c = source, *c_next;
 	while (c) {
 		c_next = c->next;
 		mem_free(c->desc);
-		if (c->obj) {
+		if (complete && c->obj) {
 			free_effect(c->obj->effect);
 			mem_free(c->obj);
 		}

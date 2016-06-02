@@ -755,7 +755,8 @@ static void remove_object_curse(struct object *obj, struct curse *curse)
 	if (streq(c->name, curse->name)) {
 		obj->curses = c->next;
 		c->next = NULL;
-		free_curse(c);
+		free_curse(c, true);
+		msg("The %s curse is removed!", c->name);
 		return;
 	}
 	while (c) {
@@ -764,7 +765,7 @@ static void remove_object_curse(struct object *obj, struct curse *curse)
 		if (streq(next->name, curse->name)) {
 			c->next = next->next;
 			next->next = NULL;
-			free_curse(next);
+			free_curse(next, true);
 			msg("The %s curse is removed!", c->name);
 			return;
 		}
