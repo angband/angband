@@ -165,6 +165,7 @@ ANGFILES = \
 	ui-birth.o \
 	ui-command.o \
 	ui-context.o \
+	ui-curse.o \
 	ui-death.o \
 	ui-display.o \
 	ui-event.o \

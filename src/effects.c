@@ -774,17 +774,17 @@ static void remove_object_curse(struct object *obj, struct curse *curse)
 }
 
 /**
- * Attempts to remove all the curses from an object.
+ * Attempts to remove a curse from an object.
  */
 static void uncurse_object(struct object *obj, int strength)
 {
-	struct curse *c = obj->curses;
-	while (c) {
-		if (c->power >= 100) {
+	struct curse *curse = NULL;
+	if (get_curse(&curse, obj)) {
+		if (curse->power >= 100) {
 			/* Curse is permanent */
-		} else if (randint0(strength) >= randint0(c->power)) {
+		} else if (randint0(strength) >= randint0(curse->power)) {
 			/* Successfully removed this curse */
-			remove_object_curse(obj, c);
+			remove_object_curse(obj, curse);
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
 			/* Failure to remove, object is now frafile */
 			of_on(obj->flags, OF_FRAGILE);
@@ -803,9 +803,7 @@ static void uncurse_object(struct object *obj, int strength)
 				delist_object(cave, obj);
 				object_delete(&obj);
 			}
-			return;
 		}
-		c = c->next;
 	}
 	player->upkeep->update |= (PU_BONUS);
 	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
