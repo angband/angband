@@ -275,9 +275,9 @@ extern struct artifact *a_info;
 /**
  * Structure for possible object kinds for an ego item
  */
-struct ego_poss_item {
+struct poss_item {
 	u32b kidx;
-	struct ego_poss_item *next;
+	struct poss_item *next;
 };
 
 /**
@@ -312,7 +312,7 @@ struct ego_item {
 	int alloc_min;			/** Minimum depth (can appear earlier) */
 	int alloc_max;			/** Maximum depth (will NEVER appear deeper) */
 
-	struct ego_poss_item *poss_items;
+	struct poss_item *poss_items;
 
 	random_value to_h;		/* Extra to-hit bonus */
 	random_value to_d;		/* Extra to-dam bonus */

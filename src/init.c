@@ -1071,7 +1071,20 @@ static enum parser_error parse_curse_name(struct parser *p) {
 	curse->next = h;
 	parser_setpriv(p, curse);
 	curse->name = string_make(name);
+	curse->poss = mem_zalloc(TV_MAX * sizeof(bool));
 
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_curse_type(struct parser *p) {
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+
+	struct curse *curse = parser_priv(p);
+	if (!curse)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if ((tval < 0) || (tval >= TV_MAX))
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	curse->poss[tval] = true;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1273,6 +1286,7 @@ struct parser *init_parse_curse(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_curse_name);
+	parser_reg(p, "type sym tval", parse_curse_type);
 	parser_reg(p, "combat int to-h int to-d int to-a", parse_curse_combat);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_curse_effect);
 	parser_reg(p, "param int p2 ?int p3", parse_curse_param);
@@ -1326,6 +1340,7 @@ static void cleanup_curse(void)
 			free_effect(curses[idx].obj->effect);
 			mem_free(curses[idx].obj);
 		}
+		mem_free(curses[idx].poss);
 	}
 	mem_free(curses);
 }
@@ -3129,7 +3144,7 @@ static enum parser_error parse_ego_alloc(struct parser *p) {
 }
 
 static enum parser_error parse_ego_type(struct parser *p) {
-	struct ego_poss_item *poss;
+	struct poss_item *poss;
 	int i;
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
 	bool found_one_kind = false;
@@ -3143,7 +3158,7 @@ static enum parser_error parse_ego_type(struct parser *p) {
 	/* Find all the right object kinds */
 	for (i = 0; i < z_info->k_max; i++) {
 		if (k_info[i].tval != tval) continue;
-		poss = mem_zalloc(sizeof(struct ego_poss_item));
+		poss = mem_zalloc(sizeof(struct poss_item));
 		poss->kidx = i;
 		poss->next = e->poss_items;
 		e->poss_items = poss;
@@ -3156,7 +3171,7 @@ static enum parser_error parse_ego_type(struct parser *p) {
 }
 
 static enum parser_error parse_ego_item(struct parser *p) {
-	struct ego_poss_item *poss;
+	struct poss_item *poss;
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
 	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
 
@@ -3166,7 +3181,7 @@ static enum parser_error parse_ego_item(struct parser *p) {
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	poss = mem_zalloc(sizeof(struct ego_poss_item));
+	poss = mem_zalloc(sizeof(struct poss_item));
 	poss->kidx = lookup_kind(tval, sval)->kidx;
 	poss->next = e->poss_items;
 	e->poss_items = poss;
@@ -3496,7 +3511,7 @@ static errr finish_parse_ego(struct parser *p) {
 static void cleanup_ego(void)
 {
 	int idx;
-	struct ego_poss_item *poss, *pn;
+	struct poss_item *poss, *pn;
 	for (idx = 0; idx < z_info->e_max; idx++) {
 		string_free(e_info[idx].name);
 		mem_free(e_info[idx].text);

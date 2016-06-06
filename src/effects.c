@@ -1929,7 +1929,7 @@ void brand_object(struct object *obj, const char *name)
 			/* Match the name */
 			if (!ego->name) continue;
 			if (streq(ego->name, brand)) {
-				struct ego_poss_item *poss;
+				struct poss_item *poss;
 				for (poss = ego->poss_items; poss; poss = poss->next)
 					if (poss->kidx == obj->kind->kidx)
 						ok = true;
@@ -3768,15 +3768,20 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 				   "terrible black aura", "surround your armor", o_name);
 	} else {
 		int num = randint1(3);
+		int max_tries = 20;
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Take down bonus a wee bit */
 		obj->to_a -= randint1(3);
 
-		/* Curse it */
-		while (num) {
+		/* Try to find enough appropriate curses */
+		while (num && max_tries) {
 			int pick = randint1(z_info->curse_max - 1);
 			int power = 10 * m_bonus(9, player->depth);
+			if (!curses[pick].poss[obj->tval]) {
+				max_tries--;
+				continue;
+			}
 			append_curse(&obj->curses, pick, power);
 			num--;
 		}
@@ -3821,6 +3826,7 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 				   "terrible black aura", "surround your weapon", o_name);
 	} else {
 		int num = randint1(3);
+		int max_tries = 20;
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Hurt it a bit */
@@ -3831,6 +3837,10 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 		while (num) {
 			int pick = randint1(z_info->curse_max - 1);
 			int power = 10 * m_bonus(9, player->depth);
+			if (!curses[pick].poss[obj->tval]) {
+				max_tries--;
+				continue;
+			}
 			append_curse(&obj->curses, pick, power);
 			num--;
 		}

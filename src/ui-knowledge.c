@@ -1676,7 +1676,7 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 		if (ego->everseen || OPT(cheat_xtra)) {
 			size_t j;
 			int *tval = mem_zalloc(N_ELEMENTS(object_text_order) * sizeof(int));
-			struct ego_poss_item *poss;
+			struct poss_item *poss;
 
 			/* Note the tvals which are possible for this ego */
 			for (poss = ego->poss_items; poss; poss = poss->next) {

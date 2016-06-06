@@ -2346,8 +2346,8 @@ static void try_supercharge(struct artifact *art, s32b target_power)
  */
 static void do_curse(struct artifact *art)
 {
-	int pick = randint1(z_info->curse_max - 1);
-	int power = 10 * m_bonus(9, art->level);
+	int num = randint1(2);
+	int max_tries = 20;
 
 	if (one_in_(7))
 		of_on(art->flags, OF_AGGRAVATE);
@@ -2365,11 +2365,15 @@ static void do_curse(struct artifact *art)
 	if ((art->to_d > 0) && one_in_(4))
 		art->to_d = -art->to_d;
 
-	append_curse(&art->curses, pick, power);
-	if (one_in_(4)) {
-		pick = randint1(z_info->curse_max - 1);
-		power = 10 * m_bonus(9, art->level);
+	while (num) {
+		int pick = randint1(z_info->curse_max - 1);
+		int power = 10 * m_bonus(9, player->depth);
+		if (!curses[pick].poss[art->tval]) {
+			max_tries--;
+			continue;
+		}
 		append_curse(&art->curses, pick, power);
+		num--;
 	}
 }
 

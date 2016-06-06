@@ -403,7 +403,7 @@ ignore_type_t ignore_type_of(const struct object *obj)
  */
 bool ego_has_ignore_type(struct ego_item *ego, ignore_type_t itype)
 {
-	struct ego_poss_item *poss;
+	struct poss_item *poss;
 
 	/* Go through all the possible items */
 	for (poss = ego->poss_items; poss; poss = poss->next) {

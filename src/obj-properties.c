@@ -318,8 +318,9 @@ int lookup_curse(const char *name)
  *
  * \param dest the address the curses are going to
  * \param source the curses being copied
+ * \param randomise whether some values on the curse object need randomising
  */
-void copy_curse(struct curse **dest, struct curse *source)
+void copy_curse(struct curse **dest, struct curse *source, bool randomise)
 {
 	struct curse *c = source;
 
@@ -347,6 +348,31 @@ void copy_curse(struct curse **dest, struct curse *source)
 		if (c->obj) {
 			new_c->obj = object_new();
 			object_copy(new_c->obj, c->obj);
+
+			/* Because struct object doesn't allow random values, generic curse
+			 * objects represent these by fixed values to be randomised on
+			 * application to an actual object */
+			if (randomise) {
+				int i;
+				if (new_c->obj->to_h) {
+					int to_h = new_c->obj->to_h;
+					new_c->obj->to_h = SGN(to_h) * randint1(ABS(to_h));
+				}
+				if (new_c->obj->to_d) {
+					int to_d = new_c->obj->to_d;
+					new_c->obj->to_d = SGN(to_d) * randint1(ABS(to_d));
+				}
+				if (new_c->obj->to_a) {
+					int to_a = new_c->obj->to_a;
+					new_c->obj->to_a = SGN(to_a) * randint1(ABS(to_a));
+				}
+				for (i = 0; i < OBJ_MOD_MAX; i++) {
+					if (new_c->obj->modifiers[i]) {
+						int m = new_c->obj->modifiers[i];
+						new_c->obj->modifiers[i] = SGN(m) * randint1(ABS(m));
+					}
+				}
+			}
 		}
 		new_c->next = *dest;
 		*dest = new_c;

@@ -281,7 +281,7 @@ static struct ego_item *ego_find_random(struct object *obj, int level)
 
 	alloc_entry *table = alloc_ego_table;
 	struct ego_item *ego;
-	struct ego_poss_item *poss;
+	struct poss_item *poss;
 
 	/* Go through all possible ego items and find ones which fit this item */
 	for (i = 0; i < alloc_ego_size; i++) {
@@ -381,7 +381,7 @@ void ego_apply_magic(struct object *obj, int level)
 	/* Add slays, brands and curses */
 	copy_slay(&obj->slays, obj->ego->slays);
 	copy_brand(&obj->brands, obj->ego->brands);
-	copy_curse(&obj->curses, obj->ego->curses);
+	copy_curse(&obj->curses, obj->ego->curses, true);
 
 	/* Add resists */
 	for (i = 0; i < ELEM_MAX; i++) {
@@ -483,7 +483,7 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 	of_union(obj->flags, art->flags);
 	copy_slay(&obj->slays, art->slays);
 	copy_brand(&obj->brands, art->brands);
-	copy_curse(&obj->curses, art->curses);
+	copy_curse(&obj->curses, art->curses, false);
 	for (i = 0; i < ELEM_MAX; i++) {
 		/* Take the larger of artifact and base object resist levels */
 		obj->el_info[i].res_level =
@@ -794,7 +794,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 	/* Default slays, brands and curses */
 	copy_slay(&obj->slays, k->slays);
 	copy_brand(&obj->brands, k->brands);
-	copy_curse(&obj->curses, k->curses);
+	copy_curse(&obj->curses, k->curses, true);
 
 	/* Default resists */
 	for (i = 0; i < ELEM_MAX; i++) {
