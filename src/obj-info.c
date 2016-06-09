@@ -108,6 +108,8 @@ static const struct flag_type misc_flags[] =
 	{ OF_AGGRAVATE, "Aggravates creatures nearby" },
 	{ OF_DRAIN_EXP, "Drains experience" },
 	{ OF_TELEPORT, "Induces random teleportation" },
+	{ OF_STICKY, "Can't be removed" },
+	{ OF_FRAGILE, "Can be destroyed if you attempt to remove its curses" },
 };
 
 static const struct origin_type {

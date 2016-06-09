@@ -1280,6 +1280,15 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 }
 
 /**
+ * Learn a flag
+ */
+void player_learn_flag(struct player *p, int flag)
+{
+	player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+	update_player_object_knowledge(p);
+}
+
+/**
  * Learn absolutely everything
  *
  * \param p is the player

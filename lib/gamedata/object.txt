@@ -1886,7 +1886,8 @@ properties:10:5:100
 alloc:16:10 to 100
 pile:25:2
 power:8
-effect:REMOVE_CURSE:0
+effect:REMOVE_CURSE
+dice:20+d20
 
 
 name:276:*Remove Curse*
@@ -1896,7 +1897,8 @@ properties:50:5:8000
 alloc:16:50 to 100
 pile:25:2
 power:20
-effect:REMOVE_CURSE:50
+effect:REMOVE_CURSE
+dice:50+d50
 
 ### 277
 
@@ -3375,7 +3377,8 @@ alloc:20:40 to 100
 combat:0:1d2:0:0:0
 charges:4+d3
 power:8
-effect:REMOVE_CURSE:0
+effect:REMOVE_CURSE
+dice:20+d20
 
 name:423:the Magi
 graphics:_:d

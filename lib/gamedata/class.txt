@@ -718,9 +718,9 @@ desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
 spell:Remove Curse:7:6:38:5
-effect:REMOVE_CURSE:0
-desc:Removes all ordinary curses from all equipped items.
-desc:  Higher or permanent curses are not affected.
+effect:REMOVE_CURSE
+dice:20+d20
+desc:Attempts to remove a curse from an item.
 
 spell:Resist Heat and Cold:7:7:38:5
 effect:TIMED_INC:OPP_COLD
@@ -1003,9 +1003,10 @@ desc: level and decrease with level of wand or staff and number of charges.
 desc:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 spell:Dispel Curse:25:40:80:160
-effect:REMOVE_CURSE:70
-desc:Removes all ordinary curses from all equipped objects, and attempts to
-desc: remove higher curses.  Permanent curses are not affected.
+effect:REMOVE_CURSE
+dice:$B+d50
+expr:B:PLAYER_LEVEL:+ 0
+desc:Strongly attempts to remove a curse from an item.
 
 spell:Enchant Weapon:35:50:80:230
 effect:ENCHANT:TOBOTH
@@ -1964,9 +1965,9 @@ desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
 spell:Remove Curse:13:11:45:4
-effect:REMOVE_CURSE:0
-desc:Removes all ordinary curses from all equipped items.
-desc:  Higher or permanent curses are not affected.
+effect:REMOVE_CURSE
+dice:20+d20
+desc:Attempts to removes a curse from an item.
 
 spell:Resist Heat and Cold:15:13:45:4
 effect:TIMED_INC:OPP_COLD

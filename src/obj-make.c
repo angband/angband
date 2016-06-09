@@ -804,6 +804,23 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 	}
 }
 
+/**
+ * Attempt to apply curses to an object, with a corresponding increase in
+ * generation level of the object
+ */
+void apply_curse(struct object *obj, int *lev)
+{
+	int pick = randint1(z_info->curse_max - 1);
+	int power = 10 * m_bonus(9, *lev);
+	if (!curses[pick].poss[obj->tval]) {
+		return;
+	}
+	append_curse(&obj->curses, pick, power);
+	*lev += randint0(power / 10);
+	while(one_in_(100 - power)) {
+		apply_curse(obj, lev);
+	}
+}
 
 /**
  * Applying magic to an object, which includes creating ego-items, and applying
@@ -1089,6 +1106,9 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	/* Make the object, prep it and apply magic */
 	new_obj = object_new();
 	object_prep(new_obj, kind, lev, RANDOMISE);
+	if (one_in_(20) && tval_is_wearable(new_obj)) {
+		apply_curse(new_obj, &lev);
+	}
 	apply_magic(new_obj, lev, true, good, great, extra_roll);
 	apply_curse_knowledge(new_obj);
 

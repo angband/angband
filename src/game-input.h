@@ -45,10 +45,13 @@ extern bool (*get_aim_dir_hook)(int *dir);
 extern int (*get_spell_from_book_hook)(const char *verb, struct object *book,
 									   const char *error,
 									   bool (*spell_filter)(int spell));
-extern int (*get_spell_hook)(const char *verb, item_tester book_filter, cmd_code cmd,
-							 const char *error, bool (*spell_filter)(int spell));
-extern bool (*get_item_hook)(struct object **choice, const char *pmt, const char *str,
-							 cmd_code cmd, item_tester tester, int mode);
+extern int (*get_spell_hook)(const char *verb, item_tester book_filter,
+							 cmd_code cmd,
+							 const char *error,
+							 bool (*spell_filter)(int spell));
+extern bool (*get_item_hook)(struct object **choice, const char *pmt,
+							 const char *str, cmd_code cmd, item_tester tester,
+							 int mode);
 extern bool (*get_curse_hook)(struct curse **choice, struct object *obj);
 extern void (*get_panel_hook)(int *min_y, int *min_x, int *max_y, int *max_x);
 extern bool (*panel_contains_hook)(unsigned int y, unsigned int x);

@@ -610,7 +610,6 @@ alloc:8:45 to 100
 power:0:1d1:0:0:20
 flags:FREE_ACT | SEE_INVIS | TELEPATHY
 values:CON[-5] | STR[-3] | DEX[-3]
-curse:sticky:50
 desc:The midnight-hued steel circlet of the sorceress-queen Berúthiel.  It 
 desc:grants extraordinary powers of sight and awareness at a terrible physical 
 desc:cost.
@@ -689,7 +688,6 @@ power:7:1d3:8:8:10
 flags:PROT_FEAR | 
 flags:SEE_INVIS | FREE_ACT | AGGRAVATE
 values:INT[-3] | WIS[-3]
-curse:sticky:50
 desc:A headpiece, gaudy and barbaric, that betrayed a warrior when he most 
 desc:needed succor.
 
@@ -907,7 +905,6 @@ alloc:5:10 to 100
 power:3:1d1:-12:-12:0
 flags:FREE_ACT | DRAIN_EXP | AGGRAVATE
 values:STR[-3] | DEX[-3] | RES_FIRE[1] | RES_DISEN[1]
-curse:sticky:50
 desc:A pair of weakening gauntlets, named after Beren, who returned to Thingol 
 desc:having lost to Carcharoth the hand that clasped a Silmaril.
 
@@ -977,7 +974,6 @@ flags:FEATHER
 act:TELE_PHASE
 time:20
 values:SPEED[3] | INT[2] | DEX[2] | STEALTH[2]
-curse:sticky:0
 desc:A pair of running shoes once used by the treacherous Gríma son of 
 desc:Gálmód, the Wormtongue of Edoras.  They are aptly suited for a 
 desc:messenger, a servant, a spy... or a coward.
@@ -1079,7 +1075,6 @@ power:0:5d4:-20:20:0
 flags:AGGRAVATE
 values:CON[5] | SLAY_DRAGON[5] | SLAY_EVIL[2] | SLAY_DEMON[3] | SLAY_TROLL[3]
 values:RES_DISEN[1]
-curse:sticky:50
 desc:This sword has runes of power incused on its ornate hilt, and a single 
 desc:blood channel that gleams coldly blue as you grasp this mighty weapon of 
 desc:peril.
@@ -1173,7 +1168,6 @@ power:0:3d6:-15:-15:-10
 flags: SEE_INVIS | HOLD_LIFE | 
 flags:AGGRAVATE | DRAIN_EXP
 values:SPEED[-10] | BRAND_POIS[3] | SLAY_DRAGON[5] | SLAY_UNDEAD[3]
-curse:sticky:50
 desc:A foul, twisted sword with blackened spines and knobs, its very name is 
 desc:a curse upon the lips of Elves and Men.  It is said that it will drink the 
 desc:very lifeblood of its wielder.
@@ -1355,7 +1349,6 @@ flags:DRAIN_EXP | AGGRAVATE |
 flags:PROT_BLIND
 values:STEALTH[-4] | WIS[-4] | BRAND_POIS[3]
 values:RES_DARK[1] | RES_LIGHT[1] | RES_NETHER[1]
-curse:sticky:50
 desc:A mighty, heavy black spear, once wielded by the Lord of Darkness 
 desc:himself as he came to Valinor in wrath.  Its envenomed bite pierced 
 desc:the Two Trees with wounds that would not heal.
@@ -1776,7 +1769,6 @@ time:15
 values:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1] | BRAND_FIRE[3]
 values:SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_TROLL[3] | SLAY_GIANT[3] 
 values:RES_FIRE[3] | RES_ELEC[1] | RES_DARK[1]
-curse:sticky:50
 desc:A great crackling Balrog's whip of flame, this weapon could bring 
 desc:even Ungoliant to heel.
 

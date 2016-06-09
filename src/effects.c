@@ -749,14 +749,17 @@ static bool item_tester_uncursable(const struct object *obj)
 /**
  * Removes an individual curse from an object.
  */
-static void remove_object_curse(struct object *obj, struct curse *curse)
+static void remove_object_curse(struct object *obj, struct curse *curse,
+								bool message)
 {
 	struct curse *c = obj->curses;
 	if (streq(c->name, curse->name)) {
 		obj->curses = c->next;
 		c->next = NULL;
 		free_curse(c, true);
-		msg("The %s curse is removed!", c->name);
+		if (message) {
+			msg("The %s curse is removed!", c->name);
+		}
 		return;
 	}
 	while (c) {
@@ -766,7 +769,9 @@ static void remove_object_curse(struct object *obj, struct curse *curse)
 			c->next = next->next;
 			next->next = NULL;
 			free_curse(next, true);
-			msg("The %s curse is removed!", c->name);
+			if (message) {
+				msg("The %s curse is removed!", c->name);
+			}
 			return;
 		}
 		c = next;
@@ -776,18 +781,21 @@ static void remove_object_curse(struct object *obj, struct curse *curse)
 /**
  * Attempts to remove a curse from an object.
  */
-static void uncurse_object(struct object *obj, int strength)
+static bool uncurse_object(struct object *obj, int strength)
 {
 	struct curse *curse = NULL;
 	if (get_curse(&curse, obj)) {
 		if (curse->power >= 100) {
 			/* Curse is permanent */
-		} else if (randint0(strength) >= randint0(curse->power)) {
+			return false;
+		} else if (strength >= curse->power) {
 			/* Successfully removed this curse */
-			remove_object_curse(obj, curse);
+			remove_object_curse(obj->known, curse, false);
+			remove_object_curse(obj, curse, true);
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
-			/* Failure to remove, object is now frafile */
+			/* Failure to remove, object is now fragile */
 			of_on(obj->flags, OF_FRAGILE);
+			player_learn_flag(player, OF_FRAGILE);
 		} else if (one_in_(4)) {
 			/* Failure - unlucky fragile object is destroyed */
 			struct object *destroyed;
@@ -804,9 +812,12 @@ static void uncurse_object(struct object *obj, int strength)
 				object_delete(&obj);
 			}
 		}
+	} else {
+		return false;
 	}
 	player->upkeep->update |= (PU_BONUS);
 	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
+	return true;
 }
 
 
@@ -815,7 +826,7 @@ static void uncurse_object(struct object *obj, int strength)
  */
 bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 {
-	int strength = context->value.base;
+	int strength = effect_calculate_value(context, false);
 	struct object *obj = NULL;
 
 	context->ident = true;
@@ -828,9 +839,7 @@ bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
 		return false;
 
-	uncurse_object(obj, strength);
-
-	return true;
+	return uncurse_object(obj, strength);
 }
 
 /**

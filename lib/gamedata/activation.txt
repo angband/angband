@@ -495,15 +495,16 @@ desc:attempts to magically enhance a piece of armour with high chance of success
 name:REMOVE_CURSE
 aim:0
 power:8
-effect:REMOVE_CURSE:0
-desc:removes all ordinary curses from all equipped items
+effect:REMOVE_CURSE
+dice:20+d20
+desc:attempts to remove a curse from an item
 
 name:REMOVE_CURSE2
 aim:0
 power:20
-effect:REMOVE_CURSE:50
-desc:removes all ordinary curses from all equipped items, and attempts to
-desc: remove higher curses
+effect:REMOVE_CURSE
+dice:50+d50
+desc:Makes a strong attempt to remove a curse from an item
 
 name:LIGHT
 aim:0

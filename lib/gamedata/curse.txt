@@ -1,8 +1,9 @@
 # curse.txt
 
 # name: effect name
-# power: relative power of the effect for object power calculation
-# effect: random effect : parameter (maybe) : paramater (maybe)
+# type: valid object base
+# combat: to_hit : to_dam : to_ac
+# effect: random effect : parameter (maybe) : parameter (maybe)
 # param:parameter:parameter (if needed)
 # dice:dice string
 # expr:dice expression
@@ -12,5 +13,80 @@
 # desc: description
 
 name:sticky
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
 flags:STICKY
 desc:cannot be taken off
+
+name:vulnerability
+combat:0:0:-50
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:shield
+flags:AGGRAVATE
+desc:attracts opponents and weakens the defences
+
+name:teleportation
+type:helm
+flags:TELEPORT
+desc:randomly makes you teleport
+
+name:dullness
+type:crown
+values:INT[-5] | WIS[-5]
+desc:makes you mentally slow
+
+name:sickliness
+type:crown
+values:STR[-5] | DEX[-5] | CON[-5]
+desc:makes you frail
+
+name:enveloping
+combat:-5:-5:20
+type:cloak
+desc:protects you at the expense of free movement
+
+name:irritation
+combat:-15:-15:0
+type:cloak
+flags:AGGRAVATE
+desc:annoys monsters and makes it hard for you to hit them
+
+name:weakness
+type:gloves
+values:STR[-10]
+desc:weakens your grasp
+
+name:clumsiness
+type:gloves
+values:DEX[-10]
+desc:gives you butterfingers
+
+name:slowness
+type:boots
+values:SPEED[-5]
+desc:drags at your feet
+
+name:annoyance
+type:boots
+values:SPEED[-10] | STEALTH[-10]
+flags:AGGRAVATE
+desc:wakes up and annoys nearby monsters, and delays your escape
+

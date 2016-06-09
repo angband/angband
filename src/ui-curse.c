@@ -33,7 +33,10 @@ void get_curse_display(struct menu *menu, int oid, bool cursor, int row,
 {
 	struct curse **choice = menu_priv(menu);
 	int attr = cursor ? COLOUR_L_BLUE : COLOUR_WHITE;
-	c_put_str(attr, choice[oid]->name, row + oid, col);
+	char buf[80];
+	int power = choice[oid]->power;
+	strnfmt(buf, sizeof(buf), "%s (power %d)", choice[oid]->name, power);
+	c_put_str(attr, buf, row + oid, col);
 }
 
 /**
@@ -101,6 +104,7 @@ struct curse *curse_menu(struct object *obj)
 
 	/* Set up the menu */
 	menu_setpriv(m, count, available);
+	m->header = "Remove which curse?";
 	m->selections = lower_case;
 	m->flags = (MN_PVT_TAGS);
 	m->browse_hook = curse_menu_browser;
@@ -109,12 +113,12 @@ struct curse *curse_menu(struct object *obj)
 	selection = NULL;
 
 	/* Set up the menu region */
-	area.page_rows = m->count;
+	area.page_rows = m->count + 1;
 	area.row = 1;
-	area.col = Term->wid - 1 - length / 2;
+	area.col = (Term->wid - 1 - length) / 2;
 	if (area.col <= 3)
 		area.col = 0;
-	area.width = length + 1;
+	area.width = MAX(length + 1, strlen(m->header));
 
 	for (row = area.row; row < area.row + area.page_rows; row++)
 		prt("", row, MAX(0, area.col - 1));

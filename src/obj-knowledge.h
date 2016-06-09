@@ -74,6 +74,7 @@ void object_touch(struct player *p, struct object *obj);
 void player_know_object(struct player *p, struct object *obj);
 void update_player_object_knowledge(struct player *p);
 
+void player_learn_flag(struct player *p, int flag);
 void player_learn_everything(struct player *p);
 
 void equip_learn_on_defend(struct player *p);
