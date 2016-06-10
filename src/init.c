@@ -1264,6 +1264,14 @@ static enum parser_error parse_curse_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_curse_msg(struct parser *p) {
+	struct curse *curse = parser_priv(p);
+	assert(curse);
+	curse->obj->effect_msg = string_append(curse->obj->effect_msg,
+										   parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_curse_time(struct parser *p) {
 	struct curse *curse = parser_priv(p);
 	assert(curse);
@@ -1292,6 +1300,7 @@ struct parser *init_parse_curse(void) {
 	parser_reg(p, "param int p2 ?int p3", parse_curse_param);
 	parser_reg(p, "dice str dice", parse_curse_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_curse_expr);
+	parser_reg(p, "msg str text", parse_curse_msg);
 	parser_reg(p, "time rand time", parse_curse_time);
 	parser_reg(p, "flags str flags", parse_curse_flags);
 	parser_reg(p, "values str values", parse_curse_values);
@@ -1338,6 +1347,7 @@ static void cleanup_curse(void)
 		mem_free(curses[idx].desc);
 		if (curses[idx].obj) {
 			free_effect(curses[idx].obj->effect);
+			mem_free(curses[idx].obj->effect_msg);
 			mem_free(curses[idx].obj);
 		}
 		mem_free(curses[idx].poss);

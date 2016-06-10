@@ -224,6 +224,9 @@ bool do_curse_effect(struct curse *curse)
 	if (dir > 4) {
 		dir++;
 	}
+	if (curse->obj->effect_msg) {
+		msgt(MSG_GENERIC, curse->obj->effect_msg);
+	}
 	effect_do(effect, NULL, &ident, was_aware, dir, 0, 0);
 	return !was_aware && ident;
 }
