@@ -33,8 +33,6 @@ typedef enum
 
 /*** Functions ***/
 
-bool remove_all_curse(void);
-
 void free_effect(struct effect *source);
 bool effect_valid(struct effect *effect);
 bool effect_aim(struct effect *effect);

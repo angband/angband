@@ -121,6 +121,7 @@ ANGFILES = \
 	mon-timed.o \
 	mon-util.o \
 	obj-chest.o \
+	obj-curse.o \
 	obj-desc.o \
 	obj-gear.o \
 	obj-ignore.o \

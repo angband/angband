@@ -25,6 +25,7 @@
 #include "mon-move.h"
 #include "mon-util.h"
 #include "obj-desc.h"
+#include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-tval.h"
@@ -240,14 +241,14 @@ void play_ambient_sound(void)
 }
 
 /**
- * Helper for process_world -- decrement player->timed[] fields.
+ * Helper for process_world -- decrement player->timed[] and curse effect fields
  */
 static void decrease_timeouts(void)
 {
 	int adjust = (adj_con_fix[player->state.stat_ind[STAT_CON]] + 1);
 	int i;
 
-	/* Most effects decrement by 1 */
+	/* Most timed effects decrement by 1 */
 	for (i = 0; i < TMD_MAX; i++) {
 		int decr = 1;
 		if (!player->timed[i])
@@ -271,6 +272,28 @@ static void decrease_timeouts(void)
 		}
 		/* Decrement the effect */
 		player_dec_timed(player, i, decr, false);
+	}
+
+	/* Curse effects always decrement by 1 */
+	for (i = 0; i < player->body.count; i++) {
+		struct curse *curse = NULL;
+		if (player->body.slots[i].obj == NULL) {
+			continue;
+		}
+		curse = player->body.slots[i].obj->curses;
+		while (curse) {
+			if (!curse->obj || !curse->obj->effect) {
+				curse = curse->next;
+				continue;
+			}
+			curse->obj->timeout--;
+			if (!curse->obj->timeout) {
+				if (do_curse_effect(curse)) {
+					player_learn_curse(player, curse);
+				}
+			}
+			curse = curse->next;
+		}
 	}
 
 	return;

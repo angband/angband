@@ -1289,6 +1289,18 @@ void player_learn_flag(struct player *p, int flag)
 }
 
 /**
+ * Learn a curse
+ */
+void player_learn_curse(struct player *p, struct curse *curse)
+{
+	int index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
+	if (index >= 0) {
+		player_learn_rune(p, index, true);
+	}
+	update_player_object_knowledge(p);
+}
+
+/**
  * Learn absolutely everything
  *
  * \param p is the player

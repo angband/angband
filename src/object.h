@@ -9,6 +9,7 @@
 #include "z-quark.h"
 #include "z-bitflag.h"
 #include "z-dice.h"
+#include "obj-curse.h"
 #include "obj-properties.h"
 
 

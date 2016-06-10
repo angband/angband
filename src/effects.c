@@ -3,7 +3,7 @@
  * \brief Handler and auxiliary functions for every effect in the game
  *
  * Copyright (c) 2007 Andi Sidwell
- * Copyright (c) 2014 Ben Semmler, Nick McConnell
+ * Copyright (c) 2016 Ben Semmler, Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -30,6 +30,7 @@
 #include "mon-summon.h"
 #include "mon-util.h"
 #include "obj-chest.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
