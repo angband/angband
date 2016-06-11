@@ -45,15 +45,22 @@ desc:attracts opponents and weakens the defences
 
 name:teleportation
 type:helm
-flags:TELEPORT
+type:crown
+type:amulet
+type:ring
+effect:TELEPORT
+dice:40
+time:d100
 desc:randomly makes you teleport
 
 name:dullness
+type:helm
 type:crown
 values:INT[-5] | WIS[-5]
 desc:makes you mentally slow
 
 name:sickliness
+type:helm
 type:crown
 values:STR[-5] | DEX[-5] | CON[-5]
 desc:makes you frail
@@ -89,4 +96,179 @@ type:boots
 values:SPEED[-10] | STEALTH[-10]
 flags:AGGRAVATE
 desc:wakes up and annoys nearby monsters, and delays your escape
+
+name:poison
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:TIMED_INC:POISONED
+dice:10+d10
+time:1d500
+desc:poisons you from time to time
+
+name:siren
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:WAKE
+time:100+1d50
+msg:A horn blares out!
+desc:occasionally makes a loud noise
+
+name:hallucination
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:TIMED_INC:IMAGE
+dice:10+d10
+time:1d500
+desc:makes you hallucinate sometimes
+
+name:paralysis
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:TIMED_INC:PARALYZED
+dice:5+1d5
+time:1d1000
+msg:Your equipment grabs you!
+desc:paralyses you every now and then
+
+name:dragon summon
+type:dragon armor
+effect:SUMMON:DRAGON
+dice:1
+time:1d500
+msg:Your armour lets out a cry...
+desc:sometimes summons a dragon
+
+name:demon summon
+type:digger
+type:hafted
+type:polearm
+type:sword
+effect:SUMMON:DEMON
+dice:1
+time:1d500
+msg:Your weapon gives out a demonic shriek!
+desc:occasionally summons a demon
+
+name:undead summon
+type:digger
+type:hafted
+type:polearm
+type:sword
+effect:SUMMON:UNDEAD
+dice:1
+time:1d500
+msg:Your weapon calls beyond the grave!
+desc:occasionally summons an undead
+
+name:impair mana recovery
+type:helm
+type:crown
+flags:IMPAIR_MANA
+desc:makes you slow to recover mana
+
+name:impair hitpoint recovery
+type:boots
+type:gloves
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+flags:IMPAIR_HP
+desc:makes you slow to recover hitpoints
+
+name:cowardice
+type:amulet
+type:ring
+flags:AFRAID
+desc:makes you too scared to fight
+
+name:stone
+type:amulet
+type:ring
+effect:TIMED_INC:STONESKIN
+dice:20+1d20
+desc:periodically turns your skin to stone
+
+name:anti-teleportation
+type:boots
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:amulet
+type:ring
+flags:NO_TELEPORT
+desc:prevents you from teleporting
+
+name:treacherous weapon
+type:digger
+type:hafted
+type:polearm
+type:sword
+effect:DAMAGE
+dice:$B
+expr:B:WEAPON_DAMAGE:+ 0
+msg:Your weapon turns on you!
+desc:makes your weapon attack you
 

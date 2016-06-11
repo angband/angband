@@ -107,7 +107,7 @@ static const struct flag_type misc_flags[] =
 	{ OF_SEE_INVIS, "Grants the ability to see invisible things" },
 	{ OF_AGGRAVATE, "Aggravates creatures nearby" },
 	{ OF_DRAIN_EXP, "Drains experience" },
-	{ OF_TELEPORT, "Induces random teleportation" },
+	{ OF_NO_TELEPORT, "Prevents teleportation" },
 	{ OF_STICKY, "Can't be removed" },
 	{ OF_FRAGILE, "Can be destroyed if you attempt to remove its curses" },
 };

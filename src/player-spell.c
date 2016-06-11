@@ -22,6 +22,7 @@
 #include "effects.h"
 #include "init.h"
 #include "monster.h"
+#include "obj-gear.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -581,6 +582,15 @@ static int spell_value_base_food_starve(void)
 	return PY_FOOD_STARVE;
 }
 
+static int spell_value_base_weapon_damage(void)
+{
+	struct object *obj = player->body.slots[slot_by_name(player, "weapon")].obj;
+	if (!obj) {
+		return 0;
+	}
+	return (damroll(obj->dd, obj->ds) + obj->to_d);
+}
+
 expression_base_value_f spell_value_base_by_name(const char *name)
 {
 	static const struct value_base_s {
@@ -593,6 +603,7 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		{ "MAX_SIGHT", spell_value_base_max_sight },
 		{ "FOOD_FAINT", spell_value_base_food_faint },
 		{ "FOOD_STARVE", spell_value_base_food_starve },
+		{ "WEAPON_DAMAGE", spell_value_base_weapon_damage },
 		{ NULL, NULL },
 	};
 	const struct value_base_s *current = value_bases;

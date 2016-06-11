@@ -189,14 +189,20 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 	char killer[80];
 	struct monster *mon = cave_monster(cave, cave->mon_current);
 	struct trap *trap = cave->trap_current;
+	struct object *obj = player->body.slots[slot_by_name(player, "weapon")].obj;
 
 	if (mon) {
 		/* Get the "died from" name in case this attack kills @ */
 		monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
-	} else {
-		/* Must be a trap */
-		assert(trap);
+	} else if (trap) {
+		/* A trap */
 		my_strcpy(killer, format("a %s", trap->kind->desc), sizeof(killer));
+	} else {
+		/* Must be a cursed weapon */
+		char o_name[80];
+		assert(obj);
+		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+		my_strcpy(killer, format("%s", o_name), sizeof(killer));
 	}
 
 	/* Hit the player */
@@ -2651,6 +2657,13 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 		/* Check for a no teleport grid */
 		if (square_isno_teleport(cave, y_start, x_start) && (dis > 10)) {
+			msg("Teleportation forbidden!");
+			return true;
+		}
+
+		/* Check for a no teleport curse */
+		if (player_of_has(player, OF_NO_TELEPORT)) {
+			equip_learn_flag(player, OF_NO_TELEPORT);
 			msg("Teleportation forbidden!");
 			return true;
 		}

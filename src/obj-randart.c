@@ -2354,7 +2354,7 @@ static void do_curse(struct artifact *art)
 	if (one_in_(4))
 		of_on(art->flags, OF_DRAIN_EXP);
 	if (one_in_(7))
-		of_on(art->flags, OF_TELEPORT);
+		of_on(art->flags, OF_NO_TELEPORT);
 
 	if ((fake_pval[0] > 0) && one_in_(2))
 		fake_pval[0] = -fake_pval[0];

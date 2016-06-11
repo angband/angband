@@ -477,14 +477,6 @@ void process_world(struct chunk *c)
 
 	/*** Involuntary Movement ***/
 
-	/* Random teleportation */
-	if (player_of_has(player, OF_TELEPORT) && one_in_(50)) {
-		const char *forty = "40";
-		equip_learn_flag(player, OF_TELEPORT);
-		effect_simple(EF_TELEPORT, forty, 0, 1, 0, NULL);
-		disturb(player, 0);
-	}
-
 	/* Delayed Word-of-Recall */
 	if (player->word_recall) {
 		/* Count down towards recall */
