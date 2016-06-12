@@ -1477,7 +1477,7 @@ type:ring
 properties:5:2:1000
 alloc:20:10 to 50
 flags:EASY_KNOW
-curse:teleportation:0
+curse:teleportation:100
 values:SPEED[2]
 
 name:217:Reckless Attacks
@@ -1696,7 +1696,7 @@ type:amulet
 properties:10:3:10
 alloc:20:10 to 40
 flags:EASY_KNOW
-curse:teleportation:0
+curse:teleportation:100
 
 name:248:Slow Digestion
 graphics:":d

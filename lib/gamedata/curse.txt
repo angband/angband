@@ -272,3 +272,46 @@ expr:B:WEAPON_DAMAGE:+ 0
 msg:Your weapon turns on you!
 desc:makes your weapon attack you
 
+name:burning up
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+values:RES_FIRE[-1] | RES_COLD[1]
+desc:makes you vulnerable to fire attacks, but resistant to cold
+
+name:chilled to the bone
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+values:RES_FIRE[1] | RES_COLD[-1]
+desc:makes you vulnerable to cold attacks, but resistant to fire
+
+name:steelskin
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:helm
+type:crown
+type:shield
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+combat:0:0:20
+values:RES_ELEC[-1] | RES_SHARD[1]
+desc:makes your skin harder to damage, but conduct electricity
+

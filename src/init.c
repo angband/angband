@@ -1814,7 +1814,6 @@ static void cleanup_object(void)
 		mem_free(k_info[idx].effect_msg);
 		free_brand(k_info[idx].brands);
 		free_slay(k_info[idx].slays);
-		//free_curse(k_info[idx].curses, true);
 		free_effect(k_info[idx].effect);
 	}
 	mem_free(k_info);
@@ -2384,7 +2383,6 @@ static void cleanup_artifact(void)
 		mem_free(a_info[idx].text);
 		free_brand(a_info[idx].brands);
 		free_slay(a_info[idx].slays);
-		//free_curse(a_info[idx].curses, true);
 	}
 	mem_free(a_info);
 }
@@ -3527,7 +3525,6 @@ static void cleanup_ego(void)
 		mem_free(e_info[idx].text);
 		free_brand(e_info[idx].brands);
 		free_slay(e_info[idx].slays);
-		//free_curse(e_info[idx].curses, true);
 		free_effect(e_info[idx].effect);
 		poss = e_info[idx].poss_items;
 		while (poss) {
