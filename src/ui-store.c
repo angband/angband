@@ -1189,9 +1189,6 @@ void use_store(game_event_type type, game_event_data *data, void *user)
 	/* Check that we're on a store */
 	if (!store) return;
 
-	/* Forget the view */
-	forget_view(cave);
-
 	/*** Display ***/
 
 	/* Save current screen (ie. dungeon) */

@@ -38,7 +38,7 @@
 #define PU_HP			0x00000004L	/* Calculate chp and mhp */
 #define PU_MANA			0x00000008L	/* Calculate csp and msp */
 #define PU_SPELLS		0x00000010L	/* Calculate spells */
-#define PU_FORGET_VIEW	0x00000020L	/* Forget field of view */
+/* 0x20L */
 #define PU_UPDATE_VIEW	0x00000040L	/* Update field of view */
 #define PU_FORGET_FLOW	0x00000080L	/* Forget flow data */
 #define PU_UPDATE_FLOW	0x00000100L	/* Update flow data */

@@ -60,7 +60,7 @@ static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t
 		}
 
 		/* Fully update the visuals */
-		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 
@@ -80,7 +80,7 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 		context->obvious = true;
 
 		/* Fully update the visuals */
-		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
 

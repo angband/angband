@@ -2488,16 +2488,10 @@ void update_stuff(struct player *p)
 	/* Map is not shown, no map updates */
 	if (!map_is_visible()) return;
 
-	if (p->upkeep->update & (PU_FORGET_VIEW)) {
-		p->upkeep->update &= ~(PU_FORGET_VIEW);
-		forget_view(cave);
-	}
-
 	if (p->upkeep->update & (PU_UPDATE_VIEW)) {
 		p->upkeep->update &= ~(PU_UPDATE_VIEW);
 		update_view(cave, p);
 	}
-
 
 	if (p->upkeep->update & (PU_FORGET_FLOW)) {
 		p->upkeep->update &= ~(PU_FORGET_FLOW);

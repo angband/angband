@@ -983,7 +983,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 	}
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
@@ -1064,7 +1064,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 		msg("You sense no traps.");
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
@@ -1127,7 +1127,7 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 		msg("You sense no doors.");
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
@@ -1184,7 +1184,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 		msg("You sense no stairs.");
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
@@ -1295,7 +1295,7 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 		msg("You sense no objects.");
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
@@ -1353,7 +1353,7 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 		msg("You detect no objects.");
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
@@ -3014,7 +3014,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 		(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),true, true);
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Fully update the flow */
 	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
@@ -3309,7 +3309,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	}
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Fully update the flow */
 	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);

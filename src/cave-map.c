@@ -268,7 +268,7 @@ static void cave_light(struct point_set *ps)
 	}
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update stuff */
 	update_stuff(player);
@@ -335,7 +335,7 @@ static void cave_unlight(struct point_set *ps)
 	}
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update stuff */
 	update_stuff(player);
@@ -469,7 +469,7 @@ void wiz_light(struct chunk *c, bool full)
 	}
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
@@ -533,7 +533,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw map, monster list */
 	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);

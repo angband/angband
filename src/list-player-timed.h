@@ -25,7 +25,7 @@
 /* symbol		description					on_begin									on_end											on_increase									on_decrease									flag_redraw							flag_update										msg				code fail */
 TMD(FAST,		"haste",					"You feel yourself moving faster!",			"You feel yourself slow down.",					NULL,										NULL,										0,									PU_BONUS,										MSG_SPEED,		0,	0)
 TMD(SLOW,		"slowness",					"You feel yourself moving slower!",			"You feel yourself speed up.",					NULL,										NULL,										0,									PU_BONUS,										MSG_SLOW,		TMD_FAIL_FLAG_OBJECT,	OF_FREE_ACT)
-TMD(BLIND,		"blindness",				"You are blind.",							"You blink and your eyes clear.",				NULL,										NULL,										PR_MAP,								PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS,	MSG_BLIND,		TMD_FAIL_FLAG_OBJECT,	OF_PROT_BLIND ) 
+TMD(BLIND,		"blindness",				"You are blind.",							"You blink and your eyes clear.",				NULL,										NULL,										PR_MAP,								PU_UPDATE_VIEW | PU_MONSTERS,	MSG_BLIND,		TMD_FAIL_FLAG_OBJECT,	OF_PROT_BLIND ) 
 TMD(PARALYZED,	"paralysis",				"You are paralysed!",						"You can move again.",							NULL,										NULL,										0,									0,												MSG_PARALYZED,	TMD_FAIL_FLAG_OBJECT,	OF_FREE_ACT)
 TMD(CONFUSED,	"confusion",				"You are confused!",						"You are no longer confused.",					"You are more confused!",					"You feel a little less confused.",			0,									PU_BONUS,												MSG_CONFUSED,	TMD_FAIL_FLAG_OBJECT,	OF_PROT_CONF)
 TMD(AFRAID,		"fear",						"You are terrified!",						"You feel bolder now.",							"You are more scared!",						"You feel a little less scared.",			0,									PU_BONUS,										MSG_AFRAID,		TMD_FAIL_FLAG_OBJECT,	OF_PROT_FEAR)

@@ -426,30 +426,11 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
  *
  */
 
-/**
- * Forget the "SQUARE_VIEW" grids, redrawing as needed
- */
-void forget_view(struct chunk *c)
-{
-	int x, y;
-
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			if (!square_isview(c, y, x))
-				continue;
-			sqinfo_off(c->squares[y][x].info, SQUARE_VIEW);
-			sqinfo_off(c->squares[y][x].info, SQUARE_SEEN);
-			square_light_spot(c, y, x);
-		}
-	}
-}
-
-
 
 /**
  * Mark the currently seen grids, then wipe in preparation for recalculating
  */
-static void mark_wasseen(struct chunk *c) 
+static void mark_wasseen(struct chunk *c)
 {
 	int x, y;
 	/* Save the old "view" grids for later */

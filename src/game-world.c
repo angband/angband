@@ -720,9 +720,6 @@ static void on_leave_level(void) {
 	update_stuff(player);
 	redraw_stuff(player);
 
-	/* Forget the view */
-	forget_view(cave);
-
 	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
 }

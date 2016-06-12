@@ -2187,7 +2187,7 @@ static void new_level_display_update(game_event_type type,
 	update_stuff(player);
 
 	/* Fully update the visuals (and monster distances) */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_DISTANCE);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
 	/* Fully update the flow */
 	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);

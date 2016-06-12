@@ -91,7 +91,7 @@ void do_cmd_redraw(void)
 		player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 
 		/* Fully update the visuals */
-		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Redraw everything */
 		player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |
