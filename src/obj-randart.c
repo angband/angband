@@ -285,7 +285,8 @@ void mods_to_fake_pvals(struct artifact *a)
  */
 static s32b artifact_power(int a_idx, bool translate)
 {
-	struct object obj, known_obj;
+	struct object *obj = object_new();
+	struct object *known_obj = object_new();
 	char buf[256];
 	bool fail = false;
 	s32b power;
@@ -294,22 +295,26 @@ static s32b artifact_power(int a_idx, bool translate)
 	file_putf(log_file, "Artifact index is %d\n", a_idx);
 
 	if (translate) fake_pvals_to_mods(&a_info[a_idx]);
-	if (!make_fake_artifact(&obj, &a_info[a_idx]))
+	if (!make_fake_artifact(obj, &a_info[a_idx]))
 		fail = true;
 	if (translate) mods_to_fake_pvals(&a_info[a_idx]);
 
-	if (fail) return 0;
+	if (fail) {
+		object_delete(&known_obj);
+		object_delete(&obj);
+		return 0;
+	}
 
-	object_copy(&known_obj, &obj);
-	obj.known = &known_obj;
-	object_desc(buf, 256 * sizeof(char), &obj,
+	object_copy(known_obj, obj);
+	obj->known = known_obj;
+	object_desc(buf, 256 * sizeof(char), obj,
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
-	power = object_power(&obj, verbose, log_file);
+	power = object_power(obj, verbose, log_file);
 
-	object_wipe(&known_obj);
-	object_wipe(&obj);
+	object_delete(&known_obj);
+	object_delete(&obj);
 	return power;
 }
 
