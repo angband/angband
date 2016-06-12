@@ -1228,6 +1228,7 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 			if (square_hasgoldvein(cave, y, x)) {
 				/* Memorize */
 				square_memorize(cave, y, x);
+				square_light_spot(cave, y, x);
 
 				/* Detect */
 				gold_buried = true;
@@ -1242,12 +1243,6 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 		else if (context->aware)
 			msg("You sense no buried treasure.");
 	}
-
-	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Redraw whole map, monster list */
-	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	context->ident = true;
 	return true;
