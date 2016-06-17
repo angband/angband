@@ -108,7 +108,7 @@ void do_cmd_redraw(void)
 
 		/* Place the cursor on the player */
 		if (0 != character_dungeon)
-			move_cursor_relative(player->px, player->py);
+			move_cursor_relative(player->py, player->px);
 	}
 
 	/* Redraw every window */

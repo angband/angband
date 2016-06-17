@@ -366,7 +366,7 @@ void pre_turn_refresh(void)
 		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 		handle_stuff(player);
 
-		move_cursor_relative(player->px, player->py);
+		move_cursor_relative(player->py, player->px);
 
 		for (j = 0; j < ANGBAND_TERM_MAX; j++) {
 			if (!angband_term[j]) continue;
