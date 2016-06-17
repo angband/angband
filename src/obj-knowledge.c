@@ -1556,6 +1556,7 @@ int object_find_unknown_rune(struct player *p, struct object *obj)
 {
 	size_t i, num = 0;
 	int *poss_runes = mem_zalloc(rune_max * sizeof(int));
+	int chosen = -1;
 
 	if (object_runes_known(obj)) return -1;
 
@@ -1564,9 +1565,12 @@ int object_find_unknown_rune(struct player *p, struct object *obj)
 			poss_runes[num++] = i;
 
 	/* Grab a random rune from among the unknowns  */
-	if (num) return poss_runes[randint0(num)];
+	if (num) {
+		chosen = poss_runes[randint0(num)];
+	}
 
-	return -1;
+	mem_free(poss_runes);
+	return chosen;
 }
 
 /**

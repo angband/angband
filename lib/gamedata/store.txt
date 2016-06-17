@@ -134,6 +134,7 @@ always:prayer book:[Words of Wisdom]
 always:prayer book:[Chants and Blessings]
 always:prayer book:[Exorcism and Dispelling]
 always:potion:Cure Light Wounds
+always:scroll:Remove Curse
 normal:hafted:Whip
 normal:hafted:Quarterstaff
 normal:hafted:Mace

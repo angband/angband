@@ -445,7 +445,7 @@ sound:SUM_UNIQUE:sum_bell_tone
 sound:BR_FROST:mco_attack_breath
 
 # Breathe electricity.
-MST_BR_ELEC:mco_attack_breath
+sound:BR_ELEC:mco_attack_breath
 
 # Breathe acid.
 sound:BR_ACID:mco_attack_breath
