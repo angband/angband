@@ -37,8 +37,8 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 
 # Support SDL2 frontend
 SYS_sdl2 = -DUSE_SDL2 \
-		   $(shell /home/vic/SDL2/bin/sdl2-config --cflags) \
-		   $(shell /home/vic/SDL2/bin/sdl2-config --libs) \
+		   $(shell sdl2-config --cflags) \
+		   $(shell sdl2-config --libs) \
 		   -lSDL2_ttf -lSDL2_image
 
 # Stats pseudo-frontend
@@ -46,8 +46,8 @@ SYS_sdl2 = -DUSE_SDL2 \
 
 ## Support SDL_mixer for sound
 SOUND_sdl2 = -DSOUND_SDL -DSOUND \
-			 $(shell /home/vic/SDL2/bin/sdl2-config --cflags) \
-			 $(shell /home/vic/SDL2/bin/sdl2-config --libs) -lSDL2_mixer
+			 $(shell sdl2-config --cflags) \
+			 $(shell sdl2-config --libs) -lSDL2_mixer
 
 
 # Basic compiler stuff
@@ -77,13 +77,13 @@ LIBS = -lm
 
 
 # Extract CFLAGS and LIBS from the system definitions
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_sdl) $(SYS_sdl2) $(SOUND_sdl2) $(SYS_stats)
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_sdl2) $(SYS_stats)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
 # Object definitions
-OBJS = $(BASEOBJS) main.o main-stats.o main-gcu.o main-x11.o main-sdl2.o snd-sdl.o
+OBJS = $(BASEOBJS) main.o main-stats.o main-gcu.o main-x11.o main-sdl2.o #snd-sdl.o
 
 
 
