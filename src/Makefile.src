@@ -23,7 +23,6 @@ HEADERS = \
 	main.h \
 	option.h \
 	parser.h \
-	types.h \
 	ui-event.h \
 	ui-menu.h \
 	wizard.h \

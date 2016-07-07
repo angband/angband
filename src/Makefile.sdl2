@@ -1,0 +1,175 @@
+# File: Makefile.std
+# Standard makefile for Angband.
+#
+# This makefile probably requires GNU make.
+#
+# This makefile is intended for use with Unix machines running X11, gtk or 
+# (n)curses.  You can choose which you want to compile for below.
+#
+# You can also place your alterations to a file in the src/ directory called 
+# "config", in which case that file will override what is specified here.
+#
+
+#### Things you should, or could, change ####
+
+
+# What systems to try.
+#
+# By default, this tries to compile both the X11 and "curses" terminal mode
+# ports in the same executable.
+
+
+# Recent, known-to-work ports
+
+# Support X11 (main-x11.c)
+# You may have to add various X11 include/library directories to the
+# "CFLAGS", if your machine places files in a weird location, for example
+# " -I/usr/X11R6/include", or "-L/usr/X11R6/lib" to LIBS.
+SYS_x11 = -DUSE_X11 -lX11
+
+# Support curses console mode (main-gcu.c)
+# If this fails, try the alternate below
+SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
+#SYS_gcu = -DUSE_GCU -lcurses -ltermcap
+
+# Support SDL frontend
+# SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf -lSDL_image
+
+# Support SDL2 frontend
+SYS_sdl2 = -DUSE_SDL2 \
+		   $(shell /home/vic/SDL2/bin/sdl2-config --cflags) \
+		   $(shell /home/vic/SDL2/bin/sdl2-config --libs) \
+		   -lSDL2_ttf -lSDL2_image
+
+# Stats pseudo-frontend
+# SYS_stats = -DUSE_STATS
+
+## Support SDL_mixer for sound
+SOUND_sdl2 = -DSOUND_SDL -DSOUND \
+			 $(shell /home/vic/SDL2/bin/sdl2-config --cflags) \
+			 $(shell /home/vic/SDL2/bin/sdl2-config --libs) -lSDL2_mixer
+
+
+# Basic compiler stuff
+CC = gcc
+WARNINGS = -W -Wall -Wextra -Wno-unused-parameter -pedantic
+CFLAGS = -std=c99 -g \
+		 -O2 \
+		 $(WARNINGS) \
+		 -DHAVE_CONFIG_H \
+		 #-fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined
+
+# Add additional search directives here
+# Example: -I/usr/X11R6/include -I/usr/include/ncurses
+INCLUDES = -I/usr/include/ncursesw
+# Example: -L/usr/X11R6/lib 
+LIBS = -lm
+
+
+
+
+#### Things you probably shouldn't change, unless there is a problem ####
+
+# Import user prefs
+# If you don't want to edit this file, put your module redefinitions
+# and build flags in "./config"
+-include config
+
+
+# Extract CFLAGS and LIBS from the system definitions
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_sdl) $(SYS_sdl2) $(SOUND_sdl2) $(SYS_stats)
+CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
+LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
+
+
+# Object definitions
+OBJS = $(BASEOBJS) main.o main-stats.o main-gcu.o main-x11.o main-sdl2.o snd-sdl.o
+
+
+
+
+#### Targets and objects #####
+
+# By default, copy the executable to ../ so that you don't find
+# yourself debugging a stale copy.
+default: install
+
+# Makefile.inc contains an up-to-date set of object files to compile, so
+# we include it
+include Makefile.inc
+
+# Version info
+EXE = $(PROGNAME)
+
+
+#
+# Targets
+#
+
+# Build the "Angband" program
+$(EXE): $(OBJS)
+	@printf "%10s %-20s\n" LINK $@
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
+
+# Install the game.
+install: ../$(EXE)
+
+docs: doc/index.html
+
+../$(EXE): $(EXE)
+	cp $(EXE) ..
+
+# Clean up old junk
+clean:
+	-rm -f $(OBJS) $(EXE)
+
+# make a distribution
+DIRS = lib/gamedata lib/customize lib/help lib/screens lib/fonts lib/tiles \
+       lib/sounds lib/icons lib/user lib/user/save lib/user/scores lib/user/info
+
+TMPDIR = ./$(EXE)-$(VERSION)
+dist:
+	@-rm -rf $(TMPDIR)
+	@echo making directories...
+	@for i in $(DIRS) ; do mkdir -p $(TMPDIR)/$$i ; done
+	@echo copying files...
+	@cp ../lib/gamedata/*.txt $(TMPDIR)/lib/gamedata
+	@cp ../lib/screens/*.txt $(TMPDIR)/lib/screens
+	@cp ../lib/help/*.txt ../lib/help/*.hlp $(TMPDIR)/lib/help
+	@cp ../lib/customize/*.prf $(TMPDIR)/lib/customize
+	@cp ../lib/fonts/*.txt $(TMPDIR)/lib/fonts
+	@echo attempting to install sound and graphics
+	@-cp ../lib/sounds/*.mp3 $(TMPDIR)/lib/sounds
+	@-cp ../lib/tiles/*.png $(TMPDIR)/lib/tiles
+	@cp ../changes.txt ../readme.txt $(TMPDIR)
+	@cp $(EXE) $(TMPDIR)
+	tar czf ../$(EXE)-$(VERSION).tar.gz $(TMPDIR)
+	rm -rf $(TMPDIR)
+
+
+#  Verify module arguments
+args:
+	@echo CFLAGS = $(CFLAGS)
+	@echo LDFLAGS = $(LDFLAGS)
+	@echo LIBS = $(LIBS)
+
+
+# Generate dependencies automatically
+depend:
+	makedepend -D__MAKEDEPEND__ $(SRCS)
+
+
+# Some file dependencies
+%.o: %.c
+	@printf "%10s %-20s\n" CC $<
+	@$(CC) $(CFLAGS) -o $@ -c $<
+
+# X11 dependencies
+main-x11.o: $(HEADERS) main.h
+
+# Basic dependencies for main-xxx.c, main.c
+$(MAINOBJS) : main.h $(HEADERS)
+
+# fake Dependency
+doc/index.html: $(HEADERS)
+	doxygen doc/doxygen.conf
