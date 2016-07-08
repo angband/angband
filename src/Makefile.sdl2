@@ -2,21 +2,13 @@
 # Makefile for compiling SDL2 frontend
 #
 # This makefile probably requires GNU make.
+# It is primarily intended for testing SDL2 based UI
+# It assumes Angband was configured properly
+# (see -DHAVE_CONFIG_H and autoconf.h)
 #
-# This makefile is intended for use with Unix machines running X11, gtk or 
-# (n)curses.  You can choose which you want to compile for below.
-#
-# You can also place your alterations to a file in the src/ directory called 
-# "config", in which case that file will override what is specified here.
-#
-
 #### Things you should, or could, change ####
 
 # What systems to try.
-#
-# By default, this tries to compile SDL2 frontend
-
-# Recent, known-to-work ports
 
 # Support X11 (main-x11.c)
 # You may have to add various X11 include/library directories to the
