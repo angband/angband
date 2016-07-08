@@ -1,5 +1,5 @@
-# File: Makefile.std
-# Standard makefile for Angband.
+# File: Makefile.sdl2
+# Makefile for compiling SDL2 frontend
 #
 # This makefile probably requires GNU make.
 #
@@ -12,12 +12,9 @@
 
 #### Things you should, or could, change ####
 
-
 # What systems to try.
 #
-# By default, this tries to compile both the X11 and "curses" terminal mode
-# ports in the same executable.
-
+# By default, this tries to compile SDL2 frontend
 
 # Recent, known-to-work ports
 
@@ -25,68 +22,83 @@
 # You may have to add various X11 include/library directories to the
 # "CFLAGS", if your machine places files in a weird location, for example
 # " -I/usr/X11R6/include", or "-L/usr/X11R6/lib" to LIBS.
-SYS_x11 = -DUSE_X11 -lX11
+SYS_x11 := -DUSE_X11 -lX11
 
 # Support curses console mode (main-gcu.c)
 # If this fails, try the alternate below
-SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
-#SYS_gcu = -DUSE_GCU -lcurses -ltermcap
+#SYS_gcu := -DUSE_GCU -lcurses -ltermcap
+SYS_gcu := -DUSE_GCU -DUSE_NCURSES -lncursesw
 
 # Support SDL frontend
-# SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf -lSDL_image
+#SYS_sdl := -DUSE_SDL \
+	$(shell sdl-config --cflags) $(shell sdl-config --libs) \
+	-lSDL_ttf -lSDL_image
 
 # Support SDL2 frontend
-SYS_sdl2 = -DUSE_SDL2 \
-		   $(shell sdl2-config --cflags) \
-		   $(shell sdl2-config --libs) \
-		   -lSDL2_ttf -lSDL2_image
+SYS_sdl2 := -DUSE_SDL2 \
+	$(shell sdl2-config --cflags) $(shell sdl2-config --libs) \
+	-lSDL2_ttf -lSDL2_image
 
 # Stats pseudo-frontend
-# SYS_stats = -DUSE_STATS
+#SYS_stats := -DUSE_STATS
 
 ## Support SDL_mixer for sound
-SOUND_sdl2 = -DSOUND_SDL -DSOUND \
-			 $(shell sdl2-config --cflags) \
-			 $(shell sdl2-config --libs) -lSDL2_mixer
+#SOUND_sdl := -DSOUND_SDL \
+	$(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_mixer
 
+## Support SDL2_mixer for sound (snd-sdl.c will need some very small changes)
+#SOUND_sdl2 := -DSOUND_SDL -DSOUND \
+	$(shell sdl2-config --cflags) \
+	$(shell sdl2-config --libs) -lSDL2_mixer
 
 # Basic compiler stuff
-CC = gcc
-WARNINGS = -W -Wall -Wextra -Wno-unused-parameter -pedantic
-CFLAGS = -std=c99 -g \
-		 -O2 \
-		 $(WARNINGS) \
-		 -DHAVE_CONFIG_H \
-		 #-fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined
+CC := gcc
+WARNINGS := -Wall -Wextra -Wno-unused-parameter -pedantic
+CFLAGS := -std=c99 -g \
+	-Og \
+	$(WARNINGS) \
+	-DHAVE_CONFIG_H \
+	#-fsanitize=address -fno-omit-frame-pointer -fsanitize=undefined
 
 # Add additional search directives here
 # Example: -I/usr/X11R6/include -I/usr/include/ncurses
-INCLUDES = -I/usr/include/ncursesw
+INCLUDES := -I/usr/include/ncursesw
 # Example: -L/usr/X11R6/lib 
-LIBS = -lm
-
-
-
+LIBS := -lm
 
 #### Things you probably shouldn't change, unless there is a problem ####
 
-# Import user prefs
-# If you don't want to edit this file, put your module redefinitions
-# and build flags in "./config"
--include config
-
-
 # Extract CFLAGS and LIBS from the system definitions
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_sdl2) $(SYS_stats)
+MODULES := $(SYS_x11) $(SYS_gcu) $(SYS_sdl) $(SYS_sdl2) $(SOUND_sdl) $(SOUND_sdl2) $(SYS_stats)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
+MAINOBJS := main.o
+
+ifdef SYS_x11
+	MAINOBJS += main-x11.o
+endif
+ifdef SYS_gcu
+	MAINOBJS += main-gcu.o
+endif
+ifdef SYS_stats
+	MAINOBJS += main-stats.o
+endif
+ifdef SYS_sdl
+	MAINOBJS += main-sdl.o
+endif
+ifdef SYS_sdl2
+	MAINOBJS += main-sdl2.o
+endif
+ifdef SOUND_sdl
+	MAINOBJS += snd-sdl.o
+endif
+ifdef SOUND_sdl2
+	MAINOBJS += snd-sdl.o
+endif
 
 # Object definitions
-OBJS = $(BASEOBJS) main.o main-stats.o main-gcu.o main-x11.o main-sdl2.o #snd-sdl.o
-
-
-
+OBJS = $(BASEOBJS) $(MAINOBJS)
 
 #### Targets and objects #####
 
@@ -99,8 +111,7 @@ default: install
 include Makefile.inc
 
 # Version info
-EXE = $(PROGNAME)
-
+EXE := $(PROGNAME)
 
 #
 # Targets
@@ -146,18 +157,16 @@ dist:
 	tar czf ../$(EXE)-$(VERSION).tar.gz $(TMPDIR)
 	rm -rf $(TMPDIR)
 
-
 #  Verify module arguments
 args:
 	@echo CFLAGS = $(CFLAGS)
 	@echo LDFLAGS = $(LDFLAGS)
 	@echo LIBS = $(LIBS)
-
+	@echo MAINOBJS = $(MAINOBJS)
 
 # Generate dependencies automatically
 depend:
 	makedepend -D__MAKEDEPEND__ $(SRCS)
-
 
 # Some file dependencies
 %.o: %.c
