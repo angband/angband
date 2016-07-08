@@ -1513,10 +1513,10 @@ static void render_button_movesize(const struct window *window, struct button *b
 	bool active = false;
 	switch (button->info.data.ival) {
 		case BUTTON_MOVESIZE_MOVING:
-			active = window->move_state.active ? true : false;
+			active = window->move_state.active;
 			break;
 		case BUTTON_MOVESIZE_SIZING:
-			active = window->size_state.active ? true : false;
+			active = window->size_state.active;
 			break;
 		default:
 			quit_fmt("button '%s' has wrong ival %d",
@@ -3718,9 +3718,7 @@ static errr term_xtra_fresh(void)
 	struct subwindow *subwindow = Term->data;
 	assert(subwindow != NULL);
 
-	if (subwindow->window->status_bar.in_menu) {
-		return 0;
-	} else {
+	if (!subwindow->window->status_bar.in_menu) {
 		try_redraw_window(subwindow->window);
 	}
 
