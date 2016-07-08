@@ -3487,7 +3487,7 @@ static keycode_t utf8_to_codepoint(const char *utf8_string)
 	 * 0x0f == 00001111
 	 * 0x07 == 00000111 */
 
-    keycode_t key = 0;
+	keycode_t key = 0;
 
 #define IS_UTF8_INFO(mask, result) (((unsigned char) utf8_string[0] & (mask)) == (result))
 #define EXTRACT_UTF8_INFO(pos, mask, shift) (((unsigned char) utf8_string[(pos)] & (mask)) << (shift))
@@ -3510,7 +3510,7 @@ static keycode_t utf8_to_codepoint(const char *utf8_string)
 #undef IS_UTF8_INFO
 #undef EXTRACT_UTF8_INFO
 
-    return key;
+	return key;
 }
 
 static bool handle_text_input(const SDL_TextInputEvent *input)
