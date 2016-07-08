@@ -624,13 +624,9 @@ static struct subwindow *get_subwindow_by_index(const struct window *window,
 static struct subwindow *get_subwindow_direct(unsigned index);
 /* this function loads new subwindow if it's not already loaded */
 static struct subwindow *make_subwindow(struct window *window, unsigned index);
-static bool get_colrow_from_xy(const struct subwindow *subwindow,
-		int x, int y, int *col, int *row);
 static void sort_to_top(struct window *window);
 static void bring_to_top(struct window *window, struct subwindow *subwindow);
-static void resize_subwindow(struct subwindow *subwindow);
 static void render_borders(struct subwindow *subwindow);
-static void clear_all_borders(struct window *window);
 static SDL_Texture *load_image(const struct window *window, const char *path);
 static void reload_all_graphics(graphics_mode *mode);
 static void free_graphics(struct graphics *graphics);
@@ -644,33 +640,16 @@ static bool is_ok_col_row(const struct subwindow *subwindow,
 static void resize_rect(SDL_Rect *rect,
 		int left, int top, int right, int bottom);
 static bool is_point_in_rect(int x, int y, const SDL_Rect *rect);
-static bool is_rect_in_rect(const SDL_Rect *small, const SDL_Rect *big);
 static bool is_close_to(int a, int b, unsigned range);
-static void fit_rect_in_rect_by_xy(SDL_Rect *small, const SDL_Rect *big);
-static void fit_rect_in_rect_by_hw(SDL_Rect *small, const SDL_Rect *big);
-static void fit_rect_in_rect_proportional(SDL_Rect *small, const SDL_Rect *big);
 static bool is_over_status_bar(const struct status_bar *status_bar, int x, int y);
 static void make_button_bank(struct button_bank *bank);
 static void free_button_bank(struct button_bank *button_bank);
-static SDL_Rect get_button_caption_rect(const struct button *button);
 static void free_menu_panel(struct menu_panel *menu_panel);
 static struct menu_panel *get_menu_panel_by_xy(struct menu_panel *menu_panel,
 		int x, int y);
-static void redraw_window(struct window *window);
-static void render_outline_rect(const struct window *window,
-		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color);
-static void render_outline_rect_width(const struct window *window,
-		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color, int width);
-static void render_fill_rect(const struct window *window,
-		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color);
 static void refresh_angband_terms(void);
-static void set_subwindows_alpha(const struct window *window, int alpha);
 static void handle_quit(void);
 static void wait_anykey(void);
-static bool handle_status_bar_buttons(struct window *window,
-		const SDL_Event *event);
-static void signal_move_state(struct window *window);
-static void signal_size_state(struct window *window);
 
 /* Functions */
 
@@ -772,6 +751,35 @@ static void render_status_bar(const struct window *window)
 	}
 }
 
+static void render_outline_rect(const struct window *window,
+		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color)
+{
+	SDL_SetRenderTarget(window->renderer, texture);
+	SDL_SetRenderDrawColor(window->renderer,
+			color->r, color->g, color->b, color->a);
+	SDL_RenderDrawRect(window->renderer, rect);
+}
+
+static void render_outline_rect_width(const struct window *window,
+		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color, int width)
+{
+	SDL_Rect dst = *rect;
+
+	for (int i = 0; i < width; i++) {
+		render_outline_rect(window, texture, &dst, color);
+		resize_rect(&dst, 1, 1, -1, -1);
+	}
+}
+
+static void render_fill_rect(const struct window *window,
+		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color)
+{
+	SDL_SetRenderTarget(window->renderer, texture);
+	SDL_SetRenderDrawColor(window->renderer,
+			color->r, color->g, color->b, color->a);
+	SDL_RenderFillRect(window->renderer, rect);
+}
+
 static void render_window_in_menu(const struct window *window)
 {
 	render_background(window);
@@ -805,12 +813,43 @@ static void render_window_in_menu(const struct window *window)
 			window->status_bar.texture, NULL, &window->status_bar.full_rect);
 }
 
+static void set_subwindow_alpha(struct subwindow *subwindow, int alpha)
+{
+	SDL_SetTextureAlphaMod(subwindow->texture, alpha);
+	SDL_SetTextureAlphaMod(subwindow->aux_texture, alpha);
+}
+
+static void set_subwindows_alpha(const struct window *window, int alpha)
+{
+	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
+		struct subwindow *subwindow = window->subwindows[i];
+		if (subwindow != NULL) {
+			set_subwindow_alpha(subwindow, alpha);
+		}
+	}
+}
+
 /* this function allows to perform special things that are not
  * needed while playing the game, like moving terms */
 static void redraw_window_in_menu(struct window *window)
 {
 	set_subwindows_alpha(window, window->alpha);
 	render_window_in_menu(window);
+	SDL_RenderPresent(window->renderer);
+	window->next_redraw = SDL_GetTicks() + window->delay;
+}
+
+/* this function is mostly used while normally playing the game */
+static void redraw_window(struct window *window)
+{
+	if (window->status_bar.in_menu) {
+		/* we called (perhaps via refresh_angband_terms()) Term_fresh() in menu */
+		redraw_window_in_menu(window);
+		return;
+	}
+
+	/* XXX XXX dont forget to prerender status bar in loader! */
+	render_all(window);
 	SDL_RenderPresent(window->renderer);
 	window->next_redraw = SDL_GetTicks() + window->delay;
 }
@@ -832,21 +871,6 @@ static void redraw_all_windows(bool dirty)
 			window->dirty = false;
 		}
 	}
-}
-
-/* this function is mostly used while normally playing the game */
-static void redraw_window(struct window *window)
-{
-	if (window->status_bar.in_menu) {
-		/* we called (perhaps via refresh_angband_terms()) Term_fresh() in menu */
-		redraw_window_in_menu(window);
-		return;
-	}
-
-	/* XXX XXX dont forget to prerender status bar in loader! */
-	render_all(window);
-	SDL_RenderPresent(window->renderer);
-	window->next_redraw = SDL_GetTicks() + window->delay;
 }
 
 static void render_utf8_string(const struct window *window,
@@ -914,35 +938,6 @@ static void render_glyph_mono(const struct window *window,
 		SDL_FreeSurface(surface);
 		SDL_DestroyTexture(texture);
 	}
-}
-
-static void render_outline_rect_width(const struct window *window,
-		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color, int width)
-{
-	SDL_Rect dst = *rect;
-
-	for (int i = 0; i < width; i++) {
-		render_outline_rect(window, texture, &dst, color);
-		resize_rect(&dst, 1, 1, -1, -1);
-	}
-}
-
-static void render_outline_rect(const struct window *window,
-		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color)
-{
-	SDL_SetRenderTarget(window->renderer, texture);
-	SDL_SetRenderDrawColor(window->renderer,
-			color->r, color->g, color->b, color->a);
-	SDL_RenderDrawRect(window->renderer, rect);
-}
-
-static void render_fill_rect(const struct window *window,
-		SDL_Texture *texture, const SDL_Rect *rect, const SDL_Color *color)
-{
-	SDL_SetRenderTarget(window->renderer, texture);
-	SDL_SetRenderDrawColor(window->renderer,
-			color->r, color->g, color->b, color->a);
-	SDL_RenderFillRect(window->renderer, rect);
 }
 
 static void render_cursor(struct subwindow *subwindow, 
@@ -1156,22 +1151,6 @@ static SDL_Texture *make_subwindow_texture(const struct window *window, int w, i
 	return texture;
 }
 
-static void set_subwindow_alpha(struct subwindow *subwindow, int alpha)
-{
-	SDL_SetTextureAlphaMod(subwindow->texture, alpha);
-	SDL_SetTextureAlphaMod(subwindow->aux_texture, alpha);
-}
-
-static void set_subwindows_alpha(const struct window *window, int alpha)
-{
-	for (size_t i = 0; i < N_ELEMENTS(window->subwindows); i++) {
-		struct subwindow *subwindow = window->subwindows[i];
-		if (subwindow != NULL) {
-			set_subwindow_alpha(subwindow, alpha);
-		}
-	}
-}
-
 static void render_menu_panel(const struct window *window, struct menu_panel *menu_panel)
 {
 	if (menu_panel == NULL) {
@@ -1189,6 +1168,18 @@ static void render_menu_panel(const struct window *window, struct menu_panel *me
 
 	/* recurse */
 	render_menu_panel(window, menu_panel->next);
+}
+
+static SDL_Rect get_button_caption_rect(const struct button *button)
+{
+	SDL_Rect rect = {
+		button->full_rect.x + button->inner_rect.x,
+		button->full_rect.y + button->inner_rect.y,
+		button->inner_rect.w,
+		button->inner_rect.h
+	};
+
+	return rect;
 }
 
 static void render_button_menu(const struct window *window,
@@ -1623,6 +1614,48 @@ static void show_about(const struct window *window)
 	wait_anykey();
 
 	SDL_DestroyTexture(texture);
+}
+
+static void signal_move_state(struct window *window)
+{
+	assert(!window->size_state.active);
+
+	bool was_active = window->move_state.active;
+
+	if (was_active) {
+		window->move_state.active = false;
+		window->move_state.moving = false;
+		window->move_state.subwindow = NULL;
+	} else {
+		window->move_state.active = true;
+	}
+
+	SDL_SetWindowGrab(window->window,
+			was_active ? SDL_FALSE : SDL_TRUE);
+	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
+}
+
+static void signal_size_state(struct window *window)
+{
+	assert(!window->move_state.active);
+
+	bool was_active = window->size_state.active;
+
+	if (was_active) {
+		window->size_state.active = false;
+		window->size_state.sizing = false;
+		if (window->size_state.subwindow != NULL) {
+			memset(&window->size_state.subwindow->sizing_rect,
+					0, sizeof(window->size_state.subwindow->sizing_rect));
+			window->size_state.subwindow = NULL;
+		}
+	} else {
+		window->size_state.active = true;
+	}
+
+	SDL_SetWindowGrab(window->window,
+			was_active ? SDL_FALSE : SDL_TRUE);
+	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
 }
 
 static bool do_button_movesize(struct window *window,
@@ -2654,18 +2687,6 @@ static bool do_button(struct window *window,
 	return false;
 }
 
-static SDL_Rect get_button_caption_rect(const struct button *button)
-{
-	SDL_Rect rect = {
-		button->full_rect.x + button->inner_rect.x,
-		button->full_rect.y + button->inner_rect.y,
-		button->inner_rect.w,
-		button->inner_rect.h
-	};
-
-	return rect;
-}
-
 static bool is_close_to(int a, int b, unsigned range)
 {
 	if (a > 0 && b > 0) {
@@ -2797,48 +2818,6 @@ static void try_snap(struct window *window,
 			}
 		}
 	}
-}
-
-static void signal_move_state(struct window *window)
-{
-	assert(!window->size_state.active);
-
-	bool was_active = window->move_state.active;
-
-	if (was_active) {
-		window->move_state.active = false;
-		window->move_state.moving = false;
-		window->move_state.subwindow = NULL;
-	} else {
-		window->move_state.active = true;
-	}
-
-	SDL_SetWindowGrab(window->window,
-			was_active ? SDL_FALSE : SDL_TRUE);
-	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
-}
-
-static void signal_size_state(struct window *window)
-{
-	assert(!window->move_state.active);
-
-	bool was_active = window->size_state.active;
-
-	if (was_active) {
-		window->size_state.active = false;
-		window->size_state.sizing = false;
-		if (window->size_state.subwindow != NULL) {
-			memset(&window->size_state.subwindow->sizing_rect,
-					0, sizeof(window->size_state.subwindow->sizing_rect));
-			window->size_state.subwindow = NULL;
-		}
-	} else {
-		window->size_state.active = true;
-	}
-
-	SDL_SetWindowGrab(window->window,
-			was_active ? SDL_FALSE : SDL_TRUE);
-	window->alpha = was_active ? DEFAULT_ALPHA_FULL : DEFAULT_ALPHA_LOW;
 }
 
 static void start_moving(struct window *window,
@@ -3118,6 +3097,23 @@ static bool handle_menu_keyboard(struct window *window, const SDL_Event *event)
 	return false;
 }
 
+static bool handle_status_bar_buttons(struct window *window,
+		const SDL_Event *event)
+{
+	bool handled = false;
+
+	for (size_t i = 0; i < window->status_bar.button_bank.number; i++) {
+		struct button *button = &window->status_bar.button_bank.buttons[i];
+		if (button->callbacks.on_event != NULL) {
+			handled |= button->callbacks.on_event(window, button, event);
+		} else {
+			handled |= do_button(window, button, event);
+		}
+	}
+
+	return handled;
+}
+
 static void redraw_status_bar_buttons(struct window *window)
 {
 	SDL_Event shutdown = {.type = SDL_USEREVENT};
@@ -3175,23 +3171,6 @@ static bool is_ok_button_event(const struct window *window, const SDL_Event *eve
 		default:
 			return false;
 	}
-}
-
-static bool handle_status_bar_buttons(struct window *window,
-		const SDL_Event *event)
-{
-	bool handled = false;
-
-	for (size_t i = 0; i < window->status_bar.button_bank.number; i++) {
-		struct button *button = &window->status_bar.button_bank.buttons[i];
-		if (button->callbacks.on_event != NULL) {
-			handled |= button->callbacks.on_event(window, button, event);
-		} else {
-			handled |= do_button(window, button, event);
-		}
-	}
-
-	return handled;
 }
 
 static bool handle_status_bar_events(struct window *window,
@@ -3280,6 +3259,27 @@ static bool handle_mousemotion(const SDL_MouseMotionEvent *mouse)
 	SDL_FlushEvent(SDL_MOUSEMOTION);
 
 	return false;
+}
+
+/* x and y are relative to window */
+static bool get_colrow_from_xy(const struct subwindow *subwindow,
+		int x, int y, int *col, int *row)
+{
+	SDL_Rect rect = {
+		subwindow->full_rect.x + subwindow->inner_rect.x,
+		subwindow->full_rect.y + subwindow->inner_rect.y,
+		subwindow->inner_rect.w,
+		subwindow->inner_rect.h
+	};
+
+	if (!is_point_in_rect(x, y, &rect)) {
+		return false;
+	}
+
+	*col = (x - rect.x) / subwindow->font_width;
+	*row = (y - rect.y) / subwindow->font_height;
+
+	return true;
 }
 
 static byte translate_key_mods(Uint16 mods)
@@ -4452,27 +4452,6 @@ static void adjust_status_bar_geometry(struct window *window)
 	int border = (status_bar->full_rect.h - status_bar->font->ttf.glyph.h) / 2;
 	resize_rect(&status_bar->inner_rect,
 			border, border, -border, -border);
-}
-
-/* x and y are relative to window */
-static bool get_colrow_from_xy(const struct subwindow *subwindow,
-		int x, int y, int *col, int *row)
-{
-	SDL_Rect rect = {
-		subwindow->full_rect.x + subwindow->inner_rect.x,
-		subwindow->full_rect.y + subwindow->inner_rect.y,
-		subwindow->inner_rect.w,
-		subwindow->inner_rect.h
-	};
-
-	if (!is_point_in_rect(x, y, &rect)) {
-		return false;
-	}
-
-	*col = (x - rect.x) / subwindow->font_width;
-	*row = (y - rect.y) / subwindow->font_height;
-
-	return true;
 }
 
 static struct subwindow *get_subwindow_by_index(const struct window *window,
