@@ -1607,8 +1607,8 @@ static void show_about(const struct window *window)
 	texture_rect.x = total.x + (total.w - texture_rect.w) / 2;
 	texture_rect.y = total.y + DEFAULT_XTRA_BORDER;
 
-	SDL_RenderCopy(window->renderer, texture, NULL, &texture_rect);
 	SDL_SetRenderTarget(window->renderer, NULL);
+	SDL_RenderCopy(window->renderer, texture, NULL, &texture_rect);
 	SDL_RenderPresent(window->renderer);
 
 	wait_anykey();
