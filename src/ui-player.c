@@ -860,7 +860,7 @@ void display_player_xtra_info(void)
 
 	/* History */
 	Term_gotoxy(text_out_indent, 19);
-	text_out_to_screen(COLOUR_WHITE, player->history);
+	text_out_c(COLOUR_WHITE, player->history);
 
 	/* Reset text_out() vars */
 	text_out_wrap = 0;

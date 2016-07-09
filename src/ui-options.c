@@ -1224,9 +1224,6 @@ static void ego_menu(const char *unused, int also_unused)
 	/* Help text */
 	prt("Ego item ignore menu", 0, 0);
 
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
-
 	/* Indent output */
 	text_out_indent = 1;
 	text_out_wrap = 79;

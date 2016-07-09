@@ -281,9 +281,6 @@ static void race_help(int i, void *db, const region *l)
 	int flag_space = 3;
 
 	if (!r) return;
-
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
 	
 	/* Indent output */
 	text_out_indent = RACE_AUX_COL;
@@ -351,9 +348,6 @@ static void class_help(int i, void *db, const region *l)
 
 	if (!c) return;
 
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
-	
 	/* Indent output */
 	text_out_indent = CLASS_AUX_COL;
 	Term_gotoxy(CLASS_AUX_COL, TABLE_ROW);
@@ -538,9 +532,6 @@ static void print_menu_instructions(void)
 {
 	/* Clear screen */
 	Term_clear();
-	
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
 	
 	/* Indent output */
 	text_out_indent = QUESTION_COL;

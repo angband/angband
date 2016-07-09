@@ -229,6 +229,23 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
  * ------------------------------------------------------------------------ */
 
 /**
+ * Hack -- Where to wrap the text when using text_out().  Use the default
+ * value (for example the screen width) when 'text_out_wrap' is 0.
+ */
+int text_out_wrap = 0;
+
+/**
+ * Hack -- Indentation for the text when using text_out().
+ */
+int text_out_indent = 0;
+
+/**
+ * Hack -- Padding after wrapping
+ */
+int text_out_pad = 0;
+
+
+/**
  * Print some (colored) text to the screen at the current cursor position,
  * automatically "wrapping" existing text (at spaces) when necessary to
  * avoid placing any text into the last column, and clearing every line
@@ -242,7 +259,7 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
  * This function will correctly handle any width up to the maximum legal
  * value of 256, though it works best for a standard 80 character width.
  */
-void text_out_to_screen(byte a, const char *str)
+static void text_out_to_screen(byte a, const char *str)
 {
 	int x, y;
 
@@ -347,34 +364,6 @@ void text_out_to_screen(byte a, const char *str)
 }
 
 
-/**
- * ------------------------------------------------------------------------
- * text_out()
- * ------------------------------------------------------------------------ */
-
-
-/**
- * Function hook to output (colored) text to the screen or to a file.
- */
-void (*text_out_hook)(byte a, const char *str);
-
-/**
- * Hack -- Where to wrap the text when using text_out().  Use the default
- * value (for example the screen width) when 'text_out_wrap' is 0.
- */
-int text_out_wrap = 0;
-
-/**
- * Hack -- Indentation for the text when using text_out().
- */
-int text_out_indent = 0;
-
-/**
- * Hack -- Padding after wrapping
- */
-int text_out_pad = 0;
-
-
 
 /**
  * Output text to the screen or to a file depending on the selected
@@ -395,7 +384,7 @@ void text_out(const char *fmt, ...)
 	va_end(vp);
 
 	/* Output now */
-	text_out_hook(COLOUR_WHITE, buf);
+	text_out_to_screen(COLOUR_WHITE, buf);
 }
 
 
@@ -418,7 +407,7 @@ void text_out_c(byte a, const char *fmt, ...)
 	va_end(vp);
 
 	/* Output now */
-	text_out_hook(a, buf);
+	text_out_to_screen(a, buf);
 }
 
 /**
@@ -552,7 +541,7 @@ void text_out_e(const char *fmt, ...)
 			a = COLOUR_WHITE;
 
 		/* Output now */
-		text_out_hook(a, smallbuf);
+		text_out_to_screen(a, smallbuf);
 
 		start = next;
 	}

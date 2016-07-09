@@ -946,7 +946,6 @@ static void item_menu_browser(int oid, void *data, const region *local_area)
 		/ z_info->stack_size;
 
 	/* Set up to output below the menu */
-	text_out_hook = text_out_to_screen;
 	text_out_wrap = 0;
 	text_out_indent = local_area->col - 1;
 	text_out_pad = 1;

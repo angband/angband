@@ -2113,8 +2113,6 @@ static void show_splashscreen(game_event_type type, game_event_data *data,
 	path_build(buf, sizeof(buf), ANGBAND_DIR_SCREENS, "news.txt");
 	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
-	text_out_hook = text_out_to_screen;
-
 	/* Dump */
 	if (fp) {
 		/* Centre the splashscreen - assume news.txt has width 80, height 23 */
