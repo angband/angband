@@ -715,7 +715,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 			any = true;
 		} else {
 			obj->artifact->created = false;
-			object_wipe(obj);
+			object_wipe(obj, true);
 			mem_free(obj);
 		}
 	}
@@ -739,7 +739,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 			any = true;
 		} else {
 			obj->artifact->created = false;
-			object_wipe(obj);
+			object_wipe(obj, true);
 			mem_free(obj);
 		}
 	}

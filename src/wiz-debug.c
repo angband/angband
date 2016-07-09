@@ -941,19 +941,19 @@ static void wiz_reroll_item(struct object *obj)
 		} else if (ch == 'n' || ch == 'N') {
 			/* Apply normal magic, but first clear object */
 			changed = true;
-			object_wipe(new);
+			object_wipe(new, true);
 			object_prep(new, obj->kind, player->depth, RANDOMISE);
 			apply_magic(new, player->depth, false, false, false, false);
 		} else if (ch == 'g' || ch == 'G') {
 			/* Apply good magic, but first clear object */
 			changed = true;
-			object_wipe(new);
+			object_wipe(new, true);
 			object_prep(new, obj->kind, player->depth, RANDOMISE);
 			apply_magic(new, player->depth, false, true, false, false);
 		} else if (ch == 'e' || ch == 'E') {
 			/* Apply great magic, but first clear object */
 			changed = true;
-			object_wipe(new);
+			object_wipe(new, true);
 			object_prep(new, obj->kind, player->depth, RANDOMISE);
 			apply_magic(new, player->depth, false, true, true, false);
 		}

@@ -1376,12 +1376,12 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 	struct object *obj = &body, *known_obj = &known_body;
 
 	make_fake_artifact(obj, &a_info[a_idx]);
-	object_wipe(known_obj);
+	object_wipe(known_obj, true);
 	object_copy(known_obj, obj);
 	obj->known = known_obj;
 	object_desc(o_name, namelen, obj, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
-	object_wipe(known_obj);
-	object_wipe(obj);
+	object_wipe(known_obj, false);
+	object_wipe(obj, true);
 }
 
 /**
@@ -1481,8 +1481,8 @@ static void desc_art_fake(int a_idx)
 	object_desc(header, sizeof(header), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 	if (fake) {
-		object_wipe(obj);
-		object_wipe(known_obj);
+		object_wipe(known_obj, false);
+		object_wipe(obj, true);
 	}
 
 	textui_textblock_show(tb, area, header);

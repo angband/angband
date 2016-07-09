@@ -506,12 +506,12 @@ void object_absorb(struct object *obj1, struct object *obj2)
 /**
  * Wipe an object clean.
  */
-void object_wipe(struct object *obj)
+void object_wipe(struct object *obj, bool free_curse_objects)
 {
 	/* Free slays and brands */
 	free_slay(obj->slays);
 	free_brand(obj->brands);
-	free_curse(obj->curses, true);
+	free_curse(obj->curses, free_curse_objects);
 
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));
@@ -528,6 +528,7 @@ void object_copy(struct object *dest, const struct object *src)
 
 	dest->slays = NULL;
 	dest->brands = NULL;
+	dest->curses = NULL;
 
 	copy_slay(&dest->slays, src->slays);
 	copy_brand(&dest->brands, src->brands);
