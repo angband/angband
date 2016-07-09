@@ -54,7 +54,7 @@ static ang_file *fh = NULL;
 /**
  * Write out `n' of the character `c' to the spoiler file
  */
-static void spoiler_out_n_chars(int n, char c)
+static void spoiler_out_n_chars(ang_file *fh, int n, char c)
 {
 	while (--n >= 0) file_writec(fh, c);
 }
@@ -62,20 +62,19 @@ static void spoiler_out_n_chars(int n, char c)
 /**
  * Write out `n' blank lines to the spoiler file
  */
-static void spoiler_blanklines(int n)
+static void spoiler_blanklines(ang_file *fh, int n)
 {
-	spoiler_out_n_chars(n, '\n');
+	spoiler_out_n_chars(fh, n, '\n');
 }
 
 /**
  * Write a line to the spoiler file and then "underline" it with hypens
  */
-static void spoiler_underline(const char *str, char c)
+static void spoiler_underline(ang_file *fh, const char *str, char c)
 {
-	text_out("%s", str);
-	text_out("\n");
-	spoiler_out_n_chars(strlen(str), c);
-	text_out("\n");
+	file_putf(fh, "%s\n", str);
+	spoiler_out_n_chars(fh, strlen(str), c);
+	file_writec(fh, '\n');
 }
 
 
@@ -354,22 +353,18 @@ static void spoil_artifact(const char *fname)
 		return;
 	}
 
-	/* Dump to the spoiler file */
-	text_out_hook = text_out_to_file;
-	text_out_file = fh;
-
 	/* Dump the header */
-	spoiler_underline(format("Artifact Spoilers for %s", buildid), '=');
+	spoiler_underline(fh, format("Artifact Spoilers for %s", buildid), '=');
 
-	text_out("\n Randart seed is %u\n", seed_randart);
+	file_putf(fh, "\nRandart seed is %u\n", seed_randart);
 
 	/* List the artifacts by tval */
 	for (i = 0; group_artifact[i].tval; i++) {
 		/* Write out the group title */
 		if (group_artifact[i].name) {
-			spoiler_blanklines(2);
-			spoiler_underline(group_artifact[i].name, '=');
-			spoiler_blanklines(1);
+			spoiler_blanklines(fh, 2);
+			spoiler_underline(fh, group_artifact[i].name, '=');
+			spoiler_blanklines(fh, 1);
 		}
 
 		/* Now search through all of the artifacts */
@@ -400,7 +395,7 @@ static void spoil_artifact(const char *fname)
 				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL);
 
 			/* Print name and underline */
-			spoiler_underline(buf2, '-');
+			spoiler_underline(fh, buf2, '-');
 
 			/* Temporarily blank the artifact flavour text - spoilers
 			   spoil the mechanics, not the atmosphere. */
@@ -418,15 +413,19 @@ static void spoil_artifact(const char *fname)
 			 * artifact can appear, its rarity, its weight, and
 			 * its power rating.
 			 */
-			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %d, %d.%d lbs\n",
-					 art->alloc_min, art->alloc_max, art->alloc_prob,
-					 object_power(obj, false, NULL), (art->weight / 10),
-					 (art->weight % 10));
+			file_putf(fh,
+					"\nMin Level %u, Max Level %u, Generation chance %u, Power %d, %d.%d lbs\n",
+					art->alloc_min,
+					art->alloc_max,
+					art->alloc_prob,
+					object_power(obj, false, NULL),
+					art->weight / 10,
+					art->weight % 10);
 
-			if (OPT(player, birth_randarts)) text_out("%s.\n", art->text);
+			if (OPT(player, birth_randarts)) file_putf(fh, "%s.\n", art->text);
 
 			/* Terminate the entry */
-			spoiler_blanklines(2);
+			spoiler_blanklines(fh, 2);
 			object_delete(&known_obj);
 			object_delete(&obj);
 		}
