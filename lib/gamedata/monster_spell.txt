@@ -70,7 +70,7 @@ hit:50
 effect:BOLT:ARROW
 dice:7d6
 lore:fires missiles
-message-vis:{name} fires a seeker arrow, but misses.
+message-vis:{name} fires a seeker arrow.
 message-invis:You hear a loud thwang.
 message-miss:{name} fires a seeker arrow, but misses.
 
