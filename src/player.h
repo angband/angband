@@ -67,7 +67,6 @@ enum
 #define pf_negate(f)           flag_negate(f, PF_SIZE)
 #define pf_copy(f1, f2)        flag_copy(f1, f2, PF_SIZE)
 #define pf_union(f1, f2)       flag_union(f1, f2, PF_SIZE)
-#define pf_comp_union(f1, f2)  flag_comp_union(f1, f2, PF_SIZE)
 #define pf_inter(f1, f2)       flag_inter(f1, f2, PF_SIZE)
 #define pf_diff(f1, f2)        flag_diff(f1, f2, PF_SIZE)
 

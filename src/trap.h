@@ -32,7 +32,6 @@ enum
 #define trf_negate(f)           flag_negate(f, TRF_SIZE)
 #define trf_copy(f1, f2)        flag_copy(f1, f2, TRF_SIZE)
 #define trf_union(f1, f2)       flag_union(f1, f2, TRF_SIZE)
-#define trf_comp_union(f1, f2)  flag_comp_union(f1, f2, TRF_SIZE)
 #define trf_inter(f1, f2)       flag_inter(f1, f2, TRF_SIZE)
 #define trf_diff(f1, f2)        flag_diff(f1, f2, TRF_SIZE)
 
