@@ -107,8 +107,13 @@ void do_cmd_redraw(void)
 		handle_stuff(player);
 
 		/* Place the cursor on the player */
-		if (0 != character_dungeon)
+		if ((0 != character_dungeon) && OPT(show_target) && target_sighted()) {
+			int col, row;
+			target_get(&col, &row);
+			move_cursor_relative(row, col);
+		} else {
 			move_cursor_relative(player->py, player->px);
+		}
 	}
 
 	/* Redraw every window */
