@@ -189,7 +189,7 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
@@ -214,7 +214,7 @@ spell:Confuse Monster:5:4:30:4
 effect:BOLT_AWARE:OLD_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to confuse a single monster for a level-dependant duration.
+desc:Attempts to confuse a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist confusion are not affected.
 
 spell:Lightning Bolt:5:4:30:4
@@ -351,7 +351,7 @@ spell:Haste Self:25:12:65:10
 effect:TIMED_INC:FAST:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
-desc:Hastes you (+10 to speed) for a level-dependant duration.
+desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:25:7:50:6
 effect:PROJECT_LOS:OLD_SLEEP
@@ -658,7 +658,7 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
@@ -681,7 +681,7 @@ spell:Scare Monster:5:4:29:3
 effect:BOLT_AWARE:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare a single monster for a level-dependant duration.
+desc:Attempts to scare a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist fear are not affected.
 
 spell:Portal:5:4:30:4
@@ -767,7 +767,7 @@ spell:Protection from Evil:11:8:42:4
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
-desc:Protects you from evil for a level-dependant duration:
+desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
@@ -802,7 +802,7 @@ effect:PROJECT_LOS_AWARE:TURN_UNDEAD
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare each undead monster within line of sight,
-desc: causing it to flee in terror for a level-dependant duration.
+desc: causing it to flee in terror for a level-dependent duration.
 
 book:prayer book:[Exorcism and Dispelling]:6:2
 
@@ -1116,7 +1116,7 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
@@ -1148,7 +1148,7 @@ spell:Confuse Monster:15:6:75:1
 effect:BOLT_AWARE:OLD_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to confuse a single monster for a level-dependant duration.
+desc:Attempts to confuse a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist confusion are not affected.
 
 spell:Disable Traps, Destroy Doors:14:7:60:2
@@ -1239,7 +1239,7 @@ spell:Haste Self:32:25:70:6
 effect:TIMED_INC:FAST:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
-desc:Hastes you (+10 to speed) for a level-dependant duration.
+desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:24:15:80:10
 effect:PROJECT_LOS:OLD_SLEEP
@@ -1455,7 +1455,7 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
@@ -1490,7 +1490,7 @@ spell:Confuse Monster:7:6:40:2
 effect:BOLT_AWARE:OLD_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to confuse a single monster for a level-dependant duration.
+desc:Attempts to confuse a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist confusion are not affected.
 
 spell:Lightning Bolt:9:7:40:3
@@ -1627,7 +1627,7 @@ spell:Haste Self:33:25:75:4
 effect:TIMED_INC:FAST:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
-desc:Hastes you (+10 to speed) for a level-dependant duration.
+desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:23:20:60:4
 effect:PROJECT_LOS:OLD_SLEEP
@@ -1905,7 +1905,7 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
@@ -1928,7 +1928,7 @@ spell:Scare Monster:9:7:40:3
 effect:BOLT_AWARE:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare a single monster for a level-dependant duration.
+desc:Attempts to scare a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist fear are not affected.
 
 spell:Portal:9:8:40:3
@@ -2014,7 +2014,7 @@ spell:Protection from Evil:19:15:50:4
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
-desc:Protects you from evil for a level-dependant duration:
+desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
@@ -2049,7 +2049,7 @@ effect:PROJECT_LOS_AWARE:TURN_UNDEAD
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare each undead monster within line of sight,
-desc: causing it to flee in terror for a level-dependant duration.
+desc: causing it to flee in terror for a level-dependent duration.
 
 book:prayer book:[Exorcism and Dispelling]:4:2
 

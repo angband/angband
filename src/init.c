@@ -425,7 +425,7 @@ void add_game_slay(struct slay *s)
  * Find the default paths to all of our important sub-directories.
  *
  * All of the sub-directories should, by default, be located inside
- * the main directory, whose location is very system dependant and is 
+ * the main directory, whose location is very system dependent and is 
  * set by the ANGBAND_PATH environment variable, if it exists. (On multi-
  * user systems such as Linux this is not the default - see config.h for
  * more info.)
@@ -433,7 +433,7 @@ void add_game_slay(struct slay *s)
  * This function takes a writable buffers, initially containing the
  * "path" to the "config", "lib" and "data" directories, for example, 
  * "/etc/angband/", "/usr/share/angband" and "/var/games/angband" -
- * or a system dependant string, for example, ":lib:".  The buffer
+ * or a system dependent string, for example, ":lib:".  The buffer
  * must be large enough to contain at least 32 more characters.
  *
  * Various command line options may allow some of the important

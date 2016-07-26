@@ -372,7 +372,7 @@ void set_marked_granite(struct chunk *c, int y, int x, int flag)
  * \return success
  *
  * Starburst rooms are made in three steps:
- * 1: Choose a room size-dependant number of arcs.  Large rooms need to 
+ * 1: Choose a room size-dependent number of arcs.  Large rooms need to 
  *    look less granular and alter their shape more often, so they need 
  *    more arcs.
  * 2: For each of the arcs, calculate the portion of the full circle it 
