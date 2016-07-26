@@ -3161,7 +3161,7 @@ color:B
 info:120:36:20:24:10
 power:18:2:12312:5:50
 blow:BITE:HURT:1d8
-flags:RAND_25 | BASH_DOOR | GROUP_AI
+flags:RAND_25 | BASH_DOOR | GROUP_AI | ATTR_FLICKER
 spell-freq:4
 spells:BLINK | TELE_TO
 friends:100:2d7:Same
@@ -3303,7 +3303,7 @@ power:20:2:50112:15:60
 blow:BITE:HURT:1d8
 blow:BITE:POISON:1d6
 blow:BITE:POISON:1d6
-flags:ANIMAL | WEIRD_MIND
+flags:ANIMAL | WEIRD_MIND | ATTR_FLICKER
 flags:IM_POIS | GROUP_AI
 spell-freq:5
 spells:BLINK | TELE_TO
@@ -3609,7 +3609,7 @@ color:b
 info:110:45:100:36:0
 power:21:1:1944:0:100
 blow:ENGULF:ELEC:3d3
-flags:HAS_LIGHT
+flags:HAS_LIGHT | ATTR_FLICKER
 flags:IM_ELEC
 spell-freq:6
 spells:BR_ELEC
@@ -4446,7 +4446,7 @@ info:110:144:2:36:0
 power:27:1:2300:0:140
 blow:SPORE:ELEC:5d4
 blow:SPORE:ELEC:5d4
-flags:EMPTY_MIND | STUPID | HAS_LIGHT
+flags:EMPTY_MIND | STUPID | HAS_LIGHT | ATTR_FLICKER
 flags:IM_ELEC
 desc:It is a strange growth on the dungeon floor, glowing and crackling with
 desc: sparks.
@@ -6315,14 +6315,14 @@ desc:A lump of rotting black flesh that slurrrrrrrps across the dungeon floor.
 
 name:399:Killer iridescent beetle
 base:killer beetle
-color:v
+color:b
 info:110:330:16:90:30
 power:37:2:119919:3:850
 blow:CLAW:ELEC:2d12
 blow:CLAW:ELEC:2d12
 blow:GAZE:PARALYZE
 flags:IM_ELEC
-flags:ATTR_MULTI
+flags:ATTR_FLICKER
 desc:It is a giant beetle, whose carapace shimmers with vibrant energies.
 
 name:400:Nexus vortex
@@ -6480,7 +6480,7 @@ info:140:176:100:48:0
 power:38:4:126720:3:800
 blow:ENGULF:BLIND:4d4
 blow:ENGULF:BLIND:4d4
-flags:HAS_LIGHT
+flags:HAS_LIGHT | ATTR_FLICKER
 flags:RAND_25
 spell-freq:4
 spells:SHRIEK
