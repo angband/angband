@@ -756,28 +756,27 @@ static bool item_tester_uncursable(const struct object *obj)
 /**
  * Removes an individual curse from an object.
  */
-static void remove_object_curse(struct object *obj, struct curse *curse,
-								bool message)
+static void remove_object_curse(struct object *obj, char *name,	bool message)
 {
 	struct curse *c = obj->curses;
-	if (streq(c->name, curse->name)) {
+	if (streq(c->name, name)) {
 		obj->curses = c->next;
 		c->next = NULL;
 		free_curse(c, true);
 		if (message) {
-			msg("The %s curse is removed!", c->name);
+			msg("The %s curse is removed!", name);
 		}
 		return;
 	}
 	while (c) {
 		struct curse *next = c->next;
 		assert(next);
-		if (streq(next->name, curse->name)) {
+		if (streq(next->name, name)) {
 			c->next = next->next;
 			next->next = NULL;
 			free_curse(next, true);
 			if (message) {
-				msg("The %s curse is removed!", c->name);
+				msg("The %s curse is removed!", name);
 			}
 			return;
 		}
@@ -797,8 +796,8 @@ static bool uncurse_object(struct object *obj, int strength)
 			return false;
 		} else if (strength >= curse->power) {
 			/* Successfully removed this curse */
-			remove_object_curse(obj->known, curse, false);
-			remove_object_curse(obj, curse, true);
+			remove_object_curse(obj->known, curse->name, false);
+			remove_object_curse(obj, curse->name, true);
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
 			/* Failure to remove, object is now fragile */
 			of_on(obj->flags, OF_FRAGILE);
