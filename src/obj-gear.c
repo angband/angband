@@ -912,7 +912,7 @@ void inven_drop(struct object *obj, int amt)
 	}
 
 	/* Drop it near the player */
-	drop_near(cave, dropped, 0, py, px, false);
+	drop_near(cave, &dropped, 0, py, px, false);
 
 	/* Sound for quiver objects */
 	if (quiver)
@@ -1018,6 +1018,7 @@ void pack_overflow(struct object *obj)
 {
 	int i;
 	char o_name[80];
+	bool artifact = false;
 
 	if (!pack_is_overfull()) return;
 
@@ -1042,26 +1043,25 @@ void pack_overflow(struct object *obj)
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+	if (obj->artifact) {
+		artifact = true;
+	}
 
 	/* Message */
 	msg("You drop %s.", o_name);
 
 	/* Excise the object and drop it (carefully) near the player */
 	gear_excise_object(obj);
-	drop_near(cave, obj, 0, player->py, player->px, false);
+	drop_near(cave, &obj, 0, player->py, player->px, false);
 
 	/* Describe */
-	if (obj->artifact)
+	if (artifact)
 		msg("You no longer have the %s.", o_name);
 	else
 		msg("You no longer have %s.", o_name);
 
-	/* Notice stuff (if needed) */
+	/* Notice, update, redraw */
 	if (player->upkeep->notice) notice_stuff(player);
-
-	/* Update stuff (if needed) */
 	if (player->upkeep->update) update_stuff(player);
-
-	/* Redraw stuff (if needed) */
 	if (player->upkeep->redraw) redraw_stuff(player);
 }

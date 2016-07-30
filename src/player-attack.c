@@ -638,7 +638,7 @@ static void ranged_helper(struct object *obj, int dir, int range, int shots,
 		missile = floor_object_for_use(obj, 1, true, &none_left);
 
 	/* Drop (or break) near that location */
-	drop_near(cave, missile, breakage_chance(missile, hit_target), y, x, true);
+	drop_near(cave, &missile, breakage_chance(missile, hit_target), y, x, true);
 }
 
 

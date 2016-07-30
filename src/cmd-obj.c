@@ -776,7 +776,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 			if (object_is_carried(player, obj))
 				inven_carry(player, used, true, true);
 			else
-				drop_near(cave, used, 0, player->py, player->px, false);
+				drop_near(cave, &used, 0, player->py, player->px, false);
 		} else
 			/* Empty a single lantern */
 			obj->timeout = 0;

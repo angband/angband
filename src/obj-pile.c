@@ -894,8 +894,11 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
  *
  * This function will produce a description of a drop event under the player
  * when "verbose" is true.
+ *
+ * The calling function needs to deal with the consequences of the dropped
+ * object being destroyed or absorbed into an existing pile.
  */
-void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
+void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 			   int x, bool verbose)
 {
 	char o_name[80];
@@ -906,25 +909,25 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 	assert(c == cave);
 
 	/* Describe object */
-	object_desc(o_name, sizeof(o_name), dropped, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), *dropped, ODESC_BASE);
 
 	/* Handle normal breakage */
-	if (!dropped->artifact && (randint0(100) < chance)) {
-		floor_carry_fail(dropped, true);
+	if (!((*dropped)->artifact) && (randint0(100) < chance)) {
+		floor_carry_fail(*dropped, true);
 		return;
 	}
 
 	/* Find the best grid and drop the item, destroying if there's no space */
-	drop_find_grid(dropped, &best_y, &best_x);
-	if (floor_carry(c, best_y, best_x, dropped, false)) {
+	drop_find_grid(*dropped, &best_y, &best_x);
+	if (floor_carry(c, best_y, best_x, *dropped, false)) {
 		sound(MSG_DROP);
 		if (verbose &&
 			(c->squares[best_y][best_x].mon < 0) &&
-			c->objects[dropped->oidx] &&
-			!ignore_item_ok(dropped))
+			c->objects[(*dropped)->oidx] &&
+			!ignore_item_ok(*dropped))
 			msg("You feel something roll beneath your feet.");
 	} else {
-		floor_carry_fail(dropped, false);
+		floor_carry_fail(*dropped, false);
 	}
 }
 
@@ -974,7 +977,7 @@ void push_object(int y, int x)
 		obj = q_pop_ptr(queue);
 
 		/* Drop the object */
-		drop_near(cave, obj, 0, y, x, false);
+		drop_near(cave, &obj, 0, y, x, false);
 	}
 
 	/* Reset cave feature and rune if needed */

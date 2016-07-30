@@ -1149,7 +1149,7 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 		nice_obj->origin_depth = player->depth;
 
 		/* Drop the object */
-		drop_near(cave, nice_obj, 0, y1, x1, true);
+		drop_near(cave, &nice_obj, 0, y1, x1, true);
 	}
 }
 
