@@ -1127,6 +1127,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
  * Animations.
  * ------------------------------------------------------------------------ */
 
+static bool animations_allowed = true;
 static byte flicker = 0;
 static byte color_flicker[MAX_COLORS][3] = 
 {
@@ -1197,6 +1198,21 @@ static void do_animation(void)
 	flicker++;
 }
 
+/**
+ * Set animations to allowed
+ */
+void allow_animations(void)
+{
+	animations_allowed = true;
+}
+
+/**
+ * Set animations to disallowed
+ */
+void disallow_animations(void)
+{
+	animations_allowed = false;
+}
 
 /**
  * Update animations on request
@@ -1212,10 +1228,9 @@ static void animate(game_event_type type, game_event_data *data, void *user)
  */
 void idle_update(void)
 {
+	if (!animations_allowed) return;
 	if (msg_flag) return;
-
 	if (!character_dungeon) return;
-
 	if (!OPT(animate_flicker) || (use_graphics != GRAPHICS_NONE)) return;
 
 	/* Animate and redraw if necessary */

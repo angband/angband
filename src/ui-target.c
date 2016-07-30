@@ -32,6 +32,7 @@
 #include "project.h"
 #include "target.h"
 #include "trap.h"
+#include "ui-display.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-map.h"
@@ -962,7 +963,7 @@ bool target_set_interactive(int mode, int x, int y)
 	target_set_monster(0);
 
 	/* Prevent animations */
-	msg_flag = true;
+	disallow_animations();
 
 	/* Calculate the window location for the help prompt */
 	Term_get_size(&wid, &hgt);
@@ -1476,7 +1477,7 @@ bool target_set_interactive(int mode, int x, int y)
 	mem_free(path_char);
 
 	/* Allow animations again */
-	msg_flag = false;
+	allow_animations();
 
 	/* Failure to set target */
 	if (!target_is_set()) return (false);
