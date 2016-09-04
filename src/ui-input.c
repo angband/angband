@@ -1398,8 +1398,19 @@ ui_event textui_get_command(int *count)
 		/* Activate "command mode" */
 		inkey_flag = true;
 
+		/* Toggle on cursor if requested */
+		if (OPT(highlight_player)) {
+			Term_set_cursor(true);
+			move_cursor_relative(player->py, player->px);
+		}
+
 		/* Get a command */
 		ke = inkey_ex();
+
+		/* Toggle off cursor */
+		if (OPT(highlight_player)) {
+			Term_set_cursor(false);
+		}
 
 		if (ke.type == EVT_KBRD) {
 			bool keymap_ok = true;

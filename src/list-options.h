@@ -27,6 +27,8 @@ OP(show_flavors,          "Show flavors in object descriptions",
 INTERFACE, false)
 OP(show_target,           "Highlight target with cursor",
 INTERFACE, true)
+OP(highlight_player,      "Highlight player with cursor between turns",
+INTERFACE, false)
 OP(disturb_near,          "Disturb whenever viewable monster moves",
 INTERFACE, true)
 OP(solid_walls,           "Show walls as solid blocks",
