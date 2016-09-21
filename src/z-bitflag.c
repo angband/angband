@@ -303,29 +303,6 @@ bool flag_union(bitflag *flags1, const bitflag *flags2, const size_t size)
 
 
 /**
- * Computes the union of one bitfield and the complement of another.
- *
- * For every unset flag in `flags2`, the corresponding flag is set in `flags1`.
- * The size of the bitfields is supplied in `size`. true is returned when
- * changes were made, and false otherwise.
- */
-bool flag_comp_union(bitflag *flags1, const bitflag *flags2, const size_t size)
-{
-	size_t i;
-	bool delta = false;
-
-	for (i = 0; i < size; i++) {
-		/* no equivalent fn */
-		if (!(~flags1[i] & ~flags2[i])) delta = true;
-
-		flags1[i] |= ~flags2[i];
-	}
-
-	return delta;
-}
-
-
-/**
  * Computes the intersection of two bitfields.
  *
  * For every unset flag in `flags2`, the corresponding flag is cleared in

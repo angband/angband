@@ -59,7 +59,6 @@ enum
 #define sqinfo_negate(f)           flag_negate(f, SQUARE_SIZE)
 #define sqinfo_copy(f1, f2)        flag_copy(f1, f2, SQUARE_SIZE)
 #define sqinfo_union(f1, f2)       flag_union(f1, f2, SQUARE_SIZE)
-#define sqinfo_comp_union(f1, f2)  flag_comp_union(f1, f2, SQUARE_SIZE)
 #define sqinfo_inter(f1, f2)       flag_inter(f1, f2, SQUARE_SIZE)
 #define sqinfo_diff(f1, f2)        flag_diff(f1, f2, SQUARE_SIZE)
 

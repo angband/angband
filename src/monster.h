@@ -57,7 +57,6 @@ enum
 #define mflag_negate(f)           flag_negate(f, MFLAG_SIZE)
 #define mflag_copy(f1, f2)        flag_copy(f1, f2, MFLAG_SIZE)
 #define mflag_union(f1, f2)       flag_union(f1, f2, MFLAG_SIZE)
-#define mflag_comp_union(f1, f2)  flag_comp_union(f1, f2, MFLAG_SIZE)
 #define mflag_inter(f1, f2)       flag_inter(f1, f2, MFLAG_SIZE)
 #define mflag_diff(f1, f2)        flag_diff(f1, f2, MFLAG_SIZE)
 

@@ -106,7 +106,6 @@ enum object_flag_id {
 #define of_negate(f)           	flag_negate(f, OF_SIZE)
 #define of_copy(f1, f2)        	flag_copy(f1, f2, OF_SIZE)
 #define of_union(f1, f2)       	flag_union(f1, f2, OF_SIZE)
-#define of_comp_union(f1, f2)  	flag_comp_union(f1, f2, OF_SIZE)
 #define of_inter(f1, f2)       	flag_inter(f1, f2, OF_SIZE)
 #define of_diff(f1, f2)        	flag_diff(f1, f2, OF_SIZE)
 
@@ -126,7 +125,6 @@ enum object_flag_id {
 #define kf_negate(f)           	flag_negate(f, KF_SIZE)
 #define kf_copy(f1, f2)        	flag_copy(f1, f2, KF_SIZE)
 #define kf_union(f1, f2)       	flag_union(f1, f2, KF_SIZE)
-#define kf_comp_union(f1, f2)  	flag_comp_union(f1, f2, KF_SIZE)
 #define kf_inter(f1, f2)       	flag_inter(f1, f2, KF_SIZE)
 #define kf_diff(f1, f2)        	flag_diff(f1, f2, KF_SIZE)
 
