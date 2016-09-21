@@ -1266,8 +1266,8 @@ void do_cmd_rest(struct command *cmd)
 	 * A little sanity checking on the input - only the specified negative 
 	 * values are valid. 
 	 */
-    if (n < 0 && !player_resting_is_special(n))
-        return;
+	if (n < 0 && !player_resting_is_special(n))
+		return;
 
 	/* Do some upkeep on the first turn of rest */
 	if (!player_is_resting(player)) {
