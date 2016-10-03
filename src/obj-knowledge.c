@@ -832,6 +832,7 @@ void object_sense(struct player *p, struct object *obj)
 	struct object *known_obj = p->cave->objects[obj->oidx];
 	int y = obj->iy;
 	int x = obj->ix;
+	int none = tval_find_idx("none");
 
 	/* Make new sensed objects where necessary */
 	if (known_obj == NULL) {
@@ -845,8 +846,10 @@ void object_sense(struct player *p, struct object *obj)
 		/* Give it a fake kind */
 		if (tval_is_money(obj)) {
 			new_obj->kind = unknown_gold_kind;
+			new_obj->sval = lookup_sval(none, "<unknown treasure>");
 		} else {
 			new_obj->kind = unknown_item_kind;
+			new_obj->sval = lookup_sval(none, "<unknown item>");
 		}
 
 		/* Attach it to the current floor pile */
