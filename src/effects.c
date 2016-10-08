@@ -557,12 +557,10 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 {
 	int safe_stat = context->p1;
-	int loss_stat = randint0(STAT_MAX - 1);
+	int loss_stat = randint1(STAT_MAX - 1);
 
-	/* Skip the safe stat */
-	if (loss_stat == safe_stat) {
-		loss_stat++;
-	}
+	/* Avoid the safe stat */
+	loss_stat = (loss_stat + safe_stat) % STAT_MAX;
 
 	/* Attempt to reduce the stat */
 	if (player_stat_dec(player, loss_stat, true)) {
