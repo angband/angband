@@ -247,12 +247,12 @@ void history_find_artifact(struct player *p, const struct artifact *artifact)
 	/* Try revealing any existing artifact, otherwise log it */
 	if (!history_mark_artifact_known(&p->hist, artifact)) {
 		char o_name[80];
-		char buf[80];
+		char text[80];
 
 		get_artifact_name(o_name, sizeof(o_name), artifact);
-		strnfmt(buf, sizeof(buf), "Found %s", o_name);
+		strnfmt(text, sizeof(text), "Found %s", o_name);
 
-		history_add_with_artifact(p, buf, HIST_ARTIFACT_KNOWN, artifact);
+		history_add_with_artifact(p, text, HIST_ARTIFACT_KNOWN, artifact);
 	}
 }
 
