@@ -59,9 +59,9 @@ void history_clear(struct player *p)
 
 	if (h->entries) {
 		mem_free(h->entries);
+		h->entries = NULL;
 	}
 
-	h->entries = NULL;
 	h->next = 0;
 	h->length = 0;
 }
