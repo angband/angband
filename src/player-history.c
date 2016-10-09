@@ -105,13 +105,26 @@ bool history_add_full(struct player *p,
 }
 
 /**
- * Add an entry with text `text` to the history list, with type `type`
- * ("HIST_xxx" in player-history.h), and artifact number `id` (0 for
- * everything else).
- *
- * Return true on success.
+ * Add an entry to the history ledger with specified bitflags.
  */
-bool history_add(struct player *p,
+static bool history_add_with_flags(struct player *p,
+		const char *text,
+		bitflag flags[HIST_SIZE],
+		const struct artifact *artifact)
+{
+	return history_add_full(p,
+		flags,
+		artifact,
+		p->depth,
+		p->lev,
+		p->total_energy / 100,
+		text);
+}
+
+/**
+ * Adds an entry to the history ledger with an artifact attached.
+ */
+static bool history_add_with_artifact(struct player *p,
 		const char *text,
 		int type,
 		const struct artifact *artifact)
@@ -120,13 +133,25 @@ bool history_add(struct player *p,
 	hist_wipe(flags);
 	hist_on(flags, type);
 
-	return history_add_full(p,
+	return history_add_with_flags(p,
+		text,
 		flags,
-		artifact,
-		p->depth,
-		p->lev,
-		p->total_energy / 100,
-		text);
+		artifact);
+}
+
+/**
+ * Adds an entry to the history ledger.
+ */
+bool history_add(struct player *p, const char *text, int type)
+{
+	bitflag flags[HIST_SIZE];
+	hist_wipe(flags);
+	hist_on(flags, type);
+
+	return history_add_with_flags(p,
+		text,
+		flags,
+		0);
 }
 
 /**
@@ -149,34 +174,7 @@ bool history_is_artifact_known(struct player *p, const struct artifact *artifact
 }
 
 /**
- * Returns true if the artifact denoted by a_idx is an active entry in
- * the history log (i.e. is not marked HIST_ARTIFACT_LOST).  This permits
- * proper handling of the case where the player loses an artifact but (in
- * preserve mode) finds it again later.
- */
-static bool history_is_artifact_logged(struct player *p, const struct artifact *artifact)
-{
-	assert(artifact);
-
-	struct player_history *h = &p->hist;
-
-	size_t i = h->next;
-	while (i--) {
-		struct history_info *entry = &h->entries[i];
-
-		/* Don't count ARTIFACT_LOST entries; then we can handle
-		 * re-finding previously lost artifacts in preserve mode  */
-		if (entry->a_idx == artifact->aidx &&
-					!hist_has(entry->type, HIST_ARTIFACT_LOST)) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-/**
- * Mark artifact number `id` as known.
+ * Mark artifact as known.
  */
 static bool history_mark_artifact_known(struct player_history *h,
 		const struct artifact *artifact)
@@ -188,6 +186,26 @@ static bool history_mark_artifact_known(struct player_history *h,
 		if (h->entries[i].a_idx == artifact->aidx) {
 			hist_wipe(h->entries[i].type);
 			hist_on(h->entries[i].type, HIST_ARTIFACT_KNOWN);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Mark artifact as lost.
+ */
+static bool history_mark_artifact_lost(struct player_history *h,
+		const struct artifact *artifact)
+{
+	assert(artifact);
+
+	size_t i = h->next;
+	while (i--) {
+		if (h->entries[i].a_idx == artifact->aidx) {
+			hist_wipe(h->entries[i].type);
+			hist_on(h->entries[i].type, HIST_ARTIFACT_LOST);
 			return true;
 		}
 	}
@@ -223,68 +241,45 @@ static void get_artifact_name(char *buf, size_t len, const struct artifact *arti
  * Call this to add an artifact to the history list or make the history
  * entry visible.
  */
-bool history_add_artifact(struct player *p,
-		const struct artifact *artifact,
-		bool known,
-		bool found)
+void history_find_artifact(struct player *p, const struct artifact *artifact)
 {
 	assert(artifact != NULL);
 
-	char o_name[80];
-	char buf[80];
+	/* Try revealing any existing artifact, otherwise log it */
+	if (!history_mark_artifact_known(&p->hist, artifact)) {
+		char o_name[80];
+		char buf[80];
 
-	get_artifact_name(o_name, sizeof(o_name), artifact);
-	strnfmt(buf, sizeof(buf), found ? "Found %s" : "Missed %s", o_name);
+		get_artifact_name(o_name, sizeof(o_name), artifact);
+		strnfmt(buf, sizeof(buf), "Found %s", o_name);
 
-	/* Known objects gets different treatment */
-	if (known) {
-		/* Try revealing any existing artifact, otherwise log it */
-		if (history_is_artifact_logged(p, artifact)) {
-			history_mark_artifact_known(&p->hist, artifact);
-		} else {
-			history_add(p, buf, HIST_ARTIFACT_KNOWN, artifact);
-		}
-	} else {
-		if (!history_is_artifact_logged(p, artifact)) {
-			bitflag type[HIST_SIZE];
-			hist_wipe(type);
-			hist_on(type, HIST_ARTIFACT_UNKNOWN);
-			if (!found) {
-				hist_on(type, HIST_ARTIFACT_LOST);
-			}
-
-			history_add_full(p, type, artifact, player->depth, player->lev,
-							 player->total_energy / 100, buf);
-		} else {
-			return false;
-		}
+		history_add_with_artifact(p, buf, HIST_ARTIFACT_KNOWN, artifact);
 	}
-
-	return true;
 }
 
 /**
  * Mark artifact number `id` as lost forever.
  */
-bool history_lose_artifact(struct player *p, const struct artifact *artifact)
+void history_lose_artifact(struct player *p, const struct artifact *artifact)
 {
-	assert(artifact);
+	assert(artifact != NULL);
 
-	struct player_history *h = &p->hist;
+	/* Try to mark it as lost if it's already in history */
+	if (!history_mark_artifact_lost(&p->hist, artifact)) {
+		/* Otherwise add a new entry */
+		char o_name[80];
+		char text[80];
 
-	size_t i = h->next;
-	while (i--) {
-		if (h->entries[i].a_idx == artifact->aidx) {
-			hist_on(h->entries[i].type, HIST_ARTIFACT_LOST);
-			return true;
-		}
+		get_artifact_name(o_name, sizeof(o_name), artifact);
+		strnfmt(text, sizeof(text), "Missed %s", o_name);
+
+		bitflag flags[HIST_SIZE];
+		hist_wipe(flags);
+		hist_on(flags, HIST_ARTIFACT_UNKNOWN);
+		hist_on(flags, HIST_ARTIFACT_LOST);
+
+		history_add_with_flags(p, text, flags, artifact);
 	}
-
-	/* If we lost an artifact that didn't previously have a history, then we
-	 * missed it */
-	history_add_artifact(p, artifact, false, false);
-
-	return false;
 }
 
 /**

@@ -1862,7 +1862,7 @@ void do_cmd_sell(struct command *cmd)
 	/* Update the auto-history if selling an artifact that was previously
 	 * un-IDed. (Ouch!) */
 	if (obj->artifact)
-		history_add_artifact(player, obj->artifact, true, true);
+		history_find_artifact(player, obj->artifact);
 
 	/* Update the gear */
 	player->upkeep->update |= (PU_INVEN);

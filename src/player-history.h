@@ -61,13 +61,10 @@ bool history_add_full(struct player *p,
 		s16b clev,
 		s32b turn,
 		const char *text);
-bool history_add(struct player *p, const char *text, int type, const struct artifact *art);
+bool history_add(struct player *p, const char *text, int type);
 bool history_is_artifact_known(struct player *p, const struct artifact *artifact);
-bool history_add_artifact(struct player *p,
-		const struct artifact *artifact,
-		bool known,
-		bool found);
-bool history_lose_artifact(struct player *p, const struct artifact *artifact);
+void history_find_artifact(struct player *p, const struct artifact *artifact);
+void history_lose_artifact(struct player *p, const struct artifact *artifact);
 void history_unmask_unknown(struct player *p);
 size_t history_get_list(struct player *p, struct history_info **list);
 
