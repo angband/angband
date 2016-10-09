@@ -415,7 +415,7 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 		if (msg->delay != delay) continue;
 		if (msg->delay && msg->tag != tag) continue;
 
-		char text[512];
+		char text[160];
 		size_t start = 0;
 
 		/* Some messages don't require a monster name */
