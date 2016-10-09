@@ -53,9 +53,6 @@ static const char *msg_repository[] = {
  */
 void message_pain(struct monster *mon, int dam)
 {
-	long oldhp, newhp, tmp;
-	int percentage;
-
 	int msg_code = MON_MSG_UNHARMED;
 	char m_name[80];
 
@@ -63,39 +60,29 @@ void message_pain(struct monster *mon, int dam)
 	 * add_monster_message does string processing on m_name */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
-	/* Notice non-damage */
-	if (dam == 0) {
-		add_monster_message(m_name, mon, msg_code, false);
-		return;
+	/* Calculate damage levels */
+	if (dam > 0) {
+		/* Note -- subtle fix -CFT */
+		long newhp = (long)(mon->hp);
+		long oldhp = newhp + (long)(dam);
+		long tmp = (newhp * 100L) / oldhp;
+		int percentage = (int)(tmp);
+
+		if (percentage > 95)		msg_code = MON_MSG_95;
+		else if (percentage > 75)	msg_code = MON_MSG_75;
+		else if (percentage > 50)	msg_code = MON_MSG_50;
+		else if (percentage > 35)	msg_code = MON_MSG_35;
+		else if (percentage > 20)	msg_code = MON_MSG_20;
+		else if (percentage > 10)	msg_code = MON_MSG_10;
+		else						msg_code = MON_MSG_0;
 	}
-
-	/* Note -- subtle fix -CFT */
-	newhp = (long)(mon->hp);
-	oldhp = newhp + (long)(dam);
-	tmp = (newhp * 100L) / oldhp;
-	percentage = (int)(tmp);
-
-	if (percentage > 95)
-		msg_code = MON_MSG_95;
-	else if (percentage > 75)
-		msg_code = MON_MSG_75;
-	else if (percentage > 50)
-		msg_code = MON_MSG_50;
-	else if (percentage > 35)
-		msg_code = MON_MSG_35;
-	else if (percentage > 20)
-		msg_code = MON_MSG_20;
-	else if (percentage > 10)
-		msg_code = MON_MSG_10;
-	else
-		msg_code = MON_MSG_0;
 
 	add_monster_message(m_name, mon, msg_code, false);
 }
 
 #define SINGULAR_MON   1
 #define PLURAL_MON     2
-           
+
 /**
  * Returns a pointer to a statically allocatted string containing a formatted
  * message based on the given message code and the quantity flag.
@@ -224,77 +211,80 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 	int i;
 	byte mon_flags = 0;
 
-	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
+	assert(msg_code >= 0);
+	assert(msg_code < MON_MSG_MAX);
 
-	if (redundant_monster_message(mon, msg_code)) return (false);
+	if (redundant_monster_message(mon, msg_code))
+		return false;
 
 	/* Paranoia */
-	if (!mon_name || !mon_name[0]) mon_name = "it";
+	if (!mon_name || !mon_name[0])
+		mon_name = "it";
 
-	/* Save the "hidden" mark, if present */
-	if (strstr(mon_name, "(hidden)")) mon_flags |= MON_MSG_FLAG_HIDDEN;
-
-	/* Save the "offscreen" mark, if present */
-	if (strstr(mon_name, "(offscreen)")) mon_flags |= MON_MSG_FLAG_OFFSCREEN;
-
-	/* Monster is invisible or out of LOS */
+	if (strstr(mon_name, "(hidden)"))
+		mon_flags |= MON_MSG_FLAG_HIDDEN;
+	if (strstr(mon_name, "(offscreen)"))
+		mon_flags |= MON_MSG_FLAG_OFFSCREEN;
 	if (streq(mon_name, "it") || streq(mon_name, "something"))
 		mon_flags |= MON_MSG_FLAG_INVISIBLE;
 
 	/* Query if the message is already stored */
 	for (i = 0; i < size_mon_msg; i++) {
 		/* We found the race and the message code */
-		if ((mon_msg[i].race == mon->race) &&
-			(mon_msg[i].mon_flags == mon_flags) &&
-			(mon_msg[i].msg_code == msg_code)) {
+		if (mon_msg[i].race == mon->race &&
+					mon_msg[i].mon_flags == mon_flags &&
+					mon_msg[i].msg_code == msg_code) {
 			/* Can we increment the counter? */
-			if (mon_msg[i].mon_count < UCHAR_MAX)
+			if (mon_msg[i].mon_count < UCHAR_MAX) {
 				/* Stack the message */
-				++(mon_msg[i].mon_count);
-   
+				mon_msg[i].mon_count++;
+			}
+
 			/* Record which monster had this message stored */
-			if (size_mon_hist >= MAX_STORED_MON_CODES) return (true);
-			mon_message_hist[size_mon_hist].mon = mon;
-			mon_message_hist[size_mon_hist].message_code = msg_code;
-			size_mon_hist++;
+			if (size_mon_hist < MAX_STORED_MON_CODES) {
+				mon_message_hist[size_mon_hist].mon = mon;
+				mon_message_hist[size_mon_hist].message_code = msg_code;
+				size_mon_hist++;
+			}
 
 			/* Success */
-			return (true);
+			return true;
 		}
 	}
    
 	/* The message isn't stored. Check free space */
-	if (size_mon_msg >= MAX_STORED_MON_MSG) return (false);
+	if (size_mon_msg >= MAX_STORED_MON_MSG) {
+		return false;
+	} else {
+		/* Assign the message data to the free slot */
+		mon_msg[i].race = mon->race;
+		mon_msg[i].mon_flags = mon_flags;
+		mon_msg[i].msg_code = msg_code;
+		mon_msg[i].delay = delay;
+		mon_msg[i].delay_tag = MON_DELAY_TAG_DEFAULT;
+		mon_msg[i].mon_count = 1;
 
-	/* Assign the message data to the free slot */
-	mon_msg[i].race = mon->race;
-	mon_msg[i].mon_flags = mon_flags;
-	mon_msg[i].msg_code = msg_code;
-	mon_msg[i].delay = delay;
-	mon_msg[i].delay_tag = MON_DELAY_TAG_DEFAULT;
-	/* Just this monster so far */
-	mon_msg[i].mon_count = 1;
+		/* Force all death messages to go at the end of the group for
+		 * logical presentation */
+		if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
+			mon_msg[i].delay = true;
+			mon_msg[i].delay_tag = MON_DELAY_TAG_DEATH;
+		}
 
-	/* Force all death messages to go at the end of the group for
-	 * logical presentation */
-	if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
-		mon_msg[i].delay = true;
-		mon_msg[i].delay_tag = MON_DELAY_TAG_DEATH;
+		/* One more entry */
+		size_mon_msg++;
+
+		player->upkeep->notice |= PN_MON_MESSAGE;
+
+		/* Record which monster had this message stored */
+		if (size_mon_hist < MAX_STORED_MON_CODES) {
+			mon_message_hist[size_mon_hist].mon = mon;
+			mon_message_hist[size_mon_hist].message_code = msg_code;
+			size_mon_hist++;
+		}
+
+		return true;
 	}
-
-	/* One more entry */
-	++size_mon_msg;
- 
-	player->upkeep->notice |= PN_MON_MESSAGE;
-
-	/* Record which monster had this message stored */
-	if (size_mon_hist >= MAX_STORED_MON_CODES) return (true);
-	mon_message_hist[size_mon_hist].mon = mon;
-	mon_message_hist[size_mon_hist].message_code = msg_code;
-	size_mon_hist++;
-
-	/* Success */
-	return (true);
 }
 
 /**
