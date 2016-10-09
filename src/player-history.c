@@ -25,7 +25,7 @@
 #include "player-history.h"
 
 /**
- * Number of slots available at birth in the player history list.
+ * Memory allocation constants.
  */
 #define HISTORY_LEN_INIT		20
 #define HISTORY_LEN_INCR		20
@@ -45,7 +45,7 @@ static void history_init(struct player_history *h)
  */
 static void history_realloc(struct player_history *h)
 {
-	h->length = h->length + HISTORY_LEN_INCR;
+	h->length += HISTORY_LEN_INCR;
 	h->entries = mem_realloc(h->entries,
 			h->length * sizeof *h->entries);
 }
@@ -119,24 +119,6 @@ static bool history_add_with_flags(struct player *p,
 		p->lev,
 		p->total_energy / 100,
 		text);
-}
-
-/**
- * Adds an entry to the history ledger with an artifact attached.
- */
-static bool history_add_with_artifact(struct player *p,
-		const char *text,
-		int type,
-		const struct artifact *artifact)
-{
-	bitflag flags[HIST_SIZE];
-	hist_wipe(flags);
-	hist_on(flags, type);
-
-	return history_add_with_flags(p,
-		text,
-		flags,
-		artifact);
 }
 
 /**
@@ -252,7 +234,11 @@ void history_find_artifact(struct player *p, const struct artifact *artifact)
 		get_artifact_name(o_name, sizeof(o_name), artifact);
 		strnfmt(text, sizeof(text), "Found %s", o_name);
 
-		history_add_with_artifact(p, text, HIST_ARTIFACT_KNOWN, artifact);
+		bitflag flags[HIST_SIZE];
+		hist_wipe(flags);
+		hist_on(flags, HIST_ARTIFACT_KNOWN);
+
+		history_add_with_flags(p, text, flags, artifact);
 	}
 }
 
