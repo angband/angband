@@ -25,11 +25,50 @@
 #include "game-input.h"
 #include "player-calcs.h"
 
+/**
+ * Maxinum number of stacked monster messages
+ */
+#define MAX_STORED_MON_MSG		200
+#define MAX_STORED_MON_CODES	400
+
+/**
+ * Flags for whether monsters are offscreen or invisible
+ */
+#define MON_MSG_FLAG_OFFSCREEN	0x01
+#define MON_MSG_FLAG_INVISIBLE	0x02
+
+/**
+ * Message tags
+ *
+ * Used to determine which order to display messages in
+ */
+enum delay_tag {
+	MON_DELAY_TAG_DEFAULT = 0,
+	MON_DELAY_TAG_DEATH,
+};
+
+/**
+ * A stacked monster message entry
+ */
+typedef struct monster_race_message {
+	struct monster_race *race;	/* The race of the monster */
+	int mon_flags;				/* Flags */
+	int msg_code;				/* The coded message */
+	int mon_count;				/* How many monsters triggered this message */
+	bool delay;					/* Should this message be put off to the end */
+	enum delay_tag tag;			/* To group delayed messages for better presentation */
+} monster_race_message;
+
+typedef struct monster_message_history
+{
+	struct monster *mon;	/* The monster */
+	int message_code;		/* The coded message */
+} monster_message_history;
+
 static u16b size_mon_hist = 0;
 static u16b size_mon_msg = 0;
-
-monster_race_message *mon_msg;
-monster_message_history *mon_message_hist;
+static monster_race_message *mon_msg;
+static monster_message_history *mon_message_hist;
 
 /**
  * The NULL-terminated array of string actions used to format stacked messages.
@@ -234,19 +273,22 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 	if (size_mon_msg >= MAX_STORED_MON_MSG) {
 		return false;
 	} else {
+		int idx = size_mon_msg;
+
 		/* Assign the message data to the free slot */
-		mon_msg[i].race = mon->race;
-		mon_msg[i].mon_flags = mon_flags;
-		mon_msg[i].msg_code = msg_code;
-		mon_msg[i].delay = delay;
-		mon_msg[i].delay_tag = MON_DELAY_TAG_DEFAULT;
-		mon_msg[i].mon_count = 1;
+		mon_msg[idx].race = mon->race;
+		mon_msg[idx].mon_flags = mon_flags;
+		mon_msg[idx].msg_code = msg_code;
+		mon_msg[idx].mon_count = 1;
 
 		/* Force all death messages to go at the end of the group for
 		 * logical presentation */
 		if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
-			mon_msg[i].delay = true;
-			mon_msg[i].delay_tag = MON_DELAY_TAG_DEATH;
+			mon_msg[idx].delay = true;
+			mon_msg[idx].tag = MON_DELAY_TAG_DEATH;
+		} else {
+			mon_msg[idx].delay = delay;
+			mon_msg[idx].tag = MON_DELAY_TAG_DEFAULT;
 		}
 
 		/* One more entry */
@@ -271,7 +313,7 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
  * This is to avoid things like "The snaga dies. The snaga runs in fear!"
  * So we only flush messages matching the delay parameter.
  */
-static void flush_monster_messages(bool delay, byte delay_tag)
+static void flush_monster_messages(bool delay, enum delay_tag tag)
 {
 	const struct monster_race *race;
 	int i, count;
@@ -286,7 +328,7 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 		if (mon_msg[i].delay != delay) continue;
 
 		/* Skip if we are delaying and the tags don't match */
-		if (mon_msg[i].delay && mon_msg[i].delay_tag != delay_tag) continue;
+		if (mon_msg[i].delay && mon_msg[i].tag != tag) continue;
 
 		/* Cache the monster count */
 		count = mon_msg[i].mon_count;
