@@ -54,9 +54,9 @@ enum {
 typedef struct monster_race_message
 {
 	struct monster_race *race;	/* The race of the monster */
-	byte mon_flags;		/* Flags */
- 	int  msg_code;		/* The coded message */
-	byte mon_count;		/* How many monsters triggered this message */
+	int mon_flags;		/* Flags */
+	int msg_code;		/* The coded message */
+	int mon_count;		/* How many monsters triggered this message */
 	bool delay;			/* Should this message be put off to the end */
 	byte delay_tag;		/* To group delayed messages for better presentation */
 } monster_race_message;

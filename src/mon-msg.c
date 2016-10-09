@@ -215,11 +215,8 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 		if (mon_msg[i].race == mon->race &&
 					mon_msg[i].mon_flags == mon_flags &&
 					mon_msg[i].msg_code == msg_code) {
-			/* Can we increment the counter? */
-			if (mon_msg[i].mon_count < UCHAR_MAX) {
-				/* Stack the message */
-				mon_msg[i].mon_count++;
-			}
+			/* Stack the message */
+			mon_msg[i].mon_count++;
 
 			/* Record which monster had this message stored */
 			if (size_mon_hist < MAX_STORED_MON_CODES) {
