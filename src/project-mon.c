@@ -347,7 +347,7 @@ static void project_monster_handler_ELEC(project_monster_handler_context_t *cont
 /* Fire damage */
 static void project_monster_handler_FIRE(project_monster_handler_context_t *context)
 {
-	project_monster_hurt_immune(context, RF_HURT_FIRE, RF_IM_FIRE, 2, 9, MON_MSG_CATCH_FIRE, MON_MSG_DISENTEGRATES);
+	project_monster_hurt_immune(context, RF_HURT_FIRE, RF_IM_FIRE, 2, 9, MON_MSG_CATCH_FIRE, MON_MSG_DISINTEGRATES);
 }
 
 /* Cold */

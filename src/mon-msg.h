@@ -25,7 +25,7 @@
  * Monster message constants
  */
 enum mon_messages {
-	#define MON_MSG(x, s) MON_MSG_##x,
+	#define MON_MSG(x, t, s) MON_MSG_##x,
 	#include "list-mon-message.h"
 	#undef MON_MSG
 };

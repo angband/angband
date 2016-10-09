@@ -84,8 +84,11 @@ static struct monster_message_history mon_message_hist[MAX_STORED_MON_CODES];
  * string as a whole message, not as a part of a larger message. This
  * is useful to display Moria-like death messages.
  */
-static const char *msg_repository[] = {
-	#define MON_MSG(x, s) s,
+static const struct {
+	const char *msg;
+	int type;
+} msg_repository[] = {
+	#define MON_MSG(x, t, s) { s, t },
 	#include "list-mon-message.h"
 	#undef MON_MSG
 };
@@ -138,7 +141,7 @@ static char *get_mon_msg_action(int msg_code, bool do_plural,
 	assert(race->base->pain != NULL);
 
 	/* Find the appropriate message */
-	const char *source = msg_repository[msg_code];
+	const char *source = msg_repository[msg_code].msg;
 	switch (msg_code) {
 		case MON_MSG_95: source = race->base->pain->messages[0]; break;
 		case MON_MSG_75: source = race->base->pain->messages[1]; break;
@@ -325,8 +328,9 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
  */
 static void get_subject(char *buf, size_t len,
 		struct monster_race *race,
+		int count,
 		bool invisible,
-		int count)
+		bool offscreen)
 {
 	if (invisible) {
 		if (count == 1) {
@@ -357,6 +361,12 @@ static void get_subject(char *buf, size_t len,
 			strnfmt(buf, len, "%d %s", count, race_name);
 		}
 	}
+
+	if (offscreen)
+		my_strcat(buf, " (offscreen)", sizeof(buf));
+
+	/* Add a separator */
+	my_strcat(buf, " ", sizeof(buf));
 }
 
 /**
@@ -368,14 +378,14 @@ static void get_subject(char *buf, size_t len,
  */
 static void show_monster_messages(bool delay, enum delay_tag tag)
 {
+	char buf[512];
+
 	for (int i = 0; i < size_mon_msg; i++) {
 		struct monster_race_message *msg = &mon_msg[i];
 
 		/* Skip irrelevant entries */
 		if (msg->delay != delay) continue;
 		if (msg->delay && msg->tag != tag) continue;
-
-		char buf[512] = "";
 
 		bool invisible = msg->flags & MON_MSG_FLAG_INVISIBLE;
 		bool offscreen = msg->flags & MON_MSG_FLAG_OFFSCREEN;
@@ -391,50 +401,26 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 		if (*action == '~') {
 			action += 1;
 		} else {
-			/* Get 'it' or '3 monsters' or '15000 snakes' etc */
+			/* Get 'it ' or '3 monsters (offscreen) ' or '15000 snakes ' etc */
 			get_subject(buf, sizeof(buf),
 					msg->race,
+					msg->count,
 					invisible,
-					msg->count);
-
-			if (offscreen)
-				my_strcat(buf, " (offscreen)", sizeof(buf));
-
-			/* Add a separator */
-			my_strcat(buf, " ", sizeof(buf));
+					offscreen);
 		}
 
-		/* Append the action to the message */
 		my_strcat(buf, action, sizeof(buf));
 
-		int type = MSG_GENERIC;
-
-		switch (msg->msg_code) {
-			case MON_MSG_FLEE_IN_TERROR:
-				type = MSG_FLEE;
-				break;
-
-			case MON_MSG_MORIA_DEATH:
-			case MON_MSG_DESTROYED:
-			case MON_MSG_DIE:
-			case MON_MSG_SHRIVEL_LIGHT:
-			case MON_MSG_DISENTEGRATES:
-			case MON_MSG_FREEZE_SHATTER:
-			case MON_MSG_DISSOLVE:
-			{
-				/* Assume normal death sound */
-				type = MSG_KILL;
-
-				/* Play a special sound if the monster was unique */
-				if (msg->race != NULL && rf_has(msg->race->flags, RF_UNIQUE)) {
-					if (msg->race->base == lookup_monster_base("Morgoth"))
-						type = MSG_KILL_KING;
-					else
-						type = MSG_KILL_UNIQUE;
+		int type = msg_repository[msg->msg_code].type;
+		if (type == MSG_KILL) {
+			/* Play a special sound if the monster was unique */
+			if (rf_has(msg->race->flags, RF_UNIQUE)) {
+				if (msg->race->base == lookup_monster_base("Morgoth")) {
+					type = MSG_KILL_KING;
+				} else {
+					type = MSG_KILL_UNIQUE;
 				}
-				break;
 			}
-
 		}
 
 		/* Show the message */
