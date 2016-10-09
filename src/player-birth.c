@@ -1084,13 +1084,7 @@ void do_cmd_choose_history(struct command *cmd)
 
 void do_cmd_accept_character(struct command *cmd)
 {
-	int i;
-
-	/* Reset score options from cheat options */
-	for (i = 0; i < OPT_MAX; i++) {
-		if (option_type(i) == OP_CHEAT)
-			op_ptr->opt[i + 1] = op_ptr->opt[i];
-	}
+	options_init_cheat();
 
 	roll_hp();
 

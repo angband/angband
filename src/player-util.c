@@ -99,7 +99,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 {
 	int old_chp = p->chp;
 
-	int warning = (p->mhp * op_ptr->hitpoint_warn / 10);
+	int warning = (p->mhp * p->opts.hitpoint_warn / 10);
 
 	/* Paranoia */
 	if (p->is_dead) return;

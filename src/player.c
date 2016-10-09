@@ -29,17 +29,6 @@
 #include "z-color.h"
 #include "z-util.h"
 
-
-/**
- * The player other record (static)
- */
-static player_other player_other_body;
-
-/**
- * Pointer to the player other record
- */
-player_other *op_ptr = &player_other_body;
-
 /**
  * Pointer to the player struct
  */
@@ -308,7 +297,7 @@ byte player_hp_attr(struct player *p)
 	
 	if (p->chp >= p->mhp)
 		attr = COLOUR_L_GREEN;
-	else if (p->chp > (p->mhp * op_ptr->hitpoint_warn) / 10)
+	else if (p->chp > (p->mhp * p->opts.hitpoint_warn) / 10)
 		attr = COLOUR_YELLOW;
 	else
 		attr = COLOUR_RED;
@@ -322,7 +311,7 @@ byte player_sp_attr(struct player *p)
 	
 	if (p->csp >= p->msp)
 		attr = COLOUR_L_GREEN;
-	else if (p->csp > (p->msp * op_ptr->hitpoint_warn) / 10)
+	else if (p->csp > (p->msp * p->opts.hitpoint_warn) / 10)
 		attr = COLOUR_YELLOW;
 	else
 		attr = COLOUR_RED;

@@ -80,14 +80,28 @@ bool option_set(const char *name, int val)
 		if (!options[opt].name || !streq(options[opt].name, name))
 			continue;
 
-		op_ptr->opt[opt] = val ? true : false;
+		player->opts.opt[opt] = val ? true : false;
 		if (val && option_is_cheat(opt))
-			op_ptr->opt[opt + 1] = true;
+			player->opts.opt[opt + 1] = true;
 
 		return true;
 	}
 
 	return false;
+}
+
+/**
+ * Set score options from cheat options
+ */
+void options_init_cheat(void)
+{
+	int i;
+
+	for (i = 0; i < OPT_MAX; i++) {
+		if (option_is_cheat(i))
+			player->opts.opt[i + 1] = player->opts.opt[i];
+	}
+
 }
 
 /**
@@ -110,13 +124,13 @@ void init_options(void)
 
 	/* Set defaults */
 	for (opt = 0; opt < OPT_MAX; opt++)
-		op_ptr->opt[opt] = options[opt].normal;
+		player->opts.opt[opt] = options[opt].normal;
 
 	/* 40ms for the delay factor */
-	op_ptr->delay_factor = 40;
+	player->opts.delay_factor = 40;
 
 	/* 30% of HP */
-	op_ptr->hitpoint_warn = 3;
+	player->opts.hitpoint_warn = 3;
 }
 
 

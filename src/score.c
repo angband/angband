@@ -241,7 +241,7 @@ void enter_score(time_t *death_time)
 	for (j = 0; j < OPT_MAX; ++j) {
 		if (option_type(j) != OP_SCORE)
 			continue;
-		if (!op_ptr->opt[j])
+		if (!player->opts.opt[j])
 			continue;
 
 		msg("Score not registered for cheaters.");

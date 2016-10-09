@@ -395,15 +395,15 @@ int rd_options(void)
 
 	/* Read "delay_factor" */
 	rd_byte(&b);
-	op_ptr->delay_factor = b;
+	player->opts.delay_factor = b;
 
 	/* Read "hitpoint_warn" */
 	rd_byte(&b);
-	op_ptr->hitpoint_warn = b;
+	player->opts.hitpoint_warn = b;
 
 	/* Read lazy movement delay */
 	rd_u16b(&tmp16u);
-	op_ptr->lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
+	player->opts.lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
 
 
 	/* Read options */
@@ -643,7 +643,7 @@ int rd_player(void)
 	}
 
 	/* Numeric name suffix */
-	rd_byte(&op_ptr->name_suffix);
+	rd_byte(&player->opts.name_suffix);
 
 	/* Special Race/Class info */
 	rd_byte(&player->hitdie);

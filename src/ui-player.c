@@ -1100,7 +1100,7 @@ void write_character_dump(ang_file *fff)
 
 			file_putf(fff, "%-45s: %s (%s)\n",
 			        option_desc(opt),
-			        op_ptr->opt[opt] ? "yes" : "no ",
+			        player->opts.opt[opt] ? "yes" : "no ",
 			        option_name(opt));
 		}
 

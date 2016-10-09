@@ -351,7 +351,7 @@ struct history_chart {
  * XXX some of this is UI specific - should we allow UI way to store
  *     options in savefile?
  */
-typedef struct {
+struct player_options {
 	bool opt[OPT_MAX];		/**< Options */
 
 	byte hitpoint_warn;		/**< Hitpoint warning (0 to 9) */
@@ -359,7 +359,7 @@ typedef struct {
 	byte delay_factor;		/**< Delay factor (0 to 9) */
 
 	byte name_suffix;		/**< Numeric suffix for player name */
-} player_other;
+};
 
 /**
  * All the variable state that changes when you put on/take off equipment.
@@ -543,17 +543,19 @@ struct player {
 	s16b ht_birth;						/* Birth Height */
 	s16b wt_birth;						/* Birth Weight */
 
+	struct player_options opts;			/* Player options */
+
+	struct player_body body;			/* Equipment slots available */
+
+	struct object *gear;				/* Real gear */
+	struct object *gear_k;				/* Known gear */
+
+	struct object *obj_k;				/* Object knowledge ("runes") */
+	struct chunk *cave;					/* Known version of current level */
+
 	struct player_state state;			/* Calculatable state */
 	struct player_state known_state;	/* What the player can know of the above */
 	struct player_upkeep *upkeep;		/* Temporary player-related values */
-
-	struct object *gear;		/* Real gear */
-	struct object *gear_k;		/* Known gear */
-
-	struct object *obj_k;		/* Object knowledge ("runes") */
-	struct chunk *cave;			/* Known version of current level */
-
-	struct player_body body;	/* What equipment slots are available */
 };
 
 
@@ -568,7 +570,6 @@ extern struct player_class *classes;
 extern struct magic_realm realms[REALM_MAX];
 
 extern const s32b player_exp[PY_MAX_LEVEL];
-extern player_other *op_ptr;
 extern struct player *player;
 
 /* player-class.c */

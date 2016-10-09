@@ -377,7 +377,6 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'u': {
-
 				if (!*arg) goto usage;
 
 				my_strcpy(arg_name, arg, sizeof(arg_name));

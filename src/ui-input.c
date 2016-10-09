@@ -1163,10 +1163,10 @@ bool textui_get_rep_dir(int *dp, bool allow_5)
 				if (this_dir)
 					dir = dir_transitions[dir][this_dir];
 
-				if (op_ptr->lazymove_delay == 0 || ++keypresses_handled > 1)
+				if (player->opts.lazymove_delay == 0 || ++keypresses_handled > 1)
 					break;
 
-				inkey_scan = op_ptr->lazymove_delay;
+				inkey_scan = player->opts.lazymove_delay;
 				ke = inkey_ex();
 			}
 
@@ -1269,12 +1269,12 @@ bool textui_get_aim_dir(int *dp)
 					else
 						break;
 
-					if (op_ptr->lazymove_delay == 0 || ++keypresses_handled > 1)
+					if (player->opts.lazymove_delay == 0 || ++keypresses_handled > 1)
 						break;
 
 					/* See if there's a second keypress within the defined
 					 * period of time. */
-					inkey_scan = op_ptr->lazymove_delay;
+					inkey_scan = player->opts.lazymove_delay;
 					ke = inkey_ex();
 				}
 			}

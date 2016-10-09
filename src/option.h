@@ -46,7 +46,7 @@ enum
 };
 
 
-#define OPT(opt_name)	op_ptr->opt[OPT_##opt_name]
+#define OPT(opt_name)	player->opts.opt[OPT_##opt_name]
 
 /**
  * Information for "do_cmd_options()".
@@ -61,8 +61,9 @@ enum
 extern int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 /**
- * Functions 
-*/
+ * Functions
+ */
+void options_init_cheat(void);
 const char *option_name(int opt);
 const char *option_desc(int opt);
 int option_type(int opt);

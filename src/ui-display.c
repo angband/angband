@@ -1289,7 +1289,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 	bool new_radius = false;
 	bool drawn = false;
 	int i, y, x;
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 	int gf_type = data->explosion.gf_type;
 	int num_grids = data->explosion.num_grids;
 	int *distance_to_grid = data->explosion.distance_to_grid;
@@ -1372,7 +1372,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 static void display_bolt(game_event_type type, game_event_data *data,
 						 void *user)
 {
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 	int gf_type = data->bolt.gf_type;
 	bool drawing = data->bolt.drawing;
 	bool seen = data->bolt.seen;
@@ -1423,7 +1423,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 static void display_missile(game_event_type type, game_event_data *data,
 							void *user)
 {
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 	struct object *obj = data->missile.obj;
 	bool seen = data->missile.seen;
 	int y = data->missile.y;

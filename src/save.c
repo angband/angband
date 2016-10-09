@@ -283,18 +283,17 @@ void wr_options(void)
 	int i;
 
 	/* Special Options */
-	wr_byte(op_ptr->delay_factor);
-	wr_byte(op_ptr->hitpoint_warn);
-	wr_u16b(op_ptr->lazymove_delay);
+	wr_byte(player->opts.delay_factor);
+	wr_byte(player->opts.hitpoint_warn);
+	wr_u16b(player->opts.lazymove_delay);
 
 	/* Normal options */
 	for (i = 0; i < OPT_MAX; i++) {
 		const char *name = option_name(i);
-		if (!name)
-			continue;
-
-		wr_string(name);
-		wr_byte(op_ptr->opt[i]);
+		if (name) {
+			wr_string(name);
+			wr_byte(player->opts.opt[i]);
+		}
    }
 
 	/* Sentinel */
@@ -408,7 +407,7 @@ void wr_player(void)
 	/* Race/Class/Gender/Spells */
 	wr_byte(player->race->ridx);
 	wr_byte(player->class->cidx);
-	wr_byte(op_ptr->name_suffix);
+	wr_byte(player->opts.name_suffix);
 
 	wr_byte(player->hitdie);
 	wr_byte(player->expfact);
