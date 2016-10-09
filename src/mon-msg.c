@@ -17,7 +17,6 @@
  */
 
 #include "angband.h"
-#include "init.h"
 #include "mon-desc.h"
 #include "mon-msg.h"
 #include "mon-util.h"
@@ -68,8 +67,8 @@ struct monster_message_history {
 
 static int size_mon_hist = 0;
 static int size_mon_msg = 0;
-static struct monster_race_message *mon_msg;
-static struct monster_message_history *mon_message_hist;
+static struct monster_race_message mon_msg[MAX_STORED_MON_MSG];
+static struct monster_message_history mon_message_hist[MAX_STORED_MON_CODES];
 
 /**
  * An array of monster messages in order of monster message type.
@@ -218,7 +217,7 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
 }
 
 /**
- * Try to work out what flags a message should have from a monster name
+ * Work out what flags a message should have from a monster
  */
 static int message_flags(const struct monster *mon)
 {
@@ -238,7 +237,7 @@ static int message_flags(const struct monster *mon)
 /**
  * Store the monster in the monster history for duplicate checking later
  */
-void store_monster(struct monster *mon, int msg_code)
+static void store_monster(struct monster *mon, int msg_code)
 {
 	/* Record which monster had this message stored */
 	if (size_mon_hist < MAX_STORED_MON_CODES) {
@@ -253,7 +252,7 @@ void store_monster(struct monster *mon, int msg_code)
  *
  * \returns true if successful, false if failed
  */
-bool stack_message(struct monster *mon, int msg_code, int flags)
+static bool stack_message(struct monster *mon, int msg_code, int flags)
 {
 	int i;
 
@@ -323,11 +322,12 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 
 /**
  * Show and delete the stacked monster messages.
- * Some messages are delayed so that they show up after everything else.
- * This is to avoid things like "The snaga dies. The snaga runs in fear!"
- * So we only flush messages matching the delay parameter.
+ *
+ * Some messages are delayed so that they show up after everything else,
+ * so we only display messages matching the delay parameter. This is to
+ * avoid things like "The snaga dies. The snaga runs in fear!"
  */
-static void flush_monster_messages(bool delay, enum delay_tag tag)
+static void show_monster_messages(bool delay, enum delay_tag tag)
 {
 	const struct monster_race *race;
 	int i, count;
@@ -458,29 +458,11 @@ static void flush_monster_messages(bool delay, enum delay_tag tag)
 void flush_all_monster_messages(void)
 {
 	/* Flush regular messages, then delayed messages */
-	flush_monster_messages(false, MON_DELAY_TAG_DEFAULT);
-	flush_monster_messages(true, MON_DELAY_TAG_DEFAULT);
-	flush_monster_messages(true, MON_DELAY_TAG_DEATH);
+	show_monster_messages(false, MON_DELAY_TAG_DEFAULT);
+	show_monster_messages(true, MON_DELAY_TAG_DEFAULT);
+	show_monster_messages(true, MON_DELAY_TAG_DEATH);
 
 	/* Delete all the stacked messages and history */
 	size_mon_msg = 0;
 	size_mon_hist = 0;
 }
-
-static void monmsg_init(void) {
-	/* Array of stacked monster messages */
-	mon_msg = mem_zalloc(MAX_STORED_MON_MSG * sizeof(*mon_msg));
-	mon_message_hist = mem_zalloc(MAX_STORED_MON_CODES * sizeof(*mon_message_hist));
-}
-
-static void monmsg_cleanup(void) {
-	/* Free the stacked monster messages */
-	mem_free(mon_msg);
-	mem_free(mon_message_hist);
-}
-
-struct init_module monmsg_module = {
-	.name = "mosnter message",
-	.init = monmsg_init,
-	.cleanup = monmsg_cleanup
-};
