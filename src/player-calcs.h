@@ -26,7 +26,8 @@
  * Bit flags for the "player->upkeep->notice" variable
  */
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
-#define PN_IGNORE       0x00000008L    /* Ignore stuff */
+#define PN_IGNORE       0x00000004L    /* Ignore stuff */
+#define PN_SEARCH       0x00000008L    /* Search for traps and doors */
 #define PN_MON_MESSAGE	0x00000010L	   /* flush monster pain messages */
 
 

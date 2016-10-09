@@ -619,7 +619,8 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		case CMD_WALK:
 		case CMD_RUN:
 			cmdq_push(selected);
-			cmd_set_arg_direction(cmdq_peek(), "direction", coords_to_dir(y,x));
+			cmd_set_arg_direction(cmdq_peek(), "direction",
+								  coords_to_dir(player, y, x));
 			break;
 
 		case CMD_CAST:
@@ -1038,12 +1039,12 @@ void textui_process_click(ui_event e)
 				/* shift-click - run */
 				cmdq_push(CMD_RUN);
 				cmd_set_arg_direction(cmdq_peek(), "direction",
-									  coords_to_dir(y, x));
+									  coords_to_dir(player, y, x));
 			} else if (e.mouse.mods & KC_MOD_CONTROL) {
 				/* control-click - alter */
 				cmdq_push(CMD_ALTER);
 				cmd_set_arg_direction(cmdq_peek(), "direction",
-									  coords_to_dir(y,x));
+									  coords_to_dir(player, y,x));
 			} else if (e.mouse.mods & KC_MOD_ALT) {
 				/* alt-click - look */
 				if (target_set_interactive(TARGET_LOOK, x, y)) {
@@ -1056,7 +1057,7 @@ void textui_process_click(ui_event e)
 					&& (x-player->px >= -1) && (x-player->px <= 1)) {
 					cmdq_push(CMD_WALK);
 					cmd_set_arg_direction(cmdq_peek(), "direction",
-										  coords_to_dir(y, x));
+										  coords_to_dir(player, y, x));
 				} else {
 					cmdq_push(CMD_PATHFIND);
 					cmd_set_arg_point(cmdq_peek(), "point", y, x);

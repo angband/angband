@@ -550,7 +550,7 @@ void close_game(void)
 
 	/* Handle death or life */
 	if (player->is_dead) {
-		death_knowledge();
+		death_knowledge(player);
 		death_screen();
 
 		/* Save dead player */

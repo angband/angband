@@ -361,7 +361,7 @@ static void descend_dungeon(void)
 			}
 		}
 
-		dungeon_change_level(level);
+		dungeon_change_level(player, level);
 		cave_generate(&cave, player);
 
 		/* Store level feelings */

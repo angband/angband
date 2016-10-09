@@ -667,4 +667,3 @@ bool no_light(void)
 {
 	return (!square_isseen(cave, player->py, player->px));
 }
-

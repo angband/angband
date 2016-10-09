@@ -47,13 +47,13 @@ enum
 #define REST_REQUIRED_FOR_REGEN 5
 
 int dungeon_get_next_level(int dlev, int added);
-void dungeon_change_level(int dlev);
+void dungeon_change_level(struct player *p, int dlev);
 void take_hit(struct player *p, int dam, const char *kb_str);
-void death_knowledge(void);
+void death_knowledge(struct player *p);
 s16b modify_stat_value(int value, int amount);
-void player_regen_hp(void);
-void player_regen_mana(void);
-void player_update_light(void);
+void player_regen_hp(struct player *p);
+void player_regen_mana(struct player *p);
+void player_update_light(struct player *p);
 bool player_can_cast(struct player *p, bool show_msg);
 bool player_can_study(struct player *p, bool show_msg);
 bool player_can_read(struct player *p, bool show_msg);
@@ -79,8 +79,9 @@ void player_set_resting_repeat_count(struct player *p, s16b count);
 bool player_of_has(struct player *p, int flag);
 bool player_resists(struct player *p, int element);
 bool player_is_immune(struct player *p, int element);
-int coords_to_dir(int y, int x);
+int coords_to_dir(struct player *p, int y, int x);
 void player_place(struct chunk *c, struct player *p, int y, int x);
 void disturb(struct player *p, int stop_search);
+void search(struct player *p);
 
 #endif /* !PLAYER_UTIL_H */

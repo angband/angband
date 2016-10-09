@@ -78,7 +78,7 @@ void do_cmd_go_up(struct command *cmd)
 	player->upkeep->create_down_stair = true;
 	
 	/* Change level */
-	dungeon_change_level(ascend_to);
+	dungeon_change_level(player, ascend_to);
 }
 
 
@@ -120,55 +120,7 @@ void do_cmd_go_down(struct command *cmd)
 	player->upkeep->create_down_stair = false;
 
 	/* Change level */
-	dungeon_change_level(descend_to);
-}
-
-
-
-/**
- * Search for traps or secret doors
- */
-static void search(void)
-{
-	int py = player->py;
-	int px = player->px;
-	int y, x;
-	struct object *obj;
-
-	/* Various conditions mean no searching */
-	if (player->timed[TMD_BLIND] || no_light() ||
-		player->timed[TMD_CONFUSED] || player->timed[TMD_IMAGE])
-		return;
-
-	/* Search the nearby grids, which are always in bounds */
-	for (y = (py - 1); y <= (py + 1); y++) {
-		for (x = (px - 1); x <= (px + 1); x++) {
-			/* Traps */
-			if (square_issecrettrap(cave, y, x)) {
-				if (square_reveal_trap(cave, y, x, true))
-					disturb(player, 0);
-			}
-
-			/* Secret doors */
-			if (square_issecretdoor(cave, y, x)) {
-				msg("You have found a secret door.");
-				place_closed_door(cave, y, x);
-				disturb(player, 0);
-			}
-
-			/* Traps on chests */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-				if (!obj->known || !is_trapped_chest(obj))
-					continue;
-
-				if (obj->known->pval != obj->pval) {
-					msg("You have discovered a trap on the chest!");
-					obj->known->pval = obj->pval;
-					disturb(player, 0);
-				}
-			}
-		}
-	}
+	dungeon_change_level(player, descend_to);
 }
 
 
@@ -292,7 +244,7 @@ void do_cmd_open(struct command *cmd)
 		n_locked_chests = count_chests(&y2, &x2, CHEST_OPENABLE);
 
 		if (n_closed_doors + n_locked_chests == 1) {
-			dir = coords_to_dir(y2, x2);
+			dir = coords_to_dir(player, y2, x2);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
 			return;
@@ -432,7 +384,7 @@ void do_cmd_close(struct command *cmd)
 
 		/* Count open doors */
 		if (count_feats(&y2, &x2, square_isopendoor, false) == 1) {
-			dir = coords_to_dir(y2, x2);
+			dir = coords_to_dir(player, y2, x2);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
 			return;
@@ -823,7 +775,7 @@ void do_cmd_disarm(struct command *cmd)
 		n_chests = count_chests(&y2, &x2, CHEST_TRAPPED);
 
 		if (n_traps + n_chests == 1) {
-			dir = coords_to_dir(y2, x2);
+			dir = coords_to_dir(player, y2, x2);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, n_chests > 0)) {
 			/* If there are chests to disarm, 5 is allowed as a direction */
@@ -1036,7 +988,7 @@ void move_player(int dir, bool disarm)
 
 		/* Update view and search */
 		update_view(cave, player);
-		search();
+		search(player);
 	}
 
 	player->upkeep->running_firststep = false;
@@ -1227,7 +1179,7 @@ void do_cmd_hold(struct command *cmd)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Searching (probably not necessary - NRM)*/
-	search();
+	search(player);
 
 	/* Pick things up, not using extra energy */
 	do_autopickup(player);

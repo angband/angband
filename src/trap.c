@@ -448,7 +448,8 @@ extern void hit_trap(int y, int x)
 
 		/* Some traps drop you a dungeon level */
 		if (trf_has(trap->kind->flags, TRF_DOWN))
-			dungeon_change_level(dungeon_get_next_level(player->depth, 1));
+			dungeon_change_level(player,
+								 dungeon_get_next_level(player->depth, 1));
 
 		/* Some traps drop you onto them */
 		if (trf_has(trap->kind->flags, TRF_PIT))

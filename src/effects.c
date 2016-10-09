@@ -933,7 +933,7 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
 {
 	msg("The world changes!");
-	dungeon_change_level(player->depth);
+	dungeon_change_level(player, player->depth);
 	context->ident = true;
 	return true;
 }
@@ -2845,16 +2845,16 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	if (up) {
 		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
 		target_depth = dungeon_get_next_level(player->depth, -1);
-		dungeon_change_level(target_depth);
+		dungeon_change_level(player, target_depth);
 	} else if (down) {
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
 		if (OPT(birth_force_descend)) {
 			target_depth = dungeon_get_next_level(player->max_depth, 1);
-			dungeon_change_level(target_depth);
+			dungeon_change_level(player, target_depth);
 		} else {
 			target_depth = dungeon_get_next_level(player->depth, 1);
-			dungeon_change_level(target_depth);
+			dungeon_change_level(player, target_depth);
 		}
 	} else {
 		msg("Nothing happens.");

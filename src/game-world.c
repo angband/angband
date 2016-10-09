@@ -426,17 +426,17 @@ void process_world(struct chunk *c)
 
 	/* Regenerate Hit Points if needed */
 	if (player->chp < player->mhp)
-		player_regen_hp();
+		player_regen_hp(player);
 
 	/* Regenerate mana if needed */
 	if (player->csp < player->msp)
-		player_regen_mana();
+		player_regen_mana(player);
 
 	/* Timeout various things */
 	decrease_timeouts();
 
 	/* Process light */
-	player_update_light();
+	player_update_light(player);
 
 
 	/*** Process Inventory ***/
@@ -490,7 +490,7 @@ void process_world(struct chunk *c)
 			/* Determine the level */
 			if (player->depth) {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked upwards!");
-				dungeon_change_level(0);
+				dungeon_change_level(player, 0);
 			} else {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
                 
@@ -502,7 +502,7 @@ void process_world(struct chunk *c)
                 }
 
 				/* New depth - back to max depth or 1, whichever is deeper */
-				dungeon_change_level(player->max_depth < 1 ? 1: player->max_depth);
+				dungeon_change_level(player, player->max_depth < 1 ? 1: player->max_depth);
 			}
 		}
 	}
@@ -526,7 +526,7 @@ void process_world(struct chunk *c)
 			/* Determine the level */
 			if (target_depth > player->depth) {
 				msgt(MSG_TPLEVEL, "The floor opens beneath you!");
-				dungeon_change_level(target_depth);
+				dungeon_change_level(player, target_depth);
 			} else {
 				/* Otherwise do something disastrous */
 				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
@@ -709,7 +709,7 @@ void on_new_level(void)
 	/* Update player */
 	update_player_object_knowledge(player);
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS | PU_INVEN);
-	player->upkeep->notice |= (PN_COMBINE);
+	player->upkeep->notice |= (PN_COMBINE | PN_SEARCH);
 	notice_stuff(player);
 	update_stuff(player);
 	redraw_stuff(player);

@@ -17,6 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#ifndef PLAYER_TIMED_H
+#define PLAYER_TIMED_H
+
 #include "player.h"
 
 /**
@@ -71,3 +74,4 @@ bool player_dec_timed(struct player *p, int idx, int v, bool notify);
 bool player_clear_timed(struct player *p, int idx, bool notify);
 bool player_set_food(struct player *p, int v);
 
+#endif /* !PLAYER_TIMED_H */

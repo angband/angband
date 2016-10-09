@@ -2261,6 +2261,12 @@ void notice_stuff(struct player *p)
 		ignore_drop();
 	}
 
+	/* Look for adjacent traps and doors */
+	if (p->upkeep->notice & PN_SEARCH) {
+		p->upkeep->notice &= ~(PN_SEARCH);
+		search(p);
+	}
+
 	/* Combine the pack */
 	if (p->upkeep->notice & PN_COMBINE) {
 		p->upkeep->notice &= ~(PN_COMBINE);
