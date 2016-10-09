@@ -131,7 +131,7 @@ void message_pain(struct monster *mon, int dam)
  *
  * \param	pos		the position in buf to start writing the message into
  */
-static void get_message_text(char *buf, size_t buflen, size_t pos,
+static void get_message_text(char *buf, size_t buflen,
 		int msg_code,
 		const struct monster_race *race,
 		bool do_plural)
@@ -155,6 +155,7 @@ static void get_message_text(char *buf, size_t buflen, size_t pos,
 
 	int state = MSG_PARSE_NORMAL;
 	size_t maxlen = strlen(source);
+	size_t pos = 0;
 
 	/* Put the message characters in the buffer */
 	/* XXX This logic should be used everywhere for pluralising strings */
@@ -383,7 +384,7 @@ static bool skip_subject(int msg_code) {
  */
 static int get_message_type(int msg_code, const struct monster_race *race)
 {
-	int type = msg_repository[msg->msg_code].type;
+	int type = msg_repository[msg_code].type;
 
 	if (type == MSG_KILL) {
 		/* Play a special sound if the monster was unique */
@@ -415,13 +416,13 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 		if (msg->delay != delay) continue;
 		if (msg->delay && msg->tag != tag) continue;
 
-		char text[160];
-		size_t start = 0;
+		char subject[60] = "";
+		char body[60];
 
 		/* Some messages don't require a monster name */
 		if (!skip_subject(msg->msg_code)) {
 			/* Get 'it ' or '3 monsters (offscreen) ' or '15000 snakes ' etc */
-			start = get_subject(text, sizeof(text),
+			get_subject(subject, sizeof(subject),
 					msg->race,
 					msg->count,
 					msg->flags & MON_MSG_FLAG_INVISIBLE,
@@ -429,13 +430,16 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 		}
 
 		/* Get the message proper, corrected for singular/plural etc. */
-		get_message_text(text, sizeof(text), start,
+		get_message_text(body, sizeof(body),
 				msg->msg_code,
 				msg->race,
 				msg->count > 1);
 
 		/* Show the message */
-		msgt(get_message_type(msg->msg_code), "%s", text);
+		msgt(get_message_type(msg->msg_code, msg->race),
+				"%s%s",
+				subject,
+				body);
    }
 }
 
