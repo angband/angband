@@ -1535,7 +1535,7 @@ int rd_history(void)
 		s32b turnno;
 		s16b dlev, clev;
 		bitflag type[HIST_SIZE];
-		byte art_name;
+		byte aidx;
 		char text[80];
 
 		for (j = 0; j < hist_size; j++)		
@@ -1543,10 +1543,10 @@ int rd_history(void)
 		rd_s32b(&turnno);
 		rd_s16b(&dlev);
 		rd_s16b(&clev);
-		rd_byte(&art_name);
+		rd_byte(&aidx);
 		rd_string(text, sizeof(text));
 		
-		history_add_full(player, type, &a_info[art_name], dlev, clev, turnno, text);
+		history_add_full(player, type, aidx, dlev, clev, turnno, text);
 	}
 
 	return 0;

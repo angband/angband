@@ -56,10 +56,10 @@ struct history_info {
 void history_clear(struct player *p);
 bool history_add_full(struct player *p,
 		bitflag *type,
-		const struct artifact *artifact,
-		s16b dlev,
-		s16b clev,
-		s32b turn,
+		int aidx,
+		int dlev,
+		int clev,
+		int turn,
 		const char *text);
 bool history_add(struct player *p, const char *text, int type);
 bool history_is_artifact_known(struct player *p, const struct artifact *artifact);

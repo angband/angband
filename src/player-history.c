@@ -75,10 +75,10 @@ void history_clear(struct player *p)
  */
 bool history_add_full(struct player *p,
 		bitflag *type,
-		const struct artifact *artifact,
-		s16b dlev,
-		s16b clev,
-		s32b turnno,
+		int aidx,
+		int dlev,
+		int clev,
+		int turnno,
 		const char *text)
 {
 	struct player_history *h = &p->hist;
@@ -93,7 +93,7 @@ bool history_add_full(struct player *p,
 	hist_copy(h->entries[h->next].type, type);
 	h->entries[h->next].dlev = dlev;
 	h->entries[h->next].clev = clev;
-	h->entries[h->next].a_idx = artifact ? artifact->aidx : 0;
+	h->entries[h->next].a_idx = aidx;
 	h->entries[h->next].turn = turnno;
 	my_strcpy(h->entries[h->next].event,
 			text,
@@ -114,7 +114,7 @@ static bool history_add_with_flags(struct player *p,
 {
 	return history_add_full(p,
 		flags,
-		artifact,
+		artifact ? artifact->aidx : 0,
 		p->depth,
 		p->lev,
 		p->total_energy / 100,
@@ -130,7 +130,7 @@ bool history_add(struct player *p, const char *text, int type)
 	hist_wipe(flags);
 	hist_on(flags, type);
 
-	return history_add_with_flags(p, text, flags, 0);
+	return history_add_with_flags(p, text, flags, NULL);
 }
 
 /**
