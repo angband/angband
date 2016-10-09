@@ -5213,7 +5213,7 @@ void cleanup_angband(void)
 	}
 
 	/* Free the history */
-	history_clear();
+	history_clear(player);
 
 	monster_list_finalize();
 	object_list_finalize();

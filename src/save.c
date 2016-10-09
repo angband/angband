@@ -973,7 +973,7 @@ void wr_history(void)
 	size_t i, j;
 
 	struct history_info *history_list;
-	u32b length = history_get_list(&history_list);
+	u32b length = history_get_list(player, &history_list);
 
 	wr_byte(HIST_SIZE);
 	wr_u32b(length);

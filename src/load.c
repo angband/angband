@@ -1521,7 +1521,7 @@ int rd_history(void)
 	u32b tmp32u;
 	size_t i, j;
 	
-	history_clear();
+	history_clear(player);
 
 	/* History type flags */
 	rd_byte(&hist_size);
@@ -1546,7 +1546,7 @@ int rd_history(void)
 		rd_byte(&art_name);
 		rd_string(text, sizeof(text));
 		
-		history_add_full(type, &a_info[art_name], dlev, clev, turnno, text);
+		history_add_full(player, type, &a_info[art_name], dlev, clev, turnno, text);
 	}
 
 	return 0;

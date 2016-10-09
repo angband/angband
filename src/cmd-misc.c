@@ -114,5 +114,5 @@ void do_cmd_note(void)
 	msg("%s", &note[3]);
 
 	/* Add a history entry */
-	history_add(note, HIST_USER_INPUT, 0);
+	history_add(player, note, HIST_USER_INPUT, 0);
 }

@@ -237,7 +237,7 @@ static void adjust_level(struct player *p, bool verbose)
 		if (verbose) {
 			/* Log level updates */
 			strnfmt(buf, sizeof(buf), "Reached level %d", p->lev);
-			history_add(buf, HIST_GAIN_LEVEL, 0);
+			history_add(p, buf, HIST_GAIN_LEVEL, 0);
 
 			/* Message */
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);

@@ -183,7 +183,7 @@ void death_knowledge(struct player *p)
 		obj->known->activation = obj->activation;
 	}
 
-	history_unmask_unknown();
+	history_unmask_unknown(p);
 
 	/* Get time of death */
 	(void)time(&death_time);

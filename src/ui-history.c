@@ -37,7 +37,7 @@ static void print_history_header(void)
 void history_display(void)
 {
 	struct history_info *history_list_local = NULL;
-	size_t max_item = history_get_list(&history_list_local);
+	size_t max_item = history_get_list(player, &history_list_local);
 	int row, wid, hgt, page_size;
 	char buf[120];
 	static size_t first_item = 0;
@@ -125,7 +125,7 @@ void history_display(void)
 void dump_history(ang_file *file)
 {
 	struct history_info *history_list_local = NULL;
-	size_t max_item = history_get_list(&history_list_local);
+	size_t max_item = history_get_list(player, &history_list_local);
 	size_t i;
 	char buf[120];
 

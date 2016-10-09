@@ -1469,7 +1469,7 @@ static void desc_art_fake(int a_idx)
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
-		if (history_is_artifact_known(obj->artifact))
+		if (history_is_artifact_known(player, obj->artifact))
 			/* Be very careful not to influence anything but this object */
 			object_copy(known_obj, obj);
 	}

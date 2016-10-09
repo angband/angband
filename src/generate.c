@@ -829,11 +829,13 @@ static void cave_clear(struct chunk *c, struct player *p)
 			while (obj) {
 				if (obj->artifact) {
 					bool found = obj->known && obj->known->artifact;
-					if (!OPT(birth_lose_arts) && !found)
+					if (OPT(birth_lose_arts) || found) {
+						history_lose_artifact(p, obj->artifact);
+					} else {
 						obj->artifact->created = false;
-					else
-						history_lose_artifact(obj->artifact);
+					}
 				}
+
 				obj = obj->next;
 			}
 		}
