@@ -163,26 +163,19 @@ static char *get_mon_msg_action(int msg_code, bool do_plural,
  */
 static bool redundant_monster_message(struct monster *mon, int msg_code)
 {
-	int i;
-
 	assert(mon);
-	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
+	assert(msg_code >= 0);
+	assert(msg_code < MON_MSG_MAX);
 
-	/* No messages yet */
-	if (!size_mon_hist) return false;
-
-	for (i = 0; i < size_mon_hist; i++) {
-		/* Not the same monster */
-		if (mon != mon_message_hist[i].mon) continue;
-
-		/* Not the same code */
-		if (msg_code != mon_message_hist[i].message_code) continue;
-
-		/* We have a match. */
-		return (true);
+	for (int i = 0; i < size_mon_hist; i++) {
+		/* Check for a matched monster & monster code */
+		if (mon == mon_message_hist[i].mon &&
+				msg_code != mon_message_hist[i].message_code) {
+			return true;
+		}
 	}
 
-	return (false);
+	return false;
 }
 
 
