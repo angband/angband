@@ -321,6 +321,45 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 }
 
 /**
+ * Create the subject of the sentence for monster messages
+ */
+static void get_subject(char *buf, size_t len,
+		struct monster_race *race,
+		bool invisible,
+		int count)
+{
+	if (invisible) {
+		if (count == 1) {
+			my_strcpy(buf, "It", len);
+		} else {
+			strnfmt(buf, len, "%d monsters", count);
+		}
+	} else {
+		char race_name[80];
+
+		my_strcpy(race_name, race->name, sizeof(race_name));
+
+		/* Uniques, multiple monsters, or just one */
+		if (rf_has(race->flags, RF_UNIQUE)) {
+			my_strcpy(buf, race->name, len);
+
+		} else if (count == 1) {
+			strnfmt(buf, len, "The %s", race_name);
+
+		} else {
+			/* Get the plural of the race name */
+			if (race->plural != NULL) {
+				my_strcpy(race_name, race->plural, sizeof(race_name));
+			} else {
+				plural_aux(race_name, sizeof(race_name));
+			}
+
+			strnfmt(buf, len, "%d %s", count, race_name);
+		}
+	}
+}
+
+/**
  * Show and delete the stacked monster messages.
  *
  * Some messages are delayed so that they show up after everything else,
@@ -329,97 +368,48 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
  */
 static void show_monster_messages(bool delay, enum delay_tag tag)
 {
-	const struct monster_race *race;
-	int i, count;
-	char buf[512];
-	char *action;
-	bool action_only;
+	for (int i = 0; i < size_mon_msg; i++) {
+		struct monster_race_message *msg = &mon_msg[i];
 
-	/* Show every message */
-	for (i = 0; i < size_mon_msg; i++) {
-		int type = MSG_GENERIC;
+		/* Skip irrelevant entries */
+		if (msg->delay != delay) continue;
+		if (msg->delay && msg->tag != tag) continue;
 
-		if (mon_msg[i].delay != delay) continue;
+		char buf[512] = "";
 
-		/* Skip if we are delaying and the tags don't match */
-		if (mon_msg[i].delay && mon_msg[i].tag != tag) continue;
+		bool invisible = msg->flags & MON_MSG_FLAG_INVISIBLE;
+		bool offscreen = msg->flags & MON_MSG_FLAG_OFFSCREEN;
 
-		/* Cache the monster count */
-		count = mon_msg[i].count;
+		char *action = get_mon_msg_action(msg->msg_code,
+				(msg->count > 1),
+				msg->race);
 
-		/* Paranoia */
-		if (count < 1) continue;
+		/*
+		 * Messages starting in '~' don't get a subject; we just skip over
+		 * the initial ~ and go from there.
+		 */
+		if (*action == '~') {
+			action += 1;
+		} else {
+			/* Get 'it' or '3 monsters' or '15000 snakes' etc */
+			get_subject(buf, sizeof(buf),
+					msg->race,
+					invisible,
+					msg->count);
 
-		/* Start with an empty string */
-		buf[0] = '\0';
-
-		/* Cache the race index */
-		race = mon_msg[i].race;
-
-		/* Get the proper message action */
-		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), race);
-
-		/* Monster is marked as invisible */
-		if (mon_msg[i].flags & MON_MSG_FLAG_INVISIBLE) race = NULL;
-
-		/* Special message? */
-		action_only = (*action == '~');
-
-		/* Format the proper message depending on type, number and visibility */
-		if (race && !action_only) {
-			char race_name[80];
-
-			/* Get the race name */
-			my_strcpy(race_name, race->name, sizeof(race_name));
-
-			/* Uniques, multiple monsters, or just one */
-			if (rf_has(race->flags, RF_UNIQUE)) {
-				/* Just copy the race name */
-				my_strcpy(buf, (race->name), sizeof(buf));
-			} else if (count > 1) {
-				/* Get the plural of the race name */
-				if (race->plural != NULL) {
-					my_strcpy(race_name, race->plural, sizeof(race_name));
-				} else {
-					plural_aux(race_name, sizeof(race_name));
-				}
-
-				/* Put the count and the race name together */
-				strnfmt(buf, sizeof(buf), "%d %s", count, race_name);
-			} else {
-				/* Just add a slight flavor */
-				strnfmt(buf, sizeof(buf), "the %s", race_name);
-			}
-		} else if (!race && !action_only) {
-			if (count > 1) {
-				/* Show the counter */
-				strnfmt(buf, sizeof(buf), "%d monsters", count);
-			} else {
-				/* Just one non-visible monster */
-				my_strcpy(buf, "it", sizeof(buf));
-			}
-		}
-
-		/* Special message. Nuke the mark */
-		if (action_only)
-			++action;
-		/* Regular message */
-		else {
-			/* Add special mark. Monster is offscreen */
-			if (mon_msg[i].flags & MON_MSG_FLAG_OFFSCREEN)
+			if (offscreen)
 				my_strcat(buf, " (offscreen)", sizeof(buf));
 
-			/* Add the separator */
+			/* Add a separator */
 			my_strcat(buf, " ", sizeof(buf));
 		}
 
 		/* Append the action to the message */
 		my_strcat(buf, action, sizeof(buf));
 
-		/* Capitalize the message */
-		*buf = toupper((unsigned char)*buf);
+		int type = MSG_GENERIC;
 
-		switch (mon_msg[i].msg_code) {
+		switch (msg->msg_code) {
 			case MON_MSG_FLEE_IN_TERROR:
 				type = MSG_FLEE;
 				break;
@@ -436,8 +426,8 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 				type = MSG_KILL;
 
 				/* Play a special sound if the monster was unique */
-				if (race != NULL && rf_has(race->flags, RF_UNIQUE)) {
-					if (race->base == lookup_monster_base("Morgoth"))
+				if (msg->race != NULL && rf_has(msg->race->flags, RF_UNIQUE)) {
+					if (msg->race->base == lookup_monster_base("Morgoth"))
 						type = MSG_KILL_KING;
 					else
 						type = MSG_KILL_UNIQUE;
