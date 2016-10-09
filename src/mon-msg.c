@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "init.h"
 #include "mon-desc.h"
-#include "mon-lore.h"
 #include "mon-msg.h"
 #include "mon-util.h"
 #include "game-input.h"
@@ -50,33 +49,38 @@ enum delay_tag {
 /**
  * A stacked monster message entry
  */
-typedef struct monster_race_message {
+struct monster_race_message {
 	struct monster_race *race;	/* The race of the monster */
-	int mon_flags;				/* Flags */
+	int flags;					/* Flags */
 	int msg_code;				/* The coded message */
-	int mon_count;				/* How many monsters triggered this message */
+	int count;					/* How many monsters triggered this message */
 	bool delay;					/* Should this message be put off to the end */
 	enum delay_tag tag;			/* To group delayed messages for better presentation */
-} monster_race_message;
-
-typedef struct monster_message_history
-{
-	struct monster *mon;	/* The monster */
-	int message_code;		/* The coded message */
-} monster_message_history;
-
-static u16b size_mon_hist = 0;
-static u16b size_mon_msg = 0;
-static monster_race_message *mon_msg;
-static monster_message_history *mon_message_hist;
+};
 
 /**
- * The NULL-terminated array of string actions used to format stacked messages.
+ * A (monster, message type) pair used for duplicate checking
+ */
+struct monster_message_history {
+	struct monster *mon;	/* The monster */
+	int message_code;		/* The coded message */
+};
+
+static int size_mon_hist = 0;
+static int size_mon_msg = 0;
+static struct monster_race_message *mon_msg;
+static struct monster_message_history *mon_message_hist;
+
+/**
+ * An array of monster messages in order of monster message type.
+ *
  * Singular and plural modifiers are encoded in the same string. Example:
  * "[is|are] hurt" is expanded to "is hurt" if you request the singular form.
  * The string is expanded to "are hurt" if the plural form is requested.
+ *
  * The singular and plural parts are optional. Example:
  * "rear[s] up in anger" only includes a modifier for the singular form.
+ *
  * Any of these strings can start with "~", in which case we consider that
  * string as a whole message, not as a part of a larger message. This
  * is useful to display Moria-like death messages.
@@ -245,17 +249,17 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 	if (redundant_monster_message(mon, msg_code))
 		return false;
 
-	int mon_flags = message_flags(mon);
+	int flags = message_flags(mon);
 
 	/* Query if the message is already stored */
 	int i;
 	for (i = 0; i < size_mon_msg; i++) {
 		/* We found the race and the message code */
 		if (mon_msg[i].race == mon->race &&
-					mon_msg[i].mon_flags == mon_flags &&
+					mon_msg[i].flags == flags &&
 					mon_msg[i].msg_code == msg_code) {
 			/* Stack the message */
-			mon_msg[i].mon_count++;
+			mon_msg[i].count++;
 
 			/* Record which monster had this message stored */
 			if (size_mon_hist < MAX_STORED_MON_CODES) {
@@ -277,9 +281,9 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 
 		/* Assign the message data to the free slot */
 		mon_msg[idx].race = mon->race;
-		mon_msg[idx].mon_flags = mon_flags;
+		mon_msg[idx].flags = flags;
 		mon_msg[idx].msg_code = msg_code;
-		mon_msg[idx].mon_count = 1;
+		mon_msg[idx].count = 1;
 
 		/* Force all death messages to go at the end of the group for
 		 * logical presentation */
@@ -331,7 +335,7 @@ static void flush_monster_messages(bool delay, enum delay_tag tag)
 		if (mon_msg[i].delay && mon_msg[i].tag != tag) continue;
 
 		/* Cache the monster count */
-		count = mon_msg[i].mon_count;
+		count = mon_msg[i].count;
 
 		/* Paranoia */
 		if (count < 1) continue;
@@ -346,7 +350,7 @@ static void flush_monster_messages(bool delay, enum delay_tag tag)
 		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), race);
 
 		/* Monster is marked as invisible */
-		if (mon_msg[i].mon_flags & MON_MSG_FLAG_INVISIBLE) race = NULL;
+		if (mon_msg[i].flags & MON_MSG_FLAG_INVISIBLE) race = NULL;
 
 		/* Special message? */
 		action_only = (*action == '~');
@@ -392,7 +396,7 @@ static void flush_monster_messages(bool delay, enum delay_tag tag)
 		/* Regular message */
 		else {
 			/* Add special mark. Monster is offscreen */
-			if (mon_msg[i].mon_flags & MON_MSG_FLAG_OFFSCREEN)
+			if (mon_msg[i].flags & MON_MSG_FLAG_OFFSCREEN)
 				my_strcat(buf, " (offscreen)", sizeof(buf));
 
 			/* Add the separator */
@@ -455,9 +459,8 @@ void flush_all_monster_messages(void)
 
 static void monmsg_init(void) {
 	/* Array of stacked monster messages */
-	mon_msg = mem_zalloc(MAX_STORED_MON_MSG * sizeof(monster_race_message));
-	mon_message_hist = mem_zalloc(MAX_STORED_MON_CODES *
-								  sizeof(monster_message_history));
+	mon_msg = mem_zalloc(MAX_STORED_MON_MSG * sizeof(*mon_msg));
+	mon_message_hist = mem_zalloc(MAX_STORED_MON_CODES * sizeof(*mon_message_hist));
 }
 
 static void monmsg_cleanup(void) {
