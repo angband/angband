@@ -105,7 +105,24 @@ void options_init_cheat(void)
 }
 
 /**
- * Initialise options to defaults
+ * Set player default options
+ */
+void options_init_defaults(void)
+{
+	/* Set defaults */
+	int opt;
+	for (opt = 0; opt < OPT_MAX; opt++)
+		player->opts.opt[opt] = options[opt].normal;
+
+	/* 40ms for the delay factor */
+	player->opts.delay_factor = 40;
+
+	/* 30% of HP */
+	player->opts.hitpoint_warn = 3;
+}
+
+/**
+ * Initialise options package
  */
 void init_options(void)
 {
@@ -121,18 +138,7 @@ void init_options(void)
 		while (page_opts < OPT_PAGE_PER)
 			option_page[page][page_opts++] = OPT_none;
 	}
-
-	/* Set defaults */
-	for (opt = 0; opt < OPT_MAX; opt++)
-		player->opts.opt[opt] = options[opt].normal;
-
-	/* 40ms for the delay factor */
-	player->opts.delay_factor = 40;
-
-	/* 30% of HP */
-	player->opts.hitpoint_warn = 3;
 }
-
 
 struct init_module options_module = {
 	.name = "options",

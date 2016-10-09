@@ -434,6 +434,8 @@ void player_init(struct player *p)
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 	p->obj_k = mem_zalloc(sizeof(struct object));
 
+	options_init_defaults();
+
 	/* First turn. */
 	turn = 1;
 	p->total_energy = 0;
