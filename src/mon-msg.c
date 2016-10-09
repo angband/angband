@@ -101,7 +101,7 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural,
 
 	assert(msg_code < MON_MSG_MAX);
 	action = msg_repository[msg_code];
-	
+
 	assert(race->base && race->base->pain);
 
 	if (race->base && race->base->pain) {
@@ -251,7 +251,7 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 			return true;
 		}
 	}
-   
+
 	/* The message isn't stored. Check free space */
 	if (size_mon_msg >= MAX_STORED_MON_MSG) {
 		return false;
@@ -309,7 +309,7 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 
 		/* Skip if we are delaying and the tags don't match */
 		if (mon_msg[i].delay && mon_msg[i].delay_tag != delay_tag) continue;
-   
+
 		/* Cache the monster count */
 		count = mon_msg[i].mon_count;
 
@@ -321,7 +321,7 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 
 		/* Cache the race index */
 		race = mon_msg[i].race;
-		   
+
 		/* Get the proper message action */
 		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), race);
 
@@ -374,7 +374,7 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 			/* Add special mark. Monster is offscreen */
 			if (mon_msg[i].mon_flags & MON_MSG_FLAG_OFFSCREEN)
 				my_strcat(buf, " (offscreen)", sizeof(buf));
-        
+
 			/* Add the separator */
 			my_strcat(buf, " ", sizeof(buf));
 		}
