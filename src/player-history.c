@@ -184,7 +184,7 @@ static bool history_mark_artifact_known(struct player_history *h,
 	size_t i = h->next;
 	while (i--) {
 		if (h->entries[i].a_idx == artifact->aidx) {
-			hist_wipe(h->entries[i].type);
+			hist_off(h->entries[i].type, HIST_ARTIFACT_UNKNOWN);
 			hist_on(h->entries[i].type, HIST_ARTIFACT_KNOWN);
 			return true;
 		}
@@ -204,7 +204,6 @@ static bool history_mark_artifact_lost(struct player_history *h,
 	size_t i = h->next;
 	while (i--) {
 		if (h->entries[i].a_idx == artifact->aidx) {
-			hist_wipe(h->entries[i].type);
 			hist_on(h->entries[i].type, HIST_ARTIFACT_LOST);
 			return true;
 		}
