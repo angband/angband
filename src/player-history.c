@@ -15,7 +15,6 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
 #include "cave.h"
 #include "game-world.h"
@@ -33,41 +32,28 @@
 #define HISTORY_BIRTH_SIZE  10
 #define HISTORY_MAX 5000
 
-
-
-/* The historical list for the character */
-struct history_info *history_list;
-
-/* Index of first writable entry */
-static size_t history_ctr;
-
-/* Current size of history list */
-static size_t history_size;
-
 /**
  * Initialise an empty history list.
  */
 static void history_init(size_t entries)
 {
-	history_ctr = 0;
-	history_size = entries;
-	history_list = mem_zalloc(history_size * sizeof(struct history_info));
+	player->hist.next = 0;
+	player->hist.length = entries;
+	player->hist.entries = mem_zalloc(player->hist.length * sizeof(struct history_info));
 }
-
 
 /**
  * Clear any existing history.
  */
 void history_clear(void)
 {
-	if (!history_list) return;
+	if (!player->hist.entries) return;
 
-	mem_free(history_list);
-	history_list = NULL;
-	history_ctr = 0;
-	history_size = 0;
+	mem_free(player->hist.entries);
+	player->hist.entries = NULL;
+	player->hist.next = 0;
+	player->hist.length = 0;
 }
-
 
 /**
  * Set the number of history items.
@@ -77,38 +63,36 @@ static bool history_set_num(size_t num)
 	if (num > HISTORY_MAX)
 		num = HISTORY_MAX;
 
-	if (num <= history_size)
+	if (num <= player->hist.length)
 		return false;
 
 	/* Reallocate the list */
-	history_list = mem_realloc(history_list, num * sizeof(struct history_info));
-	history_size = num;
+	player->hist.entries = mem_realloc(player->hist.entries, num * sizeof(struct history_info));
+	player->hist.length = num;
 
 	return true;
 }
-
 
 /**
  * Return the number of history entries.
  */
 size_t history_get_num(void)
 {
-	return history_ctr;
+	return player->hist.next;
 }
-
 
 /**
  * Mark artifact number `id` as known.
  */
 static bool history_know_artifact(struct artifact *artifact)
 {
-	size_t i = history_ctr;
+	size_t i = player->hist.next;
 	assert(artifact);
 
 	while (i--) {
-		if (history_list[i].a_idx == artifact->aidx) {
-			hist_wipe(history_list[i].type);
-			hist_on(history_list[i].type, HIST_ARTIFACT_KNOWN);
+		if (player->hist.entries[i].a_idx == artifact->aidx) {
+			hist_wipe(player->hist.entries[i].type);
+			hist_on(player->hist.entries[i].type, HIST_ARTIFACT_KNOWN);
 			return true;
 		}
 	}
@@ -116,19 +100,18 @@ static bool history_know_artifact(struct artifact *artifact)
 	return false;
 }
 
-
 /**
  * Mark artifact number `id` as lost forever, either due to leaving it on a
  * level, or due to a store purging its inventory after the player sold it.
  */
 bool history_lose_artifact(struct artifact *artifact)
 {
-	size_t i = history_ctr;
+	size_t i = player->hist.next;
 	assert(artifact);
 
 	while (i--) {
-		if (history_list[i].a_idx == artifact->aidx) {
-			hist_on(history_list[i].type, HIST_ARTIFACT_LOST);
+		if (player->hist.entries[i].a_idx == artifact->aidx) {
+			hist_on(player->hist.entries[i].type, HIST_ARTIFACT_LOST);
 			return true;
 		}
 	}
@@ -139,7 +122,6 @@ bool history_lose_artifact(struct artifact *artifact)
 
 	return false;
 }
-
 
 /**
  * Add an entry with text `event` to the history list, with type `type`
@@ -152,27 +134,26 @@ bool history_add_full(bitflag *type, struct artifact *artifact, s16b dlev,
 		s16b clev, s32b turnno, const char *text)
 {
 	/* Allocate or expand the history list as needed */
-	if (!history_list)
+	if (!player->hist.entries)
 		history_init(HISTORY_BIRTH_SIZE);
-	else if ((history_ctr == history_size) &&
-			 !history_set_num(history_size + 10))
+	else if ((player->hist.next == player->hist.length) &&
+			 !history_set_num(player->hist.length + 10))
 		return false;
 
 	/* History list exists and is not full.  Add an entry at the current
 	 * counter location. */
-	hist_copy(history_list[history_ctr].type, type);
-	history_list[history_ctr].dlev = dlev;
-	history_list[history_ctr].clev = clev;
-	history_list[history_ctr].a_idx = artifact ? artifact->aidx : 0;
-	history_list[history_ctr].turn = turnno;
-	my_strcpy(history_list[history_ctr].event,
-	          text, sizeof(history_list[history_ctr].event));
+	hist_copy(player->hist.entries[player->hist.next].type, type);
+	player->hist.entries[player->hist.next].dlev = dlev;
+	player->hist.entries[player->hist.next].clev = clev;
+	player->hist.entries[player->hist.next].a_idx = artifact ? artifact->aidx : 0;
+	player->hist.entries[player->hist.next].turn = turnno;
+	my_strcpy(player->hist.entries[player->hist.next].event,
+	          text, sizeof(player->hist.entries[player->hist.next].event));
 
-	history_ctr++;
+	player->hist.next++;
 
 	return true;
 }
-
 
 /**
  * Add an entry with text `event` to the history list, with type `type`
@@ -190,24 +171,22 @@ bool history_add(const char *event, int type, struct artifact *artifact)
 	return history_add_full(h, artifact, player->depth, player->lev, player->total_energy / 100, event);
 }
 
-
 /**
  * Returns true if the artifact is KNOWN in the history log.
  */
 bool history_is_artifact_known(struct artifact *artifact)
 {
-	size_t i = history_ctr;
+	size_t i = player->hist.next;
 	assert(artifact);
 
 	while (i--) {
-		if (hist_has(history_list[i].type, HIST_ARTIFACT_KNOWN) &&
-				history_list[i].a_idx == artifact->aidx)
+		if (hist_has(player->hist.entries[i].type, HIST_ARTIFACT_KNOWN) &&
+				player->hist.entries[i].a_idx == artifact->aidx)
 			return true;
 	}
 
 	return false;
 }
-
 
 /**
  * Returns true if the artifact denoted by a_idx is an active entry in
@@ -217,22 +196,21 @@ bool history_is_artifact_known(struct artifact *artifact)
  */
 static bool history_is_artifact_logged(struct artifact *artifact)
 {
-	size_t i = history_ctr;
+	size_t i = player->hist.next;
 	assert(artifact);
 
 	while (i--) {
 		/* Don't count ARTIFACT_LOST entries; then we can handle
 		 * re-finding previously lost artifacts in preserve mode  */
-		if (hist_has(history_list[i].type, HIST_ARTIFACT_LOST))
+		if (hist_has(player->hist.entries[i].type, HIST_ARTIFACT_LOST))
 			continue;
 
-		if (history_list[i].a_idx == artifact->aidx)
+		if (player->hist.entries[i].a_idx == artifact->aidx)
 			return true;
 	}
 
 	return false;
 }
-
 
 /**
  * Adding artifacts to the history list is trickier than other operations.
@@ -284,19 +262,18 @@ bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 	return true;
 }
 
-
 /**
  * Convert all ARTIFACT_UNKNOWN history items to HIST_ARTIFACT_KNOWN.
  * Use only after player retirement/death for the final character dump.
  */
 void history_unmask_unknown(void)
 {
-	size_t i = history_ctr;
+	size_t i = player->hist.next;
 
 	while (i--) {
-		if (hist_has(history_list[i].type, HIST_ARTIFACT_UNKNOWN)) {
-			hist_off(history_list[i].type, HIST_ARTIFACT_UNKNOWN);
-			hist_on(history_list[i].type, HIST_ARTIFACT_KNOWN);
+		if (hist_has(player->hist.entries[i].type, HIST_ARTIFACT_UNKNOWN)) {
+			hist_off(player->hist.entries[i].type, HIST_ARTIFACT_UNKNOWN);
+			hist_on(player->hist.entries[i].type, HIST_ARTIFACT_KNOWN);
 		}
 	}
 }
@@ -306,6 +283,6 @@ void history_unmask_unknown(void)
  */
 size_t history_get_list(struct history_info **list)
 {
-	*list = history_list;
-	return history_ctr;
+	*list = player->hist.entries;
+	return player->hist.next;
 }

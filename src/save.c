@@ -971,11 +971,13 @@ void wr_chunks(void)
 void wr_history(void)
 {
 	size_t i, j;
-	u32b tmp32u = history_get_num();
+
+	struct history_info *history_list;
+	u32b length = history_get_list(&history_list);
 
 	wr_byte(HIST_SIZE);
-	wr_u32b(tmp32u);
-	for (i = 0; i < tmp32u; i++) {
+	wr_u32b(length);
+	for (i = 0; i < length; i++) {
 		for (j = 0; j < HIST_SIZE; j++)
 			wr_byte(history_list[i].type[j]);
 		wr_s32b(history_list[i].turn);

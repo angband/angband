@@ -362,6 +362,17 @@ struct player_options {
 };
 
 /**
+ * Player history information
+ *
+ * See player-history.c/.h
+ */
+struct player_history {
+	struct history_info *entries;	/**< List of entries */
+	size_t next;					/**< First unused entry */
+	size_t length;					/**< Current length */
+};
+
+/**
  * All the variable state that changes when you put on/take off equipment.
  * Player flags are not currently variable, but useful here so monsters can
  * learn them.
@@ -544,6 +555,7 @@ struct player {
 	s16b wt_birth;						/* Birth Weight */
 
 	struct player_options opts;			/* Player options */
+	struct player_history hist;			/* Player history (see player-history.c) */
 
 	struct player_body body;			/* Equipment slots available */
 
