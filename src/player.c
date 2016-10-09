@@ -397,6 +397,9 @@ static void init_player(void) {
 static void cleanup_player(void) {
 	int i;
 
+	/* Free the history */
+	history_clear(player);
+
 	/* Free the things that are always initialised */
 	mem_free(player->obj_k);
 	mem_free(player->timed);
