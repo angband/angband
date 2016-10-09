@@ -1175,7 +1175,7 @@ void lore_append_toughness(textblock *tb, const struct monster_race *race,
 		textblock_append(tb, ".  ");
 
 		/* Player's chance to hit it */
-		chance = py_attack_hit_chance(weapon);
+		chance = py_attack_hit_chance(player, weapon);
 
 		/* The following calculations are based on test_hit();
 		 * make sure to keep it in sync */
