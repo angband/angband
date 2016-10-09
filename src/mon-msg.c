@@ -86,9 +86,10 @@ static struct monster_message_history mon_message_hist[MAX_STORED_MON_CODES];
  */
 static const struct {
 	const char *msg;
+	bool omit_subject;
 	int type;
 } msg_repository[] = {
-	#define MON_MSG(x, t, s) { s, t },
+	#define MON_MSG(x, t, o, s) { s, o, t },
 	#include "list-mon-message.h"
 	#undef MON_MSG
 };
@@ -126,14 +127,14 @@ void message_pain(struct monster *mon, int dam)
 #define MSG_PARSE_PLURAL	2
 
 /**
- * Returns a pointer to a statically allocatted string containing a formatted
- * message based on the given message code and the quantity flag.
+ * Formats a message based on the given message code and the plural flag.
  *
- * The contents of the returned value will change with the next call
- * to this function.
+ * \param	pos		the position in buf to start writing the message into
  */
-static char *get_mon_msg_action(int msg_code, bool do_plural,
-								const struct monster_race *race)
+static void get_message_text(char *buf, size_t buflen, size_t pos,
+		int msg_code,
+		const struct monster_race *race,
+		bool do_plural)
 {
 	assert(msg_code < MON_MSG_MAX);
 	assert(race != NULL);
@@ -152,15 +153,12 @@ static char *get_mon_msg_action(int msg_code, bool do_plural,
 		case MON_MSG_0:  source = race->base->pain->messages[6]; break;
 	}
 
-	static char buf[200];
-	size_t maxlen = MIN(strlen(source), sizeof(buf));
-	size_t i;
-
 	int state = MSG_PARSE_NORMAL;
+	size_t maxlen = strlen(source);
 
 	/* Put the message characters in the buffer */
 	/* XXX This logic should be used everywhere for pluralising strings */
-	for (i = 0; i < maxlen; i++) {
+	for (size_t i = 0; i < maxlen && pos < buflen - 1; i++) {
 		char cur = source[i];
 
 		/*
@@ -178,7 +176,7 @@ static char *get_mon_msg_action(int msg_code, bool do_plural,
 			if (state == MSG_PARSE_NORMAL ||
 					(state == MSG_PARSE_SINGLE && do_plural == false) ||
 					(state == MSG_PARSE_PLURAL && do_plural == true)) {
-				buf[i] = cur;
+				buf[pos++] = cur;
 			}
 		}
 	}
@@ -187,10 +185,7 @@ static char *get_mon_msg_action(int msg_code, bool do_plural,
 	assert(state == MSG_PARSE_NORMAL);
 
 	/* Terminate the buffer */
-	buf[i] = '\0';
-
-	/* Done */
-	return buf;
+	buf[pos] = 0;
 }
 
 #undef MSG_PARSE_NORMAL
@@ -325,8 +320,10 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 
 /**
  * Create the subject of the sentence for monster messages
+ *
+ * \returns number of bytes written
  */
-static void get_subject(char *buf, size_t len,
+static size_t get_subject(char *buf, size_t len,
 		struct monster_race *race,
 		int count,
 		bool invisible,
@@ -367,6 +364,18 @@ static void get_subject(char *buf, size_t len,
 
 	/* Add a separator */
 	my_strcat(buf, " ", sizeof(buf));
+
+	return strlen(buf);
+}
+
+/**
+ * Accessor function - should we skip the monster name for this message type?
+ */
+static bool skip_subject(int msg_code) {
+	assert(msg_code >= 0);
+	assert(msg_code < MON_MSG_MAX);
+
+	return msg_repository[msg_code].omit_subject;
 }
 
 /**
@@ -378,8 +387,6 @@ static void get_subject(char *buf, size_t len,
  */
 static void show_monster_messages(bool delay, enum delay_tag tag)
 {
-	char buf[512];
-
 	for (int i = 0; i < size_mon_msg; i++) {
 		struct monster_race_message *msg = &mon_msg[i];
 
@@ -387,29 +394,24 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 		if (msg->delay != delay) continue;
 		if (msg->delay && msg->tag != tag) continue;
 
-		bool invisible = msg->flags & MON_MSG_FLAG_INVISIBLE;
-		bool offscreen = msg->flags & MON_MSG_FLAG_OFFSCREEN;
+		char text[512];
+		size_t start = 0;
 
-		char *action = get_mon_msg_action(msg->msg_code,
-				(msg->count > 1),
-				msg->race);
-
-		/*
-		 * Messages starting in '~' don't get a subject; we just skip over
-		 * the initial ~ and go from there.
-		 */
-		if (*action == '~') {
-			action += 1;
-		} else {
+		/* Some messages don't require a monster name */
+		if (!skip_subject(msg->msg_code)) {
 			/* Get 'it ' or '3 monsters (offscreen) ' or '15000 snakes ' etc */
-			get_subject(buf, sizeof(buf),
+			start = get_subject(text, sizeof(text),
 					msg->race,
 					msg->count,
-					invisible,
-					offscreen);
+					msg->flags & MON_MSG_FLAG_INVISIBLE,
+					msg->flags & MON_MSG_FLAG_OFFSCREEN);
 		}
 
-		my_strcat(buf, action, sizeof(buf));
+		/* Get the message proper, corrected for singular/plural etc. */
+		get_message_text(text, sizeof(text), start,
+				msg->msg_code,
+				msg->race,
+				msg->count > 1);
 
 		int type = msg_repository[msg->msg_code].type;
 		if (type == MSG_KILL) {
@@ -424,7 +426,7 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 		}
 
 		/* Show the message */
-		msgt(type, "%s", buf);
+		msgt(type, "%s", text);
    }
 }
 
