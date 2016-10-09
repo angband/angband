@@ -84,7 +84,7 @@ static void print_tomb(void)
 
 	line = 7;
 
-	put_str_centred(line++, 8, 8+31, "%s", op_ptr->full_name);
+	put_str_centred(line++, 8, 8+31, "%s", player->full_name);
 	put_str_centred(line++, 8, 8+31, "the");
 	if (player->total_winner)
 		put_str_centred(line++, 8, 8+31, "Magnificent");
@@ -155,7 +155,7 @@ static void death_file(const char *title, int row)
 	char ftmp[80];
 
 	/* Get the filesystem-safe name and append .txt */
-	player_safe_name(ftmp, sizeof(ftmp), op_ptr->full_name, false);
+	player_safe_name(ftmp, sizeof(ftmp), player->full_name, false);
 	my_strcat(ftmp, ".txt", sizeof(ftmp));
 
 	if (get_file(ftmp, buf, sizeof buf)) {

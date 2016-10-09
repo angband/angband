@@ -2321,6 +2321,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
  * ------------------------------------------------------------------------
  * Initialising
  * ------------------------------------------------------------------------ */
+
 /**
  * Process the user pref files relevant to a newly loaded character
  */
@@ -2336,7 +2337,7 @@ static void process_character_pref_files(void)
 	process_pref_file("user.prf", true, true);
 
 	/* Get the filesystem-safe name and append .prf */
-	player_safe_name(buf, sizeof(buf), op_ptr->full_name, true);
+	player_safe_name(buf, sizeof(buf), player->full_name, true);
 	my_strcat(buf, ".prf", sizeof(buf));
 
 	found = process_pref_file(buf, true, true);

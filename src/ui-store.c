@@ -166,7 +166,7 @@ static void prt_welcome(const struct owner *proprietor)
 		if ((i % 2) && randint0(2))
 			player_name = player->class->title[(player->lev - 1) / 5];
 		else if (randint0(2))
-			player_name = op_ptr->full_name;
+			player_name = player->full_name;
 		else
 			player_name = "valued customer";
 

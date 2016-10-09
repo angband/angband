@@ -343,8 +343,6 @@ struct history_chart {
 	unsigned int idx;
 };
 
-#define PLAYER_NAME_LEN		32
-
 /**
  * Information retained across player lives
  *
@@ -354,8 +352,6 @@ struct history_chart {
  *     options in savefile?
  */
 typedef struct {
-	char full_name[PLAYER_NAME_LEN];		/**< Full name */
-
 	bool opt[OPT_MAX];		/**< Options */
 
 	byte hitpoint_warn;		/**< Hitpoint warning (0 to 9) */
@@ -459,6 +455,8 @@ struct player_upkeep {
 	int quiver_cnt;				/* Number of items in the quiver */
 };
 
+#define PLAYER_NAME_LEN		32
+
 /**
  * Most of the "player" information goes here.
  *
@@ -525,10 +523,11 @@ struct player {
 	byte *spell_flags;			/* Spell flags */
 	byte *spell_order;			/* Spell order */
 
-	char died_from[80];			/* Cause of death */
-	char *history;				/* Player history */
-	struct quest *quests;		/* Quest history */
-	u16b total_winner;			/* Total winner */
+	char full_name[PLAYER_NAME_LEN];	/* Full name */
+	char died_from[80];					/* Cause of death */
+	char *history;						/* Player history */
+	struct quest *quests;				/* Quest history */
+	u16b total_winner;					/* Total winner */
 
 	u16b noscore;				/* Cheating flags */
 

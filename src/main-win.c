@@ -3839,7 +3839,7 @@ static void process_menus(WORD wCmd)
 
 			time( &ltime );
 			today = localtime( &ltime );
-			strnfmt(filename, sizeof(filename), "%s", op_ptr->full_name);
+			strnfmt(filename, sizeof(filename), "%s", player->full_name);
 			len = strlen(filename);
 			strftime(filename+len, sizeof(filename)-len, "_%Y%b%d_%H%M%S.png",
 					 today);

@@ -47,11 +47,11 @@ void wr_description(void)
 
 	if (player->is_dead)
 		strnfmt(buf, sizeof buf, "%s, dead (%s)",
-				op_ptr->full_name,
+				player->full_name,
 				player->died_from);
 	else
 		strnfmt(buf, sizeof buf, "%s, L%d %s %s, at DL%d",
-				op_ptr->full_name,
+				player->full_name,
 				player->lev,
 				player->race->name,
 				player->class->name,
@@ -399,7 +399,7 @@ void wr_player(void)
 {
 	int i;
 
-	wr_string(op_ptr->full_name);
+	wr_string(player->full_name);
 
 	wr_string(player->died_from);
 

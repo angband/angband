@@ -618,7 +618,7 @@ int rd_player(void)
 	byte stat_max = 0;
 	char buf[80];
 
-	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
+	rd_string(player->full_name, sizeof(player->full_name));
 	rd_string(player->died_from, 80);
 	player->history = mem_zalloc(250);
 	rd_string(player->history, 250);

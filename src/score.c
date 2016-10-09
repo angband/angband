@@ -209,7 +209,7 @@ void build_score(high_score *entry, const char *died_from, time_t *death_time)
 		my_strcpy(entry->day, "TODAY", sizeof(entry->day));
 
 	/* Save the player name (15 chars) */
-	strnfmt(entry->who, sizeof(entry->who), "%-.15s", op_ptr->full_name);
+	strnfmt(entry->who, sizeof(entry->who), "%-.15s", player->full_name);
 
 	/* Save the player info XXX XXX XXX */
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);

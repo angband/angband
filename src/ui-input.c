@@ -794,7 +794,7 @@ bool get_character_name(char *buf, size_t buflen)
 	prt("Enter a name for your character (* for a random name): ", 0, 0);
 
 	/* Save the player name */
-	my_strcpy(buf, op_ptr->full_name, buflen);
+	my_strcpy(buf, player->full_name, buflen);
 
 	/* Ask the user for a string */
 	res = askfor_aux(buf, buflen, get_name_keypress);
@@ -804,7 +804,7 @@ bool get_character_name(char *buf, size_t buflen)
 
 	/* Revert to the old name if the player doesn't pick a new one. */
 	if (!res)
-		my_strcpy(buf, op_ptr->full_name, buflen);
+		my_strcpy(buf, player->full_name, buflen);
 
 	return res;
 }
