@@ -236,6 +236,42 @@ static int message_flags(const struct monster *mon)
 }
 
 /**
+ * Store the monster in the monster history for duplicate checking later
+ */
+void store_monster(struct monster *mon, int msg_code)
+{
+	/* Record which monster had this message stored */
+	if (size_mon_hist < MAX_STORED_MON_CODES) {
+		mon_message_hist[size_mon_hist].mon = mon;
+		mon_message_hist[size_mon_hist].message_code = msg_code;
+		size_mon_hist++;
+	}
+}
+
+/**
+ * Try to stack a message on top of existing ones
+ *
+ * \returns true if successful, false if failed
+ */
+bool stack_message(struct monster *mon, int msg_code, int flags)
+{
+	int i;
+
+	for (i = 0; i < size_mon_msg; i++) {
+		/* We found the race and the message code */
+		if (mon_msg[i].race == mon->race &&
+					mon_msg[i].flags == flags &&
+					mon_msg[i].msg_code == msg_code) {
+			mon_msg[i].count++;
+			store_monster(mon, msg_code);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Stack a codified message for the given monster race. You must supply
  * the description of some monster of this race. You can also supply
  * different monster descriptions for the same race.
@@ -251,32 +287,10 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 
 	int flags = message_flags(mon);
 
-	/* Query if the message is already stored */
-	int i;
-	for (i = 0; i < size_mon_msg; i++) {
-		/* We found the race and the message code */
-		if (mon_msg[i].race == mon->race &&
-					mon_msg[i].flags == flags &&
-					mon_msg[i].msg_code == msg_code) {
-			/* Stack the message */
-			mon_msg[i].count++;
-
-			/* Record which monster had this message stored */
-			if (size_mon_hist < MAX_STORED_MON_CODES) {
-				mon_message_hist[size_mon_hist].mon = mon;
-				mon_message_hist[size_mon_hist].message_code = msg_code;
-				size_mon_hist++;
-			}
-
-			/* Success */
-			return true;
-		}
-	}
-
-	/* The message isn't stored. Check free space */
-	if (size_mon_msg >= MAX_STORED_MON_MSG) {
-		return false;
-	} else {
+	/* Stack message on top of older message if possible */
+	/* If not possible, check we have storage space for more messages and add */
+	if (!stack_message(mon, msg_code, flags) &&
+			size_mon_msg < MAX_STORED_MON_MSG) {
 		int idx = size_mon_msg;
 
 		/* Assign the message data to the free slot */
@@ -295,19 +309,15 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 			mon_msg[idx].tag = MON_DELAY_TAG_DEFAULT;
 		}
 
-		/* One more entry */
 		size_mon_msg++;
+
+		store_monster(mon, msg_code);
 
 		player->upkeep->notice |= PN_MON_MESSAGE;
 
-		/* Record which monster had this message stored */
-		if (size_mon_hist < MAX_STORED_MON_CODES) {
-			mon_message_hist[size_mon_hist].mon = mon;
-			mon_message_hist[size_mon_hist].message_code = msg_code;
-			size_mon_hist++;
-		}
-
 		return true;
+	} else {
+		return false;
 	}
 }
 
