@@ -343,6 +343,8 @@ struct history_chart {
 	unsigned int idx;
 };
 
+#define PLAYER_NAME_LEN		32
+
 /**
  * Information retained across player lives
  *
@@ -352,7 +354,7 @@ struct history_chart {
  *     options in savefile?
  */
 typedef struct {
-	char full_name[32];		/**< Full name */
+	char full_name[PLAYER_NAME_LEN];		/**< Full name */
 
 	bool opt[OPT_MAX];		/**< Options */
 

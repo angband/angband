@@ -379,7 +379,8 @@ int main(int argc, char *argv[])
 			case 'u': {
 
 				if (!*arg) goto usage;
-				my_strcpy(op_ptr->full_name, arg, sizeof op_ptr->full_name);
+
+				my_strcpy(arg_name, arg, sizeof(arg_name));
 
 				/* The difference here is because on setgid we have to be
 				 * careful to only let the player have savefiles stored in
@@ -390,9 +391,9 @@ int main(int argc, char *argv[])
 				 * can do whatever the hell they want.
 				 */
 #ifdef SETGID
-				savefile_set_name(op_ptr->full_name, true, false);
+				savefile_set_name(arg, true, false);
 #else
-				savefile_set_name(op_ptr->full_name);
+				savefile_set_name(arg, false, false);
 #endif /* SETGID */
 
 				continue;
@@ -499,11 +500,11 @@ int main(int argc, char *argv[])
 #ifdef UNIX
 
 	/* Get the "user name" as default player name, unless set with -u switch */
-	if (!op_ptr->full_name[0]) {
-		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
+	if (!arg_name[0]) {
+		user_name(arg_name, sizeof(arg_name), player_uid);
 
 		/* Sanitise name and set as savefile */
-		savefile_set_name(op_ptr->full_name, true, false);
+		savefile_set_name(arg_name, true, false);
 	}
 
 	/* Create any missing directories */
