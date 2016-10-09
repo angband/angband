@@ -379,6 +379,27 @@ static bool skip_subject(int msg_code) {
 }
 
 /**
+ * Return a MSG_ type for the given message code (and monster)
+ */
+static int get_message_type(int msg_code, const struct monster_race *race)
+{
+	int type = msg_repository[msg->msg_code].type;
+
+	if (type == MSG_KILL) {
+		/* Play a special sound if the monster was unique */
+		if (rf_has(race->flags, RF_UNIQUE)) {
+			if (race->base == lookup_monster_base("Morgoth")) {
+				type = MSG_KILL_KING;
+			} else {
+				type = MSG_KILL_UNIQUE;
+			}
+		}
+	}
+
+	return type;
+}
+
+/**
  * Show and delete the stacked monster messages.
  *
  * Some messages are delayed so that they show up after everything else,
@@ -413,20 +434,8 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 				msg->race,
 				msg->count > 1);
 
-		int type = msg_repository[msg->msg_code].type;
-		if (type == MSG_KILL) {
-			/* Play a special sound if the monster was unique */
-			if (rf_has(msg->race->flags, RF_UNIQUE)) {
-				if (msg->race->base == lookup_monster_base("Morgoth")) {
-					type = MSG_KILL_KING;
-				} else {
-					type = MSG_KILL_UNIQUE;
-				}
-			}
-		}
-
 		/* Show the message */
-		msgt(type, "%s", text);
+		msgt(get_message_type(msg->msg_code), "%s", text);
    }
 }
 
