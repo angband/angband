@@ -80,94 +80,81 @@ void message_pain(struct monster *mon, int dam)
 	add_monster_message(m_name, mon, msg_code, false);
 }
 
-#define SINGULAR_MON   1
-#define PLURAL_MON     2
+#define MSG_PARSE_NORMAL	0
+#define MSG_PARSE_SINGLE	1
+#define MSG_PARSE_PLURAL	2
 
 /**
  * Returns a pointer to a statically allocatted string containing a formatted
  * message based on the given message code and the quantity flag.
+ *
  * The contents of the returned value will change with the next call
- * to this function
+ * to this function.
  */
-static char *get_mon_msg_action(byte msg_code, bool do_plural,
+static char *get_mon_msg_action(int msg_code, bool do_plural,
 								const struct monster_race *race)
 {
-	static char buf[200];
-	const char *action;
-	u16b n = 0;
-
-	/* Regular text */
-	byte flag = 0;
-
 	assert(msg_code < MON_MSG_MAX);
-	action = msg_repository[msg_code];
+	assert(race != NULL);
+	assert(race->base != NULL);
+	assert(race->base->pain != NULL);
 
-	assert(race->base && race->base->pain);
-
-	if (race->base && race->base->pain) {
-		switch (msg_code) {
-			case MON_MSG_95: action = race->base->pain->messages[0];
-				break;
-			case MON_MSG_75: action = race->base->pain->messages[1];
-				break;
-			case MON_MSG_50: action = race->base->pain->messages[2];
-				break;
-			case MON_MSG_35: action = race->base->pain->messages[3];
-				break;
-			case MON_MSG_20: action = race->base->pain->messages[4];
-				break;
-			case MON_MSG_10: action = race->base->pain->messages[5];
-				break;
-			case MON_MSG_0: action = race->base->pain->messages[6];
-				break;
-		}
+	/* Find the appropriate message */
+	const char *source = msg_repository[msg_code];
+	switch (msg_code) {
+		case MON_MSG_95: source = race->base->pain->messages[0]; break;
+		case MON_MSG_75: source = race->base->pain->messages[1]; break;
+		case MON_MSG_50: source = race->base->pain->messages[2]; break;
+		case MON_MSG_35: source = race->base->pain->messages[3]; break;
+		case MON_MSG_20: source = race->base->pain->messages[4]; break;
+		case MON_MSG_10: source = race->base->pain->messages[5]; break;
+		case MON_MSG_0:  source = race->base->pain->messages[6]; break;
 	}
+
+	static char buf[200];
+	size_t maxlen = MIN(strlen(source), sizeof(buf));
+	size_t i;
+
+	int state = MSG_PARSE_NORMAL;
 
 	/* Put the message characters in the buffer */
-	for (; *action; action++) {
-		/* Check available space */
-		if (n >= (sizeof(buf) - 1)) break;
+	/* XXX This logic should be used everywhere for pluralising strings */
+	for (i = 0; i < maxlen; i++) {
+		char cur = source[i];
 
-		/* Are we parsing a quantity modifier? */
-		if (flag) {
-			/* Check the presence of the modifier's terminator */
-			if (*action == ']') {
-				/* Go back to parsing regular text */
-				flag = 0;
-
-				/* Skip the mark */
-				continue;
+		/*
+		 * The characters '[|]' switch parsing mode and are never output.
+		 * The syntax is [singular|plural]
+		 */
+		if (state == MSG_PARSE_NORMAL        && cur == '[') {
+			state = MSG_PARSE_SINGLE;
+		} else if (state == MSG_PARSE_SINGLE && cur == '|') {
+			state = MSG_PARSE_PLURAL;
+		} else if (state != MSG_PARSE_NORMAL && cur == ']') {
+			state = MSG_PARSE_NORMAL;
+		} else {
+			/* If we're parsing then we do these things */
+			if (state == MSG_PARSE_NORMAL ||
+					(state == MSG_PARSE_SINGLE && do_plural == false) ||
+					(state == MSG_PARSE_PLURAL && do_plural == true)) {
+				buf[i] = cur;
 			}
-
-			/* Check if we have to parse the plural modifier */
-			if (*action == '|') {
-				/* Switch to plural modifier */
-				flag = PLURAL_MON;
-
-				/* Skip the mark */
-				continue;
-			}
-
-			/* Ignore the character if we need the other part */
-			if ((flag == PLURAL_MON) != do_plural) continue;
-		} else if (*action == '[') {
-			/* Switch to singular modifier */
-			flag = SINGULAR_MON;
-
-			/* Skip the mark */
-			continue;
 		}
-
-		/* Append the character to the buffer */
-		buf[n++] = *action;
 	}
 
+	/* We should always return to the normal state */
+	assert(state == MSG_PARSE_NORMAL);
+
 	/* Terminate the buffer */
-	buf[n] = '\0';
+	buf[i] = '\0';
 
 	/* Done */
-	return (buf);
+	return buf;
 }
+
+#undef MSG_PARSE_NORMAL
+#undef MSG_PARSE_SINGLE
+#undef MSG_PARSE_PLURAL
 
 /**
  * Tracks which monster has had which pain message stored, so redundant
