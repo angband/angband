@@ -584,7 +584,7 @@ void player_flags(struct player *p, bitflag f[OF_SIZE]);
 byte player_hp_attr(struct player *p);
 byte player_sp_attr(struct player *p);
 bool player_restore_mana(struct player *p, int amt);
-const char *player_safe_name(struct player *p, bool strip_suffix);
+void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_suffix);
 
 /* player-race.c */
 struct player_race *player_id2race(guid id);

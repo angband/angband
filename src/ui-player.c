@@ -1180,11 +1180,11 @@ void do_cmd_change_name(void)
 					char buf[1024];
 					char fname[80];
 
-					strnfmt(fname, sizeof fname, "%s.txt",
-							player_safe_name(player, false));
+					/* Get the filesystem-safe name and append .txt */
+					player_safe_name(fname, sizeof(fname), op_ptr->full_name, false);
+					my_strcat(fname, ".txt", sizeof(fname));
 
-					if (get_file(fname, buf, sizeof buf))
-					{
+					if (get_file(fname, buf, sizeof buf)) {
 						if (dump_save(buf))
 							msg("Character dump successful.");
 						else

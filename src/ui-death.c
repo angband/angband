@@ -154,7 +154,9 @@ static void death_file(const char *title, int row)
 	char buf[1024];
 	char ftmp[80];
 
-	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(player, false));
+	/* Get the filesystem-safe name and append .txt */
+	player_safe_name(ftmp, sizeof(ftmp), op_ptr->full_name, false);
+	my_strcat(ftmp, ".txt", sizeof(ftmp));
 
 	if (get_file(ftmp, buf, sizeof buf)) {
 		bool success;

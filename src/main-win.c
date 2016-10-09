@@ -3104,8 +3104,8 @@ static void start_screensaver(void)
 	/* Set the name for process_player_name() */
 	my_strcpy(op_ptr->full_name, saverfilename, sizeof(op_ptr->full_name));
 
-	/* Set 'savefile' to a valid name */
-	savefile_set_name(player_safe_name(player, false));
+	/* Set 'savefile' to a safe name */
+	savefile_set_name(op_ptr->full_name, true, false);
 
 	/* Does the savefile already exist? */
 	file_exist = file_exists(savefile);

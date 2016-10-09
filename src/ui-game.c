@@ -441,17 +441,28 @@ void play_game(bool new_game)
 /**
  * Set the savefile name.
  */
-void savefile_set_name(const char *fname)
+void savefile_set_name(const char *fname, bool make_safe, bool strip_suffix)
 {
 	char path[128];
+	size_t pathlen = sizeof path;
+	size_t off = 0;
 
 #if defined(SETGID)
-	/* Rename the savefile, using the player_uid and base_name */
-	strnfmt(path, sizeof(path), "%d.%s", player_uid, fname);
-#else
-	/* Rename the savefile, using the base name */
-	strnfmt(path, sizeof(path), "%s", fname);
+	/*
+	 * On SETGID systems, we prefix the filename with the user's UID so we
+	 * know whose is whose.
+	 */
+
+	strnfmt(path, pathlen, "%d.", player_uid);
+	off = strlen(path);
+	pathlen -= off;
 #endif
+
+	if (make_safe) {
+		player_safe_name(path + off, pathlen, fname, strip_suffix);
+	} else {
+		my_strcpy(path + off, fname, pathlen);
+	}
 
 	/* Save the path */
 	path_build(savefile, sizeof(savefile), ANGBAND_DIR_SAVE, path);

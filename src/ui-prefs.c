@@ -531,8 +531,6 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 				v = player->race->name;
 			else if (streq(b+1, "CLASS"))
 				v = player->class->name;
-			else if (streq(b+1, "PLAYER"))
-				v = player_safe_name(player, true);
 		} else {
 			v = b;
 		}

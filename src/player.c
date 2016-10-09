@@ -346,40 +346,44 @@ bool player_restore_mana(struct player *p, int amt) {
 
 /**
  * Return a version of the player's name safe for use in filesystems.
+ *
+ * XXX This does not belong here.
  */
-const char *player_safe_name(struct player *p, bool strip_suffix)
+void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_suffix)
 {
-	static char buf[40];
-	int i;
-	int limit = 0;
+	size_t i;
+	size_t limit = 0;
 
-	if (op_ptr->full_name[0]) {
-		char *suffix = find_roman_suffix_start(op_ptr->full_name);
-		if (suffix)
-			limit = suffix - op_ptr->full_name - 1; /* -1 for preceding space */
-		else
-			limit = strlen(op_ptr->full_name);
+	if (name) {
+		char *suffix = find_roman_suffix_start(name);
+
+		if (suffix) {
+			limit = suffix - name - 1; /* -1 for preceding space */
+		} else {
+			limit = strlen(name);
+		}
 	}
 
+	/* Limit to maximum size of safename buffer */
+	limit = MIN(limit, safelen);
+
 	for (i = 0; i < limit; i++) {
-		char c = op_ptr->full_name[i];
+		char c = name[i];
 
 		/* Convert all non-alphanumeric symbols */
 		if (!isalpha((unsigned char)c) && !isdigit((unsigned char)c))
 			c = '_';
 
 		/* Build "base_name" */
-		buf[i] = c;
+		safe[i] = c;
 	}
 
 	/* Terminate */
-	buf[i] = '\0';
+	safe[i] = '\0';
 
 	/* Require a "base" name */
-	if (!buf[0])
-		my_strcpy(buf, "PLAYER", sizeof buf);
-
-	return buf;
+	if (!safe[0])
+		my_strcpy(safe, "PLAYER", safelen);
 }
 
 

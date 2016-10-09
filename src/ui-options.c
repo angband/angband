@@ -52,9 +52,10 @@ static bool get_pref_path(const char *what, int row, char *buf, size_t max)
 	prt(format("%s to a pref file", what), row, 0);
 	prt("File: ", row + 2, 0);
 
-	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, true));
-	
+	/* Get the filesystem-safe name and append .prf */
+	player_safe_name(ftmp, sizeof(ftmp), op_ptr->full_name, true);
+	my_strcat(ftmp, ".prf", sizeof(ftmp));
+
 	/* Get a filename */
 	ok = askfor_aux(ftmp, sizeof ftmp, NULL);
 	screen_load();
@@ -993,8 +994,9 @@ static void do_cmd_pref_file_hack(long row)
 	/* Prompt */
 	prt("File: ", row + 2, 0);
 
-	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, true));
+	/* Get the filesystem-safe name and append .prf */
+	player_safe_name(ftmp, sizeof(ftmp), op_ptr->full_name, true);
+	my_strcat(ftmp, ".prf", sizeof(ftmp));
 
 	/* Ask for a file (or cancel) */
 	if (askfor_aux(ftmp, sizeof ftmp, NULL)) {

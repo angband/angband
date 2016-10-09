@@ -1263,7 +1263,7 @@ static void ui_leave_birthscreen(game_event_type type, game_event_data *data,
 {
 	/* Set the savefile name if it's not already set */
 	if (!savefile[0])
-		savefile_set_name(player_safe_name(player, true));
+		savefile_set_name(op_ptr->full_name, true, true);
 
 	free_birth_menus();
 }
