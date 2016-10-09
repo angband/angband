@@ -43,11 +43,8 @@ enum {
 #define MAX_STORED_MON_MSG		200
 #define MAX_STORED_MON_CODES	400
 
-enum mon_msg_flags {
-	MON_MSG_FLAG_HIDDEN = 0x01, /* What is this? - NRM */
-	MON_MSG_FLAG_OFFSCREEN = 0x02,
-	MON_MSG_FLAG_INVISIBLE = 0x04
-};
+#define MON_MSG_FLAG_OFFSCREEN	0x01
+#define MON_MSG_FLAG_INVISIBLE	0x02
 
 /** Structures **/
 
@@ -77,8 +74,7 @@ extern monster_message_history *mon_message_hist;
 
 /** Functions **/
 void message_pain(struct monster *m, int dam);
-bool add_monster_message(const char *mon_name, struct monster *m, int msg_code,
-						 bool delay);
+bool add_monster_message(struct monster *m, int msg_code, bool delay);
 void flush_all_monster_messages(void);
 
 #endif /* MONSTER_MESSAGE_H */

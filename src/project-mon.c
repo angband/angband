@@ -811,7 +811,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 
 		/* Death message */
-		add_monster_message(m_name, mon, die_msg, false);
+		add_monster_message(mon, die_msg, false);
 
 		/* Generate treasure, etc */
 		monster_death(mon, false);
@@ -823,7 +823,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	} else if (!is_mimicking(mon)) {
 		/* Give detailed messages if visible or destroyed */
 		if ((hurt_msg != MON_MSG_NONE) && seen)
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 
 		/* Hack -- Pain message */
 		else if (dam > 0)
@@ -863,7 +863,7 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	 */
 	if (dam > mon->hp) {
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
-		add_monster_message(m_name, mon, die_msg, false);
+		add_monster_message(mon, die_msg, false);
 	}
 
 	mon_died = mon_take_hit(mon, dam, &fear, "");
@@ -876,12 +876,12 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	 */
 	if (!mon_died) {
 		if (seen && hurt_msg != MON_MSG_NONE)
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 		else if (dam > 0)
 			message_pain(mon, dam);
 
 		if (seen && fear)
-			add_monster_message(m_name, mon, MON_MSG_FLEE_IN_TERROR, true);
+			add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 	}
 
 	return mon_died;
@@ -919,7 +919,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		/* Uniques cannot be polymorphed */
 		if (rf_has(mon->race->flags, RF_UNIQUE)) {
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 			return;
 		}
 
@@ -932,7 +932,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			savelvl = randint1(90);
 		if (mon->race->level > savelvl) {
 			if (typ == GF_OLD_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 			return;
 		}
 
@@ -943,14 +943,14 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		if (new != old) {
 			/* Report the polymorph before changing the monster */
 			hurt_msg = MON_MSG_CHANGE;
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(m_idx);
 			place_new_monster(cave, y, x, new, false, false, ORIGIN_DROP_POLY);
 			context->mon = square_monster(cave, y, x);
 		} else {
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 		}
 	} else if (context->teleport_distance > 0) {
 		char dice[5];

@@ -220,7 +220,7 @@ static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
 			 !mflag_has(mon->mflag, MFLAG_UNAWARE)) || id)) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
-		add_monster_message(m_name, mon, m_note, true);
+		add_monster_message(mon, m_note, true);
 	}
 
 	return !resisted;

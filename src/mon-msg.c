@@ -22,6 +22,7 @@
 #include "mon-lore.h"
 #include "mon-msg.h"
 #include "mon-util.h"
+#include "game-input.h"
 #include "player-calcs.h"
 
 static u16b size_mon_hist = 0;
@@ -54,11 +55,6 @@ static const char *msg_repository[] = {
 void message_pain(struct monster *mon, int dam)
 {
 	int msg_code = MON_MSG_UNHARMED;
-	char m_name[80];
-
-	/* Get the monster name  - don't use monster_desc flags because
-	 * add_monster_message does string processing on m_name */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
 	/* Calculate damage levels */
 	if (dam > 0) {
@@ -77,7 +73,7 @@ void message_pain(struct monster *mon, int dam)
 		else						msg_code = MON_MSG_0;
 	}
 
-	add_monster_message(m_name, mon, msg_code, false);
+	add_monster_message(mon, msg_code, false);
 }
 
 #define MSG_PARSE_NORMAL	0
@@ -178,6 +174,23 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
 	return false;
 }
 
+/**
+ * Try to work out what flags a message should have from a monster name
+ */
+static int message_flags(const struct monster *mon)
+{
+	int flags = 0;
+
+	if (!panel_contains(mon->fy, mon->fx)) {
+		flags |= MON_MSG_FLAG_OFFSCREEN;
+	}
+
+	if (!mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		flags |= MON_MSG_FLAG_INVISIBLE;
+	}
+
+	return flags;
+}
 
 /**
  * Stack a codified message for the given monster race. You must supply
@@ -185,30 +198,18 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
  * different monster descriptions for the same race.
  * Return true on success.
  */
-bool add_monster_message(const char *mon_name, struct monster *mon,
-		int msg_code, bool delay)
+bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 {
-	int i;
-	byte mon_flags = 0;
-
 	assert(msg_code >= 0);
 	assert(msg_code < MON_MSG_MAX);
 
 	if (redundant_monster_message(mon, msg_code))
 		return false;
 
-	/* Paranoia */
-	if (!mon_name || !mon_name[0])
-		mon_name = "it";
-
-	if (strstr(mon_name, "(hidden)"))
-		mon_flags |= MON_MSG_FLAG_HIDDEN;
-	if (strstr(mon_name, "(offscreen)"))
-		mon_flags |= MON_MSG_FLAG_OFFSCREEN;
-	if (streq(mon_name, "it") || streq(mon_name, "something"))
-		mon_flags |= MON_MSG_FLAG_INVISIBLE;
+	int mon_flags = message_flags(mon);
 
 	/* Query if the message is already stored */
+	int i;
 	for (i = 0; i < size_mon_msg; i++) {
 		/* We found the race and the message code */
 		if (mon_msg[i].race == mon->race &&
