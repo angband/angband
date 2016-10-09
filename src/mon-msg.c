@@ -324,7 +324,7 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
  *
  * \returns number of bytes written
  */
-static size_t get_subject(char *buf, size_t len,
+static size_t get_subject(char *buf, size_t buflen,
 		struct monster_race *race,
 		int count,
 		bool invisible,
@@ -332,9 +332,9 @@ static size_t get_subject(char *buf, size_t len,
 {
 	if (invisible) {
 		if (count == 1) {
-			my_strcpy(buf, "It", len);
+			my_strcpy(buf, "It", buflen);
 		} else {
-			strnfmt(buf, len, "%d monsters", count);
+			strnfmt(buf, buflen, "%d monsters", count);
 		}
 	} else {
 		char race_name[80];
@@ -343,10 +343,10 @@ static size_t get_subject(char *buf, size_t len,
 
 		/* Uniques, multiple monsters, or just one */
 		if (rf_has(race->flags, RF_UNIQUE)) {
-			my_strcpy(buf, race->name, len);
+			my_strcpy(buf, race->name, buflen);
 
 		} else if (count == 1) {
-			strnfmt(buf, len, "The %s", race_name);
+			strnfmt(buf, buflen, "The %s", race_name);
 
 		} else {
 			/* Get the plural of the race name */
@@ -356,15 +356,15 @@ static size_t get_subject(char *buf, size_t len,
 				plural_aux(race_name, sizeof(race_name));
 			}
 
-			strnfmt(buf, len, "%d %s", count, race_name);
+			strnfmt(buf, buflen, "%d %s", count, race_name);
 		}
 	}
 
 	if (offscreen)
-		my_strcat(buf, " (offscreen)", sizeof(buf));
+		my_strcat(buf, " (offscreen)", buflen);
 
 	/* Add a separator */
-	my_strcat(buf, " ", sizeof(buf));
+	my_strcat(buf, " ", buflen);
 
 	return strlen(buf);
 }
