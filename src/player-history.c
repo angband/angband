@@ -130,10 +130,7 @@ bool history_add(struct player *p, const char *text, int type)
 	hist_wipe(flags);
 	hist_on(flags, type);
 
-	return history_add_with_flags(p,
-		text,
-		flags,
-		0);
+	return history_add_with_flags(p, text, flags, 0);
 }
 
 /**
