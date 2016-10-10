@@ -670,7 +670,7 @@ static bool make_artifact(struct object *obj)
  * Since this is now in no way marked as fake, we must make sure this function
  * is never used to create an actual game object
  */
-bool make_fake_artifact(struct object *obj, struct artifact *artifact)
+bool make_fake_artifact(struct object *obj, const struct artifact *artifact)
 {
 	struct object_kind *kind;
 
@@ -683,7 +683,7 @@ bool make_fake_artifact(struct object *obj, struct artifact *artifact)
 
 	/* Create the artifact */
 	object_prep(obj, kind, 0, MAXIMISE);
-	obj->artifact = artifact;
+	obj->artifact = (struct artifact *)artifact;
 	copy_artifact_data(obj, artifact);
 	apply_curse_knowledge(obj);
 

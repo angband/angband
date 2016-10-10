@@ -103,6 +103,7 @@ struct birther
 	s16b stat[STAT_MAX];
 
 	char *history;
+	char name[PLAYER_NAME_LEN];
 };
 
 
@@ -156,6 +157,7 @@ static void save_roller_data(birther *tosave)
 		tosave->stat[i] = player->stat_birth[i];
 
 	tosave->history = player->history;
+	my_strcpy(tosave->name, player->full_name, sizeof(tosave->name));
 }
 
 
@@ -199,6 +201,7 @@ static void load_roller_data(birther *saved, birther *prev_player)
 
 	/* Load previous history */
 	player->history = saved->history;
+	my_strcpy(player->full_name, saved->name, sizeof(player->full_name));
 
 	/* Save the current data if the caller is interested in it. */
 	if (prev_player)
@@ -430,6 +433,8 @@ void player_init(struct player *p)
 								   sizeof(struct object *));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 	p->obj_k = mem_zalloc(sizeof(struct object));
+
+	options_init_defaults();
 
 	/* First turn. */
 	turn = 1;
@@ -927,16 +932,17 @@ void do_cmd_birth_init(struct command *cmd)
 	}
 
 	/* Handle incrementing name suffix */
-	buf = find_roman_suffix_start(op_ptr->full_name);
+	buf = find_roman_suffix_start(player->full_name);
 	if (buf) {
 		/* Try to increment the roman suffix */
-		int success = int_to_roman((roman_to_int(buf) + 1), buf,
-			(sizeof(op_ptr->full_name) - (buf -
-			(char *)&op_ptr->full_name)));
-			
+		int success = int_to_roman(
+				roman_to_int(buf) + 1,
+				buf,
+				sizeof(player->full_name) - (buf - (char *)&player->full_name));
+
 		if (!success) msg("Sorry, could not deal with suffix");
 	}
-	
+
 	/* We're ready to start the birth process */
 	event_signal_flag(EVENT_ENTER_BIRTH, quickstart_allowed);
 }
@@ -1058,7 +1064,7 @@ void do_cmd_choose_name(struct command *cmd)
 	cmd_get_arg_string(cmd, "name", &str);
 
 	/* Set player name */
-	my_strcpy(op_ptr->full_name, str, sizeof(op_ptr->full_name));
+	my_strcpy(player->full_name, str, sizeof(player->full_name));
 
 	string_free((char *) str);
 }
@@ -1080,21 +1086,15 @@ void do_cmd_choose_history(struct command *cmd)
 
 void do_cmd_accept_character(struct command *cmd)
 {
-	int i;
-
-	/* Reset score options from cheat options */
-	for (i = 0; i < OPT_MAX; i++) {
-		if (option_type(i) == OP_CHEAT)
-			op_ptr->opt[i + 1] = op_ptr->opt[i];
-	}
+	options_init_cheat();
 
 	roll_hp();
 
 	ignore_birth_init();
 
 	/* Clear old messages, add new starting message */
-	history_clear();
-	history_add("Began the quest to destroy Morgoth.", HIST_PLAYER_BIRTH, 0);
+	history_clear(player);
+	history_add(player, "Began the quest to destroy Morgoth.", HIST_PLAYER_BIRTH);
 
 	/* Note player birth in the message recall */
 	message_add(" ", MSG_GENERIC);

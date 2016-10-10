@@ -2973,7 +2973,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 							!(obj->known && obj->known->artifact))
 							obj->artifact->created = false;
 						else
-							history_lose_artifact(obj->artifact);
+							history_lose_artifact(player, obj->artifact);
 					}
 					obj = obj->next;
 				}

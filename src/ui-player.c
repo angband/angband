@@ -696,7 +696,7 @@ static const byte colour_table[] =
 static struct panel *get_panel_topleft(void) {
 	struct panel *p = panel_allocate(6);
 
-	panel_line(p, COLOUR_L_BLUE, "Name", "%s", op_ptr->full_name);
+	panel_line(p, COLOUR_L_BLUE, "Name", "%s", player->full_name);
 	panel_line(p, COLOUR_L_BLUE, "Race",	"%s", player->race->name);
 	panel_line(p, COLOUR_L_BLUE, "Class", "%s", player->class->name);
 	panel_line(p, COLOUR_L_BLUE, "Title", "%s", show_title());
@@ -1100,7 +1100,7 @@ void write_character_dump(ang_file *fff)
 
 			file_putf(fff, "%-45s: %s (%s)\n",
 			        option_desc(opt),
-			        op_ptr->opt[opt] ? "yes" : "no ",
+			        player->opts.opt[opt] ? "yes" : "no ",
 			        option_name(opt));
 		}
 
@@ -1170,8 +1170,8 @@ void do_cmd_change_name(void)
 
 					/* Set player name */
 					if (get_character_name(namebuf, sizeof namebuf))
-						my_strcpy(op_ptr->full_name, namebuf,
-								  sizeof(op_ptr->full_name));
+						my_strcpy(player->full_name, namebuf,
+								  sizeof(player->full_name));
 
 					break;
 				}
@@ -1180,11 +1180,11 @@ void do_cmd_change_name(void)
 					char buf[1024];
 					char fname[80];
 
-					strnfmt(fname, sizeof fname, "%s.txt",
-							player_safe_name(player, false));
+					/* Get the filesystem-safe name and append .txt */
+					player_safe_name(fname, sizeof(fname), player->full_name, false);
+					my_strcat(fname, ".txt", sizeof(fname));
 
-					if (get_file(fname, buf, sizeof buf))
-					{
+					if (get_file(fname, buf, sizeof buf)) {
 						if (dump_save(buf))
 							msg("Character dump successful.");
 						else

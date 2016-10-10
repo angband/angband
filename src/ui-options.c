@@ -52,9 +52,10 @@ static bool get_pref_path(const char *what, int row, char *buf, size_t max)
 	prt(format("%s to a pref file", what), row, 0);
 	prt("File: ", row + 2, 0);
 
-	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, true));
-	
+	/* Get the filesystem-safe name and append .prf */
+	player_safe_name(ftmp, sizeof(ftmp), player->full_name, true);
+	my_strcat(ftmp, ".prf", sizeof(ftmp));
+
 	/* Get a filename */
 	ok = askfor_aux(ftmp, sizeof ftmp, NULL);
 	screen_load();
@@ -125,7 +126,7 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		/* At birth, m->flags == MN_DBL_TAP. */
 		/* After birth, m->flags == MN_NO_TAGS */
 		if (!((option_type(oid) == OP_BIRTH) && (m->flags == MN_NO_TAGS))) {
-			option_set(option_name(oid), !op_ptr->opt[oid]);
+			option_set(option_name(oid), !player->opts.opt[oid]);
 		}
 	} else if (event->type == EVT_KBRD) {
 		if (event->key.code == 'y' || event->key.code == 'Y') {
@@ -135,7 +136,7 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 			option_set(option_name(oid), false);
 			next = true;
 		} else if (event->key.code == 't' || event->key.code == 'T') {
-			option_set(option_name(oid), !op_ptr->opt[oid]);
+			option_set(option_name(oid), !player->opts.opt[oid]);
 		} else if (event->key.code == '?') {
 			screen_save();
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
@@ -201,7 +202,7 @@ static void option_toggle_menu(const char *name, int page)
 	}
 
 	/* Set the data to the player's options */
-	menu_setpriv(m, OPT_MAX, &op_ptr->opt);
+	menu_setpriv(m, OPT_MAX, &player->opts.opt);
 	menu_set_filter(m, option_page[page], i);
 	menu_layout(m, &SCREEN_REGION);
 
@@ -881,9 +882,9 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 static void do_cmd_delay(const char *name, int row)
 {
 	char tmp[4] = "";
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 
-	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->delay_factor);
+	strnfmt(tmp, sizeof(tmp), "%i", player->opts.delay_factor);
 
 	screen_save();
 
@@ -891,13 +892,13 @@ static void do_cmd_delay(const char *name, int row)
 	prt("Command: Base Delay Factor", 20, 0);
 
 	prt(format("Current base delay factor: %d msec",
-			   op_ptr->delay_factor, msec), 22, 0);
+			   player->opts.delay_factor, msec), 22, 0);
 	prt("New base delay factor (0-255): ", 21, 0);
 
 	/* Ask for a numeric value */
 	if (askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers)) {
 		u16b val = (u16b) strtoul(tmp, NULL, 0);
-		op_ptr->delay_factor = MIN(val, 255);
+		player->opts.delay_factor = MIN(val, 255);
 	}
 
 	screen_load();
@@ -913,7 +914,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 	char tmp[4] = "";
 	byte warn;
 
-	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
+	strnfmt(tmp, sizeof(tmp), "%i", player->opts.hitpoint_warn);
 
 	screen_save();
 
@@ -921,7 +922,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 	prt("Command: Hitpoint Warning", 20, 0);
 
 	prt(format("Current hitpoint warning: %d (%d%%)",
-			   op_ptr->hitpoint_warn, op_ptr->hitpoint_warn * 10), 22, 0);
+			   player->opts.hitpoint_warn, player->opts.hitpoint_warn * 10), 22, 0);
 	prt("New hitpoint warning (0-9): ", 21, 0);
 
 	/* Ask the user for a string */
@@ -935,7 +936,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 		if (warn > 9)
 			warn = 0;
 
-		op_ptr->hitpoint_warn = warn;
+		player->opts.hitpoint_warn = warn;
 	}
 
 	screen_load();
@@ -950,7 +951,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	bool res;
 	char tmp[4] = "";
 
-	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->lazymove_delay);
+	strnfmt(tmp, sizeof(tmp), "%i", player->opts.lazymove_delay);
 
 	screen_save();
 
@@ -958,7 +959,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	prt("Command: Movement Delay Factor", 20, 0);
 
 	prt(format("Current movement delay: %d (%d msec)",
-			   op_ptr->lazymove_delay, op_ptr->lazymove_delay * 10), 22, 0);
+			   player->opts.lazymove_delay, player->opts.lazymove_delay * 10), 22, 0);
 	prt("New movement delay: ", 21, 0);
 
 	/* Ask the user for a string */
@@ -966,7 +967,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 
 	/* Process input */
 	if (res)
-		op_ptr->lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
+		player->opts.lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
 
 	screen_load();
 }
@@ -993,8 +994,9 @@ static void do_cmd_pref_file_hack(long row)
 	/* Prompt */
 	prt("File: ", row + 2, 0);
 
-	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, true));
+	/* Get the filesystem-safe name and append .prf */
+	player_safe_name(ftmp, sizeof(ftmp), player->full_name, true);
+	my_strcat(ftmp, ".prf", sizeof(ftmp));
 
 	/* Ask for a file (or cancel) */
 	if (askfor_aux(ftmp, sizeof ftmp, NULL)) {

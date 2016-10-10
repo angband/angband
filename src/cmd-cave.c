@@ -292,7 +292,7 @@ void do_cmd_open(struct command *cmd)
 			msg("There is a monster in the way!");
 
 			/* Attack */
-			py_attack(y, x);
+			py_attack(player, y, x);
 		}
 	} else if (obj) {
 		/* Chest */
@@ -415,7 +415,7 @@ void do_cmd_close(struct command *cmd)
 	/* Monster - alert, then attack */
 	if (cave->squares[y][x].mon > 0) {
 		msg("There is a monster in the way!");
-		py_attack(y, x);
+		py_attack(player, y, x);
 	} else
 		/* Door - close it */
 		more = do_cmd_close_aux(y, x);
@@ -591,7 +591,7 @@ void do_cmd_tunnel(struct command *cmd)
 	/* Attack any monster we run into */
 	if (cave->squares[y][x].mon > 0) {
 		msg("There is a monster in the way!");
-		py_attack(y, x);
+		py_attack(player, y, x);
 	} else {
 		/* Tunnel through walls */
 		more = do_cmd_tunnel_aux(y, x);
@@ -814,7 +814,7 @@ void do_cmd_disarm(struct command *cmd)
 	/* Monster */
 	if (cave->squares[y][x].mon > 0) {
 		msg("There is a monster in the way!");
-		py_attack(y, x);
+		py_attack(player, y, x);
 	} else if (obj)
 		/* Chest */
 		more = do_cmd_disarm_chest(y, x, obj);
@@ -863,7 +863,7 @@ void do_cmd_alter_aux(int dir)
 	/* Action depends on what's there */
 	if (cave->squares[y][x].mon > 0)
 		/* Attack monsters */
-		py_attack(y, x);
+		py_attack(player, y, x);
 	else if (square_isdiggable(cave, y, x))
 		/* Tunnel through walls and rubble */
 		more = do_cmd_tunnel_aux(y, x);
@@ -920,7 +920,7 @@ void move_player(int dir, bool disarm)
 			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
 
 		} else {
-			py_attack(y, x);
+			py_attack(player, y, x);
 		}
 	} else if (disarm && square_isknown(cave, y, x) && alterable) {
 		/* Auto-repeat if not already repeating */

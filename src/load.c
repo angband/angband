@@ -395,15 +395,15 @@ int rd_options(void)
 
 	/* Read "delay_factor" */
 	rd_byte(&b);
-	op_ptr->delay_factor = b;
+	player->opts.delay_factor = b;
 
 	/* Read "hitpoint_warn" */
 	rd_byte(&b);
-	op_ptr->hitpoint_warn = b;
+	player->opts.hitpoint_warn = b;
 
 	/* Read lazy movement delay */
 	rd_u16b(&tmp16u);
-	op_ptr->lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
+	player->opts.lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
 
 
 	/* Read options */
@@ -618,7 +618,7 @@ int rd_player(void)
 	byte stat_max = 0;
 	char buf[80];
 
-	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
+	rd_string(player->full_name, sizeof(player->full_name));
 	rd_string(player->died_from, 80);
 	player->history = mem_zalloc(250);
 	rd_string(player->history, 250);
@@ -643,7 +643,7 @@ int rd_player(void)
 	}
 
 	/* Numeric name suffix */
-	rd_byte(&op_ptr->name_suffix);
+	rd_byte(&player->opts.name_suffix);
 
 	/* Special Race/Class info */
 	rd_byte(&player->hitdie);
@@ -1521,7 +1521,7 @@ int rd_history(void)
 	u32b tmp32u;
 	size_t i, j;
 	
-	history_clear();
+	history_clear(player);
 
 	/* History type flags */
 	rd_byte(&hist_size);
@@ -1535,7 +1535,7 @@ int rd_history(void)
 		s32b turnno;
 		s16b dlev, clev;
 		bitflag type[HIST_SIZE];
-		byte art_name;
+		byte aidx;
 		char text[80];
 
 		for (j = 0; j < hist_size; j++)		
@@ -1543,10 +1543,10 @@ int rd_history(void)
 		rd_s32b(&turnno);
 		rd_s16b(&dlev);
 		rd_s16b(&clev);
-		rd_byte(&art_name);
+		rd_byte(&aidx);
 		rd_string(text, sizeof(text));
 		
-		history_add_full(type, &a_info[art_name], dlev, clev, turnno, text);
+		history_add_full(player, type, aidx, dlev, clev, turnno, text);
 	}
 
 	return 0;

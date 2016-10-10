@@ -1520,7 +1520,7 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 
 			/* Log the slaying of a unique */
 			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
-			history_add(buf, HIST_SLAY_UNIQUE, 0);
+			history_add(player, buf, HIST_SLAY_UNIQUE);
 		}
 
 		/* Gain experience */

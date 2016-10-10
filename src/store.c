@@ -1063,8 +1063,9 @@ static void store_delete_random(struct store *store)
 
 	assert (num <= obj->number);
 
-	if (obj->artifact)
-		history_lose_artifact(obj->artifact);
+	if (obj->artifact) {
+		history_lose_artifact(player, obj->artifact);
+	}
 
 	/* Delete the item, wholly or in part */
 	store_delete(store, obj, num);
@@ -1861,7 +1862,7 @@ void do_cmd_sell(struct command *cmd)
 	/* Update the auto-history if selling an artifact that was previously
 	 * un-IDed. (Ouch!) */
 	if (obj->artifact)
-		history_add_artifact(obj->artifact, true, true);
+		history_find_artifact(player, obj->artifact);
 
 	/* Update the gear */
 	player->upkeep->update |= (PU_INVEN);

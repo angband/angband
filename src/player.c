@@ -29,17 +29,6 @@
 #include "z-color.h"
 #include "z-util.h"
 
-
-/**
- * The player other record (static)
- */
-static player_other player_other_body;
-
-/**
- * Pointer to the player other record
- */
-player_other *op_ptr = &player_other_body;
-
 /**
  * Pointer to the player struct
  */
@@ -248,7 +237,7 @@ static void adjust_level(struct player *p, bool verbose)
 		if (verbose) {
 			/* Log level updates */
 			strnfmt(buf, sizeof(buf), "Reached level %d", p->lev);
-			history_add(buf, HIST_GAIN_LEVEL, 0);
+			history_add(p, buf, HIST_GAIN_LEVEL);
 
 			/* Message */
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);
@@ -308,7 +297,7 @@ byte player_hp_attr(struct player *p)
 	
 	if (p->chp >= p->mhp)
 		attr = COLOUR_L_GREEN;
-	else if (p->chp > (p->mhp * op_ptr->hitpoint_warn) / 10)
+	else if (p->chp > (p->mhp * p->opts.hitpoint_warn) / 10)
 		attr = COLOUR_YELLOW;
 	else
 		attr = COLOUR_RED;
@@ -322,7 +311,7 @@ byte player_sp_attr(struct player *p)
 	
 	if (p->csp >= p->msp)
 		attr = COLOUR_L_GREEN;
-	else if (p->csp > (p->msp * op_ptr->hitpoint_warn) / 10)
+	else if (p->csp > (p->msp * p->opts.hitpoint_warn) / 10)
 		attr = COLOUR_YELLOW;
 	else
 		attr = COLOUR_RED;
@@ -346,40 +335,44 @@ bool player_restore_mana(struct player *p, int amt) {
 
 /**
  * Return a version of the player's name safe for use in filesystems.
+ *
+ * XXX This does not belong here.
  */
-const char *player_safe_name(struct player *p, bool strip_suffix)
+void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_suffix)
 {
-	static char buf[40];
-	int i;
-	int limit = 0;
+	size_t i;
+	size_t limit = 0;
 
-	if (op_ptr->full_name[0]) {
-		char *suffix = find_roman_suffix_start(op_ptr->full_name);
-		if (suffix)
-			limit = suffix - op_ptr->full_name - 1; /* -1 for preceding space */
-		else
-			limit = strlen(op_ptr->full_name);
+	if (name) {
+		char *suffix = find_roman_suffix_start(name);
+
+		if (suffix) {
+			limit = suffix - name - 1; /* -1 for preceding space */
+		} else {
+			limit = strlen(name);
+		}
 	}
 
+	/* Limit to maximum size of safename buffer */
+	limit = MIN(limit, safelen);
+
 	for (i = 0; i < limit; i++) {
-		char c = op_ptr->full_name[i];
+		char c = name[i];
 
 		/* Convert all non-alphanumeric symbols */
 		if (!isalpha((unsigned char)c) && !isdigit((unsigned char)c))
 			c = '_';
 
 		/* Build "base_name" */
-		buf[i] = c;
+		safe[i] = c;
 	}
 
 	/* Terminate */
-	buf[i] = '\0';
+	safe[i] = '\0';
 
 	/* Require a "base" name */
-	if (!buf[0])
-		my_strcpy(buf, "PLAYER", sizeof buf);
-
-	return buf;
+	if (!safe[0])
+		my_strcpy(safe, "PLAYER", safelen);
 }
 
 
@@ -403,6 +396,9 @@ static void init_player(void) {
  */
 static void cleanup_player(void) {
 	int i;
+
+	/* Free the history */
+	history_clear(player);
 
 	/* Free the things that are always initialised */
 	mem_free(player->obj_k);

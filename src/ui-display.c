@@ -1289,7 +1289,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 	bool new_radius = false;
 	bool drawn = false;
 	int i, y, x;
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 	int gf_type = data->explosion.gf_type;
 	int num_grids = data->explosion.num_grids;
 	int *distance_to_grid = data->explosion.distance_to_grid;
@@ -1372,7 +1372,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 static void display_bolt(game_event_type type, game_event_data *data,
 						 void *user)
 {
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 	int gf_type = data->bolt.gf_type;
 	bool drawing = data->bolt.drawing;
 	bool seen = data->bolt.seen;
@@ -1423,7 +1423,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 static void display_missile(game_event_type type, game_event_data *data,
 							void *user)
 {
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 	struct object *obj = data->missile.obj;
 	bool seen = data->missile.seen;
 	int y = data->missile.y;
@@ -2321,6 +2321,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
  * ------------------------------------------------------------------------
  * Initialising
  * ------------------------------------------------------------------------ */
+
 /**
  * Process the user pref files relevant to a newly loaded character
  */
@@ -2335,8 +2336,10 @@ static void process_character_pref_files(void)
 	/* Process the "user.prf" file */
 	process_pref_file("user.prf", true, true);
 
-	/* Process the pref file based on the character name */
-	strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(player, true));
+	/* Get the filesystem-safe name and append .prf */
+	player_safe_name(buf, sizeof(buf), player->full_name, true);
+	my_strcat(buf, ".prf", sizeof(buf));
+
 	found = process_pref_file(buf, true, true);
 
     /* Try pref file using savefile name if we fail using character name */

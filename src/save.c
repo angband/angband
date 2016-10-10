@@ -47,11 +47,11 @@ void wr_description(void)
 
 	if (player->is_dead)
 		strnfmt(buf, sizeof buf, "%s, dead (%s)",
-				op_ptr->full_name,
+				player->full_name,
 				player->died_from);
 	else
 		strnfmt(buf, sizeof buf, "%s, L%d %s %s, at DL%d",
-				op_ptr->full_name,
+				player->full_name,
 				player->lev,
 				player->race->name,
 				player->class->name,
@@ -283,18 +283,17 @@ void wr_options(void)
 	int i;
 
 	/* Special Options */
-	wr_byte(op_ptr->delay_factor);
-	wr_byte(op_ptr->hitpoint_warn);
-	wr_u16b(op_ptr->lazymove_delay);
+	wr_byte(player->opts.delay_factor);
+	wr_byte(player->opts.hitpoint_warn);
+	wr_u16b(player->opts.lazymove_delay);
 
 	/* Normal options */
 	for (i = 0; i < OPT_MAX; i++) {
 		const char *name = option_name(i);
-		if (!name)
-			continue;
-
-		wr_string(name);
-		wr_byte(op_ptr->opt[i]);
+		if (name) {
+			wr_string(name);
+			wr_byte(player->opts.opt[i]);
+		}
    }
 
 	/* Sentinel */
@@ -399,7 +398,7 @@ void wr_player(void)
 {
 	int i;
 
-	wr_string(op_ptr->full_name);
+	wr_string(player->full_name);
 
 	wr_string(player->died_from);
 
@@ -408,7 +407,7 @@ void wr_player(void)
 	/* Race/Class/Gender/Spells */
 	wr_byte(player->race->ridx);
 	wr_byte(player->class->cidx);
-	wr_byte(op_ptr->name_suffix);
+	wr_byte(player->opts.name_suffix);
 
 	wr_byte(player->hitdie);
 	wr_byte(player->expfact);
@@ -972,11 +971,13 @@ void wr_chunks(void)
 void wr_history(void)
 {
 	size_t i, j;
-	u32b tmp32u = history_get_num();
+
+	struct history_info *history_list;
+	u32b length = history_get_list(player, &history_list);
 
 	wr_byte(HIST_SIZE);
-	wr_u32b(tmp32u);
-	for (i = 0; i < tmp32u; i++) {
+	wr_u32b(length);
+	for (i = 0; i < length; i++) {
 		for (j = 0; j < HIST_SIZE; j++)
 			wr_byte(history_list[i].type[j]);
 		wr_s32b(history_list[i].turn);

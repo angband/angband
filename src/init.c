@@ -5212,9 +5212,6 @@ void cleanup_angband(void)
 		cave = NULL;
 	}
 
-	/* Free the history */
-	history_clear();
-
 	monster_list_finalize();
 	object_list_finalize();
 

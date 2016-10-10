@@ -956,7 +956,7 @@ void object_touch(struct player *p, struct object *obj)
 
 	/* Log artifacts if found */
 	if (obj->artifact)
-		history_add_artifact(obj->artifact, true, true);
+		history_find_artifact(p, obj->artifact);
 }
 
 

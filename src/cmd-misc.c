@@ -103,10 +103,10 @@ void do_cmd_note(void)
 
 	/* Format the note correctly, supporting some cute /me commands */
 	if (strncmp(tmp, "/say ", 5) == 0)
-		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", op_ptr->full_name,
+		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", player->full_name,
 				&tmp[5]);
 	else if (strncmp(tmp, "/me", 3) == 0)
-		strnfmt(note, sizeof(note), "-- %s%s", op_ptr->full_name, &tmp[3]);
+		strnfmt(note, sizeof(note), "-- %s%s", player->full_name, &tmp[3]);
 	else
 		strnfmt(note, sizeof(note), "-- Note: %s", tmp);
 
@@ -114,5 +114,5 @@ void do_cmd_note(void)
 	msg("%s", &note[3]);
 
 	/* Add a history entry */
-	history_add(note, HIST_USER_INPUT, 0);
+	history_add(player, note, HIST_USER_INPUT);
 }

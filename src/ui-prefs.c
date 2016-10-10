@@ -29,6 +29,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "project.h"
+#include "player.h"
 #include "trap.h"
 #include "ui-display.h"
 #include "ui-keymap.h"
@@ -36,6 +37,7 @@
 #include "ui-term.h"
 #include "sound.h"
 
+char arg_name[PLAYER_NAME_LEN];		/* Command arg -- request character name */
 int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */
 int use_graphics;			/* The "graphics" mode is enabled */
@@ -531,8 +533,6 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 				v = player->race->name;
 			else if (streq(b+1, "CLASS"))
 				v = player->class->name;
-			else if (streq(b+1, "PLAYER"))
-				v = player_safe_name(player, true);
 		} else {
 			v = b;
 		}

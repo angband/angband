@@ -794,7 +794,7 @@ bool get_character_name(char *buf, size_t buflen)
 	prt("Enter a name for your character (* for a random name): ", 0, 0);
 
 	/* Save the player name */
-	my_strcpy(buf, op_ptr->full_name, buflen);
+	my_strcpy(buf, player->full_name, buflen);
 
 	/* Ask the user for a string */
 	res = askfor_aux(buf, buflen, get_name_keypress);
@@ -804,7 +804,7 @@ bool get_character_name(char *buf, size_t buflen)
 
 	/* Revert to the old name if the player doesn't pick a new one. */
 	if (!res)
-		my_strcpy(buf, op_ptr->full_name, buflen);
+		my_strcpy(buf, player->full_name, buflen);
 
 	return res;
 }
@@ -1163,10 +1163,10 @@ bool textui_get_rep_dir(int *dp, bool allow_5)
 				if (this_dir)
 					dir = dir_transitions[dir][this_dir];
 
-				if (op_ptr->lazymove_delay == 0 || ++keypresses_handled > 1)
+				if (player->opts.lazymove_delay == 0 || ++keypresses_handled > 1)
 					break;
 
-				inkey_scan = op_ptr->lazymove_delay;
+				inkey_scan = player->opts.lazymove_delay;
 				ke = inkey_ex();
 			}
 
@@ -1269,12 +1269,12 @@ bool textui_get_aim_dir(int *dp)
 					else
 						break;
 
-					if (op_ptr->lazymove_delay == 0 || ++keypresses_handled > 1)
+					if (player->opts.lazymove_delay == 0 || ++keypresses_handled > 1)
 						break;
 
 					/* See if there's a second keypress within the defined
 					 * period of time. */
-					inkey_scan = op_ptr->lazymove_delay;
+					inkey_scan = player->opts.lazymove_delay;
 					ke = inkey_ex();
 				}
 			}

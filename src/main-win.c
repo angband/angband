@@ -3101,11 +3101,8 @@ static void start_screensaver(void)
 {
 	bool file_exist;
 
-	/* Set the name for process_player_name() */
-	my_strcpy(op_ptr->full_name, saverfilename, sizeof(op_ptr->full_name));
-
-	/* Set 'savefile' to a valid name */
-	savefile_set_name(player_safe_name(player, false));
+	/* Set 'savefile' to a safe name */
+	savefile_set_name(saverfilename, true, false);
 
 	/* Does the savefile already exist? */
 	file_exist = file_exists(savefile);
@@ -3842,7 +3839,7 @@ static void process_menus(WORD wCmd)
 
 			time( &ltime );
 			today = localtime( &ltime );
-			strnfmt(filename, sizeof(filename), "%s", op_ptr->full_name);
+			strnfmt(filename, sizeof(filename), "%s", player->full_name);
 			len = strlen(filename);
 			strftime(filename+len, sizeof(filename)-len, "_%Y%b%d_%H%M%S.png",
 					 today);

@@ -39,14 +39,13 @@ enum
  */
 enum
 {
-    #define OP(a, b, c, d) OPT_##a,
-    #include "list-options.h"
-    #undef OP
+	#define OP(a, b, c, d) OPT_##a,
+	#include "list-options.h"
+	#undef OP
 	OPT_MAX
 };
 
-
-#define OPT(opt_name)	op_ptr->opt[OPT_##opt_name]
+#define OPT(opt_name)	player->opts.opt[OPT_##opt_name]
 
 /**
  * Information for "do_cmd_options()".
@@ -61,13 +60,15 @@ enum
 extern int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 /**
- * Functions 
-*/
+ * Functions
+ */
+void options_init_cheat(void);
 const char *option_name(int opt);
 const char *option_desc(int opt);
 int option_type(int opt);
 bool option_set(const char *opt, int val);
+void options_init_cheat(void);
+void options_init_defaults(void);
 void init_options(void);
-
 
 #endif /* !INCLUDED_OPTIONS_H */
