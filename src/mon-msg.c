@@ -2,7 +2,7 @@
  * \file mon-msg.c
  * \brief Monster message code.
  *
- * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 1997-2016 Jeff Greene, Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -34,7 +34,6 @@
  */
 #define MON_MSG_FLAG_OFFSCREEN	0x01
 #define MON_MSG_FLAG_INVISIBLE	0x02
-
 
 /**
  * A stacked monster message entry
@@ -188,10 +187,18 @@ static bool stack_message(struct monster *mon, int msg_code, int flags)
 	return false;
 }
 
+static int what_delay(int msg_code, int delay)
+{
+	if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
+		return 2;
+	} else {
+		return delay ? 1 : 0;
+	}
+}
+
 /**
- * Stack a codified message for the given monster race. You must supply
- * the description of some monster of this race. You can also supply
- * different monster descriptions for the same race.
+ * Stack a codified message for the given monster race.
+ *
  * Return true on success.
  */
 bool add_monster_message(struct monster *mon, int msg_code, bool delay)
@@ -199,31 +206,18 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 	assert(msg_code >= 0);
 	assert(msg_code < MON_MSG_MAX);
 
-	if (redundant_monster_message(mon, msg_code))
-		return false;
-
 	int flags = message_flags(mon);
 
-	/* Stack message on top of older message if possible */
+	/* Try to stack the message on top of older messages if it isn't redunant */
 	/* If not possible, check we have storage space for more messages and add */
-	if (!stack_message(mon, msg_code, flags) &&
+	if (!redundant_monster_message(mon, msg_code) &&
+			!stack_message(mon, msg_code, flags) &&
 			size_mon_msg < MAX_STORED_MON_MSG) {
-		int idx = size_mon_msg;
-
-		/* Assign the message data to the free slot */
-		mon_msg[idx].race = mon->race;
-		mon_msg[idx].flags = flags;
-		mon_msg[idx].msg_code = msg_code;
-		mon_msg[idx].count = 1;
-
-		/* Force all death messages to go at the end of the group for
-		 * logical presentation */
-		if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
-			mon_msg[idx].delay = 2;
-		} else {
-			mon_msg[idx].delay = delay ? 1 : 0;
-		}
-
+		mon_msg[size_mon_msg].race = mon->race;
+		mon_msg[size_mon_msg].flags = flags;
+		mon_msg[size_mon_msg].msg_code = msg_code;
+		mon_msg[size_mon_msg].count = 1;
+		mon_msg[size_mon_msg].delay = what_delay(msg_code, delay);
 		size_mon_msg++;
 
 		store_monster(mon, msg_code);
@@ -238,8 +232,6 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 
 /**
  * Create the subject of the sentence for monster messages
- *
- * \returns number of bytes written
  */
 static void get_subject(char *buf, size_t buflen,
 		struct monster_race *race,
@@ -254,26 +246,19 @@ static void get_subject(char *buf, size_t buflen,
 			strnfmt(buf, buflen, "%d monsters", count);
 		}
 	} else {
-		char race_name[80];
-
-		my_strcpy(race_name, race->name, sizeof(race_name));
-
 		/* Uniques, multiple monsters, or just one */
 		if (rf_has(race->flags, RF_UNIQUE)) {
 			my_strcpy(buf, race->name, buflen);
-
 		} else if (count == 1) {
-			strnfmt(buf, buflen, "The %s", race_name);
-
+			strnfmt(buf, buflen, "The %s", race->name);
 		} else {
 			/* Get the plural of the race name */
 			if (race->plural != NULL) {
-				my_strcpy(race_name, race->plural, sizeof(race_name));
+				strnfmt(buf, buflen, "%d %s", count, race->plural);
 			} else {
-				plural_aux(race_name, sizeof(race_name));
+				strnfmt(buf, buflen, "%d %s", count, race->name);
+				plural_aux(buf, sizeof(buflen));
 			}
-
-			strnfmt(buf, buflen, "%d %s", count, race_name);
 		}
 	}
 
@@ -335,13 +320,11 @@ static void get_message_text(char *buf, size_t buflen,
 			state = MSG_PARSE_PLURAL;
 		} else if (state != MSG_PARSE_NORMAL && cur == ']') {
 			state = MSG_PARSE_NORMAL;
-		} else {
-			/* If we're parsing then we do these things */
-			if (state == MSG_PARSE_NORMAL ||
-					(state == MSG_PARSE_SINGLE && do_plural == false) ||
-					(state == MSG_PARSE_PLURAL && do_plural == true)) {
-				buf[pos++] = cur;
-			}
+		} else if (state == MSG_PARSE_NORMAL ||
+				(state == MSG_PARSE_SINGLE && do_plural == false) ||
+				(state == MSG_PARSE_PLURAL && do_plural == true)) {
+			/* Copy the characters according to the mode */
+			buf[pos++] = cur;
 		}
 	}
 
@@ -359,7 +342,8 @@ static void get_message_text(char *buf, size_t buflen,
 /**
  * Accessor function - should we skip the monster name for this message type?
  */
-static bool skip_subject(int msg_code) {
+static bool skip_subject(int msg_code)
+{
 	assert(msg_code >= 0);
 	assert(msg_code < MON_MSG_MAX);
 
@@ -429,7 +413,7 @@ void show_monster_messages(void)
 
 			/* Skip irrelevant entries */
 			if (msg->delay == delay) {
-				show_message(msg):
+				show_message(msg);
 			}
 		}
 	}
