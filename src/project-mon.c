@@ -776,11 +776,10 @@ static const project_monster_handler_f monster_handlers[] = {
  * handler, but we take a handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
- * \param m_name is the formatted monster name.
  * \param m_idx is the cave monster index.
  * \return true if the monster died, false if it is still alive.
  */
-static bool project_m_monster_attack(project_monster_handler_context_t *context, const char *m_name, int m_idx)
+static bool project_m_monster_attack(project_monster_handler_context_t *context, int m_idx)
 {
 	bool mon_died = false;
 	bool seen = context->seen;
@@ -840,10 +839,9 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
  * handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
- * \param m_name is the formatted monster name.
  * \return true if the monster died, false if it is still alive.
  */
-static bool project_m_player_attack(project_monster_handler_context_t *context, const char *m_name)
+static bool project_m_player_attack(project_monster_handler_context_t *context)
 {
 	bool fear = false;
 	bool mon_died = false;
@@ -894,10 +892,9 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
  * handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
- * \param m_name is the formatted monster name.
  * \param m_idx is the cave monster index.
  */
-static void project_m_apply_side_effects(project_monster_handler_context_t *context, const char *m_name, int m_idx)
+static void project_m_apply_side_effects(project_monster_handler_context_t *context, int m_idx)
 {
 	int typ = context->type;
 	struct monster *mon = context->mon;
@@ -1064,10 +1061,6 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 	/* Are we trying to id the source of this effect? */
 	bool id = who < 0 ? !obvious : false;
 
-	/* Hold the monster name */
-	char m_name[80];
-	char m_poss[80];
-
 	int m_idx = cave->squares[y][x].mon;
 
 	project_monster_handler_f monster_handler = monster_handlers[typ];
@@ -1126,10 +1119,6 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 			return;
 	}
 
-	/* Get monster name and possessive here, in case of polymorphing. */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
-	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
-
 	/* Some monsters get "destroyed" */
 	if (monster_is_unusual(mon->race))
 		context.die_msg = MON_MSG_DESTROYED;
@@ -1149,12 +1138,12 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 
 	/* Apply damage to the monster, based on who did the damage. */
 	if (who > 0)
-		mon_died = project_m_monster_attack(&context, m_name, m_idx);
+		mon_died = project_m_monster_attack(&context, m_idx);
 	else
-		mon_died = project_m_player_attack(&context, m_name);
+		mon_died = project_m_player_attack(&context);
 
 	if (!mon_died)
-		project_m_apply_side_effects(&context, m_name, m_idx);
+		project_m_apply_side_effects(&context, m_idx);
 
 	/* Update locals again, since the project_m_* functions can change
 	 * some values. */
