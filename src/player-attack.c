@@ -453,11 +453,7 @@ void py_attack(struct player *p, int y, int x)
 	
 	/* Hack - delay fear messages */
 	if (fear && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
-		char m_name[80];
-		/* Don't set monster_desc flags, since add_monster_message does string
-		 * processing on m_name */
-		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
-		add_monster_message(m_name, mon, MON_MSG_FLEE_IN_TERROR, true);
+		add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 	}
 }
 
@@ -624,11 +620,7 @@ static void ranged_helper(struct player *p,
 				if (!mon_take_hit(mon, dmg, &fear, note_dies)) {
 					message_pain(mon, dmg);
 					if (fear && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
-						char m_name[80];
-						monster_desc(m_name, sizeof(m_name), mon, 
-									 MDESC_DEFAULT);
-						add_monster_message(m_name, mon, 
-											MON_MSG_FLEE_IN_TERROR, true);
+						add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 					}
 				}
 			}

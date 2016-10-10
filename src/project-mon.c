@@ -347,7 +347,7 @@ static void project_monster_handler_ELEC(project_monster_handler_context_t *cont
 /* Fire damage */
 static void project_monster_handler_FIRE(project_monster_handler_context_t *context)
 {
-	project_monster_hurt_immune(context, RF_HURT_FIRE, RF_IM_FIRE, 2, 9, MON_MSG_CATCH_FIRE, MON_MSG_DISENTEGRATES);
+	project_monster_hurt_immune(context, RF_HURT_FIRE, RF_IM_FIRE, 2, 9, MON_MSG_CATCH_FIRE, MON_MSG_DISINTEGRATES);
 }
 
 /* Cold */
@@ -776,11 +776,10 @@ static const project_monster_handler_f monster_handlers[] = {
  * handler, but we take a handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
- * \param m_name is the formatted monster name.
  * \param m_idx is the cave monster index.
  * \return true if the monster died, false if it is still alive.
  */
-static bool project_m_monster_attack(project_monster_handler_context_t *context, const char *m_name, int m_idx)
+static bool project_m_monster_attack(project_monster_handler_context_t *context, int m_idx)
 {
 	bool mon_died = false;
 	bool seen = context->seen;
@@ -811,7 +810,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 
 		/* Death message */
-		add_monster_message(m_name, mon, die_msg, false);
+		add_monster_message(mon, die_msg, false);
 
 		/* Generate treasure, etc */
 		monster_death(mon, false);
@@ -823,7 +822,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	} else if (!is_mimicking(mon)) {
 		/* Give detailed messages if visible or destroyed */
 		if ((hurt_msg != MON_MSG_NONE) && seen)
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 
 		/* Hack -- Pain message */
 		else if (dam > 0)
@@ -840,10 +839,9 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
  * handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
- * \param m_name is the formatted monster name.
  * \return true if the monster died, false if it is still alive.
  */
-static bool project_m_player_attack(project_monster_handler_context_t *context, const char *m_name)
+static bool project_m_player_attack(project_monster_handler_context_t *context)
 {
 	bool fear = false;
 	bool mon_died = false;
@@ -863,7 +861,7 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	 */
 	if (dam > mon->hp) {
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
-		add_monster_message(m_name, mon, die_msg, false);
+		add_monster_message(mon, die_msg, false);
 	}
 
 	mon_died = mon_take_hit(mon, dam, &fear, "");
@@ -876,12 +874,12 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	 */
 	if (!mon_died) {
 		if (seen && hurt_msg != MON_MSG_NONE)
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 		else if (dam > 0)
 			message_pain(mon, dam);
 
 		if (seen && fear)
-			add_monster_message(m_name, mon, MON_MSG_FLEE_IN_TERROR, true);
+			add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 	}
 
 	return mon_died;
@@ -894,10 +892,9 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
  * handler context since that has a lot of what we need.
  *
  * \param context is the project_m context.
- * \param m_name is the formatted monster name.
  * \param m_idx is the cave monster index.
  */
-static void project_m_apply_side_effects(project_monster_handler_context_t *context, const char *m_name, int m_idx)
+static void project_m_apply_side_effects(project_monster_handler_context_t *context, int m_idx)
 {
 	int typ = context->type;
 	struct monster *mon = context->mon;
@@ -919,7 +916,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		/* Uniques cannot be polymorphed */
 		if (rf_has(mon->race->flags, RF_UNIQUE)) {
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 			return;
 		}
 
@@ -932,7 +929,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			savelvl = randint1(90);
 		if (mon->race->level > savelvl) {
 			if (typ == GF_OLD_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 			return;
 		}
 
@@ -943,14 +940,14 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		if (new != old) {
 			/* Report the polymorph before changing the monster */
 			hurt_msg = MON_MSG_CHANGE;
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(m_idx);
 			place_new_monster(cave, y, x, new, false, false, ORIGIN_DROP_POLY);
 			context->mon = square_monster(cave, y, x);
 		} else {
-			add_monster_message(m_name, mon, hurt_msg, false);
+			add_monster_message(mon, hurt_msg, false);
 		}
 	} else if (context->teleport_distance > 0) {
 		char dice[5];
@@ -1064,10 +1061,6 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 	/* Are we trying to id the source of this effect? */
 	bool id = who < 0 ? !obvious : false;
 
-	/* Hold the monster name */
-	char m_name[80];
-	char m_poss[80];
-
 	int m_idx = cave->squares[y][x].mon;
 
 	project_monster_handler_f monster_handler = monster_handlers[typ];
@@ -1126,10 +1119,6 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 			return;
 	}
 
-	/* Get monster name and possessive here, in case of polymorphing. */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
-	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
-
 	/* Some monsters get "destroyed" */
 	if (monster_is_unusual(mon->race))
 		context.die_msg = MON_MSG_DESTROYED;
@@ -1149,12 +1138,12 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 
 	/* Apply damage to the monster, based on who did the damage. */
 	if (who > 0)
-		mon_died = project_m_monster_attack(&context, m_name, m_idx);
+		mon_died = project_m_monster_attack(&context, m_idx);
 	else
-		mon_died = project_m_player_attack(&context, m_name);
+		mon_died = project_m_player_attack(&context);
 
 	if (!mon_died)
-		project_m_apply_side_effects(&context, m_name, m_idx);
+		project_m_apply_side_effects(&context, m_idx);
 
 	/* Update locals again, since the project_m_* functions can change
 	 * some values. */
