@@ -35,15 +35,6 @@
 #define MON_MSG_FLAG_OFFSCREEN	0x01
 #define MON_MSG_FLAG_INVISIBLE	0x02
 
-/**
- * Message tags
- *
- * Used to determine which order to display messages in
- */
-enum delay_tag {
-	MON_DELAY_TAG_DEFAULT = 0,
-	MON_DELAY_TAG_DEATH,
-};
 
 /**
  * A stacked monster message entry
@@ -53,8 +44,7 @@ struct monster_race_message {
 	int flags;					/* Flags */
 	int msg_code;				/* The coded message */
 	int count;					/* How many monsters triggered this message */
-	bool delay;					/* Should this message be put off to the end */
-	enum delay_tag tag;			/* To group delayed messages for better presentation */
+	int delay;					/* messages will be processed in this order: delay = 0, 1, 2 */
 };
 
 /**
@@ -300,11 +290,9 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
 		/* Force all death messages to go at the end of the group for
 		 * logical presentation */
 		if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
-			mon_msg[idx].delay = true;
-			mon_msg[idx].tag = MON_DELAY_TAG_DEATH;
+			mon_msg[idx].delay = 2;
 		} else {
-			mon_msg[idx].delay = delay;
-			mon_msg[idx].tag = MON_DELAY_TAG_DEFAULT;
+			mon_msg[idx].delay = delay ? 1 : 0;
 		}
 
 		size_mon_msg++;
@@ -405,14 +393,13 @@ static int get_message_type(int msg_code, const struct monster_race *race)
  * so we only display messages matching the delay parameter. This is to
  * avoid things like "The snaga dies. The snaga runs in fear!"
  */
-static void show_monster_messages(bool delay, enum delay_tag tag)
+static void show_monster_messages(int delay)
 {
 	for (int i = 0; i < size_mon_msg; i++) {
 		struct monster_race_message *msg = &mon_msg[i];
 
 		/* Skip irrelevant entries */
 		if (msg->delay != delay) continue;
-		if (msg->delay && msg->tag != tag) continue;
 
 		char subject[60] = "";
 		char body[60];
@@ -447,9 +434,9 @@ static void show_monster_messages(bool delay, enum delay_tag tag)
 void flush_all_monster_messages(void)
 {
 	/* Flush regular messages, then delayed messages */
-	show_monster_messages(false, MON_DELAY_TAG_DEFAULT);
-	show_monster_messages(true, MON_DELAY_TAG_DEFAULT);
-	show_monster_messages(true, MON_DELAY_TAG_DEATH);
+	show_monster_messages(0);
+	show_monster_messages(1);
+	show_monster_messages(2);
 
 	/* Delete all the stacked messages and history */
 	size_mon_msg = 0;
