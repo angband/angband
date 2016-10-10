@@ -112,77 +112,6 @@ void message_pain(struct monster *mon, int dam)
 	add_monster_message(mon, msg_code, false);
 }
 
-#define MSG_PARSE_NORMAL	0
-#define MSG_PARSE_SINGLE	1
-#define MSG_PARSE_PLURAL	2
-
-/**
- * Formats a message based on the given message code and the plural flag.
- *
- * \param	pos		the position in buf to start writing the message into
- */
-static void get_message_text(char *buf, size_t buflen,
-		int msg_code,
-		const struct monster_race *race,
-		bool do_plural)
-{
-	assert(msg_code < MON_MSG_MAX);
-	assert(race != NULL);
-	assert(race->base != NULL);
-	assert(race->base->pain != NULL);
-
-	/* Find the appropriate message */
-	const char *source = msg_repository[msg_code].msg;
-	switch (msg_code) {
-		case MON_MSG_95: source = race->base->pain->messages[0]; break;
-		case MON_MSG_75: source = race->base->pain->messages[1]; break;
-		case MON_MSG_50: source = race->base->pain->messages[2]; break;
-		case MON_MSG_35: source = race->base->pain->messages[3]; break;
-		case MON_MSG_20: source = race->base->pain->messages[4]; break;
-		case MON_MSG_10: source = race->base->pain->messages[5]; break;
-		case MON_MSG_0:  source = race->base->pain->messages[6]; break;
-	}
-
-	int state = MSG_PARSE_NORMAL;
-	size_t maxlen = strlen(source);
-	size_t pos = 0;
-
-	/* Put the message characters in the buffer */
-	/* XXX This logic should be used everywhere for pluralising strings */
-	for (size_t i = 0; i < maxlen && pos < buflen - 1; i++) {
-		char cur = source[i];
-
-		/*
-		 * The characters '[|]' switch parsing mode and are never output.
-		 * The syntax is [singular|plural]
-		 */
-		if (state == MSG_PARSE_NORMAL        && cur == '[') {
-			state = MSG_PARSE_SINGLE;
-		} else if (state == MSG_PARSE_SINGLE && cur == '|') {
-			state = MSG_PARSE_PLURAL;
-		} else if (state != MSG_PARSE_NORMAL && cur == ']') {
-			state = MSG_PARSE_NORMAL;
-		} else {
-			/* If we're parsing then we do these things */
-			if (state == MSG_PARSE_NORMAL ||
-					(state == MSG_PARSE_SINGLE && do_plural == false) ||
-					(state == MSG_PARSE_PLURAL && do_plural == true)) {
-				buf[pos++] = cur;
-			}
-		}
-	}
-
-	/* We should always return to the normal state */
-	assert(state == MSG_PARSE_NORMAL);
-
-	/* Terminate the buffer */
-	buf[pos] = 0;
-}
-
-#undef MSG_PARSE_NORMAL
-#undef MSG_PARSE_SINGLE
-#undef MSG_PARSE_PLURAL
-
 /**
  * Tracks which monster has had which pain message stored, so redundant
  * messages don't happen due to monster attacks hitting other monsters.
@@ -354,6 +283,78 @@ static void get_subject(char *buf, size_t buflen,
 	/* Add a separator */
 	my_strcat(buf, " ", buflen);
 }
+
+/* State machine constants for get_message_text() */
+#define MSG_PARSE_NORMAL	0
+#define MSG_PARSE_SINGLE	1
+#define MSG_PARSE_PLURAL	2
+
+/**
+ * Formats a message based on the given message code and the plural flag.
+ *
+ * \param	pos		the position in buf to start writing the message into
+ */
+static void get_message_text(char *buf, size_t buflen,
+		int msg_code,
+		const struct monster_race *race,
+		bool do_plural)
+{
+	assert(msg_code < MON_MSG_MAX);
+	assert(race != NULL);
+	assert(race->base != NULL);
+	assert(race->base->pain != NULL);
+
+	/* Find the appropriate message */
+	const char *source = msg_repository[msg_code].msg;
+	switch (msg_code) {
+		case MON_MSG_95: source = race->base->pain->messages[0]; break;
+		case MON_MSG_75: source = race->base->pain->messages[1]; break;
+		case MON_MSG_50: source = race->base->pain->messages[2]; break;
+		case MON_MSG_35: source = race->base->pain->messages[3]; break;
+		case MON_MSG_20: source = race->base->pain->messages[4]; break;
+		case MON_MSG_10: source = race->base->pain->messages[5]; break;
+		case MON_MSG_0:  source = race->base->pain->messages[6]; break;
+	}
+
+	int state = MSG_PARSE_NORMAL;
+	size_t maxlen = strlen(source);
+	size_t pos = 0;
+
+	/* Put the message characters in the buffer */
+	/* XXX This logic should be used everywhere for pluralising strings */
+	for (size_t i = 0; i < maxlen && pos < buflen - 1; i++) {
+		char cur = source[i];
+
+		/*
+		 * The characters '[|]' switch parsing mode and are never output.
+		 * The syntax is [singular|plural]
+		 */
+		if (state == MSG_PARSE_NORMAL        && cur == '[') {
+			state = MSG_PARSE_SINGLE;
+		} else if (state == MSG_PARSE_SINGLE && cur == '|') {
+			state = MSG_PARSE_PLURAL;
+		} else if (state != MSG_PARSE_NORMAL && cur == ']') {
+			state = MSG_PARSE_NORMAL;
+		} else {
+			/* If we're parsing then we do these things */
+			if (state == MSG_PARSE_NORMAL ||
+					(state == MSG_PARSE_SINGLE && do_plural == false) ||
+					(state == MSG_PARSE_PLURAL && do_plural == true)) {
+				buf[pos++] = cur;
+			}
+		}
+	}
+
+	/* We should always return to the normal state */
+	assert(state == MSG_PARSE_NORMAL);
+
+	/* Terminate the buffer */
+	buf[pos] = 0;
+}
+
+#undef MSG_PARSE_NORMAL
+#undef MSG_PARSE_SINGLE
+#undef MSG_PARSE_PLURAL
 
 /**
  * Accessor function - should we skip the monster name for this message type?
