@@ -324,7 +324,7 @@ bool add_monster_message(struct monster *mon, int msg_code, bool delay)
  *
  * \returns number of bytes written
  */
-static size_t get_subject(char *buf, size_t buflen,
+static void get_subject(char *buf, size_t buflen,
 		struct monster_race *race,
 		int count,
 		bool invisible,
@@ -365,8 +365,6 @@ static size_t get_subject(char *buf, size_t buflen,
 
 	/* Add a separator */
 	my_strcat(buf, " ", buflen);
-
-	return strlen(buf);
 }
 
 /**
