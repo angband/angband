@@ -387,58 +387,52 @@ static int get_message_type(int msg_code, const struct monster_race *race)
 }
 
 /**
- * Show and delete the stacked monster messages.
- *
- * Some messages are delayed so that they show up after everything else,
- * so we only display messages matching the delay parameter. This is to
- * avoid things like "The snaga dies. The snaga runs in fear!"
+ * Show the given monster message.
  */
-static void show_monster_messages(int delay)
+static void show_message(struct monster_race_message *msg)
 {
-	for (int i = 0; i < size_mon_msg; i++) {
-		struct monster_race_message *msg = &mon_msg[i];
+	char subject[60] = "";
+	char body[60];
 
-		/* Skip irrelevant entries */
-		if (msg->delay != delay) continue;
-
-		char subject[60] = "";
-		char body[60];
-
-		/* Some messages don't require a monster name */
-		if (!skip_subject(msg->msg_code)) {
-			/* Get 'it ' or '3 monsters (offscreen) ' or '15000 snakes ' etc */
-			get_subject(subject, sizeof(subject),
-					msg->race,
-					msg->count,
-					msg->flags & MON_MSG_FLAG_INVISIBLE,
-					msg->flags & MON_MSG_FLAG_OFFSCREEN);
-		}
-
-		/* Get the message proper, corrected for singular/plural etc. */
-		get_message_text(body, sizeof(body),
-				msg->msg_code,
+	/* Some messages don't require a monster name */
+	if (!skip_subject(msg->msg_code)) {
+		/* Get 'it ' or '3 monsters (offscreen) ' or '15000 snakes ' etc */
+		get_subject(subject, sizeof(subject),
 				msg->race,
-				msg->count > 1);
+				msg->count,
+				msg->flags & MON_MSG_FLAG_INVISIBLE,
+				msg->flags & MON_MSG_FLAG_OFFSCREEN);
+	}
 
-		/* Show the message */
-		msgt(get_message_type(msg->msg_code, msg->race),
-				"%s%s",
-				subject,
-				body);
-   }
+	/* Get the message proper, corrected for singular/plural etc. */
+	get_message_text(body, sizeof(body),
+			msg->msg_code,
+			msg->race,
+			msg->count > 1);
+
+	/* Show the message */
+	msgt(get_message_type(msg->msg_code, msg->race),
+			"%s%s",
+			subject,
+			body);
 }
 
 /**
- * Print and delete all stacked monster messages.
+ * Show and then cler all stacked monster messages.
  */
-void flush_all_monster_messages(void)
+void show_monster_messages(void)
 {
-	/* Flush regular messages, then delayed messages */
-	show_monster_messages(0);
-	show_monster_messages(1);
-	show_monster_messages(2);
+	for (int delay = 0; delay < 3; delay++) {
+		for (int i = 0; i < size_mon_msg; i++) {
+			struct monster_race_message *msg = &mon_msg[i];
+
+			/* Skip irrelevant entries */
+			if (msg->delay == delay) {
+				show_message(msg):
+			}
+		}
+	}
 
 	/* Delete all the stacked messages and history */
-	size_mon_msg = 0;
-	size_mon_hist = 0;
+	size_mon_msg = size_mon_hist = 0;
 }
