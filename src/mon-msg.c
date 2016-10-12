@@ -125,7 +125,7 @@ static bool redundant_monster_message(struct monster *mon, int msg_code)
 	for (int i = 0; i < size_mon_hist; i++) {
 		/* Check for a matched monster & monster code */
 		if (mon == mon_message_hist[i].mon &&
-				msg_code != mon_message_hist[i].message_code) {
+				msg_code == mon_message_hist[i].message_code) {
 			return true;
 		}
 	}
