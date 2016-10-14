@@ -92,6 +92,7 @@ bool ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, b
 	{
 		png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
 		/*plog_fmt("Failed to create PNG info structure."); */
+		fclose(fp);
 		return false;
 	}
 	
