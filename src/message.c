@@ -347,7 +347,7 @@ const char *message_sound_name(int message)
 void sound(int type)
 {
 	/* No sound */
-	if (!OPT(use_sound)) return;
+	if (!OPT(player, use_sound)) return;
 
 	/* Dispatch */
 	event_signal_message(EVENT_SOUND, type, NULL);

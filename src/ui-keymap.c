@@ -168,7 +168,7 @@ void keymap_dump(ang_file *fff)
 	int mode;
 	struct keymap *k;
 
-	if (OPT(rogue_like_commands))
+	if (OPT(player, rogue_like_commands))
 		mode = KEYMAP_MODE_ROGUE;
 	else
 		mode = KEYMAP_MODE_ORIG;

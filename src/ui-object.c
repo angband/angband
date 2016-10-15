@@ -654,7 +654,7 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 				   bool quiver_tags)
 {
 	int i;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (quiver_tags) {
@@ -885,7 +885,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 	struct object_menu_data *choice = menu_priv(menu);
 	char key = event->key.code;
 	bool is_harmless = item_mode & IS_HARMLESS ? true : false;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	if (event->type == EVT_SELECT) {
 		if (get_item_allow(choice[oid].object, cmd_lookup_key(item_cmd, mode),

@@ -212,7 +212,7 @@ ui_event inkey_ex(void)
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
 	if (!inkey_scan && (!inkey_flag || screen_save_depth ||
-						(OPT(show_target) && target_sighted())))
+						(OPT(player, show_target) && target_sighted())))
 		(void)Term_set_cursor(true);
 
 
@@ -357,7 +357,7 @@ static void msg_flush(int x)
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
 
-	if ((!OPT(auto_more)) && !keymap_auto_more)
+	if ((!OPT(player, auto_more)) && !keymap_auto_more)
 		anykey();
 
 	/* Clear the line */
@@ -1219,7 +1219,7 @@ bool textui_get_aim_dir(int *dp)
 	(*dp) = 0;
 
 	/* Hack -- auto-target if requested */
-	if (OPT(use_old_target) && target_okay() && !dir) dir = 5;
+	if (OPT(player, use_old_target) && target_okay() && !dir) dir = 5;
 
 	/* Ask until satisfied */
 	while (!dir) {
@@ -1380,7 +1380,7 @@ static struct keypress request_command_buffer[256];
  */
 ui_event textui_get_command(int *count)
 {
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	struct keypress tmp[2] = { KEYPRESS_NULL, KEYPRESS_NULL };
 
@@ -1399,7 +1399,7 @@ ui_event textui_get_command(int *count)
 		inkey_flag = true;
 
 		/* Toggle on cursor if requested */
-		if (OPT(highlight_player)) {
+		if (OPT(player, highlight_player)) {
 			Term_set_cursor(true);
 			move_cursor_relative(player->py, player->px);
 		}
@@ -1408,7 +1408,7 @@ ui_event textui_get_command(int *count)
 		ke = inkey_ex();
 
 		/* Toggle off cursor */
-		if (OPT(highlight_player)) {
+		if (OPT(player, highlight_player)) {
 			Term_set_cursor(false);
 		}
 

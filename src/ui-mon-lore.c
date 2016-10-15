@@ -52,7 +52,7 @@ void lore_title(textblock *tb, const struct monster_race *race)
 	/* A title (use "The" for non-uniques) */
 	if (!rf_has(race->flags, RF_UNIQUE))
 		textblock_append(tb, "The ");
-	else if (OPT(purple_uniques)) {
+	else if (OPT(player, purple_uniques)) {
 		standard_attr = COLOUR_VIOLET;
 		if (!(optional_attr & 0x80))
 			optional_attr = COLOUR_VIOLET;
@@ -105,7 +105,7 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	monster_flags_known(race, lore, known_flags);
 
 	/* Cheat -- know everything */
-	if (OPT(cheat_know) || spoilers)
+	if (OPT(player, cheat_know) || spoilers)
 		cheat_monster_lore(race, lore);
 
 	/* Appending the title here simplifies code in the callers. It also causes

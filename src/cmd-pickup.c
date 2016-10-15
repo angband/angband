@@ -133,8 +133,8 @@ static void player_pickup_gold(struct player *p)
 static bool auto_pickup_okay(const struct object *obj)
 {
 	if (!inven_carry_okay(obj)) return false;
-	if (OPT(pickup_always) || check_for_inscrip(obj, "=g")) return true;
-	if (OPT(pickup_inven) && inven_carry_num(obj, true)) return true;
+	if (OPT(player, pickup_always) || check_for_inscrip(obj, "=g")) return true;
+	if (OPT(player, pickup_inven) && inven_carry_num(obj, true)) return true;
 
 	return false;
 }

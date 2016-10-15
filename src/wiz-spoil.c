@@ -423,7 +423,7 @@ static void spoil_artifact(const char *fname)
 					 object_power(obj, false, NULL), (art->weight / 10),
 					 (art->weight % 10));
 
-			if (OPT(birth_randarts)) text_out("%s.\n", art->text);
+			if (OPT(player, birth_randarts)) text_out("%s.\n", art->text);
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);

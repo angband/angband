@@ -10,9 +10,9 @@
 #include "monster.h"
 
 #if  __STDC_VERSION__ < 199901L
-#define ROOM_LOG  if (OPT(cheat_room)) msg
+#define ROOM_LOG  if (OPT(player, cheat_room)) msg
 #else
-#define ROOM_LOG(...) if (OPT(cheat_room)) msg(__VA_ARGS__);
+#define ROOM_LOG(...) if (OPT(player, cheat_room)) msg(__VA_ARGS__);
 #endif
 
 /**

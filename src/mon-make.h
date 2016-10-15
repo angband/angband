@@ -35,7 +35,7 @@ bool place_new_monster(struct chunk *, int y, int x, struct monster_race *race,
 					   bool sleep, bool group_okay, byte origin);
 bool pick_and_place_monster(struct chunk *c, int y, int x, int depth, 
 							bool sleep,	bool group_okay, byte origin);
-bool pick_and_place_distant_monster(struct chunk *c, struct loc loc, int dis,
+bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 									bool sleep, int depth);
 void monster_death(struct monster *mon, bool stats);
 bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note);

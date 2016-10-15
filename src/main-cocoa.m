@@ -3149,20 +3149,21 @@ static BOOL check_events(int wait)
 
 			static BOOL periodicStarted = NO;
 
-			if (OPT(animate_flicker) && !periodicStarted) {
+			if (OPT(player, animate_flicker) && !periodicStarted) {
 				[NSEvent startPeriodicEventsAfterDelay: 0.0 withPeriod: 0.2];
 				periodicStarted = YES;
 			}
-			else if (!OPT(animate_flicker) && periodicStarted) {
+			else if (!OPT(player, animate_flicker) && periodicStarted) {
 				[NSEvent stopPeriodicEvents];
 				periodicStarted = NO;
 			}
 
-			if (OPT(animate_flicker) && wait && periodicStarted && [event type] == NSPeriodic)
+			if (OPT(player, animate_flicker) && wait && periodicStarted &&
+				[event type] == NSPeriodic) {
 				idle_update();
+			}
 
-            if (! event)
-            {
+            if (! event) {
                 [pool drain];
                 return FALSE;
             }

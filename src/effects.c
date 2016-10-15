@@ -855,20 +855,20 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	context->ident = true;	
 
 	/* No recall */
-	if (OPT(birth_no_recall) && !player->total_winner) {
+	if (OPT(player, birth_no_recall) && !player->total_winner) {
 		msg("Nothing happens.");
 		return true;
 	}
 
 	/* No recall from quest levels with force_descend */
-	if (OPT(birth_force_descend) && (is_quest(player->depth))) {
+	if (OPT(player, birth_force_descend) && (is_quest(player->depth))) {
 		msg("Nothing happens.");
 		return true;
 	}
 
 	/* Warn the player if they're descending to an unrecallable level */
 	target_depth = dungeon_get_next_level(player->max_depth, 1);
-	if (OPT(birth_force_descend) && !(player->depth) &&
+	if (OPT(player, birth_force_descend) && !(player->depth) &&
 			(is_quest(target_depth))) {
 		if (!get_check("Are you sure you want to descend? ")) {
 			return false;
@@ -2822,7 +2822,7 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	}
 
 	/* No going up with force_descend or in the town */
-	if (OPT(birth_force_descend) || !player->depth)
+	if (OPT(player, birth_force_descend) || !player->depth)
 		up = false;
 
 	/* No forcing player down to quest levels if they can't leave */
@@ -2849,7 +2849,7 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	} else if (down) {
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
-		if (OPT(birth_force_descend)) {
+		if (OPT(player, birth_force_descend)) {
 			target_depth = dungeon_get_next_level(player->max_depth, 1);
 			dungeon_change_level(player, target_depth);
 		} else {
@@ -2969,7 +2969,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				struct object *obj = square_object(cave, y, x);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(birth_lose_arts) && 
+						if (!OPT(player, birth_lose_arts) && 
 							!(obj->known && obj->known->artifact))
 							obj->artifact->created = false;
 						else

@@ -596,7 +596,7 @@ int price_item(struct store *store, const struct object *obj,
 			price = price / 2;
 
 		/* Check for no_selling option */
-		if (OPT(birth_no_selling)) return (0L);
+		if (OPT(player, birth_no_selling)) return (0L);
 	} else {
 		/* Black market sucks */
 		if (store->sidx == STORE_B_MARKET)
@@ -1373,7 +1373,7 @@ static void store_maint(struct store *s)
  */
 void store_update(void)
 {
-	if (OPT(cheat_xtra)) msg("Updating Shops...");
+	if (OPT(player, cheat_xtra)) msg("Updating Shops...");
 	while (daycount--) {
 		int n;
 
@@ -1389,7 +1389,7 @@ void store_update(void)
 		/* Sometimes, shuffle the shop-keepers */
 		if (one_in_(z_info->store_shuffle)) {
 			/* Message */
-			if (OPT(cheat_xtra)) msg("Shuffling a Shopkeeper...");
+			if (OPT(player, cheat_xtra)) msg("Shuffling a Shopkeeper...");
 
 			/* Pick a random shop (except home) */
 			while (1) {
@@ -1402,7 +1402,7 @@ void store_update(void)
 		}
 	}
 	daycount = 0;
-	if (OPT(cheat_xtra)) msg("Done.");
+	if (OPT(player, cheat_xtra)) msg("Done.");
 }
 
 /** Owner stuff **/
@@ -1787,7 +1787,7 @@ bool store_will_buy_tester(const struct object *obj)
 	struct store *store = store_at(cave, player->py, player->px);
 	if (!store) return false;
 
-	if (OPT(birth_no_selling)) {
+	if (OPT(player, birth_no_selling)) {
 		if (tval_can_have_charges(obj)) {
 			if (!store_can_carry(store, obj->kind) &&
 				object_flavor_is_aware(obj))
@@ -1890,7 +1890,7 @@ void do_cmd_sell(struct command *cmd)
 	object_desc(o_name, sizeof(o_name), sold_item, ODESC_PREFIX | ODESC_FULL);
 
 	/* Describe the result (in message buffer) */
-	if (OPT(birth_no_selling)) {
+	if (OPT(player, birth_no_selling)) {
 		msg("You had %s (%c).", o_name, label);
 	} else {
 		msg("You sold %s (%c) for %d gold.", o_name, label, price);

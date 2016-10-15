@@ -55,7 +55,7 @@ void do_cmd_go_up(struct command *cmd)
 	}
 
 	/* Force descend */
-	if (OPT(birth_force_descend)) {
+	if (OPT(player, birth_force_descend)) {
 		msg("Nothing happens!");
 		return;
 	}
@@ -102,7 +102,7 @@ void do_cmd_go_down(struct command *cmd)
 	}
 
 	/* Warn a force_descend player if they're going to a quest level */
-	if (OPT(birth_force_descend)) {
+	if (OPT(player, birth_force_descend)) {
 		descend_to = dungeon_get_next_level(player->max_depth, 1);
 		if (is_quest(descend_to) &&
 			!get_check("Are you sure you want to descend?"))
@@ -1323,7 +1323,7 @@ void display_feeling(bool obj_only)
 	const char *join;
 
 	/* Don't show feelings for cold-hearted characters */
-	if (!OPT(birth_feelings)) return;
+	if (!OPT(player, birth_feelings)) return;
 
 	/* No useful feeling in town */
 	if (!player->depth) {

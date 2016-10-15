@@ -393,7 +393,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 		if (msg_type != melee_hit_types[i].msg)
 			continue;
 
-		if (OPT(show_damage))
+		if (OPT(p, show_damage))
 			dmg_text = format(" (%d)", dmg);
 
 		if (melee_hit_types[i].text)
@@ -595,7 +595,7 @@ static void ranged_helper(struct player *p,
 						if (msg_type != ranged_hit_types[j].msg)
 							continue;
 
-						if (OPT(show_damage))
+						if (OPT(p, show_damage))
 							dmg_text = format(" (%d)", dmg);
 
 						monster_desc(m_name, sizeof(m_name), mon, MDESC_OBJE);

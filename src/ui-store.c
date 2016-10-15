@@ -381,7 +381,7 @@ static void store_display_help(struct store_context *ctx)
 	text_out_indent = 1;
 	Term_gotoxy(1, help_loc);
 
-	if (OPT(rogue_like_commands))
+	if (OPT(player, rogue_like_commands))
 		text_out_c(COLOUR_L_GREEN, "x");
 	else
 		text_out_c(COLOUR_L_GREEN, "l");
@@ -397,7 +397,7 @@ static void store_display_help(struct store_context *ctx)
 	text_out(" the selected item. ");
 
 	if (!ctx->inspect_only) {
-		if (OPT(birth_no_selling)) {
+		if (OPT(player, birth_no_selling)) {
 			text_out_c(COLOUR_L_GREEN, "d");
 			text_out(" gives an item to the store in return for its identification. Some wands and staves will also be recharged. ");
 		} else {
@@ -483,7 +483,7 @@ static bool store_sell(struct store_context *ctx)
 	item_tester tester = NULL;
 
 	const char *reject = "You have nothing that I want. ";
-	const char *prompt = OPT(birth_no_selling) ? "Give which item? " : "Sell which item? ";
+	const char *prompt = OPT(player, birth_no_selling) ? "Give which item? " : "Sell which item? ";
 
 	assert(store);
 
@@ -542,12 +542,12 @@ static bool store_sell(struct store_context *ctx)
 		screen_save();
 
 		/* Show price */
-		if (!OPT(birth_no_selling)) prt(format("Price: %d", price), 1, 0);
+		if (!OPT(player, birth_no_selling))
+			prt(format("Price: %d", price), 1, 0);
 
 		/* Confirm sale */
 		if (!store_get_check(format("%s %s? [ESC, any other key to accept]",
-				OPT(birth_no_selling) ? "Give" : "Sell",
-				o_name))) {
+				OPT(player, birth_no_selling) ? "Give" : "Sell", o_name))) {
 			screen_load();
 			return false;
 		}
@@ -748,7 +748,7 @@ static void store_examine(struct store_context *ctx, int item)
 static void store_menu_set_selections(struct menu *menu, bool knowledge_menu)
 {
 	if (knowledge_menu) {
-		if (OPT(rogue_like_commands)) {
+		if (OPT(player, rogue_like_commands)) {
 			/* These two can't intersect! */
 			menu->cmd_keys = "?|Ieilx";
 			menu->selections = "abcdfghjkmnopqrstuvwyz134567";
@@ -758,7 +758,7 @@ static void store_menu_set_selections(struct menu *menu, bool knowledge_menu)
 			menu->selections = "abcdfghjkmnopqrstuvwxyz13456";
 		}
 	} else {
-		if (OPT(rogue_like_commands)) {
+		if (OPT(player, rogue_like_commands)) {
 			/* These two can't intersect! */
 			menu->cmd_keys = "\x04\x05\x10?={|}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D, \x05 = ^E */
 			menu->selections = "abcfmnoqrtuvyz13456790ABDFGH";

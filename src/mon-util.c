@@ -174,7 +174,7 @@ bool monster_is_unusual(struct monster_race *race)
  * or viewed directly, but old targets will remain set.  XXX XXX
  *
  * The player can choose to be disturbed by several things, including
- * "OPT(disturb_near)" (monster which is "easily" viewable moves in some
+ * "OPT(player, disturb_near)" (monster which is "easily" viewable moves in some
  * way).  Note that "moves" includes "appears" and "disappears".
  */
 void update_mon(struct monster *mon, struct chunk *c, bool full)
@@ -377,7 +377,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			mflag_on(mon->mflag, MFLAG_VIEW);
 
 			/* Disturb on appearance */
-			if (OPT(disturb_near)) disturb(player, 1);
+			if (OPT(player, disturb_near))
+				disturb(player, 1);
 
 			/* Re-draw monster window */
 			player->upkeep->redraw |= PR_MONLIST;
@@ -392,7 +393,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			mflag_off(mon->mflag, MFLAG_VIEW);
 
 			/* Disturb on disappearance */
-			if (OPT(disturb_near) && !is_mimicking(mon)) disturb(player, 1);
+			if (OPT(player, disturb_near) && !is_mimicking(mon))
+				disturb(player, 1);
 
 			/* Re-draw monster list window */
 			player->upkeep->redraw |= PR_MONLIST;
@@ -636,7 +638,7 @@ void update_smart_learn(struct monster *m, struct player *p, int flag,
 	if (element_ok) equip_learn_element(p, element);
 
 	/* Not allowed to learn */
-	if (!OPT(birth_ai_learn)) return;
+	if (!OPT(p, birth_ai_learn)) return;
 
 	/* Too stupid to learn anything */
 	if (rf_has(m->race->flags, RF_STUPID)) return;

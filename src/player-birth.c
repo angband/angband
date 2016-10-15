@@ -434,7 +434,7 @@ void player_init(struct player *p)
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 	p->obj_k = mem_zalloc(sizeof(struct object));
 
-	options_init_defaults();
+	options_init_defaults(&p->opts);
 
 	/* First turn. */
 	turn = 1;
@@ -525,7 +525,7 @@ static void player_outfit(struct player *p)
 		int num = rand_range(si->min, si->max);
 
 		/* Without start_kit, only start with 1 food and 1 light */
-		if (!OPT(birth_start_kit)) {
+		if (!OPT(p, birth_start_kit)) {
 			if (!tval_is_food_k(si->kind) && !tval_is_light_k(si->kind))
 				continue;
 
@@ -1113,18 +1113,18 @@ void do_cmd_accept_character(struct command *cmd)
 	player_spells_init(player);
 
 	/* Know all runes for ID on walkover */
-	if (OPT(birth_know_runes))
+	if (OPT(player, birth_know_runes))
 		player_learn_everything(player);
 
 	/* Initialise the stores */
 	store_reset();
 
 	/* Seed for random artifacts */
-	if (!seed_randart || !OPT(birth_keep_randarts))
+	if (!seed_randart || !OPT(player, birth_keep_randarts))
 		seed_randart = randint0(0x10000000);
 
 	/* Randomize the artifacts if required */
-	if (OPT(birth_randarts))
+	if (OPT(player, birth_randarts))
 		do_randart(seed_randart, true);
 
 	/* Seed for flavors */

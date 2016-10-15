@@ -45,7 +45,7 @@ enum
 	OPT_MAX
 };
 
-#define OPT(opt_name)	player->opts.opt[OPT_##opt_name]
+#define OPT(p, opt_name)	p->opts.opt[OPT_##opt_name]
 
 /**
  * Information for "do_cmd_options()".
@@ -57,6 +57,16 @@ enum
 /**
  * The option data structures
  */
+struct player_options {
+	bool opt[OPT_MAX];		/**< Options */
+
+	byte hitpoint_warn;		/**< Hitpoint warning (0 to 9) */
+	u16b lazymove_delay;	/**< Delay in cs before moving to allow another key */
+	byte delay_factor;		/**< Delay factor (0 to 9) */
+
+	byte name_suffix;		/**< Numeric suffix for player name */
+};
+
 extern int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 /**
@@ -68,7 +78,7 @@ const char *option_desc(int opt);
 int option_type(int opt);
 bool option_set(const char *opt, int val);
 void options_init_cheat(void);
-void options_init_defaults(void);
+void options_init_defaults(struct player_options *opts);
 void init_options(void);
 
 #endif /* !INCLUDED_OPTIONS_H */

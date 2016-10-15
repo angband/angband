@@ -107,18 +107,18 @@ void options_init_cheat(void)
 /**
  * Set player default options
  */
-void options_init_defaults(void)
+void options_init_defaults(struct player_options *opts)
 {
 	/* Set defaults */
 	int opt;
 	for (opt = 0; opt < OPT_MAX; opt++)
-		player->opts.opt[opt] = options[opt].normal;
+		(*opts).opt[opt] = options[opt].normal;
 
 	/* 40ms for the delay factor */
-	player->opts.delay_factor = 40;
+	(*opts).delay_factor = 40;
 
 	/* 30% of HP */
-	player->opts.hitpoint_warn = 3;
+	(*opts).hitpoint_warn = 3;
 }
 
 /**

@@ -140,9 +140,9 @@ static void grid_get_attr(struct grid_data *g, int *a)
 	if (a0) {
 		*a = a0 | *a;
 	} else if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
-		if (OPT(hybrid_walls))
+		if (OPT(player, hybrid_walls))
 			*a = *a + (MAX_COLORS * BG_DARK);
-		else if (OPT(solid_walls))
+		else if (OPT(player, solid_walls))
 			*a = *a + (MAX_COLORS * BG_SAME);
 	}
 }
@@ -251,7 +251,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				/* Special attr/char codes */
 				a = da;
 				c = dc;
-			} else if (OPT(purple_uniques) && 
+			} else if (OPT(player, purple_uniques) && 
 					   rf_has(mon->race->flags, RF_UNIQUE)) {
 				/* Turn uniques purple if desired (violet, actually) */
 				a = COLOUR_VIOLET;
@@ -290,7 +290,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 		/* Get the "player" attr */
 		a = monster_x_attr[race->ridx];
-		if ((OPT(hp_changes_color)) && !(a & 0x80)) {
+		if ((OPT(player, hp_changes_color)) && !(a & 0x80)) {
 			switch(player->chp * 10 / player->mhp)
 			{
 			case 10:

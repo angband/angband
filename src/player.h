@@ -344,24 +344,6 @@ struct history_chart {
 };
 
 /**
- * Information retained across player lives
- *
- * This should be incorporated into struct player
- *
- * XXX some of this is UI specific - should we allow UI way to store
- *     options in savefile?
- */
-struct player_options {
-	bool opt[OPT_MAX];		/**< Options */
-
-	byte hitpoint_warn;		/**< Hitpoint warning (0 to 9) */
-	u16b lazymove_delay;	/**< Delay in cs before moving to allow another key */
-	byte delay_factor;		/**< Delay factor (0 to 9) */
-
-	byte name_suffix;		/**< Numeric suffix for player name */
-};
-
-/**
  * Player history information
  *
  * See player-history.c/.h

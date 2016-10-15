@@ -87,7 +87,7 @@ static int context_menu_player_2(int mx, int my)
 	int selected;
 	char *labels;
 	bool allowed = true;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 
 	m = menu_dynamic_new();
@@ -251,7 +251,7 @@ int context_menu_player(int mx, int my)
 	int selected;
 	char *labels;
 	bool allowed = true;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 	struct object *obj;
 
@@ -303,7 +303,7 @@ int context_menu_player(int mx, int my)
 	/* 'C' is used for the character sheet in both keymaps. */
 	menu_dynamic_add_label(m, "Character", 'C', MENU_VALUE_CHARACTER, labels);
 
-	if (!OPT(center_player)) {
+	if (!OPT(player, center_player)) {
 		menu_dynamic_add_label(m, "^Center Map", 'L', MENU_VALUE_CENTER_MAP,
 							   labels);
 	}
@@ -423,7 +423,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	int selected;
 	char *labels;
 	bool allowed = true;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 	struct object *square_obj = square_object(c, y, x);
 
@@ -653,7 +653,7 @@ int context_menu_object(struct object *obj)
 	region area = { 0, 0, 0, 0 };
 
 	bool allowed = true;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 
 	m = menu_dynamic_new();
@@ -896,7 +896,7 @@ static int show_command_list(struct cmd_info cmd_list[], int size, int mx,
 	char cmd_name[80];
 	char key[3];
 
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	m = menu_dynamic_new();
 	if (!m) {
@@ -985,7 +985,7 @@ void textui_process_click(ui_event e)
 {
 	int x, y;
 
-	if (!OPT(mouse_movement)) return;
+	if (!OPT(player, mouse_movement)) return;
 
 	y = KEY_GRID_Y(e);
 	x = KEY_GRID_X(e);
@@ -1116,7 +1116,7 @@ static void cmd_sub_entry(struct menu *menu, int oid, bool cursor, int row,
 	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 	const struct cmd_info *commands = menu_priv(menu);
 
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	struct keypress kp = { EVT_KBRD, commands[oid].key[mode], 0 };
 	char buf[16];
 

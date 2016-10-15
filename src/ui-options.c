@@ -428,7 +428,7 @@ static void ui_keymap_pref_append(const char *title, int row)
 static void ui_keymap_query(const char *title, int row)
 {
 	char tmp[1024];
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	struct keypress c;
 	const struct keypress *act;
 
@@ -464,7 +464,7 @@ static void ui_keymap_create(const char *title, int row)
 
 	struct keypress c;
 	char tmp[1024];
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);
@@ -540,7 +540,7 @@ static void ui_keymap_create(const char *title, int row)
 static void ui_keymap_remove(const char *title, int row)
 {
 	struct keypress c;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);

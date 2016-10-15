@@ -1669,7 +1669,7 @@ static void describe_flavor_text(textblock *tb, const struct object *obj,
 								 bool ego)
 {
 	/* Display the known artifact or object description */
-	if (!OPT(birth_randarts) && obj->artifact &&
+	if (!OPT(player, birth_randarts) && obj->artifact &&
 		obj->known->artifact && obj->artifact->text) {
 		textblock_append(tb, "%s\n\n", obj->artifact->text);
 

@@ -729,7 +729,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	}
 
 	/* The stack is already too large */
-	if (n >= z_info->floor_size || (!OPT(birth_stacking) && n)) {
+	if (n >= z_info->floor_size || (!OPT(player, birth_stacking) && n)) {
 		/* Delete the oldest ignored object */
 		if (ignore) {
 			square_excise_object(c, y, x, ignore);
@@ -840,7 +840,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 				num_shown++;
 
 			/* Disallow if the stack size is too big */
-			if ((OPT(birth_stacking) && (num_shown > 1)) ||
+			if ((OPT(player, birth_stacking) && (num_shown > 1)) ||
 				((num_shown + num_ignored) > z_info->floor_size &&
 				 !floor_get_oldest_ignored(ty, tx)))
 				continue;

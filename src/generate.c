@@ -662,7 +662,7 @@ static void place_feeling(struct chunk *c)
  * Calculate the level feeling for objects.
  * \param c is the cave where the feeling is being measured
  */
-static int calc_obj_feeling(struct chunk *c)
+static int calc_obj_feeling(struct chunk *c, struct player *p)
 {
 	u32b x;
 
@@ -670,7 +670,7 @@ static int calc_obj_feeling(struct chunk *c)
 	if (c->depth == 0) return 0;
 
 	/* Artifacts trigger a special feeling when they can be easily lost */
-	if (c->good_item && OPT(birth_lose_arts)) return 10;
+	if (c->good_item && OPT(p, birth_lose_arts)) return 10;
 
 	/* Check the loot adjusted for depth */
 	x = c->obj_rating / c->depth;
@@ -829,7 +829,7 @@ static void cave_clear(struct chunk *c, struct player *p)
 			while (obj) {
 				if (obj->artifact) {
 					bool found = obj->known && obj->known->artifact;
-					if (OPT(birth_lose_arts) || found) {
+					if (OPT(p, birth_lose_arts) || found) {
 						history_lose_artifact(p, obj->artifact);
 					} else {
 						obj->artifact->created = false;
@@ -921,7 +921,9 @@ void cave_generate(struct chunk **c, struct player *p)
 			error = "too many monsters";
 
 		if (error) {
-			ROOM_LOG("Generation restarted: %s.", error);
+			if (OPT(p, cheat_room)) {
+				msg("Generation restarted: %s.", error);
+			}
 			cave_clear(chunk, p);
 		}
 
@@ -956,7 +958,7 @@ void cave_generate(struct chunk **c, struct player *p)
 		chunk_list_add(town);
 	}
 
-	(*c)->feeling = calc_obj_feeling(*c) + calc_mon_feeling(*c);
+	(*c)->feeling = calc_obj_feeling(*c, p) + calc_mon_feeling(*c);
 
 	/* Validate the dungeon (we could use more checks here) */
 	chunk_validate_objects(*c);

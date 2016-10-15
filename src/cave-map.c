@@ -48,8 +48,8 @@
  *    grid that the player knows and cares about (to facilitate any special
  *    floor stack symbol that might be used).
  *  - g->in_view is true if the player can currently see the grid - this can
- *    be used to indicate field-of-view, such as through the OPT(view_bright_light)
- *    option.
+ *    be used to indicate field-of-view, such as through the 
+ *    OPT(player, view_bright_light) option.
  *  - g->lighting is set to indicate the lighting level for the grid:
  *    LIGHTING_DARK for unlit grids, LIGHTING_LIT for inherently light
  *    grids (lit rooms, etc), LIGHTING_TORCH for grids lit by the player's
@@ -103,7 +103,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	if (g->in_view) {
 		g->lighting = LIGHTING_LOS;
 
-		if (!square_isglow(cave, y, x) && OPT(view_yellow_light))
+		if (!square_isglow(cave, y, x) && OPT(player, view_yellow_light))
 			g->lighting = LIGHTING_TORCH;
 
 		/* Remember seen feature */

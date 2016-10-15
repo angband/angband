@@ -68,7 +68,7 @@ int target_dir_allow(struct keypress ch, bool allow_5)
 		int mode;
 		const struct keypress *act;
 
-		if (OPT(rogue_like_commands))
+		if (OPT(player, rogue_like_commands))
 			mode = KEYMAP_MODE_ROGUE;
 		else
 			mode = KEYMAP_MODE_ORIG;

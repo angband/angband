@@ -118,7 +118,7 @@ static void recharged_notice(const struct object *obj, bool all)
 
 	bool notify = false;
 
-	if (OPT(notify_recharge)) {
+	if (OPT(player, notify_recharge)) {
 		notify = true;
 	} else if (obj->note) {
 		/* Find a '!' */
@@ -352,7 +352,7 @@ void process_world(struct chunk *c)
 
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))
-		(void)pick_and_place_distant_monster(cave, loc(player->px, player->py),
+		(void)pick_and_place_distant_monster(cave, player,
 											 z_info->max_sight + 5, true,
 											 player->depth);
 
@@ -495,7 +495,7 @@ void process_world(struct chunk *c)
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
                 
                 /* Force descent to a lower level if allowed */
-                if (OPT(birth_force_descend) &&
+                if (OPT(player, birth_force_descend) &&
 					player->max_depth < z_info->max_depth - 1 &&
 					!is_quest(player->max_depth)) {
                     player->max_depth = dungeon_get_next_level(player->max_depth, 1);

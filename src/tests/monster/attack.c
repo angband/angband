@@ -6,6 +6,7 @@
 #include "mon-attack.h"
 #include "mon-lore.h"
 #include "monster.h"
+#include "option.h"
 #include "player-timed.h"
 #include "ui-input.h"
 
@@ -106,6 +107,7 @@ static int test_effects(void *state) {
 	struct player *p = &test_player;
 	int delta;
 
+	options_init_defaults(&p->opts);
 	p->upkeep = &test_player_upkeep;
 
 	require(!p->timed[TMD_POISONED]);

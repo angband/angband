@@ -280,7 +280,7 @@ void textui_process_command(void)
 	ui_event e = textui_get_command(&count);
 	struct cmd_info *cmd = NULL;
 	unsigned char key = '\0';
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	switch (e.type) {
 		case EVT_RESIZE: do_cmd_redraw(); return;
@@ -367,7 +367,7 @@ void pre_turn_refresh(void)
 		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 		handle_stuff(player);
 
-		if (OPT(show_target) && target_sighted()) {
+		if (OPT(player, show_target) && target_sighted()) {
 			int col, row;
 			target_get(&col, &row);
 			move_cursor_relative(row, col);

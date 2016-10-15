@@ -641,13 +641,13 @@ bool change_panel(int dir)
  * panel, the map scrolls one panel in that direction so that the player
  * is no longer so close to the edge.
  *
- * The "OPT(center_player)" option allows the current panel to always be
+ * The "OPT(player, center_player)" option allows the current panel to always be
  * centered around the player, which is very expensive, and also has some
  * interesting gameplay ramifications.
  */
 void verify_panel(void)
 {
-	verify_panel_int(OPT(center_player));
+	verify_panel_int(OPT(player, center_player));
 }
 
 void center_panel(void)

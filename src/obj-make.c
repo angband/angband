@@ -511,7 +511,7 @@ static struct object *make_artifact_special(int level)
 	struct object *new_obj;
 
 	/* No artifacts, do nothing */
-	if (OPT(birth_no_artifacts))
+	if (OPT(player, birth_no_artifacts))
 		return NULL;
 
 	/* No artifacts in the town */
@@ -596,7 +596,7 @@ static bool make_artifact(struct object *obj)
 	bool art_ok = true;
 
 	/* Make sure birth no artifacts isn't set */
-	if (OPT(birth_no_artifacts)) art_ok = false;
+	if (OPT(player, birth_no_artifacts)) art_ok = false;
 
 	/* Special handling of quest artifacts */
 	if (kf_has(obj->kind->kind_flags, KF_QUEST_ART))
@@ -1205,7 +1205,7 @@ struct object *make_gold(int lev, char *coin_type)
 	object_prep(new_gold, money_kind(coin_type, value), lev, RANDOMISE);
 
 	/* If we're playing with no_selling, increase the value */
-	if (OPT(birth_no_selling) && player->depth)
+	if (OPT(player, birth_no_selling) && player->depth)
 		value = value * MIN(5, player->depth);
 
 	/* Cap gold at max short (or alternatively make pvals s32b) */

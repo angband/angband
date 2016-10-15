@@ -178,10 +178,10 @@ static void free_stats_memory(void)
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats()
 {
-	OPT(birth_randarts) = randarts;
-	OPT(birth_no_selling) = no_selling;
-	OPT(birth_stacking) = true;
-	OPT(auto_more) = true;
+	OPT(player, birth_randarts) = randarts;
+	OPT(player, birth_no_selling) = no_selling;
+	OPT(player, birth_stacking) = true;
+	OPT(player, auto_more) = true;
 
 	player->wizard = 1; /* Set wizard mode on */
 

@@ -159,7 +159,7 @@ void flavor_init(void)
 	/* Hack -- Induce consistant flavors */
 	Rand_value = seed_flavor;
 
-	if (OPT(birth_randarts))
+	if (OPT(player, birth_randarts))
 		flavor_reset_fixed();
 
 	flavor_assign_fixed();

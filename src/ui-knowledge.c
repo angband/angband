@@ -743,7 +743,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int i;
 	int prev_g = -1;
 
-	int omode = OPT(rogue_like_commands);
+	int omode = OPT(player, rogue_like_commands);
 	ui_event ke;
 
 	/* Get size */
@@ -751,7 +751,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	browser_rows = hgt - 8;
 
 	/* Disable the roguelike commands for the duration */
-	OPT(rogue_like_commands) = false;
+	OPT(player, rogue_like_commands) = false;
 
 	/* Determine if using tiles or not */
 	if (tiles) tiles = (current_graphics_mode->grafID != 0);
@@ -1030,7 +1030,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	}
 
 	/* Restore roguelike option */
-	OPT(rogue_like_commands) = omode;
+	OPT(player, rogue_like_commands) = omode;
 
 	/* Prompt */
 	if (!grp_cnt)
@@ -1126,11 +1126,11 @@ static void display_monster(int col, int row, bool cursor, int oid)
 		a = race->d_attr;
 		c = race->d_char;
 		/* If uniques are purple, make it so */
-		if (OPT(purple_uniques) && rf_has(race->flags, RF_UNIQUE))
+		if (OPT(player, purple_uniques) && rf_has(race->flags, RF_UNIQUE))
 			a = COLOUR_VIOLET;
 	}
 	/* If uniques are purple, make it so */
-	else if (OPT(purple_uniques) && !(a & 0x80) &&
+	else if (OPT(player, purple_uniques) && !(a & 0x80) &&
 			 rf_has(race->flags, RF_UNIQUE))
 		a = COLOUR_VIOLET;
 
@@ -1250,8 +1250,11 @@ static int count_known_monsters(void)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
+			!l_list[i].sights) {
 			continue;
+		}
+
 		if (!race->name) continue;
 
 		if (rf_has(race->flags, RF_UNIQUE)) m_count++;
@@ -1283,8 +1286,11 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
+			!l_list[i].sights) {
 			continue;
+		}
+
 		if (!race->name) continue;
 
 		if (rf_has(race->flags, RF_UNIQUE)) m_count++;
@@ -1301,8 +1307,11 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
+			!l_list[i].sights) {
 			continue;
+		}
+
 		if (!race->name) continue;
 
 		for (j = 0; j < N_ELEMENTS(monster_group) - 1; j++) {
@@ -1559,7 +1568,7 @@ static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
 		/* Artifact doesn't exist */
 		if (!a_info[j].name) continue;
 
-		if (OPT(cheat_xtra) || artifact_is_known(j)) {
+		if (OPT(player, cheat_xtra) || artifact_is_known(j)) {
 			if (artifacts)
 				artifacts[a_count++] = j;
 			else
@@ -1673,7 +1682,7 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 	/* Look at all the ego items */
 	for (i = 0; i < z_info->e_max; i++)	{
 		struct ego_item *ego = &e_info[i];
-		if (ego->everseen || OPT(cheat_xtra)) {
+		if (ego->everseen || OPT(player, cheat_xtra)) {
 			size_t j;
 			int *tval = mem_zalloc(N_ELEMENTS(object_text_order) * sizeof(int));
 			struct poss_item *poss;
@@ -1758,7 +1767,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 		get_artifact_display_name(o_name, sizeof(o_name), 
 								  get_artifact_from_kind(kind));
 	else
- 		object_kind_name(o_name, sizeof(o_name), kind, OPT(cheat_xtra));
+ 		object_kind_name(o_name, sizeof(o_name), kind, OPT(player, cheat_xtra));
 
 	/* If the type is "tried", display that */
 	if (kind->tried && !aware)
@@ -2005,7 +2014,7 @@ void textui_browse_object_knowledge(const char *name, int row)
 		 * we're not aware of it yet. This way the flavour appears in the list
 		 * until it is found.
 		 */
-		if ((kind->everseen || kind->flavor || OPT(cheat_xtra)) &&
+		if ((kind->everseen || kind->flavor || OPT(player, cheat_xtra)) &&
 				(!kf_has(kind->kind_flags, KF_INSTA_ART) ||
 				 !artifact_is_known(get_artifact_from_kind(kind)))) {
 			int c = obj_group_order[k_info[i].tval];
@@ -2609,7 +2618,7 @@ void textui_browse_knowledge(void)
 	/* Runes */
 	knowledge_actions[1].flags = MN_ACT_GRAYED;
 	for (i = 0; i < rune_max; i++) {
-		if (player_knows_rune(player, i) || OPT(cheat_xtra)) {
+		if (player_knows_rune(player, i) || OPT(player, cheat_xtra)) {
 			knowledge_actions[1].flags = 0;
 		    break;
 		}
@@ -2624,7 +2633,7 @@ void textui_browse_knowledge(void)
 	/* Ego items */
 	knowledge_actions[3].flags = MN_ACT_GRAYED;
 	for (i = 0; i < z_info->e_max; i++) {
-		if (e_info[i].everseen || OPT(cheat_xtra)) {
+		if (e_info[i].everseen || OPT(player, cheat_xtra)) {
 			knowledge_actions[3].flags = 0;
 			break;
 		}
@@ -3047,7 +3056,7 @@ void do_cmd_locate(void)
 		        (y2 / panel_hgt), (x2 / panel_wid), tmp_val);
 
 		/* More detail */
-		if (OPT(center_player)) {
+		if (OPT(player, center_player)) {
 			strnfmt(out_val, sizeof(out_val),
 		        	"Map sector [%d(%02d),%d(%02d)], which is%s your sector.  Direction?",
 					(y2 / panel_hgt), (y2 % panel_hgt),
@@ -3251,7 +3260,8 @@ void do_cmd_query_symbol(void)
 		struct monster_lore *lore = &l_list[i];
 
 		/* Nothing to recall */
-		if (!OPT(cheat_know) && !lore->all_known && !lore->sights) continue;
+		if (!OPT(player, cheat_know) && !lore->all_known && !lore->sights)
+			continue;
 
 		/* Require non-unique monsters if needed */
 		if (norm && rf_has(race->flags, RF_UNIQUE)) continue;

@@ -1512,7 +1512,7 @@ static void process_monster(struct chunk *c, struct monster *mon)
 
 		/* Possible disturb */
 		if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-			mflag_has(mon->mflag, MFLAG_VIEW) && OPT(disturb_near))
+			mflag_has(mon->mflag, MFLAG_VIEW) && OPT(player, disturb_near))
 			disturb(player, 0);		
 	}
 

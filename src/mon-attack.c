@@ -91,7 +91,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 	/* Update acquired knowledge */
 	of_wipe(ai_flags);
 	pf_wipe(ai_pflags);
-	if (OPT(birth_ai_learn)) {
+	if (OPT(player, birth_ai_learn)) {
 		size_t i;
 
 		/* Occasionally forget player status */

@@ -945,15 +945,15 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 	/* Check out-of-depth-ness */
 	if (race->level > player->depth) {
 		if (rf_has(race->flags, RF_UNIQUE)) { /* OOD unique */
-			if (OPT(cheat_hear))
+			if (OPT(player, cheat_hear))
 				msg("Deep unique (%s).", race->name);
 		} else { /* Normal monsters but OOD */
-			if (OPT(cheat_hear))
+			if (OPT(player, cheat_hear))
 				msg("Deep monster (%s).", race->name);
 		}
 		/* Boost rating by power per 10 levels OOD */
 		c->mon_rating += (race->level - player->depth) * race->power / 200;
-	} else if (rf_has(race->flags, RF_UNIQUE) && OPT(cheat_hear))
+	} else if (rf_has(race->flags, RF_UNIQUE) && OPT(player, cheat_hear))
 		msg("Unique (%s).", race->name);
 
 	/* Get local monster */
@@ -1288,12 +1288,9 @@ bool pick_and_place_monster(struct chunk *c, int y, int x, int depth,
  *
  * Returns true if we successfully place a monster.
  */
-bool pick_and_place_distant_monster(struct chunk *c, struct loc loc, int dis,
+bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 		bool sleep, int depth)
 {
-	int py = loc.y;
-	int px = loc.x;
-
 	int y = 0, x = 0;
 	int	attempts_left = 10000;
 
@@ -1313,11 +1310,11 @@ bool pick_and_place_distant_monster(struct chunk *c, struct loc loc, int dis,
 			continue;
 
 		/* Accept far away grids */
-		if (distance(y, x, py, px) > dis) break;
+		if (distance(y, x, p->py, p->px) > dis) break;
 	}
 
 	if (!attempts_left) {
-		if (OPT(cheat_xtra) || OPT(cheat_hear))
+		if (OPT(p, cheat_xtra) || OPT(p, cheat_hear))
 			msg("Warning! Could not allocate a new monster.");
 
 		return false;

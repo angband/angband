@@ -584,7 +584,7 @@ static void update_sidebar(game_event_type type, game_event_data *data,
 static void hp_colour_change(game_event_type type, game_event_data *data,
 							 void *user)
 {
-	if ((OPT(hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
+	if ((OPT(player, hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
 		square_light_spot(cave, player->py, player->px);
 }
 
@@ -876,7 +876,7 @@ static size_t prt_level_feeling(int row, int col)
 	byte obj_feeling_color_print;
 
 	/* Don't show feelings for cold-hearted characters */
-	if (!OPT(birth_feelings)) return 0;
+	if (!OPT(player, birth_feelings)) return 0;
 
 	/* No useful feeling in town */
 	if (!player->depth) return 0;
@@ -1111,7 +1111,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	}
 
 	/* Refresh the main screen unless the map needs to center */
-	if (player->upkeep->update & (PU_PANEL) && OPT(center_player)) {
+	if (player->upkeep->update & (PU_PANEL) && OPT(player, center_player)) {
 		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 : t->hgt / 2;
 		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 : t->wid / 2;
 
@@ -1231,7 +1231,8 @@ void idle_update(void)
 	if (!animations_allowed) return;
 	if (msg_flag) return;
 	if (!character_dungeon) return;
-	if (!OPT(animate_flicker) || (use_graphics != GRAPHICS_NONE)) return;
+	if (!OPT(player, animate_flicker) || (use_graphics != GRAPHICS_NONE))
+		return;
 
 	/* Animate and redraw if necessary */
 	do_animation();
@@ -2148,7 +2149,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data,
 static void refresh(game_event_type type, game_event_data *data, void *user)
 {
 	/* Place cursor on player/target */
-	if (OPT(show_target) && target_sighted()) {
+	if (OPT(player, show_target) && target_sighted()) {
 		int col, row;
 		target_get(&col, &row);
 		move_cursor_relative(row, col);

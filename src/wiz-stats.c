@@ -1664,7 +1664,7 @@ void stats_collect(void)
 	 */
 	 auto_flag = false;
 	 
-	 if (!OPT(auto_more)) {
+	 if (!OPT(player, auto_more)) {
 		/* Remember that we turned off auto_more */
 		auto_flag = true;
 
