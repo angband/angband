@@ -196,7 +196,9 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 		monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
 	} else if (trap) {
 		/* A trap */
-		my_strcpy(killer, format("a %s", trap->kind->desc), sizeof(killer));
+		char *article = is_a_vowel(trap->kind->desc[0]) ? "an " : "a ";
+		my_strcpy(killer, format("%s %s", article, trap->kind->desc),
+				  sizeof(killer));
 	} else {
 		/* Must be a cursed weapon */
 		char o_name[80];

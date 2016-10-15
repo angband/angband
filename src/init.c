@@ -2922,8 +2922,13 @@ static void cleanup_trap(void)
 	for (i = 0; i < z_info->trap_max; i++) {
 		string_free(trap_info[i].name);
 		mem_free(trap_info[i].text);
-		free_effect(trap_info[i].effect);
 		string_free(trap_info[i].desc);
+		string_free(trap_info[i].msg);
+		string_free(trap_info[i].msg_good);
+		string_free(trap_info[i].msg_bad);
+		string_free(trap_info[i].msg_xtra);
+		free_effect(trap_info[i].effect);
+		free_effect(trap_info[i].effect_xtra);
 	}
 	mem_free(trap_info);
 }
