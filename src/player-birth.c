@@ -381,6 +381,7 @@ static void get_money(void)
 void player_init(struct player *p)
 {
 	int i;
+	struct player_options opts_save = p->opts;
 
 	if (p->upkeep) {
 		if (p->upkeep->inven)
@@ -434,7 +435,8 @@ void player_init(struct player *p)
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 	p->obj_k = mem_zalloc(sizeof(struct object));
 
-	options_init_defaults(&p->opts);
+	/* Options should persist */
+	p->opts = opts_save;
 
 	/* First turn. */
 	turn = 1;
