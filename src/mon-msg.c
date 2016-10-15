@@ -257,7 +257,7 @@ static void get_subject(char *buf, size_t buflen,
 				strnfmt(buf, buflen, "%d %s", count, race->plural);
 			} else {
 				strnfmt(buf, buflen, "%d %s", count, race->name);
-				plural_aux(buf, sizeof(buflen));
+				plural_aux(buf, buflen);
 			}
 		}
 	}
