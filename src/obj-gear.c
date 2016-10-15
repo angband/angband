@@ -50,8 +50,11 @@ int slot_by_name(struct player *p, const char *name)
 	int i;
 
 	/* Look for the correctly named slot */
-	for (i = 0; i < p->body.count; i++)
-		if (streq(name, p->body.slots[i].name)) break;
+	for (i = 0; i < p->body.count; i++) {
+		if (streq(name, p->body.slots[i].name)) {
+			break;
+		}
+	}
 
 	/* Index for that slot */
 	return i;
@@ -95,35 +98,39 @@ bool slot_type_is(int slot, int type)
 struct object *slot_object(struct player *p, int slot)
 {
 	/* Ensure a valid body */
-	if (!p->body.slots)
-		return NULL;
+	if (p->body.slots) {
+		return p->body.slots[slot].obj;
+	}
 
-	/* Returns NULL if no object in that slot */
-	return p->body.slots[slot].obj;
+	return NULL;
 }
 
 struct object *equipped_item_by_slot_name(struct player *p, const char *name)
 {
 	/* Ensure a valid body */
-	if (!p->body.slots)
-		return NULL;
+	if (p->body.slots) {
+		return slot_object(p, slot_by_name(p, name));
+	}
 
-	return slot_object(p, slot_by_name(p, name));
+	return NULL;
 }
 
 int object_slot(struct player_body body, const struct object *obj)
 {
 	int i;
 
-	for (i = 0; i < body.count; i++)
-		if (obj == body.slots[i].obj) break;
+	for (i = 0; i < body.count; i++) {
+		if (obj == body.slots[i].obj) {
+			break;
+		}
+	}
 
 	return i;
 }
 
 bool object_is_equipped(struct player_body body, const struct object *obj)
 {
-	return (object_slot(body, obj) < body.count);
+	return object_slot(body, obj) < body.count;
 }
 
 bool object_is_carried(struct player *p, const struct object *obj)
@@ -138,9 +145,11 @@ static bool object_is_in_quiver(struct player *p, const struct object *obj)
 {
 	int i;
 
-	for (i = 0; i < z_info->quiver_size; i++)
-		if (obj == p->upkeep->quiver[i])
+	for (i = 0; i < z_info->quiver_size; i++) {
+		if (obj == p->upkeep->quiver[i]) {
 			return true;
+		}
+	}
 
 	return false;
 }
@@ -154,30 +163,31 @@ static bool object_is_in_quiver(struct player *p, const struct object *obj)
 int pack_slots_used(struct player *p)
 {
 	struct object *obj;
-	int quiver_slots = 0, pack_slots = 0, quiver_ammo = 0;
-	int maxsize = z_info->stack_size;
+	int quiver_slots = 0;
+	int pack_slots = 0;
+	int quiver_ammo = 0;
 
 	for (obj = p->gear; obj; obj = obj->next) {
 		/* Equipment doesn't count */
-		if (object_is_equipped(p->body, obj)) continue;
-
-		/* Check if it could be in the quiver */
-		if (tval_is_ammo(obj))
-			if (quiver_slots < z_info->quiver_size) {
+		if (!object_is_equipped(p->body, obj)) {
+			/* Check if it could be in the quiver */
+			if (tval_is_ammo(obj) && quiver_slots < z_info->quiver_size) {
 				quiver_slots++;
 				quiver_ammo += obj->number;
-				continue;
+			} else {
+				/* Count regular slots */
+				pack_slots++;
 			}
-
-		/* Count regular slots */
-		pack_slots++;
+		}
 	}
 
 	/* Full slots */
-	pack_slots += quiver_ammo / maxsize;
+	pack_slots += quiver_ammo / z_info->stack_size;
 
 	/* Plus one for any remainder */
-	if (quiver_ammo % maxsize) pack_slots++;
+	if (quiver_ammo % z_info->stack_size) {
+		pack_slots++;
+	}
 
 	return pack_slots;
 }
@@ -187,16 +197,13 @@ int pack_slots_used(struct player *p)
  */
 const char *equip_mention(struct player *p, int slot)
 {
-	int type;
-
-	type = p->body.slots[slot].type;
+	int type = p->body.slots[slot].type;
 
 	/* Heavy */
 	if ((type == EQUIP_WEAPON && p->state.heavy_wield) ||
-		(type == EQUIP_WEAPON && p->state.heavy_shoot))
+			(type == EQUIP_WEAPON && p->state.heavy_shoot))
 		return slot_table[type].heavy_describe;
-
-	if (slot_table[type].name_in_desc)
+	else if (slot_table[type].name_in_desc)
 		return format(slot_table[type].mention, p->body.slots[slot].name);
 	else
 		return slot_table[type].mention;
@@ -209,16 +216,13 @@ const char *equip_mention(struct player *p, int slot)
  */
 const char *equip_describe(struct player *p, int slot)
 {
-	int type;
-
-	type = p->body.slots[slot].type;
+	int type = p->body.slots[slot].type;
 
 	/* Heavy */
 	if ((type == EQUIP_WEAPON && p->state.heavy_wield) ||
-		(type == EQUIP_WEAPON && p->state.heavy_shoot))
+			(type == EQUIP_WEAPON && p->state.heavy_shoot))
 		return slot_table[type].heavy_describe;
-
-	if (slot_table[type].name_in_desc)
+	else if (slot_table[type].name_in_desc)
 		return format(slot_table[type].describe, p->body.slots[slot].name);
 	else
 		return slot_table[type].describe;
@@ -256,7 +260,7 @@ int wield_slot(const struct object *obj)
 		return slot_by_type(player, EQUIP_HAT, false);
 
 	/* No slot available */
-	return (-1);
+	return -1;
 }
 
 
@@ -266,12 +270,10 @@ int wield_slot(const struct object *obj)
  * Note that the "base armor" of an object never changes.
  * If any armor is damaged (or resists), the player takes less damage.
  */
-int minus_ac(struct player *p)
+bool minus_ac(struct player *p)
 {
 	int i, count = 0;
 	struct object *obj = NULL;
-
-	char o_name[80];
 
 	/* Avoid crash during monster power calculations */
 	if (!p->gear) return false;
@@ -304,34 +306,32 @@ int minus_ac(struct player *p)
 	/* Get the item */
 	obj = slot_object(player, i);
 
-	/* Nothing to damage */
-	if (!obj) return (false);
+	/* If we can still damage the item */
+	if (obj && (obj->ac + obj->to_a > 0)) {
+		char o_name[80];
+		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
-	/* No damage left to be done */
-	if (obj->ac + obj->to_a <= 0) return (false);
+		/* Object resists */
+		if (obj->el_info[ELEM_ACID].flags & EL_INFO_IGNORE) {
+			msg("Your %s is unaffected!", o_name);
+		} else {
+			msg("Your %s is damaged!", o_name);
 
-	/* Describe */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+			/* Damage the item */
+			obj->to_a--;
+			if (p->obj_k->to_a)
+				obj->known->to_a = obj->to_a;
 
-	/* Object resists */
-	if (obj->el_info[ELEM_ACID].flags & EL_INFO_IGNORE) {
-		msg("Your %s is unaffected!", o_name);
-		return (true);
+			p->upkeep->update |= (PU_BONUS);
+			p->upkeep->redraw |= (PR_EQUIP);
+		}
+
+		/* There was an effect */
+		return true;
+	} else {
+		/* No damage or effect */
+		return false;
 	}
-
-	/* Message */
-	msg("Your %s is damaged!", o_name);
-
-	/* Damage the item */
-	obj->to_a--;
-	if (p->obj_k->to_a)
-		obj->known->to_a = obj->to_a;
-
-	p->upkeep->update |= (PU_BONUS);
-	p->upkeep->redraw |= (PR_EQUIP);
-
-	/* Item was damaged */
-	return (true);
 }
 
 /**
@@ -342,16 +342,23 @@ char gear_to_label(struct object *obj)
 	int i;
 
 	/* Equipment is easy */
-	if (object_is_equipped(player->body, obj))
+	if (object_is_equipped(player->body, obj)) {
 		return I2A(equipped_item_slot(player->body, obj));
+	}
 
 	/* Check the quiver */
-	for (i = 0; i < z_info->quiver_size; i++)
-		if (player->upkeep->quiver[i] == obj) return I2D(i);
+	for (i = 0; i < z_info->quiver_size; i++) {
+		if (player->upkeep->quiver[i] == obj) {
+			return I2D(i);
+		}
+	}
 
 	/* Check the inventory */
-	for (i = 0; i < z_info->pack_size; i++)
-		if (player->upkeep->inven[i] == obj) return I2A(i);
+	for (i = 0; i < z_info->pack_size; i++) {
+		if (player->upkeep->inven[i] == obj) {
+			return I2A(i);
+		}
+	}
 
 	return '\0';
 }
@@ -418,19 +425,6 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 	/* Bounds check */
 	num = MIN(num, obj->number);
 
-	/* Prepare a name if necessary */
-	if (message) {
-		/* Artifacts */
-		if (artifact)
-			object_desc(name, sizeof(name), obj, ODESC_FULL | ODESC_SINGULAR);
-		else {
-			/* Describe as if it's already reduced */
-			obj->number -= num;
-			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
-			obj->number += num;
-		}
-	}
-
 	/* Split off a usable object if necessary */
 	if (obj->number > num) {
 		usable = object_split(obj, num);
@@ -438,16 +432,13 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 		/* Change the weight */
 		player->upkeep->total_weight -= (num * obj->weight);
 
-		/* Describe if necessary */
-		if (message) 
-			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
-	} else {
-		/* Describe if necessary */
 		if (message) {
-			/* Artifacts */
+			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+		}
+	} else {
+		if (message) {
 			if (artifact) {
-				object_desc(name, sizeof(name), obj,
-							ODESC_FULL | ODESC_SINGULAR);
+				object_desc(name, sizeof(name), obj, ODESC_FULL | ODESC_SINGULAR);
 			} else {
 				/* Describe zero amount */
 				obj->number = 0;
@@ -465,7 +456,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 		if (tracked_object_is(player->upkeep, obj))
 			track_object(player->upkeep, NULL);
 
-		/* Inventory has changed, so disable repeat command */ 
+		/* Inventory has changed, so disable repeat command */
 		cmd_disable_repeat();
 	}
 
@@ -493,34 +484,36 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
  */
 static int quiver_absorb_num(const struct object *obj)
 {
-	int i, quiver_count = 0, space_free = 0;
-
 	/* Must be ammo */
-	if (!tval_is_ammo(obj)) return 0;
+	if (tval_is_ammo(obj)) {
+		int i, quiver_count = 0, space_free = 0;
 
-	/* Count the current space this object could go into */
-	for (i = 0; i < z_info->quiver_size; i++) {
-		struct object *quiver_obj = player->upkeep->quiver[i];
-		if (quiver_obj) {
-			quiver_count += quiver_obj->number;
-			if (object_stackable(quiver_obj, obj, OSTACK_PACK))
-				space_free += z_info->stack_size - quiver_obj->number;
-		} else {
-			space_free += z_info->stack_size;
+		/* Count the current space this object could go into */
+		for (i = 0; i < z_info->quiver_size; i++) {
+			struct object *quiver_obj = player->upkeep->quiver[i];
+			if (quiver_obj) {
+				quiver_count += quiver_obj->number;
+				if (object_stackable(quiver_obj, obj, OSTACK_PACK))
+					space_free += z_info->stack_size - quiver_obj->number;
+			} else {
+				space_free += z_info->stack_size;
+			}
+		}
+
+		if (space_free) {
+			/* Check we won't need another pack slot */
+			quiver_count += z_info->stack_size;
+			while (quiver_count > z_info->stack_size)
+				quiver_count -= z_info->stack_size;
+
+			/* Return the number, or the number that will fit */
+			space_free = MIN(space_free, z_info->stack_size - quiver_count);
+			return MIN(obj->number, space_free);
 		}
 	}
 
-	/* No space */
-	if (!space_free) return 0;
-
-	/* Check we won't need another pack slot */
-	quiver_count += z_info->stack_size;
-	while (quiver_count > z_info->stack_size)
-		quiver_count -= z_info->stack_size;
-
-	/* Return the number, or the number that will fit */
-	space_free = MIN(space_free, z_info->stack_size - quiver_count);
-	return MIN(obj->number, space_free);
+	/* No ammo or no space */
+	return 0;
 }
 
 /**
@@ -530,44 +523,43 @@ static int quiver_absorb_num(const struct object *obj)
  */
 int inven_carry_num(const struct object *obj, bool stack)
 {
-	struct object *gear_obj;
-	int i, num_left = obj->number;
-
 	/* Check for similarity */
 	if (stack) {
-		for (gear_obj = player->gear; gear_obj; gear_obj = gear_obj->next) {
-			/* Skip equipped items and non-objects */
-			if (object_is_equipped(player->body, gear_obj))
-				continue;
-			if (!gear_obj)
-				continue;
+		struct object *gear_obj;
 
-			/* Check if the two items can be combined */
-			if (object_stackable(gear_obj, obj, OSTACK_PACK))
+		for (gear_obj = player->gear; gear_obj; gear_obj = gear_obj->next) {
+			if (!object_is_equipped(player->body, gear_obj) &&
+					object_stackable(gear_obj, obj, OSTACK_PACK)) {
 				break;
+			}
 		}
 
 		/* No similar object, so no stacking */
-		if (!gear_obj) return 0;
+		if (!gear_obj) {
+			return 0;
+		}
 	}
 
 	/* Free inventory slots, so there is definitely room */
-	if (pack_slots_used(player) < z_info->pack_size) return obj->number;
+	if (pack_slots_used(player) < z_info->pack_size) {
+		return obj->number;
+	} else {
+		int i;
 
-	/* Absorb as many as we can in the quiver */
-	num_left -= quiver_absorb_num(obj);
+		/* Absorb as many as we can in the quiver */
+		int num_left = obj->number - quiver_absorb_num(obj);
 
-	/* See if we can add to a part full inventory slot */
-	for (i = 0; i < z_info->pack_size; i++) {
-		struct object *inven_obj = player->upkeep->inven[i];
-		if (!inven_obj) continue;
-		if (!object_stackable(inven_obj, obj, OSTACK_PACK)) continue;
-		num_left -= z_info->stack_size - inven_obj->number;
+		/* See if we can add to a part full inventory slot */
+		for (i = 0; i < z_info->pack_size; i++) {
+			struct object *inven_obj = player->upkeep->inven[i];
+			if (inven_obj && object_stackable(inven_obj, obj, OSTACK_PACK)) {
+				num_left -= z_info->stack_size - inven_obj->number;
+			}
+		}
+
+		/* Return the number we can absorb */
+		return obj->number - MAX(num_left, 0);
 	}
-
-	/* Return the number we can absorb */
-	num_left = MAX(num_left, 0);
-	return obj->number - num_left;
 }
 
 /**
@@ -576,7 +568,7 @@ int inven_carry_num(const struct object *obj, bool stack)
  */
 bool inven_carry_okay(const struct object *obj)
 {
-	return (inven_carry_num(obj, false) == 0) ? false : true;
+	return inven_carry_num(obj, false) > 0;
 }
 
 /**
@@ -585,16 +577,12 @@ bool inven_carry_okay(const struct object *obj)
 void inven_item_charges(struct object *obj)
 {
 	/* Require staff/wand */
-	if (!tval_can_have_charges(obj)) return;
-
-	/* Require known item */
-	if (!object_flavor_is_aware(obj)) return;
-
-	/* Print a message */
-	msg("You have %d charge%s remaining.", obj->pval,
-	    (obj->pval != 1) ? "s" : "");
+	if (tval_can_have_charges(obj) && object_flavor_is_aware(obj)) {
+		msg("You have %d charge%s remaining.",
+				obj->pval,
+				PLURAL(obj->pval));
+	}
 }
-
 
 /**
  * Add an item to the players inventory.
@@ -617,95 +605,71 @@ void inven_item_charges(struct object *obj)
 void inven_carry(struct player *p, struct object *obj, bool absorb,
 				 bool message)
 {
-	struct object *gear_obj;
-	char o_name[80];
+	bool combining = false;
 
 	/* Check for combining, if appropriate */
 	if (absorb) {
+		struct object *gear_obj;
+		struct object *combine_item = NULL;
+
 		for (gear_obj = p->gear; gear_obj; gear_obj = gear_obj->next) {
-			/* Can't stack equipment */
-			if (object_is_equipped(p->body, gear_obj))
-				continue;
-
-			/* Check if the two items can be combined */
-			if (object_similar(gear_obj, obj, OSTACK_PACK)) {
-				/* Increase the weight */
-				p->upkeep->total_weight += (obj->number * obj->weight);
-
-				/* Combine the items, and their known versions */
-				object_absorb(gear_obj->known, obj->known);
-				obj->known = NULL;
-				object_absorb(gear_obj, obj);
-
-				/* Describe the combined object */
-				object_desc(o_name, sizeof(o_name), gear_obj,
-							ODESC_PREFIX | ODESC_FULL);
-
-				/* Recalculate bonuses */
-				p->upkeep->update |= (PU_BONUS | PU_INVEN);
-
-				/* Redraw stuff */
-				p->upkeep->redraw |= (PR_INVEN);
-
-				/* Inventory will need updating */
-				update_stuff(player);
-
-				/* Optionally, display a message */
-				if (message)
-					msg("You have %s (%c).", o_name, gear_to_label(gear_obj));
-
-				/* Sound for quiver objects */
-				if (object_is_in_quiver(p, gear_obj))
-					sound(MSG_QUIVER);
-
-				/* Success */
-				return;
+			if (!object_is_equipped(p->body, gear_obj) &&
+					object_similar(gear_obj, obj, OSTACK_PACK)) {
+				combine_item = gear_obj;
 			}
+		}
+
+		if (combine_item) {
+			/* Increase the weight */
+			p->upkeep->total_weight += (obj->number * obj->weight);
+
+			/* Combine the items, and their known versions */
+			object_absorb(gear_obj->known, obj->known);
+			obj->known = NULL;
+			object_absorb(gear_obj, obj);
+
+			obj = gear_obj;
+			combining = true;
 		}
 	}
 
-	/* Paranoia */
-	assert(pack_slots_used(p) <= z_info->pack_size);
+	/* We didn't manage the find an object to combine with */
+	if (!combining) {
+		/* Paranoia */
+		assert(pack_slots_used(p) <= z_info->pack_size);
 
-	/* Add to the end of the list */
-	gear_insert_end(obj);
+		gear_insert_end(obj);
+		apply_autoinscription(obj);
 
-	/* Apply an autoinscription */
-	apply_autoinscription(obj);
+		/* Remove cave object details */
+		obj->held_m_idx = 0;
+		obj->iy = obj->ix = 0;
+		obj->known->iy = obj->known->ix = 0;
 
-	/* Remove cave object details */
-	obj->held_m_idx = 0;
-	obj->iy = obj->ix = 0;
-	obj->known->iy = obj->known->ix = 0;
+		/* Update the inventory */
+		p->upkeep->total_weight += (obj->number * obj->weight);
+		p->upkeep->notice |= (PN_COMBINE);
 
-	/* Update the inventory */
-	p->upkeep->total_weight += (obj->number * obj->weight);
-	p->upkeep->update |= (PU_BONUS | PU_INVEN);
-	p->upkeep->notice |= (PN_COMBINE);
-	p->upkeep->redraw |= (PR_INVEN);
-
-	/* Inventory will need updating */
-	update_stuff(player);
-
-	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
-	if (!object_flavor_is_aware(obj)) {
-		if (player_has(player, PF_KNOW_MUSHROOM) && tval_is_mushroom(obj)) {
-			object_flavor_aware(obj);
-			msg("Mushrooms for breakfast!");
-		} else if (player_has(player, PF_KNOW_ZAPPER) && tval_is_zapper(obj))
-			object_flavor_aware(obj);
+		/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
+		if (!object_flavor_is_aware(obj)) {
+			if (player_has(player, PF_KNOW_MUSHROOM) && tval_is_mushroom(obj)) {
+				object_flavor_aware(obj);
+				msg("Mushrooms for breakfast!");
+			} else if (player_has(player, PF_KNOW_ZAPPER) && tval_is_zapper(obj))
+				object_flavor_aware(obj);
+		}
 	}
 
-	/* Optionally, display a message */
-	if (message) {
-		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+	p->upkeep->update |= (PU_BONUS | PU_INVEN);
+	p->upkeep->redraw |= (PR_INVEN);
+	update_stuff(player);
 
-		/* Message */
+	if (message) {
+		char o_name[80];
+		object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 		msg("You have %s (%c).", o_name, gear_to_label(obj));
 	}
 
-	/* Sound for quiver objects */
 	if (object_is_in_quiver(p, obj))
 		sound(MSG_QUIVER);
 }
@@ -993,7 +957,7 @@ void combine_pack(void)
  */
 bool pack_is_full(void)
 {
-	return pack_slots_used(player) == z_info->pack_size ? true : false;
+	return pack_slots_used(player) == z_info->pack_size;
 }
 
 /**
@@ -1002,7 +966,7 @@ bool pack_is_full(void)
  */
 bool pack_is_overfull(void)
 {
-	return pack_slots_used(player) > z_info->pack_size ? true : false;
+	return pack_slots_used(player) > z_info->pack_size;
 }
 
 /**
