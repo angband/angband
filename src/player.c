@@ -389,6 +389,8 @@ static void init_player(void) {
 	player->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(struct object *));
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 	player->obj_k = mem_zalloc(sizeof(struct object));
+
+	options_init_defaults(&player->opts);
 }
 
 /**
