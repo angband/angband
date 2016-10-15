@@ -1237,7 +1237,7 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
 			int j;
-			struct curse *c;
+			struct curse *c = NULL;
 			for (j = 1; j < z_info->curse_max; j++) {
 				c = &curses[j];
 				if (curses[j].name && streq(curses[j].name, r->name)) {

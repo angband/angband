@@ -448,8 +448,6 @@ struct player_upkeep {
 	int quiver_cnt;				/* Number of items in the quiver */
 };
 
-#define PLAYER_NAME_LEN		32
-
 /**
  * Most of the "player" information goes here.
  *

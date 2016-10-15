@@ -20,6 +20,8 @@
 
 #include "z-file.h"
 
+#define PLAYER_NAME_LEN		32
+
 /**
  * Option types 
  */
