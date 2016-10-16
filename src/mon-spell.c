@@ -59,18 +59,11 @@ static void spell_message(struct monster *mon,
 						  bool seen, bool hits)
 {
 	char buf[1024] = "\0";
-	char m_name[80], m_poss[80];
 	const char *next;
 	const char *s;
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
-
-	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
-
-	/* Get the monster possessive ("his"/"her"/"its") */
-	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
 
 	/* Get the message */
 	if (!seen)
@@ -83,7 +76,7 @@ static void spell_message(struct monster *mon,
 	next = strchr(in_cursor, '{');
 	while (next) {
 		/* Copy the text leading up to this { */
-		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor); 
+		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor);
 
 		s = next + 1;
 		while (*s && isalpha((unsigned char) *s)) s++;
@@ -94,28 +87,35 @@ static void spell_message(struct monster *mon,
 			tag = next + 1;
 			in_cursor = s + 1;
 
-			switch(spell_tag_lookup(tag)) {
-			case SPELL_TAG_NAME:
-				strnfcat(buf, sizeof(buf), &end, m_name);
-				break;
-			case SPELL_TAG_PRONOUN:
-				strnfcat(buf, sizeof(buf), &end, m_poss);
-				break;
-			default:
-				break;
+			switch (spell_tag_lookup(tag)) {
+				case SPELL_TAG_NAME: {
+					char m_name[80];
+					monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+					strnfcat(buf, sizeof(buf), &end, m_name);
+					break;
+				}
+
+				case SPELL_TAG_PRONOUN: {
+					char m_poss[80];
+
+					/* Get the monster possessive ("his"/"her"/"its") */
+					monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
+
+					strnfcat(buf, sizeof(buf), &end, m_poss);
+					break;
+				}
 			}
-		} else
+		} else {
 			/* An invalid tag, skip it */
 			in_cursor = next + 1;
+		}
 
 		next = strchr(in_cursor, '{');
 	}
 	strnfcat(buf, 1024, &end, in_cursor);
 
-	if (spell->msgt)
-		msgt(spell->msgt, "%s", buf);
-	else
-		msg("%s", buf);
+	msgt(spell->msgt, "%s", buf);
 }
 
 static const struct monster_spell *monster_spell_by_index(int index)
@@ -138,42 +138,34 @@ static const struct monster_spell *monster_spell_by_index(int index)
  */
 void do_mon_spell(int index, struct monster *mon, bool seen)
 {
-	char m_name[80];
-	bool ident, hits = false;
-
-	/* Extract the monster level */
-	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
-
 	const struct monster_spell *spell = monster_spell_by_index(index);
 
-	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+	bool ident;
+	bool hits;
 
 	/* See if it hits */
-	if (spell->hit == 100)
+	if (spell->hit == 100) {
 		hits = true;
-	else if (spell->hit == 0)
+	} else if (spell->hit == 0) {
 		hits = false;
-	else
+	} else {
+		int rlev = MAX(mon->race->level, 1);
 		hits = check_hit(player, spell->hit, rlev);
+	}
 
 	/* Tell the player what's going on */
 	disturb(player, 1);
 	spell_message(mon, spell, seen, hits);
 
-	if (!hits) return;
-
-	/* Try a saving throw if available */
-	if (spell->save_message &&
-		randint0(100) < player->state.skills[SKILL_SAVE]) {
-		msg("%s", spell->save_message);
-		return;
+	if (hits) {
+		/* Try a saving throw if available */
+		if (spell->save_message &&
+				randint0(100) < player->state.skills[SKILL_SAVE]) {
+			msg("%s", spell->save_message);
+		} else {
+			effect_do(spell->effect, NULL, &ident, true, 0, 0, 0);
+		}
 	}
-
-	/* Do effects */
-	effect_do(spell->effect, NULL, &ident, true, 0, 0, 0);
-
-	return;
 }
 
 /**
@@ -263,8 +255,6 @@ void ignore_spells(bitflag *f, int types)
 	for (info = mon_spell_types; info->index < RSF_MAX; info++)
 		if (rsf_has(f, info->index) && (info->type & types))
 			rsf_off(f, info->index);
-
-	return;
 }
 
 /**
@@ -298,19 +288,22 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 		if (info->type & (RST_BOLT | RST_BALL | RST_BREATH)) {
 			int element = effect->params[0];
 			int learn_chance = el[element].res_level * (smart ? 50 : 25);
-			if (randint0(100) < learn_chance)
+			if (randint0(100) < learn_chance) {
 				rsf_off(spells, info->index);
+			}
 		} else {
 			/* Now others with resisted effects */
 			while (effect) {
 				/* Timed effects */
-				if ((smart || !one_in_(3)) && (effect->index == EF_TIMED_INC) &&
-					of_has(flags, timed_effects[effect->params[0]].fail))
+				if ((smart || !one_in_(3)) &&
+						effect->index == EF_TIMED_INC &&
+						of_has(flags, timed_effects[effect->params[0]].fail))
 					break;
 
 				/* Mana drain */
-				if ((smart || one_in_(2)) && (effect->index == EF_DRAIN_MANA) &&
-					pf_has(pflags, PF_NO_MANA))
+				if ((smart || one_in_(2)) &&
+						effect->index == EF_DRAIN_MANA &&
+						pf_has(pflags, PF_NO_MANA))
 					break;
 
 				effect = effect->next;
@@ -403,10 +396,10 @@ static int mon_spell_dam(int index, int hp, const struct monster_race *race,
 int best_spell_power(const struct monster_race *race, int resist)
 {
 	const struct mon_spell_info *info;
-	int dam = 0, best_dam = 0; 
+	int dam = 0, best_dam = 0;
 
 	/* Extract the monster level */
-	int rlev = ((race->level >= 1) ? race->level : 1);
+	int rlev = MAX(race->level, 1);
 
 	for (info = mon_spell_types; info->index < RSF_MAX; info++) {
 		if (rsf_has(race->spell_flags, info->index)) {
@@ -416,8 +409,10 @@ int best_spell_power(const struct monster_race *race, int resist)
 			if (!spell) continue;
 
 			/* Get the maximum basic damage output of the spell (could be 0) */
-			dam = mon_spell_dam(info->index, mon_hp(race, MAXIMISE), race,
-				MAXIMISE);
+			dam = mon_spell_dam(info->index,
+					mon_hp(race, MAXIMISE),
+					race,
+					MAXIMISE);
 
 			/* For all attack forms the player can save against, damage
 			 * is halved */
@@ -456,22 +451,21 @@ int best_spell_power(const struct monster_race *race, int resist)
 
 const char *mon_spell_lore_description(int index)
 {
-	const struct monster_spell *spell = monster_spell_by_index(index);
-	if (!mon_spell_is_valid(index))
+	if (mon_spell_is_valid(index)) {
+		const struct monster_spell *spell = monster_spell_by_index(index);
+		return spell->lore_desc;
+	} else {
 		return "";
-
-	return spell->lore_desc;
+	}
 }
 
 int mon_spell_lore_damage(int index, const struct monster_race *race,
-						  bool know_hp)
+		bool know_hp)
 {
-	int hp;
-
-	if (!mon_spell_is_valid(index) || !mon_spell_has_damage(index))
+	if (mon_spell_is_valid(index) && mon_spell_has_damage(index)) {
+		int hp = know_hp ? race->avg_hp : 0;
+		return mon_spell_dam(index, hp, race, MAXIMISE);
+	} else {
 		return 0;
-
-	hp = (know_hp) ? race->avg_hp : 0;
-	return mon_spell_dam(index, hp, race, MAXIMISE);
+	}
 }
-
