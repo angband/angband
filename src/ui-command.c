@@ -272,165 +272,6 @@ void textui_quit(void)
  * Screenshot loading/saving code
  * ------------------------------------------------------------------------ */
 
-/**
- * Encode the screen colors
- */
-static const char hack[BASIC_COLORS + 1] = "dwsorgbuDWvyRGBUpvtmYiTVIMzZ";
-
-
-/**
- * Hack -- load a screen dump from a file
- *
- * ToDo: Add support for loading/saving screen-dumps with graphics
- * and pseudo-graphics.  Allow the player to specify the filename
- * of the dump.
- */
-void do_cmd_load_screen(void)
-{
-	int i, y, x;
-	int a = 0;
-	wchar_t c = L' ';
-	bool okay = true;
-	ang_file *fp;
-	char buf[1024];
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
-	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
-	if (!fp) return;
-
-	/* Save screen */
-	screen_save();
-
-	/* Clear the screen */
-	Term_clear();
-
-	/* Load the screen */
-	for (y = 0; okay && (y < 24); y++) {
-		/* Get a line of data */
-		if (!file_getl(fp, buf, sizeof(buf))) okay = false;
-
-		/* Show each row */
-		for (x = 0; x < 79; x++) {
-			text_mbstowcs(&c, &buf[x], 1);
-			/* Put the attr/char */
-			Term_draw(x, y, COLOUR_WHITE, c);
-		}
-	}
-
-	/* Get the blank line */
-	if (!file_getl(fp, buf, sizeof(buf))) okay = false;
-
-	/* Dump the screen */
-	for (y = 0; okay && (y < 24); y++) {
-		/* Get a line of data */
-		if (!file_getl(fp, buf, sizeof(buf))) okay = false;
-
-		/* Dump each row */
-		for (x = 0; x < 79; x++) {
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-
-			/* Look up the attr */
-			for (i = 0; i < BASIC_COLORS; i++)
-				/* Use attr matches */
-				if (hack[i] == buf[x]) a = i;
-
-			/* Put the attr/char */
-			Term_draw(x, y, a, c);
-		}
-	}
-
-	/* Close it */
-	file_close(fp);
-
-	/* Message */
-	msg("Screen dump loaded.");
-	event_signal(EVENT_MESSAGE_FLUSH);
-
-	/* Load screen */
-	screen_load();
-}
-
-
-/**
- * Save a simple text screendump.
- */
-static void do_cmd_save_screen_text(void)
-{
-	int y, x;
-	int a = 0;
-	wchar_t c = L' ';
-	ang_file *fff;
-	char buf[1024];
-	char *p;
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
-	fff = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	if (!fff) return;
-
-	/* Save screen */
-	screen_save();
-
-	/* Dump the screen */
-	for (y = 0; y < 24; y++) {
-		p = buf;
-		/* Dump each row */
-		for (x = 0; x < 79; x++) {
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-
-			/* Dump it */
-			p += wctomb(p, c);
-		}
-
-		/* Terminate */
-		*p = '\0';
-
-		/* End the row */
-		file_putf(fff, "%s\n", buf);
-	}
-
-	/* Skip a line */
-	file_putf(fff, "\n");
-
-	/* Dump the screen */
-	for (y = 0; y < 24; y++) {
-		/* Dump each row */
-		for (x = 0; x < 79; x++) {
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-
-			/* Dump it */
-			buf[x] = hack[a & 0x0F];
-		}
-
-		/* Terminate */
-		buf[x] = '\0';
-
-		/* End the row */
-		file_putf(fff, "%s\n", buf);
-	}
-
-	/* Skip a line */
-	file_putf(fff, "\n");
-
-
-	/* Close it */
-	file_close(fff);
-
-
-	/* Message */
-	msg("Screen dump saved.");
-	event_signal(EVENT_MESSAGE_FLUSH);
-
-
-	/* Load screen */
-	screen_load();
-}
-
-
 static void write_html_escape_char(ang_file *fp, wchar_t c)
 {
 	switch (c)
@@ -637,7 +478,7 @@ static void do_cmd_save_screen_html(int mode)
 	file_delete(file_name);
 	do_cmd_redraw();
 
-	msg("HTML screen dump saved.");
+	msg("%s screen dump saved.", mode ? "Forum text" : "HTML");
 	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
@@ -648,11 +489,10 @@ static void do_cmd_save_screen_html(int mode)
 void do_cmd_save_screen(void)
 {
 	char ch;
-	ch = get_char("Dump as (T)ext, (H)TML, or (F)orum text? ", "thf", 3, ' ');
+	ch = get_char("Dump as (H)TML or (F)orum text? ", "hf", 2, ' ');
 
 	switch (ch)
 	{
-		case 't': do_cmd_save_screen_text(); break;
 		case 'h': do_cmd_save_screen_html(0); break;
 		case 'f': do_cmd_save_screen_html(1); break;
 	}
