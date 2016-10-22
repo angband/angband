@@ -365,6 +365,9 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		/* Require identical ego-item types */
 		if (obj1->ego != obj2->ego) return false;
 
+		/* Require identical curses */
+		if (!curses_are_equal(obj1->curses, obj2->curses)) return false;
+
 		/* Hack - Never stack recharging wearables ... */
 		if ((obj1->timeout || obj2->timeout) &&
 			!tval_is_light(obj1)) return false;
