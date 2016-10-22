@@ -919,7 +919,8 @@ static void context_menu_store_item(struct store_context *ctx, const int oid, in
 	char *labels;
 	char header[120];
 
-	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_BASE);
+	object_desc(header, sizeof(header), obj,
+				ODESC_PREFIX | ODESC_FULL | ODESC_STORE);
 
 	labels = string_make(lower_case);
 	m->selections = labels;
