@@ -381,7 +381,7 @@ void ego_apply_magic(struct object *obj, int level)
 	/* Add slays, brands and curses */
 	copy_slay(&obj->slays, obj->ego->slays);
 	copy_brand(&obj->brands, obj->ego->brands);
-	copy_curse(&obj->curses, obj->ego->curses, true);
+	copy_curse(&obj->curses, obj->ego->curses, true, true);
 
 	/* Add resists */
 	for (i = 0; i < ELEM_MAX; i++) {
@@ -483,7 +483,7 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 	of_union(obj->flags, art->flags);
 	copy_slay(&obj->slays, art->slays);
 	copy_brand(&obj->brands, art->brands);
-	copy_curse(&obj->curses, art->curses, false);
+	copy_curse(&obj->curses, art->curses, false, true);
 	for (i = 0; i < ELEM_MAX; i++) {
 		/* Take the larger of artifact and base object resist levels */
 		obj->el_info[i].res_level =
@@ -794,7 +794,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 	/* Default slays, brands and curses */
 	copy_slay(&obj->slays, k->slays);
 	copy_brand(&obj->brands, k->brands);
-	copy_curse(&obj->curses, k->curses, true);
+	copy_curse(&obj->curses, k->curses, true, true);
 
 	/* Default resists */
 	for (i = 0; i < ELEM_MAX; i++) {
@@ -808,7 +808,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
  * Attempt to apply curses to an object, with a corresponding increase in
  * generation level of the object
  */
-void apply_curse(struct object *obj, int *lev)
+static void apply_curse(struct object *obj, int *lev)
 {
 	int pick = randint1(z_info->curse_max - 1);
 	int power = 10 * m_bonus(9, *lev);

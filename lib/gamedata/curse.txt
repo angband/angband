@@ -248,6 +248,7 @@ type:amulet
 type:ring
 effect:TIMED_INC:STONESKIN
 dice:20+1d20
+time:1d1000
 desc:periodically turns your skin to stone
 
 name:anti-teleportation

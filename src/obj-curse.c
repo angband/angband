@@ -47,7 +47,8 @@ int lookup_curse(const char *name)
  * \param source the curses being copied
  * \param randomise whether some values on the curse object need randomising
  */
-void copy_curse(struct curse **dest, struct curse *source, bool randomise)
+void copy_curse(struct curse **dest, struct curse *source, bool randomise,
+				bool new)
 {
 	struct curse *c = source;
 
@@ -99,6 +100,11 @@ void copy_curse(struct curse **dest, struct curse *source, bool randomise)
 						new_c->obj->modifiers[i] = SGN(m) * randint1(ABS(m));
 					}
 				}
+			}
+
+			/* Timeouts need to be set for new objects */
+			if (new) {
+				new_c->obj->timeout = randcalc(new_c->obj->time, 0, RANDOMISE);
 			}
 		}
 		new_c->next = *dest;
@@ -228,5 +234,6 @@ bool do_curse_effect(struct curse *curse)
 		msgt(MSG_GENERIC, curse->obj->effect_msg);
 	}
 	effect_do(effect, NULL, &ident, was_aware, dir, 0, 0);
+	curse->obj->timeout = randcalc(curse->obj->time, 0, RANDOMISE);
 	return !was_aware && ident;
 }

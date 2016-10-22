@@ -535,7 +535,7 @@ void object_copy(struct object *dest, const struct object *src)
 
 	copy_slay(&dest->slays, src->slays);
 	copy_brand(&dest->brands, src->brands);
-	copy_curse(&dest->curses, src->curses, false);
+	copy_curse(&dest->curses, src->curses, false, false);
 
 	/* Detach from any pile */
 	dest->prev = NULL;

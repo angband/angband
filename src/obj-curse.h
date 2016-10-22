@@ -33,7 +33,8 @@ struct curse {
 extern struct curse *curses;
 
 int lookup_curse(const char *name);
-void copy_curse(struct curse **dest, struct curse *src, bool randomise);
+void copy_curse(struct curse **dest, struct curse *src, bool randomise,
+				bool new);
 void free_curse(struct curse *source, bool complete);
 bool curses_are_equal(struct curse *curse1, struct curse *curse2);
 bool append_curse(struct curse **current, int pick, int power);
