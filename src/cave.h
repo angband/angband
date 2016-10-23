@@ -232,17 +232,25 @@ typedef bool (*square_predicate)(struct chunk *c, int y, int x);
 /* FEATURE PREDICATES */
 bool feat_is_magma(int feat);
 bool feat_is_quartz(int feat);
+bool feat_is_granite(int feat);
 bool feat_is_treasure(int feat);
 bool feat_is_wall(int feat);
+bool feat_is_floor(int feat);
+bool feat_is_trap_holding(int feat);
 bool feat_is_monster_walkable(int feat);
 bool feat_is_shop(int feat);
 bool feat_is_passable(int feat);
 bool feat_is_projectable(int feat);
+bool feat_is_torch(int feat);
 bool feat_is_bright(int feat);
+bool feat_is_no_flow(int feat);
+bool feat_is_smooth(int feat);
 
 /* SQUARE FEATURE PREDICATES */
 bool square_isfloor(struct chunk *c, int y, int x);
+bool square_istrappable(struct chunk *c, int y, int x);
 bool square_isrock(struct chunk *c, int y, int x);
+bool square_isgranite(struct chunk *c, int y, int x);
 bool square_isperm(struct chunk *c, int y, int x);
 bool square_ismagma(struct chunk *c, int y, int x);
 bool square_isquartz(struct chunk *c, int y, int x);
@@ -294,6 +302,7 @@ bool square_isprojectable(struct chunk *c, int y, int x);
 bool square_iswall(struct chunk *c, int y, int x);
 bool square_isstrongwall(struct chunk *c, int y, int x);
 bool square_isbright(struct chunk *c, int y, int x);
+bool square_isnoflow(struct chunk *c, int y, int x);
 bool square_iswarded(struct chunk *c, int y, int x);
 bool square_canward(struct chunk *c, int y, int x);
 bool square_seemslikewall(struct chunk *c, int y, int x);

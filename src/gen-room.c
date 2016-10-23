@@ -417,8 +417,6 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	/* Number (max 45) of arcs. */
 	int arc_num;
 
-	struct feature *f = &f_info[feat];
-
 	/* Make certain the room does not cross the dungeon edge. */
 	if ((!square_in_bounds(c, y1, x1)) || (!square_in_bounds(c, y2, x2)))
 		return (false);
@@ -467,7 +465,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 		 * If floor, extend a "corridor" between room centers, to ensure 
 		 * that the rooms are connected together.
 		 */
-		if (tf_has(f->flags, TF_FLOOR)) {
+		if (feat_is_floor(feat)) {
 			for (y = (y1 + tmp_ay) / 2; y <= (tmp_by + y2) / 2; y++) {
 				for (x = (x1 + tmp_ax) / 2; x <= (tmp_bx + x2) / 2; x++) {
 					square_set_feat(c, y, x, feat);
@@ -582,7 +580,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 		/* Keep variability under control. */
 		if ((!make_cloverleaf) && (i != 0) && (i != arc_num - 1)) {
 			/* Water edges must be quite smooth. */
-			if (tf_has(f->flags, TF_SMOOTH)) {
+			if (feat_is_smooth(feat)) {
 				if (arc[i][1] > arc[i - 1][1] + 2)
 					arc[i][1] = arc[i - 1][1] + 2;
 
@@ -650,11 +648,10 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 					if (max_dist >= dist) {
 						/* If new feature is not passable, or floor, always 
 						 * place it. */
-						if ((tf_has(f->flags, TF_FLOOR))
-							|| (!tf_has(f->flags, TF_PASSABLE))) {
+						if (feat_is_floor(feat) || !feat_is_passable(feat)) {
 							square_set_feat(c, y, x, feat);
 
-							if (tf_has(f->flags, TF_FLOOR))
+							if (feat_is_floor(feat))
 								sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
 							else
 								sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
@@ -669,16 +666,13 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 						 * place it only over floor. */
 						else {
 							/* Replace old feature entirely in some cases. */
-							if (tf_has(f->flags, TF_SMOOTH)) {
-								if (tf_has(f_info[c->squares[y][x].feat].flags, 
-										   TF_FLOOR))
+							if (feat_is_smooth(feat)) {
+								if (square_isfloor(c, y, x))
 									square_set_feat(c, y, x, feat);
-							}
-							/* Make denser in the middle. */
-							else {
-								if ((tf_has(f_info[c->squares[y][x].feat].flags,
-											TF_FLOOR))
-									&& (randint1(max_dist + 5) >= dist + 5))
+							} else {
+								/* Make denser in the middle. */
+								if (square_isfloor(c, y, x) &&
+									(randint1(max_dist + 5) >= dist + 5))
 									square_set_feat(c, y, x, feat);
 							}
 
@@ -699,11 +693,11 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	 * If we placed floors or dungeon granite, all dungeon granite next
 	 * to floors needs to become outer wall.
 	 */
-	if ((tf_has(f->flags, TF_FLOOR)) || (feat == FEAT_GRANITE)) {
+	if (feat_is_floor(feat) || feat == FEAT_GRANITE) {
 		for (y = y1 + 1; y < y2; y++) {
 			for (x = x1 + 1; x < x2; x++) {
 				/* Floor grids only */
-				if (tf_has(f_info[c->squares[y][x].feat].flags, TF_FLOOR)) {
+				if (square_isfloor(c, y, x)) {
 					/* Look in all directions. */
 					for (d = 0; d < 8; d++) {
 						/* Extract adjacent location */
@@ -2794,7 +2788,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0)
 						set_marked_granite(c, y, x, SQUARE_NONE);
 				}
 			}
-			if (tf_has(f_info[c->squares[y][x].feat].flags, TF_FLOOR)) {
+			if (square_isfloor(c, y, x)) {
 				for (d = 0; d < 9; d++) {
 					/* Extract adjacent location */
 					int yy = y + ddy_ddd[d];

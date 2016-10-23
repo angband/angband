@@ -273,7 +273,8 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 			row1 = tmp_row;
 			col1 = tmp_col;
 
-		} else if (tf_has(f_info[c->squares[tmp_row][tmp_col].feat].flags, TF_GRANITE)|| tf_has(f_info[c->squares[tmp_row][tmp_col].feat].flags, TF_PERMANENT)){
+		} else if (square_isgranite(c, tmp_row, tmp_col)||
+				   square_isperm(c, tmp_row, tmp_col)) {
 			/* Tunnel through all other walls */
 			/* Accept this location */
 			row1 = tmp_row;

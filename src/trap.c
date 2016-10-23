@@ -161,8 +161,8 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
     if (square_object(c, y, x))
 		return false;
 
-    /* Check the feature trap flag */
-    return (tf_has(square_feat(c, y, x)->flags, TF_TRAP));
+    /* Check it's a trappable square */
+    return (square_istrappable(c, y, x));
 }
 
 /**
@@ -171,13 +171,11 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
 static int pick_trap(int feat, int trap_level)
 {
     int trap_index = 0;
-    struct feature *f = &f_info[feat];
-	
     struct trap_kind *kind;
     bool trap_is_okay = false;
 	
     /* Paranoia */
-    if (!tf_has(f->flags, TF_TRAP))
+    if (!feat_is_trap_holding(feat))
 		return -1;
 	
     /* Try to create a trap appropriate to the level.  Make certain that at
@@ -200,7 +198,7 @@ static int pick_trap(int feat, int trap_level)
 		trap_is_okay = true;
 
 		/* Floor? */
-		if (tf_has(f->flags, TF_FLOOR) && !trf_has(kind->flags, TRF_FLOOR))
+		if (feat_is_floor(feat) && !trf_has(kind->flags, TRF_FLOOR))
 			trap_is_okay = false;
 
 		/* Check legality of trapdoors. */

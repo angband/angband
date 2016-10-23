@@ -485,11 +485,10 @@ void cave_illuminate(struct chunk *c, bool daytime)
 	int y, x, i;
 
 	/* Apply light or darkness */
-	for (y = 0; y < c->height; y++)
+	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			int d;
 			bool light = false;
-			struct feature *feat = &f_info[c->squares[y][x].feat];
 			
 			/* Skip grids with no surrounding floors or stairs */
 			for (d = 0; d < 9; d++) {
@@ -508,7 +507,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			if (!light) continue;
 
 			/* Only interesting grids at night */
-			if (daytime || !tf_has(feat->flags, TF_FLOOR)) {
+			if (daytime || !square_isfloor(c, y, x)) {
 				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 				square_memorize(c, y, x);
 			} else {
@@ -516,6 +515,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 				square_forget(c, y, x);
 			}
 		}
+	}
 			
 			
 	/* Light shop doorways */
@@ -692,7 +692,7 @@ void cave_update_flow(struct chunk *c)
 			if (c->squares[y][x].when == flow_n) continue;
 
 			/* Ignore "walls" and "rubble" */
-			if (tf_has(f_info[c->squares[y][x].feat].flags, TF_NO_FLOW))
+			if (square_isnoflow(c, y, x))
 				continue;
 
 			/* Save the time-stamp */

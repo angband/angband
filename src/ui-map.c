@@ -102,8 +102,6 @@ static void get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
  */
 static void grid_get_attr(struct grid_data *g, int *a)
 {
-    struct feature *feat = &f_info[g->f_idx];
-
 	/* Save the high-bit, since it's used for attr inversion in GCU */
 	int a0 = *a & 0x80;
 
@@ -115,9 +113,9 @@ static void grid_get_attr(struct grid_data *g, int *a)
 		/* Only apply lighting effects when the attr is white and it's a 
 		 * floor or wall */
 		if ((*a == COLOUR_WHITE) &&
-			(tf_has(feat->flags, TF_FLOOR) || feat_is_wall(g->f_idx))) {
+			(feat_is_floor(g->f_idx) || feat_is_wall(g->f_idx))) {
 			/* If it's a floor tile then we'll tint based on lighting. */
-			if (tf_has(feat->flags, TF_TORCH))
+			if (feat_is_torch(g->f_idx))
 				switch (g->lighting) {
 					case LIGHTING_TORCH: *a = COLOUR_YELLOW; break;
 					case LIGHTING_LIT: *a = COLOUR_L_DARK; break;
