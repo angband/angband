@@ -716,6 +716,10 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	int n = 0;
 	struct object *obj, *ignore = floor_get_oldest_ignored(y, x);
 
+	/* Fail if the square can't hold objects */
+	if (!square_isobjectholding(c, y, x))
+		return false;
+
 	/* Scan objects in that grid for combination */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
 		/* Check for combination */

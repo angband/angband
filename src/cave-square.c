@@ -93,6 +93,14 @@ bool feat_is_trap_holding(int feat)
 }
 
 /**
+ * True is the feature can hold an object.
+ */
+bool feat_is_object_holding(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_OBJECT);
+}
+
+/**
  * True if a monster can walk through the feature.
  */
 bool feat_is_monster_walkable(int feat)
@@ -176,7 +184,7 @@ bool feat_is_smooth(int feat)
  */
 bool square_isfloor(struct chunk *c, int y, int x)
 {
-	return tf_has(f_info[c->squares[y][x].feat].flags, TF_FLOOR);
+	return feat_is_floor(c->squares[y][x].feat);
 }
 
 /**
@@ -184,7 +192,15 @@ bool square_isfloor(struct chunk *c, int y, int x)
  */
 bool square_istrappable(struct chunk *c, int y, int x)
 {
-	return tf_has(f_info[c->squares[y][x].feat].flags, TF_TRAP);
+	return feat_is_trap_holding(c->squares[y][x].feat);
+}
+
+/**
+ * True if the square can hold an object.
+ */
+bool square_isobjectholding(struct chunk *c, int y, int x)
+{
+	return feat_is_object_holding(c->squares[y][x].feat);
 }
 
 /**

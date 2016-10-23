@@ -237,6 +237,7 @@ bool feat_is_treasure(int feat);
 bool feat_is_wall(int feat);
 bool feat_is_floor(int feat);
 bool feat_is_trap_holding(int feat);
+bool feat_is_object_holding(int feat);
 bool feat_is_monster_walkable(int feat);
 bool feat_is_shop(int feat);
 bool feat_is_passable(int feat);
@@ -249,6 +250,7 @@ bool feat_is_smooth(int feat);
 /* SQUARE FEATURE PREDICATES */
 bool square_isfloor(struct chunk *c, int y, int x);
 bool square_istrappable(struct chunk *c, int y, int x);
+bool square_isobjectholding(struct chunk *c, int y, int x);
 bool square_isrock(struct chunk *c, int y, int x);
 bool square_isgranite(struct chunk *c, int y, int x);
 bool square_isperm(struct chunk *c, int y, int x);
