@@ -763,11 +763,12 @@ static void remove_object_curse(struct object *obj, char *name,	bool message)
 {
 	struct curse *c = obj->curses;
 	if (streq(c->name, name)) {
+		char *removed = format("The %s curse is removed!", name);
 		obj->curses = c->next;
 		c->next = NULL;
 		free_curse(c, true);
 		if (message) {
-			msg("The %s curse is removed!", name);
+			msg(removed);
 		}
 		return;
 	}
@@ -775,11 +776,12 @@ static void remove_object_curse(struct object *obj, char *name,	bool message)
 		struct curse *next = c->next;
 		assert(next);
 		if (streq(next->name, name)) {
+			char *removed = format("The %s curse is removed!", name);
 			c->next = next->next;
 			next->next = NULL;
 			free_curse(next, true);
 			if (message) {
-				msg("The %s curse is removed!", name);
+				msg(removed);
 			}
 			return;
 		}
