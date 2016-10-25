@@ -124,14 +124,19 @@ section { clear: both; margin-bottom: 2em; }
 #downloads .other a { font-weight: bold; }
 
 #download {
-	display: block; margin: 0 auto; width: 10em; padding: 7px 0;
-	border: 1px solid black; border-radius: 5px;
-    font: 26px/20px Helvetica;
-	background-color: black; color: white;
-    box-shadow: 0 2px 4px 2px #aaa, inset 1px 1px 5px 1px #666;
+	display: block;
+	margin: 0 auto;
+	width: 10em;
+	padding: 10px 0;
+	font: 26px/20px 'Open Sans', sans-serif;
+	background-color: rgb(42, 69, 86);
+	color: white;
 }
 
-#download:active { box-shadow: 0 2px 4px 2px #aaa, inset -1px -1px 5px 1px #999; }
+#download:hover, #download:active {
+	background-color: rgb(54, 89, 112);
+}
+
 #download .sub { font-size: 16px; font-style: italic; }
 
 #resources { margin-top: 3em; margin-bottom: 5em; }
