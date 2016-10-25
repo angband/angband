@@ -68,7 +68,7 @@
 #define PR_STATUS		0x00002000L
 #define PR_STATE		0x00008000L	/* Display Extra (State) */
 #define PR_MAP			0x00010000L	/* Redraw whole map */
-#define PR_INVEN		0x00010000L /* Display inven/equip */
+#define PR_INVEN		0x00020000L /* Display inven/equip */
 #define PR_EQUIP		0x00040000L /* Display equip/inven */
 #define PR_MESSAGE		0x00080000L /* Display messages */
 #define PR_MONSTER		0x00100000L /* Display monster recall */
