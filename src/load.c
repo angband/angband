@@ -409,7 +409,7 @@ int rd_options(void)
 	/* Read options */
 	while (1) {
 		byte value;
-		char name[20];
+		char name[40];
 		rd_string(name, sizeof name);
 
 		if (!name[0])
