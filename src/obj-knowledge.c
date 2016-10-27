@@ -943,13 +943,6 @@ void object_touch(struct player *p, struct object *obj)
 {
 	player_know_object(p, obj);
 
-	/* Get the dice, and the pval for anything but chests */
-	obj->known->dd = obj->dd * p->obj_k->dd;
-	obj->known->ds = obj->ds * p->obj_k->ds;
-	obj->known->ac = obj->ac * p->obj_k->ac;
-	if (!tval_is_chest(obj))
-		obj->known->pval = obj->pval;
-
 	/* Automatically notice artifacts, mark as assessed */
 	obj->known->artifact = obj->artifact;
 	obj->known->notice |= OBJ_NOTICE_ASSESSED;
@@ -978,6 +971,13 @@ void player_know_object(struct player *p, struct object *obj)
 	if (!obj) return;
 	if (!obj->known) return;
 	if (obj->kind != obj->known->kind) return;
+
+	/* Get the dice, and the pval for anything but chests */
+	obj->known->dd = obj->dd * p->obj_k->dd;
+	obj->known->ds = obj->ds * p->obj_k->ds;
+	obj->known->ac = obj->ac * p->obj_k->ac;
+	if (!tval_is_chest(obj))
+		obj->known->pval = obj->pval;
 
 	/* Set combat details */
 	obj->known->to_a = p->obj_k->to_a * obj->to_a;
