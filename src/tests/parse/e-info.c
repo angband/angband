@@ -18,7 +18,7 @@ int teardown_tests(void *state) {
 }
 
 int test_order(void *state) {
-	enum parser_error r = parser_parse(state, "info:3:4");
+	enum parser_error r = parser_parse(state, "info:4");
 	eq(r, PARSE_ERROR_MISSING_FIELD);
 	ok;
 }
@@ -36,14 +36,12 @@ int test_name0(void *state) {
 }
 
 int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:2:4:6:8");
+	enum parser_error r = parser_parse(state, "info:6:8");
 	struct ego_item *e;
 
 	eq(r, PARSE_ERROR_NONE);
 	e = parser_priv(state);
 	require(e);
-	eq(e->level, 2);
-	eq(e->rarity, 4);
 	eq(e->cost, 6);
 	eq(e->rating, 8);
 	ok;
