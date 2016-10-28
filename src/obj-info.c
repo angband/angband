@@ -1392,16 +1392,9 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			int roll = 0;
 			random_value value = { 0, 0, 0, 0 };
 			char dice_string[20];
-			int boost, level = obj->kind->level;
 
-			/* Get the level */
-			if (obj->artifact)
-				level = obj->artifact->level;
-			else if (obj->ego)
-				level = obj->ego->level;
-
-			/* Get the boost */
-			boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);			
+			int level = obj->artifact ? obj->artifact->level : obj->kind->level;
+			int boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
 
 			if (effect->dice != NULL)
 				roll = dice_roll(effect->dice, &value);

@@ -306,8 +306,6 @@ struct ego_item {
 	struct slay *slays;
 	struct curse *curses;	/**< Linked list of curse structures */
 
-	int level;				/* Minimum level */
-	int rarity;			/* Object rarity */
 	int rating;			/* Level rating boost */
 	int alloc_prob; 		/** Chance of being generated (i.e. rarity) */
 	int alloc_min;			/** Minimum depth (can appear earlier) */
