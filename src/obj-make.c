@@ -48,16 +48,12 @@ struct money {
 static struct money *money_type;
 static int num_money_types;
 
-static void init_obj_make(void) {
-	int i, item, lev;
+/*
+ * Initialize object allocation info
+ */
+static void alloc_init_objects(void) {
+	int item, lev;
 	int k_max = z_info->k_max;
-	struct alloc_entry *table;
-	struct ego_item *ego;
-	s16b *num;
-	s16b *aux;
-	int *money_svals;
-
-	/*** Initialize object allocation info ***/
 
 	/* Allocate and wipe */
 	obj_alloc = mem_zalloc((z_info->max_obj_depth + 1) * k_max * sizeof(byte));
@@ -90,24 +86,30 @@ static void init_obj_make(void) {
 			obj_alloc_great[(lev * k_max) + item] = rarity;
 		}
 	}
+}
 
-	/*** Initialize ego-item allocation info ***/
+/*
+ * Initialize ego-item allocation info
+ *
+ * The ego allocation probabilities table (alloc_ego_table) is sorted in
+ * order of minimum depth.  Precisely why, I'm not sure!  But that is what
+ * the code below is doing with the arrays 'num' and 'level_total'. -AS
+ */
+static void alloc_init_egos(void) {
+	int *num = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(int));
+	int *level_total = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(int));
 
-	num = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(s16b));
-	aux = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(s16b));
+	int i;
 
-	/* Scan the ego items */
 	for (i = 1; i < z_info->e_max; i++) {
-		/* Get the i'th ego item */
-		ego = &e_info[i];
+		struct ego_item *ego = &e_info[i];
 
-		/* Legal items */
-		if (ego->rarity) {
+		if (ego->alloc_prob) {
 			/* Count the entries */
 			alloc_ego_size++;
 
 			/* Group by level */
-			num[ego->level]++;
+			num[ego->alloc_min]++;
 		}
 	}
 
@@ -118,45 +120,43 @@ static void init_obj_make(void) {
 	/* Allocate the alloc_ego_table */
 	alloc_ego_table = mem_zalloc(alloc_ego_size * sizeof(alloc_entry));
 
-	/* Get the table entry */
-	table = alloc_ego_table;
-
 	/* Scan the ego-items */
 	for (i = 1; i < z_info->e_max; i++) {
-		/* Get the i'th ego item */
-		ego = &e_info[i];
+		struct ego_item *ego = &e_info[i];
 
 		/* Count valid pairs */
-		if (ego->rarity) {
-			int p, x, y, z;
-
-			/* Extract the base level */
-			x = ego->level;
-
-			/* Extract the base probability */
-			p = (100 / ego->rarity);
+		if (ego->alloc_prob) {
+			int min_level = ego->alloc_min;
 
 			/* Skip entries preceding our locale */
-			y = (x > 0) ? num[x - 1] : 0;
+			int y = (min_level > 0) ? num[min_level - 1] : 0;
 
 			/* Skip previous entries at this locale */
-			z = y + aux[x];
+			int z = y + level_total[min_level];
 
 			/* Load the entry */
-			table[z].index = i;
-			table[z].level = x;
-			table[z].prob1 = p;
-			table[z].prob2 = p;
-			table[z].prob3 = p;
+			alloc_ego_table[z].index = i;
+			alloc_ego_table[z].level = min_level;			/* Unused */
+			alloc_ego_table[z].prob1 = ego->alloc_prob;
+			alloc_ego_table[z].prob2 = ego->alloc_prob;
+			alloc_ego_table[z].prob3 = ego->alloc_prob;
 
 			/* Another entry complete for this locale */
-			aux[x]++;
+			level_total[min_level]++;
 		}
 	}
-	mem_free(aux);
-	mem_free(num);
 
-	/*** Initialize money info ***/
+	mem_free(level_total);
+	mem_free(num);
+}
+
+/*
+ * Initialize money info
+ */
+static void init_money_svals(void)
+{
+	int *money_svals;
+	int i;
 
 	/* Count the money types and make a list */
 	num_money_types = tval_sval_count("gold");
@@ -170,7 +170,14 @@ static void init_obj_make(void) {
 		money_type[i].name = string_make(kind->name);
 		money_type[i].type = money_svals[i];
 	}
+
 	mem_free(money_svals);
+}
+
+static void init_obj_make(void) {
+	alloc_init_objects();
+	alloc_init_egos();
+	init_money_svals();
 }
 
 static void cleanup_obj_make(void) {
@@ -276,54 +283,46 @@ static int random_high_resist(struct object *obj, int *resist)
  */
 static struct ego_item *ego_find_random(struct object *obj, int level)
 {
-	int i, ood_chance;
+	int i;
 	long total = 0L;
 
 	alloc_entry *table = alloc_ego_table;
-	struct ego_item *ego;
-	struct poss_item *poss;
 
 	/* Go through all possible ego items and find ones which fit this item */
 	for (i = 0; i < alloc_ego_size; i++) {
+		struct ego_item *ego = &e_info[table[i].index];
+
 		/* Reset any previous probability of this type being picked */
 		table[i].prob3 = 0;
 
-		if (level < table[i].level)
-			continue;
+		if (level <= ego->alloc_max) {
+			int ood_chance = MAX(2, (ego->alloc_min - level) / 3);
+			if (level >= ego->alloc_min || one_in_(ood_chance)) {
+				struct poss_item *poss;
 
-		/* Access the ego item */
-		ego = &e_info[table[i].index];
-        
-        /* enforce maximum */
-        if (level > ego->alloc_max) continue;
-        
-        /* roll for Out of Depth (ood) */
-        if (level < ego->alloc_min){
-            ood_chance = MAX(2, (ego->alloc_min - level) / 3);
-            if (!one_in_(ood_chance)) continue;
-        }
+				for (poss = ego->poss_items; poss; poss = poss->next)
+					if (poss->kidx == obj->kind->kidx) {
+						table[i].prob3 = table[i].prob2;
+						break;
+					}
 
-		for (poss = ego->poss_items; poss; poss = poss->next)
-			if (poss->kidx == obj->kind->kidx) {
-				table[i].prob3 = table[i].prob2;
-				break;
+				/* Total */
+				total += table[i].prob3;
 			}
-
-		/* Total */
-		total += table[i].prob3;
+		}
 	}
 
 	if (total) {
 		long value = randint0(total);
 		for (i = 0; i < alloc_ego_size; i++) {
 			/* Found the entry */
-			if (value < table[i].prob3) break;
-
-			/* Decrement */
-			value = value - table[i].prob3;
+			if (value < table[i].prob3) {
+				return &e_info[table[i].index];
+			} else {
+				/* Decrement */
+				value = value - table[i].prob3;
+			}
 		}
-
-		return &e_info[table[i].index];
 	}
 
 	return NULL;
@@ -845,14 +844,14 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 	/* Chance of being `good` and `great` */
 	/* This has changed over the years:
 	 * 3.0.0:   good = MIN(75, lev + 10);      great = MIN(20, lev / 2); 
-	 * 3.3.0:	good = (lev + 2) * 3;          great = MIN(lev / 4 + lev, 50);
-     * 3.4.0:   good = (2 * lev) + 5
-     * 3.4 was in between 3.0 and 3.3, 3.5 attempts to keep the same
-     * area under the curve as 3.4, but make the generation chances
-     * flatter.  This depresses good items overall since more items
-     * are created deeper. 
-     * This change is meant to go in conjunction with the changes
-     * to ego item allocation levels. (-fizzix)
+	 * 3.3.0:   good = (lev + 2) * 3;          great = MIN(lev / 4 + lev, 50);
+	 * 3.4.0:   good = (2 * lev) + 5
+	 * 3.4 was in between 3.0 and 3.3, 3.5 attempts to keep the same
+	 * area under the curve as 3.4, but make the generation chances
+	 * flatter.  This depresses good items overall since more items
+	 * are created deeper. 
+	 * This change is meant to go in conjunction with the changes
+	 * to ego item allocation levels. (-fizzix)
 	 */
 	int good_chance = (33 + lev);
 	int great_chance = 30;
@@ -875,9 +874,9 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 
 		/* Get two rolls if forced great */
 		if (great) rolls = 2;
-        
-        /* Give some extra rolls for uniques and acq scrolls */
-        if (extra_roll) rolls += 2;
+		
+		/* Give some extra rolls for uniques and acq scrolls */
+		if (extra_roll) rolls += 2;
 
 		/* Roll for artifacts if allowed */
 		for (i = 0; i < rolls; i++)
