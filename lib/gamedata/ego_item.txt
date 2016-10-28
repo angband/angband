@@ -15,7 +15,7 @@
 # === Understanding ego_item.txt ===
 
 # name: serial number : ego type
-# info: depth : rarity : cost : rating
+# info: cost : rating
 # alloc: commonness : min " to " max
 # combat: to-hit : to-dam : to-ac
 # min-combat: min to-hit : min to-dam : min to-ac
@@ -38,9 +38,8 @@
 # 'name' indicates the beginning of an entry. The serial number must
 # increase for each new item.
 
-# 'info' is for item information. Depth is the depth the object is
-# normally found at, rarity determines how common the object is,
-# cost is the item's value and rating affects level feelings.
+# 'info' is for item information.  Cost is the item's value and rating
+# affects level feelings.
 
 # 'alloc' is for allocation details. commonness determines how common
 # the object is, min depth is the earliest it is normally found, max
@@ -106,7 +105,7 @@
 ### Body Armor ###
 
 name:4:of Resist Acid
-info:0:1:1000:16
+info:1000:16
 alloc:100:1 to 30
 min-combat:255:0:0
 type:soft armor
@@ -120,7 +119,7 @@ flags:IGNORE_ACID
 values:RES_ACID[1]
 
 name:5:of Resist Lightning
-info:0:1:400:10
+info:400:10
 alloc:100:1 to 30
 min-combat:255:0:0
 type:soft armor
@@ -134,7 +133,7 @@ flags:IGNORE_ELEC
 values:RES_ELEC[1]
 
 name:6:of Resist Fire
-info:0:1:800:14
+info:800:14
 alloc:100:1 to 30
 min-combat:255:0:0
 type:soft armor
@@ -148,7 +147,7 @@ flags:IGNORE_FIRE
 values:RES_FIRE[1]
 
 name:7:of Resist Cold
-info:0:1:600:12
+info:600:12
 alloc:100:1 to 30
 min-combat:255:0:0
 type:soft armor
@@ -162,7 +161,7 @@ flags:IGNORE_COLD
 values:RES_COLD[1]
 
 name:8:of Resistance
-info:0:2:12500:20
+info:12500:20
 alloc:50:10 to 100
 combat:0:0:d10
 min-combat:255:0:0
@@ -172,7 +171,7 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 
 name:9:of Elvenkind
-info:0:4:15000:25
+info:15000:25
 alloc:10:30 to 127
 combat:0:0:d10
 min-combat:255:0:0
@@ -188,7 +187,7 @@ min-values:STEALTH[0]
 ### Robes only ###
 
 name:11:of Permanence
-info:0:4:30000:30
+info:30000:30
 alloc:10:30 to 127
 combat:0:0:d20
 item:soft armor:Robe
@@ -201,7 +200,7 @@ values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 ### Heavy metal armor only ###
 
 name:12:(Dwarven)
-info:0:4:5000:18
+info:5000:18
 alloc:20:20 to 127
 combat:0:0:d15
 min-combat:255:0:0
@@ -218,7 +217,7 @@ min-values:STR[1] | CON[1] | INFRA[1]
 ### Shields ###
 
 name:15:(Dwarven)
-info:0:4:5000:20
+info:5000:20
 alloc:20:40 to 127
 combat:1+M3:1+M3:d5
 item:shield:Small Metal Shield
@@ -228,35 +227,35 @@ values:STR[d2] | CON[d2]
 min-values:STR[1] | CON[1]
 
 name:16:of Resist Acid
-info:0:1:1000:16
+info:1000:16
 alloc:100:1 to 30
 type:shield
 flags:IGNORE_ACID
 values:RES_ACID[1]
 
 name:17:of Resist Lightning
-info:0:1:400:10
+info:400:10
 alloc:100:1 to 30
 type:shield
 flags:IGNORE_ELEC
 values:RES_ELEC[1]
 
 name:18:of Resist Fire
-info:0:1:800:14
+info:800:14
 alloc:100:1 to 30
 type:shield
 flags:IGNORE_FIRE
 values:RES_FIRE[1]
 
 name:19:of Resist Cold
-info:0:1:600:12
+info:600:12
 alloc:100:1 to 30
 type:shield
 flags:IGNORE_COLD
 values:RES_COLD[1]
 
 name:20:of Resistance
-info:0:2:12500:20
+info:12500:20
 alloc:50:10 to 100
 combat:0:0:d10
 type:shield
@@ -264,7 +263,7 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 
 name:21:of Elvenkind
-info:0:4:18000:25
+info:18000:25
 alloc:10:30 to 127
 combat:0:0:d10
 type:shield
@@ -275,7 +274,7 @@ flags:IGNORE_ACID | IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC
 values:RES_FIRE[1] | RES_COLD[1] | RES_ACID[1] | RES_ELEC[1]
 
 name:22:of Preservation
-info:60:4:24000:25
+info:24000:25
 alloc:5:40 to 127
 combat:0:0:d20
 type:shield
@@ -289,7 +288,7 @@ values:RES_DISEN[1]
 ### Crowns and Helms ###
 
 name:24:of Intelligence
-info:0:2:500:13
+info:500:13
 alloc:100:1 to 40
 type:helm
 flags:SUST_INT
@@ -297,7 +296,7 @@ values:INT[d2]
 min-values:INT[0]
 
 name:25:of Wisdom
-info:0:2:500:13
+info:500:13
 alloc:100:1 to 40
 type:helm
 flags:SUST_WIS
@@ -308,7 +307,7 @@ min-values:WIS[0]
 
 
 name:27:of the Magi
-info:0:4:7500:15
+info:7500:15
 alloc:20:20 to 127
 type:crown
 flags:SUST_INT | RAND_POWER
@@ -317,7 +316,7 @@ values:INT[d3] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 min-values:INT[0]
 
 name:28:of Might
-info:0:4:7500:19
+info:7500:19
 alloc:10:40 to 127
 type:crown
 flags:SUST_STR | SUST_DEX | SUST_CON | FREE_ACT
@@ -327,7 +326,7 @@ min-values:STR[1] | DEX[1] | CON[1]
 
 
 name:29:of Lordliness
-info:0:2:7500:17
+info:7500:17
 alloc:20:40 to 127
 type:crown
 flags:SUST_WIS | PROT_FEAR | RAND_POWER
@@ -336,33 +335,33 @@ values:WIS[d3]
 min-values:WIS[1]
 
 name:30:of Seeing
-info:0:2:2000:8
+info:2000:8
 alloc:50:10 to 60
 type:helm
 flags:PROT_BLIND | SEE_INVIS
 
 name:31:of Infravision
-info:0:2:500:11
+info:500:11
 alloc:100:1 to 20
 type:helm
 values:INFRA[d5]
 min-values:INFRA[0]
 
 name:32:of Light
-info:0:2:1000:6
+info:1000:6
 alloc:50:5 to 30
 type:crown
 values:LIGHT[1] | RES_LIGHT[1]
 min-values:LIGHT[1]
 
 name:33:of Telepathy
-info:0:6:50000:20
+info:50000:20
 alloc:10:40 to 127
 type:helm
 flags:TELEPATHY
 
 name:34:of Regeneration
-info:0:4:1500:10
+info:1500:10
 alloc:20:1 to 60
 type:helm
 flags:REGEN
@@ -370,14 +369,14 @@ flags:REGEN
 # 35 (unused)
 
 name:36:of Serenity
-info:0:6:4000:20
+info:4000:20
 alloc:15:20 to 127
 type:crown
 flags:PROT_CONF | PROT_FEAR | PROT_STUN
 values:RES_SOUND[1]
 
 name:37:of Night and Day
-info:35:6:4000:18
+info:4000:18
 alloc:15:10 to 80
 type:crown
 flags:SEE_INVIS | PROT_BLIND | IGNORE_ACID
@@ -391,7 +390,7 @@ min-values:LIGHT[1]
 ### Cloaks ###
 
 name:40:of Protection
-info:0:2:1500:10
+info:1500:10
 alloc:30:1 to 40
 combat:0:0:d10
 type:cloak
@@ -399,14 +398,14 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_SHARD[1]
 
 name:41:of Stealth
-info:0:1:500:10
+info:500:10
 alloc:60:1 to 70
 type:cloak
 values:STEALTH[d3]
 min-values:STEALTH[0]
 
 name:42:of Aman
-info:0:6:4000:20
+info:4000:20
 alloc:10:20 to 127
 combat:0:0:d20
 type:cloak
@@ -416,7 +415,7 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 flags:RAND_HI_RES
 
 name:43:of the Magi
-info:30:3:2000:15
+info:2000:15
 alloc:10:30 to 127
 combat:0:0:d4
 type:cloak
@@ -435,27 +434,27 @@ min-values:INT[1] | STEALTH[1]
 ### Gloves ###
 
 name:48:of Free Action
-info:0:4:1000:11
+info:1000:11
 alloc:100:1 to 60
 type:gloves
 flags:FREE_ACT
 
 name:49:of Slaying
-info:0:4:1500:17
+info:1500:17
 alloc:20:10 to 75
 combat:d5:d5:0
 type:gloves
 desc:They boost your to-hit and to-dam values.
 
 name:50:of Agility
-info:0:6:1000:14
+info:1000:14
 alloc:10:20 to 50
 type:gloves
 values:DEX[d5]
 min-values:DEX[0]
 
 name:51:of Power
-info:0:6:2500:22
+info:2500:22
 alloc:5:30 to 127
 combat:d5:d5:0
 type:gloves
@@ -463,7 +462,7 @@ values:STR[d5]
 min-values:STR[0]
 
 name:52:of Thievery
-info:40:12:5000:22
+info:5000:22
 alloc:5:40 to 127
 combat:d8:d3:0
 item:gloves:Set of Leather Gloves
@@ -473,7 +472,7 @@ values:DEX[1+M4]
 min-values:DEX[1]
 
 name:53:of Combat
-info:50:12:7000:22
+info:7000:22
 alloc:5:50 to 127
 combat:d5:d8:0
 item:gloves:Set of Gauntlets
@@ -490,13 +489,13 @@ min-values:STR[1] | CON[1]
 ### Boots ###
 
 name:56:of Slow Descent
-info:0:5:250:7
+info:250:7
 alloc:100:1 to 15
 type:boots
 flags:FEATHER
 
 name:57:of Stealth
-info:0:6:500:16
+info:500:16
 alloc:20:15 to 100
 item:boots:Pair of Leather Sandals
 item:boots:Pair of Leather Boots
@@ -505,28 +504,28 @@ values:STEALTH[d3]
 min-values:STEALTH[0]
 
 name:58:of Free Action
-info:0:8:1000:15
+info:1000:15
 alloc:20:1 to 40
 type:boots
 flags:FREE_ACT
 
 
 name:59:of Speed
-info:0:24:100000:25
+info:100000:25
 alloc:3:20 to 127
 type:boots
 values:SPEED[2+M8]
 min-values:SPEED[0]
 
 name:60:of Stability
-info:0:10:5000:20
+info:5000:20
 alloc:10:15 to 100
 type:boots
 flags:FEATHER
 values:RES_NEXUS[1]
 
 name:61:of Elvenkind
-info:60:30:200000:30
+info:200000:30
 alloc:3:60 to 127
 item:boots:Pair of Leather Boots
 item:boots:Pair of Iron Shod Boots
@@ -541,7 +540,7 @@ min-values:STEALTH[1] | SPEED[1]
 ### Weapons ###
 
 name:64:(Holy Avenger)
-info:0:12:20000:30
+info:20000:30
 alloc:10:15 to 127
 combat:d6:d6:d4
 type:sword
@@ -553,7 +552,7 @@ flags:SEE_INVIS | BLESSED | PROT_FEAR | RAND_SUSTAIN
 values:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[3]
 
 name:65:(Defender)
-info:0:12:15000:25
+info:15000:25
 alloc:10:10 to 80
 combat:d4:d4:d8
 type:sword
@@ -565,7 +564,7 @@ values:STEALTH[d4] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 min-values:STEALTH[0]
 
 name:66:(Blessed)
-info:0:10:5000:20
+info:5000:20
 alloc:20:1 to 60
 type:sword
 type:polearm
@@ -575,7 +574,7 @@ values:WIS[d3]
 min-values:WIS[0]
 
 name:67:of Gondolin
-info:30:20:25000:30
+info:25000:30
 alloc:10:20 to 127
 combat:d7:d7:0
 type:sword
@@ -588,7 +587,7 @@ values:RES_DARK[1]
 min-values:LIGHT[1]
 
 name:68:of Westernesse
-info:0:10:20000:20
+info:20000:20
 alloc:10:10 to 70
 combat:d5:d5:0
 type:sword
@@ -599,7 +598,7 @@ min-values:STR[1] | DEX[1] | CON[1]
 flags:FREE_ACT | SEE_INVIS
 
 name:69:of Extra Attacks
-info:0:10:10000:20
+info:10000:20
 alloc:10:10 to 127
 type:sword
 type:polearm
@@ -609,7 +608,7 @@ min-values:BLOWS[0]
 
 #Fury is not currently creatable
 name:70:of Fury
-info:40:20:20000:30
+info:20000:30
 alloc:2:50 to 127
 #T:21:12:99
 #T:22:10:99
@@ -628,7 +627,7 @@ min-values:STR[2] | BLOWS[1]
 # The "Branded" weapons (5)
 
 name:72:of Acid
-info:0:20:5000:20
+info:5000:20
 alloc:30:1 to 60
 type:sword
 type:polearm
@@ -637,7 +636,7 @@ flags:IGNORE_ACID
 values:BRAND_ACID[3] | RES_ACID[1]
 
 name:73:of Lightning
-info:0:15:4500:20
+info:4500:20
 alloc:30:1 to 60
 type:sword
 type:polearm
@@ -646,7 +645,7 @@ flags:IGNORE_ELEC
 values:BRAND_ELEC[3] | RES_ELEC[1]
 
 name:74:of Flame
-info:0:8:3500:15
+info:3500:15
 alloc:40:1 to 50
 type:sword
 type:polearm
@@ -655,7 +654,7 @@ flags:IGNORE_FIRE
 values:BRAND_FIRE[3] | RES_FIRE[1]
 
 name:75:of Frost
-info:0:8:3000:15
+info:3000:15
 alloc:40:1 to 50
 type:sword
 type:polearm
@@ -664,7 +663,7 @@ flags:IGNORE_COLD
 values:BRAND_COLD[3] | RES_COLD[1]
 
 name:76:of Venom
-info:0:8:4000:15
+info:4000:15
 alloc:60:1 to 40
 type:sword
 type:polearm
@@ -680,7 +679,7 @@ values:BRAND_POIS[3]
 # The "Slay" weapons (8)
 
 name:80:of Slay Animal
-info:0:6:3000:18
+info:3000:18
 alloc:100:1 to 30
 type:sword
 type:polearm
@@ -688,7 +687,7 @@ type:hafted
 values:SLAY_ANIMAL[2]
 
 name:81:of Slay Evil
-info:0:6:3000:18
+info:3000:18
 alloc:60:1 to 40
 type:sword
 type:polearm
@@ -696,7 +695,7 @@ type:hafted
 values:SLAY_EVIL[2]
 
 name:82:of Slay Undead
-info:0:6:3500:18
+info:3500:18
 alloc:100:1 to 30
 type:sword
 type:polearm
@@ -714,7 +713,7 @@ item:hafted:Great Hammer
 values:SLAY_UNDEAD[3]
 
 name:83:of Slay Demon
-info:0:6:3500:14
+info:3500:14
 alloc:100:1 to 30
 type:sword
 type:polearm
@@ -722,7 +721,7 @@ type:hafted
 values:SLAY_DEMON[3]
 
 name:84:of Slay Orc
-info:0:6:2500:10
+info:2500:10
 alloc:150:1 to 20
 type:sword
 type:polearm
@@ -730,7 +729,7 @@ type:hafted
 values:SLAY_ORC[3]
 
 name:85:of Slay Troll
-info:0:6:2500:10
+info:2500:10
 alloc:150:1 to 25
 type:sword
 type:polearm
@@ -738,7 +737,7 @@ type:hafted
 values:SLAY_TROLL[3]
 
 name:86:of Slay Giant
-info:0:6:2500:14
+info:2500:14
 alloc:60:1 to 30
 type:sword
 type:polearm
@@ -746,7 +745,7 @@ type:hafted
 values:SLAY_GIANT[3]
 
 name:87:of Slay Dragon
-info:0:6:3500:18
+info:3500:18
 alloc:100:1 to 30
 type:sword
 type:polearm
@@ -756,7 +755,7 @@ values:SLAY_DRAGON[3]
 # The *Slay* weapons (8)
 
 name:88:of *Slay Animal*
-info:0:20:6000:20
+info:6000:20
 alloc:40:1 to 45
 type:sword
 type:polearm
@@ -766,7 +765,7 @@ values:INT[d2] | SLAY_ANIMAL[2]
 min-values:INT[0]
 
 name:89:of *Slay Evil*
-info:0:20:5000:20
+info:5000:20
 alloc:15:10 to 127
 type:sword
 type:polearm
@@ -776,7 +775,7 @@ values:WIS[d2] | SLAY_EVIL[2]
 min-values:WIS[0]
 
 name:90:of *Slay Undead*
-info:0:20:8000:24
+info:8000:24
 alloc:30:10 to 60
 type:sword
 type:polearm
@@ -796,7 +795,7 @@ values:WIS[d2] | SLAY_UNDEAD[5]
 min-values:WIS[0]
 
 name:91:of *Slay Demon*
-info:0:20:8000:16
+info:8000:16
 alloc:30:10 to 60
 type:sword
 type:polearm
@@ -806,7 +805,7 @@ values:INT[d2] | SLAY_DEMON[5]
 min-values:INT[0]
 
 name:92:of *Slay Orc*
-info:0:20:4000:14
+info:4000:14
 alloc:60:1 to 40
 type:sword
 type:polearm
@@ -816,7 +815,7 @@ values:DEX[d2] | SLAY_ORC[3]
 min-values:DEX[0]
 
 name:93:of *Slay Troll*
-info:0:20:4000:14
+info:4000:14
 alloc:60:1 to 45
 type:sword
 type:polearm
@@ -826,7 +825,7 @@ values:STR[d2] | SLAY_TROLL[3]
 min-values:STR[0]
 
 name:94:of *Slay Giant*
-info:0:20:4000:16
+info:4000:16
 alloc:20:1 to 45
 type:sword
 type:polearm
@@ -836,7 +835,7 @@ values:STR[d2] | SLAY_GIANT[3]
 min-values:STR[0]
 
 name:95:of *Slay Dragon*
-info:0:20:8000:24
+info:8000:24
 alloc:30:10 to 60
 type:sword
 type:polearm
@@ -859,7 +858,7 @@ min-values:CON[0]
 #L:STEALTH[0]
 
 name:97:of Brightness
-info:0:2:2000:10
+info:2000:10
 alloc:50:1 to 30
 item:light:Wooden Torch
 item:light:Lantern
@@ -867,7 +866,7 @@ values:LIGHT[1]
 min-values:LIGHT[1]
 
 name:98:(Everburning)
-info:0:3:2500:10
+info:2500:10
 alloc:100:1 to 30
 item:light:Lantern
 flags:NO_FUEL
@@ -875,7 +874,7 @@ flags-off:TAKES_FUEL
 
 #imported from S
 name:99:of True Sight
-info:20:8:6000:10
+info:6000:10
 alloc:10:20 to 127
 item:light:Lantern
 flags:PROT_BLIND | SEE_INVIS
@@ -884,14 +883,14 @@ flags:PROT_BLIND | SEE_INVIS
 ### Digging Tools
 
 name:100:of Digging
-info:0:1:500:4
+info:500:4
 alloc:100:1 to 40
 type:digger
 values:TUNNEL[d4] | BRAND_ACID[3]
 min-values:TUNNEL[1]
 
 name:101:of Earthquakes
-info:20:4:3000:8
+info:3000:8
 alloc:10:10 to 127
 combat:d10:d10:0
 type:digger
@@ -902,7 +901,7 @@ flags:IMPACT
 ### Cursed Weapons
 
 name:102:of Morgul
-info:0:5:1:0
+info:1:0
 alloc:10:10 to 80
 type:sword
 type:polearm
@@ -916,7 +915,7 @@ values:BRAND_POIS[3] | SLAY_UNDEAD[3]
 ### Missile Launchers ###
 
 name:104:of Accuracy
-info:0:1:1000:10
+info:1000:10
 alloc:100:5 to 70
 combat:d15:d5:0
 min-combat:15:255:0
@@ -925,7 +924,7 @@ desc:It has no special abilities, but its to-hit value may be unusually
 desc: high.
 
 name:105:of Power
-info:0:1:1000:10
+info:1000:10
 alloc:100:5 to 70
 combat:d5:d15:0
 min-combat:255:15:0
@@ -934,7 +933,7 @@ desc:It has no special abilities, but its to-dam value may be unusually
 desc: high.
 
 name:106:of Lothlórien
-info:50:4:20000:30
+info:20000:30
 alloc:5:20 to 127
 combat:d10:d10:0
 item:bow:Short Bow
@@ -944,7 +943,7 @@ min-values:DEX[2] | MIGHT[1]
 flags:FREE_ACT | IGNORE_ACID | IGNORE_FIRE | RAND_POWER
 
 name:107:of the Haradrim
-info:50:4:20000:30
+info:20000:30
 alloc:5:20 to 127
 combat:d5:d5:0
 item:bow:Light Crossbow
@@ -953,7 +952,7 @@ min-values:MIGHT[1] | SHOTS[1]
 flags:IGNORE_ACID | IGNORE_FIRE | 
 
 name:108:of Extra Might
-info:0:2:10000:20
+info:10000:20
 alloc:20:15 to 100
 combat:d5:d10:0
 type:bow
@@ -961,7 +960,7 @@ values:MIGHT[1]
 min-values:MIGHT[0]
 
 name:109:of Extra Shots
-info:0:2:10000:20
+info:10000:20
 alloc:10:15 to 100
 combat:d10:d5:0
 type:bow
@@ -969,7 +968,7 @@ values:SHOTS[1]
 min-values:SHOTS[0]
 
 name:110:of Buckland
-info:40:4:20000:25
+info:20000:25
 alloc:5:20 to 127
 combat:d8:d8:0
 item:bow:Sling
@@ -978,7 +977,7 @@ min-values:DEX[2] | SHOTS[1] | MIGHT[1]
 flags:IGNORE_ACID | IGNORE_FIRE | 
 
 name:111:of the Nazgûl
-info:0:2:0:0
+info:0:0
 alloc:10:10 to 80
 combat:d10:d10:0
 type:bow
@@ -988,7 +987,7 @@ flags:DRAIN_EXP | SEE_INVIS
 ### Ammo ###
 
 name:112:of Slay Animal
-info:0:6:20:10
+info:20:10
 alloc:80:1 to 40
 type:shot
 type:arrow
@@ -996,7 +995,7 @@ type:bolt
 values:SLAY_ANIMAL[2]
 
 name:113:of Slay Evil
-info:0:6:20:10
+info:20:10
 alloc:10:10 to 100
 type:shot
 type:arrow
@@ -1004,7 +1003,7 @@ type:bolt
 values:SLAY_EVIL[2]
 
 name:114:of Slay Undead
-info:0:8:25:10
+info:25:10
 alloc:15:5 to 100
 type:shot
 type:arrow
@@ -1012,7 +1011,7 @@ type:bolt
 values:SLAY_UNDEAD[3]
 
 name:115:of Slay Demon
-info:0:8:25:10
+info:25:10
 alloc:15:5 to 100
 type:shot
 type:arrow
@@ -1020,7 +1019,7 @@ type:bolt
 values:SLAY_DEMON[3]
 
 name:116:of Acid
-info:0:10:50:10
+info:50:10
 alloc:5:10 to 100
 type:shot
 type:arrow
@@ -1029,7 +1028,7 @@ flags:IGNORE_ACID
 values:BRAND_ACID[3]
 
 name:117:of Lightning
-info:0:10:45:10
+info:45:10
 alloc:5:10 to 100
 type:shot
 type:arrow
@@ -1038,7 +1037,7 @@ flags:IGNORE_ELEC
 values:BRAND_ELEC[3]
 
 name:118:of Slay Giant
-info:0:8:25:10
+info:25:10
 alloc:5:5 to 60
 type:shot
 type:arrow
@@ -1046,7 +1045,7 @@ type:bolt
 values:SLAY_GIANT[3]
 
 name:119:of Slay Dragon
-info:0:8:40:10
+info:40:10
 alloc:10:10 to 100
 type:shot
 type:arrow
@@ -1054,7 +1053,7 @@ type:bolt
 values:SLAY_DRAGON[3]
 
 name:120:of Holy Might
-info:40:15:60:20
+info:60:20
 alloc:2:30 to 127
 combat:d10:d10:0
 item:shot:Mithril Shot
@@ -1066,7 +1065,7 @@ flags:IGNORE_FIRE | IGNORE_ACID
 values:SLAY_EVIL[2] | SLAY_DEMON[3] | SLAY_UNDEAD[3]
 
 name:121:of Venom
-info:0:6:40:10
+info:40:10
 alloc:20:10 to 60
 type:shot
 type:arrow
@@ -1074,7 +1073,7 @@ type:bolt
 values:BRAND_POIS[3]
 
 name:122:of Flame
-info:0:6:35:10
+info:35:10
 alloc:10:10 to 100
 type:shot
 type:arrow
@@ -1083,7 +1082,7 @@ flags:IGNORE_FIRE
 values:BRAND_FIRE[3]
 
 name:123:of Frost
-info:0:6:30:10
+info:30:10
 alloc:10:10 to 100
 type:shot
 type:arrow
@@ -1092,7 +1091,7 @@ flags:IGNORE_COLD
 values:BRAND_COLD[3]
 
 name:124:of Wounding
-info:0:4:20:5
+info:20:5
 alloc:15:15 to 127
 combat:3+d5:3+d5:0
 type:shot
@@ -1101,7 +1100,7 @@ type:bolt
 desc:Ammunition of Wounding often has unusually high to-hit and to-dam values.
 
 name:125:of Backbiting
-info:0:0:0:0
+info:0:0
 alloc:0:10 to 80
 combat:-26+d25:-26+d25:0
 type:shot
@@ -1115,14 +1114,14 @@ type:bolt
 
 # Destroyed Weapon
 name:126:(Shattered)
-info:0:0:0:0
+info:0:0
 alloc:0:1 to 80
 combat:d5:d5:0
 
 # Destroyed Body Armor
 
 name:127:(Blasted)
-info:0:0:0:0
+info:0:0
 alloc:0:1 to 80
 combat:0:0:d10
 
@@ -1130,7 +1129,7 @@ combat:0:0:d10
 
 # This is the 'default' DSM ego - roughly half of them
 name:128:of Craftsmanship
-info:0:2:500:4
+info:500:4
 alloc:60:20 to 95
 combat:0:0:1d6M4
 min-combat:0:0:4
@@ -1138,7 +1137,7 @@ type:dragon armor
 desc:This armour is finely wrought, tough yet unencumbering.
 
 name:129:of Stealth
-info:0:10:500:16
+info:500:16
 alloc:10:20 to 100
 min-combat:255:0:0
 type:dragon armor
@@ -1146,7 +1145,7 @@ values:STEALTH[d2]
 min-values:STEALTH[0]
 
 name:130:of Resistance
-info:0:10:12500:10
+info:12500:10
 alloc:5:40 to 100
 combat:0:0:d10
 min-combat:255:0:0
@@ -1158,7 +1157,7 @@ item:dragon armor:Balance Dragon Scale Mail
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 
 name:131:of Elvenkind
-info:0:33:15000:25
+info:15000:25
 alloc:3:50 to 127
 combat:0:0:d10
 item:dragon armor:Pseudo-Dragon Scale Mail
@@ -1171,7 +1170,7 @@ min-values:STEALTH[0]
 flags:RAND_HI_RES
 
 name:132:(Dwarven)
-info:0:20:5000:18
+info:5000:18
 alloc:5:40 to 127
 combat:0:0:d15
 min-combat:255:0:5
@@ -1181,7 +1180,7 @@ values:STR[d2] | CON[d2] | INFRA[d2M3]
 min-values:STR[1] | CON[1] | INFRA[1]
 
 name:133:of Speed
-info:0:100:100000:25
+info:100000:25
 alloc:2:40 to 127
 min-combat:255:0:0
 type:dragon armor

@@ -3124,18 +3124,14 @@ static enum parser_error parse_ego_name(struct parser *p) {
 }
 
 static enum parser_error parse_ego_info(struct parser *p) {
-	int level = parser_getint(p, "level");
-	int rarity = parser_getint(p, "rarity");
-	int cost = parser_getint(p, "cost");
-	int rating = parser_getint(p, "rating");
 	struct ego_item *e = parser_priv(p);
-
-	if (!e)
+	if (!e) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	e->level = level;
-	e->rarity = rarity;
-	e->cost = cost;
-	e->rating = rating;
+	}
+
+	e->cost = parser_getint(p, "cost");
+	e->rating = parser_getint(p, "rating");
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -3468,7 +3464,7 @@ struct parser *init_parse_ego(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name int index str name", parse_ego_name);
-	parser_reg(p, "info int level int rarity int cost int rating", parse_ego_info);
+	parser_reg(p, "info int cost int rating", parse_ego_info);
 	parser_reg(p, "alloc int common str minmax", parse_ego_alloc);
 	parser_reg(p, "type sym tval", parse_ego_type);
 	parser_reg(p, "item sym tval sym sval", parse_ego_item);

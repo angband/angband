@@ -484,8 +484,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		/* Get the level */
 		if (obj->artifact)
 			level = obj->artifact->level;
-		else if (obj->ego)
-			level = obj->ego->level;
 		else
 			level = obj->kind->level;
 
