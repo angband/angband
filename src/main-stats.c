@@ -499,8 +499,8 @@ static int stats_dump_egos(void)
 		err = stats_db_bind_rv(info_stmt, 5, ego->to_a); 
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 8, 5, 
-			ego->cost, ego->level, ego->rarity,
-			ego->rating, ego->min_to_h, 
+			ego->cost, ego->alloc_min, ego->alloc_max,
+			ego->alloc_prob, ego->rating, ego->min_to_h, 
 			ego->min_to_d, ego->min_to_a);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
