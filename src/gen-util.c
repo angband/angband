@@ -384,7 +384,7 @@ static int next_to_walls(struct chunk *c, int y, int x)
  */
 static void place_rubble(struct chunk *c, int y, int x)
 {
-    square_set_feat(c, y, x, FEAT_RUBBLE);
+    square_set_feat(c, y, x, one_in_(2) ? FEAT_RUBBLE : FEAT_PASS_RUBBLE);
 }
 
 

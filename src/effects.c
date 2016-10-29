@@ -2905,7 +2905,10 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 			if (square_in_bounds_fully(cave, yy, xx) &&
 					square_isempty(cave, yy, xx) &&
 					one_in_(3)) {
-				square_set_feat(cave, yy, xx, FEAT_RUBBLE);
+				if (one_in_(2))
+					square_set_feat(cave, yy, xx, FEAT_PASS_RUBBLE);
+				else
+					square_set_feat(cave, yy, xx, FEAT_RUBBLE);
 				rubble_grids--;
 			}
 		}

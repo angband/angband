@@ -2034,7 +2034,11 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				break;
 			}
 				/* Rubble */
-			case ':': square_set_feat(c, y, x, FEAT_RUBBLE); break;
+			case ':': {
+				square_set_feat(c, y, x, one_in_(2) ? FEAT_PASS_RUBBLE :
+								FEAT_RUBBLE);
+				break;
+			}
 				/* Secret door */
 			case '+': place_secret_door(c, y, x); break;
 				/* Trap */
@@ -2393,7 +2397,7 @@ bool build_moria(struct chunk *c, int y0, int x0)
 									   x1 + randint0(width / 4),
 									   y2 - randint0(height / 4),
 									   x2 - randint0(width / 4), false,
-									   FEAT_RUBBLE, false);
+									   FEAT_PASS_RUBBLE, false);
 
 	/* Success */
 	return (true);
@@ -2922,7 +2926,7 @@ bool build_huge(struct chunk *c, int y0, int x0)
 
 			/* Make the rubble field. */
 			generate_starburst_room(c, y1_tmp, x1_tmp, y2_tmp, x2_tmp,
-									false, FEAT_RUBBLE, false);
+									false, FEAT_PASS_RUBBLE, false);
 		}
 	}
 

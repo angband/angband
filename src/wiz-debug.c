@@ -1683,6 +1683,7 @@ static void do_cmd_wiz_features(void)
 	int featg[] = {FEAT_GRANITE};
 	int featp[] = {FEAT_PERM};
 	int featr[] = {FEAT_RUBBLE};
+	int feata[] = {FEAT_PASS_RUBBLE};
 	int length = 0;
 
 
@@ -1720,6 +1721,8 @@ static void do_cmd_wiz_features(void)
 		case 'p': feat = featp; length = 1; break;
 		/* Rubble */
 		case 'r': feat = featr; length = 1; break;
+		/* Passable rubble */
+		case 'a': feat = feata; length = 1; break;
 	}
 
 	/* Scan map */
