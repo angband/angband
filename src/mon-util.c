@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "game-world.h"
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -186,6 +187,10 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* Current location */
 	int fy, fx;
 
+	/* If still generating the level, measure distances from the middle */
+	int py = character_dungeon ? player->py : c->height / 2;
+	int px = character_dungeon ? player->px : c->width / 2;
+
 	/* Seen at all */
 	bool flag = false;
 
@@ -204,9 +209,6 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 	/* Compute distance */
 	if (full) {
-		int py = player->py;
-		int px = player->px;
-
 		/* Distance components */
 		int dy = (py > fy) ? (py - fy) : (fy - py);
 		int dx = (px > fx) ? (px - fx) : (fx - px);
@@ -232,7 +234,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 	/* Check if telepathy works */
 	if (square_isno_esp(c, fy, fx) ||
-		square_isno_esp(c, player->py, player->px))
+		square_isno_esp(c, py, px))
 		telepathy_ok = false;
 
 	/* Nearby */

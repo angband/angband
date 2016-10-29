@@ -287,6 +287,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 					obj->iy = dest_y;
 					obj->ix = dest_x;
 				}
+				source->squares[y][x].obj = NULL;
 			}
 
 			/* Monsters */
@@ -324,7 +325,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			/* Traps */
 			if (source->squares[y][x].trap) {
 				struct trap *trap = source->squares[y][x].trap;
-				dest->squares[y][x].trap = trap;
+				dest->squares[dest_y][dest_x].trap = trap;
 
 				/* Traverse the trap list */
 				while (trap) {
@@ -333,6 +334,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 					trap->fx = dest_x;
 					trap = trap->next;
 				}
+				source->squares[y][x].trap = NULL;
 			}
 
 			/* Player */

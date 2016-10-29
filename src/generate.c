@@ -773,7 +773,7 @@ const struct cave_profile *choose_profile(int depth)
 
 	/* A bit of a hack, but worth it for now NRM */
 	if (player->noscore & NOSCORE_JUMPING) {
-		char name[30];
+		char name[30] = "";
 
 		/* Cancel the query */
 		player->noscore &= ~(NOSCORE_JUMPING);
@@ -817,29 +817,9 @@ const struct cave_profile *choose_profile(int depth)
  */
 static void cave_clear(struct chunk *c, struct player *p)
 {
-	int x, y;
-
 	/* Clear the monsters */
 	wipe_mon_list(c, p);
 
-	/* Deal with artifacts */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			struct object *obj = square_object(c, y, x);
-			while (obj) {
-				if (obj->artifact) {
-					bool found = obj->known && obj->known->artifact;
-					if (OPT(p, birth_lose_arts) || found) {
-						history_lose_artifact(p, obj->artifact);
-					} else {
-						obj->artifact->created = false;
-					}
-				}
-
-				obj = obj->next;
-			}
-		}
-	}
 	/* Free the chunk */
 	cave_free(c);
 }
@@ -937,6 +917,28 @@ void cave_generate(struct chunk **c, struct player *p)
 
 	/* Forget old level */
 	if (p->cave && (*c == cave)) {
+		int x, y;
+
+		/* Deal with artifacts */
+		for (y = 0; y < (*c)->height; y++) {
+			for (x = 0; x < (*c)->width; x++) {
+				struct object *obj = square_object(*c, y, x);
+				while (obj) {
+					if (obj->artifact) {
+						bool found = obj->known && obj->known->artifact;
+						if (OPT(p, birth_lose_arts) || found) {
+							history_lose_artifact(p, obj->artifact);
+						} else {
+							obj->artifact->created = false;
+						}
+					}
+
+					obj = obj->next;
+				}
+			}
+		}
+
+		/* Free the known cave */
 		cave_free(p->cave);
 		p->cave = NULL;
 	}
