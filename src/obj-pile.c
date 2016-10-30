@@ -271,7 +271,15 @@ void object_delete(struct object **obj_address)
 		&& (obj == cave->objects[obj->oidx]))
 		cave->objects[obj->oidx] = NULL;
 
-	object_free(obj);
+	if (obj->slays) {
+		free_slay(obj->slays);
+	}
+
+	if (obj->brands) {
+		free_brand(obj->brands);
+	}
+
+	mem_free(obj);
 	*obj_address = NULL;
 }
 
