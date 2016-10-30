@@ -388,7 +388,7 @@ static void init_player(void) {
 	player->upkeep->inven = mem_zalloc((z_info->pack_size + 1) * sizeof(struct object *));
 	player->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(struct object *));
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
-	player->obj_k = mem_zalloc(sizeof(struct object));
+	player->obj_k = object_new();
 
 	options_init_defaults(&player->opts);
 }
@@ -403,7 +403,7 @@ static void cleanup_player(void) {
 	history_clear(player);
 
 	/* Free the things that are always initialised */
-	mem_free(player->obj_k);
+	object_free(player->obj_k);
 	mem_free(player->timed);
 	mem_free(player->upkeep->quiver);
 	mem_free(player->upkeep->inven);

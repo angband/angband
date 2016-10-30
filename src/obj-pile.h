@@ -49,6 +49,7 @@ typedef enum
 } object_floor_t;
 
 struct object *object_new(void);
+void object_free(struct object *obj);
 void object_delete(struct object **obj_address);
 void object_pile_free(struct object *obj);
 

@@ -251,23 +251,25 @@ static enum parser_error parse_buy(struct parser *p) {
 
 static enum parser_error parse_buy_flag(struct parser *p) {
 	struct store *s = parser_priv(p);
-	struct object_buy *buy;
-	char *t;
 	int flag;
 
 	if (!s)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	buy = mem_zalloc(sizeof(*buy));
-	t = string_make(parser_getsym(p, "flag"));
-	flag = lookup_flag(obj_flags, t);
-	if (flag == FLAG_END)
+	flag = lookup_flag(obj_flags, parser_getsym(p, "flag"));
+
+	if (flag == FLAG_END) {
 		return PARSE_ERROR_INVALID_FLAG;
-	buy->flag = flag;
-	buy->tval = tval_find_idx(parser_getstr(p, "base"));
-	buy->next = s->buy;
-	s->buy = buy;
-	return PARSE_ERROR_NONE;
+	} else {
+		struct object_buy *buy = mem_zalloc(sizeof(*buy));
+
+		buy->flag = flag;
+		buy->tval = tval_find_idx(parser_getstr(p, "base"));
+		buy->next = s->buy;
+		s->buy = buy;
+
+		return PARSE_ERROR_NONE;
+	}
 }
 
 struct parser *init_parse_stores(void) {

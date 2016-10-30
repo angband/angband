@@ -1809,12 +1809,13 @@ static void cleanup_object(void)
 {
 	int idx;
 	for (idx = 0; idx < z_info->k_max; idx++) {
-		string_free(k_info[idx].name);
-		mem_free(k_info[idx].text);
-		mem_free(k_info[idx].effect_msg);
-		free_brand(k_info[idx].brands);
-		free_slay(k_info[idx].slays);
-		free_effect(k_info[idx].effect);
+		struct object_kind *kind = &k_info[idx];
+		string_free(kind->name);
+		string_free(kind->text);
+		string_free(kind->effect_msg);
+		free_brand(kind->brands);
+		free_slay(kind->slays);
+		free_effect(kind->effect);
 	}
 	mem_free(k_info);
 }
@@ -2378,11 +2379,13 @@ static void cleanup_artifact(void)
 {
 	int idx;
 	for (idx = 0; idx < z_info->a_max; idx++) {
-		string_free(a_info[idx].name);
-		mem_free(a_info[idx].alt_msg);
-		mem_free(a_info[idx].text);
-		free_brand(a_info[idx].brands);
-		free_slay(a_info[idx].slays);
+		struct artifact *art = &a_info[idx];
+		string_free(art->name);
+		string_free(art->alt_msg);
+		string_free(art->text);
+		free_brand(art->brands);
+		free_slay(art->slays);
+		free_curse(art->curses, true);
 	}
 	mem_free(a_info);
 }
@@ -3520,18 +3523,21 @@ static errr finish_parse_ego(struct parser *p) {
 static void cleanup_ego(void)
 {
 	int idx;
-	struct poss_item *poss, *pn;
 	for (idx = 0; idx < z_info->e_max; idx++) {
-		string_free(e_info[idx].name);
-		mem_free(e_info[idx].text);
-		free_brand(e_info[idx].brands);
-		free_slay(e_info[idx].slays);
-		free_effect(e_info[idx].effect);
-		poss = e_info[idx].poss_items;
+		struct ego_item *ego = &e_info[idx];
+		struct poss_item *poss;
+
+		string_free(ego->name);
+		string_free(ego->text);
+		free_brand(ego->brands);
+		free_slay(ego->slays);
+		free_effect(ego->effect);
+
+		poss = ego->poss_items;
 		while (poss) {
-			pn = poss->next;
+			struct poss_item *next = poss->next;
 			mem_free(poss);
-			poss = pn;
+			poss = next;
 		}
 	}
 	mem_free(e_info);
