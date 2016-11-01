@@ -314,6 +314,14 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 		/* Observe */
 		context->obvious = true;
 	}
+
+	/* Can create lava if extremely powerful. */
+	if ((context->dam > randint1(1800) + 600) &&
+		square_isfloor(cave, context->y, context->x)) {
+		/* Forget the floor, make lava. */
+		square_unmark(cave, context->y, context->x);
+		square_set_feat(cave, context->y, context->x, FEAT_LAVA);
+	}
 }
 
 static void project_feature_handler_COLD(project_feature_handler_context_t *context)
@@ -323,6 +331,19 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
+	}
+
+	/* Sufficiently intense cold can solidify lava. */
+	if ((context->dam > randint1(900) + 300) &&
+		square_isfiery(cave, context->y, context->x)) {
+		square_unmark(cave, context->y, context->x);
+		if (one_in_(2)) {
+			square_set_feat(cave, context->y, context->x, FEAT_FLOOR);
+		} else if (one_in_(2)) {
+			square_set_feat(cave, context->y, context->x, FEAT_RUBBLE);
+		} else {
+			square_set_feat(cave, context->y, context->x, FEAT_PASS_RUBBLE);
+		}
 	}
 }
 
@@ -426,6 +447,19 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 		/* Observe */
 		context->obvious = true;
 	}
+
+	/* Sufficiently intense cold can solidify lava. */
+	if ((context->dam > randint1(900) + 300) &&
+		square_isfiery(cave, context->y, context->x)) {
+		square_unmark(cave, context->y, context->x);
+		if (one_in_(2)) {
+			square_set_feat(cave, context->y, context->x, FEAT_FLOOR);
+		} else if (one_in_(2)) {
+			square_set_feat(cave, context->y, context->x, FEAT_RUBBLE);
+		} else {
+			square_set_feat(cave, context->y, context->x, FEAT_PASS_RUBBLE);
+		}
+	}
 }
 
 static void project_feature_handler_GRAVITY(project_feature_handler_context_t *context)
@@ -475,6 +509,14 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
+	}
+
+	/* Can create lava if extremely powerful. */
+	if ((context->dam > randint1(1800) + 600) &&
+		square_isfloor(cave, context->y, context->x)) {
+		/* Forget the floor, make lava. */
+		square_unmark(cave, context->y, context->x);
+		square_set_feat(cave, context->y, context->x, FEAT_LAVA);
 	}
 }
 
