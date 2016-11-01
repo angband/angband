@@ -38,6 +38,7 @@
 #include "player-path.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "project.h"
 #include "store.h"
 #include "trap.h"
 
@@ -959,6 +960,45 @@ void move_player(int dir, bool disarm)
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
 		}
+	} else if (square_isfiery(cave, y, x)) {
+		/* Fire-based terrain can burn the player */
+		bool step = true;
+		int base_dam = 100 + randint1(100);
+		int res = player->state.el_info[ELEM_FIRE].res_level;
+		int dam_taken = adjust_dam(player, ELEM_FIRE, base_dam, RANDOMISE, res);
+
+		/* Feather fall makes one lightfooted. */
+		if (player_of_has(player, OF_FEATHER)) {
+			dam_taken /= 2;
+		}
+
+		/* Check if running, or going to cost more than a third of hp */
+		if (player->upkeep->running) {
+			if (!get_check("Lava blocks your path.  Step into it? ")) {
+				player->upkeep->running = 0;
+				step = false;
+			}
+		} else {
+			if (dam_taken > player->chp / 3) {
+				step = get_check("The lava will scald you!  Really step in? ");
+			}
+		}
+
+		/* Enter if OK or confirmed. */
+		if (step) {
+			/* Move player */
+			monster_swap(player->py, player->px, y, x);
+
+			/* Will take serious fire damage. */
+			if (dam_taken) {
+				take_hit(player, dam_taken, "burning to a cinder in lava");
+				inven_damage(player, GF_FIRE, dam_taken);
+			}
+
+			/* Update view and search */
+			update_view(cave, player);
+			search(player);
+		}
 	} else {
 		/* Move player */
 		monster_swap(player->py, player->px, y, x);
@@ -1033,9 +1073,6 @@ static bool do_cmd_walk_test(int y, int x)
 		else if (square_iscloseddoor(cave, y, x))
 			/* Door */
 			return true;
-		else if (square_isbright(cave, y, x))
-			/* Lava */
-			msgt(MSG_HITWALL, "The heat of the lava turns you away!");
 		else
 			/* Wall */
 			msgt(MSG_HITWALL, "There is a wall in the way!");

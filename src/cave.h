@@ -244,6 +244,7 @@ bool feat_is_passable(int feat);
 bool feat_is_projectable(int feat);
 bool feat_is_torch(int feat);
 bool feat_is_bright(int feat);
+bool feat_is_fiery(int feat);
 bool feat_is_no_flow(int feat);
 bool feat_is_smooth(int feat);
 
@@ -304,6 +305,7 @@ bool square_isprojectable(struct chunk *c, int y, int x);
 bool square_iswall(struct chunk *c, int y, int x);
 bool square_isstrongwall(struct chunk *c, int y, int x);
 bool square_isbright(struct chunk *c, int y, int x);
+bool square_isfiery(struct chunk *c, int y, int x);
 bool square_isnoflow(struct chunk *c, int y, int x);
 bool square_iswarded(struct chunk *c, int y, int x);
 bool square_canward(struct chunk *c, int y, int x);

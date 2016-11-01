@@ -241,8 +241,8 @@ desc:surrounded by these kinds of walls and some special rooms are made of them.
 name:25:lava flow
 graphics:#:r
 priority:10
-flags:PROJECT | WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW | BRIGHT
-desc:An impassable pool of glowing lava.
+flags:PROJECT | FIERY | PASSABLE | NO_SCENT | NO_FLOW | BRIGHT
+desc:A fiery pool of glowing lava.  Step in it at your peril!
 
 name:26:pile of passable rubble
 graphics:::u

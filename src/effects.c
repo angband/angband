@@ -2623,6 +2623,19 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 		}
 	}
 
+	/* Some special messages or effects for player. */
+	if (cave->squares[y][x].mon < 0) {
+		if (square_isfiery(cave, y, x)) {
+			int base_dam = 100 + randint1(100);
+			int res = player->state.el_info[ELEM_FIRE].res_level;
+			int dam = adjust_dam(player, ELEM_FIRE, base_dam, RANDOMISE, res);
+
+			msg("You are thrown into molten lava!");
+			take_hit(player, dam, "being hurled into lava");
+			inven_damage(player, GF_FIRE, dam);
+		}
+	}
+
 	/* Clear the projection mark. */
 	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
 

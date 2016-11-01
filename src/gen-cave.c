@@ -1484,7 +1484,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		for (x = 1; x < c->width - 1; x++) {
 			if (square_isfloor(c, y, x))
 				sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
-			else if (!square_isperm(c, y, x))
+			else if (!square_isperm(c, y, x) && !square_isfiery(c, y, x))
 				square_set_feat(c, y, x, FEAT_PERM);
 		}
 

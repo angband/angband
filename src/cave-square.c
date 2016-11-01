@@ -149,6 +149,14 @@ bool feat_is_bright(int feat)
 }
 
 /**
+ * True if the feature is internally lit.
+ */
+bool feat_is_fiery(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_FIERY);
+}
+
+/**
  * True if the feature doesn't carry monster flow information.
  */
 bool feat_is_no_flow(int feat)
@@ -632,6 +640,14 @@ bool square_isstrongwall(struct chunk *c, int y, int x) {
 bool square_isbright(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return feat_is_bright(c->squares[y][x].feat);
+}
+
+/**
+ * True if the cave square is fire-based.
+ */
+bool square_isfiery(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return feat_is_fiery(c->squares[y][x].feat);
 }
 
 /**

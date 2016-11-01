@@ -57,6 +57,9 @@ static bool is_valid_pf(int y, int x)
 	/* Unvisited means allowed */
 	if (!square_isknown(cave, y, x)) return (true);
 
+	/* No lava */
+	if (!square_isfiery(cave, y, x)) return (true);
+
 	/* Require open space */
 	return (square_ispassable(cave, y, x));
 }
