@@ -64,14 +64,14 @@ cutoff:-1
 ## Cavern
 name:cavern
 params:1:0:200:0
-cutoff:10
+cutoff:5
 
 ## Classic
 name:classic
 params:11:50:200:2
-tunnel:10:30:15:25:70
+tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:100
+cutoff:50
 
 # Greater vaults only have rarity 0 but they have other checks
 room:Greater vault:44:66:35:0:0:100
@@ -95,9 +95,9 @@ room:simple room:11:33:1:0:0:100
 ## Modified
 name:modified
 params:1:50:250:2
-tunnel:10:30:15:25:70
+tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:-1
+cutoff:90
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:44:66:35:0:0:100
@@ -124,9 +124,9 @@ room:simple room:11:33:1:0:0:100
 ## Moria
 name:moria
 params:1:50:250:2
-tunnel:10:30:15:25:70
+tunnel:10:30:15:25:30
 streamer:5:2:3:90:2:40
-cutoff:-1
+cutoff:95
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:44:66:35:0:0:100
@@ -145,9 +145,9 @@ room:moria room:11:33:1:0:0:100
 ## Lair
 name:lair
 params:1:50:500:2
-tunnel:10:30:15:25:90
+tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:-1
+cutoff:98
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:44:66:35:0:0:100
@@ -174,9 +174,9 @@ room:simple room:11:33:1:0:0:100
 ## Gauntlet
 name:gauntlet
 params:1:0:200:0
-cutoff:-1
+cutoff:99
 
 ## Hard Centre
 name:hard centre
 params:1:0:200:0
-cutoff:-1
+cutoff:100
