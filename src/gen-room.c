@@ -2061,8 +2061,9 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					square_set_feat(c, y, x, FEAT_MORE);
 				break;
 			}
+				/* Lava */
+			case '`': square_set_feat(c, y, x, FEAT_LAVA); break;
 				/* Included to allow simple inclusion of FA vaults */
-			case '`': /*square_set_feat(c, y, x, FEAT_LAVA)*/; break;
 			case '/': /*square_set_feat(c, y, x, FEAT_WATER)*/; break;
 			case ';': /*square_set_feat(c, y, x, FEAT_TREE)*/; break;
 			}
