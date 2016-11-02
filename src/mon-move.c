@@ -308,6 +308,10 @@ static bool get_moves_flow(struct chunk *c, struct monster *mon)
 		/* Ignore locations which are farther away */
 		if (c->squares[y][x].cost > best_cost) continue;
 
+		/* Ignore lava if they can't handle the heat */
+		if (square_isfiery(c, y, x) && !rf_has(mon->race->flags, RF_IM_FIRE))
+			continue;
+
 		/* Save the cost and time */
 		best_when = c->squares[y][x].when;
 		best_cost = c->squares[y][x].cost;
@@ -594,6 +598,11 @@ static bool find_safety(struct chunk *c, struct monster *mon)
 
 			/* Ignore too-distant grids */
 			if (c->squares[y][x].cost > c->squares[fy][fx].cost + 2 * d)
+				continue;
+
+			/* Ignore lava if they can't handle the heat */
+			if (square_isfiery(c, y, x) &&
+				!rf_has(mon->race->flags, RF_IM_FIRE))
 				continue;
 
 			/* Check for absence of shot (more or less) */
@@ -1116,6 +1125,10 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 		const char *m_name, int nx, int ny, bool *did_something)
 {
 	struct monster_lore *lore = get_lore(mon->race);
+
+	/* Only fiery creatures can handle lava */
+	if (square_isfiery(c, ny, nx) && !rf_has(mon->race->flags, RF_IM_FIRE))
+		return false;
 
 	/* Floor is open? */
 	if (square_ispassable(c, ny, nx))

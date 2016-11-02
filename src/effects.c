@@ -26,6 +26,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-msg.h"
 #include "mon-spell.h"
 #include "mon-summon.h"
 #include "mon-util.h"
@@ -2623,9 +2624,9 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 		}
 	}
 
-	/* Some special messages or effects for player. */
-	if (cave->squares[y][x].mon < 0) {
-		if (square_isfiery(cave, y, x)) {
+	/* Some special messages or effects for player or monster. */
+	if (square_isfiery(cave, y, x)) {
+		if (cave->squares[y][x].mon < 0) {
 			int base_dam = 100 + randint1(100);
 			int res = player->state.el_info[ELEM_FIRE].res_level;
 			int dam = adjust_dam(player, ELEM_FIRE, base_dam, RANDOMISE, res);
@@ -2633,6 +2634,17 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 			msg("You are thrown into molten lava!");
 			take_hit(player, dam, "being hurled into lava");
 			inven_damage(player, GF_FIRE, dam);
+		} else if (cave->squares[y][x].mon > 0) {
+			struct monster *mon = square_monster(cave, y, x);
+			bool fear = false;
+
+			if (!rf_has(mon->race->flags, RF_IM_FIRE)) {
+				mon_take_hit(mon, 100 + randint1(100), &fear, " is burnt up.");
+			}
+
+			if (fear && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+				add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
+			}
 		}
 	}
 
