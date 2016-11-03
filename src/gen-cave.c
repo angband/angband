@@ -2282,20 +2282,32 @@ struct chunk *hard_centre_gen(struct player *p)
  */
 struct chunk *lair_gen(struct player *p) {
     int i, k;
+    int size_percent, y_size, x_size;
 	struct chunk *c;
 	struct chunk *normal;
 	struct chunk *lair;
+
+    /* Scale the level */
+    i = randint1(10) + p->depth / 24;
+    if (is_quest(p->depth)) size_percent = 100;
+    else if (i < 2) size_percent = 75;
+    else if (i < 3) size_percent = 80;
+    else if (i < 4) size_percent = 85;
+    else if (i < 5) size_percent = 90;
+    else if (i < 6) size_percent = 95;
+    else size_percent = 100;
+	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
+	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
 
     /* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
 	dun->block_wid = dun->profile->block_size;
 
-    normal = modified_chunk(p->depth, z_info->dungeon_hgt,
-							z_info->dungeon_wid / 2);
+    normal = modified_chunk(p->depth, y_size, x_size / 2);
 	if (!normal) return NULL;
 	normal->depth = p->depth;
 
-	lair = cavern_chunk(p->depth, z_info->dungeon_hgt, z_info->dungeon_wid / 2);
+	lair = cavern_chunk(p->depth, y_size, x_size / 2);
 	if (!lair) return NULL;
 	lair->depth = p->depth;
 
@@ -2321,7 +2333,7 @@ struct chunk *lair_gen(struct player *p) {
 		build_streamer(normal, FEAT_QUARTZ, dun->profile->str.qc);
 
     /* Pick a larger number of monsters for the lair */
-    i = (z_info->level_monster_min + randint1(6) + k);
+    i = (z_info->level_monster_min + randint1(20) + k);
 
 	/* Find appropriate monsters */
 	while (true) {
@@ -2344,17 +2356,17 @@ struct chunk *lair_gen(struct player *p) {
 	(void) mon_restrict(NULL, lair->depth, false);
 
 	/* Make the level */
-	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
+	c = cave_new(y_size, x_size);
 	c->depth = p->depth;
 	if (one_in_(2)) {
 		chunk_copy(c, lair, 0, 0, 0, false);
-		chunk_copy(c, normal, 0, z_info->dungeon_wid / 2, 0, false);
+		chunk_copy(c, normal, 0, x_size / 2, 0, false);
 
 		/* The player needs to move */
-		p->px += z_info->dungeon_wid / 2;
+		p->px += x_size / 2;
 	} else {
 		chunk_copy(c, normal, 0, 0, 0, false);
-		chunk_copy(c, lair, 0, z_info->dungeon_wid / 2, 0, false);
+		chunk_copy(c, lair, 0, x_size / 2, 0, false);
 	}
 
 	/* Free the chunks */
@@ -2412,6 +2424,8 @@ struct chunk *gauntlet_gen(struct player *p) {
 	struct chunk *departure;
 	int gauntlet_hgt = 2 * randint1(5) + 3;
 	int gauntlet_wid = 2 * randint1(10) + 19;
+	int y_size = z_info->dungeon_hgt * gauntlet_hgt / (15 + randint1(5));
+	int x_size = z_info->dungeon_wid * gauntlet_wid / ((30 + randint1(10)) * 2);
 	int line1, line2;
 
 	gauntlet = labyrinth_chunk(p->depth, gauntlet_hgt, gauntlet_wid, false,
@@ -2419,16 +2433,14 @@ struct chunk *gauntlet_gen(struct player *p) {
 	if (!gauntlet) return NULL;
 	gauntlet->depth = p->depth;
 
-	arrival = cavern_chunk(p->depth, z_info->dungeon_hgt,
-						   z_info->dungeon_wid * 2 / 5);
+	arrival = cavern_chunk(p->depth, y_size, x_size);
 	if (!arrival) {
 		cave_free(gauntlet);
 		return NULL;
 	}
 	arrival->depth = p->depth;
 
-	departure = cavern_chunk(p->depth, z_info->dungeon_hgt,
-							 z_info->dungeon_wid * 2 / 5);
+	departure = cavern_chunk(p->depth, y_size, x_size);
 	if (!departure) {
 		cave_free(gauntlet);
 		cave_free(arrival);
@@ -2504,7 +2516,7 @@ struct chunk *gauntlet_gen(struct player *p) {
 	(void) mon_restrict(NULL, gauntlet->depth, false);
 
 	/* Make the level */
-	c = cave_new(z_info->dungeon_hgt, z_info->dungeon_wid);
+	c = cave_new(y_size, arrival->width + gauntlet->width + departure->width);
 	c->depth = p->depth;
 
 	/* Fill cave area with basic granite */
@@ -2517,8 +2529,7 @@ struct chunk *gauntlet_gen(struct player *p) {
 
 	/* Copy in the pieces */
 	chunk_copy(c, arrival, 0, 0, 0, false);
-	chunk_copy(c, gauntlet, (z_info->dungeon_hgt - gauntlet->height) / 2,
-			   line1, 0, false);
+	chunk_copy(c, gauntlet, (y_size - gauntlet->height) / 2, line1, 0, false);
 	chunk_copy(c, departure, 0, line2, 0, false);
 
 	/* Free the chunks */
@@ -2535,10 +2546,9 @@ struct chunk *gauntlet_gen(struct player *p) {
 
 	/* Temporary until connecting to vault entrances works better */
 	for (y = 0; y < gauntlet_hgt; y++) {
-		square_set_feat(c, y + (z_info->dungeon_hgt - gauntlet_hgt) / 2,
-						line1 - 1, FEAT_FLOOR);
-		square_set_feat(c, y + (z_info->dungeon_hgt - gauntlet_hgt) / 2, line2,
+		square_set_feat(c, y + (y_size - gauntlet_hgt) / 2, line1 - 1,
 						FEAT_FLOOR);
+		square_set_feat(c, y + (y_size - gauntlet_hgt) / 2, line2, FEAT_FLOOR);
 	}
 
 	/* Put some rubble in corridors */
