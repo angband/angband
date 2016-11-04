@@ -547,10 +547,10 @@ void cave_illuminate(struct chunk *c, bool daytime)
 
 /*
  * Hack -- provide some "speed" for the "flow" code
- * This entry is the "current index" for the "when" field
- * Note that a "when" value of "zero" means "not used".
+ * This entry is the "current index" for the "scent" field
+ * Note that a "scent" value of "zero" means "not used".
  *
- * Note that the "cost" indexes from 1 to 127 are for
+ * Note that the "noise" indexes from 1 to 127 are for
  * "old" data, and from 128 to 255 are for "new" data.
  *
  * This means that as long as the player does not "teleport",
@@ -577,8 +577,8 @@ void cave_forget_flow(struct chunk *c)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			/* Forget the old data */
-			c->squares[y][x].cost = 0;
-			c->squares[y][x].when = 0;
+			c->squares[y][x].noise = 0;
+			c->squares[y][x].scent = 0;
 		}
 	}
 
@@ -588,17 +588,17 @@ void cave_forget_flow(struct chunk *c)
 
 
 /*
- * Hack -- fill in the "cost" field of every grid that the player can
+ * Hack -- fill in the "noise" field of every grid that the player can
  * "reach" with the number of steps needed to reach that grid.  This
  * also yields the "distance" of the player from every grid.
  *
- * In addition, mark the "when" of the grids that can reach the player
+ * In addition, mark the "scent" of the grids that can reach the player
  * with the incremented value of "flow_save".
  *
  * Hack -- use the local "flow_y" and "flow_x" arrays as a "circular
  * queue" of cave grids.
  *
- * We do not need a priority queue because the cost from grid to grid
+ * We do not need a priority queue because the noise from grid to grid
  * is always "one" (even along diagonals) and we process them in order.
  */
 void cave_update_flow(struct chunk *c)
@@ -631,8 +631,8 @@ void cave_update_flow(struct chunk *c)
 		{
 			for (x = 0; x < c->width; x++)
 			{
-				int w = c->squares[y][x].when;
-				c->squares[y][x].when = (w >= 128) ? (w - 128) : 0;
+				int w = c->squares[y][x].scent;
+				c->squares[y][x].scent = (w >= 128) ? (w - 128) : 0;
 			}
 		}
 
@@ -647,10 +647,10 @@ void cave_update_flow(struct chunk *c)
 	/*** Player Grid ***/
 
 	/* Save the time-stamp */
-	c->squares[py][px].when = flow_n;
+	c->squares[py][px].scent = flow_n;
 
-	/* Save the flow cost */
-	c->squares[py][px].cost = 0;
+	/* Save the flow noise */
+	c->squares[py][px].noise = 0;
 
 	/* Enqueue that entry */
 	flow_y[flow_head] = py;
@@ -672,8 +672,8 @@ void cave_update_flow(struct chunk *c)
 		/* Forget that entry (with wrap) */
 		if (++flow_head == FLOW_MAX) flow_head = 0;
 
-		/* Child cost */
-		n = c->squares[ty][tx].cost + 1;
+		/* Child noise */
+		n = c->squares[ty][tx].noise + 1;
 
 		/* Hack -- Limit flow depth */
 		if (n == z_info->max_flow_depth) continue;
@@ -689,17 +689,17 @@ void cave_update_flow(struct chunk *c)
 			if (!square_in_bounds(c, y, x)) continue;
 
 			/* Ignore "pre-stamped" entries */
-			if (c->squares[y][x].when == flow_n) continue;
+			if (c->squares[y][x].scent == flow_n) continue;
 
 			/* Ignore "walls" and "rubble" */
 			if (square_isnoflow(c, y, x))
 				continue;
 
 			/* Save the time-stamp */
-			c->squares[y][x].when = flow_n;
+			c->squares[y][x].scent = flow_n;
 
-			/* Save the flow cost */
-			c->squares[y][x].cost = n;
+			/* Save the flow noise */
+			c->squares[y][x].noise = n;
 
 			/* Enqueue that entry */
 			flow_y[flow_tail] = y;

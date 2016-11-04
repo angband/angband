@@ -246,9 +246,9 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 			/* Describe the object */
 			if (player->wizard) {
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
-						"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).", s1, s2, s3,
-						o_name, coords, y, x, (int)cave->squares[y][x].cost,
-						(int)cave->squares[y][x].when);
+						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
+						o_name, coords, y, x, (int)cave->squares[y][x].noise,
+						(int)cave->squares[y][x].scent);
 			} else {
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
 						"%s%s%s%s, %s.", s1, s2, s3, o_name, coords);
@@ -347,9 +347,9 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			/* Display a message */
 			if (player->wizard)
 				strnfmt(out_val, sizeof(out_val),
-						"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).", s1, s2, s3,
-						name_strange, coords, y, x, (int)cave->squares[y][x].cost,
-						(int)cave->squares[y][x].when);
+						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
+						name_strange, coords, y, x, (int)cave->squares[y][x].noise,
+						(int)cave->squares[y][x].scent);
 			else
 				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.",
 						s1, s2, s3, name_strange, coords);
@@ -410,10 +410,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						/* Describe, and prompt for recall */
 						if (player->wizard) {
 							strnfmt(out_val, sizeof(out_val),
-									"%s%s%s%s (%s), %s (%d:%d, cost=%d, when=%d).",
+									"%s%s%s%s (%s), %s (%d:%d, noise=%d, scent=%d).",
 									s1, s2, s3, m_name, buf, coords, y, x,
-									(int)cave->squares[y][x].cost,
-									(int)cave->squares[y][x].when);
+									(int)cave->squares[y][x].noise,
+									(int)cave->squares[y][x].scent);
 						} else {
 							strnfmt(out_val, sizeof(out_val),
 									"%s%s%s%s (%s), %s.",
@@ -476,10 +476,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					/* Describe the object */
 					if (player->wizard) {
 						strnfmt(out_val, sizeof(out_val),
-								"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).",
+								"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
 								s1, s2, s3, o_name, coords, y, x,
-								(int)cave->squares[y][x].cost,
-								(int)cave->squares[y][x].when);
+								(int)cave->squares[y][x].noise,
+								(int)cave->squares[y][x].scent);
 					}
 
 					prt(out_val, 0, 0);
@@ -541,10 +541,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				/* Describe, and prompt for recall */
 				if (player->wizard) {
 					strnfmt(out_val, sizeof(out_val),
-							"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).", s1, s2,
+							"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2,
 							s3, trap->kind->name, coords, y, x,
-							(int)cave->squares[y][x].cost,
-							(int)cave->squares[y][x].when);
+							(int)cave->squares[y][x].noise,
+							(int)cave->squares[y][x].scent);
 				} else {
 					strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.", 
 							s1, s2, s3, trap->kind->desc, coords);
@@ -589,10 +589,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					/* Describe the pile */
 					if (player->wizard) {
 						strnfmt(out_val, sizeof(out_val),
-								"%s%s%sa pile of %d objects, %s (%d:%d, cost=%d, when=%d).",
+								"%s%s%sa pile of %d objects, %s (%d:%d, noise=%d, scent=%d).",
 								s1, s2, s3, floor_num, coords, y, x,
-								(int)cave->squares[y][x].cost,
-								(int)cave->squares[y][x].when);
+								(int)cave->squares[y][x].noise,
+								(int)cave->squares[y][x].scent);
 					} else {
 						strnfmt(out_val, sizeof(out_val),
 								"%s%s%sa pile of %d objects, %s.",
@@ -693,9 +693,9 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			/* Display a message */
 			if (player->wizard) {
 				strnfmt(out_val, sizeof(out_val),
-						"%s%s%s%s, %s (%d:%d, cost=%d, when=%d).", s1, s2, s3,
-						name, coords, y, x, (int)cave->squares[y][x].cost,
-						(int)cave->squares[y][x].when);
+						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
+						name, coords, y, x, (int)cave->squares[y][x].noise,
+						(int)cave->squares[y][x].scent);
 			} else {
 				strnfmt(out_val, sizeof(out_val),
 						"%s%s%s%s, %s.", s1, s2, s3, name, coords);

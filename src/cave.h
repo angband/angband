@@ -132,8 +132,8 @@ struct grid_data {
 struct square {
 	byte feat;
 	bitflag *info;
-	byte cost;
-	byte when;
+	byte noise;
+	byte scent;
 	s16b mon;
 	struct object *obj;
 	struct trap *trap;
