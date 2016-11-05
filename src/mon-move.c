@@ -226,10 +226,8 @@ static bool near_permwall(const struct monster *mon, struct chunk *c)
     if (randint0(99) < 5) return true;
     
 	/* Search the nearby grids, which are always in bounds */
-	for (y = (my - 2); y <= (my + 2); y++)
-	{
-		for (x = (mx - 2); x <= (mx + 2); x++)
-		{
+	for (y = (my - 2); y <= (my + 2); y++) {
+		for (x = (mx - 2); x <= (mx + 2); x++) {
             if (!square_in_bounds_fully(c, y, x)) continue;
             if (square_isperm(c, y, x)) return true;
 		}
@@ -588,10 +586,10 @@ static bool find_safety(struct chunk *c, struct monster *mon)
 			x = fx + dx;
 
 			/* Skip illegal locations */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(c, y, x)) continue;
 
 			/* Skip locations in a wall */
-			if (!square_ispassable(cave, y, x)) continue;
+			if (!square_ispassable(c, y, x)) continue;
 
 			/* Ignore grids very far from the player */
 			if (c->squares[y][x].scent < c->squares[py][px].scent) continue;
@@ -645,7 +643,7 @@ static bool find_safety(struct chunk *c, struct monster *mon)
  *
  * Return true if a good location is available.
  */
-static bool find_hiding(struct monster *mon)
+static bool find_hiding(struct chunk *c, struct monster *mon)
 {
 	int fy = mon->fy;
 	int fx = mon->fx;
@@ -675,14 +673,14 @@ static bool find_hiding(struct monster *mon)
 			x = fx + dx;
 
 			/* Skip illegal locations */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(c, y, x)) continue;
 
 			/* Skip occupied locations */
-			if (!square_isempty(cave, y, x)) continue;
+			if (!square_isempty(c, y, x)) continue;
 
 			/* Check for hidden, available grid */
-			if (!square_isview(cave, y, x) &&
-				projectable(cave, fy, fx, y, x, PROJECT_STOP)) {
+			if (!square_isview(c, y, x) &&
+				projectable(c, fy, fx, y, x, PROJECT_STOP)) {
 				/* Calculate distance from player */
 				dis = distance(y, x, py, px);
 
@@ -842,7 +840,7 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 		/* Not in an empty space and strong player */
 		if ((open < 7) && (player->chp > player->mhp / 2)) {
 			/* Find hiding place */
-			if (find_hiding(mon)) {
+			if (find_hiding(c, mon)) {
 				done = true;
 				y = mon->ty - mon->fy;
 				x = mon->tx - mon->fx;
@@ -911,10 +909,11 @@ static bool monster_can_flow(struct chunk *c, struct monster *mon)
 	assert(c);
 
 	/* Check the flow (normal aaf is about 20) */
-	if ((c->squares[fy][fx].scent == c->squares[player->py][player->px].scent) &&
-	    (c->squares[fy][fx].noise < z_info->max_flow_depth) &&
-	    (c->squares[fy][fx].noise < mon->race->aaf))
+	if ((c->squares[fy][fx].scent == c->squares[player->py][player->px].scent)
+		&& (c->squares[fy][fx].noise < z_info->max_flow_depth)
+		&& (c->squares[fy][fx].noise < mon->race->aaf)) {
 		return true;
+	}
 	return false;
 }
 
@@ -1147,12 +1146,10 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 		rf_on(lore->flags, RF_KILL_WALL);
 	}
 
-	/* Monster moves through walls (and doors) */
-	if (rf_has(mon->race->flags, RF_PASS_WALL)) 
+	/* Monster may be able to deal with walls and doors */
+	if (rf_has(mon->race->flags, RF_PASS_WALL)) {
 		return true;
-
-	/* Monster destroys walls (and doors) */
-	else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
+	} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
 		/* Remove the wall */
 		square_destroy_wall(c, ny, nx);
 
@@ -1164,10 +1161,8 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 		player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 		return true;
-	}
-
-	/* Handle doors and secret doors */
-	else if (square_iscloseddoor(c, ny, nx) || square_issecretdoor(c, ny, nx)) {
+	} else if (square_iscloseddoor(c, ny, nx) ||
+			   square_issecretdoor(c, ny, nx)) {
 		bool may_bash = rf_has(mon->race->flags, RF_BASH_DOOR) && one_in_(2);
 
 		/* Take a turn */
@@ -1180,7 +1175,8 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 		}
 
 		/* Creature can open or bash doors */
-		if (!rf_has(mon->race->flags, RF_OPEN_DOOR) && !rf_has(mon->race->flags, RF_BASH_DOOR))
+		if (!rf_has(mon->race->flags, RF_OPEN_DOOR) &&
+			!rf_has(mon->race->flags, RF_BASH_DOOR))
 			return false;
 
 		/* Stuck door -- try to unlock it */
@@ -1247,8 +1243,8 @@ static bool process_monster_glyph(struct chunk *c, struct monster *mon,
 	return false;
 }
 
-/*
- * Hack -- compare the "strength" of two monsters XXX XXX XXX
+/**
+ * Compare the "strength" of two monsters XXX XXX XXX
  */
 static int compare_monsters(const struct monster *mon1,
 							const struct monster *mon2)
@@ -1267,7 +1263,8 @@ static int compare_monsters(const struct monster *mon1,
 /**
  * Try to push past / kill another monster.  Returns true on success.
  */
-static bool process_monster_try_push(struct chunk *c, struct monster *mon, const char *m_name, int nx, int ny)
+static bool process_monster_try_push(struct chunk *c, struct monster *mon,
+									 const char *m_name, int nx, int ny)
 {
 	struct monster *mon1 = square_monster(c, ny, nx);
 	struct monster_lore *lore = get_lore(mon->race);
@@ -1299,8 +1296,8 @@ static bool process_monster_try_push(struct chunk *c, struct monster *mon, const
 			/* Note if visible */
 			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
 				mflag_has(mon->mflag, MFLAG_VIEW))
-				msg("%s %s %s.", m_name, kill_ok ? "tramples over" : "pushes past",
-					n_name);
+				msg("%s %s %s.", m_name,
+					kill_ok ? "tramples over" : "pushes past", n_name);
 
 			/* Monster ate another monster */
 			if (kill_ok)
@@ -1365,7 +1362,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 		if (react_to_slay(obj, mon))
 			safe = true;
 
-		/* The object cannot be picked up by the monster */
+		/* Try to pick up, or crush */
 		if (safe) {
 			/* Only give a message for "take_item" */
 			if (rf_has(mon->race->flags, RF_TAKE_ITEM) && visible &&
@@ -1373,8 +1370,6 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 				/* Dump a message */
 				msg("%s tries to pick up %s, but fails.", m_name, o_name);
 			}
-
-		/* Pick up the item */
 		} else if (rf_has(mon->race->flags, RF_TAKE_ITEM)) {
 			/* Describe observable situations */
 			if (square_isseen(c, ny, nx) && !ignore_item_ok(obj))
@@ -1385,7 +1380,6 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 			monster_carry(c, mon, obj);
 			square_note_spot(c, ny, nx);
 			square_light_spot(c, ny, nx);
-		/* Destroy the item */
 		} else {
 			/* Describe observable situations */
 			if (square_isseen(c, ny, nx) && !ignore_item_ok(obj))
@@ -1404,7 +1398,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 	}
 }
 
-/*
+/**
  * Process a monster
  *
  * In several cases, we directly update the monster lore
@@ -1470,9 +1464,10 @@ static void process_monster(struct chunk *c, struct monster *mon)
 		if (!process_monster_can_move(c, mon, m_name, nx, ny, &did_something))
 			continue;
 
-		/* Try to break the glyph if there is one */
-		/* This can happen multiple times per turn because failure does not break the loop */
-		if (square_iswarded(c, ny, nx) && !process_monster_glyph(c, mon, nx, ny))
+		/* Try to break the glyph if there is one.  This can happen multiple
+		 * times per turn because failure does not break the loop */
+		if (square_iswarded(c, ny, nx) &&
+			!process_monster_glyph(c, mon, nx, ny))
 			continue;
 
 		/* The player is in the way. */
@@ -1592,8 +1587,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		regen = true;
 
 	/* Process the monsters (backwards) */
-	for (i = cave_monster_max(c) - 1; i >= 1; i--)
-	{
+	for (i = cave_monster_max(c) - 1; i >= 1; i--) {
 		struct monster *mon;
 		bool moving;
 
