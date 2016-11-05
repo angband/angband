@@ -35,9 +35,10 @@ extern struct curse *curses;
 int lookup_curse(const char *name);
 void copy_curse(struct curse **dest, struct curse *src, bool randomise,
 				bool new);
-void free_curse(struct curse *source, bool complete);
+void free_curse(struct curse *source, bool free_object, bool free_eff);
 bool curses_are_equal(struct curse *curse1, struct curse *curse2);
 bool append_curse(struct curse **current, int pick, int power);
+void wipe_curses(struct curse *curses);
 bool do_curse_effect(struct curse *curse);
 
 #endif /* !INCLUDED_OBJ_CURSE_H */

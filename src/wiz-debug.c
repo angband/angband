@@ -1352,7 +1352,7 @@ static void do_cmd_wiz_cure_all(void)
 	/* Remove curses */
 	for (i = 0; i < player->body.count; i++) {
 		if (player->body.slots[i].obj) {
-			free_curse(player->body.slots[i].obj->curses, true);
+			free_curse(player->body.slots[i].obj->curses, true, true);
 			player->body.slots[i].obj->curses = NULL;
 		}
 	}

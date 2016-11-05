@@ -216,7 +216,7 @@ void object_free(struct object *obj)
 	}
 
 	if (obj->curses) {
-		free_curse(obj->curses, true);
+		free_curse(obj->curses, true, true);
 	}
 
 	mem_free(obj);
@@ -538,7 +538,7 @@ void object_wipe(struct object *obj, bool free_curse_objects)
 	/* Free slays and brands */
 	free_slay(obj->slays);
 	free_brand(obj->brands);
-	free_curse(obj->curses, free_curse_objects);
+	free_curse(obj->curses, free_curse_objects, false);
 
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));

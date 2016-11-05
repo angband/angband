@@ -2385,7 +2385,7 @@ static void cleanup_artifact(void)
 		string_free(art->text);
 		free_brand(art->brands);
 		free_slay(art->slays);
-		free_curse(art->curses, true);
+		free_curse(art->curses, true, false);
 	}
 	mem_free(a_info);
 }

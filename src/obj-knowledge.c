@@ -1044,7 +1044,7 @@ void player_know_object(struct player *p, struct object *obj)
 	}
 
 	/* Reset curses */
-	free_curse(obj->known->curses, false);
+	free_curse(obj->known->curses, false, false);
 	obj->known->curses = NULL;
 	for (c = obj->curses; c; c = c->next) {
 		/* Update knowledge of the curse object first */

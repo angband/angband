@@ -22,6 +22,7 @@
 #include "angband.h"
 #include "effects.h"
 #include "init.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-make.h"
 #include "obj-pile.h"
@@ -219,9 +220,6 @@ struct activation *activations;
 /* Global just for convenience. */
 static int verbose = 1;
 
-/* Fake pvals array for maintaining current behaviour NRM */
-static int fake_pval[3] = {0, 0, 0};
-
 /**
  * Include the elements and names
  */
@@ -234,51 +232,6 @@ static const struct element_type {
 	#undef ELEM
 };
 
-void fake_pvals_to_mods(struct artifact *a)
-{
-	int i;
-
-	/* Copy the fake_pvals in as modifiers */
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (a->modifiers[i] != 0) {
-			a->modifiers[i] = fake_pval[a->modifiers[i] - 1];
-			file_putf(log_file, "Modifier %s is %d\n", mod_name(i), a->modifiers[i]);
-		}
-	}
-}
-
-void mods_to_fake_pvals(struct artifact *a)
-{
-	int i, j;
-
-	/* Set the fake pvals to 0 */
-	for (i = 0; i < 3; i++)
-		fake_pval[i] = 0;
-
-	/* Now set any non-zero mod as a fake_pval, and set the mod value to the 
-	 * fake_pval position this mod is in  - lunacy, but hey NRM */
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		if (a->modifiers[i] != 0) {
-			for (j = 0; j < 3; j++) {
-				/* If the mod value is already there, refer to it */
-				if (a->modifiers[i] == fake_pval[j]) {
-					a->modifiers[i] = j + 1;
-					break;
-				}
-				/* If that failed, and we have a zero position, use that */
-				if (fake_pval[j] == 0) {
-					fake_pval[j] = a->modifiers[i];
-					a->modifiers[i] = j + 1;
-					break;
-				}
-				/* If those both failed, we lose a mod, but at this stage there
-				 * are only a max of three distinct mods per object, and when 
-				 * there aren't we should have removed this silliness */
-			}
-		}
-	}
-}
-
 /**
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
@@ -288,18 +241,12 @@ static s32b artifact_power(int a_idx, bool translate)
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();
 	char buf[256];
-	bool fail = false;
 	s32b power;
 
 	file_putf(log_file, "********** ENTERING EVAL POWER ********\n");
 	file_putf(log_file, "Artifact index is %d\n", a_idx);
 
-	if (translate) fake_pvals_to_mods(&a_info[a_idx]);
-	if (!make_fake_artifact(obj, &a_info[a_idx]))
-		fail = true;
-	if (translate) mods_to_fake_pvals(&a_info[a_idx]);
-
-	if (fail) {
+	if (!make_fake_artifact(obj, &a_info[a_idx])) {
 		object_delete(&known_obj);
 		object_delete(&obj);
 		return 0;
@@ -514,47 +461,6 @@ static struct object_kind *choose_item(int a_idx)
 
 
 /**
- * We've just added an ability which uses the pval bonus.  Make sure it's
- * not zero.  If it's currently negative, leave it negative (heh heh).
- */
-static void do_mod(struct artifact *art)
-{
-	int factor = 1;
-
-	/* Track whether we have blows, might or shots on this item */
-	if (art->modifiers[OBJ_MOD_BLOWS] > 0) factor++;
-	if (art->modifiers[OBJ_MOD_MIGHT] > 0) factor++;
-	if (art->modifiers[OBJ_MOD_SHOTS] > 0) factor++;
-
-	if (fake_pval[0] == 0) {
-		/* Blows, might, shots handled separately */
-		if (factor > 1) {
-			fake_pval[0] = (s16b)randint1(2);
-			/* Give it a shot at +3 */
-			if (INHIBIT_STRONG) fake_pval[0] = 3;
-		} else
-			fake_pval[0] = (s16b)randint1(4);
-		file_putf(log_file, "Assigned initial pval, value is: %d\n",
-				  fake_pval[0]);
-	} else if (fake_pval[0] < 0) {
-		if (one_in_(2)) {
-			fake_pval[0]--;
-			file_putf(log_file, "Decreasing pval by 1, new value is: %d\n",
-					  fake_pval[0]);
-		}
-	} else if (one_in_(fake_pval[0] * factor)) {
-		/*
-		 * CR: made this a bit rarer and diminishing with higher pval -
-		 * also rarer if item has blows/might/shots already
-		 */
-		fake_pval[0]++;
-		file_putf(log_file, "Increasing pval by 1, new value is: %d\n",
-				  fake_pval[0]);
-	}
-}
-
-
-/**
  * Clean up the artifact by removing illogical combinations of powers.
  */
 static void remove_contradictory(struct artifact *art)
@@ -562,19 +468,17 @@ static void remove_contradictory(struct artifact *art)
 	if (of_has(art->flags, OF_AGGRAVATE))
 		art->modifiers[OBJ_MOD_STEALTH] = 0;
 
-	if (fake_pval[0] < 0) {
-		if (art->modifiers[OBJ_MOD_STR] != 0)
-			of_off(art->flags, OF_SUST_STR);
-		if (art->modifiers[OBJ_MOD_INT] != 0)
-			of_off(art->flags, OF_SUST_INT);
-		if (art->modifiers[OBJ_MOD_WIS] != 0)
-			of_off(art->flags, OF_SUST_WIS);
-		if (art->modifiers[OBJ_MOD_DEX] != 0)
-			of_off(art->flags, OF_SUST_DEX);
-		if (art->modifiers[OBJ_MOD_CON] != 0)
-			of_off(art->flags, OF_SUST_CON);
-		art->modifiers[OBJ_MOD_BLOWS] = 0;
-	}
+	if (art->modifiers[OBJ_MOD_STR] < 0)
+		of_off(art->flags, OF_SUST_STR);
+	if (art->modifiers[OBJ_MOD_INT] < 0)
+		of_off(art->flags, OF_SUST_INT);
+	if (art->modifiers[OBJ_MOD_WIS] < 0)
+		of_off(art->flags, OF_SUST_WIS);
+	if (art->modifiers[OBJ_MOD_DEX] < 0)
+		of_off(art->flags, OF_SUST_DEX);
+	if (art->modifiers[OBJ_MOD_CON] < 0)
+		of_off(art->flags, OF_SUST_CON);
+	art->modifiers[OBJ_MOD_BLOWS] = 0;
 
 	if (of_has(art->flags, OF_DRAIN_EXP))
 		of_off(art->flags, OF_HOLD_LIFE);
@@ -1505,82 +1409,46 @@ static void add_immunity(struct artifact *art)
 }
 
 /**
- * Adds a flag and pval to an artifact. Always attempts
- * to increase the pval.
+ * Adds, or increases the positive value of, or decreases the negative value
+ * of, a modifier to an artifact.
  */
-static void add_pval_mod(struct artifact *art, int mod)
+static bool add_mod(struct artifact *art, int mod)
 {
-	art->modifiers[mod] = 1;
-	do_mod(art);
-	file_putf(log_file, "Adding ability: %s (now %+d)\n", mod_name(mod), 
-			  fake_pval[0]);
-}
+	/* Blows, might, shots need special treatment */
+	bool powerful = ((mod == OBJ_MOD_BLOWS) || (mod == OBJ_MOD_MIGHT) ||
+					 (mod == OBJ_MOD_SHOTS));
+	int factor = powerful ? 2 : 1;
+	bool success = false;
 
-/**
- * Adds a flag and a pval to an artifact, but won't increase
- * the pval if the flag is present. Returns true when changes were made.
- */
-static bool add_fixed_pval_mod(struct artifact *art, int mod)
-{
-	if (art->modifiers[mod])
-		return false;
-
-	art->modifiers[mod] = 1;
-	do_mod(art);
-	file_putf(log_file, "Adding ability: %s (now %+d)\n", mod_name(mod), 
-			  fake_pval[0]);
-
-	return true;
-}
-
-/**
- * Adds a flag and an initial pval to an artifact.  Returns true
- * when the flag was not present.
- */
-static bool add_first_pval_mod(struct artifact *art, int mod)
-{
-	art->modifiers[mod] = 1;
-
-	if (fake_pval[0] == 0) {
-		fake_pval[0] = (s16b)randint1(4);
-		file_putf(log_file, "Adding ability: %s (first time) (now %+d)\n", 
-				  mod_name(mod), fake_pval[0]);
-
-		return true;
+	/* If no value here, pick one; otherwise try to increase */
+	if (art->modifiers[mod] == 0) {
+		art->modifiers[mod] = powerful ? randint1(2) : randint1(4);
+		file_putf(log_file, "Adding ability: %s (%+d)\n", mod_name(mod),
+				  art->modifiers[mod]);
+		success = true;
+	} else if (art->modifiers[mod] < 0) {
+		if (one_in_(2)) {
+			art->modifiers[mod]--;
+			file_putf(log_file, "Decreasing %s by 1, new value is: %d\n",
+					  mod_name(mod), art->modifiers[mod]);
+			success = true;
+		}
+	} else if (one_in_(factor * art->modifiers[mod])) {
+		art->modifiers[mod]++;
+		file_putf(log_file, "Increasing %s by 1, new value is: %d\n",
+				  mod_name(mod), art->modifiers[mod]);
+		success = true;
 	}
 
-	do_mod(art);
-	file_putf(log_file, "Adding ability: %s (now %+d)\n", mod_name(mod), 
-			  fake_pval[0]);
-
-	return false;
+	return success;
 }
 
 /**
- * Adds a stat modifier, if possible
+ * Adds, or increases a stat modifier (probably)
  */
 static void add_stat(struct artifact *art)
 {
-	int r;
-	bool success = false;
-
-	/* Break out if all stats are raised to avoid an infinite loop */
-	if (art->modifiers[OBJ_MOD_STR] && 
-		art->modifiers[OBJ_MOD_INT] && 
-		art->modifiers[OBJ_MOD_WIS] && 
-		art->modifiers[OBJ_MOD_DEX] && 
-		art->modifiers[OBJ_MOD_CON])
-			return;
-
-	/* Make sure we add one that hasn't been added yet */
-	while (!success) {
-		r = randint0(5);
-		if (r == 0) success = add_fixed_pval_mod(art, OBJ_MOD_STR);
-		else if (r == 1) success = add_fixed_pval_mod(art, OBJ_MOD_INT);
-		else if (r == 2) success = add_fixed_pval_mod(art, OBJ_MOD_WIS);
-		else if (r == 3) success = add_fixed_pval_mod(art, OBJ_MOD_DEX);
-		else if (r == 4) success = add_fixed_pval_mod(art, OBJ_MOD_CON);
-	}
+	add_mod(art, OBJ_MOD_MIN_STAT + randint0(STAT_MAX));
 }
 
 /**
@@ -2010,11 +1878,11 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 	{
 		case ART_IDX_BOW_SHOTS:
 		case ART_IDX_NONWEAPON_SHOTS:
-			add_pval_mod(art, OBJ_MOD_SHOTS);
+			add_mod(art, OBJ_MOD_SHOTS);
 			break;
 
 		case ART_IDX_BOW_MIGHT:
-			add_pval_mod(art, OBJ_MOD_MIGHT);
+			add_mod(art, OBJ_MOD_MIGHT);
 			break;
 
 		case ART_IDX_WEAPON_HIT:
@@ -2064,7 +1932,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 
 		case ART_IDX_MELEE_BLOWS:
 		case ART_IDX_NONWEAPON_BLOWS:
-			add_pval_mod(art, OBJ_MOD_BLOWS);
+			add_mod(art, OBJ_MOD_BLOWS);
 			break;
 
 		case ART_IDX_MELEE_AC:
@@ -2089,7 +1957,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 
 		case ART_IDX_MELEE_TUNN:
 		case ART_IDX_GEN_TUNN:
-			add_pval_mod(art, OBJ_MOD_TUNNEL);
+			add_mod(art, OBJ_MOD_TUNNEL);
 			break;
 
 		case ART_IDX_BOOT_FEATHER:
@@ -2101,12 +1969,12 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 		case ART_IDX_CLOAK_STEALTH:
 		case ART_IDX_ARMOR_STEALTH:
 		case ART_IDX_GEN_STEALTH:
-			add_pval_mod(art, OBJ_MOD_STEALTH);
+			add_mod(art, OBJ_MOD_STEALTH);
 			break;
 
 		case ART_IDX_BOOT_SPEED:
 		case ART_IDX_GEN_SPEED:
-			add_first_pval_mod(art, OBJ_MOD_SPEED);
+			add_mod(art, OBJ_MOD_SPEED);
 			break;
 
 		case ART_IDX_GLOVE_FA:
@@ -2115,7 +1983,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GLOVE_DEX:
-			add_fixed_pval_mod(art, OBJ_MOD_DEX);
+			add_mod(art, OBJ_MOD_DEX);
 			break;
 
 		case ART_IDX_HELM_RBLIND:
@@ -2129,11 +1997,11 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 			break;
 
 		case ART_IDX_HELM_WIS:
-			add_fixed_pval_mod(art, OBJ_MOD_WIS);
+			add_mod(art, OBJ_MOD_WIS);
 			break;
 
 		case ART_IDX_HELM_INT:
-			add_fixed_pval_mod(art, OBJ_MOD_INT);
+			add_mod(art, OBJ_MOD_INT);
 			break;
 
 		case ART_IDX_SHIELD_LRES:
@@ -2148,7 +2016,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 			break;
 
 		case ART_IDX_ARMOR_CON:
-			add_fixed_pval_mod(art, OBJ_MOD_CON);
+			add_mod(art, OBJ_MOD_CON);
 			break;
 
 		case ART_IDX_ARMOR_ALLRES:
@@ -2171,7 +2039,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_INFRA:
-			add_pval_mod(art, OBJ_MOD_INFRA);
+			add_mod(art, OBJ_MOD_INFRA);
 			break;
 
 		case ART_IDX_GEN_IMMUNE:
@@ -2179,14 +2047,11 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_LIGHT: {
-				if (art->tval != TV_LIGHT && (fake_pval[0] != 0)) {
+				if (art->tval != TV_LIGHT) {
 					art->modifiers[OBJ_MOD_LIGHT] = 2;
-					fake_pval[1] = 1;
-				} else
+				}
 				break;
 		}
-			break;
-
 		case ART_IDX_GEN_SDIG:
 			add_flag(art, OF_SLOW_DIGEST);
 			break;
@@ -2287,24 +2152,26 @@ static void try_supercharge(struct artifact *art, s32b target_power)
 			art->dd += 3 + randint0(4);
 			file_putf(log_file, "Supercharging damage dice!  (Now %d dice)\n",
 					  art->dd);
-		} else if (randint0(z_info->a_max) < artprobs[ART_IDX_MELEE_BLOWS_SUPER]) {
+		} else if (randint0(z_info->a_max) <
+				   artprobs[ART_IDX_MELEE_BLOWS_SUPER]) {
 			/* Blows */
-			art->modifiers[OBJ_MOD_BLOWS] = 1;
-			fake_pval[0] = INHIBIT_BLOWS - 1;
-			file_putf(log_file, "Supercharging melee blows! (+2 blows)\n");
+			art->modifiers[OBJ_MOD_BLOWS] = INHIBIT_BLOWS - 1;
+			file_putf(log_file, "Supercharging melee blows! (%+d blows)\n",
+				INHIBIT_BLOWS - 1);
 		}
 	}
 
 	/* Bows - max might or shots */
 	if (art->tval == TV_BOW) {
 		if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_SHOTS_SUPER]) {
-			art->modifiers[OBJ_MOD_SHOTS] = 1;
-			fake_pval[0] = INHIBIT_SHOTS - 1;
-			file_putf(log_file, "Supercharging shots for bow!  (2 extra shots)\n");
-		} else if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_MIGHT_SUPER]){
-			art->modifiers[OBJ_MOD_MIGHT] = 1;
-			fake_pval[0] = INHIBIT_MIGHT - 1;
-			file_putf(log_file, "Supercharging might for bow!  (3 extra might)\n");
+			art->modifiers[OBJ_MOD_SHOTS] = INHIBIT_SHOTS - 1;
+			file_putf(log_file, "Supercharging shots! (%+d extra shots)\n",
+				INHIBIT_SHOTS - 1);
+		} else if (randint0(z_info->a_max) <
+				   artprobs[ART_IDX_BOW_MIGHT_SUPER]) {
+			art->modifiers[OBJ_MOD_MIGHT] = INHIBIT_MIGHT - 1;
+			file_putf(log_file, "Supercharging might! (%+d extra might)\n",
+					  INHIBIT_MIGHT - 1);
 		}
 	}
 
@@ -2312,18 +2179,21 @@ static void try_supercharge(struct artifact *art, s32b target_power)
 	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_SPEED_SUPER] ||
 		(art->tval == TV_BOOTS && randint0(z_info->a_max) <
 		artprobs[ART_IDX_BOOT_SPEED])) {
-		art->modifiers[OBJ_MOD_SPEED] = 1;
-		fake_pval[0] = 5 + randint0(6);
-		if (INHIBIT_WEAK) fake_pval[0] += randint1(3);
-		if (INHIBIT_STRONG) fake_pval[0] += 1 + randint1(6);
-		file_putf(log_file, "Supercharging speed for this item!  (New speed bonus is %d)\n", fake_pval[0]);
+		art->modifiers[OBJ_MOD_SPEED] = 5 + randint0(6);
+		if (INHIBIT_WEAK)
+			art->modifiers[OBJ_MOD_SPEED] += randint1(3);
+		if (INHIBIT_STRONG)
+			art->modifiers[OBJ_MOD_SPEED] += 1 + randint1(6);
+		file_putf(log_file, "Supercharging speed for this item!  (New speed bonus is %d)\n", art->modifiers[OBJ_MOD_SPEED]);
 	}
 
 	/* Big AC bonus */
 	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_AC_SUPER]) {
 		art->to_a += 19 + randint1(11);
-		if (INHIBIT_WEAK) art->to_a += randint1(10);
-		if (INHIBIT_STRONG) art->to_a += randint1(20);
+		if (INHIBIT_WEAK)
+			art->to_a += randint1(10);
+		if (INHIBIT_STRONG)
+			art->to_a += randint1(20);
 		file_putf(log_file, "Supercharging AC! New AC bonus is %d\n",
 				  art->to_a);
 	}
@@ -2351,6 +2221,7 @@ static void try_supercharge(struct artifact *art, s32b target_power)
  */
 static void do_curse(struct artifact *art)
 {
+	int i;
 	int num = randint1(2);
 	int max_tries = 20;
 
@@ -2361,8 +2232,11 @@ static void do_curse(struct artifact *art)
 	if (one_in_(7))
 		of_on(art->flags, OF_NO_TELEPORT);
 
-	if ((fake_pval[0] > 0) && one_in_(2))
-		fake_pval[0] = -fake_pval[0];
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		if ((art->modifiers[i] > 0) && one_in_(2)) {
+			art->modifiers[i] = -art->modifiers[i];
+		}
+	}
 	if ((art->to_a > 0) && one_in_(2))
 		art->to_a = -art->to_a;
 	if ((art->to_h > 0) && one_in_(2))
@@ -2383,20 +2257,19 @@ static void do_curse(struct artifact *art)
 }
 
 /**
- * Copy artifact fields from a_src to a_dst, and fake pvals from
- * fake_pval_src to fake_pval_dst
+ * Copy artifact fields from a_src to a_dst
  */
 
-static void copy_artifact(struct artifact *a_src, 
-	struct artifact *a_dst, int *fake_pval_src, int *fake_pval_dst)
+static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 {
-	int i;
-
 	if (a_dst->slays) {
 		free_slay(a_dst->slays);
 	}
 	if (a_dst->brands) {
 		free_brand(a_dst->brands);
+	}
+	if (a_dst->curses) {
+		free_curse(a_dst->curses, true, false);
 	}
 	/* Copy the structure */
 	memcpy(a_dst, a_src, sizeof(struct artifact));
@@ -2404,6 +2277,7 @@ static void copy_artifact(struct artifact *a_src,
 	a_dst->next = NULL;
 	a_dst->slays = NULL;
 	a_dst->brands = NULL;
+	a_dst->curses = NULL;
 	if (a_dst->tval != TV_LIGHT)
 		a_dst->activation = NULL;
 	a_dst->alt_msg = NULL;
@@ -2414,10 +2288,8 @@ static void copy_artifact(struct artifact *a_src,
 	if (a_src->brands) {
 		copy_brand(&a_dst->brands, a_src->brands);
 	}
-
-	/* Save contents of fake_pval */
-	for (i = 0; i < 3; i++) {
-		fake_pval_dst[i] = fake_pval_src[i];
+	if (a_src->curses) {
+		copy_curse(&a_dst->curses, a_src->curses, false, false);
 	}
 }
 
@@ -2441,7 +2313,6 @@ static void scramble_artifact(int a_idx)
 	bool curse_me = false;
 	bool success = false;
 	int i;
-	int fake_pval_save[3] = {0, 0, 0};
 
 	bool special_artifact = kf_has(kind->kind_flags, KF_INSTA_ART);
 
@@ -2461,8 +2332,6 @@ static void scramble_artifact(int a_idx)
 		file_putf(log_file, "Skipping artifact number %d - too powerful to randomize!", a_idx);
 		return;
 	}
-
-	mods_to_fake_pvals(art);
 
 	if (power < 0) curse_me = true;
 
@@ -2551,17 +2420,17 @@ static void scramble_artifact(int a_idx)
 		art->brands = NULL;
 		wipe_slays(art->slays);
 		art->slays = NULL;
+		wipe_curses(art->curses);
+		art->curses = NULL;
 
 		/* Clear the activations for rings and amulets but not lights */
-		if ((art->tval != TV_LIGHT) && art->activation)
+		if ((art->tval != TV_LIGHT) && art->activation) {
 			art->activation = NULL;
-
-		/* Restore lights */
-		else {
+		} else {
 			of_on(art->flags, OF_NO_FUEL);
-			art->modifiers[OBJ_MOD_LIGHT] = 1;
-			fake_pval[0] = 3;
+			art->modifiers[OBJ_MOD_LIGHT] = 3;
 		}
+
 		/* Artifacts ignore everything */
 		for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
 			art->el_info[i].flags |= EL_INFO_IGNORE;
@@ -2573,21 +2442,21 @@ static void scramble_artifact(int a_idx)
 	build_freq_table(art, art_freq);
 
 	/* Copy artifact info temporarily. */
-	copy_artifact(art, a_old, fake_pval, fake_pval_save);
+	copy_artifact(art, a_old);
 
 	/* Give this artifact a shot at being supercharged */
 	try_supercharge(art, power);
 	ap = artifact_power(a_idx, true);
 	if (ap > (power * 23) / 20 + 1)	{
 		/* too powerful -- put it back */
-		copy_artifact(a_old, art, fake_pval_save, fake_pval);
+		copy_artifact(a_old, art);
 		file_putf(log_file, "--- Supercharge is too powerful! Rolling back.\n");
 	}
 
 	/* First draft: add two abilities, then curse it three times. */
 	if (curse_me) {
 		/* Copy artifact info temporarily. */
-		copy_artifact(art, a_old, fake_pval, fake_pval_save);
+		copy_artifact(art, a_old);
 		do {
 			add_ability(art, power);
 			add_ability(art, power);
@@ -2602,7 +2471,7 @@ static void scramble_artifact(int a_idx)
 			/* Otherwise go back and try again */
 			else {
 				file_putf(log_file, "Inhibited ability added - rolling back\n");
-				copy_artifact(a_old, art, fake_pval_save, fake_pval);
+				copy_artifact(a_old, art);
 			}
 		} while (!success);
 
@@ -2615,7 +2484,7 @@ static void scramble_artifact(int a_idx)
 		 */
 		for (tries = 0; tries < MAX_TRIES; tries++) {
 			/* Copy artifact info temporarily. */
-			copy_artifact(art, a_old, fake_pval, fake_pval_save);
+			copy_artifact(art, a_old);
 
 			add_ability(art, power);
 			ap = artifact_power(a_idx, true);
@@ -2623,7 +2492,7 @@ static void scramble_artifact(int a_idx)
 			/* CR 11/14/01 - pushed both limits up by about 5% */
 			if (ap > (power * 23) / 20 + 1) {
 				/* too powerful -- put it back */
-				copy_artifact(a_old, art, fake_pval_save, fake_pval);
+				copy_artifact(a_old, art);
 				file_putf(log_file, "--- Too powerful!  Rolling back.\n");
 				continue;
 			} else if (ap >= (power * 19) / 20) {	/* just right */
@@ -2652,6 +2521,9 @@ static void scramble_artifact(int a_idx)
 	}
 	if (a_old->brands) {
 		free_brand(a_old->brands);
+	}
+	if (a_old->curses) {
+		free_curse(a_old->curses, true, false);
 	}
 	mem_free(a_old);
 
@@ -2689,9 +2561,6 @@ static void scramble_artifact(int a_idx)
 	/* Sanity check */
 	if (art->alloc_prob > 99) art->alloc_prob = 99;
 	if (art->alloc_prob < 1) art->alloc_prob = 1;
-
-	/* Write the mods back in */
-	fake_pvals_to_mods(art);
 
 	/* Ensure diggers keep a basic digging bonus */
 	if (art->modifiers[OBJ_MOD_TUNNEL] < kind->modifiers[OBJ_MOD_TUNNEL].base)

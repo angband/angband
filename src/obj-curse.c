@@ -41,11 +41,17 @@ int lookup_curse(const char *name)
 }
 
 /**
- * Copy all the curses from one structure to another
+ * Copy all the curses from one structure to another.
+ *
+ * At first glance this function seeme to cause recursion, because copy_curse()
+ * calls object_copy(), which calls copy_curse()...
+ * This is OK because copy_curse() only calls object_copy() on curse objects,
+ * which cannot have curses themselves, so the recurse (!) ends there.
  *
  * \param dest the address the curses are going to
  * \param source the curses being copied
  * \param randomise whether some values on the curse object need randomising
+ * \param new whether we are creating a new object which needs a timeout
  */
 void copy_curse(struct curse **dest, struct curse *source, bool randomise,
 				bool new)
@@ -120,14 +126,15 @@ void copy_curse(struct curse **dest, struct curse *source, bool randomise,
  * \param complete whether to free the curse objects or not (we don't want to
  * if we are dealing with the known version of an object)
  */
-void free_curse(struct curse *source, bool complete)
+void free_curse(struct curse *source, bool free_object, bool free_eff)
 {
 	struct curse *c = source, *c_next;
 	while (c) {
 		c_next = c->next;
 		mem_free(c->desc);
-		if (complete && c->obj) {
-			free_effect(c->obj->effect);
+		if (free_object && c->obj) {
+			if (free_eff && c->obj->effect)
+				free_effect(c->obj->effect);
 			mem_free(c->obj);
 		}
 		string_free(c->name);
@@ -216,6 +223,20 @@ bool append_curse(struct curse **current, int pick, int power)
 
 	return true;
 }
+
+/**
+ * Remove a list of curses and de-allocate their memory
+ */
+void wipe_curses(struct curse *curses)
+{
+	struct curse *c = curses, *c1;
+	while (c) {
+		c1 = c;
+		c = c->next;
+		mem_free(c1);
+	}
+}
+
 
 /**
  * Do a curse effect.  

@@ -767,7 +767,7 @@ static void remove_object_curse(struct object *obj, char *name,	bool message)
 		char *removed = format("The %s curse is removed!", name);
 		obj->curses = c->next;
 		c->next = NULL;
-		free_curse(c, true);
+		free_curse(c, true, true);
 		if (message) {
 			msg(removed);
 		}
@@ -780,7 +780,7 @@ static void remove_object_curse(struct object *obj, char *name,	bool message)
 			char *removed = format("The %s curse is removed!", name);
 			c->next = next->next;
 			next->next = NULL;
-			free_curse(next, true);
+			free_curse(next, true, true);
 			if (message) {
 				msg(removed);
 			}
