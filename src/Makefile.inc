@@ -286,9 +286,9 @@ depgen:
  init.h parser.h list-parser-errors.h mon-init.h mon-list.h mon-lore.h \
  z-textblock.h mon-msg.h list-mon-message.h mon-util.h obj-ignore.h \
  list-ignore-types.h obj-list.h obj-make.h obj-pile.h obj-randart.h \
- obj-slays.h obj-tval.h list-tvals.h obj-util.h player-history.h \
- list-history-types.h player-quest.h player-spell.h player-timed.h \
- list-player-timed.h project.h list-project-environs.h \
+ list-randart-properties.h obj-slays.h obj-tval.h list-tvals.h obj-util.h \
+ player-history.h list-history-types.h player-quest.h player-spell.h \
+ player-timed.h list-player-timed.h project.h list-project-environs.h \
  list-project-monsters.h randname.h store.h trap.h list-trap-flags.h \
  list-equip-slots.h
 ./load.o: load.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
@@ -305,10 +305,10 @@ depgen:
  list-parser-errors.h mon-lore.h z-textblock.h mon-make.h mon-spell.h \
  mon-util.h obj-gear.h list-equip-slots.h obj-ignore.h \
  list-ignore-types.h obj-knowledge.h obj-make.h obj-pile.h obj-randart.h \
- obj-slays.h obj-util.h player-calcs.h player-history.h \
- list-history-types.h player-quest.h player-spell.h player-timed.h \
- list-player-timed.h player-util.h savefile.h store.h cmd-core.h trap.h \
- list-trap-flags.h
+ list-randart-properties.h obj-slays.h obj-util.h player-calcs.h \
+ player-history.h list-history-types.h player-quest.h player-spell.h \
+ player-timed.h list-player-timed.h player-util.h savefile.h store.h \
+ cmd-core.h trap.h list-trap-flags.h
 ./message.o: message.c z-virt.h h-basic.h z-color.h z-util.h message.h \
  list-message.h game-event.h z-type.h option.h z-file.h list-options.h \
  init.h z-bitflag.h z-form.h z-rand.h parser.h z-dice.h z-expression.h \
@@ -668,10 +668,11 @@ depgen:
  list-player-flags.h list-magic-realms.h effects.h list-effects.h init.h \
  parser.h list-parser-errors.h obj-desc.h obj-make.h cave.h \
  list-square-flags.h list-terrain-flags.h obj-pile.h obj-power.h \
- obj-randart.h obj-slays.h monster.h mon-timed.h list-mon-timed.h \
- mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
- list-blow-effects.h list-mon-temp-flags.h list-mon-race-flags.h \
- list-mon-spells.h obj-tval.h list-tvals.h obj-util.h randname.h
+ obj-randart.h list-randart-properties.h obj-slays.h monster.h \
+ mon-timed.h list-mon-timed.h mon-blow-methods.h list-blow-methods.h \
+ mon-blow-effects.h list-blow-effects.h list-mon-temp-flags.h \
+ list-mon-race-flags.h list-mon-spells.h obj-tval.h list-tvals.h \
+ obj-util.h randname.h
 ./obj-slays.o: obj-slays.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
@@ -759,10 +760,10 @@ depgen:
  mon-blow-effects.h list-blow-effects.h list-mon-temp-flags.h \
  list-mon-race-flags.h list-mon-spells.h obj-gear.h list-equip-slots.h \
  obj-ignore.h list-ignore-types.h obj-knowledge.h obj-make.h obj-pile.h \
- obj-power.h obj-randart.h obj-tval.h list-tvals.h obj-util.h \
- player-birth.h player-calcs.h player-history.h list-history-types.h \
- player-quest.h player-spell.h player-timed.h list-player-timed.h \
- player-util.h savefile.h store.h
+ obj-power.h obj-randart.h list-randart-properties.h obj-tval.h \
+ list-tvals.h obj-util.h player-birth.h player-calcs.h player-history.h \
+ list-history-types.h player-quest.h player-spell.h player-timed.h \
+ list-player-timed.h player-util.h savefile.h store.h
 ./player-calcs.o: player-calcs.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
@@ -1440,8 +1441,8 @@ depgen:
  mon-blow-methods.h list-blow-methods.h mon-blow-effects.h \
  list-blow-effects.h list-mon-temp-flags.h list-mon-race-flags.h \
  list-mon-spells.h init.h parser.h list-parser-errors.h mon-make.h \
- obj-pile.h obj-randart.h obj-tval.h list-tvals.h obj-util.h ui-command.h \
- wizard.h
+ obj-pile.h obj-randart.h list-randart-properties.h obj-tval.h \
+ list-tvals.h obj-util.h ui-command.h wizard.h
 ./buildid.o: buildid.c buildid.h
 ./z-bitflag.o: z-bitflag.c z-bitflag.h h-basic.h z-form.h z-virt.h
 ./z-color.o: z-color.c h-basic.h z-color.h z-util.h

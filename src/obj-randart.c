@@ -650,8 +650,7 @@ static void parse_frequencies(void)
 			artprobs[ART_IDX_WEAPON_DAM] += temp;
 
 			/* Aggravation */
-			if (of_has(art->flags, OF_AGGRAVATE))
-			{
+			if (of_has(art->flags, OF_AGGRAVATE)) {
 				file_putf(log_file, "Adding 1 for aggravation - weapon\n");
 				artprobs[ART_IDX_WEAPON_AGGR]++;
 			}
