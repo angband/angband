@@ -27,7 +27,6 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "trap.h"
-#include "z-queue.h"
 
 /**
  * This function takes a grid location (x, y) and extracts information the
@@ -542,35 +541,37 @@ void cave_illuminate(struct chunk *c, bool daytime)
 }
 
 /**
- * Scent values start at 0 on a newly generated level.  Every time the player
- * moves or the dungeon is altered new scent values are calculated, with
- * all grids within z_info->max_flow_depth getting marked with the
- * current_scent value.
+ * Size of the circular queue used by "update_flow()"
+ */
+#define FLOW_MAX 2048
+
+/*
+ * Hack -- provide some "speed" for the "flow" code
+ * This entry is the "current index" for the "scent" field
+ * Note that a "scent" value of "zero" means "not used".
  *
- * Once current_scent value reaches MAX_SCENT, all scent values below
- * MAX_SCENT / 2 are set back to 0, all other scent values are reduced by
- * MAX_SCENT / 2, and current_scent is reduced back to MAX_SCENT / 2.
+ * Note that the "noise" indexes from 1 to 127 are for
+ * "old" data, and from 128 to 255 are for "new" data.
  *
- * This means that as long as the player does not teleport,
+ * This means that as long as the player does not "teleport",
  * then any monster up to 128 + z_info->max_flow_depth will be
  * able to track down the player, and in general, will be
  * able to track down either the player or a position recently
  * occupied by the player.
  */
-#define MAX_SCENT 256
-static int current_scent = 0;
+static int flow_save = 0;
 
 
 
 /**
- * Forget the noise and scent information ready for a complete update
+ * Forget the "flow" information ready for a complete update
  */
 void cave_forget_flow(struct chunk *c)
 {
 	int x, y;
 
 	/* Nothing to forget */
-	if (!current_scent) return;
+	if (!flow_save) return;
 
 	/* Check the entire dungeon */
 	for (y = 0; y < c->height; y++) {
@@ -582,91 +583,135 @@ void cave_forget_flow(struct chunk *c)
 	}
 
 	/* Start over */
-	current_scent = 0;
+	flow_save = 0;
 }
 
 
-/**
- * Fill in the noise field of every grid that the player can reach with
- * the number of steps needed to reach that grid.  This also yields
- * the distance of the player from every grid.
+/*
+ * Hack -- fill in the "noise" field of every grid that the player can
+ * "reach" with the number of steps needed to reach that grid.  This
+ * also yields the "distance" of the player from every grid.
  *
- * Mark the scent of the grids that can reach the player with the
- * incremented value of current_scent.
+ * In addition, mark the "scent" of the grids that can reach the player
+ * with the incremented value of "flow_save".
  *
- * This function currently uses a pair of grid queues for the coordinates of
- * the grids which get scent and noise information.  Making it a single queue
- * of locations would be neater.
+ * Hack -- use the local "flow_y" and "flow_x" arrays as a "circular
+ * queue" of cave grids.
+ *
+ * We do not need a priority queue because the noise from grid to grid
+ * is always "one" (even along diagonals) and we process them in order.
  */
 void cave_update_flow(struct chunk *c)
 {
-	int y, x, d;
-    struct queue *queue_y = q_new(c->height * c->width);
-    struct queue *queue_x = q_new(c->height * c->width);
+	int py = player->py;
+	int px = player->px;
 
-	/* Reset scent values if current_scent has reached the maximum */
-	if (current_scent++ == MAX_SCENT) {
-		/* Reduce current_scent */
-		current_scent = MAX_SCENT / 2;
+	int ty, tx;
 
-		/* Reduce all scent values */
-		for (y = 0; y < c->height; y++)	{
-			for (x = 0; x < c->width; x++) {
-				if (c->squares[y][x].scent >= MAX_SCENT / 2) {
-					c->squares[y][x].scent -= MAX_SCENT / 2;
-				} else {
-					c->squares[y][x].scent = 0;
-				}
+	int y, x;
+
+	int n, d;
+
+	int flow_n;
+
+	int flow_tail = 0;
+	int flow_head = 0;
+
+	byte flow_y[FLOW_MAX];
+	byte flow_x[FLOW_MAX];
+
+
+	/*** Cycle the flow ***/
+
+	/* Cycle the flow */
+	if (flow_save++ == 255)
+	{
+		/* Cycle the flow */
+		for (y = 0; y < c->height; y++)
+		{
+			for (x = 0; x < c->width; x++)
+			{
+				int w = c->squares[y][x].scent;
+				c->squares[y][x].scent = (w >= 128) ? (w - 128) : 0;
 			}
 		}
+
+		/* Restart */
+		flow_save = 128;
 	}
 
-	/* The player grid is marked with current scent and 0 noise */
-	c->squares[player->py][player->px].scent = current_scent;
-	c->squares[player->py][player->px].noise = 0;
+	/* Local variable */
+	flow_n = flow_save;
 
-	/* Start the grid queue */
-	q_push_int(queue_y, player->py);
-	q_push_int(queue_x, player->px);
+
+	/*** Player Grid ***/
+
+	/* Save the time-stamp */
+	c->squares[py][px].scent = flow_n;
+
+	/* Save the flow noise */
+	c->squares[py][px].noise = 0;
+
+	/* Enqueue that entry */
+	flow_y[flow_head] = py;
+	flow_x[flow_head] = px;
+
+	/* Advance the queue */
+	++flow_tail;
+
+
+	/*** Process Queue ***/
 
 	/* Now process the queue */
-	while (q_len(queue_y) > 0) {
-		/* Get the next grid */
-		int ty = q_pop_int(queue_y);
-		int tx = q_pop_int(queue_x);
+	while (flow_head != flow_tail)
+	{
+		/* Extract the next entry */
+		ty = flow_y[flow_head];
+		tx = flow_x[flow_head];
 
-		/* Incremented noise for the adjacent grids */
-		int noise = c->squares[ty][tx].noise + 1;
+		/* Forget that entry (with wrap) */
+		if (++flow_head == FLOW_MAX) flow_head = 0;
 
-		/* Skip this grid if we've reached maximum flow depth */
-		if (noise == z_info->max_flow_depth) continue;
+		/* Child noise */
+		n = c->squares[ty][tx].noise + 1;
 
-		/* Add the adjacent grids */
-		for (d = 0; d < 8; d++) {
-			int y = ty + ddy_ddd[d];
-			int x = tx + ddx_ddd[d];
+		/* Hack -- Limit flow depth */
+		if (n == z_info->max_flow_depth) continue;
 
-			/* Ignore invalid grids */
+		/* Add the "children" */
+		for (d = 0; d < 8; d++)
+		{
+			int old_head = flow_tail;
+
+			/* Child location */
+			y = ty + ddy_ddd[d];
+			x = tx + ddx_ddd[d];
 			if (!square_in_bounds(c, y, x)) continue;
 
-			/* Ignore grids we've already processed */
-			if (c->squares[y][x].scent == current_scent) continue;
+			/* Ignore "pre-stamped" entries */
+			if (c->squares[y][x].scent == flow_n) continue;
 
-			/* Ignore grids that don't allow flow information */
-			if (square_isnoflow(c, y, x)) continue;
+			/* Ignore "walls" and "rubble" */
+			if (square_isnoflow(c, y, x))
+				continue;
 
-			/* Save the current scent and noise */
-			c->squares[y][x].scent = current_scent;
-			c->squares[y][x].noise = noise;
+			/* Save the time-stamp */
+			c->squares[y][x].scent = flow_n;
 
-			/* Add that grid to the queue */
-			q_push_int(queue_y, y);
-			q_push_int(queue_x, x);
+			/* Save the flow noise */
+			c->squares[y][x].noise = n;
+
+			/* Enqueue that entry */
+			flow_y[flow_tail] = y;
+			flow_x[flow_tail] = x;
+
+			/* Advance the queue */
+			if (++flow_tail == FLOW_MAX) flow_tail = 0;
+
+			/* Hack -- Overflow by forgetting new entry */
+			if (flow_tail == flow_head) flow_tail = old_head;
 		}
 	}
-
-	q_free(queue_y);
-	q_free(queue_x);
 }
 
 /**
