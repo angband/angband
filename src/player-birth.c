@@ -1127,7 +1127,7 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Randomize the artifacts if required */
 	if (OPT(player, birth_randarts))
-		do_randart(seed_randart, true);
+		do_randart(seed_randart);
 
 	/* Seed for flavors */
 	seed_flavor = randint0(0x10000000);

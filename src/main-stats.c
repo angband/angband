@@ -231,9 +231,8 @@ static void initialize_character(void)
 	seed_flavor = randint0(0x10000000);
 	seed_randart = randint0(0x10000000);
 
-	if (randarts)
-	{
-		do_randart(seed_randart, true);
+	if (randarts) {
+		do_randart(seed_randart);
 	}
 
 	store_reset();

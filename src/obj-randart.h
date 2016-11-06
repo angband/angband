@@ -57,6 +57,6 @@ enum {
 };
 
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
-errr do_randart(u32b randart_seed, bool full);
+errr do_randart(u32b randart_seed);
 
 #endif /* OBJECT_RANDART_H */

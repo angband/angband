@@ -155,7 +155,6 @@ static s16b art_idx_high_resist[] =	{
 
 /* Initialize the data structures for learned probabilities */
 static s16b artprobs[ART_IDX_TOTAL];
-static s16b *baseprobs;
 static s16b art_bow_total = 0;
 static s16b art_melee_total = 0;
 static s16b art_boot_total = 0;
@@ -193,7 +192,6 @@ static ang_file *log_file = NULL;
 /*
  * Store the original artifact power ratings
  */
-static s32b *base_power;
 static s16b max_power;
 static s16b min_power;
 static s16b avg_power;
@@ -269,7 +267,7 @@ static s32b artifact_power(int a_idx, bool translate)
 /**
  * Store the original artifact power ratings as a baseline
  */
-static void store_base_power(void)
+static void store_base_power(s32b *base_power)
 {
 	int i, j;
 	struct artifact *art;
@@ -485,90 +483,15 @@ static void remove_contradictory(struct artifact *art)
 }
 
 /**
- * Adjust the parsed frequencies for any peculiarities of the
- * algorithm.  For example, if stat bonuses and sustains are
- * being added in a correlated fashion, it will tend to push
- * the frequencies up for both of them.  In this method we
- * compensate for cases like this by applying corrective
- * scaling.
+ * Parse the standard artifacts and count up the frequencies of the various
+ * abilities.
  */
-static void adjust_freqs(void)
-{
-	/*
-	 * Enforce minimum values for any frequencies that might potentially
-	 * be missing in the standard set, especially supercharged ones.
-	 * Numbers here represent the average number of times this ability
-	 * would appear if the entire randart set was eligible to receive
-	 * it (so in the case of a bow ability: if the set was all bows).
-	 *
-	 * Note that low numbers here for very specialized abilities could
-	 * mean that there's a good chance this ability will not appear in
-	 * a given randart set.  If this is a problem, raise the number.
-	 */
-	if (artprobs[ART_IDX_GEN_RFEAR] < 5)
-		artprobs[ART_IDX_GEN_RFEAR] = 5;
-	if (artprobs[ART_IDX_MELEE_DICE_SUPER] < 5)
-		artprobs[ART_IDX_MELEE_DICE_SUPER] = 5;
-	if (artprobs[ART_IDX_BOW_SHOTS_SUPER] < 5)
-		artprobs[ART_IDX_BOW_SHOTS_SUPER] = 5;
-	if (artprobs[ART_IDX_BOW_MIGHT_SUPER] < 5)
-		artprobs[ART_IDX_BOW_MIGHT_SUPER] = 5;
-	if (artprobs[ART_IDX_MELEE_BLOWS_SUPER] < 5)
-		artprobs[ART_IDX_MELEE_BLOWS_SUPER] = 5;
-	if (artprobs[ART_IDX_GEN_SPEED_SUPER] < 5)
-		artprobs[ART_IDX_GEN_SPEED_SUPER] = 5;
-	if (artprobs[ART_IDX_GEN_AC] < 5)
-		artprobs[ART_IDX_GEN_AC] = 5;
-	if (artprobs[ART_IDX_GEN_TUNN] < 5)
-		artprobs[ART_IDX_GEN_TUNN] = 5;
-	if (artprobs[ART_IDX_NONWEAPON_BRAND] < 2)
-		artprobs[ART_IDX_NONWEAPON_BRAND] = 2;
-	if (artprobs[ART_IDX_NONWEAPON_SLAY] < 2)
-		artprobs[ART_IDX_NONWEAPON_SLAY] = 2;
-	if (artprobs[ART_IDX_BOW_BRAND] < 2)
-		artprobs[ART_IDX_BOW_BRAND] = 2;
-	if (artprobs[ART_IDX_BOW_SLAY] < 2)
-		artprobs[ART_IDX_BOW_SLAY] = 2;
-	if (artprobs[ART_IDX_NONWEAPON_BLOWS] < 2)
-		artprobs[ART_IDX_NONWEAPON_BLOWS] = 2;
-	if (artprobs[ART_IDX_NONWEAPON_SHOTS] < 2)
-		artprobs[ART_IDX_NONWEAPON_SHOTS] = 2;
-	if (artprobs[ART_IDX_GEN_AC_SUPER] < 5)
-		artprobs[ART_IDX_GEN_AC_SUPER] = 5;
-	if (artprobs[ART_IDX_MELEE_AC] < 5)
-		artprobs[ART_IDX_MELEE_AC] = 5;
-	if (artprobs[ART_IDX_GEN_PSTUN] < 3)
-		artprobs[ART_IDX_GEN_PSTUN] = 3;
-
-	/* Cut aggravation frequencies in half since they're used twice */
-	artprobs[ART_IDX_NONWEAPON_AGGR] /= 2;
-	artprobs[ART_IDX_WEAPON_AGGR] /= 2;
-}
-
-/**
- * Parse the list of artifacts and count up the frequencies of the various
- * abilities.  This is used to give dynamic generation probabilities.
- */
-static void parse_frequencies(void)
+static void parse_standarts(s32b *base_power, s16b *baseprobs)
 {
 	size_t i;
-	int j;
 	const struct artifact *art;
 	struct object_kind *kind;
 	s32b m, temp;
-
-	file_putf(log_file, "\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
-
-	/* Zero the frequencies for artifact attributes */
-	for (i = 0; i < ART_IDX_TOTAL; i++)
-		artprobs[i] = 0;
-
-	/*
-	 * Initialise the frequencies for base items so that each item could
-	 * be chosen - we check for illegal items during choose_item()
-	 */
-	for (i = 0; i < z_info->k_max; i++)
-		baseprobs[i] = 1;
 
 	/* Go through the list of all artifacts */
 	for (i = 0; i < z_info->a_max; i++) {
@@ -1251,39 +1174,32 @@ static void parse_frequencies(void)
 			file_putf(log_file, "Adding 1 for activation.\n");
 			(artprobs[ART_IDX_GEN_ACTIV])++;
 		}
-		/* Done with parsing of frequencies for this item */
 	}
-	/* End for loop */
+}
 
-	if (verbose) {
-	/* Print out some of the abilities, to make sure that everything's fine */
-		for (i = 0; i < ART_IDX_TOTAL; i++)
-			file_putf(log_file, "Frequency of ability %d: %d\n", i,
-					  artprobs[i]);
-
-		for (i = 0; i < z_info->k_max; i++)
-			file_putf(log_file, "Frequency of item %d: %d\n", i, baseprobs[i]);
-	}
-
-	/*
-	 * Rescale the abilities so that dependent / independent abilities are
-	 * comparable.  We do this by rescaling the frequencies for item-dependent
-	 * abilities as though the entire set was made up of that item type.  For
-	 * example, if one bow out of three has extra might, and there are 120
-	 * artifacts in the full set, we rescale the frequency for extra might to
-	 * 40 (if we had 120 randart bows, about 40 would have extra might).
-	 *
-	 * This will allow us to compare the frequencies of all ability types,
-	 * no matter what the dependency.  We assume that generic abilities (like
-	 * resist fear in the current version) don't need rescaling.  This
-	 * introduces some inaccuracy in cases where specific instances of an
-	 * ability (like INT bonus on helms) have been counted separately -
-	 * ideally we should adjust for this in the general case.  However, as
-	 * long as this doesn't occur too often, it shouldn't be a big issue.
-	 *
-	 * The following loops look complicated, but they are simply equivalent
-	 * to going through each of the relevant ability types one by one.
-	 */
+/**
+ * Rescale the abilities so that dependent / independent abilities are
+ * comparable.  We do this by rescaling the frequencies for item-dependent
+ * abilities as though the entire set was made up of that item type.  For
+ * example, if one bow out of three has extra might, and there are 120
+ * artifacts in the full set, we rescale the frequency for extra might to
+ * 40 (if we had 120 randart bows, about 40 would have extra might).
+ *
+ * This will allow us to compare the frequencies of all ability types,
+ * no matter what the dependency.  We assume that generic abilities (like
+ * resist fear in the current version) don't need rescaling.  This
+ * introduces some inaccuracy in cases where specific instances of an
+ * ability (like INT bonus on helms) have been counted separately -
+ * ideally we should adjust for this in the general case.  However, as
+ * long as this doesn't occur too often, it shouldn't be a big issue.
+ *
+ * The following loops look complicated, but they are simply equivalent
+ * to going through each of the relevant ability types one by one.
+ */
+static void rescale_freqs(void)
+{
+	size_t i;
+	s32b temp;
 
 	/* Bow-only abilities */
 	for (i = 0; i < N_ELEMENTS(art_idx_bow); i++)
@@ -1347,8 +1263,109 @@ static void parse_frequencies(void)
 	 * All others are general case and don't need to be rescaled,
 	 * unless the algorithm is getting too clever about separating
 	 * out individual cases (in which case some logic should be
-	 * added for them in the following method call).
+	 * added for them in rescale_freqs()).
 	 */
+}
+
+/**
+ * Adjust the parsed frequencies for any peculiarities of the
+ * algorithm.  For example, if stat bonuses and sustains are
+ * being added in a correlated fashion, it will tend to push
+ * the frequencies up for both of them.  In this method we
+ * compensate for cases like this by applying corrective
+ * scaling.
+ */
+static void adjust_freqs(void)
+{
+	/*
+	 * Enforce minimum values for any frequencies that might potentially
+	 * be missing in the standard set, especially supercharged ones.
+	 * Numbers here represent the average number of times this ability
+	 * would appear if the entire randart set was eligible to receive
+	 * it (so in the case of a bow ability: if the set was all bows).
+	 *
+	 * Note that low numbers here for very specialized abilities could
+	 * mean that there's a good chance this ability will not appear in
+	 * a given randart set.  If this is a problem, raise the number.
+	 */
+	if (artprobs[ART_IDX_GEN_RFEAR] < 5)
+		artprobs[ART_IDX_GEN_RFEAR] = 5;
+	if (artprobs[ART_IDX_MELEE_DICE_SUPER] < 5)
+		artprobs[ART_IDX_MELEE_DICE_SUPER] = 5;
+	if (artprobs[ART_IDX_BOW_SHOTS_SUPER] < 5)
+		artprobs[ART_IDX_BOW_SHOTS_SUPER] = 5;
+	if (artprobs[ART_IDX_BOW_MIGHT_SUPER] < 5)
+		artprobs[ART_IDX_BOW_MIGHT_SUPER] = 5;
+	if (artprobs[ART_IDX_MELEE_BLOWS_SUPER] < 5)
+		artprobs[ART_IDX_MELEE_BLOWS_SUPER] = 5;
+	if (artprobs[ART_IDX_GEN_SPEED_SUPER] < 5)
+		artprobs[ART_IDX_GEN_SPEED_SUPER] = 5;
+	if (artprobs[ART_IDX_GEN_AC] < 5)
+		artprobs[ART_IDX_GEN_AC] = 5;
+	if (artprobs[ART_IDX_GEN_TUNN] < 5)
+		artprobs[ART_IDX_GEN_TUNN] = 5;
+	if (artprobs[ART_IDX_NONWEAPON_BRAND] < 2)
+		artprobs[ART_IDX_NONWEAPON_BRAND] = 2;
+	if (artprobs[ART_IDX_NONWEAPON_SLAY] < 2)
+		artprobs[ART_IDX_NONWEAPON_SLAY] = 2;
+	if (artprobs[ART_IDX_BOW_BRAND] < 2)
+		artprobs[ART_IDX_BOW_BRAND] = 2;
+	if (artprobs[ART_IDX_BOW_SLAY] < 2)
+		artprobs[ART_IDX_BOW_SLAY] = 2;
+	if (artprobs[ART_IDX_NONWEAPON_BLOWS] < 2)
+		artprobs[ART_IDX_NONWEAPON_BLOWS] = 2;
+	if (artprobs[ART_IDX_NONWEAPON_SHOTS] < 2)
+		artprobs[ART_IDX_NONWEAPON_SHOTS] = 2;
+	if (artprobs[ART_IDX_GEN_AC_SUPER] < 5)
+		artprobs[ART_IDX_GEN_AC_SUPER] = 5;
+	if (artprobs[ART_IDX_MELEE_AC] < 5)
+		artprobs[ART_IDX_MELEE_AC] = 5;
+	if (artprobs[ART_IDX_GEN_PSTUN] < 3)
+		artprobs[ART_IDX_GEN_PSTUN] = 3;
+
+	/* Cut aggravation frequencies in half since they're used twice */
+	artprobs[ART_IDX_NONWEAPON_AGGR] /= 2;
+	artprobs[ART_IDX_WEAPON_AGGR] /= 2;
+}
+
+/**
+ * Parse the artifacts and write frequencies of their abilities and
+ * base object kinds. 
+ *
+ * This is used to give dynamic generation probabilities.
+ */
+static void parse_frequencies(s32b *base_power, s16b *baseprobs)
+{
+	size_t i;
+	int j;
+
+	file_putf(log_file, "\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
+
+	/* Zero the frequencies for artifact attributes */
+	for (i = 0; i < ART_IDX_TOTAL; i++)
+		artprobs[i] = 0;
+
+	/*
+	 * Initialise the frequencies for base items so that each item could
+	 * be chosen - we check for illegal items during choose_item()
+	 */
+	for (i = 0; i < z_info->k_max; i++)
+		baseprobs[i] = 1;
+
+	parse_standarts(base_power, baseprobs);
+
+	if (verbose) {
+	/* Print out some of the abilities, to make sure that everything's fine */
+		for (i = 0; i < ART_IDX_TOTAL; i++)
+			file_putf(log_file, "Frequency of ability %d: %d\n", i,
+					  artprobs[i]);
+
+		for (i = 0; i < z_info->k_max; i++)
+			file_putf(log_file, "Frequency of item %d: %d\n", i, baseprobs[i]);
+	}
+
+	/* Rescale frequencies */
+	rescale_freqs();
 
 	/* Perform any additional rescaling and adjustment, if required. */
 	adjust_freqs();
@@ -2300,12 +2317,11 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
  *
  * This code is full of intricacies developed over years of tweaking.
  */
-static void scramble_artifact(int a_idx)
+static void scramble_artifact(int a_idx, s32b power)
 {
 	struct artifact *art = &a_info[a_idx];
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
 	struct artifact *a_old = mem_zalloc(sizeof *a_old);
-	s32b power;
 	int tries = 0;
 	byte alloc_old, base_alloc_old, alloc_new;
 	s32b ap = 0;
@@ -2322,9 +2338,6 @@ static void scramble_artifact(int a_idx)
 	if (strstr(art->name, "The One Ring") ||
 		kf_has(kind->kind_flags, KF_QUEST_ART))
 		return;
-
-	/* Evaluate the original artifact to determine the power level. */
-	power = base_power[a_idx];
 
 	/* If it has a restricted ability then don't randomize it. */
 	if (power > INHIBIT_POWER) {
@@ -2607,7 +2620,7 @@ static bool artifacts_acceptable(void)
 /**
  * Scramble each artifact
  */
-static errr scramble(void)
+static errr scramble(s32b *base_power)
 {
 	/* If our artifact set fails to meet certain criteria, we start over. */
 	do {
@@ -2615,7 +2628,7 @@ static errr scramble(void)
 
 		/* Generate all the artifacts. */
 		for (a_idx = 1; a_idx < z_info->a_max; a_idx++)
-			scramble_artifact(a_idx);
+			scramble_artifact(a_idx, base_power[a_idx]);
 	} while (!artifacts_acceptable());
 
 	/* Success */
@@ -2677,7 +2690,7 @@ static errr init_names(void)
 /**
  * Call the name allocation and artifact scrambling routines
  */
-static errr do_randart_aux(bool full)
+static errr do_randart_aux(s32b *base_power)
 {
 	errr result;
 
@@ -2685,8 +2698,7 @@ static errr do_randart_aux(bool full)
 	if ((result = init_names()) != 0) return (result);
 
 	/* Randomize the artifacts */
-	if (full)
-		if ((result = scramble()) != 0) return (result);
+	if ((result = scramble(base_power)) != 0) return (result);
 
 	/* Success */
 	return (0);
@@ -2699,69 +2711,64 @@ static errr do_randart_aux(bool full)
  * The full flag toggles between just randomizing the names and
  * complete randomization of the artifacts.
  */
-errr do_randart(u32b randart_seed, bool full)
+errr do_randart(u32b randart_seed)
 {
 	errr err;
+	s32b *base_power;
+	s16b *baseprobs;
 
 	/* Prepare to use the Angband "simple" RNG. */
 	Rand_value = randart_seed;
 	Rand_quick = true;
 
-	/* Only do all the following if full randomization requested */
-	if (full) {
-		/* Allocate the various "original powers" arrays */
-		base_power = mem_zalloc(z_info->a_max * sizeof(s32b));
-		base_item_level = mem_zalloc(z_info->a_max * sizeof(byte));
-		base_item_prob = mem_zalloc(z_info->a_max * sizeof(byte));
-		base_art_alloc = mem_zalloc(z_info->a_max * sizeof(byte));
-		baseprobs = mem_zalloc(z_info->k_max * sizeof(s16b));
-		base_freq = mem_zalloc(z_info->k_max * sizeof(s16b));
+	/* Allocate the various "original powers" arrays */
+	base_power = mem_zalloc(z_info->a_max * sizeof(s32b));
+	base_item_level = mem_zalloc(z_info->a_max * sizeof(byte));
+	base_item_prob = mem_zalloc(z_info->a_max * sizeof(byte));
+	base_art_alloc = mem_zalloc(z_info->a_max * sizeof(byte));
+	baseprobs = mem_zalloc(z_info->k_max * sizeof(s16b));
+	base_freq = mem_zalloc(z_info->k_max * sizeof(s16b));
 
-		/* Open the log file for writing */
-		if (verbose) {
-			char buf[1024];
-			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "randart.log");
-			log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-			if (!log_file) {
-				msg("Error - can't open randart.log for writing.");
-				exit(1);
-			}
+	/* Open the log file for writing */
+	if (verbose) {
+		char buf[1024];
+		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "randart.log");
+		log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+		if (!log_file) {
+			msg("Error - can't open randart.log for writing.");
+			exit(1);
 		}
-
-		/* Store the original power ratings */
-		store_base_power();
-
-		/* Determine the generation probabilities */
-		parse_frequencies();
 	}
+
+	/* Store the original power ratings */
+	store_base_power(base_power);
+
+	/* Determine the generation probabilities */
+	parse_frequencies(base_power, baseprobs);
 
 	/* Generate the random artifact (names) */
-	err = do_randart_aux(full);
+	err = do_randart_aux(base_power);
 
-	/* Only do all the following if full randomization requested */
-	if (full) {
-		/* Just for fun, look at the frequencies on the finished items */
-		/* Remove this prior to release */
-		store_base_power();
-		parse_frequencies();
+	/* Just for fun, look at the frequencies on the finished items */
+	/* Remove this prior to release */
+	store_base_power(base_power);
+	parse_frequencies(base_power, baseprobs);
 
-		/* Close the log file */
-		if (verbose) {
-			if (!file_close(log_file))
-			{
-				msg("Error - can't close randart.log file.");
-				exit(1);
-			}
+	/* Close the log file */
+	if (verbose) {
+		if (!file_close(log_file)) {
+			msg("Error - can't close randart.log file.");
+			exit(1);
 		}
-
-		/* Free the "original powers" arrays */
-		mem_free(base_power);
-		mem_free(base_item_level);
-		mem_free(base_item_prob);
-		mem_free(base_art_alloc);
-		mem_free(baseprobs);
-		mem_free(base_freq);
 	}
+
+	/* Free the "original powers" arrays */
+	mem_free(base_power);
+	mem_free(base_item_level);
+	mem_free(base_item_prob);
+	mem_free(base_art_alloc);
+	mem_free(baseprobs);
+	mem_free(base_freq);
 
 	/* When done, resume use of the Angband "complex" RNG. */
 	Rand_quick = false;
