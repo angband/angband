@@ -2582,75 +2582,27 @@ static void scramble_artifact(int a_idx)
  */
 static bool artifacts_acceptable(void)
 {
-	int swords = 5, polearms = 5, blunts = 5, bows = 4;
-	int bodies_local = 5, shields = 4, cloaks = 4, hats = 4;
-	int gloves = 4, boots = 4;
 	int i;
 
-	for (i = 0; i < z_info->a_max; i++)
-	{
-		switch (a_info[i].tval)
-		{
-			case TV_SWORD:
-				swords--; break;
-			case TV_POLEARM:
-				polearms--; break;
-			case TV_HAFTED:
-				blunts--; break;
-			case TV_BOW:
-				bows--; break;
-			case TV_SOFT_ARMOR:
-			case TV_HARD_ARMOR:
-			case TV_DRAG_ARMOR:
-				bodies_local--; break;
-			case TV_SHIELD:
-				shields--; break;
-			case TV_CLOAK:
-				cloaks--; break;
-			case TV_HELM:
-			case TV_CROWN:
-				hats--; break;
-			case TV_GLOVES:
-				gloves--; break;
-			case TV_BOOTS:
-				boots--; break;
+	int tval_min[] = {
+		#define TV(a, b, c) c,
+		#include "list-tvals.h"
+		#undef TV
+	};
+
+	for (i = 0; i < z_info->a_max; i++)	{
+		tval_min[a_info[i].tval]--;
+	}
+
+	for (i = 0; i < TV_MAX; i++) {
+		if (tval_min[i] > 0) {
+			file_putf(log_file, "Restarting generation process: too few %ss",
+					  tval_find_name(i));
+			return false;
 		}
 	}
 
-	file_putf(log_file, "Deficit amount for swords is %d\n", swords);
-	file_putf(log_file, "Deficit amount for polearms is %d\n", polearms);
-	file_putf(log_file, "Deficit amount for blunts is %d\n", blunts);
-	file_putf(log_file, "Deficit amount for bows is %d\n", bows);
-	file_putf(log_file, "Deficit amount for bodies is %d\n", bodies_local);
-	file_putf(log_file, "Deficit amount for shields is %d\n", shields);
-	file_putf(log_file, "Deficit amount for cloaks is %d\n", cloaks);
-	file_putf(log_file, "Deficit amount for hats is %d\n", hats);
-	file_putf(log_file, "Deficit amount for gloves is %d\n", gloves);
-	file_putf(log_file, "Deficit amount for boots is %d\n", boots);
-
-	if (swords > 0 || polearms > 0 || blunts > 0 || bows > 0 ||
-	    bodies_local > 0 || shields > 0 || cloaks > 0 || hats > 0 ||
-	    gloves > 0 || boots > 0) {
-		if (verbose) {
-			char types[256];
-			strnfmt(types, sizeof(types), "%s%s%s%s%s%s%s%s%s%s",
-					swords > 0 ? " swords" : "",
-					polearms > 0 ? " polearms" : "",
-					blunts > 0 ? " blunts" : "",
-					bows > 0 ? " bows" : "",
-					bodies_local > 0 ? " body-armors" : "",
-					shields > 0 ? " shields" : "",
-					cloaks > 0 ? " cloaks" : "",
-					hats > 0 ? " hats" : "",
-					gloves > 0 ? " gloves" : "",
-					boots > 0 ? " boots" : "");
-
-			file_putf(log_file, "Restarting generation process: not enough%s",
-					  types);
-		}
-		return false;
-	} else
-		return true;
+	return true;
 }
 
 /**

@@ -346,7 +346,7 @@ bool tval_is_zapper(const struct object *obj)
  */
 static const grouper tval_names[] =
 {
-	#define TV(a, b) { TV_##a, b },
+	#define TV(a, b, c) { TV_##a, b },
 	#include "list-tvals.h"
 	#undef TV
 };
