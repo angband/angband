@@ -1815,6 +1815,7 @@ static void cleanup_object(void)
 		string_free(kind->effect_msg);
 		free_brand(kind->brands);
 		free_slay(kind->slays);
+		free_curse(kind->curses, true, false);
 		free_effect(kind->effect);
 	}
 	mem_free(k_info);
@@ -5219,6 +5220,8 @@ void cleanup_angband(void)
 
 	monster_list_finalize();
 	object_list_finalize();
+	free_slay(game_slays);
+	free_brand(game_brands);
 
 	cleanup_game_constants();
 
