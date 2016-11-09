@@ -33,7 +33,33 @@
 #include "obj-util.h"
 #include "randname.h"
 
-/* Arrays of indices by item type, used in frequency generation */
+/*
+ * Pointer for logging file
+ */
+static ang_file *log_file = NULL;
+
+/* Activation list */
+struct activation *activations;
+
+/* Global just for convenience. */
+static int verbose = 1;
+
+/**
+ * Include the elements and names
+ */
+static const struct element_type {
+	int index;
+	const char *name;
+} elements[] = {
+	#define ELEM(a, b, c, d, e, f, g, h, i, col) {ELEM_##a, b},
+	#include "list-elements.h"
+	#undef ELEM
+};
+
+/**
+ * ------------------------------------------------------------------------
+ * Arrays of indices by item type, used in frequency generation
+ * ------------------------------------------------------------------------ */
 static s16b art_idx_bow[] = {
 	ART_IDX_BOW_SHOTS,
 	ART_IDX_BOW_MIGHT,
@@ -153,27 +179,7 @@ static s16b art_idx_high_resist[] =	{
 	ART_IDX_GEN_PSTUN
 };
 
-/* Initialize the data structures for learned probabilities */
-static s16b artprobs[ART_IDX_TOTAL];
-static s16b art_bow_total = 0;
-static s16b art_melee_total = 0;
-static s16b art_boot_total = 0;
-static s16b art_glove_total = 0;
-static s16b art_headgear_total = 0;
-static s16b art_shield_total = 0;
-static s16b art_cloak_total = 0;
-static s16b art_armor_total = 0;
-static s16b art_other_total = 0;
-static s16b art_total = 0;
-
-/*
- * Working arrays for holding frequency values - global to avoid repeated
- * allocation of memory
- */
-static s16b art_freq[ART_IDX_TOTAL];  	/* artifact attributes */
-static s16b *base_freq; 			/* base items */
-
-/*
+/**
  * Mean start and increment values for to_hit, to_dam and AC.  Update these
  * if the algorithm changes.  They are used in frequency generation.
  */
@@ -184,52 +190,10 @@ static s16b mean_dam_startval = 10;
 static s16b mean_ac_startval = 15;
 static s16b mean_ac_increment = 5;
 
-/*
- * Pointer for logging file
- */
-static ang_file *log_file = NULL;
-
-/*
- * Store the original artifact power ratings
- */
-static s16b max_power;
-static s16b min_power;
-static s16b avg_power;
-static s16b var_power;
-
-/*
- * Store the original base item levels
- */
-static byte *base_item_level;
-
-/*
- * Store the original base item rarities
- */
-static byte *base_item_prob;
-
-/*
- * Store the original artifact rarities
- */
-static byte *base_art_alloc;
-
-/* Activation list */
-struct activation *activations;
-
-/* Global just for convenience. */
-static int verbose = 1;
-
 /**
- * Include the elements and names
- */
-static const struct element_type {
-	int index;
-	const char *name;
-} elements[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) {ELEM_##a, b},
-	#include "list-elements.h"
-	#undef ELEM
-};
-
+ * ------------------------------------------------------------------------
+ * Calculation of the statistics of an artifact set
+ * ------------------------------------------------------------------------ */
 /**
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
@@ -267,45 +231,48 @@ static s32b artifact_power(int a_idx, bool translate)
 /**
  * Store the original artifact power ratings as a baseline
  */
-static void store_base_power(s32b *base_power)
+static void store_base_power(struct artifact_data *data)
 {
 	int i, j;
 	struct artifact *art;
 	struct object_kind *kind;
 	int *fake_power;
 
-	max_power = 0;
-	min_power = 32767;
-	var_power = 0;
+	data->max_power = 0;
+	data->min_power = 32767;
+	data->var_power = 0;
 	fake_power = mem_zalloc(z_info->a_max * sizeof(int));
 	j = 0;
 
 	for (i = 0; i < z_info->a_max; i++, j++) {
-		base_power[i] = artifact_power(i, false);
+		data->base_power[i] = artifact_power(i, false);
 
 		/* capture power stats, ignoring cursed and uber arts */
-		if (base_power[i] > max_power && base_power[i] < INHIBIT_POWER)
-			max_power = base_power[i];
-		if (base_power[i] < min_power && base_power[i] > 0)
-			min_power = base_power[i];
-		if (base_power[i] > 0 && base_power[i] < INHIBIT_POWER)
-			fake_power[j] = (int)base_power[i];
+		if (data->base_power[i] > data->max_power &&
+			data->base_power[i] < INHIBIT_POWER)
+			data->max_power = data->base_power[i];
+		if (data->base_power[i] < data->min_power && data->base_power[i] > 0)
+			data->min_power = data->base_power[i];
+		if (data->base_power[i] > 0 && data->base_power[i] < INHIBIT_POWER)
+			fake_power[j] = (int)data->base_power[i];
 		else
 			j--;
 
-		if (!base_power[i]) continue;
+		if (!data->base_power[i]) continue;
 		art = &a_info[i];
 		kind = lookup_kind(art->tval, art->sval);
-		base_item_level[i] = kind->level;
-		base_item_prob[i] = kind->alloc_prob;
-		base_art_alloc[i] = art->alloc_prob;
+		data->base_item_level[i] = kind->level;
+		data->base_item_prob[i] = kind->alloc_prob;
+		data->base_art_alloc[i] = art->alloc_prob;
 	}
 
-	avg_power = mean(fake_power, j);
-	var_power = variance(fake_power, j);
+	data->avg_power = mean(fake_power, j);
+	data->var_power = variance(fake_power, j);
 
-	file_putf(log_file, "Max power is %d, min is %d\n", max_power, min_power);
-	file_putf(log_file, "Mean is %d, variance is %d\n", avg_power, var_power);
+	file_putf(log_file, "Max power is %d, min is %d\n", data->max_power,
+			  data->min_power);
+	file_putf(log_file, "Mean is %d, variance is %d\n", data->avg_power,
+			  data->var_power);
 
 	/* Store the number of different types, for use later */
 	/* ToDo: replace this with full combination tracking */
@@ -315,38 +282,974 @@ static void store_base_power(s32b *base_power)
 		case TV_SWORD:
 		case TV_POLEARM:
 		case TV_HAFTED:
-			art_melee_total++; break;
+			data->melee_total++; break;
 		case TV_BOW:
-			art_bow_total++; break;
+			data->bow_total++; break;
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-			art_armor_total++; break;
+			data->armor_total++; break;
 		case TV_SHIELD:
-			art_shield_total++; break;
+			data->shield_total++; break;
 		case TV_CLOAK:
-			art_cloak_total++; break;
+			data->cloak_total++; break;
 		case TV_HELM:
 		case TV_CROWN:
-			art_headgear_total++; break;
+			data->headgear_total++; break;
 		case TV_GLOVES:
-			art_glove_total++; break;
+			data->glove_total++; break;
 		case TV_BOOTS:
-			art_boot_total++; break;
+			data->boot_total++; break;
 		case TV_NULL:
 			break;
 		default:
-			art_other_total++;
+			data->other_total++;
 		}
 	}
-	art_total = art_melee_total + art_bow_total + art_armor_total +
-	            art_shield_total + art_cloak_total + art_headgear_total +
-	            art_glove_total + art_boot_total + art_other_total;
+	data->total = data->melee_total + data->bow_total + data->armor_total +
+	            data->shield_total + data->cloak_total + data->headgear_total +
+	            data->glove_total + data->boot_total + data->other_total;
 
     mem_free(fake_power);
 }
 
 
+/**
+ * Handle weapon combat abilities
+ */
+void count_weapon_abilities(const struct artifact *art,
+							struct artifact_data *data)
+{
+	int bonus;
+	struct object_kind *kind = lookup_kind(art->tval, art->sval);
+	int min_to_h = randcalc(kind->to_h, 0, MAXIMISE);
+	int min_to_d = randcalc(kind->to_d, 0, MAXIMISE);
+	int min_to_a = randcalc(kind->to_a, 0, MAXIMISE);
+
+	/* To-hit and to-dam */
+	bonus = (art->to_h - min_to_h - mean_hit_startval) / mean_hit_increment;
+	if (bonus > 0)
+		file_putf(log_file, "Adding %d instances of extra to-hit bonus for weapon\n", bonus);
+	else if (bonus < 0)
+		file_putf(log_file, "Subtracting %d instances of extra to-hit bonus for weapon\n", bonus);
+	data->art_probs[ART_IDX_WEAPON_HIT] += bonus;
+
+	bonus = (art->to_d - min_to_d - mean_dam_startval) / mean_dam_increment;
+	if (bonus > 0)
+		file_putf(log_file, "Adding %d instances of extra to-dam bonus for weapon\n", bonus);
+	else
+		file_putf(log_file, "Subtracting %d instances of extra to-dam bonus for weapon\n", bonus);
+	data->art_probs[ART_IDX_WEAPON_DAM] += bonus;
+
+	/* Does this weapon have an unusual bonus to AC? */
+	bonus = (art->to_a - min_to_a) / mean_ac_increment;
+	if (bonus > 0) {
+		file_putf(log_file,
+				  "Adding %d instances of extra AC bonus for weapon\n", bonus);
+		(data->art_probs[ART_IDX_MELEE_AC]) += bonus;
+	}
+
+	/* Check damage dice - are they more than normal? */
+	if (art->dd > kind->dd) {
+		/* Difference of 3 or more? */
+		if ((art->dd - kind->dd) > 2) {
+			file_putf(log_file, "Adding 1 for super-charged damage dice!\n");
+			(data->art_probs[ART_IDX_MELEE_DICE_SUPER])++;
+		} else {
+			file_putf(log_file, "Adding 1 for extra damage dice.\n");
+			(data->art_probs[ART_IDX_MELEE_DICE])++;
+		}
+	}
+
+	/* Check weight - is it different from normal? */
+	if (art->weight != kind->weight) {
+		file_putf(log_file, "Adding 1 for unusual weight.\n");
+		(data->art_probs[ART_IDX_MELEE_WEIGHT])++;
+	}
+
+	/* Do we have 3 or more extra blows? (Unlikely) */
+	if (art->modifiers[OBJ_MOD_BLOWS] > 2) {
+		file_putf(log_file, "Adding 1 for supercharged blows (3 or more!)\n");
+		(data->art_probs[ART_IDX_MELEE_BLOWS_SUPER])++;
+	} else if (art->modifiers[OBJ_MOD_BLOWS] > 0) {
+		file_putf(log_file, "Adding 1 for extra blows\n");
+		(data->art_probs[ART_IDX_MELEE_BLOWS])++;
+	}
+
+	/* Aggravation */
+	if (of_has(art->flags, OF_AGGRAVATE)) {
+		file_putf(log_file, "Adding 1 for aggravation - weapon\n");
+		data->art_probs[ART_IDX_WEAPON_AGGR]++;
+	}
+
+	/* Blessed weapon? */
+	if (of_has(art->flags, OF_BLESSED)) {
+		file_putf(log_file, "Adding 1 for blessed weapon\n");
+		(data->art_probs[ART_IDX_MELEE_BLESS])++;
+	}
+
+	/* See invisible? */
+	if (of_has(art->flags, OF_SEE_INVIS)) {
+		file_putf(log_file, "Adding 1 for see invisible (weapon case)\n");
+		(data->art_probs[ART_IDX_MELEE_SINV])++;
+	}
+
+	/* Check for tunnelling ability */
+	if (art->modifiers[OBJ_MOD_TUNNEL] > 0) {
+		file_putf(log_file, "Adding 1 for tunnelling bonus.\n");
+		(data->art_probs[ART_IDX_MELEE_TUNN])++;
+	}
+
+	/* Count brands and slays */
+	if (art->slays) {
+		bonus = slay_count(art->slays);
+		data->art_probs[ART_IDX_MELEE_SLAY] += bonus;
+		file_putf(log_file, "Adding %d for slays\n", bonus);
+	}
+	if (art->brands) {
+		bonus = brand_count(art->brands);
+		data->art_probs[ART_IDX_MELEE_BRAND] += bonus;
+		file_putf(log_file, "Adding %d for brands\n", bonus);
+	}
+}
+
+/**
+ * Count combat abilities on bows
+ */
+void count_bow_abilities(const struct artifact *art, struct artifact_data *data)
+{
+	int bonus;
+	struct object_kind *kind = lookup_kind(art->tval, art->sval);
+	int min_to_h = randcalc(kind->to_h, 0, MAXIMISE);
+	int min_to_d = randcalc(kind->to_d, 0, MAXIMISE);
+	int min_to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE) - mean_ac_startval;
+
+	/* To-hit */
+	bonus = (art->to_h - min_to_h - mean_hit_startval) / mean_hit_increment;
+	if (bonus > 0)
+		file_putf(log_file, "Adding %d instances of extra to-hit bonus for weapon\n", bonus);
+	else if (bonus < 0)
+		file_putf(log_file, "Subtracting %d instances of extra to-hit bonus for weapon\n", bonus);
+	data->art_probs[ART_IDX_WEAPON_HIT] += bonus;
+
+	/* To-dam */
+	bonus = (art->to_d - min_to_d - mean_dam_startval) / mean_dam_increment;
+	if (bonus > 0)
+		file_putf(log_file, "Adding %d instances of extra to-dam bonus for weapon\n", bonus);
+	else
+		file_putf(log_file, "Subtracting %d instances of extra to-dam bonus for weapon\n", bonus);
+	data->art_probs[ART_IDX_WEAPON_DAM] += bonus;
+
+	/* Armor class */
+	bonus = (art->to_a - min_to_a) / mean_ac_increment;
+	if (bonus > 0) {
+		file_putf(log_file, "Adding %d for AC bonus - general\n", bonus);
+		(data->art_probs[ART_IDX_GEN_AC]) += bonus;
+	}
+
+	/* Aggravation */
+	if (of_has(art->flags, OF_AGGRAVATE)) {
+		file_putf(log_file, "Adding 1 for aggravation - weapon\n");
+		data->art_probs[ART_IDX_WEAPON_AGGR]++;
+	}
+
+	/* Do we have 3 or more extra shots? (Unlikely) */
+	if (art->modifiers[OBJ_MOD_SHOTS] > 2) {
+		file_putf(log_file, "Adding 1 for supercharged shots (3 or more!)\n");
+		(data->art_probs[ART_IDX_BOW_SHOTS_SUPER])++;
+	} else if (art->modifiers[OBJ_MOD_SHOTS] > 0) {
+		file_putf(log_file, "Adding 1 for extra shots\n");
+		(data->art_probs[ART_IDX_BOW_SHOTS])++;
+	}
+
+	/* Do we have 3 or more extra might? (Unlikely) */
+	if (art->modifiers[OBJ_MOD_MIGHT] > 2) {
+		file_putf(log_file, "Adding 1 for supercharged might (3 or more!)\n");
+		(data->art_probs[ART_IDX_BOW_MIGHT_SUPER])++;
+	} else if (art->modifiers[OBJ_MOD_MIGHT] > 0) {
+		file_putf(log_file, "Adding 1 for extra might\n");
+		(data->art_probs[ART_IDX_BOW_MIGHT])++;
+	}
+
+	/* Count brands and slays */
+	if (art->slays) {
+		int bonus = slay_count(art->slays);
+		data->art_probs[ART_IDX_BOW_SLAY] += bonus;
+		file_putf(log_file, "Adding %d for slays\n", bonus);
+	}
+	if (art->brands) {
+		int bonus = brand_count(art->brands);
+		data->art_probs[ART_IDX_BOW_BRAND] += bonus;
+		file_putf(log_file, "Adding %d for brands\n", bonus);
+	}
+}
+
+/**
+ * Handle nonweapon combat abilities
+ */
+void count_nonweapon_abilities(const struct artifact *art,
+							   struct artifact_data *data)
+{
+	struct object_kind *kind = lookup_kind(art->tval, art->sval);
+	int to_hit = art->to_h - randcalc(kind->to_h, 0, MINIMISE);
+	int to_dam = art->to_d - randcalc(kind->to_d, 0, MINIMISE);
+	int to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE) - mean_ac_startval;
+	int bonus = to_a / mean_ac_increment;
+
+	/* Armor class */
+	if (bonus > 0) {
+		if (art->to_a > 20) {
+			file_putf(log_file, "Adding %d for supercharged AC\n", bonus);
+			(data->art_probs[ART_IDX_GEN_AC_SUPER])++;
+		} else if (art->tval == TV_BOOTS) {
+			file_putf(log_file, "Adding %d for AC bonus - boots\n", bonus);
+			(data->art_probs[ART_IDX_BOOT_AC]) += bonus;
+		} else if (art->tval == TV_GLOVES) {
+			file_putf(log_file, "Adding %d for AC bonus - gloves\n", bonus);
+			(data->art_probs[ART_IDX_GLOVE_AC]) += bonus;
+		} else if (art->tval == TV_HELM || art->tval == TV_CROWN) {
+			file_putf(log_file, "Adding %d for AC bonus - hat\n", bonus);
+			(data->art_probs[ART_IDX_HELM_AC]) += bonus;
+		} else if (art->tval == TV_SHIELD) {
+			file_putf(log_file, "Adding %d for AC bonus - shield\n", bonus);
+			(data->art_probs[ART_IDX_SHIELD_AC]) += bonus;
+		} else if (art->tval == TV_CLOAK) {
+			file_putf(log_file, "Adding %d for AC bonus - cloak\n", bonus);
+			(data->art_probs[ART_IDX_CLOAK_AC]) += bonus;
+		} else if (art->tval == TV_SOFT_ARMOR ||
+				   art->tval == TV_HARD_ARMOR ||
+				   art->tval == TV_DRAG_ARMOR) {
+			file_putf(log_file, "Adding %d for AC bonus - body armor\n", bonus);
+			(data->art_probs[ART_IDX_ARMOR_AC]) += bonus;
+		} else {
+			file_putf(log_file, "Adding %d for AC bonus - general\n", bonus);
+			(data->art_probs[ART_IDX_GEN_AC]) += bonus;
+		}
+	}
+
+	/* To hit and dam to bonuses */
+	if (to_hit && (to_hit == to_dam)) {
+		bonus = to_dam / mean_dam_increment;
+		if (bonus > 0) {
+			file_putf(log_file, "Adding %d instances of extra to-hit and to-dam bonus for non-weapon\n", bonus);
+			(data->art_probs[ART_IDX_NONWEAPON_HIT_DAM]) += bonus;
+		}
+	} else if (to_hit > 0) {
+		bonus = to_hit / mean_hit_increment;
+		if (bonus > 0) {
+			file_putf(log_file, "Adding %d instances of extra to-hit bonus for non-weapon\n", bonus);
+			(data->art_probs[ART_IDX_NONWEAPON_HIT]) += bonus;
+		}
+	} else if (to_dam > 0) {
+		bonus = to_dam / mean_dam_increment;
+		if (bonus > 0) {
+			file_putf(log_file, "Adding %d instances of extra to-dam bonus for non-weapon\n", bonus);
+			(data->art_probs[ART_IDX_NONWEAPON_DAM]) += bonus;
+		}
+	}
+
+	/* Check weight - is it different from normal? */
+	if (art->weight != kind->weight) {
+		file_putf(log_file, "Adding 1 for unusual weight.\n");
+		(data->art_probs[ART_IDX_ALLARMOR_WEIGHT])++;
+	}
+
+	/* Aggravation */
+	if (of_has(art->flags, OF_AGGRAVATE)) {
+		file_putf(log_file, "Adding 1 for aggravation - nonweapon\n");
+		(data->art_probs[ART_IDX_NONWEAPON_AGGR])++;
+	}
+
+	/* Count brands and slays */
+	if (art->slays) {
+		bonus = slay_count(art->slays);
+		data->art_probs[ART_IDX_NONWEAPON_SLAY] += bonus;
+		file_putf(log_file, "Adding %d for slays\n", bonus);
+	}
+	if (art->brands) {
+		bonus = brand_count(art->brands);
+		data->art_probs[ART_IDX_NONWEAPON_BRAND] += bonus;
+		file_putf(log_file, "Adding %d for brands\n", bonus);
+	}
+
+	/* Blows */
+	if (art->modifiers[OBJ_MOD_BLOWS] > 0) {
+		file_putf(log_file, "Adding 1 for extra blows on nonweapon\n");
+		(data->art_probs[ART_IDX_NONWEAPON_BLOWS])++;
+	}
+
+	/* Shots */
+	if (art->modifiers[OBJ_MOD_SHOTS] > 0) {
+		file_putf(log_file, "Adding 1 for extra shots on nonweapon\n");
+		(data->art_probs[ART_IDX_NONWEAPON_SHOTS])++;
+	}
+
+	/* Check for tunnelling ability */
+	if (art->modifiers[OBJ_MOD_TUNNEL] > 0) {
+		file_putf(log_file, "Adding 1 for tunnelling bonus - general.\n");
+		(data->art_probs[ART_IDX_GEN_TUNN])++;
+	}
+}
+
+
+/**
+ * Count modifiers
+ */
+void count_modifiers(const struct artifact *art, struct artifact_data *data)
+{
+	int num = 0;
+
+	/* Stat bonuses.  Add up the number of individual bonuses */
+	if (art->modifiers[OBJ_MOD_STR] > 0) num++;
+	if (art->modifiers[OBJ_MOD_INT] > 0) num++;
+	if (art->modifiers[OBJ_MOD_WIS] > 0) num++;
+	if (art->modifiers[OBJ_MOD_DEX] > 0) num++;
+	if (art->modifiers[OBJ_MOD_CON] > 0) num++;
+
+	/* Handle a few special cases separately. */
+	if ((art->tval == TV_HELM || art->tval == TV_CROWN) &&
+		(art->modifiers[OBJ_MOD_WIS] > 0 || art->modifiers[OBJ_MOD_INT] > 0)) {
+		/* Handle WIS and INT on helms and crowns */
+		if (art->modifiers[OBJ_MOD_WIS] > 0) {
+			file_putf(log_file, "Adding 1 for WIS bonus on headgear.\n");
+			(data->art_probs[ART_IDX_HELM_WIS])++;
+			/* Counted this one separately so subtract it here */
+			num--;
+		}
+		if (art->modifiers[OBJ_MOD_INT] > 0) {
+			file_putf(log_file, "Adding 1 for INT bonus on headgear.\n");
+			(data->art_probs[ART_IDX_HELM_INT])++;
+			/* Counted this one separately so subtract it here */
+			num--;
+		}
+	} else if ((art->tval == TV_SOFT_ARMOR ||
+				art->tval == TV_HARD_ARMOR ||
+				art->tval == TV_DRAG_ARMOR) &&
+			   art->modifiers[OBJ_MOD_CON] > 0) {
+		/* Handle CON bonus on armor */
+		file_putf(log_file, "Adding 1 for CON bonus on body armor.\n");
+
+		(data->art_probs[ART_IDX_ARMOR_CON])++;
+		/* Counted this one separately so subtract it here */
+		num--;
+	} else if (art->tval == TV_GLOVES && art->modifiers[OBJ_MOD_DEX] > 0) {
+		/* Handle DEX bonus on gloves */
+		file_putf(log_file, "Adding 1 for DEX bonus on gloves.\n");
+		(data->art_probs[ART_IDX_GLOVE_DEX])++;
+		/* Counted this one separately so subtract it here */
+		num--;
+	}
+
+	/* Now the general case */
+	if (num > 0) {
+		/* There are some bonuses that weren't handled above */
+		file_putf(log_file, "Adding %d for stat bonuses - general.\n", num);
+			(data->art_probs[ART_IDX_GEN_STAT]) += num;
+	}
+
+	/* Handle stealth, including a couple of special cases */
+	if (art->modifiers[OBJ_MOD_STEALTH] > 0) {
+		if (art->tval == TV_BOOTS) {
+			file_putf(log_file, "Adding 1 for stealth bonus on boots.\n");
+			(data->art_probs[ART_IDX_BOOT_STEALTH])++;
+		} else if (art->tval == TV_CLOAK) {
+			file_putf(log_file, "Adding 1 for stealth bonus on cloak.\n");
+			(data->art_probs[ART_IDX_CLOAK_STEALTH])++;
+		} else if (art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
+				   art->tval == TV_DRAG_ARMOR) {
+			file_putf(log_file, "Adding 1 for stealth bonus on armor.\n");
+			(data->art_probs[ART_IDX_ARMOR_STEALTH])++;
+		} else {
+			/* General case */
+			file_putf(log_file, "Adding 1 for stealth bonus - general.\n");
+			(data->art_probs[ART_IDX_GEN_STEALTH])++;
+		}
+	}
+
+	/* Handle infravision bonus - fully generic */
+	if (art->modifiers[OBJ_MOD_INFRA] > 0) {
+		file_putf(log_file, "Adding 1 for infravision bonus - general.\n");
+		(data->art_probs[ART_IDX_GEN_INFRA])++;
+	}
+
+	/* Speed - boots handled separately.
+	 * This is something of a special case in that we use the same
+	 * frequency for the supercharged value and the normal value.
+	 * We get away with this by using a somewhat lower average value
+	 * for the supercharged ability than in the basic set (around
+	 * +7 or +8 - c.f. Ringil and the others at +10 and upwards).
+	 * This then allows us to add an equal number of
+	 * small bonuses around +3 or so without unbalancing things.
+	 */
+	if (art->modifiers[OBJ_MOD_SPEED] > 0) {
+		if (art->modifiers[OBJ_MOD_SPEED] > 7) {
+			/* Supercharge case */
+			file_putf(log_file, "Adding 1 for supercharged speed bonus!\n");
+			(data->art_probs[ART_IDX_GEN_SPEED_SUPER])++;
+		} else if (art->tval == TV_BOOTS) {
+			/* Handle boots separately */
+			file_putf(log_file, "Adding 1 for normal speed bonus on boots.\n");
+			(data->art_probs[ART_IDX_BOOT_SPEED])++;
+		} else {
+			file_putf(log_file, "Adding 1 for normal speed bonus - general.\n");
+			(data->art_probs[ART_IDX_GEN_SPEED])++;
+		}
+	}
+
+	/* Handle permanent light */
+	if (art->modifiers[OBJ_MOD_LIGHT] > 0) {
+		file_putf(log_file, "Adding 1 for light radius - general.\n");
+		(data->art_probs[ART_IDX_GEN_LIGHT])++;
+	}
+}
+
+void count_low_resists(const struct artifact *art, struct artifact_data *data)
+{
+	int num = 0;
+
+	/* Count up immunities for this item, if any */
+	if (art->el_info[ELEM_ACID].res_level == 3) num++;
+	if (art->el_info[ELEM_ELEC].res_level == 3) num++;
+	if (art->el_info[ELEM_FIRE].res_level == 3) num++;
+	if (art->el_info[ELEM_COLD].res_level == 3) num++;
+	file_putf(log_file, "Adding %d for immunities.\n", num);
+
+	(data->art_probs[ART_IDX_GEN_IMMUNE]) += num;
+
+	/* Count up low resists (not the type, just the number) */
+	num = 0;
+	if (art->el_info[ELEM_ACID].res_level == 1) num++;
+	if (art->el_info[ELEM_ELEC].res_level == 1) num++;
+	if (art->el_info[ELEM_FIRE].res_level == 1) num++;
+	if (art->el_info[ELEM_COLD].res_level == 1) num++;
+
+	if (num) {
+		/* Shields treated separately */
+		if (art->tval == TV_SHIELD) {
+			file_putf(log_file, "Adding %d for low resists on shield.\n",
+					  num);
+			(data->art_probs[ART_IDX_SHIELD_LRES]) += num;
+		} else if (art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
+				   art->tval == TV_DRAG_ARMOR) {
+			/* Armor also treated separately */
+			if (num == 4) {
+				/* Special case: armor has all four low resists */
+				file_putf(log_file,
+						  "Adding 1 for ALL LOW RESISTS on body armor.\n");
+				(data->art_probs[ART_IDX_ARMOR_ALLRES])++;
+			} else {
+				/* Just tally up the resists as usual */
+				file_putf(log_file,
+						  "Adding %d for low resists on body armor.\n", num);
+				(data->art_probs[ART_IDX_ARMOR_LRES]) += num;
+			}
+		} else {
+			/* General case */
+			file_putf(log_file, "Adding %d for low resists - general.\n", num);
+			(data->art_probs[ART_IDX_GEN_LRES]) += num;
+		}
+	}
+}
+
+/**
+ * Count high resists and protections.
+ */
+void count_high_resists(const struct artifact *art, struct artifact_data *data)
+{
+	int num = 0;
+
+	/* If the item is body armor then count up all the high resists before
+	 * going through them individually.  High resists are an important
+	 * component of body armor so we track probability for them separately.
+	 * The proportions of the high resists will be determined by the
+	 * generic frequencies - this number just tracks the total. */
+	if (art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
+		art->tval == TV_DRAG_ARMOR) {
+		if (art->el_info[ELEM_POIS].res_level == 1) num++;
+		if (of_has(art->flags, OF_PROT_FEAR)) num++;
+		if (art->el_info[ELEM_LIGHT].res_level == 1) num++;
+		if (art->el_info[ELEM_DARK].res_level == 1) num++;
+		if (of_has(art->flags, OF_PROT_BLIND)) num++;
+		if (of_has(art->flags, OF_PROT_CONF)) num++;
+		if (art->el_info[ELEM_SOUND].res_level == 1) num++;
+		if (art->el_info[ELEM_SHARD].res_level == 1) num++;
+		if (art->el_info[ELEM_NEXUS].res_level == 1) num++;
+		if (art->el_info[ELEM_NETHER].res_level == 1) num++;
+		if (art->el_info[ELEM_CHAOS].res_level == 1) num++;
+		if (art->el_info[ELEM_DISEN].res_level == 1) num++;
+		if (of_has(art->flags, OF_PROT_STUN)) num++;
+		file_putf(log_file, "Adding %d for high resists on body armor.\n",
+				  num);
+		(data->art_probs[ART_IDX_ARMOR_HRES]) += num;
+	}
+
+	/* Now do the high resists individually */
+	if (art->el_info[ELEM_POIS].res_level == 1) {
+		/* Resist poison ability */
+		file_putf(log_file, "Adding 1 for resist poison - general.\n");
+
+		(data->art_probs[ART_IDX_GEN_RPOIS])++;
+	}
+
+	if (of_has(art->flags, OF_PROT_FEAR)) {
+		/* Resist fear ability */
+		file_putf(log_file, "Adding 1 for resist fear - general.\n");
+		(data->art_probs[ART_IDX_GEN_RFEAR])++;
+	}
+
+	if (art->el_info[ELEM_LIGHT].res_level == 1) {
+		/* Resist light ability */
+		file_putf(log_file, "Adding 1 for resist light - general.\n");
+		(data->art_probs[ART_IDX_GEN_RLIGHT])++;
+	}
+
+	if (art->el_info[ELEM_DARK].res_level == 1) {
+		/* Resist dark ability */
+		file_putf(log_file, "Adding 1 for resist dark - general.\n");
+		(data->art_probs[ART_IDX_GEN_RDARK])++;
+	}
+
+	if (of_has(art->flags, OF_PROT_BLIND)) {
+		/* Resist blind ability - helms/crowns are separate */
+		if (art->tval == TV_HELM || art->tval == TV_CROWN) {
+			file_putf(log_file, "Adding 1 for resist blindness - headgear.\n");
+			(data->art_probs[ART_IDX_HELM_RBLIND])++;
+		} else {
+			/* General case */
+			file_putf(log_file, "Adding 1 for resist blindness - general.\n");
+			(data->art_probs[ART_IDX_GEN_RBLIND])++;
+		}
+	}
+
+	if (of_has(art->flags, OF_PROT_CONF)) {
+		/* Resist confusion ability */
+		file_putf(log_file, "Adding 1 for resist confusion - general.\n");
+		(data->art_probs[ART_IDX_GEN_RCONF])++;
+	}
+
+	if (art->el_info[ELEM_SOUND].res_level == 1) {
+		/* Resist sound ability */
+		file_putf(log_file, "Adding 1 for resist sound - general.\n");
+		(data->art_probs[ART_IDX_GEN_RSOUND])++;
+	}
+
+	if (art->el_info[ELEM_SHARD].res_level == 1) {
+		/* Resist shards ability */
+		file_putf(log_file, "Adding 1 for resist shards - general.\n");
+		(data->art_probs[ART_IDX_GEN_RSHARD])++;
+	}
+
+	if (art->el_info[ELEM_NEXUS].res_level == 1) {
+		/* Resist nexus ability */
+		file_putf(log_file, "Adding 1 for resist nexus - general.\n");
+		(data->art_probs[ART_IDX_GEN_RNEXUS])++;
+	}
+
+	if (art->el_info[ELEM_NETHER].res_level == 1) {
+		/* Resist nether ability */
+		file_putf(log_file, "Adding 1 for resist nether - general.\n");
+		(data->art_probs[ART_IDX_GEN_RNETHER])++;
+	}
+
+	if (art->el_info[ELEM_CHAOS].res_level == 1) {
+		/* Resist chaos ability */
+		file_putf(log_file, "Adding 1 for resist chaos - general.\n");
+		(data->art_probs[ART_IDX_GEN_RCHAOS])++;
+	}
+
+	if (art->el_info[ELEM_DISEN].res_level == 1) {
+		/* Resist disenchantment ability */
+		file_putf(log_file, "Adding 1 for resist disenchantment - general.\n");
+		(data->art_probs[ART_IDX_GEN_RDISEN])++;
+	}
+
+	if (of_has(art->flags, OF_PROT_STUN)) {
+		/* Resist stunning ability */
+		file_putf(log_file, "Adding 1 for res_stun - general.\n");
+		(data->art_probs[ART_IDX_GEN_PSTUN])++;
+	}
+}
+
+/**
+ * General abilities.  This section requires a bit more work
+ * than the others, because we have to consider cases where
+ * a certain ability might be found in a particular item type.
+ * For example, ESP is commonly found on headgear, so when
+ * we count ESP we must add it to either the headgear or
+ * general tally, depending on the base item.  This permits
+ * us to have general abilities appear more commonly on a
+ * certain item type.
+ */
+void count_abilities(const struct artifact *art, struct artifact_data *data)
+{
+	int num = 0;
+
+	if (flags_test(art->flags, OF_SIZE, OF_SUST_STR, OF_SUST_INT, OF_SUST_WIS,
+				   OF_SUST_DEX, OF_SUST_CON, FLAG_END)) {
+		/* Now do sustains, in a similar manner */
+		num = 0;
+		if (of_has(art->flags, OF_SUST_STR)) num++;
+		if (of_has(art->flags, OF_SUST_INT)) num++;
+		if (of_has(art->flags, OF_SUST_WIS)) num++;
+		if (of_has(art->flags, OF_SUST_DEX)) num++;
+		if (of_has(art->flags, OF_SUST_CON)) num++;
+		file_putf(log_file, "Adding %d for stat sustains.\n", num);
+		(data->art_probs[ART_IDX_GEN_SUST]) += num;
+	}
+
+	if (of_has(art->flags, OF_FREE_ACT)) {
+		/* Free action - handle gloves separately */
+		if (art->tval == TV_GLOVES) {
+			file_putf(log_file, "Adding 1 for free action on gloves.\n");
+			(data->art_probs[ART_IDX_GLOVE_FA])++;
+		} else {
+			file_putf(log_file, "Adding 1 for free action - general.\n");
+			(data->art_probs[ART_IDX_GEN_FA])++;
+		}
+	}
+
+	if (of_has(art->flags, OF_HOLD_LIFE)) {
+		/* Hold life - do body armor separately */
+		if( (art->tval == TV_SOFT_ARMOR) ||
+			(art->tval == TV_HARD_ARMOR) ||
+			(art->tval == TV_DRAG_ARMOR)) {
+			file_putf(log_file, "Adding 1 for hold life on armor.\n");
+			(data->art_probs[ART_IDX_ARMOR_HLIFE])++;
+		} else {
+			file_putf(log_file, "Adding 1 for hold life - general.\n");
+			(data->art_probs[ART_IDX_GEN_HLIFE])++;
+		}
+	}
+
+	if (of_has(art->flags, OF_FEATHER)) {
+		/* Feather fall - handle boots separately */
+		if (art->tval == TV_BOOTS) {
+			file_putf(log_file, "Adding 1 for feather fall on boots.\n");
+			(data->art_probs[ART_IDX_BOOT_FEATHER])++;
+		} else {
+			file_putf(log_file, "Adding 1 for feather fall - general.\n");
+			(data->art_probs[ART_IDX_GEN_FEATHER])++;
+		}
+	}
+
+	if (of_has(art->flags, OF_SEE_INVIS)) {
+		/*
+		 * Handle see invisible - do helms / crowns separately
+		 * (Weapons were done already so exclude them)
+		 */
+		if(!(art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
+			 art->tval == TV_POLEARM || art->tval == TV_SWORD)) {
+			if (art->tval == TV_HELM || art->tval == TV_CROWN) {
+				file_putf(log_file, "Adding 1 for see invisible - headgear.\n");
+				(data->art_probs[ART_IDX_HELM_SINV])++;
+			} else {
+				file_putf(log_file, "Adding 1 for see invisible - general.\n");
+				(data->art_probs[ART_IDX_GEN_SINV])++;
+			}
+		}
+	}
+
+	if (of_has(art->flags, OF_TELEPATHY)) {
+		/* ESP case.  Handle helms/crowns separately. */
+		if (art->tval == TV_HELM || art->tval == TV_CROWN) {
+			file_putf(log_file, "Adding 1 for ESP on headgear.\n");
+			(data->art_probs[ART_IDX_HELM_ESP])++;
+		} else {
+			file_putf(log_file, "Adding 1 for ESP - general.\n");
+			(data->art_probs[ART_IDX_GEN_ESP])++;
+		}
+	}
+
+	if (of_has(art->flags, OF_SLOW_DIGEST)) {
+		/* Slow digestion case - generic. */
+		file_putf(log_file, "Adding 1 for slow digestion - general.\n");
+		(data->art_probs[ART_IDX_GEN_SDIG])++;
+	}
+
+	if (of_has(art->flags, OF_REGEN)) {
+		/* Regeneration case - generic. */
+		file_putf(log_file, "Adding 1 for regeneration - general.\n");
+		(data->art_probs[ART_IDX_GEN_REGEN])++;
+	}
+
+
+	if (art->activation) {
+		/* Activation */
+		file_putf(log_file, "Adding 1 for activation.\n");
+		(data->art_probs[ART_IDX_GEN_ACTIV])++;
+	}
+}
+
+/**
+ * Parse the standard artifacts and count up the frequencies of the various
+ * abilities.
+ */
+static void collect_artifact_data(struct artifact_data *data)
+{
+	size_t i;
+
+	/* Go through the list of all artifacts */
+	for (i = 0; i < z_info->a_max; i++) {
+		struct object_kind *kind;
+		const struct artifact *art = &a_info[i];
+
+		file_putf(log_file, "Current artifact index is %d\n", i);
+
+		/* Don't parse cursed or null items */
+		if (data->base_power[i] < 0 || art->tval == 0) continue;
+
+		/* Get a pointer to the base item for this artifact */
+		kind = lookup_kind(art->tval, art->sval);
+
+		/* Special cases -- don't parse these! */
+		if (strstr(art->name, "The One Ring") ||
+			kf_has(kind->kind_flags, KF_QUEST_ART))
+			continue;
+
+		/* Add the base item to the base_probs array */
+		data->base_probs[kind->kidx]++;
+		file_putf(log_file, "Base item is %d\n", kind->kidx);
+
+		/* Count combat abilities broken up by type */
+		if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
+			art->tval == TV_POLEARM || art->tval == TV_SWORD) {
+			count_weapon_abilities(art, data);
+		} else if (art->tval == TV_BOW) {
+			count_bow_abilities(art, data);
+		} else {
+			count_nonweapon_abilities(art, data);
+		}
+
+		/* Count other properties  */
+		count_modifiers(art, data);
+		count_low_resists(art, data);
+		count_high_resists(art, data);
+		count_abilities(art, data);
+	}
+}
+
+/**
+ * Rescale the abilities so that dependent / independent abilities are
+ * comparable.  We do this by rescaling the frequencies for item-dependent
+ * abilities as though the entire set was made up of that item type.  For
+ * example, if one bow out of three has extra might, and there are 120
+ * artifacts in the full set, we rescale the frequency for extra might to
+ * 40 (if we had 120 randart bows, about 40 would have extra might).
+ *
+ * This will allow us to compare the frequencies of all ability types,
+ * no matter what the dependency.  We assume that generic abilities (like
+ * resist fear in the current version) don't need rescaling.  This
+ * introduces some inaccuracy in cases where specific instances of an
+ * ability (like INT bonus on helms) have been counted separately -
+ * ideally we should adjust for this in the general case.  However, as
+ * long as this doesn't occur too often, it shouldn't be a big issue.
+ *
+ * The following loops look complicated, but they are simply equivalent
+ * to going through each of the relevant ability types one by one.
+ */
+static void rescale_freqs(struct artifact_data *data)
+{
+	size_t i;
+	s32b temp;
+
+	/* Bow-only abilities */
+	for (i = 0; i < N_ELEMENTS(art_idx_bow); i++)
+		data->art_probs[art_idx_bow[i]] =
+			(data->art_probs[art_idx_bow[i]] * data->total)
+			/ data->bow_total;
+
+	/* All weapon abilities */
+	for (i = 0; i < N_ELEMENTS(art_idx_weapon); i++)
+		data->art_probs[art_idx_weapon[i]] =
+			(data->art_probs[art_idx_weapon[i]] * data->total)
+			/ (data->bow_total + data->melee_total);
+
+	/* Corresponding non-weapon abilities */
+	temp = data->total - data->melee_total - data->bow_total;
+	for (i = 0; i < N_ELEMENTS(art_idx_nonweapon); i++)
+		data->art_probs[art_idx_nonweapon[i]] =
+			(data->art_probs[art_idx_nonweapon[i]] * data->total)
+			/ temp;
+
+	/* All melee weapon abilities */
+	for (i = 0; i < N_ELEMENTS(art_idx_melee); i++)
+		data->art_probs[art_idx_melee[i]] =
+			(data->art_probs[art_idx_melee[i]] * data->total)
+			/ data->melee_total;
+
+	/* All general armor abilities */
+	temp = data->armor_total + data->boot_total + data->shield_total +
+		data->headgear_total + data->cloak_total + data->glove_total;
+	for (i = 0; i < N_ELEMENTS(art_idx_allarmor); i++)
+		data->art_probs[art_idx_allarmor[i]] =
+			(data->art_probs[art_idx_allarmor[i]] *	data->total)
+			/ temp;
+
+	/* Boots */
+	for (i = 0; i < N_ELEMENTS(art_idx_boot); i++)
+		data->art_probs[art_idx_boot[i]] =
+			(data->art_probs[art_idx_boot[i]] *	data->total)
+			/ data->boot_total;
+
+	/* Gloves */
+	for (i = 0; i < N_ELEMENTS(art_idx_glove); i++)
+		data->art_probs[art_idx_glove[i]] =
+			(data->art_probs[art_idx_glove[i]] * data->total)
+			/ data->glove_total;
+
+	/* Headgear */
+	for (i = 0; i < N_ELEMENTS(art_idx_headgear); i++)
+		data->art_probs[art_idx_headgear[i]] =
+			(data->art_probs[art_idx_headgear[i]] *	data->total)
+			/ data->headgear_total;
+
+	/* Shields */
+	for (i = 0; i < N_ELEMENTS(art_idx_shield); i++)
+		data->art_probs[art_idx_shield[i]] =
+			(data->art_probs[art_idx_shield[i]] *data->total)
+			/ data->shield_total;
+
+	/* Cloaks */
+	for (i = 0; i < N_ELEMENTS(art_idx_cloak); i++)
+		data->art_probs[art_idx_cloak[i]] =
+			(data->art_probs[art_idx_cloak[i]] * data->total)
+			/ data->cloak_total;
+
+	/* Body armor */
+	for (i = 0; i < N_ELEMENTS(art_idx_armor); i++)
+		data->art_probs[art_idx_armor[i]] =
+			(data->art_probs[art_idx_armor[i]] * data->total)
+			/ data->armor_total;
+
+	/*
+	 * All others are general case and don't need to be rescaled,
+	 * unless the algorithm is getting too clever about separating
+	 * out individual cases (in which case some logic should be
+	 * added for them in rescale_freqs()).
+	 */
+}
+
+/**
+ * Adjust the parsed frequencies for any peculiarities of the
+ * algorithm.  For example, if stat bonuses and sustains are
+ * being added in a correlated fashion, it will tend to push
+ * the frequencies up for both of them.  In this method we
+ * compensate for cases like this by applying corrective
+ * scaling.
+ */
+static void adjust_freqs(struct artifact_data *data)
+{
+	/*
+	 * Enforce minimum values for any frequencies that might potentially
+	 * be missing in the standard set, especially supercharged ones.
+	 * Numbers here represent the average number of times this ability
+	 * would appear if the entire randart set was eligible to receive
+	 * it (so in the case of a bow ability: if the set was all bows).
+	 *
+	 * Note that low numbers here for very specialized abilities could
+	 * mean that there's a good chance this ability will not appear in
+	 * a given randart set.  If this is a problem, raise the number.
+	 */
+	if (data->art_probs[ART_IDX_GEN_RFEAR] < 5)
+		data->art_probs[ART_IDX_GEN_RFEAR] = 5;
+	if (data->art_probs[ART_IDX_MELEE_DICE_SUPER] < 5)
+		data->art_probs[ART_IDX_MELEE_DICE_SUPER] = 5;
+	if (data->art_probs[ART_IDX_BOW_SHOTS_SUPER] < 5)
+		data->art_probs[ART_IDX_BOW_SHOTS_SUPER] = 5;
+	if (data->art_probs[ART_IDX_BOW_MIGHT_SUPER] < 5)
+		data->art_probs[ART_IDX_BOW_MIGHT_SUPER] = 5;
+	if (data->art_probs[ART_IDX_MELEE_BLOWS_SUPER] < 5)
+		data->art_probs[ART_IDX_MELEE_BLOWS_SUPER] = 5;
+	if (data->art_probs[ART_IDX_GEN_SPEED_SUPER] < 5)
+		data->art_probs[ART_IDX_GEN_SPEED_SUPER] = 5;
+	if (data->art_probs[ART_IDX_GEN_AC] < 5)
+		data->art_probs[ART_IDX_GEN_AC] = 5;
+	if (data->art_probs[ART_IDX_GEN_TUNN] < 5)
+		data->art_probs[ART_IDX_GEN_TUNN] = 5;
+	if (data->art_probs[ART_IDX_NONWEAPON_BRAND] < 2)
+		data->art_probs[ART_IDX_NONWEAPON_BRAND] = 2;
+	if (data->art_probs[ART_IDX_NONWEAPON_SLAY] < 2)
+		data->art_probs[ART_IDX_NONWEAPON_SLAY] = 2;
+	if (data->art_probs[ART_IDX_BOW_BRAND] < 2)
+		data->art_probs[ART_IDX_BOW_BRAND] = 2;
+	if (data->art_probs[ART_IDX_BOW_SLAY] < 2)
+		data->art_probs[ART_IDX_BOW_SLAY] = 2;
+	if (data->art_probs[ART_IDX_NONWEAPON_BLOWS] < 2)
+		data->art_probs[ART_IDX_NONWEAPON_BLOWS] = 2;
+	if (data->art_probs[ART_IDX_NONWEAPON_SHOTS] < 2)
+		data->art_probs[ART_IDX_NONWEAPON_SHOTS] = 2;
+	if (data->art_probs[ART_IDX_GEN_AC_SUPER] < 5)
+		data->art_probs[ART_IDX_GEN_AC_SUPER] = 5;
+	if (data->art_probs[ART_IDX_MELEE_AC] < 5)
+		data->art_probs[ART_IDX_MELEE_AC] = 5;
+	if (data->art_probs[ART_IDX_GEN_PSTUN] < 3)
+		data->art_probs[ART_IDX_GEN_PSTUN] = 3;
+
+	/* Cut aggravation frequencies in half since they're used twice */
+	data->art_probs[ART_IDX_NONWEAPON_AGGR] /= 2;
+	data->art_probs[ART_IDX_WEAPON_AGGR] /= 2;
+}
+
+/**
+ * Parse the artifacts and write frequencies of their abilities and
+ * base object kinds. 
+ *
+ * This is used to give dynamic generation probabilities.
+ */
+static void parse_frequencies(struct artifact_data *data)
+{
+	size_t i;
+	int j;
+
+	file_putf(log_file, "\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
+
+	/* Zero the frequencies for artifact attributes */
+	for (i = 0; i < ART_IDX_TOTAL; i++)
+		data->art_probs[i] = 0;
+
+	/* Initialise the frequencies for base items so each item could be chosen */
+	for (i = 0; i < z_info->k_max; i++)
+		data->base_probs[i] = 1;
+
+	collect_artifact_data(data);
+
+	if (verbose) {
+	/* Print out some of the abilities, to make sure that everything's fine */
+		for (i = 0; i < ART_IDX_TOTAL; i++)
+			file_putf(log_file, "Frequency of ability %d: %d\n", i,
+					  data->art_probs[i]);
+
+		for (i = 0; i < z_info->k_max; i++)
+			file_putf(log_file, "Frequency of item %d: %d\n", i,
+					  data->base_probs[i]);
+	}
+
+	/* Rescale frequencies */
+	rescale_freqs(data);
+
+	/* Perform any additional rescaling and adjustment, if required. */
+	adjust_freqs(data);
+
+	/* Log the final frequencies to check that everything's correct */
+	for (i = 0; i < ART_IDX_TOTAL; i++)
+		file_putf(log_file,  "Rescaled frequency of ability %d: %d\n", i,
+				  data->art_probs[i]);
+
+	/* Build a cumulative frequency table for the base items */
+	for (i = 0; i < z_info->k_max; i++)
+		for (j = i; j < z_info->k_max; j++)
+			data->base_freq[j] += data->base_probs[i];
+
+	/* Print out the frequency table, for verification */
+	for (i = 0; i < z_info->k_max; i++)
+		file_putf(log_file, "Cumulative frequency of item %d is: %d\n", i,
+				  data->base_freq[i]);
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Generation of a random artifact
+ * ------------------------------------------------------------------------ */
 /**
  * Randomly select a base item type (tval,sval).  Assign the various fields
  * corresponding to that choice.
@@ -355,7 +1258,7 @@ static void store_base_power(s32b *base_power)
  * passed a pointer to a rarity value in order to return the rarity of the
  * new item.
  */
-static struct object_kind *choose_item(int a_idx)
+static struct object_kind *choose_item(int a_idx, int *freq)
 {
 	struct artifact *art = &a_info[a_idx];
 	int tval = 0, sval = 0, i = 0;
@@ -381,9 +1284,9 @@ static struct object_kind *choose_item(int a_idx)
 		   tval == TV_AMULET || tval == TV_RING || tval == TV_CHEST ||
 		   (tval == TV_HAFTED && sval == lookup_sval(tval, "Mighty Hammer")) ||
 		   (tval == TV_CROWN && sval == lookup_sval(tval, "Massive Iron Crown"))) {
-		r = randint1(base_freq[z_info->k_max - 1]);
+		r = randint1(freq[z_info->k_max - 1]);
 		i = 0;
-		while (r > base_freq[i])
+		while (r > freq[i])
 			i++;
 		tval = k_info[i].tval;
 		sval = k_info[i].sval;
@@ -459,948 +1362,216 @@ static struct object_kind *choose_item(int a_idx)
 
 
 /**
- * Clean up the artifact by removing illogical combinations of powers.
+ * Build a suitable frequency table for this item, based on the generated
+ * frequencies.  The frequencies for any abilities that don't apply for
+ * this item type will be set to zero.  First parameter is the artifact
+ * for which to generate the frequency table.
+ *
+ * The second input parameter is a pointer to an array that the function
+ * will use to store the frequency table.  The array must have size
+ * ART_IDX_TOTAL.
+ *
+ * The resulting frequency table is cumulative for ease of use in the
+ * weighted randomization algorithm.
  */
-static void remove_contradictory(struct artifact *art)
+static void build_freq_table(struct artifact *art, int *freq,
+							 struct artifact_data *data)
 {
-	if (of_has(art->flags, OF_AGGRAVATE))
-		art->modifiers[OBJ_MOD_STEALTH] = 0;
+	int i;
+	size_t j;
+	int f_temp[ART_IDX_TOTAL];
 
-	if (art->modifiers[OBJ_MOD_STR] < 0)
-		of_off(art->flags, OF_SUST_STR);
-	if (art->modifiers[OBJ_MOD_INT] < 0)
-		of_off(art->flags, OF_SUST_INT);
-	if (art->modifiers[OBJ_MOD_WIS] < 0)
-		of_off(art->flags, OF_SUST_WIS);
-	if (art->modifiers[OBJ_MOD_DEX] < 0)
-		of_off(art->flags, OF_SUST_DEX);
-	if (art->modifiers[OBJ_MOD_CON] < 0)
-		of_off(art->flags, OF_SUST_CON);
-	art->modifiers[OBJ_MOD_BLOWS] = 0;
-
-	if (of_has(art->flags, OF_DRAIN_EXP))
-		of_off(art->flags, OF_HOLD_LIFE);
-}
-
-/**
- * Handle weapon combat abilities
- */
-void count_weapon_abilities(const struct artifact *art)
-{
-	int bonus;
-	struct object_kind *kind = lookup_kind(art->tval, art->sval);
-	int min_to_h = randcalc(kind->to_h, 0, MAXIMISE);
-	int min_to_d = randcalc(kind->to_d, 0, MAXIMISE);
-	int min_to_a = randcalc(kind->to_a, 0, MAXIMISE);
-
-	/* To-hit and to-dam */
-	bonus = (art->to_h - min_to_h - mean_hit_startval) / mean_hit_increment;
-	if (bonus > 0)
-		file_putf(log_file, "Adding %d instances of extra to-hit bonus for weapon\n", bonus);
-	else if (bonus < 0)
-		file_putf(log_file, "Subtracting %d instances of extra to-hit bonus for weapon\n", bonus);
-	artprobs[ART_IDX_WEAPON_HIT] += bonus;
-
-	bonus = (art->to_d - min_to_d - mean_dam_startval) / mean_dam_increment;
-	if (bonus > 0)
-		file_putf(log_file, "Adding %d instances of extra to-dam bonus for weapon\n", bonus);
-	else
-		file_putf(log_file, "Subtracting %d instances of extra to-dam bonus for weapon\n", bonus);
-	artprobs[ART_IDX_WEAPON_DAM] += bonus;
-
-	/* Does this weapon have an unusual bonus to AC? */
-	bonus = (art->to_a - min_to_a) / mean_ac_increment;
-	if (bonus > 0) {
-		file_putf(log_file,
-				  "Adding %d instances of extra AC bonus for weapon\n", bonus);
-		(artprobs[ART_IDX_MELEE_AC]) += bonus;
+	/* First, set everything to zero */
+	for (i = 0; i < ART_IDX_TOTAL; i++) {
+		f_temp[i] = 0;
+		freq[i] = 0;
 	}
 
-	/* Check damage dice - are they more than normal? */
-	if (art->dd > kind->dd) {
-		/* Difference of 3 or more? */
-		if ((art->dd - kind->dd) > 2) {
-			file_putf(log_file, "Adding 1 for super-charged damage dice!\n");
-			(artprobs[ART_IDX_MELEE_DICE_SUPER])++;
-		} else {
-			file_putf(log_file, "Adding 1 for extra damage dice.\n");
-			(artprobs[ART_IDX_MELEE_DICE])++;
+	/* Now copy over appropriate frequencies for applicable abilities */
+	/* Bow abilities */
+	if (art->tval == TV_BOW) {
+		size_t n = N_ELEMENTS(art_idx_bow);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_bow[j]] = data->art_probs[art_idx_bow[j]];
 		}
+
+	/* General weapon abilities */
+	if (art->tval == TV_BOW || art->tval == TV_DIGGING ||
+		art->tval == TV_HAFTED || art->tval == TV_POLEARM ||
+		art->tval == TV_SWORD) {
+		size_t n = N_ELEMENTS(art_idx_weapon);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_weapon[j]] = data->art_probs[art_idx_weapon[j]];
+	}
+	/* General non-weapon abilities */
+	else {
+		size_t n = N_ELEMENTS(art_idx_nonweapon);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_nonweapon[j]] =
+				data->art_probs[art_idx_nonweapon[j]];
 	}
 
-	/* Check weight - is it different from normal? */
-	if (art->weight != kind->weight) {
-		file_putf(log_file, "Adding 1 for unusual weight.\n");
-		(artprobs[ART_IDX_MELEE_WEIGHT])++;
+	/* General melee abilities */
+	if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
+		art->tval == TV_POLEARM || art->tval == TV_SWORD) {
+		size_t n = N_ELEMENTS(art_idx_melee);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_melee[j]] = data->art_probs[art_idx_melee[j]];
 	}
 
-	/* Do we have 3 or more extra blows? (Unlikely) */
-	if (art->modifiers[OBJ_MOD_BLOWS] > 2) {
-		file_putf(log_file, "Adding 1 for supercharged blows (3 or more!)\n");
-		(artprobs[ART_IDX_MELEE_BLOWS_SUPER])++;
-	} else if (art->modifiers[OBJ_MOD_BLOWS] > 0) {
-		file_putf(log_file, "Adding 1 for extra blows\n");
-		(artprobs[ART_IDX_MELEE_BLOWS])++;
+	/* General armor abilities */
+	if (art->tval == TV_BOOTS || art->tval == TV_GLOVES ||
+		art->tval == TV_HELM || art->tval == TV_CROWN ||
+		art->tval == TV_SHIELD || art->tval == TV_CLOAK ||
+		art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
+		art->tval == TV_DRAG_ARMOR) {
+		size_t n = N_ELEMENTS(art_idx_allarmor);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_allarmor[j]] = data->art_probs[art_idx_allarmor[j]];
 	}
 
-	/* Aggravation */
-	if (of_has(art->flags, OF_AGGRAVATE)) {
-		file_putf(log_file, "Adding 1 for aggravation - weapon\n");
-		artprobs[ART_IDX_WEAPON_AGGR]++;
+	/* Boot abilities */
+	if (art->tval == TV_BOOTS) {
+		size_t n = N_ELEMENTS(art_idx_boot);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_boot[j]] = data->art_probs[art_idx_boot[j]];
 	}
 
-	/* Blessed weapon? */
-	if (of_has(art->flags, OF_BLESSED)) {
-		file_putf(log_file, "Adding 1 for blessed weapon\n");
-		(artprobs[ART_IDX_MELEE_BLESS])++;
+	/* Glove abilities */
+	if (art->tval == TV_GLOVES) {
+		size_t n = N_ELEMENTS(art_idx_glove);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_glove[j]] = data->art_probs[art_idx_glove[j]];
 	}
 
-	/* See invisible? */
-	if (of_has(art->flags, OF_SEE_INVIS)) {
-		file_putf(log_file, "Adding 1 for see invisible (weapon case)\n");
-		(artprobs[ART_IDX_MELEE_SINV])++;
+	/* Headgear abilities */
+	if (art->tval == TV_HELM || art->tval == TV_CROWN) {
+		size_t n = N_ELEMENTS(art_idx_headgear);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_headgear[j]] = data->art_probs[art_idx_headgear[j]];
 	}
 
-	/* Check for tunnelling ability */
-	if (art->modifiers[OBJ_MOD_TUNNEL] > 0) {
-		file_putf(log_file, "Adding 1 for tunnelling bonus.\n");
-		(artprobs[ART_IDX_MELEE_TUNN])++;
+	/* Shield abilities */
+	if (art->tval == TV_SHIELD) {
+		size_t n = N_ELEMENTS(art_idx_shield);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_shield[j]] = data->art_probs[art_idx_shield[j]];
 	}
 
-	/* Count brands and slays */
-	if (art->slays) {
-		bonus = slay_count(art->slays);
-		artprobs[ART_IDX_MELEE_SLAY] += bonus;
-		file_putf(log_file, "Adding %d for slays\n", bonus);
-	}
-	if (art->brands) {
-		bonus = brand_count(art->brands);
-		artprobs[ART_IDX_MELEE_BRAND] += bonus;
-		file_putf(log_file, "Adding %d for brands\n", bonus);
-	}
-}
-
-/**
- * Count combat abilities on bows
- */
-void count_bow_abilities(const struct artifact *art)
-{
-	int bonus;
-	struct object_kind *kind = lookup_kind(art->tval, art->sval);
-	int min_to_h = randcalc(kind->to_h, 0, MAXIMISE);
-	int min_to_d = randcalc(kind->to_d, 0, MAXIMISE);
-	int min_to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE) - mean_ac_startval;
-
-	/* To-hit */
-	bonus = (art->to_h - min_to_h - mean_hit_startval) / mean_hit_increment;
-	if (bonus > 0)
-		file_putf(log_file, "Adding %d instances of extra to-hit bonus for weapon\n", bonus);
-	else if (bonus < 0)
-		file_putf(log_file, "Subtracting %d instances of extra to-hit bonus for weapon\n", bonus);
-	artprobs[ART_IDX_WEAPON_HIT] += bonus;
-
-	/* To-dam */
-	bonus = (art->to_d - min_to_d - mean_dam_startval) / mean_dam_increment;
-	if (bonus > 0)
-		file_putf(log_file, "Adding %d instances of extra to-dam bonus for weapon\n", bonus);
-	else
-		file_putf(log_file, "Subtracting %d instances of extra to-dam bonus for weapon\n", bonus);
-	artprobs[ART_IDX_WEAPON_DAM] += bonus;
-
-	/* Armor class */
-	bonus = (art->to_a - min_to_a) / mean_ac_increment;
-	if (bonus > 0) {
-		file_putf(log_file, "Adding %d for AC bonus - general\n", bonus);
-		(artprobs[ART_IDX_GEN_AC]) += bonus;
+	/* Cloak abilities */
+	if (art->tval == TV_CLOAK) {
+		size_t n = N_ELEMENTS(art_idx_cloak);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_cloak[j]] = data->art_probs[art_idx_cloak[j]];
 	}
 
-	/* Aggravation */
-	if (of_has(art->flags, OF_AGGRAVATE)) {
-		file_putf(log_file, "Adding 1 for aggravation - weapon\n");
-		artprobs[ART_IDX_WEAPON_AGGR]++;
-	}
-
-	/* Do we have 3 or more extra shots? (Unlikely) */
-	if (art->modifiers[OBJ_MOD_SHOTS] > 2) {
-		file_putf(log_file, "Adding 1 for supercharged shots (3 or more!)\n");
-		(artprobs[ART_IDX_BOW_SHOTS_SUPER])++;
-	} else if (art->modifiers[OBJ_MOD_SHOTS] > 0) {
-		file_putf(log_file, "Adding 1 for extra shots\n");
-		(artprobs[ART_IDX_BOW_SHOTS])++;
-	}
-
-	/* Do we have 3 or more extra might? (Unlikely) */
-	if (art->modifiers[OBJ_MOD_MIGHT] > 2) {
-		file_putf(log_file, "Adding 1 for supercharged might (3 or more!)\n");
-		(artprobs[ART_IDX_BOW_MIGHT_SUPER])++;
-	} else if (art->modifiers[OBJ_MOD_MIGHT] > 0) {
-		file_putf(log_file, "Adding 1 for extra might\n");
-		(artprobs[ART_IDX_BOW_MIGHT])++;
-	}
-
-	/* Count brands and slays */
-	if (art->slays) {
-		int bonus = slay_count(art->slays);
-		artprobs[ART_IDX_BOW_SLAY] += bonus;
-		file_putf(log_file, "Adding %d for slays\n", bonus);
-	}
-	if (art->brands) {
-		int bonus = brand_count(art->brands);
-		artprobs[ART_IDX_BOW_BRAND] += bonus;
-		file_putf(log_file, "Adding %d for brands\n", bonus);
-	}
-}
-
-/**
- * Handle nonweapon combat abilities
- */
-void count_nonweapon_abilities(const struct artifact *art)
-{
-	struct object_kind *kind = lookup_kind(art->tval, art->sval);
-	int to_hit = art->to_h - randcalc(kind->to_h, 0, MINIMISE);
-	int to_dam = art->to_d - randcalc(kind->to_d, 0, MINIMISE);
-	int to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE) - mean_ac_startval;
-	int bonus = to_a / mean_ac_increment;
-
-	/* Armor class */
-	if (bonus > 0) {
-		if (art->to_a > 20) {
-			file_putf(log_file, "Adding %d for supercharged AC\n", bonus);
-			(artprobs[ART_IDX_GEN_AC_SUPER])++;
-		} else if (art->tval == TV_BOOTS) {
-			file_putf(log_file, "Adding %d for AC bonus - boots\n", bonus);
-			(artprobs[ART_IDX_BOOT_AC]) += bonus;
-		} else if (art->tval == TV_GLOVES) {
-			file_putf(log_file, "Adding %d for AC bonus - gloves\n", bonus);
-			(artprobs[ART_IDX_GLOVE_AC]) += bonus;
-		} else if (art->tval == TV_HELM || art->tval == TV_CROWN) {
-			file_putf(log_file, "Adding %d for AC bonus - hat\n", bonus);
-			(artprobs[ART_IDX_HELM_AC]) += bonus;
-		} else if (art->tval == TV_SHIELD) {
-			file_putf(log_file, "Adding %d for AC bonus - shield\n", bonus);
-			(artprobs[ART_IDX_SHIELD_AC]) += bonus;
-		} else if (art->tval == TV_CLOAK) {
-			file_putf(log_file, "Adding %d for AC bonus - cloak\n", bonus);
-			(artprobs[ART_IDX_CLOAK_AC]) += bonus;
-		} else if (art->tval == TV_SOFT_ARMOR ||
-				   art->tval == TV_HARD_ARMOR ||
-				   art->tval == TV_DRAG_ARMOR) {
-			file_putf(log_file, "Adding %d for AC bonus - body armor\n", bonus);
-			(artprobs[ART_IDX_ARMOR_AC]) += bonus;
-		} else {
-			file_putf(log_file, "Adding %d for AC bonus - general\n", bonus);
-			(artprobs[ART_IDX_GEN_AC]) += bonus;
-		}
-	}
-
-	/* To hit and dam to bonuses */
-	if (to_hit && (to_hit == to_dam)) {
-		bonus = to_dam / mean_dam_increment;
-		if (bonus > 0) {
-			file_putf(log_file, "Adding %d instances of extra to-hit and to-dam bonus for non-weapon\n", bonus);
-			(artprobs[ART_IDX_NONWEAPON_HIT_DAM]) += bonus;
-		}
-	} else if (to_hit > 0) {
-		bonus = to_hit / mean_hit_increment;
-		if (bonus > 0) {
-			file_putf(log_file, "Adding %d instances of extra to-hit bonus for non-weapon\n", bonus);
-			(artprobs[ART_IDX_NONWEAPON_HIT]) += bonus;
-		}
-	} else if (to_dam > 0) {
-		bonus = to_dam / mean_dam_increment;
-		if (bonus > 0) {
-			file_putf(log_file, "Adding %d instances of extra to-dam bonus for non-weapon\n", bonus);
-			(artprobs[ART_IDX_NONWEAPON_DAM]) += bonus;
-		}
-	}
-
-	/* Check weight - is it different from normal? */
-	if (art->weight != kind->weight) {
-		file_putf(log_file, "Adding 1 for unusual weight.\n");
-		(artprobs[ART_IDX_ALLARMOR_WEIGHT])++;
-	}
-
-	/* Aggravation */
-	if (of_has(art->flags, OF_AGGRAVATE)) {
-		file_putf(log_file, "Adding 1 for aggravation - nonweapon\n");
-		(artprobs[ART_IDX_NONWEAPON_AGGR])++;
-	}
-
-	/* Count brands and slays */
-	if (art->slays) {
-		bonus = slay_count(art->slays);
-		artprobs[ART_IDX_NONWEAPON_SLAY] += bonus;
-		file_putf(log_file, "Adding %d for slays\n", bonus);
-	}
-	if (art->brands) {
-		bonus = brand_count(art->brands);
-		artprobs[ART_IDX_NONWEAPON_BRAND] += bonus;
-		file_putf(log_file, "Adding %d for brands\n", bonus);
-	}
-
-	/* Blows */
-	if (art->modifiers[OBJ_MOD_BLOWS] > 0) {
-		file_putf(log_file, "Adding 1 for extra blows on nonweapon\n");
-		(artprobs[ART_IDX_NONWEAPON_BLOWS])++;
-	}
-
-	/* Shots */
-	if (art->modifiers[OBJ_MOD_SHOTS] > 0) {
-		file_putf(log_file, "Adding 1 for extra shots on nonweapon\n");
-		(artprobs[ART_IDX_NONWEAPON_SHOTS])++;
-	}
-
-	/* Check for tunnelling ability */
-	if (art->modifiers[OBJ_MOD_TUNNEL] > 0) {
-		file_putf(log_file, "Adding 1 for tunnelling bonus - general.\n");
-		(artprobs[ART_IDX_GEN_TUNN])++;
-	}
-}
-
-
-/**
- * Count modifiers
- */
-void count_modifiers(const struct artifact *art)
-{
-	int num = 0;
-
-	/* Stat bonuses.  Add up the number of individual bonuses */
-	if (art->modifiers[OBJ_MOD_STR] > 0) num++;
-	if (art->modifiers[OBJ_MOD_INT] > 0) num++;
-	if (art->modifiers[OBJ_MOD_WIS] > 0) num++;
-	if (art->modifiers[OBJ_MOD_DEX] > 0) num++;
-	if (art->modifiers[OBJ_MOD_CON] > 0) num++;
-
-	/* Handle a few special cases separately. */
-	if ((art->tval == TV_HELM || art->tval == TV_CROWN) &&
-		(art->modifiers[OBJ_MOD_WIS] > 0 || art->modifiers[OBJ_MOD_INT] > 0)) {
-		/* Handle WIS and INT on helms and crowns */
-		if (art->modifiers[OBJ_MOD_WIS] > 0) {
-			file_putf(log_file, "Adding 1 for WIS bonus on headgear.\n");
-			(artprobs[ART_IDX_HELM_WIS])++;
-			/* Counted this one separately so subtract it here */
-			num--;
-		}
-		if (art->modifiers[OBJ_MOD_INT] > 0) {
-			file_putf(log_file, "Adding 1 for INT bonus on headgear.\n");
-			(artprobs[ART_IDX_HELM_INT])++;
-			/* Counted this one separately so subtract it here */
-			num--;
-		}
-	} else if ((art->tval == TV_SOFT_ARMOR ||
-				art->tval == TV_HARD_ARMOR ||
-				art->tval == TV_DRAG_ARMOR) &&
-			   art->modifiers[OBJ_MOD_CON] > 0) {
-		/* Handle CON bonus on armor */
-		file_putf(log_file, "Adding 1 for CON bonus on body armor.\n");
-
-		(artprobs[ART_IDX_ARMOR_CON])++;
-		/* Counted this one separately so subtract it here */
-		num--;
-	} else if (art->tval == TV_GLOVES && art->modifiers[OBJ_MOD_DEX] > 0) {
-		/* Handle DEX bonus on gloves */
-		file_putf(log_file, "Adding 1 for DEX bonus on gloves.\n");
-		(artprobs[ART_IDX_GLOVE_DEX])++;
-		/* Counted this one separately so subtract it here */
-		num--;
-	}
-
-	/* Now the general case */
-	if (num > 0) {
-		/* There are some bonuses that weren't handled above */
-		file_putf(log_file, "Adding %d for stat bonuses - general.\n", num);
-			(artprobs[ART_IDX_GEN_STAT]) += num;
-	}
-
-	/* Handle stealth, including a couple of special cases */
-	if (art->modifiers[OBJ_MOD_STEALTH] > 0) {
-		if (art->tval == TV_BOOTS) {
-			file_putf(log_file, "Adding 1 for stealth bonus on boots.\n");
-			(artprobs[ART_IDX_BOOT_STEALTH])++;
-		} else if (art->tval == TV_CLOAK) {
-			file_putf(log_file, "Adding 1 for stealth bonus on cloak.\n");
-			(artprobs[ART_IDX_CLOAK_STEALTH])++;
-		} else if (art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
-				   art->tval == TV_DRAG_ARMOR) {
-			file_putf(log_file, "Adding 1 for stealth bonus on armor.\n");
-			(artprobs[ART_IDX_ARMOR_STEALTH])++;
-		} else {
-			/* General case */
-			file_putf(log_file, "Adding 1 for stealth bonus - general.\n");
-			(artprobs[ART_IDX_GEN_STEALTH])++;
-		}
-	}
-
-	/* Handle infravision bonus - fully generic */
-	if (art->modifiers[OBJ_MOD_INFRA] > 0) {
-		file_putf(log_file, "Adding 1 for infravision bonus - general.\n");
-		(artprobs[ART_IDX_GEN_INFRA])++;
-	}
-
-	/* Speed - boots handled separately.
-	 * This is something of a special case in that we use the same
-	 * frequency for the supercharged value and the normal value.
-	 * We get away with this by using a somewhat lower average value
-	 * for the supercharged ability than in the basic set (around
-	 * +7 or +8 - c.f. Ringil and the others at +10 and upwards).
-	 * This then allows us to add an equal number of
-	 * small bonuses around +3 or so without unbalancing things.
-	 */
-	if (art->modifiers[OBJ_MOD_SPEED] > 0) {
-		if (art->modifiers[OBJ_MOD_SPEED] > 7) {
-			/* Supercharge case */
-			file_putf(log_file, "Adding 1 for supercharged speed bonus!\n");
-			(artprobs[ART_IDX_GEN_SPEED_SUPER])++;
-		} else if (art->tval == TV_BOOTS) {
-			/* Handle boots separately */
-			file_putf(log_file, "Adding 1 for normal speed bonus on boots.\n");
-			(artprobs[ART_IDX_BOOT_SPEED])++;
-		} else {
-			file_putf(log_file, "Adding 1 for normal speed bonus - general.\n");
-			(artprobs[ART_IDX_GEN_SPEED])++;
-		}
-	}
-
-	/* Handle permanent light */
-	if (art->modifiers[OBJ_MOD_LIGHT] > 0) {
-		file_putf(log_file, "Adding 1 for light radius - general.\n");
-		(artprobs[ART_IDX_GEN_LIGHT])++;
-	}
-}
-
-void count_low_resists(const struct artifact *art)
-{
-	int num = 0;
-
-	/* Count up immunities for this item, if any */
-	if (art->el_info[ELEM_ACID].res_level == 3) num++;
-	if (art->el_info[ELEM_ELEC].res_level == 3) num++;
-	if (art->el_info[ELEM_FIRE].res_level == 3) num++;
-	if (art->el_info[ELEM_COLD].res_level == 3) num++;
-	file_putf(log_file, "Adding %d for immunities.\n", num);
-
-	(artprobs[ART_IDX_GEN_IMMUNE]) += num;
-
-	/* Count up low resists (not the type, just the number) */
-	num = 0;
-	if (art->el_info[ELEM_ACID].res_level == 1) num++;
-	if (art->el_info[ELEM_ELEC].res_level == 1) num++;
-	if (art->el_info[ELEM_FIRE].res_level == 1) num++;
-	if (art->el_info[ELEM_COLD].res_level == 1) num++;
-
-	if (num) {
-		/* Shields treated separately */
-		if (art->tval == TV_SHIELD) {
-			file_putf(log_file, "Adding %d for low resists on shield.\n",
-					  num);
-			(artprobs[ART_IDX_SHIELD_LRES]) += num;
-		} else if (art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
-				   art->tval == TV_DRAG_ARMOR) {
-			/* Armor also treated separately */
-			if (num == 4) {
-				/* Special case: armor has all four low resists */
-				file_putf(log_file,
-						  "Adding 1 for ALL LOW RESISTS on body armor.\n");
-				(artprobs[ART_IDX_ARMOR_ALLRES])++;
-			} else {
-				/* Just tally up the resists as usual */
-				file_putf(log_file,
-						  "Adding %d for low resists on body armor.\n", num);
-				(artprobs[ART_IDX_ARMOR_LRES]) += num;
-			}
-		} else {
-			/* General case */
-			file_putf(log_file, "Adding %d for low resists - general.\n", num);
-			(artprobs[ART_IDX_GEN_LRES]) += num;
-		}
-	}
-}
-
-/**
- * Count high resists and protections.
- */
-void count_high_resists(const struct artifact *art)
-{
-	int num = 0;
-
-	/* If the item is body armor then count up all the high resists before
-	 * going through them individually.  High resists are an important
-	 * component of body armor so we track probability for them separately.
-	 * The proportions of the high resists will be determined by the
-	 * generic frequencies - this number just tracks the total. */
+	/* Armor abilities */
 	if (art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
 		art->tval == TV_DRAG_ARMOR) {
-		if (art->el_info[ELEM_POIS].res_level == 1) num++;
-		if (of_has(art->flags, OF_PROT_FEAR)) num++;
-		if (art->el_info[ELEM_LIGHT].res_level == 1) num++;
-		if (art->el_info[ELEM_DARK].res_level == 1) num++;
-		if (of_has(art->flags, OF_PROT_BLIND)) num++;
-		if (of_has(art->flags, OF_PROT_CONF)) num++;
-		if (art->el_info[ELEM_SOUND].res_level == 1) num++;
-		if (art->el_info[ELEM_SHARD].res_level == 1) num++;
-		if (art->el_info[ELEM_NEXUS].res_level == 1) num++;
-		if (art->el_info[ELEM_NETHER].res_level == 1) num++;
-		if (art->el_info[ELEM_CHAOS].res_level == 1) num++;
-		if (art->el_info[ELEM_DISEN].res_level == 1) num++;
-		if (of_has(art->flags, OF_PROT_STUN)) num++;
-		file_putf(log_file, "Adding %d for high resists on body armor.\n",
-				  num);
-		(artprobs[ART_IDX_ARMOR_HRES]) += num;
+		size_t n = N_ELEMENTS(art_idx_armor);
+		for (j = 0; j < n; j++)
+			f_temp[art_idx_armor[j]] = data->art_probs[art_idx_armor[j]];
 	}
 
-	/* Now do the high resists individually */
-	if (art->el_info[ELEM_POIS].res_level == 1) {
-		/* Resist poison ability */
-		file_putf(log_file, "Adding 1 for resist poison - general.\n");
-
-		(artprobs[ART_IDX_GEN_RPOIS])++;
-	}
-
-	if (of_has(art->flags, OF_PROT_FEAR)) {
-		/* Resist fear ability */
-		file_putf(log_file, "Adding 1 for resist fear - general.\n");
-		(artprobs[ART_IDX_GEN_RFEAR])++;
-	}
-
-	if (art->el_info[ELEM_LIGHT].res_level == 1) {
-		/* Resist light ability */
-		file_putf(log_file, "Adding 1 for resist light - general.\n");
-		(artprobs[ART_IDX_GEN_RLIGHT])++;
-	}
-
-	if (art->el_info[ELEM_DARK].res_level == 1) {
-		/* Resist dark ability */
-		file_putf(log_file, "Adding 1 for resist dark - general.\n");
-		(artprobs[ART_IDX_GEN_RDARK])++;
-	}
-
-	if (of_has(art->flags, OF_PROT_BLIND)) {
-		/* Resist blind ability - helms/crowns are separate */
-		if (art->tval == TV_HELM || art->tval == TV_CROWN) {
-			file_putf(log_file, "Adding 1 for resist blindness - headgear.\n");
-			(artprobs[ART_IDX_HELM_RBLIND])++;
-		} else {
-			/* General case */
-			file_putf(log_file, "Adding 1 for resist blindness - general.\n");
-			(artprobs[ART_IDX_GEN_RBLIND])++;
-		}
-	}
-
-	if (of_has(art->flags, OF_PROT_CONF)) {
-		/* Resist confusion ability */
-		file_putf(log_file, "Adding 1 for resist confusion - general.\n");
-		(artprobs[ART_IDX_GEN_RCONF])++;
-	}
-
-	if (art->el_info[ELEM_SOUND].res_level == 1) {
-		/* Resist sound ability */
-		file_putf(log_file, "Adding 1 for resist sound - general.\n");
-		(artprobs[ART_IDX_GEN_RSOUND])++;
-	}
-
-	if (art->el_info[ELEM_SHARD].res_level == 1) {
-		/* Resist shards ability */
-		file_putf(log_file, "Adding 1 for resist shards - general.\n");
-		(artprobs[ART_IDX_GEN_RSHARD])++;
-	}
-
-	if (art->el_info[ELEM_NEXUS].res_level == 1) {
-		/* Resist nexus ability */
-		file_putf(log_file, "Adding 1 for resist nexus - general.\n");
-		(artprobs[ART_IDX_GEN_RNEXUS])++;
-	}
-
-	if (art->el_info[ELEM_NETHER].res_level == 1) {
-		/* Resist nether ability */
-		file_putf(log_file, "Adding 1 for resist nether - general.\n");
-		(artprobs[ART_IDX_GEN_RNETHER])++;
-	}
-
-	if (art->el_info[ELEM_CHAOS].res_level == 1) {
-		/* Resist chaos ability */
-		file_putf(log_file, "Adding 1 for resist chaos - general.\n");
-		(artprobs[ART_IDX_GEN_RCHAOS])++;
-	}
-
-	if (art->el_info[ELEM_DISEN].res_level == 1) {
-		/* Resist disenchantment ability */
-		file_putf(log_file, "Adding 1 for resist disenchantment - general.\n");
-		(artprobs[ART_IDX_GEN_RDISEN])++;
-	}
-
-	if (of_has(art->flags, OF_PROT_STUN)) {
-		/* Resist stunning ability */
-		file_putf(log_file, "Adding 1 for res_stun - general.\n");
-		(artprobs[ART_IDX_GEN_PSTUN])++;
-	}
-}
-
-/**
- * General abilities.  This section requires a bit more work
- * than the others, because we have to consider cases where
- * a certain ability might be found in a particular item type.
- * For example, ESP is commonly found on headgear, so when
- * we count ESP we must add it to either the headgear or
- * general tally, depending on the base item.  This permits
- * us to have general abilities appear more commonly on a
- * certain item type.
- */
-void count_abilities(const struct artifact *art)
-{
-	int num = 0;
-
-	if (flags_test(art->flags, OF_SIZE, OF_SUST_STR, OF_SUST_INT, OF_SUST_WIS,
-				   OF_SUST_DEX, OF_SUST_CON, FLAG_END)) {
-		/* Now do sustains, in a similar manner */
-		num = 0;
-		if (of_has(art->flags, OF_SUST_STR)) num++;
-		if (of_has(art->flags, OF_SUST_INT)) num++;
-		if (of_has(art->flags, OF_SUST_WIS)) num++;
-		if (of_has(art->flags, OF_SUST_DEX)) num++;
-		if (of_has(art->flags, OF_SUST_CON)) num++;
-		file_putf(log_file, "Adding %d for stat sustains.\n", num);
-		(artprobs[ART_IDX_GEN_SUST]) += num;
-	}
-
-	if (of_has(art->flags, OF_FREE_ACT)) {
-		/* Free action - handle gloves separately */
-		if (art->tval == TV_GLOVES) {
-			file_putf(log_file, "Adding 1 for free action on gloves.\n");
-			(artprobs[ART_IDX_GLOVE_FA])++;
-		} else {
-			file_putf(log_file, "Adding 1 for free action - general.\n");
-			(artprobs[ART_IDX_GEN_FA])++;
-		}
-	}
-
-	if (of_has(art->flags, OF_HOLD_LIFE)) {
-		/* Hold life - do body armor separately */
-		if( (art->tval == TV_SOFT_ARMOR) ||
-			(art->tval == TV_HARD_ARMOR) ||
-			(art->tval == TV_DRAG_ARMOR)) {
-			file_putf(log_file, "Adding 1 for hold life on armor.\n");
-			(artprobs[ART_IDX_ARMOR_HLIFE])++;
-		} else {
-			file_putf(log_file, "Adding 1 for hold life - general.\n");
-			(artprobs[ART_IDX_GEN_HLIFE])++;
-		}
-	}
-
-	if (of_has(art->flags, OF_FEATHER)) {
-		/* Feather fall - handle boots separately */
-		if (art->tval == TV_BOOTS) {
-			file_putf(log_file, "Adding 1 for feather fall on boots.\n");
-			(artprobs[ART_IDX_BOOT_FEATHER])++;
-		} else {
-			file_putf(log_file, "Adding 1 for feather fall - general.\n");
-			(artprobs[ART_IDX_GEN_FEATHER])++;
-		}
-	}
-
-	if (of_has(art->flags, OF_SEE_INVIS)) {
-		/*
-		 * Handle see invisible - do helms / crowns separately
-		 * (Weapons were done already so exclude them)
-		 */
-		if(!(art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
-			 art->tval == TV_POLEARM || art->tval == TV_SWORD)) {
-			if (art->tval == TV_HELM || art->tval == TV_CROWN) {
-				file_putf(log_file, "Adding 1 for see invisible - headgear.\n");
-				(artprobs[ART_IDX_HELM_SINV])++;
-			} else {
-				file_putf(log_file, "Adding 1 for see invisible - general.\n");
-				(artprobs[ART_IDX_GEN_SINV])++;
-			}
-		}
-	}
-
-	if (of_has(art->flags, OF_TELEPATHY)) {
-		/* ESP case.  Handle helms/crowns separately. */
-		if (art->tval == TV_HELM || art->tval == TV_CROWN) {
-			file_putf(log_file, "Adding 1 for ESP on headgear.\n");
-			(artprobs[ART_IDX_HELM_ESP])++;
-		} else {
-			file_putf(log_file, "Adding 1 for ESP - general.\n");
-			(artprobs[ART_IDX_GEN_ESP])++;
-		}
-	}
-
-	if (of_has(art->flags, OF_SLOW_DIGEST)) {
-		/* Slow digestion case - generic. */
-		file_putf(log_file, "Adding 1 for slow digestion - general.\n");
-		(artprobs[ART_IDX_GEN_SDIG])++;
-	}
-
-	if (of_has(art->flags, OF_REGEN)) {
-		/* Regeneration case - generic. */
-		file_putf(log_file, "Adding 1 for regeneration - general.\n");
-		(artprobs[ART_IDX_GEN_REGEN])++;
-	}
-
-
-	if (art->activation) {
-		/* Activation */
-		file_putf(log_file, "Adding 1 for activation.\n");
-		(artprobs[ART_IDX_GEN_ACTIV])++;
-	}
-}
-
-/**
- * Parse the standard artifacts and count up the frequencies of the various
- * abilities.
- */
-static void parse_standarts(s32b *base_power, s16b *baseprobs)
-{
-	size_t i;
-
-	/* Go through the list of all artifacts */
-	for (i = 0; i < z_info->a_max; i++) {
-		struct object_kind *kind;
-		const struct artifact *art = &a_info[i];
-
-		file_putf(log_file, "Current artifact index is %d\n", i);
-
-		/* Don't parse cursed or null items */
-		if (base_power[i] < 0 || art->tval == 0) continue;
-
-		/* Get a pointer to the base item for this artifact */
-		kind = lookup_kind(art->tval, art->sval);
-
-		/* Special cases -- don't parse these! */
-		if (strstr(art->name, "The One Ring") ||
-			kf_has(kind->kind_flags, KF_QUEST_ART))
-			continue;
-
-		/* Add the base item to the baseprobs array */
-		baseprobs[kind->kidx]++;
-		file_putf(log_file, "Base item is %d\n", kind->kidx);
-
-		/* Count combat abilities broken up by type */
-		if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
-			art->tval == TV_POLEARM || art->tval == TV_SWORD) {
-			count_weapon_abilities(art);
-		} else if (art->tval == TV_BOW) {
-			count_bow_abilities(art);
-		} else {
-			count_nonweapon_abilities(art);
-		}
-
-		/* Count other properties  */
-		count_modifiers(art);
-		count_low_resists(art);
-		count_high_resists(art);
-		count_abilities(art);
-	}
-}
-
-/**
- * Rescale the abilities so that dependent / independent abilities are
- * comparable.  We do this by rescaling the frequencies for item-dependent
- * abilities as though the entire set was made up of that item type.  For
- * example, if one bow out of three has extra might, and there are 120
- * artifacts in the full set, we rescale the frequency for extra might to
- * 40 (if we had 120 randart bows, about 40 would have extra might).
- *
- * This will allow us to compare the frequencies of all ability types,
- * no matter what the dependency.  We assume that generic abilities (like
- * resist fear in the current version) don't need rescaling.  This
- * introduces some inaccuracy in cases where specific instances of an
- * ability (like INT bonus on helms) have been counted separately -
- * ideally we should adjust for this in the general case.  However, as
- * long as this doesn't occur too often, it shouldn't be a big issue.
- *
- * The following loops look complicated, but they are simply equivalent
- * to going through each of the relevant ability types one by one.
- */
-static void rescale_freqs(void)
-{
-	size_t i;
-	s32b temp;
-
-	/* Bow-only abilities */
-	for (i = 0; i < N_ELEMENTS(art_idx_bow); i++)
-		artprobs[art_idx_bow[i]] = (artprobs[art_idx_bow[i]] * art_total)
-			/ art_bow_total;
-
-	/* All weapon abilities */
-	for (i = 0; i < N_ELEMENTS(art_idx_weapon); i++)
-		artprobs[art_idx_weapon[i]] = (artprobs[art_idx_weapon[i]] *
-			art_total) / (art_bow_total + art_melee_total);
-
-	/* Corresponding non-weapon abilities */
-	temp = art_total - art_melee_total - art_bow_total;
-	for (i = 0; i < N_ELEMENTS(art_idx_nonweapon); i++)
-		artprobs[art_idx_nonweapon[i]] = (artprobs[art_idx_nonweapon[i]] *
-			art_total) / temp;
-
-	/* All melee weapon abilities */
-	for (i = 0; i < N_ELEMENTS(art_idx_melee); i++)
-		artprobs[art_idx_melee[i]] = (artprobs[art_idx_melee[i]] *
-			art_total) / art_melee_total;
-
-	/* All general armor abilities */
-	temp = art_armor_total + art_boot_total + art_shield_total +
-		art_headgear_total + art_cloak_total + art_glove_total;
-	for (i = 0; i < N_ELEMENTS(art_idx_allarmor); i++)
-		artprobs[art_idx_allarmor[i]] = (artprobs[art_idx_allarmor[i]] *
-			art_total) / temp;
-
-	/* Boots */
-	for (i = 0; i < N_ELEMENTS(art_idx_boot); i++)
-		artprobs[art_idx_boot[i]] = (artprobs[art_idx_boot[i]] *
-			art_total) / art_boot_total;
-
-	/* Gloves */
-	for (i = 0; i < N_ELEMENTS(art_idx_glove); i++)
-		artprobs[art_idx_glove[i]] = (artprobs[art_idx_glove[i]] *
-			art_total) / art_glove_total;
-
-	/* Headgear */
-	for (i = 0; i < N_ELEMENTS(art_idx_headgear); i++)
-		artprobs[art_idx_headgear[i]] = (artprobs[art_idx_headgear[i]] *
-			art_total) / art_headgear_total;
-
-	/* Shields */
-	for (i = 0; i < N_ELEMENTS(art_idx_shield); i++)
-		artprobs[art_idx_shield[i]] = (artprobs[art_idx_shield[i]] *
-			art_total) / art_shield_total;
-
-	/* Cloaks */
-	for (i = 0; i < N_ELEMENTS(art_idx_cloak); i++)
-		artprobs[art_idx_cloak[i]] = (artprobs[art_idx_cloak[i]] *
-			art_total) / art_cloak_total;
-
-	/* Body armor */
-	for (i = 0; i < N_ELEMENTS(art_idx_armor); i++)
-		artprobs[art_idx_armor[i]] = (artprobs[art_idx_armor[i]] *
-			art_total) / art_armor_total;
+	/* General abilities - no constraint */
+	for (j = 0; j < N_ELEMENTS(art_idx_gen); j++)
+		f_temp[art_idx_gen[j]] = data->art_probs[art_idx_gen[j]];
 
 	/*
-	 * All others are general case and don't need to be rescaled,
-	 * unless the algorithm is getting too clever about separating
-	 * out individual cases (in which case some logic should be
-	 * added for them in rescale_freqs()).
+	 * Now we have the correct individual frequencies, we build a cumulative
+	 * frequency table for them.
 	 */
-}
-
-/**
- * Adjust the parsed frequencies for any peculiarities of the
- * algorithm.  For example, if stat bonuses and sustains are
- * being added in a correlated fashion, it will tend to push
- * the frequencies up for both of them.  In this method we
- * compensate for cases like this by applying corrective
- * scaling.
- */
-static void adjust_freqs(void)
-{
-	/*
-	 * Enforce minimum values for any frequencies that might potentially
-	 * be missing in the standard set, especially supercharged ones.
-	 * Numbers here represent the average number of times this ability
-	 * would appear if the entire randart set was eligible to receive
-	 * it (so in the case of a bow ability: if the set was all bows).
-	 *
-	 * Note that low numbers here for very specialized abilities could
-	 * mean that there's a good chance this ability will not appear in
-	 * a given randart set.  If this is a problem, raise the number.
-	 */
-	if (artprobs[ART_IDX_GEN_RFEAR] < 5)
-		artprobs[ART_IDX_GEN_RFEAR] = 5;
-	if (artprobs[ART_IDX_MELEE_DICE_SUPER] < 5)
-		artprobs[ART_IDX_MELEE_DICE_SUPER] = 5;
-	if (artprobs[ART_IDX_BOW_SHOTS_SUPER] < 5)
-		artprobs[ART_IDX_BOW_SHOTS_SUPER] = 5;
-	if (artprobs[ART_IDX_BOW_MIGHT_SUPER] < 5)
-		artprobs[ART_IDX_BOW_MIGHT_SUPER] = 5;
-	if (artprobs[ART_IDX_MELEE_BLOWS_SUPER] < 5)
-		artprobs[ART_IDX_MELEE_BLOWS_SUPER] = 5;
-	if (artprobs[ART_IDX_GEN_SPEED_SUPER] < 5)
-		artprobs[ART_IDX_GEN_SPEED_SUPER] = 5;
-	if (artprobs[ART_IDX_GEN_AC] < 5)
-		artprobs[ART_IDX_GEN_AC] = 5;
-	if (artprobs[ART_IDX_GEN_TUNN] < 5)
-		artprobs[ART_IDX_GEN_TUNN] = 5;
-	if (artprobs[ART_IDX_NONWEAPON_BRAND] < 2)
-		artprobs[ART_IDX_NONWEAPON_BRAND] = 2;
-	if (artprobs[ART_IDX_NONWEAPON_SLAY] < 2)
-		artprobs[ART_IDX_NONWEAPON_SLAY] = 2;
-	if (artprobs[ART_IDX_BOW_BRAND] < 2)
-		artprobs[ART_IDX_BOW_BRAND] = 2;
-	if (artprobs[ART_IDX_BOW_SLAY] < 2)
-		artprobs[ART_IDX_BOW_SLAY] = 2;
-	if (artprobs[ART_IDX_NONWEAPON_BLOWS] < 2)
-		artprobs[ART_IDX_NONWEAPON_BLOWS] = 2;
-	if (artprobs[ART_IDX_NONWEAPON_SHOTS] < 2)
-		artprobs[ART_IDX_NONWEAPON_SHOTS] = 2;
-	if (artprobs[ART_IDX_GEN_AC_SUPER] < 5)
-		artprobs[ART_IDX_GEN_AC_SUPER] = 5;
-	if (artprobs[ART_IDX_MELEE_AC] < 5)
-		artprobs[ART_IDX_MELEE_AC] = 5;
-	if (artprobs[ART_IDX_GEN_PSTUN] < 3)
-		artprobs[ART_IDX_GEN_PSTUN] = 3;
-
-	/* Cut aggravation frequencies in half since they're used twice */
-	artprobs[ART_IDX_NONWEAPON_AGGR] /= 2;
-	artprobs[ART_IDX_WEAPON_AGGR] /= 2;
-}
-
-/**
- * Parse the artifacts and write frequencies of their abilities and
- * base object kinds. 
- *
- * This is used to give dynamic generation probabilities.
- */
-static void parse_frequencies(s32b *base_power, s16b *baseprobs)
-{
-	size_t i;
-	int j;
-
-	file_putf(log_file, "\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
-
-	/* Zero the frequencies for artifact attributes */
 	for (i = 0; i < ART_IDX_TOTAL; i++)
-		artprobs[i] = 0;
-
-	/*
-	 * Initialise the frequencies for base items so that each item could
-	 * be chosen - we check for illegal items during choose_item()
-	 */
-	for (i = 0; i < z_info->k_max; i++)
-		baseprobs[i] = 1;
-
-	parse_standarts(base_power, baseprobs);
-
-	if (verbose) {
-	/* Print out some of the abilities, to make sure that everything's fine */
-		for (i = 0; i < ART_IDX_TOTAL; i++)
-			file_putf(log_file, "Frequency of ability %d: %d\n", i,
-					  artprobs[i]);
-
-		for (i = 0; i < z_info->k_max; i++)
-			file_putf(log_file, "Frequency of item %d: %d\n", i, baseprobs[i]);
-	}
-
-	/* Rescale frequencies */
-	rescale_freqs();
-
-	/* Perform any additional rescaling and adjustment, if required. */
-	adjust_freqs();
-
-	/* Log the final frequencies to check that everything's correct */
-	for (i = 0; i < ART_IDX_TOTAL; i++)
-		file_putf(log_file,  "Rescaled frequency of ability %d: %d\n", i,
-				  artprobs[i]);
-
-	/* Build a cumulative frequency table for the base items */
-	for (i = 0; i < z_info->k_max; i++)
-		for (j = i; j < z_info->k_max; j++)
-			base_freq[j] += baseprobs[i];
+		for (j = i; j < ART_IDX_TOTAL; j++)
+			freq[j] += f_temp[i];
 
 	/* Print out the frequency table, for verification */
-	for (i = 0; i < z_info->k_max; i++)
-		file_putf(log_file, "Cumulative frequency of item %d is: %d\n", i,
-				  base_freq[i]);
+	for (i = 0; i < ART_IDX_TOTAL; i++)
+		file_putf(log_file, "Cumulative frequency of ability %d is: %d\n", i,
+				  freq[i]);
+}
+
+/**
+ * Try to supercharge this item by running through the list of the supercharge
+ * abilities and attempting to add each in turn.  An artifact only gets one
+ * chance at each of these up front (if applicable).
+ */
+static void try_supercharge(struct artifact *art, s32b target_power,
+							struct artifact_data *data)
+{
+	/* Huge damage dice or max blows - melee weapon only */
+	if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
+		art->tval == TV_POLEARM || art->tval == TV_SWORD) {
+		/* Damage dice */
+		if (randint0(z_info->a_max) <
+			data->art_probs[ART_IDX_MELEE_DICE_SUPER]) {
+			art->dd += 3 + randint0(4);
+			file_putf(log_file, "Supercharging damage dice!  (Now %d dice)\n",
+					  art->dd);
+		} else if (randint0(z_info->a_max) <
+				   data->art_probs[ART_IDX_MELEE_BLOWS_SUPER]) {
+			/* Blows */
+			art->modifiers[OBJ_MOD_BLOWS] = INHIBIT_BLOWS - 1;
+			file_putf(log_file, "Supercharging melee blows! (%+d blows)\n",
+				INHIBIT_BLOWS - 1);
+		}
+	}
+
+	/* Bows - max might or shots */
+	if (art->tval == TV_BOW) {
+		if (randint0(z_info->a_max)
+			< data->art_probs[ART_IDX_BOW_SHOTS_SUPER]) {
+			art->modifiers[OBJ_MOD_SHOTS] = INHIBIT_SHOTS - 1;
+			file_putf(log_file, "Supercharging shots! (%+d extra shots)\n",
+				INHIBIT_SHOTS - 1);
+		} else if (randint0(z_info->a_max) <
+				   data->art_probs[ART_IDX_BOW_MIGHT_SUPER]) {
+			art->modifiers[OBJ_MOD_MIGHT] = INHIBIT_MIGHT - 1;
+			file_putf(log_file, "Supercharging might! (%+d extra might)\n",
+					  INHIBIT_MIGHT - 1);
+		}
+	}
+
+	/* Big speed bonus - any item (potentially) but more likely on boots */
+	if (randint0(z_info->a_max) < data->art_probs[ART_IDX_GEN_SPEED_SUPER] ||
+		(art->tval == TV_BOOTS && randint0(z_info->a_max) <
+		data->art_probs[ART_IDX_BOOT_SPEED])) {
+		art->modifiers[OBJ_MOD_SPEED] = 5 + randint0(6);
+		if (INHIBIT_WEAK)
+			art->modifiers[OBJ_MOD_SPEED] += randint1(3);
+		if (INHIBIT_STRONG)
+			art->modifiers[OBJ_MOD_SPEED] += 1 + randint1(6);
+		file_putf(log_file, "Supercharging speed for this item!  (New speed bonus is %d)\n", art->modifiers[OBJ_MOD_SPEED]);
+	}
+
+	/* Big AC bonus */
+	if (randint0(z_info->a_max) < data->art_probs[ART_IDX_GEN_AC_SUPER]) {
+		art->to_a += 19 + randint1(11);
+		if (INHIBIT_WEAK)
+			art->to_a += randint1(10);
+		if (INHIBIT_STRONG)
+			art->to_a += randint1(20);
+		file_putf(log_file, "Supercharging AC! New AC bonus is %d\n",
+				  art->to_a);
+	}
+
+	/* Aggravation */
+	if (art->tval == TV_BOW || art->tval == TV_DIGGING ||
+		art->tval == TV_HAFTED || art->tval == TV_POLEARM ||
+		art->tval == TV_SWORD) {
+		if ((randint0(z_info->a_max) < data->art_probs[ART_IDX_WEAPON_AGGR]) &&
+		    (target_power > AGGR_POWER)) {
+			of_on(art->flags, OF_AGGRAVATE);
+			file_putf(log_file, "Adding aggravation\n");
+		}
+	} else {
+		if ((randint0(z_info->a_max)
+			 < data->art_probs[ART_IDX_NONWEAPON_AGGR]) &&
+			(target_power > AGGR_POWER)) {
+			of_on(art->flags, OF_AGGRAVATE);
+			file_putf(log_file, "Adding aggravation\n");
+		}
+	}
 }
 
 /**
@@ -1535,7 +1706,7 @@ static void add_low_resist(struct artifact *art)
 /**
  * Adds a high resist, if possible
  */
-static void add_high_resist(struct artifact *art)
+static void add_high_resist(struct artifact *art, struct artifact_data *data)
 {
 	/* Add a high resist, according to the generated frequency distribution. */
 	size_t i;
@@ -1545,7 +1716,7 @@ static void add_high_resist(struct artifact *art)
 
 	temp = 0;
 	for (i = 0; i < N_ELEMENTS(art_idx_high_resist); i++)
-		temp += artprobs[art_idx_high_resist[i]];
+		temp += data->art_probs[art_idx_high_resist[i]];
 
 	/* The following will fail (cleanly) if all high resists already added */
 	while (!success && (count < MAX_TRIES)) {
@@ -1554,10 +1725,10 @@ static void add_high_resist(struct artifact *art)
 
 		/* Determine which (weighted) resist this number corresponds to */
 
-		temp = artprobs[art_idx_high_resist[0]];
+		temp = data->art_probs[art_idx_high_resist[0]];
 		i = 0;
 		while (r > temp && i < N_ELEMENTS(art_idx_high_resist))	{
-			temp += artprobs[art_idx_high_resist[i]];
+			temp += data->art_probs[art_idx_high_resist[i]];
 			i++;
 		}
 
@@ -1705,7 +1876,8 @@ static void add_weight_mod(struct artifact *art)
 /**
  * Add an activation (called only if artifact does not yet have one)
  */
-static void add_activation(struct artifact *art, s32b target_power)
+static void add_activation(struct artifact *art, int target_power,
+						   int max_power)
 {
 	int i, x, p, max_effect = 0;
 	int count = 0;
@@ -1742,146 +1914,18 @@ static void add_activation(struct artifact *art, s32b target_power)
 
 
 /**
- * Build a suitable frequency table for this item, based on the generated
- * frequencies.  The frequencies for any abilities that don't apply for
- * this item type will be set to zero.  First parameter is the artifact
- * for which to generate the frequency table.
- *
- * The second input parameter is a pointer to an array that the function
- * will use to store the frequency table.  The array must have size
- * ART_IDX_TOTAL.
- *
- * The resulting frequency table is cumulative for ease of use in the
- * weighted randomization algorithm.
- */
-static void build_freq_table(struct artifact *art, s16b *freq)
-{
-	int i;
-	size_t j;
-	s16b f_temp[ART_IDX_TOTAL];
-
-	/* First, set everything to zero */
-	for (i = 0; i < ART_IDX_TOTAL; i++) {
-		f_temp[i] = 0;
-		freq[i] = 0;
-	}
-
-	/* Now copy over appropriate frequencies for applicable abilities */
-	/* Bow abilities */
-	if (art->tval == TV_BOW) {
-		size_t n = N_ELEMENTS(art_idx_bow);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_bow[j]] = artprobs[art_idx_bow[j]];
-		}
-
-	/* General weapon abilities */
-	if (art->tval == TV_BOW || art->tval == TV_DIGGING ||
-		art->tval == TV_HAFTED || art->tval == TV_POLEARM ||
-		art->tval == TV_SWORD) {
-		size_t n = N_ELEMENTS(art_idx_weapon);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_weapon[j]] = artprobs[art_idx_weapon[j]];
-	}
-	/* General non-weapon abilities */
-	else {
-		size_t n = N_ELEMENTS(art_idx_nonweapon);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_nonweapon[j]] = artprobs[art_idx_nonweapon[j]];
-	}
-
-	/* General melee abilities */
-	if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
-		art->tval == TV_POLEARM || art->tval == TV_SWORD) {
-		size_t n = N_ELEMENTS(art_idx_melee);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_melee[j]] = artprobs[art_idx_melee[j]];
-	}
-
-	/* General armor abilities */
-	if (art->tval == TV_BOOTS || art->tval == TV_GLOVES ||
-		art->tval == TV_HELM || art->tval == TV_CROWN ||
-		art->tval == TV_SHIELD || art->tval == TV_CLOAK ||
-		art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
-		art->tval == TV_DRAG_ARMOR) {
-		size_t n = N_ELEMENTS(art_idx_allarmor);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_allarmor[j]] = artprobs[art_idx_allarmor[j]];
-	}
-
-	/* Boot abilities */
-	if (art->tval == TV_BOOTS) {
-		size_t n = N_ELEMENTS(art_idx_boot);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_boot[j]] = artprobs[art_idx_boot[j]];
-	}
-
-	/* Glove abilities */
-	if (art->tval == TV_GLOVES) {
-		size_t n = N_ELEMENTS(art_idx_glove);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_glove[j]] = artprobs[art_idx_glove[j]];
-	}
-
-	/* Headgear abilities */
-	if (art->tval == TV_HELM || art->tval == TV_CROWN) {
-		size_t n = N_ELEMENTS(art_idx_headgear);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_headgear[j]] = artprobs[art_idx_headgear[j]];
-	}
-
-	/* Shield abilities */
-	if (art->tval == TV_SHIELD) {
-		size_t n = N_ELEMENTS(art_idx_shield);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_shield[j]] = artprobs[art_idx_shield[j]];
-	}
-
-	/* Cloak abilities */
-	if (art->tval == TV_CLOAK) {
-		size_t n = N_ELEMENTS(art_idx_cloak);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_cloak[j]] = artprobs[art_idx_cloak[j]];
-	}
-
-	/* Armor abilities */
-	if (art->tval == TV_SOFT_ARMOR || art->tval == TV_HARD_ARMOR ||
-		art->tval == TV_DRAG_ARMOR) {
-		size_t n = N_ELEMENTS(art_idx_armor);
-		for (j = 0; j < n; j++)
-			f_temp[art_idx_armor[j]] = artprobs[art_idx_armor[j]];
-	}
-
-	/* General abilities - no constraint */
-	for (j = 0; j < N_ELEMENTS(art_idx_gen); j++)
-		f_temp[art_idx_gen[j]] = artprobs[art_idx_gen[j]];
-
-	/*
-	 * Now we have the correct individual frequencies, we build a cumulative
-	 * frequency table for them.
-	 */
-	for (i = 0; i < ART_IDX_TOTAL; i++)
-		for (j = i; j < ART_IDX_TOTAL; j++)
-			freq[j] += f_temp[i];
-
-	/* Print out the frequency table, for verification */
-	for (i = 0; i < ART_IDX_TOTAL; i++)
-		file_putf(log_file, "Cumulative frequency of ability %d is: %d\n", i,
-				  freq[i]);
-}
-
-/**
  * Choose a random ability using weights based on the given cumulative
  * frequency table.  A pointer to the frequency array (which must be of size
  * ART_IDX_TOTAL) is passed as a parameter.  The function returns a number
  * representing the index of the ability chosen.
  */
 
-static int choose_ability (s16b *freq_table)
+static int choose_ability (int *freq_table)
 {
 	int r, ability;
 
 	/* Generate a random number between 1 and the last value in the table */
-	r = randint1(freq_table[ART_IDX_TOTAL-1]);
+	r = randint1(freq_table[ART_IDX_TOTAL - 1]);
 
 	/* Find the entry in the table that this number represents. */
 	ability = 0;
@@ -1905,7 +1949,8 @@ static int choose_ability (s16b *freq_table)
  * been done already.
  */
 
-static void add_ability_aux(struct artifact *art, int r, s32b target_power)
+static void add_ability_aux(struct artifact *art, int r, s32b target_power,
+							struct artifact_data *data)
 {
 	switch(r)
 	{
@@ -2060,7 +2105,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 			break;
 
 		case ART_IDX_ARMOR_HRES:
-			add_high_resist(art);
+			add_high_resist(art, data);
 			break;
 
 		case ART_IDX_GEN_STAT:
@@ -2142,23 +2187,49 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_ACTIV:
-			if (!art->activation) add_activation(art, target_power);
+			if (!art->activation)
+				add_activation(art, target_power, data->max_power);
 			break;
 	}
 }
 
 /**
+ * Clean up the artifact by removing illogical combinations of powers.
+ */
+static void remove_contradictory(struct artifact *art)
+{
+	if (of_has(art->flags, OF_AGGRAVATE))
+		art->modifiers[OBJ_MOD_STEALTH] = 0;
+
+	if (art->modifiers[OBJ_MOD_STR] < 0)
+		of_off(art->flags, OF_SUST_STR);
+	if (art->modifiers[OBJ_MOD_INT] < 0)
+		of_off(art->flags, OF_SUST_INT);
+	if (art->modifiers[OBJ_MOD_WIS] < 0)
+		of_off(art->flags, OF_SUST_WIS);
+	if (art->modifiers[OBJ_MOD_DEX] < 0)
+		of_off(art->flags, OF_SUST_DEX);
+	if (art->modifiers[OBJ_MOD_CON] < 0)
+		of_off(art->flags, OF_SUST_CON);
+	art->modifiers[OBJ_MOD_BLOWS] = 0;
+
+	if (of_has(art->flags, OF_DRAIN_EXP))
+		of_off(art->flags, OF_HOLD_LIFE);
+}
+
+/**
  * Randomly select an extra ability to be added to the artifact in question.
  */
-static void add_ability(struct artifact *art, s32b target_power)
+static void add_ability(struct artifact *art, s32b target_power, int *freq,
+						struct artifact_data *data)
 {
 	int r;
 
 	/* Choose a random ability using the frequency table previously defined*/
-	r = choose_ability(art_freq);
+	r = choose_ability(freq);
 
 	/* Add the appropriate ability */
-	add_ability_aux(art, r, target_power);
+	add_ability_aux(art, r, target_power, data);
 
 	/* Now remove contradictory or redundant powers. */
 	remove_contradictory(art);
@@ -2169,85 +2240,6 @@ static void add_ability(struct artifact *art, s32b target_power)
 		add_flag(art, OF_BLESSED);
 }
 
-
-/**
- * Try to supercharge this item by running through the list of the supercharge
- * abilities and attempting to add each in turn.  An artifact only gets one
- * chance at each of these up front (if applicable).
- */
-static void try_supercharge(struct artifact *art, s32b target_power)
-{
-	/* Huge damage dice or max blows - melee weapon only */
-	if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
-		art->tval == TV_POLEARM || art->tval == TV_SWORD) {
-		/* Damage dice */
-		if (randint0(z_info->a_max) < artprobs[ART_IDX_MELEE_DICE_SUPER]) {
-			art->dd += 3 + randint0(4);
-			file_putf(log_file, "Supercharging damage dice!  (Now %d dice)\n",
-					  art->dd);
-		} else if (randint0(z_info->a_max) <
-				   artprobs[ART_IDX_MELEE_BLOWS_SUPER]) {
-			/* Blows */
-			art->modifiers[OBJ_MOD_BLOWS] = INHIBIT_BLOWS - 1;
-			file_putf(log_file, "Supercharging melee blows! (%+d blows)\n",
-				INHIBIT_BLOWS - 1);
-		}
-	}
-
-	/* Bows - max might or shots */
-	if (art->tval == TV_BOW) {
-		if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_SHOTS_SUPER]) {
-			art->modifiers[OBJ_MOD_SHOTS] = INHIBIT_SHOTS - 1;
-			file_putf(log_file, "Supercharging shots! (%+d extra shots)\n",
-				INHIBIT_SHOTS - 1);
-		} else if (randint0(z_info->a_max) <
-				   artprobs[ART_IDX_BOW_MIGHT_SUPER]) {
-			art->modifiers[OBJ_MOD_MIGHT] = INHIBIT_MIGHT - 1;
-			file_putf(log_file, "Supercharging might! (%+d extra might)\n",
-					  INHIBIT_MIGHT - 1);
-		}
-	}
-
-	/* Big speed bonus - any item (potentially) but more likely on boots */
-	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_SPEED_SUPER] ||
-		(art->tval == TV_BOOTS && randint0(z_info->a_max) <
-		artprobs[ART_IDX_BOOT_SPEED])) {
-		art->modifiers[OBJ_MOD_SPEED] = 5 + randint0(6);
-		if (INHIBIT_WEAK)
-			art->modifiers[OBJ_MOD_SPEED] += randint1(3);
-		if (INHIBIT_STRONG)
-			art->modifiers[OBJ_MOD_SPEED] += 1 + randint1(6);
-		file_putf(log_file, "Supercharging speed for this item!  (New speed bonus is %d)\n", art->modifiers[OBJ_MOD_SPEED]);
-	}
-
-	/* Big AC bonus */
-	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_AC_SUPER]) {
-		art->to_a += 19 + randint1(11);
-		if (INHIBIT_WEAK)
-			art->to_a += randint1(10);
-		if (INHIBIT_STRONG)
-			art->to_a += randint1(20);
-		file_putf(log_file, "Supercharging AC! New AC bonus is %d\n",
-				  art->to_a);
-	}
-
-	/* Aggravation */
-	if (art->tval == TV_BOW || art->tval == TV_DIGGING ||
-		art->tval == TV_HAFTED || art->tval == TV_POLEARM ||
-		art->tval == TV_SWORD) {
-		if ((randint0(z_info->a_max) < artprobs[ART_IDX_WEAPON_AGGR]) &&
-		    (target_power > AGGR_POWER)) {
-			of_on(art->flags, OF_AGGRAVATE);
-			file_putf(log_file, "Adding aggravation\n");
-		}
-	} else {
-		if ((randint0(z_info->a_max) < artprobs[ART_IDX_NONWEAPON_AGGR]) &&
-		    (target_power > AGGR_POWER)) {
-			of_on(art->flags, OF_AGGRAVATE);
-			file_putf(log_file, "Adding aggravation\n");
-		}
-	}
-}
 
 /**
  * Make it bad, or if it's already bad, make it worse!
@@ -2334,11 +2326,13 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
  *
  * This code is full of intricacies developed over years of tweaking.
  */
-static void scramble_artifact(int a_idx, s32b power)
+static void scramble_artifact(int a_idx, struct artifact_data *data)
 {
 	struct artifact *art = &a_info[a_idx];
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
 	struct artifact *a_old = mem_zalloc(sizeof *a_old);
+	int art_freq[ART_IDX_TOTAL];
+	int power = data->base_power[a_idx];
 	int tries = 0;
 	byte alloc_old, base_alloc_old, alloc_new;
 	s32b ap = 0;
@@ -2387,11 +2381,11 @@ static void scramble_artifact(int a_idx, s32b power)
 		s32b ap2;
 
 		/* Capture the rarity of the original base item and artifact */
-		alloc_old = base_art_alloc[a_idx];
-		base_alloc_old = base_item_prob[a_idx];
+		alloc_old = data->base_art_alloc[a_idx];
+		base_alloc_old = data->base_item_prob[a_idx];
 		do {
 			/* Get the new item kind */
-			kind = choose_item(a_idx);
+			kind = choose_item(a_idx, data->base_freq);
 
 			/*
 			 * Hack: if power is positive but very low, and if we're not having
@@ -2468,13 +2462,13 @@ static void scramble_artifact(int a_idx, s32b power)
 	}
 
 	/* Generate the cumulative frequency table for this base item type */
-	build_freq_table(art, art_freq);
+	build_freq_table(art, art_freq, data);
 
 	/* Copy artifact info temporarily. */
 	copy_artifact(art, a_old);
 
 	/* Give this artifact a shot at being supercharged */
-	try_supercharge(art, power);
+	try_supercharge(art, power, data);
 	ap = artifact_power(a_idx, true);
 	if (ap > (power * 23) / 20 + 1)	{
 		/* too powerful -- put it back */
@@ -2487,8 +2481,8 @@ static void scramble_artifact(int a_idx, s32b power)
 		/* Copy artifact info temporarily. */
 		copy_artifact(art, a_old);
 		do {
-			add_ability(art, power);
-			add_ability(art, power);
+			add_ability(art, power, art_freq, data);
+			add_ability(art, power, art_freq, data);
 			do_curse(art);
 			do_curse(art);
 			do_curse(art);
@@ -2515,7 +2509,7 @@ static void scramble_artifact(int a_idx, s32b power)
 			/* Copy artifact info temporarily. */
 			copy_artifact(art, a_old);
 
-			add_ability(art, power);
+			add_ability(art, power, art_freq, data);
 			ap = artifact_power(a_idx, true);
 
 			/* CR 11/14/01 - pushed both limits up by about 5% */
@@ -2567,14 +2561,12 @@ static void scramble_artifact(int a_idx, s32b power)
 
 	if (special_artifact) {
 		art->alloc_max = 127;
-		if (ap > avg_power) {
+		if (ap > data->avg_power) {
 			art->alloc_prob = 1;
-			art->alloc_min = MAX(50, ((ap + 150) * 100 /
-				max_power));
+			art->alloc_min = MAX(50, ((ap + 150) * 100 / data->max_power));
 		} else if (ap > 30) {
-			art->alloc_prob = MAX(2, (avg_power - ap) / 20);
-			art->alloc_min = MAX(25, ((ap + 200) * 100 /
-				max_power));
+			art->alloc_prob = MAX(2, (data->avg_power - ap) / 20);
+			art->alloc_min = MAX(25, ((ap + 200) * 100 / data->max_power));
 		} else {/* Just the Phial */
 			art->alloc_prob = 50 - ap;
 			art->alloc_min = 5;
@@ -2582,7 +2574,7 @@ static void scramble_artifact(int a_idx, s32b power)
 	} else {
 		file_putf(log_file, "kind->alloc_prob is %d\n", kind->alloc_prob);
 		art->alloc_max = MIN(127, (ap * 4) / 5);
-		art->alloc_min = MIN(100, ((ap + 100) * 100 / max_power));
+		art->alloc_min = MIN(100, ((ap + 100) * 100 / data->max_power));
 
 		/* Leave alloc_prob consistent with base art total rarity */
 	}
@@ -2604,6 +2596,10 @@ static void scramble_artifact(int a_idx, s32b power)
 	file_putf(log_file, "Number of tries for artifact %d was: %d\n", a_idx, tries);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Generation of a set of random artifacts
+ * ------------------------------------------------------------------------ */
 /**
  * Return true if the whole set of random artifacts meets certain
  * criteria.  Return false if we fail to meet those criteria (which will
@@ -2637,7 +2633,7 @@ static bool artifacts_acceptable(void)
 /**
  * Scramble each artifact
  */
-static errr scramble(s32b *base_power)
+static void scramble(struct artifact_data *data)
 {
 	/* If our artifact set fails to meet certain criteria, we start over. */
 	do {
@@ -2645,11 +2641,8 @@ static errr scramble(s32b *base_power)
 
 		/* Generate all the artifacts. */
 		for (a_idx = 1; a_idx < z_info->a_max; a_idx++)
-			scramble_artifact(a_idx, base_power[a_idx]);
+			scramble_artifact(a_idx, data);
 	} while (!artifacts_acceptable());
-
-	/* Success */
-	return (0);
 }
 
 /**
@@ -2679,7 +2672,7 @@ char *artifact_gen_name(struct artifact *a, const char ***words) {
 /**
  * Initialise all the artifact names.
  */
-static errr init_names(void)
+static void init_names(void)
 {
 	int i;
 	struct artifact *a;
@@ -2700,27 +2693,52 @@ static errr init_names(void)
 		a->text = string_make(desc);
 		a->name = artifact_gen_name(a, name_sections);
 	}
-
-	return 0;
 }
 
 /**
  * Call the name allocation and artifact scrambling routines
  */
-static errr do_randart_aux(s32b *base_power)
+void do_randart_aux(struct artifact_data *data)
 {
-	errr result;
-
 	/* Generate random names */
-	if ((result = init_names()) != 0) return (result);
+	init_names();
 
 	/* Randomize the artifacts */
-	if ((result = scramble(base_power)) != 0) return (result);
-
-	/* Success */
-	return (0);
+	scramble(data);
 }
 
+/**
+ * Allocate a new artifact set data structure
+ */
+static struct artifact_data *artifact_data_new(void)
+{
+	struct artifact_data *data = mem_zalloc(sizeof(*data));
+
+	data->base_power = mem_zalloc(z_info->a_max * sizeof(int));
+	data->base_item_level = mem_zalloc(z_info->a_max * sizeof(int));
+	data->base_item_prob = mem_zalloc(z_info->a_max * sizeof(int));
+	data->base_art_alloc = mem_zalloc(z_info->a_max * sizeof(int));
+	data->base_probs = mem_zalloc(z_info->k_max * sizeof(int));
+	data->art_probs = mem_zalloc(ART_IDX_TOTAL * sizeof(int));
+	data->base_freq = mem_zalloc(z_info->k_max * sizeof(int));
+
+	return data;
+}
+
+/**
+ * Allocate a new artifact set data structure
+ */
+static void artifact_data_free(struct artifact_data *data)
+{
+	mem_free(data->base_power);
+	mem_free(data->base_item_level);
+	mem_free(data->base_item_prob);
+	mem_free(data->base_art_alloc);
+	mem_free(data->base_probs);
+	mem_free(data->art_probs);
+	mem_free(data->base_freq);
+	mem_free(data);
+}
 
 /**
  * Randomize the artifacts
@@ -2728,23 +2746,14 @@ static errr do_randart_aux(s32b *base_power)
  * The full flag toggles between just randomizing the names and
  * complete randomization of the artifacts.
  */
-errr do_randart(u32b randart_seed)
+void do_randart(u32b randart_seed)
 {
-	errr err;
-	s32b *base_power;
-	s16b *baseprobs;
+	struct artifact_data *standarts = artifact_data_new();
+	struct artifact_data *randarts;
 
 	/* Prepare to use the Angband "simple" RNG. */
 	Rand_value = randart_seed;
 	Rand_quick = true;
-
-	/* Allocate the various "original powers" arrays */
-	base_power = mem_zalloc(z_info->a_max * sizeof(s32b));
-	base_item_level = mem_zalloc(z_info->a_max * sizeof(byte));
-	base_item_prob = mem_zalloc(z_info->a_max * sizeof(byte));
-	base_art_alloc = mem_zalloc(z_info->a_max * sizeof(byte));
-	baseprobs = mem_zalloc(z_info->k_max * sizeof(s16b));
-	base_freq = mem_zalloc(z_info->k_max * sizeof(s16b));
 
 	/* Open the log file for writing */
 	if (verbose) {
@@ -2753,23 +2762,26 @@ errr do_randart(u32b randart_seed)
 		log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 		if (!log_file) {
 			msg("Error - can't open randart.log for writing.");
+			artifact_data_free(standarts);
 			exit(1);
 		}
 	}
 
 	/* Store the original power ratings */
-	store_base_power(base_power);
+	store_base_power(standarts);
 
 	/* Determine the generation probabilities */
-	parse_frequencies(base_power, baseprobs);
+	parse_frequencies(standarts);
 
-	/* Generate the random artifact (names) */
-	err = do_randart_aux(base_power);
+	/* Generate the random artifacts */
+	do_randart_aux(standarts);
+	artifact_data_free(standarts);
 
-	/* Just for fun, look at the frequencies on the finished items */
-	/* Remove this prior to release */
-	store_base_power(base_power);
-	parse_frequencies(base_power, baseprobs);
+	/* Look at the frequencies on the finished items */
+	randarts = artifact_data_new();
+	store_base_power(randarts);
+	parse_frequencies(randarts);
+	artifact_data_free(randarts);
 
 	/* Close the log file */
 	if (verbose) {
@@ -2779,16 +2791,6 @@ errr do_randart(u32b randart_seed)
 		}
 	}
 
-	/* Free the "original powers" arrays */
-	mem_free(base_power);
-	mem_free(base_item_level);
-	mem_free(base_item_prob);
-	mem_free(base_art_alloc);
-	mem_free(baseprobs);
-	mem_free(base_freq);
-
 	/* When done, resume use of the Angband "complex" RNG. */
 	Rand_quick = false;
-
-	return (err);
 }

@@ -56,7 +56,44 @@ enum {
 	#undef ART_IDX
 };
 
+struct artifact_data {
+	/* Data structures for learned probabilities */
+	int *art_probs;
+	int *base_probs;
+	int bow_total;
+	int melee_total;
+	int boot_total;
+	int glove_total;
+	int headgear_total;
+	int shield_total;
+	int cloak_total;
+	int armor_total;
+	int other_total;
+	int total;
+
+	/* Arrays for holding frequency values */
+	int art_freq[ART_IDX_TOTAL];  	/* artifact attributes */
+	int *base_freq; 			/* base items */
+
+	/* Artifact power ratings */
+	int *base_power;
+	int max_power;
+	int min_power;
+	int avg_power;
+	int var_power;
+
+	/* Base item levels */
+	int *base_item_level;
+
+	/* Base item rarities */
+	int *base_item_prob;
+
+	/* Artifact rarities */
+	int *base_art_alloc;
+};
+
+
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
-errr do_randart(u32b randart_seed);
+void do_randart(u32b randart_seed);
 
 #endif /* OBJECT_RANDART_H */
