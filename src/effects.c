@@ -1014,7 +1014,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
-	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 
 	/* Notice */
 	context->ident = true;

@@ -2718,9 +2718,6 @@ static void artifact_data_free(struct artifact_data *data)
 
 /**
  * Randomize the artifacts
- *
- * The full flag toggles between just randomizing the names and
- * complete randomization of the artifacts.
  */
 void do_randart(u32b randart_seed)
 {
