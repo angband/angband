@@ -41,9 +41,6 @@ static ang_file *log_file = NULL;
 /* Activation list */
 struct activation *activations;
 
-/* Global just for convenience. */
-static int verbose = 1;
-
 /**
  * Include the elements and names
  */
@@ -180,17 +177,6 @@ static s16b art_idx_high_resist[] =	{
 };
 
 /**
- * Mean start and increment values for to_hit, to_dam and AC.  Update these
- * if the algorithm changes.  They are used in frequency generation.
- */
-static s16b mean_hit_increment = 4;
-static s16b mean_dam_increment = 4;
-static s16b mean_hit_startval = 10;
-static s16b mean_dam_startval = 10;
-static s16b mean_ac_startval = 15;
-static s16b mean_ac_increment = 5;
-
-/**
  * ------------------------------------------------------------------------
  * Calculation of the statistics of an artifact set
  * ------------------------------------------------------------------------ */
@@ -220,7 +206,7 @@ static s32b artifact_power(int a_idx, bool translate)
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
-	power = object_power(obj, verbose, log_file);
+	power = object_power(obj, 1, log_file);
 
 	object_delete(&known_obj);
 	object_delete(&obj);
@@ -327,14 +313,14 @@ void count_weapon_abilities(const struct artifact *art,
 	int min_to_a = randcalc(kind->to_a, 0, MAXIMISE);
 
 	/* To-hit and to-dam */
-	bonus = (art->to_h - min_to_h - mean_hit_startval) / mean_hit_increment;
+	bonus = (art->to_h - min_to_h - data->hit_startval) / data->hit_increment;
 	if (bonus > 0)
 		file_putf(log_file, "Adding %d instances of extra to-hit bonus for weapon\n", bonus);
 	else if (bonus < 0)
 		file_putf(log_file, "Subtracting %d instances of extra to-hit bonus for weapon\n", bonus);
 	data->art_probs[ART_IDX_WEAPON_HIT] += bonus;
 
-	bonus = (art->to_d - min_to_d - mean_dam_startval) / mean_dam_increment;
+	bonus = (art->to_d - min_to_d - data->dam_startval) / data->dam_increment;
 	if (bonus > 0)
 		file_putf(log_file, "Adding %d instances of extra to-dam bonus for weapon\n", bonus);
 	else
@@ -342,7 +328,7 @@ void count_weapon_abilities(const struct artifact *art,
 	data->art_probs[ART_IDX_WEAPON_DAM] += bonus;
 
 	/* Does this weapon have an unusual bonus to AC? */
-	bonus = (art->to_a - min_to_a) / mean_ac_increment;
+	bonus = (art->to_a - min_to_a) / data->ac_increment;
 	if (bonus > 0) {
 		file_putf(log_file,
 				  "Adding %d instances of extra AC bonus for weapon\n", bonus);
@@ -422,10 +408,11 @@ void count_bow_abilities(const struct artifact *art, struct artifact_data *data)
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
 	int min_to_h = randcalc(kind->to_h, 0, MAXIMISE);
 	int min_to_d = randcalc(kind->to_d, 0, MAXIMISE);
-	int min_to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE) - mean_ac_startval;
+	int min_to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE)
+		- data->ac_startval;
 
 	/* To-hit */
-	bonus = (art->to_h - min_to_h - mean_hit_startval) / mean_hit_increment;
+	bonus = (art->to_h - min_to_h - data->hit_startval) / data->hit_increment;
 	if (bonus > 0)
 		file_putf(log_file, "Adding %d instances of extra to-hit bonus for weapon\n", bonus);
 	else if (bonus < 0)
@@ -433,7 +420,7 @@ void count_bow_abilities(const struct artifact *art, struct artifact_data *data)
 	data->art_probs[ART_IDX_WEAPON_HIT] += bonus;
 
 	/* To-dam */
-	bonus = (art->to_d - min_to_d - mean_dam_startval) / mean_dam_increment;
+	bonus = (art->to_d - min_to_d - data->dam_startval) / data->dam_increment;
 	if (bonus > 0)
 		file_putf(log_file, "Adding %d instances of extra to-dam bonus for weapon\n", bonus);
 	else
@@ -441,7 +428,7 @@ void count_bow_abilities(const struct artifact *art, struct artifact_data *data)
 	data->art_probs[ART_IDX_WEAPON_DAM] += bonus;
 
 	/* Armor class */
-	bonus = (art->to_a - min_to_a) / mean_ac_increment;
+	bonus = (art->to_a - min_to_a) / data->ac_increment;
 	if (bonus > 0) {
 		file_putf(log_file, "Adding %d for AC bonus - general\n", bonus);
 		(data->art_probs[ART_IDX_GEN_AC]) += bonus;
@@ -493,8 +480,9 @@ void count_nonweapon_abilities(const struct artifact *art,
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
 	int to_hit = art->to_h - randcalc(kind->to_h, 0, MINIMISE);
 	int to_dam = art->to_d - randcalc(kind->to_d, 0, MINIMISE);
-	int to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE) - mean_ac_startval;
-	int bonus = to_a / mean_ac_increment;
+	int to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE)
+		- data->ac_startval;
+	int bonus = to_a / data->ac_increment;
 
 	/* Armor class */
 	if (bonus > 0) {
@@ -529,19 +517,19 @@ void count_nonweapon_abilities(const struct artifact *art,
 
 	/* To hit and dam to bonuses */
 	if (to_hit && (to_hit == to_dam)) {
-		bonus = to_dam / mean_dam_increment;
+		bonus = to_dam / data->dam_increment;
 		if (bonus > 0) {
 			file_putf(log_file, "Adding %d instances of extra to-hit and to-dam bonus for non-weapon\n", bonus);
 			(data->art_probs[ART_IDX_NONWEAPON_HIT_DAM]) += bonus;
 		}
 	} else if (to_hit > 0) {
-		bonus = to_hit / mean_hit_increment;
+		bonus = to_hit / data->hit_increment;
 		if (bonus > 0) {
 			file_putf(log_file, "Adding %d instances of extra to-hit bonus for non-weapon\n", bonus);
 			(data->art_probs[ART_IDX_NONWEAPON_HIT]) += bonus;
 		}
 	} else if (to_dam > 0) {
-		bonus = to_dam / mean_dam_increment;
+		bonus = to_dam / data->dam_increment;
 		if (bonus > 0) {
 			file_putf(log_file, "Adding %d instances of extra to-dam bonus for non-weapon\n", bonus);
 			(data->art_probs[ART_IDX_NONWEAPON_DAM]) += bonus;
@@ -703,6 +691,9 @@ void count_modifiers(const struct artifact *art, struct artifact_data *data)
 	}
 }
 
+/**
+ * Count low resists and immunities.
+ */
 void count_low_resists(const struct artifact *art, struct artifact_data *data)
 {
 	int num = 0;
@@ -1213,16 +1204,14 @@ static void parse_frequencies(struct artifact_data *data)
 
 	collect_artifact_data(data);
 
-	if (verbose) {
 	/* Print out some of the abilities, to make sure that everything's fine */
-		for (i = 0; i < ART_IDX_TOTAL; i++)
-			file_putf(log_file, "Frequency of ability %d: %d\n", i,
-					  data->art_probs[i]);
+	for (i = 0; i < ART_IDX_TOTAL; i++)
+		file_putf(log_file, "Frequency of ability %d: %d\n", i,
+				  data->art_probs[i]);
 
-		for (i = 0; i < z_info->k_max; i++)
-			file_putf(log_file, "Frequency of item %d: %d\n", i,
-					  data->base_probs[i]);
-	}
+	for (i = 0; i < z_info->k_max; i++)
+		file_putf(log_file, "Frequency of item %d: %d\n", i,
+				  data->base_probs[i]);
 
 	/* Rescale frequencies */
 	rescale_freqs(data);
@@ -1317,44 +1306,6 @@ static struct object_kind *choose_item(int a_idx, int *freq)
 	/* Artifacts ignore everything */
 	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
 		art->el_info[i].flags |= EL_INFO_IGNORE;
-
-	/* Assign basic stats to the artifact based on its artifact level. */
-	/*
-	 * CR, 2001-09-03: changed to a simpler version to match the hit-dam
-	 * parsing algorithm. We use random ranges averaging mean_hit_startval
-	 * and mean_dam_startval, but permitting variation of 50% to 150%.
-	 * Level-dependent term has been removed for the moment.
-	 */
-	switch (art->tval) {
-		case TV_BOW:
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_SWORD:
-		case TV_POLEARM:
-			art->to_h += (s16b)(mean_hit_startval / 2 +
-			                      randint0(mean_hit_startval) );
-			art->to_d += (s16b)(mean_dam_startval / 2 +
-			                      randint0(mean_dam_startval) );
-			file_putf(log_file,
-					  "Assigned basic stats, to_hit: %d, to_dam: %d\n",
-					  art->to_h, art->to_d);
-			break;
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_SHIELD:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-			/* CR: adjusted this to work with parsing logic */
-			art->to_a += (s16b)(mean_ac_startval / 2 +
-			                      randint0(mean_ac_startval) );
-			file_putf(log_file, "Assigned basic stats, AC bonus: %d\n",
-					  art->to_a);
-			break;
-	}
 
 	/* Done - return the index of the new object kind. */
 	return kind;
@@ -1894,10 +1845,8 @@ static void add_activation(struct artifact *art, int target_power,
 		x = randint0(z_info->act_max);
 		p = activations[x].power;
 
-		/*
-		 * Check that activation is useful but not exploitable,
-		 * and roughly proportionate to the overall power
-		 */
+		/* Check that activation is useful but not exploitable, and roughly
+		 * proportionate to the overall power */
 		if (p < INHIBIT_POWER &&
 			100 * p / max_effect > 50 * target_power / max_power &&
 			100 * p / max_effect < 200 * target_power / max_power) {
@@ -1965,17 +1914,17 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 
 		case ART_IDX_WEAPON_HIT:
 		case ART_IDX_NONWEAPON_HIT:
-			add_to_hit(art, 1, 2 * mean_hit_increment);
+			add_to_hit(art, 1, 2 * data->hit_increment);
 			break;
 
 		case ART_IDX_WEAPON_DAM:
 		case ART_IDX_NONWEAPON_DAM:
-			add_to_dam(art, 1, 2 * mean_dam_increment);
+			add_to_dam(art, 1, 2 * data->dam_increment);
 			break;
 
 		case ART_IDX_NONWEAPON_HIT_DAM:
-			add_to_hit(art, 1, 2 * mean_hit_increment);
-			add_to_dam(art, 1, 2 * mean_dam_increment);
+			add_to_hit(art, 1, 2 * data->hit_increment);
+			add_to_dam(art, 1, 2 * data->dam_increment);
 			break;
 
 		case ART_IDX_WEAPON_AGGR:
@@ -2021,7 +1970,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 		case ART_IDX_CLOAK_AC:
 		case ART_IDX_ARMOR_AC:
 		case ART_IDX_GEN_AC:
-			add_to_AC(art, 1, 2 * mean_ac_increment);
+			add_to_AC(art, 1, 2 * data->ac_increment);
 			break;
 
 		case ART_IDX_MELEE_DICE:
@@ -2361,22 +2310,15 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 	file_putf(log_file, "+++++++++++++++++ CREATING NEW ARTIFACT ++++++++++++++++++\n");
 	file_putf(log_file, "Artifact %d: power = %d\n", a_idx, power);
 
-	/*
-	 * Flip the sign on power if it's negative, since it's only used for base
+	/* Flip the sign on power if it's negative, since it's only used for base
 	 * item choice
 	 */
 	if (power < 0) power = -power;
 
 	if (!special_artifact) {
-		/*
-		 * Normal artifact - choose a random base item type.  Not too
+		/* Normal artifact - choose a random base item type.  Not too
 		 * powerful, so we'll have to add something to it.  Not too
-		 * weak, for the opposite reason.
-		 *
-		 * CR 7/15/2001 - lowered the upper limit so that we get at
-		 * least a few powers (from 8/10 to 6/10) but permit anything
-		 * more than 20 below the target power
-		 */
+		 * weak, for the opposite reason. */
 		int count = 0;
 		s32b ap2;
 
@@ -2387,11 +2329,40 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 			/* Get the new item kind */
 			kind = choose_item(a_idx, data->base_freq);
 
-			/*
-			 * Hack: if power is positive but very low, and if we're not having
+			/* Assign basic stats to the artifact based on its artifact level */
+			switch (kind->tval) {
+				case TV_BOW:
+				case TV_DIGGING:
+				case TV_HAFTED:
+				case TV_SWORD:
+				case TV_POLEARM:
+					art->to_h += (s16b)(data->hit_startval / 2 +
+										randint0(data->hit_startval) );
+					art->to_d += (s16b)(data->dam_startval / 2 +
+										randint0(data->dam_startval) );
+					file_putf(log_file,
+							  "Assigned basic stats, to_hit: %d, to_dam: %d\n",
+							  art->to_h, art->to_d);
+					break;
+				case TV_BOOTS:
+				case TV_GLOVES:
+				case TV_HELM:
+				case TV_CROWN:
+				case TV_SHIELD:
+				case TV_CLOAK:
+				case TV_SOFT_ARMOR:
+				case TV_HARD_ARMOR:
+				case TV_DRAG_ARMOR:
+					art->to_a += (s16b)(data->ac_startval / 2 +
+										randint0(data->ac_startval));
+					file_putf(log_file, "Assigned basic stats, AC bonus: %d\n",
+							  art->to_a);
+					break;
+			}
+
+			/* If power is positive but very low, and if we're not having
 			 * any luck finding a base item, curse it once.  This helps ensure
-			 * that we get a base item for borderline cases like Wormtongue.
-			 */
+			 * that we get a base item for borderline cases like Wormtongue. */
 
 			if (power > 0 && power < 10 && count > MAX_TRIES / 2) {
 				file_putf(log_file, "Cursing base item to help get a match.\n");
@@ -2399,12 +2370,10 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 			}
 			ap2 = artifact_power(a_idx, true);
 			count++;
-			/*
-			 * Calculate the proper rarity based on the new type.  We attempt
-			 * to preserve the 'effective rarity' which is equal to the
-			 * artifact rarity multiplied by the base item rarity.
-			 */
 
+			/* Calculate the proper rarity based on the new type.  We attempt
+			 * to preserve the 'effective rarity' which is equal to the
+			 * artifact rarity multiplied by the base item rarity. */
 			alloc_new = alloc_old * base_alloc_old / kind->alloc_prob;
 
 			if (alloc_new > 99) alloc_new = 99;
@@ -2530,11 +2499,9 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 			}
 		}		/* end of power selection */
 
-		if (verbose && tries >= MAX_TRIES)
-			/*
-			 * We couldn't generate an artifact within the number of permitted
-			 * iterations.  Show a warning message.
-			 */
+		/* We couldn't generate an artifact within the number of permitted
+		 * iterations.  Show a warning message. */
+		if (tries >= MAX_TRIES)
 			file_putf(log_file, "Warning!  Couldn't get appropriate power level on artifact.\n");
 	}
 
@@ -2722,6 +2689,15 @@ static struct artifact_data *artifact_data_new(void)
 	data->art_probs = mem_zalloc(ART_IDX_TOTAL * sizeof(int));
 	data->base_freq = mem_zalloc(z_info->k_max * sizeof(int));
 
+	/* Mean start and increment values for to_hit, to_dam and AC.  Update these
+	 * if the algorithm changes.  They are used in frequency generation. */
+	data->hit_increment = 4;
+	data->dam_increment = 4;
+	data->hit_startval = 10;
+	data->dam_startval = 10;
+	data->ac_startval = 15;
+	data->ac_increment = 5;
+
 	return data;
 }
 
@@ -2748,6 +2724,7 @@ static void artifact_data_free(struct artifact_data *data)
  */
 void do_randart(u32b randart_seed)
 {
+	char buf[1024];
 	struct artifact_data *standarts = artifact_data_new();
 	struct artifact_data *randarts;
 
@@ -2756,15 +2733,12 @@ void do_randart(u32b randart_seed)
 	Rand_quick = true;
 
 	/* Open the log file for writing */
-	if (verbose) {
-		char buf[1024];
-		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "randart.log");
-		log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-		if (!log_file) {
-			msg("Error - can't open randart.log for writing.");
-			artifact_data_free(standarts);
-			exit(1);
-		}
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "randart.log");
+	log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	if (!log_file) {
+		msg("Error - can't open randart.log for writing.");
+		artifact_data_free(standarts);
+		exit(1);
 	}
 
 	/* Store the original power ratings */
@@ -2784,11 +2758,9 @@ void do_randart(u32b randart_seed)
 	artifact_data_free(randarts);
 
 	/* Close the log file */
-	if (verbose) {
-		if (!file_close(log_file)) {
-			msg("Error - can't close randart.log file.");
-			exit(1);
-		}
+	if (!file_close(log_file)) {
+		msg("Error - can't close randart.log file.");
+		exit(1);
 	}
 
 	/* When done, resume use of the Angband "complex" RNG. */

@@ -57,6 +57,14 @@ enum {
 };
 
 struct artifact_data {
+	/* Mean start and increment values for to_hit, to_dam and AC */
+	int hit_increment;
+	int dam_increment;
+	int hit_startval;
+	int dam_startval;
+	int ac_startval;
+	int ac_increment;
+
 	/* Data structures for learned probabilities */
 	int *art_probs;
 	int *base_probs;
