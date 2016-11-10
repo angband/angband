@@ -787,14 +787,16 @@ const struct cave_profile *choose_profile(int depth)
 	}
 
 	/* Make the profile choice */
-	if (depth == 0)
+	if (depth == 0) {
 		profile = find_cave_profile("town");
-	else if (is_quest(depth))
+	} else if (is_quest(depth)) {
 		/* Quest levels must be normal levels */
 		profile = find_cave_profile("classic");
-	else if (labyrinth_check(depth))
+	} else if (labyrinth_check(depth)) {
 		profile = find_cave_profile("labyrinth");
-	else {
+	} else if ((depth >= 10) && (depth < 40) && one_in_(40)) {
+		profile = find_cave_profile("moria");
+	} else {
 		int perc = randint0(100);
 		size_t i;
 		for (i = 0; i < z_info->profile_max; i++) {

@@ -2046,6 +2046,9 @@ struct chunk *moria_gen(struct player *p) {
     for (; i > 0; i--)
 		pick_and_place_distant_monster(c, p, 0, true, c->depth);
 
+	/* Remove our restrictions. */
+	(void) mon_restrict(NULL, c->depth, false);
+
     /* Put some objects in rooms */
     alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(z_info->room_item_av, 3),
 				  c->depth, ORIGIN_FLOOR);

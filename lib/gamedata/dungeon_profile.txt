@@ -71,7 +71,7 @@ name:classic
 params:11:50:200:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:50
+cutoff:55
 
 # Greater vaults only have rarity 0 but they have other checks
 room:Greater vault:44:66:35:0:0:100
@@ -97,7 +97,7 @@ name:modified
 params:1:50:250:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:95
+cutoff:100
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:44:66:35:0:0:100
@@ -121,12 +121,12 @@ room:room template:11:33:5:0:1:100
 # Normal rooms (rarity = 0)
 room:simple room:11:33:1:0:0:100
 
-## Moria
+## Moria - these have cutoff -1, but still appear after other checks
 name:moria
 params:1:50:250:2
 tunnel:10:30:15:25:30
 streamer:5:2:3:90:2:40
-cutoff:100
+cutoff:-1
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:44:66:35:0:0:100

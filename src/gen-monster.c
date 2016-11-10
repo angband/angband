@@ -153,7 +153,7 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 		if (i < 2499) {
 			/* Use that monster's base type for all monsters. */
 			my_strcpy(base_d_char, format("%c", r_info[j].base->d_char),
-					  sizeof(r_info[j].base->d_char));
+					  sizeof(base_d_char));
 
 			/* Prepare allocation table */
 			get_mon_num_prep(mon_select);
@@ -219,17 +219,21 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 		if ((dy == 0) && (dx == 0)) {
 			y = y0;
 			x = x0;
-			if (!square_in_bounds(c, y, x))
+			if (!square_in_bounds(c, y, x)) {
+				(void) mon_restrict(NULL, depth, true);
 				return;
+			}
 		} else {
 			for (j = 0; j < 10; j++) {
 				y = rand_spread(y0, dy);
 				x = rand_spread(x0, dx);
 				if (!square_in_bounds(c, y, x)) {
-					if (j < 9)
+					if (j < 9) {
 						continue;
-					else
+					} else {
+						(void) mon_restrict(NULL, depth, true);
 						return;
+					}
 				}
 				break;
 			}
@@ -278,7 +282,7 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 		/* Require correct race, allow uniques. */
 		allow_unique = true;
 		my_strcpy(base_d_char, format("%c", racial_symbol[i]),
-				  sizeof(racial_symbol[i]));
+				  sizeof(base_d_char));
 
 		/* Determine level of monster */
 		if (strstr(vault_type, "Lesser vault"))
