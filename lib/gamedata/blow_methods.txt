@@ -1,0 +1,187 @@
+# Methods for monster blows
+
+# name: blow method code
+
+# cut: 1 if the method can cut, 0 if not
+
+# stun: 1 if the method can stun, 0 if not
+
+# miss: 1 if the player is told when the blow misses, 0 if not
+
+# phys: 1 if the method does physical damage, 0 if not
+
+# msg: message type to display
+
+# act: action string to append
+
+# desc: monster lore description
+
+name:HIT
+cut:1
+stun:1
+miss:1
+phys:1
+msg:MON_HIT
+act:hits you
+desc:hit
+
+name:TOUCH
+cut:0
+stun:0
+miss:1
+phys:0
+msg:MON_TOUCH
+act:touches you
+desc:touch
+
+name:PUNCH
+cut:0
+stun:1
+miss:1
+phys:1
+msg:MON_PUNCH
+act:punches you
+desc:punch
+
+name:KICK
+cut:0
+stun:1
+miss:1
+phys:1
+msg:MON_KICK
+act:kicks you
+desc:kick
+
+name:CLAW
+cut:1
+stun:0
+miss:1
+phys:1
+msg:MON_CLAW
+act:claws you
+desc:claw
+
+name:BITE
+cut:1
+stun:0
+miss:1
+phys:1
+msg:MON_BITE
+act:bites you
+desc:bite
+
+name:STING
+cut:0
+stun:0
+miss:1
+phys:1
+msg:MON_STING
+act:stings you
+desc:sting
+
+name:BUTT
+cut:0
+stun:1
+miss:1
+phys:1
+msg:MON_BUTT
+act:butts you
+desc:butt
+
+name:CRUSH
+cut:0
+stun:1
+miss:1
+phys:1
+msg:MON_CRUSH
+act:crushes you
+desc:crush
+
+name:ENGULF
+cut:0
+stun:0
+miss:1
+phys:0
+msg:MON_ENGULF
+act:engulfs you
+desc:engulf
+
+name:CRAWL
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_CRAWL
+act:crawls on you
+desc:crawl on you
+
+name:DROOL
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_DROOL
+act:drools on you
+desc:drool on you
+
+name:SPIT
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_SPIT
+act:spits on you
+desc:spit
+
+name:GAZE
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_GAZE
+act:gazes at you
+desc:gaze
+
+name:WAIL
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_WAIL
+act:wails at you
+desc:wail
+
+name:SPORE
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_SPORE
+act:releases spores at you
+desc:release spores
+
+name:BEG
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_BEG
+act:begs you for money
+desc:beg
+
+name:INSULT
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_INSULT
+desc:insult
+
+name:MOAN
+cut:0
+stun:0
+miss:0
+phys:0
+msg:MON_MOAN
+desc:moan
+

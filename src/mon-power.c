@@ -22,8 +22,7 @@
 #include "mon-init.h"
 #include "mon-power.h"
 #include "mon-spell.h"
-#include "mon-blow-methods.h"
-#include "mon-blow-effects.h"
+#include "mon-blows.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "z-textblock.h"
@@ -87,7 +86,8 @@ static long eval_max_dam(struct monster_race *race, int ridx)
 
 	/* Check attacks */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
-		int effect, method;
+		struct blow_method *method;
+		int effect;
 		random_value dice;
 
 		if (!race->blow) break;
@@ -101,11 +101,11 @@ static long eval_max_dam(struct monster_race *race, int ridx)
 		atk_dam = eval_blow_effect(effect, dice, race->level);
 
 		/* Factor for dangerous side effects */
-		if (monster_blow_method_stun(method)) {
+		if (method->stun) {
 			/* Stun definitely most dangerous*/
 			atk_dam *= 4;
 			atk_dam /= 3;
-		} else if (monster_blow_method_stun(method)) {
+		} else if (method->cut) {
 			/* Cut */
 			atk_dam *= 7;
 			atk_dam /= 5;

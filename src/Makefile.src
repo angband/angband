@@ -105,8 +105,7 @@ ANGFILES = \
 	load.o \
 	message.o \
 	mon-attack.o \
-	mon-blow-effects.o \
-	mon-blow-methods.o \
+	mon-blows.o \
 	mon-desc.o \
 	mon-init.o \
 	mon-list.o \

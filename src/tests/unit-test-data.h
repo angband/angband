@@ -734,11 +734,21 @@ static struct monster_base TEST_DATA test_rb_info = {
 	
 };
 
-#define _NOBLOW { .method = RBM_NONE, .effect = RBE_NONE, .d_dice = 0, .d_side = 0 }
+static struct blow_method TEST_DATA test_blow_method = {
+	.name = "HIT",
+	.cut = true,
+	.stun = true,
+	.miss = false,
+	.phys = false,
+	.msgt = 34,
+	.act_msg = "hits you",
+	.desc = "hit",
+	.next = NULL
+};
 
 static struct monster_blow TEST_DATA test_blow[4] = {
 	{
-		.method = RBM_HIT,
+		.method = &test_blow_method,
 		.effect = RBE_HURT,
 		.dice = {
 			.base = 0,
@@ -749,7 +759,7 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 		.times_seen = 1,
 	},
 	{
-		.method = RBM_NONE,
+		.method = NULL,
 		.effect = RBE_NONE,
 		.dice = {
 			.base = 0,
@@ -760,7 +770,7 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 		.times_seen = 0,
 	},
 	{
-		.method = RBM_NONE,
+		.method = NULL,
 		.effect = RBE_NONE,
 		.dice = {
 			.base = 0,
@@ -771,7 +781,7 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 		.times_seen = 0,
 	},
 	{
-		.method = RBM_NONE,
+		.method = NULL,
 		.effect = RBE_NONE,
 		.dice = {
 			.base = 0,
@@ -851,8 +861,6 @@ static monster_lore TEST_DATA test_lore = {
 	.sleep_known = false,
 	.spell_freq_known = false
 };
-
-#undef _NOBLOW
 
 static struct angband_constants TEST_DATA test_z_info = {
 	.f_max    = 2,

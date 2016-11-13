@@ -25,8 +25,7 @@
 #include "mon-power.h"
 #include "mon-spell.h"
 #include "mon-util.h"
-#include "mon-blow-methods.h"
-#include "mon-blow-effects.h"
+#include "mon-blows.h"
 #include "monster.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -34,6 +33,7 @@
 #include "parser.h"
 #include "player-spell.h"
 
+struct blow_method *blow_methods;
 struct monster_pain *pain_messages;
 struct monster_spell *monster_spells;
 struct monster_base *rb_info;
@@ -102,6 +102,180 @@ void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 	if (pointer)
 		file_putf(fff, "%s%s\n", intro_text, buf);
 }
+
+
+/**
+ * Parsing functions for blow_methods.txt
+ */
+static struct blow_method *findmeth(const char *meth_name) {
+	struct blow_method *meth = &blow_methods[1];
+	while (meth) {
+		if (streq(meth->name, meth_name))
+			break;
+		meth = meth->next;
+	}
+	return meth;
+}
+
+static enum parser_error parse_meth_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct blow_method *h = parser_priv(p);
+
+	struct blow_method *meth = mem_zalloc(sizeof *meth);
+	meth->next = h;
+	parser_setpriv(p, meth);
+	meth->name = string_make(name);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_meth_cut(struct parser *p) {
+	struct blow_method *meth = parser_priv(p);
+	int val;
+	assert(meth);
+
+	val = parser_getuint(p, "cut");
+	meth->cut = val ? true : false;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_meth_stun(struct parser *p) {
+	struct blow_method *meth = parser_priv(p);
+	int val;
+	assert(meth);
+
+	val = parser_getuint(p, "stun");
+	meth->stun = val ? true : false;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_meth_miss(struct parser *p) {
+	struct blow_method *meth = parser_priv(p);
+	int val;
+	assert(meth);
+
+	val = parser_getuint(p, "miss");
+	meth->miss = val ? true : false;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_meth_phys(struct parser *p) {
+	struct blow_method *meth = parser_priv(p);
+	int val;
+	assert(meth);
+
+	val = parser_getuint(p, "phys");
+	meth->phys = val ? true : false;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_meth_message_type(struct parser *p)
+{
+	int msg_index;
+	const char *type;
+	struct blow_method *meth = parser_priv(p);
+	assert(meth);
+
+	if (parser_hasval(p, "msg")) {
+		type = parser_getstr(p, "msg");
+
+		msg_index = message_lookup_by_name(type);
+
+		if (msg_index < 0)
+			return PARSE_ERROR_INVALID_MESSAGE;
+
+		meth->msgt = msg_index;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_meth_act_msg(struct parser *p) {
+	struct blow_method *meth = parser_priv(p);
+	assert(meth);
+
+	meth->act_msg = string_append(meth->act_msg, parser_getstr(p, "act"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_meth_desc(struct parser *p) {
+	struct blow_method *meth = parser_priv(p);
+	assert(meth);
+
+	meth->desc = string_append(meth->desc, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_meth(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_meth_name);
+	parser_reg(p, "cut uint cut", parse_meth_cut);
+	parser_reg(p, "stun uint stun", parse_meth_stun);
+	parser_reg(p, "miss uint miss", parse_meth_miss);
+	parser_reg(p, "phys uint phys", parse_meth_phys);
+	parser_reg(p, "msg ?str msg", parse_meth_message_type);
+	parser_reg(p, "act str act", parse_meth_act_msg);
+	parser_reg(p, "desc str desc", parse_meth_desc);
+	return p;
+}
+
+static errr run_parse_meth(struct parser *p) {
+	return parse_file_quit_not_found(p, "blow_methods");
+}
+
+static errr finish_parse_meth(struct parser *p) {
+	struct blow_method *meth, *next = NULL;
+	int count = 1;
+
+	/* Count the entries */
+	z_info->blow_methods_max = 0;
+	meth = parser_priv(p);
+	while (meth) {
+		z_info->blow_methods_max++;
+		meth = meth->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	blow_methods = mem_zalloc((z_info->blow_methods_max + 1) * sizeof(*meth));
+	for (meth = parser_priv(p); meth; meth = next, count++) {
+		memcpy(&blow_methods[count], meth, sizeof(*meth));
+		next = meth->next;
+		if (next)
+			blow_methods[count].next = &blow_methods[count + 1];
+		else
+			blow_methods[count].next = NULL;
+
+		mem_free(meth);
+	}
+	z_info->blow_methods_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_meth(void)
+{
+	struct blow_method *meth = blow_methods;
+	struct blow_method *next;
+
+	while (meth) {
+		next = meth->next;
+		string_free(meth->desc);
+		if (meth->act_msg)
+			string_free(meth->act_msg);
+		string_free(meth->name);
+		mem_free(meth);
+		meth = next;
+	}
+}
+
+struct file_parser meth_parser = {
+	"blow_methods",
+	init_parse_meth,
+	run_parse_meth,
+	finish_parse_meth,
+	cleanup_meth
+};
 
 
 /**
@@ -219,7 +393,7 @@ static enum parser_error parse_mon_spell_effect(struct parser *p) {
 			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
 
 		/* Check for a value */
-	val = effect_param(new_effect->index, type);
+		val = effect_param(new_effect->index, type);
 		if (val < 0)
 			return PARSE_ERROR_INVALID_VALUE;
 		else
@@ -643,8 +817,8 @@ static enum parser_error parse_monster_blow(struct parser *p) {
 	}
 
 	/* Now read the data */
-	b->method = blow_method_name_to_idx(parser_getsym(p, "method"));
-	if (!monster_blow_method_is_valid(b->method))
+	b->method = findmeth(parser_getsym(p, "method"));
+	if (!b->method)
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
 	if (parser_hasval(p, "effect")) {
 		b->effect = blow_effect_name_to_idx(parser_getsym(p, "effect"));
@@ -1121,15 +1295,16 @@ static enum parser_error parse_lore_counts(struct parser *p) {
 
 static enum parser_error parse_lore_blow(struct parser *p) {
 	struct monster_lore *l = parser_priv(p);
-	int method, effect = 0, seen = 0, index = 0;
+	struct blow_method *method;
+	int effect = 0, seen = 0, index = 0;
 	struct random dam = { 0, 0, 0, 0 };
 
 	if (!l)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
 	/* Read in all the data */
-	method = blow_method_name_to_idx(parser_getsym(p, "method"));
-	if (!monster_blow_method_is_valid(method))
+	method = findmeth(parser_getsym(p, "method"));
+	if (!method)
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
 	if (parser_hasval(p, "effect")) {
 		effect = blow_effect_name_to_idx(parser_getsym(p, "effect"));

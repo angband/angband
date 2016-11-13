@@ -39,6 +39,7 @@ struct angband_constants
 	u16b act_max;		/**< Maximum number of activations for randarts */
 	u16b curse_max;		/**< Maximum number of curses */
 	u16b mon_blows_max;	/**< Maximum number of monster blows */
+	u16b blow_methods_max;	/**< Maximum number of monster blow methods */
 	u16b equip_slots_max;	/**< Maximum number of player equipment slots */
 	u16b profile_max;	/**< Maximum number of cave_profiles */
 	u16b quest_max;		/**< Maximum number of quests */

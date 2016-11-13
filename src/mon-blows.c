@@ -22,8 +22,7 @@
 #include "init.h"
 #include "monster.h"
 #include "mon-attack.h"
-#include "mon-blow-effects.h"
-#include "mon-blow-methods.h"
+#include "mon-blows.h"
 #include "mon-lore.h"
 #include "mon-util.h"
 #include "obj-desc.h"
@@ -37,6 +36,77 @@
 #include "player-util.h"
 #include "project.h"
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster blow methods
+ * ------------------------------------------------------------------------ */
+/**
+ * Return a randomly chosen string to append to an INSULT message.
+ */
+static const char *monster_blow_random_insult(void)
+{
+	#define MAX_DESC_INSULT 8
+	static const char *desc_insult[MAX_DESC_INSULT] =
+	{
+		"insults you!",
+		"insults your mother!",
+		"gives you the finger!",
+		"humiliates you!",
+		"defiles you!",
+		"dances around you!",
+		"makes obscene gestures!",
+		"moons you!!!"
+	};
+
+	return desc_insult[randint0(MAX_DESC_INSULT)];
+	#undef MAX_DESC_INSULT
+}
+
+/**
+ * Return a randomly chosen string to append to a MOAN message.
+ */
+static const char *monster_blow_random_moan(void)
+{
+	#define MAX_DESC_MOAN 8
+	static const char *desc_moan[MAX_DESC_MOAN] = {
+		"wants his mushrooms back.",
+		"tells you to get off his land.",
+		"looks for his dogs. ",
+		"says 'Did you kill my Fang?' ",
+		"asks 'Do you want to buy any mushrooms?' ",
+		"seems sad about something.",
+		"asks if you have seen his dogs.",
+		"mumbles something about mushrooms."
+	};
+
+	return desc_moan[randint0(MAX_DESC_MOAN)];
+	#undef MAX_DESC_MOAN
+}
+
+/**
+ * Return an action string to be appended on the attack message.
+ *
+ * \param method is the blow method.
+ */
+const char *monster_blow_method_action(struct blow_method *method)
+{
+	const char *action = NULL;
+
+	if (method->act_msg) {
+		action = method->act_msg;
+	} else if (streq(method->name, "INSULT")) {
+		action = monster_blow_random_insult();
+	} else if (streq(method->name, "MOAN")) {
+		action = monster_blow_random_moan();
+	}
+
+	return action;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Monster blow effects
+ * ------------------------------------------------------------------------ */
 /**
  * Do damage as the result of a melee attack that has an elemental aspect.
  *
@@ -69,7 +139,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 	physical_dam = adjust_dam_armor(context->damage, context->ac + 50);
 
 	/* Some attacks do no physical damage */
-	if (!monster_blow_method_physical(context->method))
+	if (!context->method->phys)
 		physical_dam = 0;
 
 	elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE, 0);

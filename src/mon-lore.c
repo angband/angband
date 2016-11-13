@@ -18,7 +18,7 @@
 
 #include "angband.h"
 #include "init.h"
-#include "mon-blow-effects.h"
+#include "mon-blows.h"
 #include "mon-init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -590,9 +590,9 @@ static const char *lore_describe_race_flag(int flag)
 /**
  * Return a description for the given monster blow method flags.
  */
-static const char *lore_describe_blow_method(int method)
+static const char *lore_describe_blow_method(struct blow_method *method)
 {
-	return monster_blow_method_description(method);
+	return method->desc;
 }
 
 /**
@@ -1900,12 +1900,6 @@ void write_lore_entries(ang_file *fff)
 {
 	int i, n;
 
-	static const char *r_info_blow_method[] = {
-		#define RBM(x, c, s, miss, p, m, a, d) #x,
-		#include "list-blow-methods.h"
-		#undef RBM
-	};
-
 	static const char *r_info_blow_effect[] = {
 		#define RBE(x, p, e, d) #x,
 		#include "list-blow-effects.h"
@@ -1940,7 +1934,7 @@ void write_lore_entries(ang_file *fff)
 			if (!lore->blows[n].method) continue;
 
 			/* Output blow method */
-			file_putf(fff, "blow:%s", r_info_blow_method[lore->blows[n].method]);
+			file_putf(fff, "blow:%s", lore->blows[n].method->desc);
 
 			/* Output blow effect (may be none) */
 			file_putf(fff, ":%s", r_info_blow_effect[lore->blows[n].effect]);

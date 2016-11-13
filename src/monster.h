@@ -24,8 +24,7 @@
 #include "z-rand.h"
 #include "cave.h"
 #include "mon-timed.h"
-#include "mon-blow-methods.h"
-#include "mon-blow-effects.h"
+#include "mon-blows.h"
 
 /*** Monster flags ***/
 
@@ -137,7 +136,7 @@ enum
 struct monster_blow {
 	struct monster_blow *next;	/* Unused after parsing */
 
-	int method;			/* Method (RBM_*) */
+	struct blow_method *method;	/* Method (RBM_*) */
 	int effect;			/* Effect (RBE_*) */
 	random_value dice;	/* Damage dice */
 	int times_seen;		/* Sightings of the blow (lore only) */

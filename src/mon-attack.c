@@ -25,8 +25,7 @@
 #include "effects.h"
 #include "init.h"
 #include "mon-attack.h"
-#include "mon-blow-methods.h"
-#include "mon-blow-effects.h"
+#include "mon-blows.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-spell.h"
@@ -487,7 +486,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 		/* Extract the attack infomation */
 		int effect = mon->race->blow[ap_cnt].effect;
-		int method = mon->race->blow[ap_cnt].method;
+		struct blow_method *method = mon->race->blow[ap_cnt].method;
 		random_value dice = mon->race->blow[ap_cnt].dice;
 
 		/* Hack -- no more attacks */
@@ -530,9 +529,9 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 			/* Describe the attack method */
 			act = monster_blow_method_action(method);
-			do_cut = monster_blow_method_cut(method);
-			do_stun = monster_blow_method_stun(method);
-			sound_msg = monster_blow_method_message(method);
+			do_cut = method->cut;
+			do_stun = method->stun;
+			sound_msg = method->msgt;
 
 			/* Message */
 			if (act)
@@ -632,8 +631,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			}
 		} else {
 			/* Visible monster missed player, so notify if appropriate. */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-				monster_blow_method_miss(method)) {
+			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&	method->miss) {
 				/* Disturbing */
 				disturb(p, 1);
 				msg("%s misses you.", m_name);
