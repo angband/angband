@@ -1,0 +1,273 @@
+# File: player_timed.txt
+# Used in conjunction with list-player-timed.h
+# Timed player properties
+#
+# Descriptions, messages and message types can be edited without bad effects.
+# Changing code or fail may have unpredictable results.
+# Changing the name, reordering, or adding whole new entires will severely
+# disrupt the game, and should only be done when list-player-timed.h
+# (and other code) is also  being changed, and the game recompiled. 
+#
+# Fields:
+# name - the effect name 
+# desc - the effect description
+# on-begin - the message on beginning the effect
+# on-end - the message on ending the effect
+# on-increase - the message on the effect increasing
+# on-decrease - the message on the effect decreasing
+# msgt - the message type for this effect
+# code - determines what flag type makes the effect fail: 1 means object flag,
+#        2 means resist, 3 means vulnerability
+# fail - the actual flag that causes the failure
+#
+
+name:FAST
+desc:haste
+on-begin:You feel yourself moving faster!
+on-end:You feel yourself slow down.
+msgt:SPEED
+
+name:SLOW
+desc:slowness
+on-begin:You feel yourself moving slower!
+on-end:You feel yourself speed up.
+msgt:SLOW
+code:1
+fail:FREE_ACT
+
+name:BLIND
+desc:blindness
+on-begin:You are blind.
+on-end:You blink and your eyes clear.
+msgt:BLIND
+code:1
+fail:PROT_BLIND
+
+name:PARALYZED
+desc:paralysis
+on-begin:You are paralysed!
+on-end:You can move again.
+msgt:PARALYZED
+code:1
+fail:FREE_ACT
+
+name:CONFUSED
+desc:confusion
+on-begin:You are confused!
+on-end:You are no longer confused.
+on-increase:You are more confused!
+on-decrease:You feel a little less confused.
+msgt:CONFUSED
+code:1
+fail:PROT_CONF
+
+name:AFRAID
+desc:fear
+on-begin:You are terrified!
+on-end:You feel bolder now.
+on-increase:You are more scared!
+on-decrease:You feel a little less scared.
+msgt:AFRAID
+code:1
+fail:PROT_FEAR
+
+name:IMAGE
+desc:hallucination
+on-begin:You feel drugged!
+on-end:You can see clearly again.
+on-increase:You feel more drugged!
+on-decrease:You feel less drugged.
+msgt:DRUGGED
+code:2
+fail:CHAOS
+
+name:POISONED
+desc:poisoning
+on-begin:You are poisoned!
+on-end:You are no longer poisoned.
+on-increase:You are more poisoned!
+on-decrease:You are less poisoned.
+msgt:POISONED
+code:2
+fail:POIS
+
+name:CUT
+desc:wounds
+
+name:STUN
+desc:stunning
+code:1
+fail:PROT_STUN
+
+name:PROTEVIL
+desc:protection from evil
+on-begin:You feel safe from evil!
+on-end:You no longer feel safe from evil.
+on-increase:You feel even safer from evil!
+on-decrease:You feel less safe from evil.
+msgt:PROT_EVIL
+
+name:INVULN
+desc:invulnerability
+on-begin:You feel invulnerable!
+on-end:You feel vulnerable once more.
+msgt:INVULN
+
+name:HERO
+desc:heroism
+on-begin:You feel like a hero!
+on-end:You no longer feel heroic.
+on-increase:You feel more like a hero!
+on-decrease:You feel less heroic.
+msgt:HERO
+
+name:SHERO
+desc:berserk rage
+on-begin:You feel like a killing machine!
+on-end:You no longer feel berserk.
+on-increase:You feel even more berserk!
+on-decrease:You feel less berserk.
+msgt:BERSERK
+
+name:SHIELD
+desc:mystic shield
+on-begin:A mystic shield forms around your body!
+on-end:Your mystic shield crumbles away.
+on-increase:The mystic shield strengthens.
+on-decrease:The mystic shield weakens.
+msgt:SHIELD
+
+name:BLESSED
+desc:your AC and to-hit bonus
+on-begin:You feel righteous!
+on-end:The prayer has expired.
+on-increase:You feel more righteous!
+on-decrease:You feel less righteous.
+msgt:BLESSED
+
+name:SINVIS
+desc:see invisible
+on-begin:Your eyes feel very sensitive!
+on-end:Your eyes no longer feel so sensitive.
+on-increase:Your eyes feel more sensitive!
+on-decrease:Your eyes feel less sensitive.
+msgt:SEE_INVIS
+
+name:SINFRA
+desc:enhanced infravision
+on-begin:Your eyes begin to tingle!
+on-end:Your eyes stop tingling.
+on-increase:Your eyes' tingling intensifies.
+on-decrease:Your eyes tingle less.
+msgt:INFRARED
+
+name:OPP_ACID
+desc:acid resistance
+on-begin:You feel resistant to acid!
+on-end:You are no longer resistant to acid.
+on-increase:You feel more resistant to acid!
+on-decrease:You feel less resistant to acid.
+msgt:RES_ACID
+code:3
+fail:ACID
+
+name:OPP_ELEC
+desc:electricity resistance
+on-begin:You feel resistant to electricity!
+on-end:You are no longer resistant to electricity.
+on-increase:You feel more resistant to electricity!
+on-decrease:You feel less resistant to electricity.
+msgt:RES_ELEC
+code:3
+fail:ELEC
+
+name:OPP_FIRE
+desc:fire resistance
+on-begin:You feel resistant to fire!
+on-end:You are no longer resistant to fire.
+on-increase:You feel more resistant to fire!
+on-decrease:You feel less resistant to fire.
+msgt:RES_FIRE
+code:3
+fail:FIRE
+
+name:OPP_COLD
+desc:cold resistance
+on-begin:You feel resistant to cold!
+on-end:You are no longer resistant to cold.
+on-increase:You feel more resistant to cold!
+on-decrease:You feel less resistant to cold.
+msgt:RES_COLD
+code:3
+fail:COLD
+
+name:OPP_POIS
+desc:poison resistance
+on-begin:You feel resistant to poison!
+on-end:You are no longer resistant to poison.
+on-increase:You feel more resistant to poison!
+on-decrease:You feel less resistant to poison.
+msgt:RES_POIS
+
+name:OPP_CONF
+desc:confusion resistance
+on-begin:You feel resistant to confusion!
+on-end:You are no longer resistant to confusion.
+on-increase:You feel more resistant to confusion!
+on-decrease:You feel less resistant to confusion.
+
+name:AMNESIA
+desc:amnesia
+on-begin:You feel your memories fade.
+on-end:Your memories come flooding back.
+msgt:GENERIC
+
+name:TELEPATHY
+desc:telepathy
+on-begin:Your mind expands.
+on-end:Your horizons are once more limited.
+on-increase:Your mind expands further.
+msgt:GENERIC
+
+name:STONESKIN
+desc:stone skin
+on-begin:Your skin turns to stone.
+on-end:A fleshy shade returns to your skin.
+msgt:GENERIC
+
+name:TERROR
+desc:terror
+on-begin:You feel the need to run away and fast!
+on-end:The urge to run dissipates.
+msgt:AFRAID
+
+name:SPRINT
+desc:sprinting
+on-begin:You start sprinting.
+on-end:You suddenly stop sprinting.
+msgt:SPEED
+
+name:BOLD
+desc:fearlessness
+on-begin:You feel bold.
+on-end:You no longer feel bold.
+on-increase:You feel even bolder!
+on-decrease:You feel less bold.
+msgt:BOLD
+
+name:SCRAMBLE
+desc:scrambled
+on-begin:Your body starts to scramble...
+on-end:Your body reasserts its true nature.
+on-increase:You are more scrambled!
+on-decrease:You are less scrambled.
+msgt:SCRAMBLE
+code:2
+fail:NEXUS
+
+name:TRAPSAFE
+desc:safety from traps
+on-begin:You feel safe from traps.
+on-end:You feel vulnerable to traps again.
+on-increase:You feel even safer from traps!
+on-decrease:You feel less safe from traps.

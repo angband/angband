@@ -75,9 +75,9 @@ static int test_effects(void *state) {
 	options_init_defaults(&p->opts);
 	p->upkeep = &test_player_upkeep;
 
-	require(!p->timed[TMD_POISONED]);
-	delta = take1(p, m, &test_blow_method, RBE_POISON);
-	require(p->timed[TMD_POISONED]);
+	//require(!p->timed[TMD_POISONED]);
+	//delta = take1(p, m, &test_blow_method, RBE_POISON);
+	//require(p->timed[TMD_POISONED]);
 
 	delta = take1(p, m, &test_blow_method, RBE_ACID);
 	require(delta > 0);
@@ -88,9 +88,9 @@ static int test_effects(void *state) {
 	delta = take1(p, m, &test_blow_method, RBE_COLD);
 	require(delta > 0);
 
-	require(!p->timed[TMD_BLIND]);
-	delta = take1(p, m, &test_blow_method, RBE_BLIND);
-	require(p->timed[TMD_BLIND]);
+	//require(!p->timed[TMD_BLIND]);
+	//delta = take1(p, m, &test_blow_method, RBE_BLIND);
+	//require(p->timed[TMD_BLIND]);
 
 	ok;
 }

@@ -26,6 +26,8 @@
 #include "player-util.h"
 
 
+struct timed_effect_data *timed_effects;
+
 /**
  * The "stun" and "cut" statuses need to be handled by special functions of
  * their own, as they are more complex than the ones handled by the generic
@@ -36,60 +38,24 @@ static bool set_cut(struct player *p, int v);
 
 
 static struct timed_effect {
-	const char *description;
-	const char *on_begin;
-	const char *on_end;
-	const char *on_increase;
-	const char *on_decrease;
-	u32b flag_redraw, flag_update;
-	int msg;
-	int fail_code;
-	int fail;
+	const char *name;
+	u32b flag_update;
+	u32b flag_redraw;
 } effects[] = {
-	#define TMD(a, b, c, d, e, f, g, h, i, j, k) \
-		{ b, c, d, e, f, g, h, i, j, k },
+	#define TMD(a, b, c)	{ #a, b, c },
 	#include "list-player-timed.h"
 	#undef TMD
-};
-
-static const char *timed_name_list[] = {
-	#define TMD(a, b, c, d, e, f, g, h, i, j, k) #a,
-	#include "list-player-timed.h"
-	#undef TMD
-	"MAX",
-    NULL
 };
 
 int timed_name_to_idx(const char *name)
 {
-    int i;
-    for (i = 0; timed_name_list[i]; i++) {
-        if (!my_stricmp(name, timed_name_list[i]))
+    size_t i;
+    for (i = 0; i < N_ELEMENTS(effects); i++) {
+        if (!my_stricmp(name, effects[i].name))
             return i;
     }
 
     return -1;
-}
-
-const char *timed_idx_to_name(int type)
-{
-    assert(type >= 0);
-    assert(type < TMD_MAX);
-
-    return timed_name_list[type];
-}
-
-const char *timed_idx_to_desc(int type)
-{
-    assert(type >= 0);
-    assert(type < TMD_MAX);
-
-    return effects[type].description;
-}
-
-int timed_protect_flag(int type)
-{
-	return effects[type].fail;
 }
 
 /**
@@ -97,7 +63,7 @@ int timed_protect_flag(int type)
  */
 bool player_set_timed(struct player *p, int idx, int v, bool notify)
 {
-	struct timed_effect *effect;
+	struct timed_effect_data *effect;
 
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -123,23 +89,23 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		notify = false;
 
 	/* Find the effect */
-	effect = &effects[idx];
+	effect = &timed_effects[idx];
 
 	/* Always mention start or finish, otherwise on request */
 	if (v == 0) {
 		msgt(MSG_RECOVER, "%s", effect->on_end);
 		notify = true;
 	} else if (p->timed[idx] == 0) {
-		msgt(effect->msg, "%s", effect->on_begin);
+		msgt(effect->msgt, "%s", effect->on_begin);
 		notify = true;
 	} else if (notify) {
 		/* Decrementing */
 		if (p->timed[idx] > v && effect->on_decrease)
-			msgt(effect->msg, "%s", effect->on_decrease);
+			msgt(effect->msgt, "%s", effect->on_decrease);
 
 		/* Incrementing */
 		else if (v > p->timed[idx] && effect->on_increase)
-			msgt(effect->msg, "%s", effect->on_increase);
+			msgt(effect->msgt, "%s", effect->on_increase);
 	}
 
 	/* Use the value */
@@ -173,8 +139,8 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	disturb(p, 0);
 
 	/* Update the visuals, as appropriate. */
-	p->upkeep->update |= effect->flag_update;
-	p->upkeep->redraw |= (PR_STATUS | effect->flag_redraw);
+	p->upkeep->update |= effects[idx].flag_update;
+	p->upkeep->redraw |= (PR_STATUS | effects[idx].flag_redraw);
 
 	/* Handle stuff */
 	handle_stuff(p);
@@ -189,10 +155,10 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
  */
 bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 {
-	struct timed_effect *effect;
+	struct timed_effect_data *effect;
 
 	/* Find the effect */
-	effect = &effects[idx];
+	effect = &timed_effects[idx];
 
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return false;
@@ -312,25 +278,21 @@ static bool set_stun(struct player *p, int v)
 	/* Increase or decrease stun */
 	if (new_aux > old_aux) {
 		/* Describe the state */
-		switch (new_aux)
-		{
+		switch (new_aux) {
 			/* Stun */
-			case 1:
-			{
+			case 1:	{
 				msgt(MSG_STUN, "You have been stunned.");
 				break;
 			}
 
 			/* Heavy stun */
-			case 2:
-			{
+			case 2:	{
 				msgt(MSG_STUN, "You have been heavily stunned.");
 				break;
 			}
 
 			/* Knocked out */
-			case 3:
-			{
+			case 3:	{
 				msgt(MSG_STUN, "You have been knocked out.");
 				break;
 			}
@@ -340,11 +302,9 @@ static bool set_stun(struct player *p, int v)
 		notice = true;
 	} else if (new_aux < old_aux) {
 		/* Describe the state */
-		switch (new_aux)
-		{
+		switch (new_aux) {
 			/* None */
-			case 0:
-			{
+			case 0: {
 				msgt(MSG_RECOVER, "You are no longer stunned.");
 				disturb(player, 0);
 				break;
@@ -441,53 +401,45 @@ static bool set_cut(struct player *p, int v)
 	/* Increase or decrease cut */
 	if (new_aux > old_aux) {
 		/* Describe the state */
-		switch (new_aux)
-		{
+		switch (new_aux) {
 			/* Graze */
-			case 1:
-			{
+			case 1:	{
 				msgt(MSG_CUT, "You have been given a graze.");
 				break;
 			}
 
 			/* Light cut */
-			case 2:
-			{
+			case 2:	{
 				msgt(MSG_CUT, "You have been given a light cut.");
 				break;
 			}
 
 			/* Bad cut */
-			case 3:
-			{
+			case 3:	{
 				msgt(MSG_CUT, "You have been given a bad cut.");
 				break;
 			}
 
 			/* Nasty cut */
-			case 4:
-			{
+			case 4:	{
 				msgt(MSG_CUT, "You have been given a nasty cut.");
 				break;
 			}
 
 			/* Severe cut */
-			case 5:
-			{
+			case 5:	{
 				msgt(MSG_CUT, "You have been given a severe cut.");
 				break;
 			}
 
 			/* Deep gash */
-			case 6:
-			{
+			case 6:	{
 				msgt(MSG_CUT, "You have been given a deep gash.");
 				break;
 			}
 
 			/* Mortal wound */
-			case 7:
-			{
+			case 7:	{
 				msgt(MSG_CUT, "You have been given a mortal wound.");
 				break;
 			}
@@ -497,11 +449,9 @@ static bool set_cut(struct player *p, int v)
 		notice = true;
 	} else if (new_aux < old_aux) {
 		/* Describe the state */
-		switch (new_aux)
-		{
+		switch (new_aux) {
 			/* None */
-			case 0:
-			{
+			case 0:	{
 				msgt(MSG_RECOVER, "You are no longer bleeding.");
 				disturb(player, 0);
 				break;

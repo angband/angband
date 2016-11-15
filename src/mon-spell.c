@@ -305,7 +305,7 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 			while (effect) {
 				/* Timed effects */
 				if ((smart || !one_in_(3)) && (effect->index == EF_TIMED_INC) &&
-					of_has(flags, timed_protect_flag(effect->params[0])))
+					of_has(flags, timed_effects[effect->params[0]].fail))
 					break;
 
 				/* Mana drain */

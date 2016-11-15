@@ -95,6 +95,14 @@ char *ANGBAND_DIR_INFO;
 
 static struct history_chart *histories;
 
+static const char *timed_name_list[] = {
+	#define TMD(a, b, c) #a,
+	#include "list-player-timed.h"
+	#undef TMD
+	"MAX",
+    NULL
+};
+
 static const char *slots[] = {
 	#define EQUIP(a, b, c, d, e, f) #a,
 	#include "list-equip-slots.h"
@@ -888,6 +896,190 @@ static void cleanup_game_constants(void)
 {
 	cleanup_parser(&constants_parser);
 }
+
+/**
+ * Parsing functions for player_timed.txt
+ */
+
+static enum parser_error parse_player_timed_name(struct parser *p) {
+	struct timed_effect_data *h = parser_priv(p);
+	struct timed_effect_data *t = mem_zalloc(sizeof *t);
+	const char *name = parser_getstr(p, "name");
+	int index;
+	t->next = h;
+	if (grab_name("timed effect", name, timed_name_list,
+				  N_ELEMENTS(timed_name_list), &index))
+		return PARSE_ERROR_INVALID_SPELL_NAME;
+	t->name = string_make(name);
+	t->index = index;
+	parser_setpriv(p, t);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_desc(struct parser *p) {
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->desc = string_append(t->desc, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_begin_message(struct parser *p) {
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->on_begin = string_append(t->on_begin, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_end_message(struct parser *p) {
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->on_end = string_append(t->on_end, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_increase_message(struct parser *p) {
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->on_increase = string_append(t->on_increase, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_decrease_message(struct parser *p) {
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->on_decrease = string_append(t->on_decrease, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_message_type(struct parser *p)
+{
+	int msg_index;
+	const char *type;
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	type = parser_getsym(p, "type");
+
+	msg_index = message_lookup_by_name(type);
+
+	if (msg_index < 0)
+		return PARSE_ERROR_INVALID_MESSAGE;
+
+	t->msgt = msg_index;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_fail_code(struct parser *p) {
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->fail_code = parser_getuint(p, "code");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_fail_flag(struct parser *p) {
+	struct timed_effect_data *t = parser_priv(p);
+	const char *name;
+	assert(t);
+
+	name = parser_getstr(p, "flag");
+	if (t->fail_code == TMD_FAIL_FLAG_OBJECT) {
+		int flag = lookup_flag(obj_flags, name);
+		if (flag == FLAG_END)
+			return PARSE_ERROR_INVALID_FLAG;
+		else
+			t->fail = flag;
+	} else if ((t->fail_code == TMD_FAIL_FLAG_RESIST) ||
+			   (t->fail_code == TMD_FAIL_FLAG_VULN)) {
+		size_t i = 0;
+		while (elements[i] && !streq(elements[i], name))
+			i++;
+
+		if (i == N_ELEMENTS(elements))
+			return PARSE_ERROR_INVALID_FLAG;
+		else
+			t->fail = i;
+	} else {
+		return PARSE_ERROR_INVALID_FLAG;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_player_timed(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_player_timed_name);
+	parser_reg(p, "desc str text", parse_player_timed_desc);
+	parser_reg(p, "on-begin str text", parse_player_timed_begin_message);
+	parser_reg(p, "on-end str text", parse_player_timed_end_message);
+	parser_reg(p, "on-increase str text", parse_player_timed_increase_message);
+	parser_reg(p, "on-decrease str text", parse_player_timed_decrease_message);
+	parser_reg(p, "msgt sym type", parse_player_timed_message_type);
+	parser_reg(p, "code uint code", parse_player_timed_fail_code);
+	parser_reg(p, "fail str flag", parse_player_timed_fail_flag);
+	return p;
+}
+
+static errr run_parse_player_timed(struct parser *p) {
+	return parse_file_quit_not_found(p, "player_timed");
+}
+
+static errr finish_parse_player_timed(struct parser *p) {
+	struct timed_effect_data *timed, *next = NULL;
+	int count = TMD_MAX - 1;
+
+	/* Allocate the direct access list and copy the data to it */
+	timed_effects = mem_zalloc((TMD_MAX + 1) * sizeof(*timed));
+	for (timed = parser_priv(p); timed; timed = next, count--) {
+		memcpy(&timed_effects[count], timed, sizeof(*timed));
+		next = timed->next;
+		assert(timed->index == count);
+		if (count < TMD_MAX - 1)
+			timed_effects[count].next = &timed_effects[count + 1];
+		else
+			timed_effects[count].next = NULL;
+
+		mem_free(timed);
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_player_timed(void)
+{
+	struct timed_effect_data *timed = timed_effects;
+	struct timed_effect_data *next;
+
+	while (timed) {
+		next = timed->next;
+		if (timed->on_begin)
+			string_free(timed->on_begin);
+		if (timed->on_end)
+			string_free(timed->on_end);
+		if (timed->on_increase)
+			string_free(timed->on_increase);
+		if (timed->on_decrease)
+			string_free(timed->on_decrease);
+		string_free(timed->desc);
+		string_free(timed->name);
+		timed = next;
+	}
+	mem_free(timed_effects);
+}
+
+struct file_parser player_timed_parser = {
+	"player timed",
+	init_parse_player_timed,
+	run_parse_player_timed,
+	finish_parse_player_timed,
+	cleanup_player_timed
+};
 
 /**
  * Parsing functions for object_base.txt
@@ -5064,6 +5256,7 @@ static struct {
 	const char *name;
 	struct file_parser *parser;
 } pl[] = {
+	{ "timed effects", &player_timed_parser },
 	{ "traps", &trap_parser },
 	{ "features", &feat_parser },
 	{ "object bases", &object_base_parser },

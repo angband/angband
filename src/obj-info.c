@@ -1435,12 +1435,12 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			case EFINFO_CURE: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-							timed_idx_to_desc(effect->params[0]));
+						timed_effects[effect->params[0]].desc);
 				break;
 			}
 			case EFINFO_TIMED: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-							timed_idx_to_desc(effect->params[0]), dice_string);
+						timed_effects[effect->params[0]].desc, dice_string);
 				break;
 			}
 			case EFINFO_STAT: {

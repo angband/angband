@@ -153,6 +153,7 @@ extern struct parser *init_parse_names(void);
 extern struct parser *init_parse_hints(void);
 extern struct parser *init_parse_trap(void);
 extern struct parser *init_parse_quest(void);
+extern struct parser *init_parse_player_timed(void);
 
 void add_game_brand(struct brand *b);
 void add_game_slay(struct slay *s);

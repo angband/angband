@@ -1,6 +1,6 @@
 /**
- * \file mon-blow-effects.c
- * \brief Monster melee effects module.
+ * \file mon-blows.c
+ * \brief Monster melee module.
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *               2013 Ben Semmler
