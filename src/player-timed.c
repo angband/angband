@@ -39,8 +39,8 @@ static bool set_cut(struct player *p, int v);
 
 static struct timed_effect {
 	const char *name;
-	u32b flag_update;
 	u32b flag_redraw;
+	u32b flag_update;
 } effects[] = {
 	#define TMD(a, b, c)	{ #a, b, c },
 	#include "list-player-timed.h"
