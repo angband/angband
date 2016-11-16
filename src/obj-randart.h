@@ -79,9 +79,8 @@ struct artifact_data {
 	int other_total;
 	int total;
 
-	/* Arrays for holding frequency values */
-	int art_freq[ART_IDX_TOTAL];  	/* artifact attributes */
-	int *base_freq; 			/* base items */
+	/* Base item frequency values */
+	int *base_freq;
 
 	/* Artifact power ratings */
 	int *base_power;

@@ -308,9 +308,9 @@ void count_weapon_abilities(const struct artifact *art,
 {
 	int bonus;
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
-	int min_to_h = randcalc(kind->to_h, 0, MAXIMISE);
-	int min_to_d = randcalc(kind->to_d, 0, MAXIMISE);
-	int min_to_a = randcalc(kind->to_a, 0, MAXIMISE);
+	int min_to_h = randcalc(kind->to_h, 0, MINIMISE);
+	int min_to_d = randcalc(kind->to_d, 0, MINIMISE);
+	int min_to_a = randcalc(kind->to_a, 0, MINIMISE);
 
 	/* To-hit and to-dam */
 	bonus = (art->to_h - min_to_h - data->hit_startval) / data->hit_increment;
@@ -329,7 +329,10 @@ void count_weapon_abilities(const struct artifact *art,
 
 	/* Does this weapon have an unusual bonus to AC? */
 	bonus = (art->to_a - min_to_a) / data->ac_increment;
-	if (bonus > 0) {
+	if (art->to_a > 20) {
+		file_putf(log_file, "Adding %d for supercharged AC\n", bonus);
+		(data->art_probs[ART_IDX_GEN_AC_SUPER])++;
+	} else if (bonus > 0) {
 		file_putf(log_file,
 				  "Adding %d instances of extra AC bonus for weapon\n", bonus);
 		(data->art_probs[ART_IDX_MELEE_AC]) += bonus;
@@ -406,10 +409,9 @@ void count_bow_abilities(const struct artifact *art, struct artifact_data *data)
 {
 	int bonus;
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
-	int min_to_h = randcalc(kind->to_h, 0, MAXIMISE);
-	int min_to_d = randcalc(kind->to_d, 0, MAXIMISE);
-	int min_to_a = art->to_a - randcalc(kind->to_a, 0, MINIMISE)
-		- data->ac_startval;
+	int min_to_h = randcalc(kind->to_h, 0, MINIMISE);
+	int min_to_d = randcalc(kind->to_d, 0, MINIMISE);
+	int min_to_a = randcalc(kind->to_a, 0, MINIMISE);
 
 	/* To-hit */
 	bonus = (art->to_h - min_to_h - data->hit_startval) / data->hit_increment;
@@ -428,7 +430,7 @@ void count_bow_abilities(const struct artifact *art, struct artifact_data *data)
 	data->art_probs[ART_IDX_WEAPON_DAM] += bonus;
 
 	/* Armor class */
-	bonus = (art->to_a - min_to_a) / data->ac_increment;
+	bonus = (art->to_a - min_to_a - data->ac_startval) / data->ac_increment;
 	if (bonus > 0) {
 		file_putf(log_file, "Adding %d for AC bonus - general\n", bonus);
 		(data->art_probs[ART_IDX_GEN_AC]) += bonus;
