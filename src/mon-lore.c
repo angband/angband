@@ -1934,7 +1934,7 @@ void write_lore_entries(ang_file *fff)
 			if (!lore->blows[n].method) continue;
 
 			/* Output blow method */
-			file_putf(fff, "blow:%s", lore->blows[n].method->desc);
+			file_putf(fff, "blow:%s", lore->blows[n].method->name);
 
 			/* Output blow effect (may be none) */
 			file_putf(fff, ":%s", r_info_blow_effect[lore->blows[n].effect]);
