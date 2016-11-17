@@ -283,7 +283,7 @@ struct file_parser meth_parser = {
  * Parsing functions for blow_effects.txt
  */
 static struct blow_effect *findeff(const char *eff_name) {
-	struct blow_effect *eff = &blow_effects[1];
+	struct blow_effect *eff = &blow_effects[0];
 	while (eff) {
 		if (streq(eff->name, eff_name))
 			break;
@@ -342,7 +342,7 @@ static errr run_parse_eff(struct parser *p) {
 
 static errr finish_parse_eff(struct parser *p) {
 	struct blow_effect *eff, *next = NULL;
-	int count = 1;
+	int count;
 
 	/* Count the entries */
 	z_info->blow_effects_max = 0;
@@ -353,18 +353,19 @@ static errr finish_parse_eff(struct parser *p) {
 	}
 
 	/* Allocate the direct access list and copy the data to it */
+	count = z_info->blow_effects_max - 1;
 	blow_effects = mem_zalloc((z_info->blow_effects_max + 1) * sizeof(*eff));
-	for (eff = parser_priv(p); eff; eff = next, count++) {
+	for (eff = parser_priv(p); eff; eff = next, count--) {
 		memcpy(&blow_effects[count], eff, sizeof(*eff));
 		next = eff->next;
-		if (next)
+		if (count < z_info->blow_effects_max - 1)
 			blow_effects[count].next = &blow_effects[count + 1];
 		else
 			blow_effects[count].next = NULL;
 
 		mem_free(eff);
 	}
-	z_info->blow_effects_max += 1;
+	z_info->blow_effects_max++;
 
 	parser_destroy(p);
 	return 0;
@@ -379,9 +380,9 @@ static void cleanup_eff(void)
 		next = eff->next;
 		string_free(eff->desc);
 		string_free(eff->name);
-		mem_free(eff);
 		eff = next;
 	}
+	mem_free(blow_effects);
 }
 
 struct file_parser eff_parser = {
@@ -939,6 +940,8 @@ static enum parser_error parse_monster_blow(struct parser *p) {
 		b->effect = findeff(parser_getsym(p, "effect"));
 		if (!b->effect)
 			return PARSE_ERROR_INVALID_EFFECT;
+	} else {
+		b->effect = findeff("NONE");
 	}
 	if (parser_hasval(p, "damage"))
 		b->dice = parser_getrand(p, "damage");

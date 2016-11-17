@@ -257,6 +257,18 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 }
 
 /**
+ * Melee effect handler: Hit the player, but don't do any damage.
+ */
+static void melee_effect_handler_NONE(melee_effect_handler_context_t *context)
+{
+	/* Hack -- Assume obvious */
+	context->obvious = true;
+
+	/* Hack -- No damage */
+	context->damage = 0;
+}
+
+/**
  * Melee effect handler: Hurt the player with no side effects.
  */
 static void melee_effect_handler_HURT(melee_effect_handler_context_t *context)
@@ -832,6 +844,7 @@ melee_effect_handler_f melee_handler_for_blow_effect(const char *name)
 		const char *name;
 		melee_effect_handler_f function;
 	} effect_handlers[] = {
+		{ "NONE", melee_effect_handler_NONE },
 		{ "HURT", melee_effect_handler_HURT },
 		{ "POISON", melee_effect_handler_POISON },
 		{ "DISENCHANT", melee_effect_handler_DISENCHANT },

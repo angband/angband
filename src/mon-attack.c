@@ -490,6 +490,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 		/* Hack -- no more attacks */
 		if (!method) break;
+		assert(effect);
 
 		/* Handle "leaving" */
 		if (p->is_dead || p->upkeep->generate_level) break;
@@ -501,7 +502,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		if (rf_has(mon->race->flags, RF_HAS_LIGHT)) visible = true;
 
 		/* Monster hits player */
-		if (!effect || check_hit(p, effect->power, rlev)) {
+		if (check_hit(p, effect->power, rlev)) {
 			melee_effect_handler_f effect_handler;
 
 			/* Always disturbing */
