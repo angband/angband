@@ -460,6 +460,7 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 	struct brand *b;
 	struct slay *s;
 	int best_mult = 1;
+	struct monster_lore *lore = get_lore(mon->race);
 
 	if (!obj) return;
 
@@ -482,8 +483,6 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 			}
 			/* Learn from real attacks */
 			if (real) {
-				struct monster_lore *lore = get_lore(mon->race);
-
 				/* Learn about the brand */
 				object_learn_brand(player, obj, b);
 
@@ -491,6 +490,10 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 					rf_on(lore->flags, brand_names[b->element].resist_flag);
 			}
+		} else if (real && player_knows_brand(player, b)) {
+				/* Learn about resistant monsters */
+				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+					rf_on(lore->flags, brand_names[b->element].resist_flag);
 		}
 	}
 
@@ -517,8 +520,6 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 			}
 			/* Learn from real attacks */
 			if (real) {
-				struct monster_lore *lore = get_lore(mon->race);
-
 				/* Learn about the slay */
 				object_learn_slay(player, obj, s);
 
@@ -526,6 +527,10 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 					rf_on(lore->flags, s->race_flag);
 			}
+		} else if (real && player_knows_slay(player, s)) {
+				/* Learn about resistant monsters */
+				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+					rf_on(lore->flags, s->race_flag);
 		}
 	}
 }
