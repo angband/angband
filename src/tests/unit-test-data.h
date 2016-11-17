@@ -746,10 +746,66 @@ static struct blow_method TEST_DATA test_blow_method = {
 	.next = NULL
 };
 
+static struct blow_effect TEST_DATA test_blow_effect_hurt = {
+	.name = "HURT",
+	.power = 40,
+	.eval = 0,
+	.desc = "attack",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_poison = {
+	.name = "POISON",
+	.power = 20,
+	.eval = 10,
+	.desc = "poison",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_acid = {
+	.name = "ACID",
+	.power = 20,
+	.eval = 20,
+	.desc = "shoot acid",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_elec = {
+	.name = "ELEC",
+	.power = 40,
+	.eval = 10,
+	.desc = "electrify",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_fire = {
+	.name = "FIRE",
+	.power = 40,
+	.eval = 10,
+	.desc = "burn",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_cold = {
+	.name = "COLD",
+	.power = 40,
+	.eval = 10,
+	.desc = "freeze",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_blind = {
+	.name = "BLIND",
+	.power = 0,
+	.eval = 20,
+	.desc = "blind",
+	.next = NULL
+};
+
 static struct monster_blow TEST_DATA test_blow[4] = {
 	{
 		.method = &test_blow_method,
-		.effect = RBE_HURT,
+		.effect = &test_blow_effect_hurt,
 		.dice = {
 			.base = 0,
 			.dice = 3,
@@ -760,7 +816,7 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 	},
 	{
 		.method = NULL,
-		.effect = RBE_NONE,
+		.effect = NULL,
 		.dice = {
 			.base = 0,
 			.dice = 0,
@@ -771,7 +827,7 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 	},
 	{
 		.method = NULL,
-		.effect = RBE_NONE,
+		.effect = NULL,
 		.dice = {
 			.base = 0,
 			.dice = 0,
@@ -782,7 +838,7 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 	},
 	{
 		.method = NULL,
-		.effect = RBE_NONE,
+		.effect = NULL,
 		.dice = {
 			.base = 0,
 			.dice = 0,

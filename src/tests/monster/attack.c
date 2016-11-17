@@ -35,7 +35,7 @@ static int mdam(struct monster *m)
 }
 
 static int take1(struct player *p, struct monster *m, struct blow_method *blow,
-				 int eff)
+				 struct blow_effect *eff)
 {
 	int old, new;
 	cave = &test_cave;
@@ -57,11 +57,11 @@ static int test_blows(void *state) {
 	p->upkeep = &test_player_upkeep;
 
 	flags_set(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
-	delta = take1(p, m, &test_blow_method, RBE_HURT);
+	delta = take1(p, m, &test_blow_method, &test_blow_effect_hurt);
 	flags_clear(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
 	eq(delta, 0);
 
-	delta = take1(p, m, &test_blow_method, RBE_HURT);
+	delta = take1(p, m, &test_blow_method, &test_blow_effect_hurt);
 	eq(delta, mdam(m));
 
 	ok;
@@ -76,20 +76,20 @@ static int test_effects(void *state) {
 	p->upkeep = &test_player_upkeep;
 
 	//require(!p->timed[TMD_POISONED]);
-	//delta = take1(p, m, &test_blow_method, RBE_POISON);
+	//delta = take1(p, m, &test_blow_method, &test_blow_effect_poison);
 	//require(p->timed[TMD_POISONED]);
 
-	delta = take1(p, m, &test_blow_method, RBE_ACID);
+	delta = take1(p, m, &test_blow_method, &test_blow_effect_acid);
 	require(delta > 0);
-	delta = take1(p, m, &test_blow_method, RBE_ELEC);
+	delta = take1(p, m, &test_blow_method, &test_blow_effect_elec);
 	require(delta > 0);
-	delta = take1(p, m, &test_blow_method, RBE_FIRE);
+	delta = take1(p, m, &test_blow_method, &test_blow_effect_fire);
 	require(delta > 0);
-	delta = take1(p, m, &test_blow_method, RBE_COLD);
+	delta = take1(p, m, &test_blow_method, &test_blow_effect_cold);
 	require(delta > 0);
 
 	//require(!p->timed[TMD_BLIND]);
-	//delta = take1(p, m, &test_blow_method, RBE_BLIND);
+	//delta = take1(p, m, &test_blow_method, &test_blow_effect_blind);
 	//require(p->timed[TMD_BLIND]);
 
 	ok;

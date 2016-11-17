@@ -5266,6 +5266,7 @@ static struct {
 	{ "ego-items", &ego_parser },
 	{ "artifacts", &artifact_parser },
 	{ "blow methods", &meth_parser },
+	{ "blow effects", &eff_parser },
 	{ "monster pain messages", &pain_parser },
 	{ "monster spells", &mon_spell_parser },
 	{ "monster bases", &mon_base_parser },

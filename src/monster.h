@@ -136,10 +136,10 @@ enum
 struct monster_blow {
 	struct monster_blow *next;	/* Unused after parsing */
 
-	struct blow_method *method;	/* Method (RBM_*) */
-	int effect;			/* Effect (RBE_*) */
-	random_value dice;	/* Damage dice */
-	int times_seen;		/* Sightings of the blow (lore only) */
+	struct blow_method *method;	/* Method */
+	struct blow_effect *effect;	/* Effect */
+	random_value dice;			/* Damage dice */
+	int times_seen;				/* Sightings of the blow (lore only) */
 };
 
 /**

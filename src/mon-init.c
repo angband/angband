@@ -34,6 +34,7 @@
 #include "player-spell.h"
 
 struct blow_method *blow_methods;
+struct blow_effect *blow_effects;
 struct monster_pain *pain_messages;
 struct monster_spell *monster_spells;
 struct monster_base *rb_info;
@@ -275,6 +276,120 @@ struct file_parser meth_parser = {
 	run_parse_meth,
 	finish_parse_meth,
 	cleanup_meth
+};
+
+
+/**
+ * Parsing functions for blow_effects.txt
+ */
+static struct blow_effect *findeff(const char *eff_name) {
+	struct blow_effect *eff = &blow_effects[1];
+	while (eff) {
+		if (streq(eff->name, eff_name))
+			break;
+		eff = eff->next;
+	}
+	return eff;
+}
+
+static enum parser_error parse_eff_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct blow_effect *h = parser_priv(p);
+
+	struct blow_effect *eff = mem_zalloc(sizeof *eff);
+	eff->next = h;
+	parser_setpriv(p, eff);
+	eff->name = string_make(name);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_eff_power(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	assert(eff);
+	eff->power = parser_getint(p, "power");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_eff_eval(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	assert(eff);
+	eff->eval = parser_getint(p, "eval");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_eff_desc(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	assert(eff);
+
+	eff->desc = string_append(eff->desc, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_eff(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_eff_name);
+	parser_reg(p, "power int power", parse_eff_power);
+	parser_reg(p, "eval int eval", parse_eff_eval);
+	parser_reg(p, "desc str desc", parse_eff_desc);
+	return p;
+}
+
+static errr run_parse_eff(struct parser *p) {
+	return parse_file_quit_not_found(p, "blow_effects");
+}
+
+static errr finish_parse_eff(struct parser *p) {
+	struct blow_effect *eff, *next = NULL;
+	int count = 1;
+
+	/* Count the entries */
+	z_info->blow_effects_max = 0;
+	eff = parser_priv(p);
+	while (eff) {
+		z_info->blow_effects_max++;
+		eff = eff->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	blow_effects = mem_zalloc((z_info->blow_effects_max + 1) * sizeof(*eff));
+	for (eff = parser_priv(p); eff; eff = next, count++) {
+		memcpy(&blow_effects[count], eff, sizeof(*eff));
+		next = eff->next;
+		if (next)
+			blow_effects[count].next = &blow_effects[count + 1];
+		else
+			blow_effects[count].next = NULL;
+
+		mem_free(eff);
+	}
+	z_info->blow_effects_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_eff(void)
+{
+	struct blow_effect *eff = blow_effects;
+	struct blow_effect *next;
+
+	while (eff) {
+		next = eff->next;
+		string_free(eff->desc);
+		string_free(eff->name);
+		mem_free(eff);
+		eff = next;
+	}
+}
+
+struct file_parser eff_parser = {
+	"blow_effects",
+	init_parse_eff,
+	run_parse_eff,
+	finish_parse_eff,
+	cleanup_eff
 };
 
 
@@ -821,8 +936,8 @@ static enum parser_error parse_monster_blow(struct parser *p) {
 	if (!b->method)
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
 	if (parser_hasval(p, "effect")) {
-		b->effect = blow_effect_name_to_idx(parser_getsym(p, "effect"));
-		if (!monster_blow_effect_is_valid(b->effect))
+		b->effect = findeff(parser_getsym(p, "effect"));
+		if (!b->effect)
 			return PARSE_ERROR_INVALID_EFFECT;
 	}
 	if (parser_hasval(p, "damage"))
@@ -1295,8 +1410,9 @@ static enum parser_error parse_lore_counts(struct parser *p) {
 
 static enum parser_error parse_lore_blow(struct parser *p) {
 	struct monster_lore *l = parser_priv(p);
-	struct blow_method *method;
-	int effect = 0, seen = 0, index = 0;
+	struct blow_method *method = NULL;
+	struct blow_effect *effect = NULL;
+	int seen = 0, index = 0;
 	struct random dam = { 0, 0, 0, 0 };
 
 	if (!l)
@@ -1307,8 +1423,8 @@ static enum parser_error parse_lore_blow(struct parser *p) {
 	if (!method)
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
 	if (parser_hasval(p, "effect")) {
-		effect = blow_effect_name_to_idx(parser_getsym(p, "effect"));
-		if (!monster_blow_effect_is_valid(effect))
+		effect = findeff(parser_getsym(p, "effect"));
+		if (!effect)
 			return PARSE_ERROR_INVALID_EFFECT;
 	}
 	if (parser_hasval(p, "damage"))

@@ -476,7 +476,6 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		bool obvious = false;
 		bool do_break = false;
 
-		int power = 0;
 		int damage = 0;
 		int do_cut = 0;
 		int do_stun = 0;
@@ -485,7 +484,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		const char *act = NULL;
 
 		/* Extract the attack infomation */
-		int effect = mon->race->blow[ap_cnt].effect;
+		struct blow_effect *effect = mon->race->blow[ap_cnt].effect;
 		struct blow_method *method = mon->race->blow[ap_cnt].method;
 		random_value dice = mon->race->blow[ap_cnt].dice;
 
@@ -501,11 +500,8 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		/* Extract visibility from carrying light */
 		if (rf_has(mon->race->flags, RF_HAS_LIGHT)) visible = true;
 
-		/* Extract the attack "power" */
-		power = monster_blow_effect_power(effect);
-
 		/* Monster hits player */
-		if (!effect || check_hit(p, power, rlev)) {
+		if (!effect || check_hit(p, effect->power, rlev)) {
 			melee_effect_handler_f effect_handler;
 
 			/* Always disturbing */
@@ -544,7 +540,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			damage = randcalc(dice, rlev, RANDOMISE);
 
 			/* Perform the actual effect. */
-			effect_handler = melee_handler_for_blow_effect(effect);
+			effect_handler = melee_handler_for_blow_effect(effect->name);
 			if (effect_handler != NULL) {
 				melee_effect_handler_context_t context = {
 					p,
@@ -567,7 +563,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				damage = context.damage;
 				do_break = context.do_break;
 			} else {
-				msg("ERROR: Effect handler not found for %d.", effect);
+				msg("ERROR: Effect handler not found for %s.", effect->name);
 			}
 
 			/* Don't cut or stun if player is dead */

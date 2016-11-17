@@ -1,0 +1,148 @@
+# File blow_effects.txt
+# Monster race blow effects
+#
+# Fields:
+# name - blow effect name as in monster.txt
+# pow - used for attack quality in check_hit()
+# eval - used for power evaluation in eval_blow_effect()
+# desc - description for monster recall
+
+name:HURT
+power:40
+eval:0
+desc:attack
+
+name:POISON
+power:20
+eval:10
+desc:poison
+
+name:DISENCHANT
+power:10
+eval:30
+desc:disenchant
+
+name:DRAIN_CHARGES
+power:10
+eval:30
+desc:drain charges
+
+name:EAT_GOLD
+power:0
+eval:5
+desc:steal gold
+
+name:EAT_ITEM
+power:0
+eval:5
+desc:steal items
+
+name:EAT_FOOD
+power:0
+eval:5
+desc:eat your food
+
+name:EAT_LIGHT
+power:0
+eval:5
+desc:absorb light
+
+name:ACID
+power:20
+eval:20
+desc:shoot acid
+
+name:ELEC
+power:40
+eval:10
+desc:electrify
+
+name:FIRE
+power:40
+eval:10
+desc:burn
+
+name:COLD
+power:40
+eval:10
+desc:freeze
+
+name:BLIND
+power:0
+eval:20
+desc:blind
+
+name:CONFUSE
+power:20
+eval:20
+desc:confuse
+
+name:TERRIFY
+power:0
+eval:10
+desc:terrify
+
+name:PARALYZE
+power:0
+eval:40
+desc:paralyze
+
+name:LOSE_STR
+power:0
+eval:20
+desc:reduce strength
+
+name:LOSE_INT
+power:0
+eval:20
+desc:reduce intelligence
+
+name:LOSE_WIS
+power:0
+eval:20
+desc:reduce wisdom
+
+name:LOSE_DEX
+power:0
+eval:20
+desc:reduce dexterity
+
+name:LOSE_CON
+power:0
+eval:30
+desc:reduce constitution
+
+name:LOSE_ALL
+power:0
+eval:40
+desc:reduce all stats
+
+name:SHATTER
+power:60
+eval:300
+desc:shatter
+
+name:EXP_10
+power:20
+eval:5
+desc:lower experience
+
+name:EXP_20
+power:20
+eval:5
+desc:lower experience
+
+name:EXP_40
+power:20
+eval:10
+desc:lower experience
+
+name:EXP_80
+power:20
+eval:10
+desc:lower experience
+
+name:HALLU
+power:0
+eval:20
+desc:cause hallucinations

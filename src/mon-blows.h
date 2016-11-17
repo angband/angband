@@ -23,15 +23,6 @@
 #include "player.h"
 #include "monster.h"
 
-/**
- * List of monster blow effects
- */
-enum monster_blow_effect_e {
-	#define RBE(x, p, e, d) RBE_##x,
-	#include "list-blow-effects.h"
-	#undef RBE
-};
-
 struct blow_method {
 	char *name;
 	bool cut;
@@ -72,18 +63,18 @@ typedef struct melee_effect_handler_context_s {
  */
 typedef void (*melee_effect_handler_f)(melee_effect_handler_context_t *);
 
-/**
- * Storage class for monster_blow_effect_e.
- */
-typedef byte monster_blow_effect_t;
+struct blow_effect {
+	char *name;
+	int power;
+	int eval;
+	char *desc;
+	struct blow_effect *next;
+};
+
+struct blow_effect *blow_effects;
 
 /* Functions */
 extern const char *monster_blow_method_action(struct blow_method *method);
-extern int monster_blow_effect_power(monster_blow_effect_t effect);
-extern int monster_blow_effect_eval(monster_blow_effect_t effect);
-extern bool monster_blow_effect_is_valid(monster_blow_effect_t effect);
-extern const char *monster_blow_effect_description(monster_blow_effect_t effect);
-extern melee_effect_handler_f melee_handler_for_blow_effect(monster_blow_effect_t effect);
-extern monster_blow_effect_t blow_effect_name_to_idx(const char *string);
+extern melee_effect_handler_f melee_handler_for_blow_effect(const char *name);
 
 #endif /* MON_BLOW_EFFECTS_H */

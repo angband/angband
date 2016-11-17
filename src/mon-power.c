@@ -34,12 +34,13 @@ static long *power, *scaled_power, *final_hp, *final_melee_dam, *final_spell_dam
 static int *highest_threat;
 static s32b tot_mon_power;
 
-static long eval_blow_effect(int effect, random_value atk_dam, int rlev)
+static long eval_blow_effect(struct blow_effect *effect, random_value atk_dam,
+							 int rlev)
 {
-	int adjustment = monster_blow_effect_eval(effect);
+	int adjustment = effect->eval;
 	int blow_power = randcalc(atk_dam, rlev, MAXIMISE);
 
-	if (effect == RBE_POISON) {
+	if (streq(effect->name, "POISON")) {
 		blow_power *= 5;
 		blow_power /= 4;
 		blow_power += rlev;
@@ -87,7 +88,7 @@ static long eval_max_dam(struct monster_race *race, int ridx)
 	/* Check attacks */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
 		struct blow_method *method;
-		int effect;
+		struct blow_effect *effect;
 		random_value dice;
 
 		if (!race->blow) break;

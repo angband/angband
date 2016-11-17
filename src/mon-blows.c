@@ -4,6 +4,7 @@
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *               2013 Ben Semmler
+ *               2016 Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -253,18 +254,6 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 			player_exp_lose(context->p, d, false);
 		}
 	}
-}
-
-/**
- * Melee effect handler: Hit the player, but don't do any damage.
- */
-static void melee_effect_handler_NONE(melee_effect_handler_context_t *context)
-{
-	/* Hack -- Assume obvious */
-	context->obvious = true;
-
-	/* Hack -- No damage */
-	context->damage = 0;
 }
 
 /**
@@ -837,131 +826,50 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 	update_smart_learn(context->mon, context->p, 0, 0, ELEM_CHAOS);
 }
 
-/**
- * Dummy melee effect handler.
- */
-static void melee_effect_handler_MAX(melee_effect_handler_context_t *context)
+melee_effect_handler_f melee_handler_for_blow_effect(const char *name)
 {
-	/* Hack -- Do nothing */
-}
-
-/**
- * Return a handler for the given effect.
- *
- * Handlers are named after RBE_ constants.
- *
- * \param effect is the RBE_ constant for the effect.
- * \returns a function pointer to handle the effect, or NULL if not found.
- */
-melee_effect_handler_f melee_handler_for_blow_effect(monster_blow_effect_t effect)
-{
-	static const melee_effect_handler_f blow_handlers[] = {
-		#define RBE(x, p, e, d) melee_effect_handler_##x,
-		#include "list-blow-effects.h"
-		#undef RBE
+	static const struct effect_handler_s {
+		const char *name;
+		melee_effect_handler_f function;
+	} effect_handlers[] = {
+		{ "HURT", melee_effect_handler_HURT },
+		{ "POISON", melee_effect_handler_POISON },
+		{ "DISENCHANT", melee_effect_handler_DISENCHANT },
+		{ "DRAIN_CHARGES", melee_effect_handler_DRAIN_CHARGES },
+		{ "EAT_GOLD", melee_effect_handler_EAT_GOLD },
+		{ "EAT_ITEM", melee_effect_handler_EAT_ITEM },
+		{ "EAT_FOOD", melee_effect_handler_EAT_FOOD },
+		{ "EAT_LIGHT", melee_effect_handler_EAT_LIGHT },
+		{ "ACID", melee_effect_handler_ACID },
+		{ "ELEC", melee_effect_handler_ELEC },
+		{ "FIRE", melee_effect_handler_FIRE },
+		{ "COLD", melee_effect_handler_COLD },
+		{ "BLIND", melee_effect_handler_BLIND },
+		{ "CONFUSE", melee_effect_handler_CONFUSE },
+		{ "TERRIFY", melee_effect_handler_TERRIFY },
+		{ "PARALYZE", melee_effect_handler_PARALYZE },
+		{ "LOSE_STR", melee_effect_handler_LOSE_STR },
+		{ "LOSE_INT", melee_effect_handler_LOSE_INT },
+		{ "LOSE_WIS", melee_effect_handler_LOSE_WIS },
+		{ "LOSE_DEX", melee_effect_handler_LOSE_DEX },
+		{ "LOSE_CON", melee_effect_handler_LOSE_CON },
+		{ "LOSE_ALL", melee_effect_handler_LOSE_ALL },
+		{ "SHATTER", melee_effect_handler_SHATTER },
+		{ "EXP_10", melee_effect_handler_EXP_10 },
+		{ "EXP_20", melee_effect_handler_EXP_20 },
+		{ "EXP_40", melee_effect_handler_EXP_40 },
+		{ "EXP_80", melee_effect_handler_EXP_80 },
+		{ "HALLU", melee_effect_handler_HALLU },
+		{ NULL, NULL },
 	};
+	const struct effect_handler_s *current = effect_handlers;
 
-	if (effect >= RBE_MAX)
-		return NULL;
+	while (current->name != NULL && current->function != NULL) {
+		if (my_stricmp(name, current->name) == 0)
+			return current->function;
 
-	return blow_handlers[effect];
-}
+		current++;
+	}
 
-/**
- * Return a power modifier for the given effect.
- *
- * Values are in list-blow-effects.h.
- *
- * \param effect is the RBE_ constant for the effect.
- */
-int monster_blow_effect_power(monster_blow_effect_t effect)
-{
-	static const int effect_powers[] = {
-		#define RBE(x, p, e, d) p,
-		#include "list-blow-effects.h"
-		#undef RBE
-	};
-
-	if (effect >= RBE_MAX)
-		return 0;
-
-	return effect_powers[effect];
-}
-
-/**
- * Return a description for the given monster blow effect flags.
- *
- * Returns an sensible placeholder string for an out-of-range flag.
- * Descriptions are in list-blow-effects.h.
- *
- * \param effect is one of the RBE_ flags.
- */
-const char *monster_blow_effect_description(monster_blow_effect_t effect)
-{
-	static const char *r_blow_effect_description[] = {
-		#define RBE(x, p, e, d) d,
-		#include "list-blow-effects.h"
-		#undef RBE
-	};
-
-	/* Some blows have no effects, so we do want to return whatever is in
-	 * the table for RBE_NONE */
-	if (effect >= RBE_MAX)
-		return "do weird things";
-
-	return r_blow_effect_description[effect];
-}
-
-/**
- * Return a power factor for the given effect to evaluate its power.
- *
- * Values are in list-blow-effects.h.
- *
- * \param effect is the RBE_ constant for the effect.
- */
-int monster_blow_effect_eval(monster_blow_effect_t effect)
-{
-	static const int effect_evals[] = {
-		#define RBE(x, p, e, d) e,
-		#include "list-blow-effects.h"
-		#undef RBE
-	};
-
-	if (effect >= RBE_MAX)
-		return 0;
-
-	return effect_evals[effect];
-}
-
-/**
- * Return the RBE_ constant matching the given string.
- *
- * Values are stringified RBE_ constants.
- *
- * \param string contains a value to search for.
- */
-monster_blow_effect_t blow_effect_name_to_idx(const char *string)
-{
-	int i;
-	static const char *r_info_blow_effect[] = {
-		#define RBE(x, p, e, d) #x,
-		#include "list-blow-effects.h"
-		#undef RBE
-	};
-
-	for (i = 0; r_info_blow_effect[i]; i++)
-		if (streq(string, r_info_blow_effect[i]))
-			break;
-
-	return i;
-}
-
-/**
- * Return whether the given effect is valid.
- *
- * \param effect is the RBE_ constant for the effect.
- */
-bool monster_blow_effect_is_valid(monster_blow_effect_t effect)
-{
-	return effect < RBE_MAX;
+	return NULL;
 }

@@ -44,6 +44,19 @@ enum monster_sex {
 
 typedef enum monster_sex monster_sex_t;
 
+static int blow_index(const char *name)
+{
+	int i;
+
+	for (i = 1; i < z_info->blow_effects_max; i++) {
+		struct blow_effect *effect = &blow_effects[i];
+		if (my_stricmp(name, effect->name) == 0)
+			return i;
+	}
+	return 0;
+}
+
+
 /**
  * Initializes the color-coding of monster attacks / spells.
  *
@@ -58,7 +71,7 @@ typedef enum monster_sex monster_sex_t;
  * We should be able to loop over all spell effects and check for resistance
  * in a nicer way.
  */
-void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
+void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
 {
 	int i;
 	struct object *obj;
@@ -67,7 +80,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	int tmp_col;
 
 	/* Initialize the colors to green */
-	for (i = 0; i < RBE_MAX; i++)
+	for (i = 0; i < z_info->blow_effects_max; i++)
 		melee_colors[i] = COLOUR_L_GREEN;
 	for (i = 0; i < RSF_MAX; i++)
 		spell_colors[i] = COLOUR_L_GREEN;
@@ -79,28 +92,28 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 
 		/* Drain charges - requires a charged item */
 		if ((obj->pval > 0) && tval_can_have_charges(obj))
-			melee_colors[RBE_DRAIN_CHARGES] = COLOUR_L_RED;
+			melee_colors[blow_index("DRAIN_CHARGES")] = COLOUR_L_RED;
 
 		/* Steal item - requires non-artifacts */
 		if (!object_is_equipped(player->body, obj) && !obj->known->artifact &&
 			player->lev + adj_dex_safe[st.stat_ind[STAT_DEX]] < 100)
-			melee_colors[RBE_EAT_ITEM] = COLOUR_L_RED;
+			melee_colors[blow_index("EAT_ITEM")] = COLOUR_L_RED;
 
 		/* Eat food - requries food */
 		if (tval_is_edible(obj))
-			melee_colors[RBE_EAT_FOOD] = COLOUR_YELLOW;
+			melee_colors[blow_index("EAT_FOOD")] = COLOUR_YELLOW;
 
 		/* Eat light - requires a fuelled light */
 		if (object_is_equipped(player->body, obj) && tval_is_light(obj) &&
 			!of_has(f, OF_NO_FUEL) && obj->timeout > 0)
-			melee_colors[RBE_EAT_LIGHT] = COLOUR_YELLOW;
+			melee_colors[blow_index("EAT_LIGHT")] = COLOUR_YELLOW;
 
 		/* Disenchantment - requires an enchanted item */
 		if (object_is_equipped(player->body, obj) &&
 			(obj->known->to_a > 0 || obj->known->to_h > 0 ||
 			 obj->known->to_d > 0) &&
 			(st.el_info[ELEM_DISEN].res_level <= 0)) {
-			melee_colors[RBE_DISENCHANT] = COLOUR_L_RED;
+			melee_colors[blow_index("DISENCHANT")] = COLOUR_L_RED;
 			spell_colors[RSF_BR_DISE] = COLOUR_L_RED;
 		}
 	}
@@ -114,7 +127,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	else
 		tmp_col = COLOUR_ORANGE;
 
-	melee_colors[RBE_ACID] = tmp_col;
+	melee_colors[blow_index("ACID")] = tmp_col;
 	spell_colors[RSF_BR_ACID] = tmp_col;
 	spell_colors[RSF_BO_ACID] = tmp_col;
 	spell_colors[RSF_BA_ACID] = tmp_col;
@@ -128,7 +141,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	else
 		tmp_col = COLOUR_ORANGE;
 
-	melee_colors[RBE_COLD] = tmp_col;
+	melee_colors[blow_index("COLD")] = tmp_col;
 	spell_colors[RSF_BR_COLD] = tmp_col;
 	spell_colors[RSF_BO_COLD] = tmp_col;
 	spell_colors[RSF_BA_COLD] = tmp_col;
@@ -143,7 +156,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	else
 		tmp_col = COLOUR_ORANGE;
 
-	melee_colors[RBE_ELEC] = tmp_col;
+	melee_colors[blow_index("ELEC")] = tmp_col;
 	spell_colors[RSF_BR_ELEC] = tmp_col;
 	spell_colors[RSF_BO_ELEC] = tmp_col;
 	spell_colors[RSF_BA_ELEC] = tmp_col;
@@ -157,7 +170,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	else
 		tmp_col = COLOUR_ORANGE;
 
-	melee_colors[RBE_FIRE] = tmp_col;
+	melee_colors[blow_index("FIRE")] = tmp_col;
 	spell_colors[RSF_BR_FIRE] = tmp_col;
 	spell_colors[RSF_BO_FIRE] = tmp_col;
 	spell_colors[RSF_BA_FIRE] = tmp_col;
@@ -165,7 +178,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	/* Poison */
 	if ((st.el_info[ELEM_POIS].res_level <= 0) &&
 		!player->timed[TMD_OPP_POIS]) {
-		melee_colors[RBE_POISON] = COLOUR_ORANGE;
+		melee_colors[blow_index("POISON")] = COLOUR_ORANGE;
 		spell_colors[RSF_BR_POIS] = COLOUR_ORANGE;
 		spell_colors[RSF_BA_POIS] = COLOUR_ORANGE;
 	}
@@ -205,7 +218,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 
 	/* Confusion */
 	if (!of_has(st.flags, OF_PROT_CONF))
-		melee_colors[RBE_CONFUSE] = COLOUR_ORANGE;
+		melee_colors[blow_index("CONFUSE")] = COLOUR_ORANGE;
 
 	/* Stunning */
 	if (!of_has(st.flags, OF_PROT_STUN)) {
@@ -255,13 +268,13 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 
 		/* Fear */
 		if (!of_has(st.flags, OF_PROT_FEAR)) {
-			melee_colors[RBE_TERRIFY] = COLOUR_YELLOW;
+			melee_colors[blow_index("TERRIFY")] = COLOUR_YELLOW;
 			spell_colors[RSF_SCARE] = COLOUR_YELLOW;
 		}
 
 		/* Paralysis and slow */
 		if (!of_has(st.flags, OF_FREE_ACT)) {
-			melee_colors[RBE_PARALYZE] = COLOUR_L_RED;
+			melee_colors[blow_index("PARALYZE")] = COLOUR_L_RED;
 			spell_colors[RSF_HOLD] = COLOUR_L_RED;
 			spell_colors[RSF_SLOW] = COLOUR_ORANGE;
 		}
@@ -292,39 +305,39 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 
 	/* Gold theft */
 	if (player->lev + adj_dex_safe[st.stat_ind[STAT_DEX]] < 100 && player->au)
-		melee_colors[RBE_EAT_GOLD] = COLOUR_YELLOW;
+		melee_colors[blow_index("EAT_GOLD")] = COLOUR_YELLOW;
 
 	/* Melee blindness and hallucinations */
 	if (!of_has(st.flags, OF_PROT_BLIND))
-		melee_colors[RBE_BLIND] = COLOUR_YELLOW;
+		melee_colors[blow_index("BLIND")] = COLOUR_YELLOW;
 	if ((st.el_info[ELEM_CHAOS].res_level <= 0))
-		melee_colors[RBE_HALLU] = COLOUR_YELLOW;
+		melee_colors[blow_index("HALLU")] = COLOUR_YELLOW;
 
 	/* Stat draining is bad */
 	if (!of_has(st.flags, OF_SUST_STR))
-		melee_colors[RBE_LOSE_STR] = COLOUR_ORANGE;
+		melee_colors[blow_index("LOSE_STR")] = COLOUR_ORANGE;
 	if (!of_has(st.flags, OF_SUST_INT))
-		melee_colors[RBE_LOSE_INT] = COLOUR_ORANGE;
+		melee_colors[blow_index("LOSE_INT")] = COLOUR_ORANGE;
 	if (!of_has(st.flags, OF_SUST_WIS))
-		melee_colors[RBE_LOSE_WIS] = COLOUR_ORANGE;
+		melee_colors[blow_index("LOSE_WIS")] = COLOUR_ORANGE;
 	if (!of_has(st.flags, OF_SUST_DEX))
-		melee_colors[RBE_LOSE_DEX] = COLOUR_ORANGE;
+		melee_colors[blow_index("LOSE_DEX")] = COLOUR_ORANGE;
 	if (!of_has(st.flags, OF_SUST_CON))
-		melee_colors[RBE_LOSE_CON] = COLOUR_ORANGE;
+		melee_colors[blow_index("LOSE_CON")] = COLOUR_ORANGE;
 
 	/* Drain all gets a red warning */
 	if (!of_has(st.flags, OF_SUST_STR) || !of_has(st.flags, OF_SUST_INT) ||
 			!of_has(st.flags, OF_SUST_WIS) || !of_has(st.flags, OF_SUST_DEX) ||
 			!of_has(st.flags, OF_SUST_CON))
-		melee_colors[RBE_LOSE_ALL] = COLOUR_L_RED;
+		melee_colors[blow_index("LOSE_ALL")] = COLOUR_L_RED;
 
 	/* Hold life isn't 100% effective */
-	melee_colors[RBE_EXP_10] = melee_colors[RBE_EXP_20] = 
-			melee_colors[RBE_EXP_40] = melee_colors[RBE_EXP_80] =
-			of_has(st.flags, OF_HOLD_LIFE) ? COLOUR_YELLOW : COLOUR_ORANGE;
+	melee_colors[blow_index("EXP_10")] = melee_colors[blow_index("EXP_20")] = 
+		melee_colors[blow_index("EXP_40")] = melee_colors[blow_index("EXP_80")]
+		= of_has(st.flags, OF_HOLD_LIFE) ? COLOUR_YELLOW : COLOUR_ORANGE;
 
 	/* Shatter is always noteworthy */
-	melee_colors[RBE_SHATTER] = COLOUR_YELLOW;
+	melee_colors[blow_index("SHATTER")] = COLOUR_YELLOW;
 
 	/* Heal (and drain mana) and haste are always noteworthy */
 	spell_colors[RSF_HEAL] = COLOUR_YELLOW;
@@ -585,22 +598,6 @@ static const char *lore_describe_race_flag(int flag)
 		return "";
 
 	return r_flag_description[flag];
-}
-
-/**
- * Return a description for the given monster blow method flags.
- */
-static const char *lore_describe_blow_method(struct blow_method *method)
-{
-	return method->desc;
-}
-
-/**
- * Return a description for the given monster blow effect flags.
- */
-static const char *lore_describe_blow_effect(int effect)
-{
-	return monster_blow_effect_description(effect);
 }
 
 /**
@@ -1787,12 +1784,11 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
  * \param known_flags is the preprocessed bitfield of race flags known to the
  *        player.
  * \param melee_colors is a list of colors that is associated with each
- *        RBE_ effect.
+ *        blow effect.
  */
 void lore_append_attack(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
-						bitflag known_flags[RF_SIZE],
-						const int melee_colors[RBE_MAX])
+						bitflag known_flags[RF_SIZE], const int *melee_colors)
 {
 	int i, total_attacks, described_count;
 	monster_sex_t msex = MON_SEX_NEUTER;
@@ -1831,7 +1827,6 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 	/* Describe each melee attack */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
 		random_value dice;
-		const char *method_str = NULL;
 		const char *effect_str = NULL;
 
 		/* Skip unknown and undefined attacks */
@@ -1839,8 +1834,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 
 		/* Extract the attack info */
 		dice = race->blow[i].dice;
-		method_str = lore_describe_blow_method(race->blow[i].method);
-		effect_str = lore_describe_blow_effect(race->blow[i].effect);
+		effect_str = race->blow[i].effect->desc;
 
 		/* Introduce the attack description */
 		if (described_count == 0)
@@ -1852,14 +1846,14 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, ", and ");
 
 		/* Describe the method */
-		textblock_append(tb, method_str);
+		textblock_append(tb, race->blow[i].method->desc);
 
 		/* Describe the effect (if any) */
 		if (effect_str && strlen(effect_str) > 0) {
+			int color = blow_index(race->blow[i].effect->name);
 			/* Describe the attack type */
 			textblock_append(tb, " to ");
-			textblock_append_c(tb, melee_colors[race->blow[i].effect],
-							   effect_str);
+			textblock_append_c(tb, melee_colors[color], effect_str);
 
 			/* Describe damage (if known) */
 			if (dice.base || dice.dice || dice.sides || dice.m_bonus) {
@@ -1900,12 +1894,6 @@ void write_lore_entries(ang_file *fff)
 {
 	int i, n;
 
-	static const char *r_info_blow_effect[] = {
-		#define RBE(x, p, e, d) #x,
-		#include "list-blow-effects.h"
-		#undef RBE
-	};
-
 	for (i = 0; i < z_info->r_max; i++) {
 		/* Current entry */
 		struct monster_race *race = &r_info[i];
@@ -1937,7 +1925,7 @@ void write_lore_entries(ang_file *fff)
 			file_putf(fff, "blow:%s", lore->blows[n].method->name);
 
 			/* Output blow effect (may be none) */
-			file_putf(fff, ":%s", r_info_blow_effect[lore->blows[n].effect]);
+			file_putf(fff, ":%s", lore->blows[n].effect->name);
 
 			/* Output blow damage (may be 0) */
 			file_putf(fff, ":%d+%dd%dM%d", lore->blows[n].dice.base,

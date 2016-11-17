@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "init.h"
 #include "mon-lore.h"
 #include "ui-mon-lore.h"
 #include "ui-output.h"
@@ -91,7 +92,8 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	struct monster_lore mutable_lore;
 	struct monster_lore *lore = &mutable_lore;
 	bitflag known_flags[RF_SIZE];
-	int melee_colors[RBE_MAX], spell_colors[RSF_MAX];
+	int spell_colors[RSF_MAX];
+	int *melee_colors = mem_zalloc(z_info->blow_effects_max * sizeof(int));
 
 	assert(tb && race && original_lore);
 
@@ -154,6 +156,8 @@ void lore_description(textblock *tb, const struct monster_race *race,
 		textblock_append(tb, "You feel an intense desire to kill this monster...  ");
 
 	textblock_append(tb, "\n");
+
+	mem_free(melee_colors);
 }
 
 /**
