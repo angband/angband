@@ -3072,6 +3072,9 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	if (cave->mon_current > 0) {
 		cy = cave_monster(cave, cave->mon_current)->fy;
 		cx = cave_monster(cave, cave->mon_current)->fx;
+	} else if (cave->trap_current) {
+		cy = cave->trap_current->fy;
+		cx = cave->trap_current->fx;
 	} else {
 		cy = py;
 		cx = px;
