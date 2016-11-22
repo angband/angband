@@ -11,7 +11,7 @@
 # name: serial number : monster name
 # plural: monster name plural (if non-standard)
 # base: template name
-# glyph: symbol 
+# glyph: symbol
 # color: color
 # info: speed : hit points : vision : armor class : alertness
 # power: depth : rarity : power : scaled power : experience for kill
@@ -77,7 +77,7 @@
 
 # Note to maintainers/devteam: Light Violet (V) is currently used for the
 # "purple uniques" option. The option makes all uniques appear in this colour
-# (instead of only Castamir and Waldern). It is therefore unwise to use it 
+# (instead of only Castamir and Waldern). It is therefore unwise to use it
 # for non-unique monsters.
 
 # 'info' is for information--speed, health, vision in tens of feet, armor class,
@@ -97,8 +97,8 @@
 # lines may be used as are needed to specify all the flags and flags are
 # separated by the '|' symbol.
 
-# 'flags-off' is for flags to remove from the template. For example, in 
-# monster_base.txt, molds are given HURT_FIRE. We don't want the red mold 
+# 'flags-off' is for flags to remove from the template. For example, in
+# monster_base.txt, molds are given HURT_FIRE. We don't want the red mold
 # to have that, so we add a 'flags-off:HURT_FIRE' line to subtract that flag.
 
 # 'spell-freq' is for spell frequency - the number of monster turns, on
@@ -125,7 +125,7 @@
 # monster on creation.  The format is:
 # friends:Chance of friend appearing:number in xdy format:name of friend
 #
-# Note that number is throttled depending on the dungeon level with only half 
+# Note that number is throttled depending on the dungeon level with only half
 # appearing at depth and the full complement 5 levels deeper.  All town friends
 # will be divided by two.
 # The code places monsters from bottom up and will not place it if it can't find
@@ -163,7 +163,7 @@
 
 # CHAR_MULTI monsters are those which look like objects, and use the symbols of
 # objects. They are in plain sight, but the character should not know that a
-# monster is there. At the moment, such monsters can be targetted normally 
+# monster is there. At the moment, such monsters can be targetted normally
 # (which means that this flag currently has no effect), but this may change
 # in the future, as with CHAR_CLEAR monsters.
 
@@ -187,7 +187,7 @@ color:w
 
 ### Dungeon level 0 ###
 
-name:1:Filthy street urchin
+name:1:filthy street urchin
 base:townsfolk
 color:D
 info:110:3:4:1:40
@@ -201,7 +201,7 @@ friends:50:2d1:Scruffy little dog
 friends:100:3d4:Same
 desc:He looks squalid and thoroughly revolting.
 
-name:2:Scrawny cat
+name:2:scrawny cat
 base:feline
 color:U
 info:110:2:30:1:10
@@ -210,7 +210,7 @@ blow:CLAW:HURT:1d1
 flags:RAND_25
 desc:A skinny little furball with sharp claws and a menacing look.
 
-name:3:Scruffy little dog
+name:3:scruffy little dog
 base:canine
 color:U
 info:110:2:20:1:5
@@ -232,7 +232,7 @@ flags:NO_CONF | NO_SLEEP
 desc:He's lost his dogs.  He's had his mushrooms stolen.  He's not a happy
 desc: hobbit!
 
-name:5:Blubbering idiot
+name:5:blubbering idiot
 base:townsfolk
 color:W
 info:110:2:6:1:50
@@ -242,8 +242,8 @@ flags:MALE
 flags:RAND_25 | TAKE_ITEM
 desc:He tends to blubber a lot.
 
-name:6:Boil-covered wretch
-plural:Boil-covered wretches
+name:6:boil-covered wretch
+plural:boil-covered wretches
 base:townsfolk
 color:g
 info:110:2:6:1:50
@@ -253,7 +253,7 @@ flags:MALE
 flags:RAND_25 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:Ugly doesn't begin to describe him.
 
-name:7:Village idiot
+name:7:village idiot
 base:townsfolk
 color:G
 info:120:10:6:1:50
@@ -263,7 +263,7 @@ flags:MALE
 flags:RAND_25 | TAKE_ITEM
 desc:Drooling and comical, but then, what do you expect?
 
-name:8:Pitiful-looking beggar
+name:8:pitiful-looking beggar
 base:townsfolk
 color:U
 info:110:3:10:1:40
@@ -273,7 +273,7 @@ flags:MALE
 flags:RAND_25 | OPEN_DOOR | TAKE_ITEM
 desc:You just can't help feeling sorry for him.
 
-name:9:Mangy-looking leper
+name:9:mangy-looking leper
 base:townsfolk
 color:u
 info:110:1:10:1:50
@@ -283,7 +283,7 @@ flags:MALE
 flags:RAND_25 | OPEN_DOOR | TAKE_ITEM
 desc:You feel it isn't safe to touch him.
 
-name:10:Squint-eyed rogue
+name:10:squint-eyed rogue
 base:townsfolk
 color:b
 info:110:9:10:9:99
@@ -295,7 +295,7 @@ flags:MALE | EVIL
 flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:A hardy, street-wise crook that knows an easy catch when it sees one.
 
-name:11:Singing, happy drunk
+name:11:singing, happy drunk
 base:townsfolk
 color:y
 info:110:4:10:1:0
@@ -306,7 +306,7 @@ flags:DROP_40 | ONLY_GOLD
 flags:RAND_50 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:He makes you glad to be sober.
 
-name:12:Aimless-looking merchant
+name:12:aimless-looking merchant
 base:townsfolk
 color:o
 info:110:6:10:1:255
@@ -319,8 +319,8 @@ friends:30:2d2:Filthy street urchin
 desc:The typical ponce around town, with purse jingling, and looking for more
 desc: amulets of adornment to buy.
 
-name:13:Mean-looking mercenary
-plural:Mean-looking mercenaries
+name:13:mean-looking mercenary
+plural:mean-looking mercenaries
 base:townsfolk
 color:r
 info:110:23:10:24:250
@@ -331,7 +331,7 @@ flags:DROP_40
 flags:RAND_50 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:No job is too low for him.
 
-name:14:Battle-scarred veteran
+name:14:battle-scarred veteran
 base:townsfolk
 color:B
 info:110:32:10:36:250
@@ -342,7 +342,7 @@ flags:DROP_40
 flags:RAND_50 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:He doesn't take to strangers kindly.
 
-name:617:Red-Hatted Elf
+name:617:red-hatted elf
 base:humanoid
 color:r
 info:110:100:80:12:3
@@ -367,7 +367,7 @@ desc:It's Saint Nick, out delivering presents to the town urchins.
 
 ### Dungeon level 1 ###
 
-name:15:Grey mold
+name:15:grey mold
 base:mold
 color:s
 info:110:2:2:1:0
@@ -377,8 +377,8 @@ blow:SPORE:HURT:1d4
 flags:EMPTY_MIND | STUPID
 desc:A small strange grey growth.
 
-name:16:Grey mushroom patch
-plural:Grey mushroom patches
+name:16:grey mushroom patch
+plural:grey mushroom patches
 base:mushroom
 color:s
 info:110:2:2:1:0
@@ -387,7 +387,7 @@ blow:SPORE:CONFUSE:1d4
 flags:IM_POIS | NEVER_MOVE
 desc:Yum!  It looks quite tasty.
 
-name:17:Giant yellow centipede
+name:17:giant yellow centipede
 base:centipede
 color:y
 info:110:7:8:14:30
@@ -396,7 +396,7 @@ blow:BITE:HURT:1d3
 blow:STING:HURT:1d3
 desc:It is about four feet long and carnivorous.
 
-name:18:Giant white centipede
+name:18:giant white centipede
 base:centipede
 color:w
 info:110:9:7:12:40
@@ -406,7 +406,7 @@ blow:STING:HURT:1d2
 flags:RAND_50 | BASH_DOOR
 desc:It is about four feet long and carnivorous.
 
-name:19:White icky thing
+name:19:white icky thing
 base:icky thing
 color:w
 info:110:6:12:8:10
@@ -416,7 +416,7 @@ flags:EMPTY_MIND
 flags:RAND_25
 desc:It is a smallish, slimy, icky creature.
 
-name:20:Clear icky thing
+name:20:clear icky thing
 base:icky thing
 color:w
 info:110:6:12:7:10
@@ -427,8 +427,8 @@ flags:RAND_25
 flags:ATTR_CLEAR
 desc:It is a smallish, slimy, icky, blobby creature.
 
-name:21:Giant white mouse
-plural:Giant white mice
+name:21:giant white mouse
+plural:giant white mice
 base:rodent
 color:w
 info:110:2:8:4:20
@@ -438,7 +438,7 @@ flags:MULTIPLY
 flags:RAND_50
 desc:It is about three feet long with large teeth.
 
-name:22:Large brown snake
+name:22:large brown snake
 base:snake
 color:u
 info:100:14:4:42:99
@@ -448,7 +448,7 @@ blow:CRUSH:HURT:1d4
 flags:RAND_25
 desc:It is about eight feet long.
 
-name:23:Large white snake
+name:23:large white snake
 base:snake
 color:w
 info:100:11:4:36:99
@@ -458,7 +458,7 @@ blow:CRUSH:HURT:1d1
 flags:RAND_50
 desc:It is about eight feet long.
 
-name:24:Small kobold
+name:24:small kobold
 base:kobold
 color:y
 info:110:8:20:24:70
@@ -467,7 +467,7 @@ blow:HIT:HURT:1d5
 flags:DROP_60
 desc:It is a squat and ugly humanoid figure with a canine face.
 
-name:26:White worm mass
+name:26:white worm mass
 base:worm
 color:w
 info:100:10:7:1:14
@@ -478,7 +478,7 @@ flags:RAND_25 | RAND_50
 flags:HURT_LIGHT | IM_POIS | NO_FEAR
 desc:It is a large slimy mass of worms.
 
-name:27:Floating eye
+name:27:floating eye
 base:eye
 color:o
 info:110:11:2:7:10
@@ -488,7 +488,7 @@ flags:NEVER_MOVE
 flags:HURT_LIGHT | NO_FEAR
 desc:A disembodied eye, floating a few feet above the ground.
 
-name:28:Rock lizard
+name:28:rock lizard
 base:reptile
 color:U
 info:110:8:20:4:15
@@ -496,7 +496,7 @@ power:1:1:4:0:2
 blow:BITE:HURT:1d1
 desc:It is a small lizard with a hardened hide.
 
-name:29:Jackal
+name:29:jackal
 base:canine
 color:U
 info:110:3:10:3:10
@@ -506,7 +506,7 @@ flags:GROUP_AI
 friends:100:2d7:Same
 desc:It is a yapping snarling dog, dangerous when in a pack.
 
-name:30:Soldier ant
+name:30:soldier ant
 base:ant
 color:W
 info:110:6:10:4:40
@@ -514,7 +514,7 @@ power:1:1:9:1:3
 blow:BITE:HURT:1d2
 desc:A large ant with powerful mandibles.
 
-name:31:Fruit bat
+name:31:fruit bat
 base:bat
 color:o
 info:120:4:20:3:10
@@ -524,7 +524,7 @@ desc:A fast-moving pest.
 
 ### Dungeon level 2 ###
 
-name:25:Kobold
+name:25:kobold
 base:kobold
 color:G
 info:110:12:20:24:70
@@ -533,8 +533,8 @@ blow:HIT:HURT:1d8
 flags:DROP_60
 desc:It is a small, dog-headed humanoid.
 
-name:32:Shrieker mushroom patch
-plural:Shrieker mushroom patches
+name:32:shrieker mushroom patch
+plural:shrieker mushroom patches
 base:mushroom
 color:R
 info:110:1:4:1:0
@@ -546,7 +546,7 @@ spell-freq:4
 spells:SHRIEK
 desc:Yum!  It looks quite tasty.  It doesn't sound so nice, though...
 
-name:33:Blubbering icky thing
+name:33:blubbering icky thing
 base:icky thing
 color:W
 info:110:18:14:4:10
@@ -558,7 +558,7 @@ flags:KILL_BODY | TAKE_ITEM
 flags:IM_POIS
 desc:It is a smallish, slimy, icky, hungry creature.
 
-name:34:Metallic green centipede
+name:34:metallic green centipede
 base:centipede
 color:g
 info:120:10:5:4:10
@@ -567,7 +567,7 @@ blow:CRAWL:HURT:1d1
 flags:RAND_50 | BASH_DOOR
 desc:It is about four feet long and carnivorous.
 
-name:35:Soldier
+name:35:soldier
 base:person
 color:u
 info:110:23:20:24:80
@@ -583,7 +583,7 @@ friends-base:80:1d3:person
 friends:50:1d2:Same
 desc:An inexperienced but tough warrior.
 
-name:36:Cutpurse
+name:36:cutpurse
 base:person
 color:b
 info:110:20:20:18:10
@@ -599,7 +599,7 @@ friends-base:80:1d3:person
 friends:50:1d2:Same
 desc:A rather shifty individual.
 
-name:37:Acolyte
+name:37:acolyte
 base:person
 color:g
 info:110:18:20:15:80
@@ -618,7 +618,7 @@ friends-base:80:1d3:person
 friends:50:1d2:Same
 desc:He is tripping over his priestly robes.
 
-name:38:Apprentice
+name:38:apprentice
 base:person
 color:r
 info:110:15:20:9:15
@@ -637,8 +637,8 @@ friends-base:80:1d3:person
 friends:50:1d2:Same
 desc:He is leaving behind a trail of dropped spell components.
 
-name:39:Yellow mushroom patch
-plural:Yellow mushroom patches
+name:39:yellow mushroom patch
+plural:yellow mushroom patches
 base:mushroom
 color:y
 info:110:1:2:1:0
@@ -648,8 +648,8 @@ flags:NEVER_MOVE
 flags:IM_POIS
 desc:Yum!  It looks quite tasty.
 
-name:40:White jelly
-plural:White jellies
+name:40:white jelly
+plural:white jellies
 base:jelly
 color:w
 info:120:36:2:1:99
@@ -659,7 +659,7 @@ flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 desc:It's a large pile of white flesh.
 
-name:41:Giant green frog
+name:41:giant green frog
 base:reptile
 color:g
 info:110:9:12:9:30
@@ -668,7 +668,7 @@ blow:BITE:HURT:1d3
 flags:RAND_25 | BASH_DOOR
 desc:It is as big as a wolf.
 
-name:42:Giant black ant
+name:42:giant black ant
 base:ant
 color:D
 info:110:11:8:24:80
@@ -677,7 +677,7 @@ blow:BITE:HURT:1d4
 flags:RAND_25
 desc:It is about three feet long.
 
-name:43:Salamander
+name:43:salamander
 base:reptile
 color:o
 info:110:14:8:24:80
@@ -687,8 +687,8 @@ flags:RAND_25
 flags:IM_FIRE
 desc:A small black and orange lizard.
 
-name:44:White harpy
-plural:White harpies
+name:44:white harpy
+plural:white harpies
 base:hybrid
 color:w
 info:110:6:16:20:10
@@ -700,7 +700,7 @@ flags:FEMALE | EVIL | ANIMAL
 flags:RAND_50
 desc:A flying, screeching bird with a woman's face.
 
-name:45:Blue yeek
+name:45:blue yeek
 base:yeek
 color:b
 info:110:7:18:16:10
@@ -709,7 +709,7 @@ blow:HIT:HURT:1d5
 flags:DROP_60
 desc:A small humanoid figure.
 
-name:46:Grip, Farmer Maggot's dog
+name:46:Grip, Farmer Maggot's Dog
 base:canine
 color:y
 info:120:25:30:36:0
@@ -721,7 +721,7 @@ flags:NO_CONF | NO_SLEEP
 desc:A rather vicious dog belonging to Farmer Maggot.  It thinks you are
 desc: stealing mushrooms.
 
-name:47:Fang, Farmer Maggot's dog
+name:47:Fang, Farmer Maggot's Dog
 base:canine
 color:y
 info:120:25:30:36:0
@@ -733,7 +733,7 @@ flags:NO_CONF | NO_SLEEP
 desc:A rather vicious dog belonging to Farmer Maggot.  It thinks you are
 desc: stealing mushrooms.
 
-name:48:Green worm mass
+name:48:green worm mass
 base:worm
 color:g
 info:100:15:7:3:10
@@ -744,7 +744,7 @@ flags:RAND_25 | RAND_50
 flags:HURT_LIGHT | IM_ACID | NO_FEAR
 desc:It is a large slimy mass of worms.
 
-name:49:Large yellow snake
+name:49:large yellow snake
 base:snake
 color:y
 info:100:18:5:45:75
@@ -754,7 +754,7 @@ blow:CRUSH:HURT:1d6
 flags:RAND_25
 desc:It is about ten feet long.
 
-name:50:Cave spider
+name:50:cave spider
 base:spider
 color:p
 info:120:7:8:19:80
@@ -765,7 +765,7 @@ flags:GROUP_AI
 friends:100:2d8:Same
 desc:It is a black spider that moves in fits and starts.
 
-name:51:Wild cat
+name:51:wild cat
 base:feline
 color:U
 info:120:9:40:14:0
@@ -776,7 +776,7 @@ flags:BASH_DOOR
 desc:A larger than normal feline, hissing loudly.  Its velvet paws conceal a
 desc: fistful of needles.
 
-name:559:Crow
+name:559:crow
 base:bird
 color:s
 info:120:9:40:14:0
@@ -799,7 +799,7 @@ flags:RAND_25 | RAND_50 | TAKE_ITEM
 flags:HURT_LIGHT
 desc:Usually known as Gollum.  He's been sneaking, and he wants his 'precious.'
 
-name:53:Green ooze
+name:53:green ooze
 base:jelly
 color:g
 info:120:8:8:19:80
@@ -810,7 +810,7 @@ flags:RAND_25 | RAND_50
 flags:IM_ACID | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 desc:It's green and it's oozing.
 
-name:54:Poltergeist
+name:54:poltergeist
 base:ghost
 color:W
 info:130:6:8:18:10
@@ -823,7 +823,7 @@ spell-freq:15
 spells:BLINK
 desc:It is a ghastly, ghostly form.
 
-name:55:Metallic blue centipede
+name:55:metallic blue centipede
 base:centipede
 color:b
 info:120:12:6:7:15
@@ -832,8 +832,8 @@ blow:CRAWL:HURT:1d2
 flags:RAND_50 | BASH_DOOR
 desc:It is about four feet long and carnivorous.
 
-name:56:Giant white louse
-plural:Giant white lice
+name:56:giant white louse
+plural:giant white lice
 base:louse
 color:w
 info:120:1:6:6:10
@@ -842,7 +842,7 @@ blow:BITE:HURT:1d1
 flags:RAND_25
 desc:It is six inches long.
 
-name:57:Black naga
+name:57:black naga
 base:naga
 color:D
 info:110:27:16:60:180
@@ -852,8 +852,8 @@ flags:DROP_60
 flags:RAND_25
 desc:A large black serpent's body with a female torso.
 
-name:58:Spotted mushroom patch
-plural:Spotted mushroom patches
+name:58:spotted mushroom patch
+plural:spotted mushroom patches
 base:mushroom
 color:o
 info:110:1:2:1:0
@@ -863,8 +863,8 @@ flags:NEVER_MOVE
 flags:IM_POIS
 desc:Yum!  It looks quite tasty.
 
-name:59:Silver jelly
-plural:Silver jellies
+name:59:silver jelly
+plural:silver jellies
 base:jelly
 color:W
 info:120:45:2:1:99
@@ -878,8 +878,8 @@ spells:DRAIN_MANA
 desc:It is a large pile of silver flesh that sucks all light from its
 desc: surroundings.
 
-name:60:Yellow jelly
-plural:Yellow jellies
+name:60:yellow jelly
+plural:yellow jellies
 base:jelly
 color:y
 info:120:45:2:1:99
@@ -891,7 +891,7 @@ spell-freq:15
 spells:DRAIN_MANA
 desc:It's a large pile of yellow flesh.
 
-name:61:Scruffy looking hobbit
+name:61:scruffy looking hobbit
 base:humanoid
 color:b
 info:110:9:16:9:10
@@ -904,7 +904,7 @@ flags:TAKE_ITEM
 desc:A short little guy, in bedraggled clothes.  He appears to be looking for a
 desc: good tavern.
 
-name:62:Giant white ant
+name:62:giant white ant
 base:ant
 color:w
 info:110:11:8:19:80
@@ -912,7 +912,7 @@ power:3:1:66:1:7
 blow:BITE:HURT:1d4
 desc:It is about two feet long and has sharp pincers.
 
-name:63:Yellow mold
+name:63:yellow mold
 base:mold
 color:y
 info:110:36:2:12:99
@@ -921,7 +921,7 @@ blow:SPORE:HURT:1d4
 flags:EMPTY_MIND | STUPID
 desc:It is a strange yellow growth on the dungeon floor.
 
-name:64:Metallic red centipede
+name:64:metallic red centipede
 base:centipede
 color:r
 info:120:18:8:10:20
@@ -930,7 +930,7 @@ blow:CRAWL:HURT:1d2
 flags:RAND_25 | BASH_DOOR
 desc:It is about four feet long and carnivorous.
 
-name:65:Yellow worm mass
+name:65:yellow worm mass
 base:worm
 color:y
 info:100:18:7:4:10
@@ -941,7 +941,7 @@ flags:RAND_25 | RAND_50
 flags:HURT_LIGHT | NO_FEAR
 desc:It is a large slimy mass of worms.
 
-name:66:Clear worm mass
+name:66:clear worm mass
 base:worm
 color:w
 info:100:10:7:1:13
@@ -953,7 +953,7 @@ flags:HURT_LIGHT | IM_POIS | NO_FEAR
 flags:ATTR_CLEAR
 desc:It is a disgusting mass of poisonous worms.
 
-name:67:Radiation eye
+name:67:radiation eye
 base:eye
 color:R
 info:110:11:2:7:10
@@ -965,7 +965,7 @@ spell-freq:11
 spells:DRAIN_MANA
 desc:A disembodied eye, crackling with energy.
 
-name:604:Kobold shaman
+name:604:kobold shaman
 base:kobold
 color:r
 info:110:11:20:24:50
@@ -982,7 +982,7 @@ desc:It is a kobold dressed in skins and gesturing wildly.
 
 ### Dungeon level 4 ###
 
-name:68:Cave lizard
+name:68:cave lizard
 base:reptile
 color:u
 info:110:11:8:19:80
@@ -990,7 +990,7 @@ power:4:1:102:1:8
 blow:BITE:HURT:1d5
 desc:It is an armoured lizard with a powerful bite.
 
-name:69:Scout
+name:69:scout
 base:person
 color:W
 info:110:27:20:12:50
@@ -1010,7 +1010,7 @@ friends-base:80:1d3:person
 friends:50:1d2:Same
 desc:An agile hunter, ready and relaxed.
 
-name:70:Gallant
+name:70:gallant
 base:person
 color:w
 info:110:27:20:24:100
@@ -1030,8 +1030,8 @@ friends-base:80:1d3:person
 friends:50:1d2:Same
 desc:An adventurer both devoutly religious and skillful in combat.
 
-name:71:Blue jelly
-plural:Blue jellies
+name:71:blue jelly
+plural:blue jellies
 base:jelly
 color:b
 info:110:54:2:1:99
@@ -1042,8 +1042,8 @@ flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_COLD | NO_CONF | NO_SLEEP
 desc:It's a large pile of pulsing blue flesh.
 
-name:72:Creeping copper coins
-plural:Piles of creeping copper coins
+name:72:creeping copper coins
+plural:piles of creeping copper coins
 base:creeping coins
 color:u
 info:100:32:3:28:10
@@ -1053,7 +1053,7 @@ blow:TOUCH:POISON:2d4
 desc:It appears to be a pile of copper coins.
 mimic:gold:copper
 
-name:73:Giant white rat
+name:73:giant white rat
 base:rodent
 color:W
 info:110:3:8:8:30
@@ -1063,7 +1063,7 @@ flags:MULTIPLY
 flags:RAND_25
 desc:It is a very vicious rodent.
 
-name:74:Blue worm mass
+name:74:blue worm mass
 base:worm
 color:b
 info:100:23:7:14:10
@@ -1074,7 +1074,7 @@ flags:RAND_25 | RAND_50
 flags:HURT_LIGHT | IM_COLD | NO_FEAR
 desc:It is a large slimy mass of worms.
 
-name:75:Large grey snake
+name:75:large grey snake
 base:snake
 color:s
 info:100:27:6:61:100
@@ -1084,7 +1084,7 @@ blow:CRUSH:HURT:1d8
 flags:RAND_25
 desc:It is about ten feet long.
 
-name:94:Kobold archer
+name:94:kobold archer
 base:kobold
 color:W
 info:110:24:20:24:70
@@ -1097,8 +1097,8 @@ friends-base:30:1d2:kobold
 friends-base:70:1d2:kobold
 desc:It is an ugly dog-headed humanoid wielding a bow.
 
-name:548:Silver mouse
-plural:Silver mice
+name:548:silver mouse
+plural:silver mice
 base:rodent
 color:W
 info:110:2:8:4:20
@@ -1109,7 +1109,7 @@ flags:RAND_50
 desc:It is about three feet long with large teeth.  As the light of your lamp
 desc: falls on it, it seems to grow stronger.
 
-name:560:Raven
+name:560:raven
 base:bird
 color:D
 info:120:12:40:14:0
@@ -1133,7 +1133,7 @@ friends:80:1d7:Scruffy looking hobbit
 desc:He is a sturdy hobbit who is renowned for his unusual strength and vigour.
 desc:  He can prove a troublesome opponent.
 
-name:78:Green naga
+name:78:green naga
 base:naga
 color:g
 info:110:41:18:48:120
@@ -1146,7 +1146,7 @@ flags:IM_ACID
 desc:A large green serpent with a female's torso.  Her green skin glistens with
 desc: acid.
 
-name:79:Blue ooze
+name:79:blue ooze
 base:jelly
 color:b
 info:110:8:8:19:80
@@ -1157,7 +1157,7 @@ flags:RAND_25 | RAND_50
 flags:IM_COLD | NO_CONF | NO_SLEEP
 desc:It's blue and it's oozing.
 
-name:80:Green glutton ghost
+name:80:green glutton ghost
 base:ghost
 color:g
 info:130:8:10:24:10
@@ -1168,8 +1168,8 @@ flags:RAND_25 | RAND_50
 flags-off:IM_COLD
 desc:It is a very ugly green ghost with a voracious appetite.
 
-name:81:Green jelly
-plural:Green jellies
+name:81:green jelly
+plural:green jellies
 base:jelly
 color:g
 info:120:99:2:1:99
@@ -1179,7 +1179,7 @@ flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_ACID | HURT_COLD | NO_CONF | NO_SLEEP
 desc:It is a large pile of pulsing green flesh.
 
-name:82:Large kobold
+name:82:large kobold
 base:kobold
 color:b
 info:110:65:20:48:70
@@ -1190,7 +1190,7 @@ friends-base:50:1d2:kobold
 friends-base:30:1d2:kobold
 desc:It is a man-sized figure with the all too recognizable face of a kobold.
 
-name:83:Skeleton kobold
+name:83:skeleton kobold
 base:skeleton
 color:w
 info:110:23:20:39:80
@@ -1200,7 +1200,7 @@ flags:EMPTY_MIND
 flags:OPEN_DOOR | BASH_DOOR
 desc:It is a small animated kobold skeleton.
 
-name:84:Grey icky thing
+name:84:grey icky thing
 base:icky thing
 color:s
 info:110:18:14:14:15
@@ -1209,7 +1209,7 @@ blow:TOUCH:HURT:1d5
 flags:EMPTY_MIND
 desc:It is a smallish, slimy, icky, nasty creature.
 
-name:85:Disenchanter eye
+name:85:disenchanter eye
 base:eye
 color:v
 info:100:32:2:7:10
@@ -1222,7 +1222,7 @@ spell-freq:9
 spells:DRAIN_MANA
 desc:A disembodied eye, crackling with magic.
 
-name:86:Red worm mass
+name:86:red worm mass
 base:worm
 color:r
 info:100:23:7:14:10
@@ -1233,7 +1233,7 @@ flags:RAND_25 | RAND_50 | BASH_DOOR
 flags:HURT_LIGHT | IM_FIRE | NO_FEAR
 desc:It is a large slimy mass of worms.
 
-name:87:Copperhead snake
+name:87:copperhead snake
 base:snake
 color:o
 info:110:14:6:30:10
@@ -1243,8 +1243,8 @@ flags:RAND_50
 flags:IM_POIS
 desc:It has a copper head and sharp venomous fangs.
 
-name:182:Giant white dragon fly
-plural:Giant white dragon flies
+name:182:giant white dragon fly
+plural:giant white dragon flies
 base:dragon fly
 color:w
 info:110:14:12:30:1
@@ -1255,8 +1255,8 @@ spell-freq:10
 spells:BR_COLD
 desc:It is a large fly that drips frost.
 
-name:208:Giant green dragon fly
-plural:Giant green dragon flies
+name:208:giant green dragon fly
+plural:giant green dragon flies
 base:dragon fly
 color:g
 info:110:14:12:30:1
@@ -1268,8 +1268,8 @@ spell-freq:10
 spells:BR_POIS
 desc:A vast, foul-smelling dragonfly.
 
-name:549:Rot jelly
-plural:Rot jellies
+name:549:rot jelly
+plural:rot jellies
 base:jelly
 color:u
 info:120:90:2:36:99
@@ -1286,8 +1286,8 @@ desc: terrible smell it exudes is also very hard to get rid of...
 #name:77:Wizard's apprentice
 #Deleted
 
-name:88:Purple mushroom patch
-plural:Purple mushroom patches
+name:88:purple mushroom patch
+plural:purple mushroom patches
 base:mushroom
 color:P
 info:110:1:2:1:0
@@ -1307,7 +1307,7 @@ desc:Yum!  It looks quite tasty.
 #name:91:Footpad
 #Deleted
 
-name:92:Brown mold
+name:92:brown mold
 base:mold
 color:u
 info:110:68:2:14:99
@@ -1316,7 +1316,7 @@ blow:SPORE:CONFUSE:1d4
 flags:EMPTY_MIND | STUPID
 desc:A strange brown growth on the dungeon floor.
 
-name:93:Giant brown bat
+name:93:giant brown bat
 base:bat
 color:u
 info:130:14:10:18:30
@@ -1325,8 +1325,8 @@ blow:BITE:HURT:1d3
 flags:RAND_50
 desc:It screeches as it attacks.
 
-name:95:Creeping silver coins
-plural:Piles of creeping silver coins
+name:95:creeping silver coins
+plural:piles of creeping silver coins
 base:creeping coins
 color:s
 info:100:54:4:36:10
@@ -1336,7 +1336,7 @@ blow:TOUCH:POISON:2d6
 desc:It appears to be a pile of silver coins.
 mimic:gold:silver
 
-name:96:Snaga
+name:96:snaga
 base:orc
 color:U
 info:110:36:20:48:70
@@ -1349,7 +1349,7 @@ friends:100:2d9:Same
 desc:He is one of the many weaker 'slave' orcs, often mistakenly known as a
 desc: goblin.
 
-name:97:Rattlesnake
+name:97:rattlesnake
 base:snake
 color:r
 info:110:24:6:36:10
@@ -1360,8 +1360,8 @@ flags:IM_POIS
 desc:It is recognized by the hard-scaled end of its body that is often rattled
 desc: to frighten its prey.
 
-name:231:Giant black dragon fly
-plural:Giant black dragon flies
+name:231:giant black dragon fly
+plural:giant black dragon flies
 base:dragon fly
 color:s
 info:120:14:12:30:1
@@ -1372,8 +1372,8 @@ spell-freq:10
 spells:BR_ACID
 desc:The size of a large bird, this fly drips caustic acid.
 
-name:234:Giant gold dragon fly
-plural:Giant gold dragon flies
+name:234:giant gold dragon fly
+plural:giant gold dragon flies
 base:dragon fly
 color:y
 info:120:14:12:30:1
@@ -1388,7 +1388,7 @@ desc: pervades the air.
 
 ### Dungeon level 7 ###
 
-name:98:Cave orc
+name:98:cave orc
 base:orc
 color:G
 info:110:55:20:48:70
@@ -1400,7 +1400,7 @@ friends:50:1d8:Snaga
 friends:100:2d6:Same
 desc:He is often found in huge numbers in deep caves.
 
-name:99:Wood spider
+name:99:wood spider
 base:spider
 color:U
 info:120:11:8:19:80
@@ -1412,8 +1412,8 @@ flags:IM_POIS | GROUP_AI
 friends:100:2d7:Same
 desc:It scuttles towards you.
 
-name:100:Manes
-plural:Manes
+name:100:manes
+plural:manes
 base:minor demon
 color:u
 info:110:36:20:48:80
@@ -1424,7 +1424,7 @@ flags:NO_FEAR
 friends:100:2d7:Same
 desc:It is a minor but aggressive demon.
 
-name:101:Bloodshot eye
+name:101:bloodshot eye
 base:eye
 color:r
 info:110:45:2:7:10
@@ -1436,7 +1436,7 @@ spell-freq:7
 spells:DRAIN_MANA
 desc:A disembodied eye, bloodshot and nasty.
 
-name:102:Red naga
+name:102:red naga
 base:naga
 color:r
 info:110:50:20:48:120
@@ -1447,8 +1447,8 @@ flags:DROP_60
 flags:RAND_25 | TAKE_ITEM
 desc:A large red snake with a woman's torso.
 
-name:103:Red jelly
-plural:Red jellies
+name:103:red jelly
+plural:red jellies
 base:jelly
 color:r
 info:110:117:2:1:99
@@ -1458,7 +1458,7 @@ flags:NEVER_MOVE
 flags:HURT_LIGHT | HURT_COLD | NO_CONF | NO_SLEEP
 desc:It is a large pulsating mound of red flesh.
 
-name:104:Giant red frog
+name:104:giant red frog
 base:reptile
 color:r
 info:110:23:12:19:50
@@ -1467,7 +1467,7 @@ blow:BITE:LOSE_STR:2d4
 flags:RAND_50 | BASH_DOOR
 desc:It looks poisonous.
 
-name:105:Green icky thing
+name:105:green icky thing
 base:icky thing
 color:g
 info:110:23:14:14:20
@@ -1477,7 +1477,7 @@ flags:EMPTY_MIND
 flags:IM_ACID
 desc:It is a smallish, slimy, icky, acidic creature.
 
-name:106:Zombified kobold
+name:106:zombified kobold
 base:zombie
 color:s
 info:110:27:20:21:100
@@ -1489,7 +1489,7 @@ flags:NO_FEAR
 desc:It is an animated kobold corpse.  Flesh falls off in large chunks as it
 desc: shambles forward.
 
-name:107:Lost soul
+name:107:lost soul
 base:ghost
 color:B
 info:110:9:12:12:10
@@ -1502,8 +1502,8 @@ spell-freq:15
 spells:DRAIN_MANA | TPORT
 desc:It is almost insubstantial.
 
-name:108:Dark elf
-plural:Dark elves
+name:108:dark elf
+plural:dark elves
 base:humanoid
 color:D
 info:110:39:20:24:40
@@ -1519,7 +1519,7 @@ spells:CONF | DARKNESS
 desc:An elven figure with jet black skin and white hair, his eyes are large and
 desc: twisted with evil.
 
-name:109:Night lizard
+name:109:night lizard
 base:reptile
 color:b
 info:110:18:20:19:30
@@ -1576,14 +1576,14 @@ blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d9
-flags:UNIQUE 
+flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 friends:80:2d7:Wolf
 friends:100:5d4:Snaga
 desc:A captain of a regiment of weaker orcs, Lagduf keeps his troop in order
 desc: with displays of excessive violence.
 
-name:113:Brown yeek
+name:113:brown yeek
 base:yeek
 color:u
 info:110:18:18:21:10
@@ -1595,7 +1595,7 @@ desc:It is a strange small humanoid.
 #name:114:Tracker
 #Deleted
 
-name:115:Giant salamander
+name:115:giant salamander
 base:reptile
 color:y
 info:110:24:6:60:80
@@ -1608,7 +1608,7 @@ spell-freq:9
 spells:BR_FIRE
 desc:A large black and yellow lizard.  You'd better run away!
 
-name:116:Green mold
+name:116:green mold
 base:mold
 color:g
 info:110:95:2:16:75
@@ -1618,7 +1618,7 @@ flags:EMPTY_MIND | STUPID
 flags:IM_ACID
 desc:It is a strange growth on the dungeon floor.
 
-name:117:Skeleton orc
+name:117:skeleton orc
 base:skeleton
 color:w
 info:110:45:20:54:70
@@ -1631,7 +1631,7 @@ desc:It is an animated orc skeleton.
 #name:118:Honor guard
 #Deleted
 
-name:119:Lemure
+name:119:lemure
 base:minor demon
 color:U
 info:110:65:20:48:80
@@ -1642,7 +1642,7 @@ flags:NO_FEAR
 friends:100:2d7:Same
 desc:It is the larval form of a major demon.
 
-name:120:Hill orc
+name:120:hill orc
 base:orc
 color:u
 info:110:65:20:48:70
@@ -1654,7 +1654,7 @@ friends:50:1d8:Wolf
 friends:100:2d6:Same
 desc:He is a hardy well-weathered survivor.
 
-name:121:Bandit
+name:121:bandit
 base:person
 color:b
 info:110:36:20:28:10
@@ -1666,7 +1666,7 @@ flags:DROP_1
 flags:OPEN_DOOR | TAKE_ITEM
 desc:He is after your cash!
 
-name:598:Nighthawk
+name:598:nighthawk
 base:bird
 color:u
 info:120:36:30:30:10
@@ -1679,8 +1679,8 @@ desc:Trained to hunt and kill without fear.
 
 ### Dungeon level 9 ###
 
-name:122:Yeti
-plural:Yeti
+name:122:yeti
+plural:yeti
 base:yeti
 color:w
 info:110:55:20:36:30
@@ -1690,7 +1690,7 @@ blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d4
 desc:A large white figure covered in shaggy fur.
 
-name:123:Bloodshot icky thing
+name:123:bloodshot icky thing
 base:icky thing
 color:r
 info:110:32:14:21:20
@@ -1702,7 +1702,7 @@ spell-freq:11
 spells:DRAIN_MANA
 desc:It is a strange, slimy, icky creature.
 
-name:124:Giant grey rat
+name:124:giant grey rat
 base:rodent
 color:s
 info:110:4:8:14:20
@@ -1712,8 +1712,8 @@ flags:MULTIPLY
 flags:RAND_25
 desc:It is a rodent of unusual size.
 
-name:125:Black harpy
-plural:Black harpies
+name:125:black harpy
+plural:black harpies
 base:hybrid
 color:D
 info:120:14:16:26:10
@@ -1725,7 +1725,7 @@ flags:FEMALE | EVIL | ANIMAL
 flags:RAND_25
 desc:A woman's face on the body of a vicious black bird.
 
-name:126:Orc shaman
+name:126:orc shaman
 base:orc
 color:r
 info:110:41:20:22:50
@@ -1741,7 +1741,7 @@ spell-freq:8
 spells:BLINK | CAUSE_1 | MISSILE
 desc:An orc dressed in skins who gestures wildly.
 
-name:127:Baby blue dragon
+name:127:baby blue dragon
 base:dragon
 color:b
 info:110:88:20:36:70
@@ -1757,7 +1757,7 @@ spells:BR_ELEC
 desc:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 desc: scales a pale blue.
 
-name:128:Baby white dragon
+name:128:baby white dragon
 base:dragon
 color:w
 info:110:88:20:36:70
@@ -1773,7 +1773,7 @@ spells:BR_COLD
 desc:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 desc: scales a pale white.
 
-name:129:Baby green dragon
+name:129:baby green dragon
 base:dragon
 color:g
 info:110:88:20:36:70
@@ -1789,7 +1789,7 @@ spells:BR_POIS
 desc:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 desc: scales a sickly green.
 
-name:130:Baby black dragon
+name:130:baby black dragon
 base:dragon
 color:s
 info:110:88:20:36:70
@@ -1805,7 +1805,7 @@ spells:BR_ACID
 desc:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 desc: scales a dull black.
 
-name:131:Baby red dragon
+name:131:baby red dragon
 base:dragon
 color:r
 info:110:88:20:36:70
@@ -1821,7 +1821,7 @@ spells:BR_FIRE
 desc:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 desc: scales a pale red.
 
-name:132:Giant red ant
+name:132:giant red ant
 base:ant
 color:r
 info:110:18:12:40:60
@@ -1844,7 +1844,7 @@ flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR
 desc:A nasty piece of work, Brodda picks on defenseless women and children.
 
-name:134:King cobra
+name:134:king cobra
 base:snake
 color:g
 info:110:44:8:45:10
@@ -1855,7 +1855,7 @@ flags:RAND_50
 flags:IM_POIS
 desc:It is a large snake with a hooded face.
 
-name:575:Baby gold dragon
+name:575:baby gold dragon
 base:dragon
 color:y
 info:110:88:20:36:70
@@ -1870,7 +1870,7 @@ spells:BR_SOUN
 desc:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 desc: scales a pale gold.
 
-name:563:Cave bear
+name:563:cave bear
 base:quadruped
 color:u
 info:110:36:10:52:30
@@ -1891,7 +1891,7 @@ desc: you are trespassing in its territory.
 
 ### Dungeon level 10 ###
 
-name:135:Giant spider
+name:135:giant spider
 base:spider
 color:V
 info:110:55:8:24:40
@@ -1904,7 +1904,7 @@ flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
 desc:It is a vast black spider whose bulbous body is bloated with poison.
 
-name:136:Dark elven mage
+name:136:dark elven mage
 base:humanoid
 color:r
 info:120:39:20:24:30
@@ -1943,7 +1943,7 @@ friends:50:1d3:Master yeek
 desc:He's just like his daddy!  He knows mighty spells, but fortunately he is a
 desc: yeek.
 
-name:138:Dark elven warrior
+name:138:dark elven warrior
 base:humanoid
 color:u
 info:110:60:20:24:40
@@ -1955,8 +1955,8 @@ flags:DROP_60
 flags:HURT_LIGHT
 desc:A dark elven figure in armour and ready with his sword.
 
-name:139:Clear mushroom patch
-plural:Clear mushroom patches
+name:139:clear mushroom patch
+plural:clear mushroom patches
 base:mushroom
 color:w
 info:120:1:4:1:0
@@ -1983,7 +1983,7 @@ friends:80:2d7:Wolf
 friends:100:5d4:Hill orc
 desc:He is a cunning and devious orc with a chaotic nature.
 
-name:141:Giant white tick
+name:141:giant white tick
 base:spider
 color:w
 info:100:54:12:150:20
@@ -1993,7 +1993,7 @@ flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
 desc:It is moving slowly towards you.
 
-name:142:Hairy mold
+name:142:hairy mold
 base:mold
 color:o
 info:110:68:2:22:0
@@ -2002,7 +2002,7 @@ blow:SPORE:POISON:1d3
 flags:EMPTY_MIND | STUPID
 desc:It is a strange hairy growth on the dungeon floor.
 
-name:143:Disenchanter mold
+name:143:disenchanter mold
 base:mold
 color:v
 info:110:72:2:30:10
@@ -2015,7 +2015,7 @@ spell-freq:11
 spells:DRAIN_MANA
 desc:It is a strange glowing growth on the dungeon floor.
 
-name:144:Pseudo-dragon
+name:144:pseudo-dragon
 base:dragon
 color:o
 info:110:176:20:36:70
@@ -2031,8 +2031,8 @@ spells:CONF | SCARE
 spells:BR_DARK | BR_LIGHT
 desc:A small relative of the dragon that inhabits dark caves.
 
-name:145:Tengu
-plural:Tengu
+name:145:tengu
+plural:tengu
 base:minor demon
 color:R
 info:120:80:20:38:30
@@ -2045,8 +2045,8 @@ spells:BLINK | TELE_TO
 desc:It is a fast-moving demon that blinks quickly in and out of existence; no
 desc: other demon matches its teleporting mastery.
 
-name:146:Creeping gold coins
-plural:Piles of creeping gold coins
+name:146:creeping gold coins
+plural:piles of creeping gold coins
 base:creeping coins
 color:y
 info:100:81:5:43:10
@@ -2058,8 +2058,8 @@ desc:It appears to be a pile of gold coins, until it starts crawling towards
 desc: you on tiny legs.
 mimic:gold:gold
 
-name:147:Wolf
-plural:Wolves
+name:147:wolf
+plural:wolves
 base:canine
 color:u
 info:120:21:30:45:10
@@ -2070,8 +2070,8 @@ flags:GROUP_AI
 friends:100:2d10:Same
 desc:It howls and snaps at you.
 
-name:148:Giant fruit fly
-plural:Giant fruit flies
+name:148:giant fruit fly
+plural:giant fruit flies
 base:insect
 color:G
 info:120:3:8:16:10
@@ -2079,7 +2079,7 @@ power:10:3:480:1:4
 blow:BITE:HURT:1d2
 desc:A fast-breeding, annoying pest.
 
-name:149:Panther
+name:149:panther
 base:feline
 color:u
 info:120:45:40:36:0
@@ -2090,7 +2090,7 @@ flags:BASH_DOOR
 desc:A large black cat, stalking you with intent.  It thinks you're its next
 desc: meal.
 
-name:150:Brigand
+name:150:brigand
 base:person
 color:b
 info:110:41:20:48:5
@@ -2108,7 +2108,7 @@ desc:He is eyeing your backpack.
 
 ### Dungeon level 11 ###
 
-name:151:Baby multi-hued dragon
+name:151:baby multi-hued dragon
 base:dragon
 color:v
 info:110:114:20:36:70
@@ -2125,7 +2125,7 @@ spells:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 desc:This hatchling dragon is still soft, its eyes unaccustomed to light and its
 desc: scales shimmering with hints of many different colours.
 
-name:152:Hippogriff
+name:152:hippogriff
 base:hybrid
 color:U
 info:110:100:12:21:40
@@ -2136,7 +2136,7 @@ flags:ANIMAL
 flags:BASH_DOOR
 desc:A strange hybrid of eagle and horse.  It looks weird.
 
-name:153:Zombified orc
+name:153:zombified orc
 base:zombie
 color:s
 info:110:50:20:36:90
@@ -2148,7 +2148,7 @@ flags:ORC | EMPTY_MIND
 flags:NO_FEAR
 desc:It is a shambling orcish corpse leaving behind a trail of flesh.
 
-name:154:Gnome mage
+name:154:gnome mage
 base:humanoid
 color:r
 info:110:32:18:30:20
@@ -2168,7 +2168,7 @@ desc:A mage of short stature.
 
 ### Dungeon level 12 ###
 
-name:155:Black mamba
+name:155:black mamba
 base:snake
 color:D
 info:120:45:10:48:10
@@ -2178,8 +2178,8 @@ flags:RAND_50
 flags:IM_POIS
 desc:It has glistening black skin, a sleek body and highly venomous fangs.
 
-name:156:White wolf
-plural:White wolves
+name:156:white wolf
+plural:white wolves
 base:canine
 color:w
 info:120:28:30:45:15
@@ -2192,8 +2192,8 @@ friends:100:2d7:Same
 desc:A large and muscled wolf from the northern wastes.  Its breath is cold and
 desc: icy and its fur coated in frost.
 
-name:157:Grape jelly
-plural:Grape jellies
+name:157:grape jelly
+plural:grape jellies
 base:jelly
 color:P
 info:110:234:2:1:99
@@ -2206,7 +2206,7 @@ spell-freq:11
 spells:DRAIN_MANA
 desc:Yum!  It looks quite tasty.  It is a pulsing mound of glowing flesh.
 
-name:158:Nether worm mass
+name:158:nether worm mass
 base:worm
 color:D
 info:100:23:10:22:10
@@ -2237,7 +2237,7 @@ friends:100:1d1:Bullroarer the Hobbit
 friends:100:1d1:Grishnákh, the Hill Orc
 desc:A leader of a band of raiding orcs, he picks on hobbits.
 
-name:160:Master yeek
+name:160:master yeek
 base:yeek
 color:U
 info:110:60:18:28:10
@@ -2254,7 +2254,7 @@ drop:magic book:[Magic for Beginners]:5:1:1
 drop:magic book:[Conjurings and Tricks]:5:1:1
 desc:A small humanoid that radiates some power.
 
-name:161:Priest
+name:161:priest
 base:person
 color:g
 info:110:54:20:26:40
@@ -2276,7 +2276,7 @@ friends:50:1d2:Easterling warrior
 friends:50:1d2:Same
 desc:A robed man, dedicated to his god.
 
-name:162:Dark elven priest
+name:162:dark elven priest
 base:humanoid
 color:g
 info:120:39:20:45:40
@@ -2294,7 +2294,7 @@ drop:prayer book:[Beginners Handbook]:8:1:1
 desc:A dark elven figure, dressed all in black, chanting curses and waiting to
 desc: deliver your soul to hell.
 
-name:163:Air spirit
+name:163:air spirit
 base:elemental
 color:B
 info:130:36:12:48:20
@@ -2305,7 +2305,7 @@ flags:RAND_25 | RAND_50 | BASH_DOOR
 flags:IM_ELEC
 desc:A whirlwind of sentient air.
 
-name:164:Skeleton human
+name:164:skeleton human
 base:skeleton
 color:w
 info:110:45:20:45:70
@@ -2315,7 +2315,7 @@ flags:EMPTY_MIND
 flags:OPEN_DOOR | BASH_DOOR
 desc:It is an animated human skeleton.
 
-name:165:Zombified human
+name:165:zombified human
 base:zombie
 color:s
 info:110:54:20:36:100
@@ -2326,7 +2326,7 @@ flags:EMPTY_MIND
 flags:NO_FEAR
 desc:It is a shambling human corpse dropping chunks of flesh behind it.
 
-name:166:Tiger
+name:166:tiger
 base:feline
 color:o
 info:120:66:40:48:0
@@ -2338,7 +2338,7 @@ flags:BASH_DOOR
 desc:One of the largest of its species, a sleek orange and black shape creeps
 desc: towards you, ready to pounce.
 
-name:167:Moaning spirit
+name:167:moaning spirit
 base:ghost
 color:u
 info:120:23:14:24:10
@@ -2368,7 +2368,7 @@ friends:50:1d2:Illusionist
 friends:50:1d2:Same
 desc:A warrior of considerable skill.
 
-name:169:Stegocentipede
+name:169:stegocentipede
 base:centipede
 color:u
 info:120:59:12:36:30
@@ -2379,8 +2379,8 @@ blow:STING:HURT:2d4
 flags:BASH_DOOR
 desc:It is a vast armoured centipede with massive mandibles and a spiked tail.
 
-name:170:Spotted jelly
-plural:Spotted jellies
+name:170:spotted jelly
+plural:spotted jellies
 base:jelly
 color:o
 info:120:59:12:27:0
@@ -2395,7 +2395,7 @@ desc:A strange jelly thing, covered in discoloured blotches.
 
 ### Dungeon level 13 ###
 
-name:171:Drider
+name:171:drider
 base:spider
 color:b
 info:110:70:8:36:80
@@ -2410,7 +2410,7 @@ spell-freq:8
 spells:CAUSE_1 | CONF | DARKNESS
 desc:A dark elven torso merged with the bloated form of a giant spider.
 
-name:172:Killer brown beetle
+name:172:killer brown beetle
 base:killer beetle
 color:u
 info:110:59:10:72:30
@@ -2438,7 +2438,7 @@ friends:100:2d4:Master yeek
 friends:100:1d1:Orfax, Son of Boldor
 desc:A great yeek, powerful in magic and sorcery, but a yeek all the same.
 
-name:174:Ogre
+name:174:ogre
 base:ogre
 color:U
 info:110:65:20:49:50
@@ -2449,8 +2449,8 @@ friends-base:100:2d4:orc
 friends:100:2d4:Same
 desc:A hideous, smallish giant that is often found near or with orcs.
 
-name:175:Creeping mithril coins
-plural:Piles of creeping mithril coins
+name:175:creeping mithril coins
+plural:piles of creeping mithril coins
 base:creeping coins
 color:B
 info:110:90:5:60:10
@@ -2462,7 +2462,7 @@ desc:It appears to be a pile of sentient mithril coins that doesn't like being
 desc: picked up.
 mimic:gold:mithril
 
-name:176:Illusionist
+name:176:illusionist
 base:person
 color:I
 info:120:54:20:15:20
@@ -2483,7 +2483,7 @@ friends:50:1d2:Easterling warrior
 friends:50:1d2:Same
 desc:A deceptive spell caster.
 
-name:177:Druid
+name:177:druid
 base:person
 color:G
 info:110:78:20:15:20
@@ -2502,7 +2502,7 @@ drop:prayer book:[Beginners Handbook]:8:1:1
 drop:prayer book:[Words of Wisdom]:8:1:1
 desc:A priest devoted to Nature.
 
-name:178:Black orc
+name:178:black orc
 base:orc
 color:D
 info:110:66:20:54:60
@@ -2518,8 +2518,8 @@ friends:70:2d4:Snaga
 friends:100:3d4:Same
 desc:He is a large orc with powerful arms and deep black skin.
 
-name:179:Ochre jelly
-plural:Ochre jellies
+name:179:ochre jelly
+plural:ochre jellies
 base:jelly
 color:U
 info:120:59:12:21:1
@@ -2535,7 +2535,7 @@ desc: rests on.
 
 ### Dungeon level 14 ###
 
-name:180:Giant flea
+name:180:giant flea
 base:insect
 color:s
 info:120:3:8:30:10
@@ -2561,7 +2561,7 @@ friends:100:4d4:Black orc
 desc:A strong orc guarding the pass of Cirith Ungol.  He is mortally afraid of
 desc: spiders.
 
-name:183:Blue icky thing
+name:183:blue icky thing
 base:icky thing
 color:b
 info:100:35:15:30:10
@@ -2579,7 +2579,7 @@ spells:BLIND | CONF | SCARE
 desc:It is a strange, slimy, icky creature, with rudimentary intelligence, but
 desc: evil cunning.  It hungers for food, and you look tasty.
 
-name:185:Flesh golem
+name:185:flesh golem
 base:golem
 color:R
 info:110:54:12:36:10
@@ -2589,7 +2589,7 @@ blow:HIT:HURT:1d6
 flags:BASH_DOOR
 desc:A shambling humanoid monster with long scars.
 
-name:186:Warg
+name:186:warg
 base:canine
 color:s
 info:120:36:20:30:10
@@ -2600,8 +2600,8 @@ flags:RAND_25 | BASH_DOOR
 friends:100:2d7:Same
 desc:It is a large wolf with eyes full of cunning.
 
-name:187:Giant black louse
-plural:Giant black lice
+name:187:giant black louse
+plural:giant black lice
 base:louse
 color:D
 info:120:2:6:8:10
@@ -2609,7 +2609,7 @@ power:14:1:360:0:3
 blow:BITE:HURT:1d2
 desc:It makes you itch just to look at it.
 
-name:188:Lurker
+name:188:lurker
 base:lurker
 color:w
 info:110:176:30:30:10
@@ -2621,7 +2621,7 @@ desc: victims by enveloping them within its perfectly disguised form.
 
 ### Dungeon level 15 ###
 
-name:189:Wererat
+name:189:wererat
 base:rodent
 color:D
 info:110:90:10:15:20
@@ -2640,7 +2640,7 @@ spells:BO_COLD
 desc:A large rat with glowing red eyes.  The wererat is a disgusting creature,
 desc: relishing in filth and disease.
 
-name:190:Black ogre
+name:190:black ogre
 base:ogre
 color:D
 info:110:100:20:49:50
@@ -2653,8 +2653,8 @@ friends:60:2d4:Ogre
 friends:100:3d4:Same
 desc:A massive orc-like figure with black skin and powerful arms.
 
-name:191:Magic mushroom patch
-plural:Magic mushroom patches
+name:191:magic mushroom patch
+plural:magic mushroom patches
 base:mushroom
 color:B
 info:140:1:40:12:0
@@ -2670,7 +2670,7 @@ spell-freq:2
 spells:BLINK | DARKNESS | SCARE | SLOW
 desc:Yum!  It looks quite tasty.  It seems to glow with an unusual light.
 
-name:192:Guardian naga
+name:192:guardian naga
 base:naga
 color:B
 info:110:144:20:78:120
@@ -2682,7 +2682,7 @@ flags:DROP_40 | DROP_1
 flags:RAND_25 | OPEN_DOOR
 desc:A giant snake-like figure with a woman's torso.
 
-name:193:Light hound
+name:193:light hound
 base:zephyr hound
 color:o
 info:110:21:30:36:0
@@ -2698,7 +2698,7 @@ spells:BR_LIGHT
 friends:100:2d7:Same
 desc:A brilliant canine form whose light hurts your eyes, even at this distance.
 
-name:194:Dark hound
+name:194:dark hound
 base:zephyr hound
 color:D
 info:110:21:30:36:0
@@ -2714,7 +2714,7 @@ friends:100:2d7:Same
 desc:A hole in the air in the shape of a huge hound.  No light falls upon its
 desc: form.
 
-name:195:Half-orc
+name:195:half-orc
 base:orc
 color:s
 info:110:88:20:60:50
@@ -2728,7 +2728,7 @@ desc:He is a hideous deformed cross-breed with man and orc, combining man's
 desc: strength and cunning with orcish evil.  The traitorous wizard Saruman is
 desc: generally believed to be responsible for this abomination.
 
-name:196:Giant tarantula
+name:196:giant tarantula
 base:spider
 color:o
 info:120:80:8:48:20
@@ -2740,7 +2740,7 @@ flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
 desc:A giant spider with hairy black and red legs.
 
-name:197:Giant clear centipede
+name:197:giant clear centipede
 base:centipede
 color:w
 info:110:23:12:36:30
@@ -2766,7 +2766,7 @@ friends:100:2d7:Same
 desc:A strong and powerful spider from Mirkwood forest.  Cunning and evil, it
 desc: seeks to taste your juicy insides.
 
-name:200:Griffon
+name:200:griffon
 base:hybrid
 color:u
 info:110:135:12:22:40
@@ -2777,8 +2777,8 @@ flags:ANIMAL
 flags:BASH_DOOR
 desc:It is half lion, half eagle.  It flies menacingly towards you.
 
-name:201:Homunculus
-plural:Homunculi
+name:201:homunculus
+plural:homunculi
 base:minor demon
 color:y
 info:110:36:20:48:60
@@ -2792,7 +2792,7 @@ desc:It is a small demonic spirit full of malevolence.
 #name:202:Gnome mage
 #Consolidated (see #154)
 
-name:203:Clear hound
+name:203:clear hound
 base:zephyr hound
 color:w
 info:110:21:30:36:0
@@ -2806,7 +2806,7 @@ flags:ATTR_CLEAR
 friends:100:2d7:Same
 desc:A completely translucent hound.
 
-name:204:Clay golem
+name:204:clay golem
 base:golem
 color:U
 info:110:63:12:36:10
@@ -2818,7 +2818,7 @@ flags:BASH_DOOR
 flags:HURT_ROCK | IM_COLD | IM_FIRE | IM_POIS
 desc:It is a massive animated statue made out of hardened clay.
 
-name:550:Giant tan bat
+name:550:giant tan bat
 base:bat
 color:U
 info:130:14:12:30:10
@@ -2833,7 +2833,7 @@ desc: noise.
 
 ### Dungeon level 16 ###
 
-name:205:Umber hulk
+name:205:umber hulk
 base:xorn
 color:U
 info:110:110:20:75:30
@@ -2847,7 +2847,7 @@ flags:BASH_DOOR | KILL_WALL
 desc:This bizarre creature has glaring eyes and large mandibles capable of
 desc: slicing through rock.
 
-name:207:Gelatinous cube
+name:207:gelatinous cube
 base:jelly
 color:G
 info:110:316:12:21:1
@@ -2866,7 +2866,7 @@ desc: as it lines all four walls of the corridors it patrols.  Through its
 desc: transparent jelly structure you can see treasures it has engulfed, and a
 desc: few corpses as well.
 
-name:210:Hummerhorn
+name:210:hummerhorn
 base:insect
 color:y
 info:120:3:8:16:10
@@ -2889,7 +2889,7 @@ flags:OPEN_DOOR | TAKE_ITEM
 friends:60:1d3:Easterling warrior
 desc:A short and swarthy Easterling.
 
-name:212:Quasit
+name:212:quasit
 base:minor demon
 color:o
 info:110:27:20:36:20
@@ -2906,7 +2906,7 @@ spells:BLIND | BLINK | CONF | SCARE | TELE_LEVEL | TELE_TO
 spells:TPORT
 desc:The chaotic evil master's favourite pet.
 
-name:226:Uruk
+name:226:uruk
 base:orc
 color:B
 info:110:70:20:75:30
@@ -2921,7 +2921,7 @@ friends:80:2d5:Warg
 friends:100:3d3:Same
 desc:A cunning orc of power, as tall as a man, and stronger.  It fears little.
 
-name:564:Grizzly bear
+name:564:grizzly bear
 base:quadruped
 color:U
 info:110:78:10:52:30
@@ -2933,8 +2933,8 @@ blow:CRUSH:HURT:1d10
 flags:ANIMAL
 desc:A huge, beastly bear, more savage than most of its kind.
 
-name:561:Craban
-plural:Crebain
+name:561:craban
+plural:crebain
 base:bird
 color:D
 info:120:9:40:14:0
@@ -2951,7 +2951,7 @@ desc: now they seek to alert other evil creatures to your presence.
 
 ### Dungeon level 17 ###
 
-name:213:Imp
+name:213:imp
 base:minor demon
 color:g
 info:110:27:20:36:20
@@ -2967,7 +2967,7 @@ spells:BLIND | BLINK | CONF | SCARE | TELE_LEVEL | TELE_TO
 spells:TPORT
 desc:The lawful evil master's favourite pet.
 
-name:214:Forest troll
+name:214:forest troll
 base:troll
 color:g
 info:110:110:20:75:80
@@ -2997,7 +2997,7 @@ flags:FORCE_SLEEP
 spell-freq:6
 spells:BLIND | CAUSE_2 | CONF | HEAL | MIND_BLAST
 desc:The friend and companion of the dwarven king Thrór, he went mad with grief
-desc: after Thrór's death at the hands of Azog the Orc.  With torn beard and 
+desc: after Thrór's death at the hands of Azog the Orc.  With torn beard and
 desc: ragged clothes, he seems to have fixed on you as a convenient target to
 desc: vent  his anger.
 
@@ -3014,7 +3014,7 @@ spell-freq:11
 spells:SCARE
 desc:A strange reptilian hybrid with two heads, guarding its hoard.
 
-name:217:Water spirit
+name:217:water spirit
 base:elemental
 color:b
 info:120:41:12:42:20
@@ -3026,7 +3026,7 @@ flags:RAND_25 | BASH_DOOR
 flags:IM_ACID | IM_WATER
 desc:A whirlpool of sentient liquid.
 
-name:218:Giant red scorpion
+name:218:giant red scorpion
 base:spider
 color:r
 info:110:50:12:52:20
@@ -3037,7 +3037,7 @@ flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
 desc:It is fast and poisonous.
 
-name:219:Earth spirit
+name:219:earth spirit
 base:elemental
 color:u
 info:120:59:10:60:20
@@ -3051,7 +3051,7 @@ desc:A whirling form of sentient rock.
 
 ### Dungeon level 18 ###
 
-name:206:Orc captain
+name:206:orc captain
 base:orc
 color:o
 info:110:110:20:88:30
@@ -3069,7 +3069,7 @@ friends-base:50:1d5:orc
 friends-base:50:1d5:orc
 desc:An armoured orc with an air of authority.
 
-name:220:Fire spirit
+name:220:fire spirit
 base:elemental
 color:r
 info:120:50:16:36:20
@@ -3081,7 +3081,7 @@ flags:RAND_25 | BASH_DOOR
 flags:IM_FIRE | HURT_COLD
 desc:A whirlwind of sentient flame.
 
-name:221:Fire hound
+name:221:fire hound
 base:zephyr hound
 color:r
 info:110:35:30:36:0
@@ -3099,7 +3099,7 @@ friends:100:2d7:Same
 desc:Flames lick at its feet and its tongue is a blade of fire.  You can feel a
 desc: furnace heat radiating from the creature.
 
-name:222:Cold hound
+name:222:cold hound
 base:zephyr hound
 color:w
 info:110:35:30:36:0
@@ -3116,7 +3116,7 @@ friends:100:2d7:Same
 desc:A hound as tall as a man, this creature appears to be composed of angular
 desc: planes of ice.  Cold radiates from it and freezes your breath in the air.
 
-name:223:Energy hound
+name:223:energy hound
 base:zephyr hound
 color:b
 info:110:35:30:36:0
@@ -3134,7 +3134,7 @@ friends:100:2d7:Same
 desc:Saint Elmo's Fire forms a ghostly halo around this hound, and sparks sting
 desc: your fingers as energy builds up in the air around you.
 
-name:224:Potion mimic
+name:224:potion mimic
 base:mimic
 glyph:!
 color:w
@@ -3155,7 +3155,7 @@ mimic:potion:Experience
 mimic:potion:Augmentation
 mimic:potion:Speed
 
-name:225:Blink dog
+name:225:blink dog
 base:canine
 color:B
 info:120:36:20:24:10
@@ -3168,7 +3168,7 @@ friends:100:2d7:Same
 desc:A strange magical member of the canine race, its form seems to shimmer and
 desc: fade in front of your very eyes.
 
-name:229:Shambling mound
+name:229:shambling mound
 base:mushroom
 color:g
 info:110:70:20:19:40
@@ -3184,7 +3184,7 @@ friends:60:1d1:Giant fruit fly
 desc:A pile of rotting vegetation that slides towards you with a disgusting
 desc: stench, waking all it nears.
 
-name:588:Evil eye
+name:588:evil eye
 base:eye
 color:g
 info:110:68:2:7:10
@@ -3234,7 +3234,7 @@ friends:100:4d4:Black orc
 desc:He is an orc of power and great cunning, leader of the garrison at Minas
 desc: Morgul.
 
-name:232:Stone golem
+name:232:stone golem
 base:golem
 color:W
 info:100:126:12:90:10
@@ -3246,7 +3246,7 @@ flags:BASH_DOOR
 flags:HURT_ROCK | IM_COLD | IM_FIRE | IM_POIS
 desc:It is a massive animated statue.
 
-name:233:Red mold
+name:233:red mold
 base:mold
 color:r
 info:110:77:2:19:70
@@ -3258,7 +3258,7 @@ flags-off:HURT_FIRE
 desc:It is a strange red growth on the dungeon floor; it seems to burn with
 desc: flame.
 
-name:592:Neekerbreeker
+name:592:neekerbreeker
 base:insect
 color:D
 info:120:5:8:21:10
@@ -3295,7 +3295,7 @@ friends:100:4d4:Uruk
 desc:A large and powerful orc, he looks just like his father.  He is tall and
 desc: fast, but fortunately blessed with orcish brains.
 
-name:236:Phase spider
+name:236:phase spider
 base:spider
 color:B
 info:120:27:15:30:80
@@ -3325,7 +3325,7 @@ spell-freq:9
 spells:SCARE
 desc:A strange reptilian hybrid with three heads, guarding its hoard.
 
-name:238:Earth hound
+name:238:earth hound
 base:zephyr hound
 color:u
 info:110:68:30:36:0
@@ -3342,7 +3342,7 @@ friends:100:2d7:Same
 desc:A beautiful crystalline shape does not disguise the danger this hound
 desc: clearly presents.  Your flesh tingles as it approaches.
 
-name:239:Air hound
+name:239:air hound
 base:zephyr hound
 color:g
 info:110:68:30:36:0
@@ -3360,7 +3360,7 @@ friends:100:2d7:Same
 desc:Swirling vapours surround this beast as it floats towards you, seemingly
 desc: walking on air.  Noxious gases sting your throat.
 
-name:240:Sabre-tooth tiger
+name:240:sabre-tooth tiger
 base:feline
 color:y
 info:120:150:40:60:0
@@ -3373,7 +3373,7 @@ flags:BASH_DOOR
 desc:A fierce and dangerous cat, its huge tusks and sharp claws would lacerate
 desc: even the strongest armour.
 
-name:241:Water hound
+name:241:water hound
 base:zephyr hound
 color:s
 info:110:68:30:36:0
@@ -3391,7 +3391,7 @@ friends:100:2d7:Same
 desc:Liquid footprints follow this hound as it pads around the dungeon.  An
 desc: acrid smell of acid rises from the dog's pelt.
 
-name:242:Chimaera
+name:242:chimaera
 base:hybrid
 color:r
 info:110:160:12:22:30
@@ -3407,7 +3407,7 @@ spells:BR_FIRE
 desc:It is a strange concoction of goat, lion and dragon, with the heads of all
 desc: three beasts.
 
-name:243:Quylthulg
+name:243:quylthulg
 base:quylthulg
 color:y
 info:110:27:10:1:2
@@ -3417,8 +3417,8 @@ spells:BLINK
 spells:S_MONSTER
 desc:It is a strange pulsing mound of flesh.
 
-name:244:Sasquatch
-plural:Sasquatches
+name:244:sasquatch
+plural:sasquatches
 base:yeti
 color:g
 info:120:200:15:60:20
@@ -3428,8 +3428,8 @@ blow:CLAW:HURT:1d10
 blow:BITE:HURT:2d8
 desc:A tall shaggy, furry humanoid, it could call the yeti brother.
 
-name:245:Werewolf
-plural:Werewolves
+name:245:werewolf
+plural:werewolves
 base:canine
 color:D
 info:110:230:15:36:70
@@ -3441,7 +3441,7 @@ flags:EVIL
 flags:RAND_25 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 desc:It is a huge wolf with eyes that glow with manly intelligence.
 
-name:246:Dark elven lord
+name:246:dark elven lord
 base:humanoid
 color:s
 info:120:144:20:48:30
@@ -3463,7 +3463,7 @@ friends:50:1d1:Dark elven mage
 friends:50:1d1:Dark elven priest
 desc:A dark elven figure in armour and radiating evil power.
 
-name:580:Ranger
+name:580:ranger
 base:person
 color:W
 info:110:90:20:60:20
@@ -3487,7 +3487,7 @@ friends:50:1d1:Paladin
 desc:A warrior who is at one with nature.  A master of both bow and sword, with
 desc: minor spellcasting skills, and animals come to do his bidding.
 
-name:581:Paladin
+name:581:paladin
 base:person
 color:w
 info:110:90:20:48:40
@@ -3521,7 +3521,7 @@ blow:HIT:HURT:3d7
 blow:HIT:HURT:3d7
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
-flags:UNIQUE 
+flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 friends:50:3d4:Half-orc
 friends:80:2d7:Warg
@@ -3529,7 +3529,7 @@ friends:50:1d3:Orc captain
 friends:100:4d4:Uruk
 desc:A large and powerful orc, captain of one of Saruman's orcish regiments.
 
-name:250:Blue dragon bat
+name:250:blue dragon bat
 base:bat
 color:b
 info:130:10:12:39:10
@@ -3542,7 +3542,7 @@ spell-freq:4
 spells:BR_ELEC
 desc:It is a glowing blue bat with a sharp tail.
 
-name:251:Scroll mimic
+name:251:scroll mimic
 base:mimic
 glyph:?
 color:w
@@ -3565,8 +3565,8 @@ mimic:scroll:Acquirement
 mimic:scroll:*Acquirement*
 mimic:scroll:*Destruction*
 
-name:252:Fire vortex
-plural:Fire vortices
+name:252:fire vortex
+plural:fire vortices
 base:vortex
 color:r
 info:110:45:100:36:0
@@ -3578,8 +3578,8 @@ spell-freq:6
 spells:BR_FIRE
 desc:A whirling maelstrom of fire.
 
-name:253:Water vortex
-plural:Water vortices
+name:253:water vortex
+plural:water vortices
 base:vortex
 color:s
 info:110:45:100:36:0
@@ -3590,8 +3590,8 @@ spell-freq:6
 spells:BR_ACID
 desc:A caustic spinning whirlpool of water.
 
-name:254:Cold vortex
-plural:Cold vortices
+name:254:cold vortex
+plural:cold vortices
 base:vortex
 color:w
 info:110:45:100:36:0
@@ -3602,8 +3602,8 @@ spell-freq:6
 spells:BR_COLD
 desc:A twisting whirlpool of frost.
 
-name:255:Energy vortex
-plural:Energy vortices
+name:255:energy vortex
+plural:energy vortices
 base:vortex
 color:b
 info:110:45:100:36:0
@@ -3615,7 +3615,7 @@ spell-freq:6
 spells:BR_ELEC
 desc:A shimmering tornado of air, sparks crackle along its length.
 
-name:256:Mummified orc
+name:256:mummified orc
 base:zombie
 color:w
 info:110:68:20:33:75
@@ -3648,7 +3648,7 @@ friends:80:1d3:Orc captain
 friends:100:1d1:Lugdush, the Uruk
 desc:A strong and cunning orc warrior, the commander of Saruman's orcish horde.
 
-name:257:Killer stag beetle
+name:257:killer stag beetle
 base:killer beetle
 color:g
 info:110:68:12:76:30
@@ -3658,7 +3658,7 @@ blow:CLAW:HURT:3d6
 flags:RAND_25
 desc:It is a giant beetle with vicious claws.
 
-name:258:Iron golem
+name:258:iron golem
 base:golem
 color:s
 info:110:520:12:120:20
@@ -3672,7 +3672,7 @@ spell-freq:7
 spells:SLOW
 desc:It is a massive metal statue that moves steadily towards you.
 
-name:259:Giant yellow scorpion
+name:259:giant yellow scorpion
 base:spider
 color:y
 info:110:54:12:45:20
@@ -3683,7 +3683,7 @@ flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
 desc:It is a giant scorpion with a sharp stinger.
 
-name:555:Wyvern
+name:555:wyvern
 base:dragon
 color:g
 info:120:203:20:79:60
@@ -3699,7 +3699,7 @@ desc:A fast-moving and deadly draconian animal.  Beware its poisonous sting!
 
 ### Dungeon level 23 ###
 
-name:260:Black ooze
+name:260:black ooze
 base:jelly
 color:D
 info:90:27:10:7:1
@@ -3744,10 +3744,10 @@ friends:80:2d7:Warg
 friends:100:4d4:Uruk
 friends:50:1d3:Orc captain
 friends:100:1d1:Bolg, son of Azog
-desc:He is also known as the King of Khazad-dûm.  His ego is renowned to be 
+desc:He is also known as the King of Khazad-dûm.  His ego is renowned to be
 desc: bigger than his head.
 
-name:263:Master rogue
+name:263:master rogue
 base:person
 color:b
 info:120:75:20:45:5
@@ -3764,7 +3764,7 @@ friends:50:1d1:Mage
 friends:50:1d1:Paladin
 desc:A thief of great power and shifty speed.
 
-name:264:Red dragon bat
+name:264:red dragon bat
 base:bat
 color:r
 info:130:14:12:42:10
@@ -3778,7 +3778,7 @@ spell-freq:4
 spells:BR_FIRE
 desc:It is a sharp-tailed bat, wreathed in fire.
 
-name:265:Killer white beetle
+name:265:killer white beetle
 base:killer beetle
 color:w
 info:110:81:14:66:30
@@ -3787,7 +3787,7 @@ blow:BITE:HURT:4d5
 flags:RAND_25
 desc:It is looking for prey.
 
-name:551:Giant silver ant
+name:551:giant silver ant
 base:ant
 color:W
 info:110:41:10:100:40
@@ -3798,7 +3798,7 @@ desc:A giant silver ant with a caustic bite and hard scales.
 
 ### Dungeon level 24 ###
 
-name:267:Forest wight
+name:267:forest wight
 base:wraith
 color:g
 info:110:54:20:36:30
@@ -3866,7 +3866,7 @@ spell-freq:7
 spells:SCARE
 desc:A strange reptilian hybrid with four heads, guarding its hoard.
 
-name:271:Mummified human
+name:271:mummified human
 base:zombie
 color:w
 info:110:85:20:51:70
@@ -3878,7 +3878,7 @@ flags:DROP_60 | ONLY_ITEM
 flags:NO_FEAR
 desc:It is a human form encased in mouldy wrappings.
 
-name:272:Vampire bat
+name:272:vampire bat
 base:bat
 color:D
 info:120:50:12:60:10
@@ -3928,7 +3928,7 @@ spells:CONF | SLOW
 friends:100:1d1:Sangahyando of Umbar
 desc:A Black Númenorean who hates the men of the west.
 
-name:275:Banshee
+name:275:banshee
 base:ghost
 color:b
 info:120:27:20:28:10
@@ -3942,8 +3942,8 @@ spell-freq:15
 spells:DRAIN_MANA | TPORT
 desc:It is a ghostly woman's form that wails mournfully.
 
-name:593:Giant firefly
-plural:Giant fireflies
+name:593:giant firefly
+plural:giant fireflies
 base:insect
 color:r
 info:120:5:8:21:10
@@ -3953,8 +3953,7 @@ flags:HAS_LIGHT
 desc:Clouds of these monsters light up the dungeon - so brightly that you can
 desc: barely see through them.
 
-
-name:565:Werebear
+name:565:werebear
 base:quadruped
 color:D
 info:110:325:20:75:40
@@ -3973,7 +3972,7 @@ desc: bear makes for a dangerous enemy.
 
 ### Dungeon level 25 ###
 
-name:184:Hill giant
+name:184:hill giant
 base:giant
 color:U
 info:110:240:20:54:50
@@ -3987,8 +3986,8 @@ friends:60:1d7:Wolf
 friends:80:1d3:Same
 desc:A ten foot tall humanoid with powerful muscles.
 
-name:276:Pukelman
-plural:Pukelmen
+name:276:pukelman
+plural:pukelmen
 base:golem
 color:m
 info:110:520:12:120:20
@@ -4005,7 +4004,7 @@ spells:BO_ACID
 desc:A stumpy figure carved from stone, with glittering eyes, this sentinel
 desc: strides towards you with deadly intent.
 
-name:277:Dark elven druid
+name:277:dark elven druid
 base:humanoid
 color:G
 info:120:210:15:112:20
@@ -4024,7 +4023,7 @@ drop:prayer book:[Words of Wisdom]:8:1:1
 drop:prayer book:[Chants and Blessings]:8:1:1
 desc:A powerful dark elf, with mighty nature-controlling enchantments.
 
-name:278:Stone troll
+name:278:stone troll
 base:troll
 color:W
 info:110:127:20:60:70
@@ -4039,7 +4038,7 @@ friends:50:1d5:Earth hound
 friends:100:3d3:Same
 desc:He is a giant troll with scabrous black skin.
 
-name:280:Wereworm
+name:280:wereworm
 base:worm
 color:p
 info:110:600:15:105:40
@@ -4053,7 +4052,7 @@ flags:IM_ACID
 desc:A huge wormlike shape dripping acid, twisted by evil sorcery into a foul
 desc: monster that breeds on death.
 
-name:281:Carrion crawler
+name:281:carrion crawler
 base:centipede
 color:o
 info:110:130:15:60:20
@@ -4066,7 +4065,7 @@ friends:100:2d4:Same
 desc:A hideous centipede covered in slime and with glowing tentacles around its
 desc: head.
 
-name:282:Killer red beetle
+name:282:killer red beetle
 base:killer beetle
 color:r
 info:110:90:14:60:30
@@ -4076,7 +4075,7 @@ blow:BITE:HURT:4d4
 flags:RAND_25
 desc:It is a giant beetle with poisonous mandibles.
 
-name:552:Giant brown tick
+name:552:giant brown tick
 base:spider
 color:u
 info:100:81:12:200:20
@@ -4089,7 +4088,7 @@ desc:It is moving slowly towards you.
 
 ### Dungeon level 26 ###
 
-name:279:Troll priest
+name:279:troll priest
 base:troll
 color:G
 info:110:165:20:75:60
@@ -4107,7 +4106,7 @@ drop:prayer book:[Beginners Handbook]:5:1:1
 drop:prayer book:[Words of Wisdom]:5:1:1
 desc:A troll who is so bright he knows how to read.
 
-name:283:Giant grey ant
+name:283:giant grey ant
 base:ant
 color:s
 info:110:86:10:200:10
@@ -4132,7 +4131,7 @@ friends:60:2d3:Easterling champion
 friends:100:1d1:Ulfast, Son of Ulfang
 desc:A short and swarthy Easterling.
 
-name:285:Displacer beast
+name:285:displacer beast
 base:feline
 color:D
 info:110:138:35:150:10
@@ -4145,7 +4144,7 @@ flags:INVISIBLE
 flags:BASH_DOOR
 desc:It is a huge black panther, clubbed tentacles sprouting from its shoulders.
 
-name:286:Giant fire tick
+name:286:giant fire tick
 base:spider
 color:R
 info:110:72:14:120:20
@@ -4156,7 +4155,7 @@ flags:RAND_25
 flags:IM_FIRE
 desc:It is smoking and burning with great heat.
 
-name:287:Cave ogre
+name:287:cave ogre
 base:ogre
 color:u
 info:110:150:20:49:40
@@ -4169,7 +4168,7 @@ friends:50:2d4:Black ogre
 friends:100:2d4:Same
 desc:A giant orc-like figure with an awesomely muscled frame.
 
-name:288:White wraith
+name:288:white wraith
 base:wraith
 color:w
 info:110:68:20:48:10
@@ -4184,8 +4183,8 @@ spell-freq:8
 spells:CAUSE_2 | DARKNESS | SCARE
 desc:It is a tangible but ghostly form made of white fog.
 
-name:289:Lesser Maia
-plural:Lesser Maiar
+name:289:lesser Maia
+plural:lesser Maiar
 base:ainu
 color:o
 color:o
@@ -4202,9 +4201,9 @@ spells:BLIND | CONF | SCARE
 desc:One of the first children of Eru, human-like in form but painfully
 desc: beautiful to look upon. You can think of no reason that a servant of Eru
 desc: might face you in combat; yet this one stands before you, and its eyes
-desc: are ablaze as it prepares its next volley of spells. 
+desc: are ablaze as it prepares its next volley of spells.
 
-name:553:Disenchanter bat
+name:553:disenchanter bat
 base:bat
 color:v
 info:130:27:12:42:10
@@ -4215,7 +4214,7 @@ flags:IM_DISEN
 flags:ATTR_MULTI | FORCE_SLEEP
 desc:A giant bat which feeds on raw magical energy.
 
-name:607:Wolf chieftain
+name:607:wolf chieftain
 base:canine
 color:D
 info:120:422:20:24:5
@@ -4236,7 +4235,7 @@ friends:60:1d4:Werewolf
 desc:A great wolf-chieftain whose pack is in the service of the Dark Lord, and
 desc: whose howls strike fear into even the boldest heart.
 
-name:599:Ghoul
+name:599:ghoul
 base:zombie
 color:U
 info:110:83:30:36:20
@@ -4277,7 +4276,7 @@ desc:The last of his race, Mîm is a Petty-Dwarf.  Petty-Dwarves are strange
 desc: creatures, powerful in sorcery and originating in the East.  They have
 desc: been hunted nearly to extinction by the High Elves.
 
-name:291:Killer fire beetle
+name:291:killer fire beetle
 base:killer beetle
 color:R
 info:110:99:14:54:30
@@ -4288,8 +4287,8 @@ flags:HAS_LIGHT
 flags:IM_FIRE
 desc:It is a giant beetle wreathed in flames.
 
-name:292:Creeping adamantite coins
-plural:Piles of creeping adamantite coins
+name:292:creeping adamantite coins
+plural:piles of creeping adamantite coins
 base:creeping coins
 color:G
 info:120:260:5:60:10
@@ -4303,7 +4302,7 @@ desc:It appears to be a pile of coins made of precious adamant, slithering
 desc: toward you on lots of tiny legs.
 mimic:gold:adamantite
 
-name:293:Algroth
+name:293:algroth
 base:troll
 color:o
 info:110:137:20:90:50
@@ -4311,14 +4310,14 @@ power:27:1:141966:20:150
 blow:CLAW:POISON:3d3
 blow:CLAW:POISON:3d3
 blow:BITE:HURT:1d6
-flags:REGENERATE 
+flags:REGENERATE
 flags:DROP_20
 flags:IM_POIS
 friends:30:1d5:Forest Troll
 friends:100:3d3:Same
 desc:A powerful troll form.  Venom drips from its needlelike claws.
 
-name:294:Vibration hound
+name:294:vibration hound
 base:zephyr hound
 color:y
 info:110:138:30:36:0
@@ -4336,7 +4335,7 @@ friends:100:2d7:Same
 desc:A blurry canine form which seems to be moving as fast as the eye can
 desc: follow.  You can feel the earth resonating beneath your feet.
 
-name:295:Nexus hound
+name:295:nexus hound
 base:zephyr hound
 color:P
 info:110:138:30:36:0
@@ -4354,7 +4353,7 @@ friends:100:2d7:Same
 desc:A locus of conflicting points coalesce to form the vague shape of a huge
 desc: hound. Or is it just your imagination?
 
-name:296:Ogre mage
+name:296:ogre mage
 base:ogre
 color:r
 info:110:163:20:60:40
@@ -4373,7 +4372,7 @@ drop:magic book:[Incantations and Illusions]:5:1:1
 drop:magic book:[Sorcery and Evocations]:5:1:1
 desc:A hideous ogre wrapped in black sorcerous robes.
 
-name:298:Vampire
+name:298:vampire
 base:vampire
 color:W
 info:110:163:20:67:30
@@ -4388,7 +4387,7 @@ spells:CAUSE_2 | DARKNESS | MIND_BLAST | TELE_TO
 desc:It is a humanoid with an aura of power.  You notice a sharp set of front
 desc: teeth.
 
-name:299:Gorgimaera
+name:299:gorgimaera
 base:hybrid
 color:o
 info:110:263:12:82:20
@@ -4405,7 +4404,7 @@ desc:The result of evil experiments, this travesty of nature should never be
 desc: alive.  It has three heads - goat, dragon and gorgon - all attached to a
 desc: lion's body.
 
-name:300:Colbran
+name:300:colbran
 base:golem
 color:b
 info:120:520:12:120:20
@@ -4421,7 +4420,7 @@ spells:BO_ELEC
 desc:A man-shaped form of living lightning, sparks and shocks crackle all over
 desc: this madly capering figure, as it leaps and whirls around and about you.
 
-name:328:Ogre shaman
+name:328:ogre shaman
 base:ogre
 color:G
 info:110:163:20:82:40
@@ -4439,7 +4438,7 @@ drop:prayer book:[Words of Wisdom]:5:1:1
 drop:prayer book:[Chants and Blessings]:5:1:1
 desc:It is an ogre wrapped in furs and covered in grotesque body paints.
 
-name:554:Shimmering mold
+name:554:shimmering mold
 base:mold
 color:b
 info:110:144:2:36:0
@@ -4453,7 +4452,7 @@ desc: sparks.
 
 ### Dungeon level 28 ###
 
-name:199:Frost giant
+name:199:frost giant
 base:giant
 color:w
 info:110:256:20:60:50
@@ -4468,7 +4467,7 @@ friends:60:1d7:Cold Hound
 friends:80:1d3:Same
 desc:A twelve foot tall giant covered in furs.
 
-name:301:Spirit naga
+name:301:spirit naga
 base:naga
 color:w
 info:110:240:20:90:120
@@ -4506,7 +4505,7 @@ spells:SCARE
 spells:BA_POIS
 desc:A strange reptilian hybrid with five heads dripping venom.
 
-name:303:Black knight
+name:303:black knight
 base:person
 color:s
 info:120:165:20:105:30
@@ -4545,10 +4544,10 @@ flags:OPEN_DOOR | TAKE_ITEM
 spell-freq:10
 spells:S_KIN
 desc:An evil and cunning man from the East.  Having once sworn allegiance to the
-desc: sons of Fëanor, it was Uldor's treachery that turned the tide of the 
+desc: sons of Fëanor, it was Uldor's treachery that turned the tide of the
 desc: Battle of Unnumbered Tears in Morgoth's favour.
 
-name:305:Mage
+name:305:mage
 base:person
 color:r
 info:110:68:20:48:10
@@ -4568,7 +4567,7 @@ drop:magic book:[Sorcery and Evocations]:7:1:1
 friends-base:100:1d1:golem
 desc:A mage of some power - you can tell by the size of his hat.
 
-name:306:Mind flayer
+name:306:mind flayer
 base:humanoid
 color:P
 info:110:132:20:72:10
@@ -4607,7 +4606,7 @@ friends-base:50:1d3:minor demon
 friends:100:2d4:Imp
 desc:An intensely irritating git of a monster.
 
-name:308:Basilisk
+name:308:basilisk
 base:reptile
 color:s
 info:120:310:15:108:30
@@ -4624,7 +4623,7 @@ spells:BR_POIS
 desc:A vile reptile that preys on unsuspecting travellers.  Its eyes stare
 desc: deeply at you and your soul starts to wilt!
 
-name:309:Ice troll
+name:309:ice troll
 base:troll
 color:w
 info:110:132:20:67:50
@@ -4641,8 +4640,8 @@ friends:60:2d7:White wolf
 friends:100:4d4:Same
 desc:He is a white troll with powerfully clawed hands.
 
-name:605:Bat of Gorgoroth
-plural:Bats of Gorgoroth
+name:605:bat of Gorgoroth
+plural:bats of Gorgoroth
 base:bat
 color:g
 info:120:110:20:36:30
@@ -4660,7 +4659,7 @@ friends:100:2d7:Same
 desc:Fed with horrid meats and grown to enormous size, this slavering creature
 desc: seeks livelier prey.
 
-name:589:Spectator
+name:589:spectator
 base:eye
 color:B
 info:110:171:30:1:30
@@ -4699,7 +4698,7 @@ desc: in human form - and still less when in bear's shape, as he is now.
 
 ### Dungeon level 29 ###
 
-name:310:Purple worm
+name:310:purple worm
 base:worm
 color:P
 info:110:293:14:78:30
@@ -4712,8 +4711,8 @@ flags:IM_ACID | IM_POIS
 desc:It is a massive worm form, many feet in length.  Its vast maw drips acid
 desc: and poison.
 
-name:312:Catoblepas
-plural:Catoblepae
+name:312:catoblepas
+plural:catoblepae
 base:quadruped
 color:g
 info:110:165:15:66:40
@@ -4728,7 +4727,7 @@ flags:IM_POIS
 desc:A strange ox-like form with a huge head but a thin, weak neck, it looks
 desc: like the creation of some deranged alchemist.
 
-name:313:Ring mimic
+name:313:ring mimic
 base:mimic
 glyph:=
 color:w
@@ -4750,7 +4749,7 @@ mimic:ring:Resist Poison
 mimic:ring:Free Action
 mimic:ring:See Invisible
 
-name:314:Young blue dragon
+name:314:young blue dragon
 base:dragon
 color:b
 info:110:237:20:60:70
@@ -4767,7 +4766,7 @@ spells:BR_ELEC
 desc:It has a form that legends are made of.  Its still-tender scales are a deep
 desc: blue in hue.  Sparks crackle along its length.
 
-name:315:Young white dragon
+name:315:young white dragon
 base:dragon
 color:w
 info:110:237:20:60:70
@@ -4784,7 +4783,7 @@ spells:BR_COLD
 desc:It has a form that legends are made of.  Its still-tender scales are a
 desc: frosty white in hue.  Icy blasts of cold air come from it as it breathes.
 
-name:316:Young green dragon
+name:316:young green dragon
 base:dragon
 color:g
 info:110:237:20:60:70
@@ -4808,7 +4807,7 @@ desc: green in hue.  Foul gas seeps through its scales.
 
 ### Dungeon level 30 ###
 
-name:209:Fire giant
+name:209:fire giant
 base:giant
 color:r
 info:110:289:20:72:50
@@ -4824,7 +4823,7 @@ friends:60:1d7:Fire Hound
 friends:80:1d3:Same
 desc:A glowing fourteen foot tall giant.  Flames drip from its red skin.
 
-name:318:Mithril golem
+name:318:mithril golem
 base:golem
 color:B
 info:110:640:12:150:30
@@ -4839,7 +4838,7 @@ flags:BASH_DOOR
 flags:IM_COLD | IM_FIRE | IM_POIS
 desc:It is a massive statue of purest mithril.  It looks expensive!
 
-name:320:Skeleton troll
+name:320:skeleton troll
 base:skeleton
 color:w
 info:110:110:20:82:60
@@ -4851,7 +4850,7 @@ flags:TROLL | EMPTY_MIND | REGENERATE
 flags:OPEN_DOOR | BASH_DOOR
 desc:It is a troll skeleton animated by dark dweomers.
 
-name:321:Manticore
+name:321:manticore
 base:hybrid
 color:y
 info:120:220:12:22:20
@@ -4868,7 +4867,7 @@ spells:ARROW_4
 desc:It is a winged lion's body with a human torso and a tail covered in vicious
 desc: spikes.
 
-name:322:Giant blue ant
+name:322:giant blue ant
 base:ant
 color:b
 info:110:36:10:75:10
@@ -4879,7 +4878,7 @@ flags:IM_ELEC | GROUP_AI
 friends:100:4d4:Same
 desc:It is a giant ant that crackles with energy.
 
-name:323:Giant army ant
+name:323:giant army ant
 base:ant
 color:o
 info:120:67:10:60:20
@@ -4891,7 +4890,7 @@ friends:100:4d4:Same
 desc:An armoured form moving with purpose.  Powerful on its own, flee when
 desc: hordes of them march.
 
-name:324:Grave wight
+name:324:grave wight
 base:wraith
 color:b
 info:110:66:20:60:30
@@ -4906,7 +4905,7 @@ spell-freq:8
 spells:CAUSE_3 | DARKNESS | SCARE
 desc:It is a ghostly form with eyes that haunt you.
 
-name:325:Killer slicer beetle
+name:325:killer slicer beetle
 base:killer beetle
 color:y
 info:110:138:14:72:30
@@ -4916,7 +4915,7 @@ blow:BITE:HURT:7d8
 desc:It is a beetle with deadly sharp cutting mandibles and a rock-hard
 desc: carapace.
 
-name:610:Ogre chieftain
+name:610:ogre chieftain
 base:ogre
 color:b
 info:120:240:20:66:30
@@ -4937,7 +4936,7 @@ friends:50:1d2:Ogre shaman
 desc:This ogre is leader of his tribe.  He sneers at you as he advances towards
 desc: you, wielding a huge club and pushing his own followers rudely aside.
 
-name:600:Ghast
+name:600:ghast
 base:zombie
 color:u
 info:120:165:30:60:20
@@ -4961,7 +4960,7 @@ desc: them.  It smells foul, and its bite carries a rotting disease.
 
 ### Dungeon level 31 ###
 
-name:326:Ghost
+name:326:ghost
 base:ghost
 color:w
 info:120:59:20:36:10
@@ -4977,7 +4976,7 @@ spell-freq:15
 spells:BLIND | DRAIN_MANA | HOLD
 desc:You don't believe in it.  But it believes in you...
 
-name:327:Death watch beetle
+name:327:death watch beetle
 base:killer beetle
 color:D
 info:110:163:16:72:30
@@ -4987,7 +4986,7 @@ blow:BITE:HURT:5d6
 blow:WAIL:TERRIFY:5d6
 desc:It is a giant beetle that produces a chilling sound.
 
-name:372:Young black dragon
+name:372:young black dragon
 base:dragon
 color:s
 info:110:264:20:72:70
@@ -5004,7 +5003,7 @@ spells:BR_ACID
 desc:It has a form that legends are made of.  Its still-tender scales are a
 desc: darkest black hue.  Acid drips from its body.
 
-name:382:Young gold dragon
+name:382:young gold dragon
 base:dragon
 color:y
 info:110:264:20:72:70
@@ -5020,7 +5019,7 @@ spells:BR_SOUN
 desc:It has a form that legends are made of.  Its still-tender scales are a
 desc: tarnished gold hue, and light is reflected from its form.
 
-name:387:Young red dragon
+name:387:young red dragon
 base:dragon
 color:r
 info:110:264:20:72:70
@@ -5059,7 +5058,7 @@ friends:50:1d2:Ogre chieftain
 desc:An ogre renowned for acts of surpassing cruelty, Lokkak quickly became the
 desc: leader of a large band of violent ogres.
 
-name:329:Nexus quylthulg
+name:329:nexus quylthulg
 base:quylthulg
 color:P
 info:110:65:10:1:1
@@ -5069,7 +5068,7 @@ spell-freq:1
 spells:BLINK | TELE_AWAY
 desc:It is a very unstable, strange pulsing mound of flesh.
 
-name:331:Ninja
+name:331:ninja
 base:person
 color:y
 info:120:85:20:72:10
@@ -5086,7 +5085,7 @@ friends:50:1d1:Mage
 friends:50:1d1:Black knight
 desc:A humanoid clothed in black who moves with blinding speed.
 
-name:332:Memory moss
+name:332:memory moss
 base:mushroom
 color:r
 info:110:2:30:1:5
@@ -5100,7 +5099,7 @@ spells:FORGET
 desc:A mass of green vegetation.  You don't remember seeing anything like it
 desc: before.
 
-name:380:Young multi-hued dragon
+name:380:young multi-hued dragon
 base:dragon
 color:v
 info:110:281:20:72:70
@@ -5118,7 +5117,7 @@ spells:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 desc:It has a form that legends are made of.  Beautiful scales of shimmering and
 desc: magical colours cover it.
 
-name:606:Doombat
+name:606:doombat
 base:bat
 color:R
 info:120:180:16:112:20
@@ -5134,7 +5133,7 @@ desc: flickering bright red flames.
 
 ### Dungeon level 33 ###
 
-name:230:Stone giant
+name:230:stone giant
 base:giant
 color:W
 info:110:333:20:90:50
@@ -5148,7 +5147,7 @@ friends:60:1d7:Earth hound
 friends:80:1d3:Same
 desc:It is eighteen feet tall and looking at you.
 
-name:319:Shadow drake
+name:319:shadow drake
 base:dragon
 color:G
 info:110:264:20:84:70
@@ -5167,7 +5166,7 @@ desc:It is a dragon-like form wrapped in shadow.  Glowing red eyes shine out in
 desc: the dark, and it is surrounded by an aura of unearthly cold that chills
 desc: the soul rather than the body.
 
-name:334:Cave troll
+name:334:cave troll
 base:troll
 color:u
 info:110:156:20:60:50
@@ -5184,7 +5183,7 @@ friends:30:1d5:Algroth
 friends:100:3d3:Same
 desc:He is a vicious monster, feared for his ferocity.
 
-name:336:Mystic
+name:336:mystic
 base:person
 color:o
 info:120:308:30:60:5
@@ -5207,7 +5206,7 @@ friends-base:50:2d4:spider
 desc:An adept at unarmed combat, the mystic strikes with stunning power.  He can
 desc: summon help from nature and is able to focus his power to ease any pain.
 
-name:337:Barrow wight
+name:337:barrow wight
 base:wraith
 color:P
 info:110:83:20:60:30
@@ -5223,7 +5222,7 @@ spells:CAUSE_2 | DARKNESS | HOLD | SCARE
 friends:100:4d4:Same
 desc:It is a ghostly nightmare of an entity.
 
-name:338:Skeleton ettin
+name:338:skeleton ettin
 base:skeleton
 color:w
 info:110:396:20:75:50
@@ -5236,7 +5235,7 @@ flags:TROLL | EMPTY_MIND | REGENERATE
 flags:OPEN_DOOR | BASH_DOOR
 desc:It is the animated form of a massive two-headed troll.
 
-name:339:Chaos drake
+name:339:chaos drake
 base:dragon
 color:v
 info:110:440:20:84:70
@@ -5254,7 +5253,7 @@ spells:BR_CHAO | BR_DISE
 desc:A dragon twisted by the forces of chaos.  It seems first ugly, then fair,
 desc: as its form shimmers and changes in front of your eyes.
 
-name:340:Law drake
+name:340:law drake
 base:dragon
 color:B
 info:110:440:20:84:70
@@ -5271,7 +5270,7 @@ spells:BR_SHAR | BR_SOUN
 desc:This dragon is clever and cunning.  It laughs at your puny efforts to
 desc: disturb it.
 
-name:341:Balance drake
+name:341:balance drake
 base:dragon
 color:P
 info:110:528:20:84:70
@@ -5288,7 +5287,7 @@ spells:BR_CHAO | BR_DISE | BR_SHAR | BR_SOUN
 desc:A mighty dragon, the balance drake seeks to maintain the Cosmic Balance,
 desc: and despises your feeble efforts to destroy evil.
 
-name:342:Ethereal drake
+name:342:ethereal drake
 base:dragon
 color:o
 info:110:352:20:84:70
@@ -5306,7 +5305,7 @@ spells:BR_DARK | BR_LIGHT
 desc:A dragon of great power, with control over light and dark, the ethereal
 desc: drake's eyes glare with white hatred from the shadows.
 
-name:346:Shade
+name:346:shade
 base:ghost
 color:D
 info:120:147:20:36:10
@@ -5322,7 +5321,7 @@ spells:BLIND | DRAIN_MANA | HOLD
 desc:A shadowy form clutches at you from the darkness.  A powerful undead
 desc: creature with a deadly touch.
 
-name:349:Fire elemental
+name:349:fire elemental
 base:elemental
 color:r
 info:110:135:12:60:50
@@ -5337,7 +5336,7 @@ spell-freq:6
 spells:BO_FIRE
 desc:It is a towering inferno of flames.
 
-name:351:Water elemental
+name:351:water elemental
 base:elemental
 color:b
 info:110:113:12:48:50
@@ -5353,7 +5352,7 @@ spell-freq:6
 spells:BO_COLD
 desc:It is a towering tempest of water.
 
-name:404:Crystal drake
+name:404:crystal drake
 base:dragon
 color:u
 info:110:396:20:84:70
@@ -5391,7 +5390,7 @@ spells:BLIND | CONF | HASTE | HEAL | SCARE
 desc:One of the first children of Eru. Its body shines with glorious light, but
 desc: its face is stern as it looks down at you.
 
-name:335:Half-troll
+name:335:half-troll
 base:troll
 color:U
 info:110:188:20:60:50
@@ -5463,7 +5462,7 @@ friends:100:1d1:Bill the Stone Troll
 desc:Big, brawny, powerful and with a taste for hobbit.  He has friends called
 desc: Bert and Bill.
 
-name:347:Spectre
+name:347:spectre
 base:ghost
 color:U
 info:120:147:20:36:10
@@ -5484,8 +5483,8 @@ desc: evil deep within your body.
 #name:353:Carrion crawler
 #Deleted
 
-name:354:Master thief
-plural:Master thieves
+name:354:master thief
+plural:master thieves
 base:person
 color:b
 info:130:99:20:45:5
@@ -5526,8 +5525,8 @@ desc:A short and swarthy Easterling dressed in black.  He and his three sons
 desc: once openly swore allegiance to the High Elves, but were secretly in the
 desc: pay of Morgoth.
 
-name:356:Lich
-plural:Liches
+name:356:lich
+plural:liches
 base:lich
 color:o
 info:110:264:20:72:60
@@ -5544,7 +5543,7 @@ spells:SCARE | SLOW | TELE_AWAY | TELE_TO
 friends-base:70:1d3:skeleton
 desc:It is a skeletal form dressed in robes.  It radiates vastly evil power.
 
-name:358:Giant grey scorpion
+name:358:giant grey scorpion
 base:spider
 color:s
 info:120:189:12:60:40
@@ -5555,7 +5554,7 @@ flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
 desc:It is a giant grey scorpion.  It looks poisonous.
 
-name:359:Earth elemental
+name:359:earth elemental
 base:elemental
 color:u
 info:100:165:10:90:50
@@ -5571,7 +5570,7 @@ spell-freq:8
 spells:BO_ACID
 desc:It is a towering form composed of rock with fists of awesome power.
 
-name:360:Air elemental
+name:360:air elemental
 base:elemental
 color:B
 info:120:90:12:60:50
@@ -5604,7 +5603,7 @@ desc:It is a massive deep brown statue, striding towards you with an
 desc: all-too-familiar purpose.  Your magic surprisingly feels much less
 desc: powerful now.
 
-name:375:Mature white dragon
+name:375:mature white dragon
 base:dragon
 color:w
 info:110:352:20:84:70
@@ -5622,7 +5621,7 @@ friends:50:1d4:Baby white dragon
 friends:50:1d2:Young white dragon
 desc:A large dragon, scales gleaming bright white.
 
-name:384:Mature blue dragon
+name:384:mature blue dragon
 base:dragon
 color:b
 info:110:352:20:84:70
@@ -5640,7 +5639,7 @@ friends:50:1d4:Baby blue dragon
 friends:50:1d2:Young blue dragon
 desc:A large dragon, scales tinted deep blue.
 
-name:385:Mature green dragon
+name:385:mature green dragon
 base:dragon
 color:g
 info:110:352:20:84:70
@@ -5660,7 +5659,7 @@ desc:A large dragon, scales tinted deep green.
 
 ### Dungeon level 35 ###
 
-name:348:Water troll
+name:348:water troll
 base:troll
 color:B
 info:110:316:20:60:50
@@ -5676,7 +5675,7 @@ friends:50:1d5:Water hound
 friends:100:4d4:Same
 desc:He is a troll that reeks of brine.
 
-name:352:Invisible stalker
+name:352:invisible stalker
 base:elemental
 color:y
 info:130:124:20:69:10
@@ -5689,7 +5688,7 @@ flags:RAND_50 | OPEN_DOOR | BASH_DOOR
 flags:IM_ELEC
 desc:It is impossible to define its form but its violence is legendary.
 
-name:364:Dagashi
+name:364:dagashi
 base:person
 color:y
 info:120:169:20:84:10
@@ -5705,7 +5704,7 @@ flags:NO_CONF | NO_SLEEP
 friends:80:1d4:Ninja
 desc:A human warrior, moving with lightning speed.
 
-name:365:Gravity hound
+name:365:gravity hound
 base:zephyr hound
 color:W
 info:110:193:30:36:0
@@ -5724,7 +5723,7 @@ desc:Unfettered by the usual constraints of gravity, these unnatural creatures
 desc: are walking on the walls and even the ceiling!  The earth suddenly feels
 desc: rather less solid as you see gravity warp all round the monsters.
 
-name:366:Acidic cytoplasm
+name:366:acidic cytoplasm
 base:jelly
 color:s
 info:120:352:12:21:1
@@ -5740,7 +5739,7 @@ flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 flags:NO_CONF | NO_SLEEP
 desc:A disgusting animated blob of destruction.  Flee its gruesome hunger!
 
-name:367:Inertia hound
+name:367:inertia hound
 base:zephyr hound
 color:W
 info:110:193:30:36:0
@@ -5758,7 +5757,7 @@ friends:100:2d7:Same
 desc:Bizarrely, this hound seems to be hardly moving at all, yet it approaches
 desc: you with deadly menace.  It makes you tired just to look at it.
 
-name:368:Impact hound
+name:368:impact hound
 base:zephyr hound
 color:u
 info:110:193:30:36:0
@@ -5777,7 +5776,7 @@ desc:A deep brown shape is visible before you, its canine form strikes you with
 desc: an almost physical force.  The dungeon floor buckles as if struck by a
 desc: powerful blow as it stalks towards you.
 
-name:369:Dread
+name:369:dread
 base:ghost
 color:o
 info:120:263:20:36:10
@@ -5796,8 +5795,8 @@ desc:It is a form that screams its presence against the eye.  Death incarnate,
 desc: its hideous black body seems to struggle against reality as the universe
 desc: itself struggles to banish it.
 
-name:373:Mûmak
-plural:Mûmakil
+name:373:mûmak
+plural:mûmakil
 base:quadruped
 color:s
 info:110:495:20:82:70
@@ -5809,7 +5808,7 @@ flags:ANIMAL
 friends:100:4d4:Same
 desc:A massive elephantine form with eyes twisted by madness.
 
-name:374:Giant fire ant
+name:374:giant fire ant
 base:ant
 color:R
 info:110:176:14:58:40
@@ -5822,7 +5821,7 @@ flags:IM_FIRE | GROUP_AI
 friends:100:4d4:Same
 desc:A giant ant covered in shaggy fur.  Its powerful jaws glow with heat.
 
-name:556:Chest mimic
+name:556:chest mimic
 base:mimic
 glyph:~
 color:s
@@ -5848,7 +5847,7 @@ mimic:chest:Large iron chest
 mimic:chest:Small steel chest
 mimic:chest:Large steel chest
 
-name:597:Silent watcher
+name:597:silent watcher
 base:golem
 color:r
 info:110:1040:42:96:10
@@ -5868,7 +5867,7 @@ desc: malevolent light.
 
 ### Dungeon level 36 ###
 
-name:363:Olog
+name:363:olog
 base:troll
 color:y
 info:110:369:20:60:50
@@ -5877,12 +5876,12 @@ blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:BITE:HURT:2d3
 blow:BITE:HURT:2d3
-flags:SMART | REGENERATE 
+flags:SMART | REGENERATE
 flags:DROP_20
 friends:100:4d4:Olog
 desc:It is a massive intelligent troll with needle-sharp fangs.
 
-name:247:Cloud giant
+name:247:cloud giant
 base:giant
 color:b
 info:110:368:20:90:40
@@ -5897,7 +5896,7 @@ friends:60:1d7:Energy hound
 friends:80:1d3:Same
 desc:It is a twenty foot tall giant wreathed in clouds.
 
-name:357:Master vampire
+name:357:master vampire
 base:vampire
 color:g
 info:110:299:20:72:10
@@ -5914,7 +5913,7 @@ spells:BO_NETH
 desc:It is a humanoid form dressed in robes.  Power emanates from its chilling
 desc: frame.
 
-name:370:Ooze elemental
+name:370:ooze elemental
 base:elemental
 color:g
 info:110:72:10:120:50
@@ -5931,7 +5930,7 @@ spells:BA_ACID
 spells:BO_ACID
 desc:It is a towering mass of filth, an eyesore of ooze.
 
-name:371:Smoke elemental
+name:371:smoke elemental
 base:elemental
 color:D
 info:120:83:10:120:50
@@ -5946,7 +5945,7 @@ spells:DARKNESS
 spells:BO_FIRE
 desc:It is a towering blackened form, crackling with heat.
 
-name:376:Xorn
+name:376:xorn
 base:xorn
 color:u
 info:110:140:20:96:10
@@ -5960,7 +5959,7 @@ flags:IM_COLD | IM_ELEC | IM_FIRE
 desc:A huge creature of the element Earth.  Able to merge with its element, it
 desc: has four huge arms protruding from its enormous torso.
 
-name:377:Shadow
+name:377:shadow
 base:ghost
 color:D
 info:120:105:30:36:20
@@ -5978,7 +5977,7 @@ desc:A mighty spirit of darkness of vaguely humanoid form.  Razor-edged claws
 desc: reach out to end your life as it glides towards you, seeking to suck the
 desc: energy from your soul to feed its power.
 
-name:378:Phantom
+name:378:phantom
 base:ghost
 color:P
 info:120:260:30:36:20
@@ -5994,7 +5993,7 @@ spells:FORGET
 desc:An unholy creature of darkness, the aura emanating from this evil being
 desc: saps your very soul.
 
-name:379:Grey wraith
+name:379:grey wraith
 base:wraith
 color:s
 info:110:167:20:60:10
@@ -6010,8 +6009,8 @@ spells:CAUSE_3 | DARKNESS | HOLD | SCARE
 desc:A tangible but ghostly form, made of grey fog.  The air around it feels
 desc: deathly cold.
 
-name:381:Colossus
-plural:Colossi
+name:381:colossus
+plural:colossi
 base:golem
 color:G
 info:100:2640:12:180:10
@@ -6027,7 +6026,7 @@ desc:An enormous construct resembling a titan made from stone.  It strides
 desc: purposefully towards you, swinging its slow fists with earth-shattering
 desc: power.
 
-name:388:Trapper
+name:388:trapper
 base:lurker
 color:w
 info:120:528:30:90:10
@@ -6039,7 +6038,7 @@ blow:HIT:PARALYZE:15d1
 desc:A larger cousin of the lurker, this creature traps unsuspecting victims and
 desc: paralyzes them, to be slowly digested later.
 
-name:389:Bodak
+name:389:bodak
 base:minor demon
 color:r
 info:110:193:10:81:90
@@ -6057,7 +6056,7 @@ spells:BO_FIRE
 spells:S_DEMON
 desc:It is a humanoid form composed of flames and hatred.
 
-name:391:Necromancer
+name:391:necromancer
 base:person
 color:R
 info:110:246:20:75:20
@@ -6101,7 +6100,7 @@ friends:100:2d5:Easterling champion
 desc:A mighty warrior from the east, Lorgan hates everything that he cannot
 desc: control.
 
-name:393:Demonologist
+name:393:demonologist
 base:person
 color:i
 info:120:246:20:75:20
@@ -6123,7 +6122,7 @@ friends-base:50:1d3:minor demon
 friends:100:1d1:Quasit
 desc:A figure twisted by evil standing in robes of deepest crimson.
 
-name:402:Mature red dragon
+name:402:mature red dragon
 base:dragon
 color:r
 info:110:440:20:96:70
@@ -6142,7 +6141,7 @@ friends:50:1d4:Baby red dragon
 friends:50:1d2:Young red dragon
 desc:A large dragon, scales tinted deep red.
 
-name:403:Mature gold dragon
+name:403:mature gold dragon
 base:dragon
 color:y
 info:110:440:20:96:70
@@ -6160,7 +6159,7 @@ friends:50:1d4:Baby gold dragon
 friends:50:1d2:Young gold dragon
 desc:A large dragon with scales of gleaming gold.
 
-name:405:Mature black dragon
+name:405:mature black dragon
 base:dragon
 color:s
 info:110:440:20:96:70
@@ -6178,8 +6177,8 @@ friends:50:1d4:Baby black dragon
 friends:50:1d2:Young black dragon
 desc:A large dragon, with scales of deepest black.
 
-name:615:Greater mummy
-plural:Greater mummies
+name:615:greater mummy
+plural:greater mummies
 base:zombie
 color:y
 info:110:299:30:102:90
@@ -6204,7 +6203,7 @@ friends:100:2d3:Mummified human
 friends:100:2d3:Mummified troll
 desc:Once a powerful ruler, now an even more powerful undead menace.
 
-name:590:Gauth
+name:590:gauth
 base:eye
 color:D
 info:110:264:20:75:25
@@ -6225,7 +6224,7 @@ desc: magic.
 
 ### Dungeon level 37 ###
 
-name:390:Ice elemental
+name:390:ice elemental
 base:elemental
 color:w
 info:110:193:10:90:50
@@ -6242,7 +6241,7 @@ spells:BA_COLD
 spells:BO_ICEE
 desc:It is a towering glacier of ice.
 
-name:394:Mummified troll
+name:394:mummified troll
 base:zombie
 color:w
 info:110:167:20:75:70
@@ -6279,7 +6278,7 @@ friends:60:2d3:Giant fire ant
 friends:100:3d3:Giant army ant
 desc:She's upset because you hurt her children.
 
-name:397:Magma elemental
+name:397:magma elemental
 base:elemental
 color:o
 info:110:193:10:105:50
@@ -6296,7 +6295,7 @@ spells:BA_FIRE
 spells:BO_PLAS
 desc:It is a towering glowing form of molten hate.
 
-name:398:Black pudding
+name:398:black pudding
 base:jelly
 color:D
 info:110:352:12:21:1
@@ -6313,7 +6312,7 @@ flags:NO_CONF | NO_SLEEP
 friends:100:2d5:Same
 desc:A lump of rotting black flesh that slurrrrrrrps across the dungeon floor.
 
-name:399:Killer iridescent beetle
+name:399:killer iridescent beetle
 base:killer beetle
 color:b
 info:110:330:16:90:30
@@ -6325,8 +6324,8 @@ flags:IM_ELEC
 flags:ATTR_FLICKER
 desc:It is a giant beetle, whose carapace shimmers with vibrant energies.
 
-name:400:Nexus vortex
-plural:Nexus vortices
+name:400:nexus vortex
+plural:nexus vortices
 base:vortex
 color:P
 info:120:176:100:48:0
@@ -6338,8 +6337,8 @@ spell-freq:6
 spells:BR_NEXU
 desc:A maelstrom of potent magical energy.
 
-name:401:Plasma vortex
-plural:Plasma vortices
+name:401:plasma vortex
+plural:plasma vortices
 base:vortex
 color:R
 info:120:176:100:48:0
@@ -6353,7 +6352,7 @@ spell-freq:6
 spells:BR_PLAS
 desc:A whirlpool of intense flame, charring the stones at your feet.
 
-name:420:Eldrak
+name:420:eldrak
 base:troll
 color:r
 info:110:660:20:120:40
@@ -6366,7 +6365,7 @@ flags:TAKE_ITEM
 flags:NO_CONF | NO_SLEEP
 desc:A massive troll, larger and stronger than many men together.
 
-name:613:Shardstorm
+name:613:shardstorm
 base:vortex
 color:u
 info:120:176:40:14:0
@@ -6379,7 +6378,7 @@ desc: magics.
 
 ### Dungeon level 38 ###
 
-name:396:Will o' the wisp
+name:396:will o' the wisp
 base:elemental
 color:W
 info:130:176:30:180:0
@@ -6397,7 +6396,7 @@ desc:A strange ball of glowing light.  It disappears and reappears and seems to
 desc: draw you to it.  You seem somehow compelled to stand still and watch its
 desc: strange dancing motion.
 
-name:406:Mature multi-hued dragon
+name:406:mature multi-hued dragon
 base:dragon
 color:v
 info:110:528:20:96:70
@@ -6417,7 +6416,7 @@ friends:50:1d4:Baby multi-hued dragon
 friends:50:1d2:Young multi-hued dragon
 desc:A large dragon, scales shimmering many colours.
 
-name:407:Death knight
+name:407:death knight
 base:person
 color:D
 info:120:528:20:120:10
@@ -6460,8 +6459,8 @@ spells:BO_COLD | BO_ELEC | BO_FIRE | BO_ICEE
 desc:A Black Númenorean who usurped the throne of Gondor, he is treacherous and
 desc: evil.
 
-name:409:Time vortex
-plural:Time vortices
+name:409:time vortex
+plural:time vortices
 base:vortex
 color:B
 info:130:176:100:48:0
@@ -6472,8 +6471,8 @@ spell-freq:6
 spells:BR_TIME
 desc:You haven't seen it yet.
 
-name:410:Shimmering vortex
-plural:Shimmering vortices
+name:410:shimmering vortex
+plural:shimmering vortices
 base:vortex
 color:o
 info:140:176:100:48:0
@@ -6489,7 +6488,7 @@ desc:A strange pillar of shining light that hurts your eyes.  Its shape changes
 desc: constantly as it cuts through the air towards you.  It is like a beacon,
 desc: waking monsters from their slumber.
 
-name:414:Emperor wight
+name:414:emperor wight
 base:wraith
 color:r
 info:120:334:20:48:10
@@ -6508,7 +6507,7 @@ friends-base:50:1d3:wraith
 desc:Your life force is torn from your body as this powerful unearthly being
 desc: approaches.
 
-name:417:Black wraith
+name:417:black wraith
 base:wraith
 color:D
 info:120:440:20:66:10
@@ -6526,8 +6525,8 @@ spells:BO_NETH
 desc:A figure that seems made of void, its strangely human shape is cloaked in
 desc: shadow.  It reaches out at you.
 
-name:418:Erinyes
-plural:Erinyes
+name:418:erinyes
+plural:erinyes
 base:major demon
 color:u
 info:110:210:20:75:70
@@ -6543,7 +6542,7 @@ spells:BO_FIRE
 desc:It is a lesser demon of female form; however, she takes little time to show
 desc: her true colours.
 
-name:421:Ettin
+name:421:ettin
 base:troll
 color:b
 info:110:1320:20:120:30
@@ -6557,7 +6556,7 @@ desc:A massive two-headed troll of huge strength, ettins are stupid but violent.
 desc:  They are also living proof that two heads are not more intelligent than
 desc: one...
 
-name:602:Aranea
+name:602:aranea
 base:spider
 color:R
 info:110:264:20:54:50
@@ -6579,8 +6578,8 @@ desc:An intelligent arachnid whose hairy legs weave spells in the air.
 
 ### Dungeon level 39 ###
 
-name:350:Greater Maia
-plural:Greater Maiar
+name:350:greater Maia
+plural:greater Maiar
 base:ainu
 color:G
 info:120:880:30:81:155
@@ -6602,7 +6601,7 @@ desc: to your own frail body. One of the first children of Eru,
 desc: human-like in form but god-like in power. The dungeon
 desc: shakes with each of its steps toward you.
 
-name:419:Nether wraith
+name:419:nether wraith
 base:wraith
 color:G
 info:120:420:20:66:10
@@ -6660,7 +6659,7 @@ spells:BA_POIS
 spells:BR_POIS
 desc:A strange reptilian hybrid with seven heads dripping venom.
 
-name:427:Night mare
+name:427:night mare
 base:quadruped
 color:G
 info:120:1320:30:102:0
@@ -6683,7 +6682,7 @@ desc: more than a hatred of all that lives.
 
 ### Dungeon level 40 ###
 
-name:333:Storm giant
+name:333:storm giant
 base:giant
 color:B
 info:120:700:20:90:30
@@ -6703,7 +6702,7 @@ friends:60:1d7:Energy hound
 friends:80:1d3:Same
 desc:It is a twenty-five foot tall giant wreathed in lightning.
 
-name:411:Ancient blue dragon
+name:411:ancient blue dragon
 base:ancient dragon
 color:b
 info:120:633:20:108:80
@@ -6718,7 +6717,7 @@ spells:BLIND | CONF | SCARE
 spells:BR_ELEC
 desc:A huge draconic form.  Lightning crackles along its length.
 
-name:413:Beholder
+name:413:beholder
 base:eye
 color:U
 info:120:1400:30:96:10
@@ -6738,7 +6737,7 @@ spells:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 desc:A vile creature with one huge central eye, twelve smaller eyes on stalks,
 desc: and a huge mouth filled with sharp teeth.
 
-name:424:Ancient white dragon
+name:424:ancient white dragon
 base:ancient dragon
 color:w
 info:120:633:20:108:80
@@ -6753,7 +6752,7 @@ spells:BLIND | CONF | SCARE
 spells:BR_COLD
 desc:A huge draconic form.  Frost covers it from head to tail.
 
-name:425:Ancient green dragon
+name:425:ancient green dragon
 base:ancient dragon
 color:g
 info:120:633:20:108:80
@@ -6768,7 +6767,7 @@ spells:BLIND | CONF | SCARE
 spells:BR_POIS
 desc:A huge draconic form enveloped in clouds of poisonous vapour.
 
-name:430:Disenchanter worm mass
+name:430:disenchanter worm mass
 base:worm
 color:v
 info:100:45:7:6:10
@@ -6781,7 +6780,7 @@ flags:ATTR_MULTI
 desc:It is a strange mass of squirming worms.  Magical energy crackles around
 desc: its disgusting form.
 
-name:432:Spirit troll
+name:432:spirit troll
 base:ghost
 color:G
 info:110:880:20:108:5
@@ -6813,7 +6812,7 @@ spells:BO_FIRE
 spells:BR_FIRE
 desc:A strange reptilian hybrid with nine smouldering heads.
 
-name:435:Enchantress
+name:435:enchantress
 base:person
 color:i
 info:130:457:20:72:10
@@ -6836,7 +6835,7 @@ friends-base:60:1d1:dragon
 desc:This elusive female spellcaster has a special affinity for dragons, whom
 desc: she rarely fights without.
 
-name:437:Sorcerer
+name:437:sorcerer
 base:person
 color:R
 info:130:457:20:72:10
@@ -6864,7 +6863,7 @@ friends:30:1d1:Berserker
 desc:A human figure in robes, he moves with magically improved speed, and his
 desc: hands are ablur with spell casting.
 
-name:438:Xaren
+name:438:xaren
 base:xorn
 color:s
 info:120:280:20:96:10
@@ -6878,7 +6877,7 @@ flags:PASS_WALL | KILL_ITEM
 flags:IM_COLD | IM_ELEC | IM_FIRE
 desc:It is a tougher relative of the Xorn.  Its hide glitters with metal ores.
 
-name:439:Giant roc
+name:439:giant roc
 base:bird
 color:u
 info:110:560:20:84:10
@@ -6907,7 +6906,7 @@ flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 desc:A tall black cloaked Ringwraith, he is a master of horsemanship.  He longs
 desc: to taste your blood.
 
-name:441:Minotaur
+name:441:minotaur
 base:hybrid
 color:s
 info:130:550:13:30:10
@@ -6944,7 +6943,7 @@ desc:One of the original three ugly sisters.  Her face could sink a thousand
 desc: ships.  Her scales rattle as she slithers towards you, venom dripping
 desc: from her ghastly mouth.
 
-name:447:Vrock
+name:447:vrock
 base:major demon
 color:s
 info:110:352:20:75:70
@@ -6959,7 +6958,7 @@ spells:BLIND | CONF
 friends:100:4d4:Same
 desc:It is a demon with a long neck and raking claws.
 
-name:448:Death quasit
+name:448:death quasit
 base:minor demon
 color:D
 info:130:387:20:96:0
@@ -6978,7 +6977,7 @@ spells:S_DEMON
 desc:It is a demon of small stature, but its armoured frame moves with lightning
 desc: speed and its powers make it a tornado of death and destruction.
 
-name:470:Patriarch
+name:470:patriarch
 base:person
 color:G
 info:120:457:20:90:20
@@ -7005,7 +7004,7 @@ desc:An evil priest, dressed all in black.  Deadly spells hit you at an alarming
 desc: rate as his black spiked mace rains down blow after blow on your pitiful
 desc: frame.
 
-name:612:Troll chieftain
+name:612:troll chieftain
 base:troll
 color:P
 info:120:792:30:60:20
@@ -7030,7 +7029,7 @@ desc: its tribe.  It fears nothing.
 
 ### Dungeon level 41 ###
 
-name:429:Ancient black dragon
+name:429:ancient black dragon
 base:ancient dragon
 color:s
 info:120:880:20:108:80
@@ -7045,7 +7044,7 @@ spells:BLIND | CONF | SCARE
 spells:BR_ACID
 desc:A huge draconic form.  Pools of acid melt the floor around it.
 
-name:444:Ancient red dragon
+name:444:ancient red dragon
 base:ancient dragon
 color:r
 info:120:880:20:108:80
@@ -7062,7 +7061,7 @@ spells:BR_FIRE
 desc:A huge draconic form.  Wisps of smoke steam from its nostrils and the
 desc: extreme heat surrounding it makes you gasp for breath.
 
-name:445:Ancient gold dragon
+name:445:ancient gold dragon
 base:ancient dragon
 color:y
 info:120:880:20:108:80
@@ -7077,7 +7076,7 @@ spells:BR_SOUN
 desc:A huge draconic form wreathed in a nimbus of light.  Its roar stuns and
 desc: deafens you.
 
-name:450:Dark elven sorcerer
+name:450:dark elven sorcerer
 base:humanoid
 color:R
 info:130:700:20:84:10
@@ -7100,8 +7099,8 @@ drop:magic book:[Sorcery and Evocations]:10:1:1
 desc:A dark elven figure, dressed in deepest black.  Power seems to crackle from
 desc: his slender frame.
 
-name:451:Master lich
-plural:Master liches
+name:451:master lich
+plural:master liches
 base:lich
 color:r
 info:120:1584:20:96:50
@@ -7120,7 +7119,7 @@ friends-base:80:1d3:skeleton
 desc:A skeletal form wrapped in robes.  Powerful magic crackles along its bony
 desc: fingers.
 
-name:452:Hezrou
+name:452:hezrou
 base:major demon
 color:g
 info:110:457:20:60:70
@@ -7158,7 +7157,7 @@ desc: wife.   And so he fell under Morgoth's power and became little more than
 desc: a mindless servant of evil, even though the other side of his "bargain"
 desc: was not kept.
 
-name:582:Ranger Chieftain
+name:582:ranger chieftain
 base:person
 color:W
 info:120:880:20:72:10
@@ -7189,7 +7188,7 @@ desc: so you will need magically enhanced seeing to spot him.
 
 ### Dungeon level 42 ###
 
-name:361:Hellhound
+name:361:hellhound
 base:canine
 color:r
 info:120:352:25:120:10
@@ -7229,7 +7228,7 @@ friends:100:4d4:Water troll
 desc:A massive and cruel troll of great power, drool slides caustically down his
 desc: muscular frame.  Despite his bulk, he strikes with stunning speed.
 
-name:428:Vampire lord
+name:428:vampire lord
 base:vampire
 color:b
 info:120:1400:20:84:10
@@ -7307,8 +7306,8 @@ spells:S_MONSTER
 desc:A sorceress in life, Adunaphel quickly fell under Sauron's sway and the
 desc: power of the rings.
 
-name:456:Glabrezu
-plural:Glabrezu
+name:456:glabrezu
+plural:glabrezu
 base:major demon
 color:U
 info:110:616:20:60:70
@@ -7324,7 +7323,7 @@ desc:It is demon with arms and pincers, its form a true mockery of life.
 
 #name:461:Mûmak
 
-name:462:Ancient multi-hued dragon
+name:462:ancient multi-hued dragon
 base:ancient dragon
 color:v
 info:120:1848:25:120:80
@@ -7380,7 +7379,7 @@ spells:BO_ELEC
 desc:A towering air elemental, Ariel, the sorceress, avoids your blows with her
 desc: extreme speed.
 
-name:616:Multi-hued hound
+name:616:multi-hued hound
 base:zephyr hound
 color:v
 info:110:220:25:48:0
@@ -7400,7 +7399,7 @@ desc:Shimmering in rainbow hues, this hound is beautiful and deadly.
 
 ### Dungeon level 44 ###
 
-name:436:Knight Templar
+name:436:knight Templar
 base:person
 color:w
 info:120:1056:20:72:10
@@ -7448,7 +7447,7 @@ spells:BO_FIRE | BO_PLAS
 spells:BR_FIRE
 desc:A strange reptilian hybrid with eleven smouldering heads.
 
-name:471:Dreadmaster
+name:471:dreadmaster
 base:ghost
 color:y
 info:120:1056:20:120:10
@@ -7469,7 +7468,7 @@ desc:It is an unlife of power almost unequaled.  An affront to existence, its
 desc: very touch abuses and disrupts the flow of life, and its unearthly limbs,
 desc: of purest black, crush rock and flesh with ease.
 
-name:472:Drolem
+name:472:drolem
 base:golem
 color:g
 info:120:2200:25:195:80
@@ -7511,7 +7510,7 @@ spells:S_AINU | S_MONSTERS
 desc:Members of a society of wizards founded by Alatar and Pallandro,
 desc: the blue wizards command powerful magics and make formidable opponents.
 
-name:431:Rotting quylthulg
+name:431:rotting quylthulg
 base:quylthulg
 color:u
 info:120:420:20:1:0
@@ -7521,7 +7520,7 @@ spells:BLINK | TPORT
 spells:S_UNDEAD
 desc:It is a pulsing flesh mound that reeks of death and putrefaction.
 
-name:443:Death drake
+name:443:death drake
 base:ancient dragon
 color:G
 info:120:1848:25:120:80
@@ -7539,7 +7538,7 @@ spells:BR_NETH
 desc:It is a dragon-like form wrapped in darkness.  You cannot make out its true
 desc: form but you sense its evil.
 
-name:446:Great crystal drake
+name:446:great crystal drake
 base:ancient dragon
 color:u
 info:120:1848:25:120:80
@@ -7579,7 +7578,7 @@ desc:A mighty sorcerer King, Akhorahil was blind in life.  With powerful
 desc: enchantments, he created jewelled eyes that enabled him to see better than
 desc: any ordinary man ever could.
 
-name:458:Nalfeshnee
+name:458:nalfeshnee
 base:major demon
 color:r
 info:110:792:20:60:80
@@ -7597,7 +7596,7 @@ spells:S_DEMON
 desc:It is a large demon with the head of a giant boar.  Flames run up and down
 desc: its length.
 
-name:459:Undead beholder
+name:459:undead beholder
 base:eye
 color:u
 info:120:2376:30:120:10
@@ -7622,7 +7621,7 @@ desc: bloodshot pupil of its central giant eye, and light seems to bend as it
 desc: sucks its power from the very air around it.  Your soul chills as it
 desc: drains your vitality for its evil enchantments.
 
-name:463:Ethereal dragon
+name:463:ethereal dragon
 base:ancient dragon
 color:o
 info:120:1848:25:120:80
@@ -7640,7 +7639,7 @@ desc:A huge dragon emanating from the ethereal plane, this terrible dragon is a
 desc: master of light and dark.  Its form disappears from sight as it cloaks
 desc: itself in unearthly shadows.
 
-name:488:Demonic quylthulg
+name:488:demonic quylthulg
 base:quylthulg
 color:r
 info:120:420:20:1:0
@@ -7651,7 +7650,7 @@ spells:S_DEMON
 desc:A pile of pulsing flesh that glows with an inner hellish fire.  The world
 desc: itself seems to cry out against it.
 
-name:507:Draconic quylthulg
+name:507:draconic quylthulg
 base:quylthulg
 color:g
 info:120:420:20:1:0
@@ -7662,7 +7661,7 @@ spells:S_DRAGON
 desc:It looks like it was once a dragon corpse, now deeply infected with magical
 desc: bacteria that make it pulse in a foul and degrading way.
 
-name:601:Greater basilisk
+name:601:greater basilisk
 base:reptile
 color:D
 info:120:1010:25:120:15
@@ -7679,7 +7678,7 @@ spell-freq:8
 spells:BR_DARK | BR_NEXU | BR_POIS
 desc:A large basilisk, whose shape resembles that of a great wyrm.
 
-name:583:Berserker
+name:583:berserker
 base:person
 color:u
 info:120:1320:20:96:10
@@ -7704,8 +7703,8 @@ desc: survive blows which should kill him, and still apparently feel no pain.
 desc:  He tramples weaker creatures underfoot in his eagerness to get to his
 desc: real enemy, and his battle-cry strikes terror into his foes.
 
-name:584:Cyclops
-plural:Cyclopes
+name:584:cyclops
+plural:cyclopes
 base:giant
 color:u
 info:120:1050:20:144:20
@@ -7743,7 +7742,7 @@ desc: into the air.
 
 ### Dungeon level 47 ###
 
-name:465:Marilith
+name:465:marilith
 base:major demon
 color:y
 info:120:1232:20:112:60
@@ -7760,7 +7759,7 @@ spells:BLIND | CAUSE_2
 spells:S_DEMON
 desc:She is a demon of female form with many arms, each bearing deadly weapons.
 
-name:479:Death mold
+name:479:death mold
 base:mold
 color:D
 info:140:1050:200:72:0
@@ -7842,7 +7841,7 @@ desc: cunning and intelligence.  His speed through air is matched by few other
 desc: dragons and his dragonfire is what legends are made of; he is believed to
 desc: be the greatest dragon still surviving into the Third Age.
 
-name:603:Elder aranea
+name:603:elder aranea
 base:spider
 color:r
 info:120:1050:20:78:50
@@ -7866,7 +7865,7 @@ desc:A vast, bloated arachnid, master of its brood: among the more terrible of
 desc: Ungoliant's descendants, this is a monster such as those who haunted the
 desc: dread valley of Nan Dungortheb long ago.
 
-name:562:Winged Horror
+name:562:winged horror
 base:bird
 color:p
 info:120:1013:30:96:5
@@ -7885,7 +7884,7 @@ desc: steed for his Ringwraiths.
 
 ### Dungeon level 49 ###
 
-name:467:Lesser Balrog
+name:467:lesser Balrog
 base:major demon
 color:p
 info:120:1760:20:75:50
@@ -7895,7 +7894,7 @@ blow:HIT:FIRE:4d12
 blow:CRUSH:HURT:3d12
 blow:TOUCH:DRAIN_CHARGES
 flags:POWERFUL | HAS_LIGHT
-flags:DROP_2 
+flags:DROP_2
 flags:MOVE_BODY
 flags:IM_FIRE
 spell-freq:4
@@ -7934,7 +7933,7 @@ desc: Gondolin.
 
 ### Dungeon level 50 ###
 
-name:482:Master mystic
+name:482:master mystic
 base:person
 color:o
 info:130:968:30:72:5
@@ -7984,7 +7983,7 @@ desc: his fury blisters your skin and melts your flesh!
 
 ### Dungeon level 51 ###
 
-name:485:Nether hound
+name:485:nether hound
 base:zephyr hound
 color:G
 info:120:330:30:120:0
@@ -8002,7 +8001,7 @@ friends:100:2d7:Same
 desc:You feel a soul-tearing chill upon viewing this beast, a ghostly form of
 desc: darkness in the shape of a large dog.
 
-name:486:Time hound
+name:486:time hound
 base:zephyr hound
 color:B
 info:130:330:30:120:0
@@ -8022,7 +8021,7 @@ desc:You get a terrible sense of deja vu, or is it a premonition?  All at once
 desc: you see a little puppy and a toothless old dog.  Perhaps you should give
 desc: up and go to bed.
 
-name:487:Plasma hound
+name:487:plasma hound
 base:zephyr hound
 color:R
 info:120:330:30:120:0
@@ -8086,8 +8085,8 @@ desc: Sauron's power.
 
 ### Dungeon level 53 ###
 
-name:502:Chaos vortex
-plural:Chaos vortices
+name:502:chaos vortex
+plural:chaos vortices
 base:vortex
 color:v
 info:120:315:100:96:0
@@ -8102,8 +8101,8 @@ spell-freq:6
 spells:BR_CHAO
 desc:Void, nothingness, spinning destructively.
 
-name:614:Storm of Unmagic
-plural:Storms of Unmagic
+name:614:storm of Unmagic
+plural:storms of Unmagic
 base:vortex
 color:v
 info:120:315:50:48:0
@@ -8143,8 +8142,8 @@ spells:S_KIN
 desc:A massive glowing eagle bathed in flames.  The searing heat chars your skin
 desc: and melts your armour.
 
-name:557:Demilich
-plural:Demiliches
+name:557:demilich
+plural:demiliches
 base:lich
 color:U
 info:120:2816:20:150:40
@@ -8161,7 +8160,7 @@ spells:TPORT
 spells:S_DEMON | S_UNDEAD
 desc:A lich who is partially immaterial, on its way to a new, ethereal form.
 
-name:596:Elder vampire
+name:596:elder vampire
 base:vampire
 color:r
 info:120:2640:20:108:10
@@ -8231,8 +8230,8 @@ desc:The Istari are an order of Maia who came to Middle-Earth in the third age.
 desc: They have taken the form of human wizards, and channel powerful magic to
 desc: crush their foes.
 
-name:476:Dracolich
-plural:Dracoliches
+name:476:dracolich
+plural:dracoliches
 base:ancient dragon
 color:G
 info:120:3080:25:144:80
@@ -8251,7 +8250,7 @@ desc:The skeletal form of a once-great dragon, enchanted by magic most
 desc: perilous.   Its animated form strikes with speed and drains life from its
 desc: prey to satisfy its hunger.
 
-name:478:Dracolisk
+name:478:dracolisk
 base:ancient dragon
 color:i
 info:120:3080:25:144:80
@@ -8291,8 +8290,8 @@ desc:Last and proudest king of ancient Númenor.  Corrupted by power and avarice
 desc: he fell victim to Sauron's wiles, tried to fight the Valar themselves, and
 desc: condemned Númenor to oblivion.
 
-name:567:Barbazu
-plural:Barbazu
+name:567:barbazu
+plural:barbazu
 base:major demon
 color:G
 info:120:700:25:90:70
@@ -8313,7 +8312,7 @@ desc: hells, capable of a terrifying berserk fury.
 
 ### Dungeon level 56 ###
 
-name:433:Lesser titan
+name:433:lesser titan
 base:giant
 color:y
 info:120:2100:30:96:15
@@ -8354,7 +8353,7 @@ desc: will.  He howls maniacally as he reaches out to destroy you.
 
 ### Dungeon level 57 ###
 
-name:493:Grand master mystic
+name:493:grand master mystic
 base:person
 color:o
 info:130:1936:30:96:5
@@ -8379,7 +8378,7 @@ desc:He is one of the few true masters of the art, being extremely skillful in
 desc: all forms of unarmed combat and controlling the world's natural creatures
 desc: with disdainful ease.
 
-name:499:Hand druj
+name:499:hand druj
 base:skeleton
 color:y
 info:130:528:20:132:10
@@ -8442,7 +8441,7 @@ spells:BR_WALL
 desc:A fearsome bull-headed monster, Baphomet swings a mighty axe as he curses
 desc: all that defy him.
 
-name:500:Eye druj
+name:500:eye druj
 base:skeleton
 color:r
 info:130:880:20:108:10
@@ -8461,7 +8460,7 @@ desc: harmless.
 
 ### Dungeon level 59 ###
 
-name:495:Ethereal hound
+name:495:ethereal hound
 base:zephyr hound
 color:G
 info:120:480:30:120:0
@@ -8480,7 +8479,7 @@ friends:100:2d7:Same
 desc:A pale green hound.  Pulsing red lines and strange fluorescent light hints
 desc: at internal organs best left to the imagination.
 
-name:501:Skull druj
+name:501:skull druj
 base:skeleton
 color:o
 info:130:1232:20:144:10
@@ -8527,8 +8526,8 @@ desc: strength and priestly wisdom are a true match for any adventurer.
 
 ### Dungeon level 60 ###
 
-name:503:Aether vortex
-plural:Aether vortices
+name:503:aether vortex
+plural:aether vortices
 base:vortex
 color:v
 info:130:420:100:48:0
@@ -8575,7 +8574,7 @@ desc: the world.
 
 ### Dungeon level 61 ###
 
-name:484:Nightwing
+name:484:nightwing
 base:wraith
 color:V
 info:120:1830:20:144:10
@@ -8623,7 +8622,7 @@ desc: kill you. She wears no mortal shell; her body is made of fiery golden
 desc: light, painfully bright even when you close your eyes, and hot enough to
 desc: melt armor and flesh alike.
 
-name:568:Bile Demon
+name:568:bile demon
 base:major demon
 color:R
 info:120:2464:40:135:40
@@ -8670,7 +8669,7 @@ desc: Ossë is the most powerful and heartless of Ulmo's servants and embodies
 desc: the untamed power of the ocean. Terror grows in your heart with each
 desc: squelching step of his approach.
 
-name:515:Dreadlord
+name:515:dreadlord
 base:ghost
 color:r
 info:120:2640:20:180:10
@@ -8696,7 +8695,7 @@ desc: and the stench of death.  Flee its hunger!
 
 ### Dungeon level 63 ###
 
-name:489:Great Storm Wyrm
+name:489:great storm wyrm
 base:ancient dragon
 color:b
 info:120:3080:30:225:30
@@ -8716,7 +8715,7 @@ desc:A vast dragon of power.  Storms and lightning crash around its titanic
 desc: form.  Deep blue scales reflect the flashes and highlight the creature's
 desc: great muscles.  It regards you with contempt.
 
-name:496:Great Ice Wyrm
+name:496:great ice wyrm
 base:ancient dragon
 color:w
 info:120:3080:30:225:30
@@ -8736,7 +8735,7 @@ desc:An immense dragon capable of awesome destruction.  You have never felt such
 desc: extreme cold, or witnessed such an icy stare.  Begone quickly or feel its
 desc: wrath!
 
-name:576:Great Swamp Wyrm
+name:576:great swamp wyrm
 base:ancient dragon
 color:g
 info:120:3080:30:225:30
@@ -8806,7 +8805,7 @@ desc: has studied the plants and animals of Middle-Earth for many years
 desc: and considers himself their defender. His humble robes and demeanor
 desc: belie his inner strength.
 
-name:518:Chaos hound
+name:518:chaos hound
 base:zephyr hound
 color:v
 info:120:930:30:120:0
@@ -8825,8 +8824,8 @@ desc:A constantly changing canine form, this hound rushes towards you as if
 desc: expecting mayhem and chaos ahead.  It appears to have an almost kamikaze
 desc: relish for combat.  You suspect all may not be as it seems.
 
-name:558:Archlich
-plural:Archliches
+name:558:archlich
+plural:archliches
 base:lich
 color:B
 info:120:3520:20:180:40
@@ -8871,7 +8870,7 @@ desc: remember his own name, his power and evil are undeniable.  He believes
 desc: unshakably that he is unbeatable and laughs as he weaves his awesome
 desc: spells.
 
-name:569:Osyluth
+name:569:osyluth
 base:major demon
 color:W
 info:130:2288:20:112:30
@@ -8881,7 +8880,7 @@ blow:HIT:LOSE_CON:6d6
 blow:BITE:POISON:8d8
 blow:STING:LOSE_STR:5d5
 flags:INVISIBLE | POWERFUL
-flags:DROP_3 
+flags:DROP_3
 flags:MOVE_BODY
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 spell-freq:6
@@ -8895,7 +8894,7 @@ desc: of decay and rot.  They are despised even in the hells.
 
 ### Dungeon level 66 ###
 
-name:477:Greater titan
+name:477:greater titan
 base:giant
 color:o
 info:120:3344:30:150:15
@@ -8959,7 +8958,7 @@ desc:Chief messenger between Sauron and Morgoth, she is surely the most deadly
 desc: of her vampire race.  At first she is charming to meet, but her wings and
 desc: eyes give away her true form.
 
-name:506:Great Hell Wyrm
+name:506:great hell wyrm
 base:ancient dragon
 color:r
 info:120:3344:30:225:30
@@ -8979,7 +8978,7 @@ desc:A vast dragon of immense power.  Fire leaps continuously from its huge
 desc: form. The air around it scalds you.  Its slightest glance burns you, and
 desc: you truly realize how insignificant you are.
 
-name:591:Beholder hive-mother
+name:591:beholder hive-mother
 base:eye
 color:b
 info:120:3080:30:96:10
@@ -9000,7 +8999,7 @@ spells:S_KIN
 desc:A hive mother of the race of beholders, she can summon her brood to her aid
 desc: whenever she wishes.
 
-name:578:Great Bile Wyrm
+name:578:great bile wyrm
 base:ancient dragon
 color:s
 info:120:3080:30:225:30
@@ -9042,7 +9041,7 @@ desc: enough to defend yourself adequately.
 
 ### Dungeon level 68 ###
 
-name:517:Jabberwock
+name:517:jabberwock
 base:hybrid
 color:v
 info:130:2816:35:187:100
@@ -9084,7 +9083,7 @@ desc: and destruction.  Tselakus is a being of sneering contempt, laughing at
 desc: your pitiful efforts to defy him.  Mighty claws rend reality as he
 desc: annihilates all in his path to your soul!
 
-name:608:Bone golem
+name:608:bone golem
 base:golem
 color:D
 info:120:3080:20:255:20
@@ -9106,7 +9105,7 @@ desc: victims.
 
 ### Dungeon level 69 ###
 
-name:498:Nightcrawler
+name:498:nightcrawler
 base:wraith
 color:D
 info:120:2440:20:192:10
@@ -9154,7 +9153,7 @@ desc: himself to hear so well that it nearly makes up for his disability.
 
 ### Dungeon level 69 ###
 
-name:570:Gelugon
+name:570:gelugon
 base:major demon
 color:w
 info:130:3080:20:150:30
@@ -9208,7 +9207,7 @@ desc: definition of dragonfire.
 
 ### Dungeon level 71 ###
 
-name:525:Greater demonic quylthulg
+name:525:greater demonic quylthulg
 base:quylthulg
 color:R
 info:120:1320:20:1:0
@@ -9219,7 +9218,7 @@ spells:BLINK | TELE_TO
 spells:S_HI_DEMON
 desc:A massive pulsating mound of flesh, glowing with a hellish light.
 
-name:526:Greater draconic quylthulg
+name:526:greater draconic quylthulg
 base:quylthulg
 color:G
 info:120:1320:20:1:0
@@ -9231,7 +9230,7 @@ spells:S_HI_DRAGON
 desc:A massive mound of scaled flesh, throbbing and pulsating with multi-hued
 desc: light.
 
-name:527:Greater rotting quylthulg
+name:527:greater rotting quylthulg
 base:quylthulg
 color:U
 info:120:1320:20:1:0
@@ -9267,7 +9266,7 @@ spells:S_HI_UNDEAD
 desc:A warrior-king of the East.  Khamûl is a powerful opponent, his skill in
 desc: combat awesome and his form twisted by evil cunning.
 
-name:571:Horned Reaper
+name:571:horned reaper
 base:major demon
 color:B
 info:130:3344:40:180:20
@@ -9290,7 +9289,7 @@ desc: and you - even the minions it has just summoned.
 
 ### Dungeon level 73 ###
 
-name:512:Nightwalker
+name:512:nightwalker
 base:wraith
 color:D
 info:130:1650:20:210:10
@@ -9339,7 +9338,7 @@ desc: history steeped in forgotten evils, his atrocities numerous and sickening.
 
 ### Dungeon level 74 ###
 
-name:524:Black reaver
+name:524:black reaver
 base:lich
 color:D
 info:120:3960:20:255:40
@@ -9359,7 +9358,7 @@ spells:S_UNDEAD
 desc:A humanoid form, black as night, advancing steadily and unstoppably, even
 desc: the very rock of the dungeon cannot prevent it reaching you.
 
-name:531:Aether hound
+name:531:aether hound
 base:zephyr hound
 color:v
 info:120:1230:30:120:0
@@ -9452,7 +9451,7 @@ desc: living light into her bloated body, and breathes out the blackest of
 desc: darkness. She is always ravenously hungry and would even eat herself to
 desc: avoid starvation.
 
-name:609:Bronze golem
+name:609:bronze golem
 base:golem
 color:o
 info:120:3520:20:255:20
@@ -9476,7 +9475,7 @@ desc: great heat.
 
 ### Dungeon level 76 ###
 
-name:533:Master quylthulg
+name:533:master quylthulg
 base:quylthulg
 color:B
 info:120:2640:30:1:0
@@ -9535,7 +9534,7 @@ friends:10:1d2:Archlich
 desc:A stench of corruption and decay surrounds this sorcerer, who has clearly
 desc: risen from the dead to continue his foul plots and schemes.
 
-name:572:Pit Fiend
+name:572:pit fiend
 base:major demon
 color:o
 info:130:3520:30:180:20
@@ -9623,7 +9622,7 @@ desc:A gigantic seething mass of flesh, Qlzqqlzuup changes colours in front of
 desc: your eyes.  Pulsating first one colour then the next, it knows only it
 desc: must bring help to protect itself.
 
-name:573:Greater Balrog
+name:573:greater balrog
 base:major demon
 color:P
 info:130:4400:40:210:20
