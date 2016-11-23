@@ -61,7 +61,6 @@
 #include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
-#include "mon-power.h"
 #include "savefile.h"
 #include "ui-command.h"
 #include "ui-display.h"
@@ -829,15 +828,6 @@ static void load_prefs(void)
 
 	/* Extract the "arg_wizard" flag */
 	arg_wizard = (GetPrivateProfileInt("Angband", "Wizard", 0, ini_file) != 0);
-
-	/* Extract the "arg_power" flag */
-	arg_power = (GetPrivateProfileInt("Angband", "Power", false,
-									  ini_file) != 0);
-
-	/* Extract the "arg_rebalance" flag */
-	arg_rebalance = (GetPrivateProfileInt("Angband", "Rebalance", false,
-										  ini_file) != 0);
-
 
 	/* Extract the gamma correction */
 	gamma_correction = GetPrivateProfileInt("Angband", "Gamma", 0, ini_file);

@@ -22,7 +22,6 @@
 #include "mon-init.h"
 #include "mon-lore.h"
 #include "mon-msg.h"
-#include "mon-power.h"
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "mon-blows.h"
@@ -1307,10 +1306,6 @@ static errr finish_parse_monster(struct parser *p) {
 		l->blows = mem_zalloc(z_info->mon_blows_max * sizeof(struct monster_blow));
 		l->blow_known = mem_zalloc(z_info->mon_blows_max * sizeof(bool));
 	}
-
-	/* Write new monster.txt file if requested */
-	if (arg_power || arg_rebalance)
-		eval_monster_power(r_info);
 
 	parser_destroy(p);
 	return 0;

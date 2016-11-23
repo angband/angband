@@ -113,7 +113,6 @@ ANGFILES = \
 	mon-make.o \
 	mon-move.o \
 	mon-msg.o \
-	mon-power.o \
 	mon-spell.o \
 	mon-summon.o \
 	mon-timed.o \

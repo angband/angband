@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "init.h"
-#include "mon-power.h"
 #include "savefile.h"
 #include "ui-command.h"
 #include "ui-display.h"
@@ -361,14 +360,6 @@ int main(int argc, char *argv[])
 				arg_wizard = true;
 				break;
 
-			case 'p':
-				arg_power = true;
-				break;
-
-			case 'r':
-				arg_rebalance = true;
-				break;
-
 			case 'g':
 				/* Default graphics tile */
 				/* in graphics.txt, 2 corresponds to adam bolt's tiles */
@@ -433,7 +424,6 @@ int main(int argc, char *argv[])
 				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
 				puts("  -l             Lists all savefiles you can play");
 				puts("  -w             Resurrect dead character (marks savefile)");
-				puts("  -r             Rebalance monsters");
 				puts("  -g             Request graphics mode");
 				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");

@@ -25,7 +25,6 @@
 #include "obj-util.h"
 #include "init.h"
 #include "effects.h"
-#include "mon-power.h"
 #include "monster.h"
 
 /**
