@@ -9622,7 +9622,7 @@ desc:A gigantic seething mass of flesh, Qlzqqlzuup changes colours in front of
 desc: your eyes.  Pulsating first one colour then the next, it knows only it
 desc: must bring help to protect itself.
 
-name:573:greater balrog
+name:573:greater Balrog
 base:major demon
 color:P
 info:130:4400:40:210:20
@@ -9869,8 +9869,8 @@ spell-freq:4
 spells:BLIND | CONF | SCARE
 spells:BR_FIRE | BR_PLAS
 spells:S_HI_DEMON | S_UNDEAD
-friends:100:1d3:Lesser balrog
-friends:50:1d2:Greater balrog
+friends:100:1d3:Lesser Balrog
+friends:50:1d2:Greater Balrog
 friends:100:1d1:The Balrog of Moria
 desc:A massive form cloaked in flame.  Lungorthin stares balefully at you with
 desc: eyes that smoulder red.  The dungeon floor where he stands is scorched by
@@ -9975,11 +9975,11 @@ spell-freq:3
 spells:BLIND | CONF | SCARE
 spells:BR_FIRE | BR_PLAS
 spells:S_HI_DEMON | S_HI_UNDEAD
-friends:100:1d5:Lesser balrog
+friends:100:1d5:Lesser Balrog
 friends:30:1d3:Osyluth
 friends:30:1d3:Gelugon
 friends:30:1d3:Pit fiend
-friends:100:1d2:Greater balrog
+friends:100:1d2:Greater Balrog
 friends:100:1d1:The Balrog of Moria
 friends:100:1d1:Lungorthin, the Balrog of White Fire
 desc:Gothmog is the Chief Balrog in Morgoth's personal guard.  He is renowned
