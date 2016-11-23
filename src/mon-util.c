@@ -53,7 +53,7 @@ struct monster_race *lookup_monster(const char *name)
 			continue;
 
 		/* Test for equality */
-		if (streq(name, race->name))
+		if (my_stricmp(name, race->name) == 0)
 			return race;
 
 		/* Test for close matches */
