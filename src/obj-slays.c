@@ -21,6 +21,7 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "obj-desc.h"
+#include "obj-init.h"
 #include "obj-knowledge.h"
 #include "obj-slays.h"
 #include "obj-util.h"

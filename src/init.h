@@ -156,8 +156,7 @@ extern struct parser *init_parse_trap(void);
 extern struct parser *init_parse_quest(void);
 extern struct parser *init_parse_player_timed(void);
 
-void add_game_brand(struct brand *b);
-void add_game_slay(struct slay *s);
+errr grab_effect_data(struct parser *p, struct effect *effect);
 extern void init_file_paths(const char *config, const char *lib, const char *data);
 extern void init_game_constants(void);
 extern void init_arrays(void);

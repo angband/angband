@@ -269,12 +269,12 @@ depgen:
  list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h hint.h \
  init.h parser.h list-parser-errors.h mon-init.h mon-list.h mon-lore.h \
  z-textblock.h mon-msg.h list-mon-message.h mon-util.h obj-ignore.h \
- list-ignore-types.h obj-list.h obj-make.h obj-pile.h obj-randart.h \
- list-randart-properties.h obj-slays.h obj-tval.h list-tvals.h obj-util.h \
- player-history.h list-history-types.h player-quest.h player-spell.h \
- player-timed.h list-player-timed.h project.h list-project-environs.h \
- list-project-monsters.h randname.h store.h trap.h list-trap-flags.h \
- list-equip-slots.h
+ list-ignore-types.h obj-init.h obj-list.h obj-make.h obj-pile.h \
+ obj-randart.h list-randart-properties.h obj-slays.h obj-tval.h \
+ list-tvals.h obj-util.h player-history.h list-history-types.h \
+ player-quest.h player-spell.h player-timed.h list-player-timed.h \
+ project.h list-project-environs.h list-project-monsters.h randname.h \
+ store.h trap.h list-trap-flags.h list-equip-slots.h
 ./load.o: load.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  list-message.h player.h guid.h obj-properties.h z-file.h list-stats.h \
@@ -343,12 +343,12 @@ depgen:
  list-object-flags.h list-kind-flags.h list-object-modifiers.h object.h \
  z-quark.h z-dice.h z-expression.h obj-curse.h list-elements.h \
  list-origins.h option.h list-options.h list-player-flags.h \
- list-magic-realms.h effects.h list-effects.h init.h parser.h \
- list-parser-errors.h mon-init.h mon-lore.h z-textblock.h monster.h \
- cave.h list-square-flags.h list-terrain-flags.h mon-timed.h \
- list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
- list-mon-spells.h mon-msg.h list-mon-message.h mon-spell.h mon-util.h \
- obj-tval.h list-tvals.h obj-util.h player-spell.h
+ list-magic-realms.h effects.h list-effects.h generate.h monster.h cave.h \
+ list-square-flags.h list-terrain-flags.h mon-timed.h list-mon-timed.h \
+ mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
+ list-mon-spells.h init.h parser.h list-parser-errors.h mon-init.h \
+ mon-lore.h z-textblock.h mon-msg.h list-mon-message.h mon-spell.h \
+ mon-util.h obj-tval.h list-tvals.h obj-util.h player-spell.h
 ./mon-list.o: mon-list.c game-world.h cave.h z-type.h h-basic.h z-bitflag.h \
  z-form.h z-virt.h list-square-flags.h list-terrain-flags.h mon-desc.h \
  monster.h z-rand.h mon-timed.h list-mon-timed.h mon-blows.h player.h \
@@ -526,6 +526,20 @@ depgen:
  obj-pile.h obj-slays.h obj-tval.h list-tvals.h obj-util.h \
  player-attack.h player-calcs.h player-timed.h list-player-timed.h \
  project.h list-project-environs.h list-project-monsters.h
+./obj-init.o: obj-init.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+ z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
+ list-message.h player.h guid.h obj-properties.h z-file.h list-stats.h \
+ list-object-flags.h list-kind-flags.h list-object-modifiers.h object.h \
+ z-quark.h z-dice.h z-expression.h obj-curse.h list-elements.h \
+ list-origins.h option.h list-options.h list-player-flags.h \
+ list-magic-realms.h buildid.h effects.h list-effects.h init.h parser.h \
+ list-parser-errors.h obj-ignore.h list-ignore-types.h obj-list.h \
+ obj-make.h cave.h list-square-flags.h list-terrain-flags.h obj-pile.h \
+ obj-randart.h list-randart-properties.h obj-slays.h monster.h \
+ mon-timed.h list-mon-timed.h mon-blows.h list-mon-temp-flags.h \
+ list-mon-race-flags.h list-mon-spells.h obj-tval.h list-tvals.h \
+ obj-util.h player-spell.h project.h list-project-environs.h \
+ list-project-monsters.h
 ./obj-knowledge.o: obj-knowledge.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
@@ -619,7 +633,8 @@ depgen:
  list-parser-errors.h mon-lore.h z-textblock.h monster.h cave.h \
  list-square-flags.h list-terrain-flags.h mon-timed.h list-mon-timed.h \
  mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
- list-mon-spells.h obj-desc.h obj-knowledge.h obj-slays.h obj-util.h
+ list-mon-spells.h obj-desc.h obj-init.h obj-knowledge.h obj-slays.h \
+ obj-util.h
 ./obj-tval.o: obj-tval.c init.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-file.h z-rand.h parser.h z-dice.h z-expression.h list-parser-errors.h \
  object.h z-quark.h obj-curse.h obj-properties.h list-stats.h \

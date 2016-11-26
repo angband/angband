@@ -28,6 +28,8 @@ extern struct file_parser eff_parser;
 extern struct file_parser mon_spell_parser;
 extern struct file_parser monster_parser;
 extern struct file_parser mon_base_parser;
+extern struct file_parser pit_parser;
+extern struct file_parser pain_parser;
 
 void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 				 int flag_size, const char *names[]);

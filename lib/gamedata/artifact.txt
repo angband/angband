@@ -1221,7 +1221,7 @@ flags:FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN |
 act:COLD_BALL100
 time:40
 values:SPEED[10] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] |
-values:SLAY_TROLL[2] | SLAY_DEMON[5] | RES_COLD[1] | RES_LIGHT[1]
+values:SLAY_TROLL[3] | SLAY_DEMON[5] | RES_COLD[1] | RES_LIGHT[1]
 desc:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
 desc:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it 
 desc:of old; his lame foot will remind him of its might should he face it again.

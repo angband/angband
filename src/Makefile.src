@@ -123,6 +123,7 @@ ANGFILES = \
 	obj-gear.o \
 	obj-ignore.o \
 	obj-info.o \
+	obj-init.o \
 	obj-knowledge.o \
 	obj-list.o \
 	obj-make.o \
