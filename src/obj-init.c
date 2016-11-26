@@ -298,8 +298,10 @@ static struct activation *findact(const char *act_name) {
 }
 
 /**
- * Parsing functions for object_base.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize object bases
+ * ------------------------------------------------------------------------ */
+
 struct kb_parsedata {
 	struct object_base defaults;
 	struct object_base *kb;
@@ -468,8 +470,10 @@ struct file_parser object_base_parser = {
 
 
 /**
- * Parsing functions for curse.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize object curses
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_curse_name(struct parser *p) {
 	const char *name = parser_getstr(p, "name");
 	struct curse *h = parser_priv(p);
@@ -772,8 +776,246 @@ struct file_parser curse_parser = {
 };
 
 /**
- * Parsing functions for object.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize activations
+ * ------------------------------------------------------------------------ */
+
+static enum parser_error parse_act_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct activation *h = parser_priv(p);
+
+	struct activation *act = mem_zalloc(sizeof *act);
+	act->next = h;
+	parser_setpriv(p, act);
+	act->name = string_make(name);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_aim(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	int val;
+	assert(act);
+
+	val = parser_getuint(p, "aim");
+	act->aim = val ? true : false;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_power(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	assert(act);
+
+	act->power = parser_getuint(p, "power");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_effect(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (act->effect) {
+		effect = act->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		act->effect = new_effect;
+
+	/* Fill in the detail */
+	return grab_effect_data(p, new_effect);
+}
+
+static enum parser_error parse_act_param(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	struct effect *effect = act->effect;
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->params[1] = parser_getint(p, "p2");
+
+	if (parser_hasval(p, "p3"))
+		effect->params[2] = parser_getint(p, "p3");
+
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_act_dice(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	struct effect *effect = act->effect;
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INVALID_DICE;
+
+	/* Go to the correct effect */
+	while (effect->next) effect = effect->next;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		effect->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_INVALID_DICE;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_expr(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	struct effect *effect = act->effect;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (act->effect->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	/* Go to the correct effect */
+	while (effect->next) effect = effect->next;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INVALID_EXPRESSION;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
+
+	if (dice_bind_expression(effect->dice, name, expression) < 0)
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_act_msg(struct parser *p) {
+	struct activation *act = parser_priv(p);
+	assert(act);
+	act->message = string_append(act->message, parser_getstr(p, "msg"));
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_act_desc(struct parser *p) {
+	struct activation *act = parser_priv(p);
+
+	if (!act)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	act->desc = string_append(act->desc, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_act(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_act_name);
+	parser_reg(p, "aim uint aim", parse_act_aim);
+	parser_reg(p, "power uint power", parse_act_power);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_act_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_act_param);
+	parser_reg(p, "dice str dice", parse_act_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_act_expr);
+	parser_reg(p, "msg str msg", parse_act_msg);
+	parser_reg(p, "desc str desc", parse_act_desc);
+	return p;
+}
+
+static errr run_parse_act(struct parser *p) {
+	return parse_file_quit_not_found(p, "activation");
+}
+
+static errr finish_parse_act(struct parser *p) {
+	struct activation *act, *next = NULL;
+	int count = 1;
+
+	/* Count the entries */
+	z_info->act_max = 0;
+	act = parser_priv(p);
+	while (act) {
+		z_info->act_max++;
+		act = act->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	activations = mem_zalloc((z_info->act_max + 1) * sizeof(*act));
+	for (act = parser_priv(p); act; act = next, count++) {
+		memcpy(&activations[count], act, sizeof(*act));
+		activations[count].index = count;
+		next = act->next;
+		if (next)
+			activations[count].next = &activations[count + 1];
+		else
+			activations[count].next = NULL;
+
+		mem_free(act);
+	}
+	z_info->act_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_act(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->act_max; idx++) {
+		string_free(activations[idx].name);
+		mem_free(activations[idx].desc);
+		mem_free(activations[idx].message);
+		free_effect(activations[idx].effect);
+	}
+	mem_free(activations);
+}
+
+struct file_parser act_parser = {
+	"activation",
+	init_parse_act,
+	run_parse_act,
+	finish_parse_act,
+	cleanup_act
+};
+
+/**
+ * ------------------------------------------------------------------------
+ * Initialize objects
+ * ------------------------------------------------------------------------ */
 
 /* Generic object kinds */
 struct object_kind *unknown_item_kind;
@@ -1238,243 +1480,10 @@ struct file_parser object_parser = {
 };
 
 /**
- * Parsing functions for activation.txt
- */
-static enum parser_error parse_act_name(struct parser *p) {
-	const char *name = parser_getstr(p, "name");
-	struct activation *h = parser_priv(p);
+ * ------------------------------------------------------------------------
+ * Initialize ego items
+ * ------------------------------------------------------------------------ */
 
-	struct activation *act = mem_zalloc(sizeof *act);
-	act->next = h;
-	parser_setpriv(p, act);
-	act->name = string_make(name);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_act_aim(struct parser *p) {
-	struct activation *act = parser_priv(p);
-	int val;
-	assert(act);
-
-	val = parser_getuint(p, "aim");
-	act->aim = val ? true : false;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_act_power(struct parser *p) {
-	struct activation *act = parser_priv(p);
-	assert(act);
-
-	act->power = parser_getuint(p, "power");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_act_effect(struct parser *p) {
-	struct activation *act = parser_priv(p);
-	struct effect *effect;
-	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
-
-	if (!act)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	/* Go to the next vacant effect and set it to the new one  */
-	if (act->effect) {
-		effect = act->effect;
-		while (effect->next)
-			effect = effect->next;
-		effect->next = new_effect;
-	} else
-		act->effect = new_effect;
-
-	/* Fill in the detail */
-	return grab_effect_data(p, new_effect);
-}
-
-static enum parser_error parse_act_param(struct parser *p) {
-	struct activation *act = parser_priv(p);
-	struct effect *effect = act->effect;
-
-	if (!act)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
-		return PARSE_ERROR_NONE;
-
-	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
-
-	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
-
-	return PARSE_ERROR_NONE;
-}
-
-
-static enum parser_error parse_act_dice(struct parser *p) {
-	struct activation *act = parser_priv(p);
-	struct effect *effect = act->effect;
-	dice_t *dice = NULL;
-	const char *string = NULL;
-
-	if (!act)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	dice = dice_new();
-
-	if (dice == NULL)
-		return PARSE_ERROR_INVALID_DICE;
-
-	/* Go to the correct effect */
-	while (effect->next) effect = effect->next;
-
-	string = parser_getstr(p, "dice");
-
-	if (dice_parse_string(dice, string)) {
-		effect->dice = dice;
-	}
-	else {
-		dice_free(dice);
-		return PARSE_ERROR_INVALID_DICE;
-	}
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_act_expr(struct parser *p) {
-	struct activation *act = parser_priv(p);
-	expression_t *expression = NULL;
-	expression_base_value_f function = NULL;
-	struct effect *effect = act->effect;
-	const char *name;
-	const char *base;
-	const char *expr;
-
-	if (!act)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	/* If there are no dice, assume that this is human and not parser error. */
-	if (act->effect->dice == NULL)
-		return PARSE_ERROR_NONE;
-
-	/* Go to the correct effect */
-	while (effect->next) effect = effect->next;
-
-	name = parser_getsym(p, "name");
-	base = parser_getsym(p, "base");
-	expr = parser_getstr(p, "expr");
-	expression = expression_new();
-
-	if (expression == NULL)
-		return PARSE_ERROR_INVALID_EXPRESSION;
-
-	function = spell_value_base_by_name(base);
-	expression_set_base_value(expression, function);
-
-	if (expression_add_operations_string(expression, expr) < 0)
-		return PARSE_ERROR_BAD_EXPRESSION_STRING;
-
-	if (dice_bind_expression(effect->dice, name, expression) < 0)
-		return PARSE_ERROR_UNBOUND_EXPRESSION;
-
-	/* The dice object makes a deep copy of the expression, so we can free it */
-	expression_free(expression);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_act_msg(struct parser *p) {
-	struct activation *act = parser_priv(p);
-	assert(act);
-	act->message = string_append(act->message, parser_getstr(p, "msg"));
-	return PARSE_ERROR_NONE;
-}
-
-
-static enum parser_error parse_act_desc(struct parser *p) {
-	struct activation *act = parser_priv(p);
-
-	if (!act)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	act->desc = string_append(act->desc, parser_getstr(p, "desc"));
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *init_parse_act(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-	parser_reg(p, "name str name", parse_act_name);
-	parser_reg(p, "aim uint aim", parse_act_aim);
-	parser_reg(p, "power uint power", parse_act_power);
-	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_act_effect);
-	parser_reg(p, "param int p2 ?int p3", parse_act_param);
-	parser_reg(p, "dice str dice", parse_act_dice);
-	parser_reg(p, "expr sym name sym base str expr", parse_act_expr);
-	parser_reg(p, "msg str msg", parse_act_msg);
-	parser_reg(p, "desc str desc", parse_act_desc);
-	return p;
-}
-
-static errr run_parse_act(struct parser *p) {
-	return parse_file_quit_not_found(p, "activation");
-}
-
-static errr finish_parse_act(struct parser *p) {
-	struct activation *act, *next = NULL;
-	int count = 1;
-
-	/* Count the entries */
-	z_info->act_max = 0;
-	act = parser_priv(p);
-	while (act) {
-		z_info->act_max++;
-		act = act->next;
-	}
-
-	/* Allocate the direct access list and copy the data to it */
-	activations = mem_zalloc((z_info->act_max + 1) * sizeof(*act));
-	for (act = parser_priv(p); act; act = next, count++) {
-		memcpy(&activations[count], act, sizeof(*act));
-		activations[count].index = count;
-		next = act->next;
-		if (next)
-			activations[count].next = &activations[count + 1];
-		else
-			activations[count].next = NULL;
-
-		mem_free(act);
-	}
-	z_info->act_max += 1;
-
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_act(void)
-{
-	int idx;
-	for (idx = 0; idx < z_info->act_max; idx++) {
-		string_free(activations[idx].name);
-		mem_free(activations[idx].desc);
-		mem_free(activations[idx].message);
-		free_effect(activations[idx].effect);
-	}
-	mem_free(activations);
-}
-
-struct file_parser act_parser = {
-	"activation",
-	init_parse_act,
-	run_parse_act,
-	finish_parse_act,
-	cleanup_act
-};
-
-/**
- * Parsing functions for ego-item.txt
- */
 static enum parser_error parse_ego_name(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -1915,8 +1924,10 @@ struct file_parser ego_parser = {
 };
 
 /**
- * Parsing functions for artifact.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize artifacts
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_artifact_name(struct parser *p) {
 	size_t i;
 	int idx = parser_getint(p, "index");

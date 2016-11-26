@@ -106,8 +106,10 @@ void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 
 
 /**
- * Parsing functions for blow_methods.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize monster blow methods
+ * ------------------------------------------------------------------------ */
+
 static struct blow_method *findmeth(const char *meth_name) {
 	struct blow_method *meth = &blow_methods[1];
 	while (meth) {
@@ -280,8 +282,10 @@ struct file_parser meth_parser = {
 
 
 /**
- * Parsing functions for blow_effects.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize monster blow effects
+ * ------------------------------------------------------------------------ */
+
 static struct blow_effect *findeff(const char *eff_name) {
 	struct blow_effect *eff = &blow_effects[0];
 	while (eff) {
@@ -393,10 +397,11 @@ struct file_parser eff_parser = {
 	cleanup_eff
 };
 
-
 /**
+ * ------------------------------------------------------------------------
  * Initialize monster pain messages
- */
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_pain_type(struct parser *p) {
 	struct monster_pain *h = parser_priv(p);
 	struct monster_pain *mp = mem_zalloc(sizeof *mp);
@@ -484,8 +489,9 @@ struct file_parser pain_parser = {
 
 
 /**
- * Parsing functions for monster_spell.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize monster spells
+ * ------------------------------------------------------------------------ */
 
 static enum parser_error parse_mon_spell_name(struct parser *p) {
 	struct monster_spell *h = parser_priv(p);
@@ -776,8 +782,10 @@ struct file_parser mon_spell_parser = {
 };
 
 /**
- * Parsing functions for monster_base.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize monster bases
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_mon_base_name(struct parser *p) {
 	struct monster_base *h = parser_priv(p);
 	struct monster_base *rb = mem_zalloc(sizeof *rb);
@@ -919,8 +927,10 @@ struct file_parser mon_base_parser = {
 
 
 /**
- * Parsing functions for monster.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize monsters
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_monster_name(struct parser *p) {
 	struct monster_race *h = parser_priv(p);
 	struct monster_race *r = mem_zalloc(sizeof *r);
@@ -1454,8 +1464,10 @@ struct file_parser monster_parser = {
 };
 
 /**
+ * ------------------------------------------------------------------------
  * Initialize monster pits
- */
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_pit_name(struct parser *p) {
 	struct pit_profile *h = parser_priv(p);
 	struct pit_profile *pit = mem_zalloc(sizeof *pit);
@@ -1740,7 +1752,11 @@ struct file_parser pit_parser = {
 };
 
 
-/* Parsing functions for lore.txt */
+/**
+ * ------------------------------------------------------------------------
+ * Initialize monster lore
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_lore_name(struct parser *p) {
 	int index = parser_getuint(p, "index");
 	struct monster_lore *l = &l_list[index];
@@ -2033,8 +2049,6 @@ static errr finish_parse_lore(struct parser *p) {
 		struct monster_race *r = &r_info[i];
 		struct monster_friends *f;
 		int j;
-
-		//if (!l->sights) continue;
 
 		/* Base flag knowledge */
 		if (r->base) {

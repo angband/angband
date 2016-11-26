@@ -88,8 +88,6 @@ char *ANGBAND_DIR_SAVE;
 char *ANGBAND_DIR_SCORES;
 char *ANGBAND_DIR_INFO;
 
-static struct history_chart *histories;
-
 static const char *timed_name_list[] = {
 	#define TMD(a, b, c) #a,
 	#include "list-player-timed.h"
@@ -183,13 +181,6 @@ errr grab_effect_data(struct parser *p, struct effect *effect)
 		effect->params[1] = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
-}
-
-static struct history_chart *findchart(struct history_chart *hs, unsigned int idx) {
-	for (; hs; hs = hs->next)
-		if (hs->idx == idx)
-			break;
-	return hs;
 }
 
 /**
@@ -338,8 +329,10 @@ void create_needed_dirs(void)
 }
 
 /**
- * Parsing functions for constants.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize game constants
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_constants_level_max(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
@@ -661,8 +654,9 @@ static void cleanup_game_constants(void)
 }
 
 /**
- * Parsing functions for player_timed.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize player timed effects
+ * ------------------------------------------------------------------------ */
 
 static enum parser_error parse_player_timed_name(struct parser *p) {
 	struct timed_effect_data *h = parser_priv(p);
@@ -845,8 +839,10 @@ struct file_parser player_timed_parser = {
 };
 
 /**
- * Parsing functions for names.txt (random name fragments)
- */
+ * ------------------------------------------------------------------------
+ * Intialize random names
+ * ------------------------------------------------------------------------ */
+
 struct name {
 	struct name *next;
 	char *str;
@@ -937,8 +933,10 @@ static struct file_parser names_parser = {
 };
 
 /**
- * Parsing functions for trap.txt
- */
+ * ------------------------------------------------------------------------
+ * Intialize traps
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_trap_name(struct parser *p) {
     int idx = parser_getuint(p, "index");
     const char *name = parser_getsym(p, "name");
@@ -1391,8 +1389,10 @@ static struct file_parser trap_parser = {
 };
 
 /**
- * Parsing functions for terrain.txt
- */
+ * ------------------------------------------------------------------------
+ * Intialize terrain
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_feat_name(struct parser *p) {
 	int idx = parser_getuint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -1557,8 +1557,10 @@ static struct file_parser feat_parser = {
 };
 
 /**
- * Parsing functions for body.txt
- */
+ * ------------------------------------------------------------------------
+ * Intialize player bodies
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_body_body(struct parser *p) {
 	struct player_body *h = parser_priv(p);
 	struct player_body *b = mem_zalloc(sizeof *b);
@@ -1685,8 +1687,130 @@ static struct file_parser body_parser = {
 };
 
 /**
- * Parsing functions for prace.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize player histories
+ * ------------------------------------------------------------------------ */
+
+static struct history_chart *histories;
+
+static struct history_chart *findchart(struct history_chart *hs,
+									   unsigned int idx) {
+	for (; hs; hs = hs->next)
+		if (hs->idx == idx)
+			break;
+	return hs;
+}
+
+static enum parser_error parse_history_chart(struct parser *p) {
+	struct history_chart *oc = parser_priv(p);
+	struct history_chart *c;
+	struct history_entry *e = mem_zalloc(sizeof *e);
+	unsigned int idx = parser_getuint(p, "chart");
+	
+	if (!(c = findchart(oc, idx))) {
+		c = mem_zalloc(sizeof *c);
+		c->next = oc;
+		c->idx = idx;
+		parser_setpriv(p, c);
+	}
+
+	e->isucc = parser_getint(p, "next");
+	e->roll = parser_getint(p, "roll");
+
+	e->next = c->entries;
+	c->entries = e;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_history_phrase(struct parser *p) {
+	struct history_chart *h = parser_priv(p);
+
+	if (!h)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	assert(h->entries);
+	h->entries->text = string_append(h->entries->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_history(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "chart uint chart int next int roll", parse_history_chart);
+	parser_reg(p, "phrase str text", parse_history_phrase);
+	return p;
+}
+
+static errr run_parse_history(struct parser *p) {
+	return parse_file_quit_not_found(p, "history");
+}
+
+static errr finish_parse_history(struct parser *p) {
+	struct history_chart *c;
+	struct history_entry *e, *prev, *next;
+	histories = parser_priv(p);
+
+	/* Go fix up the entry successor pointers. We can't compute them at
+	 * load-time since we may not have seen the successor history yet. Also,
+	 * we need to put the entries in the right order; the parser actually
+	 * stores them backwards, which is not desirable.
+	 */
+	for (c = histories; c; c = c->next) {
+		e = c->entries;
+		prev = NULL;
+		while (e) {
+			next = e->next;
+			e->next = prev;
+			prev = e;
+			e = next;
+		}
+		c->entries = prev;
+		for (e = c->entries; e; e = e->next) {
+			if (!e->isucc)
+				continue;
+			e->succ = findchart(histories, e->isucc);
+			if (!e->succ) {
+				return -1;
+			}
+		}
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_history(void)
+{
+	struct history_chart *c, *next_c;
+	struct history_entry *e, *next_e;
+
+	c = histories;
+	while (c) {
+		next_c = c->next;
+		e = c->entries;
+		while (e) {
+			next_e = e->next;
+			mem_free(e->text);
+			mem_free(e);
+			e = next_e;
+		}
+		mem_free(c);
+		c = next_c;
+	}
+}
+
+static struct file_parser history_parser = {
+	"history",
+	init_parse_history,
+	run_parse_history,
+	finish_parse_history,
+	cleanup_history
+};
+
+/**
+ * ------------------------------------------------------------------------
+ * Intialize player races
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_p_race_name(struct parser *p) {
 	struct player_race *h = parser_priv(p);
 	struct player_race *r = mem_zalloc(sizeof *r);
@@ -1946,8 +2070,10 @@ static struct file_parser p_race_parser = {
 };
 
 /**
- * Parsing functions for class.txt
- */
+ * ------------------------------------------------------------------------
+ * Initialize player classes
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_class_name(struct parser *p) {
 	struct player_class *h = parser_priv(p);
 	struct player_class *c = mem_zalloc(sizeof *c);
@@ -2348,9 +2474,12 @@ struct parser *init_parse_class(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name uint index str name", parse_class_name);
-	parser_reg(p, "stats int str int int int wis int dex int con", parse_class_stats);
-	parser_reg(p, "skill-disarm-phys int base int incr", parse_class_skill_disarm_phys);
-	parser_reg(p, "skill-disarm-magic int base int incr", parse_class_skill_disarm_magic);
+	parser_reg(p, "stats int str int int int wis int dex int con",
+			   parse_class_stats);
+	parser_reg(p, "skill-disarm-phys int base int incr",
+			   parse_class_skill_disarm_phys);
+	parser_reg(p, "skill-disarm-magic int base int incr",
+			   parse_class_skill_disarm_magic);
 	parser_reg(p, "skill-device int base int incr", parse_class_skill_device);
 	parser_reg(p, "skill-save int base int incr", parse_class_skill_save);
 	parser_reg(p, "skill-stealth int base int incr", parse_class_skill_stealth);
@@ -2358,14 +2487,20 @@ struct parser *init_parse_class(void) {
 	parser_reg(p, "skill-shoot int base int incr", parse_class_skill_shoot);
 	parser_reg(p, "skill-throw int base int incr", parse_class_skill_throw);
 	parser_reg(p, "skill-dig int base int incr", parse_class_skill_dig);
-	parser_reg(p, "info int mhp int exp int sense-base int sense-div", parse_class_info);
-	parser_reg(p, "attack int max-attacks int min-weight int att-multiply", parse_class_attack);
+	parser_reg(p, "info int mhp int exp int sense-base int sense-div",
+			   parse_class_info);
+	parser_reg(p, "attack int max-attacks int min-weight int att-multiply",
+			   parse_class_attack);
 	parser_reg(p, "title str title", parse_class_title);
-	parser_reg(p, "equip sym tval sym sval uint min uint max", parse_class_equip);
+	parser_reg(p, "equip sym tval sym sval uint min uint max",
+			   parse_class_equip);
 	parser_reg(p, "flags ?str flags", parse_class_flags);
-	parser_reg(p, "magic uint first uint weight uint realm uint books", parse_class_magic);
-	parser_reg(p, "book sym tval sym sval uint spells uint realm", parse_class_book);
-	parser_reg(p, "spell sym name int level int mana int fail int exp", parse_class_spell);
+	parser_reg(p, "magic uint first uint weight uint realm uint books",
+			   parse_class_magic);
+	parser_reg(p, "book sym tval sym sval uint spells uint realm",
+			   parse_class_book);
+	parser_reg(p, "spell sym name int level int mana int fail int exp",
+			   parse_class_spell);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_class_effect);
 	parser_reg(p, "param int p2 ?int p3", parse_class_param);
 	parser_reg(p, "dice str dice", parse_class_dice);
@@ -2430,116 +2565,10 @@ static struct file_parser class_parser = {
 };
 
 /**
- * Parsing functions for history.txt
- */
-static enum parser_error parse_history_chart(struct parser *p) {
-	struct history_chart *oc = parser_priv(p);
-	struct history_chart *c;
-	struct history_entry *e = mem_zalloc(sizeof *e);
-	unsigned int idx = parser_getuint(p, "chart");
-	
-	if (!(c = findchart(oc, idx))) {
-		c = mem_zalloc(sizeof *c);
-		c->next = oc;
-		c->idx = idx;
-		parser_setpriv(p, c);
-	}
+ * ------------------------------------------------------------------------
+ * Intialize flavors
+ * ------------------------------------------------------------------------ */
 
-	e->isucc = parser_getint(p, "next");
-	e->roll = parser_getint(p, "roll");
-
-	e->next = c->entries;
-	c->entries = e;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_history_phrase(struct parser *p) {
-	struct history_chart *h = parser_priv(p);
-
-	if (!h)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	assert(h->entries);
-	h->entries->text = string_append(h->entries->text, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *init_parse_history(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-	parser_reg(p, "chart uint chart int next int roll", parse_history_chart);
-	parser_reg(p, "phrase str text", parse_history_phrase);
-	return p;
-}
-
-static errr run_parse_history(struct parser *p) {
-	return parse_file_quit_not_found(p, "history");
-}
-
-static errr finish_parse_history(struct parser *p) {
-	struct history_chart *c;
-	struct history_entry *e, *prev, *next;
-	histories = parser_priv(p);
-
-	/* Go fix up the entry successor pointers. We can't compute them at
-	 * load-time since we may not have seen the successor history yet. Also,
-	 * we need to put the entries in the right order; the parser actually
-	 * stores them backwards, which is not desirable.
-	 */
-	for (c = histories; c; c = c->next) {
-		e = c->entries;
-		prev = NULL;
-		while (e) {
-			next = e->next;
-			e->next = prev;
-			prev = e;
-			e = next;
-		}
-		c->entries = prev;
-		for (e = c->entries; e; e = e->next) {
-			if (!e->isucc)
-				continue;
-			e->succ = findchart(histories, e->isucc);
-			if (!e->succ) {
-				return -1;
-			}
-		}
-	}
-
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_history(void)
-{
-	struct history_chart *c, *next_c;
-	struct history_entry *e, *next_e;
-
-	c = histories;
-	while (c) {
-		next_c = c->next;
-		e = c->entries;
-		while (e) {
-			next_e = e->next;
-			mem_free(e->text);
-			mem_free(e);
-			e = next_e;
-		}
-		mem_free(c);
-		c = next_c;
-	}
-}
-
-static struct file_parser history_parser = {
-	"history",
-	init_parse_history,
-	run_parse_history,
-	finish_parse_history,
-	cleanup_history
-};
-
-/**
- * Parsing functions for flavor.txt
- */
 static wchar_t flavor_glyph;
 static unsigned int flavor_tval;
 
@@ -2634,8 +2663,10 @@ static struct file_parser flavor_parser = {
 
 
 /**
+ * ------------------------------------------------------------------------
  * Initialize hints
- */
+ * ------------------------------------------------------------------------ */
+
 static enum parser_error parse_hint(struct parser *p) {
 	struct hint *h = parser_priv(p);
 	struct hint *new = mem_zalloc(sizeof *new);
@@ -2683,6 +2714,11 @@ static struct file_parser hints_parser = {
 	finish_parse_hints,
 	cleanup_hints
 };
+
+/**
+ * ------------------------------------------------------------------------
+ * Game data initialization
+ * ------------------------------------------------------------------------ */
 
 /**
  * A list of all the above parsers, plus those found in mon-init.c and
