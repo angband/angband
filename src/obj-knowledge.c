@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "init.h"
-#include "object.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
@@ -290,11 +290,9 @@ bool player_knows_rune(struct player *p, size_t i)
 		}
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
-			struct curse *curse;
-			for (curse = p->obj_k->curses; curse; curse = curse->next) {
-				if (r->index == lookup_curse(curse->name)) {
-					return true;
-				}
+			assert(r->index < z_info->curse_max);
+			if (p->obj_k->curses[r->index].power) {
+				return true;
 			}
 			break;
 		}
@@ -475,18 +473,9 @@ bool player_knows_slay(struct player *p, struct slay *s)
  * \param p is the player
  * \param c is the curse
  */
-bool player_knows_curse(struct player *p, struct curse *c)
+bool player_knows_curse(struct player *p, int index)
 {
-	struct curse *c_check = p->obj_k->curses;
-	while (c_check) {
-		/* Name needs to be the same */
-		if (streq(c_check->name, c->name)) {
-			return true;
-		}
-		c_check = c_check->next;
-	}
-
-	return false;
+	return p->obj_k->curses[index].power == 1;
 }
 
 /**
@@ -500,7 +489,6 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 	int i;
 	struct brand *b;
 	struct slay *s;
-	struct curse *c;
 
 	if (!ego) return false;
 
@@ -527,8 +515,11 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 		if (!player_knows_slay(p, s)) return false;
 
 	/* All curses known */
-	for (c = ego->curses; c; c = c->next)
-		if (!player_knows_curse(p, c)) return false;
+	for (i = 1; i < z_info->curse_max; i++) {
+		if (ego->curses && ego->curses[i] && !player_knows_curse(p, i)) {
+			return false;
+		}
+	}
 
 	return true;
 }
@@ -646,10 +637,8 @@ bool object_has_rune(const struct object *obj, int rune_no)
 		}
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
-			struct curse *c;
-			for (c = obj->curses; c; c = c->next)
-				if (streq(c->name, r->name))
-					return true;
+			if (obj->curses && obj->curses[r->index].power)
+				return true;
 			break;
 		}
 		/* Flag runes */
@@ -701,8 +690,10 @@ bool object_runes_known(const struct object *obj)
 		return false;
 
 	/* Not all curses known */
-	if (!curses_are_equal(obj->curses, obj->known->curses))
-		return false;
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (!curses_are_equal(obj, obj->known))
+			return false;
+	}
 
 	/* Not all flags known */
 	if (!of_is_subset(obj->known->flags, obj->flags)) return false;
@@ -807,21 +798,6 @@ void object_set_base_known(struct object *obj)
 	/* Know standard activations for wearables */
 	if (tval_is_wearable(obj) && obj->kind->effect)
 		obj->known->effect = obj->effect;
-}
-
-/**
- * Add knowledge to curse objects
- */
-void apply_curse_knowledge(struct object *obj)
-{
-	struct curse *curse = obj->curses;
-	while (curse) {
-		curse->obj->known = object_new();
-		curse->obj->known->kind = curse_object_kind;
-		curse->obj->known->sval = lookup_sval(0, "<curse object>");
-		player_know_object(player, curse->obj);
-		curse = curse->next;
-	}
 }
 
 /**
@@ -964,7 +940,6 @@ void player_know_object(struct player *p, struct object *obj)
 	int i, flag;
 	struct brand *b;
 	struct slay *s;
-	struct curse *c;
 	bool seen = true;
 
 	/* Unseen or only sensed objects don't get any ID */
@@ -1043,24 +1018,16 @@ void player_know_object(struct player *p, struct object *obj)
 		}
 	}
 
-	/* Reset curses */
-	free_curse(obj->known->curses, false, false);
-	obj->known->curses = NULL;
-	for (c = obj->curses; c; c = c->next) {
-		/* Update knowledge of the curse object first */
-		player_know_object(p, c->obj);
-		if (player_knows_curse(p, c)) {
-			/* Copy */
-			struct curse *new_c = mem_zalloc(sizeof *new_c);
-			new_c->name = string_make(c->name);
-			if (c->obj) {
-				new_c->obj = c->obj->known;
+	/* Set curses */
+	if (obj->curses) {
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (p->obj_k->curses[i].power) {
+				if (!obj->known->curses) {
+					obj->known->curses = mem_zalloc(z_info->curse_max *
+													sizeof(struct curse_data));
+				}
+				obj->known->curses[i].power = obj->curses[i].power;
 			}
-			new_c->power = c->power;
-
-			/* Attach the new curse */
-			new_c->next = obj->known->curses;
-			obj->known->curses = new_c;
 		}
 	}
 
@@ -1126,6 +1093,11 @@ void update_player_object_knowledge(struct player *p)
 		struct store *s = &stores[i];
 		for (obj = s->stock; obj; obj = obj->next)
 			player_know_object(p, obj);
+	}
+
+	/* Curse objects */
+	for (i = 1; i < z_info->curse_max; i++) {
+		player_know_object(player, curses[i].obj);
 	}
 
 	/* Update */
@@ -1236,25 +1208,12 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 		}
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
-			int j;
-			struct curse *c = NULL;
-			for (j = 1; j < z_info->curse_max; j++) {
-				c = &curses[j];
-				if (curses[j].name && streq(curses[j].name, r->name)) {
-					break;
-				}
-			}
-			assert(j < z_info->curse_max);
+			int i = r->index;
+			assert(i < z_info->curse_max);
 
 			/* If the curse was unknown, add it to known curses */
-			if (!player_knows_curse(p, c)) {
-				/* Copy the name flag */
-				struct curse *new_c = mem_zalloc(sizeof *new_c);
-				new_c->name = string_make(c->name);
-
-				/* Attach the new curse */
-				new_c->next = p->obj_k->curses;
-				p->obj_k->curses = new_c;
+			if (!player_knows_curse(p, i)) {
+				p->obj_k->curses[i].power = 1;
 				learned = true;
 			}
 			break;
@@ -1397,95 +1356,111 @@ void mod_message(struct object *obj, int mod)
 
 void object_curses_find_to_a(struct player *p, struct object *obj)
 {
-	struct curse *curse = obj->curses;
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_A);
-	while (curse) {
-		struct object *test_obj = curse->obj;
-		if (test_obj->to_a != 0) {
-			player_learn_rune(p, index, true);
+	if (obj->curses) {
+		int i;
 
-			/* Learn the curse */
-			index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
-			if (index >= 0) {
+		for (i = 0; i < z_info->curse_max; i++) {
+			if (!obj->curses[i].power)
+				continue;
+
+			if (curses[i].obj->to_a != 0) {
 				player_learn_rune(p, index, true);
+
+				/* Learn the curse */
+				index = rune_index(RUNE_VAR_CURSE, i);
+				if (index >= 0) {
+					player_learn_rune(p, index, true);
+				}
 			}
 		}
-		curse = curse->next;
 	}
 }
 
 void object_curses_find_to_h(struct player *p, struct object *obj)
 {
-	struct curse *curse = obj->curses;
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_H);
-	while (curse) {
-		struct object *test_obj = curse->obj;
-		if (test_obj->to_h != 0) {
-			player_learn_rune(p, index, true);
+	if (obj->curses) {
+		int i;
 
-			/* Learn the curse */
-			index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
-			if (index >= 0) {
+		for (i = 0; i < z_info->curse_max; i++) {
+			if (!obj->curses[i].power)
+				continue;
+
+			if (curses[i].obj->to_h != 0) {
 				player_learn_rune(p, index, true);
+
+				/* Learn the curse */
+				index = rune_index(RUNE_VAR_CURSE, i);
+				if (index >= 0) {
+					player_learn_rune(p, index, true);
+				}
 			}
 		}
-		curse = curse->next;
 	}
 }
 
 void object_curses_find_to_d(struct player *p, struct object *obj)
 {
-	struct curse *curse = obj->curses;
 	int index = rune_index(RUNE_VAR_COMBAT, COMBAT_RUNE_TO_D);
-	while (curse) {
-		struct object *test_obj = curse->obj;
-		if (test_obj->to_d != 0) {
-			player_learn_rune(p, index, true);
+	if (obj->curses) {
+		int i;
 
-			/* Learn the curse */
-			index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
-			if (index >= 0) {
+		for (i = 0; i < z_info->curse_max; i++) {
+			if (!obj->curses[i].power)
+				continue;
+
+			if (curses[i].obj->to_d != 0) {
 				player_learn_rune(p, index, true);
+
+				/* Learn the curse */
+				index = rune_index(RUNE_VAR_CURSE, i);
+				if (index >= 0) {
+					player_learn_rune(p, index, true);
+				}
 			}
 		}
-		curse = curse->next;
 	}
 }
 
 bool object_curses_find_flags(struct player *p, struct object *obj,
 							  bitflag *test_flags)
 {
-	struct curse *curse = obj->curses;
 	char o_name[80];
 	bool new = false;
 
 	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-	while (curse) {
-		struct object *test_obj = curse->obj;
-		int index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
+	if (obj->curses) {
+		int i;
+		int index;
 		bitflag f[OF_SIZE];
 		int flag;
 
-		/* Get all the relevant flags */
-		object_flags(test_obj, f);
-		of_inter(f, test_flags);
-		for (flag = of_next(f, FLAG_START); flag != FLAG_END;
-			 flag = of_next(f, flag + 1)) {
-			/* Learn any new flags */
-			if (!of_has(p->obj_k->flags, flag)) {
-				new = true;
-				player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
-				if (p->upkeep->playing) {
-					flag_message(flag, o_name);
-				}
+		for (i = 0; i < z_info->curse_max; i++) {
+			if (!obj->curses[i].power)
+				continue;
 
-				/* Learn the curse */
-				if (index >= 0) {
-					player_learn_rune(p, index, true);
+			/* Get all the relevant flags */
+			object_flags(curses[i].obj, f);
+			of_inter(f, test_flags);
+			for (flag = of_next(f, FLAG_START); flag != FLAG_END;
+				 flag = of_next(f, flag + 1)) {
+				/* Learn any new flags */
+				if (!of_has(p->obj_k->flags, flag)) {
+					new = true;
+					player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+					if (p->upkeep->playing) {
+						flag_message(flag, o_name);
+					}
+
+					/* Learn the curse */
+					index = rune_index(RUNE_VAR_CURSE, i);
+					if (index >= 0) {
+						player_learn_rune(p, index, true);
+					}
 				}
 			}
 		}
-		curse = curse->next;
 	}
 
 	return new;
@@ -1493,20 +1468,53 @@ bool object_curses_find_flags(struct player *p, struct object *obj,
 
 void object_curses_find_modifiers(struct player *p, struct object *obj)
 {
-	struct curse *curse = obj->curses;
+	int i;
 
-	while (curse) {
-		struct object *test_obj = curse->obj;
-		int index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
+	if (obj->curses) {
+		for (i = 0; i < z_info->curse_max; i++) {
+			int index = rune_index(RUNE_VAR_CURSE, i);
+			int j;
+
+			if (!obj->curses[i].power)
+				continue;
+
+			/* Learn all modifiers */
+			for (j = 0; j < OBJ_MOD_MAX; j++) {
+				if (curses[i].obj->modifiers[j] && !p->obj_k->modifiers[j]) {
+					player_learn_rune(p, rune_index(RUNE_VAR_MOD, j), true);
+					if (p->upkeep->playing) {
+						mod_message(obj, j);
+					}
+
+					/* Learn the curse */
+					if (index >= 0) {
+						player_learn_rune(p, index, true);
+					}
+				}
+			}
+		}
+	}
+}
+
+bool object_curses_find_element(struct player *p, struct object *obj, int elem)
+{
+	char o_name[80];
+	bool new = false;
+
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+	if (obj->curses) {
 		int i;
 
-		/* Learn all modifiers */
-		for (i = 0; i < OBJ_MOD_MAX; i++) {
-			if (test_obj->modifiers[i] && !p->obj_k->modifiers[i]) {
-				player_learn_rune(p, rune_index(RUNE_VAR_MOD, i), true);
-				if (p->upkeep->playing) {
-					mod_message(obj, i);
-				}
+		for (i = 0; i < z_info->curse_max; i++) {
+			int index = rune_index(RUNE_VAR_CURSE, i);
+
+			/* Does the object affect the player's resistance to the element? */
+			if (curses[i].obj->el_info[elem].res_level != 0) {
+				new = true;
+				msg("Your %s glows.", o_name);
+
+				/* Learn the element properties */
+				player_learn_rune(p, rune_index(RUNE_VAR_RESIST, elem), true);
 
 				/* Learn the curse */
 				if (index >= 0) {
@@ -1514,36 +1522,6 @@ void object_curses_find_modifiers(struct player *p, struct object *obj)
 				}
 			}
 		}
-		curse = curse->next;
-	}
-}
-
-bool object_curses_find_element(struct player *p, struct object *obj,
-								int element)
-{
-	struct curse *curse = obj->curses;
-	char o_name[80];
-	bool new = false;
-
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-	while (curse) {
-		struct object *test_obj = curse->obj;
-		int index = rune_index(RUNE_VAR_CURSE, lookup_curse(curse->name));
-
-		/* Does the object affect the player's resistance to the element? */
-		if (test_obj->el_info[element].res_level != 0) {
-			new = true;
-			msg("Your %s glows.", o_name);
-
-			/* Learn the element properties */
-			player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), true);
-
-			/* Learn the curse */
-			if (index >= 0) {
-				player_learn_rune(p, index, true);
-			}
-		}
-		curse = curse->next;
 	}
 	return new;
 }

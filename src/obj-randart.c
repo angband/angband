@@ -2227,7 +2227,7 @@ static void do_curse(struct artifact *art)
 			max_tries--;
 			continue;
 		}
-		append_curse(&art->curses, pick, power);
+		append_artifact_curse(art, pick, power);
 		num--;
 	}
 }
@@ -2245,7 +2245,7 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 		free_brand(a_dst->brands);
 	}
 	if (a_dst->curses) {
-		free_curse(a_dst->curses, true, false);
+		mem_free(a_dst->curses);
 	}
 	/* Copy the structure */
 	memcpy(a_dst, a_src, sizeof(struct artifact));
@@ -2265,7 +2265,8 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 		copy_brand(&a_dst->brands, a_src->brands);
 	}
 	if (a_src->curses) {
-		copy_curse(&a_dst->curses, a_src->curses, false, false);
+		a_dst->curses = mem_zalloc(z_info->curse_max * sizeof(int));
+		memcpy(a_dst->curses, a_src->curses, z_info->curse_max * sizeof(int));
 	}
 }
 
@@ -2414,7 +2415,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 		art->brands = NULL;
 		wipe_slays(art->slays);
 		art->slays = NULL;
-		wipe_curses(art->curses);
+		mem_free(art->curses);
 		art->curses = NULL;
 
 		/* Clear the activations for rings and amulets but not lights */
@@ -2515,7 +2516,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 		free_brand(a_old->brands);
 	}
 	if (a_old->curses) {
-		free_curse(a_old->curses, true, false);
+		mem_free(a_old->curses);
 	}
 	mem_free(a_old);
 

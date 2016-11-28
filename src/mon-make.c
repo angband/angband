@@ -696,12 +696,10 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 				drop->artifact->sval), level, RANDOMISE);
 			obj->artifact = drop->artifact;
 			copy_artifact_data(obj, obj->artifact);
-			apply_curse_knowledge(obj);
 			obj->artifact->created = true;
 		} else {
 			object_prep(obj, drop->kind, level, RANDOMISE);
 			apply_magic(obj, level, true, good, great, extra_roll);
-			apply_curse_knowledge(obj);
 		}
 
 		/* Set origin details */
@@ -715,7 +713,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 			any = true;
 		} else {
 			obj->artifact->created = false;
-			object_wipe(obj, true);
+			object_wipe(obj);
 			mem_free(obj);
 		}
 	}
@@ -739,7 +737,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 			any = true;
 		} else {
 			obj->artifact->created = false;
-			object_wipe(obj, true);
+			object_wipe(obj);
 			mem_free(obj);
 		}
 	}
@@ -820,7 +818,6 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 			obj = object_new();
 			object_prep(obj, kind, new_mon->race->level, RANDOMISE);
 			apply_magic(obj, new_mon->race->level, true, false, false, false);
-			apply_curse_knowledge(obj);
 			obj->number = 1;
 			obj->origin = ORIGIN_DROP_MIMIC;
 			obj->origin_depth = player->depth;

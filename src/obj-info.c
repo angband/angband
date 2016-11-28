@@ -24,6 +24,7 @@
 #include "init.h"
 #include "monster.h"
 #include "mon-summon.h"
+#include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-info.h"
 #include "obj-knowledge.h"
@@ -204,17 +205,17 @@ static size_t element_info_collect(const bool list[], const char *recepticle[])
 static bool describe_curses(textblock *tb, const struct object *obj,
 		const bitflag flags[OF_SIZE])
 {
-	struct curse *c = obj->known->curses;
+	int i;
+	struct curse_data *c = obj->known->curses;
 
 	if (!c)
 		return false;
-	while (c) {
-		int i = lookup_curse(c->name);
-		assert(i);
-		textblock_append(tb, "It ");
-		textblock_append_c(tb, COLOUR_L_RED, curses[i].desc);
-		textblock_append(tb, ".\n");
-		c = c->next;
+	for (i = 1; i < z_info->curse_max; i++) {
+		if (c[i].power) {
+			textblock_append(tb, "It ");
+			textblock_append_c(tb, COLOUR_L_RED, curses[i].desc);
+			textblock_append(tb, ".\n");
+		}
 	}
 
 	return true;

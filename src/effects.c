@@ -747,12 +747,14 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
  */
 static bool item_tester_uncursable(const struct object *obj)
 {
-	struct curse *c = obj->known->curses;
-	while (c) {
-		if (c->power < 100) {
-			return true;
+	struct curse_data *c = obj->known->curses;
+	if (c) {
+		size_t i;
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (c[i].power < 100) {
+				return true;
+			}
 		}
-		c = c->next;
 	}
     return false;
 }
@@ -760,34 +762,27 @@ static bool item_tester_uncursable(const struct object *obj)
 /**
  * Removes an individual curse from an object.
  */
-static void remove_object_curse(struct object *obj, char *name,	bool message)
+static void remove_object_curse(struct object *obj, int index, bool message)
 {
-	struct curse *c = obj->curses;
-	if (streq(c->name, name)) {
-		char *removed = format("The %s curse is removed!", name);
-		obj->curses = c->next;
-		c->next = NULL;
-		free_curse(c, true, true);
-		if (message) {
-			msg(removed);
-		}
-		return;
+	struct curse_data *c = &obj->curses[index];
+	char *name = curses[index].name;
+	char *removed = format("The %s curse is removed!", name);
+	int i;
+
+	c->power = 0;
+	c->timeout = 0;
+	if (message) {
+		msg(removed);
 	}
-	while (c) {
-		struct curse *next = c->next;
-		assert(next);
-		if (streq(next->name, name)) {
-			char *removed = format("The %s curse is removed!", name);
-			c->next = next->next;
-			next->next = NULL;
-			free_curse(next, true, true);
-			if (message) {
-				msg(removed);
-			}
+
+	/* Check to see if that was the last one */
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (obj->curses[i].power) {
 			return;
 		}
-		c = next;
 	}
+
+	mem_free(obj->curses);
 }
 
 /**
@@ -795,15 +790,16 @@ static void remove_object_curse(struct object *obj, char *name,	bool message)
  */
 static bool uncurse_object(struct object *obj, int strength)
 {
-	struct curse *curse = NULL;
-	if (get_curse(&curse, obj)) {
-		if (curse->power >= 100) {
+	int index = 0;
+	if (get_curse(&index, obj)) {
+		struct curse_data curse = obj->curses[index];
+		if (curse.power >= 100) {
 			/* Curse is permanent */
 			return false;
-		} else if (strength >= curse->power) {
+		} else if (strength >= curse.power) {
 			/* Successfully removed this curse */
-			remove_object_curse(obj->known, curse->name, false);
-			remove_object_curse(obj, curse->name, true);
+			remove_object_curse(obj->known, index, false);
+			remove_object_curse(obj, index, true);
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
 			/* Failure to remove, object is now fragile */
 			of_on(obj->flags, OF_FRAGILE);
@@ -3839,7 +3835,7 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 				max_tries--;
 				continue;
 			}
-			append_curse(&obj->curses, pick, power);
+			append_object_curse(obj, pick, power);
 			num--;
 		}
 
@@ -3898,7 +3894,7 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 				max_tries--;
 				continue;
 			}
-			append_curse(&obj->curses, pick, power);
+			append_object_curse(obj, pick, power);
 			num--;
 		}
 

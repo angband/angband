@@ -17,4 +17,4 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-bool textui_get_curse(struct curse **choice, struct object *obj);
+bool textui_get_curse(int *choice, struct object *obj);

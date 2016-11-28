@@ -27,6 +27,7 @@
 #include "init.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
@@ -599,15 +600,21 @@ bool obj_has_inscrip(const struct object *obj)
 
 bool obj_has_flag(const struct object *obj, int flag)
 {
-	struct curse *c = obj->curses;
+	struct curse_data *c = obj->curses;
+
+	/* Check the object's own flags */
 	if (of_has(obj->flags, flag)) {
 		return true;
 	}
-	while (c) {
-		if (of_has(c->obj->flags, flag)) {
-			return true;
+
+	/* Check any curse object flags */
+	if (c) {
+		int i;
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (c[i].power && of_has(curses[i].obj->flags, flag)) {
+				return true;
+			}
 		}
-		c = c->next;
 	}
 	return false;
 }

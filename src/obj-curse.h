@@ -18,27 +18,16 @@
 #ifndef INCLUDED_OBJ_CURSE_H
 #define INCLUDED_OBJ_CURSE_H
 
-/**
- * Curse type
- */
-struct curse {
-	struct curse *next;
-	char *name;
-	bool *poss;
-	struct object *obj;
-	int power;
-	char *desc;
-};
+#include "object.h"
 
 extern struct curse *curses;
 
+void init_curse_knowledge(void);
 int lookup_curse(const char *name);
-void copy_curse(struct curse **dest, struct curse *src, bool randomise,
-				bool new);
-void free_curse(struct curse *source, bool free_object, bool free_eff);
-bool curses_are_equal(struct curse *curse1, struct curse *curse2);
-bool append_curse(struct curse **current, int pick, int power);
-void wipe_curses(struct curse *curses);
-bool do_curse_effect(struct curse *curse);
+void copy_curses(struct object *obj, int *source);
+bool curses_are_equal(const struct object *obj1, const struct object *obj2);
+bool append_object_curse(struct object *obj, int pick, int power);
+bool append_artifact_curse(struct artifact *art, int pick, int power);
+bool do_curse_effect(int i);
 
 #endif /* !INCLUDED_OBJ_CURSE_H */

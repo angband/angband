@@ -2809,8 +2809,8 @@ extern struct init_module options_module;
 static struct init_module *modules[] = {
 	&z_quark_module,
 	&messages_module,
-	&player_module,
 	&arrays_module,
+	&player_module,
 	&generate_module,
 	&rune_module,
 	&obj_make_module,

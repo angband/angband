@@ -26,6 +26,7 @@
 #include "init.h"
 #include "mon-msg.h"
 #include "mon-util.h"
+#include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
@@ -1733,8 +1734,10 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	/* Analyze equipment */
 	for (i = 0; i < p->body.count; i++) {
 		int dig = 0;
+		int index = 0;
 		struct object *obj = slot_object(p, i);
-		struct curse *curse = obj ? obj->curses : NULL;
+		struct curse_data *curse = obj ? obj->curses : NULL;
+
 		while (obj) {
 			/* Extract the item flags */
 			if (known_only) {
@@ -1794,8 +1797,16 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 			/* Move to any unprocessed curse object */
 			if (curse) {
-				obj = curse->obj;
-				curse = curse->next;
+				index++;
+				obj = NULL;
+				while (index < z_info->curse_max) {
+					if (curse[index].power) {
+						obj = curses[index].obj;
+						break;
+					} else {
+						index++;
+					}
+				}
 			} else {
 				obj = NULL;
 			}

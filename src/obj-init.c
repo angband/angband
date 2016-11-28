@@ -27,6 +27,7 @@
 #include "buildid.h"
 #include "effects.h"
 #include "init.h"
+#include "obj-curse.h"
 #include "obj-ignore.h"
 #include "obj-list.h"
 #include "obj-make.h"
@@ -185,38 +186,15 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 static void write_curse_kinds(void)
 {
 	int i;
+	int sval =  lookup_sval(tval_find_idx("none"), "<curse object>");
 
 	for (i = 1; i < z_info->curse_max; i++) {
 		struct curse *curse = &curses[i];
 		curse->obj->kind = curse_object_kind;
-		curse->obj->sval = lookup_sval(tval_find_idx("none"), "<curse object>");
-	}
-	for (i = 0; i < z_info->k_max; i++) {
-		struct object_kind *kind = &k_info[i];
-		struct curse *curse = kind->curses;
-		while (curse) {
-			curse->obj->kind = curse_object_kind;
-			curse->obj->sval = lookup_sval(0, "<curse object>");
-			curse = curse->next;
-		}
-	}
-	for (i = 0; i < z_info->e_max; i++) {
-		struct ego_item *ego = &e_info[i];
-		struct curse *curse = ego->curses;
-		while (curse) {
-			curse->obj->kind = curse_object_kind;
-			curse->obj->sval = lookup_sval(0, "<curse object>");
-			curse = curse->next;
-		}
-	}
-	for (i = 0; i < z_info->a_max; i++) {
-		struct artifact *art = &a_info[i];
-		struct curse *curse = art->curses;
-		while (curse) {
-			curse->obj->kind = curse_object_kind;
-			curse->obj->sval = lookup_sval(0, "<curse object>");
-			curse = curse->next;
-		}
+		curse->obj->sval = sval;
+		curse->obj->known = object_new();
+		curse->obj->known->kind = curse_object_kind;
+		curses[i].obj->known->sval = sval;
 	}
 }
 
@@ -758,6 +736,11 @@ static void cleanup_curse(void)
 		string_free(curses[idx].name);
 		mem_free(curses[idx].desc);
 		if (curses[idx].obj) {
+			if (curses[idx].obj->known) {
+				free_effect(curses[idx].obj->known->effect);
+				mem_free(curses[idx].obj->known->effect_msg);
+				mem_free(curses[idx].obj->known);
+			}
 			free_effect(curses[idx].obj->effect);
 			mem_free(curses[idx].obj->effect_msg);
 			mem_free(curses[idx].obj);
@@ -1369,7 +1352,6 @@ static enum parser_error parse_object_values(struct parser *p) {
 
 static enum parser_error parse_object_curse(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
-	struct curse *curse = k->curses;
 	char *s;
 	int i;
 
@@ -1381,12 +1363,9 @@ static enum parser_error parse_object_curse(struct parser *p) {
 	if (i == z_info->curse_max)
 		return PARSE_ERROR_UNRECOGNISED_CURSE;
 
-	k->curses = mem_zalloc(sizeof *curse);
-	k->curses->next = curse;
-	k->curses->name = s;
-	k->curses->power = parser_getint(p, "power");
-	k->curses->obj = object_new();
-	object_copy(k->curses->obj, curses[i].obj);
+	if (!k->curses)
+		k->curses = mem_zalloc(z_info->curse_max * sizeof(int));
+	k->curses[i] = parser_getint(p, "power");
 	return PARSE_ERROR_NONE;
 }
 
@@ -1465,7 +1444,8 @@ static void cleanup_object(void)
 		string_free(kind->effect_msg);
 		free_brand(kind->brands);
 		free_slay(kind->slays);
-		free_curse(kind->curses, true, false);
+		if (kind->curses)
+			mem_free(kind->curses);
 		free_effect(kind->effect);
 	}
 	mem_free(k_info);
@@ -1811,7 +1791,6 @@ static enum parser_error parse_ego_desc(struct parser *p) {
 
 static enum parser_error parse_ego_curse(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
-	struct curse *curse = e->curses;
 	char *s;
 	int i;
 
@@ -1824,12 +1803,9 @@ static enum parser_error parse_ego_curse(struct parser *p) {
 	if (i == z_info->curse_max)
 		return PARSE_ERROR_UNRECOGNISED_CURSE;
 
-	e->curses = mem_zalloc(sizeof *curse);
-	e->curses->next = curse;
-	e->curses->name = s;
-	e->curses->power = parser_getint(p, "power");
-	e->curses->obj = object_new();
-	object_copy(e->curses->obj, curses[i].obj);
+	if (!e->curses)
+		e->curses = mem_zalloc(z_info->curse_max * sizeof(int));
+	e->curses[i] = parser_getint(p, "power");
 	return PARSE_ERROR_NONE;
 }
 
@@ -1902,6 +1878,8 @@ static void cleanup_ego(void)
 		string_free(ego->text);
 		free_brand(ego->brands);
 		free_slay(ego->slays);
+		if (ego->curses)
+			mem_free(ego->curses);
 		free_effect(ego->effect);
 
 		poss = ego->poss_items;
@@ -2153,7 +2131,6 @@ static enum parser_error parse_artifact_desc(struct parser *p) {
 
 static enum parser_error parse_artifact_curse(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	struct curse *curse = a->curses;
 	char *s;
 	int i;
 
@@ -2165,12 +2142,9 @@ static enum parser_error parse_artifact_curse(struct parser *p) {
 	if (i == z_info->curse_max)
 		return PARSE_ERROR_UNRECOGNISED_CURSE;
 
-	a->curses = mem_zalloc(sizeof *curse);
-	a->curses->next = curse;
-	a->curses->name = s;
-	a->curses->power = parser_getint(p, "power");
-	a->curses->obj = object_new();
-	object_copy(a->curses->obj, curses[i].obj);
+	if (!a->curses)
+		a->curses = mem_zalloc(z_info->curse_max * sizeof(int));
+	a->curses[i] = parser_getint(p, "power");
 	return PARSE_ERROR_NONE;
 }
 
@@ -2247,7 +2221,8 @@ static void cleanup_artifact(void)
 		string_free(art->text);
 		free_brand(art->brands);
 		free_slay(art->slays);
-		free_curse(art->curses, true, false);
+		if (art->curses)
+			mem_free(art->curses);
 	}
 	mem_free(a_info);
 }

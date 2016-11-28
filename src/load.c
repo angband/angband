@@ -27,6 +27,7 @@
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
@@ -187,17 +188,14 @@ static struct object *rd_item(void)
 
 	/* Read curses */
 	rd_byte(&tmp8u);
-	while (tmp8u) {
-		char buf_local[40];
-		struct curse *c = mem_zalloc(sizeof *c);
-		rd_string(buf_local, sizeof(buf_local));
-		c->name = string_make(buf_local);
-		c->obj = rd_item();
-		rd_s16b(&tmp16s);
-		c->power = tmp16s;
-		c->next = obj->curses;
-		obj->curses = c;
-		rd_byte(&tmp8u);
+	if (tmp8u) {
+		obj->curses = mem_zalloc(z_info->curse_max * sizeof(struct curse_data));
+		for (i = 0; i < z_info->curse_max; i++) {
+			rd_byte(&tmp8u);
+			obj->curses[i].power = tmp8u;
+			rd_u16b(&tmp16u);
+			obj->curses[i].timeout = tmp16u;
+		}
 	}
 
 	for (i = 0; i < elem_max; i++) {
@@ -952,14 +950,11 @@ int rd_misc(void)
 
 	/* Read curses */
 	rd_byte(&tmp8u);
-	while (tmp8u) {
-		char buf[40];
-		struct curse *c = mem_zalloc(sizeof *c);
-		rd_string(buf, sizeof(buf));
-		c->name = string_make(buf);
-		c->next = player->obj_k->curses;
-		player->obj_k->curses = c;
-		rd_byte(&tmp8u);
+	if (tmp8u) {
+		for (i = 0; i < z_info->curse_max; i++) {
+			rd_byte(&tmp8u);
+			player->obj_k->curses[i].power = tmp8u;
+		}
 	}
 
 	/* Combat data */
@@ -1429,7 +1424,6 @@ int rd_objects(void)
 int rd_monsters(void)
 {
 	int i;
-	struct object *obj;
 
 	/* Only if the player's alive */
 	if (player->is_dead)
@@ -1439,24 +1433,6 @@ int rd_monsters(void)
 		return -1;
 	if (rd_monsters_aux(player->cave))
 		return -1;
-
-	/* Add curse info for all objects */
-	if (cave) {
-		for (i = 0; i < cave->obj_max; i++) {
-			if (cave->objects[i]) {
-				apply_curse_knowledge(cave->objects[i]);
-			}
-		}
-	}
-	for (obj = player->gear; obj; obj = obj->next) {
-		apply_curse_knowledge(obj);
-	}
-	for (i = 0; i < MAX_STORES; i++) {
-		struct store *s = &stores[i];
-		for (obj = s->stock; obj; obj = obj->next) {
-			apply_curse_knowledge(obj);
-		}
-	}
 
 	/* Associate known objects */
 	for (i = 0; i < player->cave->obj_max; i++)

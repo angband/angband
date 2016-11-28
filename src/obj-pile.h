@@ -65,7 +65,7 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 					object_stack_t mode);
 void object_absorb_partial(struct object *obj1, struct object *obj2);
 void object_absorb(struct object *obj1, struct object *obj2);
-void object_wipe(struct object *obj, bool free_curse_objects);
+void object_wipe(struct object *obj);
 void object_copy(struct object *obj1, const struct object *obj2);
 void object_copy_amt(struct object *dest, struct object *src, int amt);
 struct object *object_split(struct object *src, int amt);

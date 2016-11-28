@@ -24,6 +24,7 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "monster.h"
+#include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
@@ -392,8 +393,12 @@ void player_init(struct player *p)
 	}
 	if (p->timed)
 		mem_free(p->timed);
-	if (p->obj_k)
+	if (p->obj_k) {
+		if (p->obj_k->curses) {
+			mem_free(p->obj_k->curses);
+		}
 		mem_free(p->obj_k);
+	}
 
 	/* Wipe the player */
 	memset(p, 0, sizeof(struct player));
@@ -434,6 +439,8 @@ void player_init(struct player *p)
 								   sizeof(struct object *));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 	p->obj_k = mem_zalloc(sizeof(struct object));
+	p->obj_k->curses = mem_zalloc(z_info->curse_max *
+								  sizeof(struct curse_data));
 
 	/* Options should persist */
 	p->opts = opts_save;

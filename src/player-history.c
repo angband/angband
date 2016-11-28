@@ -209,8 +209,8 @@ static void get_artifact_name(char *buf, size_t len, const struct artifact *arti
 	object_copy(known_obj, fake);
 	object_desc(buf, len, fake, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 
-	object_wipe(known_obj, false);
-	object_wipe(fake, true);
+	object_wipe(known_obj);
+	object_wipe(fake);
 }
 
 /**

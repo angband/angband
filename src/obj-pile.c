@@ -26,6 +26,7 @@
 #include "init.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
@@ -216,7 +217,7 @@ void object_free(struct object *obj)
 	}
 
 	if (obj->curses) {
-		free_curse(obj->curses, true, true);
+		mem_free(obj->curses);
 	}
 
 	mem_free(obj);
@@ -390,7 +391,7 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 		if (obj1->ego != obj2->ego) return false;
 
 		/* Require identical curses */
-		if (!curses_are_equal(obj1->curses, obj2->curses)) return false;
+		if (!curses_are_equal(obj1, obj2)) return false;
 
 		/* Hack - Never stack recharging wearables ... */
 		if ((obj1->timeout || obj2->timeout) &&
@@ -533,12 +534,12 @@ void object_absorb(struct object *obj1, struct object *obj2)
 /**
  * Wipe an object clean.
  */
-void object_wipe(struct object *obj, bool free_curse_objects)
+void object_wipe(struct object *obj)
 {
 	/* Free slays and brands */
 	free_slay(obj->slays);
 	free_brand(obj->brands);
-	free_curse(obj->curses, free_curse_objects, false);
+	mem_free(obj->curses);
 
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));
@@ -559,7 +560,11 @@ void object_copy(struct object *dest, const struct object *src)
 
 	copy_slay(&dest->slays, src->slays);
 	copy_brand(&dest->brands, src->brands);
-	copy_curse(&dest->curses, src->curses, false, false);
+	if (src->curses) {
+		size_t array_size = z_info->curse_max * sizeof(struct curse_data);
+		dest->curses = mem_zalloc(array_size);
+		memcpy(dest->curses, src->curses, array_size);
+	}
 
 	/* Detach from any pile */
 	dest->prev = NULL;

@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "init.h"
+#include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
@@ -380,7 +381,7 @@ void ego_apply_magic(struct object *obj, int level)
 	/* Add slays, brands and curses */
 	copy_slay(&obj->slays, obj->ego->slays);
 	copy_brand(&obj->brands, obj->ego->brands);
-	copy_curse(&obj->curses, obj->ego->curses, true, true);
+	copy_curses(obj, obj->ego->curses);
 
 	/* Add resists */
 	for (i = 0; i < ELEM_MAX; i++) {
@@ -482,7 +483,7 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 	of_union(obj->flags, art->flags);
 	copy_slay(&obj->slays, art->slays);
 	copy_brand(&obj->brands, art->brands);
-	copy_curse(&obj->curses, art->curses, false, true);
+	copy_curses(obj, art->curses);
 	for (i = 0; i < ELEM_MAX; i++) {
 		/* Take the larger of artifact and base object resist levels */
 		obj->el_info[i].res_level =
@@ -684,7 +685,6 @@ bool make_fake_artifact(struct object *obj, const struct artifact *artifact)
 	object_prep(obj, kind, 0, MAXIMISE);
 	obj->artifact = (struct artifact *)artifact;
 	copy_artifact_data(obj, artifact);
-	apply_curse_knowledge(obj);
 
 	return (true);
 }
@@ -793,7 +793,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 	/* Default slays, brands and curses */
 	copy_slay(&obj->slays, k->slays);
 	copy_brand(&obj->brands, k->brands);
-	copy_curse(&obj->curses, k->curses, true, true);
+	copy_curses(obj, k->curses);
 
 	/* Default resists */
 	for (i = 0; i < ELEM_MAX; i++) {
@@ -814,7 +814,7 @@ static void apply_curse(struct object *obj, int *lev)
 	if (!curses[pick].poss[obj->tval]) {
 		return;
 	}
-	append_curse(&obj->curses, pick, power);
+	append_object_curse(obj, pick, power);
 	*lev += randint0(power / 10);
 	while(one_in_(100 - power)) {
 		apply_curse(obj, lev);
@@ -1109,7 +1109,6 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 		apply_curse(new_obj, &lev);
 	}
 	apply_magic(new_obj, lev, true, good, great, extra_roll);
-	apply_curse_knowledge(new_obj);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))

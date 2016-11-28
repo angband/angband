@@ -276,23 +276,25 @@ static void decrease_timeouts(void)
 
 	/* Curse effects always decrement by 1 */
 	for (i = 0; i < player->body.count; i++) {
-		struct curse *curse = NULL;
+		struct curse_data *curse = NULL;
 		if (player->body.slots[i].obj == NULL) {
 			continue;
 		}
 		curse = player->body.slots[i].obj->curses;
-		while (curse) {
-			if (!curse->obj || !curse->obj->effect) {
-				curse = curse->next;
-				continue;
-			}
-			curse->obj->timeout--;
-			if (!curse->obj->timeout) {
-				if (do_curse_effect(curse)) {
-					player_learn_curse(player, curse);
+		if (curse) {
+			int j;
+			for (j = 0; j < z_info->curse_max; j++) {
+				if (curse[j].power) {
+					curse[j].timeout--;
+					if (!curse[j].timeout) {
+						struct curse *c = &curses[j];
+						if (do_curse_effect(j)) {
+							player_learn_curse(player, c);
+						}
+						curse[j].timeout = randcalc(c->obj->time, 0, RANDOMISE);
+					}
 				}
 			}
-			curse = curse->next;
 		}
 	}
 

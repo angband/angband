@@ -9,7 +9,6 @@
 #include "z-quark.h"
 #include "z-bitflag.h"
 #include "z-dice.h"
-#include "obj-curse.h"
 #include "obj-properties.h"
 
 
@@ -81,6 +80,18 @@ struct slay {
 };
 
 extern struct slay *game_slays;
+
+/**
+ * Curse type
+ */
+struct curse {
+	struct curse *next;
+	char *name;
+	bool *poss;
+	struct object *obj;
+	int power;
+	char *desc;
+};
 
 enum {
 	EL_INFO_HATES = 0x01,
@@ -172,7 +183,7 @@ struct object_kind {
 
 	struct brand *brands;
 	struct slay *slays;
-	struct curse *curses;	/**< Linked list of curse structures */
+	int *curses;			/**< Array of curse powers */
 
 	byte d_attr;			/**< Default object attribute */
 	wchar_t d_char;			/**< Default object character */
@@ -249,7 +260,7 @@ struct artifact {
 
 	struct brand *brands;
 	struct slay *slays;
-	struct curse *curses;	/**< Linked list of curse structures */
+	int *curses;		/**< Array of curse powers */
 
 	int level;			/** Difficulty level for activation */
 
@@ -304,7 +315,7 @@ struct ego_item {
 
 	struct brand *brands;
 	struct slay *slays;
-	struct curse *curses;	/**< Linked list of curse structures */
+	int *curses;			/**< Array of curse powers */
 
 	int rating;			/* Level rating boost */
 	int alloc_prob; 		/** Chance of being generated (i.e. rarity) */
@@ -341,6 +352,11 @@ enum {
 	OBJ_NOTICE_ASSESSED = 0x02,
 	OBJ_NOTICE_IGNORE = 0x04,
 	OBJ_NOTICE_IMAGINED = 0x08,
+};
+
+struct curse_data {
+	int power;
+	int timeout;
 };
 
 /**
@@ -402,7 +418,7 @@ struct object {
 	struct element_info el_info[ELEM_MAX];	/**< Object element info */
 	struct brand *brands;	/**< Linked list of brand structures */
 	struct slay *slays;		/**< Linked list of slay structures */
-	struct curse *curses;	/**< Linked list of curse structures */
+	struct curse_data *curses;	/**< Array of curse powers and timeouts */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	char *effect_msg;		/**< Message on use */

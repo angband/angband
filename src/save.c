@@ -69,7 +69,6 @@ static void wr_item(const struct object *obj)
 	size_t i;
 	struct brand *b;
 	struct slay *s;
-	struct curse *c;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
@@ -144,11 +143,11 @@ static void wr_item(const struct object *obj)
 
 	/* Write a sentinel byte */
 	wr_byte(obj->curses ? 1 : 0);
-	for (c = obj->curses; c; c = c->next) {
-		wr_string(c->name);
-		wr_item(c->obj);
-		wr_s16b(c->power);
-		wr_byte(c->next ? 1 : 0);
+	if (obj->curses) {
+		for (i = 0; i < z_info->curse_max; i++) {
+			wr_byte(obj->curses[i].power);
+			wr_u16b(obj->curses[i].timeout);
+		}
 	}
 	if (obj->known) {
 		obj->known->curses = NULL;
@@ -578,7 +577,6 @@ void wr_misc(void)
 	size_t i;
 	struct brand *b;
 	struct slay *s;
-	struct curse *c;
 
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
@@ -635,9 +633,10 @@ void wr_misc(void)
 
 	/* Curses */
 	wr_byte(player->obj_k->curses ? 1 : 0);
-	for (c = player->obj_k->curses; c; c = c->next) {
-		wr_string(c->name);
-		wr_byte(c->next ? 1 : 0);
+	if (player->obj_k->curses) {
+		for (i = 0; i < z_info->curse_max; i++) {
+			wr_byte(player->obj_k->curses[i].power ? 1 : 0);
+		}
 	}
 
 	/* Combat data */
