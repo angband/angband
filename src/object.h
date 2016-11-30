@@ -72,7 +72,9 @@ extern struct brand *game_brands;
  * Slay type
  */
 struct slay {
+	char *code;
 	char *name;
+	char *base;
 	int race_flag;
 	int multiplier;
 	int damage; /* Storage for damage during description */

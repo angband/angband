@@ -29,6 +29,7 @@ struct slay_cache {
 	s32b value;            		/* Value of this combination */
 };
 
+extern struct slay *slays;
 
 /*** Functions ***/
 void copy_slay(struct slay **dest, struct slay *source);

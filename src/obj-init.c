@@ -27,6 +27,7 @@
 #include "buildid.h"
 #include "effects.h"
 #include "init.h"
+#include "mon-util.h"
 #include "obj-curse.h"
 #include "obj-ignore.h"
 #include "obj-list.h"
@@ -47,6 +48,14 @@
  */
 struct brand *game_brands;
 struct slay *game_slays;
+
+static const char *mon_race_flags[] =
+{
+	#define RF(a, b, c) #a,
+	#include "list-mon-race-flags.h"
+	#undef RF
+	NULL
+};
 
 static const char *obj_flags[] = {
 	"NONE",
@@ -83,7 +92,7 @@ static const char *elements[] = {
 	NULL
 };
 
-static const char *slays[] = {
+static const char *old_slays[] = {
 	#define RF(a, b, c) #a,
 	#include "list-mon-race-flags.h"
 	#undef RF
@@ -443,6 +452,133 @@ struct file_parser object_base_parser = {
 	run_parse_object_base,
 	finish_parse_object_base,
 	cleanup_object_base
+};
+
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Initialize object slays
+ * ------------------------------------------------------------------------ */
+
+static enum parser_error parse_slay_code(struct parser *p) {
+	const char *code = parser_getstr(p, "code");
+	struct slay *h = parser_priv(p);
+	struct slay *slay = mem_zalloc(sizeof *slay);
+
+	slay->next = h;
+	parser_setpriv(p, slay);
+	slay->code = string_make(code);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_slay_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct slay *slay = parser_priv(p);
+	if (!slay)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	slay->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_slay_race_flag(struct parser *p) {
+	int flag;
+	struct slay *slay = parser_priv(p);
+	if (!slay)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	flag = lookup_flag(mon_race_flags, parser_getsym(p, "flag"));
+
+	if (flag == FLAG_END) {
+		return PARSE_ERROR_INVALID_FLAG;
+	} else {
+		slay->race_flag = flag;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_slay_base(struct parser *p) {
+	const char *base_name = parser_getsym(p, "base");
+	struct slay *slay = parser_priv(p);
+
+	slay->base = string_make(base_name);
+	if (lookup_monster_base(base_name) == NULL)
+		/* Todo: make new error for this */
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_slay_multiplier(struct parser *p) {
+	struct slay *slay = parser_priv(p);
+	if (!slay)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	slay->multiplier = parser_getuint(p, "multiplier");
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_slay(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "code str code", parse_slay_code);
+	parser_reg(p, "name str name", parse_slay_name);
+	parser_reg(p, "race-flag sym flag", parse_slay_race_flag);
+	parser_reg(p, "base sym base", parse_slay_base);
+	parser_reg(p, "multiplier uint multiplier", parse_slay_multiplier);
+	return p;
+}
+
+static errr run_parse_slay(struct parser *p) {
+	return parse_file_quit_not_found(p, "slay");
+}
+
+static errr finish_parse_slay(struct parser *p) {
+	struct slay *slay, *next = NULL;
+	int count = 1;
+
+	/* Count the entries */
+	z_info->slay_max = 0;
+	slay = parser_priv(p);
+	while (slay) {
+		z_info->slay_max++;
+		slay = slay->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	slays = mem_zalloc((z_info->slay_max + 1) * sizeof(*slay));
+	for (slay = parser_priv(p); slay; slay = next, count++) {
+		memcpy(&slays[count], slay, sizeof(*slay));
+		next = slay->next;
+		slays[count].next = NULL;
+
+		mem_free(slay);
+	}
+	z_info->slay_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_slay(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->slay_max; idx++) {
+		string_free(slays[idx].code);
+		string_free(slays[idx].name);
+		if (slays[idx].base)
+			string_free(slays[idx].base);
+	}
+	mem_free(slays);
+}
+
+struct file_parser slay_parser = {
+	"slay",
+	init_parse_slay,
+	run_parse_slay,
+	finish_parse_slay,
+	cleanup_slay
 };
 
 
@@ -1316,7 +1452,7 @@ static enum parser_error parse_object_values(struct parser *p) {
 			k->brands = b;
 			add_game_brand(b);
 		}
-		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
+		if (!grab_index_and_int(&value, &index, old_slays, "SLAY_", t)) {
 			struct slay *slay;
 			found = true;
 			slay = mem_zalloc(sizeof *slay);
@@ -1719,7 +1855,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 			e->brands = b;
 			add_game_brand(b);
 		}
-		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
+		if (!grab_index_and_int(&value, &index, old_slays, "SLAY_", t)) {
 			struct slay *slay;
 			found = true;
 			slay = mem_zalloc(sizeof *slay);
@@ -2087,7 +2223,7 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 			a->brands = b;
 			add_game_brand(b);
 		}
-		if (!grab_index_and_int(&value, &index, slays, "SLAY_", t)) {
+		if (!grab_index_and_int(&value, &index, old_slays, "SLAY_", t)) {
 			struct slay *slay;
 			found = true;
 			slay = mem_zalloc(sizeof *slay);

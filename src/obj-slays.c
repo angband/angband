@@ -27,6 +27,8 @@
 #include "obj-util.h"
 
 
+struct slay *slays;
+
 /**
  * Cache of slay values (for object_power)
  */

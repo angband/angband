@@ -1,0 +1,62 @@
+# slay.txt
+
+# code: code for slay to use in object data files
+# name: name of slain creatures for use in object descriptions
+# race-flag: monster race flag which this slay affects
+# base: monster base which this flag affects
+# multiplier: slay multiplier applied to damage dice
+
+code:EVIL_2
+name:evil creatures
+race-flag:EVIL
+multiplier:2
+
+code:ANIMAL_2
+name:animals
+race-flag:ANIMAL
+multiplier:2
+
+code:ORC_3
+name:orcs
+race-flag:ORC
+multiplier:3
+
+code:TROLL_3
+name:trolls
+race-flag:TROLL
+multiplier:3
+
+code:GIANT_3
+name:giants
+race-flag:GIANT
+multiplier:3
+
+code:DEMON_3
+name:demons
+race-flag:DEMON
+multiplier:3
+
+code:DRAGON_3
+name:dragons
+race-flag:DRAGON
+multiplier:3
+
+code:UNDEAD_3
+name:undead
+race-flag:UNDEAD
+multiplier:3
+
+code:DEMON_5
+name:demons
+race-flag:DEMON
+multiplier:5
+
+code:DRAGON_5
+name:dragons
+race-flag:DRAGON
+multiplier:5
+
+code:UNDEAD_5
+name:undead
+race-flag:UNDEAD
+multiplier:5
