@@ -1997,8 +1997,6 @@ static errr finish_parse_ego(struct parser *p) {
 	}
 	z_info->e_max += 1;
 
-	create_slay_cache(e_info);
-
 	parser_destroy(p);
 	return 0;
 }
@@ -2026,7 +2024,6 @@ static void cleanup_ego(void)
 		}
 	}
 	mem_free(e_info);
-	free_slay_cache();
 }
 
 struct file_parser ego_parser = {

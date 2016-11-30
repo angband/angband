@@ -20,15 +20,6 @@
 
 #include "monster.h"
 
-/**
- * Slay cache. Used for looking up slay values in obj-power.c
- */
-struct slay_cache {
-	struct brand *brands;   	/* Brands */
-	struct slay *slays;   	/* Slays */
-	s32b value;            		/* Value of this combination */
-};
-
 extern struct slay *slays;
 
 /*** Functions ***/
@@ -51,9 +42,5 @@ bool brands_are_equal(struct brand *brand1, struct brand *brand2);
 bool slays_are_equal(struct slay *slay1, struct slay *slay2);
 void wipe_brands(struct brand *brands);
 void wipe_slays(struct slay *slays);
-errr create_slay_cache(struct ego_item *items);
-s32b check_slay_cache(const struct object *obj);
-bool fill_slay_cache(const struct object *obj, s32b value);
-void free_slay_cache(void);
 
 #endif /* OBJECT_SLAYS_H */

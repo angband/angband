@@ -343,74 +343,61 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	if ((num_slays + num_brands + num_kills) == 0)
 		return p;
 
-	/* Look in the cache to see if we know this one yet */
-	sv = check_slay_cache(obj);
+	/*
+	 * Otherwise we need to calculate the expected average multiplier
+	 * for this combination (multiplied by the total number of
+	 * monsters, which we'll divide out later).
+	 */
+	tot_mon_power = 0;
+	for (i = 0; i < z_info->r_max; i++)	{
+		struct object *obj1 = (struct object *) obj;
+		struct monster *mon = mem_zalloc(sizeof(*mon));
+		const struct brand *b = NULL;
+		const struct slay *s = NULL;
+		char verb[20];
 
-	/* If it's cached (or there are no slays), return the value */
-	if (sv)	{
-		log_obj("Slay cache hit\n");
-	} else {
+		mult = 1;
+		mon->race = &r_info[i];
 
-		/*
-		 * Otherwise we need to calculate the expected average multiplier
-		 * for this combination (multiplied by the total number of
-		 * monsters, which we'll divide out later).
-		 */
-		tot_mon_power = 0;
-		for (i = 0; i < z_info->r_max; i++)	{
-			struct object *obj1 = (struct object *) obj;
-			struct monster *mon = mem_zalloc(sizeof(*mon));
-			const struct brand *b = NULL;
-			const struct slay *s = NULL;
-			char verb[20];
+		/* Find the best multiplier against this monster */
+		improve_attack_modifier(obj1, mon, &b, &s, verb, false,	false);
+		if (s)
+			mult = s->multiplier;
+		else if (b)
+			mult = b->multiplier;
 
-			mult = 1;
-			mon->race = &r_info[i];
+		/* Add up totals */
+		tot_mon_power += mon->race->scaled_power;
+		sv += mult * mon->race->scaled_power;
+		mem_free(mon);
+	}
 
-			/* Find the best multiplier against this monster */
-			improve_attack_modifier(obj1, mon, &b, &s, verb, false,	false);
-			if (s)
-				mult = s->multiplier;
-			else if (b)
-				mult = b->multiplier;
+	/*
+	 * To get the expected damage for this weapon, multiply the
+	 * average damage from base dice by sv, and divide by the
+	 * total number of monsters.
+	 */
+	if (verbose) {
+		struct brand *b, *verbose_brands = NULL;
+		struct slay *s, *verbose_slays = NULL;
 
-			/* Add up totals */
-			tot_mon_power += mon->race->scaled_power;
-			sv += mult * mon->race->scaled_power;
-			mem_free(mon);
+		/* Write info about the slay combination and multiplier */
+		log_obj("Slay multiplier for: ");
+
+		verbose_brands = brand_collect(obj->brands, NULL);
+		verbose_slays = slay_collect(obj->slays, NULL);
+
+		for (b = verbose_brands; b; b = b->next) {
+			log_obj(format("%sx%d ", b->name, b->multiplier));
 		}
-
-		/*
-		 * To get the expected damage for this weapon, multiply the
-		 * average damage from base dice by sv, and divide by the
-		 * total number of monsters.
-		 */
-		if (verbose) {
-			struct brand *b, *verbose_brands = NULL;
-			struct slay *s, *verbose_slays = NULL;
-
-			/* Write info about the slay combination and multiplier */
-			log_obj("Slay multiplier for: ");
-
-			verbose_brands = brand_collect(obj->brands, NULL);
-			verbose_slays = slay_collect(obj->slays, NULL);
-
-			for (b = verbose_brands; b; b = b->next) {
-				log_obj(format("%sx%d ", b->name, b->multiplier));
-			}
-			for (s = verbose_slays; s; s = s->next) {
-				log_obj(format("%sx%d ", s->name, s->multiplier));
-			}
-			log_obj(format("\nsv is: %d\n", sv));
-			log_obj(format(" and t_m_p is: %d \n", tot_mon_power));
-			log_obj(format("times 1000 is: %d\n", (1000 * sv) / tot_mon_power));
-			free_brand(verbose_brands);
-			free_slay(verbose_slays);
+		for (s = verbose_slays; s; s = s->next) {
+			log_obj(format("%sx%d ", s->name, s->multiplier));
 		}
-
-		/* Add to the cache */
-		if (fill_slay_cache(obj, sv))
-			log_obj("Added to slay cache\n");
+		log_obj(format("\nsv is: %d\n", sv));
+		log_obj(format(" and t_m_p is: %d \n", tot_mon_power));
+		log_obj(format("times 1000 is: %d\n", (1000 * sv) / tot_mon_power));
+		free_brand(verbose_brands);
+		free_slay(verbose_slays);
 	}
 
 	q = (dice_pwr * (sv / 100)) / (tot_mon_power / 100);
