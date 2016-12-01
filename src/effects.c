@@ -46,6 +46,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "source.h"
 #include "target.h"
 #include "trap.h"
 
@@ -125,6 +126,20 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 	return final;
 }
 
+/**
+ * Hack to be refactored - get a 'struct source' for the current
+ * trap/monster/whatever
+ */
+struct source get_origin(void)
+{
+	if (cave->mon_current > 0) {
+		return source_monster(cave->mon_current);
+	} else if (cave->trap_current != NULL) {
+		return source_trap(cave->trap_current);
+	} else {
+		return source_player();
+	}
+}
 
 /**
  * Apply the project() function in a direction, or at a target
@@ -134,8 +149,9 @@ static bool project_aimed(int typ, int dir, int dam, int flg,
 {
 	int py = player->py;
 	int px = player->px;
+
 	/* Player or monster? */
-	int source = (cave->mon_current > 0) ? cave->mon_current : -1;
+	struct source origin = get_origin();
 
 	int ty, tx;
 
@@ -143,7 +159,7 @@ static bool project_aimed(int typ, int dir, int dam, int flg,
 	flg |= (PROJECT_THRU);
 
 	/* Can hurt the player */
-	if (source > 0)
+	if (origin.what == SRC_MONSTER > 0)
 		flg |= (PROJECT_PLAY);
 
 	/* Use the adjacent grid in the given direction as target */
@@ -151,11 +167,11 @@ static bool project_aimed(int typ, int dir, int dam, int flg,
 	tx = px + ddx[dir];
 
 	/* Ask for a target if no direction given */
-	if ((dir == 5) && target_okay() && source == -1)
+	if ((dir == 5) && target_okay() && origin.what == SRC_PLAYER)
 		target_get(&tx, &ty);
 
 	/* Aim at the target, do NOT explode */
-	return (project(source, 0, ty, tx, dam, typ, flg, 0, 0, obj));
+	return (project(origin, 0, ty, tx, dam, typ, flg, 0, 0, obj));
 }
 
 /**
@@ -169,11 +185,11 @@ static bool project_touch(int dam, int typ, bool aware,
 
 	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
 	if (aware) flg |= PROJECT_AWARE;
-	return (project(-1, 1, py, px, dam, typ, flg, 0, 0, obj));
+	return (project(source_player(), 1, py, px, dam, typ, flg, 0, 0, obj));
 }
 
 /**
- * Dummy effect, to tell the effect code to pick one of the next 
+ * Dummy effect, to tell the effect code to pick one of the next
  * context->value.base effects at random.
  */
 bool effect_handler_RANDOM(effect_handler_context_t *context)
@@ -2116,7 +2132,7 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 		if (!square_isview(cave, y, x)) continue;
 
 		/* Jump directly to the target monster */
-		(void) project(-1, 0, y, x, dam, typ, flg, 0, 0, context->obj);
+		(void)project(source_player(), 0, y, x, dam, typ, flg, 0, 0, context->obj);
 		context->ident = true;
 	}
 
@@ -2155,7 +2171,7 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 		if (!square_isview(cave, y, x)) continue;
 
 		/* Jump directly to the target monster */
-		(void) project(-1, 0, y, x, dam, typ, flg, 0, 0, context->obj);
+		(void)project(source_player(), 0, y, x, dam, typ, flg, 0, 0, context->obj);
 		context->ident = true;
 	}
 
@@ -3365,7 +3381,7 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 		msg("You are surrounded by a white light.");
 
 	/* Hook into the "project()" function */
-	(void)project(-1, rad, py, px, dam, GF_LIGHT_WEAK, flg, 0, 0, context->obj);
+	(void)project(source_player(), rad, py, px, dam, GF_LIGHT_WEAK, flg, 0, 0, context->obj);
 
 	/* Light up the room */
 	light_room(py, px, true);
@@ -3386,7 +3402,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, false);
 	int rad = context->p2;
-	int source = (cave->mon_current > 0) ? cave->mon_current : -1;
+	struct source origin = get_origin();
 
 	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_PLAY;
 
@@ -3395,15 +3411,16 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 		msg("Darkness surrounds you.");
 
 	/* Hook into the "project()" function */
-	(void)project(source, rad, py, px, dam, GF_DARK_WEAK, flg, 0, 0,
+	(void)project(origin, rad, py, px, dam, GF_DARK_WEAK, flg, 0, 0,
 				  context->obj);
 
 	/* Darken the room */
 	light_room(py, px, false);
 
 	/* Hack - blind the player directly if player-cast */
-	if ((source == -1) && !player_resists(player, ELEM_DARK))
+	if (origin.what == SRC_PLAYER && !player_resists(player, ELEM_DARK)) {
 		(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), true, true);
+	}
 
 	/* Assume seen */
 	context->ident = true;
@@ -3423,8 +3440,10 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
 
 	int flg = PROJECT_STOP | PROJECT_PLAY | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
+	struct source origin = get_origin();
+
 	/* Aim at the target, explode */
-	if (project(0, rad, py, px, dam, context->p1, flg, 0, 0, NULL))
+	if (project(origin, rad, py, px, dam, context->p1, flg, 0, 0, NULL))
 		context->ident = true;
 
 	return true;
@@ -3442,39 +3461,46 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	int px = player->px;
 	int dam = effect_calculate_value(context, true);
 	int rad = context->p2 ? context->p2 : 2;
-	int source;
-
 	int ty = py + ddy[context->dir];
 	int tx = px + ddx[context->dir];
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
+	struct source origin = get_origin();
+
 	/* Player or monster? */
-	if (cave->mon_current > 0) {
-		struct monster *mon = cave_monster(cave, cave->mon_current);
-		source = cave->mon_current;
-		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
-		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
-	} else if (cave->trap_current) {
-		source = 0;
-		flg |= PROJECT_PLAY;
-		ty = cave->trap_current->fy;
-		tx = cave->trap_current->fx;
-	} else {
-		source = -1;
-		if (context->p3) rad += player->lev / context->p3;
+	switch (origin.what) {
+		case SRC_MONSTER: {
+			struct monster *mon = cave_monster(cave, origin.which.monster);
+			if (rf_has(mon->race->flags, RF_POWERFUL)) {
+				rad++;
+			}
+			flg |= PROJECT_PLAY;
+			flg &= ~(PROJECT_STOP | PROJECT_THRU);
+			break;
+		}
+
+		case SRC_TRAP:
+			flg |= PROJECT_PLAY;
+			ty = cave->trap_current->fy;
+			tx = cave->trap_current->fx;
+			break;
+
+		case SRC_PLAYER:
+			if (context->p3) rad += player->lev / context->p3;
+			break;
 	}
 
 	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay() && source == -1) {
+	if (origin.what == SRC_PLAYER &&
+			context->dir == 5 &&
+			target_okay()) {
 		flg &= ~(PROJECT_STOP | PROJECT_THRU);
-
 		target_get(&tx, &ty);
 	}
 
 	/* Aim at the target, explode */
-	if (project(source, rad, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
+	if (project(origin, rad, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
 		context->ident = true;
 
 	return true;
@@ -3493,7 +3519,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, false);
 	int type = context->p1;
 	int rad = context->p3;
-	int source;
+
+	struct source origin = get_origin();
 
 	int ty = py + ddy[context->dir];
 	int tx = px + ddx[context->dir];
@@ -3510,9 +3537,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		rad = z_info->max_range;
 
 	/* Player or monster? */
-	if (cave->mon_current > 0) {
-		struct monster *mon = cave_monster(cave, cave->mon_current);
-		source = cave->mon_current;
+	if (origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, origin.which.monster);
 		flg |= PROJECT_PLAY;
 
 		dam = breath_dam(type, mon->hp);
@@ -3522,14 +3548,16 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 			diameter_of_source *= 2;
 			degrees_of_arc *= 2;
 		}
-	} else {
+	} else if (origin.what == SRC_PLAYER) {
 		msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
-		source = -1;
 	}
 
 	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay() && source == -1)
+	if (origin.what == SRC_PLAYER &&
+			context->dir == 5 &&
+			target_okay()) {
 		target_get(&tx, &ty);
+	}
 
 	/* Diameter of the energy source. */
 	if (degrees_of_arc < 60) {
@@ -3548,7 +3576,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		diameter_of_source = 250;
 
 	/* Breathe at the target */
-	if (project(source, rad, ty, tx, dam, type, flg, degrees_of_arc,
+	if (project(origin, rad, ty, tx, dam, type, flg, degrees_of_arc,
 				diameter_of_source, context->obj))
 		context->ident = true;
 
@@ -3583,7 +3611,7 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 
 	while (num--) {
 		/* Aim at the target.  Hurt items on floor. */
-		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0,
+		if (project(source_player(), context->p2, ty, tx, dam, context->p1, flg, 0, 0,
 					context->obj))
 			context->ident = true;
 	}
@@ -3617,9 +3645,10 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target */
-		if (project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
+		if (project(source_player(), 0, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
 			context->ident = true;
 	}
+
 	return true;
 }
 
@@ -3646,7 +3675,7 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target, explode */
-		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0,
+		if (project(source_player(), context->p2, ty, tx, dam, context->p1, flg, 0, 0,
 					context->obj))
 			context->ident = true;
 	}
@@ -4006,6 +4035,7 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 bool effect_handler_BIZARRE(effect_handler_context_t *context)
 {
 	context->ident = true;
+
 	/* Pick a random effect */
 	switch (randint1(10))
 	{
@@ -4058,9 +4088,8 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			}
 
 			/* Aim at the target, explode */
-			if (project(-1, 3, ty, tx, 300, GF_MANA, flg, 0, 0, context->obj))
-
-			return true;
+			if (project(source_player(), 3, ty, tx, 300, GF_MANA, flg, 0, 0, context->obj))
+				return true;
 		}
 
 		case 7:
@@ -4078,12 +4107,11 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 				target_get(&tx, &ty);
 
 			/* Aim at the target, do NOT explode */
-			return (project(-1, 0, ty, tx, 250, GF_MANA, flg, 0, 0,
-							context->obj));
-
-			return true;
+			return project(source_player(), 0, ty, tx, 250, GF_MANA, flg, 0, 0,
+							context->obj);
 		}
 	}
+
 	return false;
 }
 

@@ -24,6 +24,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "source.h"
 #include "trap.h"
 
 
@@ -33,7 +34,7 @@
  * ------------------------------------------------------------------------ */
 
 typedef struct project_feature_handler_context_s {
-	const int who;
+	const struct source origin;
 	const int r;
 	const int y;
 	const int x;
@@ -589,7 +590,7 @@ static const project_feature_handler_f feature_handlers[] = {
  * Called for projections with the PROJECT_GRID flag set, which includes
  * beam, ball and breath effects.
  *
- * \param who is the monster list index of the caster
+ * \param origin is the origin of the effect
  * \param r is the distance from the centre of the effect
  * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
@@ -602,12 +603,12 @@ static const project_feature_handler_f feature_handlers[] = {
  *
  * Hack -- effects on grids which are memorized but not in view are also seen.
  */
-bool project_f(int who, int r, int y, int x, int dam, int typ)
+bool project_f(struct source origin, int r, int y, int x, int dam, int typ)
 {
 	bool obvious = false;
 
 	project_feature_handler_context_t context = {
-		who,
+		origin,
 		r,
 		y,
 		x,
