@@ -260,7 +260,7 @@ static void do_cmd_wiz_bamf(void)
 
 	/* Teleport to the target */
 	else
-		effect_simple(EF_TELEPORT_TO, "0", y, x, 0, NULL);
+		effect_simple(EF_TELEPORT_TO, source_player(), "0", y, x, 0, NULL);
 }
 
 
@@ -1359,14 +1359,14 @@ static void do_cmd_wiz_cure_all(void)
 	}
 
 	/* Restore stats */
-	effect_simple(EF_RESTORE_STAT, "0", STAT_STR, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, "0", STAT_INT, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, "0", STAT_WIS, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, "0", STAT_DEX, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, "0", STAT_CON, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_STR, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_INT, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_WIS, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_DEX, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_CON, 0, 0, NULL);
 
 	/* Restore the level */
-	effect_simple(EF_RESTORE_EXP, "0", 1, 0, 0, NULL);
+	effect_simple(EF_RESTORE_EXP, source_player(), "0", 1, 0, 0, NULL);
 
 	/* Heal the player */
 	player->chp = player->mhp;
@@ -1521,7 +1521,7 @@ static void do_cmd_wiz_summon(int num)
 	int i;
 
 	for (i = 0; i < num; i++)
-		effect_simple(EF_SUMMON, "1", 0, 0, 0, NULL);
+		effect_simple(EF_SUMMON, source_player(), "1", 0, 0, 0, NULL);
 }
 
 
@@ -1911,7 +1911,7 @@ void do_cmd_wiz_effect(void)
 	screen_load();
 
 	if (index > EF_NONE && index < EF_MAX)
-		effect_simple(index, dice, p1, p2, p3, &ident);
+		effect_simple(index, source_player(), dice, p1, p2, p3, &ident);
 	else
 		msg("No effect found.");
 
@@ -1994,16 +1994,16 @@ void get_debug_command(void)
 		/* Detect everything */
 		case 'd':
 		{
-			//effect_simple(EF_DETECT_TRAPS, "22d40", 0, 0, 0, NULL);
-			//effect_simple(EF_DETECT_DOORS, "22d40", 0, 0, 0, NULL);
-			//effect_simple(EF_DETECT_STAIRS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_GOLD, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_OBJECTS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_VISIBLE_MONSTERS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, "22d40", 0, 0, 0, NULL);
+//			effect_simple(EF_DETECT_TRAPS, source_player(), "22d40", 0, 0, 0, NULL);
+//			effect_simple(EF_DETECT_DOORS, source_player(), "22d40", 0, 0, 0, NULL);
+//			effect_simple(EF_DETECT_STAIRS, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_GOLD, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_OBJECTS, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "22d40", 0, 0, 0, NULL);
 			break;
 		}
-		
+
 		/* Test for disconnected dungeon */
 		case 'D':
 		{
@@ -2066,7 +2066,7 @@ void get_debug_command(void)
 		/* Hit all monsters in LOS */
 		case 'H':
 		{
-			effect_simple(EF_PROJECT_LOS, "10000", GF_DISP_ALL, 0, 0, NULL);
+			effect_simple(EF_PROJECT_LOS, source_player(), "10000", GF_DISP_ALL, 0, 0, NULL);
 			break;
 		}
 
@@ -2094,7 +2094,7 @@ void get_debug_command(void)
 		/* Magic Mapping */
 		case 'm':
 		{
-			effect_simple(EF_MAP_AREA, "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_MAP_AREA, source_player(), "22d40", 0, 0, 0, NULL);
 			break;
 		}
 
@@ -2146,7 +2146,7 @@ void get_debug_command(void)
 		case 'p':
 		{
 			const char *near = "10";
-			effect_simple(EF_TELEPORT, near, 0, 1, 0, NULL);
+			effect_simple(EF_TELEPORT, source_player(), near, 0, 1, 0, NULL);
 			break;
 		}
 
@@ -2240,7 +2240,7 @@ void get_debug_command(void)
 		case 't':
 		{
 			const char *far = "100";
-			effect_simple(EF_TELEPORT, far, 0, 1, 0, NULL);
+			effect_simple(EF_TELEPORT, source_player(), far, 0, 1, 0, NULL);
 			break;
 		}
 
@@ -2272,9 +2272,8 @@ void get_debug_command(void)
 		/* Un-hide all monsters */
 		case 'u':
 		{
-			effect_simple(EF_DETECT_VISIBLE_MONSTERS, "500d500", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, "500d500", 0, 0, 0,
-						  NULL);
+			effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "500d500", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "500d500", 0, 0, 0, NULL);
 			break;
 		}
 

@@ -24,8 +24,8 @@
 #include "mon-make.h"
 #include "mon-move.h"
 #include "mon-util.h"
-#include "obj-desc.h"
 #include "obj-curse.h"
+#include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-tval.h"
@@ -33,6 +33,7 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "source.h"
 #include "target.h"
 #include "trap.h"
 
@@ -532,8 +533,8 @@ void process_world(struct chunk *c)
 			} else {
 				/* Otherwise do something disastrous */
 				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
-				effect_simple(EF_DESTRUCTION, "0", 0, 5, 0, NULL);
-			}		
+				effect_simple(EF_DESTRUCTION, source_none(), "0", 0, 5, 0, NULL);
+			}
 		}
 	}
 }
@@ -642,7 +643,7 @@ void process_player(void)
 				!player->timed[TMD_PARALYZED] &&
 				!player->timed[TMD_TERROR] &&
 				!player->timed[TMD_AFRAID])
-				effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0, NULL);
+				effect_simple(EF_DETECT_GOLD, source_none(), "3d3", 1, 0, 0, NULL);
 		}
 
 		/* Paralyzed or Knocked Out player gets no turn */

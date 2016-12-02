@@ -167,7 +167,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 				randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("%s", spell->save_message);
 		} else {
-			effect_do(spell->effect, NULL, &ident, true, 0, 0, 0);
+			effect_do(spell->effect, source_monster(mon->midx), NULL, &ident, true, 0, 0, 0);
 		}
 	}
 }

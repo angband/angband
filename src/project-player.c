@@ -21,6 +21,7 @@
 #include "effects.h"
 #include "init.h"
 #include "mon-desc.h"
+#include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "player-calcs.h"
@@ -267,16 +268,16 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 	}
 
 	if (one_in_(3) && mon) { /* Teleport to */
-		effect_simple(EF_TELEPORT_TO, "0", mon->fy, mon->fx, 0, NULL);
+		effect_simple(EF_TELEPORT_TO, context->origin, "0", mon->fy, mon->fx, 0, NULL);
 	} else if (one_in_(4)) { /* Teleport level */
 		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("You avoid the effect!");
 			return;
 		}
-		effect_simple(EF_TELEPORT_LEVEL, "0", 0, 0, 0, NULL);
+		effect_simple(EF_TELEPORT_LEVEL, context->origin, "0", 0, 0, 0, NULL);
 	} else { /* Teleport */
 		const char *miles = "200";
-		effect_simple(EF_TELEPORT, miles, 0, 1, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, miles, 0, 1, 0, NULL);
 	}
 }
 
@@ -327,7 +328,7 @@ static void project_player_handler_DISEN(project_player_handler_context_t *conte
 	}
 
 	/* Disenchant gear */
-	effect_simple(EF_DISENCHANT, "0", 0, 0, 0, NULL);
+	effect_simple(EF_DISENCHANT, context->origin, "0", 0, 0, 0, NULL);
 }
 
 static void project_player_handler_WATER(project_player_handler_context_t *context)
@@ -361,7 +362,7 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 	/* Blink */
 	if (randint1(127) > player->lev) {
 		const char *five = "5";
-		effect_simple(EF_TELEPORT, five, 0, 1, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, five, 0, 1, 0, NULL);
 	}
 
 	/* Slow */
@@ -392,7 +393,7 @@ static void project_player_handler_FORCE(project_player_handler_context_t *conte
 
 	/* Thrust player away. */
 	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
-	effect_simple(EF_THRUST_AWAY, grids_away, context->y, context->x, 0, NULL);
+	effect_simple(EF_THRUST_AWAY, context->origin, grids_away, context->y, context->x, 0, NULL);
 }
 
 static void project_player_handler_TIME(project_player_handler_context_t *context)
@@ -563,6 +564,17 @@ bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 			/* Get the trap name */
 			strnfmt(killer, sizeof(killer), "a %s", trap->kind->desc);
 
+			break;
+		}
+
+		case SRC_OBJECT: {
+			struct object *obj = origin.which.object;
+			object_desc(killer, sizeof(killer), obj, ODESC_PREFIX | ODESC_BASE);
+			break;
+		}
+
+		case SRC_NONE: {
+			/* Assume the caller has set the killer variable */
 			break;
 		}
 	}

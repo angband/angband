@@ -53,6 +53,7 @@
 
 typedef struct effect_handler_context_s {
 	const effect_index effect;
+	const struct source origin;
 	const struct object *obj;
 	const bool aware;
 	const int dir;
@@ -3489,6 +3490,9 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		case SRC_PLAYER:
 			if (context->p3) rad += player->lev / context->p3;
 			break;
+
+		default:
+			break;
 	}
 
 	/* Ask for a target if no direction given */
@@ -4066,7 +4070,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			msg("You are surrounded by a powerful aura.");
 
 			/* Dispel monsters */
-			effect_simple(EF_PROJECT_LOS, "1000", GF_DISP_ALL, 0, 0, NULL);
+			effect_simple(EF_PROJECT_LOS, context->origin, "1000", GF_DISP_ALL, 0, 0, NULL);
 
 			return true;
 		}
@@ -4133,7 +4137,6 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	int beam = context->beam;
 	effect_handler_f handler = NULL;
 	random_value value = { 0, 0, 0, 0 };
-	bool *ident = mem_zalloc(sizeof(*ident));
 
 	context->ident = true;
 
@@ -4242,6 +4245,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	if (handler != NULL) {
 		effect_handler_context_t new_context = {
 			context->effect,
+			context->origin,
 			context->obj,
 			context->aware,
 			context->dir,
@@ -4249,21 +4253,19 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 			context->boost,
 			value,
 			p1, p2, p3,
-			ident
+			context->ident
 		};
 
-		mem_free(ident);
-		return (handler(&new_context));
+		return handler(&new_context);
+	} else {
+		/* RARE */
+		effect_simple(EF_PROJECT_LOS, context->origin, "150", GF_DISP_ALL, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "20", GF_OLD_SLOW, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "40", GF_OLD_SLEEP, 0, 0, NULL);
+		effect_simple(EF_HEAL_HP, context->origin, "300", 0, 0, 0, NULL);
+
+		return true;
 	}
-
-	/* RARE */
-	effect_simple(EF_PROJECT_LOS, "150", GF_DISP_ALL, 0, 0, ident);
-	effect_simple(EF_PROJECT_LOS, "20", GF_OLD_SLOW, 0, 0, ident);
-	effect_simple(EF_PROJECT_LOS, "40", GF_OLD_SLEEP, 0, 0, ident);
-	effect_simple(EF_HEAL_HP, "300", 0, 0, 0, ident);
-	mem_free(ident);
-
-	return true;
 }
 
 
@@ -4448,14 +4450,27 @@ int effect_param(int index, const char *type)
 }
 
 /**
- * Do an effect, given an object.
- * Boost is the extent to which skill surpasses difficulty, used as % boost. It
- * ranges from 0 to 138.
+ * Execute an effect chain.
  *
- * Note that no effect ever sets `*ident` to false
+ * \param effect is the effect chain
+ * \param origin is the origin of the effect (player, monster etc.)
+ * \param obj    is the object making the effect happen (or NULL)
+ * \param ident  will be updated if the effect is identifiable
+ *               (NB: no effect ever sets *ident to false)
+ * \param aware  indicates whether the player is aware of the effect already
+ * \param dir    is the direction the effect will go in
+ * \param beam   is the base chance out of 100 that a BOLT_OR_BEAM effect will beam
+ * \param boost  is the extent to which skill surpasses difficulty, used as % boost. It
+ *               ranges from 0 to 138.
  */
-bool effect_do(struct effect *effect, struct object *obj, bool *ident,
-			   bool aware, int dir, int beam, int boost)
+bool effect_do(struct effect *effect,
+		struct source origin,
+		struct object *obj,
+		bool *ident,
+		bool aware,
+		int dir,
+		int beam,
+		int boost)
 {
 	bool completed = false;
 	effect_handler_f handler;
@@ -4492,6 +4507,7 @@ bool effect_do(struct effect *effect, struct object *obj, bool *ident,
 		if (handler != NULL) {
 			effect_handler_context_t context = {
 				effect->index,
+				origin,
 				obj,
 				aware,
 				dir,
@@ -4523,9 +4539,15 @@ bool effect_do(struct effect *effect, struct object *obj, bool *ident,
 /**
  * Perform a single effect with a simple dice string and parameters
  * Calling with ident a valid pointer will (depending on effect) give success
- * information; ident = NULL will ignore this 
+ * information; ident = NULL will ignore this
  */
-void effect_simple(int index, const char* dice_string, int p1, int p2, int p3, bool *ident)
+void effect_simple(int index,
+		struct source origin,
+		const char *dice_string,
+		int p1,
+		int p2,
+		int p3,
+		bool *ident)
 {
 	struct effect *effect = mem_zalloc(sizeof(*effect));
 	int dir = DIR_TARGET;
@@ -4544,10 +4566,11 @@ void effect_simple(int index, const char* dice_string, int p1, int p2, int p3, b
 		get_aim_dir(&dir);
 
 	/* Do the effect */
-	if (ident)
-		effect_do(effect, NULL, ident, true, dir, 0, 0);
-	else
-		effect_do(effect, NULL, &dummy_ident, true, dir, 0, 0);
+	if (!ident) {
+		ident = &dummy_ident;
+	}
+
+	effect_do(effect, origin, NULL, ident, true, dir, 0, 0);
 
 	free_effect(effect);
 }

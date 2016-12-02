@@ -524,7 +524,7 @@ static void project_monster_handler_FORCE(project_monster_handler_context_t *con
 
 	/* Thrust monster away. */
 	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
-	effect_simple(EF_THRUST_AWAY, grids_away, context->y, context->x, 0, NULL);
+	effect_simple(EF_THRUST_AWAY, context->origin, grids_away, context->y, context->x, 0, NULL);
 }
 
 /* Time -- breathers resist */
@@ -955,7 +955,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 	} else if (context->teleport_distance > 0) {
 		char dice[5];
 		strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
-		effect_simple(EF_TELEPORT, dice, context->y, context->x, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, dice, context->y, context->x, 0, NULL);
 	} else {
 		int i;
 

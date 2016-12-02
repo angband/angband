@@ -151,6 +151,6 @@ bool do_curse_effect(int i)
 	if (curse->obj->effect_msg) {
 		msgt(MSG_GENERIC, curse->obj->effect_msg);
 	}
-	effect_do(effect, NULL, &ident, was_aware, dir, 0, 0);
+	effect_do(effect, source_object(curse->obj), NULL, &ident, was_aware, dir, 0, 0);
 	return !was_aware && ident;
 }
