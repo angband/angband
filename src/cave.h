@@ -151,7 +151,7 @@ struct chunk {
 
 	int height;
 	int width;
-	
+
 	u16b feeling_squares; /* How many feeling squares the player has visited */
 	int *feat_count;
 
@@ -164,8 +164,6 @@ struct chunk {
 	u16b mon_max;
 	u16b mon_cnt;
 	int mon_current;
-
-	struct trap *trap_current;
 };
 
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/

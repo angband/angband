@@ -436,6 +436,33 @@ const char *gf_idx_to_name(int type)
  * ------------------------------------------------------------------------ */
 
 /**
+ * Given an origin, find its coordinates and return them
+ *
+ * If there is no origin, return (-1, -1)
+ */
+struct loc origin_get_loc(struct source origin)
+{
+	switch (origin.what) {
+		case SRC_MONSTER: {
+			struct monster *who = cave_monster(cave, origin.which.monster);
+			return loc(who->fx, who->fy);
+		}
+
+		case SRC_TRAP: {
+			struct trap *trap = origin.which.trap;
+			return loc(trap->fx, trap->fy);
+		}
+
+		case SRC_PLAYER:
+		case SRC_OBJECT:	/* At the moment only worn cursed objects use this */
+			return loc(player->py, player->py);
+
+		case SRC_NONE:
+			return loc(-1, -1);
+	}
+}
+
+/**
  * Generic "beam"/"bolt"/"ball" projection routine.
  *   -BEN-, some changes by -LM-
  *
@@ -637,25 +664,11 @@ bool project(struct source origin, int rad, int y, int x,
 		/* Clear the flag */
 		flg &= ~(PROJECT_JUMP);
 	} else {
+		source = origin_get_loc(origin);
+
 		/* Default to destination grid */
-		source = loc(x, y);
-
-		switch (origin.what) {
-			case SRC_TRAP: {
-				struct trap *trap = origin.which.trap;
-				source = loc(trap->fx, trap->fy);
-				break;
-			}
-
-			case SRC_PLAYER:
-				source = loc(player->px, player->py);
-				break;
-
-			case SRC_MONSTER: {
-				struct monster *mon = cave_monster(cave, origin.which.monster);
-				source = loc(mon->fx, mon->fy);
-				break;
-			}
+		if (source.y == -1 && source.x == -1) {
+			source = loc(x, y);
 		}
 	}
 

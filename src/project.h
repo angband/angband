@@ -92,6 +92,9 @@ const char *gf_desc(int type);
 const char *gf_blind_desc(int type);
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
+
+struct loc origin_get_loc(struct source origin);
+
 bool project(struct source, int rad, int y, int x, int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source,
 			 const struct object *obj);
