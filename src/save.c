@@ -132,23 +132,28 @@ static void wr_item(const struct object *obj)
 		wr_byte(b->next ? 1 : 0);
 	}
 
-	/* Write a sentinel byte */
-	wr_byte(obj->slays ? 1 : 0);
-	for (s = obj->slays; s; s = s->next) {
-		wr_string(s->name);
-		wr_s16b(s->race_flag);
-		wr_s16b(s->multiplier);
-		wr_byte(s->next ? 1 : 0);
+	/* Write slays if any */
+	if (obj->slays) {
+		wr_byte(1);
+		for (i = 0; i < z_info->slay_max; i++) {
+			wr_byte(obj->slays[i] ? 1 : 0);
+		}
+	} else {
+		wr_byte(0);
 	}
 
-	/* Write a sentinel byte */
-	wr_byte(obj->curses ? 1 : 0);
+	/* Write curses if any */
 	if (obj->curses) {
+		wr_byte(1);
 		for (i = 0; i < z_info->curse_max; i++) {
 			wr_byte(obj->curses[i].power);
 			wr_u16b(obj->curses[i].timeout);
 		}
+	} else {
+		wr_byte(0);
 	}
+
+
 	if (obj->known) {
 		obj->known->curses = NULL;
 	}
@@ -623,20 +628,13 @@ void wr_misc(void)
 	}
 
 	/* Slays */
-	wr_byte(player->obj_k->slays ? 1 : 0);
-	for (s = player->obj_k->slays; s; s = s->next) {
-		wr_string(s->name);
-		wr_s16b(s->race_flag);
-		wr_s16b(s->multiplier);
-		wr_byte(s->next ? 1 : 0);
+	for (i = 0; i < z_info->slay_max; i++) {
+		wr_byte(player->obj_k->slays[i] ? 1 : 0);
 	}
 
 	/* Curses */
-	wr_byte(player->obj_k->curses ? 1 : 0);
-	if (player->obj_k->curses) {
-		for (i = 0; i < z_info->curse_max; i++) {
-			wr_byte(player->obj_k->curses[i].power ? 1 : 0);
-		}
+	for (i = 0; i < z_info->curse_max; i++) {
+		wr_byte(player->obj_k->curses[i].power ? 1 : 0);
 	}
 
 	/* Combat data */

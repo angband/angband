@@ -2888,7 +2888,6 @@ void cleanup_angband(void)
 
 	monster_list_finalize();
 	object_list_finalize();
-	free_slay(game_slays);
 	free_brand(game_brands);
 
 	cleanup_game_constants();

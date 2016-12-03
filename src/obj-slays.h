@@ -23,24 +23,20 @@
 extern struct slay *slays;
 
 /*** Functions ***/
-void copy_slay(struct slay **dest, struct slay *source);
+bool same_monsters_slain(int slay1, int slay2);
+void copy_slays(bool **dest, bool *source);
 void copy_brand(struct brand **dest, struct brand *source);
-void free_slay(struct slay *source);
 void free_brand(struct brand *source);
 bool append_random_brand(struct brand **current, char **name);
-bool append_random_slay(struct slay **current, char **name);
+bool append_random_slay(bool **current, char **name);
 int brand_count(struct brand *brands);
-int slay_count(struct slay *slays);
+int slay_count(bool *slays);
 struct brand *brand_collect(struct brand *b, const struct object *obj2);
-struct slay *slay_collect(struct slay *s, const struct object *obj2);
 void improve_attack_modifier(struct object *obj, const struct monster *mon, 
-							 const struct brand **brand_used, 
-							 const struct slay **slay_used, 
+							 const struct brand **brand_used, int *slay_used, 
 							 char *verb, bool range, bool real);
 bool react_to_slay(struct object *obj, const struct monster *mon);
 bool brands_are_equal(struct brand *brand1, struct brand *brand2);
-bool slays_are_equal(struct slay *slay1, struct slay *slay2);
 void wipe_brands(struct brand *brands);
-void wipe_slays(struct slay *slays);
 
 #endif /* OBJECT_SLAYS_H */

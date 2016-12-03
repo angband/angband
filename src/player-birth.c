@@ -394,9 +394,8 @@ void player_init(struct player *p)
 	if (p->timed)
 		mem_free(p->timed);
 	if (p->obj_k) {
-		if (p->obj_k->curses) {
-			mem_free(p->obj_k->curses);
-		}
+		mem_free(p->obj_k->slays);
+		mem_free(p->obj_k->curses);
 		mem_free(p->obj_k);
 	}
 
@@ -439,6 +438,7 @@ void player_init(struct player *p)
 								   sizeof(struct object *));
 	p->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 	p->obj_k = mem_zalloc(sizeof(struct object));
+	p->obj_k->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
 	p->obj_k->curses = mem_zalloc(z_info->curse_max *
 								  sizeof(struct curse_data));
 

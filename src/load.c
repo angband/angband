@@ -172,18 +172,12 @@ static struct object *rd_item(void)
 
 	/* Read slays */
 	rd_byte(&tmp8u);
-	while (tmp8u) {
-		char buf_local[40];
-		struct slay *s = mem_zalloc(sizeof *s);
-		rd_string(buf_local, sizeof(buf_local));
-		s->name = string_make(buf_local);
-		rd_s16b(&tmp16s);
-		s->race_flag = tmp16s;
-		rd_s16b(&tmp16s);
-		s->multiplier = tmp16s;
-		s->next = obj->slays;
-		obj->slays = s;
-		rd_byte(&tmp8u);
+	if (tmp8u) {
+		obj->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
+		for (i = 0; i < z_info->slay_max; i++) {
+			rd_byte(&tmp8u);
+			obj->slays[i] = tmp8u ? true : false;
+		}
 	}
 
 	/* Read curses */
@@ -933,28 +927,15 @@ int rd_misc(void)
 	}
 
 	/* Read slays */
-	rd_byte(&tmp8u);
-	while (tmp8u) {
-		char buf[40];
-		struct slay *s = mem_zalloc(sizeof *s);
-		rd_string(buf, sizeof(buf));
-		s->name = string_make(buf);
-		rd_s16b(&tmp16s);
-		s->race_flag = tmp16s;
-		rd_s16b(&tmp16s);
-		s->multiplier = tmp16s;
-		s->next = player->obj_k->slays;
-		player->obj_k->slays = s;
+	for (i = 0; i < z_info->slay_max; i++) {
 		rd_byte(&tmp8u);
+		player->obj_k->slays[i] = tmp8u ? true : false;
 	}
 
 	/* Read curses */
-	rd_byte(&tmp8u);
-	if (tmp8u) {
-		for (i = 0; i < z_info->curse_max; i++) {
-			rd_byte(&tmp8u);
-			player->obj_k->curses[i].power = tmp8u;
-		}
+	for (i = 0; i < z_info->curse_max; i++) {
+		rd_byte(&tmp8u);
+		player->obj_k->curses[i].power = tmp8u;
 	}
 
 	/* Combat data */

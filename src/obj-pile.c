@@ -208,18 +208,13 @@ struct object *object_new(void)
  */
 void object_free(struct object *obj)
 {
-	if (obj->slays) {
-		free_slay(obj->slays);
-	}
+	mem_free(obj->slays);
 
 	if (obj->brands) {
 		free_brand(obj->brands);
 	}
 
-	if (obj->curses) {
-		mem_free(obj->curses);
-	}
-
+	mem_free(obj->curses);
 	mem_free(obj);
 }
 
@@ -272,15 +267,7 @@ void object_delete(struct object **obj_address)
 		&& (obj == cave->objects[obj->oidx]))
 		cave->objects[obj->oidx] = NULL;
 
-	if (obj->slays) {
-		free_slay(obj->slays);
-	}
-
-	if (obj->brands) {
-		free_brand(obj->brands);
-	}
-
-	mem_free(obj);
+	object_free(obj);
 	*obj_address = NULL;
 }
 
@@ -537,7 +524,7 @@ void object_absorb(struct object *obj1, struct object *obj2)
 void object_wipe(struct object *obj)
 {
 	/* Free slays and brands */
-	free_slay(obj->slays);
+	mem_free(obj->slays);
 	free_brand(obj->brands);
 	mem_free(obj->curses);
 
@@ -554,11 +541,12 @@ void object_copy(struct object *dest, const struct object *src)
 	/* Copy the structure */
 	memcpy(dest, src, sizeof(struct object));
 
-	dest->slays = NULL;
 	dest->brands = NULL;
-	dest->curses = NULL;
 
-	copy_slay(&dest->slays, src->slays);
+	if (src->slays) {
+		dest->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
+		memcpy(dest->slays, src->slays, z_info->slay_max * sizeof(bool));
+	}
 	copy_brand(&dest->brands, src->brands);
 	if (src->curses) {
 		size_t array_size = z_info->curse_max * sizeof(struct curse_data);

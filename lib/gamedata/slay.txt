@@ -6,6 +6,9 @@
 # base: monster base which this flag affects
 # multiplier: slay multiplier applied to damage dice
 
+# This file encodes the slays that can appear on object.  Each slay should
+# have exactly one of a race flag or a base.
+
 code:EVIL_2
 name:evil creatures
 race-flag:EVIL

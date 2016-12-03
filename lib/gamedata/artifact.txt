@@ -989,7 +989,9 @@ info:15:30:20000
 alloc:3:15 to 65
 power:0:2d5:12:15:0
 flags:FREE_ACT | SEE_INVIS
-values:INT[3] | DEX[3] | SLAY_TROLL[3] | SLAY_GIANT[3]
+values:INT[3] | DEX[3]
+slay:TROLL_3
+slay:GIANT_3
 desc:A short thrusting blade with a large guard worn by the eldest son of 
 desc:Fëanor, Maedhros the Tall, who lost his right hand while escaping 
 desc:from Angband.
@@ -1001,8 +1003,10 @@ info:20:12:100000
 alloc:2:20 to 100
 power:0:2d4:10:15:5
 flags:FREE_ACT | SUST_DEX | 
-values:DEX[4] | BRAND_ACID[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
-values:RES_ACID[1] | RES_DARK[1] 
+values:DEX[4] | BRAND_ACID[3] | RES_ACID[1] | RES_DARK[1]
+slay:EVIL_2
+slay:TROLL_3
+slay:ORC_3
 desc:Forged by Telchar, greatest of Dwarven smiths, and used by Beren to gouge
 desc: a Silmaril out of Morgoth's crown, this long chopping dagger slices
 desc: through ordinary metal as easily as its name, "Iron Cleaver", suggests.
@@ -1046,7 +1050,9 @@ base-object:sword:Dagger
 info:5:12:15000
 alloc:5:5 to 75
 power:0:2d4:14:13:0
-values:BRAND_POIS[3] | SLAY_ORC[3] | SLAY_TROLL[3] | RES_POIS[1] | RES_DISEN[1]
+slay:ORC_3
+slay:TROLL_3
+values:BRAND_POIS[3] | RES_POIS[1] | RES_DISEN[1]
 act:STINKING_CLOUD
 time:4+d4
 desc:A large stiletto dagger that glistens with odorless poison, to which the 
@@ -1073,8 +1079,11 @@ alloc:7:30 to 127
 power:0:5d4:-20:20:0
 # F:DRAIN_HP | 
 flags:AGGRAVATE
-values:CON[5] | SLAY_DRAGON[5] | SLAY_EVIL[2] | SLAY_DEMON[3] | SLAY_TROLL[3]
-values:RES_DISEN[1]
+values:CON[5] | RES_DISEN[1]
+slay:DRAGON_5
+slay:EVIL_2
+slay:DEMON_3
+slay:TROLL_3
 desc:This sword has runes of power incused on its ornate hilt, and a single 
 desc:blood channel that gleams coldly blue as you grasp this mighty weapon of 
 desc:peril.
@@ -1088,7 +1097,9 @@ power:0:3d5:20:12:0
 flags:FREE_ACT | FEATHER | SLOW_DIGEST
 act:COLD_BOLT2
 time:50
-values:DEX[4] | SLAY_DEMON[3] | SLAY_ORC[3] | RES_COLD[1]
+values:DEX[4] | RES_COLD[1]
+slay:DEMON_3
+slay:ORC_3
 desc:The beautiful sword of Thingol, justly named "King's Ire".  It glistens 
 desc:icy enough to freeze the hearts of demons, and you feel supple and 
 desc:lightfooted as you clasp its hilt of gold and silver inlay.
@@ -1100,8 +1111,10 @@ info:20:150:40000
 alloc:5:20 to 80
 power:0:2d5:10:15:0
 flags:BLESSED | SLOW_DIGEST
-values:LIGHT[1] | BRAND_FIRE[3] | SLAY_ORC[3] | SLAY_DEMON[3] |
-values:SLAY_EVIL[2] | RES_FIRE[1] | RES_LIGHT[1]
+values:LIGHT[1] | BRAND_FIRE[3] | RES_FIRE[1] | RES_LIGHT[1]
+slay:ORC_3
+slay:DEMON_3
+slay:EVIL_2
 desc:This fiery, shining blade, mate to Orcrist, earned its sobriquet "Beater" 
 desc:from dying orcs who dared to behold hidden Gondolin.
 
@@ -1112,8 +1125,10 @@ info:20:150:45000
 alloc:3:20 to 100
 power:0:2d5:12:16:0
 flags:BLESSED | PROT_BLIND | SLOW_DIGEST
-values:LIGHT[1] | BRAND_ELEC[3] | SLAY_ORC[3] | SLAY_TROLL[3] | 
-values:SLAY_GIANT[3] | RES_ELEC[1]
+values:LIGHT[1] | BRAND_ELEC[3] | RES_ELEC[1]
+slay:ORC_3
+slay:TROLL_3
+slay:GIANT_3
 desc:Like unto Orcrist and Glamdring, and like them long lost, this sword is 
 desc:continually covered in tiny arcs of captive lightning that flash and dance 
 desc:eerily in the globes of light they create.
@@ -1125,8 +1140,10 @@ info:20:150:40000
 alloc:5:20 to 80
 power:0:2d5:10:15:0
 flags:BLESSED | SLOW_DIGEST
-values:LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_ORC[3] |
-values:SLAY_DRAGON[3] | RES_COLD[1] | RES_DARK[1]
+values:LIGHT[1] | BRAND_COLD[3] | RES_COLD[1] | RES_DARK[1]
+slay:EVIL_2
+slay:ORC_3
+slay:DRAGON_3
 desc:This coldly gleaming blade, mate to Glamdring, is called simply "Biter" 
 desc:by orcs who came to know its power all too well.
 
@@ -1137,8 +1154,8 @@ info:30:200:100000
 alloc:3:30 to 100
 power:0:3d6:13:17:0
 flags:FREE_ACT | SLOW_DIGEST | REGEN
-values:STR[2] | BRAND_FIRE[3] | BRAND_POIS[3] | SLAY_DRAGON[5]
-values:RES_FIRE[1] | RES_POIS[1]
+values:STR[2] | BRAND_FIRE[3] | BRAND_POIS[3] | RES_FIRE[1] | RES_POIS[1]
+slay:DRAGON_5
 desc:A giant sword once wielded by mighty Túrin, and an even greater 
 desc:dragonbane; for what wyrm could stand against the blade that bathed in 
 desc:Glaurung's blood?
@@ -1151,9 +1168,15 @@ alloc:1:30 to 127
 power:0:4d6:19:21:0
 # F:DRAIN_MANA | 
 flags:FREE_ACT | SEE_INVIS | AGGRAVATE
-values:STR[4] | INFRA[2] | BRAND_FIRE[3] | SLAY_DRAGON[5] | SLAY_ANIMAL[2]
-values:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[3] | SLAY_TROLL[3]
-values:SLAY_GIANT[3] | SLAY_ORC[3] | RES_FIRE[1] | RES_CHAOS[1]
+values:STR[4] | INFRA[2] | BRAND_FIRE[3] | RES_FIRE[1] | RES_CHAOS[1]
+slay:DRAGON_5
+slay:ANIMAL_2
+slay:EVIL_2
+slay:UNDEAD_3
+slay:DEMON_3
+slay:TROLL_3
+slay:GIANT_3
+slay:ORC_3
 desc:Runes dark and deadly stand stark against the naked steel of this awesome 
 desc:weapon, and you feel a wrathful power of slaying and rending as you 
 desc:slowly approach.
@@ -1167,7 +1190,9 @@ power:0:3d6:-15:-15:-10
 # F:DRAIN_HP | DRAIN_MANA | 
 flags: SEE_INVIS | HOLD_LIFE | 
 flags:AGGRAVATE | DRAIN_EXP
-values:SPEED[-10] | BRAND_POIS[3] | SLAY_DRAGON[5] | SLAY_UNDEAD[3]
+values:SPEED[-10] | BRAND_POIS[3]
+slay:DRAGON_5
+slay:UNDEAD_3
 desc:A foul, twisted sword with blackened spines and knobs, its very name is 
 desc:a curse upon the lips of Elves and Men.  It is said that it will drink the 
 desc:very lifeblood of its wielder.
@@ -1192,8 +1217,12 @@ info:40:260:100000
 alloc:4:40 to 127
 power:0:4d5:18:19:0
 flags:SEE_INVIS
-values:SLAY_DRAGON[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_TROLL[3] |
-values:SLAY_GIANT[3] | SLAY_ORC[3] 
+slay:DRAGON_3
+slay:EVIL_2
+slay:UNDEAD_3
+slay:TROLL_3
+slay:GIANT_3
+slay:ORC_3
 desc:A giant's weapon, with a long blade tall and straight thrusting out from a 
 desc:massive double-pronged hilt.  On its blade are written doomspells against 
 desc:both the living and undead.
@@ -1207,8 +1236,8 @@ power:0:6d5:10:10:0
 flags:SUST_DEX | 
 values:SPEED[5] | DEX[5] | BLOWS[1]
 desc:An utterly perfect, cleanly chiseled sword, with an edge that effortlessly 
-desc:slices rock and bone, and spells to render the wearer lithe and nimble.  It 
-desc:is combat incarnate.
+desc:slices rock and bone, and spells to render the wearer lithe and nimble.
+desc:  It is combat incarnate.
 
 
 name:82:'Ringil'
@@ -1220,8 +1249,11 @@ flags:PROT_FEAR | BLESSED
 flags:FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN | 
 act:COLD_BALL100
 time:40
-values:SPEED[10] | LIGHT[1] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_UNDEAD[3] |
-values:SLAY_TROLL[3] | SLAY_DEMON[5] | RES_COLD[1] | RES_LIGHT[1]
+values:SPEED[10] | LIGHT[1] | BRAND_COLD[3] | RES_COLD[1] | RES_LIGHT[1]
+slay:EVIL_2
+slay:UNDEAD_3
+slay:TROLL_3
+slay:DEMON_5
 desc:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
 desc:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it 
 desc:of old; his lame foot will remind him of its might should he face it again.
@@ -1236,8 +1268,11 @@ flags:PROT_FEAR | FREE_ACT | BLESSED
 flags:SUST_STR | SUST_DEX | SEE_INVIS
 act:FIRE_BOLT72
 time:40
-values:STR[4] | DEX[4] | BRAND_FIRE[3] | SLAY_EVIL[2] | SLAY_TROLL[3]
-values:SLAY_ORC[3] | SLAY_UNDEAD[3] | RES_FIRE[1] | RES_DISEN[1]
+values:STR[4] | DEX[4] | BRAND_FIRE[3] | RES_FIRE[1] | RES_DISEN[1]
+slay:EVIL_2
+slay:TROLL_3
+slay:ORC_3
+slay:UNDEAD_3
 desc:The famed "Flame of the West", the Sword that was Broken and is forged 
 desc:again.  It glows with the essence of fire, its wearer is mighty in combat, 
 desc:and no creature of Sauron can withstand it.
@@ -1250,7 +1285,9 @@ alloc:3:20 to 127
 power:0:2d5:10:12:0
 flags:AGGRAVATE | FREE_ACT | SEE_INVIS
 values:SPEED[3] | STR[2] | CON[2] | BLOWS[1] | LIGHT[1] | BRAND_POIS[3]
-values:SLAY_EVIL[2] | SLAY_DEMON[3] | RES_ELEC[1] | RES_LIGHT[1] | RES_DARK[1]
+values:RES_ELEC[1] | RES_LIGHT[1] | RES_DARK[1]
+slay:EVIL_2
+slay:DEMON_3
 desc:Forged of meteoric iron by Eöl the Dark Elf, and as deadly as any 
 desc:other blade he forged.
 
@@ -1261,7 +1298,9 @@ info:1:130:30000
 alloc:50:10 to 50
 power:0:2d5:12:12:0
 flags:FEATHER | SEE_INVIS
-values:DEX[2] | STEALTH[2] | SLAY_TROLL[3] | SLAY_ORC[3]
+values:DEX[2] | STEALTH[2]
+slay:TROLL_3
+slay:ORC_3
 desc:The "Singing Blade", whose wearer can slay Orcs and Trolls in the hidden 
 desc:and secret places of the earth.
 
@@ -1271,7 +1310,8 @@ base-object:sword:Rapier
 info:1:40:15000
 alloc:38:5 to 50
 power:0:1d6:12:19:0
-values:LIGHT[1] | BRAND_COLD[3] | SLAY_ANIMAL[2] | RES_COLD[1] | RES_LIGHT[1]
+values:LIGHT[1] | BRAND_COLD[3] | RES_COLD[1] | RES_LIGHT[1]
+slay:ANIMAL_2
 desc:A slender, tapered needle of ice that coldly grips its impaled prey.
 
 
@@ -1280,8 +1320,12 @@ base-object:sword:Rapier
 info:15:40:25000
 alloc:10:15 to 80
 power:0:2d6:16:12:0
-values:BLOWS[1] | STR[2] | DEX[2] | CON[2] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] |
-values:SLAY_TROLL[3] | SLAY_GIANT[3] | SLAY_ORC[3]
+values:BLOWS[1] | STR[2] | DEX[2] | CON[2]
+slay:DRAGON_3
+slay:ANIMAL_2
+slay:TROLL_3
+slay:GIANT_3
+slay:ORC_3
 desc:An heirloom of the dauntless Lords of Rhûn far to the east, and a name 
 desc:of dismay to creatures natural and unnatural.
 
@@ -1293,7 +1337,10 @@ alloc:6:20 to 100
 power:0:1d7:7:8:0
 flags:PROT_FEAR | FREE_ACT | SEE_INVIS
 values:SPEED[3] | BLOWS[2] | STR[1] | DEX[1] | CON[1] | LIGHT[1] | RES_LIGHT[1]
-values:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_ORC[3] | SLAY_ANIMAL[2]
+slay:EVIL_2
+slay:UNDEAD_3
+slay:ORC_3
+slay:ANIMAL_2
 desc:"I will give you a name, and I shall call you Sting."  The perfect size 
 desc:for Bilbo, and stamped forever by the courage he found in Mirkwood, this 
 desc:sturdy little blade grants the wearer combat prowess and survival 
@@ -1306,7 +1353,10 @@ info:20:130:30000
 alloc:7:20 to 80
 power:0:4d2:9:11:0
 flags:SEE_INVIS
-values:DEX[2] | BLOWS[2] | SLAY_ANIMAL[2] | SLAY_EVIL[2] | SLAY_UNDEAD[3]
+values:DEX[2] | BLOWS[2]
+slay:ANIMAL_2
+slay:EVIL_2
+slay:UNDEAD_3
 desc:A damascened scimitar that hefts with wondrous ease.  Famed in song 
 desc:as the "Sickle of Harad", and a deadly foe to the undead.
 
@@ -1317,7 +1367,8 @@ info:20:80:15000
 alloc:12:20 to 80
 power:0:1d7:13:11:0
 flags:SLOW_DIGEST | REGEN
-values:BLOWS[2] | BRAND_POIS[3] | SLAY_ANIMAL[2]
+values:BLOWS[2] | BRAND_POIS[3]
+slay:ANIMAL_2
 desc:A stubby blade worn by Beren, whose horn sounded of old in the glades of 
 desc:Brethil.
 
@@ -1328,10 +1379,14 @@ info:70:180:200000
 alloc:4:70 to 127
 power:0:6d5:18:28:-50
 # F:DRAIN_HP | 
-flags:FREE_ACT | SEE_INVIS | TELEPATHY | AGGRAVATE | 
-values:BRAND_COLD[3] | SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_EVIL[2] |
-values:SLAY_TROLL[3] | SLAY_DEMON[3] 
+flags:FREE_ACT | SEE_INVIS | TELEPATHY | AGGRAVATE
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_CHAOS[1]
+values:BRAND_COLD[3]
+slay:ANIMAL_2
+slay:DRAGON_5
+slay:EVIL_2
+slay:TROLL_3
+slay:DEMON_3
 desc:This weapon of wrath, wrought by a desperate berserker gang, dives hungrily
 desc: into the yielding flesh of your enemies.  You yourself fall under the 
 desc:shadow of death even as you inflict wounds that will not heal.
@@ -1359,10 +1414,11 @@ base-object:polearm:Beaked Axe
 info:20:180:40000
 alloc:7:20 to 100
 power:0:2d6:8:10:0
-flags:TELEPATHY | SLOW_DIGEST | 
+flags:TELEPATHY | SLOW_DIGEST
 act:DRAIN_LIFE2
 time:40
-values:WIS[3] | CON[3] | SLAY_DRAGON[3]
+values:WIS[3] | CON[3]
+slay:DRAGON_3
 desc:The narrow axe head of this weapon would pierce the armour of a very 
 desc:Dragon, and the designs of your enemies stand naked and revealed.
 
@@ -1383,8 +1439,9 @@ info:20:140:22000
 alloc:12:25 to 80
 power:0:3d5:16:12:0
 flags:BLESSED | FEATHER | SEE_INVIS
-values:STR[3] | WIS[3] | BRAND_FIRE[3] | SLAY_UNDEAD[3] | SLAY_GIANT[3]
-values:RES_FIRE[1] | RES_SOUND[1]
+values:STR[3] | WIS[3] | BRAND_FIRE[3] | RES_FIRE[1] | RES_SOUND[1]
+slay:UNDEAD_3
+slay:GIANT_3
 desc:Lordly and tall did Osondir stand against the wrath of giants, and 
 desc:clear-eyed in barrows fell, wielding a halberd glowing ruby red.
 
@@ -1396,7 +1453,10 @@ alloc:7:20 to 80
 power:0:3d5:10:12:10
 flags:SUST_INT | SLOW_DIGEST
 values:STR[3] | INT[3] | SPEED[2] | BRAND_COLD[3] | BRAND_FIRE[3]
-values:SLAY_DEMON[3] | SLAY_TROLL[3] | SLAY_GIANT[3] | RES_FIRE[1] | RES_COLD[1]
+values:RES_FIRE[1] | RES_COLD[1]
+slay:DEMON_3
+slay:TROLL_3
+slay:GIANT_3
 desc:Within this long two-handed spear dwell the spirits of frost giants and 
 desc:fire demons, who war forever, fettered by sorcerous binds.
 
@@ -1409,8 +1469,11 @@ power:0:3d6:15:25:5
 flags:PROT_FEAR | FREE_ACT | SLOW_DIGEST | BLESSED
 act:COLD_BALL100
 time:35
-values:DEX[4] | WIS[2] | BRAND_COLD[3] | SLAY_EVIL[2] | SLAY_TROLL[3]
-values:SLAY_ORC[3] | SLAY_UNDEAD[5]| RES_COLD[1]
+values:DEX[4] | WIS[2] | BRAND_COLD[3] | RES_COLD[1]
+slay:EVIL_2
+slay:TROLL_3
+slay:ORC_3
+slay:UNDEAD_5
 desc:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves.
 desc:  Against it, all the foul corruptions of Sauron dashed in vain.
 
@@ -1424,8 +1487,10 @@ power:0:4d6:15:15:0
 flags:FEATHER | SEE_INVIS | BLESSED | 
 act:STONE_TO_MUD
 time:5
-values:INT[4] | SPEED[4] | INFRA[4] | LIGHT[1] | BRAND_FIRE[3] | SLAY_GIANT[3]
-values:SLAY_ANIMAL[2] | RES_FIRE[1] | RES_LIGHT[1]
+values:INT[4] | SPEED[4] | INFRA[4] | LIGHT[1] | BRAND_FIRE[3]
+slay:GIANT_3
+slay:ANIMAL_2
+values: | RES_FIRE[1] | RES_LIGHT[1]
 desc:The thrusting spear of wise Oromë the Vala, strong against giants of 
 desc:frost, and able to pierce rock or flesh with ease.
 
@@ -1436,7 +1501,8 @@ info:15:50:30000
 alloc:8:15 to 65
 power:0:1d6:11:13:0
 flags:BLESSED | SEE_INVIS | 
-values:STEALTH[3] | SPEED[3] | BRAND_COLD[3] | SLAY_UNDEAD[3] | RES_COLD[1]
+values:STEALTH[3] | SPEED[3] | BRAND_COLD[3] | RES_COLD[1]
+slay:UNDEAD_3
 desc:A thin spike of thrice-forged steel caps a straight silvan shaft cut from 
 desc:a legendary tree, and spells to break the wills of the undead and strike 
 desc:cold into the breasts of your enemies lay upon this perfectly balanced 
@@ -1449,7 +1515,10 @@ info:20:360:55000
 alloc:4:20 to 100
 power:0:3d8:13:21:0
 flags:PROT_FEAR | SEE_INVIS
-values:STR[2] | DEX[2] | SPEED[2] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
+values:STR[2] | DEX[2] | SPEED[2]
+slay:EVIL_2
+slay:TROLL_3
+slay:ORC_3
 desc:"Forth Eorlingas!"  To the field of Celebrant, Eorl the Young came beyond 
 desc:hope to save beleaguered Gondor, and from his lance fled massive trolls 
 desc:and dire wolves.
@@ -1462,8 +1531,11 @@ alloc:1:40 to 127
 power:0:4d4:10:20:15
 flags:FREE_ACT | PROT_FEAR
 values:TUNNEL[5] | STR[3] | CON[3] | STEALTH[-1] | BRAND_ACID[3] | BRAND_FIRE[3]
-values:SLAY_DRAGON[5] | SLAY_DEMON[3] | SLAY_TROLL[3] | SLAY_ORC[3] 
 values:RES_ACID[1] | RES_FIRE[1] | RES_LIGHT[1] | RES_DARK[1] | RES_CHAOS[1]
+slay:DRAGON_5
+slay:DEMON_3
+slay:TROLL_3
+slay:ORC_3
 desc:The twin massive axe heads of this ancient demon's dread gleam with 
 desc:mithril inlay telling sagas of endurance.  The powers of 
 desc:Khazad-dûm protect its wielder and slay all evils found underground.
@@ -1476,7 +1548,10 @@ alloc:1:40 to 127
 power:0:5d4:15:18:8
 flags:PROT_FEAR | FREE_ACT | SEE_INVIS | BLESSED
 values:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | BRAND_COLD[3] | RES_COLD[3]
-values:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[5] | SLAY_ORC[3] 
+slay:EVIL_2
+slay:UNDEAD_3
+slay:DEMON_5
+slay:ORC_3
 act:LOSKILL
 time:1000
 desc:The axe of Eönwë, leader of the Hosts of the West in the War of 
@@ -1490,8 +1565,11 @@ info:30:170:90000
 alloc:7:30 to 100
 power:0:3d8:8:11:5
 flags:FREE_ACT | PROT_BLIND | FEATHER | SEE_INVIS | REGEN
-values:STR[3] | CON[3] | STEALTH[1] | SLAY_DEMON[3] | SLAY_TROLL[3]
-values:SLAY_ORC[3] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+values:STR[3] | CON[3] | STEALTH[1] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1]
+values:RES_COLD[1]
+slay:DEMON_3
+slay:TROLL_3
+slay:ORC_3
 desc:The twin blades of this weapon were forged in Belegost, and powerful 
 desc:forces to resist and endure lie ready for he who shall wield it once 
 desc:more.
@@ -1504,7 +1582,9 @@ alloc:7:30 to 100
 power:0:2d8:14:13:0
 act:CURE_SERIOUS
 time:3+d3
-values:STR[3] | DEX[3] | BLOWS[1] | SLAY_TROLL[3] | SLAY_ORC[3] | RES_DISEN[1]
+values:STR[3] | DEX[3] | BLOWS[1] | RES_DISEN[1]
+slay:TROLL_3
+slay:ORC_3
 desc:A superbly crafted double-bladed axe once borne by Ceruthain, commander 
 desc:of the Rangers of Arnor.
 
@@ -1514,7 +1594,9 @@ base-object:polearm:Lochaber Axe
 info:30:240:30000
 alloc:12:30 to 100
 power:0:3d8:12:17:0
-values:SLAY_EVIL[2] | SLAY_ANIMAL[2] | SLAY_DEMON[3] 
+slay:EVIL_2
+slay:ANIMAL_2
+slay:DEMON_3
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 desc:A massive axe with twin razor-sharp heads, so large that it usually 
 desc:requires two hands to wield, with spells to ward off the elements 
@@ -1526,8 +1608,12 @@ base-object:polearm:Broad Axe
 info:20:160:50000
 alloc:12:20 to 75
 power:0:2d6:13:19:0
-flags:SEE_INVIS | 
-values:CON[3] | SLAY_EVIL[2] | SLAY_TROLL[3] | SLAY_GIANT[3] | SLAY_ORC[3]
+flags:SEE_INVIS
+values:CON[3]
+slay:EVIL_2
+slay:TROLL_3
+slay:GIANT_3
+slay:ORC_3
 desc:A royal heirloom of the southern coast, strong in combat against the evil 
 desc:creatures of earth.
 
@@ -1538,8 +1624,9 @@ info:15:70:90000
 alloc:3:15 to 100
 power:0:3d10:16:18:0 
 flags:SEE_INVIS | BLESSED | 
-values:STR[2] | DEX[2] | BRAND_POIS[3] | SLAY_EVIL[2] | SLAY_UNDEAD[5]
-values:RES_LIGHT[1] | RES_DARK[1]
+values:STR[2] | DEX[2] | BRAND_POIS[3] | RES_LIGHT[1] | RES_DARK[1]
+slay:EVIL_2
+slay:UNDEAD_5
 desc:A massive triple-pronged spear, so great it normally requires two hands 
 desc:to wield, evoking the spirit of Osse who with it pierced legions of 
 desc:evil and undead.
@@ -1555,7 +1642,9 @@ flags:SEE_INVIS | SLOW_DIGEST | REGEN |
 flags:BLESSED | 
 act:TELE_OTHER
 time:50
-values:DEX[4] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] | RES_ACID[3] | RES_NETHER[1]
+values:DEX[4] | RES_ACID[3] | RES_NETHER[1]
+slay:DRAGON_3
+slay:ANIMAL_2
 desc:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightiest of all the 
 desc:powers of good save Manwë himself, Ulmo laughs to scorn the dread powers 
 desc:of the undead, and is utterly in command of the Element of water.
@@ -1584,8 +1673,11 @@ power:0:3d6:12:15:0
 # F:DRAIN_MANA | 
 act:BERSERKER
 time:80+d80
-values:STR[2] | CON[2] | LIGHT[1] | BRAND_ACID[3] | SLAY_DRAGON[3]
-values:SLAY_TROLL[3] | SLAY_DEMON[5] | RES_ACID[1] | RES_DARK[1] | RES_FIRE[1]
+values:STR[2] | CON[2] | LIGHT[1] | BRAND_ACID[3] | RES_ACID[1] | RES_DARK[1]
+values:RES_FIRE[1]
+slay:DRAGON_3
+slay:TROLL_3
+slay:DEMON_5
 desc:Wielded by Húrin Thalion, last lord of Dor-Lómin at the Battle 
 desc:of Tears Unnumbered.  He stood alone, his friends and kinsmen 
 desc:dead about him, his axe smoking in the black blood of Gothmog's 
@@ -1602,8 +1694,13 @@ info:100:1000:500000
 alloc:0:100 to 100
 power:0:9d9:5:25:10
 flags:IMPACT | SEE_INVIS | TELEPATHY | AGGRAVATE
-values:SLAY_DRAGON[5] | SLAY_ANIMAL[2] | SLAY_EVIL[2] | SLAY_UNDEAD[5] | 
-values:SLAY_DEMON[5] | SLAY_TROLL[3] | SLAY_ORC[3] | 
+slay:DRAGON_5
+slay:ANIMAL_2
+slay:EVIL_2
+slay:UNDEAD_5
+slay:DEMON_5
+slay:TROLL_3
+slay:ORC_3
 desc:The mighty Hammer of the Underworld, blackened by doomspells of shattering.
 desc:  Its wielder holds the lives of all Morgoth's servants in his hand.
 
@@ -1616,7 +1713,8 @@ power:0:3d6:16:12:0
 flags:PROT_CONF
 act:CONFUSE2
 time:15
-values:STEALTH[2] | SPEED[2] | BRAND_FIRE[3] | SLAY_EVIL[2] | RES_FIRE[1]
+values:STEALTH[2] | SPEED[2] | BRAND_FIRE[3] | RES_FIRE[1]
+slay:EVIL_2
 desc:A flail whose head befuddles those who stare as you whirl it round and 
 desc:becomes a fiery comet as you bring it down.
 
@@ -1627,8 +1725,11 @@ info:45:300:160000
 alloc:3:45 to 127
 power:0:4d6:5:18:0
 flags:PROT_FEAR | 
-values:STR[4] | CON[3] | BRAND_FIRE[3] | BRAND_ELEC[3] | SLAY_ANIMAL[2]
-values:SLAY_TROLL[3] | SLAY_ORC[3] | RES_ELEC[1] | RES_FIRE[1] | RES_DARK[1]
+values:STR[4] | CON[3] | BRAND_FIRE[3] | BRAND_ELEC[3] | RES_ELEC[1] |
+values:RES_FIRE[1] | RES_DARK[1]
+slay:ANIMAL_2
+slay:TROLL_3
+slay:ORC_3
 desc:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost 
 desc:Runes of strength adorn its handle, and flames and sparks roar and 
 desc:crackle around its massive head.
@@ -1640,8 +1741,10 @@ info:20:150:30000
 alloc:3:20 to 75
 power:0:2d6:8:22:0
 flags:SEE_INVIS
-values:STR[4] | BRAND_POIS[3] | SLAY_ANIMAL[2] | SLAY_TROLL[3] | SLAY_ORC[3]
-values:RES_NEXUS[1]
+values:STR[4] | BRAND_POIS[3] | RES_NEXUS[1]
+slay:ANIMAL_2
+slay:TROLL_3
+slay:ORC_3
 desc:You feel strong and firm of foot as you whip its spiked orb around and 
 desc:bathe it in the blood of your foes.
 
@@ -1663,7 +1766,8 @@ base-object:hafted:Mace
 info:20:200:50000
 alloc:7:20 to 100
 power:0:3d4:12:12:0
-values:BRAND_ELEC[3] | SLAY_DRAGON[5] | RES_ELEC[3]
+values:BRAND_ELEC[3] | RES_ELEC[3]
+slay:DRAGON_5
 act:HASTE1
 time:100+d100
 desc:A great ridged mace that surrounds you with a nimbus of living lightning.  
@@ -1678,9 +1782,12 @@ alloc:1:40 to 127
 power:0:18d1:19:21:5
 # F:DRAIN_MANA | 
 flags:PROT_FEAR | FREE_ACT | SEE_INVIS
-values:TUNNEL[8] | WIS[4] | BRAND_ACID[3] | SLAY_DRAGON[5] | SLAY_EVIL[2] |
-values:SLAY_UNDEAD[3] | SLAY_DEMON[3]
+values:TUNNEL[8] | WIS[4] | BRAND_ACID[3]
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_NEXUS[1]
+slay:DRAGON_5
+slay:EVIL_2
+slay:UNDEAD_3
+slay:DEMON_3
 desc:The wondrous hammer of Aulë, creator of the wise Dwarven lords of old.   
 desc:It bears demolishing magics that no serpent or demon can withstand, and 
 desc:invokes the strength of mountains to ward off the tumult of the elements.
@@ -1691,7 +1798,8 @@ base-object:hafted:Quarterstaff
 info:20:150:70000
 alloc:5:20 to 80
 power:0:1d9:10:20:0
-values:INT[4] | BRAND_FIRE[3] | SLAY_ANIMAL[2] | RES_FIRE[1] | RES_POIS[1]
+values:INT[4] | BRAND_FIRE[3] | RES_FIRE[1] | RES_POIS[1]
+slay:ANIMAL_2
 desc:Named for a fiery star and set with priceless gems bearing mystic 
 desc:auras of protection and thought.
 
@@ -1704,7 +1812,8 @@ power:0:1d9:13:15:0
 flags:SEE_INVIS
 act:DETECT_OBJECTS
 time:50+d50
-values:INT[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | RES_LIGHT[1]
+values:INT[4] | WIS[4] | LIGHT[1] | RES_LIGHT[1]
+slay:EVIL_2
 desc:The radiant golden staff of an Istar of legend; this wizard's companion 
 desc:grants keen sight and clear knowledge of many hidden things.
 
@@ -1717,8 +1826,11 @@ power:0:2d9:10:13:0
 flags:HOLD_LIFE | SEE_INVIS
 act:PROBING
 time:20
-values:INT[4] | WIS[4] | BRAND_FIRE[3] | SLAY_DEMON[5] | SLAY_EVIL[2] |
-values:SLAY_TROLL[3] | SLAY_ORC[3] | RES_FIRE[1] | RES_NETHER[1]
+values:INT[4] | WIS[4] | BRAND_FIRE[3] | RES_FIRE[1] | RES_NETHER[1]
+slay:DEMON_5
+slay:EVIL_2
+slay:TROLL_3
+slay:ORC_3
 desc:A staff tall and sturdy, borne of old by Gandalf.  Rough-hewn runes that 
 desc:invoke the element of Earth stand bold upon its gnarled surface, and no 
 desc:creature who lives in the shadow of mountains can withstand the blows it 
@@ -1732,9 +1844,12 @@ alloc:3:80 to 127
 power:0:7d8:18:18:0
 # F:DRAIN_MANA | 
 flags:AGGRAVATE
-values:STR[6] | TUNNEL[4] | BRAND_FIRE[3] | SLAY_DRAGON[3] | SLAY_ANIMAL[2] |
-values:SLAY_EVIL[2] | SLAY_UNDEAD[5]
+values:STR[6] | TUNNEL[4] | BRAND_FIRE[3]
 values:RES_FIRE[3] | RES_DARK[1] | RES_CHAOS[1] | RES_DISEN[1]
+slay:DRAGON_3
+slay:ANIMAL_2
+slay:EVIL_2
+slay:UNDEAD_5
 desc:A weapon so massive it seems beyond the strength of mortals, yet you feel 
 desc:the might of giants within you as you heft it.  As you grip the handle 
 desc:of ebony and steel, coronas of fire blaze, and mighty spells to preserve 
@@ -1750,8 +1865,8 @@ power:0:2d5:10:11:8
 flags:BLESSED | REGEN
 act:DRAIN_LIFE1
 time:40
-values:WIS[4] | INFRA[4] | LIGHT[1] | BRAND_COLD[3] | SLAY_ORC[3]
-values:RES_COLD[3] | RES_LIGHT[1]
+values:WIS[4] | INFRA[4] | LIGHT[1] | BRAND_COLD[3] | RES_COLD[3] | RES_LIGHT[1]
+slay:ORC_3
 desc:Once wielded by the High Priest of Meneltarma, this great mace gleams
 desc: coldly as though moonlit, and can strike equally mighty spiritual and
 desc: physical blows.
@@ -1767,8 +1882,11 @@ flags:AGGRAVATE
 act:FIRE_BALL
 time:15
 values:STR[3] | INT[-3] | DEX[-3] | WIS[-3] | LIGHT[1] | BRAND_FIRE[3]
-values:SLAY_ANIMAL[2] | SLAY_DRAGON[5] | SLAY_TROLL[3] | SLAY_GIANT[3] 
 values:RES_FIRE[3] | RES_ELEC[1] | RES_DARK[1]
+slay:ANIMAL_2
+slay:DRAGON_5
+slay:TROLL_3
+slay:GIANT_3
 desc:A great crackling Balrog's whip of flame, this weapon could bring 
 desc:even Ungoliant to heel.
 
@@ -1852,8 +1970,11 @@ alloc:12:60 to 100
 power:0:2d8:12:18:0
 act:STONE_TO_MUD
 time:2
-values:TUNNEL[6] | INFRA[4] | STR[4] | SLAY_ORC[3] | SLAY_TROLL[3]
-values:SLAY_GIANT[3] | SLAY_DRAGON[3] | RES_DARK[1] | RES_DISEN[1]
+values:TUNNEL[6] | INFRA[4] | STR[4] | RES_DARK[1] | RES_DISEN[1]
+slay:ORC_3
+slay:TROLL_3
+slay:GIANT_3
+slay:DRAGON_3
 desc:A mighty Dwarven mattock, as good for hewing orc-necks as for hewing 
 desc:stone.  Náin, King of the Iron Hills, brought his mattock-wielding 
 desc:warriors to the Battle of Azanulbizar, and no Orc could withstand them, 
@@ -1866,8 +1987,11 @@ info:55:180:30000
 alloc:20:55 to 100
 power:0:4d3:5:20:0
 flags:SUST_STR | 
-values:TUNNEL[5] | STR[3] | CON[3] | LIGHT[1] | BRAND_ACID[3] | SLAY_ORC[3] |
-values:SLAY_TROLL[3] | SLAY_DEMON[3] | RES_CHAOS[1] | RES_LIGHT[1] | RES_DARK[1]
+values:TUNNEL[5] | STR[3] | CON[3] | LIGHT[1] | BRAND_ACID[3] | RES_CHAOS[1]
+values:RES_LIGHT[1] | RES_DARK[1]
+slay:ORC_3
+slay:TROLL_3
+slay:DEMON_3
 desc:A fine dwarven pick, good for a miner, and suitable as a weapon 
 desc:should the wielder ever tunnel through into a foe's stronghold.
 
@@ -1882,8 +2006,9 @@ power:0:4d4:13:17:10
 flags:HOLD_LIFE
 act:DISPEL_EVIL
 time:100+d100
-values:STR[4] | WIS[4] | LIGHT[1] | SLAY_EVIL[2] | SLAY_UNDEAD[3]
-values:RES_FIRE[1] | RES_ELEC[1] | RES_NETHER[1]
+values:STR[4] | WIS[4] | LIGHT[1] | RES_FIRE[1] | RES_ELEC[1] | RES_NETHER[1]
+slay:EVIL_2
+slay:UNDEAD_3
 desc:The weapon of a mighty dwarven priest, whose shade is rumoured to 
 desc:haunt the halls of Angband still.
 
@@ -1894,7 +2019,8 @@ info:18:30:50000
 alloc:3:18 to 100
 power:0:2d5:12:14:0
 flags:PROT_FEAR
-values:SLAY_DRAGON[5] | RES_FIRE[3] | RES_ACID[1]
+slay:DRAGON_5
+values:RES_FIRE[3] | RES_ACID[1]
 desc:Azaghâl, Dwarf-king of Belegost, fell before Glaurung in the Battle 
 desc:of Unnumbered Tears.  With his final breath, Azaghâl plunged this 
 desc:blade into Glaurung's belly with such a blow that the Father of Dragons 
@@ -1933,8 +2059,11 @@ info:30:140:120000
 alloc:3:30 to 127
 power:0:4d4:12:16:0
 flags:PROT_FEAR
-values:STR[4] | STEALTH[2] | SLAY_EVIL[2] | SLAY_UNDEAD[5] | SLAY_GIANT[3] |
-values:SLAY_ANIMAL[2] | RES_NETHER[1] | RES_DARK[1] | RES_COLD[1]
+values:STR[4] | STEALTH[2] | RES_NETHER[1] | RES_DARK[1] | RES_COLD[1]
+slay:EVIL_2
+slay:UNDEAD_5
+slay:GIANT_3
+slay:ANIMAL_2
 desc:The blade of the legendary Shieldmaiden of Rohan, who slew the foul 
 desc:steed of the Morgul-lord before striking down the mighty Witch-king 
 desc:himself, whom no mortal man could hinder.

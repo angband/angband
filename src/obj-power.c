@@ -324,19 +324,22 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
 	int mult;
 	struct brand *brands = obj->brands;
-	struct slay *slays = obj->slays;
 
 	/* Count the brands and slays */
 	while (brands) {
 		num_brands++;
 		brands = brands->next;
 	}
-	while (slays) {
-		if (slays->multiplier <= 3)
-			num_slays++;
-		else
-			num_kills++;
-		slays = slays->next;
+	if (obj->slays) {
+		for (i = 1; i < z_info->slay_max; i++) {
+			if (obj->slays[i]) {
+				if (slays[i].multiplier <= 3) {
+					num_slays++;
+				} else {
+					num_kills++;
+				}
+			}
+		}
 	}
 
 	/* If there are no slays or brands return */
@@ -353,16 +356,16 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		struct object *obj1 = (struct object *) obj;
 		struct monster *mon = mem_zalloc(sizeof(*mon));
 		const struct brand *b = NULL;
-		const struct slay *s = NULL;
+		int slay = 0;
 		char verb[20];
 
 		mult = 1;
 		mon->race = &r_info[i];
 
 		/* Find the best multiplier against this monster */
-		improve_attack_modifier(obj1, mon, &b, &s, verb, false,	false);
-		if (s)
-			mult = s->multiplier;
+		improve_attack_modifier(obj1, mon, &b, &slay, verb, false,	false);
+		if (slay)
+			mult = slays[slay].multiplier;
 		else if (b)
 			mult = b->multiplier;
 
@@ -379,25 +382,27 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	 */
 	if (verbose) {
 		struct brand *b, *verbose_brands = NULL;
-		struct slay *s, *verbose_slays = NULL;
 
 		/* Write info about the slay combination and multiplier */
 		log_obj("Slay multiplier for: ");
 
 		verbose_brands = brand_collect(obj->brands, NULL);
-		verbose_slays = slay_collect(obj->slays, NULL);
 
 		for (b = verbose_brands; b; b = b->next) {
 			log_obj(format("%sx%d ", b->name, b->multiplier));
 		}
-		for (s = verbose_slays; s; s = s->next) {
-			log_obj(format("%sx%d ", s->name, s->multiplier));
+		if (obj->slays) {
+			for (i = 1; i < z_info->slay_max; i++) {
+				if (obj->slays[i]) {
+					struct slay *s = &slays[i];
+					log_obj(format("%sx%d ", s->name, s->multiplier));
+				}
+			}
 		}
 		log_obj(format("\nsv is: %d\n", sv));
 		log_obj(format(" and t_m_p is: %d \n", tot_mon_power));
 		log_obj(format("times 1000 is: %d\n", (1000 * sv) / tot_mon_power));
 		free_brand(verbose_brands);
-		free_slay(verbose_slays);
 	}
 
 	q = (dice_pwr * (sv / 100)) / (tot_mon_power / 100);

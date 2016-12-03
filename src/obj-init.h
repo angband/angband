@@ -35,6 +35,5 @@ extern struct file_parser ego_parser;
 extern struct file_parser artifact_parser;
 
 void add_game_brand(struct brand *b);
-void add_game_slay(struct slay *s);
 
 #endif /* OBJECT_INIT_H_ */

@@ -81,8 +81,6 @@ struct slay {
 	struct slay *next;
 };
 
-extern struct slay *game_slays;
-
 /**
  * Curse type
  */
@@ -184,7 +182,7 @@ struct object_kind {
 	struct element_info el_info[ELEM_MAX];
 
 	struct brand *brands;
-	struct slay *slays;
+	bool *slays;
 	int *curses;			/**< Array of curse powers */
 
 	byte d_attr;			/**< Default object attribute */
@@ -261,7 +259,7 @@ struct artifact {
 	struct element_info el_info[ELEM_MAX];
 
 	struct brand *brands;
-	struct slay *slays;
+	bool *slays;
 	int *curses;		/**< Array of curse powers */
 
 	int level;			/** Difficulty level for activation */
@@ -316,7 +314,7 @@ struct ego_item {
 	struct element_info el_info[ELEM_MAX];
 
 	struct brand *brands;
-	struct slay *slays;
+	bool *slays;
 	int *curses;			/**< Array of curse powers */
 
 	int rating;			/* Level rating boost */
@@ -419,7 +417,7 @@ struct object {
 	s16b modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
 	struct element_info el_info[ELEM_MAX];	/**< Object element info */
 	struct brand *brands;	/**< Linked list of brand structures */
-	struct slay *slays;		/**< Linked list of slay structures */
+	bool *slays;		/**< Linked list of slay structures */
 	struct curse_data *curses;	/**< Array of curse powers and timeouts */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */

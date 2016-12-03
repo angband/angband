@@ -389,6 +389,7 @@ static void init_player(void) {
 	player->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(struct object *));
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
 	player->obj_k = object_new();
+	player->obj_k->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
 	player->obj_k->curses = mem_zalloc(z_info->curse_max *
 									   sizeof(struct curse_data));
 

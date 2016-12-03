@@ -108,9 +108,8 @@ static const char *m_rune[] =
  */
 static void init_rune(void)
 {
-	int i, count, brands = 0, slays = 0;
+	int i, j, count, brands = 0;
 	struct brand *b;
-	struct slay *s;
 
 	/* Count runes (combat runes are fixed) */
 	count = COMBAT_RUNE_MAX;
@@ -129,8 +128,19 @@ static void init_rune(void)
 	for (b = game_brands; b; b = b->next) {
 		count++;
 	}
-	for (s = game_slays; s; s = s->next) {
-		count++;
+	/* Note slay runes cover all slays with the same flag/base */
+	for (i = 1; i < z_info->slay_max; i++) {
+		bool counted = false;
+		if (slays[i].name) {
+			for (j = 1; j < i; j++) {
+				if (same_monsters_slain(i, j)) {
+					counted = true;
+				}
+			}
+			if (!counted) {
+				count++;
+			}
+		}
 	}
 	for (i = 1; i < z_info->curse_max; i++) {
 		if (curses[i].name) {
@@ -155,9 +165,19 @@ static void init_rune(void)
 		rune_list[count++] =
 			(struct rune) { RUNE_VAR_BRAND, brands++, 0, b->name};
 	}
-	for (s = game_slays; s; s = s->next) {
-		rune_list[count++] =
-			(struct rune) { RUNE_VAR_SLAY, slays++, 0, s->name };
+	for (i = 1; i < z_info->slay_max; i++) {
+		bool counted = false;
+		if (slays[i].name) {
+			for (j = 1; j < i; j++) {
+				if (same_monsters_slain(i, j)) {
+					counted = true;
+				}
+			}
+			if (!counted) {
+				rune_list[count++] =
+					(struct rune) { RUNE_VAR_SLAY, i, 0, slays[i].name };
+			}
+		}
 	}
 	for (i = 1; i < z_info->curse_max; i++) {
 		if (curses[i].name) {
@@ -278,14 +298,10 @@ bool player_knows_rune(struct player *p, size_t i)
 		}
 		/* Slay runes */
 		case RUNE_VAR_SLAY: {
-			int num;
-			struct slay *s;
-			for (s = game_slays, num = 0; s; s = s->next, num++)
-				if (num == r->index) break;
-			assert(s != NULL);
-
-			if (player_knows_slay(p, s))
+			assert(r->index < z_info->slay_max);
+			if (p->obj_k->slays[r->index]) {
 				return true;
+			}
 			break;
 		}
 		/* Curse runes */
@@ -375,12 +391,6 @@ char *rune_desc(size_t i)
 		}
 		/* Slay runes */
 		case RUNE_VAR_SLAY: {
-			int num;
-			struct slay *s;
-			for (s = game_slays, num = 0; s; s = s->next, num++)
-				if (num == r->index) break;
-			assert(s != NULL);
-
 			return format("Object makes the player's attacks against %s more powerful.", r->name);
 			break;
 		}
@@ -454,17 +464,9 @@ bool player_knows_brand(struct player *p, struct brand *b)
  * \param p is the player
  * \param s is the slay
  */
-bool player_knows_slay(struct player *p, struct slay *s)
+bool player_knows_slay(struct player *p, int i)
 {
-	struct slay *s_check = p->obj_k->slays;
-	while (s_check) {
-		/* Name and race flag need to be the same */
-		if (streq(s_check->name, s->name) &&
-			(s_check->race_flag == s->race_flag)) return true;
-		s_check = s_check->next;
-	}
-
-	return false;
+	return p->obj_k->slays[i];
 }
 
 /**
@@ -488,7 +490,6 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 {
 	int i;
 	struct brand *b;
-	struct slay *s;
 
 	if (!ego) return false;
 
@@ -511,8 +512,11 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 		if (!player_knows_brand(p, b)) return false;
 
 	/* All slays known */
-	for (s = ego->slays; s; s = s->next)
-		if (!player_knows_slay(p, s)) return false;
+	for (i = 1; i < z_info->slay_max; i++) {
+		if (ego->slays && ego->slays[i] && !player_knows_slay(p, i)) {
+			return false;
+		}
+	}
 
 	/* All curses known */
 	for (i = 1; i < z_info->curse_max; i++) {
@@ -629,10 +633,14 @@ bool object_has_rune(const struct object *obj, int rune_no)
 		}
 		/* Slay runes */
 		case RUNE_VAR_SLAY: {
-			struct slay *s;
-			for (s = obj->slays; s; s = s->next)
-				if (streq(s->name, r->name))
-					return true;
+			if (obj->slays) {
+				int i;
+				for (i = 0; i < z_info->slay_max; i++) {
+					if (obj->slays[i] && same_monsters_slain(r->index, i)) {
+						return true;
+					}
+				}
+			}
 			break;
 		}
 		/* Curse runes */
@@ -686,8 +694,15 @@ bool object_runes_known(const struct object *obj)
 		return false;
 
 	/* Not all slays known */
-	if (!slays_are_equal(obj->slays, obj->known->slays))
-		return false;
+	if (obj->slays) {
+		if (!obj->known->slays)
+			return false;
+		for (i = 0; i < z_info->slay_max; i++) {
+			if (obj->slays[i] && !obj->known->slays[i]) {
+				return false;
+			}
+		}
+	}
 
 	/* Not all curses known */
 	for (i = 0; i < z_info->curse_max; i++) {
@@ -939,7 +954,6 @@ void player_know_object(struct player *p, struct object *obj)
 {
 	int i, flag;
 	struct brand *b;
-	struct slay *s;
 	bool seen = true;
 
 	/* Unseen or only sensed objects don't get any ID */
@@ -1001,20 +1015,16 @@ void player_know_object(struct player *p, struct object *obj)
 		}
 	}
 
-	/* Reset slays */
-	free_slay(obj->known->slays);
-	obj->known->slays = NULL;
-	for (s = obj->slays; s; s = s->next) {
-		if (player_knows_slay(p, s)) {
-			/* Copy */
-			struct slay *new_s = mem_zalloc(sizeof *new_s);
-			new_s->name = string_make(s->name);
-			new_s->race_flag = s->race_flag;
-			new_s->multiplier = s->multiplier;
-
-			/* Attach the new slay */
-			new_s->next = obj->known->slays;
-			obj->known->slays = new_s;
+	/* Set slays */
+	if (obj->slays) {
+		for (i = 1; i < z_info->slay_max; i++) {
+			if (player_knows_slay(p, i) && obj->slays[i]) {
+				if (!obj->known->slays) {
+					obj->known->slays = mem_zalloc(z_info->slay_max *
+												   sizeof(bool));
+				}
+				obj->known->slays[i] = true;
+			}
 		}
 	}
 
@@ -1186,26 +1196,22 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 		}
 		/* Slay runes */
 		case RUNE_VAR_SLAY: {
-			int num;
-			struct slay *s;
-			for (s = game_slays, num = 0; s; s = s->next, num++)
-				if (num == r->index) break;
-			assert(s != NULL);
+			assert(r->index < z_info->slay_max);
 
 			/* If the slay was unknown, add it to known slays */
-			if (!player_knows_slay(p, s)) {
-				/* Copy the name and race flag */
-				struct slay *new_s = mem_zalloc(sizeof *new_s);
-				new_s->name = string_make(s->name);
-				new_s->race_flag = s->race_flag;
-
-				/* Attach the new slay */
-				new_s->next = p->obj_k->slays;
-				p->obj_k->slays = new_s;
-				learned = true;
+			if (!player_knows_slay(p, r->index)) {
+				int i;
+				for (i = 1; i < z_info->slay_max; i++) {
+					/* Check base and race flag */
+					if (same_monsters_slain(r->index, i)) {
+						p->obj_k->slays[i] = true;
+						learned = true;
+					}
+				}
 			}
 			break;
 		}
+
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
 			int i = r->index;
@@ -1698,22 +1704,22 @@ void object_learn_brand(struct player *p, struct object *obj, struct brand *b)
  * \param obj is the object on which we are noticing slays
  * \param mon the monster we are trying to slay
  */
-void object_learn_slay(struct player *p, struct object *obj, struct slay *s)
+void object_learn_slay(struct player *p, struct object *obj, int index)
 {
 	/* Learn about the slay */
-	if (!player_knows_slay(player, s)) {
-		int num = 0;
-		struct slay *s_check = game_slays;
+	if (!player_knows_slay(p, index)) {
+		int i;
 
 		/* Find the rune index */
-		while (s_check && !streq(s_check->name, s->name)) {
-			num++;
-			s_check = s_check->next;
+		for (i = 1; i < z_info->slay_max; i++) {
+			if (same_monsters_slain(i, index)) {
+				break;
+			}
 		}
-		assert(s_check);
+		assert(i < z_info->slay_max);
 
 		/* Learn the rune */
-		player_learn_rune(p, rune_index(RUNE_VAR_SLAY, num), true);
+		player_learn_rune(p, rune_index(RUNE_VAR_SLAY, i), true);
 		update_player_object_knowledge(p);
 	}
 }

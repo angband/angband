@@ -622,7 +622,7 @@ type:hafted
 properties:80:400:4300
 alloc:10:80 to 100
 combat:0:5d8:0:0:0
-values:SLAY_UNDEAD[3]
+slay:UNDEAD_3
 
 
 

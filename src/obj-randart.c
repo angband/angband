@@ -1294,8 +1294,9 @@ static struct object_kind *choose_item(int a_idx, int *freq)
 	art->ds = kind->ds;
 	art->weight = kind->weight;
 	of_copy(art->flags, kind->flags);
+	mem_free(art->slays);
 	art->slays = NULL;
-	copy_slay(&art->slays, kind->slays);
+	copy_slays(&art->slays, kind->slays);
 	art->brands = NULL;
 	copy_brand(&art->brands, kind->brands);
 	art->activation = NULL;
@@ -2238,15 +2239,12 @@ static void do_curse(struct artifact *art)
 
 static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 {
-	if (a_dst->slays) {
-		free_slay(a_dst->slays);
-	}
+	mem_free(a_dst->slays);
 	if (a_dst->brands) {
 		free_brand(a_dst->brands);
 	}
-	if (a_dst->curses) {
-		mem_free(a_dst->curses);
-	}
+	mem_free(a_dst->curses);
+
 	/* Copy the structure */
 	memcpy(a_dst, a_src, sizeof(struct artifact));
 
@@ -2259,7 +2257,8 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 	a_dst->alt_msg = NULL;
 
 	if (a_src->slays) {
-		copy_slay(&a_dst->slays, a_src->slays);
+		a_dst->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
+		memcpy(a_dst->slays, a_src->slays, z_info->slay_max * sizeof(bool));
 	}
 	if (a_src->brands) {
 		copy_brand(&a_dst->brands, a_src->brands);
@@ -2413,7 +2412,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 			art->modifiers[i] = 0;
 		wipe_brands(art->brands);
 		art->brands = NULL;
-		wipe_slays(art->slays);
+		mem_free(art->slays);
 		art->slays = NULL;
 		mem_free(art->curses);
 		art->curses = NULL;
@@ -2509,15 +2508,11 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 	}
 
 	/* Cleanup a_old */
-	if (a_old->slays) {
-		free_slay(a_old->slays);
-	}
+	mem_free(a_old->slays);
 	if (a_old->brands) {
 		free_brand(a_old->brands);
 	}
-	if (a_old->curses) {
-		mem_free(a_old->curses);
-	}
+	mem_free(a_old->curses);
 	mem_free(a_old);
 
 	/* Set depth and rarity info according to power */

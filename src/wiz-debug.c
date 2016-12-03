@@ -965,8 +965,11 @@ static void wiz_reroll_item(struct object *obj)
 		struct object *known_obj = obj->known;
 
 		/* Free slays and brands on the old object by hand */
-		free_slay(obj->slays);
+		mem_free(obj->slays);
+		obj->slays = NULL;
 		free_brand(obj->brands);
+		mem_free(obj->curses);
+		obj->curses = NULL;
 
 		/* Copy over - slays and brands OK, pile info needs restoring */
 		object_copy(obj, new);
