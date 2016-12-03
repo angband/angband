@@ -288,9 +288,12 @@ bool effect_handler_HEAL_HP(effect_handler_context_t *context)
  */
 bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 {
-	int midx = cave->mon_current;
-	int amount = effect_calculate_value(context, false);
+	assert(context->origin.what == SRC_MONSTER);
+
+	int midx = context->origin.which.monster;
 	struct monster *mon = midx > 0 ? cave_monster(cave, midx) : NULL;
+
+	int amount = effect_calculate_value(context, false);
 	char m_name[80], m_poss[80];
 	bool seen;
 
@@ -412,7 +415,6 @@ bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
 		player_inc_timed(player, context->p1, context->p2, true, false);
 	context->ident = true;
 	return true;
-
 }
 
 /**
@@ -420,16 +422,17 @@ bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
  */
 bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 {
+	assert(context->origin.what == SRC_MONSTER);
+
 	int amount = effect_calculate_value(context, false);
-	struct monster *mon  = cave->mon_current > 0 ?
-		cave_monster(cave, cave->mon_current) : NULL;
+	struct monster *mon = cave_monster(cave, context->origin.which.monster);
 
 	if (mon) {
 		mon_inc_timed(mon, context->p1, amount, 0, false);
 		context->ident = true;
 	}
-	return true;
 
+	return true;
 }
 
 /**
@@ -444,7 +447,6 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 	(void) player_dec_timed(player, context->p1, amount, true);
 	context->ident = true;
 	return true;
-
 }
 
 /**
@@ -690,11 +692,11 @@ bool effect_handler_DRAIN_LIGHT(effect_handler_context_t *context)
  */
 bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 {
+	assert(context->origin.what == SRC_MONSTER);
+
 	int drain = effect_calculate_value(context, false);
 	char m_name[80];
-	struct monster *mon = cave_monster(cave, cave->mon_current);
-
-	if (!mon) return true;
+	struct monster *mon = cave_monster(cave, context->origin.which.monster);
 
 	context->ident = true;
 
@@ -2229,14 +2231,14 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	int summon_max = effect_calculate_value(context, false);
 	int summon_type = context->p1 ? context->p1 : S_ANY;
 	int level_boost = context->p2;
-	struct monster *mon = cave_monster(cave, cave->mon_current);
 	int message_type = summon_message_type(summon_type);
 	int count = 0, val = 0, attempts = 0;
 
 	sound(message_type);
 
 	/* Monster summon */
-	if (mon) {
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		int rlev = mon->race->level;
 
 		/* Set the kin_base if necessary */
@@ -2263,8 +2265,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 		/* In the special case that uniques or wraiths were summoned but all
 		 * were dead S_HI_UNDEAD is used instead */
-		if ((!count) &&
-			((summon_type == S_WRAITH) || (summon_type == S_UNIQUE))) {
+		if (count == 0 &&
+			(summon_type == S_WRAITH || summon_type == S_UNIQUE)) {
 			attempts = 0;
 			summon_type = S_HI_UNDEAD;
 			while ((val < player->depth * rlev) && (attempts < summon_max)) {
@@ -2284,6 +2286,10 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 					count++;
 			}
 		}
+
+		/* Summoner failed */
+		if (!count)
+			msg("But nothing comes.");
 	} else {
 		/* If not a monster summon, it's simple */
 		while (summon_max) {
@@ -2300,10 +2306,6 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	if (count && player->timed[TMD_BLIND])
 		msgt(message_type, "You hear %s appear nearby.",
 			 (count > 1 ? "many things" : "something"));
-
-	/* Summoner failed */
-	if (mon && !count)
-		msg("But nothing comes.");
 
 	return true;
 }
@@ -2651,14 +2653,13 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
  */
 bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
-	int y_start = context->p1, x_start = context->p2;
+	int y_start = context->p1;
+	int x_start = context->p2;
 	int dis = context->value.base;
 	int d, i, min, y, x;
-	int midx = cave->mon_current;
-	struct monster *mon;
 
 	bool look = true;
-	bool is_player = (midx < 0 || context->p2);
+	bool is_player = (context->origin.what == SRC_PLAYER || context->p2);
 
 	context->ident = true;
 
@@ -2682,8 +2683,8 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 			return true;
 		}
 	} else {
-		mon = cave_monster(cave, midx);
-		if (!mon->race) return true;
+		assert(context->origin.what == SRC_MONSTER);
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		y_start = mon->fy;
 		x_start = mon->fx;
 	}
@@ -2765,8 +2766,6 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 	int ny = py, nx = px;
 	int y, x, dis = 0, ctr = 0;
-	int midx = cave->mon_current;
-	struct monster *mon;
 
 	/* Initialize */
 	y = py;
@@ -2778,9 +2777,8 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	if (context->p1 && context->p2) {
 		ny = context->p1;
 		nx = context->p2;
-	} else if (midx > 0) {
-		mon = cave_monster(cave, midx);
-		if (!mon) return true;
+	} else if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		ny = mon->fy;
 		nx = mon->fx;
 	} else {
@@ -2827,13 +2825,15 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
  */
 bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 {
-	bool up = true, down = true;
+	bool up = true;
+	bool down = true;
 	int target_depth = dungeon_get_next_level(player->max_depth, 1);
 
 	context->ident = true;
 
 	/* Resist hostile teleport */
-	if ((cave->mon_current > 0) && player_resists(player, ELEM_NEXUS)) {
+	if (context->origin.what == SRC_MONSTER &&
+			player_resists(player, ELEM_NEXUS)) {
 		msg("You resist the effect!");
 		return true;
 	}
