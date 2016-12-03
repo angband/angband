@@ -68,7 +68,6 @@ static void wr_item(const struct object *obj)
 {
 	size_t i;
 	struct brand *b;
-	struct slay *s;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
@@ -581,7 +580,6 @@ void wr_misc(void)
 {
 	size_t i;
 	struct brand *b;
-	struct slay *s;
 
 	/* Random artifact seed */
 	wr_u32b(seed_randart);

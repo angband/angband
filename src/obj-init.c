@@ -476,6 +476,26 @@ static enum parser_error parse_slay_multiplier(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_slay_melee_verb(struct parser *p) {
+	const char *verb = parser_getstr(p, "verb");
+	struct slay *slay = parser_priv(p);
+	if (!slay)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	slay->melee_verb = string_make(verb);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_slay_range_verb(struct parser *p) {
+	const char *verb = parser_getstr(p, "verb");
+	struct slay *slay = parser_priv(p);
+	if (!slay)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	slay->range_verb = string_make(verb);
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_slay(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -484,6 +504,8 @@ struct parser *init_parse_slay(void) {
 	parser_reg(p, "race-flag sym flag", parse_slay_race_flag);
 	parser_reg(p, "base sym base", parse_slay_base);
 	parser_reg(p, "multiplier uint multiplier", parse_slay_multiplier);
+	parser_reg(p, "melee-verb str verb", parse_slay_melee_verb);
+	parser_reg(p, "range-verb str verb", parse_slay_range_verb);
 	return p;
 }
 
@@ -526,6 +548,8 @@ static void cleanup_slay(void)
 		string_free(slays[idx].name);
 		if (slays[idx].base)
 			string_free(slays[idx].base);
+		string_free(slays[idx].melee_verb);
+		string_free(slays[idx].range_verb);
 	}
 	mem_free(slays);
 }

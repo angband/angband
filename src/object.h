@@ -75,9 +75,10 @@ struct slay {
 	char *code;
 	char *name;
 	char *base;
+	char *melee_verb;
+	char *range_verb;
 	int race_flag;
 	int multiplier;
-	int damage; /* Storage for damage during description */
 	struct slay *next;
 };
 

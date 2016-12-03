@@ -404,15 +404,9 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				*brand_used = NULL;
 				*slay_used = i;
 				if (range) {
-					if (s->multiplier <= 3)
-						my_strcpy(verb, "pierces", 20);
-					else
-						my_strcpy(verb, "deeply pierces", 20);
+					my_strcpy(verb, s->range_verb, 20);
 				} else {
-					if (s->multiplier <= 3)
-						my_strcpy(verb, "smite", 20);
-					else
-						my_strcpy(verb, "fiercely smite", 20);
+					my_strcpy(verb, s->melee_verb, 20);
 				}
 			}
 			/* Learn from real attacks */
