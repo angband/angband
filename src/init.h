@@ -121,6 +121,9 @@ struct init_module {
 	void (*cleanup)(void);
 };
 
+extern const char *list_element_names[];
+extern const char *list_obj_flag_names[];
+
 extern struct angband_constants *z_info;
 
 extern const char *ANGBAND_SYS;
@@ -156,7 +159,6 @@ extern struct parser *init_parse_names(void);
 extern struct parser *init_parse_hints(void);
 extern struct parser *init_parse_trap(void);
 extern struct parser *init_parse_quest(void);
-extern struct parser *init_parse_player_timed(void);
 
 errr grab_effect_data(struct parser *p, struct effect *effect);
 extern void init_file_paths(const char *config, const char *lib, const char *data);
