@@ -28,6 +28,7 @@
 
 
 struct slay *slays;
+struct brand *brands;
 
 struct brand_info {
 	const char* name;

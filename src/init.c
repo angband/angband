@@ -2733,6 +2733,7 @@ static struct {
 	{ "features", &feat_parser },
 	{ "object bases", &object_base_parser },
 	{ "slays", &slay_parser },
+	{ "brands", &brand_parser },
 	{ "curses", &curse_parser },
 	{ "objects", &object_parser },
 	{ "activations", &act_parser },

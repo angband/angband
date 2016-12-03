@@ -59,9 +59,12 @@ struct effect {
  * Brand type
  */
 struct brand {
+	char *code;
 	char *name;
 	int element;
 	int multiplier;
+	char *verb;
+	int resist_flag;
 	int damage; /* Storage for damage during description */
 	struct brand *next;
 };

@@ -562,6 +562,129 @@ struct file_parser slay_parser = {
 	cleanup_slay
 };
 
+/**
+ * ------------------------------------------------------------------------
+ * Initialize object brands
+ * ------------------------------------------------------------------------ */
+
+static enum parser_error parse_brand_code(struct parser *p) {
+	const char *code = parser_getstr(p, "code");
+	struct brand *h = parser_priv(p);
+	struct brand *brand = mem_zalloc(sizeof *brand);
+
+	brand->next = h;
+	parser_setpriv(p, brand);
+	brand->code = string_make(code);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_brand_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct brand *brand = parser_priv(p);
+	if (!brand)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	brand->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_brand_verb(struct parser *p) {
+	const char *verb = parser_getstr(p, "verb");
+	struct brand *brand = parser_priv(p);
+	if (!brand)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	brand->verb = string_make(verb);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_brand_multiplier(struct parser *p) {
+	struct brand *brand = parser_priv(p);
+	if (!brand)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	brand->multiplier = parser_getuint(p, "multiplier");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_brand_resist_flag(struct parser *p) {
+	int flag;
+	struct brand *brand = parser_priv(p);
+	if (!brand)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	flag = lookup_flag(mon_race_flags, parser_getsym(p, "flag"));
+
+	if (flag == FLAG_END) {
+		return PARSE_ERROR_INVALID_FLAG;
+	} else {
+		brand->resist_flag = flag;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_brand(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "code str code", parse_brand_code);
+	parser_reg(p, "name str name", parse_brand_name);
+	parser_reg(p, "verb str verb", parse_brand_verb);
+	parser_reg(p, "multiplier uint multiplier", parse_brand_multiplier);
+	parser_reg(p, "resist-flag sym flag", parse_brand_resist_flag);
+	return p;
+}
+
+static errr run_parse_brand(struct parser *p) {
+	return parse_file_quit_not_found(p, "brand");
+}
+
+static errr finish_parse_brand(struct parser *p) {
+	struct brand *brand, *next = NULL;
+	int count = 1;
+
+	/* Count the entries */
+	z_info->brand_max = 0;
+	brand = parser_priv(p);
+	while (brand) {
+		z_info->brand_max++;
+		brand = brand->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	brands = mem_zalloc((z_info->brand_max + 1) * sizeof(*brand));
+	for (brand = parser_priv(p); brand; brand = next, count++) {
+		memcpy(&brands[count], brand, sizeof(*brand));
+		next = brand->next;
+		brands[count].next = NULL;
+
+		mem_free(brand);
+	}
+	z_info->brand_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_brand(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->brand_max; idx++) {
+		string_free(brands[idx].code);
+		string_free(brands[idx].name);
+		string_free(brands[idx].verb);
+	}
+	mem_free(brands);
+}
+
+struct file_parser brand_parser = {
+	"brand",
+	init_parse_brand,
+	run_parse_brand,
+	finish_parse_brand,
+	cleanup_brand
+};
+
 
 
 /**

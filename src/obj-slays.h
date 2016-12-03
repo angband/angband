@@ -21,6 +21,7 @@
 #include "monster.h"
 
 extern struct slay *slays;
+extern struct brand *brands;
 
 /*** Functions ***/
 bool same_monsters_slain(int slay1, int slay2);
