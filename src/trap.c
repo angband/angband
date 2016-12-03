@@ -469,27 +469,33 @@ extern void hit_trap(int y, int x)
 }
 
 /**
- * Remove a trap
+ * Remove all traps from a grid.
+ *
+ * Return true if traps were removed.
  */
-static void remove_trap_aux(struct chunk *c, struct trap *trap, int y, int x,
-							bool domsg)
+bool square_remove_all_traps(struct chunk *c, int y, int x)
 {
-	/* Message if needed */
-	if (domsg) {
-		/* We are deleting a rune */
-		if (trf_has(trap->flags, TRF_RUNE)) {
-			if (c->mon_current < 0) {
-				/* Removed by player */
-				msg("You have removed the %s.", trap->kind->name);
-			}
-		} else {
-			/* We are disarming a trap */
-			msgt(MSG_DISARM, "You have disarmed the %s.", trap->kind->name);
-		}
+	assert(square_in_bounds(c, y, x));
+
+	struct trap *trap = c->squares[y][x].trap;
+	bool were_there_traps = trap == NULL ? false : true;
+
+	while (trap) {
+		struct trap *next_trap = trap->next;
+		mem_free(trap);
+		trap = next_trap;
 	}
 
-    /* Wipe the trap */
-	mem_free(trap);
+	c->squares[y][x].trap = NULL;
+
+	/* Refresh grids that the character can see */
+	if (square_isseen(c, y, x)) {
+		square_light_spot(c, y, x);
+	}
+
+	(void)square_verify_trap(c, y, x, 0);
+
+	return were_there_traps;
 }
 
 /**
@@ -498,46 +504,44 @@ static void remove_trap_aux(struct chunk *c, struct trap *trap, int y, int x,
  * If called with t_idx < 0, will remove all traps in the location given.
  * Otherwise, will remove all traps with the given kind.
  *
- * Return true if no traps now exist in this grid.
+ * Return true if traps were removed.
  */
-bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx)
+bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
 {
-    bool trap_exists;
-	struct trap **trap_slot = NULL;
-	struct trap *next_trap;
-
-	/* Bounds check */
 	assert(square_in_bounds(c, y, x));
 
-	/* Look at the traps in this grid */
-	trap_slot = &c->squares[y][x].trap;
-	while (*trap_slot) {
-		/* Get the next trap (may be NULL) */
-		next_trap = (*trap_slot)->next;
+	bool removed = false;
 
-		/* If called with a specific index, skip others */
-		if ((t_idx >= 0) && (t_idx != (*trap_slot)->t_idx)) {
-			if (!next_trap) break;
-			trap_slot = &next_trap;
-			continue;
+	/* Look at the traps in this grid */
+	struct trap *prev_trap = NULL;
+	struct trap *trap = c->squares[y][x].trap;
+	while (trap) {
+		struct trap *next_trap = trap->next;
+
+		if (t_idx_remove == trap->t_idx) {
+			mem_free(trap);
+			removed = true;
+
+			if (prev_trap) {
+				prev_trap->next = next_trap;
+			} else {
+				c->squares[y][x].trap = next_trap;
+			}
+
+			break;
 		}
 
-		/* Remove it */
-		remove_trap_aux(c, *trap_slot, y, x, domsg);
+		prev_trap = trap;
+		trap = next_trap;
+	}
 
-		/* Replace with the next trap */
-		*trap_slot = next_trap;
-    }
-
-    /* Refresh grids that the character can see */
-    if (square_isseen(c, y, x))
+	/* Refresh grids that the character can see */
+	if (square_isseen(c, y, x))
 		square_light_spot(c, y, x);
-    
-    /* Verify traps (remove marker if appropriate) */
-    trap_exists = square_verify_trap(c, y, x, 0);
 
-    /* Report whether any traps exist in this grid */
-    return (!trap_exists);
+	(void)square_verify_trap(c, y, x, 0);
+
+	return removed;
 }
 
 /**

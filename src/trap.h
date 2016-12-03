@@ -96,7 +96,8 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x);
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
 void square_free_trap(struct chunk *c, int y, int x);
 void wipe_trap_list(struct chunk *c);
-bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx);
+bool square_remove_all_traps(struct chunk *c, int y, int x);
+bool square_remove_trap(struct chunk *c, int y, int x, int t_idx);
 bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
 							 int t_idx, int time);
 int square_trap_timeout(struct chunk *c, int y, int x, int t_idx);
