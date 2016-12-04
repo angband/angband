@@ -111,14 +111,14 @@ bool test_hit(int chance, int ac, int vis) {
  *
  * Factor in damage dice, to-dam and any brand or slay.
  */
-static int melee_damage(struct object *obj, const struct brand *b, int s)
+static int melee_damage(struct object *obj, int b, int s)
 {
 	int dmg = damroll(obj->dd, obj->ds);
 
 	if (s)
 		dmg *= slays[s].multiplier;
 	else if (b)
-		dmg *= b->multiplier;
+		dmg *= slays[b].multiplier;
 
 	dmg += obj->to_d;
 
@@ -131,13 +131,13 @@ static int melee_damage(struct object *obj, const struct brand *b, int s)
  * Factor in damage dice, to-dam, multiplier and any brand or slay.
  */
 static int ranged_damage(struct object *missile, struct object *launcher, 
-						 const struct brand *b, int s, int mult)
+						 int b, int s, int mult)
 {
 	int dam;
 
 	/* If we have a slay, modify the multiplier appropriately */
 	if (b)
-		mult += b->multiplier;
+		mult += brands[b].multiplier;
 	else if (s)
 		mult += slays[s].multiplier;
 
@@ -349,8 +349,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	/* Handle normal weapon */
 	if (obj) {
 		int j;
-		const struct brand *b = NULL;
-		int s = 0;
+		int b = 0, s = 0;
 
 		my_strcpy(verb, "hit", sizeof(verb));
 
@@ -655,8 +654,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	struct monster *mon = square_monster(cave, y, x);
 	int chance = chance_of_missile_hit(p, ammo, bow, y, x);
 	int multiplier = p->state.ammo_mult;
-	const struct brand *b = NULL;
-	int s = 0;
+	int b = 0, s = 0;
 
 	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
@@ -690,8 +688,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	struct monster *mon = square_monster(cave, y, x);
 	int chance = chance_of_missile_hit(p, obj, NULL, y, x);
 	int multiplier = 1;
-	const struct brand *b = NULL;
-	int s = 0;
+	int b = 0, s = 0;
 
 	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 

@@ -43,11 +43,6 @@
 #include "player-spell.h"
 #include "project.h"
 
-/**
- * Structures to hold all brands and slays possible in the game
- */
-struct brand *game_brands;
-
 static const char *mon_race_flags[] =
 {
 	#define RF(a, b, c) #a,
@@ -86,13 +81,6 @@ static const char *kind_flags[] = {
 
 static const char *elements[] = {
 	#define ELEM(a, b, c, d, e, f, g, h, i, col) #a,
-	#include "list-elements.h"
-	#undef ELEM
-	NULL
-};
-
-static const char *brand_names[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) b,
 	#include "list-elements.h"
 	#undef ELEM
 	NULL
@@ -189,39 +177,6 @@ static void write_curse_kinds(void)
 		curse->obj->known = object_new();
 		curse->obj->known->kind = curse_object_kind;
 		curses[i].obj->known->sval = sval;
-	}
-}
-
-void add_game_brand(struct brand *b)
-{
-	struct brand *known_b = game_brands;
-
-	if (!known_b) {
-		/* Copy the name and element */
-		game_brands = mem_zalloc(sizeof(struct brand));
-		game_brands->name = string_make(b->name);
-		game_brands->element = b->element;
-		return;
-	}
-
-	while (known_b) {
-		/* Same element is all we need */
-		if (known_b->element == b->element) return;
-
-		/* Not found, so add it */
-		if (!known_b->next) {
-			/* Copy the name and element */
-			struct brand *new_b = mem_zalloc(sizeof *new_b);
-			new_b->name = string_make(b->name);
-			new_b->element = b->element;
-
-			/* Attach the new brand */
-			new_b->next = game_brands;
-			game_brands = new_b;
-			return;
-		}
-
-		known_b = known_b->next;
 	}
 }
 
@@ -1544,17 +1499,6 @@ static enum parser_error parse_object_values(struct parser *p) {
 		bool found = false;
 		if (!grab_rand_value(k->modifiers, obj_mods, t))
 			found = true;
-		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
-			struct brand *b;
-			found = true;
-			b = mem_zalloc(sizeof *b);
-			b->name = string_make(brand_names[index]);
-			b->element = index;
-			b->multiplier = value;
-			b->next = k->brands;
-			k->brands = b;
-			add_game_brand(b);
-		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;
 			k->el_info[index].res_level = value;
@@ -1584,6 +1528,24 @@ static enum parser_error parse_object_slay(struct parser *p) {
 	if (!k->slays)
 		k->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
 	k->slays[i] = true;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_brand(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	const char *s = parser_getstr(p, "code");
+	int i;
+
+	assert(k);
+	for (i = 1; i < z_info->brand_max; i++) {
+		if (streq(s, brands[i].code)) break;
+	}
+	if (i == z_info->brand_max)
+		return PARSE_ERROR_UNRECOGNISED_BRAND;
+
+	if (!k->brands)
+		k->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+	k->brands[i] = true;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1629,6 +1591,7 @@ struct parser *init_parse_object(void) {
 	parser_reg(p, "values str values", parse_object_values);
 	parser_reg(p, "desc str text", parse_object_desc);
 	parser_reg(p, "slay str code", parse_object_slay);
+	parser_reg(p, "brand str code", parse_object_brand);
 	parser_reg(p, "curse sym name int power", parse_object_curse);
 	return p;
 }
@@ -1679,11 +1642,9 @@ static void cleanup_object(void)
 		string_free(kind->name);
 		string_free(kind->text);
 		string_free(kind->effect_msg);
-		free_brand(kind->brands);
-		if (kind->slays)
-			mem_free(kind->slays);
-		if (kind->curses)
-			mem_free(kind->curses);
+		mem_free(kind->brands);
+		mem_free(kind->slays);
+		mem_free(kind->curses);
 		free_effect(kind->effect);
 	}
 	mem_free(k_info);
@@ -1945,17 +1906,6 @@ static enum parser_error parse_ego_values(struct parser *p) {
 		int index = 0;
 		if (!grab_rand_value(e->modifiers, obj_mods, t))
 			found = true;
-		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
-			struct brand *b;
-			found = true;
-			b = mem_zalloc(sizeof *b);
-			b->name = string_make(brand_names[index]);
-			b->element = index;
-			b->multiplier = value;
-			b->next = e->brands;
-			e->brands = b;
-			add_game_brand(b);
-		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;
 			e->el_info[index].res_level = value;
@@ -2025,6 +1975,25 @@ static enum parser_error parse_ego_slay(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_ego_brand(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	const char *s = parser_getstr(p, "code");
+	int i;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 1; i < z_info->brand_max; i++) {
+		if (streq(s, brands[i].code)) break;
+	}
+	if (i == z_info->brand_max)
+		return PARSE_ERROR_UNRECOGNISED_BRAND;
+
+	if (!e->brands)
+		e->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+	e->brands[i] = true;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_ego_curse(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 	char *s;
@@ -2064,6 +2033,7 @@ struct parser *init_parse_ego(void) {
 	parser_reg(p, "min-values str min_values", parse_ego_min_val);
 	parser_reg(p, "desc str text", parse_ego_desc);
 	parser_reg(p, "slay str code", parse_ego_slay);
+	parser_reg(p, "brand str code", parse_ego_brand);
 	parser_reg(p, "curse sym name int power", parse_ego_curse);
 	return p;
 }
@@ -2110,11 +2080,9 @@ static void cleanup_ego(void)
 
 		string_free(ego->name);
 		string_free(ego->text);
-		free_brand(ego->brands);
-		if (ego->slays)
-			mem_free(ego->slays);
-		if (ego->curses)
-			mem_free(ego->curses);
+		mem_free(ego->brands);
+		mem_free(ego->slays);
+		mem_free(ego->curses);
 		free_effect(ego->effect);
 
 		poss = ego->poss_items;
@@ -2309,17 +2277,6 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 		int index = 0;
 		if (!grab_int_value(a->modifiers, obj_mods, t))
 			found = true;
-		if (!grab_index_and_int(&value, &index, elements, "BRAND_", t)) {
-			struct brand *b;
-			found = true;
-			b = mem_zalloc(sizeof *b);
-			b->name = string_make(brand_names[index]);
-			b->element = index;
-			b->multiplier = value;
-			b->next = a->brands;
-			a->brands = b;
-			add_game_brand(b);
-		}
 		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
 			found = true;
 			a->el_info[index].res_level = value;
@@ -2361,6 +2318,25 @@ static enum parser_error parse_artifact_slay(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_artifact_brand(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	const char *s = parser_getstr(p, "code");
+	int i;
+
+	if (!a)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 1; i < z_info->brand_max; i++) {
+		if (streq(s, brands[i].code)) break;
+	}
+	if (i == z_info->brand_max)
+		return PARSE_ERROR_UNRECOGNISED_BRAND;
+
+	if (!a->brands)
+		a->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+	a->brands[i] = true;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_artifact_curse(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	char *s;
@@ -2397,6 +2373,7 @@ struct parser *init_parse_artifact(void) {
 	parser_reg(p, "values str values", parse_artifact_values);
 	parser_reg(p, "desc str text", parse_artifact_desc);
 	parser_reg(p, "slay str code", parse_artifact_slay);
+	parser_reg(p, "brand str code", parse_artifact_brand);
 	parser_reg(p, "curse sym name int power", parse_artifact_curse);
 	return p;
 }
@@ -2452,11 +2429,9 @@ static void cleanup_artifact(void)
 		string_free(art->name);
 		string_free(art->alt_msg);
 		string_free(art->text);
-		free_brand(art->brands);
-		if (art->slays)
-			mem_free(art->slays);
-		if (art->curses)
-			mem_free(art->curses);
+		mem_free(art->brands);
+		mem_free(art->slays);
+		mem_free(art->curses);
 	}
 	mem_free(a_info);
 }

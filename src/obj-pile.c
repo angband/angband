@@ -209,11 +209,7 @@ struct object *object_new(void)
 void object_free(struct object *obj)
 {
 	mem_free(obj->slays);
-
-	if (obj->brands) {
-		free_brand(obj->brands);
-	}
-
+	mem_free(obj->brands);
 	mem_free(obj->curses);
 	mem_free(obj);
 }
@@ -525,7 +521,7 @@ void object_wipe(struct object *obj)
 {
 	/* Free slays and brands */
 	mem_free(obj->slays);
-	free_brand(obj->brands);
+	mem_free(obj->brands);
 	mem_free(obj->curses);
 
 	/* Wipe the structure */
@@ -541,13 +537,14 @@ void object_copy(struct object *dest, const struct object *src)
 	/* Copy the structure */
 	memcpy(dest, src, sizeof(struct object));
 
-	dest->brands = NULL;
-
 	if (src->slays) {
 		dest->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
 		memcpy(dest->slays, src->slays, z_info->slay_max * sizeof(bool));
 	}
-	copy_brand(&dest->brands, src->brands);
+	if (src->brands) {
+		dest->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+		memcpy(dest->brands, src->brands, z_info->brand_max * sizeof(bool));
+	}
 	if (src->curses) {
 		size_t array_size = z_info->curse_max * sizeof(struct curse_data);
 		dest->curses = mem_zalloc(array_size);

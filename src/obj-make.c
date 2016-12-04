@@ -380,7 +380,7 @@ void ego_apply_magic(struct object *obj, int level)
 
 	/* Add slays, brands and curses */
 	copy_slays(&obj->slays, obj->ego->slays);
-	copy_brand(&obj->brands, obj->ego->brands);
+	copy_brands(&obj->brands, obj->ego->brands);
 	copy_curses(obj, obj->ego->curses);
 
 	/* Add resists */
@@ -482,7 +482,7 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 		obj->time = art->time;
 	of_union(obj->flags, art->flags);
 	copy_slays(&obj->slays, art->slays);
-	copy_brand(&obj->brands, art->brands);
+	copy_brands(&obj->brands, art->brands);
 	copy_curses(obj, art->curses);
 	for (i = 0; i < ELEM_MAX; i++) {
 		/* Take the larger of artifact and base object resist levels */
@@ -792,7 +792,7 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
 
 	/* Default slays, brands and curses */
 	copy_slays(&obj->slays, k->slays);
-	copy_brand(&obj->brands, k->brands);
+	copy_brands(&obj->brands, k->brands);
 	copy_curses(obj, k->curses);
 
 	/* Default resists */

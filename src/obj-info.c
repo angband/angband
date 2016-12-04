@@ -467,7 +467,8 @@ static bool describe_slays(textblock *tb, const struct object *obj)
  */
 static bool describe_brands(textblock *tb, const struct object *obj)
 {
-	struct brand *b = obj->known->brands;
+	int i, count = 0;
+	bool *b = obj->known->brands;
 
 	if (!b) return false;
 
@@ -476,15 +477,24 @@ static bool describe_brands(textblock *tb, const struct object *obj)
 	else
 		textblock_append(tb, "It brands your melee attacks with ");
 
-	while (b) {
-		if (b->multiplier < 3)
+	for (i = 1; i < z_info->brand_max; i++) {
+		if (b[i]) {
+			count++;
+		}
+	}
+
+	assert(count >= 1);
+	for (i = 1; i < z_info->brand_max; i++) {
+		if (!b[i]) continue;
+
+		if (brands[i].multiplier < 3)
 			textblock_append(tb, "weak ");
-		textblock_append(tb, b->name);
-		if (b->next)
+		textblock_append(tb, brands[i].name);
+		if (count > 1)
 			textblock_append(tb, ", ");
 		else
 			textblock_append(tb, ".\n");
-		b = b->next;
+		count--;
 	}
 
 	return true;
@@ -780,15 +790,15 @@ static bool describe_blows(textblock *tb, const struct object *obj)
  * the actual ego may have different properties.
  */
 static bool obj_known_damage(const struct object *obj, int *normal_damage,
-							struct brand **brand_list, int *slay_damage,
-							bool *nonweap_slay)
+							 int *brand_damage, int *slay_damage,
+							 bool *nonweap_slay)
 {
 	int i;
 	int dice, sides, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
 	int old_blows = 0;
-	struct brand *brand;
+	bool *total_brands;
 	bool *total_slays;
 	bool has_brands_or_slays = false;
 
@@ -842,7 +852,10 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	if (ammo) multiplier = player->state.ammo_mult;
 
 	/* Get the brands */
-	*brand_list = brand_collect(obj->known->brands, ammo ? bow->known : NULL);
+	total_brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+	copy_brands(&total_brands, obj->known->brands);
+	if (ammo && bow->known)
+		copy_brands(&total_brands, bow->known->brands);
 
 	/* Get the slays */
 	total_slays = mem_zalloc(z_info->slay_max * sizeof(bool));
@@ -855,7 +868,6 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 	if (weapon)	{
 		for (i = 2; i < player->body.count; i++) {
 			struct object *slot_obj = slot_object(player, i);
-			struct brand *new_brand;
 			if (!slot_obj)
 				continue;
 
@@ -865,19 +877,22 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 				continue;
 
 			/* Replace the old lists with new ones */
-			new_brand = brand_collect(*brand_list, slot_obj->known);
-			free_brand(*brand_list);
-			*brand_list = new_brand;
+			copy_brands(&total_brands, slot_obj->known->brands);
 			copy_slays(&total_slays, slot_obj->known->slays);
 		}
 	}
 
 	/* Get damage for each brand on the objects */
-	for (brand = *brand_list; brand; brand = brand->next) {
+	for (i = 1; i < z_info->brand_max; i++) {
+		/* Must have the brand */
+		if (total_brands[i])
+			has_brands_or_slays = true;
+		else
+			continue;
 
-		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + brand->multiplier
-						   - melee_adj_mult) + xtra_precrit;
+		/* Include bonus damage and brand in stated average */
+		total_dam = dam * (multiplier + brands[i].multiplier - melee_adj_mult)
+			+ xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
@@ -886,7 +901,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		else
 			total_dam *= player->state.num_shots;
 
-		brand->damage = total_dam;
+		brand_damage[i] = total_dam;
 	}
 
 	/* Get damage for each slay on the objects */
@@ -924,6 +939,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 
 	*normal_damage = total_dam;
 
+	mem_free(total_brands);
 	mem_free(total_slays);
 	return has_brands_or_slays;
 }
@@ -937,12 +953,13 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	int i;
 	bool nonweap_slay = false;
 	int normal_damage = 0;
-	struct brand *brand, *brands = NULL;
+	int *brand_damage = mem_zalloc(z_info->brand_max * sizeof(int));
 	int *slay_damage = mem_zalloc(z_info->slay_max * sizeof(int));
 
 	/* Collect brands and slays */
-	bool has_brands_or_slays = obj_known_damage(obj, &normal_damage, &brands,
-												slay_damage, &nonweap_slay);
+	bool has_brands_or_slays = obj_known_damage(obj, &normal_damage,
+												brand_damage, slay_damage,
+												&nonweap_slay);
 
 	/* Mention slays and brands from other items */
 	if (nonweap_slay)
@@ -950,23 +967,22 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 
 	textblock_append(tb, "Average damage/round: ");
 
-	/* Output damage for creatures effected by the brands */
-	brand = brands;
-	while (brand) {
-		if (brand->damage <= 0)
-			textblock_append_c(tb, COLOUR_L_RED, "%d", 0);
-		else if (brand->damage % 10)
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
-							   brand->damage / 10, brand->damage % 10);
-		else
-			textblock_append_c(tb, COLOUR_L_GREEN, "%d",brand->damage / 10);
-
-		textblock_append(tb, " vs. creatures not resistant to %s, ",
-						 brand->name);
-		brand = brand->next;
-	}
-
 	if (has_brands_or_slays) {
+		/* Output damage for creatures effected by the brands */
+		for (i = 0; i < z_info->brand_max; i++) {
+			if (brand_damage[i] <= 0) {
+				continue;
+			} else if (brand_damage[i] % 10) {
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d.%d",
+								   brand_damage[i] / 10, brand_damage[i] % 10);
+			} else {
+				textblock_append_c(tb, COLOUR_L_GREEN, "%d",
+								   brand_damage[i] / 10);
+			}
+			textblock_append(tb, " vs. creatures not resistant to %s, ",
+							 brands[i].name);
+		}
+
 		/* Output damage for creatures effected by the slays */
 		for (i = 0; i < z_info->slay_max; i++) {
 			if (slay_damage[i] <= 0) {
@@ -995,7 +1011,7 @@ static bool describe_damage(textblock *tb, const struct object *obj)
 	if (has_brands_or_slays) textblock_append(tb, " vs. others");
 	textblock_append(tb, ".\n");
 
-	free_brand(brands);
+	mem_free(brand_damage);
 	mem_free(slay_damage);
 	return true;
 }

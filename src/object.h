@@ -69,8 +69,6 @@ struct brand {
 	struct brand *next;
 };
 
-extern struct brand *game_brands;
-
 /**
  * Slay type
  */
@@ -185,7 +183,7 @@ struct object_kind {
 	random_value modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
 
-	struct brand *brands;
+	bool *brands;
 	bool *slays;
 	int *curses;			/**< Array of curse powers */
 
@@ -262,7 +260,7 @@ struct artifact {
 	int modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
 
-	struct brand *brands;
+	bool *brands;
 	bool *slays;
 	int *curses;		/**< Array of curse powers */
 
@@ -317,7 +315,7 @@ struct ego_item {
 	int min_modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
 
-	struct brand *brands;
+	bool *brands;
 	bool *slays;
 	int *curses;			/**< Array of curse powers */
 
@@ -420,8 +418,8 @@ struct object {
 	bitflag flags[OF_SIZE];	/**< Object flags */
 	s16b modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
 	struct element_info el_info[ELEM_MAX];	/**< Object element info */
-	struct brand *brands;	/**< Linked list of brand structures */
-	bool *slays;		/**< Linked list of slay structures */
+	bool *brands;			/**< Array of brand structures */
+	bool *slays;			/**< Array of slay structures */
 	struct curse_data *curses;	/**< Array of curse powers and timeouts */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */

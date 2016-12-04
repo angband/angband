@@ -1297,8 +1297,9 @@ static struct object_kind *choose_item(int a_idx, int *freq)
 	mem_free(art->slays);
 	art->slays = NULL;
 	copy_slays(&art->slays, kind->slays);
+	mem_free(art->brands);
 	art->brands = NULL;
-	copy_brand(&art->brands, kind->brands);
+	copy_brands(&art->brands, kind->brands);
 	art->activation = NULL;
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		art->modifiers[i] = randcalc(kind->modifiers[i], 0, MINIMISE);
@@ -2240,9 +2241,7 @@ static void do_curse(struct artifact *art)
 static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 {
 	mem_free(a_dst->slays);
-	if (a_dst->brands) {
-		free_brand(a_dst->brands);
-	}
+	mem_free(a_dst->brands);
 	mem_free(a_dst->curses);
 
 	/* Copy the structure */
@@ -2261,7 +2260,8 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 		memcpy(a_dst->slays, a_src->slays, z_info->slay_max * sizeof(bool));
 	}
 	if (a_src->brands) {
-		copy_brand(&a_dst->brands, a_src->brands);
+		a_dst->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+		memcpy(a_dst->brands, a_src->brands, z_info->brand_max * sizeof(bool));
 	}
 	if (a_src->curses) {
 		a_dst->curses = mem_zalloc(z_info->curse_max * sizeof(int));
@@ -2410,7 +2410,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 		}
 		for (i = 0; i < OBJ_MOD_MAX; i++)
 			art->modifiers[i] = 0;
-		wipe_brands(art->brands);
+		mem_free(art->brands);
 		art->brands = NULL;
 		mem_free(art->slays);
 		art->slays = NULL;
@@ -2509,9 +2509,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 
 	/* Cleanup a_old */
 	mem_free(a_old->slays);
-	if (a_old->brands) {
-		free_brand(a_old->brands);
-	}
+	mem_free(a_old->brands);
 	mem_free(a_old->curses);
 	mem_free(a_old);
 

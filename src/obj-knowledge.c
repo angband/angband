@@ -108,8 +108,7 @@ static const char *m_rune[] =
  */
 static void init_rune(void)
 {
-	int i, j, count, brands = 0;
-	struct brand *b;
+	int i, j, count;
 
 	/* Count runes (combat runes are fixed) */
 	count = COMBAT_RUNE_MAX;
@@ -125,8 +124,19 @@ static void init_rune(void)
 	for (i = 0; i <= ELEM_HIGH_MAX; i++) {
 		count++;
 	}
-	for (b = game_brands; b; b = b->next) {
-		count++;
+	/* Note brand runes cover all brands with the same name */
+	for (i = 1; i < z_info->brand_max; i++) {
+		bool counted = false;
+		if (brands[i].name) {
+			for (j = 1; j < i; j++) {
+				if (streq(brands[i].name, brands[j].name)) {
+					counted = true;
+				}
+			}
+			if (!counted) {
+				count++;
+			}
+		}
 	}
 	/* Note slay runes cover all slays with the same flag/base */
 	for (i = 1; i < z_info->slay_max; i++) {
@@ -161,9 +171,19 @@ static void init_rune(void)
 	for (i = 0; i <= ELEM_HIGH_MAX; i++) {
 		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, e_rune[i] };
 	}
-	for (b = game_brands; b; b = b->next) {
-		rune_list[count++] =
-			(struct rune) { RUNE_VAR_BRAND, brands++, 0, b->name};
+	for (i = 1; i < z_info->brand_max; i++) {
+		bool counted = false;
+		if (brands[i].name) {
+			for (j = 1; j < i; j++) {
+				if (streq(brands[i].name, brands[j].name)) {
+					counted = true;
+				}
+			}
+			if (!counted) {
+				rune_list[count++] =
+					(struct rune) { RUNE_VAR_BRAND, i, 0, brands[i].name };
+			}
+		}
 	}
 	for (i = 1; i < z_info->slay_max; i++) {
 		bool counted = false;
@@ -286,14 +306,10 @@ bool player_knows_rune(struct player *p, size_t i)
 		}
 		/* Brand runes */
 		case RUNE_VAR_BRAND: {
-			int num;
-			struct brand *b;
-			for (b = game_brands, num = 0; b; b = b->next, num++)
-				if (num == r->index) break;
-			assert(b != NULL);
-
-			if (player_knows_brand(p, b))
+			assert(r->index < z_info->brand_max);
+			if (p->obj_k->brands[r->index]) {
 				return true;
+			}
 			break;
 		}
 		/* Slay runes */
@@ -379,12 +395,6 @@ char *rune_desc(size_t i)
 		}
 		/* Brand runes */
 		case RUNE_VAR_BRAND: {
-			int num;
-			struct brand *b;
-			for (b = game_brands, num = 0; b; b = b->next, num++)
-				if (num == r->index) break;
-			assert(b != NULL);
-
 			return format("Object brands the player's attacks with %s.",
 						  r->name);
 			break;
@@ -446,16 +456,9 @@ void rune_set_note(size_t i, const char *inscription)
  * \param p is the player
  * \param b is the brand
  */
-bool player_knows_brand(struct player *p, struct brand *b)
+bool player_knows_brand(struct player *p, int i)
 {
-	struct brand *b_check = p->obj_k->brands;
-	while (b_check) {
-		/* Same element is all we need */
-		if (b_check->element == b->element) return true;
-		b_check = b_check->next;
-	}
-
-	return false;
+	return p->obj_k->brands[i];
 }
 
 /**
@@ -489,7 +492,6 @@ bool player_knows_curse(struct player *p, int index)
 bool player_knows_ego(struct player *p, struct ego_item *ego)
 {
 	int i;
-	struct brand *b;
 
 	if (!ego) return false;
 
@@ -508,8 +510,11 @@ bool player_knows_ego(struct player *p, struct ego_item *ego)
 			return false;
 
 	/* All brands known */
-	for (b = ego->brands; b; b = b->next)
-		if (!player_knows_brand(p, b)) return false;
+	for (i = 1; i < z_info->brand_max; i++) {
+		if (ego->brands && ego->brands[i] && !player_knows_brand(p, i)) {
+			return false;
+		}
+	}
 
 	/* All slays known */
 	for (i = 1; i < z_info->slay_max; i++) {
@@ -625,10 +630,14 @@ bool object_has_rune(const struct object *obj, int rune_no)
 		}
 		/* Brand runes */
 		case RUNE_VAR_BRAND: {
-			struct brand *b;
-			for (b = obj->brands; b; b = b->next)
-				if (streq(b->name, r->name))
-					return true;
+			if (obj->brands) {
+				int i;
+				for (i = 0; i < z_info->brand_max; i++) {
+					if (obj->brands[i] && streq(brands[i].name, r->name)) {
+						return true;
+					}
+				}
+			}
 			break;
 		}
 		/* Slay runes */
@@ -690,8 +699,15 @@ bool object_runes_known(const struct object *obj)
 			return false;
 
 	/* Not all brands known */
-	if (!brands_are_equal(obj->brands, obj->known->brands))
-		return false;
+	if (obj->brands) {
+		if (!obj->known->brands)
+			return false;
+		for (i = 0; i < z_info->brand_max; i++) {
+			if (obj->brands[i] && !obj->known->brands[i]) {
+				return false;
+			}
+		}
+	}
 
 	/* Not all slays known */
 	if (obj->slays) {
@@ -953,7 +969,6 @@ void object_touch(struct player *p, struct object *obj)
 void player_know_object(struct player *p, struct object *obj)
 {
 	int i, flag;
-	struct brand *b;
 	bool seen = true;
 
 	/* Unseen or only sensed objects don't get any ID */
@@ -998,20 +1013,16 @@ void player_know_object(struct player *p, struct object *obj)
 		return;
 	}
 
-	/* Reset brands */
-	free_brand(obj->known->brands);
-	obj->known->brands = NULL;
-	for (b = obj->brands; b; b = b->next) {
-		if (player_knows_brand(p, b)) {
-			/* Copy */
-			struct brand *new_b = mem_zalloc(sizeof *new_b);
-			new_b->name = string_make(b->name);
-			new_b->element = b->element;
-			new_b->multiplier = b->multiplier;
-
-			/* Attach the new brand */
-			new_b->next = obj->known->brands;
-			obj->known->brands = new_b;
+	/* Set brands */
+	if (obj->brands) {
+		for (i = 1; i < z_info->brand_max; i++) {
+			if (player_knows_brand(p, i) && obj->brands[i]) {
+				if (!obj->known->brands) {
+					obj->known->brands = mem_zalloc(z_info->brand_max *
+													sizeof(bool));
+				}
+				obj->known->brands[i] = true;
+			}
 		}
 	}
 
@@ -1174,23 +1185,18 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 		}
 		/* Brand runes */
 		case RUNE_VAR_BRAND: {
-			int num;
-			struct brand *b;
-			for (b = game_brands, num = 0; b; b = b->next, num++)
-				if (num == r->index) break;
-			assert(b != NULL);
+			assert(r->index < z_info->brand_max);
 
 			/* If the brand was unknown, add it to known brands */
-			if (!player_knows_brand(p, b)) {
-				/* Copy the name and element */
-				struct brand *new_b = mem_zalloc(sizeof *new_b);
-				new_b->name = string_make(b->name);
-				new_b->element = b->element;
-
-				/* Attach the new brand */
-				new_b->next = p->obj_k->brands;
-				p->obj_k->brands = new_b;
-				learned = true;
+			if (!player_knows_brand(p, r->index)) {
+				int i;
+				for (i = 1; i < z_info->brand_max; i++) {
+					/* Check base and race flag */
+					if (streq(brands[r->index].name, brands[i].name)) {
+						p->obj_k->brands[i] = true;
+						learned = true;
+					}
+				}
 			}
 			break;
 		}
@@ -1672,33 +1678,6 @@ void object_learn_on_use(struct player *p, struct object *obj)
 }
 
 /**
- * Notice a brand on a particular object which affects a particular monster.
- *
- * \param obj is the object on which we are noticing brands
- * \param mon the monster we are hitting
- * \param b is the brand we are learning
- */
-void object_learn_brand(struct player *p, struct object *obj, struct brand *b)
-{
-	/* Learn about the brand */
-	if (!player_knows_brand(player, b)) {
-		int num = 0;
-		struct brand *b_check = game_brands;
-
-		/* Find the rune index */
-		while (b_check && !streq(b_check->name, b->name)) {
-			num++;
-			b_check = b_check->next;
-		}
-		assert(b_check);
-
-		/* Learn the rune */
-		player_learn_rune(p, rune_index(RUNE_VAR_BRAND, num), true);
-		update_player_object_knowledge(p);
-	}
-}
-
-/**
  * Notice any slays on a particular object which affect a particular monster.
  *
  * \param obj is the object on which we are noticing slays
@@ -1720,6 +1699,32 @@ void object_learn_slay(struct player *p, struct object *obj, int index)
 
 		/* Learn the rune */
 		player_learn_rune(p, rune_index(RUNE_VAR_SLAY, i), true);
+		update_player_object_knowledge(p);
+	}
+}
+
+/**
+ * Notice any brands on a particular object which affect a particular monster.
+ *
+ * \param obj is the object on which we are noticing brands
+ * \param mon the monster we are trying to brand
+ */
+void object_learn_brand(struct player *p, struct object *obj, int index)
+{
+	/* Learn about the brand */
+	if (!player_knows_brand(p, index)) {
+		int i;
+
+		/* Find the rune index */
+		for (i = 1; i < z_info->brand_max; i++) {
+			if (streq(brands[i].name, brands[index].name)) {
+				break;
+			}
+		}
+		assert(i < z_info->brand_max);
+
+		/* Learn the rune */
+		player_learn_rune(p, rune_index(RUNE_VAR_BRAND, i), true);
 		update_player_object_knowledge(p);
 	}
 }

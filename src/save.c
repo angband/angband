@@ -67,7 +67,6 @@ void wr_description(void)
 static void wr_item(const struct object *obj)
 {
 	size_t i;
-	struct brand *b;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
@@ -122,13 +121,14 @@ static void wr_item(const struct object *obj)
 		wr_s16b(obj->modifiers[i]);
 	}
 
-	/* Write a sentinel byte */
-	wr_byte(obj->brands ? 1 : 0);
-	for (b = obj->brands; b; b = b->next) {
-		wr_string(b->name);
-		wr_s16b(b->element);
-		wr_s16b(b->multiplier);
-		wr_byte(b->next ? 1 : 0);
+	/* Write brands if any */
+	if (obj->brands) {
+		wr_byte(1);
+		for (i = 0; i < z_info->brand_max; i++) {
+			wr_byte(obj->brands[i] ? 1 : 0);
+		}
+	} else {
+		wr_byte(0);
 	}
 
 	/* Write slays if any */
@@ -579,7 +579,6 @@ void wr_ignore(void)
 void wr_misc(void)
 {
 	size_t i;
-	struct brand *b;
 
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
@@ -617,12 +616,8 @@ void wr_misc(void)
 	}
 
 	/* Brands */
-	wr_byte(player->obj_k->brands ? 1 : 0);
-	for (b = player->obj_k->brands; b; b = b->next) {
-		wr_string(b->name);
-		wr_s16b(b->element);
-		wr_s16b(b->multiplier);
-		wr_byte(b->next ? 1 : 0);
+	for (i = 0; i < z_info->brand_max; i++) {
+		wr_byte(player->obj_k->brands[i] ? 1 : 0);
 	}
 
 	/* Slays */

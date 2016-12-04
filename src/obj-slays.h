@@ -26,18 +26,14 @@ extern struct brand *brands;
 /*** Functions ***/
 bool same_monsters_slain(int slay1, int slay2);
 void copy_slays(bool **dest, bool *source);
-void copy_brand(struct brand **dest, struct brand *source);
-void free_brand(struct brand *source);
-bool append_random_brand(struct brand **current, char **name);
+void copy_brands(bool **dest, bool *source);
+bool append_random_brand(bool **current, char **name);
 bool append_random_slay(bool **current, char **name);
-int brand_count(struct brand *brands);
+int brand_count(bool *brands);
 int slay_count(bool *slays);
-struct brand *brand_collect(struct brand *b, const struct object *obj2);
 void improve_attack_modifier(struct object *obj, const struct monster *mon, 
-							 const struct brand **brand_used, int *slay_used, 
-							 char *verb, bool range, bool real);
+							 int *brand_used, int *slay_used, char *verb,
+							 bool range, bool real);
 bool react_to_slay(struct object *obj, const struct monster *mon);
-bool brands_are_equal(struct brand *brand1, struct brand *brand2);
-void wipe_brands(struct brand *brands);
 
 #endif /* OBJECT_SLAYS_H */

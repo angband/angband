@@ -100,7 +100,6 @@ static struct object *rd_item(void)
 
 	byte tmp8u;
 	u16b tmp16u;
-	s16b tmp16s;
 	u32b ego_idx;
 	u32b art_idx;
 	byte effect;
@@ -156,18 +155,12 @@ static struct object *rd_item(void)
 
 	/* Read brands */
 	rd_byte(&tmp8u);
-	while (tmp8u) {
-		char buf_local[40];
-		struct brand *b = mem_zalloc(sizeof *b);
-		rd_string(buf_local, sizeof(buf_local));
-		b->name = string_make(buf_local);
-		rd_s16b(&tmp16s);
-		b->element = tmp16s;
-		rd_s16b(&tmp16s);
-		b->multiplier = tmp16s;
-		b->next = obj->brands;
-		obj->brands = b;
-		rd_byte(&tmp8u);
+	if (tmp8u) {
+		obj->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+		for (i = 0; i < z_info->brand_max; i++) {
+			rd_byte(&tmp8u);
+			obj->brands[i] = tmp8u ? true : false;
+		}
 	}
 
 	/* Read slays */
@@ -868,7 +861,6 @@ int rd_misc(void)
 {
 	size_t i;
 	byte tmp8u;
-	s16b tmp16s;
 	
 	/* Read the randart seed */
 	rd_u32b(&seed_randart);
@@ -910,20 +902,10 @@ int rd_misc(void)
 		rd_byte(&player->obj_k->el_info[i].flags);
 	}
 
-	/* Brands */
-	rd_byte(&tmp8u);
-	while (tmp8u) {
-		char buf[40];
-		struct brand *b = mem_zalloc(sizeof *b);
-		rd_string(buf, sizeof(buf));
-		b->name = string_make(buf);
-		rd_s16b(&tmp16s);
-		b->element = tmp16s;
-		rd_s16b(&tmp16s);
-		b->multiplier = tmp16s;
-		b->next = player->obj_k->brands;
-		player->obj_k->brands = b;
+	/* Read brands */
+	for (i = 0; i < z_info->brand_max; i++) {
 		rd_byte(&tmp8u);
+		player->obj_k->brands[i] = tmp8u ? true : false;
 	}
 
 	/* Read slays */

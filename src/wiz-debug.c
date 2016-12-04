@@ -967,7 +967,8 @@ static void wiz_reroll_item(struct object *obj)
 		/* Free slays and brands on the old object by hand */
 		mem_free(obj->slays);
 		obj->slays = NULL;
-		free_brand(obj->brands);
+		mem_free(obj->brands);
+		obj->brands = NULL;
 		mem_free(obj->curses);
 		obj->curses = NULL;
 

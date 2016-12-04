@@ -35,6 +35,4 @@ extern struct file_parser act_parser;
 extern struct file_parser ego_parser;
 extern struct file_parser artifact_parser;
 
-void add_game_brand(struct brand *b);
-
 #endif /* OBJECT_INIT_H_ */

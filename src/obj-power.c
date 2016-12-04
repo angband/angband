@@ -323,12 +323,14 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	u32b sv = 0;
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
 	int mult;
-	struct brand *brands = obj->brands;
 
 	/* Count the brands and slays */
-	while (brands) {
-		num_brands++;
-		brands = brands->next;
+	if (obj->brands) {
+		for (i = 1; i < z_info->brand_max; i++) {
+			if (obj->brands[i]) {
+				num_brands++;
+			}
+		}
 	}
 	if (obj->slays) {
 		for (i = 1; i < z_info->slay_max; i++) {
@@ -355,7 +357,7 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	for (i = 0; i < z_info->r_max; i++)	{
 		struct object *obj1 = (struct object *) obj;
 		struct monster *mon = mem_zalloc(sizeof(*mon));
-		const struct brand *b = NULL;
+		int brand = 0;
 		int slay = 0;
 		char verb[20];
 
@@ -363,11 +365,11 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		mon->race = &r_info[i];
 
 		/* Find the best multiplier against this monster */
-		improve_attack_modifier(obj1, mon, &b, &slay, verb, false,	false);
+		improve_attack_modifier(obj1, mon, &brand, &slay, verb, false, false);
 		if (slay)
 			mult = slays[slay].multiplier;
-		else if (b)
-			mult = b->multiplier;
+		else if (brand)
+			mult = brands[brand].multiplier;
 
 		/* Add up totals */
 		tot_mon_power += mon->race->scaled_power;
@@ -381,15 +383,16 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	 * total number of monsters.
 	 */
 	if (verbose) {
-		struct brand *b, *verbose_brands = NULL;
-
 		/* Write info about the slay combination and multiplier */
 		log_obj("Slay multiplier for: ");
 
-		verbose_brands = brand_collect(obj->brands, NULL);
-
-		for (b = verbose_brands; b; b = b->next) {
-			log_obj(format("%sx%d ", b->name, b->multiplier));
+		if (obj->brands) {
+			for (i = 1; i < z_info->brand_max; i++) {
+				if (obj->brands[i]) {
+					struct brand *b = &brands[i];
+					log_obj(format("%sx%d ", b->name, b->multiplier));
+				}
+			}
 		}
 		if (obj->slays) {
 			for (i = 1; i < z_info->slay_max; i++) {
@@ -402,7 +405,6 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		log_obj(format("\nsv is: %d\n", sv));
 		log_obj(format(" and t_m_p is: %d \n", tot_mon_power));
 		log_obj(format("times 1000 is: %d\n", (1000 * sv) / tot_mon_power));
-		free_brand(verbose_brands);
 	}
 
 	q = (dice_pwr * (sv / 100)) / (tot_mon_power / 100);
