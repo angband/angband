@@ -61,11 +61,11 @@ struct effect {
 struct brand {
 	char *code;
 	char *name;
-	int element;
-	int multiplier;
 	char *verb;
+	int element;
 	int resist_flag;
-	int damage; /* Storage for damage during description */
+	int multiplier;
+	int power;
 	struct brand *next;
 };
 
@@ -80,6 +80,7 @@ struct slay {
 	char *range_verb;
 	int race_flag;
 	int multiplier;
+	int power;
 	struct slay *next;
 };
 

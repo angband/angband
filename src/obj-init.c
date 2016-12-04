@@ -431,6 +431,15 @@ static enum parser_error parse_slay_multiplier(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_slay_power(struct parser *p) {
+	struct slay *slay = parser_priv(p);
+	if (!slay)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	slay->power = parser_getuint(p, "power");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_slay_melee_verb(struct parser *p) {
 	const char *verb = parser_getstr(p, "verb");
 	struct slay *slay = parser_priv(p);
@@ -459,6 +468,7 @@ struct parser *init_parse_slay(void) {
 	parser_reg(p, "race-flag sym flag", parse_slay_race_flag);
 	parser_reg(p, "base sym base", parse_slay_base);
 	parser_reg(p, "multiplier uint multiplier", parse_slay_multiplier);
+	parser_reg(p, "power uint power", parse_slay_power);
 	parser_reg(p, "melee-verb str verb", parse_slay_melee_verb);
 	parser_reg(p, "range-verb str verb", parse_slay_range_verb);
 	return p;
@@ -562,6 +572,15 @@ static enum parser_error parse_brand_multiplier(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_brand_power(struct parser *p) {
+	struct brand *brand = parser_priv(p);
+	if (!brand)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	brand->power = parser_getuint(p, "power");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_brand_resist_flag(struct parser *p) {
 	int flag;
 	struct brand *brand = parser_priv(p);
@@ -586,6 +605,7 @@ struct parser *init_parse_brand(void) {
 	parser_reg(p, "name str name", parse_brand_name);
 	parser_reg(p, "verb str verb", parse_brand_verb);
 	parser_reg(p, "multiplier uint multiplier", parse_brand_multiplier);
+	parser_reg(p, "power uint power", parse_brand_power);
 	parser_reg(p, "resist-flag sym flag", parse_brand_resist_flag);
 	return p;
 }
