@@ -439,7 +439,7 @@ static void wiz_display_item(const struct object *obj, bool all)
 			   obj->number, obj->pval,
 			   obj->artifact ? obj->artifact->aidx : 0,
 			   obj->ego ? obj->ego->eidx : 0,
-			   (long)object_value(obj, 1, false)), 6, j);
+			   (long)object_value(obj, 1)), 6, j);
 
 	prt("+------------FLAGS-------------+", 16, j);
 	prt("SUST.PROT<-OTHER--><BAD->CUR....", 17, j);

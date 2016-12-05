@@ -975,18 +975,18 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 
 	/* Objects sort by decreasing value, except ammo */
 	if (tval_is_ammo(orig)) {
-		if (object_value(orig, 1, false) <
-			object_value(new, 1, false))
+		if (object_value(orig, 1) <
+			object_value(new, 1))
 			return false;
-		if (object_value(orig, 1, false) >
-			object_value(new, 1, false))
+		if (object_value(orig, 1) >
+			object_value(new, 1))
 			return true;
 	} else {
-		if (object_value(orig, 1, false) >
-			object_value(new, 1, false))
+		if (object_value(orig, 1) >
+			object_value(new, 1))
 			return false;
-		if (object_value(orig, 1, false) <
-			object_value(new, 1, false))
+		if (object_value(orig, 1) <
+			object_value(new, 1))
 			return true;
 	}
 

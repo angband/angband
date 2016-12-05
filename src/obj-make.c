@@ -1086,7 +1086,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	if (one_in_(good ? 10 : 1000)) {
 		new_obj = make_artifact_special(lev);
 		if (new_obj) {
-			if (value) *value = object_value_real(new_obj, 1, false);
+			if (value) *value = object_value_real(new_obj, 1);
 			return new_obj;
 		}
 
@@ -1119,7 +1119,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 
 	/* Get the value */
 	if (value)
-		*value = object_value_real(new_obj, new_obj->number, false);
+		*value = object_value_real(new_obj, new_obj->number);
 
 	/* Boost of 20% per level OOD for uncursed objects */
 	if ((!new_obj->curses) && (kind->alloc_min > c->depth)) {

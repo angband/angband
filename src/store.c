@@ -517,7 +517,7 @@ static bool store_will_buy(struct store *store, const struct object *obj)
 	if (store->sidx == STORE_HOME) return true;
 
 	/* Ignore "worthless" items */
-	if (object_value(obj, 1, false) <= 0) return false;
+	if (object_value(obj, 1) <= 0) return false;
 
 	/* No buy list means we buy anything */
 	if (!store->buy) return true;
@@ -573,9 +573,9 @@ int price_item(struct store *store, const struct object *obj,
 
 	/* Get the value of the stack of wands, or a single item */
 	if (tval_can_have_charges(obj))
-		price = object_value_real(obj, qty, false);
+		price = object_value_real(obj, qty);
 	else
-		price = object_value_real(obj, 1, false);
+		price = object_value_real(obj, 1);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
@@ -646,7 +646,7 @@ static int mass_roll(int times, int max)
 static void mass_produce(struct object *obj)
 {
 	int size = 1;
-	s32b cost = object_value(obj, 1, false);
+	s32b cost = object_value(obj, 1);
 
 	/* Analyze the type */
 	switch (obj->tval)
@@ -900,9 +900,9 @@ struct object *store_carry(struct store *store, struct object *obj)
 
 	/* Evaluate the object */
 	if (object_is_carried(player, obj))
-		value = object_value(obj, 1, false);
+		value = object_value(obj, 1);
 	else
-		value = object_value_real(obj, 1, false);
+		value = object_value_real(obj, 1);
 
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0)
@@ -1093,7 +1093,7 @@ static bool black_market_ok(const struct object *obj)
 	if (obj->to_d > 2) return true;
 
 	/* No cheap items */
-	if (object_value(obj, 1, false) < 10) return (false);
+	if (object_value(obj, 1) < 10) return (false);
 
 	/* Check the other stores */
 	for (i = 0; i < MAX_STORES; i++) {
@@ -1209,7 +1209,7 @@ static bool store_create_random(struct store *store)
 		}
 
 		/* No "worthless" items */
-		if (object_value_real(obj, 1, false) < 1)  {
+		if (object_value_real(obj, 1) < 1)  {
 			object_delete(&known_obj);
 			obj->known = NULL;
 			object_delete(&obj);
@@ -1874,7 +1874,7 @@ void do_cmd_sell(struct command *cmd)
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 	/* Get the "apparent" value */
-	dummy = object_value(&dummy_item, amt, false);
+	dummy = object_value(&dummy_item, amt);
 
 	/* Know flavor of consumables */
 	if (obj->kind->flavor && !tval_is_jewelry(obj))
@@ -1884,7 +1884,7 @@ void do_cmd_sell(struct command *cmd)
 	sold_item = gear_object_for_use(obj, amt, false, &none_left);
 
 	/* Get the "actual" value */
-	value = object_value(sold_item, amt, false);
+	value = object_value(sold_item, amt);
 
 	/* Get the description all over again */
 	object_desc(o_name, sizeof(o_name), sold_item, ODESC_PREFIX | ODESC_FULL);

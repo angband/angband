@@ -162,7 +162,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	obj->known = known_obj;
 
 	/* Value */
-	(*val) = object_value(obj, 1, false);
+	(*val) = object_value(obj, 1);
 
 	/* Description (too brief) */
 	if (buf)
