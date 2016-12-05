@@ -937,10 +937,10 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 		return (false);
 
 	/* Add to level feeling, note uniques for cheaters */
-	c->mon_rating += race->power / 20;
+	c->mon_rating += race->level * race->level;
 
 	/* Check out-of-depth-ness */
-	if (race->level > player->depth) {
+	if (race->level > c->depth) {
 		if (rf_has(race->flags, RF_UNIQUE)) { /* OOD unique */
 			if (OPT(player, cheat_hear))
 				msg("Deep unique (%s).", race->name);
@@ -949,7 +949,7 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 				msg("Deep monster (%s).", race->name);
 		}
 		/* Boost rating by power per 10 levels OOD */
-		c->mon_rating += (race->level - player->depth) * race->power / 200;
+		c->mon_rating += (race->level - c->depth) * race->level * race->level;
 	} else if (rf_has(race->flags, RF_UNIQUE) && OPT(player, cheat_hear))
 		msg("Unique (%s).", race->name);
 

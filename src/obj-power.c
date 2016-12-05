@@ -28,11 +28,6 @@
 #include "monster.h"
 
 /**
- * Store total monster power for use in slay cache calculations
- */
-static int tot_mon_power;
-
-/**
  * Define a set of constants for dealing with launchers and ammo:
  * - the assumed average damage of ammo (for rating launchers)
  * (the current values assume normal (non-seeker) ammo enchanted to +9)
@@ -320,15 +315,16 @@ static int extra_might_power(const struct object *obj, int p, int mult)
 static s32b slay_power(const struct object *obj, int p, int verbose,
 					   int dice_pwr)
 {
-	u32b sv = 0;
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
-	int mult;
+	int best_power = 1;
 
 	/* Count the brands and slays */
 	if (obj->brands) {
 		for (i = 1; i < z_info->brand_max; i++) {
 			if (obj->brands[i]) {
 				num_brands++;
+				if (brands[i].power > best_power)
+					best_power = brands[i].power;
 			}
 		}
 	}
@@ -340,6 +336,8 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 				} else {
 					num_kills++;
 				}
+				if (slays[i].power > best_power)
+					best_power = slays[i].power;
 			}
 		}
 	}
@@ -348,43 +346,10 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	if ((num_slays + num_brands + num_kills) == 0)
 		return p;
 
-	/*
-	 * Otherwise we need to calculate the expected average multiplier
-	 * for this combination (multiplied by the total number of
-	 * monsters, which we'll divide out later).
-	 */
-	tot_mon_power = 0;
-	for (i = 0; i < z_info->r_max; i++)	{
-		struct object *obj1 = (struct object *) obj;
-		struct monster *mon = mem_zalloc(sizeof(*mon));
-		int brand = 0;
-		int slay = 0;
-		char verb[20];
-
-		mult = 1;
-		mon->race = &r_info[i];
-
-		/* Find the best multiplier against this monster */
-		improve_attack_modifier(obj1, mon, &brand, &slay, verb, false, false);
-		if (slay)
-			mult = slays[slay].multiplier;
-		else if (brand)
-			mult = brands[brand].multiplier;
-
-		/* Add up totals */
-		tot_mon_power += mon->race->scaled_power;
-		sv += mult * mon->race->scaled_power;
-		mem_free(mon);
-	}
-
-	/*
-	 * To get the expected damage for this weapon, multiply the
-	 * average damage from base dice by sv, and divide by the
-	 * total number of monsters.
-	 */
+	/* Write the best power */
 	if (verbose) {
 		/* Write info about the slay combination and multiplier */
-		log_obj("Slay multiplier for: ");
+		log_obj("Slay and brands: ");
 
 		if (obj->brands) {
 			for (i = 1; i < z_info->brand_max; i++) {
@@ -402,12 +367,10 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 				}
 			}
 		}
-		log_obj(format("\nsv is: %d\n", sv));
-		log_obj(format(" and t_m_p is: %d \n", tot_mon_power));
-		log_obj(format("times 1000 is: %d\n", (1000 * sv) / tot_mon_power));
+		log_obj(format("\nbest power is : %d\n", best_power));
 	}
 
-	q = (dice_pwr * (sv / 100)) / (tot_mon_power / 100);
+	q = (dice_pwr * (best_power - 100)) / 100;
 	p += q;
 	log_obj(format("Add %d for slay power, total is %d\n", q, p));
 
@@ -421,6 +384,11 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		q = (2 * num_brands * num_brands * dice_pwr) / (DAMAGE_POWER * 5);
 		p += q;
 		log_obj(format("Add %d power for multiple brands, total is %d\n",q, p));
+	}
+	if (num_slays && num_brands) {
+		q = (num_slays * num_brands * dice_pwr) / (DAMAGE_POWER * 5);
+		p += q;
+		log_obj(format("Add %d power for slay and brand, total is %d\n", q, p));
 	}
 	if (num_kills > 1) {
 		q = (3 * num_kills * num_kills * dice_pwr) / (DAMAGE_POWER * 5);

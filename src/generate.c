@@ -701,7 +701,7 @@ static int calc_mon_feeling(struct chunk *c)
 	if (c->depth == 0) return 0;
 
 	/* Check the monster power adjusted for depth */
-	x = c->mon_rating / (c->depth * c->depth);
+	x = c->mon_rating / c->depth;
 
 	if (x > 7000) return 1;
 	if (x > 4500) return 2;

@@ -1007,8 +1007,6 @@ static enum parser_error parse_monster_power(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->level = parser_getint(p, "level");
 	r->rarity = parser_getint(p, "rarity");
-	r->power = parser_getint(p, "power");
-	r->scaled_power = parser_getint(p, "scaled");
 	r->mexp = parser_getint(p, "mexp");
 	return PARSE_ERROR_NONE;
 }
@@ -1295,7 +1293,7 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "glyph char glyph", parse_monster_glyph);
 	parser_reg(p, "color sym color", parse_monster_color);
 	parser_reg(p, "info int speed int hp int aaf int ac int sleep", parse_monster_info);
-	parser_reg(p, "power int level int rarity int power int scaled int mexp", parse_monster_power);
+	parser_reg(p, "power int level int rarity int mexp", parse_monster_power);
 	parser_reg(p, "blow sym method ?sym effect ?rand damage", parse_monster_blow);
 	parser_reg(p, "flags ?str flags", parse_monster_flags);
 	parser_reg(p, "flags-off ?str flags", parse_monster_flags_off);

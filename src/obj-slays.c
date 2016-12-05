@@ -93,6 +93,8 @@ bool append_random_brand(bool **current, char **name)
 	int i, pick;
 
 	pick = randint1(z_info->brand_max - 1);
+	*name = brands[pick].name;
+
 	/* No existing brands means OK to add */
 	if (!(*current)) {
 		*current = mem_zalloc(z_info->brand_max * sizeof(bool));

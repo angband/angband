@@ -70,7 +70,7 @@ int test_info0(void *state) {
 }
 
 int test_power0(void *state) {
-	enum parser_error r = parser_parse(state, "power:42:11:27:6:4");
+	enum parser_error r = parser_parse(state, "power:42:11:4");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -78,8 +78,6 @@ int test_power0(void *state) {
 	require(mr);
 	eq(mr->level, 42);
 	eq(mr->rarity, 11);
-	eq(mr->power, 27);
-	eq(mr->scaled_power, 6);
 	eq(mr->mexp, 4);
 	ok;
 }

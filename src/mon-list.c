@@ -242,13 +242,6 @@ int monster_list_standard_compare(const void *a, const void *b)
 	if (ar->level < br->level)
 		return 1;
 
-	/* Depths are equal, check power. */
-	if (ar->power > br->power)
-		return -1;
-
-	if (ar->power < br->power)
-		return 1;
-
 	return 0;
 }
 

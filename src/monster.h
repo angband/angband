@@ -269,9 +269,6 @@ struct monster_race {
 
 	int mexp;				/* Exp value for kill */
 
-	long power;				/* Monster power */
-	long scaled_power;		/* Monster power scaled by level */
-
 	int freq_innate;		/* Innate spell frequency */
 	int freq_spell;			/* Other spell frequency */
 
