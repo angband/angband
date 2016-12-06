@@ -1459,7 +1459,8 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
  */
 static void town_gen_layout(struct chunk *c, struct player *p)
 {
-	int y, x = 0, n, num_lava = 3 + randint0(3), num_rubble = 3 + randint0(3);
+	int y, y1, x = 0, n;
+	int num_lava = 3 + randint0(3), num_rubble = 3 + randint0(3);
 
 	/* Create walls */
 	draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
@@ -1543,6 +1544,15 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 
 	/* Clear previous contents, add down stairs */
 	square_set_feat(c, y, x, FEAT_MORE);
+
+	/* Ensure stairs aren't cut off from the town by lava */
+	y1 = y + 1;
+	while (y1 < c->height) {
+		if (square_isfiery(c, y1, x)) {
+			square_set_feat(c, y1, x, FEAT_FLOOR);
+		}
+		y1++;
+	}
 
 	/* Place the player */
 	player_place(c, p, y, x);
