@@ -22,7 +22,7 @@ stun:1
 miss:1
 phys:1
 msg:MON_HIT
-act:hits you
+act:hits you.
 desc:hit
 
 name:TOUCH
@@ -31,7 +31,7 @@ stun:0
 miss:1
 phys:0
 msg:MON_TOUCH
-act:touches you
+act:touches you.
 desc:touch
 
 name:PUNCH
@@ -40,7 +40,7 @@ stun:1
 miss:1
 phys:1
 msg:MON_PUNCH
-act:punches you
+act:punches you.
 desc:punch
 
 name:KICK
@@ -49,7 +49,7 @@ stun:1
 miss:1
 phys:1
 msg:MON_KICK
-act:kicks you
+act:kicks you.
 desc:kick
 
 name:CLAW
@@ -58,7 +58,7 @@ stun:0
 miss:1
 phys:1
 msg:MON_CLAW
-act:claws you
+act:claws you.
 desc:claw
 
 name:BITE
@@ -67,7 +67,7 @@ stun:0
 miss:1
 phys:1
 msg:MON_BITE
-act:bites you
+act:bites you.
 desc:bite
 
 name:STING
@@ -76,7 +76,7 @@ stun:0
 miss:1
 phys:1
 msg:MON_STING
-act:stings you
+act:stings you.
 desc:sting
 
 name:BUTT
@@ -85,7 +85,7 @@ stun:1
 miss:1
 phys:1
 msg:MON_BUTT
-act:butts you
+act:butts you.
 desc:butt
 
 name:CRUSH
@@ -94,7 +94,7 @@ stun:1
 miss:1
 phys:1
 msg:MON_CRUSH
-act:crushes you
+act:crushes you.
 desc:crush
 
 name:ENGULF
@@ -103,7 +103,7 @@ stun:0
 miss:1
 phys:0
 msg:MON_ENGULF
-act:engulfs you
+act:engulfs you.
 desc:engulf
 
 name:CRAWL
@@ -112,7 +112,7 @@ stun:0
 miss:0
 phys:0
 msg:MON_CRAWL
-act:crawls on you
+act:crawls on you.
 desc:crawl on you
 
 name:DROOL
@@ -121,7 +121,7 @@ stun:0
 miss:0
 phys:0
 msg:MON_DROOL
-act:drools on you
+act:drools on you.
 desc:drool on you
 
 name:SPIT
@@ -130,7 +130,7 @@ stun:0
 miss:0
 phys:0
 msg:MON_SPIT
-act:spits on you
+act:spits on you.
 desc:spit
 
 name:GAZE
@@ -139,7 +139,7 @@ stun:0
 miss:0
 phys:0
 msg:MON_GAZE
-act:gazes at you
+act:gazes at you.
 desc:gaze
 
 name:WAIL
@@ -148,7 +148,7 @@ stun:0
 miss:0
 phys:0
 msg:MON_WAIL
-act:wails at you
+act:wails at you.
 desc:wail
 
 name:SPORE
@@ -157,7 +157,7 @@ stun:0
 miss:0
 phys:0
 msg:MON_SPORE
-act:releases spores at you
+act:releases spores at you.
 desc:release spores
 
 name:BEG
@@ -166,7 +166,7 @@ stun:0
 miss:0
 phys:0
 msg:MON_BEG
-act:begs you for money
+act:begs you for money.
 desc:beg
 
 name:INSULT
