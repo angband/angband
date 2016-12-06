@@ -2014,7 +2014,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "glyph char glyph", ignored);
 	parser_reg(p, "color sym color", ignored);
 	parser_reg(p, "info int speed int hp int aaf int ac int sleep", ignored);
-	parser_reg(p, "power int level int rarity int power int scaled int mexp", ignored);
+	parser_reg(p, "power int level int rarity int mexp", ignored);
 	parser_reg(p, "counts int sights int deaths int tkills int wake int ignore int innate int spell", parse_lore_counts);
 	parser_reg(p, "blow sym method ?sym effect ?rand damage ?int seen ?int index", parse_lore_blow);
 	parser_reg(p, "flags ?str flags", parse_lore_flags);
