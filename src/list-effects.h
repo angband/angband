@@ -82,7 +82,7 @@ EFFECT(BOLT,						true,	"dam",		2,		EFINFO_BOLTD,	"casts a bolt of %s dealing %s
 EFFECT(BEAM,						true,	"dam",		2,		EFINFO_BOLTD,	"casts a beam of %s dealing %s damage")
 EFFECT(BOLT_OR_BEAM,				true,	"dam",		2,		EFINFO_BOLTD,	"casts a bolt or beam of %s dealing %s damage")
 EFFECT(LINE,						true,	"dam",		2,		EFINFO_BOLTD,	"creates a line of %s dealing %s damage")
-EFFECT(ALTER,						true,	NULL,		0,		EFINFO_NONE,	"creates a line which may affect terrain and/or items")
+EFFECT(ALTER,						true,	NULL,		1,		EFINFO_BOLT,	"creates a line which %s")
 EFFECT(BOLT_STATUS,					true,	NULL,		1,		EFINFO_BOLT,	"casts a bolt which %s")
 EFFECT(BOLT_STATUS_DAM,				true,	"dam",		2,		EFINFO_BOLTD,	"casts a bolt which %s, dealing %s damage")
 EFFECT(BOLT_AWARE,					true,	"dam",		1,		EFINFO_BOLT,	"creates a bolt which %s")
