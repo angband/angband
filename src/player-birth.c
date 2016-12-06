@@ -1127,6 +1127,11 @@ void do_cmd_accept_character(struct command *cmd)
 	if (OPT(player, birth_know_runes))
 		player_learn_everything(player);
 
+	/* Hack - player knows all combat runes.  Maybe make them not runes? NRM */
+	player->obj_k->to_a = 1;
+	player->obj_k->to_h = 1;
+	player->obj_k->to_d = 1;
+
 	/* Initialise the stores */
 	store_reset();
 
