@@ -2295,11 +2295,16 @@ bool build_medium_vault(struct chunk *c, int y0, int x0)
  * \param x0 co-ordinates of the centre; out of chunk bounds invoke find_space()
  * \return success
  *
+ * Classic profile:
  * Since Greater Vaults are so large (4x6 blocks, in a 6x18 dungeon) there is
  * a 63% chance that a randomly chosen quadrant to start a GV on won't work.
  * To balance this, we give Greater Vaults an artificially high probability
  * of being attempted, and then in this function use a depth check to cancel
  * vault creation except at deep depths.
+ *
+ * Newer profiles:
+ * We reject 2/3 of attempts which pass other checks to get roughly the same
+ * chnce of a GV as the classic profile
  *
  * The following code should make a greater vault with frequencies:
  * dlvl  freq
@@ -2321,13 +2326,16 @@ bool build_greater_vault(struct chunk *c, int y0, int x0)
 	if (dun->cent_n > 0) return false;
 
 	/* Level 90+ has a 2/3 chance, level 80-89 has 4/9, ... */
-	for(i = 90; i > c->depth; i -= 10) {
+	for (i = 90; i > c->depth; i -= 10) {
 		numerator *= 2;
 		denominator *= 3;
 	}
 
 	/* Attempt to pass the depth check and build a GV */
 	if (randint0(denominator) >= numerator) return false;
+
+	/* Non-classic profiles need to adjust the probability */
+	if (!streq(dun->profile->name, "classic") && !one_in_(3)) return false;
 
 	if (!streq(dun->profile->name, "classic") && (one_in_(2)))
 		return build_vault_type(c, y0, x0, "Greater vault (new)");
