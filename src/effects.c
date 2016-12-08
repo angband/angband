@@ -783,6 +783,7 @@ static void remove_object_curse(struct object *obj, int index, bool message)
 	}
 
 	mem_free(obj->curses);
+	obj->curses = NULL;
 }
 
 /**

@@ -721,9 +721,8 @@ bool object_runes_known(const struct object *obj)
 	}
 
 	/* Not all curses known */
-	for (i = 0; i < z_info->curse_max; i++) {
-		if (!curses_are_equal(obj, obj->known))
-			return false;
+	if (!curses_are_equal(obj, obj->known)) {
+		return false;
 	}
 
 	/* Not all flags known */

@@ -105,6 +105,10 @@ static void spell_message(struct monster *mon,
 					strnfcat(buf, sizeof(buf), &end, m_poss);
 					break;
 				}
+
+				default: {
+					break;
+				}
 			}
 		} else {
 			/* An invalid tag, skip it */
