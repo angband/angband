@@ -609,14 +609,16 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 
 	/* Check for combining, if appropriate */
 	if (absorb) {
-		struct object *gear_obj;
 		struct object *combine_item = NULL;
 
-		for (gear_obj = p->gear; gear_obj; gear_obj = gear_obj->next) {
+		struct object *gear_obj = p->gear;
+		while (combine_item == false && gear_obj) {
 			if (!object_is_equipped(p->body, gear_obj) &&
 					object_similar(gear_obj, obj, OSTACK_PACK)) {
 				combine_item = gear_obj;
 			}
+
+			gear_obj = gear_obj->next;
 		}
 
 		if (combine_item) {
@@ -624,11 +626,11 @@ void inven_carry(struct player *p, struct object *obj, bool absorb,
 			p->upkeep->total_weight += (obj->number * obj->weight);
 
 			/* Combine the items, and their known versions */
-			object_absorb(gear_obj->known, obj->known);
+			object_absorb(combine_item->known, obj->known);
 			obj->known = NULL;
-			object_absorb(gear_obj, obj);
+			object_absorb(combine_item, obj);
 
-			obj = gear_obj;
+			obj = combine_item;
 			combining = true;
 		}
 	}
