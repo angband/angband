@@ -169,6 +169,7 @@ struct equip_slot {
  */
 struct player_body {
 	struct player_body *next;
+
 	char *name;
 	u16b count;
 	struct equip_slot *slots;
@@ -360,29 +361,29 @@ struct player_history {
  * learn them.
  */
 struct player_state {
-	s16b stat_add[STAT_MAX];	/**< Equipment stat bonuses */
-	s16b stat_ind[STAT_MAX];	/**< Indexes into stat tables */
-	s16b stat_use[STAT_MAX];	/**< Current modified stats */
-	s16b stat_top[STAT_MAX];	/**< Maximal modified stats */
+	int stat_add[STAT_MAX];	/**< Equipment stat bonuses */
+	int stat_ind[STAT_MAX];	/**< Indexes into stat tables */
+	int stat_use[STAT_MAX];	/**< Current modified stats */
+	int stat_top[STAT_MAX];	/**< Maximal modified stats */
 
-	s16b skills[SKILL_MAX];		/**< Skills */
+	int skills[SKILL_MAX];		/**< Skills */
 
-	s16b speed;			/**< Current speed */
+	int speed;			/**< Current speed */
 
-	s16b num_blows;		/**< Number of blows x100 */
-	s16b num_shots;		/**< Number of shots */
+	int num_blows;		/**< Number of blows x100 */
+	int num_shots;		/**< Number of shots */
 
-	byte ammo_mult;		/**< Ammo multiplier */
-	byte ammo_tval;		/**< Ammo variety */
+	int ammo_mult;		/**< Ammo multiplier */
+	int ammo_tval;		/**< Ammo variety */
 
-	s16b ac;			/**< Base ac */
-	s16b to_a;			/**< Bonus to ac */
-	s16b to_h;			/**< Bonus to hit */
-	s16b to_d;			/**< Bonus to dam */
+	int ac;			/**< Base ac */
+	int to_a;			/**< Bonus to ac */
+	int to_h;			/**< Bonus to hit */
+	int to_d;			/**< Bonus to dam */
 
-	s16b see_infra;		/**< Infravision range */
+	int see_infra;		/**< Infravision range */
 
-	s16b cur_light;		/**< Radius of light (if any) */
+	int cur_light;		/**< Radius of light (if any) */
 
 	int noise;			/**< Derived from stealth */
 

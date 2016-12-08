@@ -98,10 +98,10 @@
 	(PR_MONSTER | PR_OBJECT | PR_MONLIST | PR_ITEMLIST)
 
 
-extern const byte adj_str_blow[STAT_RANGE];
-extern const byte adj_dex_safe[STAT_RANGE];
-extern const byte adj_con_fix[STAT_RANGE];
-extern const byte adj_str_hold[STAT_RANGE];
+extern const int adj_str_blow[STAT_RANGE];
+extern const int adj_dex_safe[STAT_RANGE];
+extern const int adj_con_fix[STAT_RANGE];
+extern const int adj_str_hold[STAT_RANGE];
 
 bool earlier_object(struct object *orig, struct object *new, bool store);
 int equipped_item_slot(struct player_body body, struct object *obj);
