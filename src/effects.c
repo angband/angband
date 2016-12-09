@@ -776,7 +776,7 @@ static void remove_object_curse(struct object *obj, int index, bool message)
 	}
 
 	/* Check to see if that was the last one */
-	for (i = 0; i < z_info->curse_max; i++) {
+	for (i = 1; i < z_info->curse_max; i++) {
 		if (obj->curses[i].power) {
 			return;
 		}

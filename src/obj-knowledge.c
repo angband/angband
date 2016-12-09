@@ -1371,8 +1371,8 @@ void object_curses_find_to_a(struct player *p, struct object *obj)
 	if (obj->curses) {
 		int i;
 
-		for (i = 0; i < z_info->curse_max; i++) {
-			if (!obj->curses[i].power)
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (!obj->curses[i].power || !curses[i].obj)
 				continue;
 
 			if (curses[i].obj->to_a != 0) {
@@ -1394,8 +1394,8 @@ void object_curses_find_to_h(struct player *p, struct object *obj)
 	if (obj->curses) {
 		int i;
 
-		for (i = 0; i < z_info->curse_max; i++) {
-			if (!obj->curses[i].power)
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (!obj->curses[i].power || !curses[i].obj)
 				continue;
 
 			if (curses[i].obj->to_h != 0) {
@@ -1417,8 +1417,8 @@ void object_curses_find_to_d(struct player *p, struct object *obj)
 	if (obj->curses) {
 		int i;
 
-		for (i = 0; i < z_info->curse_max; i++) {
-			if (!obj->curses[i].power)
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (!obj->curses[i].power || !curses[i].obj)
 				continue;
 
 			if (curses[i].obj->to_d != 0) {
@@ -1447,8 +1447,8 @@ bool object_curses_find_flags(struct player *p, struct object *obj,
 		bitflag f[OF_SIZE];
 		int flag;
 
-		for (i = 0; i < z_info->curse_max; i++) {
-			if (!obj->curses[i].power)
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (!obj->curses[i].power || !curses[i].obj)
 				continue;
 
 			/* Get all the relevant flags */
@@ -1482,11 +1482,11 @@ void object_curses_find_modifiers(struct player *p, struct object *obj)
 	int i;
 
 	if (obj->curses) {
-		for (i = 0; i < z_info->curse_max; i++) {
+		for (i = 1; i < z_info->curse_max; i++) {
 			int index = rune_index(RUNE_VAR_CURSE, i);
 			int j;
 
-			if (!obj->curses[i].power)
+			if (!obj->curses[i].power || !curses[i].obj)
 				continue;
 
 			/* Learn all modifiers */
@@ -1516,8 +1516,11 @@ bool object_curses_find_element(struct player *p, struct object *obj, int elem)
 	if (obj->curses) {
 		int i;
 
-		for (i = 0; i < z_info->curse_max; i++) {
+		for (i = 1; i < z_info->curse_max; i++) {
 			int index = rune_index(RUNE_VAR_CURSE, i);
+
+			if (!obj->curses[i].power || !curses[i].obj)
+				continue;
 
 			/* Does the object affect the player's resistance to the element? */
 			if (curses[i].obj->el_info[elem].res_level != 0) {
