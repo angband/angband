@@ -12,27 +12,6 @@
 # values: label[value] | label[value] | etc.
 # desc: description
 
-name:sticky
-type:bow
-type:digger
-type:hafted
-type:polearm
-type:sword
-type:boots
-type:gloves
-type:helm
-type:crown
-type:shield
-type:cloak
-type:soft armor
-type:hard armor
-type:dragon armor
-type:light
-type:amulet
-type:ring
-flags:STICKY
-desc:cannot be taken off
-
 name:vulnerability
 combat:0:0:-50
 type:cloak

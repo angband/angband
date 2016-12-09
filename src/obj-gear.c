@@ -744,6 +744,12 @@ void inven_wield(struct object *obj, int slot)
 	/* Message */
 	msgt(MSG_WIELD, fmt, o_name, I2A(slot));
 
+	/* Sticky flag geats a special mention */
+	if (of_has(wielded->flags, OF_STICKY)) {
+		/* Warn the player */
+		msgt(MSG_CURSED, "Oops! It feels deathly cold!");
+	}
+
 	/* See if we have to overflow the pack */
 	combine_pack();
 	pack_overflow(old);

@@ -290,12 +290,11 @@ info:100:2:5000000
 alloc:1:100 to 127
 power:0:0d0:15:15:0
 # F: DRAIN_MANA | DRAIN_HP | 
-flags:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN | TELEPATHY
+flags:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN | TELEPATHY | STICKY
 flags:SUST_STR | SUST_DEX | SUST_CON | SUST_INT | SUST_WIS
 values:STR[5] | INT[5] | WIS[5] | DEX[5] | CON[5] | SPEED[5]
 values:RES_FIRE[3] | RES_COLD[3] | RES_ELEC[3] | RES_ACID[3] | RES_DARK[1]
 values:RES_DISEN[1] | RES_POIS[1] | RES_NETHER[1]
-curse:sticky:100
 act:BIZARRE
 time:200+9d50
 desc:"One Ring to rule them all, One Ring to find them, One Ring to bring 
@@ -589,12 +588,11 @@ base-object:crown:Massive Iron Crown
 info:100:400:10000000
 alloc:0:100 to 100
 power:0:1d1:0:0:0
-flags:PROT_CONF | SEE_INVIS | TELEPATHY | PROT_FEAR
+flags:PROT_CONF | SEE_INVIS | TELEPATHY | PROT_FEAR | STICKY
 values:STR[125] | INT[125] | WIS[125] | DEX[125] | CON[125] | INFRA[125]
 values:LIGHT[1]
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 values:RES_LIGHT[1] | RES_DARK[1] | RES_NEXUS[1] | RES_NETHER[1]
-curse:sticky:100
 desc:Containing much of the power of he who once was mightiest among the Ainur, 
 desc:this plain iron crown has mounted upon it the two remaining Silmarils, 
 desc:greatest treasures of Middle-Earth.
