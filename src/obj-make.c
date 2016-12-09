@@ -807,18 +807,26 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
  * Attempt to apply curses to an object, with a corresponding increase in
  * generation level of the object
  */
-static void apply_curse(struct object *obj, int *lev)
+static int apply_curse(struct object *obj, int lev)
 {
-	int pick = randint1(z_info->curse_max - 1);
-	int power = 10 * m_bonus(9, *lev);
-	if (!curses[pick].poss[obj->tval]) {
-		return;
+	int pick, tries = 5;
+	int power = randint1(9) + 10 * m_bonus(9, lev);
+	int new_lev = lev;
+
+	/* Try to curse it */
+	while (tries--) {
+		pick = randint1(z_info->curse_max - 1);
+		if (curses[pick].poss[obj->tval]) {
+			append_object_curse(obj, pick, power);
+			new_lev += randint1(1 + power / 10);
+			while(one_in_(100 - power)) {
+				new_lev = apply_curse(obj, new_lev);
+			}
+			break;
+		}
 	}
-	append_object_curse(obj, pick, power);
-	*lev += randint0(power / 10);
-	while(one_in_(100 - power)) {
-		apply_curse(obj, lev);
-	}
+
+	return new_lev;
 }
 
 /**
@@ -881,6 +889,11 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 		/* Roll for artifacts if allowed */
 		for (i = 0; i < rolls; i++)
 			if (make_artifact(obj)) return 3;
+	}
+
+	/* Give it a chance to be cursed */
+	if (one_in_(20) && tval_is_wearable(obj)) {
+		lev = apply_curse(obj, lev);
 	}
 
 	/* Try to make an ego item */
@@ -1105,9 +1118,6 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	/* Make the object, prep it and apply magic */
 	new_obj = object_new();
 	object_prep(new_obj, kind, lev, RANDOMISE);
-	if (one_in_(20) && tval_is_wearable(new_obj)) {
-		apply_curse(new_obj, &lev);
-	}
 	apply_magic(new_obj, lev, true, good, great, extra_roll);
 
 	/* Generate multiple items */

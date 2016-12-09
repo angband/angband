@@ -1176,17 +1176,11 @@ static bool store_create_random(struct store *store)
 		/* Apply some "low-level" magic (no artifacts) */
 		apply_magic(obj, level, false, false, false, false);
 
-		/* Reject if item is 'damaged' (i.e. negative mods) */
-		if (tval_is_weapon(obj)) {
-			if ((obj->to_h < 0) || (obj->to_d < 0)) {
-				object_delete(&obj);
-				continue;
-			}
-		} else if (tval_is_armor(obj)) {
-			if (obj->to_a < 0) {
-				object_delete(&obj);
-				continue;
-			}
+		/* Reject if item is 'damaged' (negative combat mods, curses) */
+		if ((tval_is_weapon(obj) && ((obj->to_h < 0) || (obj->to_d < 0)))
+			|| (tval_is_armor(obj) && (obj->to_a < 0)) || (obj->curses)) {
+			object_delete(&obj);
+			continue;
 		}
 
 		/*** Post-generation filters ***/
