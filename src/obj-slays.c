@@ -88,12 +88,12 @@ void copy_brands(bool **dest, bool *source)
  * \param current the list of brands the object already has
  * \param name the name to report for randart logging
  */
-bool append_random_brand(bool **current, char **name)
+bool append_random_brand(bool **current, struct brand **brand)
 {
 	int i, pick;
 
 	pick = randint1(z_info->brand_max - 1);
-	*name = brands[pick].name;
+	*brand = &brands[pick];
 
 	/* No existing brands means OK to add */
 	if (!(*current)) {
@@ -106,9 +106,9 @@ bool append_random_brand(bool **current, char **name)
 	for (i = 1; i < z_info->brand_max; i++) {
 		if ((*current)[i]) {
 			/* If we get the same race, check the multiplier */
-			if (streq(brands[i].name, brands[pick].name)) {
+			if (streq(brands[i].name, (*brand)->name)) {
 				/* Same multiplier or smaller, fail */
-				if (brands[pick].multiplier <= brands[i].multiplier)
+				if ((*brand)->multiplier <= brands[i].multiplier)
 					return false;
 
 				/* Greater multiplier, replace and accept */
@@ -132,12 +132,12 @@ bool append_random_brand(bool **current, char **name)
  * \param current the list of slays the object already has
  * \param name the name to report for randart logging
  */
-bool append_random_slay(bool **current, char **name)
+bool append_random_slay(bool **current, struct slay **slay)
 {
 	int i, pick;
 
 	pick = randint1(z_info->slay_max - 1);
-	*name = slays[pick].name;
+	*slay = &slays[pick];
 
 	/* No existing slays means OK to add */
 	if (!(*current)) {
@@ -150,10 +150,10 @@ bool append_random_slay(bool **current, char **name)
 	for (i = 1; i < z_info->slay_max; i++) {
 		if ((*current)[i]) {
 			/* If we get the same race, check the multiplier */
-			if (streq(slays[i].name, slays[pick].name) &&
-				(slays[i].race_flag == slays[pick].race_flag)) {
+			if (streq(slays[i].name, (*slay)->name) &&
+				(slays[i].race_flag == (*slay)->race_flag)) {
 				/* Same multiplier or smaller, fail */
-				if (slays[pick].multiplier <= slays[i].multiplier)
+				if ((*slay)->multiplier <= slays[i].multiplier)
 					return false;
 
 				/* Greater multiplier, replace and accept */

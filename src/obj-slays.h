@@ -27,8 +27,8 @@ extern struct brand *brands;
 bool same_monsters_slain(int slay1, int slay2);
 void copy_slays(bool **dest, bool *source);
 void copy_brands(bool **dest, bool *source);
-bool append_random_brand(bool **current, char **name);
-bool append_random_slay(bool **current, char **name);
+bool append_random_brand(bool **current, struct brand **brand);
+bool append_random_slay(bool **current, struct slay **slay);
 int brand_count(bool *brands);
 int slay_count(bool *slays);
 void improve_attack_modifier(struct object *obj, const struct monster *mon, 

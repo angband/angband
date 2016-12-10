@@ -1576,27 +1576,38 @@ static bool add_mod(struct artifact *art, int mod)
 	/* Blows, might, shots need special treatment */
 	bool powerful = ((mod == OBJ_MOD_BLOWS) || (mod == OBJ_MOD_MIGHT) ||
 					 (mod == OBJ_MOD_SHOTS));
-	int factor = powerful ? 2 : 1;
 	bool success = false;
 
-	/* If no value here, pick one; otherwise try to increase */
-	if (art->modifiers[mod] == 0) {
-		art->modifiers[mod] = powerful ? randint1(2) : randint1(4);
-		file_putf(log_file, "Adding ability: %s (%+d)\n", mod_name(mod),
-				  art->modifiers[mod]);
-		success = true;
-	} else if (art->modifiers[mod] < 0) {
+	/* This code aims to favour a few larger bonuses over many small ones */
+	if (art->modifiers[mod] < 0) {
+		/* Negative mods just get a bit worse */
 		if (one_in_(2)) {
 			art->modifiers[mod]--;
 			file_putf(log_file, "Decreasing %s by 1, new value is: %d\n",
 					  mod_name(mod), art->modifiers[mod]);
 			success = true;
 		}
-	} else if (one_in_(factor * art->modifiers[mod])) {
-		art->modifiers[mod]++;
-		file_putf(log_file, "Increasing %s by 1, new value is: %d\n",
-				  mod_name(mod), art->modifiers[mod]);
-		success = true;
+	} else if (powerful) {
+		/* Powerful mods need to be applied sparingly */
+		if (one_in_(2 * art->modifiers[mod])) {
+			art->modifiers[mod]++;
+			file_putf(log_file, "Increasing %s by 1, new value is: %d\n",
+					  mod_name(mod), art->modifiers[mod]);
+			success = true;
+		}
+	} else {
+		/* New mods average 3, old ones are incremented by 1 or 2 */
+		if (art->modifiers[mod] == 0) {
+			art->modifiers[mod] = randint0(3) + randint1(3);
+			file_putf(log_file, "Adding ability: %s (%+d)\n", mod_name(mod),
+					  art->modifiers[mod]);
+			success = true;
+		} else {
+			art->modifiers[mod] += 1 + randint0(2);
+			file_putf(log_file, "Increasing %s by 2, new value is: %d\n",
+					  mod_name(mod), art->modifiers[mod]);
+			success = true;
+		}
 	}
 
 	return success;
@@ -1712,12 +1723,28 @@ static void add_high_resist(struct artifact *art, struct artifact_data *data)
 static void add_brand(struct artifact *art)
 {
 	int count;
-	char *name;
+	struct brand *brand;
 
+	/* Mostly only one brand */
+	if (art->brands && randint0(4)) return;
+
+	/* Get a random brand */
 	for (count = 0; count < MAX_TRIES; count++) {
-		if (!append_random_brand(&art->brands, &name)) continue;
-		file_putf(log_file, "Adding brand: %s\n", name);
-		return;
+		if (!append_random_brand(&art->brands, &brand)) continue;
+		file_putf(log_file, "Adding brand: %sx%d\n", brand->name,
+				  brand->multiplier);
+		break;
+	}
+
+	/* Frequently add the corresponding resist */
+	if (randint0(4)) {
+		size_t i;
+		for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++) {
+			if (streq(brand->name, elements[i].name) &&
+				(art->el_info[i].res_level <= 0)) {
+				add_resist(art, i);
+			}
+		}
 	}
 }
 
@@ -1727,12 +1754,18 @@ static void add_brand(struct artifact *art)
 static void add_slay(struct artifact *art)
 {
 	int count;
-	char *name;
+	struct slay *slay;
 
 	for (count = 0; count < MAX_TRIES; count++) {
-		if (!append_random_slay(&art->slays, &name)) continue;
-		file_putf(log_file, "Adding slay: %s\n", name);
-		return;
+		if (!append_random_slay(&art->slays, &slay)) continue;
+		file_putf(log_file, "Adding slay: %sx%d\n", slay->name,
+				  slay->multiplier);
+		break;
+	}
+
+	/* Frequently add more slays if the first choice is weak */
+	if (randint0(4) && (slay->power < 105)) {
+		add_slay(art);
 	}
 }
 
@@ -2079,7 +2112,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 
 		case ART_IDX_GEN_LIGHT: {
 				if (art->tval != TV_LIGHT) {
-					art->modifiers[OBJ_MOD_LIGHT] = 2;
+					art->modifiers[OBJ_MOD_LIGHT] = 1;
 				}
 				break;
 		}

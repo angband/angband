@@ -593,7 +593,7 @@ static void get_known_elements(const struct object *obj,
 	/* Grab the element info */
 	for (i = 0; i < N_ELEMENTS(elements); i++) {
 		/* Report fake egos or known element info */
-		if (player->obj_k->el_info[i].res_level)
+		if (player->obj_k->el_info[i].res_level || (mode & OINFO_SPOIL))
 			el_info[i].res_level = obj->known->el_info[i].res_level;
 		else
 			el_info[i].res_level = 0;
@@ -1878,7 +1878,7 @@ void object_info_chardump(ang_file *f, const struct object *obj, int indent,
  */
 void object_info_spoil(ang_file *f, const struct object *obj, int wrap)
 {
-	textblock *tb = object_info_out(obj, OINFO_NONE);
+	textblock *tb = object_info_out(obj, OINFO_SPOIL);
 	textblock_to_file(tb, f, 0, wrap);
 	textblock_free(tb);
 }
