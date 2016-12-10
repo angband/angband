@@ -809,20 +809,21 @@ void object_prep(struct object *obj, struct object_kind *k, int lev,
  */
 static int apply_curse(struct object *obj, int lev)
 {
-	int pick, tries = 5;
+	int pick, max_curses = randint1(4);
 	int power = randint1(9) + 10 * m_bonus(9, lev);
 	int new_lev = lev;
 
-	/* Try to curse it */
-	while (tries--) {
-		pick = randint1(z_info->curse_max - 1);
-		if (curses[pick].poss[obj->tval]) {
-			append_object_curse(obj, pick, power);
-			new_lev += randint1(1 + power / 10);
-			while(one_in_(100 - power)) {
-				new_lev = apply_curse(obj, new_lev);
+	while (max_curses--) {
+		/* Try to curse it */
+		int tries = 3;
+		while (tries--) {
+			pick = randint1(z_info->curse_max - 1);
+			if (curses[pick].poss[obj->tval]) {
+				if (append_object_curse(obj, pick, power)) {
+					new_lev += randint1(1 + power / 10);
+				}
+				break;
 			}
-			break;
 		}
 	}
 
