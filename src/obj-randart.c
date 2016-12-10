@@ -184,7 +184,7 @@ static s16b art_idx_high_resist[] =	{
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
  */
-static s32b artifact_power(int a_idx, bool translate)
+static s32b artifact_power(int a_idx)
 {
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();
@@ -206,7 +206,7 @@ static s32b artifact_power(int a_idx, bool translate)
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
-	power = object_power(obj, 1, log_file);
+	power = object_power(obj, true, log_file);
 
 	object_delete(&known_obj);
 	object_delete(&obj);
@@ -231,7 +231,7 @@ static void store_base_power(struct artifact_data *data)
 	j = 0;
 
 	for (i = 0; i < z_info->a_max; i++, j++) {
-		data->base_power[i] = artifact_power(i, false);
+		data->base_power[i] = artifact_power(i);
 
 		/* capture power stats, ignoring cursed and uber arts */
 		if (data->base_power[i] > data->max_power &&
@@ -2230,11 +2230,11 @@ static void add_ability(struct artifact *art, s32b target_power, int *freq,
 /**
  * Make it bad, or if it's already bad, make it worse!
  */
-static void do_curse(struct artifact *art)
+static void make_bad(struct artifact *art, int level)
 {
 	int i;
 	int num = randint1(2);
-	int max_tries = 20;
+	int max_tries = 5;
 
 	if (one_in_(7))
 		of_on(art->flags, OF_AGGRAVATE);
@@ -2255,9 +2255,9 @@ static void do_curse(struct artifact *art)
 	if ((art->to_d > 0) && one_in_(4))
 		art->to_d = -art->to_d;
 
-	while (num) {
+	while (num && max_tries) {
 		int pick = randint1(z_info->curse_max - 1);
-		int power = 10 * m_bonus(9, player->depth);
+		int power = randint1(9) + 10 * m_bonus(9, level);
 		if (!curses[pick].poss[art->tval]) {
 			max_tries--;
 			continue;
@@ -2317,11 +2317,11 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 	struct artifact *a_old = mem_zalloc(sizeof *a_old);
 	int art_freq[ART_IDX_TOTAL];
 	int power = data->base_power[a_idx];
+	int old_level = art->level;
 	int tries = 0;
 	byte alloc_old, base_alloc_old, alloc_new;
 	s32b ap = 0;
-	bool curse_me = false;
-	bool success = false;
+	bool hurt_me = false;
 	int i;
 
 	bool special_artifact = kf_has(kind->kind_flags, KF_INSTA_ART);
@@ -2336,13 +2336,13 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 
 	/* If it has a restricted ability then don't randomize it. */
 	if (power > INHIBIT_POWER) {
-		file_putf(log_file, "Skipping artifact number %d - too powerful to randomize!", a_idx);
+		file_putf(log_file, "Artifact number %d too powerful - skipping", a_idx);
 		return;
 	}
 
-	if (power < 0) curse_me = true;
+	if (power < 0) hurt_me = true;
 
-	file_putf(log_file, "+++++++++++++++++ CREATING NEW ARTIFACT ++++++++++++++++++\n");
+	file_putf(log_file, "+++++++++++++ CREATING NEW ARTIFACT ++++++++++++++\n");
 	file_putf(log_file, "Artifact %d: power = %d\n", a_idx, power);
 
 	/* Flip the sign on power if it's negative, since it's only used for base
@@ -2396,14 +2396,14 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 			}
 
 			/* If power is positive but very low, and if we're not having
-			 * any luck finding a base item, curse it once.  This helps ensure
+			 * any luck finding a base item, damage it once.  This helps ensure
 			 * that we get a base item for borderline cases like Wormtongue. */
 
 			if (power > 0 && power < 10 && count > MAX_TRIES / 2) {
-				file_putf(log_file, "Cursing base item to help get a match.\n");
-				do_curse(art);
+				file_putf(log_file, "Damaging base item to help get a match.\n");
+				make_bad(art, old_level);
 			}
-			ap2 = artifact_power(a_idx, true);
+			ap2 = artifact_power(a_idx);
 			count++;
 
 			/* Calculate the proper rarity based on the new type.  We attempt
@@ -2473,25 +2473,27 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 
 	/* Give this artifact a shot at being supercharged */
 	try_supercharge(art, power, data);
-	ap = artifact_power(a_idx, true);
+	ap = artifact_power(a_idx);
 	if (ap > (power * 23) / 20 + 1)	{
 		/* too powerful -- put it back */
 		copy_artifact(a_old, art);
 		file_putf(log_file, "--- Supercharge is too powerful! Rolling back.\n");
 	}
 
-	/* First draft: add two abilities, then curse it three times. */
-	if (curse_me) {
+	/* First draft: add two abilities, then damage it three times. */
+	if (hurt_me) {
+		bool success = false;
+
 		/* Copy artifact info temporarily. */
 		copy_artifact(art, a_old);
 		do {
 			add_ability(art, power, art_freq, data);
 			add_ability(art, power, art_freq, data);
-			do_curse(art);
-			do_curse(art);
-			do_curse(art);
+			make_bad(art, old_level);
+			make_bad(art, old_level);
+			make_bad(art, old_level);
 			remove_contradictory(art);
-			ap = artifact_power(a_idx, true);
+			ap = artifact_power(a_idx);
 			/* Accept if it doesn't have any inhibited abilities */
 			if (ap < INHIBIT_POWER)
 				success = true;
@@ -2514,7 +2516,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 			copy_artifact(art, a_old);
 
 			add_ability(art, power, art_freq, data);
-			ap = artifact_power(a_idx, true);
+			ap = artifact_power(a_idx);
 
 			/* CR 11/14/01 - pushed both limits up by about 5% */
 			if (ap > (power * 23) / 20 + 1) {

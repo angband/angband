@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-power.h"
@@ -698,6 +699,32 @@ static int effects_power(const struct object *obj, int p)
 }
 
 /**
+ * Add power for curses
+ */
+static int curse_power(const struct object *obj, int p)
+{
+	int i, q = 0;
+
+	if (obj->curses) {
+		/* Get the curse object power */
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (obj->curses[i].power) {
+				q += object_power(curses[i].obj, false, NULL);
+				q -= obj->curses[i].power / 10;
+			}
+		}
+	}
+
+	if (q != 0) {
+		p += q;
+		log_obj(format("Add %d power for curses, total is %d\n",
+					   q, p));
+	}
+	return p;
+}
+
+
+/**
  * Evaluate the object's overall power level.
  */
 s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
@@ -738,6 +765,7 @@ s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	p = flags_power(obj, p, verbose, object_log);
 	p = element_power(obj, p);
 	p = effects_power(obj, p);
+	p = curse_power(obj, p);
 
 	log_obj(format("FINAL POWER IS %d\n", p));
 
