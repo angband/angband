@@ -165,6 +165,7 @@ static enum parser_error parse_profile_room(struct parser *p) {
 	if (i == N_ELEMENTS(room_builders))
 		return PARSE_ERROR_NO_ROOM_FOUND;
 	r->builder = room_builders[i].builder;
+	r->rating = parser_getint(p, "rating");
     r->height = parser_getint(p, "height");
     r->width = parser_getint(p, "width");
     r->level = parser_getint(p, "level");
@@ -190,7 +191,7 @@ static struct parser *init_parse_profile(void) {
 	parser_reg(p, "params int block int rooms int unusual int rarity", parse_profile_params);
 	parser_reg(p, "tunnel int rnd int chg int con int pen int jct", parse_profile_tunnel);
 	parser_reg(p, "streamer int den int rng int mag int mc int qua int qc", parse_profile_streamer);
-	parser_reg(p, "room sym name int height int width int level int pit int rarity int cutoff", parse_profile_room);
+	parser_reg(p, "room sym name int rating int height int width int level int pit int rarity int cutoff", parse_profile_room);
 	parser_reg(p, "cutoff int cutoff", parse_profile_cutoff);
 	return p;
 }

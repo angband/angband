@@ -7700,7 +7700,7 @@ D:       %%%                    #%%
 
 name:House of many doors
 type:1
-rating:1
+rating:2
 rows:7
 columns:11
 doors:1
@@ -7715,7 +7715,7 @@ D:#%#%#%#%#%#
 
 name:Spiral left down
 type:1
-rating:1
+rating:2
 rows:11
 columns:14
 doors:1
@@ -7734,7 +7734,7 @@ D:#%############
 
 name:Spiral left up
 type:1
-rating:1
+rating:2
 rows:11
 columns:14
 doors:1
@@ -7753,7 +7753,7 @@ D:#%############
 
 name:Spiral right down
 type:1
-rating:1
+rating:2
 rows:11
 columns:14
 doors:1
@@ -7772,7 +7772,7 @@ D:############%#
 
 name:Spiral right up
 type:1
-rating:1
+rating:2
 rows:11
 columns:14
 doors:1
@@ -7791,7 +7791,7 @@ D:############%#
 
 name:Pyramid chambers
 type:1
-rating:1
+rating:2
 rows:8
 columns:15
 doors:2
@@ -7807,7 +7807,7 @@ D:#%%%#%%#%%#%%%#
 
 name:Pyramid chambers inverted
 type:1
-rating:1
+rating:2
 rows:8
 columns:15
 doors:2
@@ -7823,7 +7823,7 @@ D:     #%#%#
 
 name:Exercise in frustration 1
 type:1
-rating:1
+rating:2
 rows:11
 columns:15
 doors:4
@@ -7842,7 +7842,7 @@ D:%%%%%%%%%%%%%%%
 
 name:Exercise in frustration 2
 type:1
-rating:1
+rating:2
 rows:11
 columns:15
 doors:4
@@ -7861,7 +7861,7 @@ D:%%%%%%%%%%%%%%%
 
 name:Exercise in frustration 3
 type:1
-rating:1
+rating:2
 rows:11
 columns:15
 doors:4
@@ -7880,7 +7880,7 @@ D:%%%%%%%%%%%%%%%
 
 name:Exercise in frustration 4
 type:1
-rating:1
+rating:2
 rows:11
 columns:15
 doors:4
@@ -7899,7 +7899,7 @@ D:%%%%%%%%%%%%%%%
 
 name:Exercise in frustration 5
 type:1
-rating:1
+rating:2
 rows:11
 columns:15
 doors:4
@@ -7918,7 +7918,7 @@ D:%%%%%%%%%%%%%%%
 
 name:Exercise in frustration 6
 type:1
-rating:1
+rating:2
 rows:11
 columns:15
 doors:4
@@ -7937,7 +7937,7 @@ D:%%%%%%%%%%%%%%%
 
 name:Mini room X
 type:1
-rating:1
+rating:2
 rows:11
 columns:15
 doors:2
@@ -7956,7 +7956,7 @@ D:%%%%%%%%%%%%%%%
 
 name:Pass the parcel
 type:1
-rating:1
+rating:2
 rows:11
 columns:15
 doors:4
@@ -7975,7 +7975,7 @@ D:%%%%%%%%%%%%%%%
 
 name:Box room
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:4
@@ -7994,7 +7994,7 @@ D:%%#%%%%%%%%%%%#%%
 
 name:Bullseye
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:4
@@ -8013,7 +8013,7 @@ D:   ##%%%%%%%##
 
 name:Flower
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:2
@@ -8032,7 +8032,7 @@ D:      #%%%#
 
 name:Fort
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:4
@@ -8051,7 +8051,7 @@ D:######%%%%%######
 
 name:Secret centre
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:4
@@ -8070,7 +8070,7 @@ D:%%%%%%%%%%%%%%%%%
 
 name:Snail shell left
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:1
@@ -8089,7 +8089,7 @@ D:%%%###########
 
 name:Snail shell right
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:1
@@ -8108,7 +8108,7 @@ D:   ###########%%%
 
 name:The secret path
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:4
@@ -8127,7 +8127,7 @@ D:    #%%%%%%%#
 
 name:Wheel
 type:1
-rating:1
+rating:2
 rows:11
 columns:17
 doors:1
@@ -8146,7 +8146,7 @@ D:    #%%#%#%%#
 
 name:Minimaze with treasure
 type:1
-rating:1
+rating:2
 rows:11
 columns:18
 doors:4
@@ -8165,7 +8165,7 @@ D:#%####%#%#%%#%#%%#
 
 name:Concentric hexagons
 type:1
-rating:1
+rating:2
 rows:11
 columns:19
 doors:2
@@ -8184,7 +8184,7 @@ D:    #%%%%%%%%%#
 
 name:Hex spiral down
 type:1
-rating:1
+rating:2
 rows:11
 columns:19
 doors:1
@@ -8203,7 +8203,7 @@ D:    ######%%%%#
 
 name:Hex spiral up
 type:1
-rating:1
+rating:2
 rows:11
 columns:19
 doors:1
@@ -8222,7 +8222,7 @@ D:    #%%########
 
 name:Hopscotch
 type:1
-rating:1
+rating:2
 rows:11
 columns:19
 doors:2
@@ -8241,7 +8241,7 @@ D:%%%%%%%%%%%%%%%%%%%
 
 name:Octo fort
 type:1
-rating:1
+rating:2
 rows:11
 columns:19
 doors:2
@@ -8260,7 +8260,7 @@ D:  ####%#%%%#%####
 
 name:Rounded fort
 type:1
-rating:1
+rating:2
 rows:11
 columns:19
 doors:4
@@ -8279,7 +8279,7 @@ D: ######%%#%%######
 
 name:Thick-walled chambers
 type:1
-rating:1
+rating:2
 rows:11
 columns:19
 doors:2
@@ -8298,7 +8298,7 @@ D:#%%%%%%%%%%%%%%%%%#
 
 name:Diagonal interlace
 type:1
-rating:1
+rating:2
 rows:11
 columns:21
 doors:2
@@ -8317,7 +8317,7 @@ D:%%%     %%%%%     %%%
 
 name:Circle interlink
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:2
@@ -8336,7 +8336,7 @@ D:    #%%%%%# #%%%%%%%#
 
 name:Circle interlink inverted
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:2
@@ -8355,7 +8355,7 @@ D:    #%%%%%%%# #%%%%%#
 
 name:Cluster rooms
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:2
@@ -8374,7 +8374,7 @@ D: #%# #%# #%# #%# #%# #%#
 
 name:Creature
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:1
@@ -8392,7 +8392,7 @@ D:#%%#%%%%# ##### #%%%%#%%#
 
 name:Hex interlace
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:2
@@ -8411,7 +8411,7 @@ D:%%%     #%%%%%%%#     %%%
 
 name:Oval with block pattern
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:2
@@ -8430,7 +8430,7 @@ D:      #%%%%%%%%%%%#
 
 name:Oval with centre hex
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:2
@@ -8449,7 +8449,7 @@ D:      #%%%%%#%%%%%#
 
 name:Oval with centre square
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:2
@@ -8468,7 +8468,7 @@ D:      #%%%#####%%%#
 
 name:Split oval with round room
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:2
@@ -8487,7 +8487,7 @@ D:      #%%#%%%%%#%%#
 
 name:Venn diagram
 type:1
-rating:1
+rating:2
 rows:11
 columns:25
 doors:4
@@ -8506,7 +8506,7 @@ D:    #%%%%%##%##%%%%%#
 
 name:Capsule
 type:1
-rating:1
+rating:2
 rows:11
 columns:27
 doors:3
@@ -8525,7 +8525,7 @@ D:    #%%#%%#     #%%#%%#
 
 name:Diamond blocks
 type:1
-rating:1
+rating:2
 rows:11
 columns:27
 doors:4
@@ -8544,7 +8544,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 name:False chamber left
 type:1
-rating:1
+rating:2
 rows:11
 columns:27
 doors:4
@@ -8563,7 +8563,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 name:False chamber right
 type:1
-rating:1
+rating:2
 rows:11
 columns:27
 doors:4
@@ -8582,7 +8582,7 @@ D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 name:Hawk
 type:1
-rating:1
+rating:2
 rows:11
 columns:27
 doors:2
@@ -8601,7 +8601,7 @@ D:           #%%%#
 
 name:Key
 type:1
-rating:1
+rating:2
 rows:8
 columns:28
 doors:2
@@ -8617,7 +8617,7 @@ D: %%# #%%
 
 name:Inner diamond
 type:1
-rating:1
+rating:2
 rows:11
 columns:29
 doors:4
@@ -8636,7 +8636,7 @@ D:        #%%%%%#%%%%%#
 
 name:Big pyramid
 type:1
-rating:1
+rating:2
 rows:10
 columns:31
 doors:3
@@ -8654,7 +8654,7 @@ D:#%%%#######################%%%#
 
 name:Big diamond sections
 type:1
-rating:1
+rating:2
 rows:11
 columns:31
 doors:2
@@ -8673,7 +8673,7 @@ D:            #%%#%%#
 
 name:Octopus
 type:1
-rating:1
+rating:2
 rows:11
 columns:31
 doors:1
@@ -8692,7 +8692,7 @@ D:%%%###  #%%##     ##%%#  ###%%%
 
 name:Scorpion left
 type:1
-rating:1
+rating:2
 rows:11
 columns:31
 doors:1
@@ -8711,7 +8711,7 @@ D: #%%%%%#             #%%%%%#
 
 name:Scorpion right
 type:1
-rating:1
+rating:2
 rows:11
 columns:31
 doors:1
@@ -8730,7 +8730,7 @@ D:   #%%%%%#             #%%%%%#
 
 name:Inward arrows
 type:1
-rating:1
+rating:2
 rows:7
 columns:33
 doors:1
@@ -8745,7 +8745,7 @@ D:#%%#   #%%#    ###    #%%#   #%%#
 
 name:Castle
 type:1
-rating:1
+rating:2
 rows:11
 columns:33
 doors:2
@@ -8764,7 +8764,7 @@ D:%%#############%%%#############%%
 
 name:Checkered fort
 type:1
-rating:1
+rating:2
 rows:11
 columns:33
 doors:2
@@ -8783,7 +8783,7 @@ D:#%#%#%#%#################%#%#%#%#
 
 name:Clamshell
 type:1
-rating:1
+rating:2
 rows:11
 columns:33
 doors:2
@@ -8802,7 +8802,7 @@ D:   #%%%###%%%#######%%%###%%%#
 
 name:Crab
 type:1
-rating:1
+rating:2
 rows:11
 columns:33
 doors:3
@@ -8821,7 +8821,7 @@ D:#%# #%#                   #%# #%#
 
 name:Double flower
 type:1
-rating:1
+rating:2
 rows:11
 columns:33
 doors:2
@@ -8840,7 +8840,7 @@ D:      #%%%#   #####   #%%%#
 
 name:Longmaze with treasure
 type:1
-rating:1
+rating:2
 rows:11
 columns:33
 doors:4
@@ -8859,7 +8859,7 @@ D:#%#%#%######%#%###%#%#%##%###%#%#
 
 name:Mountains
 type:1
-rating:1
+rating:2
 rows:11
 columns:33
 doors:3
@@ -8881,7 +8881,7 @@ D:#%%%###%%%###%%%#%%%###%%%###%%%#
 
 name:Larder
 type:1
-rating:1
+rating:3
 rows:9
 columns:9
 doors:4
@@ -8898,7 +8898,7 @@ D:%%#%%%#%%
 
 name:Ammo dump - arrows
 type:1
-rating:1
+rating:3
 rows:7
 columns:11
 doors:3
@@ -8913,7 +8913,7 @@ D:#%%%%%%%%%#
 
 name:Ammo dump - bolts
 type:1
-rating:1
+rating:3
 rows:7
 columns:11
 doors:3
@@ -8928,7 +8928,7 @@ D:#%%%%%%%%%#
 
 name:Ammo dump - shots
 type:1
-rating:1
+rating:3
 rows:7
 columns:11
 doors:3
@@ -8943,7 +8943,7 @@ D:#%%%%%%%%%#
 
 name:Library
 type:1
-rating:1
+rating:3
 rows:7
 columns:11
 doors:1
@@ -8958,7 +8958,7 @@ D:%%%%%%%%%%%
 
 name:Laboratory
 type:1
-rating:1
+rating:3
 rows:9
 columns:11
 doors:1
@@ -8975,7 +8975,7 @@ D:###########
 
 name:Treasure chest
 type:1
-rating:1
+rating:3
 rows:11
 columns:11
 doors:4
@@ -8994,7 +8994,7 @@ D:%%%%%%%%%%%
 
 name:Arcanum
 type:1
-rating:1
+rating:3
 rows:7
 columns:12
 doors:1
@@ -9009,7 +9009,7 @@ D:#####%%#####
 
 name:Temple
 type:1
-rating:1
+rating:3
 rows:7
 columns:12
 doors:1
@@ -9024,7 +9024,7 @@ D:#%##########
 
 name:Lighthouse
 type:1
-rating:1
+rating:3
 rows:9
 columns:13
 doors:4
@@ -9041,7 +9041,7 @@ D:   #%%#%%#
 
 name:Scroll shelves
 type:1
-rating:1
+rating:3
 rows:11
 columns:13
 doors:1
@@ -9060,7 +9060,7 @@ D:#%##%%#%%##%#
 
 name:Mushroom Field
 type:1
-rating:1
+rating:3
 rows:9
 columns:17
 doors:2
@@ -9077,7 +9077,7 @@ D:%%%%%%%%%%%%%%%%%
 
 name:Amulet chamber
 type:1
-rating:1
+rating:3
 rows:11
 columns:17
 doors:4
@@ -9096,7 +9096,7 @@ D:    #%%%%%%%#
 
 name:Ring chamber
 type:1
-rating:1
+rating:3
 rows:11
 columns:17
 doors:2
@@ -9115,7 +9115,7 @@ D:    #%%%#%%%#
 
 name:Mining outpost
 type:1
-rating:1
+rating:3
 rows:9
 columns:18
 doors:2
@@ -9132,7 +9132,7 @@ D:  %%%%%%%%
 
 name:Potion cupboard
 type:1
-rating:1
+rating:3
 rows:11
 columns:19
 doors:4
@@ -9151,7 +9151,7 @@ D:    #%%%%%%%%%#
 
 name:Staff chamber
 type:1
-rating:1
+rating:3
 rows:9
 columns:23
 doors:2
@@ -9168,7 +9168,7 @@ D:%%%%%#############%%%%%
 
 name:Wand chamber
 type:1
-rating:1
+rating:3
 rows:11
 columns:27
 doors:2
@@ -9187,7 +9187,7 @@ D: #%%%%%#############%%%%%#
 
 name:Treasure chamber
 type:1
-rating:1
+rating:3
 rows:11
 columns:31
 doors:2
@@ -9206,7 +9206,7 @@ D:%%%%%%%%%#############%%%%%%%%%
 
 name:Rod chamber
 type:1
-rating:1
+rating:3
 rows:11
 columns:32
 doors:1
