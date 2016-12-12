@@ -400,21 +400,21 @@ effect:SENSE_OBJECTS
 dice:22d40
 desc:detects gold and objects nearby
 
-name:DETECT_TRAP
-aim:0
-power:6
-effect:DETECT_TRAPS
-dice:22d40
-desc:detects traps nearby
+#name:DETECT_TRAP
+#aim:0
+#power:6
+#effect:DETECT_TRAPS
+#dice:22d40
+#desc:detects traps nearby
 
-name:DETECT_DOORSTAIR
-aim:0
-power:6
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:detects doors and stairs nearby
+#name:DETECT_DOORSTAIR
+#aim:0
+#power:6
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
+#desc:detects doors and stairs nearby
 
 name:DETECT_INVIS
 aim:0
@@ -434,12 +434,12 @@ name:DETECT_ALL
 aim:0
 power:10
 msg:{name} forms an image in your mind...
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -448,7 +448,9 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:detects treasure, traps, doors, stairs, and all creatures nearby
+effect:MAP_AREA
+dice:11d11
+desc:detects treasure and all creatures and maps an area nearby
 
 name:DETECT_OBJECTS
 aim:0
@@ -683,18 +685,18 @@ param:3
 dice:2d15
 desc:lights up the surrounding area, hurting light-sensitive creatures
 
-name:CLAIRVOYANCE
-aim:0
-power:23
-msg:The {kind} form{s} an image in your mind...
-effect:ENLIGHTENMENT
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:maps the entire level and detects nearby objects, traps, doors, and stairs
+#name:CLAIRVOYANCE
+#aim:0
+#power:23
+#msg:The {kind} form{s} an image in your mind...
+#effect:ENLIGHTENMENT
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
+#desc:maps the entire level and detects nearby objects, traps, doors, and stairs
 
 name:PROBING
 aim:0

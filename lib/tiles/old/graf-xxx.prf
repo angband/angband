@@ -561,8 +561,8 @@ object:scroll:Teleport Level:0x86:0x80
 
 object:scroll:Magic Mapping:0x86:0x80
 object:scroll:Treasure Detection:0x86:0x80
-object:scroll:Trap Detection:0x86:0x80
-object:scroll:Door/Stair Location:0x86:0x80
+#object:scroll:Trap Detection:0x86:0x80
+#object:scroll:Door/Stair Location:0x86:0x80
 object:scroll:Detect Invisible:0x86:0x80
 
 

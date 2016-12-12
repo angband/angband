@@ -193,14 +193,21 @@ desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
-spell:Find Traps, Doors & Stairs:3:3:25:2
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+#spell:Find Traps, Doors & Stairs:3:3:25:2
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
+#desc:Detects all traps, doors, and stairs in the immediate area.
+
+spell:Magic Mapping:3:3:25:2
+effect:MAP_AREA
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 20 + 1 * 11
+expr:S:PLAYER_LEVEL:/ 20 + 1 * 11
+desc:Maps the nearby area.
 
 spell:Stinking Cloud:3:2:27:3
 effect:BALL:POIS:2
@@ -662,14 +669,14 @@ desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
-spell:Find Traps, Doors & Stairs:3:3:27:2
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+#spell:Find Traps, Doors & Stairs:3:3:27:2
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
+#desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Slow Poison:3:3:28:4
 effect:TIMED_DEC:POISONED:2
@@ -782,8 +789,11 @@ desc:  This prayer has no effect when used in the town.
 
 spell:Sense Surroundings:13:10:45:4
 effect:MAP_AREA
-dice:22d40
-desc:Maps out a portion of the level around you.
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
+expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
+desc:Maps the nearby area.
+
 
 spell:Cure Mortal Wounds:13:11:45:4
 effect:HEAL_HP
@@ -911,12 +921,12 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:10:10:80:20
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -925,8 +935,7 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:Detects all treasure, objects, doors, stairs, traps, and monsters
-desc: in the immediate area.
+desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Perception:20:20:80:20
 effect:IDENTIFY
@@ -1127,14 +1136,21 @@ effect:DETECT_OBJECTS
 dice:22d40
 desc:Detects all objects in the immediate area.
 
-spell:Find Traps, Doors & Stairs:8:3:50:1
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+#spell:Find Traps, Doors & Stairs:8:3:50:1
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
+#desc:Detects all traps, doors, and stairs in the immediate area.
+
+spell:Magic Mapping:8:3:50:1
+effect:MAP_AREA
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 20 + 1 * 11
+expr:S:PLAYER_LEVEL:/ 20 + 1 * 11
+desc:Maps the nearby area.
 
 spell:Stinking Cloud:21:12:50:10
 effect:BALL:POIS:2
@@ -1469,14 +1485,21 @@ effect:TIMED_DEC:CONFUSED
 dice:20
 desc:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
-spell:Find Traps, Doors & Stairs:5:4:45:2
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+#spell:Find Traps, Doors & Stairs:5:4:45:2
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
+#desc:Detects all traps, doors, and stairs in the immediate area.
+
+spell:Magic Mapping:5:4:45:2
+effect:MAP_AREA
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 20 + 1 * 11
+expr:S:PLAYER_LEVEL:/ 20 + 1 * 11
+desc:Maps the nearby area.
 
 spell:Stinking Cloud:7:5:40:3
 effect:BALL:POIS:2
@@ -1909,14 +1932,14 @@ desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
-spell:Find Traps, Doors & Stairs:7:5:40:3
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+#spell:Find Traps, Doors & Stairs:7:5:40:3
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
+#desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Slow Poison:9:7:40:3
 effect:TIMED_DEC:POISONED:2
@@ -2029,8 +2052,10 @@ desc:  This prayer has no effect when used in the town.
 
 spell:Sense Surroundings:23:17:50:3
 effect:MAP_AREA
-dice:22d40
-desc:Maps out a portion of the level around you.
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
+expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
+desc:Maps the nearby area.
 
 spell:Cure Mortal Wounds:25:20:50:3
 effect:HEAL_HP
@@ -2127,12 +2152,12 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:15:15:80:12
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS

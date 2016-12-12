@@ -1994,9 +1994,9 @@ void get_debug_command(void)
 		/* Detect everything */
 		case 'd':
 		{
-			effect_simple(EF_DETECT_TRAPS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_DOORS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_STAIRS, "22d40", 0, 0, 0, NULL);
+			//effect_simple(EF_DETECT_TRAPS, "22d40", 0, 0, 0, NULL);
+			//effect_simple(EF_DETECT_DOORS, "22d40", 0, 0, 0, NULL);
+			//effect_simple(EF_DETECT_STAIRS, "22d40", 0, 0, 0, NULL);
 			effect_simple(EF_DETECT_GOLD, "22d40", 0, 0, 0, NULL);
 			effect_simple(EF_DETECT_OBJECTS, "22d40", 0, 0, 0, NULL);
 			effect_simple(EF_DETECT_VISIBLE_MONSTERS, "22d40", 0, 0, 0, NULL);

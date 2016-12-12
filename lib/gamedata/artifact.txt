@@ -121,7 +121,8 @@ power:0:1d1:0:0:0
 flags:SEE_INVIS | HOLD_LIFE | NO_FUEL
 values:LIGHT[3] | RES_LIGHT[1] | RES_DARK[1]
 #E:DETECT_ALL:30+d30
-act:CLAIRVOYANCE
+#act:CLAIRVOYANCE
+act:ENLIGHTENMENT
 time:50+d50
 desc:A great globe seemingly filled with moonlight, the famed Heart of the 
 desc:Mountain.  It splinters the light that falls upon it into ten thousand 

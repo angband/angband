@@ -963,7 +963,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			switch (*t) {
 			case '%': set_marked_granite(c, y, x, SQUARE_WALL_OUTER); break;
 			case '#': set_marked_granite(c, y, x, SQUARE_WALL_SOLID); break;
-			case '+': place_secret_door(c, y, x); break;
+			case '+': place_closed_door(c, y, x); break;
 			case '^': place_trap(c, y, x, -1, c->depth); break;
 			case 'x': {
 

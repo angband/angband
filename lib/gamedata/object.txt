@@ -1784,27 +1784,27 @@ dice:22d40
 effect:SENSE_OBJECTS
 dice:22d40
 
-name:265:Trap Detection
-graphics:?:w
-type:scroll
-properties:5:5:35
-alloc:50:0 to 70
-pile:70:1d3
-power:6
-effect:DETECT_TRAPS
-dice:22d40
+#name:265:Trap Detection
+#graphics:?:w
+#type:scroll
+#properties:5:5:35
+#alloc:50:0 to 70
+#pile:70:1d3
+#power:6
+#effect:DETECT_TRAPS
+#dice:22d40
 
-name:266:Door/Stair Location
-graphics:?:w
-type:scroll
-properties:5:5:50
-alloc:50:5 to 70
-pile:70:1d3
-power:6
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
+#name:266:Door/Stair Location
+#graphics:?:w
+#type:scroll
+#properties:5:5:50
+#alloc:50:5 to 70
+#pile:70:1d3
+#power:6
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
 
 name:267:Detect Invisible
 graphics:?:w
@@ -2478,12 +2478,12 @@ effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT
 effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:DETECT_OBJECTS
@@ -3205,7 +3205,7 @@ name:410:Mapping
 graphics:_:d
 type:staff
 properties:20:50:600
-alloc:30:20 to 100
+alloc:40:10 to 100
 combat:0:1d2:0:0:0
 charges:5+d5
 power:10
@@ -3411,29 +3411,29 @@ effect:SENSE_OBJECTS
 dice:22d40
 time:50
 
-name:431:Door/Stair Location
-graphics:-:d
-type:rod
-properties:15:15:1000
-alloc:30:8 to 75
-combat:0:1d1:0:0:0
-power:6
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-time:70
+#name:431:Door/Stair Location
+#graphics:-:d
+#type:rod
+#properties:15:15:1000
+#alloc:30:8 to 75
+#combat:0:1d1:0:0:0
+#power:6
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
+#time:70
 
-name:432:Trap Location
-graphics:-:d
-type:rod
-properties:5:15:1000
-alloc:30:8 to 75
-combat:0:1d1:0:0:0
-power:6
-effect:DETECT_TRAPS
-dice:22d40
-time:50
+#name:432:Trap Location
+#graphics:-:d
+#type:rod
+#properties:5:15:1000
+#alloc:30:8 to 75
+#combat:0:1d1:0:0:0
+#power:6
+#effect:DETECT_TRAPS
+#dice:22d40
+#time:50
 
 name:433:Detection
 graphics:-:d
@@ -3443,12 +3443,12 @@ alloc:30:50 to 100
 combat:0:1d1:0:0:0
 flags:IGNORE_ELEC
 power:10
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
+#effect:DETECT_TRAPS
+#dice:22d40
+#effect:DETECT_DOORS
+#dice:22d40
+#effect:DETECT_STAIRS
+#dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -3463,11 +3463,11 @@ name:434:Magic Mapping
 graphics:-:d
 type:rod
 properties:65:15:2000
-alloc:10:65 to 100
+alloc:30:35 to 100
 combat:0:1d1:0:0:0
 power:10
 effect:MAP_AREA
-dice:22d40
+dice:33d55
 time:100
 
 name:435:Probing

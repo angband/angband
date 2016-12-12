@@ -171,8 +171,8 @@ always:scroll:Word of Recall
 always:scroll:Phase Door
 normal:scroll:Monster Confusion
 normal:scroll:Magic Mapping
-normal:scroll:Trap Detection
-normal:scroll:Door/Stair Location
+#normal:scroll:Trap Detection
+#normal:scroll:Door/Stair Location
 normal:scroll:Detect Invisible
 normal:scroll:Recharging
 normal:scroll:Satisfy Hunger

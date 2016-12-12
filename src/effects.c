@@ -1018,7 +1018,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 
 	return true;
 }
-
+#if 0
 /**
  * Detect traps around the player.  The height to detect above and below the
  * player is context->value.dice, the width either side of the player context->value.sides.
@@ -1203,7 +1203,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 	context->ident = true;
 	return true;
 }
-
+#endif
 
 /**
  * Detect buried gold around the player.  The height to detect above and below
