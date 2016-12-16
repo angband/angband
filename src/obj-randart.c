@@ -1589,7 +1589,12 @@ static bool add_mod(struct artifact *art, int mod)
 		}
 	} else if (powerful) {
 		/* Powerful mods need to be applied sparingly */
-		if (one_in_(2 * art->modifiers[mod])) {
+		if (art->modifiers[mod] == 0) {
+			art->modifiers[mod] = randint1(2);
+			file_putf(log_file, "Adding ability: %s (%+d)\n", mod_name(mod),
+					  art->modifiers[mod]);
+			success = true;
+		} else if (one_in_(2 * art->modifiers[mod])) {
 			art->modifiers[mod]++;
 			file_putf(log_file, "Increasing %s by 1, new value is: %d\n",
 					  mod_name(mod), art->modifiers[mod]);
@@ -1603,7 +1608,7 @@ static bool add_mod(struct artifact *art, int mod)
 					  art->modifiers[mod]);
 			success = true;
 		} else {
-			art->modifiers[mod] += 1 + randint0(2);
+			art->modifiers[mod] += randint1(2);
 			file_putf(log_file, "Increasing %s by 2, new value is: %d\n",
 					  mod_name(mod), art->modifiers[mod]);
 			success = true;
@@ -2197,7 +2202,6 @@ static void remove_contradictory(struct artifact *art)
 		of_off(art->flags, OF_SUST_DEX);
 	if (art->modifiers[OBJ_MOD_CON] < 0)
 		of_off(art->flags, OF_SUST_CON);
-	art->modifiers[OBJ_MOD_BLOWS] = 0;
 
 	if (of_has(art->flags, OF_DRAIN_EXP))
 		of_off(art->flags, OF_HOLD_LIFE);
