@@ -43,8 +43,8 @@ void get_curse_display(struct menu *menu, int oid, bool cursor, int row,
 	int power = choice[oid].power;
 	char *name = curses[choice[oid].index].name;
 
-	strnfmt(buf, sizeof(buf), "%s (power %d)", name, power);
-	c_put_str(attr, buf, row + oid, col);
+	strnfmt(buf, sizeof(buf), "  %s (power %d)", name, power);
+	c_put_str(attr, buf, row, col);
 }
 
 /**
@@ -65,7 +65,7 @@ bool get_curse_action(struct menu *menu, const ui_event *event, int oid)
  */
 static void curse_menu_browser(int oid, void *data, const region *loc)
 {
-	int *choice = data;
+	struct curse_menu_data *choice = data;
 
 	/* Redirect output to the screen */
 	text_out_hook = text_out_to_screen;
@@ -74,7 +74,7 @@ static void curse_menu_browser(int oid, void *data, const region *loc)
 	text_out_pad = 1;
 
 	Term_gotoxy(loc->col, loc->row + loc->page_rows);
-	text_out("\n%s\n", curses[choice[oid]].desc);
+	text_out("%s.\n", curses[choice[oid].index].desc);
 
 	/* XXX */
 	text_out_pad = 0;
@@ -100,7 +100,7 @@ int curse_menu(struct object *obj)
 		if (obj->curses[i].power) {
 			available[count].index = i;
 			available[count].power = obj->curses[i].power;
-			length = MAX(length, strlen(curses[i].name));
+			length = MAX(length, strlen(curses[i].name) + 13);
 			count++;
 		}
 	}
@@ -111,7 +111,7 @@ int curse_menu(struct object *obj)
 
 	/* Set up the menu */
 	menu_setpriv(m, count, available);
-	m->header = "Remove which curse?";
+	m->header = " Remove which curse?";
 	m->selections = lower_case;
 	m->flags = (MN_PVT_TAGS);
 	m->browse_hook = curse_menu_browser;
@@ -120,7 +120,7 @@ int curse_menu(struct object *obj)
 	selection = 0;
 
 	/* Set up the menu region */
-	area.page_rows = m->count + 1;
+	area.page_rows = m->count + 2;
 	area.row = 1;
 	area.col = (Term->wid - 1 - length) / 2;
 	if (area.col <= 3)
