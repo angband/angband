@@ -91,13 +91,15 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	const int y = context->y;
 
 	/* Non-walls (etc) */
-	if (square_ispassable(cave, y, x)) return;
+	if (square_ispassable(cave, y, x) && !square_seemslikewall(cave, y, x))
+		return;
 
 	/* Permanent walls */
 	if (square_isperm(cave, y, x)) return;
 
 	/* Different treatment for different walls */
-	if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x)) {
+	if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x) &&
+		!square_seemslikewall(cave, y, x)) {
 		/* Message */
 		if (square_isseen(cave, y, x)) {
 			msg("The wall turns into mud!");
