@@ -321,6 +321,9 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->y, context->x);
 		square_set_feat(cave, context->y, context->x, FEAT_LAVA);
+
+		/* Objects that have survived should move */
+		push_object(context->y, context->x);
 	}
 }
 
@@ -517,6 +520,9 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->y, context->x);
 		square_set_feat(cave, context->y, context->x, FEAT_LAVA);
+
+		/* Objects that have survived should move */
+		push_object(context->y, context->x);
 	}
 }
 
