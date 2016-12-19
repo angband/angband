@@ -248,7 +248,7 @@ name:BOULDER
 hit:60
 effect:BOLT:ARROW
 dice:$Dd12
-expr:D:MONSTER_LEVEL:/ 7 + 1
+expr:D:SPELL_POWER:/ 7 + 1
 lore:throw boulders
 message-vis:{name} hurls a boulder.
 message-invis:You hear a grunt of exertion.
@@ -258,7 +258,7 @@ name:BA_ACID
 hit:100
 effect:BALL:ACID:2
 dice:15+1d$S
-expr:S:MONSTER_LEVEL:* 3
+expr:S:SPELL_POWER:* 3
 power:20
 lore:produce acid balls
 message-vis:{name} casts a ball of acid.
@@ -268,7 +268,7 @@ name:BA_ELEC
 hit:100
 effect:BALL:ELEC:2
 dice:8+1d$S
-expr:S:MONSTER_LEVEL:* 3 / 2
+expr:S:SPELL_POWER:* 3 / 2
 power:10
 lore:produce lightning balls
 message-vis:{name} casts a ball of lightning.
@@ -278,7 +278,7 @@ name:BA_FIRE
 hit:100
 effect:BALL:FIRE:2
 dice:10+1d$S
-expr:S:MONSTER_LEVEL:* 7 / 2
+expr:S:SPELL_POWER:* 7 / 2
 power:10
 lore:produce fire balls
 message-vis:{name} casts a ball of fire.
@@ -288,7 +288,7 @@ name:BA_COLD
 hit:100
 effect:BALL:COLD:2
 dice:10+1d$S
-expr:S:MONSTER_LEVEL:* 3 / 2
+expr:S:SPELL_POWER:* 3 / 2
 power:10
 lore:produce frost balls
 message-vis:{name} casts a ball of frost.
@@ -307,7 +307,7 @@ name:BA_NETH
 hit:100
 effect:BALL:NETHER:2
 dice:$B+10d10
-expr:B:MONSTER_LEVEL:+ 50
+expr:B:SPELL_POWER:+ 50
 power:d2000M2
 lore:produce nether balls
 message-vis:{name} casts a ball of nether.
@@ -317,7 +317,7 @@ name:BA_WATE
 hit:100
 effect:BALL:WATER:2
 dice:50+1d$S
-expr:S:MONSTER_LEVEL:* 5 / 2
+expr:S:SPELL_POWER:* 5 / 2
 power:20
 lore:produce water balls
 message-vis:{name} creates a whirlpool of water.
@@ -327,7 +327,7 @@ name:BA_MANA
 hit:100
 effect:BALL:MANA:2
 dice:$B+10d10
-expr:B:MONSTER_LEVEL:* 5
+expr:B:SPELL_POWER:* 5
 power:100
 lore:invoke mana storms
 message-vis:{name} invokes a storm of raw magic.
@@ -337,7 +337,7 @@ name:BA_DARK
 hit:100
 effect:BALL:DARK:2
 dice:$B+10d10
-expr:B:MONSTER_LEVEL:* 5
+expr:B:SPELL_POWER:* 5
 power:10
 lore:invoke darkness storms
 message-vis:{name} invokes a storm of darkness.
@@ -347,7 +347,7 @@ name:DRAIN_MANA
 hit:100
 effect:DRAIN_MANA
 dice:d$S
-expr:S:MONSTER_LEVEL:/ 2 + 1
+expr:S:SPELL_POWER:/ 2 + 1
 power:5
 lore:drain mana
 message-vis:{name} drains your mana away.
@@ -423,7 +423,7 @@ name:BO_ACID
 hit:100
 effect:BOLT:ACID
 dice:$B+7d8
-expr:B:MONSTER_LEVEL:/ 3
+expr:B:SPELL_POWER:/ 3
 power:20
 lore:produce acid bolts
 message-vis:{name} casts a bolt of acid.
@@ -433,7 +433,7 @@ name:BO_ELEC
 hit:100
 effect:BOLT:ELEC
 dice:$B+4d8
-expr:B:MONSTER_LEVEL:/ 3
+expr:B:SPELL_POWER:/ 3
 power:10
 lore:produce lightning bolts
 message-vis:{name} casts a bolt of lightning.
@@ -443,7 +443,7 @@ name:BO_FIRE
 hit:100
 effect:BOLT:FIRE
 dice:$B+9d8
-expr:B:MONSTER_LEVEL:/ 3
+expr:B:SPELL_POWER:/ 3
 power:10
 lore:produce fire bolts
 message-vis:{name} casts a bolt of fire.
@@ -453,7 +453,7 @@ name:BO_COLD
 hit:100
 effect:BOLT:COLD
 dice:$B+6d8
-expr:B:MONSTER_LEVEL:/ 3
+expr:B:SPELL_POWER:/ 3
 power:10
 lore:produce frost bolts
 message-vis:{name} casts a bolt of frost.
@@ -463,7 +463,7 @@ name:BO_POIS
 hit:100
 effect:BOLT:POIS
 dice:$B+9d8
-expr:B:MONSTER_LEVEL:/ 3
+expr:B:SPELL_POWER:/ 3
 power:125d100
 lore:produce poison bolts
 message-vis:{name} spews a stream of poison.
@@ -473,7 +473,7 @@ name:BO_NETH
 hit:100
 effect:BOLT:NETHER
 dice:$B+5d5
-expr:B:MONSTER_LEVEL:* 3 / 2 + 30
+expr:B:SPELL_POWER:* 3 / 2 + 30
 power:d2000M2
 lore:produce nether bolts
 message-vis:{name} casts a bolt of nether.
@@ -483,7 +483,7 @@ name:BO_WATE
 hit:100
 effect:BOLT:WATER
 dice:$B+10d10
-expr:B:MONSTER_LEVEL:+ 0
+expr:B:SPELL_POWER:+ 0
 power:20
 lore:produce water bolts
 message-vis:{name} fires a jet of water.
@@ -493,7 +493,7 @@ name:BO_MANA
 hit:100
 effect:BOLT:MANA
 dice:50+1d$S
-expr:S:MONSTER_LEVEL:* 7 / 2
+expr:S:SPELL_POWER:* 7 / 2
 power:100
 lore:produce mana bolts
 message-vis:{name} casts a bolt of raw magic.
@@ -503,7 +503,7 @@ name:BO_PLAS
 hit:100
 effect:BOLT:PLASMA
 dice:$B+8d7
-expr:B:MONSTER_LEVEL:+ 10
+expr:B:SPELL_POWER:+ 10
 power:30
 lore:produce plasma bolts
 message-vis:{name} casts a bolt of plasma.
@@ -513,7 +513,7 @@ name:BO_ICEE
 hit:100
 effect:BOLT:ICE
 dice:$B+6d6
-expr:B:MONSTER_LEVEL:+ 0
+expr:B:SPELL_POWER:+ 0
 power:10
 lore:produce ice bolts
 message-vis:{name} shoots a spear of ice.
@@ -523,7 +523,7 @@ name:MISSILE
 hit:100
 effect:BOLT:MISSILE
 dice:$B+2d6
-expr:B:MONSTER_LEVEL:/ 3
+expr:B:SPELL_POWER:/ 3
 lore:produce magic missiles
 message-vis:{name} fires a magic missile.
 message-invis:Something mumbles.
@@ -592,7 +592,7 @@ name:HEAL
 hit:100
 effect:MON_HEAL_HP
 dice:$B
-expr:B:MONSTER_LEVEL:* 6
+expr:B:SPELL_POWER:* 6
 power:30
 lore:heal-self
 message-vis:{name} magically starts closing wounds.

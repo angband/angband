@@ -543,18 +543,18 @@ void get_spell_info(int spell_index, char *p, size_t len)
 	spell_append_value_info(spell_index, p, len);
 }
 
-static int spell_value_base_monster_level(void)
+static int spell_value_base_spell_power(void)
 {
-	int level = 0;
+	int power = 0;
 
 	/* Check the reference race first */
 	if (ref_race)
-		level = ref_race->level;
+	   power = ref_race->spell_power;
 	/* Otherwise the current monster if there is one */
 	else if (cave->mon_current > 0)
-		level = cave_monster(cave, cave->mon_current)->race->level;
+		power = cave_monster(cave, cave->mon_current)->race->spell_power;
 
-	return level;
+	return power;
 }
 
 static int spell_value_base_player_level(void)
@@ -597,7 +597,7 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		const char *name;
 		expression_base_value_f function;
 	} value_bases[] = {
-		{ "MONSTER_LEVEL", spell_value_base_monster_level },
+		{ "SPELL_POWER", spell_value_base_spell_power },
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
 		{ "DUNGEON_LEVEL", spell_value_base_dungeon_level },
 		{ "MAX_SIGHT", spell_value_base_max_sight },

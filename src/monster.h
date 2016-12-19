@@ -271,6 +271,7 @@ struct monster_race {
 
 	int freq_innate;		/* Innate spell frequency */
 	int freq_spell;			/* Other spell frequency */
+	int spell_power;		/* Power of spells */
 
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */

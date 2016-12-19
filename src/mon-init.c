@@ -1113,6 +1113,15 @@ static enum parser_error parse_monster_spell_freq(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_monster_spell_power(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->spell_power = parser_getuint(p, "power");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_monster_spells(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	char *flags;
@@ -1295,6 +1304,7 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "flags-off ?str flags", parse_monster_flags_off);
 	parser_reg(p, "desc str desc", parse_monster_desc);
 	parser_reg(p, "spell-freq int freq", parse_monster_spell_freq);
+	parser_reg(p, "spell-power uint power", parse_monster_spell_power);
 	parser_reg(p, "spells str spells", parse_monster_spells);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_monster_drop);
 	parser_reg(p, "drop-artifact str name", parse_monster_drop_artifact);
