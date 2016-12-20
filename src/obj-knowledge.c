@@ -406,7 +406,7 @@ char *rune_desc(size_t i)
 		}
 		/* Curse runes */
 		case RUNE_VAR_CURSE: {
-			return curses[r->index].desc;
+			return format("Object %s.", curses[r->index].desc);
 			break;
 		}
 		/* Flag runes */

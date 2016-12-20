@@ -806,7 +806,7 @@ static bool uncurse_object(struct object *obj, int strength)
 			remove_object_curse(obj, index, true);
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
 			/* Failure to remove, object is now fragile */
-			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
 			msgt(MSG_CURSED, "The spell fails; your %s is now fragile", o_name);
 			of_on(obj->flags, OF_FRAGILE);
 			player_learn_flag(player, OF_FRAGILE);
