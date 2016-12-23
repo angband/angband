@@ -647,12 +647,12 @@ static struct class_book TEST_DATA test_book = {
 };
 
 static struct magic_realm TEST_DATA test_realm = {
-	.index = 1,
+	.next = NULL,
+	.name = "realm",
 	.stat = 1,
 	.verb = "spell_verb",
 	.spell_noun = "spell_noun",
 	.book_noun = "book_noun",
-	.adjective = "realm_adjective",
 };
 
 static struct player_class TEST_DATA test_class = {

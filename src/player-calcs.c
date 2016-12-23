@@ -1175,7 +1175,7 @@ static void update_inventory(struct player *p)
  * "Percentage" (actually some complicated hack that needs redoing) of
  * player's spells they can learn per level (-> realms - NRM)
  */
-int level_spells(struct player *p)
+static int level_spells(struct player *p)
 {
 	int stat = p->class->magic.spell_realm->stat;
 	return adj_mag_study[p->state.stat_ind[stat]];
@@ -1368,7 +1368,7 @@ static void calc_spells(struct player *p)
 /**
  * Get the player's max spell points per effective level
  */
-int mana_per_level(struct player *p, struct player_state *state)
+static int mana_per_level(struct player *p, struct player_state *state)
 {
 	int stat = p->class->magic.spell_realm->stat;
 	return adj_mag_mana[state->stat_ind[stat]];
@@ -1386,7 +1386,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	struct object *obj;
 
 	/* Hack -- Must be literate */
-	if (!p->class->magic.total_spells) {
+	if (!p->class->magic.spell_realm) {
 		p->msp = 0;
 		p->csp = 0;
 		p->csp_frac = 0;
@@ -2329,7 +2329,8 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_SPELLS)) {
 		p->upkeep->update &= ~(PU_SPELLS);
-		calc_spells(p);
+		if (p->class->magic.spell_realm)
+			calc_spells(p);
 	}
 
 	/* Character is not ready yet, no map updates */

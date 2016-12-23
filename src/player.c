@@ -37,18 +37,7 @@ struct player *player;
 struct player_body *bodies;
 struct player_race *races;
 struct player_class *classes;
-
-/**
- * Magic realms:
- * index, spell stat, verb, spell noun, book noun, realm name
- */
-struct magic_realm realms[REALM_MAX] =
-{
-	#define REALM(a, b, c, d, e, f) { REALM_##a, b, c, d, e, f },
-	#include "list-magic-realms.h"
-	#undef REALM
-};
-
+struct magic_realm *realms;
 
 /**
  * Base experience levels, may be adjusted up for race and/or class
@@ -133,6 +122,21 @@ const char *stat_idx_to_name(int type)
     assert(type < STAT_MAX);
 
     return stat_name_list[type];
+}
+
+const struct magic_realm *lookup_realm(const char *name)
+{
+	struct magic_realm *realm = realms;
+	while (realm) {
+		if (!my_stricmp(name, realm->name)) {
+			return realm;
+		}
+		realm = realm->next;
+	}
+
+	/* Fail horribly */
+	quit_fmt("Failed to find %s magic realm", name);
+	return realm;
 }
 
 bool player_stat_inc(struct player *p, int stat)

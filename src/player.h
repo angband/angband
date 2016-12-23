@@ -92,17 +92,6 @@ enum
 #define BTH_PLUS_ADJ    	3 		/* Adjust BTH per plus-to-hit */
 
 /**
- * Player magic realms
- */
-enum
-{
-	#define REALM(a, b, c, d, e, f) REALM_##a,
-	#include "list-magic-realms.h"
-	#undef REALM
-	REALM_MAX
-};
-
-/**
  * Ways in which players can be marked as cheaters
  */
 #define NOSCORE_WIZARD		0x0002
@@ -227,12 +216,13 @@ struct start_item {
  * Structure for magic realms
  */
 struct magic_realm {
-	int index;
+	struct magic_realm *next;
+	char *code;
+	char *name;
 	int stat;
-	const char *verb;
-	const char *spell_noun;
-	const char *book_noun;
-	const char *adjective;
+	char *verb;
+	char *spell_noun;
+	char *book_noun;
 };
 
 /**
@@ -269,7 +259,7 @@ struct class_book {
 struct class_magic {
 	int spell_first;					/**< Level of first spell */
 	int spell_weight;					/**< Max armour weight to avoid mana penalties */
-	struct magic_realm *spell_realm;	/**< Primary spellcasting realm */
+	const struct magic_realm *spell_realm;	/**< Primary spellcasting realm */
 	int num_books;						/**< Number of spellbooks */
 	struct class_book *books;			/**< Details of spellbooks */
 	int total_spells;					/**< Number of spells for this class */
@@ -560,7 +550,7 @@ struct player {
 extern struct player_body *bodies;
 extern struct player_race *races;
 extern struct player_class *classes;
-extern struct magic_realm realms[REALM_MAX];
+extern struct magic_realm *realms;
 
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern struct player *player;
@@ -571,6 +561,7 @@ struct player_class *player_id2class(guid id);
 /* player.c */
 int stat_name_to_idx(const char *name);
 const char *stat_idx_to_name(int type);
+const struct magic_realm *lookup_realm(const char *code);
 bool player_stat_inc(struct player *p, int stat);
 bool player_stat_dec(struct player *p, int stat, bool permanent);
 void player_exp_gain(struct player *p, s32b amount);

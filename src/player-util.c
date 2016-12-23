@@ -424,7 +424,7 @@ void player_update_light(struct player *p)
  */
 bool player_can_cast(struct player *p, bool show_msg)
 {
-	if (p->class->magic.spell_realm->index == REALM_NONE)
+	if (!p->class->magic.spell_realm)
 	{
 		if (show_msg)
 			msg("You cannot pray or produce magics.");

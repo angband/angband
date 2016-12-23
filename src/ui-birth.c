@@ -378,8 +378,8 @@ static void class_help(int i, void *db, const region *l)
 	skill_help(r->r_skills, c->c_skills, r->r_mhp + c->c_mhp,
 			   r->r_exp + c->c_exp, -1);
 
-	if (c->magic.spell_realm->index != REALM_NONE)
-		text_out_e("\nLearns %s magic", c->magic.spell_realm->adjective);
+	if (c->magic.spell_realm)
+		text_out_e("\nLearns %s magic", c->magic.spell_realm->name);
 
 	for (k = 0; k < PF_MAX; k++) {
 		const char *s;
