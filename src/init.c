@@ -1896,8 +1896,7 @@ static enum parser_error parse_realm_stat(struct parser *p) {
 
 	realm->stat = stat_name_to_idx(parser_getsym(p, "stat"));
 	if (realm->stat < 0)
-		/* Todo: make new error for this */
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
+		return PARSE_ERROR_INVALID_SPELL_STAT;
 
 	return PARSE_ERROR_NONE;
 }

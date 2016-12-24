@@ -943,8 +943,7 @@ static enum parser_error parse_monster_base(struct parser *p) {
 
 	r->base = lookup_monster_base(parser_getsym(p, "base"));
 	if (r->base == NULL)
-		/* Todo: make new error for this */
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
+		return PARSE_ERROR_INVALID_MONSTER_BASE;
 
 	/* The template sets the default display character */
 	r->d_char = r->base->d_char;
@@ -1768,8 +1767,7 @@ static enum parser_error parse_lore_base(struct parser *p) {
 	if (!l)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (base == NULL)
-		/* Todo: make new error for this */
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
+		return PARSE_ERROR_INVALID_MONSTER_BASE;
 
 	/* Know everything */
 	l->all_known = true;
