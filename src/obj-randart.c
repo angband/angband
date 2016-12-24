@@ -2318,7 +2318,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 {
 	struct artifact *art = &a_info[a_idx];
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
-	struct artifact *a_old = mem_zalloc(sizeof *a_old);
+	struct artifact *a_old;
 	int art_freq[ART_IDX_TOTAL];
 	int power = data->base_power[a_idx];
 	int old_level = art->level;
@@ -2343,6 +2343,9 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 		file_putf(log_file, "Artifact number %d too powerful - skipping", a_idx);
 		return;
 	}
+
+	/* Structure to hold the old artifact */
+	a_old = mem_zalloc(sizeof *a_old);
 
 	if (power < 0) hurt_me = true;
 
@@ -2677,12 +2680,12 @@ char *artifact_gen_name(struct artifact *a, const char ***words) {
 static void init_names(void)
 {
 	int i;
-	struct artifact *a;
 
 	for (i = 0; i < z_info->a_max; i++) {
 		char desc[128] = "Based on ";
+		struct artifact *a = &a_info[i];
+		char *new_name;
 
-		a = &a_info[i];
 		if (!a->tval || !a->sval || !a->name) continue;
 
 		if (prefix(a->name, "of Power"))
@@ -2692,8 +2695,11 @@ static void init_names(void)
 		else
 			my_strcat(desc, a->name + 1, strlen(a->name) + 8);
 
+		string_free(a->text);
 		a->text = string_make(desc);
-		a->name = artifact_gen_name(a, name_sections);
+		new_name = artifact_gen_name(a, name_sections);
+		string_free(a->name);
+		a->name = new_name;
 	}
 }
 
