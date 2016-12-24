@@ -258,18 +258,15 @@ static errr finish_parse_meth(struct parser *p) {
 
 static void cleanup_meth(void)
 {
-	struct blow_method *meth = blow_methods;
-	struct blow_method *next;
+	struct blow_method *meth = &blow_methods[1];
 
 	while (meth) {
-		next = meth->next;
 		string_free(meth->desc);
-		if (meth->act_msg)
-			string_free(meth->act_msg);
+		string_free(meth->act_msg);
 		string_free(meth->name);
-		mem_free(meth);
-		meth = next;
+		meth = meth->next;
 	}
+	mem_free(blow_methods);
 }
 
 struct file_parser meth_parser = {

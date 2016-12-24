@@ -126,8 +126,6 @@ title:Champion
 title:Hero
 title:Lord
 
-magic:0:0:0
-
 
 ############### MAGE ###############
 name:1:Mage

@@ -518,6 +518,6 @@ u32b Rand_simple(u32b m)
 	static time_t seed;
 	time_t v;
 	v = time(NULL);
-	seed = LCRNG(seed) + ((v << 16) ^ v ^ getpid());
-	return (seed%m);
+	seed = LCRNG(seed % m) + ((v << 16) ^ v ^ getpid());
+	return (seed % m);
 }

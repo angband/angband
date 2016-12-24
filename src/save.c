@@ -152,11 +152,6 @@ static void wr_item(const struct object *obj)
 		wr_byte(0);
 	}
 
-
-	if (obj->known) {
-		obj->known->curses = NULL;
-	}
-
 	for (i = 0; i < ELEM_MAX; i++) {
 		wr_s16b(obj->el_info[i].res_level);
 		wr_byte(obj->el_info[i].flags);
