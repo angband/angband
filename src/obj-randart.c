@@ -1249,7 +1249,7 @@ static void parse_frequencies(struct artifact_data *data)
  * passed a pointer to a rarity value in order to return the rarity of the
  * new item.
  */
-static struct object_kind *choose_item(int a_idx, int *freq)
+static struct object_kind *get_base_item(int a_idx, struct artifact_data *data)
 {
 	struct artifact *art = &a_info[a_idx];
 	int tval = 0, sval = 0, i = 0;
@@ -1275,9 +1275,9 @@ static struct object_kind *choose_item(int a_idx, int *freq)
 		   tval == TV_AMULET || tval == TV_RING || tval == TV_CHEST ||
 		   (tval == TV_HAFTED && sval == lookup_sval(tval, "Mighty Hammer")) ||
 		   (tval == TV_CROWN && sval == lookup_sval(tval, "Massive Iron Crown"))) {
-		r = randint1(freq[z_info->k_max - 1]);
+		r = randint1(data->base_freq[z_info->k_max - 1]);
 		i = 0;
-		while (r > freq[i])
+		while (r > data->base_freq[i])
 			i++;
 		tval = k_info[i].tval;
 		sval = k_info[i].sval;
@@ -1310,6 +1310,37 @@ static struct object_kind *choose_item(int a_idx, int *freq)
 	/* Artifacts ignore everything */
 	for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
 		art->el_info[i].flags |= EL_INFO_IGNORE;
+
+	/* Assign basic stats to the artifact based on its artifact level */
+	switch (kind->tval) {
+		case TV_BOW:
+		case TV_DIGGING:
+		case TV_HAFTED:
+		case TV_SWORD:
+		case TV_POLEARM:
+			art->to_h += (s16b)(data->hit_startval / 2 +
+								randint0(data->hit_startval));
+			art->to_d += (s16b)(data->dam_startval / 2 +
+								randint0(data->dam_startval));
+			file_putf(log_file,
+					  "Assigned basic stats, to_hit: %d, to_dam: %d\n",
+					  art->to_h, art->to_d);
+			break;
+		case TV_BOOTS:
+		case TV_GLOVES:
+		case TV_HELM:
+		case TV_CROWN:
+		case TV_SHIELD:
+		case TV_CLOAK:
+		case TV_SOFT_ARMOR:
+		case TV_HARD_ARMOR:
+		case TV_DRAG_ARMOR:
+			art->to_a += (s16b)(data->ac_startval / 2 +
+								randint0(data->ac_startval));
+			file_putf(log_file, "Assigned basic stats, AC bonus: %d\n",
+					  art->to_a);
+			break;
+	}
 
 	/* Done - return the index of the new object kind. */
 	return kind;
@@ -2318,7 +2349,6 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 {
 	struct artifact *art = &a_info[a_idx];
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
-	struct artifact *a_old;
 	int art_freq[ART_IDX_TOTAL];
 	int power = data->base_power[a_idx];
 	int old_level = art->level;
@@ -2330,24 +2360,8 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 
 	bool special_artifact = kf_has(kind->kind_flags, KF_INSTA_ART);
 
-	/* Skip unused artifacts */
-	if (art->tval == 0) return;
-
-	/* Special cases -- don't randomize these! */
-	if (strstr(art->name, "The One Ring") ||
-		kf_has(kind->kind_flags, KF_QUEST_ART))
-		return;
-
-	/* If it has a restricted ability then don't randomize it. */
-	if (power > INHIBIT_POWER) {
-		file_putf(log_file, "Artifact number %d too powerful - skipping", a_idx);
-		return;
-	}
-
 	/* Structure to hold the old artifact */
-	a_old = mem_zalloc(sizeof *a_old);
-
-	if (power < 0) hurt_me = true;
+	struct artifact *a_old = mem_zalloc(sizeof *a_old);
 
 	file_putf(log_file, "+++++++++++++ CREATING NEW ARTIFACT ++++++++++++++\n");
 	file_putf(log_file, "Artifact %d: power = %d\n", a_idx, power);
@@ -2355,82 +2369,58 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 	/* Flip the sign on power if it's negative, since it's only used for base
 	 * item choice
 	 */
-	if (power < 0) power = -power;
+	if (power < 0) {
+		hurt_me = true;
+		power = -power;
+	}
 
 	if (!special_artifact) {
 		/* Normal artifact - choose a random base item type.  Not too
 		 * powerful, so we'll have to add something to it.  Not too
 		 * weak, for the opposite reason. */
 		int count = 0;
-		s32b ap2;
+		s32b ap2 = 0;
 
 		/* Capture the rarity of the original base item and artifact */
 		alloc_old = data->base_art_alloc[a_idx];
 		base_alloc_old = data->base_item_prob[a_idx];
-		do {
-			/* Get the new item kind */
-			kind = choose_item(a_idx, data->base_freq);
 
-			/* Assign basic stats to the artifact based on its artifact level */
-			switch (kind->tval) {
-				case TV_BOW:
-				case TV_DIGGING:
-				case TV_HAFTED:
-				case TV_SWORD:
-				case TV_POLEARM:
-					art->to_h += (s16b)(data->hit_startval / 2 +
-										randint0(data->hit_startval) );
-					art->to_d += (s16b)(data->dam_startval / 2 +
-										randint0(data->dam_startval) );
-					file_putf(log_file,
-							  "Assigned basic stats, to_hit: %d, to_dam: %d\n",
-							  art->to_h, art->to_d);
-					break;
-				case TV_BOOTS:
-				case TV_GLOVES:
-				case TV_HELM:
-				case TV_CROWN:
-				case TV_SHIELD:
-				case TV_CLOAK:
-				case TV_SOFT_ARMOR:
-				case TV_HARD_ARMOR:
-				case TV_DRAG_ARMOR:
-					art->to_a += (s16b)(data->ac_startval / 2 +
-										randint0(data->ac_startval));
-					file_putf(log_file, "Assigned basic stats, AC bonus: %d\n",
-							  art->to_a);
-					break;
-			}
+		/* Try to find a good base item kind for the artifact */
+		do {
+			/* Get the new item kind and do basic prep on it */
+			kind = get_base_item(a_idx, data);
 
 			/* If power is positive but very low, and if we're not having
 			 * any luck finding a base item, damage it once.  This helps ensure
 			 * that we get a base item for borderline cases like Wormtongue. */
-
 			if (power > 0 && power < 10 && count > MAX_TRIES / 2) {
-				file_putf(log_file, "Damaging base item to help get a match.\n");
+				file_putf(log_file,
+						  "Damaging base item to help get a match.\n");
 				make_bad(art, old_level);
 			}
+
 			ap2 = artifact_power(a_idx);
+			file_putf(log_file, "Base item power old %d, new %d\n", power, ap2);
 			count++;
 
-			/* Calculate the proper rarity based on the new type.  We attempt
-			 * to preserve the 'effective rarity' which is equal to the
-			 * artifact rarity multiplied by the base item rarity. */
-			alloc_new = alloc_old * base_alloc_old / kind->alloc_prob;
-
-			if (alloc_new > 99) alloc_new = 99;
-			if (alloc_new < 1) alloc_new = 1;
-
-			file_putf(log_file, "Old allocs are base %d, art %d\n",
-					  base_alloc_old, alloc_old);
-			file_putf(log_file, "New allocs are base %d, art %d\n",
-					  kind->alloc_prob, alloc_new);
-
 		} while ((count < MAX_TRIES) &&
-				 (((ap2 > (power * 6) / 10 + 1) && (power-ap2 < 20)) ||
+				 (((ap2 > (power * 6) / 10 + 1) && (power - ap2 < 20)) ||
 		          (ap2 < (power / 10))));
 
-		/* Got an item - set the new rarity */
+		/* Calculate the proper rarity based on the new type.  We attempt
+		 * to preserve the 'effective rarity' which is equal to the
+		 * artifact rarity multiplied by the base item rarity. */
+		alloc_new = alloc_old * base_alloc_old / kind->alloc_prob;
+
+		if (alloc_new > 99) alloc_new = 99;
+		if (alloc_new < 1) alloc_new = 1;
+
+		file_putf(log_file, "Old allocs are base %d, art %d\n",
+				  base_alloc_old, alloc_old);
+		file_putf(log_file, "New allocs are base %d, art %d\n",
+				  kind->alloc_prob, alloc_new);
+
+		/* Set the new rarity */
 		art->alloc_prob = alloc_new;
 
 		if (count >= MAX_TRIES)
@@ -2644,9 +2634,28 @@ static void scramble(struct artifact_data *data)
 	do {
 		int a_idx;
 
-		/* Generate all the artifacts. */
-		for (a_idx = 1; a_idx < z_info->a_max; a_idx++)
+		/* Generate all the artifacts, excluding ineligible ones */
+		for (a_idx = 1; a_idx < z_info->a_max; a_idx++) {
+			struct artifact *art = &a_info[a_idx];
+			struct object_kind *kind = lookup_kind(art->tval, art->sval);
+
+			/* Skip unused artifacts */
+			if (art->tval == 0) continue;
+
+			/* Special cases -- don't randomize these! */
+			if (strstr(art->name, "The One Ring") ||
+				kf_has(kind->kind_flags, KF_QUEST_ART))
+				continue;
+
+			/* If it has a restricted ability then don't randomize it. */
+			if (data->base_power[a_idx] > INHIBIT_POWER) {
+				file_putf(log_file,
+						  "Artifact number %d too powerful - skipping", a_idx);
+				continue;
+			}
+
 			scramble_artifact(a_idx, data);
+		}
 	} while (!artifacts_acceptable());
 }
 
