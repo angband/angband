@@ -29,6 +29,8 @@
 #include "mon-util.h"
 #include "player-calcs.h"
 #include "project.h"
+#include "source.h"
+
 
 /**
  * Helper function -- return a "nearby" race for polymorphing
@@ -76,7 +78,7 @@ static struct monster_race *poly_race(struct monster_race *race)
  * ------------------------------------------------------------------------ */
 
 typedef struct project_monster_handler_context_s {
-	const int who;
+	const struct source origin;
 	const int r;
 	const int y;
 	const int x;
@@ -237,7 +239,7 @@ static void project_monster_timed_damage(project_monster_handler_context_t *cont
 	if (type < 0 || type >= MON_TMD_MAX)
 		return;
 
-	if (context->who > 0) {
+	if (context->origin.what == SRC_MONSTER) {
 		context->mon_timed[type] = monster_amount;
 		context->flag |= MON_TMD_MON_SOURCE;
 	} else {
@@ -522,7 +524,7 @@ static void project_monster_handler_FORCE(project_monster_handler_context_t *con
 
 	/* Thrust monster away. */
 	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
-	effect_simple(EF_THRUST_AWAY, grids_away, context->y, context->x, 0, NULL);
+	effect_simple(EF_THRUST_AWAY, context->origin, grids_away, context->y, context->x, 0, NULL);
 }
 
 /* Time -- breathers resist */
@@ -833,7 +835,8 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 }
 
 /**
- * Deal damage to a monster from the player
+ * Deal damage to a monster from a non-monster source (usually a player,
+ * but could also be a trap)
  *
  * This is a helper for project_m(). It isn't a type handler, but we take a
  * handler context since that has a lot of what we need.
@@ -952,7 +955,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 	} else if (context->teleport_distance > 0) {
 		char dice[5];
 		strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
-		effect_simple(EF_TELEPORT, dice, context->y, context->x, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, dice, context->y, context->x, 0, NULL);
 	} else {
 		int i;
 
@@ -969,7 +972,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		}
 
 		/* If sleep is caused by the player, base time on the player's level. */
-		if (context->who == 0 && context->mon_timed[MON_TMD_SLEEP] > 0) {
+		if (context->origin.what == SRC_PLAYER && context->mon_timed[MON_TMD_SLEEP] > 0) {
 			context->mon_timed[MON_TMD_SLEEP] = 500 + player->lev * 10;
 		}
 
@@ -992,7 +995,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  * Called for projections with the PROJECT_KILL flag set, which includes
  * bolt, beam, ball and breath effects.
  *
- * \param who is the monster list index of the caster
+ * \param origin is the monster list index of the caster
  * \param r is the distance from the centre of the effect
  * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
@@ -1045,8 +1048,9 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  *
  * Hack -- effects on grids which are memorized but not in view are also seen.
  */
-void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
-               bool *did_hit, bool *was_obvious)
+void project_m(struct source origin, int r, int y, int x,
+				int dam, int typ, int flg,
+				bool *did_hit, bool *was_obvious)
 {
 	struct monster *mon;
 	struct monster_lore *lore;
@@ -1059,13 +1063,13 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 	bool obvious = (flg & PROJECT_AWARE ? true : false);
 
 	/* Are we trying to id the source of this effect? */
-	bool id = who < 0 ? !obvious : false;
+	bool id = (origin.what == SRC_PLAYER) ? !obvious : false;
 
 	int m_idx = cave->squares[y][x].mon;
 
 	project_monster_handler_f monster_handler = monster_handlers[typ];
 	project_monster_handler_context_t context = {
-		who,
+		origin,
 		r,
 		y,
 		x,
@@ -1095,7 +1099,7 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 	if (!(m_idx > 0)) return;
 
 	/* Never affect projector */
-	if (m_idx == who) return;
+	if (origin.what == SRC_MONSTER && origin.which.monster == m_idx) return;
 
 	/* Obtain monster info */
 	mon = cave_monster(cave, m_idx);
@@ -1110,9 +1114,9 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 	}
 
 	/* Breathers may not blast members of the same race. */
-	if ((who > 0) && (flg & (PROJECT_SAFE))) {
+	if (origin.what == SRC_MONSTER && (flg & PROJECT_SAFE)) {
 		/* Point to monster information of caster */
-		struct monster *caster = cave_monster(cave, who);
+		struct monster *caster = cave_monster(cave, origin.which.monster);
 
 		/* Skip monsters with the same race */
 		if (caster->race == mon->race)
@@ -1137,7 +1141,7 @@ void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
 	if (context.skipped) return;
 
 	/* Apply damage to the monster, based on who did the damage. */
-	if (who > 0)
+	if (origin.what == SRC_MONSTER)
 		mon_died = project_m_monster_attack(&context, m_idx);
 	else
 		mon_died = project_m_player_attack(&context);

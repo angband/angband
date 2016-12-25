@@ -957,7 +957,7 @@ void square_add_door(struct chunk *c, int y, int x, bool closed) {
 
 void square_open_door(struct chunk *c, int y, int x)
 {
-	square_remove_trap(c, y, x, false, -1);
+	square_remove_all_traps(c, y, x);
 	square_set_feat(c, y, x, FEAT_OPEN);
 }
 
@@ -968,7 +968,7 @@ void square_close_door(struct chunk *c, int y, int x)
 
 void square_smash_door(struct chunk *c, int y, int x)
 {
-	square_remove_trap(c, y, x, false, -1);
+	square_remove_all_traps(c, y, x);
 	square_set_feat(c, y, x, FEAT_BROKEN);
 }
 
@@ -979,13 +979,13 @@ void square_unlock_door(struct chunk *c, int y, int x) {
 
 void square_destroy_door(struct chunk *c, int y, int x) {
 	assert(square_isdoor(c, y, x));
-	square_remove_trap(c, y, x, false, -1);
+	square_remove_all_traps(c, y, x);
 	square_set_feat(c, y, x, FEAT_FLOOR);
 }
 
 void square_destroy_trap(struct chunk *c, int y, int x)
 {
-	square_remove_trap(c, y, x, false, -1);
+	square_remove_all_traps(c, y, x);
 }
 
 void square_disable_trap(struct chunk *c, int y, int x)
@@ -1038,9 +1038,10 @@ void square_earthquake(struct chunk *c, int y, int x) {
 
 void square_remove_ward(struct chunk *c, int y, int x)
 {
-	struct trap_kind *rune = lookup_trap("glyph of warding");
 	assert(square_iswarded(c, y, x));
-	square_remove_trap(c, y, x, true, rune->tidx);
+
+	struct trap_kind *rune = lookup_trap("glyph of warding");
+	square_remove_trap(c, y, x, rune->tidx);
 }
 
 /**

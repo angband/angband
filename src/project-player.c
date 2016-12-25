@@ -21,12 +21,14 @@
 #include "effects.h"
 #include "init.h"
 #include "mon-desc.h"
+#include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "source.h"
 #include "trap.h"
 
 /**
@@ -152,14 +154,18 @@ static void project_player_swap_stats(void)
 }
 
 typedef struct project_player_handler_context_s {
-	const int who;
+	/* Input values */
+	const struct source origin;
 	const int r;
 	const int y;
 	const int x;
 	const int dam;
 	const int type;
+
+	/* Return values */
 	bool obvious;
 } project_player_handler_context_t;
+
 typedef void (*project_player_handler_f)(project_player_handler_context_t *);
 
 static void project_player_handler_ACID(project_player_handler_context_t *context)
@@ -244,7 +250,10 @@ static void project_player_handler_SHARD(project_player_handler_context_t *conte
 
 static void project_player_handler_NEXUS(project_player_handler_context_t *context)
 {
-	struct monster *mon = cave_monster(cave, context->who);
+	struct monster *mon = NULL;
+	if (context->origin.what == SRC_MONSTER) {
+		mon = cave_monster(cave, context->origin.which.monster);
+	}
 
 	if (player_resists(player, ELEM_NEXUS)) {
 		msg("You resist the effect!");
@@ -252,24 +261,23 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 	}
 
 	/* Stat swap */
-    if (randint0(100) < player->state.skills[SKILL_SAVE]) {
-        msg("You avoid the effect!");
-    }
-    else {
-        project_player_swap_stats();
-    }
+	if (randint0(100) < player->state.skills[SKILL_SAVE]) {
+		msg("You avoid the effect!");
+	} else {
+		project_player_swap_stats();
+	}
 
-	if (one_in_(3)) { /* Teleport to */
-		effect_simple(EF_TELEPORT_TO, "0", mon->fy, mon->fx, 0, NULL);
+	if (one_in_(3) && mon) { /* Teleport to */
+		effect_simple(EF_TELEPORT_TO, context->origin, "0", mon->fy, mon->fx, 0, NULL);
 	} else if (one_in_(4)) { /* Teleport level */
 		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("You avoid the effect!");
 			return;
 		}
-		effect_simple(EF_TELEPORT_LEVEL, "0", 0, 0, 0, NULL);
+		effect_simple(EF_TELEPORT_LEVEL, context->origin, "0", 0, 0, 0, NULL);
 	} else { /* Teleport */
 		const char *miles = "200";
-		effect_simple(EF_TELEPORT, miles, 0, 1, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, miles, 0, 1, 0, NULL);
 	}
 }
 
@@ -320,7 +328,7 @@ static void project_player_handler_DISEN(project_player_handler_context_t *conte
 	}
 
 	/* Disenchant gear */
-	effect_simple(EF_DISENCHANT, "0", 0, 0, 0, NULL);
+	effect_simple(EF_DISENCHANT, context->origin, "0", 0, 0, 0, NULL);
 }
 
 static void project_player_handler_WATER(project_player_handler_context_t *context)
@@ -354,7 +362,7 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 	/* Blink */
 	if (randint1(127) > player->lev) {
 		const char *five = "5";
-		effect_simple(EF_TELEPORT, five, 0, 1, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, five, 0, 1, 0, NULL);
 	}
 
 	/* Slow */
@@ -385,7 +393,7 @@ static void project_player_handler_FORCE(project_player_handler_context_t *conte
 
 	/* Thrust player away. */
 	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
-	effect_simple(EF_THRUST_AWAY, grids_away, context->y, context->x, 0, NULL);
+	effect_simple(EF_THRUST_AWAY, context->origin, grids_away, context->y, context->x, 0, NULL);
 }
 
 static void project_player_handler_TIME(project_player_handler_context_t *context)
@@ -493,7 +501,7 @@ static const project_player_handler_f player_handlers[] = {
  * Called for projections with the PROJECT_PLAY flag set, which includes
  * bolt, beam, ball and breath effects.
  *
- * \param who is the monster list index of the caster, or 0 for a trap
+ * \param src is the origin of the effect
  * \param r is the distance from the centre of the effect
  * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
@@ -507,22 +515,18 @@ static const project_player_handler_f player_handlers[] = {
  *
  * We assume the player is aware of some effect, and always return "true".
  */
-bool project_p(int who, int r, int y, int x, int dam, int typ)
+bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 {
 	bool blind = (player->timed[TMD_BLIND] ? true : false);
 	bool seen = !blind;
 	bool obvious = true;
-
-	/* Source monster or trap */
-	struct monster *mon = cave_monster(cave, who);
-	struct trap *trap = cave->trap_current;
 
 	/* Monster or trap name (for damage) */
 	char killer[80];
 
 	project_player_handler_f player_handler = player_handlers[typ];
 	project_player_handler_context_t context = {
-		who,
+		origin,
 		r,
 		y,
 		x,
@@ -532,46 +536,72 @@ bool project_p(int who, int r, int y, int x, int dam, int typ)
 	};
 
 	/* No player here */
-	if (!square_isplayer(cave, y, x)) return (false);
+	if (!square_isplayer(cave, y, x)) {
+		return false;
+	}
 
-	/* Never affect projector */
-	if (who < 0) return (false);
+	switch (origin.what) {
+		case SRC_PLAYER:
+			/* Never affect projector */
+			return false;
 
-	/* Monster or trap */
-	if (mon) {
-		/* Check it is visible */
-		if (!mflag_has(mon->mflag, MFLAG_VISIBLE))
-			seen = false;
+		case SRC_MONSTER: {
+			struct monster *mon = cave_monster(cave, origin.which.monster);
 
-		/* Get the monster's real name */
-		monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
-	} else {
-		/* Ensure there's a trap */
-		assert(trap);
+			/* Check it is visible */
+			if (!mflag_has(mon->mflag, MFLAG_VISIBLE))
+				seen = false;
 
-		/* Get the trap name */
-		my_strcpy(killer, format("a %s", trap->kind->desc), sizeof(killer));
+			/* Get the monster's real name */
+			monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
+
+			break;
+		}
+
+		case SRC_TRAP: {
+			struct trap *trap = origin.which.trap;
+
+			/* Get the trap name */
+			strnfmt(killer, sizeof(killer), "a %s", trap->kind->desc);
+
+			break;
+		}
+
+		case SRC_OBJECT: {
+			struct object *obj = origin.which.object;
+			object_desc(killer, sizeof(killer), obj, ODESC_PREFIX | ODESC_BASE);
+			break;
+		}
+
+		case SRC_NONE: {
+			/* Assume the caller has set the killer variable */
+			break;
+		}
 	}
 
 	/* Let player know what is going on */
-	if (!seen)
+	if (!seen) {
 		msg("You are hit by %s!", gf_blind_desc(typ));
+	}
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(player, typ, dam, RANDOMISE,
-					 player->state.el_info[typ].res_level);
-	if (dam)
+	dam = adjust_dam(player,
+						typ,
+						dam,
+						RANDOMISE,
+						player->state.el_info[typ].res_level);
+	if (dam) {
 		take_hit(player, dam, killer);
+	}
 
 	/* Handle side effects */
-	if ((player_handler != NULL) && !player->is_dead)
+	if (player_handler != NULL && player->is_dead == false) {
 		player_handler(&context);
-
-	obvious = context.obvious;
+	}
 
 	/* Disturb */
 	disturb(player, 1);
 
 	/* Return "Anything seen?" */
-	return (obvious);
+	return context.obvious;
 }

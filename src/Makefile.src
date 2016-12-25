@@ -158,6 +158,7 @@ ANGFILES = \
 	save.o \
 	savefile.o \
 	sound-core.o \
+	source.o \
 	store.o \
 	target.o \
 	trap.o \

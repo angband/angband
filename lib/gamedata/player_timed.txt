@@ -6,19 +6,23 @@
 # Changing code or fail may have unpredictable results.
 # Changing the name, reordering, or adding whole new entires will severely
 # disrupt the game, and should only be done when list-player-timed.h
-# (and other code) is also  being changed, and the game recompiled. 
+# (and other code) is also  being changed, and the game recompiled.
 #
 # Fields:
-# name - the effect name 
+# name - the effect name
 # desc - the effect description
 # on-begin - the message on beginning the effect
 # on-end - the message on ending the effect
 # on-increase - the message on the effect increasing
 # on-decrease - the message on the effect decreasing
 # msgt - the message type for this effect
-# code - determines what flag type makes the effect fail: 1 means object flag,
-#        2 means resist, 3 means vulnerability
-# fail - the actual flag that causes the failure
+# fail - determines what makes the effect fail.
+#        param one:
+#          1 - object flag
+#          2 - resist
+#          3 - vulnerability
+#        param two:
+#          the actual flag that causes the failure
 #
 
 name:FAST
@@ -32,24 +36,21 @@ desc:slowness
 on-begin:You feel yourself moving slower!
 on-end:You feel yourself speed up.
 msgt:SLOW
-code:1
-fail:FREE_ACT
+fail:1:FREE_ACT
 
 name:BLIND
 desc:blindness
 on-begin:You are blind.
 on-end:You blink and your eyes clear.
 msgt:BLIND
-code:1
-fail:PROT_BLIND
+fail:1:PROT_BLIND
 
 name:PARALYZED
 desc:paralysis
 on-begin:You are paralysed!
 on-end:You can move again.
 msgt:PARALYZED
-code:1
-fail:FREE_ACT
+fail:1:FREE_ACT
 
 name:CONFUSED
 desc:confusion
@@ -58,8 +59,7 @@ on-end:You are no longer confused.
 on-increase:You are more confused!
 on-decrease:You feel a little less confused.
 msgt:CONFUSED
-code:1
-fail:PROT_CONF
+fail:1:PROT_CONF
 
 name:AFRAID
 desc:fear
@@ -68,8 +68,7 @@ on-end:You feel bolder now.
 on-increase:You are more scared!
 on-decrease:You feel a little less scared.
 msgt:AFRAID
-code:1
-fail:PROT_FEAR
+fail:1:PROT_FEAR
 
 name:IMAGE
 desc:hallucination
@@ -78,8 +77,7 @@ on-end:You can see clearly again.
 on-increase:You feel more drugged!
 on-decrease:You feel less drugged.
 msgt:DRUGGED
-code:2
-fail:CHAOS
+fail:2:CHAOS
 
 name:POISONED
 desc:poisoning
@@ -88,16 +86,14 @@ on-end:You are no longer poisoned.
 on-increase:You are more poisoned!
 on-decrease:You are less poisoned.
 msgt:POISONED
-code:2
-fail:POIS
+fail:2:POIS
 
 name:CUT
 desc:wounds
 
 name:STUN
 desc:stunning
-code:1
-fail:PROT_STUN
+fail:1:PROT_STUN
 
 name:PROTEVIL
 desc:protection from evil
@@ -168,8 +164,7 @@ on-end:You are no longer resistant to acid.
 on-increase:You feel more resistant to acid!
 on-decrease:You feel less resistant to acid.
 msgt:RES_ACID
-code:3
-fail:ACID
+fail:3:ACID
 
 name:OPP_ELEC
 desc:electricity resistance
@@ -178,8 +173,7 @@ on-end:You are no longer resistant to electricity.
 on-increase:You feel more resistant to electricity!
 on-decrease:You feel less resistant to electricity.
 msgt:RES_ELEC
-code:3
-fail:ELEC
+fail:3:ELEC
 
 name:OPP_FIRE
 desc:fire resistance
@@ -188,8 +182,7 @@ on-end:You are no longer resistant to fire.
 on-increase:You feel more resistant to fire!
 on-decrease:You feel less resistant to fire.
 msgt:RES_FIRE
-code:3
-fail:FIRE
+fail:3:FIRE
 
 name:OPP_COLD
 desc:cold resistance
@@ -198,8 +191,7 @@ on-end:You are no longer resistant to cold.
 on-increase:You feel more resistant to cold!
 on-decrease:You feel less resistant to cold.
 msgt:RES_COLD
-code:3
-fail:COLD
+fail:3:COLD
 
 name:OPP_POIS
 desc:poison resistance
@@ -262,8 +254,7 @@ on-end:Your body reasserts its true nature.
 on-increase:You are more scrambled!
 on-decrease:You are less scrambled.
 msgt:SCRAMBLE
-code:2
-fail:NEXUS
+fail:2:NEXUS
 
 name:TRAPSAFE
 desc:safety from traps

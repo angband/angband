@@ -502,7 +502,14 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
 
 		/* Do effect */
-		used = effect_do(effect, obj, &ident, was_aware, dir, beam, boost);
+		used = effect_do(effect,
+							source_player(),
+							obj,
+							&ident,
+							was_aware,
+							dir,
+							beam,
+							boost);
 
 		/* Quit if the item wasn't used and no knowledge was gained */
 		if (!used && (was_aware || !ident)) return;

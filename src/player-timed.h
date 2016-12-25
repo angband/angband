@@ -44,15 +44,6 @@
 #define TMD_CUT_DEEP    1000
 
 /**
- * Effect failure flag types
- */
-enum {
-	TMD_FAIL_FLAG_OBJECT = 1,
-	TMD_FAIL_FLAG_RESIST,
-	TMD_FAIL_FLAG_VULN
-};
-
-/**
  * Timed effects
  */
 enum
@@ -63,8 +54,23 @@ enum
 	TMD_MAX
 };
 
+/**
+ * Effect failure flag types
+ */
+enum {
+	TMD_FAIL_FLAG_OBJECT = 1,
+	TMD_FAIL_FLAG_RESIST,
+	TMD_FAIL_FLAG_VULN
+};
+
+/**
+ * Data struct
+ */
 struct timed_effect_data {
-	char *name;
+	const char *name;
+	u32b flag_redraw;
+	u32b flag_update;
+
 	int index;
 	char *desc;
 	char *on_begin;
@@ -74,10 +80,10 @@ struct timed_effect_data {
 	int msgt;
 	int fail_code;
 	int fail;
-	struct timed_effect_data *next;
 };
 
-struct timed_effect_data *timed_effects;
+extern struct file_parser player_timed_parser;
+extern struct timed_effect_data timed_effects[TMD_MAX];
 
 int timed_name_to_idx(const char *name);
 bool player_set_timed(struct player *p, int idx, int v, bool notify);

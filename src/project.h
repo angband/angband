@@ -6,6 +6,8 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+#include "source.h"
+
 /**
  * Spell types used by project(), and related functions.
  */
@@ -66,19 +68,19 @@ enum
 #define PROJECT_ARC   0x400
 #define PROJECT_PLAY  0x800
 
-bool project_f(int who, int r, int y, int x, int dam, int typ);
-int inven_damage(struct player *p, int type, int cperc);
-bool project_o(int who, int r, int y, int x, int dam, int typ,
-			   const struct object *protected_obj);
-void project_m(int who, int r, int y, int x, int dam, int typ, int flg,
-               bool *did_hit, bool *was_obvious);
-int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
-bool project_p(int who, int r, int y, int x, int dam, int typ);
-
-
-/* project.c */
+/* Display attrs and chars */
 extern byte gf_to_attr[GF_MAX][BOLT_MAX];
 extern wchar_t gf_to_char[GF_MAX][BOLT_MAX];
+
+int inven_damage(struct player *p, int type, int cperc);
+int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
+
+bool project_f(struct source, int r, int y, int x, int dam, int typ);
+bool project_o(struct source, int r, int y, int x, int dam, int typ,
+			   const struct object *protected_obj);
+void project_m(struct source, int r, int y, int x, int dam, int typ, int flg,
+               bool *did_hit, bool *was_obvious);
+bool project_p(struct source, int r, int y, int x, int dam, int typ);
 
 int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int flg);
 bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg);
@@ -90,7 +92,10 @@ const char *gf_desc(int type);
 const char *gf_blind_desc(int type);
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
-bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
+
+struct loc origin_get_loc(struct source origin);
+
+bool project(struct source, int rad, int y, int x, int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source,
 			 const struct object *obj);
 

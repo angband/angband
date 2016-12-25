@@ -27,6 +27,8 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "source.h"
+
 
 /**
  * Destroys a type of item on a given percent chance.
@@ -166,7 +168,7 @@ int inven_damage(struct player *p, int type, int cperc)
  * ------------------------------------------------------------------------ */
 
 typedef struct project_object_handler_context_s {
-	const int who;
+	const struct source origin;
 	const int r;
 	const int y;
 	const int x;
@@ -394,13 +396,13 @@ static const project_object_handler_f object_handlers[] = {
  * Called for projections with the PROJECT_ITEM flag set, which includes
  * beam, ball and breath effects.
  *
- * \param who is the monster list index of the caster
+ * \param origin is the origin of the effect
  * \param r is the distance from the centre of the effect
  * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
  * \param typ is the projection (GF_) type
- * \param protected_obj is an object that should not be affected by the 
+ * \param protected_obj is an object that should not be affected by the
  *        projection, typically the object that created it
  * \return whether the effects were obvious
  *
@@ -409,7 +411,7 @@ static const project_object_handler_f object_handlers[] = {
  *
  * Hack -- effects on objects which are memorized but not in view are also seen.
  */
-bool project_o(int who, int r, int y, int x, int dam, int typ,
+bool project_o(struct source origin, int r, int y, int x, int dam, int typ,
 			   const struct object *protected_obj)
 {
 	struct object *obj = square_object(cave, y, x);
@@ -421,8 +423,10 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 		bool do_kill = false;
 		const char *note_kill = NULL;
 		struct object *next = obj->next;
+
+		project_object_handler_f object_handler = object_handlers[typ];
 		project_object_handler_context_t context = {
-			who,
+			origin,
 			r,
 			y,
 			x,
@@ -434,7 +438,6 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 			ignore,
 			note_kill,
 		};
-		project_object_handler_f object_handler = object_handlers[typ];
 
 		if (object_handler != NULL)
 			object_handler(&context);

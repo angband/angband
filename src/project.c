@@ -26,6 +26,8 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "project.h"
+#include "source.h"
+#include "trap.h"
 
 /*
  * Specify attr/char pairs for visual special effects for project()
@@ -434,10 +436,37 @@ const char *gf_idx_to_name(int type)
  * ------------------------------------------------------------------------ */
 
 /**
- * Generic "beam"/"bolt"/"ball" projection routine.  
+ * Given an origin, find its coordinates and return them
+ *
+ * If there is no origin, return (-1, -1)
+ */
+struct loc origin_get_loc(struct source origin)
+{
+	switch (origin.what) {
+		case SRC_MONSTER: {
+			struct monster *who = cave_monster(cave, origin.which.monster);
+			return loc(who->fx, who->fy);
+		}
+
+		case SRC_TRAP: {
+			struct trap *trap = origin.which.trap;
+			return loc(trap->fx, trap->fy);
+		}
+
+		case SRC_PLAYER:
+		case SRC_OBJECT:	/* At the moment only worn cursed objects use this */
+			return loc(player->py, player->py);
+
+		case SRC_NONE:
+			return loc(-1, -1);
+	}
+}
+
+/**
+ * Generic "beam"/"bolt"/"ball" projection routine.
  *   -BEN-, some changes by -LM-
  *
- *   \param who Index of "source" monster (negative for the character)
+ *   \param origin Origin of the projection
  *   \param rad Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
  *	  length of arc from the source.
  *   \param y Target location (or location to travel towards)
@@ -579,7 +608,8 @@ const char *gf_idx_to_name(int type)
  * in the blast radius, in case the illumination of the grid was changed,
  * and "update_view()" and "update_monsters()" need to be called.
  */
-bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
+bool project(struct source origin, int rad, int y, int x,
+			 int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source,
 			 const struct object *obj)
 {
@@ -628,33 +658,28 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	handle_stuff(player);
 
 	/* No projection path - jump to target */
-	if (flg & (PROJECT_JUMP)) {
+	if (flg & PROJECT_JUMP) {
 		source = loc(x, y);
 
 		/* Clear the flag */
 		flg &= ~(PROJECT_JUMP);
+	} else {
+		source = origin_get_loc(origin);
+
+		/* Default to destination grid */
+		if (source.y == -1 && source.x == -1) {
+			source = loc(x, y);
+		}
 	}
 
-	/* Start at player */
-	else if (who < 0)
-		source = loc(player->px, player->py);
-
-	/* Start at monster */
-	else if (who > 0)
-		source = loc(cave_monster(cave, who)->fx, cave_monster(cave, who)->fy);
-
-	/* Implies no caster, so assume source is target */
-	else
-		source = loc(x, y);
-
 	/* Default destination */
-		destination = loc(x, y);
+	destination = loc(x, y);
 
 	/* Default center of explosion (if any) */
 	centre = loc(source.x, source.y);
 
-	/* 
-	 * An arc spell with no width and a non-zero radius is actually a 
+	/*
+	 * An arc spell with no width and a non-zero radius is actually a
 	 * beam of defined length.  Mark it as such.
 	 */
 	if ((flg & (PROJECT_ARC)) && (degrees_of_arc == 0) && (rad != 0)) {
@@ -666,9 +691,10 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		flg |= (PROJECT_THRU);
 	}
 
-
-	/* If a single grid is both source and destination (for example
-	 * if PROJECT_JUMP is set), store it. */
+	/*
+	 * If a single grid is both source and destination (for example
+	 * if PROJECT_JUMP is set), store it.
+	 */
 	if ((source.x == destination.x) && (source.y == destination.y)) {
 		blast_grid[num_grids].y = y;
 		blast_grid[num_grids].x = x;
@@ -752,7 +778,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		/* No special actions */
 	}
 
-	/* 
+	/*
 	 * All non-beam projections with a positive radius explode in some way.
 	 */
 	else if (rad > 0) {
@@ -956,7 +982,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the object in the grid */
-			if (project_o(who, distance_to_grid[i], y, x,
+			if (project_o(origin, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ, obj))
 				notice = true;
 		}
@@ -988,7 +1014,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				continue;
 
 			/* Affect the monster in the grid */
-			project_m(who, distance_to_grid[i], y, x,
+			project_m(origin, distance_to_grid[i], y, x,
 			          dam_at_dist[distance_to_grid[i]], typ, flg,
 			          &did_hit, &was_obvious);
 			if (was_obvious)
@@ -1003,7 +1029,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		}
 
 		/* Player affected one monster (without "jumping") */
-		if ((who < 0) && (num_hit == 1) && !(flg & (PROJECT_JUMP))) {
+		if (origin.what == SRC_PLAYER &&
+				num_hit == 1 &&
+				!(flg & PROJECT_JUMP)) {
 			/* Location */
 			x = last_hit_x;
 			y = last_hit_y;
@@ -1030,7 +1058,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the player, or keep scanning */
-			if (project_p(who, distance_to_grid[i], y, x,
+			if (project_p(origin, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ)) {
 				notice = true;
 				if (player->is_dead)
@@ -1049,7 +1077,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the feature in that grid */
-			if (project_f(who, distance_to_grid[i], y, x,
+			if (project_f(origin, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ))
 				notice = true;
 		}

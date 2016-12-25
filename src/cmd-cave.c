@@ -716,8 +716,10 @@ static bool do_cmd_disarm_aux(int y, int x)
 		skill = player->state.skills[SKILL_DISARM_PHYS];
 
 	/* Penalize some conditions */
-	if (player->timed[TMD_BLIND] || no_light() || player->timed[TMD_CONFUSED] ||
-		player->timed[TMD_IMAGE])
+	if (player->timed[TMD_BLIND] ||
+			no_light() ||
+			player->timed[TMD_CONFUSED] ||
+			player->timed[TMD_IMAGE])
 		skill = skill / 10;
 
 	/* Extract trap power */
