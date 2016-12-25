@@ -1200,10 +1200,10 @@ struct object_kind *money_kind(const char *name, int value)
  */
 struct object *make_gold(int lev, char *coin_type)
 {
-	/* This average is 20 at dlev0, 100 at dlev40, 220 at dlev100. */
-	s32b avg = (18 * lev)/10 + 18;
-	s32b spread = lev + 10;
-	s32b value = rand_spread(avg, spread);
+	/* This average is 16 at dlev0, 80 at dlev40, 176 at dlev100. */
+	int avg = (16 * lev)/10 + 16;
+	int spread = lev + 10;
+	int value = rand_spread(avg, spread);
 	struct object *new_gold = mem_zalloc(sizeof(*new_gold)); 
 
 	/* Increase the range to infinite, moving the average to 110% */
@@ -1215,11 +1215,12 @@ struct object *make_gold(int lev, char *coin_type)
 
 	/* If we're playing with no_selling, increase the value */
 	if (OPT(player, birth_no_selling) && player->depth)
-		value = value * MIN(5, player->depth);
+		value *= MIN(5, player->depth);
 
 	/* Cap gold at max short (or alternatively make pvals s32b) */
-	if (value > SHRT_MAX)
-		value = SHRT_MAX;
+	if (value >= SHRT_MAX) {
+		value = SHRT_MAX - randint0(200);
+	}
 
 	new_gold->pval = value;
 
