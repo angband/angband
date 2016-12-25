@@ -460,6 +460,8 @@ struct loc origin_get_loc(struct source origin)
 		case SRC_NONE:
 			return loc(-1, -1);
 	}
+
+	return loc(-1, -1);
 }
 
 /**
