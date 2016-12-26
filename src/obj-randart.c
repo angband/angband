@@ -184,14 +184,14 @@ static s16b art_idx_high_resist[] =	{
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
  */
-static s32b artifact_power(int a_idx)
+static s32b artifact_power(int a_idx, char *reason)
 {
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();
 	char buf[256];
 	s32b power;
 
-	file_putf(log_file, "********** ENTERING EVAL POWER ********\n");
+	file_putf(log_file, "********** Evaluating %s ********\n", reason);
 	file_putf(log_file, "Artifact index is %d\n", a_idx);
 
 	if (!make_fake_artifact(obj, &a_info[a_idx])) {
@@ -231,7 +231,7 @@ static void store_base_power(struct artifact_data *data)
 	j = 0;
 
 	for (i = 0; i < z_info->a_max; i++, j++) {
-		data->base_power[i] = artifact_power(i);
+		data->base_power[i] = artifact_power(i, "for original power");
 
 		/* capture power stats, ignoring cursed and uber arts */
 		if (data->base_power[i] > data->max_power &&
@@ -2363,7 +2363,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 	/* Structure to hold the old artifact */
 	struct artifact *a_old = mem_zalloc(sizeof *a_old);
 
-	file_putf(log_file, "+++++++++++++ CREATING NEW ARTIFACT ++++++++++++++\n");
+	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> CREATING NEW ARTIFACT\n");
 	file_putf(log_file, "Artifact %d: power = %d\n", a_idx, power);
 
 	/* Flip the sign on power if it's negative, since it's only used for base
@@ -2386,7 +2386,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 		base_alloc_old = data->base_item_prob[a_idx];
 
 		/* Try to find a good base item kind for the artifact */
-		do {
+		while (count < MAX_TRIES) {
 			/* Get the new item kind and do basic prep on it */
 			kind = get_base_item(a_idx, data);
 
@@ -2399,13 +2399,23 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 				make_bad(art, old_level);
 			}
 
-			ap2 = artifact_power(a_idx);
+			ap2 = artifact_power(a_idx, "for base item power");
 			file_putf(log_file, "Base item power old %d, new %d\n", power, ap2);
 			count++;
 
-		} while ((count < MAX_TRIES) &&
-				 (((ap2 > (power * 6) / 10 + 1) && (power - ap2 < 20)) ||
-		          (ap2 < (power / 10))));
+			/* New base item power too close to target artifact power */
+			if ((ap2 > (power * 6) / 10 + 1) && (power - ap2 < 20)) {
+				continue;
+			}
+
+			/* New base item power too low */
+			if (ap2 < (power / 10)) {
+				continue;
+			}
+
+			/* Acceptable */
+			break;
+		};
 
 		/* Calculate the proper rarity based on the new type.  We attempt
 		 * to preserve the 'effective rarity' which is equal to the
@@ -2470,7 +2480,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 
 	/* Give this artifact a shot at being supercharged */
 	try_supercharge(art, power, data);
-	ap = artifact_power(a_idx);
+	ap = artifact_power(a_idx, "result of supercharge");
 	if (ap > (power * 23) / 20 + 1)	{
 		/* too powerful -- put it back */
 		copy_artifact(a_old, art);
@@ -2490,7 +2500,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 			make_bad(art, old_level);
 			make_bad(art, old_level);
 			remove_contradictory(art);
-			ap = artifact_power(a_idx);
+			ap = artifact_power(a_idx, "damage for bad art");
 			/* Accept if it doesn't have any inhibited abilities */
 			if (ap < INHIBIT_POWER)
 				success = true;
@@ -2513,7 +2523,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 			copy_artifact(art, a_old);
 
 			add_ability(art, power, art_freq, data);
-			ap = artifact_power(a_idx);
+			ap = artifact_power(a_idx, "artifact attempt");
 
 			/* CR 11/14/01 - pushed both limits up by about 5% */
 			if (ap > (power * 23) / 20 + 1) {
@@ -2587,7 +2597,7 @@ static void scramble_artifact(int a_idx, struct artifact_data *data)
 	file_putf(log_file, "Power-based alloc_prob is %d\n", art->alloc_prob);
 
 	/* Success */
-	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> ARTIFACT COMPLETED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	file_putf(log_file, "<<<<<<<<<<<<<<<<<<<<<<<<<< ARTIFACT COMPLETED\n");
 	file_putf(log_file, "Number of tries for artifact %d was: %d\n", a_idx, tries);
 }
 
