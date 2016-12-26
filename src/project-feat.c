@@ -99,48 +99,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	if (square_isperm(cave, y, x)) return;
 
 	/* Different treatment for different walls */
-	if (square_iswall(cave, y, x) && !square_hasgoldvein(cave, y, x) &&
-		!square_seemslikewall(cave, y, x)) {
-		/* Message */
-		if (square_isseen(cave, y, x)) {
-			msg("The wall turns into mud!");
-			context->obvious = true;
-
-			/* Forget the wall */
-			square_forget(cave, y, x);
-		}
-
-		/* Destroy the wall */
-		square_destroy_wall(cave, y, x);
-	} else if (square_iswall(cave, y, x) && square_hasgoldvein(cave, y, x)) {
-		/* Message */
-		if (square_isseen(cave, y, x)) {
-			msg("The vein turns into mud!");
-			msg("You have found something!");
-			context->obvious = true;
-
-			/* Forget the wall */
-			square_forget(cave, y, x);
-		}
-
-		/* Destroy the wall */
-		square_destroy_wall(cave, y, x);
-
-		/* Place some gold */
-		place_gold(cave, y, x, player->depth, ORIGIN_FLOOR);
-	} else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x)) {
-		/* Message */
-		if (square_isseen(cave, y, x)) {
-			msg("The vein turns into mud!");
-			context->obvious = true;
-
-			/* Forget the wall */
-			square_forget(cave, y, x);
-		}
-
-		/* Destroy the wall */
-		square_destroy_wall(cave, y, x);
-	} else if (square_isrubble(cave, y, x)) {
+	if (square_isrubble(cave, y, x)) {
 		/* Message */
 		if (square_isseen(cave, y, x)) {
 			msg("The rubble turns into mud!");
@@ -174,6 +133,46 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 		/* Destroy the feature */
 		square_destroy_door(cave, y, x);
+	} else if (square_hasgoldvein(cave, y, x)) {
+		/* Message */
+		if (square_isseen(cave, y, x)) {
+			msg("The vein turns into mud!");
+			msg("You have found something!");
+			context->obvious = true;
+
+			/* Forget the wall */
+			square_forget(cave, y, x);
+		}
+
+		/* Destroy the wall */
+		square_destroy_wall(cave, y, x);
+
+		/* Place some gold */
+		place_gold(cave, y, x, player->depth, ORIGIN_FLOOR);
+	} else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x)) {
+		/* Message */
+		if (square_isseen(cave, y, x)) {
+			msg("The vein turns into mud!");
+			context->obvious = true;
+
+			/* Forget the wall */
+			square_forget(cave, y, x);
+		}
+
+		/* Destroy the wall */
+		square_destroy_wall(cave, y, x);
+	} else if (square_iswall(cave, y, x)) {
+		/* Message */
+		if (square_isseen(cave, y, x)) {
+			msg("The wall turns into mud!");
+			context->obvious = true;
+
+			/* Forget the wall */
+			square_forget(cave, y, x);
+		}
+
+		/* Destroy the wall */
+		square_destroy_wall(cave, y, x);
 	}
 
 	/* Update the visuals */
