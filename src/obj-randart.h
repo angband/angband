@@ -56,7 +56,7 @@ enum {
 	#undef ART_IDX
 };
 
-struct artifact_data {
+struct artifact_set_data {
 	/* Mean start and increment values for to_hit, to_dam and AC */
 	int hit_increment;
 	int dam_increment;

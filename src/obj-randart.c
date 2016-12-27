@@ -217,7 +217,7 @@ static s32b artifact_power(int a_idx, char *reason)
 /**
  * Store the original artifact power ratings as a baseline
  */
-static void store_base_power(struct artifact_data *data)
+static void store_base_power(struct artifact_set_data *data)
 {
 	int i, j;
 	struct artifact *art;
@@ -291,20 +291,17 @@ static void store_base_power(struct artifact_data *data)
 		default:
 			data->other_total++;
 		}
+		data->total++;
 	}
-	data->total = data->melee_total + data->bow_total + data->armor_total +
-	            data->shield_total + data->cloak_total + data->headgear_total +
-	            data->glove_total + data->boot_total + data->other_total;
 
     mem_free(fake_power);
 }
-
 
 /**
  * Handle weapon combat abilities
  */
 void count_weapon_abilities(const struct artifact *art,
-							struct artifact_data *data)
+							struct artifact_set_data *data)
 {
 	int bonus;
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
@@ -405,7 +402,8 @@ void count_weapon_abilities(const struct artifact *art,
 /**
  * Count combat abilities on bows
  */
-void count_bow_abilities(const struct artifact *art, struct artifact_data *data)
+void count_bow_abilities(const struct artifact *art,
+						 struct artifact_set_data *data)
 {
 	int bonus;
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
@@ -477,7 +475,7 @@ void count_bow_abilities(const struct artifact *art, struct artifact_data *data)
  * Handle nonweapon combat abilities
  */
 void count_nonweapon_abilities(const struct artifact *art,
-							   struct artifact_data *data)
+							   struct artifact_set_data *data)
 {
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
 	int to_hit = art->to_h - randcalc(kind->to_h, 0, MINIMISE);
@@ -585,7 +583,7 @@ void count_nonweapon_abilities(const struct artifact *art,
 /**
  * Count modifiers
  */
-void count_modifiers(const struct artifact *art, struct artifact_data *data)
+void count_modifiers(const struct artifact *art, struct artifact_set_data *data)
 {
 	int num = 0;
 
@@ -696,7 +694,8 @@ void count_modifiers(const struct artifact *art, struct artifact_data *data)
 /**
  * Count low resists and immunities.
  */
-void count_low_resists(const struct artifact *art, struct artifact_data *data)
+void count_low_resists(const struct artifact *art,
+					   struct artifact_set_data *data)
 {
 	int num = 0;
 
@@ -747,7 +746,8 @@ void count_low_resists(const struct artifact *art, struct artifact_data *data)
 /**
  * Count high resists and protections.
  */
-void count_high_resists(const struct artifact *art, struct artifact_data *data)
+void count_high_resists(const struct artifact *art,
+						struct artifact_set_data *data)
 {
 	int num = 0;
 
@@ -873,7 +873,7 @@ void count_high_resists(const struct artifact *art, struct artifact_data *data)
  * us to have general abilities appear more commonly on a
  * certain item type.
  */
-void count_abilities(const struct artifact *art, struct artifact_data *data)
+void count_abilities(const struct artifact *art, struct artifact_set_data *data)
 {
 	int num = 0;
 
@@ -977,7 +977,7 @@ void count_abilities(const struct artifact *art, struct artifact_data *data)
  * Parse the standard artifacts and count up the frequencies of the various
  * abilities.
  */
-static void collect_artifact_data(struct artifact_data *data)
+static void collect_artifact_data(struct artifact_set_data *data)
 {
 	size_t i;
 
@@ -1040,7 +1040,7 @@ static void collect_artifact_data(struct artifact_data *data)
  * The following loops look complicated, but they are simply equivalent
  * to going through each of the relevant ability types one by one.
  */
-static void rescale_freqs(struct artifact_data *data)
+static void rescale_freqs(struct artifact_set_data *data)
 {
 	size_t i;
 	s32b temp;
@@ -1130,7 +1130,7 @@ static void rescale_freqs(struct artifact_data *data)
  * compensate for cases like this by applying corrective
  * scaling.
  */
-static void adjust_freqs(struct artifact_data *data)
+static void adjust_freqs(struct artifact_set_data *data)
 {
 	/*
 	 * Enforce minimum values for any frequencies that might potentially
@@ -1189,7 +1189,7 @@ static void adjust_freqs(struct artifact_data *data)
  *
  * This is used to give dynamic generation probabilities.
  */
-static void parse_frequencies(struct artifact_data *data)
+static void parse_frequencies(struct artifact_set_data *data)
 {
 	size_t i;
 	int j;
@@ -1249,7 +1249,8 @@ static void parse_frequencies(struct artifact_data *data)
  * passed a pointer to a rarity value in order to return the rarity of the
  * new item.
  */
-static struct object_kind *get_base_item(int a_idx, struct artifact_data *data)
+static struct object_kind *get_base_item(int a_idx,
+										 struct artifact_set_data *data)
 {
 	struct artifact *art = &a_info[a_idx];
 	int tval = 0, sval = 0, i = 0;
@@ -1361,7 +1362,7 @@ static struct object_kind *get_base_item(int a_idx, struct artifact_data *data)
  * weighted randomization algorithm.
  */
 static void build_freq_table(struct artifact *art, int *freq,
-							 struct artifact_data *data)
+							 struct artifact_set_data *data)
 {
 	int i;
 	size_t j;
@@ -1483,7 +1484,7 @@ static void build_freq_table(struct artifact *art, int *freq,
  * chance at each of these up front (if applicable).
  */
 static void try_supercharge(struct artifact *art, s32b target_power,
-							struct artifact_data *data)
+							struct artifact_set_data *data)
 {
 	/* Huge damage dice or max blows - melee weapon only */
 	if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
@@ -1708,7 +1709,8 @@ static void add_low_resist(struct artifact *art)
 /**
  * Adds a high resist, if possible
  */
-static void add_high_resist(struct artifact *art, struct artifact_data *data)
+static void add_high_resist(struct artifact *art,
+							struct artifact_set_data *data)
 {
 	/* Add a high resist, according to the generated frequency distribution. */
 	size_t i;
@@ -1972,7 +1974,7 @@ static int choose_ability (int *freq_table)
  */
 
 static void add_ability_aux(struct artifact *art, int r, s32b target_power,
-							struct artifact_data *data)
+							struct artifact_set_data *data)
 {
 	switch(r)
 	{
@@ -2242,7 +2244,7 @@ static void remove_contradictory(struct artifact *art)
  * Randomly select an extra ability to be added to the artifact in question.
  */
 static void add_ability(struct artifact *art, s32b target_power, int *freq,
-						struct artifact_data *data)
+						struct artifact_set_data *data)
 {
 	int r;
 
@@ -2345,7 +2347,7 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
  *
  * This code is full of intricacies developed over years of tweaking.
  */
-static void scramble_artifact(int a_idx, struct artifact_data *data)
+static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 {
 	struct artifact *art = &a_info[a_idx];
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
@@ -2638,7 +2640,7 @@ static bool artifacts_acceptable(void)
 /**
  * Scramble each artifact
  */
-static void scramble(struct artifact_data *data)
+static void scramble(struct artifact_set_data *data)
 {
 	/* If our artifact set fails to meet certain criteria, we start over. */
 	do {
@@ -2707,9 +2709,7 @@ static void init_names(void)
 
 		if (!a->tval || !a->sval || !a->name) continue;
 
-		if (prefix(a->name, "of Power"))
-			my_strcat(desc, a->name + 10, strlen(a->name) - 1);
-		else if (prefix(a->name, "of "))
+		if (prefix(a->name, "of "))
 			my_strcat(desc, a->name + 3, strlen(a->name) + 7);
 		else
 			my_strcat(desc, a->name + 1, strlen(a->name) + 8);
@@ -2725,7 +2725,7 @@ static void init_names(void)
 /**
  * Call the name allocation and artifact scrambling routines
  */
-void do_randart_aux(struct artifact_data *data)
+void do_randart_aux(struct artifact_set_data *data)
 {
 	/* Generate random names */
 	init_names();
@@ -2737,9 +2737,9 @@ void do_randart_aux(struct artifact_data *data)
 /**
  * Allocate a new artifact set data structure
  */
-static struct artifact_data *artifact_data_new(void)
+static struct artifact_set_data *artifact_set_data_new(void)
 {
-	struct artifact_data *data = mem_zalloc(sizeof(*data));
+	struct artifact_set_data *data = mem_zalloc(sizeof(*data));
 
 	data->base_power = mem_zalloc(z_info->a_max * sizeof(int));
 	data->base_item_level = mem_zalloc(z_info->a_max * sizeof(int));
@@ -2764,7 +2764,7 @@ static struct artifact_data *artifact_data_new(void)
 /**
  * Allocate a new artifact set data structure
  */
-static void artifact_data_free(struct artifact_data *data)
+static void artifact_set_data_free(struct artifact_set_data *data)
 {
 	mem_free(data->base_power);
 	mem_free(data->base_item_level);
@@ -2782,8 +2782,8 @@ static void artifact_data_free(struct artifact_data *data)
 void do_randart(u32b randart_seed)
 {
 	char buf[1024];
-	struct artifact_data *standarts = artifact_data_new();
-	struct artifact_data *randarts;
+	struct artifact_set_data *standarts = artifact_set_data_new();
+	struct artifact_set_data *randarts;
 
 	/* Prepare to use the Angband "simple" RNG. */
 	Rand_value = randart_seed;
@@ -2794,7 +2794,7 @@ void do_randart(u32b randart_seed)
 	log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	if (!log_file) {
 		msg("Error - can't open randart.log for writing.");
-		artifact_data_free(standarts);
+		artifact_set_data_free(standarts);
 		exit(1);
 	}
 
@@ -2806,13 +2806,13 @@ void do_randart(u32b randart_seed)
 
 	/* Generate the random artifacts */
 	do_randart_aux(standarts);
-	artifact_data_free(standarts);
+	artifact_set_data_free(standarts);
 
 	/* Look at the frequencies on the finished items */
-	randarts = artifact_data_new();
+	randarts = artifact_set_data_new();
 	store_base_power(randarts);
 	parse_frequencies(randarts);
-	artifact_data_free(randarts);
+	artifact_set_data_free(randarts);
 
 	/* Close the log file */
 	if (!file_close(log_file)) {
