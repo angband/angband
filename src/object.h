@@ -92,7 +92,7 @@ struct curse {
 	char *name;
 	bool *poss;
 	struct object *obj;
-	int power;
+	char *conflict;
 	char *desc;
 };
 

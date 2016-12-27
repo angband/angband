@@ -895,6 +895,18 @@ static enum parser_error parse_curse_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_curse_conflict(struct parser *p) {
+	struct curse *curse = parser_priv(p);
+
+	if (!curse)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	curse->conflict = string_append(curse->conflict, "|");
+	curse->conflict = string_append(curse->conflict, parser_getstr(p, "conf"));
+	curse->conflict = string_append(curse->conflict, "|");
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_curse(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -910,6 +922,7 @@ struct parser *init_parse_curse(void) {
 	parser_reg(p, "flags str flags", parse_curse_flags);
 	parser_reg(p, "values str values", parse_curse_values);
 	parser_reg(p, "desc str desc", parse_curse_desc);
+	parser_reg(p, "conflict str conf", parse_curse_conflict);
 	return p;
 }
 
@@ -949,6 +962,7 @@ static void cleanup_curse(void)
 	int idx;
 	for (idx = 0; idx < z_info->curse_max; idx++) {
 		string_free(curses[idx].name);
+		string_free(curses[idx].conflict);
 		mem_free(curses[idx].desc);
 		if (curses[idx].obj) {
 			if (curses[idx].obj->known) {

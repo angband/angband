@@ -88,6 +88,29 @@ bool curses_are_equal(const struct object *obj1, const struct object *obj2)
 }
 
 /**
+ * Detect if a curse is in the conflict list of another curse
+ */
+static bool curses_conflict(int first, int second)
+{
+	struct curse *c = &curses[first];
+	char buf[80] = "|";
+
+	/* First curse has no conflicts */
+	if (!c->conflict) {
+		return false;
+	}
+
+	/* Build the conflict strong and search for it */
+	my_strcat(buf, curses[second].name, sizeof(buf));
+	my_strcat(buf, "|", sizeof(buf));
+	if (strstr(c->conflict, buf)) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Append a given curse with a given power to an object
  *
  * \param the object to curse
@@ -97,9 +120,17 @@ bool curses_are_equal(const struct object *obj1, const struct object *obj2)
 bool append_object_curse(struct object *obj, int pick, int power)
 {
 	struct curse *c = &curses[pick];
+	int i;
 
 	if (!obj->curses)
 		obj->curses = mem_zalloc(z_info->curse_max * sizeof(struct curse_data));
+
+	/* Reject conflicting curses */
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (obj->curses[i].power && curses_conflict(i, pick)) {
+			return false;
+		}
+	}
 
 	/* Adjust power if our pick is a duplicate */
 	if (power > obj->curses[pick].power) {
@@ -120,8 +151,17 @@ bool append_object_curse(struct object *obj, int pick, int power)
  */
 bool append_artifact_curse(struct artifact *art, int pick, int power)
 {
+	int i;
+
 	if (!art->curses)
 		art->curses = mem_zalloc(z_info->curse_max * sizeof(int));
+
+	/* Reject conflicting curses */
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (art->curses[i] && curses_conflict(i, pick)) {
+			return false;
+		}
+	}
 
 	/* Adjust power if our pick is a duplicate */
 	if (power > art->curses[pick]) {
