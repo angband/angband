@@ -111,7 +111,11 @@ static void wr_item(const struct object *obj)
 
 	wr_byte(obj->origin);
 	wr_byte(obj->origin_depth);
-	wr_u16b(obj->origin_xtra);
+	if (obj->origin_race) {
+		wr_string(obj->origin_race);
+	} else {
+		wr_string("");
+	}
 	wr_byte(obj->notice);
 
 	for (i = 0; i < OF_SIZE; i++)

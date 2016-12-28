@@ -24,6 +24,7 @@
 #include "init.h"
 #include "monster.h"
 #include "mon-summon.h"
+#include "mon-util.h"
 #include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-info.h"
@@ -1632,8 +1633,9 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 	char loot_spot[80];
 	char name[80];
 	int origin;
-	const char *dropper;
+	const char *dropper = NULL;
 	const char *article;
+	bool unique = false;
 
 	/* Only give this info in chardumps if wieldable */
 	if (terse && !obj_can_wear(obj))
@@ -1653,12 +1655,20 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 		my_strcpy(loot_spot, "in town", sizeof(loot_spot));
 
 	/* Name the monster of origin */
-	if (r_info[obj->origin_xtra].ridx)
-		dropper = r_info[obj->origin_xtra].name;
-	else
+	if (obj->origin_race) {
+		struct monster_race *mon = lookup_monster(obj->origin_race);
+		if (mon) {
+			dropper = obj->origin_race;
+			if (rf_has(mon->flags, RF_UNIQUE)) {
+				unique = true;
+			}
+		}
+	}
+	if (!dropper) {
 		dropper = "monster lost to history";
+	}
 	article = is_a_vowel(dropper[0]) ? "an " : "a ";
-	if (rf_has(r_info[obj->origin_xtra].flags, RF_UNIQUE))
+	if (unique)
 		my_strcpy(name, dropper, sizeof(name));
 	else {
 		my_strcpy(name, article, sizeof(name));

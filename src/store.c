@@ -772,40 +772,7 @@ static void store_object_absorb(struct object *old, struct object *new)
 	if (tval_can_have_charges(old))
 		old->pval += new->pval;
 
-	if ((old->origin != new->origin) ||
-	    (old->origin_depth != new->origin_depth) ||
-	    (old->origin_xtra != new->origin_xtra)) {
-		int act = 2;
-
-		if ((old->origin == ORIGIN_DROP) && (old->origin == new->origin)) {
-			struct monster_race *r_old = &r_info[old->origin_xtra];
-			struct monster_race *r_new = &r_info[new->origin_xtra];
-
-			bool old_uniq = rf_has(r_old->flags, RF_UNIQUE) ? true : false;
-			bool new_uniq = rf_has(r_new->flags, RF_UNIQUE) ? true : false;
-
-			if (old_uniq && !new_uniq) act = 0;
-			else if (new_uniq && !old_uniq) act = 1;
-			else act = 2;
-		}
-
-		switch (act)
-		{
-			/* Overwrite with new */
-			case 1:
-			{
-				old->origin = new->origin;
-				old->origin_depth = new->origin_depth;
-				old->origin_xtra = new->origin_xtra;
-			}
-
-			/* Set as "mixed" */
-			case 2:
-			{
-				old->origin = ORIGIN_MIXED;
-			}
-		}
-	}
+	object_origin_combine(old, new);
 
 	/* Fully absorbed */
 	object_delete(&new);

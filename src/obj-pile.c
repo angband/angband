@@ -25,6 +25,7 @@
 #include "grafmode.h"
 #include "init.h"
 #include "mon-make.h"
+#include "mon-util.h"
 #include "monster.h"
 #include "obj-curse.h"
 #include "obj-desc.h"
@@ -208,6 +209,7 @@ struct object *object_new(void)
  */
 void object_free(struct object *obj)
 {
+	string_free(obj->origin_race);
 	mem_free(obj->slays);
 	mem_free(obj->brands);
 	mem_free(obj->curses);
@@ -415,6 +417,50 @@ bool object_similar(const struct object *obj1, const struct object *obj2,
 }
 
 /**
+ * Combine the origins of two objects
+ */
+void object_origin_combine(struct object *obj1, const struct object *obj2)
+{
+	int act = 2;
+
+	if (obj1->origin_race && obj2->origin_race) {
+		struct monster_race *race1 = lookup_monster(obj1->origin_race);
+		struct monster_race *race2 = lookup_monster(obj2->origin_race);
+		bool r1_uniq = false;
+		bool r2_uniq = false;
+
+		if (race1) {
+			r1_uniq = rf_has(race1->flags, RF_UNIQUE) ? true : false;
+		}
+		if (race2) {
+			r2_uniq = rf_has(race2->flags, RF_UNIQUE) ? true : false;
+		}
+
+		if (r1_uniq && !r2_uniq) act = 0;
+		else if (r2_uniq && !r1_uniq) act = 1;
+		else act = 2;
+	}
+
+	switch (act)
+	{
+		/* Overwrite with obj2 */
+		case 1:
+		{
+			obj1->origin = obj2->origin;
+			obj1->origin_depth = obj2->origin_depth;
+			string_free(obj1->origin_race);
+			obj1->origin_race = string_make(obj2->origin_race);
+		}
+
+		/* Set as "mixed" */
+		case 2:
+		{
+			obj1->origin = ORIGIN_MIXED;
+		}
+	}
+}
+
+/**
  * Allow one item to "absorb" another, assuming they are similar.
  *
  * The blending of the "note" field assumes that either (1) one has an
@@ -450,40 +496,7 @@ static void object_absorb_merge(struct object *obj1, const struct object *obj2)
 	}
 
 	/* Combine origin data as best we can */
-	if (obj1->origin != obj2->origin ||
-		obj1->origin_depth != obj2->origin_depth ||
-		obj1->origin_xtra != obj2->origin_xtra) {
-		int act = 2;
-
-		if (obj1->origin_xtra && obj2->origin_xtra) {
-			struct monster_race *race1 = &r_info[obj1->origin_xtra];
-			struct monster_race *race2 = &r_info[obj2->origin_xtra];
-
-			bool r1_uniq = rf_has(race1->flags, RF_UNIQUE) ? true : false;
-			bool r2_uniq = rf_has(race2->flags, RF_UNIQUE) ? true : false;
-
-			if (r1_uniq && !r2_uniq) act = 0;
-			else if (r2_uniq && !r1_uniq) act = 1;
-			else act = 2;
-		}
-
-		switch (act)
-		{
-				/* Overwrite with obj2 */
-			case 1:
-			{
-				obj1->origin = obj2->origin;
-				obj1->origin_depth = obj2->origin_depth;
-				obj1->origin_xtra = obj2->origin_xtra;
-			}
-
-				/* Set as "mixed" */
-			case 2:
-			{
-				obj1->origin = ORIGIN_MIXED;
-			}
-		}
-	}
+	object_origin_combine(obj1, obj2);
 }
 
 /**

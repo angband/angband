@@ -143,7 +143,10 @@ static struct object *rd_item(void)
 
 	rd_byte(&obj->origin);
 	rd_byte(&obj->origin_depth);
-	rd_u16b(&obj->origin_xtra);
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) {
+		obj->origin_race = string_make(buf);
+	}
 	rd_byte(&obj->notice);
 
 	for (i = 0; i < of_size; i++)
