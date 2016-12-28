@@ -7,7 +7,7 @@
 
 # === Understanding object.txt ===
 
-# name: serial number : & object name~
+# name: & object name~
 # graphics: symbol : color
 # type: tval 
 # properties: depth : weight : cost
@@ -34,8 +34,7 @@
 # range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
 # 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
 
-# 'name' indicates the beginning of an entry. The serial number must
-# increase for each new item. The '&' and '~' symbols are use to
+# 'name' indicates the beginning of an entry. The '&' and '~' symbols are use to
 # include articles and pluralization as necessary to ensure
 # grammatical correctness in object descriptions.
 #

@@ -24,13 +24,12 @@ int test_order(void *state) {
 }
 
 int test_name0(void *state) {
-	enum parser_error r = parser_parse(state, "name:5:of Resist Lightning");
+	enum parser_error r = parser_parse(state, "name:of Resist Lightning");
 	struct ego_item *e;
 
 	eq(r, PARSE_ERROR_NONE);
 	e = parser_priv(state);
 	require(e);
-	eq(e->eidx, 5);
 	require(streq(e->name, "of Resist Lightning"));
 	ok;
 }

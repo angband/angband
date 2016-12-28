@@ -1699,14 +1699,12 @@ struct file_parser object_parser = {
  * ------------------------------------------------------------------------ */
 
 static enum parser_error parse_ego_name(struct parser *p) {
-	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct ego_item *h = parser_priv(p);
 
 	struct ego_item *e = mem_zalloc(sizeof *e);
 	e->next = h;
 	parser_setpriv(p, e);
-	e->eidx = idx;
 	e->name = string_make(name);
 	return PARSE_ERROR_NONE;
 }
@@ -2052,7 +2050,7 @@ static enum parser_error parse_ego_curse(struct parser *p) {
 struct parser *init_parse_ego(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "name int index str name", parse_ego_name);
+	parser_reg(p, "name str name", parse_ego_name);
 	parser_reg(p, "info int cost int rating", parse_ego_info);
 	parser_reg(p, "alloc int common str minmax", parse_ego_alloc);
 	parser_reg(p, "type sym tval", parse_ego_type);
@@ -2079,25 +2077,29 @@ static errr run_parse_ego(struct parser *p) {
 
 static errr finish_parse_ego(struct parser *p) {
 	struct ego_item *e, *n;
+	int eidx;
 
-	/* scan the list for the max id */
+	/* Scan the list for the max id */
 	z_info->e_max = 0;
 	e = parser_priv(p);
 	while (e) {
-		if (e->eidx > z_info->e_max)
-			z_info->e_max = e->eidx;
+		z_info->e_max++;
 		e = e->next;
 	}
 
-	/* allocate the direct access list and copy the data to it */
+	/* Allocate the direct access list and copy the data to it */
 	e_info = mem_zalloc((z_info->e_max + 1) * sizeof(*e));
-	for (e = parser_priv(p); e; e = n) {
-		memcpy(&e_info[e->eidx], e, sizeof(*e));
+	eidx = z_info->e_max - 1;
+	for (e = parser_priv(p); e; e = n, eidx--) {
+		assert(eidx >= 0);
+
+		memcpy(&e_info[eidx], e, sizeof(*e));
+		e_info[eidx].eidx = eidx;
 		n = e->next;
-		if (n)
-			e_info[e->eidx].next = &e_info[n->eidx];
+		if (eidx < z_info->e_max - 1)
+			e_info[eidx].next = &e_info[eidx + 1];
 		else
-			e_info[e->eidx].next = NULL;
+			e_info[eidx].next = NULL;
 		mem_free(e);
 	}
 	z_info->e_max += 1;
