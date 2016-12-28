@@ -418,19 +418,24 @@ static void cleanup_player(void) {
 	mem_free(player->upkeep);
 	player->upkeep = NULL;
 
-	/* Free the things that are only there if there is a loaded player -
-	 * checking if there are quests will suffice */
+	/* Free the things that are only sometimes initialised */
 	if (player->quests) {
 		player_quests_free(player);
+	}
+	if (player->spell_flags) {
 		player_spells_free(player);
+	}
+	if (player->gear) {
 		object_pile_free(player->gear);
 		object_pile_free(player->gear_k);
+	}
+	if (player->body.slots) {
 		for (i = 0; i < player->body.count; i++)
 			string_free(player->body.slots[i].name);
 		mem_free(player->body.slots);
-		string_free(player->body.name);
-		mem_free(player->history);
 	}
+	string_free(player->body.name);
+	string_free(player->history);
 	if (player->cave) {
 		cave_free(player->cave);
 		player->cave = NULL;

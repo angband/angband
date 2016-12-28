@@ -4543,4 +4543,5 @@ void effect_simple(int index,
 	}
 
 	effect_do(&effect, origin, NULL, ident, true, dir, 0, 0);
+	dice_free(effect.dice);
 }

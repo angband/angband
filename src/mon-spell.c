@@ -144,7 +144,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 {
 	const struct monster_spell *spell = monster_spell_by_index(index);
 
-	bool ident;
+	bool ident = false;
 	bool hits;
 
 	/* See if it hits */

@@ -1037,6 +1037,8 @@ void do_cmd_roll_stats(struct command *cmd)
 
 	/* There's no real need to do this here, but it's tradition. */
 	get_ahw(player);
+	if (player->history)
+		string_free(player->history);
 	player->history = get_history(player->race->history);
 
 	event_signal(EVENT_GOLD);
