@@ -692,50 +692,58 @@ bool effect_handler_DRAIN_LIGHT(effect_handler_context_t *context)
  */
 bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 {
-	assert(context->origin.what == SRC_MONSTER);
-
 	int drain = effect_calculate_value(context, false);
+	bool monster = context->origin.what != SRC_TRAP;
 	char m_name[80];
-	struct monster *mon = cave_monster(cave, context->origin.which.monster);
+	struct monster *mon = NULL;
 
 	context->ident = true;
 
-	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+	if (monster) {
+		assert(context->origin.what == SRC_MONSTER);
+
+		mon = cave_monster(cave, context->origin.which.monster);
+
+		/* Get the monster name (or "it") */
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+	}
 
 	if (!player->csp) {
 		msg("The draining fails.");
-		update_smart_learn(mon, player, 0, PF_NO_MANA, -1);
+		if (monster) {
+			update_smart_learn(mon, player, 0, PF_NO_MANA, -1);
+		}
 		return true;
 	}
 
-	/* Full drain */
+	/* Drain the given amount if the player has that many, or all of them */
 	if (drain >= player->csp) {
 		drain = player->csp;
 		player->csp = 0;
 		player->csp_frac = 0;
-	}
-	/* Partial drain */
-	else
+	} else {
 		player->csp -= drain;
+	}
+
+	/* Heal the monster */
+	if (monster) {
+		if (mon->hp < mon->maxhp) {
+			mon->hp += (6 * drain);
+			if (mon->hp > mon->maxhp)
+				mon->hp = mon->maxhp;
+
+			/* Redraw (later) if needed */
+			if (player->upkeep->health_who == mon)
+				player->upkeep->redraw |= (PR_HEALTH);
+
+			/* Special message */
+			if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+				msg("%s appears healthier.", m_name);
+		}
+	}
 
 	/* Redraw mana */
 	player->upkeep->redraw |= PR_MANA;
-
-	/* Heal the monster */
-	if (mon->hp < mon->maxhp) {
-		mon->hp += (6 * drain);
-		if (mon->hp > mon->maxhp)
-			mon->hp = mon->maxhp;
-
-		/* Redraw (later) if needed */
-		if (player->upkeep->health_who == mon)
-			player->upkeep->redraw |= (PR_HEALTH);
-
-		/* Special message */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
-			msg("%s appears healthier.", m_name);
-	}
 
 	return true;
 }
@@ -2667,7 +2675,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	int d, i, min, y, x;
 
 	bool look = true;
-	bool is_player = (context->origin.what == SRC_PLAYER || context->p2);
+	bool is_player = (context->origin.what != SRC_MONSTER || context->p2);
 
 	context->ident = true;
 

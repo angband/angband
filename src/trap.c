@@ -190,7 +190,7 @@ static int pick_trap(int feat, int trap_level)
 		/* Ensure that this is a player trap */
 		if (!kind->name) continue;
 		if (!trf_has(kind->flags, TRF_TRAP)) continue;
-	
+
 		/* Require that trap_level not be too low */
 		if (kind->min_depth > trap_level) continue;
 
@@ -373,7 +373,7 @@ bool trap_check_hit(int power)
  */
 extern void hit_trap(int y, int x)
 {
-	bool ident;
+	bool ident = false;
 	struct trap *trap;
 	struct effect *effect;
 
