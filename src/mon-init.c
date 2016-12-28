@@ -932,7 +932,6 @@ static enum parser_error parse_monster_name(struct parser *p) {
 	struct monster_race *h = parser_priv(p);
 	struct monster_race *r = mem_zalloc(sizeof *r);
 	r->next = h;
-	r->ridx = parser_getuint(p, "index");
 	r->name = string_make(parser_getstr(p, "name"));
 	parser_setpriv(p, r);
 	return PARSE_ERROR_NONE;
@@ -1292,7 +1291,7 @@ struct parser *init_parse_monster(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "name uint index str name", parse_monster_name);
+	parser_reg(p, "name str name", parse_monster_name);
 	parser_reg(p, "plural ?str plural", parse_monster_plural);
 	parser_reg(p, "base sym base", parse_monster_base);
 	parser_reg(p, "glyph char glyph", parse_monster_glyph);
@@ -1321,6 +1320,7 @@ static errr run_parse_monster(struct parser *p) {
 static errr finish_parse_monster(struct parser *p) {
 	struct monster_race *r, *n;
 	size_t i;
+	int ridx;
 
 	/* Scan the list for the max id and max blows */
 	z_info->r_max = 0;
@@ -1329,8 +1329,7 @@ static errr finish_parse_monster(struct parser *p) {
 	while (r) {
 		int max_blows = 0;
 		struct monster_blow *b = r->blow;
-		if (r->ridx > z_info->r_max)
-			z_info->r_max = r->ridx;
+		z_info->r_max++;
 		while (b) {
 			b = b->next;
 			max_blows++;
@@ -1342,16 +1341,20 @@ static errr finish_parse_monster(struct parser *p) {
 
 	/* Allocate the direct access list and copy the race records to it */
 	r_info = mem_zalloc((z_info->r_max + 1) * sizeof(*r));
-	for (r = parser_priv(p); r; r = n) {
+	ridx = z_info->r_max - 1;
+	for (r = parser_priv(p); r; r = n, ridx--) {
 		struct monster_blow *b_new;
 
+		assert(ridx >= 0);
+
 		/* Main record */
-		memcpy(&r_info[r->ridx], r, sizeof(*r));
+		memcpy(&r_info[ridx], r, sizeof(*r));
+		r_info[ridx].ridx = ridx;
 		n = r->next;
-		if (n)
-			r_info[r->ridx].next = &r_info[n->ridx];
+		if (ridx < z_info->r_max - 1)
+			r_info[ridx].next = &r_info[ridx + 1];
 		else
-			r_info[r->ridx].next = NULL;
+			r_info[ridx].next = NULL;
 
 		/* Blows */
 		b_new = mem_zalloc(z_info->mon_blows_max * sizeof(*b_new));
@@ -1379,7 +1382,7 @@ static errr finish_parse_monster(struct parser *p) {
 				b_old = b_temp;
 			}
 		}
-		r_info[r->ridx].blow = b_new;
+		r_info[ridx].blow = b_new;
 
 		mem_free(r);
 	}
@@ -1762,11 +1765,11 @@ struct file_parser pit_parser = {
  * ------------------------------------------------------------------------ */
 
 static enum parser_error parse_lore_name(struct parser *p) {
-	int index = parser_getuint(p, "index");
-	struct monster_lore *l = &l_list[index];
+	struct monster_race *race = lookup_monster(parser_getstr(p, "name"));
+	struct monster_lore *l = &l_list[race->ridx];
 
 	parser_setpriv(p, l);
-	l->ridx = index;
+	l->ridx = race->ridx;
 	return PARSE_ERROR_NONE;
 }
 
@@ -2013,7 +2016,7 @@ struct parser *init_parse_lore(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "name uint index str name", parse_lore_name);
+	parser_reg(p, "name str name", parse_lore_name);
 	parser_reg(p, "plural ?str plural", ignored);
 	parser_reg(p, "base sym base", parse_lore_base);
 	parser_reg(p, "glyph char glyph", ignored);
@@ -2026,6 +2029,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "flags-off ?str flags", ignored);
 	parser_reg(p, "desc str desc", ignored);
 	parser_reg(p, "spell-freq int freq", ignored);
+	parser_reg(p, "spell-power uint power", ignored);
 	parser_reg(p, "spells str spells", parse_lore_spells);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_lore_drop);
 	parser_reg(p, "drop-artifact str name", parse_lore_drop_artifact);

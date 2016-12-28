@@ -252,12 +252,16 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 {
 	byte tmp8u;
 	u16b tmp16u;
-	s16b r_idx;
+	char race_name[80];
 	size_t j;
 
 	/* Read the monster race */
-	rd_s16b(&r_idx);
-	mon->race = &r_info[r_idx];
+	rd_string(race_name, sizeof(race_name));
+	mon->race = lookup_monster(race_name);
+	if (!mon->race) {
+		note(format("Monster race %s no longer exists!", race_name));
+		return (-1);
+	}
 
 	/* Read the other information */
 	rd_byte(&mon->fy);

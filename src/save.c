@@ -192,7 +192,7 @@ static void wr_monster(const struct monster *mon)
 	struct object *obj = mon->held_obj; 
 	struct object *dummy = object_new();
 
-	wr_s16b(mon->race->ridx);
+	wr_string(mon->race->name);
 	wr_byte(mon->fy);
 	wr_byte(mon->fx);
 	wr_s16b(mon->hp);

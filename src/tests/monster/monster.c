@@ -34,7 +34,7 @@ int test_match_monster_bases(void *state) {
 	require(!match_monster_bases(base, "lich", "vampire", "wraith", NULL));
 
 	/* Morgoth */
-	base = (&r_info[547])->base;
+	base = (lookup_monster("Morgoth, Lord of Darkness"))->base;
 	require(!match_monster_bases(base, "canine", NULL));
 	require(!match_monster_bases(base, "lich", "vampire", "wraith", NULL));
 	require(match_monster_bases(base, "person", "Morgoth", NULL));

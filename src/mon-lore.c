@@ -1904,7 +1904,7 @@ void write_lore_entries(ang_file *fff)
 		if (!lore->sights && !lore->all_known) continue;
 
 		/* Output 'name' */
-		file_putf(fff, "name:%d:%s\n", i, race->name);
+		file_putf(fff, "name:%s\n", race->name);
 
 		/* Output base if we're remembering everything */
 		if (lore->all_known)

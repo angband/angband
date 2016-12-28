@@ -19,13 +19,12 @@ int teardown_tests(void *state) {
 }
 
 int test_name0(void *state) {
-	enum parser_error r = parser_parse(state, "name:544:Carcharoth, the Jaws of Thirst");
+	enum parser_error r = parser_parse(state, "name:Carcharoth, the Jaws of Thirst");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->ridx, 544);
 	require(streq(mr->name, "Carcharoth, the Jaws of Thirst"));
 	ok;
 }
