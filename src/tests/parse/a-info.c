@@ -17,13 +17,12 @@ int teardown_tests(void *state) {
 }
 
 int test_name0(void *state) {
-	enum parser_error r = parser_parse(state, "name:3:of Thrain");
+	enum parser_error r = parser_parse(state, "name:of Thrain");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
-	eq(a->aidx, 3);
 	require(streq(a->name, "of Thrain"));
 	ok;
 }

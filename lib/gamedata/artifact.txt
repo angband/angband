@@ -72,9 +72,8 @@
 # (2.) Removing any artifact, or changing its "base" type (as defined by
 # the tval and sval entries in the "base-object:" line), will break savefile
 # compatibility for ALL savefiles.
-# (3.) Adding a new artifact, or changing the powers of existing ones, will
-# NOT affect savefile compatibility for games with the standard artifact set:
-# it is perfectly safe to do this.
+# (3.) Adding a new artifact, WILL now affect savefile compatibility for all
+# savefiles.
 
 
 
@@ -82,7 +81,7 @@
 
 # The Phial of Galadriel
 
-name:1:of Galadriel
+name:of Galadriel
 base-object:light:Phial
 graphics:~:y
 info:5:10:10000
@@ -98,7 +97,7 @@ desc:Its light is imperishable, and near it darkness cannot endure.
 
 # The Star of Elendil
 
-name:2:of Elendil
+name:of Elendil
 base-object:light:Star
 graphics:~:y
 info:30:5:30000
@@ -112,7 +111,7 @@ desc:The shining Star of the North, a treasured heirloom of Elendil's house.
 
 # The Arkenstone of Thrain
 
-name:3:of Thráin
+name:of Thráin
 base-object:light:Arkenstone
 graphics:~:y
 info:50:5:50000
@@ -131,7 +130,7 @@ desc:sparks of white radiance shot with glints of the rainbow.
 
 # The Amulet of Carlammas
 
-name:4:of Carlammas
+name:of Carlammas
 base-object:amulet:Amulet
 graphics:":d
 info:50:3:60000
@@ -144,7 +143,7 @@ desc:A fiery circle of bronze, with mighty spells to ward off and banish evil.
 
 # The Amulet of Ingwe
 
-name:5:of Ingwë
+name:of Ingwë
 base-object:amulet:Pendant
 graphics:":d
 info:65:3:90000
@@ -159,7 +158,7 @@ desc:nothing of evil could stand.
 
 # The Necklace of the Dwarves
 
-name:6:of the Dwarves
+name:of the Dwarves
 base-object:amulet:Necklace
 graphics:":y
 info:50:3:75000
@@ -175,7 +174,7 @@ desc:it rests upon the bearer.
 
 # New Artifact (7): The Palantir of Westernesse
 
-#name:7:of Westernesse
+#name:of Westernesse
 #base-object:light:Palantir
 #graphics:~:y
 #info:75:200:100000
@@ -195,7 +194,7 @@ desc:it rests upon the bearer.
 
 # The Ring of Barahir
 
-name:8:of Barahir
+name:of Barahir
 base-object:ring:Serpent Ring
 graphics:=:d
 info:50:2:65000
@@ -208,7 +207,7 @@ desc:form this ring, an ancient treasure of Isildur's house.
 
 # The Ring of Tulkas
 
-name:9:of Tulkas
+name:of Tulkas
 base-object:ring:Ring
 graphics:=:d
 info:70:2:150000
@@ -222,7 +221,7 @@ desc:The treasure of Tulkas, most fleet and wrathful of the Valar.
 
 # The Ring of Fire 'Narya'
 
-name:10:'Narya'
+name:'Narya'
 base-object:ring:Ring of Fire
 graphics:=:d
 info:70:2:100000
@@ -241,7 +240,7 @@ desc:by the Elves from Sauron.
 
 # The Ring of Adamant 'Nenya'
 
-name:11:'Nenya'
+name:'Nenya'
 base-object:ring:Ring of Adamant
 graphics:=:d
 info:80:2:200000
@@ -262,7 +261,7 @@ desc:Celebrimbor and hidden by the Elves from Sauron.
 
 # The Ring of Firmament 'Vilya'
 
-name:12:'Vilya'
+name:'Vilya'
 base-object:ring:Ring of Firmament
 graphics:=:d
 info:90:2:300000
@@ -284,7 +283,7 @@ desc:hidden by the Elves from Sauron.
 
 # The Ring of Power 'The One Ring'
 
-name:13:'The One Ring'
+name:'The One Ring'
 base-object:ring:Ring of Power
 graphics:=:y
 info:100:2:5000000
@@ -307,7 +306,7 @@ desc:being who wears it.
 
 # New Artifact (14): The Elfstone 'Elessar'
 
-name:14:'Elessar'
+name:'Elessar'
 base-object:amulet:Elfstone
 graphics:":g
 info:60:3:40000
@@ -324,7 +323,7 @@ desc: its wearer brings healing after victory in battle.
 
 # New Artifact (15): The Jewel 'Evenstar'
 
-name:15:'Evenstar'
+name:'Evenstar'
 base-object:amulet:Jewel
 graphics:":w
 info:40:3:25000
@@ -341,7 +340,7 @@ desc:return to the Shire.
 
 ### Dragon Scale Mails ###
 
-name:16:'Razorback'
+name:'Razorback'
 base-object:dragon armour:Multi-Hued Dragon Scale Mail
 info:90:200:400000
 alloc:11:90 to 127
@@ -356,7 +355,7 @@ desc:It throbs with angry energies, and you feel the raw elemental might of
 desc:untamed Lightning as you put it on.
 
 
-name:17:'Bladeturner'
+name:'Bladeturner'
 base-object:dragon armour:Power Dragon Scale Mail
 info:100:250:500000
 alloc:6:100 to 127
@@ -371,7 +370,7 @@ desc:An adamant suit with scales of every color.  Untrammelled powers elemental
 desc:and ethereal swirl around it in an inextricably intermingled nimbus.
 
 
-name:18:'Mediator'
+name:'Mediator'
 base-object:dragon armour:Balance Dragon Scale Mail
 info:95:250:400000
 alloc:8:95 to 127
@@ -386,7 +385,7 @@ desc:mightiest wyrms of Law and Chaos fear the judgement of its wearer.
 
 ### Heavy Armor ###
 
-name:19:'Soulkeeper'
+name:'Soulkeeper'
 base-object:hard armour:Adamantite Plate Mail
 info:75:420:300000
 alloc:11:75 to 127
@@ -401,7 +400,7 @@ desc:and disruptive magics.  It protects the life force of its wearer as
 desc:nothing else can.
 
 
-name:20:of Isildur
+name:of Isildur
 base-object:hard armour:Full Plate Armour
 info:30:300:50000
 alloc:30:55 to 127
@@ -413,7 +412,7 @@ desc:A gleaming steel suit covering the wearer from neck to foot, with runes of
 desc:warding and stability deeply engraved into its surface.
 
 
-name:21:of the Rohirrim
+name:of the Rohirrim
 base-object:hard armour:Metal Brigandine Armour
 info:30:200:30000
 alloc:30:45 to 100
@@ -426,7 +425,7 @@ desc:and cloth bear scenes of hunting and war.  As you don the armour of Eorl
 desc:the Young, matchless in combat, you feel his spirit surround you.
 
 
-name:22:'Belegennon'
+name:'Belegennon'
 base-object:hard armour:Mithril Chain Mail
 info:40:150:105000
 alloc:30:55 to 127
@@ -440,7 +439,7 @@ desc: It stands untouched amidst the fury of the elements, and a power of
 desc:concealment rests within.
 
 
-name:23:of Celeborn
+name:of Celeborn
 base-object:hard armour:Mithril Plate Mail
 info:40:250:150000
 alloc:30:65 to 127
@@ -454,7 +453,7 @@ desc:legend. It gleams with purest white as you gaze upon it, and mighty are
 desc:its powers to protect and banish.
 
 
-name:24:of Arvedui
+name:of Arvedui
 base-object:hard armour:Chain Mail
 info:20:220:32000
 alloc:30:20 to 75
@@ -466,7 +465,7 @@ desc:with leather.  You feel as strong and tall as Arvedui, last king of Arnor,
 desc:as you put it on.
 
 
-name:25:of Caspanion
+name:of Caspanion
 base-object:hard armour:Augmented Chain Mail
 info:25:270:40000
 alloc:11:35 to 100
@@ -483,7 +482,7 @@ desc: wearer's path.
 
 ### Light Armor ###
 
-name:26:of Himring
+name:of Himring
 base-object:soft armour:Hard Leather Armour
 info:50:100:35000
 alloc:20:25 to 90
@@ -496,7 +495,7 @@ desc:unvanquished Himring, defiant fortress surrounded by the legions of
 desc: Morgoth.
 
 
-name:27:'Hithlomir'
+name:'Hithlomir'
 base-object:soft armour:Soft Leather Armour
 info:20:80:45000
 alloc:20:20 to 80
@@ -507,7 +506,7 @@ desc:Familiar with the secret ways hidden in darkness, this leather cuirass is
 desc:truly more than it appears.
 
 
-name:28:'Thalkettoth'
+name:'Thalkettoth'
 base-object:soft armour:Leather Scale Mail
 info:20:60:25000
 alloc:20:30 to 100
@@ -521,7 +520,7 @@ desc:hardened leather.  Those who wear it move with agility and assurance.
 ### Shields ###
 
 # should be Shield of Deflection
-name:29:of Gil-galad
+name:of Gil-galad
 base-object:shield:Mithril Shield
 info:70:80:65000
 alloc:25:70 to 127
@@ -535,7 +534,7 @@ desc:The legendary shield of Ereinion Gil-galad, who fought his way to the
 desc:gates of the Dark Tower, and with whom came light even to Gorgoroth.
 
 
-name:30:of Thorin
+name:of Thorin
 base-object:shield:Small Metal Shield
 info:40:65:60000
 alloc:14:40 to 127
@@ -546,7 +545,7 @@ desc:Invoking the strength and endurance of Thorin, King under the Mountain,
 desc:this little metal shield is proof against the Element of Earth.
 
 
-name:31:of Celegorm
+name:of Celegorm
 base-object:shield:Leather Shield
 info:30:60:12000
 alloc:28:30 to 100
@@ -559,7 +558,7 @@ desc:once protected Celegorm, Lord of Himlad; around it, a mystic balance lies,
 desc:containing the conflicts of the elements.
 
 
-name:32:of Anárion
+name:of Anárion
 base-object:shield:Large Metal Shield
 info:40:120:160000
 alloc:11:40 to 100
@@ -572,7 +571,7 @@ desc:even Sauron could not corrupt.
 
 ### Helmets and Crowns ###
 
-name:33:of Celebrimbor
+name:of Celebrimbor
 base-object:helm:Metal Cap
 info:55:20:45000
 alloc:8:55 to 100
@@ -584,7 +583,7 @@ desc:this helm serves equally well in battle or at the forge, and its
 desc:enchantment will never be diminished.
 
 
-name:34:of Morgoth
+name:of Morgoth
 base-object:crown:Massive Iron Crown
 info:100:400:10000000
 alloc:0:100 to 100
@@ -599,7 +598,7 @@ desc:this plain iron crown has mounted upon it the two remaining Silmarils,
 desc:greatest treasures of Middle-Earth.
 
 
-name:35:of Berúthiel
+name:of Berúthiel
 base-object:crown:Iron Crown
 info:40:20:1
 alloc:8:45 to 100
@@ -611,7 +610,7 @@ desc:grants extraordinary powers of sight and awareness at a terrible physical
 desc:cost.
 
 
-name:36:of Thranduil
+name:of Thranduil
 base-object:helm:Hard Leather Cap
 info:50:15:50000
 alloc:14:40 to 100
@@ -622,7 +621,7 @@ desc:The hunting cap of King Thranduil, to whose ears come all the secrets of
 desc:his forest domain.
 
 
-name:37:of Thengel
+name:of Thengel
 base-object:helm:Metal Cap
 info:10:20:22000
 alloc:18:10 to 100
@@ -633,7 +632,7 @@ desc:A ridged helmet made of steel and embossed with scenes of valor in fine-
 desc:engraved silver.  It grants the wearer nobility and understanding.
 
 
-name:38:of Hammerhand
+name:of Hammerhand
 base-object:helm:Steel Helm
 info:20:60:45000
 alloc:11:40 to 127
@@ -647,7 +646,7 @@ desc:strode out time and again among his foes and slew many.  Although they
 desc:knew of his coming, none could stand against him. 
 
 
-name:39:of Dor-Lómin
+name:of Dor-Lómin
 base-object:helm:Iron Helm
 info:40:50:300000
 alloc:5:40 to 127
@@ -662,7 +661,7 @@ desc:mere sight of the helm, borne by Túrin Turambar, struck dread into the
 desc:hearts of the servants of Morgoth.
 
 
-name:40:'Holhenneth'
+name:'Holhenneth'
 base-object:helm:Iron Helm
 info:20:50:100000
 alloc:18:20 to 100
@@ -675,7 +674,7 @@ desc:A famous forged iron helm granting extraordinary powers of mind and
 desc:awareness.
 
 
-name:41:of Gorlim
+name:of Gorlim
 base-object:helm:Iron Helm
 info:20:75:1
 alloc:18:20 to 75
@@ -688,7 +687,7 @@ desc:A headpiece, gaudy and barbaric, that betrayed a warrior when he most
 desc:needed succor.
 
 
-name:42:of Gondor
+name:of Gondor
 base-object:crown:Golden Crown
 info:40:30:100000
 alloc:5:45 to 127
@@ -703,7 +702,7 @@ desc:From dying Númenor, Elendil brought this shining winged circlet, emblem
 desc:of Gondor through an age of the world.
 
 
-name:43:of Númenor
+name:of Númenor
 base-object:crown:Jewel Encrusted Crown
 info:60:40:50000
 alloc:5:60 to 127
@@ -719,7 +718,7 @@ desc:once worn by the kings of ancient Númenor.
 
 ### Cloaks and Shadow Cloaks ###
 
-name:44:'Colluin'
+name:'Colluin'
 base-object:cloak:Cloak
 info:5:10:50000
 alloc:2:5 to 100
@@ -731,7 +730,7 @@ desc:A cape worn by a hero from Valinor, a land utterly beyond the strife
 desc:of Elements.
 
 
-name:45:'Holcolleth'
+name:'Holcolleth'
 base-object:cloak:Cloak
 info:5:10:18000
 alloc:5:5 to 100
@@ -744,7 +743,7 @@ desc:concealment, and grants the wearer the knowledge and understanding of
 desc:the Sindar.
 
 
-name:46:of Thingol
+name:of Thingol
 base-object:cloak:Cloak
 info:5:10:35000
 alloc:5:5 to 100
@@ -757,7 +756,7 @@ desc:A translucent cloak of pearly grey with glowing, energized Elven runes
 desc:showing calm and clear as moonlight on still water.
 
 
-name:47:of Thorongil
+name:of Thorongil
 base-object:cloak:Cloak
 info:5:10:8000
 alloc:10:5 to 75
@@ -769,7 +768,7 @@ desc:Aragorn, a keen-eyed captain of Rohan and Gondor, valiant on both land
 desc:and sea.
 
 
-name:48:'Colannon'
+name:'Colannon'
 base-object:cloak:Cloak
 info:5:10:20000
 alloc:5:5 to 100
@@ -781,7 +780,7 @@ desc:A crystal-blue cape of fine silk worn by a silent messenger of the forces
 desc:of Law.  Seldom will its wearer be diverted from his mission.
 
 
-name:49:of Lúthien
+name:of Lúthien
 base-object:cloak:Elven Cloak
 info:40:5:45000
 alloc:2:40 to 127
@@ -796,7 +795,7 @@ desc:restorative magics of Lúthien, the most beautiful being who ever knew
 desc:death.
 
 
-name:50:of Tuor
+name:of Tuor
 base-object:cloak:Ethereal Cloak
 info:40:0:35000
 alloc:2:70 to 127
@@ -810,7 +809,7 @@ desc:of hostile eyes.
 
 ### Gloves and Gauntlets ###
 
-name:51:of Eöl
+name:of Eöl
 base-object:gloves:Set of Gauntlets
 info:55:25:40000
 alloc:3:55 to 127
@@ -823,7 +822,7 @@ desc:The iron-shod gauntlets of the Dark Elven smith Eöl, who imbued them
 desc:with magics he could channel in battle.
 
 
-name:52:'Cambeleg'
+name:'Cambeleg'
 base-object:gloves:Set of Leather Gloves
 info:10:5:36000
 alloc:3:10 to 100
@@ -833,7 +832,7 @@ values:STR[2] | CON[2]
 desc:A hero's handgear that lends great prowess in battle.
 
 
-name:53:'Cammithrim'
+name:'Cammithrim'
 base-object:gloves:Set of Leather Gloves
 info:10:5:30000
 alloc:18:10 to 80
@@ -846,7 +845,7 @@ desc:These gloves glow so brightly as to light the way for the wearer and cast
 desc:magical bolts with great frequency.
 
 
-name:54:'Paurhach'
+name:'Paurhach'
 base-object:gloves:Set of Gauntlets
 info:1:25:15000
 alloc:40:10 to 60
@@ -858,7 +857,7 @@ time:8+d8
 desc:A set of gauntlets that smoulder with an unnatural heat.
 
 
-name:55:'Paurnimmen'
+name:'Paurnimmen'
 base-object:gloves:Set of Gauntlets
 info:20:25:13000
 alloc:5:50 to 127
@@ -871,7 +870,7 @@ time:7+d7
 desc:A set of handgear, freezing with unnatural cold.
 
 
-name:56:'Pauraegen'
+name:'Pauraegen'
 base-object:gloves:Set of Gauntlets
 info:1:25:11000
 alloc:23:10 to 75
@@ -882,7 +881,7 @@ time:6+d6
 desc:A set of handgear with sparks that crackle across its knuckleguards.
 
 
-name:57:'Paurnen'
+name:'Paurnen'
 base-object:gloves:Set of Gauntlets
 info:1:25:12000
 alloc:30:10 to 60
@@ -895,7 +894,7 @@ desc:A set of gauntlets that give off a foul, acrid odour yet remain
 desc: untarnished.
 
 
-name:58:'Camlost'
+name:'Camlost'
 base-object:gloves:Set of Gauntlets
 info:10:25:0
 alloc:5:10 to 100
@@ -906,7 +905,7 @@ desc:A pair of weakening gauntlets, named after Beren, who returned to Thingol
 desc:having lost to Carcharoth the hand that clasped a Silmaril.
 
 
-name:59:of Fingolfin
+name:of Fingolfin
 base-object:gloves:Set of Caestus
 info:40:40:110000
 alloc:3:40 to 127
@@ -922,7 +921,7 @@ desc:Morgoth seven mighty wounds and pain that will last until the end of Arda.
 
 ### Boots ###
 
-name:60:of Fëanor
+name:of Fëanor
 base-object:boots:Pair of Leather Boots
 info:40:20:300000
 alloc:1:40 to 127
@@ -937,7 +936,7 @@ desc:shall be accounted, and yet shall be well-bought.  For the price could be
 desc:no other."
 
 
-name:61:'Dal-i-thalion'
+name:'Dal-i-thalion'
 base-object:boots:Pair of Leather Boots
 info:10:20:40000
 alloc:4:50 to 100
@@ -951,7 +950,7 @@ desc:A pair of high-laced shoes, bestowing of extraordinary agility and proof
 desc:against the powers of corruption and withering.
 
 
-name:62:of Thrór
+name:of Thrór
 base-object:boots:Pair of Steel Shod Boots
 info:30:60:12000
 alloc:5:30 to 100
@@ -962,7 +961,7 @@ desc:Sturdy footwear of leather and steel as enduring as the long-suffering
 desc:Dwarven king-in-exile who wore them.
 
 
-name:63:of Wormtongue
+name:of Wormtongue
 base-object:boots:Pair of Leather Boots
 info:10:20:17000
 alloc:8:15 to 80
@@ -980,7 +979,7 @@ desc:messenger, a servant, a spy... or a coward.
 
 ### Swords and Daggers ###
 
-name:64:of Maedhros
+name:of Maedhros
 base-object:sword:Main Gauche
 info:15:30:20000
 alloc:3:15 to 65
@@ -994,7 +993,7 @@ desc:Fëanor, Maedhros the Tall, who lost his right hand while escaping
 desc:from Angband.
 
 
-name:65:'Angrist'
+name:'Angrist'
 base-object:sword:Dagger
 info:20:12:100000
 alloc:2:20 to 100
@@ -1010,7 +1009,7 @@ desc: a Silmaril out of Morgoth's crown, this long chopping dagger slices
 desc: through ordinary metal as easily as its name, "Iron Cleaver", suggests.
 
 
-name:66:'Narthanc'
+name:'Narthanc'
 base-object:sword:Dagger
 info:1:12:12000
 alloc:40:1 to 50
@@ -1022,7 +1021,7 @@ time:8+d8
 desc:Instead of a blade, a flame seems to emerge from this dagger's hilt.
 
 
-name:67:'Nimthanc'
+name:'Nimthanc'
 base-object:sword:Dagger
 info:1:12:11000
 alloc:40:1 to 50
@@ -1034,7 +1033,7 @@ time:7+d8
 desc:From the hilt of this dagger springs not so much a blade as an icicle.
 
 
-name:68:'Dethanc'
+name:'Dethanc'
 base-object:sword:Dagger
 info:1:12:13000
 alloc:40:1 to 50
@@ -1046,7 +1045,7 @@ time:6+d6
 desc:In this dagger is bound the very force of lightning.
 
 
-name:69:of Rilia
+name:of Rilia
 base-object:sword:Dagger
 info:5:12:15000
 alloc:5:5 to 75
@@ -1061,7 +1060,7 @@ desc:A large stiletto dagger that glistens with odorless poison, to which the
 desc:wearer seems oddly immune.
 
 
-name:70:'Belangil'
+name:'Belangil'
 base-object:sword:Dagger
 info:10:12:40000
 alloc:2:10 to 80
@@ -1075,7 +1074,7 @@ desc:A frosty dagger wreathed in a nimbus of ice with a hilt of elk horn and
 desc:an edge to wound the wind.
 
 
-name:71:'Calris'
+name:'Calris'
 base-object:sword:Bastard Sword
 info:30:140:100000
 alloc:7:30 to 127
@@ -1092,7 +1091,7 @@ desc:blood channel that gleams coldly blue as you grasp this mighty weapon of
 desc:peril.
 
 
-name:72:'Aranrúth'
+name:'Aranrúth'
 base-object:sword:Broad Sword
 info:20:150:50000
 alloc:2:20 to 100
@@ -1108,7 +1107,7 @@ desc:icy enough to freeze the hearts of demons, and you feel supple and
 desc:lightfooted as you clasp its hilt of gold and silver inlay.
 
 
-name:73:'Glamdring'
+name:'Glamdring'
 base-object:sword:Broad Sword
 info:20:150:40000
 alloc:5:20 to 80
@@ -1123,7 +1122,7 @@ desc:This fiery, shining blade, mate to Orcrist, earned its sobriquet "Beater"
 desc:from dying orcs who dared to behold hidden Gondolin.
 
 
-name:74:'Aeglin'
+name:'Aeglin'
 base-object:sword:Broad Sword
 info:20:150:45000
 alloc:3:20 to 100
@@ -1139,7 +1138,7 @@ desc:continually covered in tiny arcs of captive lightning that flash and dance
 desc:eerily in the globes of light they create.
 
 
-name:75:'Orcrist'
+name:'Orcrist'
 base-object:sword:Broad Sword
 info:20:150:40000
 alloc:5:20 to 80
@@ -1154,7 +1153,7 @@ desc:This coldly gleaming blade, mate to Glamdring, is called simply "Biter"
 desc:by orcs who came to know its power all too well.
 
 
-name:76:'Gurthang'
+name:'Gurthang'
 base-object:sword:Zweihander
 info:30:200:100000
 alloc:3:30 to 100
@@ -1169,7 +1168,7 @@ desc:dragonbane; for what wyrm could stand against the blade that bathed in
 desc:Glaurung's blood?
 
 
-name:77:'Zarcuthra'
+name:'Zarcuthra'
 base-object:sword:Zweihander
 info:30:240:200000
 alloc:1:30 to 127
@@ -1191,7 +1190,7 @@ desc:weapon, and you feel a wrathful power of slaying and rending as you
 desc:slowly approach.
 
 
-name:78:'Mormegil'
+name:'Mormegil'
 base-object:sword:Zweihander
 info:30:250:10000
 alloc:7:30 to 100
@@ -1207,7 +1206,7 @@ desc:a curse upon the lips of Elves and Men.  It is said that it will drink the
 desc:very lifeblood of its wielder.
 
 
-name:79:'Gondricam'
+name:'Gondricam'
 base-object:sword:Cutlass
 info:20:110:28000
 alloc:12:20 to 65
@@ -1220,7 +1219,7 @@ desc:with a perfect edge shining cleanly in the sun, an object of hate to the
 desc:men of Umbar who met it in combat.
 
 
-name:80:'Crisdurian'
+name:'Crisdurian'
 base-object:sword:Executioner's Sword
 info:40:260:100000
 alloc:4:40 to 127
@@ -1237,7 +1236,7 @@ desc:massive double-pronged hilt.  On its blade are written doomspells against
 desc:both the living and undead.
 
 
-name:81:'Aglarang'
+name:'Aglarang'
 base-object:sword:Katana
 info:30:50:40000
 alloc:4:30 to 100
@@ -1249,7 +1248,7 @@ desc:slices rock and bone, and spells to render the wearer lithe and nimble.
 desc:  It is combat incarnate.
 
 
-name:82:'Ringil'
+name:'Ringil'
 base-object:sword:Long Sword
 info:20:130:300000
 alloc:1:20 to 127
@@ -1268,7 +1267,7 @@ desc:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it
 desc:of old; his lame foot will remind him of its might should he face it again.
 
 
-name:83:'Andúril'
+name:'Andúril'
 base-object:sword:Long Sword
 info:20:130:80000
 alloc:3:20 to 127
@@ -1287,7 +1286,7 @@ desc:again.  It glows with the essence of fire, its wearer is mighty in combat,
 desc:and no creature of Sauron can withstand it.
 
 
-name:84:'Anguirel'
+name:'Anguirel'
 base-object:sword:Long Sword
 info:20:130:40000
 alloc:3:20 to 127
@@ -1302,7 +1301,7 @@ desc:Forged of meteoric iron by Eöl the Dark Elf, and as deadly as any
 desc:other blade he forged.
 
 
-name:85:'Elvagil'
+name:'Elvagil'
 base-object:sword:Long Sword
 info:1:130:30000
 alloc:50:10 to 50
@@ -1315,7 +1314,7 @@ desc:The "Singing Blade", whose wearer can slay Orcs and Trolls in the hidden
 desc:and secret places of the earth.
 
 
-name:86:'Forasgil'
+name:'Forasgil'
 base-object:sword:Rapier
 info:1:40:15000
 alloc:38:5 to 50
@@ -1326,7 +1325,7 @@ slay:ANIMAL_2
 desc:A slender, tapered needle of ice that coldly grips its impaled prey.
 
 
-name:87:'Careth Asdriag'
+name:'Careth Asdriag'
 base-object:sword:Rapier
 info:15:40:25000
 alloc:10:15 to 80
@@ -1341,7 +1340,7 @@ desc:An heirloom of the dauntless Lords of Rhûn far to the east, and a name
 desc:of dismay to creatures natural and unnatural.
 
 
-name:88:'Sting'
+name:'Sting'
 base-object:sword:Short Sword
 info:20:75:100000
 alloc:6:20 to 100
@@ -1358,7 +1357,7 @@ desc:sturdy little blade grants the wearer combat prowess and survival
 desc:abilities he did not know he had.
 
 
-name:89:'Haradekket'
+name:'Haradekket'
 base-object:sword:Scimitar
 info:20:130:30000
 alloc:7:20 to 80
@@ -1372,7 +1371,7 @@ desc:A damascened scimitar that hefts with wondrous ease.  Famed in song
 desc:as the "Sickle of Harad", and a deadly foe to the undead.
 
 
-name:90:'Dagmor'
+name:'Dagmor'
 base-object:sword:Short Sword
 info:20:80:15000
 alloc:12:20 to 80
@@ -1385,7 +1384,7 @@ desc:A stubby blade worn by Beren, whose horn sounded of old in the glades of
 desc:Brethil.
 
 
-name:91:'Doomcaller'
+name:'Doomcaller'
 base-object:sword:Blade of Chaos
 info:70:180:200000
 alloc:4:70 to 127
@@ -1406,7 +1405,7 @@ desc:shadow of death even as you inflict wounds that will not heal.
 
 ### Polearms ###
 
-name:92:of Melkor
+name:of Melkor
 base-object:polearm:Spear
 info:65:200:100000
 alloc:2:65 to 127
@@ -1420,7 +1419,7 @@ desc:himself as he came to Valinor in wrath.  Its envenomed bite pierced
 desc:the Two Trees with wounds that would not heal.
 
 
-name:93:of Théoden
+name:of Théoden
 base-object:polearm:Beaked Axe
 info:20:180:40000
 alloc:7:20 to 100
@@ -1434,7 +1433,7 @@ desc:The narrow axe head of this weapon would pierce the armour of a very
 desc:Dragon, and the designs of your enemies stand naked and revealed.
 
 
-name:94:of Pain
+name:of Pain
 base-object:polearm:Glaive
 info:30:300:50000
 alloc:4:30 to 127
@@ -1444,7 +1443,7 @@ desc:fell spells of annihilation swirl and dance as you swing death's myrmidon
 desc:down.
 
 
-name:95:'Osondir'
+name:'Osondir'
 base-object:polearm:Halberd
 info:20:140:22000
 alloc:12:25 to 80
@@ -1458,7 +1457,7 @@ desc:Lordly and tall did Osondir stand against the wrath of giants, and
 desc:clear-eyed in barrows fell, wielding a halberd glowing ruby red.
 
 
-name:96:'Til-i-arc'
+name:'Til-i-arc'
 base-object:polearm:Pike
 info:20:160:32000
 alloc:7:20 to 80
@@ -1474,7 +1473,7 @@ desc:Within this long two-handed spear dwell the spirits of frost giants and
 desc:fire demons, who war forever, fettered by sorcerous binds.
 
 
-name:97:'Aiglos'
+name:'Aiglos'
 base-object:polearm:Spear
 info:15:50:140000
 alloc:2:15 to 100
@@ -1492,7 +1491,7 @@ desc:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves.
 desc:  Against it, all the foul corruptions of Sauron dashed in vain.
 
 
-name:98:of Oromë
+name:of Oromë
 base-object:polearm:Spear
 info:15:50:60000
 alloc:2:15 to 127
@@ -1509,7 +1508,7 @@ desc:The thrusting spear of wise Oromë the Vala, strong against giants of
 desc:frost, and able to pierce rock or flesh with ease.
 
 
-name:99:'Nimloth'
+name:'Nimloth'
 base-object:polearm:Spear
 info:15:50:30000
 alloc:8:15 to 65
@@ -1524,7 +1523,7 @@ desc:cold into the breasts of your enemies lay upon this perfectly balanced
 desc:spear.
 
 
-name:100:of the Eorlingas
+name:of the Eorlingas
 base-object:polearm:Lance
 info:20:360:55000
 alloc:4:20 to 100
@@ -1539,7 +1538,7 @@ desc:hope to save beleaguered Gondor, and from his lance fled massive trolls
 desc:and dire wolves.
 
 
-name:101:of Durin
+name:of Durin
 base-object:polearm:Great Axe
 info:30:230:150000
 alloc:1:40 to 127
@@ -1558,7 +1557,7 @@ desc:mithril inlay telling sagas of endurance.  The powers of
 desc:Khazad-dûm protect its wielder and slay all evils found underground.
 
 
-name:102:of Eönwë
+name:of Eönwë
 base-object:polearm:Great Axe
 info:30:230:200000
 alloc:1:40 to 127
@@ -1577,7 +1576,7 @@ desc:Wrath, strikes with icy wrath at the undead, disperses hosts of
 desc:evil at a word, and grants Maia-like powers of body and mind.
 
 
-name:103:of Balli Stonehand
+name:of Balli Stonehand
 base-object:polearm:Battle Axe
 info:30:170:90000
 alloc:7:30 to 100
@@ -1593,7 +1592,7 @@ desc:forces to resist and endure lie ready for he who shall wield it once
 desc:more.
 
 
-name:104:'Lotharang'
+name:'Lotharang'
 base-object:polearm:Battle Axe
 info:30:170:21000
 alloc:7:30 to 100
@@ -1607,7 +1606,7 @@ desc:A superbly crafted double-bladed axe once borne by Ceruthain, commander
 desc:of the Rangers of Arnor.
 
 
-name:105:'Mundwine'
+name:'Mundwine'
 base-object:polearm:Lochaber Axe
 info:30:240:30000
 alloc:12:30 to 100
@@ -1621,7 +1620,7 @@ desc:requires two hands to wield, with spells to ward off the elements
 desc:intricately engraved upon its surface in filleted gold.
 
 
-name:106:'Barukkheled'
+name:'Barukkheled'
 base-object:polearm:Broad Axe
 info:20:160:50000
 alloc:12:20 to 75
@@ -1636,7 +1635,7 @@ desc:A royal heirloom of the southern coast, strong in combat against the evil
 desc:creatures of earth.
 
 
-name:107:of Wrath
+name:of Wrath
 base-object:polearm:Trident
 info:15:70:90000
 alloc:3:15 to 100
@@ -1651,7 +1650,7 @@ desc:to wield, evoking the spirit of Osse who with it pierced legions of
 desc:evil and undead.
 
 
-name:108:of Ulmo
+name:of Ulmo
 base-object:polearm:Trident
 info:30:70:120000
 alloc:1:30 to 127
@@ -1667,7 +1666,7 @@ desc:powers of good save Manwë himself, Ulmo laughs to scorn the dread powers
 desc:of the undead, and is utterly in command of the Element of water.
 
 
-name:109:'Avavir'
+name:'Avavir'
 base-object:polearm:Scythe
 info:40:180:18000
 alloc:12:45 to 100
@@ -1683,7 +1682,7 @@ desc:white, this shining reaper bears within it a power of going forth and
 desc:returning.
 
 
-name:110:of Húrin
+name:of Húrin
 base-object:polearm:Beaked Axe
 info:20:180:90000
 alloc:7:20 to 100
@@ -1706,7 +1705,7 @@ desc:come again!"
 
 ### Blunt Weapons ###
 
-name:111:'Grond'
+name:'Grond'
 base-object:hafted:Mighty Hammer
 info:100:1000:500000
 alloc:0:100 to 100
@@ -1723,7 +1722,7 @@ desc:The mighty Hammer of the Underworld, blackened by doomspells of shattering.
 desc:  Its wielder holds the lives of all Morgoth's servants in his hand.
 
 
-name:112:'Totila'
+name:'Totila'
 base-object:hafted:Flail
 info:20:150:55000
 alloc:12:20 to 65
@@ -1738,7 +1737,7 @@ desc:A flail whose head befuddles those who stare as you whirl it round and
 desc:becomes a fiery comet as you bring it down.
 
 
-name:113:'Thunderfist'
+name:'Thunderfist'
 base-object:hafted:Two-Handed Great Flail
 info:45:300:160000
 alloc:3:45 to 127
@@ -1755,7 +1754,7 @@ desc:Runes of strength adorn its handle, and flames and sparks roar and
 desc:crackle around its massive head.
 
 
-name:114:'Bloodspike'
+name:'Bloodspike'
 base-object:hafted:Morning Star
 info:20:150:30000
 alloc:3:20 to 75
@@ -1770,7 +1769,7 @@ desc:You feel strong and firm of foot as you whip its spiked orb around and
 desc:bathe it in the blood of your foes.
 
 
-name:115:'Firestar'
+name:'Firestar'
 base-object:hafted:Morning Star
 info:20:150:35000
 alloc:7:20 to 100
@@ -1783,7 +1782,7 @@ desc:A famed battle-lord of old with a head as ruddy as embers that can yet rise
 desc: up in wrath.
 
 
-name:116:'Taratol'
+name:'Taratol'
 base-object:hafted:Mace
 info:20:200:50000
 alloc:7:20 to 100
@@ -1798,7 +1797,7 @@ desc:You remain utterly untouched, even as fat sparks crackle around your
 desc:fingers and eyebrows.
 
 
-name:117:of Aulë
+name:of Aulë
 base-object:hafted:Great Hammer
 info:40:120:250000
 alloc:1:40 to 127
@@ -1817,7 +1816,7 @@ desc:It bears demolishing magics that no serpent or demon can withstand, and
 desc:invokes the strength of mountains to ward off the tumult of the elements.
 
 
-name:118:'Nar-i-vagil'
+name:'Nar-i-vagil'
 base-object:hafted:Quarterstaff
 info:20:150:70000
 alloc:5:20 to 80
@@ -1829,7 +1828,7 @@ desc:Named for a fiery star and set with priceless gems bearing mystic
 desc:auras of protection and thought.
 
 
-name:119:'Eriril'
+name:'Eriril'
 base-object:hafted:Quarterstaff
 info:20:150:20000
 alloc:5:20 to 100
@@ -1843,7 +1842,7 @@ desc:The radiant golden staff of an Istar of legend; this wizard's companion
 desc:grants keen sight and clear knowledge of many hidden things.
 
 
-name:120:of Olórin
+name:of Olórin
 base-object:hafted:Quarterstaff
 info:30:150:130000
 alloc:1:30 to 100
@@ -1863,7 +1862,7 @@ desc:creature who lives in the shadow of mountains can withstand the blows it
 desc:deals.
 
 
-name:121:'Deathwreaker'
+name:'Deathwreaker'
 base-object:hafted:Mace of Disruption
 info:80:400:400000
 alloc:3:80 to 127
@@ -1884,7 +1883,7 @@ desc:magic surge around you.  You wield the Fear of Dragons and the Despair
 desc:of the Undead!
 
 
-name:122:'Turmil'
+name:'Turmil'
 base-object:polearm:Lucerne Hammer
 info:20:120:30000
 alloc:7:20 to 100
@@ -1900,7 +1899,7 @@ desc: coldly as though moonlit, and can strike equally mighty spiritual and
 desc: physical blows.
 
 
-name:123:of Gothmog
+name:of Gothmog
 base-object:hafted:Whip
 info:60:90:25000
 alloc:4:60 to 127
@@ -1922,7 +1921,7 @@ desc:even Ungoliant to heel.
 
 ### Missile Weapons ###
 
-name:124:'Belthronding'
+name:'Belthronding'
 base-object:bow:Long Bow
 info:40:40:35000
 alloc:5:40 to 127
@@ -1933,7 +1932,7 @@ desc:Its backbone of black yew holds strings of bear sinew, and of old, only
 desc:Beleg himself could draw them.
 
 
-name:125:of Bard
+name:of Bard
 base-object:bow:Long Bow
 info:30:40:20000
 alloc:5:40 to 127
@@ -1944,7 +1943,7 @@ desc:The great yew bow of grim-faced Bard, who shot the mightiest arrow that
 desc:songs record.
 
 
-name:126:'Cubragol'
+name:'Cubragol'
 base-object:bow:Light Crossbow
 info:50:110:50000
 alloc:4:50 to 127
@@ -1955,7 +1954,7 @@ desc:A crossbow that grants fiery speed to he who finds it, and from which
 desc:shoot bolts that blaze with flame unquenchable.
 
 
-name:127:of Umbar
+name:of Umbar
 base-object:bow:Heavy Crossbow
 info:60:200:35000
 alloc:5:60 to 127
@@ -1968,7 +1967,7 @@ desc:A great brazen arbalest with arms of gleaming steel.  It shoots quarrels
 desc:with mighty power for those brave enough to risk betrayal.
 
 
-name:128:of Amrod
+name:of Amrod
 base-object:bow:Short Bow
 info:25:30:9000
 alloc:10:30 to 100
@@ -1979,7 +1978,7 @@ desc:One of a pair of hunting bows once belonging to Fëanor's two youngest
 desc:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
-name:129:of Amras
+name:of Amras
 base-object:bow:Short Bow
 info:25:30:9000
 alloc:10:30 to 80
@@ -1993,7 +1992,7 @@ desc:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 ### Digging Tools ###
 
-name:130:of Náin
+name:of Náin
 base-object:digger:Mattock
 info:60:240:30000
 alloc:12:60 to 100
@@ -2011,7 +2010,7 @@ desc:warriors to the Battle of Azanulbizar, and no Orc could withstand them,
 desc:although Náin himself fell before their lord Azog.
 
 
-name:131:of Erebor
+name:of Erebor
 base-object:digger:Pick
 info:55:180:30000
 alloc:20:55 to 100
@@ -2029,7 +2028,7 @@ desc:should the wielder ever tunnel through into a foe's stronghold.
 
 ### Miscellaneous new stuff ###
 
-name:132:of Fundin Bluecloak
+name:of Fundin Bluecloak
 base-object:hafted:Ball-and-Chain
 info:65:130:60000
 alloc:2:65 to 127
@@ -2044,7 +2043,7 @@ desc:The weapon of a mighty dwarven priest, whose shade is rumoured to
 desc:haunt the halls of Angband still.
 
 
-name:133:of Azaghâl
+name:of Azaghâl
 base-object:sword:Main Gauche
 info:18:30:50000
 alloc:3:18 to 100
@@ -2059,7 +2058,7 @@ desc:fled the field with all his kin, and was at first believed to be mortally
 desc:wounded.
 
 
-name:134:of the Haradrim
+name:of the Haradrim
 base-object:shield:Leather Shield
 info:35:90:25000
 alloc:10:35 to 127
@@ -2073,7 +2072,7 @@ desc:Its wielder will fear nothing and fight with unnatural strength, but
 desc:also draw attention to himself.
 
 
-name:135:of Elros
+name:of Elros
 base-object:shield:Wicker Shield
 info:40:30:60000
 alloc:10:50 to 127
@@ -2084,7 +2083,7 @@ desc:The shield of Elros Tar-Minyatur, founder of Númenor. Granted long
 desc: life by the Valar, even his shield became imbued with power.
 
 
-name:136:of Éowyn
+name:of Éowyn
 base-object:sword:Bastard Sword
 info:30:140:120000
 alloc:3:30 to 127
@@ -2100,7 +2099,7 @@ desc:steed of the Morgul-lord before striking down the mighty Witch-king
 desc:himself, whom no mortal man could hinder.
 
 
-name:137:of Radagast
+name:of Radagast
 base-object:boots:Pair of Leather Boots
 info:10:20:7000
 alloc:8:15 to 70
@@ -2111,7 +2110,7 @@ desc:Made of brown leather, covered with scuff marks and dust, still these
 desc: boots possess the magic of Radagast, friend of birds and nature.
 
 
-name:138:'Stormwalker'
+name:'Stormwalker'
 base-object:boots:Pair of Mithril Shod Boots
 info:30:40:40000
 alloc:3:60 to 127
@@ -2127,7 +2126,7 @@ desc: and they pursued the heralds and slew them, and drove on deep into
 desc: the main host.
 
 
-#name:139:of Amandil
+#name:of Amandil
 #base-object:amulet:55
 #info:65:3:90000
 #alloc:3:60 to 127

@@ -2147,14 +2147,12 @@ struct file_parser ego_parser = {
 
 static enum parser_error parse_artifact_name(struct parser *p) {
 	size_t i;
-	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct artifact *h = parser_priv(p);
 
 	struct artifact *a = mem_zalloc(sizeof *a);
 	a->next = h;
 	parser_setpriv(p, a);
-	a->aidx = idx;
 	a->name = string_make(name);
 
 	/* Ignore all base elements */
@@ -2396,7 +2394,7 @@ static enum parser_error parse_artifact_curse(struct parser *p) {
 struct parser *init_parse_artifact(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "name int index str name", parse_artifact_name);
+	parser_reg(p, "name str name", parse_artifact_name);
 	parser_reg(p, "base-object sym tval sym sval", parse_artifact_base_object);
 	parser_reg(p, "graphics char glyph sym color", parse_artifact_graphics);
 	parser_reg(p, "info int level int weight int cost", parse_artifact_info);
@@ -2421,26 +2419,29 @@ static errr run_parse_artifact(struct parser *p) {
 
 static errr finish_parse_artifact(struct parser *p) {
 	struct artifact *a, *n;
-	int none;
+	int none, aidx;
 
-	/* scan the list for the max id */
+	/* Scan the list for the max id */
 	z_info->a_max = 0;
 	a = parser_priv(p);
 	while (a) {
-		if (a->aidx > z_info->a_max)
-			z_info->a_max = a->aidx;
+		z_info->a_max++;
 		a = a->next;
 	}
 
-	/* allocate the direct access list and copy the data to it */
+	/* Allocate the direct access list and copy the data to it */
 	a_info = mem_zalloc((z_info->a_max + 1) * sizeof(*a));
-	for (a = parser_priv(p); a; a = n) {
-		memcpy(&a_info[a->aidx], a, sizeof(*a));
+	aidx = z_info->a_max - 1;
+	for (a = parser_priv(p); a; a = n, aidx--) {
+		assert(aidx >= 0);
+
+		memcpy(&a_info[aidx], a, sizeof(*a));
+		a_info[aidx].aidx = aidx;
 		n = a->next;
-		if (n)
-			a_info[a->aidx].next = &a_info[n->aidx];
+		if (aidx < z_info->a_max - 1)
+			a_info[aidx].next = &a_info[aidx + 1];
 		else
-			a_info[a->aidx].next = NULL;
+			a_info[aidx].next = NULL;
 
 		mem_free(a);
 	}
