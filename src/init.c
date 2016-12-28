@@ -1984,7 +1984,6 @@ static struct file_parser realm_parser = {
 static enum parser_error parse_class_name(struct parser *p) {
 	struct player_class *h = parser_priv(p);
 	struct player_class *c = mem_zalloc(sizeof *c);
-	c->cidx = parser_getuint(p, "index");
 	c->name = string_make(parser_getstr(p, "name"));
 	c->next = h;
 	parser_setpriv(p, c);
@@ -2390,7 +2389,7 @@ static enum parser_error parse_class_desc(struct parser *p) {
 struct parser *init_parse_class(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "name uint index str name", parse_class_name);
+	parser_reg(p, "name str name", parse_class_name);
 	parser_reg(p, "stats int str int int int wis int dex int con",
 			   parse_class_stats);
 	parser_reg(p, "skill-disarm-phys int base int incr",
@@ -2431,7 +2430,14 @@ static errr run_parse_class(struct parser *p) {
 }
 
 static errr finish_parse_class(struct parser *p) {
+	struct player_class *c;
+	int num = 0;
 	classes = parser_priv(p);
+	for (c = classes; c; c = c->next) num++;
+	for (c = classes; c; c = c->next, num--) {
+		assert(num);
+		c->cidx = num - 1;
+	}
 	parser_destroy(p);
 	return 0;
 }

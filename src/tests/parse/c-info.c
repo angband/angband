@@ -20,13 +20,12 @@ int teardown_tests(void *state) {
 }
 
 int test_name0(void *state) {
-	enum parser_error r = parser_parse(state, "name:4:Ranger");
+	enum parser_error r = parser_parse(state, "name:Ranger");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	eq(c->cidx, 4);
 	require(streq(c->name, "Ranger"));
 	ok;
 }

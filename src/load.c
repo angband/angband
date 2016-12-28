@@ -609,6 +609,7 @@ int rd_player(void)
 	byte num;
 	byte stat_max = 0;
 	char buf[80];
+	struct player_class *c;
 
 	rd_string(player->full_name, sizeof(player->full_name));
 	rd_string(player->died_from, 80);
@@ -626,11 +627,16 @@ int rd_player(void)
 	}
 
 	/* Player class */
-	rd_byte(&num);
-	player->class = player_id2class(num);
+	rd_string(buf, sizeof(buf));
+	for (c = classes; c; c = c->next) {
+		if (streq(c->name, buf)) {
+			player->class = c;
+			break;
+		}
+	}
 
 	if (!player->class) {
-		note(format("Invalid player class (%d).", num));
+		note(format("Invalid player class (%s).", buf));
 		return -1;
 	}
 
