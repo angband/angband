@@ -609,6 +609,7 @@ int rd_player(void)
 	byte num;
 	byte stat_max = 0;
 	char buf[80];
+	struct player_race *r;
 	struct player_class *c;
 
 	rd_string(player->full_name, sizeof(player->full_name));
@@ -617,12 +618,17 @@ int rd_player(void)
 	rd_string(player->history, 250);
 
 	/* Player race */
-	rd_byte(&num);
-	player->race = player_id2race(num);
+	rd_string(buf, sizeof(buf));
+	for (r = races; r; r = r->next) {
+		if (streq(r->name, buf)) {
+			player->race = r;
+			break;
+		}
+	}
 
 	/* Verify player race */
 	if (!player->race) {
-		note(format("Invalid player race (%d).", num));
+		note(format("Invalid player race (%s).", buf));
 		return -1;
 	}
 

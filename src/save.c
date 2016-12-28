@@ -407,7 +407,7 @@ void wr_player(void)
 	wr_string(player->history);
 
 	/* Race/Class/Gender/Spells */
-	wr_byte(player->race->ridx);
+	wr_string(player->race->name);
 	wr_string(player->class->name);
 	wr_byte(player->opts.name_suffix);
 
