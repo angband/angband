@@ -145,7 +145,7 @@ static struct object *rd_item(void)
 	rd_byte(&obj->origin_depth);
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) {
-		obj->origin_race = string_make(buf);
+		obj->origin_race = lookup_monster(buf);
 	}
 	rd_byte(&obj->notice);
 

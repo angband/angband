@@ -209,7 +209,6 @@ struct object *object_new(void)
  */
 void object_free(struct object *obj)
 {
-	string_free(obj->origin_race);
 	mem_free(obj->slays);
 	mem_free(obj->brands);
 	mem_free(obj->curses);
@@ -424,20 +423,18 @@ void object_origin_combine(struct object *obj1, const struct object *obj2)
 	int act = 2;
 
 	if (obj1->origin_race && obj2->origin_race) {
-		struct monster_race *race1 = lookup_monster(obj1->origin_race);
-		struct monster_race *race2 = lookup_monster(obj2->origin_race);
-		bool r1_uniq = false;
-		bool r2_uniq = false;
+		bool uniq1 = false;
+		bool uniq2 = false;
 
-		if (race1) {
-			r1_uniq = rf_has(race1->flags, RF_UNIQUE) ? true : false;
+		if (obj1->origin_race) {
+			uniq1 = rf_has(obj1->origin_race->flags, RF_UNIQUE) ? true : false;
 		}
-		if (race2) {
-			r2_uniq = rf_has(race2->flags, RF_UNIQUE) ? true : false;
+		if (obj2->origin_race) {
+			uniq2 = rf_has(obj2->origin_race->flags, RF_UNIQUE) ? true : false;
 		}
 
-		if (r1_uniq && !r2_uniq) act = 0;
-		else if (r2_uniq && !r1_uniq) act = 1;
+		if (uniq1 && !uniq2) act = 0;
+		else if (uniq2 && !uniq1) act = 1;
 		else act = 2;
 	}
 
@@ -448,8 +445,7 @@ void object_origin_combine(struct object *obj1, const struct object *obj2)
 		{
 			obj1->origin = obj2->origin;
 			obj1->origin_depth = obj2->origin_depth;
-			string_free(obj1->origin_race);
-			obj1->origin_race = string_make(obj2->origin_race);
+			obj1->origin_race = obj2->origin_race;
 		}
 
 		/* Set as "mixed" */

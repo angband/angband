@@ -437,7 +437,7 @@ struct object {
 
 	byte origin;			/**< How this item was found */
 	byte origin_depth;		/**< What depth the item was found at */
-	char *origin_race; 		/**< Monster race that dropped this item, if any */
+	struct monster_race *origin_race;	/**< Monster race that dropped it */
 
 	quark_t note; 			/**< Inscription index */
 };

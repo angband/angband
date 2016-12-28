@@ -1656,15 +1656,11 @@ static bool describe_origin(textblock *tb, const struct object *obj, bool terse)
 
 	/* Name the monster of origin */
 	if (obj->origin_race) {
-		struct monster_race *mon = lookup_monster(obj->origin_race);
-		if (mon) {
-			dropper = obj->origin_race;
-			if (rf_has(mon->flags, RF_UNIQUE)) {
-				unique = true;
-			}
+		dropper = obj->origin_race->name;
+		if (rf_has(obj->origin_race->flags, RF_UNIQUE)) {
+			unique = true;
 		}
-	}
-	if (!dropper) {
+	} else {
 		dropper = "monster lost to history";
 	}
 	article = is_a_vowel(dropper[0]) ? "an " : "a ";

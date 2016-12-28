@@ -112,7 +112,7 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->origin);
 	wr_byte(obj->origin_depth);
 	if (obj->origin_race) {
-		wr_string(obj->origin_race);
+		wr_string(obj->origin_race->name);
 	} else {
 		wr_string("");
 	}
