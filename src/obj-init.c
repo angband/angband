@@ -1236,14 +1236,12 @@ struct object_kind *pile_kind;
 struct object_kind *curse_object_kind;
 
 static enum parser_error parse_object_name(struct parser *p) {
-	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct object_kind *h = parser_priv(p);
 
 	struct object_kind *k = mem_zalloc(sizeof *k);
 	k->next = h;
 	parser_setpriv(p, k);
-	k->kidx = idx;
 	k->name = string_make(name);
 	return PARSE_ERROR_NONE;
 }
@@ -1605,9 +1603,9 @@ static enum parser_error parse_object_curse(struct parser *p) {
 struct parser *init_parse_object(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "name int index str name", parse_object_name);
-	parser_reg(p, "graphics char glyph sym color", parse_object_graphics);
+	parser_reg(p, "name str name", parse_object_name);
 	parser_reg(p, "type sym tval", parse_object_type);
+	parser_reg(p, "graphics char glyph sym color", parse_object_graphics);
 	parser_reg(p, "properties int level int weight int cost", parse_object_properties);
 	parser_reg(p, "alloc int common str minmax", parse_object_alloc);
 	parser_reg(p, "combat int ac rand hd rand to-h rand to-d rand to-a", parse_object_combat);
@@ -1636,34 +1634,37 @@ static errr run_parse_object(struct parser *p) {
 
 static errr finish_parse_object(struct parser *p) {
 	struct object_kind *k, *next = NULL;
+	int kidx;
 
 	/* scan the list for the max id */
 	z_info->k_max = 0;
 	k = parser_priv(p);
 	while (k) {
-		if (k->kidx > z_info->k_max)
-			z_info->k_max = k->kidx;
+		z_info->k_max++;
 		k = k->next;
 	}
 
 	/* allocate the direct access list and copy the data to it */
 	k_info = mem_zalloc((z_info->k_max + 1) * sizeof(*k));
-	for (k = parser_priv(p); k; k = next) {
-		memcpy(&k_info[k->kidx], k, sizeof(*k));
+	kidx = z_info->k_max - 1;
+	for (k = parser_priv(p); k; k = next, kidx--) {
+		assert(kidx >= 0);
+
+		memcpy(&k_info[kidx], k, sizeof(*k));
+		k_info[kidx].kidx = kidx;
 
 		/* Add base kind flags to kind kind flags */
-		kf_union(k_info[k->kidx].kind_flags, kb_info[k->tval].kind_flags);
+		kf_union(k_info[kidx].kind_flags, kb_info[k->tval].kind_flags);
 
 		next = k->next;
-		if (next)
-			k_info[k->kidx].next = &k_info[next->kidx];
+		if (kidx < z_info->k_max - 1)
+			k_info[kidx].next = &k_info[kidx + 1];
 		else
-			k_info[k->kidx].next = NULL;
+			k_info[kidx].next = NULL;
 		mem_free(k);
 	}
 	z_info->k_max += 1;
 
-	/*objkinds = parser_priv(p); not used yet, when used, remove the mem_free(k); above */
 	parser_destroy(p);
 	return 0;
 }
