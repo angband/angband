@@ -4,7 +4,7 @@
 
 ### Understanding trap.txt ###
 
-# name: index: name: short description
+# name: name: short description
 # graphics: ASCII char used to represent the feature: color symbol
 # appear: rarity: minimum depth: maximum number on level
 # desc: description
@@ -53,16 +53,16 @@
 #    also triggered 50% of the time.  If they are triggered, the 'msg-xtra'
 #    line is printed, if present.
 
-name:0:no trap:no trap
+name:no trap:no trap
 graphics: :w
 
-name:1:glyph of warding:glyph of warding
+name:glyph of warding:glyph of warding
 graphics:;:y
 appear:0:0:0
 flags:RUNE | VISIBLE | FLOOR
 desc:A magical rune which monsters cannot pass without difficulty.
 
-name:2:door lock:door lock
+name:door lock:door lock
 graphics: :w
 appear:0:0:0
 flags:LOCK | INVISIBLE
@@ -72,7 +72,7 @@ desc:A device which makes a closed door harder to open.
 
 # trap door
 
-name:10:trap door:trap door
+name:trap door:trap door
 graphics:^:w
 appear:0:2:0
 flags:TRAP | FLOOR | DOWN
@@ -85,7 +85,7 @@ msg-good:You float gently down to the next level.
 
 # open pit
 
-name:11:pit:pit
+name:pit:pit
 graphics:^:s
 appear:0:2:0
 flags:TRAP | FLOOR | PIT
@@ -98,7 +98,7 @@ msg-good:You float gently to the bottom of the pit.
 
 # spiked pit
 
-name:12:pit:spiked pit
+name:pit:spiked pit
 graphics:^:s
 appear:0:2:0
 flags:TRAP | FLOOR | PIT
@@ -116,7 +116,7 @@ msg-xtra:You are impaled!
 
 # poison pit
 
-name:13:pit:poison pit
+name:pit:poison pit
 graphics:^:s
 appear:0:2:0
 flags:TRAP | FLOOR | PIT
@@ -136,7 +136,7 @@ msg-xtra:You are impaled on poisonous spikes!
 
 # rune -- summon (OoD) monster
 
-name:15:strange rune:rune of summon foe
+name:strange rune:rune of summon foe
 graphics:^:B
 appear:0:3:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -147,7 +147,7 @@ msg:A new foe appears from nowhere!
 
 # rune -- summon monsters
 
-name:16:strange rune:rune of summoning
+name:strange rune:rune of summoning
 graphics:^:B
 appear:0:3:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -158,7 +158,7 @@ msg:You are enveloped in a cloud of smoke!
 
 # rune -- summon undead
 
-name:17:strange rune:rune of necromancy
+name:strange rune:rune of necromancy
 graphics:^:B
 appear:0:20:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -169,7 +169,7 @@ msg:A sense of dread washes over you...
 
 # rune -- summon dragons
 
-name:18:strange rune:rune of dragonsong
+name:strange rune:rune of dragonsong
 graphics:^:B
 appear:0:20:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -180,7 +180,7 @@ msg:You hear a dragon's call!
 
 # rune -- summon demons
 
-name:19:strange rune:hellhole
+name:strange rune:hellhole
 graphics:^:B
 appear:0:20:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
@@ -193,7 +193,7 @@ msg:Demons appear!
 
 # rune -- teleport
 
-name:21:strange rune:teleport rune
+name:strange rune:teleport rune
 graphics:^:o
 appear:0:1:0
 flags:TRAP | FLOOR | MAGICAL
@@ -204,7 +204,7 @@ msg:You hit a teleport trap!
 
 # spot -- fire
 
-name:22:discolored spot:fire trap
+name:discolored spot:fire trap
 graphics:^:u
 appear:0:2:0
 flags:TRAP | FLOOR | MAGICAL
@@ -215,7 +215,7 @@ msg:You are enveloped in flames!
 
 # spot -- acid
 
-name:23:discolored spot:acid trap
+name:discolored spot:acid trap
 graphics:^:u
 appear:0:2:0
 flags:TRAP | FLOOR | MAGICAL
@@ -226,7 +226,7 @@ msg:You are splashed with acid!
 
 # dart -- slow
 
-name:24:dart trap:slow dart
+name:dart trap:slow dart
 graphics:^:r
 appear:0:2:0
 flags:TRAP | FLOOR | SAVE_ARMOR
@@ -240,7 +240,7 @@ msg-bad:A small dart hits you!
 
 # dart -- lose str
 
-name:25:dart trap:strength loss dart
+name:dart trap:strength loss dart
 graphics:^:r
 appear:0:6:0
 flags:TRAP | FLOOR | SAVE_ARMOR
@@ -253,7 +253,7 @@ msg-bad:A small dart hits you!
 
 # dart -- lose dex
 
-name:26:dart trap:dexterity loss dart
+name:dart trap:dexterity loss dart
 graphics:^:r
 appear:0:6:0
 flags:TRAP | FLOOR | SAVE_ARMOR
@@ -266,7 +266,7 @@ msg-bad:A small dart hits you!
 
 # dart -- lose con
 
-name:27:dart trap:constitution loss dart
+name:dart trap:constitution loss dart
 graphics:^:r
 appear:0:6:0
 flags:TRAP | FLOOR | SAVE_ARMOR
@@ -279,7 +279,7 @@ msg-bad:A small dart hits you!
 
 # gas -- blind
 
-name:28:gas trap:blinding gas trap
+name:gas trap:blinding gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR
@@ -290,7 +290,7 @@ msg:You are surrounded by a black gas!
 
 # gas -- confuse
 
-name:29:gas trap:confusion gas trap
+name:gas trap:confusion gas trap
 graphics:^:g
 appear:0:1:0
 flags:TRAP | FLOOR
@@ -301,7 +301,7 @@ msg:You are surrounded by a gas of scintillating colors!
 
 # gas -- poison
 
-name:30:gas trap:poison gas trap
+name:gas trap:poison gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR
@@ -312,7 +312,7 @@ msg:You are surrounded by a pungent green gas!
 
 # gas -- sleep
 
-name:31:gas trap:sleep gas trap
+name:gas trap:sleep gas trap
 graphics:^:g
 appear:0:2:0
 flags:TRAP | FLOOR
@@ -323,7 +323,7 @@ msg:You are surrounded by a strange white mist!
 
 # alarm -- aggravation
 
-name:32:alarm:aggravation trap
+name:alarm:aggravation trap
 graphics:^:R
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL
@@ -335,7 +335,7 @@ msg:A high-pitched whistle blares through the dungeon!
 
 # explosion -- mine
 
-name:33:explosion:mine trap
+name:explosion:mine trap
 graphics:^:M
 appear:0:15:0
 flags:TRAP | FLOOR | ONETIME
@@ -347,7 +347,7 @@ msg:The floor explodes around you!
 
 # explosion -- blast
 
-name:34:explosion:blast trap
+name:explosion:blast trap
 graphics:^:M
 appear:0:25:0
 flags:TRAP | FLOOR | ONETIME
@@ -367,7 +367,7 @@ msg:The air seems to catch fire!
 
 # mental assault -- mind blast
 
-name:35:mind blast trap:mind blasting trap
+name:mind blast trap:mind blasting trap
 graphics:^:G
 appear:0:20:0
 flags:TRAP | FLOOR | MAGICAL | SAVE_THROW
@@ -383,7 +383,7 @@ msg-bad:Your mind is blasted by psionic energy!
 
 # mental assault -- brain smash
 
-name:36:mind blast trap:brain smashing trap
+name:mind blast trap:brain smashing trap
 graphics:^:G
 appear:0:40:0
 flags:TRAP | FLOOR | MAGICAL | SAVE_THROW
@@ -405,7 +405,7 @@ msg-bad:Your mind is blasted by psionic energy!
 
 # dungeon alter -- rock fall
 
-name:37:ancient mechanism:rock fall trap
+name:ancient mechanism:rock fall trap
 graphics:^:U
 appear:0:4:0
 flags:TRAP | FLOOR | ONETIME
@@ -420,7 +420,7 @@ msg:A rock falls on your head!
 
 # dungeon alter -- earthquake
 
-name:38:ancient mechanism:earthquake trap
+name:ancient mechanism:earthquake trap
 graphics:^:U
 appear:0:30:0
 flags:TRAP | FLOOR
@@ -435,7 +435,7 @@ msg:The ground shakes.
 # dungeon alter - stone to mud
 # XXX this currently prints loads of annoying messages
 
-name:39:ancient mechanism:area blast trap
+name:ancient mechanism:area blast trap
 graphics:^:U
 appear:0:40:0
 flags:TRAP | FLOOR | ONETIME
@@ -450,7 +450,7 @@ msg:The trap explodes, blasting the area clear!
 
 # blinding flash
 
-name:40:trap:blinding flash trap
+name:trap:blinding flash trap
 graphics:^:light yellow
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL | ONETIME
@@ -462,7 +462,7 @@ msg:A blazing light descends on you!
 
 # blinding trap
 
-name:41:trap:blinding trap
+name:trap:blinding trap
 graphics:^:light slate
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL | ONETIME
@@ -476,7 +476,7 @@ msg:Everything starts to fade...
 
 # mana drain
 
-name:42:trap:mana drain trap
+name:trap:mana drain trap
 graphics:^:light purple
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL
@@ -490,7 +490,7 @@ desc:A trap that drains your mana.
 # XXX ideally this would have an effect that wasn't cured in one turn
 #   - maybe make CSW only heal 100 points of cuts?
 
-name:43:trap:knife trap
+name:trap:knife trap
 graphics:^:yellow
 appear:0:20:0
 flags:TRAP | FLOOR
@@ -504,7 +504,7 @@ desc:A trap designed to bleed you to death.
 
 # petrifier
 
-name:44:trap:petrifying trap
+name:trap:petrifying trap
 graphics:^:blue
 appear:0:5:0
 flags:TRAP | FLOOR | MAGICAL
@@ -517,7 +517,7 @@ desc:A trap that stuns you and gives you stoneskin.
 
 # alarm -- aggravation
 
-name:45:alarm:siren
+name:alarm:siren
 graphics:^:R
 appear:0:1:0
 flags:TRAP | FLOOR | MAGICAL

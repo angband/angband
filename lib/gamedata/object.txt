@@ -170,10 +170,6 @@ desc: a maximum of 15000 turns of light.
 desc:  When thrown, it is considered lit, so it does more than nominal
 desc: damage (which occurs even against creatures resistant to fire).
 
-### 8
-
-### 9
-
 ##### Food #####
 
 ### Normal Food ###
@@ -477,7 +473,6 @@ alloc:20:10 to 100
 combat:0:4d2:0:0:0
 desc:A long sabre with an extreme curve to the blade.
 
-
 name:& Long Sword~
 type:sword
 graphics:|:W
@@ -491,7 +486,6 @@ graphics:|:W
 properties:10:150:300
 alloc:20:10 to 100
 combat:0:2d5:0:0:0
-
 
 name:& Bastard Sword~
 type:sword
@@ -613,7 +607,6 @@ graphics:\:D
 properties:5:180:500
 alloc:20:20 to 100
 combat:0:8d1:0:0:0
-
 
 name:& Mace~ of Disruption
 type:hafted
@@ -901,6 +894,8 @@ flags:DIG_3
 
 ##### Armor #####
 
+##### Boots #####
+
 name:& Pair~ of Leather Sandals
 type:boots
 graphics:]:U
@@ -1129,9 +1124,7 @@ alloc:10:75 to 100
 combat:80:2d4:-4:0:0
 flags:IGNORE_ACID
 
-
-
-### The Cloaks ###
+### Cloaks ###
 
 name:& Cloak~
 type:cloak
@@ -1170,7 +1163,7 @@ desc:This unearthly, completely transparent body mantle folds and drapes in
 desc:iridescent patterns around you.  It weighs absolutely nothing.
 
 
-### The Gloves ###
+### Gloves ###
 
 name:& Set~ of Leather Gloves
 type:gloves
@@ -1222,7 +1215,7 @@ desc:Highly protective gloves designed for an alchemist's elemental magics.
 #V:TUNNEL[1d3]
 
 
-### The shields ###
+### Shields ###
 
 #N:180:& Buckler~
 #G:):U
@@ -1316,10 +1309,6 @@ alloc:40:75 to 100
 flags:GOOD
 values:SPEED[4+M6]
 
-### 195
-### 196
-### 197
-
 ### Stat sustain rings ###
 
 name:Bodykeeping
@@ -1335,8 +1324,6 @@ graphics:=:d
 properties:30:2:600
 alloc:20:30 to 100
 flags:SUST_STR | SUST_INT | SUST_WIS | EASY_KNOW
-
-### 200
 
 
 ### Resistance rings ###
@@ -1357,9 +1344,6 @@ alloc:50:10 to 50
 flags:IGNORE_COLD | IGNORE_FIRE | EASY_KNOW
 values:RES_FIRE[1] | RES_COLD[1]
 
-### 203
-### 204
-
 ### Elemental rings ###
 
 name:Light
@@ -1368,8 +1352,6 @@ graphics:=:d
 properties:0:2:400
 alloc:20:25 to 100
 values:LIGHT[1] | RES_LIGHT[1]
-
-### 206
 
 name:Flames
 type:ring
@@ -1430,8 +1412,6 @@ dice:85
 effect:TIMED_INC:OPP_ELEC
 dice:20+1d20
 time:50+d50
-
-### 211
 
 ### Combat rings ###
 
@@ -1524,8 +1504,6 @@ alloc:50:10 to 50
 flags:PROT_FEAR | EASY_KNOW
 values:STEALTH[-2]
 
-### 222
-
 ### Misc rings ###
 
 name:Slow Digestion
@@ -1580,8 +1558,6 @@ properties:30:3:500
 alloc:50:20 to 90
 flags:SUST_WIS | 
 values:WIS[1+M5]
-
-### 231
 
 ### Resistances ###
 
@@ -1665,10 +1641,6 @@ flags:SUST_DEX | GOOD
 values:DEX[1+M4] | SPEED[1+M2] | STEALTH[1+M2] | INFRA[1+d3M3]
 values:RES_NEXUS[1] | RES_POIS[1]
 
-### 241
-### 242
-### 243
-
 ### Ability boosts ###
 
 name:Regeneration
@@ -1684,8 +1656,6 @@ graphics:":d
 properties:10:3:200
 alloc:30:10 to 70
 values:INFRA[1+M5]
-
-### 246
 
 ### Powers ###
 
@@ -1824,8 +1794,6 @@ pile:70:1d4
 power:6
 effect:IDENTIFY
 
-### 269
-
 ### Enchantments ###
 
 name:Enchant Weapon To-Hit
@@ -1900,8 +1868,6 @@ pile:25:2
 power:20
 effect:REMOVE_CURSE
 dice:50+d50
-
-### 277
 
 ### Summoning ###
 
@@ -1984,10 +1950,6 @@ pile:100:2d3
 power:7
 effect:SET_NOURISH
 dice:16999
-
-### 286
-### 287
-### 288
 
 name:Light
 type:scroll
@@ -2219,8 +2181,6 @@ pile:10:2
 power:20000
 effect:RESTORE_STAT:CON
 effect:GAIN_STAT:CON
-
-### 315
 
 name:Augmentation
 type:potion
@@ -3730,8 +3690,6 @@ power:15
 effect:RECALL
 time:60
 
-### 456
-
 name:Speed
 type:rod
 graphics:-:d
@@ -3933,8 +3891,6 @@ graphics:~:s
 properties:55:1000:250
 alloc:5:55 to 100
 combat:0:2d6:0:0:0
-
-### 486
 
 
 

@@ -745,14 +745,12 @@ static struct file_parser names_parser = {
  * ------------------------------------------------------------------------ */
 
 static enum parser_error parse_trap_name(struct parser *p) {
-    int idx = parser_getuint(p, "index");
     const char *name = parser_getsym(p, "name");
     const char *desc = parser_getstr(p, "desc");
     struct trap_kind *h = parser_priv(p);
 
     struct trap_kind *t = mem_zalloc(sizeof *t);
     t->next = h;
-    t->tidx = idx;
     t->name = string_make(name);
 	t->desc = string_make(desc);
     parser_setpriv(p, t);
@@ -1114,7 +1112,7 @@ static enum parser_error parse_trap_msg_xtra(struct parser *p) {
 struct parser *init_parse_trap(void) {
     struct parser *p = parser_new();
     parser_setpriv(p, NULL);
-    parser_reg(p, "name uint index sym name str desc", parse_trap_name);
+    parser_reg(p, "name sym name str desc", parse_trap_name);
     parser_reg(p, "graphics char glyph sym color", parse_trap_graphics);
     parser_reg(p, "appear uint rarity uint mindepth uint maxnum", parse_trap_appear);
     parser_reg(p, "flags ?str flags", parse_trap_flags);
@@ -1141,22 +1139,27 @@ static errr run_parse_trap(struct parser *p) {
 
 static errr finish_parse_trap(struct parser *p) {
 	struct trap_kind *t, *n;
+	int tidx;
 	
-	/* scan the list for the max id */
+	/* Scan the list for the max id */
 	z_info->trap_max = 0;
 	t = parser_priv(p);
 	while (t) {
-		if (t->tidx > z_info->trap_max)
-			z_info->trap_max = t->tidx;
+		z_info->trap_max++;
 		t = t->next;
 	}
 
-	z_info->trap_max += 1;
-	trap_info = mem_zalloc((z_info->trap_max) * sizeof(*t));
-    for (t = parser_priv(p); t; t = t->next) {
-		if (t->tidx >= z_info->trap_max)
-			continue;
-		memcpy(&trap_info[t->tidx], t, sizeof(*t));
+	trap_info = mem_zalloc((z_info->trap_max + 1) * sizeof(*t));
+	tidx = z_info->trap_max - 1;
+    for (t = parser_priv(p); t; t = t->next, tidx--) {
+		assert(tidx >= 0);
+
+		memcpy(&trap_info[tidx], t, sizeof(*t));
+		trap_info[tidx].tidx = tidx;
+		if (tidx < z_info->trap_max - 1)
+			trap_info[tidx].next = &trap_info[tidx + 1];
+		else
+			trap_info[tidx].next = NULL;
     }
 
     t = parser_priv(p);

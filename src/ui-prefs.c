@@ -725,20 +725,17 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	/* idx can be "*" or a number */
+	/* idx can be "*" or a name */
 	idx_sym = parser_getsym(p, "idx");
 
 	if (!strcmp(idx_sym, "*")) {
 		trap_idx = -1;
 	} else {
-		char *z = NULL;
-		trap_idx = strtoul(idx_sym, NULL, 0);
-		if (z == idx_sym || *idx_sym == '-') {
-			return PARSE_ERROR_NOT_NUMBER;
-		}
-
-		if (trap_idx >= z_info->trap_max) {
-			return PARSE_ERROR_OUT_OF_BOUNDS;
+		struct trap_kind *trap = lookup_trap(idx_sym);
+		if (!trap) {
+			return PARSE_ERROR_UNRECOGNISED_TRAP;
+		} else {
+			trap_idx = trap->tidx;
 		}
 	}
 
