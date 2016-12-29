@@ -1479,7 +1479,6 @@ static enum parser_error parse_pit_name(struct parser *p) {
 	struct pit_profile *h = parser_priv(p);
 	struct pit_profile *pit = mem_zalloc(sizeof *pit);
 	pit->next = h;
-	pit->pit_idx = parser_getuint(p, "index");
 	pit->name = string_make(parser_getstr(p, "name"));
 	pit->colors = NULL;
 	pit->forbidden_monsters = NULL;
@@ -1668,7 +1667,7 @@ struct parser *init_parse_pit(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "name uint index str name", parse_pit_name);
+	parser_reg(p, "name str name", parse_pit_name);
 	parser_reg(p, "room uint type", parse_pit_room);
 	parser_reg(p, "alloc uint rarity uint level", parse_pit_alloc);
 	parser_reg(p, "obj-rarity uint obj_rarity", parse_pit_obj_rarity);
@@ -1688,25 +1687,29 @@ static errr run_parse_pit(struct parser *p) {
  
 static errr finish_parse_pit(struct parser *p) {
 	struct pit_profile *pit, *n;
+	int pit_idx;
 		
-	/* scan the list for the max id */
+	/* Scan the list for the max id */
 	z_info->pit_max = 0;
 	pit = parser_priv(p);
 	while (pit) {
-		if (pit->pit_idx > z_info->pit_max)
-			z_info->pit_max = pit->pit_idx;
+		z_info->pit_max++;
 		pit = pit->next;
 	}
 
-	/* allocate the direct access list and copy the data to it */
+	/* Allocate the direct access list and copy the data to it */
 	pit_info = mem_zalloc((z_info->pit_max + 1) * sizeof(*pit));
-	for (pit = parser_priv(p); pit; pit = n) {
-		memcpy(&pit_info[pit->pit_idx], pit, sizeof(*pit));
+	pit_idx = z_info->pit_max - 1;
+	for (pit = parser_priv(p); pit; pit = n, pit_idx--) {
+		assert(pit_idx >= 0);
+
+		memcpy(&pit_info[pit_idx], pit, sizeof(*pit));
+		pit_info[pit_idx].pit_idx = pit_idx;
 		n = pit->next;
-		if (n)
-			pit_info[pit->pit_idx].next = &pit_info[n->pit_idx];
+		if (pit_idx < z_info->pit_max - 1)
+			pit_info[pit_idx].next = &pit_info[pit_idx + 1];
 		else
-			pit_info[pit->pit_idx].next = NULL;
+			pit_info[pit_idx].next = NULL;
 
 		mem_free(pit);
 	}
