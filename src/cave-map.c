@@ -93,7 +93,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	/* Use real feature (remove later) */
 	g->f_idx = cave->squares[y][x].feat;
 	if (f_info[g->f_idx].mimic)
-		g->f_idx = f_info[g->f_idx].mimic;
+		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
 
 	g->in_view = (square_isseen(cave, y, x)) ? true : false;
 	g->is_player = (cave->squares[y][x].mon < 0) ? true : false;
@@ -117,7 +117,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	/* Use known feature */
 	g->f_idx = player->cave->squares[y][x].feat;
 	if (f_info[g->f_idx].mimic)
-		g->f_idx = f_info[g->f_idx].mimic;
+		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
 
     /* There is a trap in this square */
     if (square_istrap(cave, y, x) && square_isknown(cave, y, x)) {

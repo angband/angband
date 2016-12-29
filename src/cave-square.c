@@ -1078,7 +1078,9 @@ int square_digging(struct chunk *c, int y, int x) {
 }
 
 const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x) {
-	int f = f_info[player->cave->squares[y][x].feat].mimic;
+	int actual = player->cave->squares[y][x].feat;
+	char *mimic_name = f_info[actual].mimic;
+	int f = mimic_name ? lookup_feat(mimic_name) : actual;
 	return f_info[f].name;
 }
 

@@ -2326,7 +2326,7 @@ static void do_cmd_knowledge_features(const char *name, int row)
 
 	for (i = 0; i < z_info->f_max; i++) {
 		/* Ignore non-features and mimics */
-		if (f_info[i].name == 0 || f_info[i].mimic != i)
+		if (f_info[i].name == 0 || f_info[i].mimic)
 			continue;
 
 		/* Currently no filter for features */

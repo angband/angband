@@ -83,7 +83,7 @@ const s16b ddy_ddd[9] =
 /**
  * Find a terrain feature index by name
  */
-static int lookup_feat(const char *name)
+int lookup_feat(const char *name)
 {
 	int i;
 
@@ -124,7 +124,7 @@ void set_terrain(void)
 	FEAT_QUARTZ_K = lookup_feat("quartz vein with treasure");
 	FEAT_GRANITE = lookup_feat("granite wall");
 	FEAT_PERM = lookup_feat("permanent wall");
-	FEAT_LAVA = lookup_feat("lava flow");
+	FEAT_LAVA = lookup_feat("lava");
 }
 
 /**

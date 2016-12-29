@@ -244,8 +244,8 @@ void dump_features(ang_file *fff)
 		/* Skip non-entries */
 		if (!feat->name) continue;
 
-		/* Skip mimic entries -- except invisible trap */
-		if (feat->mimic != i) continue;
+		/* Skip mimic entries  */
+		if (feat->mimic) continue;
 
 		file_putf(fff, "# Terrain: %s\n", feat->name);
 		for (j = 0; j < LIGHTING_MAX; j++) {
@@ -780,7 +780,7 @@ static enum parser_error parse_prefs_feat(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getuint(p, "idx");
+	idx = lookup_feat(parser_getsym(p, "idx"));
 	if (idx >= z_info->f_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
@@ -1058,7 +1058,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "object sym tval sym sval int attr int char", parse_prefs_object);
 	parser_reg(p, "monster sym name int attr int char", parse_prefs_monster);
 	parser_reg(p, "monster-base sym name int attr int char", parse_prefs_monster_base);
-	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
+	parser_reg(p, "feat sym idx sym lighting int attr int char", parse_prefs_feat);
 	parser_reg(p, "trap sym idx sym lighting int attr int char", parse_prefs_trap);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "flavor uint idx int attr int char", parse_prefs_flavor);

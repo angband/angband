@@ -59,19 +59,19 @@
 # index used to get the difficulty of digging through this type of terrain.
 
 
-name:0:unknown grid
+name:unknown grid
 graphics: :w
 priority:2
 
 
-name:1:open floor
+name:open floor
 graphics:.:w
 priority:5
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
 desc:An open floor or bare ground.  Can be walked across by anything, and can 
 desc:hold traps or items.  Does not break line of sight.
 
-name:2:closed door
+name:closed door
 graphics:+:U
 priority:17
 flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
@@ -82,39 +82,39 @@ desc:but you can also take a pickaxe to them, or blast them open
 desc:with magic.  Monsters are also slowed down by doors; you can earn yourself 
 desc:valuable time by locking them.
 
-name:3:open door
+name:open door
 graphics:':U
 priority:15
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | CLOSABLE | EASY
 desc:A door that is already open.  Player, monster, spell and missile can pass 
 desc:through as long as it stays open.
 
-name:4:broken door
+name:broken door
 graphics:':u
 priority:15
 flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | EASY
 desc:A door so broken that it cannot be shut.
 
-name:5:up staircase
+name:up staircase
 graphics:<:w
 priority:25
 flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR | EASY
 desc:A staircase up to a shallower part of the dungeon.
 
-name:6:down staircase
+name:down staircase
 graphics:>:w
 priority:25
 flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR | EASY
 desc:A staircase down to a deeper part of the dungeon.
 
-name:7:General Store
+name:General Store
 graphics:1:U
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:1:0
 desc:The General Store sells food, ammunition and lighting supplies.
 
-name:8:Armoury
+name:Armoury
 graphics:2:s
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
@@ -122,7 +122,7 @@ info:2:0
 desc:The armour sold here will give you some protection against the blows of 
 desc:your enemies.
 
-name:9:Weapon Smiths
+name:Weapon Smiths
 graphics:3:w
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
@@ -130,7 +130,7 @@ info:3:0
 desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid 
 desc:backroom of this enticing shop.
 
-name:10:Temple
+name:Temple
 graphics:4:g
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
@@ -138,14 +138,14 @@ info:4:0
 desc:A quiet, reflective place of refuge, with priestly books and supplies of 
 desc:magical and hallowed goods for the pure of heart.
 
-name:11:Alchemy Shop
+name:Alchemy Shop
 graphics:5:b
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:5:0
 desc:A dim, scented room where potions and scrolls are traded.
 
-name:12:Magic Shop
+name:Magic Shop
 graphics:6:r
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
@@ -153,7 +153,7 @@ info:6:0
 desc:A shop for devices with magic trapped within, lined with shelves of 
 desc:mystical tomes.
 
-name:13:Black Market
+name:Black Market
 graphics:7:D
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
@@ -161,7 +161,7 @@ info:7:0
 desc:Watch your back and hold onto your purse as you enter this disreputable 
 desc:haunt - and do not expect friendly service or good bargains.
 
-name:14:Home
+name:Home
 graphics:8:y
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
@@ -169,14 +169,14 @@ info:8:0
 desc:Your safe piece of Middle Earth, and the only place you can store goods 
 desc:apart from on your person.
 
-name:15:secret door
+name:secret door
 graphics:#:w
 priority:10
-mimic:21
+mimic:granite wall
 flags:WALL | ROCK | DOOR_ANY | GRANITE
 desc:A door that appears like a granite wall to untrained eyes.
 
-name:16:pile of rubble
+name:pile of rubble
 graphics:::w
 priority:13
 flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING
@@ -184,7 +184,7 @@ info:0:1
 desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled 
 desc:to normal floor.
 
-name:17:magma vein
+name:magma vein
 graphics:%:s
 priority:12
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA
@@ -193,7 +193,7 @@ desc:A seam of soft rock.  It can be removed by digging or magic, and passed
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.
 
-name:18:quartz vein
+name:quartz vein
 graphics:%:W
 priority:11
 flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ
@@ -202,7 +202,7 @@ desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.
 
-name:19:magma vein with treasure
+name:magma vein with treasure
 graphics:*:o
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA
@@ -211,7 +211,7 @@ desc:A seam of soft rock.  It can be removed by digging or magic, and passed
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.  It contains visible treasure.
 
-name:20:quartz vein with treasure
+name:quartz vein with treasure
 graphics:*:o
 priority:19
 flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
@@ -220,7 +220,7 @@ desc:A seam of hardish rock.  It can be removed by digging or magic, and passed
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight.  It contains visible treasure.
 
-name:21:granite wall
+name:granite wall
 graphics:#:w
 priority:10
 flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
@@ -229,7 +229,7 @@ desc:A seam of hard rock.  It can be removed by digging or magic, and passed
 desc:through by immaterial monsters.  It stops any spells, missiles or line of 
 desc:sight. 
 
-name:22:permanent wall
+name:permanent wall
 graphics:#:z
 priority:10
 flags:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
@@ -238,13 +238,13 @@ desc:surrounded by these kinds of walls and some special rooms are made of them.
 
 ## New terrain
 
-name:25:lava flow
+name:lava
 graphics:#:r
 priority:10
 flags:PROJECT | FIERY | PASSABLE | NO_SCENT | NO_FLOW | BRIGHT
 desc:A fiery pool of glowing lava.  Step in it at your peril!
 
-name:26:pile of passable rubble
+name:pile of passable rubble
 graphics:::u
 priority:13
 flags:ROCK | PASSABLE | NO_SCENT | NO_FLOW

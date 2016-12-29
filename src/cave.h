@@ -91,7 +91,7 @@ struct feature {
 
 	struct feature *next;
 
-	byte mimic;    /**< Feature to mimic */
+	char *mimic;    /**< Name of feature to mimic */
 	byte priority; /**< Display priority */
 
 	byte shopnum;  /**< Which shop does it take you to? */
@@ -366,6 +366,7 @@ void square_mark(struct chunk *c, int y, int x);
 void square_unmark(struct chunk *c, int y, int x);
 
 /* cave.c */
+int lookup_feat(const char *name);
 void set_terrain(void);
 struct chunk *cave_new(int height, int width);
 void cave_free(struct chunk *c);

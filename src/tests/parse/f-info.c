@@ -16,15 +16,13 @@ int teardown_tests(void *state) {
 }
 
 int test_name0(void *state) {
-	enum parser_error r = parser_parse(state, "name:3:Test Feature");
+	enum parser_error r = parser_parse(state, "name:Test Feature");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
 	require(streq(f->name, "Test Feature"));
-	eq(f->fidx, 3);
-	eq(f->mimic, 3);
 	ok;
 }
 
@@ -41,13 +39,13 @@ int test_graphics0(void *state) {
 }
 
 int test_mimic0(void *state) {
-	enum parser_error r = parser_parse(state, "mimic:11");
+	enum parser_error r = parser_parse(state, "mimic:marshmallow");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
-	eq(f->mimic, 11);
+	require(streq(f->mimic, "marshmallow"));
 	ok;
 }
 

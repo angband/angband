@@ -1201,14 +1201,11 @@ static struct file_parser trap_parser = {
  * ------------------------------------------------------------------------ */
 
 static enum parser_error parse_feat_name(struct parser *p) {
-	int idx = parser_getuint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct feature *h = parser_priv(p);
 
 	struct feature *f = mem_zalloc(sizeof *f);
 	f->next = h;
-	f->fidx = idx;
-	f->mimic = idx;
 	f->name = string_make(name);
 	parser_setpriv(p, f);
 	return PARSE_ERROR_NONE;
@@ -1234,12 +1231,12 @@ static enum parser_error parse_feat_graphics(struct parser *p) {
 }
 
 static enum parser_error parse_feat_mimic(struct parser *p) {
-	unsigned int idx = parser_getuint(p, "index");
+	const char *mimic_feat = parser_getstr(p, "feat");
 	struct feature *f = parser_priv(p);
 
 	if (!f)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	f->mimic = idx;
+	f->mimic = string_make(mimic_feat);
 	return PARSE_ERROR_NONE;
 }
 
@@ -1300,9 +1297,9 @@ static enum parser_error parse_feat_desc(struct parser *p) {
 struct parser *init_parse_feat(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "name uint index str name", parse_feat_name);
+	parser_reg(p, "name str name", parse_feat_name);
 	parser_reg(p, "graphics char glyph sym color", parse_feat_graphics);
-	parser_reg(p, "mimic uint index", parse_feat_mimic);
+	parser_reg(p, "mimic str feat", parse_feat_mimic);
 	parser_reg(p, "priority uint priority", parse_feat_priority);
 	parser_reg(p, "flags ?str flags", parse_feat_flags);
 	parser_reg(p, "info int shopnum int dig", parse_feat_info);
@@ -1316,25 +1313,29 @@ static errr run_parse_feat(struct parser *p) {
 
 static errr finish_parse_feat(struct parser *p) {
 	struct feature *f, *n;
+	int fidx;
 
-	/* scan the list for the max id */
+	/* Scan the list for the max id */
 	z_info->f_max = 0;
 	f = parser_priv(p);
 	while (f) {
-		if (f->fidx > z_info->f_max)
-			z_info->f_max = f->fidx;
+		z_info->f_max++;
 		f = f->next;
 	}
 
-	/* allocate the direct access list and copy the data to it */
+	/* Allocate the direct access list and copy the data to it */
 	f_info = mem_zalloc((z_info->f_max + 1) * sizeof(*f));
-	for (f = parser_priv(p); f; f = n) {
-		memcpy(&f_info[f->fidx], f, sizeof(*f));
+	fidx = z_info->f_max - 1;
+	for (f = parser_priv(p); f; f = n, fidx--) {
+		assert(fidx >= 0);
+
+		memcpy(&f_info[fidx], f, sizeof(*f));
+		f_info[fidx].fidx = fidx;
 		n = f->next;
-		if (n)
-			f_info[f->fidx].next = &f_info[n->fidx];
+		if (fidx < z_info->f_max - 1)
+			f_info[fidx].next = &f_info[fidx + 1];
 		else
-			f_info[f->fidx].next = NULL;
+			f_info[fidx].next = NULL;
 		mem_free(f);
 	}
 	z_info->f_max += 1;
@@ -1349,6 +1350,7 @@ static errr finish_parse_feat(struct parser *p) {
 static void cleanup_feat(void) {
 	int idx;
 	for (idx = 0; idx < z_info->f_max; idx++) {
+		string_free(f_info[idx].mimic);
 		string_free(f_info[idx].desc);
 		string_free(f_info[idx].name);
 	}
