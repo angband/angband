@@ -2431,14 +2431,14 @@ static errr finish_parse_artifact(struct parser *p) {
 
 	/* Allocate the direct access list and copy the data to it */
 	a_info = mem_zalloc((z_info->a_max + 1) * sizeof(*a));
-	aidx = z_info->a_max - 1;
+	aidx = z_info->a_max;
 	for (a = parser_priv(p); a; a = n, aidx--) {
-		assert(aidx >= 0);
+		assert(aidx > 0);
 
 		memcpy(&a_info[aidx], a, sizeof(*a));
 		a_info[aidx].aidx = aidx;
 		n = a->next;
-		if (aidx < z_info->a_max - 1)
+		if (aidx < z_info->a_max)
 			a_info[aidx].next = &a_info[aidx + 1];
 		else
 			a_info[aidx].next = NULL;

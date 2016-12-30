@@ -380,6 +380,39 @@ int lookup_artifact_name(const char *name)
 	return a_idx;
 }
 
+/**
+ * \param name ego type name
+ * \param tval object tval
+ * \param sval object sval
+ * \return eidx of the ego item type
+ */
+int lookup_ego_item(const char *name, int tval, int sval)
+{
+	int i;
+	int eidx = -1;
+
+	/* Look for it */
+	for (i = 0; i < z_info->e_max; i++) {
+		struct ego_item *ego = &e_info[i];
+		struct poss_item *poss_item = ego->poss_items;
+
+		/* Reject nameless and wrong names */
+		if (!ego->name) continue;
+		if (!streq(name, ego->name)) continue;
+
+		/* Check tval and sval */
+		while (poss_item) {
+			struct object_kind *kind = lookup_kind(tval, sval);
+			if (kind->kidx == poss_item->kidx) {
+				return i;
+			}
+			poss_item = poss_item->next;
+		}
+	}
+
+	/* Return our best match */
+	return eidx;
+}
 
 /**
  * Return the numeric sval of the object kind with the given `tval` and
@@ -440,7 +473,7 @@ static int compare_types(const struct object *o1, const struct object *o2)
 	else
 		return CMP(o1->tval, o2->tval);
 }	
-	
+
 
 /**
  * Sort comparator for objects

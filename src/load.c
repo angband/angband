@@ -35,6 +35,7 @@
 #include "obj-pile.h"
 #include "obj-randart.h"
 #include "obj-slays.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player-calcs.h"
@@ -63,6 +64,9 @@ static byte hist_size = 0;
 static byte obj_mod_max = 0;
 static byte of_size = 0;
 static byte elem_max = 0;
+static byte brand_max;
+static byte slay_max;
+static byte curse_max;
 
 /**
  * Monster constants
@@ -80,18 +84,6 @@ static byte trf_size = 0;
 typedef struct object *(*rd_item_t)(void);
 
 /**
- * Find an ego item from its index
- */
-static struct ego_item *lookup_ego(int idx)
-{
-	if (idx > 0 && idx < z_info->e_max)
-		return &e_info[idx];
-
-	return NULL;
-}
-
-
-/**
  * Read an object.
  */
 static struct object *rd_item(void)
@@ -100,8 +92,6 @@ static struct object *rd_item(void)
 
 	byte tmp8u;
 	u16b tmp16u;
-	u32b ego_idx;
-	u32b art_idx;
 	byte effect;
 	size_t i;
 	char buf[128];
@@ -119,15 +109,27 @@ static struct object *rd_item(void)
 	rd_byte(&obj->ix);
 
 	/* Type/Subtype */
-	rd_byte(&obj->tval);
-	rd_byte(&obj->sval);
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) {
+		obj->tval = tval_find_idx(buf);
+	}
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) {
+		obj->sval = lookup_sval(obj->tval, buf);
+	}
 	rd_s16b(&obj->pval);
 
 	rd_byte(&obj->number);
 	rd_s16b(&obj->weight);
 
-	rd_u32b(&art_idx);
-	rd_u32b(&ego_idx);
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) {
+		obj->artifact = &a_info[lookup_artifact_name(buf)];
+	}
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) {
+		obj->ego = &e_info[lookup_ego_item(buf, obj->tval, obj->sval)];
+	}
 	rd_byte(&effect);
 
 	rd_s16b(&obj->timeout);
@@ -160,7 +162,7 @@ static struct object *rd_item(void)
 	rd_byte(&tmp8u);
 	if (tmp8u) {
 		obj->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
-		for (i = 0; i < z_info->brand_max; i++) {
+		for (i = 0; i < brand_max; i++) {
 			rd_byte(&tmp8u);
 			obj->brands[i] = tmp8u ? true : false;
 		}
@@ -170,7 +172,7 @@ static struct object *rd_item(void)
 	rd_byte(&tmp8u);
 	if (tmp8u) {
 		obj->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
-		for (i = 0; i < z_info->slay_max; i++) {
+		for (i = 0; i < slay_max; i++) {
 			rd_byte(&tmp8u);
 			obj->slays[i] = tmp8u ? true : false;
 		}
@@ -180,7 +182,7 @@ static struct object *rd_item(void)
 	rd_byte(&tmp8u);
 	if (tmp8u) {
 		obj->curses = mem_zalloc(z_info->curse_max * sizeof(struct curse_data));
-		for (i = 0; i < z_info->curse_max; i++) {
+		for (i = 0; i < curse_max; i++) {
 			rd_byte(&tmp8u);
 			obj->curses[i].power = tmp8u;
 			rd_u16b(&tmp16u);
@@ -220,17 +222,6 @@ static struct object *rd_item(void)
 	if ((!obj->tval && !obj->sval) || !obj->kind) {
 		object_delete(&obj);
 		return NULL;
-	}
-
-	/* Lookup ego */
-	obj->ego = lookup_ego(ego_idx);
-
-	/* Set artifact, fail if invalid index */
-	if (art_idx >= z_info->a_max) {
-		object_delete(&obj);
-		return NULL;
-	} else if (art_idx > 0) {
-		obj->artifact = &a_info[art_idx];
 	}
 
 	/* Set effect */
@@ -322,9 +313,12 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 static void rd_trap(struct trap *trap)
 {
     int i;
+	char buf[80];
 
-    rd_byte(&trap->t_idx);
-    trap->kind = &trap_info[trap->t_idx];
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) {
+		trap->kind = lookup_trap(buf);
+	}
     rd_byte(&trap->fy);
     rd_byte(&trap->fx);
     rd_byte(&trap->power);
@@ -512,7 +506,7 @@ int rd_object_memory(void)
 	/* Object modifiers */
 	rd_byte(&obj_mod_max);
 	if (obj_mod_max > OBJ_MOD_MAX) {
-	        note(format("Too many (%u) object modifiers allowed!", 
+	        note(format("Too many (%u) object modifiers allowed!",
 						obj_mod_max));
 		return (-1);
 	}
@@ -520,8 +514,28 @@ int rd_object_memory(void)
 	/* Elements */
 	rd_byte(&elem_max);
 	if (elem_max > ELEM_MAX) {
-	        note(format("Too many (%u) elements allowed!", 
-						elem_max));
+	        note(format("Too many (%u) elements allowed!", elem_max));
+		return (-1);
+	}
+
+	/* Brands */
+	rd_byte(&brand_max);
+	if (brand_max > z_info->brand_max) {
+	        note(format("Too many (%u) brands allowed!", brand_max));
+		return (-1);
+	}
+
+	/* Slays */
+	rd_byte(&slay_max);
+	if (slay_max > z_info->slay_max) {
+	        note(format("Too many (%u) slays allowed!", slay_max));
+		return (-1);
+	}
+
+	/* Curses */
+	rd_byte(&curse_max);
+	if (curse_max > z_info->curse_max) {
+	        note(format("Too many (%u) curses allowed!", curse_max));
 		return (-1);
 	}
 
@@ -831,13 +845,16 @@ int rd_ignore(void)
 	/* Read the aware object autoinscriptions array */
 	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
-		s16b kidx;
+		byte tval, sval;
 		struct object_kind *k;
 
-		rd_s16b(&kidx);
-		k = objkind_byid(kidx);
+		rd_string(tmp, sizeof(tmp));
+		tval = tval_find_idx(tmp);
+		rd_string(tmp, sizeof(tmp));
+		sval = lookup_sval(tval, tmp);
+		k = lookup_kind(tval, sval);
 		if (!k)
-			quit_fmt("objkind_byid(%d) failed", kidx);
+			quit_fmt("lookup_kind(%d, %d) failed", tval, sval);
 		rd_string(tmp, sizeof(tmp));
 		k->note_aware = quark_add(tmp);
 	}
@@ -848,13 +865,16 @@ int rd_ignore(void)
 	/* Read the unaware object autoinscriptions array */
 	for (i = 0; i < inscriptions; i++) {
 		char tmp[80];
-		s16b kidx;
+		byte tval, sval;
 		struct object_kind *k;
 
-		rd_s16b(&kidx);
-		k = objkind_byid(kidx);
+		rd_string(tmp, sizeof(tmp));
+		tval = tval_find_idx(tmp);
+		rd_string(tmp, sizeof(tmp));
+		sval = lookup_sval(tval, tmp);
+		k = lookup_kind(tval, sval);
 		if (!k)
-			quit_fmt("objkind_byid(%d) failed", kidx);
+			quit_fmt("lookup_kind(%d, %d) failed", tval, sval);
 		rd_string(tmp, sizeof(tmp));
 		k->note_unaware = quark_add(tmp);
 	}
@@ -922,19 +942,19 @@ int rd_misc(void)
 	}
 
 	/* Read brands */
-	for (i = 0; i < z_info->brand_max; i++) {
+	for (i = 0; i < brand_max; i++) {
 		rd_byte(&tmp8u);
 		player->obj_k->brands[i] = tmp8u ? true : false;
 	}
 
 	/* Read slays */
-	for (i = 0; i < z_info->slay_max; i++) {
+	for (i = 0; i < slay_max; i++) {
 		rd_byte(&tmp8u);
 		player->obj_k->slays[i] = tmp8u ? true : false;
 	}
 
 	/* Read curses */
-	for (i = 0; i < z_info->curse_max; i++) {
+	for (i = 0; i < curse_max; i++) {
 		rd_byte(&tmp8u);
 		player->obj_k->curses[i].power = tmp8u;
 	}
@@ -1494,6 +1514,7 @@ int rd_history(void)
 		s16b dlev, clev;
 		bitflag type[HIST_SIZE];
 		byte aidx;
+		char name[80];
 		char text[80];
 
 		for (j = 0; j < hist_size; j++)		
@@ -1501,7 +1522,10 @@ int rd_history(void)
 		rd_s32b(&turnno);
 		rd_s16b(&dlev);
 		rd_s16b(&clev);
-		rd_byte(&aidx);
+		rd_string(name, sizeof(name));
+		if (name[0]) {
+			aidx = lookup_artifact_name(name);
+		}
 		rd_string(text, sizeof(text));
 		
 		history_add_full(player, type, aidx, dlev, clev, turnno, text);

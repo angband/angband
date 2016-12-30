@@ -24,10 +24,13 @@
 #include "mon-make.h"
 #include "monster.h"
 #include "object.h"
+#include "obj-desc.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
+#include "obj-tval.h"
+#include "obj-util.h"
 #include "option.h"
 #include "player.h"
 #include "savefile.h"
@@ -77,23 +80,33 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->iy);
 	wr_byte(obj->ix);
 
-	wr_byte(obj->tval);
-	wr_byte(obj->sval);
+	/* Names of object base and object */
+	wr_string(tval_find_name(obj->tval));
+	if (obj->sval) {
+		char name[1024];
+		obj_desc_name_format(name, sizeof name, 0,
+							 lookup_kind(obj->tval, obj->sval)->name, 0, false);
+		wr_string(name);
+	} else {
+		wr_string("");
+	}
 
 	wr_s16b(obj->pval);
 
 	wr_byte(obj->number);
 	wr_s16b(obj->weight);
 
-	if (obj->artifact)
-		wr_u32b(obj->artifact->aidx);
-	else
-		wr_u32b(0);
+	if (obj->artifact) {
+		wr_string(obj->artifact->name);
+	} else {
+		wr_string("");
+	}
 
-	if (obj->ego)
-		wr_u32b(obj->ego->eidx);
-	else
-		wr_u32b(0);
+	if (obj->ego) {
+		wr_string(obj->ego->name);
+	} else {
+		wr_string("");
+	}
 
 	if (obj->effect)
 		wr_byte(1);
@@ -235,7 +248,11 @@ static void wr_trap(struct trap *trap)
 {
     size_t i;
 
-    wr_byte(trap->t_idx);
+	if (trap->t_idx) {
+		wr_string(trap_info[trap->t_idx].desc);
+	} else {
+		wr_string("");
+	}
     wr_byte(trap->fy);
     wr_byte(trap->fx);
     wr_byte(trap->power);
@@ -348,6 +365,9 @@ void wr_object_memory(void)
 	wr_byte(OF_SIZE);
 	wr_byte(OBJ_MOD_MAX);
 	wr_byte(ELEM_MAX);
+	wr_byte(z_info->brand_max);
+	wr_byte(z_info->slay_max);
+	wr_byte(z_info->curse_max);
 
 	/* Kind knowledge */
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
@@ -533,7 +553,11 @@ void wr_ignore(void)
 	/* Write the aware object autoinscriptions array */
 	for (i = 0; i < z_info->k_max; i++) {
 		if (k_info[i].note_aware) {
-			wr_s16b(i);
+			char name[1024];
+			wr_string(tval_find_name(k_info[i].tval));
+			obj_desc_name_format(name, sizeof name, 0, k_info[i].name, 0,
+								 false);
+			wr_string(name);
 			wr_string(quark_str(k_info[i].note_aware));
 		}
 	}
@@ -549,7 +573,11 @@ void wr_ignore(void)
 	/* Write the unaware object autoinscriptions array */
 	for (i = 0; i < z_info->k_max; i++) {
 		if (k_info[i].note_unaware) {
-			wr_s16b(i);
+			char name[1024];
+			wr_string(tval_find_name(k_info[i].tval));
+			obj_desc_name_format(name, sizeof name, 0, k_info[i].name, 0,
+								 false);
+			wr_string(name);
 			wr_string(quark_str(k_info[i].note_unaware));
 		}
 	}
@@ -972,7 +1000,11 @@ void wr_history(void)
 		wr_s32b(history_list[i].turn);
 		wr_s16b(history_list[i].dlev);
 		wr_s16b(history_list[i].clev);
-		wr_byte(history_list[i].a_idx);
+		if (history_list[i].a_idx) {
+			wr_string(a_info[history_list[i].a_idx].name);
+		} else {
+			wr_string("");
+		}
 		wr_string(history_list[i].event);
 	}
 }
