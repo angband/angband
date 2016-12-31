@@ -85,7 +85,7 @@ static const char *mod_names[] =
 };
 
 /**
- * Create a "mask" of flags of a specific type or ID threshold.
+ * Create a "mask" of object flags of a specific type or ID threshold.
  *
  * \param f is the flag array we're filling
  * \param id is whether we're masking by ID level
@@ -93,7 +93,7 @@ static const char *mod_names[] =
  *
  * N.B. OFT_MAX must be the last item in the ... list
  */
-void create_mask(bitflag *f, bool id, ...)
+void create_obj_flag_mask(bitflag *f, bool id, ...)
 {
 	const struct object_flag *of;
 	int i;

@@ -22,6 +22,8 @@
 #include "monster.h"
 
 /** Functions **/
+const char *describe_race_flag(int flag);
+void create_mon_flag_mask(bitflag *f, ...);
 struct monster_race *lookup_monster(const char *name);
 struct monster_base *lookup_monster_base(const char *name);
 bool monster_is_nonliving(struct monster_race *race);

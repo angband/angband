@@ -160,7 +160,7 @@ struct object_mod {
  * ------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------ */
-void create_mask(bitflag *f, bool id, ...);
+void create_obj_flag_mask(bitflag *f, bool id, ...);
 s32b flag_power(int flag);
 void log_flags(bitflag *f, ang_file *log_file);
 const char *flag_name(int flag);

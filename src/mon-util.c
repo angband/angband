@@ -36,6 +36,61 @@
 #include "player-util.h"
 
 
+static const struct monster_flag monster_flag_table[] =
+{
+	#define RF(a, b, c) { RF_##a, b, c },
+	#include "list-mon-race-flags.h"
+	#undef RF
+};
+
+/**
+ * Return a description for the given monster race flag.
+ *
+ * Returns an empty string for an out-of-range flag.
+ *
+ * \param flag is one of the RF_ flags.
+ */
+const char *describe_race_flag(int flag)
+{
+	const struct monster_flag *rf = &monster_flag_table[flag];
+
+	if (flag <= RF_NONE || flag >= RF_MAX)
+		return "";
+
+	return rf->desc;
+}
+
+/**
+ * Create a mask of monster flags of a specific type.
+ *
+ * \param f is the flag array we're filling
+ * \param ... is the list of flags we're looking for
+ *
+ * N.B. RFT_MAX must be the last item in the ... list
+ */
+void create_mon_flag_mask(bitflag *f, ...)
+{
+	const struct monster_flag *rf;
+	int i;
+	va_list args;
+
+	rf_wipe(f);
+
+	va_start(args, f);
+
+	/* Process each type in the va_args */
+    for (i = va_arg(args, int); i != RFT_MAX; i = va_arg(args, int)) {
+		for (rf = monster_flag_table; rf->index < RF_MAX; rf++)
+			if (rf->type == i)
+				rf_on(f, rf->index);
+	}
+
+	va_end(args);
+
+	return;
+}
+
+
 /**
  * Returns the monster with the given name. If no monster has the exact name
  * given, returns the first monster with the given name as a (case-insensitive)
@@ -323,9 +378,11 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* The monster is now visible */
 	if (flag) {
 		/* Learn about the monster's mind */
-		if (player_of_has(player, OF_TELEPATHY))
-			flags_set(lore->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND,
-					RF_SMART, RF_STUPID, FLAG_END);
+		if (player_of_has(player, OF_TELEPATHY)) {
+			bitflag mask[RF_SIZE];
+			create_mon_flag_mask(mask, RFT_DET, RFT_MAX);
+			mflag_union(lore->flags, mask);
+		}
 
 		/* It was previously unseen */
 		if (!mflag_has(mon->mflag, MFLAG_VISIBLE)) {

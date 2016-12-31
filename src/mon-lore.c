@@ -233,11 +233,13 @@ int blow_color(struct player *p, int blow_idx)
 void lore_update(const struct monster_race *race, struct monster_lore *lore)
 {
 	int i;
+	bitflag mask[RF_SIZE];
 
 	if (!race || !lore) return;
 
 	/* Assume some "obvious" flags */
-	flags_set(lore->flags, RF_SIZE, RF_OBVIOUS_MASK, FLAG_END);
+	create_mon_flag_mask(mask, RFT_OBV, RFT_MAX);
+	mflag_union(lore->flags, mask);
 
 	/* Blows */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
@@ -255,8 +257,10 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 	if ((lore->tkills > 0) || lore->all_known) {
 		lore->armour_known = true;
 		lore->drop_known = true;
-		flags_set(lore->flags, RF_SIZE, RF_RACE_MASK, FLAG_END);
-		flags_set(lore->flags, RF_SIZE, RF_DROP_MASK, FLAG_END);
+		create_mon_flag_mask(mask, RFT_RACE, RFT_MAX);
+		mflag_union(lore->flags, mask);
+		create_mon_flag_mask(mask, RFT_DROP, RFT_MAX);
+		mflag_union(lore->flags, mask);
 		rf_on(lore->flags, RF_FORCE_DEPTH);
 	}
 
@@ -418,29 +422,6 @@ void monster_flags_known(const struct monster_race *race,
 {
 	rf_copy(flags, race->flags);
 	rf_inter(flags, lore->flags);
-}
-
-/**
- * Return a description for the given monster race flag.
- *
- * Returns an empty string for an out-of-range flag. Descriptions are in
- * list-mon-flag.h.
- *
- * \param flag is one of the RF_ flags.
- */
-static const char *lore_describe_race_flag(int flag)
-{
-	static const char *r_flag_description[] = {
-		#define RF(a, b, c) c,
-		#include "list-mon-race-flags.h"
-		#undef RF
-		NULL
-	};
-
-	if (flag <= RF_NONE || flag >= RF_MAX)
-		return "";
-
-	return r_flag_description[flag];
 }
 
 /**
@@ -611,7 +592,7 @@ static int lore_insert_flag_description(int flag,
 										const char *list[], int index)
 {
 	if (rf_has(known_flags, flag)) {
-		list[index] = lore_describe_race_flag(flag);
+		list[index] = describe_race_flag(flag);
 		return index + 1;
 	}
 
@@ -639,7 +620,7 @@ static int lore_insert_unknown_vulnerability(int flag,
 											 const char *list[], int index)
 {
 	if (rf_has(lore->flags, flag) && !rf_has(known_flags, flag)) {
-		list[index] = lore_describe_race_flag(flag);
+		list[index] = describe_race_flag(flag);
 		return index + 1;
 	}
 
@@ -880,35 +861,35 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
 
 	if (rf_has(race->flags, RF_ANIMAL))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_ANIMAL));
+						   describe_race_flag(RF_ANIMAL));
 	if (rf_has(race->flags, RF_EVIL))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_EVIL));
+						   describe_race_flag(RF_EVIL));
 	if (rf_has(race->flags, RF_UNDEAD))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_UNDEAD));
+						   describe_race_flag(RF_UNDEAD));
 	if (rf_has(race->flags, RF_NONLIVING))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_NONLIVING));
+						   describe_race_flag(RF_NONLIVING));
 	if (rf_has(race->flags, RF_METAL))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_METAL));
+						   describe_race_flag(RF_METAL));
 
 	if (rf_has(race->flags, RF_DRAGON))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_DRAGON));
+						   describe_race_flag(RF_DRAGON));
 	else if (rf_has(race->flags, RF_DEMON))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_DEMON));
+						   describe_race_flag(RF_DEMON));
 	else if (rf_has(race->flags, RF_GIANT))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_GIANT));
+						   describe_race_flag(RF_GIANT));
 	else if (rf_has(race->flags, RF_TROLL))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_TROLL));
+						   describe_race_flag(RF_TROLL));
 	else if (rf_has(race->flags, RF_ORC))
 		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   lore_describe_race_flag(RF_ORC));
+						   describe_race_flag(RF_ORC));
 	else
 		textblock_append_c(tb, COLOUR_L_BLUE, " creature");
 
@@ -1288,10 +1269,10 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_ELEC);
 	if (rf_has(lore->flags, RF_IM_FIRE) && !rf_has(known_flags, RF_IM_FIRE) &&
 		!rf_has(known_flags, RF_HURT_FIRE))
-		descs[list_index++] = lore_describe_race_flag(RF_HURT_FIRE);
+		descs[list_index++] = describe_race_flag(RF_HURT_FIRE);
 	if (rf_has(lore->flags, RF_IM_COLD) && !rf_has(known_flags, RF_IM_COLD) &&
 		!rf_has(known_flags, RF_HURT_COLD))
-		descs[list_index++] = lore_describe_race_flag(RF_HURT_COLD);
+		descs[list_index++] = describe_race_flag(RF_HURT_COLD);
 	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_POIS);
 	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_WATER);
 	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_NETHER);

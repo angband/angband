@@ -40,6 +40,27 @@ enum
 };
 
 
+/**
+ * The monster flag types
+ */
+enum monster_flag_type {
+	RFT_NONE = 0,	/* placeholder flag */
+	RFT_OBV,		/* an obvious property */
+	RFT_DISP,		/* for display purposes */
+	RFT_GEN,		/* related to generation */
+	RFT_NOTE,		/* especially noteworthy for lore */
+	RFT_BEHAV,		/* behaviour-related */
+	RFT_DROP,		/* drop details */
+	RFT_DET,		/* detection properties */
+	RFT_ALTER,		/* environment shaping */
+	RFT_RACE,		/* types of monster */
+	RFT_VULN,		/* vulnerabilities */
+	RFT_RES,		/* elemental resistances */
+	RFT_PROT,		/* immunity from status effects */
+
+	RFT_MAX
+};
+
 #define MFLAG_SIZE                FLAG_SIZE(MFLAG_MAX)
 
 #define mflag_has(f, flag)        flag_has_dbg(f, MFLAG_SIZE, flag, #f, #flag)
@@ -64,7 +85,7 @@ enum
  */
 enum
 {
-	#define RF(a,b,c) RF_##a,
+	#define RF(a, b, c) RF_##a,
 	#include "list-mon-race-flags.h"
 	#undef RF
 	RF_MAX
@@ -90,30 +111,6 @@ enum
 #define rf_inter(f1, f2)       flag_inter(f1, f2, RF_SIZE)
 #define rf_diff(f1, f2)        flag_diff(f1, f2, RF_SIZE)
 
-/* Some flags are obvious */
-#define RF_OBVIOUS_MASK \
-	RF_UNIQUE, RF_QUESTOR, RF_MALE, RF_FEMALE, \
-	RF_GROUP_AI
-
-/* "race" flags */
-#define RF_RACE_MASK \
-	RF_ORC, RF_TROLL, RF_GIANT, RF_DRAGON, RF_DEMON, \
-	RF_UNDEAD, RF_EVIL, RF_ANIMAL, RF_METAL, RF_NONLIVING
-
-/* Drop flags to be revealed on first kill */
-#define RF_DROP_MASK \
-	RF_DROP_GOOD, \
-	RF_DROP_GREAT, \
-	RF_ONLY_ITEM, \
-	RF_ONLY_GOLD, \
-	RF_DROP_20, \
-	RF_DROP_40, \
-	RF_DROP_60, \
-	RF_DROP_4, \
-	RF_DROP_3, \
-	RF_DROP_2, \
-	RF_DROP_1
-
 
 /**
  * Monster spell flag indices
@@ -129,6 +126,15 @@ enum
 
 
 /** Structures **/
+
+/**
+ * The monster flag structure
+ */
+struct monster_flag {
+	u16b index;				/* the RF_ index */
+	u16b type;				/* RFT_ category */
+	const char *desc;		/* lore description */
+};
 
 /**
  * Monster blows

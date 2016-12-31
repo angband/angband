@@ -344,10 +344,10 @@ void ego_apply_magic(struct object *obj, int level)
 
 	/* Extra powers */
 	if (kf_has(obj->ego->kind_flags, KF_RAND_SUSTAIN)) {
-		create_mask(newf, false, OFT_SUST, OFT_MAX);
+		create_obj_flag_mask(newf, false, OFT_SUST, OFT_MAX);
 		of_on(obj->flags, get_new_attr(obj->flags, newf));
 	} else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER) || (pick == 1)) {
-		create_mask(newf, false, OFT_PROT, OFT_MISC, OFT_MAX);
+		create_obj_flag_mask(newf, false, OFT_PROT, OFT_MISC, OFT_MAX);
 		of_on(obj->flags, get_new_attr(obj->flags, newf));
 	} else if (kf_has(obj->ego->kind_flags, KF_RAND_BASE_RES) || (pick > 1)) {
 		/* Get a base resist if available, mark it as random */

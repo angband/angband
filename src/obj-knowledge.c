@@ -1612,7 +1612,7 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	object_flavor_tried(obj);
 
 	/* Get the obvious object flags */
-	create_mask(obvious_mask, true, OFID_WIELD, OFT_MAX);
+	create_obj_flag_mask(obvious_mask, true, OFID_WIELD, OFT_MAX);
 
 	/* Make sustains obvious for items with that stat bonus */
 	for (i = 0; i < STAT_MAX; i++) {
@@ -1948,7 +1948,7 @@ void equip_learn_after_time(struct player *p)
 	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
 
 	/* Get the timed flags */
-	create_mask(timed_mask, true, OFID_TIMED, OFT_MAX);
+	create_obj_flag_mask(timed_mask, true, OFID_TIMED, OFT_MAX);
 
 	/* Get the unknown timed flags, and return if there are none */
 	object_flags(p->obj_k, f);
