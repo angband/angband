@@ -6,147 +6,243 @@
 # pow - used for attack quality in check_hit()
 # eval - used for power evaluation in eval_blow_effect()
 # desc - description for monster recall
+# lore-color-base - base color for lore
+# lore-color-resist - color for lore when the effects are resisted
+# lore-color-immune - color for lore when the effects are resisted strongly
+# effect-type - indicator of what type of property will protect from the effect
+# resist - which precise flag or resist will protect from the effect
 
 name:NONE
 power:0
 eval:0
+lore-color-base:Dark
 
 name:HURT
 power:40
 eval:0
 desc:attack
+lore-color-base:Light Green
 
 name:POISON
 power:20
 eval:10
 desc:poison
+lore-color-base:Orange
+lore-color-resist:Light Green
+effect-type:element
+resist:POIS
 
 name:DISENCHANT
 power:10
 eval:30
 desc:disenchant
+lore-color-base:Light Red
+lore-color-resist:Light Green
+effect-type:element
+resist:DISEN
 
 name:DRAIN_CHARGES
 power:10
 eval:30
 desc:drain charges
+lore-color-base:Light Red
 
 name:EAT_GOLD
 power:0
 eval:5
 desc:steal gold
+lore-color-base:Yellow
+lore-color-resist:Light Green
+effect-type:theft
 
 name:EAT_ITEM
 power:0
 eval:5
 desc:steal items
+lore-color-base:Light Red
+lore-color-resist:Light Green
+effect-type:theft
 
 name:EAT_FOOD
 power:0
 eval:5
 desc:eat your food
+lore-color-base:Yellow
 
 name:EAT_LIGHT
 power:0
 eval:5
 desc:absorb light
+lore-color-base:Light Green
 
 name:ACID
 power:20
 eval:20
 desc:shoot acid
+lore-color-base:Orange
+lore-color-resist:Yellow
+lore-color-immune:Light Green
 
 name:ELEC
 power:40
 eval:10
 desc:electrify
+lore-color-base:Orange
+lore-color-resist:Yellow
+lore-color-immune:Light Green
 
 name:FIRE
 power:40
 eval:10
 desc:burn
+lore-color-base:Orange
+lore-color-resist:Yellow
+lore-color-immune:Light Green
 
 name:COLD
 power:40
 eval:10
 desc:freeze
+lore-color-base:Orange
+lore-color-resist:Yellow
+lore-color-immune:Light Green
 
 name:BLIND
 power:0
 eval:20
 desc:blind
+lore-color-base:Yellow
+lore-color-resist:Light Green
+effect-type:flag
+resist:PROT_BLIND
 
 name:CONFUSE
 power:20
 eval:20
 desc:confuse
+lore-color-base:Orange
+lore-color-resist:Light Green
+effect-type:flag
+resist:PROT_CONF
 
 name:TERRIFY
 power:0
 eval:10
 desc:terrify
+lore-color-base:Yellow
+lore-color-resist:Light Green
+effect-type:flag
+resist:PROT_FEAR
 
 name:PARALYZE
 power:0
 eval:40
 desc:paralyze
+lore-color-base:Light Red
+lore-color-resist:Light Green
+effect-type:flag
+resist:FREE_ACT
 
 name:LOSE_STR
 power:0
 eval:20
 desc:reduce strength
+lore-color-base:Orange
+lore-color-resist:Light Green
+effect-type:flag
+resist:SUST_STR
 
 name:LOSE_INT
 power:0
 eval:20
 desc:reduce intelligence
+lore-color-base:Orange
+lore-color-resist:Light Green
+effect-type:flag
+resist:SUST_INT
 
 name:LOSE_WIS
 power:0
 eval:20
 desc:reduce wisdom
+lore-color-base:Orange
+lore-color-resist:Light Green
+effect-type:flag
+resist:SUST_WIS
 
 name:LOSE_DEX
 power:0
 eval:20
 desc:reduce dexterity
+lore-color-base:Orange
+lore-color-resist:Light Green
+effect-type:flag
+resist:SUST_DEX
 
 name:LOSE_CON
 power:0
 eval:30
 desc:reduce constitution
+lore-color-base:Orange
+lore-color-resist:Light Green
+effect-type:flag
+resist:SUST_CON
 
 name:LOSE_ALL
 power:0
 eval:40
 desc:reduce all stats
+lore-color-base:Light Red
+lore-color-resist:Light Green
+effect-type:all_sustains
 
 name:SHATTER
 power:60
 eval:300
 desc:shatter
+lore-color-base:Yellow
 
 name:EXP_10
 power:20
 eval:5
 desc:lower experience
+lore-color-base:Orange
+lore-color-resist:Yellow
+effect-type:flag
+resist:HOLD_LIFE
 
 name:EXP_20
 power:20
 eval:5
 desc:lower experience
+lore-color-base:Orange
+lore-color-resist:Yellow
+effect-type:flag
+resist:HOLD_LIFE
 
 name:EXP_40
 power:20
 eval:10
 desc:lower experience
+lore-color-base:Orange
+lore-color-resist:Yellow
+effect-type:flag
+resist:HOLD_LIFE
 
 name:EXP_80
 power:20
 eval:10
 desc:lower experience
+lore-color-base:Orange
+lore-color-resist:Yellow
+effect-type:flag
+resist:HOLD_LIFE
 
 name:HALLU
 power:0
 eval:20
 desc:cause hallucinations
+lore-color-base:Yellow
+lore-color-resist:Light Green
+effect-type:element
+resist:CHAOS

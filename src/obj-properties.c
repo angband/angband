@@ -140,6 +140,21 @@ const char *flag_name(int flag)
 }
 
 /**
+ * Return the index of a flag from its name.
+ */
+int flag_index_by_name(const char *name)
+{
+	size_t i;
+	for (i = 0; i < N_ELEMENTS(flag_names); i++) {
+		if (streq(name, flag_names[i])) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+/**
  * Get the slot multiplier for a flag's power rating
  *
  * \param flag is the flag in question.

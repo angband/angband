@@ -164,6 +164,7 @@ void create_mask(bitflag *f, bool id, ...);
 s32b flag_power(int flag);
 void log_flags(bitflag *f, ang_file *log_file);
 const char *flag_name(int flag);
+int flag_index_by_name(const char *name);
 s16b flag_slot_mult(int flag, int slot);
 int obj_flag_type(int flag);
 void flag_message(int flag, char *name);

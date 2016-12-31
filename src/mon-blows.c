@@ -108,6 +108,18 @@ const char *monster_blow_method_action(struct blow_method *method)
  * ------------------------------------------------------------------------
  * Monster blow effects
  * ------------------------------------------------------------------------ */
+int blow_index(const char *name)
+{
+	int i;
+
+	for (i = 1; i < z_info->blow_effects_max; i++) {
+		struct blow_effect *effect = &blow_effects[i];
+		if (my_stricmp(name, effect->name) == 0)
+			return i;
+	}
+	return 0;
+}
+
 /**
  * Do damage as the result of a melee attack that has an elemental aspect.
  *

@@ -68,12 +68,18 @@ struct blow_effect {
 	int power;
 	int eval;
 	char *desc;
+	byte lore_attr;			/* Color of the attack used in lore text */
+	byte lore_attr_resist;	/* Color used in lore text when resisted */
+	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
+	char *effect_type;
+	int resist;
 	struct blow_effect *next;
 };
 
 struct blow_effect *blow_effects;
 
 /* Functions */
+int blow_index(const char *name);
 extern const char *monster_blow_method_action(struct blow_method *method);
 extern melee_effect_handler_f melee_handler_for_blow_effect(const char *name);
 

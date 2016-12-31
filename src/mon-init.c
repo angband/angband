@@ -32,6 +32,7 @@
 #include "object.h"
 #include "parser.h"
 #include "player-spell.h"
+#include "project.h"
 
 struct blow_method *blow_methods;
 struct blow_effect *blow_effects;
@@ -327,6 +328,86 @@ static enum parser_error parse_eff_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_eff_lore_color(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	const char *color;
+	int attr;
+
+	if (!eff)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+	eff->lore_attr = attr;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_eff_lore_color_resist(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	const char *color;
+	int attr;
+
+	if (!eff)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+	eff->lore_attr_resist = attr;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_eff_lore_color_immune(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	const char *color;
+	int attr;
+
+	if (!eff)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+	eff->lore_attr_immune = attr;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_eff_effect_type(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	assert(eff);
+
+	eff->effect_type = string_make(parser_getstr(p, "type"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_eff_resist(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	const char *resist = parser_getstr(p, "resist");
+	assert(eff);
+
+	if (streq(eff->effect_type, "element")) {
+		eff->resist = gf_name_to_idx(resist);
+	} else if (streq(eff->effect_type, "flag")) {
+		eff->resist = flag_index_by_name(resist);
+	} else {
+		return PARSE_ERROR_MISSING_BLOW_EFF_TYPE;
+	}
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_eff(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -334,6 +415,11 @@ struct parser *init_parse_eff(void) {
 	parser_reg(p, "power int power", parse_eff_power);
 	parser_reg(p, "eval int eval", parse_eff_eval);
 	parser_reg(p, "desc str desc", parse_eff_desc);
+	parser_reg(p, "lore-color-base sym color", parse_eff_lore_color);
+	parser_reg(p, "lore-color-resist sym color", parse_eff_lore_color_resist);
+	parser_reg(p, "lore-color-immune sym color", parse_eff_lore_color_immune);
+	parser_reg(p, "effect-type str type", parse_eff_effect_type);
+	parser_reg(p, "resist str resist", parse_eff_resist);
 	return p;
 }
 
