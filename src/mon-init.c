@@ -504,6 +504,63 @@ static enum parser_error parse_mon_spell_name(struct parser *p) {
 }
 
 
+static enum parser_error parse_mon_spell_lore_color(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	const char *color;
+	int attr;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+	s->lore_attr = attr;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_lore_color_resist(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	const char *color;
+	int attr;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+	s->lore_attr_resist = attr;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_lore_color_immune(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	const char *color;
+	int attr;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+	s->lore_attr_immune = attr;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_mon_spell_message_type(struct parser *p)
 {
 	int msg_index;
@@ -731,6 +788,9 @@ struct parser *init_parse_mon_spell(void) {
 	parser_reg(p, "message-miss str text", parse_mon_spell_miss_message);
 	parser_reg(p, "message-save str text", parse_mon_spell_save_message);
 	parser_reg(p, "lore str text", parse_mon_spell_lore_desc);
+	parser_reg(p, "lore-color-base sym color", parse_mon_spell_lore_color);
+	parser_reg(p, "lore-color-resist sym color", parse_mon_spell_lore_color_resist);
+	parser_reg(p, "lore-color-immune sym color", parse_mon_spell_lore_color_immune);
 	parser_reg(p, "hit uint hit", parse_mon_spell_hit);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_mon_spell_effect);
 	parser_reg(p, "param int p2 ?int p3", parse_mon_spell_param);

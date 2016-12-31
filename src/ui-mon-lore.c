@@ -92,13 +92,12 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	struct monster_lore mutable_lore;
 	struct monster_lore *lore = &mutable_lore;
 	bitflag known_flags[RF_SIZE];
-	int spell_colors[RSF_MAX];
 	int *melee_colors = mem_zalloc(z_info->blow_effects_max * sizeof(int));
 
 	assert(tb && race && original_lore);
 
 	/* Determine the special attack colors */
-	get_attack_colors(melee_colors, spell_colors);
+	get_attack_colors(melee_colors);
 
 	/* Hack -- create a copy of the monster-memory that we can modify */
 	memcpy(lore, original_lore, sizeof(struct monster_lore));
@@ -144,7 +143,7 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	lore_append_friends(tb, race, lore, known_flags);
 
 	/* Describe the spells, spell-like abilities and melee attacks */
-	lore_append_spells(tb, race, lore, known_flags, spell_colors);
+	lore_append_spells(tb, race, lore, known_flags);
 	lore_append_attack(tb, race, lore, known_flags, melee_colors);
 	
 	/* Do we know everything */

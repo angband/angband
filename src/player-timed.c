@@ -155,11 +155,30 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	return notify;
 }
 
-bool player_inc_check(struct timed_effect_data *effect, struct player *p)
+/**
+ * Check whether a timed effect will affect the player
+ */
+bool player_inc_check(struct player *p, int idx, bool lore)
 {
+	struct timed_effect_data *effect = &timed_effects[idx];
+
 	/* Check that @ can be affected by this effect */
 	if (!effect->fail_code) {
 		return true;
+	}
+
+	/* If we're only doing this for monster lore purposes */
+	if (lore) {
+		if (((effect->fail_code == TMD_FAIL_FLAG_OBJECT) &&
+			 (of_has(p->known_state.flags, effect->fail))) ||
+			((effect->fail_code == TMD_FAIL_FLAG_RESIST) &&
+			 (p->known_state.el_info[effect->fail].res_level > 0)) ||
+			((effect->fail_code == TMD_FAIL_FLAG_VULN) &&
+			 (p->known_state.el_info[effect->fail].res_level < 0))) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	/* Determine whether an effect can be prevented by a flag */
@@ -188,9 +207,9 @@ bool player_inc_check(struct timed_effect_data *effect, struct player *p)
 			return false;
 		}
 	} else if (effect->fail_code == TMD_FAIL_FLAG_VULN) {
-		equip_learn_element(p, effect->fail);
 		/* Effect is inhibited by a vulnerability
 		 * the asymmetry with resists is OK for now - NRM */
+		equip_learn_element(p, effect->fail);
 		if (p->state.el_info[effect->fail].res_level < 0) {
 			return false;
 		}
@@ -212,9 +231,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	assert(idx >= 0);
 	assert(idx < TMD_MAX);
 
-	struct timed_effect_data *effect = &timed_effects[idx];
-
-	if (check == false || player_inc_check(effect, p) == true) {
+	if (check == false || player_inc_check(p, idx, false) == true) {
 		/* Paralysis should be non-cumulative */
 		if (idx == TMD_PARALYZED && p->timed[TMD_PARALYZED] > 0) {
 			return false;

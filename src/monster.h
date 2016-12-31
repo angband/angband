@@ -166,6 +166,9 @@ struct monster_spell {
 	char *miss_message;		/* Description of a missed attack */
 	char *save_message;		/* Message on passing saving throw, if any */
 	char *lore_desc;		/* Description of the attack used in lore text */
+	byte lore_attr;			/* Color of the attack used in lore text */
+	byte lore_attr_resist;	/* Color used in lore text when resisted */
+	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	int hit;				/* To-hit level for the attack */
 	struct effect *effect;	/* Effect(s) of the spell */
 	random_value power;		/* Relative power of the spell */

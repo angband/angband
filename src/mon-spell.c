@@ -122,7 +122,7 @@ static void spell_message(struct monster *mon,
 	msgt(spell->msgt, "%s", buf);
 }
 
-static const struct monster_spell *monster_spell_by_index(int index)
+const struct monster_spell *monster_spell_by_index(int index)
 {
 	const struct monster_spell *spell = monster_spells;
 	while (spell) {

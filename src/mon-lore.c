@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "effects.h"
 #include "init.h"
 #include "mon-blows.h"
 #include "mon-init.h"
@@ -56,6 +57,117 @@ static int blow_index(const char *name)
 	return 0;
 }
 
+/**
+ * Determine the color to code a monster spell
+ *
+ * This function assigns a color to each monster spell, depending on how
+ * dangerous the attack is to the player given current state. Spells may be
+ * colored green (least dangerous), yellow, orange, or red (most dangerous).
+ */
+int spell_color(struct player *p, int spell_index)
+{
+	const struct monster_spell *spell = monster_spell_by_index(spell_index);
+	struct effect *eff = spell ? spell->effect : NULL;
+
+	/* No spell */
+	if (!spell) return COLOUR_DARK;
+
+	/* Unresistable spells just use the default color */
+	if (!spell->lore_attr_resist && !spell->lore_attr_immune) {
+		return spell->lore_attr;
+	}
+
+	/* Spells with a save */
+	if (spell->save_message) {
+		/* Mixed results if the save may fail, perfect result if it can't */
+		if (p->known_state.skills[SKILL_SAVE] < 100) {
+			if (eff->index == EF_TELEPORT_LEVEL) {
+				/* Special case - teleport level */
+				if (p->known_state.el_info[ELEM_NEXUS].res_level > 0) {
+					return spell->lore_attr_resist;
+				} else {
+					return spell->lore_attr;
+				}
+			} else if (eff->index == EF_TIMED_INC) {
+				/* Simple timed effects */
+				if (player_inc_check(p, eff->params[0], true)) {
+					return spell->lore_attr;
+				} else {
+					return spell->lore_attr_resist;
+				}
+			} else if (spell->lore_attr_immune) {
+				/* Multiple timed effects plus damage */
+				for (; eff; eff = eff->next) {
+					if (eff->index != EF_TIMED_INC) continue;
+					if (player_inc_check(p, eff->params[0], true)) {
+						return spell->lore_attr;
+					}
+				}
+				return spell->lore_attr_resist;
+			} else {
+				/* Straight damage */
+				return spell->lore_attr;
+			}
+		} else if (spell->lore_attr_immune) {
+			return spell->lore_attr_immune;
+		} else {
+			return spell->lore_attr_resist;
+		}
+	}
+
+	/* Bolts, balls and breaths */
+	if ((eff->index == EF_BOLT) || (eff->index == EF_BALL) ||
+		(eff->index == EF_BREATH)) {
+		/* Treat by element */
+		switch (eff->params[0]) {
+			/* Special case - sound */
+			case ELEM_SOUND:
+				if (p->known_state.el_info[ELEM_SOUND].res_level > 0) {
+					return spell->lore_attr_immune;
+				} else if (of_has(p->known_state.flags, OF_PROT_STUN)) {
+					return spell->lore_attr_resist;
+				} else {
+					return spell->lore_attr;
+				}
+				break;
+			/* Special case - nexus */
+			case ELEM_NEXUS:
+				if (p->known_state.el_info[ELEM_NEXUS].res_level > 0) {
+					return spell->lore_attr_immune;
+				} else if (p->known_state.skills[SKILL_SAVE] >= 100) {
+					return spell->lore_attr_resist;
+				} else {
+					return spell->lore_attr;
+				}
+				break;
+			/* Elements that stun or confuse */
+			case ELEM_FORCE:
+			case ELEM_ICE:
+			case ELEM_PLASMA:
+			case ELEM_WATER:
+				if (!of_has(p->known_state.flags, OF_PROT_STUN)) {
+					return spell->lore_attr;
+				} else if (!of_has(p->known_state.flags, OF_PROT_CONF) &&
+						   (eff->params[0] == ELEM_WATER)){
+					return spell->lore_attr;
+				} else {
+					return spell->lore_attr_resist;
+				}
+				break;
+			/* All other elements */
+			default:
+				if (p->known_state.el_info[eff->params[0]].res_level == 3) {
+					return spell->lore_attr_immune;
+				} else if (p->known_state.el_info[eff->params[0]].res_level > 0) {
+					return spell->lore_attr_resist;
+				} else {
+					return spell->lore_attr;
+				}
+		}
+	}
+
+	return spell->lore_attr;
+}
 
 /**
  * Initializes the color-coding of monster attacks / spells.
@@ -71,7 +183,7 @@ static int blow_index(const char *name)
  * We should be able to loop over all spell effects and check for resistance
  * in a nicer way.
  */
-void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
+void get_attack_colors(int *melee_colors)
 {
 	int i;
 	struct object *obj;
@@ -82,8 +194,6 @@ void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
 	/* Initialize the colors to green */
 	for (i = 0; i < z_info->blow_effects_max; i++)
 		melee_colors[i] = COLOUR_L_GREEN;
-	for (i = 0; i < RSF_MAX; i++)
-		spell_colors[i] = COLOUR_L_GREEN;
 
 	/* Scan for potentially vulnerable items */
 	for (obj = player->gear; obj; obj = obj->next) {
@@ -114,7 +224,6 @@ void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
 			 obj->known->to_d > 0) &&
 			(st.el_info[ELEM_DISEN].res_level <= 0)) {
 			melee_colors[blow_index("DISENCHANT")] = COLOUR_L_RED;
-			spell_colors[RSF_BR_DISE] = COLOUR_L_RED;
 		}
 	}
 
@@ -128,9 +237,6 @@ void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
 		tmp_col = COLOUR_ORANGE;
 
 	melee_colors[blow_index("ACID")] = tmp_col;
-	spell_colors[RSF_BR_ACID] = tmp_col;
-	spell_colors[RSF_BO_ACID] = tmp_col;
-	spell_colors[RSF_BA_ACID] = tmp_col;
 
 	/* Cold and ice */
 	if (st.el_info[ELEM_COLD].res_level == 3)
@@ -142,10 +248,6 @@ void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
 		tmp_col = COLOUR_ORANGE;
 
 	melee_colors[blow_index("COLD")] = tmp_col;
-	spell_colors[RSF_BR_COLD] = tmp_col;
-	spell_colors[RSF_BO_COLD] = tmp_col;
-	spell_colors[RSF_BA_COLD] = tmp_col;
-	spell_colors[RSF_BO_ICEE] = tmp_col;
 
 	/* Elec */
 	if (st.el_info[ELEM_ELEC].res_level == 3)
@@ -157,9 +259,6 @@ void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
 		tmp_col = COLOUR_ORANGE;
 
 	melee_colors[blow_index("ELEC")] = tmp_col;
-	spell_colors[RSF_BR_ELEC] = tmp_col;
-	spell_colors[RSF_BO_ELEC] = tmp_col;
-	spell_colors[RSF_BA_ELEC] = tmp_col;
 
 	/* Fire */
 	if (st.el_info[ELEM_FIRE].res_level == 3)
@@ -171,136 +270,29 @@ void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
 		tmp_col = COLOUR_ORANGE;
 
 	melee_colors[blow_index("FIRE")] = tmp_col;
-	spell_colors[RSF_BR_FIRE] = tmp_col;
-	spell_colors[RSF_BO_FIRE] = tmp_col;
-	spell_colors[RSF_BA_FIRE] = tmp_col;
 
 	/* Poison */
 	if ((st.el_info[ELEM_POIS].res_level <= 0) &&
 		!player->timed[TMD_OPP_POIS]) {
 		melee_colors[blow_index("POISON")] = COLOUR_ORANGE;
-		spell_colors[RSF_BR_POIS] = COLOUR_ORANGE;
-		spell_colors[RSF_BA_POIS] = COLOUR_ORANGE;
 	}
-
-	/* Nexus  */
-	if (st.el_info[ELEM_NEXUS].res_level <= 0) {
-		if(st.skills[SKILL_SAVE] < 100)
-			spell_colors[RSF_BR_NEXU] = COLOUR_L_RED;
-		else
-			spell_colors[RSF_BR_NEXU] = COLOUR_YELLOW;
-	}
-
-	/* Nether */
-	if (st.el_info[ELEM_NETHER].res_level <= 0) {
-		spell_colors[RSF_BR_NETH] = COLOUR_ORANGE;
-		spell_colors[RSF_BA_NETH] = COLOUR_ORANGE;
-		spell_colors[RSF_BO_NETH] = COLOUR_ORANGE;
-	}
-
-	/* Inertia, gravity, and time */
-	spell_colors[RSF_BR_INER] = COLOUR_ORANGE;
-	spell_colors[RSF_BR_GRAV] = COLOUR_L_RED;
-	spell_colors[RSF_BR_TIME] = COLOUR_L_RED;
-
-	/* Sound */
-	if (st.el_info[ELEM_SOUND].res_level > 0)
-		spell_colors[RSF_BR_SOUN] = COLOUR_L_GREEN;
-	else if ((st.el_info[ELEM_SOUND].res_level <= 0) &&
-			 of_has(st.flags, OF_PROT_STUN))
-		spell_colors[RSF_BR_SOUN] = COLOUR_YELLOW;
-	else
-		spell_colors[RSF_BR_SOUN] = COLOUR_ORANGE;
-
- 	/* Shards */
- 	if (st.el_info[ELEM_SHARD].res_level <= 0)
- 		spell_colors[RSF_BR_SHAR] = COLOUR_ORANGE;
 
 	/* Confusion */
 	if (!of_has(st.flags, OF_PROT_CONF))
 		melee_colors[blow_index("CONFUSE")] = COLOUR_ORANGE;
 
-	/* Stunning */
-	if (!of_has(st.flags, OF_PROT_STUN)) {
-		spell_colors[RSF_BR_WALL] = COLOUR_YELLOW;
-		spell_colors[RSF_BR_PLAS] = COLOUR_ORANGE;
-		spell_colors[RSF_BO_PLAS] = COLOUR_ORANGE;
-		spell_colors[RSF_BO_ICEE] = COLOUR_ORANGE;
-	} else {
-		spell_colors[RSF_BR_PLAS] = COLOUR_YELLOW;
-		spell_colors[RSF_BO_PLAS] = COLOUR_YELLOW;
-		spell_colors[RSF_BO_ICEE] = COLOUR_YELLOW;
-	}
-
-	/* Chaos */
-	if (st.el_info[ELEM_CHAOS].res_level <= 0)
-		spell_colors[RSF_BR_CHAO] = COLOUR_ORANGE;
-
-	/* Light */
-	if (st.el_info[ELEM_LIGHT].res_level <= 0)
-		spell_colors[RSF_BR_LIGHT] = COLOUR_ORANGE;
-
-	/* Darkness */
-	if (st.el_info[ELEM_DARK].res_level <= 0) {
-		spell_colors[RSF_BR_DARK] = COLOUR_ORANGE;
-		spell_colors[RSF_BA_DARK] = COLOUR_L_RED;
-	}
-
-	/* Water */
-	if (!of_has(st.flags, OF_PROT_CONF) ||
-			!of_has(st.flags, OF_PROT_STUN)) {
-		spell_colors[RSF_BA_WATE] = COLOUR_L_RED;
-		spell_colors[RSF_BO_WATE] = COLOUR_L_RED;
-	} else {
-		spell_colors[RSF_BA_WATE] = COLOUR_ORANGE;
-		spell_colors[RSF_BO_WATE] = COLOUR_ORANGE;
-	}
-
-	/* Mana */
-	spell_colors[RSF_BR_MANA] = COLOUR_L_RED;
-	spell_colors[RSF_BA_MANA] = COLOUR_L_RED;
-	spell_colors[RSF_BO_MANA] = COLOUR_L_RED;
-
 	/* These attacks only apply without a perfect save */
 	if (st.skills[SKILL_SAVE] < 100) {
-		/* Amnesia */
-		spell_colors[RSF_FORGET] = COLOUR_YELLOW;
-
 		/* Fear */
 		if (!of_has(st.flags, OF_PROT_FEAR)) {
 			melee_colors[blow_index("TERRIFY")] = COLOUR_YELLOW;
-			spell_colors[RSF_SCARE] = COLOUR_YELLOW;
 		}
 
 		/* Paralysis and slow */
 		if (!of_has(st.flags, OF_FREE_ACT)) {
 			melee_colors[blow_index("PARALYZE")] = COLOUR_L_RED;
-			spell_colors[RSF_HOLD] = COLOUR_L_RED;
-			spell_colors[RSF_SLOW] = COLOUR_ORANGE;
 		}
 
-		/* Blind */
-		if (!of_has(st.flags, OF_PROT_BLIND))
-			spell_colors[RSF_BLIND] = COLOUR_ORANGE;
-
-		/* Confusion */
-		if (!of_has(st.flags, OF_PROT_CONF))
-			spell_colors[RSF_CONF] = COLOUR_ORANGE;
-
-		/* Cause wounds */
-		spell_colors[RSF_CAUSE_1] = COLOUR_YELLOW;
-		spell_colors[RSF_CAUSE_2] = COLOUR_YELLOW;
-		spell_colors[RSF_CAUSE_3] = COLOUR_YELLOW;
-		spell_colors[RSF_CAUSE_4] = COLOUR_YELLOW;
-
-		/* Mind blast */
-		spell_colors[RSF_MIND_BLAST] = (of_has(st.flags, OF_PROT_CONF) ?
-				COLOUR_YELLOW : COLOUR_ORANGE);
-
-		/* Brain smash slows even when conf/blind resisted */
-		spell_colors[RSF_BRAIN_SMASH] = (of_has(st.flags, OF_PROT_BLIND) &&
-				of_has(st.flags, OF_FREE_ACT) &&
-				of_has(st.flags, OF_PROT_CONF)	? COLOUR_ORANGE : COLOUR_L_RED);
 	}
 
 	/* Gold theft */
@@ -338,50 +330,6 @@ void get_attack_colors(int *melee_colors, int spell_colors[RSF_MAX])
 
 	/* Shatter is always noteworthy */
 	melee_colors[blow_index("SHATTER")] = COLOUR_YELLOW;
-
-	/* Heal (and drain mana) and haste are always noteworthy */
-	spell_colors[RSF_HEAL] = COLOUR_YELLOW;
-	spell_colors[RSF_DRAIN_MANA] = COLOUR_YELLOW;
-	spell_colors[RSF_HASTE] = COLOUR_YELLOW;
-
-	/* Player teleports and traps are annoying */
-	spell_colors[RSF_TELE_TO] = COLOUR_YELLOW;
-	spell_colors[RSF_TELE_AWAY] = COLOUR_YELLOW;
-	if ((st.el_info[ELEM_NEXUS].res_level <= 0) && st.skills[SKILL_SAVE] < 100)
-		spell_colors[RSF_TELE_LEVEL] = COLOUR_YELLOW;
-	spell_colors[RSF_TRAPS] = COLOUR_YELLOW;
-
-	/* Summons are potentially dangerous */
-	spell_colors[RSF_S_MONSTER] = COLOUR_ORANGE;
-	spell_colors[RSF_S_MONSTERS] = COLOUR_ORANGE;
-	spell_colors[RSF_S_KIN] = COLOUR_ORANGE;
-	spell_colors[RSF_S_ANIMAL] = COLOUR_ORANGE;
-	spell_colors[RSF_S_SPIDER] = COLOUR_ORANGE;
-	spell_colors[RSF_S_HOUND] = COLOUR_ORANGE;
-	spell_colors[RSF_S_HYDRA] = COLOUR_ORANGE;
-	spell_colors[RSF_S_AINU] = COLOUR_ORANGE;
-	spell_colors[RSF_S_DEMON] = COLOUR_ORANGE;
-	spell_colors[RSF_S_DRAGON] = COLOUR_ORANGE;
-	spell_colors[RSF_S_UNDEAD] = COLOUR_ORANGE;
-
-	/* High level summons are very dangerous */
-	spell_colors[RSF_S_HI_DEMON] = COLOUR_L_RED;
-	spell_colors[RSF_S_HI_DRAGON] = COLOUR_L_RED;
-	spell_colors[RSF_S_HI_UNDEAD] = COLOUR_L_RED;
-	spell_colors[RSF_S_UNIQUE] = COLOUR_L_RED;
-	spell_colors[RSF_S_WRAITH] = COLOUR_L_RED;
-
-	/* Shrieking can lead to bad combos */
-	spell_colors[RSF_SHRIEK] = COLOUR_ORANGE;
-
-	/* Ranged attacks can't be resisted (only mitigated by accuracy)
-	 * They are colored yellow to indicate the damage is a hard value
-	 */
-	spell_colors[RSF_ARROW_1] = COLOUR_YELLOW;
-	spell_colors[RSF_ARROW_2] = COLOUR_YELLOW;
-	spell_colors[RSF_ARROW_3] = COLOUR_YELLOW;
-	spell_colors[RSF_ARROW_4] = COLOUR_YELLOW;
-	spell_colors[RSF_BOULDER] = COLOUR_YELLOW;
 }
 
 /**
@@ -814,7 +762,6 @@ static int lore_insert_unknown_vulnerability(int flag,
  * \param spell is the RSF_ flag to describe.
  * \param race is the monster race of the spell.
  * \param lore is the player's current knowledge about the monster.
- * \param spell_colors is where the color for `spell` will be chosen from.
  * \param know_hp indicates whether or know the player has determined the
  *        monster's AC/HP.
  * \param name_list is the list in which the description will be inserted.
@@ -825,14 +772,13 @@ static int lore_insert_unknown_vulnerability(int flag,
  */
 static int lore_insert_spell_description(int spell, const struct monster_race *race,
 										 const struct monster_lore *lore,
-										 const int spell_colors[RSF_MAX],
 										 bool know_hp, const char *name_list[],
 										 int color_list[], int damage_list[],
 										 int index)
 {
 	if (rsf_has(lore->spell_flags, spell)) {
 		name_list[index] = mon_spell_lore_description(spell);
-		color_list[index] = spell_colors[spell];
+		color_list[index] = spell_color(player, spell);
 		damage_list[index] = mon_spell_lore_damage(spell, race, know_hp);
 		return index + 1;
 	}
@@ -1568,13 +1514,10 @@ void lore_append_friends(textblock *tb, const struct monster_race *race,
  * \param lore is the known information about the monster race.
  * \param known_flags is the preprocessed bitfield of race flags known to the
  *        player.
- * \param spell_colors is a list of colors that is associated with each
- *        RSF_ spell.
  */
 void lore_append_spells(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
-						bitflag known_flags[RF_SIZE],
-						const int spell_colors[RSF_MAX])
+						bitflag known_flags[RF_SIZE])
 {
 	int i, average_frequency;
 	monster_sex_t msex = MON_SEX_NEUTER;
@@ -1590,7 +1533,7 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 
 	/* "Local" macros for easier reading; undef'd at end of function */
 	#define LORE_INSERT_SPELL_DESCRIPTION(x) \
-		lore_insert_spell_description((x), race, lore, spell_colors, know_hp, name_list, color_list, damage_list, list_index)
+		lore_insert_spell_description((x), race, lore, know_hp, name_list, color_list, damage_list, list_index)
 	#define LORE_RESET_LISTS() \
 		{ list_index = 0; for(i = 0; i < list_size; i++) { damage_list[i] = 0; color_list[i] = COLOUR_WHITE; } }
 
