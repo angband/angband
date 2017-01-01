@@ -453,6 +453,38 @@ int best_spell_power(const struct monster_race *race, int resist)
 	return best_dam;
 }
 
+/**
+ * Create a mask of monster spell flags of a specific type.
+ *
+ * \param f is the flag array we're filling
+ * \param ... is the list of flags we're looking for
+ *
+ * N.B. RST_NONE must be the last item in the ... list
+ */
+void create_mon_spell_mask(bitflag *f, ...)
+{
+	const struct mon_spell_info *rs;
+	int i;
+	va_list args;
+
+	rsf_wipe(f);
+
+	va_start(args, f);
+
+	/* Process each type in the va_args */
+    for (i = va_arg(args, int); i != RST_NONE; i = va_arg(args, int)) {
+		for (rs = mon_spell_types; rs->index < RSF_MAX; rs++) {
+			if (rs->type & i) {
+				rsf_on(f, rs->index);
+			}
+		}
+	}
+
+	va_end(args);
+
+	return;
+}
+
 const char *mon_spell_lore_description(int index)
 {
 	if (mon_spell_is_valid(index)) {

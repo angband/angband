@@ -76,7 +76,7 @@ name:ARROW_4
 hit:50
 effect:BOLT:ARROW
 dice:7d6
-lore:fires missiles
+lore:fire missiles
 lore-color-base:Yellow
 message-vis:{name} fires a seeker arrow.
 message-invis:You hear a loud thwang.

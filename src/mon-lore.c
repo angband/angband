@@ -575,41 +575,6 @@ static const char *lore_pronoun_possessive(monster_sex_t sex, bool title_case)
 }
 
 /**
- * Insert into a list the description for a spell if it is known to the player.
- * Return the next index available for insertion.
- *
- * The function returns an incremented index if it inserted something;
- * otherwise, it returns the same index (which is used for the next
- * insertion attempt).
- *
- * \param spell is the RSF_ flag to describe.
- * \param race is the monster race of the spell.
- * \param lore is the player's current knowledge about the monster.
- * \param know_hp indicates whether or know the player has determined the
- *        monster's AC/HP.
- * \param name_list is the list in which the description will be inserted.
- * \param color_list is the list in which the selected color will be inserted.
- * \param damage_list is the list in which the max spell damage will be inserted
- * \param index is where in `name_list`, `color_list`, and `damage_list`
- *        the description will be inserted.
- */
-static int lore_insert_spell_description(int spell, const struct monster_race *race,
-										 const struct monster_lore *lore,
-										 bool know_hp, const char *name_list[],
-										 int color_list[], int damage_list[],
-										 int index)
-{
-	if (rsf_has(lore->spell_flags, spell)) {
-		name_list[index] = mon_spell_lore_description(spell);
-		color_list[index] = spell_color(player, spell);
-		damage_list[index] = mon_spell_lore_damage(spell, race, know_hp);
-		return index + 1;
-	}
-
-	return index;
-}
-
-/**
  * Append a clause containing a list of descriptions of monster flags from
  * list-mon-race-flags.h to a textblock.
  *
@@ -656,44 +621,48 @@ static void lore_append_clause(textblock *tb, bitflag *f, byte attr,
 /**
  * Append a list of spell descriptions.
  *
- * This is a modified version of `lore_append_list()` to format spells, without
- * have to do a lot of allocating and freeing of formatted strings.
+ * This is a modified version of `lore_append_clause()` to format spells.
  *
  * \param tb is the textblock we are adding to.
- * \param name_list is a list of base spell description.
- * \param color_list is the list of attributes which the description should be
- *        drawn with.
- * \param damage_list is a value that should be appended to the base spell
- *        description (if it is greater than zero).
- * \param count is the number of items in the lists.
+ * \param f is the set of flags to be described.
+ * \param know_hp is whether the player knows the monster's AC.
+ * \param race is the monster race.
  * \param conjunction is a string that is added before the last item.
+ * \param end is a string that is added after the last item.
  */
-static void lore_append_spell_descriptions(textblock *tb,
-										   const char *name_list[],
-										   int color_list[], int damage_list[],
-										   int count, const char *conjunction)
+static void lore_append_spell_clause(textblock *tb, bitflag *f, bool know_hp,
+									 const struct monster_race *race,
+									 const char *conjunction,
+									 const char *end)
 {
-	int i;
+	int count = rsf_count(f);
+	bool comma = count > 2;
 
-	assert(count >= 0);
+	if (count) {
+		int spell;
+		for (spell = rsf_next(f, FLAG_START); spell;
+			 spell = rsf_next(f, spell + 1)) {
+			int color = spell_color(player, spell);
+			int damage = mon_spell_lore_damage(spell, race, know_hp);
 
-	for (i = 0; i < count; i++) {
-		if (i > 0) {
-			if (count > 2)
-				textblock_append(tb, ",");
-
-			if (i == count - 1) {
+			/* First entry starts immediately */
+			if (spell != rsf_next(f, FLAG_START)) {
+				if (comma) {
+					textblock_append(tb, ",");
+				}
+				/* Last entry */
+				if (rsf_next(f, spell + 1) == FLAG_END) {
+					textblock_append(tb, " ");
+					textblock_append(tb, conjunction);
+				}
 				textblock_append(tb, " ");
-				textblock_append(tb, conjunction);
 			}
-
-			textblock_append(tb, " ");
+			textblock_append_c(tb, color, mon_spell_lore_description(spell));
+			if (damage > 0) {
+				textblock_append_c(tb, color, " (%d)", damage);
+			}
 		}
-
-		textblock_append_c(tb, color_list[i], name_list[i]);
-
-		if (damage_list[i] > 0)
-			textblock_append_c(tb, color_list[i], " (%d)", damage_list[i]);
+		textblock_append(tb, end);
 	}
 }
 
@@ -1310,23 +1279,13 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE])
 {
-	int i, average_frequency;
+	int average_frequency;
 	monster_sex_t msex = MON_SEX_NEUTER;
 	bool breath = false;
 	bool magic = false;
-	int list_index;
-	static const int list_size = 64;
 	const char *initial_pronoun;
-	const char *name_list[list_size];
-	int color_list[list_size];
-	int damage_list[list_size];
 	bool know_hp;
-
-	/* "Local" macros for easier reading; undef'd at end of function */
-	#define LORE_INSERT_SPELL_DESCRIPTION(x) \
-		lore_insert_spell_description((x), race, lore, know_hp, name_list, color_list, damage_list, list_index)
-	#define LORE_RESET_LISTS() \
-		{ list_index = 0; for(i = 0; i < list_size; i++) { damage_list[i] = 0; color_list[i] = COLOUR_WHITE; } }
+	bitflag current_flags[RSF_SIZE], test_flags[RSF_SIZE];
 
 	assert(tb && race && lore);
 
@@ -1337,128 +1296,32 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 	msex = lore_monster_sex(race);
 	initial_pronoun = lore_pronoun_nominative(msex, true);
 
-	/* Collect innate attacks */
-	LORE_RESET_LISTS();
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_SHRIEK);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_ARROW_1);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_ARROW_2);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_ARROW_3);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_ARROW_4);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BOULDER);
-
-	if (list_index > 0) {
+	/* Collect innate (non-breath) attacks */
+	create_mon_spell_mask(current_flags, RST_INNATE, RST_NONE);
+	rsf_inter(current_flags, lore->spell_flags);
+	create_mon_spell_mask(test_flags, RST_BREATH, RST_NONE);
+	rsf_diff(current_flags, test_flags);
+	if (!rsf_is_empty(current_flags)) {
 		textblock_append(tb, "%s may ", initial_pronoun);
-		lore_append_spell_descriptions(tb, name_list, color_list, damage_list,
-									   list_index, "or");
-		textblock_append(tb, ".  ");
+		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", ".  ");
 	}
 
 	/* Collect breaths */
-	LORE_RESET_LISTS();
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_ACID);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_ELEC);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_FIRE);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_COLD);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_POIS);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_NETH);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_LIGHT);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_DARK);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_SOUN);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_CHAO);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_DISE);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_NEXU);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_TIME);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_INER);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_GRAV);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_SHAR);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_PLAS);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_WALL);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_MANA);
-
-	if (list_index > 0) {
-		breath = true;
+	create_mon_spell_mask(current_flags, RST_BREATH, RST_NONE);
+	rsf_inter(current_flags, lore->spell_flags);
+	if (!rsf_is_empty(current_flags)) {
 		textblock_append(tb, "%s may ", initial_pronoun);
 		textblock_append_c(tb, COLOUR_L_RED, "breathe ");
-		lore_append_spell_descriptions(tb, name_list, color_list, damage_list,
-									   list_index, "or");
+		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
+		breath = true;
 	}
 
+
 	/* Collect spell information */
-	LORE_RESET_LISTS();
-
-	/* Ball spells */
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_MANA);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_DARK);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_WATE);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_NETH);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_FIRE);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_ACID);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_COLD);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_ELEC);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_POIS);
-
-	/* Bolt spells */
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_MANA);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_PLAS);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_ICEE);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_WATE);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_NETH);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_FIRE);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_ACID);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_COLD);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_ELEC);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_POIS);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_MISSILE);
-
-	/* Curses */
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BRAIN_SMASH);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_MIND_BLAST);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CAUSE_4);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CAUSE_3);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CAUSE_2);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CAUSE_1);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_FORGET);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_SCARE);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BLIND);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CONF);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_SLOW);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_HOLD);
-
-	/* Healing and haste */
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_DRAIN_MANA);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_HEAL);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_HASTE);
-
-	/* Teleports */
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BLINK);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TPORT);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TELE_TO);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TELE_AWAY);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TELE_LEVEL);
-
-	/* Annoyances */
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_DARKNESS);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TRAPS);
-
-	/* Summoning */
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_KIN);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_MONSTER);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_MONSTERS);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_ANIMAL);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_SPIDER);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HOUND);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HYDRA);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_AINU);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_DEMON);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_UNDEAD);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_DRAGON);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HI_UNDEAD);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HI_DRAGON);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HI_DEMON);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_WRAITH);
-	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_UNIQUE);
-
-	if (list_index > 0) {
+	rsf_copy(current_flags, lore->spell_flags);
+	create_mon_spell_mask(test_flags, RST_BREATH, RST_INNATE, RST_NONE);
+	rsf_diff(current_flags, test_flags);
+	if (!rsf_is_empty(current_flags)) {
 		magic = true;
 
 		/* Intro */
@@ -1476,8 +1339,7 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 
 		/* List */
 		textblock_append(tb, " which ");
-		lore_append_spell_descriptions(tb, name_list, color_list, damage_list,
-									   list_index, "or");
+		lore_append_spell_clause(tb, current_flags, know_hp, race, "or", "");
 	}
 
 	/* End the sentence about innate/other spells */
@@ -1502,9 +1364,6 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 
 		textblock_append(tb, ".  ");
 	}
-
-	#undef LORE_INSERT_SPELL_DESCRIPTION
-	#undef LORE_RESET_LISTS
 }
 
 /**

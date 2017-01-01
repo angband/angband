@@ -28,6 +28,7 @@
 
 /* Spell type bitflags */
 enum mon_spell_type {
+    RST_NONE    = 0x000,
     RST_BOLT    = 0x001,
     RST_BALL    = 0x002,
     RST_BREATH  = 0x004,
@@ -44,6 +45,7 @@ enum mon_spell_type {
 /** Macros **/
 #define rsf_has(f, flag)       flag_has_dbg(f, RSF_SIZE, flag, #f, #flag)
 #define rsf_next(f, flag)      flag_next(f, RSF_SIZE, flag)
+#define rsf_count(f)           flag_count(f, RSF_SIZE)
 #define rsf_is_empty(f)        flag_is_empty(f, RSF_SIZE)
 #define rsf_is_full(f)         flag_is_full(f, RSF_SIZE)
 #define rsf_is_inter(f1, f2)   flag_is_inter(f1, f2, RSF_SIZE)
@@ -80,6 +82,7 @@ int best_spell_power(const struct monster_race *race, int resist);
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 				  struct element_info *el, const struct monster_race *race);
 bool mon_spell_is_innate(int index);
+void create_mon_spell_mask(bitflag *f, ...);
 const char *mon_spell_lore_description(int index);
 int mon_spell_lore_damage(int index, const struct monster_race *race,
 						  bool know_hp);
