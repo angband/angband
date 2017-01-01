@@ -2,11 +2,6 @@
  * \file list-mon-race-flags.h
  * \brief monster race flags
  *
- * Changing flag order will break savefiles. There was a hard-coded limit of
- * 96 flags, due to 12 bytes of storage for lore flags in the savefile; this 
- * should be fixed now. Flags below start from 1 on line 13, so a flag's 
- * sequence number is its line number minus 12. Column 3 (descr) is currently 
- * used for lore descriptions.
  */
 /* symbol		type			descr */
 RF(NONE,		RFT_NONE,		"")
@@ -59,16 +54,16 @@ RF(MOVE_BODY,	RFT_ALTER,		"push past weaker monsters")
 RF(KILL_BODY,	RFT_ALTER,		"destroy weaker monsters")
 RF(TAKE_ITEM,	RFT_ALTER,		"pick up objects")
 RF(KILL_ITEM,	RFT_ALTER,		"destroy objects")
-RF(ORC,			RFT_RACE,		"orc")
-RF(TROLL,		RFT_RACE,		"troll")
-RF(GIANT,		RFT_RACE,		"giant")
-RF(DRAGON,		RFT_RACE,		"dragon")
-RF(DEMON,		RFT_RACE,		"demon")
-RF(UNDEAD,		RFT_RACE,		"undead")
-RF(EVIL,		RFT_RACE,		"evil")
-RF(ANIMAL,		RFT_RACE,		"natural")
-RF(METAL,		RFT_RACE,		"metal")
-RF(NONLIVING,	RFT_RACE,		"nonliving")
+RF(ORC,			RFT_RACE_N,		"orc")
+RF(TROLL,		RFT_RACE_N,		"troll")
+RF(GIANT,		RFT_RACE_N,		"giant")
+RF(DRAGON,		RFT_RACE_N,		"dragon")
+RF(DEMON,		RFT_RACE_N,		"demon")
+RF(ANIMAL,		RFT_RACE_A,		"natural")
+RF(EVIL,		RFT_RACE_A,		"evil")
+RF(UNDEAD,		RFT_RACE_A,		"undead")
+RF(NONLIVING,	RFT_RACE_A,		"nonliving")
+RF(METAL,		RFT_RACE_A,		"metal")
 RF(HURT_LIGHT,	RFT_VULN,		"bright light")
 RF(HURT_ROCK,	RFT_VULN,		"rock remover")
 RF(HURT_FIRE,	RFT_VULN_I,		"fire")

@@ -53,7 +53,8 @@ enum monster_flag_type {
 	RFT_DROP,		/* drop details */
 	RFT_DET,		/* detection properties */
 	RFT_ALTER,		/* environment shaping */
-	RFT_RACE,		/* types of monster */
+	RFT_RACE_N,		/* types of monster (noun) */
+	RFT_RACE_A,		/* types of monster (adjective) */
 	RFT_VULN,		/* vulnerabilities with no corresponding resistance */
 	RFT_VULN_I,		/* vulnerabilities with a corresponding resistance */
 	RFT_RES,		/* elemental resistances */

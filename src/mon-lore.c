@@ -257,9 +257,7 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 	if ((lore->tkills > 0) || lore->all_known) {
 		lore->armour_known = true;
 		lore->drop_known = true;
-		create_mon_flag_mask(mask, RFT_RACE, RFT_MAX);
-		mflag_union(lore->flags, mask);
-		create_mon_flag_mask(mask, RFT_DROP, RFT_MAX);
+		create_mon_flag_mask(mask, RFT_RACE_A, RFT_RACE_N, RFT_DROP, RFT_MAX);
 		mflag_union(lore->flags, mask);
 		rf_on(lore->flags, RF_FORCE_DEPTH);
 	}
@@ -689,7 +687,7 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
 	/* Extract a gender (if applicable) */
 	msex = lore_monster_sex(race);
 
-	/* Treat uniques differently */
+	/* Treat by whether unique, then by whether they have any player kills */
 	if (rf_has(known_flags, RF_UNIQUE)) {
 		/* Hack -- Determine if the unique is "dead" */
 		bool dead = (race->max_num == 0) ? true : false;
@@ -715,23 +713,29 @@ void lore_append_kills(textblock *tb, const struct monster_race *race,
 			/* Alive and never killed us */
 			out = false;
 		}
-	} else if (lore->deaths) { /* Not unique, but killed us */
+	} else if (lore->deaths) {
 		/* Dead ancestors */
 		textblock_append(tb, "%d of your ancestors %s been killed by this creature, ", lore->deaths, VERB_AGREEMENT(lore->deaths, "has", "have"));
 
-		if (lore->pkills) { /* Some kills this life */
+		if (lore->pkills) {
+			/* Some kills this life */
 			textblock_append(tb, "and you have exterminated at least %d of the creatures.  ", lore->pkills);
-		} else if (lore->tkills) { /* Some kills past lives */
+		} else if (lore->tkills) {
+			/* Some kills past lives */
 			textblock_append(tb, "and your ancestors have exterminated at least %d of the creatures.  ", lore->tkills);
-		} else { /* No kills */
+		} else {
+			/* No kills */
 			textblock_append_c(tb, COLOUR_RED, "and %s is not ever known to have been defeated.  ", lore_pronoun_nominative(msex, false));
 		}
-	} else { /* Normal monsters */
-		if (lore->pkills) { /* Killed some this life */
+	} else {
+		if (lore->pkills) {
+			/* Killed some this life */
 			textblock_append(tb, "You have killed at least %d of these creatures.  ", lore->pkills);
-		} else if (lore->tkills) { /* Killed some last life */
+		} else if (lore->tkills) {
+			/* Killed some last life */
 			textblock_append(tb, "Your ancestors have killed at least %d of these creatures.  ", lore->tkills);
-		} else { /* Killed none */
+		} else {
+			/* Killed none */
 			textblock_append(tb, "No battles to the death are recalled.  ");
 		}
 	}
@@ -777,43 +781,29 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
 						  const struct monster_lore *lore,
 						  bitflag known_flags[RF_SIZE])
 {
+	int f;
+	bitflag flags[RF_SIZE];
+
 	assert(tb && race && lore);
 
 	textblock_append(tb, "This");
 
-	if (rf_has(race->flags, RF_ANIMAL))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_ANIMAL));
-	if (rf_has(race->flags, RF_EVIL))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_EVIL));
-	if (rf_has(race->flags, RF_UNDEAD))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_UNDEAD));
-	if (rf_has(race->flags, RF_NONLIVING))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_NONLIVING));
-	if (rf_has(race->flags, RF_METAL))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_METAL));
+	/* Get adjectives */
+	create_mon_flag_mask(flags, RFT_RACE_A, RFT_MAX);
+	rf_inter(flags, race->flags);
+	for (f = rf_next(flags, FLAG_START); f; f = rf_next(flags, f + 1)) {
+		textblock_append_c(tb, COLOUR_L_BLUE, " %s", describe_race_flag(f));
+	}
 
-	if (rf_has(race->flags, RF_DRAGON))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_DRAGON));
-	else if (rf_has(race->flags, RF_DEMON))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_DEMON));
-	else if (rf_has(race->flags, RF_GIANT))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_GIANT));
-	else if (rf_has(race->flags, RF_TROLL))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_TROLL));
-	else if (rf_has(race->flags, RF_ORC))
-		textblock_append_c(tb, COLOUR_L_BLUE, " %s",
-						   describe_race_flag(RF_ORC));
-	else
+	/* Get noun */
+	create_mon_flag_mask(flags, RFT_RACE_N, RFT_MAX);
+	rf_inter(flags, race->flags);
+	f = rf_next(flags, FLAG_START);
+	if (f) {
+		textblock_append_c(tb, COLOUR_L_BLUE, " %s", describe_race_flag(f));
+	} else {
 		textblock_append_c(tb, COLOUR_L_BLUE, " creature");
+	}
 
 	/* Describe location */
 	if (race->level == 0) {
