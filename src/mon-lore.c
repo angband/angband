@@ -575,59 +575,6 @@ static const char *lore_pronoun_possessive(monster_sex_t sex, bool title_case)
 }
 
 /**
- * Insert into a list the description for a given flag, if it is set. Return
- * the next index available for insertion.
- *
- * The function returns an incremented index if it inserted something;
- * otherwise, it returns the same index (which is used for the next
- * insertion attempt).
- *
- * \param flag is the RF_ flag to check for in `known_flags`.
- * \param known_flags is the preprocessed set of flags for the lore/race.
- * \param list is the list in which the description will be inserted.
- * \param index is where in `list` the description will be inserted.
- */
-static int lore_insert_flag_description(int flag,
-										const bitflag known_flags[RF_SIZE],
-										const char *list[], int index)
-{
-	if (rf_has(known_flags, flag)) {
-		list[index] = describe_race_flag(flag);
-		return index + 1;
-	}
-
-	return index;
-}
-
-/**
- * Insert into a list the description for a given flag, if a flag is not known
- * to the player as a vulnerability. Return the next index available for
- * insertion.
- *
- * The function returns an incremented index if it inserted something;
- * otherwise, it returns the same index (which is used for the next
- * insertion attempt).
- *
- * \param flag is the RF_ flag to check for in `known_flags`.
- * \param known_flags is the preprocessed set of flags for the lore/race.
- * \param lore is the base knowledge about the monster.
- * \param list is the list in which the description will be inserted.
- * \param index is where in `list` the description will be inserted.
- */
-static int lore_insert_unknown_vulnerability(int flag,
-											 const bitflag known_flags[RF_SIZE],
-											 const struct monster_lore *lore,
-											 const char *list[], int index)
-{
-	if (rf_has(lore->flags, flag) && !rf_has(known_flags, flag)) {
-		list[index] = describe_race_flag(flag);
-		return index + 1;
-	}
-
-	return index;
-}
-
-/**
  * Insert into a list the description for a spell if it is known to the player.
  * Return the next index available for insertion.
  *
@@ -663,42 +610,48 @@ static int lore_insert_spell_description(int spell, const struct monster_race *r
 }
 
 /**
- * Append a list of items to a textblock, with each item using the provided
- * attribute.
+ * Append a clause containing a list of descriptions of monster flags from
+ * list-mon-race-flags.h to a textblock.
  *
  * The text that joins the list is drawn using the default attributes. The list
  * uses a serial comma ("a, b, c, and d").
  *
  * \param tb is the textblock we are adding to.
- * \param list is a list of strings that should be joined and appended; drawn
- *        with the attribute in `attribute`.
- * \param count is the number of items in `list`.
+ * \param f is the set of flags to be described.
  * \param attr is the attribute each list item will be drawn with.
+ * \param start is a string to start the clause.
  * \param conjunction is a string that is added before the last item.
+ * \param end is a string that is added after the last item.
  */
-static void lore_append_list(textblock *tb, const char *list[], int count,
-							 byte attr, const char *conjunction)
+static void lore_append_clause(textblock *tb, bitflag *f, byte attr,
+							   const char *start, const char *conjunction,
+							   const char *end)
 {
-	int i;
+	int count = rf_count(f);
+	bool comma = count > 2;
 
-	assert(count >= 0);
-
-	for (i = 0; i < count; i++) {
-		if (i > 0) {
-			if (count > 2)
-				textblock_append(tb, ",");
-
-			if (i == count - 1) {
+	if (count) {
+		int flag;
+		textblock_append(tb, start);
+		for (flag = rf_next(f, FLAG_START); flag; flag = rf_next(f, flag + 1)) {
+			/* First entry starts immediately */
+			if (flag != rf_next(f, FLAG_START)) {
+				if (comma) {
+					textblock_append(tb, ",");
+				}
+				/* Last entry */
+				if (rf_next(f, flag + 1) == FLAG_END) {
+					textblock_append(tb, " ");
+					textblock_append(tb, conjunction);
+				}
 				textblock_append(tb, " ");
-				textblock_append(tb, conjunction);
 			}
-
-			textblock_append(tb, " ");
+			textblock_append_c(tb, attr, describe_race_flag(flag));
 		}
-
-		textblock_append_c(tb, attr, list[i]);
+		textblock_append(tb, end);
 	}
 }
+
 
 /**
  * Append a list of spell descriptions.
@@ -1163,17 +1116,12 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 						   const struct monster_lore *lore,
 						   bitflag known_flags[RF_SIZE])
 {
-	int list_index;
-	const char *descs[64];
+	int flag;
+	char start[40];
 	const char *initial_pronoun;
 	bool prev = false;
+	bitflag current_flags[RF_SIZE], test_flags[RF_SIZE];
 	monster_sex_t msex = MON_SEX_NEUTER;
-
-	/* "Local" macros for easier reading; undef'd at end of function */
-	#define LORE_INSERT_FLAG_DESCRIPTION(x) \
-		lore_insert_flag_description((x), known_flags, descs, list_index)
-	#define LORE_INSERT_UNKNOWN_VULN(x) \
-		lore_insert_unknown_vulnerability((x), known_flags, lore, descs, list_index)
 
 	assert(tb && race && lore);
 
@@ -1182,138 +1130,105 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	msex = lore_monster_sex(race);
 	initial_pronoun = lore_pronoun_nominative(msex, true);
 
-	/* Collect special abilities. */
-	list_index = 0;
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_OPEN_DOOR);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_BASH_DOOR);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_PASS_WALL);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_KILL_WALL);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_MOVE_BODY);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_KILL_BODY);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_TAKE_ITEM);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_KILL_ITEM);
-
-	if (list_index > 0) {
-		textblock_append(tb, "%s can ", initial_pronoun);
-		lore_append_list(tb, descs, list_index, COLOUR_WHITE, "and");
-		textblock_append(tb, ".  ");
-	}
+	/* Describe environment-shaping abilities. */
+	create_mon_flag_mask(current_flags, RFT_ALTER, RFT_MAX);
+	rf_inter(current_flags, known_flags);
+	my_strcpy(start, format("%s can ", initial_pronoun), sizeof(start));
+	lore_append_clause(tb, current_flags, COLOUR_WHITE, start, "and", ". ");
 
 	/* Describe detection traits */
-	list_index = 0;
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_INVISIBLE);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_COLD_BLOOD);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_EMPTY_MIND);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_WEIRD_MIND);
-
-	if (list_index > 0) {
-		textblock_append(tb, "%s is ", initial_pronoun);
-		lore_append_list(tb, descs, list_index, COLOUR_WHITE, "and");
-		textblock_append(tb, ".  ");
-	}
+	create_mon_flag_mask(current_flags, RFT_DET, RFT_MAX);
+	rf_inter(current_flags, known_flags);
+	my_strcpy(start, format("%s is ", initial_pronoun), sizeof(start));
+	lore_append_clause(tb, current_flags, COLOUR_WHITE, start, "and", ". ");
 
 	/* Describe special things */
 	if (rf_has(known_flags, RF_UNAWARE))
-		textblock_append(tb, "%s disguises itself to look like something else.  ", initial_pronoun);
+		textblock_append(tb, "%s disguises itself as something else.  ",
+						 initial_pronoun);
 	if (rf_has(known_flags, RF_MULTIPLY))
-		textblock_append_c(tb, COLOUR_ORANGE, "%s breeds explosively.  ", initial_pronoun);
+		textblock_append_c(tb, COLOUR_ORANGE, "%s breeds explosively.  ",
+						   initial_pronoun);
 	if (rf_has(known_flags, RF_REGENERATE))
 		textblock_append(tb, "%s regenerates quickly.  ", initial_pronoun);
 	if (rf_has(known_flags, RF_HAS_LIGHT))
-		textblock_append(tb, "%s illuminates %s surroundings.  ", initial_pronoun, lore_pronoun_possessive(msex, false));
+		textblock_append(tb, "%s illuminates %s surroundings.  ",
+						 initial_pronoun, lore_pronoun_possessive(msex, false));
 
 	/* Collect susceptibilities */
-	list_index = 0;
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_HURT_ROCK);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_HURT_LIGHT);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_HURT_FIRE);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_HURT_COLD);
-
-	if (list_index > 0) {
-		textblock_append(tb, "%s is hurt by ", initial_pronoun);
-		lore_append_list(tb, descs, list_index, COLOUR_VIOLET, "and");
+	create_mon_flag_mask(current_flags, RFT_VULN, RFT_VULN_I, RFT_MAX);
+	rf_inter(current_flags, known_flags);
+	my_strcpy(start, format("%s is hurt by ", initial_pronoun), sizeof(start));
+	lore_append_clause(tb, current_flags, COLOUR_VIOLET, start, "and", "");
+	if (!rf_is_empty(current_flags)) {
 		prev = true;
 	}
 
 	/* Collect immunities and resistances */
-	list_index = 0;
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_ACID);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_ELEC);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_FIRE);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_COLD);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_POIS);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_WATER);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_NETHER);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_PLASMA);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_NEXUS);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_DISEN);
+	create_mon_flag_mask(current_flags, RFT_RES, RFT_MAX);
+	rf_inter(current_flags, known_flags);
 
 	/* Note lack of vulnerability as a resistance */
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_HURT_LIGHT);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_HURT_ROCK);
-
-	if (list_index > 0) {
-		/* Output connecting text */
-		if (prev)
-			textblock_append(tb, ", but resists ");
-		else
-			textblock_append(tb, "%s resists ", initial_pronoun);
-
-		lore_append_list(tb, descs, list_index, COLOUR_L_UMBER, "and");
+	create_mon_flag_mask(test_flags, RFT_VULN, RFT_MAX);
+	for (flag = rf_next(test_flags, FLAG_START); flag;
+		 flag = rf_next(test_flags, flag + 1)) {
+		if (rf_has(lore->flags, flag) && !rf_has(known_flags, flag)) {
+			rf_on(current_flags, flag);
+		}
+	}
+	if (prev)
+		my_strcpy(start, ", but resists ", sizeof(start));
+	else
+		my_strcpy(start, format("%s resists ", initial_pronoun), sizeof(start));
+	lore_append_clause(tb, current_flags, COLOUR_L_UMBER, start, "and", "");
+	if (!rf_is_empty(current_flags)) {
 		prev = true;
 	}
 
 	/* Collect known but average susceptibilities */
-	list_index = 0;
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_ACID);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_ELEC);
-	if (rf_has(lore->flags, RF_IM_FIRE) && !rf_has(known_flags, RF_IM_FIRE) &&
-		!rf_has(known_flags, RF_HURT_FIRE))
-		descs[list_index++] = describe_race_flag(RF_HURT_FIRE);
-	if (rf_has(lore->flags, RF_IM_COLD) && !rf_has(known_flags, RF_IM_COLD) &&
-		!rf_has(known_flags, RF_HURT_COLD))
-		descs[list_index++] = describe_race_flag(RF_HURT_COLD);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_POIS);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_WATER);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_NETHER);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_PLASMA);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_NEXUS);
-	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_DISEN);
+	rf_wipe(current_flags);
+	create_mon_flag_mask(test_flags, RFT_RES, RFT_MAX);
+	for (flag = rf_next(test_flags, FLAG_START); flag;
+		 flag = rf_next(test_flags, flag + 1)) {
+		if (rf_has(lore->flags, flag) && !rf_has(known_flags, flag)) {
+			rf_on(current_flags, flag);
+		}
+	}
 
-	if (list_index > 0) {
-		/* Output connecting text */
-		if (prev)
-			textblock_append(tb, ", and does not resist ");
-		else
-			textblock_append(tb, "%s does not resist ", initial_pronoun);
-
-		lore_append_list(tb, descs, list_index, COLOUR_L_UMBER, "or");
+	/* Vulnerabilities need to be specifically removed */
+	create_mon_flag_mask(test_flags, RFT_VULN_I, RFT_MAX);
+	rf_inter(test_flags, known_flags);
+	for (flag = rf_next(test_flags, FLAG_START); flag;
+		 flag = rf_next(test_flags, flag + 1)) {
+		int susc_flag;
+		for (susc_flag = rf_next(current_flags, FLAG_START); susc_flag;
+			 susc_flag = rf_next(current_flags, susc_flag + 1)) {
+			if (streq(describe_race_flag(flag), describe_race_flag(susc_flag)))
+				rf_off(current_flags, susc_flag);
+		}
+	}
+	if (prev)
+		my_strcpy(start, ", and does not resist ", sizeof(start));
+	else
+		my_strcpy(start, format("%s does not resist ", initial_pronoun),
+				  sizeof(start));
+	lore_append_clause(tb, current_flags, COLOUR_L_UMBER, start, "or", "");
+	if (!rf_is_empty(current_flags)) {
 		prev = true;
 	}
 
 	/* Collect non-effects */
-	list_index = 0;
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_NO_STUN);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_NO_FEAR);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_NO_CONF);
-	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_NO_SLEEP);
-
-	if (list_index > 0) {
-		/* Output connecting text */
-		if (prev)
-			textblock_append(tb, ", and cannot be ");
-		else
-			textblock_append(tb, "%s cannot be ", initial_pronoun);
-
-		lore_append_list(tb, descs, list_index, COLOUR_L_UMBER, "or");
-		prev = true;
-	}
+	create_mon_flag_mask(current_flags, RFT_PROT, RFT_MAX);
+	rf_inter(current_flags, known_flags);
+	if (prev)
+		my_strcpy(start, ", and cannot be ", sizeof(start));
+	else
+		my_strcpy(start, format("%s cannot be ", initial_pronoun),
+				  sizeof(start));
+	lore_append_clause(tb, current_flags, COLOUR_L_UMBER, start, "or", "");
 
 	if (prev)
 		textblock_append(tb, ".  ");
-
-	#undef LORE_INSERT_FLAG_DESCRIPTION
-	#undef LORE_INSERT_UNKNOWN_VULN
 }
 
 /**

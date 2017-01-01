@@ -54,7 +54,8 @@ enum monster_flag_type {
 	RFT_DET,		/* detection properties */
 	RFT_ALTER,		/* environment shaping */
 	RFT_RACE,		/* types of monster */
-	RFT_VULN,		/* vulnerabilities */
+	RFT_VULN,		/* vulnerabilities with no corresponding resistance */
+	RFT_VULN_I,		/* vulnerabilities with a corresponding resistance */
 	RFT_RES,		/* elemental resistances */
 	RFT_PROT,		/* immunity from status effects */
 
@@ -95,6 +96,7 @@ enum
 
 #define rf_has(f, flag)        flag_has_dbg(f, RF_SIZE, flag, #f, #flag)
 #define rf_next(f, flag)       flag_next(f, RF_SIZE, flag)
+#define rf_count(f)            flag_count(f, RF_SIZE)
 #define rf_is_empty(f)         flag_is_empty(f, RF_SIZE)
 #define rf_is_full(f)          flag_is_full(f, RF_SIZE)
 #define rf_is_inter(f1, f2)    flag_is_inter(f1, f2, RF_SIZE)
