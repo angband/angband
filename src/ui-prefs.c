@@ -810,7 +810,7 @@ static enum parser_error parse_prefs_feat(struct parser *p)
 
 static enum parser_error parse_prefs_gf(struct parser *p)
 {
-	bool types[GF_MAX] = { 0 };
+	bool types[PROJ_MAX] = { 0 };
 	const char *direction;
 	int motion;
 
@@ -822,14 +822,14 @@ static enum parser_error parse_prefs_gf(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	/* Parse the type, which is a | seperated list of GF_ constants */
+	/* Parse the type, which is a | seperated list of PROJ_ constants */
 	s = string_make(parser_getsym(p, "type"));
 	t = strtok(s, "| ");
 	while (t) {
 		if (streq(t, "*")) {
 			memset(types, true, sizeof types);
 		} else {
-			int idx = gf_name_to_idx(t);
+			int idx = proj_name_to_idx(t);
 			if (idx == -1)
 				return PARSE_ERROR_INVALID_VALUE;
 
@@ -855,11 +855,11 @@ static enum parser_error parse_prefs_gf(struct parser *p)
 	else
 		return PARSE_ERROR_INVALID_VALUE;
 
-	for (i = 0; i < GF_MAX; i++) {
+	for (i = 0; i < PROJ_MAX; i++) {
 		if (!types[i]) continue;
 
-		gf_to_attr[i][motion] = (byte)parser_getuint(p, "attr");
-		gf_to_char[i][motion] = (wchar_t)parser_getuint(p, "char");
+		proj_to_attr[i][motion] = (byte)parser_getuint(p, "attr");
+		proj_to_char[i][motion] = (wchar_t)parser_getuint(p, "char");
 	}
 
 	return PARSE_ERROR_NONE;

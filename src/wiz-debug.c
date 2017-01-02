@@ -55,17 +55,17 @@
 #include "wizard.h"
 
 
-static void gf_display(struct menu *m, int type, bool cursor,
+static void proj_display(struct menu *m, int type, bool cursor,
 		int row, int col, int wid)
 {
 	size_t i;
 
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	const char *gf_name = gf_idx_to_name(type);
+	const char *proj_name = proj_idx_to_name(type);
 
 	if (type % 2)
 		c_prt(attr, ".........................", row, col);
-	c_put_str(attr, gf_name, row, col);
+	c_put_str(attr, proj_name, row, col);
 
 	col += 25;
 
@@ -75,10 +75,10 @@ static void gf_display(struct menu *m, int type, bool cursor,
 				/* ASCII is simple */
 				wchar_t chars[] = L"*|/-\\";
 
-				col += big_pad(col, row, gf_color(type), chars[i]);
+				col += big_pad(col, row, projections[type].color, chars[i]);
 			} else {
-				col += big_pad(col, row, gf_to_attr[type][i],
-							   gf_to_char[type][i]);
+				col += big_pad(col, row, proj_to_attr[type][i],
+							   proj_to_char[type][i]);
 			}
 		}
 	} else {
@@ -86,22 +86,22 @@ static void gf_display(struct menu *m, int type, bool cursor,
 	}
 }
 
-static const menu_iter gf_iter = {
+static const menu_iter proj_iter = {
 	NULL, /* get_tag */
 	NULL, /* validity */
-	gf_display,
+	proj_display,
 	NULL, /* action */
 	NULL /* resize */
 };
 
-static void wiz_gf_demo(void)
+static void wiz_proj_demo(void)
 {
-	struct menu *m = menu_new(MN_SKIN_SCROLL, &gf_iter);
+	struct menu *m = menu_new(MN_SKIN_SCROLL, &proj_iter);
 	region loc = { 0, 0, 0, 0 };
 
-	menu_setpriv(m, GF_MAX, NULL);
+	menu_setpriv(m, PROJ_MAX, NULL);
 
-	m->title = "GF_ types display";
+	m->title = "PROJ_ types display";
 	menu_layout(m, &loc);
 
 	screen_save();
@@ -2052,7 +2052,7 @@ void get_debug_command(void)
 		/* GF demo */
 		case 'G':
 		{
-			wiz_gf_demo();
+			wiz_proj_demo();
 			break;
 		}
 
@@ -2066,7 +2066,7 @@ void get_debug_command(void)
 		/* Hit all monsters in LOS */
 		case 'H':
 		{
-			effect_simple(EF_PROJECT_LOS, source_player(), "10000", GF_DISP_ALL, 0, 0, NULL);
+			effect_simple(EF_PROJECT_LOS, source_player(), "10000", PROJ_DISP_ALL, 0, 0, NULL);
 			break;
 		}
 

@@ -16,6 +16,7 @@ int setup_tests(void **state) {
 	textui_input_init();
 	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->mon_blows_max = 2;
+	projections = test_projections;
 	m->race = r;
 	r_info = r;
 	*state = m;

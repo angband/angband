@@ -20,6 +20,7 @@
 #include "obj-tval.h"
 #include "player.h"
 #include "player-calcs.h"
+#include "project.h"
 
 /* 30 = TMD_MAX */
 static s16b TEST_DATA test_timed[30] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
@@ -1136,4 +1137,72 @@ static struct chunk TEST_DATA test_cave = {
 	.mon_cnt = 0,
 	.mon_current = -1,
 };
+
+static struct projection TEST_DATA test_projections[4] = {
+	{
+		.index = 0,
+		.name = "acid",
+		.type = "element",
+		.desc = "acid",
+		.player_desc = "acid",
+		.blind_desc = "acid",
+		.numerator = 1,
+		.denominator = {3, 0, 0, 0},
+		.divisor = 3,
+		.damage_cap = 1600,
+		.msgt = 0,
+		.obvious = true,
+		.color = 2,
+		.next = NULL
+	},
+	{
+		.index = 1,
+		.name = "electricity",
+		.type = "element",
+		.desc = "electricity",
+		.player_desc = "electricity",
+		.blind_desc = "electricity",
+		.numerator = 1,
+		.denominator = {3, 0, 0, 0},
+		.divisor = 3,
+		.damage_cap = 1600,
+		.msgt = 0,
+		.obvious = true,
+		.color = 6,
+		.next = NULL
+	},
+	{
+		.index = 2,
+		.name = "fire",
+		.type = "element",
+		.desc = "fire",
+		.player_desc = "fire",
+		.blind_desc = "fire",
+		.numerator = 1,
+		.denominator = {3, 0, 0, 0},
+		.divisor = 3,
+		.damage_cap = 1600,
+		.msgt = 0,
+		.obvious = true,
+		.color = 4,
+		.next = NULL
+	},
+	{
+		.index = 3,
+		.name = "cold",
+		.type = "element",
+		.desc = "cold",
+		.player_desc = "cold",
+		.blind_desc = "cold",
+		.numerator = 1,
+		.denominator = {3, 0, 0, 0},
+		.divisor = 3,
+		.damage_cap = 1600,
+		.msgt = 0,
+		.obvious = true,
+		.color = 1,
+		.next = NULL
+	}
+};
+
 #endif /* !UNIT_TEST_DATA */

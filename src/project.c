@@ -29,13 +29,56 @@
 #include "source.h"
 #include "trap.h"
 
+struct projection *projections;
+
 /*
  * Specify attr/char pairs for visual special effects for project()
- * Ideally move these and GF-type colors to the UI - NRM
+ * Ideally move these and PROJ-type colors to the UI - NRM
  */
-byte gf_to_attr[GF_MAX][BOLT_MAX];
-wchar_t gf_to_char[GF_MAX][BOLT_MAX];
+byte proj_to_attr[PROJ_MAX][BOLT_MAX];
+wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
+/**
+ * ------------------------------------------------------------------------
+ * PROJ type info needed for projections
+ *
+ * Note that elements come first, so PROJ_ACID == ELEM_ACID, etc
+ * ------------------------------------------------------------------------ */
+static const char *proj_name_list[] =
+{
+	#define ELEM(a) #a,
+	#include "list-elements.h"
+	#undef ELEM
+	#define PROJ(a) #a,
+	#include "list-projections.h"
+	#undef PROJ
+	"MAX",
+    NULL
+};
+
+int proj_name_to_idx(const char *name)
+{
+    int i;
+    for (i = 0; proj_name_list[i]; i++) {
+        if (!my_stricmp(name, proj_name_list[i]))
+            return i;
+    }
+
+    return -1;
+}
+
+const char *proj_idx_to_name(int type)
+{
+    assert(type >= 0);
+    assert(type < PROJ_MAX);
+
+    return proj_name_list[type];
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Projection paths
+ * ------------------------------------------------------------------------ */
 /**
  * Determine the path taken by a projection.
  *
@@ -312,123 +355,6 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
 
 
 
-
-/**
- * ------------------------------------------------------------------------
- * GF type info needed for projections
- *
- * Note that elements come first, so GF_ACID == ELEM_ACID, etc
- * ------------------------------------------------------------------------ */
-static const struct gf_type {
-	const char *desc;	/* text description */
-	const char *blind_desc;	/* text description (if blind) */
-	int num;			/* numerator for resistance */
-	random_value denom;	/* denominator for resistance */
-	bool force_obvious; /* */
- 	byte color;			/* */
-} gf_table[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) { c, d, e, f, true, col },
-	#define RV(b, x, y, m) {b, x, y, m}
-	#include "list-elements.h"
-	#undef ELEM
-	#undef RV
-
-	#define PROJ_ENV(a, col, desc) { desc, NULL, 0, {0, 0, 0, 0}, false, col },
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-
-	#define PROJ_MON(a, obv, desc) \
-		{ desc, NULL, 0, {0, 0, 0, 0}, obv, COLOUR_WHITE }, 
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
-	{ NULL, NULL, 0, {0, 0, 0, 0}, false, COLOUR_WHITE }
-};
-
-static const char *gf_name_list[] =
-{
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) #a,
-	#include "list-elements.h"
-	#undef ELEM
-	#define PROJ_ENV(a, col, desc) #a,
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-	#define PROJ_MON(a, obv, desc) #a,
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
-	"MAX",
-    NULL
-};
-
-bool gf_force_obvious(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return false;
-
-	return gf_table[type].force_obvious;
-}
-
-int gf_color(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return COLOUR_WHITE;
-
-	return gf_table[type].color;
-}
-
-int gf_num(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return 0;
-
-	return gf_table[type].num;
-}
-
-random_value gf_denom(int type)
-{
-	random_value rand = { 0, 0, 0, 0};
-	if (type < 0 || type >= GF_MAX)
-		return rand;
-
-	return gf_table[type].denom;
-}
-
-const char *gf_desc(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return 0;
-
-	return gf_table[type].desc;
-}
-
-const char *gf_blind_desc(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return 0;
-
-	if (gf_table[type].blind_desc)
-		return gf_table[type].blind_desc;
-	else
-		return "something";
-}
-
-int gf_name_to_idx(const char *name)
-{
-    int i;
-    for (i = 0; gf_name_list[i]; i++) {
-        if (!my_stricmp(name, gf_name_list[i]))
-            return i;
-    }
-
-    return -1;
-}
-
-const char *gf_idx_to_name(int type)
-{
-    assert(type >= 0);
-    assert(type < GF_MAX);
-
-    return gf_name_list[type];
-}
 
 /**
  * ------------------------------------------------------------------------

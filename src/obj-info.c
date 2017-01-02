@@ -178,9 +178,9 @@ static size_t element_info_collect(const bool list[], const char *recepticle[])
 {
 	int i, count = 0;
 
-	for (i = 0; i < z_info->element_max; i++) {
+	for (i = 0; i < ELEM_MAX; i++) {
 		if (list[i])
-			recepticle[count++] = elements[i].name;
+			recepticle[count++] = projections[i].name;
 	}
 	
 	return count;
@@ -271,15 +271,15 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 static bool describe_elements(textblock *tb,
 							  const struct element_info el_info[])
 {
-	const char *i_descs[z_info->element_max];
-	const char *r_descs[z_info->element_max];
-	const char *v_descs[z_info->element_max];
+	const char *i_descs[ELEM_MAX];
+	const char *r_descs[ELEM_MAX];
+	const char *v_descs[ELEM_MAX];
 	size_t i, count;
 
-	bool list[z_info->element_max], prev = false;
+	bool list[ELEM_MAX], prev = false;
 
 	/* Immunities */
-	for (i = 0; i < z_info->element_max; i++)
+	for (i = 0; i < ELEM_MAX; i++)
 		list[i] = (el_info[i].res_level == 3);
 	count = element_info_collect(list, i_descs);
 	if (count) {
@@ -289,7 +289,7 @@ static bool describe_elements(textblock *tb,
 	}
 
 	/* Resistances */
-	for (i = 0; i < z_info->element_max; i++)
+	for (i = 0; i < ELEM_MAX; i++)
 		list[i] = (el_info[i].res_level == 1);
 	count = element_info_collect(list, r_descs);
 	if (count) {
@@ -299,7 +299,7 @@ static bool describe_elements(textblock *tb,
 	}
 
 	/* Vulnerabilities */
-	for (i = 0; i < z_info->element_max; i++)
+	for (i = 0; i < ELEM_MAX; i++)
 		list[i] = (el_info[i].res_level == -1);
 	count = element_info_collect(list, v_descs);
 	if (count) {
@@ -338,11 +338,11 @@ static bool describe_protects(textblock *tb, const bitflag flags[OF_SIZE])
  */
 static bool describe_ignores(textblock *tb, const struct element_info el_info[])
 {
-	const char *descs[z_info->element_max];
+	const char *descs[ELEM_MAX];
 	size_t i, count;
-	bool list[z_info->element_max];
+	bool list[ELEM_MAX];
 
-	for (i = 0; i < z_info->element_max; i++)
+	for (i = 0; i < ELEM_MAX; i++)
 		list[i] = (el_info[i].flags & EL_INFO_IGNORE);
 	count = element_info_collect(list, descs);
 
@@ -360,11 +360,11 @@ static bool describe_ignores(textblock *tb, const struct element_info el_info[])
  */
 static bool describe_hates(textblock *tb, const struct element_info el_info[])
 {
-	const char *descs[z_info->element_max];
+	const char *descs[ELEM_MAX];
 	size_t i, count = 0;
-	bool list[z_info->element_max];
+	bool list[ELEM_MAX];
 
-	for (i = 0; i < z_info->element_max; i++)
+	for (i = 0; i < ELEM_MAX; i++)
 		list[i] = (el_info[i].flags & EL_INFO_HATES);
 	count = element_info_collect(list, descs);
 
@@ -585,7 +585,7 @@ static void get_known_elements(const struct object *obj,
 	size_t i;
 
 	/* Grab the element info */
-	for (i = 0; i < z_info->element_max; i++) {
+	for (i = 0; i < ELEM_MAX; i++) {
 		/* Report fake egos or known element info */
 		if (player->obj_k->el_info[i].res_level || (mode & OINFO_SPOIL))
 			el_info[i].res_level = obj->known->el_info[i].res_level;
@@ -1476,7 +1476,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			case EFINFO_SEEN: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						gf_desc(effect->params[0]));
+						projections[effect->params[0]].desc);
 				break;
 			}
 			case EFINFO_SUMM: {
@@ -1509,7 +1509,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Object generated balls are elemental */
 			case EFINFO_BALL: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						elements[effect->params[0]].player_desc,
+						projections[effect->params[0]].player_desc,
 						effect->params[1], dice_string);
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
@@ -1520,7 +1520,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Object generated breaths are elemental */
 			case EFINFO_BREATH: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						elements[effect->params[0]].player_desc,
+						projections[effect->params[0]].player_desc,
 						effect->params[1], dice_string);
 				break;
 			}
@@ -1528,13 +1528,13 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						gf_desc(effect->params[0]));
+						projections[effect->params[0]].desc);
 				break;
 			}
 			/* Bolts and beams that damage */
 			case EFINFO_BOLTD: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						gf_desc(effect->params[0]), dice_string);
+						projections[effect->params[0]].desc, dice_string);
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
@@ -1542,7 +1542,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			case EFINFO_TOUCH: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						gf_desc(effect->params[0]));
+						projections[effect->params[0]].desc);
 				break;
 			}
 			case EFINFO_NONE: {
@@ -1745,7 +1745,7 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 static textblock *object_info_out(const struct object *obj, int mode)
 {
 	bitflag flags[OF_SIZE];
-	struct element_info el_info[z_info->element_max];
+	struct element_info el_info[ELEM_MAX];
 	bool something = false;
 
 	bool terse = mode & OINFO_TERSE ? true : false;

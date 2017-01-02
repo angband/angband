@@ -46,7 +46,7 @@ struct angband_constants
 	u16b equip_slots_max;	/**< Maximum number of player equipment slots */
 	u16b profile_max;	/**< Maximum number of cave_profiles */
 	u16b quest_max;		/**< Maximum number of quests */
-	u16b element_max;	/**< Maximum number of elements */
+	u16b projection_max;	/**< Maximum number of projection types */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */

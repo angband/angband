@@ -250,7 +250,7 @@ void ignore_spells(bitflag *f, int types)
 }
 
 /**
- * Turn off spells with a side effect or a gf_type that is resisted by
+ * Turn off spells with a side effect or a proj_type that is resisted by
  * something in flags, subject to intelligence and chance.
  *
  * \param spells is the set of spells we're pruning
@@ -346,7 +346,7 @@ static int nonhp_dam(const struct monster_spell *spell,
  */
 int breath_dam(int type, int hp)
 {
-	struct element *element = &elements[type];
+	struct projection *element = &projections[type];
 	int dam;
 
 	/* Damage is based on monster's current hp */

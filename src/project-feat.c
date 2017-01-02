@@ -578,16 +578,81 @@ static void project_feature_handler_ARROW(project_feature_handler_context_t *con
 	}
 }
 
+static void project_feature_handler_AWAY_UNDEAD(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_AWAY_EVIL(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_AWAY_ALL(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_TURN_UNDEAD(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_TURN_EVIL(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_TURN_ALL(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_DISP_UNDEAD(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_DISP_EVIL(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_DISP_ALL(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_CLONE(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_POLY(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_HEAL(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_SPEED(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_SLOW(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_CONF(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_SLEEP(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_DRAIN(project_feature_handler_context_t *context)
+{
+}
+
 static const project_feature_handler_f feature_handlers[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_feature_handler_##a,
+	#define ELEM(a) project_feature_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, desc) project_feature_handler_##a,
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-	#define PROJ_MON(a, obv, desc) NULL, 
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
+	#define PROJ(a) project_feature_handler_##a,
+	#include "list-projections.h"
+	#undef PROJ
 	NULL
 };
 
@@ -602,7 +667,7 @@ static const project_feature_handler_f feature_handlers[] = {
  * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
- * \param typ is the projection (GF_) type
+ * \param typ is the projection (PROJ_) type
  * \return whether the effects were obvious
  *
  * Note that this function determines if the player can see anything that

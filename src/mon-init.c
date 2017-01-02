@@ -399,7 +399,7 @@ static enum parser_error parse_eff_resist(struct parser *p) {
 	assert(eff);
 
 	if (streq(eff->effect_type, "element")) {
-		eff->resist = gf_name_to_idx(resist);
+		eff->resist = proj_name_to_idx(resist);
 	} else if (streq(eff->effect_type, "flag")) {
 		eff->resist = flag_index_by_name(resist);
 	} else {

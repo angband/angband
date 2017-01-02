@@ -1274,10 +1274,10 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a,
 		wchar_t chars[] = L"*|/-\\";
 
 		*c = chars[motion];
-		*a = gf_color(typ);
+		*a = projections[typ].color;
 	} else {
-		*a = gf_to_attr[typ][motion];
-		*c = gf_to_char[typ][motion];
+		*a = proj_to_attr[typ][motion];
+		*c = proj_to_char[typ][motion];
 	}
 }
 
@@ -1291,7 +1291,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 	bool drawn = false;
 	int i, y, x;
 	int msec = player->opts.delay_factor;
-	int gf_type = data->explosion.gf_type;
+	int proj_type = data->explosion.proj_type;
 	int num_grids = data->explosion.num_grids;
 	int *distance_to_grid = data->explosion.distance_to_grid;
 	bool drawing = data->explosion.drawing;
@@ -1313,7 +1313,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 			drawn = true;
 
 			/* Obtain the explosion pict */
-			bolt_pict(y, x, y, x, gf_type, &a, &c);
+			bolt_pict(y, x, y, x, proj_type, &a, &c);
 
 			/* Just display the pict, ignoring what was under it */
 			print_rel(c, a, y, x);
@@ -1374,7 +1374,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 						 void *user)
 {
 	int msec = player->opts.delay_factor;
-	int gf_type = data->bolt.gf_type;
+	int proj_type = data->bolt.proj_type;
 	bool drawing = data->bolt.drawing;
 	bool seen = data->bolt.seen;
 	bool beam = data->bolt.beam;
@@ -1389,7 +1389,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 		wchar_t c;
 
 		/* Obtain the bolt pict */
-		bolt_pict(oy, ox, y, x, gf_type, &a, &c);
+		bolt_pict(oy, ox, y, x, proj_type, &a, &c);
 
 		/* Visual effects */
 		print_rel(c, a, y, x);
@@ -1407,7 +1407,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 		if (beam) {
 
 			/* Obtain the explosion pict */
-			bolt_pict(y, x, y, x, gf_type, &a, &c);
+			bolt_pict(y, x, y, x, proj_type, &a, &c);
 
 			/* Visual effects */
 			print_rel(c, a, y, x);

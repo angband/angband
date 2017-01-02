@@ -34,7 +34,7 @@ name:SHRIEK
 msgt:SHRIEK
 hit:100
 effect:WAKE
-effect:PROJECT_LOS:OLD_SPEED
+effect:PROJECT_LOS:MON_SPEED
 dice:25
 power:d150M1
 lore:shriek for help

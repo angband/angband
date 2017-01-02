@@ -32,6 +32,7 @@
 #include "player.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "project.h"
 #include "store.h"
 
 /**
@@ -162,7 +163,7 @@ static void init_rune(void)
 		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, 0, m_rune[i] };
 	}
 	for (i = 0; i <= ELEM_HIGH_MAX; i++) {
-		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, elements[i].name };
+		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, projections[i].name };
 	}
 	for (i = 1; i < z_info->brand_max; i++) {
 		bool counted = false;

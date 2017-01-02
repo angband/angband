@@ -218,7 +218,7 @@ desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:9:1
 
 spell:Confuse Monster:5:4:30:4
-effect:BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:MON_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to confuse a single monster for a level-dependent duration.
@@ -240,7 +240,7 @@ effect:CURE:POISONED
 desc:Neutralizes poison.
 
 spell:Sleep Monster:7:5:30:4
-effect:BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to put to sleep a single monster.
@@ -307,7 +307,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Polymorph Other:11:7:45:9
-effect:BOLT_STATUS:OLD_POLY
+effect:BOLT_STATUS:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
@@ -334,7 +334,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Slow Monster:17:9:50:7
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_STATUS:MON_SLOW
 dice:20
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
@@ -361,7 +361,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:25:7:50:6
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to put to sleep each monster within line of sight.
@@ -542,7 +542,7 @@ desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 
 spell:Bedlam:25:15:60:24
-effect:BALL:OLD_CONF:4
+effect:BALL:MON_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
@@ -713,7 +713,7 @@ desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
 desc: turns.
 
 spell:Sanctuary:7:5:36:3
-effect:TOUCH_AWARE:OLD_SLEEP
+effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to put to sleep each monster directly adjacent to you.
@@ -1068,7 +1068,7 @@ desc: have resistance to blindness or light.
 desc:  This prayer has no effect when used in the town.
 
 spell:Annihilation:45:60:75:250
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:200
 desc:Inflicts 200 points of damage on a single monster that is not
 desc: undead, a demon, an elemental, a golem, or a vortex.
@@ -1163,7 +1163,7 @@ desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:7:1
 
 spell:Confuse Monster:15:6:75:1
-effect:BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:MON_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to confuse a single monster for a level-dependent duration.
@@ -1179,7 +1179,7 @@ effect:CURE:POISONED
 desc:Neutralizes poison.
 
 spell:Sleep Monster:19:8:85:1
-effect:BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to put to sleep a single monster.
@@ -1239,7 +1239,7 @@ dice:22d40
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Slow Monster:28:20:70:2
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_STATUS:MON_SLOW
 dice:20
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
@@ -1260,7 +1260,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:24:15:80:10
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to put to sleep each monster within line of sight.
@@ -1402,7 +1402,7 @@ desc: slay, is broken, or is cursed.
 book:magic book:[Kelek's Grimoire of Power]:1:1
 
 spell:Bedlam:29:20:70:20
-effect:BALL:OLD_CONF:4
+effect:BALL:MON_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
@@ -1513,7 +1513,7 @@ desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:9:1
 
 spell:Confuse Monster:7:6:40:2
-effect:BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:MON_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to confuse a single monster for a level-dependent duration.
@@ -1535,7 +1535,7 @@ effect:CURE:POISONED
 desc:Neutralizes poison.
 
 spell:Sleep Monster:11:8:40:3
-effect:BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to put to sleep a single monster.
@@ -1602,7 +1602,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Polymorph Other:21:19:60:3
-effect:BOLT_STATUS:OLD_POLY
+effect:BOLT_STATUS:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
@@ -1629,7 +1629,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Slow Monster:25:21:65:3
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_STATUS:MON_SLOW
 dice:20
 desc:Attempts to slow a single monster.
 desc:  Uniques are not affected.
@@ -1656,7 +1656,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:23:20:60:4
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to put to sleep each monster within line of sight.
@@ -1847,7 +1847,7 @@ desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 
 spell:Bedlam:32:30:70:12
-effect:BALL:OLD_CONF:4
+effect:BALL:MON_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
@@ -1979,7 +1979,7 @@ desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
 desc: turns.
 
 spell:Sanctuary:11:10:45:3
-effect:TOUCH_AWARE:OLD_SLEEP
+effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to put to sleep each monster directly adjacent to you.

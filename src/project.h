@@ -13,17 +13,36 @@
  */
 enum
 {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) GF_##a,
+	#define ELEM(a) PROJ_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, desc) GF_##a,
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-	#define PROJ_MON(a, obv, desc) GF_##a,
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
-	GF_MAX
+	#define PROJ(a) PROJ_##a,
+	#include "list-projections.h"
+	#undef PROJ
+	PROJ_MAX
 };
+
+/**
+ * Element struct
+ */
+struct projection {
+	int index;
+	char *name;
+	char *type;
+	char *desc;
+	char *player_desc;
+	char *blind_desc;
+	int numerator;
+	random_value denominator;
+	int divisor;
+	int damage_cap;
+	int msgt;
+	bool obvious;
+	int color;
+	struct projection *next;
+};
+
+extern struct projection *projections;
 
 /**
  * Bolt motion (used in prefs.c, project.c)
@@ -54,23 +73,26 @@ enum
  *   ARC: Projection is a sector of circle radiating from the caster
  *   PLAY: May affect the player
  */
-#define PROJECT_NONE  0x000
-#define PROJECT_JUMP  0x001
-#define PROJECT_BEAM  0x002
-#define PROJECT_THRU  0x004
-#define PROJECT_STOP  0x008
-#define PROJECT_GRID  0x010
-#define PROJECT_ITEM  0x020
-#define PROJECT_KILL  0x040
-#define PROJECT_HIDE  0x080
-#define PROJECT_AWARE 0x100
-#define PROJECT_SAFE  0x200
-#define PROJECT_ARC   0x400
-#define PROJECT_PLAY  0x800
+enum
+{
+	PROJECT_NONE  = 0x000,
+	PROJECT_JUMP  = 0x001,
+	PROJECT_BEAM  = 0x002,
+	PROJECT_THRU  = 0x004,
+	PROJECT_STOP  = 0x008,
+	PROJECT_GRID  = 0x010,
+	PROJECT_ITEM  = 0x020,
+	PROJECT_KILL  = 0x040,
+	PROJECT_HIDE  = 0x080,
+	PROJECT_AWARE = 0x100,
+	PROJECT_SAFE  = 0x200,
+	PROJECT_ARC   = 0x400,
+	PROJECT_PLAY  = 0x800
+};
 
 /* Display attrs and chars */
-extern byte gf_to_attr[GF_MAX][BOLT_MAX];
-extern wchar_t gf_to_char[GF_MAX][BOLT_MAX];
+extern byte proj_to_attr[PROJ_MAX][BOLT_MAX];
+extern wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
 int inven_damage(struct player *p, int type, int cperc);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
@@ -84,14 +106,8 @@ bool project_p(struct source, int r, int y, int x, int dam, int typ);
 
 int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int flg);
 bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg);
-bool gf_force_obvious(int type);
-int gf_color(int type);
-int gf_num(int type);
-random_value gf_denom(int type);
-const char *gf_desc(int type);
-const char *gf_blind_desc(int type);
-int gf_name_to_idx(const char *name);
-const char *gf_idx_to_name(int type);
+int proj_name_to_idx(const char *name);
+const char *proj_idx_to_name(int type);
 
 struct loc origin_get_loc(struct source origin);
 

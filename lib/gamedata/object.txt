@@ -2083,7 +2083,7 @@ pile:70:1d3
 power:0
 msg:There is a high pitched humming noise.
 effect:WAKE
-effect:PROJECT_LOS:OLD_SPEED
+effect:PROJECT_LOS:MON_SPEED
 dice:25
 
 name:Curse Weapon
@@ -2802,7 +2802,7 @@ alloc:20:5 to 60
 combat:0:1d1:0:0:0
 charges:6+d10
 power:3
-effect:BOLT_AWARE:OLD_SLOW
+effect:BOLT_AWARE:MON_SLOW
 dice:20
 
 name:Confuse Monster
@@ -2813,7 +2813,7 @@ alloc:20:5 to 60
 combat:0:1d1:0:0:0
 charges:6+d12
 power:3
-effect:BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:MON_CONF
 dice:10
 
 name:Sleep Monster
@@ -2824,7 +2824,7 @@ alloc:20:5 to 60
 combat:0:1d1:0:0:0
 charges:8+d15
 power:3
-effect:BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -2873,7 +2873,7 @@ alloc:20:20 to 60
 combat:0:1d1:0:0:0
 charges:6+d8
 power:7
-effect:BOLT_AWARE:OLD_POLY
+effect:BOLT_AWARE:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -2895,7 +2895,7 @@ alloc:20:15 to 100
 combat:0:1d1:0:0:0
 charges:3+d5
 power:0
-effect:BOLT_STATUS:OLD_CLONE
+effect:BOLT_STATUS:MON_CLONE
 
 name:Teleport Other
 type:wand
@@ -2993,7 +2993,7 @@ alloc:50:50 to 100
 combat:0:1d1:0:0:0
 charges:3+d3
 power:11
-effect:BOLT_STATUS_DAM:OLD_DRAIN
+effect:BOLT_STATUS_DAM:MON_DRAIN
 dice:150
 
 name:Annihilation
@@ -3005,7 +3005,7 @@ combat:0:1d1:0:0:0
 charges:1+d2
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:BOLT_STATUS_DAM:OLD_DRAIN
+effect:BOLT_STATUS_DAM:MON_DRAIN
 dice:250
 
 
@@ -3019,7 +3019,7 @@ alloc:10:3 to 40
 combat:0:1d1:0:0:0
 charges:8+d20
 power:0
-effect:BOLT_STATUS:OLD_HEAL
+effect:BOLT_STATUS:MON_HEAL
 dice:4d6
 
 name:Haste Monster
@@ -3030,7 +3030,7 @@ alloc:10:3 to 40
 combat:0:1d1:0:0:0
 charges:8+d20
 power:0
-effect:BOLT_STATUS:OLD_SPEED
+effect:BOLT_STATUS:MON_SPEED
 dice:100
 
 
@@ -3059,7 +3059,7 @@ alloc:10:10 to 40
 combat:0:1d2:0:0:0
 charges:8+d8
 power:0
-effect:PROJECT_LOS:OLD_SPEED
+effect:PROJECT_LOS:MON_SPEED
 dice:50
 
 name:Darkness
@@ -3108,7 +3108,7 @@ alloc:20:10 to 100
 combat:0:1d2:0:0:0
 charges:6+d5
 power:10
-effect:PROJECT_LOS_AWARE:OLD_CONF
+effect:PROJECT_LOS_AWARE:MON_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -3120,7 +3120,7 @@ alloc:20:10 to 100
 combat:0:1d2:0:0:0
 charges:6+d5
 power:7
-effect:PROJECT_LOS:OLD_SLOW
+effect:PROJECT_LOS:MON_SLOW
 dice:20
 
 name:Sleep Monsters
@@ -3131,7 +3131,7 @@ alloc:20:10 to 100
 combat:0:1d2:0:0:0
 charges:6+d5
 power:8
-effect:PROJECT_LOS_AWARE:OLD_SLEEP
+effect:PROJECT_LOS_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 
@@ -3544,7 +3544,7 @@ properties:30:15:1500
 alloc:20:30 to 100
 combat:0:1d1:0:0:0
 power:3
-effect:BOLT_AWARE:OLD_SLOW
+effect:BOLT_AWARE:MON_SLOW
 dice:20
 time:20
 
@@ -3555,7 +3555,7 @@ properties:30:15:1500
 alloc:20:30 to 100
 combat:0:1d1:0:0:0
 power:3
-effect:BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 time:18
@@ -3617,7 +3617,7 @@ properties:35:15:1200
 alloc:20:35 to 80
 combat:0:1d1:0:0:0
 power:7
-effect:BOLT_STATUS:OLD_POLY
+effect:BOLT_STATUS:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 time:25
@@ -3629,7 +3629,7 @@ properties:75:15:3600
 alloc:20:75 to 100
 combat:0:1d1:0:0:0
 power:11
-effect:BOLT_STATUS_DAM:OLD_DRAIN
+effect:BOLT_STATUS_DAM:MON_DRAIN
 dice:150
 time:23
 

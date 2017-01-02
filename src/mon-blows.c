@@ -124,7 +124,7 @@ int blow_index(const char *name)
  * Do damage as the result of a melee attack that has an elemental aspect.
  *
  * \param context is information for the current attack.
- * \param type is the GF_ constant for the element.
+ * \param type is the PROJ_ constant for the element.
  * \param pure_element should be true if no side effects (mostly a hack
  * for poison).
  */
@@ -138,13 +138,13 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 		context->obvious = true;
 
 	switch (type) {
-		case GF_ACID: msg("You are covered in acid!");
+		case PROJ_ACID: msg("You are covered in acid!");
 			break;
-		case GF_ELEC: msg("You are struck by electricity!");
+		case PROJ_ELEC: msg("You are struck by electricity!");
 			break;
-		case GF_FIRE: msg("You are enveloped in flames!");
+		case PROJ_FIRE: msg("You are enveloped in flames!");
 			break;
-		case GF_COLD: msg("You are covered with frost!");
+		case PROJ_COLD: msg("You are covered with frost!");
 			break;
 	}
 
@@ -310,7 +310,7 @@ static void melee_effect_handler_HURT(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_POIS, false);
+	melee_effect_elemental(context, PROJ_POIS, false);
 
 	/* Player is dead */
 	if (context->p->is_dead)
@@ -647,7 +647,7 @@ static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *conte
  */
 static void melee_effect_handler_ACID(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_ACID, true);
+	melee_effect_elemental(context, PROJ_ACID, true);
 }
 
 /**
@@ -655,7 +655,7 @@ static void melee_effect_handler_ACID(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_ELEC(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_ELEC, true);
+	melee_effect_elemental(context, PROJ_ELEC, true);
 }
 
 /**
@@ -663,7 +663,7 @@ static void melee_effect_handler_ELEC(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_FIRE(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_FIRE, true);
+	melee_effect_elemental(context, PROJ_FIRE, true);
 }
 
 /**
@@ -671,7 +671,7 @@ static void melee_effect_handler_FIRE(melee_effect_handler_context_t *context)
  */
 static void melee_effect_handler_COLD(melee_effect_handler_context_t *context)
 {
-	melee_effect_elemental(context, GF_COLD, true);
+	melee_effect_elemental(context, PROJ_COLD, true);
 }
 
 /**

@@ -649,14 +649,14 @@ desc:destroys an area around you in the shape of a circle radius 15, and blinds 
 name:LOSSLOW
 aim:0
 power:7
-effect:PROJECT_LOS:OLD_SLOW
+effect:PROJECT_LOS:MON_SLOW
 dice:20
 desc:slows all non-unique monsters within line of sight
 
 name:LOSSLEEP
 aim:0
 power:8
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:sleeps all non-unique creatures within line of sight
@@ -664,7 +664,7 @@ desc:sleeps all non-unique creatures within line of sight
 name:LOSCONF
 aim:0
 power:10
-effect:PROJECT_LOS:OLD_CONF
+effect:PROJECT_LOS:MON_CONF
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:confuses all non-unique creatures within line of sight
@@ -765,7 +765,7 @@ name:SLEEPII
 aim:0
 power:8
 msg:{name} glows deep blue...
-effect:TOUCH_AWARE:OLD_SLEEP
+effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:puts to sleep the monsters around you
@@ -977,7 +977,7 @@ name:DRAIN_LIFE1
 aim:1
 power:9
 msg:{name} glows white...
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:90
 desc:drains up to 90 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
@@ -985,21 +985,21 @@ name:DRAIN_LIFE2
 aim:1
 power:10
 msg:Your {kind} glow{s} black...
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:120
 desc:drains up to 120 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
 name:DRAIN_LIFE3
 aim:1
 power:11
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:150
 desc:drains up to 150 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
 name:DRAIN_LIFE4
 aim:1
 power:12
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:250
 desc:drains up to 250 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
@@ -1063,28 +1063,28 @@ name:CONFUSE2
 aim:1
 power:3
 msg:{name} glows in scintillating colours...
-effect:BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:MON_CONF
 dice:20
 desc:confuses a target monster
 
 name:MON_SLOW
 aim:1
 power:3
-effect:BOLT_AWARE:OLD_SLOW
+effect:BOLT_AWARE:MON_SLOW
 dice:20
 desc:attempts to magically slow a single monster
 
 name:MON_CONFUSE
 aim:1
 power:3
-effect:BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:MON_CONF
 dice:10
 desc:attempts to magically confuse a single monster
 
 name:MON_SLEEP
 aim:1
 power:3
-effect:BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:MON_SLEEP
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:attempts to induce magical sleep in a single monster
@@ -1120,7 +1120,7 @@ desc:destroys doors
 name:POLYMORPH
 aim:1
 power:7
-effect:BOLT_AWARE:OLD_POLY
+effect:BOLT_AWARE:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:polymorphs a monster into another kind of creature

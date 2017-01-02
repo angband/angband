@@ -19,7 +19,7 @@
  */
 enum
 {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) ELEM_##a,
+	#define ELEM(a) ELEM_##a,
 	#include "list-elements.h"
 	#undef ELEM
 
@@ -101,26 +101,6 @@ enum {
 	EL_INFO_IGNORE = 0x02,
 	EL_INFO_RANDOM = 0x04,
 };
-
-/**
- * Element struct
- */
-struct element {
-	int index;
-	char *name;
-	char *desc;
-	char *player_desc;
-	char *blind_desc;
-	int numerator;
-	random_value denominator;
-	int divisor;
-	int damage_cap;
-	int msgt;
-	int color;
-	struct element *next;
-};
-
-extern struct element *elements;
 
 /**
  * Element info type

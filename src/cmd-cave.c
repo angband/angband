@@ -994,7 +994,7 @@ void move_player(int dir, bool disarm)
 			/* Will take serious fire damage. */
 			if (dam_taken) {
 				take_hit(player, dam_taken, "burning to a cinder in lava");
-				inven_damage(player, GF_FIRE, dam_taken);
+				inven_damage(player, PROJ_FIRE, dam_taken);
 			}
 
 			/* Update view and search */

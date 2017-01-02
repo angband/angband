@@ -31,6 +31,7 @@
 #include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "project.h"
 #include "randname.h"
 
 /*
@@ -1572,7 +1573,7 @@ static bool add_resist(struct artifact *art, int element)
 		return false;
 
 	art->el_info[element].res_level = 1;
-	file_putf(log_file, "Adding resistance to %s\n", elements[element].name);
+	file_putf(log_file, "Adding resistance to %s\n", projections[element].name);
 
 	return true;
 }
@@ -1584,7 +1585,7 @@ static void add_immunity(struct artifact *art)
 {
 	int r = randint0(4);
 	art->el_info[r].res_level = 3;
-	file_putf(log_file, "Adding immunity to %s\n", elements[r].name);
+	file_putf(log_file, "Adding immunity to %s\n", projections[r].name);
 }
 
 /**
@@ -1766,7 +1767,7 @@ static void add_brand(struct artifact *art)
 	if (randint0(4)) {
 		size_t i;
 		for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++) {
-			if (streq(brand->name, elements[i].name) &&
+			if (streq(brand->name, projections[i].name) &&
 				(art->el_info[i].res_level <= 0)) {
 				add_resist(art, i);
 			}

@@ -107,7 +107,7 @@ const char *list_obj_flag_names[] = {
 };
 
 const char *list_element_names[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) #a,
+	#define ELEM(a) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	NULL
@@ -2662,7 +2662,7 @@ static struct {
 	const char *name;
 	struct file_parser *parser;
 } pl[] = {
-	{ "elements", &element_parser },
+	{ "projections", &projection_parser },
 	{ "timed effects", &player_timed_parser },
 	{ "traps", &trap_parser },
 	{ "features", &feat_parser },

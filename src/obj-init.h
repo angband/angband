@@ -26,7 +26,7 @@
 #ifndef OBJECT_INIT_H_
 #define OBJECT_INIT_H_
 
-extern struct file_parser element_parser;
+extern struct file_parser projection_parser;
 extern struct file_parser object_base_parser;
 extern struct file_parser slay_parser;
 extern struct file_parser brand_parser;

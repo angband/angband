@@ -682,7 +682,7 @@ bool is_mimicking(struct monster *mon)
  * state property, or lack of it.
  *
  * Note that this function is robust to being called with `element` as an
- * arbitrary GF_ type
+ * arbitrary PROJ_ type
  */
 void update_smart_learn(struct monster *m, struct player *p, int flag,
 						int pflag, int element)

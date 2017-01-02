@@ -664,7 +664,7 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 }
 
 /* Clone monsters (Ignore "dam") */
-static void project_monster_handler_OLD_CLONE(project_monster_handler_context_t *context)
+static void project_monster_handler_MON_CLONE(project_monster_handler_context_t *context)
 {
 	/* Heal fully */
 	context->mon->hp = context->mon->maxhp;
@@ -683,7 +683,7 @@ static void project_monster_handler_OLD_CLONE(project_monster_handler_context_t 
 }
 
 /* Polymorph monster (Use "dam" as "power") */
-static void project_monster_handler_OLD_POLY(project_monster_handler_context_t *context)
+static void project_monster_handler_MON_POLY(project_monster_handler_context_t *context)
 {
 	/* Polymorph later */
 	context->do_poly = context->dam;
@@ -693,7 +693,7 @@ static void project_monster_handler_OLD_POLY(project_monster_handler_context_t *
 }
 
 /* Heal Monster (use "dam" as amount of healing) */
-static void project_monster_handler_OLD_HEAL(project_monster_handler_context_t *context)
+static void project_monster_handler_MON_HEAL(project_monster_handler_context_t *context)
 {
 	/* Wake up */
 	mon_clear_timed(context->mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, 
@@ -718,31 +718,31 @@ static void project_monster_handler_OLD_HEAL(project_monster_handler_context_t *
 }
 
 /* Speed Monster (Ignore "dam") */
-static void project_monster_handler_OLD_SPEED(project_monster_handler_context_t *context)
+static void project_monster_handler_MON_SPEED(project_monster_handler_context_t *context)
 {
 	project_monster_timed_no_damage(context, MON_TMD_FAST);
 }
 
 /* Slow Monster (Use "dam" as "power") */
-static void project_monster_handler_OLD_SLOW(project_monster_handler_context_t *context)
+static void project_monster_handler_MON_SLOW(project_monster_handler_context_t *context)
 {
 	project_monster_timed_no_damage(context, MON_TMD_SLOW);
 }
 
 /* Confusion (Use "dam" as "power") */
-static void project_monster_handler_OLD_CONF(project_monster_handler_context_t *context)
+static void project_monster_handler_MON_CONF(project_monster_handler_context_t *context)
 {
 	project_monster_timed_no_damage(context, MON_TMD_CONF);
 }
 
 /* Sleep (Use "dam" as "power") */
-static void project_monster_handler_OLD_SLEEP(project_monster_handler_context_t *context)
+static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t *context)
 {
 	project_monster_timed_no_damage(context, MON_TMD_SLEEP);
 }
 
 /* Drain Life */
-static void project_monster_handler_OLD_DRAIN(project_monster_handler_context_t *context)
+static void project_monster_handler_MON_DRAIN(project_monster_handler_context_t *context)
 {
 	if (context->seen) context->obvious = true;
 	if (context->seen) {
@@ -757,15 +757,12 @@ static void project_monster_handler_OLD_DRAIN(project_monster_handler_context_t 
 }
 
 static const project_monster_handler_f monster_handlers[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_monster_handler_##a,
+	#define ELEM(a) project_monster_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, desc) project_monster_handler_##a,
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-	#define PROJ_MON(a, obv, desc) project_monster_handler_##a,
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
+	#define PROJ(a) project_monster_handler_##a,
+	#include "list-projections.h"
+	#undef PROJ
 	NULL
 };
 
@@ -926,12 +923,12 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		if (context->seen) context->obvious = true;
 
 		/* Saving throws depend on damage for direct poly, random for chaos */
-		if (typ == GF_OLD_POLY)
+		if (typ == PROJ_MON_POLY)
 			savelvl = randint1(MAX(1, context->do_poly - 10)) + 10;
 		else
 			savelvl = randint1(90);
 		if (mon->race->level > savelvl) {
-			if (typ == GF_OLD_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
+			if (typ == PROJ_MON_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
 			add_monster_message(mon, hurt_msg, false);
 			return;
 		}
@@ -1000,7 +997,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
- * \param typ is the projection (GF_) type
+ * \param typ is the projection (PROJ_) type
  * \param flg consists of any relevant PROJECT_ flags
  * \return whether the effects were obvious
  *
@@ -1128,7 +1125,7 @@ void project_m(struct source origin, int r, int y, int x,
 		context.die_msg = MON_MSG_DESTROYED;
 
 	/* Force obviousness for certain types if seen. */
-	if (gf_force_obvious(typ) && context.seen)
+	if (projections[typ].obvious && context.seen)
 		context.obvious = true;
 
 	if (monster_handler != NULL)

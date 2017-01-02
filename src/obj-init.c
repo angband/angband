@@ -43,8 +43,6 @@
 #include "player-spell.h"
 #include "project.h"
 
-struct element *elements;
-
 static const char *mon_race_flags[] =
 {
 	#define RF(a, b, c) #a,
@@ -82,7 +80,7 @@ static const char *kind_flags[] = {
 };
 
 static const char *element_names[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) #a,
+	#define ELEM(a) #a,
 	#include "list-elements.h"
 	#undef ELEM
 	NULL
@@ -194,105 +192,115 @@ static struct activation *findact(const char *act_name) {
 
 /**
  * ------------------------------------------------------------------------
- * Initialize elements
+ * Initialize projections
  * ------------------------------------------------------------------------ */
 
-static enum parser_error parse_element_code(struct parser *p) {
+static enum parser_error parse_projection_code(struct parser *p) {
 	const char *code = parser_getstr(p, "code");
-	struct element *h = parser_priv(p);
+	struct projection *h = parser_priv(p);
 	int index = h ? h->index + 1 : 0;
-	struct element *element = mem_zalloc(sizeof *element);
+	struct projection *projection = mem_zalloc(sizeof *projection);
 
-	parser_setpriv(p, element);
-	element->next = h;
-	if (!streq(code, element_names[index]))
+	parser_setpriv(p, projection);
+	projection->next = h;
+	projection->index = index;
+	if ((index < ELEM_MAX) && !streq(code, element_names[index]))
 		return PARSE_ERROR_ELEMENT_NAME_MISMATCH;
-	element->index = index;
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_name(struct parser *p) {
+static enum parser_error parse_projection_name(struct parser *p) {
 	const char *name = parser_getstr(p, "name");
-	struct element *element = parser_priv(p);
-	if (!element)
+	struct projection *projection = parser_priv(p);
+	if (!projection)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	element->name = string_make(name);
+	projection->name = string_make(name);
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_desc(struct parser *p) {
+static enum parser_error parse_projection_type(struct parser *p) {
+	const char *type = parser_getstr(p, "type");
+	struct projection *projection = parser_priv(p);
+	if (!projection)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	projection->type = string_make(type);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_projection_desc(struct parser *p) {
 	const char *desc = parser_getstr(p, "desc");
-	struct element *element = parser_priv(p);
-	if (!element)
+	struct projection *projection = parser_priv(p);
+	if (!projection)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	element->desc = string_make(desc);
+	projection->desc = string_make(desc);
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_player_desc(struct parser *p) {
+static enum parser_error parse_projection_player_desc(struct parser *p) {
 	const char *desc = parser_getstr(p, "desc");
-	struct element *element = parser_priv(p);
-	if (!element)
+	struct projection *projection = parser_priv(p);
+	if (!projection)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	element->player_desc = string_make(desc);
+	projection->player_desc = string_make(desc);
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_blind_desc(struct parser *p) {
+static enum parser_error parse_projection_blind_desc(struct parser *p) {
 	const char *desc = parser_getstr(p, "desc");
-	struct element *element = parser_priv(p);
-	if (!element)
+	struct projection *projection = parser_priv(p);
+	if (!projection)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	element->blind_desc = string_make(desc);
+	projection->blind_desc = string_make(desc);
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_numerator(struct parser *p) {
-	struct element *element = parser_priv(p);
-	if (!element)
+static enum parser_error parse_projection_numerator(struct parser *p) {
+	struct projection *projection = parser_priv(p);
+	if (!projection)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	element->numerator = parser_getuint(p, "num");
+	projection->numerator = parser_getuint(p, "num");
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_denominator(struct parser *p) {
-	struct element *element = parser_priv(p);
-	if (!element)
+static enum parser_error parse_projection_denominator(struct parser *p) {
+	struct projection *projection = parser_priv(p);
+	if (!projection)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	element->denominator = parser_getrand(p, "denom");
+	projection->denominator = parser_getrand(p, "denom");
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_divisor(struct parser *p) {
-	struct element *element = parser_priv(p);
-	if (!element)
+static enum parser_error parse_projection_divisor(struct parser *p) {
+	struct projection *projection = parser_priv(p);
+	if (!projection)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	element->divisor = parser_getuint(p, "div");
+	projection->divisor = parser_getuint(p, "div");
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_damage_cap(struct parser *p) {
-	struct element *element = parser_priv(p);
-	if (!element)
+static enum parser_error parse_projection_damage_cap(struct parser *p) {
+	struct projection *projection = parser_priv(p);
+	if (!projection)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	element->damage_cap = parser_getuint(p, "cap");
+	projection->damage_cap = parser_getuint(p, "cap");
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_message_type(struct parser *p)
+static enum parser_error parse_projection_message_type(struct parser *p)
 {
 	int msg_index;
 	const char *type;
-	struct element *element = parser_priv(p);
-	assert(element);
+	struct projection *projection = parser_priv(p);
+	assert(projection);
 
 	type = parser_getsym(p, "type");
 
@@ -301,94 +309,109 @@ static enum parser_error parse_element_message_type(struct parser *p)
 	if (msg_index < 0)
 		return PARSE_ERROR_INVALID_MESSAGE;
 
-	element->msgt = msg_index;
+	projection->msgt = msg_index;
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_element_color(struct parser *p) {
-	struct element *element = parser_priv(p);
+static enum parser_error parse_projection_obvious(struct parser *p) {
+	int obvious = parser_getuint(p, "answer");
+	struct projection *projection = parser_priv(p);
+	if (!projection)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	projection->obvious = (obvious == 1) ? true : false;;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_projection_color(struct parser *p) {
+	struct projection *projection = parser_priv(p);
 	const char *color;
-	assert(element);
+	assert(projection);
 
 	color = parser_getsym(p, "color");
 	if (strlen(color) > 1)
-		element->color = color_text_to_attr(color);
+		projection->color = color_text_to_attr(color);
 	else
-		element->color = color_char_to_attr(color[0]);
+		projection->color = color_char_to_attr(color[0]);
 
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_element(void) {
+struct parser *init_parse_projection(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "code str code", parse_element_code);
-	parser_reg(p, "name str name", parse_element_name);
-	parser_reg(p, "desc str desc", parse_element_desc);
-	parser_reg(p, "player-desc str desc", parse_element_player_desc);
-	parser_reg(p, "blind-desc str desc", parse_element_blind_desc);
-	parser_reg(p, "numerator uint num", parse_element_numerator);
-	parser_reg(p, "denominator rand denom", parse_element_denominator);
-	parser_reg(p, "divisor uint div", parse_element_divisor);
-	parser_reg(p, "damage-cap uint cap", parse_element_damage_cap);
-	parser_reg(p, "msgt sym type", parse_element_message_type);
-	parser_reg(p, "color sym color", parse_element_color);
+	parser_reg(p, "code str code", parse_projection_code);
+	parser_reg(p, "name str name", parse_projection_name);
+	parser_reg(p, "type str type", parse_projection_type);
+	parser_reg(p, "desc str desc", parse_projection_desc);
+	parser_reg(p, "player-desc str desc", parse_projection_player_desc);
+	parser_reg(p, "blind-desc str desc", parse_projection_blind_desc);
+	parser_reg(p, "numerator uint num", parse_projection_numerator);
+	parser_reg(p, "denominator rand denom", parse_projection_denominator);
+	parser_reg(p, "divisor uint div", parse_projection_divisor);
+	parser_reg(p, "damage-cap uint cap", parse_projection_damage_cap);
+	parser_reg(p, "msgt sym type", parse_projection_message_type);
+	parser_reg(p, "obvious uint answer", parse_projection_obvious);
+	parser_reg(p, "color sym color", parse_projection_color);
 	return p;
 }
 
-static errr run_parse_element(struct parser *p) {
-	return parse_file_quit_not_found(p, "element");
+static errr run_parse_projection(struct parser *p) {
+	return parse_file_quit_not_found(p, "projection");
 }
 
-static errr finish_parse_element(struct parser *p) {
-	struct element *element, *next = NULL;
-	int count = 0;
+static errr finish_parse_projection(struct parser *p) {
+	struct projection *projection, *next = NULL;
+	int element_count = 0, count = 0;
 
 	/* Count the entries */
-	z_info->element_max = 0;
-	element = parser_priv(p);
-	while (element) {
-		z_info->element_max++;
-		element = element->next;
+	z_info->projection_max = 0;
+	projection = parser_priv(p);
+	while (projection) {
+		z_info->projection_max++;
+		if (streq(projection->type, "element"))
+			element_count++;
+		projection = projection->next;
 	}
-	z_info->element_max++;
-	if (z_info->element_max < (int) N_ELEMENTS(element_names)) {
-		quit_fmt("Too few elements in element.txt!");
-	} else if (z_info->element_max > (int) N_ELEMENTS(element_names)) {
-		quit_fmt("Too many elements in element.txt!");
+
+	if (element_count + 1 < (int) N_ELEMENTS(element_names)) {
+		quit_fmt("Too few elements in projection.txt!");
+	} else if (element_count + 1 > (int) N_ELEMENTS(element_names)) {
+		quit_fmt("Too many elements in projection.txt!");
 	}
 
 	/* Allocate the direct access list and copy the data to it */
-	elements = mem_zalloc((z_info->element_max) * sizeof(*element));
-	count = z_info->element_max - 2;
-	for (element = parser_priv(p); element; element = next, count--) {
-		memcpy(&elements[count], element, sizeof(*element));
-		next = element->next;
-		mem_free(element);
+	projections = mem_zalloc((z_info->projection_max) * sizeof(*projection));
+	count = z_info->projection_max - 1;
+	for (projection = parser_priv(p); projection; projection = next, count--) {
+		memcpy(&projections[count], projection, sizeof(*projection));
+		next = projection->next;
+		mem_free(projection);
 	}
 
 	parser_destroy(p);
 	return 0;
 }
 
-static void cleanup_element(void)
+static void cleanup_projection(void)
 {
 	int idx;
-	for (idx = 0; idx < z_info->element_max; idx++) {
-		string_free(elements[idx].name);
-		string_free(elements[idx].desc);
-		string_free(elements[idx].player_desc);
-		string_free(elements[idx].blind_desc);
+	for (idx = 0; idx < z_info->projection_max; idx++) {
+		string_free(projections[idx].name);
+		string_free(projections[idx].type);
+		string_free(projections[idx].desc);
+		string_free(projections[idx].player_desc);
+		string_free(projections[idx].blind_desc);
 	}
-	mem_free(elements);
+	mem_free(projections);
 }
 
-struct file_parser element_parser = {
-	"element",
-	init_parse_element,
-	run_parse_element,
-	finish_parse_element,
-	cleanup_element
+struct file_parser projection_parser = {
+	"projection",
+	init_parse_projection,
+	run_parse_projection,
+	finish_parse_projection,
+	cleanup_projection
 };
 
 /**

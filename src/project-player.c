@@ -44,10 +44,12 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 {
 	int i, denom = 0;
 
+	assert(type < ELEM_MAX);
+
 	/* If an actual player exists, get their actual resist */
 	if (p && p->race) {
 		/* Ice is a special case */
-		int res_type = (type == GF_ICE) ? GF_COLD: type;
+		int res_type = (type == PROJ_ICE) ? PROJ_COLD: type;
 		resist = p->state.el_info[res_type].res_level;
 
 		/* Notice element stuff */
@@ -58,7 +60,7 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 		return 0;
 
 	/* Hack - acid damage is halved by armour, holy orb is halved */
-	if ((type == GF_ACID && p && minus_ac(p)) || type == GF_HOLY_ORB)
+	if ((type == PROJ_ACID && p && minus_ac(p)) || type == PROJ_HOLY_ORB)
 		dam = (dam + 1) / 2;
 
 	if (resist == -1) /* vulnerable */
@@ -68,15 +70,15 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 	 * of dam_aspect. (m_bonus is unused) */
 	switch (dam_aspect) {
 		case MINIMISE:
-			denom = randcalc(gf_denom(type), 0, MAXIMISE);
+			denom = randcalc(projections[type].denominator, 0, MAXIMISE);
 			break;
 		case MAXIMISE:
-			denom = randcalc(gf_denom(type), 0, MINIMISE);
+			denom = randcalc(projections[type].denominator, 0, MINIMISE);
 			break;
 		case AVERAGE:
 		case EXTREMIFY:
 		case RANDOMISE:
-			denom = randcalc(gf_denom(type), 0, dam_aspect);
+			denom = randcalc(projections[type].denominator, 0, dam_aspect);
 			break;
 		default:
 			assert(0);
@@ -84,7 +86,7 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 
 	for (i = resist; i > 0; i--)
 		if (denom)
-			dam = dam * gf_num(type) / denom;
+			dam = dam * projections[type].numerator / denom;
 
 	return dam;
 }
@@ -171,25 +173,25 @@ typedef void (*project_player_handler_f)(project_player_handler_context_t *);
 static void project_player_handler_ACID(project_player_handler_context_t *context)
 {
 	if (player_is_immune(player, ELEM_ACID)) return;
-	inven_damage(player, GF_ACID, MIN(context->dam * 5, 300));
+	inven_damage(player, PROJ_ACID, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_ELEC(project_player_handler_context_t *context)
 {
 	if (player_is_immune(player, ELEM_ELEC)) return;
-	inven_damage(player, GF_ELEC, MIN(context->dam * 5, 300));
+	inven_damage(player, PROJ_ELEC, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_FIRE(project_player_handler_context_t *context)
 {
 	if (player_is_immune(player, ELEM_FIRE)) return;
-	inven_damage(player, GF_FIRE, MIN(context->dam * 5, 300));
+	inven_damage(player, PROJ_FIRE, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_COLD(project_player_handler_context_t *context)
 {
 	if (player_is_immune(player, ELEM_COLD)) return;
-	inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
+	inven_damage(player, PROJ_COLD, MIN(context->dam * 5, 300));
 }
 
 static void project_player_handler_POIS(project_player_handler_context_t *context)
@@ -343,7 +345,7 @@ static void project_player_handler_WATER(project_player_handler_context_t *conte
 static void project_player_handler_ICE(project_player_handler_context_t *context)
 {
 	if (!player_is_immune(player, ELEM_COLD))
-		inven_damage(player, GF_COLD, MIN(context->dam * 5, 300));
+		inven_damage(player, PROJ_COLD, MIN(context->dam * 5, 300));
 
 	/* Cuts */
 	if (!player_resists(player, ELEM_SHARD))
@@ -482,16 +484,81 @@ static void project_player_handler_MAKE_TRAP(project_player_handler_context_t *c
 {
 }
 
+static void project_player_handler_AWAY_UNDEAD(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_AWAY_EVIL(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_AWAY_ALL(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_TURN_UNDEAD(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_TURN_EVIL(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_TURN_ALL(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_DISP_UNDEAD(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_DISP_EVIL(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_DISP_ALL(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MON_CLONE(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MON_POLY(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MON_HEAL(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MON_SPEED(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MON_SLOW(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MON_CONF(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MON_SLEEP(project_player_handler_context_t *context)
+{
+}
+
+static void project_player_handler_MON_DRAIN(project_player_handler_context_t *context)
+{
+}
+
 static const project_player_handler_f player_handlers[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_player_handler_##a,
+	#define ELEM(a) project_player_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, desc) project_player_handler_##a,
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-	#define PROJ_MON(a, obv, desc) NULL, 
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
+	#define PROJ(a) project_player_handler_##a,
+	#include "list-projections.h"
+	#undef PROJ
 	NULL
 };
 
@@ -506,7 +573,7 @@ static const project_player_handler_f player_handlers[] = {
  * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
- * \param typ is the projection (GF_) type
+ * \param typ is the projection (PROJ_) type
  * \return whether the effects were obvious
  *
  * If "r" is non-zero, then the blast was centered elsewhere; the damage
@@ -581,7 +648,7 @@ bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 
 	/* Let player know what is going on */
 	if (!seen) {
-		msg("You are hit by %s!", gf_blind_desc(typ));
+		msg("You are hit by %s!", projections[typ].blind_desc);
 	}
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */

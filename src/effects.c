@@ -2624,7 +2624,7 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 
 			msg("You are thrown into molten lava!");
 			take_hit(player, dam, "being hurled into lava");
-			inven_damage(player, GF_FIRE, dam);
+			inven_damage(player, PROJ_FIRE, dam);
 		} else if (cave->squares[y][x].mon > 0) {
 			struct monster *mon = square_monster(cave, y, x);
 			bool fear = false;
@@ -3347,7 +3347,7 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 		msg("You are surrounded by a white light.");
 
 	/* Hook into the "project()" function */
-	(void)project(source_player(), rad, py, px, dam, GF_LIGHT_WEAK, flg, 0, 0, context->obj);
+	(void)project(source_player(), rad, py, px, dam, PROJ_LIGHT_WEAK, flg, 0, 0, context->obj);
 
 	/* Light up the room */
 	light_room(py, px, true);
@@ -3376,7 +3376,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 		msg("Darkness surrounds you.");
 
 	/* Hook into the "project()" function */
-	(void)project(context->origin, rad, py, px, dam, GF_DARK_WEAK, flg, 0, 0,
+	(void)project(context->origin, rad, py, px, dam, PROJ_DARK_WEAK, flg, 0, 0,
 				  context->obj);
 
 	/* Darken the room */
@@ -3513,7 +3513,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 			degrees_of_arc *= 2;
 		}
 	} else if (context->origin.what == SRC_PLAYER) {
-		msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
+		msgt(projections[type].msgt, "You breathe %s.", projections[type].desc);
 	}
 
 	/* Ask for a target if no direction given */
@@ -4028,7 +4028,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			msg("You are surrounded by a powerful aura.");
 
 			/* Dispel monsters */
-			effect_simple(EF_PROJECT_LOS, context->origin, "1000", GF_DISP_ALL, 0, 0, NULL);
+			effect_simple(EF_PROJECT_LOS, context->origin, "1000", PROJ_DISP_ALL, 0, 0, NULL);
 
 			return true;
 		}
@@ -4050,7 +4050,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			}
 
 			/* Aim at the target, explode */
-			if (project(source_player(), 3, ty, tx, 300, GF_MANA, flg, 0, 0, context->obj))
+			if (project(source_player(), 3, ty, tx, 300, PROJ_MANA, flg, 0, 0, context->obj))
 				return true;
 		}
 
@@ -4069,7 +4069,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 				target_get(&tx, &ty);
 
 			/* Aim at the target, do NOT explode */
-			return project(source_player(), 0, ty, tx, 250, GF_MANA, flg, 0, 0,
+			return project(source_player(), 0, ty, tx, 250, PROJ_MANA, flg, 0, 0,
 							context->obj);
 		}
 	}
@@ -4102,88 +4102,88 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 		msg("You feel a surge of power!");
 
 	if (die < 8) {
-		p1 = GF_OLD_CLONE;
+		p1 = PROJ_MON_CLONE;
 		handler = effect_handler_BOLT;
 	} else if (die < 14) {
-		p1 = GF_OLD_SPEED;
+		p1 = PROJ_MON_SPEED;
 		value.base = 100;
 		handler = effect_handler_BOLT;
 	} else if (die < 26) {
-		p1 = GF_OLD_HEAL;
+		p1 = PROJ_MON_HEAL;
 		value.dice = 4;
 		value.sides = 6;
 		handler = effect_handler_BOLT;
 	} else if (die < 31) {
-		p1 = GF_OLD_POLY;
+		p1 = PROJ_MON_POLY;
 		value.base = plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 36) {
 		beam -= 10;
-		p1 = GF_MISSILE;
+		p1 = PROJ_MISSILE;
 		value.dice = 3 + ((plev - 1) / 5);
 		value.sides = 4;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 41) {
-		p1 = GF_OLD_CONF;
+		p1 = PROJ_MON_CONF;
 		value.base = plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 46) {
-		p1 = GF_POIS;
+		p1 = PROJ_POIS;
 		value.base = 20 + plev / 2;
 		p2 = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 51) {
-		p1 = GF_LIGHT_WEAK;
+		p1 = PROJ_LIGHT_WEAK;
 		value.dice = 6;
 		value.sides = 8;
 		handler = effect_handler_LINE;
 	} else if (die < 56) {
-		p1 = GF_ELEC;
+		p1 = PROJ_ELEC;
 		value.dice = 3 + ((plev - 5) / 6);
 		value.sides = 6;
 		handler = effect_handler_BEAM;
 	} else if (die < 61) {
 		beam -= 10;
-		p1 = GF_COLD;
+		p1 = PROJ_COLD;
 		value.dice = 5 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 66) {
-		p1 = GF_ACID;
+		p1 = PROJ_ACID;
 		value.dice = 6 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 71) {
-		p1 = GF_FIRE;
+		p1 = PROJ_FIRE;
 		value.dice = 8 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 76) {
-		p1 = GF_OLD_DRAIN;
+		p1 = PROJ_MON_DRAIN;
 		value.base = 75;
 		handler = effect_handler_BOLT;
 	} else if (die < 81) {
-		p1 = GF_ELEC;
+		p1 = PROJ_ELEC;
 		value.base = 30 + plev / 2;
 		p2 = 2;
 		handler = effect_handler_BALL;
 	} else if (die < 86) {
-		p1 = GF_ACID;
+		p1 = PROJ_ACID;
 		value.base = 40 + plev;
 		p2 = 2;
 		handler = effect_handler_BALL;
 	} else if (die < 91) {
-		p1 = GF_ICE;
+		p1 = PROJ_ICE;
 		value.base = 70 + plev;
 		p2 = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 96) {
-		p1 = GF_FIRE;
+		p1 = PROJ_FIRE;
 		value.base = 80 + plev;
 		p2 = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 101) {
-		p1 = GF_OLD_DRAIN;
+		p1 = PROJ_MON_DRAIN;
 		value.base = 100 + plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 104) {
@@ -4195,7 +4195,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	} else if (die < 108) {
 		handler = effect_handler_BANISH;
 	} else if (die < 110) {
-		p1 = GF_DISP_ALL;
+		p1 = PROJ_DISP_ALL;
 		value.base = 120;
 		handler = effect_handler_PROJECT_LOS;
 	}
@@ -4217,9 +4217,9 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 		return handler(&new_context);
 	} else {
 		/* RARE */
-		effect_simple(EF_PROJECT_LOS, context->origin, "150", GF_DISP_ALL, 0, 0, NULL);
-		effect_simple(EF_PROJECT_LOS, context->origin, "20", GF_OLD_SLOW, 0, 0, NULL);
-		effect_simple(EF_PROJECT_LOS, context->origin, "40", GF_OLD_SLEEP, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "150", PROJ_DISP_ALL, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "20", PROJ_MON_SLOW, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "40", PROJ_MON_SLEEP, 0, 0, NULL);
 		effect_simple(EF_HEAL_HP, context->origin, "300", 0, 0, 0, NULL);
 
 		return true;
@@ -4350,7 +4350,7 @@ int effect_param(int index, const char *type)
 			case EF_BOLT_AWARE:
 			case EF_TOUCH:
 			case EF_TOUCH_AWARE: {
-				val = gf_name_to_idx(type);
+				val = proj_name_to_idx(type);
 				break;
 			}
 

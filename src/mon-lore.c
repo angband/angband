@@ -179,7 +179,7 @@ int blow_color(struct player *p, int blow_idx)
 		int i;
 
 		for (i = ELEM_ACID; i < ELEM_POIS; i++) {
-			if (gf_name_to_idx(blow->name) == i) {
+			if (proj_name_to_idx(blow->name) == i) {
 				break;
 			}
 		}
