@@ -5,6 +5,7 @@
 
 PARSE_ERROR(NONE,					"(none)")
 PARSE_ERROR(BAD_EXPRESSION_STRING,	"bad expression string")
+PARSE_ERROR(ELEMENT_NAME_MISMATCH,	"element name mismatch")
 PARSE_ERROR(FIELD_TOO_LONG,			"field too long")
 PARSE_ERROR(GENERIC,				"generic error")
 PARSE_ERROR(INTERNAL,				"internal error")

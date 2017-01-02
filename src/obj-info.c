@@ -62,13 +62,6 @@ struct blow_info {
  * Big fat data tables
  * ------------------------------------------------------------------------ */
 
-static const struct flag_type elements[] =
-{
-	#define ELEM(a, b, c, d, e, f, g, h, i, col)	{ ELEM_##a, c },
-    #include "list-elements.h"
-    #undef ELEM
-};
-
 static const char *mod_names[] =
 {
 	#define STAT(a, b, c, d, e, f, g, h, i) h,
@@ -183,9 +176,9 @@ static size_t flag_info_collect(const struct flag_type list[], size_t max,
  */
 static size_t element_info_collect(const bool list[], const char *recepticle[])
 {
-	size_t i, count = 0;
+	int i, count = 0;
 
-	for (i = 0; i < N_ELEMENTS(elements); i++) {
+	for (i = 0; i < z_info->element_max; i++) {
 		if (list[i])
 			recepticle[count++] = elements[i].name;
 	}
@@ -278,15 +271,15 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 static bool describe_elements(textblock *tb,
 							  const struct element_info el_info[])
 {
-	const char *i_descs[N_ELEMENTS(elements)];
-	const char *r_descs[N_ELEMENTS(elements)];
-	const char *v_descs[N_ELEMENTS(elements)];
+	const char *i_descs[z_info->element_max];
+	const char *r_descs[z_info->element_max];
+	const char *v_descs[z_info->element_max];
 	size_t i, count;
 
-	bool list[N_ELEMENTS(elements)], prev = false;
+	bool list[z_info->element_max], prev = false;
 
 	/* Immunities */
-	for (i = 0; i < N_ELEMENTS(elements); i++)
+	for (i = 0; i < z_info->element_max; i++)
 		list[i] = (el_info[i].res_level == 3);
 	count = element_info_collect(list, i_descs);
 	if (count) {
@@ -296,7 +289,7 @@ static bool describe_elements(textblock *tb,
 	}
 
 	/* Resistances */
-	for (i = 0; i < N_ELEMENTS(elements); i++)
+	for (i = 0; i < z_info->element_max; i++)
 		list[i] = (el_info[i].res_level == 1);
 	count = element_info_collect(list, r_descs);
 	if (count) {
@@ -306,7 +299,7 @@ static bool describe_elements(textblock *tb,
 	}
 
 	/* Vulnerabilities */
-	for (i = 0; i < N_ELEMENTS(elements); i++)
+	for (i = 0; i < z_info->element_max; i++)
 		list[i] = (el_info[i].res_level == -1);
 	count = element_info_collect(list, v_descs);
 	if (count) {
@@ -345,11 +338,11 @@ static bool describe_protects(textblock *tb, const bitflag flags[OF_SIZE])
  */
 static bool describe_ignores(textblock *tb, const struct element_info el_info[])
 {
-	const char *descs[N_ELEMENTS(elements)];
+	const char *descs[z_info->element_max];
 	size_t i, count;
-	bool list[N_ELEMENTS(elements)];
+	bool list[z_info->element_max];
 
-	for (i = 0; i < N_ELEMENTS(elements); i++)
+	for (i = 0; i < z_info->element_max; i++)
 		list[i] = (el_info[i].flags & EL_INFO_IGNORE);
 	count = element_info_collect(list, descs);
 
@@ -367,11 +360,11 @@ static bool describe_ignores(textblock *tb, const struct element_info el_info[])
  */
 static bool describe_hates(textblock *tb, const struct element_info el_info[])
 {
-	const char *descs[N_ELEMENTS(elements)];
+	const char *descs[z_info->element_max];
 	size_t i, count = 0;
-	bool list[N_ELEMENTS(elements)];
+	bool list[z_info->element_max];
 
-	for (i = 0; i < N_ELEMENTS(elements); i++)
+	for (i = 0; i < z_info->element_max; i++)
 		list[i] = (el_info[i].flags & EL_INFO_HATES);
 	count = element_info_collect(list, descs);
 
@@ -592,7 +585,7 @@ static void get_known_elements(const struct object *obj,
 	size_t i;
 
 	/* Grab the element info */
-	for (i = 0; i < N_ELEMENTS(elements); i++) {
+	for (i = 0; i < z_info->element_max; i++) {
 		/* Report fake egos or known element info */
 		if (player->obj_k->el_info[i].res_level || (mode & OINFO_SPOIL))
 			el_info[i].res_level = obj->known->el_info[i].res_level;
@@ -1516,8 +1509,8 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Object generated balls are elemental */
 			case EFINFO_BALL: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						elements[effect->params[0]].name, effect->params[1],
-						dice_string);
+						elements[effect->params[0]].player_desc,
+						effect->params[1], dice_string);
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
@@ -1527,8 +1520,8 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Object generated breaths are elemental */
 			case EFINFO_BREATH: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						elements[effect->params[0]].name, effect->params[1],
-						dice_string);
+						elements[effect->params[0]].player_desc,
+						effect->params[1], dice_string);
 				break;
 			}
 
@@ -1752,7 +1745,7 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 static textblock *object_info_out(const struct object *obj, int mode)
 {
 	bitflag flags[OF_SIZE];
-	struct element_info el_info[N_ELEMENTS(elements)];
+	struct element_info el_info[z_info->element_max];
 	bool something = false;
 
 	bool terse = mode & OINFO_TERSE ? true : false;

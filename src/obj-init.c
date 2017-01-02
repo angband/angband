@@ -43,6 +43,8 @@
 #include "player-spell.h"
 #include "project.h"
 
+struct element *elements;
+
 static const char *mon_race_flags[] =
 {
 	#define RF(a, b, c) #a,
@@ -79,7 +81,7 @@ static const char *kind_flags[] = {
 	NULL
 };
 
-static const char *elements[] = {
+static const char *element_names[] = {
 	#define ELEM(a, b, c, d, e, f, g, h, i, col) #a,
 	#include "list-elements.h"
 	#undef ELEM
@@ -97,7 +99,7 @@ static bool grab_element_flag(struct element_info *info, const char *flag_name)
 
 	/* Ignore or hate */
 	for (i = 0; i < ELEM_MAX; i++)
-		if (streq(suffix, elements[i])) {
+		if (streq(suffix, element_names[i])) {
 			if (streq(prefix, "IGNORE")) {
 				info[i].flags |= EL_INFO_IGNORE;
 				return true;
@@ -189,6 +191,205 @@ static struct activation *findact(const char *act_name) {
 	}
 	return act;
 }
+
+/**
+ * ------------------------------------------------------------------------
+ * Initialize elements
+ * ------------------------------------------------------------------------ */
+
+static enum parser_error parse_element_code(struct parser *p) {
+	const char *code = parser_getstr(p, "code");
+	struct element *h = parser_priv(p);
+	int index = h ? h->index + 1 : 0;
+	struct element *element = mem_zalloc(sizeof *element);
+
+	parser_setpriv(p, element);
+	element->next = h;
+	if (!streq(code, element_names[index]))
+		return PARSE_ERROR_ELEMENT_NAME_MISMATCH;
+	element->index = index;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct element *element = parser_priv(p);
+	if (!element)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	element->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_desc(struct parser *p) {
+	const char *desc = parser_getstr(p, "desc");
+	struct element *element = parser_priv(p);
+	if (!element)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	element->desc = string_make(desc);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_player_desc(struct parser *p) {
+	const char *desc = parser_getstr(p, "desc");
+	struct element *element = parser_priv(p);
+	if (!element)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	element->player_desc = string_make(desc);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_blind_desc(struct parser *p) {
+	const char *desc = parser_getstr(p, "desc");
+	struct element *element = parser_priv(p);
+	if (!element)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	element->blind_desc = string_make(desc);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_numerator(struct parser *p) {
+	struct element *element = parser_priv(p);
+	if (!element)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	element->numerator = parser_getuint(p, "num");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_denominator(struct parser *p) {
+	struct element *element = parser_priv(p);
+	if (!element)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	element->denominator = parser_getrand(p, "denom");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_divisor(struct parser *p) {
+	struct element *element = parser_priv(p);
+	if (!element)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	element->divisor = parser_getuint(p, "div");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_damage_cap(struct parser *p) {
+	struct element *element = parser_priv(p);
+	if (!element)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	element->damage_cap = parser_getuint(p, "cap");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_message_type(struct parser *p)
+{
+	int msg_index;
+	const char *type;
+	struct element *element = parser_priv(p);
+	assert(element);
+
+	type = parser_getsym(p, "type");
+
+	msg_index = message_lookup_by_name(type);
+
+	if (msg_index < 0)
+		return PARSE_ERROR_INVALID_MESSAGE;
+
+	element->msgt = msg_index;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_element_color(struct parser *p) {
+	struct element *element = parser_priv(p);
+	const char *color;
+	assert(element);
+
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		element->color = color_text_to_attr(color);
+	else
+		element->color = color_char_to_attr(color[0]);
+
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_element(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "code str code", parse_element_code);
+	parser_reg(p, "name str name", parse_element_name);
+	parser_reg(p, "desc str desc", parse_element_desc);
+	parser_reg(p, "player-desc str desc", parse_element_player_desc);
+	parser_reg(p, "blind-desc str desc", parse_element_blind_desc);
+	parser_reg(p, "numerator uint num", parse_element_numerator);
+	parser_reg(p, "denominator rand denom", parse_element_denominator);
+	parser_reg(p, "divisor uint div", parse_element_divisor);
+	parser_reg(p, "damage-cap uint cap", parse_element_damage_cap);
+	parser_reg(p, "msgt sym type", parse_element_message_type);
+	parser_reg(p, "color sym color", parse_element_color);
+	return p;
+}
+
+static errr run_parse_element(struct parser *p) {
+	return parse_file_quit_not_found(p, "element");
+}
+
+static errr finish_parse_element(struct parser *p) {
+	struct element *element, *next = NULL;
+	int count = 0;
+
+	/* Count the entries */
+	z_info->element_max = 0;
+	element = parser_priv(p);
+	while (element) {
+		z_info->element_max++;
+		element = element->next;
+	}
+	z_info->element_max++;
+	if (z_info->element_max < (int) N_ELEMENTS(element_names)) {
+		quit_fmt("Too few elements in element.txt!");
+	} else if (z_info->element_max > (int) N_ELEMENTS(element_names)) {
+		quit_fmt("Too many elements in element.txt!");
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	elements = mem_zalloc((z_info->element_max) * sizeof(*element));
+	count = z_info->element_max - 2;
+	for (element = parser_priv(p); element; element = next, count--) {
+		memcpy(&elements[count], element, sizeof(*element));
+		next = element->next;
+		mem_free(element);
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_element(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->element_max; idx++) {
+		string_free(elements[idx].name);
+		string_free(elements[idx].desc);
+		string_free(elements[idx].player_desc);
+		string_free(elements[idx].blind_desc);
+	}
+	mem_free(elements);
+}
+
+struct file_parser element_parser = {
+	"element",
+	init_parse_element,
+	run_parse_element,
+	finish_parse_element,
+	cleanup_element
+};
 
 /**
  * ------------------------------------------------------------------------
@@ -741,7 +942,7 @@ static enum parser_error parse_curse_values(struct parser *p) {
 			found = true;
 			curse->obj->modifiers[index] = value;
 		}
-		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
+		if (!grab_index_and_int(&value, &index, element_names, "RES_", t)) {
 			found = true;
 			curse->obj->el_info[index].res_level = value;
 		}
@@ -1531,7 +1732,7 @@ static enum parser_error parse_object_values(struct parser *p) {
 		bool found = false;
 		if (!grab_rand_value(k->modifiers, obj_mods, t))
 			found = true;
-		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
+		if (!grab_index_and_int(&value, &index, element_names, "RES_", t)) {
 			found = true;
 			k->el_info[index].res_level = value;
 		}
@@ -1939,7 +2140,7 @@ static enum parser_error parse_ego_values(struct parser *p) {
 		int index = 0;
 		if (!grab_rand_value(e->modifiers, obj_mods, t))
 			found = true;
-		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
+		if (!grab_index_and_int(&value, &index, element_names, "RES_", t)) {
 			found = true;
 			e->el_info[index].res_level = value;
 		}
@@ -2312,7 +2513,7 @@ static enum parser_error parse_artifact_values(struct parser *p) {
 		int index = 0;
 		if (!grab_int_value(a->modifiers, obj_mods, t))
 			found = true;
-		if (!grab_index_and_int(&value, &index, elements, "RES_", t)) {
+		if (!grab_index_and_int(&value, &index, element_names, "RES_", t)) {
 			found = true;
 			a->el_info[index].res_level = value;
 		}

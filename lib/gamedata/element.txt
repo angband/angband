@@ -1,0 +1,279 @@
+# element.txt
+
+code:ACID
+name:acid
+desc:acid
+player-desc:acid
+blind-desc:acid
+numerator:1  
+denominator:3
+divisor:3
+damage-cap:1600
+msgt:BR_ACID
+color:Slate
+
+code:ELEC
+name:lightning
+desc:lightning
+player-desc:lightning
+blind-desc:lightning
+numerator:1  
+denominator:3
+divisor:3
+damage-cap:1600
+msgt:BR_ELEC
+color:Blue
+
+code:FIRE
+name:fire
+desc:fire
+player-desc:fire
+blind-desc:fire
+numerator:1  
+denominator:3
+divisor:3
+damage-cap:1600
+msgt:BR_FIRE
+color:Red
+
+code:COLD
+name:cold
+desc:cold
+player-desc:frost
+blind-desc:cold
+numerator:1  
+denominator:3
+divisor:3
+damage-cap:1600
+msgt:BR_FROST
+color:White
+
+code:POIS
+name:poison
+desc:poison
+player-desc:poison gas
+blind-desc:poison
+numerator:1  
+denominator:3
+divisor:3
+damage-cap:800
+msgt:BR_GAS
+color:Green
+
+code:LIGHT
+name:light
+desc:light
+player-desc:light
+blind-desc:something
+numerator:4  
+denominator:6+1d6
+divisor:6
+damage-cap:400
+msgt:BR_LIGHT
+color:Orange
+
+code:DARK
+name:dark
+desc:dark
+player-desc:dark
+blind-desc:something
+numerator:4  
+denominator:6+1d6
+divisor:6
+damage-cap:400
+msgt:BR_DARK
+color:Light Dark
+
+code:SOUND
+name:sound
+desc:sound
+player-desc:sound
+blind-desc:noise
+numerator:5  
+denominator:6+1d6
+divisor:6
+damage-cap:500
+msgt:BR_SOUND
+color:Yellow
+
+code:SHARD
+name:shards
+desc:shards
+player-desc:shards
+blind-desc:something sharp
+numerator:6  
+denominator:6+1d6
+divisor:6
+damage-cap:500
+msgt:BR_SHARDS
+color:Umber
+
+code:NEXUS
+name:nexus
+desc:nexus
+player-desc:nexus
+blind-desc:something strange
+numerator:6  
+denominator:6+1d6
+divisor:6
+damage-cap:400
+msgt:BR_NEXUS
+color:Light Red
+
+code:NETHER
+name:nether
+desc:nether
+player-desc:nether
+blind-desc:something cold
+numerator:6  
+denominator:6+1d6
+divisor:6
+damage-cap:550
+msgt:BR_NETHER
+color:Light Green
+
+code:CHAOS
+name:chaos
+desc:chaos
+player-desc:chaos
+blind-desc:something strange
+numerator:6
+denominator:6+1d6
+divisor:6
+damage-cap:500
+msgt:BR_CHAOS
+color:Violet
+
+code:DISEN
+name:disenchantment
+desc:disenchantment
+player-desc:disenchantment
+blind-desc:something strange
+numerator:6  
+denominator:6+1d6
+divisor:6
+damage-cap:500
+msgt:BR_DISEN
+color:Violet
+
+code:WATER
+name:water
+desc:water
+player-desc:water
+blind-desc:water
+divisor:6
+damage-cap:0
+msgt:GENERIC
+color:Slate
+
+code:ICE
+name:ice
+desc:ice
+player-desc:ice
+blind-desc:something sharp
+numerator:1  
+denominator:3
+divisor:6
+damage-cap:0
+msgt:GENERIC
+color:White
+
+code:GRAVITY
+name:gravity
+desc:gravity
+player-desc:gravity
+blind-desc:something strange
+divisor:3
+damage-cap:200
+msgt:BR_GRAVITY
+color:Light Slate
+
+code:INERTIA
+name:inertia
+desc:inertia
+player-desc:inertia
+blind-desc:something strange
+divisor:6
+damage-cap:200
+msgt:BR_INERTIA
+color:Light Slate
+
+code:FORCE
+name:force
+desc:force
+player-desc:force
+blind-desc:something hard
+divisor:6
+damage-cap:200
+msgt:BR_FORCE
+color:Umber
+
+code:TIME
+name:time
+desc:time
+player-desc:time
+blind-desc:something strange
+divisor:3
+damage-cap:150
+msgt:BR_TIME
+color:Light Blue
+
+code:PLASMA
+name:plasma
+desc:plasma
+player-desc:plasma
+blind-desc:something
+divisor:6
+damage-cap:150
+msgt:BR_PLASMA
+color:Red
+
+code:METEOR
+name:meteors
+desc:a meteor
+player-desc:meteor
+blind-desc:something
+divisor:6
+damage-cap:0
+msgt:GENERIC
+color:Red
+
+code:MISSILE
+name:magic missiles
+desc:a missile
+player-desc:magical energy
+blind-desc:something
+divisor:6
+damage-cap:0
+msgt:GENERIC
+color:Violet
+
+code:MANA
+name:mana
+desc:mana
+player-desc:the elements
+blind-desc:something
+divisor:3
+damage-cap:1600
+msgt:BR_ELEMENTS
+color:Light dark
+
+code:HOLY_ORB
+name:holy power
+desc:a holy orb
+player-desc:holy power
+blind-desc:something
+divisor:6
+damage-cap:0
+msgt:GENERIC
+color:Light Dark
+
+code:ARROW
+name:arrows
+desc:an arrow
+player-desc:arrows
+blind-desc:something sharp
+divisor:6
+damage-cap:0
+msgt:GENERIC
+color:White

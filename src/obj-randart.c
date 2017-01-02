@@ -42,18 +42,6 @@ static ang_file *log_file = NULL;
 struct activation *activations;
 
 /**
- * Include the elements and names
- */
-static const struct element_type {
-	int index;
-	const char *name;
-} elements[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) {ELEM_##a, b},
-	#include "list-elements.h"
-	#undef ELEM
-};
-
-/**
  * ------------------------------------------------------------------------
  * Arrays of indices by item type, used in frequency generation
  * ------------------------------------------------------------------------ */

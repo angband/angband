@@ -2662,6 +2662,7 @@ static struct {
 	const char *name;
 	struct file_parser *parser;
 } pl[] = {
+	{ "elements", &element_parser },
 	{ "timed effects", &player_timed_parser },
 	{ "traps", &trap_parser },
 	{ "features", &feat_parser },

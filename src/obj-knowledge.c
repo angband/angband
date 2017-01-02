@@ -86,13 +86,6 @@ static const struct flag_type f_rune[] =
 	#undef OF
 };
 
-static const char *e_rune[] =
-{
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) b,
-    #include "list-elements.h"
-    #undef ELEM
-};
-
 static const char *m_rune[] =
 {
 	#define STAT(a, b, c, d, e, f, g, h, i) h,
@@ -169,7 +162,7 @@ static void init_rune(void)
 		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, 0, m_rune[i] };
 	}
 	for (i = 0; i <= ELEM_HIGH_MAX; i++) {
-		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, e_rune[i] };
+		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, elements[i].name };
 	}
 	for (i = 1; i < z_info->brand_max; i++) {
 		bool counted = false;

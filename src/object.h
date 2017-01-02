@@ -103,6 +103,26 @@ enum {
 };
 
 /**
+ * Element struct
+ */
+struct element {
+	int index;
+	char *name;
+	char *desc;
+	char *player_desc;
+	char *blind_desc;
+	int numerator;
+	random_value denominator;
+	int divisor;
+	int damage_cap;
+	int msgt;
+	int color;
+	struct element *next;
+};
+
+extern struct element *elements;
+
+/**
  * Element info type
  */
 struct element_info {

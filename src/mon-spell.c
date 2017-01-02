@@ -189,18 +189,6 @@ static const struct mon_spell_info {
 };
 
 
-/**
- * Elemental damage properties of monster breaths.
- */
-static const struct breath_damage {
-	int divisor;
-	int cap;
-} breath[] = {
-    #define ELEM(a, b, c, d, e, f, g, h, i, col) { g, h },
-    #include "list-elements.h"
-    #undef ELEM
-};
-
 static bool mon_spell_is_valid(int index)
 {
 	return index > RSF_NONE && index < RSF_MAX;
@@ -353,19 +341,20 @@ static int nonhp_dam(const struct monster_spell *spell,
 /**
  * Determine the damage of a monster breath attack
  *
- * \param element is the attack element
+ * \param type is the attack element type
  * \param hp is the monster's hp
  */
-int breath_dam(int element, int hp)
+int breath_dam(int type, int hp)
 {
+	struct element *element = &elements[type];
 	int dam;
 
 	/* Damage is based on monster's current hp */
-	dam = hp / breath[element].divisor;
+	dam = hp / element->divisor;
 
 	/* Check for maximum damage */
-	if (dam > breath[element].cap)
-		dam = breath[element].cap;
+	if (dam > element->damage_cap)
+		dam = element->damage_cap;
 
 	return dam;
 }

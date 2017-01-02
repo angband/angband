@@ -79,19 +79,6 @@ struct effect_kind {
 
 
 /**
- * Element info for player breaths
- */
-static struct breath_info {
-	const char *desc;    /* Element description */
-	int msgt;            /* Element message type */
-} elements[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) { c, i },
-	#include "list-elements.h"
-	#undef ELEM
-};
-
-
-/**
  * Array of stat adjectives
  */
 static const char *desc_stat_pos[] =
