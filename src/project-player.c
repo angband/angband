@@ -44,8 +44,6 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 {
 	int i, denom = 0;
 
-	assert(type < ELEM_MAX);
-
 	/* If an actual player exists, get their actual resist */
 	if (p && p->race) {
 		/* Ice is a special case */

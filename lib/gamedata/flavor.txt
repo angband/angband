@@ -66,14 +66,13 @@ flavor:35:Light Umber:Bronze
 flavor:36:Yellow:Gold
 flavor:37:Light Dark:Obsidian
 flavor:38:Light Slate:Silver
-flavor:39:Umber:Serpent
+flavor:39:Umber:Amber
 #flavor:40:Light Blue:Mithril
 flavor:41:Light Dark:Jet
 flavor:42:Yellow:Jewelled
 flavor:43:Light Green:Adamantite
 
 # Agate
-# Amber
 # Black Diamond
 # Blue Diamond
 # Flawed Diamond
@@ -324,13 +323,12 @@ flavor:188:Slate:Slimy
 flavor:189:Deep Light Blue:Moist
 flavor:190:White:Withered
 flavor:191:White:Waxy
-flavor:192:Umber:Wrinkled
+flavor:192:Umber:Smelly
 
 # Fleshy
 # Fuzzy
 # Luminescent
 # Blotchy
-# Smelly
 # Leathery
 # Rotting
 
