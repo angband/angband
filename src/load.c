@@ -1513,7 +1513,7 @@ int rd_history(void)
 		s32b turnno;
 		s16b dlev, clev;
 		bitflag type[HIST_SIZE];
-		byte aidx;
+		byte aidx = 0;
 		char name[80];
 		char text[80];
 

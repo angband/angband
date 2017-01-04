@@ -331,144 +331,168 @@ color:White
 code:LIGHT_WEAK
 type:environs
 desc:light
+blind-desc:something
 obvious:0
 color:ORANGE
 
 code:DARK_WEAK
 type:environs
 desc:darkness
+blind-desc:something
 obvious:0
 color:L_DARK
 
 code:KILL_WALL
 type:environs
 desc:rock remover
+blind-desc:something
 obvious:0
 color:WHITE
 
 code:KILL_DOOR
 type:environs
 desc:destroys doors
+blind-desc:something
 obvious:0
 color:WHITE
 
 code:KILL_TRAP
 type:environs
 desc:disables traps
+blind-desc:something
 obvious:0
 color:WHITE
 
 code:MAKE_DOOR
 type:environs
 desc:creates doors
+blind-desc:something
 obvious:0
 color:WHITE
 
 code:MAKE_TRAP
 type:environs
 desc:creates traps
+blind-desc:something
 obvious:0
 color:WHITE
 
 code:AWAY_UNDEAD
 type:monster
 desc:teleports undead away
+blind-desc:something
 obvious:0
 color:White
 
 code:AWAY_EVIL
 type:monster
 desc:teleports evil monsters away
+blind-desc:something
 obvious:0
 color:White
 
 code:AWAY_ALL
 type:monster
 desc:teleports monsters away
+blind-desc:something
 obvious:1
 color:White
 
 code:TURN_UNDEAD
 type:monster
 desc:turns undead
+blind-desc:something
 obvious:0
 color:White
 
 code:TURN_EVIL
 type:monster
 desc:frightens evil monsters
+blind-desc:something
 obvious:0
 color:White
 
 code:TURN_ALL
 type:monster
 desc:causes monsters to flee
+blind-desc:something
 obvious:0
 color:White
 
 code:DISP_UNDEAD
 type:monster
 desc:damages undead
+blind-desc:something
 obvious:0
 color:White
 
 code:DISP_EVIL
 type:monster
 desc:damages evil monsters
+blind-desc:something
 obvious:0
 color:White
 
 code:DISP_ALL
 type:monster
 desc:damages all monsters
+blind-desc:something
 obvious:1
 color:White
 
 code:MON_CLONE
 type:monster
 desc:hastes, heals and magically duplicates monsters
+blind-desc:something
 obvious:1
 color:White
 
 code:MON_POLY
 type:monster
 desc:polymorphs monsters into other kinds of creatures
+blind-desc:something
 obvious:0
 color:White
 
 code:MON_HEAL
 type:monster
 desc:heals monsters
+blind-desc:something
 obvious:1
 color:White
 
 code:MON_SPEED
 type:monster
 desc:hastes monsters
+blind-desc:something
 obvious:1
 color:White
 
 code:MON_SLOW
 type:monster
 desc:attempts to slow monsters
+blind-desc:something
 obvious:1
 color:White
 
 code:MON_CONF
 type:monster
 desc:attempts to confuse monsters
+blind-desc:something
 obvious:0
 color:White
 
 code:MON_SLEEP
 type:monster
 desc:attempts to put monsters to sleep
+blind-desc:something
 obvious:0
 color:White
 
 code:MON_DRAIN
 type:monster
 desc:damages living monsters
+blind-desc:something
 obvious:1
 color:White
 
