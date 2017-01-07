@@ -318,6 +318,7 @@ static void rd_trap(struct trap *trap)
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) {
 		trap->kind = lookup_trap(buf);
+		trap->t_idx = trap->kind->tidx;
 	}
     rd_byte(&trap->fy);
     rd_byte(&trap->fx);
