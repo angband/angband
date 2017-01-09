@@ -1329,15 +1329,13 @@ static enum parser_error parse_monster_drop(struct parser *p) {
 static enum parser_error parse_monster_drop_artifact(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	struct monster_drop *d;
-	int art;
 	struct artifact *a;
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	art = lookup_artifact_name(parser_getstr(p, "name"));
-	if (art < 0)
+	a = lookup_artifact_name(parser_getstr(p, "name"));
+	if (a == NULL)
 		return PARSE_ERROR_NO_ARTIFACT_NAME;
-	a = &a_info[art];
 
 	d = mem_zalloc(sizeof *d);
 	d->artifact = a;
@@ -2076,15 +2074,13 @@ static enum parser_error parse_lore_drop(struct parser *p) {
 static enum parser_error parse_lore_drop_artifact(struct parser *p) {
 	struct monster_lore *l = parser_priv(p);
 	struct monster_drop *d;
-	int art;
 	struct artifact *a;
 
 	if (!l)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	art = lookup_artifact_name(parser_getstr(p, "name"));
-	if (art < 0)
+	a = lookup_artifact_name(parser_getstr(p, "name"));
+	if (a == NULL)
 		return PARSE_ERROR_NO_ARTIFACT_NAME;
-	a = &a_info[art];
 
 	d = mem_zalloc(sizeof *d);
 	d->artifact = a;

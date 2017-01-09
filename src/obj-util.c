@@ -357,18 +357,18 @@ struct object_kind *objkind_byid(int kidx) {
 /**
  * Return the a_idx of the artifact with the given name
  */
-int lookup_artifact_name(const char *name)
+struct artifact *lookup_artifact_name(const char *name)
 {
 	int i;
 	int a_idx = -1;
 
 	/* Look for it */
-	for (i = 1; i < z_info->a_max; i++) {
+	for (i = 0; i < z_info->a_max; i++) {
 		struct artifact *art = &a_info[i];
 
 		/* Test for equality */
 		if (art->name && streq(name, art->name))
-			return i;
+			return art;
 		
 		/* Test for close matches */
 		if (strlen(name) >= 3 && art->name && my_stristr(art->name, name)
@@ -377,7 +377,7 @@ int lookup_artifact_name(const char *name)
 	}
 
 	/* Return our best match */
-	return a_idx;
+	return a_idx > 0 ? &a_info[a_idx] : NULL;
 }
 
 /**
@@ -386,10 +386,9 @@ int lookup_artifact_name(const char *name)
  * \param sval object sval
  * \return eidx of the ego item type
  */
-int lookup_ego_item(const char *name, int tval, int sval)
+struct ego_item *lookup_ego_item(const char *name, int tval, int sval)
 {
 	int i;
-	int eidx = -1;
 
 	/* Look for it */
 	for (i = 0; i < z_info->e_max; i++) {
@@ -404,14 +403,13 @@ int lookup_ego_item(const char *name, int tval, int sval)
 		while (poss_item) {
 			struct object_kind *kind = lookup_kind(tval, sval);
 			if (kind->kidx == poss_item->kidx) {
-				return i;
+				return ego;
 			}
 			poss_item = poss_item->next;
 		}
 	}
 
-	/* Return our best match */
-	return eidx;
+	return NULL;
 }
 
 /**

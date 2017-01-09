@@ -124,11 +124,19 @@ static struct object *rd_item(void)
 
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) {
-		obj->artifact = &a_info[lookup_artifact_name(buf)];
+		obj->artifact = lookup_artifact_name(buf);
+		if (!obj->artifact) {
+			note(format("Couldn't find artifact %s!", buf));
+			return NULL;
+		}
 	}
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) {
-		obj->ego = &e_info[lookup_ego_item(buf, obj->tval, obj->sval)];
+		obj->ego = lookup_ego_item(buf, obj->tval, obj->sval);
+		if (!obj->ego) {
+			note(format("Couldn't find ego item %s!", buf));
+			return NULL;
+		}
 	}
 	rd_byte(&effect);
 
@@ -1514,7 +1522,7 @@ int rd_history(void)
 		s32b turnno;
 		s16b dlev, clev;
 		bitflag type[HIST_SIZE];
-		byte aidx = 0;
+		struct artifact *art;
 		char name[80];
 		char text[80];
 
@@ -1525,11 +1533,15 @@ int rd_history(void)
 		rd_s16b(&clev);
 		rd_string(name, sizeof(name));
 		if (name[0]) {
-			aidx = lookup_artifact_name(name);
+			art = lookup_artifact_name(name);
 		}
 		rd_string(text, sizeof(text));
+		if (!art) {
+			note(format("Couldn't find artifact %s!", name));
+			continue;
+		}
 		
-		history_add_full(player, type, aidx, dlev, clev, turnno, text);
+		history_add_full(player, type, art->aidx, dlev, clev, turnno, text);
 	}
 
 	return 0;
