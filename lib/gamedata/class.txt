@@ -949,8 +949,8 @@ desc: current hit points of the monster and many of its characteristics
 desc: and abilities (excluding its melee, spellcasting, and breath attacks).
 
 spell:Clairvoyance:35:50:80:230
-effect:ENLIGHTENMENT
-desc:Lights up, maps out, and detects all objects on the complete current
+effect:LIGHT_LEVEL
+desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
 book:prayer book:[Purifications and Healing]:5:2

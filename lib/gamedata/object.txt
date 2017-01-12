@@ -2421,8 +2421,7 @@ properties:25:4:800
 alloc:40:25 to 100
 pile:25:2
 power:22
-effect:ENLIGHTENMENT
-dice:1
+effect:LIGHT_LEVEL
 
 name:*Enlightenment*
 type:potion
@@ -2431,7 +2430,7 @@ properties:70:4:12000
 alloc:8:70 to 100
 combat:0:1d1:0:0:0
 power:20000
-effect:ENLIGHTENMENT
+effect:LIGHT_LEVEL
 dice:1
 effect:RESTORE_STAT:INT
 effect:GAIN_STAT:INT

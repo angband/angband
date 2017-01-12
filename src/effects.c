@@ -3319,7 +3319,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	return true;
 }
 
-bool effect_handler_ENLIGHTENMENT(effect_handler_context_t *context)
+bool effect_handler_LIGHT_LEVEL(effect_handler_context_t *context)
 {
 	bool full = context->value.base ? true : false;
 	if (full)

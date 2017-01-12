@@ -313,9 +313,9 @@ desc:cures blindness and gives you telepathy for 9d9+24 turns
 name:ENLIGHTENMENT
 aim:0
 power:22
-effect:ENLIGHTENMENT
+effect:LIGHT_LEVEL
 dice:1
-desc:completely lights up and magically maps the level
+desc:completely lights up and magically maps the level, detecting all objects
 
 
 name:HERO
@@ -685,18 +685,12 @@ param:3
 dice:2d15
 desc:lights up the surrounding area, hurting light-sensitive creatures
 
-#name:CLAIRVOYANCE
-#aim:0
-#power:23
-#msg:The {kind} form{s} an image in your mind...
-#effect:ENLIGHTENMENT
-#effect:DETECT_TRAPS
-#dice:22d40
-#effect:DETECT_DOORS
-#dice:22d40
-#effect:DETECT_STAIRS
-#dice:22d40
-#desc:maps the entire level and detects nearby objects, traps, doors, and stairs
+name:CLAIRVOYANCE
+aim:0
+power:23
+msg:The {kind} form{s} an image in your mind...
+effect:LIGHT_LEVEL
+desc:lights and maps the entire level, sensing objects
 
 name:PROBING
 aim:0
