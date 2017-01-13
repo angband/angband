@@ -108,8 +108,10 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 		final = context->value.base +
 			damroll(context->value.dice, context->value.sides);
 
-	if (use_boost)
-		final *= (100 + context->boost) / 100;
+	if (use_boost) {
+		final *= (100 + context->boost);
+		final /= 100;
+	}
 
 	return final;
 }
