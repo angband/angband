@@ -1522,7 +1522,8 @@ int rd_history(void)
 		s32b turnno;
 		s16b dlev, clev;
 		bitflag type[HIST_SIZE];
-		struct artifact *art;
+		struct artifact *art = NULL;
+		int aidx = 0;
 		char name[80];
 		char text[80];
 
@@ -1534,14 +1535,17 @@ int rd_history(void)
 		rd_string(name, sizeof(name));
 		if (name[0]) {
 			art = lookup_artifact_name(name);
+			if (art) {
+				aidx = art->aidx;
+			}
 		}
 		rd_string(text, sizeof(text));
-		if (!art) {
+		if (name[0] && !art) {
 			note(format("Couldn't find artifact %s!", name));
 			continue;
 		}
-		
-		history_add_full(player, type, art->aidx, dlev, clev, turnno, text);
+
+		history_add_full(player, type, aidx, dlev, clev, turnno, text);
 	}
 
 	return 0;
