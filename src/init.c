@@ -44,6 +44,7 @@
 #include "obj-list.h"
 #include "obj-make.h"
 #include "obj-pile.h"
+#include "obj-power.h"
 #include "obj-randart.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -2674,6 +2675,7 @@ static struct {
 	{ "activations", &act_parser },
 	{ "ego-items", &ego_parser },
 	{ "artifacts", &artifact_parser },
+	{ "object power calculations", &object_power_parser },
 	{ "blow methods", &meth_parser },
 	{ "blow effects", &eff_parser },
 	{ "monster pain messages", &pain_parser },

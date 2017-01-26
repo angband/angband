@@ -256,11 +256,11 @@ depgen:
  list-mon-spells.h hint.h init.h parser.h list-parser-errors.h mon-init.h \
  mon-list.h mon-lore.h z-textblock.h mon-msg.h list-mon-message.h \
  mon-util.h obj-ignore.h list-ignore-types.h obj-init.h obj-list.h \
- obj-make.h obj-pile.h obj-randart.h list-randart-properties.h \
- obj-slays.h obj-tval.h list-tvals.h obj-util.h player-history.h \
- list-history-types.h player-quest.h player-spell.h player-timed.h \
- list-player-timed.h project.h list-projections.h randname.h store.h \
- trap.h list-trap-flags.h list-equip-slots.h
+ obj-make.h obj-pile.h obj-power.h obj-randart.h \
+ list-randart-properties.h obj-slays.h obj-tval.h list-tvals.h obj-util.h \
+ player-history.h list-history-types.h player-quest.h player-spell.h \
+ player-timed.h list-player-timed.h project.h list-projections.h \
+ randname.h store.h trap.h list-trap-flags.h list-equip-slots.h
 ./load.o: load.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  list-message.h player.h guid.h obj-properties.h z-file.h list-stats.h \
@@ -513,9 +513,9 @@ depgen:
  cave.h list-square-flags.h list-terrain-flags.h mon-timed.h \
  list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
  list-mon-spells.h obj-curse.h obj-ignore.h list-ignore-types.h \
- obj-list.h obj-make.h obj-pile.h obj-randart.h list-randart-properties.h \
- obj-slays.h obj-tval.h list-tvals.h obj-util.h player-spell.h project.h \
- list-projections.h
+ obj-list.h obj-make.h obj-pile.h obj-power.h obj-randart.h \
+ list-randart-properties.h obj-slays.h obj-tval.h list-tvals.h obj-util.h \
+ player-spell.h project.h list-projections.h
 ./obj-knowledge.o: obj-knowledge.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \

@@ -63,7 +63,23 @@
 #define VERYHIGH_TO_DAM		26
 #define AMMO_RESCALER		20 /* this value is also used for torches */
 
+/*** Structures ***/
+
+struct power_calc {
+	struct power_calc *next;
+	char *name;			/**< Name of the calculation */
+	struct poss_item *poss_items;
+	dice_t *dice;		/**< Dice expression used in the calculation */
+	char *operation;	/**< How the calculation operates on power */
+	char *apply_to;		/**< What the calculation is applied to */
+};
+
+
+extern struct power_calc *calculations;
+
 /*** Functions ***/
+
+extern expression_base_value_f power_calculation_by_name(const char *name);
 
 s32b object_power(const struct object *obj, bool verbose, ang_file *log_file);
 s32b object_value_real(const struct object *obj, int qty);

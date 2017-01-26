@@ -33,6 +33,7 @@
 #include "obj-list.h"
 #include "obj-make.h"
 #include "obj-pile.h"
+#include "obj-power.h"
 #include "obj-randart.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
@@ -2704,5 +2705,219 @@ struct file_parser artifact_parser = {
 	run_parse_artifact,
 	finish_parse_artifact,
 	cleanup_artifact
+};
+
+/**
+ * ------------------------------------------------------------------------
+ * Initialize object power calculations
+ * ------------------------------------------------------------------------ */
+
+static enum parser_error parse_object_power_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct power_calc *h = parser_priv(p);
+	struct power_calc *c = mem_zalloc(sizeof *c);
+
+	c->next = h;
+	parser_setpriv(p, c);
+	c->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_power_type(struct parser *p) {
+	struct poss_item *poss;
+	int i;
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	struct power_calc *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	/* Find all the right object kinds */
+	for (i = 0; i < z_info->k_max; i++) {
+		if (k_info[i].tval != tval) continue;
+		poss = mem_zalloc(sizeof(struct poss_item));
+		poss->kidx = i;
+		poss->next = c->poss_items;
+		c->poss_items = poss;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_power_item(struct parser *p) {
+	struct poss_item *poss;
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	struct power_calc *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	poss = mem_zalloc(sizeof(struct poss_item));
+	poss->kidx = lookup_kind(tval, sval)->kidx;
+	poss->next = c->poss_items;
+	c->poss_items = poss;
+
+	if (poss->kidx <= 0)
+		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_power_dice(struct parser *p) {
+	struct power_calc *calc = parser_priv(p);
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!calc)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INVALID_DICE;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		calc->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_INVALID_DICE;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_power_expr(struct parser *p) {
+	struct power_calc *calc = parser_priv(p);
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!calc)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (calc->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INVALID_EXPRESSION;
+
+	function = power_calculation_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
+
+	if (dice_bind_expression(calc->dice, name, expression) < 0)
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_power_operation(struct parser *p) {
+	const char *op = parser_getstr(p, "op");
+	struct power_calc *c = parser_priv(p);
+
+	c->operation = string_make(op);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_power_apply_to(struct parser *p) {
+	const char *apply = parser_getstr(p, "apply");
+	struct power_calc *c = parser_priv(p);
+
+	c->apply_to = string_make(apply);
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_object_power(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_object_power_name);
+	parser_reg(p, "type sym tval", parse_object_power_type);
+	parser_reg(p, "item sym tval sym sval", parse_object_power_item);
+	parser_reg(p, "dice str dice", parse_object_power_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_object_power_expr);
+	parser_reg(p, "operation str op", parse_object_power_operation);
+	parser_reg(p, "apply-to str apply", parse_object_power_apply_to);
+	return p;
+}
+
+static errr run_parse_object_power(struct parser *p) {
+	return parse_file_quit_not_found(p, "object_power");
+}
+
+static errr finish_parse_object_power(struct parser *p) {
+	struct power_calc *c, *n;
+	int cidx;
+
+	/* Scan the list for the max id */
+	z_info->calculation_max = 0;
+	c = parser_priv(p);
+	while (c) {
+		z_info->calculation_max++;
+		c = c->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	calculations = mem_zalloc((z_info->calculation_max + 1) * sizeof(*c));
+	cidx = z_info->calculation_max;
+	for (c = parser_priv(p); c; c = n, cidx--) {
+		assert(cidx > 0);
+
+		memcpy(&calculations[cidx], c, sizeof(*c));
+		n = c->next;
+
+		mem_free(c);
+	}
+	z_info->calculation_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_object_power(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->calculation_max; idx++) {
+		struct power_calc *calc = &calculations[idx];
+		struct poss_item *poss = calc->poss_items;
+
+		string_free(calc->name);
+		string_free(calc->operation);
+		string_free(calc->apply_to);
+		dice_free(calc->dice);
+		while (poss) {
+			struct poss_item *next = poss->next;
+			mem_free(poss);
+			poss = next;
+		}
+	}
+	mem_free(calculations);
+}
+
+struct file_parser object_power_parser = {
+	"object_power",
+	init_parse_object_power,
+	run_parse_object_power,
+	finish_parse_object_power,
+	cleanup_object_power
 };
 

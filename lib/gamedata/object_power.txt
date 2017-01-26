@@ -1,0 +1,31 @@
+# object_power.txt
+
+# name:
+# type:
+# item:
+# dice:
+# expr:
+# operation:
+# apply-to:
+
+name:to damage power
+dice:$P
+expr:P:OBJ_POWER_TO_DAM:+ 0
+operation:add
+
+name:nonweapon to damage power
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+dice:$P
+expr:P:OBJ_POWER_TO_DAM:* 2
+operation:add

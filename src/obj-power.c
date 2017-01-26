@@ -28,6 +28,8 @@
 #include "effects.h"
 #include "monster.h"
 
+struct power_calc *calculations;
+
 /**
  * Define a set of constants for dealing with launchers and ammo:
  * - the assumed average damage of ammo (for rating launchers)
@@ -136,6 +138,40 @@ static ang_file *object_log;
 void log_obj(char *message)
 {
 	file_putf(object_log, message);
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Object power calculations
+ * ------------------------------------------------------------------------ */
+
+
+static struct object *power_obj = NULL;
+
+static int object_power_calculation_TO_DAM(void)
+{
+	return power_obj->to_d;
+}
+
+expression_base_value_f power_calculation_by_name(const char *name)
+{
+	static const struct power_calc_s {
+		const char *name;
+		expression_base_value_f function;
+	} power_calcs[] = {
+		{ "OBJ_POWER_TO_DAM", object_power_calculation_TO_DAM },
+		{ NULL, NULL },
+	};
+	const struct power_calc_s *current = power_calcs;
+
+	while (current->name != NULL && current->function != NULL) {
+		if (my_stricmp(name, current->name) == 0)
+			return current->function;
+
+		current++;
+	}
+
+	return NULL;
 }
 
 /**
