@@ -10,7 +10,7 @@
 
 name:to damage power
 dice:$P
-expr:P:OBJ_POWER_TO_DAM:+ 0
+expr:P:OBJ_POWER_TO_DAM:* 5 / 2
 operation:add
 
 name:nonweapon to damage power
@@ -27,5 +27,5 @@ type:light
 type:amulet
 type:ring
 dice:$P
-expr:P:OBJ_POWER_TO_DAM:* 2
+expr:P:OBJ_POWER_TO_DAM:* 5
 operation:add

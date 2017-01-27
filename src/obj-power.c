@@ -146,7 +146,9 @@ void log_obj(char *message)
  * ------------------------------------------------------------------------ */
 
 
-static struct object *power_obj = NULL;
+static struct object *power_obj;
+static int power;
+static int dice_power;
 
 static int object_power_calculation_TO_DAM(void)
 {
@@ -172,6 +174,74 @@ expression_base_value_f power_calculation_by_name(const char *name)
 	}
 
 	return NULL;
+}
+
+/**
+ * Run an individual power calculation
+ *
+ * Dice are used in power calculations sometimes as an easy way of encoding
+ * multiplication, so the MAXIMISE aspect is always used in their evaluation.
+ */
+static int run_power_calculation(struct power_calc *calc)
+{
+	random_value rv = {0, 0, 0, 0};
+
+	return dice_evaluate(calc->dice, 1, MAXIMISE, &rv);
+}
+
+static void apply_power_operation(int operation, int *changed, int value)
+{
+	switch (operation) {
+		case POWER_CALC_NONE: break;
+		case POWER_CALC_ADD: *changed += value; break;
+		case POWER_CALC_MULTIPLY: *changed *= value; break;
+		case POWER_CALC_DIVIDE: *changed /= value; break;
+		default: break;
+	}
+}
+
+static void evaluate_power(const struct object *obj)
+{
+	int i;
+
+	/* Set the power evaluation object and intermediate power values */
+	power_obj = (struct object *) obj;
+	power = 0;
+	dice_power = 0;
+
+	/* Run all the power calculations */
+	for (i = 0; i < z_info->calculation_max; i++) {
+		struct power_calc *calc = &calculations[i];
+		struct poss_item *poss = calc->poss_items;
+		int value = 0;
+
+		/* Ignore null calculations */
+		if (!calc->dice) continue;
+
+		/* Check whether this calculation applies to this item */
+		if (poss) {
+			while (poss) {
+				if (obj->kind->kidx == poss->kidx) break;
+				poss = poss->next;
+			}
+			if (!poss) continue;
+		}
+
+		/* Run the calculation, and apply where appropriate */
+		value = run_power_calculation(calc);
+		if (calc->apply_to == NULL) {
+			apply_power_operation(calc->operation, &power, value);
+		} else if (streq(calc->apply_to, "dice power")) {
+			apply_power_operation(calc->operation, &dice_power, value);
+		} else {
+			/* No recognisable target, ignore this calculation with complaint */
+			log_obj(format("No target for %s\n", calc->name));
+			continue;
+		}
+
+		/* Report result */
+		log_obj(format("Processed %s, power is %d\n", calc->name, power));
+	}
 }
 
 /**
@@ -770,6 +840,13 @@ s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
 
 	/* Set the log file */
 	object_log = log_file;
+
+	/* New power calculations */
+	if (tval_has_variable_power(obj)) {
+		log_obj("---New power calculations---\n");
+		evaluate_power(obj);
+		log_obj("---End new power calculations---\n");
+	}
 
 	/* Get all the attack power */
 	p = to_damage_power(obj);

@@ -63,6 +63,15 @@
 #define VERYHIGH_TO_DAM		26
 #define AMMO_RESCALER		20 /* this value is also used for torches */
 
+
+enum power_calc_operation {
+	POWER_CALC_NONE,
+	POWER_CALC_ADD,
+	POWER_CALC_MULTIPLY,
+	POWER_CALC_DIVIDE,
+	POWER_CALC_MAX
+};
+
 /*** Structures ***/
 
 struct power_calc {
@@ -70,7 +79,7 @@ struct power_calc {
 	char *name;			/**< Name of the calculation */
 	struct poss_item *poss_items;
 	dice_t *dice;		/**< Dice expression used in the calculation */
-	char *operation;	/**< How the calculation operates on power */
+	int operation;		/**< How the calculation operates on power */
 	char *apply_to;		/**< What the calculation is applied to */
 };
 

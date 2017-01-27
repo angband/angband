@@ -2835,7 +2835,15 @@ static enum parser_error parse_object_power_operation(struct parser *p) {
 	const char *op = parser_getstr(p, "op");
 	struct power_calc *c = parser_priv(p);
 
-	c->operation = string_make(op);
+	if (streq(op, "add")) {
+		c->operation = POWER_CALC_ADD;
+	} else if (streq(op, "multiply")) {
+		c->operation = POWER_CALC_MULTIPLY;
+	} else if (streq(op, "divide")) {
+		c->operation = POWER_CALC_DIVIDE;
+	} else {
+		return PARSE_ERROR_INVALID_OPERATION;
+	}
 	return PARSE_ERROR_NONE;
 }
 
@@ -2901,7 +2909,6 @@ static void cleanup_object_power(void)
 		struct poss_item *poss = calc->poss_items;
 
 		string_free(calc->name);
-		string_free(calc->operation);
 		string_free(calc->apply_to);
 		dice_free(calc->dice);
 		while (poss) {
