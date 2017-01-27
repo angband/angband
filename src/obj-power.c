@@ -155,6 +155,36 @@ static int object_power_calculation_TO_DAM(void)
 	return power_obj->to_d;
 }
 
+static int object_power_calculation_DICE_PROD(void)
+{
+	return power_obj->dd * (power_obj->ds + 1);
+}
+
+static int object_power_calculation_HELPS_DICE(void)
+{
+	if (power_obj->brands || power_obj->slays ||
+		(power_obj->modifiers[OBJ_MOD_BLOWS] > 0) ||
+		(power_obj->modifiers[OBJ_MOD_SHOTS] > 0) ||
+		(power_obj->modifiers[OBJ_MOD_MIGHT] > 0)) {
+		return 1;
+	}
+
+	return 0;
+}
+
+static int object_power_calculation_IS_EGO(void)
+{
+	return power_obj->ego ? 1 : 0;
+}
+
+#if 0
+static int object_power_calculation_(void)
+{
+	return ;
+}
+
+#endif
+
 expression_base_value_f power_calculation_by_name(const char *name)
 {
 	static const struct power_calc_s {
@@ -162,6 +192,12 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		expression_base_value_f function;
 	} power_calcs[] = {
 		{ "OBJ_POWER_TO_DAM", object_power_calculation_TO_DAM },
+		{ "OBJ_POWER_DICE_PROD", object_power_calculation_DICE_PROD },
+		{ "OBJ_POWER_HELPS_DICE", object_power_calculation_HELPS_DICE },
+		{ "OBJ_POWER_IS_EGO", object_power_calculation_IS_EGO },
+#if 0
+		{ "OBJ_POWER_", object_power_calculation_ },
+#endif
 		{ NULL, NULL },
 	};
 	const struct power_calc_s *current = power_calcs;
@@ -185,62 +221,93 @@ expression_base_value_f power_calculation_by_name(const char *name)
 static int run_power_calculation(struct power_calc *calc)
 {
 	random_value rv = {0, 0, 0, 0};
+	struct poss_item *poss = calc->poss_items;
+
+	/* Ignore null calculations */
+	if (!calc->dice) return 0;
+
+	/* Check whether this calculation applies to this item */
+	if (poss) {
+		while (poss) {
+			if (power_obj->kind->kidx == poss->kidx) break;
+			poss = poss->next;
+		}
+		if (!poss) return 0;
+	}
 
 	return dice_evaluate(calc->dice, 1, MAXIMISE, &rv);
 }
 
-static void apply_power_operation(int operation, int *changed, int value)
+static int apply_operation(int operation, int current, int new)
 {
 	switch (operation) {
 		case POWER_CALC_NONE: break;
-		case POWER_CALC_ADD: *changed += value; break;
-		case POWER_CALC_MULTIPLY: *changed *= value; break;
-		case POWER_CALC_DIVIDE: *changed /= value; break;
+		case POWER_CALC_ADD: current += new; break;
+		case POWER_CALC_MULTIPLY: current *= new; break;
+		case POWER_CALC_DIVIDE: current /= new; break;
 		default: break;
 	}
+
+	return current;
 }
 
 static void evaluate_power(const struct object *obj)
 {
 	int i;
+	int *current_value;
+	int power = 0;
 
 	/* Set the power evaluation object and intermediate power values */
 	power_obj = (struct object *) obj;
-	power = 0;
-	dice_power = 0;
+	current_value = mem_zalloc(z_info->calculation_max * sizeof(int));
 
-	/* Run all the power calculations */
+	/* Preprocess the power calculations for intermediate results */
+	for (i = 0; i < z_info->calculation_max; i++) {
+		struct power_calc *calc = &calculations[i];
+
+		/* Run the calculation, and apply to an earlier one if needed */
+		current_value[i] = run_power_calculation(calc);
+		if (calc->apply_to) {
+			int j;
+			for (j = 0; j < i; j++) {
+				if (!calculations[j].name) continue;
+				if (streq(calculations[j].name, calc->apply_to)) {
+					current_value[j] = apply_operation(calc->operation,
+													   current_value[j],
+													   current_value[i]);
+					break;
+				}
+			}
+
+			/* No name match found, ignore this calculation with complaint */
+			if (i == j) {
+				log_obj(format("No target %s for %s to apply to\n",
+							   calc->apply_to, calc->name));
+			}
+		}
+	}
+
+	/* Put all the power calculations together */
 	for (i = 0; i < z_info->calculation_max; i++) {
 		struct power_calc *calc = &calculations[i];
 		struct poss_item *poss = calc->poss_items;
-		int value = 0;
-
-		/* Ignore null calculations */
-		if (!calc->dice) continue;
 
 		/* Check whether this calculation applies to this item */
 		if (poss) {
 			while (poss) {
-				if (obj->kind->kidx == poss->kidx) break;
+				if (power_obj->kind->kidx == poss->kidx) break;
 				poss = poss->next;
 			}
 			if (!poss) continue;
 		}
 
-		/* Run the calculation, and apply where appropriate */
-		value = run_power_calculation(calc);
 		if (calc->apply_to == NULL) {
-			apply_power_operation(calc->operation, &power, value);
-		} else if (streq(calc->apply_to, "dice power")) {
-			apply_power_operation(calc->operation, &dice_power, value);
-		} else {
-			/* No recognisable target, ignore this calculation with complaint */
-			log_obj(format("No target for %s\n", calc->name));
-			continue;
-		}
+			power = apply_operation(calc->operation, power, current_value[i]);
 
-		/* Report result */
-		log_obj(format("Processed %s, power is %d\n", calc->name, power));
+			/* Report result */
+			log_obj(format("%s is %d, power is %d\n", calc->name,
+						   current_value[i], power));
+		}
 	}
 }
 

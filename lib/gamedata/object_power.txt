@@ -8,11 +8,13 @@
 # operation:
 # apply-to:
 
+# to-dam gets a 5/2 multipler
 name:to damage power
 dice:$P
 expr:P:OBJ_POWER_TO_DAM:* 5 / 2
 operation:add
 
+# non-weapon to dam gets an additional 5 multipler
 name:nonweapon to damage power
 type:boots
 type:gloves
@@ -29,3 +31,121 @@ type:ring
 dice:$P
 expr:P:OBJ_POWER_TO_DAM:* 5
 operation:add
+
+# dice power for things with dice
+name:dice power
+type:shot
+type:arrow
+type:bolt
+type:sword
+type:polearm
+type:hafted
+type:digger
+dice:$P
+expr:P:OBJ_POWER_DICE_PROD:* 5 / 4
+operation:add
+
+# assumed dice power for non-weapons that give weapon-like bonuses
+name:nonweapon dice power
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+dice:$P
+expr:P:OBJ_POWER_HELPS_DICE:* 60
+operation:add
+
+# extra dice power for weapons and ammo with slays and brands
+name:dice slay power
+type:shot
+type:arrow
+type:bolt
+type:sword
+type:polearm
+type:hafted
+type:digger
+dice:$P
+expr:P:OBJ_POWER_DICE_PROD:* 5 / 4
+operation:add
+
+# assumed extra dice power for non-weapons that give weapon-like bonuses
+name:nonweapon dice slay power
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+dice:$P
+expr:P:OBJ_POWER_HELPS_DICE:* 60
+operation:add
+
+# assumed ammo damage power for slings
+name:ammo damage power - slings
+item:bow:Sling
+dice:25
+operation:add
+
+# assumed ammo damage power for bows
+name:ammo damage power - bows
+item:bow:Short Bow
+item:bow:Long Bow
+dice:30
+operation:add
+
+# assumed ammo damage power for crossbows
+name:ammo damage power - crossbows
+item:bow:Light Crossbow
+item:bow:Heavy Crossbow
+dice:35
+operation:add
+
+# bonus for ego ammo
+name:ego ammo bonus
+type:shot
+type:arrow
+type:bolt
+dice:$P
+expr:P:OBJ_POWER_IS_EGO:* 45 / 2
+operation:add
+
+# launcher power multiplier for shots
+name:sling multiplier
+type:shot
+dice:4
+operation:multiply
+
+# launcher power multiplier for arrows
+name:bow multiplier
+type:arrow
+dice:5
+operation:multiply
+
+# launcher power multiplier for bolts
+name:crossbow multiplier
+type:bolt
+dice:7
+operation:multiply
+
+# rescale ammo to reflect only one hit per round
+name:ammo rescale divisor
+type:shot
+type:arrow
+type:bolt
+dice:10
+operation:divide
+
