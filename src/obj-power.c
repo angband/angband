@@ -147,26 +147,25 @@ void log_obj(char *message)
 
 
 static struct object *power_obj;
-static int power;
-static int dice_power;
+static int num_brands;
+static int num_slays;
+static int num_kills;
+static int best_power;
 
 static int object_power_calculation_TO_DAM(void)
 {
 	return power_obj->to_d;
 }
 
-static int object_power_calculation_DICE_PROD(void)
+static int object_power_calculation_DICE(void)
 {
-	return power_obj->dd * (power_obj->ds + 1);
-}
-
-static int object_power_calculation_HELPS_DICE(void)
-{
-	if (power_obj->brands || power_obj->slays ||
-		(power_obj->modifiers[OBJ_MOD_BLOWS] > 0) ||
-		(power_obj->modifiers[OBJ_MOD_SHOTS] > 0) ||
-		(power_obj->modifiers[OBJ_MOD_MIGHT] > 0)) {
-		return 1;
+	if (tval_is_ammo(power_obj) || tval_is_melee_weapon(power_obj)) {
+		return power_obj->dd * (power_obj->ds + 1);
+	} else if (power_obj->brands || power_obj->slays ||
+			   (power_obj->modifiers[OBJ_MOD_BLOWS] > 0) ||
+			   (power_obj->modifiers[OBJ_MOD_SHOTS] > 0) ||
+			   (power_obj->modifiers[OBJ_MOD_MIGHT] > 0)) {
+		return 48;
 	}
 
 	return 0;
@@ -175,6 +174,90 @@ static int object_power_calculation_HELPS_DICE(void)
 static int object_power_calculation_IS_EGO(void)
 {
 	return power_obj->ego ? 1 : 0;
+}
+
+static int object_power_calculation_EXTRA_BLOWS(void)
+{
+	return power_obj->modifiers[OBJ_MOD_BLOWS];
+}
+
+static int object_power_calculation_EXTRA_SHOTS(void)
+{
+	return power_obj->modifiers[OBJ_MOD_SHOTS];
+}
+
+static int object_power_calculation_EXTRA_MIGHT(void)
+{
+	return power_obj->modifiers[OBJ_MOD_MIGHT];
+}
+
+static int object_power_calculation_BOW_MULTIPLIER(void)
+{
+	return tval_is_launcher(power_obj) ? power_obj->pval : 1;
+}
+
+static int object_power_calculation_BEST_SLAY(void)
+{
+	return best_power;
+}
+
+static int object_power_calculation_SLAY_SLAY(void)
+{
+	return num_slays * num_slays;
+}
+
+static int object_power_calculation_BRAND_BRAND(void)
+{
+	return num_brands * num_brands;
+}
+
+static int object_power_calculation_SLAY_BRAND(void)
+{
+	return num_slays * num_brands;
+}
+
+static int object_power_calculation_KILL_KILL(void)
+{
+	return num_kills * num_kills;
+}
+
+static int object_power_calculation_ALL_SLAYS(void)
+{
+	int i, count = 0;
+	for (i = 0; i < z_info->slay_max; i++) {
+		struct slay *slay = &slays[i];
+		if (slay->name && (slay->multiplier <= 3)) {
+			count++;
+		}
+	}
+
+	return num_slays == count ? 1 : 0;
+}
+
+static int object_power_calculation_ALL_BRANDS(void)
+{
+	int i, count = 0;
+	for (i = 0; i < z_info->brand_max; i++) {
+		struct brand *brand = &brands[i];
+		if (brand->name) {
+			count++;
+		}
+	}
+
+	return num_brands == count ? 1 : 0;
+}
+
+static int object_power_calculation_ALL_KILLS(void)
+{
+	int i, count = 0;
+	for (i = 0; i < z_info->slay_max; i++) {
+		struct slay *slay = &slays[i];
+		if (slay->name && (slay->multiplier > 3)) {
+			count++;
+		}
+	}
+
+	return num_kills == count ? 1 : 0;
 }
 
 #if 0
@@ -192,9 +275,20 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		expression_base_value_f function;
 	} power_calcs[] = {
 		{ "OBJ_POWER_TO_DAM", object_power_calculation_TO_DAM },
-		{ "OBJ_POWER_DICE_PROD", object_power_calculation_DICE_PROD },
-		{ "OBJ_POWER_HELPS_DICE", object_power_calculation_HELPS_DICE },
+		{ "OBJ_POWER_DICE", object_power_calculation_DICE },
 		{ "OBJ_POWER_IS_EGO", object_power_calculation_IS_EGO },
+		{ "OBJ_POWER_EXTRA_BLOWS", object_power_calculation_EXTRA_BLOWS },
+		{ "OBJ_POWER_EXTRA_SHOTS", object_power_calculation_EXTRA_SHOTS },
+		{ "OBJ_POWER_EXTRA_MIGHT", object_power_calculation_EXTRA_MIGHT },
+		{ "OBJ_POWER_BOW_MULTIPLIER", object_power_calculation_BOW_MULTIPLIER },
+		{ "OBJ_POWER_BEST_SLAY", object_power_calculation_BEST_SLAY },
+		{ "OBJ_POWER_SLAY_SLAY", object_power_calculation_SLAY_SLAY },
+		{ "OBJ_POWER_BRAND_BRAND", object_power_calculation_BRAND_BRAND },
+		{ "OBJ_POWER_SLAY_BRAND", object_power_calculation_SLAY_BRAND },
+		{ "OBJ_POWER_KILL_KILL", object_power_calculation_KILL_KILL },
+		{ "OBJ_POWER_ALL_SLAYS", object_power_calculation_ALL_SLAYS },
+		{ "OBJ_POWER_ALL_BRANDS", object_power_calculation_ALL_BRANDS },
+		{ "OBJ_POWER_ALL_KILLS", object_power_calculation_ALL_KILLS },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif
@@ -260,6 +354,58 @@ static void evaluate_power(const struct object *obj)
 	/* Set the power evaluation object and intermediate power values */
 	power_obj = (struct object *) obj;
 	current_value = mem_zalloc(z_info->calculation_max * sizeof(int));
+
+	/* Calculate stats on slays and brands up front */
+	num_brands = 0;
+	num_slays = 0;
+	num_kills = 0;
+	best_power = 1;
+	if (obj->brands) {
+		for (i = 1; i < z_info->brand_max; i++) {
+			if (obj->brands[i]) {
+				num_brands++;
+				if (brands[i].power > best_power)
+					best_power = brands[i].power;
+			}
+		}
+	}
+	if (obj->slays) {
+		for (i = 1; i < z_info->slay_max; i++) {
+			if (obj->slays[i]) {
+				if (slays[i].multiplier <= 3) {
+					num_slays++;
+				} else {
+					num_kills++;
+				}
+				if (slays[i].power > best_power)
+					best_power = slays[i].power;
+			}
+		}
+	}
+
+	/* Write the best power */
+	if (num_slays + num_brands + num_kills) {
+		/* Write info about the slay combination and multiplier */
+		log_obj("Slay and brands: ");
+
+		if (obj->brands) {
+			for (i = 1; i < z_info->brand_max; i++) {
+				if (obj->brands[i]) {
+					struct brand *b = &brands[i];
+					log_obj(format("%sx%d ", b->name, b->multiplier));
+				}
+			}
+		}
+		if (obj->slays) {
+			for (i = 1; i < z_info->slay_max; i++) {
+				if (obj->slays[i]) {
+					struct slay *s = &slays[i];
+					log_obj(format("%sx%d ", s->name, s->multiplier));
+				}
+			}
+		}
+		log_obj(format("\nbest power is : %d\n", best_power));
+	}
 
 	/* Preprocess the power calculations for intermediate results */
 	for (i = 0; i < z_info->calculation_max; i++) {
