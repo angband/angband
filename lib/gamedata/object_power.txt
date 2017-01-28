@@ -45,13 +45,6 @@ operation:add
 # dice power is a bit of a hack - the base is dice x (sides + 1), or 48 for
 # assumed damage for non-weapons with slays or brands or + blows, might or shots
 name:dice power
-type:shot
-type:arrow
-type:bolt
-type:sword
-type:polearm
-type:hafted
-type:digger
 dice:$P
 expr:P:OBJ_POWER_DICE:* 5 / 4
 operation:add
@@ -156,7 +149,7 @@ apply-to:slay power
 
 # now a whole lot of bitty slay bonuses, which probably need rationalising
 
-# SLAY_SLAY is number of slays suqared
+# SLAY_SLAY is number of slays squared
 name:slay slay bonus
 dice:$Pd$Q
 expr:P:OBJ_POWER_DICE:* 5 / 4
@@ -172,7 +165,7 @@ apply-to:slay slay bonus
 name:brand brand bonus
 dice:$Pd$Q
 expr:P:OBJ_POWER_DICE:* 5 / 4
-expr:Q:OBJ_POWER_BRAND_BRAND:+ 0
+expr:Q:OBJ_POWER_BRAND_BRAND:* 2
 operation:add
 
 name:brand brand divisor
@@ -196,7 +189,7 @@ apply-to:slay brand bonus
 name:kill kill bonus
 dice:$Pd$Q
 expr:P:OBJ_POWER_DICE:* 5 / 4
-expr:Q:OBJ_POWER_KILL_KILL:+ 0
+expr:Q:OBJ_POWER_KILL_KILL:* 3
 operation:add
 
 name:kill kill divisor

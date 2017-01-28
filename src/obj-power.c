@@ -161,6 +161,8 @@ static int object_power_calculation_DICE(void)
 {
 	if (tval_is_ammo(power_obj) || tval_is_melee_weapon(power_obj)) {
 		return power_obj->dd * (power_obj->ds + 1);
+	} else if (tval_is_launcher(power_obj)) {
+		return 0;
 	} else if (power_obj->brands || power_obj->slays ||
 			   (power_obj->modifiers[OBJ_MOD_BLOWS] > 0) ||
 			   (power_obj->modifiers[OBJ_MOD_SHOTS] > 0) ||
@@ -198,16 +200,18 @@ static int object_power_calculation_BOW_MULTIPLIER(void)
 
 static int object_power_calculation_BEST_SLAY(void)
 {
-	return best_power;
+	return MAX(best_power, 100);
 }
 
 static int object_power_calculation_SLAY_SLAY(void)
 {
+	if (num_slays <= 1) return 0;
 	return num_slays * num_slays;
 }
 
 static int object_power_calculation_BRAND_BRAND(void)
 {
+	if (num_brands <= 1) return 0;
 	return num_brands * num_brands;
 }
 
@@ -218,6 +222,7 @@ static int object_power_calculation_SLAY_BRAND(void)
 
 static int object_power_calculation_KILL_KILL(void)
 {
+	if (num_kills <= 1) return 0;
 	return num_kills * num_kills;
 }
 
