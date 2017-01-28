@@ -265,6 +265,31 @@ static int object_power_calculation_ALL_KILLS(void)
 	return num_kills == count ? 1 : 0;
 }
 
+static int object_power_calculation_TO_HIT(void)
+{
+	return power_obj->to_h;
+}
+
+static int object_power_calculation_AC(void)
+{
+	return power_obj->ac;
+}
+
+static int object_power_calculation_TO_ARMOR(void)
+{
+	return power_obj->to_a;
+}
+
+static int object_power_calculation_TOTAL_ARMOR(void)
+{
+	return power_obj->ac + power_obj->to_a;
+}
+
+static int object_power_calculation_WEIGHT(void)
+{
+	return MAX(20, power_obj->weight);
+}
+
 #if 0
 static int object_power_calculation_(void)
 {
@@ -294,6 +319,11 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		{ "OBJ_POWER_ALL_SLAYS", object_power_calculation_ALL_SLAYS },
 		{ "OBJ_POWER_ALL_BRANDS", object_power_calculation_ALL_BRANDS },
 		{ "OBJ_POWER_ALL_KILLS", object_power_calculation_ALL_KILLS },
+		{ "OBJ_POWER_TO_HIT", object_power_calculation_TO_HIT },
+		{ "OBJ_POWER_AC", object_power_calculation_AC },
+		{ "OBJ_POWER_TO_ARMOR", object_power_calculation_TO_ARMOR },
+		{ "OBJ_POWER_TOTAL_ARMOR", object_power_calculation_TOTAL_ARMOR },
+		{ "OBJ_POWER_WEIGHT", object_power_calculation_WEIGHT },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif
@@ -340,11 +370,30 @@ static int run_power_calculation(struct power_calc *calc)
 static int apply_operation(int operation, int current, int new)
 {
 	switch (operation) {
-		case POWER_CALC_NONE: break;
-		case POWER_CALC_ADD: current += new; break;
-		case POWER_CALC_MULTIPLY: current *= new; break;
-		case POWER_CALC_DIVIDE: current /= new; break;
-		default: break;
+		case POWER_CALC_NONE: {
+			break;
+		}
+		case POWER_CALC_ADD: {
+			current += new;
+			break;
+		}
+		case POWER_CALC_ADD_IF_POSITIVE: {
+			if (new > 0) {
+				current += new;
+			}
+			break;
+		}
+		case POWER_CALC_MULTIPLY: {
+			current *= new;
+			break;
+		}
+		case POWER_CALC_DIVIDE: {
+			current /= new;
+			break;
+		}
+		default: {
+			break;
+		}
 	}
 
 	return current;
@@ -453,11 +502,14 @@ static void evaluate_power(const struct object *obj)
 		}
 
 		if (calc->apply_to == NULL) {
+			int old_power = power;
 			power = apply_operation(calc->operation, power, current_value[i]);
 
-			/* Report result */
-			log_obj(format("%s is %d, power is %d\n", calc->name,
-						   current_value[i], power));
+			/* Report result if there's a change in power */
+			if (power != old_power) {
+				log_obj(format("%s is %d, power is %d\n", calc->name,
+							   current_value[i], power));
+			}
 		}
 	}
 }

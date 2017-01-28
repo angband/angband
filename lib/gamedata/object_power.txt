@@ -104,6 +104,12 @@ type:bolt
 dice:10
 operation:divide
 
+# more than 2 extra blows not allowed
+name:extra blows inhibitor
+dice:$P
+expr:P:OBJ_POWER_EXTRA_BLOWS:- 2 * 20000
+operation:add if positive
+
 # 5 is assumed max blows
 name:extra blows multiplier
 dice:$P
@@ -121,11 +127,23 @@ dice:$P
 expr:P:OBJ_POWER_EXTRA_BLOWS:* 15 * 5 / 2
 operation:add
 
+# more than 3 extra shots not allowed
+name:extra shots inhibitor
+dice:$P
+expr:P:OBJ_POWER_EXTRA_SHOTS:- 3 * 20000
+operation:add if positive
+
 # extra shots is a straight 1 + number multiplier
 name:extra shots multiplier
 dice:$P
 expr:P:OBJ_POWER_EXTRA_SHOTS:+ 1
 operation:multiply
+
+# more than 2 extra might not allowed
+name:extra might inhibitor
+dice:$P
+expr:P:OBJ_POWER_EXTRA_MIGHT:- 2 * 20000
+operation:add if positive
 
 # extra might is a multiplier, made up of bonus + bow pval (or 1 if not a bow)
 name:extra might multiplier
@@ -210,5 +228,60 @@ operation:add
 name:all kills bonus
 dice:$P
 expr:P:OBJ_POWER_ALL_KILLS:* 20
+operation:add
+
+# Rescale bow power to reflect lack of multiple blows
+name:launcher rescale divisor
+type:bow
+dice:5
+operation:divide
+
+# 3/2 power per point to-hit
+name:to hit power
+dice:$P
+expr:P:OBJ_POWER_TO_HIT:* 3 / 2
+operation:add
+
+# AC is multiplied by 15 / 2 and by total armor, and divided by weight + 1
+name:armor power
+dice:$Pd$Q
+expr:P:OBJ_POWER_AC:* 750
+expr:Q:OBJ_POWER_TOTAL_ARMOR:+ 0
+operation:add
+
+# weight is a minimum of 2 pounds to avoid issues with ultra-light armor
+name:armor power divisor
+dice:$P
+expr:P:OBJ_POWER_WEIGHT:+ 10 * 100
+operation:divide
+apply-to:armor power
+
+# to-armor is power, plus bonuses over 25 and 35
+name:to armor power
+dice:$P
+expr:P:OBJ_POWER_TO_ARMOR:+ 0
+operation:add
+
+name:to armor bonus
+dice:$P
+expr:P:OBJ_POWER_TO_ARMOR:- 25 * 2
+operation:add if positive
+
+name:to armor extra bonus
+dice:$P
+expr:P:OBJ_POWER_TO_ARMOR:- 35 * 4
+operation:add if positive
+
+# to armor over 55 not allowed
+name:to armor inhibitor
+dice:$P
+expr:P:OBJ_POWER_TO_ARMOR:- 55 * 20000
+operation:add if positive
+
+# jewelry gets a flat 4 power
+name:jewelry power
+type:amulet
+type:ring
+dice:4
 operation:add
 
