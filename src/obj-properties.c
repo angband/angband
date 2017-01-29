@@ -20,6 +20,8 @@
 #include "obj-gear.h"
 #include "obj-pile.h"
 
+struct obj_property *obj_properties;
+
 /**
  * Details of the different object flags in the game.
  * See src/obj-properties.h for structure

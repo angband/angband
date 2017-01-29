@@ -155,6 +155,29 @@ struct object_mod {
 	const char *name;		/* id message */
 };
 
+enum obj_property_type {
+	OBJ_PROPERTY_NONE = 0,
+	OBJ_PROPERTY_STAT,
+	OBJ_PROPERTY_MOD,
+	OBJ_PROPERTY_FLAG,
+	OBJ_PROPERTY_MAX
+};
+
+/**
+ * The object property structure
+ */
+struct obj_property {
+	struct obj_property *next;
+	int type;		/* type of property */
+	int index;		/* index of the property for its type */
+	int power;		/* base power rating */
+	int mult;		/* relative weight rating */
+	char *name;		/* property name */
+	char *adjective;/* adjective for property */
+	char *neg_adj;	/* adjective for negative of property */
+};
+
+extern struct obj_property *obj_properties;
 
 /**
  * ------------------------------------------------------------------------

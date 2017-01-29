@@ -1,0 +1,120 @@
+# object_property.txt
+
+# name: the property name
+# type: the type of object property.  Each property needs one, and it must 
+#       appear before the code in this file 
+# code: a code for the object property, which is used to associate it with its
+#       index among the other properties of that type
+
+name:strength
+type:stat
+code:STR
+power:9
+mult:13
+adjective:strong
+neg-adjective:weak
+
+name:intelligence
+type:stat
+code:INT
+power:5
+mult:10
+adjective:smart
+neg-adjective:stupid
+
+name:wisdom
+type:stat
+code:WIS
+power:5
+mult:10
+adjective:wise
+neg-adjective:naive
+
+name:dexterity
+type:stat
+code:DEX
+power:8
+mult:10
+adjective:dextrous
+neg-adjective:clumsy
+
+name:constitution
+type:stat
+code:CON
+power:12
+mult:15
+adjective:healthy
+neg-adjective:sickly
+
+name:stealth
+type:mod
+code:STEALTH
+power:8
+mult:12
+
+name:infravision
+type:mod
+code:INFRA
+power:4
+mult:8
+
+name:tunneling
+type:mod
+code:TUNNEL
+power:3
+mult:8
+
+name:speed
+type:mod
+code:SPEED
+power:20
+mult:6
+
+name:attack speed
+type:mod
+code:BLOWS
+power:0
+mult:50
+
+name:shooting speed
+type:mod
+code:SHOTS
+power:0
+mult:50
+
+name:shooting power
+type:mod
+code:MIGHT
+power:0
+mult:30
+
+name:light
+type:mod
+code:LIGHT
+power:3
+mult:6
+
+name:sustain strength
+type:flag
+code:SUST_STR
+power:9
+
+name:sustain intelligence
+type:flag
+code:SUST_INT
+power:4
+
+name:sustain wisdom
+type:flag
+code:SUST_WIS
+power:4
+
+name:sustain dexterity
+type:flag
+code:SUST_DEX
+power:7
+
+name:sustain constitution
+type:flag
+code:SUST_CON
+power:8

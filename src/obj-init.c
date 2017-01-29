@@ -112,6 +112,20 @@ static bool grab_element_flag(struct element_info *info, const char *flag_name)
 	return false;
 }
 
+static int code_index_in_array(const char *code_name[], const char *code)
+{
+	int i = 0;
+
+	while (code_name[i]) {
+		if (streq(code_name[i], code)) {
+			return i;
+		}
+		i++;
+	}
+
+	return -1;
+}
+
 static enum parser_error write_dummy_object_record(struct artifact *art, const char *name)
 {
 	struct object_kind *temp, *dummy;
@@ -2705,6 +2719,168 @@ struct file_parser artifact_parser = {
 	run_parse_artifact,
 	finish_parse_artifact,
 	cleanup_artifact
+};
+
+/**
+ * ------------------------------------------------------------------------
+ * Initialize object properties
+ * ------------------------------------------------------------------------ */
+
+static enum parser_error parse_object_property_name(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct obj_property *h = parser_priv(p);
+	struct obj_property *prop = mem_zalloc(sizeof *prop);
+
+	prop->next = h;
+	parser_setpriv(p, prop);
+	prop->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_property_type(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+	const char *name = parser_getstr(p, "type");
+
+	if (streq(name, "stat")) {
+		prop->type = OBJ_PROPERTY_STAT;
+	} else if (streq(name, "mod")) {
+		prop->type = OBJ_PROPERTY_MOD;
+	} else if (streq(name, "flag")) {
+		prop->type = OBJ_PROPERTY_FLAG;
+	} else {
+		return PARSE_ERROR_INVALID_PROPERTY;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_property_code(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+	const char *code = parser_getstr(p, "code");
+	int index = -1;
+
+	if (!prop)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!prop->type)
+		return PARSE_ERROR_MISSING_OBJ_PROP_TYPE;
+
+	if (prop->type == OBJ_PROPERTY_STAT) {
+		index = code_index_in_array(obj_mods, code);
+	} else if (prop->type == OBJ_PROPERTY_MOD) {
+		index = code_index_in_array(obj_mods, code);
+	} else if (prop->type == OBJ_PROPERTY_FLAG) {
+		index = code_index_in_array(obj_flags, code);
+	}
+	if (index >= 0) {
+		prop->index = index;
+	} else {
+		return PARSE_ERROR_INVALID_OBJ_PROP_CODE;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_property_power(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+
+	if (!prop)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	prop->power = parser_getint(p, "power");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_property_mult(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+
+	if (!prop)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	prop->mult = parser_getint(p, "mult");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_property_adjective(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+	const char *adj = parser_getstr(p, "adj");
+
+	if (!prop)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	prop->adjective = string_make(adj);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_property_neg_adj(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+	const char *adj = parser_getstr(p, "neg_adj");
+
+	if (!prop)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	prop->neg_adj = string_make(adj);
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_object_property(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_object_property_name);
+	parser_reg(p, "code str code", parse_object_property_code);
+	parser_reg(p, "type str type", parse_object_property_type);
+	parser_reg(p, "power int power", parse_object_property_power);
+	parser_reg(p, "mult int mult", parse_object_property_mult);
+	parser_reg(p, "adjective str adj", parse_object_property_adjective);
+	parser_reg(p, "neg-adjective str neg_adj", parse_object_property_neg_adj);
+	return p;
+}
+
+static errr run_parse_object_property(struct parser *p) {
+	return parse_file_quit_not_found(p, "object_property");
+}
+
+static errr finish_parse_object_property(struct parser *p) {
+	struct obj_property *prop, *n;
+	int idx;
+
+	/* Scan the list for the max id */
+	z_info->property_max = 0;
+	prop = parser_priv(p);
+	while (prop) {
+		z_info->property_max++;
+		prop = prop->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	obj_properties = mem_zalloc((z_info->property_max + 1) * sizeof(*prop));
+	idx = z_info->property_max;
+	for (prop = parser_priv(p); prop; prop = n, idx--) {
+		assert(idx > 0);
+
+		memcpy(&obj_properties[idx], prop, sizeof(*prop));
+		n = prop->next;
+
+		mem_free(prop);
+	}
+	z_info->property_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_object_property(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->property_max; idx++) {
+		struct obj_property *prop = &obj_properties[idx];
+
+		string_free(prop->name);
+		string_free(prop->adjective);
+		string_free(prop->neg_adj);
+	}
+	mem_free(obj_properties);
+}
+
+struct file_parser object_property_parser = {
+	"object_property",
+	init_parse_object_property,
+	run_parse_object_property,
+	finish_parse_object_property,
+	cleanup_object_property
 };
 
 /**

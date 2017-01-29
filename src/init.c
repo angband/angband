@@ -2675,6 +2675,7 @@ static struct {
 	{ "activations", &act_parser },
 	{ "ego-items", &ego_parser },
 	{ "artifacts", &artifact_parser },
+	{ "object properties", &object_property_parser },
 	{ "object power calculations", &object_power_parser },
 	{ "blow methods", &meth_parser },
 	{ "blow effects", &eff_parser },
