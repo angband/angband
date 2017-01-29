@@ -175,6 +175,7 @@ struct obj_property {
 	char *name;		/* property name */
 	char *adjective;/* adjective for property */
 	char *neg_adj;	/* adjective for negative of property */
+	char *msg;		/* message on noticing property */
 };
 
 extern struct obj_property *obj_properties;

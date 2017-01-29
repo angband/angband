@@ -118,3 +118,169 @@ name:sustain constitution
 type:flag
 code:SUST_CON
 power:8
+
+name:protection from fear
+type:flag
+code:PROT_FEAR
+power:6
+msg:Your {name} strengthens your courage.
+
+name:protection from blindness
+type:flag
+code:PROT_BLIND
+power:16
+msg:Your {name} soothes your eyes.
+
+name:protection from confusion
+type:flag
+code:PROT_CONF
+power:24
+msg:Your {name} clears your thoughts.
+
+name:protection from stunning
+type:flag
+code:PROT_STUN
+power:12
+msg:Your {name} steadies you.
+
+name:slow digestion
+type:flag
+code:SLOW_DIGEST
+power:2
+msg:You realise your {name} is slowing your metabolism.
+
+name:feather falling
+type:flag
+code:FEATHER
+power:1
+msg:Your {name} slows your fall.
+
+name:regeneration
+type:flag
+code:REGEN
+power:5
+msg:You note that your {name} is speeding up your recovery.
+
+name:telepathy
+type:flag
+code:TELEPATHY
+power:35
+
+name:see invisible
+type:flag
+code:SEE_INVIS
+power:6
+
+name:free action
+type:flag
+code:FREE_ACT
+power:8
+msg:Your {name} keeps you moving.
+
+name:hold life
+type:flag
+code:HOLD_LIFE
+power:5
+msg:Your {name} warms your spirit.
+
+name:earthquakes
+type:flag
+code:IMPACT
+power:10
+msg:Your {name} causes an earthquake!
+
+name:blessed melee
+type:flag
+code:BLESSED
+power:1
+
+name:burns out
+type:flag
+code:BURNS_OUT
+power:0
+
+name:takes fuel
+type:flag
+code:TAKES_FUEL
+power:0
+
+name:no fuel
+type:flag
+code:NO_FUEL
+power:5
+
+name:impaired hitpoint recovery
+type:flag
+code:IMPAIR_HP
+power:-9
+msg:You feel your {name} is slowing your recovery.
+
+name:impaired mana recovery
+type:flag
+code:IMPAIR_MANA
+power:-9
+msg:You feel your {name} is slowing your mana recovery.
+
+name:constant fear
+type:flag
+code:AFRAID
+power:-20
+
+name:teleportation ban
+type:flag
+code:NO_TELEPORT
+power:-20
+msg:Your {name} prevents you teleporting.
+
+name:aggravation
+type:flag
+code:AGGRAVATE
+power:-20
+msg:You notice your {name} aggravating things around you.
+
+name:experience drain
+type:flag
+code:DRAIN_EXP
+power:-5
+msg:You sense your {name} is draining your life.
+
+name:stuck on
+type:flag
+code:STICKY
+power:		-5
+
+name:fragile
+type:flag
+code:FRAGILE
+power:0
+
+name:radius 1 light
+type:flag
+code:LIGHT_1
+power:0
+
+name:radius 2 light
+type:flag
+code:LIGHT_2
+power:0
+
+name:power 1 digging
+type:flag
+code:DIG_1
+power:0
+
+name:power 2 digging
+type:flag
+code:DIG_2
+power:0
+
+name:power 3 digging
+type:flag
+code:DIG_3
+power:0
+
+name:explode
+type:flag
+code:EXPLODE
+power:0
+
