@@ -2747,6 +2747,14 @@ static enum parser_error parse_object_property_type(struct parser *p) {
 		prop->type = OBJ_PROPERTY_MOD;
 	} else if (streq(name, "flag")) {
 		prop->type = OBJ_PROPERTY_FLAG;
+	} else if (streq(name, "ignore")) {
+		prop->type = OBJ_PROPERTY_IGNORE;
+	} else if (streq(name, "resistance")) {
+		prop->type = OBJ_PROPERTY_RESIST;
+	} else if (streq(name, "vulnerability")) {
+		prop->type = OBJ_PROPERTY_VULN;
+	} else if (streq(name, "immunity")) {
+		prop->type = OBJ_PROPERTY_IMM;
 	} else {
 		return PARSE_ERROR_INVALID_PROPERTY;
 	}
@@ -2769,6 +2777,14 @@ static enum parser_error parse_object_property_code(struct parser *p) {
 		index = code_index_in_array(obj_mods, code);
 	} else if (prop->type == OBJ_PROPERTY_FLAG) {
 		index = code_index_in_array(obj_flags, code);
+	} else if (prop->type == OBJ_PROPERTY_IGNORE) {
+		index = code_index_in_array(element_names, code);
+	} else if (prop->type == OBJ_PROPERTY_RESIST) {
+		index = code_index_in_array(element_names, code);
+	} else if (prop->type == OBJ_PROPERTY_VULN) {
+		index = code_index_in_array(element_names, code);
+	} else if (prop->type == OBJ_PROPERTY_IMM) {
+		index = code_index_in_array(element_names, code);
 	}
 	if (index >= 0) {
 		prop->index = index;

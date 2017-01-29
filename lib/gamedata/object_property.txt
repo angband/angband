@@ -247,7 +247,7 @@ msg:You sense your {name} is draining your life.
 name:stuck on
 type:flag
 code:STICKY
-power:		-5
+power:-5
 
 name:fragile
 type:flag
@@ -283,4 +283,129 @@ name:explode
 type:flag
 code:EXPLODE
 power:0
+
+name:ignore acid
+type:ignore
+code:ACID
+power:3
+
+name:ignore electricity
+type:ignore
+code:ELEC
+power:1
+
+name:ignore fire
+type:ignore
+code:FIRE
+power:3
+
+name:ignore cold
+type:ignore
+code:COLD
+power:1
+
+name:acid resistance
+type:resistance
+code:ACID
+power:5
+
+name:electricity resistance
+type:resistance
+code:ELEC
+power:6
+
+name:fire resistance
+type:resistance
+code:FIRE
+power:6
+
+name:cold resistance
+type:resistance
+code:COLD
+power:6
+
+name:poison resistance
+type:resistance
+code:POIS
+power:28
+
+name:light resistance
+type:resistance
+code:LIGHT
+power:6
+
+name:dark resistance
+type:resistance
+code:DARK
+power:16
+
+name:sound resistance
+type:resistance
+code:SOUND
+power:14
+
+name:shards resistance
+type:resistance
+code:SHARD
+power:8
+
+name:nexus resistance
+type:resistance
+code:NEXUS
+power:15
+
+name:nether resistance
+type:resistance
+code:NETHER
+power:20
+
+name:chaos resistance
+type:resistance
+code:CHAOS
+power:20
+
+name:disenchantment resistance
+type:resistance
+code:DISEN
+power:20
+
+name:acid vulnerability
+type:vulnerability
+code:ACID
+power:-6
+
+name:lightning vulnerability
+type:vulnerability
+code:ELEC
+power:-6
+
+name:fire vulnerability
+type:vulnerability
+code:FIRE
+power:-6
+
+name:cold vulnerability
+type:vulnerability
+code:COLD
+power:-6
+
+name:acid immunity
+type:immunity
+code:ACID
+power:38
+
+name:lightning immunity
+type:immunity
+code:ELEC
+power:35
+
+name:fire immunity
+type:immunity
+code:FIRE
+power:40
+
+name:cold immunity
+type:immunity
+code:COLD
+power:37
 
