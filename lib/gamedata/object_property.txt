@@ -5,6 +5,10 @@
 #       appear before the code in this file 
 # code: a code for the object property, which is used to associate it with its
 #       index among the other properties of that type
+# power: the value given to the property in object power calculations
+# mult: relative value of properties, used in power calculations
+# type-mult: extra multiplier used in power for particular properties on
+#            particular types of object.  Assumed 1 if not mentioned
 
 name:strength
 type:stat
@@ -35,6 +39,7 @@ type:stat
 code:DEX
 power:8
 mult:10
+type-mult:gloves:2
 adjective:dextrous
 neg-adjective:clumsy
 
@@ -75,24 +80,70 @@ type:mod
 code:BLOWS
 power:0
 mult:50
+type-mult:bow:0
+type-mult:ring:3
+type-mult:amulet:3
+type-mult:light:3
+type-mult:soft armor:3
+type-mult:hard armor:3
+type-mult:dragon armor:3
+type-mult:cloak:3
+type-mult:shield:3
+type-mult:helm:3
+type-mult:crown:3
+type-mult:gloves:3
+type-mult:boots:3
 
 name:shooting speed
 type:mod
 code:SHOTS
 power:0
 mult:50
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:ring:4
+type-mult:amulet:4
+type-mult:light:4
+type-mult:soft armor:4
+type-mult:hard armor:4
+type-mult:dragon armor:4
+type-mult:cloak:4
+type-mult:shield:4
+type-mult:helm:4
+type-mult:crown:4
+type-mult:gloves:4
+type-mult:boots:4
 
 name:shooting power
 type:mod
 code:MIGHT
 power:0
 mult:30
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 
 name:light
 type:mod
 code:LIGHT
 power:3
 mult:6
+type-mult:light:3
 
 name:sustain strength
 type:flag
@@ -159,55 +210,189 @@ name:regeneration
 type:flag
 code:REGEN
 power:5
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
 msg:You note that your {name} is speeding up your recovery.
 
 name:telepathy
 type:flag
 code:TELEPATHY
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
 power:35
 
 name:see invisible
 type:flag
 code:SEE_INVIS
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
 power:6
 
 name:free action
 type:flag
 code:FREE_ACT
 power:8
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:5
+type-mult:boots:2
 msg:Your {name} keeps you moving.
 
 name:hold life
 type:flag
 code:HOLD_LIFE
 power:5
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
 msg:Your {name} warms your spirit.
 
 name:earthquakes
 type:flag
 code:IMPACT
 power:10
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 msg:Your {name} causes an earthquake!
 
 name:blessed melee
 type:flag
 code:BLESSED
 power:1
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 
 name:burns out
 type:flag
 code:BURNS_OUT
 power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 
 name:takes fuel
 type:flag
 code:TAKES_FUEL
 power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 
 name:no fuel
 type:flag
 code:NO_FUEL
 power:5
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 
 name:impaired hitpoint recovery
 type:flag
@@ -258,11 +443,43 @@ name:radius 1 light
 type:flag
 code:LIGHT_1
 power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 
 name:radius 2 light
 type:flag
 code:LIGHT_2
 power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 
 name:power 1 digging
 type:flag
@@ -283,6 +500,22 @@ name:explode
 type:flag
 code:EXPLODE
 power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
 
 name:ignore acid
 type:ignore

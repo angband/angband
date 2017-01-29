@@ -22,21 +22,6 @@
 #include "object.h"
 
 /**
- * The values for the "tval" field of various objects.
- *
- * This value is the primary means by which items are sorted in the
- * player inventory, followed by "sval" and "cost".
- */
-enum
-{
-	#define TV(a, b, c) TV_##a,
-	#include "list-tvals.h"
-	#undef TV
-
-	TV_MAX
-};
-
-/**
  * Special "sval" value -- unknown "sval"
  */
 #define SV_UNKNOWN			0

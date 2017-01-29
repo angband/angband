@@ -27,6 +27,21 @@
  * ------------------------------------------------------------------------ */
 
 /**
+ * The values for the "tval" field of various objects.
+ *
+ * This value is the primary means by which items are sorted in the
+ * player inventory, followed by "sval" and "cost".
+ */
+enum
+{
+	#define TV(a, b, c) TV_##a,
+	#include "list-tvals.h"
+	#undef TV
+
+	TV_MAX
+};
+
+/**
  * The object flags
  */
 enum {
@@ -172,14 +187,15 @@ enum obj_property_type {
  */
 struct obj_property {
 	struct obj_property *next;
-	int type;		/* type of property */
-	int index;		/* index of the property for its type */
-	int power;		/* base power rating */
-	int mult;		/* relative weight rating */
-	char *name;		/* property name */
-	char *adjective;/* adjective for property */
-	char *neg_adj;	/* adjective for negative of property */
-	char *msg;		/* message on noticing property */
+	int type;				/* type of property */
+	int index;				/* index of the property for its type */
+	int power;				/* base power rating */
+	int mult;				/* relative weight rating */
+	int type_mult[TV_MAX];	/* relative weight rating specific to object type */
+	char *name;				/* property name */
+	char *adjective;		/* adjective for property */
+	char *neg_adj;			/* adjective for negative of property */
+	char *msg;				/* message on noticing property */
 };
 
 extern struct obj_property *obj_properties;

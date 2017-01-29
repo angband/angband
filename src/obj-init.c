@@ -2730,10 +2730,16 @@ static enum parser_error parse_object_property_name(struct parser *p) {
 	const char *name = parser_getstr(p, "name");
 	struct obj_property *h = parser_priv(p);
 	struct obj_property *prop = mem_zalloc(sizeof *prop);
+	int i;
 
 	prop->next = h;
 	parser_setpriv(p, prop);
 	prop->name = string_make(name);
+
+	/* Set all the type multipliers to the default of 1 */
+	for (i = 0; i < TV_MAX; i++) {
+		prop->type_mult[i] = 1;
+	}
 	return PARSE_ERROR_NONE;
 }
 
@@ -2812,6 +2818,20 @@ static enum parser_error parse_object_property_mult(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_object_property_type_mult(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+	int tval, mult;
+
+	if (!prop)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "type"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	mult = parser_getint(p, "mult");
+	prop->type_mult[tval] = mult;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_object_property_adjective(struct parser *p) {
 	struct obj_property *prop = parser_priv(p);
 	const char *adj = parser_getstr(p, "adj");
@@ -2850,6 +2870,7 @@ struct parser *init_parse_object_property(void) {
 	parser_reg(p, "type str type", parse_object_property_type);
 	parser_reg(p, "power int power", parse_object_property_power);
 	parser_reg(p, "mult int mult", parse_object_property_mult);
+	parser_reg(p, "type-mult sym type int mult", parse_object_property_type_mult);
 	parser_reg(p, "adjective str adj", parse_object_property_adjective);
 	parser_reg(p, "neg-adjective str neg_adj", parse_object_property_neg_adj);
 	parser_reg(p, "msg str msg", parse_object_property_msg);
