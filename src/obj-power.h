@@ -81,6 +81,7 @@ struct power_calc {
 	struct poss_item *poss_items;
 	dice_t *dice;		/**< Dice expression used in the calculation */
 	int operation;		/**< How the calculation operates on power */
+	int iterate;		/**< How many values the calculation iterates over */
 	char *apply_to;		/**< What the calculation is applied to */
 };
 

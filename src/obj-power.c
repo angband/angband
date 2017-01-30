@@ -151,6 +151,7 @@ static int num_brands;
 static int num_slays;
 static int num_kills;
 static int best_power;
+static int iter;
 
 static int object_power_calculation_TO_DAM(void)
 {
@@ -290,6 +291,45 @@ static int object_power_calculation_WEIGHT(void)
 	return MAX(20, power_obj->weight);
 }
 
+static int object_power_calculation_MODIFIER(void)
+{
+	return power_obj->modifiers[iter];
+}
+
+static int object_power_calculation_MOD_POWER(void)
+{
+	struct obj_property *prop;
+	int i;
+
+	/* Find the right property */
+	for (i = 0; i < z_info->property_max; i++) {
+		prop = &obj_properties[i];
+		if (((prop->type == OBJ_PROPERTY_STAT) ||
+			 (prop->type == OBJ_PROPERTY_MOD)) && (prop->index == iter)) {
+			break;
+		}
+	}
+	assert(i < z_info->property_max);
+	return prop->power;
+}
+
+static int object_power_calculation_MOD_TYPE_MULT(void)
+{
+	struct obj_property *prop;
+	int i;
+
+	/* Find the right property */
+	for (i = 0; i < z_info->property_max; i++) {
+		prop = &obj_properties[i];
+		if (((prop->type == OBJ_PROPERTY_STAT) ||
+			 (prop->type == OBJ_PROPERTY_MOD)) && (prop->index == iter)) {
+			break;
+		}
+	}
+	assert(i < z_info->property_max);
+	return prop->type_mult[power_obj->tval];
+}
+
 #if 0
 static int object_power_calculation_(void)
 {
@@ -324,6 +364,9 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		{ "OBJ_POWER_TO_ARMOR", object_power_calculation_TO_ARMOR },
 		{ "OBJ_POWER_TOTAL_ARMOR", object_power_calculation_TOTAL_ARMOR },
 		{ "OBJ_POWER_WEIGHT", object_power_calculation_WEIGHT },
+		{ "OBJ_POWER_MODIFIER", object_power_calculation_MODIFIER },
+		{ "OBJ_POWER_MOD_POWER", object_power_calculation_MOD_POWER },
+		{ "OBJ_POWER_MOD_TYPE_MULT", object_power_calculation_MOD_TYPE_MULT },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif
@@ -367,49 +410,43 @@ static int run_power_calculation(struct power_calc *calc)
 	return dice_evaluate(calc->dice, 1, MAXIMISE, &rv);
 }
 
-static int apply_operation(int operation, int current, int new)
+static void apply_op(int operation, int *current, int new)
 {
 	switch (operation) {
 		case POWER_CALC_NONE: {
 			break;
 		}
 		case POWER_CALC_ADD: {
-			current += new;
+			*current += new;
 			break;
 		}
 		case POWER_CALC_ADD_IF_POSITIVE: {
 			if (new > 0) {
-				current += new;
+				*current += new;
 			}
 			break;
 		}
 		case POWER_CALC_MULTIPLY: {
-			current *= new;
+			*current *= new;
 			break;
 		}
 		case POWER_CALC_DIVIDE: {
-			current /= new;
+			*current /= new;
 			break;
 		}
 		default: {
 			break;
 		}
 	}
-
-	return current;
 }
 
-static void evaluate_power(const struct object *obj)
+/**
+ * Calculate stats on slays and brands up
+ */
+static void collect_slay_brand_stats(const struct object *obj)
 {
 	int i;
-	int *current_value;
-	int power = 0;
 
-	/* Set the power evaluation object and intermediate power values */
-	power_obj = (struct object *) obj;
-	current_value = mem_zalloc(z_info->calculation_max * sizeof(int));
-
-	/* Calculate stats on slays and brands up front */
 	num_brands = 0;
 	num_slays = 0;
 	num_kills = 0;
@@ -460,29 +497,57 @@ static void evaluate_power(const struct object *obj)
 		}
 		log_obj(format("\nbest power is : %d\n", best_power));
 	}
+}
+
+/**
+ * Run all the power calculations on an object to find its power
+ */
+static void evaluate_power(const struct object *obj)
+{
+	int i;
+	int **current_value;
+	int power = 0;
+
+	/* Set the power evaluation object and collect slay and brand stats */
+	power_obj = (struct object *) obj;
+	collect_slay_brand_stats(obj);
+
+	/* Set up arrays for each power calculation (most of them length 1) */
+	current_value = mem_zalloc(z_info->calculation_max * sizeof(int*));
+	for (i = 0; i < z_info->calculation_max; i++) {
+		struct power_calc *calc = &calculations[i];
+
+		current_value[i] = mem_zalloc(calc->iterate * sizeof(int));
+	}
 
 	/* Preprocess the power calculations for intermediate results */
 	for (i = 0; i < z_info->calculation_max; i++) {
 		struct power_calc *calc = &calculations[i];
+		int j;
 
-		/* Run the calculation, and apply to an earlier one if needed */
-		current_value[i] = run_power_calculation(calc);
+		/* Run the calculation... */
+		for (iter = 0; iter < calc->iterate; iter++) {
+			current_value[i][iter] = run_power_calculation(calc);
+		}
+
+		/* ...and apply to an earlier one if needed */
 		if (calc->apply_to) {
-			int j;
 			for (j = 0; j < i; j++) {
 				if (!calculations[j].name) continue;
 				if (streq(calculations[j].name, calc->apply_to)) {
-					current_value[j] = apply_operation(calc->operation,
-													   current_value[j],
-													   current_value[i]);
 					break;
 				}
 			}
 
-			/* No name match found, ignore this calculation with complaint */
+			/* Ignore this calculation if no name found, otherwise apply it */
 			if (i == j) {
 				log_obj(format("No target %s for %s to apply to\n",
 							   calc->apply_to, calc->name));
+			} else {
+				for (iter = 0; iter < calc->iterate; iter++) {
+					apply_op(calc->operation, &current_value[j][iter],
+							 current_value[i][iter]);
+				}
 			}
 		}
 	}
@@ -503,15 +568,23 @@ static void evaluate_power(const struct object *obj)
 
 		if (calc->apply_to == NULL) {
 			int old_power = power;
-			power = apply_operation(calc->operation, power, current_value[i]);
+			for (iter = 0; iter < calc->iterate; iter++) {
+				apply_op(calc->operation, &power, current_value[i][iter]);
+			}
 
 			/* Report result if there's a change in power */
 			if (power != old_power) {
 				log_obj(format("%s is %d, power is %d\n", calc->name,
-							   current_value[i], power));
+							   current_value[i][0], power));
 			}
 		}
 	}
+
+	/* Free the current value arrays */
+	for (i = 0; i < z_info->calculation_max; i++) {
+		mem_free(current_value[i]);
+	}
+	mem_free(current_value);
 }
 
 /**

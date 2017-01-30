@@ -2944,6 +2944,7 @@ static enum parser_error parse_object_power_name(struct parser *p) {
 	c->next = h;
 	parser_setpriv(p, c);
 	c->name = string_make(name);
+	c->iterate = 1;
 	return PARSE_ERROR_NONE;
 }
 
@@ -3073,6 +3074,22 @@ static enum parser_error parse_object_power_operation(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_object_power_iterate(struct parser *p) {
+	const char *iter = parser_getstr(p, "iter");
+	struct power_calc *c = parser_priv(p);
+
+	if (streq(iter, "modifier")) {
+		c->iterate = OBJ_MOD_MAX;
+	} else if (streq(iter, "element")) {
+		c->iterate = ELEM_MAX;
+	} else if (streq(iter, "flag")) {
+		c->iterate = OF_MAX;
+	} else {
+		return PARSE_ERROR_INVALID_ITERATE;
+	}
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_object_power_apply_to(struct parser *p) {
 	const char *apply = parser_getstr(p, "apply");
 	struct power_calc *c = parser_priv(p);
@@ -3090,6 +3107,7 @@ struct parser *init_parse_object_power(void) {
 	parser_reg(p, "dice str dice", parse_object_power_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_object_power_expr);
 	parser_reg(p, "operation str op", parse_object_power_operation);
+	parser_reg(p, "iterate str iter", parse_object_power_iterate);
 	parser_reg(p, "apply-to str apply", parse_object_power_apply_to);
 	return p;
 }

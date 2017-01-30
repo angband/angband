@@ -285,3 +285,24 @@ type:ring
 dice:4
 operation:add
 
+# modifiers have a power and a type-dependent multiplier
+name:modifier power
+dice:$P
+expr:P:OBJ_POWER_MODIFIER:+ 0
+operation:add
+iterate:modifier
+
+name:individual modifier power
+dice:$P
+expr:P:OBJ_POWER_MOD_POWER:+ 0
+operation:multiply
+iterate:modifier
+apply-to:modifier power
+
+name:modifier type multiplier
+dice:$P
+expr:P:OBJ_POWER_MOD_TYPE_MULT:+ 0
+operation:multiply
+iterate:modifier
+apply-to:modifier power
+
