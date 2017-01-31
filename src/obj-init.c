@@ -3064,6 +3064,8 @@ static enum parser_error parse_object_power_operation(struct parser *p) {
 		c->operation = POWER_CALC_ADD;
 	} else if (streq(op, "add if positive")) {
 		c->operation = POWER_CALC_ADD_IF_POSITIVE;
+	} else if (streq(op, "square and add if positive")) {
+		c->operation = POWER_CALC_SQUARE_ADD_IF_POSITIVE;
 	} else if (streq(op, "multiply")) {
 		c->operation = POWER_CALC_MULTIPLY;
 	} else if (streq(op, "divide")) {

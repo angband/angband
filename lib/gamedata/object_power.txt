@@ -286,23 +286,40 @@ dice:4
 operation:add
 
 # modifiers have a power and a type-dependent multiplier
-name:modifier power
+name:total modifier power
 dice:$P
 expr:P:OBJ_POWER_MODIFIER:+ 0
 operation:add
 iterate:modifier
 
-name:individual modifier power
+name:modifier power
 dice:$P
 expr:P:OBJ_POWER_MOD_POWER:+ 0
 operation:multiply
 iterate:modifier
-apply-to:modifier power
+apply-to:total modifier power
 
 name:modifier type multiplier
 dice:$P
 expr:P:OBJ_POWER_MOD_TYPE_MULT:+ 0
 operation:multiply
 iterate:modifier
-apply-to:modifier power
+apply-to:total modifier power
+
+name:total modifier bonus
+dice:-70
+operation:square and add if positive
+
+name:modifier bonus
+dice:$Pd$Q
+expr:P:OBJ_POWER_MODIFIER:+ 0
+expr:Q:OBJ_POWER_MOD_MULT:+ 0
+operation:add
+iterate:modifier
+apply-to:total modifier bonus
+
+name:modifier bonus divisor
+dice:16
+operation:divide
+apply-to:total modifier bonus
 

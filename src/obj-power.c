@@ -330,6 +330,23 @@ static int object_power_calculation_MOD_TYPE_MULT(void)
 	return prop->type_mult[power_obj->tval];
 }
 
+static int object_power_calculation_MOD_MULT(void)
+{
+	struct obj_property *prop;
+	int i;
+
+	/* Find the right property */
+	for (i = 0; i < z_info->property_max; i++) {
+		prop = &obj_properties[i];
+		if (((prop->type == OBJ_PROPERTY_STAT) ||
+			 (prop->type == OBJ_PROPERTY_MOD)) && (prop->index == iter)) {
+			break;
+		}
+	}
+	assert(i < z_info->property_max);
+	return prop->mult;
+}
+
 #if 0
 static int object_power_calculation_(void)
 {
@@ -367,6 +384,7 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		{ "OBJ_POWER_MODIFIER", object_power_calculation_MODIFIER },
 		{ "OBJ_POWER_MOD_POWER", object_power_calculation_MOD_POWER },
 		{ "OBJ_POWER_MOD_TYPE_MULT", object_power_calculation_MOD_TYPE_MULT },
+		{ "OBJ_POWER_MOD_MULT", object_power_calculation_MOD_MULT },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif
@@ -422,6 +440,13 @@ static void apply_op(int operation, int *current, int new)
 		}
 		case POWER_CALC_ADD_IF_POSITIVE: {
 			if (new > 0) {
+				*current += new;
+			}
+			break;
+		}
+		case POWER_CALC_SQUARE_ADD_IF_POSITIVE: {
+			if (new > 0) {
+				new *= new;
 				*current += new;
 			}
 			break;
@@ -544,9 +569,21 @@ static void evaluate_power(const struct object *obj)
 				log_obj(format("No target %s for %s to apply to\n",
 							   calc->apply_to, calc->name));
 			} else {
-				for (iter = 0; iter < calc->iterate; iter++) {
-					apply_op(calc->operation, &current_value[j][iter],
-							 current_value[i][iter]);
+				if ((calculations[j].iterate == 1) && (calc->iterate > 1)) {
+					/* Many values applying to one */
+					for (iter = 0; iter < calc->iterate; iter++) {
+						apply_op(calc->operation, &current_value[j][0],
+								 current_value[i][iter]);
+					}
+				} else if (calculations[j].iterate == calc->iterate) {
+					/* Both the same size */
+					for (iter = 0; iter < calc->iterate; iter++) {
+						apply_op(calc->operation, &current_value[j][iter],
+								 current_value[i][iter]);
+					}
+				} else {
+					log_obj(format("Size mismatch applying %s to %s\n",
+								   calc->name, calculations[j].name));
 				}
 			}
 		}
