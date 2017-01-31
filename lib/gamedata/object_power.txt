@@ -323,3 +323,20 @@ dice:16
 operation:divide
 apply-to:total modifier bonus
 
+name:total modifier inhibitor
+dice:-249
+operation:add if positive
+
+name:modifier inhibitor
+dice:$Pd$Q
+expr:P:OBJ_POWER_MODIFIER:+ 0
+expr:Q:OBJ_POWER_MOD_MULT:+ 0
+operation:add
+iterate:modifier
+apply-to:total modifier inhibitor
+
+name:modifier inhibitor multiplier
+dice:20000
+operation:multiply
+apply-to:total modifier inhibitor
+
