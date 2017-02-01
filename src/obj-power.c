@@ -145,6 +145,27 @@ void log_obj(char *message)
  * Object power calculations
  * ------------------------------------------------------------------------ */
 
+static struct obj_property *obj_property_by_type_and_index(int type, int index)
+{
+	struct obj_property *prop;
+	int i;
+
+	/* Find the right property */
+	for (i = 0; i < z_info->property_max; i++) {
+		prop = &obj_properties[i];
+		if ((prop->type == type) && (prop->index == index)) {
+			return prop;
+		}
+
+		/* Special case - stats count as mods */
+		if ((type == OBJ_PROPERTY_MOD) && (prop->type == OBJ_PROPERTY_STAT)
+			&& (prop->index == index)) {
+			return prop;
+		}
+	}
+
+	return NULL;
+}
 
 static struct object *power_obj;
 static int num_brands;
@@ -299,52 +320,41 @@ static int object_power_calculation_MODIFIER(void)
 static int object_power_calculation_MOD_POWER(void)
 {
 	struct obj_property *prop;
-	int i;
-
-	/* Find the right property */
-	for (i = 0; i < z_info->property_max; i++) {
-		prop = &obj_properties[i];
-		if (((prop->type == OBJ_PROPERTY_STAT) ||
-			 (prop->type == OBJ_PROPERTY_MOD)) && (prop->index == iter)) {
-			break;
-		}
-	}
-	assert(i < z_info->property_max);
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_MOD, iter);
+	assert(prop);
 	return prop->power;
 }
 
 static int object_power_calculation_MOD_TYPE_MULT(void)
 {
 	struct obj_property *prop;
-	int i;
-
-	/* Find the right property */
-	for (i = 0; i < z_info->property_max; i++) {
-		prop = &obj_properties[i];
-		if (((prop->type == OBJ_PROPERTY_STAT) ||
-			 (prop->type == OBJ_PROPERTY_MOD)) && (prop->index == iter)) {
-			break;
-		}
-	}
-	assert(i < z_info->property_max);
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_MOD, iter);
+	assert(prop);
 	return prop->type_mult[power_obj->tval];
 }
 
 static int object_power_calculation_MOD_MULT(void)
 {
 	struct obj_property *prop;
-	int i;
-
-	/* Find the right property */
-	for (i = 0; i < z_info->property_max; i++) {
-		prop = &obj_properties[i];
-		if (((prop->type == OBJ_PROPERTY_STAT) ||
-			 (prop->type == OBJ_PROPERTY_MOD)) && (prop->index == iter)) {
-			break;
-		}
-	}
-	assert(i < z_info->property_max);
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_MOD, iter);
+	assert(prop);
 	return prop->mult;
+}
+
+static int object_power_calculation_FLAG_POWER(void)
+{
+	struct obj_property *prop;
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_FLAG, iter);
+	assert(prop);
+	return of_has(power_obj->flags, iter + 1) ? prop->power : 0;
+}
+
+static int object_power_calculation_FLAG_TYPE_MULT(void)
+{
+	struct obj_property *prop;
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_FLAG, iter);
+	assert(prop);
+	return prop->type_mult[power_obj->tval];
 }
 
 #if 0
@@ -385,6 +395,8 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		{ "OBJ_POWER_MOD_POWER", object_power_calculation_MOD_POWER },
 		{ "OBJ_POWER_MOD_TYPE_MULT", object_power_calculation_MOD_TYPE_MULT },
 		{ "OBJ_POWER_MOD_MULT", object_power_calculation_MOD_MULT },
+		{ "OBJ_POWER_FLAG_POWER", object_power_calculation_FLAG_POWER },
+		{ "OBJ_POWER_FLAG_TYPE_MULT", object_power_calculation_FLAG_TYPE_MULT },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif
@@ -542,7 +554,7 @@ static void evaluate_power(const struct object *obj)
 	for (i = 0; i < z_info->calculation_max; i++) {
 		struct power_calc *calc = &calculations[i];
 
-		current_value[i] = mem_zalloc(calc->iterate * sizeof(int));
+		current_value[i] = mem_zalloc(calc->iterate.max * sizeof(int));
 	}
 
 	/* Preprocess the power calculations for intermediate results */
@@ -551,7 +563,7 @@ static void evaluate_power(const struct object *obj)
 		int j;
 
 		/* Run the calculation... */
-		for (iter = 0; iter < calc->iterate; iter++) {
+		for (iter = 0; iter < calc->iterate.max; iter++) {
 			current_value[i][iter] = run_power_calculation(calc);
 		}
 
@@ -569,15 +581,16 @@ static void evaluate_power(const struct object *obj)
 				log_obj(format("No target %s for %s to apply to\n",
 							   calc->apply_to, calc->name));
 			} else {
-				if ((calculations[j].iterate == 1) && (calc->iterate > 1)) {
+				if ((calculations[j].iterate.max == 1) &&
+					(calc->iterate.max > 1)) {
 					/* Many values applying to one */
-					for (iter = 0; iter < calc->iterate; iter++) {
+					for (iter = 0; iter < calc->iterate.max; iter++) {
 						apply_op(calc->operation, &current_value[j][0],
 								 current_value[i][iter]);
 					}
-				} else if (calculations[j].iterate == calc->iterate) {
+				} else if (calculations[j].iterate.max == calc->iterate.max) {
 					/* Both the same size */
-					for (iter = 0; iter < calc->iterate; iter++) {
+					for (iter = 0; iter < calc->iterate.max; iter++) {
 						apply_op(calc->operation, &current_value[j][iter],
 								 current_value[i][iter]);
 					}
@@ -605,14 +618,28 @@ static void evaluate_power(const struct object *obj)
 
 		if (calc->apply_to == NULL) {
 			int old_power = power;
-			for (iter = 0; iter < calc->iterate; iter++) {
+			for (iter = 0; iter < calc->iterate.max; iter++) {
 				apply_op(calc->operation, &power, current_value[i][iter]);
 			}
 
 			/* Report result if there's a change in power */
 			if (power != old_power) {
-				log_obj(format("%s is %d, power is %d\n", calc->name,
-							   current_value[i][0], power));
+				if (calc->iterate.max == 1) {
+					log_obj(format("%s is %d, power is %d\n", calc->name,
+								   current_value[i][0], power));
+				} else {
+					for (iter = 0; iter < calc->iterate.max; iter++) {
+						struct obj_property *prop;
+						int type = calc->iterate.property_type;
+						prop = obj_property_by_type_and_index(type, iter);
+						if (current_value[i][iter] != 0) {
+							old_power += current_value[i][iter];
+							log_obj(format("%d for %s, power is %d\n",
+										   current_value[i][iter], prop->name,
+										   old_power));
+						}
+					}
+				}
 			}
 		}
 	}

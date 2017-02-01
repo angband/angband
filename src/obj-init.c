@@ -2767,6 +2767,22 @@ static enum parser_error parse_object_property_type(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_object_property_subtype(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+	const char *name = parser_getstr(p, "subtype");
+
+	if (streq(name, "sustain")) {
+		prop->subtype = OFT_SUST;
+	} else if (streq(name, "protection")) {
+		prop->subtype = OFT_PROT;
+	} else if (streq(name, "misc ability")) {
+		prop->type = OFT_MISC;
+	} else {
+		return PARSE_ERROR_INVALID_SUBTYPE;
+	}
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_object_property_code(struct parser *p) {
 	struct obj_property *prop = parser_priv(p);
 	const char *code = parser_getstr(p, "code");
@@ -2782,7 +2798,7 @@ static enum parser_error parse_object_property_code(struct parser *p) {
 	} else if (prop->type == OBJ_PROPERTY_MOD) {
 		index = code_index_in_array(obj_mods, code);
 	} else if (prop->type == OBJ_PROPERTY_FLAG) {
-		index = code_index_in_array(obj_flags, code);
+		index = code_index_in_array(obj_flags, code) - 1;
 	} else if (prop->type == OBJ_PROPERTY_IGNORE) {
 		index = code_index_in_array(element_names, code);
 	} else if (prop->type == OBJ_PROPERTY_RESIST) {
@@ -2868,6 +2884,7 @@ struct parser *init_parse_object_property(void) {
 	parser_reg(p, "name str name", parse_object_property_name);
 	parser_reg(p, "code str code", parse_object_property_code);
 	parser_reg(p, "type str type", parse_object_property_type);
+	parser_reg(p, "subtype str subtype", parse_object_property_subtype);
 	parser_reg(p, "power int power", parse_object_property_power);
 	parser_reg(p, "mult int mult", parse_object_property_mult);
 	parser_reg(p, "type-mult sym type int mult", parse_object_property_type_mult);
@@ -2944,7 +2961,8 @@ static enum parser_error parse_object_power_name(struct parser *p) {
 	c->next = h;
 	parser_setpriv(p, c);
 	c->name = string_make(name);
-	c->iterate = 1;
+	c->iterate.property_type = OBJ_PROPERTY_NONE;
+	c->iterate.max = 1;
 	return PARSE_ERROR_NONE;
 }
 
@@ -3081,11 +3099,23 @@ static enum parser_error parse_object_power_iterate(struct parser *p) {
 	struct power_calc *c = parser_priv(p);
 
 	if (streq(iter, "modifier")) {
-		c->iterate = OBJ_MOD_MAX;
-	} else if (streq(iter, "element")) {
-		c->iterate = ELEM_MAX;
+		c->iterate.property_type = OBJ_PROPERTY_MOD;
+		c->iterate.max = OBJ_MOD_MAX;
+	} else if (streq(iter, "resistance")) {
+		c->iterate.property_type = OBJ_PROPERTY_RESIST;
+		c->iterate.max = ELEM_MAX;
+	} else if (streq(iter, "vulnerability")) {
+		c->iterate.property_type = OBJ_PROPERTY_VULN;
+		c->iterate.max = ELEM_MAX;
+	} else if (streq(iter, "immunity")) {
+		c->iterate.property_type = OBJ_PROPERTY_IMM;
+		c->iterate.max = ELEM_MAX;
+	} else if (streq(iter, "ignore")) {
+		c->iterate.property_type = OBJ_PROPERTY_IGNORE;
+		c->iterate.max = ELEM_MAX;
 	} else if (streq(iter, "flag")) {
-		c->iterate = OF_MAX;
+		c->iterate.property_type = OBJ_PROPERTY_FLAG;
+		c->iterate.max = OF_MAX - 1;
 	} else {
 		return PARSE_ERROR_INVALID_ITERATE;
 	}

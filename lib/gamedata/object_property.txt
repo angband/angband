@@ -147,67 +147,79 @@ type-mult:light:3
 
 name:sustain strength
 type:flag
+subtype:sustain
 code:SUST_STR
 power:9
 
 name:sustain intelligence
 type:flag
+subtype:sustain
 code:SUST_INT
 power:4
 
 name:sustain wisdom
 type:flag
+subtype:sustain
 code:SUST_WIS
 power:4
 
 name:sustain dexterity
 type:flag
+subtype:sustain
 code:SUST_DEX
 power:7
 
 name:sustain constitution
 type:flag
+subtype:sustain
 code:SUST_CON
 power:8
 
 name:protection from fear
 type:flag
 code:PROT_FEAR
+subtype:protection
 power:6
 msg:Your {name} strengthens your courage.
 
 name:protection from blindness
 type:flag
 code:PROT_BLIND
+subtype:protection
 power:16
 msg:Your {name} soothes your eyes.
 
 name:protection from confusion
 type:flag
 code:PROT_CONF
+subtype:protection
 power:24
 msg:Your {name} clears your thoughts.
 
 name:protection from stunning
 type:flag
 code:PROT_STUN
+subtype:protection
 power:12
 msg:Your {name} steadies you.
 
 name:slow digestion
 type:flag
+subtype:misc ability
 code:SLOW_DIGEST
 power:2
 msg:You realise your {name} is slowing your metabolism.
 
 name:feather falling
 type:flag
+subtype:misc ability
 code:FEATHER
 power:1
 msg:Your {name} slows your fall.
 
 name:regeneration
 type:flag
+subtype:misc ability
 code:REGEN
 power:5
 type-mult:ring:2
@@ -226,6 +238,7 @@ msg:You note that your {name} is speeding up your recovery.
 
 name:telepathy
 type:flag
+subtype:misc ability
 code:TELEPATHY
 type-mult:ring:2
 type-mult:amulet:2
@@ -243,6 +256,7 @@ power:35
 
 name:see invisible
 type:flag
+subtype:misc ability
 code:SEE_INVIS
 type-mult:ring:2
 type-mult:amulet:2
@@ -260,6 +274,7 @@ power:6
 
 name:free action
 type:flag
+subtype:misc ability
 code:FREE_ACT
 power:8
 type-mult:ring:2
@@ -278,6 +293,7 @@ msg:Your {name} keeps you moving.
 
 name:hold life
 type:flag
+subtype:misc ability
 code:HOLD_LIFE
 power:5
 type-mult:ring:2

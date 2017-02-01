@@ -340,3 +340,10 @@ dice:20000
 operation:multiply
 apply-to:total modifier inhibitor
 
+name:flag power
+dice:$Pd$Q
+expr:P:OBJ_POWER_FLAG_POWER:+ 0
+expr:Q:OBJ_POWER_FLAG_TYPE_MULT:+ 0
+operation:add
+iterate:flag
+
