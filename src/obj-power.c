@@ -357,6 +357,23 @@ static int object_power_calculation_FLAG_TYPE_MULT(void)
 	return prop->type_mult[power_obj->tval];
 }
 
+static int object_power_calculation_NUM_SUSTAINS(void)
+{
+	bitflag f[OF_SIZE];
+	of_wipe(f);
+	create_obj_flag_mask(f, false, OFT_SUST, OFT_MAX);
+	of_inter(f, power_obj->flags);
+	return of_count(f) > 1 ? of_count(f) : 0;
+}
+
+static int object_power_calculation_ALL_SUSTAINS(void)
+{
+	bitflag f[OF_SIZE];
+	of_wipe(f);
+	create_obj_flag_mask(f, false, OFT_SUST, OFT_MAX);
+	return of_is_subset(power_obj->flags, f) ? 1 : 0;
+}
+
 #if 0
 static int object_power_calculation_(void)
 {
@@ -397,6 +414,8 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		{ "OBJ_POWER_MOD_MULT", object_power_calculation_MOD_MULT },
 		{ "OBJ_POWER_FLAG_POWER", object_power_calculation_FLAG_POWER },
 		{ "OBJ_POWER_FLAG_TYPE_MULT", object_power_calculation_FLAG_TYPE_MULT },
+		{ "OBJ_POWER_NUM_SUSTAINS", object_power_calculation_NUM_SUSTAINS },
+		{ "OBJ_POWER_ALL_SUSTAINS", object_power_calculation_ALL_SUSTAINS },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif
@@ -626,7 +645,7 @@ static void evaluate_power(const struct object *obj)
 			if (power != old_power) {
 				if (calc->iterate.max == 1) {
 					log_obj(format("%s is %d, power is %d\n", calc->name,
-								   current_value[i][0], power));
+								   power - old_power, power));
 				} else {
 					for (iter = 0; iter < calc->iterate.max; iter++) {
 						struct obj_property *prop;

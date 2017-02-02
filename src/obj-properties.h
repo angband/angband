@@ -109,6 +109,7 @@ enum object_flag_id {
 
 #define of_has(f, flag)        	flag_has_dbg(f, OF_SIZE, flag, #f, #flag)
 #define of_next(f, flag)       	flag_next(f, OF_SIZE, flag)
+#define of_count(f)             flag_count(f, OF_SIZE)
 #define of_is_empty(f)         	flag_is_empty(f, OF_SIZE)
 #define of_is_full(f)          	flag_is_full(f, OF_SIZE)
 #define of_is_inter(f1, f2)    	flag_is_inter(f1, f2, OF_SIZE)
