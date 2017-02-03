@@ -374,6 +374,40 @@ static int object_power_calculation_ALL_SUSTAINS(void)
 	return of_is_subset(power_obj->flags, f) ? 1 : 0;
 }
 
+static int object_power_calculation_NUM_PROTECTS(void)
+{
+	bitflag f[OF_SIZE];
+	of_wipe(f);
+	create_obj_flag_mask(f, false, OFT_PROT, OFT_MAX);
+	of_inter(f, power_obj->flags);
+	return of_count(f) > 1 ? of_count(f) : 0;
+}
+
+static int object_power_calculation_ALL_PROTECTS(void)
+{
+	bitflag f[OF_SIZE];
+	of_wipe(f);
+	create_obj_flag_mask(f, false, OFT_PROT, OFT_MAX);
+	return of_is_subset(power_obj->flags, f) ? 1 : 0;
+}
+
+static int object_power_calculation_NUM_MISC(void)
+{
+	bitflag f[OF_SIZE];
+	of_wipe(f);
+	create_obj_flag_mask(f, false, OFT_MISC, OFT_MAX);
+	of_inter(f, power_obj->flags);
+	return of_count(f) > 1 ? of_count(f) : 0;
+}
+
+static int object_power_calculation_ALL_MISC(void)
+{
+	bitflag f[OF_SIZE];
+	of_wipe(f);
+	create_obj_flag_mask(f, false, OFT_MISC, OFT_MAX);
+	return of_is_subset(power_obj->flags, f) ? 1 : 0;
+}
+
 #if 0
 static int object_power_calculation_(void)
 {
@@ -416,6 +450,10 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		{ "OBJ_POWER_FLAG_TYPE_MULT", object_power_calculation_FLAG_TYPE_MULT },
 		{ "OBJ_POWER_NUM_SUSTAINS", object_power_calculation_NUM_SUSTAINS },
 		{ "OBJ_POWER_ALL_SUSTAINS", object_power_calculation_ALL_SUSTAINS },
+		{ "OBJ_POWER_NUM_PROTECTS", object_power_calculation_NUM_PROTECTS },
+		{ "OBJ_POWER_ALL_PROTECTS", object_power_calculation_ALL_PROTECTS },
+		{ "OBJ_POWER_NUM_MISC", object_power_calculation_NUM_MISC },
+		{ "OBJ_POWER_ALL_MISC", object_power_calculation_ALL_MISC },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif

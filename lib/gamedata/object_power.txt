@@ -358,3 +358,25 @@ dice:$P
 expr:P:OBJ_POWER_ALL_SUSTAINS:* 10
 operation:add
 
+name:multiple protect bonus
+dice:$Pd$Q
+expr:P:OBJ_POWER_NUM_PROTECTS:+ 0
+expr:Q:OBJ_POWER_NUM_PROTECTS:* 3
+operation:add
+
+name:all protect bonus
+dice:$P
+expr:P:OBJ_POWER_ALL_PROTECTS:* 15
+operation:add
+
+name:multiple misc ability bonus
+dice:$Pd$Q
+expr:P:OBJ_POWER_NUM_MISC:+ 0
+expr:Q:OBJ_POWER_NUM_MISC:+ 0
+operation:add
+
+name:all misc ability bonus
+dice:$P
+expr:P:OBJ_POWER_ALL_MISC:* 25
+operation:add
+
