@@ -522,6 +522,14 @@ static int object_power_calculation_ALL_IMM(void)
 	return 1;
 }
 
+static int object_power_calculation_EFFECT_POWER(void)
+{
+	if (power_obj->artifact && power_obj->artifact->activation) {
+		return power_obj->artifact->activation->power;
+	}
+	return power_obj->kind->power;
+}
+
 #if 0
 static int object_power_calculation_(void)
 {
@@ -578,6 +586,7 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		{ "OBJ_POWER_ALL_HIGH_RES", object_power_calculation_ALL_HIGH_RES },
 		{ "OBJ_POWER_NUM_IMM", object_power_calculation_NUM_IMM },
 		{ "OBJ_POWER_ALL_IMM", object_power_calculation_ALL_IMM },
+		{ "OBJ_POWER_EFFECT_POWER", object_power_calculation_EFFECT_POWER },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif
@@ -720,7 +729,7 @@ static void collect_slay_brand_stats(const struct object *obj)
 /**
  * Run all the power calculations on an object to find its power
  */
-static void evaluate_power(const struct object *obj)
+static void evaluate_power(const struct object *obj, int p)
 {
 	int i;
 	int **current_value;
@@ -830,6 +839,8 @@ static void evaluate_power(const struct object *obj)
 		mem_free(current_value[i]);
 	}
 	mem_free(current_value);
+
+	log_obj(format("Final power is %d, discrepancy %d\n", power, p - power));
 }
 
 /**
@@ -1429,13 +1440,6 @@ s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	/* Set the log file */
 	object_log = log_file;
 
-	/* New power calculations */
-	if (tval_has_variable_power(obj)) {
-		log_obj("---New power calculations---\n");
-		evaluate_power(obj);
-		log_obj("---End new power calculations---\n");
-	}
-
 	/* Get all the attack power */
 	p = to_damage_power(obj);
 	dice_pwr = damage_dice_power(obj);
@@ -1469,6 +1473,13 @@ s32b object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	p = curse_power(obj, p);
 
 	log_obj(format("FINAL POWER IS %d\n", p));
+
+	/* New power calculations */
+	if (tval_has_variable_power(obj)) {
+		log_obj("---New power calculations---\n");
+		evaluate_power(obj, p);
+		log_obj("---End new power calculations---\n");
+	}
 
 	return p;
 }

@@ -437,3 +437,9 @@ dice:$P
 expr:P:OBJ_POWER_ALL_IMM:* 20000
 operation:add
 
+# this is a base power for activation for wearables, or effect for consumables
+name:effect power
+dice:$P
+expr:P:OBJ_POWER_EFFECT_POWER:+ 0
+operation:add
+

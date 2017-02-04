@@ -16,6 +16,8 @@
 # alloc: commonness : min " to " max
 # charges: charges
 # pile: chance of being generated in a pile : dice for number of items
+# power: power of the effect for object power eveluations
+# msg: message on using the object
 # effect: effect when used : parameter (maybe) : paramater (maybe)
 # param:parameter:parameter (if needed)
 # dice:dice string
@@ -89,6 +91,13 @@
 # the weapon concerned has a basic 3x slay against undead creatures.  Like
 # flags, values are separated by '|' and as many values: lines as needed
 # can be used.
+
+# 'power' is used in calculating the power of the object for pricing and 
+# generating random artifacts.  It reflects the power of the effect of the
+# object; other properties are taken into account separately in power
+# calculation.
+
+# 'msg' is any message printed on using the object.
 
 # 'effect' is for the effect when an object is eaten, activated or whatever.
 # Fields are the name of the effect (as found in src/list-effects.h) and
