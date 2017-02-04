@@ -257,7 +257,7 @@ static int random_high_resist(struct object *obj, int *resist)
 	int i, r, count = 0;
 
 	/* Count the available high resists */
-	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++)
+	for (i = ELEM_HIGH_MIN; i < ELEM_HIGH_MAX; i++)
 		if (obj->el_info[i].res_level == 0) count++;
 
 	if (count == 0) return false;
@@ -266,7 +266,7 @@ static int random_high_resist(struct object *obj, int *resist)
 	r = randint0(count);
 
 	/* Find the one we picked */
-	for (i = ELEM_HIGH_MIN; i <= ELEM_HIGH_MAX; i++) {
+	for (i = ELEM_HIGH_MIN; i < ELEM_HIGH_MAX; i++) {
 		if (obj->el_info[i].res_level != 0) continue;
 		if (r == 0) {
 			*resist = i;

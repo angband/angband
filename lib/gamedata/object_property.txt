@@ -641,20 +641,20 @@ power:-6
 name:acid immunity
 type:immunity
 code:ACID
-power:38
+power:43
 
 name:lightning immunity
 type:immunity
 code:ELEC
-power:35
+power:41
 
 name:fire immunity
 type:immunity
 code:FIRE
-power:40
+power:46
 
 name:cold immunity
 type:immunity
 code:COLD
-power:37
+power:43
 

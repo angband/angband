@@ -380,3 +380,60 @@ dice:$P
 expr:P:OBJ_POWER_ALL_MISC:* 25
 operation:add
 
+name:ignore power
+dice:$P
+expr:P:OBJ_POWER_IGNORE:+ 0
+iterate:ignore
+operation:add
+
+name:vulnerability power
+dice:$P
+expr:P:OBJ_POWER_VULN:+ 0
+iterate:vulnerability
+operation:add
+
+name:resistance power
+dice:$P
+expr:P:OBJ_POWER_RESIST:+ 0
+iterate:resistance
+operation:add
+
+name:immunity power
+dice:$P
+expr:P:OBJ_POWER_IMM:+ 0
+iterate:immunity
+operation:add
+
+name:multiple base resists bonus
+dice:$Pd$Q
+expr:P:OBJ_POWER_NUM_BASE_RES:+ 0
+expr:Q:OBJ_POWER_NUM_BASE_RES:+ 0
+operation:add
+
+name:all base resists bonus
+dice:$P
+expr:P:OBJ_POWER_ALL_BASE_RES:* 10
+operation:add
+
+name:multiple high resists bonus
+dice:$Pd$Q
+expr:P:OBJ_POWER_NUM_HIGH_RES:+ 0
+expr:Q:OBJ_POWER_NUM_HIGH_RES:* 2
+operation:add
+
+name:all high resists bonus
+dice:$P
+expr:P:OBJ_POWER_ALL_HIGH_RES:* 10
+operation:add
+
+name:multiple immunities bonus
+dice:$Pd$Q
+expr:P:OBJ_POWER_NUM_IMM:+ 0
+expr:Q:OBJ_POWER_NUM_IMM:* 6
+operation:add
+
+name:all immunities bonus (inhibiting)
+dice:$P
+expr:P:OBJ_POWER_ALL_IMM:* 20000
+operation:add
+

@@ -3103,16 +3103,16 @@ static enum parser_error parse_object_power_iterate(struct parser *p) {
 		c->iterate.max = OBJ_MOD_MAX;
 	} else if (streq(iter, "resistance")) {
 		c->iterate.property_type = OBJ_PROPERTY_RESIST;
-		c->iterate.max = ELEM_MAX;
+		c->iterate.max = ELEM_HIGH_MAX;
 	} else if (streq(iter, "vulnerability")) {
 		c->iterate.property_type = OBJ_PROPERTY_VULN;
-		c->iterate.max = ELEM_MAX;
+		c->iterate.max = ELEM_BASE_MAX;
 	} else if (streq(iter, "immunity")) {
 		c->iterate.property_type = OBJ_PROPERTY_IMM;
-		c->iterate.max = ELEM_MAX;
+		c->iterate.max = ELEM_BASE_MAX;
 	} else if (streq(iter, "ignore")) {
 		c->iterate.property_type = OBJ_PROPERTY_IGNORE;
-		c->iterate.max = ELEM_MAX;
+		c->iterate.max = ELEM_BASE_MAX;
 	} else if (streq(iter, "flag")) {
 		c->iterate.property_type = OBJ_PROPERTY_FLAG;
 		c->iterate.max = OF_MAX - 1;

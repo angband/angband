@@ -115,7 +115,7 @@ static void init_rune(void)
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		count++;
 	}
-	for (i = 0; i <= ELEM_HIGH_MAX; i++) {
+	for (i = 0; i < ELEM_HIGH_MAX; i++) {
 		count++;
 	}
 	/* Note brand runes cover all brands with the same name */
@@ -162,7 +162,7 @@ static void init_rune(void)
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, 0, m_rune[i] };
 	}
-	for (i = 0; i <= ELEM_HIGH_MAX; i++) {
+	for (i = 0; i < ELEM_HIGH_MAX; i++) {
 		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, projections[i].name };
 	}
 	for (i = 1; i < z_info->brand_max; i++) {

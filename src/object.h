@@ -27,8 +27,9 @@ enum
 };
 
 #define ELEM_BASE_MIN  ELEM_ACID
+#define ELEM_BASE_MAX  (ELEM_COLD + 1)
 #define ELEM_HIGH_MIN  ELEM_POIS
-#define ELEM_HIGH_MAX  ELEM_DISEN
+#define ELEM_HIGH_MAX  (ELEM_DISEN + 1)
 
 /**
  * Object origin kinds

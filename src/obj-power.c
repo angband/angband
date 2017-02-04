@@ -408,6 +408,120 @@ static int object_power_calculation_ALL_MISC(void)
 	return of_is_subset(power_obj->flags, f) ? 1 : 0;
 }
 
+static int object_power_calculation_IGNORE(void)
+{
+	struct obj_property *prop;
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_IGNORE, iter);
+	assert(prop);
+	if (power_obj->el_info[iter].flags & EL_INFO_IGNORE) {
+		return prop->power;
+	}
+
+	return 0;
+}
+
+static int object_power_calculation_VULN(void)
+{
+	struct obj_property *prop;
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_VULN, iter);
+	assert(prop);
+	if (power_obj->el_info[iter].res_level == -1) {
+		return prop->power;
+	}
+
+	return 0;
+}
+
+static int object_power_calculation_RESIST(void)
+{
+	struct obj_property *prop;
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_RESIST, iter);
+	assert(prop);
+	if (power_obj->el_info[iter].res_level == 1) {
+		return prop->power;
+	}
+
+	return 0;
+}
+
+static int object_power_calculation_IMM(void)
+{
+	struct obj_property *prop;
+	prop = obj_property_by_type_and_index(OBJ_PROPERTY_IMM, iter);
+	assert(prop);
+	if (power_obj->el_info[iter].res_level == 3) {
+		return prop->power;
+	}
+
+	return 0;
+}
+
+static int object_power_calculation_NUM_BASE_RES(void)
+{
+	int i, count = 0;
+	for (i = ELEM_BASE_MIN; i < ELEM_BASE_MAX; i++) {
+		if (power_obj->el_info[i].res_level >= 1) {
+			count++;
+		}
+	}
+	return count > 1 ? count : 0;
+}
+
+static int object_power_calculation_ALL_BASE_RES(void)
+{
+	int i;
+	for (i = ELEM_BASE_MIN; i < ELEM_BASE_MAX; i++) {
+		if (power_obj->el_info[i].res_level < 1) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+static int object_power_calculation_NUM_HIGH_RES(void)
+{
+	int i, count = 0;
+	for (i = ELEM_HIGH_MIN; i < ELEM_HIGH_MAX; i++) {
+		if (power_obj->el_info[i].res_level == 1) {
+			count++;
+		}
+	}
+	return count > 1 ? count : 0;
+}
+
+static int object_power_calculation_ALL_HIGH_RES(void)
+{
+	int i;
+	for (i = ELEM_HIGH_MIN; i < ELEM_HIGH_MAX; i++) {
+		if (power_obj->el_info[i].res_level != 1) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+static int object_power_calculation_NUM_IMM(void)
+{
+	int i, count = 0;
+	for (i = ELEM_BASE_MIN; i < ELEM_BASE_MAX; i++) {
+		if (power_obj->el_info[i].res_level == 3) {
+			count++;
+		}
+	}
+	return count > 1 ? count : 0;
+}
+
+static int object_power_calculation_ALL_IMM(void)
+{
+	int i;
+	for (i = ELEM_BASE_MIN; i < ELEM_BASE_MAX; i++) {
+		if (power_obj->el_info[i].res_level != 3) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 #if 0
 static int object_power_calculation_(void)
 {
@@ -454,6 +568,16 @@ expression_base_value_f power_calculation_by_name(const char *name)
 		{ "OBJ_POWER_ALL_PROTECTS", object_power_calculation_ALL_PROTECTS },
 		{ "OBJ_POWER_NUM_MISC", object_power_calculation_NUM_MISC },
 		{ "OBJ_POWER_ALL_MISC", object_power_calculation_ALL_MISC },
+		{ "OBJ_POWER_IGNORE", object_power_calculation_IGNORE },
+		{ "OBJ_POWER_VULN", object_power_calculation_VULN },
+		{ "OBJ_POWER_RESIST", object_power_calculation_RESIST },
+		{ "OBJ_POWER_IMM", object_power_calculation_IMM },
+		{ "OBJ_POWER_NUM_BASE_RES", object_power_calculation_NUM_BASE_RES },
+		{ "OBJ_POWER_ALL_BASE_RES", object_power_calculation_ALL_BASE_RES },
+		{ "OBJ_POWER_NUM_HIGH_RES", object_power_calculation_NUM_HIGH_RES },
+		{ "OBJ_POWER_ALL_HIGH_RES", object_power_calculation_ALL_HIGH_RES },
+		{ "OBJ_POWER_NUM_IMM", object_power_calculation_NUM_IMM },
+		{ "OBJ_POWER_ALL_IMM", object_power_calculation_ALL_IMM },
 #if 0
 		{ "OBJ_POWER_", object_power_calculation_ },
 #endif
