@@ -21,30 +21,6 @@
 #define OBJECT_POWER_H
 
 /**
- * Constants for the power algorithm:
- * - fudge factor for extra damage from rings etc. (used if extra blows)
- * - assumed damage for off-weapon brands
- * - base power for jewelry
- * - base power for armour items (for halving acid damage)
- * - power per point of damage
- * - power per point of +to_hit
- * - power per point of base AC
- * - power per point of +to_ac
- * (these four are all halved in the algorithm)
- * - assumed max blows
- * - inhibiting values for +blows/might/shots/immunities (max is one less)
- */
-#define NONWEAP_DAMAGE   		15 /* fudge to boost extra blows */
-#define WEAP_DAMAGE				12 /* and for off-weapon combat flags */
-#define BASE_JEWELRY_POWER		 4
-#define BASE_ARMOUR_POWER		 1
-#define DAMAGE_POWER             5 /* i.e. 2.5 */
-#define TO_HIT_POWER             3 /* i.e. 1.5 */
-#define BASE_AC_POWER            2 /* i.e. 1 */
-#define TO_AC_POWER              2 /* i.e. 1 */
-#define MAX_BLOWS                5
-
-/**
  * Some constants used in randart generation and power calculation
  * - thresholds for limiting to_hit, to_dam and to_ac
  * - fudge factor for rescaling ammo cost
@@ -98,9 +74,9 @@ extern struct power_calc *calculations;
 
 extern expression_base_value_f power_calculation_by_name(const char *name);
 
-s32b object_power(const struct object *obj, bool verbose, ang_file *log_file);
-s32b object_value_real(const struct object *obj, int qty);
-s32b object_value(const struct object *obj, int qty);
+int object_power(const struct object *obj, bool verbose, ang_file *log_file);
+int object_value_real(const struct object *obj, int qty);
+int object_value(const struct object *obj, int qty);
 
 
 #endif /* OBJECT_POWER_H */

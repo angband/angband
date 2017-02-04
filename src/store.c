@@ -476,7 +476,7 @@ static const char *comment_great[] =
  *
  * We paid "price", it was worth "value", and we thought it was worth "guess"
  */
-static void purchase_analyze(s32b price, s32b value, s32b guess)
+static void purchase_analyze(int price, int value, int guess)
 {
 	/* Item was worthless, but we bought it */
 	if ((value <= 0) && (price > value))
@@ -646,7 +646,7 @@ static int mass_roll(int times, int max)
 static void mass_produce(struct object *obj)
 {
 	int size = 1;
-	s32b cost = object_value(obj, 1);
+	int cost = object_value(obj, 1);
 
 	/* Analyze the type */
 	switch (obj->tval)
