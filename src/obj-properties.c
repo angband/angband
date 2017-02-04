@@ -33,12 +33,12 @@ struct obj_property *obj_properties;
  */
 static const struct object_flag object_flag_table[] =
 {
-	{ OF_NONE, OFID_NONE, OFT_NONE, 0, "NONE" },
-	#define STAT(a, b, c, d, e, f, g, h, i)							\
-		{ OF_##c, OFID_NORMAL, OFT_SUST, d, "Your %s glows." },
+	{ OF_NONE, OFID_NONE, OFT_NONE, "NONE" },
+	#define STAT(a, c, f, g, h, i)							\
+		{ OF_##c, OFID_NORMAL, OFT_SUST, "Your %s glows." },
 	#include "list-stats.h"
 	#undef STAT
-	#define OF(a, b, c, d, e, f) { OF_##a, b, c, d, f },
+	#define OF(a, b, c, e, f) { OF_##a, b, c, f },
 	#include "list-object-flags.h"
 	#undef OF
 };
@@ -49,27 +49,13 @@ static const struct object_flag object_flag_table[] =
 static const char *flag_names[] =
 {
 	"NONE",
-	#define STAT(a, b, c, d, e, f, g, h, i) #c,
+	#define STAT(a, c, f, g, h, i) #c,
 	#include "list-stats.h"
 	#undef STAT
-	#define OF(a, b, c, d, e, f) #a,
+	#define OF(a, b, c, e, f) #a,
 	#include "list-object-flags.h"
 	#undef OF
     ""
-};
-
-/**
- * Details of the different object modifiers in the game.
- * See src/obj-properties.h for structure
- */
-static const struct object_mod object_mod_table[] =
-{
-	#define STAT(a, b, c, d, e, f, g, h, i) { OBJ_MOD_##a, b, e, h },
-	#include "list-stats.h"
-	#undef STAT
-	#define OBJ_MOD(a, b, c, d) { OBJ_MOD_##a, b, c, d },
-	#include "list-object-modifiers.h"
-	#undef OBJ_MOD
 };
 
 /**
@@ -77,10 +63,10 @@ static const struct object_mod object_mod_table[] =
  */
 static const char *mod_names[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h, i) #a,
+	#define STAT(a, c, f, g, h, i) #a,
 	#include "list-stats.h"
 	#undef STAT
-	#define OBJ_MOD(a, b, c, d) #a,
+	#define OBJ_MOD(a, b) #a,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
 	""
@@ -118,22 +104,6 @@ void create_obj_flag_mask(bitflag *f, bool id, ...)
 }
 
 /**
- * Log the names of a flagset to a file.
- *
- * \param f is the set of flags we are logging.
- * \param log_file is the file to which we are logging the names.
- */
-void log_flags(bitflag *f, ang_file *log_file)
-{
-	int i;
-
-	file_putf(log_file, "Object flags are:\n");
-	for (i = 0; i < OF_MAX; i++)
-		if (of_has(f, i))
-			file_putf(log_file, "%s\n", flag_names[i]);
-}
-
-/**
  * Return the name of a flag.
  */
 const char *flag_name(int flag)
@@ -154,52 +124,6 @@ int flag_index_by_name(const char *name)
 	}
 
 	return -1;
-}
-
-/**
- * Get the slot multiplier for a flag's power rating
- *
- * \param flag is the flag in question.
- * \param slot is the wield_slot it's in.
- */
-s16b flag_slot_mult(int flag, int slot)
-{
-	const struct object_flag *f = &object_flag_table[flag];
-
-	switch (f->type) {
-		/* Many flags are equally good (or bad) in any slot */
-	case OFT_SUST:
-	case OFT_PROT:
-	case OFT_BAD:
-	case OFT_DIG: return 1;
-		/* Light-specific */
-	case OFT_LIGHT: return (slot_type_is(slot, EQUIP_LIGHT)) ? 1 : 0;
-		/* Melee weapon specific */
-	case OFT_MELEE: return (slot_type_is(slot, EQUIP_WEAPON)) ? 1 : 0;
-		/* Miscellaneous flags are a mixed bag */
-	case OFT_MISC: {
-		/* Weapon and bow slot are more useful for other purposes */
-		if ((slot_type_is(slot, EQUIP_WEAPON)) || (slot_type_is(slot, EQUIP_BOW))) return 1;
-		/* SD and FF are a bit lame */
-		if ((flag == OF_FEATHER) || (flag == OF_SLOW_DIGEST)) return 1;
-		/* FA on gloves is really nice */
-		if ((flag == OF_FREE_ACT) && (slot_type_is(slot, EQUIP_GLOVES))) return 5;
-		/* All the major powers are good */
-		return 2;
-	}
-	default: return 1;
-	}
-}
-
-
-/**
- * Return the base power rating for a flag.
- */
-s32b flag_power(int flag)
-{
-	const struct object_flag *of = &object_flag_table[flag];
-
-	return of->power;
 }
 
 /**
@@ -245,69 +169,3 @@ const char *mod_name(int mod)
 {
 	return mod_names[mod];
 }
-
-/**
- * Return the base power rating for a mod.
- */
-s32b mod_power(int mod)
-{
-	const struct object_mod *om = &object_mod_table[mod];
-
-	return om->power;
-}
-
-/**
- * Return the mod weighting of a flag^H^H^H^Hmod
- */
-int mod_mult(int mod)
-{
-	const struct object_mod *om = &object_mod_table[mod];
-
-	return om->mod_mult;
-}
-
-/**
- * Get the slot multiplier for a mod's power rating
- *
- * \param mod is the mod in question.
- * \param slot is the wield_slot it's in.
- */
-s16b mod_slot_mult(int mod, int slot)
-{
-	/* Ammo gets -1 as a slot, and always has muliplier 1 */
-	if (slot == -1) return 1;
-
-	/* Gloves with DEX are good */
-	if ((mod == OBJ_MOD_DEX) && (slot_type_is(slot, EQUIP_GLOVES))) return 2;
-
-	/* Extra blows are silly on a bow, powerful off-weapon */
-	if (mod == OBJ_MOD_BLOWS) {
-		if (slot_type_is(slot, EQUIP_BOW)) return 0;
-		if (slot_type_is(slot, EQUIP_WEAPON)) return 1;
-		return 3;
-	}
-
-	/* Extra shots are silly on a melee weapon, powerful off-weapon */
-	if (mod == OBJ_MOD_SHOTS) {
-		if (slot_type_is(slot, EQUIP_WEAPON)) return 0;
-		if (slot_type_is(slot, EQUIP_BOW)) return 1;
-		return 4;
-	}
-
-	/* Extra might only works on bows */
-	if (mod == OBJ_MOD_MIGHT) {
-		if (slot_type_is(slot, EQUIP_BOW)) return 1;
-		return 0;
-	}
-
-	/* Light is best on, well, lights */
-	if (mod == OBJ_MOD_LIGHT) {
-		if (slot_type_is(slot, EQUIP_LIGHT)) return 3;
-		return 1;
-	}
-
-	/* Others are all easy */
-	return 1;
-}
-
-

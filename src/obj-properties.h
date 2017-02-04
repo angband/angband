@@ -1,6 +1,6 @@
 /**
-   \file obj-properties.h
-   \brief definitions and functions for object flags and modifiers
+ * \file obj-properties.h
+ * \brief definitions and functions for object flags and modifiers
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
@@ -46,10 +46,10 @@ enum
  */
 enum {
 	OF_NONE,
-	#define STAT(a, b, c, d, e, f, g, h, i) OF_##c,
+	#define STAT(a, c, f, g, h, i) OF_##c,
     #include "list-stats.h"
     #undef STAT
-	#define OF(a, b, c, d, e, f) OF_##a,
+	#define OF(a, b, c, e, f) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -67,10 +67,10 @@ enum {
  * The object modifiers
  */
 enum {
-	#define STAT(a, b, c, d, e, f, g, h, i) OBJ_MOD_##a,
+	#define STAT(a, c, f, g, h, i) OBJ_MOD_##a,
     #include "list-stats.h"
     #undef STAT
-    #define OBJ_MOD(a, b, c, d) OBJ_MOD_##a,
+    #define OBJ_MOD(a, b) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 	OBJ_MOD_MAX
@@ -157,18 +157,7 @@ struct object_flag {
 	u16b index;				/* the OF_ index */
 	u16b id;				/* how is it identified */
 	u16b type;				/* OFT_ category */
-	s16b power;				/* base power rating */
 	const char *message;	/* id message */
-};
-
-/**
- * The object modifier structure
- */
-struct object_mod {
-	u16b index;				/* the OBJ_MOD_ index */
-	s16b power;				/* base power rating */
-	s16b mod_mult;			/* modifier weight rating */
-	const char *name;		/* id message */
 };
 
 enum obj_property_type {
@@ -207,17 +196,11 @@ extern struct obj_property *obj_properties;
  * Functions
  * ------------------------------------------------------------------------ */
 void create_obj_flag_mask(bitflag *f, bool id, ...);
-s32b flag_power(int flag);
-void log_flags(bitflag *f, ang_file *log_file);
 const char *flag_name(int flag);
 int flag_index_by_name(const char *name);
-s16b flag_slot_mult(int flag, int slot);
 int obj_flag_type(int flag);
 void flag_message(int flag, char *name);
 int sustain_flag(int stat);
 const char *mod_name(int mod);
-s32b mod_power(int mod);
-int mod_mult(int mod);
-s16b mod_slot_mult(int mod, int slot);
 
 #endif /* !INCLUDED_OBJPROPERTIES_H */

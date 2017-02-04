@@ -98,7 +98,7 @@ const s32b player_exp[PY_MAX_LEVEL] =
 
 
 static const char *stat_name_list[] = {
-	#define STAT(a, b, c, d, e, f, g, h, i) #a,
+	#define STAT(a, c, f, g, h, i) #a,
 	#include "list-stats.h"
 	#undef STAT
 	"MAX",

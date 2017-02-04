@@ -757,24 +757,25 @@ static int stats_dump_lists(void)
 
 	struct object_flag object_flag_table[] =
 	{
-		{ OF_NONE, OFID_NONE, OFT_NONE, 0, "NONE" },
-		#define STAT(a, b, c, d, e, f, g, h, i)					\
-			{ OF_##c, OFID_NORMAL, OFT_SUST, d, #c },
+		{ OF_NONE, OFID_NONE, OFT_NONE, "NONE" },
+		#define STAT(a, c, f, g, h, i)					\
+			{ OF_##c, OFID_NORMAL, OFT_SUST, #c },
         #include "list-stats.h"
         #undef STAT
-		#define OF(a, b, c, d, e, f) { OF_##a, b, c, d, #a },
+		#define OF(a, b, c, e, f) { OF_##a, b, c, #a },
 		#include "list-object-flags.h"
 		#undef OF
 	};
 
-	struct object_mod object_mod_table[] =
+	char *object_mods[] =
 	{
-		#define STAT(a, b, c, d, e, f, g, h, i)  { OBJ_MOD_##a, b, e, #a },
+		#define STAT(a, c, f, g, h, i) #a,
         #include "list-stats.h"
         #undef STAT
-        #define OBJ_MOD(a, b, c, d)  { OBJ_MOD_##a, b, c, #a },
+        #define OBJ_MOD(a, b) #a,
         #include "list-object-modifiers.h"
         #undef OBJ_MOD
+		NULL
 	};
 
 	err = stats_db_stmt_prep(&sql_stmt, 
@@ -811,7 +812,7 @@ static int stats_dump_lists(void)
 	STATS_DB_FINALIZE(sql_stmt)
 
 	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_flags_list VALUES(?,?,?,?);");
+		"INSERT INTO object_flags_list VALUES(?,?,?);");
 	if (err) return err;
 
 	for (idx = 1; idx < OF_MAX; idx++) {
@@ -819,7 +820,7 @@ static int stats_dump_lists(void)
 		if (! of->message) continue;
 
 		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, 
-			of->type, of->power);
+			of->type);
 		if (err) return err;
 		err = sqlite3_bind_text(sql_stmt, 4, of->message,
 			strlen(of->message), SQLITE_STATIC);
@@ -830,17 +831,14 @@ static int stats_dump_lists(void)
 	STATS_DB_FINALIZE(sql_stmt)
 
 	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_mods_list VALUES(?,?,?,?,?);");
+		"INSERT INTO object_mods_list VALUES(?,?);");
 	if (err) return err;
 
-	for (idx = 0; idx < OBJ_MOD_MAX; idx++) {
-		struct object_mod *om = &object_mod_table[idx];
-		if (!om->name) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, om->power, om->mod_mult);
+	for (idx = 0; object_mods[idx] != NULL; idx++) {
+		err = stats_db_bind_ints(sql_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 4, om->name,
-			strlen(om->name), SQLITE_STATIC);
+		err = sqlite3_bind_text(sql_stmt, 2, object_mods[idx],
+			strlen(object_mods[idx]), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}

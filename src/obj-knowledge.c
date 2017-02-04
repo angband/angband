@@ -79,20 +79,20 @@ static char *c_rune[] = {
 static const struct flag_type f_rune[] =
 {
 	{ OF_NONE, "" },
-	#define STAT(a, b, c, d, e, f, g, h, i) { OF_##c, i },
+	#define STAT(a, c, f, g, h, i) { OF_##c, i },
 	#include "list-stats.h"
 	#undef STAT
-	#define OF(a, b, c, d, e, f) { OF_##a, e },
+	#define OF(a, b, c, e, f) { OF_##a, e },
 	#include "list-object-flags.h"
 	#undef OF
 };
 
 static const char *m_rune[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h, i) h,
+	#define STAT(a, c, f, g, h, i) h,
 	#include "list-stats.h"
 	#undef STAT
-	#define OBJ_MOD(a, b, c, d) d,
+	#define OBJ_MOD(a, b) b,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
 };

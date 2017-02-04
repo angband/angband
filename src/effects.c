@@ -83,7 +83,7 @@ struct effect_kind {
  */
 static const char *desc_stat_pos[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h, i) f,
+	#define STAT(a, c, f, g, h, i) f,
 	#include "list-stats.h"
 	#undef STAT
 };
@@ -94,7 +94,7 @@ static const char *desc_stat_pos[] =
  */
 static const char *desc_stat_neg[] =
 {
-	#define STAT(a, b, c, d, e, f, g, h, i) g,
+	#define STAT(a, c, f, g, h, i) g,
 	#include "list-stats.h"
 	#undef STAT
 };
