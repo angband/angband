@@ -2776,9 +2776,33 @@ static enum parser_error parse_object_property_subtype(struct parser *p) {
 	} else if (streq(name, "protection")) {
 		prop->subtype = OFT_PROT;
 	} else if (streq(name, "misc ability")) {
-		prop->type = OFT_MISC;
+		prop->subtype = OFT_MISC;
+	} else if (streq(name, "light")) {
+		prop->subtype = OFT_LIGHT;
+	} else if (streq(name, "melee")) {
+		prop->subtype = OFT_MELEE;
+	} else if (streq(name, "bad")) {
+		prop->subtype = OFT_BAD;
+	} else if (streq(name, "dig")) {
+		prop->subtype = OFT_DIG;
 	} else {
 		return PARSE_ERROR_INVALID_SUBTYPE;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_object_property_id_type(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+	const char *name = parser_getstr(p, "id");
+
+	if (streq(name, "on effect")) {
+		prop->id_type = OFID_NORMAL;
+	} else if (streq(name, "timed")) {
+		prop->id_type = OFID_TIMED;
+	} else if (streq(name, "on wield")) {
+		prop->id_type = OFID_WIELD;
+	} else {
+		return PARSE_ERROR_INVALID_ID_TYPE;
 	}
 	return PARSE_ERROR_NONE;
 }
@@ -2885,6 +2909,7 @@ struct parser *init_parse_object_property(void) {
 	parser_reg(p, "code str code", parse_object_property_code);
 	parser_reg(p, "type str type", parse_object_property_type);
 	parser_reg(p, "subtype str subtype", parse_object_property_subtype);
+	parser_reg(p, "id-type str id", parse_object_property_id_type);
 	parser_reg(p, "power int power", parse_object_property_power);
 	parser_reg(p, "mult int mult", parse_object_property_mult);
 	parser_reg(p, "type-mult sym type int mult", parse_object_property_type_mult);

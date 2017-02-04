@@ -179,6 +179,7 @@ struct obj_property {
 	struct obj_property *next;
 	int type;				/* type of property */
 	int subtype;			/* subtype of property */
+	int id_type;			/* how the property is identified (flags only?) */
 	int index;				/* index of the property for its type */
 	int power;				/* base power rating */
 	int mult;				/* relative weight rating */

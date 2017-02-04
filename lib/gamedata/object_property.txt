@@ -148,30 +148,35 @@ type-mult:light:3
 name:sustain strength
 type:flag
 subtype:sustain
+id-type:on effect
 code:SUST_STR
 power:9
 
 name:sustain intelligence
 type:flag
 subtype:sustain
+id-type:on effect
 code:SUST_INT
 power:4
 
 name:sustain wisdom
 type:flag
 subtype:sustain
+id-type:on effect
 code:SUST_WIS
 power:4
 
 name:sustain dexterity
 type:flag
 subtype:sustain
+id-type:on effect
 code:SUST_DEX
 power:7
 
 name:sustain constitution
 type:flag
 subtype:sustain
+id-type:on effect
 code:SUST_CON
 power:8
 
@@ -179,6 +184,7 @@ name:protection from fear
 type:flag
 code:PROT_FEAR
 subtype:protection
+id-type:on effect
 power:6
 msg:Your {name} strengthens your courage.
 
@@ -186,6 +192,7 @@ name:protection from blindness
 type:flag
 code:PROT_BLIND
 subtype:protection
+id-type:on effect
 power:16
 msg:Your {name} soothes your eyes.
 
@@ -193,6 +200,7 @@ name:protection from confusion
 type:flag
 code:PROT_CONF
 subtype:protection
+id-type:on effect
 power:24
 msg:Your {name} clears your thoughts.
 
@@ -200,12 +208,14 @@ name:protection from stunning
 type:flag
 code:PROT_STUN
 subtype:protection
+id-type:on effect
 power:12
 msg:Your {name} steadies you.
 
 name:slow digestion
 type:flag
 subtype:misc ability
+id-type:timed
 code:SLOW_DIGEST
 power:2
 msg:You realise your {name} is slowing your metabolism.
@@ -213,6 +223,7 @@ msg:You realise your {name} is slowing your metabolism.
 name:feather falling
 type:flag
 subtype:misc ability
+id-type:on effect
 code:FEATHER
 power:1
 msg:Your {name} slows your fall.
@@ -220,6 +231,7 @@ msg:Your {name} slows your fall.
 name:regeneration
 type:flag
 subtype:misc ability
+id-type:timed
 code:REGEN
 power:5
 type-mult:ring:2
@@ -239,6 +251,7 @@ msg:You note that your {name} is speeding up your recovery.
 name:telepathy
 type:flag
 subtype:misc ability
+id-type:on wield
 code:TELEPATHY
 type-mult:ring:2
 type-mult:amulet:2
@@ -257,6 +270,7 @@ power:35
 name:see invisible
 type:flag
 subtype:misc ability
+id-type:on wield
 code:SEE_INVIS
 type-mult:ring:2
 type-mult:amulet:2
@@ -275,6 +289,7 @@ power:6
 name:free action
 type:flag
 subtype:misc ability
+id-type:on effect
 code:FREE_ACT
 power:8
 type-mult:ring:2
@@ -294,6 +309,7 @@ msg:Your {name} keeps you moving.
 name:hold life
 type:flag
 subtype:misc ability
+id-type:on effect
 code:HOLD_LIFE
 power:5
 type-mult:ring:2
@@ -312,6 +328,8 @@ msg:Your {name} warms your spirit.
 
 name:earthquakes
 type:flag
+subtype:melee
+id-type:on effect
 code:IMPACT
 power:10
 type-mult:bow:0
@@ -331,6 +349,8 @@ msg:Your {name} causes an earthquake!
 
 name:blessed melee
 type:flag
+subtype:melee
+id-type:on wield
 code:BLESSED
 power:1
 type-mult:bow:0
@@ -349,6 +369,8 @@ type-mult:boots:0
 
 name:burns out
 type:flag
+subtype:light
+id-type:on wield
 code:BURNS_OUT
 power:0
 type-mult:sword:0
@@ -370,6 +392,8 @@ type-mult:boots:0
 
 name:takes fuel
 type:flag
+subtype:light
+id-type:on wield
 code:TAKES_FUEL
 power:0
 type-mult:sword:0
@@ -391,6 +415,8 @@ type-mult:boots:0
 
 name:no fuel
 type:flag
+subtype:light
+id-type:on wield
 code:NO_FUEL
 power:5
 type-mult:sword:0
@@ -412,51 +438,69 @@ type-mult:boots:0
 
 name:impaired hitpoint recovery
 type:flag
+subtype:bad
+id-type:timed
 code:IMPAIR_HP
 power:-9
 msg:You feel your {name} is slowing your recovery.
 
 name:impaired mana recovery
 type:flag
+subtype:bad
+id-type:timed
 code:IMPAIR_MANA
 power:-9
 msg:You feel your {name} is slowing your mana recovery.
 
 name:constant fear
 type:flag
+subtype:bad
+id-type:on wield
 code:AFRAID
 power:-20
 
 name:teleportation ban
 type:flag
+subtype:bad
+id-type:on effect
 code:NO_TELEPORT
 power:-20
 msg:Your {name} prevents you teleporting.
 
 name:aggravation
 type:flag
+subtype:bad
+id-type:timed
 code:AGGRAVATE
 power:-20
 msg:You notice your {name} aggravating things around you.
 
 name:experience drain
 type:flag
+subtype:bad
+id-type:timed
 code:DRAIN_EXP
 power:-5
 msg:You sense your {name} is draining your life.
 
 name:stuck on
 type:flag
+subtype:bad
+id-type:on wield
 code:STICKY
 power:-5
 
 name:fragile
 type:flag
+subtype:bad
+id-type:on wield
 code:FRAGILE
 power:0
 
 name:radius 1 light
 type:flag
+subtype:light
+id-type:on wield
 code:LIGHT_1
 power:0
 type-mult:sword:0
@@ -478,6 +522,8 @@ type-mult:boots:0
 
 name:radius 2 light
 type:flag
+subtype:light
+id-type:on wield
 code:LIGHT_2
 power:0
 type-mult:sword:0
@@ -499,21 +545,29 @@ type-mult:boots:0
 
 name:power 1 digging
 type:flag
+subtype:dig
+id-type:on wield
 code:DIG_1
 power:0
 
 name:power 2 digging
 type:flag
+subtype:dig
+id-type:on wield
 code:DIG_2
 power:0
 
 name:power 3 digging
 type:flag
+subtype:dig
+id-type:on wield
 code:DIG_3
 power:0
 
 name:explode
 type:flag
+subtype:light
+id-type:on wield
 code:EXPLODE
 power:0
 type-mult:sword:0
