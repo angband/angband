@@ -1555,11 +1555,12 @@ static void try_supercharge(struct artifact *art, s32b target_power,
  */
 static bool add_flag(struct artifact *art, int flag)
 {
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
 	if (of_has(art->flags, flag))
 		return false;
 
 	of_on(art->flags, flag);
-	file_putf(log_file, "Adding ability: %s\n", flag_name(flag));
+	file_putf(log_file, "Adding ability: %s\n", prop->name);
 
 	return true;
 }

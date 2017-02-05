@@ -196,8 +196,8 @@ extern struct obj_property *obj_properties;
  * ------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------ */
+struct obj_property *lookup_obj_property(int type, int index);
 void create_obj_flag_mask(bitflag *f, bool id, ...);
-const char *flag_name(int flag);
 int flag_index_by_name(const char *name);
 int obj_flag_type(int flag);
 void flag_message(int flag, char *name);

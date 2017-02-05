@@ -106,7 +106,7 @@ static void init_rune(void)
 
 	/* Count runes (combat runes are fixed) */
 	count = COMBAT_RUNE_MAX;
-	for (i = 0; i < OF_MAX; i++) {
+	for (i = 1; i < OF_MAX; i++) {
 		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
 		if (obj_flag_type(i) == OFT_DIG) continue;
@@ -199,7 +199,7 @@ static void init_rune(void)
 				(struct rune) { RUNE_VAR_CURSE, i, 0, curses[i].name };
 		}
 	}
-	for (i = 0; i < OF_MAX; i++) {
+	for (i = 1; i < OF_MAX; i++) {
 		if (obj_flag_type(i) == OFT_NONE) continue;
 		if (obj_flag_type(i) == OFT_LIGHT) continue;
 		if (obj_flag_type(i) == OFT_DIG) continue;

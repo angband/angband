@@ -44,28 +44,6 @@ void log_obj(char *message)
 	file_putf(object_log, message);
 }
 
-static struct obj_property *obj_property_by_type_and_index(int type, int index)
-{
-	struct obj_property *prop;
-	int i;
-
-	/* Find the right property */
-	for (i = 0; i < z_info->property_max; i++) {
-		prop = &obj_properties[i];
-		if ((prop->type == type) && (prop->index == index)) {
-			return prop;
-		}
-
-		/* Special case - stats count as mods */
-		if ((type == OBJ_PROPERTY_MOD) && (prop->type == OBJ_PROPERTY_STAT)
-			&& (prop->index == index)) {
-			return prop;
-		}
-	}
-
-	return NULL;
-}
-
 /**
  * ------------------------------------------------------------------------
  * Individual object power calculations
@@ -223,7 +201,7 @@ static int object_power_calculation_MODIFIER(void)
 static int object_power_calculation_MOD_POWER(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_MOD, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_MOD, iter);
 	assert(prop);
 	return prop->power;
 }
@@ -231,7 +209,7 @@ static int object_power_calculation_MOD_POWER(void)
 static int object_power_calculation_MOD_TYPE_MULT(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_MOD, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_MOD, iter);
 	assert(prop);
 	return prop->type_mult[power_obj->tval];
 }
@@ -239,7 +217,7 @@ static int object_power_calculation_MOD_TYPE_MULT(void)
 static int object_power_calculation_MOD_MULT(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_MOD, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_MOD, iter);
 	assert(prop);
 	return prop->mult;
 }
@@ -247,7 +225,7 @@ static int object_power_calculation_MOD_MULT(void)
 static int object_power_calculation_FLAG_POWER(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_FLAG, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_FLAG, iter);
 	assert(prop);
 	return of_has(power_obj->flags, iter + 1) ? prop->power : 0;
 }
@@ -255,7 +233,7 @@ static int object_power_calculation_FLAG_POWER(void)
 static int object_power_calculation_FLAG_TYPE_MULT(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_FLAG, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_FLAG, iter);
 	assert(prop);
 	return prop->type_mult[power_obj->tval];
 }
@@ -314,7 +292,7 @@ static int object_power_calculation_ALL_MISC(void)
 static int object_power_calculation_IGNORE(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_IGNORE, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_IGNORE, iter);
 	assert(prop);
 	if (power_obj->el_info[iter].flags & EL_INFO_IGNORE) {
 		return prop->power;
@@ -326,7 +304,7 @@ static int object_power_calculation_IGNORE(void)
 static int object_power_calculation_VULN(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_VULN, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_VULN, iter);
 	assert(prop);
 	if (power_obj->el_info[iter].res_level == -1) {
 		return prop->power;
@@ -338,7 +316,7 @@ static int object_power_calculation_VULN(void)
 static int object_power_calculation_RESIST(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_RESIST, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_RESIST, iter);
 	assert(prop);
 	if (power_obj->el_info[iter].res_level == 1) {
 		return prop->power;
@@ -350,7 +328,7 @@ static int object_power_calculation_RESIST(void)
 static int object_power_calculation_IMM(void)
 {
 	struct obj_property *prop;
-	prop = obj_property_by_type_and_index(OBJ_PROPERTY_IMM, iter);
+	prop = lookup_obj_property(OBJ_PROPERTY_IMM, iter);
 	assert(prop);
 	if (power_obj->el_info[iter].res_level == 3) {
 		return prop->power;
@@ -649,10 +627,11 @@ int object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	/* Preprocess the power calculations for intermediate results */
 	for (i = 0; i < z_info->calculation_max; i++) {
 		struct power_calc *calc = &calculations[i];
+		bool flg = (calc->iterate.property_type == OBJ_PROPERTY_FLAG);
 		int j;
 
 		/* Run the calculation... */
-		for (iter = 0; iter < calc->iterate.max; iter++) {
+		for (iter = flg ? 1 : 0; iter < calc->iterate.max; iter++) {
 			current_value[i][iter] = run_power_calculation(calc);
 		}
 
@@ -673,13 +652,13 @@ int object_power(const struct object* obj, bool verbose, ang_file *log_file)
 				if ((calculations[j].iterate.max == 1) &&
 					(calc->iterate.max > 1)) {
 					/* Many values applying to one */
-					for (iter = 0; iter < calc->iterate.max; iter++) {
+					for (iter = flg ? 1 : 0; iter < calc->iterate.max; iter++) {
 						apply_op(calc->operation, &current_value[j][0],
 								 current_value[i][iter]);
 					}
 				} else if (calculations[j].iterate.max == calc->iterate.max) {
 					/* Both the same size */
-					for (iter = 0; iter < calc->iterate.max; iter++) {
+					for (iter = flg ? 1 : 0; iter < calc->iterate.max; iter++) {
 						apply_op(calc->operation, &current_value[j][iter],
 								 current_value[i][iter]);
 					}
@@ -695,6 +674,8 @@ int object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	for (i = 0; i < z_info->calculation_max; i++) {
 		struct power_calc *calc = &calculations[i];
 		struct poss_item *poss = calc->poss_items;
+		int type = calc->iterate.property_type;
+		bool flg = (type == OBJ_PROPERTY_FLAG);
 
 		/* Check whether this calculation applies to this item */
 		if (poss) {
@@ -707,7 +688,7 @@ int object_power(const struct object* obj, bool verbose, ang_file *log_file)
 
 		if (calc->apply_to == NULL) {
 			int old_power = power;
-			for (iter = 0; iter < calc->iterate.max; iter++) {
+			for (iter = flg ? 1 : 0; iter < calc->iterate.max; iter++) {
 				apply_op(calc->operation, &power, current_value[i][iter]);
 			}
 
@@ -717,10 +698,9 @@ int object_power(const struct object* obj, bool verbose, ang_file *log_file)
 					log_obj(format("%s is %d, power is %d\n", calc->name,
 								   power - old_power, power));
 				} else {
-					for (iter = 0; iter < calc->iterate.max; iter++) {
+					for (iter = flg ? 1 : 0; iter < calc->iterate.max; iter++) {
 						struct obj_property *prop;
-						int type = calc->iterate.property_type;
-						prop = obj_property_by_type_and_index(type, iter);
+						prop = lookup_obj_property(type, iter);
 						if (current_value[i][iter] != 0) {
 							old_power += current_value[i][iter];
 							log_obj(format("%d for %s, power is %d\n",

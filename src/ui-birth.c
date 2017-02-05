@@ -308,7 +308,7 @@ static void race_help(int i, void *db, const region *l)
 	skill_help(r->r_skills, NULL, r->r_mhp, r->r_exp, r->infra);
 	text_out_e("\n");
 
-	for (k = 0; k < OF_MAX; k++) {
+	for (k = 1; k < OF_MAX; k++) {
 		if (n_flags >= flag_space) break;
 		if (!of_has(r->flags, k)) continue;
 		text_out_e("\n%s", get_flag_desc(k));

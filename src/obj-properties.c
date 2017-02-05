@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "init.h"
 #include "object.h"
 #include "obj-gear.h"
 #include "obj-pile.h"
@@ -72,6 +73,28 @@ static const char *mod_names[] =
 	""
 };
 
+struct obj_property *lookup_obj_property(int type, int index)
+{
+	struct obj_property *prop;
+	int i;
+
+	/* Find the right property */
+	for (i = 0; i < z_info->property_max; i++) {
+		prop = &obj_properties[i];
+		if ((prop->type == type) && (prop->index == index)) {
+			return prop;
+		}
+
+		/* Special case - stats count as mods */
+		if ((type == OBJ_PROPERTY_MOD) && (prop->type == OBJ_PROPERTY_STAT)
+			&& (prop->index == index)) {
+			return prop;
+		}
+	}
+
+	return NULL;
+}
+
 /**
  * Create a "mask" of object flags of a specific type or ID threshold.
  *
@@ -83,8 +106,7 @@ static const char *mod_names[] =
  */
 void create_obj_flag_mask(bitflag *f, bool id, ...)
 {
-	const struct object_flag *of;
-	int i;
+	int i, j;
 	va_list args;
 
 	of_wipe(f);
@@ -93,22 +115,18 @@ void create_obj_flag_mask(bitflag *f, bool id, ...)
 
 	/* Process each type in the va_args */
     for (i = va_arg(args, int); i != OFT_MAX; i = va_arg(args, int)) {
-		for (of = object_flag_table; of->index < OF_MAX; of++)
-			if ((id && of->id == i) || (!id && of->type == i))
-				of_on(f, of->index);
+		for (j = 1; j < z_info->property_max; j++) {
+			struct obj_property *prop = &obj_properties[j];
+			if (prop->type != OBJ_PROPERTY_FLAG) continue;
+			if ((id && prop->id_type == i) || (!id && prop->subtype == i)) {
+				of_on(f, prop->index);
+			}
+		}
 	}
 
 	va_end(args);
 
 	return;
-}
-
-/**
- * Return the name of a flag.
- */
-const char *flag_name(int flag)
-{
-	return flag_names[flag];
 }
 
 /**
@@ -131,9 +149,8 @@ int flag_index_by_name(const char *name)
  */
 int obj_flag_type(int flag)
 {
-	const struct object_flag *of = &object_flag_table[flag];
-
-	return of->type;
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
+	return prop->subtype;
 }
 
 /**

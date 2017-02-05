@@ -2822,7 +2822,7 @@ static enum parser_error parse_object_property_code(struct parser *p) {
 	} else if (prop->type == OBJ_PROPERTY_MOD) {
 		index = code_index_in_array(obj_mods, code);
 	} else if (prop->type == OBJ_PROPERTY_FLAG) {
-		index = code_index_in_array(obj_flags, code) - 1;
+		index = code_index_in_array(obj_flags, code);
 	} else if (prop->type == OBJ_PROPERTY_IGNORE) {
 		index = code_index_in_array(element_names, code);
 	} else if (prop->type == OBJ_PROPERTY_RESIST) {
@@ -3140,7 +3140,7 @@ static enum parser_error parse_object_power_iterate(struct parser *p) {
 		c->iterate.max = ELEM_BASE_MAX;
 	} else if (streq(iter, "flag")) {
 		c->iterate.property_type = OBJ_PROPERTY_FLAG;
-		c->iterate.max = OF_MAX - 1;
+		c->iterate.max = OF_MAX;
 	} else {
 		return PARSE_ERROR_INVALID_ITERATE;
 	}
