@@ -98,10 +98,7 @@ static const char *slots[] = {
 
 const char *list_obj_flag_names[] = {
 	"NONE",
-	#define STAT(a, c, f, g, h, i) #c,
-	#include "list-stats.h"
-	#undef STAT
-	#define OF(a, b, c, e, f) #a,
+	#define OF(a) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	NULL
@@ -116,7 +113,7 @@ const char *list_element_names[] = {
 
 static const char *effect_list[] = {
 	"NONE",
-	#define EFFECT(x, a, b, c, d, e)	#x,
+	#define EFFECT(x, a, b, c, d, e) #x,
 	#include "list-effects.h"
 	#undef EFFECT
 	"MAX"

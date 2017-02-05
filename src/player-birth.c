@@ -527,8 +527,9 @@ static void player_outfit(struct player *p)
 	p->obj_k->ds = 1;
 	p->obj_k->ac = 1;
 	for (i = 1; i < OF_MAX; i++) {
-		if (obj_flag_type(i) == OFT_LIGHT) of_on(p->obj_k->flags, i);
-		if (obj_flag_type(i) == OFT_DIG) of_on(p->obj_k->flags, i);
+		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
+		if (prop->subtype == OFT_LIGHT) of_on(p->obj_k->flags, i);
+		if (prop->subtype == OFT_DIG) of_on(p->obj_k->flags, i);
 	}
 
 	/* Give the player starting equipment */

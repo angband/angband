@@ -151,6 +151,7 @@ subtype:sustain
 id-type:on effect
 code:SUST_STR
 power:9
+msg:Your {name} glows.
 
 name:sustain intelligence
 type:flag
@@ -158,6 +159,7 @@ subtype:sustain
 id-type:on effect
 code:SUST_INT
 power:4
+msg:Your {name} glows.
 
 name:sustain wisdom
 type:flag
@@ -165,6 +167,7 @@ subtype:sustain
 id-type:on effect
 code:SUST_WIS
 power:4
+msg:Your {name} glows.
 
 name:sustain dexterity
 type:flag
@@ -172,6 +175,7 @@ subtype:sustain
 id-type:on effect
 code:SUST_DEX
 power:7
+msg:Your {name} glows.
 
 name:sustain constitution
 type:flag
@@ -179,6 +183,7 @@ subtype:sustain
 id-type:on effect
 code:SUST_CON
 power:8
+msg:Your {name} glows.
 
 name:protection from fear
 type:flag

@@ -59,6 +59,15 @@ const char *r_info_spell_flags[] =
 	NULL
 };
 
+static const char *obj_flags[] =
+{
+	"NONE",
+	#define OF(a) #a,
+	#include "list-object-flags.h"
+	#undef OF
+    ""
+};
+
 static const char *effect_list[] = {
 	"NONE",
 	#define EFFECT(x, a, b, c, d, e)	#x,
@@ -66,6 +75,21 @@ static const char *effect_list[] = {
 	#undef EFFECT
 	"MAX"
 };
+
+/**
+ * Return the index of a flag from its name.
+ */
+int flag_index_by_name(const char *name)
+{
+	size_t i;
+	for (i = 0; i < N_ELEMENTS(obj_flags); i++) {
+		if (streq(name, obj_flags[i])) {
+			return i;
+		}
+	}
+
+	return -1;
+}
 
 /**
  * Write the flag lines for a set of flags.

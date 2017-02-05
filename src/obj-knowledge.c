@@ -60,41 +60,12 @@
  * Object knowledge data
  * This section covers initialisation, access and cleanup of rune data
  * ------------------------------------------------------------------------ */
-/**
- * Describes a flag-name pair.
- */
-struct flag_type {
-	int flag;
-	const char *name;
-};
-
 static size_t rune_max;
 static struct rune *rune_list;
 static char *c_rune[] = {
 	"enchantment to armor",
 	"enchantment to hit",
 	"enchantment to damage"
-};
-
-static const struct flag_type f_rune[] =
-{
-	{ OF_NONE, "" },
-	#define STAT(a, c, f, g, h, i) { OF_##c, i },
-	#include "list-stats.h"
-	#undef STAT
-	#define OF(a, b, c, e, f) { OF_##a, e },
-	#include "list-object-flags.h"
-	#undef OF
-};
-
-static const char *m_rune[] =
-{
-	#define STAT(a, c, f, g, h, i) h,
-	#include "list-stats.h"
-	#undef STAT
-	#define OBJ_MOD(a, b) b,
-	#include "list-object-modifiers.h"
-	#undef OBJ_MOD
 };
 
 /**
@@ -107,9 +78,10 @@ static void init_rune(void)
 	/* Count runes (combat runes are fixed) */
 	count = COMBAT_RUNE_MAX;
 	for (i = 1; i < OF_MAX; i++) {
-		if (obj_flag_type(i) == OFT_NONE) continue;
-		if (obj_flag_type(i) == OFT_LIGHT) continue;
-		if (obj_flag_type(i) == OFT_DIG) continue;
+		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
+		if (prop->subtype == OFT_NONE) continue;
+		if (prop->subtype == OFT_LIGHT) continue;
+		if (prop->subtype == OFT_DIG) continue;
 		count++;
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
@@ -160,7 +132,8 @@ static void init_rune(void)
 		rune_list[count++] = (struct rune) { RUNE_VAR_COMBAT, i, 0, c_rune[i] };
 	}
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
-		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, 0, m_rune[i] };
+		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_MOD, i);
+		rune_list[count++] = (struct rune) { RUNE_VAR_MOD, i, 0, prop->name };
 	}
 	for (i = 0; i < ELEM_HIGH_MAX; i++) {
 		rune_list[count++] = (struct rune) { RUNE_VAR_RESIST, i, 0, projections[i].name };
@@ -200,12 +173,13 @@ static void init_rune(void)
 		}
 	}
 	for (i = 1; i < OF_MAX; i++) {
-		if (obj_flag_type(i) == OFT_NONE) continue;
-		if (obj_flag_type(i) == OFT_LIGHT) continue;
-		if (obj_flag_type(i) == OFT_DIG) continue;
+		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
+		if (prop->subtype == OFT_NONE) continue;
+		if (prop->subtype == OFT_LIGHT) continue;
+		if (prop->subtype == OFT_DIG) continue;
 
 		rune_list[count++] = (struct rune)
-			{ RUNE_VAR_FLAG, i, 0, f_rune[i].name };
+			{ RUNE_VAR_FLAG, i, 0, prop->name };
 	}
 }
 
@@ -1610,9 +1584,9 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 
 	/* Make sustains obvious for items with that stat bonus */
 	for (i = 0; i < STAT_MAX; i++) {
-		/* Sustains are the first flags, stats are the first modifiers */
-		if ((obj_flag_type(i + 1) == OFT_SUST) && obj->modifiers[i]) {
-			of_on(obvious_mask, i + 1);
+		int sust = sustain_flag(i);
+		if (obj->modifiers[i]) {
+			of_on(obvious_mask, sust);
 		}
 	}
 

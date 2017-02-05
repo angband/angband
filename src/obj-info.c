@@ -62,29 +62,12 @@ struct blow_info {
  * Big fat data tables
  * ------------------------------------------------------------------------ */
 
-static const char *mod_names[] =
-{
-	#define STAT(a, c, f, g, h, i) h,
-	#include "list-stats.h"
-	#undef STAT
-	#define OBJ_MOD(a, b) b,
-	#include "list-object-modifiers.h"
-	#undef OBJ_MOD
-};
-
 static const struct flag_type protect_flags[] =
 {
 	{ OF_PROT_FEAR, "fear" },
 	{ OF_PROT_BLIND, "blindness" },
 	{ OF_PROT_CONF, "confusion" },
 	{ OF_PROT_STUN,  "stunning" },
-};
-
-static const struct flag_type sustain_flags[] =
-{
-	#define STAT(a, c, f, g, h, i) { OF_##c, h },
-	#include "list-stats.h"
-	#undef STAT
 };
 
 static const struct flag_type misc_flags[] =
@@ -238,7 +221,7 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 		known_effect = true;
 
 	/* See what we've got */
-	for (i = 0; i < N_ELEMENTS(mod_names); i++)
+	for (i = 0; i < OBJ_MOD_MAX; i++)
 		if (obj->known->modifiers[i]) {
 			count++;
 			detail = true;
@@ -247,8 +230,8 @@ static bool describe_stats(textblock *tb, const struct object *obj,
 	if (!count)
 		return false;
 
-	for (i = 0; i < N_ELEMENTS(mod_names); i++) {
-		const char *desc = mod_names[i];
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		const char *desc = lookup_obj_property(OBJ_PROPERTY_MOD, i)->name;
 		int val = obj->known->modifiers[i];
 		if (!val) continue;
 
@@ -383,9 +366,14 @@ static bool describe_hates(textblock *tb, const struct element_info el_info[])
  */
 static bool describe_sustains(textblock *tb, const bitflag flags[OF_SIZE])
 {
-	const char *descs[N_ELEMENTS(sustain_flags)];
-	size_t count = flag_info_collect(sustain_flags, N_ELEMENTS(sustain_flags),
-									 flags, descs);
+	const char *descs[STAT_MAX];
+	int i, count = 0;
+
+	for (i = 0; i < STAT_MAX; i++) {
+		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_STAT, i);
+		if (of_has(flags, sustain_flag(prop->index)))
+			descs[count++] = prop->name;
+	}
 
 	if (!count)
 		return false;
@@ -1470,8 +1458,9 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				break;
 			}
 			case EFINFO_STAT: {
+				int stat = effect->params[0];
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-							mod_names[effect->params[0]]);
+						lookup_obj_property(OBJ_PROPERTY_STAT, stat)->name);
 				break;
 			}
 			case EFINFO_SEEN: {

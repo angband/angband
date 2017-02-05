@@ -755,24 +755,20 @@ static int stats_dump_lists(void)
 
 	/** Really want elements (at least) here - NRM **/
 
-	struct object_flag object_flag_table[] =
+	char *object_flag_names[] =
 	{
-		{ OF_NONE, OFID_NONE, OFT_NONE, "NONE" },
-		#define STAT(a, c, f, g, h, i)					\
-			{ OF_##c, OFID_NORMAL, OFT_SUST, #c },
-        #include "list-stats.h"
-        #undef STAT
-		#define OF(a, b, c, e, f) { OF_##a, b, c, #a },
+		"NONE",
+		#define OF(a) #a,
 		#include "list-object-flags.h"
 		#undef OF
 	};
 
 	char *object_mods[] =
 	{
-		#define STAT(a, c, f, g, h, i) #a,
+		#define STAT(a) #a,
         #include "list-stats.h"
         #undef STAT
-        #define OBJ_MOD(a, b) #a,
+        #define OBJ_MOD(a) #a,
         #include "list-object-modifiers.h"
         #undef OBJ_MOD
 		NULL
@@ -812,18 +808,14 @@ static int stats_dump_lists(void)
 	STATS_DB_FINALIZE(sql_stmt)
 
 	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_flags_list VALUES(?,?,?);");
+		"INSERT INTO object_flags_list VALUES(?,?);");
 	if (err) return err;
 
-	for (idx = 1; idx < OF_MAX; idx++) {
-		struct object_flag *of = &object_flag_table[idx];
-		if (! of->message) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, 
-			of->type);
+	for (idx = 0; idx < OF_MAX; idx++) {
+		err = stats_db_bind_ints(sql_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 4, of->message,
-			strlen(of->message), SQLITE_STATIC);
+		err = sqlite3_bind_text(sql_stmt, 2, object_flag_names[idx],
+			strlen(object_flag_names[idx]), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}

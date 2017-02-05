@@ -64,10 +64,7 @@ struct hint *hints;
 
 static const char *obj_flags[] = {
 	"NONE",
-	#define STAT(a, c, f, g, h, i) #c,
-	#include "list-stats.h"
-	#undef STAT
-	#define OF(a, b, c, e, f) #a,
+	#define OF(a) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	NULL

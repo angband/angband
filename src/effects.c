@@ -79,25 +79,17 @@ struct effect_kind {
 
 
 /**
- * Array of stat adjectives
+ * Stat adjectives
  */
-static const char *desc_stat_pos[] =
+static const char *desc_stat(int stat, bool positive)
 {
-	#define STAT(a, c, f, g, h, i) f,
-	#include "list-stats.h"
-	#undef STAT
-};
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_STAT, stat);
+	if (positive) {
+		return prop->adjective;
+	}
+	return prop->neg_adj;
+}
 
-
-/**
- * Array of stat opposite adjectives
- */
-static const char *desc_stat_neg[] =
-{
-	#define STAT(a, c, f, g, h, i) g,
-	#include "list-stats.h"
-	#undef STAT
-};
 
 int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 {
@@ -513,7 +505,7 @@ bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 
 	/* Message */
 	if (context->p2)
-		msg("You feel less %s.", desc_stat_neg[stat]);
+		msg("You feel less %s.", desc_stat(stat, false));
 
 	return (true);
 }
@@ -539,7 +531,7 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 
 		/* Message */
 		msg("You feel very %s for a moment, but the feeling passes.",
-				   desc_stat_neg[stat]);
+				   desc_stat(stat, false));
 
 		return (true);
 	}
@@ -552,7 +544,7 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 		equip_learn_flag(player, flag);
 
 		/* Message */
-		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[stat]);
+		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat(stat, false));
 		if (dam)
 			take_hit(player, dam, "stat drain");
 	}
@@ -574,7 +566,7 @@ bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 
 	/* Attempt to reduce the stat */
 	if (player_stat_dec(player, loss_stat, true)) {
-		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[loss_stat]);
+		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat(loss_stat, false));
 	}
 
 	/* ID */
@@ -593,7 +585,7 @@ bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
 
 	/* Attempt to increase */
 	if (player_stat_inc(player, stat)) {
-		msg("You feel very %s!", desc_stat_pos[stat]);
+		msg("You feel very %s!", desc_stat(stat, true));
 	}
 
 	/* Notice */

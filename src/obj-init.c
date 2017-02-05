@@ -54,20 +54,17 @@ static const char *mon_race_flags[] =
 
 static const char *obj_flags[] = {
 	"NONE",
-	#define STAT(a, c, f, g, h, i) #c,
-	#include "list-stats.h"
-	#undef STAT
-	#define OF(a, b, c, e, f) #a,
+	#define OF(a) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	NULL
 };
 
 static const char *obj_mods[] = {
-	#define STAT(a, c, f, g, h, i) #a,
+	#define STAT(a) #a,
 	#include "list-stats.h"
 	#undef STAT
-	#define OBJ_MOD(a, b) #a,
+	#define OBJ_MOD(a) #a,
 	#include "list-object-modifiers.h"
 	#undef OBJ_MOD
 	NULL

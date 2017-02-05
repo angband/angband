@@ -2,17 +2,17 @@
  * \file src/list-stats.h
  * \brief player stats
  *
- * index: the stat number
- * sustain: object flag name for sustain
- * sust_p: power of sustain
- * pos_adj: adjective for gain of this stat
- * neg_adj: adjective for loss of this stat
- * name: name of the stat
- * sustain name: name of the sustain rune
+ * Changing stat order or making new ones will break savefiles. Stats
+ * below start from 0 on line 14, so a stat's sequence number is its line
+ * number minus 14.
+ *
+ * Each stat has a matching sustain in src/list-object-flags.h, which should
+ * be at the same index in that file as the stat in this file.
+ *
+ * Stat properties are defined in lib/gamedata/object_property.txt
  */
-/* index       	sustain			pos adj		neg adj		name 			sustain name */
-STAT(STR,        SUST_STR,		"strong",	"weak",		"strength",		"sustain strength")
-STAT(INT,        SUST_INT,		"smart",	"stupid",	"intelligence",	"sustain intelligence")
-STAT(WIS,        SUST_WIS,		"wise",		"naive",	"wisdom",		"sustain wisdom")
-STAT(DEX,        SUST_DEX,		"dextrous",	"clumsy",	"dexterity",	"sustain dexterity")
-STAT(CON,        SUST_CON,		"healthy",	"sickly",	"constitution",	"sustain constitution")
+STAT(STR)
+STAT(INT)
+STAT(WIS)
+STAT(DEX)
+STAT(CON)

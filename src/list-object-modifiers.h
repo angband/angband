@@ -2,18 +2,17 @@
  * \file list-object-modifiers.h
  * \brief object modifiers (plusses and minuses) for all objects
  *
- * index: the mod number
- * power: base power rating for the mod (0 means it is unused or derived)
- * mult: weight of this modifier relative to others
- * message: what is printed when the mod is IDd (but see also identify.c 
- * and list-slays.h)
+ * Changing modifier order will break savefiles. Modifiers
+ * below start from 5 on line 11, so a modifier's sequence number is its line
+ * number minus 6.
+ *
+ * Modifier properties are defined in lib/gamedata/object_property.txt
  */
-/* index       		name */
-OBJ_MOD(STEALTH,    "stealth")
-OBJ_MOD(INFRA,      "infravision")
-OBJ_MOD(TUNNEL,     "tunneling")
-OBJ_MOD(SPEED,      "speed")
-OBJ_MOD(BLOWS,      "attack speed")
-OBJ_MOD(SHOTS,      "shooting speed")
-OBJ_MOD(MIGHT,      "shooting power")
-OBJ_MOD(LIGHT,      "light")
+OBJ_MOD(STEALTH)
+OBJ_MOD(INFRA)
+OBJ_MOD(TUNNEL)
+OBJ_MOD(SPEED)
+OBJ_MOD(BLOWS)
+OBJ_MOD(SHOTS)
+OBJ_MOD(MIGHT)
+OBJ_MOD(LIGHT)

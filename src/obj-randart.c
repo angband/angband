@@ -1595,6 +1595,8 @@ static void add_immunity(struct artifact *art)
  */
 static bool add_mod(struct artifact *art, int mod)
 {
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_MOD, mod);
+
 	/* Blows, might, shots need special treatment */
 	bool powerful = ((mod == OBJ_MOD_BLOWS) || (mod == OBJ_MOD_MIGHT) ||
 					 (mod == OBJ_MOD_SHOTS));
@@ -1606,33 +1608,33 @@ static bool add_mod(struct artifact *art, int mod)
 		if (one_in_(2)) {
 			art->modifiers[mod]--;
 			file_putf(log_file, "Decreasing %s by 1, new value is: %d\n",
-					  mod_name(mod), art->modifiers[mod]);
+					  prop->name, art->modifiers[mod]);
 			success = true;
 		}
 	} else if (powerful) {
 		/* Powerful mods need to be applied sparingly */
 		if (art->modifiers[mod] == 0) {
 			art->modifiers[mod] = randint1(2);
-			file_putf(log_file, "Adding ability: %s (%+d)\n", mod_name(mod),
+			file_putf(log_file, "Adding ability: %s (%+d)\n", prop->name,
 					  art->modifiers[mod]);
 			success = true;
 		} else if (one_in_(2 * art->modifiers[mod])) {
 			art->modifiers[mod]++;
 			file_putf(log_file, "Increasing %s by 1, new value is: %d\n",
-					  mod_name(mod), art->modifiers[mod]);
+					  prop->name, art->modifiers[mod]);
 			success = true;
 		}
 	} else {
 		/* New mods average 3, old ones are incremented by 1 or 2 */
 		if (art->modifiers[mod] == 0) {
 			art->modifiers[mod] = randint0(3) + randint1(3);
-			file_putf(log_file, "Adding ability: %s (%+d)\n", mod_name(mod),
+			file_putf(log_file, "Adding ability: %s (%+d)\n", prop->name,
 					  art->modifiers[mod]);
 			success = true;
 		} else {
 			art->modifiers[mod] += randint1(2);
 			file_putf(log_file, "Increasing %s by 2, new value is: %d\n",
-					  mod_name(mod), art->modifiers[mod]);
+					  prop->name, art->modifiers[mod]);
 			success = true;
 		}
 	}

@@ -1,6 +1,6 @@
 /**
  * \file obj-properties.c
- * \brief functions to deal with object flags and modifiers
+ * \brief functions to deal with object properties
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
@@ -18,60 +18,8 @@
 #include "angband.h"
 #include "init.h"
 #include "object.h"
-#include "obj-gear.h"
-#include "obj-pile.h"
 
 struct obj_property *obj_properties;
-
-/**
- * Details of the different object flags in the game.
- * See src/obj-properties.h for structure
- *
- * Note that sustain stat flags are included first, so that the index into 
- * the flag table for a sustain is the stat index + 1
- *
- * Note that any strings in the last position must have exactly one %s
- */
-static const struct object_flag object_flag_table[] =
-{
-	{ OF_NONE, OFID_NONE, OFT_NONE, "NONE" },
-	#define STAT(a, c, f, g, h, i)							\
-		{ OF_##c, OFID_NORMAL, OFT_SUST, "Your %s glows." },
-	#include "list-stats.h"
-	#undef STAT
-	#define OF(a, b, c, e, f) { OF_##a, b, c, f },
-	#include "list-object-flags.h"
-	#undef OF
-};
-
-/**
- * Object flag names
- */
-static const char *flag_names[] =
-{
-	"NONE",
-	#define STAT(a, c, f, g, h, i) #c,
-	#include "list-stats.h"
-	#undef STAT
-	#define OF(a, b, c, e, f) #a,
-	#include "list-object-flags.h"
-	#undef OF
-    ""
-};
-
-/**
- * Object modifier names
- */
-static const char *mod_names[] =
-{
-	#define STAT(a, c, f, g, h, i) #a,
-	#include "list-stats.h"
-	#undef STAT
-	#define OBJ_MOD(a, b) #a,
-	#include "list-object-modifiers.h"
-	#undef OBJ_MOD
-	""
-};
 
 struct obj_property *lookup_obj_property(int type, int index)
 {
@@ -130,30 +78,6 @@ void create_obj_flag_mask(bitflag *f, bool id, ...)
 }
 
 /**
- * Return the index of a flag from its name.
- */
-int flag_index_by_name(const char *name)
-{
-	size_t i;
-	for (i = 0; i < N_ELEMENTS(flag_names); i++) {
-		if (streq(name, flag_names[i])) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-/**
- * Return the OFT_ type of a flag.
- */
-int obj_flag_type(int flag)
-{
-	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
-	return prop->subtype;
-}
-
-/**
  * Print a message when an object flag is identified by use.
  *
  * \param flag is the flag being noticed
@@ -161,12 +85,45 @@ int obj_flag_type(int flag)
  */
 void flag_message(int flag, char *name)
 {
-	const struct object_flag *of = &object_flag_table[flag];
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, flag);
+	char buf[1024] = "\0";
+	const char *next;
+	const char *s;
+	const char *tag;
+	const char *in_cursor;
+	size_t end = 0;
 
-	if (!streq(of->message, ""))
-		msg(of->message, name);
+	/* See if we have a message */
+	if (!prop->msg) return;
+	in_cursor = prop->msg;
 
-	return;
+	next = strchr(in_cursor, '{');
+	while (next) {
+		/* Copy the text leading up to this { */
+		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor); 
+
+		s = next + 1;
+		while (*s && isalpha((unsigned char) *s)) s++;
+
+		/* Valid tag */
+		if (*s == '}') {
+			/* Start the tag after the { */
+			tag = next + 1;
+			in_cursor = s + 1;
+			if (streq(tag, "name")) {
+				end += strlen(name);
+			}
+
+		} else {
+			/* An invalid tag, skip it */
+			in_cursor = next + 1;
+		}
+
+		next = strchr(in_cursor, '{');
+	}
+	strnfcat(buf, 1024, &end, in_cursor);
+
+	msg("%s", buf);
 }
 
 /**
@@ -176,13 +133,5 @@ int sustain_flag(int stat)
 {
 	if (stat < 0 || stat >= STAT_MAX) return -1;
 
-	return object_flag_table[stat + 1].index;
-}
-
-/**
- * Return the name of a flag.
- */
-const char *mod_name(int mod)
-{
-	return mod_names[mod];
+	return stat + 1;
 }

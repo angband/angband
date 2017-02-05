@@ -46,10 +46,7 @@ enum
  */
 enum {
 	OF_NONE,
-	#define STAT(a, c, f, g, h, i) OF_##c,
-    #include "list-stats.h"
-    #undef STAT
-	#define OF(a, b, c, e, f) OF_##a,
+	#define OF(a) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -67,10 +64,10 @@ enum {
  * The object modifiers
  */
 enum {
-	#define STAT(a, c, f, g, h, i) OBJ_MOD_##a,
+	#define STAT(a) OBJ_MOD_##a,
     #include "list-stats.h"
     #undef STAT
-    #define OBJ_MOD(a, b) OBJ_MOD_##a,
+    #define OBJ_MOD(a) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 	OBJ_MOD_MAX
@@ -103,6 +100,21 @@ enum object_flag_id {
 	OFID_NORMAL,		/* normal ID on use */
 	OFID_TIMED,			/* obvious after time */
 	OFID_WIELD			/* obvious on wield */
+};
+
+/**
+ * The object property types
+ */
+enum obj_property_type {
+	OBJ_PROPERTY_NONE = 0,
+	OBJ_PROPERTY_STAT,
+	OBJ_PROPERTY_MOD,
+	OBJ_PROPERTY_FLAG,
+	OBJ_PROPERTY_IGNORE,
+	OBJ_PROPERTY_RESIST,
+	OBJ_PROPERTY_VULN,
+	OBJ_PROPERTY_IMM,
+	OBJ_PROPERTY_MAX
 };
 
 #define OF_SIZE                	FLAG_SIZE(OF_MAX)
@@ -151,28 +163,6 @@ enum object_flag_id {
  * ------------------------------------------------------------------------ */
 
 /**
- * The object flag structure
- */
-struct object_flag {
-	u16b index;				/* the OF_ index */
-	u16b id;				/* how is it identified */
-	u16b type;				/* OFT_ category */
-	const char *message;	/* id message */
-};
-
-enum obj_property_type {
-	OBJ_PROPERTY_NONE = 0,
-	OBJ_PROPERTY_STAT,
-	OBJ_PROPERTY_MOD,
-	OBJ_PROPERTY_FLAG,
-	OBJ_PROPERTY_IGNORE,
-	OBJ_PROPERTY_RESIST,
-	OBJ_PROPERTY_VULN,
-	OBJ_PROPERTY_IMM,
-	OBJ_PROPERTY_MAX
-};
-
-/**
  * The object property structure
  */
 struct obj_property {
@@ -198,10 +188,7 @@ extern struct obj_property *obj_properties;
  * ------------------------------------------------------------------------ */
 struct obj_property *lookup_obj_property(int type, int index);
 void create_obj_flag_mask(bitflag *f, bool id, ...);
-int flag_index_by_name(const char *name);
-int obj_flag_type(int flag);
 void flag_message(int flag, char *name);
 int sustain_flag(int stat);
-const char *mod_name(int mod);
 
 #endif /* !INCLUDED_OBJPROPERTIES_H */

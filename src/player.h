@@ -30,7 +30,7 @@
  * Indexes of the player stats (hard-coded by savefiles).
  */
 enum {
-	#define STAT(a, c, f, g, h, i) STAT_##a,
+	#define STAT(a) STAT_##a,
 	#include "list-stats.h"
 	#undef STAT
 
