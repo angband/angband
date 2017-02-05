@@ -178,6 +178,7 @@ struct obj_property {
 	char *adjective;		/* adjective for property */
 	char *neg_adj;			/* adjective for negative of property */
 	char *msg;				/* message on noticing property */
+	char *desc;				/* extra text for object info */
 };
 
 extern struct obj_property *obj_properties;

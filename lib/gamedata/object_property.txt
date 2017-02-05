@@ -3,12 +3,21 @@
 # name: the property name
 # type: the type of object property.  Each property needs one, and it must 
 #       appear before the code in this file 
+# subtype: subtype of object property, currently only used by flags
+# id-type: how a property is identified, currently only used by flags
 # code: a code for the object property, which is used to associate it with its
 #       index among the other properties of that type
 # power: the value given to the property in object power calculations
 # mult: relative value of properties, used in power calculations
 # type-mult: extra multiplier used in power for particular properties on
 #            particular types of object.  Assumed 1 if not mentioned
+# adjective: adjective describing the property as a player attribute, currently
+#            only used by stats
+# neg-adjective: adjective describing the opposite of the property as a player
+#                 attribute, currently only used by stats
+# msg: message printed on noticing a property, currently used for flags which
+#      are identified after time or on an effect
+# desc: an extra piece of descriptive text used in object information
 
 name:strength
 type:stat
@@ -192,6 +201,7 @@ subtype:protection
 id-type:on effect
 power:6
 msg:Your {name} strengthens your courage.
+desc:fear
 
 name:protection from blindness
 type:flag
@@ -200,6 +210,7 @@ subtype:protection
 id-type:on effect
 power:16
 msg:Your {name} soothes your eyes.
+desc:blindness
 
 name:protection from confusion
 type:flag
@@ -208,6 +219,7 @@ subtype:protection
 id-type:on effect
 power:24
 msg:Your {name} clears your thoughts.
+desc:confusion
 
 name:protection from stunning
 type:flag
@@ -216,6 +228,7 @@ subtype:protection
 id-type:on effect
 power:12
 msg:Your {name} steadies you.
+desc:stunning
 
 name:slow digestion
 type:flag
@@ -224,6 +237,7 @@ id-type:timed
 code:SLOW_DIGEST
 power:2
 msg:You realise your {name} is slowing your metabolism.
+desc:Slows your metabolism
 
 name:feather falling
 type:flag
@@ -232,6 +246,7 @@ id-type:on effect
 code:FEATHER
 power:1
 msg:Your {name} slows your fall.
+desc:Feather Falling
 
 name:regeneration
 type:flag
@@ -252,6 +267,7 @@ type-mult:crown:2
 type-mult:gloves:2
 type-mult:boots:2
 msg:You note that your {name} is speeding up your recovery.
+desc:Speeds regeneration
 
 name:telepathy
 type:flag
@@ -271,6 +287,7 @@ type-mult:crown:2
 type-mult:gloves:2
 type-mult:boots:2
 power:35
+desc:Grants telepathy
 
 name:see invisible
 type:flag
@@ -290,6 +307,7 @@ type-mult:crown:2
 type-mult:gloves:2
 type-mult:boots:2
 power:6
+desc:Grants the ability to see invisible things
 
 name:free action
 type:flag
@@ -310,6 +328,7 @@ type-mult:crown:2
 type-mult:gloves:5
 type-mult:boots:2
 msg:Your {name} keeps you moving.
+desc:Prevents paralysis
 
 name:hold life
 type:flag
@@ -330,6 +349,7 @@ type-mult:crown:2
 type-mult:gloves:2
 type-mult:boots:2
 msg:Your {name} warms your spirit.
+desc:Sustains your life force
 
 name:earthquakes
 type:flag
@@ -351,6 +371,7 @@ type-mult:crown:0
 type-mult:gloves:0
 type-mult:boots:0
 msg:Your {name} causes an earthquake!
+desc:Sometimes creates earthquakes on impact
 
 name:blessed melee
 type:flag
@@ -371,6 +392,7 @@ type-mult:helm:0
 type-mult:crown:0
 type-mult:gloves:0
 type-mult:boots:0
+desc:Blessed by the gods
 
 name:burns out
 type:flag
@@ -448,6 +470,7 @@ id-type:timed
 code:IMPAIR_HP
 power:-9
 msg:You feel your {name} is slowing your recovery.
+desc:Impairs hitpoint recovery
 
 name:impaired mana recovery
 type:flag
@@ -456,6 +479,7 @@ id-type:timed
 code:IMPAIR_MANA
 power:-9
 msg:You feel your {name} is slowing your mana recovery.
+desc:Impairs mana recovery
 
 name:constant fear
 type:flag
@@ -463,6 +487,7 @@ subtype:bad
 id-type:on wield
 code:AFRAID
 power:-20
+desc:Makes you afraid of melee, and worse at shooting and casting spells
 
 name:teleportation ban
 type:flag
@@ -471,6 +496,7 @@ id-type:on effect
 code:NO_TELEPORT
 power:-20
 msg:Your {name} prevents you teleporting.
+desc:Prevents teleportation
 
 name:aggravation
 type:flag
@@ -479,6 +505,7 @@ id-type:timed
 code:AGGRAVATE
 power:-20
 msg:You notice your {name} aggravating things around you.
+desc:Aggravates creatures nearby
 
 name:experience drain
 type:flag
@@ -487,6 +514,7 @@ id-type:timed
 code:DRAIN_EXP
 power:-5
 msg:You sense your {name} is draining your life.
+desc:Drains experience
 
 name:stuck on
 type:flag
@@ -494,6 +522,7 @@ subtype:bad
 id-type:on wield
 code:STICKY
 power:-5
+desc:Can't be removed
 
 name:fragile
 type:flag
@@ -501,6 +530,7 @@ subtype:bad
 id-type:on wield
 code:FRAGILE
 power:0
+desc:Can be destroyed if you attempt to remove its curses
 
 name:radius 1 light
 type:flag

@@ -2899,6 +2899,16 @@ static enum parser_error parse_object_property_msg(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_object_property_desc(struct parser *p) {
+	struct obj_property *prop = parser_priv(p);
+	const char *desc = parser_getstr(p, "desc");
+
+	if (!prop)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	prop->desc = string_make(desc);
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_object_property(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2913,6 +2923,7 @@ struct parser *init_parse_object_property(void) {
 	parser_reg(p, "adjective str adj", parse_object_property_adjective);
 	parser_reg(p, "neg-adjective str neg_adj", parse_object_property_neg_adj);
 	parser_reg(p, "msg str msg", parse_object_property_msg);
+	parser_reg(p, "desc str desc", parse_object_property_desc);
 	return p;
 }
 

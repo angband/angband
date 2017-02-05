@@ -41,14 +41,6 @@
 #include "z-textblock.h"
 
 /**
- * Describes a flag-name pair.
- */
-struct flag_type {
-	int flag;
-	const char *name;
-};
-
-/**
  * Describes the number of blows possible for given stat bonuses
  */
 struct blow_info {
@@ -61,34 +53,6 @@ struct blow_info {
  * ------------------------------------------------------------------------
  * Big fat data tables
  * ------------------------------------------------------------------------ */
-
-static const struct flag_type protect_flags[] =
-{
-	{ OF_PROT_FEAR, "fear" },
-	{ OF_PROT_BLIND, "blindness" },
-	{ OF_PROT_CONF, "confusion" },
-	{ OF_PROT_STUN,  "stunning" },
-};
-
-static const struct flag_type misc_flags[] =
-{
-	{ OF_BLESSED, "Blessed by the gods" },
-	{ OF_SLOW_DIGEST, "Slows your metabolism" },
-	{ OF_IMPAIR_HP, "Impairs hitpoint recovery" },
-	{ OF_IMPAIR_MANA, "Impairs mana recovery" },
-	{ OF_AFRAID, "Makes you afraid of melee, and worse at shooting and casting spells" },
-	{ OF_FEATHER, "Feather Falling" },
-	{ OF_REGEN, "Speeds regeneration" },
-	{ OF_FREE_ACT, "Prevents paralysis" },
-	{ OF_HOLD_LIFE, "Sustains your life force" },
-	{ OF_TELEPATHY, "Grants telepathy" },
-	{ OF_SEE_INVIS, "Grants the ability to see invisible things" },
-	{ OF_AGGRAVATE, "Aggravates creatures nearby" },
-	{ OF_DRAIN_EXP, "Drains experience" },
-	{ OF_NO_TELEPORT, "Prevents teleportation" },
-	{ OF_STICKY, "Can't be removed" },
-	{ OF_FRAGILE, "Can be destroyed if you attempt to remove its curses" },
-};
 
 static const struct origin_type {
 	int type;
@@ -136,23 +100,6 @@ static void info_out_list(textblock *tb, const char *list[], size_t count)
 	textblock_append(tb, ".\n");
 }
 
-
-/**
- * Fills recepticle with all the flags in `flags` that are in the given `list`.
- */
-static size_t flag_info_collect(const struct flag_type list[], size_t max,
-								const bitflag flags[OF_SIZE],
-								const char *recepticle[])
-{
-	size_t i, count = 0;
-
-	for (i = 0; i < max; i++) {
-		if (of_has(flags, list[i].flag))
-			recepticle[count++] = list[i].name;
-	}
-
-	return count;
-}
 
 /**
  * Fills recepticle with all the elements that correspond to the given `list`.
@@ -300,12 +247,17 @@ static bool describe_elements(textblock *tb,
  */
 static bool describe_protects(textblock *tb, const bitflag flags[OF_SIZE])
 {
-	const char *p_descs[N_ELEMENTS(protect_flags)];
-	size_t count;
+	const char *p_descs[OF_MAX];
+	int i, count = 0;
 
 	/* Protections */
-	count = flag_info_collect(protect_flags, N_ELEMENTS(protect_flags),
-			flags, p_descs);
+	for (i = 1; i < OF_MAX; i++) {
+		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
+		if (prop->subtype != OFT_PROT) continue;
+		if (of_has(flags, prop->index)) {
+			p_descs[count++] = prop->desc;
+		}
+	}
 
 	if (!count)
 		return false;
@@ -390,14 +342,18 @@ static bool describe_sustains(textblock *tb, const bitflag flags[OF_SIZE])
  */
 static bool describe_misc_magic(textblock *tb, const bitflag flags[OF_SIZE])
 {
-	size_t i;
+	int i;
 	bool printed = false;
 
-	for (i = 0; i < N_ELEMENTS(misc_flags); i++)
-		if (of_has(flags, misc_flags[i].flag)) {
-			textblock_append(tb, "%s.  ", misc_flags[i].name);
+	for (i = 1; i < OF_MAX; i++) {
+		struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_FLAG, i);
+		if ((prop->subtype != OFT_MISC)  && (prop->subtype != OFT_MELEE) &&
+			(prop->subtype != OFT_BAD)) continue;
+		if (of_has(flags, prop->index)) {
+			textblock_append(tb, "%s.  ", prop->desc);
 			printed = true;
 		}
+	}
 
 	if (printed)
 		textblock_append(tb, "\n");
@@ -601,7 +557,7 @@ static void get_known_elements(const struct object *obj,
  * Gets information about the number of blows possible for the player with
  * the given object.
  *
- * Fills in whether the object is too_heavy to wield effectively,
+ * Fills in whether the object is too heavy to wield effectively,
  * and the possible_blows[] information of .str_plus and .dex_plus needed
  * to achieve the approximate number of blows in centiblows. 
  *
@@ -1002,19 +958,17 @@ static bool describe_damage(textblock *tb, const struct object *obj)
  * Gets miscellaneous combat information about the given object.
  *
  * Fills in whether there is a special effect when thrown in `thrown effect`,
- * the `range` in ft (or zero if not ammo), whether the weapon has the 
- * impact flag set, the percentage chance of breakage and whether it is
- * too heavy to be weilded effectively at the moment.
+ * the `range` in ft (or zero if not ammo), the percentage chance of breakage
+ * and whether it is too heavy to be wielded effectively at the moment.
  */
 static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
-								  int *range, bool *impactful,
-								  int *break_chance, bool *too_heavy)
+								  int *range, int *break_chance, bool *heavy)
 {
 	struct object *bow = equipped_item_by_slot_name(player, "shooting");
 	bool weapon = tval_is_melee_weapon(obj);
 	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
 
-	*thrown_effect = *impactful = *too_heavy = false;
+	*thrown_effect = *heavy = false;
 	*range = *break_chance = 0;
 
 	if (!weapon && !ammo) {
@@ -1026,10 +980,6 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 
 	if (ammo)
 		*range = 10 * MIN(6 + 2 * player->state.ammo_mult, z_info->max_range);
-
-	/* Note the impact flag */
-	*impactful = of_has(obj->known->flags, OF_IMPACT) &&
-		of_has(obj->flags, OF_IMPACT);
 
 	/* Add breakage chance */
 	*break_chance = breakage_chance(obj, true);
@@ -1050,7 +1000,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		player->body.slots[weapon_slot].obj = current;
 
 		/* Warn about heavy weapons */
-		*too_heavy = state.heavy_wield;
+		*heavy = state.heavy_wield;
 	}
 }
 
@@ -1065,10 +1015,9 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 	bool ammo   = (player->state.ammo_tval == obj->tval) && (bow);
 
 	int range, break_chance;
-	bool impactful, thrown_effect, too_heavy;
+	bool thrown_effect, heavy;
 
-	obj_known_misc_combat(obj, &thrown_effect, &range, &impactful,
-						  &break_chance, &too_heavy);
+	obj_known_misc_combat(obj, &thrown_effect, &range, &break_chance, &heavy);
 
 	if (!weapon && !ammo) {
 		if (thrown_effect) {
@@ -1080,7 +1029,7 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 
 	textblock_append_c(tb, COLOUR_L_WHITE, "Combat info:\n");
 
-	if (too_heavy)
+	if (heavy)
 		textblock_append_c(tb, COLOUR_L_RED, "You are too weak to use this weapon.\n");
 
 	describe_blows(tb, obj);
@@ -1092,9 +1041,6 @@ static bool describe_combat(textblock *tb, const struct object *obj)
 	}
 
 	describe_damage(tb, obj);
-
-	if (impactful)
-		textblock_append(tb, "Sometimes creates earthquakes on impact.\n");
 
 	if (ammo) {
 		textblock_append_c(tb, COLOUR_L_GREEN, "%d%%", break_chance);
