@@ -51,6 +51,10 @@
 #include "trap.h"
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Structures and helper functions for effects
+ * ------------------------------------------------------------------------ */
 typedef struct effect_handler_context_s {
 	const effect_index effect;
 	const struct source origin;
@@ -154,6 +158,390 @@ static bool project_touch(int dam, int typ, bool aware,
 	return (project(source_player(), 1, py, px, dam, typ, flg, 0, 0, obj));
 }
 
+/**
+ * Selects items that have at least one removable curse.
+ */
+static bool item_tester_uncursable(const struct object *obj)
+{
+	struct curse_data *c = obj->known->curses;
+	if (c) {
+		size_t i;
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (c[i].power < 100) {
+				return true;
+			}
+		}
+	}
+    return false;
+}
+
+/**
+ * Removes an individual curse from an object.
+ */
+static void remove_object_curse(struct object *obj, int index, bool message)
+{
+	struct curse_data *c = &obj->curses[index];
+	char *name = curses[index].name;
+	char *removed = format("The %s curse is removed!", name);
+	int i;
+
+	c->power = 0;
+	c->timeout = 0;
+	if (message) {
+		msg(removed);
+	}
+
+	/* Check to see if that was the last one */
+	for (i = 1; i < z_info->curse_max; i++) {
+		if (obj->curses[i].power) {
+			return;
+		}
+	}
+
+	mem_free(obj->curses);
+	obj->curses = NULL;
+}
+
+/**
+ * Attempts to remove a curse from an object.
+ */
+static bool uncurse_object(struct object *obj, int strength)
+{
+	int index = 0;
+
+	if (get_curse(&index, obj)) {
+		struct curse_data curse = obj->curses[index];
+		char o_name[80];
+
+		if (curse.power >= 100) {
+			/* Curse is permanent */
+			return false;
+		} else if (strength >= curse.power) {
+			/* Successfully removed this curse */
+			remove_object_curse(obj->known, index, false);
+			remove_object_curse(obj, index, true);
+		} else if (!of_has(obj->flags, OF_FRAGILE)) {
+			/* Failure to remove, object is now fragile */
+			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+			msgt(MSG_CURSED, "The spell fails; your %s is now fragile", o_name);
+			of_on(obj->flags, OF_FRAGILE);
+			player_learn_flag(player, OF_FRAGILE);
+		} else if (one_in_(4)) {
+			/* Failure - unlucky fragile object is destroyed */
+			struct object *destroyed;
+			bool none_left = false;
+			msg("There is a bang and a flash!");
+			take_hit(player, damroll(5, 5), "Failed uncursing");
+			if (object_is_carried(player, obj)) {
+				destroyed = gear_object_for_use(obj, 1, false, &none_left);
+				object_delete(&destroyed->known);
+				object_delete(&destroyed);
+			} else {
+				square_excise_object(cave, obj->iy, obj->ix, obj);
+				delist_object(cave, obj);
+				object_delete(&obj);
+			}
+		} else {
+			/* Non-destructive failure */
+			msg("The removal fails.");
+		}
+	} else {
+		return false;
+	}
+	player->upkeep->update |= (PU_BONUS);
+	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
+	return true;
+}
+
+/**
+ * Selects items that have at least one unknown rune.
+ */
+static bool item_tester_unknown(const struct object *obj)
+{
+    return object_runes_known(obj) ? false : true;
+}
+
+/**
+ * Bit flags for the enchant() function
+ */
+#define ENCH_TOHIT   0x01
+#define ENCH_TODAM   0x02
+#define ENCH_TOBOTH  0x03
+#define ENCH_TOAC	0x04
+
+/**
+ * Used by the enchant() function (chance of failure)
+ */
+static const int enchant_table[16] =
+{
+	0, 10,  20, 40, 80,
+	160, 280, 400, 550, 700,
+	800, 900, 950, 970, 990,
+	1000
+};
+
+/**
+ * Hook to specify "weapon"
+ */
+static bool item_tester_hook_weapon(const struct object *obj)
+{
+	return tval_is_weapon(obj);
+}
+
+
+/**
+ * Hook to specify "armour"
+ */
+static bool item_tester_hook_armour(const struct object *obj)
+{
+	return tval_is_armor(obj);
+}
+
+/**
+ * Tries to increase an items bonus score, if possible.
+ *
+ * \returns true if the bonus was increased
+ */
+static bool enchant_score(s16b *score, bool is_artifact)
+{
+	int chance;
+
+	/* Artifacts resist enchantment half the time */
+	if (is_artifact && randint0(100) < 50) return false;
+
+	/* Figure out the chance to enchant */
+	if (*score < 0) chance = 0;
+	else if (*score > 15) chance = 1000;
+	else chance = enchant_table[*score];
+
+	/* If we roll less-than-or-equal to chance, it fails */
+	if (randint1(1000) <= chance) return false;
+
+	/* Increment the score */
+	++*score;
+
+	return true;
+}
+
+/**
+ * Helper function for enchant() which tries increasing an item's bonuses
+ *
+ * \returns true if a bonus was increased
+ */
+static bool enchant2(struct object *obj, s16b *score)
+{
+	bool result = false;
+	bool is_artifact = obj->artifact ? true : false;
+	if (enchant_score(score, is_artifact)) result = true;
+	return result;
+}
+
+/**
+ * Enchant an item
+ *
+ * Revamped!  Now takes item pointer, number of times to try enchanting, and a
+ * flag of what to try enchanting.  Artifacts resist enchantment some of the
+ * time. Also, any enchantment attempt (even unsuccessful) kicks off a parallel
+ * attempt to uncurse a cursed item.
+ *
+ * Note that an item can technically be enchanted all the way to +15 if you
+ * wait a very, very, long time.  Going from +9 to +10 only works about 5% of
+ * the time, and from +10 to +11 only about 1% of the time.
+ *
+ * Note that this function can now be used on "piles" of items, and the larger
+ * the pile, the lower the chance of success.
+ *
+ * \returns true if the item was changed in some way
+ */
+bool enchant(struct object *obj, int n, int eflag)
+{
+	int i, prob;
+	bool res = false;
+
+	/* Large piles resist enchantment */
+	prob = obj->number * 100;
+
+	/* Missiles are easy to enchant */
+	if (tval_is_ammo(obj)) prob = prob / 20;
+
+	/* Try "n" times */
+	for (i = 0; i < n; i++)
+	{
+		/* Roll for pile resistance */
+		if (prob > 100 && randint0(prob) >= 100) continue;
+
+		/* Try the three kinds of enchantment we can do */
+		if ((eflag & ENCH_TOHIT) && enchant2(obj, &obj->to_h)) res = true;
+		if ((eflag & ENCH_TODAM) && enchant2(obj, &obj->to_d)) res = true;
+		if ((eflag & ENCH_TOAC)  && enchant2(obj, &obj->to_a)) res = true;
+	}
+
+	/* Update knowledge */
+	assert(obj->known);
+	obj->known->to_h = obj->to_h;
+	obj->known->to_d = obj->to_d;
+	obj->known->to_a = obj->to_a;
+
+	/* Failure */
+	if (!res) return (false);
+
+	/* Recalculate bonuses, gear */
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
+
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
+
+	/* Redraw stuff */
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
+
+	/* Success */
+	return (true);
+}
+
+/**
+ * Enchant an item (in the inventory or on the floor)
+ * Note that "num_ac" requires armour, else weapon
+ * Returns true if attempted, false if cancelled
+ *
+ * Enchanting with the TOBOTH flag will try to enchant
+ * both to_hit and to_dam with the same flag.  This
+ * may not be the most desirable behavior (ACB).
+ */
+bool enchant_spell(int num_hit, int num_dam, int num_ac)
+{
+	bool okay = false;
+
+	struct object *obj;
+
+	char o_name[80];
+
+	const char *q, *s;
+
+	/* Get an item */
+	q = "Enchant which item? ";
+	s = "You have nothing to enchant.";
+	if (!get_item(&obj, q, s, 0, 
+		num_ac ? item_tester_hook_armour : item_tester_hook_weapon,
+		(USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+		return false;
+
+	/* Description */
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+
+	/* Describe */
+	msg("%s %s glow%s brightly!",
+		(object_is_carried(player, obj) ? "Your" : "The"), o_name,
+			   ((obj->number > 1) ? "" : "s"));
+
+	/* Enchant */
+	if (num_dam && enchant(obj, num_hit, ENCH_TOBOTH)) okay = true;
+	else if (enchant(obj, num_hit, ENCH_TOHIT)) okay = true;
+	else if (enchant(obj, num_dam, ENCH_TODAM)) okay = true;
+	if (enchant(obj, num_ac, ENCH_TOAC)) okay = true;
+
+	/* Failure */
+	if (!okay) {
+		event_signal(EVENT_INPUT_FLUSH);
+
+		/* Message */
+		msg("The enchantment failed.");
+	}
+
+	/* Something happened */
+	return (true);
+}
+
+/**
+ * Brand weapons (or ammo)
+ *
+ * Turns the (non-magical) object into an ego-item of 'brand_type'.
+ */
+void brand_object(struct object *obj, const char *name)
+{
+	int i;
+	struct ego_item *ego;
+	bool ok = false;
+
+	/* You can never modify artifacts, ego items or worthless items */
+	if (obj && obj->kind->cost && !obj->artifact && !obj->ego) {
+		char o_name[80];
+		char brand[20];
+
+		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+		strnfmt(brand, sizeof(brand), "of %s", name);
+
+		/* Describe */
+		msg("The %s %s surrounded with an aura of %s.", o_name,
+			(obj->number > 1) ? "are" : "is", name);
+
+		/* Get the right ego type for the object */
+		for (i = 0; i < z_info->e_max; i++) {
+			ego = &e_info[i];
+
+			/* Match the name */
+			if (!ego->name) continue;
+			if (streq(ego->name, brand)) {
+				struct poss_item *poss;
+				for (poss = ego->poss_items; poss; poss = poss->next)
+					if (poss->kidx == obj->kind->kidx)
+						ok = true;
+			}
+			if (ok) break;
+		}
+
+		/* Make it an ego item */
+		obj->ego = &e_info[i];
+		ego_apply_magic(obj, 0);
+		player_know_object(player, obj);
+
+		/* Update the gear */
+		player->upkeep->update |= (PU_INVEN);
+
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
+
+		/* Window stuff */
+		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+
+		/* Enchant */
+		enchant(obj, randint0(3) + 4, ENCH_TOHIT | ENCH_TODAM);
+	} else {
+		event_signal(EVENT_INPUT_FLUSH);
+		msg("The branding failed.");
+	}
+}
+
+/**
+ * Hook for "get_item()".  Determine if something is rechargable.
+ */
+static bool item_tester_hook_recharge(const struct object *obj)
+{
+	/* Recharge staves and wands */
+	if (tval_can_have_charges(obj)) return true;
+
+	return false;
+}
+
+/**
+ * Hook to specify "ammo"
+ */
+static bool item_tester_hook_ammo(const struct object *obj)
+{
+	return tval_is_ammo(obj);
+}
+
+/**
+ * Hook to specify bolts
+ */
+static bool item_tester_hook_bolt(const struct object *obj)
+{
+	return obj->tval == TV_BOLT;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Effect handlers
+ * ------------------------------------------------------------------------ */
 /**
  * Dummy effect, to tell the effect code to pick one of the next
  * context->value.base effects at random.
@@ -747,102 +1135,6 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 
 	return true;
 }
-
-/**
- * Selects items that have at least one removable curse.
- */
-static bool item_tester_uncursable(const struct object *obj)
-{
-	struct curse_data *c = obj->known->curses;
-	if (c) {
-		size_t i;
-		for (i = 1; i < z_info->curse_max; i++) {
-			if (c[i].power < 100) {
-				return true;
-			}
-		}
-	}
-    return false;
-}
-
-/**
- * Removes an individual curse from an object.
- */
-static void remove_object_curse(struct object *obj, int index, bool message)
-{
-	struct curse_data *c = &obj->curses[index];
-	char *name = curses[index].name;
-	char *removed = format("The %s curse is removed!", name);
-	int i;
-
-	c->power = 0;
-	c->timeout = 0;
-	if (message) {
-		msg(removed);
-	}
-
-	/* Check to see if that was the last one */
-	for (i = 1; i < z_info->curse_max; i++) {
-		if (obj->curses[i].power) {
-			return;
-		}
-	}
-
-	mem_free(obj->curses);
-	obj->curses = NULL;
-}
-
-/**
- * Attempts to remove a curse from an object.
- */
-static bool uncurse_object(struct object *obj, int strength)
-{
-	int index = 0;
-
-	if (get_curse(&index, obj)) {
-		struct curse_data curse = obj->curses[index];
-		char o_name[80];
-
-		if (curse.power >= 100) {
-			/* Curse is permanent */
-			return false;
-		} else if (strength >= curse.power) {
-			/* Successfully removed this curse */
-			remove_object_curse(obj->known, index, false);
-			remove_object_curse(obj, index, true);
-		} else if (!of_has(obj->flags, OF_FRAGILE)) {
-			/* Failure to remove, object is now fragile */
-			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
-			msgt(MSG_CURSED, "The spell fails; your %s is now fragile", o_name);
-			of_on(obj->flags, OF_FRAGILE);
-			player_learn_flag(player, OF_FRAGILE);
-		} else if (one_in_(4)) {
-			/* Failure - unlucky fragile object is destroyed */
-			struct object *destroyed;
-			bool none_left = false;
-			msg("There is a bang and a flash!");
-			take_hit(player, damroll(5, 5), "Failed uncursing");
-			if (object_is_carried(player, obj)) {
-				destroyed = gear_object_for_use(obj, 1, false, &none_left);
-				object_delete(&destroyed->known);
-				object_delete(&destroyed);
-			} else {
-				square_excise_object(cave, obj->iy, obj->ix, obj);
-				delist_object(cave, obj);
-				object_delete(&obj);
-			}
-		} else {
-			/* Non-destructive failure */
-			msg("The removal fails.");
-		}
-	} else {
-		return false;
-	}
-	player->upkeep->update |= (PU_BONUS);
-	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
-	return true;
-}
-
 
 /**
  * Attempt to uncurse an object
@@ -1523,14 +1815,6 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 }
 
 /**
- * Selects items that have at least one unknown rune.
- */
-static bool item_tester_unknown(const struct object *obj)
-{
-    return object_runes_known(obj) ? false : true;
-}
-
-/**
  * Identify an unknown rune of an item.
  */
 bool effect_handler_IDENTIFY(effect_handler_context_t *context)
@@ -1739,260 +2023,6 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 }
 
 /**
- * Bit flags for the enchant() function
- */
-#define ENCH_TOHIT   0x01
-#define ENCH_TODAM   0x02
-#define ENCH_TOBOTH  0x03
-#define ENCH_TOAC	0x04
-
-/**
- * Used by the enchant() function (chance of failure)
- */
-static const int enchant_table[16] =
-{
-	0, 10,  20, 40, 80,
-	160, 280, 400, 550, 700,
-	800, 900, 950, 970, 990,
-	1000
-};
-
-/**
- * Hook to specify "weapon"
- */
-static bool item_tester_hook_weapon(const struct object *obj)
-{
-	return tval_is_weapon(obj);
-}
-
-
-/**
- * Hook to specify "armour"
- */
-static bool item_tester_hook_armour(const struct object *obj)
-{
-	return tval_is_armor(obj);
-}
-
-/**
- * Tries to increase an items bonus score, if possible.
- *
- * \returns true if the bonus was increased
- */
-static bool enchant_score(s16b *score, bool is_artifact)
-{
-	int chance;
-
-	/* Artifacts resist enchantment half the time */
-	if (is_artifact && randint0(100) < 50) return false;
-
-	/* Figure out the chance to enchant */
-	if (*score < 0) chance = 0;
-	else if (*score > 15) chance = 1000;
-	else chance = enchant_table[*score];
-
-	/* If we roll less-than-or-equal to chance, it fails */
-	if (randint1(1000) <= chance) return false;
-
-	/* Increment the score */
-	++*score;
-
-	return true;
-}
-
-/**
- * Helper function for enchant() which tries increasing an item's bonuses
- *
- * \returns true if a bonus was increased
- */
-static bool enchant2(struct object *obj, s16b *score)
-{
-	bool result = false;
-	bool is_artifact = obj->artifact ? true : false;
-	if (enchant_score(score, is_artifact)) result = true;
-	return result;
-}
-
-/**
- * Enchant an item
- *
- * Revamped!  Now takes item pointer, number of times to try enchanting, and a
- * flag of what to try enchanting.  Artifacts resist enchantment some of the
- * time. Also, any enchantment attempt (even unsuccessful) kicks off a parallel
- * attempt to uncurse a cursed item.
- *
- * Note that an item can technically be enchanted all the way to +15 if you
- * wait a very, very, long time.  Going from +9 to +10 only works about 5% of
- * the time, and from +10 to +11 only about 1% of the time.
- *
- * Note that this function can now be used on "piles" of items, and the larger
- * the pile, the lower the chance of success.
- *
- * \returns true if the item was changed in some way
- */
-bool enchant(struct object *obj, int n, int eflag)
-{
-	int i, prob;
-	bool res = false;
-
-	/* Large piles resist enchantment */
-	prob = obj->number * 100;
-
-	/* Missiles are easy to enchant */
-	if (tval_is_ammo(obj)) prob = prob / 20;
-
-	/* Try "n" times */
-	for (i = 0; i < n; i++)
-	{
-		/* Roll for pile resistance */
-		if (prob > 100 && randint0(prob) >= 100) continue;
-
-		/* Try the three kinds of enchantment we can do */
-		if ((eflag & ENCH_TOHIT) && enchant2(obj, &obj->to_h)) res = true;
-		if ((eflag & ENCH_TODAM) && enchant2(obj, &obj->to_d)) res = true;
-		if ((eflag & ENCH_TOAC)  && enchant2(obj, &obj->to_a)) res = true;
-	}
-
-	/* Update knowledge */
-	assert(obj->known);
-	obj->known->to_h = obj->to_h;
-	obj->known->to_d = obj->to_d;
-	obj->known->to_a = obj->to_a;
-
-	/* Failure */
-	if (!res) return (false);
-
-	/* Recalculate bonuses, gear */
-	player->upkeep->update |= (PU_BONUS | PU_INVEN);
-
-	/* Combine the pack (later) */
-	player->upkeep->notice |= (PN_COMBINE);
-
-	/* Redraw stuff */
-	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
-
-	/* Success */
-	return (true);
-}
-
-
-
-/**
- * Enchant an item (in the inventory or on the floor)
- * Note that "num_ac" requires armour, else weapon
- * Returns true if attempted, false if cancelled
- *
- * Enchanting with the TOBOTH flag will try to enchant
- * both to_hit and to_dam with the same flag.  This
- * may not be the most desirable behavior (ACB).
- */
-bool enchant_spell(int num_hit, int num_dam, int num_ac)
-{
-	bool okay = false;
-
-	struct object *obj;
-
-	char o_name[80];
-
-	const char *q, *s;
-
-	/* Get an item */
-	q = "Enchant which item? ";
-	s = "You have nothing to enchant.";
-	if (!get_item(&obj, q, s, 0, 
-		num_ac ? item_tester_hook_armour : item_tester_hook_weapon,
-		(USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return false;
-
-	/* Description */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-
-	/* Describe */
-	msg("%s %s glow%s brightly!",
-		(object_is_carried(player, obj) ? "Your" : "The"), o_name,
-			   ((obj->number > 1) ? "" : "s"));
-
-	/* Enchant */
-	if (num_dam && enchant(obj, num_hit, ENCH_TOBOTH)) okay = true;
-	else if (enchant(obj, num_hit, ENCH_TOHIT)) okay = true;
-	else if (enchant(obj, num_dam, ENCH_TODAM)) okay = true;
-	if (enchant(obj, num_ac, ENCH_TOAC)) okay = true;
-
-	/* Failure */
-	if (!okay) {
-		event_signal(EVENT_INPUT_FLUSH);
-
-		/* Message */
-		msg("The enchantment failed.");
-	}
-
-	/* Something happened */
-	return (true);
-}
-
-
-/**
- * Brand weapons (or ammo)
- *
- * Turns the (non-magical) object into an ego-item of 'brand_type'.
- */
-void brand_object(struct object *obj, const char *name)
-{
-	int i;
-	struct ego_item *ego;
-	bool ok = false;
-
-	/* You can never modify artifacts, ego items or worthless items */
-	if (obj && obj->kind->cost && !obj->artifact && !obj->ego) {
-		char o_name[80];
-		char brand[20];
-
-		object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-		strnfmt(brand, sizeof(brand), "of %s", name);
-
-		/* Describe */
-		msg("The %s %s surrounded with an aura of %s.", o_name,
-			(obj->number > 1) ? "are" : "is", name);
-
-		/* Get the right ego type for the object */
-		for (i = 0; i < z_info->e_max; i++) {
-			ego = &e_info[i];
-
-			/* Match the name */
-			if (!ego->name) continue;
-			if (streq(ego->name, brand)) {
-				struct poss_item *poss;
-				for (poss = ego->poss_items; poss; poss = poss->next)
-					if (poss->kidx == obj->kind->kidx)
-						ok = true;
-			}
-			if (ok) break;
-		}
-
-		/* Make it an ego item */
-		obj->ego = &e_info[i];
-		ego_apply_magic(obj, 0);
-		player_know_object(player, obj);
-
-		/* Update the gear */
-		player->upkeep->update |= (PU_INVEN);
-
-		/* Combine the pack (later) */
-		player->upkeep->notice |= (PN_COMBINE);
-
-		/* Window stuff */
-		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
-
-		/* Enchant */
-		enchant(obj, randint0(3) + 4, ENCH_TOHIT | ENCH_TODAM);
-	} else {
-		event_signal(EVENT_INPUT_FLUSH);
-		msg("The branding failed.");
-	}
-}
-
-
-/**
  * Enchant an item (in the inventory or on the floor)
  * Note that armour, to hit or to dam is controlled by context->p1
  *
@@ -2023,18 +2053,6 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 
 	return used;
 }
-
-/*
- * Hook for "get_item()".  Determine if something is rechargable.
- */
-static bool item_tester_hook_recharge(const struct object *obj)
-{
-	/* Recharge staves and wands */
-	if (tval_can_have_charges(obj)) return true;
-
-	return false;
-}
-
 
 /**
  * Recharge a wand or staff from the pack or on the floor.  Recharge strength
@@ -3921,15 +3939,6 @@ bool effect_handler_BRAND_WEAPON(effect_handler_context_t *context)
 }
 
 
-/*
- * Hook to specify "ammo"
- */
-static bool item_tester_hook_ammo(const struct object *obj)
-{
-	return tval_is_ammo(obj);
-}
-
-
 /**
  * Brand some (non-magical) ammo
  */
@@ -3955,11 +3964,6 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 
 	/* Done */
 	return (true);
-}
-
-static bool item_tester_hook_bolt(const struct object *obj)
-{
-	return obj->tval == TV_BOLT;
 }
 
 /**
@@ -4222,6 +4226,10 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 
 
 /**
+ * ------------------------------------------------------------------------
+ * Properties of effects
+ * ------------------------------------------------------------------------ */
+/**
  * Useful things about effects.
  */
 static const struct effect_kind effects[] =
@@ -4401,6 +4409,10 @@ int effect_param(int index, const char *type)
 	return val;
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Execution of effects
+ * ------------------------------------------------------------------------ */
 /**
  * Execute an effect chain.
  *

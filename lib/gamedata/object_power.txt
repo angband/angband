@@ -1,12 +1,18 @@
 # object_power.txt
 
-# name:
-# type:
-# item:
-# dice:
-# expr:
-# operation:
-# apply-to:
+# name: calculation name for logs
+# type: type (tval) of item the calculation applies to; if none, then all types
+# item: individual item the calculation applies to
+# dice: value of the calculation.  Damage dice are used and evaluated; if dice
+#       and sides are present, they are treated as maximised
+# expr: expression for the value (dice) calculation
+# operation: how the calculated value is applied to power, or to a previous
+#            calculated value
+# iterate: if this is present, the calculation is done once for each value of
+#          the indicated type (modifier, flag, etc)
+# apply-to: if present, which previous value to apply the current value to; if
+#           this is not present, the current value is applied to the total
+#           object power
 
 # For calculating the power of any individual object, there are two passes
 # through these calculations.

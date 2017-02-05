@@ -1,7 +1,7 @@
 /**
-   \file list-origins.h
-   \brief List of object origins
-*/
+ * \file list-origins.h
+ * \brief List of object origins
+ */
 ORIGIN(NONE,		-1,	"")
 ORIGIN(FLOOR,		1,	"Found lying on the floor %s")
 ORIGIN(CHEST,		1,	"Taken from a chest found %s")

@@ -14,7 +14,7 @@
 # adjective: adjective describing the property as a player attribute, currently
 #            only used by stats
 # neg-adjective: adjective describing the opposite of the property as a player
-#                 attribute, currently only used by stats
+#                attribute, currently only used by stats
 # msg: message printed on noticing a property, currently used for flags which
 #      are identified after time or on an effect
 # desc: an extra piece of descriptive text used in object information
