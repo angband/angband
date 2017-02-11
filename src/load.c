@@ -1086,6 +1086,10 @@ int rd_gear(void)
 {
 	struct object *obj, *known_obj;
 
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
 	/* Get real gear */
 	if (rd_gear_aux(rd_item, &player->gear))
 		return -1;
@@ -1161,7 +1165,14 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 /**
  * Read the stores - wrapper functions
  */
-int rd_stores(void) { return rd_stores_aux(rd_item); }
+int rd_stores(void)
+{ 
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
+	return rd_stores_aux(rd_item);
+}
 
 
 /**
@@ -1270,10 +1281,6 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 {
 	int i;
 
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
 	/* Make the object list */
 	rd_u16b(&c->obj_max);
 	c->objects = mem_realloc(c->objects,
@@ -1341,10 +1348,6 @@ static int rd_traps_aux(struct chunk *c)
 {
 	int y, x;
 	struct trap *trap;
-
-    /* Only if the player's alive */
-    if (player->is_dead)
-		return 0;
 
     rd_byte(&trf_size);
 
@@ -1421,6 +1424,10 @@ int rd_dungeon(void)
  */
 int rd_objects(void)
 {
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
 	if (rd_objects_aux(rd_item, cave))
 		return -1;
 	if (rd_objects_aux(rd_item, player->cave))
@@ -1458,6 +1465,10 @@ int rd_monsters(void)
  */
 int rd_traps(void)
 {
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
 	if (rd_traps_aux(cave))
 		return -1;
 	if (rd_traps_aux(player->cave))
@@ -1509,6 +1520,10 @@ int rd_history(void)
 	size_t i, j;
 	
 	history_clear(player);
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
 
 	/* History type flags */
 	rd_byte(&hist_size);
