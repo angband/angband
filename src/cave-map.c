@@ -443,7 +443,7 @@ void wiz_light(struct chunk *c, bool full)
 					if (!square_isfloor(c, yy, xx) || 
 						square_isvisibletrap(c, yy, xx)) {
 						square_memorize(c, yy, xx);
-						square_mark(cave, yy, xx);
+						square_mark(c, yy, xx);
 					}
 				}
 			}
