@@ -312,7 +312,7 @@ desc:cures blindness and gives you telepathy for 9d9+24 turns
 
 name:ENLIGHTENMENT
 aim:0
-power:22
+power:25
 effect:LIGHT_LEVEL
 dice:1
 desc:completely lights up and magically maps the level, detecting all objects
@@ -687,7 +687,7 @@ desc:lights up the surrounding area, hurting light-sensitive creatures
 
 name:CLAIRVOYANCE
 aim:0
-power:23
+power:22
 msg:The {kind} form{s} an image in your mind...
 effect:LIGHT_LEVEL
 desc:lights and maps the entire level, sensing objects
