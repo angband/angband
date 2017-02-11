@@ -173,16 +173,22 @@ static int pick_trap(int feat, int trap_level)
     int trap_index = 0;
     struct trap_kind *kind;
     bool trap_is_okay = false;
+	int tries = 0;
 	
     /* Paranoia */
     if (!feat_is_trap_holding(feat))
 		return -1;
-	
+
+    /* No traps in town */
+    if (cave->depth == 0)
+		return -1;
+
     /* Try to create a trap appropriate to the level.  Make certain that at
      * least one trap type can be made on any possible level. -LM- */
-    while (!trap_is_okay) {
+    while (!trap_is_okay && tries < 200) {
 		/* Pick at random. */
 		trap_index = randint0(z_info->trap_max);
+		tries++;
 
 		/* Get this trap */
 		kind = &trap_info[trap_index];
