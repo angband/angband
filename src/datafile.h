@@ -19,6 +19,7 @@
 #ifndef DATAFILE_H
 #define DATAFILE_H
 
+#include "object.h"
 #include "parser.h"
 
 struct file_parser {
@@ -52,5 +53,7 @@ errr remove_flag(bitflag *flags, const size_t size, const char **flag_table,
 
 void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 				 int flag_size, const char *names[]);
+void write_mods(ang_file *fff, const int values[]);
+void write_elements(ang_file *fff, const struct element_info *el_info);
 
 #endif /* !DATAFILE_H */

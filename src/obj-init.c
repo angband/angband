@@ -1900,6 +1900,7 @@ static errr finish_parse_object(struct parser *p) {
 		mem_free(k);
 	}
 	z_info->k_max += 1;
+	z_info->ordinary_kind_max = z_info->k_max;
 
 	parser_destroy(p);
 	return 0;

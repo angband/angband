@@ -380,3 +380,97 @@ void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 		file_putf(fff, "%s%s\n", intro_text, buf);
 }
 
+/**
+ * Write value lines for a set of modifiers.
+ */
+void write_mods(ang_file *fff, const int values[])
+{
+	size_t i;
+	char buf[1024] = "";
+	int pointer = 0;
+
+	static const char *obj_mods[] = {
+		#define STAT(a) #a,
+		#include "list-stats.h"
+		#undef STAT
+		#define OBJ_MOD(a) #a,
+		#include "list-object-modifiers.h"
+		#undef OBJ_MOD
+		NULL
+	};
+
+	/* Write value list */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		/* If no value, don't write */
+		if (values[i] == 0) continue;
+
+		/* If this line contains something, write a divider */
+		if (strlen(buf)) {
+			my_strcat(buf, " | ", sizeof(buf));
+			pointer += 3;
+		}
+
+		/* Write the name and value */
+		my_strcat(buf, obj_mods[i], sizeof(buf));
+		pointer += strlen(obj_mods[i]);
+		my_strcat(buf, format("[%d]", values[i]), sizeof(buf));
+		pointer += 5;
+
+		/* Move to a new line if this one is long enough */
+		if (pointer >= 60) {
+			file_putf(fff, "%s%s\n", "values:", buf);
+			my_strcpy(buf, "", sizeof(buf));
+			pointer = 0;
+		}
+	}
+
+	/* Print remaining values if any */
+	if (pointer)
+		file_putf(fff, "%s%s\n", "values:", buf);
+}
+
+/**
+ * Write value lines for a set of modifiers.
+ */
+void write_elements(ang_file *fff, const struct element_info *el_info)
+{
+	size_t i;
+	char buf[1024] = "";
+	int pointer = 0;
+
+	static const char *element_names[] = {
+		#define ELEM(a) #a,
+		#include "list-elements.h"
+		#undef ELEM
+		NULL
+	};
+
+	/* Write value list */
+	for (i = 0; i < ELEM_MAX; i++) {
+		/* If no value, don't write */
+		if (el_info[i].res_level == 0) continue;
+
+		/* If this line contains something, write a divider */
+		if (strlen(buf)) {
+			my_strcat(buf, " | ", sizeof(buf));
+			pointer += 3;
+		}
+
+		/* Write the name and value */
+		my_strcat(buf, format("RES_%s", element_names[i]), sizeof(buf));
+		pointer += strlen(element_names[i]) + 4;
+		my_strcat(buf, format("[%d]", el_info[i].res_level), sizeof(buf));
+		pointer += 5;
+
+		/* Move to a new line if this one is long enough */
+		if (pointer >= 60) {
+			file_putf(fff, "%s%s\n", "values:", buf);
+			my_strcpy(buf, "", sizeof(buf));
+			pointer = 0;
+		}
+	}
+
+	/* Print remaining values if any */
+	if (pointer)
+		file_putf(fff, "%s%s\n", "values:", buf);
+}

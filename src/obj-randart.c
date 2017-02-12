@@ -20,6 +20,7 @@
  * Updated by Chris Carr / Chris Robertson 2001-2010.
  */
 #include "angband.h"
+#include "datafile.h"
 #include "effects.h"
 #include "init.h"
 #include "obj-curse.h"
@@ -33,6 +34,7 @@
 #include "obj-util.h"
 #include "project.h"
 #include "randname.h"
+#include "z-textblock.h"
 
 /*
  * Pointer for logging file
@@ -2769,6 +2771,105 @@ static void artifact_set_data_free(struct artifact_set_data *data)
 }
 
 /**
+ * Write an artifact data file
+ */
+void write_randart_file(ang_file *fff)
+{
+	int i;
+
+	static const char *obj_flags[] = {
+		"NONE",
+		#define OF(a) #a,
+		#include "list-object-flags.h"
+		#undef OF
+		NULL
+	};
+
+	for (i = 1; i < z_info->a_max; i++) {
+		char name[120] = "";
+		struct artifact *art = &a_info[i];
+		struct object_kind *kind = lookup_kind(art->tval, art->sval);
+		int j;
+
+		/* Ignore non-existent artifacts */
+		if (!art->name) continue;
+
+		/* Output description */
+		file_putf(fff, "# %s\n", art->text);
+
+		/* Output name */
+		file_putf(fff, "name:%s\n", art->name);
+
+		/* Output tval and sval */
+		object_short_name(name, sizeof name, kind->name);
+		file_putf(fff, "base-object:%s:%s\n", tval_find_name(art->tval), name);
+
+		/* Output graphics if necessary */
+		if (kind->kidx > z_info->ordinary_kind_max) {
+			const char *attr = attr_to_text(kind->d_attr);
+			file_putf(fff, "graphics:%c:%s\n", kind->d_char, attr);
+		}
+
+		/* Output level, weight and cost */
+		file_putf(fff, "info:%d:%d:%d\n", art->level, art->weight, art->cost);
+
+		/* Output allocation info */
+		file_putf(fff, "alloc:%d:%d to %d\n", art->alloc_prob, art->alloc_min,
+				  art->alloc_max);
+
+		/* Output combat power */
+		file_putf(fff, "power:%d:%dd%d:%d:%d:%d\n", art->ac, art->dd, art->ds,
+				  art->to_h, art->to_d, art->to_a);
+
+		/* Output flags */
+		write_flags(fff, "flags:", art->flags, OF_SIZE, obj_flags);
+
+		/* Output modifiers */
+		write_mods(fff, art->modifiers);
+
+		/* Output resists, immunities and vulnerabilities */
+		write_elements(fff, art->el_info);
+
+		/* Output slays */
+		if (art->slays) {
+			for (j = 1; j < z_info->slay_max; j++) {
+				if (art->slays[j]) {
+					file_putf(fff, "slay:%s\n", slays[j].code);
+				}
+			}
+		}
+
+		/* Output brands */
+		if (art->brands) {
+			for (j = 1; j < z_info->brand_max; j++) {
+				if (art->brands[j]) {
+					file_putf(fff, "brand:%s\n", brands[j].code);
+				}
+			}
+		}
+
+		/* Output curses */
+		if (art->curses) {
+			for (j = 1; j < z_info->curse_max; j++) {
+				if (art->curses[j] != 0) {
+					file_putf(fff, "curse:%s:%d\n", curses[j].name,
+							  art->curses[j]);
+				}
+			}
+		}
+
+		/* Output activation details */
+		if (art->activation) {
+			file_putf(fff, "act:%s\n", art->activation->name);
+			file_putf(fff, "time:%d+%dd%d\n", art->time.base, art->time.dice,
+					  art->time.sides);
+		}
+
+		file_putf(fff, "\n");
+	}
+}
+
+/**
  * Randomize the artifacts
  */
 void do_randart(u32b randart_seed)
@@ -2810,6 +2911,16 @@ void do_randart(u32b randart_seed)
 	if (!file_close(log_file)) {
 		msg("Error - can't close randart.log file.");
 		exit(1);
+	}
+
+	/* Write a data file */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "randart.txt");
+	log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	if (text_lines_to_file(buf, write_randart_file)) {
+		msg("Failed to create file %s.new", buf);
+	}
+	if (!file_close(log_file)) {
+		msg("Error - can't close randart.txt file.");
 	}
 
 	/* When done, resume use of the Angband "complex" RNG. */

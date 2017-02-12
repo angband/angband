@@ -49,6 +49,7 @@ struct angband_constants
 	u16b projection_max;	/**< Maximum number of projection types */
 	u16b calculation_max;	/**< Maximum number of object power calculations */
 	u16b property_max;	/**< Maximum number of object properties */
+	u16b ordinary_kind_max;	/**< Maximum number of objects in object.txt */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
