@@ -88,6 +88,7 @@ char *ANGBAND_DIR_USER;
 char *ANGBAND_DIR_SAVE;
 char *ANGBAND_DIR_SCORES;
 char *ANGBAND_DIR_INFO;
+char *ANGBAND_DIR_ARCHIVE;
 
 static const char *slots[] = {
 	#define EQUIP(a, b, c, d, e, f) #a,
@@ -224,6 +225,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	string_free(ANGBAND_DIR_SAVE);
 	string_free(ANGBAND_DIR_SCORES);
 	string_free(ANGBAND_DIR_INFO);
+	string_free(ANGBAND_DIR_ARCHIVE);
 
 	/*** Prepare the paths ***/
 
@@ -282,9 +284,10 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	userpath = (char *)datapath;
 #endif /* USE_PRIVATE_PATHS */
 
-	/* Build the path to the score and save directories */
+	/* Build the path to the score, save and archive directories */
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SCORES, userpath, "scores");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SAVE, userpath, "save");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ARCHIVE, userpath, "archive");
 
 #undef BUILD_DIRECTORY_PATH
 }
@@ -316,6 +319,10 @@ void create_needed_dirs(void)
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_HELP, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
+
+	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_ARCHIVE, "");
+	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
+
 }
 
 /**
