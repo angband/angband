@@ -7,7 +7,7 @@
 
 NAME = Angband
 VERSION = 4.0.5
-COPYRIGHT = (c) 1995-2016 Angband contributors
+COPYRIGHT = (c) 1995-2017 Angband contributors
 PROGNAME = angband
 
 HEADERS = \
@@ -88,6 +88,7 @@ ANGFILES = \
 	cmd-misc.o \
 	cmd-obj.o \
 	cmd-pickup.o \
+	datafile.o \
 	debug.o \
 	effects.o \
 	game-event.o \

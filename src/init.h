@@ -16,7 +16,7 @@
 #include "z-bitflag.h"
 #include "z-file.h"
 #include "z-rand.h"
-#include "parser.h"
+#include "datafile.h"
 #include "object.h"
 
 /**

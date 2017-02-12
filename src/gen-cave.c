@@ -60,6 +60,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "datafile.h"
 #include "game-event.h"
 #include "game-world.h"
 #include "generate.h"
@@ -67,7 +68,6 @@
 #include "math.h"
 #include "mon-make.h"
 #include "mon-spell.h"
-#include "parser.h"
 #include "player-util.h"
 #include "store.h"
 #include "trap.h"

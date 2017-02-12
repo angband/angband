@@ -22,8 +22,8 @@
 
 #include "cave.h"
 #include "cmd-core.h"
+#include "datafile.h"
 #include "object.h"
-#include "parser.h"
 
 /**
  * List of store indices

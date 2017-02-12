@@ -30,6 +30,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "datafile.h"
 #include "math.h"
 #include "game-event.h"
 #include "generate.h"
@@ -37,7 +38,6 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "obj-tval.h"
-#include "parser.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"

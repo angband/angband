@@ -25,6 +25,7 @@
 
 #include "angband.h"
 #include "buildid.h"
+#include "datafile.h"
 #include "effects.h"
 #include "init.h"
 #include "mon-util.h"
@@ -40,7 +41,6 @@
 #include "obj-util.h"
 #include "object.h"
 #include "option.h"
-#include "parser.h"
 #include "player-spell.h"
 #include "project.h"
 

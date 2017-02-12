@@ -16,12 +16,12 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "datafile.h"
 #include "init.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-pile.h"
 #include "obj-util.h"
-#include "parser.h"
 #include "player-calcs.h"
 #include "player-quest.h"
 

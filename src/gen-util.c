@@ -22,6 +22,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "datafile.h"
 #include "math.h"
 #include "game-event.h"
 #include "generate.h"
@@ -32,7 +33,6 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
-#include "parser.h"
 #include "player-util.h"
 #include "trap.h"
 #include "z-queue.h"

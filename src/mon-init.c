@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "datafile.h"
 #include "effects.h"
 #include "generate.h"
 #include "init.h"
@@ -30,7 +31,6 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "parser.h"
 #include "player-spell.h"
 #include "project.h"
 
@@ -90,45 +90,6 @@ int flag_index_by_name(const char *name)
 
 	return -1;
 }
-
-/**
- * Write the flag lines for a set of flags.
- */
-void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
-					   int flag_size, const char *names[])
-{
-	int flag;
-	char buf[1024] = "";
-	int pointer = 0;
-
-	/* Write flag name list */
-	for (flag = flag_next(flags, flag_size, FLAG_START); flag != FLAG_END;
-		 flag = flag_next(flags, flag_size, flag + 1)) {
-
-		/* Write the flags, keeping track of where we are */
-		if (strlen(buf)) {
-			my_strcat(buf, " | ", sizeof(buf));
-			pointer += 3;
-		}
-
-		/* If no name, we're past the real flags */
-		if (!names[flag]) break;
-		my_strcat(buf, names[flag], sizeof(buf));
-		pointer += strlen(names[flag]);
-
-		/* Move to a new line if this one is long enough */
-		if (pointer >= 60) {
-			file_putf(fff, "%s%s\n", intro_text, buf);
-			my_strcpy(buf, "", sizeof(buf));
-			pointer = 0;
-		}
-	}
-
-	/* Print remaining flags if any */
-	if (pointer)
-		file_putf(fff, "%s%s\n", intro_text, buf);
-}
-
 
 /**
  * ------------------------------------------------------------------------

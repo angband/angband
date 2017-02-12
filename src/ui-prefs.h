@@ -22,10 +22,10 @@
 #define UI_PREFS_H
 
 #include "cave.h"
+#include "datafile.h"
 #include "ui-keymap.h"
 #include "ui-term.h"
 #include "option.h"
-#include "parser.h"
 #include "z-file.h"
 
 extern char arg_name[PLAYER_NAME_LEN];

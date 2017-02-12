@@ -19,10 +19,10 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "datafile.h"
 #include "init.h"
 #include "mon-util.h"
 #include "obj-knowledge.h"
-#include "parser.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
