@@ -27,6 +27,7 @@
 #include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
+#include "obj-init.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
@@ -1140,12 +1141,19 @@ void do_cmd_accept_character(struct command *cmd)
 	store_reset();
 
 	/* Seed for random artifacts */
-	if (!seed_randart || !OPT(player, birth_keep_randarts))
-		seed_randart = randint0(0x10000000);
+	seed_randart = randint0(0x10000000);
 
-	/* Randomize the artifacts if required */
-	if (OPT(player, birth_randarts))
-		do_randart(seed_randart);
+	/* If not keeping custom artifact set, remove it and reload artifacts */
+	if (!OPT(player, birth_keep_arts)) {
+		file_archive("artifact");
+		cleanup_parser(&artifact_parser);
+		run_parser(&artifact_parser);
+
+		/* Randomize the artifacts if required */
+		if (OPT(player, birth_randarts)) {
+			do_randart(seed_randart, true);
+		}
+	}
 
 	/* Seed for flavors */
 	seed_flavor = randint0(0x10000000);

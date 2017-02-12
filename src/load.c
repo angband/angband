@@ -925,8 +925,6 @@ int rd_misc(void)
 	/* Read "death" */
 	rd_byte(&tmp8u);
 	player->is_dead = tmp8u;
-	if (!player->is_dead && OPT(player, birth_randarts))
-		do_randart(seed_randart);
 
 	/* Current turn */
 	rd_s32b(&turn);

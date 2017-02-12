@@ -2872,9 +2872,9 @@ void write_randart_file(ang_file *fff)
 /**
  * Randomize the artifacts
  */
-void do_randart(u32b randart_seed)
+void do_randart(u32b randart_seed, bool create_file)
 {
-	char buf[1024];
+	char fname[1024];
 	struct artifact_set_data *standarts = artifact_set_data_new();
 	struct artifact_set_data *randarts;
 
@@ -2883,8 +2883,8 @@ void do_randart(u32b randart_seed)
 	Rand_quick = true;
 
 	/* Open the log file for writing */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "randart.log");
-	log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	path_build(fname, sizeof(fname), ANGBAND_DIR_USER, "randart.log");
+	log_file = file_open(fname, MODE_WRITE, FTYPE_TEXT);
 	if (!log_file) {
 		msg("Error - can't open randart.log for writing.");
 		artifact_set_data_free(standarts);
@@ -2913,14 +2913,16 @@ void do_randart(u32b randart_seed)
 		exit(1);
 	}
 
-	/* Write a data file */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "randart.txt");
-	log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	if (text_lines_to_file(buf, write_randart_file)) {
-		msg("Failed to create file %s.new", buf);
-	}
-	if (!file_close(log_file)) {
-		msg("Error - can't close randart.txt file.");
+	/* Write a data file if required */
+	if (create_file) {
+		path_build(fname, sizeof(fname), ANGBAND_DIR_USER, "artifact.txt");
+		log_file = file_open(fname, MODE_WRITE, FTYPE_TEXT);
+		if (text_lines_to_file(fname, write_randart_file)) {
+			quit_fmt("Failed to create file %s", fname);
+		}
+		if (!file_close(log_file)) {
+			quit_fmt("Error - can't close %s.", fname);
+		}
 	}
 
 	/* When done, resume use of the Angband "complex" RNG. */

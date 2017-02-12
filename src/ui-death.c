@@ -331,17 +331,6 @@ static void death_spoilers(const char *title, int row)
 	do_cmd_spoilers();
 }
 
-/* Menu command: toggle birth_keep_randarts option. */
-static void death_randarts(const char *title, int row)
-{
-	if (OPT(player, birth_randarts))
-		option_set(option_name(OPT_birth_keep_randarts),
-			get_check("Keep randarts for next game? "));
-	else
-		msg("You are not playing with randarts!");
-}
-
-
 /**
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
@@ -355,7 +344,6 @@ static menu_action death_actions[] =
 	{ 0, 'x', "Examine items", death_examine   },
 	{ 0, 'h', "History",       death_history   },
 	{ 0, 's', "Spoilers",      death_spoilers  },
-	{ 0, 'r', "Keep randarts", death_randarts  },
 	{ 0, 'q', "Quit",          NULL            },
 };
 

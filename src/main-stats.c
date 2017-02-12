@@ -232,7 +232,7 @@ static void initialize_character(void)
 	seed_randart = randint0(0x10000000);
 
 	if (randarts) {
-		do_randart(seed_randart);
+		do_randart(seed_randart, false);
 	}
 
 	store_reset();

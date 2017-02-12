@@ -73,8 +73,8 @@ OP(score_live,            "Score: Allow player to avoid death",
 SCORE, false)
 OP(birth_randarts,        "Randomise the artifacts (except a very few)",
 BIRTH, false)
-OP(birth_keep_randarts,   "Use previous set of randarts",
-BIRTH, true)
+OP(birth_keep_arts,       "Keep current (custom or random) artifacts",
+BIRTH, false)
 OP(birth_connect_stairs,  "Generate connected stairs",
 BIRTH, true)
 OP(birth_force_descend,   "Force player descent (never make up stairs)",

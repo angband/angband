@@ -474,3 +474,25 @@ void write_elements(ang_file *fff, const struct element_info *el_info)
 	if (pointer)
 		file_putf(fff, "%s%s\n", "values:", buf);
 }
+
+/**
+ * Archive a data file from ANGBAND_DIR_USER into ANGBAND_DIR_ARCHIVE
+ */
+void file_archive(char *fname)
+{
+	char arch[1024];
+	char old[1024];
+	int i, max_arch = 10000;
+
+	/* Check the indices of existing archived files, get the next one */
+	for (i = 1; i < max_arch; i++) {
+		path_build(arch, sizeof(arch), ANGBAND_DIR_ARCHIVE,
+				   format("%s_%d.txt", fname, i));
+		if (!file_exists(arch)) break;
+		my_strcpy(arch, "", sizeof(arch));
+	}
+
+	/* Move any old file */
+	path_build(old, sizeof(old), ANGBAND_DIR_USER, format("%s.txt", fname));
+	file_move(old, arch);
+}

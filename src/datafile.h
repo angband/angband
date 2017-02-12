@@ -55,5 +55,6 @@ void write_flags(ang_file *fff, const char *intro_text, bitflag *flags,
 				 int flag_size, const char *names[]);
 void write_mods(ang_file *fff, const int values[]);
 void write_elements(ang_file *fff, const struct element_info *el_info);
+void file_archive(char *fname);
 
 #endif /* !DATAFILE_H */

@@ -1534,7 +1534,7 @@ static void clearing_stats(void)
 			int seed_randart = randint0(0x10000000);
 
 			/* regen randarts */
-			do_randart(seed_randart);
+			do_randart(seed_randart, false);
 		}
 
 		/* Do game iterations */

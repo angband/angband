@@ -155,14 +155,17 @@ Randomize the artifacts (except a very few) '[birth_randarts]'
   number, findability and power of random artifacts will all match the
   standard set - approximately.
 
-.. _birth_keep_randarts:
+.. _birth_keep_arts:
 
-Use previous set of randarts '[birth_keep_randarts]'
-  Does what it says on the tin. Note that this option must be set at the
-  END of the game, from the death menu. Once you have restarted the game,
-  it is too late to set it (but you can still un-set it if you change your
-  mind). Note that switching to non-random artifacts will wipe randarts,
-  regardless of this option.
+Keep current (custom or random) artifacts '[birth_keep_arts]'
+  Playing with random artifacts generates a new 'artifact.txt' file in the
+  player's user directory, which is used instead of the regular one.  The
+  player can also put an edited version of 'artifact.txt' in the user
+  directory, and the game will use that to generate its artifacts.  Setting
+  this option retains and uses any such file.  If this option is not set,
+  any such custom 'artifact.txt' file is moved to the player's archive
+  directory, and then either the standard artifacts are used or a new random
+  set of artifacts if birth_randarts is set.
 
 .. _birth_ai_learn:
 
