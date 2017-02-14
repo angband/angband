@@ -67,7 +67,7 @@ struct artifact_set_data {
 
 	/* Data structures for learned probabilities */
 	int *art_probs;
-	int *base_probs;
+	int *tv_probs;
 	int bow_total;
 	int melee_total;
 	int boot_total;
@@ -79,8 +79,8 @@ struct artifact_set_data {
 	int other_total;
 	int total;
 
-	/* Base item frequency values */
-	int *base_freq;
+	/* Tval frequency values */
+	int *tv_freq;
 
 	/* Artifact power ratings */
 	int *base_power;

@@ -990,8 +990,8 @@ static void collect_artifact_data(struct artifact_set_data *data)
 			kf_has(kind->kind_flags, KF_QUEST_ART))
 			continue;
 
-		/* Add the base item to the base_probs array */
-		data->base_probs[kind->kidx]++;
+		/* Add the base item tval to the tv_probs array */
+		data->tv_probs[kind->tval]++;
 		file_putf(log_file, "Base item is %d\n", kind->kidx);
 
 		/* Count combat abilities broken up by type */
@@ -1191,10 +1191,6 @@ static void parse_frequencies(struct artifact_set_data *data)
 	for (i = 0; i < ART_IDX_TOTAL; i++)
 		data->art_probs[i] = 0;
 
-	/* Initialise the frequencies for base items so each item could be chosen */
-	for (i = 0; i < z_info->k_max; i++)
-		data->base_probs[i] = 1;
-
 	collect_artifact_data(data);
 
 	/* Print out some of the abilities, to make sure that everything's fine */
@@ -1202,9 +1198,9 @@ static void parse_frequencies(struct artifact_set_data *data)
 		file_putf(log_file, "Frequency of ability %d: %d\n", i,
 				  data->art_probs[i]);
 
-	for (i = 0; i < z_info->k_max; i++)
-		file_putf(log_file, "Frequency of item %d: %d\n", i,
-				  data->base_probs[i]);
+	for (i = 0; i < TV_MAX; i++)
+		file_putf(log_file, "Frequency of %s: %d\n", tval_find_name(i),
+				  data->tv_probs[i]);
 
 	/* Rescale frequencies */
 	rescale_freqs(data);
@@ -1217,15 +1213,15 @@ static void parse_frequencies(struct artifact_set_data *data)
 		file_putf(log_file,  "Rescaled frequency of ability %d: %d\n", i,
 				  data->art_probs[i]);
 
-	/* Build a cumulative frequency table for the base items */
-	for (i = 0; i < z_info->k_max; i++)
-		for (j = i; j < z_info->k_max; j++)
-			data->base_freq[j] += data->base_probs[i];
+	/* Build a cumulative frequency table for tvals */
+	for (i = 0; i < TV_MAX; i++)
+		for (j = i; j < TV_MAX; j++)
+			data->tv_freq[j] += data->tv_probs[i];
 
 	/* Print out the frequency table, for verification */
 	for (i = 0; i < z_info->k_max; i++)
-		file_putf(log_file, "Cumulative frequency of item %d is: %d\n", i,
-				  data->base_freq[i]);
+		file_putf(log_file, "Cumulative frequency of %s is: %d\n",
+				  tval_find_name(i), data->tv_freq[i]);
 }
 
 /**
@@ -1233,49 +1229,33 @@ static void parse_frequencies(struct artifact_set_data *data)
  * Generation of a random artifact
  * ------------------------------------------------------------------------ */
 /**
- * Randomly select a base item type (tval,sval).  Assign the various fields
- * corresponding to that choice.
- *
- * The return value gives the index of the new item type.  The method is
- * passed a pointer to a rarity value in order to return the rarity of the
- * new item.
+ * Pick a random base item
  */
-static struct object_kind *get_base_item(int a_idx,
-										 struct artifact_set_data *data)
+static struct object_kind *get_base_item(struct artifact_set_data *data)
 {
-	struct artifact *art = &a_info[a_idx];
-	int tval = 0, sval = 0, i = 0;
-	struct object_kind *kind;
-	s16b r;
+	int tval = 0;
+	int r = randint1(data->tv_freq[TV_DRAG_ARMOR]);
 
-	/*
-	 * Pick a base item from the cumulative frequency table.
-	 *
-	 * Although this looks hideous, it provides for easy addition of
-	 * future artifact types, simply by removing the tvals from this
-	 * loop.
-	 *
-	 * N.B. Could easily generate lights, rings and amulets this way if
-	 * the whole special/flavour issue was sorted out (see ticket #1014).
-	 */
-	while (tval == 0 ||	k_info[i].alloc_prob == 0 ||
-		   tval == TV_SHOT || tval == TV_ARROW || tval == TV_BOLT ||
-		   tval == TV_STAFF || tval == TV_WAND || tval == TV_ROD ||
-		   tval == TV_SCROLL || tval == TV_POTION || tval == TV_FLASK ||
-		   tval == TV_FOOD || tval == TV_MUSHROOM || tval == TV_MAGIC_BOOK ||
-		   tval == TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LIGHT ||
-		   tval == TV_AMULET || tval == TV_RING || tval == TV_CHEST ||
-		   (tval == TV_HAFTED && sval == lookup_sval(tval, "Mighty Hammer")) ||
-		   (tval == TV_CROWN && sval == lookup_sval(tval, "Massive Iron Crown"))) {
-		r = randint1(data->base_freq[z_info->k_max - 1]);
-		i = 0;
-		while (r > data->base_freq[i])
-			i++;
-		tval = k_info[i].tval;
-		sval = k_info[i].sval;
+	/* Get a tval based on original artifact tval frequencies */
+	while (r > data->tv_freq[tval]) {
+		tval++;
 	}
-	file_putf(log_file, "Creating tval %d sval %d\n", tval, sval);
-	kind = lookup_kind(tval, sval);
+
+	/* Pick an sval for that tval at random */
+	r = randint1(kb_info[tval].num_svals);
+
+	file_putf(log_file, "Creating tval %d sval %d\n", tval, r);
+	return lookup_kind(tval, r);
+}
+
+/**
+ * Add basic data to an artifact of a given object kind
+ */
+void artifact_prep(struct artifact *art, const struct object_kind *kind,
+				   struct artifact_set_data *data)
+{
+	int i;
+
 	art->tval = kind->tval;
 	art->sval = kind->sval;
 	art->to_h = randcalc(kind->to_h, 0, MINIMISE);
@@ -1333,9 +1313,6 @@ static struct object_kind *get_base_item(int a_idx,
 					  art->to_a);
 			break;
 	}
-
-	/* Done - return the index of the new object kind. */
-	return kind;
 }
 
 
@@ -2384,7 +2361,9 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 		/* Try to find a good base item kind for the artifact */
 		while (count < MAX_TRIES) {
 			/* Get the new item kind and do basic prep on it */
-			kind = get_base_item(a_idx, data);
+			kind = get_base_item(data);
+			//kind = lookup_kind(tval, randint1(kb_info[tval].num_svals));
+			artifact_prep(art, kind, data);
 
 			/* If power is positive but very low, and if we're not having
 			 * any luck finding a base item, damage it once.  This helps ensure
@@ -2416,7 +2395,7 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 		/* Calculate the proper rarity based on the new type.  We attempt
 		 * to preserve the 'effective rarity' which is equal to the
 		 * artifact rarity multiplied by the base item rarity. */
-		alloc_new = alloc_old * base_alloc_old / kind->alloc_prob;
+		alloc_new = alloc_old * base_alloc_old / MAX(kind->alloc_prob, 1);
 
 		if (alloc_new > 99) alloc_new = 99;
 		if (alloc_new < 1) alloc_new = 1;
@@ -2433,9 +2412,6 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 			file_putf(log_file, "Warning! Couldn't get appropriate power level on base item.\n");
 	} else {
 		/* Special artifact (light source, ring, or amulet) */
-
-		/* Keep the item kind */
-		kind = lookup_kind(art->tval, art->sval);
 
 		/* Clear the following fields; leave the rest alone */
 		art->to_h = art->to_d = art->to_a = 0;
@@ -2739,9 +2715,9 @@ static struct artifact_set_data *artifact_set_data_new(void)
 	data->base_item_level = mem_zalloc(z_info->a_max * sizeof(int));
 	data->base_item_prob = mem_zalloc(z_info->a_max * sizeof(int));
 	data->base_art_alloc = mem_zalloc(z_info->a_max * sizeof(int));
-	data->base_probs = mem_zalloc(z_info->k_max * sizeof(int));
+	data->tv_probs = mem_zalloc(TV_MAX * sizeof(int));
 	data->art_probs = mem_zalloc(ART_IDX_TOTAL * sizeof(int));
-	data->base_freq = mem_zalloc(z_info->k_max * sizeof(int));
+	data->tv_freq = mem_zalloc(TV_MAX * sizeof(int));
 
 	/* Mean start and increment values for to_hit, to_dam and AC.  Update these
 	 * if the algorithm changes.  They are used in frequency generation. */
@@ -2764,9 +2740,9 @@ static void artifact_set_data_free(struct artifact_set_data *data)
 	mem_free(data->base_item_level);
 	mem_free(data->base_item_prob);
 	mem_free(data->base_art_alloc);
-	mem_free(data->base_probs);
+	mem_free(data->tv_probs);
 	mem_free(data->art_probs);
-	mem_free(data->base_freq);
+	mem_free(data->tv_freq);
 	mem_free(data);
 }
 
@@ -2860,6 +2836,11 @@ void write_randart_entry(ang_file *fff, struct artifact *art)
 		file_putf(fff, "time:%d+%dd%d\n", art->time.base, art->time.dice,
 				  art->time.sides);
 	}
+
+	/* Output description again */
+	file_putf(fff, "desc:%s\n", art->text);
+
+	file_putf(fff, "\n");
 
 	/* Output description again */
 	file_putf(fff, "desc:%s\n", art->text);
