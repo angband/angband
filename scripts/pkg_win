@@ -50,9 +50,10 @@ mkdir lib/user
 mkdir lib/user/save
 mkdir lib/user/scores
 mkdir lib/user/info
+mkdir lib/user/archive
 
 touch lib/user/delete.me lib/user/save/delete.me lib/user/scores/delete.me \
-      lib/user/info/delete.me
+      lib/user/info/delete.me lib/user/archive/delete.me
 
 cp ../*.exe .
 cp ../*.dll .

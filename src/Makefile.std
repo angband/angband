@@ -114,7 +114,8 @@ clean:
 
 # make a distribution
 DIRS = lib/gamedata lib/customize lib/help lib/screens lib/fonts lib/tiles \
-       lib/sounds lib/icons lib/user lib/user/save lib/user/scores lib/user/info
+       lib/sounds lib/icons lib/user lib/user/save lib/user/scores \
+       lib/user/info lib/user/archive
 
 TMPDIR = ./$(EXE)-$(VERSION)
 dist:
