@@ -2454,7 +2454,7 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 	try_supercharge(art, power, data);
 	ap = artifact_power(a_idx, "result of supercharge");
 	if (ap > (power * 23) / 20 + 1)	{
-		/* too powerful -- put it back */
+		/* Too powerful -- put it back */
 		copy_artifact(a_old, art);
 		file_putf(log_file, "--- Supercharge is too powerful! Rolling back.\n");
 	}
@@ -2841,11 +2841,6 @@ void write_randart_entry(ang_file *fff, struct artifact *art)
 	file_putf(fff, "desc:%s\n", art->text);
 
 	file_putf(fff, "\n");
-
-	/* Output description again */
-	file_putf(fff, "desc:%s\n", art->text);
-
-	file_putf(fff, "\n");
 }
 
 /**
@@ -2897,10 +2892,10 @@ void do_randart(u32b randart_seed, bool create_file)
 		int i;
 
 		/* Open the file, write a header */
-		path_build(fname, sizeof(fname), ANGBAND_DIR_USER, "artifact.txt");
+		path_build(fname, sizeof(fname), ANGBAND_DIR_USER, "randart.txt");
 		log_file = file_open(fname, MODE_WRITE, FTYPE_TEXT);
 		file_putf(log_file,
-				  "# Artifact file for random artifacts with seed %d\n\n\n",
+				  "# Artifact file for random artifacts with seed %x\n\n\n",
 				  randart_seed);
 
 		/* Write individual entries */

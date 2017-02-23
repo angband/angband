@@ -30,6 +30,7 @@
 #include "obj-curse.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
+#include "obj-init.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
@@ -925,6 +926,10 @@ int rd_misc(void)
 	/* Read "death" */
 	rd_byte(&tmp8u);
 	player->is_dead = tmp8u;
+	if (!player->is_dead && OPT(player, birth_randarts)) {
+		cleanup_parser(&artifact_parser);
+		run_parser(&randart_parser);
+	}
 
 	/* Current turn */
 	rd_s32b(&turn);

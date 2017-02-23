@@ -155,18 +155,6 @@ Randomize the artifacts (except a very few) '[birth_randarts]'
   number, findability and power of random artifacts will all match the
   standard set - approximately.
 
-.. _birth_keep_arts:
-
-Keep current (custom or random) artifacts '[birth_keep_arts]'
-  Playing with random artifacts generates a new 'artifact.txt' file in the
-  player's user directory, which is used instead of the regular one.  The
-  player can also put an edited version of 'artifact.txt' in the user
-  directory, and the game will use that to generate its artifacts.  Setting
-  this option retains and uses any such file.  If this option is not set,
-  any such custom 'artifact.txt' file is moved to the player's archive
-  directory, and then either the standard artifacts are used or a new random
-  set of artifacts if birth_randarts is set.
-
 .. _birth_ai_learn:
 
 Monsters learn from their mistakes '[birth_ai_learn]'

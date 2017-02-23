@@ -2721,6 +2721,57 @@ struct file_parser artifact_parser = {
 
 /**
  * ------------------------------------------------------------------------
+ * Initialize random artifacts
+ * This mostly uses the artifact functions
+ * ------------------------------------------------------------------------ */
+static errr run_parse_randart(struct parser *p) {
+	return parse_file_quit_not_found(p, "randart");
+}
+
+static errr finish_parse_randart(struct parser *p) {
+	struct artifact *a, *n;
+	int aidx;
+
+	/* Scan the list for the max id */
+	z_info->a_max = 0;
+	a = parser_priv(p);
+	while (a) {
+		z_info->a_max++;
+		a = a->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	a_info = mem_zalloc((z_info->a_max + 1) * sizeof(*a));
+	aidx = z_info->a_max;
+	for (a = parser_priv(p); a; a = n, aidx--) {
+		assert(aidx > 0);
+
+		memcpy(&a_info[aidx], a, sizeof(*a));
+		a_info[aidx].aidx = aidx;
+		n = a->next;
+		if (aidx < z_info->a_max)
+			a_info[aidx].next = &a_info[aidx + 1];
+		else
+			a_info[aidx].next = NULL;
+
+		mem_free(a);
+	}
+	z_info->a_max += 1;
+
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser randart_parser = {
+	"randart",
+	init_parse_artifact,
+	run_parse_randart,
+	finish_parse_randart,
+	cleanup_artifact
+};
+
+/**
+ * ------------------------------------------------------------------------
  * Initialize object properties
  * ------------------------------------------------------------------------ */
 

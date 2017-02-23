@@ -560,6 +560,7 @@ void close_game(void)
 
 	/* Handle death or life */
 	if (player->is_dead) {
+		file_archive("randart");
 		death_knowledge(player);
 		death_screen();
 
