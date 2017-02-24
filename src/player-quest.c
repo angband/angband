@@ -187,7 +187,8 @@ void player_quests_free(struct player *p)
  */
 static void build_quest_stairs(int y, int x)
 {
-	int ny, nx;
+	int ny = player->py;
+	int nx = player->px;
 
 	/* Stagger around */
 	while (!square_changeable(cave, y, x) && !square_iswall(cave, y, x) &&

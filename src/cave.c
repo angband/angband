@@ -281,17 +281,18 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
  *
  * need_los determines whether line of sight is needed
  */
-void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los)
+void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d,
+			 bool need_los)
 {
 	int nx, ny;
+	int tries = 0;
 
-
-	/* Pick a location */
-	while (true)
-	{
+	/* Pick a location, try ridiculously many times */
+	while (tries < 1000000) {
 		/* Pick a new location */
 		ny = rand_spread(y, d);
 		nx = rand_spread(x, d);
+		tries++;
 
 		/* Ignore annoying locations */
 		if (!square_in_bounds_fully(c, ny, nx)) continue;
