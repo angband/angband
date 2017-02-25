@@ -926,16 +926,19 @@ int rd_misc(void)
 	/* Read "death" */
 	rd_byte(&tmp8u);
 	player->is_dead = tmp8u;
-	if (!player->is_dead && OPT(player, birth_randarts)) {
-		cleanup_parser(&artifact_parser);
-		run_parser(&randart_parser);
-	}
 
 	/* Current turn */
 	rd_s32b(&turn);
 
 	if (player->is_dead)
 		return 0;
+
+	/* Handle randart file parsing */
+	if (OPT(player, birth_randarts)) {
+		cleanup_parser(&artifact_parser);
+		activate_randart_file();
+		run_parser(&randart_parser);
+	}
 
 	/* Property knowledge */
 	/* Flags */

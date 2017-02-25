@@ -2894,12 +2894,11 @@ void do_randart(u32b randart_seed, bool create_file)
 	/* Write a data file if required */
 	if (create_file) {
 		int i;
-
 		/* Open the file, write a header */
 		path_build(fname, sizeof(fname), ANGBAND_DIR_USER, "randart.txt");
 		log_file = file_open(fname, MODE_WRITE, FTYPE_TEXT);
 		file_putf(log_file,
-				  "# Artifact file for random artifacts with seed %x\n\n\n",
+				  "# Artifact file for random artifacts with seed %8x\n\n\n",
 				  randart_seed);
 
 		/* Write individual entries */

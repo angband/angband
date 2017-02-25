@@ -21,6 +21,7 @@
 
 #include "angband.h"
 #include "datafile.h"
+#include "game-world.h"
 #include "init.h"
 #include "parser.h"
 
@@ -478,21 +479,54 @@ void write_elements(ang_file *fff, const struct element_info *el_info)
 /**
  * Archive a data file from ANGBAND_DIR_USER into ANGBAND_DIR_ARCHIVE
  */
-void file_archive(char *fname)
+void file_archive(char *fname, char *append)
 {
 	char arch[1024];
 	char old[1024];
 	int i, max_arch = 10000;
 
-	/* Check the indices of existing archived files, get the next one */
-	for (i = 1; i < max_arch; i++) {
+	/* Add a suffix to the filename, custom if requested */
+	if (append) {
 		path_build(arch, sizeof(arch), ANGBAND_DIR_ARCHIVE,
-				   format("%s_%d.txt", fname, i));
-		if (!file_exists(arch)) break;
-		my_strcpy(arch, "", sizeof(arch));
+				   format("%s_%s.txt", fname, append));
+	} else {
+		/* Check the indices of existing archived files, get the next one */
+		for (i = 1; i < max_arch; i++) {
+			path_build(arch, sizeof(arch), ANGBAND_DIR_ARCHIVE,
+					   format("%s_%d.txt", fname, i));
+			if (!file_exists(arch)) break;
+			my_strcpy(arch, "", sizeof(arch));
+		} 
 	}
 
-	/* Move any old file */
+	/* Move the file */
 	path_build(old, sizeof(old), ANGBAND_DIR_USER, format("%s.txt", fname));
 	file_move(old, arch);
+}
+
+/**
+ * Prepare the randart file for the current seed to be loaded
+ */
+void activate_randart_file(void)
+{
+	char new[1024];
+	char old[1024];
+
+	/* Get the randart filename and path */
+	path_build(old, sizeof(old), ANGBAND_DIR_ARCHIVE,
+			   format("randart_%08x.txt", seed_randart));
+
+	/* Move it into place */
+	path_build(new, sizeof(new), ANGBAND_DIR_USER, "randart.txt");
+	file_move(old, new);
+}
+
+/**
+ * Move the randart file to the archive directory
+ */
+void deactivate_randart_file(void)
+{
+	char buf[10];
+	strnfmt(buf, 9, "%08x", seed_randart);
+	file_archive("randart", buf);
 }

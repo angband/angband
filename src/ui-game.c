@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "datafile.h"
 #include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
@@ -558,9 +559,13 @@ void close_game(void)
 	/* Hack -- Increase "icky" depth */
 	screen_save_depth++;
 
+	/* Deal with the randarts file */
+	if (OPT(player, birth_randarts)) {
+		deactivate_randart_file();
+	}
+
 	/* Handle death or life */
 	if (player->is_dead) {
-		file_archive("randart");
 		death_knowledge(player);
 		death_screen();
 
