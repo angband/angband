@@ -2509,20 +2509,33 @@ static enum parser_error parse_artifact_flags(struct parser *p) {
 
 static enum parser_error parse_artifact_act(struct parser *p) {
 	struct artifact *a = parser_priv(p);
+	struct object_kind *k = lookup_kind(a->tval, a->sval);
 	const char *name = parser_getstr(p, "name");
 
 	if (!a)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	a->activation = findact(name);
+
+	/* Light activations are a property of the base object */
+	if (a->tval == TV_LIGHT) {
+		k->activation = findact(name);
+	} else {
+		a->activation = findact(name);
+	}
 
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_artifact_time(struct parser *p) {
 	struct artifact *a = parser_priv(p);
+	struct object_kind *k = lookup_kind(a->tval, a->sval);
 	assert(a);
 
-	a->time = parser_getrand(p, "time");
+	/* Light activations are a property of the base object */
+	if (a->tval == TV_LIGHT) {
+		k->time = parser_getrand(p, "time");
+	} else {
+		a->time = parser_getrand(p, "time");
+	}
 	return PARSE_ERROR_NONE;
 }
 

@@ -405,8 +405,8 @@ static int object_power_calculation_ALL_IMM(void)
 
 static int object_power_calculation_EFFECT_POWER(void)
 {
-	if (power_obj->artifact && power_obj->artifact->activation) {
-		return power_obj->artifact->activation->power;
+	if (power_obj->activation) {
+		return power_obj->activation->power;
 	}
 	return power_obj->kind->power;
 }

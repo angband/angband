@@ -867,6 +867,7 @@ void count_high_resists(const struct artifact *art,
 void count_abilities(const struct artifact *art, struct artifact_set_data *data)
 {
 	int num = 0;
+	struct object_kind *kind = lookup_kind(art->tval, art->sval);
 
 	if (flags_test(art->flags, OF_SIZE, OF_SUST_STR, OF_SUST_INT, OF_SUST_WIS,
 				   OF_SUST_DEX, OF_SUST_CON, FLAG_END)) {
@@ -957,7 +958,7 @@ void count_abilities(const struct artifact *art, struct artifact_set_data *data)
 	}
 
 
-	if (art->activation) {
+	if (art->activation || kind->activation) {
 		/* Activation */
 		file_putf(log_file, "Adding 1 for activation.\n");
 		(data->art_probs[ART_IDX_GEN_ACTIV])++;
@@ -1947,6 +1948,8 @@ static int choose_ability (int *freq_table)
 static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 							struct artifact_set_data *data)
 {
+	struct object_kind *kind = lookup_kind(art->tval, art->sval);
+
 	switch(r)
 	{
 		case ART_IDX_BOW_SHOTS:
@@ -2182,7 +2185,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 			break;
 
 		case ART_IDX_GEN_ACTIV:
-			if (!art->activation)
+			if (!art->activation && !kind->activation)
 				add_activation(art, target_power, data->max_power);
 			break;
 	}
@@ -2292,8 +2295,7 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 	a_dst->slays = NULL;
 	a_dst->brands = NULL;
 	a_dst->curses = NULL;
-	if (a_dst->tval != TV_LIGHT)
-		a_dst->activation = NULL;
+	a_dst->activation = NULL;
 	a_dst->alt_msg = NULL;
 
 	if (a_src->slays) {
@@ -2429,10 +2431,8 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 		mem_free(art->curses);
 		art->curses = NULL;
 
-		/* Clear the activations for rings and amulets but not lights */
-		if ((art->tval != TV_LIGHT) && art->activation) {
-			art->activation = NULL;
-		} else {
+		/* Lights get some extra properties */
+		if (art->tval == TV_LIGHT) {
 			of_on(art->flags, OF_NO_FUEL);
 			art->modifiers[OBJ_MOD_LIGHT] = 3;
 		}
@@ -2835,6 +2835,10 @@ void write_randart_entry(ang_file *fff, struct artifact *art)
 		file_putf(fff, "act:%s\n", art->activation->name);
 		file_putf(fff, "time:%d+%dd%d\n", art->time.base, art->time.dice,
 				  art->time.sides);
+	} else if (kind->activation) {
+		file_putf(fff, "act:%s\n", kind->activation->name);
+		file_putf(fff, "time:%d+%dd%d\n", kind->time.base, kind->time.dice,
+				  kind->time.sides);
 	}
 
 	/* Output description again */

@@ -197,6 +197,7 @@ struct object_kind {
 	int alloc_max;			/**< Lowest normal dungeon level */
 	int level;				/**< Level (difficulty of activation) */
 
+	struct activation *activation;	/**< Artifact-like activation */
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	int power;				/**< Power of the item's effect */
 	char *effect_msg;

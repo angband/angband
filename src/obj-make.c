@@ -466,6 +466,7 @@ static void make_ego_item(struct object *obj, int level)
 void copy_artifact_data(struct object *obj, const struct artifact *art)
 {
 	int i;
+	struct object_kind *kind = lookup_kind(art->tval, art->sval);
 
 	/* Extract the data */
 	for (i = 0; i < OBJ_MOD_MAX; i++)
@@ -477,7 +478,14 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 	obj->to_h = art->to_h;
 	obj->to_d = art->to_d;
 	obj->weight = art->weight;
-	obj->activation = art->activation;
+
+	/* Activations can come from the artifact or the kind */
+	if (art->activation) {
+		obj->activation = art->activation;
+	} else if (kind->activation) {
+		obj->activation = kind->activation;
+	}
+
 	if (art->time.base != 0)
 		obj->time = art->time;
 	of_union(obj->flags, art->flags);
