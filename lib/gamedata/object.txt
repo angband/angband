@@ -1798,7 +1798,7 @@ name:Identify
 type:scroll
 graphics:?:w
 properties:1:5:200
-alloc:50:5 to 70
+alloc:50:5 to 100
 pile:70:1d4
 power:6
 effect:IDENTIFY
