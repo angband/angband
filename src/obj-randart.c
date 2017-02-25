@@ -1236,6 +1236,8 @@ static struct object_kind *get_base_item(struct artifact_set_data *data)
 {
 	int tval = 0;
 	int r = randint1(data->tv_freq[TV_DRAG_ARMOR]);
+	struct object_kind *kind = NULL;
+	char name[120] = "";
 
 	/* Get a tval based on original artifact tval frequencies */
 	while (r > data->tv_freq[tval]) {
@@ -1243,10 +1245,19 @@ static struct object_kind *get_base_item(struct artifact_set_data *data)
 	}
 
 	/* Pick an sval for that tval at random */
-	r = randint1(kb_info[tval].num_svals);
+	while (!kind) {
+		r = randint1(kb_info[tval].num_svals);
+		kind = lookup_kind(tval, r);
 
-	file_putf(log_file, "Creating tval %d sval %d\n", tval, r);
-	return lookup_kind(tval, r);
+		/* No items based on unrandomised artifacts */
+		if (strstr(kind->name, "Ring of Power") ||
+			kf_has(kind->kind_flags, KF_QUEST_ART))
+				kind = NULL;
+	}
+
+	object_short_name(name, sizeof name, kind->name);
+	file_putf(log_file, "Creating %s\n", name);
+	return kind;
 }
 
 /**
@@ -2898,7 +2909,7 @@ void do_randart(u32b randart_seed, bool create_file)
 		path_build(fname, sizeof(fname), ANGBAND_DIR_USER, "randart.txt");
 		log_file = file_open(fname, MODE_WRITE, FTYPE_TEXT);
 		file_putf(log_file,
-				  "# Artifact file for random artifacts with seed %8x\n\n\n",
+				  "# Artifact file for random artifacts with seed %08x\n\n\n",
 				  randart_seed);
 
 		/* Write individual entries */
