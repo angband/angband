@@ -1194,6 +1194,14 @@ static void parse_frequencies(struct artifact_set_data *data)
 
 	collect_artifact_data(data);
 
+	/* Big hack, reduce frequencies of sharp weapons */
+	for (i = 0; i < TV_MAX; i++) {
+		if ((i == TV_SWORD) || (i == TV_POLEARM)) {
+			data->tv_probs[i] *= 2;
+			data->tv_probs[i] /= 3;
+		}
+	}
+
 	/* Print out some of the abilities, to make sure that everything's fine */
 	for (i = 0; i < ART_IDX_TOTAL; i++)
 		file_putf(log_file, "Frequency of ability %d: %d\n", i,
@@ -1235,7 +1243,7 @@ static void parse_frequencies(struct artifact_set_data *data)
 static struct object_kind *get_base_item(struct artifact_set_data *data)
 {
 	int tval = 0;
-	int r = randint1(data->tv_freq[TV_DRAG_ARMOR]);
+	int r = randint1(data->tv_freq[TV_MAX - 1]);
 	struct object_kind *kind = NULL;
 	char name[120] = "";
 
@@ -1323,6 +1331,32 @@ void artifact_prep(struct artifact *art, const struct object_kind *kind,
 								randint0(data->ac_startval));
 			file_putf(log_file, "Assigned basic stats, AC bonus: %d\n",
 					  art->to_a);
+			break;
+		case TV_RING:
+		case TV_AMULET:
+			if (kind->kidx < z_info->ordinary_kind_max) {
+				int first_special = 1;
+				int total = kb_info[art->tval].num_svals;
+				struct object_kind *test_kind = lookup_kind(art->tval, 1);
+				while (test_kind->kidx < z_info->ordinary_kind_max) {
+					first_special++;
+					test_kind = lookup_kind(art->tval, first_special);
+				}
+				art->sval = randint0(total - first_special + 1) + first_special;
+				test_kind = lookup_kind(art->tval, art->sval);
+				while (strstr(test_kind->name, "Ring of Power")) {
+					art->sval = randint0(total - first_special + 1) +
+						first_special;
+					test_kind = lookup_kind(art->tval, art->sval);
+				}
+			}
+			break;
+		case TV_LIGHT:
+			of_off(art->flags, OF_TAKES_FUEL);
+			of_off(art->flags, OF_BURNS_OUT);
+			of_on(art->flags, OF_NO_FUEL);
+			break;
+		default:
 			break;
 	}
 }
@@ -2342,9 +2376,7 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 	byte alloc_old, base_alloc_old, alloc_new;
 	s32b ap = 0;
 	bool hurt_me = false;
-	int i;
-
-	bool special_artifact = kf_has(kind->kind_flags, KF_INSTA_ART);
+	int count = 0;
 
 	/* Structure to hold the old artifact */
 	struct artifact *a_old = mem_zalloc(sizeof *a_old);
@@ -2360,100 +2392,71 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 		power = -power;
 	}
 
-	if (!special_artifact) {
-		/* Normal artifact - choose a random base item type.  Not too
-		 * powerful, so we'll have to add something to it.  Not too
-		 * weak, for the opposite reason. */
-		int count = 0;
+	/* Capture the rarity of the original base item and artifact */
+	alloc_old = data->base_art_alloc[a_idx];
+	base_alloc_old = data->base_item_prob[a_idx];
+
+	/* Choose a random base item type.  Not too powerful, so we'll have to
+	 * add something to it.  Not too weak, for the opposite reason. */
+	while (count < MAX_TRIES) {
 		s32b ap2 = 0;
 
-		/* Capture the rarity of the original base item and artifact */
-		alloc_old = data->base_art_alloc[a_idx];
-		base_alloc_old = data->base_item_prob[a_idx];
+		/* Get the new item kind and do basic prep on it */
+		kind = get_base_item(data);
+		artifact_prep(art, kind, data);
 
-		/* Try to find a good base item kind for the artifact */
-		while (count < MAX_TRIES) {
-			/* Get the new item kind and do basic prep on it */
-			kind = get_base_item(data);
-			//kind = lookup_kind(tval, randint1(kb_info[tval].num_svals));
-			artifact_prep(art, kind, data);
+		/* Get the kind again in case it's changed */
+		kind = lookup_kind(art->tval, art->sval);
 
-			/* If power is positive but very low, and if we're not having
-			 * any luck finding a base item, damage it once.  This helps ensure
-			 * that we get a base item for borderline cases like Wormtongue. */
-			if (power > 0 && power < 10 && count > MAX_TRIES / 2) {
-				file_putf(log_file,
-						  "Damaging base item to help get a match.\n");
-				make_bad(art, old_level);
-			}
+		/* If power is positive but very low, and if we're not having
+		 * any luck finding a base item, damage it once.  This helps ensure
+		 * that we get a base item for borderline cases like Wormtongue. */
+		if (power > 0 && power < 10 && count > MAX_TRIES / 2) {
+			file_putf(log_file, "Damaging base item to help get a match.\n");
+			make_bad(art, old_level);
+		}
 
-			ap2 = artifact_power(a_idx, "for base item power");
-			file_putf(log_file, "Base item power old %d, new %d\n", power, ap2);
-			count++;
+		ap2 = artifact_power(a_idx, "for base item power");
+		file_putf(log_file, "Base item power old %d, new %d\n", power, ap2);
+		count++;
 
-			/* New base item power too close to target artifact power */
-			if ((ap2 > (power * 6) / 10 + 1) && (power - ap2 < 20)) {
-				continue;
-			}
+		/* New base item power too close to target artifact power */
+		if ((ap2 > (power * 6) / 10 + 1) && (power - ap2 < 20)) {
+			continue;
+		}
 
-			/* New base item power too low */
-			if (ap2 < (power / 10)) {
-				continue;
-			}
+		/* New base item power too low */
+		if (ap2 < (power / 10)) {
+			continue;
+		}
 
-			/* Acceptable */
-			break;
-		};
+		/* Acceptable */
+		break;
+	};
 
-		/* Calculate the proper rarity based on the new type.  We attempt
-		 * to preserve the 'effective rarity' which is equal to the
-		 * artifact rarity multiplied by the base item rarity. */
-		alloc_new = alloc_old * base_alloc_old / MAX(kind->alloc_prob, 1);
-
-		if (alloc_new > 99) alloc_new = 99;
-		if (alloc_new < 1) alloc_new = 1;
-
-		file_putf(log_file, "Old allocs are base %d, art %d\n",
-				  base_alloc_old, alloc_old);
-		file_putf(log_file, "New allocs are base %d, art %d\n",
-				  kind->alloc_prob, alloc_new);
-
-		/* Set the new rarity */
-		art->alloc_prob = alloc_new;
-
-		if (count >= MAX_TRIES)
-			file_putf(log_file, "Warning! Couldn't get appropriate power level on base item.\n");
+	/* Calculate the proper rarity based on the new type.  We attempt
+	 * to preserve the 'effective rarity' which is equal to the
+	 * artifact rarity multiplied by the base item rarity. */
+	/* Note guess for special types - NRM */
+	if (kind->kidx > z_info->ordinary_kind_max) {
+		alloc_new = alloc_old * base_alloc_old / 20;
 	} else {
-		/* Special artifact (light source, ring, or amulet) */
-
-		/* Clear the following fields; leave the rest alone */
-		art->to_h = art->to_d = art->to_a = 0;
-		of_wipe(art->flags);
-		for (i = 0; i < ELEM_MAX; i++) {
-			art->el_info[i].res_level = 0;
-			art->el_info[i].flags = 0;
-		}
-		for (i = 0; i < OBJ_MOD_MAX; i++)
-			art->modifiers[i] = 0;
-		mem_free(art->brands);
-		art->brands = NULL;
-		mem_free(art->slays);
-		art->slays = NULL;
-		mem_free(art->curses);
-		art->curses = NULL;
-
-		/* Lights get some extra properties */
-		if (art->tval == TV_LIGHT) {
-			of_on(art->flags, OF_NO_FUEL);
-			art->modifiers[OBJ_MOD_LIGHT] = 3;
-		}
-
-		/* Artifacts ignore everything */
-		for (i = ELEM_BASE_MIN; i < ELEM_HIGH_MIN; i++)
-			art->el_info[i].flags |= EL_INFO_IGNORE;
-
-		file_putf(log_file, "Alloc prob is %d\n", art->alloc_prob);
+		alloc_new = alloc_old * base_alloc_old / MAX(kind->alloc_prob, 1);
 	}
+
+	if (alloc_new > 99) alloc_new = 99;
+	if (alloc_new < 1) alloc_new = 1;
+
+	file_putf(log_file, "Old allocs are base %d, art %d\n", base_alloc_old,
+			  alloc_old);
+	file_putf(log_file, "New allocs are base %d, art %d\n", kind->alloc_prob,
+			  alloc_new);
+
+	/* Set the new rarity */
+	art->alloc_prob = alloc_new;
+
+	if (count >= MAX_TRIES)
+		file_putf(log_file, "Warning! Couldn't get appropriate power level on base item.\n");
 
 	/* Generate the cumulative frequency table for this base item type */
 	build_freq_table(art, art_freq, data);
@@ -2539,7 +2542,6 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 	mem_free(a_old);
 
 	/* Set depth and rarity info according to power */
-	/* This is currently very tricky for special artifacts */
 	file_putf(log_file, "Old depths are min %d, max %d\n", art->alloc_min,
 			  art->alloc_max);
 	file_putf(log_file, "Alloc prob is %d\n", art->alloc_prob);
@@ -2547,33 +2549,13 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 	/* Flip cursed items to avoid overflows */
 	if (ap < 0) ap = -ap;
 
-	if (special_artifact) {
-		art->alloc_max = 127;
-		if (ap > data->avg_power) {
-			art->alloc_prob = 1;
-			art->alloc_min = MAX(50, ((ap + 150) * 100 / data->max_power));
-		} else if (ap > 30) {
-			art->alloc_prob = MAX(2, (data->avg_power - ap) / 20);
-			art->alloc_min = MAX(25, ((ap + 200) * 100 / data->max_power));
-		} else {/* Just the Phial */
-			art->alloc_prob = 50 - ap;
-			art->alloc_min = 5;
-		}
-	} else {
-		file_putf(log_file, "kind->alloc_prob is %d\n", kind->alloc_prob);
-		art->alloc_max = MIN(127, (ap * 4) / 5);
-		art->alloc_min = MIN(100, ((ap + 100) * 100 / data->max_power));
-
-		/* Leave alloc_prob consistent with base art total rarity */
-	}
+	file_putf(log_file, "kind->alloc_prob is %d\n", kind->alloc_prob);
+	art->alloc_max = MIN(127, (ap * 4) / 5);
+	art->alloc_min = MIN(100, ((ap + 100) * 100 / data->max_power));
 
 	/* Sanity check */
 	if (art->alloc_prob > 99) art->alloc_prob = 99;
 	if (art->alloc_prob < 1) art->alloc_prob = 1;
-
-	/* Ensure diggers keep a basic digging bonus */
-	if (art->modifiers[OBJ_MOD_TUNNEL] < kind->modifiers[OBJ_MOD_TUNNEL].base)
-		art->modifiers[OBJ_MOD_TUNNEL] = kind->modifiers[OBJ_MOD_TUNNEL].base;
 
 	file_putf(log_file, "New depths are min %d, max %d\n", art->alloc_min,
 			  art->alloc_max);

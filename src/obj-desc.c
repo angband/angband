@@ -507,7 +507,7 @@ static size_t obj_desc_charges(const struct object *obj, char *buf, size_t max,
 	} else if (obj->timeout > 0) {
 		if (tval_is_rod(obj) && obj->number > 1)
 			strnfcat(buf, max, &end, " (%d charging)", number_charging(obj));
-		else if (!(tval_is_light(obj) && !obj->artifact))
+		else if (tval_is_rod(obj) || obj->activation)
 			/* Artifacts, single rods */
 			strnfcat(buf, max, &end, " (charging)");
 	}
