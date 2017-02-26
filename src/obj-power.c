@@ -719,7 +719,25 @@ int object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	}
 	mem_free(current_value);
 
-	log_obj(format("FINAL POWER IS %d\n", power));
+	/* Deal with curse power */
+	if (obj->curses) {
+		int curse_power = 0;
+
+		/* Get the curse object power */
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (obj->curses[i].power) {
+				curse_power += object_power(curses[i].obj, verbose, log_file);
+				curse_power -= obj->curses[i].power / 10;
+				power += curse_power;
+				log_obj(format("%d for %s curse power, power is %d\n",
+							   curse_power, curses[i].name, power));
+			}
+		}
+	}
+
+
+	if (obj->kind != curse_object_kind)
+		log_obj(format("FINAL POWER IS %d\n", power));
 	return power;
 }
 
