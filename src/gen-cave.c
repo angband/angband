@@ -1459,7 +1459,7 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
  */
 static void town_gen_layout(struct chunk *c, struct player *p)
 {
-	int y, y1, x = 0, n;
+	int y, x, py, px, n;
 	int num_lava = 3 + randint0(3), num_rubble = 3 + randint0(3);
 
 	/* Create walls */
@@ -1481,13 +1481,23 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 								   FEAT_FLOOR, false);
 
 	/* Turn off room illumination flag */
-	for (y = 1; y < c->height - 1; y++)
+	for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
 			if (square_isfloor(c, y, x))
 				sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
 			else if (!square_isperm(c, y, x) && !square_isfiery(c, y, x))
 				square_set_feat(c, y, x, FEAT_PERM);
 		}
+	}
+
+	/* Place the stairs in the north wall */
+	px = rand_spread(z_info->town_wid / 2, z_info->town_wid / 12);
+	py = z_info->town_hgt / 2;
+	while (square_isfloor(c, py, px) && (py > 2)) py--;
+	if (square_isfloor(c, py - 1, px) && (py == 2)) py--;
+
+	/* Clear previous contents, add down stairs */
+	square_set_feat(c, py, px, FEAT_MORE);
 
 	/* Place stores */
 	for (n = 0; n < MAX_STORES; n++) {
@@ -1536,26 +1546,8 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 					square_set_feat(c, yy, xx, FEAT_PASS_RUBBLE);
 	}
 
-	/* Place the stairs in the north wall */
-	x = rand_spread(z_info->town_wid / 2, z_info->town_wid / 12);
-	y = 2;
-	while (square_isperm(c, y, x)) y++;
-	y--;
-
-	/* Clear previous contents, add down stairs */
-	square_set_feat(c, y, x, FEAT_MORE);
-
-	/* Ensure stairs aren't cut off from the town by lava */
-	y1 = y + 1;
-	while (y1 < c->height) {
-		if (square_isfiery(c, y1, x)) {
-			square_set_feat(c, y1, x, FEAT_FLOOR);
-		}
-		y1++;
-	}
-
 	/* Place the player */
-	player_place(c, p, y, x);
+	player_place(c, p, py, px);
 }
 
 
