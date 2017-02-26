@@ -1650,6 +1650,11 @@ static bool add_mod(struct artifact *art, int mod)
 			success = true;
 		}
 	} else {
+		/* Hard cap of 6 on non-speed mods */
+		if ((mod != OBJ_MOD_SPEED) && (art->modifiers[mod] >= 6)) {
+			return false;
+		}
+
 		/* New mods average 3, old ones are incremented by 1 or 2 */
 		if (art->modifiers[mod] == 0) {
 			art->modifiers[mod] = randint0(3) + randint1(3);
@@ -1661,6 +1666,11 @@ static bool add_mod(struct artifact *art, int mod)
 			file_putf(log_file, "Increasing %s by 2, new value is: %d\n",
 					  prop->name, art->modifiers[mod]);
 			success = true;
+		}
+
+		/* Enforce cap */
+		if ((mod != OBJ_MOD_SPEED) && (art->modifiers[mod] >= 6)) {
+			art->modifiers[mod] = 6;
 		}
 	}
 
