@@ -2280,7 +2280,7 @@ static void add_ability(struct artifact *art, s32b target_power, int *freq,
 {
 	int r;
 
-	/* Choose a random ability using the frequency table previously defined*/
+	/* Choose a random ability using the frequency table previously defined */
 	r = choose_ability(freq);
 
 	/* Add the appropriate ability */
@@ -2297,13 +2297,32 @@ static void add_ability(struct artifact *art, s32b target_power, int *freq,
 
 
 /**
+ * Randomly select a curse and added it to the artifact in question.
+ */
+static void add_curse(struct artifact *art, int level)
+{
+	int max_tries = 5;
+
+	while (max_tries) {
+		int pick = randint1(z_info->curse_max - 1);
+		int power = randint1(9) + 10 * m_bonus(9, level);
+		if (!curses[pick].poss[art->tval]) {
+			max_tries--;
+			continue;
+		}
+		append_artifact_curse(art, pick, power);
+		return;
+	}
+}
+
+
+/**
  * Make it bad, or if it's already bad, make it worse!
  */
 static void make_bad(struct artifact *art, int level)
 {
 	int i;
 	int num = randint1(2);
-	int max_tries = 5;
 
 	if (one_in_(7))
 		of_on(art->flags, OF_AGGRAVATE);
@@ -2324,14 +2343,8 @@ static void make_bad(struct artifact *art, int level)
 	if ((art->to_d > 0) && one_in_(4))
 		art->to_d = -art->to_d;
 
-	while (num && max_tries) {
-		int pick = randint1(z_info->curse_max - 1);
-		int power = randint1(9) + 10 * m_bonus(9, level);
-		if (!curses[pick].poss[art->tval]) {
-			max_tries--;
-			continue;
-		}
-		append_artifact_curse(art, pick, power);
+	while (num) {
+		add_curse(art, level);
 		num--;
 	}
 }
@@ -2521,7 +2534,14 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 			/* Copy artifact info temporarily. */
 			copy_artifact(art, a_old);
 
-			add_ability(art, power, art_freq, data);
+			/* Occasionally curse stuff */
+			if (one_in_(5000)) {
+				add_curse(art, old_level);
+			} else {
+				add_ability(art, power, art_freq, data);
+			}
+
+			/* Check the power */
 			ap = artifact_power(a_idx, "artifact attempt");
 
 			/* CR 11/14/01 - pushed both limits up by about 5% */
