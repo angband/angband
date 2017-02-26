@@ -1355,6 +1355,9 @@ void artifact_prep(struct artifact *art, const struct object_kind *kind,
 			of_off(art->flags, OF_TAKES_FUEL);
 			of_off(art->flags, OF_BURNS_OUT);
 			of_on(art->flags, OF_NO_FUEL);
+			if (kind->kidx >= z_info->ordinary_kind_max) {
+				art->modifiers[OBJ_MOD_LIGHT] = 3;
+			}
 			break;
 		default:
 			break;
