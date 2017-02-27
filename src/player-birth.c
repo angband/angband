@@ -954,7 +954,11 @@ void do_cmd_birth_init(struct command *cmd)
 				buf,
 				sizeof(player->full_name) - (buf - (char *)&player->full_name));
 
-		if (!success) msg("Sorry, could not deal with suffix");
+		if (success) {
+			save_roller_data(&quickstart_prev);
+		} else {
+			msg("Sorry, could not deal with suffix");
+		}
 	}
 
 	/* We're ready to start the birth process */
