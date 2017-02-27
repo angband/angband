@@ -110,8 +110,8 @@ void flag_message(int flag, char *name)
 			/* Start the tag after the { */
 			tag = next + 1;
 			in_cursor = s + 1;
-			if (streq(tag, "name")) {
-				end += strlen(name);
+			if (strncmp(tag, "name", 4) == 0) {
+				strnfcat(buf, 1024, &end, "%s", name); 
 			}
 
 		} else {
