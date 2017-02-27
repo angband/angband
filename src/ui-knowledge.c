@@ -1724,26 +1724,6 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
  * ------------------------------------------------------------------------ */
 
 /**
- * Looks up an artifact idx given an object_kind *that's already known
- * to be an artifact*.  Behaviour is distinctly unfriendly if passed
- * flavours which don't correspond to an artifact.
- */
-static int get_artifact_from_kind(struct object_kind *kind)
-{
-	int i;
-
-	assert(kf_has(kind->kind_flags, KF_INSTA_ART));
-
-	/* Look for the corresponding artifact */
-	for (i = 0; i < z_info->a_max; i++)
-		if (kind->tval == a_info[i].tval && kind->sval == a_info[i].sval)
-			break;
-
-	assert(i < z_info->a_max);
-	return i;
-}
-
-/**
  * Display the objects in a group.
  */
 static void display_object(int col, int row, bool cursor, int oid)
@@ -1761,12 +1741,8 @@ static void display_object(int col, int row, bool cursor, int oid)
 	byte a = object_kind_attr(kind);
 	wchar_t c = object_kind_char(kind);
 
-	/* Display known artifacts differently */
-	if (kf_has(kind->kind_flags, KF_INSTA_ART) && 
-		artifact_is_known(get_artifact_from_kind(kind)))
-		get_artifact_display_name(o_name, sizeof(o_name), 
-								  get_artifact_from_kind(kind));
-	else
+	/* Don't display special artifacts */
+	if (!kf_has(kind->kind_flags, KF_INSTA_ART))
  		object_kind_name(o_name, sizeof(o_name), kind, OPT(player, cheat_xtra));
 
 	/* If the type is "tried", display that */
@@ -1805,13 +1781,6 @@ static void desc_obj_fake(int k_idx)
 
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
-
-	/* Check for known artifacts, display them as artifacts */
-	if (kf_has(kind->kind_flags, KF_INSTA_ART) && 
-		artifact_is_known(get_artifact_from_kind(kind))) {
-		desc_art_fake(get_artifact_from_kind(kind));
-		return;
-	}
 
 	/* Update the object recall window */
 	track_object_kind(player->upkeep, kind);
@@ -2009,13 +1978,10 @@ void textui_browse_object_knowledge(const char *name, int row)
 	for (i = 0; i < z_info->k_max; i++) {
 		kind = &k_info[i];
 		/* It's in the list if we've ever seen it, or it has a flavour,
-		 * and either it's not one of the special artifacts, or if it is,
-		 * we're not aware of it yet. This way the flavour appears in the list
-		 * until it is found.
-		 */
+		 * and it's not one of the special artifacts. This way the flavour
+		 * appears in the list until it is found. */
 		if ((kind->everseen || kind->flavor || OPT(player, cheat_xtra)) &&
-				(!kf_has(kind->kind_flags, KF_INSTA_ART) ||
-				 !artifact_is_known(get_artifact_from_kind(kind)))) {
+			(!kf_has(kind->kind_flags, KF_INSTA_ART))) {
 			int c = obj_group_order[k_info[i].tval];
 			if (c >= 0) objects[o_count++] = i;
 		}
