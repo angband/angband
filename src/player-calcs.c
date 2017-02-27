@@ -1754,6 +1754,10 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->stat_add[STAT_DEX] += obj->modifiers[OBJ_MOD_DEX];
 			state->stat_add[STAT_CON] += obj->modifiers[OBJ_MOD_CON];
 			state->skills[SKILL_STEALTH] += obj->modifiers[OBJ_MOD_STEALTH];
+			state->skills[SKILL_SEARCH] += (obj->modifiers[OBJ_MOD_SEARCH] * 5);
+			state->skills[SKILL_SEARCH_FREQUENCY] += 
+				(obj->modifiers[OBJ_MOD_SEARCH] * 5);
+
 			state->see_infra += obj->modifiers[OBJ_MOD_INFRA];
 			if (tval_is_digger(obj)) {
 				if (of_has(obj->flags, OF_DIG_1))

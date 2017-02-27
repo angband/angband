@@ -225,6 +225,8 @@ static void skill_help(const int r_skills[], const int c_skills[], int mhp, int 
 	if (infra >= 0)
 		text_out_e("Infravision:  %d ft\n", infra * 10);
 	text_out_e("Digging:      %+d\n", skills[SKILL_DIGGING]);
+	text_out_e("Search:       %+d/%d", skills[SKILL_SEARCH],
+			   skills[SKILL_SEARCH_FREQUENCY]);
 	if (infra < 0)
 		text_out_e("\n");
 }

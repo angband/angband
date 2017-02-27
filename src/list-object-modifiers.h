@@ -9,6 +9,7 @@
  * Modifier properties are defined in lib/gamedata/object_property.txt
  */
 OBJ_MOD(STEALTH)
+OBJ_MOD(SEARCH)
 OBJ_MOD(INFRA)
 OBJ_MOD(TUNNEL)
 OBJ_MOD(SPEED)
