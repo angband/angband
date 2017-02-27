@@ -327,9 +327,11 @@ bool react_to_slay(struct object *obj, const struct monster *mon)
 {
 	int i;
 
+	if (!obj->slays) return false;
+
 	for (i = 0; i < z_info->slay_max; i++) {
-		struct slay *s = &slays[i];;
-		if (react_to_specific_slay(s, mon)) {
+		struct slay *s = &slays[i];
+		if (obj->slays[i] && react_to_specific_slay(s, mon)) {
 			return true;
 		}
 	}
