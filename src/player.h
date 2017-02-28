@@ -120,7 +120,6 @@ enum {
 	SKILL_DEVICE,			/* Magic Devices */
 	SKILL_SAVE,				/* Saving throw */
 	SKILL_SEARCH,			/* Searching ability */
-	SKILL_SEARCH_FREQUENCY,	/* Searching frequency */
 	SKILL_STEALTH,			/* Stealth factor */
 	SKILL_TO_HIT_MELEE,		/* To hit (normal) */
 	SKILL_TO_HIT_BOW,		/* To hit (shooting) */

@@ -269,6 +269,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Aggrv",	-1,					OF_AGGRAVATE,	-1, 		-1 },
 
 	{ "Stea.",	OBJ_MOD_STEALTH,	-1,				-1, 		-1 },
+	{ "Sear.",	OBJ_MOD_SEARCH,		-1,				-1, 		-1 },
 	{ "Infra",	OBJ_MOD_INFRA,		-1,				-1,			TMD_SINFRA },
 	{ "Tunn.",	OBJ_MOD_TUNNEL,		-1,				-1, 		-1 },
 	{ "Speed",	OBJ_MOD_SPEED,		-1,				-1,			TMD_FAST },
@@ -276,7 +277,6 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Shots",	OBJ_MOD_SHOTS,		-1,				-1, 		-1 },
 	{ "Might",	OBJ_MOD_MIGHT,		-1,				-1, 		-1 },
 	{ "Light",	OBJ_MOD_LIGHT,		-1,				-1, 		-1 },
-	{ "",	-1,		-1,				-1, 		-1 },
 };
 
 static void display_resistance_panel(const struct player_flag_record *rec,
@@ -798,17 +798,6 @@ static struct panel *get_panel_skills(void) {
 	/* Magic devices */
 	skill = player->state.skills[SKILL_DEVICE];
 	panel_line(p, colour_table[skill / 13], "Magic Devices", "%d", skill);
-
-	/* Search frequency */
-	skill = MAX(player->state.skills[SKILL_SEARCH_FREQUENCY], 1);
-	if (skill >= 50) {
-		panel_line(p, colour_table[10], "Perception", "1 in 1");
-	} else {
-		/* convert to chance of searching */
-		skill = 50 - skill;
-		panel_line(p, colour_table[(100 - skill*2) / 10],
-				"Perception", "1 in %d", skill);
-	}
 
 	/* Searching ability */
 	skill = BOUND(player->state.skills[SKILL_SEARCH], 0, 100);

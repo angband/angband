@@ -1755,8 +1755,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->stat_add[STAT_CON] += obj->modifiers[OBJ_MOD_CON];
 			state->skills[SKILL_STEALTH] += obj->modifiers[OBJ_MOD_STEALTH];
 			state->skills[SKILL_SEARCH] += (obj->modifiers[OBJ_MOD_SEARCH] * 5);
-			state->skills[SKILL_SEARCH_FREQUENCY] += 
-				(obj->modifiers[OBJ_MOD_SEARCH] * 5);
 
 			state->see_infra += obj->modifiers[OBJ_MOD_INFRA];
 			if (tval_is_digger(obj)) {
@@ -2274,12 +2272,6 @@ void notice_stuff(struct player *p)
 	if (p->upkeep->notice & PN_IGNORE) {
 		p->upkeep->notice &= ~(PN_IGNORE);
 		ignore_drop();
-	}
-
-	/* Look for adjacent traps and doors */
-	if (p->upkeep->notice & PN_SEARCH) {
-		p->upkeep->notice &= ~(PN_SEARCH);
-		search(p);
 	}
 
 	/* Combine the pack */

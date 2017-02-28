@@ -66,6 +66,12 @@ code:STEALTH
 power:8
 mult:12
 
+name:searching skill
+type:mod
+code:SEARCH
+power:2
+mult:5
+
 name:infravision
 type:mod
 code:INFRA

@@ -122,6 +122,7 @@ static s16b art_idx_gen[] = {
 	ART_IDX_GEN_STAT,
 	ART_IDX_GEN_SUST,
 	ART_IDX_GEN_STEALTH,
+	ART_IDX_GEN_SEARCH,
 	ART_IDX_GEN_INFRA,
 	ART_IDX_GEN_SPEED,
 	ART_IDX_GEN_IMMUNE,
@@ -643,6 +644,12 @@ void count_modifiers(const struct artifact *art, struct artifact_set_data *data)
 			file_putf(log_file, "Adding 1 for stealth bonus - general.\n");
 			(data->art_probs[ART_IDX_GEN_STEALTH])++;
 		}
+	}
+
+	/* Handle searching bonus - fully generic this time */
+	if (art->modifiers[OBJ_MOD_SEARCH] > 0) {
+		file_putf(log_file, "Adding 1 for search bonus - general.\n");
+		(data->art_probs[ART_IDX_GEN_SEARCH])++;
 	}
 
 	/* Handle infravision bonus - fully generic */
@@ -2170,6 +2177,10 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 
 		case ART_IDX_GEN_SUST:
 			add_sustain(art);
+			break;
+
+		case ART_IDX_GEN_SEARCH:
+			add_mod(art, OBJ_MOD_SEARCH);
 			break;
 
 		case ART_IDX_GEN_INFRA:

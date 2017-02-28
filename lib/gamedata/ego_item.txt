@@ -774,6 +774,8 @@ info:2000:8
 alloc:50:10 to 60
 type:helm
 flags:PROT_BLIND | SEE_INVIS
+values:SEARCH[d5]
+min-values:SEARCH[0]
 
 name:of Infravision
 info:500:11
@@ -995,8 +997,8 @@ combat:d8:d3:0
 item:gloves:Set of Leather Gloves
 item:gloves:Set of Alchemist's Gloves
 flags:FEATHER | FREE_ACT
-values:DEX[1+M4]
-min-values:DEX[1]
+values:DEX[1+M4] | SEARCH[1+d2M3]
+min-values:DEX[1] | SEARCH[2]
 
 name:of Combat
 info:7000:22

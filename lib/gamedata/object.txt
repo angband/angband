@@ -1318,6 +1318,13 @@ alloc:40:75 to 100
 flags:GOOD
 values:SPEED[4+M6]
 
+name:Searching
+type:ring
+graphics:=:d
+properties:5:2:250
+alloc:20:5 to 90
+values:SEARCH[1+M5]
+
 ### Stat sustain rings ###
 
 name:Bodykeeping
@@ -1360,7 +1367,7 @@ type:ring
 graphics:=:d
 properties:0:2:400
 alloc:20:25 to 100
-values:LIGHT[1] | RES_LIGHT[1]
+values:SEARCH[1+M5] | LIGHT[1] | RES_LIGHT[1]
 
 name:Flames
 type:ring
@@ -1614,7 +1621,7 @@ alloc:10:70 to 100
 combat:0:0d0:0:0:d5M5
 flags:FREE_ACT | SEE_INVIS | SUST_INT | PROT_BLIND | GOOD
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-values:INT[1+M3]
+values:SEARCH[1+M3] | INT[1+M3]
 
 name:ESP
 type:amulet
@@ -1647,7 +1654,7 @@ graphics:":d
 properties:70:3:30000
 alloc:10:70 to 100
 flags:SUST_DEX | GOOD
-values:DEX[1+M4] | SPEED[1+M2] | STEALTH[1+M2] | INFRA[1+d3M3]
+values:DEX[1+M4] | SPEED[1+M2] | STEALTH[1+M2] | SEARCH[1+d3M3] | INFRA[1+d3M3]
 values:RES_NEXUS[1] | RES_POIS[1]
 
 ### Ability boosts ###
@@ -1665,6 +1672,13 @@ graphics:":d
 properties:10:3:200
 alloc:30:10 to 70
 values:INFRA[1+M5]
+
+name:246:Searching
+type:amulet
+graphics:":d
+properties:15:3:600
+alloc:20:10 to 40
+values:SEARCH[d5M5]
 
 ### Powers ###
 
