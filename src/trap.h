@@ -58,6 +58,7 @@ struct trap_kind
 	int rarity;					/**< Rarity */
 	int min_depth;				/**< Minimum depth */
 	int max_num;				/**< Unused */
+	random_value power;			/**< Power of player trap */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (all traps of this kind) */
 	bitflag save_flags[OF_SIZE];/**< Save flags (player with these saves) */
@@ -89,7 +90,7 @@ struct trap
 struct trap_kind *lookup_trap(const char *desc);
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
 bool square_trap_flag(struct chunk *c, int y, int x, int flag);
-bool square_reveal_trap(struct chunk *c, int y, int x, bool domsg);
+bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg);
 bool trap_check_hit(int power);
 void hit_trap(int y, int x);
 bool square_player_trap_allowed(struct chunk *c, int y, int x);

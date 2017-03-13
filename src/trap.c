@@ -170,11 +170,10 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
  */
 static int pick_trap(int feat, int trap_level)
 {
-    int trap_index = 0;
-    struct trap_kind *kind;
-    bool trap_is_okay = false;
-	int tries = 0;
-	
+    int i, pick;
+	int *trap_probs = NULL;
+	int trap_prob_max = 0;
+
     /* Paranoia */
     if (!feat_is_trap_holding(feat))
 		return -1;
@@ -183,44 +182,64 @@ static int pick_trap(int feat, int trap_level)
     if (cave->depth == 0)
 		return -1;
 
-    /* Try to create a trap appropriate to the level.  Make certain that at
-     * least one trap type can be made on any possible level. -LM- */
-    while (!trap_is_okay && tries < 200) {
-		/* Pick at random. */
-		trap_index = randint0(z_info->trap_max);
-		tries++;
-
+    /* Get trap probabilities */
+	trap_probs = mem_zalloc(z_info->trap_max * sizeof(int));
+	for (i = 0; i < z_info->trap_max; i++) {
 		/* Get this trap */
-		kind = &trap_info[trap_index];
+		struct trap_kind *kind = &trap_info[i];
 
-		/* Ensure that this is a player trap */
+		/* Ensure that this is a valid player trap */
 		if (!kind->name) continue;
+		if (!kind->rarity) continue;
 		if (!trf_has(kind->flags, TRF_TRAP)) continue;
 
 		/* Require that trap_level not be too low */
 		if (kind->min_depth > trap_level) continue;
 
-		/* Assume legal until proven otherwise. */
-		trap_is_okay = true;
-
 		/* Floor? */
 		if (feat_is_floor(feat) && !trf_has(kind->flags, TRF_FLOOR))
-			trap_is_okay = false;
+			continue;
 
 		/* Check legality of trapdoors. */
 		if (trf_has(kind->flags, TRF_DOWN)) {
 			/* No trap doors on quest levels */
-			if (is_quest(player->depth)) trap_is_okay = false;
+			if (is_quest(player->depth)) continue;
 
 			/* No trap doors on the deepest level */
 			if (player->depth >= z_info->max_depth - 1)
-				trap_is_okay = false;
+				continue;
 	    }
 
-    }
+		/* Trap is okay, store the cumulative probability */
+		trap_probs[i] = (100 / kind->rarity);
+		if (i > 0) {
+			trap_probs[i] += trap_probs[i - 1];
+		}
+		trap_prob_max = trap_probs[i];
+	}
+
+	/* No valid trap */
+	if (trap_prob_max == 0) {
+		mem_free(trap_probs);
+		return -1;
+	}
+
+	/* Pick at random. */
+	pick = randint0(trap_prob_max);
+	for (i = 0; i < z_info->trap_max; i++) {
+		/* Not the one yet */
+		if (pick > trap_probs[i]) {
+			continue;
+		}
+
+		/* Found it */
+		break;
+	}
+
+	mem_free(trap_probs);
 
     /* Return our chosen trap */
-    return (trap_index);
+    return i < z_info->trap_max ? i : -1;
 }
 
 /**
@@ -257,6 +276,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 	new_trap->kind = &trap_info[t_idx];
 	new_trap->fy = y;
 	new_trap->fx = x;
+	new_trap->power = randcalc(new_trap->kind->power, trap_level, RANDOMISE);
 	trf_copy(new_trap->flags, trap_info[t_idx].flags);
 
 	/* Toggle on the trap marker */
@@ -283,7 +303,7 @@ void square_free_trap(struct chunk *c, int y, int x)
 /**
  * Reveal some of the player traps in a square
  */
-bool square_reveal_trap(struct chunk *c, int y, int x, bool domsg)
+bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
 {
     int found_trap = 0;
 	struct trap *trap = square_trap(c, y, x);
@@ -300,6 +320,12 @@ bool square_reveal_trap(struct chunk *c, int y, int x, bool domsg)
 			continue;
 		}
 		
+		/* Skip traps the player doesn't notice */
+		if (!always && player->state.skills[SKILL_SEARCH] < trap->power) {
+			trap = trap->next;
+			continue;
+		}
+
 		/* Trap is invisible */
 		if (!trf_has(trap->flags, TRF_VISIBLE)) {
 			/* See the trap */

@@ -939,12 +939,6 @@ void search(struct player *p)
 		for (x = (p->px - 1); x <= (p->px + 1); x++) {
 			struct object *obj;
 
-			/* Traps */
-			if (square_issecrettrap(cave, y, x)) {
-				if (square_reveal_trap(cave, y, x, true))
-					disturb(p, 0);
-			}
-
 			/* Secret doors */
 			if (square_issecretdoor(cave, y, x)) {
 				msg("You have found a secret door.");
