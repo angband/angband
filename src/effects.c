@@ -1324,7 +1324,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 
 	return true;
 }
-#if 0
+
 /**
  * Detect traps around the player.  The height to detect above and below the
  * player is context->value.dice, the width either side of the player context->value.sides.
@@ -1430,8 +1430,8 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 		for (x = x1; x < x2; x++) {
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
-			/* Detect non-secret doors */
-			if (square_isdoor(cave, y, x) && !square_issecretdoor(cave, y, x)) {
+			/* Detect secret doors */
+			if (square_issecretdoor(cave, y, x)) {
 				/* Memorize */
 				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
@@ -1509,7 +1509,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 	context->ident = true;
 	return true;
 }
-#endif
+
 
 /**
  * Detect buried gold around the player.  The height to detect above and below
