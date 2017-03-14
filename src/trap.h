@@ -58,7 +58,7 @@ struct trap_kind
 	int rarity;					/**< Rarity */
 	int min_depth;				/**< Minimum depth */
 	int max_num;				/**< Unused */
-	random_value power;			/**< Power of player trap */
+	random_value power;			/**< Visibility of player trap */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (all traps of this kind) */
 	bitflag save_flags[OF_SIZE];/**< Save flags (player with these saves) */
@@ -81,7 +81,7 @@ struct trap
 	byte fy;					/**< Location of trap */
 	byte fx;
 
-	byte power;					/**< Power for door locks */
+	byte power;					/**< Power for locks, visibility for traps */
 	byte timeout;				/**< Timer for disabled traps */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (only this particular trap) */

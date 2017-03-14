@@ -792,12 +792,25 @@ static enum parser_error parse_trap_appear(struct parser *p) {
     return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_trap_power(struct parser *p) {
+static enum parser_error parse_trap_visibility(struct parser *p) {
     struct trap_kind *t = parser_priv(p);
+	char *s;
+	dice_t *dice;
 
     if (!t)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-    t->power =  parser_getrand(p, "power");
+
+	/* Get a rewritable string */
+	s = string_make(parser_getstr(p, "visibility"));
+
+	dice = dice_new();
+	if (!dice_parse_string(dice, s)) {
+		dice_free(dice);
+		return PARSE_ERROR_NOT_RANDOM;
+	}
+	dice_random_value(dice, &t->power);
+
+	dice_free(dice);
     return PARSE_ERROR_NONE;
 }
 
@@ -1129,7 +1142,7 @@ struct parser *init_parse_trap(void) {
     parser_reg(p, "name sym name str desc", parse_trap_name);
     parser_reg(p, "graphics char glyph sym color", parse_trap_graphics);
     parser_reg(p, "appear uint rarity uint mindepth uint maxnum", parse_trap_appear);
-    parser_reg(p, "power rand power", parse_trap_power);
+    parser_reg(p, "visibility str visibility", parse_trap_visibility);
     parser_reg(p, "flags ?str flags", parse_trap_flags);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_trap_effect);
 	parser_reg(p, "param int p2 ?int p3", parse_trap_param);

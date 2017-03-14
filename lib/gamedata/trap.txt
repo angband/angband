@@ -7,7 +7,7 @@
 # name: name: short description
 # graphics: ASCII char used to represent the feature: color symbol
 # appear: rarity: minimum depth: maximum number on level
-# power: player trap power value
+# visibility: player trap visibility value
 # desc: description
 
 # flags: trap flags
@@ -76,7 +76,7 @@ desc:A device which makes a closed door harder to open.
 name:trap door:trap door
 graphics:^:w
 appear:1:2:0
-power:0
+visibility:2d10M50
 flags:TRAP | FLOOR | DOWN
 effect:DAMAGE
 dice:2d8
@@ -90,7 +90,7 @@ msg-good:You float gently down to the next level.
 name:pit:pit
 graphics:^:s
 appear:1:2:0
-power:0
+visibility:90
 flags:TRAP | FLOOR | PIT
 effect:DAMAGE
 dice:2d6
@@ -104,7 +104,7 @@ msg-good:You float gently to the bottom of the pit.
 name:pit:spiked pit
 graphics:^:s
 appear:1:2:0
-power:0
+visibility:80
 flags:TRAP | FLOOR | PIT
 effect:DAMAGE
 dice:2d6
@@ -123,7 +123,7 @@ msg-xtra:You are impaled!
 name:pit:poison pit
 graphics:^:s
 appear:1:2:0
-power:0
+visibility:70
 flags:TRAP | FLOOR | PIT
 effect:DAMAGE
 dice:2d6
@@ -144,20 +144,20 @@ msg-xtra:You are impaled on poisonous spikes!
 name:strange rune:rune of summon foe
 graphics:^:B
 appear:1:3:0
-power:0
+visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
 effect:SUMMON:MONSTER:5
 dice:1
 desc:A magical rune which calls a monster to attack you.
 msg:A new foe appears from nowhere!
-power:0
+visibility:0
 
 # rune -- summon monsters
 
 name:strange rune:rune of summoning
 graphics:^:B
-appear:1:3:0
-power:0
+appear:2:3:0
+visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
 effect:SUMMON
 dice:2+1d3
@@ -169,7 +169,7 @@ msg:You are enveloped in a cloud of smoke!
 name:strange rune:rune of necromancy
 graphics:^:B
 appear:1:20:0
-power:0
+visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
 effect:SUMMON:UNDEAD
 dice:1d3M2
@@ -181,7 +181,7 @@ msg:A sense of dread washes over you...
 name:strange rune:rune of dragonsong
 graphics:^:B
 appear:1:20:0
-power:0
+visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
 effect:SUMMON:DRAGON
 dice:1d3
@@ -193,13 +193,13 @@ msg:You hear a dragon's call!
 name:strange rune:hellhole
 graphics:^:B
 appear:1:20:0
-power:0
+visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
 effect:SUMMON:DEMON
 dice:1+1d3
 desc:A magical rune which calls demons to attack you.
 msg:Demons appear!
-power:0
+visibility:0
 
 ### 20
 
@@ -208,7 +208,7 @@ power:0
 name:strange rune:teleport rune
 graphics:^:o
 appear:1:1:0
-power:0
+visibility:30+d30
 flags:TRAP | FLOOR | MAGICAL
 effect:TELEPORT
 dice:100
@@ -220,10 +220,11 @@ msg:You hit a teleport trap!
 name:discolored spot:fire trap
 graphics:^:u
 appear:1:2:0
-power:0
+visibility:20
 flags:TRAP | FLOOR | MAGICAL
 effect:SPOT:FIRE:0
-dice:4d6
+dice:4d$S
+expr:S:DUNGEON_LEVEL:/ 2
 desc:A strange coloured spot on the ground - beware its fiery attack.
 msg:You are enveloped in flames!
 
@@ -232,10 +233,11 @@ msg:You are enveloped in flames!
 name:discolored spot:acid trap
 graphics:^:u
 appear:1:2:0
-power:0
+visibility:0
 flags:TRAP | FLOOR | MAGICAL
 effect:SPOT:ACID:0
-dice:4d6
+dice:4d$S
+expr:S:DUNGEON_LEVEL:/ 2
 desc:A strange coloured spot on the ground - beware its acidic attack.
 msg:You are splashed with acid!
 
@@ -244,7 +246,7 @@ msg:You are splashed with acid!
 name:dart trap:slow dart
 graphics:^:r
 appear:1:2:0
-power:0
+visibility:M50
 flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
 dice:1d4
@@ -258,8 +260,8 @@ msg-bad:A small dart hits you!
 
 name:dart trap:strength loss dart
 graphics:^:r
-appear:1:6:0
-power:0
+appear:2:6:0
+visibility:30
 flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
 dice:1d4
@@ -272,8 +274,8 @@ msg-bad:A small dart hits you!
 
 name:dart trap:dexterity loss dart
 graphics:^:r
-appear:1:6:0
-power:0
+appear:2:6:0
+visibility:30
 flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
 dice:1d4
@@ -286,8 +288,8 @@ msg-bad:A small dart hits you!
 
 name:dart trap:constitution loss dart
 graphics:^:r
-appear:1:6:0
-power:0
+appear:2:6:0
+visibility:30
 flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
 dice:1d4
@@ -301,7 +303,7 @@ msg-bad:A small dart hits you!
 name:gas trap:blinding gas trap
 graphics:^:g
 appear:1:2:0
-power:0
+visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:BLIND
 dice:25+1d50
@@ -313,7 +315,7 @@ msg:You are surrounded by a black gas!
 name:gas trap:confusion gas trap
 graphics:^:g
 appear:1:1:0
-power:0
+visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:CONFUSED
 dice:10+1d20
@@ -325,7 +327,7 @@ msg:You are surrounded by a gas of scintillating colors!
 name:gas trap:poison gas trap
 graphics:^:g
 appear:1:2:0
-power:0
+visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:POISONED
 dice:10+1d20
@@ -337,7 +339,7 @@ msg:You are surrounded by a pungent green gas!
 name:gas trap:sleep gas trap
 graphics:^:g
 appear:1:2:0
-power:0
+visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:PARALYZED
 dice:5+1d10
@@ -349,7 +351,7 @@ msg:You are surrounded by a strange white mist!
 name:alarm:aggravation trap
 graphics:^:R
 appear:1:5:0
-power:0
+visibility:M50
 flags:TRAP | FLOOR | MAGICAL
 effect:WAKE
 effect:PROJECT_LOS:MON_SPEED
@@ -362,7 +364,7 @@ msg:A high-pitched whistle blares through the dungeon!
 name:explosion:mine trap
 graphics:^:M
 appear:1:15:0
-power:0
+visibility:10+d5
 flags:TRAP | FLOOR | ONETIME
 effect:SPOT:SHARD:2
 dice:$B
@@ -374,8 +376,8 @@ msg:The floor explodes around you!
 
 name:explosion:blast trap
 graphics:^:M
-appear:1:25:0
-power:0
+appear:2:25:0
+visibility:0
 flags:TRAP | FLOOR | ONETIME
 effect:SPOT:LIGHT:1
 dice:2d6
@@ -396,7 +398,7 @@ msg:The air seems to catch fire!
 name:mind blast trap:mind blasting trap
 graphics:^:G
 appear:1:20:0
-power:0
+visibility:30+d10
 flags:TRAP | FLOOR | MAGICAL | SAVE_THROW
 effect:DAMAGE
 dice:8d$S
@@ -412,8 +414,8 @@ msg-bad:Your mind is blasted by psionic energy!
 
 name:mind blast trap:brain smashing trap
 graphics:^:G
-appear:1:40:0
-power:0
+appear:2:40:0
+visibility:30+d10
 flags:TRAP | FLOOR | MAGICAL | SAVE_THROW
 effect:DAMAGE
 dice:10d$S
@@ -436,7 +438,7 @@ msg-bad:Your mind is blasted by psionic energy!
 name:ancient mechanism:rock fall trap
 graphics:^:U
 appear:1:4:0
-power:0
+visibility:40+d5
 flags:TRAP | FLOOR | ONETIME
 effect:DAMAGE
 dice:$Dd5
@@ -452,7 +454,7 @@ msg:A rock falls on your head!
 name:ancient mechanism:earthquake trap
 graphics:^:U
 appear:1:30:0
-power:0
+visibility:30+d5
 flags:TRAP | FLOOR
 effect:DAMAGE
 dice:$Dd5
@@ -467,8 +469,8 @@ msg:The ground shakes.
 
 name:ancient mechanism:area blast trap
 graphics:^:U
-appear:1:40:0
-power:0
+appear:2:40:0
+visibility:20+d5
 flags:TRAP | FLOOR | ONETIME
 effect:BALL:KILL_WALL:2
 dice:20
@@ -484,7 +486,7 @@ msg:The trap explodes, blasting the area clear!
 name:trap:blinding flash trap
 graphics:^:light yellow
 appear:1:5:0
-power:0
+visibility:30+d5
 flags:TRAP | FLOOR | MAGICAL | ONETIME
 effect:BALL:LIGHT:4
 dice:$Dd8
@@ -497,7 +499,7 @@ msg:A blazing light descends on you!
 name:trap:blinding trap
 graphics:^:light slate
 appear:1:5:0
-power:0
+visibility:20+d5
 flags:TRAP | FLOOR | MAGICAL | ONETIME
 effect:BALL:DARK:4
 dice:$Dd8
@@ -512,7 +514,7 @@ msg:Everything starts to fade...
 name:trap:mana drain trap
 graphics:^:light purple
 appear:1:5:0
-power:0
+visibility:50+d10
 flags:TRAP | FLOOR | MAGICAL
 effect:DRAIN_MANA
 dice:1d$D
@@ -527,7 +529,7 @@ desc:A trap that drains your mana.
 name:trap:knife trap
 graphics:^:yellow
 appear:1:20:0
-power:0
+visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:CUT
 dice:150
@@ -542,7 +544,7 @@ desc:A trap designed to bleed you to death.
 name:trap:petrifying trap
 graphics:^:blue
 appear:1:5:0
-power:0
+visibility:20+d5
 flags:TRAP | FLOOR | MAGICAL
 effect:TIMED_INC:STONESKIN
 dice:20+1d20
@@ -556,7 +558,7 @@ desc:A trap that stuns you and gives you stoneskin.
 name:alarm:siren
 graphics:^:R
 appear:1:1:0
-power:0
+visibility:60+d10
 flags:TRAP | FLOOR | MAGICAL
 effect:WAKE
 desc:A trap that wakes nearby monsters.
