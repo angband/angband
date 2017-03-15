@@ -919,12 +919,12 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:10:10:80:20
-#effect:DETECT_TRAPS
-#dice:22d40
-#effect:DETECT_DOORS
-#dice:22d40
-#effect:DETECT_STAIRS
-#dice:22d40
+effect:DETECT_TRAPS
+dice:22d40
+effect:DETECT_DOORS
+dice:22d40
+effect:DETECT_STAIRS
+dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -2148,12 +2148,6 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:15:15:80:12
-#effect:DETECT_TRAPS
-#dice:22d40
-#effect:DETECT_DOORS
-#dice:22d40
-#effect:DETECT_STAIRS
-#dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -2162,8 +2156,7 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:Detects all treasure, objects, doors, stairs, traps, and monsters
-desc: in the immediate area.
+desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Perception:25:25:80:16
 effect:IDENTIFY
