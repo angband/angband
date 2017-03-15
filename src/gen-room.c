@@ -964,7 +964,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			case '%': set_marked_granite(c, y, x, SQUARE_WALL_OUTER); break;
 			case '#': set_marked_granite(c, y, x, SQUARE_WALL_SOLID); break;
 			case '+': place_closed_door(c, y, x); break;
-			case '^': place_trap(c, y, x, -1, c->depth); break;
+			case '^': if (one_in_(4)) place_trap(c, y, x, -1, c->depth); break;
 			case 'x': {
 
 				/* If optional walls are generated, put a wall in this square */
@@ -1159,13 +1159,14 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				/* Secret door */
 			case '+': place_secret_door(c, y, x); break;
 				/* Trap */
-			case '^': place_trap(c, y, x, -1, c->depth); break;
+			case '^': if (one_in_(4)) place_trap(c, y, x, -1, c->depth); break;
 				/* Treasure or a trap */
 			case '&': {
-				if (randint0(100) < 75)
+				if (randint0(100) < 75) {
 					place_object(c, y, x, c->depth, false, false, ORIGIN_VAULT, 0);
-				else
+				} else if (one_in_(4)) {
 					place_trap(c, y, x, -1, c->depth);
+				}
 				break;
 			}
 				/* Stairs */
@@ -1213,13 +1214,16 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				switch (*t) {
 					/* An ordinary monster, object (sometimes good), or trap. */
 				case '1': {
-					if (one_in_(2))
+					if (one_in_(2)) {
 						pick_and_place_monster(c, y, x, c->depth , true, true,
 											   ORIGIN_DROP_VAULT);
-					else if (one_in_(2))
-						place_object(c, y, x, c->depth, one_in_(8) ? true : false, false, ORIGIN_VAULT, 0);
-					else
+					} else if (one_in_(2)) {
+						place_object(c, y, x, c->depth,
+									 one_in_(8) ? true : false, false,
+									 ORIGIN_VAULT, 0);
+					} else if (one_in_(4)) {
 						place_trap(c, y, x, -1, c->depth);
+					}
 					break;
 				}
 					/* Slightly out of depth monster. */

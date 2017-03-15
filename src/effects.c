@@ -145,9 +145,9 @@ static bool project_aimed(struct source origin,
 }
 
 /**
- * Apply the project() function to grids the player is touching
+ * Apply the project() function to grids around the player
  */
-static bool project_touch(int dam, int typ, bool aware,
+static bool project_touch(int dam, int rad, int typ, bool aware,
 						  const struct object *obj)
 {
 	int py = player->py;
@@ -155,7 +155,7 @@ static bool project_touch(int dam, int typ, bool aware,
 
 	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
 	if (aware) flg |= PROJECT_AWARE;
-	return (project(source_player(), 1, py, px, dam, typ, flg, 0, 0, obj));
+	return (project(source_player(), rad, py, px, dam, typ, flg, 0, 0, obj));
 }
 
 /**
@@ -3786,7 +3786,8 @@ bool effect_handler_BOLT_AWARE(effect_handler_context_t *context)
 bool effect_handler_TOUCH(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
-	if (project_touch(dam, context->p1, false, context->obj))
+	int rad = context->p2 ? context->p2 : 1;
+	if (project_touch(dam, rad, context->p1, false, context->obj))
 		context->ident = true;
 	return true;
 }
@@ -3798,7 +3799,8 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
 bool effect_handler_TOUCH_AWARE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
-	if (project_touch(dam, context->p1, context->aware, context->obj))
+	int rad = context->p2 ? context->p2 : 1;
+	if (project_touch(dam, rad, context->p1, context->aware, context->obj))
 		context->ident = true;
 	return true;
 }

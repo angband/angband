@@ -788,7 +788,7 @@ message-invis:Something mumbles.
 name:TRAPS
 msgt:CREATE_TRAP
 hit:100
-effect:TOUCH:MAKE_TRAP
+effect:TOUCH:MAKE_TRAP:3
 power:10
 lore:create traps
 lore-color-base:Yellow

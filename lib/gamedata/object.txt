@@ -2146,7 +2146,7 @@ alloc:10:10 to 70
 pile:70:1d3
 power:0
 msg:You hear a low-pitched whistling sound.
-effect:TOUCH:MAKE_TRAP
+effect:TOUCH:MAKE_TRAP:3
 
 
 
