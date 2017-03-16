@@ -187,6 +187,7 @@ static int pick_trap(int feat, int trap_level)
 	for (i = 0; i < z_info->trap_max; i++) {
 		/* Get this trap */
 		struct trap_kind *kind = &trap_info[i];
+		trap_probs[i] = trap_prob_max;
 
 		/* Ensure that this is a valid player trap */
 		if (!kind->name) continue;
@@ -211,10 +212,7 @@ static int pick_trap(int feat, int trap_level)
 	    }
 
 		/* Trap is okay, store the cumulative probability */
-		trap_probs[i] = (100 / kind->rarity);
-		if (i > 0) {
-			trap_probs[i] += trap_probs[i - 1];
-		}
+		trap_probs[i] += (100 / kind->rarity);
 		trap_prob_max = trap_probs[i];
 	}
 
@@ -227,13 +225,9 @@ static int pick_trap(int feat, int trap_level)
 	/* Pick at random. */
 	pick = randint0(trap_prob_max);
 	for (i = 0; i < z_info->trap_max; i++) {
-		/* Not the one yet */
-		if (pick > trap_probs[i]) {
-			continue;
+		if (pick < trap_probs[i]) {
+			break;
 		}
-
-		/* Found it */
-		break;
 	}
 
 	mem_free(trap_probs);

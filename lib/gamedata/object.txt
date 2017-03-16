@@ -1673,7 +1673,7 @@ properties:10:3:200
 alloc:30:10 to 70
 values:INFRA[1+M5]
 
-name:246:Searching
+name:Searching
 type:amulet
 graphics:":d
 properties:15:3:600
