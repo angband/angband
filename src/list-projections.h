@@ -1,6 +1,11 @@
 /**
- * \file list-project-environs.h
+ * \file list-projections.h
  * \brief Spell types used by project() and related functions.
+ *
+ * ===== NOTICE =====
+ * If you add new entries to this file, you must
+ * also update lib/gamedata/projection.txt!
+ * ===== NOTICE =====
  */
 PROJ(LIGHT_WEAK)
 PROJ(DARK_WEAK)

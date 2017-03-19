@@ -489,6 +489,20 @@ blind-desc:something
 obvious:0
 color:White
 
+code:MON_HOLD
+type:monster
+desc:attempts to hold monsters still
+blind-desc:something
+obvious:0
+color:White
+
+code:MON_STUN
+type:monster
+desc:attempts to put stun monsters
+blind-desc:something
+obvious:0
+color:White
+
 code:MON_DRAIN
 type:monster
 desc:damages living monsters
