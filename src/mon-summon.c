@@ -274,6 +274,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including slowing down faster monsters for one turn */
+	/* XXX should this now be hold monster for a turn? */
 	if (delay) {
 		mon->energy = 0;
 		if (mon->race->speed > player->state.speed)

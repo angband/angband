@@ -1619,7 +1619,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		if (mon->m_timed[MON_TMD_FAST])
 			mspeed += 10;
 		if (mon->m_timed[MON_TMD_SLOW])
-			mspeed -= 10;
+			mspeed -= 2;
 
 		/* Give this monster some energy */
 		mon->energy += turn_energy(mspeed);
