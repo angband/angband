@@ -82,4 +82,5 @@ RF(NO_FEAR,		RFT_PROT,		"frightened")
 RF(NO_STUN,		RFT_PROT,		"stunned")
 RF(NO_CONF,		RFT_PROT,		"confused")
 RF(NO_SLEEP,	RFT_PROT,		"slept")
+RF(NO_SLOW,		RFT_PROT,		"slowed")
 /* end flags */

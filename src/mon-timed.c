@@ -31,8 +31,8 @@
 static struct mon_timed_effect {
 	const char *name;
 	bool can_fail;
+	bool can_stack;
 	int flag_resist;
-	int flag_spell;
 	int max_timer;
 	int message_begin;
 	int message_end;
@@ -114,36 +114,15 @@ static bool does_resist(const struct monster *mon, int effect_type, int timer, i
 		return false;
 	}
 
-	/* Check resistances from base flags */
+	/* Check resistances from monster flags */
 	if (rf_has(mon->race->flags, effect->flag_resist)) {
 		lore_learn_flag_if_visible(lore, mon, effect->flag_resist);
 		return true;
 	}
 
-	/* Check resistances from spells */
-	if (rsf_has(mon->race->spell_flags, effect->flag_spell)) {
-		lore_learn_spell_if_visible(lore, mon, effect->flag_spell);
+	/* Some effects can't stack */
+	if (!effect->can_stack && mon->m_timed[effect_type] != 0) {
 		return true;
-	}
-
-	/* A sleeping monster resists further sleeping */
-	if (effect_type == MON_TMD_SLEEP && mon->m_timed[MON_TMD_SLEEP]) {
-		return true;
-	}
-
-	/* Monsters with specific breaths resist stunning */
-	/* Not included in the table because there's two flags, not just one */
-	if (effect_type == MON_TMD_STUN) {
-		if (rsf_has(mon->race->spell_flags, RSF_BR_SOUN) ||
-				rsf_has(mon->race->spell_flags, RSF_BR_WALL)) {
-			/* Add the lore */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
-				lore_learn_spell_if_has(lore, mon->race, RSF_BR_SOUN);
-				lore_learn_spell_if_has(lore, mon->race, RSF_BR_WALL);
-			}
-
-			return true;
-		}
 	}
 
 	return saving_throw(mon, effect_type, timer, flag);
