@@ -33,6 +33,7 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "mon-util.h"
+#include "mon-timed.h"
 #include "obj-desc.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
@@ -1021,8 +1022,7 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 		mon_dec_timed(mon, MON_TMD_STUN, 1, MON_TMD_FLG_NOTIFY, false);
 
 	if (mon->m_timed[MON_TMD_CONF]) {
-		int d = randint1(mon->race->level / 10 + 1);
-		mon_dec_timed(mon, MON_TMD_CONF, d, MON_TMD_FLG_NOTIFY, false);
+		mon_dec_timed(mon, MON_TMD_CONF, 1, MON_TMD_FLG_NOTIFY, false);
 	}
 
 	if (mon->m_timed[MON_TMD_FEAR]) {
@@ -1093,8 +1093,9 @@ static bool process_monster_should_stagger(struct monster *mon)
 	int chance = 0;
 
 	/* Confused */
-	if (mon->m_timed[MON_TMD_CONF])
-		return true;
+	if (mon->m_timed[MON_TMD_CONF]) {
+		chance = CONF_ERRATIC_CHANCE;
+	}
 
 	/* RAND_25 and RAND_50 are cumulative */
 	if (rf_has(mon->race->flags, RF_RAND_25)) {

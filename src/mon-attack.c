@@ -247,9 +247,6 @@ bool make_attack_spell(struct monster *mon)
 	/* Assume "normal" target */
 	bool normal = true;
 
-	/* Cannot cast spells when confused */
-	if (mon->m_timed[MON_TMD_CONF]) return (false);
-
 	/* Cannot cast spells when nice */
 	if (mflag_has(mon->mflag, MFLAG_NICE)) return false;
 
@@ -281,11 +278,11 @@ bool make_attack_spell(struct monster *mon)
 
 	/* Allow "desperate" spells */
 	if (rf_has(mon->race->flags, RF_SMART) &&
-	    mon->hp < mon->maxhp / 10 &&
-	    randint0(100) < 50)
-
+			mon->hp < mon->maxhp / 10 &&
+			randint0(100) < 50) {
 		/* Require intelligent spells */
 		ignore_spells(f, RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK | RST_INNATE);
+	}
 
 	/* Remove the "ineffective" spells */
 	remove_bad_spells(mon, f);
@@ -336,6 +333,10 @@ bool make_attack_spell(struct monster *mon)
 	/* Stupid monsters will never fail (for jellies and such) */
 	if (rf_has(mon->race->flags, RF_STUPID))
 		failrate = 0;
+
+	/* Confusion adds 50% to fail rate */
+	if (mon->m_timed[MON_TMD_CONF])
+		failrate += 50;
 
 	/* Check for spell failure (innate attacks never fail) */
 	if (!mon_spell_is_innate(thrown_spell) && (randint0(100) < failrate)) {
@@ -413,7 +414,7 @@ static int monster_critical(random_value dice, int rlev, int dam)
 /**
  * Determine if a monster attack against the player succeeds.
  */
-bool check_hit(struct player *p, int power, int level, bool stunned)
+bool check_hit(struct player *p, int power, int level, int debuff)
 {
 	int chance, ac;
 
@@ -426,9 +427,9 @@ bool check_hit(struct player *p, int power, int level, bool stunned)
 	/* If the monster checks vs ac, the player learns ac bonuses */
 	equip_learn_on_defend(p);
 
-	/* Apply stunning penalty */
-	if (stunned) {
-		chance = (chance * STUN_HIT_REDUCTION) / 100;
+	/* Apply debuff penalty */
+	if (debuff) {
+		chance = (chance * debuff) / 100;
 	}
 
 	/* Check if the player was hit */
@@ -513,7 +514,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 		/* Monster hits player */
 		if (streq(effect->name, "NONE") ||
-				check_hit(p, effect->power, rlev, stunned)) {
+				check_hit(p, effect->power, rlev, stunned ? STUN_HIT_REDUCTION : 0)) {
 			melee_effect_handler_f effect_handler;
 
 			/* Always disturbing */

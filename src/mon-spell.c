@@ -154,7 +154,9 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 		hits = false;
 	} else {
 		int rlev = MAX(mon->race->level, 1);
-		hits = check_hit(player, spell->hit, rlev, false /* MON_TMD_CONF */);
+		int debuff = mon->m_timed[MON_TMD_CONF] ? CONF_HIT_REDUCTION : 0;
+
+		hits = check_hit(player, spell->hit, rlev, debuff);
 	}
 
 	/* Tell the player what's going on */
