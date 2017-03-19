@@ -542,10 +542,6 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			do_stun = method->stun;
 			sound_msg = method->msgt;
 
-			/* Message */
-			if (act)
-				msgt(sound_msg, "%s %s", m_name, act);
-
 			/* Hack -- assume all attacks are obvious */
 			obvious = true;
 
@@ -555,6 +551,14 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Reduce damage when stunned */
 			if (stunned) {
 				damage = (damage * STUN_DAM_REDUCTION) / 100;
+			}
+
+			/* Message */
+			if (act) {
+				if (OPT(p, show_damage))
+					msgt(sound_msg, "%s %s (%d).", m_name, act, damage);
+				else
+					msgt(sound_msg, "%s %s.", m_name, act);
 			}
 
 			/* Perform the actual effect. */
