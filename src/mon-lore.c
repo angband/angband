@@ -677,7 +677,8 @@ static void lore_append_spell_clause(textblock *tb, bitflag *f, bool know_hp,
 				}
 				textblock_append(tb, " ");
 			}
-			textblock_append_c(tb, color, mon_spell_lore_description(spell));
+			textblock_append_c(tb, color,
+							   mon_spell_lore_description(spell, race));
 			if (damage > 0) {
 				textblock_append_c(tb, color, " (%d)", damage);
 			}

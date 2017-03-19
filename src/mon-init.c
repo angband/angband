@@ -658,12 +658,32 @@ static enum parser_error parse_mon_spell_message(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_mon_spell_message_strong(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	s->message_strong = string_append(s->message_strong,
+									  parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+
 static enum parser_error parse_mon_spell_blind_message(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	assert(s);
 
 	s->blind_message = string_append(s->blind_message,
 									 parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_blind_message_strong(struct parser *p)
+{
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	s->blind_message_strong = string_append(s->blind_message_strong,
+											parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
@@ -688,6 +708,15 @@ static enum parser_error parse_mon_spell_lore_desc(struct parser *p) {
 	assert(s);
 
 	s->lore_desc = string_append(s->lore_desc, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_lore_desc_strong(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	s->lore_desc_strong = string_append(s->lore_desc_strong,
+										parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
@@ -856,9 +885,12 @@ struct parser *init_parse_mon_spell(void) {
 	parser_reg(p, "msgt sym type", parse_mon_spell_message_type);
 	parser_reg(p, "message-vis str text", parse_mon_spell_message);
 	parser_reg(p, "message-invis str text", parse_mon_spell_blind_message);
+	parser_reg(p, "message-vis-strong str text", parse_mon_spell_message_strong);
+	parser_reg(p, "message-invis-strong str text", parse_mon_spell_blind_message_strong);
 	parser_reg(p, "message-miss str text", parse_mon_spell_miss_message);
 	parser_reg(p, "message-save str text", parse_mon_spell_save_message);
 	parser_reg(p, "lore str text", parse_mon_spell_lore_desc);
+	parser_reg(p, "lore-strong str text", parse_mon_spell_lore_desc_strong);
 	parser_reg(p, "lore-color-base sym color", parse_mon_spell_lore_color);
 	parser_reg(p, "lore-color-resist sym color", parse_mon_spell_lore_color_resist);
 	parser_reg(p, "lore-color-immune sym color", parse_mon_spell_lore_color_immune);

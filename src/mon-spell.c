@@ -64,14 +64,24 @@ static void spell_message(struct monster *mon,
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
+	bool strong = mon->race->spell_power >= 60;
 
 	/* Get the message */
-	if (!seen)
-		in_cursor = spell->blind_message;
-	else if (!hits)
+	if (!seen) {
+		if (strong && spell->blind_message_strong) {
+			in_cursor = spell->blind_message_strong;
+		} else {
+			in_cursor = spell->blind_message;
+		}
+	} else if (!hits) {
 		in_cursor = spell->miss_message;
-	else
-		in_cursor = spell->message;
+	} else {
+		if (strong && spell->message_strong) {
+			in_cursor = spell->message_strong;
+		} else {
+			in_cursor = spell->message;
+		}
+	}
 
 	next = strchr(in_cursor, '{');
 	while (next) {
@@ -476,11 +486,13 @@ void create_mon_spell_mask(bitflag *f, ...)
 	return;
 }
 
-const char *mon_spell_lore_description(int index)
+const char *mon_spell_lore_description(int index,
+									   const struct monster_race *race)
 {
 	if (mon_spell_is_valid(index)) {
 		const struct monster_spell *spell = monster_spell_by_index(index);
-		return spell->lore_desc;
+		bool strong = (race->spell_power >= 60) && spell->lore_desc_strong;
+		return strong ? spell->lore_desc_strong : spell->lore_desc;
 	} else {
 		return "";
 	}

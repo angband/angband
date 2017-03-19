@@ -84,7 +84,8 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 				  struct element_info *el, const struct monster_race *race);
 bool mon_spell_is_innate(int index);
 void create_mon_spell_mask(bitflag *f, ...);
-const char *mon_spell_lore_description(int index);
+const char *mon_spell_lore_description(int index,
+									   const struct monster_race *race);
 int mon_spell_lore_damage(int index, const struct monster_race *race,
 						  bool know_hp);
 

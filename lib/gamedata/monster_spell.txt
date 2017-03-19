@@ -407,11 +407,15 @@ effect:BALL:DARK:2
 dice:$B+10d10
 expr:B:SPELL_POWER:* 5
 power:10
-lore:invoke darkness storms
+lore:produce balls of darkness
+lore-strong:invoke darkness storms
 lore-color-base:Light Red
 lore-color-resist:Light Green
-message-vis:{name} invokes a storm of darkness.
+message-vis:{name} casts a ball of darkness.
 message-invis:Something mumbles loudly.
+message-vis-strong:{name} invokes a storm of darkness.
+message-invis-strong:Something chants powerfully.
+
 
 name:DRAIN_MANA
 hit:100
