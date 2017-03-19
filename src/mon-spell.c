@@ -154,7 +154,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 		hits = false;
 	} else {
 		int rlev = MAX(mon->race->level, 1);
-		hits = check_hit(player, spell->hit, rlev);
+		hits = check_hit(player, spell->hit, rlev, false /* MON_TMD_CONF */);
 	}
 
 	/* Tell the player what's going on */

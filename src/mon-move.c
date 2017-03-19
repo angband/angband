@@ -1017,17 +1017,8 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 	if (mon->m_timed[MON_TMD_HOLD])
 		mon_dec_timed(mon, MON_TMD_HOLD, 1, 0, false);
 
-	if (mon->m_timed[MON_TMD_STUN]) {
-		int d = 1;
-
-		/* Make a "saving throw" against stun */
-		if (randint0(5000) <= mon->race->level * mon->race->level)
-			/* Recover fully */
-			d = mon->m_timed[MON_TMD_STUN];
-
-		/* Hack -- Recover from stun */
-		mon_dec_timed(mon, MON_TMD_STUN, d, MON_TMD_FLG_NOTIFY, false);
-	}
+	if (mon->m_timed[MON_TMD_STUN])
+		mon_dec_timed(mon, MON_TMD_STUN, 1, MON_TMD_FLG_NOTIFY, false);
 
 	if (mon->m_timed[MON_TMD_CONF]) {
 		int d = randint1(mon->race->level / 10 + 1);
@@ -1039,14 +1030,15 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 		mon_dec_timed(mon, MON_TMD_FEAR, d, MON_TMD_FLG_NOTIFY, false);
 	}
 
-	/* Don't do anything if stunned */
-	if (mon->m_timed[MON_TMD_STUN] || mon->m_timed[MON_TMD_HOLD]) {
+	/* One in __ chance of missing turn if stunned; always miss if held */
+	if (mon->m_timed[MON_TMD_STUN]) {
+		return randint0(STUN_MISS_CHANCE) == 1;
+	} else if (mon->m_timed[MON_TMD_HOLD]) {
 		return true;
 	} else {
 		return false;
 	}
 }
-
 
 /**
  * Attempt to reproduce, if possible.  All monsters are checked here for

@@ -445,6 +445,10 @@ static void project_object_handler_MON_HOLD(project_object_handler_context_t *co
 {
 }
 
+static void project_object_handler_MON_STUN(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_MON_DRAIN(project_object_handler_context_t *context)
 {
 }

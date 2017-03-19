@@ -741,10 +741,16 @@ static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t 
 	project_monster_timed_no_damage(context, MON_TMD_SLEEP);
 }
 
-/* Sleep (Use "dam" as "power") */
+/* Hold (Use "dam" as "power") */
 static void project_monster_handler_MON_HOLD(project_monster_handler_context_t *context)
 {
 	project_monster_timed_no_damage(context, MON_TMD_HOLD);
+}
+
+/* Stun (Use "dam" as "power") */
+static void project_monster_handler_MON_STUN(project_monster_handler_context_t *context)
+{
+	project_monster_timed_no_damage(context, MON_TMD_STUN);
 }
 
 /* Drain Life */

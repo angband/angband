@@ -413,7 +413,7 @@ static int monster_critical(random_value dice, int rlev, int dam)
 /**
  * Determine if a monster attack against the player succeeds.
  */
-bool check_hit(struct player *p, int power, int level)
+bool check_hit(struct player *p, int power, int level, bool stunned)
 {
 	int chance, ac;
 
@@ -425,6 +425,11 @@ bool check_hit(struct player *p, int power, int level)
 
 	/* If the monster checks vs ac, the player learns ac bonuses */
 	equip_learn_on_defend(p);
+
+	/* Apply stunning penalty */
+	if (stunned) {
+		chance = (chance * STUN_HIT_REDUCTION) / 100;
+	}
 
 	/* Check if the player was hit */
 	return test_hit(chance, ac, true);
@@ -450,6 +455,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	char m_name[80];
 	char ddesc[80];
 	bool blinked;
+	bool stunned;
 
 	/* Not allowed to attack */
 	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
@@ -460,6 +466,9 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	/* Extract the effective monster level */
 	rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
 
+	/* Is the monster stunned? */
+	stunned = mon->m_timed[MON_TMD_STUN] ? true : false;
+
 
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
@@ -469,6 +478,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 	/* Assume no blink */
 	blinked = false;
+
 
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
@@ -502,7 +512,8 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		if (rf_has(mon->race->flags, RF_HAS_LIGHT)) visible = true;
 
 		/* Monster hits player */
-		if (streq(effect->name, "NONE") || check_hit(p, effect->power, rlev)) {
+		if (streq(effect->name, "NONE") ||
+				check_hit(p, effect->power, rlev, stunned)) {
 			melee_effect_handler_f effect_handler;
 
 			/* Always disturbing */
@@ -539,6 +550,11 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 			/* Roll dice */
 			damage = randcalc(dice, rlev, RANDOMISE);
+
+			/* Reduce damage when stunned */
+			if (stunned) {
+				damage = (damage * STUN_DAM_REDUCTION) / 100;
+			}
 
 			/* Perform the actual effect. */
 			effect_handler = melee_handler_for_blow_effect(effect->name);

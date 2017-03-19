@@ -20,6 +20,13 @@
 #define MONSTER_TIMED_H
 
 /**
+ * Monster stunning constants
+ */
+#define STUN_MISS_CHANCE		10  /* 1 in __ chance of missing turn when stunned */
+#define STUN_HIT_REDUCTION		25  /* Percentage reduction in accuracy */
+#define STUN_DAM_REDUCTION		25  /* Percentage reduction in damage */
+
+/**
  * Monster Timed Effects
  */
 enum {
