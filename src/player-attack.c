@@ -141,7 +141,7 @@ static int ranged_damage(struct object *missile, struct object *launcher,
 	else if (s)
 		mult += slays[s].multiplier;
 
-	/* Apply damage: multiplier, slays, criticals, bonuses */
+	/* Apply damage: multiplier, slays, bonuses */
 	dam = damroll(missile->dd, missile->ds);
 	dam += missile->to_d;
 	if (launcher)
@@ -152,16 +152,33 @@ static int ranged_damage(struct object *missile, struct object *launcher,
 }
 
 /**
+ * Check if a monster is debuffed in such a way as to make a critical
+ * hit more likely.
+ */
+static bool check_debuff(const struct monster *monster)
+{
+	return monster->m_timed[MON_TMD_CONF] > 0 ||
+			monster->m_timed[MON_TMD_HOLD] > 0 ||
+			monster->m_timed[MON_TMD_STUN] > 0;
+}
+
+/**
  * Determine damage for critical hits from shooting.
  *
  * Factor in item weight, total plusses, and player level.
  */
 static int critical_shot(const struct player *p,
+		const struct monster *monster,
 		int weight, int plus,
 		int dam, u32b *msg_type)
 {
 	int chance = weight + (p->state.to_h + plus) * 4 + p->lev * 2;
 	int power = weight + randint1(500);
+
+	/* Confused, held, stunned, or slowed? Double the chance! */
+	if (check_debuff(monster)) {
+		chance *= 2;
+	}
 
 	if (randint1(5000) > chance) {
 		*msg_type = MSG_SHOOT_HIT;
@@ -181,18 +198,23 @@ static int critical_shot(const struct player *p,
 	}
 }
 
-
 /**
  * Determine damage for critical hits from melee.
  *
  * Factor in weapon weight, total plusses, player level.
  */
 static int critical_norm(const struct player *p,
+		const struct monster *monster,
 		int weight, int plus,
 		int dam, u32b *msg_type)
 {
-	int chance = weight + (p->state.to_h + plus) * 5 + p->lev * 3;
 	int power = weight + randint1(650);
+	int chance = weight + (p->state.to_h + plus) * 5 + p->lev * 3;
+
+	/* Confused, held, stunned, or slowed? Double the chance! */
+	if (check_debuff(monster)) {
+		chance *= 2;
+	}
 
 	if (randint1(5000) > chance) {
 		*msg_type = MSG_HIT;
@@ -365,7 +387,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 		improve_attack_modifier(obj, mon, &b, &s, verb, false, true);
 
 		dmg = melee_damage(obj, b, s);
-		dmg = critical_norm(p, obj->weight, obj->to_h, dmg, &msg_type);
+		dmg = critical_norm(p, mon, obj->weight, obj->to_h, dmg, &msg_type);
 
 		if (player_of_has(p, OF_IMPACT) && dmg > 50) {
 			do_quake = true;
@@ -669,7 +691,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, true, true);
 
 	result.dmg = ranged_damage(ammo, bow, b, s, multiplier);
-	result.dmg = critical_shot(player, ammo->weight, ammo->to_h, result.dmg,
+	result.dmg = critical_shot(player, mon, ammo->weight, ammo->to_h, result.dmg,
 							   &result.msg_type);
 
 	missile_learn_on_ranged_attack(p, bow);
@@ -702,7 +724,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, true, true);
 
 	result.dmg = ranged_damage(obj, NULL, b, s, multiplier);
-	result.dmg = critical_norm(player, obj->weight, obj->to_h, result.dmg,
+	result.dmg = critical_norm(player, mon, obj->weight, obj->to_h, result.dmg,
 							   &result.msg_type);
 
 	/* Direct adjustment for exploding things (flasks of oil) */
