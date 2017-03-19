@@ -26,19 +26,28 @@
 #include "player-calcs.h"
 
 /**
+ * The different ways increases can stack - see mon_inc_timed()
+ */
+enum stack_type {
+	STACK_NO,
+	STACK_INCR,
+	STACK_MAX
+};
+
+/**
  * Monster timed effects.
  */
 static struct mon_timed_effect {
 	const char *name;
 	bool gets_save;
-	bool can_stack;
+	enum stack_type stacking;
 	int flag_resist;
 	int max_timer;
 	int message_begin;
 	int message_end;
 	int message_increase;
 } effects[] = {
-	#define MON_TMD(a, b, c, d, e, f, g, h) { #a, b, c, d, e, f, g, h },
+	#define MON_TMD(a, b, c, d, e, f, g, h) { #a, b, STACK_##c, d, e, f, g, h },
 	#include "list-mon-timed.h"
 	#undef MON_TMD
 };
@@ -117,11 +126,6 @@ static bool does_resist(const struct monster *mon, int effect_type, int timer, i
 	/* Check resistances from monster flags */
 	if (rf_has(mon->race->flags, effect->flag_resist)) {
 		lore_learn_flag_if_visible(lore, mon, effect->flag_resist);
-		return true;
-	}
-
-	/* Some effects can't stack */
-	if (!effect->can_stack && mon->m_timed[effect_type] != 0) {
 		return true;
 	}
 
@@ -244,16 +248,36 @@ bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag,
 	assert(effect_type < MON_TMD_MAX);
 	assert(timer > 0); /* For negative amounts, we use mon_dec_timed instead */
 
+	struct mon_timed_effect *effect = &effects[effect_type];
+	int new_value;
+
 	/* Make it last for a mimimum # of turns if it is a new effect */
 	if (mon->m_timed[effect_type] == 0 && timer < MON_INC_MIN_TURNS) {
 		timer = MON_INC_MIN_TURNS;
 	}
 
-	return mon_set_timed(mon,
-			effect_type,
-			mon->m_timed[effect_type] + timer,
-			flag,
-			id);
+	/* Stack effects correctly */
+	switch (effect->stacking) {
+		case STACK_NO: {
+			new_value = mon->m_timed[effect_type];
+			if (new_value == 0) {
+				new_value += timer;
+			}
+			break;
+		}
+
+		case STACK_MAX: {
+			new_value = MAX(mon->m_timed[effect_type], timer);
+			break;
+		}
+
+		case STACK_INCR: {
+			new_value = mon->m_timed[effect_type] + timer;
+			break;
+		}
+	}
+
+	return mon_set_timed(mon, effect_type, new_value, flag, id);
 }
 
 /**
