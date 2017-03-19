@@ -644,6 +644,10 @@ static void project_feature_handler_MON_SLEEP(project_feature_handler_context_t 
 {
 }
 
+static void project_feature_handler_MON_HOLD(project_feature_handler_context_t *context)
+{
+}
+
 static void project_feature_handler_MON_DRAIN(project_feature_handler_context_t *context)
 {
 }

@@ -301,12 +301,8 @@ static void cave_light(struct point_set *ps)
 			if (rf_has(mon->race->flags, RF_SMART)) chance = 100;
 
 			/* Sometimes monsters wake up */
-			if (mon->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))
-			{
-				/* Wake up! */
-				mon_clear_timed(mon, MON_TMD_SLEEP,
-					MON_TMD_FLG_NOTIFY, false);
-
+			if (mon->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance)) {
+				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, false);
 			}
 		}
 	}

@@ -1430,6 +1430,7 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 
 	/* Wake it up */
 	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY, false);
 
 	/* Become aware of its presence */
 	if (mflag_has(mon->mflag, MFLAG_UNAWARE))

@@ -441,6 +441,10 @@ static void project_object_handler_MON_SLEEP(project_object_handler_context_t *c
 {
 }
 
+static void project_object_handler_MON_HOLD(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_MON_DRAIN(project_object_handler_context_t *context)
 {
 }

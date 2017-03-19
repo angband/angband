@@ -30,7 +30,7 @@
  */
 static struct mon_timed_effect {
 	const char *name;
-	bool can_fail;
+	bool gets_save;
 	bool can_stack;
 	int flag_resist;
 	int max_timer;
@@ -109,8 +109,8 @@ static bool does_resist(const struct monster *mon, int effect_type, int timer, i
 	struct mon_timed_effect *effect = &effects[effect_type];
 	struct monster_lore *lore = get_lore(mon->race);
 
-	/* Some effects are marked to never fail */
-	if (effect->can_fail == false || flag & MON_TMD_FLG_NOFAIL) {
+	/* Sometimes the game can override the monster's innate resistance */
+	if (flag & MON_TMD_FLG_NOFAIL) {
 		return false;
 	}
 
@@ -125,7 +125,12 @@ static bool does_resist(const struct monster *mon, int effect_type, int timer, i
 		return true;
 	}
 
-	return saving_throw(mon, effect_type, timer, flag);
+	/* Some effects get a saving throw; others don't */
+	if (effect->gets_save == true) {
+		return saving_throw(mon, effect_type, timer, flag);
+	} else {
+		return false;
+	}
 }
 
 /**

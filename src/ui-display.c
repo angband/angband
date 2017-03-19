@@ -385,8 +385,11 @@ byte monster_health_attr(void)
 
 		/* Asleep */
 		if (mon->m_timed[MON_TMD_SLEEP]) attr = COLOUR_BLUE;
+
+		/* Held */
+		if (mon->m_timed[MON_TMD_HOLD]) attr = COLOUR_BLUE;
 	}
-	
+
 	return attr;
 }
 

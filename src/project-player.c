@@ -546,6 +546,10 @@ static void project_player_handler_MON_SLEEP(project_player_handler_context_t *c
 {
 }
 
+static void project_player_handler_MON_HOLD(project_player_handler_context_t *context)
+{
+}
+
 static void project_player_handler_MON_DRAIN(project_player_handler_context_t *context)
 {
 }

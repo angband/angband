@@ -335,6 +335,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 
 	/* Disturb the monster */
 	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY, false);
 
 	/* See if the player hit */
 	success = test_hit(chance, mon->race->ac,

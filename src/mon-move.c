@@ -1014,6 +1014,9 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 	if (mon->m_timed[MON_TMD_SLOW])
 		mon_dec_timed(mon, MON_TMD_SLOW, 1, 0, false);
 
+	if (mon->m_timed[MON_TMD_HOLD])
+		mon_dec_timed(mon, MON_TMD_HOLD, 1, 0, false);
+
 	if (mon->m_timed[MON_TMD_STUN]) {
 		int d = 1;
 
@@ -1037,7 +1040,11 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 	}
 
 	/* Don't do anything if stunned */
-	return mon->m_timed[MON_TMD_STUN] ? true : false;
+	if (mon->m_timed[MON_TMD_STUN] || mon->m_timed[MON_TMD_HOLD]) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 
