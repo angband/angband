@@ -53,30 +53,90 @@ int test_color0(void *state) {
 	ok;
 }
 
-int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:7:500:80:22:3");
+int test_speed0(void *state) {
+	enum parser_error r = parser_parse(state, "speed:7");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
 	eq(mr->speed, 7);
+	ok;
+}
+
+int test_hp0(void *state) {
+	enum parser_error r = parser_parse(state, "hit-points:500");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->avg_hp, 500);
+	ok;
+}
+
+int test_aaf0(void *state) {
+	enum parser_error r = parser_parse(state, "vision:80");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->aaf, 80);
+	ok;
+}
+
+int test_ac0(void *state) {
+	enum parser_error r = parser_parse(state, "armor-class:22");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->ac, 22);
+	ok;
+}
+
+int test_sleep0(void *state) {
+	enum parser_error r = parser_parse(state, "alertness:3");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->sleep, 3);
 	ok;
 }
 
-int test_power0(void *state) {
-	enum parser_error r = parser_parse(state, "power:42:11:4");
+int test_depth0(void *state) {
+	enum parser_error r = parser_parse(state, "depth:42");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
 	eq(mr->level, 42);
+	ok;
+}
+
+int test_rarity0(void *state) {
+	enum parser_error r = parser_parse(state, "rarity:11");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->rarity, 11);
+	ok;
+}
+
+int test_mexp0(void *state) {
+	enum parser_error r = parser_parse(state, "experience:4");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->mexp, 4);
 	ok;
 }
@@ -161,8 +221,14 @@ struct test tests[] = {
 	{ "name0", test_name0 },
 	{ "color0", test_color0 },
 	{ "base0", test_base0 },
-	{ "info0", test_info0 },
-	{ "power0", test_power0 },
+	{ "speed0", test_speed0 },
+	{ "hp0", test_hp0 },
+	{ "aaf0", test_aaf0 },
+	{ "ac0", test_ac0 },
+	{ "sleep0", test_sleep0 },
+	{ "depth0", test_depth0 },
+	{ "rarity0", test_rarity0 },
+	{ "mexp0", test_mexp0 },
 	//{ "blow0", test_blow0 },
 	//{ "blow1", test_blow1 },
 	{ "flags0", test_flags0 },

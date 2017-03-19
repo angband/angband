@@ -13,8 +13,14 @@
 # base: template name
 # glyph: symbol
 # color: color
-# info: speed : hit points : vision : armor class : alertness
-# power: depth : rarity : experience for kill
+# speed : monster speed
+# hit-points : average hit points
+# vision : vision range
+# armor-class : armor class
+# alertness : initial sleep value
+# depth: usual depth
+# rarity: inverse probability of generation
+# experience: experience per depth level
 # blow: attack method : attack effect : damage
 # flags: flag | flag | etc
 # flags-off: flag | flag | etc
@@ -81,11 +87,28 @@
 # (instead of only Castamir and Waldern). It is therefore unwise to use it
 # for non-unique monsters.
 
-# 'info' is for information--speed, health, vision in tens of feet, armor class,
-# and alertness. 110 is normal speed. Alertness ranges from 0 (ever vigilant
-# for intruders) to 255 (prefers to ignore intruders).
+# 'speed' is for speed; 110 is normal speed.
 
-# 'power' is for power information--level, rarity and experience for killing.
+# 'hit-points' is the average number of hitpoints for this monster race, or the
+# exact number for unique monsters.
+
+# 'vision' is at what multiple of the player's vision radius the monster notices
+# the player.
+
+# 'armor-class' is a measure of how likely the player is to hit the monster;
+# the player's hit chance is rolled against 2/3 of this value.
+
+# 'alertness' is for initial monster sleep value. Alertness ranges from 0
+# (ever vigilant for intruders) to 255 (prefers to ignore intruders).
+
+# 'depth' is the monster's usual dungeon level
+
+# 'rarity' is used for picking monsters to be generated; probability of a given
+# monster race is 100/rarity
+
+# 'experience' is the base experience for the monster; this is multiplied by 
+# the monster depth and divided by the player level to get the number of
+# experience points the player receives for killing the monster.
 
 # 'blow' is for blows -- method of attack, effect of the attack, and damage from
 # the attack.
@@ -192,8 +215,14 @@ color:w
 name:filthy street urchin
 base:townsfolk
 color:D
-info:110:3:4:1:40
-power:0:2:0
+speed:110
+hit-points:3
+vision:4
+armor-class:1
+alertness:40
+depth:0
+rarity:2
+experience:0
 blow:BEG
 blow:TOUCH:EAT_GOLD
 flags:MALE
@@ -206,8 +235,14 @@ desc:He looks squalid and thoroughly revolting.
 name:scrawny cat
 base:feline
 color:U
-info:110:2:30:1:10
-power:0:3:0
+speed:110
+hit-points:2
+vision:30
+armor-class:1
+alertness:10
+depth:0
+rarity:3
+experience:0
 blow:CLAW:HURT:1d1
 flags:RAND_25
 desc:A skinny little furball with sharp claws and a menacing look.
@@ -215,8 +250,14 @@ desc:A skinny little furball with sharp claws and a menacing look.
 name:scruffy little dog
 base:canine
 color:U
-info:110:2:20:1:5
-power:0:3:0
+speed:110
+hit-points:2
+vision:20
+armor-class:1
+alertness:5
+depth:0
+rarity:3
+experience:0
 blow:BITE:HURT:1d1
 flags:RAND_25
 desc:A thin flea-ridden mutt, growling as you get close.
@@ -224,8 +265,14 @@ desc:A thin flea-ridden mutt, growling as you get close.
 name:Farmer Maggot
 base:humanoid
 color:w
-info:110:350:40:12:3
-power:0:4:0
+speed:110
+hit-points:350
+vision:40
+armor-class:12
+alertness:3
+depth:0
+rarity:4
+experience:0
 blow:MOAN
 blow:MOAN
 flags:UNIQUE | MALE | HAS_LIGHT
@@ -237,8 +284,14 @@ desc: hobbit!
 name:blubbering idiot
 base:townsfolk
 color:W
-info:110:2:6:1:50
-power:0:1:0
+speed:110
+hit-points:2
+vision:6
+armor-class:1
+alertness:50
+depth:0
+rarity:1
+experience:0
 blow:DROOL
 flags:MALE
 flags:RAND_25 | TAKE_ITEM
@@ -248,8 +301,14 @@ name:boil-covered wretch
 plural:boil-covered wretches
 base:townsfolk
 color:g
-info:110:2:6:1:50
-power:0:1:0
+speed:110
+hit-points:2
+vision:6
+armor-class:1
+alertness:50
+depth:0
+rarity:1
+experience:0
 blow:DROOL
 flags:MALE
 flags:RAND_25 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
@@ -258,8 +317,14 @@ desc:Ugly doesn't begin to describe him.
 name:village idiot
 base:townsfolk
 color:G
-info:120:10:6:1:50
-power:0:1:0
+speed:120
+hit-points:10
+vision:6
+armor-class:1
+alertness:50
+depth:0
+rarity:1
+experience:0
 blow:DROOL
 flags:MALE
 flags:RAND_25 | TAKE_ITEM
@@ -268,8 +333,14 @@ desc:Drooling and comical, but then, what do you expect?
 name:pitiful-looking beggar
 base:townsfolk
 color:U
-info:110:3:10:1:40
-power:0:1:0
+speed:110
+hit-points:3
+vision:10
+armor-class:1
+alertness:40
+depth:0
+rarity:1
+experience:0
 blow:BEG
 flags:MALE
 flags:RAND_25 | OPEN_DOOR | TAKE_ITEM
@@ -278,8 +349,14 @@ desc:You just can't help feeling sorry for him.
 name:mangy-looking leper
 base:townsfolk
 color:u
-info:110:1:10:1:50
-power:0:1:0
+speed:110
+hit-points:1
+vision:10
+armor-class:1
+alertness:50
+depth:0
+rarity:1
+experience:0
 blow:BEG
 flags:MALE
 flags:RAND_25 | OPEN_DOOR | TAKE_ITEM
@@ -288,8 +365,14 @@ desc:You feel it isn't safe to touch him.
 name:squint-eyed rogue
 base:townsfolk
 color:b
-info:110:9:10:9:99
-power:0:1:0
+speed:110
+hit-points:9
+vision:10
+armor-class:9
+alertness:99
+depth:0
+rarity:1
+experience:0
 blow:HIT:HURT:1d6
 blow:TOUCH:EAT_ITEM
 blow:INSULT
@@ -300,8 +383,14 @@ desc:A hardy, street-wise crook that knows an easy catch when it sees one.
 name:singing, happy drunk
 base:townsfolk
 color:y
-info:110:4:10:1:0
-power:0:1:0
+speed:110
+hit-points:4
+vision:10
+armor-class:1
+alertness:0
+depth:0
+rarity:1
+experience:0
 blow:BEG
 flags:MALE | HAS_LIGHT
 flags:DROP_40 | ONLY_GOLD
@@ -311,8 +400,14 @@ desc:He makes you glad to be sober.
 name:aimless-looking merchant
 base:townsfolk
 color:o
-info:110:6:10:1:255
-power:0:1:0
+speed:110
+hit-points:6
+vision:10
+armor-class:1
+alertness:255
+depth:0
+rarity:1
+experience:0
 blow:HIT:HURT:1d3
 flags:MALE | HAS_LIGHT
 flags:DROP_40 | ONLY_GOLD
@@ -325,8 +420,14 @@ name:mean-looking mercenary
 plural:mean-looking mercenaries
 base:townsfolk
 color:r
-info:110:23:10:24:250
-power:0:1:0
+speed:110
+hit-points:23
+vision:10
+armor-class:24
+alertness:250
+depth:0
+rarity:1
+experience:0
 blow:HIT:HURT:1d10
 flags:MALE | EVIL | HAS_LIGHT
 flags:DROP_40
@@ -336,8 +437,14 @@ desc:No job is too low for him.
 name:battle-scarred veteran
 base:townsfolk
 color:B
-info:110:32:10:36:250
-power:0:1:0
+speed:110
+hit-points:32
+vision:10
+armor-class:36
+alertness:250
+depth:0
+rarity:1
+experience:0
 blow:HIT:HURT:2d6
 flags:MALE | HAS_LIGHT
 flags:DROP_40
@@ -347,8 +454,14 @@ desc:He doesn't take to strangers kindly.
 name:red-hatted elf
 base:humanoid
 color:r
-info:110:100:80:12:3
-power:0:1:0
+speed:110
+hit-points:100
+vision:80
+armor-class:12
+alertness:3
+depth:0
+rarity:1
+experience:0
 blow:HIT:HURT:1d1
 flags:HAS_LIGHT | SEASONAL
 friends:30:1d5:Same
@@ -357,8 +470,14 @@ desc:It's Yuletide and this elf has had a few too many.
 name:Father Christmas
 base:humanoid
 color:G
-info:100:1000:80:12:3
-power:0:1:0
+speed:100
+hit-points:1000
+vision:80
+armor-class:12
+alertness:3
+depth:0
+rarity:1
+experience:0
 flags:HAS_LIGHT | SEASONAL
 flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
@@ -373,8 +492,14 @@ desc:It's Saint Nick, out delivering presents to the town urchins.
 name:grey mold
 base:mold
 color:s
-info:110:2:2:1:0
-power:1:1:3
+speed:110
+hit-points:2
+vision:2
+armor-class:1
+alertness:0
+depth:1
+rarity:1
+experience:3
 blow:SPORE:HURT:1d4
 blow:SPORE:HURT:1d4
 flags:EMPTY_MIND | STUPID
@@ -384,8 +509,14 @@ name:grey mushroom patch
 plural:grey mushroom patches
 base:mushroom
 color:s
-info:110:2:2:1:0
-power:1:1:1
+speed:110
+hit-points:2
+vision:2
+armor-class:1
+alertness:0
+depth:1
+rarity:1
+experience:1
 blow:SPORE:CONFUSE:1d4
 flags:IM_POIS | NEVER_MOVE
 desc:Yum!  It looks quite tasty.
@@ -393,8 +524,14 @@ desc:Yum!  It looks quite tasty.
 name:giant yellow centipede
 base:centipede
 color:y
-info:110:7:8:14:30
-power:1:1:2
+speed:110
+hit-points:7
+vision:8
+armor-class:14
+alertness:30
+depth:1
+rarity:1
+experience:2
 blow:BITE:HURT:1d3
 blow:STING:HURT:1d3
 desc:It is about four feet long and carnivorous.
@@ -402,8 +539,14 @@ desc:It is about four feet long and carnivorous.
 name:giant white centipede
 base:centipede
 color:w
-info:110:9:7:12:40
-power:1:1:2
+speed:110
+hit-points:9
+vision:7
+armor-class:12
+alertness:40
+depth:1
+rarity:1
+experience:2
 blow:BITE:HURT:1d2
 blow:STING:HURT:1d2
 flags:RAND_50 | BASH_DOOR
@@ -412,8 +555,14 @@ desc:It is about four feet long and carnivorous.
 name:white icky thing
 base:icky thing
 color:w
-info:110:6:12:8:10
-power:1:1:1
+speed:110
+hit-points:6
+vision:12
+armor-class:8
+alertness:10
+depth:1
+rarity:1
+experience:1
 blow:TOUCH:HURT:1d2
 flags:EMPTY_MIND
 flags:RAND_25
@@ -422,8 +571,14 @@ desc:It is a smallish, slimy, icky creature.
 name:clear icky thing
 base:icky thing
 color:w
-info:110:6:12:7:10
-power:1:1:2
+speed:110
+hit-points:6
+vision:12
+armor-class:7
+alertness:10
+depth:1
+rarity:1
+experience:2
 blow:TOUCH:HURT:1d2
 flags:INVISIBLE | EMPTY_MIND
 flags:RAND_25
@@ -434,8 +589,14 @@ name:giant white mouse
 plural:giant white mice
 base:rodent
 color:w
-info:110:2:8:4:20
-power:1:1:1
+speed:110
+hit-points:2
+vision:8
+armor-class:4
+alertness:20
+depth:1
+rarity:1
+experience:1
 blow:BITE:HURT:1d2
 flags:MULTIPLY
 flags:RAND_50
@@ -444,8 +605,14 @@ desc:It is about three feet long with large teeth.
 name:large brown snake
 base:snake
 color:u
-info:100:14:4:42:99
-power:1:1:3
+speed:100
+hit-points:14
+vision:4
+armor-class:42
+alertness:99
+depth:1
+rarity:1
+experience:3
 blow:BITE:HURT:1d3
 blow:CRUSH:HURT:1d4
 flags:RAND_25
@@ -454,8 +621,14 @@ desc:It is about eight feet long.
 name:large white snake
 base:snake
 color:w
-info:100:11:4:36:99
-power:1:1:2
+speed:100
+hit-points:11
+vision:4
+armor-class:36
+alertness:99
+depth:1
+rarity:1
+experience:2
 blow:BITE:HURT:1d1
 blow:CRUSH:HURT:1d1
 flags:RAND_50
@@ -464,8 +637,14 @@ desc:It is about eight feet long.
 name:small kobold
 base:kobold
 color:y
-info:110:8:20:24:70
-power:1:1:5
+speed:110
+hit-points:8
+vision:20
+armor-class:24
+alertness:70
+depth:1
+rarity:1
+experience:5
 blow:HIT:HURT:1d5
 flags:DROP_60
 desc:It is a squat and ugly humanoid figure with a canine face.
@@ -473,8 +652,14 @@ desc:It is a squat and ugly humanoid figure with a canine face.
 name:white worm mass
 base:worm
 color:w
-info:100:10:7:1:14
-power:1:1:2
+speed:100
+hit-points:10
+vision:7
+armor-class:1
+alertness:14
+depth:1
+rarity:1
+experience:2
 blow:CRAWL:POISON:1d2
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50
@@ -484,8 +669,14 @@ desc:It is a large slimy mass of worms.
 name:floating eye
 base:eye
 color:o
-info:110:11:2:7:10
-power:1:1:1
+speed:110
+hit-points:11
+vision:2
+armor-class:7
+alertness:10
+depth:1
+rarity:1
+experience:1
 blow:GAZE:PARALYZE
 flags:NEVER_MOVE
 flags:HURT_LIGHT | NO_FEAR
@@ -494,16 +685,28 @@ desc:A disembodied eye, floating a few feet above the ground.
 name:rock lizard
 base:reptile
 color:U
-info:110:8:20:4:15
-power:1:1:2
+speed:110
+hit-points:8
+vision:20
+armor-class:4
+alertness:15
+depth:1
+rarity:1
+experience:2
 blow:BITE:HURT:1d1
 desc:It is a small lizard with a hardened hide.
 
 name:jackal
 base:canine
 color:U
-info:110:3:10:3:10
-power:1:1:1
+speed:110
+hit-points:3
+vision:10
+armor-class:3
+alertness:10
+depth:1
+rarity:1
+experience:1
 blow:BITE:HURT:1d1
 flags:GROUP_AI
 friends:100:2d7:Same
@@ -512,16 +715,28 @@ desc:It is a yapping snarling dog, dangerous when in a pack.
 name:soldier ant
 base:ant
 color:W
-info:110:6:10:4:40
-power:1:1:3
+speed:110
+hit-points:6
+vision:10
+armor-class:4
+alertness:40
+depth:1
+rarity:1
+experience:3
 blow:BITE:HURT:1d2
 desc:A large ant with powerful mandibles.
 
 name:fruit bat
 base:bat
 color:o
-info:120:4:20:3:10
-power:1:1:1
+speed:120
+hit-points:4
+vision:20
+armor-class:3
+alertness:10
+depth:1
+rarity:1
+experience:1
 blow:BITE:HURT:1d1
 desc:A fast-moving pest.
 
@@ -530,8 +745,14 @@ desc:A fast-moving pest.
 name:kobold
 base:kobold
 color:G
-info:110:12:20:24:70
-power:2:1:5
+speed:110
+hit-points:12
+vision:20
+armor-class:24
+alertness:70
+depth:2
+rarity:1
+experience:5
 blow:HIT:HURT:1d8
 flags:DROP_60
 desc:It is a small, dog-headed humanoid.
@@ -540,8 +761,14 @@ name:shrieker mushroom patch
 plural:shrieker mushroom patches
 base:mushroom
 color:R
-info:110:1:4:1:0
-power:2:1:1
+speed:110
+hit-points:1
+vision:4
+armor-class:1
+alertness:0
+depth:2
+rarity:1
+experience:1
 flags:NEVER_BLOW | NEVER_MOVE
 flags:IM_POIS
 flags:FORCE_SLEEP
@@ -553,8 +780,14 @@ desc:Yum!  It looks quite tasty.  It doesn't sound so nice, though...
 name:blubbering icky thing
 base:icky thing
 color:W
-info:110:18:14:4:10
-power:2:1:8
+speed:110
+hit-points:18
+vision:14
+armor-class:4
+alertness:10
+depth:2
+rarity:1
+experience:8
 blow:CRAWL:POISON:1d4
 blow:CRAWL:EAT_FOOD
 flags:EMPTY_MIND
@@ -565,8 +798,14 @@ desc:It is a smallish, slimy, icky, hungry creature.
 name:metallic green centipede
 base:centipede
 color:g
-info:120:10:5:4:10
-power:2:1:3
+speed:120
+hit-points:10
+vision:5
+armor-class:4
+alertness:10
+depth:2
+rarity:1
+experience:3
 blow:CRAWL:HURT:1d1
 flags:RAND_50 | BASH_DOOR
 desc:It is about four feet long and carnivorous.
@@ -574,8 +813,14 @@ desc:It is about four feet long and carnivorous.
 name:soldier
 base:person
 color:u
-info:110:23:20:24:80
-power:2:1:6
+speed:110
+hit-points:23
+vision:20
+armor-class:24
+alertness:80
+depth:2
+rarity:1
+experience:6
 blow:HIT:HURT:1d7
 blow:HIT:HURT:1d7
 flags:MALE | HAS_LIGHT
@@ -590,8 +835,14 @@ desc:An inexperienced but tough warrior.
 name:cutpurse
 base:person
 color:b
-info:110:20:20:18:10
-power:2:1:6
+speed:110
+hit-points:20
+vision:20
+armor-class:18
+alertness:10
+depth:2
+rarity:1
+experience:6
 blow:HIT:HURT:1d6
 blow:TOUCH:EAT_GOLD
 flags:MALE | EVIL
@@ -606,8 +857,14 @@ desc:A rather shifty individual.
 name:acolyte
 base:person
 color:g
-info:110:18:20:15:80
-power:2:1:6
+speed:110
+hit-points:18
+vision:20
+armor-class:15
+alertness:80
+depth:2
+rarity:1
+experience:6
 blow:HIT:HURT:1d5
 flags:MALE | HAS_LIGHT
 flags:DROP_40
@@ -626,8 +883,14 @@ desc:He is tripping over his priestly robes.
 name:apprentice
 base:person
 color:r
-info:110:15:20:9:15
-power:2:1:6
+speed:110
+hit-points:15
+vision:20
+armor-class:9
+alertness:15
+depth:2
+rarity:1
+experience:6
 blow:HIT:HURT:1d4
 flags:MALE | HAS_LIGHT
 flags:DROP_40
@@ -647,8 +910,14 @@ name:yellow mushroom patch
 plural:yellow mushroom patches
 base:mushroom
 color:y
-info:110:1:2:1:0
-power:2:1:2
+speed:110
+hit-points:1
+vision:2
+armor-class:1
+alertness:0
+depth:2
+rarity:1
+experience:2
 blow:SPORE:TERRIFY:1d6
 flags:NEVER_MOVE
 flags:IM_POIS
@@ -658,8 +927,14 @@ name:white jelly
 plural:white jellies
 base:jelly
 color:w
-info:120:36:2:1:99
-power:2:1:10
+speed:120
+hit-points:36
+vision:2
+armor-class:1
+alertness:99
+depth:2
+rarity:1
+experience:10
 blow:TOUCH:POISON:1d2
 flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
@@ -668,8 +943,14 @@ desc:It's a large pile of white flesh.
 name:giant green frog
 base:reptile
 color:g
-info:110:9:12:9:30
-power:2:1:6
+speed:110
+hit-points:9
+vision:12
+armor-class:9
+alertness:30
+depth:2
+rarity:1
+experience:6
 blow:BITE:HURT:1d3
 flags:RAND_25 | BASH_DOOR
 desc:It is as big as a wolf.
@@ -677,8 +958,14 @@ desc:It is as big as a wolf.
 name:giant black ant
 base:ant
 color:D
-info:110:11:8:24:80
-power:2:1:8
+speed:110
+hit-points:11
+vision:8
+armor-class:24
+alertness:80
+depth:2
+rarity:1
+experience:8
 blow:BITE:HURT:1d4
 flags:RAND_25
 desc:It is about three feet long.
@@ -686,8 +973,14 @@ desc:It is about three feet long.
 name:salamander
 base:reptile
 color:o
-info:110:14:8:24:80
-power:2:1:10
+speed:110
+hit-points:14
+vision:8
+armor-class:24
+alertness:80
+depth:2
+rarity:1
+experience:10
 blow:BITE:FIRE:1d3
 flags:RAND_25
 flags:IM_FIRE
@@ -697,8 +990,14 @@ name:white harpy
 plural:white harpies
 base:hybrid
 color:w
-info:110:6:16:20:10
-power:2:1:5
+speed:110
+hit-points:6
+vision:16
+armor-class:20
+alertness:10
+depth:2
+rarity:1
+experience:5
 blow:CLAW:HURT:1d1
 blow:CLAW:HURT:1d1
 blow:BITE:HURT:1d2
@@ -709,8 +1008,14 @@ desc:A flying, screeching bird with a woman's face.
 name:blue yeek
 base:yeek
 color:b
-info:110:7:18:16:10
-power:2:1:4
+speed:110
+hit-points:7
+vision:18
+armor-class:16
+alertness:10
+depth:2
+rarity:1
+experience:4
 blow:HIT:HURT:1d5
 flags:DROP_60
 desc:A small humanoid figure.
@@ -718,8 +1023,14 @@ desc:A small humanoid figure.
 name:Grip, Farmer Maggot's Dog
 base:canine
 color:y
-info:120:25:30:36:0
-power:2:1:30
+speed:120
+hit-points:25
+vision:30
+armor-class:36
+alertness:0
+depth:2
+rarity:1
+experience:30
 blow:BITE:HURT:1d4
 flags:UNIQUE
 flags:RAND_25 | BASH_DOOR
@@ -730,8 +1041,14 @@ desc: stealing mushrooms.
 name:Fang, Farmer Maggot's Dog
 base:canine
 color:y
-info:120:25:30:36:0
-power:2:1:30
+speed:120
+hit-points:25
+vision:30
+armor-class:36
+alertness:0
+depth:2
+rarity:1
+experience:30
 blow:BITE:HURT:1d4
 flags:UNIQUE
 flags:RAND_25 | BASH_DOOR
@@ -742,8 +1059,14 @@ desc: stealing mushrooms.
 name:green worm mass
 base:worm
 color:g
-info:100:15:7:3:10
-power:2:1:3
+speed:100
+hit-points:15
+vision:7
+armor-class:3
+alertness:10
+depth:2
+rarity:1
+experience:3
 blow:CRAWL:ACID:1d3
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50
@@ -753,8 +1076,14 @@ desc:It is a large slimy mass of worms.
 name:large yellow snake
 base:snake
 color:y
-info:100:18:5:45:75
-power:2:1:9
+speed:100
+hit-points:18
+vision:5
+armor-class:45
+alertness:75
+depth:2
+rarity:1
+experience:9
 blow:BITE:HURT:1d4
 blow:CRUSH:HURT:1d6
 flags:RAND_25
@@ -763,8 +1092,14 @@ desc:It is about ten feet long.
 name:cave spider
 base:spider
 color:p
-info:120:7:8:19:80
-power:2:1:7
+speed:120
+hit-points:7
+vision:8
+armor-class:19
+alertness:80
+depth:2
+rarity:1
+experience:7
 blow:BITE:HURT:1d4
 flags:ANIMAL | WEIRD_MIND
 flags:GROUP_AI
@@ -774,8 +1109,14 @@ desc:It is a black spider that moves in fits and starts.
 name:wild cat
 base:feline
 color:U
-info:120:9:40:14:0
-power:2:2:8
+speed:120
+hit-points:9
+vision:40
+armor-class:14
+alertness:0
+depth:2
+rarity:2
+experience:8
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 flags:BASH_DOOR
@@ -785,8 +1126,14 @@ desc: fistful of needles.
 name:crow
 base:bird
 color:s
-info:120:9:40:14:0
-power:2:2:8
+speed:120
+hit-points:9
+vision:40
+armor-class:14
+alertness:0
+depth:2
+rarity:2
+experience:8
 blow:BITE:HURT:1d3
 blow:BITE:HURT:1d3
 desc:It is a hooded crow, gray except for the black wings and head.
@@ -796,8 +1143,14 @@ desc:It is a hooded crow, gray except for the black wings and head.
 name:Sméagol
 base:humanoid
 color:B
-info:130:400:20:14:5
-power:3:2:50
+speed:130
+hit-points:400
+vision:20
+armor-class:14
+alertness:5
+depth:3
+rarity:2
+experience:50
 blow:TOUCH:EAT_GOLD:1d4
 flags:UNIQUE | MALE | EVIL | INVISIBLE
 flags:DROP_1 | DROP_GOOD | DROP_GREAT
@@ -808,8 +1161,14 @@ desc:Usually known as Gollum.  He's been sneaking, and he wants his 'precious.'
 name:green ooze
 base:jelly
 color:g
-info:120:8:8:19:80
-power:3:2:4
+speed:120
+hit-points:8
+vision:8
+armor-class:19
+alertness:80
+depth:3
+rarity:2
+experience:4
 blow:CRAWL:ACID:1d3
 flags:DROP_60
 flags:RAND_25 | RAND_50
@@ -819,8 +1178,14 @@ desc:It's green and it's oozing.
 name:poltergeist
 base:ghost
 color:W
-info:130:6:8:18:10
-power:3:1:8
+speed:130
+hit-points:6
+vision:8
+armor-class:18
+alertness:10
+depth:3
+rarity:1
+experience:8
 blow:TOUCH:TERRIFY
 flags:DROP_40 | DROP_60
 flags:RAND_25 | RAND_50 | TAKE_ITEM
@@ -833,8 +1198,14 @@ desc:It is a ghastly, ghostly form.
 name:metallic blue centipede
 base:centipede
 color:b
-info:120:12:6:7:15
-power:3:1:7
+speed:120
+hit-points:12
+vision:6
+armor-class:7
+alertness:15
+depth:3
+rarity:1
+experience:7
 blow:CRAWL:HURT:1d2
 flags:RAND_50 | BASH_DOOR
 desc:It is about four feet long and carnivorous.
@@ -843,8 +1214,14 @@ name:giant white louse
 plural:giant white lice
 base:louse
 color:w
-info:120:1:6:6:10
-power:3:1:1
+speed:120
+hit-points:1
+vision:6
+armor-class:6
+alertness:10
+depth:3
+rarity:1
+experience:1
 blow:BITE:HURT:1d1
 flags:RAND_25
 desc:It is six inches long.
@@ -852,8 +1229,14 @@ desc:It is six inches long.
 name:black naga
 base:naga
 color:D
-info:110:27:16:60:180
-power:3:1:20
+speed:110
+hit-points:27
+vision:16
+armor-class:60
+alertness:180
+depth:3
+rarity:1
+experience:20
 blow:CRUSH:HURT:1d8
 flags:DROP_60
 flags:RAND_25
@@ -863,8 +1246,14 @@ name:spotted mushroom patch
 plural:spotted mushroom patches
 base:mushroom
 color:o
-info:110:1:2:1:0
-power:3:1:3
+speed:110
+hit-points:1
+vision:2
+armor-class:1
+alertness:0
+depth:3
+rarity:1
+experience:3
 blow:SPORE:POISON:2d4
 flags:NEVER_MOVE
 flags:IM_POIS
@@ -874,8 +1263,14 @@ name:silver jelly
 plural:silver jellies
 base:jelly
 color:W
-info:120:45:2:1:99
-power:3:2:12
+speed:120
+hit-points:45
+vision:2
+armor-class:1
+alertness:99
+depth:3
+rarity:2
+experience:12
 blow:TOUCH:EAT_LIGHT:1d3
 blow:TOUCH:EAT_LIGHT:1d3
 flags:NEVER_MOVE
@@ -890,8 +1285,14 @@ name:yellow jelly
 plural:yellow jellies
 base:jelly
 color:y
-info:120:45:2:1:99
-power:3:1:12
+speed:120
+hit-points:45
+vision:2
+armor-class:1
+alertness:99
+depth:3
+rarity:1
+experience:12
 blow:TOUCH:POISON:1d3
 flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
@@ -903,8 +1304,14 @@ desc:It's a large pile of yellow flesh.
 name:scruffy looking hobbit
 base:humanoid
 color:b
-info:110:9:16:9:10
-power:3:1:4
+speed:110
+hit-points:9
+vision:16
+armor-class:9
+alertness:10
+depth:3
+rarity:1
+experience:4
 blow:HIT:HURT:1d4
 blow:TOUCH:EAT_GOLD
 flags:MALE | EVIL
@@ -916,16 +1323,28 @@ desc: good tavern.
 name:giant white ant
 base:ant
 color:w
-info:110:11:8:19:80
-power:3:1:7
+speed:110
+hit-points:11
+vision:8
+armor-class:19
+alertness:80
+depth:3
+rarity:1
+experience:7
 blow:BITE:HURT:1d4
 desc:It is about two feet long and has sharp pincers.
 
 name:yellow mold
 base:mold
 color:y
-info:110:36:2:12:99
-power:3:1:9
+speed:110
+hit-points:36
+vision:2
+armor-class:12
+alertness:99
+depth:3
+rarity:1
+experience:9
 blow:SPORE:HURT:1d4
 flags:EMPTY_MIND | STUPID
 desc:It is a strange yellow growth on the dungeon floor.
@@ -933,8 +1352,14 @@ desc:It is a strange yellow growth on the dungeon floor.
 name:metallic red centipede
 base:centipede
 color:r
-info:120:18:8:10:20
-power:3:1:12
+speed:120
+hit-points:18
+vision:8
+armor-class:10
+alertness:20
+depth:3
+rarity:1
+experience:12
 blow:CRAWL:HURT:1d2
 flags:RAND_25 | BASH_DOOR
 desc:It is about four feet long and carnivorous.
@@ -942,8 +1367,14 @@ desc:It is about four feet long and carnivorous.
 name:yellow worm mass
 base:worm
 color:y
-info:100:18:7:4:10
-power:3:2:4
+speed:100
+hit-points:18
+vision:7
+armor-class:4
+alertness:10
+depth:3
+rarity:2
+experience:4
 blow:CRAWL:LOSE_DEX:1d3
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50
@@ -953,8 +1384,14 @@ desc:It is a large slimy mass of worms.
 name:clear worm mass
 base:worm
 color:w
-info:100:10:7:1:13
-power:3:2:4
+speed:100
+hit-points:10
+vision:7
+armor-class:1
+alertness:13
+depth:3
+rarity:2
+experience:4
 blow:CRAWL:POISON:1d2
 flags:WEIRD_MIND | INVISIBLE | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50
@@ -965,8 +1402,14 @@ desc:It is a disgusting mass of poisonous worms.
 name:radiation eye
 base:eye
 color:R
-info:110:11:2:7:10
-power:3:1:6
+speed:110
+hit-points:11
+vision:2
+armor-class:7
+alertness:10
+depth:3
+rarity:1
+experience:6
 blow:GAZE:LOSE_STR:1d6
 flags:NEVER_MOVE
 flags:HURT_LIGHT | NO_FEAR
@@ -978,8 +1421,14 @@ desc:A disembodied eye, crackling with energy.
 name:kobold shaman
 base:kobold
 color:r
-info:110:11:20:24:50
-power:3:1:15
+speed:110
+hit-points:11
+vision:20
+armor-class:24
+alertness:50
+depth:3
+rarity:1
+experience:15
 blow:HIT:HURT:1d8
 flags:DROP_40
 spell-freq:5
@@ -996,16 +1445,28 @@ desc:It is a kobold dressed in skins and gesturing wildly.
 name:cave lizard
 base:reptile
 color:u
-info:110:11:8:19:80
-power:4:1:8
+speed:110
+hit-points:11
+vision:8
+armor-class:19
+alertness:80
+depth:4
+rarity:1
+experience:8
 blow:BITE:HURT:1d5
 desc:It is an armoured lizard with a powerful bite.
 
 name:scout
 base:person
 color:W
-info:110:27:20:12:50
-power:4:1:18
+speed:110
+hit-points:27
+vision:20
+armor-class:12
+alertness:50
+depth:4
+rarity:1
+experience:18
 blow:HIT:HURT:1d5
 blow:HIT:HURT:1d5
 flags:MALE | HAS_LIGHT
@@ -1025,8 +1486,14 @@ desc:An agile hunter, ready and relaxed.
 name:gallant
 base:person
 color:w
-info:110:27:20:24:100
-power:4:1:18
+speed:110
+hit-points:27
+vision:20
+armor-class:24
+alertness:100
+depth:4
+rarity:1
+experience:18
 blow:HIT:HURT:1d7
 blow:HIT:HURT:1d7
 flags:MALE | HAS_LIGHT
@@ -1046,8 +1513,14 @@ desc:An adventurer both devoutly religious and skillful in combat.
 name:healer
 base:person
 color:y
-info:110:20:20:20:100
-power:4:1:13
+speed:110
+hit-points:20
+vision:20
+armor-class:20
+alertness:100
+depth:4
+rarity:1
+experience:13
 blow:HIT:HURT:1d2
 blow:HIT:HURT:1d2
 flags:HAS_LIGHT
@@ -1066,8 +1539,14 @@ name:blue jelly
 plural:blue jellies
 base:jelly
 color:b
-info:110:54:2:1:99
-power:4:1:14
+speed:110
+hit-points:54
+vision:2
+armor-class:1
+alertness:99
+depth:4
+rarity:1
+experience:14
 blow:TOUCH:COLD:1d6
 flags:COLD_BLOOD
 flags:NEVER_MOVE
@@ -1078,8 +1557,14 @@ name:creeping copper coins
 plural:piles of creeping copper coins
 base:creeping coins
 color:u
-info:100:32:3:28:10
-power:4:3:9
+speed:100
+hit-points:32
+vision:3
+armor-class:28
+alertness:10
+depth:4
+rarity:3
+experience:9
 blow:HIT:HURT:1d4
 blow:TOUCH:POISON:2d4
 desc:It appears to be a pile of copper coins.
@@ -1088,8 +1573,14 @@ mimic:gold:copper
 name:giant white rat
 base:rodent
 color:W
-info:110:3:8:8:30
-power:4:1:1
+speed:110
+hit-points:3
+vision:8
+armor-class:8
+alertness:30
+depth:4
+rarity:1
+experience:1
 blow:BITE:POISON:1d3
 flags:MULTIPLY
 flags:RAND_25
@@ -1098,8 +1589,14 @@ desc:It is a very vicious rodent.
 name:blue worm mass
 base:worm
 color:b
-info:100:23:7:14:10
-power:4:1:5
+speed:100
+hit-points:23
+vision:7
+armor-class:14
+alertness:10
+depth:4
+rarity:1
+experience:5
 blow:CRAWL:COLD:1d4
 flags:COLD_BLOOD | WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50
@@ -1109,8 +1606,14 @@ desc:It is a large slimy mass of worms.
 name:large grey snake
 base:snake
 color:s
-info:100:27:6:61:100
-power:4:1:14
+speed:100
+hit-points:27
+vision:6
+armor-class:61
+alertness:100
+depth:4
+rarity:1
+experience:14
 blow:BITE:HURT:1d5
 blow:CRUSH:HURT:1d8
 flags:RAND_25
@@ -1119,8 +1622,14 @@ desc:It is about ten feet long.
 name:kobold archer
 base:kobold
 color:W
-info:110:24:20:24:70
-power:4:1:20
+speed:110
+hit-points:24
+vision:20
+armor-class:24
+alertness:70
+depth:4
+rarity:1
+experience:20
 blow:HIT:HURT:1d9
 flags:DROP_40
 spell-freq:5
@@ -1134,8 +1643,14 @@ name:silver mouse
 plural:silver mice
 base:rodent
 color:W
-info:110:2:8:4:20
-power:4:1:1
+speed:110
+hit-points:2
+vision:8
+armor-class:4
+alertness:20
+depth:4
+rarity:1
+experience:1
 blow:BITE:EAT_LIGHT:1d2
 flags:MULTIPLY
 flags:RAND_50
@@ -1145,8 +1660,14 @@ desc: falls on it, it seems to grow stronger.
 name:raven
 base:bird
 color:D
-info:120:12:40:14:0
-power:4:2:10
+speed:120
+hit-points:12
+vision:40
+armor-class:14
+alertness:0
+depth:4
+rarity:2
+experience:10
 blow:BITE:HURT:1d4
 blow:BITE:HURT:1d4
 desc:Larger than a crow, and pitch black.
@@ -1156,8 +1677,14 @@ desc:Larger than a crow, and pitch black.
 name:Bullroarer the Hobbit
 base:humanoid
 color:U
-info:120:60:16:12:30
-power:5:3:90
+speed:120
+hit-points:60
+vision:16
+armor-class:12
+alertness:30
+depth:5
+rarity:3
+experience:90
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 flags:UNIQUE | MALE
@@ -1169,8 +1696,14 @@ desc:  He can prove a troublesome opponent.
 name:green naga
 base:naga
 color:g
-info:110:41:18:48:120
-power:5:1:30
+speed:110
+hit-points:41
+vision:18
+armor-class:48
+alertness:120
+depth:5
+rarity:1
+experience:30
 blow:CRUSH:HURT:1d8
 blow:SPIT:ACID:2d6
 flags:DROP_60
@@ -1182,8 +1715,14 @@ desc: acid.
 name:blue ooze
 base:jelly
 color:b
-info:110:8:8:19:80
-power:5:1:7
+speed:110
+hit-points:8
+vision:8
+armor-class:19
+alertness:80
+depth:5
+rarity:1
+experience:7
 blow:CRAWL:COLD:1d4
 flags:DROP_40
 flags:RAND_25 | RAND_50
@@ -1193,8 +1732,14 @@ desc:It's blue and it's oozing.
 name:green glutton ghost
 base:ghost
 color:g
-info:130:8:10:24:10
-power:5:1:15
+speed:130
+hit-points:8
+vision:10
+armor-class:24
+alertness:10
+depth:5
+rarity:1
+experience:15
 blow:TOUCH:EAT_FOOD:1d1
 flags:DROP_40 | DROP_60
 flags:RAND_25 | RAND_50
@@ -1205,8 +1750,14 @@ name:green jelly
 plural:green jellies
 base:jelly
 color:g
-info:120:99:2:1:99
-power:5:1:18
+speed:120
+hit-points:99
+vision:2
+armor-class:1
+alertness:99
+depth:5
+rarity:1
+experience:18
 blow:TOUCH:ACID:1d2
 flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_ACID | HURT_COLD | NO_CONF | NO_SLEEP
@@ -1215,8 +1766,14 @@ desc:It is a large pile of pulsing green flesh.
 name:large kobold
 base:kobold
 color:b
-info:110:65:20:48:70
-power:5:1:25
+speed:110
+hit-points:65
+vision:20
+armor-class:48
+alertness:70
+depth:5
+rarity:1
+experience:25
 blow:HIT:HURT:1d10
 flags:DROP_60
 friends-base:50:1d2:kobold
@@ -1226,8 +1783,14 @@ desc:It is a man-sized figure with the all too recognizable face of a kobold.
 name:skeleton kobold
 base:skeleton
 color:w
-info:110:23:20:39:80
-power:5:1:12
+speed:110
+hit-points:23
+vision:20
+armor-class:39
+alertness:80
+depth:5
+rarity:1
+experience:12
 blow:HIT:HURT:1d6
 flags:EMPTY_MIND
 flags:OPEN_DOOR | BASH_DOOR
@@ -1236,8 +1799,14 @@ desc:It is a small animated kobold skeleton.
 name:grey icky thing
 base:icky thing
 color:s
-info:110:18:14:14:15
-power:5:1:10
+speed:110
+hit-points:18
+vision:14
+armor-class:14
+alertness:15
+depth:5
+rarity:1
+experience:10
 blow:TOUCH:HURT:1d5
 flags:EMPTY_MIND
 desc:It is a smallish, slimy, icky, nasty creature.
@@ -1245,8 +1814,14 @@ desc:It is a smallish, slimy, icky, nasty creature.
 name:disenchanter eye
 base:eye
 color:v
-info:100:32:2:7:10
-power:5:2:20
+speed:100
+hit-points:32
+vision:2
+armor-class:7
+alertness:10
+depth:5
+rarity:2
+experience:20
 blow:GAZE:DISENCHANT
 flags:NEVER_MOVE
 flags:HURT_LIGHT | IM_DISEN | NO_FEAR
@@ -1259,8 +1834,14 @@ desc:A disembodied eye, crackling with magic.
 name:red worm mass
 base:worm
 color:r
-info:100:23:7:14:10
-power:5:1:6
+speed:100
+hit-points:23
+vision:7
+armor-class:14
+alertness:10
+depth:5
+rarity:1
+experience:6
 blow:CRAWL:FIRE:1d6
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50 | BASH_DOOR
@@ -1270,8 +1851,14 @@ desc:It is a large slimy mass of worms.
 name:copperhead snake
 base:snake
 color:o
-info:110:14:6:30:10
-power:5:1:15
+speed:110
+hit-points:14
+vision:6
+armor-class:30
+alertness:10
+depth:5
+rarity:1
+experience:15
 blow:BITE:POISON:2d4
 flags:RAND_50
 flags:IM_POIS
@@ -1281,8 +1868,14 @@ name:giant white dragon fly
 plural:giant white dragon flies
 base:dragon fly
 color:w
-info:110:14:12:30:1
-power:5:2:15
+speed:110
+hit-points:14
+vision:12
+armor-class:30
+alertness:1
+depth:5
+rarity:2
+experience:15
 blow:BITE:COLD:1d6
 flags:IM_COLD
 spell-freq:10
@@ -1294,8 +1887,14 @@ name:giant green dragon fly
 plural:giant green dragon flies
 base:dragon fly
 color:g
-info:110:14:12:30:1
-power:5:2:16
+speed:110
+hit-points:14
+vision:12
+armor-class:30
+alertness:1
+depth:5
+rarity:2
+experience:16
 blow:BITE:POISON:1d6
 flags:RAND_25
 flags:IM_POIS
@@ -1308,8 +1907,14 @@ name:rot jelly
 plural:rot jellies
 base:jelly
 color:u
-info:120:90:2:36:99
-power:5:1:15
+speed:120
+hit-points:90
+vision:2
+armor-class:36
+alertness:99
+depth:5
+rarity:1
+experience:15
 blow:TOUCH:EAT_FOOD:2d3
 blow:TOUCH:LOSE_WIS:2d3
 flags:NEVER_MOVE
@@ -1319,35 +1924,35 @@ desc: terrible smell it exudes is also very hard to get rid of...
 
 ### Dungeon level 6 ###
 
-#name:Wizard's apprentice
-#Deleted
-
 name:purple mushroom patch
 plural:purple mushroom patches
 base:mushroom
 color:P
-info:110:1:2:1:0
-power:6:2:15
+speed:110
+hit-points:1
+vision:2
+armor-class:1
+alertness:0
+depth:6
+rarity:2
+experience:15
 blow:SPORE:LOSE_CON:1d2
 blow:SPORE:LOSE_CON:1d2
 blow:SPORE:LOSE_CON:1d2
 flags:NEVER_MOVE
 desc:Yum!  It looks quite tasty.
 
-#name:Adept
-#Deleted
-
-#name:Soldier
-#Deleted
-
-#name:Footpad
-#Deleted
-
 name:brown mold
 base:mold
 color:u
-info:110:68:2:14:99
-power:6:1:20
+speed:110
+hit-points:68
+vision:2
+armor-class:14
+alertness:99
+depth:6
+rarity:1
+experience:20
 blow:SPORE:CONFUSE:1d4
 flags:EMPTY_MIND | STUPID
 desc:A strange brown growth on the dungeon floor.
@@ -1355,8 +1960,14 @@ desc:A strange brown growth on the dungeon floor.
 name:giant brown bat
 base:bat
 color:u
-info:130:14:10:18:30
-power:6:1:10
+speed:130
+hit-points:14
+vision:10
+armor-class:18
+alertness:30
+depth:6
+rarity:1
+experience:10
 blow:BITE:HURT:1d3
 flags:RAND_50
 desc:It screeches as it attacks.
@@ -1365,8 +1976,14 @@ name:creeping silver coins
 plural:piles of creeping silver coins
 base:creeping coins
 color:s
-info:100:54:4:36:10
-power:6:3:18
+speed:100
+hit-points:54
+vision:4
+armor-class:36
+alertness:10
+depth:6
+rarity:3
+experience:18
 blow:HIT:HURT:1d6
 blow:TOUCH:POISON:2d6
 desc:It appears to be a pile of silver coins.
@@ -1375,8 +1992,14 @@ mimic:gold:silver
 name:snaga
 base:orc
 color:U
-info:110:36:20:48:70
-power:6:1:15
+speed:110
+hit-points:36
+vision:20
+armor-class:48
+alertness:70
+depth:6
+rarity:1
+experience:15
 blow:HIT:HURT:1d8
 flags:DROP_20
 flags:HURT_LIGHT
@@ -1388,8 +2011,14 @@ desc: goblin.
 name:rattlesnake
 base:snake
 color:r
-info:110:24:6:36:10
-power:6:1:20
+speed:110
+hit-points:24
+vision:6
+armor-class:36
+alertness:10
+depth:6
+rarity:1
+experience:20
 blow:BITE:POISON:2d5
 flags:RAND_50
 flags:IM_POIS
@@ -1400,8 +2029,14 @@ name:giant black dragon fly
 plural:giant black dragon flies
 base:dragon fly
 color:s
-info:120:14:12:30:1
-power:6:2:18
+speed:120
+hit-points:14
+vision:12
+armor-class:30
+alertness:1
+depth:6
+rarity:2
+experience:18
 flags:NEVER_BLOW | RAND_25
 flags:IM_ACID
 spell-freq:10
@@ -1413,8 +2048,14 @@ name:giant gold dragon fly
 plural:giant gold dragon flies
 base:dragon fly
 color:y
-info:120:14:12:30:1
-power:6:2:18
+speed:120
+hit-points:14
+vision:12
+armor-class:30
+alertness:1
+depth:6
+rarity:2
+experience:18
 blow:BITE:HURT:1d3
 flags:RAND_25
 flags:IM_FIRE | NO_STUN
@@ -1429,8 +2070,14 @@ desc: pervades the air.
 name:cave orc
 base:orc
 color:G
-info:110:55:20:48:70
-power:7:1:20
+speed:110
+hit-points:55
+vision:20
+armor-class:48
+alertness:70
+depth:7
+rarity:1
+experience:20
 blow:HIT:HURT:1d8
 flags:DROP_20
 flags:HURT_LIGHT
@@ -1441,8 +2088,14 @@ desc:He is often found in huge numbers in deep caves.
 name:wood spider
 base:spider
 color:U
-info:120:11:8:19:80
-power:7:3:15
+speed:120
+hit-points:11
+vision:8
+armor-class:19
+alertness:80
+depth:7
+rarity:3
+experience:15
 blow:BITE:HURT:1d3
 blow:STING:POISON:1d4
 flags:ANIMAL | WEIRD_MIND
@@ -1454,8 +2107,14 @@ name:manes
 plural:manes
 base:minor demon
 color:u
-info:110:36:20:48:80
-power:7:2:16
+speed:110
+hit-points:36
+vision:20
+armor-class:48
+alertness:80
+depth:7
+rarity:2
+experience:16
 blow:HIT:HURT:1d8
 flags:OPEN_DOOR | BASH_DOOR
 flags:NO_FEAR
@@ -1465,8 +2124,14 @@ desc:It is a minor but aggressive demon.
 name:bloodshot eye
 base:eye
 color:r
-info:110:45:2:7:10
-power:7:3:15
+speed:110
+hit-points:45
+vision:2
+armor-class:7
+alertness:10
+depth:7
+rarity:3
+experience:15
 blow:GAZE:BLIND:2d6
 flags:NEVER_MOVE
 flags:HURT_LIGHT | NO_FEAR
@@ -1478,8 +2143,14 @@ desc:A disembodied eye, bloodshot and nasty.
 name:red naga
 base:naga
 color:r
-info:110:50:20:48:120
-power:7:2:40
+speed:110
+hit-points:50
+vision:20
+armor-class:48
+alertness:120
+depth:7
+rarity:2
+experience:40
 blow:CRUSH:HURT:1d10
 blow:BITE:LOSE_STR:1d4
 flags:DROP_60
@@ -1490,8 +2161,14 @@ name:red jelly
 plural:red jellies
 base:jelly
 color:r
-info:110:117:2:1:99
-power:7:1:26
+speed:110
+hit-points:117
+vision:2
+armor-class:1
+alertness:99
+depth:7
+rarity:1
+experience:26
 blow:TOUCH:LOSE_STR:1d5
 flags:NEVER_MOVE
 flags:HURT_LIGHT | HURT_COLD | NO_CONF | NO_SLEEP
@@ -1500,8 +2177,14 @@ desc:It is a large pulsating mound of red flesh.
 name:giant red frog
 base:reptile
 color:r
-info:110:23:12:19:50
-power:7:1:16
+speed:110
+hit-points:23
+vision:12
+armor-class:19
+alertness:50
+depth:7
+rarity:1
+experience:16
 blow:BITE:LOSE_STR:2d4
 flags:RAND_50 | BASH_DOOR
 desc:It looks poisonous.
@@ -1509,8 +2192,14 @@ desc:It looks poisonous.
 name:green icky thing
 base:icky thing
 color:g
-info:110:23:14:14:20
-power:7:2:18
+speed:110
+hit-points:23
+vision:14
+armor-class:14
+alertness:20
+depth:7
+rarity:2
+experience:18
 blow:TOUCH:ACID:2d5
 flags:EMPTY_MIND
 flags:IM_ACID
@@ -1519,8 +2208,14 @@ desc:It is a smallish, slimy, icky, acidic creature.
 name:zombified kobold
 base:zombie
 color:s
-info:110:27:20:21:100
-power:7:1:14
+speed:110
+hit-points:27
+vision:20
+armor-class:21
+alertness:100
+depth:7
+rarity:1
+experience:14
 blow:HIT:HURT:1d2
 blow:HIT:HURT:1d2
 flags:EMPTY_MIND
@@ -1531,8 +2226,14 @@ desc: shambles forward.
 name:lost soul
 base:ghost
 color:B
-info:110:9:12:12:10
-power:7:2:18
+speed:110
+hit-points:9
+vision:12
+armor-class:12
+alertness:10
+depth:7
+rarity:2
+experience:18
 blow:HIT:HURT:2d2
 blow:TOUCH:LOSE_WIS
 flags:DROP_40 | DROP_60
@@ -1546,8 +2247,14 @@ name:dark elf
 plural:dark elves
 base:humanoid
 color:D
-info:110:39:20:24:40
-power:7:2:25
+speed:110
+hit-points:39
+vision:20
+armor-class:24
+alertness:40
+depth:7
+rarity:2
+experience:25
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 flags:MALE | EVIL
@@ -1563,8 +2270,14 @@ desc: twisted with evil.
 name:night lizard
 base:reptile
 color:b
-info:110:18:20:19:30
-power:7:2:35
+speed:110
+hit-points:18
+vision:20
+armor-class:19
+alertness:30
+depth:7
+rarity:2
+experience:35
 blow:BITE:HURT:1d6
 blow:BITE:HURT:1d6
 desc:It is a black lizard with overlapping scales and a powerful jaw.
@@ -1572,8 +2285,14 @@ desc:It is a black lizard with overlapping scales and a powerful jaw.
 name:Mughash the Kobold Lord
 base:kobold
 color:v
-info:110:150:20:30:40
-power:7:3:100
+speed:110
+hit-points:150
+vision:20
+armor-class:30
+alertness:40
+depth:7
+rarity:3
+experience:100
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
@@ -1591,8 +2310,14 @@ desc:Strong and powerful, for a kobold.
 name:Wormtongue, Agent of Saruman
 base:person
 color:B
-info:110:250:20:45:10
-power:8:1:150
+speed:110
+hit-points:250
+vision:20
+armor-class:45
+alertness:10
+depth:8
+rarity:1
+experience:150
 blow:HIT:HURT:1d5
 blow:HIT:HURT:1d5
 blow:TOUCH:EAT_GOLD
@@ -1612,8 +2337,14 @@ desc: disgusting habits.
 name:Lagduf, the Snaga
 base:orc
 color:y
-info:110:190:20:48:50
-power:8:2:80
+speed:110
+hit-points:190
+vision:20
+armor-class:48
+alertness:50
+depth:8
+rarity:2
+experience:80
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d9
@@ -1628,20 +2359,29 @@ desc: with displays of excessive violence.
 name:brown yeek
 base:yeek
 color:u
-info:110:18:18:21:10
-power:8:1:11
+speed:110
+hit-points:18
+vision:18
+armor-class:21
+alertness:10
+depth:8
+rarity:1
+experience:11
 blow:HIT:HURT:1d6
 flags:DROP_40
 desc:It is a strange small humanoid.
 
-#name:Tracker
-#Deleted
-
 name:giant salamander
 base:reptile
 color:y
-info:110:24:6:60:80
-power:8:1:50
+speed:110
+hit-points:24
+vision:6
+armor-class:60
+alertness:80
+depth:8
+rarity:1
+experience:50
 blow:BITE:FIRE:3d6
 flags:RAND_25
 flags:IM_FIRE
@@ -1654,8 +2394,14 @@ desc:A large black and yellow lizard.  You'd better run away!
 name:green mold
 base:mold
 color:g
-info:110:95:2:16:75
-power:8:1:28
+speed:110
+hit-points:95
+vision:2
+armor-class:16
+alertness:75
+depth:8
+rarity:1
+experience:28
 blow:SPORE:TERRIFY:1d4
 flags:EMPTY_MIND | STUPID
 flags:IM_ACID
@@ -1664,21 +2410,30 @@ desc:It is a strange growth on the dungeon floor.
 name:skeleton orc
 base:skeleton
 color:w
-info:110:45:20:54:70
-power:8:1:26
+speed:110
+hit-points:45
+vision:20
+armor-class:54
+alertness:70
+depth:8
+rarity:1
+experience:26
 blow:HIT:HURT:2d5
 flags:ORC | EMPTY_MIND
 flags:OPEN_DOOR | BASH_DOOR
 desc:It is an animated orc skeleton.
 
-#name:Honor guard
-#Deleted
-
 name:lemure
 base:minor demon
 color:U
-info:110:65:20:48:80
-power:8:3:16
+speed:110
+hit-points:65
+vision:20
+armor-class:48
+alertness:80
+depth:8
+rarity:3
+experience:16
 blow:HIT:HURT:1d8
 flags:OPEN_DOOR | BASH_DOOR
 flags:NO_FEAR
@@ -1688,8 +2443,14 @@ desc:It is the larval form of a major demon.
 name:hill orc
 base:orc
 color:u
-info:110:65:20:48:70
-power:8:1:25
+speed:110
+hit-points:65
+vision:20
+armor-class:48
+alertness:70
+depth:8
+rarity:1
+experience:25
 blow:HIT:HURT:1d10
 flags:DROP_20
 friends:30:1d8:Crow
@@ -1700,8 +2461,14 @@ desc:He is a hardy well-weathered survivor.
 name:bandit
 base:person
 color:b
-info:110:36:20:28:10
-power:8:2:26
+speed:110
+hit-points:36
+vision:20
+armor-class:28
+alertness:10
+depth:8
+rarity:2
+experience:26
 blow:HIT:HURT:2d4
 blow:TOUCH:EAT_GOLD
 flags:MALE | EVIL
@@ -1712,8 +2479,14 @@ desc:He is after your cash!
 name:nighthawk
 base:bird
 color:u
-info:120:36:30:30:10
-power:8:2:22
+speed:120
+hit-points:36
+vision:30
+armor-class:30
+alertness:10
+depth:8
+rarity:2
+experience:22
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d4
@@ -1726,8 +2499,14 @@ name:yeti
 plural:yeti
 base:yeti
 color:w
-info:110:55:20:36:30
-power:9:3:30
+speed:110
+hit-points:55
+vision:20
+armor-class:36
+alertness:30
+depth:9
+rarity:3
+experience:30
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d4
@@ -1736,8 +2515,14 @@ desc:A large white figure covered in shaggy fur.
 name:bloodshot icky thing
 base:icky thing
 color:r
-info:110:32:14:21:20
-power:9:3:24
+speed:110
+hit-points:32
+vision:14
+armor-class:21
+alertness:20
+depth:9
+rarity:3
+experience:24
 blow:TOUCH:HURT:1d4
 blow:CRAWL:ACID:2d4
 flags:EMPTY_MIND
@@ -1749,8 +2534,14 @@ desc:It is a strange, slimy, icky creature.
 name:giant grey rat
 base:rodent
 color:s
-info:110:4:8:14:20
-power:9:1:2
+speed:110
+hit-points:4
+vision:8
+armor-class:14
+alertness:20
+depth:9
+rarity:1
+experience:2
 blow:BITE:POISON:1d4
 flags:MULTIPLY
 flags:RAND_25
@@ -1760,8 +2551,14 @@ name:black harpy
 plural:black harpies
 base:hybrid
 color:D
-info:120:14:16:26:10
-power:9:1:19
+speed:120
+hit-points:14
+vision:16
+armor-class:26
+alertness:10
+depth:9
+rarity:1
+experience:19
 blow:CLAW:HURT:1d2
 blow:CLAW:HURT:1d2
 blow:BITE:HURT:1d3
@@ -1772,8 +2569,14 @@ desc:A woman's face on the body of a vicious black bird.
 name:orc shaman
 base:orc
 color:r
-info:110:41:20:22:50
-power:9:1:30
+speed:110
+hit-points:41
+vision:20
+armor-class:22
+alertness:50
+depth:9
+rarity:1
+experience:30
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 flags:DROP_60
@@ -1789,8 +2592,14 @@ desc:An orc dressed in skins who gestures wildly.
 name:baby blue dragon
 base:dragon
 color:b
-info:110:88:20:36:70
-power:9:2:35
+speed:110
+hit-points:88
+vision:20
+armor-class:36
+alertness:70
+depth:9
+rarity:2
+experience:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1806,8 +2615,14 @@ desc: scales a pale blue.
 name:baby white dragon
 base:dragon
 color:w
-info:110:88:20:36:70
-power:9:2:35
+speed:110
+hit-points:88
+vision:20
+armor-class:36
+alertness:70
+depth:9
+rarity:2
+experience:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1823,8 +2638,14 @@ desc: scales a pale white.
 name:baby green dragon
 base:dragon
 color:g
-info:110:88:20:36:70
-power:9:2:35
+speed:110
+hit-points:88
+vision:20
+armor-class:36
+alertness:70
+depth:9
+rarity:2
+experience:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1840,8 +2661,14 @@ desc: scales a sickly green.
 name:baby black dragon
 base:dragon
 color:s
-info:110:88:20:36:70
-power:9:2:35
+speed:110
+hit-points:88
+vision:20
+armor-class:36
+alertness:70
+depth:9
+rarity:2
+experience:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1857,8 +2684,14 @@ desc: scales a dull black.
 name:baby red dragon
 base:dragon
 color:r
-info:110:88:20:36:70
-power:9:2:35
+speed:110
+hit-points:88
+vision:20
+armor-class:36
+alertness:70
+depth:9
+rarity:2
+experience:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1874,8 +2707,14 @@ desc: scales a pale red.
 name:giant red ant
 base:ant
 color:r
-info:110:18:12:40:60
-power:9:2:22
+speed:110
+hit-points:18
+vision:12
+armor-class:40
+alertness:60
+depth:9
+rarity:2
+experience:22
 blow:BITE:HURT:1d4
 blow:STING:LOSE_STR:1d4
 desc:It is large and has venomous mandibles.
@@ -1883,8 +2722,14 @@ desc:It is large and has venomous mandibles.
 name:Brodda, the Easterling
 base:person
 color:U
-info:110:210:20:37:40
-power:9:2:100
+speed:110
+hit-points:210
+vision:20
+armor-class:37
+alertness:40
+depth:9
+rarity:2
+experience:100
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
@@ -1897,8 +2742,14 @@ desc:A nasty piece of work, Brodda picks on defenseless women and children.
 name:king cobra
 base:snake
 color:g
-info:110:44:8:45:10
-power:9:2:28
+speed:110
+hit-points:44
+vision:8
+armor-class:45
+alertness:10
+depth:9
+rarity:2
+experience:28
 blow:SPIT:BLIND:1d2
 blow:BITE:POISON:3d4
 flags:RAND_50
@@ -1908,8 +2759,14 @@ desc:It is a large snake with a hooded face.
 name:baby gold dragon
 base:dragon
 color:y
-info:110:88:20:36:70
-power:9:2:35
+speed:110
+hit-points:88
+vision:20
+armor-class:36
+alertness:70
+depth:9
+rarity:2
+experience:35
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -1924,8 +2781,14 @@ desc: scales a pale gold.
 name:cave bear
 base:quadruped
 color:u
-info:110:36:10:52:30
-power:9:1:25
+speed:110
+hit-points:36
+vision:10
+armor-class:52
+alertness:30
+depth:9
+rarity:1
+experience:25
 blow:CLAW:HURT:1d6
 blow:CLAW:HURT:1d6
 blow:BITE:HURT:1d8
@@ -1945,8 +2808,14 @@ desc: you are trespassing in its territory.
 name:giant spider
 base:spider
 color:V
-info:110:55:8:24:40
-power:10:2:35
+speed:110
+hit-points:55
+vision:8
+armor-class:24
+alertness:40
+depth:10
+rarity:2
+experience:35
 blow:BITE:HURT:1d10
 blow:BITE:POISON:1d6
 blow:BITE:POISON:1d6
@@ -1958,8 +2827,14 @@ desc:It is a vast black spider whose bulbous body is bloated with poison.
 name:dark elven mage
 base:humanoid
 color:r
-info:120:39:20:24:30
-power:10:1:50
+speed:120
+hit-points:39
+vision:20
+armor-class:24
+alertness:30
+depth:10
+rarity:1
+experience:50
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 flags:MALE | EVIL
@@ -1977,8 +2852,14 @@ desc:A dark elven figure, dressed all in black, hurling spells at you.
 name:Orfax, Son of Boldor
 base:yeek
 color:B
-info:120:120:18:24:10
-power:10:3:80
+speed:120
+hit-points:120
+vision:18
+armor-class:24
+alertness:10
+depth:10
+rarity:3
+experience:80
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d8
 blow:INSULT
@@ -1999,8 +2880,14 @@ desc: yeek.
 name:dark elven warrior
 base:humanoid
 color:u
-info:110:60:20:24:40
-power:10:1:50
+speed:110
+hit-points:60
+vision:20
+armor-class:24
+alertness:40
+depth:10
+rarity:1
+experience:50
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 flags:MALE | EVIL
@@ -2012,8 +2899,14 @@ name:clear mushroom patch
 plural:clear mushroom patches
 base:mushroom
 color:w
-info:120:1:4:1:0
-power:10:2:3
+speed:120
+hit-points:1
+vision:4
+armor-class:1
+alertness:0
+depth:10
+rarity:2
+experience:3
 blow:SPORE:HURT:1d1
 flags:COLD_BLOOD | INVISIBLE | MULTIPLY
 flags:NEVER_MOVE
@@ -2023,8 +2916,14 @@ desc:Yum!  It looks quite tasty.
 name:Grishnákh, the Hill Orc
 base:orc
 color:y
-info:110:230:20:30:50
-power:10:3:160
+speed:110
+hit-points:230
+vision:20
+armor-class:30
+alertness:50
+depth:10
+rarity:3
+experience:160
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d12
@@ -2039,8 +2938,14 @@ desc:He is a cunning and devious orc with a chaotic nature.
 name:giant white tick
 base:spider
 color:w
-info:100:54:12:150:20
-power:10:2:27
+speed:100
+hit-points:54
+vision:12
+armor-class:150
+alertness:20
+depth:10
+rarity:2
+experience:27
 blow:BITE:POISON:2d6
 flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
@@ -2049,8 +2954,14 @@ desc:It is moving slowly towards you.
 name:hairy mold
 base:mold
 color:o
-info:110:68:2:22:0
-power:10:1:32
+speed:110
+hit-points:68
+vision:2
+armor-class:22
+alertness:0
+depth:10
+rarity:1
+experience:32
 blow:SPORE:POISON:1d3
 flags:EMPTY_MIND | STUPID
 desc:It is a strange hairy growth on the dungeon floor.
@@ -2058,8 +2969,14 @@ desc:It is a strange hairy growth on the dungeon floor.
 name:disenchanter mold
 base:mold
 color:v
-info:110:72:2:30:10
-power:10:1:40
+speed:110
+hit-points:72
+vision:2
+armor-class:30
+alertness:10
+depth:10
+rarity:1
+experience:40
 blow:SPORE:DISENCHANT:1d6
 flags:EMPTY_MIND | STUPID
 flags:IM_DISEN
@@ -2072,8 +2989,14 @@ desc:It is a strange glowing growth on the dungeon floor.
 name:pseudo-dragon
 base:dragon
 color:o
-info:110:176:20:36:70
-power:10:2:150
+speed:110
+hit-points:176
+vision:20
+armor-class:36
+alertness:70
+depth:10
+rarity:2
+experience:150
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BITE:HURT:1d5
@@ -2090,8 +3013,14 @@ name:tengu
 plural:tengu
 base:minor demon
 color:R
-info:120:80:20:38:30
-power:10:1:40
+speed:120
+hit-points:80
+vision:20
+armor-class:38
+alertness:30
+depth:10
+rarity:1
+experience:40
 blow:HIT:HURT:1d8
 flags:OPEN_DOOR | BASH_DOOR
 flags:NO_FEAR
@@ -2105,8 +3034,14 @@ name:creeping gold coins
 plural:piles of creeping gold coins
 base:creeping coins
 color:y
-info:100:81:5:43:10
-power:10:3:32
+speed:100
+hit-points:81
+vision:5
+armor-class:43
+alertness:10
+depth:10
+rarity:3
+experience:32
 blow:HIT:HURT:2d5
 blow:TOUCH:POISON:3d5
 flags:IM_ACID
@@ -2118,8 +3053,14 @@ name:wolf
 plural:wolves
 base:canine
 color:u
-info:120:21:30:45:10
-power:10:1:30
+speed:120
+hit-points:21
+vision:30
+armor-class:45
+alertness:10
+depth:10
+rarity:1
+experience:30
 blow:BITE:HURT:1d6
 flags:RAND_25 | BASH_DOOR
 flags:GROUP_AI
@@ -2130,16 +3071,28 @@ name:giant fruit fly
 plural:giant fruit flies
 base:insect
 color:G
-info:120:3:8:16:10
-power:10:3:4
+speed:120
+hit-points:3
+vision:8
+armor-class:16
+alertness:10
+depth:10
+rarity:3
+experience:4
 blow:BITE:HURT:1d2
 desc:A fast-breeding, annoying pest.
 
 name:panther
 base:feline
 color:u
-info:120:45:40:36:0
-power:10:2:25
+speed:120
+hit-points:45
+vision:40
+armor-class:36
+alertness:0
+depth:10
+rarity:2
+experience:25
 blow:CLAW:HURT:1d8
 blow:CLAW:HURT:1d8
 flags:BASH_DOOR
@@ -2149,8 +3102,14 @@ desc: meal.
 name:brigand
 base:person
 color:b
-info:110:41:20:48:5
-power:10:2:35
+speed:110
+hit-points:41
+vision:20
+armor-class:48
+alertness:5
+depth:10
+rarity:2
+experience:35
 blow:HIT:HURT:2d4
 blow:TOUCH:EAT_ITEM
 flags:MALE | EVIL
@@ -2167,8 +3126,14 @@ desc:He is eyeing your backpack.
 name:baby multi-hued dragon
 base:dragon
 color:v
-info:110:114:20:36:70
-power:11:2:45
+speed:110
+hit-points:114
+vision:20
+armor-class:36
+alertness:70
+depth:11
+rarity:2
+experience:45
 blow:CLAW:HURT:1d4
 blow:CLAW:HURT:1d4
 blow:BITE:HURT:1d6
@@ -2185,8 +3150,14 @@ desc: scales shimmering with hints of many different colours.
 name:hippogriff
 base:hybrid
 color:U
-info:110:100:12:21:40
-power:11:1:30
+speed:110
+hit-points:100
+vision:12
+armor-class:21
+alertness:40
+depth:11
+rarity:1
+experience:30
 blow:HIT:HURT:2d5
 blow:BITE:HURT:2d5
 flags:ANIMAL
@@ -2196,8 +3167,14 @@ desc:A strange hybrid of eagle and horse.  It looks weird.
 name:zombified orc
 base:zombie
 color:s
-info:110:50:20:36:90
-power:11:1:30
+speed:110
+hit-points:50
+vision:20
+armor-class:36
+alertness:90
+depth:11
+rarity:1
+experience:30
 blow:HIT:HURT:1d4
 blow:HIT:HURT:1d4
 blow:HIT:HURT:1d4
@@ -2208,8 +3185,14 @@ desc:It is a shambling orcish corpse leaving behind a trail of flesh.
 name:gnome mage
 base:humanoid
 color:r
-info:110:32:18:30:20
-power:11:2:38
+speed:110
+hit-points:32
+vision:18
+armor-class:30
+alertness:20
+depth:11
+rarity:2
+experience:38
 blow:HIT:HURT:1d5
 flags:MALE | EVIL
 flags:DROP_60
@@ -2229,8 +3212,14 @@ desc:A mage of short stature.
 name:black mamba
 base:snake
 color:D
-info:120:45:10:48:10
-power:12:3:40
+speed:120
+hit-points:45
+vision:10
+armor-class:48
+alertness:10
+depth:12
+rarity:3
+experience:40
 blow:BITE:POISON:4d4
 flags:RAND_50
 flags:IM_POIS
@@ -2240,8 +3229,14 @@ name:white wolf
 plural:white wolves
 base:canine
 color:w
-info:120:28:30:45:15
-power:12:1:30
+speed:120
+hit-points:28
+vision:30
+armor-class:45
+alertness:15
+depth:12
+rarity:1
+experience:30
 blow:BITE:HURT:1d3
 blow:BITE:HURT:1d4
 flags:RAND_25 | BASH_DOOR
@@ -2254,8 +3249,14 @@ name:grape jelly
 plural:grape jellies
 base:jelly
 color:P
-info:110:234:2:1:99
-power:12:3:60
+speed:110
+hit-points:234
+vision:2
+armor-class:1
+alertness:99
+depth:12
+rarity:3
+experience:60
 blow:TOUCH:EXP_10
 flags:HAS_LIGHT
 flags:NEVER_MOVE
@@ -2268,8 +3269,14 @@ desc:Yum!  It looks quite tasty.  It is a pulsing mound of glowing flesh.
 name:nether worm mass
 base:worm
 color:D
-info:100:23:10:22:10
-power:12:3:6
+speed:100
+hit-points:23
+vision:10
+armor-class:22
+alertness:10
+depth:12
+rarity:3
+experience:6
 blow:TOUCH:EXP_10
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50 | BASH_DOOR
@@ -2280,8 +3287,14 @@ desc: air, you....
 name:Golfimbul, the Hill Orc Chief
 base:orc
 color:Y
-info:110:240:20:90:40
-power:12:3:230
+speed:110
+hit-points:240
+vision:20
+armor-class:90
+alertness:40
+depth:12
+rarity:3
+experience:230
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d10
@@ -2299,8 +3312,14 @@ desc:A leader of a band of raiding orcs, he picks on hobbits.
 name:master yeek
 base:yeek
 color:U
-info:110:60:18:28:10
-power:12:2:28
+speed:110
+hit-points:60
+vision:18
+armor-class:28
+alertness:10
+depth:12
+rarity:2
+experience:28
 blow:HIT:HURT:1d8
 flags:EVIL
 flags:DROP_40
@@ -2317,8 +3336,14 @@ desc:A small humanoid that radiates some power.
 name:priest
 base:person
 color:g
-info:110:54:20:26:40
-power:12:1:36
+speed:110
+hit-points:54
+vision:20
+armor-class:26
+alertness:40
+depth:12
+rarity:1
+experience:36
 blow:HIT:HURT:2d3
 blow:HIT:HURT:2d3
 flags:MALE | EVIL | SMART | HAS_LIGHT
@@ -2340,8 +3365,14 @@ desc:A robed man, dedicated to his god.
 name:dark elven priest
 base:humanoid
 color:g
-info:120:39:20:45:40
-power:12:1:50
+speed:120
+hit-points:39
+vision:20
+armor-class:45
+alertness:40
+depth:12
+rarity:1
+experience:50
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d10
 flags:MALE | EVIL | SMART
@@ -2359,8 +3390,14 @@ desc: deliver your soul to hell.
 name:air spirit
 base:elemental
 color:B
-info:130:36:12:48:20
-power:12:2:40
+speed:130
+hit-points:36
+vision:12
+armor-class:48
+alertness:20
+depth:12
+rarity:2
+experience:40
 blow:HIT:HURT:1d3
 flags:COLD_BLOOD | INVISIBLE
 flags:RAND_25 | RAND_50 | BASH_DOOR
@@ -2370,8 +3407,14 @@ desc:A whirlwind of sentient air.
 name:skeleton human
 base:skeleton
 color:w
-info:110:45:20:45:70
-power:12:1:38
+speed:110
+hit-points:45
+vision:20
+armor-class:45
+alertness:70
+depth:12
+rarity:1
+experience:38
 blow:HIT:HURT:1d8
 flags:EMPTY_MIND
 flags:OPEN_DOOR | BASH_DOOR
@@ -2380,8 +3423,14 @@ desc:It is an animated human skeleton.
 name:zombified human
 base:zombie
 color:s
-info:110:54:20:36:100
-power:12:1:34
+speed:110
+hit-points:54
+vision:20
+armor-class:36
+alertness:100
+depth:12
+rarity:1
+experience:34
 blow:HIT:HURT:1d4
 blow:HIT:HURT:1d4
 flags:EMPTY_MIND
@@ -2391,8 +3440,14 @@ desc:It is a shambling human corpse dropping chunks of flesh behind it.
 name:tiger
 base:feline
 color:o
-info:120:66:40:48:0
-power:12:2:40
+speed:120
+hit-points:66
+vision:40
+armor-class:48
+alertness:0
+depth:12
+rarity:2
+experience:40
 blow:CLAW:HURT:1d8
 blow:CLAW:HURT:1d8
 blow:BITE:HURT:1d6
@@ -2403,8 +3458,14 @@ desc: towards you, ready to pounce.
 name:moaning spirit
 base:ghost
 color:u
-info:120:23:14:24:10
-power:12:2:44
+speed:120
+hit-points:23
+vision:14
+armor-class:24
+alertness:10
+depth:12
+rarity:2
+experience:44
 blow:WAIL:TERRIFY
 blow:TOUCH:LOSE_DEX:1d8
 flags:DROP_40 | DROP_60
@@ -2418,8 +3479,14 @@ desc:A ghostly apparition that shrieks horribly.
 name:Easterling warrior
 base:person
 color:u
-info:110:54:20:51:70
-power:12:1:40
+speed:110
+hit-points:54
+vision:20
+armor-class:51
+alertness:70
+depth:12
+rarity:1
+experience:40
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 flags:MALE | HAS_LIGHT
@@ -2434,8 +3501,14 @@ desc:A warrior of considerable skill.
 name:stegocentipede
 base:centipede
 color:u
-info:120:59:12:36:30
-power:12:2:40
+speed:120
+hit-points:59
+vision:12
+armor-class:36
+alertness:30
+depth:12
+rarity:2
+experience:40
 blow:BITE:HURT:2d4
 blow:BITE:HURT:2d4
 blow:STING:HURT:2d4
@@ -2446,8 +3519,14 @@ name:spotted jelly
 plural:spotted jellies
 base:jelly
 color:o
-info:120:59:12:27:0
-power:12:3:33
+speed:120
+hit-points:59
+vision:12
+armor-class:27
+alertness:0
+depth:12
+rarity:3
+experience:33
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:2d6
 blow:TOUCH:ACID:2d6
@@ -2461,8 +3540,14 @@ desc:A strange jelly thing, covered in discoloured blotches.
 name:drider
 base:spider
 color:b
-info:110:70:8:36:80
-power:13:2:55
+speed:110
+hit-points:70
+vision:8
+armor-class:36
+alertness:80
+depth:13
+rarity:2
+experience:55
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:BITE:POISON:1d6
@@ -2477,16 +3562,28 @@ desc:A dark elven torso merged with the bloated form of a giant spider.
 name:killer brown beetle
 base:killer beetle
 color:u
-info:110:59:10:72:30
-power:13:1:45
+speed:110
+hit-points:59
+vision:10
+armor-class:72
+alertness:30
+depth:13
+rarity:1
+experience:45
 blow:BITE:HURT:4d4
 desc:It is a vicious insect with a tough carapace.
 
 name:Boldor, King of the Yeeks
 base:yeek
 color:P
-info:120:180:18:28:10
-power:13:3:200
+speed:120
+hit-points:180
+vision:18
+armor-class:28
+alertness:10
+depth:13
+rarity:3
+experience:200
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d8
@@ -2506,8 +3603,14 @@ desc:A great yeek, powerful in magic and sorcery, but a yeek all the same.
 name:ogre
 base:ogre
 color:U
-info:110:65:20:49:50
-power:13:2:50
+speed:110
+hit-points:65
+vision:20
+armor-class:49
+alertness:50
+depth:13
+rarity:2
+experience:50
 blow:HIT:HURT:2d8
 flags:DROP_40
 friends-base:100:2d4:orc
@@ -2518,8 +3621,14 @@ name:creeping mithril coins
 plural:piles of creeping mithril coins
 base:creeping coins
 color:B
-info:110:90:5:60:10
-power:13:3:45
+speed:110
+hit-points:90
+vision:5
+armor-class:60
+alertness:10
+depth:13
+rarity:3
+experience:45
 blow:HIT:HURT:2d5
 blow:TOUCH:POISON:3d5
 flags:IM_ACID
@@ -2530,8 +3639,14 @@ mimic:gold:mithril
 name:illusionist
 base:person
 color:I
-info:120:54:20:15:20
-power:13:2:50
+speed:120
+hit-points:54
+vision:20
+armor-class:15
+alertness:20
+depth:13
+rarity:2
+experience:50
 blow:HIT:HURT:2d2
 flags:MALE | EVIL | SMART | HAS_LIGHT
 flags:DROP_1
@@ -2552,8 +3667,14 @@ desc:A deceptive spell caster.
 name:druid
 base:person
 color:G
-info:110:78:20:15:20
-power:13:2:50
+speed:110
+hit-points:78
+vision:20
+armor-class:15
+alertness:20
+depth:13
+rarity:2
+experience:50
 blow:HIT:HURT:2d4
 blow:HIT:HURT:2d4
 flags:MALE | EVIL | SMART | HAS_LIGHT
@@ -2572,8 +3693,14 @@ desc:A priest devoted to Nature.
 name:black orc
 base:orc
 color:D
-info:110:66:20:54:60
-power:13:1:45
+speed:110
+hit-points:66
+vision:20
+armor-class:54
+alertness:60
+depth:13
+rarity:1
+experience:45
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 flags:DROP_20
@@ -2590,8 +3717,14 @@ name:ochre jelly
 plural:ochre jellies
 base:jelly
 color:U
-info:120:59:12:21:1
-power:13:3:40
+speed:120
+hit-points:59
+vision:12
+armor-class:21
+alertness:1
+depth:13
+rarity:3
+experience:40
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:2d6
 blow:TOUCH:ACID:2d6
@@ -2606,8 +3739,14 @@ desc: rests on.
 name:giant flea
 base:insect
 color:s
-info:120:3:8:30:10
-power:14:3:4
+speed:120
+hit-points:3
+vision:8
+armor-class:30
+alertness:10
+depth:14
+rarity:3
+experience:4
 blow:BITE:HURT:1d2
 flags:BASH_DOOR
 desc:It makes you itch just to look at it.
@@ -2615,8 +3754,14 @@ desc:It makes you itch just to look at it.
 name:Ufthak of Cirith Ungol
 base:orc
 color:g
-info:110:320:20:75:40
-power:14:3:250
+speed:110
+hit-points:320
+vision:20
+armor-class:75
+alertness:40
+depth:14
+rarity:3
+experience:250
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
@@ -2632,8 +3777,14 @@ desc: spiders.
 name:blue icky thing
 base:icky thing
 color:b
-info:100:35:15:30:10
-power:14:4:20
+speed:100
+hit-points:35
+vision:15
+armor-class:30
+alertness:10
+depth:14
+rarity:4
+experience:20
 blow:CRAWL:POISON:1d4
 blow:CRAWL:EAT_FOOD
 blow:HIT:HURT:1d4
@@ -2651,8 +3802,14 @@ desc: evil cunning.  It hungers for food, and you look tasty.
 name:flesh golem
 base:golem
 color:R
-info:110:54:12:36:10
-power:14:2:50
+speed:110
+hit-points:54
+vision:12
+armor-class:36
+alertness:10
+depth:14
+rarity:2
+experience:50
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 flags:BASH_DOOR
@@ -2661,8 +3818,14 @@ desc:A shambling humanoid monster with long scars.
 name:warg
 base:canine
 color:s
-info:120:36:20:30:10
-power:14:2:40
+speed:120
+hit-points:36
+vision:20
+armor-class:30
+alertness:10
+depth:14
+rarity:2
+experience:40
 blow:BITE:HURT:1d8
 flags:EVIL | GROUP_AI
 flags:RAND_25 | BASH_DOOR
@@ -2673,16 +3836,28 @@ name:giant black louse
 plural:giant black lice
 base:louse
 color:D
-info:120:2:6:8:10
-power:14:1:3
+speed:120
+hit-points:2
+vision:6
+armor-class:8
+alertness:10
+depth:14
+rarity:1
+experience:3
 blow:BITE:HURT:1d2
 desc:It makes you itch just to look at it.
 
 name:lurker
 base:lurker
 color:w
-info:110:176:30:30:10
-power:14:3:80
+speed:110
+hit-points:176
+vision:30
+armor-class:30
+alertness:10
+depth:14
+rarity:3
+experience:80
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 desc:A strange creature that merges with the dungeon floor, trapping its
@@ -2693,8 +3868,14 @@ desc: victims by enveloping them within its perfectly disguised form.
 name:wererat
 base:rodent
 color:D
-info:110:90:10:15:20
-power:15:2:45
+speed:110
+hit-points:90
+vision:10
+armor-class:15
+alertness:20
+depth:15
+rarity:2
+experience:45
 blow:CLAW:HURT:1d8
 blow:CLAW:HURT:1d8
 blow:BITE:HURT:2d6
@@ -2713,8 +3894,14 @@ desc: relishing in filth and disease.
 name:black ogre
 base:ogre
 color:D
-info:110:100:20:49:50
-power:15:2:75
+speed:110
+hit-points:100
+vision:20
+armor-class:49
+alertness:50
+depth:15
+rarity:2
+experience:75
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 flags:DROP_40
@@ -2727,8 +3914,14 @@ name:magic mushroom patch
 plural:magic mushroom patches
 base:mushroom
 color:B
-info:140:1:40:12:0
-power:15:2:10
+speed:140
+hit-points:1
+vision:40
+armor-class:12
+alertness:0
+depth:15
+rarity:2
+experience:10
 blow:SPORE:CONFUSE
 blow:SPORE:CONFUSE
 blow:SPORE:HALLU
@@ -2744,8 +3937,14 @@ desc:Yum!  It looks quite tasty.  It seems to glow with an unusual light.
 name:guardian naga
 base:naga
 color:B
-info:110:144:20:78:120
-power:15:2:80
+speed:110
+hit-points:144
+vision:20
+armor-class:78
+alertness:120
+depth:15
+rarity:2
+experience:80
 blow:CRUSH:HURT:2d8
 blow:BITE:HURT:1d8
 blow:BITE:HURT:1d8
@@ -2756,8 +3955,14 @@ desc:A giant snake-like figure with a woman's torso.
 name:light hound
 base:zephyr hound
 color:o
-info:110:21:30:36:0
-power:15:3:50
+speed:110
+hit-points:21
+vision:30
+armor-class:36
+alertness:0
+depth:15
+rarity:3
+experience:50
 blow:CLAW:HURT:1d4
 blow:CLAW:HURT:1d4
 blow:BITE:HURT:1d6
@@ -2773,8 +3978,14 @@ desc:A brilliant canine form whose light hurts your eyes, even at this distance.
 name:dark hound
 base:zephyr hound
 color:D
-info:110:21:30:36:0
-power:15:3:50
+speed:110
+hit-points:21
+vision:30
+armor-class:36
+alertness:0
+depth:15
+rarity:3
+experience:50
 blow:CLAW:HURT:1d4
 blow:CLAW:HURT:1d4
 blow:BITE:HURT:1d6
@@ -2790,8 +4001,14 @@ desc: form.
 name:half-orc
 base:orc
 color:s
-info:110:88:20:60:50
-power:15:2:50
+speed:110
+hit-points:88
+vision:20
+armor-class:60
+alertness:50
+depth:15
+rarity:2
+experience:50
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 flags:DROP_20
@@ -2804,8 +4021,14 @@ desc: generally believed to be responsible for this abomination.
 name:giant tarantula
 base:spider
 color:o
-info:120:80:8:48:20
-power:15:3:70
+speed:120
+hit-points:80
+vision:8
+armor-class:48
+alertness:20
+depth:15
+rarity:3
+experience:70
 blow:BITE:POISON:1d6
 blow:BITE:POISON:1d6
 blow:BITE:POISON:1d6
@@ -2816,8 +4039,14 @@ desc:A giant spider with hairy black and red legs.
 name:giant clear centipede
 base:centipede
 color:w
-info:110:23:12:36:30
-power:15:2:30
+speed:110
+hit-points:23
+vision:12
+armor-class:36
+alertness:30
+depth:15
+rarity:2
+experience:30
 blow:BITE:HURT:2d4
 blow:STING:HURT:2d4
 flags:INVISIBLE
@@ -2828,8 +4057,14 @@ desc:It is about four feet long and carnivorous.
 name:Mirkwood spider
 base:spider
 color:g
-info:120:41:15:30:80
-power:15:2:25
+speed:120
+hit-points:41
+vision:15
+armor-class:30
+alertness:80
+depth:15
+rarity:2
+experience:25
 blow:BITE:HURT:1d8
 blow:BITE:POISON:1d6
 blow:BITE:POISON:1d6
@@ -2842,8 +4077,14 @@ desc: seeks to taste your juicy insides.
 name:griffon
 base:hybrid
 color:u
-info:110:135:12:22:40
-power:15:1:70
+speed:110
+hit-points:135
+vision:12
+armor-class:22
+alertness:40
+depth:15
+rarity:1
+experience:70
 blow:HIT:HURT:3d4
 blow:BITE:HURT:2d6
 flags:ANIMAL
@@ -2854,22 +4095,31 @@ name:homunculus
 plural:homunculi
 base:minor demon
 color:y
-info:110:36:20:48:60
-power:15:3:40
+speed:110
+hit-points:36
+vision:20
+armor-class:48
+alertness:60
+depth:15
+rarity:3
+experience:40
 blow:HIT:PARALYZE:1d2
 blow:HIT:HURT:1d10
 flags:OPEN_DOOR | BASH_DOOR
 flags:NO_FEAR
 desc:It is a small demonic spirit full of malevolence.
 
-#name:Gnome mage
-#Consolidated (see #154)
-
 name:clear hound
 base:zephyr hound
 color:w
-info:110:21:30:36:0
-power:15:3:50
+speed:110
+hit-points:21
+vision:30
+armor-class:36
+alertness:0
+depth:15
+rarity:3
+experience:50
 blow:CLAW:HURT:1d6
 blow:CLAW:HURT:1d6
 blow:BITE:HURT:1d8
@@ -2882,8 +4132,14 @@ desc:A completely translucent hound.
 name:clay golem
 base:golem
 color:U
-info:110:63:12:36:10
-power:15:2:60
+speed:110
+hit-points:63
+vision:12
+armor-class:36
+alertness:10
+depth:15
+rarity:2
+experience:60
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 flags:COLD_BLOOD
@@ -2894,8 +4150,14 @@ desc:It is a massive animated statue made out of hardened clay.
 name:giant tan bat
 base:bat
 color:U
-info:130:14:12:30:10
-power:15:2:18
+speed:130
+hit-points:14
+vision:12
+armor-class:30
+alertness:10
+depth:15
+rarity:2
+experience:18
 blow:BITE:TERRIFY:1d3
 blow:CLAW:HURT:1d2
 blow:CLAW:HURT:1d2
@@ -2909,8 +4171,14 @@ desc: noise.
 name:umber hulk
 base:xorn
 color:U
-info:110:110:20:75:30
-power:16:1:75
+speed:110
+hit-points:110
+vision:20
+armor-class:75
+alertness:30
+depth:16
+rarity:1
+experience:75
 blow:GAZE:CONFUSE
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
@@ -2923,8 +4191,14 @@ desc: slicing through rock.
 name:gelatinous cube
 base:jelly
 color:G
-info:110:316:12:21:1
-power:16:4:80
+speed:110
+hit-points:316
+vision:12
+armor-class:21
+alertness:1
+depth:16
+rarity:4
+experience:80
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
@@ -2942,16 +4216,28 @@ desc: few corpses as well.
 name:hummerhorn
 base:insect
 color:y
-info:120:3:8:16:10
-power:16:4:4
+speed:120
+hit-points:3
+vision:8
+armor-class:16
+alertness:10
+depth:16
+rarity:4
+experience:4
 blow:BITE:CONFUSE:2d2
 desc:A giant buzzing wasp, its stinger drips venom.
 
 name:Ulfast, Son of Ulfang
 base:person
 color:U
-info:110:340:20:48:40
-power:16:3:200
+speed:110
+hit-points:340
+vision:20
+armor-class:48
+alertness:40
+depth:16
+rarity:3
+experience:200
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
@@ -2965,8 +4251,14 @@ desc:A short and swarthy Easterling.
 name:quasit
 base:minor demon
 color:o
-info:110:27:20:36:20
-power:16:2:50
+speed:110
+hit-points:27
+vision:20
+armor-class:36
+alertness:20
+depth:16
+rarity:2
+experience:50
 blow:BITE:LOSE_DEX:1d6
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
@@ -2983,8 +4275,14 @@ desc:The chaotic evil master's favourite pet.
 name:uruk
 base:orc
 color:B
-info:110:70:20:75:30
-power:16:1:60
+speed:110
+hit-points:70
+vision:20
+armor-class:75
+alertness:30
+depth:16
+rarity:1
+experience:60
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 flags:DROP_20
@@ -2999,8 +4297,14 @@ desc:A cunning orc of power, as tall as a man, and stronger.  It fears little.
 name:grizzly bear
 base:quadruped
 color:U
-info:110:78:10:52:30
-power:16:2:55
+speed:110
+hit-points:78
+vision:10
+armor-class:52
+alertness:30
+depth:16
+rarity:2
+experience:55
 blow:CLAW:HURT:1d8
 blow:CLAW:HURT:1d8
 blow:BITE:HURT:1d12
@@ -3012,8 +4316,14 @@ name:craban
 plural:crebain
 base:bird
 color:D
-info:120:9:40:14:0
-power:16:4:20
+speed:120
+hit-points:9
+vision:40
+armor-class:14
+alertness:0
+depth:16
+rarity:4
+experience:20
 blow:CLAW:HURT:1d4
 blow:CLAW:HURT:1d4
 spell-freq:8
@@ -3030,8 +4340,14 @@ desc: now they seek to alert other evil creatures to your presence.
 name:imp
 base:minor demon
 color:g
-info:110:27:20:36:20
-power:17:2:55
+speed:110
+hit-points:27
+vision:20
+armor-class:36
+alertness:20
+depth:17
+rarity:2
+experience:55
 blow:HIT:POISON:3d4
 blow:HIT:POISON:3d4
 flags:COLD_BLOOD | INVISIBLE | SMART
@@ -3047,8 +4363,14 @@ desc:The lawful evil master's favourite pet.
 name:forest troll
 base:troll
 color:g
-info:110:110:20:75:80
-power:17:1:70
+speed:110
+hit-points:110
+vision:20
+armor-class:75
+alertness:80
+depth:17
+rarity:1
+experience:70
 blow:HIT:HURT:1d4
 blow:HIT:HURT:1d4
 blow:BITE:HURT:1d6
@@ -3061,8 +4383,14 @@ desc:He is green skinned and ugly.
 name:Nár, the Dwarf
 base:humanoid
 color:y
-info:110:450:25:84:25
-power:17:2:250
+speed:110
+hit-points:450
+vision:25
+armor-class:84
+alertness:25
+depth:17
+rarity:2
+experience:250
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
@@ -3082,8 +4410,14 @@ desc: vent  his anger.
 name:2-headed hydra
 base:hydra
 color:u
-info:110:200:20:90:80
-power:17:2:80
+speed:110
+hit-points:200
+vision:20
+armor-class:90
+alertness:80
+depth:17
+rarity:2
+experience:80
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
 flags:DROP_2
@@ -3096,8 +4430,14 @@ desc:A strange reptilian hybrid with two heads, guarding its hoard.
 name:water spirit
 base:elemental
 color:b
-info:120:41:12:42:20
-power:17:2:58
+speed:120
+hit-points:41
+vision:12
+armor-class:42
+alertness:20
+depth:17
+rarity:2
+experience:58
 blow:HIT:HURT:2d4
 blow:HIT:HURT:2d4
 flags:COLD_BLOOD
@@ -3108,8 +4448,14 @@ desc:A whirlpool of sentient liquid.
 name:giant red scorpion
 base:spider
 color:r
-info:110:50:12:52:20
-power:17:1:62
+speed:110
+hit-points:50
+vision:12
+armor-class:52
+alertness:20
+depth:17
+rarity:1
+experience:62
 blow:BITE:HURT:2d4
 blow:STING:LOSE_STR:1d7
 flags:ANIMAL | WEIRD_MIND
@@ -3119,8 +4465,14 @@ desc:It is fast and poisonous.
 name:earth spirit
 base:elemental
 color:u
-info:120:59:10:60:20
-power:17:2:64
+speed:120
+hit-points:59
+vision:10
+armor-class:60
+alertness:20
+depth:17
+rarity:2
+experience:64
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 flags:COLD_BLOOD
@@ -3133,8 +4485,14 @@ desc:A whirling form of sentient rock.
 name:orc captain
 base:orc
 color:o
-info:110:110:20:88:30
-power:18:3:80
+speed:110
+hit-points:110
+vision:20
+armor-class:88
+alertness:30
+depth:18
+rarity:3
+experience:80
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
@@ -3152,8 +4510,14 @@ desc:An armoured orc with an air of authority.
 name:fire spirit
 base:elemental
 color:r
-info:120:50:16:36:20
-power:18:2:75
+speed:120
+hit-points:50
+vision:16
+armor-class:36
+alertness:20
+depth:18
+rarity:2
+experience:75
 blow:HIT:FIRE:2d6
 blow:HIT:FIRE:2d6
 flags:HAS_LIGHT
@@ -3164,8 +4528,14 @@ desc:A whirlwind of sentient flame.
 name:fire hound
 base:zephyr hound
 color:r
-info:110:35:30:36:0
-power:18:3:70
+speed:110
+hit-points:35
+vision:30
+armor-class:36
+alertness:0
+depth:18
+rarity:3
+experience:70
 blow:CLAW:HURT:3d3
 blow:CLAW:HURT:3d3
 blow:BITE:FIRE:2d6
@@ -3183,8 +4553,14 @@ desc: furnace heat radiating from the creature.
 name:cold hound
 base:zephyr hound
 color:w
-info:110:35:30:36:0
-power:18:3:70
+speed:110
+hit-points:35
+vision:30
+armor-class:36
+alertness:0
+depth:18
+rarity:3
+experience:70
 blow:CLAW:HURT:3d3
 blow:CLAW:HURT:3d3
 blow:BITE:COLD:2d6
@@ -3201,8 +4577,14 @@ desc: planes of ice.  Cold radiates from it and freezes your breath in the air.
 name:energy hound
 base:zephyr hound
 color:b
-info:110:35:30:36:0
-power:18:3:70
+speed:110
+hit-points:35
+vision:30
+armor-class:36
+alertness:0
+depth:18
+rarity:3
+experience:70
 blow:CLAW:HURT:3d3
 blow:CLAW:HURT:3d3
 blow:BITE:ELEC:2d6
@@ -3221,8 +4603,14 @@ name:potion mimic
 base:mimic
 glyph:!
 color:w
-info:110:55:25:36:0
-power:18:3:60
+speed:110
+hit-points:55
+vision:25
+armor-class:36
+alertness:0
+depth:18
+rarity:3
+experience:60
 blow:HIT:POISON:3d4
 blow:HIT:HURT:2d3
 blow:HIT:HURT:2d3
@@ -3242,8 +4630,14 @@ mimic:potion:Speed
 name:blink dog
 base:canine
 color:B
-info:120:36:20:24:10
-power:18:2:50
+speed:120
+hit-points:36
+vision:20
+armor-class:24
+alertness:10
+depth:18
+rarity:2
+experience:50
 blow:BITE:HURT:1d8
 flags:RAND_25 | BASH_DOOR | GROUP_AI | ATTR_FLICKER
 spell-freq:4
@@ -3256,8 +4650,14 @@ desc: fade in front of your very eyes.
 name:shambling mound
 base:mushroom
 color:g
-info:110:70:20:19:40
-power:18:2:75
+speed:110
+hit-points:70
+vision:20
+armor-class:19
+alertness:40
+depth:18
+rarity:2
+experience:75
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 flags:EVIL
@@ -3273,8 +4673,14 @@ desc: stench, waking all it nears.
 name:evil eye
 base:eye
 color:g
-info:110:68:2:7:10
-power:18:3:80
+speed:110
+hit-points:68
+vision:2
+armor-class:7
+alertness:10
+depth:18
+rarity:3
+experience:80
 blow:GAZE:EXP_10
 blow:GAZE:EXP_10
 flags:EVIL
@@ -3292,8 +4698,14 @@ desc: do anything except approach it in horrified fascination.
 name:Shagrat, the Orc Captain
 base:orc
 color:g
-info:110:400:20:72:20
-power:19:2:400
+speed:110
+hit-points:400
+vision:20
+armor-class:72
+alertness:20
+depth:19
+rarity:2
+experience:400
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d5
@@ -3308,8 +4720,14 @@ desc: Ungol.
 name:Gorbag, the Orc Captain
 base:orc
 color:g
-info:110:400:20:72:20
-power:19:2:400
+speed:110
+hit-points:400
+vision:20
+armor-class:72
+alertness:20
+depth:19
+rarity:2
+experience:400
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d5
@@ -3324,8 +4742,14 @@ desc: Morgul.
 name:stone golem
 base:golem
 color:W
-info:100:126:12:90:10
-power:19:2:100
+speed:100
+hit-points:126
+vision:12
+armor-class:90
+alertness:10
+depth:19
+rarity:2
+experience:100
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
 flags:COLD_BLOOD
@@ -3336,8 +4760,14 @@ desc:It is a massive animated statue.
 name:red mold
 base:mold
 color:r
-info:110:77:2:19:70
-power:19:1:64
+speed:110
+hit-points:77
+vision:2
+armor-class:19
+alertness:70
+depth:19
+rarity:1
+experience:64
 blow:SPORE:FIRE:4d4
 flags:EMPTY_MIND | STUPID | HAS_LIGHT
 flags:IM_FIRE
@@ -3348,8 +4778,14 @@ desc: flame.
 name:neekerbreeker
 base:insect
 color:D
-info:120:5:8:21:10
-power:19:4:4
+speed:120
+hit-points:5
+vision:8
+armor-class:21
+alertness:10
+depth:19
+rarity:4
+experience:4
 blow:BITE:POISON:2d2
 flags:EVIL
 spell-freq:12
@@ -3369,8 +4805,14 @@ desc: heard for quite some distance, alerting other monsters to your presence.
 name:Bolg, Son of Azog
 base:orc
 color:P
-info:120:500:20:60:20
-power:20:4:800
+speed:120
+hit-points:500
+vision:20
+armor-class:60
+alertness:20
+depth:20
+rarity:4
+experience:800
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
@@ -3386,8 +4828,14 @@ desc: fast, but fortunately blessed with orcish brains.
 name:phase spider
 base:spider
 color:B
-info:120:27:15:30:80
-power:20:2:60
+speed:120
+hit-points:27
+vision:15
+armor-class:30
+alertness:80
+depth:20
+rarity:2
+experience:60
 blow:BITE:HURT:1d8
 blow:BITE:POISON:1d6
 blow:BITE:POISON:1d6
@@ -3403,8 +4851,14 @@ desc: half-seen in the corner of one eye.
 name:3-headed hydra
 base:hydra
 color:o
-info:120:300:20:97:70
-power:20:2:350
+speed:120
+hit-points:300
+vision:20
+armor-class:97
+alertness:70
+depth:20
+rarity:2
+experience:350
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
@@ -3418,8 +4872,14 @@ desc:A strange reptilian hybrid with three heads, guarding its hoard.
 name:earth hound
 base:zephyr hound
 color:u
-info:110:68:30:36:0
-power:20:3:200
+speed:110
+hit-points:68
+vision:30
+armor-class:36
+alertness:0
+depth:20
+rarity:3
+experience:200
 blow:BITE:HURT:1d8
 blow:BITE:HURT:1d8
 blow:CLAW:HURT:3d3
@@ -3436,8 +4896,14 @@ desc: clearly presents.  Your flesh tingles as it approaches.
 name:air hound
 base:zephyr hound
 color:g
-info:110:68:30:36:0
-power:20:3:200
+speed:110
+hit-points:68
+vision:30
+armor-class:36
+alertness:0
+depth:20
+rarity:3
+experience:200
 blow:BITE:POISON:1d8
 blow:BITE:POISON:1d8
 blow:CLAW:HURT:3d3
@@ -3455,8 +4921,14 @@ desc: walking on air.  Noxious gases sting your throat.
 name:sabre-tooth tiger
 base:feline
 color:y
-info:120:150:40:60:0
-power:20:2:120
+speed:120
+hit-points:150
+vision:40
+armor-class:60
+alertness:0
+depth:20
+rarity:2
+experience:120
 blow:CLAW:HURT:1d10
 blow:CLAW:HURT:1d10
 blow:BITE:HURT:1d10
@@ -3468,8 +4940,14 @@ desc: even the strongest armour.
 name:water hound
 base:zephyr hound
 color:s
-info:110:68:30:36:0
-power:20:3:200
+speed:110
+hit-points:68
+vision:30
+armor-class:36
+alertness:0
+depth:20
+rarity:3
+experience:200
 blow:BITE:ACID:1d8
 blow:BITE:ACID:1d8
 blow:CLAW:HURT:3d3
@@ -3487,8 +4965,14 @@ desc: acrid smell of acid rises from the dog's pelt.
 name:chimaera
 base:hybrid
 color:r
-info:110:160:12:22:30
-power:20:2:200
+speed:110
+hit-points:160
+vision:12
+armor-class:22
+alertness:30
+depth:20
+rarity:2
+experience:200
 blow:BUTT:HURT:2d8
 blow:BITE:HURT:2d10
 blow:BITE:FIRE:2d6
@@ -3504,8 +4988,14 @@ desc: three beasts.
 name:quylthulg
 base:quylthulg
 color:y
-info:110:27:10:1:2
-power:20:1:250
+speed:110
+hit-points:27
+vision:10
+armor-class:1
+alertness:2
+depth:20
+rarity:1
+experience:250
 spell-freq:4
 spell-power:20
 spells:BLINK
@@ -3516,8 +5006,14 @@ name:sasquatch
 plural:sasquatches
 base:yeti
 color:g
-info:120:200:15:60:20
-power:20:3:180
+speed:120
+hit-points:200
+vision:15
+armor-class:60
+alertness:20
+depth:20
+rarity:3
+experience:180
 blow:CLAW:HURT:1d10
 blow:CLAW:HURT:1d10
 blow:BITE:HURT:2d8
@@ -3527,8 +5023,14 @@ name:werewolf
 plural:werewolves
 base:canine
 color:D
-info:110:230:15:36:70
-power:20:1:150
+speed:110
+hit-points:230
+vision:15
+armor-class:36
+alertness:70
+depth:20
+rarity:1
+experience:150
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
 blow:BITE:HURT:2d10
@@ -3539,8 +5041,14 @@ desc:It is a huge wolf with eyes that glow with manly intelligence.
 name:dark elven lord
 base:humanoid
 color:s
-info:120:144:20:48:30
-power:20:2:500
+speed:120
+hit-points:144
+vision:20
+armor-class:48
+alertness:30
+depth:20
+rarity:2
+experience:500
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d5
 flags:MALE | EVIL
@@ -3562,8 +5070,14 @@ desc:A dark elven figure in armour and radiating evil power.
 name:ranger
 base:person
 color:W
-info:110:90:20:60:20
-power:20:1:55
+speed:110
+hit-points:90
+vision:20
+armor-class:60
+alertness:20
+depth:20
+rarity:1
+experience:55
 blow:HIT:HURT:5d4
 blow:HIT:HURT:5d4
 flags:MALE | HAS_LIGHT
@@ -3587,8 +5101,14 @@ desc: minor spellcasting skills, and animals come to do his bidding.
 name:paladin
 base:person
 color:w
-info:110:90:20:48:40
-power:20:1:55
+speed:110
+hit-points:90
+vision:20
+armor-class:48
+alertness:40
+depth:20
+rarity:1
+experience:55
 blow:HIT:HURT:4d5
 blow:HIT:HURT:4d5
 flags:MALE | HAS_LIGHT
@@ -3613,8 +5133,14 @@ desc: enemy.
 name:Lugdush, the Uruk
 base:orc
 color:b
-info:110:640:20:108:20
-power:21:4:550
+speed:110
+hit-points:640
+vision:20
+armor-class:108
+alertness:20
+depth:21
+rarity:4
+experience:550
 blow:HIT:HURT:3d7
 blow:HIT:HURT:3d7
 blow:HIT:HURT:3d5
@@ -3630,8 +5156,14 @@ desc:A large and powerful orc, captain of one of Saruman's orcish regiments.
 name:blue dragon bat
 base:bat
 color:b
-info:130:10:12:39:10
-power:21:1:54
+speed:130
+hit-points:10
+vision:12
+armor-class:39
+alertness:10
+depth:21
+rarity:1
+experience:54
 blow:BITE:ELEC:1d3
 flags:RAND_50 | BASH_DOOR
 flags:IM_ELEC
@@ -3645,8 +5177,14 @@ name:scroll mimic
 base:mimic
 glyph:?
 color:w
-info:110:75:30:48:0
-power:21:3:70
+speed:110
+hit-points:75
+vision:30
+armor-class:48
+alertness:0
+depth:21
+rarity:3
+experience:70
 blow:HIT:POISON:3d4
 blow:HIT:POISON:3d4
 blow:HIT:HURT:2d3
@@ -3669,8 +5207,14 @@ name:fire vortex
 plural:fire vortices
 base:vortex
 color:r
-info:110:45:100:36:0
-power:21:1:100
+speed:110
+hit-points:45
+vision:100
+armor-class:36
+alertness:0
+depth:21
+rarity:1
+experience:100
 blow:ENGULF:FIRE:3d3
 flags:HAS_LIGHT
 flags:IM_FIRE | HURT_COLD
@@ -3683,8 +5227,14 @@ name:water vortex
 plural:water vortices
 base:vortex
 color:s
-info:110:45:100:36:0
-power:21:1:100
+speed:110
+hit-points:45
+vision:100
+armor-class:36
+alertness:0
+depth:21
+rarity:1
+experience:100
 blow:ENGULF:ACID:3d3
 flags:IM_ACID | IM_WATER
 spell-freq:6
@@ -3696,8 +5246,14 @@ name:cold vortex
 plural:cold vortices
 base:vortex
 color:w
-info:110:45:100:36:0
-power:21:1:100
+speed:110
+hit-points:45
+vision:100
+armor-class:36
+alertness:0
+depth:21
+rarity:1
+experience:100
 blow:ENGULF:COLD:3d3
 flags:IM_COLD | HURT_FIRE
 spell-freq:6
@@ -3709,8 +5265,14 @@ name:energy vortex
 plural:energy vortices
 base:vortex
 color:b
-info:110:45:100:36:0
-power:21:1:100
+speed:110
+hit-points:45
+vision:100
+armor-class:36
+alertness:0
+depth:21
+rarity:1
+experience:100
 blow:ENGULF:ELEC:3d3
 flags:HAS_LIGHT | ATTR_FLICKER
 flags:IM_ELEC
@@ -3722,8 +5284,14 @@ desc:A shimmering tornado of air, sparks crackle along its length.
 name:mummified orc
 base:zombie
 color:w
-info:110:68:20:33:75
-power:21:1:56
+speed:110
+hit-points:68
+vision:20
+armor-class:33
+alertness:75
+depth:21
+rarity:1
+experience:56
 blow:HIT:HURT:2d4
 blow:HIT:HURT:2d4
 flags:ORC | EMPTY_MIND
@@ -3736,8 +5304,14 @@ desc:It is an orcish figure covered in wrappings.
 name:Uglúk, the Uruk
 base:orc
 color:b
-info:110:720:20:114:20
-power:22:3:600
+speed:110
+hit-points:720
+vision:20
+armor-class:114
+alertness:20
+depth:22
+rarity:3
+experience:600
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d5
@@ -3755,8 +5329,14 @@ desc:A strong and cunning orc warrior, the commander of Saruman's orcish horde.
 name:killer stag beetle
 base:killer beetle
 color:g
-info:110:68:12:76:30
-power:22:1:80
+speed:110
+hit-points:68
+vision:12
+armor-class:76
+alertness:30
+depth:22
+rarity:1
+experience:80
 blow:CLAW:HURT:3d6
 blow:CLAW:HURT:3d6
 flags:RAND_25
@@ -3765,8 +5345,14 @@ desc:It is a giant beetle with vicious claws.
 name:iron golem
 base:golem
 color:s
-info:110:520:12:120:20
-power:22:2:160
+speed:110
+hit-points:520
+vision:12
+armor-class:120
+alertness:20
+depth:22
+rarity:2
+experience:160
 blow:HIT:HURT:1d12
 flags:COLD_BLOOD
 flags:BASH_DOOR
@@ -3780,8 +5366,14 @@ desc:It is a massive metal statue that moves steadily towards you.
 name:giant yellow scorpion
 base:spider
 color:y
-info:110:54:12:45:20
-power:22:1:60
+speed:110
+hit-points:54
+vision:12
+armor-class:45
+alertness:20
+depth:22
+rarity:1
+experience:60
 blow:BITE:HURT:1d8
 blow:STING:POISON:2d5
 flags:ANIMAL | WEIRD_MIND
@@ -3791,8 +5383,14 @@ desc:It is a giant scorpion with a sharp stinger.
 name:wyvern
 base:dragon
 color:g
-info:120:203:20:79:60
-power:22:2:250
+speed:120
+hit-points:203
+vision:20
+armor-class:79
+alertness:60
+depth:22
+rarity:2
+experience:250
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
 blow:STING:POISON:2d6
@@ -3807,8 +5405,14 @@ desc:A fast-moving and deadly draconian animal.  Beware its poisonous sting!
 name:black ooze
 base:jelly
 color:D
-info:90:27:10:7:1
-power:23:1:7
+speed:90
+hit-points:27
+vision:10
+armor-class:7
+alertness:1
+depth:23
+rarity:1
+experience:7
 blow:TOUCH:ACID:2d6
 flags:MULTIPLY
 flags:DROP_40
@@ -3822,8 +5426,14 @@ desc:It is a strangely moving puddle.
 name:Easterling champion
 base:person
 color:u
-info:110:90:20:60:60
-power:23:1:60
+speed:110
+hit-points:90
+vision:20
+armor-class:60
+alertness:60
+depth:23
+rarity:1
+experience:60
 blow:HIT:HURT:6d5
 blow:HIT:HURT:6d5
 flags:MALE | EVIL | HAS_LIGHT
@@ -3838,8 +5448,14 @@ desc:A scarred warrior who moves with confidence.
 name:Azog, King of the Uruk-Hai
 base:orc
 color:R
-info:120:900:20:96:20
-power:23:5:1111
+speed:120
+hit-points:900
+vision:20
+armor-class:96
+alertness:20
+depth:23
+rarity:5
+experience:1111
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -3856,8 +5472,14 @@ desc: bigger than his head.
 name:master rogue
 base:person
 color:b
-info:120:75:20:45:5
-power:23:2:110
+speed:120
+hit-points:75
+vision:20
+armor-class:45
+alertness:5
+depth:23
+rarity:2
+experience:110
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 blow:HIT:EAT_GOLD:4d4
@@ -3873,8 +5495,14 @@ desc:A thief of great power and shifty speed.
 name:red dragon bat
 base:bat
 color:r
-info:130:14:12:42:10
-power:23:1:60
+speed:130
+hit-points:14
+vision:12
+armor-class:42
+alertness:10
+depth:23
+rarity:1
+experience:60
 blow:BITE:FIRE:1d3
 flags:HAS_LIGHT
 flags:RAND_50 | BASH_DOOR
@@ -3888,8 +5516,14 @@ desc:It is a sharp-tailed bat, wreathed in fire.
 name:killer white beetle
 base:killer beetle
 color:w
-info:110:81:14:66:30
-power:23:0:85
+speed:110
+hit-points:81
+vision:14
+armor-class:66
+alertness:30
+depth:23
+rarity:0
+experience:85
 blow:BITE:HURT:4d5
 flags:RAND_25
 desc:It is looking for prey.
@@ -3897,8 +5531,14 @@ desc:It is looking for prey.
 name:giant silver ant
 base:ant
 color:W
-info:110:41:10:100:40
-power:23:1:80
+speed:110
+hit-points:41
+vision:10
+armor-class:100
+alertness:40
+depth:23
+rarity:1
+experience:80
 blow:BITE:ACID:4d4
 flags:RAND_25
 desc:A giant silver ant with a caustic bite and hard scales.
@@ -3908,8 +5548,14 @@ desc:A giant silver ant with a caustic bite and hard scales.
 name:forest wight
 base:wraith
 color:g
-info:110:54:20:36:30
-power:24:1:140
+speed:110
+hit-points:54
+vision:20
+armor-class:36
+alertness:30
+depth:24
+rarity:1
+experience:140
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:TOUCH:EXP_20
@@ -3924,8 +5570,14 @@ desc:It is a ghostly apparition with a humanoid form.
 name:Ibun, Son of Mîm
 base:humanoid
 color:o
-info:110:820:20:96:10
-power:24:2:300
+speed:110
+hit-points:820
+vision:20
+armor-class:96
+alertness:10
+depth:24
+rarity:2
+experience:300
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
@@ -3944,8 +5596,14 @@ desc: being, full of mischief.
 name:Khîm, Son of Mîm
 base:humanoid
 color:o
-info:110:820:20:96:10
-power:24:2:300
+speed:110
+hit-points:820
+vision:20
+armor-class:96
+alertness:10
+depth:24
+rarity:2
+experience:300
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
@@ -3964,8 +5622,14 @@ desc: being, full of mischief.
 name:4-headed hydra
 base:hydra
 color:y
-info:120:350:20:105:60
-power:24:2:450
+speed:120
+hit-points:350
+vision:20
+armor-class:105
+alertness:60
+depth:24
+rarity:2
+experience:450
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
 blow:BITE:HURT:2d6
@@ -3980,8 +5644,14 @@ desc:A strange reptilian hybrid with four heads, guarding its hoard.
 name:mummified human
 base:zombie
 color:w
-info:110:85:20:51:70
-power:24:1:70
+speed:110
+hit-points:85
+vision:20
+armor-class:51
+alertness:70
+depth:24
+rarity:1
+experience:70
 blow:HIT:HURT:2d4
 blow:HIT:HURT:2d4
 flags:EMPTY_MIND
@@ -3992,8 +5662,14 @@ desc:It is a human form encased in mouldy wrappings.
 name:vampire bat
 base:bat
 color:D
-info:120:50:12:60:10
-power:24:2:150
+speed:120
+hit-points:50
+vision:12
+armor-class:60
+alertness:10
+depth:24
+rarity:2
+experience:150
 blow:BITE:EXP_40:1d4
 blow:BITE:EXP_40:1d4
 flags:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
@@ -4004,8 +5680,14 @@ desc:A blood-sucking bat that flies at your neck hungrily.
 name:Sangahyando of Umbar
 base:person
 color:U
-info:110:800:25:96:25
-power:24:2:400
+speed:110
+hit-points:800
+vision:25
+armor-class:96
+alertness:25
+depth:24
+rarity:2
+experience:400
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -4024,8 +5706,14 @@ desc:A Black Númenorean with a blacker heart.
 name:Angamaitë of Umbar
 base:person
 color:U
-info:110:800:25:96:25
-power:24:2:400
+speed:110
+hit-points:800
+vision:25
+armor-class:96
+alertness:25
+depth:24
+rarity:2
+experience:400
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -4044,8 +5732,14 @@ desc:A Black Númenorean who hates the men of the west.
 name:banshee
 base:ghost
 color:b
-info:120:27:20:28:10
-power:24:2:60
+speed:120
+hit-points:27
+vision:20
+armor-class:28
+alertness:10
+depth:24
+rarity:2
+experience:60
 blow:WAIL:TERRIFY
 blow:TOUCH:EXP_20
 flags:FEMALE
@@ -4060,8 +5754,14 @@ name:giant firefly
 plural:giant fireflies
 base:insect
 color:r
-info:120:5:8:21:10
-power:24:4:4
+speed:120
+hit-points:5
+vision:8
+armor-class:21
+alertness:10
+depth:24
+rarity:4
+experience:4
 blow:BITE:BLIND:1d2
 flags:HAS_LIGHT
 desc:Clouds of these monsters light up the dungeon - so brightly that you can
@@ -4070,8 +5770,14 @@ desc: barely see through them.
 name:werebear
 base:quadruped
 color:D
-info:110:325:20:75:40
-power:24:2:200
+speed:110
+hit-points:325
+vision:20
+armor-class:75
+alertness:40
+depth:24
+rarity:2
+experience:200
 blow:CLAW:HURT:1d10
 blow:CLAW:HURT:1d10
 blow:BITE:HURT:2d8
@@ -4089,8 +5795,14 @@ desc: bear makes for a dangerous enemy.
 name:hill giant
 base:giant
 color:U
-info:110:240:20:54:50
-power:25:1:150
+speed:110
+hit-points:240
+vision:20
+armor-class:54
+alertness:50
+depth:25
+rarity:1
+experience:150
 blow:HIT:HURT:4d8
 blow:HIT:HURT:4d8
 flags:DROP_40
@@ -4105,8 +5817,14 @@ name:pukelman
 plural:pukelmen
 base:golem
 color:m
-info:110:520:12:120:20
-power:25:3:600
+speed:110
+hit-points:520
+vision:12
+armor-class:120
+alertness:20
+depth:25
+rarity:3
+experience:600
 blow:HIT:HURT:1d12
 blow:HIT:HURT:3d6
 flags:COLD_BLOOD
@@ -4123,8 +5841,14 @@ desc: strides towards you with deadly intent.
 name:dark elven druid
 base:humanoid
 color:G
-info:120:210:15:112:20
-power:25:3:500
+speed:120
+hit-points:210
+vision:15
+armor-class:112
+alertness:20
+depth:25
+rarity:3
+experience:500
 blow:HIT:HURT:1d7
 blow:HIT:HURT:1d7
 blow:HIT:HURT:3d8
@@ -4143,8 +5867,14 @@ desc:A powerful dark elf, with mighty nature-controlling enchantments.
 name:stone troll
 base:troll
 color:W
-info:110:127:20:60:70
-power:25:1:85
+speed:110
+hit-points:127
+vision:20
+armor-class:60
+alertness:70
+depth:25
+rarity:1
+experience:85
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:BITE:HURT:3d4
@@ -4158,8 +5888,14 @@ desc:He is a giant troll with scabrous black skin.
 name:wereworm
 base:worm
 color:p
-info:110:600:15:105:40
-power:25:3:300
+speed:110
+hit-points:600
+vision:15
+armor-class:105
+alertness:40
+depth:25
+rarity:3
+experience:300
 blow:GAZE:EXP_20
 blow:CRAWL:ACID:2d4
 blow:BITE:HURT:1d10
@@ -4172,8 +5908,14 @@ desc: monster that breeds on death.
 name:carrion crawler
 base:centipede
 color:o
-info:110:130:15:60:20
-power:25:2:60
+speed:110
+hit-points:130
+vision:15
+armor-class:60
+alertness:20
+depth:25
+rarity:2
+experience:60
 blow:STING:PARALYZE:2d6
 blow:STING:PARALYZE:2d6
 flags:RAND_25 | BASH_DOOR
@@ -4185,8 +5927,14 @@ desc: head.
 name:killer red beetle
 base:killer beetle
 color:r
-info:110:90:14:60:30
-power:25:1:90
+speed:110
+hit-points:90
+vision:14
+armor-class:60
+alertness:30
+depth:25
+rarity:1
+experience:90
 blow:BITE:LOSE_STR:4d4
 blow:BITE:HURT:4d4
 flags:RAND_25
@@ -4195,8 +5943,14 @@ desc:It is a giant beetle with poisonous mandibles.
 name:giant brown tick
 base:spider
 color:u
-info:100:81:12:200:20
-power:25:2:70
+speed:100
+hit-points:81
+vision:12
+armor-class:200
+alertness:20
+depth:25
+rarity:2
+experience:70
 blow:BITE:POISON:2d6
 blow:STING:BLIND:1d1
 flags:ANIMAL | WEIRD_MIND
@@ -4208,8 +5962,14 @@ desc:It is moving slowly towards you.
 name:troll priest
 base:troll
 color:G
-info:110:165:20:75:60
-power:26:1:120
+speed:110
+hit-points:165
+vision:20
+armor-class:75
+alertness:60
+depth:26
+rarity:1
+experience:120
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 blow:BITE:HURT:3d4
@@ -4227,8 +5987,14 @@ desc:A troll who is so bright he knows how to read.
 name:giant grey ant
 base:ant
 color:s
-info:110:86:10:200:10
-power:26:1:120
+speed:110
+hit-points:86
+vision:10
+armor-class:200
+alertness:10
+depth:26
+rarity:1
+experience:120
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:RAND_25 | KILL_BODY
@@ -4237,8 +6003,14 @@ desc:It is an ant encased in an impenetrable exoskeleton.
 name:Ulwarth, Son of Ulfang
 base:person
 color:U
-info:110:850:20:48:40
-power:26:4:500
+speed:110
+hit-points:850
+vision:20
+armor-class:48
+alertness:40
+depth:26
+rarity:4
+experience:500
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -4252,8 +6024,14 @@ desc:A short and swarthy Easterling.
 name:displacer beast
 base:feline
 color:D
-info:110:138:35:150:10
-power:26:2:100
+speed:110
+hit-points:138
+vision:35
+armor-class:150
+alertness:10
+depth:26
+rarity:2
+experience:100
 blow:BITE:HURT:2d8
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
@@ -4265,8 +6043,14 @@ desc:It is a huge black panther, clubbed tentacles sprouting from its shoulders.
 name:giant fire tick
 base:spider
 color:R
-info:110:72:14:120:20
-power:26:1:90
+speed:110
+hit-points:72
+vision:14
+armor-class:120
+alertness:20
+depth:26
+rarity:1
+experience:90
 blow:BITE:FIRE:3d6
 flags:ANIMAL | WEIRD_MIND | HAS_LIGHT
 flags:RAND_25
@@ -4276,8 +6060,14 @@ desc:It is smoking and burning with great heat.
 name:cave ogre
 base:ogre
 color:u
-info:110:150:20:49:40
-power:26:2:80
+speed:110
+hit-points:150
+vision:20
+armor-class:49
+alertness:40
+depth:26
+rarity:2
+experience:80
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 flags:DROP_40
@@ -4289,8 +6079,14 @@ desc:A giant orc-like figure with an awesomely muscled frame.
 name:white wraith
 base:wraith
 color:w
-info:110:68:20:48:10
-power:26:1:175
+speed:110
+hit-points:68
+vision:20
+armor-class:48
+alertness:10
+depth:26
+rarity:1
+experience:175
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:TOUCH:EXP_20
@@ -4307,8 +6103,14 @@ plural:lesser Maiar
 base:ainu
 color:o
 color:o
-info:110:264:30:72:255
-power:26:4:220
+speed:110
+hit-points:264
+vision:30
+armor-class:72
+alertness:255
+depth:26
+rarity:4
+experience:220
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
@@ -4326,8 +6128,14 @@ desc: are ablaze as it prepares its next volley of spells.
 name:disenchanter bat
 base:bat
 color:v
-info:130:27:12:42:10
-power:26:4:75
+speed:130
+hit-points:27
+vision:12
+armor-class:42
+alertness:10
+depth:26
+rarity:4
+experience:75
 blow:HIT:DISENCHANT
 flags:RAND_50
 flags:IM_DISEN
@@ -4337,8 +6145,14 @@ desc:A giant bat which feeds on raw magical energy.
 name:wolf chieftain
 base:canine
 color:D
-info:120:422:20:24:5
-power:26:5:120
+speed:120
+hit-points:422
+vision:20
+armor-class:24
+alertness:5
+depth:26
+rarity:5
+experience:120
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
 blow:BITE:HURT:2d10
@@ -4359,8 +6173,14 @@ desc: whose howls strike fear into even the boldest heart.
 name:ghoul
 base:zombie
 color:U
-info:110:83:30:36:20
-power:26:2:95
+speed:110
+hit-points:83
+vision:30
+armor-class:36
+alertness:20
+depth:26
+rarity:2
+experience:95
 blow:CLAW:PARALYZE:1d4
 blow:CLAW:PARALYZE:1d4
 blow:BITE:POISON:1d6
@@ -4377,8 +6197,14 @@ desc:Flesh is falling off in chunks from this decaying abomination.
 name:Mîm, Betrayer of Turin
 base:humanoid
 color:I
-info:120:1100:20:96:20
-power:27:4:1000
+speed:120
+hit-points:1100
+vision:20
+armor-class:96
+alertness:20
+depth:27
+rarity:4
+experience:1000
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
@@ -4402,8 +6228,14 @@ desc: been hunted nearly to extinction by the High Elves.
 name:killer fire beetle
 base:killer beetle
 color:R
-info:110:99:14:54:30
-power:27:1:95
+speed:110
+hit-points:99
+vision:14
+armor-class:54
+alertness:30
+depth:27
+rarity:1
+experience:95
 blow:BITE:HURT:3d4
 blow:SPIT:FIRE:4d5
 flags:HAS_LIGHT
@@ -4414,8 +6246,14 @@ name:creeping adamantite coins
 plural:piles of creeping adamantite coins
 base:creeping coins
 color:G
-info:120:260:5:60:10
-power:27:3:60
+speed:120
+hit-points:260
+vision:5
+armor-class:60
+alertness:10
+depth:27
+rarity:3
+experience:60
 blow:BITE:POISON:3d4
 blow:TOUCH:POISON:3d5
 blow:HIT:HURT:1d12
@@ -4428,8 +6266,14 @@ mimic:gold:adamantite
 name:algroth
 base:troll
 color:o
-info:110:137:20:90:50
-power:27:1:150
+speed:110
+hit-points:137
+vision:20
+armor-class:90
+alertness:50
+depth:27
+rarity:1
+experience:150
 blow:CLAW:POISON:3d3
 blow:CLAW:POISON:3d3
 blow:BITE:HURT:1d6
@@ -4443,8 +6287,14 @@ desc:A powerful troll form.  Venom drips from its needlelike claws.
 name:vibration hound
 base:zephyr hound
 color:y
-info:110:138:30:36:0
-power:27:4:250
+speed:110
+hit-points:138
+vision:30
+armor-class:36
+alertness:0
+depth:27
+rarity:4
+experience:250
 blow:BITE:HURT:2d8
 blow:BITE:HURT:2d8
 blow:CLAW:HURT:3d3
@@ -4462,8 +6312,14 @@ desc: follow.  You can feel the earth resonating beneath your feet.
 name:nexus hound
 base:zephyr hound
 color:P
-info:110:138:30:36:0
-power:27:4:250
+speed:110
+hit-points:138
+vision:30
+armor-class:36
+alertness:0
+depth:27
+rarity:4
+experience:250
 blow:BITE:HURT:2d8
 blow:BITE:HURT:2d8
 blow:CLAW:HURT:3d3
@@ -4481,8 +6337,14 @@ desc: hound. Or is it just your imagination?
 name:ogre mage
 base:ogre
 color:r
-info:110:163:20:60:40
-power:27:2:300
+speed:110
+hit-points:163
+vision:20
+armor-class:60
+alertness:40
+depth:27
+rarity:2
+experience:300
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
@@ -4501,8 +6363,14 @@ desc:A hideous ogre wrapped in black sorcerous robes.
 name:vampire
 base:vampire
 color:W
-info:110:163:20:67:30
-power:27:1:175
+speed:110
+hit-points:163
+vision:20
+armor-class:67
+alertness:30
+depth:27
+rarity:1
+experience:175
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:BITE:EXP_20:2d6
@@ -4517,8 +6385,14 @@ desc: teeth.
 name:gorgimaera
 base:hybrid
 color:o
-info:110:263:12:82:20
-power:27:2:400
+speed:110
+hit-points:263
+vision:12
+armor-class:82
+alertness:20
+depth:27
+rarity:2
+experience:400
 blow:BUTT:HURT:2d10
 blow:BITE:FIRE:2d10
 blow:GAZE:PARALYZE:2d6
@@ -4535,8 +6409,14 @@ desc: lion's body.
 name:colbran
 base:golem
 color:b
-info:120:520:12:120:20
-power:27:2:900
+speed:120
+hit-points:520
+vision:12
+armor-class:120
+alertness:20
+depth:27
+rarity:2
+experience:900
 blow:HIT:ELEC:3d8
 blow:HIT:ELEC:3d8
 flags:COLD_BLOOD | HAS_LIGHT
@@ -4552,8 +6432,14 @@ desc: this madly capering figure, as it leaps and whirls around and about you.
 name:ogre shaman
 base:ogre
 color:G
-info:110:163:20:82:40
-power:27:2:300
+speed:110
+hit-points:163
+vision:20
+armor-class:82
+alertness:40
+depth:27
+rarity:2
+experience:300
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
@@ -4571,8 +6457,14 @@ desc:It is an ogre wrapped in furs and covered in grotesque body paints.
 name:shimmering mold
 base:mold
 color:b
-info:110:144:2:36:0
-power:27:1:140
+speed:110
+hit-points:144
+vision:2
+armor-class:36
+alertness:0
+depth:27
+rarity:1
+experience:140
 blow:SPORE:ELEC:5d4
 blow:SPORE:ELEC:5d4
 flags:EMPTY_MIND | STUPID | HAS_LIGHT | ATTR_FLICKER
@@ -4585,8 +6477,14 @@ desc: sparks.
 name:frost giant
 base:giant
 color:w
-info:110:256:20:60:50
-power:28:1:180
+speed:110
+hit-points:256
+vision:20
+armor-class:60
+alertness:50
+depth:28
+rarity:1
+experience:180
 blow:HIT:COLD:5d8
 blow:HIT:COLD:5d8
 flags:DROP_40
@@ -4601,8 +6499,14 @@ desc:A twelve foot tall giant covered in furs.
 name:spirit naga
 base:naga
 color:w
-info:110:240:20:90:120
-power:28:2:60
+speed:110
+hit-points:240
+vision:20
+armor-class:90
+alertness:120
+depth:28
+rarity:2
+experience:60
 blow:CRUSH:HURT:2d8
 blow:CRUSH:HURT:2d8
 blow:BITE:HURT:1d8
@@ -4623,8 +6527,14 @@ desc: most powerful of its kind.
 name:5-headed hydra
 base:hydra
 color:g
-info:120:450:20:120:50
-power:28:2:650
+speed:120
+hit-points:450
+vision:20
+armor-class:120
+alertness:50
+depth:28
+rarity:2
+experience:650
 blow:BITE:POISON:4d4
 blow:BITE:POISON:4d4
 blow:BITE:POISON:4d4
@@ -4641,8 +6551,14 @@ desc:A strange reptilian hybrid with five heads dripping venom.
 name:black knight
 base:person
 color:s
-info:120:165:20:105:30
-power:28:1:240
+speed:120
+hit-points:165
+vision:20
+armor-class:105
+alertness:30
+depth:28
+rarity:1
+experience:240
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -4666,8 +6582,14 @@ desc: menacingly.
 name:Uldor the Accursed
 base:person
 color:U
-info:110:1000:20:84:40
-power:28:4:600
+speed:110
+hit-points:1000
+vision:20
+armor-class:84
+alertness:40
+depth:28
+rarity:4
+experience:600
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -4685,8 +6607,14 @@ desc: Battle of Unnumbered Tears in Morgoth's favour.
 name:mage
 base:person
 color:r
-info:110:68:20:48:10
-power:28:1:150
+speed:110
+hit-points:68
+vision:20
+armor-class:48
+alertness:10
+depth:28
+rarity:1
+experience:150
 blow:HIT:HURT:2d5
 blow:HIT:HURT:2d5
 flags:MALE | EVIL | SMART | HAS_LIGHT
@@ -4706,8 +6634,14 @@ desc:A mage of some power - you can tell by the size of his hat.
 name:mind flayer
 base:humanoid
 color:P
-info:110:132:20:72:10
-power:28:1:200
+speed:110
+hit-points:132
+vision:20
+armor-class:72
+alertness:10
+depth:28
+rarity:1
+experience:200
 blow:GAZE:LOSE_INT:2d6
 blow:GAZE:LOSE_WIS:2d6
 flags:EVIL
@@ -4723,8 +6657,14 @@ desc:  Claws reach out for you and you feel a presence invade your mind.
 name:Draebor, the Imp
 base:minor demon
 color:v
-info:120:520:20:75:10
-power:28:5:750
+speed:120
+hit-points:520
+vision:20
+armor-class:75
+alertness:10
+depth:28
+rarity:5
+experience:750
 blow:HIT:POISON:3d4
 blow:HIT:POISON:3d4
 blow:HIT:HURT:3d4
@@ -4747,8 +6687,14 @@ desc:An intensely irritating git of a monster.
 name:basilisk
 base:reptile
 color:s
-info:120:310:15:108:30
-power:28:3:300
+speed:120
+hit-points:310
+vision:15
+armor-class:108
+alertness:30
+depth:28
+rarity:3
+experience:300
 blow:GAZE:PARALYZE
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
@@ -4765,8 +6711,14 @@ desc: deeply at you and your soul starts to wilt!
 name:ice troll
 base:troll
 color:w
-info:110:132:20:67:50
-power:28:1:200
+speed:110
+hit-points:132
+vision:20
+armor-class:67
+alertness:50
+depth:28
+rarity:1
+experience:200
 blow:HIT:HURT:1d5
 blow:HIT:HURT:1d5
 blow:BITE:COLD:2d6
@@ -4783,8 +6735,14 @@ name:bat of Gorgoroth
 plural:bats of Gorgoroth
 base:bat
 color:g
-info:120:110:20:36:30
-power:28:3:100
+speed:120
+hit-points:110
+vision:20
+armor-class:36
+alertness:30
+depth:28
+rarity:3
+experience:100
 blow:BITE:POISON:1d10
 blow:CLAW:HURT:1d4
 flags:WEIRD_MIND
@@ -4802,8 +6760,14 @@ desc: seeks livelier prey.
 name:spectator
 base:eye
 color:B
-info:110:171:30:1:30
-power:28:2:150
+speed:110
+hit-points:171
+vision:30
+armor-class:1
+alertness:30
+depth:28
+rarity:2
+experience:150
 blow:GAZE:PARALYZE:1d4
 blow:GAZE:CONFUSE:1d4
 blow:BITE:HURT:1d8
@@ -4819,8 +6783,14 @@ desc: from the top of its body.
 name:Beorn, the Shape-Changer
 base:quadruped
 color:p
-info:120:1400:25:72:25
-power:28:3:1000
+speed:120
+hit-points:1400
+vision:25
+armor-class:72
+alertness:25
+depth:28
+rarity:3
+experience:1000
 blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:4d8
@@ -4842,8 +6812,14 @@ desc: in human form - and still less when in bear's shape, as he is now.
 name:purple worm
 base:worm
 color:P
-info:110:293:14:78:30
-power:29:3:400
+speed:110
+hit-points:293
+vision:14
+armor-class:78
+alertness:30
+depth:29
+rarity:3
+experience:400
 blow:HIT:HURT:1d8
 blow:BITE:ACID:2d8
 blow:STING:POISON:1d8
@@ -4856,8 +6832,14 @@ name:catoblepas
 plural:catoblepae
 base:quadruped
 color:g
-info:110:165:15:66:40
-power:29:2:400
+speed:110
+hit-points:165
+vision:15
+armor-class:66
+alertness:40
+depth:29
+rarity:2
+experience:400
 blow:GAZE:TERRIFY:2d4
 blow:GAZE:BLIND:2d4
 blow:BUTT:HURT:2d6
@@ -4872,8 +6854,14 @@ name:ring mimic
 base:mimic
 glyph:=
 color:w
-info:120:180:30:72:100
-power:29:3:200
+speed:120
+hit-points:180
+vision:30
+armor-class:72
+alertness:100
+depth:29
+rarity:3
+experience:200
 blow:HIT:POISON:3d4
 blow:HIT:POISON:3d4
 blow:HIT:POISON:3d4
@@ -4894,8 +6882,14 @@ mimic:ring:See Invisible
 name:young blue dragon
 base:dragon
 color:b
-info:110:237:20:60:70
-power:29:1:500
+speed:110
+hit-points:237
+vision:20
+armor-class:60
+alertness:70
+depth:29
+rarity:1
+experience:500
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:HURT:2d6
@@ -4912,8 +6906,14 @@ desc: blue in hue.  Sparks crackle along its length.
 name:young white dragon
 base:dragon
 color:w
-info:110:237:20:60:70
-power:29:1:500
+speed:110
+hit-points:237
+vision:20
+armor-class:60
+alertness:70
+depth:29
+rarity:1
+experience:500
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:HURT:2d6
@@ -4930,8 +6930,14 @@ desc: frosty white in hue.  Icy blasts of cold air come from it as it breathes.
 name:young green dragon
 base:dragon
 color:g
-info:110:237:20:60:70
-power:29:1:500
+speed:110
+hit-points:237
+vision:20
+armor-class:60
+alertness:70
+depth:29
+rarity:1
+experience:500
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:HURT:2d6
@@ -4955,8 +6961,14 @@ desc: green in hue.  Foul gas seeps through its scales.
 name:fire giant
 base:giant
 color:r
-info:110:289:20:72:50
-power:30:1:220
+speed:110
+hit-points:289
+vision:20
+armor-class:72
+alertness:50
+depth:30
+rarity:1
+experience:220
 blow:HIT:FIRE:6d8
 blow:HIT:FIRE:6d8
 flags:HAS_LIGHT
@@ -4972,8 +6984,14 @@ desc:A glowing fourteen foot tall giant.  Flames drip from its red skin.
 name:mithril golem
 base:golem
 color:B
-info:110:640:12:150:30
-power:30:4:500
+speed:110
+hit-points:640
+vision:12
+armor-class:150
+alertness:30
+depth:30
+rarity:4
+experience:500
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:5d5
@@ -4987,8 +7005,14 @@ desc:It is a massive statue of purest mithril.  It looks expensive!
 name:skeleton troll
 base:skeleton
 color:w
-info:110:110:20:82:60
-power:30:1:225
+speed:110
+hit-points:110
+vision:20
+armor-class:82
+alertness:60
+depth:30
+rarity:1
+experience:225
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:BITE:HURT:3d4
@@ -4999,8 +7023,14 @@ desc:It is a troll skeleton animated by dark dweomers.
 name:manticore
 base:hybrid
 color:y
-info:120:220:12:22:20
-power:30:2:300
+speed:120
+hit-points:220
+vision:12
+armor-class:22
+alertness:20
+depth:30
+rarity:2
+experience:300
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
@@ -5017,8 +7047,14 @@ desc: spikes.
 name:giant blue ant
 base:ant
 color:b
-info:110:36:10:75:10
-power:30:2:80
+speed:110
+hit-points:36
+vision:10
+armor-class:75
+alertness:10
+depth:30
+rarity:2
+experience:80
 blow:BITE:ELEC:5d5
 flags:RAND_25
 flags:IM_ELEC | GROUP_AI
@@ -5028,8 +7064,14 @@ desc:It is a giant ant that crackles with energy.
 name:giant army ant
 base:ant
 color:o
-info:120:67:10:60:20
-power:30:3:90
+speed:120
+hit-points:67
+vision:10
+armor-class:60
+alertness:20
+depth:30
+rarity:3
+experience:90
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:RAND_25 | KILL_BODY | GROUP_AI
@@ -5040,8 +7082,14 @@ desc: hordes of them march.
 name:grave wight
 base:wraith
 color:b
-info:110:66:20:60:30
-power:30:1:325
+speed:110
+hit-points:66
+vision:20
+armor-class:60
+alertness:30
+depth:30
+rarity:1
+experience:325
 blow:HIT:HURT:1d7
 blow:HIT:HURT:1d7
 blow:TOUCH:EXP_20
@@ -5056,8 +7104,14 @@ desc:It is a ghostly form with eyes that haunt you.
 name:killer slicer beetle
 base:killer beetle
 color:y
-info:110:138:14:72:30
-power:30:2:250
+speed:110
+hit-points:138
+vision:14
+armor-class:72
+alertness:30
+depth:30
+rarity:2
+experience:250
 blow:BITE:HURT:7d8
 blow:BITE:HURT:7d8
 desc:It is a beetle with deadly sharp cutting mandibles and a rock-hard
@@ -5066,8 +7120,14 @@ desc: carapace.
 name:ogre chieftain
 base:ogre
 color:b
-info:120:240:20:66:30
-power:30:5:600
+speed:120
+hit-points:240
+vision:20
+armor-class:66
+alertness:30
+depth:30
+rarity:5
+experience:600
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
@@ -5087,8 +7147,14 @@ desc: you, wielding a huge club and pushing his own followers rudely aside.
 name:ghast
 base:zombie
 color:u
-info:120:165:30:60:20
-power:30:3:130
+speed:120
+hit-points:165
+vision:30
+armor-class:60
+alertness:20
+depth:30
+rarity:3
+experience:130
 blow:CLAW:PARALYZE:2d4
 blow:CLAW:PARALYZE:2d4
 blow:BITE:LOSE_CON:2d4
@@ -5112,8 +7178,14 @@ desc: them.  It smells foul, and its bite carries a rotting disease.
 name:ghost
 base:ghost
 color:w
-info:120:59:20:36:10
-power:31:1:350
+speed:120
+hit-points:59
+vision:20
+armor-class:36
+alertness:10
+depth:31
+rarity:1
+experience:350
 blow:WAIL:TERRIFY
 blow:TOUCH:EXP_20
 blow:CLAW:LOSE_INT:1d6
@@ -5129,8 +7201,14 @@ desc:You don't believe in it.  But it believes in you...
 name:death watch beetle
 base:killer beetle
 color:D
-info:110:163:16:72:30
-power:31:3:300
+speed:110
+hit-points:163
+vision:16
+armor-class:72
+alertness:30
+depth:31
+rarity:3
+experience:300
 blow:BITE:HURT:5d6
 blow:BITE:HURT:5d6
 blow:WAIL:TERRIFY:5d6
@@ -5139,8 +7217,14 @@ desc:It is a giant beetle that produces a chilling sound.
 name:young black dragon
 base:dragon
 color:s
-info:110:264:20:72:70
-power:31:1:700
+speed:110
+hit-points:264
+vision:20
+armor-class:72
+alertness:70
+depth:31
+rarity:1
+experience:700
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
 blow:BITE:HURT:2d8
@@ -5157,8 +7241,14 @@ desc: darkest black hue.  Acid drips from its body.
 name:young gold dragon
 base:dragon
 color:y
-info:110:264:20:72:70
-power:31:1:700
+speed:110
+hit-points:264
+vision:20
+armor-class:72
+alertness:70
+depth:31
+rarity:1
+experience:700
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
 blow:BITE:HURT:2d8
@@ -5174,8 +7264,14 @@ desc: tarnished gold hue, and light is reflected from its form.
 name:young red dragon
 base:dragon
 color:r
-info:110:264:20:72:70
-power:31:1:700
+speed:110
+hit-points:264
+vision:20
+armor-class:72
+alertness:70
+depth:31
+rarity:1
+experience:700
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
 blow:BITE:HURT:2d8
@@ -5195,8 +7291,14 @@ desc: deepest red hue.  Heat radiates from its form.
 name:Lokkak, the Ogre Chieftain
 base:ogre
 color:v
-info:120:1500:20:120:20
-power:32:2:1500
+speed:120
+hit-points:1500
+vision:20
+armor-class:120
+alertness:20
+depth:32
+rarity:2
+experience:1500
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
@@ -5214,8 +7316,14 @@ desc: leader of a large band of violent ogres.
 name:nexus quylthulg
 base:quylthulg
 color:P
-info:110:65:10:1:1
-power:32:1:300
+speed:110
+hit-points:65
+vision:10
+armor-class:1
+alertness:1
+depth:32
+rarity:1
+experience:300
 flags:IM_NEXUS
 spell-freq:1
 spell-power:32
@@ -5225,8 +7333,14 @@ desc:It is a very unstable, strange pulsing mound of flesh.
 name:ninja
 base:person
 color:y
-info:120:85:20:72:10
-power:32:2:300
+speed:120
+hit-points:85
+vision:20
+armor-class:72
+alertness:10
+depth:32
+rarity:2
+experience:300
 blow:HIT:POISON:3d4
 blow:HIT:LOSE_STR:3d4
 blow:HIT:LOSE_STR:3d4
@@ -5242,8 +7356,14 @@ desc:A humanoid clothed in black who moves with blinding speed.
 name:memory moss
 base:mushroom
 color:r
-info:110:2:30:1:5
-power:32:3:150
+speed:110
+hit-points:2
+vision:30
+armor-class:1
+alertness:5
+depth:32
+rarity:3
+experience:150
 blow:HIT:CONFUSE:1d4
 blow:HIT:CONFUSE:1d4
 flags:NEVER_MOVE
@@ -5257,8 +7377,14 @@ desc: before.
 name:young multi-hued dragon
 base:dragon
 color:v
-info:110:281:20:72:70
-power:32:1:900
+speed:110
+hit-points:281
+vision:20
+armor-class:72
+alertness:70
+depth:32
+rarity:1
+experience:900
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
 blow:BITE:HURT:3d8
@@ -5276,8 +7402,14 @@ desc: magical colours cover it.
 name:doombat
 base:bat
 color:R
-info:120:180:16:112:20
-power:32:2:250
+speed:120
+hit-points:180
+vision:16
+armor-class:112
+alertness:20
+depth:32
+rarity:2
+experience:250
 blow:BITE:FIRE:5d4
 blow:BITE:FIRE:5d4
 blow:BITE:FIRE:5d4
@@ -5292,8 +7424,14 @@ desc: flickering bright red flames.
 name:stone giant
 base:giant
 color:W
-info:110:333:20:90:50
-power:33:1:250
+speed:110
+hit-points:333
+vision:20
+armor-class:90
+alertness:50
+depth:33
+rarity:1
+experience:250
 blow:HIT:HURT:7d8
 blow:HIT:HURT:7d8
 flags:DROP_40
@@ -5307,8 +7445,14 @@ desc:It is eighteen feet tall and looking at you.
 name:shadow drake
 base:dragon
 color:G
-info:110:264:20:84:70
-power:33:3:1100
+speed:110
+hit-points:264
+vision:20
+armor-class:84
+alertness:70
+depth:33
+rarity:3
+experience:1100
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:EXP_10:3d6
@@ -5327,8 +7471,14 @@ desc: the soul rather than the body.
 name:cave troll
 base:troll
 color:u
-info:110:156:20:60:50
-power:33:1:350
+speed:110
+hit-points:156
+vision:20
+armor-class:60
+alertness:50
+depth:33
+rarity:1
+experience:350
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:BITE:HURT:1d8
@@ -5344,8 +7494,14 @@ desc:He is a vicious monster, feared for his ferocity.
 name:mystic
 base:person
 color:o
-info:120:308:30:60:5
-power:33:3:500
+speed:120
+hit-points:308
+vision:30
+armor-class:60
+alertness:5
+depth:33
+rarity:3
+experience:500
 blow:KICK:HURT:10d2
 blow:KICK:HURT:10d2
 blow:KICK:HURT:10d2
@@ -5368,8 +7524,14 @@ desc: summon help from nature and is able to focus his power to ease any pain.
 name:barrow wight
 base:wraith
 color:P
-info:110:83:20:60:30
-power:33:3:375
+speed:110
+hit-points:83
+vision:20
+armor-class:60
+alertness:30
+depth:33
+rarity:3
+experience:375
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
 blow:TOUCH:EXP_40
@@ -5385,8 +7547,14 @@ desc:It is a ghostly nightmare of an entity.
 name:skeleton ettin
 base:skeleton
 color:w
-info:110:396:20:75:50
-power:33:1:325
+speed:110
+hit-points:396
+vision:20
+armor-class:75
+alertness:50
+depth:33
+rarity:1
+experience:325
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d9
 blow:BITE:HURT:1d5
@@ -5398,8 +7566,14 @@ desc:It is the animated form of a massive two-headed troll.
 name:chaos drake
 base:dragon
 color:v
-info:110:440:20:84:70
-power:33:3:1400
+speed:110
+hit-points:440
+vision:20
+armor-class:84
+alertness:70
+depth:33
+rarity:3
+experience:1400
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:HURT:3d6
@@ -5417,8 +7591,14 @@ desc: as its form shimmers and changes in front of your eyes.
 name:law drake
 base:dragon
 color:B
-info:110:440:20:84:70
-power:33:3:1400
+speed:110
+hit-points:440
+vision:20
+armor-class:84
+alertness:70
+depth:33
+rarity:3
+experience:1400
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:HURT:3d6
@@ -5435,8 +7615,14 @@ desc: disturb it.
 name:balance drake
 base:dragon
 color:P
-info:110:528:20:84:70
-power:33:3:1600
+speed:110
+hit-points:528
+vision:20
+armor-class:84
+alertness:70
+depth:33
+rarity:3
+experience:1600
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:HURT:3d6
@@ -5453,8 +7639,14 @@ desc: and despises your feeble efforts to destroy evil.
 name:ethereal drake
 base:dragon
 color:o
-info:110:352:20:84:70
-power:33:3:1200
+speed:110
+hit-points:352
+vision:20
+armor-class:84
+alertness:70
+depth:33
+rarity:3
+experience:1200
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:HURT:3d6
@@ -5472,8 +7664,14 @@ desc: drake's eyes glare with white hatred from the shadows.
 name:shade
 base:ghost
 color:D
-info:120:147:20:36:10
-power:33:3:350
+speed:120
+hit-points:147
+vision:20
+armor-class:36
+alertness:10
+depth:33
+rarity:3
+experience:350
 blow:WAIL:TERRIFY
 blow:TOUCH:EXP_40
 blow:CLAW:LOSE_INT:1d10
@@ -5489,8 +7687,14 @@ desc: creature with a deadly touch.
 name:fire elemental
 base:elemental
 color:r
-info:110:135:12:60:50
-power:33:2:350
+speed:110
+hit-points:135
+vision:12
+armor-class:60
+alertness:50
+depth:33
+rarity:2
+experience:350
 blow:HIT:FIRE:4d6
 blow:HIT:FIRE:4d6
 flags:HAS_LIGHT
@@ -5505,8 +7709,14 @@ desc:It is a towering inferno of flames.
 name:water elemental
 base:elemental
 color:b
-info:110:113:12:48:50
-power:33:2:325
+speed:110
+hit-points:113
+vision:12
+armor-class:48
+alertness:50
+depth:33
+rarity:2
+experience:325
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
@@ -5522,8 +7732,14 @@ desc:It is a towering tempest of water.
 name:crystal drake
 base:dragon
 color:u
-info:110:396:20:84:70
-power:33:3:1350
+speed:110
+hit-points:396
+vision:20
+armor-class:84
+alertness:70
+depth:33
+rarity:3
+experience:1350
 blow:CLAW:HURT:2d4
 blow:CLAW:HURT:2d4
 blow:BITE:HURT:3d6
@@ -5544,8 +7760,14 @@ name:Maia
 plural:Maiar
 base:ainu
 color:B
-info:110:528:30:81:255
-power:34:4:1000
+speed:110
+hit-points:528
+vision:30
+armor-class:81
+alertness:255
+depth:34
+rarity:4
+experience:1000
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
@@ -5562,8 +7784,14 @@ desc: its face is stern as it looks down at you.
 name:half-troll
 base:troll
 color:U
-info:110:188:20:60:50
-power:34:2:400
+speed:110
+hit-points:188
+vision:20
+armor-class:60
+alertness:50
+depth:34
+rarity:2
+experience:400
 blow:CLAW:HURT:1d5
 blow:CLAW:HURT:1d5
 blow:BITE:HURT:2d6
@@ -5577,8 +7805,14 @@ desc:A huge, ugly, half-human in search of plunder.
 name:Bert the Stone Troll
 base:troll
 color:s
-info:120:1100:20:84:50
-power:34:7:2000
+speed:120
+hit-points:1100
+vision:20
+armor-class:84
+alertness:50
+depth:34
+rarity:7
+experience:2000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:BITE:HURT:3d10
@@ -5597,8 +7831,14 @@ desc: Bill and Tom.
 name:Bill the Stone Troll
 base:troll
 color:s
-info:120:1100:20:84:50
-power:34:7:2000
+speed:120
+hit-points:1100
+vision:20
+armor-class:84
+alertness:50
+depth:34
+rarity:7
+experience:2000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:BITE:HURT:3d10
@@ -5617,8 +7857,14 @@ desc: Bert and Tom.
 name:Tom the Stone Troll
 base:troll
 color:s
-info:120:1100:20:84:50
-power:34:7:2000
+speed:120
+hit-points:1100
+vision:20
+armor-class:84
+alertness:50
+depth:34
+rarity:7
+experience:2000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:BITE:HURT:3d10
@@ -5637,8 +7883,14 @@ desc: Bert and Bill.
 name:spectre
 base:ghost
 color:U
-info:120:147:20:36:10
-power:34:3:350
+speed:120
+hit-points:147
+vision:20
+armor-class:36
+alertness:10
+depth:34
+rarity:3
+experience:350
 blow:WAIL:TERRIFY
 blow:TOUCH:EXP_40
 blow:CLAW:LOSE_WIS:5d5
@@ -5653,15 +7905,18 @@ desc: evil deep within your body.
 
 ### Dungeon level 34 ###
 
-#name:Carrion crawler
-#Deleted
-
 name:master thief
 plural:master thieves
 base:person
 color:b
-info:130:99:20:45:5
-power:34:2:350
+speed:130
+hit-points:99
+vision:20
+armor-class:45
+alertness:5
+depth:34
+rarity:2
+experience:350
 blow:HIT:HURT:2d8
 blow:HIT:HURT:3d4
 blow:HIT:EAT_GOLD:4d4
@@ -5680,8 +7935,14 @@ desc:Cool and confident, fast and lithe; protect your possessions quickly!
 name:Ulfang the Black
 base:person
 color:U
-info:120:1000:20:108:40
-power:34:5:1200
+speed:120
+hit-points:1000
+vision:20
+armor-class:108
+alertness:40
+depth:34
+rarity:5
+experience:1200
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -5704,8 +7965,14 @@ name:lich
 plural:liches
 base:lich
 color:o
-info:110:264:20:72:60
-power:34:2:1000
+speed:110
+hit-points:264
+vision:20
+armor-class:72
+alertness:60
+depth:34
+rarity:2
+experience:1000
 blow:TOUCH:EXP_40
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:2d8
@@ -5722,8 +7989,14 @@ desc:It is a skeletal form dressed in robes.  It radiates vastly evil power.
 name:giant grey scorpion
 base:spider
 color:s
-info:120:189:12:60:40
-power:34:4:275
+speed:120
+hit-points:189
+vision:12
+armor-class:60
+alertness:40
+depth:34
+rarity:4
+experience:275
 blow:BITE:HURT:1d6
 blow:STING:POISON:1d4
 flags:ANIMAL | WEIRD_MIND
@@ -5733,8 +8006,14 @@ desc:It is a giant grey scorpion.  It looks poisonous.
 name:earth elemental
 base:elemental
 color:u
-info:100:165:10:90:50
-power:34:2:375
+speed:100
+hit-points:165
+vision:10
+armor-class:90
+alertness:50
+depth:34
+rarity:2
+experience:375
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -5750,8 +8029,14 @@ desc:It is a towering form composed of rock with fists of awesome power.
 name:air elemental
 base:elemental
 color:B
-info:120:90:12:60:50
-power:34:2:390
+speed:120
+hit-points:90
+vision:12
+armor-class:60
+alertness:50
+depth:34
+rarity:2
+experience:390
 blow:HIT:HURT:1d10
 blow:HIT:CONFUSE:1d4
 blow:HIT:HURT:1d10
@@ -5767,8 +8052,14 @@ desc:It is a towering tornado of winds.
 name:Eog golem
 base:golem
 color:u
-info:100:1050:12:187:20
-power:34:4:1200
+speed:100
+hit-points:1050
+vision:12
+armor-class:187
+alertness:20
+depth:34
+rarity:4
+experience:1200
 blow:HIT:HURT:8d6
 blow:HIT:HURT:8d6
 blow:HIT:HURT:6d6
@@ -5784,8 +8075,14 @@ desc: powerful now.
 name:mature white dragon
 base:dragon
 color:w
-info:110:352:20:84:70
-power:34:1:1200
+speed:110
+hit-points:352
+vision:20
+armor-class:84
+alertness:70
+depth:34
+rarity:1
+experience:1200
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:4d8
@@ -5803,8 +8100,14 @@ desc:A large dragon, scales gleaming bright white.
 name:mature blue dragon
 base:dragon
 color:b
-info:110:352:20:84:70
-power:34:1:1200
+speed:110
+hit-points:352
+vision:20
+armor-class:84
+alertness:70
+depth:34
+rarity:1
+experience:1200
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:4d8
@@ -5822,8 +8125,14 @@ desc:A large dragon, scales tinted deep blue.
 name:mature green dragon
 base:dragon
 color:g
-info:110:352:20:84:70
-power:34:1:1200
+speed:110
+hit-points:352
+vision:20
+armor-class:84
+alertness:70
+depth:34
+rarity:1
+experience:1200
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:4d8
@@ -5843,8 +8152,14 @@ desc:A large dragon, scales tinted deep green.
 name:water troll
 base:troll
 color:B
-info:110:316:20:60:50
-power:35:1:420
+speed:110
+hit-points:316
+vision:20
+armor-class:60
+alertness:50
+depth:35
+rarity:1
+experience:420
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d9
 blow:BITE:HURT:2d2
@@ -5859,8 +8174,14 @@ desc:He is a troll that reeks of brine.
 name:invisible stalker
 base:elemental
 color:y
-info:130:124:20:69:10
-power:35:3:300
+speed:130
+hit-points:124
+vision:20
+armor-class:69
+alertness:10
+depth:35
+rarity:3
+experience:300
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
@@ -5872,8 +8193,14 @@ desc:It is impossible to define its form but its violence is legendary.
 name:dagashi
 base:person
 color:y
-info:120:169:20:84:10
-power:35:4:500
+speed:120
+hit-points:169
+vision:20
+armor-class:84
+alertness:10
+depth:35
+rarity:4
+experience:500
 blow:HIT:POISON:3d4
 blow:HIT:LOSE_STR:3d4
 blow:HIT:LOSE_STR:3d4
@@ -5888,8 +8215,14 @@ desc:A human warrior, moving with lightning speed.
 name:gravity hound
 base:zephyr hound
 color:W
-info:110:193:30:36:0
-power:35:4:500
+speed:110
+hit-points:193
+vision:30
+armor-class:36
+alertness:0
+depth:35
+rarity:4
+experience:500
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:2d8
@@ -5908,8 +8241,14 @@ desc: rather less solid as you see gravity warp all round the monsters.
 name:acidic cytoplasm
 base:jelly
 color:s
-info:120:352:12:21:1
-power:35:5:180
+speed:120
+hit-points:352
+vision:12
+armor-class:21
+alertness:1
+depth:35
+rarity:5
+experience:180
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
@@ -5924,8 +8263,14 @@ desc:A disgusting animated blob of destruction.  Flee its gruesome hunger!
 name:inertia hound
 base:zephyr hound
 color:W
-info:110:193:30:36:0
-power:35:4:500
+speed:110
+hit-points:193
+vision:30
+armor-class:36
+alertness:0
+depth:35
+rarity:4
+experience:500
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:2d8
@@ -5943,8 +8288,14 @@ desc: you with deadly menace.  It makes you tired just to look at it.
 name:impact hound
 base:zephyr hound
 color:u
-info:110:193:30:36:0
-power:35:4:500
+speed:110
+hit-points:193
+vision:30
+armor-class:36
+alertness:0
+depth:35
+rarity:4
+experience:500
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:2d8
@@ -5963,8 +8314,14 @@ desc: powerful blow as it stalks towards you.
 name:dread
 base:ghost
 color:o
-info:120:263:20:36:10
-power:35:2:600
+speed:120
+hit-points:263
+vision:20
+armor-class:36
+alertness:10
+depth:35
+rarity:2
+experience:600
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:LOSE_STR:3d4
@@ -5984,8 +8341,14 @@ name:mûmak
 plural:mûmakil
 base:quadruped
 color:s
-info:110:495:20:82:70
-power:35:2:2100
+speed:110
+hit-points:495
+vision:20
+armor-class:82
+alertness:70
+depth:35
+rarity:2
+experience:2100
 blow:BUTT:HURT:4d6
 blow:BUTT:HURT:4d6
 blow:CRUSH:HURT:4d4
@@ -5996,8 +8359,14 @@ desc:A massive elephantine form with eyes twisted by madness.
 name:giant fire ant
 base:ant
 color:R
-info:110:176:14:58:40
-power:35:1:350
+speed:110
+hit-points:176
+vision:14
+armor-class:58
+alertness:40
+depth:35
+rarity:1
+experience:350
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
 flags:HAS_LIGHT
@@ -6010,8 +8379,14 @@ name:chest mimic
 base:mimic
 glyph:~
 color:s
-info:110:308:30:48:0
-power:35:4:250
+speed:110
+hit-points:308
+vision:30
+armor-class:48
+alertness:0
+depth:35
+rarity:4
+experience:250
 blow:BITE:POISON:4d4
 blow:BITE:POISON:4d4
 blow:BUTT:CONFUSE:4d4
@@ -6036,8 +8411,14 @@ mimic:chest:Large steel chest
 name:silent watcher
 base:golem
 color:r
-info:110:1040:42:96:10
-power:35:3:800
+speed:110
+hit-points:1040
+vision:42
+armor-class:96
+alertness:10
+depth:35
+rarity:3
+experience:800
 blow:GAZE:TERRIFY
 blow:GAZE:PARALYZE
 blow:GAZE:LOSE_STR
@@ -6057,8 +8438,14 @@ desc: malevolent light.
 name:olog
 base:troll
 color:y
-info:110:369:20:60:50
-power:36:1:450
+speed:110
+hit-points:369
+vision:20
+armor-class:60
+alertness:50
+depth:36
+rarity:1
+experience:450
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:BITE:HURT:2d3
@@ -6071,8 +8458,14 @@ desc:It is a massive intelligent troll with needle-sharp fangs.
 name:cloud giant
 base:giant
 color:b
-info:110:368:20:90:40
-power:36:1:500
+speed:110
+hit-points:368
+vision:20
+armor-class:90
+alertness:40
+depth:36
+rarity:1
+experience:500
 blow:HIT:ELEC:8d8
 blow:HIT:ELEC:8d8
 flags:DROP_60
@@ -6087,8 +8480,14 @@ desc:It is a twenty foot tall giant wreathed in clouds.
 name:master vampire
 base:vampire
 color:g
-info:110:299:20:72:10
-power:36:1:750
+speed:110
+hit-points:299
+vision:20
+armor-class:72
+alertness:10
+depth:36
+rarity:1
+experience:750
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
 blow:BITE:EXP_40:3d6
@@ -6105,8 +8504,14 @@ desc: frame.
 name:ooze elemental
 base:elemental
 color:g
-info:110:72:10:120:50
-power:36:3:300
+speed:110
+hit-points:72
+vision:10
+armor-class:120
+alertness:50
+depth:36
+rarity:3
+experience:300
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
@@ -6123,8 +8528,14 @@ desc:It is a towering mass of filth, an eyesore of ooze.
 name:smoke elemental
 base:elemental
 color:D
-info:120:83:10:120:50
-power:36:3:375
+speed:120
+hit-points:83
+vision:10
+armor-class:120
+alertness:50
+depth:36
+rarity:3
+experience:375
 blow:ENGULF:HURT:2d6
 blow:ENGULF:HURT:2d6
 flags:BASH_DOOR | KILL_BODY | KILL_ITEM
@@ -6139,8 +8550,14 @@ desc:It is a towering blackened form, crackling with heat.
 name:xorn
 base:xorn
 color:u
-info:110:140:20:96:10
-power:36:2:650
+speed:110
+hit-points:140
+vision:20
+armor-class:96
+alertness:10
+depth:36
+rarity:2
+experience:650
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
@@ -6153,8 +8570,14 @@ desc: has four huge arms protruding from its enormous torso.
 name:shadow
 base:ghost
 color:D
-info:120:105:30:36:20
-power:36:3:400
+speed:120
+hit-points:105
+vision:30
+armor-class:36
+alertness:20
+depth:36
+rarity:3
+experience:400
 blow:TOUCH:EXP_80
 blow:TOUCH:EXP_40
 blow:CLAW:LOSE_INT:1d10
@@ -6172,8 +8595,14 @@ desc: energy from your soul to feed its power.
 name:phantom
 base:ghost
 color:P
-info:120:260:30:36:20
-power:36:3:400
+speed:120
+hit-points:260
+vision:30
+armor-class:36
+alertness:20
+depth:36
+rarity:3
+experience:400
 blow:TOUCH:EXP_80
 blow:TOUCH:EXP_40
 blow:CLAW:LOSE_INT:1d10
@@ -6189,8 +8618,14 @@ desc: saps your very soul.
 name:grey wraith
 base:wraith
 color:s
-info:110:167:20:60:10
-power:36:1:700
+speed:110
+hit-points:167
+vision:20
+armor-class:60
+alertness:10
+depth:36
+rarity:1
+experience:700
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
 blow:TOUCH:EXP_40
@@ -6207,8 +8642,14 @@ name:colossus
 plural:colossi
 base:golem
 color:G
-info:100:2640:12:180:10
-power:36:4:850
+speed:100
+hit-points:2640
+vision:12
+armor-class:180
+alertness:10
+depth:36
+rarity:4
+experience:850
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:HIT:HURT:6d6
@@ -6223,8 +8664,14 @@ desc: power.
 name:trapper
 base:lurker
 color:w
-info:120:528:30:90:10
-power:36:3:580
+speed:120
+hit-points:528
+vision:30
+armor-class:90
+alertness:10
+depth:36
+rarity:3
+experience:580
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:PARALYZE:15d1
@@ -6235,8 +8682,14 @@ desc: paralyzes them, to be slowly digested later.
 name:bodak
 base:minor demon
 color:r
-info:110:193:10:81:90
-power:36:2:750
+speed:110
+hit-points:193
+vision:10
+armor-class:81
+alertness:90
+depth:36
+rarity:2
+experience:750
 blow:HIT:FIRE:4d6
 blow:HIT:FIRE:4d6
 blow:GAZE:EXP_20
@@ -6254,8 +8707,14 @@ desc:It is a humanoid form composed of flames and hatred.
 name:necromancer
 base:person
 color:R
-info:110:246:20:75:20
-power:36:2:630
+speed:110
+hit-points:246
+vision:20
+armor-class:75
+alertness:20
+depth:36
+rarity:2
+experience:630
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
 flags:MALE | EVIL | SMART | HAS_LIGHT
@@ -6276,8 +8735,14 @@ desc:A gaunt figure, clothed in black robes.
 name:Lorgan, Chief of the Easterlings
 base:person
 color:P
-info:120:1800:25:120:10
-power:36:2:1200
+speed:120
+hit-points:1800
+vision:25
+armor-class:120
+alertness:10
+depth:36
+rarity:2
+experience:1200
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:3d8
@@ -6300,8 +8765,14 @@ desc: control.
 name:demonologist
 base:person
 color:i
-info:120:246:20:75:20
-power:36:2:700
+speed:120
+hit-points:246
+vision:20
+armor-class:75
+alertness:20
+depth:36
+rarity:2
+experience:700
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
@@ -6323,8 +8794,14 @@ desc:A figure twisted by evil standing in robes of deepest crimson.
 name:mature red dragon
 base:dragon
 color:r
-info:110:440:20:96:70
-power:36:1:1500
+speed:110
+hit-points:440
+vision:20
+armor-class:96
+alertness:70
+depth:36
+rarity:1
+experience:1500
 blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:4d10
@@ -6343,8 +8820,14 @@ desc:A large dragon, scales tinted deep red.
 name:mature gold dragon
 base:dragon
 color:y
-info:110:440:20:96:70
-power:36:1:1500
+speed:110
+hit-points:440
+vision:20
+armor-class:96
+alertness:70
+depth:36
+rarity:1
+experience:1500
 blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:4d10
@@ -6362,8 +8845,14 @@ desc:A large dragon with scales of gleaming gold.
 name:mature black dragon
 base:dragon
 color:s
-info:110:440:20:96:70
-power:36:1:1500
+speed:110
+hit-points:440
+vision:20
+armor-class:96
+alertness:70
+depth:36
+rarity:1
+experience:1500
 blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:4d10
@@ -6382,8 +8871,14 @@ name:greater mummy
 plural:greater mummies
 base:zombie
 color:y
-info:110:299:30:102:90
-power:36:5:800
+speed:110
+hit-points:299
+vision:30
+armor-class:102
+alertness:90
+depth:36
+rarity:5
+experience:800
 blow:CLAW:LOSE_CON:3d6
 blow:CLAW:LOSE_CON:3d6
 blow:GAZE:EXP_40:3d4
@@ -6408,8 +8903,14 @@ desc:Once a powerful ruler, now an even more powerful undead menace.
 name:gauth
 base:eye
 color:D
-info:110:264:20:75:25
-power:36:2:600
+speed:110
+hit-points:264
+vision:20
+armor-class:75
+alertness:25
+depth:36
+rarity:2
+experience:600
 blow:GAZE:DISENCHANT:5d2
 blow:GAZE:DISENCHANT:5d2
 blow:GAZE:DRAIN_CHARGES:5d2
@@ -6430,8 +8931,14 @@ desc: magic.
 name:ice elemental
 base:elemental
 color:w
-info:110:193:10:90:50
-power:37:3:650
+speed:110
+hit-points:193
+vision:10
+armor-class:90
+alertness:50
+depth:37
+rarity:3
+experience:650
 blow:TOUCH:COLD:4d3
 blow:HIT:HURT:4d6
 blow:TOUCH:COLD:4d3
@@ -6448,8 +8955,14 @@ desc:It is a towering glacier of ice.
 name:mummified troll
 base:zombie
 color:w
-info:110:167:20:75:70
-power:37:1:420
+speed:110
+hit-points:167
+vision:20
+armor-class:75
+alertness:70
+depth:37
+rarity:1
+experience:420
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
 flags:TROLL | EMPTY_MIND | REGENERATE
@@ -6461,8 +8974,14 @@ desc: fists.
 name:The Queen Ant
 base:ant
 color:v
-info:120:1500:30:120:10
-power:37:2:2000
+speed:120
+hit-points:1500
+vision:30
+armor-class:120
+alertness:10
+depth:37
+rarity:2
+experience:2000
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d8
@@ -6486,8 +9005,14 @@ desc:She's upset because you hurt her children.
 name:magma elemental
 base:elemental
 color:o
-info:110:193:10:105:50
-power:37:3:950
+speed:110
+hit-points:193
+vision:10
+armor-class:105
+alertness:50
+depth:37
+rarity:3
+experience:950
 blow:HIT:FIRE:3d7
 blow:HIT:HURT:4d6
 blow:HIT:FIRE:3d7
@@ -6504,8 +9029,14 @@ desc:It is a towering glowing form of molten hate.
 name:black pudding
 base:jelly
 color:D
-info:110:352:12:21:1
-power:37:5:50
+speed:110
+hit-points:352
+vision:12
+armor-class:21
+alertness:1
+depth:37
+rarity:5
+experience:50
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
 blow:TOUCH:ACID:1d10
@@ -6521,8 +9052,14 @@ desc:A lump of rotting black flesh that slurrrrrrrps across the dungeon floor.
 name:killer iridescent beetle
 base:killer beetle
 color:b
-info:110:330:16:90:30
-power:37:2:850
+speed:110
+hit-points:330
+vision:16
+armor-class:90
+alertness:30
+depth:37
+rarity:2
+experience:850
 blow:CLAW:ELEC:2d12
 blow:CLAW:ELEC:2d12
 blow:GAZE:PARALYZE
@@ -6534,8 +9071,14 @@ name:nexus vortex
 plural:nexus vortices
 base:vortex
 color:P
-info:120:176:100:48:0
-power:37:1:800
+speed:120
+hit-points:176
+vision:100
+armor-class:48
+alertness:0
+depth:37
+rarity:1
+experience:800
 blow:ENGULF:HURT:5d5
 flags:RAND_25
 flags:IM_NEXUS
@@ -6548,8 +9091,14 @@ name:plasma vortex
 plural:plasma vortices
 base:vortex
 color:R
-info:120:176:100:48:0
-power:37:1:800
+speed:120
+hit-points:176
+vision:100
+armor-class:48
+alertness:0
+depth:37
+rarity:1
+experience:800
 blow:ENGULF:FIRE:4d8
 blow:ENGULF:ELEC:4d8
 flags:HAS_LIGHT
@@ -6563,8 +9112,14 @@ desc:A whirlpool of intense flame, charring the stones at your feet.
 name:eldrak
 base:troll
 color:r
-info:110:660:20:120:40
-power:37:3:800
+speed:110
+hit-points:660
+vision:20
+armor-class:120
+alertness:40
+depth:37
+rarity:3
+experience:800
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
@@ -6576,8 +9131,14 @@ desc:A massive troll, larger and stronger than many men together.
 name:shardstorm
 base:vortex
 color:u
-info:120:176:40:14:0
-power:37:1:800
+speed:120
+hit-points:176
+vision:40
+armor-class:14
+alertness:0
+depth:37
+rarity:1
+experience:800
 blow:ENGULF:HURT:6d6
 spell-freq:4
 spell-power:37
@@ -6590,8 +9151,14 @@ desc: magics.
 name:will o' the wisp
 base:elemental
 color:W
-info:130:176:30:180:0
-power:38:4:500
+speed:130
+hit-points:176
+vision:30
+armor-class:180
+alertness:0
+depth:38
+rarity:4
+experience:500
 blow:HIT:HURT:1d9
 blow:HIT:HURT:1d9
 blow:HIT:HALLU:1d9
@@ -6609,8 +9176,14 @@ desc: strange dancing motion.
 name:mature multi-hued dragon
 base:dragon
 color:v
-info:110:528:20:96:70
-power:38:1:1800
+speed:110
+hit-points:528
+vision:20
+armor-class:96
+alertness:70
+depth:38
+rarity:1
+experience:1800
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:4d12
@@ -6630,8 +9203,14 @@ desc:A large dragon, scales shimmering many colours.
 name:death knight
 base:person
 color:D
-info:120:528:20:120:10
-power:38:1:1000
+speed:120
+hit-points:528
+vision:20
+armor-class:120
+alertness:10
+depth:38
+rarity:1
+experience:1000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -6655,8 +9234,14 @@ desc: fire.
 name:Castamir the Usurper
 base:person
 color:V
-info:120:880:20:108:40
-power:38:5:1600
+speed:120
+hit-points:880
+vision:20
+armor-class:108
+alertness:40
+depth:38
+rarity:5
+experience:1600
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -6676,8 +9261,14 @@ name:time vortex
 plural:time vortices
 base:vortex
 color:B
-info:130:176:100:48:0
-power:38:4:800
+speed:130
+hit-points:176
+vision:100
+armor-class:48
+alertness:0
+depth:38
+rarity:4
+experience:800
 blow:ENGULF:EXP_20:5d5
 flags:RAND_25
 spell-freq:6
@@ -6689,8 +9280,14 @@ name:shimmering vortex
 plural:shimmering vortices
 base:vortex
 color:o
-info:140:176:100:48:0
-power:38:4:800
+speed:140
+hit-points:176
+vision:100
+armor-class:48
+alertness:0
+depth:38
+rarity:4
+experience:800
 blow:ENGULF:BLIND:4d4
 blow:ENGULF:BLIND:4d4
 flags:HAS_LIGHT | ATTR_FLICKER
@@ -6706,8 +9303,14 @@ desc: waking monsters from their slumber.
 name:emperor wight
 base:wraith
 color:r
-info:120:334:20:48:10
-power:38:2:1600
+speed:120
+hit-points:334
+vision:20
+armor-class:48
+alertness:10
+depth:38
+rarity:2
+experience:1600
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:TOUCH:EXP_80
@@ -6726,8 +9329,14 @@ desc: approaches.
 name:black wraith
 base:wraith
 color:D
-info:120:440:20:66:10
-power:38:2:1700
+speed:120
+hit-points:440
+vision:20
+armor-class:66
+alertness:10
+depth:38
+rarity:2
+experience:1700
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:TOUCH:EXP_40
@@ -6746,8 +9355,14 @@ name:erinyes
 plural:erinyes
 base:major demon
 color:u
-info:110:210:20:75:70
-power:38:2:1000
+speed:110
+hit-points:210
+vision:20
+armor-class:75
+alertness:70
+depth:38
+rarity:2
+experience:1000
 blow:HIT:HURT:3d4
 blow:TOUCH:LOSE_STR:1d5
 flags:FEMALE
@@ -6763,8 +9378,14 @@ desc: her true colours.
 name:ettin
 base:troll
 color:b
-info:110:1320:20:120:30
-power:38:3:1000
+speed:110
+hit-points:1320
+vision:20
+armor-class:120
+alertness:30
+depth:38
+rarity:3
+experience:1000
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
@@ -6777,8 +9398,14 @@ desc: one...
 name:aranea
 base:spider
 color:R
-info:110:264:20:54:50
-power:38:3:250
+speed:110
+hit-points:264
+vision:20
+armor-class:54
+alertness:50
+depth:38
+rarity:3
+experience:250
 blow:CLAW:POISON:2d8
 blow:CLAW:POISON:2d8
 blow:BITE:POISON:2d6
@@ -6801,8 +9428,14 @@ name:greater Maia
 plural:greater Maiar
 base:ainu
 color:G
-info:120:880:30:81:155
-power:39:4:2500
+speed:120
+hit-points:880
+vision:30
+armor-class:81
+alertness:155
+depth:39
+rarity:4
+experience:2500
 blow:HIT:HURT:4d3
 blow:HIT:HURT:3d8
 blow:HIT:HURT:4d3
@@ -6824,8 +9457,14 @@ desc: shakes with each of its steps toward you.
 name:nether wraith
 base:wraith
 color:G
-info:120:420:20:66:10
-power:39:2:1700
+speed:120
+hit-points:420
+vision:20
+armor-class:66
+alertness:10
+depth:39
+rarity:2
+experience:1700
 blow:HIT:HURT:1d12
 blow:HIT:HURT:1d12
 blow:TOUCH:EXP_80
@@ -6844,8 +9483,14 @@ desc: you, a coldness saps your soul.
 name:Kavlax the Many-Headed
 base:dragon
 color:D
-info:120:1300:20:102:30
-power:39:3:3000
+speed:120
+hit-points:1300
+vision:20
+armor-class:102
+alertness:30
+depth:39
+rarity:3
+experience:3000
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
@@ -6865,8 +9510,14 @@ desc: look for prey, but each with its own deadly breath weapon.
 name:7-headed hydra
 base:hydra
 color:G
-info:120:550:20:135:35
-power:39:2:2000
+speed:120
+hit-points:550
+vision:20
+armor-class:135
+alertness:35
+depth:39
+rarity:2
+experience:2000
 blow:BITE:POISON:3d9
 blow:BITE:POISON:3d9
 blow:BITE:POISON:3d9
@@ -6885,8 +9536,14 @@ desc:A strange reptilian hybrid with seven heads dripping venom.
 name:night mare
 base:quadruped
 color:G
-info:120:1320:30:102:0
-power:39:3:2900
+speed:120
+hit-points:1320
+vision:30
+armor-class:102
+alertness:0
+depth:39
+rarity:3
+experience:2900
 blow:BITE:EXP_80:2d6
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
@@ -6908,8 +9565,14 @@ desc: more than a hatred of all that lives.
 name:storm giant
 base:giant
 color:B
-info:120:700:20:90:30
-power:40:1:1000
+speed:120
+hit-points:700
+vision:20
+armor-class:90
+alertness:30
+depth:40
+rarity:1
+experience:1000
 blow:HIT:ELEC:10d8
 blow:HIT:ELEC:10d8
 flags:HAS_LIGHT
@@ -6929,8 +9592,14 @@ desc:It is a twenty-five foot tall giant wreathed in lightning.
 name:ancient blue dragon
 base:ancient dragon
 color:b
-info:120:633:20:108:80
-power:40:1:2000
+speed:120
+hit-points:633
+vision:20
+armor-class:108
+alertness:80
+depth:40
+rarity:1
+experience:2000
 blow:CLAW:HURT:4d8
 blow:CLAW:HURT:4d8
 blow:BITE:ELEC:7d8
@@ -6945,8 +9614,14 @@ desc:A huge draconic form.  Lightning crackles along its length.
 name:beholder
 base:eye
 color:U
-info:120:1400:30:96:10
-power:40:3:6000
+speed:120
+hit-points:1400
+vision:30
+armor-class:96
+alertness:10
+depth:40
+rarity:3
+experience:6000
 blow:GAZE:EXP_20:2d6
 blow:GAZE:DRAIN_CHARGES:2d6
 blow:GAZE:LOSE_INT:2d6
@@ -6966,8 +9641,14 @@ desc: and a huge mouth filled with sharp teeth.
 name:ancient white dragon
 base:ancient dragon
 color:w
-info:120:633:20:108:80
-power:40:1:2000
+speed:120
+hit-points:633
+vision:20
+armor-class:108
+alertness:80
+depth:40
+rarity:1
+experience:2000
 blow:CLAW:HURT:4d8
 blow:CLAW:HURT:4d8
 blow:BITE:COLD:7d8
@@ -6982,8 +9663,14 @@ desc:A huge draconic form.  Frost covers it from head to tail.
 name:ancient green dragon
 base:ancient dragon
 color:g
-info:120:633:20:108:80
-power:40:1:2000
+speed:120
+hit-points:633
+vision:20
+armor-class:108
+alertness:80
+depth:40
+rarity:1
+experience:2000
 blow:CLAW:HURT:4d8
 blow:CLAW:HURT:4d8
 blow:BITE:POISON:7d8
@@ -6998,8 +9685,14 @@ desc:A huge draconic form enveloped in clouds of poisonous vapour.
 name:disenchanter worm mass
 base:worm
 color:v
-info:100:45:7:6:10
-power:40:3:30
+speed:100
+hit-points:45
+vision:7
+armor-class:6
+alertness:10
+depth:40
+rarity:3
+experience:30
 blow:CRAWL:DISENCHANT:1d4
 flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_50 | BASH_DOOR
@@ -7011,8 +9704,14 @@ desc: its disgusting form.
 name:spirit troll
 base:ghost
 color:G
-info:110:880:20:108:5
-power:40:3:900
+speed:110
+hit-points:880
+vision:20
+armor-class:108
+alertness:5
+depth:40
+rarity:3
+experience:900
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
@@ -7024,8 +9723,14 @@ desc:A weird ghostly troll-like being from the ethereal plane.
 name:9-headed hydra
 base:hydra
 color:r
-info:120:650:20:114:20
-power:40:2:3000
+speed:120
+hit-points:650
+vision:20
+armor-class:114
+alertness:20
+depth:40
+rarity:2
+experience:3000
 blow:BITE:FIRE:3d10
 blow:BITE:FIRE:3d10
 blow:BITE:FIRE:3d10
@@ -7044,8 +9749,14 @@ desc:A strange reptilian hybrid with nine smouldering heads.
 name:enchantress
 base:person
 color:i
-info:130:457:20:72:10
-power:40:4:2100
+speed:130
+hit-points:457
+vision:20
+armor-class:72
+alertness:10
+depth:40
+rarity:4
+experience:2100
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d8
@@ -7068,8 +9779,14 @@ desc: she rarely fights without.
 name:sorcerer
 base:person
 color:R
-info:130:457:20:72:10
-power:40:2:2150
+speed:130
+hit-points:457
+vision:20
+armor-class:72
+alertness:10
+depth:40
+rarity:2
+experience:2150
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
@@ -7097,8 +9814,14 @@ desc: hands are ablur with spell casting.
 name:xaren
 base:xorn
 color:s
-info:120:280:20:96:10
-power:40:1:1200
+speed:120
+hit-points:280
+vision:20
+armor-class:96
+alertness:10
+depth:40
+rarity:1
+experience:1200
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
@@ -7111,8 +9834,14 @@ desc:It is a tougher relative of the Xorn.  Its hide glitters with metal ores.
 name:giant roc
 base:bird
 color:u
-info:110:560:20:84:10
-power:40:3:1000
+speed:110
+hit-points:560
+vision:20
+armor-class:84
+alertness:10
+depth:40
+rarity:3
+experience:1000
 blow:CRUSH:HURT:8d12
 blow:CRUSH:HURT:8d12
 blow:HIT:ELEC:12d12
@@ -7125,8 +9854,14 @@ desc: corridors.
 name:Uvatha the Horseman
 base:wraith
 color:p
-info:120:1800:90:72:10
-power:40:3:10000
+speed:120
+hit-points:1800
+vision:90
+armor-class:72
+alertness:10
+depth:40
+rarity:3
+experience:10000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:EXP_80:4d6
@@ -7140,8 +9875,14 @@ desc: to taste your blood.
 name:minotaur
 base:hybrid
 color:s
-info:130:550:13:30:10
-power:40:2:2100
+speed:130
+hit-points:550
+vision:13
+armor-class:30
+alertness:10
+depth:40
+rarity:2
+experience:2100
 blow:BUTT:HURT:4d6
 blow:BUTT:HURT:4d6
 blow:BUTT:HURT:2d6
@@ -7153,8 +9894,14 @@ desc:It is a cross between a human and a bull.
 name:Medusa, the Gorgon
 base:naga
 color:v
-info:120:2400:30:120:5
-power:40:3:9000
+speed:120
+hit-points:2400
+vision:30
+armor-class:120
+alertness:5
+depth:40
+rarity:3
+experience:9000
 blow:GAZE:EXP_80
 blow:GAZE:PARALYZE
 blow:HIT:HURT:8d6
@@ -7178,8 +9925,14 @@ desc: from her ghastly mouth.
 name:vrock
 base:major demon
 color:s
-info:110:352:20:75:70
-power:40:2:2000
+speed:110
+hit-points:352
+vision:20
+armor-class:75
+alertness:70
+depth:40
+rarity:2
+experience:2000
 blow:HIT:HURT:3d4
 blow:CRUSH:HURT:8d12
 blow:CRUSH:HURT:8d12
@@ -7194,8 +9947,14 @@ desc:It is a demon with a long neck and raking claws.
 name:death quasit
 base:minor demon
 color:D
-info:130:387:20:96:0
-power:40:3:1000
+speed:130
+hit-points:387
+vision:20
+armor-class:96
+alertness:0
+depth:40
+rarity:3
+experience:1000
 blow:BITE:LOSE_DEX:3d6
 blow:CLAW:HURT:3d3
 blow:CLAW:HURT:3d3
@@ -7214,8 +9973,14 @@ desc: speed and its powers make it a tornado of death and destruction.
 name:patriarch
 base:person
 color:G
-info:120:457:20:90:20
-power:40:2:1800
+speed:120
+hit-points:457
+vision:20
+armor-class:90
+alertness:20
+depth:40
+rarity:2
+experience:1800
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d5
@@ -7242,8 +10007,14 @@ desc: frame.
 name:troll chieftain
 base:troll
 color:P
-info:120:792:30:60:20
-power:40:5:3000
+speed:120
+hit-points:792
+vision:30
+armor-class:60
+alertness:20
+depth:40
+rarity:5
+experience:3000
 blow:HIT:HURT:2d12
 blow:HIT:HURT:2d12
 blow:BITE:HURT:3d6
@@ -7267,8 +10038,14 @@ desc: its tribe.  It fears nothing.
 name:ancient black dragon
 base:ancient dragon
 color:s
-info:120:880:20:108:80
-power:41:1:2500
+speed:120
+hit-points:880
+vision:20
+armor-class:108
+alertness:80
+depth:41
+rarity:1
+experience:2500
 blow:CLAW:HURT:4d9
 blow:CLAW:HURT:4d9
 blow:BITE:ACID:7d9
@@ -7283,8 +10060,14 @@ desc:A huge draconic form.  Pools of acid melt the floor around it.
 name:ancient red dragon
 base:ancient dragon
 color:r
-info:120:880:20:108:80
-power:41:1:2500
+speed:120
+hit-points:880
+vision:20
+armor-class:108
+alertness:80
+depth:41
+rarity:1
+experience:2500
 blow:CLAW:HURT:4d9
 blow:CLAW:HURT:4d9
 blow:BITE:FIRE:7d9
@@ -7301,8 +10084,14 @@ desc: extreme heat surrounding it makes you gasp for breath.
 name:ancient gold dragon
 base:ancient dragon
 color:y
-info:120:880:20:108:80
-power:41:1:2500
+speed:120
+hit-points:880
+vision:20
+armor-class:108
+alertness:80
+depth:41
+rarity:1
+experience:2500
 blow:CLAW:HURT:4d9
 blow:CLAW:HURT:4d9
 blow:BITE:HURT:7d9
@@ -7317,8 +10106,14 @@ desc: deafens you.
 name:dark elven sorcerer
 base:humanoid
 color:R
-info:130:700:20:84:10
-power:41:2:3000
+speed:130
+hit-points:700
+vision:20
+armor-class:84
+alertness:10
+depth:41
+rarity:2
+experience:3000
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
@@ -7342,8 +10137,14 @@ name:master lich
 plural:master liches
 base:lich
 color:r
-info:120:1584:20:96:50
-power:41:2:10000
+speed:120
+hit-points:1584
+vision:20
+armor-class:96
+alertness:50
+depth:41
+rarity:2
+experience:10000
 blow:TOUCH:EXP_80
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:2d12
@@ -7362,8 +10163,14 @@ desc: fingers.
 name:hezrou
 base:major demon
 color:g
-info:110:457:20:60:70
-power:41:3:2500
+speed:110
+hit-points:457
+vision:20
+armor-class:60
+alertness:70
+depth:41
+rarity:3
+experience:2500
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 flags:DROP_1
@@ -7378,8 +10185,14 @@ desc:It is a demon of lizard form with cruel-looking jaws.
 name:Gorlim, Betrayer of Barahir
 base:person
 color:z
-info:120:1600:20:144:40
-power:41:3:7000
+speed:120
+hit-points:1600
+vision:20
+armor-class:144
+alertness:40
+depth:41
+rarity:3
+experience:7000
 blow:HIT:HURT:8d6
 blow:HIT:HURT:8d6
 blow:HIT:DISENCHANT:6d8
@@ -7402,8 +10215,14 @@ desc: was not kept.
 name:ranger chieftain
 base:person
 color:W
-info:120:880:20:72:10
-power:41:2:1600
+speed:120
+hit-points:880
+vision:20
+armor-class:72
+alertness:10
+depth:41
+rarity:2
+experience:1600
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -7434,8 +10253,14 @@ desc: so you will need magically enhanced seeing to spot him.
 name:hellhound
 base:canine
 color:r
-info:120:352:25:120:10
-power:42:2:600
+speed:120
+hit-points:352
+vision:25
+armor-class:120
+alertness:10
+depth:42
+rarity:2
+experience:600
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
@@ -7452,8 +10277,14 @@ desc:It is a giant dog that glows with heat.  Flames pour from its nostrils.
 name:Rogrog the Black Troll
 base:troll
 color:D
-info:120:2000:20:105:30
-power:42:3:5000
+speed:120
+hit-points:2000
+vision:20
+armor-class:105
+alertness:30
+depth:42
+rarity:3
+experience:5000
 blow:HIT:HURT:6d7
 blow:HIT:HURT:6d7
 blow:BITE:HURT:4d10
@@ -7476,8 +10307,14 @@ desc: muscular frame.  Despite his bulk, he strikes with stunning speed.
 name:vampire lord
 base:vampire
 color:b
-info:120:1400:20:84:10
-power:42:1:1800
+speed:120
+hit-points:1400
+vision:20
+armor-class:84
+alertness:10
+depth:42
+rarity:1
+experience:1800
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:BITE:EXP_80:4d6
@@ -7490,16 +10327,19 @@ spells:BO_NETH
 friends:40:1d4:Vampire
 desc:A foul wind chills your bones as this ghastly figure approaches.
 
-#name:Dread
-#Consolidated (see #369)
-
 ### Dungeon level 43 ###
 
 name:Vargo, Tyrant of Fire
 base:elemental
 color:R
-info:120:2400:12:75:30
-power:43:3:4000
+speed:120
+hit-points:2400
+vision:12
+armor-class:75
+alertness:30
+depth:43
+rarity:3
+experience:4000
 blow:HIT:FIRE:4d6
 blow:HIT:FIRE:4d6
 blow:HIT:FIRE:4d6
@@ -7517,8 +10357,14 @@ desc:A towering fire elemental, Vargo burns everything beyond recognition.
 name:Waldern, King of Water
 base:elemental
 color:V
-info:120:2500:12:120:30
-power:43:3:4250
+speed:120
+hit-points:2500
+vision:12
+armor-class:120
+alertness:30
+depth:43
+rarity:3
+experience:4250
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -7537,8 +10383,14 @@ desc: after wave drowns your frail body.
 name:Adunaphel the Quiet
 base:wraith
 color:p
-info:120:2100:90:72:10
-power:43:3:13000
+speed:120
+hit-points:2100
+vision:90
+armor-class:72
+alertness:10
+depth:43
+rarity:3
+experience:13000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:TOUCH:EXP_80:5d6
@@ -7559,8 +10411,14 @@ name:glabrezu
 plural:glabrezu
 base:major demon
 color:U
-info:110:616:20:60:70
-power:43:2:3000
+speed:110
+hit-points:616
+vision:20
+armor-class:60
+alertness:70
+depth:43
+rarity:2
+experience:3000
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 flags:DROP_60
@@ -7571,13 +10429,17 @@ spells:BO_FIRE
 spells:S_DEMON
 desc:It is demon with arms and pincers, its form a true mockery of life.
 
-#name:Mûmak
-
 name:ancient multi-hued dragon
 base:ancient dragon
 color:v
-info:120:1848:25:120:80
-power:43:1:13000
+speed:120
+hit-points:1848
+vision:25
+armor-class:120
+alertness:80
+depth:43
+rarity:1
+experience:13000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:HURT:7d10
@@ -7595,8 +10457,14 @@ desc: live to see another.
 name:Quaker, Master of Earth
 base:elemental
 color:U
-info:110:2800:10:145:50
-power:43:3:4500
+speed:110
+hit-points:2800
+vision:10
+armor-class:145
+alertness:50
+depth:43
+rarity:3
+experience:4500
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
@@ -7615,8 +10483,14 @@ desc: reduced to rubble as Quaker advances.
 name:Ariel, Queen of Air
 base:elemental
 color:Z
-info:130:2700:12:75:30
-power:43:3:4750
+speed:130
+hit-points:2700
+vision:12
+armor-class:75
+alertness:30
+depth:43
+rarity:3
+experience:4750
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:CONFUSE:4d4
@@ -7635,8 +10509,14 @@ desc: extreme speed.
 name:multi-hued hound
 base:zephyr hound
 color:v
-info:110:220:25:48:0
-power:43:6:600
+speed:110
+hit-points:220
+vision:25
+armor-class:48
+alertness:0
+depth:43
+rarity:6
+experience:600
 blow:CLAW:HURT:2d8
 blow:CLAW:HURT:2d8
 blow:BITE:HURT:4d4
@@ -7656,8 +10536,14 @@ desc:Shimmering in rainbow hues, this hound is beautiful and deadly.
 name:knight Templar
 base:person
 color:w
-info:120:1056:20:72:10
-power:44:2:2000
+speed:120
+hit-points:1056
+vision:20
+armor-class:72
+alertness:10
+depth:44
+rarity:2
+experience:2000
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -7686,8 +10572,14 @@ desc: forces of good are set against each other.
 name:11-headed hydra
 base:hydra
 color:R
-info:120:950:20:120:20
-power:44:2:6000
+speed:120
+hit-points:950
+vision:20
+armor-class:120
+alertness:20
+depth:44
+rarity:2
+experience:6000
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
@@ -7706,8 +10598,14 @@ desc:A strange reptilian hybrid with eleven smouldering heads.
 name:dreadmaster
 base:ghost
 color:y
-info:120:1056:20:120:10
-power:44:2:8000
+speed:120
+hit-points:1056
+vision:20
+armor-class:120
+alertness:10
+depth:44
+rarity:2
+experience:8000
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:LOSE_STR:3d4
@@ -7728,8 +10626,14 @@ desc: of purest black, crush rock and flesh with ease.
 name:drolem
 base:golem
 color:g
-info:120:2200:25:195:80
-power:44:3:12000
+speed:120
+hit-points:2200
+vision:25
+armor-class:195
+alertness:80
+depth:44
+rarity:3
+experience:12000
 blow:CLAW:HURT:3d10
 blow:CLAW:HURT:3d10
 blow:BITE:POISON:5d10
@@ -7751,8 +10655,14 @@ desc: little intelligence, but it has been instructed to destroy all it meets.
 name:Blue Wizard
 base:ainu
 color:b
-info:120:1320:30:68:255
-power:45:6:5000
+speed:120
+hit-points:1320
+vision:30
+armor-class:68
+alertness:255
+depth:45
+rarity:6
+experience:5000
 blow:HIT:HURT:4d6
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
@@ -7772,8 +10682,14 @@ desc: the blue wizards command powerful magics and make formidable opponents.
 name:rotting quylthulg
 base:quylthulg
 color:u
-info:120:420:20:1:0
-power:45:1:3000
+speed:120
+hit-points:420
+vision:20
+armor-class:1
+alertness:0
+depth:45
+rarity:1
+experience:3000
 spell-freq:2
 spell-power:45
 spells:BLINK | TPORT
@@ -7783,8 +10699,14 @@ desc:It is a pulsing flesh mound that reeks of death and putrefaction.
 name:death drake
 base:ancient dragon
 color:G
-info:120:1848:25:120:80
-power:45:2:10000
+speed:120
+hit-points:1848
+vision:25
+armor-class:120
+alertness:80
+depth:45
+rarity:2
+experience:10000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:EXP_80:7d10
@@ -7802,8 +10724,14 @@ desc: form but you sense its evil.
 name:great crystal drake
 base:ancient dragon
 color:u
-info:120:1848:25:120:80
-power:45:2:10000
+speed:120
+hit-points:1848
+vision:25
+armor-class:120
+alertness:80
+depth:45
+rarity:2
+experience:10000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:HURT:7d10
@@ -7822,8 +10750,14 @@ desc: light.
 name:Akhorahil the Blind
 base:wraith
 color:p
-info:120:2400:90:84:10
-power:45:3:15000
+speed:120
+hit-points:2400
+vision:90
+armor-class:84
+alertness:10
+depth:45
+rarity:3
+experience:15000
 blow:HIT:HURT:7d6
 blow:HIT:HURT:7d6
 blow:GAZE:EXP_80:6d6
@@ -7844,8 +10778,14 @@ desc: any ordinary man ever could.
 name:nalfeshnee
 base:major demon
 color:r
-info:110:792:20:60:80
-power:45:2:5000
+speed:110
+hit-points:792
+vision:20
+armor-class:60
+alertness:80
+depth:45
+rarity:2
+experience:5000
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
@@ -7863,8 +10803,14 @@ desc: its length.
 name:undead beholder
 base:eye
 color:u
-info:120:2376:30:120:10
-power:45:3:8000
+speed:120
+hit-points:2376
+vision:30
+armor-class:120
+alertness:10
+depth:45
+rarity:3
+experience:8000
 blow:GAZE:EXP_40:3d6
 blow:GAZE:DRAIN_CHARGES:3d6
 blow:GAZE:LOSE_INT:3d6
@@ -7889,8 +10835,14 @@ desc: drains your vitality for its evil enchantments.
 name:ethereal dragon
 base:ancient dragon
 color:o
-info:120:1848:25:120:80
-power:45:2:10000
+speed:120
+hit-points:1848
+vision:25
+armor-class:120
+alertness:80
+depth:45
+rarity:2
+experience:10000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:CONFUSE:7d10
@@ -7908,8 +10860,14 @@ desc: itself in unearthly shadows.
 name:demonic quylthulg
 base:quylthulg
 color:r
-info:120:420:20:1:0
-power:45:1:3000
+speed:120
+hit-points:420
+vision:20
+armor-class:1
+alertness:0
+depth:45
+rarity:1
+experience:3000
 spell-freq:2
 spell-power:45
 spells:BLINK | TPORT
@@ -7920,8 +10878,14 @@ desc: itself seems to cry out against it.
 name:draconic quylthulg
 base:quylthulg
 color:g
-info:120:420:20:1:0
-power:45:1:3000
+speed:120
+hit-points:420
+vision:20
+armor-class:1
+alertness:0
+depth:45
+rarity:1
+experience:3000
 spell-freq:2
 spell-power:45
 spells:BLINK | TPORT
@@ -7932,8 +10896,14 @@ desc: bacteria that make it pulse in a foul and degrading way.
 name:greater basilisk
 base:reptile
 color:D
-info:120:1010:25:120:15
-power:45:2:10000
+speed:120
+hit-points:1010
+vision:25
+armor-class:120
+alertness:15
+depth:45
+rarity:2
+experience:10000
 blow:GAZE:PARALYZE:3d12
 blow:GAZE:PARALYZE:3d12
 blow:BITE:POISON:2d12
@@ -7950,8 +10920,14 @@ desc:A large basilisk, whose shape resembles that of a great wyrm.
 name:berserker
 base:person
 color:u
-info:120:1320:20:96:10
-power:45:2:2500
+speed:120
+hit-points:1320
+vision:20
+armor-class:96
+alertness:10
+depth:45
+rarity:2
+experience:2500
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
@@ -7977,8 +10953,14 @@ name:cyclops
 plural:cyclopes
 base:giant
 color:u
-info:120:1050:20:144:20
-power:45:2:1500
+speed:120
+hit-points:1050
+vision:20
+armor-class:144
+alertness:20
+depth:45
+rarity:2
+experience:1500
 blow:HIT:HURT:9d9
 blow:HIT:HURT:9d9
 flags:DROP_1
@@ -7994,8 +10976,14 @@ desc:A gigantic ugly humanoid with but one eye and very thick skin.
 name:Scatha the Worm
 base:ancient dragon
 color:W
-info:120:2200:30:156:70
-power:46:2:17000
+speed:120
+hit-points:2200
+vision:30
+armor-class:156
+alertness:70
+depth:46
+rarity:2
+experience:17000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:CLAW:COLD:4d14
@@ -8017,8 +11005,14 @@ desc: into the air.
 name:marilith
 base:major demon
 color:y
-info:120:1232:20:112:60
-power:47:2:7000
+speed:120
+hit-points:1232
+vision:20
+armor-class:112
+alertness:60
+depth:47
+rarity:2
+experience:7000
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
@@ -8035,8 +11029,14 @@ desc:She is a demon of female form with many arms, each bearing deadly weapons.
 name:death mold
 base:mold
 color:D
-info:140:1050:200:72:0
-power:47:1:1000
+speed:140
+hit-points:1050
+vision:200
+armor-class:72
+alertness:0
+depth:47
+rarity:1
+experience:1000
 blow:SPORE:DISENCHANT:7d7
 blow:SPORE:DISENCHANT:7d7
 blow:SPORE:DISENCHANT:7d7
@@ -8052,8 +11052,14 @@ desc: evil surrounds it.  Luckily for you, it can't move.
 name:Itangast the Fire Drake
 base:ancient dragon
 color:R
-info:120:2200:30:144:70
-power:47:2:20000
+speed:120
+hit-points:2200
+vision:30
+armor-class:144
+alertness:70
+depth:47
+rarity:2
+experience:20000
 blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:FIRE:4d14
@@ -8074,8 +11080,14 @@ desc: smoke curl up from his nostrils as he regards you with disdain.
 name:Ren the Unclean
 base:wraith
 color:p
-info:120:2700:90:84:10
-power:48:3:18000
+speed:120
+hit-points:2700
+vision:90
+armor-class:84
+alertness:10
+depth:48
+rarity:3
+experience:18000
 blow:HIT:HURT:7d7
 blow:HIT:HURT:7d7
 blow:TOUCH:EXP_80:6d7
@@ -8098,8 +11110,14 @@ desc: wiped out his family, and he never recovered.
 name:Smaug the Golden
 base:ancient dragon
 color:R
-info:120:2400:30:195:120
-power:48:2:23000
+speed:120
+hit-points:2400
+vision:30
+armor-class:195
+alertness:120
+depth:48
+rarity:2
+experience:23000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:FIRE:5d14
@@ -8120,8 +11138,14 @@ desc: be the greatest dragon still surviving into the Third Age.
 name:elder aranea
 base:spider
 color:r
-info:120:1050:20:78:50
-power:48:5:2500
+speed:120
+hit-points:1050
+vision:20
+armor-class:78
+alertness:50
+depth:48
+rarity:5
+experience:2500
 blow:CLAW:POISON:5d8
 blow:CLAW:POISON:5d8
 blow:BITE:POISON:5d6
@@ -8145,8 +11169,14 @@ desc: dread valley of Nan Dungortheb long ago.
 name:winged horror
 base:bird
 color:p
-info:120:1013:30:96:5
-power:48:3:4000
+speed:120
+hit-points:1013
+vision:30
+armor-class:96
+alertness:5
+depth:48
+rarity:3
+experience:4000
 blow:CLAW:HURT:3d8
 blow:CLAW:HURT:3d8
 blow:BITE:EXP_40:4d6
@@ -8165,8 +11195,14 @@ desc: steed for his Ringwraiths.
 name:lesser Balrog
 base:major demon
 color:p
-info:120:1760:20:75:50
-power:49:2:10000
+speed:120
+hit-points:1760
+vision:20
+armor-class:75
+alertness:50
+depth:49
+rarity:2
+experience:10000
 blow:HIT:FIRE:4d12
 blow:HIT:FIRE:4d12
 blow:CRUSH:HURT:3d12
@@ -8185,8 +11221,14 @@ desc:It is a massive humanoid demon wreathed in flames.
 name:Eöl, the Dark Elf
 base:humanoid
 color:v
-info:130:2400:20:150:40
-power:49:2:25000
+speed:130
+hit-points:2400
+vision:20
+armor-class:150
+alertness:40
+depth:49
+rarity:2
+experience:25000
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
@@ -8216,8 +11258,14 @@ desc: Gondolin.
 name:master mystic
 base:person
 color:o
-info:130:968:30:72:5
-power:50:3:6000
+speed:130
+hit-points:968
+vision:30
+armor-class:72
+alertness:5
+depth:50
+rarity:3
+experience:6000
 blow:KICK:HURT:10d2
 blow:KICK:HURT:10d2
 blow:HIT:PARALYZE:20d1
@@ -8242,8 +11290,14 @@ desc: wild if need be.
 name:The Balrog of Moria
 base:major demon
 color:v
-info:130:3000:20:150:20
-power:50:3:30000
+speed:130
+hit-points:3000
+vision:20
+armor-class:150
+alertness:20
+depth:50
+rarity:3
+experience:30000
 blow:HIT:FIRE:6d12
 blow:HIT:FIRE:6d12
 blow:CRUSH:HURT:5d12
@@ -8268,8 +11322,14 @@ desc: his fury blisters your skin and melts your flesh!
 name:nether hound
 base:zephyr hound
 color:G
-info:120:330:30:120:0
-power:51:4:5000
+speed:120
+hit-points:330
+vision:30
+armor-class:120
+alertness:0
+depth:51
+rarity:4
+experience:5000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8287,8 +11347,14 @@ desc: darkness in the shape of a large dog.
 name:time hound
 base:zephyr hound
 color:B
-info:130:330:30:120:0
-power:51:4:5000
+speed:130
+hit-points:330
+vision:30
+armor-class:120
+alertness:0
+depth:51
+rarity:4
+experience:5000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8308,8 +11374,14 @@ desc: up and go to bed.
 name:plasma hound
 base:zephyr hound
 color:R
-info:120:330:30:120:0
-power:51:4:5000
+speed:120
+hit-points:330
+vision:30
+armor-class:120
+alertness:0
+depth:51
+rarity:4
+experience:5000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8329,8 +11401,14 @@ desc: you sense trouble.
 name:Harowen the Black Hand
 base:person
 color:Z
-info:140:2500:40:108:0
-power:51:3:20000
+speed:140
+hit-points:2500
+vision:40
+armor-class:108
+alertness:0
+depth:51
+rarity:3
+experience:20000
 blow:TOUCH:EAT_GOLD:5d5
 blow:TOUCH:EAT_ITEM:5d5
 blow:HIT:BLIND:10d5
@@ -8351,8 +11429,14 @@ desc: moves with blinding speed.  Check your pockets!
 name:Ji Indur Dawndeath
 base:wraith
 color:p
-info:120:3200:90:84:10
-power:52:3:22000
+speed:120
+hit-points:3200
+vision:90
+armor-class:84
+alertness:10
+depth:52
+rarity:3
+experience:22000
 blow:HIT:HURT:8d7
 blow:HIT:HURT:8d7
 blow:TOUCH:EXP_40:6d7
@@ -8376,8 +11460,14 @@ name:chaos vortex
 plural:chaos vortices
 base:vortex
 color:v
-info:120:315:100:96:0
-power:53:3:4000
+speed:120
+hit-points:315
+vision:100
+armor-class:96
+alertness:0
+depth:53
+rarity:3
+experience:4000
 blow:ENGULF:CONFUSE:5d5
 blow:ENGULF:CONFUSE:5d5
 blow:ENGULF:CONFUSE:5d5
@@ -8394,8 +11484,14 @@ name:storm of Unmagic
 plural:storms of Unmagic
 base:vortex
 color:v
-info:120:315:50:48:0
-power:53:3:4000
+speed:120
+hit-points:315
+vision:50
+armor-class:48
+alertness:0
+depth:53
+rarity:3
+experience:4000
 blow:ENGULF:DRAIN_CHARGES:5d5
 blow:ENGULF:DISENCHANT:5d5
 flags:RAND_25
@@ -8412,8 +11508,14 @@ desc: the enchantments from everything it touches.
 name:The Phoenix
 base:bird
 color:r
-info:120:3600:60:156:0
-power:54:3:40000
+speed:120
+hit-points:3600
+vision:60
+armor-class:156
+alertness:0
+depth:54
+rarity:3
+experience:40000
 blow:BITE:FIRE:12d6
 blow:BITE:FIRE:12d6
 blow:HIT:FIRE:9d12
@@ -8437,8 +11539,14 @@ name:demilich
 plural:demiliches
 base:lich
 color:U
-info:120:2816:20:150:40
-power:54:2:12500
+speed:120
+hit-points:2816
+vision:20
+armor-class:150
+alertness:40
+depth:54
+rarity:2
+experience:12500
 blow:TOUCH:EXP_80
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:4d12
@@ -8455,8 +11563,14 @@ desc:A lich who is partially immaterial, on its way to a new, ethereal form.
 name:elder vampire
 base:vampire
 color:r
-info:120:2640:20:108:10
-power:54:3:4500
+speed:120
+hit-points:2640
+vision:20
+armor-class:108
+alertness:10
+depth:54
+rarity:3
+experience:4500
 blow:HIT:HURT:4d6
 blow:HIT:HURT:4d6
 blow:BITE:EXP_80:5d6
@@ -8479,8 +11593,14 @@ desc: shades of its victims from beyond the grave to come enslaved to its aid.
 name:Shelob, Spider of Darkness
 base:spider
 color:D
-info:120:3500:30:180:20
-power:55:3:27000
+speed:120
+hit-points:3500
+vision:30
+armor-class:180
+alertness:20
+depth:55
+rarity:3
+experience:27000
 blow:CLAW:POISON:5d6
 blow:CLAW:POISON:5d6
 blow:BITE:PARALYZE:5d10
@@ -8506,8 +11626,14 @@ name:Istar
 plural:Istari
 base:ainu
 color:y
-info:130:1800:30:140:255
-power:55:5:10000
+speed:130
+hit-points:1800
+vision:30
+armor-class:140
+alertness:255
+depth:55
+rarity:5
+experience:10000
 blow:GAZE:TERRIFY:4d4
 blow:GAZE:TERRIFY:4d4
 blow:HIT:HURT:8d6
@@ -8529,8 +11655,14 @@ name:dracolich
 plural:dracoliches
 base:ancient dragon
 color:G
-info:120:3080:25:144:80
-power:55:2:18000
+speed:120
+hit-points:3080
+vision:25
+armor-class:144
+alertness:80
+depth:55
+rarity:2
+experience:18000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:EXP_80:7d14
@@ -8549,8 +11681,14 @@ desc: prey to satisfy its hunger.
 name:dracolisk
 base:ancient dragon
 color:i
-info:120:3080:25:144:80
-power:55:2:14000
+speed:120
+hit-points:3080
+vision:25
+armor-class:144
+alertness:80
+depth:55
+rarity:2
+experience:14000
 blow:BITE:HURT:4d12
 blow:BITE:HURT:4d12
 blow:BITE:FIRE:7d14
@@ -8569,8 +11707,14 @@ desc: piercing eyes, its evil breath burning the ground where it stands.
 name:Ar-Pharazôn the Golden
 base:person
 color:y
-info:130:4000:30:54:255
-power:55:1:32500
+speed:130
+hit-points:4000
+vision:30
+armor-class:54
+alertness:255
+depth:55
+rarity:1
+experience:32500
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
@@ -8592,8 +11736,14 @@ name:barbazu
 plural:barbazu
 base:major demon
 color:G
-info:120:700:25:90:70
-power:55:4:3000
+speed:120
+hit-points:700
+vision:25
+armor-class:90
+alertness:70
+depth:55
+rarity:4
+experience:3000
 blow:HIT:HURT:4d10
 blow:HIT:HURT:4d10
 blow:HIT:LOSE_CON:10d2
@@ -8614,8 +11764,14 @@ desc: hells, capable of a terrifying berserk fury.
 name:lesser titan
 base:giant
 color:y
-info:120:2100:30:96:15
-power:56:3:6000
+speed:120
+hit-points:2100
+vision:30
+armor-class:96
+alertness:15
+depth:56
+rarity:3
+experience:6000
 blow:HIT:CONFUSE:9d9
 blow:HIT:CONFUSE:9d9
 blow:HIT:CONFUSE:9d9
@@ -8634,8 +11790,14 @@ desc: and hate.
 name:Dwar, Dog Lord of Waw
 base:wraith
 color:p
-info:120:4000:90:108:10
-power:56:3:25000
+speed:120
+hit-points:4000
+vision:90
+armor-class:108
+alertness:10
+depth:56
+rarity:3
+experience:25000
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:BITE:EXP_40:6d7
@@ -8657,8 +11819,14 @@ desc: will.  He howls maniacally as he reaches out to destroy you.
 name:grand master mystic
 base:person
 color:o
-info:130:1936:30:96:5
-power:57:3:15000
+speed:130
+hit-points:1936
+vision:30
+armor-class:96
+alertness:5
+depth:57
+rarity:3
+experience:15000
 blow:KICK:HURT:20d2
 blow:KICK:HURT:10d2
 blow:HIT:PARALYZE:20d1
@@ -8683,8 +11851,14 @@ desc: with disdainful ease.
 name:hand druj
 base:skeleton
 color:y
-info:130:528:20:132:10
-power:57:2:12000
+speed:130
+hit-points:528
+vision:20
+armor-class:132
+alertness:10
+depth:57
+rarity:2
+experience:12000
 flags:SMART | ATTR_FLICKER
 flags:NEVER_BLOW | NEVER_MOVE
 flags:FORCE_SLEEP
@@ -8699,8 +11873,14 @@ desc: fingers.
 name:The Lernaean Hydra
 base:hydra
 color:v
-info:120:4500:20:168:20
-power:57:2:20000
+speed:120
+hit-points:4500
+vision:20
+armor-class:168
+alertness:20
+depth:57
+rarity:2
+experience:20000
 blow:BITE:POISON:8d6
 blow:BITE:POISON:8d6
 blow:BITE:FIRE:12d6
@@ -8726,8 +11906,14 @@ desc: seething form.  And it grows new heads as fast as you chop them off.
 name:Baphomet the Minotaur Lord
 base:hybrid
 color:v
-info:130:4700:30:144:30
-power:58:4:24000
+speed:130
+hit-points:4700
+vision:30
+armor-class:144
+alertness:30
+depth:58
+rarity:4
+experience:24000
 blow:BUTT:HURT:12d13
 blow:BUTT:HURT:12d13
 blow:HIT:HURT:10d10
@@ -8749,8 +11935,14 @@ desc: all that defy him.
 name:eye druj
 base:skeleton
 color:r
-info:130:880:20:108:10
-power:58:2:15000
+speed:130
+hit-points:880
+vision:20
+armor-class:108
+alertness:10
+depth:58
+rarity:2
+experience:15000
 flags:SMART | ATTR_FLICKER
 flags:NEVER_BLOW | NEVER_MOVE
 flags:IM_FIRE
@@ -8769,8 +11961,14 @@ desc: harmless.
 name:ethereal hound
 base:zephyr hound
 color:G
-info:120:480:30:120:0
-power:59:5:7000
+speed:120
+hit-points:480
+vision:30
+armor-class:120
+alertness:0
+depth:59
+rarity:5
+experience:7000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -8789,8 +11987,14 @@ desc: at internal organs best left to the imagination.
 name:skull druj
 base:skeleton
 color:o
-info:130:1232:20:144:10
-power:59:2:18000
+speed:130
+hit-points:1232
+vision:20
+armor-class:144
+alertness:10
+depth:59
+rarity:2
+experience:18000
 flags:SMART | ATTR_FLICKER
 flags:NEVER_BLOW | NEVER_MOVE
 flags:IM_FIRE
@@ -8807,8 +12011,14 @@ desc: blast you with mighty magic as it speaks the words of power.
 name:Fundin Bluecloak
 base:humanoid
 color:Z
-info:130:5000:25:234:10
-power:59:2:20000
+speed:130
+hit-points:5000
+vision:25
+armor-class:234
+alertness:10
+depth:59
+rarity:2
+experience:20000
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
@@ -8839,8 +12049,14 @@ name:aether vortex
 plural:aether vortices
 base:vortex
 color:v
-info:130:420:100:48:0
-power:60:4:5000
+speed:130
+hit-points:420
+vision:100
+armor-class:48
+alertness:0
+depth:60
+rarity:4
+experience:5000
 blow:ENGULF:ELEC:5d5
 blow:ENGULF:FIRE:5d5
 blow:ENGULF:ACID:5d5
@@ -8859,8 +12075,14 @@ desc:An awesome vortex of pure magic, power radiates from its frame.
 name:Saruman of Many Colours
 base:person
 color:v
-info:120:5000:100:120:0
-power:60:1:35000
+speed:120
+hit-points:5000
+vision:100
+armor-class:120
+alertness:0
+depth:60
+rarity:1
+experience:35000
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:HURT:5d5
@@ -8888,8 +12110,14 @@ desc: the world.
 name:nightwing
 base:wraith
 color:V
-info:120:1830:20:144:10
-power:61:3:10000
+speed:120
+hit-points:1830
+vision:20
+armor-class:144
+alertness:10
+depth:61
+rarity:3
+experience:10000
 blow:TOUCH:POISON:6d5
 blow:TOUCH:POISON:6d5
 blow:HIT:DISENCHANT:6d8
@@ -8913,8 +12141,14 @@ desc: being.
 name:Arien, Maia of the Sun
 base:ainu
 color:R
-info:130:5500:40:192:10
-power:61:3:25000
+speed:130
+hit-points:5500
+vision:40
+armor-class:192
+alertness:10
+depth:61
+rarity:3
+experience:25000
 blow:HIT:FIRE:4d12
 blow:HIT:FIRE:4d12
 blow:HIT:HURT:10d10
@@ -8938,8 +12172,14 @@ desc: melt armor and flesh alike.
 name:bile demon
 base:major demon
 color:R
-info:120:2464:40:135:40
-power:61:2:12000
+speed:120
+hit-points:2464
+vision:40
+armor-class:135
+alertness:40
+depth:61
+rarity:2
+experience:12000
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:CRUSH:ACID:9d9
@@ -8961,8 +12201,14 @@ desc: you have ever experienced.
 name:Ossë, Herald of Ulmo
 base:ainu
 color:w
-info:130:6000:40:204:10
-power:62:3:30000
+speed:130
+hit-points:6000
+vision:40
+armor-class:204
+alertness:10
+depth:62
+rarity:3
+experience:30000
 blow:HIT:EXP_80:10d5
 blow:HIT:EXP_80:10d5
 blow:HIT:HURT:10d10
@@ -8987,8 +12233,14 @@ desc: squelching step of his approach.
 name:dreadlord
 base:ghost
 color:r
-info:120:2640:20:180:10
-power:62:2:20000
+speed:120
+hit-points:2640
+vision:20
+armor-class:180
+alertness:10
+depth:62
+rarity:2
+experience:20000
 blow:HIT:EXP_40:6d6
 blow:HIT:EXP_40:6d6
 blow:HIT:LOSE_STR:4d6
@@ -9014,8 +12266,14 @@ desc: and the stench of death.  Flee its hunger!
 name:great storm wyrm
 base:ancient dragon
 color:b
-info:120:3080:30:225:30
-power:63:2:20000
+speed:120
+hit-points:3080
+vision:30
+armor-class:225
+alertness:30
+depth:63
+rarity:2
+experience:20000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:ELEC:6d14
@@ -9035,8 +12293,14 @@ desc: great muscles.  It regards you with contempt.
 name:great ice wyrm
 base:ancient dragon
 color:w
-info:120:3080:30:225:30
-power:63:2:20000
+speed:120
+hit-points:3080
+vision:30
+armor-class:225
+alertness:30
+depth:63
+rarity:2
+experience:20000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:COLD:6d14
@@ -9056,8 +12320,14 @@ desc: wrath!
 name:great swamp wyrm
 base:ancient dragon
 color:g
-info:120:3080:30:225:30
-power:63:2:20000
+speed:120
+hit-points:3080
+vision:30
+armor-class:225
+alertness:30
+depth:63
+rarity:2
+experience:20000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:POISON:6d14
@@ -9079,8 +12349,14 @@ desc: you fight it, it sees no reason to do likewise.
 name:Hoarmurath of Dir
 base:wraith
 color:p
-info:120:4500:90:120:10
-power:64:3:30000
+speed:120
+hit-points:4500
+vision:90
+armor-class:120
+alertness:10
+depth:64
+rarity:3
+experience:30000
 blow:HIT:HURT:9d9
 blow:HIT:HURT:9d9
 blow:TOUCH:EXP_80:6d7
@@ -9101,8 +12377,14 @@ desc: for an unlife of everlasting torment.
 name:Radagast the Brown
 base:ainu
 color:u
-info:130:7500:40:216:10
-power:64:3:35000
+speed:130
+hit-points:7500
+vision:40
+armor-class:216
+alertness:10
+depth:64
+rarity:3
+experience:35000
 blow:HIT:DISENCHANT:6d8
 blow:HIT:FIRE:6d8
 blow:HIT:BLIND:10d10
@@ -9129,8 +12411,14 @@ desc: belie his inner strength.
 name:chaos hound
 base:zephyr hound
 color:v
-info:120:930:30:120:0
-power:64:4:10000
+speed:120
+hit-points:930
+vision:30
+armor-class:120
+alertness:0
+depth:64
+rarity:4
+experience:10000
 blow:CLAW:HURT:2d12
 blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
@@ -9150,8 +12438,14 @@ name:archlich
 plural:archliches
 base:lich
 color:B
-info:120:3520:20:180:40
-power:64:2:20000
+speed:120
+hit-points:3520
+vision:20
+armor-class:180
+alertness:40
+depth:64
+rarity:2
+experience:20000
 blow:TOUCH:EXP_80
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:8d12
@@ -9172,8 +12466,14 @@ desc: immaterial state.
 name:The Mouth of Sauron
 base:person
 color:v
-info:130:7000:60:120:10
-power:65:3:38000
+speed:130
+hit-points:7000
+vision:60
+armor-class:120
+alertness:10
+depth:65
+rarity:3
+experience:38000
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DRAIN_CHARGES:5d5
@@ -9197,8 +12497,14 @@ desc: spells.
 name:osyluth
 base:major demon
 color:W
-info:130:2288:20:112:30
-power:65:2:13000
+speed:130
+hit-points:2288
+vision:20
+armor-class:112
+alertness:30
+depth:65
+rarity:2
+experience:13000
 blow:HIT:LOSE_WIS:6d6
 blow:HIT:LOSE_CON:6d6
 blow:BITE:POISON:8d8
@@ -9222,8 +12528,14 @@ desc: of decay and rot.  They are despised even in the hells.
 name:greater titan
 base:giant
 color:o
-info:120:3344:30:150:15
-power:66:3:23500
+speed:120
+hit-points:3344
+vision:30
+armor-class:150
+alertness:15
+depth:66
+rarity:3
+experience:23500
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
@@ -9243,8 +12555,14 @@ desc: defiance.
 name:The Cat Lord
 base:feline
 color:v
-info:130:4800:100:240:0
-power:66:3:30000
+speed:130
+hit-points:4800
+vision:100
+armor-class:240
+alertness:0
+depth:66
+rarity:3
+experience:30000
 blow:CLAW:CONFUSE:12d12
 blow:CLAW:LOSE_DEX:2d12
 blow:CLAW:BLIND:10d5
@@ -9268,8 +12586,14 @@ desc:Master of all things feline, the Cat Lord moves with unsurpassed stealth.
 name:Thuringwethil, the Vampire Messenger
 base:vampire
 color:v
-info:130:5000:20:174:10
-power:67:4:23000
+speed:130
+hit-points:5000
+vision:20
+armor-class:174
+alertness:10
+depth:67
+rarity:4
+experience:23000
 blow:BITE:EXP_80:6d6
 blow:BITE:EXP_80:6d6
 blow:HIT:CONFUSE:6d6
@@ -9289,8 +12613,14 @@ desc: eyes give away her true form.
 name:great hell wyrm
 base:ancient dragon
 color:r
-info:120:3344:30:225:30
-power:67:2:23000
+speed:120
+hit-points:3344
+vision:30
+armor-class:225
+alertness:30
+depth:67
+rarity:2
+experience:23000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:FIRE:6d14
@@ -9310,8 +12640,14 @@ desc: you truly realize how insignificant you are.
 name:beholder hive-mother
 base:eye
 color:b
-info:120:3080:30:96:10
-power:67:3:17000
+speed:120
+hit-points:3080
+vision:30
+armor-class:96
+alertness:10
+depth:67
+rarity:3
+experience:17000
 blow:BITE:EXP_80:6d6
 blow:GAZE:PARALYZE:5d5
 blow:GAZE:LOSE_INT:5d5
@@ -9332,8 +12668,14 @@ desc: whenever she wishes.
 name:great bile wyrm
 base:ancient dragon
 color:s
-info:120:3080:30:225:30
-power:67:2:23000
+speed:120
+hit-points:3080
+vision:30
+armor-class:225
+alertness:30
+depth:67
+rarity:2
+experience:23000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:ACID:6d14
@@ -9354,8 +12696,14 @@ name:Great Wyrm of Thunder
 plural:Great Wyrms of Thunder
 base:ancient dragon
 color:y
-info:120:3080:30:225:30
-power:67:2:23000
+speed:120
+hit-points:3080
+vision:30
+armor-class:225
+alertness:30
+depth:67
+rarity:2
+experience:23000
 blow:CLAW:HURT:4d12
 blow:CLAW:HURT:4d12
 blow:BITE:HURT:6d14
@@ -9377,8 +12725,14 @@ desc: enough to defend yourself adequately.
 name:jabberwock
 base:hybrid
 color:v
-info:130:2816:35:187:100
-power:68:3:19000
+speed:130
+hit-points:2816
+vision:35
+armor-class:187
+alertness:100
+depth:68
+rarity:3
+experience:19000
 blow:CLAW:HURT:10d10
 blow:CLAW:HURT:10d10
 blow:BITE:HURT:10d10
@@ -9397,8 +12751,14 @@ desc: Run and run quickly, for death incarnate chases behind you!
 name:Tselakus, the Dreadlord
 base:ghost
 color:R
-info:130:6500:20:180:10
-power:68:2:35000
+speed:130
+hit-points:6500
+vision:20
+armor-class:180
+alertness:10
+depth:68
+rarity:2
+experience:35000
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:HIT:LOSE_STR:4d6
@@ -9421,8 +12781,14 @@ desc: annihilates all in his path to your soul!
 name:bone golem
 base:golem
 color:D
-info:120:3080:20:255:20
-power:68:3:23000
+speed:120
+hit-points:3080
+vision:20
+armor-class:255
+alertness:20
+depth:68
+rarity:3
+experience:23000
 blow:HIT:DISENCHANT:8d8
 blow:HIT:DISENCHANT:8d8
 blow:HIT:LOSE_STR:6d6
@@ -9444,8 +12810,14 @@ desc: victims.
 name:nightcrawler
 base:wraith
 color:D
-info:120:2440:20:192:10
-power:69:3:15000
+speed:120
+hit-points:2440
+vision:20
+armor-class:192
+alertness:10
+depth:69
+rarity:3
+experience:15000
 blow:STING:LOSE_CON:8d8
 blow:STING:LOSE_CON:8d8
 blow:BITE:ACID:10d10
@@ -9470,8 +12842,14 @@ desc: down your spine as you face it.
 name:Polyphemus, the Blind Cyclops
 base:giant
 color:g
-info:130:5300:40:210:20
-power:69:3:29000
+speed:130
+hit-points:5300
+vision:40
+armor-class:210
+alertness:20
+depth:69
+rarity:3
+experience:29000
 blow:HIT:HURT:11d10
 blow:HIT:HURT:11d10
 blow:HIT:SHATTER:11d10
@@ -9494,8 +12872,14 @@ desc: himself to hear so well that it nearly makes up for his disability.
 name:gelugon
 base:major demon
 color:w
-info:130:3080:20:150:30
-power:69:3:14000
+speed:130
+hit-points:3080
+vision:20
+armor-class:150
+alertness:30
+depth:69
+rarity:3
+experience:14000
 blow:CLAW:COLD:6d8
 blow:CLAW:COLD:6d8
 blow:BITE:COLD:9d9
@@ -9525,8 +12909,14 @@ desc: spikes.
 name:Glaurung, Father of the Dragons
 base:ancient dragon
 color:v
-info:130:7500:30:210:20
-power:70:3:50000
+speed:130
+hit-points:7500
+vision:30
+armor-class:210
+alertness:20
+depth:70
+rarity:3
+experience:50000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:POISON:8d14
@@ -9550,8 +12940,14 @@ desc: definition of dragonfire.
 name:greater demonic quylthulg
 base:quylthulg
 color:R
-info:120:1320:20:1:0
-power:71:2:10500
+speed:120
+hit-points:1320
+vision:20
+armor-class:1
+alertness:0
+depth:71
+rarity:2
+experience:10500
 flags:ATTR_FLICKER
 spell-freq:2
 spell-power:71
@@ -9562,8 +12958,14 @@ desc:A massive pulsating mound of flesh, glowing with a hellish light.
 name:greater draconic quylthulg
 base:quylthulg
 color:G
-info:120:1320:20:1:0
-power:71:2:10500
+speed:120
+hit-points:1320
+vision:20
+armor-class:1
+alertness:0
+depth:71
+rarity:2
+experience:10500
 flags:ATTR_FLICKER
 spell-freq:2
 spell-power:71
@@ -9575,8 +12977,14 @@ desc: light.
 name:greater rotting quylthulg
 base:quylthulg
 color:U
-info:120:1320:20:1:0
-power:71:2:10500
+speed:120
+hit-points:1320
+vision:20
+armor-class:1
+alertness:0
+depth:71
+rarity:2
+experience:10500
 flags:ATTR_FLICKER
 spell-freq:2
 spell-power:71
@@ -9590,8 +12998,14 @@ desc: throbs and writhes.
 name:Khamûl, the Black Easterling
 base:wraith
 color:p
-info:120:5000:90:120:10
-power:72:3:40000
+speed:120
+hit-points:5000
+vision:90
+armor-class:120
+alertness:10
+depth:72
+rarity:3
+experience:40000
 blow:HIT:HURT:9d10
 blow:HIT:HURT:9d10
 blow:TOUCH:EXP_40:7d7
@@ -9613,8 +13027,14 @@ desc: combat awesome and his form twisted by evil cunning.
 name:horned reaper
 base:major demon
 color:B
-info:130:3344:40:180:20
-power:72:3:18000
+speed:130
+hit-points:3344
+vision:40
+armor-class:180
+alertness:20
+depth:72
+rarity:3
+experience:18000
 blow:HIT:HURT:11d11
 blow:HIT:HURT:11d11
 blow:HIT:HURT:11d11
@@ -9637,8 +13057,14 @@ desc: and you - even the minions it has just summoned.
 name:nightwalker
 base:wraith
 color:D
-info:130:1650:20:210:10
-power:73:3:20000
+speed:130
+hit-points:1650
+vision:20
+armor-class:210
+alertness:10
+depth:73
+rarity:3
+experience:20000
 blow:HIT:DISENCHANT:10d10
 blow:HIT:DISENCHANT:10d10
 blow:HIT:DISENCHANT:8d8
@@ -9663,8 +13089,14 @@ desc: strides towards you menacingly.
 name:Omarax, the Eye Tyrant
 base:eye
 color:v
-info:130:6500:30:96:10
-power:73:3:25000
+speed:130
+hit-points:6500
+vision:30
+armor-class:96
+alertness:10
+depth:73
+rarity:3
+experience:25000
 blow:GAZE:DISENCHANT:6d6
 blow:GAZE:DRAIN_CHARGES:6d6
 blow:GAZE:LOSE_INT:6d6
@@ -9688,8 +13120,14 @@ desc: history steeped in forgotten evils, his atrocities numerous and sickening.
 name:black reaver
 base:lich
 color:D
-info:120:3960:20:255:40
-power:74:3:23000
+speed:120
+hit-points:3960
+vision:20
+armor-class:255
+alertness:40
+depth:74
+rarity:3
+experience:23000
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:LOSE_STR:4d6
@@ -9709,8 +13147,14 @@ desc: the very rock of the dungeon cannot prevent it reaching you.
 name:aether hound
 base:zephyr hound
 color:v
-info:120:1230:30:120:0
-power:74:5:10000
+speed:120
+hit-points:1230
+vision:30
+armor-class:120
+alertness:0
+depth:74
+rarity:5
+experience:10000
 blow:CLAW:HURT:3d12
 blow:CLAW:HURT:3d12
 blow:BITE:HURT:3d12
@@ -9736,8 +13180,14 @@ name:Great Wyrm of Chaos
 plural:Great Wyrms of Chaos
 base:ancient dragon
 color:v
-info:120:3960:40:255:20
-power:75:2:29000
+speed:120
+hit-points:3960
+vision:40
+armor-class:255
+alertness:20
+depth:75
+rarity:2
+experience:29000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:HURT:7d14
@@ -9759,8 +13209,14 @@ name:Great Wyrm of Law
 plural:Great Wyrms of Law
 base:ancient dragon
 color:B
-info:120:3960:40:255:20
-power:75:2:29000
+speed:120
+hit-points:3960
+vision:40
+armor-class:255
+alertness:20
+depth:75
+rarity:2
+experience:29000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:HURT:7d14
@@ -9781,8 +13237,14 @@ desc: insects to be crushed underfoot.
 name:Ungoliant, the Unlight
 base:spider
 color:D
-info:130:13000:40:240:10
-power:75:1:35000
+speed:130
+hit-points:13000
+vision:40
+armor-class:240
+alertness:10
+depth:75
+rarity:1
+experience:35000
 blow:CLAW:POISON:8d6
 blow:CLAW:POISON:8d6
 blow:BITE:PARALYZE:8d10
@@ -9806,8 +13268,14 @@ desc: avoid starvation.
 name:bronze golem
 base:golem
 color:o
-info:120:3520:20:255:20
-power:75:3:26000
+speed:120
+hit-points:3520
+vision:20
+armor-class:255
+alertness:20
+depth:75
+rarity:3
+experience:26000
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
@@ -9831,8 +13299,14 @@ desc: great heat.
 name:master quylthulg
 base:quylthulg
 color:B
-info:120:2640:30:1:0
-power:76:2:15000
+speed:120
+hit-points:2640
+vision:30
+armor-class:1
+alertness:0
+depth:76
+rarity:2
+experience:15000
 flags:ATTR_FLICKER
 spell-freq:1
 spell-power:76
@@ -9844,8 +13318,14 @@ desc: monster.
 name:Atlas, the Titan
 base:giant
 color:s
-info:120:6000:30:192:15
-power:76:3:37000
+speed:120
+hit-points:6000
+vision:30
+armor-class:192
+alertness:15
+depth:76
+rarity:3
+experience:37000
 blow:HIT:SHATTER:13d13
 blow:HIT:CONFUSE:13d13
 blow:HIT:SHATTER:13d13
@@ -9866,8 +13346,14 @@ desc: after him.
 name:Feagwath, the Undead Sorcerer
 base:lich
 color:v
-info:130:5000:20:127:10
-power:77:2:30000
+speed:130
+hit-points:5000
+vision:20
+armor-class:127
+alertness:10
+depth:77
+rarity:2
+experience:30000
 blow:TOUCH:EXP_80:6d12
 blow:TOUCH:DRAIN_CHARGES:6d12
 blow:TOUCH:LOSE_DEX:6d12
@@ -9893,8 +13379,14 @@ desc: risen from the dead to continue his foul plots and schemes.
 name:pit fiend
 base:major demon
 color:o
-info:130:3520:30:180:20
-power:77:3:22000
+speed:130
+hit-points:3520
+vision:30
+armor-class:180
+alertness:20
+depth:77
+rarity:3
+experience:22000
 blow:CLAW:FIRE:6d10
 blow:CLAW:FIRE:6d10
 blow:BITE:POISON:5d10
@@ -9916,17 +13408,20 @@ desc: of vast demon armies.
 
 ### Dungeon level 78 ###
 
-#name:Hellhound
-#Deleted
-
 ### Dungeon level 79 ###
 
 name:Great Wyrm of Balance
 plural:Great Wyrms of Balance
 base:ancient dragon
 color:P
-info:120:4400:40:255:20
-power:79:2:31000
+speed:120
+hit-points:4400
+vision:40
+armor-class:255
+alertness:20
+depth:79
+rarity:2
+experience:31000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:HURT:7d14
@@ -9949,8 +13444,14 @@ name:Great Wyrm of Many Colours
 plural:Great Wyrms of Many Colours
 base:ancient dragon
 color:v
-info:120:4400:40:255:20
-power:79:2:31000
+speed:120
+hit-points:4400
+vision:40
+armor-class:255
+alertness:20
+depth:79
+rarity:2
+experience:31000
 blow:CLAW:HURT:5d12
 blow:CLAW:HURT:5d12
 blow:BITE:HURT:7d14
@@ -9969,8 +13470,14 @@ desc:A gigantic dragon whose scales shimmer in myriad hues.
 name:Qlzqqlzuup, the Emperor Quylthulg
 base:quylthulg
 color:v
-info:130:5000:30:1:0
-power:79:3:20000
+speed:130
+hit-points:5000
+vision:30
+armor-class:1
+alertness:0
+depth:79
+rarity:3
+experience:20000
 flags:UNIQUE
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:ATTR_MULTI
@@ -9985,8 +13492,14 @@ desc: must bring help to protect itself.
 name:greater Balrog
 base:major demon
 color:P
-info:130:4400:40:210:20
-power:79:3:25000
+speed:130
+hit-points:4400
+vision:40
+armor-class:210
+alertness:20
+depth:79
+rarity:3
+experience:25000
 blow:HIT:FIRE:8d12
 blow:HIT:FIRE:8d12
 blow:CRUSH:HURT:7d12
@@ -10017,8 +13530,14 @@ desc: you.
 name:The Witch-King of Angmar
 base:wraith
 color:p
-info:130:6000:90:144:10
-power:80:3:60000
+speed:130
+hit-points:6000
+vision:90
+armor-class:144
+alertness:10
+depth:80
+rarity:3
+experience:60000
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:HIT:EXP_80:7d7
@@ -10044,8 +13563,14 @@ desc: he is fated never to die by the hand of mortal man.
 name:Maeglin, the Traitor of Gondolin
 base:humanoid
 color:p
-info:130:6000:70:144:20
-power:81:2:35000
+speed:130
+hit-points:6000
+vision:70
+armor-class:144
+alertness:20
+depth:81
+rarity:2
+experience:35000
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
 blow:HIT:HURT:8d8
@@ -10069,8 +13594,14 @@ desc: Morgoth's greatest servants answer to his call.
 name:Pazuzu, Lord of Air
 base:major demon
 color:Z
-info:140:5500:40:150:10
-power:82:2:30000
+speed:140
+hit-points:5500
+vision:40
+armor-class:150
+alertness:10
+depth:82
+rarity:2
+experience:30000
 blow:HIT:ELEC:12d12
 blow:HIT:ELEC:12d12
 blow:HIT:ELEC:12d12
@@ -10093,8 +13624,14 @@ desc: you as he decides your fate.
 name:Draugluin, Sire of All Werewolves
 base:canine
 color:m
-info:130:7000:80:135:10
-power:83:2:40000
+speed:130
+hit-points:7000
+vision:80
+armor-class:135
+alertness:10
+depth:83
+rarity:2
+experience:40000
 blow:CLAW:HURT:6d8
 blow:CLAW:HURT:6d8
 blow:BITE:POISON:6d6
@@ -10118,8 +13655,14 @@ desc: enormous wolf inhabited with a human spirit.  He is chief of all his kind.
 name:Cantoras, the Skeletal Lord
 base:skeleton
 color:W
-info:140:7500:20:180:40
-power:84:2:45000
+speed:140
+hit-points:7500
+vision:20
+armor-class:180
+alertness:40
+depth:84
+rarity:2
+experience:45000
 blow:GAZE:EXP_80:5d5
 blow:GAZE:EXP_80:5d5
 blow:TOUCH:POISON:5d5
@@ -10144,8 +13687,14 @@ desc: underworld.  Flee his wrath!
 name:Ancalagon the Black
 base:ancient dragon
 color:D
-info:130:10000:40:255:20
-power:85:3:45000
+speed:130
+hit-points:10000
+vision:40
+armor-class:255
+alertness:20
+depth:85
+rarity:3
+experience:45000
 blow:CLAW:HURT:6d12
 blow:CLAW:HURT:6d12
 blow:BITE:HURT:10d14
@@ -10171,8 +13720,14 @@ desc: terrible of all dragonkind, his power dismayed even the Valar for a time.
 name:The Tarrasque
 base:reptile
 color:v
-info:130:8500:50:222:20
-power:86:2:35000
+speed:130
+hit-points:8500
+vision:50
+armor-class:222
+alertness:20
+depth:86
+rarity:2
+experience:35000
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
 blow:TOUCH:DRAIN_CHARGES
@@ -10194,8 +13749,14 @@ desc: immune to magic.  Fear its anger, for its devastation is unmatched!
 name:Kronos, Lord of the Titans
 base:giant
 color:v
-info:120:7000:30:180:15
-power:87:3:42000
+speed:120
+hit-points:7000
+vision:30
+armor-class:180
+alertness:15
+depth:87
+rarity:3
+experience:42000
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
@@ -10224,8 +13785,14 @@ desc: nether hells to seek revenge on the world.
 name:Lungorthin, the Balrog of White Fire
 base:major demon
 color:v
-info:130:7000:20:187:10
-power:88:2:37000
+speed:130
+hit-points:7000
+vision:20
+armor-class:187
+alertness:10
+depth:88
+rarity:2
+experience:37000
 blow:HIT:FIRE:8d12
 blow:HIT:FIRE:8d12
 blow:CRUSH:HURT:8d12
@@ -10255,8 +13822,14 @@ desc: the heat of his body.
 name:Huan, Wolfhound of the Valar
 base:canine
 color:W
-info:130:8000:50:192:10
-power:90:1:40000
+speed:130
+hit-points:8000
+vision:50
+armor-class:192
+alertness:10
+depth:90
+rarity:1
+experience:40000
 blow:CLAW:COLD:9d12
 blow:CLAW:COLD:9d12
 blow:BITE:COLD:9d12
@@ -10277,8 +13850,14 @@ desc: Carcharoth, the terrible wolf of Angband.
 name:Carcharoth, the Jaws of Thirst
 base:canine
 color:p
-info:130:8000:50:192:10
-power:90:1:40000
+speed:130
+hit-points:8000
+vision:50
+armor-class:192
+alertness:10
+depth:90
+rarity:1
+experience:40000
 blow:CLAW:FIRE:9d12
 blow:CLAW:FIRE:9d12
 blow:BITE:FIRE:9d12
@@ -10301,8 +13880,14 @@ desc: deadly opponent in combat.
 name:Vecna, the Emperor Lich
 base:lich
 color:p
-info:130:6000:100:120:0
-power:92:3:45000
+speed:130
+hit-points:6000
+vision:100
+armor-class:120
+alertness:0
+depth:92
+rarity:3
+experience:45000
 blow:HIT:EXP_80:7d12
 blow:HIT:LOSE_DEX:7d12
 blow:HIT:DRAIN_CHARGES:7d12
@@ -10334,8 +13919,14 @@ desc: ancient shadow of death wilts every living thing it passes.
 name:Gothmog, the High Captain of Balrogs
 base:major demon
 color:v
-info:130:8000:100:168:0
-power:95:1:43000
+speed:130
+hit-points:8000
+vision:100
+armor-class:168
+alertness:0
+depth:95
+rarity:1
+experience:43000
 blow:HIT:FIRE:9d12
 blow:HIT:FIRE:9d12
 blow:CRUSH:HURT:8d12
@@ -10366,8 +13957,14 @@ desc: awesome fiery breath he saved his master from Ungoliant's rage.
 name:Sauron, the Sorcerer
 base:person
 color:p
-info:130:10500:100:192:0
-power:99:1:50000
+speed:130
+hit-points:10500
+vision:100
+armor-class:192
+alertness:0
+depth:99
+rarity:1
+experience:50000
 blow:HIT:DISENCHANT:10d12
 blow:HIT:DISENCHANT:10d12
 blow:HIT:DRAIN_CHARGES:8d12
@@ -10395,8 +13992,14 @@ desc: destroy your soul.  He has many servants, and rarely fights without them.
 name:Morgoth, Lord of Darkness
 base:Morgoth
 color:D
-info:140:20000:100:180:0
-power:100:1:60000
+speed:140
+hit-points:20000
+vision:100
+armor-class:180
+alertness:0
+depth:100
+rarity:1
+experience:60000
 blow:HIT:SHATTER:20d10
 blow:HIT:SHATTER:20d10
 blow:HIT:LOSE_ALL:10d12
@@ -10426,6 +14029,3 @@ desc: the Underworld, cries defiance as he strides towards you to crush you to
 desc: a pulp!
 drop-artifact:'Grond'
 drop-artifact:of Morgoth
-
-
-# Max is currently N:619

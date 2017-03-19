@@ -1144,27 +1144,75 @@ static enum parser_error parse_monster_color(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_monster_info(struct parser *p) {
+static enum parser_error parse_monster_speed(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->speed = parser_getint(p, "speed");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_hit_points(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->avg_hp = parser_getint(p, "hp");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_vision(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	/* Area of action assumes max_sight is 20, so we adjust in case it isn't */
 	r->aaf = parser_getint(p, "aaf") * 20 / z_info->max_sight;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_armor_class(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->ac = parser_getint(p, "ac");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_alertness(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->sleep = parser_getint(p, "sleep");
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_monster_power(struct parser *p) {
+static enum parser_error parse_monster_depth(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->level = parser_getint(p, "level");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_rarity(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->rarity = parser_getint(p, "rarity");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_experience(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->mexp = parser_getint(p, "mexp");
 	return PARSE_ERROR_NONE;
 }
@@ -1457,8 +1505,14 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "base sym base", parse_monster_base);
 	parser_reg(p, "glyph char glyph", parse_monster_glyph);
 	parser_reg(p, "color sym color", parse_monster_color);
-	parser_reg(p, "info int speed int hp int aaf int ac int sleep", parse_monster_info);
-	parser_reg(p, "power int level int rarity int mexp", parse_monster_power);
+	parser_reg(p, "speed int speed", parse_monster_speed);
+	parser_reg(p, "hit-points int hp", parse_monster_hit_points);
+	parser_reg(p, "vision int aaf", parse_monster_vision);
+	parser_reg(p, "armor-class int ac", parse_monster_armor_class);
+	parser_reg(p, "alertness int sleep", parse_monster_alertness);
+	parser_reg(p, "depth int level", parse_monster_depth);
+	parser_reg(p, "rarity int rarity", parse_monster_rarity);
+	parser_reg(p, "experience int mexp", parse_monster_experience);
 	parser_reg(p, "blow sym method ?sym effect ?rand damage", parse_monster_blow);
 	parser_reg(p, "flags ?str flags", parse_monster_flags);
 	parser_reg(p, "flags-off ?str flags", parse_monster_flags_off);
