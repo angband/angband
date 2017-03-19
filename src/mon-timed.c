@@ -261,7 +261,7 @@ bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag,
 		case STACK_NO: {
 			new_value = mon->m_timed[effect_type];
 			if (new_value == 0) {
-				new_value += timer;
+				new_value = timer;
 			}
 			break;
 		}
