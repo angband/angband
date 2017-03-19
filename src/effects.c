@@ -30,6 +30,7 @@
 #include "mon-spell.h"
 #include "mon-summon.h"
 #include "mon-util.h"
+#include "mon-timed.h"
 #include "obj-chest.h"
 #include "obj-curse.h"
 #include "obj-desc.h"
@@ -112,6 +113,44 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 	return final;
 }
 
+static void get_target(struct source origin, int dir, int *ty, int *tx, int *flags)
+{
+	switch (origin.what) {
+		case SRC_MONSTER: {
+			struct monster *monster = cave_monster(cave, origin.which.monster);
+
+			*flags |= (PROJECT_PLAY);
+
+			if (monster->m_timed[MON_TMD_CONF] > 0 && one_in_(CONF_RANDOM_CHANCE)) {
+				dir = randint1(9);
+				*ty = monster->fy + ddy[dir];
+				*tx = monster->fx + ddx[dir];
+			} else {
+				*ty = player->py;
+				*tx = player->px;
+			}
+
+			break;
+		}
+
+		case SRC_PLAYER:
+			if (dir == 5 && target_okay()) {
+				target_get(tx, ty);
+			} else {
+				/* Use the adjacent grid in the given direction as target */
+				*ty = player->py + ddy[dir];
+				*tx = player->px + ddx[dir];
+			}
+
+			break;
+
+		default:
+			*flags |= PROJECT_PLAY;
+			*ty = player->py;
+			*tx = player->px;
+			break;
+	}
+}
 
 /**
  * Apply the project() function in a direction, or at a target
@@ -120,25 +159,13 @@ static bool project_aimed(struct source origin,
 						  int typ, int dir, int dam, int flg,
 						  const struct object *obj)
 {
-	int py = player->py;
-	int px = player->px;
-
-	int ty, tx;
+	int ty = -1;
+	int tx = -1;
 
 	/* Pass through the target if needed */
 	flg |= (PROJECT_THRU);
 
-	/* Can hurt the player */
-	if (origin.what == SRC_MONSTER)
-		flg |= (PROJECT_PLAY);
-
-	/* Use the adjacent grid in the given direction as target */
-	ty = py + ddy[dir];
-	tx = px + ddx[dir];
-
-	/* Ask for a target if no direction given */
-	if (origin.what == SRC_PLAYER && dir == 5 && target_okay())
-		target_get(&tx, &ty);
+	get_target(origin, dir, &ty, &tx, &flg);
 
 	/* Aim at the target, do NOT explode */
 	return (project(origin, 0, ty, tx, dam, typ, flg, 0, 0, obj));
@@ -3432,12 +3459,10 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
  */
 bool effect_handler_BALL(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
 	int dam = effect_calculate_value(context, true);
 	int rad = context->p2 ? context->p2 : 2;
-	int ty = py + ddy[context->dir];
-	int tx = px + ddx[context->dir];
+	int ty = -1;
+	int tx = -1;
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3450,6 +3475,16 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			}
 			flg |= PROJECT_PLAY;
 			flg &= ~(PROJECT_STOP | PROJECT_THRU);
+
+			if (mon->m_timed[MON_TMD_CONF] > 0 && one_in_(CONF_RANDOM_CHANCE)) {
+				int dir = randint1(9);
+				ty = mon->fy + ddy[dir];
+				tx = mon->fx + ddx[dir];
+			} else {
+				ty = player->py;
+				tx = player->px;
+			}
+
 			break;
 		}
 
@@ -3462,19 +3497,20 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		}
 
 		case SRC_PLAYER:
+			/* Ask for a target if no direction given */
+			if (context->dir == 5 && target_okay()) {
+				flg &= ~(PROJECT_STOP | PROJECT_THRU);
+				target_get(&tx, &ty);
+			} else {
+				ty = player->py + ddy[context->dir];
+				tx = player->px + ddx[context->dir];
+			}
+
 			if (context->p3) rad += player->lev / context->p3;
 			break;
 
 		default:
 			break;
-	}
-
-	/* Ask for a target if no direction given */
-	if (context->origin.what == SRC_PLAYER &&
-			context->dir == 5 &&
-			target_okay()) {
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
-		target_get(&tx, &ty);
 	}
 
 	/* Aim at the target, explode */
@@ -3492,14 +3528,12 @@ bool effect_handler_BALL(effect_handler_context_t *context)
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
 	int dam = effect_calculate_value(context, false);
 	int type = context->p1;
 	int rad = context->p3;
 
-	int ty = py + ddy[context->dir];
-	int tx = px + ddx[context->dir];
+	int ty = -1;
+	int tx = -1;
 
 	/* Diameter of source starts at 20, so full strength only adjacent to
 	 * the breather. */
@@ -3516,6 +3550,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		flg |= PROJECT_PLAY;
+		ty = player->py;
+		tx = player->px;
 
 		dam = breath_dam(type, mon->hp);
 
@@ -3526,14 +3562,16 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		}
 	} else if (context->origin.what == SRC_PLAYER) {
 		msgt(projections[type].msgt, "You breathe %s.", projections[type].desc);
+
+		/* Ask for a target if no direction given */
+		if (context->dir == 5 && target_okay()) {
+			target_get(&tx, &ty);
+		} else {
+			ty = player->py + ddy[context->dir];
+			tx = player->px + ddx[context->dir];
+		}
 	}
 
-	/* Ask for a target if no direction given */
-	if (context->origin.what == SRC_PLAYER &&
-			context->dir == 5 &&
-			target_okay()) {
-		target_get(&tx, &ty);
-	}
 
 	/* Diameter of the energy source. */
 	if (degrees_of_arc < 60) {
