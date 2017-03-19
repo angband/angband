@@ -204,7 +204,8 @@ normal:amulet:Slow Digestion
 normal:amulet:Resist Acid
 normal:wand:Slow Monster
 normal:wand:Confuse Monster
-normal:wand:Sleep Monster
+normal:wand:Hold Monster
+normal:wand:Stun Monster
 normal:wand:Magic Missile
 normal:wand:Stinking Cloud
 normal:wand:Wonder

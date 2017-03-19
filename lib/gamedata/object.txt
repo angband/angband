@@ -2820,41 +2820,51 @@ name:Slow Monster
 type:wand
 graphics:-:d
 properties:5:10:500
-alloc:20:5 to 60
+alloc:20:5 to 100
 combat:0:1d1:0:0:0
 charges:6+d10
 power:3
 effect:BOLT_AWARE:MON_SLOW
-dice:20
+dice:10+1d20
 
 name:Confuse Monster
 type:wand
 graphics:-:d
 properties:5:10:500
-alloc:20:5 to 60
+alloc:20:5 to 100
 combat:0:1d1:0:0:0
 charges:6+d12
 power:3
 effect:BOLT_AWARE:MON_CONF
-dice:10
+dice:5+1d5
 
-name:Sleep Monster
+name:Hold Monster
 type:wand
 graphics:-:d
 properties:5:10:500
-alloc:20:5 to 60
+alloc:20:5 to 100
 combat:0:1d1:0:0:0
 charges:8+d15
 power:3
-effect:BOLT_AWARE:MON_SLEEP
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+effect:BOLT_AWARE:MON_HOLD
+dice:3+1d5
+
+name:Stun Monster
+type:wand
+graphics:-:d
+properties:5:10:500
+alloc:20:5 to 100
+combat:0:1d1:0:0:0
+charges:8+d8
+power:3
+effect:BOLT_AWARE:MON_STUN
+dice:5+1d5
 
 name:Scare Monster
 type:wand
 graphics:-:d
 properties:10:10:500
-alloc:20:10 to 60
+alloc:20:10 to 100
 combat:0:1d1:0:0:0
 charges:3+d5
 power:3
@@ -3128,11 +3138,10 @@ graphics:_:d
 properties:10:50:800
 alloc:20:10 to 100
 combat:0:1d2:0:0:0
-charges:6+d5
+charges:3+d3
 power:10
 effect:PROJECT_LOS_AWARE:MON_CONF
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+dice:5+1d5
 
 name:Slow Monsters
 type:staff
@@ -3140,10 +3149,10 @@ graphics:_:d
 properties:10:50:800
 alloc:20:10 to 100
 combat:0:1d2:0:0:0
-charges:6+d5
+charges:4+d4
 power:7
 effect:PROJECT_LOS:MON_SLOW
-dice:20
+dice:10+1d10
 
 name:Sleep Monsters
 type:staff
@@ -3567,20 +3576,18 @@ alloc:20:30 to 100
 combat:0:1d1:0:0:0
 power:3
 effect:BOLT_AWARE:MON_SLOW
-dice:20
+dice:10+1d20
 time:20
 
-name:Sleep Monster
+name:Hold Monster
 type:rod
 graphics:-:d
 properties:30:15:1500
 alloc:20:30 to 100
 combat:0:1d1:0:0:0
 power:3
-effect:BOLT_AWARE:MON_SLEEP
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-time:18
+effect:BOLT_AWARE:MON_HOLD
+dice:3+1d5
 
 
 ### Healing ###
