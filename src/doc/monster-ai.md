@@ -12,7 +12,7 @@ Each turn monsters will try the following in order:
      4. Try to move towards the player
 
 
-# cave-map.c: flow code
+# cave-map.c: flow code
 
 Each grid on the level (in `struct square`, see cave.h) has two pieces of data stored for monster flow: its distance from the player ('noise') and the recentness of this information ('scent').
 
@@ -34,7 +34,7 @@ So, when updating flow information, the game marks:
 
 This one set of flow information is used for all monsters.  It is efficient but means that monsters that can't open or bash down doors, or otherwise deal with obstacles, will find it impossible to flow around them and find a different way to the player.
 
-## Examples
+## Examples
 
 The noise information in this situation:
 
