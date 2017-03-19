@@ -6,10 +6,10 @@ Mostly the code is quite straightforward.  `mon-move.c:process_monsters()` is th
 
 Each turn monsters will try the following in order:
 
-     1. Regenerate HP and recover from timed effects
-     2. Attempt to multiply
-     3. Attempt a spell
-     4. Try to move towards the player
+  1. Regenerate HP and recover from timed effects
+  2. Attempt to multiply
+  3. Attempt a spell
+  4. Try to move towards the player
 
 
 # cave-map.c: flow code
@@ -27,10 +27,10 @@ Scent indicates recentness of the noise.  Because this algorithm was written in 
 The game keeps an internal scent counter, which is increased when flow is calculated, and when a grid's flow data is updated, its scent is set to this counter.  The counter starts out at 0 and increases by 1 each update until you reach 255 (this is because `scent` is one byte, see previous comment about 1997).  When it reaches 255, it rolls over to 128, and the game reduces the `scent` value of all grids by 128 (and any values below 128 are reset to 0), in effect preserving the last 128 updates' worth of data.
 
 So, when updating flow information, the game marks:
-     * the grid with the player on as `{ noise = 0, scent = now }`
-     * adjacent grids as `{ noise = 1, scent = now }`
-     * grids surrounding those as `{ noise = 2, scent = now }`,
-     * and so on.
+  * the grid with the player on as `{ noise = 0, scent = now }`
+  * adjacent grids as `{ noise = 1, scent = now }`
+  * grids surrounding those as `{ noise = 2, scent = now }`,
+  * and so on.
 
 This one set of flow information is used for all monsters.  It is efficient but means that monsters that can't open or bash down doors, or otherwise deal with obstacles, will find it impossible to flow around them and find a different way to the player.
 
