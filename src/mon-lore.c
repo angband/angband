@@ -227,6 +227,28 @@ int blow_color(struct player *p, int blow_idx)
 	return blow->lore_attr;
 }
 
+void lore_learn_spell_if_has(struct monster_lore *lore, const struct monster_race *race, int flag)
+{
+	if (rsf_has(race->spell_flags, flag)) {
+		rsf_on(lore->spell_flags, flag);
+	}
+}
+
+void lore_learn_spell_if_visible(struct monster_lore *lore, const struct monster *mon, int flag)
+{
+	if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		rsf_on(lore->spell_flags, flag);
+	}
+}
+
+void lore_learn_flag_if_visible(struct monster_lore *lore, const struct monster *mon, int flag)
+{
+	if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		rf_on(lore->flags, flag);
+	}
+}
+
+
 /**
  * Update which bits of lore are known
  */

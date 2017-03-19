@@ -19,14 +19,11 @@
 #ifndef MONSTER_TIMED_H
 #define MONSTER_TIMED_H
 
-
-/** Constants **/
-
 /**
  * Monster Timed Effects
  */
 enum {
-	#define MON_TMD(a, b, c, d, e, f) MON_TMD_##a,
+	#define MON_TMD(a, b, c, d, e, f, g, h) MON_TMD_##a,
 	#include "list-mon-timed.h"
 	#undef MON_TMD
 };
@@ -41,11 +38,8 @@ enum {
 
 /** Functions **/
 int mon_timed_name_to_idx(const char *name);
-bool mon_inc_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
-				   bool id);
-bool mon_dec_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
-				   bool id);
-bool mon_clear_timed(struct monster *mon, int ef_idx, u16b flag, bool id);
-
+bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag, bool id);
+bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag, bool id);
+bool mon_clear_timed(struct monster *mon, int effect_type, int flag, bool id);
 
 #endif /* MONSTER_TIMED_H */

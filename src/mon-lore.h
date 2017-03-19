@@ -103,6 +103,11 @@ void lore_append_spells(textblock *tb, const struct monster_race *race,
 void lore_append_attack(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE]);
+
+void lore_learn_spell_if_has(struct monster_lore *lore, const struct monster_race *race, int flag);
+void lore_learn_spell_if_visible(struct monster_lore *lore, const struct monster *mon, int flag);
+void lore_learn_flag_if_visible(struct monster_lore *lore, const struct monster *mon, int flag);
+
 void lore_update(const struct monster_race *race, struct monster_lore *lore);
 void cheat_monster_lore(const struct monster_race *race,
 						struct monster_lore *lore);

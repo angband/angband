@@ -30,27 +30,59 @@
  */
 static struct mon_timed_effect {
 	const char *name;
+	bool can_fail;
+	int flag_resist;
+	int flag_spell;
+	int max_timer;
 	int message_begin;
 	int message_end;
 	int message_increase;
-	int flag_resist;
-	int max_timer;
 } effects[] = {
-	#define MON_TMD(a, b, c, d, e, f) { #a, b, c, d, e, f },
+	#define MON_TMD(a, b, c, d, e, f, g, h) { #a, b, c, d, e, f, g, h },
 	#include "list-mon-timed.h"
 	#undef MON_TMD
 };
 
-
+/**
+ * Find the timed monster effect with the name `name`.
+ *
+ * Returns -1 on failure.
+ */
 int mon_timed_name_to_idx(const char *name)
 {
-    int i;
-    for (i = 0; !streq(effects[i].name, "MAX"); i++) {
+    for (size_t i = 0; i < MON_TMD_MAX; i++) {
         if (streq(name, effects[i].name))
             return i;
     }
 
     return -1;
+}
+
+/**
+ * Roll the saving throw for monsters resisting a timed effect.
+ */
+static bool saving_throw(const struct monster *mon, int effect_type, int timer, int flag)
+{
+	int resist_chance;
+
+	/* Calculate the chance of the monster making its saving throw. */
+	if (flag & MON_TMD_MON_SOURCE) {
+		resist_chance = mon->race->level;
+	} else {
+		/* Hack - sleep uses much bigger numbers */
+		if (effect_type == MON_TMD_SLEEP) {
+			timer /= 25;
+		}
+
+		resist_chance = mon->race->level + 40 - (timer / 2);
+	}
+
+	/* Uniques are doubly hard to affect */
+	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+		resist_chance /= 2;
+	}
+
+	return randint0(100) < resist_chance;
 }
 
 /**
@@ -68,156 +100,138 @@ int mon_timed_name_to_idx(const char *name)
  *
  * Also marks the lore for any appropriate resists.
  */
-static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, u16b flag)
+static bool does_resist(const struct monster *mon, int effect_type, int timer, int flag)
 {
-	struct mon_timed_effect *effect;
-	int resist_chance;
-	struct monster_lore *lore;
+	assert(mon != NULL);
+	assert(effect_type >= 0);
+	assert(effect_type < MON_TMD_MAX);
 
-	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
-	assert(mon);
+	struct mon_timed_effect *effect = &effects[effect_type];
+	struct monster_lore *lore = get_lore(mon->race);
 
-	effect = &effects[ef_idx];
-	lore = get_lore(mon->race);
-	
-	/* Hasting never fails */
-	if (ef_idx == MON_TMD_FAST) return (false);
-	
 	/* Some effects are marked to never fail */
-	if (flag & MON_TMD_FLG_NOFAIL) return (false);
+	if (effect->can_fail == false || flag & MON_TMD_FLG_NOFAIL) {
+		return false;
+	}
+
+	/* Check resistances from base flags */
+	if (rf_has(mon->race->flags, effect->flag_resist)) {
+		lore_learn_flag_if_visible(lore, mon, effect->flag_resist);
+		return true;
+	}
+
+	/* Check resistances from spells */
+	if (rsf_has(mon->race->spell_flags, effect->flag_spell)) {
+		lore_learn_spell_if_visible(lore, mon, effect->flag_spell);
+		return true;
+	}
 
 	/* A sleeping monster resists further sleeping */
-	if (ef_idx == MON_TMD_SLEEP && mon->m_timed[ef_idx]) return (true);
-
-	/* If the monster resists innately, learn about it */
-	if (rf_has(mon->race->flags, effect->flag_resist)) {
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
-			rf_on(lore->flags, effect->flag_resist);
-
-		return (true);
+	if (effect_type == MON_TMD_SLEEP && mon->m_timed[MON_TMD_SLEEP]) {
+		return true;
 	}
 
 	/* Monsters with specific breaths resist stunning */
-	if (ef_idx == MON_TMD_STUN &&
-		(rsf_has(mon->race->spell_flags, RSF_BR_SOUN) ||
-		 rsf_has(mon->race->spell_flags, RSF_BR_WALL))) {
-		/* Add the lore */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
-			if (rsf_has(mon->race->spell_flags, RSF_BR_SOUN))
-				rsf_on(lore->spell_flags, RSF_BR_SOUN);
-			if (rsf_has(mon->race->spell_flags, RSF_BR_WALL))
-				rsf_on(lore->spell_flags, RSF_BR_WALL);
+	/* Not included in the table because there's two flags, not just one */
+	if (effect_type == MON_TMD_STUN) {
+		if (rsf_has(mon->race->spell_flags, RSF_BR_SOUN) ||
+				rsf_has(mon->race->spell_flags, RSF_BR_WALL)) {
+			/* Add the lore */
+			if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+				lore_learn_spell_if_has(lore, mon->race, RSF_BR_SOUN);
+				lore_learn_spell_if_has(lore, mon->race, RSF_BR_WALL);
+			}
+
+			return true;
 		}
-
-		return (true);
 	}
 
-	/* Monsters with specific breaths resist confusion */
-	if ((ef_idx == MON_TMD_CONF) &&
-		rsf_has(mon->race->spell_flags, RSF_BR_CHAO)) {
-		/* Add the lore */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
-			if (rsf_has(mon->race->spell_flags, RSF_BR_CHAO))
-				rsf_on(lore->spell_flags, RSF_BR_CHAO);
-
-		return (true);
-	}
-
-	/* Inertia breathers resist slowing */
-	if (ef_idx == MON_TMD_SLOW && rsf_has(mon->race->spell_flags, RSF_BR_INER)){
-		rsf_on(lore->spell_flags, RSF_BR_INER);
-		return (true);
-	}
-
-	/* Calculate the chance of the monster making its saving throw. */
-	if (ef_idx == MON_TMD_SLEEP)
-		timer /= 25; /* Hack - sleep uses much bigger numbers */
-
-	if (flag & MON_TMD_MON_SOURCE)
-		resist_chance = mon->race->level;
-	else
-		resist_chance = mon->race->level + 40 - (timer / 2);
-
-	if (randint0(100) < resist_chance) return (true);
-
-	/* Uniques are doubly hard to affect */
-	if (rf_has(mon->race->flags, RF_UNIQUE))
-		if (randint0(100) < resist_chance) return (true);
-
-	return (false);
+	return saving_throw(mon, effect_type, timer, flag);
 }
 
 /**
  * Attempts to set the timer of the given monster effect to `timer`.
  *
- * Checks to see if the monster resists the effect, using mon_resist_effect().
+ * Checks to see if the monster resists the effect, using does_resist().
  * If not, the effect is set to `timer` turns. If `timer` is 0, or if the
  * effect timer was 0, or if MON_TMD_FLG_NOTIFY is set in `flag`, then a
  * message is printed, unless MON_TMD_FLG_NOMESSAGE is set in `flag`.
  *
  * Set a timed monster event to 'v'.  Give messages if the right flags are set.
  * Check if the monster is able to resist the spell.  Mark the lore.
- * Returns true if the monster was affected.
- * Return false if the monster was unaffected.
+ *
+ * Returns true if the monster was affected, false if not.
  */
-static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
-						  u16b flag, bool id)
+static bool mon_set_timed(struct monster *mon,
+		int effect_type,
+		int timer,
+		int flag,
+		bool id)
 {
-	bool check_resist = false;
+	assert(mon != NULL);
+	assert(mon->race != NULL);
+	assert(effect_type >= 0);
+	assert(effect_type < MON_TMD_MAX);
+	assert(timer >= 0);
+
+	struct mon_timed_effect *effect = &effects[effect_type];
+
+	bool check_resist;
 	bool resisted = false;
 
-	struct mon_timed_effect *effect;
-
 	int m_note = 0;
-	int old_timer;
+	int old_timer = mon->m_timed[effect_type];
 
-	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
-	effect = &effects[ef_idx];
-
-	assert(mon);
-	assert(mon->race);
-
-	old_timer = mon->m_timed[ef_idx];
+	/* Limit time of effect */
+	if (timer > effect->max_timer) {
+		timer = effect->max_timer;
+	}
 
 	/* No change */
-	if (old_timer == timer)
+	if (old_timer == timer) {
 		return false;
-
-	if (timer == 0) {
+	} else if (timer == 0) {
 		/* Turning off, usually mention */
 		m_note = effect->message_end;
 		flag |= MON_TMD_FLG_NOTIFY;
+		check_resist = false;
 	} else if (old_timer == 0) {
 		/* Turning on, usually mention */
-		flag |= MON_TMD_FLG_NOTIFY;
 		m_note = effect->message_begin;
+		flag |= MON_TMD_FLG_NOTIFY;
 		check_resist = true;
 	} else if (timer > old_timer) {
 		/* Different message for increases, but don't automatically mention. */
 		m_note = effect->message_increase;
 		check_resist = true;
-	} /* Decreases don't get a message */
+	} else {
+		/* Decreases don't get a message, but never resist them */
+		check_resist = false;
+	}
 
 	/* Determine if the monster resisted or not, if appropriate */
-	if (check_resist)
-		resisted = mon_resist_effect(mon, ef_idx, timer, flag);
-
-	if (resisted)
+	if (check_resist && does_resist(mon, effect_type, timer, flag)) {
+		resisted = true;
 		m_note = MON_MSG_UNAFFECTED;
-	else
-		mon->m_timed[ef_idx] = timer;
+	} else {
+		mon->m_timed[effect_type] = timer;
 
-	if (player->upkeep->health_who == mon)
-		player->upkeep->redraw |= (PR_HEALTH);
+		if (player->upkeep->health_who == mon)
+			player->upkeep->redraw |= (PR_HEALTH);
 
-	/* Update the visuals, as appropriate. */
-	player->upkeep->redraw |= (PR_MONLIST);
+		/* Update the visuals, as appropriate. */
+		player->upkeep->redraw |= (PR_MONLIST);
+	}
 
 	/* Print a message if there is one, if the effect allows for it, and if
 	 * either the monster is visible, or we're trying to ID something */
-	if (m_note && !(flag & MON_TMD_FLG_NOMESSAGE) && (flag & MON_TMD_FLG_NOTIFY)
-		&& ((mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-			 !mflag_has(mon->mflag, MFLAG_UNAWARE)) || id)) {
+	if (m_note &&
+			!(flag & MON_TMD_FLG_NOMESSAGE) &&
+			(flag & MON_TMD_FLG_NOTIFY)
+			&& (id || (
+					mflag_has(mon->mflag, MFLAG_VISIBLE) &&
+					!mflag_has(mon->mflag, MFLAG_UNAWARE)
+				))) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
 		add_monster_message(mon, m_note, true);
@@ -226,9 +240,11 @@ static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
 	return !resisted;
 }
 
+/** Minimum number of turns a new timed effect can last */
+#define MON_INC_MIN_TURNS		2
 
 /**
- * Increases the timed effect `ef_idx` by `timer`.
+ * Increases the timed effect `effect_type` by `timer`.
  *
  * Calculates the new timer, then passes that to mon_set_timed().
  * Note that each effect has a maximum number of turns it can be active for.
@@ -237,35 +253,27 @@ static bool mon_set_timed(struct monster *mon, int ef_idx, int timer,
  *
  * Returns true if the monster's timer changed.
  */
-bool mon_inc_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
+bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag,
 				   bool id)
 {
-	struct mon_timed_effect *effect;
-
-	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
-	effect = &effects[ef_idx];
-
-	/* For negative amounts, we use mon_dec_timed instead */
-	assert(timer > 0);
+	assert(effect_type >= 0);
+	assert(effect_type < MON_TMD_MAX);
+	assert(timer > 0); /* For negative amounts, we use mon_dec_timed instead */
 
 	/* Make it last for a mimimum # of turns if it is a new effect */
-	if ((!mon->m_timed[ef_idx]) && (timer < 2)) timer = 2;
+	if (mon->m_timed[effect_type] == 0 && timer < MON_INC_MIN_TURNS) {
+		timer = MON_INC_MIN_TURNS;
+	}
 
-	/* New counter amount - prevent overflow */
-	if (SHRT_MAX - timer < mon->m_timed[ef_idx])
-		timer = SHRT_MAX;
-	else
-		timer += mon->m_timed[ef_idx];
-
-	/* Reduce to max_timer if necessary*/
-	if (timer > effect->max_timer)
-		timer = effect->max_timer;
-
-	return mon_set_timed(mon, ef_idx, timer, flag, id);
+	return mon_set_timed(mon,
+			effect_type,
+			mon->m_timed[effect_type] + timer,
+			flag,
+			id);
 }
 
 /**
- * Decreases the timed effect `ef_idx` by `timer`.
+ * Decreases the timed effect `effect_type` by `timer`.
  *
  * Calculates the new timer, then passes that to mon_set_timed().
  * If a timer would be set to a negative number, it is set to 0 instead.
@@ -273,37 +281,34 @@ bool mon_inc_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
  *
  * Returns true if the monster's timer changed.
  */
-bool mon_dec_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
+bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag,
 				   bool id)
 {
-	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
-	assert(timer > 0);
+	assert(effect_type >= 0);
+	assert(effect_type < MON_TMD_MAX);
+	assert(timer > 0); /* For negative amounts, we use mon_inc_timed instead */
 
-	/* Decreasing is never resisted */
-	flag |= MON_TMD_FLG_NOFAIL;
+	int new_level = mon->m_timed[effect_type] - timer;
+	if (new_level < 0) {
+		new_level = 0;
+	}
 
-	/* New counter amount */
-	timer = mon->m_timed[ef_idx] - timer;
-	if (timer < 0)
-		timer = 0;
-
-	return mon_set_timed(mon, ef_idx, timer, flag, id);
+	return mon_set_timed(mon, effect_type, new_level, flag, id);
 }
 
 /**
- * Clears the timed effect `ef_idx`.
+ * Clears the timed effect `effect_type`.
  *
  * Returns true if the monster's timer was changed.
  */
-bool mon_clear_timed(struct monster *mon, int ef_idx, u16b flag, bool id)
+bool mon_clear_timed(struct monster *mon, int effect_type, int flag, bool id)
 {
-	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
+	assert(effect_type >= 0);
+	assert(effect_type < MON_TMD_MAX);
 
-	if (!mon->m_timed[ef_idx]) return false;
-
-	/* Clearing never fails */
-	flag |= MON_TMD_FLG_NOFAIL;
-
-	return mon_set_timed(mon, ef_idx, 0, flag, id);
+	if (mon->m_timed[effect_type] == 0) {
+		return false;
+	} else {
+		return mon_set_timed(mon, effect_type, 0, flag, id);
+	}
 }
-
