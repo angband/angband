@@ -355,7 +355,7 @@ desc:Hastes you (+10 to speed) for a level-dependent duration.
 spell:Mass Sleep:25:7:50:6
 effect:PROJECT_LOS:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 
@@ -708,7 +708,7 @@ desc: turns.
 spell:Sanctuary:7:5:36:3
 effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster directly adjacent to you.
 desc:  Uniques and monsters that resist sleep are not affected.
 
@@ -1248,7 +1248,7 @@ desc:Hastes you (+10 to speed) for a level-dependent duration.
 spell:Mass Sleep:24:15:80:10
 effect:PROJECT_LOS:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 
@@ -1637,7 +1637,7 @@ desc:Hastes you (+10 to speed) for a level-dependent duration.
 spell:Mass Sleep:23:20:60:4
 effect:PROJECT_LOS:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 
@@ -1961,7 +1961,7 @@ desc: turns.
 spell:Sanctuary:11:10:45:3
 effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster directly adjacent to you.
 desc:  Uniques and monsters that resist sleep are not affected.
 

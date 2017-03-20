@@ -234,7 +234,7 @@ static void project_monster_breath(project_monster_handler_context_t *context, i
  * \param player_amount is the amount to increment the timer by if the source is the player.
  * \param monster_amount is the amount to increment the timer by if the source is another monster.
  */
-static void project_monster_timed_damage(project_monster_handler_context_t *context, int type, int player_amount, int monster_amount)
+static void project_monster_timed(project_monster_handler_context_t *context, int type, int player_amount, int monster_amount)
 {
 	if (type < 0 || type >= MON_TMD_MAX)
 		return;
@@ -255,7 +255,7 @@ static void project_monster_timed_damage(project_monster_handler_context_t *cont
  */
 static void project_monster_timed_no_damage(project_monster_handler_context_t *context, int type)
 {
-	project_monster_timed_damage(context, type, context->dam, 0);
+	project_monster_timed(context, type, context->dam, 0);
 	context->dam = 0;
 }
 
@@ -393,9 +393,9 @@ static void project_monster_handler_DARK(project_monster_handler_context_t *cont
 /* Sound -- Sound breathers resist */
 static void project_monster_handler_SOUND(project_monster_handler_context_t *context)
 {
-	int player_amount = (10 + randint1(15) + context->r + player->lev / 5) / (context->r + 1);
-	int monster_amount = (10 + randint1(15) + context->r) / (context->r + 1);
-	project_monster_timed_damage(context, MON_TMD_STUN, player_amount, monster_amount);
+	int amount = 10 + randint1(20);
+
+	project_monster_timed(context, MON_TMD_STUN, amount, amount);
 	project_monster_breath(context, RSF_BR_SOUN, 2);
 }
 
@@ -452,8 +452,7 @@ static void project_monster_handler_NETHER(project_monster_handler_context_t *co
 /* Chaos -- Chaos breathers resist */
 static void project_monster_handler_CHAOS(project_monster_handler_context_t *context)
 {
-	int player_amount = (5 + randint1(11) + context->r + player->lev / 5) / (context->r + 1);
-	int monster_amount = (5 + randint1(11) + context->r) / (context->r + 1);
+	int amount = 10 + randint1(10);
 
 	/* Prevent polymorph on chaos breathers. */
 	if (rsf_has(context->mon->race->spell_flags, RSF_BR_CHAO))
@@ -462,7 +461,7 @@ static void project_monster_handler_CHAOS(project_monster_handler_context_t *con
 		context->do_poly = 1;
 
 	/* Hide resistance message (as assigned in project_monster_breath()). */
-	project_monster_timed_damage(context, MON_TMD_CONF, player_amount, monster_amount);
+	project_monster_timed(context, MON_TMD_CONF, amount, amount);
 	project_monster_breath(context, RSF_BR_CHAO, 3);
 	context->hurt_msg = MON_MSG_NONE;
 }
@@ -483,9 +482,9 @@ static void project_monster_handler_WATER(project_monster_handler_context_t *con
 /* Ice -- Cold + Stun */
 static void project_monster_handler_ICE(project_monster_handler_context_t *context)
 {
-	int player_amount = (randint1(15) + context->r + player->lev / 5) / (context->r + 1);
-	int monster_amount = (randint1(15) + context->r) / (context->r + 1);
-	project_monster_timed_damage(context, MON_TMD_STUN, player_amount, monster_amount);
+	int amount = 10 + randint1(20);
+
+	project_monster_timed(context, MON_TMD_STUN, amount, amount);
 	project_monster_hurt_immune(context, RF_HURT_COLD, RF_IM_COLD, 2, 9, MON_MSG_BADLY_FROZEN, MON_MSG_FREEZE_SHATTER);
 }
 
@@ -512,17 +511,17 @@ static void project_monster_handler_INERTIA(project_monster_handler_context_t *c
 /* Force */
 static void project_monster_handler_FORCE(project_monster_handler_context_t *context)
 {
-	int player_amount = (randint1(15) + context->r + player->lev / 5) / (context->r + 1);
-	int monster_amount = (randint1(15) + context->r) / (context->r + 1);
-	char grids_away[5];
-	project_monster_timed_damage(context, MON_TMD_STUN, player_amount, monster_amount);
+	int amount = 10 + randint1(20);
+
+	project_monster_timed(context, MON_TMD_STUN, amount, amount);
 	project_monster_breath(context, RSF_BR_WALL, 3);
 
 	/* Prevent thursting force breathers. */
 	if (rsf_has(context->mon->race->spell_flags, RSF_BR_WALL))
 		return;
 
-	/* Thrust monster away. */
+	/* Thrust monster away */
+	char grids_away[5];
 	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
 	effect_simple(EF_THRUST_AWAY, context->origin, grids_away, context->y, context->x, 0, NULL);
 }
@@ -696,7 +695,7 @@ static void project_monster_handler_MON_POLY(project_monster_handler_context_t *
 static void project_monster_handler_MON_HEAL(project_monster_handler_context_t *context)
 {
 	/* Wake up */
-	mon_clear_timed(context->mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, 
+	mon_clear_timed(context->mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
 					context->id);
 
 	/* Heal */
@@ -966,26 +965,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
 		effect_simple(EF_TELEPORT, context->origin, dice, context->y, context->x, 0, NULL);
 	} else {
-		int i;
-
-		/* Reduce stun if the monster is already stunned. */
-		if (context->mon_timed[MON_TMD_STUN] > 0 &&
-			mon->m_timed[MON_TMD_STUN] > 0) {
-			context->mon_timed[MON_TMD_STUN] /= 2;
-			context->mon_timed[MON_TMD_STUN] += 1;
-		}
-
-		/* Reroll confusion based on the provided amount. */
-		if (context->mon_timed[MON_TMD_CONF] > 0) {
-			context->mon_timed[MON_TMD_CONF] = damroll(3, (context->mon_timed[MON_TMD_CONF] / 2)) + 1;
-		}
-
-		/* If sleep is caused by the player, base time on the player's level. */
-		if (context->origin.what == SRC_PLAYER && context->mon_timed[MON_TMD_SLEEP] > 0) {
-			context->mon_timed[MON_TMD_SLEEP] = 500 + player->lev * 10;
-		}
-
-		for (i = 0; i < MON_TMD_MAX; i++) {
+		for (int i = 0; i < MON_TMD_MAX; i++) {
 			if (context->mon_timed[i] > 0) {
 				mon_inc_timed(mon,
 							  i,

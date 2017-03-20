@@ -658,7 +658,7 @@ aim:0
 power:8
 effect:PROJECT_LOS:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:sleeps all non-unique creatures within line of sight
 
 name:LOSCONF
@@ -761,7 +761,7 @@ power:8
 msg:{name} glows deep blue...
 effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:puts to sleep the monsters around you
 
 name:STAR_BALL
@@ -1080,7 +1080,7 @@ aim:1
 power:3
 effect:BOLT_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:attempts to induce magical sleep in a single monster
 
 name:MON_SCARE

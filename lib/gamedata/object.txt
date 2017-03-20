@@ -3164,7 +3164,7 @@ charges:6+d5
 power:8
 effect:PROJECT_LOS_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 
 
 ### Detect ###
