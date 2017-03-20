@@ -72,19 +72,13 @@ int mon_timed_name_to_idx(const char *name)
  */
 static bool saving_throw(const struct monster *mon, int effect_type, int timer, int flag)
 {
-	int resist_chance;
-
 	/* Calculate the chance of the monster making its saving throw. */
-	if (flag & MON_TMD_MON_SOURCE) {
-		resist_chance = mon->race->level;
-	} else {
-		/* Hack - sleep uses much bigger numbers */
-		if (effect_type == MON_TMD_SLEEP) {
-			timer /= 25;
-		}
-
-		resist_chance = mon->race->level + 40 - (timer / 2);
+	/* Hack - sleep uses much bigger numbers */
+	if (effect_type == MON_TMD_SLEEP) {
+		timer /= 25;
 	}
+
+	int resist_chance = mon->race->level + 40 - (timer / 2);
 
 	/* Uniques are doubly hard to affect */
 	if (rf_has(mon->race->flags, RF_UNIQUE)) {
@@ -96,18 +90,6 @@ static bool saving_throw(const struct monster *mon, int effect_type, int timer, 
 
 /**
  * Determines whether the given monster successfully resists the given effect.
- *
- * If MON_TMD_FLG_NOFAIL is set in `flag`, this returns false.
- * Then we determine if the monster resists the effect for some racial
- * reason. For example, the monster might have the NO_SLEEP flag, in which
- * case it always resists sleep. Or if it breathes chaos, it always resists
- * confusion. If the given monster doesn't resist for any of these reasons,
- * then it makes a saving throw. If MON_TMD_MON_SOURCE is set in `flag`,
- * indicating that another monster caused this effect, then the chance of
- * success on the saving throw just depends on the monster's native depth.
- * Otherwise, the chance of success decreases as `timer` increases.
- *
- * Also marks the lore for any appropriate resists.
  */
 static bool does_resist(const struct monster *mon, int effect_type, int timer, int flag)
 {

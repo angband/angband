@@ -99,6 +99,11 @@ typedef struct project_monster_handler_context_s {
 } project_monster_handler_context_t;
 typedef void (*project_monster_handler_f)(project_monster_handler_context_t *);
 
+static int adjust_radius(project_monster_handler_context_t *context, int amount)
+{
+	return (amount + context->r) / (context->r + 1);
+}
+
 /**
  * Resist an attack if the monster has the given elemental flag.
  *
@@ -225,41 +230,6 @@ static void project_monster_breath(project_monster_handler_context_t *context, i
 }
 
 /**
- * Add a timed status effect to a monster with damage.
- *
- * The source of the damage is tracked if comes from another monster.
- *
- * \param context is the project_m context.
- * \param type is the MON_TMD timer to increment.
- * \param player_amount is the amount to increment the timer by if the source is the player.
- * \param monster_amount is the amount to increment the timer by if the source is another monster.
- */
-static void project_monster_timed(project_monster_handler_context_t *context, int type, int player_amount, int monster_amount)
-{
-	if (type < 0 || type >= MON_TMD_MAX)
-		return;
-
-	if (context->origin.what == SRC_MONSTER) {
-		context->mon_timed[type] = monster_amount;
-		context->flag |= MON_TMD_MON_SOURCE;
-	} else {
-		context->mon_timed[type] = player_amount;
-	}
-}
-
-/**
- * Add a timed status effect to a monster without damage.
- *
- * \param context is the project_m context.
- * \param type is the MON_TMD timer to increment.
- */
-static void project_monster_timed_no_damage(project_monster_handler_context_t *context, int type)
-{
-	project_monster_timed(context, type, context->dam, 0);
-	context->dam = 0;
-}
-
-/**
  * Teleport away a monster that has a given flag.
  *
  * If the monster matches, it is teleported and the effect is obvious (if seen).
@@ -299,7 +269,7 @@ static void project_monster_scare(project_monster_handler_context_t *context, in
     if (context->seen) rf_on(context->lore->flags, flag);
 
 	if (rf_has(context->mon->race->flags, flag)) {
-        project_monster_timed_no_damage(context, MON_TMD_FEAR);
+        context->mon_timed[MON_TMD_FEAR] = adjust_radius(context, context->dam);
 	} else {
 		context->skipped = true;
 	}
@@ -393,9 +363,7 @@ static void project_monster_handler_DARK(project_monster_handler_context_t *cont
 /* Sound -- Sound breathers resist */
 static void project_monster_handler_SOUND(project_monster_handler_context_t *context)
 {
-	int amount = 10 + randint1(20);
-
-	project_monster_timed(context, MON_TMD_STUN, amount, amount);
+	context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 10 + randint1(20));
 	project_monster_breath(context, RSF_BR_SOUN, 2);
 }
 
@@ -452,8 +420,6 @@ static void project_monster_handler_NETHER(project_monster_handler_context_t *co
 /* Chaos -- Chaos breathers resist */
 static void project_monster_handler_CHAOS(project_monster_handler_context_t *context)
 {
-	int amount = 10 + randint1(10);
-
 	/* Prevent polymorph on chaos breathers. */
 	if (rsf_has(context->mon->race->spell_flags, RSF_BR_CHAO))
 		context->do_poly = 0;
@@ -461,7 +427,7 @@ static void project_monster_handler_CHAOS(project_monster_handler_context_t *con
 		context->do_poly = 1;
 
 	/* Hide resistance message (as assigned in project_monster_breath()). */
-	project_monster_timed(context, MON_TMD_CONF, amount, amount);
+	context->mon_timed[MON_TMD_CONF] = adjust_radius(context, 10 + randint1(10));
 	project_monster_breath(context, RSF_BR_CHAO, 3);
 	context->hurt_msg = MON_MSG_NONE;
 }
@@ -482,9 +448,7 @@ static void project_monster_handler_WATER(project_monster_handler_context_t *con
 /* Ice -- Cold + Stun */
 static void project_monster_handler_ICE(project_monster_handler_context_t *context)
 {
-	int amount = 10 + randint1(20);
-
-	project_monster_timed(context, MON_TMD_STUN, amount, amount);
+	context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 10 + randint1(20));
 	project_monster_hurt_immune(context, RF_HURT_COLD, RF_IM_COLD, 2, 9, MON_MSG_BADLY_FROZEN, MON_MSG_FREEZE_SHATTER);
 }
 
@@ -511,9 +475,7 @@ static void project_monster_handler_INERTIA(project_monster_handler_context_t *c
 /* Force */
 static void project_monster_handler_FORCE(project_monster_handler_context_t *context)
 {
-	int amount = 10 + randint1(20);
-
-	project_monster_timed(context, MON_TMD_STUN, amount, amount);
+	context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 10 + randint1(20));
 	project_monster_breath(context, RSF_BR_WALL, 3);
 
 	/* Prevent thursting force breathers. */
@@ -640,7 +602,8 @@ static void project_monster_handler_TURN_EVIL(project_monster_handler_context_t 
 /* Turn monster (Use "dam" as "power") */
 static void project_monster_handler_TURN_ALL(project_monster_handler_context_t *context)
 {
-	project_monster_timed_no_damage(context, MON_TMD_FEAR);
+	context->mon_timed[MON_TMD_FEAR] = context->dam;
+	context->dam = 0;
 }
 
 /* Dispel undead */
@@ -719,37 +682,43 @@ static void project_monster_handler_MON_HEAL(project_monster_handler_context_t *
 /* Speed Monster (Ignore "dam") */
 static void project_monster_handler_MON_SPEED(project_monster_handler_context_t *context)
 {
-	project_monster_timed_no_damage(context, MON_TMD_FAST);
+	context->mon_timed[MON_TMD_FAST] = context->dam;
+	context->dam = 0;
 }
 
 /* Slow Monster (Use "dam" as "power") */
 static void project_monster_handler_MON_SLOW(project_monster_handler_context_t *context)
 {
-	project_monster_timed_no_damage(context, MON_TMD_SLOW);
+	context->mon_timed[MON_TMD_SLOW] = context->dam;
+	context->dam = 0;
 }
 
 /* Confusion (Use "dam" as "power") */
 static void project_monster_handler_MON_CONF(project_monster_handler_context_t *context)
 {
-	project_monster_timed_no_damage(context, MON_TMD_CONF);
+	context->mon_timed[MON_TMD_CONF] = context->dam;
+	context->dam = 0;
 }
 
 /* Sleep (Use "dam" as "power") */
 static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t *context)
 {
-	project_monster_timed_no_damage(context, MON_TMD_SLEEP);
+	context->mon_timed[MON_TMD_SLEEP] = context->dam;
+	context->dam = 0;
 }
 
 /* Hold (Use "dam" as "power") */
 static void project_monster_handler_MON_HOLD(project_monster_handler_context_t *context)
 {
-	project_monster_timed_no_damage(context, MON_TMD_HOLD);
+	context->mon_timed[MON_TMD_HOLD] = context->dam;
+	context->dam = 0;
 }
 
 /* Stun (Use "dam" as "power") */
 static void project_monster_handler_MON_STUN(project_monster_handler_context_t *context)
 {
-	project_monster_timed_no_damage(context, MON_TMD_STUN);
+	context->mon_timed[MON_TMD_STUN] = context->dam;
+	context->dam = 0;
 }
 
 /* Drain Life */
