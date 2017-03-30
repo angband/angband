@@ -28,18 +28,19 @@
 
 /* Spell type bitflags */
 enum mon_spell_type {
-    RST_NONE    = 0x000,
-    RST_BOLT    = 0x001,
-    RST_BALL    = 0x002,
-    RST_BREATH  = 0x004,
-    RST_ATTACK  = 0x008,    /* Direct (non-projectable) attacks */
-    RST_ANNOY   = 0x010,    /* Irritant spells, usually non-fatal */
-    RST_HASTE   = 0x020,    /* Relative speed advantage */
-    RST_HEAL    = 0x040,
-    RST_TACTIC  = 0x080,    /* Get a better position */
-    RST_ESCAPE  = 0x100,
-    RST_SUMMON  = 0x200,
-    RST_INNATE  = 0x400
+    RST_NONE       = 0x000,
+    RST_BOLT       = 0x001,
+    RST_BALL       = 0x002,
+    RST_BREATH     = 0x004,
+    RST_ATTACK     = 0x008,    /* Direct (non-projectable) attacks */
+    RST_ANNOY      = 0x010,    /* Irritant spells, usually non-fatal */
+    RST_HASTE      = 0x020,    /* Relative speed advantage */
+    RST_HEAL       = 0x040,
+    RST_HEAL_OTHER = 0x080,
+    RST_TACTIC     = 0x100,    /* Get a better position */
+    RST_ESCAPE     = 0x200,
+    RST_SUMMON     = 0x400,
+    RST_INNATE     = 0x800
 };
 
 /** Macros **/

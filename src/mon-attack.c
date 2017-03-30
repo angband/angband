@@ -80,7 +80,11 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 
 	/* Don't heal if full */
 	if (mon->hp >= mon->maxhp) rsf_off(f2, RSF_HEAL);
-	
+
+	/* Don't heal others if no injuries */
+	if (rsf_has(f2, RSF_HEAL_KIN) &&
+			find_any_nearby_injured_kin(cave, mon) == false) rsf_off(f2, RSF_HEAL_KIN);
+
 	/* Don't haste if hasted with time remaining */
 	if (mon->m_timed[MON_TMD_FAST] > 10) rsf_off(f2, RSF_HASTE);
 

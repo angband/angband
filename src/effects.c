@@ -710,6 +710,60 @@ bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 }
 
 /**
+ * Monster healing of kin.
+ */
+bool effect_handler_MON_HEAL_KIN(effect_handler_context_t *context)
+{
+	assert(context->origin.what == SRC_MONSTER);
+
+	int midx = context->origin.which.monster;
+	struct monster *mon = midx > 0 ? cave_monster(cave, midx) : NULL;
+	if (!mon) return true;
+
+	int amount = effect_calculate_value(context, false);
+	char m_name[80], m_poss[80];
+	bool seen;
+
+	/* Find a nearby monster */
+	mon = choose_nearby_injured_kin(cave, mon);
+	if (!mon) return true;
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+	/* Get the monster possessive ("his"/"her"/"its") */
+	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
+
+	seen = (!player->timed[TMD_BLIND] && mflag_has(mon->mflag, MFLAG_VISIBLE));
+
+	/* Heal some */
+	mon->hp = MIN(mon->hp + amount, mon->maxhp);
+
+	if (seen) {
+		if (mon->hp == mon->maxhp) {
+			msg("%s looks REALLY healthy!", m_name);
+		} else if (seen) { /* Partially healed */
+			msg("%s looks healthier.", m_name);
+		}
+	}
+
+	/* Redraw (later) if needed */
+	if (player->upkeep->health_who == mon)
+		player->upkeep->redraw |= (PR_HEALTH);
+
+	/* Cancel fear */
+	if (mon->m_timed[MON_TMD_FEAR]) {
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+		msg("%s recovers %s courage.", m_name, m_poss);
+	}
+
+	/* ID */
+	context->ident = true;
+
+	return true;
+}
+
+/**
  * Feed the player.
  */
 bool effect_handler_NOURISH(effect_handler_context_t *context)
