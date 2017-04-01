@@ -34,7 +34,7 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
-
+#include "z-set.h"
 
 static const struct monster_flag monster_flag_table[] =
 {
@@ -730,4 +730,84 @@ void update_smart_learn(struct monster *m, struct player *p, int flag,
 	if (element_ok)
 		m->known_pstate.el_info[element].res_level
 			= player->state.el_info[element].res_level;
+}
+
+#define MAX_KIN_RADIUS			5
+#define MAX_KIN_DISTANCE		5
+
+/**
+ * Given a dungeon chunk, a monster, and a location, see if there is
+ * an injured monster with the same base kind in LOS and less than
+ * MAX_KIN_DISTANCE away.
+ */
+static struct monster *get_injured_kin(struct chunk *c, const struct monster *mon, int x, int y)
+{
+	/* Ignore the monster itself */
+	if (y == mon->fy && x == mon->fx)
+		return NULL;
+
+	/* Check kin */
+	struct monster *kin = square_monster(c, y, x);
+	if (!kin)
+		return NULL;
+
+	if (kin->race->base != mon->race->base)
+		return NULL;
+
+	/* Check line of sight */
+	if (los(c, mon->fy, mon->fx, y, x) == false)
+		return NULL;
+
+	/* Check injury */
+	if (kin->hp == kin->maxhp)
+		return NULL;
+
+	/* Check distance */
+	if (distance(mon->fy, mon->fx, y, x) > MAX_KIN_DISTANCE)
+		return NULL;
+
+	return kin;
+}
+
+/**
+ * Find out if there are any injured monsters nearby.
+ *
+ * See get_injured_kin() above for more details on what monsters qualify.
+ */
+bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon)
+{
+	for (int y = mon->fy - MAX_KIN_RADIUS; y <= mon->fy + MAX_KIN_RADIUS; y++) {
+		for (int x = mon->fx - MAX_KIN_RADIUS; x <= mon->fx + MAX_KIN_RADIUS; x++) {
+			if (get_injured_kin(c, mon, x, y) != NULL) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Choose one injured monster of the same base in LOS of the provided monster.
+ *
+ * Scan MAX_KIN_RADIUS grids around the monster to find potential grids,
+ * make a list of kin, and choose a random one.
+ */
+struct monster *choose_nearby_injured_kin(struct chunk *c, const struct monster *mon)
+{
+	struct set *set = set_new();
+
+	for (int y = mon->fy - MAX_KIN_RADIUS; y <= mon->fy + MAX_KIN_RADIUS; y++) {
+		for (int x = mon->fx - MAX_KIN_RADIUS; x <= mon->fx + MAX_KIN_RADIUS; x++) {
+			struct monster *kin = get_injured_kin(c, mon, x, y);
+			if (kin != NULL) {
+				set_add(set, kin);
+			}
+		}
+	}
+
+	struct monster *found = set_choose(set);
+	set_free(set);
+
+	return found;
 }

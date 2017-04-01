@@ -719,6 +719,17 @@ lore-color-base:Yellow
 message-vis:{name} magically starts closing wounds.
 message-invis:Something mutters.
 
+name:HEAL_KIN
+hit:100
+effect:MON_HEAL_KIN
+dice:$B
+expr:B:SPELL_POWER:* 6
+power:30
+lore:heal kin
+lore-color-base:Yellow
+message-vis:{name} tries to heal {pronoun} comrades.
+message-invis:Something mutters.
+
 name:BLINK
 hit:100
 effect:TELEPORT

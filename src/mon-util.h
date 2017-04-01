@@ -21,7 +21,6 @@
 
 #include "monster.h"
 
-/** Functions **/
 const char *describe_race_flag(int flag);
 void create_mon_flag_mask(bitflag *f, ...);
 struct monster_race *lookup_monster(const char *name);
@@ -37,5 +36,7 @@ void become_aware(struct monster *m);
 bool is_mimicking(struct monster *m);
 void update_smart_learn(struct monster *m, struct player *p, int flag,
 						int pflag, int element);
+bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon);
+struct monster *choose_nearby_injured_kin(struct chunk *c, const struct monster *mon);
 
 #endif /* MONSTER_UTILITIES_H */
