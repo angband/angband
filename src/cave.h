@@ -139,6 +139,10 @@ struct square {
 	struct trap *trap;
 };
 
+struct heatmap {
+    u16b **grids;
+};
+
 struct chunk {
 	char *name;
 	s32b created_at;
@@ -156,6 +160,8 @@ struct chunk {
 	int *feat_count;
 
 	struct square **squares;
+	struct heatmap noise;
+	struct heatmap scent;
 
 	struct object **objects;
 	u16b obj_max;
@@ -244,6 +250,7 @@ bool feat_is_torch(int feat);
 bool feat_is_bright(int feat);
 bool feat_is_fiery(int feat);
 bool feat_is_no_flow(int feat);
+bool feat_is_no_scent(int feat);
 bool feat_is_smooth(int feat);
 
 /* SQUARE FEATURE PREDICATES */
@@ -305,6 +312,7 @@ bool square_isstrongwall(struct chunk *c, int y, int x);
 bool square_isbright(struct chunk *c, int y, int x);
 bool square_isfiery(struct chunk *c, int y, int x);
 bool square_isnoflow(struct chunk *c, int y, int x);
+bool square_isnoscent(struct chunk *c, int y, int x);
 bool square_iswarded(struct chunk *c, int y, int x);
 bool square_canward(struct chunk *c, int y, int x);
 bool square_seemslikewall(struct chunk *c, int y, int x);

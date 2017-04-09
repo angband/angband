@@ -183,6 +183,86 @@ static void do_cmd_wiz_hack_ben(void)
 
 
 /**
+ * Display in sequence the squares at n grids from the player, as measured by
+ * the flow algorithm; n goes from 1 to max flow depth
+ */
+static void do_cmd_wiz_hack_nick(void)
+{
+	int py = player->py;
+	int px = player->px;
+
+	int i, y, x;
+
+	char kp;
+
+	/* Noise */
+	for (i = 30 - player->state.skills[SKILL_STEALTH]; i > 0; --i) {
+		/* Update map */
+		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
+			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
+				byte a = COLOUR_RED;
+
+				if (!square_in_bounds_fully(cave, y, x)) continue;
+
+				/* Display proper noise */
+				if (cave->noise.grids[y][x] != i) continue;
+
+				/* Display player/floors/walls */
+				if ((y == py) && (x == px))
+					print_rel(L'@', a, y, x);
+				else if (square_ispassable(cave, y, x))
+					print_rel(L'*', a, y, x);
+				else
+					print_rel(L'#', a, y, x);
+			}
+
+		/* Get key */
+		if (!get_com(format("Depth %d: ", i), &kp))
+			break;
+
+		/* Redraw map */
+		prt_map();
+	}
+
+	/* Smell */
+	for (i = z_info->max_flow_depth; i > 0; --i) {
+		/* Update map */
+		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
+			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
+				byte a = COLOUR_YELLOW;
+
+				if (!square_in_bounds_fully(cave, y, x)) continue;
+
+				/* Display proper smell */
+				if (cave->scent.grids[y][x] != i) continue;
+
+				/* Display player/floors/walls */
+				if ((y == py) && (x == px))
+					print_rel(L'@', a, y, x);
+				else if (square_ispassable(cave, y, x))
+					print_rel(L'*', a, y, x);
+				else
+					print_rel(L'#', a, y, x);
+			}
+
+		/* Get key */
+		if (!get_com(format("Depth %d: ", i), &kp))
+			break;
+
+		/* Redraw map */
+		prt_map();
+	}
+
+	/* Done */
+	prt("", 0, 0);
+
+	/* Redraw map */
+	prt_map();
+}
+
+
+
+/**
  * Output part of a bitflag set in binary format.
  */
 static void prt_binary(const bitflag *flags, int offset, int row, int col,
@@ -2391,7 +2471,7 @@ void get_debug_command(void)
 		/* Hack */
 		case '_':
 		{
-			do_cmd_wiz_hack_ben();
+			do_cmd_wiz_hack_nick();
 			break;
 		}
 

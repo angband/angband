@@ -165,6 +165,14 @@ bool feat_is_no_flow(int feat)
 }
 
 /**
+ * True if the feature doesn't carry player scent.
+ */
+bool feat_is_no_scent(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_NO_SCENT);
+}
+
+/**
  * True if the feature should have smooth boundaries (for dungeon generation).
  */
 bool feat_is_smooth(int feat)
@@ -656,6 +664,14 @@ bool square_isfiery(struct chunk *c, int y, int x) {
 bool square_isnoflow(struct chunk *c, int y, int x) {
 	assert(square_in_bounds(c, y, x));
 	return feat_is_no_flow(c->squares[y][x].feat);
+}
+
+/**
+ * True if the cave square doesn't carry player scent.
+ */
+bool square_isnoscent(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return feat_is_no_scent(c->squares[y][x].feat);
 }
 
 bool square_iswarded(struct chunk *c, int y, int x)
