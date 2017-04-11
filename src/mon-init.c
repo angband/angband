@@ -1162,13 +1162,13 @@ static enum parser_error parse_monster_hit_points(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_monster_vision(struct parser *p) {
+static enum parser_error parse_monster_hearing(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	/* Area of action assumes max_sight is 20, so we adjust in case it isn't */
-	r->aaf = parser_getint(p, "aaf") * 20 / z_info->max_sight;
+	r->hearing = parser_getint(p, "hearing") * 20 / z_info->max_sight;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1181,7 +1181,7 @@ static enum parser_error parse_monster_armor_class(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_monster_alertness(struct parser *p) {
+static enum parser_error parse_monster_sleepiness(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
 	if (!r)
@@ -1507,9 +1507,9 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "color sym color", parse_monster_color);
 	parser_reg(p, "speed int speed", parse_monster_speed);
 	parser_reg(p, "hit-points int hp", parse_monster_hit_points);
-	parser_reg(p, "vision int aaf", parse_monster_vision);
+	parser_reg(p, "hearing int hearing", parse_monster_hearing);
 	parser_reg(p, "armor-class int ac", parse_monster_armor_class);
-	parser_reg(p, "alertness int sleep", parse_monster_alertness);
+	parser_reg(p, "sleepiness int sleep", parse_monster_sleepiness);
 	parser_reg(p, "depth int level", parse_monster_depth);
 	parser_reg(p, "rarity int rarity", parse_monster_rarity);
 	parser_reg(p, "experience int mexp", parse_monster_experience);
@@ -2237,8 +2237,14 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "base sym base", parse_lore_base);
 	parser_reg(p, "glyph char glyph", ignored);
 	parser_reg(p, "color sym color", ignored);
-	parser_reg(p, "info int speed int hp int aaf int ac int sleep", ignored);
-	parser_reg(p, "power int level int rarity int mexp", ignored);
+	parser_reg(p, "speed int speed", ignored);
+	parser_reg(p, "hit-points int hp", ignored);
+	parser_reg(p, "hearing int hearing", ignored);
+	parser_reg(p, "armor-class int ac", ignored);
+	parser_reg(p, "sleepiness int sleep", ignored);
+	parser_reg(p, "depth int level", ignored);
+	parser_reg(p, "rarity int rarity", ignored);
+	parser_reg(p, "experience int mexp", ignored);
 	parser_reg(p, "counts int sights int deaths int tkills int wake int ignore int innate int spell", parse_lore_counts);
 	parser_reg(p, "blow sym method ?sym effect ?rand damage ?int seen ?int index", parse_lore_blow);
 	parser_reg(p, "flags ?str flags", parse_lore_flags);

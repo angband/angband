@@ -1240,7 +1240,7 @@ void lore_append_awareness(textblock *tb, const struct monster_race *race,
 		textblock_append(tb, "%s %s intruders, which %s may notice from ",
 						 lore_pronoun_nominative(msex, true), aware,
 						 lore_pronoun_nominative(msex, false));
-		textblock_append_c(tb, COLOUR_L_BLUE, "%d", 10 * race->aaf);
+		textblock_append_c(tb, COLOUR_L_BLUE, "%d", 10 * race->hearing);
 		textblock_append(tb, " feet.  ");
 	}
 }

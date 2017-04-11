@@ -279,7 +279,7 @@ static bool get_moves_flow(struct chunk *c, struct monster *mon)
 
 	/* Monster is too far away to notice the player */
 	if (c->squares[my][mx].noise > z_info->max_flow_depth) return false;
-	if (c->squares[my][mx].noise > mon->race->aaf) return false;
+	if (c->squares[my][mx].noise > mon->race->hearing) return false;
 
 	/* If the player can see monster, set target and run towards them */
 	if (square_isview(c, my, mx)) {
@@ -361,7 +361,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
 
 	/* Monster is too far away to use flow information */
 	if (c->squares[my][mx].noise > z_info->max_flow_depth) return false;
-	if (c->squares[my][mx].noise > mon->race->aaf) return false;
+	if (c->squares[my][mx].noise > mon->race->hearing) return false;
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--) {
@@ -909,10 +909,10 @@ static bool monster_can_flow(struct chunk *c, struct monster *mon)
 
 	assert(c);
 
-	/* Check the flow (normal aaf is about 20) */
+	/* Check the flow (normal hearing is about 20) */
 	if ((c->squares[fy][fx].scent == c->squares[player->py][player->px].scent)
 		&& (c->squares[fy][fx].noise < z_info->max_flow_depth)
-		&& (c->squares[fy][fx].noise < mon->race->aaf)) {
+		&& (c->squares[fy][fx].noise < mon->race->hearing)) {
 		return true;
 	}
 	return false;
@@ -924,7 +924,7 @@ static bool monster_can_flow(struct chunk *c, struct monster *mon)
 static bool monster_check_active(struct chunk *c, struct monster *mon)
 {
 	/* Character is inside scanning range */
-	if (mon->cdis <= mon->race->aaf)
+	if (mon->cdis <= mon->race->hearing)
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 
 	/* Monster is hurt */

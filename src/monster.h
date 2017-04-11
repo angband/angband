@@ -279,7 +279,7 @@ struct monster_race {
 	int ac;					/* Armour Class */
 
 	int sleep;				/* Inactive counter (base) */
-	int aaf;				/* Area affect radius (1-100) */
+	int hearing;			/* Area affect radius (1-100) */
 	int speed;				/* Speed (normally 110) */
 
 	int mexp;				/* Exp value for kill */

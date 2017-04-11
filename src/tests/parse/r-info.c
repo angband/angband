@@ -75,14 +75,14 @@ int test_hp0(void *state) {
 	ok;
 }
 
-int test_aaf0(void *state) {
-	enum parser_error r = parser_parse(state, "vision:80");
+int test_hearing0(void *state) {
+	enum parser_error r = parser_parse(state, "hearing:80");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->aaf, 80);
+	eq(mr->hearing, 80);
 	ok;
 }
 
@@ -98,7 +98,7 @@ int test_ac0(void *state) {
 }
 
 int test_sleep0(void *state) {
-	enum parser_error r = parser_parse(state, "alertness:3");
+	enum parser_error r = parser_parse(state, "sleepiness:3");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -223,7 +223,7 @@ struct test tests[] = {
 	{ "base0", test_base0 },
 	{ "speed0", test_speed0 },
 	{ "hp0", test_hp0 },
-	{ "aaf0", test_aaf0 },
+	{ "hearing0", test_hearing0 },
 	{ "ac0", test_ac0 },
 	{ "sleep0", test_sleep0 },
 	{ "depth0", test_depth0 },
