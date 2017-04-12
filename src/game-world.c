@@ -306,6 +306,136 @@ static void decrease_timeouts(void)
 
 
 /**
+ * Every turn, the character makes enough noise that nearby monsters can use
+ * it to home in.
+ *
+ * Mark the player's grid with the amount of noise they generate this turn,
+ * then fill in the noise field of every grid that the player can
+ * reach with that noise less the number of steps needed to reach that grid.
+ *
+ * Monsters use this information by moving to adjacent grids with
+ * higher noise values, thereby homing in on the player even though
+ * twisty tunnels and mazes.  Monsters can also run away from loud
+ * noises.
+ *
+ * The biggest limitation of this code is that it does not easily
+ * allow for alternate ways around doors (not all monsters can handle
+ * doors) and lava (many monsters are not allowed to enter lava).
+ */
+static void make_noise(struct player *p)
+{
+	int next_y = p->py;
+	int next_x = p->px;
+	int y, x, d;
+	//int noise = p->state.noise;
+	int noise = 30 - p->state.skills[SKILL_STEALTH];
+    struct queue *queue = q_new(cave->height * cave->width);
+
+	/* Set all the grids to silence */
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
+			cave->noise.grids[y][x] = 0;
+		}
+	}
+
+	/* Player makes noise */
+	cave->noise.grids[next_y][next_x] = noise;
+	q_push_int(queue, yx_to_i(next_y, next_x, cave->width));
+
+	/* Propagate noise until it fades out */
+	while (noise > 1) {
+		noise--;
+
+		/* Add the children of currently queued grids */
+		while (q_len(queue) > 0) {
+			/* Get the next grid */
+			i_to_yx(q_pop_int(queue), cave->width, &next_y, &next_x);
+
+			/* If we've reached the current noise level, put it back and step */
+			if (cave->noise.grids[next_y][next_x] == noise) {
+				q_push_int(queue, yx_to_i(next_y, next_x, cave->width));
+				break;
+			}
+
+			/* Assign noise to the children and enqueue them */
+			for (d = 0; d < 8; d++)	{
+				/* Child location */
+				y = next_y + ddy_ddd[d];
+				x = next_x + ddx_ddd[d];
+				if (!square_in_bounds(cave, y, x)) continue;
+
+				/* Ignore features that don't transmit sound */
+				if (square_isnoflow(cave, y, x)) continue;
+
+				/* Skip grids that already have noise */
+				if (cave->noise.grids[y][x] != 0) continue;
+
+				/* Save the noise */
+				cave->noise.grids[y][x] = noise;
+
+				/* Enqueue that entry */
+				q_push_int(queue, yx_to_i(y, x, cave->width));
+			}
+		}
+
+		/* If the queue us empty we're done, otherwise reduce noise again */
+		if (q_len(queue) == 0) break;
+	}
+
+	q_free(queue);
+}
+
+/**
+ * Characters leave scent trails for perceptive monsters to track.
+ *
+ * Scent is rather more limited than sound.  Many creatures cannot use
+ * it at all, it doesn't extend very far outwards from the character's
+ * current position, and monsters can use it to home in the character,
+ * but not to run away.
+ *
+ * Scent is valued according to age.  When a character takes his turn,
+ * scent is aged by one, and new scent is laid down.  Speedy characters
+ * leave more scent, but it also ages faster, which makes it harder
+ * to hunt them down.
+ */
+static void update_scent(void)
+{
+	int y, x;
+	int scent_adjust[5][5] = {
+		{2, 2, 2, 2, 2},
+		{2, 1, 1, 1, 2},
+		{2, 1, 0, 1, 2},
+		{2, 1, 1, 1, 2},
+		{2, 2, 2, 2, 2},
+	};
+
+	/* Update scent for all grids */
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
+			if (cave->scent.grids[y][x] > 0) {
+				cave->scent.grids[y][x]--;
+			}
+		}
+	}
+
+	/* Lay down new scent around the player */
+	for (y = 0; y < 5; y++) {
+		for (x = 0; x < 5; x++) {
+			int scent_y = y + player->py - 2;
+			int scent_x = x + player->px - 2;
+			int scent_strength = z_info->max_flow_depth - scent_adjust[y][x];
+
+			/* Ignore invalid or non-scent-carrying grids */
+			if (!square_in_bounds(cave, scent_y, scent_x)) continue;
+			if (square_isnoscent(cave, scent_y, scent_x)) continue;
+
+			/* Mark the scent */
+			cave->scent.grids[scent_y][scent_x] = scent_strength;
+		}
+	}
+}
+
+/**
  * Handle things that need updating once every 10 game turns
  */
 void process_world(struct chunk *c)
@@ -443,6 +573,10 @@ void process_world(struct chunk *c)
 	/* Process light */
 	player_update_light(player);
 
+	/* Update noise and scent */
+	make_noise(player);
+	update_scent();
+
 
 	/*** Process Inventory ***/
 
@@ -541,136 +675,6 @@ void process_world(struct chunk *c)
 	}
 }
 
-
-/**
- * Every turn, the character makes enough noise that nearby monsters can use
- * it to home in.
- *
- * Mark the player's grid with the amount of noise they generate this turn,
- * then fill in the noise field of every grid that the player can
- * reach with that noise less the number of steps needed to reach that grid.
- *
- * Monsters use this information by moving to adjacent grids with
- * higher noise values, thereby homing in on the player even though
- * twisty tunnels and mazes.  Monsters can also run away from loud
- * noises.
- *
- * The biggest limitation of this code is that it does not easily
- * allow for alternate ways around doors (not all monsters can handle
- * doors) and lava (many monsters are not allowed to enter lava).
- */
-static void make_noise(struct player *p)
-{
-	int next_y = p->py;
-	int next_x = p->px;
-	int y, x, d;
-	//int noise = p->state.noise;
-	int noise = 30 - p->state.skills[SKILL_STEALTH];
-    struct queue *queue = q_new(cave->height * cave->width);
-
-	/* Set all the grids to silence */
-	for (y = 1; y < cave->height - 1; y++) {
-		for (x = 1; x < cave->width - 1; x++) {
-			cave->noise.grids[y][x] = 0;
-		}
-	}
-
-	/* Player makes noise */
-	cave->noise.grids[next_y][next_x] = noise;
-	q_push_int(queue, yx_to_i(next_y, next_x, cave->width));
-
-	/* Propagate noise until it fades out */
-	while (noise > 1) {
-		noise--;
-
-		/* Add the children of currently queued grids */
-		while (q_len(queue) > 0) {
-			/* Get the next grid */
-			i_to_yx(q_pop_int(queue), cave->width, &next_y, &next_x);
-
-			/* If we've reached the current noise level, put it back and step */
-			if (cave->noise.grids[next_y][next_x] == noise) {
-				q_push_int(queue, yx_to_i(next_y, next_x, cave->width));
-				break;
-			}
-
-			/* Assign noise to the children and enqueue them */
-			for (d = 0; d < 8; d++)	{
-				/* Child location */
-				y = next_y + ddy_ddd[d];
-				x = next_x + ddx_ddd[d];
-				if (!square_in_bounds(cave, y, x)) continue;
-
-				/* Ignore features that don't transmit sound */
-				if (square_isnoflow(cave, y, x)) continue;
-
-				/* Skip grids that already have noise */
-				if (cave->noise.grids[y][x] != 0) continue;
-
-				/* Save the noise */
-				cave->noise.grids[y][x] = noise;
-
-				/* Enqueue that entry */
-				q_push_int(queue, yx_to_i(y, x, cave->width));
-			}
-		}
-
-		/* If the queue us empty we're done, otherwise reduce noise again */
-		if (q_len(queue) == 0) break;
-	}
-
-	q_free(queue);
-}
-
-/**
- * Characters leave scent trails for perceptive monsters to track.
- *
- * Smell is rather more limited than sound.  Many creatures cannot use
- * it at all, it doesn't extend very far outwards from the character's
- * current position, and monsters can use it to home in the character,
- * but not to run away.
- *
- * Smell is valued according to age.  When a character takes his turn,
- * scent is aged by one, and new scent is laid down.  Speedy characters
- * leave more scent, but it also ages faster, which makes it harder
- * to hunt them down.
- */
-static void update_smell(void)
-{
-	int y, x;
-	int scent_adjust[5][5] = {
-		{2, 2, 2, 2, 2},
-		{2, 1, 1, 1, 2},
-		{2, 1, 0, 1, 2},
-		{2, 1, 1, 1, 2},
-		{2, 2, 2, 2, 2},
-	};
-
-	/* Update scent for all grids */
-	for (y = 1; y < cave->height - 1; y++) {
-		for (x = 1; x < cave->width - 1; x++) {
-			if (cave->scent.grids[y][x] > 0) {
-				cave->scent.grids[y][x]--;
-			}
-		}
-	}
-
-	/* Lay down new scent around the player */
-	for (y = 0; y < 5; y++) {
-		for (x = 0; x < 5; x++) {
-			int smell_y = y + player->py - 2;
-			int smell_x = x + player->px - 2;
-			int smell_strength = z_info->max_flow_depth - scent_adjust[y][x];
-
-			/* Ignore invalid or non-scent-carrying grids */
-			if (!square_in_bounds(cave, smell_y, smell_x)) continue;
-			if (square_isnoscent(cave, smell_y, smell_x)) continue;
-
-			/* Mark the scent */
-			cave->scent.grids[smell_y][smell_x] = smell_strength;
-		}
-	}
-}
 
 /**
  * Housekeeping after the processing of a player command
@@ -808,10 +812,6 @@ void process_player(void)
 
 	/* Notice stuff (if needed) */
 	notice_stuff(player);
-
-	/* Update noise and scent */
-	make_noise(player);
-	update_smell();
 }
 
 /**

@@ -1167,8 +1167,18 @@ static enum parser_error parse_monster_hearing(struct parser *p) {
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	/* Area of action assumes max_sight is 20, so we adjust in case it isn't */
+	/* Assumes max_sight is 20, so we adjust in case it isn't */
 	r->hearing = parser_getint(p, "hearing") * 20 / z_info->max_sight;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_monster_smell(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	/* Assumes max_sight is 20, so we adjust in case it isn't */
+	r->smell = parser_getint(p, "smell") * 20 / z_info->max_sight;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1508,6 +1518,7 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "speed int speed", parse_monster_speed);
 	parser_reg(p, "hit-points int hp", parse_monster_hit_points);
 	parser_reg(p, "hearing int hearing", parse_monster_hearing);
+	parser_reg(p, "smell int smell", parse_monster_smell);
 	parser_reg(p, "armor-class int ac", parse_monster_armor_class);
 	parser_reg(p, "sleepiness int sleep", parse_monster_sleepiness);
 	parser_reg(p, "depth int level", parse_monster_depth);
@@ -2240,6 +2251,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "speed int speed", ignored);
 	parser_reg(p, "hit-points int hp", ignored);
 	parser_reg(p, "hearing int hearing", ignored);
+	parser_reg(p, "smell int smell", ignored);
 	parser_reg(p, "armor-class int ac", ignored);
 	parser_reg(p, "sleepiness int sleep", ignored);
 	parser_reg(p, "depth int level", ignored);

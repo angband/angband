@@ -878,6 +878,7 @@ static struct monster_race TEST_DATA test_r_human = {
 	.ac = 12,
 	.sleep = 0,
 	.hearing = 20,
+	.smell = 20,
 	.speed = 110,
 	.mexp = 50,
 	.freq_innate = 0,

@@ -86,6 +86,17 @@ int test_hearing0(void *state) {
 	ok;
 }
 
+int test_smell0(void *state) {
+	enum parser_error r = parser_parse(state, "smell:30");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	eq(mr->smell, 30);
+	ok;
+}
+
 int test_ac0(void *state) {
 	enum parser_error r = parser_parse(state, "armor-class:22");
 	struct monster_race *mr;
@@ -224,6 +235,7 @@ struct test tests[] = {
 	{ "speed0", test_speed0 },
 	{ "hp0", test_hp0 },
 	{ "hearing0", test_hearing0 },
+	{ "smell0", test_smell0 },
 	{ "ac0", test_ac0 },
 	{ "sleep0", test_sleep0 },
 	{ "depth0", test_depth0 },

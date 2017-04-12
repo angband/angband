@@ -279,7 +279,8 @@ struct monster_race {
 	int ac;					/* Armour Class */
 
 	int sleep;				/* Inactive counter (base) */
-	int hearing;			/* Area affect radius (1-100) */
+	int hearing;			/* Monster sense of hearing (1-100, standard 20) */
+	int smell;				/* Monster sense of smell (0-50, standard 20) */
 	int speed;				/* Speed (normally 110) */
 
 	int mexp;				/* Exp value for kill */
