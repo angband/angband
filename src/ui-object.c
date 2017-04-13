@@ -398,7 +398,7 @@ static void show_obj_list(olist_detail_t mode)
 	/* For the inventory: print the quiver count */
 	if (mode & OLIST_QUIVER) {
 		int count, j;
-		int quiver_slots = (player->upkeep->quiver_cnt + z_info->stack_size - 1) / z_info->stack_size;
+		int quiver_slots = (player->upkeep->quiver_cnt + z_info->quiver_slot_size - 1) / z_info->quiver_slot_size;
 
 		/* Quiver may take multiple lines */
 		for (j = 0; j < quiver_slots; j++, i++) {
@@ -407,9 +407,9 @@ static void show_obj_list(olist_detail_t mode)
 
 			/* Number of missiles in this "slot" */
 			if (j == quiver_slots - 1)
-				count = player->upkeep->quiver_cnt - (z_info->stack_size * (quiver_slots - 1));
+				count = player->upkeep->quiver_cnt - (z_info->quiver_slot_size * (quiver_slots - 1));
 			else
-				count = z_info->stack_size;
+				count = z_info->quiver_slot_size;
 
 			/* Clear the line */
 			prt("", row + i, MAX(col - 2, 0));
@@ -942,8 +942,8 @@ static void item_menu_browser(int oid, void *data, const region *local_area)
 {
 	char tmp_val[80];
 	int count, j, i = num_obj;
-	int quiver_slots = (player->upkeep->quiver_cnt + z_info->stack_size - 1)
-		/ z_info->stack_size;
+	int quiver_slots = (player->upkeep->quiver_cnt + z_info->quiver_slot_size - 1)
+		/ z_info->quiver_slot_size;
 
 	/* Set up to output below the menu */
 	text_out_hook = text_out_to_screen;
@@ -962,10 +962,10 @@ static void item_menu_browser(int oid, void *data, const region *local_area)
 
 			/* Number of missiles in this "slot" */
 			if (j == quiver_slots - 1)
-				count = player->upkeep->quiver_cnt - (z_info->stack_size *
+				count = player->upkeep->quiver_cnt - (z_info->quiver_slot_size *
 													  (quiver_slots - 1));
 			else
-				count = z_info->stack_size;
+				count = z_info->quiver_slot_size;
 
 			/* Print the (disabled) label */
 			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);

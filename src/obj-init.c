@@ -448,6 +448,8 @@ static enum parser_error parse_object_base_defaults(struct parser *p) {
 
 	if (streq(label, "break-chance"))
 		d->defaults.break_perc = value;
+	else if (streq(label, "max-stack"))
+		d->defaults.max_stack = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -509,6 +511,19 @@ static enum parser_error parse_object_base_break(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_object_base_max_stack(struct parser *p) {
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	struct object_base *kb = d->kb;
+	assert(kb);
+
+	kb->max_stack = parser_getint(p, "size");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_object_base_flags(struct parser *p) {
 	struct object_base *kb;
 	char *s, *t;
@@ -548,6 +563,7 @@ struct parser *init_parse_object_base(void) {
 	parser_reg(p, "name sym tval ?str name", parse_object_base_name);
 	parser_reg(p, "graphics sym color", parse_object_base_graphics);
 	parser_reg(p, "break int breakage", parse_object_base_break);
+	parser_reg(p, "max-stack int size", parse_object_base_max_stack);
 	parser_reg(p, "flags str flags", parse_object_base_flags);
 	return p;
 }

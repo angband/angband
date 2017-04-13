@@ -713,7 +713,7 @@ static void mass_produce(struct object *obj)
 	}
 
 	/* Save the total pile size */
-	obj->number = size;
+	obj->number = MIN(size, obj->kind->base->max_stack);
 }
 
 
@@ -759,7 +759,7 @@ static void store_object_absorb(struct object *old, struct object *new)
 	int total = old->number + new->number;
 
 	/* Combine quantity, lose excess items */
-	old->number = (total > z_info->stack_size) ? z_info->stack_size : total;
+	old->number = MIN(total, old->kind->base->max_stack);
 
 	/* If rods are stacking, add the charging timeouts */
 	if (tval_can_have_timeout(old))
@@ -1291,8 +1291,8 @@ static void store_maint(struct store *s)
 				obj = store_create_item(s, kind);
 
 			/* Ensure a full stack */
-			obj->number = z_info->stack_size;
-			obj->known->number = z_info->stack_size;
+			obj->number = obj->kind->base->max_stack;
+			obj->known->number = obj->kind->base->max_stack;
 		}
 	}
 
