@@ -30,6 +30,9 @@ extern const s16b ddx[10];
 extern const s16b ddy[10];
 extern const s16b ddx_ddd[9];
 extern const s16b ddy_ddd[9];
+extern const int *dist_offsets_y[10];
+extern const int *dist_offsets_x[10];
+extern const byte side_dirs[20][8];
 
 /**
  * Square flags

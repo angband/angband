@@ -47,40 +47,6 @@
 
 
 /**
- * Given a central direction at position [dir #][0], return a series
- * of directions radiating out on both sides from the central direction
- * all the way back to its rear.
- *
- * Side directions come in pairs; for example, directions '1' and '3'
- * flank direction '2'.  The code should know which side to consider
- * first.  If the left, it must add 10 to the central direction to
- * access the second part of the table.
- */
-static byte side_dirs[20][8] = {
-	{0, 0, 0, 0, 0, 0, 0, 0},	/* bias right */
-	{1, 4, 2, 7, 3, 8, 6, 9},
-	{2, 1, 3, 4, 6, 7, 9, 8},
-	{3, 2, 6, 1, 9, 4, 8, 7},
-	{4, 7, 1, 8, 2, 9, 3, 6},
-	{5, 5, 5, 5, 5, 5, 5, 5},
-	{6, 3, 9, 2, 8, 1, 7, 4},
-	{7, 8, 4, 9, 1, 6, 2, 3},
-	{8, 9, 7, 6, 4, 3, 1, 2},
-	{9, 6, 8, 3, 7, 2, 4, 1},
-
-	{0, 0, 0, 0, 0, 0, 0, 0},	/* bias left */
-	{1, 2, 4, 3, 7, 6, 8, 9},
-	{2, 3, 1, 6, 4, 9, 7, 8},
-	{3, 6, 2, 9, 1, 8, 4, 7},
-	{4, 1, 7, 2, 8, 3, 9, 6},
-	{5, 5, 5, 5, 5, 5, 5, 5},
-	{6, 9, 3, 8, 2, 7, 1, 4},
-	{7, 4, 8, 1, 9, 2, 6, 3},
-	{8, 7, 9, 4, 6, 1, 3, 2},
-	{9, 8, 6, 7, 3, 4, 2, 1}
-};
-
-/**
  * Calculate minimum and desired combat ranges.  -BR-
  */
 static void find_range(struct monster *mon)
@@ -93,12 +59,13 @@ static void find_range(struct monster *mon)
 	/* Monsters will run up to z_info->flee_range grids out of sight */
 	int flee_range = z_info->max_sight + z_info->flee_range;
 
+	bool breathes = flags_test(mon->race->spell_flags, RSF_SIZE,
+							   RSF_BREATH_MASK, FLAG_END);
+
 	/* All "afraid" monsters will run away */
-	if (mon->m_timed[MON_TMD_FEAR])
+	if (mon->m_timed[MON_TMD_FEAR]) {
 		mon->min_range = flee_range;
-
-	else {
-
+	} else {
 		/* Minimum distance - stay at least this far if possible */
 		mon->min_range = 1;
 
@@ -111,9 +78,9 @@ static void find_range(struct monster *mon)
 		m_lev = mon->race->level + (mon->midx & 0x08) + 25;
 
 		/* Simple cases first */
-		if (m_lev + 3 < p_lev)
+		if (m_lev + 3 < p_lev) {
 			mon->min_range = flee_range;
-		else if (m_lev - 5 < p_lev) {
+		} else if (m_lev - 5 < p_lev) {
 
 			/* Examine player health */
 			p_chp = player->chp;
@@ -144,12 +111,12 @@ static void find_range(struct monster *mon)
 	}
 
 	/* Maximum range to flee to */
-	if (!(mon->min_range < flee_range))
+	if (!(mon->min_range < flee_range)) {
 		mon->min_range = flee_range;
-
-	/* Nearby monsters won't run away */
-	else if (mon->cdis < z_info->turn_range)
+	} else if (mon->cdis < z_info->turn_range) {
+		/* Nearby monsters won't run away */
 		mon->min_range = 1;
+	}
 
 	/* Now find preferred range */
 	mon->best_range = mon->min_range;
@@ -160,14 +127,12 @@ static void find_range(struct monster *mon)
 
 	if (mon->race->freq_spell > 24) {
 		/* Breathers like point blank range */
-		if (flags_test(mon->race->spell_flags, RSF_SIZE, RSF_BREATH_MASK,
-					   FLAG_END)
-			&& (mon->best_range < 6) && (mon->hp > mon->maxhp / 2))
+		if (breathes && (mon->best_range < 6) && (mon->hp > mon->maxhp / 2)) {
 			mon->best_range = 6;
-
-		/* Other spell casters will sit back and cast */
-		else
+		} else {
+			/* Other spell casters will sit back and cast */
 			mon->best_range += 3;
+		}
 	}
 }
 
@@ -413,138 +378,6 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
 	return true;
 }
 
-
-
-/*
- * Hack -- Precompute a bunch of calls to distance() in find_safety() and
- * find_hiding().
- *
- * The pair of arrays dist_offsets_y[n] and dist_offsets_x[n] contain the
- * offsets of all the locations with a distance of n from a central point,
- * with an offset of (0,0) indicating no more offsets at this distance.
- *
- * This is, of course, fairly unreadable, but it eliminates multiple loops
- * from the previous version.
- *
- * It is probably better to replace these arrays with code to compute
- * the relevant arrays, even if the storage is pre-allocated in hard
- * coded sizes.  At the very least, code should be included which is
- * able to generate and dump these arrays (ala "los()").  XXX XXX XXX
- *
- * Also, the storage needs could be reduced by using char.  XXX XXX XXX
- */
-
-
-static const int d_off_y_0[] =
-{ 0 };
-
-static const int d_off_x_0[] =
-{ 0 };
-
-
-static const int d_off_y_1[] =
-{ -1, -1, -1, 0, 0, 1, 1, 1, 0 };
-
-static const int d_off_x_1[] =
-{ -1, 0, 1, -1, 1, -1, 0, 1, 0 };
-
-
-static const int d_off_y_2[] =
-{ -1, -1, -2, -2, -2, 0, 0, 1, 1, 2, 2, 2, 0 };
-
-static const int d_off_x_2[] =
-{ -2, 2, -1, 0, 1, -2, 2, -2, 2, -1, 0, 1, 0 };
-
-
-static const int d_off_y_3[] =
-{ -1, -1, -2, -2, -3, -3, -3, 0, 0, 1, 1, 2, 2,
-  3, 3, 3, 0 };
-
-static const int d_off_x_3[] =
-{ -3, 3, -2, 2, -1, 0, 1, -3, 3, -3, 3, -2, 2,
-  -1, 0, 1, 0 };
-
-
-static const int d_off_y_4[] =
-{ -1, -1, -2, -2, -3, -3, -3, -3, -4, -4, -4, 0,
-  0, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 0 };
-
-static const int d_off_x_4[] =
-{ -4, 4, -3, 3, -2, -3, 2, 3, -1, 0, 1, -4, 4,
-  -4, 4, -3, 3, -2, -3, 2, 3, -1, 0, 1, 0 };
-
-
-static const int d_off_y_5[] =
-{ -1, -1, -2, -2, -3, -3, -4, -4, -4, -4, -5, -5,
-  -5, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5,
-  5, 0 };
-
-static const int d_off_x_5[] =
-{ -5, 5, -4, 4, -4, 4, -2, -3, 2, 3, -1, 0, 1,
-  -5, 5, -5, 5, -4, 4, -4, 4, -2, -3, 2, 3, -1,
-  0, 1, 0 };
-
-
-static const int d_off_y_6[] =
-{ -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -5, -5,
-  -6, -6, -6, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
-  5, 5, 6, 6, 6, 0 };
-
-static const int d_off_x_6[] =
-{ -6, 6, -5, 5, -5, 5, -4, 4, -2, -3, 2, 3, -1,
-  0, 1, -6, 6, -6, 6, -5, 5, -5, 5, -4, 4, -2,
-  -3, 2, 3, -1, 0, 1, 0 };
-
-
-static const int d_off_y_7[] =
-{ -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -5, -5,
-  -6, -6, -6, -6, -7, -7, -7, 0, 0, 1, 1, 2, 2, 3,
-  3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 0 };
-
-static const int d_off_x_7[] =
-{ -7, 7, -6, 6, -6, 6, -5, 5, -4, -5, 4, 5, -2,
-  -3, 2, 3, -1, 0, 1, -7, 7, -7, 7, -6, 6, -6,
-  6, -5, 5, -4, -5, 4, 5, -2, -3, 2, 3, -1, 0,
-  1, 0 };
-
-
-static const int d_off_y_8[] =
-{ -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -6, -6,
-  -6, -6, -7, -7, -7, -7, -8, -8, -8, 0, 0, 1, 1,
-  2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7,
-  8, 8, 8, 0 };
-
-static const int d_off_x_8[] =
-{ -8, 8, -7, 7, -7, 7, -6, 6, -6, 6, -4, -5, 4,
-  5, -2, -3, 2, 3, -1, 0, 1, -8, 8, -8, 8, -7,
-  7, -7, 7, -6, 6, -6, 6, -4, -5, 4, 5, -2, -3,
-  2, 3, -1, 0, 1, 0 };
-
-
-static const int d_off_y_9[] =
-{ -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -6, -6,
-  -7, -7, -7, -7, -8, -8, -8, -8, -9, -9, -9, 0,
-  0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 7,
-  7, 8, 8, 8, 8, 9, 9, 9, 0 };
-
-static const int d_off_x_9[] =
-{ -9, 9, -8, 8, -8, 8, -7, 7, -7, 7, -6, 6, -4,
-  -5, 4, 5, -2, -3, 2, 3, -1, 0, 1, -9, 9, -9,
-  9, -8, 8, -8, 8, -7, 7, -7, 7, -6, 6, -4, -5,
-  4, 5, -2, -3, 2, 3, -1, 0, 1, 0 };
-
-
-static const int *dist_offsets_y[10] =
-{
-	d_off_y_0, d_off_y_1, d_off_y_2, d_off_y_3, d_off_y_4,
-	d_off_y_5, d_off_y_6, d_off_y_7, d_off_y_8, d_off_y_9
-};
-
-static const int *dist_offsets_x[10] =
-{
-	d_off_x_0, d_off_x_1, d_off_x_2, d_off_x_3, d_off_x_4,
-	d_off_x_5, d_off_x_6, d_off_x_7, d_off_x_8, d_off_x_9
-};
 
 
 /**
