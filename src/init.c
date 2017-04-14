@@ -500,10 +500,10 @@ static enum parser_error parse_constants_carry_cap(struct parser *p) {
 		z->pack_size = value;
 	else if (streq(label, "quiver-size"))
 		z->quiver_size = value;
+	else if (streq(label, "quiver-slot-size"))
+		z->quiver_slot_size = value;
 	else if (streq(label, "floor-size"))
 		z->floor_size = value;
-	else if (streq(label, "stack-size"))
-		z->stack_size = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

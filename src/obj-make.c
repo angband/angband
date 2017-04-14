@@ -1133,8 +1133,8 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	if (kind->gen_mult_prob >= randint1(100))
 		new_obj->number = randcalc(kind->stack_size, lev, RANDOMISE);
 
-	if (new_obj->number > z_info->stack_size)
-		new_obj->number = z_info->stack_size;
+	if (new_obj->number > new_obj->kind->base->max_stack)
+		new_obj->number = new_obj->kind->base->max_stack;
 
 	/* Get the value */
 	if (value)

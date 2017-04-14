@@ -182,10 +182,10 @@ int pack_slots_used(struct player *p)
 	}
 
 	/* Full slots */
-	pack_slots += quiver_ammo / z_info->stack_size;
+	pack_slots += quiver_ammo / z_info->quiver_slot_size;
 
 	/* Plus one for any remainder */
-	if (quiver_ammo % z_info->stack_size) {
+	if (quiver_ammo % z_info->quiver_slot_size) {
 		pack_slots++;
 	}
 
@@ -494,20 +494,20 @@ static int quiver_absorb_num(const struct object *obj)
 			if (quiver_obj) {
 				quiver_count += quiver_obj->number;
 				if (object_stackable(quiver_obj, obj, OSTACK_PACK))
-					space_free += z_info->stack_size - quiver_obj->number;
+					space_free += z_info->quiver_slot_size - quiver_obj->number;
 			} else {
-				space_free += z_info->stack_size;
+				space_free += z_info->quiver_slot_size;
 			}
 		}
 
 		if (space_free) {
 			/* Check we won't need another pack slot */
-			quiver_count += z_info->stack_size;
-			while (quiver_count > z_info->stack_size)
-				quiver_count -= z_info->stack_size;
+			quiver_count += z_info->quiver_slot_size;
+			while (quiver_count > z_info->quiver_slot_size)
+				quiver_count -= z_info->quiver_slot_size;
 
 			/* Return the number, or the number that will fit */
-			space_free = MIN(space_free, z_info->stack_size - quiver_count);
+			space_free = MIN(space_free, z_info->quiver_slot_size - quiver_count);
 			return MIN(obj->number, space_free);
 		}
 	}
@@ -553,7 +553,7 @@ int inven_carry_num(const struct object *obj, bool stack)
 		for (i = 0; i < z_info->pack_size; i++) {
 			struct object *inven_obj = player->upkeep->inven[i];
 			if (inven_obj && object_stackable(inven_obj, obj, OSTACK_PACK)) {
-				num_left -= z_info->stack_size - inven_obj->number;
+				num_left -= inven_obj->kind->base->max_stack - inven_obj->number;
 			}
 		}
 
@@ -889,7 +889,6 @@ void inven_drop(struct object *obj, int amt)
 }
 
 
-
 /**
  * Return whether each stack of objects can be merged into two uneven stacks.
  */
@@ -899,14 +898,15 @@ static bool inven_can_stack_partial(const struct object *obj1,
 {
 	if (!(mode & OSTACK_STORE)) {
 		int total = obj1->number + obj2->number;
-		int remainder = total - (z_info->stack_size);
+		int remainder = total - obj1->kind->base->max_stack;
 
-		if (remainder > z_info->stack_size)
+		if (remainder > obj1->kind->base->max_stack)
 			return false;
 	}
 
 	return object_stackable(obj1, obj2, mode);
 }
+
 
 /**
  * Combine items in the pack, confirming no blank objects or gold

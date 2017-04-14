@@ -143,6 +143,7 @@ struct object_base {
 	struct element_info el_info[ELEM_MAX];
 
 	int break_perc;
+	int max_stack;
 	int num_svals;
 };
 

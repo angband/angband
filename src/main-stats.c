@@ -547,7 +547,7 @@ static int stats_dump_objects(void)
 
 		err = sqlite3_bind_int(info_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 2, kind->name, 
+		err = sqlite3_bind_text(info_stmt, 2, kind->name,
 			strlen(kind->name), SQLITE_STATIC);
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 13, 2,
