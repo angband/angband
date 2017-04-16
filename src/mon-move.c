@@ -137,42 +137,6 @@ static void find_range(struct monster *mon)
 }
 
 
-/**
- * Lets the given monster attempt to reproduce.
- *
- * Note that "reproduction" REQUIRES empty space.
- *
- * Returns true if the monster successfully reproduced.
- */
-bool multiply_monster(const struct monster *mon)
-{
-	int i, y, x;
-
-	bool result = false;
-
-	/* Try up to 18 times */
-	for (i = 0; i < 18; i++) {
-		int d = 1;
-
-		/* Pick a location */
-		scatter(cave, &y, &x, mon->fy, mon->fx, d, true);
-
-		/* Require an "empty" floor grid */
-		if (!square_isempty(cave, y, x)) continue;
-
-		/* Create a new monster (awake, no groups) */
-		result = place_new_monster(cave, y, x, mon->race, false, false,
-			ORIGIN_DROP_BREED);
-
-		/* Done */
-		break;
-	}
-
-	/* Result */
-	return (result);
-}
-
-
 /* From Will Asher in DJA:
  * Find whether a monster is near a permanent wall
  * this decides whether PASS_WALL & KILL_WALL monsters 
@@ -735,143 +699,41 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 	return (true);
 }
 
-static bool monster_can_flow(struct chunk *c, struct monster *mon)
-{
-	int fy = mon->fy;
-	int fx = mon->fx;
-
-	assert(c);
-
-	/* Check the flow (normal hearing is about 20) */
-	if ((c->squares[fy][fx].scent == c->squares[player->py][player->px].scent)
-		&& (c->squares[fy][fx].noise < z_info->max_flow_depth)
-		&& (c->squares[fy][fx].noise < mon->race->hearing)) {
-		return true;
-	}
-	return false;
-}
-
 /**
- * Determine whether a monster is active or passive
- */
-static bool monster_check_active(struct chunk *c, struct monster *mon)
-{
-	/* Character is inside scanning range */
-	if (mon->cdis <= mon->race->hearing)
-		mflag_on(mon->mflag, MFLAG_ACTIVE);
-
-	/* Monster is hurt */
-	else if (mon->hp < mon->maxhp)
-		mflag_on(mon->mflag, MFLAG_ACTIVE);
-
-	/* Monster can "see" the player (checked backwards) */
-	else if (square_isview(c, mon->fy, mon->fx))
-		mflag_on(mon->mflag, MFLAG_ACTIVE);
-
-	/* Monster can "smell" the player from far away (flow) */
-	else if (monster_can_flow(c, mon))
-		mflag_on(mon->mflag, MFLAG_ACTIVE);
-
-	/* Otherwise go passive */
-	else
-		mflag_off(mon->mflag, MFLAG_ACTIVE);
-
-	return mflag_has(mon->mflag, MFLAG_ACTIVE) ? true : false;
-}
-
-/**
- * Process a monster's timed effects, e.g. decrease them.
+ * Lets the given monster attempt to reproduce.
  *
- * Returns true if the monster is skipping its turn.
+ * Note that "reproduction" REQUIRES empty space.
+ *
+ * Returns true if the monster successfully reproduced.
  */
-static bool process_monster_timed(struct chunk *c, struct monster *mon)
+bool multiply_monster(const struct monster *mon)
 {
-	struct monster_lore *lore = get_lore(mon->race);
+	int i, y, x;
 
-	/* Handle "sleep" */
-	if (mon->m_timed[MON_TMD_SLEEP]) {
-		bool woke_up = false;
+	bool result = false;
 
-		/* Anti-stealth */
-		int notice = randint0(1024);
+	/* Try up to 18 times */
+	for (i = 0; i < 18; i++) {
+		int d = 1;
 
-		/* Aggravation */
-		if (player_of_has(player, OF_AGGRAVATE)) {
-			char m_name[80];
+		/* Pick a location */
+		scatter(cave, &y, &x, mon->fy, mon->fx, d, true);
 
-			/* Wake the monster */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+		/* Require an "empty" floor grid */
+		if (!square_isempty(cave, y, x)) continue;
 
-			/* Get the monster name */
-			monster_desc(m_name, sizeof(m_name), mon,
-						 MDESC_CAPITAL | MDESC_IND_HID);
+		/* Create a new monster (awake, no groups) */
+		result = place_new_monster(cave, y, x, mon->race, false, false,
+			ORIGIN_DROP_BREED);
 
-			/* Notify the player if aware */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-				!mflag_has(mon->mflag, MFLAG_UNAWARE))
-				msg("%s wakes up.", m_name);
-
-			woke_up = true;
-
-		} else if ((notice * notice * notice) <= player->state.noise) {
-			/* See if monster "notices" player */
-			int d = 1;
-
-			/* Wake up faster near the player */
-			if (mon->cdis < 50) d = (100 / mon->cdis);
-
-			/* Note a complete wakeup */
-			if (mon->m_timed[MON_TMD_SLEEP] <= d) woke_up = true;
-
-			/* Monster wakes up a bit */
-			mon_dec_timed(mon, MON_TMD_SLEEP, d, MON_TMD_FLG_NOTIFY, false);
-
-			/* Update knowledge */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-				!mflag_has(mon->mflag, MFLAG_UNAWARE)) {
-				if (!woke_up && lore->ignore < UCHAR_MAX)
-					lore->ignore++;
-				else if (woke_up && lore->wake < UCHAR_MAX)
-					lore->wake++;
-				lore_update(mon->race, lore);
-			}
-		}
-
-		/* Sleeping monsters don't recover in any other ways */
-		/* If the monster just woke up, then it doesn't act */
-		return true;
+		/* Done */
+		break;
 	}
 
-	if (mon->m_timed[MON_TMD_FAST])
-		mon_dec_timed(mon, MON_TMD_FAST, 1, 0, false);
-
-	if (mon->m_timed[MON_TMD_SLOW])
-		mon_dec_timed(mon, MON_TMD_SLOW, 1, 0, false);
-
-	if (mon->m_timed[MON_TMD_HOLD])
-		mon_dec_timed(mon, MON_TMD_HOLD, 1, 0, false);
-
-	if (mon->m_timed[MON_TMD_STUN])
-		mon_dec_timed(mon, MON_TMD_STUN, 1, MON_TMD_FLG_NOTIFY, false);
-
-	if (mon->m_timed[MON_TMD_CONF]) {
-		mon_dec_timed(mon, MON_TMD_CONF, 1, MON_TMD_FLG_NOTIFY, false);
-	}
-
-	if (mon->m_timed[MON_TMD_FEAR]) {
-		int d = randint1(mon->race->level / 10 + 1);
-		mon_dec_timed(mon, MON_TMD_FEAR, d, MON_TMD_FLG_NOTIFY, false);
-	}
-
-	/* One in __ chance of missing turn if stunned; always miss if held */
-	if (mon->m_timed[MON_TMD_STUN]) {
-		return randint0(STUN_MISS_CHANCE) == 1;
-	} else if (mon->m_timed[MON_TMD_HOLD]) {
-		return true;
-	} else {
-		return false;
-	}
+	/* Result */
+	return (result);
 }
+
 
 /**
  * Attempt to reproduce, if possible.  All monsters are checked here for
@@ -1366,6 +1228,144 @@ static void process_monster(struct chunk *c, struct monster *mon)
 		become_aware(mon);
 }
 
+
+static bool monster_can_flow(struct chunk *c, struct monster *mon)
+{
+	int fy = mon->fy;
+	int fx = mon->fx;
+
+	assert(c);
+
+	/* Check the flow (normal hearing is about 20) */
+	if ((c->squares[fy][fx].scent == c->squares[player->py][player->px].scent)
+		&& (c->squares[fy][fx].noise < z_info->max_flow_depth)
+		&& (c->squares[fy][fx].noise < mon->race->hearing)) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Determine whether a monster is active or passive
+ */
+static bool monster_check_active(struct chunk *c, struct monster *mon)
+{
+	/* Character is inside scanning range */
+	if (mon->cdis <= mon->race->hearing)
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
+
+	/* Monster is hurt */
+	else if (mon->hp < mon->maxhp)
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
+
+	/* Monster can "see" the player (checked backwards) */
+	else if (square_isview(c, mon->fy, mon->fx))
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
+
+	/* Monster can "smell" the player from far away (flow) */
+	else if (monster_can_flow(c, mon))
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
+
+	/* Otherwise go passive */
+	else
+		mflag_off(mon->mflag, MFLAG_ACTIVE);
+
+	return mflag_has(mon->mflag, MFLAG_ACTIVE) ? true : false;
+}
+
+/**
+ * Process a monster's timed effects, e.g. decrease them.
+ *
+ * Returns true if the monster is skipping its turn.
+ */
+static bool process_monster_timed(struct chunk *c, struct monster *mon)
+{
+	struct monster_lore *lore = get_lore(mon->race);
+
+	/* Handle "sleep" */
+	if (mon->m_timed[MON_TMD_SLEEP]) {
+		bool woke_up = false;
+
+		/* Anti-stealth */
+		int notice = randint0(1024);
+
+		/* Aggravation */
+		if (player_of_has(player, OF_AGGRAVATE)) {
+			char m_name[80];
+
+			/* Wake the monster */
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+
+			/* Get the monster name */
+			monster_desc(m_name, sizeof(m_name), mon,
+						 MDESC_CAPITAL | MDESC_IND_HID);
+
+			/* Notify the player if aware */
+			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
+				!mflag_has(mon->mflag, MFLAG_UNAWARE))
+				msg("%s wakes up.", m_name);
+
+			woke_up = true;
+
+		} else if ((notice * notice * notice) <= player->state.noise) {
+			/* See if monster "notices" player */
+			int d = 1;
+
+			/* Wake up faster near the player */
+			if (mon->cdis < 50) d = (100 / mon->cdis);
+
+			/* Note a complete wakeup */
+			if (mon->m_timed[MON_TMD_SLEEP] <= d) woke_up = true;
+
+			/* Monster wakes up a bit */
+			mon_dec_timed(mon, MON_TMD_SLEEP, d, MON_TMD_FLG_NOTIFY, false);
+
+			/* Update knowledge */
+			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
+				!mflag_has(mon->mflag, MFLAG_UNAWARE)) {
+				if (!woke_up && lore->ignore < UCHAR_MAX)
+					lore->ignore++;
+				else if (woke_up && lore->wake < UCHAR_MAX)
+					lore->wake++;
+				lore_update(mon->race, lore);
+			}
+		}
+
+		/* Sleeping monsters don't recover in any other ways */
+		/* If the monster just woke up, then it doesn't act */
+		return true;
+	}
+
+	if (mon->m_timed[MON_TMD_FAST])
+		mon_dec_timed(mon, MON_TMD_FAST, 1, 0, false);
+
+	if (mon->m_timed[MON_TMD_SLOW])
+		mon_dec_timed(mon, MON_TMD_SLOW, 1, 0, false);
+
+	if (mon->m_timed[MON_TMD_HOLD])
+		mon_dec_timed(mon, MON_TMD_HOLD, 1, 0, false);
+
+	if (mon->m_timed[MON_TMD_STUN])
+		mon_dec_timed(mon, MON_TMD_STUN, 1, MON_TMD_FLG_NOTIFY, false);
+
+	if (mon->m_timed[MON_TMD_CONF]) {
+		mon_dec_timed(mon, MON_TMD_CONF, 1, MON_TMD_FLG_NOTIFY, false);
+	}
+
+	if (mon->m_timed[MON_TMD_FEAR]) {
+		int d = randint1(mon->race->level / 10 + 1);
+		mon_dec_timed(mon, MON_TMD_FEAR, d, MON_TMD_FLG_NOTIFY, false);
+	}
+
+	/* One in __ chance of missing turn if stunned; always miss if held */
+	if (mon->m_timed[MON_TMD_STUN]) {
+		return randint0(STUN_MISS_CHANCE) == 1;
+	} else if (mon->m_timed[MON_TMD_HOLD]) {
+		return true;
+	} else {
+		return false;
+	}
+}
 
 /**
  * Monster regeneration of HPs.

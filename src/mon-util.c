@@ -262,7 +262,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	fy = mon->fy;
 	fx = mon->fx;
 
-	/* Compute distance */
+	/* Compute distance, or just use the current one */
 	if (full) {
 		/* Distance components */
 		int dy = (py > fy) ? (py - fy) : (fy - py);
@@ -276,10 +276,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 		/* Save the distance */
 		mon->cdis = d;
-	}
-
-	/* Extract distance */
-	else {
+	} else {
 		/* Extract the distance */
 		d = mon->cdis;
 	}
@@ -288,23 +285,17 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	if (mflag_has(mon->mflag, MFLAG_MARK)) flag = true;
 
 	/* Check if telepathy works */
-	if (square_isno_esp(c, fy, fx) ||
-		square_isno_esp(c, py, px))
+	if (square_isno_esp(c, fy, fx) || square_isno_esp(c, py, px))
 		telepathy_ok = false;
 
 	/* Nearby */
 	if (d <= z_info->max_sight) {
 		/* Basic telepathy */
 		if (player_of_has(player, OF_TELEPATHY) && telepathy_ok) {
-			/* Empty mind, no telepathy */
-			if (rf_has(mon->race->flags, RF_EMPTY_MIND))
-			{
-				/* Nothing! */
-			}
-
-			/* Weird mind, occasional telepathy */
-			else if (rf_has(mon->race->flags, RF_WEIRD_MIND)) {
-				/* One in ten individuals are detectable */
+			if (rf_has(mon->race->flags, RF_EMPTY_MIND)) {
+				/* Empty mind, no telepathy */
+			} else if (rf_has(mon->race->flags, RF_WEIRD_MIND)) {
+				/* Weird mind, one in ten individuals are detectable */
 				if ((mon->midx % 10) == 5) {
 					/* Detectable */
 					flag = true;
@@ -312,11 +303,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 					/* Check for LOS so that MFLAG_VIEW is set later */
 					if (square_isview(c, fy, fx)) easy = true;
 				}
-			}
-
-			/* Normal mind, allow telepathy */
-			else {
-				/* Detectable */
+			} else {
+				/* Normal mind, allow telepathy */
 				flag = true;
 
 				/* Check for LOS to that MFLAG_VIEW is set later */
@@ -338,10 +326,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 				}
 			}
 
-			/* See if the monster is emitting light */
-			/*if (rf_has(mon->race->flags, RF_HAS_LIGHT)) easy = flag = true;*/
-
-			/* Use "illumination" */
+			/* Use illumination */
 			if (square_isseen(c, fy, fx)) {
 				/* Learn it emits light */
 				rf_on(lore->flags, RF_HAS_LIGHT);
@@ -349,18 +334,14 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 				/* Learn about invisibility */
 				rf_on(lore->flags, RF_INVISIBLE);
 
-				/* Handle "invisible" monsters */
+				/* Handle invisibility */
 				if (rf_has(mon->race->flags, RF_INVISIBLE)) {
 					/* See invisible */
-					if (player_of_has(player, OF_SEE_INVIS))
-					{
+					if (player_of_has(player, OF_SEE_INVIS)) {
 						/* Easy to see */
 						easy = flag = true;
 					}
-				}
-
-				/* Handle "normal" monsters */
-				else {
+				} else {
 					/* Easy to see */
 					easy = flag = true;
 				}
@@ -375,7 +356,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			easy = flag = false;
 	}
 
-	/* The monster is now visible */
+	/* Is the monster is now visible? */
 	if (flag) {
 		/* Learn about the monster's mind */
 		if (player_of_has(player, OF_TELEPATHY)) {
@@ -404,32 +385,26 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			/* Window stuff */
 			player->upkeep->redraw |= PR_MONLIST;
 		}
-	}
+	} else if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		/* Not visible but was previously seen - treat mimics differently */
+		if (!mon->mimicked_obj || ignore_item_ok(mon->mimicked_obj)) {
+			/* Mark as not visible */
+			mflag_off(mon->mflag, MFLAG_VISIBLE);
 
-	/* The monster is not visible */
-	else {
-		/* It was previously seen */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
-			/* Treat mimics differently */
-			if (!mon->mimicked_obj || ignore_item_ok(mon->mimicked_obj)) {
-				/* Mark as not visible */
-				mflag_off(mon->mflag, MFLAG_VISIBLE);
+			/* Erase the monster */
+			square_light_spot(c, fy, fx);
 
-				/* Erase the monster */
-				square_light_spot(c, fy, fx);
+			/* Update health bar as needed */
+			if (player->upkeep->health_who == mon)
+				player->upkeep->redraw |= (PR_HEALTH);
 
-				/* Update health bar as needed */
-				if (player->upkeep->health_who == mon)
-					player->upkeep->redraw |= (PR_HEALTH);
-
-				/* Window stuff */
-				player->upkeep->redraw |= PR_MONLIST;
-			}
+			/* Window stuff */
+			player->upkeep->redraw |= PR_MONLIST;
 		}
 	}
 
 
-	/* The monster is now easily visible */
+	/* Is the monster is now easily visible? */
 	if (easy) {
 		/* Change */
 		if (!mflag_has(mon->mflag, MFLAG_VIEW)) {
@@ -443,10 +418,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			/* Re-draw monster window */
 			player->upkeep->redraw |= PR_MONLIST;
 		}
-	}
-
-	/* The monster is not easily visible */
-	else {
+	} else {
 		/* Change */
 		if (mflag_has(mon->mflag, MFLAG_VIEW)) {
 			/* Mark as not easily visible */
@@ -538,9 +510,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 	/* Monster 1 */
 	if (m1 > 0) {
+		/* Monster */
 		mon = cave_monster(cave, m1);
-
-		/* Move monster */
 		mon->fy = y2;
 		mon->fx = x2;
 
@@ -553,21 +524,13 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
-	}
-
-	/* Player 1 */
-	else if (m1 < 0) {
-		/* Move player */
+	} else if (m1 < 0) {
+		/* Player */
 		player->py = y2;
 		player->px = x2;
 
-		/* Update the panel */
-		player->upkeep->update |= (PU_PANEL);
-
-		/* Update the visuals (and monster distances) */
-		player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
-
-		/* Update the flow */
+		/* Updates */
+		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);
 		player->upkeep->update |= (PU_UPDATE_FLOW);
 
 		/* Redraw monster list */
@@ -576,9 +539,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 	/* Monster 2 */
 	if (m2 > 0) {
+		/* Monster */
 		mon = cave_monster(cave, m2);
-
-		/* Move monster */
 		mon->fy = y1;
 		mon->fx = x1;
 
@@ -591,21 +553,13 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
-	}
-
-	/* Player 2 */
-	else if (m2 < 0) {
-		/* Move player */
+	} else if (m2 < 0) {
+		/* Player */
 		player->py = y1;
 		player->px = x1;
 
-		/* Update the panel */
-		player->upkeep->update |= (PU_PANEL);
-
-		/* Update the visuals (and monster distances) */
-		player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
-
-		/* Update the flow */
+		/* Updates */
+		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);
 		player->upkeep->update |= (PU_UPDATE_FLOW);
 
 		/* Redraw monster list */
@@ -651,9 +605,9 @@ void become_aware(struct monster *mon)
 			square_excise_object(cave, obj->iy, obj->ix, obj);
 
 			/* Give the object to the monster if appropriate */
-			if (rf_has(mon->race->flags, RF_MIMIC_INV))
+			if (rf_has(mon->race->flags, RF_MIMIC_INV)) {
 				monster_carry(cave, mon, obj);
-			else {
+			} else {
 				/* Otherwise delete the mimicked object */
 				delist_object(cave, obj);
 				object_delete(&obj);
@@ -712,18 +666,20 @@ void update_smart_learn(struct monster *m, struct player *p, int flag,
 
 	/* Learn the flag */
 	if (flag) {
-		if (player_of_has(p, flag))
+		if (player_of_has(p, flag)) {
 			of_on(m->known_pstate.flags, flag);
-		else
+		} else {
 			of_off(m->known_pstate.flags, flag);
+		}
 	}
 
 	/* Learn the pflag */
 	if (pflag) {
-		if (pf_has(player->state.pflags, pflag))
+		if (pf_has(player->state.pflags, pflag)) {
 			of_on(m->known_pstate.pflags, pflag);
-		else
+		} else {
 			of_off(m->known_pstate.pflags, pflag);
+		}
 	}
 
 	/* Learn the element */
