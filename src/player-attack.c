@@ -155,7 +155,7 @@ static int ranged_damage(struct object *missile, struct object *launcher,
  * Check if a monster is debuffed in such a way as to make a critical
  * hit more likely.
  */
-static bool check_debuff(const struct monster *monster)
+static bool is_debuffed(const struct monster *monster)
 {
 	return monster->m_timed[MON_TMD_CONF] > 0 ||
 			monster->m_timed[MON_TMD_HOLD] > 0 ||
@@ -172,13 +172,9 @@ static int critical_shot(const struct player *p,
 		int weight, int plus,
 		int dam, u32b *msg_type)
 {
-	int chance = weight + (p->state.to_h + plus) * 4 + p->lev * 2;
+	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
+	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 4 + p->lev * 2;
 	int power = weight + randint1(500);
-
-	/* Confused, held, stunned, or slowed? Double the chance! */
-	if (check_debuff(monster)) {
-		chance *= 2;
-	}
 
 	if (randint1(5000) > chance) {
 		*msg_type = MSG_SHOOT_HIT;
@@ -208,13 +204,9 @@ static int critical_norm(const struct player *p,
 		int weight, int plus,
 		int dam, u32b *msg_type)
 {
+	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
 	int power = weight + randint1(650);
-	int chance = weight + (p->state.to_h + plus) * 5 + p->lev * 3;
-
-	/* Confused, held, stunned, or slowed? Double the chance! */
-	if (check_debuff(monster)) {
-		chance *= 2;
-	}
+	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 5 + p->lev * 3;
 
 	if (randint1(5000) > chance) {
 		*msg_type = MSG_HIT;

@@ -23,13 +23,14 @@
  * Monster timed effect constants
  */
 #define STUN_MISS_CHANCE		10  /* 1 in __ chance of missing turn when stunned */
-#define STUN_HIT_REDUCTION		25  /* Percentage reduction in accuracy for combat */
-#define STUN_DAM_REDUCTION		25  /* Percentage reduction in damage */
+#define STUN_HIT_REDUCTION		10  /* Percentage reduction in accuracy for combat */
+#define STUN_DAM_REDUCTION		10  /* Percentage reduction in damage */
 
-#define CONF_ERRATIC_CHANCE		20  /* Percentage chance of erratic movement when confused */
+#define CONF_ERRATIC_CHANCE		30  /* Percentage chance of erratic movement when confused */
 #define CONF_HIT_REDUCTION		20  /* Percentage reduction in accuracy for spells */
 #define CONF_RANDOM_CHANCE		2   /* 1 in __ chance of an aimed spell going in random direction */
 
+#define DEBUFF_CRITICAL_HIT		10  /* Effective increase in to-hit for critical hit calcs */
 
 /**
  * Monster Timed Effects

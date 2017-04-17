@@ -72,13 +72,10 @@ int mon_timed_name_to_idx(const char *name)
  */
 static bool saving_throw(const struct monster *mon, int effect_type, int timer, int flag)
 {
-	/* Calculate the chance of the monster making its saving throw. */
-	/* Hack - sleep uses much bigger numbers */
-	if (effect_type == MON_TMD_SLEEP) {
-		timer /= 25;
-	}
-
-	int resist_chance = mon->race->level + 40 - (timer / 2);
+	int resist_chance = MIN(
+								90,
+								mon->race->level + MAX(0, 25 - timer / 2)
+						   );
 
 	/* Uniques are doubly hard to affect */
 	if (rf_has(mon->race->flags, RF_UNIQUE)) {
