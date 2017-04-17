@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "game-input.h"
 #include "mon-desc.h"
+#include "mon-predicate.h"
 
 /**
  * Perform simple English pluralization on a monster name.
@@ -112,7 +113,7 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 
 	/* Can we see it? (forced, or not hidden + visible) */
 	bool seen = (mode & MDESC_SHOW) ||
-			(!(mode & MDESC_HIDE) && mflag_has(mon->mflag, MFLAG_VISIBLE));
+		(!(mode & MDESC_HIDE) && monster_is_visible(mon));
 
 	/* Sexed pronouns (seen and forced, or unseen and allowed) */
 	bool use_pronoun = (seen && (mode & MDESC_PRO_VIS)) ||

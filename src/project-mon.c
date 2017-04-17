@@ -24,6 +24,7 @@
 #include "mon-make.h"
 #include "mon-move.h"
 #include "mon-msg.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
@@ -729,7 +730,7 @@ static void project_monster_handler_MON_DRAIN(project_monster_handler_context_t 
 		rf_on(context->lore->flags, RF_UNDEAD);
 		rf_on(context->lore->flags, RF_DEMON);
 	}
-	if (monster_is_nonliving(context->mon->race)) {
+	if (monster_is_nonliving(context->mon)) {
 		context->hurt_msg = MON_MSG_UNAFFECTED;
 		context->obvious = false;
 		context->dam = 0;
@@ -798,7 +799,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		delete_monster_idx(m_idx);
 
 		mon_died = true;
-	} else if (!is_mimicking(mon)) {
+	} else if (!monster_is_mimicking(mon)) {
 		/* Give detailed messages if visible or destroyed */
 		if ((hurt_msg != MON_MSG_NONE) && seen)
 			add_monster_message(mon, hurt_msg, false);
@@ -1066,7 +1067,7 @@ void project_m(struct source origin, int r, int y, int x,
 	context.lore = lore;
 
 	/* See visible monsters */
-	if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+	if (monster_is_visible(mon)) {
 		seen = true;
 		context.seen = seen;
 	}
@@ -1082,7 +1083,7 @@ void project_m(struct source origin, int r, int y, int x,
 	}
 
 	/* Some monsters get "destroyed" */
-	if (monster_is_unusual(mon->race))
+	if (monster_is_destroyed(mon))
 		context.die_msg = MON_MSG_DESTROYED;
 
 	/* Force obviousness for certain types if seen. */

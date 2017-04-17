@@ -27,6 +27,7 @@
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-msg.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-summon.h"
 #include "mon-util.h"
@@ -701,7 +702,7 @@ bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
 
-	seen = (!player->timed[TMD_BLIND] && mflag_has(mon->mflag, MFLAG_VISIBLE));
+	seen = (!player->timed[TMD_BLIND] && monster_is_visible(mon));
 
 	/* Heal some */
 	mon->hp += amount;
@@ -761,7 +762,7 @@ bool effect_handler_MON_HEAL_KIN(effect_handler_context_t *context)
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
 
-	seen = (!player->timed[TMD_BLIND] && mflag_has(mon->mflag, MFLAG_VISIBLE));
+	seen = (!player->timed[TMD_BLIND] && monster_is_visible(mon));
 
 	/* Heal some */
 	mon->hp = MIN(mon->hp + amount, mon->maxhp);
@@ -1187,7 +1188,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 				player->upkeep->redraw |= (PR_HEALTH);
 
 			/* Special message */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+			if (monster_is_visible(mon))
 				msg("%s appears healthier.", m_name);
 		}
 	}
@@ -1794,9 +1795,8 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect all non-invisible, obvious monsters */
-		if (!rf_has(mon->race->flags, RF_INVISIBLE) &&
-			!mflag_has(mon->mflag, MFLAG_UNAWARE)) {
-			/* Hack -- Detect the monster */
+		if (!monster_is_invisible(mon) && !monster_is_camouflaged(mon)) {
+			/* Detect the monster */
 			mflag_on(mon->mflag, MFLAG_MARK);
 			mflag_on(mon->mflag, MFLAG_SHOW);
 
@@ -1866,7 +1866,7 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect invisible monsters */
-		if (rf_has(mon->race->flags, RF_INVISIBLE)) {
+		if (monster_is_invisible(mon)) {
 			/* Take note that they are invisible */
 			rf_on(lore->flags, RF_INVISIBLE);
 
@@ -1963,7 +1963,7 @@ bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect evil monsters */
-		if (rf_has(mon->race->flags, RF_EVIL)) {
+		if (monster_is_evil(mon)) {
 			/* Take note that they are evil */
 			rf_on(lore->flags, RF_EVIL);
 
@@ -2433,7 +2433,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		if (!mon->race) continue;
 
 		/* Hack -- Skip Unique Monsters */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) continue;
+		if (monster_is_unique(mon)) continue;
 
 		/* Skip "wrong" monsters (see warning above) */
 		if ((char) mon->race->d_char != typ) continue;
@@ -2475,7 +2475,7 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 		if (!mon->race) continue;
 
 		/* Hack -- Skip unique monsters */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) continue;
+		if (monster_is_unique(mon)) continue;
 
 		/* Skip distant monsters */
 		if (mon->cdis > radius) continue;
@@ -2516,7 +2516,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 		if (!square_isview(cave, mon->fy, mon->fx)) continue;
 
 		/* Probe visible monsters */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		if (monster_is_visible(mon)) {
 			char m_name[80];
 
 			/* Start the message */
@@ -2726,7 +2726,7 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 				mon_take_hit(mon, 100 + randint1(100), &fear, " is burnt up.");
 			}
 
-			if (fear && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+			if (fear && monster_is_visible(mon)) {
 				add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 			}
 		}
@@ -3524,7 +3524,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	switch (context->origin.what) {
 		case SRC_MONSTER: {
 			struct monster *mon = cave_monster(cave, context->origin.which.monster);
-			if (rf_has(mon->race->flags, RF_POWERFUL)) {
+			if (monster_is_powerful(mon)) {
 				rad++;
 			}
 			flg |= PROJECT_PLAY;
@@ -3610,7 +3610,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		dam = breath_dam(type, mon->hp);
 
 		/* Powerful monsters breathe wider arcs */
-		if (rf_has(mon->race->flags, RF_POWERFUL)) {
+		if (monster_is_powerful(mon)) {
 			diameter_of_source *= 2;
 			degrees_of_arc *= 2;
 		}

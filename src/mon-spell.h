@@ -81,7 +81,7 @@ bool test_spells(bitflag *f, int types);
 void ignore_spells(bitflag *f, int types);
 int best_spell_power(const struct monster_race *race, int resist);
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
-				  struct element_info *el, const struct monster_race *race);
+				  struct element_info *el, const struct monster *mon);
 bool mon_spell_is_innate(int index);
 void create_mon_spell_mask(bitflag *f, ...);
 const char *mon_spell_lore_description(int index,

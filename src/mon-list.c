@@ -20,6 +20,7 @@
 #include "game-world.h"
 #include "mon-desc.h"
 #include "mon-list.h"
+#include "mon-predicate.h"
 #include "project.h"
 
 /**
@@ -152,8 +153,7 @@ void monster_list_collect(monster_list_t *list)
 		bool los = false;
 
 		/* Only consider visible, known monsters */
-		if (!mflag_has(mon->mflag, MFLAG_VISIBLE) ||
-			mflag_has(mon->mflag, MFLAG_UNAWARE))
+		if (!monster_is_visible(mon) ||	monster_is_camouflaged(mon))
 			continue;
 
 		/* Find or add a list entry. */

@@ -31,6 +31,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "mon-timed.h"
@@ -756,7 +757,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *mon)
 	/* Multiply slower in crowded areas */
 	if ((k < 4) && (k == 0 || one_in_(k * z_info->repro_monster_rate))) {
 		/* Successful breeding attempt, learn about that now */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+		if (monster_is_visible(mon))
 			rf_on(lore->flags, RF_MULTIPLY);
 
 		/* Leave now if not a breeder */
@@ -766,7 +767,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *mon)
 		/* Try to multiply */
 		if (multiply_monster(mon)) {
 			/* Make a sound */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+			if (monster_is_visible(mon))
 				sound(MSG_MULTIPLY);
 
 			/* Multiplying takes energy */
@@ -795,13 +796,13 @@ static bool process_monster_should_stagger(struct monster *mon)
 	/* RAND_25 and RAND_50 are cumulative */
 	if (rf_has(mon->race->flags, RF_RAND_25)) {
 		chance += 25;
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+		if (monster_is_visible(mon))
 			rf_on(lore->flags, RF_RAND_25);
 	}
 
 	if (rf_has(mon->race->flags, RF_RAND_50)) {
 		chance += 50;
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+		if (monster_is_visible(mon))
 			rf_on(lore->flags, RF_RAND_50);
 	}
 
@@ -836,7 +837,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 
 	/* There's some kind of feature in the way, so learn about
 	 * kill-wall and pass-wall now */
-	if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+	if (monster_is_visible(mon)) {
 		rf_on(lore->flags, RF_PASS_WALL);
 		rf_on(lore->flags, RF_KILL_WALL);
 	}
@@ -864,7 +865,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 		*did_something = true;
 
 		/* Learn about door abilities */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		if (monster_is_visible(mon)) {
 			rf_on(lore->flags, RF_OPEN_DOOR);
 			rf_on(lore->flags, RF_BASH_DOOR);
 		}
@@ -974,7 +975,7 @@ static bool process_monster_try_push(struct chunk *c, struct monster *mon,
 
 	if (compare_monsters(mon, mon1) > 0) {
 		/* Learn about pushing and shoving */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		if (monster_is_visible(mon)) {
 			rf_on(lore->flags, RF_KILL_BODY);
 			rf_on(lore->flags, RF_MOVE_BODY);
 		}
@@ -985,12 +986,11 @@ static bool process_monster_try_push(struct chunk *c, struct monster *mon,
 			monster_desc(n_name, sizeof(n_name), mon1, MDESC_IND_HID);
 
 			/* Reveal mimics */
-			if (is_mimicking(mon1))
+			if (monster_is_mimicking(mon1))
 				become_aware(mon1);
 
 			/* Note if visible */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-				mflag_has(mon->mflag, MFLAG_VIEW))
+			if (monster_is_visible(mon) && monster_is_in_view(mon))
 				msg("%s %s %s.", m_name,
 					kill_ok ? "tramples over" : "pushes past", n_name);
 
@@ -1014,7 +1014,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	struct object *obj;
-	bool visible = mflag_has(mon->mflag, MFLAG_VISIBLE);
+	bool visible = monster_is_visible(mon);
 
 	/* Learn about item pickup behavior */
 	for (obj = square_object(c, ny, nx); obj; obj = obj->next) {
@@ -1168,7 +1168,7 @@ static void process_monster(struct chunk *c, struct monster *mon)
 		/* The player is in the way. */
 		if (square_isplayer(c, ny, nx)) {
 			/* Learn about if the monster attacks */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+			if (monster_is_visible(mon))
 				rf_on(lore->flags, RF_NEVER_BLOW);
 
 			/* Some monsters never attack */
@@ -1184,7 +1184,7 @@ static void process_monster(struct chunk *c, struct monster *mon)
 			/* Some monsters never move */
 			if (rf_has(mon->race->flags, RF_NEVER_MOVE)) {
 				/* Learn about lack of movement */
-				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+				if (monster_is_visible(mon))
 					rf_on(lore->flags, RF_NEVER_MOVE);
 
 				return;
@@ -1210,12 +1210,12 @@ static void process_monster(struct chunk *c, struct monster *mon)
 
 	if (did_something) {
 		/* Learn about no lack of movement */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+		if (monster_is_visible(mon))
 			rf_on(lore->flags, RF_NEVER_MOVE);
 
 		/* Possible disturb */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-			mflag_has(mon->mflag, MFLAG_VIEW) && OPT(player, disturb_near))
+		if (monster_is_visible(mon) && monster_is_in_view(mon) && 
+			OPT(player, disturb_near))
 			disturb(player, 0);		
 	}
 
@@ -1224,7 +1224,7 @@ static void process_monster(struct chunk *c, struct monster *mon)
 		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, false);
 
 	/* If we see an unaware monster do something, become aware of it */
-	if (did_something && mflag_has(mon->mflag, MFLAG_UNAWARE))
+	if (did_something && monster_is_camouflaged(mon))
 		become_aware(mon);
 }
 
@@ -1301,8 +1301,7 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 						 MDESC_CAPITAL | MDESC_IND_HID);
 
 			/* Notify the player if aware */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-				!mflag_has(mon->mflag, MFLAG_UNAWARE))
+			if (monster_is_obvious(mon))
 				msg("%s wakes up.", m_name);
 
 			woke_up = true;
@@ -1321,8 +1320,7 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 			mon_dec_timed(mon, MON_TMD_SLEEP, d, MON_TMD_FLG_NOTIFY, false);
 
 			/* Update knowledge */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-				!mflag_has(mon->mflag, MFLAG_UNAWARE)) {
+			if (monster_is_obvious(mon)) {
 				if (!woke_up && lore->ignore < UCHAR_MAX)
 					lore->ignore++;
 				else if (woke_up && lore->wake < UCHAR_MAX)
@@ -1466,7 +1464,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		mon->energy -= z_info->move_energy;
 
 		/* Mimics lie in wait */
-		if (is_mimicking(mon)) continue;
+		if (monster_is_mimicking(mon)) continue;
 
 		/* Check if the monster is active */
 		if (monster_check_active(c, mon)) {

@@ -23,6 +23,7 @@
 #include "mon-init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "obj-gear.h"
@@ -236,14 +237,14 @@ void lore_learn_spell_if_has(struct monster_lore *lore, const struct monster_rac
 
 void lore_learn_spell_if_visible(struct monster_lore *lore, const struct monster *mon, int flag)
 {
-	if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+	if (monster_is_visible(mon)) {
 		rsf_on(lore->spell_flags, flag);
 	}
 }
 
 void lore_learn_flag_if_visible(struct monster_lore *lore, const struct monster *mon, int flag)
 {
-	if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+	if (monster_is_visible(mon)) {
 		rf_on(lore->flags, flag);
 	}
 }

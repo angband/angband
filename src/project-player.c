@@ -21,6 +21,7 @@
 #include "effects.h"
 #include "init.h"
 #include "mon-desc.h"
+#include "mon-predicate.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
@@ -622,7 +623,7 @@ bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 			struct monster *mon = cave_monster(cave, origin.which.monster);
 
 			/* Check it is visible */
-			if (!mflag_has(mon->mflag, MFLAG_VISIBLE))
+			if (!monster_is_visible(mon))
 				seen = false;
 
 			/* Get the monster's real name */

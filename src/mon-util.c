@@ -19,12 +19,13 @@
 #include "angband.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-list.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-msg.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
-#include "mon-list.h"
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-ignore.h"
@@ -154,26 +155,6 @@ bool match_monster_bases(const struct monster_base *base, ...)
 
 	return ok;
 }
-
-/**
- * Nonliving monsters are immune to life drain
- */
-bool monster_is_nonliving(struct monster_race *race)
-{
-	return flags_test(race->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_NONLIVING,
-					  FLAG_END);
-}
-
-/**
- * Nonliving and stupid monsters are destroyed rather than dying
- */
-bool monster_is_unusual(struct monster_race *race)
-{
-	return (monster_is_nonliving(race) || rf_has(race->flags, RF_STUPID));
-}
-
-
-
 
 /**
  * This function updates the monster record of the given monster
@@ -335,7 +316,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 				rf_on(lore->flags, RF_INVISIBLE);
 
 				/* Handle invisibility */
-				if (rf_has(mon->race->flags, RF_INVISIBLE)) {
+				if (monster_is_invisible(mon)) {
 					/* See invisible */
 					if (player_of_has(player, OF_SEE_INVIS)) {
 						/* Easy to see */
@@ -350,7 +331,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	}
 
 	/* If a mimic looks like an ignored item, it's not seen */
-	if (is_mimicking(mon)) {
+	if (monster_is_mimicking(mon)) {
 		struct object *obj = mon->mimicked_obj;
 		if (ignore_item_ok(obj))
 			easy = flag = false;
@@ -367,7 +348,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 		}
 
 		/* It was previously unseen */
-		if (!mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		if (!monster_is_visible(mon)) {
 			/* Mark as visible */
 			mflag_on(mon->mflag, MFLAG_VISIBLE);
 
@@ -385,7 +366,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			/* Window stuff */
 			player->upkeep->redraw |= PR_MONLIST;
 		}
-	} else if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+	} else if (monster_is_visible(mon)) {
 		/* Not visible but was previously seen - treat mimics differently */
 		if (!mon->mimicked_obj || ignore_item_ok(mon->mimicked_obj)) {
 			/* Mark as not visible */
@@ -407,7 +388,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* Is the monster is now easily visible? */
 	if (easy) {
 		/* Change */
-		if (!mflag_has(mon->mflag, MFLAG_VIEW)) {
+		if (!monster_is_in_view(mon)) {
 			/* Mark as easily visible */
 			mflag_on(mon->mflag, MFLAG_VIEW);
 
@@ -420,12 +401,12 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 		}
 	} else {
 		/* Change */
-		if (mflag_has(mon->mflag, MFLAG_VIEW)) {
+		if (monster_is_in_view(mon)) {
 			/* Mark as not easily visible */
 			mflag_off(mon->mflag, MFLAG_VIEW);
 
 			/* Disturb on disappearance */
-			if (OPT(player, disturb_near) && !is_mimicking(mon))
+			if (OPT(player, disturb_near) && !monster_is_mimicking(mon))
 				disturb(player, 1);
 
 			/* Re-draw monster list window */
@@ -581,8 +562,8 @@ void become_aware(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 
-	if (mflag_has(mon->mflag, MFLAG_UNAWARE)) {
-		mflag_off(mon->mflag, MFLAG_UNAWARE);
+	if (mflag_has(mon->mflag, MFLAG_CAMOUFLAGE)) {
+		mflag_off(mon->mflag, MFLAG_CAMOUFLAGE);
 
 		/* Learn about mimicry */
 		if (rf_has(mon->race->flags, RF_UNAWARE))
@@ -624,22 +605,13 @@ void become_aware(struct monster *mon)
 }
 
 /**
- * Returns true if the given monster is currently mimicking an item.
- */
-bool is_mimicking(struct monster *mon)
-{
-	return (mflag_has(mon->mflag, MFLAG_UNAWARE) && mon->mimicked_obj);
-}
-
-
-/**
  * The given monster learns about an "observed" resistance or other player
  * state property, or lack of it.
  *
  * Note that this function is robust to being called with `element` as an
  * arbitrary PROJ_ type
  */
-void update_smart_learn(struct monster *m, struct player *p, int flag,
+void update_smart_learn(struct monster *mon, struct player *p, int flag,
 						int pflag, int element)
 {
 	bool element_ok = ((element >= 0) && (element < ELEM_MAX));
@@ -655,10 +627,10 @@ void update_smart_learn(struct monster *m, struct player *p, int flag,
 	if (!OPT(p, birth_ai_learn)) return;
 
 	/* Too stupid to learn anything */
-	if (rf_has(m->race->flags, RF_STUPID)) return;
+	if (monster_is_stupid(mon)) return;
 
 	/* Not intelligent, only learn sometimes */
-	if (!rf_has(m->race->flags, RF_SMART) && one_in_(2)) return;
+	if (!monster_is_smart(mon) && one_in_(2)) return;
 
 	/* Analyze the knowledge; fail very rarely */
 	if (one_in_(100))
@@ -667,24 +639,24 @@ void update_smart_learn(struct monster *m, struct player *p, int flag,
 	/* Learn the flag */
 	if (flag) {
 		if (player_of_has(p, flag)) {
-			of_on(m->known_pstate.flags, flag);
+			of_on(mon->known_pstate.flags, flag);
 		} else {
-			of_off(m->known_pstate.flags, flag);
+			of_off(mon->known_pstate.flags, flag);
 		}
 	}
 
 	/* Learn the pflag */
 	if (pflag) {
 		if (pf_has(player->state.pflags, pflag)) {
-			of_on(m->known_pstate.pflags, pflag);
+			of_on(mon->known_pstate.pflags, pflag);
 		} else {
-			of_off(m->known_pstate.pflags, pflag);
+			of_off(mon->known_pstate.pflags, pflag);
 		}
 	}
 
 	/* Learn the element */
 	if (element_ok)
-		m->known_pstate.el_info[element].res_level
+		mon->known_pstate.el_info[element].res_level
 			= player->state.el_info[element].res_level;
 }
 

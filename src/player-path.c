@@ -18,10 +18,10 @@
  */
 
 #include "angband.h"
-#include "cmds.h"
 #include "cave.h"
+#include "cmds.h"
 #include "init.h"
-#include "mon-util.h"
+#include "mon-predicate.h"
 #include "obj-ignore.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -102,10 +102,9 @@ bool findpath(int y, int x)
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey)) {
 		if ((cave->squares[y][x].mon > 0) &&
-			mflag_has(square_monster(cave, y, x)->mflag, MFLAG_VISIBLE))
+			monster_is_visible(square_monster(cave, y, x))) {
 			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
-
-		terrain[y - oy][x - ox] = MAX_PF_LENGTH;
+		}
 	} else {
 		bell("Target out of range.");
 		return (false);
@@ -553,9 +552,9 @@ static bool run_test(void)
 		/* Visible monsters abort running */
 		if (cave->squares[row][col].mon > 0) {
 			struct monster *mon = square_monster(cave, row, col);
-
-			/* Visible monster */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE)) return (true);
+			if (monster_is_visible(mon)) {
+				return (true);
+			}
 		}
 
 		/* Visible objects abort running */
@@ -627,12 +626,10 @@ static bool run_test(void)
 		if (row >= cave->height || col >= cave->width) continue;
 		if (row < 0 || col < 0) continue;
 
-		/* Visible monsters abort running */
+		/* Obvious monsters abort running */
 		if (cave->squares[row][col].mon > 0) {
 			struct monster *mon = square_monster(cave, row, col);
-			
-			/* Visible monster */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) && !is_mimicking(mon))
+			if (monster_is_obvious(mon))
 				return (true);
 		}
 	}
@@ -785,7 +782,7 @@ void run_step(int dir)
 					struct monster *mon = square_monster(cave, y, x);
 
 					/* Visible monster */
-					if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+					if (monster_is_visible(mon)) {
 						disturb(player, 0);
 						player->upkeep->running_withpathfind = false;
 						return;

@@ -114,6 +114,7 @@ ANGFILES = \
 	mon-make.o \
 	mon-move.o \
 	mon-msg.o \
+	mon-predicate.o \
 	mon-spell.o \
 	mon-summon.o \
 	mon-timed.o \

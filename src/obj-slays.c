@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "mon-predicate.h"
 #include "obj-desc.h"
 #include "obj-init.h"
 #include "obj-knowledge.h"
@@ -271,12 +272,12 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				object_learn_brand(player, obj, i);
 
 				/* Learn about the monster */
-				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+				if (monster_is_visible(mon))
 					rf_on(lore->flags, b->resist_flag);
 			}
 		} else if (real && player_knows_brand(player, i)) {
 				/* Learn about resistant monsters */
-				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+				if (monster_is_visible(mon))
 					rf_on(lore->flags, b->resist_flag);
 		}
 	}
@@ -305,12 +306,12 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				object_learn_slay(player, obj, i);
 
 				/* Learn about the monster */
-				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+				if (monster_is_visible(mon))
 					rf_on(lore->flags, s->race_flag);
 			}
 		} else if (real && player_knows_slay(player, i)) {
 				/* Learn about resistant monsters */
-				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+				if (monster_is_visible(mon))
 					rf_on(lore->flags, s->race_flag);
 		}
 	}

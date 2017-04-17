@@ -22,6 +22,7 @@
 #include "game-input.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
@@ -969,7 +970,7 @@ bool project(struct source origin, int rad, int y, int x,
 				struct monster *mon = square_monster(cave, y, x);
 
 				/* Recall and track */
-				if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+				if (monster_is_visible(mon)) {
 					monster_race_track(player->upkeep, mon->race);
 					health_track(player->upkeep, mon);
 				}

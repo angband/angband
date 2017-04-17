@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "mon-desc.h"
 #include "mon-msg.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "game-input.h"
 #include "player-calcs.h"
@@ -144,7 +145,7 @@ static int message_flags(const struct monster *mon)
 		flags |= MON_MSG_FLAG_OFFSCREEN;
 	}
 
-	if (!mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+	if (!monster_is_visible(mon)) {
 		flags |= MON_MSG_FLAG_INVISIBLE;
 	}
 

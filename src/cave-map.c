@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "init.h"
 #include "monster.h"
+#include "mon-predicate.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -158,7 +159,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	if (g->m_idx > 0) {
 		/* If the monster isn't "visible", make sure we don't list it.*/
 		struct monster *mon = cave_monster(cave, g->m_idx);
-		if (!mflag_has(mon->mflag, MFLAG_VISIBLE)) g->m_idx = 0;
+		if (!monster_is_visible(mon)) g->m_idx = 0;
 	}
 
 	/* Rare random hallucination on non-outer walls */
@@ -295,10 +296,10 @@ static void cave_light(struct point_set *ps)
 			struct monster *mon = square_monster(cave, y, x);
 
 			/* Stupid monsters rarely wake up */
-			if (rf_has(mon->race->flags, RF_STUPID)) chance = 10;
+			if (monster_is_stupid(mon)) chance = 10;
 
 			/* Smart monsters always wake up */
-			if (rf_has(mon->race->flags, RF_SMART)) chance = 100;
+			if (monster_is_smart(mon)) chance = 100;
 
 			/* Sometimes monsters wake up */
 			if (mon->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance)) {

@@ -23,6 +23,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "obj-knowledge.h"
@@ -1000,9 +1001,9 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 
 	/* Is this obviously a monster? (Mimics etc. aren't) */
 	if (rf_has(race->flags, RF_UNAWARE))
-		mflag_on(mon->mflag, MFLAG_UNAWARE);
+		mflag_on(mon->mflag, MFLAG_CAMOUFLAGE);
 	else
-		mflag_off(mon->mflag, MFLAG_UNAWARE);
+		mflag_off(mon->mflag, MFLAG_CAMOUFLAGE);
 
 	/* Set the color if necessary */
 	if (rf_has(race->flags, RF_ATTR_RAND))
@@ -1346,8 +1347,7 @@ void monster_death(struct monster *mon, bool stats)
 	int dump_gold = 0;
 	struct object *obj = mon->held_obj;
 
-	bool visible = (mflag_has(mon->mflag, MFLAG_VISIBLE) ||
-					rf_has(mon->race->flags, RF_UNIQUE));
+	bool visible = monster_is_visible(mon) || monster_is_unique(mon);
 
 	/* Delete any mimicked objects */
 	if (mon->mimicked_obj)
@@ -1433,7 +1433,7 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY, false);
 
 	/* Become aware of its presence */
-	if (mflag_has(mon->mflag, MFLAG_UNAWARE))
+	if (monster_is_camouflaged(mon))
 		become_aware(mon);
 
 	/* Hurt it */
@@ -1476,10 +1476,10 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 			/* Make sure to flush any monster messages first */
 			notice_stuff(player);
 
-			if (!mflag_has(mon->mflag, MFLAG_VISIBLE))
+			if (!monster_is_visible(mon))
 				/* Death by physical attack -- invisible monster */
 				msgt(soundfx, "You have killed %s.", m_name);
-			else if (monster_is_unusual(mon->race))
+			else if (monster_is_destroyed(mon))
 				/* Death by Physical attack -- non-living monster */
 				msgt(soundfx, "You have destroyed %s.", m_name);
 			else
@@ -1529,8 +1529,7 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 		monster_death(mon, false);
 
 		/* Recall even invisible uniques or winners */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE) ||
-			rf_has(mon->race->flags, RF_UNIQUE)) {
+		if (monster_is_visible(mon) || monster_is_unique(mon)) {
 			/* Count kills this life */
 			if (lore->pkills < SHRT_MAX) lore->pkills++;
 

@@ -20,6 +20,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-msg.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
@@ -193,15 +194,12 @@ static bool mon_set_timed(struct monster *mon,
 	/* Print a message if there is one, if the effect allows for it, and if
 	 * either the monster is visible, or we're trying to ID something */
 	if (m_note &&
-			!(flag & MON_TMD_FLG_NOMESSAGE) &&
-			(flag & MON_TMD_FLG_NOTIFY)
-			&& (id || (
-					mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-					!mflag_has(mon->mflag, MFLAG_UNAWARE)
-				))) {
-		char m_name[80];
-		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
-		add_monster_message(mon, m_note, true);
+		!(flag & MON_TMD_FLG_NOMESSAGE) &&
+		(flag & MON_TMD_FLG_NOTIFY)
+		&& (id || monster_is_obvious(mon))) {
+			char m_name[80];
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
+			add_monster_message(mon, m_note, true);
 	}
 
 	return !resisted;

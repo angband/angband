@@ -22,6 +22,7 @@
 #include "init.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
+#include "mon-predicate.h"
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-pile.h"
@@ -373,8 +374,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			const struct monster_lore *lore = get_lore(mon->race);
 
 			/* Visible */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-				!mflag_has(mon->mflag, MFLAG_UNAWARE)) {
+			if (monster_is_obvious(mon)) {
 				bool recall = false;
 
 				char m_name[80];
@@ -830,9 +830,9 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		Term_what(Term->scr->cx, Term->scr->cy, a+i, c+i);
 
 		/* Choose a colour. */
-		if (mon && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		if (mon && monster_is_visible(mon)) {
 			/* Mimics act as objects */
-			if (rf_has(mon->race->flags, RF_UNAWARE)) 
+			if (monster_is_camouflaged(mon)) 
 				colour = COLOUR_YELLOW;
 			else
 				/* Visible monsters are red. */

@@ -21,6 +21,7 @@
 #include "cmd-core.h"
 #include "game-input.h"
 #include "mon-desc.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
@@ -87,7 +88,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 	bool living = true;
 
 	/* Determine if the monster is "living" (vs "undead") */
-	if (monster_is_unusual(mon->race)) living = false;
+	if (monster_is_destroyed(mon)) living = false;
 
 	/* Assess health */
 	if (mon->hp >= mon->maxhp) {
@@ -131,8 +132,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
  */
 bool target_able(struct monster *m)
 {
-	return m && m->race && mflag_has(m->mflag, MFLAG_VISIBLE) &&
-		!mflag_has(m->mflag, MFLAG_UNAWARE) &&
+	return m && m->race && monster_is_obvious(m) &&
 		projectable(cave, player->py, player->px, m->fy, m->fx, PROJECT_NONE) &&
 		!player->timed[TMD_IMAGE];
 }
@@ -324,13 +324,10 @@ bool target_accept(int y, int x)
 	/* Handle hallucination */
 	if (player->timed[TMD_IMAGE]) return (false);
 
-	/* Visible monsters */
+	/* Obvious monsters */
 	if (cave->squares[y][x].mon > 0) {
 		struct monster *mon = square_monster(cave, y, x);
-
-		/* Visible monsters */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-			!mflag_has(mon->mflag, MFLAG_UNAWARE))
+		if (monster_is_obvious(mon))
 			return (true);
 	}
 
@@ -409,7 +406,7 @@ bool target_sighted(void)
 			 /* either the target is a grid and is visible, or it is a monster
 			  * that is visible */
 		((!target_who && square_isseen(cave, target_y, target_x)) ||
-			 (target_who && mflag_has(target_who->mflag, MFLAG_VISIBLE)));
+		 (target_who && monster_is_visible(target_who)));
 }
 
 

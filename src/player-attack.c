@@ -27,6 +27,7 @@
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-msg.h"
+#include "mon-predicate.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -333,13 +334,11 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	monster_desc(m_name, sizeof(m_name), mon, 
 				 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
 
-	/* Auto-Recall if possible and visible */
-	if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+	/* Auto-Recall and track if possible and visible */
+	if (monster_is_visible(mon)) {
 		monster_race_track(p->upkeep, mon->race);
-
-	/* Track a new monster */
-	if (mflag_has(mon->mflag, MFLAG_VISIBLE))
 		health_track(p->upkeep, mon);
+	}
 
 	/* Handle player fear (only for invisible monsters) */
 	if (player_of_has(p, OF_AFRAID)) {
@@ -352,8 +351,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY, false);
 
 	/* See if the player hit */
-	success = test_hit(chance, mon->race->ac,
-					   mflag_has(mon->mflag, MFLAG_VISIBLE));
+	success = test_hit(chance, mon->race->ac, monster_is_visible(mon));
 
 	/* If a miss, skip this hit */
 	if (!success) {
@@ -465,7 +463,7 @@ void py_attack(struct player *p, int y, int x)
 	}
 	
 	/* Hack - delay fear messages */
-	if (fear && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+	if (fear && monster_is_visible(mon)) {
 		add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 	}
 }
@@ -569,10 +567,10 @@ static void ranged_helper(struct player *p,
 		/* Try the attack on the monster at (x, y) if any */
 		mon = square_monster(cave, y, x);
 		if (mon) {
-			int visible = mflag_has(mon->mflag, MFLAG_VISIBLE);
+			int visible = monster_is_visible(mon);
 
 			bool fear = false;
-			const char *note_dies = monster_is_unusual(mon->race) ? 
+			const char *note_dies = monster_is_destroyed(mon) ? 
 				" is destroyed." : " dies.";
 
 			struct attack_result result = attack(p, obj, y, x);
@@ -623,7 +621,7 @@ static void ranged_helper(struct player *p,
 					}
 					
 					/* Track this monster */
-					if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+					if (monster_is_visible(mon)) {
 						monster_race_track(p->upkeep, mon->race);
 						health_track(p->upkeep, mon);
 					}
@@ -632,7 +630,7 @@ static void ranged_helper(struct player *p,
 				/* Hit the monster, check for death */
 				if (!mon_take_hit(mon, dmg, &fear, note_dies)) {
 					message_pain(mon, dmg);
-					if (fear && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+					if (fear && monster_is_visible(mon)) {
 						add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 					}
 				}
@@ -674,7 +672,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* Did we hit it (penalize distance travelled) */
-	if (!test_hit(chance, mon->race->ac, mflag_has(mon->mflag, MFLAG_VISIBLE)))
+	if (!test_hit(chance, mon->race->ac, monster_is_visible(mon)))
 		return result;
 
 	result.success = true;
@@ -708,7 +706,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* If we missed then we're done */
-	if (!test_hit(chance, mon->race->ac, mflag_has(mon->mflag, MFLAG_VISIBLE)))
+	if (!test_hit(chance, mon->race->ac, monster_is_visible(mon)))
 		return result;
 
 	result.success = true;

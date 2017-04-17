@@ -28,6 +28,7 @@
 #include "mon-blows.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
@@ -73,7 +74,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 	bool know_something = false;
 
 	/* Stupid monsters act randomly */
-	if (rf_has(mon->race->flags, RF_STUPID)) return;
+	if (monster_is_stupid(mon)) return;
 
 	/* Take working copy of spell flags */
 	rsf_copy(f2, f);
@@ -120,7 +121,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 
 	/* Cancel out certain flags based on knowledge */
 	if (know_something)
-		unset_spells(f2, ai_flags, ai_pflags, el, mon->race);
+		unset_spells(f2, ai_flags, ai_pflags, el, mon);
 
 	/* use working copy of spell flags */
 	rsf_copy(f, f2);
@@ -246,7 +247,7 @@ bool make_attack_spell(struct monster *mon)
 	bool blind = (player->timed[TMD_BLIND] ? true : false);
 
 	/* Extract the "see-able-ness" */
-	bool seen = (!blind && mflag_has(mon->mflag, MFLAG_VISIBLE));
+	bool seen = (!blind && monster_is_visible(mon));
 
 	/* Assume "normal" target */
 	bool normal = true;
@@ -281,9 +282,7 @@ bool make_attack_spell(struct monster *mon)
 	rsf_copy(f, mon->race->spell_flags);
 
 	/* Allow "desperate" spells */
-	if (rf_has(mon->race->flags, RF_SMART) &&
-			mon->hp < mon->maxhp / 10 &&
-			randint0(100) < 50) {
+	if (monster_is_smart(mon) && mon->hp < mon->maxhp / 10 && one_in_(2)) {
 		/* Require intelligent spells */
 		ignore_spells(f, RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK | RST_INNATE);
 	}
@@ -292,7 +291,7 @@ bool make_attack_spell(struct monster *mon)
 	remove_bad_spells(mon, f);
 
 	/* Check whether summons and bolts are worth it. */
-	if (!rf_has(mon->race->flags, RF_STUPID)) {
+	if (!monster_is_stupid(mon)) {
 		/* Check for a clean bolt shot */
 		if (test_spells(f, RST_BOLT) &&
 			!projectable(cave, mon->fy, mon->fx, py, px, PROJECT_STOP))
@@ -325,8 +324,8 @@ bool make_attack_spell(struct monster *mon)
 	/* Abort if no spell was chosen */
 	if (!thrown_spell) return false;
 
-	/* If we see an unaware monster try to cast a spell, become aware of it */
-	if (mflag_has(mon->mflag, MFLAG_UNAWARE))
+	/* If we see a hidden monster try to cast a spell, become aware of it */
+	if (monster_is_camouflaged(mon))
 		become_aware(mon);
 
 	/* Calculate spell failure rate */
@@ -335,7 +334,7 @@ bool make_attack_spell(struct monster *mon)
 		failrate += 20;
 
 	/* Stupid monsters will never fail (for jellies and such) */
-	if (rf_has(mon->race->flags, RF_STUPID))
+	if (monster_is_stupid(mon))
 		failrate = 0;
 
 	/* Confusion adds 50% to fail rate */
@@ -511,7 +510,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		if (p->is_dead || p->upkeep->generate_level) break;
 
 		/* Extract visibility (before blink) */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) visible = true;
+		if (monster_is_visible(mon)) visible = true;
 
 		/* Extract visibility from carrying light */
 		if (rf_has(mon->race->flags, RF_HAS_LIGHT)) visible = true;
@@ -527,10 +526,10 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Hack -- Apply "protection from evil" */
 			if (p->timed[TMD_PROTEVIL] > 0) {
 				/* Learn about the evil flag */
-				if (mflag_has(mon->mflag, MFLAG_VISIBLE))
+				if (monster_is_visible(mon))
 					rf_on(lore->flags, RF_EVIL);
 
-				if (rf_has(mon->race->flags, RF_EVIL) && p->lev >= rlev &&
+				if (monster_is_evil(mon) && p->lev >= rlev &&
 				    randint0(100) + p->lev > 50) {
 					/* Message */
 					msg("%s is repelled.", m_name);
@@ -653,7 +652,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			}
 		} else {
 			/* Visible monster missed player, so notify if appropriate. */
-			if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&	method->miss) {
+			if (monster_is_visible(mon) &&	method->miss) {
 				/* Disturbing */
 				disturb(p, 1);
 				msg("%s misses you.", m_name);

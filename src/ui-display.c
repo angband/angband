@@ -27,6 +27,7 @@
 #include "hint.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
@@ -348,7 +349,7 @@ byte monster_health_attr(void)
 		/* Not tracking */
 		attr = COLOUR_DARK;
 
-	} else if (!mflag_has(mon->mflag, MFLAG_VISIBLE) || mon->hp < 0 ||
+	} else if (!monster_is_visible(mon) || mon->hp < 0 ||
 			   player->timed[TMD_IMAGE]) {
 		/* The monster health is "unknown" */
 		attr = COLOUR_WHITE;
@@ -416,7 +417,7 @@ static void prt_health(int row, int col)
 	}
 
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	if (!mflag_has(mon->mflag, MFLAG_VISIBLE) || /* Unseen */
+	if (!monster_is_visible(mon) || /* Unseen */
 		(player->timed[TMD_IMAGE]) || /* Hallucination */
 		(mon->hp < 0)) { /* Dead (?) */
 		/* The monster health is "unknown" */
@@ -1185,7 +1186,7 @@ static void do_animation(void)
 		byte attr;
 		struct monster *mon = cave_monster(cave, i);
 
-		if (!mon || !mon->race || !mflag_has(mon->mflag, MFLAG_VISIBLE))
+		if (!mon || !mon->race || !monster_is_visible(mon))
 			continue;
 		else if (rf_has(mon->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);

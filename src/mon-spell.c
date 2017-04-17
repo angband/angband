@@ -21,6 +21,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
@@ -272,10 +273,10 @@ void ignore_spells(bitflag *f, int types)
  * \param race is the monster type we're operating on
  */
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
-				  struct element_info *el, const struct monster_race *race)
+				  struct element_info *el, const struct monster *mon)
 {
 	const struct mon_spell_info *info;
-	bool smart = rf_has(race->flags, RF_SMART);
+	bool smart = monster_is_smart(mon);
 
 	for (info = mon_spell_types; info->index < RSF_MAX; info++) {
 		const struct monster_spell *spell = monster_spell_by_index(info->index);

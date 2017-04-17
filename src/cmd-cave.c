@@ -26,6 +26,7 @@
 #include "init.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
+#include "mon-predicate.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -283,7 +284,7 @@ void do_cmd_open(struct command *cmd)
 	m = square_monster(cave, y, x);
 	if (m) {
 		/* Mimics surprise the player */
-		if (is_mimicking(m)) {
+		if (monster_is_mimicking(m)) {
 			become_aware(m);
 
 			/* Mimic wakes up */
@@ -916,7 +917,7 @@ void move_player(int dir, bool disarm)
 	/* Attack monsters, alter traps/doors on movement, hit obstacles or move */
 	if (m_idx > 0) {
 		/* Mimics surprise the player */
-		if (is_mimicking(mon)) {
+		if (monster_is_mimicking(mon)) {
 			become_aware(mon);
 
 			/* Mimic wakes up */
@@ -1045,8 +1046,7 @@ static bool do_cmd_walk_test(int y, int x)
 	struct monster *mon = cave_monster(cave, m_idx);
 
 	/* Allow attack on visible monsters if unafraid */
-	if (m_idx > 0 && mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-		!is_mimicking(mon)) {
+	if (m_idx > 0 && monster_is_visible(mon) &&	!monster_is_mimicking(mon)) {
 		/* Handle player fear */
 		if (player_of_has(player, OF_AFRAID)) {
 			/* Extract monster name (or "it") */
