@@ -364,7 +364,10 @@ static void project_monster_handler_DARK(project_monster_handler_context_t *cont
 /* Sound -- Sound breathers resist */
 static void project_monster_handler_SOUND(project_monster_handler_context_t *context)
 {
-	context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 10 + randint1(20));
+	if (one_in_(3)) {
+		context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 5 + randint1(10));
+	}
+
 	project_monster_breath(context, RSF_BR_SOUN, 2);
 }
 
@@ -449,7 +452,10 @@ static void project_monster_handler_WATER(project_monster_handler_context_t *con
 /* Ice -- Cold + Stun */
 static void project_monster_handler_ICE(project_monster_handler_context_t *context)
 {
-	context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 10 + randint1(20));
+	if (one_in_(3)) {
+		context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 5 + randint1(10));
+	}
+
 	project_monster_hurt_immune(context, RF_HURT_COLD, RF_IM_COLD, 2, 9, MON_MSG_BADLY_FROZEN, MON_MSG_FREEZE_SHATTER);
 }
 
@@ -476,7 +482,10 @@ static void project_monster_handler_INERTIA(project_monster_handler_context_t *c
 /* Force */
 static void project_monster_handler_FORCE(project_monster_handler_context_t *context)
 {
-	context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 10 + randint1(20));
+	if (one_in_(3)) {
+		context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 5 + randint1(10));
+	}
+
 	project_monster_breath(context, RSF_BR_WALL, 3);
 
 	/* Prevent thursting force breathers. */
