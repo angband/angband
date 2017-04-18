@@ -2209,9 +2209,6 @@ static void new_level_display_update(game_event_type type,
 	/* Fully update the visuals (and monster distances) */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-
 	/* Redraw dungeon */
 	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
 

@@ -376,8 +376,6 @@ struct player_state {
 
 	int cur_light;		/**< Radius of light (if any) */
 
-	int noise;			/**< Derived from stealth */
-
 	bool heavy_wield;	/**< Heavy weapon */
 	bool heavy_shoot;	/**< Heavy shooter */
 	bool icky_wield;	/**< Icky weapon shooter */

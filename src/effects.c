@@ -3112,9 +3112,6 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 	/* Fully update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-
 	/* Redraw monster list */
 	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 
@@ -3399,9 +3396,6 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	/* Fully update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Update the health bar */
 	player->upkeep->redraw |= (PR_HEALTH);

@@ -248,8 +248,8 @@ static ui_event target_recall_loop_object(struct object *obj, int y, int x,
 			if (player->wizard) {
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
 						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
-						o_name, coords, y, x, (int)cave->squares[y][x].noise,
-						(int)cave->squares[y][x].scent);
+						o_name, coords, y, x, (int)cave->noise.grids[y][x],
+						(int)cave->scent.grids[y][x]);
 			} else {
 				strnfmt(out_val, TARGET_OUT_VAL_SIZE,
 						"%s%s%s%s, %s.", s1, s2, s3, o_name, coords);
@@ -349,8 +349,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			if (player->wizard)
 				strnfmt(out_val, sizeof(out_val),
 						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
-						name_strange, coords, y, x, (int)cave->squares[y][x].noise,
-						(int)cave->squares[y][x].scent);
+						name_strange, coords, y, x, (int)cave->noise.grids[y][x],
+						(int)cave->scent.grids[y][x]);
 			else
 				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.",
 						s1, s2, s3, name_strange, coords);
@@ -412,8 +412,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 							strnfmt(out_val, sizeof(out_val),
 									"%s%s%s%s (%s), %s (%d:%d, noise=%d, scent=%d).",
 									s1, s2, s3, m_name, buf, coords, y, x,
-									(int)cave->squares[y][x].noise,
-									(int)cave->squares[y][x].scent);
+									(int)cave->noise.grids[y][x],
+									(int)cave->scent.grids[y][x]);
 						} else {
 							strnfmt(out_val, sizeof(out_val),
 									"%s%s%s%s (%s), %s.",
@@ -478,8 +478,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						strnfmt(out_val, sizeof(out_val),
 								"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).",
 								s1, s2, s3, o_name, coords, y, x,
-								(int)cave->squares[y][x].noise,
-								(int)cave->squares[y][x].scent);
+								(int)cave->noise.grids[y][x],
+								(int)cave->scent.grids[y][x]);
 					}
 
 					prt(out_val, 0, 0);
@@ -543,8 +543,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					strnfmt(out_val, sizeof(out_val),
 							"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2,
 							s3, trap->kind->name, coords, y, x,
-							(int)cave->squares[y][x].noise,
-							(int)cave->squares[y][x].scent);
+							(int)cave->noise.grids[y][x],
+							(int)cave->scent.grids[y][x]);
 				} else {
 					strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.", 
 							s1, s2, s3, trap->kind->desc, coords);
@@ -591,8 +591,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						strnfmt(out_val, sizeof(out_val),
 								"%s%s%sa pile of %d objects, %s (%d:%d, noise=%d, scent=%d).",
 								s1, s2, s3, floor_num, coords, y, x,
-								(int)cave->squares[y][x].noise,
-								(int)cave->squares[y][x].scent);
+								(int)cave->noise.grids[y][x],
+								(int)cave->scent.grids[y][x]);
 					} else {
 						strnfmt(out_val, sizeof(out_val),
 								"%s%s%sa pile of %d objects, %s.",
@@ -694,8 +694,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			if (player->wizard) {
 				strnfmt(out_val, sizeof(out_val),
 						"%s%s%s%s, %s (%d:%d, noise=%d, scent=%d).", s1, s2, s3,
-						name, coords, y, x, (int)cave->squares[y][x].noise,
-						(int)cave->squares[y][x].scent);
+						name, coords, y, x, (int)cave->noise.grids[y][x],
+						(int)cave->scent.grids[y][x]);
 			} else {
 				strnfmt(out_val, sizeof(out_val),
 						"%s%s%s%s, %s.", s1, s2, s3, name, coords);

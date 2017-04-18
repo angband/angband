@@ -130,61 +130,7 @@ static s16b get_idx_from_name(char *s)
 
 /**
  * Display in sequence the squares at n grids from the player, as measured by
- * the flow algorithm; n goes from 1 to max flow depth
- */
-static void do_cmd_wiz_hack_ben(void)
-{
-	int py = player->py;
-	int px = player->px;
-
-	int i, y, x;
-
-	char kp;
-
-	for (i = 0; i < z_info->max_flow_depth; ++i) {
-		/* Update map */
-		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
-			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
-				byte a = COLOUR_RED;
-
-				if (!square_in_bounds_fully(cave, y, x)) continue;
-
-				/* Display proper noise */
-				if (cave->squares[y][x].noise != i) continue;
-
-				/* Reliability in yellow */
-				if (cave->squares[y][x].scent == cave->squares[py][px].scent)
-					a = COLOUR_YELLOW;
-
-				/* Display player/floors/walls */
-				if ((y == py) && (x == px))
-					print_rel(L'@', a, y, x);
-				else if (square_ispassable(cave, y, x))
-					print_rel(L'*', a, y, x);
-				else
-					print_rel(L'#', a, y, x);
-			}
-
-		/* Get key */
-		if (!get_com(format("Depth %d: ", i), &kp))
-			break;
-
-		/* Redraw map */
-		prt_map();
-	}
-
-	/* Done */
-	prt("", 0, 0);
-
-	/* Redraw map */
-	prt_map();
-}
-
-
-
-/**
- * Display in sequence the squares at n grids from the player, as measured by
- * the flow algorithm; n goes from 1 to max flow depth
+ * the noise and scent algorithms; n goes from 1 to max flow depth
  */
 static void do_cmd_wiz_hack_nick(void)
 {
@@ -196,7 +142,7 @@ static void do_cmd_wiz_hack_nick(void)
 	char kp;
 
 	/* Noise */
-	for (i = 30 - player->state.skills[SKILL_STEALTH]; i > 0; --i) {
+	for (i = MAX(0, player->state.skills[SKILL_STEALTH]); i < 100; i++) {
 		/* Update map */
 		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
@@ -225,7 +171,7 @@ static void do_cmd_wiz_hack_nick(void)
 	}
 
 	/* Smell */
-	for (i = z_info->max_flow_depth; i > 0; --i) {
+	for (i = 0; i < 50; i++) {
 		/* Update map */
 		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {

@@ -218,7 +218,6 @@ color:D
 speed:110
 hit-points:3
 hearing:4
-smell:20
 armor-class:1
 sleepiness:40
 depth:0
@@ -239,7 +238,7 @@ color:U
 speed:110
 hit-points:2
 hearing:30
-smell:20
+smell:30
 armor-class:1
 sleepiness:10
 depth:0
@@ -255,7 +254,7 @@ color:U
 speed:110
 hit-points:2
 hearing:20
-smell:20
+smell:50
 armor-class:1
 sleepiness:5
 depth:0
@@ -271,7 +270,6 @@ color:w
 speed:110
 hit-points:350
 hearing:40
-smell:20
 armor-class:12
 sleepiness:3
 depth:0
@@ -291,7 +289,6 @@ color:W
 speed:110
 hit-points:2
 hearing:6
-smell:20
 armor-class:1
 sleepiness:50
 depth:0
@@ -309,7 +306,6 @@ color:g
 speed:110
 hit-points:2
 hearing:6
-smell:20
 armor-class:1
 sleepiness:50
 depth:0
@@ -326,7 +322,6 @@ color:G
 speed:120
 hit-points:10
 hearing:6
-smell:20
 armor-class:1
 sleepiness:50
 depth:0
@@ -343,7 +338,6 @@ color:U
 speed:110
 hit-points:3
 hearing:10
-smell:20
 armor-class:1
 sleepiness:40
 depth:0
@@ -360,7 +354,6 @@ color:u
 speed:110
 hit-points:1
 hearing:10
-smell:20
 armor-class:1
 sleepiness:50
 depth:0
@@ -377,7 +370,6 @@ color:b
 speed:110
 hit-points:9
 hearing:10
-smell:20
 armor-class:9
 sleepiness:99
 depth:0
@@ -396,7 +388,6 @@ color:y
 speed:110
 hit-points:4
 hearing:10
-smell:20
 armor-class:1
 sleepiness:0
 depth:0
@@ -414,7 +405,6 @@ color:o
 speed:110
 hit-points:6
 hearing:10
-smell:20
 armor-class:1
 sleepiness:255
 depth:0
@@ -435,7 +425,6 @@ color:r
 speed:110
 hit-points:23
 hearing:10
-smell:20
 armor-class:24
 sleepiness:250
 depth:0
@@ -453,7 +442,6 @@ color:B
 speed:110
 hit-points:32
 hearing:10
-smell:20
 armor-class:36
 sleepiness:250
 depth:0
@@ -471,7 +459,6 @@ color:r
 speed:110
 hit-points:100
 hearing:80
-smell:20
 armor-class:12
 sleepiness:3
 depth:0
@@ -488,7 +475,6 @@ color:G
 speed:100
 hit-points:1000
 hearing:80
-smell:20
 armor-class:12
 sleepiness:3
 depth:0
@@ -511,7 +497,6 @@ color:s
 speed:110
 hit-points:2
 hearing:2
-smell:20
 armor-class:1
 sleepiness:0
 depth:1
@@ -529,7 +514,6 @@ color:s
 speed:110
 hit-points:2
 hearing:2
-smell:20
 armor-class:1
 sleepiness:0
 depth:1
@@ -578,7 +562,6 @@ color:w
 speed:110
 hit-points:6
 hearing:12
-smell:20
 armor-class:8
 sleepiness:10
 depth:1
@@ -595,7 +578,6 @@ color:w
 speed:110
 hit-points:6
 hearing:12
-smell:20
 armor-class:7
 sleepiness:10
 depth:1
@@ -631,7 +613,6 @@ color:u
 speed:100
 hit-points:14
 hearing:4
-smell:20
 armor-class:42
 sleepiness:99
 depth:1
@@ -648,7 +629,6 @@ color:w
 speed:100
 hit-points:11
 hearing:4
-smell:20
 armor-class:36
 sleepiness:99
 depth:1
@@ -681,7 +661,6 @@ color:w
 speed:100
 hit-points:10
 hearing:7
-smell:20
 armor-class:1
 sleepiness:14
 depth:1
@@ -699,7 +678,6 @@ color:o
 speed:110
 hit-points:11
 hearing:2
-smell:20
 armor-class:7
 sleepiness:10
 depth:1
@@ -731,7 +709,7 @@ color:U
 speed:110
 hit-points:3
 hearing:10
-smell:20
+smell:50
 armor-class:3
 sleepiness:10
 depth:1
@@ -763,7 +741,6 @@ color:o
 speed:120
 hit-points:4
 hearing:20
-smell:20
 armor-class:3
 sleepiness:10
 depth:1
@@ -797,7 +774,6 @@ color:R
 speed:110
 hit-points:1
 hearing:4
-smell:20
 armor-class:1
 sleepiness:0
 depth:2
@@ -817,7 +793,6 @@ color:W
 speed:110
 hit-points:18
 hearing:14
-smell:20
 armor-class:4
 sleepiness:10
 depth:2
@@ -852,7 +827,6 @@ color:u
 speed:110
 hit-points:23
 hearing:20
-smell:20
 armor-class:24
 sleepiness:80
 depth:2
@@ -875,7 +849,6 @@ color:b
 speed:110
 hit-points:20
 hearing:20
-smell:20
 armor-class:18
 sleepiness:10
 depth:2
@@ -898,7 +871,6 @@ color:g
 speed:110
 hit-points:18
 hearing:20
-smell:20
 armor-class:15
 sleepiness:80
 depth:2
@@ -925,7 +897,6 @@ color:r
 speed:110
 hit-points:15
 hearing:20
-smell:20
 armor-class:9
 sleepiness:15
 depth:2
@@ -953,7 +924,6 @@ color:y
 speed:110
 hit-points:1
 hearing:2
-smell:20
 armor-class:1
 sleepiness:0
 depth:2
@@ -971,7 +941,6 @@ color:w
 speed:120
 hit-points:36
 hearing:2
-smell:20
 armor-class:1
 sleepiness:99
 depth:2
@@ -1073,7 +1042,7 @@ color:y
 speed:120
 hit-points:25
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:2
@@ -1092,7 +1061,7 @@ color:y
 speed:120
 hit-points:25
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:2
@@ -1111,7 +1080,6 @@ color:g
 speed:100
 hit-points:15
 hearing:7
-smell:20
 armor-class:3
 sleepiness:10
 depth:2
@@ -1129,7 +1097,6 @@ color:y
 speed:100
 hit-points:18
 hearing:5
-smell:20
 armor-class:45
 sleepiness:75
 depth:2
@@ -1146,7 +1113,6 @@ color:p
 speed:120
 hit-points:7
 hearing:8
-smell:20
 armor-class:19
 sleepiness:80
 depth:2
@@ -1164,7 +1130,7 @@ color:U
 speed:120
 hit-points:9
 hearing:40
-smell:20
+smell:30
 armor-class:14
 sleepiness:0
 depth:2
@@ -1182,7 +1148,6 @@ color:s
 speed:120
 hit-points:9
 hearing:40
-smell:20
 armor-class:14
 sleepiness:0
 depth:2
@@ -1200,7 +1165,6 @@ color:B
 speed:130
 hit-points:400
 hearing:20
-smell:20
 armor-class:14
 sleepiness:5
 depth:3
@@ -1219,7 +1183,6 @@ color:g
 speed:120
 hit-points:8
 hearing:8
-smell:20
 armor-class:19
 sleepiness:80
 depth:3
@@ -1237,7 +1200,6 @@ color:W
 speed:130
 hit-points:6
 hearing:8
-smell:20
 armor-class:18
 sleepiness:10
 depth:3
@@ -1291,7 +1253,6 @@ color:D
 speed:110
 hit-points:27
 hearing:16
-smell:20
 armor-class:60
 sleepiness:180
 depth:3
@@ -1309,7 +1270,6 @@ color:o
 speed:110
 hit-points:1
 hearing:2
-smell:20
 armor-class:1
 sleepiness:0
 depth:3
@@ -1327,7 +1287,6 @@ color:W
 speed:120
 hit-points:45
 hearing:2
-smell:20
 armor-class:1
 sleepiness:99
 depth:3
@@ -1350,7 +1309,6 @@ color:y
 speed:120
 hit-points:45
 hearing:2
-smell:20
 armor-class:1
 sleepiness:99
 depth:3
@@ -1370,7 +1328,6 @@ color:b
 speed:110
 hit-points:9
 hearing:16
-smell:20
 armor-class:9
 sleepiness:10
 depth:3
@@ -1405,7 +1362,6 @@ color:y
 speed:110
 hit-points:36
 hearing:2
-smell:20
 armor-class:12
 sleepiness:99
 depth:3
@@ -1437,7 +1393,6 @@ color:y
 speed:100
 hit-points:18
 hearing:7
-smell:20
 armor-class:4
 sleepiness:10
 depth:3
@@ -1455,7 +1410,6 @@ color:w
 speed:100
 hit-points:10
 hearing:7
-smell:20
 armor-class:1
 sleepiness:13
 depth:3
@@ -1474,7 +1428,6 @@ color:R
 speed:110
 hit-points:11
 hearing:2
-smell:20
 armor-class:7
 sleepiness:10
 depth:3
@@ -1534,7 +1487,6 @@ color:W
 speed:110
 hit-points:27
 hearing:20
-smell:20
 armor-class:12
 sleepiness:50
 depth:4
@@ -1562,7 +1514,6 @@ color:w
 speed:110
 hit-points:27
 hearing:20
-smell:20
 armor-class:24
 sleepiness:100
 depth:4
@@ -1590,7 +1541,6 @@ color:y
 speed:110
 hit-points:20
 hearing:20
-smell:20
 armor-class:20
 sleepiness:100
 depth:4
@@ -1617,7 +1567,6 @@ color:b
 speed:110
 hit-points:54
 hearing:2
-smell:20
 armor-class:1
 sleepiness:99
 depth:4
@@ -1636,7 +1585,6 @@ color:u
 speed:100
 hit-points:32
 hearing:3
-smell:20
 armor-class:28
 sleepiness:10
 depth:4
@@ -1670,7 +1618,6 @@ color:b
 speed:100
 hit-points:23
 hearing:7
-smell:20
 armor-class:14
 sleepiness:10
 depth:4
@@ -1688,7 +1635,6 @@ color:s
 speed:100
 hit-points:27
 hearing:6
-smell:20
 armor-class:61
 sleepiness:100
 depth:4
@@ -1745,7 +1691,6 @@ color:D
 speed:120
 hit-points:12
 hearing:40
-smell:20
 armor-class:14
 sleepiness:0
 depth:4
@@ -1763,7 +1708,6 @@ color:U
 speed:120
 hit-points:60
 hearing:16
-smell:20
 armor-class:12
 sleepiness:30
 depth:5
@@ -1783,7 +1727,6 @@ color:g
 speed:110
 hit-points:41
 hearing:18
-smell:20
 armor-class:48
 sleepiness:120
 depth:5
@@ -1803,7 +1746,6 @@ color:b
 speed:110
 hit-points:8
 hearing:8
-smell:20
 armor-class:19
 sleepiness:80
 depth:5
@@ -1821,7 +1763,6 @@ color:g
 speed:130
 hit-points:8
 hearing:10
-smell:20
 armor-class:24
 sleepiness:10
 depth:5
@@ -1840,7 +1781,6 @@ color:g
 speed:120
 hit-points:99
 hearing:2
-smell:20
 armor-class:1
 sleepiness:99
 depth:5
@@ -1875,7 +1815,6 @@ color:w
 speed:110
 hit-points:23
 hearing:20
-smell:20
 armor-class:39
 sleepiness:80
 depth:5
@@ -1892,7 +1831,6 @@ color:s
 speed:110
 hit-points:18
 hearing:14
-smell:20
 armor-class:14
 sleepiness:15
 depth:5
@@ -1908,7 +1846,6 @@ color:v
 speed:100
 hit-points:32
 hearing:2
-smell:20
 armor-class:7
 sleepiness:10
 depth:5
@@ -1929,7 +1866,6 @@ color:r
 speed:100
 hit-points:23
 hearing:7
-smell:20
 armor-class:14
 sleepiness:10
 depth:5
@@ -1947,7 +1883,6 @@ color:o
 speed:110
 hit-points:14
 hearing:6
-smell:20
 armor-class:30
 sleepiness:10
 depth:5
@@ -1965,7 +1900,6 @@ color:w
 speed:110
 hit-points:14
 hearing:12
-smell:20
 armor-class:30
 sleepiness:1
 depth:5
@@ -1985,7 +1919,6 @@ color:g
 speed:110
 hit-points:14
 hearing:12
-smell:20
 armor-class:30
 sleepiness:1
 depth:5
@@ -2006,7 +1939,6 @@ color:u
 speed:120
 hit-points:90
 hearing:2
-smell:20
 armor-class:36
 sleepiness:99
 depth:5
@@ -2028,7 +1960,6 @@ color:P
 speed:110
 hit-points:1
 hearing:2
-smell:20
 armor-class:1
 sleepiness:0
 depth:6
@@ -2046,7 +1977,6 @@ color:u
 speed:110
 hit-points:68
 hearing:2
-smell:20
 armor-class:14
 sleepiness:99
 depth:6
@@ -2062,7 +1992,6 @@ color:u
 speed:130
 hit-points:14
 hearing:10
-smell:20
 armor-class:18
 sleepiness:30
 depth:6
@@ -2079,7 +2008,6 @@ color:s
 speed:100
 hit-points:54
 hearing:4
-smell:20
 armor-class:36
 sleepiness:10
 depth:6
@@ -2116,7 +2044,6 @@ color:r
 speed:110
 hit-points:24
 hearing:6
-smell:20
 armor-class:36
 sleepiness:10
 depth:6
@@ -2135,7 +2062,6 @@ color:s
 speed:120
 hit-points:14
 hearing:12
-smell:20
 armor-class:30
 sleepiness:1
 depth:6
@@ -2155,7 +2081,6 @@ color:y
 speed:120
 hit-points:14
 hearing:12
-smell:20
 armor-class:30
 sleepiness:1
 depth:6
@@ -2197,7 +2122,6 @@ color:U
 speed:120
 hit-points:11
 hearing:8
-smell:20
 armor-class:19
 sleepiness:80
 depth:7
@@ -2217,7 +2141,6 @@ color:u
 speed:110
 hit-points:36
 hearing:20
-smell:20
 armor-class:48
 sleepiness:80
 depth:7
@@ -2235,7 +2158,6 @@ color:r
 speed:110
 hit-points:45
 hearing:2
-smell:20
 armor-class:7
 sleepiness:10
 depth:7
@@ -2255,7 +2177,6 @@ color:r
 speed:110
 hit-points:50
 hearing:20
-smell:20
 armor-class:48
 sleepiness:120
 depth:7
@@ -2274,7 +2195,6 @@ color:r
 speed:110
 hit-points:117
 hearing:2
-smell:20
 armor-class:1
 sleepiness:99
 depth:7
@@ -2307,7 +2227,6 @@ color:g
 speed:110
 hit-points:23
 hearing:14
-smell:20
 armor-class:14
 sleepiness:20
 depth:7
@@ -2343,7 +2262,6 @@ color:B
 speed:110
 hit-points:9
 hearing:12
-smell:20
 armor-class:12
 sleepiness:10
 depth:7
@@ -2365,7 +2283,6 @@ color:D
 speed:110
 hit-points:39
 hearing:20
-smell:20
 armor-class:24
 sleepiness:40
 depth:7
@@ -2431,7 +2348,6 @@ color:B
 speed:110
 hit-points:250
 hearing:20
-smell:20
 armor-class:45
 sleepiness:10
 depth:8
@@ -2519,7 +2435,6 @@ color:g
 speed:110
 hit-points:95
 hearing:2
-smell:20
 armor-class:16
 sleepiness:75
 depth:8
@@ -2536,7 +2451,6 @@ color:w
 speed:110
 hit-points:45
 hearing:20
-smell:20
 armor-class:54
 sleepiness:70
 depth:8
@@ -2553,7 +2467,6 @@ color:U
 speed:110
 hit-points:65
 hearing:20
-smell:20
 armor-class:48
 sleepiness:80
 depth:8
@@ -2590,7 +2503,6 @@ color:b
 speed:110
 hit-points:36
 hearing:20
-smell:20
 armor-class:28
 sleepiness:10
 depth:8
@@ -2609,7 +2521,6 @@ color:u
 speed:120
 hit-points:36
 hearing:30
-smell:20
 armor-class:30
 sleepiness:10
 depth:8
@@ -2647,7 +2558,6 @@ color:r
 speed:110
 hit-points:32
 hearing:14
-smell:20
 armor-class:21
 sleepiness:20
 depth:9
@@ -2728,7 +2638,6 @@ color:b
 speed:110
 hit-points:88
 hearing:20
-smell:20
 armor-class:36
 sleepiness:70
 depth:9
@@ -2752,7 +2661,6 @@ color:w
 speed:110
 hit-points:88
 hearing:20
-smell:20
 armor-class:36
 sleepiness:70
 depth:9
@@ -2776,7 +2684,6 @@ color:g
 speed:110
 hit-points:88
 hearing:20
-smell:20
 armor-class:36
 sleepiness:70
 depth:9
@@ -2800,7 +2707,6 @@ color:s
 speed:110
 hit-points:88
 hearing:20
-smell:20
 armor-class:36
 sleepiness:70
 depth:9
@@ -2824,7 +2730,6 @@ color:r
 speed:110
 hit-points:88
 hearing:20
-smell:20
 armor-class:36
 sleepiness:70
 depth:9
@@ -2864,7 +2769,6 @@ color:U
 speed:110
 hit-points:210
 hearing:20
-smell:20
 armor-class:37
 sleepiness:40
 depth:9
@@ -2885,7 +2789,6 @@ color:g
 speed:110
 hit-points:44
 hearing:8
-smell:20
 armor-class:45
 sleepiness:10
 depth:9
@@ -2903,7 +2806,6 @@ color:y
 speed:110
 hit-points:88
 hearing:20
-smell:20
 armor-class:36
 sleepiness:70
 depth:9
@@ -2954,7 +2856,6 @@ color:V
 speed:110
 hit-points:55
 hearing:8
-smell:20
 armor-class:24
 sleepiness:40
 depth:10
@@ -2974,7 +2875,6 @@ color:r
 speed:120
 hit-points:39
 hearing:20
-smell:20
 armor-class:24
 sleepiness:30
 depth:10
@@ -3029,7 +2929,6 @@ color:u
 speed:110
 hit-points:60
 hearing:20
-smell:20
 armor-class:24
 sleepiness:40
 depth:10
@@ -3049,7 +2948,6 @@ color:w
 speed:120
 hit-points:1
 hearing:4
-smell:20
 armor-class:1
 sleepiness:0
 depth:10
@@ -3107,7 +3005,6 @@ color:o
 speed:110
 hit-points:68
 hearing:2
-smell:20
 armor-class:22
 sleepiness:0
 depth:10
@@ -3123,7 +3020,6 @@ color:v
 speed:110
 hit-points:72
 hearing:2
-smell:20
 armor-class:30
 sleepiness:10
 depth:10
@@ -3144,7 +3040,6 @@ color:o
 speed:110
 hit-points:176
 hearing:20
-smell:20
 armor-class:36
 sleepiness:70
 depth:10
@@ -3169,7 +3064,6 @@ color:R
 speed:120
 hit-points:80
 hearing:20
-smell:20
 armor-class:38
 sleepiness:30
 depth:10
@@ -3191,7 +3085,6 @@ color:y
 speed:100
 hit-points:81
 hearing:5
-smell:20
 armor-class:43
 sleepiness:10
 depth:10
@@ -3211,7 +3104,7 @@ color:u
 speed:120
 hit-points:21
 hearing:30
-smell:20
+smell:50
 armor-class:45
 sleepiness:10
 depth:10
@@ -3230,7 +3123,6 @@ color:G
 speed:120
 hit-points:3
 hearing:8
-smell:20
 armor-class:16
 sleepiness:10
 depth:10
@@ -3245,7 +3137,7 @@ color:u
 speed:120
 hit-points:45
 hearing:40
-smell:20
+smell:30
 armor-class:36
 sleepiness:0
 depth:10
@@ -3263,7 +3155,6 @@ color:b
 speed:110
 hit-points:41
 hearing:20
-smell:20
 armor-class:48
 sleepiness:5
 depth:10
@@ -3288,7 +3179,6 @@ color:v
 speed:110
 hit-points:114
 hearing:20
-smell:20
 armor-class:36
 sleepiness:70
 depth:11
@@ -3331,7 +3221,6 @@ color:s
 speed:110
 hit-points:50
 hearing:20
-smell:20
 armor-class:36
 sleepiness:90
 depth:11
@@ -3350,7 +3239,6 @@ color:r
 speed:110
 hit-points:32
 hearing:18
-smell:20
 armor-class:30
 sleepiness:20
 depth:11
@@ -3378,7 +3266,6 @@ color:D
 speed:120
 hit-points:45
 hearing:10
-smell:20
 armor-class:48
 sleepiness:10
 depth:12
@@ -3396,7 +3283,7 @@ color:w
 speed:120
 hit-points:28
 hearing:30
-smell:20
+smell:50
 armor-class:45
 sleepiness:15
 depth:12
@@ -3417,7 +3304,6 @@ color:P
 speed:110
 hit-points:234
 hearing:2
-smell:20
 armor-class:1
 sleepiness:99
 depth:12
@@ -3438,7 +3324,6 @@ color:D
 speed:100
 hit-points:23
 hearing:10
-smell:20
 armor-class:22
 sleepiness:10
 depth:12
@@ -3508,7 +3393,6 @@ color:g
 speed:110
 hit-points:54
 hearing:20
-smell:20
 armor-class:26
 sleepiness:40
 depth:12
@@ -3538,7 +3422,6 @@ color:g
 speed:120
 hit-points:39
 hearing:20
-smell:20
 armor-class:45
 sleepiness:40
 depth:12
@@ -3564,7 +3447,6 @@ color:B
 speed:130
 hit-points:36
 hearing:12
-smell:20
 armor-class:48
 sleepiness:20
 depth:12
@@ -3582,7 +3464,6 @@ color:w
 speed:110
 hit-points:45
 hearing:20
-smell:20
 armor-class:45
 sleepiness:70
 depth:12
@@ -3599,7 +3480,6 @@ color:s
 speed:110
 hit-points:54
 hearing:20
-smell:20
 armor-class:36
 sleepiness:100
 depth:12
@@ -3617,7 +3497,7 @@ color:o
 speed:120
 hit-points:66
 hearing:40
-smell:20
+smell:30
 armor-class:48
 sleepiness:0
 depth:12
@@ -3636,7 +3516,6 @@ color:u
 speed:120
 hit-points:23
 hearing:14
-smell:20
 armor-class:24
 sleepiness:10
 depth:12
@@ -3658,7 +3537,6 @@ color:u
 speed:110
 hit-points:54
 hearing:20
-smell:20
 armor-class:51
 sleepiness:70
 depth:12
@@ -3700,7 +3578,6 @@ color:o
 speed:120
 hit-points:59
 hearing:12
-smell:20
 armor-class:27
 sleepiness:0
 depth:12
@@ -3722,7 +3599,6 @@ color:b
 speed:110
 hit-points:70
 hearing:8
-smell:20
 armor-class:36
 sleepiness:80
 depth:13
@@ -3745,7 +3621,6 @@ color:u
 speed:110
 hit-points:59
 hearing:10
-smell:20
 armor-class:72
 sleepiness:30
 depth:13
@@ -3807,7 +3682,6 @@ color:B
 speed:110
 hit-points:90
 hearing:5
-smell:20
 armor-class:60
 sleepiness:10
 depth:13
@@ -3826,7 +3700,6 @@ color:I
 speed:120
 hit-points:54
 hearing:20
-smell:20
 armor-class:15
 sleepiness:20
 depth:13
@@ -3855,7 +3728,6 @@ color:G
 speed:110
 hit-points:78
 hearing:20
-smell:20
 armor-class:15
 sleepiness:20
 depth:13
@@ -3907,7 +3779,6 @@ color:U
 speed:120
 hit-points:59
 hearing:12
-smell:20
 armor-class:21
 sleepiness:1
 depth:13
@@ -3930,7 +3801,6 @@ color:s
 speed:120
 hit-points:3
 hearing:8
-smell:20
 armor-class:30
 sleepiness:10
 depth:14
@@ -3970,7 +3840,6 @@ color:b
 speed:100
 hit-points:35
 hearing:15
-smell:20
 armor-class:30
 sleepiness:10
 depth:14
@@ -3996,7 +3865,6 @@ color:R
 speed:110
 hit-points:54
 hearing:12
-smell:20
 armor-class:36
 sleepiness:10
 depth:14
@@ -4013,7 +3881,7 @@ color:s
 speed:120
 hit-points:36
 hearing:20
-smell:20
+smell:50
 armor-class:30
 sleepiness:10
 depth:14
@@ -4032,7 +3900,6 @@ color:D
 speed:120
 hit-points:2
 hearing:6
-smell:20
 armor-class:8
 sleepiness:10
 depth:14
@@ -4047,7 +3914,6 @@ color:w
 speed:110
 hit-points:176
 hearing:30
-smell:20
 armor-class:30
 sleepiness:10
 depth:14
@@ -4114,7 +3980,6 @@ color:B
 speed:140
 hit-points:1
 hearing:40
-smell:20
 armor-class:12
 sleepiness:0
 depth:15
@@ -4138,7 +4003,6 @@ color:B
 speed:110
 hit-points:144
 hearing:20
-smell:20
 armor-class:78
 sleepiness:120
 depth:15
@@ -4157,7 +4021,7 @@ color:o
 speed:110
 hit-points:21
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:15
@@ -4181,7 +4045,7 @@ color:D
 speed:110
 hit-points:21
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:15
@@ -4226,7 +4090,6 @@ color:o
 speed:120
 hit-points:80
 hearing:8
-smell:20
 armor-class:48
 sleepiness:20
 depth:15
@@ -4264,7 +4127,6 @@ color:g
 speed:120
 hit-points:41
 hearing:15
-smell:20
 armor-class:30
 sleepiness:80
 depth:15
@@ -4304,7 +4166,6 @@ color:y
 speed:110
 hit-points:36
 hearing:20
-smell:20
 armor-class:48
 sleepiness:60
 depth:15
@@ -4322,7 +4183,7 @@ color:w
 speed:110
 hit-points:21
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:15
@@ -4343,7 +4204,6 @@ color:U
 speed:110
 hit-points:63
 hearing:12
-smell:20
 armor-class:36
 sleepiness:10
 depth:15
@@ -4362,7 +4222,6 @@ color:U
 speed:130
 hit-points:14
 hearing:12
-smell:20
 armor-class:30
 sleepiness:10
 depth:15
@@ -4384,7 +4243,6 @@ color:U
 speed:110
 hit-points:110
 hearing:20
-smell:20
 armor-class:75
 sleepiness:30
 depth:16
@@ -4405,7 +4263,6 @@ color:G
 speed:110
 hit-points:316
 hearing:12
-smell:20
 armor-class:21
 sleepiness:1
 depth:16
@@ -4431,7 +4288,6 @@ color:y
 speed:120
 hit-points:3
 hearing:8
-smell:20
 armor-class:16
 sleepiness:10
 depth:16
@@ -4468,7 +4324,6 @@ color:o
 speed:110
 hit-points:27
 hearing:20
-smell:20
 armor-class:36
 sleepiness:20
 depth:16
@@ -4536,7 +4391,6 @@ color:D
 speed:120
 hit-points:9
 hearing:40
-smell:20
 armor-class:14
 sleepiness:0
 depth:16
@@ -4561,7 +4415,6 @@ color:g
 speed:110
 hit-points:27
 hearing:20
-smell:20
 armor-class:36
 sleepiness:20
 depth:17
@@ -4606,7 +4459,6 @@ color:y
 speed:110
 hit-points:450
 hearing:25
-smell:20
 armor-class:84
 sleepiness:25
 depth:17
@@ -4634,7 +4486,6 @@ color:u
 speed:110
 hit-points:200
 hearing:20
-smell:20
 armor-class:90
 sleepiness:80
 depth:17
@@ -4655,7 +4506,6 @@ color:b
 speed:120
 hit-points:41
 hearing:12
-smell:20
 armor-class:42
 sleepiness:20
 depth:17
@@ -4674,7 +4524,6 @@ color:r
 speed:110
 hit-points:50
 hearing:12
-smell:20
 armor-class:52
 sleepiness:20
 depth:17
@@ -4692,7 +4541,6 @@ color:u
 speed:120
 hit-points:59
 hearing:10
-smell:20
 armor-class:60
 sleepiness:20
 depth:17
@@ -4739,7 +4587,6 @@ color:r
 speed:120
 hit-points:50
 hearing:16
-smell:20
 armor-class:36
 sleepiness:20
 depth:18
@@ -4758,7 +4605,7 @@ color:r
 speed:110
 hit-points:35
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:18
@@ -4784,7 +4631,7 @@ color:w
 speed:110
 hit-points:35
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:18
@@ -4809,7 +4656,7 @@ color:b
 speed:110
 hit-points:35
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:18
@@ -4836,7 +4683,6 @@ color:w
 speed:110
 hit-points:55
 hearing:25
-smell:20
 armor-class:36
 sleepiness:0
 depth:18
@@ -4864,7 +4710,7 @@ color:B
 speed:120
 hit-points:36
 hearing:20
-smell:20
+smell:50
 armor-class:24
 sleepiness:10
 depth:18
@@ -4885,7 +4731,6 @@ color:g
 speed:110
 hit-points:70
 hearing:20
-smell:20
 armor-class:19
 sleepiness:40
 depth:18
@@ -4909,7 +4754,6 @@ color:g
 speed:110
 hit-points:68
 hearing:2
-smell:20
 armor-class:7
 sleepiness:10
 depth:18
@@ -4981,7 +4825,6 @@ color:W
 speed:100
 hit-points:126
 hearing:12
-smell:20
 armor-class:90
 sleepiness:10
 depth:19
@@ -5000,7 +4843,6 @@ color:r
 speed:110
 hit-points:77
 hearing:2
-smell:20
 armor-class:19
 sleepiness:70
 depth:19
@@ -5019,7 +4861,6 @@ color:D
 speed:120
 hit-points:5
 hearing:8
-smell:20
 armor-class:21
 sleepiness:10
 depth:19
@@ -5071,7 +4912,6 @@ color:B
 speed:120
 hit-points:27
 hearing:15
-smell:20
 armor-class:30
 sleepiness:80
 depth:20
@@ -5095,7 +4935,6 @@ color:o
 speed:120
 hit-points:300
 hearing:20
-smell:20
 armor-class:97
 sleepiness:70
 depth:20
@@ -5117,7 +4956,7 @@ color:u
 speed:110
 hit-points:68
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:20
@@ -5142,7 +4981,7 @@ color:g
 speed:110
 hit-points:68
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:20
@@ -5168,7 +5007,7 @@ color:y
 speed:120
 hit-points:150
 hearing:40
-smell:20
+smell:30
 armor-class:60
 sleepiness:0
 depth:20
@@ -5188,7 +5027,7 @@ color:s
 speed:110
 hit-points:68
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:20
@@ -5238,7 +5077,6 @@ color:y
 speed:110
 hit-points:27
 hearing:10
-smell:20
 armor-class:1
 sleepiness:2
 depth:20
@@ -5275,7 +5113,7 @@ color:D
 speed:110
 hit-points:230
 hearing:15
-smell:20
+smell:50
 armor-class:36
 sleepiness:70
 depth:20
@@ -5294,7 +5132,6 @@ color:s
 speed:120
 hit-points:144
 hearing:20
-smell:20
 armor-class:48
 sleepiness:30
 depth:20
@@ -5324,7 +5161,6 @@ color:W
 speed:110
 hit-points:90
 hearing:20
-smell:20
 armor-class:60
 sleepiness:20
 depth:20
@@ -5356,7 +5192,6 @@ color:w
 speed:110
 hit-points:90
 hearing:20
-smell:20
 armor-class:48
 sleepiness:40
 depth:20
@@ -5413,7 +5248,6 @@ color:b
 speed:130
 hit-points:10
 hearing:12
-smell:20
 armor-class:39
 sleepiness:10
 depth:21
@@ -5435,7 +5269,6 @@ color:w
 speed:110
 hit-points:75
 hearing:30
-smell:20
 armor-class:48
 sleepiness:0
 depth:21
@@ -5466,7 +5299,6 @@ color:r
 speed:110
 hit-points:45
 hearing:100
-smell:20
 armor-class:36
 sleepiness:0
 depth:21
@@ -5487,7 +5319,6 @@ color:s
 speed:110
 hit-points:45
 hearing:100
-smell:20
 armor-class:36
 sleepiness:0
 depth:21
@@ -5507,7 +5338,6 @@ color:w
 speed:110
 hit-points:45
 hearing:100
-smell:20
 armor-class:36
 sleepiness:0
 depth:21
@@ -5527,7 +5357,6 @@ color:b
 speed:110
 hit-points:45
 hearing:100
-smell:20
 armor-class:36
 sleepiness:0
 depth:21
@@ -5547,7 +5376,6 @@ color:w
 speed:110
 hit-points:68
 hearing:20
-smell:20
 armor-class:33
 sleepiness:75
 depth:21
@@ -5594,7 +5422,6 @@ color:g
 speed:110
 hit-points:68
 hearing:12
-smell:20
 armor-class:76
 sleepiness:30
 depth:22
@@ -5611,7 +5438,6 @@ color:s
 speed:110
 hit-points:520
 hearing:12
-smell:20
 armor-class:120
 sleepiness:20
 depth:22
@@ -5633,7 +5459,6 @@ color:y
 speed:110
 hit-points:54
 hearing:12
-smell:20
 armor-class:45
 sleepiness:20
 depth:22
@@ -5651,7 +5476,6 @@ color:g
 speed:120
 hit-points:203
 hearing:20
-smell:20
 armor-class:79
 sleepiness:60
 depth:22
@@ -5674,7 +5498,6 @@ color:D
 speed:90
 hit-points:27
 hearing:10
-smell:20
 armor-class:7
 sleepiness:1
 depth:23
@@ -5696,7 +5519,6 @@ color:u
 speed:110
 hit-points:90
 hearing:20
-smell:20
 armor-class:60
 sleepiness:60
 depth:23
@@ -5744,7 +5566,6 @@ color:b
 speed:120
 hit-points:75
 hearing:20
-smell:20
 armor-class:45
 sleepiness:5
 depth:23
@@ -5768,7 +5589,6 @@ color:r
 speed:130
 hit-points:14
 hearing:12
-smell:20
 armor-class:42
 sleepiness:10
 depth:23
@@ -5790,7 +5610,6 @@ color:w
 speed:110
 hit-points:81
 hearing:14
-smell:20
 armor-class:66
 sleepiness:30
 depth:23
@@ -5824,7 +5643,6 @@ color:g
 speed:110
 hit-points:54
 hearing:20
-smell:20
 armor-class:36
 sleepiness:30
 depth:24
@@ -5847,7 +5665,6 @@ color:o
 speed:110
 hit-points:820
 hearing:20
-smell:20
 armor-class:96
 sleepiness:10
 depth:24
@@ -5874,7 +5691,6 @@ color:o
 speed:110
 hit-points:820
 hearing:20
-smell:20
 armor-class:96
 sleepiness:10
 depth:24
@@ -5901,7 +5717,6 @@ color:y
 speed:120
 hit-points:350
 hearing:20
-smell:20
 armor-class:105
 sleepiness:60
 depth:24
@@ -5924,7 +5739,6 @@ color:w
 speed:110
 hit-points:85
 hearing:20
-smell:20
 armor-class:51
 sleepiness:70
 depth:24
@@ -5943,7 +5757,6 @@ color:D
 speed:120
 hit-points:50
 hearing:12
-smell:20
 armor-class:60
 sleepiness:10
 depth:24
@@ -5962,7 +5775,6 @@ color:U
 speed:110
 hit-points:800
 hearing:25
-smell:20
 armor-class:96
 sleepiness:25
 depth:24
@@ -5989,7 +5801,6 @@ color:U
 speed:110
 hit-points:800
 hearing:25
-smell:20
 armor-class:96
 sleepiness:25
 depth:24
@@ -6016,7 +5827,6 @@ color:b
 speed:120
 hit-points:27
 hearing:20
-smell:20
 armor-class:28
 sleepiness:10
 depth:24
@@ -6039,7 +5849,6 @@ color:r
 speed:120
 hit-points:5
 hearing:8
-smell:20
 armor-class:21
 sleepiness:10
 depth:24
@@ -6082,7 +5891,6 @@ color:U
 speed:110
 hit-points:240
 hearing:20
-smell:20
 armor-class:54
 sleepiness:50
 depth:25
@@ -6105,7 +5913,6 @@ color:m
 speed:110
 hit-points:520
 hearing:12
-smell:20
 armor-class:120
 sleepiness:20
 depth:25
@@ -6130,7 +5937,6 @@ color:G
 speed:120
 hit-points:210
 hearing:15
-smell:20
 armor-class:112
 sleepiness:20
 depth:25
@@ -6179,7 +5985,6 @@ color:p
 speed:110
 hit-points:600
 hearing:15
-smell:20
 armor-class:105
 sleepiness:40
 depth:25
@@ -6220,7 +6025,6 @@ color:r
 speed:110
 hit-points:90
 hearing:14
-smell:20
 armor-class:60
 sleepiness:30
 depth:25
@@ -6237,7 +6041,6 @@ color:u
 speed:100
 hit-points:81
 hearing:12
-smell:20
 armor-class:200
 sleepiness:20
 depth:25
@@ -6300,7 +6103,6 @@ color:U
 speed:110
 hit-points:850
 hearing:20
-smell:20
 armor-class:48
 sleepiness:40
 depth:26
@@ -6322,7 +6124,7 @@ color:D
 speed:110
 hit-points:138
 hearing:35
-smell:20
+smell:30
 armor-class:150
 sleepiness:10
 depth:26
@@ -6342,7 +6144,6 @@ color:R
 speed:110
 hit-points:72
 hearing:14
-smell:20
 armor-class:120
 sleepiness:20
 depth:26
@@ -6380,7 +6181,6 @@ color:w
 speed:110
 hit-points:68
 hearing:20
-smell:20
 armor-class:48
 sleepiness:10
 depth:26
@@ -6405,7 +6205,6 @@ color:o
 speed:110
 hit-points:264
 hearing:30
-smell:20
 armor-class:72
 sleepiness:255
 depth:26
@@ -6431,7 +6230,6 @@ color:v
 speed:130
 hit-points:27
 hearing:12
-smell:20
 armor-class:42
 sleepiness:10
 depth:26
@@ -6449,7 +6247,7 @@ color:D
 speed:120
 hit-points:422
 hearing:20
-smell:20
+smell:50
 armor-class:24
 sleepiness:5
 depth:26
@@ -6478,7 +6276,6 @@ color:U
 speed:110
 hit-points:83
 hearing:30
-smell:20
 armor-class:36
 sleepiness:20
 depth:26
@@ -6503,7 +6300,6 @@ color:I
 speed:120
 hit-points:1100
 hearing:20
-smell:20
 armor-class:96
 sleepiness:20
 depth:27
@@ -6535,7 +6331,6 @@ color:R
 speed:110
 hit-points:99
 hearing:14
-smell:20
 armor-class:54
 sleepiness:30
 depth:27
@@ -6554,7 +6349,6 @@ color:G
 speed:120
 hit-points:260
 hearing:5
-smell:20
 armor-class:60
 sleepiness:10
 depth:27
@@ -6597,7 +6391,7 @@ color:y
 speed:110
 hit-points:138
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:27
@@ -6623,7 +6417,7 @@ color:P
 speed:110
 hit-points:138
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:27
@@ -6724,7 +6518,6 @@ color:b
 speed:120
 hit-points:520
 hearing:12
-smell:20
 armor-class:120
 sleepiness:20
 depth:27
@@ -6774,7 +6567,6 @@ color:b
 speed:110
 hit-points:144
 hearing:2
-smell:20
 armor-class:36
 sleepiness:0
 depth:27
@@ -6795,7 +6587,6 @@ color:w
 speed:110
 hit-points:256
 hearing:20
-smell:20
 armor-class:60
 sleepiness:50
 depth:28
@@ -6818,7 +6609,6 @@ color:w
 speed:110
 hit-points:240
 hearing:20
-smell:20
 armor-class:90
 sleepiness:120
 depth:28
@@ -6847,7 +6637,6 @@ color:g
 speed:120
 hit-points:450
 hearing:20
-smell:20
 armor-class:120
 sleepiness:50
 depth:28
@@ -6872,7 +6661,6 @@ color:s
 speed:120
 hit-points:165
 hearing:20
-smell:20
 armor-class:105
 sleepiness:30
 depth:28
@@ -6904,7 +6692,6 @@ color:U
 speed:110
 hit-points:1000
 hearing:20
-smell:20
 armor-class:84
 sleepiness:40
 depth:28
@@ -6930,7 +6717,6 @@ color:r
 speed:110
 hit-points:68
 hearing:20
-smell:20
 armor-class:48
 sleepiness:10
 depth:28
@@ -6958,7 +6744,6 @@ color:P
 speed:110
 hit-points:132
 hearing:20
-smell:20
 armor-class:72
 sleepiness:10
 depth:28
@@ -6982,7 +6767,6 @@ color:v
 speed:120
 hit-points:520
 hearing:20
-smell:20
 armor-class:75
 sleepiness:10
 depth:28
@@ -7063,7 +6847,6 @@ color:g
 speed:120
 hit-points:110
 hearing:20
-smell:20
 armor-class:36
 sleepiness:30
 depth:28
@@ -7089,7 +6872,6 @@ color:B
 speed:110
 hit-points:171
 hearing:30
-smell:20
 armor-class:1
 sleepiness:30
 depth:28
@@ -7143,7 +6925,6 @@ color:P
 speed:110
 hit-points:293
 hearing:14
-smell:20
 armor-class:78
 sleepiness:30
 depth:29
@@ -7187,7 +6968,6 @@ color:w
 speed:120
 hit-points:180
 hearing:30
-smell:20
 armor-class:72
 sleepiness:100
 depth:29
@@ -7216,7 +6996,6 @@ color:b
 speed:110
 hit-points:237
 hearing:20
-smell:20
 armor-class:60
 sleepiness:70
 depth:29
@@ -7241,7 +7020,6 @@ color:w
 speed:110
 hit-points:237
 hearing:20
-smell:20
 armor-class:60
 sleepiness:70
 depth:29
@@ -7266,7 +7044,6 @@ color:g
 speed:110
 hit-points:237
 hearing:20
-smell:20
 armor-class:60
 sleepiness:70
 depth:29
@@ -7298,7 +7075,6 @@ color:r
 speed:110
 hit-points:289
 hearing:20
-smell:20
 armor-class:72
 sleepiness:50
 depth:30
@@ -7322,7 +7098,6 @@ color:B
 speed:110
 hit-points:640
 hearing:12
-smell:20
 armor-class:150
 sleepiness:30
 depth:30
@@ -7344,7 +7119,6 @@ color:w
 speed:110
 hit-points:110
 hearing:20
-smell:20
 armor-class:82
 sleepiness:60
 depth:30
@@ -7425,7 +7199,6 @@ color:b
 speed:110
 hit-points:66
 hearing:20
-smell:20
 armor-class:60
 sleepiness:30
 depth:30
@@ -7448,7 +7221,6 @@ color:y
 speed:110
 hit-points:138
 hearing:14
-smell:20
 armor-class:72
 sleepiness:30
 depth:30
@@ -7493,7 +7265,6 @@ color:u
 speed:120
 hit-points:165
 hearing:30
-smell:20
 armor-class:60
 sleepiness:20
 depth:30
@@ -7525,7 +7296,6 @@ color:w
 speed:120
 hit-points:59
 hearing:20
-smell:20
 armor-class:36
 sleepiness:10
 depth:31
@@ -7549,7 +7319,6 @@ color:D
 speed:110
 hit-points:163
 hearing:16
-smell:20
 armor-class:72
 sleepiness:30
 depth:31
@@ -7566,7 +7335,6 @@ color:s
 speed:110
 hit-points:264
 hearing:20
-smell:20
 armor-class:72
 sleepiness:70
 depth:31
@@ -7591,7 +7359,6 @@ color:y
 speed:110
 hit-points:264
 hearing:20
-smell:20
 armor-class:72
 sleepiness:70
 depth:31
@@ -7615,7 +7382,6 @@ color:r
 speed:110
 hit-points:264
 hearing:20
-smell:20
 armor-class:72
 sleepiness:70
 depth:31
@@ -7669,7 +7435,6 @@ color:P
 speed:110
 hit-points:65
 hearing:10
-smell:20
 armor-class:1
 sleepiness:1
 depth:32
@@ -7687,7 +7452,6 @@ color:y
 speed:120
 hit-points:85
 hearing:20
-smell:20
 armor-class:72
 sleepiness:10
 depth:32
@@ -7711,7 +7475,6 @@ color:r
 speed:110
 hit-points:2
 hearing:30
-smell:20
 armor-class:1
 sleepiness:5
 depth:32
@@ -7733,7 +7496,6 @@ color:v
 speed:110
 hit-points:281
 hearing:20
-smell:20
 armor-class:72
 sleepiness:70
 depth:32
@@ -7759,7 +7521,6 @@ color:R
 speed:120
 hit-points:180
 hearing:16
-smell:20
 armor-class:112
 sleepiness:20
 depth:32
@@ -7782,7 +7543,6 @@ color:W
 speed:110
 hit-points:333
 hearing:20
-smell:20
 armor-class:90
 sleepiness:50
 depth:33
@@ -7804,7 +7564,6 @@ color:G
 speed:110
 hit-points:264
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:33
@@ -7855,7 +7614,6 @@ color:o
 speed:120
 hit-points:308
 hearing:30
-smell:20
 armor-class:60
 sleepiness:5
 depth:33
@@ -7886,7 +7644,6 @@ color:P
 speed:110
 hit-points:83
 hearing:20
-smell:20
 armor-class:60
 sleepiness:30
 depth:33
@@ -7910,7 +7667,6 @@ color:w
 speed:110
 hit-points:396
 hearing:20
-smell:20
 armor-class:75
 sleepiness:50
 depth:33
@@ -7930,7 +7686,6 @@ color:v
 speed:110
 hit-points:440
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:33
@@ -7956,7 +7711,6 @@ color:B
 speed:110
 hit-points:440
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:33
@@ -7981,7 +7735,6 @@ color:P
 speed:110
 hit-points:528
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:33
@@ -8006,7 +7759,6 @@ color:o
 speed:110
 hit-points:352
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:33
@@ -8032,7 +7784,6 @@ color:D
 speed:120
 hit-points:147
 hearing:20
-smell:20
 armor-class:36
 sleepiness:10
 depth:33
@@ -8056,7 +7807,6 @@ color:r
 speed:110
 hit-points:135
 hearing:12
-smell:20
 armor-class:60
 sleepiness:50
 depth:33
@@ -8079,7 +7829,6 @@ color:b
 speed:110
 hit-points:113
 hearing:12
-smell:20
 armor-class:48
 sleepiness:50
 depth:33
@@ -8103,7 +7852,6 @@ color:u
 speed:110
 hit-points:396
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:33
@@ -8132,7 +7880,6 @@ color:B
 speed:110
 hit-points:528
 hearing:30
-smell:20
 armor-class:81
 sleepiness:255
 depth:34
@@ -8260,7 +8007,6 @@ color:U
 speed:120
 hit-points:147
 hearing:20
-smell:20
 armor-class:36
 sleepiness:10
 depth:34
@@ -8287,7 +8033,6 @@ color:b
 speed:130
 hit-points:99
 hearing:20
-smell:20
 armor-class:45
 sleepiness:5
 depth:34
@@ -8314,7 +8059,6 @@ color:U
 speed:120
 hit-points:1000
 hearing:20
-smell:20
 armor-class:108
 sleepiness:40
 depth:34
@@ -8345,7 +8089,6 @@ color:o
 speed:110
 hit-points:264
 hearing:20
-smell:20
 armor-class:72
 sleepiness:60
 depth:34
@@ -8370,7 +8113,6 @@ color:s
 speed:120
 hit-points:189
 hearing:12
-smell:20
 armor-class:60
 sleepiness:40
 depth:34
@@ -8388,7 +8130,6 @@ color:u
 speed:100
 hit-points:165
 hearing:10
-smell:20
 armor-class:90
 sleepiness:50
 depth:34
@@ -8412,7 +8153,6 @@ color:B
 speed:120
 hit-points:90
 hearing:12
-smell:20
 armor-class:60
 sleepiness:50
 depth:34
@@ -8436,7 +8176,6 @@ color:u
 speed:100
 hit-points:1050
 hearing:12
-smell:20
 armor-class:187
 sleepiness:20
 depth:34
@@ -8460,7 +8199,6 @@ color:w
 speed:110
 hit-points:352
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:34
@@ -8486,7 +8224,6 @@ color:b
 speed:110
 hit-points:352
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:34
@@ -8512,7 +8249,6 @@ color:g
 speed:110
 hit-points:352
 hearing:20
-smell:20
 armor-class:84
 sleepiness:70
 depth:34
@@ -8563,7 +8299,6 @@ color:y
 speed:130
 hit-points:124
 hearing:20
-smell:20
 armor-class:69
 sleepiness:10
 depth:35
@@ -8583,7 +8318,6 @@ color:y
 speed:120
 hit-points:169
 hearing:20
-smell:20
 armor-class:84
 sleepiness:10
 depth:35
@@ -8606,7 +8340,7 @@ color:W
 speed:110
 hit-points:193
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:35
@@ -8633,7 +8367,6 @@ color:s
 speed:120
 hit-points:352
 hearing:12
-smell:20
 armor-class:21
 sleepiness:1
 depth:35
@@ -8656,7 +8389,7 @@ color:W
 speed:110
 hit-points:193
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:35
@@ -8682,7 +8415,7 @@ color:u
 speed:110
 hit-points:193
 hearing:30
-smell:20
+smell:50
 armor-class:36
 sleepiness:0
 depth:35
@@ -8709,7 +8442,6 @@ color:o
 speed:120
 hit-points:263
 hearing:20
-smell:20
 armor-class:36
 sleepiness:10
 depth:35
@@ -8777,7 +8509,6 @@ color:s
 speed:110
 hit-points:308
 hearing:30
-smell:20
 armor-class:48
 sleepiness:0
 depth:35
@@ -8810,7 +8541,6 @@ color:r
 speed:110
 hit-points:1040
 hearing:42
-smell:20
 armor-class:96
 sleepiness:10
 depth:35
@@ -8859,7 +8589,6 @@ color:b
 speed:110
 hit-points:368
 hearing:20
-smell:20
 armor-class:90
 sleepiness:40
 depth:36
@@ -8907,7 +8636,6 @@ color:g
 speed:110
 hit-points:72
 hearing:10
-smell:20
 armor-class:120
 sleepiness:50
 depth:36
@@ -8932,7 +8660,6 @@ color:D
 speed:120
 hit-points:83
 hearing:10
-smell:20
 armor-class:120
 sleepiness:50
 depth:36
@@ -8955,7 +8682,6 @@ color:u
 speed:110
 hit-points:140
 hearing:20
-smell:20
 armor-class:96
 sleepiness:10
 depth:36
@@ -8976,7 +8702,6 @@ color:D
 speed:120
 hit-points:105
 hearing:30
-smell:20
 armor-class:36
 sleepiness:20
 depth:36
@@ -9002,7 +8727,6 @@ color:P
 speed:120
 hit-points:260
 hearing:30
-smell:20
 armor-class:36
 sleepiness:20
 depth:36
@@ -9026,7 +8750,6 @@ color:s
 speed:110
 hit-points:167
 hearing:20
-smell:20
 armor-class:60
 sleepiness:10
 depth:36
@@ -9051,7 +8774,6 @@ color:G
 speed:100
 hit-points:2640
 hearing:12
-smell:20
 armor-class:180
 sleepiness:10
 depth:36
@@ -9074,7 +8796,6 @@ color:w
 speed:120
 hit-points:528
 hearing:30
-smell:20
 armor-class:90
 sleepiness:10
 depth:36
@@ -9093,7 +8814,6 @@ color:r
 speed:110
 hit-points:193
 hearing:10
-smell:20
 armor-class:81
 sleepiness:90
 depth:36
@@ -9119,7 +8839,6 @@ color:R
 speed:110
 hit-points:246
 hearing:20
-smell:20
 armor-class:75
 sleepiness:20
 depth:36
@@ -9148,7 +8867,6 @@ color:P
 speed:120
 hit-points:1800
 hearing:25
-smell:20
 armor-class:120
 sleepiness:10
 depth:36
@@ -9179,7 +8897,6 @@ color:i
 speed:120
 hit-points:246
 hearing:20
-smell:20
 armor-class:75
 sleepiness:20
 depth:36
@@ -9209,7 +8926,6 @@ color:r
 speed:110
 hit-points:440
 hearing:20
-smell:20
 armor-class:96
 sleepiness:70
 depth:36
@@ -9236,7 +8952,6 @@ color:y
 speed:110
 hit-points:440
 hearing:20
-smell:20
 armor-class:96
 sleepiness:70
 depth:36
@@ -9262,7 +8977,6 @@ color:s
 speed:110
 hit-points:440
 hearing:20
-smell:20
 armor-class:96
 sleepiness:70
 depth:36
@@ -9289,7 +9003,6 @@ color:y
 speed:110
 hit-points:299
 hearing:30
-smell:20
 armor-class:102
 sleepiness:90
 depth:36
@@ -9322,7 +9035,6 @@ color:D
 speed:110
 hit-points:264
 hearing:20
-smell:20
 armor-class:75
 sleepiness:25
 depth:36
@@ -9351,7 +9063,6 @@ color:w
 speed:110
 hit-points:193
 hearing:10
-smell:20
 armor-class:90
 sleepiness:50
 depth:37
@@ -9376,7 +9087,6 @@ color:w
 speed:110
 hit-points:167
 hearing:20
-smell:20
 armor-class:75
 sleepiness:70
 depth:37
@@ -9428,7 +9138,6 @@ color:o
 speed:110
 hit-points:193
 hearing:10
-smell:20
 armor-class:105
 sleepiness:50
 depth:37
@@ -9453,7 +9162,6 @@ color:D
 speed:110
 hit-points:352
 hearing:12
-smell:20
 armor-class:21
 sleepiness:1
 depth:37
@@ -9477,7 +9185,6 @@ color:b
 speed:110
 hit-points:330
 hearing:16
-smell:20
 armor-class:90
 sleepiness:30
 depth:37
@@ -9497,7 +9204,6 @@ color:P
 speed:120
 hit-points:176
 hearing:100
-smell:20
 armor-class:48
 sleepiness:0
 depth:37
@@ -9518,7 +9224,6 @@ color:R
 speed:120
 hit-points:176
 hearing:100
-smell:20
 armor-class:48
 sleepiness:0
 depth:37
@@ -9560,7 +9265,6 @@ color:u
 speed:120
 hit-points:176
 hearing:40
-smell:20
 armor-class:14
 sleepiness:0
 depth:37
@@ -9581,7 +9285,6 @@ color:W
 speed:130
 hit-points:176
 hearing:30
-smell:20
 armor-class:180
 sleepiness:0
 depth:38
@@ -9607,7 +9310,6 @@ color:v
 speed:110
 hit-points:528
 hearing:20
-smell:20
 armor-class:96
 sleepiness:70
 depth:38
@@ -9635,7 +9337,6 @@ color:D
 speed:120
 hit-points:528
 hearing:20
-smell:20
 armor-class:120
 sleepiness:10
 depth:38
@@ -9667,7 +9368,6 @@ color:V
 speed:120
 hit-points:880
 hearing:20
-smell:20
 armor-class:108
 sleepiness:40
 depth:38
@@ -9695,7 +9395,6 @@ color:B
 speed:130
 hit-points:176
 hearing:100
-smell:20
 armor-class:48
 sleepiness:0
 depth:38
@@ -9715,7 +9414,6 @@ color:o
 speed:140
 hit-points:176
 hearing:100
-smell:20
 armor-class:48
 sleepiness:0
 depth:38
@@ -9739,7 +9437,6 @@ color:r
 speed:120
 hit-points:334
 hearing:20
-smell:20
 armor-class:48
 sleepiness:10
 depth:38
@@ -9766,7 +9463,6 @@ color:D
 speed:120
 hit-points:440
 hearing:20
-smell:20
 armor-class:66
 sleepiness:10
 depth:38
@@ -9793,7 +9489,6 @@ color:u
 speed:110
 hit-points:210
 hearing:20
-smell:20
 armor-class:75
 sleepiness:70
 depth:38
@@ -9838,7 +9533,6 @@ color:R
 speed:110
 hit-points:264
 hearing:20
-smell:20
 armor-class:54
 sleepiness:50
 depth:38
@@ -9869,7 +9563,6 @@ color:G
 speed:120
 hit-points:880
 hearing:30
-smell:20
 armor-class:81
 sleepiness:155
 depth:39
@@ -9899,7 +9592,6 @@ color:G
 speed:120
 hit-points:420
 hearing:20
-smell:20
 armor-class:66
 sleepiness:10
 depth:39
@@ -9926,7 +9618,6 @@ color:D
 speed:120
 hit-points:1300
 hearing:20
-smell:20
 armor-class:102
 sleepiness:30
 depth:39
@@ -9954,7 +9645,6 @@ color:G
 speed:120
 hit-points:550
 hearing:20
-smell:20
 armor-class:135
 sleepiness:35
 depth:39
@@ -10011,7 +9701,6 @@ color:B
 speed:120
 hit-points:700
 hearing:20
-smell:20
 armor-class:90
 sleepiness:30
 depth:40
@@ -10039,7 +9728,6 @@ color:b
 speed:120
 hit-points:633
 hearing:20
-smell:20
 armor-class:108
 sleepiness:80
 depth:40
@@ -10062,7 +9750,6 @@ color:U
 speed:120
 hit-points:1400
 hearing:30
-smell:20
 armor-class:96
 sleepiness:10
 depth:40
@@ -10090,7 +9777,6 @@ color:w
 speed:120
 hit-points:633
 hearing:20
-smell:20
 armor-class:108
 sleepiness:80
 depth:40
@@ -10113,7 +9799,6 @@ color:g
 speed:120
 hit-points:633
 hearing:20
-smell:20
 armor-class:108
 sleepiness:80
 depth:40
@@ -10136,7 +9821,6 @@ color:v
 speed:100
 hit-points:45
 hearing:7
-smell:20
 armor-class:6
 sleepiness:10
 depth:40
@@ -10156,7 +9840,6 @@ color:G
 speed:110
 hit-points:880
 hearing:20
-smell:20
 armor-class:108
 sleepiness:5
 depth:40
@@ -10176,7 +9859,6 @@ color:r
 speed:120
 hit-points:650
 hearing:20
-smell:20
 armor-class:114
 sleepiness:20
 depth:40
@@ -10203,7 +9885,6 @@ color:i
 speed:130
 hit-points:457
 hearing:20
-smell:20
 armor-class:72
 sleepiness:10
 depth:40
@@ -10234,7 +9915,6 @@ color:R
 speed:130
 hit-points:457
 hearing:20
-smell:20
 armor-class:72
 sleepiness:10
 depth:40
@@ -10270,7 +9950,6 @@ color:s
 speed:120
 hit-points:280
 hearing:20
-smell:20
 armor-class:96
 sleepiness:10
 depth:40
@@ -10291,7 +9970,6 @@ color:u
 speed:110
 hit-points:560
 hearing:20
-smell:20
 armor-class:84
 sleepiness:10
 depth:40
@@ -10312,7 +9990,7 @@ color:p
 speed:120
 hit-points:1800
 hearing:90
-smell:20
+smell:50
 armor-class:72
 sleepiness:10
 depth:40
@@ -10354,7 +10032,6 @@ color:v
 speed:120
 hit-points:2400
 hearing:30
-smell:20
 armor-class:120
 sleepiness:5
 depth:40
@@ -10386,7 +10063,6 @@ color:s
 speed:110
 hit-points:352
 hearing:20
-smell:20
 armor-class:75
 sleepiness:70
 depth:40
@@ -10409,7 +10085,6 @@ color:D
 speed:130
 hit-points:387
 hearing:20
-smell:20
 armor-class:96
 sleepiness:0
 depth:40
@@ -10436,7 +10111,6 @@ color:G
 speed:120
 hit-points:457
 hearing:20
-smell:20
 armor-class:90
 sleepiness:20
 depth:40
@@ -10503,7 +10177,6 @@ color:s
 speed:120
 hit-points:880
 hearing:20
-smell:20
 armor-class:108
 sleepiness:80
 depth:41
@@ -10526,7 +10199,6 @@ color:r
 speed:120
 hit-points:880
 hearing:20
-smell:20
 armor-class:108
 sleepiness:80
 depth:41
@@ -10551,7 +10223,6 @@ color:y
 speed:120
 hit-points:880
 hearing:20
-smell:20
 armor-class:108
 sleepiness:80
 depth:41
@@ -10574,7 +10245,6 @@ color:R
 speed:130
 hit-points:700
 hearing:20
-smell:20
 armor-class:84
 sleepiness:10
 depth:41
@@ -10606,7 +10276,6 @@ color:r
 speed:120
 hit-points:1584
 hearing:20
-smell:20
 armor-class:96
 sleepiness:50
 depth:41
@@ -10633,7 +10302,6 @@ color:g
 speed:110
 hit-points:457
 hearing:20
-smell:20
 armor-class:60
 sleepiness:70
 depth:41
@@ -10656,7 +10324,6 @@ color:z
 speed:120
 hit-points:1600
 hearing:20
-smell:20
 armor-class:144
 sleepiness:40
 depth:41
@@ -10687,7 +10354,6 @@ color:W
 speed:120
 hit-points:880
 hearing:20
-smell:20
 armor-class:72
 sleepiness:10
 depth:41
@@ -10726,7 +10392,7 @@ color:r
 speed:120
 hit-points:352
 hearing:25
-smell:20
+smell:50
 armor-class:120
 sleepiness:10
 depth:42
@@ -10808,7 +10474,6 @@ color:R
 speed:120
 hit-points:2400
 hearing:12
-smell:20
 armor-class:75
 sleepiness:30
 depth:43
@@ -10834,7 +10499,6 @@ color:V
 speed:120
 hit-points:2500
 hearing:12
-smell:20
 armor-class:120
 sleepiness:30
 depth:43
@@ -10861,7 +10525,7 @@ color:p
 speed:120
 hit-points:2100
 hearing:90
-smell:20
+smell:50
 armor-class:72
 sleepiness:10
 depth:43
@@ -10890,7 +10554,6 @@ color:U
 speed:110
 hit-points:616
 hearing:20
-smell:20
 armor-class:60
 sleepiness:70
 depth:43
@@ -10912,7 +10575,6 @@ color:v
 speed:120
 hit-points:1848
 hearing:25
-smell:20
 armor-class:120
 sleepiness:80
 depth:43
@@ -10938,7 +10600,6 @@ color:U
 speed:110
 hit-points:2800
 hearing:10
-smell:20
 armor-class:145
 sleepiness:50
 depth:43
@@ -10965,7 +10626,6 @@ color:Z
 speed:130
 hit-points:2700
 hearing:12
-smell:20
 armor-class:75
 sleepiness:30
 depth:43
@@ -10992,7 +10652,7 @@ color:v
 speed:110
 hit-points:220
 hearing:25
-smell:20
+smell:50
 armor-class:48
 sleepiness:0
 depth:43
@@ -11020,7 +10680,6 @@ color:w
 speed:120
 hit-points:1056
 hearing:20
-smell:20
 armor-class:72
 sleepiness:10
 depth:44
@@ -11057,7 +10716,6 @@ color:R
 speed:120
 hit-points:950
 hearing:20
-smell:20
 armor-class:120
 sleepiness:20
 depth:44
@@ -11084,7 +10742,6 @@ color:y
 speed:120
 hit-points:1056
 hearing:20
-smell:20
 armor-class:120
 sleepiness:10
 depth:44
@@ -11113,7 +10770,6 @@ color:g
 speed:120
 hit-points:2200
 hearing:25
-smell:20
 armor-class:195
 sleepiness:80
 depth:44
@@ -11143,7 +10799,6 @@ color:b
 speed:120
 hit-points:1320
 hearing:30
-smell:20
 armor-class:68
 sleepiness:255
 depth:45
@@ -11171,7 +10826,6 @@ color:u
 speed:120
 hit-points:420
 hearing:20
-smell:20
 armor-class:1
 sleepiness:0
 depth:45
@@ -11189,7 +10843,6 @@ color:G
 speed:120
 hit-points:1848
 hearing:25
-smell:20
 armor-class:120
 sleepiness:80
 depth:45
@@ -11215,7 +10868,6 @@ color:u
 speed:120
 hit-points:1848
 hearing:25
-smell:20
 armor-class:120
 sleepiness:80
 depth:45
@@ -11242,7 +10894,7 @@ color:p
 speed:120
 hit-points:2400
 hearing:90
-smell:20
+smell:50
 armor-class:84
 sleepiness:10
 depth:45
@@ -11271,7 +10923,6 @@ color:r
 speed:110
 hit-points:792
 hearing:20
-smell:20
 armor-class:60
 sleepiness:80
 depth:45
@@ -11297,7 +10948,6 @@ color:u
 speed:120
 hit-points:2376
 hearing:30
-smell:20
 armor-class:120
 sleepiness:10
 depth:45
@@ -11330,7 +10980,6 @@ color:o
 speed:120
 hit-points:1848
 hearing:25
-smell:20
 armor-class:120
 sleepiness:80
 depth:45
@@ -11356,7 +11005,6 @@ color:r
 speed:120
 hit-points:420
 hearing:20
-smell:20
 armor-class:1
 sleepiness:0
 depth:45
@@ -11375,7 +11023,6 @@ color:g
 speed:120
 hit-points:420
 hearing:20
-smell:20
 armor-class:1
 sleepiness:0
 depth:45
@@ -11419,7 +11066,6 @@ color:u
 speed:120
 hit-points:1320
 hearing:20
-smell:20
 armor-class:96
 sleepiness:10
 depth:45
@@ -11453,7 +11099,6 @@ color:u
 speed:120
 hit-points:1050
 hearing:20
-smell:20
 armor-class:144
 sleepiness:20
 depth:45
@@ -11477,7 +11122,6 @@ color:W
 speed:120
 hit-points:2200
 hearing:30
-smell:20
 armor-class:156
 sleepiness:70
 depth:46
@@ -11507,7 +11151,6 @@ color:y
 speed:120
 hit-points:1232
 hearing:20
-smell:20
 armor-class:112
 sleepiness:60
 depth:47
@@ -11532,7 +11175,6 @@ color:D
 speed:140
 hit-points:1050
 hearing:200
-smell:20
 armor-class:72
 sleepiness:0
 depth:47
@@ -11556,7 +11198,6 @@ color:R
 speed:120
 hit-points:2200
 hearing:30
-smell:20
 armor-class:144
 sleepiness:70
 depth:47
@@ -11585,7 +11226,7 @@ color:p
 speed:120
 hit-points:2700
 hearing:90
-smell:20
+smell:50
 armor-class:84
 sleepiness:10
 depth:48
@@ -11616,7 +11257,6 @@ color:R
 speed:120
 hit-points:2400
 hearing:30
-smell:20
 armor-class:195
 sleepiness:120
 depth:48
@@ -11645,7 +11285,6 @@ color:r
 speed:120
 hit-points:1050
 hearing:20
-smell:20
 armor-class:78
 sleepiness:50
 depth:48
@@ -11677,7 +11316,6 @@ color:p
 speed:120
 hit-points:1013
 hearing:30
-smell:20
 armor-class:96
 sleepiness:5
 depth:48
@@ -11704,7 +11342,6 @@ color:p
 speed:120
 hit-points:1760
 hearing:20
-smell:20
 armor-class:75
 sleepiness:50
 depth:49
@@ -11731,7 +11368,6 @@ color:v
 speed:130
 hit-points:2400
 hearing:20
-smell:20
 armor-class:150
 sleepiness:40
 depth:49
@@ -11769,7 +11405,6 @@ color:o
 speed:130
 hit-points:968
 hearing:30
-smell:20
 armor-class:72
 sleepiness:5
 depth:50
@@ -11802,7 +11437,6 @@ color:v
 speed:130
 hit-points:3000
 hearing:20
-smell:20
 armor-class:150
 sleepiness:20
 depth:50
@@ -11835,7 +11469,7 @@ color:G
 speed:120
 hit-points:330
 hearing:30
-smell:20
+smell:50
 armor-class:120
 sleepiness:0
 depth:51
@@ -11861,7 +11495,7 @@ color:B
 speed:130
 hit-points:330
 hearing:30
-smell:20
+smell:50
 armor-class:120
 sleepiness:0
 depth:51
@@ -11889,7 +11523,7 @@ color:R
 speed:120
 hit-points:330
 hearing:30
-smell:20
+smell:50
 armor-class:120
 sleepiness:0
 depth:51
@@ -11917,7 +11551,6 @@ color:Z
 speed:140
 hit-points:2500
 hearing:40
-smell:20
 armor-class:108
 sleepiness:0
 depth:51
@@ -11946,7 +11579,7 @@ color:p
 speed:120
 hit-points:3200
 hearing:90
-smell:20
+smell:50
 armor-class:84
 sleepiness:10
 depth:52
@@ -11978,7 +11611,6 @@ color:v
 speed:120
 hit-points:315
 hearing:100
-smell:20
 armor-class:96
 sleepiness:0
 depth:53
@@ -12003,7 +11635,6 @@ color:v
 speed:120
 hit-points:315
 hearing:50
-smell:20
 armor-class:48
 sleepiness:0
 depth:53
@@ -12028,7 +11659,6 @@ color:r
 speed:120
 hit-points:3600
 hearing:60
-smell:20
 armor-class:156
 sleepiness:0
 depth:54
@@ -12060,7 +11690,6 @@ color:U
 speed:120
 hit-points:2816
 hearing:20
-smell:20
 armor-class:150
 sleepiness:40
 depth:54
@@ -12116,7 +11745,6 @@ color:D
 speed:120
 hit-points:3500
 hearing:30
-smell:20
 armor-class:180
 sleepiness:20
 depth:55
@@ -12150,7 +11778,6 @@ color:y
 speed:130
 hit-points:1800
 hearing:30
-smell:20
 armor-class:140
 sleepiness:255
 depth:55
@@ -12180,7 +11807,6 @@ color:G
 speed:120
 hit-points:3080
 hearing:25
-smell:20
 armor-class:144
 sleepiness:80
 depth:55
@@ -12207,7 +11833,6 @@ color:i
 speed:120
 hit-points:3080
 hearing:25
-smell:20
 armor-class:144
 sleepiness:80
 depth:55
@@ -12234,7 +11859,6 @@ color:y
 speed:130
 hit-points:4000
 hearing:30
-smell:20
 armor-class:54
 sleepiness:255
 depth:55
@@ -12264,7 +11888,6 @@ color:G
 speed:120
 hit-points:700
 hearing:25
-smell:20
 armor-class:90
 sleepiness:70
 depth:55
@@ -12293,7 +11916,6 @@ color:y
 speed:120
 hit-points:2100
 hearing:30
-smell:20
 armor-class:96
 sleepiness:15
 depth:56
@@ -12320,7 +11942,7 @@ color:p
 speed:120
 hit-points:4000
 hearing:90
-smell:20
+smell:50
 armor-class:108
 sleepiness:10
 depth:56
@@ -12350,7 +11972,6 @@ color:o
 speed:130
 hit-points:1936
 hearing:30
-smell:20
 armor-class:96
 sleepiness:5
 depth:57
@@ -12383,7 +12004,6 @@ color:y
 speed:130
 hit-points:528
 hearing:20
-smell:20
 armor-class:132
 sleepiness:10
 depth:57
@@ -12406,7 +12026,6 @@ color:v
 speed:120
 hit-points:4500
 hearing:20
-smell:20
 armor-class:168
 sleepiness:20
 depth:57
@@ -12470,7 +12089,6 @@ color:r
 speed:130
 hit-points:880
 hearing:20
-smell:20
 armor-class:108
 sleepiness:10
 depth:58
@@ -12497,7 +12115,7 @@ color:G
 speed:120
 hit-points:480
 hearing:30
-smell:20
+smell:50
 armor-class:120
 sleepiness:0
 depth:59
@@ -12524,7 +12142,6 @@ color:o
 speed:130
 hit-points:1232
 hearing:20
-smell:20
 armor-class:144
 sleepiness:10
 depth:59
@@ -12549,7 +12166,6 @@ color:Z
 speed:130
 hit-points:5000
 hearing:25
-smell:20
 armor-class:234
 sleepiness:10
 depth:59
@@ -12588,7 +12204,6 @@ color:v
 speed:130
 hit-points:420
 hearing:100
-smell:20
 armor-class:48
 sleepiness:0
 depth:60
@@ -12615,7 +12230,6 @@ color:v
 speed:120
 hit-points:5000
 hearing:100
-smell:20
 armor-class:120
 sleepiness:0
 depth:60
@@ -12651,7 +12265,6 @@ color:V
 speed:120
 hit-points:1830
 hearing:20
-smell:20
 armor-class:144
 sleepiness:10
 depth:61
@@ -12683,7 +12296,6 @@ color:R
 speed:130
 hit-points:5500
 hearing:40
-smell:20
 armor-class:192
 sleepiness:10
 depth:61
@@ -12715,7 +12327,6 @@ color:R
 speed:120
 hit-points:2464
 hearing:40
-smell:20
 armor-class:135
 sleepiness:40
 depth:61
@@ -12745,7 +12356,6 @@ color:w
 speed:130
 hit-points:6000
 hearing:40
-smell:20
 armor-class:204
 sleepiness:10
 depth:62
@@ -12778,7 +12388,6 @@ color:r
 speed:120
 hit-points:2640
 hearing:20
-smell:20
 armor-class:180
 sleepiness:10
 depth:62
@@ -12812,7 +12421,6 @@ color:b
 speed:120
 hit-points:3080
 hearing:30
-smell:20
 armor-class:225
 sleepiness:30
 depth:63
@@ -12840,7 +12448,6 @@ color:w
 speed:120
 hit-points:3080
 hearing:30
-smell:20
 armor-class:225
 sleepiness:30
 depth:63
@@ -12868,7 +12475,6 @@ color:g
 speed:120
 hit-points:3080
 hearing:30
-smell:20
 armor-class:225
 sleepiness:30
 depth:63
@@ -12898,7 +12504,7 @@ color:p
 speed:120
 hit-points:4500
 hearing:90
-smell:20
+smell:50
 armor-class:120
 sleepiness:10
 depth:64
@@ -12927,7 +12533,6 @@ color:u
 speed:130
 hit-points:7500
 hearing:40
-smell:20
 armor-class:216
 sleepiness:10
 depth:64
@@ -12962,7 +12567,7 @@ color:v
 speed:120
 hit-points:930
 hearing:30
-smell:20
+smell:50
 armor-class:120
 sleepiness:0
 depth:64
@@ -12990,7 +12595,6 @@ color:B
 speed:120
 hit-points:3520
 hearing:20
-smell:20
 armor-class:180
 sleepiness:40
 depth:64
@@ -13019,7 +12623,6 @@ color:v
 speed:130
 hit-points:7000
 hearing:60
-smell:20
 armor-class:120
 sleepiness:10
 depth:65
@@ -13051,7 +12654,6 @@ color:W
 speed:130
 hit-points:2288
 hearing:20
-smell:20
 armor-class:112
 sleepiness:30
 depth:65
@@ -13083,7 +12685,6 @@ color:o
 speed:120
 hit-points:3344
 hearing:30
-smell:20
 armor-class:150
 sleepiness:15
 depth:66
@@ -13111,7 +12712,7 @@ color:v
 speed:130
 hit-points:4800
 hearing:100
-smell:20
+smell:30
 armor-class:240
 sleepiness:0
 depth:66
@@ -13171,7 +12772,6 @@ color:r
 speed:120
 hit-points:3344
 hearing:30
-smell:20
 armor-class:225
 sleepiness:30
 depth:67
@@ -13199,7 +12799,6 @@ color:b
 speed:120
 hit-points:3080
 hearing:30
-smell:20
 armor-class:96
 sleepiness:10
 depth:67
@@ -13228,7 +12827,6 @@ color:s
 speed:120
 hit-points:3080
 hearing:30
-smell:20
 armor-class:225
 sleepiness:30
 depth:67
@@ -13257,7 +12855,6 @@ color:y
 speed:120
 hit-points:3080
 hearing:30
-smell:20
 armor-class:225
 sleepiness:30
 depth:67
@@ -13314,7 +12911,6 @@ color:R
 speed:130
 hit-points:6500
 hearing:20
-smell:20
 armor-class:180
 sleepiness:10
 depth:68
@@ -13345,7 +12941,6 @@ color:D
 speed:120
 hit-points:3080
 hearing:20
-smell:20
 armor-class:255
 sleepiness:20
 depth:68
@@ -13375,7 +12970,6 @@ color:D
 speed:120
 hit-points:2440
 hearing:20
-smell:20
 armor-class:192
 sleepiness:10
 depth:69
@@ -13408,7 +13002,6 @@ color:g
 speed:130
 hit-points:5300
 hearing:40
-smell:20
 armor-class:210
 sleepiness:20
 depth:69
@@ -13439,7 +13032,6 @@ color:w
 speed:130
 hit-points:3080
 hearing:20
-smell:20
 armor-class:150
 sleepiness:30
 depth:69
@@ -13477,7 +13069,6 @@ color:v
 speed:130
 hit-points:7500
 hearing:30
-smell:20
 armor-class:210
 sleepiness:20
 depth:70
@@ -13509,7 +13100,6 @@ color:R
 speed:120
 hit-points:1320
 hearing:20
-smell:20
 armor-class:1
 sleepiness:0
 depth:71
@@ -13528,7 +13118,6 @@ color:G
 speed:120
 hit-points:1320
 hearing:20
-smell:20
 armor-class:1
 sleepiness:0
 depth:71
@@ -13548,7 +13137,6 @@ color:U
 speed:120
 hit-points:1320
 hearing:20
-smell:20
 armor-class:1
 sleepiness:0
 depth:71
@@ -13570,7 +13158,7 @@ color:p
 speed:120
 hit-points:5000
 hearing:90
-smell:20
+smell:50
 armor-class:120
 sleepiness:10
 depth:72
@@ -13600,7 +13188,6 @@ color:B
 speed:130
 hit-points:3344
 hearing:40
-smell:20
 armor-class:180
 sleepiness:20
 depth:72
@@ -13631,7 +13218,6 @@ color:D
 speed:130
 hit-points:1650
 hearing:20
-smell:20
 armor-class:210
 sleepiness:10
 depth:73
@@ -13664,7 +13250,6 @@ color:v
 speed:130
 hit-points:6500
 hearing:30
-smell:20
 armor-class:96
 sleepiness:10
 depth:73
@@ -13696,7 +13281,6 @@ color:D
 speed:120
 hit-points:3960
 hearing:20
-smell:20
 armor-class:255
 sleepiness:40
 depth:74
@@ -13724,7 +13308,7 @@ color:v
 speed:120
 hit-points:1230
 hearing:30
-smell:20
+smell:50
 armor-class:120
 sleepiness:0
 depth:74
@@ -13758,7 +13342,6 @@ color:v
 speed:120
 hit-points:3960
 hearing:40
-smell:20
 armor-class:255
 sleepiness:20
 depth:75
@@ -13788,7 +13371,6 @@ color:B
 speed:120
 hit-points:3960
 hearing:40
-smell:20
 armor-class:255
 sleepiness:20
 depth:75
@@ -13817,7 +13399,6 @@ color:D
 speed:130
 hit-points:13000
 hearing:40
-smell:20
 armor-class:240
 sleepiness:10
 depth:75
@@ -13849,7 +13430,6 @@ color:o
 speed:120
 hit-points:3520
 hearing:20
-smell:20
 armor-class:255
 sleepiness:20
 depth:75
@@ -13881,7 +13461,6 @@ color:B
 speed:120
 hit-points:2640
 hearing:30
-smell:20
 armor-class:1
 sleepiness:0
 depth:76
@@ -13901,7 +13480,6 @@ color:s
 speed:120
 hit-points:6000
 hearing:30
-smell:20
 armor-class:192
 sleepiness:15
 depth:76
@@ -13930,7 +13508,6 @@ color:v
 speed:130
 hit-points:5000
 hearing:20
-smell:20
 armor-class:127
 sleepiness:10
 depth:77
@@ -13964,7 +13541,6 @@ color:o
 speed:130
 hit-points:3520
 hearing:30
-smell:20
 armor-class:180
 sleepiness:20
 depth:77
@@ -14000,7 +13576,6 @@ color:P
 speed:120
 hit-points:4400
 hearing:40
-smell:20
 armor-class:255
 sleepiness:20
 depth:79
@@ -14031,7 +13606,6 @@ color:v
 speed:120
 hit-points:4400
 hearing:40
-smell:20
 armor-class:255
 sleepiness:20
 depth:79
@@ -14058,7 +13632,6 @@ color:v
 speed:130
 hit-points:5000
 hearing:30
-smell:20
 armor-class:1
 sleepiness:0
 depth:79
@@ -14081,7 +13654,6 @@ color:P
 speed:130
 hit-points:4400
 hearing:40
-smell:20
 armor-class:210
 sleepiness:20
 depth:79
@@ -14120,7 +13692,7 @@ color:p
 speed:130
 hit-points:6000
 hearing:90
-smell:20
+smell:50
 armor-class:144
 sleepiness:10
 depth:80
@@ -14154,7 +13726,6 @@ color:p
 speed:130
 hit-points:6000
 hearing:70
-smell:20
 armor-class:144
 sleepiness:20
 depth:81
@@ -14186,7 +13757,6 @@ color:Z
 speed:140
 hit-points:5500
 hearing:40
-smell:20
 armor-class:150
 sleepiness:10
 depth:82
@@ -14217,7 +13787,7 @@ color:m
 speed:130
 hit-points:7000
 hearing:80
-smell:20
+smell:50
 armor-class:135
 sleepiness:10
 depth:83
@@ -14249,7 +13819,6 @@ color:W
 speed:140
 hit-points:7500
 hearing:20
-smell:20
 armor-class:180
 sleepiness:40
 depth:84
@@ -14282,7 +13851,6 @@ color:D
 speed:130
 hit-points:10000
 hearing:40
-smell:20
 armor-class:255
 sleepiness:20
 depth:85
@@ -14346,7 +13914,6 @@ color:v
 speed:120
 hit-points:7000
 hearing:30
-smell:20
 armor-class:180
 sleepiness:15
 depth:87
@@ -14383,7 +13950,6 @@ color:v
 speed:130
 hit-points:7000
 hearing:20
-smell:20
 armor-class:187
 sleepiness:10
 depth:88
@@ -14421,7 +13987,7 @@ color:W
 speed:130
 hit-points:8000
 hearing:50
-smell:20
+smell:50
 armor-class:192
 sleepiness:10
 depth:90
@@ -14450,7 +14016,7 @@ color:p
 speed:130
 hit-points:8000
 hearing:50
-smell:20
+smell:50
 armor-class:192
 sleepiness:10
 depth:90
@@ -14481,7 +14047,6 @@ color:p
 speed:130
 hit-points:6000
 hearing:100
-smell:20
 armor-class:120
 sleepiness:0
 depth:92
@@ -14521,7 +14086,6 @@ color:v
 speed:130
 hit-points:8000
 hearing:100
-smell:20
 armor-class:168
 sleepiness:0
 depth:95
@@ -14560,7 +14124,6 @@ color:p
 speed:130
 hit-points:10500
 hearing:100
-smell:20
 armor-class:192
 sleepiness:0
 depth:99
@@ -14596,7 +14159,6 @@ color:D
 speed:140
 hit-points:20000
 hearing:100
-smell:20
 armor-class:180
 sleepiness:0
 depth:100

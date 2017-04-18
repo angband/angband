@@ -400,8 +400,6 @@ static enum parser_error parse_constants_mon_play(struct parser *p) {
 		z->repro_monster_rate = value;
 	else if (streq(label, "life-drain"))
 		z->life_drain_percent = value;
-	else if (streq(label, "flow-depth"))
-		z->max_flow_depth = value;
 	else if (streq(label, "flee-range"))
 		z->flee_range = value;
 	else if (streq(label, "turn-range"))

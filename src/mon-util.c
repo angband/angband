@@ -512,7 +512,6 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Updates */
 		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);
-		player->upkeep->update |= (PU_UPDATE_FLOW);
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);
@@ -541,7 +540,6 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Updates */
 		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);
-		player->upkeep->update |= (PU_UPDATE_FLOW);
 
 		/* Redraw monster list */
 		player->upkeep->redraw |= (PR_MONLIST);

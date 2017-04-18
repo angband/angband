@@ -48,9 +48,6 @@ mon-play:mult-rate:8
 # Percent of player exp drained per hit
 mon-play:life-drain:2
 
-# Maximum flow depth when using for monster flow calculation
-mon-play:flow-depth:32
-
 # Monsters will run up to this many grids out of sight
 mon-play:flee-range:5
 

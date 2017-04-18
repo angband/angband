@@ -26,8 +26,8 @@
  * Bit flags for the "player->upkeep->notice" variable
  */
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
-#define PN_IGNORE       0x00000004L    /* Ignore stuff */
-#define PN_MON_MESSAGE	0x00000010L	   /* flush monster pain messages */
+#define PN_IGNORE       0x00000002L    /* Ignore stuff */
+#define PN_MON_MESSAGE	0x00000004L	   /* flush monster pain messages */
 
 
 /**
@@ -38,14 +38,11 @@
 #define PU_HP			0x00000004L	/* Calculate chp and mhp */
 #define PU_MANA			0x00000008L	/* Calculate csp and msp */
 #define PU_SPELLS		0x00000010L	/* Calculate spells */
-/* 0x20L */
-#define PU_UPDATE_VIEW	0x00000040L	/* Update field of view */
-#define PU_FORGET_FLOW	0x00000080L	/* Forget flow data */
-#define PU_UPDATE_FLOW	0x00000100L	/* Update flow data */
-#define PU_MONSTERS		0x00000200L	/* Update monsters */
-#define PU_DISTANCE		0x00000400L	/* Update distances */
-#define PU_PANEL		0x00000800L	/* Update panel */
-#define PU_INVEN		0x00001000L	/* Update inventory */
+#define PU_UPDATE_VIEW	0x00000020L	/* Update field of view */
+#define PU_MONSTERS		0x00000040L	/* Update monsters */
+#define PU_DISTANCE		0x00000080L	/* Update distances */
+#define PU_PANEL		0x00000100L	/* Update panel */
+#define PU_INVEN		0x00000200L	/* Update inventory */
 
 
 /**

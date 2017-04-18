@@ -177,9 +177,6 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 }
 
 /* Destroy Doors */

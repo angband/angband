@@ -138,7 +138,8 @@ static void find_range(struct monster *mon)
 }
 
 
-/* From Will Asher in DJA:
+/**
+ * From Will Asher in DJA:
  * Find whether a monster is near a permanent wall
  * this decides whether PASS_WALL & KILL_WALL monsters 
  * use the monster flow code
@@ -149,7 +150,7 @@ static bool near_permwall(const struct monster *mon, struct chunk *c)
 	int my = mon->fy;
 	int mx = mon->fx;
 	
-	/* if PC is in LOS, there's no need to go around walls */
+	/* If player is in LOS, there's no need to go around walls */
     if (projectable(cave, my, mx, player->py, player->px, PROJECT_NONE)) 
 		return false;
     
@@ -168,14 +169,13 @@ static bool near_permwall(const struct monster *mon, struct chunk *c)
 
 
 /**
- * Choose the best direction for "flowing".
+ * Choose the best direction to advance toward the player, using sound or scent.
  *
- * Note that ghosts and rock-eaters generally don't flow because they can move
- * through obstacles.
+ * Note that ghosts and rock-eaters generally just head straight for the player.
  *
- * Monsters first try to use up-to-date distance information ('sound') as
- * saved in cave->squares[y][x].noise.  Failing that, they'll try using scent
- * ('scent') which is just old noise information.
+ * Monsters first try to use current sound information as saved in
+ * cave->noise.grids[y][x].  Failing that, they'll try using scent, saved in 
+ * cave->scent.grids[y][x].
  *
  * Tracking by 'scent' means that monsters end up near enough the player to
  * switch to 'sound' (noise), or they end up somewhere the player left via 
@@ -184,32 +184,19 @@ static bool near_permwall(const struct monster *mon, struct chunk *c)
  * is still near enough to "annoy" them without being close enough to chase
  * directly.
  */
-static bool get_moves_flow(struct chunk *c, struct monster *mon)
+static bool get_moves_advance(struct chunk *c, struct monster *mon)
 {
 	int i;
-
 	int best_scent = 0;
-	int best_noise = 999;
+	int best_noise = 0;
 	int best_direction = 0;
 	bool found_direction = false;
-
-	int py = player->py, px = player->px;
 	int my = mon->fy, mx = mon->fx;
 
-	/* Only use this algorithm for passwall monsters if near permanent walls,
-	 * to avoid getting snagged */
-	if (flags_test(mon->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL,
-				   FLAG_END) && !near_permwall(mon, c))
-		return (false);
-
-	/* The player is not currently near the monster grid */
-	if (c->squares[my][mx].scent < c->squares[py][px].scent)
-		/* If the player has never been near this grid, abort */
-		if (c->squares[my][mx].scent == 0) return false;
-
-	/* Monster is too far away to notice the player */
-	if (c->squares[my][mx].noise > z_info->max_flow_depth) return false;
-	if (c->squares[my][mx].noise > mon->race->hearing) return false;
+	/* If the monster can pass through nearby walls, do that */
+	if (monster_passes_walls(mon) && !near_permwall(mon, c)) {
+		return false;
+	}
 
 	/* If the player can see monster, set target and run towards them */
 	if (square_isview(c, my, mx)) {
@@ -218,54 +205,52 @@ static bool get_moves_flow(struct chunk *c, struct monster *mon)
 		return false;
 	}
 
-	/* Check nearby grids, diagonals first */
-	/* This gives preference to the cardinal directions */
-	for (i = 7; i >= 0; i--) {
+	/* Check nearby grids, giving preference to the cardinal directions */
+	for (i = 0; i < 8; i++) {
 		/* Get the location */
 		int y = my + ddy_ddd[i];
 		int x = mx + ddx_ddd[i];
+		int heard_noise, smelled_scent;
 
 		/* Bounds check */
 		if (!square_in_bounds(c, y, x)) continue;
 
-		/* Ignore unvisited/unpassable locations */
-		if (c->squares[y][x].scent == 0) continue;
-
-		/* Ignore locations whose data is more stale */
-		if (c->squares[y][x].scent < best_scent) continue;
-
-		/* Ignore locations which are farther away */
-		if (c->squares[y][x].noise > best_noise) continue;
-
-		/* Ignore lava if they can't handle the heat */
-		if (square_isfiery(c, y, x) && !rf_has(mon->race->flags, RF_IM_FIRE))
+		/* Get the heard noise, compare with the best so far */
+		heard_noise = mon->race->hearing - cave->noise.grids[y][x];
+		if ((heard_noise > best_noise) && (cave->noise.grids[y][x] != 0)) {
+			best_noise = heard_noise;
+			best_direction = i;
+			found_direction = true;
 			continue;
+		}
 
-		/* Save the noise and time */
-		best_scent = c->squares[y][x].scent;
-		best_noise = c->squares[y][x].noise;
-		best_direction = i;
-		found_direction = true;
+		/* If no good sound yet, use scent */
+		if (!best_noise) {
+			smelled_scent = mon->race->smell - cave->scent.grids[y][x];
+			if ((smelled_scent > best_scent) && (cave->scent.grids[y][x] != 0)){
+				best_scent = smelled_scent;
+				best_direction = i;
+				found_direction = true;
+			}
+		}
 	}
 
-	/* Save the location to flow toward */
-	/* Multiply by 16 to angle slightly toward the player's actual location */
+	/* Set the target */
 	if (found_direction) {
-		int dy = 0, dx = 0;
-
-		/* Ridiculous - actually multiply by whatever doesn't underflow the 
-		 * byte for ty and tx.  Really should do a better solution - NRM */
-		for (i = 0; i < 16; i++)
-			if ((py + dy > 0) && (px + dx > 0)) {
-				dy += ddy_ddd[best_direction];
-				dx += ddx_ddd[best_direction];
-			}
-
-		mon->ty = py + dy;
-		mon->tx = px + dx;
+		mon->ty = my + ddy_ddd[best_direction];
+		mon->tx = mx + ddx_ddd[best_direction];
 		return true;
 	}
 
+	return false;
+}
+
+
+static bool monster_can_hear_or_smell(struct chunk *c, struct monster *mon)
+{
+	/* Check the if the monster can hear or smell anything */
+	if (mon->race->hearing > cave->noise.grids[mon->fy][mon->fx]) return true;
+	if (mon->race->smell > cave->scent.grids[mon->fy][mon->fx]) return true;
 	return false;
 }
 
@@ -280,18 +265,15 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
 {
 	int i;
 	int gy = 0, gx = 0;
-	int best_scent = 0, best_score = -1;
-
-	int py = player->py, px = player->px;
+	int best_score = -1;
 	int my = mon->fy, mx = mon->fx;
 
 	/* If the player is not currently near the monster, no reason to flow */
-	if (c->squares[my][mx].scent < c->squares[py][px].scent)
+	if (mon->cdis >= mon->best_range)
 		return false;
 
 	/* Monster is too far away to use flow information */
-	if (c->squares[my][mx].noise > z_info->max_flow_depth) return false;
-	if (c->squares[my][mx].noise > mon->race->hearing) return false;
+	if (!monster_can_hear_or_smell(c, mon)) return false;
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--) {
@@ -304,10 +286,6 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
 		/* Bounds check */
 		if (!square_in_bounds(c, y, x)) continue;
 
-		/* Ignore illegal & older locations */
-		if (c->squares[y][x].scent == 0 || c->squares[y][x].scent < best_scent)
-			continue;
-
 		/* Calculate distance of this grid from our target */
 		dis = distance(y, x, mon->ty, mon->tx);
 
@@ -315,7 +293,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
 		 * First half of calculation is inversely proportional to distance
 		 * Second half is inversely proportional to grid's distance from player
 		 */
-		score = 5000 / (dis + 3) - 500 / (c->squares[y][x].noise + 1);
+		score = 5000 / (dis + 3) - 500 / (c->noise.grids[y][x] + 1);
 
 		/* No negative scores */
 		if (score < 0) score = 0;
@@ -323,17 +301,13 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
 		/* Ignore lower scores */
 		if (score < best_score) continue;
 
-		/* Save the score and time */
-		best_scent = c->squares[y][x].scent;
+		/* Save the score */
 		best_score = score;
 
 		/* Save the location */
 		gy = y;
 		gx = x;
 	}
-
-	/* No legal move (?) */
-	if (!best_scent) return false;
 
 	/* Set the immediate target */
 	mon->ty = gy;
@@ -390,11 +364,8 @@ static bool find_safety(struct chunk *c, struct monster *mon)
 			/* Skip locations in a wall */
 			if (!square_ispassable(c, y, x)) continue;
 
-			/* Ignore grids very far from the player */
-			if (c->squares[y][x].scent < c->squares[py][px].scent) continue;
-
 			/* Ignore too-distant grids */
-			if (c->squares[y][x].noise > c->squares[fy][fx].noise + 2 * d)
+			if (c->noise.grids[y][x] > c->noise.grids[fy][fx] + 2 * d)
 				continue;
 
 			/* Ignore lava if they can't handle the heat */
@@ -608,7 +579,7 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 	find_range(mon);
 
 	/* Flow towards the player */
-	if (get_moves_flow(c, mon)) {
+	if (get_moves_advance(c, mon)) {
 		/* Extract the "pseudo-direction" */
 		y = mon->ty - mon->fy;
 		x = mon->tx - mon->fx;
@@ -852,9 +823,6 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 		/* Note changes to viewable region */
 		if (square_isview(c, ny, nx))
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-		/* Fully update the flow since terrain changed */
-		player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 		return true;
 	} else if (square_iscloseddoor(c, ny, nx) ||
@@ -1155,6 +1123,11 @@ static void process_monster(struct chunk *c, struct monster *mon)
 		int ny = oy + ddy[d];
 		int nx = ox + ddx[d];
 
+		/* Tracking monsters have their best direction, don't change */
+		if ((i > 0) && !stagger && !square_isview(c, oy, ox)) {
+			break;
+		}
+
 		/* Check if we can move */
 		if (!process_monster_can_move(c, mon, m_name, nx, ny, &did_something))
 			continue;
@@ -1229,46 +1202,27 @@ static void process_monster(struct chunk *c, struct monster *mon)
 }
 
 
-static bool monster_can_flow(struct chunk *c, struct monster *mon)
-{
-	int fy = mon->fy;
-	int fx = mon->fx;
-
-	assert(c);
-
-	/* Check the flow (normal hearing is about 20) */
-	if ((c->squares[fy][fx].scent == c->squares[player->py][player->px].scent)
-		&& (c->squares[fy][fx].noise < z_info->max_flow_depth)
-		&& (c->squares[fy][fx].noise < mon->race->hearing)) {
-		return true;
-	}
-	return false;
-}
-
 /**
  * Determine whether a monster is active or passive
  */
 static bool monster_check_active(struct chunk *c, struct monster *mon)
 {
-	/* Character is inside scanning range */
-	if (mon->cdis <= mon->race->hearing)
+	if ((mon->cdis <= mon->race->hearing) && monster_passes_walls(mon)) {
+		/* Character is inside scanning range, monster can go straight there */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
-
-	/* Monster is hurt */
-	else if (mon->hp < mon->maxhp)
+	} else if (mon->hp < mon->maxhp) {
+		/* Monster is hurt */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
-
-	/* Monster can "see" the player (checked backwards) */
-	else if (square_isview(c, mon->fy, mon->fx))
+	} else if (square_isview(c, mon->fy, mon->fx)) {
+		/* Monster can "see" the player (checked backwards) */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
-
-	/* Monster can "smell" the player from far away (flow) */
-	else if (monster_can_flow(c, mon))
+	} else if (monster_can_hear_or_smell(c, mon)) {
+		/* Monster can hear or smell the player from far away */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
-
-	/* Otherwise go passive */
-	else
+	} else {
+		/* Otherwise go passive */
 		mflag_off(mon->mflag, MFLAG_ACTIVE);
+	}
 
 	return mflag_has(mon->mflag, MFLAG_ACTIVE) ? true : false;
 }
@@ -1284,10 +1238,9 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 
 	/* Handle "sleep" */
 	if (mon->m_timed[MON_TMD_SLEEP]) {
+		int noise_heard = mon->race->hearing
+			- cave->noise.grids[mon->fy][mon->fx];
 		bool woke_up = false;
-
-		/* Anti-stealth */
-		int notice = randint0(1024);
 
 		/* Aggravation */
 		if (player_of_has(player, OF_AGGRAVATE)) {
@@ -1306,18 +1259,13 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 
 			woke_up = true;
 
-		} else if ((notice * notice * notice) <= player->state.noise) {
-			/* See if monster "notices" player */
-			int d = 1;
-
-			/* Wake up faster near the player */
-			if (mon->cdis < 50) d = (100 / mon->cdis);
-
+		} else if (noise_heard > 0) {
 			/* Note a complete wakeup */
-			if (mon->m_timed[MON_TMD_SLEEP] <= d) woke_up = true;
+			if (mon->m_timed[MON_TMD_SLEEP] <= noise_heard) woke_up = true;
 
-			/* Monster wakes up a bit */
-			mon_dec_timed(mon, MON_TMD_SLEEP, d, MON_TMD_FLG_NOTIFY, false);
+			/* Sleep counter reduced according to noise heard */
+			mon_dec_timed(mon, MON_TMD_SLEEP, noise_heard, MON_TMD_FLG_NOTIFY,
+						  false);
 
 			/* Update knowledge */
 			if (monster_is_obvious(mon)) {

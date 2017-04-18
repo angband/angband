@@ -483,9 +483,6 @@ static bool twall(int y, int x)
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-
 	/* Result */
 	return (true);
 }

@@ -1980,7 +1980,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (state->skills[SKILL_DIGGING] < 1) state->skills[SKILL_DIGGING] = 1;
 	if (state->skills[SKILL_STEALTH] > 30) state->skills[SKILL_STEALTH] = 30;
 	if (state->skills[SKILL_STEALTH] < 0) state->skills[SKILL_STEALTH] = 0;
-	state->noise = (1L << (30 - state->skills[SKILL_STEALTH]));
 	hold = adj_str_hold[state->stat_ind[STAT_STR]];
 
 
@@ -2339,17 +2338,6 @@ void update_stuff(struct player *p)
 		p->upkeep->update &= ~(PU_UPDATE_VIEW);
 		update_view(cave, p);
 	}
-
-	if (p->upkeep->update & (PU_FORGET_FLOW)) {
-		p->upkeep->update &= ~(PU_FORGET_FLOW);
-		cave_forget_flow(cave);
-	}
-
-	if (p->upkeep->update & (PU_UPDATE_FLOW)) {
-		p->upkeep->update &= ~(PU_UPDATE_FLOW);
-		cave_update_flow(cave);
-	}
-
 
 	if (p->upkeep->update & (PU_DISTANCE)) {
 		p->upkeep->update &= ~(PU_DISTANCE);

@@ -67,7 +67,6 @@ struct angband_constants
 	u16b glyph_hardness;		/**< How hard for a monster to break a glyph */
 	u16b repro_monster_rate;	/**< Monster reproduction rate-slower */
 	u16b life_drain_percent;	/**< Percent of player life drained */
-	u16b max_flow_depth;		/**< Maximum depth for flow calculation */
 	u16b flee_range;			/**< Monsters run this many grids out of view */
 	u16b turn_range;			/**< Monsters turn to fight closer than this */
 
