@@ -192,6 +192,7 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 	int best_direction = 0;
 	bool found_direction = false;
 	int my = mon->fy, mx = mon->fx;
+	int base_hearing = mon->race->hearing - player->state.skills[SKILL_STEALTH];
 
 	/* If the monster can pass through nearby walls, do that */
 	if (monster_passes_walls(mon) && !near_permwall(mon, c)) {
@@ -216,7 +217,7 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 		if (!square_in_bounds(c, y, x)) continue;
 
 		/* Get the heard noise, compare with the best so far */
-		heard_noise = mon->race->hearing - cave->noise.grids[y][x];
+		heard_noise = base_hearing - cave->noise.grids[y][x];
 		if ((heard_noise > best_noise) && (cave->noise.grids[y][x] != 0)) {
 			best_noise = heard_noise;
 			best_direction = i;
@@ -246,10 +247,13 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 }
 
 
+/**
+ * Check if the monster can hear or smell anything
+ */
 static bool monster_can_hear_or_smell(struct chunk *c, struct monster *mon)
 {
-	/* Check the if the monster can hear or smell anything */
-	if (mon->race->hearing > cave->noise.grids[mon->fy][mon->fx]) return true;
+	int base_hearing = mon->race->hearing - player->state.skills[SKILL_STEALTH];
+	if (base_hearing > cave->noise.grids[mon->fy][mon->fx]) return true;
 	if (mon->race->smell > cave->scent.grids[mon->fy][mon->fx]) return true;
 	return false;
 }
@@ -1228,57 +1232,76 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
 }
 
 /**
+ * Wake a monster or reduce its depth of sleep
+ *
+ * Chance of waking up is dependent only on the player's stealth, but the
+ * amount of sleep reduction takes into account the monster's distance from
+ * the player.  Currently straight line distance is used; possibly this
+ * should take into account dungeon structure.
+ */
+static void monster_reduce_sleep(struct monster *mon)
+{
+	bool woke_up = false;
+	int stealth = player->state.skills[SKILL_STEALTH];
+	int player_noise = 1 << (30 - stealth);
+	int notice = randint0(1024);
+	struct monster_lore *lore = get_lore(mon->race);
+
+	/* Aggravation */
+	if (player_of_has(player, OF_AGGRAVATE)) {
+		char m_name[80];
+
+		/* Wake the monster */
+		mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+
+		/* Get the monster name */
+		monster_desc(m_name, sizeof(m_name), mon,
+					 MDESC_CAPITAL | MDESC_IND_HID);
+
+		/* Notify the player if aware */
+		if (monster_is_obvious(mon))
+			msg("%s wakes up.", m_name);
+
+		woke_up = true;
+
+	} else if ((notice * notice * notice) <= player_noise) {
+		int sleep_reduction = 1;
+
+		/* Wake up faster near the player */
+		if (mon->cdis < 50) {
+			sleep_reduction = (100 / mon->cdis);
+		}
+
+		/* Note a complete wakeup */
+		if (mon->m_timed[MON_TMD_SLEEP] <= sleep_reduction) {
+			woke_up = true;
+		}
+
+		/* Monster wakes up a bit */
+		mon_dec_timed(mon, MON_TMD_SLEEP, sleep_reduction, MON_TMD_FLG_NOTIFY,
+					  false);
+
+		/* Update knowledge */
+		if (monster_is_obvious(mon)) {
+			if (!woke_up && lore->ignore < UCHAR_MAX)
+				lore->ignore++;
+			else if (woke_up && lore->wake < UCHAR_MAX)
+				lore->wake++;
+			lore_update(mon->race, lore);
+		}
+	}
+}
+
+/**
  * Process a monster's timed effects, e.g. decrease them.
  *
  * Returns true if the monster is skipping its turn.
  */
 static bool process_monster_timed(struct chunk *c, struct monster *mon)
 {
-	struct monster_lore *lore = get_lore(mon->race);
-
-	/* Handle "sleep" */
+	/* If the monster is asleep or just woke up, then it doesn't act */
 	if (mon->m_timed[MON_TMD_SLEEP]) {
-		int noise_heard = mon->race->hearing
-			- cave->noise.grids[mon->fy][mon->fx];
-		bool woke_up = false;
-
-		/* Aggravation */
-		if (player_of_has(player, OF_AGGRAVATE)) {
-			char m_name[80];
-
-			/* Wake the monster */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
-
-			/* Get the monster name */
-			monster_desc(m_name, sizeof(m_name), mon,
-						 MDESC_CAPITAL | MDESC_IND_HID);
-
-			/* Notify the player if aware */
-			if (monster_is_obvious(mon))
-				msg("%s wakes up.", m_name);
-
-			woke_up = true;
-
-		} else if (noise_heard > 0) {
-			/* Note a complete wakeup */
-			if (mon->m_timed[MON_TMD_SLEEP] <= noise_heard) woke_up = true;
-
-			/* Sleep counter reduced according to noise heard */
-			mon_dec_timed(mon, MON_TMD_SLEEP, noise_heard, MON_TMD_FLG_NOTIFY,
-						  false);
-
-			/* Update knowledge */
-			if (monster_is_obvious(mon)) {
-				if (!woke_up && lore->ignore < UCHAR_MAX)
-					lore->ignore++;
-				else if (woke_up && lore->wake < UCHAR_MAX)
-					lore->wake++;
-				lore_update(mon->race, lore);
-			}
-		}
-
-		/* Sleeping monsters don't recover in any other ways */
-		/* If the monster just woke up, then it doesn't act */
+		monster_reduce_sleep(mon);
 		return true;
 	}
 

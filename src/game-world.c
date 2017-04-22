@@ -309,10 +309,12 @@ static void decrease_timeouts(void)
  * Every turn, the character makes enough noise that nearby monsters can use
  * it to home in.
  *
- * Mark the player's grid with theis current stealth, then fill in the noise
- * field of every grid that the player can reach with that noise plus the
- * number of steps needed to reach that grid - so higher values mean further
- * from the player.
+ * This function actually just computes distance from the player; this is
+ * used in combination with the player's stealth value to determine what
+ * monsters can hear.  We mark the player's grid with 0, then fill in the noise
+ * field of every grid that the player can reach with that "noise"
+ * (actally distance) plus the number of steps needed to reach that grid
+ * - so higher values mean further from the player.
  *
  * Monsters use this information by moving to adjacent grids with lower noise
  * values, thereby homing in on the player even though twisty tunnels and
@@ -328,7 +330,7 @@ static void make_noise(struct player *p)
 	int next_y = p->py;
 	int next_x = p->px;
 	int y, x, d;
-	int noise = MAX(p->state.skills[SKILL_STEALTH], 0);
+	int noise = 0;
     struct queue *queue = q_new(cave->height * cave->width);
 
 	/* Set all the grids to silence */
