@@ -79,6 +79,7 @@ struct blow_effect {
 	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	char *effect_type;
 	int resist;
+	int lash_type;
 	struct blow_effect *next;
 };
 

@@ -32,6 +32,7 @@ struct projection {
 	char *desc;
 	char *player_desc;
 	char *blind_desc;
+	char *lash_desc;
 	int numerator;
 	random_value denominator;
 	int divisor;

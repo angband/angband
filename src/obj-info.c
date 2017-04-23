@@ -1516,6 +1516,15 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						dice_string);
 				break;
 			}
+
+			/* Currently no object generated lashes */
+			case EFINFO_LASH: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						projections[effect->subtype].lash_desc,
+						effect->subtype);
+				break;
+			}
+
 			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),

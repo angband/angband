@@ -6,6 +6,7 @@ type:element
 desc:acid
 player-desc:acid
 blind-desc:acid
+lash-desc:acid
 numerator:1  
 denominator:3
 divisor:3
@@ -20,6 +21,7 @@ type:element
 desc:lightning
 player-desc:lightning
 blind-desc:lightning
+lash-desc:lightning
 numerator:1  
 denominator:3
 divisor:3
@@ -34,6 +36,7 @@ type:element
 desc:fire
 player-desc:fire
 blind-desc:fire
+lash-desc:fire
 numerator:1  
 denominator:3
 divisor:3
@@ -48,6 +51,7 @@ type:element
 desc:cold
 player-desc:frost
 blind-desc:cold
+lash-desc:frost
 numerator:1  
 denominator:3
 divisor:3
@@ -62,6 +66,7 @@ type:element
 desc:poison
 player-desc:poison gas
 blind-desc:poison
+lash-desc:venom
 numerator:1  
 denominator:3
 divisor:3
@@ -76,6 +81,7 @@ type:element
 desc:light
 player-desc:light
 blind-desc:something
+lash-desc:brightness
 numerator:4  
 denominator:6+1d6
 divisor:6
@@ -90,6 +96,7 @@ type:element
 desc:dark
 player-desc:dark
 blind-desc:something
+lash-desc:blackness
 numerator:4  
 denominator:6+1d6
 divisor:6
@@ -104,6 +111,7 @@ type:element
 desc:sound
 player-desc:sound
 blind-desc:noise
+lash-desc:sound
 numerator:5  
 denominator:6+1d6
 divisor:6
@@ -118,6 +126,7 @@ type:element
 desc:shards
 player-desc:shards
 blind-desc:something sharp
+lash-desc:razors
 numerator:6  
 denominator:6+1d6
 divisor:6
@@ -132,7 +141,8 @@ type:element
 desc:nexus
 player-desc:nexus
 blind-desc:something strange
-numerator:6  
+lash-desc:dislocation
+numerator:6
 denominator:6+1d6
 divisor:6
 damage-cap:400
@@ -146,6 +156,7 @@ type:element
 desc:nether
 player-desc:nether
 blind-desc:something cold
+lash-desc:withering
 numerator:6  
 denominator:6+1d6
 divisor:6
@@ -160,6 +171,7 @@ type:element
 desc:chaos
 player-desc:chaos
 blind-desc:something strange
+lash-desc:confusion
 numerator:6
 denominator:6+1d6
 divisor:6
@@ -174,6 +186,7 @@ type:element
 desc:disenchantment
 player-desc:disenchantment
 blind-desc:something strange
+lash-desc:unmagic
 numerator:6  
 denominator:6+1d6
 divisor:6
@@ -188,6 +201,7 @@ type:element
 desc:water
 player-desc:water
 blind-desc:water
+lash-desc:water
 divisor:6
 damage-cap:0
 msgt:GENERIC
@@ -200,7 +214,8 @@ type:element
 desc:ice
 player-desc:ice
 blind-desc:something sharp
-numerator:1  
+lash-desc:icicles
+numerator:1
 denominator:3
 divisor:6
 damage-cap:0
@@ -214,6 +229,7 @@ type:element
 desc:gravity
 player-desc:gravity
 blind-desc:something strange
+lash-desc:gravity
 divisor:3
 damage-cap:200
 msgt:BR_GRAVITY
@@ -226,6 +242,7 @@ type:element
 desc:inertia
 player-desc:inertia
 blind-desc:something strange
+lash-desc:lassitude
 divisor:6
 damage-cap:200
 msgt:BR_INERTIA
@@ -238,6 +255,7 @@ type:element
 desc:force
 player-desc:force
 blind-desc:something hard
+lash-desc:impact
 divisor:6
 damage-cap:200
 msgt:BR_FORCE
@@ -250,6 +268,7 @@ type:element
 desc:time
 player-desc:time
 blind-desc:something strange
+lash-desc:ruination
 divisor:3
 damage-cap:150
 msgt:BR_TIME
@@ -262,6 +281,7 @@ type:element
 desc:plasma
 player-desc:plasma
 blind-desc:something
+lash-desc:living fire
 divisor:6
 damage-cap:150
 msgt:BR_PLASMA
@@ -274,6 +294,7 @@ type:element
 desc:a meteor
 player-desc:meteor
 blind-desc:something
+lash-desc:meteoric iron
 divisor:6
 damage-cap:0
 msgt:GENERIC
@@ -298,6 +319,7 @@ type:element
 desc:mana
 player-desc:the elements
 blind-desc:something
+lash-desc:raw magic
 divisor:3
 damage-cap:1600
 msgt:BR_ELEMENTS
@@ -310,6 +332,7 @@ type:element
 desc:a holy orb
 player-desc:holy power
 blind-desc:something
+lash-desc:holy power
 divisor:6
 damage-cap:0
 msgt:GENERIC

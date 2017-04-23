@@ -405,6 +405,14 @@ static enum parser_error parse_eff_resist(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_eff_lash_type(struct parser *p) {
+	struct blow_effect *eff = parser_priv(p);
+	assert(eff);
+
+	eff->lash_type = proj_name_to_idx(parser_getstr(p, "type"));
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_eff(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -417,6 +425,7 @@ struct parser *init_parse_eff(void) {
 	parser_reg(p, "lore-color-immune sym color", parse_eff_lore_color_immune);
 	parser_reg(p, "effect-type str type", parse_eff_effect_type);
 	parser_reg(p, "resist str resist", parse_eff_resist);
+	parser_reg(p, "lash-type str type", parse_eff_lash_type);
 	return p;
 }
 

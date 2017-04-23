@@ -3902,6 +3902,70 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 }
 
 /**
+ * Crack a whip, or spit at the player; actually just a finite length beam
+ * Affect grids, objects, and monsters
+ * context->p1 is length of beam
+ */
+bool effect_handler_LASH(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, false);
+	int rad = context->radius;
+
+	int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL | PROJECT_ARC;
+	int type = PROJ_MISSILE;
+
+	struct loc target = loc(-1, -1);
+
+	/* Diameter of source is 10 times radius, so the effect is essentially
+	 * full strength for its entire length. */
+	int diameter_of_source = rad * 10;
+
+	/* No damaging blows */
+	if (!dam) return false;
+
+	/* Monsters only */
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *t_mon = monster_target_monster(context);
+
+		flg |= PROJECT_PLAY;
+
+		/* Target player or monster? */
+		if (t_mon) {
+			target = t_mon->grid;
+		} else {
+			struct loc decoy = cave_find_decoy(cave);
+			if (decoy.y && decoy.x) {
+				target = decoy;
+			} else {
+				target = player->grid;
+			}
+		}
+
+		/* Paranoia */
+		if (rad > z_info->max_range) rad = z_info->max_range;
+
+		/* Get the type (default is PROJ_MISSILE) */
+		type = mon->race->blow[0].effect->lash_type;
+	} else {
+		return false;
+	}
+
+	/* Check bounds */
+	if (diameter_of_source > 250) {
+		diameter_of_source = 250;
+	}
+
+	/* Lash the target */
+	if (project(context->origin, rad, target, dam, type, flg, 0,
+				diameter_of_source, context->obj)) {
+		context->ident = true;
+	}
+
+	return true;
+}
+
+/**
  * Cast multiple non-jumping ball spells at the same target.
  *
  * Targets absolute coordinates instead of a specific monster, so that

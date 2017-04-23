@@ -38,7 +38,9 @@ typedef enum {
 	SPELL_TAG_NONE,
 	SPELL_TAG_NAME,
 	SPELL_TAG_PRONOUN,
-	SPELL_TAG_TARGET
+	SPELL_TAG_TARGET,
+	SPELL_TAG_TYPE,
+	SPELL_TAG_OF_TYPE
 } spell_tag_t;
 
 static spell_tag_t spell_tag_lookup(const char *tag)
@@ -49,6 +51,10 @@ static spell_tag_t spell_tag_lookup(const char *tag)
 		return SPELL_TAG_PRONOUN;
 	else if (strncmp(tag, "target", 6) == 0)
 		return SPELL_TAG_TARGET;
+	else if (strncmp(tag, "type", 4) == 0)
+		return SPELL_TAG_TYPE;
+	else if (strncmp(tag, "of_type", 7) == 0)
+		return SPELL_TAG_OF_TYPE;
 	else
 		return SPELL_TAG_NONE;
 }
@@ -138,6 +144,27 @@ static void spell_message(struct monster *mon,
 						strnfcat(buf, sizeof(buf), &end, m_name);
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "you");
+					}
+					break;
+				}
+
+				case SPELL_TAG_TYPE: {
+					/* Get the attack type (assuming lash) */
+					int type = mon->race->blow[0].effect->lash_type;
+					char *type_name = projections[type].lash_desc;
+
+					strnfcat(buf, sizeof(buf), &end, type_name);
+					break;
+				}
+
+				case SPELL_TAG_OF_TYPE: {
+					/* Get the attack type (assuming lash) */
+					int type = mon->race->blow[0].effect->lash_type;
+					char *type_name = projections[type].lash_desc;
+
+					if (type_name) {
+						strnfcat(buf, sizeof(buf), &end, " of ");
+						strnfcat(buf, sizeof(buf), &end, type_name);
 					}
 					break;
 				}
