@@ -594,36 +594,6 @@ int rd_quests(void)
 }
 
 
-int rd_artifacts(void)
-{
-	int i;
-	u16b tmp16u;
-	
-	/* Load the Artifacts */
-	rd_u16b(&tmp16u);
-	if (tmp16u > z_info->a_max) {
-		note(format("Too many (%u) artifacts!", tmp16u));
-		return (-1);
-	}
-	
-	/* Read the artifact flags */
-	for (i = 0; i < tmp16u; i++) {
-		byte tmp8u;
-		
-		rd_byte(&tmp8u);
-		a_info[i].created = tmp8u;
-		rd_byte(&tmp8u);
-		a_info[i].seen = tmp8u;
-		rd_byte(&tmp8u);
-		a_info[i].everseen = tmp8u;
-		rd_byte(&tmp8u);
-	}
-
-	return 0;
-}
-
-
-
 /**
  * Read the player information
  */
@@ -983,6 +953,36 @@ int rd_misc(void)
 	rd_byte(&player->obj_k->ds);
 	return 0;
 }
+
+int rd_artifacts(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Load the Artifacts */
+	rd_u16b(&tmp16u);
+	if (tmp16u > z_info->a_max) {
+		note(format("Too many (%u) artifacts!", tmp16u));
+		return (-1);
+	}
+
+	/* Read the artifact flags */
+	for (i = 0; i < tmp16u; i++) {
+		byte tmp8u;
+
+		rd_byte(&tmp8u);
+		a_info[i].created = tmp8u;
+		rd_byte(&tmp8u);
+		a_info[i].seen = tmp8u;
+		rd_byte(&tmp8u);
+		a_info[i].everseen = tmp8u;
+		rd_byte(&tmp8u);
+	}
+
+	return 0;
+}
+
+
 
 int rd_player_hp(void)
 {

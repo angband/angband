@@ -398,24 +398,6 @@ void wr_quests(void)
 }
 
 
-void wr_artifacts(void)
-{
-	int i;
-	u16b tmp16u;
-
-	/* Hack -- Dump the artifacts */
-	tmp16u = z_info->a_max;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++) {
-		struct artifact *art = &a_info[i];
-		wr_byte(art->created);
-		wr_byte(art->seen);
-		wr_byte(art->everseen);
-		wr_byte(0);
-	}
-}
-
-
 void wr_player(void)
 {
 	int i;
@@ -664,6 +646,24 @@ void wr_misc(void)
 	wr_s16b(player->obj_k->to_d);
 	wr_byte(player->obj_k->dd);
 	wr_byte(player->obj_k->ds);
+}
+
+
+void wr_artifacts(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Hack -- Dump the artifacts */
+	tmp16u = z_info->a_max;
+	wr_u16b(tmp16u);
+	for (i = 0; i < tmp16u; i++) {
+		struct artifact *art = &a_info[i];
+		wr_byte(art->created);
+		wr_byte(art->seen);
+		wr_byte(art->everseen);
+		wr_byte(0);
+	}
 }
 
 
