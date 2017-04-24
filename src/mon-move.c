@@ -1266,10 +1266,16 @@ static void monster_reduce_sleep(struct monster *mon)
 
 	} else if ((notice * notice * notice) <= player_noise) {
 		int sleep_reduction = 1;
+		int local_noise = cave->noise.grids[mon->fy][mon->fx];
 
 		/* Wake up faster near the player */
-		if (mon->cdis < 50) {
-			sleep_reduction = (100 / mon->cdis);
+		//if (mon->cdis < 50) {
+		//	sleep_reduction = (100 / mon->cdis);
+		//}
+		/* Test - wake up faster in hearing distance of the player 
+		 * Note no dependence on stealth for now */
+		if ((local_noise > 0) && (local_noise < 50)) {
+			sleep_reduction = (100 / local_noise);
 		}
 
 		/* Note a complete wakeup */
