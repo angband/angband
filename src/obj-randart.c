@@ -211,30 +211,40 @@ static s32b artifact_power(int a_idx, char *reason)
  */
 static void store_base_power(struct artifact_set_data *data)
 {
-	int i, j;
+	int i, num;
 	struct artifact *art;
 	struct object_kind *kind;
-	int *fake_power;
+	int *fake_total_power;
+	int **fake_tv_power;
+	int *fake_tv_num;
 
 	data->max_power = 0;
 	data->min_power = 32767;
 	data->var_power = 0;
-	fake_power = mem_zalloc(z_info->a_max * sizeof(int));
-	j = 0;
+	fake_total_power = mem_zalloc(z_info->a_max * sizeof(int));
+	fake_tv_power = mem_zalloc(TV_MAX * sizeof(int*));
+	for (i = 0; i < TV_MAX; i++) {
+		fake_tv_power[i] = mem_zalloc(z_info->a_max * sizeof(int));
+	}
+	fake_tv_num = mem_zalloc(TV_MAX * sizeof(int));
+	num = 0;
 
-	for (i = 0; i < z_info->a_max; i++, j++) {
+	for (i = 0; i < z_info->a_max; i++, num++) {
 		data->base_power[i] = artifact_power(i, "for original power");
 
-		/* capture power stats, ignoring cursed and uber arts */
+		/* Capture power stats, ignoring cursed and uber arts */
 		if (data->base_power[i] > data->max_power &&
 			data->base_power[i] < INHIBIT_POWER)
 			data->max_power = data->base_power[i];
 		if (data->base_power[i] < data->min_power && data->base_power[i] > 0)
 			data->min_power = data->base_power[i];
-		if (data->base_power[i] > 0 && data->base_power[i] < INHIBIT_POWER)
-			fake_power[j] = (int)data->base_power[i];
-		else
-			j--;
+		if (data->base_power[i] > 0 && data->base_power[i] < INHIBIT_POWER) {
+			int tval = a_info[i].tval;
+			fake_total_power[num] = (int)data->base_power[i];
+			fake_tv_power[tval][fake_tv_num[tval]++] = data->base_power[i];
+		} else {
+			num--;
+		}
 
 		if (!data->base_power[i]) continue;
 		art = &a_info[i];
@@ -244,13 +254,24 @@ static void store_base_power(struct artifact_set_data *data)
 		data->base_art_alloc[i] = art->alloc_prob;
 	}
 
-	data->avg_power = mean(fake_power, j);
-	data->var_power = variance(fake_power, j);
+	data->avg_power = mean(fake_total_power, num);
+	data->var_power = variance(fake_total_power, num);
+	for (i = 0; i < TV_MAX; i++) {
+		if (fake_tv_num[i]) {
+			data->avg_tv_power[i] = mean(fake_tv_power[i], fake_tv_num[i]);
+		}
+	}
 
 	file_putf(log_file, "Max power is %d, min is %d\n", data->max_power,
 			  data->min_power);
 	file_putf(log_file, "Mean is %d, variance is %d\n", data->avg_power,
 			  data->var_power);
+	for (i = 0; i < TV_MAX; i++) {
+		if (data->avg_tv_power[i]) {
+			file_putf(log_file, "Mean power for tval %d is %d\n", i,
+					  data->avg_tv_power[i]);
+		}
+	}
 
 	/* Store the number of different types, for use later */
 	/* ToDo: replace this with full combination tracking */
@@ -286,7 +307,11 @@ static void store_base_power(struct artifact_set_data *data)
 		data->total++;
 	}
 
-    mem_free(fake_power);
+	for (i = 0; i < TV_MAX; i++) {
+		mem_free(fake_tv_power[i]);
+	}
+	mem_free(fake_tv_power);
+    mem_free(fake_total_power);
 }
 
 /**
@@ -2445,6 +2470,11 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 		/* Get the kind again in case it's changed */
 		kind = lookup_kind(art->tval, art->sval);
 
+		/* Power too high for this tval */
+		if (power > data->avg_tv_power[art->tval] * 3 / 2) {
+			continue;
+		}
+
 		/* If power is positive but very low, and if we're not having
 		 * any luck finding a base item, damage it once.  This helps ensure
 		 * that we get a base item for borderline cases like Wormtongue. */
@@ -2749,6 +2779,7 @@ static struct artifact_set_data *artifact_set_data_new(void)
 	struct artifact_set_data *data = mem_zalloc(sizeof(*data));
 
 	data->base_power = mem_zalloc(z_info->a_max * sizeof(int));
+	data->avg_tv_power = mem_zalloc(TV_MAX * sizeof(int));
 	data->base_item_level = mem_zalloc(z_info->a_max * sizeof(int));
 	data->base_item_prob = mem_zalloc(z_info->a_max * sizeof(int));
 	data->base_art_alloc = mem_zalloc(z_info->a_max * sizeof(int));

@@ -88,6 +88,7 @@ struct artifact_set_data {
 	int min_power;
 	int avg_power;
 	int var_power;
+	int *avg_tv_power;
 
 	/* Base item levels */
 	int *base_item_level;
