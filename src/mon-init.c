@@ -1994,11 +1994,17 @@ struct file_parser pit_parser = {
  * ------------------------------------------------------------------------ */
 
 static enum parser_error parse_lore_name(struct parser *p) {
-	struct monster_race *race = lookup_monster(parser_getstr(p, "name"));
-	struct monster_lore *l = &l_list[race->ridx];
+	struct monster_race *race = lookup_monster(parser_getsym(p, "index"));
+	struct monster_lore *l;
 
-	parser_setpriv(p, l);
+	/* Allow for old lore files which had an index */
+	if (!race) {
+		race = lookup_monster(parser_getstr(p, "name"));
+	}
+
+	l = &l_list[race->ridx];
 	l->ridx = race->ridx;
+	parser_setpriv(p, l);
 	return PARSE_ERROR_NONE;
 }
 
@@ -2086,11 +2092,7 @@ static enum parser_error parse_lore_flags(struct parser *p) {
 	flags = string_make(parser_getstr(p, "flags"));
 	s = strtok(flags, " |");
 	while (s) {
-		if (grab_flag(l->flags, RF_SIZE, r_info_flags, s)) {
-			mem_free(flags);
-			quit_fmt("bad lore flag: %s", s);
-			return PARSE_ERROR_INVALID_FLAG;
-		}
+		(void) grab_flag(l->flags, RF_SIZE, r_info_flags, s);
 		s = strtok(NULL, " |");
 	}
 
@@ -2109,11 +2111,7 @@ static enum parser_error parse_lore_spells(struct parser *p) {
 	flags = string_make(parser_getstr(p, "spells"));
 	s = strtok(flags, " |");
 	while (s) {
-		if (grab_flag(l->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
-			quit_fmt("bad lore spell flag: %s", s);
-			ret = PARSE_ERROR_INVALID_FLAG;
-			break;
-		}
+		(void) grab_flag(l->spell_flags, RSF_SIZE, r_info_spell_flags, s);
 		s = strtok(NULL, " |");
 	}
 
@@ -2243,7 +2241,7 @@ struct parser *init_parse_lore(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
-	parser_reg(p, "name str name", parse_lore_name);
+	parser_reg(p, "name sym index ?str name", parse_lore_name);
 	parser_reg(p, "plural ?str plural", ignored);
 	parser_reg(p, "base sym base", parse_lore_base);
 	parser_reg(p, "glyph char glyph", ignored);
