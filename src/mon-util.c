@@ -42,6 +42,7 @@ static const struct monster_flag monster_flag_table[] =
 	#define RF(a, b, c) { RF_##a, b, c },
 	#include "list-mon-race-flags.h"
 	#undef RF
+	{RF_MAX, 0, NULL}
 };
 
 /**
