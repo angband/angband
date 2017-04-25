@@ -934,6 +934,7 @@ void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 	char o_name[80];
 	int best_y = y;
 	int best_x = x;
+	bool dont_ignore = verbose && !ignore_item_ok(*dropped);
 
 	/* Only called in the current level */
 	assert(c == cave);
@@ -951,11 +952,9 @@ void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 	drop_find_grid(*dropped, &best_y, &best_x);
 	if (floor_carry(c, best_y, best_x, *dropped, false)) {
 		sound(MSG_DROP);
-		if (verbose &&
-			(c->squares[best_y][best_x].mon < 0) &&
-			c->objects[(*dropped)->oidx] &&
-			!ignore_item_ok(*dropped))
+		if (dont_ignore && (c->squares[best_y][best_x].mon < 0)) {
 			msg("You feel something roll beneath your feet.");
+		}
 	} else {
 		floor_carry_fail(*dropped, false);
 	}

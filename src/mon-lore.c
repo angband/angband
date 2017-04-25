@@ -929,19 +929,18 @@ void lore_append_toughness(textblock *tb, const struct monster_race *race,
 		textblock_append_c(tb, COLOUR_L_BLUE, "%d", race->avg_hp);
 		textblock_append(tb, ".  ");
 
-		/* Player's chance to hit it */
+		/* Player's base chance to hit */
 		chance = py_attack_hit_chance(player, weapon);
 
 		/* The following calculations are based on test_hit();
 		 * make sure to keep it in sync */
-		/* Avoid division by zero errors, and starting higher on the scale */
-		if (chance < 9)
+		if (chance < 9) {
 			chance = 9;
-
-		chance2 = 90 * (chance - (race->ac * 2 / 3)) / chance + 5;
-
-		/* There is always a 12 percent chance to hit */
-		if (chance2 < 12) chance2 = 12;
+		}
+		chance2 = 12 + (100 - 12 - 5) * (chance - (race->ac * 2 / 3)) / chance;
+		if (chance2 < 12) {
+			chance2 = 12;
+		}
 
 		textblock_append(tb, "You have a");
 		if ((chance2 == 8) || ((chance2 / 10) == 8))

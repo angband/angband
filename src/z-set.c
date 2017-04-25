@@ -66,7 +66,7 @@ void set_add(struct set *s, void *p) {
 }
 
 bool set_del(struct set *s, void *p) {
-	ssize_t i;
+	int i;
 	_set_check(s);
 
 	i = _set_find(s, p);

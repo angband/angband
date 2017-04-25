@@ -2445,6 +2445,7 @@ alloc:40:25 to 100
 pile:25:2
 power:22
 effect:LIGHT_LEVEL
+dice:1
 
 name:*Enlightenment*
 type:potion
