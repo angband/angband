@@ -226,7 +226,7 @@ bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag,
 	assert(timer > 0); /* For negative amounts, we use mon_dec_timed instead */
 
 	struct mon_timed_effect *effect = &effects[effect_type];
-	int new_value;
+	int new_value = timer;
 
 	/* Make it last for a mimimum # of turns if it is a new effect */
 	if (mon->m_timed[effect_type] == 0 && timer < MON_INC_MIN_TURNS) {
