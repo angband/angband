@@ -248,14 +248,26 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 
 
 /**
- * Check if the monster can hear or smell anything
+ * Check if the monster can hear anything
  */
-static bool monster_can_hear_or_smell(struct chunk *c, struct monster *mon)
+static bool monster_can_hear(struct chunk *c, struct monster *mon)
 {
 	int base_hearing = mon->race->hearing - player->state.skills[SKILL_STEALTH];
-	if (base_hearing > cave->noise.grids[mon->fy][mon->fx]) return true;
-	if (mon->race->smell > cave->scent.grids[mon->fy][mon->fx]) return true;
-	return false;
+	if (cave->noise.grids[mon->fy][mon->fx] == 0) {
+		return false;
+	}
+	return base_hearing > cave->noise.grids[mon->fy][mon->fx];
+}
+
+/**
+ * Check if the monster can smell anything
+ */
+static bool monster_can_smell(struct chunk *c, struct monster *mon)
+{
+	if (cave->scent.grids[mon->fy][mon->fx] == 0) {
+		return false;
+	}
+	return mon->race->smell > cave->scent.grids[mon->fy][mon->fx];
 }
 
 /**
@@ -273,11 +285,14 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
 	int my = mon->fy, mx = mon->fx;
 
 	/* If the player is not currently near the monster, no reason to flow */
-	if (mon->cdis >= mon->best_range)
+	if (mon->cdis >= mon->best_range) {
 		return false;
+	}
 
-	/* Monster is too far away to use flow information */
-	if (!monster_can_hear_or_smell(c, mon)) return false;
+	/* Monster is too far away to use sound or scent */
+	if (!monster_can_hear(c, mon) && !monster_can_smell(c, mon)) {
+		return false;
+	}
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--) {
@@ -1220,8 +1235,11 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
 	} else if (square_isview(c, mon->fy, mon->fx)) {
 		/* Monster can "see" the player (checked backwards) */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
-	} else if (monster_can_hear_or_smell(c, mon)) {
-		/* Monster can hear or smell the player from far away */
+	} else if (monster_can_hear(c, mon)) {
+		/* Monster can hear the player */
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
+	} else if (monster_can_smell(c, mon)) {
+		/* Monster can smell the player */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 	} else {
 		/* Otherwise go passive */

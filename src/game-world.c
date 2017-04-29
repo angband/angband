@@ -320,10 +320,6 @@ static void decrease_timeouts(void)
  * values, thereby homing in on the player even though twisty tunnels and
  * mazes.  Monsters have a hearing value, which is the largest sound value
  * they can detect.
- *
- * The biggest limitation of this code is that it does not easily
- * allow for alternate ways around doors (not all monsters can handle
- * doors) and lava (many monsters are not allowed to enter lava).
  */
 static void make_noise(struct player *p)
 {
@@ -370,6 +366,9 @@ static void make_noise(struct player *p)
 			/* Skip grids that already have noise */
 			if (cave->noise.grids[y][x] != 0) continue;
 
+			/* Skip the player grid */
+			if (y == player->py && x == player->px) continue;
+
 			/* Save the noise */
 			cave->noise.grids[y][x] = noise;
 
@@ -391,7 +390,9 @@ static void make_noise(struct player *p)
  *
  * Scent is valued according to age.  When a character takes his turn,
  * scent is aged by one, and new scent is laid down.  Monsters have a smell
- * value which indicates the oldest scent they can detect.
+ * value which indicates the oldest scent they can detect.  Grids where the
+ * player has never been will have scent 0.  The player's grid will also have
+ * scent 0, but this is OK as no monster will ever be smelling it.
  */
 static void update_scent(void)
 {
@@ -418,13 +419,41 @@ static void update_scent(void)
 		for (x = 0; x < 5; x++) {
 			int scent_y = y + player->py - 2;
 			int scent_x = x + player->px - 2;
+			int new_scent = scent_strength[y][x];
+			int d;
+			bool add_scent = false;
 
 			/* Ignore invalid or non-scent-carrying grids */
 			if (!square_in_bounds(cave, scent_y, scent_x)) continue;
 			if (square_isnoscent(cave, scent_y, scent_x)) continue;
 
+			/* Check scent is spreading on floors, not going through walls */
+			for (d = 0; d < 8; d++)	{
+				int adj_y = scent_y + ddy_ddd[d];
+				int adj_x = scent_x + ddx_ddd[d];
+
+				if (!square_in_bounds(cave, adj_y, adj_x)) {
+					continue;
+				}
+
+				/* Player grid is always valid */
+				if (x == 2 && y == 2) {
+					add_scent = true;
+				}
+
+				/* Adjacent to a closer grid, so valid */
+				if (cave->scent.grids[adj_y][adj_x] == new_scent - 1) {
+					add_scent = true;
+				}
+			}
+
+			/* Not valid */
+			if (!add_scent) {
+				continue;
+			}
+
 			/* Mark the scent */
-			cave->scent.grids[scent_y][scent_x] = scent_strength[y][x];
+			cave->scent.grids[scent_y][scent_x] = new_scent;
 		}
 	}
 }
