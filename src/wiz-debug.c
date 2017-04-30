@@ -142,7 +142,7 @@ static void do_cmd_wiz_hack_nick(void)
 	char kp;
 
 	/* Noise */
-	for (i = MAX(0, player->state.skills[SKILL_STEALTH]); i < 100; i++) {
+	for (i = 0; i < 100; i++) {
 		/* Update map */
 		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {

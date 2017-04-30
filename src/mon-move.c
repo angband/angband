@@ -188,11 +188,12 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 {
 	int i;
 	int best_scent = 0;
-	int best_noise = 0;
-	int best_direction = 0;
 	bool found_direction = false;
 	int my = mon->fy, mx = mon->fx;
-	int base_hearing = mon->race->hearing - player->state.skills[SKILL_STEALTH];
+	int base_hearing = mon->race->hearing
+		- player->state.skills[SKILL_STEALTH] / 3;
+	int best_noise = base_hearing - cave->noise.grids[my][mx];
+	int best_direction = 8;
 
 	/* If the monster can pass through nearby walls, do that */
 	if (monster_passes_walls(mon) && !near_permwall(mon, c)) {
@@ -252,7 +253,8 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
  */
 static bool monster_can_hear(struct chunk *c, struct monster *mon)
 {
-	int base_hearing = mon->race->hearing - player->state.skills[SKILL_STEALTH];
+	int base_hearing = mon->race->hearing
+		- player->state.skills[SKILL_STEALTH] / 3;
 	if (cave->noise.grids[mon->fy][mon->fx] == 0) {
 		return false;
 	}
@@ -627,7 +629,7 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 		}
 
 		/* Not in an empty space and strong player */
-		if ((open < 7) && (player->chp > player->mhp / 2)) {
+		if ((open < 5) && (player->chp > player->mhp / 2)) {
 			/* Find hiding place */
 			if (find_hiding(c, mon)) {
 				done = true;
