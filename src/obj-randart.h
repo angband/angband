@@ -68,6 +68,7 @@ struct artifact_set_data {
 	/* Data structures for learned probabilities */
 	int *art_probs;
 	int *tv_probs;
+	int *tv_num;
 	int bow_total;
 	int melee_total;
 	int boot_total;
@@ -89,6 +90,8 @@ struct artifact_set_data {
 	int avg_power;
 	int var_power;
 	int *avg_tv_power;
+	int *min_tv_power;
+	int *max_tv_power;
 
 	/* Base item levels */
 	int *base_item_level;

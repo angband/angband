@@ -216,17 +216,17 @@ static void store_base_power(struct artifact_set_data *data)
 	struct object_kind *kind;
 	int *fake_total_power;
 	int **fake_tv_power;
-	int *fake_tv_num;
 
 	data->max_power = 0;
-	data->min_power = 32767;
+	data->min_power = INHIBIT_POWER + 1;
 	data->var_power = 0;
 	fake_total_power = mem_zalloc(z_info->a_max * sizeof(int));
 	fake_tv_power = mem_zalloc(TV_MAX * sizeof(int*));
 	for (i = 0; i < TV_MAX; i++) {
 		fake_tv_power[i] = mem_zalloc(z_info->a_max * sizeof(int));
+		data->min_tv_power[i] = INHIBIT_POWER + 1;
+		data->max_tv_power[i] = 0;
 	}
-	fake_tv_num = mem_zalloc(TV_MAX * sizeof(int));
 	num = 0;
 
 	for (i = 0; i < z_info->a_max; i++, num++) {
@@ -241,7 +241,13 @@ static void store_base_power(struct artifact_set_data *data)
 		if (data->base_power[i] > 0 && data->base_power[i] < INHIBIT_POWER) {
 			int tval = a_info[i].tval;
 			fake_total_power[num] = (int)data->base_power[i];
-			fake_tv_power[tval][fake_tv_num[tval]++] = data->base_power[i];
+			fake_tv_power[tval][data->tv_num[tval]++] = data->base_power[i];
+			if (data->base_power[i] < data->min_tv_power[tval]) {
+				data->min_tv_power[tval] = data->base_power[i];
+			}
+			if (data->base_power[i] > data->max_tv_power[tval]) {
+				data->max_tv_power[tval] = data->base_power[i];
+			}
 		} else {
 			num--;
 		}
@@ -257,8 +263,8 @@ static void store_base_power(struct artifact_set_data *data)
 	data->avg_power = mean(fake_total_power, num);
 	data->var_power = variance(fake_total_power, num);
 	for (i = 0; i < TV_MAX; i++) {
-		if (fake_tv_num[i]) {
-			data->avg_tv_power[i] = mean(fake_tv_power[i], fake_tv_num[i]);
+		if (data->tv_num[i]) {
+			data->avg_tv_power[i] = mean(fake_tv_power[i], data->tv_num[i]);
 		}
 	}
 
@@ -268,8 +274,9 @@ static void store_base_power(struct artifact_set_data *data)
 			  data->var_power);
 	for (i = 0; i < TV_MAX; i++) {
 		if (data->avg_tv_power[i]) {
-			file_putf(log_file, "Mean power for tval %d is %d\n", i,
-					  data->avg_tv_power[i]);
+			file_putf(log_file, "Power for tval %s: min %d, max %d, avg %d\n",
+					  tval_find_name(i), data->min_tv_power[i],
+					  data->max_tv_power[i], data->avg_tv_power[i]);
 		}
 	}
 
@@ -2780,10 +2787,13 @@ static struct artifact_set_data *artifact_set_data_new(void)
 
 	data->base_power = mem_zalloc(z_info->a_max * sizeof(int));
 	data->avg_tv_power = mem_zalloc(TV_MAX * sizeof(int));
+	data->min_tv_power = mem_zalloc(TV_MAX * sizeof(int));
+	data->max_tv_power = mem_zalloc(TV_MAX * sizeof(int));
 	data->base_item_level = mem_zalloc(z_info->a_max * sizeof(int));
 	data->base_item_prob = mem_zalloc(z_info->a_max * sizeof(int));
 	data->base_art_alloc = mem_zalloc(z_info->a_max * sizeof(int));
 	data->tv_probs = mem_zalloc(TV_MAX * sizeof(int));
+	data->tv_num = mem_zalloc(TV_MAX * sizeof(int));
 	data->art_probs = mem_zalloc(ART_IDX_TOTAL * sizeof(int));
 	data->tv_freq = mem_zalloc(TV_MAX * sizeof(int));
 
@@ -2805,10 +2815,14 @@ static struct artifact_set_data *artifact_set_data_new(void)
 static void artifact_set_data_free(struct artifact_set_data *data)
 {
 	mem_free(data->base_power);
+	mem_free(data->avg_tv_power);
+	mem_free(data->min_tv_power);
+	mem_free(data->max_tv_power);
 	mem_free(data->base_item_level);
 	mem_free(data->base_item_prob);
 	mem_free(data->base_art_alloc);
 	mem_free(data->tv_probs);
+	mem_free(data->tv_num);
 	mem_free(data->art_probs);
 	mem_free(data->tv_freq);
 	mem_free(data);
