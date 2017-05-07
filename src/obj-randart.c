@@ -176,7 +176,7 @@ static s16b art_idx_high_resist[] =	{
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
  */
-static s32b artifact_power(int a_idx, char *reason)
+static int artifact_power(int a_idx, char *reason)
 {
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();
@@ -250,6 +250,9 @@ static void store_base_power(struct artifact_set_data *data)
 			}
 		} else {
 			num--;
+		}
+		if (data->base_power[i] < 0) {
+			data->neg_power_total++;
 		}
 
 		if (!data->base_power[i]) continue;
@@ -1267,7 +1270,7 @@ static void parse_frequencies(struct artifact_set_data *data)
 			data->tv_freq[j] += data->tv_probs[i];
 
 	/* Print out the frequency table, for verification */
-	for (i = 0; i < z_info->k_max; i++)
+	for (i = 0; i < TV_MAX; i++)
 		file_putf(log_file, "Cumulative frequency of %s is: %d\n",
 				  tval_find_name(i), data->tv_freq[i]);
 }
@@ -1277,23 +1280,33 @@ static void parse_frequencies(struct artifact_set_data *data)
  * Generation of a random artifact
  * ------------------------------------------------------------------------ */
 /**
- * Pick a random base item
+ * Pick a random base item tval
  */
-static struct object_kind *get_base_item(struct artifact_set_data *data)
+static int get_base_item_tval(struct artifact_set_data *data)
 {
 	int tval = 0;
 	int r = randint1(data->tv_freq[TV_MAX - 1]);
-	struct object_kind *kind = NULL;
-	char name[120] = "";
 
 	/* Get a tval based on original artifact tval frequencies */
 	while (r > data->tv_freq[tval]) {
 		tval++;
 	}
 
+	return tval;
+}
+
+/**
+ * Pick a random base item from artifact data and a tval
+ */
+static struct object_kind *get_base_item(struct artifact_set_data *data,
+										 int tval)
+{
+	struct object_kind *kind = NULL;
+	char name[120] = "";
+
 	/* Pick an sval for that tval at random */
 	while (!kind) {
-		r = randint1(kb_info[tval].num_svals);
+		int r = randint1(kb_info[tval].num_svals);
 		kind = lookup_kind(tval, r);
 
 		/* No items based on unrandomised artifacts */
@@ -1383,7 +1396,7 @@ void artifact_prep(struct artifact *art, const struct object_kind *kind,
 				}
 				art->sval = randint0(total - first_special + 1) + first_special;
 				test_kind = lookup_kind(art->tval, art->sval);
-				while (strstr(test_kind->name, "Ring of Power")) {
+				while (strstr(test_kind->name, "Ring of")) {
 					art->sval = randint0(total - first_special + 1) +
 						first_special;
 					test_kind = lookup_kind(art->tval, art->sval);
@@ -2427,80 +2440,127 @@ static void copy_artifact(struct artifact *a_src, struct artifact *a_dst)
 }
 
 /**
- * Scramble an artifact.  Regular artifacts have their base type changed at
- * random, whereas special artifacts keep theirs.
- *
- * Note the three special cases (One Ring, Grond, Morgoth).
- *
- * This code is full of intricacies developed over years of tweaking.
+ * ------------------------------------------------------------------------
+ * Generation of a set of random artifacts
+ * ------------------------------------------------------------------------ */
+/**
+ * Use W. Sheldon Simms' random name generator.
  */
-static void scramble_artifact(int a_idx, struct artifact_set_data *data)
+char *artifact_gen_name(struct artifact *a, const char ***words) {
+	char buf[BUFLEN];
+	char word[MAX_NAME_LEN + 1];
+
+	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word,
+				  sizeof(word), words);
+	my_strcap(word);
+
+	if (one_in_(3))
+		strnfmt(buf, sizeof(buf), "'%s'", word);
+	else
+		strnfmt(buf, sizeof(buf), "of %s", word);
+	return string_make(buf);
+}
+
+/**
+ * Give an artifact a (boring) description
+ */
+static void describe_artifact(int aidx, int power)
 {
-	struct artifact *art = &a_info[a_idx];
+	struct artifact *art = &a_info[aidx];
+	char desc[128] = "Random ";
+	my_strcat(desc, tval_find_name(art->tval), sizeof(desc));
+	my_strcat(desc, format(" of power %d", power), sizeof(desc));
+	string_free(art->text);
+	art->text = string_make(desc);
+}
+
+
+/**
+ * Design a random artifact given a tval
+ *
+ * The artifact is assigned a power based on the range of powers for that tval
+ * in the original artifact set.  It is then given a base item type which is
+ * suitable for that power, and than has properties added to it until it falls
+ * close enough to the target power - currently this means between 19/20 and
+ * 23/20 of the target power.
+ */
+static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
+{
+	struct artifact *art = &a_info[*aidx];
 	struct object_kind *kind = lookup_kind(art->tval, art->sval);
 	int art_freq[ART_IDX_TOTAL];
-	int power = data->base_power[a_idx];
-	int old_level = art->level;
-	int tries = 0;
-	byte alloc_old, base_alloc_old, alloc_new;
-	s32b ap = 0;
+	int art_level = art->level;
+	int tries;
+	int alloc_new;
+	int ap = 0;
 	bool hurt_me = false;
-	int count = 0;
+
+	/* Set tval if necessary */
+	int tval = (tv == TV_NULL) ? get_base_item_tval(data) : tv;
 
 	/* Structure to hold the old artifact */
 	struct artifact *a_old = mem_zalloc(sizeof *a_old);
 
-	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> CREATING NEW ARTIFACT\n");
-	file_putf(log_file, "Artifact %d: power = %d\n", a_idx, power);
+	/* Choose a power for the artifact */
+	int power = Rand_sample(data->avg_tv_power[tval],
+							data->max_tv_power[tval],
+							data->min_tv_power[tval],
+							25, 30);
 
-	/* Flip the sign on power if it's negative, since it's only used for base
-	 * item choice
-	 */
+	/* Choose a name */
+	char *new_name = artifact_gen_name(art, name_sections);
+
+	/* Skip fixed artifacts */
+	while (strstr(art->name, "The One Ring") ||
+		kf_has(kind->kind_flags, KF_QUEST_ART)) {
+		(*aidx)++;
+		art = &a_info[*aidx];
+		art_level = art->level;
+		if ((*aidx) >= z_info->a_max) {
+			return;
+		}
+	}
+
+	/* Apply the new name */
+	string_free(art->name);
+	art->name = new_name;
+
+	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> CREATING NEW ARTIFACT\n");
+	file_putf(log_file, "Artifact %d: power = %d\n", *aidx, power);
+
+	/* Flip the sign on power if it's negative (unlikely) and damage */
 	if (power < 0) {
 		hurt_me = true;
 		power = -power;
 	}
 
-	/* Capture the rarity of the original base item and artifact */
-	alloc_old = data->base_art_alloc[a_idx];
-	base_alloc_old = data->base_item_prob[a_idx];
-
 	/* Choose a random base item type.  Not too powerful, so we'll have to
 	 * add something to it.  Not too weak, for the opposite reason. */
-	while (count < MAX_TRIES) {
-		s32b ap2 = 0;
+	for (tries = 0; tries < MAX_TRIES; tries++) {
+		int base_power = 0;
 
 		/* Get the new item kind and do basic prep on it */
-		kind = get_base_item(data);
+		if (tval == TV_NULL) {
+			tval = get_base_item_tval(data);
+		}
+		kind = get_base_item(data, tval);
 		artifact_prep(art, kind, data);
 
 		/* Get the kind again in case it's changed */
 		kind = lookup_kind(art->tval, art->sval);
 
-		/* Power too high for this tval */
-		if (power > data->avg_tv_power[art->tval] * 3 / 2) {
-			continue;
-		}
-
-		/* If power is positive but very low, and if we're not having
-		 * any luck finding a base item, damage it once.  This helps ensure
-		 * that we get a base item for borderline cases like Wormtongue. */
-		if (power > 0 && power < 10 && count > MAX_TRIES / 2) {
-			file_putf(log_file, "Damaging base item to help get a match.\n");
-			make_bad(art, old_level);
-		}
-
-		ap2 = artifact_power(a_idx, "for base item power");
-		file_putf(log_file, "Base item power old %d, new %d\n", power, ap2);
-		count++;
+		base_power = artifact_power(*aidx, "for base item power");
+		file_putf(log_file, "Base item power %d\n", base_power);
 
 		/* New base item power too close to target artifact power */
-		if ((ap2 > (power * 6) / 10 + 1) && (power - ap2 < 20)) {
+		if ((base_power > (power * 6) / 10 + 1) && (power - base_power < 20)) {
+			file_putf(log_file, "Power too high!\n");
 			continue;
 		}
 
 		/* New base item power too low */
-		if (ap2 < (power / 10)) {
+		if (base_power < (power / 10)) {
+			file_putf(log_file, "Power too low!\n");
 			continue;
 		}
 
@@ -2508,28 +2568,8 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 		break;
 	};
 
-	/* Calculate the proper rarity based on the new type.  We attempt
-	 * to preserve the 'effective rarity' which is equal to the
-	 * artifact rarity multiplied by the base item rarity. */
-	/* Note guess for special types - NRM */
-	if (kind->kidx > z_info->ordinary_kind_max) {
-		alloc_new = alloc_old * base_alloc_old / 20;
-	} else {
-		alloc_new = alloc_old * base_alloc_old / MAX(kind->alloc_prob, 1);
-	}
-
-	if (alloc_new > 99) alloc_new = 99;
-	if (alloc_new < 1) alloc_new = 1;
-
-	file_putf(log_file, "Old allocs are base %d, art %d\n", base_alloc_old,
-			  alloc_old);
-	file_putf(log_file, "New allocs are base %d, art %d\n", kind->alloc_prob,
-			  alloc_new);
-
-	/* Set the new rarity */
-	art->alloc_prob = alloc_new;
-
-	if (count >= MAX_TRIES)
+	/* Failed to get a good base item */
+	if (tries >= MAX_TRIES)
 		file_putf(log_file, "Warning! Couldn't get appropriate power level on base item.\n");
 
 	/* Generate the cumulative frequency table for this base item type */
@@ -2540,81 +2580,61 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 
 	/* Give this artifact a shot at being supercharged */
 	try_supercharge(art, power, data);
-	ap = artifact_power(a_idx, "result of supercharge");
+	ap = artifact_power(*aidx, "result of supercharge");
 	if (ap > (power * 23) / 20 + 1)	{
 		/* Too powerful -- put it back */
 		copy_artifact(a_old, art);
 		file_putf(log_file, "--- Supercharge is too powerful! Rolling back.\n");
 	}
 
-	/* First draft: add two abilities, then damage it three times. */
-	if (hurt_me) {
-		bool success = false;
+	/* Give this artifact a chance to be cursed - note it retains its power */
+	if (one_in_(z_info->a_max / MAX(2, data->neg_power_total))) {
+		hurt_me = true;
+	}
 
+	/* Do the actual artifact design */
+	for (tries = 0; tries < MAX_TRIES; tries++) {
 		/* Copy artifact info temporarily. */
 		copy_artifact(art, a_old);
-		do {
+
+		if (hurt_me) {
+			/* Add two abilities, then damage it three times. */
 			add_ability(art, power, art_freq, data);
 			add_ability(art, power, art_freq, data);
-			make_bad(art, old_level);
-			make_bad(art, old_level);
-			make_bad(art, old_level);
-			remove_contradictory(art);
-			ap = artifact_power(a_idx, "damage for bad art");
-			/* Accept if it doesn't have any inhibited abilities */
-			if (ap < INHIBIT_POWER)
-				success = true;
-			/* Otherwise go back and try again */
-			else {
-				file_putf(log_file, "Inhibited ability added - rolling back\n");
-				copy_artifact(a_old, art);
-			}
-		} while (!success);
+			make_bad(art, art_level);
+			make_bad(art, art_level);
+			make_bad(art, art_level);
+		} else if (one_in_(5000)) {
+			/* Occasionally curse stuff at random */
+			add_curse(art, art_level);
+		}
 
-		/* Cursed items never have any resale value */
-		art->cost = 0;
-	} else {
-		/*
-		 * Select a random set of abilities which roughly matches the
-		 * original's in terms of overall power/usefulness.
-		 */
-		for (tries = 0; tries < MAX_TRIES; tries++) {
-			/* Copy artifact info temporarily. */
-			copy_artifact(art, a_old);
+		/* Add an ability */
+		add_ability(art, power, art_freq, data);
+		remove_contradictory(art);
 
-			/* Occasionally curse stuff */
-			if (one_in_(5000)) {
-				add_curse(art, old_level);
-			} else {
-				add_ability(art, power, art_freq, data);
-			}
+		/* Check the power, handle negative power */
+		ap = artifact_power(*aidx, "artifact attempt");
+		if (hurt_me && (ap < 0)) {
+			ap = -ap;
+			break;
+		}
 
-			/* Check the power */
-			ap = artifact_power(a_idx, "artifact attempt");
-
-			/* CR 11/14/01 - pushed both limits up by about 5% */
-			if (ap > (power * 23) / 20 + 1) {
-				/* too powerful -- put it back */
-				copy_artifact(a_old, art);
-				file_putf(log_file, "--- Too powerful!  Rolling back.\n");
-				continue;
-			} else if (ap >= (power * 19) / 20) {	/* just right */
-				/* CC 11/02/09 - add rescue for crappy weapons */
-				if ((art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
-					art->tval == TV_POLEARM || art->tval == TV_SWORD
-					|| art->tval == TV_BOW) && (art->to_d < 10)) {
-					art->to_d += randint0(10);
-					file_putf(log_file, "Redeeming crappy weapon: +dam now %d\n", art->to_d);
-				}
-				break;
-			}
-		}		/* end of power selection */
-
-		/* We couldn't generate an artifact within the number of permitted
-		 * iterations.  Show a warning message. */
-		if (tries >= MAX_TRIES)
-			file_putf(log_file, "Warning!  Couldn't get appropriate power level on artifact.\n");
+		/* Check power */
+		if (ap > (power * 23) / 20 + 1) {
+			/* Too powerful -- put it back */
+			copy_artifact(a_old, art);
+			file_putf(log_file, "--- Too powerful!  Rolling back.\n");
+			continue;
+		} else if (ap >= (power * 19) / 20) {
+			/* Just right */
+			break;
+		}
 	}
+
+	/* Couldn't generate an artifact with the number of permitted iterations */
+	if (tries >= MAX_TRIES)
+		file_putf(log_file, "Warning!  Couldn't get appropriate power level on artifact.\n");
 
 	/* Cleanup a_old */
 	mem_free(a_old->slays);
@@ -2622,21 +2642,27 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 	mem_free(a_old->curses);
 	mem_free(a_old);
 
-	/* Set depth and rarity info according to power */
-	file_putf(log_file, "Old depths are min %d, max %d\n", art->alloc_min,
-			  art->alloc_max);
-	file_putf(log_file, "Alloc prob is %d\n", art->alloc_prob);
+	/* Set rarity based on power */
+	alloc_new = 4000000 / (ap * ap);
+	alloc_new /= (kind->alloc_prob ? kind->alloc_prob : 20);
+	if (alloc_new > 99) alloc_new = 99;
+	if (alloc_new < 1) alloc_new = 1;
+	art->alloc_prob = alloc_new;
 
-	/* Flip cursed items to avoid overflows */
-	if (ap < 0) ap = -ap;
 
-	file_putf(log_file, "kind->alloc_prob is %d\n", kind->alloc_prob);
-	art->alloc_max = MIN(127, (ap * 4) / 5);
+	/* Set depth according to power */
+	art->alloc_max = MIN(127, (ap * 3) / 5);
 	art->alloc_min = MIN(100, ((ap + 100) * 100 / data->max_power));
 
+	/* Have a chance to be less rare or deep, more likely the less power */
+	if (one_in_(500 / power)) {
+		art->alloc_prob += randint1(20);
+	} else if (one_in_(500 / power)) {
+		art->alloc_min /= 2;
+	}
+
 	/* Sanity check */
-	if (art->alloc_prob > 99) art->alloc_prob = 99;
-	if (art->alloc_prob < 1) art->alloc_prob = 1;
+	art->alloc_max = MAX(art->alloc_max, MIN(art->alloc_min * 2, 127));
 
 	file_putf(log_file, "New depths are min %d, max %d\n", art->alloc_min,
 			  art->alloc_max);
@@ -2644,138 +2670,55 @@ static void scramble_artifact(int a_idx, struct artifact_set_data *data)
 
 	/* Success */
 	file_putf(log_file, "<<<<<<<<<<<<<<<<<<<<<<<<<< ARTIFACT COMPLETED\n");
-	file_putf(log_file, "Number of tries for artifact %d was: %d\n", a_idx, tries);
+	file_putf(log_file, "Number of tries for artifact %d was: %d\n", *aidx,
+			  tries);
+
+	/* Describe it */
+	describe_artifact(*aidx, ap);
 }
 
 /**
- * ------------------------------------------------------------------------
- * Generation of a set of random artifacts
- * ------------------------------------------------------------------------ */
-/**
- * Return true if the whole set of random artifacts meets certain
- * criteria.  Return false if we fail to meet those criteria (which will
- * restart the whole process).
+ * Create a random artifact set
+ *
+ * The resulting set will have at least 80% the number of artifacts from any
+ * given tval as the original artifact set.  This means that tvals with less
+ * than 5 artifacts in the original set will always have equal or increased
+ * numbers on the new set.
  */
-static bool artifacts_acceptable(void)
+void create_artifact_set(struct artifact_set_data *data)
 {
-	int i;
+	int i, aidx = 1;
+	int *tval_total = mem_zalloc(TV_MAX * sizeof(int));
+	bool not_done = true;
 
-	int tval_min[] = {
-		#define TV(a, b, c) c,
-		#include "list-tvals.h"
-		#undef TV
-	};
-
-	for (i = 0; i < z_info->a_max; i++)	{
-		tval_min[a_info[i].tval]--;
-	}
-
+	/* Get min tval frequencies for the new artifacts */
 	for (i = 0; i < TV_MAX; i++) {
-		if (tval_min[i] > 0) {
-			file_putf(log_file, "Restarting generation process: too few %ss",
-					  tval_find_name(i));
-			return false;
-		}
+		/* At least 80% as many for each tval */
+		tval_total[i] = (4 * (data->tv_num[i] + 1)) / 5;
 	}
 
-	return true;
-}
+	/* Allocate a minimal set of artifacts to the tvals */
+	while (not_done) {
+		not_done = false;
 
-/**
- * Scramble each artifact
- */
-static void scramble(struct artifact_set_data *data)
-{
-	/* If our artifact set fails to meet certain criteria, we start over. */
-	do {
-		int a_idx;
-
-		/* Generate all the artifacts, excluding ineligible ones */
-		for (a_idx = 1; a_idx < z_info->a_max; a_idx++) {
-			struct artifact *art = &a_info[a_idx];
-			struct object_kind *kind = lookup_kind(art->tval, art->sval);
-
-			/* Skip unused artifacts */
-			if (art->tval == 0) continue;
-
-			/* Special cases -- don't randomize these! */
-			if (strstr(art->name, "The One Ring") ||
-				kf_has(kind->kind_flags, KF_QUEST_ART))
-				continue;
-
-			/* If it has a restricted ability then don't randomize it. */
-			if (data->base_power[a_idx] > INHIBIT_POWER) {
-				file_putf(log_file,
-						  "Artifact number %d too powerful - skipping", a_idx);
-				continue;
+		/* Multiple passes through tvals until all have enough artifacts */ 
+		for (i = 0; i < TV_MAX; i++) {
+			if (tval_total[i] > 0) {
+				design_artifact(data, i, &aidx);
+				tval_total[i]--;
+				aidx++;
+				not_done = true;
 			}
-
-			scramble_artifact(a_idx, data);
 		}
-	} while (!artifacts_acceptable());
-}
-
-/**
- * Use W. Sheldon Simms' random name generator.
- */
-char *artifact_gen_name(struct artifact *a, const char ***words) {
-	char buf[BUFLEN];
-	char word[MAX_NAME_LEN + 1];
-	struct object_kind *kind = lookup_kind(a->tval, a->sval);
-
-	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word,
-				  sizeof(word), words);
-	my_strcap(word);
-
-	if (strstr(a->name, "The One Ring"))
-		strnfmt(buf, sizeof(buf), "(The One Ring)");
-	else if (kf_has(kind->kind_flags, KF_QUEST_ART))
-		strnfmt(buf, sizeof(buf), a->name);
-	else if (strstr(kind->name, "Ring of") || one_in_(3))
-		/* Hack - the activation message for rings of power assumes this */
-		strnfmt(buf, sizeof(buf), "'%s'", word);
-	else
-		strnfmt(buf, sizeof(buf), "of %s", word);
-	return string_make(buf);
-}
-
-/**
- * Initialise all the artifact names.
- */
-static void init_names(void)
-{
-	int i;
-
-	for (i = 0; i < z_info->a_max; i++) {
-		char desc[128] = "Based on ";
-		struct artifact *a = &a_info[i];
-		char *new_name;
-
-		if (!a->tval || !a->sval || !a->name) continue;
-
-		if (prefix(a->name, "of "))
-			my_strcat(desc, a->name + 3, strlen(a->name) + 7);
-		else
-			my_strcat(desc, a->name + 1, strlen(a->name) + 8);
-
-		string_free(a->text);
-		a->text = string_make(desc);
-		new_name = artifact_gen_name(a, name_sections);
-		string_free(a->name);
-		a->name = new_name;
 	}
-}
 
-/**
- * Call the name allocation and artifact scrambling routines
- */
-void do_randart_aux(struct artifact_set_data *data)
-{
-	/* Generate random names */
-	init_names();
+	/* Allocate remaining artifacts at random */
+	while (aidx < z_info->a_max - 1) {
+		design_artifact(data, TV_NULL, &aidx);
+		aidx++;
+	}
 
-	/* Randomize the artifacts */
-	scramble(data);
+	mem_free(tval_total);
 }
 
 /**
@@ -2958,7 +2901,7 @@ void do_randart(u32b randart_seed, bool create_file)
 	parse_frequencies(standarts);
 
 	/* Generate the random artifacts */
-	do_randart_aux(standarts);
+	create_artifact_set(standarts);
 	artifact_set_data_free(standarts);
 
 	/* Look at the frequencies on the finished items */

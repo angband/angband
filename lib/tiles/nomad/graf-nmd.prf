@@ -642,10 +642,10 @@ object:amulet:Jewel:0x84:0x90
 object:amulet:Elfstone:0x84:0x9C
 
 # The Ring of Barahir
-object:ring:Serpent Ring:0x84:0x83
+object:ring:Ring:0x84:0x83
 
-# The Ring of Tulkas
-object:ring:Ring:0x84:0x84
+# The Band of Tulkas
+object:ring:Band:0x84:0x84
 
 # The Ring of Fire 'Narya'
 object:ring:Ring of Fire:0x84:0x85

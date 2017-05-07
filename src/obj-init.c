@@ -143,7 +143,7 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	dummy = &k_info[z_info->k_max - 1];
 	memset(dummy, 0, sizeof(*dummy));
 
-	/* Copy the tval and base */
+	/* Copy the tval, base and level */
 	dummy->tval = art->tval;
 	dummy->base = &kb_info[dummy->tval];
 
@@ -151,6 +151,7 @@ static enum parser_error write_dummy_object_record(struct artifact *art, const c
 	my_strcpy(mod_name, format("& %s~", name), sizeof(mod_name));
 	dummy->name = string_make(mod_name);
 	dummy->kidx = z_info->k_max - 1;
+	dummy->level = art->level;
 
 	/* Increase the sval count for this tval, set the new one to the max */
 	for (i = 0; i < TV_MAX; i++)

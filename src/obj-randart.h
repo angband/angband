@@ -79,6 +79,7 @@ struct artifact_set_data {
 	int armor_total;
 	int other_total;
 	int total;
+	int neg_power_total;
 
 	/* Tval frequency values */
 	int *tv_freq;

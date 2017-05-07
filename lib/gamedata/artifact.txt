@@ -441,7 +441,7 @@ name:'Calris'
 base-object:sword:Bastard Sword
 info:30:140:100000
 alloc:7:30 to 127
-power:0:5d4:-20:20:0
+power:0:5d4:0:20:0
 # F:DRAIN_HP | 
 flags:AGGRAVATE
 values:CON[5] | RES_DISEN[1]
@@ -449,6 +449,7 @@ slay:DRAGON_5
 slay:EVIL_2
 slay:DEMON_3
 slay:TROLL_3
+curse:air swing:30
 desc:This sword has runes of power incused on its ornate hilt, and a single 
 desc:blood channel that gleams coldly blue as you grasp this mighty weapon of 
 desc:peril.
@@ -1740,7 +1741,7 @@ desc:gates of the Dark Tower, and with whom came light even to Gorgoroth.
 ### Rings ###
 
 name:of Barahir
-base-object:ring:Serpent Ring
+base-object:ring:Ring
 graphics:=:d
 info:50:2:65000
 alloc:4:50 to 100
@@ -1750,7 +1751,7 @@ desc:Twinned serpents with eyes of emerald meet beneath a crown of flowers to
 desc:form this ring, an ancient treasure of Isildur's house.
 
 name:of Tulkas
-base-object:ring:Ring
+base-object:ring:Band
 graphics:=:d
 info:70:2:150000
 alloc:2:70 to 127

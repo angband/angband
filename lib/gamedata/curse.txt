@@ -299,3 +299,11 @@ combat:0:0:20
 values:RES_ELEC[-1] | RES_SHARD[1]
 desc:makes your skin harder to damage, but conduct electricity
 
+name:air swing
+combat:-20:0:0
+type:digger
+type:hafted
+type:polearm
+type:sword
+desc:makes it hard to hit anything
+

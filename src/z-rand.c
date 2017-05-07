@@ -317,6 +317,36 @@ s16b Rand_normal(int mean, int stand)
 
 
 /**
+ * Choose an integer from a distribution where we know the mean and approximate
+ * upper and lower bounds.
+ *
+ * We divide the imagined distribution into two halves, above and below the
+ * mean, and then treat the bounds as if they are the given number of
+ * standard deviations from the mean in the appropriate direction.  Note that
+ * `stand_u` and `stand_l` are 10 times the number of standart deviations we
+ * are asking for.
+ * The function chooses an integer from a normal distribution, and then scales
+ * it to fit the target distribution.
+ */
+int Rand_sample(int mean, int upper, int lower, int stand_u, int stand_l)
+{
+	int pick = Rand_normal(0, 1000);
+
+	/* Scale to fit */
+	if (pick > 0) {
+		/* Positive pick, scale up */
+		pick *= (upper - mean);
+		pick /= (100 * stand_u);
+	} else if (pick < 0) {
+		/* Negative pick, scale down */
+		pick *= (mean - lower);
+		pick /= (100 * stand_l);
+	}
+
+	return mean + pick;
+}
+
+/**
  * Generates damage for "2d6" style dice rolls
  */
 int damroll(int num, int sides)
