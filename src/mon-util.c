@@ -342,10 +342,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	if (flag) {
 		/* Learn about the monster's mind */
 		if (player_of_has(player, OF_TELEPATHY)) {
-			bitflag mask[RF_SIZE];
 			flags_set(lore->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND,
 					  RF_SMART, RF_STUPID, FLAG_END);
-			mflag_union(lore->flags, mask);
 		}
 
 		/* It was previously unseen */
