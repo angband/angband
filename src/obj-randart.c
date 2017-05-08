@@ -2514,11 +2514,11 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 	while (strstr(art->name, "The One Ring") ||
 		kf_has(kind->kind_flags, KF_QUEST_ART)) {
 		(*aidx)++;
-		art = &a_info[*aidx];
-		art_level = art->level;
 		if ((*aidx) >= z_info->a_max) {
 			return;
 		}
+		art = &a_info[*aidx];
+		art_level = art->level;
 	}
 
 	/* Apply the new name */
