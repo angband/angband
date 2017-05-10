@@ -432,7 +432,7 @@ bool check_hit(struct player *p, int power, int level, int debuff)
 
 	/* Apply debuff penalty */
 	if (debuff) {
-		chance = (chance * debuff) / 100;
+		chance = (chance * (100 - debuff)) / 100;
 	}
 
 	/* Check if the player was hit */
@@ -553,7 +553,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 			/* Reduce damage when stunned */
 			if (stunned) {
-				damage = (damage * STUN_DAM_REDUCTION) / 100;
+				damage = (damage * (100 - STUN_DAM_REDUCTION)) / 100;
 			}
 
 			/* Message */
