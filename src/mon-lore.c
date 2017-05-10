@@ -1557,21 +1557,17 @@ void write_lore_entries(ang_file *fff)
 		write_flags(fff, "spells:", lore->spell_flags, RSF_SIZE,
 					r_info_spell_flags);
 
-		/* Output 'drop', 'drop-artifact' */
+		/* Output 'drop' */
 		if (lore->drops) {
 			struct monster_drop *drop = lore->drops;
 			struct object_kind *kind = drop->kind;
 			char name[120] = "";
 
 			while (drop) {
-				if (drop->artifact)
-					file_putf(fff, "drop-artifact:%s\n", drop->artifact->name);
-				else {
-					object_short_name(name, sizeof name, kind->name);
-					file_putf(fff, "drop:%s:%s:%d:%d:%d\n",
-							  tval_find_name(kind->tval), name,
-							  drop->percent_chance, drop->min, drop->max);
-				}
+				object_short_name(name, sizeof name, kind->name);
+				file_putf(fff, "drop:%s:%s:%d:%d:%d\n",
+						  tval_find_name(kind->tval), name,
+						  drop->percent_chance, drop->min, drop->max);
 				drop = drop->next;
 			}
 		}

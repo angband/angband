@@ -1401,27 +1401,6 @@ static enum parser_error parse_monster_drop(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_monster_drop_artifact(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	struct monster_drop *d;
-	struct artifact *a;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	a = lookup_artifact_name(parser_getstr(p, "name"));
-	if (a == NULL)
-		return PARSE_ERROR_NO_ARTIFACT_NAME;
-
-	d = mem_zalloc(sizeof *d);
-	d->artifact = a;
-	d->min = 1;
-	d->max = 1;
-	d->percent_chance = 100;
-	d->next = r->drops;
-	r->drops = d;
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_monster_friends(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	struct monster_friends *f;
@@ -1532,7 +1511,6 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "spell-power uint power", parse_monster_spell_power);
 	parser_reg(p, "spells str spells", parse_monster_spells);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_monster_drop);
-	parser_reg(p, "drop-artifact str name", parse_monster_drop_artifact);
 	parser_reg(p, "friends uint chance rand number str name", parse_monster_friends);
 	parser_reg(p, "friends-base uint chance rand number str name", parse_monster_friends_base);
 	parser_reg(p, "mimic sym tval sym sval", parse_monster_mimic);
@@ -2151,27 +2129,6 @@ static enum parser_error parse_lore_drop(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_lore_drop_artifact(struct parser *p) {
-	struct monster_lore *l = parser_priv(p);
-	struct monster_drop *d;
-	struct artifact *a;
-
-	if (!l)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	a = lookup_artifact_name(parser_getstr(p, "name"));
-	if (a == NULL)
-		return PARSE_ERROR_NO_ARTIFACT_NAME;
-
-	d = mem_zalloc(sizeof *d);
-	d->artifact = a;
-	d->min = 1;
-	d->max = 1;
-	d->percent_chance = 100;
-	d->next = l->drops;
-	l->drops = d;
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_lore_friends(struct parser *p) {
 	struct monster_lore *l = parser_priv(p);
 	struct monster_friends *f;
@@ -2264,7 +2221,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "spell-power uint power", ignored);
 	parser_reg(p, "spells str spells", parse_lore_spells);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_lore_drop);
-	parser_reg(p, "drop-artifact str name", parse_lore_drop_artifact);
+	parser_reg(p, "drop-artifact str name", ignored);
 	parser_reg(p, "friends uint chance rand number str name", parse_lore_friends);
 	parser_reg(p, "friends-base uint chance rand number str name", parse_lore_friends_base);
 	parser_reg(p, "mimic sym tval sym sval", parse_lore_mimic);

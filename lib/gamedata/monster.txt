@@ -14190,5 +14190,3 @@ desc: him.  His disgusting visage, twisted with evil, is crowned with iron, the
 desc: two remaining Silmarils forever burning him.  Grond, the mighty Hammer of
 desc: the Underworld, cries defiance as he strides towards you to crush you to
 desc: a pulp!
-drop-artifact:'Grond'
-drop-artifact:of Morgoth

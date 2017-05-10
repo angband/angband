@@ -211,7 +211,6 @@ struct monster_base {
 struct monster_drop {
 	struct monster_drop *next;
 	struct object_kind *kind;
-	struct artifact *artifact;
 	unsigned int percent_chance;
 	unsigned int min;
 	unsigned int max;

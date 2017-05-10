@@ -606,10 +606,6 @@ static bool make_artifact(struct object *obj)
 	/* Make sure birth no artifacts isn't set */
 	if (OPT(player, birth_no_artifacts)) art_ok = false;
 
-	/* Special handling of quest artifacts */
-	if (kf_has(obj->kind->kind_flags, KF_QUEST_ART))
-		art_ok = true;
-
 	if (!art_ok) return (false);
 
 	/* No artifacts in the town */
