@@ -665,8 +665,7 @@ name:LOSCONF
 aim:0
 power:10
 effect:PROJECT_LOS:MON_CONF
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+dice:5+1d5
 desc:confuses all non-unique creatures within line of sight
 
 name:LOSKILL
