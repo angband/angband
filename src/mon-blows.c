@@ -70,14 +70,14 @@ static const char *monster_blow_random_moan(void)
 {
 	#define MAX_DESC_MOAN 8
 	static const char *desc_moan[MAX_DESC_MOAN] = {
-		"wants his mushrooms back.",
-		"tells you to get off his land.",
-		"looks for his dogs. ",
-		"says 'Did you kill my Fang?' ",
-		"asks 'Do you want to buy any mushrooms?' ",
-		"seems sad about something.",
-		"asks if you have seen his dogs.",
-		"mumbles something about mushrooms."
+		"wants his mushrooms back",
+		"tells you to get off his land",
+		"looks for his dogs",
+		"says 'Did you kill my Fang?'",
+		"asks 'Do you want to buy any mushrooms?'",
+		"seems sad about something",
+		"asks if you have seen his dogs",
+		"mumbles something about mushrooms"
 	};
 
 	return desc_moan[randint0(MAX_DESC_MOAN)];

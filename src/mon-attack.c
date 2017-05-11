@@ -558,10 +558,16 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 			/* Message */
 			if (act) {
-				if (OPT(p, show_damage))
-					msgt(sound_msg, "%s %s (%d).", m_name, act, damage);
-				else
-					msgt(sound_msg, "%s %s.", m_name, act);
+				const char *fullstop = ".";
+				if (suffix(act, "'") || suffix(act, "!")) {
+					fullstop = "";
+				}
+
+				if (OPT(p, show_damage)) {
+					msgt(sound_msg, "%s %s (%d)%s", m_name, act, damage, fullstop);
+				} else {
+					msgt(sound_msg, "%s %s%s", m_name, act, fullstop);
+				}
 			}
 
 			/* Perform the actual effect. */
