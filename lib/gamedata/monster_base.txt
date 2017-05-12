@@ -38,7 +38,7 @@ pain:1
 flags:DRAGON | EVIL | POWERFUL | SMART
 flags:DROP_4
 flags:MOVE_BODY
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Ancient Dragon/Wyrm
 
@@ -48,7 +48,7 @@ pain:1
 flags:POWERFUL
 flags:ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
-flags:IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Ainu/maia
 
@@ -132,7 +132,7 @@ glyph:G
 pain:1
 flags:UNDEAD | EVIL | INVISIBLE | COLD_BLOOD
 flags:PASS_WALL
-flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
+flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 desc:Ghost
 
 name:giant
@@ -211,7 +211,7 @@ glyph:L
 pain:1
 flags:UNDEAD | EVIL | COLD_BLOOD | SMART
 flags:OPEN_DOOR | BASH_DOOR
-flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
+flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 flags:FORCE_SLEEP
 spells:BRAIN_SMASH
 desc:Lich
@@ -238,7 +238,7 @@ pain:1
 flags:DEMON | EVIL
 flags:ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Major Demon
 
@@ -311,7 +311,7 @@ glyph:Q
 pain:2
 flags:EMPTY_MIND | INVISIBLE
 flags:NEVER_BLOW | NEVER_MOVE
-flags:NO_FEAR | NO_CONF | NO_SLEEP
+flags:NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Quylthulg
 
@@ -374,7 +374,7 @@ glyph:v
 pain:11
 flags:EMPTY_MIND | POWERFUL
 flags:RAND_50 | BASH_DOOR
-flags:NO_FEAR | NO_CONF | NO_SLEEP
+flags:NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 flags:NONLIVING
 desc:Vortex
@@ -389,7 +389,7 @@ name:wraith
 glyph:W
 pain:1
 flags:UNDEAD | EVIL | COLD_BLOOD
-flags:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
+flags:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 desc:Wight/Wraith
 
 name:xorn

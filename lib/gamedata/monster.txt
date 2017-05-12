@@ -4470,7 +4470,7 @@ blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 flags:UNIQUE | MALE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:6
 spell-power:17
@@ -5408,7 +5408,7 @@ blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 friends:50:2d4:Half-orc
 friends:80:2d5:Warg
 friends:100:4d4:Uruk
@@ -5676,7 +5676,7 @@ blow:HIT:HURT:3d6
 blow:HIT:DISENCHANT
 flags:UNIQUE | MALE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-flags:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:8
 spell-power:24
@@ -5702,7 +5702,7 @@ blow:HIT:HURT:3d6
 blow:HIT:DISENCHANT
 flags:UNIQUE | MALE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-flags:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:8
 spell-power:24
@@ -5787,7 +5787,7 @@ blow:HIT:HURT:4d6
 flags:UNIQUE | MALE | EVIL | HAS_LIGHT
 flags:DROP_60 | DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR
-flags:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
+flags:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:4
 spell-power:24
@@ -5813,7 +5813,7 @@ blow:HIT:HURT:4d6
 flags:UNIQUE | MALE | EVIL | HAS_LIGHT
 flags:DROP_60 | DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR
-flags:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
+flags:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:4
 spell-power:24
@@ -5947,7 +5947,7 @@ blow:HIT:HURT:1d7
 blow:HIT:HURT:3d8
 flags:MALE | EVIL
 flags:DROP_1 | ONLY_ITEM
-flags:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP
+flags:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:6
 spell-power:25
@@ -6312,7 +6312,7 @@ blow:HIT:DISENCHANT
 flags:UNIQUE | MALE | EVIL
 flags:DROP_2 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
-flags:NO_SLEEP
+flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:6
 spell-power:27
@@ -6809,7 +6809,7 @@ blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:DROP_1 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
-flags:IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 spell-freq:8
 spell-power:28
 spells:BR_POIS
@@ -7626,7 +7626,7 @@ blow:KICK:HURT:10d2
 flags:MALE | INVISIBLE
 flags:DROP_1 | ONLY_ITEM
 flags:OPEN_DOOR
-flags:IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_ACID | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:6
 spell-power:33
@@ -8880,7 +8880,7 @@ flags:UNIQUE | MALE | EVIL | HAS_LIGHT
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
-flags:NO_SLEEP
+flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:4
 spell-power:36
@@ -9631,7 +9631,7 @@ flags:UNIQUE | MALE | POWERFUL
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_NEXUS | NO_CONF
-flags:NO_SLEEP | NO_STUN
+flags:NO_SLEEP | NO_STUN | NO_HOLD
 spell-freq:4
 spell-power:39
 spells:BR_ACID | BR_COLD | BR_CHAO | BR_ELEC | BR_FIRE | BR_GRAV
@@ -9896,7 +9896,7 @@ blow:HIT:HURT:2d8
 flags:FEMALE | EVIL | HAS_LIGHT
 flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:40
@@ -9926,7 +9926,7 @@ blow:HIT:HURT:2d8
 flags:MALE | EVIL | HAS_LIGHT
 flags:DROP_3 | ONLY_ITEM
 flags:OPEN_DOOR
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:40
@@ -10044,7 +10044,7 @@ blow:HIT:HURT:8d6
 flags:UNIQUE | SMART
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR
-flags:IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 flags-off:HURT_COLD
 spell-freq:2
@@ -10096,7 +10096,7 @@ blow:CLAW:HURT:3d3
 flags:INVISIBLE | SMART
 flags:DROP_3 | ONLY_ITEM
 flags:PASS_WALL
-flags:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
+flags:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:10
 spell-power:40
@@ -10122,7 +10122,7 @@ blow:HIT:HURT:3d5
 flags:MALE | EVIL | SMART | HAS_LIGHT
 flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:40
@@ -10255,7 +10255,7 @@ blow:HIT:HURT:2d8
 blow:HIT:HURT:2d8
 flags:MALE | EVIL | SMART
 flags:DROP_3 | ONLY_ITEM
-flags:HURT_LIGHT | NO_CONF | NO_SLEEP
+flags:HURT_LIGHT | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:41
@@ -10336,7 +10336,7 @@ blow:HIT:DISENCHANT:6d8
 flags:UNIQUE | MALE | SMART | HAS_LIGHT
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:41
@@ -10365,7 +10365,7 @@ blow:HIT:HURT:5d5
 flags:MALE | INVISIBLE
 flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR | TAKE_ITEM
-flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 spell-freq:4
 spell-power:41
 spells:ARROW_2 | ARROW_3 | ARROW_4 | BLINK | HASTE | MISSILE
@@ -11054,7 +11054,7 @@ blow:BITE:POISON:2d12
 flags:EVIL | POWERFUL | ATTR_FLICKER
 flags:DROP_1 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
-flags:IM_POIS | IM_NEXUS | NO_CONF | NO_SLEEP
+flags:IM_POIS | IM_NEXUS | NO_CONF | NO_SLEEP | NO_HOLD
 spell-freq:8
 spell-power:45
 spells:BR_DARK | BR_NEXU | BR_POIS
@@ -11378,7 +11378,7 @@ blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 flags:UNIQUE | MALE | EVIL | SMART
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:HURT_LIGHT | IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:HURT_LIGHT | IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:49
@@ -11418,7 +11418,7 @@ flags:MALE | INVISIBLE | ATTR_FLICKER
 flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
-flags:NO_SLEEP
+flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:50
@@ -11507,7 +11507,7 @@ blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:ATTR_FLICKER
 flags:OPEN_DOOR | BASH_DOOR
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:5
 spell-power:51
@@ -11535,7 +11535,7 @@ blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:HAS_LIGHT | ATTR_FLICKER
 flags:OPEN_DOOR | BASH_DOOR
-flags:IM_ELEC | IM_FIRE | IM_PLASMA | NO_CONF | NO_SLEEP
+flags:IM_ELEC | IM_FIRE | IM_PLASMA | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:5
 spell-power:51
@@ -11563,7 +11563,7 @@ blow:HIT:POISON:8d5
 flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | TAKE_ITEM
-flags:IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:6
 spell-power:51
@@ -11671,7 +11671,7 @@ flags:UNIQUE | HAS_LIGHT
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
 flags:IM_ACID | IM_ELEC | IM_FIRE | IM_POIS | IM_PLASMA | NO_CONF
-flags:NO_SLEEP
+flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:54
@@ -11755,7 +11755,7 @@ blow:BITE:PARALYZE:5d10
 blow:STING:LOSE_STR:5d4
 flags:UNIQUE | FEMALE | EVIL | ANIMAL | SMART
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
-flags:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
+flags:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:4
 spell-power:55
@@ -11984,7 +11984,7 @@ flags:MALE | INVISIBLE | ATTR_FLICKER
 flags:DROP_4 | ONLY_ITEM
 flags:OPEN_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
-flags:NO_SLEEP
+flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:57
@@ -12037,7 +12037,7 @@ blow:BITE:FIRE:12d6
 flags:UNIQUE | SMART | POWERFUL | REGENERATE | HAS_LIGHT
 flags:DROP_4
 flags:OPEN_DOOR | KILL_BODY
-flags:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags-off:HURT_COLD
 spell-freq:3
 spell-power:57
@@ -12071,7 +12071,7 @@ blow:HIT:HURT:10d10
 flags:UNIQUE | MALE | EVIL
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:BASH_DOOR
-flags:IM_FIRE | NO_CONF | NO_SLEEP | NO_STUN
+flags:IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD | NO_STUN
 flags:FORCE_SLEEP
 spell-freq:6
 spell-power:58
@@ -12126,7 +12126,7 @@ blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:INVISIBLE
 flags:PASS_WALL
-flags:NO_CONF | NO_SLEEP | IM_NETHER
+flags:NO_CONF | NO_SLEEP | NO_HOLD | IM_NETHER
 flags:FORCE_SLEEP
 spell-freq:5
 spell-power:59
@@ -12177,7 +12177,7 @@ blow:HIT:HURT:8d8
 flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
-flags:NO_SLEEP
+flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:4
 spell-power:59
@@ -12241,7 +12241,7 @@ blow:HIT:HURT:5d5
 flags:UNIQUE | MALE | EVIL | SMART | HAS_LIGHT
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:OPEN_DOOR
-flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:ATTR_MULTI | FORCE_SLEEP
 spell-freq:2
 spell-power:60
@@ -12577,7 +12577,7 @@ blow:CLAW:HURT:2d12
 blow:BITE:HURT:2d12
 blow:BITE:HURT:2d12
 flags:BASH_DOOR
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:ATTR_MULTI | FORCE_SLEEP
 spell-freq:5
 spell-power:64
@@ -12634,7 +12634,7 @@ blow:HIT:DRAIN_CHARGES:5d5
 flags:UNIQUE | MALE | EVIL | INVISIBLE | SMART
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR
-flags:IM_COLD | IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:65
@@ -12724,7 +12724,7 @@ blow:BITE:PARALYZE:15d1
 flags:UNIQUE | MALE | INVISIBLE
 flags:DROP_4 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
-flags:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:66
@@ -12809,7 +12809,7 @@ blow:GAZE:LOSE_INT:5d5
 blow:GAZE:DRAIN_CHARGES:5d5
 flags:FEMALE | EVIL | SMART
 flags:BASH_DOOR
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:67
@@ -13260,7 +13260,7 @@ blow:GAZE:LOSE_INT:6d6
 blow:BITE:EXP_80:8d8
 flags:UNIQUE | MALE | EVIL | SMART
 flags:BASH_DOOR
-flags:IM_ACID | IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_ACID | IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
 spell-power:73
@@ -13319,7 +13319,7 @@ blow:BITE:HURT:3d12
 blow:BITE:HURT:3d12
 flags:BASH_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | IM_DISEN | IM_NETHER
-flags:IM_NEXUS | IM_PLASMA | NO_CONF | NO_SLEEP | NO_SLOW | NO_STUN
+flags:IM_NEXUS | IM_PLASMA | NO_CONF | NO_SLEEP | NO_HOLD | NO_SLOW | NO_STUN
 flags:ATTR_MULTI | FORCE_SLEEP
 spell-freq:5
 spell-power:74
@@ -13409,7 +13409,7 @@ blow:BITE:PARALYZE:8d10
 blow:STING:LOSE_STR:8d4
 flags:UNIQUE | FEMALE | EVIL | ANIMAL | SMART
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
+flags:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:75
@@ -13737,7 +13737,7 @@ blow:HIT:HURT:8d8
 flags:UNIQUE | MALE | EVIL
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:KILL_WALL | MOVE_BODY
-flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:6
 spell-power:81
@@ -13896,7 +13896,7 @@ blow:TOUCH:DRAIN_CHARGES
 flags:UNIQUE | POWERFUL
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:IM_COLD | IM_FIRE | IM_DISEN | NO_CONF | NO_SLEEP
+flags:IM_COLD | IM_FIRE | IM_DISEN | NO_CONF | NO_SLEEP | NO_HOLD
 flags:ATTR_MULTI | FORCE_SLEEP
 flags-off:HURT_COLD
 spell-freq:2
@@ -13999,7 +13999,7 @@ blow:BITE:COLD:9d12
 flags:UNIQUE | MALE | SMART | ATTR_FLICKER
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | KILL_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP | NO_STUN
+flags:IM_ACID | IM_COLD | IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD | NO_STUN
 flags:FORCE_SLEEP
 spell-freq:5
 spell-power:90
@@ -14028,7 +14028,7 @@ blow:BITE:FIRE:9d12
 flags:UNIQUE | MALE | EVIL | SMART | HAS_LIGHT | ATTR_FLICKER
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | IM_NETHER
+flags:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD | IM_NETHER
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:90
@@ -14136,7 +14136,7 @@ flags:UNIQUE | QUESTOR | MALE | EVIL | SMART | REGENERATE
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:OPEN_DOOR | MOVE_BODY
 flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_FEAR | NO_CONF
-flags:NO_SLEEP
+flags:NO_SLEEP | NO_HOLD
 flags:FORCE_DEPTH | FORCE_SLEEP
 spell-freq:2
 spell-power:99
@@ -14171,7 +14171,7 @@ flags:UNIQUE | QUESTOR | MALE | EVIL | SMART | REGENERATE
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:KILL_WALL | MOVE_BODY | ATTR_FLICKER
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_FEAR
-flags:NO_CONF | NO_SLEEP
+flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_DEPTH | FORCE_SLEEP
 spell-freq:3
 spell-power:100
