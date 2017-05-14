@@ -2802,7 +2802,7 @@ void write_randart_entry(ang_file *fff, struct artifact *art)
 	file_putf(fff, "base-object:%s:%s\n", tval_find_name(art->tval), name);
 
 	/* Output graphics if necessary */
-	if (kind->kidx > z_info->ordinary_kind_max) {
+	if (kind->kidx >= z_info->ordinary_kind_max) {
 		const char *attr = attr_to_text(kind->d_attr);
 		file_putf(fff, "graphics:%c:%s\n", kind->d_char, attr);
 	}
