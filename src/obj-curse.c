@@ -23,6 +23,7 @@
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-util.h"
+#include "player-timed.h"
 
 struct curse *curses;
 
@@ -131,6 +132,28 @@ bool append_object_curse(struct object *obj, int pick, int power)
 			return false;
 		}
 	}
+
+	/* Reject curses with effects foiled by an existing object property */
+	if (c->obj->effect && c->obj->effect->index == effect_lookup("TIMED_INC")) {
+		int idx = c->obj->effect->params[0];
+		struct timed_effect_data *status;
+		assert(idx < TMD_MAX);
+		status = &timed_effects[idx];
+		if (status->fail_code == TMD_FAIL_FLAG_OBJECT) {
+			if (of_has(obj->flags, status->fail)) {
+				return false;
+			}
+		} else if (status->fail_code == TMD_FAIL_FLAG_RESIST) {
+			if (obj->el_info[status->fail].res_level > 0) {
+				return false;
+			}
+		} else if (status->fail_code == TMD_FAIL_FLAG_VULN) {
+			if (obj->el_info[status->fail].res_level < 0) {
+				return false;
+			}
+		}
+	}
+
 
 	/* Adjust power if our pick is a duplicate */
 	if (power > obj->curses[pick].power) {
