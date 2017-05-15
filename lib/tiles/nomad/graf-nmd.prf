@@ -134,6 +134,30 @@ trap:rune of summon foe:los:0x81:0x91
 trap:rune of summon foe:lit:0x81:0x8F
 trap:rune of summon foe:dark:0x81:0x90
 
+# visible trap -- rune -- summoning (3 tiles)
+trap:rune of summoning:torch:0x81:0x91
+trap:rune of summoning:los:0x81:0x91
+trap:rune of summoning:lit:0x81:0x8F
+trap:rune of summoning:dark:0x81:0x90
+
+# visible trap -- rune -- summon undead (3 tiles)
+trap:rune of necromancy:torch:0x81:0x91
+trap:rune of necromancy:los:0x81:0x91
+trap:rune of necromancy:lit:0x81:0x8F
+trap:rune of necromancy:dark:0x81:0x90
+
+# visible trap -- rune -- summon dragons (3 tiles)
+trap:rune of dragonsong:torch:0x81:0x91
+trap:rune of dragonsong:los:0x81:0x91
+trap:rune of dragonsong:lit:0x81:0x8F
+trap:rune of dragonsong:dark:0x81:0x90
+
+# visible trap -- rune -- summon demons (3 tiles)
+trap:hellhole:torch:0x81:0x91
+trap:hellhole:los:0x81:0x91
+trap:hellhole:lit:0x81:0x8F
+trap:hellhole:dark:0x81:0x90
+
 # visible trap -- rune -- teleport (3 tiles)
 trap:teleport rune:torch:0x81:0x94
 trap:teleport rune:los:0x81:0x94
@@ -200,6 +224,89 @@ trap:sleep gas trap:los:0x81:0x85
 trap:sleep gas trap:lit:0x81:0x83
 trap:sleep gas trap:dark:0x81:0x84
 
+# visible trap -- alarm -- aggravation (3 tiles)
+trap:aggravation trap:torch:0x82:0x82
+trap:aggravation trap:los:0x82:0x82
+trap:aggravation trap:lit:0x82:0x80
+trap:aggravation trap:dark:0x82:0x81
+
+# visible trap -- explosion -- mine (3 tiles)
+trap:mine trap:torch:0x82:0x88
+trap:mine trap:los:0x82:0x88
+trap:mine trap:lit:0x82:0x86
+trap:mine trap:dark:0x82:0x87
+
+# visible trap -- explosion -- blast (3 tiles)
+trap:blast trap:torch:0x82:0x88
+trap:blast trap:los:0x82:0x88
+trap:blast trap:lit:0x82:0x86
+trap:blast trap:dark:0x82:0x87
+
+# visible trap -- mental assault -- mind blast (3 tiles)
+trap:mind blasting trap:torch:0x82:0x8B
+trap:mind blasting trap:los:0x82:0x8B
+trap:mind blasting trap:lit:0x82:0x89
+trap:mind blasting trap:dark:0x82:0x8A
+
+# visible trap -- mental assault -- brain smash (3 tiles)
+trap:brain smashing trap:torch:0x82:0x8B
+trap:brain smashing trap:los:0x82:0x8B
+trap:brain smashing trap:lit:0x82:0x89
+trap:brain smashing trap:dark:0x82:0x8A
+
+# visible trap -- ancient mechanism -- rock fall (3 tiles)
+trap:rock fall trap:torch:0x82:0x85
+trap:rock fall trap:los:0x82:0x85
+trap:rock fall trap:lit:0x82:0x83
+trap:rock fall trap:dark:0x82:0x84
+
+# visible trap -- ancient mechanism -- earthquake (3 tiles)
+trap:earthquake trap:torch:0x82:0x85
+trap:earthquake trap:los:0x82:0x85
+trap:earthquake trap:lit:0x82:0x83
+trap:earthquake trap:dark:0x82:0x84
+
+# visible trap -- ancient mechanism -- area blast (3 tiles)
+trap:area blast trap:torch:0x82:0x85
+trap:area blast trap:los:0x82:0x85
+trap:area blast trap:lit:0x82:0x83
+trap:area blast trap:dark:0x82:0x84
+
+# visible trap -- blinding flash (3 tiles)
+trap:blinding flash trap:torch:0x82:0x8E
+trap:blinding flash trap:los:0x82:0x8E
+trap:blinding flash trap:lit:0x82:0x8C
+trap:blinding flash trap:dark:0x82:0x8D
+
+# visible trap -- blinding (3 tiles)
+trap:blinding trap:torch:0x82:0x91
+trap:blinding trap:los:0x82:0x91
+trap:blinding trap:lit:0x82:0x8F
+trap:blinding trap:dark:0x82:0x90
+
+# visible trap -- mana drain (3 tiles)
+trap:mana drain trap:torch:0x82:0x94
+trap:mana drain trap:los:0x82:0x94
+trap:mana drain trap:lit:0x82:0x92
+trap:mana drain trap:dark:0x82:0x93
+
+# visible trap -- whirling knives (3 tiles)
+trap:knife trap:torch:0x82:0x97
+trap:knife trap:los:0x82:0x97
+trap:knife trap:lit:0x82:0x95
+trap:knife trap:dark:0x82:0x96
+
+# visible trap -- petrifier (3 tiles)
+trap:petrifying trap:torch:0x82:0x9A
+trap:petrifying trap:los:0x82:0x9A
+trap:petrifying trap:lit:0x82:0x98
+trap:petrifying trap:dark:0x82:0x99
+
+# visible trap -- alarm -- siren (3 tiles)
+trap:siren:torch:0x82:0x82
+trap:siren:los:0x82:0x82
+trap:siren:lit:0x82:0x80
+trap:siren:dark:0x82:0x81
 
 ##### Object attr/char definitions #####
 
@@ -644,7 +751,7 @@ object:amulet:Elfstone:0x84:0x9C
 # The Ring of Barahir
 object:ring:Ring:0x84:0x83
 
-# The Band of Tulkas
+# The Ring of Tulkas
 object:ring:Band:0x84:0x84
 
 # The Ring of Fire 'Narya'
@@ -833,6 +940,7 @@ monster:Clear worm mass:0xB4:0x97
 monster:Radiation eye:0xA5:0x81
 monster:Cave lizard:0xAF:0x98
 monster:Scout:0xAD:0x85
+monster:healer:0xAE:0x91
 monster:Gallant:0xAD:0x84
 monster:Blue jelly:0xA9:0x84
 monster:Creeping copper coins:0x83:0x80
