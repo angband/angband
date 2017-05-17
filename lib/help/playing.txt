@@ -113,7 +113,7 @@ Original Keyset Command Summary
   x    (unused)                        X    (unused)
   y    (unused)                        Y    (unused)
   z    Zap a rod                       Z    (unused)
-  !    Interact with system            ^A    (special - debug command)
+  !    (unused)                        ^A    Debug mode
   @    (unused)                        ^B    (unused)
   #    (unused)                        ^C    (special - break)
   $    (unused)                        ^D    (unused)
@@ -141,7 +141,7 @@ Original Keyset Command Summary
   >    Go down staircase               ^Z    (unused)
   \\   (special - bypass keymap)        ~     Check knowledge
   \`   (special - escape)               ?     Help
-  /    Identify symbol                 
+  /    Identify symbol
   \|    Quiver list
 ====== ============================= ====== ============================
 
@@ -179,7 +179,7 @@ Roguelike Keyset Command Summary
   x    Look around                     X    Use an item
   y    (walk - north west)             Y    (run - north west)
   z    Aim a wand (Zap)                Z    Use a staff (Zap)
-  !    Interact with system            ^A   (special - debug command)
+  !    (unused)                        ^A   (special - debug command)
   @    Center map                      ^B   (alter - south west)
   #    (unused)                        ^C   (special - break)
   $    (unused)                        ^D   Ignore an item
