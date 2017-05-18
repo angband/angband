@@ -126,6 +126,23 @@ static void player_pickup_gold(struct player *p)
 }
 
 
+/**
+ * Find the specified object in the inventory (not equipment)
+ */
+static struct object *find_stack_object_in_inventory(const struct object *obj)
+{
+	struct object *gear_obj;
+	for (gear_obj = player->gear; gear_obj; gear_obj = gear_obj->next) {
+		if (!object_is_equipped(player->body, gear_obj) &&
+				object_stackable(gear_obj, obj, OSTACK_PACK)) {
+			/* We found the object */
+			return gear_obj;
+		}
+	}
+
+	return NULL;
+}
+
 
 /**
  * Determine if an object can be picked up automatically.
@@ -134,7 +151,11 @@ static bool auto_pickup_okay(const struct object *obj)
 {
 	if (!inven_carry_okay(obj)) return false;
 	if (OPT(player, pickup_always) || check_for_inscrip(obj, "=g")) return true;
-	if (OPT(player, pickup_inven) && inven_carry_num(obj, true)) return true;
+	if (OPT(player, pickup_inven)) {
+		struct object *gear_obj = find_stack_object_in_inventory(obj);
+		if (inven_carry_num(obj, true) && !check_for_inscrip(gear_obj, "!g"))
+			return true;
+	}
 
 	return false;
 }
