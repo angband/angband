@@ -42,7 +42,7 @@ a monster race, a sub-command, a verification, an amount of time, a
 quantity, a file name, or various other things. Normally you can hit return
 to choose the "default" response, or escape to cancel the command entirely.
 
-Some commands will prompt for a spell or an inventory item. Pressing pace
+Some commands will prompt for a spell or an inventory item. Pressing space
 (or '*') will give you a list of choices. Pressing '-' (minus) selects
 the item on the floor. Pressing a lowercase letter selects the given item.
 Pressing a capital letter selects the given item after verification.
