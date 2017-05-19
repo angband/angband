@@ -227,7 +227,7 @@ static int object_power_calculation_FLAG_POWER(void)
 	struct obj_property *prop;
 	prop = lookup_obj_property(OBJ_PROPERTY_FLAG, iter);
 	assert(prop);
-	return of_has(power_obj->flags, iter + 1) ? prop->power : 0;
+	return of_has(power_obj->flags, iter) ? prop->power : 0;
 }
 
 static int object_power_calculation_FLAG_TYPE_MULT(void)
