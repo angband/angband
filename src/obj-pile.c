@@ -47,6 +47,75 @@
 
 /* #define LIST_DEBUG */
 
+static struct object *fail_pile;
+static struct object *fail_object;
+static bool fail_prev;
+static bool fail_next;
+static char *fail_file;
+static int fail_line;
+
+void write_pile(ang_file *fff)
+{
+	file_putf(fff, "Pile integrity failure at %s:%d\n\n", fail_file, fail_line);
+	file_putf(fff, "Guilty object\n=============\n");
+	if (fail_object && fail_object->kind) {
+		file_putf(fff, "Name: %s\n", fail_object->kind->name);
+		if (fail_prev) {
+			file_putf(fff, "Previous: ");
+			if (fail_object->prev && fail_object->prev->kind) {
+				file_putf(fff, "%s\n", fail_object->prev->kind->name);
+			} else {
+				file_putf(fff, "bad object\n");
+			}
+		}
+		if (fail_next) {
+			file_putf(fff, "Next: ");
+			if (fail_object->next && fail_object->next->kind) {
+				file_putf(fff, "%s\n", fail_object->next->kind->name);
+			} else {
+				file_putf(fff, "bad object\n");
+			}
+		}
+		file_putf(fff, "\n");
+	}
+	if (fail_pile) {
+		file_putf(fff, "Guilty pile\n=============\n");
+		while (fail_pile) {
+			if (fail_pile->kind) {
+				file_putf(fff, "Name: %s\n", fail_pile->kind->name);
+			} else {
+				file_putf(fff, "bad object\n");
+			}
+			fail_pile = fail_pile->next;
+		}
+	}
+}
+
+/**
+ * Quit on getting an object pile error, writing a diagnosis file
+ */
+void pile_integrity_fail(struct object *pile, struct object *obj, char *file,
+						 int line)
+{
+	char path[1024];
+
+	/* Set the pile info to write out */
+	fail_pile = pile;
+	fail_object = obj;
+	fail_prev = (obj->prev != NULL);
+	fail_prev = (obj->next != NULL);
+	fail_file = file;
+	fail_line = line;
+
+	/* Write to the user directory */
+	path_build(path, sizeof(path), ANGBAND_DIR_USER, "pile_error.txt");
+
+	if (text_lines_to_file(path, write_pile)) {
+		quit_fmt("Failed to create file %s.new", path);
+	}
+	quit_fmt("Pile integrity failure, details written to %s", path);
+}
+
 /**
  * Check the integrity of a linked - make sure it's not circular and that each
  * entry in the chain has consistent next and prev pointers.
@@ -70,7 +139,10 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
 		i++;
 #endif
 
-		assert(obj->prev == prev);
+		//assert(obj->prev == prev);
+		if (obj->prev != prev) {
+			pile_integrity_fail(pile, obj, __FILE__, __LINE__);
+		}
 		prev = obj;
 		obj = obj->next;
 	};
@@ -79,7 +151,10 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
 	for (obj = pile; obj; obj = obj->next) {
 		struct object *check;
 		for (check = obj->next; check; check = check->next) {
-			assert(check->next != obj);
+			//assert(check->next != obj);
+			if (check->next == obj) {
+				pile_integrity_fail(pile, check, __FILE__, __LINE__);
+			}
 		}
 	}
 }
@@ -91,8 +166,11 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
  */
 void pile_insert(struct object **pile, struct object *obj)
 {
-	assert(obj->prev == NULL);
-	assert(obj->next == NULL);
+	//assert(obj->prev == NULL);
+	//assert(obj->next == NULL);
+	if (obj->prev || obj->next) {
+		pile_integrity_fail(NULL, obj, __FILE__, __LINE__);
+	}
 
 	if (*pile) {
 		obj->next = *pile;
@@ -111,7 +189,10 @@ void pile_insert(struct object **pile, struct object *obj)
  */
 void pile_insert_end(struct object **pile, struct object *obj)
 {
-	assert(obj->prev == NULL);
+	//assert(obj->prev == NULL);
+	if (obj->prev) {
+		pile_integrity_fail(NULL, obj, __FILE__, __LINE__);
+	}
 
 	if (*pile) {
 		struct object *end = pile_last_item(*pile);
@@ -133,16 +214,25 @@ void pile_excise(struct object **pile, struct object *obj)
 	struct object *prev = obj->prev;
 	struct object *next = obj->next;
 
-	assert(pile_contains(*pile, obj));
+	//assert(pile_contains(*pile, obj));
+	if (!pile_contains(*pile, obj)) {
+		pile_integrity_fail(*pile, obj, __FILE__, __LINE__);
+	}
 	pile_check_integrity("excise [pre]", *pile, obj);
 
 	/* Special case: unlink top object */
 	if (*pile == obj) {
-		assert(prev == NULL);	/* Invariant - if it's the top of the pile */
+		//assert(prev == NULL);	/* Invariant - if it's the top of the pile */
+		if (prev) {
+			pile_integrity_fail(*pile, obj, __FILE__, __LINE__);
+		}
 
 		*pile = next;
 	} else {
-		assert(obj->prev != NULL);	/* Should definitely have a previous one set */
+		//assert(obj->prev != NULL);	/* Should definitely have a previous one set */
+		if (obj->prev == NULL) {
+			pile_integrity_fail(*pile, obj, __FILE__, __LINE__);
+		}
 
 		/* Otherwise unlink from the previous */
 		prev->next = next;
