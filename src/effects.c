@@ -3586,9 +3586,9 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int ty = -1;
 	int tx = -1;
 
-	/* Diameter of source starts at 20, so full strength only adjacent to
+	/* Diameter of source starts at 40, so full strength up to 3 grids from
 	 * the breather. */
-	int diameter_of_source = 20;
+	int diameter_of_source = 40;
 	int degrees_of_arc = context->p2;
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
@@ -3606,10 +3606,10 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 		dam = breath_dam(type, mon->hp);
 
-		/* Powerful monsters breathe wider arcs */
+		/* Powerful monsters' breath is now full strength at 5 grids */
 		if (monster_is_powerful(mon)) {
-			diameter_of_source *= 2;
-			degrees_of_arc *= 2;
+			diameter_of_source *= 3;
+			diameter_of_source /= 2;
 		}
 	} else if (context->origin.what == SRC_PLAYER) {
 		msgt(projections[type].msgt, "You breathe %s.", projections[type].desc);
@@ -3630,9 +3630,12 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 			/* This handles finite length beams */
 			diameter_of_source = rad * 10;
 		else
-			/* Narrower cone means energy drops off less quickly. 30 degree
-			 * breaths are still full strength 3 grids from the breather,
-			 * and 20 degree breaths are still full strength at 5 grids. */
+			/* Narrower cone means energy drops off less quickly. We now have:
+			 * - 30 degree regular breath  | full strength at 5 grids
+			 * - 30 degree powerful breath | full strength at 9 grids
+			 * - 20 degree regular breath  | full strength at 11 grids
+			 * - 20 degree powerful breath | full strength at 17 grids
+			 * where grids are measured from the breather. */
 			diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
 	}
 
