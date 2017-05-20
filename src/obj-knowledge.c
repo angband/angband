@@ -1620,6 +1620,9 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	}
 
 	/* Learn curses */
+	object_curses_find_to_a(p, obj);
+	object_curses_find_to_h(p, obj);
+	object_curses_find_to_d(p, obj);
 	object_curses_find_flags(p, obj, obvious_mask);
 	object_curses_find_modifiers(p, obj);
 
