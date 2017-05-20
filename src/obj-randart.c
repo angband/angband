@@ -2534,8 +2534,7 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		power = -power;
 	}
 
-	/* Choose a random base item type.  Not too powerful, so we'll have to
-	 * add something to it.  Not too weak, for the opposite reason. */
+	/* Choose a base item typen not too powerful, so we'll have to add to it. */
 	for (tries = 0; tries < MAX_TRIES; tries++) {
 		int base_power = 0;
 
@@ -2555,12 +2554,6 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		/* New base item power too close to target artifact power */
 		if ((base_power > (power * 6) / 10 + 1) && (power - base_power < 20)) {
 			file_putf(log_file, "Power too high!\n");
-			continue;
-		}
-
-		/* New base item power too low */
-		if (base_power < (power / 10)) {
-			file_putf(log_file, "Power too low!\n");
 			continue;
 		}
 
