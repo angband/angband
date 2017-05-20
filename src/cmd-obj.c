@@ -527,7 +527,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 		if (!was_aware) {
 			object_learn_on_use(player, obj);
 		}
-	} else if (used) {
+	} else {
 		/* Wearables may need update, other things become known or tried */
 		if (tval_is_wearable(obj)) {
 			update_player_object_knowledge(player);
