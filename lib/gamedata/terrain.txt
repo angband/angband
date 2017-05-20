@@ -247,7 +247,7 @@ desc:A fiery pool of glowing lava.  Step in it at your peril!
 name:pile of passable rubble
 graphics:::u
 priority:13
-flags:ROCK | PASSABLE | NO_SCENT | NO_FLOW
+flags:ROCK | PASSABLE
 info:0:1
 desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
 desc:spells.  May dissolve or be tunnelled to normal floor, and can be walked 
