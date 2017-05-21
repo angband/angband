@@ -72,7 +72,7 @@ bother.
 
 If you have killed enough of a particular creature, or suffered enough
 attacks, recalling the monster memory may also provide you with information
-not otherwise available, such as a armor class, hit dice, spell types,
+not otherwise available, such as an armor class, hit dice, spell types,
 frequency of spell casting, or the amount of damage for breaths or spells.
 These attacks will be color coded to inform you of whether or not you
 currently resist a specific attack. Red or orange means you do not resist
@@ -117,7 +117,7 @@ how many dice to roll, and number 'Y' indicates how many sides they have.
 A '2d6' weapon will thus give damage from 2 to 12, plus any damage bonus.
 The weight of a weapon is also a consideration. Heavy weapons may hit
 harder, but they are also harder to use. Depending on your strength,
-dexterity, character class, and weapon weight, you may get attack more
+dexterity, character class, and weapon weight, you may get attacks more
 quickly: high dexterity and strength and low weapon weight are the main
 factors. Warriors may get up to a maximum of 6 attacks per round: mages and
 priests are limited to only 4: other classes may get up to 5. Your attacks
@@ -160,7 +160,7 @@ Your armor class (or AC) is a number that describes the amount and the
 quality of armor being worn. Armor class will generally run from about 0 to
 200, though exceptionally good armor can improve even on the latter figure.
 
-The larger your armor class, the more protective it is. A negative armor
+The higher your armor class, the more protective it is. A negative armor
 class would actually help get you hit. Armor protects you in three manners.
 First, it makes you harder to be hit for damage. A hit for no damage counts
 as a miss, and is described as a miss. Second, good armor will absorb
@@ -271,8 +271,8 @@ attack forms.
 Bolt spells will hit the first monster (or the player) in the line of fire:
 ball spells and breaths may centre on a target which may be hiding behind
 other targets. Ball spells and breath weapons affect an area: other
-monsters caught in the blast take reduced damage depending on how close to
-the centre of the blast they are. Breath weapons are proportional to a
+monsters caught in the blast take reduced damage depending on their distance
+from the centre of the blast. Breath weapons are proportional to a
 fraction of the monster's current hit points, with a maximum cap on the
 damage (which is higher for the most common of such attacks, owing to the
 fact that the resistances are also easier to find). Bolt and ball spell

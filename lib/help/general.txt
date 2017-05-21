@@ -233,7 +233,7 @@ actually walk into it. At this point, the screen should change to the store
 interaction screen. You will see the name of the shop-keeper, and the name
 of the shop, and a list of objects which are available. If there are more
 than twelve different objects, you can use the space or arrow keys to
-scroll the list of objects. The general store is the only tore with a fixed
+scroll the list of objects. The general store is the only store with a fixed
 inventory, although the amount of various items may vary. One of the items
 sold here are flasks of oil. Press 'down' to highlight the line with
 flasks of oil and press the 'p' key to purchase some. If you are asked
@@ -266,7 +266,7 @@ to go back down the stairs into the dungeon. You are now in a different
 part of the dungeon than you were in before. The dungeon is so huge, once
 you leave one part of the dungeon, you will never find it again.
 
-Now look the screen. Your character may be in a lit room, represented as a
+Now look at the screen. Your character may be in a lit room, represented as a
 large rectangle of illuminated floor grids ('.'), surrounded by walls. If
 you are not in a lit room, keep going back up to the town and back down
 into the dungeon until you are. Now look around. You may see some closed
