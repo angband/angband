@@ -1323,7 +1323,7 @@ type:ring
 graphics:=:d
 properties:5:2:250
 alloc:20:5 to 90
-values:SEARCH[d4]
+values:SEARCH[d4M2]
 
 ### Stat sustain rings ###
 
