@@ -207,11 +207,11 @@ void textui_cmd_suicide(void)
 	} else {
 		struct keypress ch;
 
-		if (!get_check("Do you really want to commit suicide? "))
+		if (!get_check("Do you really want to kill this character? "))
 			return;
 
 		/* Special Verification for suicide */
-		prt("Please verify SUICIDE by typing the '@' sign: ", 0, 0);
+		prt("Please verify KILLING THIS CHARACTER by typing the '@' sign: ", 0, 0);
 		event_signal(EVENT_INPUT_FLUSH);
 		ch = inkey();
 		prt("", 0, 0);

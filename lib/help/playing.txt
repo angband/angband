@@ -103,7 +103,7 @@ Original Keyset Command Summary
   n    Repeat previous command         N    (unused)
   o    Open a door or chest            O    (unused)
   p    Cast a spell                    P    (unused)
-  q    Quaff a potion                  Q    Quit (commit suicide)
+  q    Quaff a potion                  Q    End character & quit
   r    Read a scroll                   R    Rest for a period
   s    (unused)                        S    (unused)
   t    Take off equipment              T    Dig a tunnel
@@ -169,7 +169,7 @@ Roguelike Keyset Command Summary
   n    (walk - south east)             N    (run - south east)
   o    Open a door or chest            O    Toggle ignore
   p    Cast a spell                    P    Browse a book
-  q    Quaff a potion                  Q    Quit (commit suicide)
+  q    Quaff a potion                  Q    End character & quit
   r    Read a scroll                   R    Rest for a period
   s    (unused)                        S    (unused)
   t    Fire an item                    T    Take off equipment

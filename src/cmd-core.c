@@ -104,7 +104,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_BUY, "buy", do_cmd_buy, false, 0 },
 	{ CMD_RETRIEVE, "retrieve", do_cmd_retrieve, false, 0 },
 	{ CMD_USE, "use", do_cmd_use, false, 0 },
-	{ CMD_SUICIDE, "commit suicide", do_cmd_suicide, false, 0 },
+	{ CMD_SUICIDE, "kill character", do_cmd_suicide, false, 0 },
 	{ CMD_HELP, "help", NULL, false, 0 },
 	{ CMD_REPEAT, "repeat", NULL, false, 0 },
 };
