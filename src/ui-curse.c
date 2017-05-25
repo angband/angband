@@ -100,7 +100,9 @@ int curse_menu(struct object *obj)
 
 	/* Count and then list the curses */
 	for (i = 1; i < z_info->curse_max; i++) {
-		if (obj->curses[i].power && player_knows_curse(player, i)) {
+		if ((obj->known->curses[i].power > 0) &&
+			(obj->known->curses[i].power < 100) &&
+			player_knows_curse(player, i)) {
 			available[count].index = i;
 			available[count].power = obj->curses[i].power;
 			length = MAX(length, strlen(curses[i].name) + 13);

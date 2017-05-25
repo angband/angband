@@ -1009,7 +1009,7 @@ void player_know_object(struct player *p, struct object *obj)
 	/* Set curses */
 	if (obj->curses) {
 		for (i = 1; i < z_info->curse_max; i++) {
-			if (p->obj_k->curses[i].power) {
+			if (p->obj_k->curses[i].power && obj->curses[i].power) {
 				if (!obj->known->curses) {
 					obj->known->curses = mem_zalloc(z_info->curse_max *
 													sizeof(struct curse_data));
