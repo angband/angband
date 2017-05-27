@@ -19,6 +19,7 @@
 #include "buildid.h"
 #include "game-world.h"
 #include "init.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-info.h"
@@ -295,31 +296,73 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 
 		/* Repeated extraction of flags is inefficient but more natural */
 		for (j = 0; j <= player->body.count; j++) {
-			struct object *obj;
 			bitflag f[OF_SIZE];
-
 			byte attr = COLOUR_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
-
 			bool res = false, imm = false, vul = false, rune = false;
 			bool timed = false;
 			bool known = false;
 
-			/* Wipe flagset */
-			of_wipe(f);
+			/* Object or player info? */
+			if (j < player->body.count) {
+				int index = 0;
+				struct object *obj = slot_object(player, j);
+				struct curse_data *curse = obj ? obj->curses : NULL;
 
-			/* Get the object or player info */
-			obj = j < player->body.count ? slot_object(player, j) : NULL;
-			if (j < player->body.count && obj) {
-				/* Get known properties */
-				object_flags_known(obj, f);
-				if (rec[i].element != -1)
-					known = object_element_is_known(obj, rec[i].element);
-				else if (rec[i].flag != -1)
-					known = object_flag_is_known(obj, rec[i].flag);
-				else
-					known = true;
-			} else if (j == player->body.count) {
+				while (obj) {
+					/* Wipe flagset */
+					of_wipe(f);
+
+					/* Get known properties */
+					object_flags_known(obj, f);
+					if (rec[i].element != -1) {
+						known = object_element_is_known(obj, rec[i].element);
+					} else if (rec[i].flag != -1) {
+						known = object_flag_is_known(obj, rec[i].flag);
+					} else {
+						known = true;
+					}
+
+					/* Get resistance, immunity and vulnerability info */
+					if (rec[i].mod != -1) {
+						if (obj->modifiers[rec[i].mod] != 0) {
+							res = true;
+						}
+					} else if (rec[i].flag != -1) {
+						if (of_has(f, rec[i].flag)) {
+							res = true;
+						}
+					} else if (rec[i].element != -1) {
+						if (known) {
+							if (obj->el_info[rec[i].element].res_level == 3) {
+								imm = true;
+							}
+							if (obj->el_info[rec[i].element].res_level == 1) {
+								res = true;
+							}
+							if (obj->el_info[rec[i].element].res_level == -1) {
+								vul = true;
+							}
+						}
+					}
+
+					/* Move to any unprocessed curse object */
+					if (curse) {
+						index++;
+						obj = NULL;
+						while (index < z_info->curse_max) {
+							if (curse[index].power) {
+								obj = curses[index].obj;
+								break;
+							} else {
+								index++;
+							}
+						}
+					} else {
+						obj = NULL;
+					}
+				}
+			} else {
 				player_flags(player, f);
 				known = true;
 
@@ -331,54 +374,60 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 						(player->timed[TMD_TERROR]))
 						timed = true;
 				}
-			}
 
-			/* Set which (if any) symbol and color are used */
-			if (rec[i].mod != -1) {
-				if (j != player->body.count)
-					res = (obj && (obj->modifiers[rec[i].mod] != 0));
-				else {
+				/* Set which (if any) symbol and color are used */
+				if (rec[i].mod != -1) {
 					/* Messy special cases */
 					if (rec[i].mod == OBJ_MOD_INFRA)
 						res = (player->race->infra > 0);
 					if (rec[i].mod == OBJ_MOD_TUNNEL)
 						res = (player->race->r_skills[SKILL_DIGGING] > 0);
-				}
-				rune = (player->obj_k->modifiers[rec[i].mod] == 1);
-			} else if (rec[i].flag != -1) {
-				res = of_has(f, rec[i].flag);
-				rune = of_has(player->obj_k->flags, rec[i].flag);
-			} else if (rec[i].element != -1) {
-				if (j != player->body.count) {
-					imm = obj && known &&
-						(obj->el_info[rec[i].element].res_level == 3);
-					res = obj && known &&
-						(obj->el_info[rec[i].element].res_level == 1);
-					vul = obj && known &&
-						(obj->el_info[rec[i].element].res_level == -1);
-				} else {
+				} else if (rec[i].flag != -1) {
+					res = of_has(f, rec[i].flag);
+				} else if (rec[i].element != -1) {
 					imm = player->race->el_info[rec[i].element].res_level == 3;
 					res = player->race->el_info[rec[i].element].res_level == 1;
 					vul = player->race->el_info[rec[i].element].res_level == -1;
 				}
-				rune = (player->obj_k->el_info[rec[i].element].res_level == 1);
+			}
+
+			/* Colour the name appropriately */
+			if (imm) {
+				name_attr = COLOUR_GREEN;
+			} else if (res && (name_attr != COLOUR_GREEN)) {
+				name_attr = COLOUR_L_BLUE;
+			} else if (vul && (name_attr != COLOUR_GREEN)) {
+				name_attr = COLOUR_RED;
 			}
 
 			/* Set the symbols and print them */
-			if (imm) name_attr = COLOUR_GREEN;
-			else if (!rune) name_attr = COLOUR_SLATE;
-			else if (res && (name_attr != COLOUR_GREEN))
-				name_attr = COLOUR_L_BLUE;
-
-			if (vul) sym = '-';
-			else if (imm) sym = '*';
-			else if (res) sym = '+';
-			else if (timed) { sym = '!'; attr = COLOUR_L_GREEN; }
-			else if ((j < player->body.count) && obj && !known && !rune)
+			if (vul) {
+				sym = '-';
+			} else if (imm) {
+				sym = '*';
+			} else if (res) {
+				sym = '+';
+			} else if (timed) {
+				sym = '!';
+				attr = COLOUR_L_GREEN;
+			} else if ((j < player->body.count) && slot_object(player, j) &&
+					   !known && !rune) {
 				sym = '?';
+			}
 
 			Term_addch(attr, sym);
 		}
+
+		/* Check if the rune is known */
+		if (((rec[i].mod >= 0) &&
+			 (player->obj_k->modifiers[rec[i].mod] == 0))
+			|| ((rec[i].flag >= 0) &&
+				!of_has(player->obj_k->flags, rec[i].flag))
+			|| ((rec[i].element >= 0) &&
+				(player->obj_k->el_info[rec[i].element].res_level == 0))) {
+			name_attr = COLOUR_SLATE;
+		}
+
 		Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
 	}
 	Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
