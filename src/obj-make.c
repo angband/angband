@@ -460,8 +460,7 @@ static void make_ego_item(struct object *obj, int level)
 /*** Make an artifact ***/
 
 /**
- * Copy artifact data to a normal object, and set various slightly hacky
- * globals.
+ * Copy artifact data to a normal object.
  */
 void copy_artifact_data(struct object *obj, const struct artifact *art)
 {
@@ -482,12 +481,12 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 	/* Activations can come from the artifact or the kind */
 	if (art->activation) {
 		obj->activation = art->activation;
+		obj->time = art->time;
 	} else if (kind->activation) {
 		obj->activation = kind->activation;
+		obj->time = kind->time;
 	}
 
-	if (art->time.base != 0)
-		obj->time = art->time;
 	of_union(obj->flags, art->flags);
 	copy_slays(&obj->slays, art->slays);
 	copy_brands(&obj->brands, art->brands);
