@@ -243,6 +243,10 @@ bool file_readc(ang_file *f, byte *b);
 bool file_writec(ang_file *f, byte b);
 
 
+typedef void (*text_writer)(ang_file *f);
+errr text_lines_to_file(const char *path, text_writer writer);
+
+
 
 /**
  * ------------------------------------------------------------------------

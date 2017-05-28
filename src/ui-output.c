@@ -229,6 +229,23 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
  * ------------------------------------------------------------------------ */
 
 /**
+ * Hack -- Where to wrap the text when using text_out().  Use the default
+ * value (for example the screen width) when 'text_out_wrap' is 0.
+ */
+int text_out_wrap = 0;
+
+/**
+ * Hack -- Indentation for the text when using text_out().
+ */
+int text_out_indent = 0;
+
+/**
+ * Hack -- Padding after wrapping
+ */
+int text_out_pad = 0;
+
+
+/**
  * Print some (colored) text to the screen at the current cursor position,
  * automatically "wrapping" existing text (at spaces) when necessary to
  * avoid placing any text into the last column, and clearing every line
@@ -242,7 +259,7 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
  * This function will correctly handle any width up to the maximum legal
  * value of 256, though it works best for a standard 80 character width.
  */
-void text_out_to_screen(byte a, const char *str)
+static void text_out_to_screen(byte a, const char *str)
 {
 	int x, y;
 
@@ -345,6 +362,191 @@ void text_out_to_screen(byte a, const char *str)
 		if (++x > wrap) x = wrap;
 	}
 }
+
+
+
+/**
+ * Output text to the screen or to a file depending on the selected
+ * text_out hook.
+ */
+void text_out(const char *fmt, ...)
+{
+	char buf[1024];
+	va_list vp;
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Do the va_arg fmt to the buffer */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	/* Output now */
+	text_out_to_screen(COLOUR_WHITE, buf);
+}
+
+
+/**
+ * Output text to the screen (in color) or to a file depending on the
+ * selected hook.
+ */
+void text_out_c(byte a, const char *fmt, ...)
+{
+	char buf[1024];
+	va_list vp;
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Do the va_arg fmt to the buffer */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	/* Output now */
+	text_out_to_screen(a, buf);
+}
+
+/**
+ * Given a "formatted" chunk of text (i.e. one including tags like {red}{/})
+ * in 'source', with starting point 'init', this finds the next section of
+ * text and any tag that goes with it, return true if it finds something to 
+ * print.
+ * 
+ * If it returns true, then it also fills 'text' with a pointer to the start
+ * of the next printable section of text, and 'len' with the length of that 
+ * text, and 'end' with a pointer to the start of the next section.  This
+ * may differ from "text + len" because of the presence of tags.  If a tag
+ * applies to the section of text, it returns a pointer to the start of that
+ * tag in 'tag' and the length in 'taglen'.  Otherwise, 'tag' is filled with
+ * NULL.
+ *
+ * See text_out_e for an example of its use.
+ */
+static bool next_section(const char *source, size_t init, const char **text,
+						 size_t *len, const char **tag, size_t *taglen,
+						 const char **end)
+{
+	const char *next;	
+
+	*tag = NULL;
+	*text = source + init;
+	if (*text[0] == '\0') return false;
+
+	next = strchr(*text, '{');
+	while (next)
+	{
+		const char *s = next + 1;
+
+		while (*s && (isalpha((unsigned char) *s) ||
+					  isspace((unsigned char) *s)))
+			s++;
+
+		/* Woo!  valid opening tag thing */
+		if (*s == '}') {
+			const char *close = strstr(s, "{/}");
+
+			/* There's a closing thing, so it's valid. */
+			if (close) {
+				/* If this tag is at the start of the fragment */
+				if (next == *text) {
+					*tag = *text + 1;
+					*taglen = s - *text - 1;
+					*text = s + 1;
+					*len = close - *text;
+					*end = close + 3;
+					return true;
+				} else {
+					/* Otherwise return the chunk up to this */
+					*len = next - *text;
+					*end = *text + *len;
+					return true;
+				}
+			} else {
+				/* No closing thing, therefore all one lump of text. */
+				*len = strlen(*text);
+				*end = *text + *len;
+				return true;
+			}
+		} else if (*s == '\0') {
+			/* End of the string, that's fine. */
+			*len = strlen(*text);
+			*end = *text + *len;
+			return true;
+		} else {
+			/* An invalid tag, skip it. */
+			next = next + 1;
+		}
+
+		next = strchr(next, '{');
+	}
+
+	/* Default to the rest of the string */
+	*len = strlen(*text);
+	*end = *text + *len;
+
+	return true;
+}
+
+/**
+ * Output text to the screen or to a file depending on the
+ * selected hook.  Takes strings with "embedded formatting",
+ * such that something within {red}{/} will be printed in red.
+ *
+ * Note that such formatting will be treated as a "breakpoint"
+ * for the printing, so if used within words may lead to part of the
+ * word being moved to the next line.
+ */
+void text_out_e(const char *fmt, ...)
+{
+	char buf[1024];
+	char smallbuf[1024];
+	va_list vp;
+
+	const char *start, *next, *text, *tag;
+	size_t textlen, taglen = 0;
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Do the va_arg fmt to the buffer */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	start = buf;
+	while (next_section(start, 0, &text, &textlen, &tag, &taglen, &next)) {
+		int a = -1;
+
+		memcpy(smallbuf, text, textlen);
+		smallbuf[textlen] = 0;
+
+		if (tag) {
+			char tagbuffer[16];
+
+			/* Colour names are less than 16 characters long. */
+			assert(taglen < 16);
+
+			memcpy(tagbuffer, tag, taglen);
+			tagbuffer[taglen] = '\0';
+
+			a = color_text_to_attr(tagbuffer);
+		}
+		
+		if (a == -1) 
+			a = COLOUR_WHITE;
+
+		/* Output now */
+		text_out_to_screen(a, smallbuf);
+
+		start = next;
+	}
+}
+
 
 
 /**

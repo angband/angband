@@ -377,7 +377,6 @@ static void store_display_help(struct store_context *ctx)
 	clear_from(ctx->scr_places_y[LOC_HELP_CLEAR]);
 
 	/* Prepare help hooks */
-	text_out_hook = text_out_to_screen;
 	text_out_indent = 1;
 	Term_gotoxy(1, help_loc);
 

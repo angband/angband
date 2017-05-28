@@ -593,8 +593,7 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 }
 
 /**
- * Append a line of text 'buf' to the end of file 'f', using system-dependent
- * line ending.
+ * Append a line of text 'buf' to the end of file 'f'.
  */
 bool file_put(ang_file *f, const char *buf)
 {
@@ -643,6 +642,53 @@ bool file_vputf(ang_file *f, const char *fmt, va_list vp)
 	return file_put(f, buf);
 }
 
+/**
+ * Write a text file from given input.
+ *
+ * \param path the path to write to
+ * \param writer the text-writing function
+ */
+errr text_lines_to_file(const char *path, text_writer writer)
+{
+	char new_fname[1024];
+	char old_fname[1024];
+
+	ang_file *new_file;
+
+	safe_setuid_grab();
+
+	/* Format filenames */
+	strnfmt(new_fname, sizeof(new_fname), "%s.new", path);
+	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
+
+	/* Write new file */
+	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
+	if (!new_file) {
+		safe_setuid_drop();
+		return -1;
+	}
+
+	writer(new_file);
+
+	file_close(new_file);
+
+	/* Move files around */
+	strnfmt(old_fname, sizeof(old_fname), "%s.old", path);
+	if (!file_exists(path)) {
+		file_move(new_fname, path);
+	} else if (file_move(path, old_fname)) {
+		file_move(new_fname, path);
+		file_delete(old_fname);
+	} else {
+		file_delete(new_fname);
+	}
+
+	safe_setuid_drop();
+
+	return 0;
+}
+
+/*** DIRECTORY HANDLING ***/
 
 bool dir_exists(const char *path)
 {

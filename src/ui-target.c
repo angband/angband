@@ -106,7 +106,6 @@ void target_display_help(bool monster, bool free)
 	clear_from(help_loc);
 
 	/* Prepare help hooks */
-	text_out_hook = text_out_to_screen;
 	text_out_indent = 1;
 	Term_gotoxy(1, help_loc);
 

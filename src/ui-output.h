@@ -76,9 +76,15 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 
 /**
  * ------------------------------------------------------------------------
- * text_out hook for screen display
+ * text_out
  * ------------------------------------------------------------------------ */
-void text_out_to_screen(byte a, const char *str);
+int text_out_wrap;
+int text_out_indent;
+int text_out_pad;
+
+void text_out(const char *fmt, ...);
+void text_out_c(byte a, const char *fmt, ...);
+void text_out_e(const char *fmt, ...);
 
 /**
  * ------------------------------------------------------------------------
