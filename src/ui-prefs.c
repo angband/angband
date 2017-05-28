@@ -264,7 +264,7 @@ void dump_features(ang_file *fff)
 
 			assert(light);
 
-			file_putf(fff, "feat:%d:%s:%d:%d\n", i, light, attr, chr);
+			file_putf(fff, "feat:%s:%s:%d:%d\n", feat->name, light, attr, chr);
 		}
 	}
 }
