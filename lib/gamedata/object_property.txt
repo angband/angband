@@ -543,7 +543,7 @@ type:flag
 subtype:light
 id-type:on wield
 code:LIGHT_1
-power:0
+power:9
 type-mult:sword:0
 type-mult:polearm:0
 type-mult:hafted:0
@@ -566,7 +566,7 @@ type:flag
 subtype:light
 id-type:on wield
 code:LIGHT_2
-power:0
+power:18
 type-mult:sword:0
 type-mult:polearm:0
 type-mult:hafted:0
@@ -589,21 +589,21 @@ type:flag
 subtype:dig
 id-type:on wield
 code:DIG_1
-power:0
+power:3
 
 name:power 2 digging
 type:flag
 subtype:dig
 id-type:on wield
 code:DIG_2
-power:0
+power:6
 
 name:power 3 digging
 type:flag
 subtype:dig
 id-type:on wield
 code:DIG_3
-power:0
+power:9
 
 name:explode
 type:flag
