@@ -410,7 +410,9 @@ static size_t obj_desc_combat(const struct object *obj, char *buf, size_t max,
 
 	/* Show weapon bonuses if we know of any */
 	if (player->obj_k->to_h && player->obj_k->to_d &&
-		(tval_is_weapon(obj) || obj->to_d || !object_has_standard_to_h(obj))) {
+		(tval_is_weapon(obj) || obj->to_d ||
+		 (!object_has_standard_to_h(obj) && !obj->artifact && !obj->ego))) {
+		/* In general show full combat bonuses */
 		strnfcat(buf, max, &end, " (%+d,%+d)", obj->to_h, obj->to_d);
 	} else if (obj->to_h < 0 && object_has_standard_to_h(obj)) {
 		/* Special treatment for body armor with only a to-hit penalty */
