@@ -63,7 +63,6 @@ struct brand {
 	char *code;
 	char *name;
 	char *verb;
-	int element;
 	int resist_flag;
 	int multiplier;
 	int power;

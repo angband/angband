@@ -52,15 +52,31 @@ bool same_monsters_slain(int slay1, int slay2)
  */
 void copy_slays(bool **dest, bool *source)
 {
-	int i;
+	int i, j;
 
+	/* Check structures */
 	if (!source) return;
-
-	if (!(*dest))
+	if (!(*dest)) {
 		*dest = mem_zalloc(z_info->slay_max * sizeof(bool));
+	}
 
-	for (i = 0; i < z_info->slay_max; i++)
+	/* Copy */
+	for (i = 0; i < z_info->slay_max; i++) {
 		(*dest)[i] |= source[i];
+	}
+
+	/* Check for duplicates */
+	for (i = 0; i < z_info->slay_max; i++) {
+		for (j = 0; j < i; j++) {
+			if ((*dest)[i] && (*dest)[j] && same_monsters_slain(i, j)) {
+				if (slays[i].multiplier < slays[j].multiplier) {
+					(*dest)[i] = false;
+				} else {
+					(*dest)[j] = false;
+				}
+			}
+		}
+	}
 }
 
 /**
@@ -71,15 +87,30 @@ void copy_slays(bool **dest, bool *source)
  */
 void copy_brands(bool **dest, bool *source)
 {
-	int i;
+	int i, j;
 
+	/* Check structures */
 	if (!source) return;
-
 	if (!(*dest))
 		*dest = mem_zalloc(z_info->brand_max * sizeof(bool));
 
+	/* Copy */
 	for (i = 0; i < z_info->brand_max; i++)
 		(*dest)[i] |= source[i];
+
+	/* Check for duplicates */
+	for (i = 0; i < z_info->brand_max; i++) {
+		for (j = 0; j < i; j++) {
+			if ((*dest)[i] && (*dest)[j] &&
+				streq(brands[i].name, brands[j].name)) {
+				if (brands[i].multiplier < brands[j].multiplier) {
+					(*dest)[i] = false;
+				} else {
+					(*dest)[j] = false;
+				}
+			}
+		}
+	}
 }
 
 /**
