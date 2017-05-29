@@ -141,11 +141,11 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	/* Describe the spells, spell-like abilities and melee attacks */
 	lore_append_spells(tb, race, lore, known_flags);
 	lore_append_attack(tb, race, lore, known_flags);
-	
+
 	/* Do we know everything */
 	if (lore_is_fully_known(race))
 		textblock_append(tb, "You know everything about this monster.");
-	
+
 	/* Notice "Quest" monsters */
 	if (rf_has(race->flags, RF_QUESTOR))
 		textblock_append(tb, "You feel an intense desire to kill this monster...  ");

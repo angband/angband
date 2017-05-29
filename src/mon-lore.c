@@ -294,6 +294,12 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 	/* Spellcasting frequency */
 	if ((lore->cast_innate + lore->cast_spell > 100) || lore->all_known)
 		lore->spell_freq_known = true;
+
+	/* Flags for probing and cheating */
+	if (lore->all_known) {
+		rf_setall(lore->flags);
+		rsf_copy(lore->spell_flags, race->spell_flags);
+	}
 }
 
 /**
@@ -309,10 +315,6 @@ void cheat_monster_lore(const struct monster_race *race, struct monster_lore *lo
 	/* Full knowledge */
 	lore->all_known = true;
 	lore_update(race, lore);
-
-	/* Know all the flags */
-	rf_setall(lore->flags);
-	rsf_copy(lore->spell_flags, race->spell_flags);
 }
 
 /**
