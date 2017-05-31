@@ -1242,6 +1242,31 @@ void player_learn_curse(struct player *p, struct curse *curse)
 }
 
 /**
+ * Learn all innate runes
+ *
+ * \param p is the player
+ */
+void player_learn_innate(struct player *p)
+{
+	int element, flag;
+
+	/* Elements */
+	for (element = 0; element < ELEM_MAX; element++) {
+		if (p->race->el_info[element].res_level != 0) {
+			player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), false);
+		}
+	}
+
+	/* Flags */
+	for (flag = of_next(p->race->flags, FLAG_START); flag != FLAG_END;
+		 flag = of_next(p->race->flags, flag + 1)) {
+		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), false);
+	}
+
+	update_player_object_knowledge(p);
+}
+
+/**
  * Learn absolutely everything
  *
  * \param p is the player
