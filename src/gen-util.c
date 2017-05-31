@@ -272,7 +272,7 @@ bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, i
     int x1 = x0 - xd;
     int y2 = y0 + yd + 1;
     int x2 = x0 + xd + 1;
-    return cave_find_in_range(c, y, y1, y2, x, x1, x2, square_in_bounds);
+    return cave_find_in_range(c, y, y1, y2, x, x1, x2, square_in_bounds_fully);
 }
 
 
@@ -721,6 +721,9 @@ void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
 {
     int k, i, y, x;
 
+	/* If the starting location is illegal, don't even start */
+	if (!square_in_bounds(c, y1, x1)) return;
+
     /* Try to summon "num" monsters "near" the given location */
     for (k = 0; k < num; k++) {
 		/* Try nine locations */
@@ -734,7 +737,8 @@ void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
 			if (!square_isempty(c, y, x)) continue;
 
 			/* Place the monster (allow groups) */
-			pick_and_place_monster(c, y, x, depth, true, true, ORIGIN_DROP_SPECIAL);
+			pick_and_place_monster(c, y, x, depth, true, true,
+								   ORIGIN_DROP_SPECIAL);
 
 			break;
 		}

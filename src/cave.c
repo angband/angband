@@ -443,7 +443,7 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 }
 
 /**
- * Standard "find me a location" function
+ * Standard "find me a location" function, now with all legal outputs!
  *
  * Obtains a legal location within the given distance of the initial
  * location, and with "los()" from the source to destination location.
@@ -459,8 +459,8 @@ void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d,
 	int nx, ny;
 	int tries = 0;
 
-	/* Pick a location, try ridiculously many times */
-	while (tries < 1000000) {
+	/* Pick a location, try many times */
+	while (tries < 1000) {
 		/* Pick a new location */
 		ny = rand_spread(y, d);
 		nx = rand_spread(x, d);
@@ -472,16 +472,14 @@ void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d,
 		/* Ignore "excessively distant" locations */
 		if ((d > 1) && (distance(y, x, ny, nx) > d)) continue;
 		
-		/* Don't need los */
-		if (!need_los) break;
-
 		/* Require "line of sight" if set */
-		if (need_los && (los(c, y, x, ny, nx))) break;
-	}
+		if (need_los && !los(c, y, x, ny, nx)) continue;
 
-	/* Save the location */
-	(*yp) = ny;
-	(*xp) = nx;
+		/* Set the location and return */
+		(*yp) = ny;
+		(*xp) = nx;
+		return;
+	}
 }
 
 
