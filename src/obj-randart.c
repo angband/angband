@@ -1303,14 +1303,24 @@ static struct object_kind *get_base_item(struct artifact_set_data *data,
 {
 	struct object_kind *kind = NULL;
 	char name[120] = "";
+	int start = 1;
+
+	/* Restrict to appropriate kinds if jewellery */
+	if ((tval == TV_RING) || (tval == TV_AMULET)) {
+		struct object_kind *test_kind = lookup_kind(tval, start);
+		while (test_kind->kidx < z_info->ordinary_kind_max) {
+			start++;
+			test_kind = lookup_kind(tval, start);
+		}
+	}
 
 	/* Pick an sval for that tval at random */
 	while (!kind) {
-		int r = randint1(kb_info[tval].num_svals);
+		int r = start + randint0(kb_info[tval].num_svals - start);
 		kind = lookup_kind(tval, r);
 
-		/* No items based on unrandomised artifacts */
-		if (strstr(kind->name, "Ring of Power") ||
+		/* No items based on quest artifacts or elven rings */
+		if (strstr(kind->name, "Ring of") ||
 			kf_has(kind->kind_flags, KF_QUEST_ART))
 				kind = NULL;
 	}
@@ -1386,23 +1396,6 @@ void artifact_prep(struct artifact *art, const struct object_kind *kind,
 			break;
 		case TV_RING:
 		case TV_AMULET:
-			if (kind->kidx < z_info->ordinary_kind_max) {
-				int first_special = 1;
-				int total = kb_info[art->tval].num_svals;
-				struct object_kind *test_kind = lookup_kind(art->tval, 1);
-				while (test_kind->kidx < z_info->ordinary_kind_max) {
-					first_special++;
-					test_kind = lookup_kind(art->tval, first_special);
-				}
-				art->sval = randint0(total - first_special + 1) + first_special;
-				test_kind = lookup_kind(art->tval, art->sval);
-				while (strstr(test_kind->name, "Ring of")) {
-					art->sval = randint0(total - first_special + 1) +
-						first_special;
-					test_kind = lookup_kind(art->tval, art->sval);
-				}
-			}
-			break;
 		case TV_LIGHT:
 			of_off(art->flags, OF_TAKES_FUEL);
 			of_off(art->flags, OF_BURNS_OUT);
