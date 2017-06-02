@@ -244,6 +244,9 @@ static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
 	/* Objects picked up.  Used to determine time cost of command. */
 	byte objs_picked_up = 0;
 
+	/* Always know what's on the floor */
+	square_know_pile(cave, p->py, p->px);
+
 	/* Always pickup gold, effortlessly */
 	player_pickup_gold(p);
 
@@ -269,7 +272,6 @@ static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
 
 	if (!can_pickup) {
 	    event_signal(EVENT_SEEFLOOR);
-		square_know_pile(cave, p->py, p->px);
 		mem_free(floor_list);
 	    return objs_picked_up;
 	}
