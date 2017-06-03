@@ -487,6 +487,9 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 		obj->time = kind->time;
 	}
 
+	/* Timeouts are always 0 */
+	obj->timeout = 0;
+
 	of_union(obj->flags, art->flags);
 	copy_slays(&obj->slays, art->slays);
 	copy_brands(&obj->brands, art->brands);
