@@ -46,6 +46,8 @@ power:10
 eval:30
 desc:drain charges
 lore-color-base:Light Red
+lore-color-resist:Light Green
+effect-type:drain
 
 name:EAT_GOLD
 power:0
@@ -68,12 +70,16 @@ power:0
 eval:5
 desc:eat your food
 lore-color-base:Yellow
+lore-color-resist:Light Green
+effect-type:eat-food
 
 name:EAT_LIGHT
 power:0
 eval:5
 desc:absorb light
-lore-color-base:Light Green
+lore-color-base:Yellow
+lore-color-resist:Light Green
+effect-type:eat-light
 
 name:ACID
 power:20
