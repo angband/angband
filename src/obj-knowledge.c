@@ -1650,10 +1650,6 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	object_curses_find_to_d(p, obj);
 	object_curses_find_flags(p, obj, obvious_mask);
 	object_curses_find_modifiers(p, obj);
-
-	/* If the object isn't fully known, known object gets the obvious flags */
-	if (!object_fully_known(obj))
-		of_union(obj->known->flags, obvious_mask);
 }
 
 /**
