@@ -843,6 +843,39 @@ void cave_generate(struct chunk **c, struct player *p)
 
 	assert(c);
 
+	/* Forget old level */
+	if (p->cave && (*c == cave)) {
+		int x, y;
+
+		/* Deal with artifacts */
+		for (y = 0; y < (*c)->height; y++) {
+			for (x = 0; x < (*c)->width; x++) {
+				struct object *obj = square_object(*c, y, x);
+				while (obj) {
+					if (obj->artifact) {
+						bool found = obj->known && obj->known->artifact;
+						if (OPT(p, birth_lose_arts) || found) {
+							history_lose_artifact(p, obj->artifact);
+						} else {
+							obj->artifact->created = false;
+						}
+					}
+
+					obj = obj->next;
+				}
+			}
+		}
+
+		/* Free the known cave */
+		cave_free(p->cave);
+		p->cave = NULL;
+	}
+
+	/* Free the old cave */
+	if (*c) {
+		cave_clear(*c, p);
+	}
+
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
 		struct dun_data dun_body;
@@ -918,45 +951,14 @@ void cave_generate(struct chunk **c, struct player *p)
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
-	/* Forget old level */
-	if (p->cave && (*c == cave)) {
-		int x, y;
-
-		/* Deal with artifacts */
-		for (y = 0; y < (*c)->height; y++) {
-			for (x = 0; x < (*c)->width; x++) {
-				struct object *obj = square_object(*c, y, x);
-				while (obj) {
-					if (obj->artifact) {
-						bool found = obj->known && obj->known->artifact;
-						if (OPT(p, birth_lose_arts) || found) {
-							history_lose_artifact(p, obj->artifact);
-						} else {
-							obj->artifact->created = false;
-						}
-					}
-
-					obj = obj->next;
-				}
-			}
-		}
-
-		/* Free the known cave */
-		cave_free(p->cave);
-		p->cave = NULL;
-	}
-
-	/* Free the old cave, use the new one */
-	if (*c)
-		cave_clear(*c, p);
+	/* Use the new cave */
 	*c = chunk;
 
 	/* Place dungeon squares to trigger feeling (not in town) */
-	if (player->depth)
+	if (player->depth) {
 		place_feeling(*c);
-
-	/* Save the town */
-	else if (!chunk_find_name("Town")) {
+	} else if (!chunk_find_name("Town")) {
+		/* Save the town */
 		struct chunk *town = chunk_write(0, 0, z_info->town_hgt,
 										 z_info->town_wid, false, false, false);
 		town->name = string_make("Town");

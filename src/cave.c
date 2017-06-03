@@ -372,7 +372,9 @@ void list_object(struct chunk *c, struct object *obj)
 	/* Put objects in holes in the object list */
 	for (i = 1; i < c->obj_max; i++) {
 		/* If there is a known object, skip this slot */
-		if ((c == cave) && player->cave->objects[i]) continue;
+		if ((c == cave) && player->cave && player->cave->objects[i]) {
+			continue;
+		}
 
 		/* Put the object in a hole */
 		if (c->objects[i] == NULL) {
@@ -392,7 +394,7 @@ void list_object(struct chunk *c, struct object *obj)
 	c->obj_max += OBJECT_LIST_INCR;
 
 	/* If we're on the current level, extend the known list */
-	if (c == cave) {
+	if ((c == cave) && player->cave) {
 		player->cave->objects = mem_realloc(player->cave->objects, newsize);
 		for (i = player->cave->obj_max; i <= c->obj_max; i++)
 			player->cave->objects[i] = NULL;
