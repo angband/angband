@@ -20,7 +20,7 @@
 # skill-shoot:base:increment
 # skill-throw:base:increment
 # skill-dig:base:increment
-# info:mhp:exp:sense_base:sense_div
+# info:mhp:exp
 # attack:max_attacks:min_weight:att_multiply
 # title:title
 # equip:tval:sval:min:max
@@ -48,8 +48,7 @@
 # every ten levels.
 
 # 'info' is for extra info - max. hitpoints gained per level, experience
-# factor in percent, base chance for pseudo-id (smaller is better),
-# level dependent divisor for the pseudo-id chance.
+# factor in percent.
 
 # 'attack' is for attack info - maximum possible number of attacks, minimum
 # weapon weight for calculating the number of attacks, multiplier for
@@ -108,7 +107,7 @@ skill-melee:70:45
 skill-shoot:55:45
 skill-throw:55:45
 skill-dig:0:0
-info:9:0:7000:40
+info:9:0
 attack:6:30:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -116,7 +115,7 @@ equip:potion:Berserk Strength:1:1
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:BRAVERY_30 | PSEUDO_ID_IMPROV | NO_MANA
+flags:BRAVERY_30 | NO_MANA
 title:Rookie
 title:Soldier
 title:Swordsman
@@ -142,7 +141,7 @@ skill-melee:34:15
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
-info:0:30:170000:5
+info:0:30
 attack:4:40:2
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -604,7 +603,7 @@ skill-melee:48:20
 skill-shoot:35:20
 skill-throw:35:20
 skill-dig:0:0
-info:2:20:15000:40
+info:2:20
 attack:4:35:3
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -612,7 +611,7 @@ equip:prayer book:[Beginners Handbook]:1:1
 equip:hafted:Mace:1:1
 equip:potion:Cure Serious Wounds:2:2
 equip:scroll:Word of Recall:1:1
-flags:BLESS_WEAPON | ZERO_FAIL | PSEUDO_ID_IMPROV
+flags:BLESS_WEAPON | ZERO_FAIL
 title:Believer
 title:Acolyte
 title:Adept
@@ -1080,7 +1079,7 @@ skill-melee:60:40
 skill-shoot:66:30
 skill-throw:66:30
 skill-dig:0:0
-info:6:25:10000:40
+info:6:25
 attack:5:30:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1088,7 +1087,7 @@ equip:magic book:[Magic for Beginners]:1:1
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
+flags:CUMBER_GLOVE | CHOOSE_SPELLS
 title:Vagabond
 title:Cutpurse
 title:Footpad
@@ -1409,7 +1408,7 @@ skill-melee:56:30
 skill-shoot:72:45
 skill-throw:72:45
 skill-dig:0:0
-info:4:30:20000:40
+info:4:30
 attack:5:35:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1418,7 +1417,7 @@ equip:sword:Dagger:1:1
 equip:bow:Short Bow:1:1
 equip:arrow:Arrow:15:20
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
+flags:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
 title:Scout
@@ -1857,7 +1856,7 @@ skill-melee:68:35
 skill-shoot:40:30
 skill-throw:40:30
 skill-dig:0:0
-info:6:35:60000:40
+info:6:35
 attack:5:30:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1865,7 +1864,6 @@ equip:prayer book:[Beginners Handbook]:1:1
 equip:sword:Dagger:1:1
 equip:scroll:Protection from Evil:1:1
 equip:scroll:Word of Recall:1:1
-flags:PSEUDO_ID_IMPROV
 title:Gallant
 title:Keeper
 title:Protector

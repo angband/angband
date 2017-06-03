@@ -290,9 +290,6 @@ struct player_class {
 	int min_weight;				/**< Minimum weapon weight for calculations */
 	int att_multiply;			/**< Multiplier for attack calculations */
 
-	int sense_base;				/**< Base pseudo-id value */
-	int sense_div;				/**< Pseudo-id divisor */
-
 	struct start_item *start_items; /**< Starting inventory */
 
 	struct class_magic magic;	/**< Magic spells */

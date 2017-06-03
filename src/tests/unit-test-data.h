@@ -719,9 +719,6 @@ static struct player_class TEST_DATA test_class = {
 	.min_weight = 30,
 	.att_multiply = 5,
 
-	.sense_base = 7000,
-	.sense_div = 40,
-
 	.start_items = &start_longsword,
 	.magic =  {
 		.spell_first = 1,

@@ -154,7 +154,7 @@ int test_skill_dig0(void *state) {
 }
 
 int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:4:30:20000:40");
+	enum parser_error r = parser_parse(state, "info:4:30");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -162,8 +162,6 @@ int test_info0(void *state) {
 	require(c);
 	eq(c->c_mhp, 4);
 	eq(c->c_exp, 30);
-	eq(c->sense_base, 20000);
-	eq(c->sense_div, 40);
 	ok;
 }
 

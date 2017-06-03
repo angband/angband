@@ -455,7 +455,7 @@ static int is_object_good(const struct object *obj)
 
 
 /**
- * Determine the ignore level of an object, which is similar to its pseudo.
+ * Determine the ignore level of an object
  *
  * The main point is when the value is undetermined given current info,
  * return the maximum possible value.

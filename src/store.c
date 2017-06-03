@@ -872,7 +872,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 	if (value <= 0)
 		return NULL;
 
-	/* Erase the inscription & pseudo-ID bit */
+	/* Erase the inscription */
 	obj->note = 0;
 	known_obj->note = 0;
 

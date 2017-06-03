@@ -1214,7 +1214,7 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 	/* Give a message */
 	if (message)
-		msg("You have learned the rune of %s.", rune_name(i));
+		msgt(MSG_RUNE, "You have learned the rune of %s.", rune_name(i));
 
 	/* Update knowledge */
 	update_player_object_knowledge(p);
