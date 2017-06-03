@@ -717,24 +717,29 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 static void store_examine(struct store_context *ctx, int item)
 {
 	struct object *obj;
-
 	char header[120];
-
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
+	int odesc_flags = ODESC_PREFIX | ODESC_FULL;
 
 	if (item < 0) return;
 
 	/* Get the actual object */
 	obj = ctx->list[item];
 
+	/* Items in the home get less description */
+	if (ctx->store->sidx == STORE_HOME) {
+		odesc_flags |= ODESC_CAPITAL;
+	} else {
+		odesc_flags |= ODESC_STORE;
+	}
+
 	/* Hack -- no flush needed */
 	msg_flag = false;
 
 	/* Show full info in most stores, but normal info in player home */
 	tb = object_info(obj, OINFO_NONE);
-	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL |
-		ODESC_STORE);
+	object_desc(header, sizeof(header), obj, odesc_flags);
 
 	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
