@@ -874,6 +874,7 @@ void cave_generate(struct chunk **c, struct player *p)
 	/* Free the old cave */
 	if (*c) {
 		cave_clear(*c, p);
+		*c = NULL;
 	}
 
 	/* Generate */
@@ -973,16 +974,22 @@ void cave_generate(struct chunk **c, struct player *p)
 	/* The dungeon is ready */
 	character_dungeon = true;
 
-	/* Allocate new known level */
+	/* Allocate new known level, light it if requested */
 	if (*c == cave) {
 		p->cave = cave_new((*c)->height, (*c)->width);
 		p->cave->objects = mem_realloc(p->cave->objects, ((*c)->obj_max + 1)
 										 * sizeof(struct object*));
 		p->cave->obj_max = (*c)->obj_max;
-		for (i = 0; i <= p->cave->obj_max; i++)
+		for (i = 0; i <= p->cave->obj_max; i++) {
 			p->cave->objects[i] = NULL;
-		if (!((*c)->depth))
+		}
+		if (!((*c)->depth)) {
 			cave_known(p);
+		}
+		if (p->upkeep->light_level) {
+			wiz_light(*c, false);
+			p->upkeep->light_level = false;
+		}
 	}
 
 	(*c)->created_at = turn;

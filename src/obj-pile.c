@@ -806,11 +806,11 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 /**
  * Find and return the oldest object on the given grid marked as "ignore".
  */
-static struct object *floor_get_oldest_ignored(int y, int x)
+static struct object *floor_get_oldest_ignored(struct chunk *c, int y, int x)
 {
 	struct object *obj, *ignore = NULL;
 
-	for (obj = square_object(cave, y, x); obj; obj = obj->next)
+	for (obj = square_object(c, y, x); obj; obj = obj->next)
 		if (ignore_item_ok(obj))
 			ignore = obj;
 
@@ -827,7 +827,7 @@ static struct object *floor_get_oldest_ignored(int y, int x)
 bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 {
 	int n = 0;
-	struct object *obj, *ignore = floor_get_oldest_ignored(y, x);
+	struct object *obj, *ignore = floor_get_oldest_ignored(c, y, x);
 
 	/* Fail if the square can't hold objects */
 	if (!square_isobjectholding(c, y, x))
@@ -962,7 +962,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 			/* Disallow if the stack size is too big */
 			if ((!OPT(player, birth_stacking) && (num_shown > 1)) ||
 				((num_shown + num_ignored) > z_info->floor_size &&
-				 !floor_get_oldest_ignored(ty, tx)))
+				 !floor_get_oldest_ignored(cave, ty, tx)))
 				continue;
 
 			/* Score the location based on how close and how full the grid is */

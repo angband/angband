@@ -168,7 +168,7 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
 /**
  * Instantiate a player trap
  */
-static int pick_trap(int feat, int trap_level)
+static int pick_trap(struct chunk *c, int feat, int trap_level)
 {
     int i, pick;
 	int *trap_probs = NULL;
@@ -179,7 +179,7 @@ static int pick_trap(int feat, int trap_level)
 		return -1;
 
     /* No traps in town */
-    if (cave->depth == 0)
+    if (c->depth == 0)
 		return -1;
 
     /* Get trap probabilities */
@@ -254,7 +254,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 		/* Require the correct terrain */
 		if (!square_player_trap_allowed(c, y, x)) return;
 
-		t_idx = pick_trap(c->squares[y][x].feat, trap_level);
+		t_idx = pick_trap(c, c->squares[y][x].feat, trap_level);
     }
 
     /* Failure */

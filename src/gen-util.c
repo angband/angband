@@ -201,7 +201,7 @@ static bool _find_in_range(struct chunk *c, int *y, int y1, int y2, int *x,
  */
 bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred)
 {
-    return _find_in_range(c, y, 0, c->height, x, 0, c->width, pred);
+    return _find_in_range(c, y, 0, c->height - 1, x, 0, c->width - 1, pred);
 }
 
 
@@ -218,8 +218,8 @@ bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred)
  * \param pred square_predicate specifying what we're looking for
  * \return success
  */
-bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1,
-						int x2, square_predicate pred)
+static bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2, int *x,
+							   int x1, int x2, square_predicate pred)
 {
     return _find_in_range(c, y, y1, y2, x, x1, x2, pred);
 }
@@ -341,7 +341,7 @@ void new_player_spot(struct chunk *c, struct player *p)
     int y, x;
 
     /* Try to find a good place to put the player */
-    cave_find_in_range(c, &y, 0, c->height, &x, 0, c->width, square_isstart);
+    cave_find(c, &y, &x, square_isstart);
 
     /* Create stairs the player came down if allowed and necessary */
     if (!OPT(p, birth_connect_stairs))
@@ -433,18 +433,18 @@ void place_random_stairs(struct chunk *c, int y, int x)
  * \param origin item origin
  * \param tval specified tval, if any
  */
-void place_object(struct chunk *c, int y, int x, int level, bool good, bool great, byte origin, int tval)
+void place_object(struct chunk *c, int y, int x, int level, bool good,
+				  bool great, byte origin, int tval)
 {
     s32b rating = 0;
     struct object *new_obj;
 
-    assert(square_in_bounds(c, y, x));
-
+    if (!square_in_bounds(c, y, x)) return;
     if (!square_canputitem(c, y, x)) return;
 
+	/* Make an appropriate object */
     new_obj = make_object(c, level, good, great, false, &rating, tval);
 	if (!new_obj) return;
-
     new_obj->origin = origin;
     new_obj->origin_depth = c->depth;
 
@@ -477,12 +477,10 @@ void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 {
     struct object *money = NULL;
 
-    assert(square_in_bounds(c, y, x));
-
+    if (!square_in_bounds(c, y, x)) return;
     if (!square_canputitem(c, y, x)) return;
 
     money = make_gold(level, "any");
-
     money->origin = origin;
     money->origin_depth = level;
 
@@ -582,7 +580,8 @@ void alloc_stairs(struct chunk *c, int feat, int num, int walls)
  *
  * See alloc_object() for more information.
  */
-void alloc_objects(struct chunk *c, int set, int typ, int num, int depth, byte origin)
+void alloc_objects(struct chunk *c, int set, int typ, int num, int depth,
+				   byte origin)
 {
     int k, l = 0;
     for (k = 0; k < num; k++) {
