@@ -798,11 +798,11 @@ const struct cave_profile *choose_profile(int depth)
 	} else if ((depth >= 10) && (depth < 40) && one_in_(40)) {
 		profile = find_cave_profile("moria");
 	} else {
-		int perc = randint0(100);
+		int pick = randint0(200);
 		size_t i;
 		for (i = 0; i < z_info->profile_max; i++) {
 			profile = &cave_profiles[i];
-			if (profile->cutoff >= perc) break;
+			if (profile->cutoff >= pick) break;
 		}
 	}
 

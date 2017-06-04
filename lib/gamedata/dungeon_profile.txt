@@ -27,7 +27,7 @@
 # and quartz streamers per level; 1/mc and 1/qc are the chances of treasure in
 # magma and quartz.
 
-# cutoff is used to decide which profile to use; a random number 0 to 99
+# cutoff is used to decide which profile to use; a random number 0 to 199
 # is picked and successive profiles are rejected until this number is smaller
 # than the cutoff.  If cutoff is -1, those profiles are not used or are picked
 # in some different way.  It is IMPORTANT that non-zero cutoffs appear in
@@ -64,14 +64,14 @@ cutoff:-1
 ## Cavern
 name:cavern
 params:1:0:200:0
-cutoff:5
+cutoff:10
 
 ## Classic
 name:classic
 params:11:50:200:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:55
+cutoff:100
 
 # Greater vaults only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
@@ -99,7 +99,7 @@ name:modified
 params:1:50:250:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:100
+cutoff:197
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
@@ -151,7 +151,7 @@ name:lair
 params:1:50:500:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
-cutoff:-1
+cutoff:198
 
 # Really big rooms only have rarity 0 but they have other checks
 room:Greater vault:0:44:66:35:0:0:100
@@ -180,9 +180,9 @@ room:simple room:0:11:33:1:0:0:100
 ## Gauntlet
 name:gauntlet
 params:1:0:200:0
-cutoff:-1
+cutoff:199
 
 ## Hard Centre
 name:hard centre
 params:1:0:200:0
-cutoff:-1
+cutoff:200
