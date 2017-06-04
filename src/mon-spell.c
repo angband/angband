@@ -25,6 +25,7 @@
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
+#include "obj-knowledge.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -145,6 +146,25 @@ const struct monster_spell *monster_spell_by_index(int index)
 }
 
 /**
+ * Check if a spell effect which has been saved against would also have
+ * been prevented by an object property, and learn the appropriate rune
+ */
+static void spell_check_for_fail_rune(const struct monster_spell *spell)
+{
+	struct effect *effect = spell->effect;
+	while (effect) {
+		if (effect->index == EF_TELEPORT_LEVEL) {
+			/* Special case - teleport level */
+			equip_learn_element(player, ELEM_NEXUS);
+		} else if (effect->index == EF_TIMED_INC) {
+			/* Timed effects */
+			(void) player_inc_check(player, effect->params[0], false);
+		}
+		effect = effect->next;
+	}
+}
+
+/**
  * Process a monster spell 
  *
  * \param index is the monster spell flag (RSF_FOO)
@@ -179,6 +199,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 		if (spell->save_message &&
 				randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("%s", spell->save_message);
+			spell_check_for_fail_rune(spell);
 		} else {
 			effect_do(spell->effect, source_monster(mon->midx), NULL, &ident, true, 0, 0, 0);
 		}

@@ -7,7 +7,7 @@
 # param:parameter:parameter (if needed)
 # dice:dice string
 # expr:dice expression
-# effect-freq: average frequency of random effect
+# time: average frequency of random effect
 # flags: flag | flag | etc.
 # values: label[value] | label[value] | etc.
 # desc: description
@@ -251,6 +251,7 @@ type:sword
 effect:DAMAGE
 dice:$B
 expr:B:WEAPON_DAMAGE:+ 0
+time:1d200
 msg:Your weapon turns on you!
 desc:makes your weapon attack you
 

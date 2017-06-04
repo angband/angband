@@ -32,6 +32,7 @@
 #include "monster.h"
 #include "obj-chest.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-attack.h"
@@ -1052,6 +1053,7 @@ static bool do_cmd_walk_test(int y, int x)
 
 			/* Message */
 			msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
+			equip_learn_flag(player, OF_AFRAID);
 
 			/* Nope */
 			return (false);
