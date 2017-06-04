@@ -1295,7 +1295,7 @@ experience:12
 blow:TOUCH:EAT_LIGHT:1d3
 blow:TOUCH:EAT_LIGHT:1d3
 flags:NEVER_MOVE
-flags:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
+flags:IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 spell-freq:15
 spell-power:3
 spells:DRAIN_MANA

@@ -374,7 +374,7 @@ glyph:v
 pain:11
 flags:EMPTY_MIND | POWERFUL
 flags:RAND_50 | BASH_DOOR
-flags:NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD
+flags:NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD | IM_POIS
 flags:FORCE_SLEEP
 flags:NONLIVING
 desc:Vortex
