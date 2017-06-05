@@ -251,7 +251,7 @@ static bool uncurse_object(struct object *obj, int strength)
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
 			/* Failure to remove, object is now fragile */
 			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
-			msgt(MSG_CURSED, "The spell fails; your %s is now fragile", o_name);
+			msgt(MSG_CURSED, "The spell fails; your %s is now fragile.", o_name);
 			of_on(obj->flags, OF_FRAGILE);
 			player_learn_flag(player, OF_FRAGILE);
 		} else if (one_in_(4)) {
@@ -268,6 +268,8 @@ static bool uncurse_object(struct object *obj, int strength)
 				square_excise_object(cave, obj->iy, obj->ix, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
+				square_note_spot(cave, player->py, player->px);
+				square_light_spot(cave, player->py, player->px);
 			}
 		} else {
 			/* Non-destructive failure */
