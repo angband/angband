@@ -342,6 +342,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 
 	/* Handle player fear (only for invisible monsters) */
 	if (player_of_has(p, OF_AFRAID)) {
+		equip_learn_flag(p, OF_AFRAID);
 		msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
 		return false;
 	}

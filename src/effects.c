@@ -251,7 +251,7 @@ static bool uncurse_object(struct object *obj, int strength)
 		} else if (!of_has(obj->flags, OF_FRAGILE)) {
 			/* Failure to remove, object is now fragile */
 			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
-			msgt(MSG_CURSED, "The spell fails; your %s is now fragile", o_name);
+			msgt(MSG_CURSED, "The spell fails; your %s is now fragile.", o_name);
 			of_on(obj->flags, OF_FRAGILE);
 			player_learn_flag(player, OF_FRAGILE);
 		} else if (one_in_(4)) {
@@ -268,6 +268,8 @@ static bool uncurse_object(struct object *obj, int strength)
 				square_excise_object(cave, obj->iy, obj->ix, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
+				square_note_spot(cave, player->py, player->px);
+				square_light_spot(cave, player->py, player->px);
 			}
 		} else {
 			/* Non-destructive failure */
@@ -3069,8 +3071,10 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[y][x].info, SQUARE_ROOM);
 			sqinfo_off(cave->squares[y][x].info, SQUARE_VAULT);
 
-			/* Lose light */
+			/* Forget completely */
 			sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+			sqinfo_off(cave->squares[y][x].info, SQUARE_SEEN);
+			square_forget(cave, y, x);
 			square_light_spot(cave, y, x);
 
 			/* Deal with player later */
@@ -3098,6 +3102,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				}
 
 				/* Delete objects */
+				square_excise_pile(player->cave, y, x);
 				square_excise_pile(cave, y, x);
 				square_destroy(cave, y, x);
 			}
@@ -3183,8 +3188,11 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_ROOM);
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
 
-			/* Lose light */
+			/* Forget completely */
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
+			sqinfo_off(cave->squares[yy][xx].info, SQUARE_SEEN);
+			square_forget(cave, yy, xx);
+			square_light_spot(cave, yy, xx);
 
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;

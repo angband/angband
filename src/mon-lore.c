@@ -201,6 +201,44 @@ int blow_color(struct player *p, int blow_idx)
 		} else {
 			return blow->lore_attr;
 		}
+	} else if (streq(blow->effect_type, "drain")) {
+		int i;
+		bool found = false;
+		for (i = 0; i < z_info->pack_size; i++) {
+			struct object *obj = player->upkeep->inven[i];
+			if (obj && tval_can_have_charges(obj) && obj->pval) {
+				found = true;
+				break;
+			}
+		}
+		if (found) {
+			return blow->lore_attr;
+		} else {
+			return blow->lore_attr_resist;
+		}
+	} else if (streq(blow->effect_type, "eat-food")) {
+		int i;
+		bool found = false;
+		for (i = 0; i < z_info->pack_size; i++) {
+			struct object *obj = player->upkeep->inven[i];
+			if (obj && tval_is_edible(obj)) {
+				found = true;
+				break;
+			}
+		}
+		if (found) {
+			return blow->lore_attr;
+		} else {
+			return blow->lore_attr_resist;
+		}
+	} else if (streq(blow->effect_type, "eat-light")) {
+		int light_slot = slot_by_name(player, "light");
+		struct object *obj = slot_object(player, light_slot);
+		if (obj && obj->timeout && !of_has(obj->flags, OF_NO_FUEL)) {
+			return blow->lore_attr;
+		} else {
+			return blow->lore_attr_resist;
+		}
 	} else if (streq(blow->effect_type, "element")) {
 		if (p->known_state.el_info[blow->resist].res_level > 0) {
 			return blow->lore_attr_resist;

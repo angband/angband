@@ -829,7 +829,7 @@ struct chunk *labyrinth_gen(struct player *p) {
 
     /* Size of the actual labyrinth part must be odd. */
     /* NOTE: these are not the actual dungeon size, but rather the size of the
-     * area we're genearting a labyrinth in (which doesn't count the enclosing
+     * area we're generating a labyrinth in (which doesn't count the enclosing
      * outer walls. */
     int h = 15 + randint0(p->depth / 10) * 2;
     int w = 51 + randint0(p->depth / 10) * 2;
@@ -883,8 +883,10 @@ struct chunk *labyrinth_gen(struct player *p) {
     alloc_objects(c, SET_BOTH, TYP_GOOD, randint1(2), c->depth,
 				  ORIGIN_LABYRINTH);
 
-    /* If we want the players to see the maze layout, do that now */
-    if (known) wiz_light(c, false);
+    /* Notify if we want the player to see the maze layout */
+    if (known) {
+		player->upkeep->light_level = true;
+	}
 
     return c;
 }
@@ -2103,7 +2105,7 @@ void connect_caverns(struct chunk *c, struct loc floor[])
     int *counts = mem_zalloc(size * sizeof(int));
 	int color_of_floor[4];
 
-	/* Color the regions, find which cavern os which color */
+	/* Color the regions, find which cavern is which color */
     build_colors(c, colors, counts, true);
 	for (i = 0; i < 4; i++) {
 		int spot = yx_to_i(floor[i].y, floor[i].x, c->width);
@@ -2178,14 +2180,15 @@ struct chunk *hard_centre_gen(struct player *p)
 
 	/* Left */
 	chunk_copy(c, left_cavern, 0, 0, 0, false);
-	find_empty_range(c, &y, 0, z_info->dungeon_hgt, &x, 0, side_cavern_wid);
+	find_empty_range(c, &y, 0, z_info->dungeon_hgt - 1, &x, 0,
+					 side_cavern_wid - 1);
 	floor[0].y = y;
 	floor[0].x = x;
 
 	/* Upper */
 	chunk_copy(c, upper_cavern, 0, side_cavern_wid, 0, false);
-	find_empty_range(c, &y, 0, centre_cavern_hgt, &x, side_cavern_wid,
-					 side_cavern_wid + centre_cavern_wid);
+	find_empty_range(c, &y, 0, centre_cavern_hgt - 1, &x, side_cavern_wid,
+					 side_cavern_wid + centre_cavern_wid - 1);
 	floor[1].y = y;
 	floor[1].x = x;
 
@@ -2194,15 +2197,17 @@ struct chunk *hard_centre_gen(struct player *p)
 
 	/* Lower */
 	chunk_copy(c, lower_cavern, lower_cavern_ypos, side_cavern_wid, 0, false);
-	find_empty_range(c, &y, lower_cavern_ypos, z_info->dungeon_hgt, &x,
-					 side_cavern_wid, side_cavern_wid + centre_cavern_wid);
+	find_empty_range(c, &y, lower_cavern_ypos, z_info->dungeon_hgt - 1, &x,
+					 side_cavern_wid, side_cavern_wid + centre_cavern_wid - 1);
 	floor[3].y = y;
 	floor[3].x = x;
 
 	/* Right */
-	chunk_copy(c, right_cavern, 0, side_cavern_wid + centre_cavern_wid, 0, false);
-	find_empty_range(c, &y, 0, z_info->dungeon_hgt, &x,
-					 side_cavern_wid + centre_cavern_wid, z_info->dungeon_wid);
+	chunk_copy(c, right_cavern, 0, side_cavern_wid + centre_cavern_wid, 0,
+			   false);
+	find_empty_range(c, &y, 0, z_info->dungeon_hgt - 1, &x,
+					 side_cavern_wid + centre_cavern_wid,
+					 z_info->dungeon_wid - 1);
 	floor[2].y = y;
 	floor[2].x = x;
 

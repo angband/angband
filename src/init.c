@@ -2147,8 +2147,6 @@ static enum parser_error parse_class_info(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	c->c_mhp = parser_getint(p, "mhp");
 	c->c_exp = parser_getint(p, "exp");
-	c->sense_base = parser_getint(p, "sense-base");
-	c->sense_div = parser_getint(p, "sense-div");
 	return PARSE_ERROR_NONE;
 }
 
@@ -2459,8 +2457,7 @@ struct parser *init_parse_class(void) {
 	parser_reg(p, "skill-shoot int base int incr", parse_class_skill_shoot);
 	parser_reg(p, "skill-throw int base int incr", parse_class_skill_throw);
 	parser_reg(p, "skill-dig int base int incr", parse_class_skill_dig);
-	parser_reg(p, "info int mhp int exp int sense-base int sense-div",
-			   parse_class_info);
+	parser_reg(p, "info int mhp int exp", parse_class_info);
 	parser_reg(p, "attack int max-attacks int min-weight int att-multiply",
 			   parse_class_attack);
 	parser_reg(p, "title str title", parse_class_title);

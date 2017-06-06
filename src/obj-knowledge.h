@@ -76,6 +76,7 @@ void update_player_object_knowledge(struct player *p);
 
 void player_learn_flag(struct player *p, int flag);
 void player_learn_curse(struct player *p, struct curse *curse);
+void player_learn_innate(struct player *p);
 void player_learn_everything(struct player *p);
 
 void equip_learn_on_defend(struct player *p);

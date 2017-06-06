@@ -20,7 +20,7 @@
 # skill-shoot:base:increment
 # skill-throw:base:increment
 # skill-dig:base:increment
-# info:mhp:exp:sense_base:sense_div
+# info:mhp:exp
 # attack:max_attacks:min_weight:att_multiply
 # title:title
 # equip:tval:sval:min:max
@@ -48,8 +48,7 @@
 # every ten levels.
 
 # 'info' is for extra info - max. hitpoints gained per level, experience
-# factor in percent, base chance for pseudo-id (smaller is better),
-# level dependent divisor for the pseudo-id chance.
+# factor in percent.
 
 # 'attack' is for attack info - maximum possible number of attacks, minimum
 # weapon weight for calculating the number of attacks, multiplier for
@@ -108,7 +107,7 @@ skill-melee:70:45
 skill-shoot:55:45
 skill-throw:55:45
 skill-dig:0:0
-info:9:0:7000:40
+info:9:0
 attack:6:30:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -116,7 +115,7 @@ equip:potion:Berserk Strength:1:1
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:BRAVERY_30 | PSEUDO_ID_IMPROV | NO_MANA
+flags:BRAVERY_30 | NO_MANA
 title:Rookie
 title:Soldier
 title:Swordsman
@@ -142,7 +141,7 @@ skill-melee:34:15
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
-info:0:30:170000:5
+info:0:30
 attack:4:40:2
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -604,7 +603,7 @@ skill-melee:48:20
 skill-shoot:35:20
 skill-throw:35:20
 skill-dig:0:0
-info:2:20:15000:40
+info:2:20
 attack:4:35:3
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -612,7 +611,7 @@ equip:prayer book:[Beginners Handbook]:1:1
 equip:hafted:Mace:1:1
 equip:potion:Cure Serious Wounds:2:2
 equip:scroll:Word of Recall:1:1
-flags:BLESS_WEAPON | ZERO_FAIL | PSEUDO_ID_IMPROV
+flags:BLESS_WEAPON | ZERO_FAIL
 title:Believer
 title:Acolyte
 title:Adept
@@ -662,15 +661,6 @@ expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
-
-#spell:Find Traps, Doors & Stairs:3:3:27:2
-#effect:DETECT_TRAPS
-#dice:22d40
-#effect:DETECT_DOORS
-#dice:22d40
-#effect:DETECT_STAIRS
-#dice:22d40
-#desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Slow Poison:3:3:28:4
 effect:TIMED_DEC:POISONED:2
@@ -1080,7 +1070,7 @@ skill-melee:60:40
 skill-shoot:66:30
 skill-throw:66:30
 skill-dig:0:0
-info:6:25:10000:40
+info:6:25
 attack:5:30:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1088,7 +1078,7 @@ equip:magic book:[Magic for Beginners]:1:1
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
+flags:CUMBER_GLOVE | CHOOSE_SPELLS
 title:Vagabond
 title:Cutpurse
 title:Footpad
@@ -1136,13 +1126,6 @@ spell:Detect Stairs:8:3:50:1
 effect:DETECT_STAIRS
 dice:44d60
 desc:Detects all stairs in a wide area.
-
-#spell:Magic Mapping:8:3:50:1
-#effect:MAP_AREA
-#dice:$Dd$S
-#expr:D:PLAYER_LEVEL:/ 20 + 1 * 11
-#expr:S:PLAYER_LEVEL:/ 20 + 1 * 11
-#desc:Maps the nearby area.
 
 spell:Stinking Cloud:21:12:50:10
 effect:BALL:POIS:2
@@ -1409,7 +1392,7 @@ skill-melee:56:30
 skill-shoot:72:45
 skill-throw:72:45
 skill-dig:0:0
-info:4:30:20000:40
+info:4:30
 attack:5:35:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1418,7 +1401,7 @@ equip:sword:Dagger:1:1
 equip:bow:Short Bow:1:1
 equip:arrow:Arrow:15:20
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
+flags:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
 title:Scout
@@ -1479,13 +1462,6 @@ spell:Detect Stairs:5:4:45:2
 effect:DETECT_STAIRS
 dice:44d60
 desc:Detects all stairs in a wide area.
-
-#spell:Magic Mapping:5:4:45:2
-#effect:MAP_AREA
-#dice:$Dd$S
-#expr:D:PLAYER_LEVEL:/ 20 + 1 * 11
-#expr:S:PLAYER_LEVEL:/ 20 + 1 * 11
-#desc:Maps the nearby area.
 
 spell:Stinking Cloud:7:5:40:3
 effect:BALL:POIS:2
@@ -1857,7 +1833,7 @@ skill-melee:68:35
 skill-shoot:40:30
 skill-throw:40:30
 skill-dig:0:0
-info:6:35:60000:40
+info:6:35
 attack:5:30:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1865,7 +1841,6 @@ equip:prayer book:[Beginners Handbook]:1:1
 equip:sword:Dagger:1:1
 equip:scroll:Protection from Evil:1:1
 equip:scroll:Word of Recall:1:1
-flags:PSEUDO_ID_IMPROV
 title:Gallant
 title:Keeper
 title:Protector
@@ -1915,15 +1890,6 @@ expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
-
-#spell:Find Traps, Doors & Stairs:7:5:40:3
-#effect:DETECT_TRAPS
-#dice:22d40
-#effect:DETECT_DOORS
-#dice:22d40
-#effect:DETECT_STAIRS
-#dice:22d40
-#desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Slow Poison:9:7:40:3
 effect:TIMED_DEC:POISONED:2

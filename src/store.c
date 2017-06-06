@@ -872,7 +872,7 @@ struct object *store_carry(struct store *store, struct object *obj)
 	if (value <= 0)
 		return NULL;
 
-	/* Erase the inscription & pseudo-ID bit */
+	/* Erase the inscription */
 	obj->note = 0;
 	known_obj->note = 0;
 
@@ -1745,17 +1745,6 @@ bool store_will_buy_tester(const struct object *obj)
 	struct store *store = store_at(cave, player->py, player->px);
 	if (!store) return false;
 
-	if (OPT(player, birth_no_selling)) {
-		if (tval_can_have_charges(obj)) {
-			if (!store_can_carry(store, obj->kind) &&
-				object_flavor_is_aware(obj))
-				return false;
-		} else {
-			if (object_flavor_is_aware(obj))
-				return false;
-		}
-	}
-
 	return store_will_buy(store, obj);
 }
 
@@ -1835,8 +1824,12 @@ void do_cmd_sell(struct command *cmd)
 	dummy = object_value(&dummy_item, amt);
 
 	/* Know flavor of consumables */
-	if (obj->kind->flavor && !tval_is_jewelry(obj))
-		object_flavor_aware(obj);
+	object_flavor_aware(obj);
+	obj->known->effect = obj->effect;
+	while (!object_fully_known(obj)) {
+		object_learn_unknown_rune(player, obj);
+		player_know_object(player, obj);
+	}
 
 	/* Take a proper copy of the now known-about object. */
 	sold_item = gear_object_for_use(obj, amt, false, &none_left);

@@ -379,6 +379,7 @@ bool square_isplayer(struct chunk *c, int y, int x) {
  */
 bool square_isknown(struct chunk *c, int y, int x) {
 	if (c != cave) return false;
+	if (player->cave == NULL) return false;
 	return player->cave->squares[y][x].feat == FEAT_NONE ? false : true;
 }
 
@@ -388,6 +389,7 @@ bool square_isknown(struct chunk *c, int y, int x) {
  */
 bool square_isnotknown(struct chunk *c, int y, int x) {
 	if (c != cave) return false;
+	if (player->cave == NULL) return true;
 	return (player->cave->squares[y][x].feat != c->squares[y][x].feat);
 }
 

@@ -290,9 +290,6 @@ struct player_class {
 	int min_weight;				/**< Minimum weapon weight for calculations */
 	int att_multiply;			/**< Multiplier for attack calculations */
 
-	int sense_base;				/**< Base pseudo-id value */
-	int sense_div;				/**< Pseudo-id divisor */
-
 	struct start_item *start_items; /**< Starting inventory */
 
 	struct class_magic magic;	/**< Magic spells */
@@ -421,21 +418,22 @@ struct player_upkeep {
 							 * inventory listings when offering
 							 * a choice.  See obj-ui.c */
 
-	bool create_up_stair;		/* Create up stair on next level */
-	bool create_down_stair;		/* Create down stair on next level */
+	bool create_up_stair;	/* Create up stair on next level */
+	bool create_down_stair;	/* Create down stair on next level */
+	bool light_level;		/* Create down stair on next level */
 
-	int resting;				/* Resting counter */
+	int resting;			/* Resting counter */
 
 	int running;				/* Running counter */
 	bool running_withpathfind;	/* Are we using the pathfinder ? */
 	bool running_firststep;		/* Is this our first step running? */
 
-	struct object **quiver;		/* Quiver objects */
-	struct object **inven;		/* Inventory objects */
-	int total_weight;			/* Total weight being carried */
-	int inven_cnt;				/* Number of items in inventory */
-	int equip_cnt;				/* Number of items in equipment */
-	int quiver_cnt;				/* Number of items in the quiver */
+	struct object **quiver;	/* Quiver objects */
+	struct object **inven;	/* Inventory objects */
+	int total_weight;		/* Total weight being carried */
+	int inven_cnt;			/* Number of items in inventory */
+	int equip_cnt;			/* Number of items in equipment */
+	int quiver_cnt;			/* Number of items in the quiver */
 };
 
 /**

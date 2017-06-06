@@ -239,7 +239,7 @@ void square_note_spot(struct chunk *c, int y, int x)
  */
 void square_light_spot(struct chunk *c, int y, int x)
 {
-	if (c == cave) {
+	if ((c == cave) && player->cave) {
 		player->upkeep->redraw |= PR_ITEMLIST;
 		event_signal_point(EVENT_MAP, x, y);
 	}

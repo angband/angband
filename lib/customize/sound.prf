@@ -297,8 +297,8 @@ sound:CURSED:pls_man_oooh
 # You notice something (generic notice)
 sound:NOTICE:id_bad_hmm
 
-# You notice something about your equipment or inventory.
-sound:PSEUDOID:id_good_hmm
+# Learn a rune.
+sound:RUNE:id_good_hmm
 
 # You successfully cast a spell.
 sound:SPELL:plm_spell1 plm_spell2 plm_spell3

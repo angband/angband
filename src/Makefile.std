@@ -67,7 +67,7 @@ LIBS = -lm
 
 # Extract CFLAGS and LIBS from the system definitions
 MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_sdl) $(SOUND_sdl) $(SYS_stats)
-CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
+CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES) -DPRIVATE_USER_PATH="~/.angband"
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 

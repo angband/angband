@@ -1214,7 +1214,7 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 
 	/* Give a message */
 	if (message)
-		msg("You have learned the rune of %s.", rune_name(i));
+		msgt(MSG_RUNE, "You have learned the rune of %s.", rune_name(i));
 
 	/* Update knowledge */
 	update_player_object_knowledge(p);
@@ -1238,6 +1238,31 @@ void player_learn_curse(struct player *p, struct curse *curse)
 	if (index >= 0) {
 		player_learn_rune(p, index, true);
 	}
+	update_player_object_knowledge(p);
+}
+
+/**
+ * Learn all innate runes
+ *
+ * \param p is the player
+ */
+void player_learn_innate(struct player *p)
+{
+	int element, flag;
+
+	/* Elements */
+	for (element = 0; element < ELEM_MAX; element++) {
+		if (p->race->el_info[element].res_level != 0) {
+			player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), false);
+		}
+	}
+
+	/* Flags */
+	for (flag = of_next(p->race->flags, FLAG_START); flag != FLAG_END;
+		 flag = of_next(p->race->flags, flag + 1)) {
+		player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), false);
+	}
+
 	update_player_object_knowledge(p);
 }
 
@@ -1625,10 +1650,6 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	object_curses_find_to_d(p, obj);
 	object_curses_find_flags(p, obj, obvious_mask);
 	object_curses_find_modifiers(p, obj);
-
-	/* If the object isn't fully known, known object gets the obvious flags */
-	if (!object_fully_known(obj))
-		of_union(obj->known->flags, obvious_mask);
 }
 
 /**

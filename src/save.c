@@ -606,8 +606,8 @@ void wr_misc(void)
 	wr_s32b(turn);
 
 	/* Property knowledge */
-	if (player->is_dead)
-		return;
+	//if (player->is_dead)
+	//	return;
 
 	/* Flags */
 	for (i = 0; i < OF_SIZE; i++)
@@ -714,9 +714,6 @@ static void wr_gear_aux(struct object *gear)
 
 void wr_gear(void)
 {
-	if (player->is_dead)
-		return;
-
 	wr_gear_aux(player->gear);
 	wr_gear_aux(player->gear_k);
 }
@@ -725,9 +722,6 @@ void wr_gear(void)
 void wr_stores(void)
 {
 	int i;
-
-	if (player->is_dead)
-		return;
 
 	wr_u16b(MAX_STORES);
 	for (i = 0; i < MAX_STORES; i++) {
@@ -840,6 +834,9 @@ static void wr_objects_aux(struct chunk *c)
 	int y, x, i;
 	struct object *dummy;
 
+	if (player->is_dead)
+		return;
+	
 	/* Write the objects */
 	wr_u16b(c->obj_max);
 	for (y = 0; y < c->height; y++) {
@@ -878,6 +875,9 @@ static void wr_monsters_aux(struct chunk *c)
 {
 	int i;
 
+	if (player->is_dead)
+		return;
+
 	/* Total monsters */
 	wr_u16b(cave_monster_max(c));
 
@@ -893,6 +893,9 @@ static void wr_traps_aux(struct chunk *c)
 {
     int x, y;
 	struct trap *dummy;
+
+    if (player->is_dead)
+		return;
 
     wr_byte(TRF_SIZE);
 
@@ -914,15 +917,15 @@ static void wr_traps_aux(struct chunk *c)
 
 void wr_dungeon(void)
 {
-	if (player->is_dead)
-		return;
-
 	/* Dungeon specific info follows */
 	wr_u16b(player->depth);
 	wr_u16b(daycount);
 	wr_u16b(player->py);
 	wr_u16b(player->px);
 	wr_byte(SQUARE_SIZE);
+
+	if (player->is_dead)
+		return;
 
 	/* Write caves */
 	wr_dungeon_aux(cave);
@@ -935,27 +938,18 @@ void wr_dungeon(void)
 
 void wr_objects(void)
 {
-	if (player->is_dead)
-		return;
-
 	wr_objects_aux(cave);
 	wr_objects_aux(player->cave);
 }
 
 void wr_monsters(void)
 {
-	if (player->is_dead)
-		return;
-
 	wr_monsters_aux(cave);
 	wr_monsters_aux(player->cave);
 }
 
 void wr_traps(void)
 {
-	if (player->is_dead)
-		return;
-
 	wr_traps_aux(cave);
 	wr_traps_aux(player->cave);
 }
@@ -967,8 +961,8 @@ void wr_chunks(void)
 {
 	int j;
 
-	if (player->is_dead)
-		return;
+	//if (player->is_dead)
+	//	return;
 
 	wr_u16b(chunk_list_max);
 
@@ -997,9 +991,6 @@ void wr_history(void)
 
 	struct history_info *history_list;
 	u32b length = history_get_list(player, &history_list);
-
-	if (player->is_dead)
-		return;
 
 	wr_byte(HIST_SIZE);
 	wr_u32b(length);

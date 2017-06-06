@@ -331,6 +331,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		s2 = "";
 		s3 = "";
 
+		/* Bail if looking at a forbidden grid */
+		if (!square_in_bounds(cave, y, x)) {
+			break;
+		}
 
 		/* The player */
 		if (cave->squares[y][x].mon < 0) {

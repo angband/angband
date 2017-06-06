@@ -1141,6 +1141,9 @@ void do_cmd_accept_character(struct command *cmd)
 	player->obj_k->to_h = 1;
 	player->obj_k->to_d = 1;
 
+	/* Player learns innate runes */
+	player_learn_innate(player);
+
 	/* Initialise the stores */
 	store_reset();
 
