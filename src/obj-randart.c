@@ -1394,8 +1394,6 @@ void artifact_prep(struct artifact *art, const struct object_kind *kind,
 			file_putf(log_file, "Assigned basic stats, AC bonus: %d\n",
 					  art->to_a);
 			break;
-		case TV_RING:
-		case TV_AMULET:
 		case TV_LIGHT:
 			of_off(art->flags, OF_TAKES_FUEL);
 			of_off(art->flags, OF_BURNS_OUT);
@@ -1404,6 +1402,8 @@ void artifact_prep(struct artifact *art, const struct object_kind *kind,
 				art->modifiers[OBJ_MOD_LIGHT] = 3;
 			}
 			break;
+		case TV_RING:
+		case TV_AMULET:
 		default:
 			break;
 	}

@@ -662,15 +662,6 @@ desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
-#spell:Find Traps, Doors & Stairs:3:3:27:2
-#effect:DETECT_TRAPS
-#dice:22d40
-#effect:DETECT_DOORS
-#dice:22d40
-#effect:DETECT_STAIRS
-#dice:22d40
-#desc:Detects all traps, doors, and stairs in the immediate area.
-
 spell:Slow Poison:3:3:28:4
 effect:TIMED_DEC:POISONED:2
 desc:Halves the remaining duration of any current poisoning.
@@ -1136,13 +1127,6 @@ effect:DETECT_STAIRS
 dice:44d60
 desc:Detects all stairs in a wide area.
 
-#spell:Magic Mapping:8:3:50:1
-#effect:MAP_AREA
-#dice:$Dd$S
-#expr:D:PLAYER_LEVEL:/ 20 + 1 * 11
-#expr:S:PLAYER_LEVEL:/ 20 + 1 * 11
-#desc:Maps the nearby area.
-
 spell:Stinking Cloud:21:12:50:10
 effect:BALL:POIS:2
 dice:$B
@@ -1478,13 +1462,6 @@ spell:Detect Stairs:5:4:45:2
 effect:DETECT_STAIRS
 dice:44d60
 desc:Detects all stairs in a wide area.
-
-#spell:Magic Mapping:5:4:45:2
-#effect:MAP_AREA
-#dice:$Dd$S
-#expr:D:PLAYER_LEVEL:/ 20 + 1 * 11
-#expr:S:PLAYER_LEVEL:/ 20 + 1 * 11
-#desc:Maps the nearby area.
 
 spell:Stinking Cloud:7:5:40:3
 effect:BALL:POIS:2
@@ -1913,15 +1890,6 @@ expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
-
-#spell:Find Traps, Doors & Stairs:7:5:40:3
-#effect:DETECT_TRAPS
-#dice:22d40
-#effect:DETECT_DOORS
-#dice:22d40
-#effect:DETECT_STAIRS
-#dice:22d40
-#desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Slow Poison:9:7:40:3
 effect:TIMED_DEC:POISONED:2
