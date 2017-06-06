@@ -606,8 +606,8 @@ void wr_misc(void)
 	wr_s32b(turn);
 
 	/* Property knowledge */
-	if (player->is_dead)
-		return;
+	//if (player->is_dead)
+	//	return;
 
 	/* Flags */
 	for (i = 0; i < OF_SIZE; i++)
@@ -895,7 +895,7 @@ static void wr_traps_aux(struct chunk *c)
 	struct trap *dummy;
 
     if (player->is_dead)
-	return;
+		return;
 
     wr_byte(TRF_SIZE);
 
@@ -917,15 +917,15 @@ static void wr_traps_aux(struct chunk *c)
 
 void wr_dungeon(void)
 {
-	if (player->is_dead)
-		return;
-
 	/* Dungeon specific info follows */
 	wr_u16b(player->depth);
 	wr_u16b(daycount);
 	wr_u16b(player->py);
 	wr_u16b(player->px);
 	wr_byte(SQUARE_SIZE);
+
+	if (player->is_dead)
+		return;
 
 	/* Write caves */
 	wr_dungeon_aux(cave);
@@ -961,8 +961,8 @@ void wr_chunks(void)
 {
 	int j;
 
-	if (player->is_dead)
-		return;
+	//if (player->is_dead)
+	//	return;
 
 	wr_u16b(chunk_list_max);
 

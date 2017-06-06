@@ -900,8 +900,8 @@ int rd_misc(void)
 	/* Current turn */
 	rd_s32b(&turn);
 
-	if (player->is_dead)
-		return 0;
+	//if (player->is_dead)
+	//	return 0;
 
 	/* Handle randart file parsing */
 	if (OPT(player, birth_randarts)) {
@@ -1311,6 +1311,10 @@ static int rd_monsters_aux(struct chunk *c)
 	int i;
 	u16b limit;
 
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
+
 	/* Read the monster count */
 	rd_u16b(&limit);
 	if (limit > z_info->level_monster_max) {
@@ -1378,16 +1382,16 @@ int rd_dungeon(void)
 	u16b depth;
 	u16b py, px;
 
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
 	/* Header info */
 	rd_u16b(&depth);
 	rd_u16b(&daycount);
 	rd_u16b(&py);
 	rd_u16b(&px);
 	rd_byte(&square_size);
+
+	/* Only if the player's alive */
+	if (player->is_dead)
+		return 0;
 
 	/* Ignore illegal dungeons */
 	if (depth >= z_info->max_depth) {
@@ -1479,8 +1483,8 @@ int rd_chunks(void)
 	int j;
 	u16b chunk_max;
 
-	if (player->is_dead)
-		return 0;
+	//if (player->is_dead)
+	//	return 0;
 
 	rd_u16b(&chunk_max);
 	for (j = 0; j < chunk_max; j++) {
