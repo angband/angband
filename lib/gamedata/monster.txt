@@ -8,7 +8,7 @@
 
 # === Understanding monster.txt ===
 
-# name: serial number : monster name
+# name: monster name
 # plural: monster name plural (if non-standard)
 # base: template name
 # glyph: symbol
@@ -29,13 +29,11 @@
 # spells: spell type | spell type | etc
 # desc: Description
 # drop: tval : sval : percent drop chance : min : max
-# drop-artifact: name
 # mimic: tval : sval
 # friends: chance: number: name
 # friends-base: chance: number: name
 
-# 'name' indicates the beginning of an entry. The serial number must increase
-# for each new item. Entry 0 is used for the player.
+# 'name' indicates the beginning of an entry.
 
 # 'plural' is for plurals to monster names that can't be handled by normal
 # pluralisation rules (see mon-desc.c for more detail).
@@ -142,9 +140,6 @@
 # 'drop' lines create possible drops for specific monsters. If any L lines are
 # present, the monster will drop *only* items from its L lines. Each item has
 # its percent chance rolled for individually.
-
-# 'drop-artifact' lines force a specific artifact to drop on death. Setting this
-# on a non-UNIQUE monster is dangerous.
 
 # 'friends' lines specify options for what monsters can appear with other
 # monster on creation.  The format is:
