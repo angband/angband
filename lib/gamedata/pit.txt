@@ -246,6 +246,7 @@ obj-rarity:0
 mon-base:person
 color:u
 color:y
+spell-ban:HEAL_KIN
 
 name:Dark elves
 room:1

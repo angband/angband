@@ -1553,7 +1553,7 @@ friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
 friends:50:1d2:Same
-desc:An adventurer both devoutly religious and skillful in combat.
+desc:A healer of wounds.
 
 name:blue jelly
 plural:blue jellies
