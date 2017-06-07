@@ -451,7 +451,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 					int snd)
 {
 	struct effect *effect = object_effect(obj);
-	bool ident = false, used = false;
+	bool ident = false, used = false, can_use = true;
 	bool was_aware;
 	bool none_left = false;
 	int dir = 5;
@@ -476,8 +476,13 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Verify effect */
 	assert(effect);
 
-	/* Check for use if necessary, and execute the effect */
-	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(obj)) {
+	/* Check for use if necessary */
+	if ((use == USE_CHARGE) || (use == USE_TIMEOUT)) {
+		can_use = check_devices(obj);
+	}
+
+	/* Execute the effect */
+	if (can_use) {
 		int beam = beam_chance(obj->tval);
 		int boost, level;
 
@@ -533,7 +538,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 			update_player_object_knowledge(player);
 		} else if (!was_aware && ident) {
 			object_learn_on_use(player, obj);
-		} else {
+		} else if (can_use) {
 			object_flavor_tried(obj);
 		}
 	}
