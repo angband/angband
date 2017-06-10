@@ -418,8 +418,7 @@ void player_update_light(struct player *p)
 /**
  * See how much damage the player will take from damaging terrain
  */
-int player_check_terrain_damage(struct player *p, int y, int x, char *die,
-								size_t len)
+int player_check_terrain_damage(struct player *p, int y, int x)
 {
 	int dam_taken = 0;
 
@@ -434,11 +433,6 @@ int player_check_terrain_damage(struct player *p, int y, int x, char *die,
 		if (player_of_has(p, OF_FEATHER)) {
 			dam_taken /= 2;
 		}
-
-		/* Message */
-		if (die) {
-			my_strcpy(die, "burning to a cinder in lava", len);
-		}
 	}
 
 	return dam_taken;
@@ -449,17 +443,16 @@ int player_check_terrain_damage(struct player *p, int y, int x, char *die,
  */
 void player_take_terrain_damage(struct player *p, int y, int x)
 {
-	char death_message[80];
-	int dam_taken = player_check_terrain_damage(p, y, x, death_message, 80);
+	int dam_taken = player_check_terrain_damage(p, y, x);
 
 	if (!dam_taken) {
 		return;
 	}
 
 	/* Damage the player and inventory */
-	take_hit(player, dam_taken, death_message);
+	take_hit(player, dam_taken, square_feat(cave, y, x)->die_msg);
 	if (square_isfiery(cave, y, x)) {
-		msg("The lava burns you!");
+		msg(square_feat(cave, y, x)->hurt_msg);
 		inven_damage(player, PROJ_FIRE, dam_taken);
 	}
 }

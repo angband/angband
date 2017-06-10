@@ -961,20 +961,21 @@ void move_player(int dir, bool disarm)
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
 		}
-	} else if (square_isfiery(cave, y, x)) {
-		/* Fire-based terrain can burn the player */
+	} else if (square_isdamaging(cave, y, x)) {
+		/* Some terrain can damage the player */
 		bool step = true;
-		int dam_taken = player_check_terrain_damage(player, y, x, NULL, 0);
+		struct feature *feat = square_feat(cave, y, x);
+		int dam_taken = player_check_terrain_damage(player, y, x);
 
 		/* Check if running, or going to cost more than a third of hp */
 		if (player->upkeep->running) {
-			if (!get_check("Lava blocks your path.  Step into it? ")) {
+			if (!get_check(feat->run_msg)) {
 				player->upkeep->running = 0;
 				step = false;
 			}
 		} else {
 			if (dam_taken > player->chp / 3) {
-				step = get_check("The lava will scald you!  Really step in? ");
+				step = get_check(feat->walk_msg);
 			}
 		}
 

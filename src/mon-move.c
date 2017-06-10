@@ -389,9 +389,9 @@ static bool find_safety(struct chunk *c, struct monster *mon)
 			if (c->noise.grids[y][x] > c->noise.grids[fy][fx] + 2 * d)
 				continue;
 
-			/* Ignore lava if they can't handle the heat */
-			if (square_isfiery(c, y, x) &&
-				!rf_has(mon->race->flags, RF_IM_FIRE))
+			/* Ignore damaging terrain if they can't handle it */
+			if (square_isdamaging(c, y, x) &&
+				!rf_has(mon->race->flags, square_feat(c, y, x)->resist_flag))
 				continue;
 
 			/* Check for absence of shot (more or less) */
@@ -813,17 +813,21 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 {
 	struct monster_lore *lore = get_lore(mon->race);
 
-	/* Only fiery creatures can handle lava */
-	if (square_isfiery(c, ny, nx) && !rf_has(mon->race->flags, RF_IM_FIRE))
+	/* Only some creatures can handle damaging terrain */
+	if (square_isdamaging(c, ny, nx) &&
+		!rf_has(mon->race->flags, square_feat(c, ny, nx)->resist_flag)) {
 		return false;
+	}
 
 	/* Floor is open? */
-	if (square_ispassable(c, ny, nx))
+	if (square_ispassable(c, ny, nx)) {
 		return true;
+	}
 
 	/* Permanent wall in the way */
-	if (square_iswall(c, ny, nx) && square_isperm(c, ny, nx))
+	if (square_iswall(c, ny, nx) && square_isperm(c, ny, nx)) {
 		return false;
+	}
 
 	/* Normal wall, door, or secret door in the way */
 

@@ -661,6 +661,14 @@ bool square_isfiery(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the cave square can damage the inhabitant - only lava so far
+ */
+bool square_isdamaging(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return feat_is_fiery(c->squares[y][x].feat);
+}
+
+/**
  * True if the cave square doesn't allow monster flow information.
  */
 bool square_isnoflow(struct chunk *c, int y, int x) {

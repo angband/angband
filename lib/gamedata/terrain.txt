@@ -31,6 +31,11 @@
 # priority : display priority on mini-map
 # flags : terrain flags
 # info : shop number : digging
+# walk-msg: warning message - walking
+# run-msg: warning message - running
+# hurt-msg: damage message
+# die-msg: death message
+# resist-flag: monster race flag for resist
 
 # 'name' indicates the beginning of an entry. The serial number must
 # increase for each new feature.
@@ -58,6 +63,18 @@
 # shop if the terrain is a shop entrance, and 0 otherwise.  Digging is an
 # index used to get the difficulty of digging through this type of terrain.
 
+# 'walk-msg' is the warning message for the player on stepping into damaging
+# terrain
+
+# 'run-msg' is the warning message for the player on running into damaging
+# terrain
+
+# 'hurt-msg' is the message the player gets when damaged by terrain
+
+# 'die-msg' is the description if damaging terrain kills the player
+
+# 'resist-flag' is the race flag a monster must have to be able to enter
+# damaging terrain
 
 name:unknown grid
 graphics: :w
@@ -243,6 +260,11 @@ graphics:#:r
 priority:10
 flags:PROJECT | FIERY | PASSABLE | NO_SCENT | BRIGHT
 desc:A fiery pool of glowing lava.  Step in it at your peril!
+walk-msg:The lava will scald you!  Really step in? 
+run-msg:Lava blocks your path.  Step into it? 
+hurt-msg:The lava burns you!
+die-msg:burning to a cinder in lava
+resist-flag:IM_FIRE
 
 name:pile of passable rubble
 graphics:::u

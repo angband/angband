@@ -83,6 +83,61 @@ int test_info0(void *state) {
 	ok;
 }
 
+int test_walk_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "walk-msg:lookout ");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
+	require(streq(f->walk_msg, "lookout "));
+	ok;
+}
+
+int test_run_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "run-msg:lookout! ");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
+	require(streq(f->run_msg, "lookout! "));
+	ok;
+}
+
+int test_hurt_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "hurt-msg:ow!");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
+	require(streq(f->hurt_msg, "ow!"));
+	ok;
+}
+
+int test_die_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "die-msg:aargh");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
+	require(streq(f->die_msg, "aargh"));
+	ok;
+}
+
+int test_resist_flag0(void *state) {
+	enum parser_error r = parser_parse(state, "resist-flag:IM_POIS");
+	struct feature *f;
+
+	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
+	require(f->resist_flag);
+	ok;
+}
+
 const char *suite_name = "parse/f-info";
 struct test tests[] = {
 	{ "name0", test_name0 },
@@ -91,5 +146,10 @@ struct test tests[] = {
 	{ "priority0", test_priority0 },
 	{ "flags0", test_flags0 },
 	{ "info0", test_info0 },
+	{ "walk_msg0", test_walk_msg0 },
+	{ "run_msg0", test_run_msg0 },
+	{ "hurt_msg0", test_hurt_msg0 },
+	{ "die_msg0", test_die_msg0 },
+	{ "resist_flag0", test_resist_flag0 },
 	{ NULL, NULL }
 };

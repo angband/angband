@@ -94,16 +94,22 @@ struct feature {
 
 	struct feature *next;
 
-	char *mimic;    /**< Name of feature to mimic */
-	byte priority; /**< Display priority */
+	char *mimic;	/**< Name of feature to mimic */
+	byte priority;	/**< Display priority */
 
-	byte shopnum;  /**< Which shop does it take you to? */
+	byte shopnum;	/**< Which shop does it take you to? */
 	byte dig;      /**< How hard is it to dig through? */
 
-	bitflag flags[TF_SIZE];    /**< Terrain flags */
+	bitflag flags[TF_SIZE];	/**< Terrain flags */
 
-	byte d_attr;   /**< Default feature attribute */
-	wchar_t d_char;/**< Default feature character */
+	byte d_attr;	/**< Default feature attribute */
+	wchar_t d_char;	/**< Default feature character */
+
+	char *walk_msg;	/**< Message on walking into feature */
+	char *run_msg;	/**< Message on running into feature */
+	char *hurt_msg;	/**< Message on being hurt by feature */
+	char *die_msg;	/**< Message on dying to feature */
+	int resist_flag;/**< Monster resist flag for entering feature */
 };
 
 extern struct feature *f_info;
@@ -312,6 +318,7 @@ bool square_iswall(struct chunk *c, int y, int x);
 bool square_isstrongwall(struct chunk *c, int y, int x);
 bool square_isbright(struct chunk *c, int y, int x);
 bool square_isfiery(struct chunk *c, int y, int x);
+bool square_isdamaging(struct chunk *c, int y, int x);
 bool square_isnoflow(struct chunk *c, int y, int x);
 bool square_isnoscent(struct chunk *c, int y, int x);
 bool square_iswarded(struct chunk *c, int y, int x);
