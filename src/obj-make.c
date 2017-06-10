@@ -487,6 +487,10 @@ void copy_artifact_data(struct object *obj, const struct artifact *art)
 		obj->time = kind->time;
 	}
 
+	/* Fix for artifact lights */
+	of_off(obj->flags, OF_TAKES_FUEL);
+	of_off(obj->flags, OF_BURNS_OUT);
+
 	/* Timeouts are always 0 */
 	obj->timeout = 0;
 
