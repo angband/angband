@@ -241,7 +241,7 @@ desc:surrounded by these kinds of walls and some special rooms are made of them.
 name:lava
 graphics:#:r
 priority:10
-flags:PROJECT | FIERY | PASSABLE | NO_SCENT | NO_FLOW | BRIGHT
+flags:PROJECT | FIERY | PASSABLE | NO_SCENT | BRIGHT
 desc:A fiery pool of glowing lava.  Step in it at your peril!
 
 name:pile of passable rubble

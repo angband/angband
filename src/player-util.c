@@ -34,6 +34,7 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "project.h"
 #include "score.h"
 #include "store.h"
 #include "target.h"
@@ -414,6 +415,54 @@ void player_update_light(struct player *p)
 	p->upkeep->update |= (PU_TORCH);
 }
 
+/**
+ * See how much damage the player will take from damaging terrain
+ */
+int player_check_terrain_damage(struct player *p, int y, int x, char *die,
+								size_t len)
+{
+	int dam_taken = 0;
+
+	if (square_isfiery(cave, y, x)) {
+		int base_dam = 100 + randint1(100);
+		int res = p->state.el_info[ELEM_FIRE].res_level;
+
+		/* Fire damage */
+		dam_taken = adjust_dam(p, ELEM_FIRE, base_dam, RANDOMISE, res);
+
+		/* Feather fall makes one lightfooted. */
+		if (player_of_has(p, OF_FEATHER)) {
+			dam_taken /= 2;
+		}
+
+		/* Message */
+		if (die) {
+			my_strcpy(die, "burning to a cinder in lava", len);
+		}
+	}
+
+	return dam_taken;
+}
+
+/**
+ * Terrain damages the player
+ */
+void player_take_terrain_damage(struct player *p, int y, int x)
+{
+	char death_message[80];
+	int dam_taken = player_check_terrain_damage(p, y, x, death_message, 80);
+
+	if (!dam_taken) {
+		return;
+	}
+
+	/* Damage the player and inventory */
+	take_hit(player, dam_taken, death_message);
+	if (square_isfiery(cave, y, x)) {
+		msg("The lava burns you!");
+		inven_damage(player, PROJ_FIRE, dam_taken);
+	}
+}
 
 /**
  * Return true if the player can cast a spell.
@@ -424,27 +473,24 @@ void player_update_light(struct player *p)
  */
 bool player_can_cast(struct player *p, bool show_msg)
 {
-	if (!p->class->magic.spell_realm)
-	{
-		if (show_msg)
+	if (!p->class->magic.spell_realm) {
+		if (show_msg) {
 			msg("You cannot pray or produce magics.");
-
+		}
 		return false;
 	}
 
-	if (p->timed[TMD_BLIND] || no_light())
-	{
-		if (show_msg)
+	if (p->timed[TMD_BLIND] || no_light()) {
+		if (show_msg) {
 			msg("You cannot see!");
-
+		}
 		return false;
 	}
 
-	if (p->timed[TMD_CONFUSED])
-	{
-		if (show_msg)
+	if (p->timed[TMD_CONFUSED]) {
+		if (show_msg) {
 			msg("You are too confused!");
-
+		}
 		return false;
 	}
 
@@ -463,13 +509,11 @@ bool player_can_study(struct player *p, bool show_msg)
 	if (!player_can_cast(p, show_msg))
 		return false;
 
-	if (!p->upkeep->new_spells)
-	{
+	if (!p->upkeep->new_spells) {
 		if (show_msg) {
 			const char *name = p->class->magic.spell_realm->spell_noun;
 			msg("You cannot learn any new %ss!", name);
 		}
-
 		return false;
 	}
 
@@ -528,11 +572,9 @@ bool player_can_fire(struct player *p, bool show_msg)
 	struct object *obj = equipped_item_by_slot_name(p, "shooting");
 
 	/* Require a usable launcher */
-	if (!obj || !p->state.ammo_tval)
-	{
+	if (!obj || !p->state.ammo_tval) {
 		if (show_msg)
 			msg("You have nothing to fire with.");
-
 		return false;
 	}
 
@@ -550,11 +592,13 @@ bool player_can_refuel(struct player *p, bool show_msg)
 {
 	struct object *obj = equipped_item_by_slot_name(p, "light");
 
-	if (obj && of_has(obj->flags, OF_TAKES_FUEL))
+	if (obj && of_has(obj->flags, OF_TAKES_FUEL)) {
 		return true;
+	}
 
-	if (show_msg)
+	if (show_msg) {
 		msg("Your light cannot be refuelled.");
+	}
 
 	return false;
 }

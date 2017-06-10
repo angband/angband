@@ -103,7 +103,7 @@ void pile_integrity_fail(struct object *pile, struct object *obj, char *file,
 	fail_pile = pile;
 	fail_object = obj;
 	fail_prev = (obj->prev != NULL);
-	fail_prev = (obj->next != NULL);
+	fail_next = (obj->next != NULL);
 	fail_file = file;
 	fail_line = line;
 

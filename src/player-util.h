@@ -54,6 +54,9 @@ s16b modify_stat_value(int value, int amount);
 void player_regen_hp(struct player *p);
 void player_regen_mana(struct player *p);
 void player_update_light(struct player *p);
+int player_check_terrain_damage(struct player *p, int y, int x, char *die,
+								size_t len);
+void player_take_terrain_damage(struct player *p, int y, int x);
 bool player_can_cast(struct player *p, bool show_msg);
 bool player_can_study(struct player *p, bool show_msg);
 bool player_can_read(struct player *p, bool show_msg);
