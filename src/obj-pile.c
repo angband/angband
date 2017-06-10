@@ -139,7 +139,6 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
 		i++;
 #endif
 
-		//assert(obj->prev == prev);
 		if (obj->prev != prev) {
 			pile_integrity_fail(pile, obj, __FILE__, __LINE__);
 		}
@@ -151,7 +150,6 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
 	for (obj = pile; obj; obj = obj->next) {
 		struct object *check;
 		for (check = obj->next; check; check = check->next) {
-			//assert(check->next != obj);
 			if (check->next == obj) {
 				pile_integrity_fail(pile, check, __FILE__, __LINE__);
 			}
@@ -166,8 +164,6 @@ void pile_check_integrity(const char *op, struct object *pile, struct object *hi
  */
 void pile_insert(struct object **pile, struct object *obj)
 {
-	//assert(obj->prev == NULL);
-	//assert(obj->next == NULL);
 	if (obj->prev || obj->next) {
 		pile_integrity_fail(NULL, obj, __FILE__, __LINE__);
 	}
@@ -189,7 +185,6 @@ void pile_insert(struct object **pile, struct object *obj)
  */
 void pile_insert_end(struct object **pile, struct object *obj)
 {
-	//assert(obj->prev == NULL);
 	if (obj->prev) {
 		pile_integrity_fail(NULL, obj, __FILE__, __LINE__);
 	}
@@ -214,7 +209,6 @@ void pile_excise(struct object **pile, struct object *obj)
 	struct object *prev = obj->prev;
 	struct object *next = obj->next;
 
-	//assert(pile_contains(*pile, obj));
 	if (!pile_contains(*pile, obj)) {
 		pile_integrity_fail(*pile, obj, __FILE__, __LINE__);
 	}
@@ -222,14 +216,12 @@ void pile_excise(struct object **pile, struct object *obj)
 
 	/* Special case: unlink top object */
 	if (*pile == obj) {
-		//assert(prev == NULL);	/* Invariant - if it's the top of the pile */
 		if (prev) {
 			pile_integrity_fail(*pile, obj, __FILE__, __LINE__);
 		}
 
 		*pile = next;
 	} else {
-		//assert(obj->prev != NULL);	/* Should definitely have a previous one set */
 		if (obj->prev == NULL) {
 			pile_integrity_fail(*pile, obj, __FILE__, __LINE__);
 		}
@@ -824,7 +816,7 @@ static struct object *floor_get_oldest_ignored(struct chunk *c, int y, int x)
  *
  * Optionally put the object at the top or bottom of the pile
  */
-bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
+bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 {
 	int n = 0;
 	struct object *obj, *ignore = floor_get_oldest_ignored(c, y, x);
@@ -839,6 +831,11 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 		if (object_similar(obj, drop, OSTACK_FLOOR)) {
 			/* Combine the items */
 			object_absorb(obj, drop);
+
+			/* Don't mention if ignored */
+			if (ignore_item_ok(obj)) {
+				*note = false;
+			}
 
 			/* Result */
 			return true;
@@ -855,8 +852,9 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 			square_excise_object(c, y, x, ignore);
 			delist_object(c, ignore);
 			object_delete(&ignore);
-		} else
+		} else {
 			return false;
+		}
 	}
 
 	/* Location */
@@ -866,11 +864,8 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	/* Forget monster */
 	drop->held_m_idx = 0;
 
-	/* Link to the first or last object in the pile */
-	if (last)
-		pile_insert_end(&c->squares[y][x].obj, drop);
-	else
-		pile_insert(&c->squares[y][x].obj, drop);
+	/* Link to the first object in the pile */
+	pile_insert(&c->squares[y][x].obj, drop);
 
 	/* Record in the level list */
 	list_object(c, drop);
@@ -1040,7 +1035,7 @@ void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 
 	/* Find the best grid and drop the item, destroying if there's no space */
 	drop_find_grid(*dropped, &best_y, &best_x);
-	if (floor_carry(c, best_y, best_x, *dropped, false)) {
+	if (floor_carry(c, best_y, best_x, *dropped, &dont_ignore)) {
 		sound(MSG_DROP);
 		if (dont_ignore && (c->squares[best_y][best_x].mon < 0)) {
 			msg("You feel something roll beneath your feet.");

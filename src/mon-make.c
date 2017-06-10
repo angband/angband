@@ -826,6 +826,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 		struct object_kind *kind = new_mon->race->mimic_kinds->kind;
 		struct monster_mimic *mimic_kind;
 		int i = 1;
+		bool dummy = true;
 
 		/* Pick a random object kind to mimic */
 		for (mimic_kind = new_mon->race->mimic_kinds;
@@ -851,7 +852,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 		new_mon->mimicked_obj = obj;
 
 		/* Put the object on the floor if it goes, otherwise no mimicry */
-		if (floor_carry(c, y, x, obj, false)) {
+		if (floor_carry(c, y, x, obj, &dummy)) {
 			list_object(c, obj);
 		} else {
 			/* Clear the mimicry */

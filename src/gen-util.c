@@ -438,6 +438,7 @@ void place_object(struct chunk *c, int y, int x, int level, bool good,
 {
     s32b rating = 0;
     struct object *new_obj;
+	bool dummy = true;
 
     if (!square_in_bounds(c, y, x)) return;
     if (!square_canputitem(c, y, x)) return;
@@ -449,17 +450,21 @@ void place_object(struct chunk *c, int y, int x, int level, bool good,
     new_obj->origin_depth = c->depth;
 
     /* Give it to the floor */
-    if (!floor_carry(c, y, x, new_obj, false)) {
-		if (new_obj->artifact)
+    if (!floor_carry(c, y, x, new_obj, &dummy)) {
+		if (new_obj->artifact) {
 			new_obj->artifact->created = false;
+		}
 		object_delete(&new_obj);
 		return;
     } else {
 		list_object(c, new_obj);
-		if (new_obj->artifact)
+		if (new_obj->artifact) {
 			c->good_item = true;
-		if (rating > 2500000)
-			rating = 2500000; /* avoid overflows */
+		}
+		/* Avoid overflows */
+		if (rating > 2500000) {
+			rating = 2500000;
+		}
 		c->obj_rating += (rating / 100) * (rating / 100);
     }
 }
@@ -476,6 +481,7 @@ void place_object(struct chunk *c, int y, int x, int level, bool good,
 void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 {
     struct object *money = NULL;
+	bool dummy = true;
 
     if (!square_in_bounds(c, y, x)) return;
     if (!square_canputitem(c, y, x)) return;
@@ -484,10 +490,11 @@ void place_gold(struct chunk *c, int y, int x, int level, byte origin)
     money->origin = origin;
     money->origin_depth = level;
 
-    if (!floor_carry(c, y, x, money, false))
+    if (!floor_carry(c, y, x, money, &dummy)) {
 		object_delete(&money);
-	else
+	} else {
 		list_object(c, money);
+	}
 }
 
 

@@ -72,7 +72,8 @@ void object_copy_amt(struct object *dest, struct object *src, int amt);
 struct object *object_split(struct object *src, int amt);
 struct object *floor_object_for_use(struct object *obj, int num, bool message,
 									bool *none_left);
-bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last);
+bool floor_carry(struct chunk *c, int y, int x, struct object *drop,
+				 bool *note);
 void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 			   int x, bool verbose);
 void push_object(int y, int x);
