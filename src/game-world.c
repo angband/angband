@@ -872,7 +872,6 @@ void on_new_level(void)
 	event_signal(EVENT_NEW_LEVEL_DISPLAY);
 
 	/* Update player */
-	update_player_object_knowledge(player);
 	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS | PU_INVEN);
 	player->upkeep->notice |= (PN_COMBINE);
 	notice_stuff(player);

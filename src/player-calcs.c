@@ -1748,15 +1748,23 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			of_union(collect_f, f);
 
 			/* Apply modifiers */
-			state->stat_add[STAT_STR] += obj->modifiers[OBJ_MOD_STR];
-			state->stat_add[STAT_INT] += obj->modifiers[OBJ_MOD_INT];
-			state->stat_add[STAT_WIS] += obj->modifiers[OBJ_MOD_WIS];
-			state->stat_add[STAT_DEX] += obj->modifiers[OBJ_MOD_DEX];
-			state->stat_add[STAT_CON] += obj->modifiers[OBJ_MOD_CON];
-			state->skills[SKILL_STEALTH] += obj->modifiers[OBJ_MOD_STEALTH];
-			state->skills[SKILL_SEARCH] += (obj->modifiers[OBJ_MOD_SEARCH] * 5);
+			state->stat_add[STAT_STR] += obj->modifiers[OBJ_MOD_STR]
+				* p->obj_k->modifiers[OBJ_MOD_STR];
+			state->stat_add[STAT_INT] += obj->modifiers[OBJ_MOD_INT]
+				* p->obj_k->modifiers[OBJ_MOD_INT];
+			state->stat_add[STAT_WIS] += obj->modifiers[OBJ_MOD_WIS]
+				* p->obj_k->modifiers[OBJ_MOD_WIS];
+			state->stat_add[STAT_DEX] += obj->modifiers[OBJ_MOD_DEX]
+				* p->obj_k->modifiers[OBJ_MOD_DEX];
+			state->stat_add[STAT_CON] += obj->modifiers[OBJ_MOD_CON]
+				* p->obj_k->modifiers[OBJ_MOD_CON];
+			state->skills[SKILL_STEALTH] += obj->modifiers[OBJ_MOD_STEALTH]
+				* p->obj_k->modifiers[OBJ_MOD_STEALTH];
+			state->skills[SKILL_SEARCH] += (obj->modifiers[OBJ_MOD_SEARCH] * 5)
+				* p->obj_k->modifiers[OBJ_MOD_SEARCH];
 
-			state->see_infra += obj->modifiers[OBJ_MOD_INFRA];
+			state->see_infra += obj->modifiers[OBJ_MOD_INFRA]
+				* p->obj_k->modifiers[OBJ_MOD_INFRA];
 			if (tval_is_digger(obj)) {
 				if (of_has(obj->flags, OF_DIG_1))
 					dig = 1;
@@ -1765,12 +1773,17 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 				else if (of_has(obj->flags, OF_DIG_3))
 					dig = 3;
 			}
-			dig += obj->modifiers[OBJ_MOD_TUNNEL];
+			dig += obj->modifiers[OBJ_MOD_TUNNEL]
+				* p->obj_k->modifiers[OBJ_MOD_TUNNEL];
 			state->skills[SKILL_DIGGING] += (dig * 20);
-			state->speed += obj->modifiers[OBJ_MOD_SPEED];
-			extra_blows += obj->modifiers[OBJ_MOD_BLOWS];
-			extra_shots += obj->modifiers[OBJ_MOD_SHOTS];
-			extra_might += obj->modifiers[OBJ_MOD_MIGHT];
+			state->speed += obj->modifiers[OBJ_MOD_SPEED]
+				* p->obj_k->modifiers[OBJ_MOD_SPEED];
+			extra_blows += obj->modifiers[OBJ_MOD_BLOWS]
+				* p->obj_k->modifiers[OBJ_MOD_BLOWS];
+			extra_shots += obj->modifiers[OBJ_MOD_SHOTS]
+				* p->obj_k->modifiers[OBJ_MOD_SHOTS];
+			extra_might += obj->modifiers[OBJ_MOD_MIGHT]
+				* p->obj_k->modifiers[OBJ_MOD_MIGHT];
 
 			/* Apply element info, noting vulnerabilites for later processing */
 			for (j = 0; j < ELEM_MAX; j++) {
