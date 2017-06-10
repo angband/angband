@@ -29,6 +29,14 @@ struct attack_result {
 };
 
 /**
+ * A list of the different hit types and their associated special message
+ */
+struct hit_types {
+	u32b msg_type;
+	const char *text;
+};
+
+/**
  * ranged_attack is a function pointer, used to execute a kind of attack.
  *
  * This allows us to abstract details of throwing, shooting, etc. out while

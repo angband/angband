@@ -275,11 +275,8 @@ static bool blow_after_effects(int y, int x, bool quake)
 	return false;
 }
 
-/* A list of the different hit types and their associated special message */
-static const struct {
-	u32b msg;
-	const char *text;
-} melee_hit_types[] = {
+/* Melee and throwing hit types */
+static const struct hit_types melee_hit_types[] = {
 	{ MSG_MISS, NULL },
 	{ MSG_HIT, NULL },
 	{ MSG_HIT_GOOD, "It was a good hit!" },
@@ -402,7 +399,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {
 		const char *dmg_text = "";
 
-		if (msg_type != melee_hit_types[i].msg)
+		if (msg_type != melee_hit_types[i].msg_type)
 			continue;
 
 		if (OPT(p, show_damage))
@@ -469,12 +466,8 @@ void py_attack(struct player *p, int y, int x)
 	}
 }
 
-
-/* A list of the different hit types and their associated special message */
-static const struct {
-	u32b msg;
-	const char *text;
-} ranged_hit_types[] = {
+/* Shooting hit types */
+static const struct hit_types ranged_hit_types[] = {
 	{ MSG_MISS, NULL },
 	{ MSG_SHOOT_HIT, NULL },
 	{ MSG_HIT_GOOD, "It was a good hit!" },
@@ -489,9 +482,9 @@ static const struct {
  * logic, while using the 'attack' parameter to do work particular to each
  * kind of attack.
  */
-static void ranged_helper(struct player *p,
-		struct object *obj, int dir, int range, int shots,
-		ranged_attack attack)
+static void ranged_helper(struct player *p,	struct object *obj, int dir,
+						  int range, int shots, ranged_attack attack,
+						  const struct hit_types *hit_types, int num_types)
 {
 	int i, j;
 
@@ -600,27 +593,29 @@ static void ranged_helper(struct player *p,
 					/* Invisible monster */
 					msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
 				} else {
-					for (j = 0; j < (int)N_ELEMENTS(ranged_hit_types); j++) {
+					for (j = 0; j < num_types; j++) {
 						char m_name[80];
 						const char *dmg_text = "";
 
-						if (msg_type != ranged_hit_types[j].msg)
+						if (msg_type != hit_types[j].msg_type) {
 							continue;
+						}
 
-						if (OPT(p, show_damage))
+						if (OPT(p, show_damage)) {
 							dmg_text = format(" (%d)", dmg);
+						}
 
 						monster_desc(m_name, sizeof(m_name), mon, MDESC_OBJE);
 
-						if (ranged_hit_types[j].text)
+						if (hit_types[j].text) {
 							msgt(msg_type, "Your %s %s %s%s. %s", o_name, 
-								 hit_verb, m_name, dmg_text, 
-								 ranged_hit_types[j].text);
-						else
+								 hit_verb, m_name, dmg_text, hit_types[j].text);
+						} else {
 							msgt(msg_type, "Your %s %s %s%s.", o_name, hit_verb,
 								 m_name, dmg_text);
+						}
 					}
-					
+
 					/* Track this monster */
 					if (monster_is_visible(mon)) {
 						monster_race_track(p->upkeep, mon->race);
@@ -771,7 +766,8 @@ void do_cmd_fire(struct command *cmd) {
 		return;
 	}
 
-	ranged_helper(player, obj, dir, range, shots, attack);
+	ranged_helper(player, obj, dir, range, shots, attack, ranged_hit_types,
+				  (int) N_ELEMENTS(ranged_hit_types));
 }
 
 
@@ -808,11 +804,12 @@ void do_cmd_throw(struct command *cmd) {
 
 	/* Make sure the player isn't throwing wielded items */
 	if (object_is_equipped(player->body, obj)) {
-		msg("You have cannot throw wielded items.");
+		msg("You cannot throw wielded items.");
 		return;
 	}
 
-	ranged_helper(player, obj, dir, range, shots, attack);
+	ranged_helper(player, obj, dir, range, shots, attack, melee_hit_types,
+				  (int) N_ELEMENTS(melee_hit_types));
 }
 
 /**
