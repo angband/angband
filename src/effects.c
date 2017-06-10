@@ -1467,6 +1467,8 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 					detect = true;
 				}
 			}
+			/* Mark as trap-detected */
+			sqinfo_on(cave->squares[y][x].info, SQUARE_DTRAP);
 		}
 	}
 

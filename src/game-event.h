@@ -42,6 +42,7 @@ typedef enum game_event_type
 	EVENT_RACE_CLASS,	/* Race or Class */
 	EVENT_STUDYSTATUS,	/* "Study" availability */
 	EVENT_STATUS,		/* Status */
+	EVENT_DETECTIONSTATUS,  /* Trap detection status */
 	EVENT_FEELING,		/* Object level feeling */
 	EVENT_STATE,		/* The two 'R's: Resting and Repeating */
 

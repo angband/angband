@@ -509,6 +509,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		player->py = y2;
 		player->px = x2;
 
+		/* Update the trap detection status */
+		player->upkeep->redraw |= (PR_DTRAP);
+
 		/* Updates */
 		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);
 
@@ -536,6 +539,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		/* Player */
 		player->py = y1;
 		player->px = x1;
+
+		/* Update the trap detection status */
+		player->upkeep->redraw |= (PR_DTRAP);
 
 		/* Updates */
 		player->upkeep->update |= (PU_PANEL | PU_UPDATE_VIEW | PU_DISTANCE);

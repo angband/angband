@@ -547,6 +547,14 @@ bool square_isproject(struct chunk *c, int y, int x) {
 	return sqinfo_has(c->squares[y][x].info, SQUARE_PROJECT);
 }
 
+/**
+ * True if cave square has been detected for traps
+ */
+bool square_isdtrap(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->squares[y][x].info, SQUARE_DTRAP);
+}
+
 
 /**
  * SQUARE BEHAVIOR PREDICATES
@@ -753,6 +761,27 @@ bool square_isdisabledtrap(struct chunk *c, int y, int x)
 {
 	return square_isvisibletrap(c, y, x) &&
 		(square_trap_timeout(c, y, x, -1) > 0);
+}
+
+/**
+ * Checks if a square is at the (inner) edge of a trap detect area
+ */
+bool square_dtrap_edge(struct chunk *c, int y, int x)
+{
+	/* Check if the square is a dtrap in the first place */
+	if (!square_isdtrap(c, y, x)) return false;
+
+	/* Check for non-dtrap adjacent grids */
+	if (square_in_bounds_fully(c, y + 1, x) && (!square_isdtrap(c, y + 1, x)))
+		return true;
+	if (square_in_bounds_fully(c, y, x + 1) && (!square_isdtrap(c, y, x + 1)))
+		return true;
+	if (square_in_bounds_fully(c, y - 1, x) && (!square_isdtrap(c, y - 1, x)))
+		return true;
+	if (square_in_bounds_fully(c, y, x - 1) && (!square_isdtrap(c, y, x - 1)))
+		return true;
+
+	return false;
 }
 
 /**

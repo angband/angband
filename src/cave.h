@@ -305,6 +305,7 @@ bool square_isno_teleport(struct chunk *c, int y, int x);
 bool square_isno_map(struct chunk *c, int y, int x);
 bool square_isno_esp(struct chunk *c, int y, int x);
 bool square_isproject(struct chunk *c, int y, int x);
+bool square_isdtrap(struct chunk *c, int y, int x);
 
 /* SQUARE BEHAVIOR PREDICATES */
 bool square_isopen(struct chunk *c, int y, int x);
@@ -330,6 +331,7 @@ bool square_isvisibletrap(struct chunk *c, int y, int x);
 bool square_issecrettrap(struct chunk *c, int y, int x);
 bool square_isknowntrap(struct chunk *c, int y, int x);
 bool square_isdisabledtrap(struct chunk *c, int y, int x);
+bool square_dtrap_edge(struct chunk *c, int y, int x);
 bool square_changeable(struct chunk *c, int y, int x);
 bool square_in_bounds(struct chunk *c, int y, int x);
 bool square_in_bounds_fully(struct chunk *c, int y, int x);

@@ -266,7 +266,6 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 
 	/* Build the object list */
 	for (int i = 0; i <= last; i++) {
-		char buf[80];
 		struct object *obj = equip ? slot_object(player, i) : list[i];
 		struct object_menu_data *entry = &items[num_obj];
 
@@ -303,7 +302,6 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 					sizeof(entry->equip_label),
 					"%-14s: ",
 					equip_mention(player, i));
-			my_strcap(buf);
 		} else if (quiver && (in_term || dead)) {
 			strnfmt(entry->equip_label,
 					sizeof(entry->equip_label),

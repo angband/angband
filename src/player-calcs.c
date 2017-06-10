@@ -2400,6 +2400,7 @@ static const struct flag_event_trigger redraw_events[] =
 	{ PR_STATE,   EVENT_STATE },
 	{ PR_STATUS,  EVENT_STATUS },
 	{ PR_STUDY,   EVENT_STUDYSTATUS },
+	{ PR_DTRAP,   EVENT_DETECTIONSTATUS },
 	{ PR_FEELING, EVENT_FEELING },
 
 	{ PR_INVEN,   EVENT_INVENTORY },

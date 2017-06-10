@@ -1636,6 +1636,7 @@ static void do_cmd_wiz_query(void)
 		case 's': flag = (SQUARE_SEEN); break;
 		case 'v': flag = (SQUARE_VIEW); break;
 		case 'w': flag = (SQUARE_WASSEEN); break;
+		case 'd': flag = (SQUARE_DTRAP); break;
 		case 'f': flag = (SQUARE_FEEL); break;
 		case 't': flag = (SQUARE_TRAP); break;
 		case 'n': flag = (SQUARE_INVIS); break;
