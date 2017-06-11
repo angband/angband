@@ -35,6 +35,7 @@
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "project.h"
 #include "z-set.h"
 
 static const struct monster_flag monster_flag_table[] =
@@ -155,6 +156,33 @@ bool match_monster_bases(const struct monster_base *base, ...)
 	va_end(vp);
 
 	return ok;
+}
+
+/**
+ * Analyse the path from player to infravision-seen monster and forget any
+ * grids which would have blocked line of sight
+ */
+static void path_analyse(struct chunk *c, int y, int x)
+{
+	int path_n, i;
+	struct loc path_g[256];
+
+	/* Plot the path. */
+	path_n = project_path(path_g, z_info->max_range, player->py, player->px,
+						  y, x, PROJECT_NONE);
+
+	/* Project along the path */
+	for (i = 0; i < path_n; ++i) {
+		int ny = path_g[i].y;
+		int nx = path_g[i].x;
+
+		/* Forget grids which would block los */
+		if (square_iswall(c, ny, nx)) {
+			sqinfo_off(c->squares[ny][nx].info, SQUARE_SEEN);
+			square_forget(c, ny, nx);
+			square_light_spot(c, ny, nx);
+		}
+	}
 }
 
 /**
@@ -328,6 +356,9 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 					easy = flag = true;
 				}
 			}
+
+			/* Learn about intervening squares */
+			path_analyse(c, fy, fx);
 		}
 	}
 
