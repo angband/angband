@@ -874,6 +874,11 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 	square_note_spot(c, y, x);
 	square_light_spot(c, y, x);
 
+	/* Don't mention if ignored */
+	if (ignore_item_ok(drop)) {
+		*note = false;
+	}
+
 	/* Result */
 	return true;
 }
