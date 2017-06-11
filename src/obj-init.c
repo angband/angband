@@ -2540,8 +2540,8 @@ static enum parser_error parse_artifact_act(struct parser *p) {
 	if (!a)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	/* Light activations are a property of the base object */
-	if (a->tval == TV_LIGHT) {
+	/* Special light activations are a property of the base object */
+	if ((a->tval == TV_LIGHT) && (k->kidx  >= z_info->ordinary_kind_max)) {
 		k->activation = findact(name);
 	} else {
 		a->activation = findact(name);
@@ -2555,8 +2555,8 @@ static enum parser_error parse_artifact_time(struct parser *p) {
 	struct object_kind *k = lookup_kind(a->tval, a->sval);
 	assert(a);
 
-	/* Light activations are a property of the base object */
-	if (a->tval == TV_LIGHT) {
+	/* Special light activations are a property of the base object */
+	if ((a->tval == TV_LIGHT) && (k->kidx  >= z_info->ordinary_kind_max)) {
 		k->time = parser_getrand(p, "time");
 	} else {
 		a->time = parser_getrand(p, "time");
