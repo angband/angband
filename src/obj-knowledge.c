@@ -1427,6 +1427,14 @@ void object_curses_find_to_d(struct player *p, struct object *obj)
 	}
 }
 
+/**
+ * Find flags caused by curses
+ *
+ * \param p is the player
+ * \param obj is the object
+ * \param test_flags is the set of flags to check for
+ * \return whether a flag was found
+ */
 bool object_curses_find_flags(struct player *p, struct object *obj,
 							  bitflag *test_flags)
 {
@@ -1470,6 +1478,12 @@ bool object_curses_find_flags(struct player *p, struct object *obj,
 	return new;
 }
 
+/**
+ * Find a modifiers caused by curses
+ *
+ * \param p is the player
+ * \param obj is the object
+ */
 void object_curses_find_modifiers(struct player *p, struct object *obj)
 {
 	int i;
@@ -1484,10 +1498,12 @@ void object_curses_find_modifiers(struct player *p, struct object *obj)
 
 			/* Learn all modifiers */
 			for (j = 0; j < OBJ_MOD_MAX; j++) {
-				if (curses[i].obj->modifiers[j] && !p->obj_k->modifiers[j]) {
-					player_learn_rune(p, rune_index(RUNE_VAR_MOD, j), true);
-					if (p->upkeep->playing) {
-						mod_message(obj, j);
+				if (curses[i].obj->modifiers[j]) {
+					if (!p->obj_k->modifiers[j]) {
+						player_learn_rune(p, rune_index(RUNE_VAR_MOD, j), true);
+						if (p->upkeep->playing) {
+							mod_message(obj, j);
+						}
 					}
 
 					/* Learn the curse */
@@ -1500,6 +1516,14 @@ void object_curses_find_modifiers(struct player *p, struct object *obj)
 	}
 }
 
+/**
+ * Find an elemental property caused by curses
+ *
+ * \param p is the player
+ * \param obj is the object
+ * \param elem the element
+ * \return whether the element appeared in a curse
+ */
 bool object_curses_find_element(struct player *p, struct object *obj, int elem)
 {
 	char o_name[80];
@@ -1517,16 +1541,19 @@ bool object_curses_find_element(struct player *p, struct object *obj, int elem)
 
 			/* Does the object affect the player's resistance to the element? */
 			if (curses[i].obj->el_info[elem].res_level != 0) {
-				new = true;
-				msg("Your %s glows.", o_name);
+				/* Learn the element properties if we don't know yet */
+				if (!p->obj_k->el_info[elem].res_level) {
+					msg("Your %s glows.", o_name);
 
-				/* Learn the element properties */
-				player_learn_rune(p, rune_index(RUNE_VAR_RESIST, elem), true);
+					player_learn_rune(p, rune_index(RUNE_VAR_RESIST, elem),
+									  true);
+				}
 
 				/* Learn the curse */
 				if (index >= 0) {
 					player_learn_rune(p, index, true);
 				}
+				new = true;
 			}
 		}
 	}
@@ -1650,6 +1677,11 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 	object_curses_find_to_d(p, obj);
 	object_curses_find_flags(p, obj, obvious_mask);
 	object_curses_find_modifiers(p, obj);
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (p->obj_k->el_info[i].res_level) {
+			(void) object_curses_find_element(p, obj, i);
+		}
+	}
 }
 
 /**
