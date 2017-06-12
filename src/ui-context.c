@@ -467,7 +467,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			}
 		}
 
-		if (square_isknowntrap(c, y, x)) {
+		if (square_isdisarmabletrap(c, y, x)) {
 			ADD_LABEL("Disarm", CMD_DISARM, MN_ROW_VALID);
 			ADD_LABEL("Jump Onto", CMD_JUMP, MN_ROW_VALID);
 		}

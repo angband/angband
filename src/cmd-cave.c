@@ -617,7 +617,7 @@ static bool do_cmd_disarm_test(int y, int x)
 		return true;
 
 	/* Look for a trap */
-	if (!square_isknowntrap(cave, y, x)) {
+	if (!square_isdisarmabletrap(cave, y, x)) {
 		msg("You see nothing there to disarm.");
 		return false;
 	}
@@ -773,7 +773,7 @@ void do_cmd_disarm(struct command *cmd)
 		int y2, x2;
 		int n_traps, n_chests;
 
-		n_traps = count_feats(&y2, &x2, square_isknowntrap, true);
+		n_traps = count_feats(&y2, &x2, square_isdisarmabletrap, true);
 		n_chests = count_chests(&y2, &x2, CHEST_TRAPPED);
 
 		if (n_traps + n_chests == 1) {
@@ -872,7 +872,7 @@ void do_cmd_alter_aux(int dir)
 	else if (square_iscloseddoor(cave, y, x))
 		/* Open closed doors */
 		more = do_cmd_open_aux(y, x);
-	else if (square_isknowntrap(cave, y, x))
+	else if (square_isdisarmabletrap(cave, y, x))
 		/* Disarm traps */
 		more = do_cmd_disarm_aux(y, x);
 	else
@@ -909,8 +909,9 @@ void move_player(int dir, bool disarm)
 
 	int m_idx = cave->squares[y][x].mon;
 	struct monster *mon = cave_monster(cave, m_idx);
-	bool alterable = (square_isknowntrap(cave, y, x) ||
-					  square_iscloseddoor(cave, y, x));
+	bool trapsafe = player->timed[TMD_TRAPSAFE];
+	bool alterable = (square_isdisarmabletrap(cave, y, x) && !trapsafe) ||
+		square_iscloseddoor(cave, y, x);
 
 	/* Attack monsters, alter traps/doors on movement, hit obstacles or move */
 	if (m_idx > 0) {
@@ -930,7 +931,8 @@ void move_player(int dir, bool disarm)
 			cmd_set_repeat(99);
 
 		do_cmd_alter_aux(dir);
-	} else if (player->upkeep->running && square_isknowntrap(cave, y, x)) {
+	} else if (player->upkeep->running && square_isdisarmabletrap(cave, y, x)
+		&& !trapsafe) {
 		/* Stop running before known traps */
 		disturb(player, 0);
 	} else if (!square_ispassable(cave, y, x)) {
@@ -1025,7 +1027,7 @@ void move_player(int dir, bool disarm)
 		if (square_issecrettrap(cave, y, x)) {
 			disturb(player, 0);
 			hit_trap(y, x);
-		} else if (square_isknowntrap(cave, y, x)) {
+		} else if (square_isdisarmabletrap(cave, y, x) && !trapsafe) {
 			disturb(player, 0);
 			hit_trap(y, x);
 		}
@@ -1071,15 +1073,16 @@ static bool do_cmd_walk_test(int y, int x)
 
 	/* Require open space */
 	if (!square_ispassable(cave, y, x)) {
-		if (square_isrubble(cave, y, x))
+		if (square_isrubble(cave, y, x)) {
 			/* Rubble */
 			msgt(MSG_HITWALL, "There is a pile of rubble in the way!");
-		else if (square_iscloseddoor(cave, y, x))
+		} else if (square_iscloseddoor(cave, y, x)) {
 			/* Door */
 			return true;
-		else
+		} else {
 			/* Wall */
 			msgt(MSG_HITWALL, "There is a wall in the way!");
+		}
 
 		/* Cancel repeat */
 		disturb(player, 0);
@@ -1099,10 +1102,7 @@ static bool do_cmd_walk_test(int y, int x)
 void do_cmd_walk(struct command *cmd)
 {
 	int x, y, dir;
-
-	/* Don't disarm on movement if the player is trapsafe,
-	 * or the trap is disabled */
-	bool disarm = player->timed[TMD_TRAPSAFE] ? false : true;
+	bool trapsafe = player->timed[TMD_TRAPSAFE] ? true : false;
 
 	/* Get arguments */
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
@@ -1119,12 +1119,10 @@ void do_cmd_walk(struct command *cmd)
 	if (!do_cmd_walk_test(y, x))
 		return;
 
-	/* Don't disarm if it's a disabled trap */
-	if (square_isdisabledtrap(cave, y, x)) disarm = false;
-
 	player->upkeep->energy_use = z_info->move_energy;
 
-	move_player(dir, disarm);
+	/* Attempt to disarm unless it's s trap and we're trapsafe */
+	move_player(dir, (!square_isdisarmabletrap(cave, y, x) && trapsafe));
 }
 
 

@@ -747,20 +747,21 @@ bool square_issecrettrap(struct chunk *c, int y, int x)
 }
 
 /**
- * True if the square is a known player trap.
- */
-bool square_isknowntrap(struct chunk *c, int y, int x)
-{
-	return square_isvisibletrap(c, y, x) && square_isplayertrap(c, y, x);
-}
-
-/**
  * True if the square is a known, disabled player trap.
  */
 bool square_isdisabledtrap(struct chunk *c, int y, int x)
 {
 	return square_isvisibletrap(c, y, x) &&
 		(square_trap_timeout(c, y, x, -1) > 0);
+}
+
+/**
+ * True if the square is a known, disarmable player trap.
+ */
+bool square_isdisarmabletrap(struct chunk *c, int y, int x)
+{
+	if (square_isdisabledtrap(c, y, x)) return false;
+	return square_isvisibletrap(c, y, x) && square_isplayertrap(c, y, x);
 }
 
 /**

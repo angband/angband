@@ -26,6 +26,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-path.h"
+#include "player-timed.h"
 #include "player-util.h"
 
 /**
@@ -720,6 +721,9 @@ static bool run_test(void)
  */
 void run_step(int dir)
 {
+	/* Trapsafe player will treat the trap as if it isn't there */
+	bool disarm = player->timed[TMD_TRAPSAFE] ? false : true;
+
 	/* Start or continue run */
 	if (dir) {
 		/* Initialize */
@@ -825,7 +829,7 @@ void run_step(int dir)
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Move the player; running straight into a trap == trying to disarm */
-	move_player(run_cur_dir, dir ? true : false);
+	move_player(run_cur_dir, dir && disarm ? true : false);
 
 	/* Prepare the next step */
 	if (player->upkeep->running) {
