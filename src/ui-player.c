@@ -328,10 +328,12 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 						if (obj->modifiers[rec[i].mod] != 0) {
 							res = true;
 						}
+						rune = (player->obj_k->modifiers[rec[i].mod] == 1);
 					} else if (rec[i].flag != -1) {
 						if (of_has(f, rec[i].flag)) {
 							res = true;
 						}
+						rune = of_has(player->obj_k->flags, rec[i].flag);
 					} else if (rec[i].element != -1) {
 						if (known) {
 							if (obj->el_info[rec[i].element].res_level == 3) {
@@ -344,6 +346,7 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 								vul = true;
 							}
 						}
+						rune = (player->obj_k->el_info[rec[i].element].res_level == 1);
 					}
 
 					/* Move to any unprocessed curse object */
