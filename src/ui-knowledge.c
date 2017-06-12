@@ -3130,7 +3130,7 @@ static void lookup_symbol(char sym, char *buf, size_t max)
 	 * find a match.
 	 * It would make more sense to loop through tvals, but then we need to
 	 * associate a display character with each tval. */
-	for (i = 1; i < z_info->k_max; i++) {
+	for (i = 0; i < z_info->k_max; i++) {
 		if (char_matches_key(k_info[i].d_char, sym)) {
 			strnfmt(buf, max, "%c - %s.", sym, tval_find_name(k_info[i].tval));
 			return;

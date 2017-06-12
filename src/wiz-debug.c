@@ -622,7 +622,7 @@ static void wiz_create_item_all_items(bool create_artifacts)
 		}
 	}
 	else {
-		for (i = 1; i < z_info->k_max; i++) {
+		for (i = 0; i < z_info->k_max; i++) {
 			kind = &k_info[i];
 
 			if (kind->base == NULL || kind->base->name == NULL)

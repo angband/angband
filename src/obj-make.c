@@ -63,7 +63,7 @@ static void alloc_init_objects(void) {
 	obj_total_great = mem_zalloc((z_info->max_obj_depth + 1) * sizeof(u32b));
 
 	/* Init allocation data */
-	for (item = 1; item < k_max; item++) {
+	for (item = 0; item < k_max; item++) {
 		const struct object_kind *kind = &k_info[item];
 
 		int min = kind->alloc_min;
@@ -102,7 +102,7 @@ static void alloc_init_egos(void) {
 
 	int i;
 
-	for (i = 1; i < z_info->e_max; i++) {
+	for (i = 0; i < z_info->e_max; i++) {
 		struct ego_item *ego = &e_info[i];
 
 		if (ego->alloc_prob) {
@@ -122,7 +122,7 @@ static void alloc_init_egos(void) {
 	alloc_ego_table = mem_zalloc(alloc_ego_size * sizeof(alloc_entry));
 
 	/* Scan the ego-items */
-	for (i = 1; i < z_info->e_max; i++) {
+	for (i = 0; i < z_info->e_max; i++) {
 		struct ego_item *ego = &e_info[i];
 
 		/* Count valid pairs */
@@ -1015,7 +1015,7 @@ static struct object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 	ind = level * z_info->k_max;
 
 	/* Get new total */
-	for (item = 1; item < z_info->k_max; item++)
+	for (item = 0; item < z_info->k_max; item++)
 		if (objkind_byid(item)->tval == tval)
 			total += objects[ind + item];
 
@@ -1024,7 +1024,7 @@ static struct object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 	
 	value = randint0(total);
 	
-	for (item = 1; item < z_info->k_max; item++)
+	for (item = 0; item < z_info->k_max; item++)
 		if (objkind_byid(item)->tval == tval) {
 			if (value < objects[ind + item]) break;
 
@@ -1063,7 +1063,7 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
 	
 	if (!good) {
 		value = randint0(obj_total[level]);
-		for (item = 1; item < z_info->k_max; item++) {
+		for (item = 0; item < z_info->k_max; item++) {
 			/* Found it */
 			if (value < obj_alloc[ind + item]) break;
 
@@ -1072,7 +1072,7 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
 		}
 	} else {
 		value = randint0(obj_total_great[level]);
-		for (item = 1; item < z_info->k_max; item++) {
+		for (item = 0; item < z_info->k_max; item++) {
 			/* Found it */
 			if (value < obj_alloc_great[ind + item]) break;
 

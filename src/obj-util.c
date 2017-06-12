@@ -213,7 +213,7 @@ void flavor_init(void)
 	Rand_quick = false;
 
 	/* Analyze every object */
-	for (i = 1; i < z_info->k_max; i++) {
+	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *kind = &k_info[i];
 
 		/* Skip "empty" objects */

@@ -197,7 +197,7 @@ void dump_objects(ang_file *fff)
 
 	file_putf(fff, "# Objects\n");
 
-	for (i = 1; i < z_info->k_max; i++) {
+	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *kind = &k_info[i];
 		char name[120] = "";
 
@@ -214,7 +214,7 @@ void dump_objects(ang_file *fff)
  */
 void dump_autoinscriptions(ang_file *f) {
 	int i;
-	for (i = 1; i < z_info->k_max; i++) {
+	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *k = &k_info[i];
 		char name[120];
 		const char *note;
