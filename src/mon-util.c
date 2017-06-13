@@ -172,7 +172,7 @@ static void path_analyse(struct chunk *c, int y, int x)
 						  y, x, PROJECT_NONE);
 
 	/* Project along the path */
-	for (i = 0; i < path_n; ++i) {
+	for (i = 0; i < path_n - 1; ++i) {
 		int ny = path_g[i].y;
 		int nx = path_g[i].x;
 
