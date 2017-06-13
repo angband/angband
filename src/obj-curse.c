@@ -200,7 +200,7 @@ bool append_artifact_curse(struct artifact *art, int pick, int power)
  *
  * \param i the index into the curses array
  */
-bool do_curse_effect(int i)
+bool do_curse_effect(int i, struct object *obj)
 {
 	struct curse *curse = &curses[i];
 	struct effect *effect = curse->obj->effect;
@@ -214,6 +214,6 @@ bool do_curse_effect(int i)
 	if (curse->obj->effect_msg) {
 		msgt(MSG_GENERIC, curse->obj->effect_msg);
 	}
-	effect_do(effect, source_object(curse->obj), NULL, &ident, was_aware, dir, 0, 0);
+	effect_do(effect, source_object(obj), NULL, &ident, was_aware, dir, 0, 0);
 	return !was_aware && ident;
 }

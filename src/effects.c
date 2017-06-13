@@ -607,7 +607,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 		case SRC_OBJECT: {
 			/* Must be a cursed weapon */
 			struct object *obj = context->origin.which.object;
-			object_desc(killer, sizeof(killer), obj, ODESC_PREFIX | ODESC_FULL);
+			object_desc(killer, sizeof(killer), obj, ODESC_PREFIX | ODESC_BASE);
 			break;
 		}
 

@@ -291,7 +291,7 @@ static void decrease_timeouts(void)
 					curse[j].timeout--;
 					if (!curse[j].timeout) {
 						struct curse *c = &curses[j];
-						if (do_curse_effect(j)) {
+						if (do_curse_effect(j, player->body.slots[i].obj)) {
 							player_learn_curse(player, c);
 						}
 						curse[j].timeout = randcalc(c->obj->time, 0, RANDOMISE);
