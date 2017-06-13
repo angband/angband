@@ -910,12 +910,12 @@ void move_player(int dir, bool disarm)
 	int m_idx = cave->squares[y][x].mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 	bool trapsafe = player->timed[TMD_TRAPSAFE];
-	bool alterable = (square_isdisarmabletrap(cave, y, x) && !trapsafe) ||
+	bool alterable = square_isdisarmabletrap(cave, y, x) ||
 		square_iscloseddoor(cave, y, x);
 
-	/* Attack monsters, alter traps/doors on movement, hit obstacles or move */
+	/* Many things can happen on movement */
 	if (m_idx > 0) {
-		/* Mimics surprise the player */
+		/* Attack monsters */
 		if (monster_is_mimicking(mon)) {
 			become_aware(mon);
 
@@ -925,11 +925,10 @@ void move_player(int dir, bool disarm)
 		} else {
 			py_attack(player, y, x);
 		}
-	} else if (disarm && square_isknown(cave, y, x) && alterable) {
+	} else if (alterable && disarm && square_isknown(cave, y, x)) {
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
 			cmd_set_repeat(99);
-
 		do_cmd_alter_aux(dir);
 	} else if (player->upkeep->running && square_isdisarmabletrap(cave, y, x)
 		&& !trapsafe) {
@@ -1121,8 +1120,8 @@ void do_cmd_walk(struct command *cmd)
 
 	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Attempt to disarm unless it's s trap and we're trapsafe */
-	move_player(dir, (!square_isdisarmabletrap(cave, y, x) && trapsafe));
+	/* Attempt to disarm unless it's a trap and we're trapsafe */
+	move_player(dir, !(square_isdisarmabletrap(cave, y, x) && trapsafe));
 }
 
 
