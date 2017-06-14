@@ -346,7 +346,7 @@ struct object_kind *lookup_kind(int tval, int sval)
 }
 
 struct object_kind *objkind_byid(int kidx) {
-	if (kidx < 1 || kidx > z_info->k_max)
+	if (kidx < 0 || kidx >= z_info->k_max)
 		return NULL;
 	return &k_info[kidx];
 }
