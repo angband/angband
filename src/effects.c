@@ -2718,13 +2718,7 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 	/* Some special messages or effects for player or monster. */
 	if (square_isfiery(cave, y, x)) {
 		if (cave->squares[y][x].mon < 0) {
-			int base_dam = 100 + randint1(100);
-			int res = player->state.el_info[ELEM_FIRE].res_level;
-			int dam = adjust_dam(player, ELEM_FIRE, base_dam, RANDOMISE, res);
-
 			msg("You are thrown into molten lava!");
-			take_hit(player, dam, "being hurled into lava");
-			inven_damage(player, PROJ_FIRE, dam);
 		} else if (cave->squares[y][x].mon > 0) {
 			struct monster *mon = square_monster(cave, y, x);
 			bool fear = false;

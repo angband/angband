@@ -1292,10 +1292,6 @@ static void monster_reduce_sleep(struct monster *mon)
 		int sleep_reduction = 1;
 		int local_noise = cave->noise.grids[mon->fy][mon->fx];
 
-		/* Wake up faster near the player */
-		//if (mon->cdis < 50) {
-		//	sleep_reduction = (100 / mon->cdis);
-		//}
 		/* Test - wake up faster in hearing distance of the player 
 		 * Note no dependence on stealth for now */
 		if ((local_noise > 0) && (local_noise < 50)) {
@@ -1503,6 +1499,9 @@ void reset_monsters(void)
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
 		/* Access the monster */
 		mon = cave_monster(cave, i);
+
+		/* Dungeon hurts monsters */
+		monster_take_terrain_damage(mon);
 
 		/* Monster is ready to go again */
 		mflag_off(mon->mflag, MFLAG_HANDLED);
