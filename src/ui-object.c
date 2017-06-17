@@ -256,61 +256,49 @@ static void wipe_obj_list(void)
 static void build_obj_list(int last, struct object **list, item_tester tester,
 						   olist_detail_t mode)
 {
+	int i;
 	bool gold_ok = (mode & OLIST_GOLD) ? true : false;
 	bool in_term = (mode & OLIST_WINDOW) ? true : false;
 	bool dead = (mode & OLIST_DEATH) ? true : false;
 	bool show_empty = (mode & OLIST_SEMPTY) ? true : false;
 	bool equip = list ? false : true;
 	bool quiver = list == player->upkeep->quiver ? true : false;
-	bool book_tags = (mode & OLIST_BOOK_TAGS) ? true : false;
 
 	/* Build the object list */
-	for (int i = 0; i <= last; i++) {
+	for (i = 0; i <= last; i++) {
+		char buf[80];
 		struct object *obj = equip ? slot_object(player, i) : list[i];
-		struct object_menu_data *entry = &items[num_obj];
 
-		if (object_test(tester, obj) ||	(obj && tval_is_money(obj) && gold_ok)) {
-			/* Acceptable items get a label */
-			if (quiver) {
-				entry->key = I2D(i);
-			} else if (book_tags) {
-				entry->key = I2D(obj->sval);
-			} else {
-				entry->key = I2A(i);
-			}
-		} else if ((!obj && show_empty) || in_term) {
-			/* Unacceptable items are still sometimes shown but are not selectable */
-			entry->key = ' ';
+		/* Acceptable items get a label */
+		if (object_test(tester, obj) ||	(obj && tval_is_money(obj) && gold_ok))
+			strnfmt(items[num_obj].label, sizeof(items[num_obj].label), "%c) ",
+					quiver ? I2D(i) : I2A(i));
+
+		/* Unacceptable items are still sometimes shown */
+		else if ((!obj && show_empty) || in_term)
+			my_strcpy(items[num_obj].label, "   ",
+					  sizeof(items[num_obj].label));
+
+		/* Unacceptable items are skipped in the main window */
+		else continue;
+
+		/* Show full slot labels for equipment (or quiver in subwindow) */
+		if (equip) {
+			strnfmt(buf, sizeof(buf), "%-14s: ", equip_mention(player, i));
+			my_strcpy(items[num_obj].equip_label, buf,
+					  sizeof(items[num_obj].equip_label));
+		} else if ((in_term || dead) && quiver) {
+			strnfmt(buf, sizeof(buf), "Slot %-9d: ", i);
+			my_strcpy(items[num_obj].equip_label, buf,
+					  sizeof(items[num_obj].equip_label));
 		} else {
-			/* Unacceptable items are skipped in the main window */
-			continue;
+			strnfmt(items[num_obj].equip_label,
+					sizeof(items[num_obj].equip_label), "");
 		}
 
 		/* Save the object */
-		entry->object = obj;
-
-		/* Format the label */
-		if (entry->key != ' ') {
-			strnfmt(entry->label, sizeof(entry->label), "%c) ", entry->key);
-		} else {
-			my_strcpy(entry->label, "   ", sizeof(entry->label));
-		}
-
-		/* Format equipment slot labels (or quiver in subwindow) */
-		if (equip) {
-			strnfmt(entry->equip_label,
-					sizeof(entry->equip_label),
-					"%-14s: ",
-					equip_mention(player, i));
-		} else if (quiver && (in_term || dead)) {
-			strnfmt(entry->equip_label,
-					sizeof(entry->equip_label),
-					"Slot %-9d: ",
-					i);
-		} else {
-			entry->equip_label[0] = 0;
-		}
-
+		items[num_obj].object = obj;
+		items[num_obj].key = (items[num_obj].label)[0];
 		num_obj++;
 	}
 }
@@ -462,14 +450,12 @@ void show_inven(int mode, item_tester tester)
 
 	/* Include burden for term windows */
 	if (in_term) {
-		strnfmt(items[num_obj].label,
-				sizeof(items[num_obj].label),
-				"Burden %d.%d lb (%d.%d lb %s) ",
-				player->upkeep->total_weight / 10,
+		strnfmt(items[num_obj].label, sizeof(items[num_obj].label),
+		        "Burden %d.%d lb (%d.%d lb %s) ",
+		        player->upkeep->total_weight / 10,
 				player->upkeep->total_weight % 10,
-				abs(diff) / 10,
-				abs(diff) % 10,
-				(diff < 0 ? "overweight" : "remaining"));
+		        abs(diff) / 10, abs(diff) % 10,
+		        (diff < 0 ? "overweight" : "remaining"));
 
 		items[num_obj].object = NULL;
 		num_obj++;
@@ -1184,7 +1170,6 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	bool use_quiver = ((mode & USE_QUIVER) ? true : false);
 	bool use_floor = ((mode & USE_FLOOR) ? true : false);
 	bool quiver_tags = ((mode & QUIVER_TAGS) ? true : false);
-	bool book_tags = ((mode & BOOK_TAGS) ? true : false);
 
 	bool allow_inven = false;
 	bool allow_equip = false;
@@ -1218,9 +1203,6 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	if (mode & SHOW_QUIVER)
 		olist_mode |= OLIST_QUIVER;
-
-	if (book_tags)
-		olist_mode |= OLIST_BOOK_TAGS;
 
 	/* Paranoia XXX XXX XXX */
 	event_signal(EVENT_MESSAGE_FLUSH);

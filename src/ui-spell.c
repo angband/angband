@@ -275,7 +275,7 @@ void textui_spell_browse(void)
 	if (!get_item(&obj, "Browse which book? ",
 				  "You have no books that you can read.",
 				  CMD_BROWSE_SPELL, obj_can_browse,
-				  (USE_INVEN | USE_FLOOR | IS_HARMLESS | BOOK_TAGS)))
+				  (USE_INVEN | USE_FLOOR | IS_HARMLESS)))
 		return;
 
 	/* Track the object kind */
@@ -324,7 +324,7 @@ int textui_get_spell(const char *verb, item_tester book_filter,
 	my_strcap(prompt);
 
 	if (!get_item(&book, prompt, error,
-				  cmd, book_filter, (USE_INVEN | USE_FLOOR | BOOK_TAGS)))
+				  cmd, book_filter, (USE_INVEN | USE_FLOOR)))
 		return -1;
 
 	return textui_get_spell_from_book(verb, book, error, spell_filter);

@@ -36,8 +36,7 @@ typedef enum {
 	OLIST_PRICE  = 0x10,	/* Show item price */
 	OLIST_FAIL   = 0x20,	/* Show device failure */
 	OLIST_SEMPTY = 0x40,
-	OLIST_DEATH  = 0x80,
-	OLIST_BOOK_TAGS = 0x100    /* Use book sval for item tags */
+	OLIST_DEATH  = 0x80
 } olist_detail_t;
 
 

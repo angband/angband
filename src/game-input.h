@@ -30,11 +30,11 @@
 #define USE_QUIVER    0x0008	/* Allow floor items */
 #define IS_HARMLESS   0x0010	/* Ignore generic warning inscriptions */
 #define SHOW_PRICES   0x0020	/* Show item prices in item lists */
-#define SHOW_FAIL     0x0040	/* Show device failure in item lists */
+#define SHOW_FAIL     0x0040 	/* Show device failure in item lists */
 #define SHOW_QUIVER   0x0080	/* Show quiver summary when in inventory */
 #define SHOW_EMPTY    0x0100	/* Show empty slots in equipment display */
 #define QUIVER_TAGS   0x0200	/* 0-9 are quiver slots when selecting */
-#define BOOK_TAGS     0x0400	/* 0-9 are books when selecting */
+
 
 extern bool (*get_string_hook)(const char *prompt, char *buf, size_t len);
 extern int (*get_quantity_hook)(const char *prompt, int max);
