@@ -160,6 +160,20 @@ void flavor_init(void)
 	/* Hack -- Induce consistant flavors */
 	Rand_value = seed_flavor;
 
+	/* Scrub all flavors and re-parse for new players */
+	if (turn == 1) {
+		struct flavor *f;
+
+		for (i = 0; i < z_info->k_max; i++) {
+			k_info[i].flavor = NULL;
+		}
+		for (f = flavors; f; f = f->next) {
+			f->sval = SV_UNKNOWN;
+		}
+		cleanup_parser(&flavor_parser);
+		run_parser(&flavor_parser);
+	}
+
 	if (OPT(player, birth_randarts))
 		flavor_reset_fixed();
 

@@ -2690,7 +2690,7 @@ static void cleanup_flavor(void)
 	}
 }
 
-static struct file_parser flavor_parser = {
+struct file_parser flavor_parser = {
 	"flavor",
 	init_parse_flavor,
 	run_parse_flavor,
