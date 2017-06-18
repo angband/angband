@@ -892,11 +892,15 @@ int object_value(const struct object *obj, int qty)
 	int value;
 
 	/* Variable power items are assessed by what is known about them */
-	if (tval_has_variable_power(obj) && obj->known)
+	if (tval_has_variable_power(obj) && obj->known) {
 		value = object_value_real(obj->known, qty);
-	else
+	} else if (tval_can_have_flavor_k(obj->kind) &&
+			   object_flavor_is_aware(obj)) {
+		value = object_value_real(obj, qty);
+	} else {
 		/* Unknown constant-price items just get a base value */
 		value = object_value_base(obj) * qty;
+	}
 
 	/* Return the final value */
 	return (value);

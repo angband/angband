@@ -570,9 +570,9 @@ int price_item(struct store *store, const struct object *obj,
 
 	/* Get the value of the stack of wands, or a single item */
 	if (tval_can_have_charges(obj))
-		price = object_value_real(obj, qty);
+		price = object_value(obj, qty);
 	else
-		price = object_value_real(obj, 1);
+		price = object_value(obj, 1);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);

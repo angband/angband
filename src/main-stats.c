@@ -25,6 +25,7 @@
 #include "init.h"
 #include "main.h"
 #include "mon-make.h"
+#include "mon-util.h"
 #include "monster.h"
 #include "obj-gear.h"
 #include "obj-power.h"
