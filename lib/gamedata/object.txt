@@ -2795,7 +2795,7 @@ graphics:-:d
 properties:5:10:500
 alloc:20:5 to 100
 combat:0:1d1:0:0:0
-charges:1+d3
+charges:2+d6
 power:3
 effect:BOLT_AWARE:MON_SLOW
 dice:10+1d20
@@ -2806,7 +2806,7 @@ graphics:-:d
 properties:5:10:500
 alloc:20:5 to 100
 combat:0:1d1:0:0:0
-charges:1+d3
+charges:2+d6
 power:3
 effect:BOLT_AWARE:MON_CONF
 dice:5+1d5
@@ -2817,7 +2817,7 @@ graphics:-:d
 properties:5:10:500
 alloc:20:5 to 100
 combat:0:1d1:0:0:0
-charges:1+d3
+charges:2+d6
 power:3
 effect:BOLT_AWARE:MON_HOLD
 dice:3+1d5
@@ -2828,7 +2828,7 @@ graphics:-:d
 properties:5:10:500
 alloc:20:5 to 100
 combat:0:1d1:0:0:0
-charges:1+d3
+charges:2+d6
 power:3
 effect:BOLT_AWARE:MON_STUN
 dice:5+1d5
