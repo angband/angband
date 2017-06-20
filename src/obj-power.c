@@ -823,7 +823,7 @@ int object_value_real(const struct object *obj, int qty)
 
 		/* Rescale for expendables */
 		if ((tval_is_light(obj) && of_has(obj->flags, OF_BURNS_OUT)
-			&& !obj->ego) || tval_is_ammo(obj)) {
+			 && !obj->ego) || tval_is_ammo(obj)) {
 			value = value / AMMO_RESCALER;
 		}
 
@@ -840,7 +840,7 @@ int object_value_real(const struct object *obj, int qty)
 		if (!file_close(log_file)) {
 			msg("Error - can't close pricing.log file.");
 			exit(1);
-	}
+		}
 #endif /* PRICE_DEBUG */
 
 		/* Get the total value */
@@ -867,8 +867,9 @@ int object_value_real(const struct object *obj, int qty)
 
 			/* Pay extra for charges, depending on standard number of charges */
 			total_value += value * charges / 20;
-		} else
+		} else {
 			total_value = value * qty;
+		}
 
 		/* No negative value */
 		if (total_value < 0) total_value = 0;

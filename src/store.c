@@ -564,18 +564,23 @@ int price_item(struct store *store, const struct object *obj,
 	int price;
 	struct owner *proprietor;
 
-	if (!store) return 0L;
+	if (!store) {
+		return 0;
+	}
 
 	proprietor = store->owner;
 
 	/* Get the value of the stack of wands, or a single item */
-	if (tval_can_have_charges(obj))
+	if (tval_can_have_charges(obj)) {
 		price = object_value(obj, qty);
-	else
+	} else {
 		price = object_value(obj, 1);
+	}
 
 	/* Worthless items */
-	if (price <= 0) return (0L);
+	if (price <= 0) {
+		return 0;
+	}
 
 	/* The black market is always a worse deal */
 	if (store->sidx == STORE_B_MARKET)
@@ -585,39 +590,56 @@ int price_item(struct store *store, const struct object *obj,
 	if (store_buying) {
 		/* Set the factor */
 		adjust = 100 + (100 - adjust);
-		if (adjust > 100) adjust = 100;
+		if (adjust > 100) {
+			adjust = 100;
+		}
 
 		/* Shops now pay 2/3 of true value */
 		price = price * 2 / 3;
 
 		/* Black market sucks */
-		if (store->sidx == STORE_B_MARKET)
+		if (store->sidx == STORE_B_MARKET) {
 			price = price / 2;
+		}
 
 		/* Check for no_selling option */
-		if (OPT(player, birth_no_selling)) return (0L);
+		if (OPT(player, birth_no_selling)) {
+			return 0;
+		}
 	} else {
+		/* Re-evaluate if we're selling */
+		if (tval_can_have_charges(obj)) {
+			price = object_value_real(obj, qty);
+		} else {
+			price = object_value_real(obj, 1);
+		}
+
 		/* Black market sucks */
-		if (store->sidx == STORE_B_MARKET)
+		if (store->sidx == STORE_B_MARKET) {
 			price = price * 2;
+		}
 	}
 
 	/* Compute the final price (with rounding) */
 	price = (price * adjust + 50L) / 100L;
 
 	/* Now convert price to total price for non-wands */
-	if (!tval_can_have_charges(obj))
+	if (!tval_can_have_charges(obj)) {
 		price *= qty;
+	}
 
 	/* Now limit the price to the purse limit */
-	if (store_buying && (price > proprietor->max_cost * qty))
+	if (store_buying && (price > proprietor->max_cost * qty)) {
 		price = proprietor->max_cost * qty;
+	}
 
 	/* Note -- Never become "free" */
-	if (price <= 0L) return (qty);
+	if (price <= 0) {
+		return qty;
+	}
 
 	/* Return the price */
-	return (price);
+	return price;
 }
 
 
@@ -643,7 +665,7 @@ static int mass_roll(int times, int max)
 static void mass_produce(struct object *obj)
 {
 	int size = 1;
-	int cost = object_value(obj, 1);
+	int cost = object_value_real(obj, 1);
 
 	/* Analyze the type */
 	switch (obj->tval)
@@ -1057,7 +1079,7 @@ static bool black_market_ok(const struct object *obj)
 	if (obj->to_d > 2) return true;
 
 	/* No cheap items */
-	if (object_value(obj, 1) < 10) return (false);
+	if (object_value_real(obj, 1) < 10) return (false);
 
 	/* Check the other stores */
 	for (i = 0; i < MAX_STORES; i++) {
@@ -1835,7 +1857,7 @@ void do_cmd_sell(struct command *cmd)
 	sold_item = gear_object_for_use(obj, amt, false, &none_left);
 
 	/* Get the "actual" value */
-	value = object_value(sold_item, amt);
+	value = object_value_real(sold_item, amt);
 
 	/* Get the description all over again */
 	object_desc(o_name, sizeof(o_name), sold_item, ODESC_PREFIX | ODESC_FULL);
