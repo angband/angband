@@ -600,7 +600,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 		case SRC_TRAP: {
 			struct trap *trap = context->origin.which.trap;
 			char *article = is_a_vowel(trap->kind->desc[0]) ? "an " : "a ";
-			strnfmt(killer, sizeof(killer), "%s %s", article, trap->kind->desc);
+			strnfmt(killer, sizeof(killer), "%s%s", article, trap->kind->desc);
 			break;
 		}
 
