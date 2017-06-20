@@ -196,8 +196,8 @@ void monster_list_collect(monster_list_t *list)
 
 		/* Store the location offset from the player; this is only used for
 		 * monster counts of 1 */
-		entry->dx = mon->fx - player->px;
-		entry->dy = mon->fy - player->py;
+		entry->dx[field] = mon->fx - player->px;
+		entry->dy[field] = mon->fy - player->py;
 	}
 
 	/* Collect totals for easier calculations of the list. */

@@ -110,11 +110,13 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 
 		/* Only display directions for the case of a single monster. */
 		if (list->entries[index].count[section] == 1) {
-			const char *direction1 = (list->entries[index].dy <= 0) ? "N" : "S";
-			const char *direction2 = (list->entries[index].dx <= 0) ? "W" : "E";
+			const char *direction1 =
+				(list->entries[index].dy[section] <= 0)	? "N" : "S";
+			const char *direction2 =
+				(list->entries[index].dx[section] <= 0) ? "W" : "E";
 			strnfmt(location, sizeof(location), " %d %s %d %s",
-					abs(list->entries[index].dy), direction1,
-					abs(list->entries[index].dx), direction2);
+					abs(list->entries[index].dy[section]), direction1,
+					abs(list->entries[index].dx[section]), direction2);
 		}
 
 		/* Get width available for monster name and sleep tag: 2 for char and
