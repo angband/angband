@@ -194,6 +194,7 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 		- player->state.skills[SKILL_STEALTH] / 3;
 	int best_noise = base_hearing - cave->noise.grids[my][mx];
 	int best_direction = 8;
+	bool monster_blocking = false;
 
 	/* If the monster can pass through nearby walls, do that */
 	if (monster_passes_walls(mon) && !near_permwall(mon, c)) {
@@ -220,9 +221,20 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 		/* Get the heard noise, compare with the best so far */
 		heard_noise = base_hearing - cave->noise.grids[y][x];
 		if ((heard_noise > best_noise) && (cave->noise.grids[y][x] != 0)) {
+			/* Best so far */
 			best_noise = heard_noise;
 			best_direction = i;
 			found_direction = true;
+			if (square_monster(cave, y, x)) {
+				monster_blocking = true;
+			}
+			continue;
+		} else if ((heard_noise == best_noise) && (cave->noise.grids[y][x] != 0)
+				   && (!square_monster(cave, y, x)) && monster_blocking) {
+			/* Equal best so far, and no monster in the way */
+			best_direction = i;
+			found_direction = true;
+			monster_blocking = false;
 			continue;
 		}
 
