@@ -669,7 +669,8 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 	}
 
 	/* Monster groups try to surround the player */
-	if (!done && rf_has(mon->race->flags, RF_GROUP_AI)) {
+	if (!done && rf_has(mon->race->flags, RF_GROUP_AI) &&
+		square_isview(c, mon->fy, mon->fx)) {
 		int i, yy = mon->ty, xx = mon->tx;
 
 		/* If we are not already adjacent */
