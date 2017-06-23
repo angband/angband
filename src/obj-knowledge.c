@@ -772,6 +772,7 @@ void object_set_base_known(struct object *obj)
 	obj->known->kind = obj->kind;
 	obj->known->tval = obj->tval;
 	obj->known->sval = obj->sval;
+	obj->known->weight = obj->weight;
 	obj->known->number = obj->number;
 
 	/* Generic dice and ac, to_h for armor, and launcher multipliers */
