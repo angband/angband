@@ -1156,13 +1156,13 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 	create_mon_flag_mask(current_flags, RFT_ALTER, RFT_MAX);
 	rf_inter(current_flags, known_flags);
 	my_strcpy(start, format("%s can ", initial_pronoun), sizeof(start));
-	lore_append_clause(tb, current_flags, COLOUR_WHITE, start, "and", ". ");
+	lore_append_clause(tb, current_flags, COLOUR_WHITE, start, "and", ".  ");
 
 	/* Describe detection traits */
 	create_mon_flag_mask(current_flags, RFT_DET, RFT_MAX);
 	rf_inter(current_flags, known_flags);
 	my_strcpy(start, format("%s is ", initial_pronoun), sizeof(start));
-	lore_append_clause(tb, current_flags, COLOUR_WHITE, start, "and", ". ");
+	lore_append_clause(tb, current_flags, COLOUR_WHITE, start, "and", ".  ");
 
 	/* Describe special things */
 	if (rf_has(known_flags, RF_UNAWARE))
@@ -1248,6 +1248,9 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 		my_strcpy(start, format("%s cannot be ", initial_pronoun),
 				  sizeof(start));
 	lore_append_clause(tb, current_flags, COLOUR_L_UMBER, start, "or", "");
+	if (!rf_is_empty(current_flags)) {
+		prev = true;
+	}
 
 	if (prev)
 		textblock_append(tb, ".  ");
