@@ -1068,9 +1068,6 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 			*gear = obj;
 		last_gear_obj = obj;
 
-		/* Add the weight */
-		player->upkeep->total_weight += (obj->number * obj->weight);
-
 		/* If it's equipment, wield it */
 		if (code < player->body.count) {
 			player->body.slots[code].obj = obj;
@@ -1100,10 +1097,12 @@ int rd_gear(void)
 	if (rd_gear_aux(rd_item, &player->gear_k))
 		return -1;
 
-	/* Align the two */
+	/* Align the two, add weight */
 	for (obj = player->gear, known_obj = player->gear_k; obj;
-		 obj = obj->next, known_obj = known_obj->next)
+		 obj = obj->next, known_obj = known_obj->next) {
 		obj->known = known_obj;
+		player->upkeep->total_weight += (obj->number * obj->weight);
+	}
 
 	/* Maybe we have to duplicate also upkeep and body */
 	calc_inventory(player->upkeep, player->gear, player->body);
