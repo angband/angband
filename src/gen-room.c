@@ -1268,7 +1268,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					break;
 				}
 					/* A chest. */
-				case '~': place_object(c, y, x, c->depth + 5, true, true,
+				case '~': place_object(c, y, x, c->depth + 5, false, false,
 									   ORIGIN_VAULT, TV_CHEST); break;
 					/* Treasure. */
 				case '$': place_gold(c, y, x, c->depth, ORIGIN_VAULT);break;
