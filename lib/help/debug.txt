@@ -34,14 +34,8 @@ Detection / Information
 Detect all ('d')
   Detects all traps, doors, stairs, treasure, and monsters nearby.
 		
-Identify ('i')
-  Fully identifies an object.
-		
 Magic Mapping ('m')
   Maps the nearby dungeon.
-		
-Self-knowledge ('k')
-  Grants you self-knowledge, as the potion of the same name.
 		
 Learn about objects ('l')
   Requires a command-count. Makes you "aware" of all items with level less
@@ -139,6 +133,6 @@ Collect stats ('f' or 'S')
   Requests number of runs, and whether diving or clearing levels, and
   outputs the results into the file 'stats.log' in the user directory.
 		
-Ben hack ('_')
-  Maps out the reachable grids (by the flow algorithm) in successive
-  distances from the player grid.
+Nick hack ('_')
+  Maps out the reachable grids (by the sound and scent algorithm) in
+  successive distances from the player grid.

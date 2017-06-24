@@ -13,17 +13,21 @@ Ignore settings
       
 Angband allows you to ignore specific items that you don't want to see
 anymore. These items are marked 'ignored' and any similar items are hidden
-from view. There are several ways to ignore an item. The easiest way is to
-choose the 's' option when destroying an object. Whenever you destroy an
-object you are forced to confirm the destruction. One of the options is 's'.
-If you use this option, the object is dropped and then hidden from view.
+from view. The easiest way to ignore an item is with the 'k' (or '^D') 
+command; the object is dropped and then hidden from view.  When ignoring an
+object, you will be given a choice of ignoring just that object, or all
+objects like it in some way.
 
-Weapons and armor have quality ignore options. These allow you to specify
-what types of weapons and armor you are no longer interested in seeing. 
-There is a quality setting for each weapon and armor type. Ignoring weapons
-and armor by destroying the object will prompt you with a question about
-whether you wish to ignore all of that type of armor with a certain quality
-setting. These quality settings are described below:
+The entire ignoring system can also be accessed from the options menu ('=') 
+by choosing "i) Item ignoring setup".  This allows ignore settings for 
+non-wearable items, and quality and ego ignore settings (described below) 
+for wearable items, to be viewed or changed.
+
+There is a quality setting for each wearable item type. Ignoring a wearable 
+item will prompt you with a question about whether you wish to ignore all of 
+that type of item with a certain quality setting, or of an ego type, or both.
+
+The quality settings are:
 
 bad
   The weapon/armor has negative AC, to-hit or to-dam.
@@ -35,16 +39,9 @@ good
   The weapon/armor has positive AC, to-hit or to-dam. However it does not
   have any special abilities, brands, slays, stat-boosts, resistances
  
-excellent, with no high resists
-  Weapons will have some slays. Armor will have resistances, but these are
-  limited to rfire, rcold, racid and relec.
+non-artifact
+  This setting only leaves artifacts unignored.
 
-excellent but not splendid
-  Weapons and armor may have high resists but they do not have any stat
-  boosts or brands.
-
-splendid
-  Ignoring all splendid items only leaves artifacts unignored.
 
 Using Inscriptions
 ==================

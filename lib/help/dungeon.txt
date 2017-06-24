@@ -5,7 +5,7 @@ Exploring the Dungeon
 After you have created your character, you will begin your Angband
 adventure. Symbols appearing on your screen will represent the dungeon's
 walls, floor, objects, features, and creatures lurking about. In order to
-direct your character through his adventure, you will enter single
+direct your character through their adventure, you will enter single
 character commands (see 'commands.txt').
 
 Symbols On Your Map
@@ -42,6 +42,7 @@ Features that do not block line of sight
 '''   A broken door              '6'    Entrance to Magic Shop
 '<'   A staircase up             '7'    Entrance to the Black Market
 '>'   A staircase down           '8'    Entrance to your Home
+'#'   A pool of lava
 ===== =========================  =====  ================================== 
 
 Features that block line of sight
@@ -51,7 +52,7 @@ Features that block line of sight
 '#'   A secret door              '#'    A wall
 '+'   A closed door              '%'    A mineral vein
 '+'   A locked door              '*'    A mineral vein with treasure
-':'   A pile of rubble
+':'   A pile of rubble           ':'    A pile of passable rubble
 ===== =========================  =====  ==================================
 
 Objects
@@ -134,7 +135,7 @@ acquire treasure.
 Town Buildings
 ==============
 
-Your character will begin his adventure with some basic supplies, and some
+Your character will begin their adventure with some basic supplies, and some
 extra gold with which to purchase more supplies at the town stores.
 
 You may enter any open store to buy items of the appropriate type.
@@ -255,7 +256,7 @@ killed, and the helpful creatures scatter the various treasure throughout
 the dungeon. 
 
 Several objects may occupy a given floor location, which may or may not
-also contain one creature. However, Doors, rubble, traps, and staircases 
+also contain one creature. However, doors, rubble, traps, and staircases 
 cannot coexist with items.  As below, any item may actually be a "pile" 
 of up to 40 identical items. With the right choice of "options", you
 may be able to "stack" several items in the same grid.
@@ -284,10 +285,10 @@ also items on the ground, if you are standing on top of them. At the
 beginning of the game all items are assigned a random 'flavor'. For example
 potions of 'cure light wounds' could be 'red potions'. If you have never
 used, sold, or bought one of these potions, you will only see the flavor.
-You can learn what type of item it is by selling it to a store, using it
-and noticing an effect (for example, quaffing a healing potion when
-injured), or casting the spell identify. Lastly, items in stores that you
-have not yet identified the flavor of will be labeled '{unknown}'
+You can learn what type of item it is by selling it to a store, or using it
+(although learning by use does not always apply to magic devices). Lastly,
+items in stores that you have not yet identified the flavor of will be labeled
+'{unseen}'.
 
 Chests are complex objects, containing traps, locks, and possibly treasure
 or other objects inside them once they are opened. Many of the commands
@@ -314,25 +315,10 @@ inscriptions containing any text of the form '@#' or '@x#' or '!x' or
 '!*', see 'customize.txt'.
 
 The game provides some "fake" inscriptions to help you keep track of your 
-possessions. Wands and staves which are known to be empty will be inscribed 
-with '{empty}'. Objects which have been tried at least once but haven't 
-been identified yet will be inscribed with "tried". In addition while 
-carrying or wielding weapons or armor you may learn qualities of these 
-items. '{average}' means that the item has no magical bonuses. 
-'{magical}' means that it has magical bonuses although these bonuses may 
-be negative. An item with negative bonuses is not necessarily cursed. An 
-'{ego}' item has special abilities. If the abilities are not obvious to 
-the wielder the item will get an '{excellent}' tag. If the item has 
-obvious abilities, such as an increase to a statistic it will be labeled 
-'{splendid}'. Lastly, if at any point you pick up an Artifact you will 
-learn its name immediately and it will be labeled '{special}'. However, 
-you may not be aware of all its powers. Note that these inscriptions are 
-fake, and cannot be removed. 
-
-Only weapons and armor will receive these pseudo-identifications. Wands,
-staves, rods, scrolls, potions and mushrooms can only get the '{tried}'
-label. However, if using or consuming the item creates an obvious effect,
-you will learn the flavor.
+possessions. Weapons, armor and jewellery which have properties you don't
+know about yet will get a '{??}' label.  Wands, staves and rods can get a 
+'{tried}' label after use, particularly if they have an effect on a monster
+and were tested in the absence of monsters.
 
 It is rumored that rings of power and extra rare spell books may be found
 deeper in the dungeon...
@@ -344,14 +330,16 @@ chest full of treasure will grow teeth in its lid and bite your hand off...
 Cursed Objects
 ==============
 
-There remain some special objects of great power that have been cursed.  If
-you wield a cursed item, you will not be able to take it off.  All cursed
-items will be automatically identified as cursed when you add them into
-your inventory.  It is also possible to have your weapons or armor cursed
-through magical means, and this can destroy even the strongest artifact and
-leave you saddled with a useless piece of junk.  If you want or need to 
-remove a curse, scrolls of enchantment can be found in the dungeon that
-have a chance of lifting all curses except for permanent ones.
+Some objects, often objects of great power, have been cursed. There are many
+curses in the game, and they can appear on any wearable object. Curses may
+have a negative (or sometimes positive) effect on an object's properties, or
+cause bad things to happen to the player at random.
+
+You can choose to wear the object in spite of its curses, or attempt to
+uncurse it using magic.  A warning: failed uncursing leads to the object
+becoming fragile, and a fragile object may be destroyed on future curse removal
+attempts.  It is up to you to balance the risks and rewards in your use
+of cursed items.
 
 Mining
 ======
@@ -401,16 +389,18 @@ Traps
 There are many traps located in the dungeon of varying danger. These traps
 are hidden from sight and are triggered only when your character walks over
 them. If you have found a trap you can attempt to |'D'isarm| it, but
-failure may mean activating it.
+failure may mean activating it.  Traps can be physical dangers such as pits,
+or magical runes or inscriptions which will cause an effect when triggered.
+Your character may be better at disarming one of these types of traps than
+the other.
 
 .. |'D'isarm| replace:: 'D'\isarm
 
-There are some magical means to detecting all traps within a certain
-radius. If you cast one of these spells, there will be a 'Dtrap' green
-label on the bottom of the screen, below the dungeon map. At some point in
-the dungeon you may see a line of green squares on the floor. This line
-represents the extent of your detection. Beyond the green line you are no
-longer in the safe region.
+All characters have a chance to notice traps when they first come into view
+(dependent on searching skill). Some players will also get access to magical
+means of detecting all traps within a certain radius. If you cast one of these
+spells, there will be a 'Dtrap' green label on the bottom of the screen, below
+the dungeon map.
 
 Some monsters have the ability to create new traps on the level that may be
 hidden, even if the player is in a detected zone. The detection only finds
@@ -434,8 +424,8 @@ Stairs, like permanent rock, and shop entrances, cannot be destroyed by any
 means.
 
 Many secret doors are used within the dungeon to confuse and demoralize
-adventurers foolish enough to enter. But with some luck, and lots of
-concentration, you can find these secret doors. Secret doors will sometimes
+adventurers foolish enough to enter, although all secret doors can be
+discovered by stepping adjacent to them. Secret doors will sometimes
 hide rooms or corridors, or even entire sections of that level of the
 dungeon. Sometimes they simply hide small empty closets or even dead ends.
 Secret doors always look like granite walls, just like traps always look
@@ -512,7 +502,7 @@ creature alive, there is really not much point. Unless you wish to listen
 to the rumors of a powerful ring buried somewhere in the dungeon, or a suit
 of dragon scale mail that resists everything...
 
-When you are ready to retire, simply "commit suicide" (using the 'Q' key)
+When you are ready to retire, simply kill your character (using the 'Q' key)
 to have your character entered into the high score list as a winner. Note
 that until you retire, you can still be killed, so you may want to retire
 before wandering into yet another horde of greater demons.
@@ -526,10 +516,8 @@ displayed. You are also permitted to get a record of your character, and
 all your equipment (identified) either on the screen or in a file.
 
 Your character will leave behind a reduced save file, which contains only
-the monster memory and your option choices. It may be restored, in which
-case a new character is generated exactly as if the file was not there, but
-the new player will find his monster memory containing all the experience
-of past incarnations.
+your option choices. It may be restored, in which case a new character is
+generated exactly as if the file was not there.
 
 There are a variety of ways to "cheat" death (including using a special
 "cheating option") when it would otherwise occur. This will fully heal your

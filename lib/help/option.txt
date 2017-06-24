@@ -26,6 +26,17 @@ User Interface Options
 Rogue-like commands '[rogue_like_commands]'
   Selects the "roguelike" command set (see "command.txt" for info).
 
+.. _use_sound:
+
+Use sound '[use_sound]'
+  Turns on sound effects, if your system supports them.
+
+.. _show_damage:
+
+Show damage player deals to monsters '[show_damage]'
+  Shows the damage that the player deals to monsters for melee and ranged 
+  combat in the messages.
+  
 .. _use_old_target:
 
 Use old target by default '[use_old_target]'
@@ -33,12 +44,6 @@ Use old target by default '[use_old_target]'
   current "target" if there is one. Use of this option can be dangerous if
   you target locations on the ground, unless you clear them when done.
   
-.. _auto_more:
-
-Automatically clear -more- prompts '[auto_more]'
-  The game does not wait for a keypress when it comes to a '-more-'
-  prompt, but carries on going.  
-
 .. _pickup_always:
 
 Always pickup items '[pickup_always]'
@@ -51,27 +56,24 @@ Always pickup items matching inventory '[pickup_inven]'
   Like `pickup_always`_, but picks up an item only if it is a copy of an
   item that you already have in your inventory.
   
-.. _notify_recharge:
-
-Notify on object recharge '[notify_recharge]'
-  This causes the game to print a message when any rechargeable object
-  (i.e. a rod or activatable weapon or armour item) finishes recharging. It
-  is the equivalent of inscribing '{!!}' on all such items.  
-  
 .. _show_flavors:
 
 Show flavors in object descriptions '[show_flavors]'
   Display "flavors" (color or variety) in object descriptions, even for
   objects whose type is known. This does not affect objects in stores.  
 
-.. _center_player:
+.. _show_target:
 
-Center map continuously '[center_player]'
-  The map always centres on the player with this option on. With it off, it
-  is divided into 25 sections, with coordinates (0,0) to (4,4), and will
-  how one section at a time - the display will "flip" to the next section
-  when the player nears the edge.
-  
+Highlight target with cursor '[show_target]'
+  Highlights the current targeted monster with a cursor.  Useful when 
+  combined with "use old target by default"
+
+.. _highlight_player:
+
+Highlight player with cursor between turns '[highlight_player]'
+  Highlights the player with a cursor.  Useful if you have trouble finding
+  the player
+
 .. _disturb_near:
 
 Disturb whenever viewable monster moves '[disturb_near]'
@@ -81,17 +83,17 @@ Disturb whenever viewable monster moves '[disturb_near]'
   "telepathy" for the purpose of determining whether a monster is
   "viewable".
 
-.. _show_damage:
+.. _solid_walls:
 
-Show damage player deals to monsters '[show_damage]'
-  Shows the damage that the player deals to monsters for melee and ranged 
-  combat in the messages.
-  
-.. _show_target:
+Show walls as solid blocks '[solid_walls]'
+  Walls are solid blocks instead of # for granite and % for veins.  Veins
+  are coloured darker than granite for differentiation purposes.
 
-Highlight target with cursor '[show_target]'
-  Highlights the current targeted monster with a cursor.  Useful when 
-  combined with "use old target by default"
+.. _hybrid_walls:
+
+Show walls with shaded backgrounds '[hybrid_walls]'
+  Walls appear as # and % symbols overlaid on a gray background block.  
+  This overrides '[solid_walls]'.
 
 .. _view_yellow_light:
 
@@ -105,12 +107,14 @@ Animate multi-coloured monsters and items '[animate_flicker]'
   Certain powerful monsters and items will shimmer in real time, i.e.
   between keypresses.  
 
-.. _hp_changes_color:
+.. _center_player:
 
-Player color indicates low hit points '[hp_changes_color]'
-  This option makes the player '@' turn various shades of colour from
-  white to red, depending on percentage of HP remaining.
-
+Center map continuously '[center_player]'
+  The map always centres on the player with this option on. With it off, it
+  is divided into 25 sections, with coordinates (0,0) to (4,4), and will
+  how one section at a time - the display will "flip" to the next section
+  when the player nears the edge.
+  
 .. _purple_uniques:
 
 Show unique monsters in a special colour '[purple_uniques]'
@@ -119,17 +123,17 @@ Show unique monsters in a special colour '[purple_uniques]'
   they are unique. If you like the idea but don't like the colour, you can
   edit it via the "interact with colors" option.
   
-.. _solid_walls:
+.. _auto_more:
 
-Show walls as solid blocks '[solid_walls]'
-  Walls are solid blocks instead of # for granite and % for veins.  Veins
-  are coloured darker than granite for differentiation purposes.
+Automatically clear -more- prompts '[auto_more]'
+  The game does not wait for a keypress when it comes to a '-more-'
+  prompt, but carries on going.  
 
-.. _hybrid_walls:
+.. _hp_changes_color:
 
-Show walls with shaded backgrounds '[hybrid_walls]'
-  Walls appear as # and % symbols overlaid on a gray background block.  
-  This overrides '[solid_walls]'.
+Player color indicates low hit points '[hp_changes_color]'
+  This option makes the player '@' turn various shades of colour from
+  white to red, depending on percentage of HP remaining.
 
 .. _mouse_movement:
 
@@ -137,11 +141,13 @@ Allow mouse clicks to move the player  '[mouse_movement]'
   Clicking on the main window will be interpreted as a move command to that
   spot.
 
-.. _use_sound:
+.. _notify_recharge:
 
-Use sound '[use_sound]'
-  Turns on sound effects, if your system supports them.
-
+Notify on object recharge '[notify_recharge]'
+  This causes the game to print a message when any rechargeable object
+  (i.e. a rod or activatable weapon or armour item) finishes recharging. It
+  is the equivalent of inscribing '{!!}' on all such items.  
+  
 
 Birth options
 =============
@@ -155,13 +161,16 @@ Randomize the artifacts (except a very few) '[birth_randarts]'
   number, findability and power of random artifacts will all match the
   standard set - approximately.
 
-.. _birth_ai_learn:
+.. _birth_connect_stairs:
 
-Monsters learn from their mistakes '[birth_ai_learn]'
-  Allow monsters to learn what spell attacks you are resistant to, and to
-  use this information to choose the best attacks.  This option makes the
-  game very difficult and is not recommended.
-  
+Generate connected stairs '[birth_connect_stairs]'
+  With this option turned on, if you go down stairs, you start the new level
+  on an up staircase, and vice versa (if you go up stairs, you start the
+  next level on a down staircase).
+
+  With this option off, you will never start on a staircase - but other
+  staircases up and down elsewhere on the level will still be generated.
+
 .. _birth_force_descend:
 
 Force player descent '[birth_force_descend]'
@@ -206,16 +215,6 @@ Lose artifacts when leaving level '[birth_lose_arts]'
   have already identified (i.e. picked up) - these will always be
   permanently lost if you leave a level without taking them with you.
 
-.. _birth_connect_stairs:
-
-Generate connected stairs '[birth_connect_stairs]'
-  With this option turned on, if you go down stairs, you start the new level
-  on an up staircase, and vice versa (if you go up stairs, you start the
-  next level on a down staircase).
-
-  With this option off, you will never start on a staircase - but other
-  staircases up and down elsewhere on the level will still be generated.
-
 .. _birth_feelings:
 
 Show level feelings '[birth_feelings]'
@@ -238,6 +237,20 @@ Start with a kit of useful gear '[birth_start_kit]'
   Start with items, a useful option for new players, or ones that wish
   to descend immediately into the dungeon.  If turned off, the character
   will start with additional gold with which to purchase starting gear.
+
+.. _birth_ai_learn:
+
+Monsters learn from their mistakes '[birth_ai_learn]'
+  Allow monsters to learn what spell attacks you are resistant to, and to
+  use this information to choose the best attacks.  This option makes the
+  game very difficult and is not recommended.
+  
+.. _birth_know_runes:
+
+Player can recognize all object properties at birth '[birth_know_runes]'
+  For players who don't enjoy the "identify by use" process for wearable
+  items.  This option means all object properties are known at the outset, so
+  artifacts and ego items will identified on walking over them.
 
 Cheating options
 ================
@@ -334,4 +347,8 @@ the cut-off for using the color red to display both hitpoints and mana.
 The 'delay_factor' value, if non-zero, will slow down the visual effects
 used for missile, bolt, beam, and ball attacks. The actual time delay is
 equal to 'delay_factor' squared, in milliseconds.
+
+The 'lazymove_delay' value, if non-zero, will allow the player to move
+diagonally by pressing the two appropriate arrow keys within the delay time.
+This may be useful particularly when using a keyboard with no numpad.
 

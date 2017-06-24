@@ -82,10 +82,9 @@ learn if the monster resists that element or if they are immune. There are
 other magical means to learn about monster's abilities that don't require
 you to actually experience the attacks.
 
-This memory can be passed on to a new character even after you die by means
-of a re-used save file. (You must start the new character by opening the
-existing save file of the dead character for this to happen: using the
-"start new character" option will not give access to any monster memory.)
+This memory can be used by all your characters; it is stored in a file
+called 'lore.txt' in your user directory (~/.angband/Angband in Linux,
+lib/user in Windows, Documents/Angband in macOS).
 
 Your Weapon
 ===========
@@ -100,13 +99,7 @@ power that the character needs at two separate times.
 Weapons have two main magical characteristics, their enchanted ability to
 hit and their enchanted ability to do damage, expressed as '(+#,+#)'. A
 normal weapon would be '(+0,+0)'. Many weapons in Angband have bonuses to
-hit and/or to damage. A very few weapons are cursed, and have penalties
-that diminish your hit and/or damage bonuses. Cursed weapons cannot be
-unwielded until the curse is lifted.  Luckily, all cursed items will be
-immediately shown as {cursed} when you pick them up.  Unluckily, it is 
-rumored that there exist some powerful magic that can cause your weapons
-or armour to become cursed.  Magically identifying a weapon will inform 
-you of the magical bonuses and penalties.
+hit and/or to damage.
 
 Angband assumes that your youth in the rough environment near the dungeons
 has taught you the relative merits of different weapons, and displays as
@@ -133,12 +126,6 @@ enchanted. Like weapons, |'I'nspecting| ammunition will tell you how much
 damage you will do with your current missile launcher.
 
 .. |'I'nspecting| replace:: 'I'\nspecting
-
-Although you receive any magical bonuses an unidentified weapon may possess
-when you wield it, those bonuses will not be immediately added to the
-displayed values of to-hit and to-dam on your character sheet. In order to
-learn these plusses you must use the weapon in combat or use magical means
-of identification. The same applies for missiles and launchers.
 
 Finally, some rare weapons have special abilities. These are called ego
 weapons, and are feared by great and meek. An ego weapon must be wielded to
@@ -168,10 +155,6 @@ some of the damage that your character would have taken from normal
 attacks. Third, acid damage is reduced by wearing body armor (but the
 armor may be damaged instead). It is obvious that a high armor class is
 vital for surviving the deeper levels of Angband.
-
-Each piece of armour has a base armor value, which, like the damage from
-weapons, is assumed known by the player, and a magic bonus, which will not
-be displayed unless the armor has been identified or was bought in a store.
 
 Armor class values are always displayed between a set of square brackets,
 as '[#]' or '[#,+#]'. The first value is the base armor class of the
@@ -281,11 +264,11 @@ character or monster level.
 
 In the case of fire, cold, lightning, acid and poison, if the monster has
 resistance to a player attack of this kind it will take almost no damage.
-If the player has one or more permanent sources of resistance, he will take
+If the player has one or more permanent sources of resistance, they will take
 1/3 of the damage he would normally take: if the player has a temporary
 source of resistance (whether from potion, spell or item activation), this
 will also reduce the damage to 1/3 of its normal level, allowing the
-character to take only 1/9 damage if he has both permanent and temporary
+character to take only 1/9 damage if they have both permanent and temporary
 resistance. Having more than one source of permanent resistance confers no
 extra bonus, and using more than one source of temporary resistance
 increases only the duration of the resistance: in both cases, either the
@@ -337,7 +320,7 @@ the monster, up or down a level, or swap over two of the player's
 they have protection from blindness or resistance to light or dark), sound
 (which will stun a character without sound resistance or protection from
 stunning), crystal shards (which will cut a non-resistant character),
-inertia (which will slow a character even if he has free action), gravity
+inertia (which will slow a character regardless of free action), gravity
 (which will blink a character, also stunning and slowing), force (which
 will stun the character), plasma (which will stun), time (which may
 drain experience regardless of hold life, or drain stats regardless of
@@ -598,8 +581,8 @@ Crown of Lordliness
 Helm/Crown of Seeing
   This is the great helmet or crown of the rogues. The wearer will be able
   to see invisible creatures, and will have an increased ability to locate
-  traps and secret doors. It is also rumored that the wearer of such a helm
-  will not be able to be blinded.
+  traps. It is also rumored that the wearer of such a helm will not be able
+  to be blinded.
 
 Helm of Infravision
   This helmet allows the character to see monsters even in total darkness,

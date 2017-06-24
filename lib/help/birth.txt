@@ -38,8 +38,8 @@ These stats can be modified further by equipment, race and class bonuses up
 to a maximum of '18/220'.
 
 Each character also has several primary "skills": disarming, magic devices,
-saving throws, stealth, searching ability, searching frequency, fighting
-skill, and shooting skill, which are derived from the character's race,
+saving throws, stealth, searching ability, fighting skill, shooting skill, 
+and digging skill, which are derived from the character's race,
 class, level, stats, and current equipment. These skills have rather 
 obvious effects, but will be described more completely below.
 
@@ -409,8 +409,8 @@ Infravision
  
 Fighting
   Fighting is the ability to hit and do damage with weapons or fists.
-  Normally a character gets a single blow from any weapon, but if his
-  dexterity and strength are high enough, he may receive more blows with
+  Normally a character gets a single blow from any weapon, but with
+  high enough dexterity and strength may receive more blows with
   lighter weapons. Strength and dexterity both modify the ability to hit an
   opponent. This kill increases with the level of the character. Inspecting
   a weapon will show you how quickly you can attack with it.
@@ -440,11 +440,12 @@ Stealth
  
 Disarming
   Disarming is the ability to remove traps safely, and also includes
-  picking locks on traps and doors. A successful disarming or lock picking
-  will gain the character a small amount of experience. A trap must be
-  found before it can be disarmed. Dexterity and intelligence both modify
-  the ability to disarm, and this ability increases with the level of the
-  character.
+  picking locks on traps and doors. A successful disarming will gain the
+  character a small amount of experience. A trap must be found before it
+  can be disarmed. Traps are either physical or magical devices, so the
+  character has two disarming skills.  Dexterity modifies disarming of
+  physical traps, and intelligence modifies disarming of magical traps.
+  Both these abilities increase with the level of the character.
  
 Magical Devices
   Using a magical device such as a wand or staff requires experience and
@@ -452,16 +453,10 @@ Magical Devices
   better at using a magical device than say a warrior. This skill is
   modified by intelligence, and increases with the level of the character.
 
-Searching Frequency (Perception)
-  Perception is the ability to notice something without actively seeking it
-  out. This skill is based entirely upon race and class, and will never
-  improve unless magically enhanced.
-
-Searching Ability (Searching)
-  To search is to actively look for secret doors, floor traps, and traps on
-  chests. Rogues are the best at searching, but mages, rangers, and priests
-  are also good at it. This skill is based entirely upon race and class,
-  and will never improve unless magically enhanced.
+Searching (Perception)
+  Perception is the ability to notice traps without actively seeking them
+  out.  Rogues are the best at searching, but rangers are also good at it.
+  This skill is based on race and class, and increases with character level.
  
 Stat Bonus Tables
 =================
@@ -503,32 +498,32 @@ points per level, adjusted for constitution) and an XP modifier of
 Ability Tables
 ==============
 
-============ ======  ======  =====  =======  ======  ======  ======  =====
-  Race       Disarm  Device   Save  Stealth  Search  Percep   Fight   Bows
-============ ======  ======  =====  =======  ======  ======  ======  ===== 
-  Human         0       0       0       0       0      10       0       0
-  Half-Elf      2       3       3       1       6      11      -1       5
-  Elf           5       6       6       2       8      12      -5      15
-  Hobbit       15      18      18       4      12      15     -10      20
-  Gnome        10      22      12       3       6      13      -8      12
-  Dwarf         2       9       9      -1       7      10      15       0
-  Half-Orc     -3      -3      -3      -1       0       7      12      -5
-  Half-Troll   -5      -8      -8      -2      -1       5      20     -10
-  Dunadan       4       5       5       1       3      13      15      10
-  High-Elf      4      20      20       2       3      14      10      25
-  Kobold       10       5       0       3      15      15      -5      10
-============ ======  ======  =====  =======  ======  ======  ======  =====
+============ =======  =======  ======  =====  =======  ======  ======  =====
+  Race       DisarmP  DisarmM  Device   Save  Stealth  Search   Fight   Bows
+============ =======  =======  ======  =====  =======  ======  ======  ===== 
+  Human         0        0        0       0       0       0       0       0
+  Half-Elf      2        2        3       3       1       3      -1       5
+  Elf           5        5        6       6       2       6      -5      15
+  Hobbit       15       15       18      18       4       6     -10      20
+  Gnome        10       10       22      12       3       4      -8      12
+  Dwarf         2        2        9       9      -1       2      15       0
+  Half-Orc     -3       -3       -3      -3      -1      -3      12      -5
+  Half-Troll   -5       -5       -8      -8      -2      -9      20     -10
+  Dunadan       4        4        5       5       1       3      15      10
+  High-Elf      4        4       20      20       2      10      10      25
+  Kobold       10       10        5       0       3      10      -5      10
+============ =======  =======  ======  =====  =======  ======  ======  =====
 
-==========  ======= ======= ======= ======= ======  ======  ======= =======
- Class      Disarm  Device   Save   Stealth Search  Percep   Fight   Bows 
-==========  ======= ======= ======= ======= ======  ======  ======= =======
- Warrior    25(+10) 18(+7)  18(+10)  0(+0)  14(+0)   2(+0)  70(+45) 55(+45)
- Mage       30(+7)  36(+13) 30(+9)   2(+0)  16(+0)  20(+0)  34(+15) 20(+15)
- Priest     25(+7)  30(+10) 32(+12)  2(+0)  16(+0)   8(+0)  48(+20) 35(+20)
- Rogue      45(+15) 32(+10) 28(+10)  3(+1)  32(+0)  24(+0)  60(+40) 66(+30)
- Ranger     30(+8)  32(+10) 28(+10)  3(+0)  24(+0)  16(+0)  56(+30) 72(+45)
- Paladin    20(+7)  24(+10) 25(+11)  0(+0)  12(+0)   2(+0)  68(+35) 40(+30)
-==========  ======= ======= ======= ======= ======  ======  ======= =======
+==========  ======= ======= ======= ======= ======= =======  ======= =======
+ Class      DisarmP DisarmM Device   Save   Stealth Search    Fight   Bows 
+==========  ======= ======= ======= ======= ======= =======  ======= =======
+ Warrior    25(+15) 20(+10) 18(+7)  18(+10)  0(+0)  10(+12)  70(+45) 55(+45)
+ Mage       30(+10) 35(+12) 36(+13) 30(+9)   2(+0)  10(+12)  34(+15) 20(+15)
+ Priest     25(+12) 25(+12) 30(+10) 32(+12)  2(+0)  10(+14)  48(+20) 35(+20)
+ Rogue      45(+20) 45(+20) 32(+10) 28(+10)  3(+1)  20(+16)  60(+40) 66(+30)
+ Ranger     30(+13) 20(+13) 32(+10) 28(+10)  3(+0)  15(+15)  56(+30) 72(+45)
+ Paladin    20(+12) 20(+10) 24(+10) 25(+11)  0(+0)  10(+12)  68(+35) 40(+30)
+==========  ======= ======= ======= ======= ======= =======  ======= =======
 
 For character classes, there are two figures: the first figure is the base
 level of the skill, while the second figure (in parentheses) is the bonus

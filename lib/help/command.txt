@@ -511,7 +511,7 @@ Save ('Ctrl-S')
   if you are paranoid about having your computer crash (or your power go
   out) while you are playing.
 
-Quit (commit suicide) ('Q')
+Quit ('Q')
   Kills your character and exits Angband. You will be prompted to make sure
   you really want to do this, and then asked to verify that choice. Note
   that dead characters are dead forever.
@@ -600,12 +600,9 @@ Load screen dump (left-paren)
   'dump.txt', and displays it on the screen.
 
 Save screen dump (|')'|)
-  This command dumps a "snap-shot" of the current screen to the file
-  'dump.txt', including encoded color information. The command has three
-  variants:
+  This command dumps a "snap-shot" of the current screen to a file,
+  including encoded color information. The command has two variants:
 
-  - text, a simple ascii dump of the screen concatenated with a dump of the
-    color attributes.  It may be viewed in color with the '(' command.
   - html, suitable for viewing in a web browser.
   - forum embedded html for vBulletin, suitable for pasting in
     web forums like http://angband.oook.cz/forums.

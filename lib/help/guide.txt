@@ -8,6 +8,10 @@ get into the dungeon and try, well, whatever seems to be prudent. You'll
 probably die rather quickly, but the following will make much more sense to you
 if you have just a little actual gameplay experience.
 
+This guide was written for Angband 3.5.0, and is now a little out of date
+(particularly the sections on identifying and collecting items).  It is still
+a handy source of hints and advice; just don't take it as an authority.
+
 The basics
 ----------
 

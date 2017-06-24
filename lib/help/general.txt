@@ -48,8 +48,8 @@ especially this one, before beginning any serious adventuring...
 About the game
 ==============
 
-Angband has been maintained by a succession of volunteers since it was
-written in the early 1990s. The most current maintainer is Nick McConnell.
+Angband has been maintained and developed by a succession of volunteers since
+it was written in the early 1990s. The current maintainer is Nick McConnell.
 
 Angband will run on a wide variety of systems (including Unix, Macintosh,
 Windows). It is written in C, and the source code is freely available.
