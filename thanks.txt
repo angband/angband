@@ -5,75 +5,45 @@ Credits
 If your name should be included in this file and it's not, please email us
 so we can fix it. :)
 
-Version 4.0.x
+Version 4.1.x
 =============
 
 Code contribution:
 
- * Aaron Bader (fizzix)
- * Antony Sidwell (ajps)
- * Andi Sidwell (takkaria)
- * Bardur Arantsson
- * Ben Semmler (molybdenum)
- * Chris Carr (magnate)
- * Christian Heckendorf
- * Elly Fong-Jones (elly)
- * Elsairon
- * Erik Osheim (d_m)
- * flaviommedeiros
- * Jagath Samarabandu
- * Jose Antonio Dura
- * Kevin J. Fletcher
- * LostTemplar
- * Michel Carroll
- * Nick McConnell
- * Nomad
- * Peter Denison (noz)
- * phantom-voltage
- * PowerWyrm
- * redlumf
- * Robert Au (myshkin)
- * Rydelfox
- * Timothy Collett
+* Andi Sidwell (takkaria)
+* Bardur Arantsson
+* Ben Semmler
+* crayonsmelting
+* Derakon
+* Erik Osheim (d_m)
+* fizzix (Aaron Bader)
+* Flavio Medeiros
+* Graeme Russ
+* Gwilim Owen
+* Jean-François Caron
+* Kevin J. Fletcher
+* Nomad
+* Pete McIlroy
+* Peter (Hermann Döppes)
+* Peter McIlroy
+* PowerWyrm
+* rmzelle
+* rowanbeentje
+* Tiara Smith
+* Twisted Pair in my Hair
+* Vic K (t4nk)
+* William Orr
 
-Beta testing and bug reporting/fixing:
+Thanks are due for contributing to discussion which has influenced this
+version to a great many people (too many to list) on
 
- * Ingwe Ingweron
- * Nomad
- * MattB
- * Thraalbeast
- * tumbleweed
- * AndyHK
- * Rhonwyn
- * Jungle_Boy
- * Darin
- * StMicah
- * debo
- * pen
- * topazg
- * wobbly
- * DeusIrae
- * Timo Pietilä
- * ranger jeff
- * passer_by
- * Runaway1956
- * mrrstark
- * Estie
- * shreesh
- * elliptic
- * Gorbad
- * letslaugh
- * ShadowTechnology
- * bryan.g.hutchinson
- * Werbaer
- * fph
- * yyt16384
- * kandrc
- * Nivra
- * Tarrasque
- * Egavactip
- * zog
- * troycheek
+* the Angband forums (http://angband.oook.cz/forum/)
+* the #angband-dev and #angband IRC channels on freenode.net
+* the roguelikes subreddit (https://www.reddit.com/r/roguelikes/)
+* the #band channel on the roguelikes discord
+
+Special thanks to Luke McConnell for many, many conversations on game design
+which influenced design decisions across the breadth and depth of Angband.
 
 Previous maintainers
 ====================
@@ -98,7 +68,7 @@ Contributors
 ============
 
 Many thanks go to the following people who have contributed patches,
-bugfixes, and other stuff for Angband:
+bugfixes, and other stuff for Angband prior to 4.0:
 
 Peter Berger, Andrew Hill, Werner Baer, Tom Morton, "Cyric the Mad", 
 Chris Kern, Jurriaan Kalkman, Alexander Wilkins, Mauro Scarpa, "facade", 
@@ -220,6 +190,76 @@ Antony Sidwell (ajps)
 
 "PowerWyrm"
   Numerous bug fixes and code improvements
+
+Version 4.0.x
+=============
+
+Code contribution:
+
+ * Aaron Bader (fizzix)
+ * Antony Sidwell (ajps)
+ * Andi Sidwell (takkaria)
+ * Bardur Arantsson
+ * Ben Semmler (molybdenum)
+ * Chris Carr (magnate)
+ * Christian Heckendorf
+ * Elly Fong-Jones (elly)
+ * Elsairon
+ * Erik Osheim (d_m)
+ * flaviommedeiros
+ * Jagath Samarabandu
+ * Jose Antonio Dura
+ * Kevin J. Fletcher
+ * LostTemplar
+ * Michel Carroll
+ * Nick McConnell
+ * Nomad
+ * Peter Denison (noz)
+ * phantom-voltage
+ * PowerWyrm
+ * redlumf
+ * Robert Au (myshkin)
+ * Rydelfox
+ * Timothy Collett
+
+Beta testing and bug reporting/fixing:
+
+ * Ingwe Ingweron
+ * Nomad
+ * MattB
+ * Thraalbeast
+ * tumbleweed
+ * AndyHK
+ * Rhonwyn
+ * Jungle_Boy
+ * Darin
+ * StMicah
+ * debo
+ * pen
+ * topazg
+ * wobbly
+ * DeusIrae
+ * Timo Pietilä
+ * ranger jeff
+ * passer_by
+ * Runaway1956
+ * mrrstark
+ * Estie
+ * shreesh
+ * elliptic
+ * Gorbad
+ * letslaugh
+ * ShadowTechnology
+ * bryan.g.hutchinson
+ * Werbaer
+ * fph
+ * yyt16384
+ * kandrc
+ * Nivra
+ * Tarrasque
+ * Egavactip
+ * zog
+ * troycheek
 
 .. |copyright| unicode:: 0xA9
 
