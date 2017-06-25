@@ -149,6 +149,18 @@ trap:poison pit:*:0x87:0xC3
 trap:rune of summon foe:*:0x87:0xA7
 
 # strange rune
+trap:rune of summoning:*:0x87:0xA7
+
+# strange rune
+trap:rune of necromancy:*:0x87:0xA7
+
+# strange rune
+trap:rune of dragonsong:*:0x87:0xA7
+
+# strange rune
+trap:hellhole:*:0x87:0xA7
+
+# strange rune
 trap:teleport rune:*:0x87:0xA8
 
 # discolored spot
@@ -180,6 +192,48 @@ trap:poison gas trap:*:0x87:0xB8
 
 # gas trap
 trap:sleep gas trap:*:0x87:0xBD
+
+# alarm
+trap:aggravation trap:*:0x87:0xC0
+
+# explosion
+trap:mine trap:*:0x87:0xC4
+
+# explosion
+trap:blast trap:*:0x87:0xC4
+
+# mental assault
+trap:mind blasting trap:*:0x87:0xA9
+
+# mental assault
+trap:brain smashing trap:*:0x87:0xA9
+
+# ancient mechanism
+trap:rock fall trap:*:0x87:0xA2
+
+# ancient mechanism
+trap:earthquake trap:*:0x87:0xA2
+
+# ancient mechanism
+trap:area blast trap:*:0x87:0xC5
+
+# trap
+trap:blinding flash trap:*:0x87:0xBE
+
+# trap
+trap:blinding trap:*:0x87:0xBE
+
+# trap
+trap:mana drain trap:*:0x87:0xA9
+
+# trap
+trap:knife trap:*:0x87:0xC1
+
+# trap
+trap:petrifying trap:*:0x87:0xC2
+
+# alarm
+trap:siren:*:0x87:0xC0
 
 
 # Monster attr/char definitions
@@ -254,6 +308,7 @@ monster:Clear worm mass:0x91:0x93
 monster:Radiation eye:0x90:0x87
 monster:Cave lizard:0x93:0x8E
 monster:Scout:0x84:0x84
+monster:Healer:0x84:0x92
 monster:Gallant:0x84:0x85
 monster:Blue jelly:0x8F:0x86
 monster:Creeping copper coins:0x85:0xD9
