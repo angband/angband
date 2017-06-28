@@ -729,8 +729,9 @@ void run_step(int dir)
 		/* Initialize */
 		run_init(dir);
 
-		/* Hack -- Set the run counter */
-		player->upkeep->running = 1000;
+		/* Hack -- Set the run counter if no count given */
+		if (player->upkeep->running == 0)
+			player->upkeep->running = 9999;
 
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
