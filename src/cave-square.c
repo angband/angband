@@ -821,6 +821,20 @@ bool square_in_bounds_fully(struct chunk *c, int y, int x)
 	return x > 0 && x < c->width - 1 && y > 0 && y < c->height - 1;
 }
 
+/**
+ * Checks if a square is thought by the player to block projections
+ */
+bool square_isbelievedwall(struct chunk *c, int y, int x)
+{
+	// the edge of the world is definitely gonna block things
+	if (!square_in_bounds_fully(c, y, x)) return true;
+	// if we dont know assume its projectable
+	if (!square_isknown(cave, y, x)) return false;
+	// report what we think (we may be wrong)
+	return !square_isprojectable(player->cave, y, x);
+}
+
+
 
 /**
  * OTHER SQUARE FUNCTIONS
