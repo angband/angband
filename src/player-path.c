@@ -820,17 +820,18 @@ void run_step(int dir)
 		}
 	}
 
-	/* Decrease counter if it hasn't been cancelled */
-	if (player->upkeep->running)
-		player->upkeep->running--;
-	else if (!player->upkeep->running_withpathfind)
-		return;
-
 	/* Take time */
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Move the player; running straight into a trap == trying to disarm */
 	move_player(run_cur_dir, dir && disarm ? true : false);
+
+	/* Decrease counter if it hasn't been cancelled */
+	/* occurs after movement so that using p->u->running as flag works */
+	if (player->upkeep->running) {
+		player->upkeep->running--;
+	} else if (!player->upkeep->running_withpathfind)
+		return;
 
 	/* Prepare the next step */
 	if (player->upkeep->running) {
