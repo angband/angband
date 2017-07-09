@@ -258,6 +258,13 @@ Player can recognize all object flavors at birth '[birth_know_flavors]'
   For players who don't enjoy the "identify by use" process for consumable
   items.  This option means all object flavors are known at the outset.
 
+.. _birth_levels_persist:
+
+All dungeon levels are generated only once '[birth_levels_persist]'
+  Each level is generated for the first time when the player enters it, and 
+  from then on when the player returns the level is as they last saw it, 
+  includeing monsters, items and traps.
+
 Cheating options
 ================
 
