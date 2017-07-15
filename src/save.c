@@ -824,6 +824,25 @@ static void wr_dungeon_aux(struct chunk *c)
 	wr_byte(c->feeling);
 	wr_u16b(c->feeling_squares);
 	wr_s32b(c->created_at);
+
+	/* Write connector info */
+	if (OPT(player, birth_levels_persist)) {
+		if (c->join) {
+			struct connector *current = c->join;
+			while (current) {
+				wr_byte(current->grid.x);
+				wr_byte(current->grid.y);
+				wr_byte(current->feat);
+				for (i = 0; i < SQUARE_SIZE; i++) {
+					wr_byte(current->info[i]);
+				}
+				current = current->next;
+			}
+		}
+
+		/* Write a sentinel byte */
+		wr_byte(0xff);
+	}
 }
 
 /**

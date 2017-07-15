@@ -1265,6 +1265,26 @@ static int rd_dungeon_aux(struct chunk **c)
 	c1->feeling_squares = tmp16u;
 	rd_s32b(&c1->created_at);
 
+	/* Read connector info */
+	if (OPT(player, birth_levels_persist)) {
+		rd_byte(&tmp8u);
+		while (tmp8u != 0xff) {
+			size_t n;
+			struct connector *current = mem_zalloc(sizeof *current);
+			current->info = mem_zalloc(square_size * sizeof(bitflag));
+			current->grid.x = tmp8u;
+			rd_byte(&tmp8u);
+			current->grid.y = tmp8u;
+			rd_byte(&current->feat);
+			for (n = 0; n < square_size; n++) {
+				rd_byte(&current->info[n]);
+			}
+			current->next = c1->join;
+			c1->join = current;
+			rd_byte(&tmp8u);
+		}
+	}
+
 	/* Assign */
 	*c = c1;
 
