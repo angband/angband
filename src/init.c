@@ -31,6 +31,7 @@
 #include "datafile.h"
 #include "effects.h"
 #include "game-event.h"
+#include "game-world.h"
 #include "generate.h"
 #include "hint.h"
 #include "init.h"
@@ -655,6 +656,97 @@ static void cleanup_game_constants(void)
 {
 	cleanup_parser(&constants_parser);
 }
+
+/**
+ * ------------------------------------------------------------------------
+ * Intialize world map
+ * ------------------------------------------------------------------------ */
+static enum parser_error parse_world_level(struct parser *p) {
+	const int depth = parser_getint(p, "depth");
+    const char *name = parser_getsym(p, "name");
+    const char *up = parser_getsym(p, "up");
+    const char *down = parser_getsym(p, "down");
+    struct level *last = parser_priv(p);
+    struct level *lev = mem_zalloc(sizeof *lev);
+
+	if (last) {
+		last->next = lev;
+	} else {
+		world = lev;
+	}
+	lev->depth = depth;
+    lev->name = string_make(name);
+	lev->up = streq(up, "None") ? NULL : string_make(up);
+	lev->down = streq(down, "None") ? NULL : string_make(down);
+    parser_setpriv(p, lev);
+    return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_world(void) {
+	struct parser *p = parser_new();
+
+	parser_reg(p, "level int depth sym name sym up sym down",
+			   parse_world_level);
+	return p;
+}
+
+static errr run_parse_world(struct parser *p) {
+	return parse_file_quit_not_found(p, "world");
+}
+
+static errr finish_parse_world(struct parser *p) {
+	struct level *level_check;
+
+	/* Check that all levels referred to exist */
+	for (level_check = world; level_check; level_check = level_check->next) {
+		struct level *level_find = world;
+
+		/* Check upwards */
+		if (level_check->up) {
+			while (level_find && !streq(level_check->up, level_find->name)) {
+				level_find = level_find->next;
+			}
+			if (!level_find) {
+				quit_fmt("Invalid level reference %s", level_check->up);
+			}
+		}
+
+		/* Check downwards */
+		level_find = world;
+		if (level_check->down) {
+			while (level_find && !streq(level_check->down, level_find->name)) {
+				level_find = level_find->next;
+			}
+			if (!level_find) {
+				quit_fmt("Invalid level reference %s", level_check->down);
+			}
+		}
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_world(void)
+{
+	struct level *level = world;
+	while (level) {
+		string_free(level->name);
+		string_free(level->up);
+		string_free(level->down);
+		level = level->next;
+	}
+	mem_free(world);
+}
+
+static struct file_parser world_parser = {
+	"world",
+	init_parse_world,
+	run_parse_world,
+	finish_parse_world,
+	cleanup_world
+};
+
 
 /**
  * ------------------------------------------------------------------------
@@ -2771,6 +2863,7 @@ static struct {
 	const char *name;
 	struct file_parser *parser;
 } pl[] = {
+	{ "world", &world_parser },
 	{ "projections", &projection_parser },
 	{ "timed effects", &player_timed_parser },
 	{ "traps", &trap_parser },

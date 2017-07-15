@@ -45,6 +45,7 @@ u32b seed_flavor;		/* Hack -- consistent object colors */
 s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
+struct level *world;
 
 /**
  * This table allows quick conversion from "speed" to "energy"
@@ -87,6 +88,21 @@ const byte extract_energy[200] =
 	/* F+70 */    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
 	/* Fast */    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
 };
+
+/**
+ * Find a level by its name
+ */
+struct level *level_by_name(char *name)
+{
+	struct level *lev = world;
+	while (lev) {
+		if (streq(lev->name, name)) {
+			break;
+		}
+		lev = lev->next;
+	}
+	return lev;
+}
 
 /**
  * Say whether it's daytime or not
