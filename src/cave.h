@@ -150,6 +150,13 @@ struct heatmap {
     u16b **grids;
 };
 
+struct connector {
+	struct loc grid;
+	byte feat;
+	bitflag *info;
+	struct connector *next;
+};
+
 struct chunk {
 	char *name;
 	s32b created_at;
@@ -177,6 +184,8 @@ struct chunk {
 	u16b mon_max;
 	u16b mon_cnt;
 	int mon_current;
+
+	struct connector *join;
 };
 
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/

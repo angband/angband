@@ -330,6 +330,13 @@ struct chunk *cave_new(int height, int width) {
 void cave_free(struct chunk *c) {
 	int y, x;
 
+	while (c->join) {
+		struct connector *current = c->join;
+		mem_free(current->info);
+		c->join = current->next;
+		mem_free(current);
+	}
+
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			mem_free(c->squares[y][x].info);
