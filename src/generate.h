@@ -255,8 +255,8 @@ struct chunk *lair_gen(struct player *p);
 struct chunk *gauntlet_gen(struct player *p);
 
 /* gen-chunk.c */
-struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
-						 bool objects, bool traps);
+struct chunk *chunk_write(struct chunk *c, int y0, int x0, int height,
+						  int width, bool monsters, bool objects, bool traps);
 void chunk_list_add(struct chunk *c);
 bool chunk_list_remove(char *name);
 struct chunk *chunk_find_name(char *name);

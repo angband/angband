@@ -1028,7 +1028,7 @@ void run_game_loop(void)
 			if (character_dungeon)
 				on_leave_level();
 
-			cave_generate(&cave, player);
+			prepare_next_level(&cave, player);
 			on_new_level();
 
 			player->upkeep->generate_level = false;

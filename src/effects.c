@@ -3461,7 +3461,7 @@ bool effect_handler_LIGHT_LEVEL(effect_handler_context_t *context)
 	bool full = context->value.base ? true : false;
 	if (full)
 		msg("An image of your surroundings forms in your mind...");
-	wiz_light(cave, full);
+	wiz_light(cave, player, full);
 	context->ident = true;
 	return true;
 }

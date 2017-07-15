@@ -2332,7 +2332,7 @@ void get_debug_command(void)
 		/* Wizard Light the Level */
 		case 'w':
 		{
-			wiz_light(cave, true);
+			wiz_light(cave, player, true);
 			break;
 		}
 

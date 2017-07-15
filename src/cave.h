@@ -237,7 +237,7 @@ void map_info(unsigned x, unsigned y, struct grid_data *g);
 void square_note_spot(struct chunk *c, int y, int x);
 void square_light_spot(struct chunk *c, int y, int x);
 void light_room(int y1, int x1, bool light);
-void wiz_light(struct chunk *c, bool full);
+void wiz_light(struct chunk *c, struct player *p, bool full);
 void cave_illuminate(struct chunk *c, bool daytime);
 void cave_update_flow(struct chunk *c);
 void cave_forget_flow(struct chunk *c);
@@ -410,7 +410,7 @@ int cave_monster_count(struct chunk *c);
 
 int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), bool under);
 
-void cave_generate(struct chunk **c, struct player *p);
+void prepare_next_level(struct chunk **c, struct player *p);
 bool is_quest(int level);
 
 void cave_known(struct player *p);

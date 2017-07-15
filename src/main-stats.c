@@ -240,7 +240,7 @@ static void initialize_character(void)
 	flavor_init();
 	player->upkeep->playing = true;
 	player->upkeep->autosave = false;
-	cave_generate(&cave, player);
+	prepare_next_level(&cave, player);
 }
 
 static void kill_all_monsters(int level)
@@ -362,7 +362,7 @@ static void descend_dungeon(void)
 		}
 
 		dungeon_change_level(player, level);
-		cave_generate(&cave, player);
+		prepare_next_level(&cave, player);
 
 		/* Store level feelings */
 		obj_f = cave->feeling / 10;

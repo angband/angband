@@ -419,7 +419,7 @@ void light_room(int y1, int x1, bool light)
  * "objects" (or notes the existence of an object "if" full is true),
  * and memorizes all grids as with magic mapping.
  */
-void wiz_light(struct chunk *c, bool full)
+void wiz_light(struct chunk *c, struct player *p, bool full)
 {
 	int i, y, x;
 
@@ -469,10 +469,10 @@ void wiz_light(struct chunk *c, bool full)
 	}
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
-	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+	p->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
 

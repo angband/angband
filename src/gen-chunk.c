@@ -48,8 +48,8 @@ u16b chunk_list_max = 0;      /**< current max actual chunk index */
  * \param traps whether traps get written
  * \return the memory location of the chunk
  */
-struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
-						 bool objects, bool traps)
+struct chunk *chunk_write(struct chunk *c, int y0, int x0, int height,
+						  int width, bool monsters, bool objects, bool traps)
 {
 	int x, y;
 
@@ -59,13 +59,13 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {
 			/* Terrain */
-			new->squares[y][x].feat = cave->squares[y0 + y][x0 + x].feat;
+			new->squares[y][x].feat = c->squares[y0 + y][x0 + x].feat;
 			sqinfo_copy(new->squares[y][x].info,
-						cave->squares[y0 + y][x0 + x].info);
+						c->squares[y0 + y][x0 + x].info);
 
 			/* Dungeon objects */
 			if (objects) {
-				struct object *obj = square_object(cave, y0 + y, x0 + x);
+				struct object *obj = square_object(c, y0 + y, x0 + x);
 				if (obj) {
 					new->squares[y][x].obj = obj;
 					while (obj) {
@@ -78,9 +78,9 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 
 			/* Monsters and held objects */
 			if (monsters) {
-				if (cave->squares[y0 + y][x0 + x].mon > 0) {
-					struct monster *source_mon = square_monster(cave, y0 + y,
-															  x0 + x);
+				if (c->squares[y0 + y][x0 + x].mon > 0) {
+					struct monster *source_mon = square_monster(c, y0 + y,
+																x0 + x);
 					struct monster *dest_mon = NULL;
 
 					/* Valid monster */
@@ -107,9 +107,9 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 			/* Traps */
 			if (traps) {
 				/* Copy over */
-				struct trap *trap = cave->squares[y][x].trap;
+				struct trap *trap = c->squares[y][x].trap;
 				new->squares[y][x].trap = trap;
-				cave->squares[y][x].trap = NULL;
+				c->squares[y][x].trap = NULL;
 
 				/* Adjust position */
 				trap->fy = y;

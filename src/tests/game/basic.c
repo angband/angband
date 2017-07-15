@@ -64,7 +64,7 @@ int test_newgame(void *state) {
 	cmdq_execute(CMD_BIRTH);
 
 	eq(player->is_dead, false);
-	cave_generate(&cave, player);
+	prepare_next_level(&cave, player);
 	on_new_level();
 	notnull(cave);
 	eq(player->chp, player->mhp);

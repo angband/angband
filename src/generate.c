@@ -821,7 +821,7 @@ const struct cave_profile *choose_profile(int depth)
 static void cave_store(struct chunk *c, bool known, bool monsters, bool objects,
 					   bool traps)
 {
-	struct chunk *stored = chunk_write(0, 0, c->height, c->width, monsters,
+	struct chunk *stored = chunk_write(c, 0, 0, c->height, c->width, monsters,
 									   objects, traps);
 	stored->name = string_make(level_by_depth(c->depth)->name);
 	if (known) {
@@ -847,54 +847,19 @@ static void cave_clear(struct chunk *c, struct player *p)
 /**
  * Generate a random level.
  *
- * Confusingly, this function also generate the town level (level 0).
- * \param c is the level we're going to end up with, in practice the global cave
+ * Confusingly, this function also generates the town level (level 0).
  * \param p is the current player struct, in practice the global player
+ * \return a pointer to the new level
  */
-void cave_generate(struct chunk **c, struct player *p)
+static struct chunk *cave_generate(struct player *p)
 {
 	const char *error = "no generation";
-	int i, y, x, tries = 0;
+	int i, tries = 0;
 	struct chunk *chunk = NULL;
-
-	assert(c);
-
-	/* Forget old level */
-	if (p->cave && (*c == cave)) {
-		int x, y;
-
-		/* Deal with artifacts */
-		for (y = 0; y < (*c)->height; y++) {
-			for (x = 0; x < (*c)->width; x++) {
-				struct object *obj = square_object(*c, y, x);
-				while (obj) {
-					if (obj->artifact) {
-						bool found = obj->known && obj->known->artifact;
-						if (OPT(p, birth_lose_arts) || found) {
-							history_lose_artifact(p, obj->artifact);
-						} else {
-							obj->artifact->created = false;
-						}
-					}
-
-					obj = obj->next;
-				}
-			}
-		}
-
-		/* Free the known cave */
-		cave_free(p->cave);
-		p->cave = NULL;
-	}
-
-	/* Free the old cave */
-	if (*c) {
-		cave_clear(*c, p);
-		*c = NULL;
-	}
 
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
+		int y, x;
 		struct dun_data dun_body;
 
 		error = NULL;
@@ -982,54 +947,100 @@ void cave_generate(struct chunk **c, struct player *p)
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
-	/* Use the new cave */
-	*c = chunk;
-
 	/* Place dungeon squares to trigger feeling (not in town) */
 	if (player->depth) {
-		place_feeling(*c);
-	} else if (!chunk_find_name("Town")) {
-		/* Save the town */
-		struct chunk *town = chunk_write(0, 0, z_info->town_hgt,
-										 z_info->town_wid, false, false, false);
-		town->name = string_make("Town");
-		chunk_list_add(town);
+		place_feeling(chunk);
 	}
 
-	(*c)->feeling = calc_obj_feeling(*c, p) + calc_mon_feeling(*c);
+	chunk->feeling = calc_obj_feeling(chunk, p) + calc_mon_feeling(chunk);
 
 	/* Validate the dungeon (we could use more checks here) */
-	chunk_validate_objects(*c);
+	chunk_validate_objects(chunk);
+
+	/* Allocate new known level, light it if requested */
+	p->cave = cave_new(chunk->height, chunk->width);
+	p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
+								   * sizeof(struct object*));
+	p->cave->obj_max = chunk->obj_max;
+	for (i = 0; i <= p->cave->obj_max; i++) {
+		p->cave->objects[i] = NULL;
+	}
+	if (p->upkeep->light_level) {
+		wiz_light(chunk, p, false);
+		p->upkeep->light_level = false;
+	}
+
+	chunk->created_at = turn;
+
+	return chunk;
+}
+
+/**
+ * Prepare the level the player is about to enter, either by generating
+ * or reloading
+ *
+ * \param c is the level we're going to end up with, in practice the global cave
+ * \param p is the current player struct, in practice the global player
+*/
+void prepare_next_level(struct chunk **c, struct player *p)
+{
+	assert(c);
+
+	/* Save the town */
+	if (character_dungeon && !(*c)->depth && !chunk_find_name("Town")) {
+		cave_store(*c, false, false, false, false);
+	}
+
+	/* Forget old level */
+	if (p->cave && (*c == cave)) {
+		int x, y;
+
+		/* Deal with artifacts */
+		for (y = 0; y < (*c)->height; y++) {
+			for (x = 0; x < (*c)->width; x++) {
+				struct object *obj = square_object(*c, y, x);
+				while (obj) {
+					if (obj->artifact) {
+						bool found = obj->known && obj->known->artifact;
+						if (OPT(p, birth_lose_arts) || found) {
+							history_lose_artifact(p, obj->artifact);
+						} else {
+							obj->artifact->created = false;
+						}
+					}
+
+					obj = obj->next;
+				}
+			}
+		}
+
+		/* Free the known cave */
+		cave_free(p->cave);
+		p->cave = NULL;
+	}
+
+	/* Free the old cave */
+	if (*c) {
+		cave_clear(*c, p);
+		*c = NULL;
+	}
+
+	/* Generate a new level */
+	*c = cave_generate(p);
 
 	/* The dungeon is ready */
 	character_dungeon = true;
 
-	/* Allocate new known level, light it if requested */
-	if (*c == cave) {
-		p->cave = cave_new((*c)->height, (*c)->width);
-		p->cave->objects = mem_realloc(p->cave->objects, ((*c)->obj_max + 1)
-										 * sizeof(struct object*));
-		p->cave->obj_max = (*c)->obj_max;
-		for (i = 0; i <= p->cave->obj_max; i++) {
-			p->cave->objects[i] = NULL;
-		}
-		if (!((*c)->depth)) {
-			cave_known(p);
-		}
-		if (p->upkeep->light_level) {
-			wiz_light(*c, false);
-			p->upkeep->light_level = false;
-		}
+	/* Know the town */
+	if (!((*c)->depth)) {
+		cave_known(p);
 	}
-
-	(*c)->created_at = turn;
 }
 
 /**
  * The generate module, which initialises template rooms and vaults
  * Should it clean up?
  */
-
 struct init_module generate_module = {
 	.name = "generate",
 	.init = run_template_parser,
