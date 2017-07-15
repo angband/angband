@@ -105,6 +105,21 @@ struct level *level_by_name(char *name)
 }
 
 /**
+ * Find a level by its depth
+ */
+struct level *level_by_depth(int depth)
+{
+	struct level *lev = world;
+	while (lev) {
+		if (lev->depth == depth) {
+			break;
+		}
+		lev = lev->next;
+	}
+	return lev;
+}
+
+/**
  * Say whether it's daytime or not
  */
 bool is_daytime(void)

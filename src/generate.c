@@ -816,6 +816,22 @@ const struct cave_profile *choose_profile(int depth)
 }
 
 /**
+ * Store a dungeon level for reloading
+ */
+static void cave_store(struct chunk *c, bool known, bool monsters, bool objects,
+					   bool traps)
+{
+	struct chunk *stored = chunk_write(0, 0, c->height, c->width, monsters,
+									   objects, traps);
+	stored->name = string_make(level_by_depth(c->depth)->name);
+	if (known) {
+		stored->name = string_append(stored->name, " known");
+	}
+	chunk_list_add(stored);
+}
+
+
+/**
  * Clear the dungeon, ready for generation to begin.
  */
 static void cave_clear(struct chunk *c, struct player *p)
