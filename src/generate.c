@@ -816,6 +816,26 @@ const struct cave_profile *choose_profile(int depth)
 }
 
 /**
+ * Check the size of the level above or below the next level to be generated
+ * to make sure stairs can connect
+ */
+static void	get_min_level_size(struct chunk *check, int *min_height,
+							   int *min_width, bool above)
+{
+	struct connector *join = check->join;
+
+	while (join) {
+		if ((above && (join->feat == FEAT_MORE)) ||
+			(!above && (join->feat == FEAT_LESS))) {
+			*min_height = MAX(*min_height, join->grid.y);
+			*min_width = MAX(*min_width, join->grid.x);
+		}
+		join = join->next;
+	}
+}
+
+
+/**
  * Store a dungeon level for reloading
  */
 static void cave_store(struct chunk *c, bool known, bool monsters, bool objects,
@@ -986,45 +1006,71 @@ void prepare_next_level(struct chunk **c, struct player *p)
 {
 	int min_height = 0, min_width = 0;
 
-	assert(c);
+	/* Deal with any existing current level */
+	if (character_dungeon) {
+		int depth = (*c)->depth;
 
-	/* Save the town */
-	if (character_dungeon && !(*c)->depth && !chunk_find_name("Town")) {
-		cave_store(*c, false, false, false, false);
-	}
+		/* Save the town */
+		if (!depth && !chunk_find_name("Town")) {
+			cave_store(*c, false, false, false, false);
+		}
 
-	/* Forget old level */
-	if (p->cave && (*c == cave)) {
-		int x, y;
+		/* Determine level size requirements */
+		if (OPT(p, birth_levels_persist)) {
+			struct level *lev = NULL;
 
-		/* Deal with artifacts */
-		for (y = 0; y < (*c)->height; y++) {
-			for (x = 0; x < (*c)->width; x++) {
-				struct object *obj = square_object(*c, y, x);
-				while (obj) {
-					if (obj->artifact) {
-						bool found = obj->known && obj->known->artifact;
-						if (OPT(p, birth_lose_arts) || found) {
-							history_lose_artifact(p, obj->artifact);
-						} else {
-							obj->artifact->created = false;
-						}
-					}
+			/* Check level above */
+			lev = level_by_depth(depth - 1);
+			if (lev) {
+				struct chunk *check = chunk_find_name(lev->name);
+				if (check) {
+					get_min_level_size(check, &min_height, &min_width, true);
+				}
+			}
 
-					obj = obj->next;
+			/* Check level below */
+			lev = level_by_depth(depth + 1);
+			if (lev) {
+				struct chunk *check = chunk_find_name(lev->name);
+				if (check) {
+					get_min_level_size(check, &min_height, &min_width, false);
 				}
 			}
 		}
 
-		/* Free the known cave */
-		cave_free(p->cave);
-		p->cave = NULL;
-	}
+		/* Forget knowledge of old level */
+		if (p->cave && (*c == cave)) {
+			int x, y;
 
-	/* Free the old cave */
-	if (*c) {
-		cave_clear(*c, p);
-		*c = NULL;
+			/* Deal with artifacts */
+			for (y = 0; y < (*c)->height; y++) {
+				for (x = 0; x < (*c)->width; x++) {
+					struct object *obj = square_object(*c, y, x);
+					while (obj) {
+						if (obj->artifact) {
+							bool found = obj->known && obj->known->artifact;
+							if (OPT(p, birth_lose_arts) || found) {
+								history_lose_artifact(p, obj->artifact);
+							} else {
+								obj->artifact->created = false;
+							}
+						}
+
+						obj = obj->next;
+					}
+				}
+			}
+
+			/* Free the known cave */
+			cave_free(p->cave);
+			p->cave = NULL;
+		}
+
+		/* Free the old cave */
+		if (*c) {
+			cave_clear(*c, p);
+			*c = NULL;
+		}
 	}
 
 	/* Generate a new level */
