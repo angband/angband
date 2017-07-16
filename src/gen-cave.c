@@ -1586,9 +1586,10 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
 		/* Build stuff */
 		town_gen_layout(c_new, p);
 	} else {
-		/* Copy from the chunk list */
+		/* Copy from the chunk list, remove the old one */
 		if (!chunk_copy(c_new, c_old, 0, 0, 0, 0))
 			quit_fmt("chunk_copy() level bounds failed!");
+		chunk_list_remove("Town");
 
 		/* Find the stairs (lame) */
 		for (y = 0; y < c_new->height; y++) {
