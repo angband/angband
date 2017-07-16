@@ -2018,6 +2018,12 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 		return false;
 	}
 
+	/* Fails for persistent levels (for now) */
+	if (OPT(player, birth_levels_persist)) {
+		msg("Nothing happens!");
+		return false;
+	}
+
 	/* Push objects off the grid */
 	if (square_object(cave, py, px))
 		push_object(py, px);

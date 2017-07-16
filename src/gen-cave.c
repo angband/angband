@@ -1642,6 +1642,7 @@ struct chunk *modified_chunk(int depth, int height, int width)
     int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
     int dun_unusual = dun->profile->dun_unusual;
+	struct connector *join = dun->join;
 
     /* Make the cave */
     struct chunk *c = cave_new(height, width);
@@ -1821,10 +1822,14 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
     /* Place 3 or 4 down stairs near some walls */
-    alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 3);
+	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, false)) {
+		alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 3);
+	}
 
     /* Place 1 or 2 up stairs near some walls */
-    alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, true)) {
+		alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+	}
 
     /* General amount of rubble, traps and monsters */
     k = MAX(MIN(c->depth / 3, 10), 2);
@@ -1906,6 +1911,23 @@ struct chunk *moria_chunk(int depth, int height, int width)
     /* No rooms yet, pits or otherwise. */
     dun->pit_num = 0;
     dun->cent_n = 0;
+
+	/* Build the special staircase rooms */
+	if (OPT(player, birth_levels_persist)) {
+		struct room_profile profile;
+		for (i = 0; i < num_rooms; i++) {
+			struct room_profile profile = dun->profile->room_profiles[i];
+			if (streq(profile.name, "staircase room")) {
+				break;
+			}
+		}
+		while (join) {
+			if (!room_build(c, join->grid.y, join->grid.x, profile,	true)) {
+				quit("Failed to place stairs");
+			}
+			join = join->next;
+		}
+	}
 
     /* Build rooms until we have enough floor grids */
     while (c->feat_count[FEAT_FLOOR] < num_floors) {

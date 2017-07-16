@@ -209,6 +209,10 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
 			/* No trap doors on the deepest level */
 			if (player->depth >= z_info->max_depth - 1)
 				continue;
+
+			/* No trap doors with persistent levels (for now) */
+			if (OPT(player, birth_levels_persist))
+				continue;
 	    }
 
 		/* Trap is okay, store the cumulative probability */

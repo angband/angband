@@ -341,7 +341,14 @@ void new_player_spot(struct chunk *c, struct player *p)
     int y, x;
 
     /* Try to find a good place to put the player */
-    cave_find(c, &y, &x, square_isstart);
+	if (OPT(p, birth_levels_persist) &&
+		square_in_bounds_fully(c, player->py, player->px) &&
+		square_isstairs(c, player->py, player->px)) {
+		y = player->py;
+		x = player->px;
+	} else {
+		cave_find(c, &y, &x, square_isstart);
+	}
 
     /* Create stairs the player came down if allowed and necessary */
     if (!OPT(p, birth_connect_stairs))

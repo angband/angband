@@ -125,6 +125,10 @@ room:room template:3:11:33:30:0:1:100
 # Normal rooms (rarity = 0)
 room:simple room:0:11:33:1:0:0:100
 
+# Staircase rooms - rarity 99 to prevent random occurrence
+# these rooms are specially generated to join persistent levels
+room:staircase room:0:1:1:1:1:99:0
+
 ## Moria - these have cutoff -1, but still appear after other checks
 name:moria
 params:1:50:250:2

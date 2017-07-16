@@ -10,6 +10,7 @@
  */
 
 /* name						rows	cols	builder */
+ROOM("staircase room",		0,		0,		staircase)
 ROOM("simple room",			0,		0,		simple)
 ROOM("moria room",			0,		0,		moria)
 ROOM("large room",			0,		0,		large)

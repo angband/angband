@@ -861,21 +861,17 @@ static bool find_space(int *y, int *x, int height, int width)
 		bool found = false;
 
 		/* Acquire the location of the room */
-		if (dun->cent_n == 0) {
-			(*y) = player->py;
-			(*x) = player->px;
+		int n = dun->cent_n;
+
+		while (n) {
+			join = join->next;
+			n--;
+		}
+		if (join) {
+			(*y) = join->grid.y;
+			(*x) = join->grid.x;
+			join = join->next;
 			found = true;
-		} else {
-			int n = dun->cent_n - 1;
-			while (n) {
-				join = join->next;
-			}
-			if (join) {
-				(*y) = join->grid.y;
-				(*x) = join->grid.x;
-				join = join->next;
-				found = true;
-			}
 		}
 
 		/* Check we have found one */
@@ -1037,7 +1033,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 
 				/* Put something nice in this square
 				 * Object (80%) or Stairs (20%) */
-				if (randint0(100) < 80)
+				if ((randint0(100) < 80) || OPT(player, birth_levels_persist))
 					place_object(c, y, x, c->depth, false, false, ORIGIN_SPECIAL, 0);
 				else
 					place_random_stairs(c, y, x);
@@ -1216,8 +1212,12 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				break;
 			}
 				/* Stairs */
-			case '<': square_set_feat(c, y, x, FEAT_LESS); break;
+			case '<': {
+				if (OPT(player, birth_levels_persist)) break;
+				square_set_feat(c, y, x, FEAT_LESS); break;
+			}
 			case '>': {
+				if (OPT(player, birth_levels_persist)) break;
 				/* No down stairs at bottom or on quests */
 				if (is_quest(c->depth) || c->depth >= z_info->max_depth - 1)
 					square_set_feat(c, y, x, FEAT_LESS);
@@ -1555,6 +1555,39 @@ static void hollow_out_room(struct chunk *c, int y, int x)
  * ------------------------------------------------------------------------
  * Room builders
  * ------------------------------------------------------------------------ */
+/**
+ * Build a staircase to connect with a previous staircase on the level one up
+ * or (occasionally) one down
+ */
+bool build_staircase(struct chunk *c, int y0, int x0, int rating)
+{
+	struct connector *join = dun->join;
+
+	/* Find and reserve one grid in the dungeon */
+	if (!find_space(&y0, &x0, 1, 1))
+		return false;
+
+	/* Generate new room and outer walls */
+	generate_room(c, y0 - 1, x0 - 1, y0 + 1, x0 + 1, false);
+	draw_rectangle(c, y0 - 1, x0 - 1, y0 + 1, x0 + 1, FEAT_GRANITE,
+				   SQUARE_WALL_OUTER);
+
+	/* Place the correct stair */
+	while (join) {
+		if ((join->grid.y == y0) && (join->grid.x == x0)) {
+			square_set_feat(c, y0, x0, join->feat);
+			break;
+		}
+		join = join->next;
+	}
+	if (!join) {
+		quit_fmt("Stair connect mismatch y=%d x=%d!", y0, x0);
+	}
+
+	/* Success */
+	return true;
+}
+
 /**
  * Build a circular room (interior radius 4-7).
  * \param c the chunk the room is being built in
@@ -1988,7 +2021,7 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 		vault_monsters(c, y0, x0, c->depth + 2, randint1(3) + 2);
 
 		/* Object (80%) or Stairs (20%) */
-		if (randint0(100) < 80)
+		if ((randint0(100) < 80) || OPT(player, birth_levels_persist))
 			place_object(c, y0, x0, c->depth, false, false, ORIGIN_SPECIAL, 0);
 		else
 			place_random_stairs(c, y0, x0);

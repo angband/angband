@@ -264,6 +264,7 @@ void chunk_list_add(struct chunk *c);
 bool chunk_list_remove(char *name);
 struct chunk *chunk_find_name(char *name);
 bool chunk_find(struct chunk *c);
+struct chunk *chunk_find_adjacent(struct player *p, bool above);
 bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				int rotate, bool reflect);
 
@@ -284,6 +285,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 struct vault *random_vault(int depth, const char *typ);
 bool build_vault(struct chunk *c, int y0, int x0, struct vault *v);
 
+bool build_staircase(struct chunk *c, int y0, int x0, int rating);
 bool build_simple(struct chunk *c, int y0, int x0, int rating);
 bool build_circular(struct chunk *c, int y0, int x0, int rating);
 bool build_overlap(struct chunk *c, int y0, int x0, int rating);

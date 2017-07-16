@@ -25,6 +25,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "game-world.h"
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
@@ -118,6 +119,10 @@ struct chunk *chunk_write(struct chunk *c, int y0, int x0, int height,
 		}
 	}
 
+	/* Join info */
+	new->join = c->join;
+	c->join = NULL;
+
 	return new;
 }
 
@@ -202,6 +207,21 @@ bool chunk_find(struct chunk *c)
 		if (c == chunk_list[i]) return true;
 
 	return false;
+}
+
+/**
+ * Find the saved chunk above or below the current player depth
+ */
+struct chunk *chunk_find_adjacent(struct player *p, bool above)
+{
+	int depth = above ? p->depth - 1 : p->depth + 1;
+	struct level *lev = level_by_depth(depth);
+
+	if (lev) {
+		return chunk_find_name(lev->name);
+	}
+
+	return NULL;
 }
 
 /**
