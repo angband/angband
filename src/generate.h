@@ -152,7 +152,7 @@ struct streamer_profile {
 /*
  * cave_builder is a function pointer which builds a level.
  */
-typedef struct chunk * (*cave_builder) (struct player *p);
+typedef struct chunk * (*cave_builder) (struct player *p, int h, int w);
 
 
 struct cave_profile {
@@ -243,16 +243,16 @@ extern struct vault *vaults;
 extern struct room_template *room_templates;
 
 /* gen-cave.c */
-struct chunk *town_gen(struct player *p);
-struct chunk *classic_gen(struct player *p);
-struct chunk *labyrinth_gen(struct player *p);
+struct chunk *town_gen(struct player *p, int min_height, int min_width);
+struct chunk *classic_gen(struct player *p, int min_height, int min_width);
+struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width);
 void ensure_connectedness(struct chunk *c);
-struct chunk *cavern_gen(struct player *p);
-struct chunk *modified_gen(struct player *p);
-struct chunk *moria_gen(struct player *p);
-struct chunk *hard_centre_gen(struct player *p);
-struct chunk *lair_gen(struct player *p);
-struct chunk *gauntlet_gen(struct player *p);
+struct chunk *cavern_gen(struct player *p, int min_height, int min_width);
+struct chunk *modified_gen(struct player *p, int min_height, int min_width);
+struct chunk *moria_gen(struct player *p, int min_height, int min_width);
+struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width);
+struct chunk *lair_gen(struct player *p, int min_height, int min_width);
+struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width);
 
 /* gen-chunk.c */
 struct chunk *chunk_write(struct chunk *c, int y0, int x0, int height,

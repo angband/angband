@@ -851,7 +851,7 @@ static void cave_clear(struct chunk *c, struct player *p)
  * \param p is the current player struct, in practice the global player
  * \return a pointer to the new level
  */
-static struct chunk *cave_generate(struct player *p)
+static struct chunk *cave_generate(struct player *p, int height, int width)
 {
 	const char *error = "no generation";
 	int i, tries = 0;
@@ -876,7 +876,7 @@ static struct chunk *cave_generate(struct player *p)
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p->depth);
-		chunk = dun->profile->builder(p);
+		chunk = dun->profile->builder(p, height, width);
 		if (!chunk) {
 			error = "Failed to find builder";
 			mem_free(dun->cent);
@@ -984,6 +984,8 @@ static struct chunk *cave_generate(struct player *p)
 */
 void prepare_next_level(struct chunk **c, struct player *p)
 {
+	int min_height = 0, min_width = 0;
+
 	assert(c);
 
 	/* Save the town */
@@ -1026,7 +1028,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 	}
 
 	/* Generate a new level */
-	*c = cave_generate(p);
+	*c = cave_generate(p, min_height, min_width);
 
 	/* The dungeon is ready */
 	character_dungeon = true;
