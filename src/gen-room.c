@@ -855,6 +855,50 @@ static bool find_space(int *y, int *x, int height, int width)
 	int blocks_high = 1 + ((height - 1) / dun->block_hgt);
 	int blocks_wide = 1 + ((width - 1) / dun->block_wid);
 
+	/* Deal with staircase "rooms" */
+	if (OPT(player, birth_levels_persist) && (height * width == 1)) {
+		struct connector *join = dun->join;
+		bool found = false;
+
+		/* Acquire the location of the room */
+		if (dun->cent_n == 0) {
+			(*y) = player->py;
+			(*x) = player->px;
+			found = true;
+		} else {
+			int n = dun->cent_n - 1;
+			while (n) {
+				join = join->next;
+			}
+			if (join) {
+				(*y) = join->grid.y;
+				(*x) = join->grid.x;
+				join = join->next;
+				found = true;
+			}
+		}
+
+		/* Check we have found one */
+		if (found) {
+			/* Get the blocks */
+			by = (*y + 1) / dun->block_hgt;
+			bx = (*x + 1) / dun->block_wid;
+
+			/* Save the room location */
+			if (dun->cent_n < z_info->level_room_max) {
+				dun->cent[dun->cent_n].y = *y;
+				dun->cent[dun->cent_n].x = *x;
+				dun->cent_n++;
+			}
+
+			/* Reserve a block, marked with the room index */
+			dun->room_map[by][bx] = dun->cent_n;
+
+			/* Success. */
+			return (true);
+		}
+	}
+
 	/* We'll allow twenty-five guesses. */
 	for (i = 0; i < 25; i++) {
 		filled = false;

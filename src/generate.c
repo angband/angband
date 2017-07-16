@@ -816,6 +816,54 @@ const struct cave_profile *choose_profile(int depth)
 }
 
 /**
+ * Get information for constructing stairs in the correct places
+ */
+static void get_join_info(struct player *p, struct dun_data *dun)
+{
+	struct level *lev = NULL;
+
+	/* Check level above */
+	lev = level_by_depth(p->depth - 1);
+	if (lev) {
+		struct chunk *check = chunk_find_name(lev->name);
+		if (check) {
+			struct connector *join = check->join;
+			while (join) {
+				if (join->feat == FEAT_MORE) {
+					struct connector *new = mem_zalloc(sizeof *new);
+					new->grid.y = join->grid.y;
+					new->grid.x = join->grid.x;
+					new->feat = FEAT_LESS;
+					new->next = dun->join;
+					dun->join = new;
+				}
+				join = join->next;
+			}
+		}
+	}
+
+	/* Check level below */
+	lev = level_by_depth(p->depth + 1);
+	if (lev) {
+		struct chunk *check = chunk_find_name(lev->name);
+		if (check) {
+			struct connector *join = check->join;
+			while (join) {
+				if (join->feat == FEAT_LESS) {
+					struct connector *new = mem_zalloc(sizeof *new);
+					new->grid.y = join->grid.y;
+					new->grid.x = join->grid.x;
+					new->feat = FEAT_MORE;
+					new->next = dun->join;
+					dun->join = new;
+				}
+				join = join->next;
+			}
+		}
+	}
+}
+
+/**
  * Check the size of the level above or below the next level to be generated
  * to make sure stairs can connect
  */
@@ -893,12 +941,19 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		dun->door = mem_zalloc(z_info->level_door_max * sizeof(struct loc));
 		dun->wall = mem_zalloc(z_info->wall_pierce_max * sizeof(struct loc));
 		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
+		dun->join = NULL;
+
+		/* Get connector info for persistent levels */
+		if (OPT(p, birth_levels_persist)) {
+			get_join_info(p, dun);
+		}
 
 		/* Choose a profile and build the level */
 		dun->profile = choose_profile(p->depth);
 		chunk = dun->profile->builder(p, height, width);
 		if (!chunk) {
 			error = "Failed to find builder";
+			mem_free(dun->join);
 			mem_free(dun->cent);
 			mem_free(dun->door);
 			mem_free(dun->wall);
@@ -959,6 +1014,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			cave_clear(chunk, p);
 		}
 
+		mem_free(dun->join);
 		mem_free(dun->cent);
 		mem_free(dun->door);
 		mem_free(dun->wall);

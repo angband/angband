@@ -127,6 +127,9 @@ struct dun_data {
 
 	/*!< Current pit profile in use */
 	struct pit_profile *pit_type;
+
+	/*!< Info for connecting to persistent levels */
+	struct connector *join;
 };
 
 
