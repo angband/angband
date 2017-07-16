@@ -441,6 +441,9 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
     bool **blocks_tried;
 	struct chunk *c;
 
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
+
     /* This code currently does nothing - see comments below */
     i = randint1(10) + p->depth / 24;
     if (is_quest(p->depth)) size_percent = 100;
@@ -842,6 +845,9 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
 
     /* Most labyrinths have soft (diggable) walls */
     bool soft = randint0(p->depth) < 35 || randint0(3) < 2;
+
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
 
 	/* Enforce minimum dimensions */
 	h = MAX(h, min_height);
@@ -1377,6 +1383,9 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
     int w = rand_range(z_info->dungeon_wid / 2, (z_info->dungeon_wid * 3) / 4);
 
 	struct chunk *c;
+
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
 
     if (p->depth < 15) {
 		/* If we're too shallow then don't do it */
@@ -2168,6 +2177,9 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 	int i, k, y, x, cavern_area;
 	struct loc floor[4];
 
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
+
 	/* Measure the vault, rotate to make it wider than it is high */
 	if (centre->height > centre->width) {
 		rotate = 1;
@@ -2314,6 +2326,9 @@ struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
 	struct chunk *normal;
 	struct chunk *lair;
 
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
+
     /* Scale the level */
     i = randint1(10) + p->depth / 24;
     if (is_quest(p->depth)) size_percent = 100;
@@ -2459,6 +2474,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	int x_size = z_info->dungeon_wid * gauntlet_wid / ((30 + randint1(10)) * 2);
 	int line1, line2;
 
+	/* No persistent levels of this type for now */
 	if (OPT(p, birth_levels_persist)) return NULL;
 
 	gauntlet = labyrinth_chunk(p->depth, gauntlet_hgt, gauntlet_wid, false,
