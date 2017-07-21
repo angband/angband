@@ -73,7 +73,7 @@ checking of permissible combinations to configure is necessary
 Debug build
 ----------------------------------------
 
-**WARNING** this build is intended primarely for debugging purpouses. It might have somowhat slower perofrmance, higher memory requirements and panic saves don't alvays work (in case of a crash there is a higher chance of loosing progress).
+**WARNING** this build is intended primarely for debugging purpouses. It might have a somowhat slower perofrmance, higher memory requirements and panic saves don't alvays work (in case of a crash there is a higher chance of loosing progress).
 
 When debugging crashes it can be wery useful to get more information about *what exactly* went wrong. There are many tools that can detect common issues and provide useful information. Two such tools that are best used together are AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan). To use them you'll need to enable them when compiling angband
 
