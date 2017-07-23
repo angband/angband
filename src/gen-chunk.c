@@ -37,91 +37,25 @@ struct chunk **chunk_list;     /**< list of pointers to saved chunks */
 u16b chunk_list_max = 0;      /**< current max actual chunk index */
 
 /**
- * Write a chunk to memory and return a pointer to it.  Optionally write
- * monsters, objects and/or traps, and in those cases delete those things from
- * the source chunk
- * \param y0 coordinates of the top left corner of the chunk being written
- * \param x0 coordinates of the top left corner of the chunk being written
- * \param height dimensions of the chunk being written
- * \param width dimensions of the chunk being written
- * \param monsters whether monsters get written
- * \param objects whether objects get written
- * \param traps whether traps get written
+ * Write a the terrain info of a chunk to memory and return a pointer to it
+ *
+ * \param c chunk being written
  * \return the memory location of the chunk
  */
-struct chunk *chunk_write(struct chunk *c, int y0, int x0, int height,
-						  int width, bool monsters, bool objects, bool traps)
+struct chunk *chunk_write(struct chunk *c)
 {
 	int x, y;
 
-	struct chunk *new = cave_new(height, width);
+	struct chunk *new = cave_new(c->height, c->width);
 
 	/* Write the location stuff */
-	for (y = 0; y < height; y++) {
-		for (x = 0; x < width; x++) {
+	for (y = 0; y < new->height; y++) {
+		for (x = 0; x < new->width; x++) {
 			/* Terrain */
-			new->squares[y][x].feat = c->squares[y0 + y][x0 + x].feat;
-			sqinfo_copy(new->squares[y][x].info,
-						c->squares[y0 + y][x0 + x].info);
-
-			/* Dungeon objects */
-			if (objects) {
-				struct object *obj = square_object(c, y0 + y, x0 + x);
-				if (obj) {
-					new->squares[y][x].obj = obj;
-					while (obj) {
-						/* Adjust stuff */
-						obj->iy = y;
-						obj->ix = x;
-					}
-				}
-			}
-
-			/* Monsters and held objects */
-			if (monsters) {
-				if (c->squares[y0 + y][x0 + x].mon > 0) {
-					struct monster *source_mon = square_monster(c, y0 + y,
-																x0 + x);
-					struct monster *dest_mon = NULL;
-
-					/* Valid monster */
-					if (!source_mon->race)
-						continue;
-
-					/* Copy over */
-					new->squares[y][x].mon = ++new->mon_cnt;
-					dest_mon = cave_monster(new, new->mon_cnt);
-					memcpy(dest_mon, source_mon, sizeof(*source_mon));
-
-					/* Adjust position */
-					dest_mon->fy = y;
-					dest_mon->fx = x;
-
-					/* Held objects */
-					if (objects && source_mon->held_obj)
-						dest_mon->held_obj = source_mon->held_obj;
-
-					delete_monster(y0 + y, x0 + x);
-				}
-			}
-
-			/* Traps */
-			if (traps) {
-				/* Copy over */
-				struct trap *trap = c->squares[y][x].trap;
-				new->squares[y][x].trap = trap;
-				c->squares[y][x].trap = NULL;
-
-				/* Adjust position */
-				trap->fy = y;
-				trap->fx = x;
-			}
+			new->squares[y][x].feat = c->squares[y][x].feat;
+			sqinfo_copy(new->squares[y][x].info, c->squares[y][x].info);
 		}
 	}
-
-	/* Join info */
-	new->join = c->join;
-	c->join = NULL;
 
 	return new;
 }

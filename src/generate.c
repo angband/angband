@@ -886,11 +886,17 @@ static void	get_min_level_size(struct chunk *check, int *min_height,
 /**
  * Store a dungeon level for reloading
  */
-static void cave_store(struct chunk *c, bool known, bool monsters, bool objects,
-					   bool traps)
+static void cave_store(struct chunk *c, bool known, bool keep_all)
 {
-	struct chunk *stored = chunk_write(c, 0, 0, c->height, c->width, monsters,
-									   objects, traps);
+	struct chunk *stored;
+	if (keep_all) {
+		stored = c;
+	} else {
+		stored = chunk_write(c);
+	}
+	if (stored->name) {
+		string_free(stored->name);
+	}
 	stored->name = string_make(level_by_depth(c->depth)->name);
 	if (known) {
 		stored->name = string_append(stored->name, " known");
@@ -1024,7 +1030,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
 	/* Place dungeon squares to trigger feeling (not in town) */
-	if (player->depth) {
+	if (p->depth) {
 		place_feeling(chunk);
 	}
 
@@ -1035,6 +1041,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 
 	/* Allocate new known level, light it if requested */
 	p->cave = cave_new(chunk->height, chunk->width);
+	p->cave->depth = chunk->depth;
 	p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
 								   * sizeof(struct object*));
 	p->cave->obj_max = chunk->obj_max;
@@ -1060,23 +1067,81 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 */
 void prepare_next_level(struct chunk **c, struct player *p)
 {
-	int min_height = 0, min_width = 0;
-
 	/* Deal with any existing current level */
 	if (character_dungeon) {
-		int depth = (*c)->depth;
+		assert (p->cave && (*c == cave));
 
-		/* Save the town */
-		if (!depth && !chunk_find_name("Town")) {
-			cave_store(*c, false, false, false, false);
-		}
-
-		/* Determine level size requirements */
 		if (OPT(p, birth_levels_persist)) {
-			struct level *lev = NULL;
+			/* Save level and known level */
+			cave_store(*c, false, true);
+			cave_store(p->cave, true, true);
+		} else {
+			/* Save the town */
+			if (!((*c)->depth) && !chunk_find_name("Town")) {
+				cave_store(*c, false, false);
+			}
+
+			/* Forget knowledge of old level */
+			if (p->cave && (*c == cave)) {
+				int x, y;
+
+				/* Deal with artifacts */
+				for (y = 0; y < (*c)->height; y++) {
+					for (x = 0; x < (*c)->width; x++) {
+						struct object *obj = square_object(*c, y, x);
+						while (obj) {
+							if (obj->artifact) {
+								bool found = obj->known && obj->known->artifact;
+								if (OPT(p, birth_lose_arts) || found) {
+									history_lose_artifact(p, obj->artifact);
+								} else {
+									obj->artifact->created = false;
+								}
+							}
+
+							obj = obj->next;
+						}
+					}
+				}
+
+				/* Free the known cave */
+				cave_free(p->cave);
+				p->cave = NULL;
+			}
+
+			/* Clear the old cave */
+			if (*c) {
+				cave_clear(*c, p);
+				*c = NULL;
+			}
+		}
+	}
+
+	/* Prepare the new level */
+	if (OPT(p, birth_levels_persist)) {
+		char *name = level_by_depth(p->depth)->name;
+		struct chunk *old_level = chunk_find_name(name);
+
+		/* If we found an old level, load the known level and assign */
+		if (old_level) {
+			char *known_name = format("%s known", name);
+			struct chunk *old_known = chunk_find_name(known_name);
+			assert(old_known);
+
+			/* Assign the new ones */
+			*c = old_level;
+			p->cave = old_known;
+
+			/* Remove from the list */
+			chunk_list_remove(name);
+			chunk_list_remove(known_name);
+		} else {
+			/* Check dimensions */
+			struct level *lev;
+			int min_height = 0, min_width = 0;
 
 			/* Check level above */
-			lev = level_by_depth(depth - 1);
+			lev = level_by_depth(p->depth - 1);
 			if (lev) {
 				struct chunk *check = chunk_find_name(lev->name);
 				if (check) {
@@ -1085,60 +1150,29 @@ void prepare_next_level(struct chunk **c, struct player *p)
 			}
 
 			/* Check level below */
-			lev = level_by_depth(depth + 1);
+			lev = level_by_depth(p->depth + 1);
 			if (lev) {
 				struct chunk *check = chunk_find_name(lev->name);
 				if (check) {
 					get_min_level_size(check, &min_height, &min_width, false);
 				}
 			}
+
+			/* Generate a new level */
+			*c = cave_generate(p, min_height, min_width);
 		}
-
-		/* Forget knowledge of old level */
-		if (p->cave && (*c == cave)) {
-			int x, y;
-
-			/* Deal with artifacts */
-			for (y = 0; y < (*c)->height; y++) {
-				for (x = 0; x < (*c)->width; x++) {
-					struct object *obj = square_object(*c, y, x);
-					while (obj) {
-						if (obj->artifact) {
-							bool found = obj->known && obj->known->artifact;
-							if (OPT(p, birth_lose_arts) || found) {
-								history_lose_artifact(p, obj->artifact);
-							} else {
-								obj->artifact->created = false;
-							}
-						}
-
-						obj = obj->next;
-					}
-				}
-			}
-
-			/* Free the known cave */
-			cave_free(p->cave);
-			p->cave = NULL;
-		}
-
-		/* Free the old cave */
-		if (*c) {
-			cave_clear(*c, p);
-			*c = NULL;
-		}
+	} else {
+		/* Generate a new level */
+		*c = cave_generate(p, 0, 0);
 	}
-
-	/* Generate a new level */
-	*c = cave_generate(p, min_height, min_width);
-
-	/* The dungeon is ready */
-	character_dungeon = true;
 
 	/* Know the town */
 	if (!((*c)->depth)) {
 		cave_known(p);
 	}
+
+	/* The dungeon is ready */
+	character_dungeon = true;
 }
 
 /**
