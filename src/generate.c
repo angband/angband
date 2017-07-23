@@ -43,6 +43,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-history.h"
+#include "player-util.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"
@@ -875,8 +876,8 @@ static void	get_min_level_size(struct chunk *check, int *min_height,
 	while (join) {
 		if ((above && (join->feat == FEAT_MORE)) ||
 			(!above && (join->feat == FEAT_LESS))) {
-			*min_height = MAX(*min_height, join->grid.y);
-			*min_width = MAX(*min_width, join->grid.x);
+			*min_height = MAX(*min_height, join->grid.y + 2);
+			*min_width = MAX(*min_width, join->grid.x + 2);
 		}
 		join = join->next;
 	}
@@ -1072,6 +1073,10 @@ void prepare_next_level(struct chunk **c, struct player *p)
 		assert (p->cave && (*c == cave));
 
 		if (OPT(p, birth_levels_persist)) {
+			/* Tidy up */
+			compact_monsters(0);
+			(*c)->squares[p->py][p->px].mon = 0;
+
 			/* Save level and known level */
 			cave_store(*c, false, true);
 			cave_store(p->cave, true, true);
@@ -1131,6 +1136,9 @@ void prepare_next_level(struct chunk **c, struct player *p)
 			/* Assign the new ones */
 			*c = old_level;
 			p->cave = old_known;
+
+			/* Place the player */
+			player_place(*c, p, p->py, p->px);
 
 			/* Remove from the list */
 			chunk_list_remove(name);
