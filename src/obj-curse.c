@@ -112,6 +112,27 @@ static bool curses_conflict(int first, int second)
 }
 
 /**
+ * Check an object for active curses, and remove the "curses" field if
+ * none is found
+ */
+static void check_object_curses(struct object *obj)
+{
+	int i;
+
+	/* Look for a valid curse, return if one found */
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (obj->curses[i].power) {
+			return;
+		}
+	}
+
+	/* Free the curse structure */
+	mem_free(obj->curses);
+	obj->curses = NULL;
+}
+
+
+/**
  * Append a given curse with a given power to an object
  *
  * \param the object to curse
@@ -129,6 +150,7 @@ bool append_object_curse(struct object *obj, int pick, int power)
 	/* Reject conflicting curses */
 	for (i = 0; i < z_info->curse_max; i++) {
 		if (obj->curses[i].power && curses_conflict(i, pick)) {
+			check_object_curses(obj);
 			return false;
 		}
 	}
@@ -141,14 +163,17 @@ bool append_object_curse(struct object *obj, int pick, int power)
 		status = &timed_effects[idx];
 		if (status->fail_code == TMD_FAIL_FLAG_OBJECT) {
 			if (of_has(obj->flags, status->fail)) {
+				check_object_curses(obj);
 				return false;
 			}
 		} else if (status->fail_code == TMD_FAIL_FLAG_RESIST) {
 			if (obj->el_info[status->fail].res_level > 0) {
+				check_object_curses(obj);
 				return false;
 			}
 		} else if (status->fail_code == TMD_FAIL_FLAG_VULN) {
 			if (obj->el_info[status->fail].res_level < 0) {
+				check_object_curses(obj);
 				return false;
 			}
 		}
@@ -162,8 +187,30 @@ bool append_object_curse(struct object *obj, int pick, int power)
 		return true;
 	}
 
+	check_object_curses(obj);
 	return false;
 }
+
+/**
+ * Check an artifact template for active curses, and remove the "curses" field
+ * if none is found
+ */
+static void check_artifact_curses(struct artifact *art)
+{
+	int i;
+
+	/* Look for a valid curse, return if one found */
+	for (i = 0; i < z_info->curse_max; i++) {
+		if (art->curses[i]) {
+			return;
+		}
+	}
+
+	/* Free the curse structure */
+	mem_free(art->curses);
+	art->curses = NULL;
+}
+
 
 /**
  * Append a given curse with a given power to an artifact
@@ -182,6 +229,7 @@ bool append_artifact_curse(struct artifact *art, int pick, int power)
 	/* Reject conflicting curses */
 	for (i = 0; i < z_info->curse_max; i++) {
 		if (art->curses[i] && curses_conflict(i, pick)) {
+			check_artifact_curses(art);
 			return false;
 		}
 	}
@@ -192,6 +240,7 @@ bool append_artifact_curse(struct artifact *art, int pick, int power)
 		return true;
 	}
 
+	check_artifact_curses(art);
 	return false;
 }
 
