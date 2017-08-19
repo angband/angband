@@ -72,22 +72,24 @@ enum
  *   SAFE: Doesn't affect monsters of the same race as the caster
  *   ARC: Projection is a sector of circle radiating from the caster
  *   PLAY: May affect the player
+ *   INFO: Use believed map rather than truth for player ui
  */
 enum
 {
-	PROJECT_NONE  = 0x000,
-	PROJECT_JUMP  = 0x001,
-	PROJECT_BEAM  = 0x002,
-	PROJECT_THRU  = 0x004,
-	PROJECT_STOP  = 0x008,
-	PROJECT_GRID  = 0x010,
-	PROJECT_ITEM  = 0x020,
-	PROJECT_KILL  = 0x040,
-	PROJECT_HIDE  = 0x080,
-	PROJECT_AWARE = 0x100,
-	PROJECT_SAFE  = 0x200,
-	PROJECT_ARC   = 0x400,
-	PROJECT_PLAY  = 0x800
+	PROJECT_NONE  = 0x0000,
+	PROJECT_JUMP  = 0x0001,
+	PROJECT_BEAM  = 0x0002,
+	PROJECT_THRU  = 0x0004,
+	PROJECT_STOP  = 0x0008,
+	PROJECT_GRID  = 0x0010,
+	PROJECT_ITEM  = 0x0020,
+	PROJECT_KILL  = 0x0040,
+	PROJECT_HIDE  = 0x0080,
+	PROJECT_AWARE = 0x0100,
+	PROJECT_SAFE  = 0x0200,
+	PROJECT_ARC   = 0x0400,
+	PROJECT_PLAY  = 0x0800,
+	PROJECT_INFO  = 0x1000
 };
 
 /* Display attrs and chars */

@@ -729,8 +729,9 @@ void run_step(int dir)
 		/* Initialize */
 		run_init(dir);
 
-		/* Hack -- Set the run counter */
-		player->upkeep->running = 1000;
+		/* Hack -- Set the run counter if no count given */
+		if (player->upkeep->running == 0)
+			player->upkeep->running = 9999;
 
 		/* Calculate torch radius */
 		player->upkeep->update |= (PU_TORCH);
@@ -819,17 +820,18 @@ void run_step(int dir)
 		}
 	}
 
-	/* Decrease counter if it hasn't been cancelled */
-	if (player->upkeep->running)
-		player->upkeep->running--;
-	else if (!player->upkeep->running_withpathfind)
-		return;
-
 	/* Take time */
 	player->upkeep->energy_use = z_info->move_energy;
 
 	/* Move the player; running straight into a trap == trying to disarm */
 	move_player(run_cur_dir, dir && disarm ? true : false);
+
+	/* Decrease counter if it hasn't been cancelled */
+	/* occurs after movement so that using p->u->running as flag works */
+	if (player->upkeep->running) {
+		player->upkeep->running--;
+	} else if (!player->upkeep->running_withpathfind)
+		return;
 
 	/* Prepare the next step */
 	if (player->upkeep->running) {
