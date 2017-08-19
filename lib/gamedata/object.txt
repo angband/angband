@@ -221,7 +221,7 @@ effect:NOURISH
 dice:7500
 effect:CURE:POISONED
 effect:HEAL_HP
-dice:4d8
+dice:20
 desc:Food of the elves is always good; their waybread is no exception.  These
 desc: thin cakes are wrapped in leaves and keep their tastiness for months.
 
