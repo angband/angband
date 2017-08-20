@@ -335,6 +335,8 @@ bool square_dtrap_edge(struct chunk *c, int y, int x);
 bool square_changeable(struct chunk *c, int y, int x);
 bool square_in_bounds(struct chunk *c, int y, int x);
 bool square_in_bounds_fully(struct chunk *c, int y, int x);
+bool square_isbelievedwall(struct chunk *c, int y, int x);
+
 
 struct feature *square_feat(struct chunk *c, int y, int x);
 struct monster *square_monster(struct chunk *c, int y, int x);

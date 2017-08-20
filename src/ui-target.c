@@ -795,6 +795,7 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 {
 	int i;
 	bool on_screen;
+	bool pastknown = false;
 
 	/* No path, so do nothing. */
 	if (path_n < 1) return 0;
@@ -834,7 +835,11 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		Term_what(Term->scr->cx, Term->scr->cy, a+i, c+i);
 
 		/* Choose a colour. */
-		if (mon && monster_is_visible(mon)) {
+		if (pastknown) {
+			/* Once we pass an unknown square, we no longer know
+			 * if we will reach later squares */
+			colour = COLOUR_L_DARK;
+		} else if (mon && monster_is_visible(mon)) {
 			/* Mimics act as objects */
 			if (monster_is_camouflaged(mon)) 
 				colour = COLOUR_YELLOW;
@@ -850,11 +855,12 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 			/* Known walls are blue. */
 			colour = COLOUR_BLUE;
 
-		else if (!square_isknown(cave, y, x) && !square_isseen(cave, y, x))
+		else if (!square_isknown(cave, y, x) && !square_isseen(cave, y, x)) {
 			/* Unknown squares are grey. */
+			pastknown = true;
 			colour = COLOUR_L_DARK;
 
-		else
+		} else
 			/* Unoccupied squares are white. */
 			colour = COLOUR_WHITE;
 
@@ -1003,7 +1009,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 			/* Find the path. */
 			path_n = project_path(path_g, z_info->max_range, py, px, y, x,
-								  PROJECT_THRU);
+								  PROJECT_THRU | PROJECT_INFO);
 
 			/* Draw the path in "target" mode. If there is one */
 			if (mode & (TARGET_KILL))
@@ -1223,7 +1229,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 			/* Find the path. */
 			path_n = project_path(path_g, z_info->max_range, py, px, y, x,
-								  PROJECT_THRU);
+								  PROJECT_THRU | PROJECT_INFO);
 
 			/* Draw the path in "target" mode. If there is one */
 			if (mode & (TARGET_KILL))

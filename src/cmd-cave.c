@@ -1174,6 +1174,15 @@ void do_cmd_run(struct command *cmd)
 		x = player->px + ddx[dir];
 		if (!do_cmd_walk_test(y, x))
 			return;
+			
+		/* Hack: convert repeat count to running count */
+		if (cmd->nrepeats > 0) {
+			player->upkeep->running = cmd->nrepeats;
+			cmd->nrepeats = 0;
+		}
+		else {
+			player->upkeep->running = 0;
+		}
 	}
 
 	/* Start run */

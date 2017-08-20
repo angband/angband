@@ -197,8 +197,11 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 			if (!(flg & (PROJECT_THRU)))
 				if ((x == x2) && (y == y2)) break;
 
-			/* Always stop at non-initial wall grids */
-			if ((n > 0) && !square_isprojectable(cave, y, x)) break;
+			/* Stop at non-initial wall grids, except where that would
+			 * leak info during targetting */
+			if (!(flg & (PROJECT_INFO))) {
+				if ((n > 0) && !square_isprojectable(cave, y, x)) break;
+			} else if ((n > 0) && square_isbelievedwall(cave,y,x)) break;
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
@@ -251,8 +254,11 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 			if (!(flg & (PROJECT_THRU)))
 				if ((x == x2) && (y == y2)) break;
 
-			/* Always stop at non-initial wall grids */
-			if ((n > 0) && !square_isprojectable(cave, y, x)) break;
+			/* Stop at non-initial wall grids, except where that would
+			 * leak info during targetting */
+			if (!(flg & (PROJECT_INFO))) {			
+				if ((n > 0) && !square_isprojectable(cave, y, x)) break;
+			} else if ((n > 0) && square_isbelievedwall(cave,y,x)) break;
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
@@ -299,8 +305,11 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 			if (!(flg & (PROJECT_THRU)))
 				if ((x == x2) && (y == y2)) break;
 
-			/* Always stop at non-initial wall grids */
-			if ((n > 0) && !square_isprojectable(cave, y, x)) break;
+			/* Stop at non-initial wall grids, except where that would
+			 * leak info during targetting */
+			if (!(flg & (PROJECT_INFO))) {
+				if ((n > 0) && !square_isprojectable(cave, y, x)) break;
+			} else if ((n > 0) && square_isbelievedwall(cave,y,x)) break;
 
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))

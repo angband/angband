@@ -70,6 +70,19 @@ installation will be found, and will not be able to link properly. More
 checking of permissible combinations to configure is necessary 
 
 
+Debug build
+----------------------------------------
+
+**WARNING** this build is intended primarely for debugging purpouses. It might have a somowhat slower perofrmance, higher memory requirements and panic saves don't alvays work (in case of a crash there is a higher chance of loosing progress).
+
+When debugging crashes it can be wery useful to get more information about *what exactly* went wrong. There are many tools that can detect common issues and provide useful information. Two such tools that are best used together are AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan). To use them you'll need to enable them when compiling angband
+
+    ./configure [options]
+    SANITIZE_FLAGS="-fsanitize=undefined -fsanitize=address" make
+    
+Note that compiling with this tools will require instaling additional dependancies: libubsan libasan (names of the packages might be different in your distribution).
+
+There is probaly a way to get this tools to work on Windows and Mac OS. If you know how, please add the information to this file.
 
 BUILDING ON WINDOWS
 ===================
