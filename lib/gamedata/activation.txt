@@ -435,42 +435,42 @@ aim:0
 power:10
 effect:DETECT_OBJECTS
 dice:22d40
-desc:detects all objects in the immediate area.
+desc:detects all objects in the immediate area
 
 name:ENCHANT_TOHIT
 aim:0
 power:15
 effect:ENCHANT:TOHIT
 dice:1
-desc:attempts to magically enhance a weapon's to-hit bonus.
+desc:attempts to magically enhance a weapon's to-hit bonus
 
 name:ENCHANT_TODAM
 aim:0
 power:20
 effect:ENCHANT:TODAM
 dice:1
-desc:attempts to magically enhance a weapon's to-dam bonus.
+desc:attempts to magically enhance a weapon's to-dam bonus
 
 name:ENCHANT_WEAPON
 aim:0
 power:22
 effect:ENCHANT:TOBOTH
 dice:1d3
-desc:attempts to magically enhance a weapon both to-hit and to-dam.
+desc:attempts to magically enhance a weapon both to-hit and to-dam
 
 name:ENCHANT_ARMOR
 aim:0
 power:12
 effect:ENCHANT:TOAC
 dice:1
-desc:attempts to magically enhance a piece of armour.
+desc:attempts to magically enhance a piece of armour
 
 name:ENCHANT_ARMOR2
 aim:0
 power:15
 effect:ENCHANT:TOAC
 dice:2+1d3
-desc:attempts to magically enhance a piece of armour with high chance of success.
+desc:attempts to magically enhance a piece of armour with high chance of success
 
 name:REMOVE_CURSE
 aim:0

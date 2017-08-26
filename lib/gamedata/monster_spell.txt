@@ -301,7 +301,7 @@ lore:throw boulders
 lore-color-base:Yellow
 message-vis:{name} hurls a boulder.
 message-invis:You hear a grunt of exertion.
-message-miss: {name} hurls a boulder, but misses.
+message-miss:{name} hurls a boulder, but misses.
 
 name:BA_ACID
 hit:100
