@@ -2754,6 +2754,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	int x_start = context->p2;
 	int dis = context->value.base;
 	int d, i, min, y, x;
+	int serious_attempts = 0;
 
 	bool look = true;
 	bool is_player = (context->origin.what != SRC_MONSTER || context->p2);
@@ -2796,7 +2797,10 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	/* Look until done */
 	while (look) {
 		/* Verify max distance */
-		if (dis > 200) dis = 200;
+		if (dis > 200) {
+			dis = 200;
+			serious_attempts++;
+		}
 
 		/* Try several locations */
 		for (i = 0; i < 500; i++) {
@@ -2832,6 +2836,12 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 		/* Decrease the minimum distance */
 		min = min / 2;
+
+		/* Report failure if we've tried enough */
+		if (serious_attempts > 2) {
+			msg("Failed to find teleport destination!");
+			return true;
+		}
 	}
 
 	/* Sound */
