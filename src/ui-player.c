@@ -1222,12 +1222,16 @@ void do_cmd_change_name(void)
 			switch (ke.key.code) {
 				case ESCAPE: more = false; break;
 				case 'c': {
+					if(arg_force_name)
+						msg("You are not allowed to change your name!");
+					else {
 					char namebuf[32] = "";
 
 					/* Set player name */
 					if (get_character_name(namebuf, sizeof namebuf))
 						my_strcpy(player->full_name, namebuf,
 								  sizeof(player->full_name));
+					}
 
 					break;
 				}

@@ -64,6 +64,7 @@ extern u32b inkey_scan;
 extern bool inkey_flag;
 extern u16b lazymove_delay;
 extern bool msg_flag;
+extern bool arg_force_name;
 
 void flush(game_event_type unused, game_event_data *data, void *user);
 ui_event inkey_ex(void);
