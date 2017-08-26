@@ -1149,6 +1149,12 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Randomize the artifacts if required */
 	if (OPT(player, birth_randarts)) {
+		/* First restore the standard artifacts */
+		cleanup_parser(&randart_parser);
+		deactivate_randart_file();
+		run_parser(&artifact_parser);
+
+		/* Now generate the new randarts */
 		seed_randart = randint0(0x10000000);
 		do_randart(seed_randart, true);
 	}
