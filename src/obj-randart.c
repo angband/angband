@@ -1322,7 +1322,7 @@ static struct object_kind *get_base_item(struct artifact_set_data *data,
 
 	/* Pick an sval for that tval at random */
 	while (!kind) {
-		int r = start + randint0(kb_info[tval].num_svals - start);
+		int r = start + randint1(kb_info[tval].num_svals - start);
 		kind = lookup_kind(tval, r);
 
 		/* No items based on quest artifacts or elven rings */
