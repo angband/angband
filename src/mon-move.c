@@ -48,9 +48,73 @@
 
 
 /**
+ * ------------------------------------------------------------------------
+ * Routines to enable decisions on monster behaviour
+ * ------------------------------------------------------------------------ */
+/**
+ * From Will Asher in DJA:
+ * Find whether a monster is near a permanent wall
+ *
+ * this decides whether PASS_WALL & KILL_WALL monsters use the monster flow code
+ */
+static bool monster_near_permwall(const struct monster *mon, struct chunk *c)
+{
+	int y, x;
+	int my = mon->fy;
+	int mx = mon->fx;
+
+	/* If player is in LOS, there's no need to go around walls */
+    if (projectable(cave, my, mx, player->py, player->px, PROJECT_NONE))
+		return false;
+
+    /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */
+    if (randint0(99) < 5) return true;
+
+	/* Search the nearby grids, which are always in bounds */
+	for (y = (my - 2); y <= (my + 2); y++) {
+		for (x = (mx - 2); x <= (mx + 2); x++) {
+            if (!square_in_bounds_fully(c, y, x)) continue;
+            if (square_isperm(c, y, x)) return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Check if the monster can hear anything
+ */
+static bool monster_can_hear(struct chunk *c, struct monster *mon)
+{
+	int base_hearing = mon->race->hearing
+		- player->state.skills[SKILL_STEALTH] / 3;
+	if (cave->noise.grids[mon->fy][mon->fx] == 0) {
+		return false;
+	}
+	return base_hearing > cave->noise.grids[mon->fy][mon->fx];
+}
+
+/**
+ * Check if the monster can smell anything
+ */
+static bool monster_can_smell(struct chunk *c, struct monster *mon)
+{
+	if (cave->scent.grids[mon->fy][mon->fx] == 0) {
+		return false;
+	}
+	return mon->race->smell > cave->scent.grids[mon->fy][mon->fx];
+}
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Monster movement routines
+ * These routines, culminating in get_move(), choose if and where a monster
+ * will move on its turn
+ * ------------------------------------------------------------------------ */
+/**
  * Calculate minimum and desired combat ranges.  -BR-
  */
-static void find_range(struct monster *mon)
+static void get_move_find_range(struct monster *mon)
 {
 	u16b p_lev, m_lev;
 	u16b p_chp, p_mhp;
@@ -137,37 +201,6 @@ static void find_range(struct monster *mon)
 	}
 }
 
-
-/**
- * From Will Asher in DJA:
- * Find whether a monster is near a permanent wall
- * this decides whether PASS_WALL & KILL_WALL monsters 
- * use the monster flow code
- */
-static bool near_permwall(const struct monster *mon, struct chunk *c)
-{
-	int y, x;
-	int my = mon->fy;
-	int mx = mon->fx;
-	
-	/* If player is in LOS, there's no need to go around walls */
-    if (projectable(cave, my, mx, player->py, player->px, PROJECT_NONE)) 
-		return false;
-    
-    /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */
-    if (randint0(99) < 5) return true;
-    
-	/* Search the nearby grids, which are always in bounds */
-	for (y = (my - 2); y <= (my + 2); y++) {
-		for (x = (mx - 2); x <= (mx + 2); x++) {
-            if (!square_in_bounds_fully(c, y, x)) continue;
-            if (square_isperm(c, y, x)) return true;
-		}
-	}
-	return false;
-}
-
-
 /**
  * Choose the best direction to advance toward the player, using sound or scent.
  *
@@ -184,7 +217,7 @@ static bool near_permwall(const struct monster *mon, struct chunk *c)
  * is still near enough to "annoy" them without being close enough to chase
  * directly.
  */
-static bool get_moves_advance(struct chunk *c, struct monster *mon)
+static bool get_move_advance(struct chunk *c, struct monster *mon)
 {
 	int i;
 	int best_scent = 0;
@@ -197,7 +230,7 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 	bool monster_blocking = false;
 
 	/* If the monster can pass through nearby walls, do that */
-	if (monster_passes_walls(mon) && !near_permwall(mon, c)) {
+	if (monster_passes_walls(mon) && !monster_near_permwall(mon, c)) {
 		return false;
 	}
 
@@ -259,99 +292,6 @@ static bool get_moves_advance(struct chunk *c, struct monster *mon)
 	return false;
 }
 
-
-/**
- * Check if the monster can hear anything
- */
-static bool monster_can_hear(struct chunk *c, struct monster *mon)
-{
-	int base_hearing = mon->race->hearing
-		- player->state.skills[SKILL_STEALTH] / 3;
-	if (cave->noise.grids[mon->fy][mon->fx] == 0) {
-		return false;
-	}
-	return base_hearing > cave->noise.grids[mon->fy][mon->fx];
-}
-
-/**
- * Check if the monster can smell anything
- */
-static bool monster_can_smell(struct chunk *c, struct monster *mon)
-{
-	if (cave->scent.grids[mon->fy][mon->fx] == 0) {
-		return false;
-	}
-	return mon->race->smell > cave->scent.grids[mon->fy][mon->fx];
-}
-
-/**
- * Provide a location to flee to, but give the player a wide berth.
- *
- * A monster may wish to flee to a location that is behind the player,
- * but instead of heading directly for it, the monster should "swerve"
- * around the player so that it has a smaller chance of getting hit.
- */
-static bool get_moves_fear(struct chunk *c, struct monster *mon)
-{
-	int i;
-	int gy = 0, gx = 0;
-	int best_score = -1;
-	int my = mon->fy, mx = mon->fx;
-
-	/* If the player is not currently near the monster, no reason to flow */
-	if (mon->cdis >= mon->best_range) {
-		return false;
-	}
-
-	/* Monster is too far away to use sound or scent */
-	if (!monster_can_hear(c, mon) && !monster_can_smell(c, mon)) {
-		return false;
-	}
-
-	/* Check nearby grids, diagonals first */
-	for (i = 7; i >= 0; i--) {
-		int dis, score;
-
-		/* Get the location */
-		int y = my + ddy_ddd[i];
-		int x = mx + ddx_ddd[i];
-
-		/* Bounds check */
-		if (!square_in_bounds(c, y, x)) continue;
-
-		/* Calculate distance of this grid from our target */
-		dis = distance(y, x, mon->ty, mon->tx);
-
-		/* Score this grid 
-		 * First half of calculation is inversely proportional to distance
-		 * Second half is inversely proportional to grid's distance from player
-		 */
-		score = 5000 / (dis + 3) - 500 / (c->noise.grids[y][x] + 1);
-
-		/* No negative scores */
-		if (score < 0) score = 0;
-
-		/* Ignore lower scores */
-		if (score < best_score) continue;
-
-		/* Save the score */
-		best_score = score;
-
-		/* Save the location */
-		gy = y;
-		gx = x;
-	}
-
-	/* Set the immediate target */
-	mon->ty = gy;
-	mon->tx = gx;
-
-	/* Success */
-	return true;
-}
-
-
-
 /**
  * Choose a "safe" location near a monster for it to run toward.
  *
@@ -364,7 +304,7 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
  *
  * Return true if a safe location is available.
  */
-static bool find_safety(struct chunk *c, struct monster *mon)
+static bool get_move_find_safety(struct chunk *c, struct monster *mon)
 {
 	int fy = mon->fy;
 	int fx = mon->fx;
@@ -435,9 +375,6 @@ static bool find_safety(struct chunk *c, struct monster *mon)
 	return (false);
 }
 
-
-
-
 /**
  * Choose a good hiding place near a monster for it to run toward.
  *
@@ -446,7 +383,7 @@ static bool find_safety(struct chunk *c, struct monster *mon)
  *
  * Return true if a good location is available.
  */
-static bool find_hiding(struct chunk *c, struct monster *mon)
+static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 {
 	int fy = mon->fy;
 	int fx = mon->fx;
@@ -512,12 +449,78 @@ static bool find_hiding(struct chunk *c, struct monster *mon)
 }
 
 /**
+ * Provide a location to flee to, but give the player a wide berth.
+ *
+ * A monster may wish to flee to a location that is behind the player,
+ * but instead of heading directly for it, the monster should "swerve"
+ * around the player so that it has a smaller chance of getting hit.
+ */
+static bool get_move_flee(struct chunk *c, struct monster *mon)
+{
+	int i;
+	int gy = 0, gx = 0;
+	int best_score = -1;
+	int my = mon->fy, mx = mon->fx;
+
+	/* If the player is not currently near the monster, no reason to flow */
+	if (mon->cdis >= mon->best_range) {
+		return false;
+	}
+
+	/* Monster is too far away to use sound or scent */
+	if (!monster_can_hear(c, mon) && !monster_can_smell(c, mon)) {
+		return false;
+	}
+
+	/* Check nearby grids, diagonals first */
+	for (i = 7; i >= 0; i--) {
+		int dis, score;
+
+		/* Get the location */
+		int y = my + ddy_ddd[i];
+		int x = mx + ddx_ddd[i];
+
+		/* Bounds check */
+		if (!square_in_bounds(c, y, x)) continue;
+
+		/* Calculate distance of this grid from our target */
+		dis = distance(y, x, mon->ty, mon->tx);
+
+		/* Score this grid
+		 * First half of calculation is inversely proportional to distance
+		 * Second half is inversely proportional to grid's distance from player
+		 */
+		score = 5000 / (dis + 3) - 500 / (c->noise.grids[y][x] + 1);
+
+		/* No negative scores */
+		if (score < 0) score = 0;
+
+		/* Ignore lower scores */
+		if (score < best_score) continue;
+
+		/* Save the score */
+		best_score = score;
+
+		/* Save the location */
+		gy = y;
+		gx = x;
+	}
+
+	/* Set the immediate target */
+	mon->ty = gy;
+	mon->tx = gx;
+
+	/* Success */
+	return true;
+}
+
+/**
  * Choose the basic direction of movement, and whether to bias left or right
  * if the main direction is blocked.
  *
  * Note that this direction is intended as an index into the side_dirs array.
  */
-static int choose_direction(int dy, int dx)
+static int get_move_choose_direction(int dy, int dx)
 {
 	int dir = 0;
 
@@ -592,11 +595,10 @@ static int choose_direction(int dy, int dx)
 	return dir;
 }
 
-
 /**
  * Choose "logical" directions for monster movement
  */
-static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
+static bool get_move(struct chunk *c, struct monster *mon, int *dir)
 {
 	int py = player->py;
 	int px = player->px;
@@ -609,10 +611,10 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 	bool done = false;
 
 	/* Calculate range */
-	find_range(mon);
+	get_move_find_range(mon);
 
 	/* Flow towards the player */
-	if (get_moves_advance(c, mon)) {
+	if (get_move_advance(c, mon)) {
 		/* Extract the "pseudo-direction" */
 		y = mon->ty - mon->fy;
 		x = mon->tx - mon->fx;
@@ -643,7 +645,7 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 		/* Not in an empty space and strong player */
 		if ((open < 5) && (player->chp > player->mhp / 2)) {
 			/* Find hiding place */
-			if (find_hiding(c, mon)) {
+			if (get_move_find_hiding(c, mon)) {
 				done = true;
 				y = mon->ty - mon->fy;
 				x = mon->tx - mon->fx;
@@ -654,13 +656,13 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 	/* Apply fear */
 	if (!done && (mon->min_range == flee_range)) {
 		/* Try to find safe place */
-		if (!find_safety(c, mon)) {
+		if (!get_move_find_safety(c, mon)) {
 			/* Just leg it away from the player */
 			y = (-y);
 			x = (-x);
 		} else {
 			/* Set a course for the safe place */
-			get_moves_fear(c, mon);
+			get_move_flee(c, mon);
 			y = mon->ty - mon->fy;
 			x = mon->tx - mon->fx;
 		}
@@ -699,12 +701,19 @@ static bool get_moves(struct chunk *c, struct monster *mon, int *dir)
 	if (!x && !y) return (false);
 
 	/* Pick the correct direction */
-	*dir = choose_direction(y, x);
+	*dir = get_move_choose_direction(y, x);
 
 	/* Want to move */
 	return (true);
 }
 
+
+/**
+ * ------------------------------------------------------------------------
+ * Monster turn routines
+ * These routines, culminating in monster_turn(), decide how a monster uses
+ * its turn
+ * ------------------------------------------------------------------------ */
 /**
  * Lets the given monster attempt to reproduce.
  *
@@ -740,12 +749,11 @@ bool multiply_monster(const struct monster *mon)
 	return (result);
 }
 
-
 /**
  * Attempt to reproduce, if possible.  All monsters are checked here for
  * lore purposes, the unfit fail.
  */
-static bool process_monster_multiply(struct chunk *c, struct monster *mon)
+static bool monster_turn_multiply(struct chunk *c, struct monster *mon)
 {
 	int k = 0, y, x;
 
@@ -787,7 +795,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *mon)
  * Check if a monster should stagger or not.  Always stagger when confused,
  * but also deal with random movement for RAND_25 and _50 monsters.
  */
-static bool process_monster_should_stagger(struct monster *mon)
+static bool monster_turn_should_stagger(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 
@@ -821,7 +829,7 @@ static bool process_monster_should_stagger(struct monster *mon)
  *
  * Returns true if the monster is able to move through the grid.
  */
-static bool process_monster_can_move(struct chunk *c, struct monster *mon,
+static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 		const char *m_name, int nx, int ny, bool *did_something)
 {
 	struct monster_lore *lore = get_lore(mon->race);
@@ -920,7 +928,7 @@ static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 /**
  * Try to break a glyph.
  */
-static bool process_monster_glyph(struct chunk *c, struct monster *mon,
+static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
 								  int nx, int ny)
 {
 	assert(square_iswarded(c, ny, nx));
@@ -965,7 +973,7 @@ static int compare_monsters(const struct monster *mon1,
 /**
  * Try to push past / kill another monster.  Returns true on success.
  */
-static bool process_monster_try_push(struct chunk *c, struct monster *mon,
+static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
 									 const char *m_name, int nx, int ny)
 {
 	struct monster *mon1 = square_monster(c, ny, nx);
@@ -1015,7 +1023,7 @@ static bool process_monster_try_push(struct chunk *c, struct monster *mon,
 /**
  * Grab all objects from the grid.
  */
-void process_monster_grab_objects(struct chunk *c, struct monster *mon, 
+void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 		const char *m_name, int nx, int ny)
 {
 	struct monster_lore *lore = get_lore(mon->race);
@@ -1099,8 +1107,9 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 	}
 }
 
+
 /**
- * Process a monster
+ * Process a monster's turn
  *
  * In several cases, we directly update the monster lore
  *
@@ -1121,7 +1130,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
  * Technically, need to check for monster in the way combined
  * with that monster being in a wall (or door?) XXX
  */
-static void process_monster(struct chunk *c, struct monster *mon)
+static void monster_turn(struct chunk *c, struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 
@@ -1136,15 +1145,15 @@ static void process_monster(struct chunk *c, struct monster *mon)
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_HID);
 
 	/* Try to multiply - this can use up a turn */
-	if (process_monster_multiply(c, mon))
+	if (monster_turn_multiply(c, mon))
 		return;
 
 	/* Attempt to cast a spell */
 	if (make_attack_spell(mon)) return;
 
 	/* Work out what kind of movement to use - AI or staggered movement */
-	if (!process_monster_should_stagger(mon)) {
-		if (!get_moves(c, mon, &dir)) return;
+	if (!monster_turn_should_stagger(mon)) {
+		if (!get_move(c, mon, &dir)) return;
 	} else {
 		stagger = true;
 	}
@@ -1167,13 +1176,13 @@ static void process_monster(struct chunk *c, struct monster *mon)
 		}
 
 		/* Check if we can move */
-		if (!process_monster_can_move(c, mon, m_name, nx, ny, &did_something))
+		if (!monster_turn_can_move(c, mon, m_name, nx, ny, &did_something))
 			continue;
 
 		/* Try to break the glyph if there is one.  This can happen multiple
 		 * times per turn because failure does not break the loop */
 		if (square_iswarded(c, ny, nx) &&
-			!process_monster_glyph(c, mon, nx, ny))
+			!monster_turn_glyph(c, mon, nx, ny))
 			continue;
 
 		/* The player is in the way. */
@@ -1204,7 +1213,7 @@ static void process_monster(struct chunk *c, struct monster *mon)
 
 		/* A monster is in the way, try to push past/kill */
 		if (square_monster(c, ny, nx)) {
-			did_something = process_monster_try_push(c, mon, m_name, nx, ny);
+			did_something = monster_turn_try_push(c, mon, m_name, nx, ny);
 		} else {
 			/* Otherwise we can just move */
 			monster_swap(oy, ox, ny, nx);
@@ -1215,7 +1224,7 @@ static void process_monster(struct chunk *c, struct monster *mon)
 		if (mon == square_monster(c, ny, nx)) {
 			monster_desc(m_name, sizeof(m_name), mon,
 						 MDESC_CAPITAL | MDESC_IND_HID);
-			process_monster_grab_objects(c, mon, m_name, nx, ny);
+			monster_turn_grab_objects(c, mon, m_name, nx, ny);
 		}
 	}
 
@@ -1240,6 +1249,11 @@ static void process_monster(struct chunk *c, struct monster *mon)
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Processing routines that happen to a monster regardless of whether it
+ * gets a turn, and/or to decide whether it gets a turn
+ * ------------------------------------------------------------------------ */
 /**
  * Determine whether a monster is active or passive
  */
@@ -1405,6 +1419,10 @@ static void regen_monster(struct monster *mon)
 
 
 /**
+ * ------------------------------------------------------------------------
+ * Monster processing routines to be called by the main game loop
+ * ------------------------------------------------------------------------ */
+/**
  * Process all the "live" monsters, once per game turn.
  *
  * During each game turn, we scan through the list of all the "live" monsters,
@@ -1485,8 +1503,8 @@ void process_monsters(struct chunk *c, int minimum_energy)
 			/* Set this monster to be the current actor */
 			c->mon_current = i;
 
-			/* Process the monster */
-			process_monster(c, mon);
+			/* The monster takes its turn */
+			monster_turn(c, mon);
 
 			/* Monster is no longer current */
 			c->mon_current = -1;
