@@ -104,6 +104,72 @@ static bool monster_can_smell(struct chunk *c, struct monster *mon)
 	return mon->race->smell > cave->scent.grids[mon->fy][mon->fx];
 }
 
+/**
+ * Compare the "strength" of two monsters XXX XXX XXX
+ */
+static int compare_monsters(const struct monster *mon1,
+							const struct monster *mon2)
+{
+	u32b mexp1 = mon1->race->mexp;
+	u32b mexp2 = mon2->race->mexp;
+
+	/* Compare */
+	if (mexp1 < mexp2) return (-1);
+	if (mexp1 > mexp2) return (1);
+
+	/* Assume equal */
+	return (0);
+}
+
+/**
+ * Check if the monster can kill any monster on the relevant grid
+ */
+static bool monster_can_kill(struct chunk *c, struct monster *mon, int y, int x)
+{
+	struct monster *mon1 = square_monster(c, y, x);
+
+	/* No monster */
+	if (!mon1) return true;
+
+	if (rf_has(mon->race->flags, RF_KILL_BODY) &&
+		compare_monsters(mon, mon1) > 0) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Check if the monster can move any monster on the relevant grid
+ */
+static bool monster_can_move(struct chunk *c, struct monster *mon, int y, int x)
+{
+	struct monster *mon1 = square_monster(c, y, x);
+
+	/* No monster */
+	if (!mon1) return true;
+
+	if (rf_has(mon->race->flags, RF_MOVE_BODY) &&
+		compare_monsters(mon, mon1) > 0) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Check if the monster can occupy a grid safely
+ */
+static bool monster_hates_grid(struct chunk *c, struct monster *mon, int y,
+							   int x)
+{
+	/* Only some creatures can handle damaging terrain */
+	if (square_isdamaging(c, y, x) &&
+		!rf_has(mon->race->flags, square_feat(c, y, x)->resist_flag)) {
+		return true;
+	}
+	return false;
+}
 
 /**
  * ------------------------------------------------------------------------
@@ -210,6 +276,9 @@ static void get_move_find_range(struct monster *mon)
  * cave->noise.grids[y][x].  Failing that, they'll try using scent, saved in 
  * cave->scent.grids[y][x].
  *
+ * Note that this function assumes the monster is moving to an adjacent grid,
+ * and so the noise can be louder by at most 1.
+ *
  * Tracking by 'scent' means that monsters end up near enough the player to
  * switch to 'sound' (noise), or they end up somewhere the player left via 
  * teleport.  Teleporting away from a location will cause the monsters who
@@ -225,54 +294,72 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 	int my = mon->fy, mx = mon->fx;
 	int base_hearing = mon->race->hearing
 		- player->state.skills[SKILL_STEALTH] / 3;
-	int best_noise = base_hearing - cave->noise.grids[my][mx];
+	int current_noise = base_hearing - cave->noise.grids[my][mx];
 	int best_direction = 8;
-	bool monster_blocking = false;
+	int backup_direction = -1;
 
 	/* If the monster can pass through nearby walls, do that */
 	if (monster_passes_walls(mon) && !monster_near_permwall(mon, c)) {
-		return false;
+		mon->ty = player->py;
+		mon->tx = player->px;
+		return true;
 	}
 
 	/* If the player can see monster, set target and run towards them */
 	if (square_isview(c, my, mx)) {
 		mon->ty = player->py;
 		mon->tx = player->px;
-		return false;
+		return true;
 	}
 
-	/* Check nearby grids, giving preference to the cardinal directions */
+	/* Check nearby sound, giving preference to the cardinal directions */
 	for (i = 0; i < 8; i++) {
 		/* Get the location */
 		int y = my + ddy_ddd[i];
 		int x = mx + ddx_ddd[i];
-		int heard_noise, smelled_scent;
+		int heard_noise = base_hearing - cave->noise.grids[y][x];
 
 		/* Bounds check */
-		if (!square_in_bounds(c, y, x)) continue;
-
-		/* Get the heard noise, compare with the best so far */
-		heard_noise = base_hearing - cave->noise.grids[y][x];
-		if ((heard_noise > best_noise) && (cave->noise.grids[y][x] != 0)) {
-			/* Best so far */
-			best_noise = heard_noise;
-			best_direction = i;
-			found_direction = true;
-			if (square_monster(cave, y, x)) {
-				monster_blocking = true;
-			}
-			continue;
-		} else if ((heard_noise == best_noise) && (cave->noise.grids[y][x] != 0)
-				   && (!square_monster(cave, y, x)) && monster_blocking) {
-			/* Equal best so far, and no monster in the way */
-			best_direction = i;
-			found_direction = true;
-			monster_blocking = false;
+		if (!square_in_bounds(c, y, x)) {
 			continue;
 		}
 
-		/* If no good sound yet, use scent */
-		if (!best_noise) {
+		/* Must be some noise */
+		if (cave->noise.grids[y][x] == 0) {
+			continue;
+		}
+
+		/* There's a monster blocking that we can't deal with */
+		if (!monster_can_kill(c, mon, y, x) && !monster_can_move(c, mon, y, x)){
+			continue;
+		}
+
+		/* There's damaging terrain */
+		if (monster_hates_grid(c, mon, y, x)) {
+			continue;
+		}
+
+		/* If it's better than the current noise, choose this direction */
+		if (heard_noise > current_noise) {
+			best_direction = i;
+			found_direction = true;
+			break;
+		} else if (heard_noise == current_noise) {
+			/* Possible move if we can't actually get closer */
+			backup_direction = i;
+			continue;
+		}
+	}
+
+	/* If no good sound, use scent */
+	if (!found_direction) {
+		for (i = 0; i < 8; i++) {
+			/* Get the location */
+			int y = my + ddy_ddd[i];
+			int x = mx + ddx_ddd[i];
+			int smelled_scent;
+
+			/* If no good sound yet, use scent */
 			smelled_scent = mon->race->smell - cave->scent.grids[y][x];
 			if ((smelled_scent > best_scent) && (cave->scent.grids[y][x] != 0)){
 				best_scent = smelled_scent;
@@ -287,8 +374,14 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 		mon->ty = my + ddy_ddd[best_direction];
 		mon->tx = mx + ddx_ddd[best_direction];
 		return true;
+	} else if (backup_direction >= 0) {
+		/* Move around to try and improve position */
+		mon->ty = my + ddy_ddd[backup_direction];
+		mon->tx = mx + ddx_ddd[backup_direction];
+		return true;
 	}
 
+	/* No reason to advance */
 	return false;
 }
 
@@ -598,7 +691,7 @@ static int get_move_choose_direction(int dy, int dx)
 /**
  * Choose "logical" directions for monster movement
  */
-static bool get_move(struct chunk *c, struct monster *mon, int *dir)
+static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 {
 	int py = player->py;
 	int px = player->px;
@@ -613,13 +706,14 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir)
 	/* Calculate range */
 	get_move_find_range(mon);
 
-	/* Flow towards the player */
+	/* Assume we're heading towards the player */
 	if (get_move_advance(c, mon)) {
 		/* Extract the "pseudo-direction" */
 		y = mon->ty - mon->fy;
 		x = mon->tx - mon->fx;
+		*good = true;
 	} else {
-		/* Head straight for the player */
+		/* Head blindly straight for the player if there's no better idea */
 		y = player->py - mon->fy;
 		x = player->px - mon->fx;
 	}
@@ -697,7 +791,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir)
 		x = xx - mon->fx;
 	}
 
-	/* Check for no move */
+	/* Check if the monster has already reached its target */
 	if (!x && !y) return (false);
 
 	/* Pick the correct direction */
@@ -834,12 +928,6 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 {
 	struct monster_lore *lore = get_lore(mon->race);
 
-	/* Only some creatures can handle damaging terrain */
-	if (square_isdamaging(c, ny, nx) &&
-		!rf_has(mon->race->flags, square_feat(c, ny, nx)->resist_flag)) {
-		return false;
-	}
-
 	/* Floor is open? */
 	if (square_ispassable(c, ny, nx)) {
 		return true;
@@ -847,6 +935,11 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 
 	/* Permanent wall in the way */
 	if (square_iswall(c, ny, nx) && square_isperm(c, ny, nx)) {
+		return false;
+	}
+
+	/* Dangerous terrain in the way */
+	if (monster_hates_grid(c, mon, ny, nx)) {
 		return false;
 	}
 
@@ -951,23 +1044,6 @@ static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
 
 	/* Unbroken ward - can't move */
 	return false;
-}
-
-/**
- * Compare the "strength" of two monsters XXX XXX XXX
- */
-static int compare_monsters(const struct monster *mon1,
-							const struct monster *mon2)
-{
-	u32b mexp1 = mon1->race->mexp;
-	u32b mexp2 = mon2->race->mexp;
-
-	/* Compare */
-	if (mexp1 < mexp2) return (-1);
-	if (mexp1 > mexp2) return (1);
-
-	/* Assume equal */
-	return (0);
 }
 
 /**
@@ -1139,6 +1215,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 	int i;
 	int dir = 0;
 	bool stagger = false;
+	bool tracking = false;
 	char m_name[80];
 
 	/* Get the monster name */
@@ -1153,7 +1230,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 
 	/* Work out what kind of movement to use - AI or staggered movement */
 	if (!monster_turn_should_stagger(mon)) {
-		if (!get_move(c, mon, &dir)) return;
+		if (!get_move(c, mon, &dir, &tracking)) return;
 	} else {
 		stagger = true;
 	}
@@ -1171,7 +1248,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		int nx = ox + ddx[d];
 
 		/* Tracking monsters have their best direction, don't change */
-		if ((i > 0) && !stagger && !square_isview(c, oy, ox)) {
+		if ((i > 0) && !stagger && !square_isview(c, oy, ox) && tracking) {
 			break;
 		}
 
