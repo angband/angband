@@ -622,6 +622,9 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 		}
 	}
 
+	/* Always ID */
+	context->ident = true;
+
 	/* Hit the player */
 	take_hit(player, dam, killer);
 
