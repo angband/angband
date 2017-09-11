@@ -332,7 +332,7 @@ code:LIGHT_WEAK
 type:environs
 desc:light
 blind-desc:something
-obvious:0
+obvious:1
 color:ORANGE
 
 code:DARK_WEAK
@@ -346,7 +346,7 @@ code:KILL_WALL
 type:environs
 desc:rock remover
 blind-desc:something
-obvious:0
+obvious:1
 color:WHITE
 
 code:KILL_DOOR
