@@ -64,7 +64,7 @@ static bool monster_near_permwall(const struct monster *mon, struct chunk *c)
 	int mx = mon->fx;
 
 	/* If player is in LOS, there's no need to go around walls */
-    if (projectable(cave, my, mx, player->py, player->px, PROJECT_NONE))
+    if (projectable(c, my, mx, player->py, player->px, PROJECT_NONE))
 		return false;
 
     /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */
@@ -87,10 +87,10 @@ static bool monster_can_hear(struct chunk *c, struct monster *mon)
 {
 	int base_hearing = mon->race->hearing
 		- player->state.skills[SKILL_STEALTH] / 3;
-	if (cave->noise.grids[mon->fy][mon->fx] == 0) {
+	if (c->noise.grids[mon->fy][mon->fx] == 0) {
 		return false;
 	}
-	return base_hearing > cave->noise.grids[mon->fy][mon->fx];
+	return base_hearing > c->noise.grids[mon->fy][mon->fx];
 }
 
 /**
@@ -98,10 +98,10 @@ static bool monster_can_hear(struct chunk *c, struct monster *mon)
  */
 static bool monster_can_smell(struct chunk *c, struct monster *mon)
 {
-	if (cave->scent.grids[mon->fy][mon->fx] == 0) {
+	if (c->scent.grids[mon->fy][mon->fx] == 0) {
 		return false;
 	}
-	return mon->race->smell > cave->scent.grids[mon->fy][mon->fx];
+	return mon->race->smell > c->scent.grids[mon->fy][mon->fx];
 }
 
 /**
@@ -273,8 +273,8 @@ static void get_move_find_range(struct monster *mon)
  * Note that ghosts and rock-eaters generally just head straight for the player.
  *
  * Monsters first try to use current sound information as saved in
- * cave->noise.grids[y][x].  Failing that, they'll try using scent, saved in 
- * cave->scent.grids[y][x].
+ * c->noise.grids[y][x].  Failing that, they'll try using scent, saved in 
+ * c->scent.grids[y][x].
  *
  * Note that this function assumes the monster is moving to an adjacent grid,
  * and so the noise can be louder by at most 1.
@@ -294,7 +294,7 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 	int my = mon->fy, mx = mon->fx;
 	int base_hearing = mon->race->hearing
 		- player->state.skills[SKILL_STEALTH] / 3;
-	int current_noise = base_hearing - cave->noise.grids[my][mx];
+	int current_noise = base_hearing - c->noise.grids[my][mx];
 	int best_direction = 8;
 	int backup_direction = -1;
 
@@ -317,7 +317,7 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 		/* Get the location */
 		int y = my + ddy_ddd[i];
 		int x = mx + ddx_ddd[i];
-		int heard_noise = base_hearing - cave->noise.grids[y][x];
+		int heard_noise = base_hearing - c->noise.grids[y][x];
 
 		/* Bounds check */
 		if (!square_in_bounds(c, y, x)) {
@@ -325,7 +325,7 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 		}
 
 		/* Must be some noise */
-		if (cave->noise.grids[y][x] == 0) {
+		if (c->noise.grids[y][x] == 0) {
 			continue;
 		}
 
@@ -360,8 +360,8 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 			int smelled_scent;
 
 			/* If no good sound yet, use scent */
-			smelled_scent = mon->race->smell - cave->scent.grids[y][x];
-			if ((smelled_scent > best_scent) && (cave->scent.grids[y][x] != 0)){
+			smelled_scent = mon->race->smell - c->scent.grids[y][x];
+			if ((smelled_scent > best_scent) && (c->scent.grids[y][x] != 0)) {
 				best_scent = smelled_scent;
 				best_direction = i;
 				found_direction = true;
@@ -779,7 +779,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 				xx = px + ddx_ddd[(tmp + i) & 7];
 
 				/* Ignore filled grids */
-				if (!square_isempty(cave, yy, xx)) continue;
+				if (!square_isempty(c, yy, xx)) continue;
 
 				/* Try to fill this hole */
 				break;
@@ -815,7 +815,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
  *
  * Returns true if the monster successfully reproduced.
  */
-bool multiply_monster(const struct monster *mon)
+bool multiply_monster(struct chunk *c, const struct monster *mon)
 {
 	int i, y, x;
 
@@ -826,13 +826,13 @@ bool multiply_monster(const struct monster *mon)
 		int d = 1;
 
 		/* Pick a location */
-		scatter(cave, &y, &x, mon->fy, mon->fx, d, true);
+		scatter(c, &y, &x, mon->fy, mon->fx, d, true);
 
 		/* Require an "empty" floor grid */
-		if (!square_isempty(cave, y, x)) continue;
+		if (!square_isempty(c, y, x)) continue;
 
 		/* Create a new monster (awake, no groups) */
-		result = place_new_monster(cave, y, x, mon->race, false, false,
+		result = place_new_monster(c, y, x, mon->race, false, false,
 			ORIGIN_DROP_BREED);
 
 		/* Done */
@@ -872,7 +872,7 @@ static bool monster_turn_multiply(struct chunk *c, struct monster *mon)
 			return false;
 
 		/* Try to multiply */
-		if (multiply_monster(mon)) {
+		if (multiply_monster(c, mon)) {
 			/* Make a sound */
 			if (monster_is_visible(mon))
 				sound(MSG_MULTIPLY);
@@ -928,6 +928,11 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 {
 	struct monster_lore *lore = get_lore(mon->race);
 
+	/* Dangerous terrain in the way */
+	if (monster_hates_grid(c, mon, ny, nx)) {
+		return false;
+	}
+
 	/* Floor is open? */
 	if (square_ispassable(c, ny, nx)) {
 		return true;
@@ -935,11 +940,6 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 
 	/* Permanent wall in the way */
 	if (square_iswall(c, ny, nx) && square_isperm(c, ny, nx)) {
-		return false;
-	}
-
-	/* Dangerous terrain in the way */
-	if (monster_hates_grid(c, mon, ny, nx)) {
 		return false;
 	}
 
@@ -1367,7 +1367,7 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
  * the player.  Currently straight line distance is used; possibly this
  * should take into account dungeon structure.
  */
-static void monster_reduce_sleep(struct monster *mon)
+static void monster_reduce_sleep(struct chunk *c, struct monster *mon)
 {
 	bool woke_up = false;
 	int stealth = player->state.skills[SKILL_STEALTH];
@@ -1394,7 +1394,7 @@ static void monster_reduce_sleep(struct monster *mon)
 
 	} else if ((notice * notice * notice) <= player_noise) {
 		int sleep_reduction = 1;
-		int local_noise = cave->noise.grids[mon->fy][mon->fx];
+		int local_noise = c->noise.grids[mon->fy][mon->fx];
 
 		/* Test - wake up faster in hearing distance of the player 
 		 * Note no dependence on stealth for now */
@@ -1431,7 +1431,7 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 {
 	/* If the monster is asleep or just woke up, then it doesn't act */
 	if (mon->m_timed[MON_TMD_SLEEP]) {
-		monster_reduce_sleep(mon);
+		monster_reduce_sleep(c, mon);
 		return true;
 	}
 
