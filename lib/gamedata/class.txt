@@ -305,7 +305,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
 desc:  Uniques are not affected.
 
-spell:Identify:11:7:25:6
+spell:Identify Rune:11:7:25:6
 effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
 
@@ -1194,7 +1194,7 @@ desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
-spell:Identify:18:18:60:2
+spell:Identify Rune:18:18:60:2
 effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
 
@@ -1561,7 +1561,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
 desc:  Uniques are not affected.
 
-spell:Identify:23:25:90:3
+spell:Identify Rune:23:25:90:3
 effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
 

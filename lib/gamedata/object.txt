@@ -1786,7 +1786,7 @@ power:6
 effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 
-name:Identify
+name:Identify Rune
 type:scroll
 graphics:?:w
 properties:1:5:200
