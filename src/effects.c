@@ -2756,10 +2756,17 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	int y_start = context->p1;
 	int x_start = context->p2;
 	int dis = context->value.base;
-	int d, i, min, y, x;
-	int serious_attempts = 0;
+	int y, x, pick;
 
-	bool look = true;
+	struct jumps {
+		int y;
+		int x;
+		struct jumps *next;
+	} *spots = NULL;
+	int num_spots = 0;
+	int current_score = 2 * MAX(z_info->dungeon_wid, z_info->dungeon_hgt);
+	bool only_vault_grids_possible = true;
+
 	bool is_player = (context->origin.what != SRC_MONSTER || context->p2);
 
 	context->ident = true;
@@ -2790,71 +2797,84 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		x_start = mon->fx;
 	}
 
-	/* Initialize */
-	y = y_start;
-	x = x_start;
+	/* Make a list of the best grids, scoring by how good an approximation
+	 * the distance from the start is to the distance we want */
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
+			int d = distance(y, x, y_start, x_start);
+			int score = ABS(d - dis);
+			struct jumps *new;
 
-	/* Minimum distance */
-	min = dis / 2;
-
-	/* Look until done */
-	while (look) {
-		/* Verify max distance */
-		if (dis > 200) {
-			dis = 200;
-			serious_attempts++;
-		}
-
-		/* Try several locations */
-		for (i = 0; i < 500; i++) {
-			/* Pick a (possibly illegal) location */
-			while (1) {
-				y = rand_spread(y_start, dis);
-				x = rand_spread(x_start, dis);
-				d = distance(y_start, x_start, y, x);
-				if ((d >= min) && (d <= dis)) break;
-			}
-
-			/* Ignore illegal locations */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			/* Must move */
+			if (d == 0) continue;
 
 			/* Require "naked" floor space */
 			if (!square_isempty(cave, y, x)) continue;
 
-			/* No teleporting into vaults and such */
-			if (square_isvault(cave, y, x)) continue;
-
 			/* No monster teleport onto glyph of warding */
 			if (!is_player && square_iswarded(cave, y, x)) continue;
 
-			/* This grid looks good */
-			look = false;
+			/* No teleporting into vaults and such, unless there's no choice */
+			if (square_isvault(cave, y, x)) {
+				if (!only_vault_grids_possible) {
+					continue;
+				}
+			} else {
+				/* Just starting to consider non-vault grids, so reset score */
+				if (only_vault_grids_possible) {
+					current_score = 2 * MAX(z_info->dungeon_wid,
+											z_info->dungeon_hgt);
+				}
+				only_vault_grids_possible = false;
+			}
 
-			/* Stop looking */
-			break;
+			/* Do we have better spots already? */
+			if (score > current_score) continue;
+
+			/* Make a new spot */
+			new = mem_zalloc(sizeof(struct jumps));
+			new->y = y;
+			new->x = x;
+
+			/* If improving start a new list, otherwise extend the old one */
+			if (score < current_score) {
+				current_score = score;
+				while (spots) {
+					struct jumps *next = spots->next;
+					mem_free(spots);
+					spots = next;
+				}
+				spots = new;
+				num_spots = 1;
+			} else {
+				new->next = spots;
+				spots = new;
+				num_spots++;
+			}
 		}
+	}
 
-		/* Increase the maximum distance */
-		dis = dis * 2;
+	/* Report failure (very unlikely) */
+	if (!num_spots) {
+		msg("Failed to find teleport destination!");
+		return true;
+	}
 
-		/* Decrease the minimum distance */
-		min = min / 2;
-
-		/* Report failure if we've tried enough */
-		if (serious_attempts > 2) {
-			msg("Failed to find teleport destination!");
-			return true;
-		}
+	/* Pick a spot */
+	pick = randint0(num_spots);
+	while (pick) {
+		spots = spots->next;
+		pick--;
 	}
 
 	/* Sound */
 	sound(is_player ? MSG_TELEPORT : MSG_TPOTHER);
 
 	/* Move player */
-	monster_swap(y_start, x_start, y, x);
+	monster_swap(y_start, x_start, spots->y, spots->x);
 
 	/* Clear any projection marker to prevent double processing */
-	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
+	sqinfo_off(cave->squares[spots->y][spots->x].info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
