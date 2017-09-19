@@ -646,7 +646,7 @@ static void project_monster_handler_MON_CLONE(project_monster_handler_context_t 
 				  context->id);
 
 	/* Attempt to clone. */
-	if (multiply_monster(context->mon))
+	if (multiply_monster(cave, context->mon))
 		context->hurt_msg = MON_MSG_SPAWN;
 
 	/* No "real" damage */
