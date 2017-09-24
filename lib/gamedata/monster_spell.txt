@@ -20,11 +20,6 @@
 # effect - effect
 # dice - damage dice of effect, if any
 # expr - expression for dice, if needed
-# power - power data for this spell:
-# 		base = flat power rating to be added
-# 		dice = percentage adjustment to damage output
-#		sides = rlev-dependent power
-#		m_bonus: 1 means power is proportional to rlev, 2 means inverse
 
 # {name} and {pronoun} are markers that will be replaced with the acting
 # monster's name and his/her/its when the message is displayed,
@@ -36,7 +31,6 @@ hit:100
 effect:WAKE
 effect:PROJECT_LOS:MON_SPEED
 dice:25
-power:d150M1
 lore:shriek for help
 lore-color-base:Orange
 message-vis:{name} makes a high-pitched shriek.
@@ -86,7 +80,6 @@ name:BR_ACID
 msgt:BR_ACID
 hit:100
 effect:BREATH:ACID:30
-power:20
 lore:acid
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -98,7 +91,6 @@ name:BR_ELEC
 msgt:BR_ELEC
 hit:100
 effect:BREATH:ELEC:30
-power:10
 lore:lightning
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -110,7 +102,6 @@ name:BR_FIRE
 msgt:BR_FIRE
 hit:100
 effect:BREATH:FIRE:30
-power:10
 message-vis:{name} breathes fire.
 message-invis:You hear a scorching roar.
 lore:fire
@@ -122,7 +113,6 @@ name:BR_COLD
 msgt:BR_FROST
 hit:100
 effect:BREATH:COLD:30
-power:10
 lore:frost
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -134,7 +124,6 @@ name:BR_POIS
 msgt:BR_GAS
 hit:100
 effect:BREATH:POIS:30
-power:125d100M1
 lore:poison
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -145,7 +134,6 @@ name:BR_NETH
 msgt:BR_NETHER
 hit:100
 effect:BREATH:NETHER:30
-power:d2000M2
 lore:nether
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -156,7 +144,6 @@ name:BR_LIGHT
 msgt:BR_LIGHT
 hit:100
 effect:BREATH:LIGHT:30
-power:10
 lore:light
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -167,7 +154,6 @@ name:BR_DARK
 msgt:BR_DARK
 hit:100
 effect:BREATH:DARK:30
-power:10
 lore:darkness
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -178,7 +164,6 @@ name:BR_SOUN
 msgt:BR_SOUND
 hit:100
 effect:BREATH:SOUND:30
-power:20
 lore:sound
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -190,7 +175,6 @@ name:BR_CHAO
 msgt:BR_CHAOS
 hit:100
 effect:BREATH:CHAOS:30
-power:d2000M2
 lore:chaos
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -201,7 +185,6 @@ name:BR_DISE
 msgt:BR_DISEN
 hit:100
 effect:BREATH:DISEN:30
-power:50
 lore:disenchantment
 lore-color-base:Light Red
 lore-color-resist:Light Green
@@ -212,7 +195,6 @@ name:BR_NEXU
 msgt:BR_NEXUS
 hit:100
 effect:BREATH:NEXUS:30
-power:20
 lore:nexus
 lore-color-base:Light Red
 lore-color-resist:Yellow
@@ -224,7 +206,6 @@ name:BR_TIME
 msgt:BR_TIME
 hit:100
 effect:BREATH:TIME:30
-power:d2000M2
 lore:time
 lore-color-base:Light Red
 message-vis:{name} breathes time.
@@ -234,7 +215,6 @@ name:BR_INER
 msgt:BR_INERTIA
 hit:100
 effect:BREATH:INERTIA:30
-power:30
 lore:inertia
 lore-color-base:Orange
 message-vis:{name} breathes inertia.
@@ -244,7 +224,6 @@ name:BR_GRAV
 msgt:BR_GRAVITY
 hit:100
 effect:BREATH:GRAVITY:30
-power:30
 lore:gravity
 lore-color-base:Light Red
 message-vis:{name} breathes gravity.
@@ -254,7 +233,6 @@ name:BR_SHAR
 msgt:BR_SHARDS
 hit:100
 effect:BREATH:SHARD:30
-power:5+125d1
 lore:shards
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -265,7 +243,6 @@ name:BR_PLAS
 msgt:BR_PLASMA
 hit:100
 effect:BREATH:PLASMA:30
-power:30
 lore:plasma
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -276,7 +253,6 @@ name:BR_WALL
 msgt:BR_FORCE
 hit:100
 effect:BREATH:FORCE:30
-power:30
 lore:force
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -286,7 +262,6 @@ message-invis:You hear a staccato roar.
 name:BR_MANA
 hit:100
 effect:BREATH:MANA:30
-power:100
 lore:mana
 lore-color-base:Light Red
 message-vis:{name} breathes raw magic.
@@ -308,7 +283,6 @@ hit:100
 effect:BALL:ACID:2
 dice:15+1d$S
 expr:S:SPELL_POWER:* 3
-power:20
 lore:produce acid balls
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -321,7 +295,6 @@ hit:100
 effect:BALL:ELEC:2
 dice:8+1d$S
 expr:S:SPELL_POWER:* 3 / 2
-power:10
 lore:produce lightning balls
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -334,7 +307,6 @@ hit:100
 effect:BALL:FIRE:2
 dice:10+1d$S
 expr:S:SPELL_POWER:* 7 / 2
-power:10
 lore:produce fire balls
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -347,7 +319,6 @@ hit:100
 effect:BALL:COLD:2
 dice:10+1d$S
 expr:S:SPELL_POWER:* 3 / 2
-power:10
 lore:produce frost balls
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -359,7 +330,6 @@ name:BA_POIS
 hit:100
 effect:BALL:POIS:2
 dice:12d2
-power:125d100M1
 lore:produce poison balls
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -371,7 +341,6 @@ hit:100
 effect:BALL:NETHER:2
 dice:$B+10d10
 expr:B:SPELL_POWER:+ 50
-power:d2000M2
 lore:produce nether balls
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -383,7 +352,6 @@ hit:100
 effect:BALL:WATER:2
 dice:50+1d$S
 expr:S:SPELL_POWER:* 5 / 2
-power:20
 lore:produce water balls
 lore-color-base:Light Red
 lore-color-resist:Orange
@@ -395,7 +363,6 @@ hit:100
 effect:BALL:MANA:2
 dice:$B+10d10
 expr:B:SPELL_POWER:* 5
-power:100
 lore:invoke mana storms
 lore-color-base:Light Red
 message-vis:{name} invokes a storm of raw magic.
@@ -406,7 +373,6 @@ hit:100
 effect:BALL:DARK:2
 dice:$B+10d10
 expr:B:SPELL_POWER:* 5
-power:10
 lore:produce balls of darkness
 lore-strong:invoke darkness storms
 lore-color-base:Light Red
@@ -422,7 +388,6 @@ hit:100
 effect:DRAIN_MANA
 dice:d$S
 expr:S:SPELL_POWER:/ 2 + 1
-power:5
 lore:drain mana
 lore-color-base:Yellow
 message-vis:{name} drains your mana away.
@@ -513,7 +478,6 @@ hit:100
 effect:BOLT:ACID
 dice:$B+7d8
 expr:B:SPELL_POWER:/ 3
-power:20
 lore:produce acid bolts
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -526,7 +490,6 @@ hit:100
 effect:BOLT:ELEC
 dice:$B+4d8
 expr:B:SPELL_POWER:/ 3
-power:10
 lore:produce lightning bolts
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -539,7 +502,6 @@ hit:100
 effect:BOLT:FIRE
 dice:$B+9d8
 expr:B:SPELL_POWER:/ 3
-power:10
 lore:produce fire bolts
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -552,7 +514,6 @@ hit:100
 effect:BOLT:COLD
 dice:$B+6d8
 expr:B:SPELL_POWER:/ 3
-power:10
 lore:produce frost bolts
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -565,7 +526,6 @@ hit:100
 effect:BOLT:POIS
 dice:$B+9d8
 expr:B:SPELL_POWER:/ 3
-power:125d100
 lore:produce poison bolts
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -577,7 +537,6 @@ hit:100
 effect:BOLT:NETHER
 dice:$B+5d5
 expr:B:SPELL_POWER:* 3 / 2 + 30
-power:d2000M2
 lore:produce nether bolts
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -589,7 +548,6 @@ hit:100
 effect:BOLT:WATER
 dice:$B+10d10
 expr:B:SPELL_POWER:+ 0
-power:20
 lore:produce water bolts
 lore-color-base:Light Red
 lore-color-resist:Orange
@@ -601,7 +559,6 @@ hit:100
 effect:BOLT:MANA
 dice:50+1d$S
 expr:S:SPELL_POWER:* 7 / 2
-power:100
 lore:produce mana bolts
 lore-color-base:Light Red
 message-vis:{name} casts a bolt of raw magic.
@@ -612,7 +569,6 @@ hit:100
 effect:BOLT:PLASMA
 dice:$B+8d7
 expr:B:SPELL_POWER:+ 10
-power:30
 lore:produce plasma bolts
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -624,7 +580,6 @@ hit:100
 effect:BOLT:ICE
 dice:$B+6d6
 expr:B:SPELL_POWER:+ 0
-power:10
 lore:produce ice bolts
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -646,7 +601,6 @@ msgt:CAST_FEAR
 hit:100
 effect:TIMED_INC:AFRAID
 dice:3+1d4
-power:5
 lore:terrify
 lore-color-base:Yellow
 lore-color-resist:Light Green
@@ -658,7 +612,6 @@ name:BLIND
 hit:100
 effect:TIMED_INC:BLIND
 dice:11+1d4
-power:10
 lore:blind
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -670,7 +623,6 @@ name:CONF
 hit:100
 effect:TIMED_INC:CONFUSED
 dice:3+1d4
-power:10
 lore:confuse
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -682,7 +634,6 @@ name:SLOW
 hit:100
 effect:TIMED_INC:SLOW
 dice:3+1d4
-power:15
 lore:slow
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -694,7 +645,6 @@ name:HOLD
 hit:100
 effect:TIMED_INC:PARALYZED
 dice:3+1d4
-power:25
 lore:paralyze
 lore-color-base:Light Red
 lore-color-resist:Light Green
@@ -706,7 +656,6 @@ name:HASTE
 hit:100
 effect:MON_TIMED_INC:FAST
 dice:50
-power:70
 lore:haste-self
 lore-color-base:Yellow
 message-vis:{name} concentrates on {pronoun} body.
@@ -717,7 +666,6 @@ hit:100
 effect:MON_HEAL_HP
 dice:$B
 expr:B:SPELL_POWER:* 6
-power:30
 lore:heal-self
 lore-color-base:Yellow
 message-vis:{name} magically starts closing wounds.
@@ -728,7 +676,6 @@ hit:100
 effect:MON_HEAL_KIN
 dice:$B
 expr:B:SPELL_POWER:* 6
-power:30
 lore:heal kin
 lore-color-base:Yellow
 message-vis:{name} tries to heal {pronoun} comrades.
@@ -738,7 +685,6 @@ name:BLINK
 hit:100
 effect:TELEPORT
 dice:10
-power:15
 lore:blink-self
 lore-color-base:Light Green
 message-vis:{name} blinks.
@@ -749,7 +695,6 @@ hit:100
 effect:TELEPORT
 dice:$B
 expr:B:MAX_SIGHT:* 2 + 5
-power:15
 lore:teleport-self
 lore-color-base:Light Green
 message-vis:{name} teleports away.
@@ -759,7 +704,6 @@ name:TELE_TO
 msgt:TELEPORT
 hit:100
 effect:TELEPORT_TO
-power:25
 lore:teleport to
 lore-color-base:Yellow
 message-vis:{name} commands you to come hither.
@@ -771,7 +715,6 @@ hit:100
 effect:TELEPORT
 dice:100
 param:1
-power:25
 lore:teleport away
 lore-color-base:Yellow
 message-vis:{name} commands you to go away.
@@ -781,7 +724,6 @@ name:TELE_LEVEL
 msgt:TPLEVEL
 hit:100
 effect:TELEPORT_LEVEL
-power:40
 lore:teleport level
 lore-color-base:Yellow
 lore-color-resist:Light Green
@@ -794,7 +736,6 @@ hit:100
 effect:DARKEN_AREA
 dice:10
 param:3
-power:5
 lore:create darkness
 lore-color-base:Light Green
 message-vis:{name} surrounds you in darkness.
@@ -804,7 +745,6 @@ name:TRAPS
 msgt:CREATE_TRAP
 hit:100
 effect:TOUCH:MAKE_TRAP:3
-power:10
 lore:create traps
 lore-color-base:Yellow
 message-vis:{name} cackles evilly about traps.
@@ -814,7 +754,6 @@ name:FORGET
 hit:100
 effect:TIMED_INC:AMNESIA
 dice:3
-power:25
 lore:cause amnesia
 lore-color-base:Yellow
 lore-color-resist:Light Green
@@ -827,7 +766,6 @@ msgt:SUM_MONSTER
 hit:100
 effect:SUMMON:KIN
 dice:8
-power:d200M1
 lore:summon similar monsters
 lore-color-base:Orange
 message-vis:{name} summons {pronoun} kin.
@@ -838,7 +776,6 @@ msgt:SUM_MONSTER
 hit:100
 effect:SUMMON:MONSTER
 dice:1
-power:40
 lore:summon a monster
 lore-color-base:Orange
 message-vis:{name} summons a companion.
@@ -849,7 +786,6 @@ msgt:SUM_MONSTER
 hit:100
 effect:SUMMON:MONSTERS
 dice:8
-power:80
 lore:summon monsters
 lore-color-base:Orange
 message-vis:{name} summons some friends.
@@ -860,7 +796,6 @@ msgt:SUM_ANIMAL
 hit:100
 effect:SUMMON:ANIMAL
 dice:12
-power:30
 lore:summon animals
 lore-color-base:Orange
 message-vis:{name} summons animals.
@@ -871,7 +806,6 @@ msgt:SUM_SPIDER
 hit:100
 effect:SUMMON:SPIDER
 dice:12
-power:20
 lore:summon spiders
 lore-color-base:Orange
 message-vis:{name} summons spiders.
@@ -882,7 +816,6 @@ msgt:SUM_HOUND
 hit:100
 effect:SUMMON:HOUND
 dice:12
-power:100
 lore:summon hounds
 lore-color-base:Orange
 message-vis:{name} summons hounds.
@@ -893,7 +826,6 @@ msgt:SUM_HYDRA
 hit:100
 effect:SUMMON:HYDRA
 dice:6
-power:150
 lore:summon hydras
 lore-color-base:Orange
 message-vis:{name} summons hydrae.
@@ -904,7 +836,6 @@ msgt:SUM_AINU
 hit:100
 effect:SUMMON:AINU
 dice:1
-power:150
 lore:summon an ainu
 lore-color-base:Orange
 message-vis:{name} summons an ainu.
@@ -915,7 +846,6 @@ msgt:SUM_DEMON
 hit:100
 effect:SUMMON:DEMON
 dice:1
-power:d150M1
 lore:summon a demon
 lore-color-base:Orange
 message-vis:{name} summons a demon.
@@ -926,7 +856,6 @@ msgt:SUM_UNDEAD
 hit:100
 effect:SUMMON:UNDEAD
 dice:1
-power:d150M1
 lore:summon an undead
 lore-color-base:Orange
 message-vis:{name} summons the undead.
@@ -937,7 +866,6 @@ msgt:SUM_DRAGON
 hit:100
 effect:SUMMON:DRAGON
 dice:1
-power:d150M1
 lore:summon a dragon
 lore-color-base:Orange
 message-vis:{name} summons a dragon.
@@ -948,7 +876,6 @@ msgt:SUM_HI_DEMON
 hit:100
 effect:SUMMON:HI_DEMON
 dice:8
-power:250
 lore:summon greater demons
 lore-color-base:Light Red
 message-vis:{name} summons major demons.
@@ -959,7 +886,6 @@ msgt:SUM_HI_UNDEAD
 hit:100
 effect:SUMMON:HI_UNDEAD
 dice:8
-power:400
 lore:summon greater undead
 lore-color-base:Light Red
 message-vis:{name} summons fiends of darkness.
@@ -970,7 +896,6 @@ msgt:SUM_HI_DRAGON
 hit:100
 effect:SUMMON:HI_DRAGON
 dice:8
-power:400
 lore:summon ancient dragons
 lore-color-base:Light Red
 message-vis:{name} summons ancient dragons.
@@ -981,7 +906,6 @@ msgt:SUM_WRAITH
 hit:100
 effect:SUMMON:WRAITH
 dice:8
-power:450
 lore:summon ringwraiths
 lore-color-base:Light Red
 message-vis:{name} summons ringwraiths.
@@ -992,7 +916,6 @@ msgt:SUM_UNIQUE
 hit:100
 effect:SUMMON:UNIQUE
 dice:8
-power:500
 lore:summon uniques
 lore-color-base:Light Red
 message-vis:{name} summons {pronoun} servants.

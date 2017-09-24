@@ -870,14 +870,6 @@ static enum parser_error parse_mon_spell_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_mon_spell_power(struct parser *p) {
-	struct monster_spell *s = parser_priv(p);
-
-	s->power = parser_getrand(p, "power");
-
-	return PARSE_ERROR_NONE;
-}
-
 struct parser *init_parse_mon_spell(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -899,7 +891,6 @@ struct parser *init_parse_mon_spell(void) {
 	parser_reg(p, "param int p2 ?int p3", parse_mon_spell_param);
 	parser_reg(p, "dice str dice", parse_mon_spell_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_mon_spell_expr);
-	parser_reg(p, "power rand power", parse_mon_spell_power);
 	return p;
 }
 

@@ -228,12 +228,6 @@ static bool mon_spell_is_valid(int index)
 	return index > RSF_NONE && index < RSF_MAX;
 }
 
-static bool monster_spell_is_projectable(int index)
-{
-	return (mon_spell_types[index].type &
-			(RST_BOLT | RST_BALL | RST_BREATH)) ? true : false;
-}
-
 static bool monster_spell_is_breath(int index)
 {
 	return (mon_spell_types[index].type & RST_BREATH) ? true : false;
@@ -414,69 +408,6 @@ static int mon_spell_dam(int index, int hp, const struct monster_race *race,
 		return nonhp_dam(spell, race, dam_aspect);
 }
 
-
-/**
- * Calculate a monster's maximum spell power.
- *
- * \param race is the monster we're studying
- * \param resist is the degree of resistance we're assuming to any
- *   attack type (-1 = vulnerable ... 3 = immune)
- */
-int best_spell_power(const struct monster_race *race, int resist)
-{
-	const struct mon_spell_info *info;
-	int dam = 0, best_dam = 0;
-
-	/* Extract the monster level */
-	int rlev = MAX(race->level, 1);
-
-	for (info = mon_spell_types; info->index < RSF_MAX; info++) {
-		if (rsf_has(race->spell_flags, info->index)) {
-			/* Get the spell */
-			const struct monster_spell *spell =
-				monster_spell_by_index(info->index);
-			if (!spell) continue;
-
-			/* Get the maximum basic damage output of the spell (could be 0) */
-			dam = mon_spell_dam(info->index,
-					mon_hp(race, MAXIMISE),
-					race,
-					MAXIMISE);
-
-			/* For all attack forms the player can save against, damage
-			 * is halved */
-			if (spell->save_message)
-				dam /= 2;
-
-			/* Adjust the real damage by the assumed resistance (if it is a
-			 * resistable type) */
-			if (monster_spell_is_projectable(info->index))
-				dam = adjust_dam(player, spell->effect->params[0], dam,
-								 MAXIMISE, 1, false);
-
-			/* Add the power rating (crucial for non-damaging spells) */
-
-			/* First we adjust the real damage if necessary */
-			if (spell->power.dice)
-				dam = (dam * spell->power.dice) / 100;
-
-			/* Then we add any flat rating for this effect */
-			dam += spell->power.base;
-
-			/* Then we add any rlev-dependent rating */
-			if (spell->power.m_bonus == 1)
-				dam += (spell->power.sides * rlev) / 100;
-			else if (spell->power.m_bonus == 2)
-				dam += spell->power.sides / (rlev + 1);
-		}
-
-		/* Update the best_dam tracker */
-		if (dam > best_dam)
-			best_dam = dam;
-	}
-
-	return best_dam;
-}
 
 /**
  * Create a mask of monster spell flags of a specific type.
