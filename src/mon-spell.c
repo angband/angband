@@ -360,7 +360,9 @@ static int nonhp_dam(const struct monster_spell *spell,
 	/* Now add the damage for each effect */
 	while (effect) {
 		random_value rand;
-		if (effect->dice) {
+		/* Slight hack to prevent timed effect increases being counted
+		 * as damage in lore */
+		if (effect->dice && (effect->index != EF_TIMED_INC)) {
 			dice_roll(effect->dice, &rand);
 			dam += randcalc(rand, 0, dam_aspect);
 		}
