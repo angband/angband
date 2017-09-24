@@ -41,7 +41,8 @@
  * \param dam_aspect is the calc we want (min, avg, max, random).
  * \param resist is the degree of resistance (-1 = vuln, 3 = immune).
  */
-int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist)
+int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
+			   int resist, bool actual)
 {
 	int i, denom = 0;
 
@@ -52,7 +53,9 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 		resist = p->state.el_info[res_type].res_level;
 
 		/* Notice element stuff */
-		equip_learn_element(p, res_type);
+		if (actual) {
+			equip_learn_element(p, res_type);
+		}
 	}
 
 	if (resist == 3) /* immune */
@@ -663,7 +666,8 @@ bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 						typ,
 						dam,
 						RANDOMISE,
-						player->state.el_info[typ].res_level);
+					 player->state.el_info[typ].res_level,
+					 true);
 	if (dam) {
 		take_hit(player, dam, killer);
 	}

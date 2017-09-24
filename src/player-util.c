@@ -427,7 +427,7 @@ int player_check_terrain_damage(struct player *p, int y, int x)
 		int res = p->state.el_info[ELEM_FIRE].res_level;
 
 		/* Fire damage */
-		dam_taken = adjust_dam(p, ELEM_FIRE, base_dam, RANDOMISE, res);
+		dam_taken = adjust_dam(p, ELEM_FIRE, base_dam, RANDOMISE, res, false);
 
 		/* Feather fall makes one lightfooted. */
 		if (player_of_has(p, OF_FEATHER)) {

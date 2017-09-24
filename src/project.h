@@ -97,7 +97,8 @@ extern byte proj_to_attr[PROJ_MAX][BOLT_MAX];
 extern wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
 int inven_damage(struct player *p, int type, int cperc);
-int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
+int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
+			   int resist, bool actual);
 
 bool project_f(struct source, int r, int y, int x, int dam, int typ);
 bool project_o(struct source, int r, int y, int x, int dam, int typ,
