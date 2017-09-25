@@ -23,6 +23,7 @@
 #include "monster.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "trap.h"
 
 /**
  * Approximate distance between two points.
@@ -495,8 +496,13 @@ static void add_monster_lights(struct chunk *c, struct loc from)
  */
 static void update_one(struct chunk *c, int y, int x, int blind)
 {
-	if (blind)
+
+	/* Remove view if blind, check visible squares for traps */
+	if (blind) {
 		sqinfo_off(c->squares[y][x].info, SQUARE_SEEN);
+	} else if (square_isseen(c, y, x)) {
+		square_reveal_trap(c, y, x, false, true);
+	}
 
 	/* Square went from unseen -> seen */
 	if (square_isseen(c, y, x) && !square_wasseen(c, y, x)) {
