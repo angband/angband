@@ -476,8 +476,8 @@ extern void hit_trap(int y, int x)
 		if (trf_has(trap->kind->flags, TRF_PIT))
 			monster_swap(player->py, player->px, trap->fy, trap->fx);
 
-		/* Some traps disappear after activating */
-		if (trf_has(trap->kind->flags, TRF_ONETIME)) {
+		/* Some traps disappear after activating, all have a chance to */
+		if (trf_has(trap->kind->flags, TRF_ONETIME) || one_in_(3)) {
 			square_destroy_trap(cave, y, x);
 			square_forget(cave, y, x);
 		}
