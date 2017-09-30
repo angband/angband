@@ -811,11 +811,13 @@ static enum parser_error parse_trap_visibility(struct parser *p) {
 
 	dice = dice_new();
 	if (!dice_parse_string(dice, s)) {
+		string_free(s);
 		dice_free(dice);
 		return PARSE_ERROR_NOT_RANDOM;
 	}
 	dice_random_value(dice, &t->power);
 
+	string_free(s);
 	dice_free(dice);
     return PARSE_ERROR_NONE;
 }
@@ -1440,6 +1442,10 @@ static errr finish_parse_feat(struct parser *p) {
 static void cleanup_feat(void) {
 	int idx;
 	for (idx = 0; idx < z_info->f_max; idx++) {
+		string_free(f_info[idx].die_msg);
+		string_free(f_info[idx].hurt_msg);
+		string_free(f_info[idx].run_msg);
+		string_free(f_info[idx].walk_msg);
 		string_free(f_info[idx].mimic);
 		string_free(f_info[idx].desc);
 		string_free(f_info[idx].name);

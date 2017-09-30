@@ -450,6 +450,7 @@ static void cleanup_eff(void)
 
 	while (eff) {
 		next = eff->next;
+		string_free(eff->effect_type);
 		string_free(eff->desc);
 		string_free(eff->name);
 		eff = next;
@@ -913,12 +914,13 @@ static void cleanup_mon_spell(void)
 		next = rs->next;
 		free_effect(rs->effect);
 		string_free(rs->message);
+		string_free(rs->message_strong);
 		string_free(rs->blind_message);
-		if (rs->miss_message)
-			string_free(rs->miss_message);
-		if (rs->save_message)
-			string_free(rs->save_message);
+		string_free(rs->blind_message_strong);
+		string_free(rs->miss_message);
+		string_free(rs->save_message);
 		string_free(rs->lore_desc);
+		string_free(rs->lore_desc_strong);
 		mem_free(rs);
 		rs = next;
 	}

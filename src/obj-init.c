@@ -2657,6 +2657,7 @@ static enum parser_error parse_artifact_curse(struct parser *p) {
 	for (i = 1; i < z_info->curse_max; i++) {
 		if (streq(s, curses[i].name)) break;
 	}
+	string_free(s);
 	if (i == z_info->curse_max)
 		return PARSE_ERROR_UNRECOGNISED_CURSE;
 
@@ -3059,6 +3060,8 @@ static void cleanup_object_property(void)
 		string_free(prop->name);
 		string_free(prop->adjective);
 		string_free(prop->neg_adj);
+		string_free(prop->msg);
+		string_free(prop->desc);
 	}
 	mem_free(obj_properties);
 }
