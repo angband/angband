@@ -13,6 +13,10 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct vault *v = parser_priv(state);
+	string_free(v->name);
+	string_free(v->text);
+	string_free(v->typ);
 	parser_destroy(state);
 	return 0;
 }

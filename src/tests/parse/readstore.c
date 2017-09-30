@@ -13,6 +13,16 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct store *s = parser_priv(state);
+	struct owner *o = s->owners, *o_next;
+	while (o) {
+		o_next = o->next;
+		string_free(o->name);
+		mem_free(o);
+		o = o_next;
+	}
+	string_free(s->name);
+	mem_free(s);
 	parser_destroy(state);
 	return 0;
 }

@@ -11,6 +11,9 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct player_race *pr = parser_priv(state);
+	string_free(pr->name);
+	mem_free(pr);
 	parser_destroy(state);
 	return 0;
 }

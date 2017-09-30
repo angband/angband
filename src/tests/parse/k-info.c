@@ -13,6 +13,10 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct object_kind *k = parser_priv(state);
+	string_free(k->name);
+	string_free(k->text);
+	mem_free(k);
 	parser_destroy(state);
 	return 0;
 }

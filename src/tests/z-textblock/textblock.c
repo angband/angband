@@ -33,6 +33,8 @@ int test_append(void *state) {
 	textblock_append(tb, "%d", 20);
 	require(!wcscmp(textblock_text(tb), L"Hello20"));
 
+	textblock_free(tb);
+
 	ok;
 }
 
@@ -45,6 +47,8 @@ int test_colour(void *state) {
 	textblock_append_c(tb, COLOUR_L_GREEN, text);
 
 	require(!memcmp(textblock_attrs(tb), attrs, 3));
+
+	textblock_free(tb);
 
 	ok;
 }
@@ -71,6 +75,8 @@ int test_length(void *state) {
 
 	 	require(!wmemcmp(tb_text + offset, test_text, n));
 	}
+
+	textblock_free(tb);
 
 	ok;
 }
