@@ -621,7 +621,9 @@ int object_power(const struct object* obj, bool verbose, ang_file *log_file)
 	for (i = 0; i < z_info->calculation_max; i++) {
 		struct power_calc *calc = &calculations[i];
 
-		current_value[i] = mem_zalloc(calc->iterate.max * sizeof(int));
+		if (calc->iterate.max) {
+			current_value[i] = mem_zalloc(calc->iterate.max * sizeof(int));
+		}
 	}
 
 	/* Preprocess the power calculations for intermediate results */

@@ -4646,7 +4646,7 @@ void effect_simple(int index,
 {
 	struct effect effect;
 	int dir = DIR_TARGET;
-	bool dummy_ident;
+	bool dummy_ident = false;
 
 	/* Set all the values */
 	memset(&effect, 0, sizeof(effect));

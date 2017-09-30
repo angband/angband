@@ -380,7 +380,7 @@ static void do_cmd_options_win(const char *name, int row)
 /**
  * Current (or recent) keymap action
  */
-static struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
+static struct keypress keymap_buffer[KEYMAP_ACTION_MAX + 1];
 
 
 /**
