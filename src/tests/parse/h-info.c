@@ -11,6 +11,10 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct history_chart *h = parser_priv(state);
+	string_free(h->entries->text);
+	mem_free(h->entries);
+	mem_free(h);
 	parser_destroy(state);
 	return 0;
 }

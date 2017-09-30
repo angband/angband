@@ -14,6 +14,9 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct flavor *f = parser_priv(state);
+	string_free(f->text);
+	mem_free(f);
 	parser_destroy(state);
 	return 0;
 }

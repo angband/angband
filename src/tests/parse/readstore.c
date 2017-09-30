@@ -21,7 +21,7 @@ int teardown_tests(void *state) {
 		mem_free(o);
 		o = o_next;
 	}
-	string_free(s->name);
+	string_free((char *)s->name);
 	mem_free(s);
 	parser_destroy(state);
 	return 0;

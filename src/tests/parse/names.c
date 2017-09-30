@@ -38,12 +38,12 @@ int test_word0(void *state) {
 	struct names_parse *s = parser_priv(state);
 	eq(r, 0);
 	string_free(s->names[s->section]->str);
-	string_free(s->names[s->section]);
+	mem_free(s->names[s->section]);
 	r = parser_parse(state, "word:bar");
 	s = parser_priv(state);
 	eq(r, 0);
 	string_free(s->names[s->section]->str);
-	string_free(s->names[s->section]);
+	mem_free(s->names[s->section]);
 	ok;
 }
 
@@ -58,12 +58,12 @@ int test_word1(void *state) {
 	struct names_parse *s = parser_priv(state);
 	eq(r, 0);
 	string_free(s->names[s->section]->str);
-	string_free(s->names[s->section]);
+	mem_free(s->names[s->section]);
 	r = parser_parse(state, "word:quxx");
 	s = parser_priv(state);
 	eq(r, 0);
 	string_free(s->names[s->section]->str);
-	string_free(s->names[s->section]);
+	mem_free(s->names[s->section]);
 	ok;
 }
 

@@ -10,6 +10,7 @@
 #include "game-event.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-make.h"
 #include "savefile.h"
 #include "player.h"
 #include "player-timed.h"
@@ -40,6 +41,7 @@ int setup_tests(void **state) {
 
 int teardown_tests(void **state) {
 	file_delete("Test1");
+	wipe_mon_list(cave, player);
 	cleanup_angband();
 	return 0;
 }

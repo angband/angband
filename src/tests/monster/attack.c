@@ -25,7 +25,9 @@ int setup_tests(void **state) {
 	return 0;
 }
 
-int teardown_tests(void **state) {
+int teardown_tests(void *state) {
+	struct monster *m = state;
+	mem_free(m);
 	mem_free(z_info);
 	return 0;
 }

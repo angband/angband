@@ -17,6 +17,7 @@ int teardown_tests(void *state) {
 	string_free(v->name);
 	string_free(v->text);
 	string_free(v->typ);
+	mem_free(v);
 	parser_destroy(state);
 	return 0;
 }
