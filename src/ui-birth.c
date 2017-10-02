@@ -881,7 +881,7 @@ int edit_text(char *buffer, int buflen) {
 	int cursor = 0;
 
 	while (!done) {
-		int x, y;
+		int x = 0, y = 0;
 		struct keypress ke;
 
 		region area = { 1, HIST_INSTRUCT_ROW + 1, 71, 5 };
