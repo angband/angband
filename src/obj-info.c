@@ -1213,11 +1213,11 @@ static bool describe_light(textblock *tb, const struct object *obj,
 	if (!obj_known_light(obj, mode, &rad, &uses_fuel, &refuel_turns))
 		return false;
 
-	textblock_append(tb, "Radius ");
-	textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
-	textblock_append(tb, " light.");
-
 	if (tval_is_light(obj)) {
+		textblock_append(tb, "Radius ");
+		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
+		textblock_append(tb, " light.");
+
 		if (!obj->artifact && !uses_fuel)
 			textblock_append(tb, "  No fuel required.");
 
