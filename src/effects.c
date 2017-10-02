@@ -3059,6 +3059,12 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 
 	context->ident = true;
 
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw monster list */
+	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
+
 	return true;
 }
 
