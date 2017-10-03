@@ -385,7 +385,7 @@ Targeting Mode ('*')
   have many options. First of all, targeting mode starts targeting nearby
   monsters which can be reached by "projectable" spells and thrown objects.
   In this mode, you can press 't' (or '5' or '.') to select the
-  current monster, pace to advance to the next monster, '-' to back up to
+  current monster, space to advance to the next monster, '-' to back up to
   the previous monster, direction keys to advance to a monster more or less
   in that direction, 'r' to "recall" the current monster, 'q' to exit
   targeting mode, and 'p' (or 'o') to stop targeting monsters and

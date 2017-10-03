@@ -474,7 +474,9 @@ static void wiz_display_item(const struct object *obj, bool all)
 	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
 	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
 	prt_binary(f, 0, 22, j, '*', 28);
-	prt_binary(obj->known->flags, 0, 23, j, '+', 28);
+	if (obj->known) {
+		prt_binary(obj->known->flags, 0, 23, j, '+', 28);
+	}
 }
 
 
