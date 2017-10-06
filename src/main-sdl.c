@@ -3122,7 +3122,7 @@ static errr Term_pict_sdl(int col, int row, int n, const int *ap,
 
 static void Term_view_map_sdl(term *t)
 {
-	SDL_Surface *fulltiles;
+	SDL_Surface *fulltiles = NULL;
 	/* Get the right window */
 	term_window *win = (term_window*)(t->data);
 
@@ -3138,14 +3138,22 @@ static void Term_view_map_sdl(term *t)
 
 		fulltiles = win->tiles;
 		win->tiles = win->onebyone;
+		SDL_FreeSurface(fulltiles);
+		win->onebyone = NULL;
 	}
 
 	t->view_map_hook = NULL;
 	do_cmd_view_map();
 	t->view_map_hook = Term_view_map_sdl;
 
-	if (win->onebyone) {
-		win->tiles = fulltiles;
+	/* Swap back */
+	if (fulltiles) {
+		/* Free everything and rebuild the tileset */
+		if (win->tiles) {
+			SDL_FreeSurface(win->tiles);
+			win->tiles = NULL;
+		}
+		sdl_BuildTileset(win);
 
 		/* Load screen with the correct tiles - the screen load in the
 		 * view map command was still using the image with small tiles */
