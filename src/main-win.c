@@ -1179,6 +1179,7 @@ static bool load_sound_win(const char *filename, int file_type, struct sound_dat
 			break;
 	}
 
+	sample->type = file_type;
 	data->plat_data = (void *)sample;
 
 	return (NULL != sample);
