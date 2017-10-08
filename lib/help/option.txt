@@ -270,11 +270,6 @@ Peek into dungeon creation '[cheat_room]'
 Peek into something else '[cheat_xtra]'
   Cheaters never win. But they can see debugging messages.
 
-.. _cheat_know:
-
-Know complete monster info '[cheat_know]'
-  Cheaters never win. But they can know all about monsters.
-
 .. _cheat_live:
 
 Allow player to avoid death    '[cheat_live]'

@@ -1250,8 +1250,7 @@ static int count_known_monsters(void)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
-			!l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].sights) {
 			continue;
 		}
 
@@ -1286,8 +1285,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
-			!l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].sights) {
 			continue;
 		}
 
@@ -1307,8 +1305,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
-			!l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].sights) {
 			continue;
 		}
 
@@ -3225,7 +3222,7 @@ void do_cmd_query_symbol(void)
 		struct monster_lore *lore = &l_list[i];
 
 		/* Nothing to recall */
-		if (!OPT(player, cheat_know) && !lore->all_known && !lore->sights)
+		if (!lore->all_known && !lore->sights)
 			continue;
 
 		/* Require non-unique monsters if needed */

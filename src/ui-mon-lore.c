@@ -101,8 +101,8 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	/* Now get the known monster flags */
 	monster_flags_known(race, lore, known_flags);
 
-	/* Cheat -- know everything */
-	if (OPT(player, cheat_know) || spoilers)
+	/* Spoilers -- know everything */
+	if (spoilers)
 		cheat_monster_lore(race, lore);
 
 	/* Appending the title here simplifies code in the callers. It also causes
