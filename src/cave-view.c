@@ -571,12 +571,17 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 	if (d > z_info->max_sight)
 		return;
 
-	/* Light squares with adjacent bright terrain */
+	/* Light squares with bright terrain, or squares adjacent */
+	if (square_isbright(c, y, x)) {
+		lit = true;
+	}
 	for (dir = 0; dir < 8; dir++) {
-		if (!square_in_bounds(c, y + ddy_ddd[dir], x + ddx_ddd[dir]))
+		if (!square_in_bounds(c, y + ddy_ddd[dir], x + ddx_ddd[dir])) {
 			continue;
-		if (square_isbright(c, y + ddy_ddd[dir], x + ddx_ddd[dir]))
+		}
+		if (square_isbright(c, y + ddy_ddd[dir], x + ddx_ddd[dir])) {
 			lit = true;
+		}
 	}
 
 	/* Special case for wall lighting. If we are a wall and the square in

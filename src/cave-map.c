@@ -264,8 +264,7 @@ static void cave_light(struct point_set *ps)
 	int i;
 
 	/* Apply flag changes */
-	for (i = 0; i < ps->n; i++)
-	{
+	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
@@ -280,8 +279,7 @@ static void cave_light(struct point_set *ps)
 	update_stuff(player);
 
 	/* Process the grids */
-	for (i = 0; i < ps->n; i++)
-	{
+	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
@@ -289,8 +287,7 @@ static void cave_light(struct point_set *ps)
 		square_light_spot(cave, y, x);
 
 		/* Process affected monsters */
-		if (cave->squares[y][x].mon > 0)
-		{
+		if (cave->squares[y][x].mon > 0) {
 			int chance = 25;
 
 			struct monster *mon = square_monster(cave, y, x);
@@ -323,13 +320,14 @@ static void cave_unlight(struct point_set *ps)
 	int i;
 
 	/* Apply flag changes */
-	for (i = 0; i < ps->n; i++)
-	{
+	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
 		/* Darken the grid */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+		if (!square_isbright(cave, y, x)) {
+			sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+		}
 
 		/* Hack -- Forget "boring" grids */
 		if (square_isfloor(cave, y, x))
@@ -343,8 +341,7 @@ static void cave_unlight(struct point_set *ps)
 	update_stuff(player);
 
 	/* Process the grids */
-	for (i = 0; i < ps->n; i++)
-	{
+	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
@@ -512,7 +509,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			if (daytime || !square_isfloor(c, y, x)) {
 				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 				square_memorize(c, y, x);
-			} else {
+			} else if (!square_isbright(c, y, x)) {
 				sqinfo_off(c->squares[y][x].info, SQUARE_GLOW);
 				square_forget(c, y, x);
 			}

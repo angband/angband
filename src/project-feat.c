@@ -71,9 +71,10 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 	const int x = context->x;
 	const int y = context->y;
 
-	if (player->depth != 0 || !is_daytime())
+	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, y, x)) {
 		/* Turn off the light */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+	}
 
 	/* Grid is in line of sight */
 	if (square_isview(cave, y, x)) {

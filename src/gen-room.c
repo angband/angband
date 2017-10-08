@@ -651,15 +651,17 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 						if (feat_is_floor(feat) || !feat_is_passable(feat)) {
 							square_set_feat(c, y, x, feat);
 
-							if (feat_is_floor(feat))
+							if (feat_is_floor(feat)) {
 								sqinfo_on(c->squares[y][x].info, SQUARE_ROOM);
-							else
+							} else {
 								sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
+							}
 
-							if (light)
+							if (light) {
 								sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
-							else
+							} else if (!square_isbright(c, y, x)) {
 								sqinfo_off(c->squares[y][x].info, SQUARE_GLOW);
+							}
 						}
 
 						/* If new feature is non-floor passable terrain,

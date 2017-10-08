@@ -3107,7 +3107,9 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[y][x].info, SQUARE_VAULT);
 
 			/* Forget completely */
-			sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+			if (!square_isbright(cave, y, x)) {
+				sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+			}
 			sqinfo_off(cave->squares[y][x].info, SQUARE_SEEN);
 			square_forget(cave, y, x);
 			square_light_spot(cave, y, x);
@@ -3224,7 +3226,9 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
 
 			/* Forget completely */
-			sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
+			if (!square_isbright(cave, y, x)) {
+				sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
+			}
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_SEEN);
 			square_forget(cave, yy, xx);
 			square_light_spot(cave, yy, xx);

@@ -983,6 +983,11 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 	/* Make the change */
 	c->squares[y][x].feat = feat;
 
+	/* Light bright terrain */
+	if (feat_is_bright(feat)) {
+		sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
+	}
+
 	/* Make the new terrain feel at home */
 	if (character_dungeon) {
 		/* Remove traps if necessary */
