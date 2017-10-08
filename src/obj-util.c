@@ -238,6 +238,24 @@ void flavor_init(void)
 	}
 }
 
+/**
+ * Set all flavors as aware
+ */
+void flavor_set_all_aware(void)
+{
+	int i;
+
+	/* Analyze every object */
+	for (i = 0; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+
+		/* Skip empty objects */
+		if (!kind->name) continue;
+
+		/* Flavor yields aware */
+		if (kind->flavor) kind->aware = true;
+	}
+}
 
 /**
  * Obtain the flags for an item

@@ -91,4 +91,6 @@ OP(birth_ai_learn,        "Monsters learn from their mistakes",
 BIRTH, false)
 OP(birth_know_runes,      "Know all runes on birth",
 BIRTH, false)
+OP(birth_know_flavors,    "Know all flavors on birth",
+BIRTH, false)
 

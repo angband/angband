@@ -1272,7 +1272,7 @@ void player_learn_innate(struct player *p)
  *
  * \param p is the player
  */
-void player_learn_everything(struct player *p)
+void player_learn_all_runes(struct player *p)
 {
 	size_t i;
 
@@ -2108,7 +2108,6 @@ void object_flavor_aware(struct object *obj)
 		}
 	}
 }
-
 
 /**
  * Mark an object's flavour as tried.

@@ -252,6 +252,12 @@ Player can recognize all object properties at birth '[birth_know_runes]'
   items.  This option means all object properties are known at the outset, so
   artifacts and ego items will identified on walking over them.
 
+.. _birth_know_flavors:
+
+Player can recognize all object flavors at birth '[birth_know_flavors]'
+  For players who don't enjoy the "identify by use" process for consumable
+  items.  This option means all object flavors are known at the outset.
+
 Cheating options
 ================
 
