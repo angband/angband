@@ -1673,6 +1673,24 @@ struct chunk *modified_chunk(int depth, int height, int width)
     dun->pit_num = 0;
     dun->cent_n = 0;
 
+	/* Build the special staircase rooms */
+	if (OPT(player, birth_levels_persist)) {
+		struct room_profile profile;
+		for (i = 0; i < num_rooms; i++) {
+			struct room_profile profile = dun->profile->room_profiles[i];
+			if (streq(profile.name, "staircase room")) {
+				break;
+			}
+		}
+		while (join) {
+			if (!room_build(c, dun->join->grid.y, dun->join->grid.x, profile,
+							true)) {
+				quit("Failed to place stairs");
+			}
+			join = join->next;
+		}
+	}
+
     /* Build rooms until we have enough floor grids and at least two rooms */
     while ((c->feat_count[FEAT_FLOOR] < num_floors) || (dun->cent_n < 2)) {
 
@@ -1911,24 +1929,6 @@ struct chunk *moria_chunk(int depth, int height, int width)
     /* No rooms yet, pits or otherwise. */
     dun->pit_num = 0;
     dun->cent_n = 0;
-
-	/* Build the special staircase rooms */
-	if (OPT(player, birth_levels_persist)) {
-		struct room_profile profile;
-		for (i = 0; i < num_rooms; i++) {
-			struct room_profile profile = dun->profile->room_profiles[i];
-			if (streq(profile.name, "staircase room")) {
-				break;
-			}
-		}
-		while (join) {
-			if (!room_build(c, dun->join->grid.y, dun->join->grid.x, profile,
-							true)) {
-				quit("Failed to place stairs");
-			}
-			join = join->next;
-		}
-	}
 
     /* Build rooms until we have enough floor grids */
     while (c->feat_count[FEAT_FLOOR] < num_floors) {
