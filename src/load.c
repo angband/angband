@@ -291,13 +291,16 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		/* Find and set the mimicked object */
 		struct object *square_obj = square_object(c, mon->fy, mon->fx);
 
+		/* Try and find the mimicked object; if we fail, create a new one */
 		while (square_obj) {
 			if (square_obj->mimicking_m_idx == tmp16u) break;
 			square_obj = square_obj->next;
 		}
-		if (!square_obj)
-			return false;
-		mon->mimicked_obj = square_obj;
+		if (square_obj) {
+			mon->mimicked_obj = square_obj;
+		} else {
+			mon_create_mimicked_object(cave, mon, tmp16u);
+		}
 	}
 
 	/* Read all the held objects (order is unimportant) */

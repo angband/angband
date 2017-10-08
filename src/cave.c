@@ -436,7 +436,9 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 		}
 		if (known_obj) {
 			assert (obj);
-			assert(known_obj == obj->known);
+			if (player->upkeep->playing) {
+				assert(known_obj == obj->known);
+			}
 			if (known_obj->iy && known_obj->ix)
 				assert (pile_contains(c_k->squares[known_obj->iy][known_obj->ix].obj, known_obj));
 			assert (known_obj->oidx == i);

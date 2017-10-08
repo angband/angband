@@ -765,6 +765,58 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 
 /**
+ * Creates the onbject a mimic is imitating.
+ */
+void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
+{
+	struct object *obj;
+	struct object_kind *kind = mon->race->mimic_kinds->kind;
+	struct monster_mimic *mimic_kind;
+	int i = 1;
+	bool dummy = true;
+
+	/* Pick a random object kind to mimic */
+	for (mimic_kind = mon->race->mimic_kinds;
+		 mimic_kind;
+		 mimic_kind = mimic_kind->next, i++) {
+		if (one_in_(i)) {
+			kind = mimic_kind->kind;
+		}
+	}
+
+	if (tval_is_money_k(kind)) {
+		obj = make_gold(player->depth, kind->name);
+	} else {
+		obj = object_new();
+		object_prep(obj, kind, mon->race->level, RANDOMISE);
+		apply_magic(obj, mon->race->level, true, false, false, false);
+		obj->number = 1;
+		obj->origin = ORIGIN_DROP_MIMIC;
+		obj->origin_depth = player->depth;
+	}
+
+	obj->mimicking_m_idx = index;
+	mon->mimicked_obj = obj;
+
+	/* Put the object on the floor if it goes, otherwise no mimicry */
+	if (floor_carry(c, mon->fy, mon->fx, obj, &dummy)) {
+		list_object(c, obj);
+	} else {
+		/* Clear the mimicry */
+		obj->mimicking_m_idx = 0;
+		mon->mimicked_obj = NULL;
+
+		/* Give the object to the monster if appropriate */
+		if (rf_has(mon->race->flags, RF_MIMIC_INV)) {
+			monster_carry(c, mon, obj);
+		} else {
+			/* Otherwise delete the mimicked object */
+			object_delete(&obj);
+		}
+	}
+}
+
+/**
  * Attempts to place a copy of the given monster at the given position in
  * the dungeon.
  *
@@ -819,51 +871,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 
 	/* Make mimics start mimicking */
 	if (origin && new_mon->race->mimic_kinds) {
-		struct object *obj;
-		struct object_kind *kind = new_mon->race->mimic_kinds->kind;
-		struct monster_mimic *mimic_kind;
-		int i = 1;
-		bool dummy = true;
-
-		/* Pick a random object kind to mimic */
-		for (mimic_kind = new_mon->race->mimic_kinds;
-				mimic_kind;
-				mimic_kind = mimic_kind->next, i++) {
-			if (one_in_(i)) {
-				kind = mimic_kind->kind;
-			}
-		}
-
-		if (tval_is_money_k(kind)) {
-			obj = make_gold(player->depth, kind->name);
-		} else {
-			obj = object_new();
-			object_prep(obj, kind, new_mon->race->level, RANDOMISE);
-			apply_magic(obj, new_mon->race->level, true, false, false, false);
-			obj->number = 1;
-			obj->origin = ORIGIN_DROP_MIMIC;
-			obj->origin_depth = player->depth;
-		}
-
-		obj->mimicking_m_idx = m_idx;
-		new_mon->mimicked_obj = obj;
-
-		/* Put the object on the floor if it goes, otherwise no mimicry */
-		if (floor_carry(c, y, x, obj, &dummy)) {
-			list_object(c, obj);
-		} else {
-			/* Clear the mimicry */
-			obj->mimicking_m_idx = 0;
-			new_mon->mimicked_obj = NULL;
-
-			/* Give the object to the monster if appropriate */
-			if (rf_has(new_mon->race->flags, RF_MIMIC_INV)) {
-				monster_carry(c, new_mon, obj);
-			} else {
-				/* Otherwise delete the mimicked object */
-				object_delete(&obj);
-			}
-		}
+		mon_create_mimicked_object(c, new_mon, m_idx);
 	}
 
 	/* Result */
