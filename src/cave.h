@@ -399,7 +399,7 @@ struct monster *cave_monster(struct chunk *c, int idx);
 int cave_monster_max(struct chunk *c);
 int cave_monster_count(struct chunk *c);
 
-int count_feats(int *y, int *x, bool (*test)(struct chunk *cave, int y, int x), bool under);
+int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), bool under);
 
 void cave_generate(struct chunk **c, struct player *p);
 bool is_quest(int level);

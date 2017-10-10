@@ -299,7 +299,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		if (square_obj) {
 			mon->mimicked_obj = square_obj;
 		} else {
-			mon_create_mimicked_object(cave, mon, tmp16u);
+			mon_create_mimicked_object(c, mon, tmp16u);
 		}
 	}
 

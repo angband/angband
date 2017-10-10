@@ -466,11 +466,11 @@ void process_world(struct chunk *c)
 	int i, y, x;
 
 	/* Compact the monster list if we're approaching the limit */
-	if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
+	if (cave_monster_count(c) + 32 > z_info->level_monster_max)
 		compact_monsters(64);
 
 	/* Too many holes in the monster list - compress */
-	if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
+	if (cave_monster_count(c) + 32 < cave_monster_max(c))
 		compact_monsters(0);
 
 	/*** Check the Time ***/
@@ -510,9 +510,8 @@ void process_world(struct chunk *c)
 
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))
-		(void)pick_and_place_distant_monster(cave, player,
-											 z_info->max_sight + 5, true,
-											 player->depth);
+		(void)pick_and_place_distant_monster(c, player, z_info->max_sight + 5,
+											 true, player->depth);
 
 	/*** Damage over Time ***/
 
@@ -622,14 +621,14 @@ void process_world(struct chunk *c)
 		equip_learn_after_time(player);
 
 	/* Decrease trap timeouts */
-	for (y = 0; y < cave->height; y++) {
-		for (x = 0; x < cave->width; x++) {
-			struct trap *trap = cave->squares[y][x].trap;
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			struct trap *trap = c->squares[y][x].trap;
 			while (trap) {
 				if (trap->timeout) {
 					trap->timeout--;
 					if (!trap->timeout)
-						square_light_spot(cave, y, x);
+						square_light_spot(c, y, x);
 				}
 				trap = trap->next;
 			}
