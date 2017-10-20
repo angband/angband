@@ -1441,8 +1441,10 @@ int rd_dungeon(void)
 	character_dungeon = true;
 
 	/* Read known cave */
-	if (rd_dungeon_aux(&player->cave))
+	if (rd_dungeon_aux(&player->cave)) {
 		return 1;
+	}
+	player->cave->depth = depth;
 
 	return 0;
 }
