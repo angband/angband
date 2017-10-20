@@ -1129,6 +1129,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 
 		/* If we found an old level, load the known level and assign */
 		if (old_level) {
+			int i;
 			char *known_name = format("%s known", name);
 			struct chunk *old_known = chunk_find_name(known_name);
 			assert(old_known);
@@ -1136,6 +1137,13 @@ void prepare_next_level(struct chunk **c, struct player *p)
 			/* Assign the new ones */
 			*c = old_level;
 			p->cave = old_known;
+
+			/* Associate known objects */
+			for (i = 0; i < p->cave->obj_max; i++) {
+				if ((*c)->objects[i] && p->cave->objects[i]) {
+					(*c)->objects[i]->known = p->cave->objects[i];
+				}
+			}
 
 			/* Place the player */
 			player_place(*c, p, p->py, p->px);
@@ -1175,7 +1183,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 	}
 
 	/* Know the town */
-	if (!((*c)->depth)) {
+	if (!(p->depth)) {
 		cave_known(p);
 	}
 
