@@ -1530,6 +1530,33 @@ int rd_chunks(void)
 		if (rd_traps_aux(c))
 			return -1;
 
+
+		/* Read other chunk info */
+		if (OPT(player, birth_levels_persist)) {
+			int i;
+			byte tmp8u;
+			u16b tmp16u;
+
+			rd_string(c->name, 80);
+			rd_s32b(&c->created_at);
+			rd_u16b(&tmp16u);
+			c->depth = tmp16u;
+			rd_byte(&c->feeling);
+			rd_u32b(&c->obj_rating);
+			rd_u32b(&c->mon_rating);
+			rd_byte(&tmp8u);
+			c->good_item  = tmp8u ? true : false;
+			rd_u16b(&tmp16u);
+			c->height = tmp16u;
+			rd_u16b(&tmp16u);
+			c->width = tmp16u;
+			rd_u16b(&c->feeling_squares);
+			for (i = 0; i < z_info->f_max + 1; i++) {
+				rd_u16b(&tmp16u);
+				c->feat_count[i] = tmp16u;
+			}
+		}
+
 		chunk_list_add(c);
 	}
 
