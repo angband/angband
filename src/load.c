@@ -1507,8 +1507,8 @@ int rd_chunks(void)
 	int j;
 	u16b chunk_max;
 
-	//if (player->is_dead)
-	//	return 0;
+	if (player->is_dead)
+		return 0;
 
 	rd_u16b(&chunk_max);
 	for (j = 0; j < chunk_max; j++) {

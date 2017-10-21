@@ -980,6 +980,9 @@ void wr_chunks(void)
 {
 	int j;
 
+	if (player->is_dead)
+		return;
+
 	wr_u16b(chunk_list_max);
 
 	/* Now write each chunk */
