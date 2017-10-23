@@ -1677,7 +1677,7 @@ struct chunk *modified_chunk(int depth, int height, int width)
 	if (OPT(player, birth_levels_persist)) {
 		struct room_profile profile;
 		for (i = 0; i < num_rooms; i++) {
-			struct room_profile profile = dun->profile->room_profiles[i];
+			profile = dun->profile->room_profiles[i];
 			if (streq(profile.name, "staircase room")) {
 				break;
 			}
