@@ -614,6 +614,7 @@ name:EARTHQUAKES
 aim:0
 power:5
 effect:EARTHQUAKE
+param:10
 desc:causes an earthquake around you
 
 name:DESTRUCTION2
