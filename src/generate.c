@@ -1061,17 +1061,18 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 
 static void sanitize_player_loc(struct chunk *c, struct player *p)
 {
-	/* TODO potential problem: stairs in vaults? /*
+	/* TODO potential problem: stairs in vaults? */
 	
 	/* allow direct transfer if target location is teleportable */
 	if (square_in_bounds_fully(c, p->py, p->px)
-			&& square_isempty(c, p->py, p->px)
+			&& square_isarrivable(c, p->py, p->px)
 			&& !square_isvault(c, p->py, p->px)) {
 		return;
 	}
 	
 	/* TODO should use something similar to teleport code, but this will
-	 *  do for now as a quick'n dirty fix */
+	 *  do for now as a quick'n dirty fix
+	 */
 	int tx, ty; // test locations
 	int ix, iy; // initial location
 	int vx=1, vy=1; // fallback vault location

@@ -582,6 +582,18 @@ bool square_isempty(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the square is empty (an open square without any items).
+ */
+bool square_isarrivable(struct chunk *c, int y, int x) {
+	if (c->squares[y][x].mon) return false;
+	if (square_isplayertrap(c, y, x)) return false;
+	if (square_isfloor(c, y, x)) return true;
+	if (square_isstairs(c, y, x)) return true;
+	// maybe allow open doors or suchlike?
+	return false;
+}
+
+/**
  * True if the square is an untrapped floor square without items.
  */
 bool square_canputitem(struct chunk *c, int y, int x) {
