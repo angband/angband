@@ -97,9 +97,11 @@ bool chunk_list_remove(char *name)
 				chunk_list[j - 1] = chunk_list[j];
 
 			/* Destroy the last one, and shorten the list */
-			if ((chunk_list_max % CHUNK_LIST_INCR) == 0)
-				newsize = (chunk_list_max - CHUNK_LIST_INCR) *	
-					sizeof(struct chunk *);
+			/* Don't do this for now - may be unnecessary, as chunk list never
+			 * really gets shorter */
+			//if ((chunk_list_max % CHUNK_LIST_INCR) == 0)
+			//	newsize = (chunk_list_max - CHUNK_LIST_INCR) *	
+			//		sizeof(struct chunk *);
 			chunk_list_max--;
 			chunk_list[chunk_list_max] = NULL;
 			if (newsize)

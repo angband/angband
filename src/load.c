@@ -1533,11 +1533,13 @@ int rd_chunks(void)
 
 		/* Read other chunk info */
 		if (OPT(player, birth_levels_persist)) {
+			char buf[80];
 			int i;
 			byte tmp8u;
 			u16b tmp16u;
 
-			rd_string(c->name, 80);
+			rd_string(buf, sizeof(buf));
+			c->name = string_make(buf);
 			rd_s32b(&c->created_at);
 			rd_u16b(&tmp16u);
 			c->depth = tmp16u;
