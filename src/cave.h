@@ -319,6 +319,7 @@ bool square_isdtrap(struct chunk *c, int y, int x);
 /* SQUARE BEHAVIOR PREDICATES */
 bool square_isopen(struct chunk *c, int y, int x);
 bool square_isempty(struct chunk *c, int y, int x);
+bool square_isarrivable(struct chunk *c, int y, int x);
 bool square_canputitem(struct chunk *c, int y, int x);
 bool square_isdiggable(struct chunk *c, int y, int x);
 bool square_is_monster_walkable(struct chunk *c, int y, int x);

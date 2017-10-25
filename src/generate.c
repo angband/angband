@@ -1059,6 +1059,82 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	return chunk;
 }
 
+static void sanitize_player_loc(struct chunk *c, struct player *p)
+{
+	/* TODO potential problem: stairs in vaults? */
+	
+	/* allow direct transfer if target location is teleportable */
+	if (square_in_bounds_fully(c, p->py, p->px)
+			&& square_isarrivable(c, p->py, p->px)
+			&& !square_isvault(c, p->py, p->px)) {
+		return;
+	}
+	
+	/* TODO should use something similar to teleport code, but this will
+	 *  do for now as a quick'n dirty fix
+	 */
+	int tx, ty; // test locations
+	int ix, iy; // initial location
+	int vx=1, vy=1; // fallback vault location
+	int try = 1000; // attempts
+
+	/* a bunch of random locations */
+	while (try) {
+		try = try - 1;
+		tx = randint0(c->width-1) + 1;
+		ty = randint0(c->height-1) + 1;
+		if (square_isempty(c, ty, tx)
+				&& !square_isvault(c, ty, tx)) {
+			p->py = ty;
+			p->px = tx;
+			return;
+		}
+	}
+	
+	/* whelp, that didnt work */
+	ix = randint0(c->width-1) + 1;
+	iy = randint0(c->height-1) + 1;
+	ty = iy;
+	tx = tx + 1;
+	if (tx >= c->width - 1) {
+		tx = 1;
+		ty = ty + 1;
+		if (ty >= c->height -1) {
+			ty = 1;
+		}
+	}
+	
+	while (1) {		//until full loop through dungeon
+		if (square_isempty(c, ty, tx)) {
+			if (!square_isvault(c, ty, tx)) {
+				// ok location
+				p->py = ty;
+				p->px = tx;
+				return;
+			}
+			// vault, but lets remember it just in case
+			vy = ty;
+			vx = tx;
+		}
+		// oops tried *every* tile...
+		if (tx == ix && ty == iy) {
+			break;
+		}
+		tx = tx + 1;
+		if (tx >= c->width - 1) {
+			tx = 1;
+			ty = ty + 1;
+			if (ty >= c->height -1) {
+				ty = 1;
+			}
+		}
+	}
+	
+	// fallback vault location (or at least a non-crashy square)
+	p->px=vx;
+	p->py=vy;
+}
+
 /**
  * Prepare the level the player is about to enter, either by generating
  * or reloading
@@ -1144,6 +1220,9 @@ void prepare_next_level(struct chunk **c, struct player *p)
 					(*c)->objects[i]->known = p->cave->objects[i];
 				}
 			}
+
+			/* Map boundary changes may not cooperate with level teleports */
+			sanitize_player_loc(*c,p);
 
 			/* Place the player */
 			player_place(*c, p, p->py, p->px);
