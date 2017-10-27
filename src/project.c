@@ -772,8 +772,7 @@ bool project(struct source origin, int rad, int y, int x,
 				 * a grid visible from the explosion centre - note that as of
 				 * Angband 3.5.0 there are no such explosions - NRM.
 				 * All explosions can affect one layer of terrain which is
-				 * passable but not projectable - note that as of Angband 3.5.0
-				 * there is no such terrain - NRM */
+				 * passable but not projectable */
 				if ((flg & (PROJECT_THRU)) ||
 					square_ispassable(cave, y, x)){
 					/* If this is a wall grid, ... */

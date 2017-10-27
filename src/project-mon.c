@@ -1061,7 +1061,7 @@ void project_m(struct source origin, int r, int y, int x,
 	*was_obvious = false;
 
 	/* Walls protect monsters */
-	if (!square_isprojectable(cave, y,x)) return;
+	if (!square_ispassable(cave, y, x)) return;
 
 	/* No monster here */
 	if (!(m_idx > 0)) return;
