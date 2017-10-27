@@ -1,0 +1,30 @@
+---
+- name: build and install rephial site
+  hosts: rephial
+  remote_user: takkaria
+  become_method: sudo
+  become_user: root
+  vars:
+    local_repo: '/home/takkaria/rephial.org'
+    dest:       '/var/www/rephial.org'
+
+  tasks:
+  - name: git pull
+    git:
+      repo: 'git@github.com:takkaria/rephial.org.git'
+      dest: "{{ local_repo }}"
+
+  - name: build site
+    make: chdir="{{ local_repo }}" target=build
+
+  - name: copy generated files across
+    command: rsync -r {{ local_repo }}/output/ {{ dest }}/public/
+
+  - name: install new lighttpd mappings
+    copy: src="{{ local_repo }}/mappings" remote_src=yes dest="{{ dest }}/"
+    register: new_mappings
+
+  - name: reload lighttpd
+    when: new_mappings.changed
+    service: name=lighttpd state=reloaded
+    become: true
