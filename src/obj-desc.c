@@ -575,10 +575,13 @@ static size_t obj_desc_inscrip(const struct object *obj, char *buf,
 static size_t obj_desc_aware(const struct object *obj, char *buf, size_t max,
 							 size_t end)
 {
-	if (!object_flavor_is_aware(obj))
+	if (!object_flavor_is_aware(obj)) {
 		strnfcat(buf, max, &end, " {unseen}");
-	else if (!object_runes_known(obj))
+	} else if (!object_runes_known(obj)) {
 		strnfcat(buf, max, &end, " {??}");
+	} else if (obj->known->curses) {
+		strnfcat(buf, max, &end, " {cursed}");
+	}
 
 	return end;
 }
