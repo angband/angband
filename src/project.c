@@ -631,7 +631,8 @@ bool project(struct source origin, int rad, int y, int x,
 
 	/*
 	 * If a single grid is both source and destination (for example
-	 * if PROJECT_JUMP is set), store it.
+	 * if PROJECT_JUMP is set), store it; otherwise, travel along the
+	 * projection path.
 	 */
 	if ((source.x == destination.x) && (source.y == destination.y)) {
 		blast_grid[num_grids].y = y;
@@ -639,10 +640,7 @@ bool project(struct source origin, int rad, int y, int x,
 		distance_to_grid[num_grids] = 0;
 		sqinfo_on(cave->squares[y][x].info, SQUARE_PROJECT);
 		num_grids++;
-	}
-
-	/* Otherwise, travel along the projection path. */
-	else {
+	} else {
 		/* Calculate the projection path */
 		num_path_grids = project_path(path_grid, z_info->max_range, source.y,
 									  source.x, destination.y, destination.x,
@@ -655,13 +653,14 @@ bool project(struct source origin, int rad, int y, int x,
 		/* Some beams have limited length. */
 		if (flg & (PROJECT_BEAM)) {
 			/* Use length limit, if any is given. */
-			if ((rad > 0) && (rad < num_path_grids))
+			if ((rad > 0) && (rad < num_path_grids)) {
 				num_path_grids = rad;
+			}
 		}
 
 
 		/* Project along the path (except for arcs) */
-		if (!(flg & (PROJECT_ARC)))
+		if (!(flg & (PROJECT_ARC))) {
 			for (i = 0; i < num_path_grids; ++i) {
 				int oy = y;
 				int ox = x;
@@ -677,17 +676,15 @@ bool project(struct source origin, int rad, int y, int x,
 				y = ny;
 				x = nx;
 
-				/* If a beam, collect all grids in the path. */
+				/* Beams collect all grids in the path, all other methods
+				 * collect only the final grid in the path. */
 				if (flg & (PROJECT_BEAM)) {
 					blast_grid[num_grids].y = y;
 					blast_grid[num_grids].x = x;
 					distance_to_grid[num_grids] = 0;
 					sqinfo_on(cave->squares[y][x].info, SQUARE_PROJECT);
 					num_grids++;
-				}
-
-				/* Otherwise, collect only the final grid in the path. */
-				else if (i == num_path_grids - 1) {
+				} else if (i == num_path_grids - 1) {
 					blast_grid[num_grids].y = y;
 					blast_grid[num_grids].x = x;
 					distance_to_grid[num_grids] = 0;
@@ -705,22 +702,17 @@ bool project(struct source origin, int rad, int y, int x,
 									  ox, y, x);
 				}
 			}
+		}
 	}
 
 	/* Save the "blast epicenter" */
 	centre.y = y;
 	centre.x = x;
 
-	/* Beams have already stored all the grids they will affect. */
-	if (flg & (PROJECT_BEAM)) {
-		/* No special actions */
-	}
-
-	/*
-	 * All non-beam projections with a positive radius explode in some way.
-	 */
-	else if (rad > 0) {
-
+	/* Now check for explosions.  Beams have already stored all the grids they
+	 * will affect; all non-beam projections with positive radius explode in
+	 * some way */
+	if ((rad > 0) && (!(flg & (PROJECT_BEAM)))) {
 		/* Pre-calculate some things for arcs. */
 		if ((flg & (PROJECT_ARC)) && (num_path_grids != 0)) {
 			/* Explosion centers on the caster. */
@@ -773,8 +765,7 @@ bool project(struct source origin, int rad, int y, int x,
 				 * Angband 3.5.0 there are no such explosions - NRM.
 				 * All explosions can affect one layer of terrain which is
 				 * passable but not projectable */
-				if ((flg & (PROJECT_THRU)) ||
-					square_ispassable(cave, y, x)){
+				if ((flg & (PROJECT_THRU)) || square_ispassable(cave, y, x)) {
 					/* If this is a wall grid, ... */
 					if (!square_isprojectable(cave, y, x)) {
 						/* Check neighbors */
@@ -801,19 +792,9 @@ bool project(struct source origin, int rad, int y, int x,
 					continue;
 
 
-				/* If not an arc, accept all grids in LOS. */
-				if (!(flg & (PROJECT_ARC))) {
-					if (los(cave, centre.y, centre.x, y, x)) {
-						blast_grid[num_grids].y = y;
-						blast_grid[num_grids].x = x;
-						distance_to_grid[num_grids] = dist_from_centre;
-						sqinfo_on(cave->squares[y][x].info, SQUARE_PROJECT);
-						num_grids++;
-					}
-				}
-
-				/* Use angle comparison to delineate an arc. */
-				else {
+				/* Do we need to consider a  restricted angle? */
+				if (flg & (PROJECT_ARC)) {
+					/* Use angle comparison to delineate an arc. */
 					int n2y, n2x, tmp, rotate, diff;
 
 					/* Reorient current grid for table access. */
@@ -842,6 +823,15 @@ bool project(struct source origin, int rad, int y, int x,
 							num_grids++;
 						}
 					}
+				} else {
+					/* Accept all grids in LOS */
+					if (los(cave, centre.y, centre.x, y, x)) {
+						blast_grid[num_grids].y = y;
+						blast_grid[num_grids].x = x;
+						distance_to_grid[num_grids] = dist_from_centre;
+						sqinfo_on(cave->squares[y][x].info, SQUARE_PROJECT);
+						num_grids++;
+					}
 				}
 			}
 		}
@@ -849,21 +839,20 @@ bool project(struct source origin, int rad, int y, int x,
 
 	/* Calculate and store the actual damage at each distance. */
 	for (i = 0; i <= z_info->max_range; i++) {
-		/* No damage outside the radius. */
-		if (i > rad)
+		if (i > rad) {
+			/* No damage outside the radius. */
 			dam_temp = 0;
-
-		/* Standard damage calc. for 10' source diameters, or at origin. */
-		else if ((!diameter_of_source) || (i == 0)) {
+		} else if ((!diameter_of_source) || (i == 0)) {
+			/* Standard damage calc. for 10' source diameters, or at origin. */
 			dam_temp = (dam + i) / (i + 1);
-		}
-
-		/* If a particular diameter for the source of the explosion's energy is 
-		 * given, it is full strength to that diameter and then reduces. */
-		else {
+		} else {
+			/* If a particular diameter for the source of the explosion's
+			 * energy is given, it is full strength to that diameter and
+			 * then reduces */
 			dam_temp = (diameter_of_source * dam) / ((i + 1) * 10);
-			if (dam_temp > (u32b) dam)
+			if (dam_temp > (u32b) dam) {
 				dam_temp = dam;
+			}
 		}
 
 		/* Store it. */
@@ -900,10 +889,11 @@ bool project(struct source origin, int rad, int y, int x,
 	for (i = 0; i < num_grids; i++) {
 		if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
 			square_isview(cave, blast_grid[i].y, blast_grid[i].x) &&
-			!blind && !(flg & (PROJECT_HIDE)))
+			!blind && !(flg & (PROJECT_HIDE))) {
 			player_sees_grid[i] = true;
-		else
+		} else {
 			player_sees_grid[i] = false;
+		}
 	}
 
 	/* Tell the UI to display the blast */
@@ -920,8 +910,9 @@ bool project(struct source origin, int rad, int y, int x,
 
 			/* Affect the object in the grid */
 			if (project_o(origin, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ, obj))
+						  dam_at_dist[distance_to_grid[i]], typ, obj)) {
 				notice = true;
+			}
 		}
 	}
 
@@ -954,8 +945,9 @@ bool project(struct source origin, int rad, int y, int x,
 			project_m(origin, distance_to_grid[i], y, x,
 			          dam_at_dist[distance_to_grid[i]], typ, flg,
 			          &did_hit, &was_obvious);
-			if (was_obvious)
+			if (was_obvious) {
 				notice = true;
+			}
 			if (did_hit) {
 				num_hit++;
 
@@ -1015,8 +1007,9 @@ bool project(struct source origin, int rad, int y, int x,
 
 			/* Affect the feature in that grid */
 			if (project_f(origin, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ))
+						  dam_at_dist[distance_to_grid[i]], typ)) {
 				notice = true;
+			}
 		}
 	}
 
@@ -1031,8 +1024,7 @@ bool project(struct source origin, int rad, int y, int x,
 	}
 
 	/* Update stuff if needed */
-	if (player->upkeep->update)
-		update_stuff(player);
+	if (player->upkeep->update) update_stuff(player);
 
 	free(dam_at_dist);
 
