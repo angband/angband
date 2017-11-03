@@ -45,6 +45,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -233,11 +234,11 @@ static void remove_object_curse(struct object *obj, int index, bool message)
 /**
  * Attempts to remove a curse from an object.
  */
-static bool uncurse_object(struct object *obj, int strength)
+static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 {
 	int index = 0;
 
-	if (get_curse(&index, obj)) {
+	if (get_curse(&index, obj, dice_string)) {
 		struct curse_data curse = obj->curses[index];
 		char o_name[80];
 
@@ -1230,6 +1231,7 @@ bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 {
 	int strength = effect_calculate_value(context, false);
 	struct object *obj = NULL;
+	char dice_string[20];
 
 	context->ident = true;
 
@@ -1241,7 +1243,23 @@ bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
 		return false;
 
-	return uncurse_object(obj, strength);
+	/* Get the possible dice strings */
+	if ((context->value.dice == 1) && context->value.base) {
+		strnfmt(dice_string, sizeof(dice_string), "%d+d%d",
+				context->value.base, context->value.sides);
+	} else if (context->value.dice && context->value.base) {
+		strnfmt(dice_string, sizeof(dice_string), "%d+%dd%d",
+				context->value.base, context->value.dice, context->value.sides);
+	} else if (context->value.dice == 1) {
+		strnfmt(dice_string, sizeof(dice_string), "d%d", context->value.sides);
+	} else if (context->value.dice) {
+		strnfmt(dice_string, sizeof(dice_string), "%dd%d",
+				context->value.dice, context->value.sides);
+	} else {
+		strnfmt(dice_string, sizeof(dice_string), "%d", context->value.base);
+	}
+
+	return uncurse_object(obj, strength, dice_string);
 }
 
 /**

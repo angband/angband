@@ -43,7 +43,7 @@ void get_curse_display(struct menu *menu, int oid, bool cursor, int row,
 	int power = choice[oid].power;
 	char *name = curses[choice[oid].index].name;
 
-	strnfmt(buf, sizeof(buf), "  %s (power %d)", name, power);
+	strnfmt(buf, sizeof(buf), "  %s (curse strength %d)", name, power);
 	c_put_str(attr, buf, row, col);
 }
 
@@ -87,7 +87,7 @@ static void curse_menu_browser(int oid, void *data, const region *loc)
 /**
  * Display list of curses to choose from
  */
-int curse_menu(struct object *obj)
+int curse_menu(struct object *obj, char *dice_string)
 {
 	menu_iter menu_f = { 0, 0, get_curse_display, get_curse_action, 0 };
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &menu_f);
@@ -116,7 +116,7 @@ int curse_menu(struct object *obj)
 
 	/* Set up the menu */
 	menu_setpriv(m, count, available);
-	m->header = " Remove which curse?";
+	m->header = format(" Remove which curse (spell strength %s)?", dice_string);
 	m->selections = lower_case;
 	m->flags = (MN_PVT_TAGS);
 	m->browse_hook = curse_menu_browser;
@@ -148,9 +148,9 @@ int curse_menu(struct object *obj)
 	return selection;
 }
 
-bool textui_get_curse(int *choice, struct object *obj)
+bool textui_get_curse(int *choice, struct object *obj, char *dice_string)
 {
-	int curse = curse_menu(obj);
+	int curse = curse_menu(obj, dice_string);
 	if (curse) {
 		*choice = curse;
 		return true;
