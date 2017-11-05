@@ -685,26 +685,18 @@ void process_world(struct chunk *c)
 				dungeon_change_level(player, 0);
 			} else {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
-                
-                /* Force descent to a lower level if allowed */
-                if (OPT(player, birth_force_descend) &&
-					player->max_depth < z_info->max_depth - 1 &&
-					!is_quest(player->max_depth)) {
-                    player->max_depth = dungeon_get_next_level(player->max_depth, 1);
-                }
-
-				/* New depth - back to max depth or 1, whichever is deeper */
-				dungeon_change_level(player, player->max_depth < 1 ? 1: player->max_depth);
+				player_set_recall_depth(player);
+				dungeon_change_level(player, player->recall_depth);
 			}
 		}
 	}
 
 	/* Delayed Deep Descent */
 	if (player->deep_descent) {
-		/* Count down towards recall */
+		/* Count down towards descent */
 		player->deep_descent--;
 
-		/* Activate the recall */
+		/* Activate the descent */
 		if (player->deep_descent == 0) {
 			int target_increment;
 			int target_depth = player->max_depth;

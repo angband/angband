@@ -47,6 +47,8 @@ enum
 #define REST_REQUIRED_FOR_REGEN 5
 
 int dungeon_get_next_level(int dlev, int added);
+void player_set_recall_depth(struct player *p);
+bool player_get_recall_depth(struct player *p);
 void dungeon_change_level(struct player *p, int dlev);
 void take_hit(struct player *p, int dam, const char *kb_str);
 void death_knowledge(struct player *p);

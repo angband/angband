@@ -69,6 +69,58 @@ int dungeon_get_next_level(int dlev, int added)
 }
 
 /**
+ * Set recall depth for a player recalling from town
+ */
+void player_set_recall_depth(struct player *p)
+{
+	/* Account for forced descent */
+	if (OPT(p, birth_force_descend)) {
+		/* Force descent to a lower level if allowed */
+		if ((p->max_depth < z_info->max_depth - 1) && !is_quest(p->max_depth)) {
+			p->recall_depth = dungeon_get_next_level(p->max_depth, 1);
+		}
+	}
+
+	/* Players who haven't left town before go to level 1 */
+	p->recall_depth = MAX(p->recall_depth, 1);
+}
+
+/**
+ * Give the player the choice of persistent level to recall to.  Note that if
+ * a level greater than the player's maximum depth is chosen, we silently go
+ * to the maximum depth.
+ */
+bool player_get_recall_depth(struct player *p)
+{
+	bool level_ok = false;
+	int new = 0;
+
+	while (!level_ok) {
+		char *prompt = "Which level do you wish to return to (0 to cancel)? ";
+		int i;
+
+		/* Choose the level */
+		new = get_quantity(prompt, p->max_depth);
+		if (new == 0) {
+			return false;
+		}
+
+		/* Is that level valid? */
+		for (i = 0; i < chunk_list_max; i++) {
+			if (chunk_list[i]->depth == new) {
+				level_ok = true;
+				break;
+			}
+		}
+		if (!level_ok) {
+			msg("You must choose a level you have previously visited.");
+		}
+	}
+	p->recall_depth = new;
+	return true;
+}
+
+/**
  * Change dungeon level - e.g. by going up stairs or with WoR.
  */
 void dungeon_change_level(struct player *p, int dlev)

@@ -462,9 +462,9 @@ void wr_player(void)
 	/* Max Player and Dungeon Levels */
 	wr_s16b(player->max_lev);
 	wr_s16b(player->max_depth);
+	wr_s16b(player->recall_depth);
 
 	/* More info */
-	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
