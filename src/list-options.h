@@ -2,7 +2,7 @@
  * \file list-options.h
  * \brief options
  *
- * Currently, if there are more than 20 of any option type, the later ones
+ * Currently, if there are more than 21 of any option type, the later ones
  * will be ignored
  * Cheat options need to be followed by corresponding score options
  */
@@ -50,6 +50,8 @@ INTERFACE, true)
 OP(mouse_movement,        "Allow mouse clicks to move the player",
 INTERFACE, true)
 OP(notify_recharge,       "Notify on object recharge",
+INTERFACE, false)
+OP(effective_speed,       "Show effective speed as multiplier",
 INTERFACE, false)
 OP(cheat_hear,            "Cheat: Peek into monster creation",
 CHEAT, false)
