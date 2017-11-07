@@ -2242,7 +2242,12 @@ static void feat_lore(int oid)
 static const char *feat_prompt(int oid)
 {
 	(void)oid;
-	return ", 'l' to cycle lighting";
+		switch (f_uik_lighting) {
+				case LIGHTING_LIT:  return ", 'l/L' for lighting (lit)";
+                case LIGHTING_TORCH: return ", 'l/L' for lighting (torch)";
+				case LIGHTING_LOS:  return ", 'l/L' for lighting (LOS)";
+				default:	return ", 'l/L' for lighting (dark)";
+		}		
 }
 
 /**
