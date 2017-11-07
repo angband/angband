@@ -165,7 +165,7 @@ static int feat_order(int feat)
 		case L'#':				return 3;
 		case L'*': case L'%' :	return 4;
 		case L';': case L':' :	return 5;
-
+		case L' ':				return 7;
 		default:
 		{
 			return 6;
