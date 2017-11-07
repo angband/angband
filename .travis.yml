@@ -1,0 +1,15 @@
+language: c
+
+compiler:
+  - clang
+  - gcc
+
+os:
+  - linux
+
+script:
+  - ./autogen.sh
+  - ./configure --with-no-install
+  - make
+  - make tests
+
