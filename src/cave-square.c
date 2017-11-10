@@ -375,6 +375,13 @@ bool square_isplayer(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the square contains the player or a monster
+ */
+bool square_isoccupied(struct chunk *c, int y, int x) {
+	return c->squares[y][x].mon != 0 ? true : false;
+}
+
+/**
  * True if the the player knows the terrain of the square
  */
 bool square_isknown(struct chunk *c, int y, int x) {
