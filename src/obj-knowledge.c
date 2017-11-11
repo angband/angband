@@ -1699,6 +1699,7 @@ void object_learn_on_use(struct player *p, struct object *obj)
 
 	object_flavor_aware(obj);
 	obj->known->effect = obj->effect;
+	update_player_object_knowledge(p);
 	player_exp_gain(p, (lev + (p->lev / 2)) / p->lev);
 
 	p->upkeep->notice |= PN_IGNORE;
