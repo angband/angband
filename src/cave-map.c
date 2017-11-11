@@ -272,12 +272,6 @@ static void cave_light(struct point_set *ps)
 		sqinfo_on(cave->squares[y][x].info, SQUARE_GLOW);
 	}
 
-	/* Fully update the visuals */
-	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Update stuff */
-	update_stuff(player);
-
 	/* Process the grids */
 	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
@@ -333,12 +327,6 @@ static void cave_unlight(struct point_set *ps)
 		if (square_isfloor(cave, y, x))
 			square_forget(cave, y, x);
 	}
-
-	/* Fully update the visuals */
-	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Update stuff */
-	update_stuff(player);
 
 	/* Process the grids */
 	for (i = 0; i < ps->n; i++)	{
@@ -408,6 +396,12 @@ void light_room(int y1, int x1, bool light)
 		cave_unlight(ps);
 	}
 	point_set_dispose(ps);
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Update stuff */
+	update_stuff(player);
 }
 
 
