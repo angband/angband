@@ -1294,12 +1294,19 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	/* Activate recall */
 	if (!player->word_recall) {
 		/* Reset recall depth */
-		if ((player->depth > 0) && (player->depth != player->max_depth)) {
-			if (get_check("Set recall depth to current depth? "))
-				player->recall_depth = player->depth;
-		} else if ((player->depth == 0) && OPT(player, birth_levels_persist)) {
-			/* Persistent levels players get to choose */
-			if (!player_get_recall_depth(player)) return false;
+		if (player->depth > 0) {
+			if (player->depth != player->max_depth) {
+				if (get_check("Set recall depth to current depth? ")) {
+					player->recall_depth = player->depth;
+				}
+			} else {
+				player->recall_depth = player->max_depth;
+			}
+		} else {
+			if (OPT(player, birth_levels_persist)) {
+				/* Persistent levels players get to choose */
+				if (!player_get_recall_depth(player)) return false;
+			}
 		}
 
 		player->word_recall = randint0(20) + 15;
