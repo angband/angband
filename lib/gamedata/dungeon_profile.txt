@@ -97,7 +97,7 @@ room:simple room:0:11:33:1:0:0:100
 
 ## Modified
 name:modified
-params:1:50:250:2
+params:1:50:300:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
 cutoff:200
