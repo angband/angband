@@ -733,7 +733,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	/* Two chances - one to disarm, one not to set the trap off */
 	if (randint0(100) < chance) {
 		msgt(MSG_DISARM, "You have disarmed the %s.", trap->kind->name);
-		player_exp_gain(player, power);
+		player_exp_gain(player, 1 + power);
 
 		/* Trap is gone */
 		square_forget(cave, y, x);
