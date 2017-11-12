@@ -902,6 +902,7 @@ static void cave_store(struct chunk *c, bool known, bool keep_all)
 	if (known) {
 		stored->name = string_append(stored->name, " known");
 	}
+	stored->turn = turn;
 	chunk_list_add(stored);
 }
 
@@ -1054,7 +1055,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		p->upkeep->light_level = false;
 	}
 
-	chunk->created_at = turn;
+	chunk->turn = turn;
 
 	return chunk;
 }

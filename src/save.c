@@ -823,7 +823,7 @@ static void wr_dungeon_aux(struct chunk *c)
 	/* Write feeling */
 	wr_byte(c->feeling);
 	wr_u16b(c->feeling_squares);
-	wr_s32b(c->created_at);
+	wr_s32b(c->turn);
 
 	/* Write connector info */
 	if (OPT(player, birth_levels_persist)) {
@@ -1006,7 +1006,7 @@ void wr_chunks(void)
 			int i;
 
 			wr_string(c->name);
-			wr_s32b(c->created_at);
+			wr_s32b(c->turn);
 			wr_u16b(c->depth);
 			wr_byte(c->feeling);
 			wr_u32b(c->obj_rating);

@@ -320,7 +320,7 @@ struct chunk *cave_new(int height, int width) {
 	c->mon_max = 1;
 	c->mon_current = -1;
 
-	c->created_at = turn;
+	c->turn = turn;
 	return c;
 }
 

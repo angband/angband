@@ -1265,7 +1265,7 @@ static int rd_dungeon_aux(struct chunk **c)
 	c1->feeling = tmp8u;
 	rd_u16b(&tmp16u);
 	c1->feeling_squares = tmp16u;
-	rd_s32b(&c1->created_at);
+	rd_s32b(&c1->turn);
 
 	/* Read connector info */
 	if (OPT(player, birth_levels_persist)) {
@@ -1542,7 +1542,7 @@ int rd_chunks(void)
 
 			rd_string(buf, sizeof(buf));
 			c->name = string_make(buf);
-			rd_s32b(&c->created_at);
+			rd_s32b(&c->turn);
 			rd_u16b(&tmp16u);
 			c->depth = tmp16u;
 			rd_byte(&c->feeling);

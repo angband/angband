@@ -159,7 +159,7 @@ struct connector {
 
 struct chunk {
 	char *name;
-	s32b created_at;
+	s32b turn;
 	int depth;
 
 	byte feeling;
