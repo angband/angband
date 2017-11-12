@@ -1480,7 +1480,7 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 /**
  * Monster regeneration of HPs.
  */
-static void regen_monster(struct monster *mon)
+static void regen_monster(struct monster *mon, int num)
 {
 	/* Regenerate (if needed) */
 	if (mon->hp < mon->maxhp) {
@@ -1492,6 +1492,9 @@ static void regen_monster(struct monster *mon)
 
 		/* Some monsters regenerate quickly */
 		if (rf_has(mon->race->flags, RF_REGENERATE)) frac *= 2;
+
+		/* Multiply by number of regenerations */
+		frac *= num;
 
 		/* Regenerate */
 		mon->hp += frac;
@@ -1560,7 +1563,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 
 		/* Handle monster regeneration if requested */
 		if (regen)
-			regen_monster(mon);
+			regen_monster(mon, 1);
 
 		/* Calculate the net speed */
 		mspeed = mon->mspeed;
@@ -1624,5 +1627,38 @@ void reset_monsters(void)
 
 		/* Monster is ready to go again */
 		mflag_off(mon->mflag, MFLAG_HANDLED);
+	}
+}
+
+/**
+ * Allow monsters on a frozen persistent level to recover
+ */
+void restore_monsters(void)
+{
+	int i;
+	struct monster *mon;
+
+	/* Get the number of turns that have passed */
+	int num_turns = turn - cave->turn;
+
+	/* Process the monsters (backwards) */
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+		int status, status_red;
+
+		/* Access the monster */
+		mon = cave_monster(cave, i);
+
+		/* Regenerate */
+		regen_monster(mon, num_turns / 100);
+
+		/* Handle timed effects */
+		status_red = num_turns * turn_energy(mon->mspeed) / z_info->move_energy;
+		if (status_red > 0) {
+			for (status = 0; status < MON_TMD_MAX; status++) {
+				if (mon->m_timed[status]) {
+					mon_dec_timed(mon, status, status_red, 0, false);
+				}
+			}
+		}
 	}
 }

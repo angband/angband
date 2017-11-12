@@ -37,6 +37,7 @@
 #include "init.h"
 #include "math.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-spell.h"
 #include "monster.h"
 #include "obj-tval.h"
@@ -1221,6 +1222,9 @@ void prepare_next_level(struct chunk **c, struct player *p)
 					(*c)->objects[i]->known = p->cave->objects[i];
 				}
 			}
+
+			/* Allow monsters to recover */
+			restore_monsters();
 
 			/* Map boundary changes may not cooperate with level teleports */
 			sanitize_player_loc(*c,p);
