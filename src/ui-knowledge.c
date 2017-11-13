@@ -2121,8 +2121,9 @@ static void do_cmd_knowledge_runes(const char *name, int row)
 
 	int *runes;
 	int rune_max = max_runes();
-	int rune_count = 0;
+	int count = 0;
 	int i;
+	char buf[30];
 
 	runes = mem_zalloc(rune_max * sizeof(int));
 
@@ -2131,11 +2132,12 @@ static void do_cmd_knowledge_runes(const char *name, int row)
 		if (!player_knows_rune(player, i))
 			continue;
 
-		runes[rune_count++] = i;
+		runes[count++] = i;
 	}
 
-	display_knowledge("runes", runes, rune_count, rune_var_f, rune_f,
-					  "Inscribed");
+	my_strcpy(buf, format("runes (%d unknown)", rune_max - count), sizeof(buf));
+
+	display_knowledge(buf, runes, count, rune_var_f, rune_f, "Inscribed");
 	mem_free(runes);
 }
 
