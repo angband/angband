@@ -768,9 +768,9 @@ const struct cave_profile *find_cave_profile(char *name)
 
 /**
  * Choose a cave profile
- * \param depth is the depth of the cave the profile will be used to generate
+ * \param p is the player
  */
-const struct cave_profile *choose_profile(int depth)
+const struct cave_profile *choose_profile(struct player *p)
 {
 	const struct cave_profile *profile = NULL;
 
@@ -790,14 +790,14 @@ const struct cave_profile *choose_profile(int depth)
 	}
 
 	/* Make the profile choice */
-	if (depth == 0) {
+	if (p->depth == 0) {
 		profile = find_cave_profile("town");
-	} else if (is_quest(depth)) {
+	} else if (is_quest(p->depth) && !OPT(p, birth_levels_persist)) {
 		/* Quest levels must be normal levels */
 		profile = find_cave_profile("classic");
-	} else if (labyrinth_check(depth)) {
+	} else if (labyrinth_check(p->depth)) {
 		profile = find_cave_profile("labyrinth");
-	} else if ((depth >= 10) && (depth < 40) && one_in_(40)) {
+	} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40)) {
 		profile = find_cave_profile("moria");
 	} else {
 		int pick = randint0(200);
@@ -958,7 +958,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		}
 
 		/* Choose a profile and build the level */
-		dun->profile = choose_profile(p->depth);
+		dun->profile = choose_profile(p);
 		chunk = dun->profile->builder(p, height, width);
 		if (!chunk) {
 			error = "Failed to find builder";
