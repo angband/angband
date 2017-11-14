@@ -2733,7 +2733,7 @@ static struct artifact_set_data *artifact_set_data_new(void)
 	data->hit_startval = 10;
 	data->dam_startval = 10;
 	data->ac_startval = 15;
-	data->ac_increment = 5;
+	data->ac_increment = 10;
 
 	return data;
 }
