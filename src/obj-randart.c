@@ -356,7 +356,7 @@ void count_weapon_abilities(const struct artifact *art,
 	bonus = (art->to_a - min_to_a) / data->ac_increment;
 	if (art->to_a > 20) {
 		file_putf(log_file, "Adding %d for supercharged AC\n", bonus);
-		(data->art_probs[ART_IDX_GEN_AC_SUPER])++;
+		(data->art_probs[ART_IDX_MELEE_AC_SUPER])++;
 	} else if (bonus > 0) {
 		file_putf(log_file,
 				  "Adding %d instances of extra AC bonus for weapon\n", bonus);
@@ -1600,7 +1600,18 @@ static void try_supercharge(struct artifact *art, s32b target_power,
 	}
 
 	/* Big AC bonus */
-	if (randint0(z_info->a_max) < data->art_probs[ART_IDX_GEN_AC_SUPER]) {
+	if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
+		art->tval == TV_POLEARM || art->tval == TV_SWORD) {
+		if (randint0(z_info->a_max) < data->art_probs[ART_IDX_MELEE_AC_SUPER]) {
+			art->to_a += 19 + randint1(11);
+			if (INHIBIT_WEAK)
+				art->to_a += randint1(10);
+			if (INHIBIT_STRONG)
+				art->to_a += randint1(20);
+			file_putf(log_file, "Supercharging AC! New AC bonus is %d\n",
+					  art->to_a);
+		}
+	} else if (randint0(z_info->a_max) < data->art_probs[ART_IDX_GEN_AC_SUPER]){
 		art->to_a += 19 + randint1(11);
 		if (INHIBIT_WEAK)
 			art->to_a += randint1(10);
@@ -2733,7 +2744,7 @@ static struct artifact_set_data *artifact_set_data_new(void)
 	data->hit_startval = 10;
 	data->dam_startval = 10;
 	data->ac_startval = 15;
-	data->ac_increment = 10;
+	data->ac_increment = 5;
 
 	return data;
 }
