@@ -1295,10 +1295,9 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	if (!player->word_recall) {
 		/* Reset recall depth */
 		if (player->depth > 0) {
-			if ((player->depth != player->max_depth) &&
-				(player->depth != player->recall_depth)) {
+			if (player->depth != player->max_depth) {
 				if (get_check("Set recall depth to current depth? ")) {
-					player->recall_depth = player->depth;
+					player->recall_depth = player->max_depth = player->depth;
 				}
 			} else {
 				player->recall_depth = player->max_depth;
