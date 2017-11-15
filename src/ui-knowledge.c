@@ -165,7 +165,7 @@ static int feat_order(int feat)
 		case L'#':				return 3;
 		case L'*': case L'%' :	return 4;
 		case L';': case L':' :	return 5;
-
+		case L' ':				return 7;
 		default:
 		{
 			return 6;
@@ -591,6 +591,32 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 
 		    return true;
 	    }
+
+		case 'C':
+		case 'c':
+		{
+			/* Set the tile */
+			attr_idx = *cur_attr_ptr;
+			char_idx = *cur_char_ptr;
+
+			return true;
+		}
+
+		case 'P':
+		case 'p':
+		{
+			if (attr_idx) {
+				/* Set the char */
+				*cur_attr_ptr = attr_idx;
+			}
+
+			if (char_idx) {
+				/* Set the char */
+				*cur_char_ptr = char_idx;
+			}
+
+			return true;
+		}
 
 	    case 'i':
 	    case 'I':
@@ -2244,7 +2270,12 @@ static void feat_lore(int oid)
 static const char *feat_prompt(int oid)
 {
 	(void)oid;
-	return ", 'l' to cycle lighting";
+		switch (f_uik_lighting) {
+				case LIGHTING_LIT:  return ", 'l/L' for lighting (lit)";
+                case LIGHTING_TORCH: return ", 'l/L' for lighting (torch)";
+				case LIGHTING_LOS:  return ", 'l/L' for lighting (LOS)";
+				default:	return ", 'l/L' for lighting (dark)";
+		}		
 }
 
 /**
