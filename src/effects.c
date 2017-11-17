@@ -3259,7 +3259,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
 
 			/* Forget completely */
-			if (!square_isbright(cave, y, x)) {
+			if (!square_isbright(cave, yy, xx)) {
 				sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
 			}
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_SEEN);
