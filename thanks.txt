@@ -12,7 +12,7 @@ Code contribution:
 
 * Alex Mooney
 * Andi Sidwell (takkaria)
-* Андрей Беньковский (AndreyB)
+* AndreyB
 * Bardur Arantsson
 * Ben Semmler
 * crayonsmelting
