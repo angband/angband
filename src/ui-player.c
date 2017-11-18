@@ -725,7 +725,13 @@ static const char *show_speed(void)
 	if (player->timed[TMD_FAST]) tmp -= 10;
 	if (player->timed[TMD_SLOW]) tmp += 10;
 	if (tmp == 110) return "Normal";
-	strnfmt(buffer, sizeof(buffer), "%d", tmp - 110);
+	int multiplier = 10 * extract_energy[tmp] / extract_energy[110];
+	int int_mul = multiplier / 10;
+	int dec_mul = multiplier % 10;
+	if (OPT(player, effective_speed))
+		strnfmt(buffer, sizeof(buffer), "x%d.%d (%d)", int_mul, dec_mul, tmp - 110);
+	else
+		strnfmt(buffer, sizeof(buffer), "%d (x%d.%d)", tmp - 110, int_mul, dec_mul);
 	return buffer;
 }
 

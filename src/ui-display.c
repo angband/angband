@@ -459,11 +459,18 @@ static void prt_speed(int row, int col)
 		type = "Slow";
 	}
 
-	if (type)
+	if (type && !OPT(player, effective_speed))
 		strnfmt(buf, sizeof(buf), "%s (%+d)", type, (i - 110));
+	else if (type && OPT(player, effective_speed))
+	{
+		int multiplier = 10 * extract_energy[i] / extract_energy[110];
+		int int_mul = multiplier / 10;
+		int dec_mul = multiplier % 10;
+		strnfmt(buf, sizeof(buf), "%s (x%d.%d)", type, int_mul, dec_mul);
+	}
 
 	/* Display the speed */
-	c_put_str(attr, format("%-10s", buf), row, col);
+	c_put_str(attr, format("%-11s", buf), row, col);
 }
 
 
