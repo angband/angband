@@ -2337,6 +2337,17 @@ static void remove_contradictory(struct artifact *art)
 
 	if (of_has(art->flags, OF_DRAIN_EXP))
 		of_off(art->flags, OF_HOLD_LIFE);
+
+	/* Remove any conflicting curses */
+	if (art->curses) {
+		int i;
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (artifact_curse_conflicts(art, i)) {
+				art->curses[i] = 0;
+				check_artifact_curses(art);
+			}
+		}
+	}
 }
 
 /**
@@ -2601,11 +2612,6 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		/* Copy artifact info temporarily. */
 		copy_artifact(art, a_old);
 
-		/* Curse the designated artifacts */
-		if (hurt_me) {
-			make_bad(art, art_level);
-		}
-
 		/* Add an ability */
 		add_ability(art, power, art_freq, data);
 		remove_contradictory(art);
@@ -2615,6 +2621,14 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		if (ap < 0) {
 			ap = -ap;
 			break;
+		}
+
+		/* Curse the designated artifacts */
+		if (hurt_me) {
+			make_bad(art, art_level);
+			if (one_in_(3)) {
+				hurt_me = false;
+			}
 		}
 
 		/* Check power */
