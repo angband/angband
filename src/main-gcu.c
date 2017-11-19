@@ -1006,6 +1006,7 @@ errr init_gcu(int argc, char **argv) {
 	cbreak();
 	noecho();
 	nonl();
+	raw();
 
 	/* Tell curses to rewrite escape sequences to KEY_UP and friends */
 	keypad(stdscr, true);
