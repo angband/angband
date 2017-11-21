@@ -461,14 +461,19 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Get arguments */
 	assert(cmd_get_arg_item(cmd, "item", &obj) == CMD_OK);
 
-	if (obj_needs_aim(obj)) {
-		if (cmd_get_target(cmd, "target", &dir) != CMD_OK)
-			return;
+	was_aware = object_flavor_is_aware(obj);
 
+	if (obj_needs_aim(obj)) {
+		/* Unknown things with no obvious aim get a random direction */
+		if (!(tval_is_wand(obj) || tval_is_rod(obj)) && !was_aware) {
+			dir = ddd[randint0(8)];
+		} else if (cmd_get_target(cmd, "target", &dir) != CMD_OK) {
+			return;
+		}
+
+		/* Confusion wrecks aim */
 		player_confuse_dir(player, &dir, false);
 	}
-
-	was_aware = object_flavor_is_aware(obj);
 
 	/* track the object used */
 	track_object(player->upkeep, obj);
