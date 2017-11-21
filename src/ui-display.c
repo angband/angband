@@ -1957,13 +1957,18 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_MAP:
 		{
+			minimap_data[win_idx].win_idx = win_idx;
+
 			register_or_deregister(EVENT_MAP,
-					       update_maps,
-					       angband_term[win_idx]);
+					       update_minimap_subwindow,
+					       &minimap_data[win_idx]);
+
+			register_or_deregister(EVENT_DUNGEONLEVEL, update_minimap_subwindow,
+								   &minimap_data[win_idx]);
 
 			register_or_deregister(EVENT_END,
-					       flush_subwindow,
-					       angband_term[win_idx]);
+					       update_minimap_subwindow,
+					       &minimap_data[win_idx]);
 			break;
 		}
 
@@ -1977,18 +1982,13 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_OVERHEAD:
 		{
-			minimap_data[win_idx].win_idx = win_idx;
-
 			register_or_deregister(EVENT_MAP,
-					       update_minimap_subwindow,
-					       &minimap_data[win_idx]);
-
-			register_or_deregister(EVENT_DUNGEONLEVEL, update_minimap_subwindow,
-								   &minimap_data[win_idx]);
+					       update_maps,
+					       angband_term[win_idx]);
 
 			register_or_deregister(EVENT_END,
-					       update_minimap_subwindow,
-					       &minimap_data[win_idx]);
+					       flush_subwindow,
+					       angband_term[win_idx]);
 			break;
 		}
 
