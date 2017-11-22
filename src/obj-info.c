@@ -1227,9 +1227,8 @@ static bool describe_light(textblock *tb, const struct object *obj,
 			else
 				textblock_append(tb, "  Cannot be refueled.");
 		}
+		textblock_append(tb, "\n");
 	}
-
-	textblock_append(tb, "\n");
 
 	return true;
 }
