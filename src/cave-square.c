@@ -853,6 +853,24 @@ bool square_isbelievedwall(struct chunk *c, int y, int x)
 	return !square_isprojectable(player->cave, y, x);
 }
 
+/**
+ * Checks if a square is in a cul-de-sac
+ */
+bool square_suits_stairs_well(struct chunk *c, int y, int x)
+{
+	return (square_num_walls_adjacent(c, y, x) == 3) &&
+		(square_num_walls_diagonal(c, y, x) == 4) && square_isempty(c, y, x);
+}
+
+/**
+ * Checks if a square is in a corridor
+ */
+bool square_suits_stairs_ok(struct chunk *c, int y, int x)
+{
+	return (square_num_walls_adjacent(c, y, x) == 2) &&
+		(square_num_walls_diagonal(c, y, x) == 4) && square_isempty(c, y, x);
+}
+
 
 
 /**
@@ -979,6 +997,47 @@ void square_know_pile(struct chunk *c, int y, int x)
 		}
 		obj = next;
 	}
+}
+
+
+/**
+ * Return how many cardinal directions around (x, y) contain walls.
+ * \param c current chunk
+ * \param y co-ordinates
+ * \param x co-ordinates
+ * \return the number of walls
+ */
+int square_num_walls_adjacent(struct chunk *c, int y, int x)
+{
+    int k = 0;
+    assert(square_in_bounds(c, y, x));
+
+    if (square_iswall(c, y + 1, x)) k++;
+    if (square_iswall(c, y - 1, x)) k++;
+    if (square_iswall(c, y, x + 1)) k++;
+    if (square_iswall(c, y, x - 1)) k++;
+
+    return k;
+}
+
+/**
+ * Return how many diagonal directions around (x, y) contain walls.
+ * \param c current chunk
+ * \param y co-ordinates
+ * \param x co-ordinates
+ * \return the number of walls
+ */
+int square_num_walls_diagonal(struct chunk *c, int y, int x)
+{
+    int k = 0;
+    assert(square_in_bounds(c, y, x));
+
+    if (square_iswall(c, y + 1, x + 1)) k++;
+    if (square_iswall(c, y - 1, x - 1)) k++;
+    if (square_iswall(c, y - 1, x + 1)) k++;
+    if (square_iswall(c, y + 1, x - 1)) k++;
+
+    return k;
 }
 
 
