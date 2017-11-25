@@ -1334,7 +1334,8 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		textblock_append(tb, obj->activation->desc);
 	} else {
 		int random_choices = 0;
-		bool random_breath = ((effect->index == EF_RANDOM) &&
+		bool random_breath = (effect && (effect->index == EF_RANDOM) &&
+							  effect->next &&
 							  (effect->next->index == EF_BREATH));
 		char breaths[120];
 
