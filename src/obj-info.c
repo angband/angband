@@ -1334,6 +1334,11 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		textblock_append(tb, obj->activation->desc);
 	} else {
 		int random_choices = 0;
+		bool random_breath = ((effect->index == EF_RANDOM) &&
+							  (effect->next->index == EF_BREATH));
+		char breaths[120];
+
+		my_strcpy(breaths, "", sizeof(breaths));
 
 		/* Get descriptions for all the effects */
 		effect = object_effect(obj);
@@ -1458,9 +1463,28 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 			/* Object generated breaths are elemental */
 			case EFINFO_BREATH: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].player_desc,
-						effect->params[1], dice_string);
+				/* Special treatment for several random breaths */
+				if (random_breath) {
+					my_strcat(breaths,
+							  projections[effect->params[0]].player_desc,
+							  sizeof(breaths));
+					if (random_choices > 3) {
+						my_strcat(breaths, ", ", sizeof(breaths));
+					} else if (random_choices == 3) {
+						my_strcat(breaths, " or ", sizeof(breaths));
+					}
+					random_choices--;
+
+					if ((!effect->next) || (effect->next->index != EF_BREATH)) {
+						random_breath = false;
+					}
+					strnfmt(desc, sizeof(desc), effect_desc(effect), breaths,
+							effect->params[1], dice_string);
+				} else {
+					strnfmt(desc, sizeof(desc), effect_desc(effect),
+							projections[effect->params[0]].player_desc,
+							effect->params[1], dice_string);
+				}
 				break;
 			}
 
@@ -1495,6 +1519,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 
 			do {
+				if (random_breath && effect->index != EF_RANDOM) break;
 				if (isdigit((unsigned char) *next_char))
 					textblock_append_c(tb, COLOUR_L_GREEN, "%c", *next_char);
 				else
@@ -1504,7 +1529,10 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Random choices need special treatment - note that this code
 			 * assumes that RANDOM and the random choices will be the last
 			 * effect in the object/activation description */
-			if (random_choices >= 1) {
+			if (random_breath) {
+				/* Handled in effect description */
+				;
+			} else if (random_choices >= 1) {
 				if (effect->index == EF_RANDOM)
 					;
 				else if (random_choices > 2)
