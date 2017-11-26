@@ -182,9 +182,10 @@ bool append_object_curse(struct object *obj, int pick, int power)
 	/* Reject curses which explicitly conflict with an object property */
 	for (i = of_next(c->conflict_flags, FLAG_START); i != FLAG_END;
 		 i = of_next(c->conflict_flags, i + 1)) {
-		if (of_has(obj->flags, i))
+		if (of_has(obj->flags, i)) {
 			check_object_curses(obj);
 			return false;
+		}
 	}
 
 	/* Adjust power if our pick is a duplicate */
@@ -253,9 +254,10 @@ bool artifact_curse_conflicts(struct artifact *art, int pick)
 	/* Reject curses which explicitly conflict with an artifact property */
 	for (i = of_next(c->conflict_flags, FLAG_START); i != FLAG_END;
 		 i = of_next(c->conflict_flags, i + 1)) {
-		if (of_has(art->flags, i))
+		if (of_has(art->flags, i)) {
 			check_artifact_curses(art);
 			return true;
+		}
 	}
 
 	return false;
