@@ -823,6 +823,8 @@ static int apply_curse(struct object *obj, int lev)
 	int power = randint1(9) + 10 * m_bonus(9, lev);
 	int new_lev = lev;
 
+	if (of_has(obj->flags, OF_BLESSED)) return lev;
+
 	while (max_curses--) {
 		/* Try to curse it */
 		int tries = 3;

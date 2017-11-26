@@ -179,6 +179,13 @@ bool append_object_curse(struct object *obj, int pick, int power)
 		}
 	}
 
+	/* Reject curses which explicitly conflict with an object property */
+	for (i = of_next(c->conflict_flags, FLAG_START); i != FLAG_END;
+		 i = of_next(c->conflict_flags, i + 1)) {
+		if (of_has(obj->flags, i))
+			check_object_curses(obj);
+			return false;
+	}
 
 	/* Adjust power if our pick is a duplicate */
 	if (power > obj->curses[pick].power) {
@@ -217,6 +224,7 @@ void check_artifact_curses(struct artifact *art)
 bool artifact_curse_conflicts(struct artifact *art, int pick)
 {
 	struct curse *c = &curses[pick];
+	int i;
 
 	/* Reject curses with effects foiled by an existing artifact property */
 	if (c->obj->effect && c->obj->effect->index == effect_lookup("TIMED_INC")) {
@@ -240,6 +248,14 @@ bool artifact_curse_conflicts(struct artifact *art, int pick)
 				return true;
 			}
 		}
+	}
+
+	/* Reject curses which explicitly conflict with an artifact property */
+	for (i = of_next(c->conflict_flags, FLAG_START); i != FLAG_END;
+		 i = of_next(c->conflict_flags, i + 1)) {
+		if (of_has(art->flags, i))
+			check_artifact_curses(art);
+			return true;
 	}
 
 	return false;

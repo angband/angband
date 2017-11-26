@@ -2381,6 +2381,8 @@ static void add_curse(struct artifact *art, int level)
 {
 	int max_tries = 5;
 
+	if (of_has(art->flags, OF_BLESSED)) return;
+
 	while (max_tries) {
 		int pick = randint1(z_info->curse_max - 1);
 		int power = randint1(9) + 10 * m_bonus(9, level);

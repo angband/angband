@@ -32,6 +32,7 @@ dice:40
 time:d100
 desc:randomly makes you teleport
 conflict:anti-teleportation
+conflict-flags:NO_TELEPORT
 
 name:dullness
 type:helm
@@ -204,6 +205,7 @@ name:impair mana recovery
 type:helm
 type:crown
 flags:IMPAIR_MANA
+conflict-flags:IMPAIR_MANA
 desc:makes you slow to recover mana
 
 name:impair hitpoint recovery
@@ -215,12 +217,14 @@ type:soft armor
 type:hard armor
 type:dragon armor
 flags:IMPAIR_HP
+conflict-flags:IMPAIR_HP
 desc:makes you slow to recover hitpoints
 
 name:cowardice
 type:amulet
 type:ring
 flags:AFRAID
+conflict-flags:AFRAID | PROT_FEAR
 desc:makes you too scared to fight
 
 name:stone
@@ -242,6 +246,7 @@ type:ring
 flags:NO_TELEPORT
 desc:prevents you from teleporting
 conflict:teleportation
+conflict-flags:NO_TELEPORT
 
 name:treacherous weapon
 type:digger
