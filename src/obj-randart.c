@@ -544,8 +544,8 @@ void count_nonweapon_abilities(const struct artifact *art,
 	}
 
 	/* To hit and dam to bonuses */
-	if (to_hit && (to_hit == to_dam)) {
-		bonus = to_dam / data->dam_increment;
+	if ((to_hit > 0) && (to_dam > 0)) {
+		bonus = (to_hit + to_dam) / (data->hit_increment + data->dam_increment);
 		if (bonus > 0) {
 			if (art->tval == TV_GLOVES) {
 				file_putf(log_file, "Adding %d instances of extra to-hit and to-dam bonus for gloves\n", bonus);
@@ -1611,7 +1611,9 @@ static void try_supercharge(struct artifact *art, s32b target_power,
 			file_putf(log_file, "Supercharging AC! New AC bonus is %d\n",
 					  art->to_a);
 		}
-	} else if (randint0(z_info->a_max) < data->art_probs[ART_IDX_GEN_AC_SUPER]){
+	} else if ((art->tval != TV_BOW) &&
+			   (randint0(z_info->a_max) <
+				data->art_probs[ART_IDX_GEN_AC_SUPER])) {
 		art->to_a += 19 + randint1(11);
 		if (INHIBIT_WEAK)
 			art->to_a += randint1(10);
