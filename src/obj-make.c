@@ -902,14 +902,14 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 			if (make_artifact(obj)) return 3;
 	}
 
+	/* Try to make an ego item */
+	if (power == 2)
+		make_ego_item(obj, lev);
+
 	/* Give it a chance to be cursed */
 	if (one_in_(20) && tval_is_wearable(obj)) {
 		lev = apply_curse(obj, lev);
 	}
-
-	/* Try to make an ego item */
-	if (power == 2)
-		make_ego_item(obj, lev);
 
 	/* Apply magic */
 	if (tval_is_weapon(obj)) {
