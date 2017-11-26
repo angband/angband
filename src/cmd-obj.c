@@ -189,10 +189,12 @@ static void activation_message(struct object *obj)
 				end += strlen(&buf[end]);
 				break;
 			case ART_TAG_VERB:
-				strnfcat(buf, 1024, &end, "s");
+				if (obj->number == 1) {
+					strnfcat(buf, 1024, &end, "s");
+				}
 				break;
 			case ART_TAG_VERB_IS:
-				if((end > 2) && (buf[end-2] == 's'))
+				if (obj->number > 1)
 					strnfcat(buf, 1024, &end, "are");
 				else
 					strnfcat(buf, 1024, &end, "is");
