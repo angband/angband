@@ -2348,6 +2348,7 @@ static void remove_contradictory(struct artifact *art)
 				art->curses[i] = 0;
 				check_artifact_curses(art);
 			}
+			if (!art->curses) break;
 		}
 	}
 }
