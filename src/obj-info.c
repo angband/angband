@@ -578,11 +578,10 @@ static void get_known_elements(const struct object *obj,
 static int obj_known_blows(const struct object *obj, int max_num,
 						   struct blow_info possible_blows[])
 {
-	int str_plus, dex_plus, old_blows = 0, new_blows, extra_blows;
+	int str_plus, dex_plus, old_blows = 0;
 	int str_faster = -1, str_done = -1;
 	int dex_plus_bound;
 	int str_plus_bound;
-	int i;
 
 	struct player_state state;
 
@@ -599,9 +598,6 @@ static int obj_known_blows(const struct object *obj, int max_num,
 	/* Calculate the player's hypothetical state */
 	calc_bonuses(player, &state, true, false);
 
-	/* Stop pretending */
-	player->body.slots[weapon_slot].obj = current_weapon;
-
 	/* First entry is always the current num of blows. */
 	possible_blows[num].str_plus = 0;
 	possible_blows[num].dex_plus = 0;
@@ -610,34 +606,21 @@ static int obj_known_blows(const struct object *obj, int max_num,
 
 	/* Check to see if extra STR or DEX would yield extra blows */
 	old_blows = state.num_blows;
-	extra_blows = 0;
-
-	/* Start with blows from the weapon being examined */
-	extra_blows += obj->known->modifiers[OBJ_MOD_BLOWS];
-
-	/* Then we need to look for extra blows on other items, as
-	 * state does not track these */
-	for (i = 0; i < player->body.count; i++) {
-		struct object *helper = slot_object(player, i);
-
-		if ((i == slot_by_name(player, "weapon")) || !helper)
-			continue;
-
-		extra_blows += helper->known->modifiers[OBJ_MOD_BLOWS];
-	}
-
 	dex_plus_bound = STAT_RANGE - state.stat_ind[STAT_DEX];
 	str_plus_bound = STAT_RANGE - state.stat_ind[STAT_STR];
 
-	/* Then we check for extra "real" blows */
+	/* Re-calculate with increased stats */
 	for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++) {
 		for (str_plus = 0; str_plus < str_plus_bound; str_plus++) {
+			int new_blows = 0;
+
 			if (num == max_num)
 				return num;
 
 			state.stat_ind[STAT_STR] += str_plus;
 			state.stat_ind[STAT_DEX] += dex_plus;
-			new_blows = calc_blows(player, obj, &state, extra_blows);
+			calc_bonuses(player, &state, true, false);
+			new_blows = state.num_blows;
 			state.stat_ind[STAT_STR] -= str_plus;
 			state.stat_ind[STAT_DEX] -= dex_plus;
 
@@ -670,6 +653,9 @@ static int obj_known_blows(const struct object *obj, int max_num,
 			}
 		}
 	}
+
+	/* Stop pretending */
+	player->body.slots[weapon_slot].obj = current_weapon;
 
 	return num;
 }
