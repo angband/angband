@@ -116,10 +116,11 @@ static int melee_damage(struct object *obj, int b, int s)
 {
 	int dmg = damroll(obj->dd, obj->ds);
 
-	if (s)
+	if (s) {
 		dmg *= slays[s].multiplier;
-	else if (b)
-		dmg *= slays[b].multiplier;
+	} else if (b) {
+		dmg *= brands[b].multiplier;
+	}
 
 	dmg += obj->to_d;
 
@@ -136,17 +137,19 @@ static int ranged_damage(struct object *missile, struct object *launcher,
 {
 	int dam;
 
-	/* If we have a slay, modify the multiplier appropriately */
-	if (b)
+	/* If we have a slay or brand , modify the multiplier appropriately */
+	if (b) {
 		mult += brands[b].multiplier;
-	else if (s)
+	} else if (s) {
 		mult += slays[s].multiplier;
+	}
 
 	/* Apply damage: multiplier, slays, bonuses */
 	dam = damroll(missile->dd, missile->ds);
 	dam += missile->to_d;
-	if (launcher)
+	if (launcher) {
 		dam += launcher->to_d;
+	}
 	dam *= mult;
 
 	return dam;
