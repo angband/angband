@@ -614,8 +614,11 @@ static int obj_known_blows(const struct object *obj, int max_num,
 		for (str_plus = 0; str_plus < str_plus_bound; str_plus++) {
 			int new_blows = 0;
 
-			if (num == max_num)
+			/* Unlikely */
+			if (num == max_num) {
+				player->body.slots[weapon_slot].obj = current_weapon;
 				return num;
+			}
 
 			state.stat_ind[STAT_STR] += str_plus;
 			state.stat_ind[STAT_DEX] += dex_plus;
