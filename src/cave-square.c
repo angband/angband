@@ -562,6 +562,14 @@ bool square_isdtrap(struct chunk *c, int y, int x) {
 	return sqinfo_has(c->squares[y][x].info, SQUARE_DTRAP);
 }
 
+/**
+ * True if cave square is inappropriate to place stairs
+ */
+bool square_isno_stairs(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
+	return sqinfo_has(c->squares[y][x].info, SQUARE_NO_STAIRS);
+}
+
 
 /**
  * SQUARE BEHAVIOR PREDICATES
@@ -858,6 +866,7 @@ bool square_isbelievedwall(struct chunk *c, int y, int x)
  */
 bool square_suits_stairs_well(struct chunk *c, int y, int x)
 {
+	if (square_isvault(c, y, x) || square_isno_stairs(c, y, x)) return false;
 	return (square_num_walls_adjacent(c, y, x) == 3) &&
 		(square_num_walls_diagonal(c, y, x) == 4) && square_isempty(c, y, x);
 }
@@ -867,6 +876,7 @@ bool square_suits_stairs_well(struct chunk *c, int y, int x)
  */
 bool square_suits_stairs_ok(struct chunk *c, int y, int x)
 {
+	if (square_isvault(c, y, x) || square_isno_stairs(c, y, x)) return false;
 	return (square_num_walls_adjacent(c, y, x) == 2) &&
 		(square_num_walls_diagonal(c, y, x) == 4) && square_isempty(c, y, x);
 }
@@ -1012,10 +1022,10 @@ int square_num_walls_adjacent(struct chunk *c, int y, int x)
     int k = 0;
     assert(square_in_bounds(c, y, x));
 
-    if (square_iswall(c, y + 1, x)) k++;
-    if (square_iswall(c, y - 1, x)) k++;
-    if (square_iswall(c, y, x + 1)) k++;
-    if (square_iswall(c, y, x - 1)) k++;
+    if (feat_is_wall(c->squares[y + 1][x].feat)) k++;
+    if (feat_is_wall(c->squares[y - 1][x].feat)) k++;
+    if (feat_is_wall(c->squares[y][x + 1].feat)) k++;
+    if (feat_is_wall(c->squares[y][x - 1].feat)) k++;
 
     return k;
 }
@@ -1032,10 +1042,10 @@ int square_num_walls_diagonal(struct chunk *c, int y, int x)
     int k = 0;
     assert(square_in_bounds(c, y, x));
 
-    if (square_iswall(c, y + 1, x + 1)) k++;
-    if (square_iswall(c, y - 1, x - 1)) k++;
-    if (square_iswall(c, y - 1, x + 1)) k++;
-    if (square_iswall(c, y + 1, x - 1)) k++;
+    if (feat_is_wall(c->squares[y + 1][x + 1].feat)) k++;
+    if (feat_is_wall(c->squares[y - 1][x - 1].feat)) k++;
+    if (feat_is_wall(c->squares[y - 1][x + 1].feat)) k++;
+    if (feat_is_wall(c->squares[y + 1][x - 1].feat)) k++;
 
     return k;
 }

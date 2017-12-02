@@ -706,8 +706,9 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 						int yy = y + ddy_ddd[d];
 						int xx = x + ddx_ddd[d];
 
-						/* Join to room */
+						/* Join to room, forbid stairs */
 						sqinfo_on(c->squares[yy][xx].info, SQUARE_ROOM);
+						sqinfo_on(c->squares[yy][xx].info, SQUARE_NO_STAIRS);
 
 						/* Illuminate if requested. */
 						if (light)
@@ -2892,8 +2893,9 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 					/* Stay legal */
 					if (!square_in_bounds(c, yy, xx)) continue;
 
-					/* Turn into room. */
+					/* Turn into room, forbid stairs. */
 					sqinfo_on(c->squares[yy][xx].info, SQUARE_ROOM);
+					sqinfo_on(c->squares[yy][xx].info, SQUARE_NO_STAIRS);
 
 					/* Illuminate if requested. */
 					if (light) sqinfo_on(c->squares[yy][xx].info, SQUARE_GLOW);

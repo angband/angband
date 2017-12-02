@@ -566,10 +566,13 @@ void alloc_stairs(struct chunk *c, int feat, int num)
 
 					cave_find_in_range(c, &y, 1, c->height - 2, &x, 1,
 									   c->width - 2, square_isempty);
+					if (square_isvault(c, y, x)|| square_isno_stairs(c, y, x)) {
+						continue;
+					}
 					total_walls = square_num_walls_adjacent(c, y, x) +
 						square_num_walls_diagonal(c, y, x);
 
-					if (total_walls >= walls) {
+					if (total_walls == walls) {
 						place_stairs(c, y, x, feat);
 						done = true;
 						break;

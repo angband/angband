@@ -316,6 +316,7 @@ bool square_isno_map(struct chunk *c, int y, int x);
 bool square_isno_esp(struct chunk *c, int y, int x);
 bool square_isproject(struct chunk *c, int y, int x);
 bool square_isdtrap(struct chunk *c, int y, int x);
+bool square_isno_stairs(struct chunk *c, int y, int x);
 
 /* SQUARE BEHAVIOR PREDICATES */
 bool square_isopen(struct chunk *c, int y, int x);
