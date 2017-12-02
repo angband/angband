@@ -323,11 +323,43 @@ void rand_dir(int *rdir, int *cdir)
  * \param x co-ordinates
  * \return success
  */
-static bool square_isstart(struct chunk *c, int y, int x)
+static bool find_start(struct chunk *c, int *y, int *x)
 {
-    if (!square_isempty(c, y, x)) return false;
-    if (square_isvault(c, y, x)) return false;
-    return true;
+	/* Find the best possible place */
+	if (cave_find_in_range(c, y, 1, c->height - 2, x, 1, c->width - 2,
+						   square_suits_stairs_well)) {
+			return true;
+	} else if (cave_find_in_range(c, y, 1, c->height - 2, x, 1,
+								  c->width - 2, square_suits_stairs_ok)) {
+		return true;
+	} else {
+		int walls = 6;
+
+		/* Gradually reduce number of walls if having trouble */
+		while (walls >= 0) {
+			int j;
+
+			/* Try hard to find a square with the given number of walls */
+			for (j = 0; j < 10000; j++) {
+				int total_walls = 0;
+
+				cave_find_in_range(c, y, 1, c->height - 2, x, 1,
+								   c->width - 2, square_isempty);
+				if (square_isvault(c, *y, *x)|| square_isno_stairs(c, *y, *x)) {
+					continue;
+				}
+				total_walls = square_num_walls_adjacent(c, *y, *x) +
+						square_num_walls_diagonal(c, *y, *x);
+
+				if (total_walls == walls) {
+					return true;
+				}
+			}
+
+			walls--;
+		}
+	}
+    return false;
 }
 
 
@@ -346,8 +378,8 @@ void new_player_spot(struct chunk *c, struct player *p)
 		square_isstairs(c, p->py, p->px)) {
 		y = p->py;
 		x = p->px;
-	} else {
-		cave_find(c, &y, &x, square_isstart);
+	} else if (!find_start(c, &y, &x)) {
+		quit("Failed to place player!");
 	}
 
     /* Create stairs the player came down if allowed and necessary */
