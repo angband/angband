@@ -2050,6 +2050,9 @@ bool easy_know(const struct object *obj)
 bool object_flavor_is_aware(const struct object *obj)
 {
 	assert(obj->kind);
+	if (obj->artifact && !object_is_known_artifact(obj)) {
+		return false;
+	}
 	return obj->kind->aware;
 }
 
