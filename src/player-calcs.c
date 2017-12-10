@@ -1699,6 +1699,10 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	bitflag collect_f[OF_SIZE];
 	bool vuln[ELEM_MAX];
 
+	/* Note STR and DEX bonuses for extra blow information */
+	int str_cur = state->stat_ind[STAT_STR];
+	int dex_cur = state->stat_ind[STAT_DEX];
+
 	/* Reset */
 	memset(state, 0, sizeof *state);
 
@@ -1856,6 +1860,12 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		/* Save the new index */
 		state->stat_ind[i] = ind;
+	}
+
+	/* Adjust stat values if calculating possible extra blows */
+	if (!update) {
+		state->stat_ind[STAT_STR] = str_cur;
+		state->stat_ind[STAT_DEX] = dex_cur;
 	}
 
 	/* Now deal with vulnerabilities */

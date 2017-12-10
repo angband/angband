@@ -596,6 +596,7 @@ static int obj_known_blows(const struct object *obj, int max_num,
 	player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
+	memcpy(&state, &player->state, sizeof(state));
 	calc_bonuses(player, &state, true, false);
 
 	/* First entry is always the current num of blows. */
@@ -747,6 +748,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
+	memcpy(&state, &player->state, sizeof(state));
 	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
@@ -986,6 +988,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 		/* Calculate the player's hypothetical state */
+		memcpy(&state, &player->state, sizeof(state));
 		calc_bonuses(player, &state, true, false);
 
 		/* Stop pretending */
