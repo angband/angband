@@ -1078,6 +1078,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	player->body.slots[slot].obj = obj;
 
 	/* Calculate the player's hypothetical state */
+	memcpy(&state, &player->state, sizeof(state));
 	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
