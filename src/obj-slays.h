@@ -33,7 +33,7 @@ int brand_count(bool *brands);
 int slay_count(bool *slays);
 void improve_attack_modifier(struct object *obj, const struct monster *mon, 
 							 int *brand_used, int *slay_used, char *verb,
-							 bool range, bool real);
+							 bool range);
 bool react_to_slay(struct object *obj, const struct monster *mon);
 
 #endif /* OBJECT_SLAYS_H */

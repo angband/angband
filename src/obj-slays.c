@@ -275,12 +275,21 @@ bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
  */
 void improve_attack_modifier(struct object *obj, const struct monster *mon,
 							 int *brand_used, int *slay_used, char *verb,
-							 bool range, bool real)
+							 bool range)
 {
 	int i, best_mult = 1;
 	struct monster_lore *lore = get_lore(mon->race);
 
 	if (!obj) return;
+
+	/* Set the current best multiplier */
+	if (*brand_used) {
+		struct brand *b = &brands[*brand_used];
+		best_mult = MAX(best_mult, b->multiplier);
+	} else if (*slay_used) {
+		struct slay *s = &slays[*slay_used];
+		best_mult = MAX(best_mult, s->multiplier);
+	}
 
 	/* Brands */
 	for (i = 1; i < z_info->brand_max; i++) {
@@ -297,19 +306,17 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				if (range)
 					my_strcat(verb, "s", 20);
 			}
-			/* Learn from real attacks */
-			if (real) {
-				/* Learn about the brand */
-				object_learn_brand(player, obj, i);
+			/* Learn about the brand */
+			object_learn_brand(player, obj, i);
 
-				/* Learn about the monster */
-				if (monster_is_visible(mon))
-					rf_on(lore->flags, b->resist_flag);
+			/* Learn about the monster */
+			if (monster_is_visible(mon)) {
+				rf_on(lore->flags, b->resist_flag);
 			}
-		} else if (real && player_knows_brand(player, i)) {
-				/* Learn about resistant monsters */
-				if (monster_is_visible(mon))
-					rf_on(lore->flags, b->resist_flag);
+		} else if (player_knows_brand(player, i)) {
+			/* Learn about resistant monsters */
+			if (monster_is_visible(mon))
+				rf_on(lore->flags, b->resist_flag);
 		}
 	}
 
@@ -331,19 +338,17 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 					my_strcpy(verb, s->melee_verb, 20);
 				}
 			}
-			/* Learn from real attacks */
-			if (real) {
-				/* Learn about the slay */
-				object_learn_slay(player, obj, i);
+			/* Learn about the slay */
+			object_learn_slay(player, obj, i);
 
-				/* Learn about the monster */
-				if (monster_is_visible(mon))
-					rf_on(lore->flags, s->race_flag);
+			/* Learn about the monster */
+			if (monster_is_visible(mon)) {
+				rf_on(lore->flags, s->race_flag);
 			}
-		} else if (real && player_knows_slay(player, i)) {
-				/* Learn about resistant monsters */
-				if (monster_is_visible(mon))
-					rf_on(lore->flags, s->race_flag);
+		} else if (player_knows_slay(player, i)) {
+			/* Learn about resistant monsters */
+			if (monster_is_visible(mon))
+				rf_on(lore->flags, s->race_flag);
 		}
 	}
 }
