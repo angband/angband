@@ -639,11 +639,11 @@ bool object_has_rune(const struct object *obj, int rune_no)
 }
 
 /**
- * Check if all the runes on an object are known to the player
+ * Check if all non-curse runes on an object are known to the player
  *
  * \param obj is the object
  */
-bool object_runes_known(const struct object *obj)
+static bool object_non_curse_runes_known(const struct object *obj)
 {
 	int i;
 
@@ -688,16 +688,28 @@ bool object_runes_known(const struct object *obj)
 		}
 	}
 
-	/* Not all curses known */
-	if (!curses_are_equal(obj, obj->known)) {
-		return false;
-	}
-
 	/* Not all flags known */
 	if (!of_is_subset(obj->known->flags, obj->flags)) return false;
 
 	return true;
 }
+
+/**
+ * Check if all the runes on an object are known to the player
+ *
+ * \param obj is the object
+ */
+bool object_runes_known(const struct object *obj)
+{
+	/* Not all curses known */
+	if (!curses_are_equal(obj, obj->known)) {
+		return false;
+	}
+
+	/* Answer is now the same as for non-curse runes */
+	return object_non_curse_runes_known(obj);
+}
+
 
 /**
  * Check if an object is fully known to the player
@@ -1032,7 +1044,7 @@ void player_know_object(struct player *p, struct object *obj)
 		obj->known->ego = obj->ego;
 	}
 
-	if (object_fully_known(obj) && tval_is_jewelry(obj)) {
+	if (object_non_curse_runes_known(obj) && tval_is_jewelry(obj)) {
 		seen = obj->kind->everseen;
 		object_flavor_aware(obj);
 	}
