@@ -1,6 +1,11 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
+Angband 4.1.
+=============
+
+This version fixes bugs in 4.1.1 and makes some other small improvements
+
 Angband 4.1.1
 =============
 
