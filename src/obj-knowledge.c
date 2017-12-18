@@ -701,6 +701,9 @@ static bool object_non_curse_runes_known(const struct object *obj)
  */
 bool object_runes_known(const struct object *obj)
 {
+	/* No known object */
+	if (!obj->known) return false;
+
 	/* Not all curses known */
 	if (!curses_are_equal(obj, obj->known)) {
 		return false;
