@@ -12,7 +12,7 @@ Run `make` for help.
 
 The help files come straight from Angband proper.  To create them, do the following:
 
-1. Install docutils (http://docutils.sourceforge.net/)
+1. Install [docutils](http://docutils.sourceforge.net/)
 2. Get Angband, and go to lib/help.
 2. Run `buildhtml.py --config=docutils-website.conf --ignore=index*`
 3. Copy all the .html files into src/help.
