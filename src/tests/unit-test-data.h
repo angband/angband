@@ -646,14 +646,6 @@ static struct start_item TEST_DATA start_longsword = {
 	.next = &start_torch,
 };
 
-static struct class_book TEST_DATA test_book = {
-	.tval = 10,
-	.sval = 4,
-	.realm = 1,
-	.num_spells = 8,
-	.spells = NULL,
-};
-
 static struct magic_realm TEST_DATA test_realm = {
 	.next = NULL,
 	.name = "realm",
@@ -661,6 +653,14 @@ static struct magic_realm TEST_DATA test_realm = {
 	.verb = "spell_verb",
 	.spell_noun = "spell_noun",
 	.book_noun = "book_noun",
+};
+
+static struct class_book TEST_DATA test_book = {
+	.tval = 10,
+	.sval = 4,
+	.realm = &test_realm,
+	.num_spells = 8,
+	.spells = NULL,
 };
 
 static struct player_class TEST_DATA test_class = {

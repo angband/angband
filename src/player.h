@@ -249,8 +249,8 @@ struct class_spell {
 struct class_book {
 	int tval;					/**< Item type of the book */
 	int sval;					/**< Item sub-type for book (book number) */
-	int realm;					/**< The magic realm of this book */
 	int num_spells;				/**< Number of spells in this book */
+	const struct magic_realm *realm;	/**< The magic realm of this book */
 	struct class_spell *spells;	/**< Spells in the book*/
 };
 
