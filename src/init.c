@@ -2435,7 +2435,8 @@ static enum parser_error parse_class_book(struct parser *p) {
 	spells = parser_getuint(p, "spells");
 	c->magic.books[c->magic.num_books].spells =
 		mem_zalloc(spells * sizeof(struct class_spell));
-	c->magic.books[c->magic.num_books++].realm = parser_getuint(p, "realm");
+	c->magic.books[c->magic.num_books++].realm =
+		lookup_realm(parser_getstr(p, "realm"));
 
 	return PARSE_ERROR_NONE;
 }
@@ -2625,7 +2626,7 @@ struct parser *init_parse_class(void) {
 	parser_reg(p, "flags ?str flags", parse_class_flags);
 	parser_reg(p, "realm str realm", parse_class_realm);
 	parser_reg(p, "magic uint first uint weight uint books", parse_class_magic);
-	parser_reg(p, "book sym tval sym sval uint spells uint realm",
+	parser_reg(p, "book sym tval sym sval uint spells str realm",
 			   parse_class_book);
 	parser_reg(p, "spell sym name int level int mana int fail int exp",
 			   parse_class_spell);
