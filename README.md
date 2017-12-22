@@ -1,9 +1,14 @@
-This is a simple script and kit of parts to maintain the official
-Angband site, rephial.org.
+# rephial.org documentation
+
+This is a simple script and kit of parts to maintain the official Angband site, rephial.org.
 
 
-How to build the help files
----------------------------
+## What do I do!?
+
+Run `make` for help.
+
+
+## How to build the help files
 
 The help files come straight from Angband proper.  To create them, do the following:
 
