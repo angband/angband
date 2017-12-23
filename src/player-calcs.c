@@ -1385,8 +1385,8 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	int i, msp, levels, cur_wgt, max_wgt; 
 	struct object *obj;
 
-	/* Hack -- Must be literate */
-	if (!p->class->magic.spell_realm) {
+	/* Must be literate */
+	if (!p->class->magic.total_spells) {
 		p->msp = 0;
 		p->csp = 0;
 		p->csp_frac = 0;
@@ -2355,8 +2355,9 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_SPELLS)) {
 		p->upkeep->update &= ~(PU_SPELLS);
-		if (p->class->magic.spell_realm)
+		if (p->class->magic.total_spells > 0) {
 			calc_spells(p);
+		}
 	}
 
 	/* Character is not ready yet, no map updates */
