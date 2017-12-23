@@ -234,6 +234,7 @@ struct class_spell {
 	char *text;
 
 	struct effect *effect;	/**< The spell's effect */
+	const struct magic_realm *realm;	/**< The magic realm of this spell */
 
 	int sidx;				/**< The index of this spell for this class */
 	int bidx;				/**< The index into the player's books array */
