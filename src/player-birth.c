@@ -713,9 +713,10 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 						   int *points_left_local)
 {
 	int step = 0;
-	int maxed[STAT_MAX] = { 0 };
-	int spell_stat = player->class->magic.spell_realm ? 
-		player->class->magic.spell_realm->stat : 0;
+	bool maxed[STAT_MAX] = { 0 };
+	/* Hack - for now, just use stat of first book - NRM */
+	int spell_stat = player->class->magic.total_spells ?
+		player->class->magic.books[0].realm->stat : 0;
 	bool caster = false, warrior = false;
 
 	/* Determine whether the class is warrior */

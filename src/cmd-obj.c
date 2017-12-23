@@ -984,9 +984,9 @@ void do_cmd_study_book(struct command *cmd)
 		spell_index = spell->sidx;
 	}
 
-	if (spell_index < 0)
-		msg("You cannot learn any %ss in that book.", spell->realm->spell_noun);
-	else {
+	if (spell_index < 0) {
+		msg("You cannot learn any %ss in that book.", book->realm->spell_noun);
+	} else {
 		spell_learn(spell_index);
 		player->upkeep->energy_use = z_info->move_energy;
 	}

@@ -518,7 +518,7 @@ void player_take_terrain_damage(struct player *p, int y, int x)
  */
 bool player_can_cast(struct player *p, bool show_msg)
 {
-	if (!p->class->magic.spell_realm) {
+	if (!p->class->magic.total_spells) {
 		if (show_msg) {
 			msg("You cannot pray or produce magics.");
 		}
@@ -556,8 +556,27 @@ bool player_can_study(struct player *p, bool show_msg)
 
 	if (!p->upkeep->new_spells) {
 		if (show_msg) {
-			const char *name = p->class->magic.spell_realm->spell_noun;
-			msg("You cannot learn any new %ss!", name);
+			int count;
+			struct magic_realm *realm = class_magic_realms(p->class, &count);
+			char buf[120];
+
+			my_strcpy(buf, realm->spell_noun, sizeof(buf));
+			my_strcat(buf, "s", sizeof(buf));
+			realm = realm->next;
+			if (count > 1) {
+				while (realm) {
+					count--;
+					if (count) {
+						my_strcat(buf, ", ", sizeof(buf));
+					} else {
+						my_strcat(buf, " or ", sizeof(buf));
+					}
+					my_strcat(buf, realm->spell_noun, sizeof(buf));
+					my_strcat(buf, "s", sizeof(buf));
+					realm = realm->next;
+				}
+			}
+			msg("You cannot learn any new %s!", buf);
 		}
 		return false;
 	}

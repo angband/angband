@@ -151,6 +151,54 @@ void player_spells_free(struct player *p)
 }
 
 /**
+ * Make a list of the spell realms the player's class has books from
+ */
+struct magic_realm *class_magic_realms(const struct player_class *c, int *count)
+{
+	int i;
+	struct magic_realm *r = mem_zalloc(sizeof(struct magic_realm));
+
+	*count = 0;
+
+	if (!c->magic.total_spells) {
+		mem_free(r);
+		return NULL;
+	}
+
+	for (i = 0; i < c->magic.num_books; i++) {
+		struct magic_realm *r_test = r;
+		struct class_book *book = &c->magic.books[i];
+		bool found = false;
+
+		/* Test for first realm */
+		if (r->name == NULL) {
+			memcpy(r, book->realm, sizeof(struct magic_realm));
+			r->next = NULL;
+			(*count)++;
+			continue;
+		}
+
+		/* Test for already recorded */
+		while (r_test) {
+			if (streq(r_test->name, book->realm->name)) {
+				found = true;
+			}
+			r_test = r_test->next;
+		}
+		if (found) continue;
+
+		/* Add it */
+		r_test = mem_zalloc(sizeof(struct magic_realm));
+		r_test->next = r;
+		r = r_test;
+		(*count)++;
+	}
+
+	return r;
+}
+
+
+/**
  * Get the spellbook structure from an object which is a book the player can
  * cast from
  */
@@ -269,22 +317,20 @@ bool spell_okay_to_browse(int spell_index)
 
 /**
  * Spell failure adjustment by casting stat level
- * (or whatever realm whatever - NRM)
  */
-int fail_adjust(struct player *p)
+static int fail_adjust(struct player *p, const struct class_spell *spell)
 {
-	int stat = player->class->magic.spell_realm->stat;
-	return adj_mag_stat[player->state.stat_ind[stat]];
+	int stat = spell->realm->stat;
+	return adj_mag_stat[p->state.stat_ind[stat]];
 }
 
 /**
  * Spell minimum failure casting stat level
- * (or whatever realm whatever - NRM)
  */
-int min_fail(struct player *p)
+static int min_fail(struct player *p, const struct class_spell *spell)
 {
-	int stat = player->class->magic.spell_realm->stat;
-	return adj_mag_fail[player->state.stat_ind[stat]];
+	int stat = spell->realm->stat;
+	return adj_mag_fail[p->state.stat_ind[stat]];
 }
 
 /**
@@ -297,7 +343,7 @@ s16b spell_chance(int spell_index)
 	const struct class_spell *spell;
 
 	/* Paranoia -- must be literate */
-	if (!player->class->magic.spell_realm) return (100);
+	if (!player->class->magic.total_spells) return (100);
 
 	/* Get the spell */
 	spell = spell_by_index(spell_index);
@@ -309,14 +355,14 @@ s16b spell_chance(int spell_index)
 	chance -= 3 * (player->lev - spell->slevel);
 
 	/* Reduce failure rate by realm adjustment */
-	chance -= fail_adjust(player);
+	chance -= fail_adjust(player, spell);
 
 	/* Not enough mana to cast */
 	if (spell->smana > player->csp)
 		chance += 5 * (spell->smana - player->csp);
 
 	/* Extract the minimum failure rate due to realm */
-	minfail = min_fail(player);
+	minfail = min_fail(player, spell);
 
 	/* Non mage/priest characters never get better than 5 percent */
 	if (!player_has(player, PF_ZERO_FAIL) && minfail < 5)
@@ -356,7 +402,7 @@ s16b spell_chance(int spell_index)
 void spell_learn(int spell_index)
 {
 	int i;
-	const char *noun = player->class->magic.spell_realm->spell_noun;
+	const struct class_spell *spell = spell_by_index(spell_index);
 
 	/* Learn the spell */
 	player->spell_flags[spell_index] |= PY_SPELL_LEARNED;
@@ -369,16 +415,16 @@ void spell_learn(int spell_index)
 	player->spell_order[i] = spell_index;
 
 	/* Mention the result */
-	msgt(MSG_STUDY, "You have learned the %s of %s.", noun,
-		 spell_by_index(spell_index)->name);
+	msgt(MSG_STUDY, "You have learned the %s of %s.", spell->realm->spell_noun,
+		 spell->name);
 
 	/* One less spell available */
 	player->upkeep->new_spells--;
 
 	/* Message if needed */
 	if (player->upkeep->new_spells)
-		msg("You can learn %d more %s%s.", player->upkeep->new_spells, noun, 
-			PLURAL(player->upkeep->new_spells));
+		msg("You can learn %d more %s%s.", player->upkeep->new_spells,
+			spell->realm->spell_noun, PLURAL(player->upkeep->new_spells));
 
 	/* Redraw Study Status */
 	player->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
@@ -486,15 +532,16 @@ static size_t append_random_value_string(char *buffer, size_t size,
 	if (rv->base > 0) {
 		offset += strnfmt(buffer + offset, size - offset, "%d", rv->base);
 
-		if (rv->dice > 0 || rv->sides > 0)
+		if (rv->dice > 0 || rv->sides > 0) {
 			offset += strnfmt(buffer + offset, size - offset, "+");
+		}
 	}
 
 	if (rv->dice == 1) {
 		offset += strnfmt(buffer + offset, size - offset, "d%d", rv->sides);
-	}
-	else if (rv->dice > 1) {
-		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice, rv->sides);
+	} else if (rv->dice > 1) {
+		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice,
+						  rv->sides);
 	}
 
 	return offset;
