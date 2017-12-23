@@ -23,6 +23,7 @@
 #include "game-input.h"
 #include "obj-tval.h"
 #include "player.h"
+#include "player-spell.h"
 #include "ui-birth.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -379,8 +380,27 @@ static void class_help(int i, void *db, const region *l)
 	skill_help(r->r_skills, c->c_skills, r->r_mhp + c->c_mhp,
 			   r->r_exp + c->c_exp, -1);
 
-	if (c->magic.spell_realm)
-		text_out_e("\nLearns %s magic", c->magic.spell_realm->name);
+	if (c->magic.total_spells) {
+		int count;
+		struct magic_realm *realm = class_magic_realms(c, &count);
+		char buf[120];
+
+		my_strcpy(buf, realm->name, sizeof(buf));
+		realm = realm->next;
+		if (count > 1) {
+			while (realm) {
+				count--;
+				if (count) {
+					my_strcat(buf, ", ", sizeof(buf));
+				} else {
+					my_strcat(buf, " and ", sizeof(buf));
+				}
+				my_strcat(buf, realm->name, sizeof(buf));
+				realm = realm->next;
+			}
+		}
+		text_out_e("\nLearns %s magic", buf);
+	}
 
 	for (k = 0; k < PF_MAX; k++) {
 		const char *s;
