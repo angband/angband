@@ -882,9 +882,6 @@ void do_cmd_refill(struct command *cmd)
 void do_cmd_cast(struct command *cmd)
 {
 	int spell_index, dir = 0;
-
-	const char *verb = player->class->magic.spell_realm->verb;
-	const char *noun = player->class->magic.spell_realm->spell_noun;
 	const struct class_spell *spell;
 
 	/* Check the player can cast spells at all */
@@ -911,6 +908,9 @@ void do_cmd_cast(struct command *cmd)
 
 	/* Verify "dangerous" spells */
 	if (spell->smana > player->csp) {
+		const char *verb = spell->realm->verb;
+		const char *noun = spell->realm->spell_noun;
+
 		/* Warning */
 		msg("You do not have enough mana to %s this %s.", verb, noun);
 
@@ -960,8 +960,6 @@ void do_cmd_study_book(struct command *cmd)
 	struct class_spell *spell;
 	int i, k = 0;
 
-	const char *p = player->class->magic.spell_realm->spell_noun;
-
 	if (cmd_get_item(cmd, "item", &book_obj,
 			/* Prompt */ "Study which book? ",
 			/* Error  */ "You cannot learn any new spells from the books you have.",
@@ -987,7 +985,7 @@ void do_cmd_study_book(struct command *cmd)
 	}
 
 	if (spell_index < 0)
-		msg("You cannot learn any %ss in that book.", p);
+		msg("You cannot learn any %ss in that book.", spell->realm->spell_noun);
 	else {
 		spell_learn(spell_index);
 		player->upkeep->energy_use = z_info->move_energy;
