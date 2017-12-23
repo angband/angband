@@ -2447,6 +2447,7 @@ static enum parser_error parse_class_spell(struct parser *p) {
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	book->spells[book->num_spells].realm = book->realm;
 
 	book->spells[book->num_spells].name = string_make(parser_getsym(p, "name"));
 	book->spells[book->num_spells].sidx = c->magic.total_spells;
