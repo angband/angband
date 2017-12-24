@@ -2391,23 +2391,12 @@ static enum parser_error parse_class_flags(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_class_realm(struct parser *p) {
-	struct player_class *c = parser_priv(p);
-
-	if (!c)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->magic.spell_realm = lookup_realm(parser_getstr(p, "realm"));
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_class_magic(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int num_books;
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!c->magic.spell_realm)
-		return PARSE_ERROR_NONE;
 	c->magic.spell_first = parser_getuint(p, "first");
 	c->magic.spell_weight = parser_getuint(p, "weight");
 	num_books = parser_getuint(p, "books");
@@ -2625,7 +2614,6 @@ struct parser *init_parse_class(void) {
 	parser_reg(p, "equip sym tval sym sval uint min uint max",
 			   parse_class_equip);
 	parser_reg(p, "flags ?str flags", parse_class_flags);
-	parser_reg(p, "realm str realm", parse_class_realm);
 	parser_reg(p, "magic uint first uint weight uint books", parse_class_magic);
 	parser_reg(p, "book sym tval sym sval uint spells str realm",
 			   parse_class_book);

@@ -557,23 +557,27 @@ bool player_can_study(struct player *p, bool show_msg)
 	if (!p->upkeep->new_spells) {
 		if (show_msg) {
 			int count;
-			struct magic_realm *realm = class_magic_realms(p->class, &count);
+			struct magic_realm *r = class_magic_realms(p->class, &count), *r1;
 			char buf[120];
 
-			my_strcpy(buf, realm->spell_noun, sizeof(buf));
+			my_strcpy(buf, r->spell_noun, sizeof(buf));
 			my_strcat(buf, "s", sizeof(buf));
-			realm = realm->next;
+			r1 = r->next;
+			mem_free(r);
+			r = r1;
 			if (count > 1) {
-				while (realm) {
+				while (r) {
 					count--;
 					if (count) {
 						my_strcat(buf, ", ", sizeof(buf));
 					} else {
 						my_strcat(buf, " or ", sizeof(buf));
 					}
-					my_strcat(buf, realm->spell_noun, sizeof(buf));
+					my_strcat(buf, r->spell_noun, sizeof(buf));
 					my_strcat(buf, "s", sizeof(buf));
-					realm = realm->next;
+					r1 = r->next;
+					mem_free(r);
+					r = r1;
 				}
 			}
 			msg("You cannot learn any new %s!", buf);
