@@ -633,14 +633,16 @@ static struct player_race TEST_DATA test_race = {
 };
 
 static struct start_item TEST_DATA start_torch = {
-	.kind = &test_torch,
+	.tval = TV_LIGHT,
+	.sval = 1, //Hack - depends on edit file order - Wooden Torch (NRM)
 	.min = 3,
 	.max = 5,
 	.next = NULL,
 };
 
 static struct start_item TEST_DATA start_longsword = {
-	.kind = &test_longsword,
+	.tval = TV_SWORD,
+	.sval = 8, //Hack - depends on edit file order - Long Sword (NRM)
 	.min = 1,
 	.max = 1,
 	.next = &start_torch,
