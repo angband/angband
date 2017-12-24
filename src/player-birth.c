@@ -536,10 +536,12 @@ static void player_outfit(struct player *p)
 	/* Give the player starting equipment */
 	for (si = p->class->start_items; si; si = si->next) {
 		int num = rand_range(si->min, si->max);
+		struct object_kind *kind = lookup_kind(si->tval, si->sval);
+		assert(kind);
 
 		/* Without start_kit, only start with 1 food and 1 light */
 		if (!OPT(p, birth_start_kit)) {
-			if (!tval_is_food_k(si->kind) && !tval_is_light_k(si->kind))
+			if (!tval_is_food_k(kind) && !tval_is_light_k(kind))
 				continue;
 
 			num = 1;
@@ -547,7 +549,7 @@ static void player_outfit(struct player *p)
 
 		/* Prepare a new item */
 		obj = object_new();
-		object_prep(obj, si->kind, 0, MINIMISE);
+		object_prep(obj, kind, 0, MINIMISE);
 		obj->number = num;
 		obj->origin = ORIGIN_BIRTH;
 
@@ -564,7 +566,7 @@ static void player_outfit(struct player *p)
 
 		/* Carry the item */
 		inven_carry(p, obj, true, false);
-		si->kind->everseen = true;
+		kind->everseen = true;
 	}
 
 	/* Sanity check */

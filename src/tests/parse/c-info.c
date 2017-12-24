@@ -207,7 +207,8 @@ int test_equip0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	ptreq(c->start_items[0].kind, lookup_kind(TV_MAGIC_BOOK, 2));
+	eq(c->start_items[0].tval, TV_MAGIC_BOOK)
+	eq(c->start_items[0].sval, 2);
 	eq(c->start_items[0].min, 2);
 	eq(c->start_items[0].max, 5);
 	ok;
