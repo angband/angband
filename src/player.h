@@ -261,7 +261,6 @@ struct class_book {
 struct class_magic {
 	int spell_first;					/**< Level of first spell */
 	int spell_weight;					/**< Max armour weight to avoid mana penalties */
-	const struct magic_realm *spell_realm;	/**< Primary spellcasting realm */
 	int num_books;						/**< Number of spellbooks */
 	struct class_book *books;			/**< Details of spellbooks */
 	int total_spells;					/**< Number of spells for this class */
