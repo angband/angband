@@ -206,7 +206,8 @@ struct player_race {
  * class.txt.
  */
 struct start_item {
-	struct object_kind *kind;
+	int tval;	/**< General object type (see TV_ macros) */
+	int sval;	/**< Object sub-type  */
 	int min;	/**< Minimum starting amount */
 	int max;	/**< Maximum starting amount */
 
