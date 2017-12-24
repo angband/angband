@@ -25,7 +25,7 @@
 # title:title
 # equip:tval:sval:min:max
 # flags:class flags
-# magic:spell_first:spell_weight:spell_realm:num_books
+# magic:spell_first:spell_weight:num_books
 # book:tval:sval:spells:realm
 # spell:name:level:mana:fail:exp
 # effect:effect:parameter (if needed):parameter (if needed)
@@ -60,8 +60,6 @@
 # 'flags' is for class flags.
 
 # 'title' is for class titles.
-
-# 'realm' (if it is present) is for magic realm
 
 # 'magic' is for general magic info - level of the first spell, weight that
 # hurts spells, number of books used.
@@ -160,7 +158,6 @@ title:Warlock
 title:Sorcerer
 title:Arch-Mage
 
-realm:arcane
 magic:1:300:9
 
 book:magic book:[Magic for Beginners]:6:arcane
@@ -622,7 +619,6 @@ title:Bishop
 title:Prophet
 title:Patriarch
 
-realm:divine
 magic:1:350:9
 
 book:prayer book:[Beginners Handbook]:7:divine
@@ -1087,7 +1083,6 @@ title:Rogue
 title:Thief
 title:Master Thief
 
-realm:arcane
 magic:5:350:9
 
 book:magic book:[Magic for Beginners]:6:arcane
@@ -1410,7 +1405,6 @@ title:Pathfinder
 title:Ranger
 title:Ranger Lord
 
-realm:arcane
 magic:3:400:9
 
 book:magic book:[Magic for Beginners]:7:arcane
@@ -1849,7 +1843,6 @@ title:Chevalier
 title:Paladin
 title:Paladin Lord
 
-realm:divine
 magic:1:400:9
 
 book:prayer book:[Beginners Handbook]:7:divine

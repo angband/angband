@@ -1172,13 +1172,24 @@ static void update_inventory(struct player *p)
 }
 
 /**
- * "Percentage" (actually some complicated hack that needs redoing) of
- * player's spells they can learn per level (-> realms - NRM)
+ * Average of the player's spell stats across all the realms they can cast
+ * from, rounded up
+ *
+ * If the player can only cast from a single realm, this is simple the stat
+ * for that realm
  */
-static int level_spells(struct player *p)
+static int average_spell_stat(struct player *p, struct player_state *state)
 {
-	int stat = p->class->magic.spell_realm->stat;
-	return adj_mag_study[p->state.stat_ind[stat]];
+	int i, count, sum = 0;
+	struct magic_realm *realm = class_magic_realms(p->class, &count), *r_next;
+
+	for (i = count; i > 0; i--) {
+		sum += state->stat_ind[realm->stat];
+		r_next = realm->next;
+		mem_free(realm);
+		realm = r_next;
+	}
+	return (sum + count - 1) / count;
 }
 
 /**
@@ -1197,8 +1208,6 @@ static void calc_spells(struct player *p)
 	const struct class_spell *spell;
 
 	s16b old_spells;
-
-	const char *noun = p->class->magic.spell_realm->spell_noun;
 
 	/* Hack -- must be literate */
 	if (!p->class->magic.total_spells) return;
@@ -1219,7 +1228,7 @@ static void calc_spells(struct player *p)
 	if (levels < 0) levels = 0;
 
 	/* Number of 1/100 spells per level (or something - needs clarifying) */
-	percent_spells = level_spells(p);
+	percent_spells = adj_mag_study[average_spell_stat(p, &p->state)];
 
 	/* Extract total allowed spells (rounded up) */
 	num_allowed = (((percent_spells * levels) + 50) / 100);
@@ -1258,7 +1267,8 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have forgotten the %s of %s.", noun, spell->name);
+			msg("You have forgotten the %s of %s.", spell->realm->spell_noun,
+				spell->name);
 
 			/* One more can be learned */
 			p->upkeep->new_spells++;
@@ -1288,7 +1298,8 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have forgotten the %s of %s.", noun, spell->name);
+			msg("You have forgotten the %s of %s.", spell->realm->spell_noun,
+				spell->name);
 
 			/* One more can be learned */
 			p->upkeep->new_spells++;
@@ -1321,7 +1332,8 @@ static void calc_spells(struct player *p)
 			p->spell_flags[j] |= PY_SPELL_LEARNED;
 
 			/* Message */
-			msg("You have remembered the %s of %s.", noun, spell->name);
+			msg("You have remembered the %s of %s.", spell->realm->spell_noun,
+				spell->name);
 
 			/* One less can be learned */
 			p->upkeep->new_spells--;
@@ -1354,25 +1366,44 @@ static void calc_spells(struct player *p)
 	/* Spell count changed */
 	if (old_spells != p->upkeep->new_spells) {
 		/* Message if needed */
-		if (p->upkeep->new_spells)
+		if (p->upkeep->new_spells) {
+			int count;
+			struct magic_realm *r = class_magic_realms(p->class, &count), *r1;
+			char buf[120];
+
+			my_strcpy(buf, r->spell_noun, sizeof(buf));
+			if (p->upkeep->new_spells > 1) {
+				my_strcat(buf, "s", sizeof(buf));
+			}
+			r1 = r->next;
+			mem_free(r);
+			r = r1;
+			if (count > 1) {
+				while (r) {
+					count--;
+					if (count) {
+						my_strcat(buf, ", ", sizeof(buf));
+					} else {
+						my_strcat(buf, " or ", sizeof(buf));
+					}
+					my_strcat(buf, r->spell_noun, sizeof(buf));
+					if (p->upkeep->new_spells > 1) {
+						my_strcat(buf, "s", sizeof(buf));
+					}
+					r1 = r->next;
+					mem_free(r);
+					r = r1;
+				}
+			}
 			/* Message */
-			msg("You can learn %d more %s%s.", p->upkeep->new_spells, noun,
-				(p->upkeep->new_spells != 1) ? "s" : "");
+			msg("You can learn %d more %s.", p->upkeep->new_spells, buf);
+		}
 
 		/* Redraw Study Status */
 		p->upkeep->redraw |= (PR_STUDY | PR_OBJECT);
 	}
 }
 
-
-/**
- * Get the player's max spell points per effective level
- */
-static int mana_per_level(struct player *p, struct player_state *state)
-{
-	int stat = p->class->magic.spell_realm->stat;
-	return adj_mag_mana[state->stat_ind[stat]];
-}
 
 /**
  * Calculate maximum mana.  You do not need to know any spells.
@@ -1397,7 +1428,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	levels = (p->lev - p->class->magic.spell_first) + 1;
 	if (levels > 0) {
 		msp = 1;
-		msp += mana_per_level(p, state) * levels / 100;
+		msp += adj_mag_mana[average_spell_stat(p, state)] * levels / 100;
 	} else {
 		levels = 0;
 		msp = 0;

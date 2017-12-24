@@ -723,7 +723,6 @@ static struct player_class TEST_DATA test_class = {
 	.magic =  {
 		.spell_first = 1,
 		.spell_weight = 300,
-		.spell_realm = &test_realm,
 		.num_books = 1,
 		.books = &test_book,
 		.total_spells = 8,
