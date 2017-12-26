@@ -29,6 +29,7 @@
 # spells: spell type | spell type | etc
 # desc: Description
 # drop: tval : sval : percent drop chance : min : max
+# drop-base: tval : percent drop chance : min : max
 # mimic: tval : sval
 # friends: chance: number: name
 # friends-base: chance: number: name
@@ -140,6 +141,8 @@
 # 'drop' lines create possible drops for specific monsters. If any L lines are
 # present, the monster will drop *only* items from its L lines. Each item has
 # its percent chance rolled for individually.
+
+# 'drop-base' lines work as for drops, but only the object tval is specified.
 
 # 'friends' lines specify options for what monsters can appear with other
 # monster on creation.  The format is:
@@ -879,7 +882,7 @@ flags:FORCE_SLEEP
 spell-freq:12
 spell-power:2
 spells:CAUSE_1 | HEAL | SCARE
-drop:prayer book:[Beginners Handbook]:5:1:1
+drop-base:prayer book:5:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
@@ -905,7 +908,7 @@ flags:FORCE_SLEEP
 spell-freq:12
 spell-power:2
 spells:BLIND | BLINK | CONF | MISSILE
-drop:magic book:[Magic for Beginners]:5:1:1
+drop-base:magic book:5:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
@@ -1453,8 +1456,8 @@ flags:DROP_40
 spell-freq:5
 spell-power:3
 spells:CAUSE_1 | CONF | HEAL | MISSILE
-drop:magic book:[Magic for Beginners]:5:1:1
-drop:prayer book:[Beginners Handbook]:5:1:1
+drop-base:magic book:5:1:1
+drop-base:prayer book:5:1:1
 friends-base:30:1d2:kobold
 friends-base:70:1d2:kobold
 desc:It is a kobold dressed in skins and gesturing wildly.
@@ -1496,7 +1499,7 @@ flags:FORCE_SLEEP
 spell-freq:9
 spell-power:4
 spells:ARROW_1 | MISSILE
-drop:magic book:[Magic for Beginners]:3:1:1
+drop-base:magic book:3:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
@@ -1523,7 +1526,7 @@ flags:FORCE_SLEEP
 spell-freq:9
 spell-power:4
 spells:CAUSE_1 | SCARE
-drop:prayer book:[Beginners Handbook]:3:1:1
+drop-base:prayer book:3:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
 friends-base:80:1d3:person
@@ -2620,8 +2623,8 @@ blow:HIT:HURT:1d6
 flags:DROP_60
 flags:HURT_LIGHT
 flags:FORCE_SLEEP
-drop:magic book:[Conjurings and Tricks]:5:1:1
-drop:prayer book:[Words of Wisdom]:5:1:1
+drop-base:magic book:5:1:1
+drop-base:prayer book:5:1:1
 spell-freq:8
 spell-power:9
 spells:BLINK | CAUSE_1 | MISSILE
@@ -2885,8 +2888,8 @@ spell-freq:5
 spell-power:10
 spells:BLIND | CONF | DARKNESS | MISSILE
 spells:BA_POIS
-drop:magic book:[Magic for Beginners]:10:1:1
-drop:magic book:[Conjurings and Tricks]:10:1:1
+drop-base:magic book:10:1:1
+drop-base:magic book:10:1:1
 desc:A dark elven figure, dressed all in black, hurling spells at you.
 
 name:Orfax, Son of Boldor
@@ -3248,8 +3251,8 @@ spell-power:11
 spells:BLINK | DARKNESS
 spells:BO_COLD
 spells:S_MONSTER
-drop:magic book:[Magic for Beginners]:5:1:1
-drop:magic book:[Conjurings and Tricks]:5:1:1
+drop-base:magic book:5:1:1
+drop-base:magic book:5:1:1
 friends:100:4d4:Same
 desc:A mage of short stature.
 
@@ -3378,8 +3381,8 @@ spell-power:12
 spells:BLIND | BLINK | SLOW | TPORT
 spells:BA_POIS
 spells:S_MONSTER
-drop:magic book:[Magic for Beginners]:5:1:1
-drop:magic book:[Conjurings and Tricks]:5:1:1
+drop-base:magic book:5:1:1
+drop-base:magic book:5:1:1
 desc:A small humanoid that radiates some power.
 
 name:priest
@@ -3403,8 +3406,8 @@ spell-freq:3
 spell-power:12
 spells:CAUSE_2 | HEAL | SCARE
 spells:S_MONSTER
-drop:prayer book:[Beginners Handbook]:8:1:1
-drop:prayer book:[Words of Wisdom]:8:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:8:1:1
 friends:50:1d2:Brigand
 friends:50:1d2:Illusionist
 friends:50:1d2:Easterling warrior
@@ -3431,8 +3434,8 @@ flags:FORCE_SLEEP
 spell-freq:5
 spell-power:12
 spells:BLIND | CAUSE_2 | CONF | DARKNESS | HEAL
-drop:prayer book:[Beginners Handbook]:8:1:1
-drop:prayer book:[Beginners Handbook]:8:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:8:1:1
 desc:A dark elven figure, dressed all in black, chanting curses and waiting to
 desc: deliver your soul to hell.
 
@@ -3709,8 +3712,8 @@ spell-freq:3
 spell-power:13
 spells:BLIND | BLINK | CONF | DARKNESS | HASTE | HOLD
 spells:SLOW | TPORT
-drop:magic book:[Conjurings and Tricks]:8:1:1
-drop:magic book:[Incantations and Illusions]:8:1:1
+drop-base:magic book:8:1:1
+drop-base:magic book:8:1:1
 friends:50:1d2:Brigand
 friends:50:1d2:Priest
 friends:50:1d2:Easterling warrior
@@ -3739,8 +3742,8 @@ spell-power:13
 spells:BLIND | BLINK | HASTE | HOLD | SLOW
 spells:BO_ELEC | BO_FIRE
 spells:S_ANIMAL
-drop:prayer book:[Beginners Handbook]:8:1:1
-drop:prayer book:[Words of Wisdom]:8:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:8:1:1
 desc:A priest devoted to Nature.
 
 name:black orc
@@ -5142,8 +5145,8 @@ spell-freq:5
 spell-power:20
 spells:BLIND | CONF | DARKNESS | HASTE
 spells:BO_COLD | BO_FIRE
-drop:magic book:[Conjurings and Tricks]:5:1:1
-drop:magic book:[Incantations and Illusions]:5:1:1
+drop-base:magic book:5:1:1
+drop-base:magic book:5:1:1
 friends:80:1d3:Dark elf
 friends:70:1d2:Dark elven warrior
 friends:50:1d1:Dark elven mage
@@ -5171,8 +5174,8 @@ spell-power:20
 spells:ARROW_2 | BLINK | MISSILE
 spells:BO_COLD | BO_ELEC
 spells:S_ANIMAL
-drop:magic book:[Conjurings and Tricks]:5:1:1
-drop:magic book:[Incantations and Illusions]:5:1:1
+drop-base:magic book:5:1:1
+drop-base:magic book:5:1:1
 friends:50:1d1:Easterling champion
 friends:50:1d1:Master rogue
 friends:50:1d2:Illusionist
@@ -5200,8 +5203,8 @@ flags:OPEN_DOOR | TAKE_ITEM
 spell-freq:4
 spell-power:20
 spells:BLIND | CAUSE_2 | HEAL | SCARE | SLOW
-drop:prayer book:[Words of Wisdom]:5:1:1
-drop:prayer book:[Chants and Blessings]:5:1:1
+drop-base:prayer book:5:1:1
+drop-base:prayer book:5:1:1
 friends:50:1d1:Easterling champion
 friends:50:1d1:Master rogue
 friends:50:1d2:Illusionist
@@ -5948,8 +5951,8 @@ spell-freq:6
 spell-power:25
 spells:CONF | DARKNESS | HEAL
 spells:S_ANIMAL | S_MONSTER | S_SPIDER
-drop:prayer book:[Words of Wisdom]:8:1:1
-drop:prayer book:[Chants and Blessings]:8:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:8:1:1
 desc:A powerful dark elf, with mighty nature-controlling enchantments.
 
 name:stone troll
@@ -6071,8 +6074,8 @@ flags:FORCE_SLEEP
 spell-freq:5
 spell-power:26
 spells:BLINK | CAUSE_1 | DARKNESS | MISSILE | SCARE
-drop:prayer book:[Beginners Handbook]:5:1:1
-drop:prayer book:[Words of Wisdom]:5:1:1
+drop-base:prayer book:5:1:1
+drop-base:prayer book:5:1:1
 desc:A troll who is so bright he knows how to read.
 
 name:giant grey ant
@@ -6455,8 +6458,8 @@ spell-power:27
 spells:HEAL | HOLD | TRAPS
 spells:BA_COLD
 spells:S_MONSTER
-drop:magic book:[Incantations and Illusions]:5:1:1
-drop:magic book:[Sorcery and Evocations]:5:1:1
+drop-base:magic book:5:1:1
+drop-base:magic book:5:1:1
 desc:A hideous ogre wrapped in black sorcerous robes.
 
 name:vampire
@@ -6552,8 +6555,8 @@ spell-power:27
 spells:CAUSE_2 | HOLD | SCARE | TPORT | TRAPS
 spells:BO_FIRE
 spells:S_MONSTER
-drop:prayer book:[Words of Wisdom]:5:1:1
-drop:prayer book:[Chants and Blessings]:5:1:1
+drop-base:prayer book:5:1:1
+drop-base:prayer book:5:1:1
 desc:It is an ogre wrapped in furs and covered in grotesque body paints.
 
 name:shimmering mold
@@ -6621,8 +6624,8 @@ flags:FORCE_SLEEP
 spell-freq:4
 spell-power:28
 spells:BLIND | DARKNESS | HEAL | MIND_BLAST
-drop:prayer book:[Chants and Blessings]:8:1:1
-drop:prayer book:[Exorcism and Dispelling]:5:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:5:1:1
 desc:A wraithly snake-like form with the torso of a beautiful woman, it is the
 desc: most powerful of its kind.
 
@@ -6671,8 +6674,8 @@ flags:FORCE_SLEEP
 spell-freq:8
 spell-power:28
 spells:BLIND | CAUSE_3 | DARKNESS | SCARE
-drop:prayer book:[Words of Wisdom]:8:1:1
-drop:prayer book:[Chants and Blessings]:8:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:8:1:1
 friends:50:1d1:Master rogue
 friends:50:1d1:Ranger
 friends:50:1d1:Paladin
@@ -6728,8 +6731,8 @@ spell-power:28
 spells:BLIND | CONF | HASTE | TELE_TO | TPORT
 spells:BO_COLD | BO_ELEC | BO_FIRE
 spells:S_MONSTER
-drop:magic book:[Incantations and Illusions]:10:1:1
-drop:magic book:[Sorcery and Evocations]:7:1:1
+drop-base:magic book:10:1:1
+drop-base:magic book:7:1:1
 friends-base:100:1d1:golem
 desc:A mage of some power - you can tell by the size of his hat.
 
@@ -7627,8 +7630,8 @@ spell-freq:6
 spell-power:33
 spells:HEAL
 spells:S_ANIMAL | S_SPIDER
-drop:prayer book:[Chants and Blessings]:10:1:1
-drop:prayer book:[Exorcism and Dispelling]:5:1:1
+drop-base:prayer book:10:1:1
+drop-base:prayer book:5:1:1
 friends-base:50:2d4:spider
 desc:An adept at unarmed combat, the mystic strikes with stunning power.  He can
 desc: summon help from nature and is able to focus his power to ease any pain.
@@ -8851,8 +8854,8 @@ spells:BLIND | CAUSE_3 | HASTE | HOLD | SCARE | TELE_TO
 spells:TPORT
 spells:BO_NETH
 spells:S_UNDEAD
-drop:prayer book:[Chants and Blessings]:8:1:1
-drop:prayer book:[Exorcism and Dispelling]:8:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:8:1:1
 friends-base:80:1d3:skeleton
 desc:A gaunt figure, clothed in black robes.
 
@@ -8909,8 +8912,8 @@ spell-power:36
 spells:HOLD | TPORT
 spells:BO_FIRE
 spells:S_DEMON
-drop:magic book:[Incantations and Illusions]:8:1:1
-drop:magic book:[Sorcery and Evocations]:8:1:1
+drop-base:magic book:8:1:1
+drop-base:magic book:8:1:1
 friends-base:50:1d3:minor demon
 friends:100:1d1:Quasit
 desc:A figure twisted by evil standing in robes of deepest crimson.
@@ -9350,8 +9353,8 @@ spell-power:38
 spells:BLIND | CAUSE_3 | SCARE
 spells:BO_NETH
 spells:S_MONSTERS
-drop:prayer book:[Chants and Blessings]:8:1:1
-drop:prayer book:[Exorcism and Dispelling]:8:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:8:1:1
 friends:50:1d1:Imp
 desc:It is a humanoid figure dressed in armour of an ancient form.  From beneath
 desc: its helmet, eyes glow a baleful red and seem to pierce you like lances of
@@ -9897,8 +9900,8 @@ spell-freq:2
 spell-power:40
 spells:BLIND
 spells:S_DRAGON
-drop:magic book:[Incantations and Illusions]:8:1:1
-drop:magic book:[Sorcery and Evocations]:8:1:1
+drop-base:magic book:8:1:1
+drop-base:magic book:8:1:1
 friends-base:30:1d1:dragon
 friends-base:60:1d1:dragon
 desc:This elusive female spellcaster has a special affinity for dragons, whom
@@ -9929,8 +9932,8 @@ spells:BLIND | BLINK | CAUSE_3 | CONF | TELE_TO | TRAPS
 spells:BA_COLD | BA_FIRE
 spells:BO_ACID
 spells:S_DRAGON | S_MONSTER | S_UNDEAD
-drop:magic book:[Incantations and Illusions]:5:1:1
-drop:magic book:[Sorcery and Evocations]:10:1:1
+drop-base:magic book:5:1:1
+drop-base:magic book:10:1:1
 friends:30:1d1:Master thief
 friends:30:1d1:Ranger chieftain
 friends:30:1d1:Patriarch
@@ -10123,8 +10126,8 @@ spell-freq:2
 spell-power:40
 spells:BLIND | CAUSE_3 | CAUSE_4 | HEAL | HOLD
 spells:S_MONSTER | S_UNDEAD
-drop:prayer book:[Chants and Blessings]:5:1:1
-drop:prayer book:[Exorcism and Dispelling]:10:1:1
+drop-base:prayer book:5:1:1
+drop-base:prayer book:10:1:1
 friends:30:1d1:Master thief
 friends:30:1d1:Ranger chieftain
 friends:30:1d1:Sorcerer
@@ -10259,8 +10262,8 @@ spells:TELE_TO
 spells:BA_COLD | BA_FIRE
 spells:BO_ACID
 spells:S_DEMON | S_MONSTER | S_UNDEAD
-drop:magic book:[Incantations and Illusions]:5:1:1
-drop:magic book:[Sorcery and Evocations]:10:1:1
+drop-base:magic book:5:1:1
+drop-base:magic book:10:1:1
 desc:A dark elven figure, dressed in deepest black.  Power seems to crackle from
 desc: his slender frame.
 
@@ -10367,8 +10370,8 @@ spells:ARROW_2 | ARROW_3 | ARROW_4 | BLINK | HASTE | MISSILE
 spells:BA_COLD
 spells:BO_ELEC | BO_FIRE
 spells:S_ANIMAL
-drop:magic book:[Incantations and Illusions]:8:1:1
-drop:magic book:[Sorcery and Evocations]:8:1:1
+drop-base:magic book:8:1:1
+drop-base:magic book:8:1:1
 friends:30:1d1:Master thief
 friends:30:1d1:Sorcerer
 friends:30:1d1:Patriarch
@@ -10690,8 +10693,8 @@ flags:NO_FEAR | NO_CONF | NO_SLEEP
 spell-freq:4
 spell-power:44
 spells:BLIND | CAUSE_3 | CAUSE_4 | HASTE | HEAL | SCARE
-drop:prayer book:[Chants and Blessings]:10:1:1
-drop:prayer book:[Exorcism and Dispelling]:10:1:1
+drop-base:prayer book:10:1:1
+drop-base:prayer book:10:1:1
 friends:30:1d1:Master thief
 friends:30:1d1:Ranger chieftain
 friends:30:1d1:Patriarch
@@ -11419,8 +11422,8 @@ spell-freq:3
 spell-power:50
 spells:HEAL
 spells:S_ANIMAL
-drop:prayer book:[Chants and Blessings]:8:1:1
-drop:prayer book:[Exorcism and Dispelling]:8:1:1
+drop-base:prayer book:8:1:1
+drop-base:prayer book:8:1:1
 friends-base:50:2d4:spider
 desc:A lord of all that is natural, skilled in the mystic ways.  He is a master
 desc: of martial arts and is at one with nature, able to summon help from the
@@ -11985,8 +11988,8 @@ spell-freq:3
 spell-power:57
 spells:HEAL | MIND_BLAST
 spells:S_ANIMAL | S_HOUND | S_SPIDER
-drop:prayer book:[Chants and Blessings]:5:1:1
-drop:prayer book:[Exorcism and Dispelling]:15:1:1
+drop-base:prayer book:5:1:1
+drop-base:prayer book:15:1:1
 friends-base:80:3d5:spider
 desc:He is one of the few true masters of the art, being extremely skillful in
 desc: all forms of unarmed combat and controlling the world's natural creatures
