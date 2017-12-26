@@ -121,43 +121,24 @@ buy:polearm
 buy:hafted
 
 
-# Temple
-store:4:Temple
+# Bookseller
+store:4:Bookseller
 owner:15000:Ludwig the Humble (Human)
 owner:20000:Gunnar the Paladin (Human)
 owner:25000:Delilah the Pure (Elf)
 owner:30000:Bosk the Wise (Dwarf)
-slots:6:14
-turnover:9
+slots:0:2
+turnover:5
 always:prayer book:[Beginners Handbook]
 always:prayer book:[Words of Wisdom]
 always:prayer book:[Chants and Blessings]
-always:prayer book:[Exorcism and Dispelling]
-always:potion:Cure Light Wounds
-always:scroll:Remove Curse
-normal:hafted:Whip
-normal:hafted:Quarterstaff
-normal:hafted:Mace
-normal:hafted:Ball-and-Chain
-normal:hafted:War Hammer
-normal:hafted:Morning Star
-normal:hafted:Flail
-normal:hafted:Lead-Filled Mace
-normal:scroll:Blessing
-normal:scroll:Holy Chant
-normal:scroll:Light
-normal:potion:Boldness
-normal:potion:Heroism
-normal:potion:Neutralize Poison
-normal:potion:Cure Serious Wounds
-normal:potion:Cure Critical Wounds
+always:magic book:[Magic for Beginners]
+always:magic book:[Conjurings and Tricks]
+always:magic book:[Incantations and Illusions]
+normal:prayer book:[Exorcism and Dispelling]
+normal:magic book:[Sorcery and Evocations]
+buy:magic book
 buy:prayer book
-buy:scroll
-buy:potion
-buy:hafted
-buy-flag:BLESSED:digger
-buy-flag:BLESSED:sword
-buy-flag:BLESSED:polearm
 
 # Alchemist
 store:5:Alchemy Shop
@@ -169,19 +150,23 @@ slots:6:10
 turnover:9
 always:scroll:Word of Recall
 always:scroll:Phase Door
+always:scroll:Remove Curse
+always:potion:Cure Light Wounds
 normal:scroll:Monster Confusion
 normal:scroll:Magic Mapping
-#normal:scroll:Trap Detection
-#normal:scroll:Door/Stair Location
 normal:scroll:Detect Invisible
 normal:scroll:Recharging
 normal:scroll:Satisfy Hunger
+normal:scroll:Blessing
+normal:scroll:Holy Chant
 normal:potion:Boldness
 normal:potion:Berserk Strength
 normal:potion:Resist Heat
 normal:potion:Resist Cold
 normal:potion:Restore Life Levels
-normal:potion:Infravision
+normal:potion:Neutralize Poison
+normal:potion:Cure Serious Wounds
+normal:potion:Cure Critical Wounds
 buy:scroll
 buy:potion
 
@@ -193,10 +178,6 @@ owner:25000:Inglorian the Mage (Human)
 owner:30000:Luthien Starshine (High-Elf)
 slots:4:14
 turnover:9
-always:magic book:[Magic for Beginners]
-always:magic book:[Conjurings and Tricks]
-always:magic book:[Incantations and Illusions]
-always:magic book:[Sorcery and Evocations]
 normal:ring:Searching
 normal:ring:Feather Falling
 normal:ring:Protection

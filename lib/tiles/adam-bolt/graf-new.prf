@@ -139,8 +139,8 @@ feat:Armoury:*:0x82:0x88
 # Weapon Smiths
 feat:Weapon Smiths:*:0x82:0x89
 
-# Temple
-feat:Temple:*:0x82:0x8A
+# Bookseller
+feat:Bookseller:*:0x82:0x8F
 
 # Alchemy Shop
 feat:Alchemy Shop:*:0x82:0x8B
