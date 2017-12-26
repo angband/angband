@@ -37,7 +37,7 @@ Features that do not block line of sight
 '.'   A floor space              '1'    Entrance to General Store
 '.'   A trap (hidden)            '2'    Entrance to Armoury
 '^'   A trap (known)             '3'    Entrance to Weapon Smith
-';'   A glyph of warding         '4'    Entrance to Temple
+';'   A glyph of warding         '4'    Entrance to Bookseller
 '''   An open door               '5'    Entrance to Alchemy Shop
 '''   A broken door              '6'    Entrance to Magic Shop
 '<'   A staircase up             '7'    Entrance to the Black Market
@@ -188,16 +188,16 @@ The Weaponsmith's Shop ('3')
   bolts, and shots. As with the armoury, not all weapon types will be
   stocked here, unless they are sold to the shop by the player first.
 
-The Temple ('4')
-  The Temple deals in basic potions and scrolls, some approved priestly 
-  weapons, as well as prayer books.
+The Bookseller ('4')
+  The Bookseller holds supplies of the simpler books needed by magic users,
+  and will buy the more advanced books which can be found in the dungeon.
 
 The Alchemy shop ('5')
   The Alchemy Shop deals in all types of potions and scrolls.
 
 The Magic User's Shop ('6')
   The Magic User's Shop deals in all sorts of rings, wands, amulets, and
-  staves, as well as magic user books.
+  staves.
 
 The Black Market ('7')
   The Black Market will sell and buy anything at extortionate prices.

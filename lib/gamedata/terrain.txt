@@ -147,13 +147,13 @@ info:3:0
 desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid 
 desc:backroom of this enticing shop.
 
-name:Temple
+name:Bookseller
 graphics:4:g
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:4:0
-desc:A quiet, reflective place of refuge, with priestly books and supplies of 
-desc:magical and hallowed goods for the pure of heart.
+desc:A quiet, reflective place of refuge, lined with shelves of 
+desc:mystical tomes.
 
 name:Alchemy Shop
 graphics:5:b
@@ -167,8 +167,7 @@ graphics:6:r
 priority:20
 flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
 info:6:0
-desc:A shop for devices with magic trapped within, lined with shelves of 
-desc:mystical tomes.
+desc:A shop for devices and adornments with magic trapped within.
 
 name:Black Market
 graphics:7:D
