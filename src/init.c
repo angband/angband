@@ -184,7 +184,7 @@ errr grab_effect_data(struct parser *p, struct effect *effect)
 }
 
 static enum parser_error write_book_kind(struct class_book *book,
-										 const char *name, bool dun)
+										 const char *name)
 {
 	struct object_kind *temp, *kind;
 	int i;
@@ -241,7 +241,7 @@ static enum parser_error write_book_kind(struct class_book *book,
 	kind->weight = 30;
 
 	/* Dungeon books get extra properties */
-	if (dun) {
+	if (book->dungeon) {
 		for (i = ELEM_BASE_MIN; i < ELEM_BASE_MAX; i++) {
 			kind->el_info[i].flags |= EL_INFO_IGNORE;
 		}
@@ -2477,7 +2477,6 @@ static enum parser_error parse_class_book(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int tval, spells;
 	const char *name, *quality;
-	bool dungeon = false;
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -2489,10 +2488,10 @@ static enum parser_error parse_class_book(struct parser *p) {
 
 	quality = parser_getsym(p, "quality");
 	if (streq(quality, "dungeon")) {
-		dungeon = true;
+		c->magic.books[c->magic.num_books].dungeon = true;
 	}
 	name = parser_getsym(p, "name");
-	write_book_kind(&c->magic.books[c->magic.num_books], name, dungeon);
+	write_book_kind(&c->magic.books[c->magic.num_books], name);
 
 	spells = parser_getuint(p, "spells");
 	c->magic.books[c->magic.num_books].spells =
