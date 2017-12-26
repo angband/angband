@@ -249,22 +249,23 @@ struct class_spell {
  * A structure to hold class-dependent information on spell books.
  */
 struct class_book {
-	int tval;					/**< Item type of the book */
-	int sval;					/**< Item sub-type for book (book number) */
-	int num_spells;				/**< Number of spells in this book */
+	int tval;							/**< Item type of the book */
+	int sval;							/**< Item sub-type for book */
+	bool dungeon;						/**< Whether this is a dungeon book */
+	int num_spells;						/**< Number of spells in this book */
 	const struct magic_realm *realm;	/**< The magic realm of this book */
-	struct class_spell *spells;	/**< Spells in the book*/
+	struct class_spell *spells;			/**< Spells in the book*/
 };
 
 /**
  * Information about class magic knowledge
  */
 struct class_magic {
-	int spell_first;					/**< Level of first spell */
-	int spell_weight;					/**< Max armour weight to avoid mana penalties */
-	int num_books;						/**< Number of spellbooks */
-	struct class_book *books;			/**< Details of spellbooks */
-	int total_spells;					/**< Number of spells for this class */
+	int spell_first;			/**< Level of first spell */
+	int spell_weight;			/**< Max armor weight to avoid mana penalties */
+	int num_books;				/**< Number of spellbooks */
+	struct class_book *books;	/**< Details of spellbooks */
+	int total_spells;			/**< Number of spells for this class */
 };
 
 /**
