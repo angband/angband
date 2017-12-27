@@ -296,7 +296,7 @@ that apply to traps or doors also apply to chests and, like traps and
 doors, these commands do not work if you are carrying the chest.
 
 One item in particular will be discussed here. The scroll of "Word of
-Recall" can be found within the dungeon, or bought at the temple in town.
+Recall" can be found within the dungeon, or bought at the alchemist in town.
 All classes start with one of these scrolls in their inventory. It acts in
 two manners, depending upon your current location. If read within the
 dungeon, it will teleport you back to town. If read in town, it will

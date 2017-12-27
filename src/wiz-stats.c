@@ -929,8 +929,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			break;
 		}
 
-		/* prayer books and magic books have the same probability 
-		   only track one of them */
+		/* books have the same probability, only track one realm of them */
 		case TV_MAGIC_BOOK:{
 
 			switch(obj->sval){
