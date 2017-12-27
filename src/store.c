@@ -691,6 +691,8 @@ static void mass_produce(struct object *obj)
 
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
+		case TV_NATURE_BOOK:
+		case TV_DEATH_BOOK:
 		{
 			if (cost <= 50L) size += mass_roll(2, 3);
 			if (cost <= 500L) size += mass_roll(1, 3);

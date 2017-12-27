@@ -152,6 +152,18 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 			else
 				return "& Holy Book~ of Prayers #";
 
+		case TV_NATURE_BOOK:
+			if (terse)
+				return "& Book~ #";
+			else
+				return "& Book~ of Nature Magics #";
+
+		case TV_DEATH_BOOK:
+			if (terse)
+				return "& Tome~ #";
+			else
+				return "& Necromantic Tome~ #";
+
 		case TV_MUSHROOM:
 			return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
 	}
