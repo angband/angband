@@ -184,4 +184,14 @@ graphics:light green
 # max-stack:5
 flags:HATES_FIRE | EASY_KNOW
 
+name:nature book:Nature Book~
+graphics:yellow
+# max-stack:5
+flags:HATES_FIRE | EASY_KNOW
+
+name:death book:Death Book~
+graphics:light umber
+# max-stack:5
+flags:HATES_FIRE | EASY_KNOW
+
 name:gold
