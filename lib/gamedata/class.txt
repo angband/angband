@@ -2249,3 +2249,259 @@ desc: effect are destroyed, except stairs and permanent walls.
 desc:  You will also be blinded for 10+1d10 turns, unless you
 desc: have resistance to blindness or light.
 desc:  This prayer has no effect when used in the town.
+
+############### NEW MAGE ###############
+name:New Mage
+stats:-3:3:0:0:-2
+skill-disarm-phys:30:10
+skill-disarm-magic:35:12
+skill-device:36:13
+skill-save:30:9
+skill-stealth:2:0
+skill-search:10:12
+skill-melee:34:15
+skill-shoot:20:15
+skill-throw:20:15
+skill-dig:0:0
+info:0:30
+attack:4:40:2
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:sword:Dagger:1:1
+equip:scroll:Word of Recall:1:1
+flags:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
+title:Novice
+title:Apprentice
+title:Trickster
+title:Illusionist
+title:Spellbinder
+title:Evoker
+title:Conjurer
+title:Warlock
+title:Sorcerer
+title:Arch-Mage
+
+magic:1:300:5
+
+book:magic book:town:[Detection and Escape]:6:arcane
+book-graphics:?:R
+book-properties:25:40:1 to 100
+equip:magic book:[Detection and Escape]:1:1
+
+spell:Find Traps, Doors & Stairs:1:1:20:2
+effect:DETECT_TRAPS
+dice:22d40
+effect:DETECT_DOORS
+dice:22d40
+effect:DETECT_STAIRS
+dice:22d40
+desc:Detects all traps, doors, and stairs in the immediate area.
+
+spell:Phase Door:2:2:22:4
+effect:TELEPORT
+dice:10
+desc:Teleports you randomly up to 10 squares away.
+
+spell:Detect Monsters:3:2:24:4
+effect:DETECT_VISIBLE_MONSTERS
+dice:22d40
+desc:Detects all non-invisible monsters in the immediate area,
+desc: for one turn only.
+
+spell:Treasure Detection:4:3:60:5
+effect:DETECT_GOLD
+dice:22d40
+effect:SENSE_OBJECTS
+dice:22d40
+desc:Detects gold and senses objects in the immediate area.
+
+spell:Recharging:5:5:28:10
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:/ 2 + 10
+desc:Adds charges to a stack of wands or staves.
+desc:  Chance of success and number of charges gained increase with your
+desc: level and decrease with level of wand or staff and number of charges.
+desc:  A failed attempt to recharge destroys one wand or staff from the stack.
+
+spell:Teleport Other:6:10:30:12
+effect:BOLT_STATUS:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Produces a bolt that teleports away the first monster in its path.
+desc: Distance teleported increases with plyer level.
+
+book:magic book:town:[Magical Attack]:7:arcane
+book-graphics:?:R
+book-properties:400:40:10 to 100
+
+spell:Magic Missile:8:2:32:14
+effect:BOLT_OR_BEAM:MISSILE
+dice:$Dd4
+expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+desc:Fires a magic missile that always hits its target and does
+desc: unresistable damage.
+desc:  Sometimes a beam is fired instead that hurts each monster
+desc: in its path.
+desc:  The chance to get a beam goes up with your character level.
+
+spell:Fire Ball:8:8:33:15
+effect:BALL:FIRE:2
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Shoots a radius-2 fire ball.
+
+spell:Lightning Bolt:9:4:34:16
+effect:BEAM:ELEC
+dice:$Dd6
+expr:D:PLAYER_LEVEL:- 5 / 6 + 3
+desc:Fires a lightning beam that hurts each monster in its path.
+
+spell:Wonder:10:10:50:18
+effect:WONDER
+dice:$B+1d100
+expr:B:PLAYER_LEVEL:/ 5
+desc:Invokes a random spell effect.
+
+spell:Frost Bolt:11:4:35:20
+effect:BOLT_OR_BEAM:COLD
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 5
+desc:Fires a frost bolt that always hits its target.
+desc:  Sometimes a beam is fired instead that hurts each monster
+desc: in its path.
+desc:  The chance to get a beam goes up with your character level.
+
+spell:Fire Bolt:13:5:40:24
+effect:BOLT_OR_BEAM:FIRE
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 3 + 6
+desc:Fires a fire bolt that always hits its target.
+desc:  Sometimes a beam is fired instead that hurts each monster
+desc: in its path.
+desc:  The chance to get a beam goes up with your character level.
+
+spell:Acid Bolt:15:5:50:28
+effect:BOLT_OR_BEAM:ACID
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 3 + 8
+desc:Fires an acid bolt that always hits its target.
+desc:  Sometimes a beam is fired instead that hurts each monster
+desc: in its path.
+desc:  The chance to get a beam goes up with your character level.
+
+book:magic book:dungeon:[Magical Defences]:5:arcane
+book-graphics:?:r
+book-properties:7000:15:30 to 100
+
+spell:Resist Cold:10:5:50:10
+effect:TIMED_INC:OPP_COLD
+dice:20+d20
+desc:Grants you resistance to cold for 20+1d20 turns.
+
+spell:Resist Fire:10:5:50:10
+effect:TIMED_INC:OPP_FIRE
+dice:20+d20
+desc:Grants you resistance to fire for 20+1d20 turns.
+
+spell:Resistance:20:20:65:30
+effect:TIMED_INC:OPP_ACID
+dice:20+d20
+effect:TIMED_INC:OPP_ELEC
+dice:20+d20
+effect:TIMED_INC:OPP_COLD
+dice:20+d20
+effect:TIMED_INC:OPP_FIRE
+dice:20+d20
+desc:Grants you resistance to acid, cold, fire and lightning for 20+1d20 turns.
+
+spell:Shield:30:24:75:30
+effect:TIMED_INC:SHIELD
+dice:30+d20
+desc:Grants you +50 to AC for 30+1d20 turns.
+
+spell:Rune of Protection:36:60:70:40
+effect:RUNE
+desc:Inscribes a glyph of warding beneath you.
+desc:  Summoned monsters can't appear on the glyph.
+desc:  If a monster attempts to move onto the glyph or melee you while you
+desc: are standing on the glyph, it must first succeed in breaking the glyph.
+desc:  Higher level monsters are more likely to break the glyph.
+desc:  The glyph will remain where it is, until a monster succeeds in
+desc: breaking it, or until you leave the level.
+
+book:magic book:dungeon:[Dungeon Control]:5:arcane
+book-graphics:?:r
+book-properties:20000:15:50 to 100
+
+spell:Door Creation:13:9:40:12
+effect:TOUCH:MAKE_DOOR
+desc:A door is created on each empty floor space that is directly
+desc: adjacent to you.  These doors are closed, but not locked.
+
+spell:Teleport Level:28:17:65:20
+effect:TELEPORT_LEVEL
+desc:Teleports you 1 level up or 1 level down (chosen at random).
+desc:  This spell may have no effect when the forced descent option is set.
+
+spell:Banishment:30:45:95:25
+effect:BANISH
+desc:Removes all monsters represented by a chosen symbol from the level.
+desc:  Uniques are not affected.
+desc:  You take 1d4 points of damage for every monster removed.
+
+spell:Mass Banishment:35:75:90:100
+effect:MASS_BANISH
+desc:Removes all monsters within 20 squares of you.
+desc:  Uniques are not affected.
+desc:  You take 1d3 points of damage for every monster removed.
+
+spell:Dimension Door:38:30:80:40
+effect:TELEPORT_TO
+desc:Teleports you to (or near to) a square of your choice.
+
+book:magic book:dungeon:[Power and Destruction]:7:arcane
+book-graphics:?:r
+book-properties:20000:15:50 to 100
+
+spell:Shock Wave:20:5:40:16
+effect:BALL:SOUND:2
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Shoots a radius-2 sound ball.
+desc:  Apart from doing sound damage, this also has a chance to stun
+desc: each monster in the area of effect.
+
+spell:Explosion:30:10:50:20
+effect:BALL:SHARD:2
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+effect:BALL:FORCE:2
+dice:$B
+expr:B:PLAYER_LEVEL:/ 5
+desc:Shoots a radius-2 shards ball and throws around anything in the area of
+desc: effect.
+
+spell:Mana Bolt:35:8:60:100
+effect:BOLT_OR_BEAM:MISSILE
+dice:$Dd4
+expr:D:PLAYER_LEVEL:* 2
+desc:Fires a magic missile that always hits its target and does
+desc: unresistable damage.
+desc:  Sometimes a beam is fired instead that hurts each monster
+desc: in its path.
+desc:  The chance to get a beam goes up with your character level.
+
+spell:Thrust Away:40:20:90:140
+effect:ARC:FORCE
+param:0:5
+dice:10d$S
+expr:S:PLAYER_LEVEL:+ 0
+desc:Fires a short range beam of force.
+
+spell:Mana Storm:42:16:95:200
+effect:BALL:MANA:3
+dice:$B
+expr:B:PLAYER_LEVEL:* 2 + 300
+desc:Shoots a radius-3 mana ball that does unresistable
+desc: damage to each monster in its area of effect.
