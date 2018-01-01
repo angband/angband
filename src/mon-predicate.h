@@ -17,10 +17,18 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+/**
+ * monster_predicate is a function pointer which tests a given monster to
+ * see if the predicate in question is true.
+ */
+typedef bool (*monster_predicate)(const struct monster *mon);
+
 bool monster_is_nonliving(const struct monster *mon);
+bool monster_is_living(const struct monster *mon);
 bool monster_is_destroyed(const struct monster *mon);
 bool monster_passes_walls(const struct monster *mon);
 bool monster_is_invisible(const struct monster *mon);
+bool monster_is_not_invisible(const struct monster *mon);
 bool monster_is_unique(const struct monster *mon);
 bool monster_is_stupid(const struct monster *mon);
 bool monster_is_smart(const struct monster *mon);
