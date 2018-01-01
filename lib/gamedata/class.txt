@@ -2283,7 +2283,7 @@ title:Arch-Mage
 
 magic:1:300:5
 
-book:magic book:town:[Detection and Escape]:6:arcane
+book:magic book:town:[Detection and Escape]:7:arcane
 book-graphics:?:R
 book-properties:25:40:1 to 100
 equip:magic book:[Detection and Escape]:1:1
@@ -2318,34 +2318,38 @@ desc:Detects gold and senses objects in the immediate area.
 spell:Recharging:5:5:28:10
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:/ 2 + 10
+expr:B:PLAYER_LEVEL:* 2
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
 desc:  A failed attempt to recharge destroys one wand or staff from the stack.
 
-spell:Teleport Other:6:10:30:12
+spell:Identify Rune:10:7:25:12
+effect:IDENTIFY
+desc:Reveals an unknown rune on an object.
+
+spell:Teleport Other:15:10:30:12
 effect:BOLT_STATUS:AWAY_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
 desc:Produces a bolt that teleports away the first monster in its path.
 desc: Distance teleported increases with plyer level.
 
-book:magic book:town:[Magical Attack]:7:arcane
+book:magic book:town:[Magical Attack]:6:arcane
 book-graphics:?:R
 book-properties:400:40:10 to 100
 
-spell:Magic Missile:8:2:32:14
-effect:BOLT_OR_BEAM:MISSILE
+spell:Magic Missile:1:1:22:4
+effect:BOLT_OR_BEAM:MISSILE:-10
 dice:$Dd4
-expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Fires a magic missile that always hits its target and does
 desc: unresistable damage.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
-spell:Fire Ball:8:8:33:15
+spell:Fire Ball:7:8:33:15
 effect:BALL:FIRE:2
 dice:$B
 expr:B:PLAYER_LEVEL:* 2
@@ -2356,12 +2360,6 @@ effect:BEAM:ELEC
 dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
 desc:Fires a lightning beam that hurts each monster in its path.
-
-spell:Wonder:10:10:50:18
-effect:WONDER
-dice:$B+1d100
-expr:B:PLAYER_LEVEL:/ 5
-desc:Invokes a random spell effect.
 
 spell:Frost Bolt:11:4:35:20
 effect:BOLT_OR_BEAM:COLD
@@ -2381,7 +2379,7 @@ desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
-spell:Acid Bolt:15:5:50:28
+spell:Acid Bolt:20:5:50:28
 effect:BOLT_OR_BEAM:ACID
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 3 + 8
@@ -2393,6 +2391,11 @@ desc:  The chance to get a beam goes up with your character level.
 book:magic book:dungeon:[Magical Defences]:5:arcane
 book-graphics:?:r
 book-properties:7000:15:30 to 100
+
+spell:Disable Traps, Destroy Doors:5:5:30:6
+effect:TOUCH:KILL_DOOR
+effect:TOUCH:KILL_TRAP
+desc:Disables traps and destroys doors within a 1-square radius of you.
 
 spell:Resist Cold:10:5:50:10
 effect:TIMED_INC:OPP_COLD
@@ -2415,20 +2418,12 @@ effect:TIMED_INC:OPP_FIRE
 dice:20+d20
 desc:Grants you resistance to acid, cold, fire and lightning for 20+1d20 turns.
 
-spell:Shield:30:24:75:30
-effect:TIMED_INC:SHIELD
-dice:30+d20
-desc:Grants you +50 to AC for 30+1d20 turns.
-
-spell:Rune of Protection:36:60:70:40
-effect:RUNE
-desc:Inscribes a glyph of warding beneath you.
-desc:  Summoned monsters can't appear on the glyph.
-desc:  If a monster attempts to move onto the glyph or melee you while you
-desc: are standing on the glyph, it must first succeed in breaking the glyph.
-desc:  Higher level monsters are more likely to break the glyph.
-desc:  The glyph will remain where it is, until a monster succeeds in
-desc: breaking it, or until you leave the level.
+spell:Disruption:25:15:70:35
+effect:BALL:NEXUS:4
+dice:$B
+expr:B:PLAYER_LEVEL:/ 2
+desc:Shoots a radius-4 nexus ball that causes minimal damage but has a chance
+desc: to blink or teleport each monster in the area of effect.
 
 book:magic book:dungeon:[Dungeon Control]:5:arcane
 book-graphics:?:r
