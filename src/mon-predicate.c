@@ -34,6 +34,14 @@ bool monster_is_nonliving(const struct monster *mon)
 }
 
 /**
+ * Living monsters
+ */
+bool monster_is_living(const struct monster *mon)
+{
+	return !monster_is_nonliving(mon);
+}
+
+/**
  * Nonliving and stupid monsters are destroyed rather than dying
  */
 bool monster_is_destroyed(const struct monster *mon)
@@ -57,6 +65,14 @@ bool monster_passes_walls(const struct monster *mon)
 bool monster_is_invisible(const struct monster *mon)
 {
 	return rf_has(mon->race->flags, RF_INVISIBLE);
+}
+
+/**
+ * Monster is visible, in principle
+ */
+bool monster_is_not_invisible(const struct monster *mon)
+{
+	return !rf_has(mon->race->flags, RF_INVISIBLE);
 }
 
 /**
