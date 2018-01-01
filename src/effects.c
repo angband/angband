@@ -1793,20 +1793,18 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 }
 
 /**
- * Detect visible monsters around the player.  The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
+ * Detect monsters which satisfy the given predicate around the player.
+ * The height to detect above and below the player is y_dist,
+ * the width either side of the player x_dist.
  */
-bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
+static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
 {
 	int i, x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
 
 	bool monsters = false;
 
-	/* Pick an area to detect */
+	/* Set the detection area */
 	y1 = player->py - y_dist;
 	y2 = player->py + y_dist;
 	x1 = player->px - x_dist;
@@ -1831,8 +1829,8 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 		/* Only detect nearby monsters */
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
-		/* Detect all non-invisible, obvious monsters */
-		if (!monster_is_invisible(mon) && !monster_is_camouflaged(mon)) {
+		/* Detect all appropriate, obvious monsters */
+		if (pred(mon) && !monster_is_camouflaged(mon)) {
 			/* Detect the monster */
 			mflag_on(mon->mflag, MFLAG_MARK);
 			mflag_on(mon->mflag, MFLAG_SHOW);
@@ -1849,6 +1847,44 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 			monsters = true;
 		}
 	}
+
+	return monsters;
+}
+
+/**
+ * Detect living monsters around the player.  The height to detect above and
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
+ */
+bool effect_handler_DETECT_LIVING_MONSTERS(effect_handler_context_t *context)
+{
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+	bool monsters = detect_monsters(y_dist, x_dist, monster_is_living);
+
+	if (monsters)
+		msg("You sense life!");
+	else if (context->aware)
+		msg("You sense no life.");
+
+	context->ident = true;
+	return true;
+}
+
+
+/**
+ * Detect visible monsters around the player; note that this means monsters
+ * which are in principle visible, not monsters the player can currently see.
+ *
+ * The height to detect above and
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
+ */
+bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
+{
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+	bool monsters = detect_monsters(y_dist, x_dist, monster_is_not_invisible);
 
 	if (monsters)
 		msg("You sense the presence of monsters!");
@@ -1867,66 +1903,34 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 {
-	int i, x, y;
-	int x1, x2, y1, y2;
 	int y_dist = context->value.dice;
 	int x_dist = context->value.sides;
-
-	bool monsters = false;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
-		struct monster_lore *lore;
-
-		/* Skip dead monsters */
-		if (!mon->race) continue;
-
-		lore = get_lore(mon->race);
-
-		/* Location */
-		y = mon->fy;
-		x = mon->fx;
-
-		/* Only detect nearby monsters */
-		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
-
-		/* Detect invisible monsters */
-		if (monster_is_invisible(mon)) {
-			/* Take note that they are invisible */
-			rf_on(lore->flags, RF_INVISIBLE);
-
-			/* Update monster recall window */
-			if (player->upkeep->monster_race == mon->race)
-				player->upkeep->redraw |= (PR_MONSTER);
-
-			/* Detect the monster */
-			mflag_on(mon->mflag, MFLAG_MARK);
-			mflag_on(mon->mflag, MFLAG_SHOW);
-
-			/* Update the monster */
-			update_mon(mon, cave, false);
-
-			/* Detect */
-			monsters = true;
-		}
-	}
+	bool monsters = detect_monsters(y_dist, x_dist, monster_is_invisible);
 
 	if (monsters)
 		msg("You sense the presence of invisible creatures!");
 	else if (context->aware)
 		msg("You sense no invisible creatures.");
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Detect evil monsters around the player.  The height to detect above and
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
+ */
+bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
+{
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+	bool monsters = detect_monsters(y_dist, x_dist, monster_is_evil);
+
+	if (monsters)
+		msg("You sense the presence of evil creatures!");
+	else if (context->aware)
+		msg("You sense no evil creatures.");
 
 	context->ident = true;
 	return true;
@@ -1956,78 +1960,6 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
     return true;
 }
 
-
-/**
- * Detect evil monsters around the player.  The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
- */
-bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
-{
-	int i, x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool monsters = false;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
-		struct monster_lore *lore;
-
-		/* Skip dead monsters */
-		if (!mon->race) continue;
-
-		lore = get_lore(mon->race);
-
-		/* Location */
-		y = mon->fy;
-		x = mon->fx;
-
-		/* Only detect nearby monsters */
-		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
-
-		/* Detect evil monsters */
-		if (monster_is_evil(mon)) {
-			/* Take note that they are evil */
-			rf_on(lore->flags, RF_EVIL);
-
-			/* Update monster recall window */
-			if (player->upkeep->monster_race == mon->race)
-				player->upkeep->redraw |= (PR_MONSTER);
-
-			/* Detect the monster */
-			mflag_on(mon->mflag, MFLAG_MARK);
-			mflag_on(mon->mflag, MFLAG_SHOW);
-
-			/* Update the monster */
-			update_mon(mon, cave, false);
-
-			/* Detect */
-			monsters = true;
-		}
-	}
-
-	if (monsters)
-		msg("You sense the presence of evil creatures!");
-	else if (context->aware)
-		msg("You sense no evil creatures.");
-
-	context->ident = true;
-	return true;
-}
 
 /**
  * Create stairs at the player location
