@@ -66,7 +66,7 @@ EFFECT(MASS_BANISH,					false,	NULL,		0,		EFINFO_NONE,	"removes all nearby creat
 EFFECT(PROBE,						false,	NULL,		0,		EFINFO_NONE,	"gives you information on the health and abilities of monsters you can see")
 EFFECT(THRUST_AWAY,					false,	NULL,		0,		EFINFO_NONE,	"pushes a creature away")
 EFFECT(TELEPORT,					false,	"range",	2,		EFINFO_TELE,	"teleports %s randomly %d grids")
-EFFECT(TELEPORT_TO,					false,	NULL,		0,		EFINFO_NONE,	"teleports you to a monster")
+EFFECT(TELEPORT_TO,					true,	NULL,		0,		EFINFO_NONE,	"teleports you to a monster")
 EFFECT(TELEPORT_LEVEL,				false,	NULL,		0,		EFINFO_NONE,	"teleports you one level up or down")
 EFFECT(RUBBLE,						false,	NULL,		0,		EFINFO_NONE,	"causes rubble to fall around you")
 EFFECT(DESTRUCTION,					false,	NULL,		1,		EFINFO_QUAKE,	"destroys an area around you in the shape of a circle radius %d, and blinds you for 1d10+10 turns")
