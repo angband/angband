@@ -24,3 +24,4 @@ PF(KNOW_MUSHROOM,    "easily recognize mushrooms",                              
 PF(KNOW_ZAPPER,      "easily recognize magic devices",                            "Identifies magic devices")
 PF(SEE_ORE,          "can sense ore in the walls",                                "Senses ore/minerals")
 PF(NO_MANA,          "cannot cast spells",                                        NULL)
+PF(CHARM,            "is extra persuasive to monsters",                           "Charms monsters")

@@ -89,6 +89,7 @@ typedef struct project_monster_handler_context_s {
 	const bool id;
 	struct monster *mon;
 	struct monster_lore *lore;
+	bool charm;
 	bool obvious;
 	bool skipped;
 	u16b flag;
@@ -381,6 +382,14 @@ static void project_monster_handler_SHARD(project_monster_handler_context_t *con
 static void project_monster_handler_NEXUS(project_monster_handler_context_t *context)
 {
 	project_monster_resist_other(context, RF_IM_NEXUS, 3, true, MON_MSG_RESIST);
+
+	if (one_in_(3)) {
+		/* Blink */
+		context->teleport_distance = 10;
+	} else if (one_in_(4)) {
+		/* Teleport */
+		context->teleport_distance = 50;
+	}
 }
 
 /* Nether -- see above */
@@ -700,6 +709,9 @@ static void project_monster_handler_MON_SPEED(project_monster_handler_context_t 
 static void project_monster_handler_MON_SLOW(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_SLOW] = context->dam;
+	if (context->charm) {
+		context->dam += context->dam / 2;
+	}
 	context->dam = 0;
 }
 
@@ -707,6 +719,9 @@ static void project_monster_handler_MON_SLOW(project_monster_handler_context_t *
 static void project_monster_handler_MON_CONF(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_CONF] = context->dam;
+	if (context->charm) {
+		context->dam += context->dam / 2;
+	}
 	context->dam = 0;
 }
 
@@ -714,6 +729,9 @@ static void project_monster_handler_MON_CONF(project_monster_handler_context_t *
 static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_SLEEP] = context->dam;
+	if (context->charm) {
+		context->dam += context->dam / 2;
+	}
 	context->dam = 0;
 }
 
@@ -721,6 +739,9 @@ static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t 
 static void project_monster_handler_MON_HOLD(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_HOLD] = context->dam;
+	if (context->charm) {
+		context->dam += context->dam / 2;
+	}
 	context->dam = 0;
 }
 
@@ -728,6 +749,9 @@ static void project_monster_handler_MON_HOLD(project_monster_handler_context_t *
 static void project_monster_handler_MON_STUN(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_STUN] = context->dam;
+	if (context->charm) {
+		context->dam += context->dam / 2;
+	}
 	context->dam = 0;
 }
 
@@ -1033,6 +1057,10 @@ void project_m(struct source origin, int r, int y, int x,
 	/* Are we trying to id the source of this effect? */
 	bool id = (origin.what == SRC_PLAYER) ? !obvious : false;
 
+	/* Is the source an extra charming player? */
+	bool charm = (origin.what == SRC_PLAYER) ?
+		player_has(player, PF_CHARM) : false;
+
 	int m_idx = cave->squares[y][x].mon;
 
 	project_monster_handler_f monster_handler = monster_handlers[typ];
@@ -1047,6 +1075,7 @@ void project_m(struct source origin, int r, int y, int x,
 		id,
 		NULL, /* mon */
 		NULL, /* lore */
+		charm,
 		obvious,
 		false, /* skipped */
 		0, /* flag */
