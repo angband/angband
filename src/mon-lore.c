@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "effects.h"
+#include "game-world.h"
 #include "init.h"
 #include "mon-blows.h"
 #include "mon-init.h"
@@ -565,6 +566,65 @@ static const char *lore_describe_speed(byte speed)
 }
 
 /**
+ * Append the monster speed, in words, to a textblock.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ */
+void lore_adjective_speed(textblock *tb, const struct monster_race *race)
+{
+	/* "at" is separate from the normal speed description in order to use the
+	 * normal text colour */
+	if (race->speed == 110)
+		textblock_append(tb, "at ");
+
+	textblock_append_c(tb, COLOUR_GREEN, lore_describe_speed(race->speed));
+}
+
+/**
+ * Append the monster speed, in multipliers, to a textblock.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ */
+void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
+{
+	// moves at 2.3x normal speed (0.9x your current speed)
+	textblock_append(tb, "at ");
+
+	char buf[5] = "";
+	int multiplier = 10 * extract_energy[race->speed] / extract_energy[110];
+	byte int_mul = multiplier / 10;
+	byte dec_mul = multiplier % 10;
+
+	strnfmt(buf, sizeof(buf), "%d.%dx", int_mul, dec_mul);
+	textblock_append_c(tb, COLOUR_L_BLUE, buf);
+
+	textblock_append(tb, " normal speed, which is ");
+
+	if (player->state.speed > race->speed) {
+		char buf[13] = "";
+		multiplier = 10 * extract_energy[player->state.speed] / extract_energy[race->speed];
+		int_mul = multiplier / 10;
+		dec_mul = multiplier % 10;
+		strnfmt(buf, sizeof(buf), "%d.%dx slower ", int_mul, dec_mul);
+		textblock_append_c(tb, COLOUR_L_GREEN, buf);
+	}
+	else if (player->state.speed < race->speed) {
+		char buf[13] = "";
+		multiplier = 10 * extract_energy[race->speed] / extract_energy[player->state.speed];
+		int_mul = multiplier / 10;
+		dec_mul = multiplier % 10;
+		strnfmt(buf, sizeof(buf), "%d.%dx faster ", int_mul, dec_mul);
+		textblock_append_c(tb, COLOUR_RED, buf);
+	}
+	if (player->state.speed == race->speed)
+		textblock_append(tb, "the same as you");
+	else
+		textblock_append(tb, "than you");
+}
+
+/**
  * Return a value describing the sex of the provided monster race.
  */
 static monster_sex_t lore_monster_sex(const struct monster_race *race)
@@ -910,12 +970,10 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
 	/* Speed */
 	textblock_append(tb, " ");
 
-	/* "at" is separate from the normal speed description in order to use the
-	 * normal text colour */
-	if (race->speed == 110)
-		textblock_append(tb, "at ");
-
-	textblock_append_c(tb, COLOUR_GREEN, lore_describe_speed(race->speed));
+	if (OPT(player, effective_speed))
+		lore_multiplier_speed(tb, race);
+	else
+		lore_adjective_speed(tb, race);
 
 	/* The speed description also describes "attack speed" */
 	if (rf_has(known_flags, RF_NEVER_MOVE)) {
