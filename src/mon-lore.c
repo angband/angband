@@ -1518,6 +1518,23 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 					textblock_append_c(tb, COLOUR_L_GREEN, "M%d", dice.m_bonus);
 			}
 
+			/* Describe hit chances */
+			long chance = 0, chance2 = 0;
+			// These calculations are based on check_hit() and test_hit();
+			// make sure to keep it in sync
+			chance = (race->blow[i].effect->power + (race->level * 3));
+			if (chance < 9) {
+				chance = 9;
+			}
+			chance2 = 12 + (100 - 12 - 5) * (chance - ((player->state.ac + player->state.to_a) * 2 / 3)) / chance;
+			if (chance2 < 12) {
+				chance2 = 12;
+			}
+			textblock_append(tb, " with a");
+			if ((chance2 == 8) || ((chance2 / 10) == 8))
+				textblock_append(tb, "n");
+			textblock_append_c(tb, COLOUR_L_BLUE, " %d", chance2);
+			textblock_append(tb, " percent chance to hit");
 		}
 
 		described_count++;
