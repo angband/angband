@@ -612,9 +612,9 @@ void lore_multiplier_speed(textblock *tb, const struct monster_race *race)
 	}
 	else if (player->state.speed < race->speed) {
 		char buf[13] = "";
-		multiplier = 10 * extract_energy[race->speed] / extract_energy[player->state.speed];
-		int_mul = multiplier / 10;
-		dec_mul = multiplier % 10;
+		multiplier = 100 * extract_energy[race->speed] / extract_energy[player->state.speed];
+		int_mul = multiplier / 100;
+		dec_mul = ((multiplier + 9) / 10) % 10;
 		strnfmt(buf, sizeof(buf), "%d.%dx faster ", int_mul, dec_mul);
 		textblock_append_c(tb, COLOUR_RED, buf);
 	}
