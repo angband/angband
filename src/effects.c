@@ -2413,6 +2413,9 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		/* Skip "wrong" monsters (see warning above) */
 		if ((char) mon->race->d_char != typ) continue;
 
+		/* Ignore monsters in vaults */
+		if (square_isvault(cave, mon->fy, mon->fx)) continue;
+
 		/* Delete the monster */
 		delete_monster_idx(i);
 
@@ -2454,6 +2457,9 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 
 		/* Skip distant monsters */
 		if (mon->cdis > radius) continue;
+
+		/* Ignore monsters in vaults */
+		if (square_isvault(cave, mon->fy, mon->fx)) continue;
 
 		/* Delete the monster */
 		delete_monster_idx(i);
@@ -3067,6 +3073,9 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 		for (x = (x1 - r); x <= (x1 + r); x++) {
 			/* Skip illegal grids */
 			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Ignore vault grids */
+			if (square_isvault(cave, y, x)) continue;
 
 			/* Extract the distance */
 			k = distance(y1, x1, y, x);
