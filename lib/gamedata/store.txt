@@ -137,8 +137,8 @@ always:magic book:[Conjurings and Tricks]
 always:magic book:[Incantations and Illusions]
 normal:prayer book:[Exorcism and Dispelling]
 normal:magic book:[Sorcery and Evocations]
-always:magic book:[Detection and Escape]
-always:magic book:[Magical Attack]
+always:magic book:[Path of the Mage]
+always:magic book:[Attacks and Knowledge]
 buy:magic book
 buy:prayer book
 
