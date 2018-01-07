@@ -1488,6 +1488,14 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				break;
 			}
 
+			case EFINFO_SHORT: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect), 
+						projections[effect->params[0]].player_desc,
+						effect->params[1] +
+						effect->params[2] ? effect->params[2] / player->lev : 0,
+						dice_string);
+				break;
+			}
 			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
