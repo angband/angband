@@ -3680,12 +3680,11 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
  *
  * Because all arcs start out as being one grid wide, arc spells with a
  * value for degrees_of_arc less than (roughly) 60 do not dissipate as
- * quickly.  In the extreme case where degrees_of_arc is 0, the arc is
- * actually a defined length beam, and loses no strength at all over the
- * ranges found in the game.
+ * quickly.
  *
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 degrees of arc, context->p3 radius
+ * context->p1 is element, context->p2 degrees of arc (minimum 10),
+ * context->p3 radius
  */
 bool effect_handler_ARC(effect_handler_context_t *context)
 {
@@ -3699,13 +3698,16 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 	/* Diameter of source starts at 40, so full strength up to 3 grids from
 	 * the caster. */
 	int diameter_of_source = 40;
-	int degrees_of_arc = context->p2;
+
+	/* Short beams now have their own effect, so we set a minimum arc width */
+	int degrees_of_arc = MAX(context->p2, 20);
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Radius of zero means no fixed limit. */
-	if (rad == 0)
+	if (rad == 0) {
 		rad = z_info->max_range;
+	}
 
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
@@ -3724,22 +3726,73 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 
 	/* Diameter of the energy source. */
 	if (degrees_of_arc < 60) {
-		if (degrees_of_arc == 0) {
-			/* This handles finite length beams */
-			diameter_of_source = rad * 10;
-		} else {
 			diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
-		}
 	}
 
 	/* Max */
-	if (diameter_of_source > 250)
+	if (diameter_of_source > 250) {
 		diameter_of_source = 250;
+	}
 
 	/* Aim at the target */
 	if (project(context->origin, rad, ty, tx, dam, type, flg, degrees_of_arc,
-				diameter_of_source, context->obj))
+				diameter_of_source, context->obj)) {
 		context->ident = true;
+	}
+
+	return true;
+}
+
+/**
+ * Cast an defined length beam spell.
+ *
+ * Affect grids, objects, and monsters
+ * context->p1 is element, context->p2 radius
+ * context->p3 allows an added radius of 1 every time the player level
+ * increases by a multiple of context->p3, and will only take effect for
+ * player spells
+ */
+bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, false);
+	int type = context->p1;
+	bool addons = (context->origin.what == SRC_PLAYER) && (context->p3 > 0);
+	int rad = context->p2 + (addons ? player->lev / context->p3 : 0);
+
+	int ty = -1;
+	int tx = -1;
+
+	/* Diameter of source is 10 times radius, so the effect is essentially
+	 * full strength for its entire length. */
+	int diameter_of_source = rad * 10;
+
+	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Player or monster? */
+	if (context->origin.what == SRC_MONSTER) {
+		flg |= PROJECT_PLAY;
+		ty = player->py;
+		tx = player->px;
+	} else if (context->origin.what == SRC_PLAYER) {
+		/* Ask for a target if no direction given */
+		if (context->dir == 5 && target_okay()) {
+			target_get(&tx, &ty);
+		} else {
+			ty = player->py + ddy[context->dir];
+			tx = player->px + ddx[context->dir];
+		}
+	}
+
+	/* Check bounds */
+	if (diameter_of_source > 250) {
+		diameter_of_source = 250;
+	}
+
+	/* Aim at the target */
+	if (project(context->origin, rad, ty, tx, dam, type, flg, 0,
+				diameter_of_source, context->obj)) {
+		context->ident = true;
+	}
 
 	return true;
 }
@@ -4527,6 +4580,7 @@ int effect_param(int index, const char *type)
 			case EF_BALL:
 			case EF_BREATH:
 			case EF_ARC:
+			case EF_SHORT_BEAM:
 			case EF_SWARM:
 			case EF_STAR:
 			case EF_STAR_BALL:
