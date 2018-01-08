@@ -36,6 +36,7 @@ struct player *player;
 
 struct player_body *bodies;
 struct player_race *races;
+struct player_shape *shapes;
 struct player_class *classes;
 struct magic_realm *realms;
 
