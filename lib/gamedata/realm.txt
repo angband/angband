@@ -18,3 +18,15 @@ stat:WIS
 verb:recite
 spell-noun:prayer
 book-noun:prayer book
+
+name:nature
+stat:WIS
+verb:chant
+spell-noun:verse
+book-noun:nature book
+
+name:death
+stat:INT
+verb:perform
+spell-noun:ritual
+book-noun:death book
