@@ -922,8 +922,13 @@ void do_cmd_cast(struct command *cmd)
 	}
 
 	/* Cast a spell */
-	if (spell_cast(spell_index, dir))
-		player->upkeep->energy_use = z_info->move_energy;
+	if (spell_cast(spell_index, dir)) {
+		if (player->timed[TMD_FASTCAST]) {
+			player->upkeep->energy_use = z_info->move_energy / 2;
+		} else {
+			player->upkeep->energy_use = z_info->move_energy;
+		}
+	}
 }
 
 
