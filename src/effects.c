@@ -4241,6 +4241,75 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 
 
 /**
+ * Draw energy from a magical device
+ */
+bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
+{
+	int lev;
+	int energy = 0;
+	struct object *obj;
+	bool used = false;
+	const char *q, *s;
+	char *item = "";
+
+	/* Get an item */
+	q = "Drain charges from which item? ";
+	s = "You have nothing to drain charges from.";
+	if (!get_item(&obj, q, s, 0, item_tester_hook_recharge,
+				  (USE_INVEN | USE_FLOOR))) {
+		return (used);
+	}
+
+	/* Extract the object "level" */
+	lev = obj->kind->level;
+
+	/* Extract the object's energy and get its generic name. */
+	if (tval_is_staff(obj)) {
+		energy = (5 + lev) * obj->pval;
+		item = "staff";
+	} else if (tval_is_wand(obj)) {
+		energy = (5 + lev) * 3 * obj->pval / 2;
+		item = "wand";
+	}
+
+	/* Turn energy into mana. */
+	if (energy < 36) {
+		/* Require a resonable amount of energy */
+		msg("That %s had no useable energy", item);
+	} else {
+		/* If mana below maximum, increase mana and drain object. */
+		if (player->csp < player->msp) {
+			/* Drain the object. */
+			obj->pval = 0;
+
+
+			/* Combine / Reorder the pack (later) */
+			player->upkeep->notice |= (PN_COMBINE);
+
+			/* Redraw stuff */
+			player->upkeep->redraw |= (PR_INVEN);
+
+			/* Increase mana. */
+			player->csp += energy / 12;
+			player->csp_frac = 0;
+			if (player->csp > player->msp) {
+				(player->csp = player->msp);
+			}
+
+			msg("You feel your head clear.");
+			used = true;
+
+			player->upkeep->redraw |= (PR_MANA);
+		} else {
+			my_strcap(item);
+			msg("Your mana was already at its maximum.  %s not drained.", item);
+		}
+	}
+
+	return (used);
+}
+
+/**
  * One Ring activation
  */
 bool effect_handler_BIZARRE(effect_handler_context_t *context)

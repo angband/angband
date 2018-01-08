@@ -2307,6 +2307,14 @@ effect:DETECT_STAIRS
 dice:22d40
 desc:Detects all traps, doors, and stairs in the immediate area.
 
+spell:Electric Arc:2:2:34:16
+effect:SHORT_BEAM:ELEC
+param:0:1
+dice:$Dd6
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Creates an electrical discharge that hurts each monster in its path.
+desc:  Length of the effect increases with player level.
+
 spell:Phase Door:2:2:22:4
 effect:TELEPORT
 dice:10
@@ -2318,6 +2326,16 @@ dice:22d40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
+spell:Fire Ball:6:5:33:15
+effect:BALL:FIRE:2
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Shoots a radius-2 fire ball.
+
+book:magic book:town:[Attacks and Knowledge]:6:arcane
+book-graphics:?:R
+book-properties:400:40:10 to 100
+
 spell:Recharging:5:5:28:10
 effect:RECHARGE
 dice:$B
@@ -2327,25 +2345,9 @@ desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
 desc:  A failed attempt to recharge destroys one wand or staff from the stack.
 
-spell:Fire Ball:6:5:33:15
-effect:BALL:FIRE:2
-dice:$B
-expr:B:PLAYER_LEVEL:* 2 - 10
-desc:Shoots a radius-2 fire ball.
-
-book:magic book:town:[Attacks and Knowledge]:6:arcane
-book-graphics:?:R
-book-properties:400:40:10 to 100
-
 spell:Identify Rune:8:7:25:12
 effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
-
-spell:Lightning Beam:9:4:34:16
-effect:BEAM:ELEC
-dice:$Dd6
-expr:D:PLAYER_LEVEL:- 5 / 6 + 3
-desc:Fires a lightning beam that hurts each monster in its path.
 
 spell:Treasure Detection:10:3:60:5
 effect:DETECT_GOLD
@@ -2372,12 +2374,12 @@ desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Acid Spray:20:5:50:28
 effect:ARC:ACID
-param:30:3
+param:60:3
 dice:$Dd8
 expr:D:PLAYER_LEVEL:/ 4
 desc:Sprays acid in a narrow cone, hitting all monsters up to 3 grids away.
 
-book:magic book:dungeon:[Magical Defences]:5:arcane
+book:magic book:dungeon:[Magical Defences]:6:arcane
 book-graphics:?:r
 book-properties:10000:15:30 to 100
 
@@ -2410,6 +2412,10 @@ effect:TIMED_INC:OPP_FIRE
 dice:20+d20
 desc:Grants you resistance to acid, cold, fire and lightning for 20+1d20 turns.
 
+spell:Tap Magical Energy:22:2:50:12
+effect:TAP_DEVICE
+desc:Turns wand or staff energy into mana.
+
 spell:Disruption:25:15:70:35
 effect:BALL:NEXUS:4
 dice:$B
@@ -2417,9 +2423,9 @@ expr:B:PLAYER_LEVEL:/ 2
 desc:Shoots a radius-4 nexus ball that causes minimal damage but has a chance
 desc: to blink or teleport each monster in the area of effect.
 
-book:magic book:dungeon:[Arcane Control]:5:arcane
+book:magic book:dungeon:[Arcane Control]:6:arcane
 book-graphics:?:r
-book-properties:30000:10:50 to 100
+book-properties:30000:10:40 to 100
 
 spell:Door Creation:13:9:40:12
 effect:TOUCH:MAKE_DOOR
@@ -2428,8 +2434,8 @@ desc: adjacent to you.  These doors are closed, but not locked.
 
 spell:Mana Bolt:25:8:60:100
 effect:BOLT_OR_BEAM:MISSILE
-dice:$Dd4
-expr:D:PLAYER_LEVEL:* 2
+dice:$Dd8
+expr:D:PLAYER_LEVEL:/ 2
 desc:Fires a magic missile that always hits its target and does
 desc: unresistable damage.
 desc:  Sometimes a beam is fired instead that hurts each monster
@@ -2441,20 +2447,37 @@ effect:TELEPORT_LEVEL
 desc:Teleports you 1 level up or 1 level down (chosen at random).
 desc:  This spell may have no effect when the forced descent option is set.
 
+spell:Detection:30:10:70:30
+effect:DETECT_TRAPS
+dice:22d40
+effect:DETECT_DOORS
+dice:22d40
+effect:DETECT_STAIRS
+dice:22d40
+effect:DETECT_GOLD
+dice:22d40
+effect:SENSE_OBJECTS
+dice:22d40
+effect:DETECT_INVISIBLE_MONSTERS
+dice:22d40
+effect:DETECT_VISIBLE_MONSTERS
+dice:22d40
+desc:Detects all treasure, objects and monsters in the immediate area.
+
 spell:Dimension Door:35:30:80:40
 effect:TELEPORT_TO
 desc:Teleports you to (or near to) a square of your choice.
 
-spell:Thrust Away:40:20:90:140
+spell:Thrust Away:40:12:90:140
 effect:SHORT_BEAM:FORCE
 param:1:10
-dice:10d$S
-expr:S:PLAYER_LEVEL:+ 0
+dice:$Dd8
+expr:D:PLAYER_LEVEL:+ 0
 desc:Fires a short range beam of force.
 
-book:magic book:dungeon:[Wizard's Tome of Power]:5:arcane
+book:magic book:dungeon:[Wizard's Tome of Power]:6:arcane
 book-graphics:?:r
-book-properties:50000:5:70 to 100
+book-properties:50000:5:60 to 100
 
 spell:Shock Wave:20:5:40:16
 effect:BALL:SOUND:2
@@ -2463,6 +2486,11 @@ expr:B:PLAYER_LEVEL:* 2
 desc:Shoots a radius-2 sound ball.
 desc:  Apart from doing sound damage, this also has a chance to stun
 desc: each monster in the area of effect.
+
+spell:Mana Channel:25:3:50:20
+effect:TIMED_INC:FASTCAST
+dice:25+1d25
+desc:Doubles spellcasting speed for 25 +1d25 turns.
 
 spell:Explosion:30:10:50:20
 effect:BALL:SHARD:2
@@ -2486,7 +2514,7 @@ desc:Removes all monsters within 20 squares of you.
 desc:  Uniques are not affected.
 desc:  You take 1d3 points of damage for every monster removed.
 
-spell:Mana Storm:45:16:95:200
+spell:Mana Storm:45:16:85:200
 effect:BALL:MANA:3
 dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 300
