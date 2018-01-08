@@ -202,6 +202,37 @@ struct player_race {
 };
 
 /**
+ * Blow names for shapechanged players
+ */
+struct player_blow {
+	struct player_blow *next;
+	char *name;
+};
+
+/**
+ * Player shapechange shape info
+ */
+struct player_shape {
+	struct player_shape *next;
+	const char *name;
+
+	int infra;		/**< Infra-vision range */
+	int stat_adj[STAT_MAX];		/**< Stat bonuses */
+	int skills[SKILL_MAX];	/**< Skills */
+
+	s16b to_a;				/**< Plusses to AC */
+	s16b to_h;				/**< Plusses to hit */
+	s16b to_d;				/**< Plusses to damage */
+
+	bitflag flags[OF_SIZE];		/**< Shape (object) flags */
+	bitflag pflags[PF_SIZE];	/**< Shape (player) flags */
+	struct element_info el_info[ELEM_MAX]; /**< Resists */
+
+	struct player_blow *blows;
+	int num_blows;
+};
+
+/**
  * Items the player starts with.  Used in player_class and specified in
  * class.txt.
  */
@@ -498,6 +529,7 @@ struct player {
 	u32b resting_turn;			/* Number of player turns spent resting */
 
 	s16b food;					/* Current nutrition */
+	byte shape;					/* Current shape */
 
 	byte confusing;				/* Glowing hands */
 	byte unignoring;			/* Unignoring */
@@ -550,6 +582,7 @@ struct player {
 
 extern struct player_body *bodies;
 extern struct player_race *races;
+extern struct player_shape *shapes;
 extern struct player_class *classes;
 extern struct magic_realm *realms;
 

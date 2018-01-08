@@ -2251,6 +2251,258 @@ static struct file_parser realm_parser = {
 
 /**
  * ------------------------------------------------------------------------
+ * Intialize player shapechange shapes
+ * ------------------------------------------------------------------------ */
+
+static enum parser_error parse_shape_name(struct parser *p) {
+	struct player_shape *h = parser_priv(p);
+	struct player_shape *shape = mem_zalloc(sizeof *shape);
+
+	shape->next = h;
+	shape->name = string_make(parser_getstr(p, "name"));
+	parser_setpriv(p, shape);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_combat(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	shape->to_h = parser_getint(p, "to-h");
+	shape->to_d = parser_getint(p, "to-d");
+	shape->to_a = parser_getint(p, "to-a");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_stats(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->stat_adj[STAT_STR] = parser_getint(p, "str");
+	shape->stat_adj[STAT_DEX] = parser_getint(p, "dex");
+	shape->stat_adj[STAT_CON] = parser_getint(p, "con");
+	shape->stat_adj[STAT_INT] = parser_getint(p, "int");
+	shape->stat_adj[STAT_WIS] = parser_getint(p, "wis");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_skill_disarm_phys(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->skills[SKILL_DISARM_PHYS] = parser_getint(p, "disarm");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_skill_disarm_magic(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->skills[SKILL_DISARM_MAGIC] = parser_getint(p, "disarm");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_skill_save(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->skills[SKILL_SAVE] = parser_getint(p, "save");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_skill_stealth(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->skills[SKILL_STEALTH] = parser_getint(p, "stealth");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_skill_search(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->skills[SKILL_SEARCH] = parser_getint(p, "search");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_skill_melee(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "melee");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_skill_throw(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->skills[SKILL_TO_HIT_THROW] = parser_getint(p, "throw");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_skill_dig(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->skills[SKILL_DIGGING] = parser_getint(p, "dig");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_infra(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	shape->infra = parser_getint(p, "infra");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_obj_flags(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(shape->flags, OF_SIZE, list_obj_flag_names, s))
+			break;
+		s = strtok(NULL, " |");
+	}
+	mem_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_play_flags(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(shape->pflags, PF_SIZE, player_info_flags, s))
+			break;
+		s = strtok(NULL, " |");
+	}
+	mem_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_values(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	char *s;
+	char *t;
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	s = string_make(parser_getstr(p, "values"));
+	t = strtok(s, " |");
+
+	while (t) {
+		int value = 0;
+		int index = 0;
+		bool found = false;
+		if (!grab_index_and_int(&value, &index, list_element_names, "RES_", t)) {
+			found = true;
+			shape->el_info[index].res_level = value;
+		}
+		if (!found)
+			break;
+
+		t = strtok(NULL, " |");
+	}
+
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_blow(struct parser *p) {
+	const char *verb = parser_getstr(p, "blow");
+	struct player_blow *blow = mem_zalloc(sizeof(*blow));
+	struct player_shape *shape = parser_priv(p);
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	blow->name = string_make(verb);
+	blow->next = shape->blows;
+	shape->blows = blow;
+	shape->num_blows++;
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_shape(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_shape_name);
+	parser_reg(p, "combat int to-h int to-d int to-a", parse_shape_combat);
+	parser_reg(p, "stats int str int int int wis int dex int con", parse_shape_stats);
+	parser_reg(p, "skill-disarm-phys int disarm", parse_shape_skill_disarm_phys);
+	parser_reg(p, "skill-disarm-magic int disarm", parse_shape_skill_disarm_magic);
+	parser_reg(p, "skill-save int save", parse_shape_skill_save);
+	parser_reg(p, "skill-stealth int stealth", parse_shape_skill_stealth);
+	parser_reg(p, "skill-search int search", parse_shape_skill_search);
+	parser_reg(p, "skill-melee int melee", parse_shape_skill_melee);
+	parser_reg(p, "skill-throw int throw", parse_shape_skill_throw);
+	parser_reg(p, "skill-dig int dig", parse_shape_skill_dig);
+	parser_reg(p, "infra int infra", parse_shape_infra);
+	parser_reg(p, "obj-flags ?str flags", parse_shape_obj_flags);
+	parser_reg(p, "player-flags ?str flags", parse_shape_play_flags);
+	parser_reg(p, "values str values", parse_shape_values);
+	parser_reg(p, "blow str blow", parse_shape_blow);
+	return p;
+}
+
+static errr run_parse_shape(struct parser *p) {
+	return parse_file_quit_not_found(p, "shape");
+}
+
+static errr finish_parse_shape(struct parser *p) {
+	shapes = parser_priv(p);
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_shape(void)
+{
+	struct player_shape *shape = shapes;
+	struct player_shape *next;
+
+	while (shape) {
+		struct player_blow *blow = shape->blows;
+		next = shape->next;
+		string_free((char *)shape->name);
+		while (blow) {
+			struct player_blow *next = blow->next;
+			string_free(blow->name);
+			mem_free(blow);
+			blow = next;
+		}
+		mem_free(shape);
+		shape = next;
+	}
+}
+
+static struct file_parser shape_parser = {
+	"shape",
+	init_parse_shape,
+	run_parse_shape,
+	finish_parse_shape,
+	cleanup_shape
+};
+
+/**
+ * ------------------------------------------------------------------------
  * Initialize player classes
  * ------------------------------------------------------------------------ */
 
@@ -2983,6 +3235,7 @@ static struct {
 	{ "bodies", &body_parser },
 	{ "player races", &p_race_parser },
 	{ "magic_realms", &realm_parser },
+	{ "player shapes", &shape_parser },
 	{ "player classes", &class_parser },
 	{ "artifacts", &artifact_parser },
 	{ "object properties", &object_property_parser },
