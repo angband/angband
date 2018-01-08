@@ -262,3 +262,8 @@ on-begin:You feel safe from traps.
 on-end:You feel vulnerable to traps again.
 on-increase:You feel even safer from traps!
 on-decrease:You feel less safe from traps.
+
+name:FASTCAST
+desc:mana channelling
+on-begin:You feel your mind accelerate.
+on-end:You feel your mind slow again.
