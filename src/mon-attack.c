@@ -417,7 +417,7 @@ static int monster_critical(random_value dice, int rlev, int dam)
 /**
  * Determine if a monster attack against the player succeeds.
  */
-bool check_hit(struct player *p, int power, int level, int debuff)
+bool check_hit(struct player *p, int power, int level, int accuracy)
 {
 	int chance, ac;
 
@@ -430,10 +430,9 @@ bool check_hit(struct player *p, int power, int level, int debuff)
 	/* If the monster checks vs ac, the player learns ac bonuses */
 	equip_learn_on_defend(p);
 
-	/* Apply debuff penalty */
-	if (debuff) {
-		chance = (chance * (100 - debuff)) / 100;
-	}
+	/* Apply accuracy */
+	chance *= accuracy;
+	chance /= 100;
 
 	/* Check if the player was hit */
 	return test_hit(chance, ac, true);
