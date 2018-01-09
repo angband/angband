@@ -399,6 +399,16 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 		my_strcpy(verb, "fail to harm", sizeof(verb));
 	}
 
+	/* Substitute shape-specific blows for shapechanged players */
+	if (player_is_shapechanged(player)) {
+		int choice = randint0(player->shape->num_blows);
+		struct player_blow *blow = player->shape->blows;
+		while (choice--) {
+			blow = blow->next;
+		}
+		my_strcpy(verb, blow->name, sizeof(verb));
+	}
+
 	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {
 		const char *dmg_text = "";
 
