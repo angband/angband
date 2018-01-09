@@ -3858,6 +3858,37 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 }
 
 /**
+ * Strike the target with a ball from above
+ *
+ * Targets absolute coordinates instead of a specific monster, so that
+ * the death of the monster doesn't change the target's location.
+ */
+bool effect_handler_STRIKE(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, true);
+
+	int ty = py;
+	int tx = px;
+
+	int flg = PROJECT_JUMP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Ask for a target; if no direction given, the player is struck  */
+	if ((context->dir == 5) && target_okay()) {
+		target_get(&tx, &ty);
+	}
+
+	/* Aim at the target.  Hurt items on floor. */
+	if (project(source_player(), context->p2, ty, tx, dam, context->p1, flg, 0,
+				0, context->obj)) {
+		context->ident = true;
+	}
+
+	return true;
+}
+
+/**
  * Cast a line spell in every direction
  * Stop if we hit a monster, act as a ball
  * Affect grids, objects, and monsters
