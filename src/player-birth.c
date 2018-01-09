@@ -370,9 +370,6 @@ static void player_embody(struct player *p)
 		my_strcpy(buf, bodies[p->race->body].slots[i].name, sizeof(buf));
 		p->body.slots[i].name = string_make(buf);
 	}
-
-	/* Player starts unshapechanged */
-	player_set_shape(p, "normal");
 }
 
 /**
@@ -459,6 +456,9 @@ void player_init(struct player *p)
 	/* Default to the first race/class in the edit file */
 	p->race = races;
 	p->class = classes;
+
+	/* Player starts unshapechanged */
+	player_set_shape(p, "normal");
 }
 
 /**

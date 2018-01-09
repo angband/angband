@@ -1696,6 +1696,72 @@ int weight_remaining(struct player *p)
 
 
 /**
+ * Calculate the effect of a shapechange on player state
+ */
+static void calc_shapechange(struct player_state *state,
+							 struct player_shape *shape,
+							 int *blows, int *shots, int *might)
+{
+	int i;
+
+	/* Combat stats */
+	state->to_a += shape->to_a;
+	state->to_h += shape->to_h;
+	state->to_d += shape->to_d;
+
+	/* Skills */
+	for (i = 0; i < SKILL_MAX; i++) {
+		state->skills[i] += shape->skills[i];
+	}
+
+	/* Object flags */
+	of_union(state->flags, shape->flags);
+
+	/* Player flags */
+	of_union(state->pflags, shape->pflags);
+
+	/* Stats */
+	for (i = 0; i < STAT_MAX; i++) {
+		state->stat_add[i] += shape->modifiers[i];
+	}
+
+	/* Other modifiers */
+	state->skills[SKILL_STEALTH] += shape->modifiers[OBJ_MOD_STEALTH];
+	state->skills[SKILL_SEARCH] += (shape->modifiers[OBJ_MOD_SEARCH] * 5);
+	state->see_infra += shape->modifiers[OBJ_MOD_INFRA];
+	state->skills[SKILL_DIGGING] += (shape->modifiers[OBJ_MOD_TUNNEL] * 20);
+	state->speed += shape->modifiers[OBJ_MOD_SPEED];
+	*blows += shape->modifiers[OBJ_MOD_BLOWS];
+	*shots += shape->modifiers[OBJ_MOD_SHOTS];
+	*might += shape->modifiers[OBJ_MOD_MIGHT];
+
+	/* Resists and vulnerabilities */
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (state->el_info[i].res_level == 0) {
+			/* Simple, just apply shape res/vuln */
+			state->el_info[i].res_level = shape->el_info[i].res_level;
+		} else if (state->el_info[i].res_level == -1) {
+			/* Shape resists cancel, immunities trump, vulnerabilities */
+			if (shape->el_info[i].res_level == 1) {
+				state->el_info[i].res_level = 0;
+			} else if (shape->el_info[i].res_level == 3) {
+				state->el_info[i].res_level = 3;
+			}
+		} else if (state->el_info[i].res_level == 1) {
+			/* Shape vulnerabilities cancel, immunities enhance, resists */
+			if (shape->el_info[i].res_level == -1) {
+				state->el_info[i].res_level = 0;
+			} else if (shape->el_info[i].res_level == 3) {
+				state->el_info[i].res_level = 3;
+			}
+		} else if (state->el_info[i].res_level == 3) {
+			/* Immmunity, shape has no effect */
+		}
+	}
+
+}
+
+/**
  * Calculate the players current "state", taking into account
  * not only race/class intrinsics, but also objects being worn
  * and temporary spell effects.
@@ -1748,10 +1814,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 	for (i = 0; i < ELEM_MAX; i++) {
 		vuln[i] = false;
-		if (p->race->el_info[i].res_level == -1)
+		if (p->race->el_info[i].res_level == -1) {
 			vuln[i] = true;
-		else
+		} else {
 			state->el_info[i].res_level = p->race->el_info[i].res_level;
+		}
 	}
 
 	/* Base pflags */
@@ -1865,6 +1932,15 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* Apply the collected flags */
 	of_union(state->flags, collect_f);
+
+	/* Now deal with vulnerabilities */
+	for (i = 0; i < ELEM_MAX; i++) {
+		if (vuln[i] && (state->el_info[i].res_level < 3))
+			state->el_info[i].res_level--;
+	}
+
+	/* Add shapechange info */
+	calc_shapechange(state, p->shape, &extra_blows, &extra_shots, &extra_might);
 
 	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {

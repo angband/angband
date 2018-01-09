@@ -216,16 +216,14 @@ struct player_shape {
 	struct player_shape *next;
 	const char *name;
 
-	int infra;		/**< Infra-vision range */
-	int stat_adj[STAT_MAX];		/**< Stat bonuses */
-	int skills[SKILL_MAX];	/**< Skills */
+	int to_a;				/**< Plusses to AC */
+	int to_h;				/**< Plusses to hit */
+	int to_d;				/**< Plusses to damage */
 
-	s16b to_a;				/**< Plusses to AC */
-	s16b to_h;				/**< Plusses to hit */
-	s16b to_d;				/**< Plusses to damage */
-
+	int skills[SKILL_MAX];  /**< Skills */
 	bitflag flags[OF_SIZE];		/**< Shape (object) flags */
 	bitflag pflags[PF_SIZE];	/**< Shape (player) flags */
+	int modifiers[OBJ_MOD_MAX];	/**< Stat and other modifiers*/
 	struct element_info el_info[ELEM_MAX]; /**< Resists */
 
 	struct player_blow *blows;
