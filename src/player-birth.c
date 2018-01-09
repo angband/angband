@@ -458,7 +458,7 @@ void player_init(struct player *p)
 	p->class = classes;
 
 	/* Player starts unshapechanged */
-	player_set_shape(p, "normal");
+	p->shape = lookup_player_shape("normal");
 }
 
 /**

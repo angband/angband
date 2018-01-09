@@ -512,17 +512,44 @@ void player_take_terrain_damage(struct player *p, int y, int x)
 /**
  * Set the player's shape
  */
-void player_set_shape(struct player *p, char *name)
+struct player_shape *lookup_player_shape(char *name)
 {
 	struct player_shape *shape = shapes;
 	while (shape) {
 		if (streq(shape->name, name)) {
-			p->shape = shape;
-			return;
+			return shape;
 		}
 		shape = shape->next;
 	}
 	msg("Could not take %s shape!", name);
+	return NULL;
+}
+
+/**
+ * Revert to normal shape
+ */
+void player_resume_normal_shape(struct player *p)
+{
+	p->shape = lookup_player_shape("normal");
+	msg("You resume your usual shape.");
+}
+
+/**
+ * Make a player shapechange
+ */
+void player_shapechange(struct player *p, char *name)
+{
+	p->shape = lookup_player_shape(name);
+	msg("You assume the shape of a %s!", p->shape->name);
+	msg("Your gear merges into your body.");
+}
+
+/**
+ * Check if the player is shapechanged
+ */
+bool player_is_shapechanged(struct player *p)
+{
+	return streq(p->shape->name, "normal") ? false : true;
 }
 
 /**
