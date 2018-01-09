@@ -372,6 +372,8 @@ void do_cmd_pickup(struct command *cmd)
 	int energy_cost = 0;
 	struct object *obj = NULL;
 
+	if (player_is_shapechanged(player)) return;
+
 	/* See if we have an item already */
 	(void) cmd_get_arg_item(cmd, "item", &obj);
 
@@ -395,6 +397,8 @@ void do_cmd_pickup(struct command *cmd)
  */
 void do_cmd_autopickup(struct command *cmd)
 {
+	if (player_is_shapechanged(player)) return;
+
 	/* Get the obvious things */
 	player->upkeep->energy_use = do_autopickup(player)
 		* z_info->move_energy / 10;

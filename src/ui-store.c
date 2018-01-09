@@ -35,6 +35,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-util.h"
 #include "store.h"
 #include "target.h"
 #include "ui-display.h"
@@ -1177,6 +1178,9 @@ void enter_store(game_event_type type, game_event_data *data, void *user)
 	/* Check that we're on a store */
 	if (!square_isshop(cave, player->py, player->px)) {
 		msg("You see no store here.");
+		return;
+	} else if (player_is_shapechanged(player)) {
+		msg("There is a scream and the door slams shut!");
 		return;
 	}
 
