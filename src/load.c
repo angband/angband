@@ -607,6 +607,7 @@ int rd_player(void)
 	byte stat_max = 0;
 	char buf[80];
 	struct player_race *r;
+	struct player_shape *s;
 	struct player_class *c;
 
 	rd_string(player->full_name, sizeof(player->full_name));
@@ -626,6 +627,21 @@ int rd_player(void)
 	/* Verify player race */
 	if (!player->race) {
 		note(format("Invalid player race (%s).", buf));
+		return -1;
+	}
+
+	/* Player shape */
+	rd_string(buf, sizeof(buf));
+	for (s = shapes; s; s = s->next) {
+		if (streq(s->name, buf)) {
+			player->shape = s;
+			break;
+		}
+	}
+
+	/* If no player shape recorded, set to normal and hope for the best */
+	if (!player->shape) {
+		note(format("Invalid player shape (%s).", buf));
 		return -1;
 	}
 

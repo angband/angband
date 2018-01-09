@@ -58,6 +58,7 @@ void player_regen_mana(struct player *p);
 void player_update_light(struct player *p);
 int player_check_terrain_damage(struct player *p, int y, int x);
 void player_take_terrain_damage(struct player *p, int y, int x);
+void player_set_shape(struct player *p, char *name);
 bool player_can_cast(struct player *p, bool show_msg);
 bool player_can_study(struct player *p, bool show_msg);
 bool player_can_read(struct player *p, bool show_msg);

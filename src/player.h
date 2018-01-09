@@ -529,7 +529,6 @@ struct player {
 	u32b resting_turn;			/* Number of player turns spent resting */
 
 	s16b food;					/* Current nutrition */
-	byte shape;					/* Current shape */
 
 	byte confusing;				/* Glowing hands */
 	byte unignoring;			/* Unignoring */
@@ -562,6 +561,7 @@ struct player {
 	struct player_history hist;			/* Player history (see player-history.c) */
 
 	struct player_body body;			/* Equipment slots available */
+	struct player_shape *shape;			/* Current player shape */
 
 	struct object *gear;				/* Real gear */
 	struct object *gear_k;				/* Known gear */
