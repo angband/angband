@@ -709,7 +709,7 @@ static void project_monster_handler_MON_SPEED(project_monster_handler_context_t 
 static void project_monster_handler_MON_SLOW(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_SLOW] = context->dam;
-	if (context->charm) {
+	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
 	context->dam = 0;
@@ -719,7 +719,7 @@ static void project_monster_handler_MON_SLOW(project_monster_handler_context_t *
 static void project_monster_handler_MON_CONF(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_CONF] = context->dam;
-	if (context->charm) {
+	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
 	context->dam = 0;
@@ -729,7 +729,7 @@ static void project_monster_handler_MON_CONF(project_monster_handler_context_t *
 static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_SLEEP] = context->dam;
-	if (context->charm) {
+	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
 	context->dam = 0;
@@ -739,7 +739,7 @@ static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t 
 static void project_monster_handler_MON_HOLD(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_HOLD] = context->dam;
-	if (context->charm) {
+	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
 	context->dam = 0;
@@ -749,7 +749,7 @@ static void project_monster_handler_MON_HOLD(project_monster_handler_context_t *
 static void project_monster_handler_MON_STUN(project_monster_handler_context_t *context)
 {
 	context->mon_timed[MON_TMD_STUN] = context->dam;
-	if (context->charm) {
+	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
 	context->dam = 0;
