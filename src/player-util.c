@@ -510,6 +510,22 @@ void player_take_terrain_damage(struct player *p, int y, int x)
 }
 
 /**
+ * Set the player's shape
+ */
+void player_set_shape(struct player *p, char *name)
+{
+	struct player_shape *shape = shapes;
+	while (shape) {
+		if (streq(shape->name, name)) {
+			p->shape = shape;
+			return;
+		}
+		shape = shape->next;
+	}
+	msg("Could not take %s shape!", name);
+}
+
+/**
  * Return true if the player can cast a spell.
  *
  * \param p is the player
