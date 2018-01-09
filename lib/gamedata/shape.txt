@@ -1,0 +1,55 @@
+# File: shape.txt
+
+# This file is used to initialize the player shape information for Angband.
+
+# === Understanding shape.txt ===
+
+# Format:
+# name:shape name
+# combat:to-h:to-d:to-a
+# skill-disarm-phys:change
+# skill-disarm-magic:change
+# skill-save:change
+# skill-stealth:change
+# skill-search:change
+# skill-melee:change
+# skill-throw:change
+# skill-dig:change
+# obj-flags:object flags
+# player-flags:player flags
+# values:resistances and modifiers
+# blow:blow verb
+
+# 'name' is the name of the shape.
+
+# 'combat' is for modifiers to hit, to damage and to armor class.
+
+# 'skill-<skill name>' is for modifications to player skills - physical
+# and magical disarming, saving throws, stealth, searching, to hit (normal), 
+# to hit (throwing), digging.
+
+# 'obj-flags' is for object flags (as in src/list-obj-flags.h) gained
+# from the shapechange.
+
+# 'play-flags' is for player flags (as in src/list-player-flags.h) gained
+# from the shapechange.
+
+# 'values' is for resistances and modifiers gained from the shapechange.
+
+# 'blow' is for verbs for how the shapechanged character will hit monsters.
+# Frequencies can be adjusted by having more than one line the same.
+
+name:normal
+
+name:bear
+combat:5:5:5
+skill-disarm-phys:-5
+skill-disarm-magic:-10
+skill-melee:10
+values: STR[3] | INT[-2] | DEX[-2] | CON[2] | INFRA[1] | STEALTH[-3]
+blow:cuff
+blow:clout
+blow:claw
+blow:hit
+blow:hit
+blow:swipe

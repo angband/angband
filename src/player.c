@@ -291,8 +291,9 @@ void player_flags(struct player *p, bitflag f[OF_SIZE])
 	memcpy(f, p->race->flags, sizeof(p->race->flags));
 
 	/* Some classes become immune to fear at a certain plevel */
-	if (player_has(p, PF_BRAVERY_30) && p->lev >= 30)
+	if (player_has(p, PF_BRAVERY_30) && p->lev >= 30) {
 		of_on(f, OF_PROT_FEAR);
+	}
 }
 
 

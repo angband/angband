@@ -106,6 +106,16 @@ const char *list_obj_flag_names[] = {
 	NULL
 };
 
+static const char *obj_mods[] = {
+	#define STAT(a) #a,
+	#include "list-stats.h"
+	#undef STAT
+	#define OBJ_MOD(a) #a,
+	#include "list-object-modifiers.h"
+	#undef OBJ_MOD
+	NULL
+};
+
 const char *list_element_names[] = {
 	#define ELEM(a) #a,
 	#include "list-elements.h"
@@ -2275,18 +2285,6 @@ static enum parser_error parse_shape_combat(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_shape_stats(struct parser *p) {
-	struct player_shape *shape = parser_priv(p);
-	if (!shape)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	shape->stat_adj[STAT_STR] = parser_getint(p, "str");
-	shape->stat_adj[STAT_DEX] = parser_getint(p, "dex");
-	shape->stat_adj[STAT_CON] = parser_getint(p, "con");
-	shape->stat_adj[STAT_INT] = parser_getint(p, "int");
-	shape->stat_adj[STAT_WIS] = parser_getint(p, "wis");
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_shape_skill_disarm_phys(struct parser *p) {
 	struct player_shape *shape = parser_priv(p);
 	if (!shape)
@@ -2351,14 +2349,6 @@ static enum parser_error parse_shape_skill_dig(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_shape_infra(struct parser *p) {
-	struct player_shape *shape = parser_priv(p);
-	if (!shape)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	shape->infra = parser_getint(p, "infra");
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_shape_obj_flags(struct parser *p) {
 	struct player_shape *shape = parser_priv(p);
 	char *flags;
@@ -2413,6 +2403,8 @@ static enum parser_error parse_shape_values(struct parser *p) {
 		int value = 0;
 		int index = 0;
 		bool found = false;
+		if (!grab_int_value(shape->modifiers, obj_mods, t))
+			found = true;
 		if (!grab_index_and_int(&value, &index, list_element_names, "RES_", t)) {
 			found = true;
 			shape->el_info[index].res_level = value;
@@ -2446,7 +2438,6 @@ struct parser *init_parse_shape(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_shape_name);
 	parser_reg(p, "combat int to-h int to-d int to-a", parse_shape_combat);
-	parser_reg(p, "stats int str int int int wis int dex int con", parse_shape_stats);
 	parser_reg(p, "skill-disarm-phys int disarm", parse_shape_skill_disarm_phys);
 	parser_reg(p, "skill-disarm-magic int disarm", parse_shape_skill_disarm_magic);
 	parser_reg(p, "skill-save int save", parse_shape_skill_save);
@@ -2455,7 +2446,6 @@ struct parser *init_parse_shape(void) {
 	parser_reg(p, "skill-melee int melee", parse_shape_skill_melee);
 	parser_reg(p, "skill-throw int throw", parse_shape_skill_throw);
 	parser_reg(p, "skill-dig int dig", parse_shape_skill_dig);
-	parser_reg(p, "infra int infra", parse_shape_infra);
 	parser_reg(p, "obj-flags ?str flags", parse_shape_obj_flags);
 	parser_reg(p, "player-flags ?str flags", parse_shape_play_flags);
 	parser_reg(p, "values str values", parse_shape_values);
