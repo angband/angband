@@ -892,12 +892,16 @@ static bool monster_turn_multiply(struct chunk *c, struct monster *mon)
 static bool monster_turn_should_stagger(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
-
 	int chance = 0;
 
-	/* Confused */
-	if (mon->m_timed[MON_TMD_CONF]) {
-		chance = CONF_ERRATIC_CHANCE;
+	/* Increase chance of being erratic for every level of confusion */
+	int conf_level = monster_effect_level(mon, MON_TMD_CONF);
+	while (conf_level) {
+		int accuracy = 100 - chance;
+		accuracy *= (100 - CONF_ERRATIC_CHANCE);
+		accuracy /= 100;
+		chance = 100 - accuracy;
+		conf_level--;
 	}
 
 	/* RAND_25 and RAND_50 are cumulative */
@@ -1569,8 +1573,10 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		mspeed = mon->mspeed;
 		if (mon->m_timed[MON_TMD_FAST])
 			mspeed += 10;
-		if (mon->m_timed[MON_TMD_SLOW])
-			mspeed -= 2;
+		if (mon->m_timed[MON_TMD_SLOW]) {
+			int slow_level = monster_effect_level(mon, MON_TMD_SLOW);
+			mspeed -= (2 * slow_level);
+		}
 
 		/* Give this monster some energy */
 		mon->energy += turn_energy(mspeed);
