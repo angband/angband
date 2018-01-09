@@ -169,19 +169,22 @@ static void prt_stat(int stat, int row, int col)
 
 
 /**
- * Prints "title", including "wizard" or "winner" as needed.
+ * Prints title, including wizard, winner or shape as needed.
  */
 static void prt_title(int row, int col)
 {
 	const char *p;
 
 	/* Wizard, winner or neither */
-	if (player->wizard)
+	if (player->wizard) {
 		p = "[=-WIZARD-=]";
-	else if (player->total_winner || (player->lev > PY_MAX_LEVEL))
+	} else if (player->total_winner || (player->lev > PY_MAX_LEVEL)) {
 		p = "***WINNER***";
-	else
+	} else if (player_is_shapechanged(player)) {
+		p = player_shape_title(player->shape);
+	} else {
 		p = player->class->title[(player->lev - 1) / 5];
+	}
 
 	prt_field(p, row, col);
 }

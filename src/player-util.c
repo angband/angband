@@ -510,9 +510,9 @@ void player_take_terrain_damage(struct player *p, int y, int x)
 }
 
 /**
- * Set the player's shape
+ * Find a player shape from the name
  */
-struct player_shape *lookup_player_shape(char *name)
+struct player_shape *lookup_player_shape(const char *name)
 {
 	struct player_shape *shape = shapes;
 	while (shape) {
@@ -521,7 +521,36 @@ struct player_shape *lookup_player_shape(char *name)
 		}
 		shape = shape->next;
 	}
-	msg("Could not take %s shape!", name);
+	msg("Could not find %s shape!", name);
+	return NULL;
+}
+
+/**
+ * Find a player shape index from the shape name
+ */
+int shape_name_to_idx(const char *name)
+{
+	struct player_shape *shape = lookup_player_shape(name);
+	if (shape) {
+		return shape->sidx;
+	} else {
+		return -1;
+	}
+}
+
+/**
+ * Find a player shape from the index
+ */
+struct player_shape *player_shape_by_idx(int index)
+{
+	struct player_shape *shape = shapes;
+	while (shape) {
+		if (shape->sidx == index) {
+			return shape;
+		}
+		shape = shape->next;
+	}
+	msg("Could not find shape %d!", index);
 	return NULL;
 }
 
@@ -535,13 +564,13 @@ void player_resume_normal_shape(struct player *p)
 }
 
 /**
- * Make a player shapechange
+ * Print a capitalised version of the player's shape name
  */
-void player_shapechange(struct player *p, char *name)
+const char *player_shape_title(struct player_shape *shape)
 {
-	p->shape = lookup_player_shape(name);
-	msg("You assume the shape of a %s!", p->shape->name);
-	msg("Your gear merges into your body.");
+	char *name = (char *) shape->name;
+	my_strcap(name);
+	return name;
 }
 
 /**

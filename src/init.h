@@ -26,7 +26,7 @@
  */
 struct angband_constants
 {
-	/* Array bounds, set on parsing edit files */
+	/* Array bounds etc, set on parsing edit files */
 	u16b f_max;			/**< Maximum number of terrain features */
 	u16b trap_max;		/**< Maximum number of trap kinds */
 	u16b k_max;			/**< Maximum number of object base kinds */
@@ -50,6 +50,7 @@ struct angband_constants
 	u16b calculation_max;	/**< Maximum number of object power calculations */
 	u16b property_max;	/**< Maximum number of object properties */
 	u16b ordinary_kind_max;	/**< Maximum number of objects in object.txt */
+	u16b shape_max;		/**< Maximum number of player shapes */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */

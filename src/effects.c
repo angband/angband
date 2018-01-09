@@ -4325,6 +4325,25 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 }
 
 /**
+ * Perform a player shapechange
+ */
+bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
+{
+	struct player_shape *shape = player_shape_by_idx(context->p1);
+
+	/* Change shape */
+	player->shape = lookup_player_shape(shape->name);
+	msg("You assume the shape of a %s!", shape->name);
+	msg("Your gear merges into your body.");
+
+	/* Update bonuses */
+	player->upkeep->update |= (PU_BONUS);
+	update_stuff(player);
+
+	return true;
+}
+
+/**
  * One Ring activation
  */
 bool effect_handler_BIZARRE(effect_handler_context_t *context)
@@ -4732,6 +4751,12 @@ int effect_param(int index, const char *type)
 					val = ENCH_TODAM;
 				else if (streq(type, "TOAC"))
 					val = ENCH_TOAC;
+				break;
+			}
+
+				/* Player shape name */
+			case EF_SHAPECHANGE: {
+				val = shape_name_to_idx(type);
 				break;
 			}
 

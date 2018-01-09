@@ -2271,6 +2271,7 @@ static enum parser_error parse_shape_name(struct parser *p) {
 	shape->next = h;
 	shape->name = string_make(parser_getstr(p, "name"));
 	parser_setpriv(p, shape);
+	shape->sidx = z_info->shape_max++;
 	return PARSE_ERROR_NONE;
 }
 
@@ -2435,6 +2436,7 @@ static enum parser_error parse_shape_blow(struct parser *p) {
 
 struct parser *init_parse_shape(void) {
 	struct parser *p = parser_new();
+	z_info->shape_max = 0;
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_shape_name);
 	parser_reg(p, "combat int to-h int to-d int to-a", parse_shape_combat);
