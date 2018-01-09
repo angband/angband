@@ -120,10 +120,17 @@ static void get_target(struct source origin, int dir, int *ty, int *tx, int *fla
 	switch (origin.what) {
 		case SRC_MONSTER: {
 			struct monster *monster = cave_monster(cave, origin.which.monster);
+			int conf_level = monster_effect_level(monster, MON_TMD_CONF);
+			int accuracy = 100;
+			while (conf_level) {
+				accuracy *= (100 - CONF_RANDOM_CHANCE);
+				accuracy /= 100;
+				conf_level--;
+			}
 
 			*flags |= (PROJECT_PLAY);
 
-			if (monster->m_timed[MON_TMD_CONF] > 0 && one_in_(CONF_RANDOM_CHANCE)) {
+			if (randint1(100) > accuracy) {
 				dir = randint1(9);
 				*ty = monster->fy + ddy[dir];
 				*tx = monster->fx + ddx[dir];
@@ -3549,13 +3556,21 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	switch (context->origin.what) {
 		case SRC_MONSTER: {
 			struct monster *mon = cave_monster(cave, context->origin.which.monster);
+			int conf_level = monster_effect_level(mon, MON_TMD_CONF);
+			int accuracy = 100;
+			while (conf_level) {
+				accuracy *= (100 - CONF_RANDOM_CHANCE);
+				accuracy /= 100;
+				conf_level--;
+			}
+
 			if (monster_is_powerful(mon)) {
 				rad++;
 			}
 			flg |= PROJECT_PLAY;
 			flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-			if (mon->m_timed[MON_TMD_CONF] > 0 && one_in_(CONF_RANDOM_CHANCE)) {
+			if (randint1(100) > accuracy) {
 				int dir = randint1(9);
 				ty = mon->fy + ddy[dir];
 				tx = mon->fx + ddx[dir];

@@ -28,7 +28,7 @@
 
 #define CONF_ERRATIC_CHANCE		30  /* Percentage chance of erratic movement when confused */
 #define CONF_HIT_REDUCTION		20  /* Percentage reduction in accuracy for spells */
-#define CONF_RANDOM_CHANCE		2   /* 1 in __ chance of an aimed spell going in random direction */
+#define CONF_RANDOM_CHANCE		40  /* Percentage chance of an aimed spell going in random direction */
 
 #define DEBUFF_CRITICAL_HIT		10  /* Effective increase in to-hit for critical hit calcs */
 
@@ -54,5 +54,6 @@ int mon_timed_name_to_idx(const char *name);
 bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag, bool id);
 bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag, bool id);
 bool mon_clear_timed(struct monster *mon, int effect_type, int flag, bool id);
+int monster_effect_level(struct monster *mon, int effect_type);
 
 #endif /* MONSTER_TIMED_H */

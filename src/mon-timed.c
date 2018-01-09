@@ -298,3 +298,14 @@ bool mon_clear_timed(struct monster *mon, int effect_type, int flag, bool id)
 		return mon_set_timed(mon, effect_type, 0, flag, id);
 	}
 }
+
+/**
+ * The level at which an effect is affecting a monster.
+ * Levels range from 0 (unaffected) to 5 (maximum effect).
+ */
+int monster_effect_level(struct monster *mon, int effect_type)
+{
+	struct mon_timed_effect *effect = &effects[effect_type];
+	int divisor = MAX(effect->max_timer / 5, 1);
+	return mon->m_timed[effect_type] / divisor;
+}

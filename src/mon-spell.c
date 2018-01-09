@@ -185,9 +185,15 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 		hits = false;
 	} else {
 		int rlev = MAX(mon->race->level, 1);
-		int debuff = mon->m_timed[MON_TMD_CONF] ? CONF_HIT_REDUCTION : 0;
+		int conf_level = monster_effect_level(mon, MON_TMD_CONF);
+		int accuracy = 100;
+		while (conf_level) {
+			accuracy *= (100 - CONF_HIT_REDUCTION);
+			accuracy /= 100;
+			conf_level--;
+		}
 
-		hits = check_hit(player, spell->hit, rlev, debuff);
+		hits = check_hit(player, spell->hit, rlev, accuracy);
 	}
 
 	/* Tell the player what's going on */
