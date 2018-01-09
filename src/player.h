@@ -216,6 +216,8 @@ struct player_shape {
 	struct player_shape *next;
 	const char *name;
 
+	int sidx;
+
 	int to_a;				/**< Plusses to AC */
 	int to_h;				/**< Plusses to hit */
 	int to_d;				/**< Plusses to damage */
