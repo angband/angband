@@ -254,7 +254,7 @@ static void spell_menu_browse(struct menu *m, const char *noun)
 void textui_book_browse(const struct object *obj)
 {
 	struct menu *m;
-	const char *noun = object_to_book(obj)->realm->spell_noun;
+	const char *noun = player_object_to_book(player, obj)->realm->spell_noun;
 
 	m = spell_menu_new(obj, spell_okay_to_browse);
 	if (m) {
@@ -292,7 +292,7 @@ int textui_get_spell_from_book(const char *verb, struct object *book,
 							   const char *error,
 							   bool (*spell_filter)(int spell_index))
 {
-	const char *noun = object_to_book(book)->realm->spell_noun;
+	const char *noun = player_object_to_book(player, book)->realm->spell_noun;
 	struct menu *m;
 
 	track_object(player->upkeep, book);
