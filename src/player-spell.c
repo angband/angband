@@ -199,17 +199,37 @@ struct magic_realm *class_magic_realms(const struct player_class *c, int *count)
 
 
 /**
- * Get the spellbook structure from an object which is a book the player can
- * cast from
+ * Get the spellbook structure from any object which is a book
  */
 const struct class_book *object_to_book(const struct object *obj)
 {
+	struct player_class *class = classes;
+	while (class) {
+		int i;
+
+		for (i = 0; i < class->magic.num_books; i++)
+		if ((obj->tval == class->magic.books[i].tval) &&
+			(obj->sval == class->magic.books[i].sval)) {
+			return &class->magic.books[i];
+		}
+	}
+
+	return NULL;
+}
+
+/**
+ * Get the spellbook structure from an object which is a book the player can
+ * cast from
+ */
+const struct class_book *player_object_to_book(struct player *p,
+											   const struct object *obj)
+{
 	int i;
 
-	for (i = 0; i < player->class->magic.num_books; i++)
-		if ((obj->tval == player->class->magic.books[i].tval) &&
-			(obj->sval == player->class->magic.books[i].sval))
-			return &player->class->magic.books[i];
+	for (i = 0; i < p->class->magic.num_books; i++)
+		if ((obj->tval == p->class->magic.books[i].tval) &&
+			(obj->sval == p->class->magic.books[i].sval))
+			return &p->class->magic.books[i];
 
 	return NULL;
 }
@@ -237,7 +257,7 @@ const struct class_spell *spell_by_index(int index)
  */
 int spell_collect_from_book(const struct object *obj, int **spells)
 {
-	const struct class_book *book = object_to_book(obj);
+	const struct class_book *book = player_object_to_book(player, obj);
 	int i, n_spells = 0;
 
 	/* Count the spells */
@@ -261,7 +281,7 @@ int spell_collect_from_book(const struct object *obj, int **spells)
 int spell_book_count_spells(const struct object *obj,
 		bool (*tester)(int spell))
 {
-	const struct class_book *book = object_to_book(obj);
+	const struct class_book *book = player_object_to_book(player, obj);
 	int i, n_spells = 0;
 
 	for (i = 0; i < book->num_spells; i++)
