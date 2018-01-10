@@ -392,13 +392,6 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	/* Apply the player damage bonuses */
 	dmg += player_damage_bonus(&p->state);
 
-	/* No negative damage; change verb if no damage done */
-	if (dmg <= 0) {
-		dmg = 0;
-		msg_type = MSG_MISS;
-		my_strcpy(verb, "fail to harm", sizeof(verb));
-	}
-
 	/* Substitute shape-specific blows for shapechanged players */
 	if (player_is_shapechanged(player)) {
 		int choice = randint0(player->shape->num_blows);
@@ -407,6 +400,13 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 			blow = blow->next;
 		}
 		my_strcpy(verb, blow->name, sizeof(verb));
+	}
+
+	/* No negative damage; change verb if no damage done */
+	if (dmg <= 0) {
+		dmg = 0;
+		msg_type = MSG_MISS;
+		my_strcpy(verb, "fail to harm", sizeof(verb));
 	}
 
 	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {
@@ -749,7 +749,7 @@ void do_cmd_fire(struct command *cmd) {
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;

@@ -181,7 +181,10 @@ static void prt_title(int row, int col)
 	} else if (player->total_winner || (player->lev > PY_MAX_LEVEL)) {
 		p = "***WINNER***";
 	} else if (player_is_shapechanged(player)) {
-		p = player_shape_title(player->shape);
+		char buf[20];
+		my_strcpy(buf, player->shape->name, sizeof(buf));
+		my_strcap(buf);
+		p = buf;
 	} else {
 		p = player->class->title[(player->lev - 1) / 5];
 	}
@@ -505,8 +508,20 @@ static void prt_dex(int row, int col) { prt_stat(STAT_DEX, row, col); }
 static void prt_wis(int row, int col) { prt_stat(STAT_WIS, row, col); }
 static void prt_int(int row, int col) { prt_stat(STAT_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(STAT_CON, row, col); }
-static void prt_race(int row, int col) { prt_field(player->race->name, row, col); }
-static void prt_class(int row, int col) { prt_field(player->class->name, row, col); }
+static void prt_race(int row, int col) {
+	if (player_is_shapechanged(player)) {
+		prt_field("", row, col);
+	} else {
+		prt_field(player->race->name, row, col);
+	}
+}
+static void prt_class(int row, int col) {
+	if (player_is_shapechanged(player)) {
+		prt_field("", row, col);
+	} else {
+		prt_field(player->class->name, row, col);
+	}
+}
 
 
 /**
