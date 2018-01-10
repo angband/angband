@@ -201,17 +201,18 @@ struct magic_realm *class_magic_realms(const struct player_class *c, int *count)
 /**
  * Get the spellbook structure from any object which is a book
  */
-const struct class_book *object_to_book(const struct object *obj)
+const struct class_book *object_kind_to_book(const struct object_kind *kind)
 {
 	struct player_class *class = classes;
 	while (class) {
 		int i;
 
 		for (i = 0; i < class->magic.num_books; i++)
-		if ((obj->tval == class->magic.books[i].tval) &&
-			(obj->sval == class->magic.books[i].sval)) {
+		if ((kind->tval == class->magic.books[i].tval) &&
+			(kind->sval == class->magic.books[i].sval)) {
 			return &class->magic.books[i];
 		}
+		class = class->next;
 	}
 
 	return NULL;
