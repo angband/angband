@@ -75,6 +75,7 @@ EFFECT(LIGHT_LEVEL,					false,	NULL,		0,		EFINFO_NONE,	"completely lights up and
 EFFECT(LIGHT_AREA,					false,	NULL,		2,		EFINFO_LIGHT,	"lights up the surrounding area, causing %s damage to light-sensitive creatures within %d grids")
 EFFECT(DARKEN_AREA,					false,	NULL,		0,		EFINFO_NONE,	"darkens the surrounding area")
 EFFECT(SPOT,						false,	"dam",		3,		EFINFO_BALL,	"fires a ball of %s with radius %d, dealing %s damage at the centre")
+EFFECT(SPHERE,						false,	"dam",		3,		EFINFO_BALL,	"fires a ball of %s with radius %d, dealing %s damage at the centre")
 EFFECT(BALL,						true,	"dam",		3,		EFINFO_BALL,	"fires a ball of %s with radius %d, dealing %s damage at the centre")
 EFFECT(BREATH,						true,	NULL,		3,		EFINFO_BREATH,	"breathes a cone of %s with width %d degrees, dealing %s damage at the source")
 EFFECT(ARC,							true,	NULL,		3,		EFINFO_BALL,	"produces a cone of %s with width %d degrees, dealing %s damage at the source")

@@ -3538,6 +3538,26 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
 }
 
 /**
+ * Project from the player's grid, act as a ball
+ * Affect grids, objects, and monsters
+ */
+bool effect_handler_SPHERE(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, true);
+	int rad = context->p2 ? context->p2 : 0;
+
+	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Aim at the target, explode */
+	if (project(context->origin, rad, py, px, dam, context->p1, flg, 0, 0, NULL))
+		context->ident = true;
+
+	return true;
+}
+
+/**
  * Cast a ball spell
  * Stop if we hit a monster or the player, act as a ball
  * Allow target mode to pass over monsters
