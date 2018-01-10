@@ -4387,9 +4387,10 @@ bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 	msg("You assume the shape of a %s!", shape->name);
 	msg("Your gear merges into your body.");
 
-	/* Update bonuses */
+	/* Update */
 	player->upkeep->update |= (PU_BONUS);
-	update_stuff(player);
+	player->upkeep->redraw |= (PR_TITLE | PR_MISC);
+	handle_stuff(player);
 
 	return true;
 }
@@ -4740,11 +4741,13 @@ int effect_param(int index, const char *type)
 			case EF_PROJECT_LOS:
 			case EF_PROJECT_LOS_AWARE:
 			case EF_SPOT:
+			case EF_SPHERE:
 			case EF_BALL:
 			case EF_BREATH:
 			case EF_ARC:
 			case EF_SHORT_BEAM:
 			case EF_SWARM:
+			case EF_STRIKE:
 			case EF_STAR:
 			case EF_STAR_BALL:
 			case EF_BOLT:
