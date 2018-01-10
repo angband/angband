@@ -6,7 +6,7 @@
 # turnover: turnover				- how many items the store turns over
 # slots: min : max					- number of 'normal' slots to keep stocked
 # normal: type name : item name		- for the normal stocking list
-# always: type name : item name		- for things to always stock
+# always: type name : ?item name	- for things to always stock
 # buy: type name					- base types the store will buy
 # buy-flag: flag : type name		- types to buy if the flag is present
 #
@@ -128,21 +128,13 @@ owner:20000:Gunnar the Paladin (Human)
 owner:25000:Delilah the Pure (Elf)
 owner:30000:Bosk the Wise (Dwarf)
 slots:0:2
-turnover:5
-always:prayer book:[Beginners Handbook]
-always:prayer book:[Words of Wisdom]
-always:prayer book:[Chants and Blessings]
-always:magic book:[Magic for Beginners]
-always:magic book:[Conjurings and Tricks]
-always:magic book:[Incantations and Illusions]
-normal:prayer book:[Exorcism and Dispelling]
-normal:magic book:[Sorcery and Evocations]
-always:magic book:[Path of the Mage]
-always:magic book:[Attacks and Knowledge]
-always:nature book:[Lesser Charms]
-always:nature book:[Gifts of Nature]
+turnover:0
+always:prayer book
+always:magic book
+always:nature book
 buy:magic book
 buy:prayer book
+buy:nature book
 
 # Alchemist
 store:5:Alchemy Shop

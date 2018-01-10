@@ -38,6 +38,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-spell.h"
 #include "store.h"
 #include "target.h"
 #include "debug.h"
@@ -194,22 +195,50 @@ static enum parser_error parse_normal(struct parser *p) {
 static enum parser_error parse_always(struct parser *p) {
 	struct store *s = parser_priv(p);
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
-	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	struct object_kind *kind = NULL;
 
-	struct object_kind *kind = lookup_kind(tval, sval);
-	if (!kind)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
+	/* Mostly svals are given, but special handling is needed for books */
+	if (parser_hasval(p, "sval")) {
+		int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+		kind = lookup_kind(tval, sval);
+		if (!kind) {
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+		}
 
-	/* Expand if necessary */
-	if (!s->always_num) {
-		s->always_size = 8;
-		s->always_table = mem_zalloc(s->always_size * sizeof *s->always_table);
-	} else if (s->always_num >= s->always_size) {
-		s->always_size += 8; 
-		s->always_table = mem_realloc(s->always_table, s->always_size * sizeof *s->always_table);
+		/* Expand if necessary */
+		if (!s->always_num) {
+			s->always_size = 8;
+			s->always_table = mem_zalloc(s->always_size * sizeof *s->always_table);
+		} else if (s->always_num >= s->always_size) {
+			s->always_size += 8;
+			s->always_table = mem_realloc(s->always_table, s->always_size * sizeof *s->always_table);
+		}
+
+		s->always_table[s->always_num++] = kind;
+	} else {
+		/* Books */
+		struct object_base *book_base = &kb_info[tval];
+		int i;
+
+		/* Run across all the books for this type, add the town books */
+		for (i = 1; i <= book_base->num_svals; i++) {
+			const struct class_book *book = NULL;
+			kind = lookup_kind(tval, i);
+			book = object_kind_to_book(kind);
+			if (!book->dungeon) {
+				/* Expand if necessary */
+				if (!s->always_num) {
+					s->always_size = 8;
+					s->always_table = mem_zalloc(s->always_size * sizeof *s->always_table);
+				} else if (s->always_num >= s->always_size) {
+					s->always_size += 8;
+					s->always_table = mem_realloc(s->always_table, s->always_size * sizeof *s->always_table);
+				}
+
+				s->always_table[s->always_num++] = kind;
+			}
+		}
 	}
-
-	s->always_table[s->always_num++] = kind;
 
 	return PARSE_ERROR_NONE;
 }
@@ -277,7 +306,7 @@ struct parser *init_parse_stores(void) {
 	parser_reg(p, "slots uint min uint max", parse_slots);
 	parser_reg(p, "turnover uint turnover", parse_turnover);
 	parser_reg(p, "normal sym tval sym sval", parse_normal);
-	parser_reg(p, "always sym tval sym sval", parse_always);
+	parser_reg(p, "always sym tval ?sym sval", parse_always);
 	parser_reg(p, "buy str base", parse_buy);
 	parser_reg(p, "buy-flag sym flag str base", parse_buy_flag);
 	return p;
@@ -1301,6 +1330,14 @@ static void store_maint(struct store *s)
 		if (!restock_attempts)
 			quit_fmt("Unable to (de-)stock store %d. Please report this bug",
 					 s->sidx + 1);
+	} else {
+		/* For the Bookseller, occasionally sell a book */
+		if (s->always_num && s->stock_num) {
+			int sales = randint1(s->stock_num);
+			while (sales--) {
+				store_delete_random(s);
+			}
+		}
 	}
 
 	/* Ensure staples are created */
