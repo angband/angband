@@ -307,5 +307,5 @@ int monster_effect_level(struct monster *mon, int effect_type)
 {
 	struct mon_timed_effect *effect = &effects[effect_type];
 	int divisor = MAX(effect->max_timer / 5, 1);
-	return mon->m_timed[effect_type] / divisor;
+	return MIN((mon->m_timed[effect_type] / divisor) + 1, 5);
 }
