@@ -306,6 +306,14 @@ static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
 
 	/* Pick up object, if legal */
 	if (current) {
+	if (player_is_shapechanged(player)) {
+		msg("You cannot do this while in %s form.",	player->shape->name);
+		if (get_check("Do you want to change back?" )) {
+			player_resume_normal_shape(player);
+		} else {
+			return 0;
+		}
+	}
 		/* Pick up the object */
 		player_pickup_aux(p, current, 0, domsg);
 
@@ -371,8 +379,6 @@ void do_cmd_pickup(struct command *cmd)
 {
 	int energy_cost = 0;
 	struct object *obj = NULL;
-
-	if (player_is_shapechanged(player)) return;
 
 	/* See if we have an item already */
 	(void) cmd_get_arg_item(cmd, "item", &obj);

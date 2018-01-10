@@ -561,16 +561,11 @@ void player_resume_normal_shape(struct player *p)
 {
 	p->shape = lookup_player_shape("normal");
 	msg("You resume your usual shape.");
-}
 
-/**
- * Print a capitalised version of the player's shape name
- */
-const char *player_shape_title(struct player_shape *shape)
-{
-	char *name = (char *) shape->name;
-	my_strcap(name);
-	return name;
+	/* Update */
+	player->upkeep->update |= (PU_BONUS);
+	player->upkeep->redraw |= (PR_TITLE | PR_MISC);
+	handle_stuff(player);
 }
 
 /**

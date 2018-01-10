@@ -229,7 +229,7 @@ void do_cmd_uninscribe(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -264,7 +264,7 @@ void do_cmd_inscribe(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -324,7 +324,7 @@ void do_cmd_takeoff(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -362,7 +362,7 @@ void do_cmd_wield(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -453,7 +453,7 @@ void do_cmd_drop(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -657,7 +657,7 @@ void do_cmd_read_scroll(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -687,7 +687,7 @@ void do_cmd_use_staff(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -718,7 +718,7 @@ void do_cmd_aim_wand(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -749,7 +749,7 @@ void do_cmd_zap_rod(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -780,7 +780,7 @@ void do_cmd_activate(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -828,7 +828,7 @@ void do_cmd_quaff_potion(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -854,7 +854,7 @@ void do_cmd_use(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -956,7 +956,7 @@ void do_cmd_refill(struct command *cmd)
 
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
@@ -1004,12 +1004,10 @@ void do_cmd_cast(struct command *cmd)
 	const struct class_spell *spell;
 
 	if (player_is_shapechanged(player)) {
-		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Change back to your original form? " )) {
 			player_resume_normal_shape(player);
-		} else {
-			return;
 		}
+		return;
 	}
 
 	/* Check the player can cast spells at all */
@@ -1134,7 +1132,7 @@ void do_cmd_study(struct command *cmd)
 {
 	if (player_is_shapechanged(player)) {
 		msg("You cannot do this while in %s form.",	player->shape->name);
-		if (get_check("Do you want to change back?" )) {
+		if (get_check("Do you want to change back? " )) {
 			player_resume_normal_shape(player);
 		} else {
 			return;
