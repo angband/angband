@@ -666,6 +666,9 @@ static void project_monster_handler_MON_CLONE(project_monster_handler_context_t 
 /* Polymorph monster (Use "dam" as "power") */
 static void project_monster_handler_MON_POLY(project_monster_handler_context_t *context)
 {
+	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
+		context->dam += context->dam / 2;
+	}
 	/* Polymorph later */
 	context->do_poly = context->dam;
 
@@ -708,50 +711,50 @@ static void project_monster_handler_MON_SPEED(project_monster_handler_context_t 
 /* Slow Monster (Use "dam" as "power") */
 static void project_monster_handler_MON_SLOW(project_monster_handler_context_t *context)
 {
-	context->mon_timed[MON_TMD_SLOW] = context->dam;
 	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
+	context->mon_timed[MON_TMD_SLOW] = context->dam;
 	context->dam = 0;
 }
 
 /* Confusion (Use "dam" as "power") */
 static void project_monster_handler_MON_CONF(project_monster_handler_context_t *context)
 {
-	context->mon_timed[MON_TMD_CONF] = context->dam;
 	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
+	context->mon_timed[MON_TMD_CONF] = context->dam;
 	context->dam = 0;
 }
 
 /* Sleep (Use "dam" as "power") */
 static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t *context)
 {
-	context->mon_timed[MON_TMD_SLEEP] = context->dam;
 	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
+	context->mon_timed[MON_TMD_SLEEP] = context->dam;
 	context->dam = 0;
 }
 
 /* Hold (Use "dam" as "power") */
 static void project_monster_handler_MON_HOLD(project_monster_handler_context_t *context)
 {
-	context->mon_timed[MON_TMD_HOLD] = context->dam;
 	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
+	context->mon_timed[MON_TMD_HOLD] = context->dam;
 	context->dam = 0;
 }
 
 /* Stun (Use "dam" as "power") */
 static void project_monster_handler_MON_STUN(project_monster_handler_context_t *context)
 {
-	context->mon_timed[MON_TMD_STUN] = context->dam;
 	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
 		context->dam += context->dam / 2;
 	}
+	context->mon_timed[MON_TMD_STUN] = context->dam;
 	context->dam = 0;
 }
 
