@@ -21,6 +21,8 @@ void player_spells_free(struct player *p);
 struct magic_realm *class_magic_realms(const struct player_class *c,
 									   int *count);
 const struct class_book *object_to_book(const struct object *obj);
+const struct class_book *player_object_to_book(struct player *p,
+											   const struct object *obj);
 const struct class_spell *spell_by_index(int index);
 int spell_collect_from_book(const struct object *obj, int **spells);
 int spell_book_count_spells(const struct object *obj,

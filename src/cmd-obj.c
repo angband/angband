@@ -1098,7 +1098,7 @@ void do_cmd_study_book(struct command *cmd)
 			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
 		return;
 
-	book = object_to_book(book_obj);
+	book = player_object_to_book(player, book_obj);
 	track_object(player->upkeep, book_obj);
 	handle_stuff(player);
 
