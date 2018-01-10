@@ -2250,6 +2250,7 @@ desc:  You will also be blinded for 10+1d10 turns, unless you
 desc: have resistance to blindness or light.
 desc:  This prayer has no effect when used in the town.
 
+
 ############### NEW MAGE ###############
 name:New Mage
 stats:-3:3:0:0:-2
@@ -2520,3 +2521,244 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 2 + 300
 desc:Shoots a radius-3 mana ball that does unresistable
 desc: damage to each monster in its area of effect.
+
+
+############### DRUID ###############
+name:Druid
+stats:-2:0:3:-2:0
+skill-disarm-phys:30:10
+skill-disarm-magic:30:10
+skill-device:24:10
+skill-save:30:10
+skill-stealth:3:0
+skill-search:12:12
+skill-melee:48:12
+skill-shoot:40:30
+skill-throw:40:30
+skill-dig:0:0
+info:0:0
+attack:4:35:3
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:hafted:Whip:1:1
+equip:scroll:Word of Recall:1:1
+flags:ZERO_FAIL | CHOOSE_SPELLS | CHARM
+title:Wanderer
+title:Tamer
+title:Nurturer
+title:Gardener
+title:Forester
+title:Creator
+title:Earth Warder
+title:Windrider
+title:Stormwielder
+title:High Mystic
+
+magic:1:350:5
+
+book:nature book:town:[Lesser Charms]:6:nature
+book-graphics:?:y
+book-properties:25:40:1 to 100
+equip:nature book:[Lesser Charms]:1:1
+
+spell:Detect Life:1:1:23:4
+effect:DETECT_LIVING_MONSTERS
+dice:22d40
+desc:Detects all living monsters in the immediate area, for one turn only.
+
+spell:Satisfy Hunger:2:2:25:5
+effect:SET_NOURISH
+dice:16999
+desc:Magically renders you well-fed (but not satiated).
+desc:  This will also cure a bloated stomach.
+
+spell:Turn Stone to Mud:3:2:28:6
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Produces a beam that destroys the first section of wall it hits,
+desc: unless it is a permanent wall.  Each monster caught in the beam that
+desc: is susceptible to rock remover takes 20+1d30 points of damage.
+
+spell:Stinking Cloud:3:2:27:3
+effect:BALL:POIS:2
+dice:$B
+expr:B:PLAYER_LEVEL:/ 2 + 10
+desc:Shoots a radius-2 poison ball.
+
+spell:Confuse Monster:5:3:30:12
+effect:BOLT_AWARE:MON_CONF
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Confuse a single monster; more effective against animals.
+
+spell:Slow Monster:6:4:30:15
+effect:BOLT_STATUS:MON_SLOW
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Slows down a monster; more effective against animals.
+
+book:nature book:town:[Gifts of Nature]:6:nature
+book-graphics:?:y
+book-properties:400:40:10 to 100
+
+spell:Cure Poison:4:4:30:7
+effect:CURE:POISONED
+desc:Neutralizes poison.
+
+spell:Resist Poison:7:6:32:10
+effect:TIMED_INC:OPP_POIS
+dice:20+d20
+desc:Grants you resistance to poison for 20+1d20 turns.
+
+spell:Sense Surroundings:9:4:35:10
+effect:MAP_AREA
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
+expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
+desc:Maps the nearby area.
+
+spell:Fox Form:11:10:40:30
+effect:SHAPECHANGE:fox
+desc:Changes you into the shape of a fox, quick, stealthy, but poor at
+desc: fighting. While shapechanged you cannot use items.
+
+spell:Lightning Strike:12:6:35:20
+effect:STRIKE:ELEC:0
+dice:$Dd4
+expr:D:PLAYER_LEVEL:/ 4
+effect:STRIKE:SOUND:3
+dice:$B
+expr:B:PLAYER_LEVEL:+ 5
+desc:Strikes a target from above with a lightning bolt, followed by a clap
+desc: of thunder.
+
+spell:Earth Rising:14:5:40:25
+effect:SHORT_BEAM:SHARD
+param:4:5
+dice:$Dd6
+expr:D:PLAYER_LEVEL:/ 3 + 2
+desc:Causes shards to explode in a line out of the earth, striking objects and
+desc: monsters. Length of the line increases with player level.
+
+book:nature book:dungeon:[Creature Dominion]:5:nature
+book-graphics:?:o
+book-properties:10000:15:30 to 100
+
+spell:Alter Creature:11:7:45:40
+effect:BOLT_STATUS:MON_POLY
+dice:$B
+expr:B:PLAYER_LEVEL:+ 10
+desc:Attempts to polymorph a single monster; more effective against animals.
+desc:  Uniques are not affected.
+
+spell:Earthquake:18:18:60:20
+effect:EARTHQUAKE
+param:10
+desc:Causes a 10-square radius earthquake around you.
+desc:  Earthquakes may damage monsters and destroy items in some
+desc: squares in the area of effect.
+desc:  Artifacts will not be destroyed by this spell.
+desc:  This spell has no effect when used in the town.
+
+spell:Probing:20:20:50:80
+effect:PROBE
+desc:Probes each monster within line of sight, giving information on the
+desc: current hit points of the monster and many of its characteristics
+desc: and abilities.
+
+spell:Mass Sleep:25:15:50:60
+effect:PROJECT_LOS:MON_SLEEP
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put to sleep each monster within line of sight.
+desc:  Monsters that resist sleep are not affected.
+
+spell:Mass Confusion:25:25:60:60
+effect:PROJECT_LOS_AWARE:MON_CONF
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to strongly confuse each monster in line of sight.
+desc:  Monsters that resist confusion are not affected.
+
+book:nature book:dungeon:[Natural Vitality]:5:nature
+book-graphics:?:o
+book-properties:30000:10:40 to 100
+
+spell:Haste Self:25:12:65:30
+effect:TIMED_INC:FAST:5
+dice:$B+d20
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hastes you (+10 to speed) for a level-dependent duration.
+
+spell:Become Púkel-man:30:20:75:50
+effect:SHAPECHANGE:Púkel-man
+desc:Gives you the form of a statue of the Drúedain, slow but hard to hurt.
+
+spell:Revitalize:35:70:90:90
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:RESTORE_STAT:DEX
+effect:RESTORE_STAT:CON
+effect:RESTORE_EXP
+desc:Restores all stats and experience points to maximum.
+
+spell:Herbal Healing:40:30:90:100
+effect:HEAL_HP
+dice:m50
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+desc:Cures all cuts, poison and stunning and heals half of any missing
+desc: hit points.
+
+spell:Bear Form:40:20:85:150
+effect:SHAPECHANGE:bear
+desc:Allows you to take the form of a great bear of the mountains, sweeping
+desc: aside your enemies with your mighty paws.
+
+book:nature book:dungeon:[Wild Forces]:5:nature
+book-graphics:?:o
+book-properties:50000:5:60 to 100
+
+spell:Meteor Swarm:30:14:85:34
+effect:SWARM:METEOR:1
+dice:$B+m$M
+expr:B:PLAYER_LEVEL:/ 2 + 30
+expr:M:PLAYER_LEVEL:/ 20 + 2
+desc:Shoots a swarm of 3 or 4 meteors.
+desc:  Meteors will travel until hitting a wall, a monster,
+desc: or reaching the target location.
+desc:  Meteors will explode as a radius-1 ball that does unresistable
+desc: damage to each monster in its area of effect.
+desc:  If this kills the monster that blocked the path to the target
+desc: location, the next meteor may continue to find another target.
+
+spell:Rift:35:20:60:65
+effect:BEAM:GRAVITY
+dice:40+$Dd7
+expr:D:PLAYER_LEVEL:+ 0
+desc:Fires a gravity beam that hurts each monster in its path
+desc: and has a chance of teleporting it away.
+
+spell:Ice Storm:37:25:75:120
+effect:PROJECT_LOS:ICE
+dice:3d$S
+expr:S:PLAYER_LEVEL:* 3
+desc:Strikes every monster in line of sight with sheets of ice from above.
+
+spell:Volcanic Eruption:40:30:75:130
+effect:SPHERE:FIRE:5
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:* 3 / 2
+expr:S:PLAYER_LEVEL:* 3
+effect:EARTHQUAKE:5
+desc:Creates a radius 5 ball of fire, followed by a radius 5 earthquake,
+desc: around the player.
+
+spell:River of Lightning:43:35:75:150
+effect:ARC:PLASMA:20
+dice:$Dd8
+expr:D:PLAYER_LEVEL:+ 10
+desc:Spews plasma in a long narrow cone from the player.
+

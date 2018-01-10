@@ -41,15 +41,34 @@
 
 name:normal
 
+name:fox
+combat:-5:-5:3
+obj-flags:FEATHER | FREE_ACT
+values:STR[-3] | SPEED[5] | STEALTH[5] | BLOWS[1]
+blow:bite
+blow:claw
+
+name:Púkel-man
+combat:0:5:50
+skill-save:20
+obj-flags:SUST_STR | SUST_CON | PROT_STUN | REGEN | HOLD_LIFE
+values:STR[4] | CON[4] | STEALTH[-2] | SPEED[-5] | RES_POIS[1] | RES_SHARD[1]
+blow:punch
+blow:crush
+blow:thump
+blow:strike
+
 name:bear
-combat:5:5:5
+combat:15:15:5
 skill-disarm-phys:-5
 skill-disarm-magic:-10
 skill-melee:10
-values: STR[3] | INT[-2] | DEX[-2] | CON[2] | INFRA[1] | STEALTH[-3]
+obj-flags:PROT_FEAR
+values: STR[3] | INT[-2] | CON[2] | INFRA[1] | STEALTH[-3]
 blow:cuff
 blow:clout
 blow:claw
 blow:hit
 blow:hit
 blow:swipe
+blow:slash

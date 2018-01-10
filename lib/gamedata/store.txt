@@ -139,6 +139,8 @@ normal:prayer book:[Exorcism and Dispelling]
 normal:magic book:[Sorcery and Evocations]
 always:magic book:[Path of the Mage]
 always:magic book:[Attacks and Knowledge]
+always:nature book:[Lesser Charms]
+always:nature book:[Gifts of Nature]
 buy:magic book
 buy:prayer book
 
