@@ -1453,6 +1453,7 @@ static tval_desc sval_dependent[] =
 	{ TV_PRAYER_BOOK,	"Prayer books" },
 	{ TV_NATURE_BOOK,	"Nature books" },
 	{ TV_DEATH_BOOK,	"Death books" },
+	{ TV_OTHER_BOOK,	"Mystery books" },
 	{ TV_LIGHT,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
 	{ TV_GOLD,			"Money" },
@@ -1467,8 +1468,8 @@ bool ignore_tval(int tval)
 	size_t i;
 
 	/* Only ignore if the tval's allowed */
-	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
-	{
+	for (i = 0; i < N_ELEMENTS(sval_dependent); i++) {
+		if (kb_info[tval].num_svals == 0) continue;
 		if (tval == sval_dependent[i].tval)
 			return true;
 	}
@@ -1603,6 +1604,9 @@ static bool sval_menu(int tval, const char *desc)
 		case TV_LIGHT:
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
+		case TV_NATURE_BOOK:
+		case TV_DEATH_BOOK:
+		case TV_OTHER_BOOK:
 		case TV_DRAG_ARMOR:
 		case TV_GOLD:
 			/* leave sorted by sval */
