@@ -35,10 +35,10 @@ typedef enum
 /*** Functions ***/
 
 void free_effect(struct effect *source);
-bool effect_valid(struct effect *effect);
-bool effect_aim(struct effect *effect);
-const char *effect_info(struct effect *effect);
-const char *effect_desc(struct effect *effect);
+bool effect_valid(const struct effect *effect);
+bool effect_aim(const struct effect *effect);
+const char *effect_info(const struct effect *effect);
+const char *effect_desc(const struct effect *effect);
 effect_index effect_lookup(const char *name);
 int effect_param(int index, const char *type);
 bool effect_do(struct effect *effect,

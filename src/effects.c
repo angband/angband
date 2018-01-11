@@ -4675,15 +4675,15 @@ void free_effect(struct effect *source)
 	}
 }
 
-bool effect_valid(struct effect *effect)
+bool effect_valid(const struct effect *effect)
 {
 	if (!effect) return false;
 	return effect->index > EF_NONE && effect->index < EF_MAX;
 }
 
-bool effect_aim(struct effect *effect)
+bool effect_aim(const struct effect *effect)
 {
-	struct effect *e = effect;
+	const struct effect *e = effect;
 
 	if (!effect_valid(effect))
 		return false;
@@ -4696,7 +4696,7 @@ bool effect_aim(struct effect *effect)
 	return false;
 }
 
-const char *effect_info(struct effect *effect)
+const char *effect_info(const struct effect *effect)
 {
 	if (!effect_valid(effect))
 		return NULL;
@@ -4704,7 +4704,7 @@ const char *effect_info(struct effect *effect)
 	return effects[effect->index].info;
 }
 
-const char *effect_desc(struct effect *effect)
+const char *effect_desc(const struct effect *effect)
 {
 	if (!effect_valid(effect))
 		return NULL;

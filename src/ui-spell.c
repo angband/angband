@@ -162,8 +162,9 @@ static struct menu *spell_menu_new(const struct object *obj,
 {
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
 	struct spell_menu_data *d = mem_alloc(sizeof *d);
+	size_t width = MIN(Term->wid - 15, 80);
 
-	region loc = { -60, 1, 60, -99 };
+	region loc = { 0 - width, 1, width, -99 };
 
 	/* collect spells from object */
 	d->n_spells = spell_collect_from_book(obj, &d->spells);
