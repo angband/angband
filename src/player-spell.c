@@ -587,9 +587,32 @@ static void spell_effect_append_value_info(const struct effect *effect,
 			/* Append percentage only, as the fixed value is always displayed */
 			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);
 			break;
+		case EF_SPHERE:
+		case EF_BALL:
+			/* Append radius */
+			if (effect->params[1]) {
+				special = format(", rad %d", effect->params[1]);
+			} else {
+				special = "rad 2";
+			}
+			break;
+		case EF_STRIKE:
+			/* Append radius */
+			if (effect->params[1]) {
+				special = format(", rad %d", effect->params[1]);
+			}
+			break;
+		case EF_SHORT_BEAM:
+			/* Append length of beam */
+			special = format(", len %d",
+							 effect->params[1] +
+							 player->lev / effect->params[2]);
+			break;
 		case EF_SWARM:
 			/* Append number of projectiles. */
 			special = format("x%d", rv.m_bonus);
+			break;
+		default:
 			break;
 	}
 
@@ -597,7 +620,7 @@ static void spell_effect_append_value_info(const struct effect *effect,
 		return;
 
 	if (offset) {
-		offset += strnfmt(p + offset, len - offset, ",");
+		offset += strnfmt(p + offset, len - offset, ";");
 	}
 
 	offset += strnfmt(p + offset, len - offset, " %s ", type);
