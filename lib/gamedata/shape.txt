@@ -42,7 +42,7 @@
 name:normal
 
 name:fox
-combat:-5:-5:3
+combat:1:1:3
 obj-flags:FEATHER | FREE_ACT
 values:STR[-3] | SPEED[5] | STEALTH[5] | BLOWS[1]
 blow:bite
