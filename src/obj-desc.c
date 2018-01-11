@@ -158,7 +158,7 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 			else
 				return "& Book~ of Nature Magics #";
 
-		case TV_DEATH_BOOK:
+		case TV_SHADOW_BOOK:
 			if (terse)
 				return "& Tome~ #";
 			else

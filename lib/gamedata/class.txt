@@ -651,7 +651,7 @@ title:Patriarch
 
 magic:1:350:9
 
-book:prayer book:town:[Beginners Handbook]:7:divine
+book:prayer book:town:[Beginners Handbook]:7:light
 book-graphics:?:G
 book-properties:25:40:1 to 100
 equip:prayer book:[Beginners Handbook]:1:1
@@ -694,7 +694,7 @@ spell:Slow Poison:3:3:28:4
 effect:TIMED_DEC:POISONED:2
 desc:Halves the remaining duration of any current poisoning.
 
-book:prayer book:town:[Words of Wisdom]:8:divine
+book:prayer book:town:[Words of Wisdom]:8:light
 book-graphics:?:G
 book-properties:100:40:5 to 100
 
@@ -750,7 +750,7 @@ effect:TIMED_INC:OPP_FIRE
 dice:10+d10
 desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 
-book:prayer book:town:[Chants and Blessings]:9:divine
+book:prayer book:town:[Chants and Blessings]:9:light
 book-graphics:?:G
 book-properties:400:40:10 to 100
 
@@ -830,7 +830,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare each undead monster within line of sight,
 desc: causing it to flee in terror for a level-dependent duration.
 
-book:prayer book:town:[Exorcism and Dispelling]:6:divine
+book:prayer book:town:[Exorcism and Dispelling]:6:light
 book-graphics:?:G
 book-properties:800:40:20 to 100
 
@@ -887,7 +887,7 @@ desc:Inflicts unresistable damage on each evil monster within line of sight,
 desc: cures 1000 points of damage, cures all stunning, heals all cut damage,
 desc: neutralizes poison, and removes fear.
 
-book:prayer book:dungeon:[Ethereal Openings]:6:divine
+book:prayer book:dungeon:[Ethereal Openings]:6:light
 book-graphics:?:g
 book-properties:10000:15:40 to 100
 
@@ -932,7 +932,7 @@ desc: same dungeon depth) will be generated.  This has exactly the same
 desc: side effects as leaving and re-entering the level through a stair,
 desc: except that you won't start on a square with a stair.
 
-book:prayer book:dungeon:[Godly Insights]:5:divine
+book:prayer book:dungeon:[Godly Insights]:5:light
 book-graphics:?:g
 book-properties:20000:15:50 to 100
 
@@ -974,7 +974,7 @@ effect:LIGHT_LEVEL
 desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
-book:prayer book:dungeon:[Purifications and Healing]:5:divine
+book:prayer book:dungeon:[Purifications and Healing]:5:light
 book-graphics:?:g
 book-properties:30000:15:60 to 100
 
@@ -1017,7 +1017,7 @@ spell:Remembrance:35:70:90:250
 effect:RESTORE_EXP
 desc:Restores experience points to maximum if it is currently below maximum.
 
-book:prayer book:dungeon:[Holy Infusions]:6:divine
+book:prayer book:dungeon:[Holy Infusions]:6:light
 book-graphics:?:g
 book-properties:50000:15:70 to 100
 
@@ -1061,7 +1061,7 @@ desc: to-dam bonus of the same weapon.
 desc:  The prayer has no effect if the weapon is an artifact or ego item,
 desc: is already branded, has a slay, is broken, or is cursed.
 
-book:prayer book:dungeon:[Wrath of God]:5:divine
+book:prayer book:dungeon:[Wrath of God]:5:light
 book-graphics:?:g
 book-properties:90000:10:90 to 100
 
@@ -1893,7 +1893,7 @@ title:Paladin Lord
 
 magic:1:400:9
 
-book:prayer book:town:[Beginners Handbook]:7:divine
+book:prayer book:town:[Beginners Handbook]:7:light
 equip:prayer book:[Beginners Handbook]:1:1
 
 spell:Detect Evil:1:1:30:4
@@ -1934,7 +1934,7 @@ spell:Slow Poison:9:7:40:3
 effect:TIMED_DEC:POISONED:2
 desc:Halves the remaining duration of any current poisoning.
 
-book:prayer book:town:[Words of Wisdom]:8:divine
+book:prayer book:town:[Words of Wisdom]:8:light
 
 spell:Scare Monster:9:7:40:3
 effect:BOLT_AWARE:TURN_ALL
@@ -1988,7 +1988,7 @@ effect:TIMED_INC:OPP_FIRE
 dice:10+d10
 desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 
-book:prayer book:town:[Chants and Blessings]:9:divine
+book:prayer book:town:[Chants and Blessings]:9:light
 
 spell:Neutralize Poison:15:15:50:4
 effect:CURE:POISONED
@@ -2065,7 +2065,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare each undead monster within line of sight,
 desc: causing it to flee in terror for a level-dependent duration.
 
-book:prayer book:town:[Exorcism and Dispelling]:4:divine
+book:prayer book:town:[Exorcism and Dispelling]:4:light
 
 spell:Prayer:29:22:50:3
 effect:TIMED_INC:BLESSED
@@ -2096,7 +2096,7 @@ dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each evil monster within line of sight.
 
-book:prayer book:dungeon:[Ethereal Openings]:5:divine
+book:prayer book:dungeon:[Ethereal Openings]:5:light
 
 spell:Blink:7:7:50:2
 effect:TELEPORT
@@ -2132,7 +2132,7 @@ desc: of recall again.
 desc:  This prayer has no effect when the option to restrict the use of
 desc: stairs and recall is set, unless Morgoth is dead.
 
-book:prayer book:dungeon:[Godly Insights]:4:divine
+book:prayer book:dungeon:[Godly Insights]:4:light
 
 spell:Detect Monsters:5:5:50:1
 effect:DETECT_VISIBLE_MONSTERS
@@ -2161,7 +2161,7 @@ desc:Probes each monster within line of sight, giving information on the
 desc: current hit points of the monster and many of its characteristics
 desc: and abilities.
 
-book:prayer book:dungeon:[Purifications and Healing]:3:divine
+book:prayer book:dungeon:[Purifications and Healing]:3:light
 
 spell:Cure Serious Wounds:9:4:50:25
 effect:HEAL_HP
@@ -2191,7 +2191,7 @@ effect:RESTORE_STAT:DEX
 effect:RESTORE_STAT:CON
 desc:Restores to maximum all stats that are currently below maximum.
 
-book:prayer book:dungeon:[Holy Infusions]:5:divine
+book:prayer book:dungeon:[Holy Infusions]:5:light
 
 spell:Unbarring Ways:10:16:50:20
 effect:TOUCH:KILL_DOOR
@@ -2227,7 +2227,7 @@ desc: to-dam bonus of the same weapon.
 desc:  The prayer has no effect if the weapon is an artifact or ego item,
 desc: is already branded, has a slay, is broken, or is cursed.
 
-book:prayer book:dungeon:[Wrath of God]:3:divine
+book:prayer book:dungeon:[Wrath of God]:3:light
 
 spell:Dispel Undead:20:13:70:20
 effect:PROJECT_LOS_AWARE:DISP_UNDEAD
@@ -2285,7 +2285,7 @@ title:Arch-Mage
 magic:1:300:5
 
 book:magic book:town:[Path of the Mage]:6:arcane
-book-graphics:?:R
+book-graphics:?:B
 book-properties:25:40:1 to 100
 equip:magic book:[Path of the Mage]:1:1
 
@@ -2335,7 +2335,7 @@ expr:B:PLAYER_LEVEL:* 2
 desc:Shoots a radius-2 fire ball.
 
 book:magic book:town:[Attacks and Knowledge]:6:arcane
-book-graphics:?:R
+book-graphics:?:B
 book-properties:400:40:10 to 100
 
 spell:Recharging:5:5:28:10
@@ -2382,7 +2382,7 @@ expr:D:PLAYER_LEVEL:/ 2
 desc:Sprays acid in a cone, hitting all monsters up to 4 grids away.
 
 book:magic book:dungeon:[Magical Defences]:6:arcane
-book-graphics:?:r
+book-graphics:?:b
 book-properties:10000:15:30 to 100
 
 spell:Disable Traps, Destroy Doors:5:5:30:6
@@ -2426,7 +2426,7 @@ desc:Shoots a radius-4 nexus ball that causes minimal damage but has a chance
 desc: to blink or teleport each monster in the area of effect.
 
 book:magic book:dungeon:[Arcane Control]:6:arcane
-book-graphics:?:r
+book-graphics:?:b
 book-properties:30000:10:40 to 100
 
 spell:Door Creation:13:9:40:12
@@ -2478,7 +2478,7 @@ expr:D:PLAYER_LEVEL:+ 0
 desc:Fires a short range beam of force.
 
 book:magic book:dungeon:[Wizard's Tome of Power]:6:arcane
-book-graphics:?:r
+book-graphics:?:b
 book-properties:50000:5:60 to 100
 
 spell:Shock Wave:20:5:40:16
@@ -2557,7 +2557,7 @@ title:High Mystic
 magic:1:350:5
 
 book:nature book:town:[Lesser Charms]:6:nature
-book-graphics:?:y
+book-graphics:?:G
 book-properties:25:40:1 to 100
 equip:nature book:[Lesser Charms]:1:1
 
@@ -2596,7 +2596,7 @@ expr:S:PLAYER_LEVEL:- 5
 desc:Slows down a monster; more effective against animals.
 
 book:nature book:town:[Gifts of Nature]:6:nature
-book-graphics:?:y
+book-graphics:?:G
 book-properties:400:40:10 to 100
 
 spell:Cure Poison:4:4:30:7
@@ -2641,7 +2641,7 @@ desc:Causes shards to explode in a line out of the earth, striking objects and
 desc: monsters. Length of the line increases with player level.
 
 book:nature book:dungeon:[Creature Dominion]:5:nature
-book-graphics:?:o
+book-graphics:?:g
 book-properties:10000:15:30 to 100
 
 spell:Alter Creature:11:7:45:40
@@ -2681,7 +2681,7 @@ desc:Attempts to strongly confuse each monster in line of sight.
 desc:  Monsters that resist confusion are not affected.
 
 book:nature book:dungeon:[Natural Vitality]:5:nature
-book-graphics:?:o
+book-graphics:?:g
 book-properties:30000:10:40 to 100
 
 spell:Haste Self:25:12:65:30
@@ -2718,7 +2718,7 @@ desc:Allows you to take the form of a great bear of the mountains, sweeping
 desc: aside your enemies with your mighty paws.
 
 book:nature book:dungeon:[Wild Forces]:5:nature
-book-graphics:?:o
+book-graphics:?:g
 book-properties:50000:5:60 to 100
 
 spell:Meteor Swarm:30:14:85:34
