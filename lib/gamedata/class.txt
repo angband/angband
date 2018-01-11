@@ -2308,18 +2308,19 @@ effect:DETECT_STAIRS
 dice:22d40
 desc:Detects all traps, doors, and stairs in the immediate area.
 
+spell:Phase Door:2:2:22:4
+effect:TELEPORT
+dice:10
+desc:Teleports you randomly up to 10 squares away.
+
 spell:Electric Arc:2:2:34:16
 effect:SHORT_BEAM:ELEC
 param:0:1
 dice:$Dd6
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Creates an electrical discharge that hurts each monster in its path.
-desc:  Length of the effect increases with player level.
-
-spell:Phase Door:2:2:22:4
-effect:TELEPORT
-dice:10
-desc:Teleports you randomly up to 10 squares away.
+desc:Creates an electrical discharge that hurts monsters and destroys
+desc: vulnerable items in its path.  Length of the effect increases
+desc: with player level.
 
 spell:Detect Monsters:3:2:24:4
 effect:DETECT_VISIBLE_MONSTERS
@@ -2357,11 +2358,11 @@ effect:SENSE_OBJECTS
 dice:22d40
 desc:Detects gold and senses objects in the immediate area.
 
-spell:Fire Bolt:13:5:40:24
-effect:BOLT_OR_BEAM:FIRE
+spell:Frost Bolt:13:5:40:24
+effect:BOLT_OR_BEAM:COLD
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 3 + 6
-desc:Shoots a fire bolt that always hits its target.
+desc:Shoots a bolt of frost that always hits its target.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
@@ -2375,10 +2376,10 @@ desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Acid Spray:20:5:50:28
 effect:ARC:ACID
-param:60:3
+param:60:4
 dice:$Dd8
-expr:D:PLAYER_LEVEL:/ 4
-desc:Sprays acid in a narrow cone, hitting all monsters up to 3 grids away.
+expr:D:PLAYER_LEVEL:/ 2
+desc:Sprays acid in a cone, hitting all monsters up to 4 grids away.
 
 book:magic book:dungeon:[Magical Defences]:6:arcane
 book-graphics:?:r
@@ -2540,7 +2541,6 @@ info:0:0
 attack:4:35:3
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
-equip:hafted:Whip:1:1
 equip:scroll:Word of Recall:1:1
 flags:ZERO_FAIL | CHOOSE_SPELLS | CHARM
 title:Wanderer
@@ -2566,18 +2566,16 @@ effect:DETECT_LIVING_MONSTERS
 dice:22d40
 desc:Detects all living monsters in the immediate area, for one turn only.
 
+spell:Fox Form:1:2:20:30
+effect:SHAPECHANGE:fox
+desc:Changes you into the shape of a quick and stealthy fox.
+desc:  While shapechanged you cannot use items.
+
 spell:Satisfy Hunger:2:2:25:5
 effect:SET_NOURISH
 dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
-
-spell:Turn Stone to Mud:3:2:28:6
-effect:LINE:KILL_WALL
-dice:20+1d30
-desc:Produces a beam that destroys the first section of wall it hits,
-desc: unless it is a permanent wall.  Each monster caught in the beam that
-desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
 spell:Stinking Cloud:3:2:27:3
 effect:BALL:POIS:2
@@ -2610,17 +2608,19 @@ effect:TIMED_INC:OPP_POIS
 dice:20+d20
 desc:Grants you resistance to poison for 20+1d20 turns.
 
+spell:Turn Stone to Mud:8:3:25:6
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Produces a beam that destroys the first section of wall it hits,
+desc: unless it is a permanent wall.  Each monster caught in the beam that
+desc: is susceptible to rock remover takes 20+1d30 points of damage.
+
 spell:Sense Surroundings:9:4:35:10
 effect:MAP_AREA
 dice:$Dd$S
 expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
 expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
 desc:Maps the nearby area.
-
-spell:Fox Form:11:10:40:30
-effect:SHAPECHANGE:fox
-desc:Changes you into the shape of a fox, quick, stealthy, but poor at
-desc: fighting. While shapechanged you cannot use items.
 
 spell:Lightning Strike:12:6:35:20
 effect:STRIKE:ELEC:0
