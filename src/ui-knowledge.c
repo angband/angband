@@ -1379,6 +1379,7 @@ static const grouper object_text_order[] =
 	{TV_MAGIC_BOOK,		"Magic Book"	},
 	{TV_NATURE_BOOK,	"Nature Book"	},
 	{TV_DEATH_BOOK,		"Death Book"	},
+	{TV_OTHER_BOOK,		"Mystery Book"	},
 	{TV_LIGHT,			"Light"			},
 	{TV_FLASK,			"Flask"			},
 	{TV_SWORD,			"Sword"			},
@@ -1864,6 +1865,7 @@ static int o_cmp_tval(const void *a, const void *b)
 		case TV_PRAYER_BOOK:
 		case TV_NATURE_BOOK:
 		case TV_DEATH_BOOK:
+		case TV_OTHER_BOOK:
 		case TV_DRAG_ARMOR:
 			/* leave sorted by sval */
 			break;
@@ -2598,6 +2600,7 @@ void textui_knowledge_init(void)
 			obj_group_order[i] = -1;
 
 		for (i = 0; 0 != object_text_order[i].tval; i++) {
+			if (kb_info[object_text_order[i].tval].num_svals == 0) continue;
 			if (object_text_order[i].name) gid = i;
 			obj_group_order[object_text_order[i].tval] = gid;
 		}
