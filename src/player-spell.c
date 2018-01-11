@@ -568,21 +568,21 @@ static size_t append_random_value_string(char *buffer, size_t size,
 	return offset;
 }
 
-static void spell_append_value_info(int spell_index, char *p, size_t len)
+static void spell_effect_append_value_info(const struct effect *effect,
+										   char *p, size_t len)
 {
-	const struct class_spell *spell = spell_by_index(spell_index);
 	random_value rv;
 	const char *type = NULL;
 	const char *special = NULL;
-	size_t offset = 0;
+	size_t offset = strlen(p);
 
-	type = effect_info(spell->effect);
+	type = effect_info(effect);
 
-	if (spell->effect->dice != NULL)
-		dice_roll(spell->effect->dice, &rv);
+	if (effect->dice != NULL)
+		dice_roll(effect->dice, &rv);
 
 	/* Handle some special cases where we want to append some additional info */
-	switch (spell->effect->index) {
+	switch (effect->index) {
 		case EF_HEAL_HP:
 			/* Append percentage only, as the fixed value is always displayed */
 			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);
@@ -596,7 +596,11 @@ static void spell_append_value_info(int spell_index, char *p, size_t len)
 	if (type == NULL)
 		return;
 
-	offset += strnfmt(p, len, " %s ", type);
+	if (offset) {
+		offset += strnfmt(p + offset, len - offset, ",");
+	}
+
+	offset += strnfmt(p + offset, len - offset, " %s ", type);
 	offset += append_random_value_string(p + offset, len - offset, &rv);
 
 	if (special != NULL)
@@ -605,10 +609,14 @@ static void spell_append_value_info(int spell_index, char *p, size_t len)
 
 void get_spell_info(int spell_index, char *p, size_t len)
 {
-	/* Blank 'p' first */
+	struct effect *effect = spell_by_index(spell_index)->effect;
+
 	p[0] = '\0';
 
-	spell_append_value_info(spell_index, p, len);
+	while (effect) {
+		spell_effect_append_value_info(effect, p, len);
+		effect = effect->next;
+	}
 }
 
 static int spell_value_base_spell_power(void)
