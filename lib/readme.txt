@@ -16,7 +16,7 @@ executable, and also provide a user-readable spoiler file of sorts.
 
 These files are modifiable.  It is recommended that if you do modify any of
 these files, you put the modified version in your user directory (lib\user
-on Windows, ~/Documents/Angband on OSX, ~/.angband/Angband on Linux/Unix),
+on Windows, ~/Documents/Angband on macOS, ~/.angband/Angband on Linux/Unix),
 where it will be read preferentially.  Look at the help file
 lib/help/modify.txt for more details.
 
