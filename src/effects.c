@@ -2125,7 +2125,7 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
  */
 bool effect_handler_RECHARGE(effect_handler_context_t *context)
 {
-	int i, t, lev;
+	int i, t, ease_of_recharge;
 	int strength = context->value.base;
 	struct object *obj;
 	bool used = false;
@@ -2141,12 +2141,12 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 				  (USE_INVEN | USE_FLOOR)))
 		return (used);
 
-	/* Extract the object "level" */
-	lev = obj->kind->level;
+	/* Ease of recharge ranges from 9 down to 4 (wands) or 3 (staffs) */
+	ease_of_recharge = 100 - obj->kind->level / 10;
 
 	/* Chance of failure = 1 time in
-	 * [Spell_strength + 100 - item_level - 10 * charge_per_item]/15 */
-	i = (strength + 100 - lev - (10 * (obj->pval / obj->number))) / 15;
+	 * [Spell_strength + ease_of_use - 2 * charge_per_item] */
+	i = strength + ease_of_recharge - 2 * (obj->pval / obj->number);
 
 	/* Back-fire */
 	if ((i <= 1) || one_in_(i)) {
@@ -2166,7 +2166,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 		object_delete(&destroyed);
 	} else {
 		/* Extract a "power" */
-		t = (strength / (lev + 2)) + 1;
+		t = (strength / (10 - ease_of_recharge)) + 1;
 
 		/* Recharge based on the power */
 		if (t > 0) obj->pval += 2 + randint1(t);

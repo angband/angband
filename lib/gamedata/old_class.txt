@@ -158,7 +158,7 @@ desc:  This will also cure a bloated stomach.
 spell:Lesser Recharging:9:7:75:10
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:/ 5 + 2
+expr:B:PLAYER_LEVEL:/ 10 + 2
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
@@ -397,7 +397,7 @@ book-properties:50000:15:70 to 100
 spell:Greater Recharging:30:30:95:100
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 50
+expr:B:PLAYER_LEVEL:/ 5 + 5
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges,
@@ -897,7 +897,7 @@ desc: from traps for a short while.
 spell:Recharging:15:20:80:25
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 20
+expr:B:PLAYER_LEVEL:/ 5 + 2
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
@@ -1091,7 +1091,7 @@ desc:  This will also cure a bloated stomach.
 spell:Lesser Recharging:27:15:99:1
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:/ 5 + 2
+expr:B:PLAYER_LEVEL:/ 10 + 2
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
@@ -1260,7 +1260,7 @@ desc:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
 spell:Greater Recharging:35:40:95:100
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 50
+expr:B:PLAYER_LEVEL:/ 5 + 5
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges,
@@ -1441,7 +1441,7 @@ desc:  This will also cure a bloated stomach.
 spell:Lesser Recharging:29:17:90:4
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:/ 5 + 2
+expr:B:PLAYER_LEVEL:/ 10 + 2
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
@@ -1681,7 +1681,7 @@ desc:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
 spell:Greater Recharging:35:50:95:115
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 50
+expr:B:PLAYER_LEVEL:/ 5 + 5
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges,
@@ -2069,7 +2069,7 @@ desc: from traps for a short while.
 spell:Recharging:25:30:80:15
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:+ 20
+expr:B:PLAYER_LEVEL:/ 5 + 2
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.

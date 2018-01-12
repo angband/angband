@@ -229,7 +229,7 @@ book-properties:400:40:10 to 100
 spell:Recharging:5:5:28:10
 effect:RECHARGE
 dice:$B
-expr:B:PLAYER_LEVEL:* 2
+expr:B:PLAYER_LEVEL:+ 0
 desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
