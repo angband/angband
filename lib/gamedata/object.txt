@@ -1980,7 +1980,7 @@ alloc:40:40 to 100
 pile:12:2d3
 power:11
 effect:RECHARGE
-dice:60
+dice:6
 
 name:Door Destruction
 type:scroll
