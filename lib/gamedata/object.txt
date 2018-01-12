@@ -2865,7 +2865,7 @@ graphics:-:d
 properties:10:10:300
 alloc:20:10 to 100
 combat:0:1d1:0:0:0
-charges:3+d4
+charges:6+d10
 power:6
 effect:LINE:KILL_WALL
 dice:20+1d30
@@ -3293,7 +3293,7 @@ name:Light
 type:staff
 graphics:_:d
 properties:5:50:250
-alloc:20:5 to 80
+alloc:30:5 to 80
 combat:0:1d2:0:0:0
 charges:8+d20
 power:4
@@ -3632,7 +3632,7 @@ name:Light
 type:rod
 graphics:-:d
 properties:10:15:500
-alloc:20:8 to 100
+alloc:30:5 to 100
 combat:0:1d1:0:0:0
 msg:A line of shimmering blue light appears.
 power:6
@@ -3644,7 +3644,7 @@ name:Illumination
 type:rod
 graphics:-:d
 properties:20:15:1000
-alloc:20:20 to 100
+alloc:20:10 to 100
 combat:0:1d1:0:0:0
 power:4
 effect:LIGHT_AREA
