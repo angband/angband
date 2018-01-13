@@ -924,16 +924,6 @@ bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
 	return true;
 }
 
-bool effect_handler_CONFUSING(effect_handler_context_t *context)
-{
-	if (!player->confusing) {
-		msg("Your hands begin to glow.");
-		player->confusing = true;
-	}
-	context->ident = true;
-	return true;
-}
-
 /**
  * Create a "glyph of warding".
  */

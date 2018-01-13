@@ -2054,7 +2054,8 @@ properties:5:5:30
 alloc:16:5 to 60
 pile:25:2
 power:8
-effect:CONFUSING
+effect:TIMED_INC:ATT_CONF
+dice:10000
 
 name:Rune of Protection
 type:scroll

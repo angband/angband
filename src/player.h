@@ -530,7 +530,6 @@ struct player {
 
 	s16b food;					/* Current nutrition */
 
-	byte confusing;				/* Glowing hands */
 	byte unignoring;			/* Unignoring */
 
 	byte *spell_flags;			/* Spell flags */

@@ -476,7 +476,6 @@ void wr_player(void)
 	wr_s16b(player->food);
 	wr_s16b(player->energy);
 	wr_s16b(player->word_recall);
-	wr_byte(player->confusing);
 
 	/* Find the number of timed effects */
 	wr_byte(TMD_MAX);

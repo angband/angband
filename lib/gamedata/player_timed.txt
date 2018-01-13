@@ -267,3 +267,43 @@ name:FASTCAST
 desc:mana channelling
 on-begin:You feel your mind accelerate.
 on-end:You feel your mind slow again.
+
+name:ATT_ACID
+desc:temporary acid brand
+on-begin:Your {kind} start{s} to drip with acid!
+on-end:The acid disappears from your {kind}.
+
+name:ATT_ELEC
+desc:temporary lightning brand
+on-begin:Sparks gather around your {kind}!
+on-end:The sparks fade from your {kind}.
+
+name:ATT_FIRE
+desc:temporary fire brand
+on-begin:Flames surround your {kind}!
+on-end:The flames on your {kind} subside.
+
+name:ATT_COLD
+desc:temporary cold brand
+on-begin:Your {kind} {is} covered in frost!
+on-end:The frost evaporates from your {kind}.
+
+name:ATT_POIS
+desc:temporary poison brand
+on-begin:Your {kind} drip{s} with poison!
+on-end:The poison disappears from your {kind}.
+
+name:ATT_CONF
+desc:temporary monster confusion
+on-begin:Your {kind} begin{s} to glow!
+on-end:The glow fades from your {kind}.
+
+name:ATT_EVIL
+desc:temporary slay evil
+on-begin:Your {kind} {is} imbued with holy force!
+on-end:Holy force fades from your {kind}.
+
+name:ATT_DEMON
+desc:temporary slay demon
+on-begin:Your {kind} become{s} a bane of demons!
+on-end:Your {kind} return{s} to normal.
