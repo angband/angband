@@ -4331,7 +4331,7 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 
 	/* Extract the object's energy and get its generic name. */
 	if (tval_is_staff(obj)) {
-		energy = (5 + lev) * obj->pval;
+		energy = (5 + lev) * 3 * obj->pval / 2;
 		item = "staff";
 	} else if (tval_is_wand(obj)) {
 		energy = (5 + lev) * 3 * obj->pval / 2;
