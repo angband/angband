@@ -115,101 +115,22 @@ static int beam_chance(int tval)
 }
 
 
-typedef enum {
-	ART_TAG_NONE,
-	ART_TAG_NAME,
-	ART_TAG_KIND,
-	ART_TAG_VERB,
-	ART_TAG_VERB_IS
-} art_tag_t;
-
-static art_tag_t art_tag_lookup(const char *tag)
-{
-	if (strncmp(tag, "name", 4) == 0)
-		return ART_TAG_NAME;
-	else if (strncmp(tag, "kind", 4) == 0)
-		return ART_TAG_KIND;
-	else if (strncmp(tag, "s", 1) == 0)
-		return ART_TAG_VERB;
-	else if (strncmp(tag, "is", 2) == 0)
-		return ART_TAG_VERB_IS;
-	else
-		return ART_TAG_NONE;
-}
-
 /**
  * Print an artifact activation message.
- *
- * In order to support randarts, with scrambled names, we re-write
- * the message to replace instances of {name} with the artifact name
- * and instances of {kind} with the type of object.
- *
- * This code deals with plural and singular forms of verbs correctly
- * when encountering {s}, though in fact both names and kinds are
- * always singular in the current code (gloves are "Set of" and boots
- * are "Pair of")
  */
 static void activation_message(struct object *obj)
 {
-	char buf[1024] = "\0";
-	const char *next;
-	const char *s;
-	const char *tag;
-	const char *in_cursor;
-	size_t end = 0;
+	const char *message;
 
-	/* See if we have a message */
+	/* See if we have a message, then print it */
 	if (!obj->activation) return;
 	if (!obj->activation->message) return;
-	if (obj->artifact && obj->artifact->alt_msg)
-		in_cursor = obj->artifact->alt_msg;
-	else
-		in_cursor = obj->activation->message;
-
-	next = strchr(in_cursor, '{');
-	while (next) {
-		/* Copy the text leading up to this { */
-		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor); 
-
-		s = next + 1;
-		while (*s && isalpha((unsigned char) *s)) s++;
-
-		/* Valid tag */
-		if (*s == '}') {
-			/* Start the tag after the { */
-			tag = next + 1;
-			in_cursor = s + 1;
-
-			switch(art_tag_lookup(tag)) {
-			case ART_TAG_NAME:
-				end += object_desc(buf, 1024, obj, ODESC_PREFIX | ODESC_BASE); 
-				break;
-			case ART_TAG_KIND:
-				object_kind_name(&buf[end], 1024-end, obj->kind, true);
-				end += strlen(&buf[end]);
-				break;
-			case ART_TAG_VERB:
-				if (obj->number == 1) {
-					strnfcat(buf, 1024, &end, "s");
-				}
-				break;
-			case ART_TAG_VERB_IS:
-				if (obj->number > 1)
-					strnfcat(buf, 1024, &end, "are");
-				else
-					strnfcat(buf, 1024, &end, "is");
-			default:
-				break;
-			}
-		} else
-			/* An invalid tag, skip it */
-			in_cursor = next + 1;
-
-		next = strchr(in_cursor, '{');
+	if (obj->artifact && obj->artifact->alt_msg) {
+		message = obj->artifact->alt_msg;
+	} else {
+		message = obj->activation->message;
 	}
-	strnfcat(buf, 1024, &end, in_cursor);
-
-	msg("%s", buf);
+	print_custom_message(obj, message, MSG_GENERIC);
 }
 
 

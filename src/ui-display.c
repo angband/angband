@@ -710,7 +710,15 @@ static const struct state_info effects[] =
 	{ TMD_OPP_POIS,  S("RPois"),      COLOUR_GREEN },
 	{ TMD_OPP_CONF,  S("RConf"),      COLOUR_VIOLET },
 	{ TMD_AMNESIA,   S("Amnesiac"),   COLOUR_ORANGE },
-	{ TMD_SCRAMBLE,   S("Scrambled"),   COLOUR_VIOLET },
+	{ TMD_SCRAMBLE,  S("Scrambled"),  COLOUR_VIOLET },
+	{ TMD_ATT_ACID,  S("AttAcid"),    COLOUR_SLATE },
+	{ TMD_ATT_ELEC,  S("AttElec"),    COLOUR_BLUE },
+	{ TMD_ATT_FIRE,  S("AttFire"),    COLOUR_RED },
+	{ TMD_ATT_COLD,  S("AttCold"),    COLOUR_WHITE },
+	{ TMD_ATT_POIS,  S("AttPois"),    COLOUR_GREEN },
+	{ TMD_ATT_CONF,  S("AttConf"),    COLOUR_L_UMBER },
+	{ TMD_ATT_EVIL,  S("AttEvil"),    COLOUR_WHITE },
+	{ TMD_ATT_DEMON, S("AttDemon"),   COLOUR_L_RED },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \

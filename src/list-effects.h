@@ -24,7 +24,6 @@ EFFECT(TIMED_INC_NO_RES,			false,	"dur",		2,		EFINFO_TIMED,	"extends %s for %s t
 EFFECT(MON_TIMED_INC,				false,	NULL,		2,		EFINFO_TIMED,	"increases monster %s by %s turns")
 EFFECT(TIMED_DEC,					false,	NULL,		2,		EFINFO_TIMED,	"reduces length of %s by %s turns")
 EFFECT(SET_NOURISH,					false,	NULL,		1,		EFINFO_CONST,	"leaves you nourished for %d turns")
-EFFECT(CONFUSING,					false,	NULL,		0,		EFINFO_NONE,	"causes your next attack upon a monster to confuse it")
 EFFECT(RUNE,						false,	NULL,		0,		EFINFO_NONE,	"inscribes a glyph of warding beneath you, which monsters cannot move onto")
 EFFECT(RESTORE_STAT,				false,	NULL,		1,		EFINFO_STAT,	"restores your %s")
 EFFECT(DRAIN_STAT,					false,	NULL,		1,		EFINFO_STAT,	"reduces your %s")

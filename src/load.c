@@ -754,7 +754,6 @@ int rd_player(void)
 	rd_s16b(&player->food);
 	rd_s16b(&player->energy);
 	rd_s16b(&player->word_recall);
-	rd_byte(&player->confusing);
 
 	/* Find the number of timed effects */
 	rd_byte(&num);
