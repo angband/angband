@@ -39,6 +39,7 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
 #include "target.h"
@@ -252,9 +253,8 @@ static int player_damage_bonus(struct player_state *state)
 static void blow_side_effects(struct player *p, struct monster *mon)
 {
 	/* Confusion attack */
-	if (p->confusing) {
-		p->confusing = false;
-		msg("Your hands stop glowing.");
+	if (p->timed[TMD_ATT_CONF]) {
+		player_clear_timed(p, TMD_ATT_CONF, true);
 
 		mon_inc_timed(mon, MON_TMD_CONF, (10 + randint0(p->lev) / 10),
 					  MON_TMD_FLG_NOTIFY, false);

@@ -894,3 +894,92 @@ bool verify_object(const char *prompt, struct object *obj)
 }
 
 
+typedef enum {
+	MSG_TAG_NONE,
+	MSG_TAG_NAME,
+	MSG_TAG_KIND,
+	MSG_TAG_VERB,
+	MSG_TAG_VERB_IS
+} msg_tag_t;
+
+static msg_tag_t msg_tag_lookup(const char *tag)
+{
+	if (strncmp(tag, "name", 4) == 0) {
+		return MSG_TAG_NAME;
+	} else if (strncmp(tag, "kind", 4) == 0) {
+		return MSG_TAG_KIND;
+	} else if (strncmp(tag, "s", 1) == 0) {
+		return MSG_TAG_VERB;
+	} else if (strncmp(tag, "is", 2) == 0) {
+		return MSG_TAG_VERB_IS;
+	} else {
+		return MSG_TAG_NONE;
+	}
+}
+
+/**
+ * Print a message from a string, customised to include details about an object
+ */
+void print_custom_message(struct object *obj, const char *string, int msg_type)
+{
+	char buf[1024] = "\0";
+	const char *next;
+	const char *s;
+	const char *tag;
+	size_t end = 0;
+
+	next = strchr(string, '{');
+	while (next) {
+		/* Copy the text leading up to this { */
+		strnfcat(buf, 1024, &end, "%.*s", next - string, string); 
+
+		s = next + 1;
+		while (*s && isalpha((unsigned char) *s)) s++;
+
+		/* Valid tag */
+		if (*s == '}') {
+			/* Start the tag after the { */
+			tag = next + 1;
+			string = s + 1;
+
+			switch(msg_tag_lookup(tag)) {
+			case MSG_TAG_NAME:
+				if (obj) {
+					end += object_desc(buf, 1024, obj,
+									   ODESC_PREFIX | ODESC_BASE);
+				} else {
+					strnfcat(buf, 1024, &end, "hands");
+				}
+				break;
+			case MSG_TAG_KIND:
+				if (obj) {
+					object_kind_name(&buf[end], 1024 - end, obj->kind, true);
+					end += strlen(&buf[end]);
+				} else {
+					strnfcat(buf, 1024, &end, "hands");
+				}
+				break;
+			case MSG_TAG_VERB:
+				if (obj && obj->number == 1) {
+					strnfcat(buf, 1024, &end, "s");
+				}
+				break;
+			case MSG_TAG_VERB_IS:
+				if ((!obj) || (obj->number > 1)) {
+					strnfcat(buf, 1024, &end, "are");
+				} else {
+					strnfcat(buf, 1024, &end, "is");
+				}
+			default:
+				break;
+			}
+		} else
+			/* An invalid tag, skip it */
+			string = next + 1;
+
+		next = strchr(string, '{');
+	}
+	strnfcat(buf, 1024, &end, string);
+
+	msgt(msg_type, "%s", buf);
+}

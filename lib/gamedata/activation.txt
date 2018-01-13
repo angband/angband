@@ -519,7 +519,8 @@ desc:teleports you one level up or down
 name:CONFUSING
 aim:0
 power:8
-effect:CONFUSING
+effect:TIMED_INC:ATT_CONF
+dice:10000
 desc:causes your next attack upon a monster to confuse it
 
 name:MAPPING

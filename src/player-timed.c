@@ -22,18 +22,17 @@
 #include "datafile.h"
 #include "init.h"
 #include "mon-util.h"
+#include "obj-gear.h"
 #include "obj-knowledge.h"
+#include "obj-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 
 /**
- * The "stun" and "cut" statuses need to be handled by special functions of
- * their own, as they are more complex than the ones handled by the generic
- * code.
- */
-static bool set_stun(struct player *p, int v);
-static bool set_cut(struct player *p, int v);
+ * ------------------------------------------------------------------------
+ * Parsing functions for player_timed.txt
+ * ------------------------------------------------------------------------ */
 
 struct timed_effect_data timed_effects[TMD_MAX] = {
 	#define TMD(a, b, c)	{ #a, b, c },
@@ -52,6 +51,190 @@ int timed_name_to_idx(const char *name)
     return -1;
 }
 
+/**
+ * List of timed effect names
+ */
+static const char *list_timed_effect_names[] = {
+	#define TMD(a, b, c) #a,
+	#include "list-player-timed.h"
+	#undef TMD
+	"MAX",
+	NULL
+};
+
+static enum parser_error parse_player_timed_name(struct parser *p)
+{
+	const char *name = parser_getstr(p, "name");
+	int index;
+
+	if (grab_name("timed effect",
+			name,
+			list_timed_effect_names,
+			N_ELEMENTS(list_timed_effect_names),
+			&index)) {
+		/* XXX not a desctiptive error */
+		return PARSE_ERROR_INVALID_SPELL_NAME;
+	}
+
+	struct timed_effect_data *t = &timed_effects[index];
+
+	t->index = index;
+	parser_setpriv(p, t);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_desc(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->desc = string_append(t->desc, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_begin_message(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->on_begin = string_append(t->on_begin, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_end_message(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->on_end = string_append(t->on_end, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_increase_message(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->on_increase = string_append(t->on_increase, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_decrease_message(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->on_decrease = string_append(t->on_decrease, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_message_type(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->msgt = message_lookup_by_name(parser_getsym(p, "type"));
+
+	return t->msgt < 0 ?
+				PARSE_ERROR_INVALID_MESSAGE :
+				PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_player_timed_fail(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	assert(t);
+
+	t->fail_code = parser_getuint(p, "code");
+
+	const char *name = parser_getstr(p, "flag");
+	if (t->fail_code == TMD_FAIL_FLAG_OBJECT) {
+		int flag = lookup_flag(list_obj_flag_names, name);
+		if (flag == FLAG_END)
+			return PARSE_ERROR_INVALID_FLAG;
+		else
+			t->fail = flag;
+	} else if ((t->fail_code == TMD_FAIL_FLAG_RESIST) ||
+			   (t->fail_code == TMD_FAIL_FLAG_VULN)) {
+		size_t i = 0;
+		while (list_element_names[i] && !streq(list_element_names[i], name))
+			i++;
+
+		if (i == ELEM_MAX)
+			return PARSE_ERROR_INVALID_FLAG;
+		else
+			t->fail = i;
+	} else {
+		return PARSE_ERROR_INVALID_FLAG;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static struct parser *init_parse_player_timed(void)
+{
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_player_timed_name);
+	parser_reg(p, "desc str text", parse_player_timed_desc);
+	parser_reg(p, "on-begin str text", parse_player_timed_begin_message);
+	parser_reg(p, "on-end str text", parse_player_timed_end_message);
+	parser_reg(p, "on-increase str text", parse_player_timed_increase_message);
+	parser_reg(p, "on-decrease str text", parse_player_timed_decrease_message);
+	parser_reg(p, "msgt sym type", parse_player_timed_message_type);
+	parser_reg(p, "fail uint code str flag", parse_player_timed_fail);
+	return p;
+}
+
+static errr run_parse_player_timed(struct parser *p)
+{
+	return parse_file_quit_not_found(p, "player_timed");
+}
+
+static errr finish_parse_player_timed(struct parser *p)
+{
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_player_timed(void)
+{
+	for (size_t i = 0; i < TMD_MAX; i++) {
+		struct timed_effect_data *effect = &timed_effects[i];
+
+		string_free(effect->desc);
+
+		if (effect->on_begin)
+			string_free(effect->on_begin);
+		if (effect->on_end)
+			string_free(effect->on_end);
+		if (effect->on_increase)
+			string_free(effect->on_increase);
+		if (effect->on_decrease)
+			string_free(effect->on_decrease);
+
+		effect->desc        = NULL;
+		effect->on_begin    = NULL;
+		effect->on_end      = NULL;
+		effect->on_increase = NULL;
+		effect->on_decrease = NULL;
+	}
+}
+
+struct file_parser player_timed_parser = {
+	"player timed effects",
+	init_parse_player_timed,
+	run_parse_player_timed,
+	finish_parse_player_timed,
+	cleanup_player_timed
+};
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Utilities for more complex or anomolous effects
+ * ------------------------------------------------------------------------ */
 /**
  * Undo scrambled stats when effect runs out.
  */
@@ -72,203 +255,6 @@ void player_fix_scramble(struct player *p)
 		p->stat_max[i] = new_max[i];
 		p->stat_map[i] = i;
 	}
-}
-
-/**
- * Set a timed effect.
- */
-bool player_set_timed(struct player *p, int idx, int v, bool notify)
-{
-	assert(idx >= 0);
-	assert(idx < TMD_MAX);
-
-	struct timed_effect_data *effect = &timed_effects[idx];
-
-	/* Limit values */
-	v = MIN(v, 10000);
-	v = MAX(v, 0);
-
-	/* No change */
-	if (p->timed[idx] == v)
-		return false;
-
-	/* Hack -- call other functions */
-	if (idx == TMD_STUN)
-		return set_stun(p, v);
-	else if (idx == TMD_CUT)
-		return set_cut(p, v);
-
-	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID))
-		notify = false;
-	else if (idx == TMD_OPP_ELEC && player_is_immune(p, ELEM_ELEC))
-		notify = false;
-	else if (idx == TMD_OPP_FIRE && player_is_immune(p, ELEM_FIRE))
-		notify = false;
-	else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD))
-		notify = false;
-	else if (idx == TMD_OPP_CONF && player_of_has(p, OF_PROT_CONF))
-		notify = false;
-
-	/* Always mention start or finish, otherwise on request */
-	if (v == 0) {
-		msgt(MSG_RECOVER, "%s", effect->on_end);
-		notify = true;
-	} else if (p->timed[idx] == 0) {
-		msgt(effect->msgt, "%s", effect->on_begin);
-		notify = true;
-	} else if (notify) {
-		/* Decrementing */
-		if (p->timed[idx] > v && effect->on_decrease)
-			msgt(effect->msgt, "%s", effect->on_decrease);
-
-		/* Incrementing */
-		else if (v > p->timed[idx] && effect->on_increase)
-			msgt(effect->msgt, "%s", effect->on_increase);
-	}
-
-	/* Use the value */
-	p->timed[idx] = v;
-
-	/* Sort out the sprint effect */
-	if (idx == TMD_SPRINT && v == 0) {
-		player_inc_timed(p, TMD_SLOW, 100, true, false);
-	}
-
-	/* Undo stat swap */
-	if (idx == TMD_SCRAMBLE && v == 0) {
-		player_fix_scramble(p);
-	}
-
-	if (notify) {
-		/* Disturb */
-		disturb(p, 0);
-
-		/* Update the visuals, as appropriate. */
-		p->upkeep->update |= effect->flag_update;
-		p->upkeep->redraw |= (PR_STATUS | effect->flag_redraw);
-
-		/* Handle stuff */
-		handle_stuff(p);
-	}
-
-	return notify;
-}
-
-/**
- * Check whether a timed effect will affect the player
- */
-bool player_inc_check(struct player *p, int idx, bool lore)
-{
-	struct timed_effect_data *effect = &timed_effects[idx];
-
-	/* Check that @ can be affected by this effect */
-	if (!effect->fail_code) {
-		return true;
-	}
-
-	/* If we're only doing this for monster lore purposes */
-	if (lore) {
-		if (((effect->fail_code == TMD_FAIL_FLAG_OBJECT) &&
-			 (of_has(p->known_state.flags, effect->fail))) ||
-			((effect->fail_code == TMD_FAIL_FLAG_RESIST) &&
-			 (p->known_state.el_info[effect->fail].res_level > 0)) ||
-			((effect->fail_code == TMD_FAIL_FLAG_VULN) &&
-			 (p->known_state.el_info[effect->fail].res_level < 0))) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	/* Determine whether an effect can be prevented by a flag */
-	if (effect->fail_code == TMD_FAIL_FLAG_OBJECT) {
-		/* If the effect is from a monster action, extra stuff happens */
-		struct monster *mon = cave->mon_current > 0 ?
-				cave_monster(cave, cave->mon_current) : NULL;
-
-		/* Effect is inhibited by an object flag */
-		equip_learn_flag(p, effect->fail);
-
-		if (mon) {
-			update_smart_learn(mon, player, effect->fail, 0, -1);
-		}
-
-		if (player_of_has(p, effect->fail)) {
-			if (mon) {
-				msg("You resist the effect!");
-			}
-			return false;
-		}
-	} else if (effect->fail_code == TMD_FAIL_FLAG_RESIST) {
-		/* Effect is inhibited by a resist */
-		equip_learn_element(p, effect->fail);
-		if (p->state.el_info[effect->fail].res_level > 0) {
-			return false;
-		}
-	} else if (effect->fail_code == TMD_FAIL_FLAG_VULN) {
-		/* Effect is inhibited by a vulnerability
-		 * the asymmetry with resists is OK for now - NRM */
-		equip_learn_element(p, effect->fail);
-		if (p->state.el_info[effect->fail].res_level < 0) {
-			return false;
-		}
-	}
-
-	/* Special case */
-	if (effect->index == TMD_POISONED && p->timed[TMD_OPP_POIS])
-		return false;
-
-	return true;
-}
-
-/**
- * Increase the timed effect `idx` by `v`.  Mention this if `notify` is true.
- * Check for resistance to the effect if `check` is true.
- */
-bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
-{
-	assert(idx >= 0);
-	assert(idx < TMD_MAX);
-
-	if (check == false || player_inc_check(p, idx, false) == true) {
-		/* Paralysis should be non-cumulative */
-		if (idx == TMD_PARALYZED && p->timed[TMD_PARALYZED] > 0) {
-			return false;
-		} else {
-			return player_set_timed(p,
-					idx,
-					p->timed[idx] + v,
-					notify);
-		}
-	}
-
-	return false;
-}
-
-/**
- * Decrease the timed effect `idx` by `v`.  Mention this if `notify` is true.
- */
-bool player_dec_timed(struct player *p, int idx, int v, bool notify)
-{
-	assert(idx >= 0);
-	assert(idx < TMD_MAX);
-
-	return player_set_timed(p,
-			idx,
-			p->timed[idx] - v,
-			notify);
-}
-
-/**
- * Clear the timed effect `idx`.  Mention this if `notify` is true.
- */
-bool player_clear_timed(struct player *p, int idx, bool notify)
-{
-	assert(idx >= 0);
-	assert(idx < TMD_MAX);
-
-	return player_set_timed(p, idx, 0, notify);
 }
 
 /**
@@ -608,185 +594,208 @@ bool player_set_food(struct player *p, int v)
 	return (true);
 }
 
-/*
- * Parsing functions for player_timed.txt
+/**
+ * ------------------------------------------------------------------------
+ * Setting, increasing, decreasing and clearing timed effects
+ * ------------------------------------------------------------------------ */
+/**
+ * Set a timed effect.
  */
+bool player_set_timed(struct player *p, int idx, int v, bool notify)
+{
+	assert(idx >= 0);
+	assert(idx < TMD_MAX);
+
+	struct timed_effect_data *effect = &timed_effects[idx];
+	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
+
+	/* Limit values */
+	v = MIN(v, 10000);
+	v = MAX(v, 0);
+
+	/* No change */
+	if (p->timed[idx] == v) {
+		return false;
+	}
+
+	/* Hack -- call other functions */
+	if (idx == TMD_STUN) {
+		return set_stun(p, v);
+	} else if (idx == TMD_CUT) {
+		return set_cut(p, v);
+	}
+
+	/* Don't mention effects which already match the player state. */
+	if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID)) {
+		notify = false;
+	} else if (idx == TMD_OPP_ELEC && player_is_immune(p, ELEM_ELEC)) {
+		notify = false;
+	} else if (idx == TMD_OPP_FIRE && player_is_immune(p, ELEM_FIRE)) {
+		notify = false;
+	} else if (idx == TMD_OPP_COLD && player_is_immune(p, ELEM_COLD)) {
+		notify = false;
+	} else if (idx == TMD_OPP_CONF && player_of_has(p, OF_PROT_CONF)) {
+		notify = false;
+	}
+
+	/* Always mention start or finish, otherwise on request */
+	if (v == 0) {
+		print_custom_message(weapon, effect->on_end, MSG_RECOVER);
+		notify = true;
+	} else if (p->timed[idx] == 0) {
+		print_custom_message(weapon, effect->on_begin, effect->msgt);
+		notify = true;
+	} else if (notify) {
+		if (p->timed[idx] > v && effect->on_decrease) {
+			/* Decrementing */
+			print_custom_message(weapon, effect->on_decrease, effect->msgt);
+		} else if (v > p->timed[idx] && effect->on_increase) {
+			/* Incrementing */
+			print_custom_message(weapon, effect->on_increase, effect->msgt);
+		}
+	}
+
+	/* Use the value */
+	p->timed[idx] = v;
+
+	/* Sort out the sprint effect */
+	if (idx == TMD_SPRINT && v == 0) {
+		player_inc_timed(p, TMD_SLOW, 100, true, false);
+	}
+
+	/* Undo stat swap */
+	if (idx == TMD_SCRAMBLE && v == 0) {
+		player_fix_scramble(p);
+	}
+
+	if (notify) {
+		/* Disturb */
+		disturb(p, 0);
+
+		/* Update the visuals, as appropriate. */
+		p->upkeep->update |= effect->flag_update;
+		p->upkeep->redraw |= (PR_STATUS | effect->flag_redraw);
+
+		/* Handle stuff */
+		handle_stuff(p);
+	}
+
+	return notify;
+}
 
 /**
- * List of timed effect names
+ * Check whether a timed effect will affect the player
  */
-static const char *list_timed_effect_names[] = {
-	#define TMD(a, b, c) #a,
-	#include "list-player-timed.h"
-	#undef TMD
-	"MAX",
-	NULL
-};
-
-static enum parser_error parse_player_timed_name(struct parser *p)
+bool player_inc_check(struct player *p, int idx, bool lore)
 {
-	const char *name = parser_getstr(p, "name");
-	int index;
+	struct timed_effect_data *effect = &timed_effects[idx];
 
-	if (grab_name("timed effect",
-			name,
-			list_timed_effect_names,
-			N_ELEMENTS(list_timed_effect_names),
-			&index)) {
-		/* XXX not a desctiptive error */
-		return PARSE_ERROR_INVALID_SPELL_NAME;
+	/* Check that @ can be affected by this effect */
+	if (!effect->fail_code) {
+		return true;
 	}
 
-	struct timed_effect_data *t = &timed_effects[index];
-
-	t->index = index;
-	parser_setpriv(p, t);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_desc(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	assert(t);
-
-	t->desc = string_append(t->desc, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_begin_message(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	assert(t);
-
-	t->on_begin = string_append(t->on_begin, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_end_message(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	assert(t);
-
-	t->on_end = string_append(t->on_end, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_increase_message(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	assert(t);
-
-	t->on_increase = string_append(t->on_increase, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_decrease_message(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	assert(t);
-
-	t->on_decrease = string_append(t->on_decrease, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_message_type(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	assert(t);
-
-	t->msgt = message_lookup_by_name(parser_getsym(p, "type"));
-
-	return t->msgt < 0 ?
-				PARSE_ERROR_INVALID_MESSAGE :
-				PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_player_timed_fail(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	assert(t);
-
-	t->fail_code = parser_getuint(p, "code");
-
-	const char *name = parser_getstr(p, "flag");
-	if (t->fail_code == TMD_FAIL_FLAG_OBJECT) {
-		int flag = lookup_flag(list_obj_flag_names, name);
-		if (flag == FLAG_END)
-			return PARSE_ERROR_INVALID_FLAG;
-		else
-			t->fail = flag;
-	} else if ((t->fail_code == TMD_FAIL_FLAG_RESIST) ||
-			   (t->fail_code == TMD_FAIL_FLAG_VULN)) {
-		size_t i = 0;
-		while (list_element_names[i] && !streq(list_element_names[i], name))
-			i++;
-
-		if (i == ELEM_MAX)
-			return PARSE_ERROR_INVALID_FLAG;
-		else
-			t->fail = i;
-	} else {
-		return PARSE_ERROR_INVALID_FLAG;
+	/* If we're only doing this for monster lore purposes */
+	if (lore) {
+		if (((effect->fail_code == TMD_FAIL_FLAG_OBJECT) &&
+			 (of_has(p->known_state.flags, effect->fail))) ||
+			((effect->fail_code == TMD_FAIL_FLAG_RESIST) &&
+			 (p->known_state.el_info[effect->fail].res_level > 0)) ||
+			((effect->fail_code == TMD_FAIL_FLAG_VULN) &&
+			 (p->known_state.el_info[effect->fail].res_level < 0))) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
-	return PARSE_ERROR_NONE;
-}
+	/* Determine whether an effect can be prevented by a flag */
+	if (effect->fail_code == TMD_FAIL_FLAG_OBJECT) {
+		/* If the effect is from a monster action, extra stuff happens */
+		struct monster *mon = cave->mon_current > 0 ?
+				cave_monster(cave, cave->mon_current) : NULL;
 
-static struct parser *init_parse_player_timed(void)
-{
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-	parser_reg(p, "name str name", parse_player_timed_name);
-	parser_reg(p, "desc str text", parse_player_timed_desc);
-	parser_reg(p, "on-begin str text", parse_player_timed_begin_message);
-	parser_reg(p, "on-end str text", parse_player_timed_end_message);
-	parser_reg(p, "on-increase str text", parse_player_timed_increase_message);
-	parser_reg(p, "on-decrease str text", parse_player_timed_decrease_message);
-	parser_reg(p, "msgt sym type", parse_player_timed_message_type);
-	parser_reg(p, "fail uint code str flag", parse_player_timed_fail);
-	return p;
-}
+		/* Effect is inhibited by an object flag */
+		equip_learn_flag(p, effect->fail);
 
-static errr run_parse_player_timed(struct parser *p)
-{
-	return parse_file_quit_not_found(p, "player_timed");
-}
+		if (mon) {
+			update_smart_learn(mon, player, effect->fail, 0, -1);
+		}
 
-static errr finish_parse_player_timed(struct parser *p)
-{
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_player_timed(void)
-{
-	for (size_t i = 0; i < TMD_MAX; i++) {
-		struct timed_effect_data *effect = &timed_effects[i];
-
-		string_free(effect->desc);
-
-		if (effect->on_begin)
-			string_free(effect->on_begin);
-		if (effect->on_end)
-			string_free(effect->on_end);
-		if (effect->on_increase)
-			string_free(effect->on_increase);
-		if (effect->on_decrease)
-			string_free(effect->on_decrease);
-
-		effect->desc        = NULL;
-		effect->on_begin    = NULL;
-		effect->on_end      = NULL;
-		effect->on_increase = NULL;
-		effect->on_decrease = NULL;
+		if (player_of_has(p, effect->fail)) {
+			if (mon) {
+				msg("You resist the effect!");
+			}
+			return false;
+		}
+	} else if (effect->fail_code == TMD_FAIL_FLAG_RESIST) {
+		/* Effect is inhibited by a resist */
+		equip_learn_element(p, effect->fail);
+		if (p->state.el_info[effect->fail].res_level > 0) {
+			return false;
+		}
+	} else if (effect->fail_code == TMD_FAIL_FLAG_VULN) {
+		/* Effect is inhibited by a vulnerability
+		 * the asymmetry with resists is OK for now - NRM */
+		equip_learn_element(p, effect->fail);
+		if (p->state.el_info[effect->fail].res_level < 0) {
+			return false;
+		}
 	}
+
+	/* Special case */
+	if (effect->index == TMD_POISONED && p->timed[TMD_OPP_POIS])
+		return false;
+
+	return true;
 }
 
-struct file_parser player_timed_parser = {
-	"player timed effects",
-	init_parse_player_timed,
-	run_parse_player_timed,
-	finish_parse_player_timed,
-	cleanup_player_timed
-};
+/**
+ * Increase the timed effect `idx` by `v`.  Mention this if `notify` is true.
+ * Check for resistance to the effect if `check` is true.
+ */
+bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
+{
+	assert(idx >= 0);
+	assert(idx < TMD_MAX);
+
+	if (check == false || player_inc_check(p, idx, false) == true) {
+		/* Paralysis should be non-cumulative */
+		if (idx == TMD_PARALYZED && p->timed[TMD_PARALYZED] > 0) {
+			return false;
+		} else {
+			return player_set_timed(p,
+					idx,
+					p->timed[idx] + v,
+					notify);
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Decrease the timed effect `idx` by `v`.  Mention this if `notify` is true.
+ */
+bool player_dec_timed(struct player *p, int idx, int v, bool notify)
+{
+	assert(idx >= 0);
+	assert(idx < TMD_MAX);
+
+	return player_set_timed(p,
+			idx,
+			p->timed[idx] - v,
+			notify);
+}
+
+/**
+ * Clear the timed effect `idx`.  Mention this if `notify` is true.
+ */
+bool player_clear_timed(struct player *p, int idx, bool notify)
+{
+	assert(idx >= 0);
+	assert(idx < TMD_MAX);
+
+	return player_set_timed(p, idx, 0, notify);
+}
+
