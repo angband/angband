@@ -13,7 +13,7 @@ verb:cast
 spell-noun:spell
 book-noun:magic book
 
-name:light
+name:divine
 stat:WIS
 verb:recite
 spell-noun:prayer
