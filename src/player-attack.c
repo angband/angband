@@ -367,15 +367,16 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 
 		my_strcpy(verb, "hit", sizeof(verb));
 
-		/* Get the best attack from all slays or
-		 * brands on all non-launcher equipment */
+		/* Best attack from all slays or brands on all non-launcher equipment */
 		for (j = 2; j < p->body.count; j++) {
 			struct object *obj_local = slot_object(p, j);
 			if (obj_local)
 				improve_attack_modifier(obj_local, mon, &b, &s, verb, false);
 		}
 
+		/* Get the best attack from all slays or brands - weapon or temporary */
 		improve_attack_modifier(obj, mon, &b, &s, verb, false);
+		improve_attack_modifier(NULL, mon, &b, &s, verb, false);
 
 		dmg = melee_damage(obj, b, s);
 		dmg = critical_norm(p, mon, obj->weight, obj->to_h, dmg, &msg_type);
