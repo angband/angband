@@ -650,9 +650,9 @@ dice:$Dd8
 expr:D:PLAYER_LEVEL:+ 10
 desc:Spews plasma in a long narrow cone from the player.
 
-############### OLD PRIEST ###############
-# included to stop crashes from monsters unable to drop prayer books
-name:Old Priest
+
+############### PRIEST ###############
+name:Priest
 stats:-1:-3:3:-1:1
 skill-disarm-phys:25:12
 skill-disarm-magic:25:12
@@ -664,7 +664,7 @@ skill-melee:48:20
 skill-shoot:35:20
 skill-throw:35:20
 skill-dig:0:0
-info:2:20
+info:2:0
 attack:4:35:3
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -674,48 +674,23 @@ equip:scroll:Word of Recall:1:1
 flags:BLESS_WEAPON | ZERO_FAIL
 title:Believer
 title:Acolyte
+title:Devotee
 title:Adept
 title:Evangelist
 title:Priest
-title:Curate
-title:Canon
-title:Bishop
+title:Elder
 title:Prophet
 title:Patriarch
+title:High Priest
 
 magic:1:350:9
 
-book:prayer book:town:[Beginners Handbook]:7:light
-book-graphics:?:G
+book:prayer book:town:[Spiritual World]:6:divine
+book-graphics:?:y
 book-properties:25:40:1 to 100
-equip:prayer book:[Beginners Handbook]:1:1
+equip:prayer book:[Spiritual World]:1:1
 
-spell:Detect Evil:1:1:10:4
-effect:DETECT_EVIL
-dice:22d40
-desc:Detects all evil monsters in the immediate area,
-desc: for one turn only.
-
-spell:Cure Light Wounds:1:2:15:4
-effect:HEAL_HP
-dice:15+m15
-effect:CURE:BLIND
-effect:TIMED_DEC:CUT
-dice:20
-effect:TIMED_DEC:CONFUSED
-dice:20
-desc:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
-
-spell:Bless:1:2:20:4
-effect:TIMED_INC:BLESSED
-dice:12+d12
-desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
-
-spell:Remove Fear:1:2:5:4
-effect:CURE:AFRAID
-desc:Removes fear.
-
-spell:Call Light:3:2:25:1
+spell:Call Light:1:1:10:2
 effect:LIGHT_AREA
 param:1:10
 dice:2d$S
@@ -724,75 +699,53 @@ desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
-spell:Slow Poison:3:3:28:4
-effect:TIMED_DEC:POISONED:2
-desc:Halves the remaining duration of any current poisoning.
+spell:Detect Evil:1:1:10:4
+effect:DETECT_EVIL
+dice:22d40
+desc:Detects all evil monsters in the immediate area,
+desc: for one turn only.
 
-book:prayer book:town:[Words of Wisdom]:8:light
-book-graphics:?:G
+spell:Minor Healing:1:2:15:4
+effect:HEAL_HP
+dice:$B+m$M
+expr:B:PLAYER_LEVEL:+ 5
+expr:M:PLAYER_LEVEL:+ 10
+effect:TIMED_DEC:CUT
+dice:20
+effect:TIMED_DEC:STUN
+dice:20
+desc:Heals a level-dependent amount or percentage of hitpoints, and
+desc: cures 20 points worth of cuts and of stunning.
+
+spell:Bless:1:2:20:4
+effect:TIMED_INC:BLESSED
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:+ 10
+expr:S:PLAYER_LEVEL:+ 10
+desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
+
+spell:Heroism:5:2:30:40
+effect:HEAL_HP
+dice:10
+effect:CURE:AFRAID
+effect:TIMED_INC:HERO
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:- 19
+expr:S:PLAYER_LEVEL:- 19
+desc:Cures 10 points of damage, removes fear and, from character level 20,
+desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
+desc: for a level-dependent duration.
+
+spell:Sense Invisible:1:4:25:4
+effect:TIMED_INC:SINVIS
+dice:24+d24
+desc:Enables you to see invisible monsters for 24+1d24 turns.
+
+book:prayer book:town:[Cleansing Power]:6:divine
+book-graphics:?:y
 book-properties:100:40:5 to 100
 
-spell:Scare Monster:5:4:29:3
-effect:BOLT_AWARE:TURN_ALL
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare a single monster for a level-dependent duration.
-desc:  Uniques and monsters that resist fear are not affected.
-
-spell:Portal:5:4:30:4
-effect:TELEPORT
-dice:$B
-expr:B:PLAYER_LEVEL:* 3
-desc:Teleports you randomly over a short distance.
-
-spell:Cure Serious Wounds:5:4:32:4
-effect:HEAL_HP
-dice:25+m20
-effect:CURE:BLIND
-effect:CURE:CUT
-effect:CURE:CONFUSED
-desc:Cures 20% of your wounds (min 25hp) and heals all cut damage.
-
-spell:Chant:5:5:34:4
-effect:TIMED_INC:BLESSED
-dice:24+d24
-desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
-desc: turns.
-
-spell:Sanctuary:7:5:36:3
-effect:TOUCH_AWARE:MON_SLEEP
-dice:$B
-expr:B:PLAYER_LEVEL:* 10 + 500
-desc:Attempts to put to sleep each monster directly adjacent to you.
-desc:  Uniques and monsters that resist sleep are not affected.
-
-spell:Satisfy Hunger:7:5:38:4
-effect:SET_NOURISH
-dice:16999
-desc:Magically renders you well-fed (but not satiated).
-desc:  This will also cure a bloated stomach.
-
-spell:Remove Curse:7:6:38:5
-effect:REMOVE_CURSE
-dice:20+d20
-desc:Attempts to remove a curse from an item.
-
-spell:Resist Heat and Cold:7:7:38:5
-effect:TIMED_INC:OPP_COLD
-dice:10+d10
-effect:TIMED_INC:OPP_FIRE
-dice:10+d10
-desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
-
-book:prayer book:town:[Chants and Blessings]:9:light
-book-graphics:?:G
-book-properties:400:40:10 to 100
-
-spell:Neutralize Poison:9:6:38:4
-effect:CURE:POISONED
-desc:Neutralizes poison.
-
-spell:Orb of Draining:9:7:40:4
+spell:Orb of Draining:7:7:40:14
 effect:BALL:HOLY_ORB
 param:2:30
 dice:$B+3d6
@@ -803,24 +756,25 @@ desc:  Evil monsters take double damage.
 desc:  All cursed items in the area of effect are destroyed.
 desc:  The bigger area of effect is attained at character level 30.
 
-spell:Cure Critical Wounds:9:7:38:4
-effect:HEAL_HP
-dice:30+m25
-effect:CURE:BLIND
-effect:CURE:CUT
-effect:CURE:CONFUSED
-effect:CURE:POISONED
-effect:CURE:STUN
-effect:CURE:AMNESIA
-desc:Cures 25% of your wounds (min 30hp) and heals all cut damage, poison,
-desc: amnesia and stunning.
+spell:Spear of Light:7:6:30:15
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Fires a beam that lights up each square and hurts each
+desc: light-sensitive monster in its path.
 
-spell:Sense Invisible:11:8:42:4
-effect:TIMED_INC:SINVIS
-dice:24+d24
-desc:Enables you to see invisible monsters for 24+1d24 turns.
+spell:Dispel Undead:10:14:55:17
+effect:PROJECT_LOS_AWARE:DISP_UNDEAD
+dice:d$S
+expr:S:PLAYER_LEVEL:* 3
+desc:Inflicts unresistable damage on each undead monster within line of sight.
 
-spell:Protection from Evil:11:8:42:4
+spell:Dispel Evil:12:20:70:22
+effect:PROJECT_LOS_AWARE:DISP_EVIL
+dice:d$S
+expr:S:PLAYER_LEVEL:* 3
+desc:Inflicts unresistable damage on each evil monster within line of sight.
+
+spell:Protection from Evil:14:8:42:4
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
@@ -828,128 +782,29 @@ desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
-spell:Earthquake:11:9:55:5
-effect:EARTHQUAKE
-param:10
-desc:Causes a 10-square radius earthquake around you.
-desc:  Earthquakes may damage monsters and destroy items in some
-desc: squares in the area of effect.
-desc:  Artifacts will not be destroyed by this prayer.
-desc:  This prayer has no effect when used in the town.
-
-spell:Sense Surroundings:13:10:45:4
-effect:MAP_AREA
-dice:$Dd$S
-expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
-expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
-desc:Maps the nearby area.
-
-
-spell:Cure Mortal Wounds:13:11:45:4
-effect:HEAL_HP
-dice:50+m30
-effect:CURE:BLIND
-effect:CURE:CUT
-effect:CURE:CONFUSED
-effect:CURE:POISONED
-effect:CURE:STUN
-effect:CURE:AMNESIA
-desc:Cures 30% of your wounds (min 50hp), cures all stunning and heals all
-desc: cut damage, poison and amnesia.
-
-spell:Turn Undead:15:12:50:5
-effect:PROJECT_LOS_AWARE:TURN_UNDEAD
-dice:$B
+spell:Remove Curse:16:6:38:5
+effect:REMOVE_CURSE
+dice:$B+d$S
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare each undead monster within line of sight,
-desc: causing it to flee in terror for a level-dependent duration.
+expr:S:PLAYER_LEVEL:+ 0
+desc:Attempts to remove a curse from an item, more effective at higher
+desc: character levels.
 
-book:prayer book:town:[Exorcism and Dispelling]:6:light
-book-graphics:?:G
-book-properties:800:40:20 to 100
+book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
+book-graphics:?:o
+book-properties:10000:15:30 to 100
 
-spell:Prayer:15:14:50:5
-effect:TIMED_INC:BLESSED
-dice:48+d48
-desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 48+1d48 turns.
-
-spell:Dispel Undead:17:14:55:7
-effect:PROJECT_LOS_AWARE:DISP_UNDEAD
-dice:d$S
-expr:S:PLAYER_LEVEL:* 3
-desc:Inflicts unresistable damage on each undead monster within line of sight.
-
-spell:Heal:21:16:60:7
-effect:HEAL_HP
-dice:300+m35
-effect:CURE:BLIND
-effect:CURE:CUT
-effect:CURE:CONFUSED
-effect:CURE:POISONED
-effect:CURE:STUN
-effect:CURE:AMNESIA
-desc:Cures 35% of your max hp (min 300), cures all stunning and heals all cut
-desc: damage, poison and amnesia.
-
-spell:Dispel Evil:25:20:70:12
-effect:PROJECT_LOS_AWARE:DISP_EVIL
-dice:d$S
-expr:S:PLAYER_LEVEL:* 3
-desc:Inflicts unresistable damage on each evil monster within line of sight.
-
-spell:Glyph of Warding:33:55:90:15
-effect:RUNE
-desc:Inscribes a glyph of warding beneath you.
-desc:  Summoned monsters can't appear on the glyph.
-desc:  If a monster attempts to move onto the glyph or melee you while you
-desc: are standing on the glyph, it must first succeed in breaking the glyph.
-desc:  Higher level monsters are more likely to break the glyph.
-desc:  The glyph will remain where it is, until a monster succeeds in
-desc: breaking it, or until you leave the level.
-
-spell:Holy Word:39:32:95:20
-effect:PROJECT_LOS_AWARE:DISP_EVIL
-dice:d$S
-expr:S:PLAYER_LEVEL:* 4
-effect:HEAL_HP
-dice:1000
-effect:CURE:AFRAID
-effect:CURE:POISONED
-effect:CURE:STUN
-effect:CURE:CUT
-desc:Inflicts unresistable damage on each evil monster within line of sight,
-desc: cures 1000 points of damage, cures all stunning, heals all cut damage,
-desc: neutralizes poison, and removes fear.
-
-book:prayer book:dungeon:[Ethereal Openings]:6:light
-book-graphics:?:g
-book-properties:10000:15:40 to 100
-
-spell:Blink:3:3:50:6
-effect:TELEPORT
-dice:10
-desc:Teleports you randomly up to 10 squares away.
-
-spell:Teleport Self:10:10:50:8
+spell:Portal:10:4:30:4
 effect:TELEPORT
 dice:$B
-expr:B:PLAYER_LEVEL:* 8
-desc:Teleports you randomly within the current level.
+expr:B:PLAYER_LEVEL:/ 2 + 30
+desc:Teleports you randomly over a short distance.
 
-spell:Teleport Other:20:20:80:16
-effect:BOLT_STATUS:AWAY_ALL
-dice:$B
-expr:B:MAX_SIGHT:* 5
-desc:Produces a bolt that teleports the first monster in its path
-desc: up to 100 squares away.
+spell:Remembrance:20:30:90:250
+effect:RESTORE_EXP
+desc:Restores experience points to maximum if it is currently below maximum.
 
-spell:Teleport Level:30:40:75:133
-effect:TELEPORT_LEVEL
-desc:Teleports you 1 level up or 1 level down (chosen at random).
-desc:  This spell has no effect when the option to restrict the use of
-desc: stairs and recall is set.
-
-spell:Word of Recall:35:50:75:11
+spell:Word of Recall:25:30:75:11
 effect:RECALL
 desc:Teleports you from the dungeon to the town or from the town to the
 desc: deepest level you have visited in the dungeon.
@@ -959,85 +814,15 @@ desc: of recall again.
 desc:  This prayer has no effect when the option to restrict the use of
 desc: stairs and recall is set, unless Morgoth is dead.
 
-spell:Alter Reality:40:60:75:250
-effect:ALTER_REALITY
-desc:The current level will be discarded and a new dungeon level (on the
-desc: same dungeon depth) will be generated.  This has exactly the same
-desc: side effects as leaving and re-entering the level through a stair,
-desc: except that you won't start on a square with a stair.
-
-book:prayer book:dungeon:[Godly Insights]:5:light
-book-graphics:?:g
-book-properties:20000:15:50 to 100
-
-spell:Detect Monsters:3:3:50:2
-effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
-desc:Detects all non-invisible monsters in the immediate area,
-desc: for one turn only.
-
-spell:Detection:10:10:80:20
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-effect:DETECT_GOLD
-dice:22d40
-effect:SENSE_OBJECTS
-dice:22d40
-effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
-effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
-desc:Detects all treasure, objects and monsters in the immediate area.
-
-spell:Perception:20:20:80:20
-effect:IDENTIFY
-desc:Reveals an unknown rune on an object.
-
-spell:Probing:25:40:80:150
-effect:PROBE
-desc:Probes each monster within line of sight, giving information on the
-desc: current hit points of the monster and many of its characteristics
-desc: and abilities.
-
-spell:Clairvoyance:35:50:80:230
-effect:LIGHT_LEVEL
-desc:Lights up, maps out, and senses all objects on the complete current
-desc: dungeon level.
-
-book:prayer book:dungeon:[Purifications and Healing]:5:light
-book-graphics:?:g
-book-properties:30000:15:60 to 100
-
-spell:Cure Serious Wounds:15:5:50:25
-effect:HEAL_HP
-dice:25+m20
-effect:CURE:BLIND
-effect:CURE:CUT
-effect:CURE:CONFUSED
-desc:Cures 20% of your wounds (min 25hp) and heals all cut damage.
-
-spell:Cure Mortal Wounds:17:7:60:45
-effect:HEAL_HP
-dice:50+m30
-effect:CURE:BLIND
-effect:CURE:CUT
-effect:CURE:CONFUSED
-effect:CURE:POISONED
-effect:CURE:STUN
-effect:CURE:AMNESIA
-desc:Cures 30% of your wounds (min 50hp), cures all stunning and heals all
-desc: cut damage, poison and amnesia.
-
 spell:Healing:30:50:80:130
 effect:HEAL_HP
 dice:2000
-effect:CURE:STUN
 effect:CURE:CUT
-desc:Cures 2000 points of damage, cures all stunning and heals all cut damage.
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+desc:Heals 2000 points of damage and cures all stunning, cuts, poison
+desc: and amnesia.
 
 spell:Restoration:35:70:90:230
 effect:RESTORE_STAT:STR
@@ -1047,35 +832,29 @@ effect:RESTORE_STAT:DEX
 effect:RESTORE_STAT:CON
 desc:Restores to maximum all stats that are currently below maximum.
 
-spell:Remembrance:35:70:90:250
-effect:RESTORE_EXP
-desc:Restores experience points to maximum if it is currently below maximum.
+spell:Clairvoyance:37:50:80:230
+effect:LIGHT_LEVEL
+desc:Lights up, maps out, and senses all objects on the complete current
+desc: dungeon level.
 
-book:prayer book:dungeon:[Holy Infusions]:6:light
-book-graphics:?:g
-book-properties:50000:15:70 to 100
+book:prayer book:dungeon:[Battle Blessings]:5:divine
+book-graphics:?:o
+book-properties:30000:10:40 to 100
 
-spell:Unbarring Ways:5:6:50:40
-effect:TOUCH:KILL_DOOR
-effect:TIMED_INC:TRAPSAFE
-dice:10+d10
-desc:Destroys all doors within a 1-square radius of you and renders you safe
-desc: from traps for a short while.
+spell:Glyph of Warding:20:40:90:35
+effect:RUNE
+desc:Inscribes a glyph of warding beneath you.
+desc:  Summoned monsters can't appear on the glyph.
+desc:  If a monster attempts to move onto the glyph or melee you while you
+desc: are standing on the glyph, it must first succeed in breaking the glyph.
+desc:  Higher level monsters are more likely to break the glyph.
+desc:  The glyph will remain where it is, until a monster succeeds in
+desc: breaking it, or until you leave the level.
 
-spell:Recharging:15:20:80:25
-effect:RECHARGE
-dice:$B
-expr:B:PLAYER_LEVEL:/ 5 + 2
-desc:Adds charges to a stack of wands or staves.
-desc:  Chance of success and number of charges gained increase with your
-desc: level and decrease with level of wand or staff and number of charges.
-desc:  A failed attempt to recharge destroys one wand or staff from the stack.
-
-spell:Dispel Curse:25:40:80:160
-effect:REMOVE_CURSE
-dice:$B+d50
-expr:B:PLAYER_LEVEL:+ 0
-desc:Strongly attempts to remove a curse from an item.
+spell:Smite Evil:25:20:70:40
+effect:TIMED_INC:ATT_EVIL:5
+dice:20+d20
+desc:Temporarily makes your melee attacks slay evil creatures.
 
 spell:Enchant Weapon:35:50:80:230
 effect:ENCHANT:TOBOTH
@@ -1087,29 +866,14 @@ effect:ENCHANT:TOAC
 dice:1+1d3
 desc:Attempts to improve the armour class bonus of a piece of armour.
 
-spell:Elemental Brand:45:95:85:250
-effect:BRAND_WEAPON
-desc:Brands the currently wielded melee weapon with fire (50%) or cold (50%),
-desc: and at the same time attempts to improve the to-hit bonus and the
-desc: to-dam bonus of the same weapon.
-desc:  The prayer has no effect if the weapon is an artifact or ego item,
-desc: is already branded, has a slay, is broken, or is cursed.
+spell:Demon Bane:42:40:80:300
+effect:TIMED_INC:ATT_DEMON:5
+dice:20+d20
+desc:Temporarily makes your melee attacks powerfully slay demons.
 
-book:prayer book:dungeon:[Wrath of God]:5:light
-book-graphics:?:g
-book-properties:90000:10:90 to 100
-
-spell:Dispel Undead:15:7:70:25
-effect:PROJECT_LOS_AWARE:DISP_UNDEAD
-dice:d$S
-expr:S:PLAYER_LEVEL:* 4
-desc:Inflicts unresistable damage on each undead monster within line of sight.
-
-spell:Dispel Evil:20:10:75:60
-effect:PROJECT_LOS_AWARE:DISP_EVIL
-dice:d$S
-expr:S:PLAYER_LEVEL:* 4
-desc:Inflicts unresistable damage on each evil monster within line of sight.
+book:nature book:dungeon:[Wrath of the Valar]:5:divine
+book-graphics:?:o
+book-properties:50000:5:60 to 100
 
 spell:Banish Evil:25:25:80:250
 effect:PROJECT_LOS_AWARE:AWAY_EVIL
@@ -1126,9 +890,32 @@ desc:  You will also be blinded for 10+1d10 turns, unless you
 desc: have resistance to blindness or light.
 desc:  This prayer has no effect when used in the town.
 
-spell:Annihilation:45:60:75:250
-effect:BOLT:MON_DRAIN
-dice:200
-desc:Inflicts 200 points of damage on a single monster that is not
-desc: undead, a demon, an elemental, a golem, or a vortex.
+spell:Holy Word:39:32:95:20
+effect:PROJECT_LOS_AWARE:DISP_EVIL
+dice:d$S
+expr:S:PLAYER_LEVEL:* 4
+effect:HEAL_HP
+dice:1000
+effect:CURE:AFRAID
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:CUT
+desc:Inflicts unresistable damage on each evil monster within line of sight,
+desc: cures 1000 points of damage, cures all stunning, heals all cut damage,
+desc: neutralizes poison, and removes fear.
+
+spell:Spear of Oromë:40:30:75:130
+effect:BEAM:HOLY_ORB
+dice:$Dd8
+expr:D:PLAYER_LEVEL:/ 2
+desc:Fires a beam of holy magic that does extra damage to evil creatures.
+
+spell:Light of Manwë:42:40:85:200
+effect:BALL:LIGHT:4
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+effect:PROJECT_LOS:LIGHT_WEAK
+dice:100
+desc:Casts a radius 4 ball of strong light, and then bathes the entire area
+desc: in light doing 100 damage to every light-sensitive creature.
 
