@@ -26,6 +26,7 @@
 #include "obj-knowledge.h"
 #include "obj-slays.h"
 #include "obj-util.h"
+#include "player-timed.h"
 
 
 struct slay *slays;
@@ -263,6 +264,49 @@ bool react_to_specific_slay(struct slay *slay, const struct monster *mon)
 
 
 /**
+ * Player has a temporary brand
+ *
+ * \param idx is the index of the brand
+ */
+static bool player_has_temporary_brand(int idx)
+{
+	if (player->timed[TMD_ATT_ACID] && streq(brands[idx].code, "ACID_3")) {
+		return true;
+	}
+	if (player->timed[TMD_ATT_ELEC] && streq(brands[idx].code, "ELEC_3")) {
+		return true;
+	}
+	if (player->timed[TMD_ATT_FIRE] && streq(brands[idx].code, "FIRE_3")) {
+		return true;
+	}
+	if (player->timed[TMD_ATT_COLD] && streq(brands[idx].code, "COLD_3")) {
+		return true;
+	}
+	if (player->timed[TMD_ATT_POIS] && streq(brands[idx].code, "POIS_3")) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Player has a temporary slay
+ *
+ * \param idx is the index of the slay
+ */
+static bool player_has_temporary_slay(int idx)
+{
+	if (player->timed[TMD_ATT_EVIL] && streq(slays[idx].code, "EVIL_2")) {
+		return true;
+	}
+	if (player->timed[TMD_ATT_DEMON] && streq(slays[idx].code, "DEMON_5")) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Extract the multiplier from a given object hitting a given monster.
  *
  * \param obj is the object being used to attack
@@ -280,8 +324,6 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 	int i, best_mult = 1;
 	struct monster_lore *lore = get_lore(mon->race);
 
-	if (!obj) return;
-
 	/* Set the current best multiplier */
 	if (*brand_used) {
 		struct brand *b = &brands[*brand_used];
@@ -294,7 +336,13 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 	/* Brands */
 	for (i = 1; i < z_info->brand_max; i++) {
 		struct brand *b = &brands[i];
-		if (!obj->brands || !obj->brands[i]) continue;
+		if (obj) {
+			/* Brand is on an object */
+			if (!obj->brands || !obj->brands[i]) continue;
+		} else {
+			/* Temporary brand */
+			if (!player_has_temporary_brand(i)) continue;
+		}
  
 		/* Is the monster is vulnerable? */
 		if (!rf_has(mon->race->flags, b->resist_flag)) {
@@ -307,7 +355,9 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 					my_strcat(verb, "s", 20);
 			}
 			/* Learn about the brand */
-			object_learn_brand(player, obj, i);
+			if (obj) {
+				object_learn_brand(player, obj, i);
+			}
 
 			/* Learn about the monster */
 			if (monster_is_visible(mon)) {
@@ -323,7 +373,13 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 	/* Slays */
 	for (i = 1; i < z_info->slay_max; i++) {
 		struct slay *s = &slays[i];
-		if (!obj->slays || !obj->slays[i]) continue;
+		if (obj) {
+			/* Slay is on an object */
+			if (!obj->slays || !obj->slays[i]) continue;
+		} else {
+			/* Temporary slay */
+			if (!player_has_temporary_slay(i)) continue;
+		}
  
 		/* Is the monster is vulnerable? */
 		if (react_to_specific_slay(s, mon)) {
@@ -339,7 +395,9 @@ void improve_attack_modifier(struct object *obj, const struct monster *mon,
 				}
 			}
 			/* Learn about the slay */
+			if (obj) {
 			object_learn_slay(player, obj, i);
+			}
 
 			/* Learn about the monster */
 			if (monster_is_visible(mon)) {
