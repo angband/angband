@@ -842,7 +842,7 @@ bool effect_handler_CURE(effect_handler_context_t *context)
 bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	player_set_timed(player, context->p1, amount, true);
+	player_set_timed(player, context->p1, MAX(amount, 0), true);
 	context->ident = true;
 	return true;
 
@@ -857,7 +857,7 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context, false);
 
 	if (!player->timed[context->p1] || !context->p2)
-		player_inc_timed(player, context->p1, amount, true, true);
+		player_inc_timed(player, context->p1, MAX(amount, 0), true, true);
 	else
 		player_inc_timed(player, context->p1, context->p2, true, true);
 	context->ident = true;
@@ -874,7 +874,7 @@ bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context, false);
 
 	if (!player->timed[context->p1] || !context->p2)
-		player_inc_timed(player, context->p1, amount, true, false);
+		player_inc_timed(player, context->p1, MAX(amount, 0), true, false);
 	else
 		player_inc_timed(player, context->p1, context->p2, true, false);
 	context->ident = true;
@@ -892,7 +892,7 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 	struct monster *mon = cave_monster(cave, context->origin.which.monster);
 
 	if (mon) {
-		mon_inc_timed(mon, context->p1, amount, 0, false);
+		mon_inc_timed(mon, context->p1, MAX(amount, 0), 0, false);
 		context->ident = true;
 	}
 
@@ -908,7 +908,7 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context, false);
 	if (context->p2)
 		amount = player->timed[context->p1] / context->p2;
-	(void) player_dec_timed(player, context->p1, amount, true);
+	(void) player_dec_timed(player, context->p1, MAX(amount, 0), true);
 	context->ident = true;
 	return true;
 }
@@ -919,7 +919,7 @@ bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	(void) player_set_food(player, amount);
+	(void) player_set_food(player, MAX(amount, 0));
 	context->ident = true;
 	return true;
 }
