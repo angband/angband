@@ -649,6 +649,11 @@ void update_view(struct chunk *c, struct player *p)
 	/* Extract "radius" value */
 	radius = p->state.cur_light;
 
+	/* Handle UNLIGHT */
+	if (!radius && player_has(p, PF_UNLIGHT)) {
+		radius = 2;
+	}
+
 	/* Handle real light */
 	if (radius > 0) ++radius;
 

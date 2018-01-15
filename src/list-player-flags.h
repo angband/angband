@@ -25,3 +25,4 @@ PF(KNOW_ZAPPER,      "easily recognize magic devices",                          
 PF(SEE_ORE,          "can sense ore in the walls",                                "Senses ore/minerals")
 PF(NO_MANA,          "cannot cast spells",                                        NULL)
 PF(CHARM,            "is extra persuasive to monsters",                           "Charms monsters")
+PF(UNLIGHT,          "gains stealth in, can see in, and resists the dark",        "Likes the dark")
