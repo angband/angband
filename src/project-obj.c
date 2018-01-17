@@ -409,6 +409,18 @@ static void project_object_handler_DISP_ALL(project_object_handler_context_t *co
 {
 }
 
+static void project_object_handler_SLEEP_UNDEAD(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_SLEEP_EVIL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_SLEEP_ALL(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_MON_CLONE(project_object_handler_context_t *context)
 {
 }
@@ -430,10 +442,6 @@ static void project_object_handler_MON_SLOW(project_object_handler_context_t *co
 }
 
 static void project_object_handler_MON_CONF(project_object_handler_context_t *context)
-{
-}
-
-static void project_object_handler_MON_SLEEP(project_object_handler_context_t *context)
 {
 }
 
