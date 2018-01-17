@@ -555,7 +555,7 @@ desc: current hit points of the monster and many of its characteristics
 desc: and abilities.
 
 spell:Mass Sleep:25:15:50:60
-effect:PROJECT_LOS:MON_SLEEP
+effect:PROJECT_LOS:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
