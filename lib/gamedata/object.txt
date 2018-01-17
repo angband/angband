@@ -3136,7 +3136,7 @@ alloc:20:10 to 100
 combat:0:1d2:0:0:0
 charges:6+d5
 power:8
-effect:PROJECT_LOS_AWARE:MON_SLEEP
+effect:PROJECT_LOS_AWARE:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 

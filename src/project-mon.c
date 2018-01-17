@@ -306,6 +306,36 @@ static void project_monster_dispel(project_monster_handler_context_t *context, i
 	context->obvious = true;
 }
 
+/**
+ * Sleep a monster that has a given flag.
+ *
+ * If the monster matches, an attempt is made to put the monster to sleep
+ * and the effect is obvious (if seen).
+ * Otherwise, no attempt is made and the effect is not obvious.
+ * The player learns monster lore on whether or not the monster matches the
+ * given flag if the effect is seen.
+ *
+ * \param context is the project_m context.
+ * \param flag is the RF_ flag that the monster must have.
+ */
+static void project_monster_sleep(project_monster_handler_context_t *context, int flag)
+{
+	if (context->seen && flag) rf_on(context->lore->flags, flag);
+
+	if (flag && !rf_has(context->mon->race->flags, flag)) {
+		context->skipped = true;
+		context->dam = 0;
+	}
+
+	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
+		context->dam += context->dam / 2;
+	}
+	context->mon_timed[MON_TMD_SLEEP] = context->dam;
+	context->dam = 0;
+
+	context->obvious = true;
+}
+
 /* Acid */
 static void project_monster_handler_ACID(project_monster_handler_context_t *context)
 {
@@ -644,6 +674,24 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 	context->die_msg = MON_MSG_DISSOLVE;
 }
 
+/* Sleep (Use "dam" as "power") */
+static void project_monster_handler_SLEEP_UNDEAD(project_monster_handler_context_t *context)
+{
+	project_monster_sleep(context, RF_UNDEAD);
+}
+
+/* Sleep (Use "dam" as "power") */
+static void project_monster_handler_SLEEP_EVIL(project_monster_handler_context_t *context)
+{
+	project_monster_sleep(context, RF_EVIL);
+}
+
+/* Sleep (Use "dam" as "power") */
+static void project_monster_handler_SLEEP_ALL(project_monster_handler_context_t *context)
+{
+	project_monster_sleep(context, RF_NONE);
+}
+
 /* Clone monsters (Ignore "dam") */
 static void project_monster_handler_MON_CLONE(project_monster_handler_context_t *context)
 {
@@ -725,16 +773,6 @@ static void project_monster_handler_MON_CONF(project_monster_handler_context_t *
 		context->dam += context->dam / 2;
 	}
 	context->mon_timed[MON_TMD_CONF] = context->dam;
-	context->dam = 0;
-}
-
-/* Sleep (Use "dam" as "power") */
-static void project_monster_handler_MON_SLEEP(project_monster_handler_context_t *context)
-{
-	if (context->charm && rf_has(context->mon->race->flags, RF_ANIMAL)) {
-		context->dam += context->dam / 2;
-	}
-	context->mon_timed[MON_TMD_SLEEP] = context->dam;
 	context->dam = 0;
 }
 

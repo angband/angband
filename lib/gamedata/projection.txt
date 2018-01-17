@@ -440,6 +440,27 @@ blind-desc:something
 obvious:1
 color:White
 
+code:SLEEP_UNDEAD
+type:monster
+desc:attempts to put undead to sleep
+blind-desc:something
+obvious:0
+color:White
+
+code:SLEEP_EVIL
+type:monster
+desc:attempts to put evil monsters to sleep
+blind-desc:something
+obvious:0
+color:White
+
+code:SLEEP_ALL
+type:monster
+desc:attempts to put all monsters to sleep
+blind-desc:something
+obvious:0
+color:White
+
 code:MON_CLONE
 type:monster
 desc:hastes, heals and magically duplicates monsters
@@ -478,13 +499,6 @@ color:White
 code:MON_CONF
 type:monster
 desc:attempts to confuse monsters
-blind-desc:something
-obvious:0
-color:White
-
-code:MON_SLEEP
-type:monster
-desc:attempts to put monsters to sleep
 blind-desc:something
 obvious:0
 color:White

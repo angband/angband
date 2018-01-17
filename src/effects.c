@@ -4611,7 +4611,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 		/* RARE */
 		effect_simple(EF_PROJECT_LOS, context->origin, "150", PROJ_DISP_ALL, 0, 0, NULL);
 		effect_simple(EF_PROJECT_LOS, context->origin, "20", PROJ_MON_SLOW, 0, 0, NULL);
-		effect_simple(EF_PROJECT_LOS, context->origin, "40", PROJ_MON_SLEEP, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "40", PROJ_SLEEP_ALL, 0, 0, NULL);
 		effect_simple(EF_HEAL_HP, context->origin, "300", 0, 0, 0, NULL);
 
 		return true;

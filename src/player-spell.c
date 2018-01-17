@@ -346,7 +346,7 @@ static int fail_adjust(struct player *p, const struct class_spell *spell)
 }
 
 /**
- * Spell minimum failure casting stat level
+ * Spell minimum failure by casting stat level
  */
 static int min_fail(struct player *p, const struct class_spell *spell)
 {
@@ -375,14 +375,14 @@ s16b spell_chance(int spell_index)
 	/* Reduce failure rate by "effective" level adjustment */
 	chance -= 3 * (player->lev - spell->slevel);
 
-	/* Reduce failure rate by realm adjustment */
+	/* Reduce failure rate by casting stat level adjustment */
 	chance -= fail_adjust(player, spell);
 
 	/* Not enough mana to cast */
 	if (spell->smana > player->csp)
 		chance += 5 * (spell->smana - player->csp);
 
-	/* Extract the minimum failure rate due to realm */
+	/* Get the minimum failure rate for the casting stat level */
 	minfail = min_fail(player, spell);
 
 	/* Non mage/priest characters never get better than 5 percent */

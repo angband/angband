@@ -236,7 +236,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:25:7:50:6
-effect:PROJECT_LOS:MON_SLEEP
+effect:PROJECT_LOS:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
@@ -592,7 +592,7 @@ desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
 desc: turns.
 
 spell:Sanctuary:7:5:36:3
-effect:TOUCH_AWARE:MON_SLEEP
+effect:TOUCH_AWARE:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster directly adjacent to you.
@@ -1136,7 +1136,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:24:15:80:10
-effect:PROJECT_LOS:MON_SLEEP
+effect:PROJECT_LOS:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
@@ -1517,7 +1517,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:23:20:60:4
-effect:PROJECT_LOS:MON_SLEEP
+effect:PROJECT_LOS:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
@@ -1830,7 +1830,7 @@ desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
 desc: turns.
 
 spell:Sanctuary:11:10:45:3
-effect:TOUCH_AWARE:MON_SLEEP
+effect:TOUCH_AWARE:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster directly adjacent to you.

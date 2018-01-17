@@ -636,7 +636,7 @@ desc:slows all non-unique monsters within line of sight
 name:LOSSLEEP
 aim:0
 power:8
-effect:PROJECT_LOS:MON_SLEEP
+effect:PROJECT_LOS:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:sleeps all non-unique creatures within line of sight
@@ -738,7 +738,7 @@ name:SLEEPII
 aim:0
 power:8
 msg:{name} glows deep blue...
-effect:TOUCH_AWARE:MON_SLEEP
+effect:TOUCH_AWARE:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:puts to sleep the monsters around you
@@ -1054,10 +1054,10 @@ effect:BOLT_AWARE:MON_CONF
 dice:10
 desc:attempts to magically confuse a single monster
 
-name:MON_SLEEP
+name:SLEEP_ALL
 aim:1
 power:3
-effect:BOLT_AWARE:MON_SLEEP
+effect:BOLT_AWARE:SLEEP_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:attempts to induce magical sleep in a single monster
