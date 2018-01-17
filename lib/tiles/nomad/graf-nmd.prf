@@ -635,30 +635,30 @@ object:scroll:Trap Creation:0x87:0x91
 
 ##### Basic Books #####
 
-object:magic book:[Magic for Beginners]:0x88:0x90
-object:magic book:[Conjurings and Tricks]:0x88:0x91
-object:magic book:[Incantations and Illusions]:0x88:0x92
-object:magic book:[Sorcery and Evocations]:0x88:0x93
-object:prayer book:[Beginners Handbook]:0x88:0x80
-object:prayer book:[Words of Wisdom]:0x88:0x81
-object:prayer book:[Chants and Blessings]:0x88:0x82
-object:prayer book:[Exorcism and Dispelling]:0x88:0x83
+# object:magic book:[Magic for Beginners]:0x88:0x90
+# object:magic book:[Conjurings and Tricks]:0x88:0x91
+# object:magic book:[Incantations and Illusions]:0x88:0x92
+# object:magic book:[Sorcery and Evocations]:0x88:0x93
+# object:prayer book:[Beginners Handbook]:0x88:0x80
+# object:prayer book:[Words of Wisdom]:0x88:0x81
+# object:prayer book:[Chants and Blessings]:0x88:0x82
+# object:prayer book:[Exorcism and Dispelling]:0x88:0x83
 
 
 
 
 ##### Special Books (note resistances) #####
 
-object:magic book:[Resistances of Scarabtarices]:0x88:0x94
-object:magic book:[Raal's Tome of Destruction]:0x88:0x95
-object:magic book:[Mordenkainen's Escapes]:0x88:0x96
-object:magic book:[Tenser's Transformations]:0x88:0x97
-object:magic book:[Kelek's Grimoire of Power]:0x88:0x98
-object:prayer book:[Ethereal Openings]:0x88:0x84
-object:prayer book:[Godly Insights]:0x88:0x85
-object:prayer book:[Purifications and Healing]:0x88:0x86
-object:prayer book:[Holy Infusions]:0x88:0x87
-object:prayer book:[Wrath of God]:0x88:0x88
+# object:magic book:[Resistances of Scarabtarices]:0x88:0x94
+# object:magic book:[Raal's Tome of Destruction]:0x88:0x95
+# object:magic book:[Mordenkainen's Escapes]:0x88:0x96
+# object:magic book:[Tenser's Transformations]:0x88:0x97
+# object:magic book:[Kelek's Grimoire of Power]:0x88:0x98
+# object:prayer book:[Ethereal Openings]:0x88:0x84
+# object:prayer book:[Godly Insights]:0x88:0x85
+# object:prayer book:[Purifications and Healing]:0x88:0x86
+# object:prayer book:[Holy Infusions]:0x88:0x87
+# object:prayer book:[Wrath of God]:0x88:0x88
 
 
 
