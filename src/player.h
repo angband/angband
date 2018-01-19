@@ -228,6 +228,8 @@ struct player_shape {
 	int modifiers[OBJ_MOD_MAX];	/**< Stat and other modifiers*/
 	struct element_info el_info[ELEM_MAX]; /**< Resists */
 
+	struct effect *effect;	/**< Effect on taking this shape (effects.c) */
+
 	struct player_blow *blows;
 	int num_blows;
 };
