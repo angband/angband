@@ -906,14 +906,16 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 	enum mon_messages hurt_msg = context->hurt_msg;
 	struct monster *mon = context->mon;
 
-	/*
-	 * The monster is going to be killed, so display a specific death message.
+	/* No damage is now going to mean the monster is not hit - and hence
+	 * is not woken or released from holding */
+	if (!dam) return false;
+
+	/* The monster is going to be killed, so display a specific death message.
 	 * If the monster is not visible to the player, use a generic message.
 	 *
 	 * Note that mon_take_hit() below is passed a zero-length string, which
 	 * ensures it doesn't print any death message and allows correct ordering
-	 * of messages.
-	 */
+	 * of messages. */
 	if (dam > mon->hp) {
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 		add_monster_message(mon, die_msg, false);
@@ -921,12 +923,10 @@ static bool project_m_player_attack(project_monster_handler_context_t *context)
 
 	mon_died = mon_take_hit(mon, dam, &fear, "");
 
-	/*
-	 * If the monster didn't die, provide additional messages about how it was
+	/* If the monster didn't die, provide additional messages about how it was
 	 * hurt/damaged. If a specific message isn't provided, display a message
 	 * based on the amount of damage dealt. Also display a message
-	 * if the hit caused the monster to flee.
-	 */
+	 * if the hit caused the monster to flee. */
 	if (!mon_died) {
 		if (seen && hurt_msg != MON_MSG_NONE)
 			add_monster_message(mon, hurt_msg, false);
@@ -1179,10 +1179,11 @@ void project_m(struct source origin, int r, int y, int x,
 	if (context.skipped) return;
 
 	/* Apply damage to the monster, based on who did the damage. */
-	if (origin.what == SRC_MONSTER)
+	if (origin.what == SRC_MONSTER) {
 		mon_died = project_m_monster_attack(&context, m_idx);
-	else
+	} else {
 		mon_died = project_m_player_attack(&context);
+	}
 
 	if (!mon_died)
 		project_m_apply_side_effects(&context, m_idx);
