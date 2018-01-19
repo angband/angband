@@ -1700,7 +1700,7 @@ int weight_remaining(struct player *p)
  */
 static void calc_shapechange(struct player_state *state,
 							 struct player_shape *shape,
-							 int *blows, int *shots, int *might)
+							 int *blows, int *shots, int *might, int *moves)
 {
 	int i;
 
@@ -1731,9 +1731,11 @@ static void calc_shapechange(struct player_state *state,
 	state->see_infra += shape->modifiers[OBJ_MOD_INFRA];
 	state->skills[SKILL_DIGGING] += (shape->modifiers[OBJ_MOD_TUNNEL] * 20);
 	state->speed += shape->modifiers[OBJ_MOD_SPEED];
+	state->dam_red += shape->modifiers[OBJ_MOD_DAM_RED];
 	*blows += shape->modifiers[OBJ_MOD_BLOWS];
 	*shots += shape->modifiers[OBJ_MOD_SHOTS];
 	*might += shape->modifiers[OBJ_MOD_MIGHT];
+	*moves += shape->modifiers[OBJ_MOD_MOVES];
 
 	/* Resists and vulnerabilities */
 	for (i = 0; i < ELEM_MAX; i++) {
@@ -1790,6 +1792,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	int extra_blows = 0;
 	int extra_shots = 0;
 	int extra_might = 0;
+	int extra_moves = 0;
 	struct object *launcher = equipped_item_by_slot_name(p, "shooting");
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 	bitflag f[OF_SIZE];
@@ -1880,12 +1883,16 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->skills[SKILL_DIGGING] += (dig * 20);
 			state->speed += obj->modifiers[OBJ_MOD_SPEED]
 				* p->obj_k->modifiers[OBJ_MOD_SPEED];
+			state->dam_red += obj->modifiers[OBJ_MOD_DAM_RED]
+				* p->obj_k->modifiers[OBJ_MOD_DAM_RED];
 			extra_blows += obj->modifiers[OBJ_MOD_BLOWS]
 				* p->obj_k->modifiers[OBJ_MOD_BLOWS];
 			extra_shots += obj->modifiers[OBJ_MOD_SHOTS]
 				* p->obj_k->modifiers[OBJ_MOD_SHOTS];
 			extra_might += obj->modifiers[OBJ_MOD_MIGHT]
 				* p->obj_k->modifiers[OBJ_MOD_MIGHT];
+			extra_moves += obj->modifiers[OBJ_MOD_MOVES]
+				* p->obj_k->modifiers[OBJ_MOD_MOVES];
 
 			/* Apply element info, noting vulnerabilites for later processing */
 			for (j = 0; j < ELEM_MAX; j++) {
@@ -1940,7 +1947,8 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 	/* Add shapechange info */
-	calc_shapechange(state, p->shape, &extra_blows, &extra_shots, &extra_might);
+	calc_shapechange(state, p->shape, &extra_blows, &extra_shots, &extra_might,
+		&extra_moves);
 
 	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {
@@ -2184,6 +2192,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	} else {
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
 	}
+
+	/* Movement speed */
+	state->num_moves = 1 + extra_moves;;
 
 	/* Call individual functions for other state fields */
 	calc_torch(p, state, update);

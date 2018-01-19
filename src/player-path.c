@@ -821,7 +821,7 @@ void run_step(int dir)
 	}
 
 	/* Take time */
-	player->upkeep->energy_use = z_info->move_energy;
+	player->upkeep->energy_use = z_info->move_energy / player->state.num_moves;
 
 	/* Move the player; running straight into a trap == trying to disarm */
 	move_player(run_cur_dir, dir && disarm ? true : false);
