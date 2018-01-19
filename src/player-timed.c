@@ -34,6 +34,13 @@
  * Parsing functions for player_timed.txt
  * ------------------------------------------------------------------------ */
 
+const char *list_player_flag_names[] = {
+#define PF(a, b, c) #a,
+	#include "list-player-flags.h"
+	#undef ELEM
+	NULL
+};
+
 struct timed_effect_data timed_effects[TMD_MAX] = {
 	#define TMD(a, b, c)	{ #a, b, c },
 	#include "list-player-timed.h"
@@ -151,6 +158,12 @@ static enum parser_error parse_player_timed_fail(struct parser *p)
 	const char *name = parser_getstr(p, "flag");
 	if (t->fail_code == TMD_FAIL_FLAG_OBJECT) {
 		int flag = lookup_flag(list_obj_flag_names, name);
+		if (flag == FLAG_END)
+			return PARSE_ERROR_INVALID_FLAG;
+		else
+			t->fail = flag;
+	} else if (t->fail_code == TMD_FAIL_FLAG_PLAYER) {
+		int flag = lookup_flag(list_player_flag_names, name);
 		if (flag == FLAG_END)
 			return PARSE_ERROR_INVALID_FLAG;
 		else
@@ -741,9 +754,14 @@ bool player_inc_check(struct player *p, int idx, bool lore)
 		if (p->state.el_info[effect->fail].res_level < 0) {
 			return false;
 		}
+	} else if (effect->fail_code == TMD_FAIL_FLAG_PLAYER) {
+		/* Effect is inhibited by a player flag */
+		if (player_has(p, effect->fail)) {
+			return false;
+		}
 	}
 
-	/* Special case */
+	/* Special cases */
 	if (effect->index == TMD_POISONED && p->timed[TMD_OPP_POIS])
 		return false;
 
