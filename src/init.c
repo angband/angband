@@ -2420,6 +2420,126 @@ static enum parser_error parse_shape_values(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_shape_effect(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	struct effect *effect;
+	struct effect *new_effect = mem_zalloc(sizeof(*effect));
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* Go to the next vacant effect and set it to the new one  */
+	if (shape->effect) {
+		effect = shape->effect;
+		while (effect->next)
+			effect = effect->next;
+		effect->next = new_effect;
+	} else
+		shape->effect = new_effect;
+
+	/* Fill in the detail */
+	return grab_effect_data(p, new_effect);
+}
+
+static enum parser_error parse_shape_param(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	struct effect *effect = shape->effect;
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->params[1] = parser_getint(p, "p2");
+
+	if (parser_hasval(p, "p3"))
+		effect->params[2] = parser_getint(p, "p3");
+
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_shape_dice(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	struct effect *effect = shape->effect;
+	dice_t *dice = NULL;
+	const char *string = NULL;
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	dice = dice_new();
+
+	if (dice == NULL)
+		return PARSE_ERROR_INVALID_DICE;
+
+	string = parser_getstr(p, "dice");
+
+	if (dice_parse_string(dice, string)) {
+		effect->dice = dice;
+	}
+	else {
+		dice_free(dice);
+		return PARSE_ERROR_INVALID_DICE;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_shape_expr(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	struct effect *effect = shape->effect;
+	expression_t *expression = NULL;
+	expression_base_value_f function = NULL;
+	const char *name;
+	const char *base;
+	const char *expr;
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+	/* If there are no dice, assume that this is human and not parser error. */
+	if (effect->dice == NULL)
+		return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+	expression = expression_new();
+
+	if (expression == NULL)
+		return PARSE_ERROR_INVALID_EXPRESSION;
+
+	function = spell_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		return PARSE_ERROR_BAD_EXPRESSION_STRING;
+
+	if (dice_bind_expression(effect->dice, name, expression) < 0)
+		return PARSE_ERROR_UNBOUND_EXPRESSION;
+
+	/* The dice object makes a deep copy of the expression, so we can free it */
+	expression_free(expression);
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_shape_blow(struct parser *p) {
 	const char *verb = parser_getstr(p, "blow");
 	struct player_blow *blow = mem_zalloc(sizeof(*blow));
@@ -2451,6 +2571,10 @@ struct parser *init_parse_shape(void) {
 	parser_reg(p, "obj-flags ?str flags", parse_shape_obj_flags);
 	parser_reg(p, "player-flags ?str flags", parse_shape_play_flags);
 	parser_reg(p, "values str values", parse_shape_values);
+	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_shape_effect);
+	parser_reg(p, "param int p2 ?int p3", parse_shape_param);
+	parser_reg(p, "dice str dice", parse_shape_dice);
+	parser_reg(p, "expr sym name sym base str expr", parse_shape_expr);
 	parser_reg(p, "blow str blow", parse_shape_blow);
 	return p;
 }
@@ -2474,6 +2598,7 @@ static void cleanup_shape(void)
 		struct player_blow *blow = shape->blows;
 		next = shape->next;
 		string_free((char *)shape->name);
+		free_effect(shape->effect);
 		while (blow) {
 			struct player_blow *next = blow->next;
 			string_free(blow->name);

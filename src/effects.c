@@ -4371,11 +4371,16 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 {
 	struct player_shape *shape = player_shape_by_idx(context->p1);
+	bool ident = false;
 
 	/* Change shape */
 	player->shape = lookup_player_shape(shape->name);
 	msg("You assume the shape of a %s!", shape->name);
 	msg("Your gear merges into your body.");
+
+	/* Do effect */
+	(void) effect_do(shape->effect, source_player(), NULL, &ident, true,
+					 0, 0, 0);
 
 	/* Update */
 	player->upkeep->update |= (PU_BONUS);
