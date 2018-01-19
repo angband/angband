@@ -98,6 +98,8 @@ static struct object_kind TEST_DATA test_longsword = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.to_h = {
 			.base = 1,
@@ -197,6 +199,8 @@ static struct object_kind TEST_DATA test_torch = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 1, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.el_info = {
 		[ELEM_ACID] = { 0, 0 },
@@ -322,6 +326,8 @@ static struct object_kind TEST_DATA test_lantern = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 2, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.el_info = {
 		[ELEM_ACID] = { 0, 0 },
@@ -417,6 +423,8 @@ static struct object_kind TEST_DATA test_flask = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.to_h = {
 			.base = 0,
@@ -486,6 +494,8 @@ static struct object_kind TEST_DATA test_rod_treasure_location = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.to_h = {
 			.base = 0,
@@ -554,6 +564,8 @@ static struct object_kind TEST_DATA test_gold = {
 		[OBJ_MOD_SHOTS] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_MIGHT] = { 0, 0, 0, 0 }, 
 		[OBJ_MOD_LIGHT] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_DAM_RED] = { 0, 0, 0, 0 }, 
+		[OBJ_MOD_MOVES] = { 0, 0, 0, 0 }, 
 	},
 	.to_h = {
 			.base = 0,

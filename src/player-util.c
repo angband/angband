@@ -157,11 +157,15 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 	/* Paranoia */
 	if (p->is_dead) return;
 
-	/* Disturb */
-	disturb(p, 1);
-
 	/* Mega-Hack -- Apply "invulnerability" */
 	if (p->timed[TMD_INVULN] && (dam < 9000)) return;
+
+	/* Apply damage reduction */
+	dam -= p->state.dam_red;
+	if (dam <= 0) return;
+
+	/* Disturb */
+	disturb(p, 1);
 
 	/* Hurt the player */
 	p->chp -= dam;
