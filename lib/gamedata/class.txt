@@ -871,7 +871,7 @@ effect:TIMED_INC:ATT_DEMON:5
 dice:20+d20
 desc:Temporarily makes your melee attacks powerfully slay demons.
 
-book:nature book:dungeon:[Wrath of the Valar]:5:divine
+book:prayer book:dungeon:[Wrath of the Valar]:5:divine
 book-graphics:?:o
 book-properties:50000:5:60 to 100
 
