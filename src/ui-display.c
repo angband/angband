@@ -776,7 +776,18 @@ static size_t prt_descent(int row, int col)
  */
 static size_t prt_cut(int row, int col)
 {
-	PRINT_STATE(>, cut_data, player->timed[TMD_CUT], row, col);
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(cut_data); i++) {
+		if (player->timed[TMD_CUT] > cut_data[i].value) {
+			if (player_has(player, PF_ROCK)) {
+				c_put_str(COLOUR_L_DARK, cut_data[i].str, row, col);
+			} else {
+				c_put_str(cut_data[i].attr, cut_data[i].str, row, col);
+			}
+			return cut_data[i].len;
+		}
+	}
 	return 0;
 }
 

@@ -21,6 +21,7 @@
 #          1 - object flag
 #          2 - resist
 #          3 - vulnerability
+#          4 - player flag
 #        param two:
 #          the actual flag that causes the failure
 #
@@ -90,6 +91,7 @@ fail:2:POIS
 
 name:CUT
 desc:wounds
+fail:4:ROCK
 
 name:STUN
 desc:stunning
