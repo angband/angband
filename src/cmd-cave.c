@@ -1118,7 +1118,7 @@ void do_cmd_walk(struct command *cmd)
 	if (!do_cmd_walk_test(y, x))
 		return;
 
-	player->upkeep->energy_use = z_info->move_energy;
+	player->upkeep->energy_use = z_info->move_energy / player->state.num_moves;
 
 	/* Attempt to disarm unless it's a trap and we're trapsafe */
 	move_player(dir, !(square_isdisarmabletrap(cave, y, x) && trapsafe));
@@ -1146,7 +1146,7 @@ void do_cmd_jump(struct command *cmd)
 	if (!do_cmd_walk_test(y, x))
 		return;
 
-	player->upkeep->energy_use = z_info->move_energy;
+	player->upkeep->energy_use = z_info->move_energy / player->state.num_moves;
 
 	move_player(dir, false);
 }

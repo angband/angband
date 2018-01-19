@@ -90,6 +90,12 @@ code:SPEED
 power:20
 mult:6
 
+name:damage reduction
+type:mod
+code:DAM_RED
+power:5
+mult:6
+
 name:attack speed
 type:mod
 code:BLOWS
@@ -136,6 +142,28 @@ type:mod
 code:MIGHT
 power:0
 mult:30
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:movement speed
+type:mod
+code:MOVES
+power:0
+mult:50
 type-mult:sword:0
 type-mult:polearm:0
 type-mult:hafted:0
