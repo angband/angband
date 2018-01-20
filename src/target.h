@@ -19,6 +19,8 @@
 #ifndef TARGET_H
 #define TARGET_H
 
+#include "mon-predicate.h"
+
 /**
  * Bit flags for target_set()
  *
@@ -48,7 +50,7 @@ void coords_desc(char *buf, int size, int y, int x);
 void target_get(int *x, int *y);
 struct monster *target_get_monster(void);
 bool target_sighted(void);
-struct point_set *target_get_monsters(int mode);
-bool target_set_closest(int mode);
+struct point_set *target_get_monsters(int mode, monster_predicate pred);
+bool target_set_closest(int mode, monster_predicate pred);
 
 #endif /* !TARGET_H */

@@ -802,7 +802,6 @@ static void project_monster_handler_MON_DRAIN(project_monster_handler_context_t 
 	if (context->seen) context->obvious = true;
 	if (context->seen) {
 		rf_on(context->lore->flags, RF_UNDEAD);
-		rf_on(context->lore->flags, RF_DEMON);
 	}
 	if (monster_is_nonliving(context->mon)) {
 		context->hurt_msg = MON_MSG_UNAFFECTED;
