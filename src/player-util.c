@@ -581,6 +581,16 @@ bool player_is_shapechanged(struct player *p)
 }
 
 /**
+ * Check if the player is immune from traps
+ */
+bool player_is_trapsafe(struct player *p)
+{
+	if (p->timed[TMD_TRAPSAFE]) return true;
+	if (player_of_has(p, OF_TRAP_IMMUNE)) return true;
+	return false;
+}
+
+/**
  * Return true if the player can cast a spell.
  *
  * \param p is the player
