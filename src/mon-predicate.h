@@ -17,6 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#ifndef MON_PREDICATE_H
+#define MON_PREDICATE_H
+
 /**
  * monster_predicate is a function pointer which tests a given monster to
  * see if the predicate in question is true.
@@ -42,4 +45,4 @@ bool monster_is_camouflaged(const struct monster *mon);
 bool monster_is_obvious(const struct monster *mon);
 bool monster_is_mimicking(const struct monster *mon);
 
-
+#endif /* !MON_PREDICATE_H */
