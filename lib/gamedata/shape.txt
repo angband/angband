@@ -49,10 +49,14 @@ blow:bite
 blow:claw
 
 name:Púkel-man
-combat:0:5:50
+combat:0:5:20
 skill-save:20
 obj-flags:SUST_STR | SUST_CON | PROT_STUN | REGEN | HOLD_LIFE
-values:STR[4] | CON[4] | STEALTH[-2] | SPEED[-5] | RES_POIS[1] | RES_SHARD[1]
+player-flags:ROCK
+values:STR[4] | CON[4] | STEALTH[-2] | SPEED[-5] | RES_POIS[3] | RES_SHARD[1]
+values:DAM_RED[10]
+effect:CURE:POISONED
+effect:CURE:STUN
 blow:punch
 blow:crush
 blow:thump
