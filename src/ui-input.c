@@ -1273,7 +1273,7 @@ bool textui_get_aim_dir(int *dp)
 					dir = 5;
 			} else if (ke.key.code == '\'') {
 				/* Set to closest target */
-				if (target_set_closest(TARGET_KILL))
+				if (target_set_closest(TARGET_KILL, NULL))
 					dir = 5;
 			} else if (ke.key.code == 't' || ke.key.code == '5' ||
 					   ke.key.code == '0' || ke.key.code == '.') {

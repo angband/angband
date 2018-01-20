@@ -866,7 +866,7 @@ void do_cmd_fire_at_nearest(void) {
 	}
 
 	/* Require foe */
-	if (!target_set_closest(TARGET_KILL | TARGET_QUIET)) return;
+	if (!target_set_closest((TARGET_KILL | TARGET_QUIET), NULL)) return;
 
 	/* Fire! */
 	cmdq_push(CMD_FIRE);
