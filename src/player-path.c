@@ -722,7 +722,7 @@ static bool run_test(void)
 void run_step(int dir)
 {
 	/* Trapsafe player will treat the trap as if it isn't there */
-	bool disarm = player->timed[TMD_TRAPSAFE] ? false : true;
+	bool disarm = player_is_trapsafe(player) ? false : true;
 
 	/* Start or continue run */
 	if (dir) {

@@ -411,7 +411,7 @@ extern void hit_trap(int y, int x)
     int num = num_traps(cave, y, x, -1);
 
 	/* The player is safe from all traps */
-	if (player->timed[TMD_TRAPSAFE]) return;
+	if (player_is_trapsafe(player)) return;
 
     /* Oops.  We've walked right into trouble. */
     if      (num == 1) msg("You stumble upon a trap!");

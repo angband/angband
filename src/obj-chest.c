@@ -395,7 +395,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 	/* Allowed to open */
 	if (flag) {
 		/* Apply chest traps, if any and player is not trapsafe */
-		if (!player->timed[TMD_TRAPSAFE]) {
+		if (!player_is_trapsafe(player)) {
 			chest_trap(y, x, obj);
 		}
 
