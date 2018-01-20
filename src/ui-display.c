@@ -719,6 +719,7 @@ static const struct state_info effects[] =
 	{ TMD_ATT_CONF,  S("AttConf"),    COLOUR_L_UMBER },
 	{ TMD_ATT_EVIL,  S("AttEvil"),    COLOUR_WHITE },
 	{ TMD_ATT_DEMON, S("AttDemon"),   COLOUR_L_RED },
+	{ TMD_HEAL,      S("Heal"),       COLOUR_L_GREEN },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \

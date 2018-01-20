@@ -550,7 +550,7 @@ void process_world(struct chunk *c)
 		(void)pick_and_place_distant_monster(c, player, z_info->max_sight + 5,
 											 true, player->depth);
 
-	/*** Damage over Time ***/
+	/*** Damage (or healing) over Time ***/
 
 	/* Take damage from poison */
 	if (player->timed[TMD_POISONED])
@@ -576,6 +576,11 @@ void process_world(struct chunk *c)
 		take_hit(player, i, "a fatal wound");
 	}
 
+	/* Timed healing */
+	if (player->timed[TMD_HEAL]) {
+		bool ident = false;
+		effect_simple(EF_HEAL_HP, source_player(), "30", 0, 0, 0, &ident);
+	}
 
 	/*** Check the Food, and Regenerate ***/
 
