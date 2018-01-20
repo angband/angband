@@ -909,7 +909,7 @@ void move_player(int dir, bool disarm)
 
 	int m_idx = cave->squares[y][x].mon;
 	struct monster *mon = cave_monster(cave, m_idx);
-	bool trapsafe = player->timed[TMD_TRAPSAFE];
+	bool trapsafe = player_is_trapsafe(player);
 	bool alterable = square_isdisarmabletrap(cave, y, x) ||
 		square_iscloseddoor(cave, y, x);
 
@@ -1101,7 +1101,7 @@ static bool do_cmd_walk_test(int y, int x)
 void do_cmd_walk(struct command *cmd)
 {
 	int x, y, dir;
-	bool trapsafe = player->timed[TMD_TRAPSAFE] ? true : false;
+	bool trapsafe = player_is_trapsafe(player) ? true : false;
 
 	/* Get arguments */
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)

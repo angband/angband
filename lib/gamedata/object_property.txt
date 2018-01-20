@@ -656,6 +656,11 @@ type-mult:crown:0
 type-mult:gloves:0
 type-mult:boots:0
 
+name:trap immunity
+type:flag
+code:TRAP_IMMUNE
+power:5
+
 name:ignore acid
 type:ignore
 code:ACID

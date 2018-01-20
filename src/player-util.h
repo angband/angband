@@ -63,6 +63,7 @@ int shape_name_to_idx(const char *name);
 struct player_shape *player_shape_by_idx(int index);
 void player_resume_normal_shape(struct player *p);
 bool player_is_shapechanged(struct player *p);
+bool player_is_trapsafe(struct player *p);
 bool player_can_cast(struct player *p, bool show_msg);
 bool player_can_study(struct player *p, bool show_msg);
 bool player_can_read(struct player *p, bool show_msg);
