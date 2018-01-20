@@ -3165,6 +3165,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	int damage = 0;
 	int safe_grids = 0, safe_y = 0, safe_x = 0;
 
+	bool targeted = context->p1 ? true : false;
 	bool hurt = false;
 	bool map[32][32];
 
@@ -3176,6 +3177,11 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	if (!player->depth) {
 		msg("The ground shakes for a moment.");
 		return true;
+	}
+
+	/* Sometimes ask for a target */
+	if (targeted && (context->dir == 5) && target_okay()) {
+		target_get(&centre.x, &centre.y);
 	}
 
 	/* Paranoia -- Enforce maximum range */
