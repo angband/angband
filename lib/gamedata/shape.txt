@@ -76,3 +76,14 @@ blow:hit
 blow:hit
 blow:swipe
 blow:slash
+
+name:eagle
+combat:5:0:10
+obj-flags:SUST_WIS | PROT_BLIND | PROT_CONF | PROT_FEAR | SEE_INVIS | FREE_ACT
+obj-flags:TRAP_IMMUNE
+values:MOVES[3]
+blow:peck
+blow:claw
+blow:claw
+blow:strike
+blow:tear

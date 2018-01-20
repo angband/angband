@@ -271,7 +271,7 @@ desc:Sprays acid in a cone, hitting all monsters up to 4 grids away.
 
 book:magic book:dungeon:[Magical Defences]:6:arcane
 book-graphics:?:b
-book-properties:10000:15:30 to 100
+book-properties:10000:20:30 to 100
 
 spell:Disable Traps, Destroy Doors:5:5:30:6
 effect:TOUCH:KILL_DOOR
@@ -315,7 +315,7 @@ desc: to blink or teleport each monster in the area of effect.
 
 book:magic book:dungeon:[Arcane Control]:6:arcane
 book-graphics:?:b
-book-properties:30000:10:40 to 100
+book-properties:30000:15:40 to 100
 
 spell:Door Creation:13:9:40:12
 effect:TOUCH:MAKE_DOOR
@@ -367,7 +367,7 @@ desc:Fires a short range beam of force.
 
 book:magic book:dungeon:[Wizard's Tome of Power]:6:arcane
 book-graphics:?:b
-book-properties:50000:5:60 to 100
+book-properties:50000:10:60 to 100
 
 spell:Shock Wave:20:5:40:16
 effect:BALL:SOUND:2
@@ -454,7 +454,7 @@ effect:DETECT_LIVING_MONSTERS
 dice:22d40
 desc:Detects all living monsters in the immediate area, for one turn only.
 
-spell:Fox Form:1:2:20:30
+spell:Fox Form:1:2:20:5
 effect:SHAPECHANGE:fox
 desc:Changes you into the shape of a quick and stealthy fox.
 desc:  While shapechanged you cannot use items.
@@ -471,13 +471,13 @@ dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
 desc:Shoots a radius-2 poison ball.
 
-spell:Confuse Monster:5:3:30:12
+spell:Confuse Monster:5:3:30:5
 effect:BOLT_AWARE:MON_CONF
 dice:5+d$S
 expr:S:PLAYER_LEVEL:- 5
 desc:Confuse a single monster; more effective against animals.
 
-spell:Slow Monster:6:4:30:15
+spell:Slow Monster:6:4:30:5
 effect:BOLT_STATUS:MON_SLOW
 dice:5+d$S
 expr:S:PLAYER_LEVEL:- 5
@@ -487,16 +487,16 @@ book:nature book:town:[Gifts of Nature]:6:nature
 book-graphics:?:G
 book-properties:400:40:10 to 100
 
-spell:Cure Poison:4:4:30:7
+spell:Cure Poison:4:4:30:6
 effect:CURE:POISONED
 desc:Neutralizes poison.
 
-spell:Resist Poison:7:6:32:10
+spell:Resist Poison:7:6:32:7
 effect:TIMED_INC:OPP_POIS
 dice:20+d20
 desc:Grants you resistance to poison for 20+1d20 turns.
 
-spell:Turn Stone to Mud:8:3:25:6
+spell:Turn Stone to Mud:8:3:25:7
 effect:LINE:KILL_WALL
 dice:20+1d30
 desc:Produces a beam that destroys the first section of wall it hits,
@@ -530,29 +530,14 @@ desc: monsters. Length of the line increases with player level.
 
 book:nature book:dungeon:[Creature Dominion]:5:nature
 book-graphics:?:g
-book-properties:10000:15:30 to 100
+book-properties:10000:20:30 to 100
 
-spell:Alter Creature:11:7:45:40
-effect:BOLT_STATUS:MON_POLY
-dice:$B
-expr:B:PLAYER_LEVEL:+ 10
-desc:Attempts to polymorph a single monster; more effective against animals.
-desc:  Uniques are not affected.
-
-spell:Earthquake:18:18:60:20
-effect:EARTHQUAKE
-param:10
-desc:Causes a 10-square radius earthquake around you.
-desc:  Earthquakes may damage monsters and destroy items in some
-desc: squares in the area of effect.
-desc:  Artifacts will not be destroyed by this spell.
-desc:  This spell has no effect when used in the town.
-
-spell:Probing:20:20:50:80
-effect:PROBE
-desc:Probes each monster within line of sight, giving information on the
-desc: current hit points of the monster and many of its characteristics
-desc: and abilities.
+spell:Trance:20:10:45:50
+effect:TOUCH_AWARE:MON_HOLD
+dice:3+d$D
+expr:D:PLAYER_LEVEL:/ 7
+desc:Holds every adjacent, non-resistant monster for a level-dependent
+desc: number of turns; animals are entranced for longer.
 
 spell:Mass Sleep:25:15:50:60
 effect:PROJECT_LOS:SLEEP_ALL
@@ -561,26 +546,37 @@ expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Monsters that resist sleep are not affected.
 
-spell:Mass Confusion:25:25:60:60
-effect:PROJECT_LOS_AWARE:MON_CONF
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to strongly confuse each monster in line of sight.
-desc:  Monsters that resist confusion are not affected.
+spell:Become Púkel-man:30:20:75:80
+effect:SHAPECHANGE:Púkel-man
+desc:Gives you the form of a statue of the Drúedain, slow but hard to hurt.
 
-book:nature book:dungeon:[Natural Vitality]:5:nature
+spell:Eagle's Flight:35:20:80:100
+effect:SHAPECHANGE:eagle
+desc:Gives you the form of one of the great eagles of Manwë.
+
+spell:Bear Form:40:20:85:150
+effect:SHAPECHANGE:bear
+desc:Allows you to take the form of a great bear of the mountains, sweeping
+desc: aside your enemies with your mighty paws.
+
+book:nature book:dungeon:[Natural Vitality]:4:nature
 book-graphics:?:g
-book-properties:30000:10:40 to 100
+book-properties:30000:15:40 to 100
 
-spell:Haste Self:25:12:65:30
+spell:Tremor:20:20:60:40
+effect:EARTHQUAKE:1
+param:4
+desc:Causes a targeted 4-square radius earthquake.
+desc:  Earthquakes may hurt the player, damage monsters and destroy items
+desc: in some squares in the area of effect.
+desc:  Artifacts will not be destroyed by this spell.
+desc:  This spell has no effect when used in the town.
+
+spell:Haste Self:25:12:65:60
 effect:TIMED_INC:FAST:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
-
-spell:Become Púkel-man:30:20:75:50
-effect:SHAPECHANGE:Púkel-man
-desc:Gives you the form of a statue of the Drúedain, slow but hard to hurt.
 
 spell:Revitalize:35:70:90:90
 effect:RESTORE_STAT:STR
@@ -592,24 +588,19 @@ effect:RESTORE_EXP
 desc:Restores all stats and experience points to maximum.
 
 spell:Herbal Healing:40:30:90:100
-effect:HEAL_HP
-dice:m50
 effect:CURE:CUT
 effect:CURE:POISONED
 effect:CURE:STUN
-desc:Cures all cuts, poison and stunning and heals half of any missing
-desc: hit points.
-
-spell:Bear Form:40:20:85:150
-effect:SHAPECHANGE:bear
-desc:Allows you to take the form of a great bear of the mountains, sweeping
-desc: aside your enemies with your mighty paws.
+effect:TIMED_INC:HEAL
+dice:5+1d3
+desc:Cures all cuts, poison and stunning and heals 30 hit points on each of
+desc: the next 5+1d3 turns.
 
 book:nature book:dungeon:[Wild Forces]:5:nature
 book-graphics:?:g
-book-properties:50000:5:60 to 100
+book-properties:50000:10:60 to 100
 
-spell:Meteor Swarm:30:14:85:34
+spell:Meteor Swarm:30:14:85:50
 effect:SWARM:METEOR:1
 dice:$B+m$M
 expr:B:PLAYER_LEVEL:/ 2 + 30
@@ -708,8 +699,8 @@ desc: for one turn only.
 spell:Minor Healing:1:2:15:4
 effect:HEAL_HP
 dice:$B+m$M
-expr:B:PLAYER_LEVEL:+ 5
-expr:M:PLAYER_LEVEL:+ 10
+expr:B:PLAYER_LEVEL:+ 10
+expr:M:PLAYER_LEVEL:* 3 / 4
 effect:TIMED_DEC:CUT
 dice:20
 effect:TIMED_DEC:STUN
@@ -724,7 +715,12 @@ expr:B:PLAYER_LEVEL:+ 10
 expr:S:PLAYER_LEVEL:+ 10
 desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
 
-spell:Heroism:5:2:30:40
+spell:Sense Invisible:3:4:25:4
+effect:TIMED_INC:SINVIS
+dice:24+d24
+desc:Enables you to see invisible monsters for 24+1d24 turns.
+
+spell:Heroism:5:2:30:8
 effect:HEAL_HP
 dice:10
 effect:CURE:AFRAID
@@ -736,16 +732,11 @@ desc:Cures 10 points of damage, removes fear and, from character level 20,
 desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
 desc: for a level-dependent duration.
 
-spell:Sense Invisible:1:4:25:4
-effect:TIMED_INC:SINVIS
-dice:24+d24
-desc:Enables you to see invisible monsters for 24+1d24 turns.
-
 book:prayer book:town:[Cleansing Power]:6:divine
 book-graphics:?:y
 book-properties:100:40:5 to 100
 
-spell:Orb of Draining:7:7:40:14
+spell:Orb of Draining:7:7:40:12
 effect:BALL:HOLY_ORB
 param:2:30
 dice:$B+3d6
@@ -774,7 +765,7 @@ dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each evil monster within line of sight.
 
-spell:Protection from Evil:14:8:42:4
+spell:Protection from Evil:14:8:42:25
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
@@ -782,7 +773,7 @@ desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
-spell:Remove Curse:16:6:38:5
+spell:Remove Curse:16:6:38:30
 effect:REMOVE_CURSE
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:+ 0
@@ -792,19 +783,19 @@ desc: character levels.
 
 book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
 book-graphics:?:o
-book-properties:10000:15:30 to 100
+book-properties:10000:20:30 to 100
 
-spell:Portal:10:4:30:4
+spell:Portal:10:4:30:15
 effect:TELEPORT
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 30
 desc:Teleports you randomly over a short distance.
 
-spell:Remembrance:20:30:90:250
+spell:Remembrance:20:30:90:50
 effect:RESTORE_EXP
 desc:Restores experience points to maximum if it is currently below maximum.
 
-spell:Word of Recall:25:30:75:11
+spell:Word of Recall:25:30:75:70
 effect:RECALL
 desc:Teleports you from the dungeon to the town or from the town to the
 desc: deepest level you have visited in the dungeon.
@@ -814,7 +805,7 @@ desc: of recall again.
 desc:  This prayer has no effect when the option to restrict the use of
 desc: stairs and recall is set, unless Morgoth is dead.
 
-spell:Healing:30:50:80:130
+spell:Healing:30:50:80:100
 effect:HEAL_HP
 dice:2000
 effect:CURE:CUT
@@ -824,7 +815,7 @@ effect:CURE:AMNESIA
 desc:Heals 2000 points of damage and cures all stunning, cuts, poison
 desc: and amnesia.
 
-spell:Restoration:35:70:90:230
+spell:Restoration:35:70:90:130
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
 effect:RESTORE_STAT:WIS
@@ -832,29 +823,14 @@ effect:RESTORE_STAT:DEX
 effect:RESTORE_STAT:CON
 desc:Restores to maximum all stats that are currently below maximum.
 
-spell:Clairvoyance:37:50:80:230
+spell:Clairvoyance:37:50:80:150
 effect:LIGHT_LEVEL
 desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
 book:prayer book:dungeon:[Battle Blessings]:5:divine
 book-graphics:?:o
-book-properties:30000:10:40 to 100
-
-spell:Glyph of Warding:20:40:90:35
-effect:RUNE
-desc:Inscribes a glyph of warding beneath you.
-desc:  Summoned monsters can't appear on the glyph.
-desc:  If a monster attempts to move onto the glyph or melee you while you
-desc: are standing on the glyph, it must first succeed in breaking the glyph.
-desc:  Higher level monsters are more likely to break the glyph.
-desc:  The glyph will remain where it is, until a monster succeeds in
-desc: breaking it, or until you leave the level.
-
-spell:Smite Evil:25:20:70:40
-effect:TIMED_INC:ATT_EVIL:5
-dice:20+d20
-desc:Temporarily makes your melee attacks slay evil creatures.
+book-properties:30000:15:40 to 100
 
 spell:Enchant Weapon:35:50:80:230
 effect:ENCHANT:TOBOTH
@@ -866,6 +842,21 @@ effect:ENCHANT:TOAC
 dice:1+1d3
 desc:Attempts to improve the armour class bonus of a piece of armour.
 
+spell:Smite Evil:25:20:70:40
+effect:TIMED_INC:ATT_EVIL:5
+dice:20+d20
+desc:Temporarily makes your melee attacks slay evil creatures.
+
+spell:Glyph of Warding:20:40:90:35
+effect:RUNE
+desc:Inscribes a glyph of warding beneath you.
+desc:  Summoned monsters can't appear on the glyph.
+desc:  If a monster attempts to move onto the glyph or melee you while you
+desc: are standing on the glyph, it must first succeed in breaking the glyph.
+desc:  Higher level monsters are more likely to break the glyph.
+desc:  The glyph will remain where it is, until a monster succeeds in
+desc: breaking it, or until you leave the level.
+
 spell:Demon Bane:42:40:80:300
 effect:TIMED_INC:ATT_DEMON:5
 dice:20+d20
@@ -873,7 +864,7 @@ desc:Temporarily makes your melee attacks powerfully slay demons.
 
 book:prayer book:dungeon:[Wrath of the Valar]:5:divine
 book-graphics:?:o
-book-properties:50000:5:60 to 100
+book-properties:50000:10:60 to 100
 
 spell:Banish Evil:25:25:80:250
 effect:PROJECT_LOS_AWARE:AWAY_EVIL
@@ -904,7 +895,7 @@ desc:Inflicts unresistable damage on each evil monster within line of sight,
 desc: cures 1000 points of damage, cures all stunning, heals all cut damage,
 desc: neutralizes poison, and removes fear.
 
-spell:Spear of Oromë:40:30:75:130
+spell:Spear of Oromë:40:10:75:130
 effect:BEAM:HOLY_ORB
 dice:$Dd8
 expr:D:PLAYER_LEVEL:/ 2
@@ -913,7 +904,7 @@ desc:Fires a beam of holy magic that does extra damage to evil creatures.
 spell:Light of Manwë:42:40:85:200
 effect:BALL:LIGHT:4
 dice:$B
-expr:B:PLAYER_LEVEL:* 3
+expr:B:PLAYER_LEVEL:* 5
 effect:PROJECT_LOS:LIGHT_WEAK
 dice:100
 desc:Casts a radius 4 ball of strong light, and then bathes the entire area
