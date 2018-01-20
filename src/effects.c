@@ -1934,6 +1934,26 @@ bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 }
 
 /**
+ * Detect monsters possessing a spirit around the player.
+ * The height to detect above and below the player is context->value.dice,
+ * the width either side of the player context->value.sides.
+ */
+bool effect_handler_DETECT_SOUL(effect_handler_context_t *context)
+{
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+	bool monsters = detect_monsters(y_dist, x_dist, monster_has_spirit);
+
+	if (monsters)
+		msg("You sense the presence of spirits!");
+	else if (context->aware)
+		msg("You sense no spirits.");
+
+	context->ident = true;
+	return true;
+}
+
+/**
  * Identify an unknown rune of an item.
  */
 bool effect_handler_IDENTIFY(effect_handler_context_t *context)

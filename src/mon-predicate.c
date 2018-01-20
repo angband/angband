@@ -29,8 +29,8 @@
  */
 bool monster_is_nonliving(const struct monster *mon)
 {
-	return flags_test(mon->race->flags, RF_SIZE, RF_DEMON, RF_UNDEAD,
-					  RF_NONLIVING, FLAG_END);
+	return flags_test(mon->race->flags, RF_SIZE, RF_UNDEAD, RF_NONLIVING,
+					  FLAG_END);
 }
 
 /**
@@ -97,6 +97,14 @@ bool monster_is_stupid(const struct monster *mon)
 bool monster_is_smart(const struct monster *mon)
 {
 	return rf_has(mon->race->flags, RF_SMART);
+}
+
+/**
+ * Monster has a spirit
+ */
+bool monster_has_spirit(const struct monster *mon)
+{
+	return rf_has(mon->race->flags, RF_SPIRIT);
 }
 
 /**
