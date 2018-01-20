@@ -546,8 +546,8 @@ expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Monsters that resist sleep are not affected.
 
-spell:Become Púkel-man:30:20:75:80
-effect:SHAPECHANGE:Púkel-man
+spell:Become Pukel-man:30:20:75:80
+effect:SHAPECHANGE:Pukel-man
 desc:Gives you the form of a statue of the Drúedain, slow but hard to hurt.
 
 spell:Eagle's Flight:35:20:80:100

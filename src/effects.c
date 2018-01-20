@@ -4385,8 +4385,10 @@ bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 	msg("Your gear merges into your body.");
 
 	/* Do effect */
-	(void) effect_do(shape->effect, source_player(), NULL, &ident, true,
-					 0, 0, 0);
+	if (shape->effect) {
+		(void) effect_do(shape->effect, source_player(), NULL, &ident, true,
+						 0, 0, 0);
+	}
 
 	/* Update */
 	player->upkeep->update |= (PU_BONUS);
