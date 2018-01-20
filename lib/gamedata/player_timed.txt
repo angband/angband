@@ -309,3 +309,8 @@ name:ATT_DEMON
 desc:temporary slay demon
 on-begin:Your {kind} become{s} a bane of demons!
 on-end:Your {kind} return{s} to normal.
+
+name:HEAL
+desc:turn-by-turn minor healing
+on-begin:You feel the healing powers of nature!
+on-end:The healing effect fades.
