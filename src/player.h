@@ -67,8 +67,6 @@ enum
 #define pf_inter(f1, f2)       flag_inter(f1, f2, PF_SIZE)
 #define pf_diff(f1, f2)        flag_diff(f1, f2, PF_SIZE)
 
-#define player_has(p, flag)       (pf_has(p->race->pflags, (flag)) || pf_has(p->class->pflags, (flag)))
-
 /**
  * The range of possible indexes into tables based upon stats.
  * Currently things range from 3 to 18/220 = 40.
@@ -421,6 +419,8 @@ struct player_state {
 	bitflag pflags[PF_SIZE];				/**< Player intrinsic flags */
 	struct element_info el_info[ELEM_MAX];	/**< Resists from race and items */
 };
+
+#define player_has(p, flag)       (pf_has(p->state.pflags, (flag)))
 
 /**
  * Temporary, derived, player-related variables used during play but not saved
