@@ -48,7 +48,7 @@ values:STR[-3] | SPEED[5] | STEALTH[5] | BLOWS[1]
 blow:bite
 blow:claw
 
-name:Púkel-man
+name:Pukel-man
 combat:0:5:20
 skill-save:20
 obj-flags:SUST_STR | SUST_CON | PROT_STUN | REGEN | HOLD_LIFE
