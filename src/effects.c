@@ -67,7 +67,7 @@ typedef struct effect_handler_context_s {
 	const int beam;
 	const int boost;
 	const random_value value;
-	const int p1, p2, p3;
+	const int subtype, radius, other;
 	bool ident;
 } effect_handler_context_t;
 
@@ -830,7 +830,7 @@ bool effect_handler_CRUNCH(effect_handler_context_t *context)
  */
 bool effect_handler_CURE(effect_handler_context_t *context)
 {
-	int type = context->p1;
+	int type = context->subtype;
 	(void) player_clear_timed(player, type, true);
 	context->ident = true;
 	return true;
@@ -842,7 +842,7 @@ bool effect_handler_CURE(effect_handler_context_t *context)
 bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	player_set_timed(player, context->p1, MAX(amount, 0), true);
+	player_set_timed(player, context->subtype, MAX(amount, 0), true);
 	context->ident = true;
 	return true;
 
@@ -850,16 +850,16 @@ bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 
 /**
  * Extend a (positive or negative) player status condition.
- * If context->p2 is set, increase by that amount if the status exists already
+ * If context->radius is set, increase by that amount if the status exists already
  */
 bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
 
-	if (!player->timed[context->p1] || !context->p2)
-		player_inc_timed(player, context->p1, MAX(amount, 0), true, true);
+	if (!player->timed[context->subtype] || !context->radius)
+		player_inc_timed(player, context->subtype, MAX(amount, 0), true, true);
 	else
-		player_inc_timed(player, context->p1, context->p2, true, true);
+		player_inc_timed(player, context->subtype, context->radius, true, true);
 	context->ident = true;
 	return true;
 
@@ -867,16 +867,16 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 
 /**
  * Extend a (positive or negative) player status condition unresistably.
- * If context->p2 is set, increase by that amount if the status exists already
+ * If context->radius is set, increase by that amount if the status exists already
  */
 bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
 
-	if (!player->timed[context->p1] || !context->p2)
-		player_inc_timed(player, context->p1, MAX(amount, 0), true, false);
+	if (!player->timed[context->subtype] || !context->radius)
+		player_inc_timed(player, context->subtype, MAX(amount, 0), true, false);
 	else
-		player_inc_timed(player, context->p1, context->p2, true, false);
+		player_inc_timed(player, context->subtype, context->radius, true, false);
 	context->ident = true;
 	return true;
 }
@@ -892,7 +892,7 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 	struct monster *mon = cave_monster(cave, context->origin.which.monster);
 
 	if (mon) {
-		mon_inc_timed(mon, context->p1, MAX(amount, 0), 0, false);
+		mon_inc_timed(mon, context->subtype, MAX(amount, 0), 0, false);
 		context->ident = true;
 	}
 
@@ -901,14 +901,14 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 
 /**
  * Reduce a (positive or negative) player status condition.
- * If context->p2 is set, decrease by the current value / context->p2
+ * If context->radius is set, decrease by the current value / context->radius
  */
 bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	if (context->p2)
-		amount = player->timed[context->p1] / context->p2;
-	(void) player_dec_timed(player, context->p1, MAX(amount, 0), true);
+	if (context->radius)
+		amount = player->timed[context->subtype] / context->radius;
+	(void) player_dec_timed(player, context->subtype, MAX(amount, 0), true);
 	context->ident = true;
 	return true;
 }
@@ -952,11 +952,11 @@ bool effect_handler_RUNE(effect_handler_context_t *context)
 }
 
 /**
- * Restore a stat; the stat index is context->p1
+ * Restore a stat; the stat index is context->subtype
  */
 bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 {
-	int stat = context->p1;
+	int stat = context->subtype;
 
 	/* ID */
 	context->ident = true;
@@ -982,11 +982,11 @@ bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 }
 
 /**
- * Drain a stat temporarily.  The stat index is context->p1.
+ * Drain a stat temporarily.  The stat index is context->subtype.
  */
 bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 {
-	int stat = context->p1;
+	int stat = context->subtype;
 	int flag = sustain_flag(stat);
 
 	/* Bounds check */
@@ -1025,11 +1025,11 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 
 /**
  * Lose a stat point permanently, in a stat other than the one specified
- * in context->p1.
+ * in context->subtype.
  */
 bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 {
-	int safe_stat = context->p1;
+	int safe_stat = context->subtype;
 	int loss_stat = randint1(STAT_MAX - 1);
 
 	/* Avoid the safe stat */
@@ -1048,11 +1048,11 @@ bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
 
 
 /**
- * Gain a stat point.  The stat index is context->p1.
+ * Gain a stat point.  The stat index is context->subtype.
  */
 bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
 {
-	int stat = context->p1;
+	int stat = context->subtype;
 
 	/* Attempt to increase */
 	if (player_stat_inc(player, stat)) {
@@ -2096,7 +2096,7 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 
 /**
  * Enchant an item (in the inventory or on the floor)
- * Note that armour, to hit or to dam is controlled by context->p1
+ * Note that armour, to hit or to dam is controlled by context->subtype
  *
  * Work on incorporating enchant_spell() has been postponed...NRM
  */
@@ -2106,19 +2106,19 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 	bool used = false;
 	context->ident = true;
 
-	if ((context->p1 & ENCH_TOBOTH) == ENCH_TOBOTH) {
+	if ((context->subtype & ENCH_TOBOTH) == ENCH_TOBOTH) {
 		if (enchant_spell(value, value, 0))
 			used = true;
 	}
-	else if (context->p1 & ENCH_TOHIT) {
+	else if (context->subtype & ENCH_TOHIT) {
 		if (enchant_spell(value, 0, 0))
 			used = true;
 	}
-	else if (context->p1 & ENCH_TODAM) {
+	else if (context->subtype & ENCH_TODAM) {
 		if (enchant_spell(0, value, 0))
 			used = true;
 	}
-	if (context->p1 & ENCH_TOAC) {
+	if (context->subtype & ENCH_TOAC) {
 		if (enchant_spell(0, 0, value))
 			used = true;
 	}
@@ -2192,7 +2192,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 }
 
 /**
- * Apply a "project()" directly to all viewable monsters.  If context->p2 is
+ * Apply a "project()" directly to all viewable monsters.  If context->radius is
  * set, the effect damage boost is applied.  This is a hack - NRM
  *
  * Note that affected monsters are NOT auto-tracked by this usage.
@@ -2200,8 +2200,8 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 {
 	int i, x, y;
-	int dam = effect_calculate_value(context, context->p2 ? true : false);
-	int typ = context->p1;
+	int dam = effect_calculate_value(context, context->radius ? true : false);
+	int typ = context->subtype;
 
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
 
@@ -2237,8 +2237,8 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 {
 	int i, x, y;
-	int dam = effect_calculate_value(context, context->p2 ? true : false);
-	int typ = context->p1;
+	int dam = effect_calculate_value(context, context->radius ? true : false);
+	int typ = context->subtype;
 
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
 
@@ -2311,13 +2311,13 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 }
 
 /**
- * Summon context->value monsters of context->p1 type.
+ * Summon context->value monsters of context->subtype type.
  */
 bool effect_handler_SUMMON(effect_handler_context_t *context)
 {
 	int summon_max = effect_calculate_value(context, false);
 	int summon_type = context->p1;
-	int level_boost = context->p2;
+	int level_boost = context->radius;
 	int message_type = summon_message_type(summon_type);
 	int fallback_type = summon_fallback_type(summon_type);
 	int count = 0, val = 0, attempts = 0;
@@ -2450,12 +2450,12 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 
 /**
  * Delete all nearby (non-unique) monsters.  The radius of effect is
- * context->p2 if passed, otherwise the player view radius.
+ * context->radius if passed, otherwise the player view radius.
  */
 bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 {
 	int i;
-	int radius = context->p2 ? context->p2 : z_info->max_sight;
+	int radius = context->radius ? context->radius : z_info->max_sight;
 	unsigned dam = 0;
 
 	context->ident = true;
@@ -2547,7 +2547,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
  *
  * Monsters and players can be pushed past monsters or players weaker than
  * they are.
- * If set, context->p1 and context->p2 act as y and x coordinates
+ * If set, context->subtype and context->radius act as y and x coordinates
  */
 bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 {
@@ -2555,7 +2555,7 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 	int i, d, first_d;
 	int angle;
 
-	int t_y = context->p1, t_x = context->p2;
+	int t_y = context->subtype, t_x = context->radius;
 	int grids_away = effect_calculate_value(context, false);
 
 	context->ident = true;
@@ -2733,14 +2733,14 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
  *
  * If no spaces are readily available, the distance may increase.
  * Try very hard to move the player/monster at least a quarter that distance.
- * Setting context->p2 allows monsters to teleport the player away.
- * Setting context->p1 and context->p2 treats them as y and x coordinates
+ * Setting context->radius allows monsters to teleport the player away.
+ * Setting context->subtype and context->radius treats them as y and x coordinates
  * and teleports the monster from that grid.
  */
 bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
-	int y_start = context->p1;
-	int x_start = context->p2;
+	int y_start = context->subtype;
+	int x_start = context->radius;
 	int dis = context->value.base;
 	int y, x, pick;
 
@@ -2753,7 +2753,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	int current_score = 2 * MAX(z_info->dungeon_wid, z_info->dungeon_hgt);
 	bool only_vault_grids_possible = true;
 
-	bool is_player = (context->origin.what != SRC_MONSTER || context->p2);
+	bool is_player = (context->origin.what != SRC_MONSTER || context->radius);
 
 	context->ident = true;
 
@@ -2877,7 +2877,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 /**
  * Teleport player to a grid near the given location
- * Setting context->p1 and context->p2 treats them as y and x coordinates
+ * Setting context->subtype and context->radius treats them as y and x coordinates
  *
  * This function is slightly obsessive about correctness.
  * This function allows teleporting into vaults (!)
@@ -2898,16 +2898,16 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	context->ident = true;
 
 	/* Where are we going? */
-	if (context->p1 && context->p2) {
+	if (context->subtype && context->radius) {
 		/* Effect was given co-ordinates */
-		ny = context->p1;
-		nx = context->p2;
+		ny = context->subtype;
+		nx = context->radius;
 	} else if (context->origin.what == SRC_MONSTER) {
 		/* Spell cast by monster */
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		ny = mon->fy;
 		nx = mon->fx;
-	} else if (context->p3) {
+	} else if (context->other) {
 		/* Closest living monster - needs generalisation NRM */
 		target_set_closest(TARGET_KILL, monster_is_living);
 		target_get(&nx, &ny);
@@ -3086,7 +3086,7 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
  */
 bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 {
-	int y, x, k, r = context->p2;
+	int y, x, k, r = context->radius;
 	int y1 = player->py;
 	int x1 = player->px;
 
@@ -3175,7 +3175,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 }
 
 /**
- * Induce an earthquake of the radius context->p2 centred on the instigator.
+ * Induce an earthquake of the radius context->radius centred on the instigator.
  *
  * This will turn some walls into floors and some floors into walls.
  *
@@ -3193,12 +3193,12 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int r = context->p2;
+	int r = context->radius;
 	int i, y, x, yy, xx, dy, dx;
 	int damage = 0;
 	int safe_grids = 0, safe_y = 0, safe_x = 0;
 
-	bool targeted = context->p1 ? true : false;
+	bool targeted = context->subtype ? true : false;
 	bool hurt = false;
 	bool map[32][32];
 
@@ -3485,14 +3485,14 @@ bool effect_handler_LIGHT_LEVEL(effect_handler_context_t *context)
 
 /**
  * Call light around the player
- * Affect all monsters in the projection radius (context->p2)
+ * Affect all monsters in the projection radius (context->radius)
  */
 bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, false);
-	int rad = context->p2 + (context->p3 ? player->lev / context->p3 : 0);
+	int rad = context->radius + (context->other ? player->lev / context->other : 0);
 
 	int flg = PROJECT_GRID | PROJECT_KILL;
 
@@ -3514,14 +3514,14 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 
 /**
  * Call darkness around the player
- * Affect all monsters in the projection radius (context->p2)
+ * Affect all monsters in the projection radius (context->radius)
  */
 bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, false);
-	int rad = context->p2;
+	int rad = context->radius;
 
 	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_PLAY;
 
@@ -3555,12 +3555,12 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, true);
-	int rad = context->p2 ? context->p2 : 0;
+	int rad = context->radius ? context->radius : 0;
 
 	int flg = PROJECT_STOP | PROJECT_PLAY | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Aim at the target, explode */
-	if (project(context->origin, rad, py, px, dam, context->p1, flg, 0, 0, NULL))
+	if (project(context->origin, rad, py, px, dam, context->subtype, flg, 0, 0, NULL))
 		context->ident = true;
 
 	return true;
@@ -3575,12 +3575,12 @@ bool effect_handler_SPHERE(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 	int dam = effect_calculate_value(context, true);
-	int rad = context->p2 ? context->p2 : 0;
+	int rad = context->radius ? context->radius : 0;
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Aim at the target, explode */
-	if (project(context->origin, rad, py, px, dam, context->p1, flg, 0, 0, NULL))
+	if (project(context->origin, rad, py, px, dam, context->subtype, flg, 0, 0, NULL))
 		context->ident = true;
 
 	return true;
@@ -3595,7 +3595,7 @@ bool effect_handler_SPHERE(effect_handler_context_t *context)
 bool effect_handler_BALL(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
-	int rad = context->p2 ? context->p2 : 2;
+	int rad = context->radius ? context->radius : 2;
 	int ty = -1;
 	int tx = -1;
 
@@ -3649,7 +3649,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 				tx = player->px + ddx[context->dir];
 			}
 
-			if (context->p3) rad += player->lev / context->p3;
+			if (context->other) rad += player->lev / context->other;
 			break;
 
 		default:
@@ -3657,7 +3657,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	if (project(context->origin, rad, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
+	if (project(context->origin, rad, ty, tx, dam, context->subtype, flg, 0, 0, context->obj))
 		context->ident = true;
 
 	return true;
@@ -3667,13 +3667,13 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 /**
  * Breathe an element, in a cone from the breather
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 degrees of arc, context->p3 radius
+ * context->subtype is element, context->radius degrees of arc, context->other radius
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, false);
-	int type = context->p1;
-	int rad = context->p3;
+	int type = context->subtype;
+	int rad = context->other;
 
 	int ty = -1;
 	int tx = -1;
@@ -3681,7 +3681,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	/* Diameter of source starts at 40, so full strength up to 3 grids from
 	 * the breather. */
 	int diameter_of_source = 40;
-	int degrees_of_arc = context->p2;
+	int degrees_of_arc = context->radius;
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3756,14 +3756,14 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
  * quickly.
  *
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 degrees of arc (minimum 10),
- * context->p3 radius
+ * context->subtype is element, context->radius degrees of arc (minimum 10),
+ * context->other radius
  */
 bool effect_handler_ARC(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, false);
-	int type = context->p1;
-	int rad = context->p3;
+	int type = context->subtype;
+	int rad = context->other;
 
 	int ty = -1;
 	int tx = -1;
@@ -3773,7 +3773,7 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 	int diameter_of_source = 40;
 
 	/* Short beams now have their own effect, so we set a minimum arc width */
-	int degrees_of_arc = MAX(context->p2, 20);
+	int degrees_of_arc = MAX(context->radius, 20);
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3820,17 +3820,17 @@ bool effect_handler_ARC(effect_handler_context_t *context)
  * Cast an defined length beam spell.
  *
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 radius
- * context->p3 allows an added radius of 1 every time the player level
- * increases by a multiple of context->p3, and will only take effect for
+ * context->subtype is element, context->radius radius
+ * context->other allows an added radius of 1 every time the player level
+ * increases by a multiple of context->other, and will only take effect for
  * player spells
  */
 bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, false);
-	int type = context->p1;
-	bool addons = (context->origin.what == SRC_PLAYER) && (context->p3 > 0);
-	int rad = context->p2 + (addons ? player->lev / context->p3 : 0);
+	int type = context->subtype;
+	bool addons = (context->origin.what == SRC_PLAYER) && (context->other > 0);
+	int rad = context->radius + (addons ? player->lev / context->other : 0);
 
 	int ty = -1;
 	int tx = -1;
@@ -3898,7 +3898,7 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 
 	while (num--) {
 		/* Aim at the target.  Hurt items on floor. */
-		if (project(source_player(), context->p2, ty, tx, dam, context->p1, flg, 0, 0,
+		if (project(source_player(), context->radius, ty, tx, dam, context->subtype, flg, 0, 0,
 					context->obj))
 			context->ident = true;
 	}
@@ -3929,7 +3929,7 @@ bool effect_handler_STRIKE(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target.  Hurt items on floor. */
-	if (project(source_player(), context->p2, ty, tx, dam, context->p1, flg, 0,
+	if (project(source_player(), context->radius, ty, tx, dam, context->subtype, flg, 0,
 				0, context->obj)) {
 		context->ident = true;
 	}
@@ -3963,7 +3963,7 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target */
-		if (project(source_player(), 0, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
+		if (project(source_player(), 0, ty, tx, dam, context->subtype, flg, 0, 0, context->obj))
 			context->ident = true;
 	}
 
@@ -3993,7 +3993,7 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target, explode */
-		if (project(source_player(), context->p2, ty, tx, dam, context->p1, flg, 0, 0,
+		if (project(source_player(), context->radius, ty, tx, dam, context->subtype, flg, 0, 0,
 					context->obj))
 			context->ident = true;
 	}
@@ -4009,7 +4009,7 @@ bool effect_handler_BOLT(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	(void) project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj);
+	(void) project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj);
 	if (!player->timed[TMD_BLIND])
 		context->ident = true;
 	return true;
@@ -4024,7 +4024,7 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_BEAM | PROJECT_KILL;
-	(void) project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj);
+	(void) project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj);
 	if (!player->timed[TMD_BLIND])
 		context->ident = true;
 	return true;
@@ -4032,17 +4032,17 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 
 /**
  * Cast a bolt spell, or rarely, a beam spell
- * context->p2 is any adjustment to the regular beam chance
- * context->p3 being set means to divide by the adjustment instead of adding
+ * context->radius is any adjustment to the regular beam chance
+ * context->other being set means to divide by the adjustment instead of adding
  */
 bool effect_handler_BOLT_OR_BEAM(effect_handler_context_t *context)
 {
 	int beam = context->beam;
 
-	if (context->p3)
-		beam /= context->p2;
+	if (context->other)
+		beam /= context->radius;
 	else
-		beam += context->p2;
+		beam += context->radius;
 
 	if (randint0(100) < beam)
 		return effect_handler_BEAM(context);
@@ -4059,7 +4059,7 @@ bool effect_handler_LINE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
-	if (project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj))
+	if (project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj))
 		context->ident = true;
 	return true;
 }
@@ -4071,7 +4071,7 @@ bool effect_handler_LINE(effect_handler_context_t *context)
 bool effect_handler_ALTER(effect_handler_context_t *context)
 {
 	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
-	if (project_aimed(context->origin, context->p1, context->dir, 0, flg, context->obj))
+	if (project_aimed(context->origin, context->subtype, context->dir, 0, flg, context->obj))
 		context->ident = true;
 	return true;
 }
@@ -4086,7 +4086,7 @@ bool effect_handler_BOLT_STATUS(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	if (project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj))
+	if (project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj))
 		context->ident = true;
 	return true;
 }
@@ -4101,7 +4101,7 @@ bool effect_handler_BOLT_STATUS_DAM(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	if (project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj))
+	if (project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj))
 		context->ident = true;
 	return true;
 }
@@ -4117,7 +4117,7 @@ bool effect_handler_BOLT_AWARE(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
 	if (context->aware) flg |= PROJECT_AWARE;
-	if (project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj))
+	if (project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj))
 		context->ident = true;
 	return true;
 }
@@ -4128,8 +4128,8 @@ bool effect_handler_BOLT_AWARE(effect_handler_context_t *context)
 bool effect_handler_TOUCH(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
-	int rad = context->p2 ? context->p2 : 1;
-	if (project_touch(dam, rad, context->p1, false, context->obj))
+	int rad = context->radius ? context->radius : 1;
+	if (project_touch(dam, rad, context->subtype, false, context->obj))
 		context->ident = true;
 	return true;
 }
@@ -4141,8 +4141,8 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
 bool effect_handler_TOUCH_AWARE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
-	int rad = context->p2 ? context->p2 : 1;
-	if (project_touch(dam, rad, context->p1, context->aware, context->obj))
+	int rad = context->radius ? context->radius : 1;
+	if (project_touch(dam, rad, context->subtype, context->aware, context->obj))
 		context->ident = true;
 	return true;
 }
@@ -4409,7 +4409,7 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
  */
 bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 {
-	struct player_shape *shape = player_shape_by_idx(context->p1);
+	struct player_shape *shape = player_shape_by_idx(context->subtype);
 	bool ident = false;
 
 	/* Change shape */
@@ -4529,7 +4529,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 {
 	int plev = player->lev;
 	int die = effect_calculate_value(context, false);
-	int p1 = 0, p2 = 0, p3 = 0;
+	int subtype = 0, radius = 0, other = 0;
 	int beam = context->beam;
 	effect_handler_f handler = NULL;
 	random_value value = { 0, 0, 0, 0 };
@@ -4540,100 +4540,100 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 		msg("You feel a surge of power!");
 
 	if (die < 8) {
-		p1 = PROJ_MON_CLONE;
+		subtype = PROJ_MON_CLONE;
 		handler = effect_handler_BOLT;
 	} else if (die < 14) {
-		p1 = PROJ_MON_SPEED;
+		subtype = PROJ_MON_SPEED;
 		value.base = 100;
 		handler = effect_handler_BOLT;
 	} else if (die < 26) {
-		p1 = PROJ_MON_HEAL;
+		subtype = PROJ_MON_HEAL;
 		value.dice = 4;
 		value.sides = 6;
 		handler = effect_handler_BOLT;
 	} else if (die < 31) {
-		p1 = PROJ_MON_POLY;
+		subtype = PROJ_MON_POLY;
 		value.base = plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 36) {
 		beam -= 10;
-		p1 = PROJ_MISSILE;
+		subtype = PROJ_MISSILE;
 		value.dice = 3 + ((plev - 1) / 5);
 		value.sides = 4;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 41) {
-		p1 = PROJ_MON_CONF;
+		subtype = PROJ_MON_CONF;
 		value.base = plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 46) {
-		p1 = PROJ_POIS;
+		subtype = PROJ_POIS;
 		value.base = 20 + plev / 2;
-		p2 = 3;
+		radius = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 51) {
-		p1 = PROJ_LIGHT_WEAK;
+		subtype = PROJ_LIGHT_WEAK;
 		value.dice = 6;
 		value.sides = 8;
 		handler = effect_handler_LINE;
 	} else if (die < 56) {
-		p1 = PROJ_ELEC;
+		subtype = PROJ_ELEC;
 		value.dice = 3 + ((plev - 5) / 6);
 		value.sides = 6;
 		handler = effect_handler_BEAM;
 	} else if (die < 61) {
 		beam -= 10;
-		p1 = PROJ_COLD;
+		subtype = PROJ_COLD;
 		value.dice = 5 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 66) {
-		p1 = PROJ_ACID;
+		subtype = PROJ_ACID;
 		value.dice = 6 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 71) {
-		p1 = PROJ_FIRE;
+		subtype = PROJ_FIRE;
 		value.dice = 8 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 76) {
-		p1 = PROJ_MON_DRAIN;
+		subtype = PROJ_MON_DRAIN;
 		value.base = 75;
 		handler = effect_handler_BOLT;
 	} else if (die < 81) {
-		p1 = PROJ_ELEC;
+		subtype = PROJ_ELEC;
 		value.base = 30 + plev / 2;
-		p2 = 2;
+		radius = 2;
 		handler = effect_handler_BALL;
 	} else if (die < 86) {
-		p1 = PROJ_ACID;
+		subtype = PROJ_ACID;
 		value.base = 40 + plev;
-		p2 = 2;
+		radius = 2;
 		handler = effect_handler_BALL;
 	} else if (die < 91) {
-		p1 = PROJ_ICE;
+		subtype = PROJ_ICE;
 		value.base = 70 + plev;
-		p2 = 3;
+		radius = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 96) {
-		p1 = PROJ_FIRE;
+		subtype = PROJ_FIRE;
 		value.base = 80 + plev;
-		p2 = 3;
+		radius = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 101) {
-		p1 = PROJ_MON_DRAIN;
+		subtype = PROJ_MON_DRAIN;
 		value.base = 100 + plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 104) {
-		p2 = 12;
+		radius = 12;
 		handler = effect_handler_EARTHQUAKE;
 	} else if (die < 106) {
-		p2 = 15;
+		radius = 15;
 		handler = effect_handler_DESTRUCTION;
 	} else if (die < 108) {
 		handler = effect_handler_BANISH;
 	} else if (die < 110) {
-		p1 = PROJ_DISP_ALL;
+		subtype = PROJ_DISP_ALL;
 		value.base = 120;
 		handler = effect_handler_PROJECT_LOS;
 	}
@@ -4648,7 +4648,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 			beam,
 			context->boost,
 			value,
-			p1, p2, p3,
+			subtype, radius, other,
 			context->ident
 		};
 
@@ -4764,9 +4764,9 @@ effect_index effect_lookup(const char *name)
 }
 
 /**
- * Translate a string to an effect parameter index
+ * Translate a string to an effect parameter subtype index
  */
-int effect_param(int index, const char *type)
+int effect_subtype(int index, const char *type)
 {
 	int val = -1;
 
@@ -4850,7 +4850,7 @@ int effect_param(int index, const char *type)
 				break;
 			}
 
-				/* Anything else shoulcn't be calling this */
+				/* Anything else shouldn't be calling this */
 			default:
 				;
 		}
@@ -4928,9 +4928,9 @@ bool effect_do(struct effect *effect,
 				beam,
 				boost,
 				value,
-				effect->params[0],
-				effect->params[1],
-				effect->params[2],
+				effect->subtype,
+				effect->radius,
+				effect->other,
 				*ident,
 			};
 
@@ -4958,9 +4958,9 @@ bool effect_do(struct effect *effect,
 void effect_simple(int index,
 		struct source origin,
 		const char *dice_string,
-		int p1,
-		int p2,
-		int p3,
+		int subtype,
+		int radius,
+		int other,
 		bool *ident)
 {
 	struct effect effect;
@@ -4972,9 +4972,9 @@ void effect_simple(int index,
 	effect.index = index;
 	effect.dice = dice_new();
 	dice_parse_string(effect.dice, dice_string);
-	effect.params[0] = p1;
-	effect.params[1] = p2;
-	effect.params[2] = p3;
+	effect.subtype = subtype;
+	effect.radius = radius;
+	effect.other = other;
 
 	/* Direction if needed */
 	if (effect_aim(&effect))

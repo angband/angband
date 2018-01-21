@@ -1956,12 +1956,12 @@ void do_cmd_wiz_effect(void)
 		my_strcpy(dice, "0", sizeof(dice));
 
 	/* Get the parameters */
-	prt("Enter name or number for first parameter: ", 0, 0);
+	prt("Enter name or number for effect subtype: ", 0, 0);
 
 	/* Get the name */
 	if (askfor_aux(name, sizeof(name), NULL)) {
 		/* See if an effect parameter was entered */
-		p1 = effect_param(index, name);
+		p1 = effect_subtype(index, name);
 		if (p1 == -1) p1 = 0;
 	}
 

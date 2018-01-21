@@ -40,7 +40,7 @@ bool effect_aim(const struct effect *effect);
 const char *effect_info(const struct effect *effect);
 const char *effect_desc(const struct effect *effect);
 effect_index effect_lookup(const char *name);
-int effect_param(int index, const char *type);
+int effect_subtype(int index, const char *type);
 bool effect_do(struct effect *effect,
 	struct source origin,
 	struct object *obj,
@@ -52,9 +52,9 @@ bool effect_do(struct effect *effect,
 void effect_simple(int index,
 	struct source origin,
 	const char *dice_string,
-	int p1,
-	int p2,
-	int p3,
+	int subtype,
+	int radius,
+	int other,
 	bool *ident);
 
 #endif /* INCLUDED_EFFECTS_H */

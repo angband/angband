@@ -1404,34 +1404,34 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			case EFINFO_CURE: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						timed_effects[effect->params[0]].desc);
+						timed_effects[effect->subtype].desc);
 				break;
 			}
 			case EFINFO_TIMED: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						timed_effects[effect->params[0]].desc, dice_string);
+						timed_effects[effect->subtype].desc, dice_string);
 				break;
 			}
 			case EFINFO_STAT: {
-				int stat = effect->params[0];
+				int stat = effect->subtype;
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
 						lookup_obj_property(OBJ_PROPERTY_STAT, stat)->name);
 				break;
 			}
 			case EFINFO_SEEN: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].desc);
+						projections[effect->subtype].desc);
 				break;
 			}
 			case EFINFO_SUMM: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						summon_desc(effect->params[0]));
+						summon_desc(effect->subtype));
 				break;
 			}
 
 			/* Only currently used for the player, but can handle monsters */
 			case EFINFO_TELE: {
-				if (effect->params[0])
+				if (effect->subtype)
 					strnfmt(desc, sizeof(desc), effect_desc(effect),
 							"a monster", value.base);
 				else
@@ -1441,20 +1441,20 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			case EFINFO_QUAKE: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						effect->params[1]);
+						effect->radius);
 				break;
 			}
 			case EFINFO_LIGHT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string,
-						effect->params[1]);
+						effect->radius);
 				break;
 			}
 
 			/* Object generated balls are elemental */
 			case EFINFO_BALL: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].player_desc,
-						effect->params[1], dice_string);
+						projections[effect->subtype].player_desc,
+						effect->radius, dice_string);
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
@@ -1466,7 +1466,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 				/* Special treatment for several random breaths */
 				if (random_breath) {
 					my_strcat(breaths,
-							  projections[effect->params[0]].player_desc,
+							  projections[effect->subtype].player_desc,
 							  sizeof(breaths));
 					if (random_choices > 3) {
 						my_strcat(breaths, ", ", sizeof(breaths));
@@ -1479,33 +1479,33 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						random_breath = false;
 					}
 					strnfmt(desc, sizeof(desc), effect_desc(effect), breaths,
-							effect->params[1], dice_string);
+							effect->radius, dice_string);
 				} else {
 					strnfmt(desc, sizeof(desc), effect_desc(effect),
-							projections[effect->params[0]].player_desc,
-							effect->params[1], dice_string);
+							projections[effect->subtype].player_desc,
+							effect->radius, dice_string);
 				}
 				break;
 			}
 
 			case EFINFO_SHORT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect), 
-						projections[effect->params[0]].player_desc,
-						effect->params[1] +
-						effect->params[2] ? effect->params[2] / player->lev : 0,
+						projections[effect->subtype].player_desc,
+						effect->radius +
+						effect->other ? effect->other / player->lev : 0,
 						dice_string);
 				break;
 			}
 			/* Bolts that inflict status */
 			case EFINFO_BOLT: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].desc);
+						projections[effect->subtype].desc);
 				break;
 			}
 			/* Bolts and beams that damage */
 			case EFINFO_BOLTD: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].desc, dice_string);
+						projections[effect->subtype].desc, dice_string);
 				if (boost)
 					my_strcat(desc, format(", which your device skill increases by %d per cent", boost),
 							  sizeof(desc));
@@ -1513,7 +1513,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 			case EFINFO_TOUCH: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].desc);
+						projections[effect->subtype].desc);
 				break;
 			}
 			case EFINFO_NONE: {
