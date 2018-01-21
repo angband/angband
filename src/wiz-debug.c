@@ -1426,7 +1426,7 @@ static void do_cmd_wiz_cure_all(void)
 	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_CON, 0, 0, NULL);
 
 	/* Restore the level */
-	effect_simple(EF_RESTORE_EXP, source_player(), "0", 1, 0, 0, NULL);
+	effect_simple(EF_RESTORE_EXP, source_none(), "0", 0, 0, 0, NULL);
 
 	/* Heal the player */
 	player->chp = player->mhp;

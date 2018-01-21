@@ -840,7 +840,7 @@ void process_player(void)
 				!player->timed[TMD_PARALYZED] &&
 				!player->timed[TMD_TERROR] &&
 				!player->timed[TMD_AFRAID])
-				effect_simple(EF_DETECT_GOLD, source_none(), "3d3", 1, 0, 0, NULL);
+				effect_simple(EF_DETECT_GOLD, source_none(), "3d3", 0, 0, 0, NULL);
 		}
 
 		/* Paralyzed or Knocked Out player gets no turn */
