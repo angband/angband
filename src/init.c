@@ -181,15 +181,15 @@ errr grab_effect_data(struct parser *p, struct effect *effect)
 			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
 
 		/* Check for a value */
-		val = effect_param(effect->index, type);
+		val = effect_subtype(effect->index, type);
 		if (val < 0)
 			return PARSE_ERROR_INVALID_VALUE;
 		else
-			effect->params[0] = val;
+			effect->subtype = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		effect->params[1] = parser_getint(p, "xtra");
+		effect->radius = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1051,10 +1051,10 @@ static enum parser_error parse_trap_param(struct parser *p) {
 		return PARSE_ERROR_NONE;
 
 	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
+	effect->radius = parser_getint(p, "p2");
 
 	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
+		effect->other = parser_getint(p, "p3");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1170,10 +1170,10 @@ static enum parser_error parse_trap_param_xtra(struct parser *p) {
 		return PARSE_ERROR_NONE;
 
 	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
+	effect->radius = parser_getint(p, "p2");
 
 	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
+		effect->other = parser_getint(p, "p3");
 
 	return PARSE_ERROR_NONE;
 }
@@ -2454,10 +2454,10 @@ static enum parser_error parse_shape_param(struct parser *p) {
 		return PARSE_ERROR_NONE;
 
 	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
+	effect->radius = parser_getint(p, "p2");
 
 	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
+		effect->other = parser_getint(p, "p3");
 
 	return PARSE_ERROR_NONE;
 }
@@ -2966,10 +2966,10 @@ static enum parser_error parse_class_param(struct parser *p) {
 		return PARSE_ERROR_NONE;
 
 	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
+	effect->radius = parser_getint(p, "p2");
 
 	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
+		effect->other = parser_getint(p, "p3");
 
 	return PARSE_ERROR_NONE;
 }
