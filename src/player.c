@@ -248,11 +248,11 @@ static void adjust_level(struct player *p, bool verbose)
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);
 		}
 
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_STR, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_INT, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_WIS, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_DEX, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_CON, 1, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_STR, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_INT, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_WIS, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_DEX, 0, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_CON, 0, 0, NULL);
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&

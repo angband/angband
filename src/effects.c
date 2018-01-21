@@ -952,8 +952,7 @@ bool effect_handler_RUNE(effect_handler_context_t *context)
 }
 
 /**
- * Restore a stat.  The stat index is context->p1, message printed if
- * context->p2 is non-zero.
+ * Restore a stat; the stat index is context->p1
  */
 bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 {
@@ -977,8 +976,7 @@ bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 	update_stuff(player);
 
 	/* Message */
-	if (context->p2)
-		msg("You feel less %s.", desc_stat(stat, false));
+	msg("You feel less %s.", desc_stat(stat, false));
 
 	return (true);
 }
@@ -1068,14 +1066,14 @@ bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
 }
 
 /**
- * Restores any drained experience; message suppressed if context->p1 is set
+ * Restores any drained experience
  */
 bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 {
 	/* Restore experience */
 	if (player->exp < player->max_exp) {
 		/* Message */
-		if (context->p1 == 0)
+		if (context->origin.what != SRC_NONE)
 			msg("You feel your life energies returning.");
 		player_exp_gain(player, player->max_exp - player->exp);
 
@@ -1630,7 +1628,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 /**
  * Detect buried gold around the player.  The height to detect above and below
  * the player is context->value.dice, the width either side of the player
- * context->value.sides, and setting context->p1 to 1 suppresses messages.
+ * context->value.sides.
  */
 bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 {
@@ -1670,11 +1668,12 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 	}
 
 	/* Message unless we're silently detecting */
-	if (context->p1 != 1) {
-		if (gold_buried)
+	if (context->origin.what != SRC_NONE) {
+		if (gold_buried) {
 			msg("You sense the presence of buried treasure!");
-		else if (context->aware)
+		} else if (context->aware) {
 			msg("You sense no buried treasure.");
+		}
 	}
 
 	context->ident = true;
