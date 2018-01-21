@@ -2890,6 +2890,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 	int ny = py, nx = px;
 	int y, x, dis = 0, ctr = 0;
+	bool exact = false;
 
 	/* Initialize */
 	y = py;
@@ -2899,13 +2900,21 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 	/* Where are we going? */
 	if (context->p1 && context->p2) {
+		/* Effect was given co-ordinates */
 		ny = context->p1;
 		nx = context->p2;
 	} else if (context->origin.what == SRC_MONSTER) {
+		/* Spell cast by monster */
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		ny = mon->fy;
 		nx = mon->fx;
+	} else if (context->p3) {
+		/* Closest living monster - needs generalisation NRM */
+		target_set_closest(TARGET_KILL, monster_is_living);
+		target_get(&nx, &ny);
+		exact = true;
 	} else {
+		/* Player choice */
 		if ((context->dir == 5) && target_okay())
 			target_get(&nx, &ny);
 	}
@@ -2926,6 +2935,12 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		if (++ctr > (4 * dis * dis + 4 * dis + 1)) {
 			ctr = 0;
 			dis++;
+		}
+
+		/* Needed to be adjacent */
+		if (exact && (dis > 1)) {
+			msg("No approriate target!");
+			return false;
 		}
 	}
 
