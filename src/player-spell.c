@@ -590,23 +590,22 @@ static void spell_effect_append_value_info(const struct effect *effect,
 		case EF_SPHERE:
 		case EF_BALL:
 			/* Append radius */
-			if (effect->params[1]) {
-				special = format(", rad %d", effect->params[1]);
+			if (effect->radius) {
+				special = format(", rad %d", effect->radius);
 			} else {
 				special = "rad 2";
 			}
 			break;
 		case EF_STRIKE:
 			/* Append radius */
-			if (effect->params[1]) {
-				special = format(", rad %d", effect->params[1]);
+			if (effect->radius) {
+				special = format(", rad %d", effect->radius);
 			}
 			break;
 		case EF_SHORT_BEAM:
 			/* Append length of beam */
 			special = format(", len %d",
-							 effect->params[1] +
-							 player->lev / effect->params[2]);
+							 effect->radius + player->lev / effect->other);
 			break;
 		case EF_SWARM:
 			/* Append number of projectiles. */

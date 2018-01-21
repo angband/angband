@@ -1041,10 +1041,10 @@ static enum parser_error parse_curse_param(struct parser *p) {
 		return PARSE_ERROR_NONE;
 
 	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
+	effect->radius = parser_getint(p, "p2");
 
 	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
+		effect->other = parser_getint(p, "p3");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1323,10 +1323,10 @@ static enum parser_error parse_act_param(struct parser *p) {
 		return PARSE_ERROR_NONE;
 
 	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
+	effect->radius = parser_getint(p, "p2");
 
 	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
+		effect->other = parser_getint(p, "p3");
 
 	return PARSE_ERROR_NONE;
 }
@@ -1667,10 +1667,10 @@ static enum parser_error parse_object_param(struct parser *p) {
 		return PARSE_ERROR_NONE;
 
 	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
+	effect->radius = parser_getint(p, "p2");
 
 	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
+		effect->other = parser_getint(p, "p3");
 
 	return PARSE_ERROR_NONE;
 }

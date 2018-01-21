@@ -759,15 +759,15 @@ static enum parser_error parse_mon_spell_effect(struct parser *p) {
 			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
 
 		/* Check for a value */
-		val = effect_param(new_effect->index, type);
+		val = effect_subtype(new_effect->index, type);
 		if (val < 0)
 			return PARSE_ERROR_INVALID_VALUE;
 		else
-			new_effect->params[0] = val;
+			new_effect->subtype = val;
 	}
 
 	if (parser_hasval(p, "xtra"))
-		new_effect->params[1] = parser_getint(p, "xtra");
+		new_effect->radius = parser_getint(p, "xtra");
 
 	return PARSE_ERROR_NONE;
 }
@@ -784,10 +784,10 @@ static enum parser_error parse_mon_spell_param(struct parser *p) {
 		return PARSE_ERROR_NONE;
 
 	while (effect->next) effect = effect->next;
-	effect->params[1] = parser_getint(p, "p2");
+	effect->radius = parser_getint(p, "p2");
 
 	if (parser_hasval(p, "p3"))
-		effect->params[2] = parser_getint(p, "p3");
+		effect->other = parser_getint(p, "p3");
 
 	return PARSE_ERROR_NONE;
 }

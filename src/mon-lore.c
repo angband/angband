@@ -80,7 +80,7 @@ int spell_color(struct player *p, int spell_index)
 				}
 			} else if (eff->index == EF_TIMED_INC) {
 				/* Simple timed effects */
-				if (player_inc_check(p, eff->params[0], true)) {
+				if (player_inc_check(p, eff->subtype, true)) {
 					return spell->lore_attr;
 				} else {
 					return spell->lore_attr_resist;
@@ -89,7 +89,7 @@ int spell_color(struct player *p, int spell_index)
 				/* Multiple timed effects plus damage */
 				for (; eff; eff = eff->next) {
 					if (eff->index != EF_TIMED_INC) continue;
-					if (player_inc_check(p, eff->params[0], true)) {
+					if (player_inc_check(p, eff->subtype, true)) {
 						return spell->lore_attr;
 					}
 				}
@@ -109,7 +109,7 @@ int spell_color(struct player *p, int spell_index)
 	if ((eff->index == EF_BOLT) || (eff->index == EF_BALL) ||
 		(eff->index == EF_BREATH)) {
 		/* Treat by element */
-		switch (eff->params[0]) {
+		switch (eff->subtype) {
 			/* Special case - sound */
 			case ELEM_SOUND:
 				if (p->known_state.el_info[ELEM_SOUND].res_level > 0) {
@@ -138,7 +138,7 @@ int spell_color(struct player *p, int spell_index)
 				if (!of_has(p->known_state.flags, OF_PROT_STUN)) {
 					return spell->lore_attr;
 				} else if (!of_has(p->known_state.flags, OF_PROT_CONF) &&
-						   (eff->params[0] == ELEM_WATER)){
+						   (eff->subtype == ELEM_WATER)){
 					return spell->lore_attr;
 				} else {
 					return spell->lore_attr_resist;
@@ -146,9 +146,9 @@ int spell_color(struct player *p, int spell_index)
 				break;
 			/* All other elements */
 			default:
-				if (p->known_state.el_info[eff->params[0]].res_level == 3) {
+				if (p->known_state.el_info[eff->subtype].res_level == 3) {
 					return spell->lore_attr_immune;
-				} else if (p->known_state.el_info[eff->params[0]].res_level > 0) {
+				} else if (p->known_state.el_info[eff->subtype].res_level > 0) {
 					return spell->lore_attr_resist;
 				} else {
 					return spell->lore_attr;

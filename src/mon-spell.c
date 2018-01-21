@@ -158,7 +158,7 @@ static void spell_check_for_fail_rune(const struct monster_spell *spell)
 			equip_learn_element(player, ELEM_NEXUS);
 		} else if (effect->index == EF_TIMED_INC) {
 			/* Timed effects */
-			(void) player_inc_check(player, effect->params[0], false);
+			(void) player_inc_check(player, effect->subtype, false);
 		}
 		effect = effect->next;
 	}
@@ -312,7 +312,7 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 
 		/* First we test the elemental spells */
 		if (info->type & (RST_BOLT | RST_BALL | RST_BREATH)) {
-			int element = effect->params[0];
+			int element = effect->subtype;
 			int learn_chance = el[element].res_level * (smart ? 50 : 25);
 			if (randint0(100) < learn_chance) {
 				rsf_off(spells, info->index);
@@ -323,7 +323,7 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 				/* Timed effects */
 				if ((smart || !one_in_(3)) &&
 						effect->index == EF_TIMED_INC &&
-						of_has(flags, timed_effects[effect->params[0]].fail))
+						of_has(flags, timed_effects[effect->subtype].fail))
 					break;
 
 				/* Mana drain */
@@ -409,7 +409,7 @@ static int mon_spell_dam(int index, int hp, const struct monster_race *race,
 	const struct monster_spell *spell = monster_spell_by_index(index);
 
 	if (monster_spell_is_breath(index))
-		return breath_dam(spell->effect->params[0], hp);
+		return breath_dam(spell->effect->subtype, hp);
 	else
 		return nonhp_dam(spell, race, dam_aspect);
 }
