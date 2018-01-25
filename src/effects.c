@@ -67,7 +67,7 @@ typedef struct effect_handler_context_s {
 	const int beam;
 	const int boost;
 	const random_value value;
-	const int subtype, radius, other;
+	const int y, x, subtype, radius, other;
 	bool ident;
 } effect_handler_context_t;
 
@@ -2543,192 +2543,6 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 }
 
 /**
- * Thrust the player or a monster away from the source of a projection.
- *
- * Monsters and players can be pushed past monsters or players weaker than
- * they are.
- * If set, context->subtype and context->radius act as y and x coordinates
- */
-bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
-{
-	int y, x, yy, xx;
-	int i, d, first_d;
-	int angle;
-
-	int t_y = context->subtype, t_x = context->radius;
-	int grids_away = effect_calculate_value(context, false);
-
-	context->ident = true;
-
-	struct loc centre = origin_get_loc(context->origin);
-
-	/* Player gets pushed in a random direction if on the trap */
-	if (context->origin.what == SRC_TRAP &&
-			player->py == centre.y &&
-			player->px == centre.x) {
-		d = randint0(8);
-		centre.y += ddy_ddd[d];
-		centre.x += ddx_ddd[d];
-	}
-
-	/* Ask for a target if none given */
-	if (!(t_y && t_x))
-		target_get(&t_x, &t_y);
-
-	/* Determine where target is in relation to caster. */
-	y = t_y - centre.y + 20;
-	x = t_x - centre.x + 20;
-
-	/* Find the angle (/2) of the line from caster to target. */
-	angle = get_angle_to_grid[y][x];
-
-	/* Start at the target grid. */
-	y = t_y;
-	x = t_x;
-
-	/* Up to the number of grids requested, force the target away from the
-	 * source of the projection, until it hits something it can't travel
-	 * around. */
-	for (i = 0; i < grids_away; i++) {
-		/* Randomize initial direction. */
-		first_d = randint0(8);
-
-		/* Look around. */
-		for (d = first_d; d < 8 + first_d; d++) {
-			/* Reject angles more than 44 degrees from line. */
-			if (d % 8 == 0) {	/* 135 */
-				if ((angle > 157) || (angle < 114))
-					continue;
-			}
-			if (d % 8 == 1) {	/* 45 */
-				if ((angle > 66) || (angle < 23))
-					continue;
-			}
-			if (d % 8 == 2) {	/* 0 */
-				if ((angle > 21) && (angle < 159))
-					continue;
-			}
-			if (d % 8 == 3) {	/* 90 */
-				if ((angle > 112) || (angle < 68))
-					continue;
-			}
-			if (d % 8 == 4) {	/* 158 */
-				if ((angle > 179) || (angle < 136))
-					continue;
-			}
-			if (d % 8 == 5) {	/* 113 */
-				if ((angle > 134) || (angle < 91))
-					continue;
-			}
-			if (d % 8 == 6) {	/* 22 */
-				if ((angle > 44) || (angle < 1))
-					continue;
-			}
-			if (d % 8 == 7) {	/* 67 */
-				if ((angle > 89) || (angle < 46))
-					continue;
-			}
-
-			/* Extract adjacent location */
-			yy = y + ddy_ddd[d % 8];
-			xx = x + ddx_ddd[d % 8];
-
-			/* Cannot switch places with stronger monsters. */
-			if (cave->squares[yy][xx].mon != 0) {
-				/* A monster is trying to pass. */
-				if (cave->squares[y][x].mon > 0) {
-
-					struct monster *mon = square_monster(cave, y, x);
-
-					if (cave->squares[yy][xx].mon > 0) {
-						struct monster *mon1 = square_monster(cave, yy, xx);
-
-						/* Monsters cannot pass by stronger monsters. */
-						if (mon1->race->mexp > mon->race->mexp)
-							continue;
-					} else {
-						/* Monsters cannot pass by stronger characters. */
-						if (player->lev * 2 > mon->race->level)
-							continue;
-					}
-				}
-
-				/* The player is trying to pass. */
-				if (cave->squares[y][x].mon < 0) {
-					if (cave->squares[yy][xx].mon > 0) {
-						struct monster *mon1 = square_monster(cave, yy, xx);
-
-						/* Players cannot pass by stronger monsters. */
-						if (mon1->race->level > player->lev * 2)
-							continue;
-					}
-				}
-			}
-
-			/* Check for obstruction. */
-			if (!square_isprojectable(cave, yy, xx)) {
-				/* Some features allow entrance, but not exit. */
-				if (square_ispassable(cave, yy, xx)) {
-					/* Travel down the path. */
-					monster_swap(y, x, yy, xx);
-
-					/* Jump to new location. */
-					y = yy;
-					x = xx;
-
-					/* We can't travel any more. */
-					i = grids_away;
-
-					/* Stop looking. */
-					break;
-				}
-
-				/* If there are walls everywhere, stop here. */
-				else if (d == (8 + first_d - 1)) {
-					/* Message for player. */
-					if (cave->squares[y][x].mon < 0)
-						msg("You come to rest next to a wall.");
-					i = grids_away;
-				}
-			} else {
-				/* Travel down the path. */
-				monster_swap(y, x, yy, xx);
-
-				/* Jump to new location. */
-				y = yy;
-				x = xx;
-
-				/* Stop looking at previous location. */
-				break;
-			}
-		}
-	}
-
-	/* Some special messages or effects for player or monster. */
-	if (square_isfiery(cave, y, x)) {
-		if (cave->squares[y][x].mon < 0) {
-			msg("You are thrown into molten lava!");
-		} else if (cave->squares[y][x].mon > 0) {
-			struct monster *mon = square_monster(cave, y, x);
-			bool fear = false;
-
-			if (!rf_has(mon->race->flags, RF_IM_FIRE)) {
-				mon_take_hit(mon, 100 + randint1(100), &fear, " is burnt up.");
-			}
-
-			if (fear && monster_is_visible(mon)) {
-				add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
-			}
-		}
-	}
-
-	/* Clear the projection mark. */
-	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
-
-	return true;
-}
-
-/**
  * Teleport player or monster up to context->value.base grids away.
  *
  * If no spaces are readily available, the distance may increase.
@@ -3667,13 +3481,12 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 /**
  * Breathe an element, in a cone from the breather
  * Affect grids, objects, and monsters
- * context->subtype is element, context->radius degrees of arc, context->other radius
+ * context->subtype is element, context->radius degrees of arc
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, false);
 	int type = context->subtype;
-	int rad = context->other;
 
 	int ty = -1;
 	int tx = -1;
@@ -3681,13 +3494,14 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	/* Diameter of source starts at 40, so full strength up to 3 grids from
 	 * the breather. */
 	int diameter_of_source = 40;
-	int degrees_of_arc = context->radius;
+
+	/* Minimum breath width is 20 degrees */
+	int degrees_of_arc = MAX(context->radius, 20);
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
-	/* Radius of zero means no fixed limit. */
-	if (rad == 0)
-		rad = z_info->max_range;
+	/* Distance breathed has no fixed limit. */
+	int rad = z_info->max_range;
 
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
@@ -3715,25 +3529,20 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		}
 	}
 
-
-	/* Diameter of the energy source. */
+	/* Adjust the diameter of the energy source */
 	if (degrees_of_arc < 60) {
-		if (degrees_of_arc == 0)
-			/* This handles finite length beams */
-			diameter_of_source = rad * 10;
-		else
-			/* Narrower cone means energy drops off less quickly. We now have:
-			 * - 30 degree regular breath  | full strength at 5 grids
-			 * - 30 degree powerful breath | full strength at 9 grids
-			 * - 20 degree regular breath  | full strength at 11 grids
-			 * - 20 degree powerful breath | full strength at 17 grids
-			 * where grids are measured from the breather. */
-			diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
-	}
+		/* Narrower cone means energy drops off less quickly. We now have:
+		 * - 30 degree regular breath  | full strength at 5 grids
+		 * - 30 degree powerful breath | full strength at 9 grids
+		 * - 20 degree regular breath  | full strength at 11 grids
+		 * - 20 degree powerful breath | full strength at 17 grids
+		 * where grids are measured from the breather. */
+		diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
 
-	/* Max */
-	if (diameter_of_source > 250)
-		diameter_of_source = 250;
+		/* Max */
+		if (diameter_of_source > 250)
+			diameter_of_source = 250;
+	}
 
 	/* Breathe at the target */
 	if (project(context->origin, rad, ty, tx, dam, type, flg, degrees_of_arc,
@@ -4928,6 +4737,8 @@ bool effect_do(struct effect *effect,
 				beam,
 				boost,
 				value,
+				effect->y,
+				effect->x,
 				effect->subtype,
 				effect->radius,
 				effect->other,
