@@ -268,7 +268,7 @@ static bool blow_after_effects(int y, int x, bool quake)
 {
 	/* Apply earthquake brand */
 	if (quake) {
-		effect_simple(EF_EARTHQUAKE, source_player(), "0", 0, 10, 0, NULL);
+		effect_simple(EF_EARTHQUAKE, source_player(), "0", 0, 10, 0, 0, 0, NULL);
 
 		/* Monster may be dead or moved */
 		if (!square_monster(cave, y, x))

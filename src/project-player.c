@@ -272,16 +272,18 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 	}
 
 	if (one_in_(3) && mon) { /* Teleport to */
-		effect_simple(EF_TELEPORT_TO, context->origin, "0", mon->fy, mon->fx, 0, NULL);
+		effect_simple(EF_TELEPORT_TO, context->origin, "0", 0, 0, 0,
+					  mon->fy, mon->fx, NULL);
 	} else if (one_in_(4)) { /* Teleport level */
 		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("You avoid the effect!");
 			return;
 		}
-		effect_simple(EF_TELEPORT_LEVEL, context->origin, "0", 0, 0, 0, NULL);
+		effect_simple(EF_TELEPORT_LEVEL, context->origin, "0", 0, 0, 0, 0, 0,
+					  NULL);
 	} else { /* Teleport */
 		const char *miles = "200";
-		effect_simple(EF_TELEPORT, context->origin, miles, 0, 1, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, miles, 0, 1, 0, 0, 0, NULL);
 	}
 }
 
@@ -332,7 +334,7 @@ static void project_player_handler_DISEN(project_player_handler_context_t *conte
 	}
 
 	/* Disenchant gear */
-	effect_simple(EF_DISENCHANT, context->origin, "0", 0, 0, 0, NULL);
+	effect_simple(EF_DISENCHANT, context->origin, "0", 0, 0, 0, 0, 0, NULL);
 }
 
 static void project_player_handler_WATER(project_player_handler_context_t *context)
@@ -366,7 +368,7 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 	/* Blink */
 	if (randint1(127) > player->lev) {
 		const char *five = "5";
-		effect_simple(EF_TELEPORT, context->origin, five, 0, 1, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, five, 0, 1, 0, 0, 0, NULL);
 	}
 
 	/* Slow */

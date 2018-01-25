@@ -579,7 +579,7 @@ void process_world(struct chunk *c)
 	/* Timed healing */
 	if (player->timed[TMD_HEAL]) {
 		bool ident = false;
-		effect_simple(EF_HEAL_HP, source_player(), "30", 0, 0, 0, &ident);
+		effect_simple(EF_HEAL_HP, source_player(), "30", 0, 0, 0, 0, 0, &ident);
 	}
 
 	/*** Check the Food, and Regenerate ***/
@@ -727,7 +727,7 @@ void process_world(struct chunk *c)
 			} else {
 				/* Otherwise do something disastrous */
 				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
-				effect_simple(EF_DESTRUCTION, source_none(), "0", 0, 5, 0, NULL);
+				effect_simple(EF_DESTRUCTION, source_none(), "0", 0, 5, 0, 0, 0, NULL);
 			}
 		}
 	}
@@ -840,7 +840,7 @@ void process_player(void)
 				!player->timed[TMD_PARALYZED] &&
 				!player->timed[TMD_TERROR] &&
 				!player->timed[TMD_AFRAID])
-				effect_simple(EF_DETECT_GOLD, source_none(), "3d3", 0, 0, 0, NULL);
+				effect_simple(EF_DETECT_GOLD, source_none(), "0", 0, 0, 0, 3, 3, NULL);
 		}
 
 		/* Paralyzed or Knocked Out player gets no turn */

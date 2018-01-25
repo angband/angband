@@ -235,6 +235,8 @@ static void melee_effect_stat(melee_effect_handler_context_t *context, int stat)
 			stat,
 			0,
 			0,
+			0,
+			0,
 			&context->obvious);
 }
 
@@ -340,7 +342,7 @@ static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *cont
 
 	/* Apply disenchantment if no resist */
 	if (!player_resists(context->p, ELEM_DISEN))
-		effect_simple(EF_DISENCHANT, source_monster(context->mon->midx), "0", 0, 0, 0, &context->obvious);
+		effect_simple(EF_DISENCHANT, source_monster(context->mon->midx), "0", 0, 0, 0, 0, 0, &context->obvious);
 
 	/* Learn about the player */
 	update_smart_learn(context->mon, context->p, 0, 0, ELEM_DISEN);
@@ -640,6 +642,8 @@ static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *conte
 			0,
 			0,
 			0,
+			0,
+			0,
 			&context->obvious);
 }
 
@@ -768,11 +772,11 @@ static void melee_effect_handler_LOSE_ALL(melee_effect_handler_context_t *contex
 		return;
 
 	/* Damage (stats) */
-	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_STR, 0, 0, &context->obvious);
-	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_DEX, 0, 0, &context->obvious);
-	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_CON, 0, 0, &context->obvious);
-	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_INT, 0, 0, &context->obvious);
-	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_WIS, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_STR, 0, 0, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_DEX, 0, 0, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_CON, 0, 0, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_INT, 0, 0, 0, 0, &context->obvious);
+	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_WIS, 0, 0, 0, 0, &context->obvious);
 }
 
 /**
@@ -798,7 +802,7 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 		int px_old = context->p->px;
 		int py_old = context->p->py;
 
-		effect_simple(EF_EARTHQUAKE, source_monster(context->mon->midx), "0", 0, 8, 0, NULL);
+		effect_simple(EF_EARTHQUAKE, source_monster(context->mon->midx), "0", 0, 8, 0, 0, 0, NULL);
 
 		/* Stop the blows if the player is pushed away */
 		if ((px_old != context->p->px) ||

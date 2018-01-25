@@ -1757,7 +1757,7 @@ alloc:50:5 to 100
 pile:70:1d3
 power:10
 effect:MAP_AREA
-dice:22d40
+effect-yx:22:40
 
 name:Treasure Detection
 type:scroll
@@ -1767,9 +1767,9 @@ alloc:50:0 to 70
 pile:40:1d5
 power:6
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 
 name:Detect Invisible
 type:scroll
@@ -1779,7 +1779,7 @@ alloc:50:1 to 70
 pile:70:1d3
 power:6
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 
 name:Identify Rune
 type:scroll
@@ -2435,9 +2435,9 @@ effect:GAIN_STAT:INT
 effect:RESTORE_STAT:WIS
 effect:GAIN_STAT:WIS
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:DETECT_OBJECTS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
 dice:500d500
 effect:DETECT_VISIBLE_MONSTERS
@@ -3147,7 +3147,7 @@ combat:0:1d2:0:0:0
 charges:8+d15
 power:6
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 
 name:Detect Evil
 type:staff
@@ -3158,7 +3158,7 @@ combat:0:1d2:0:0:0
 charges:8+d15
 power:6
 effect:DETECT_EVIL
-dice:22d40
+effect-yx:22:40
 
 name:Mapping
 type:staff
@@ -3169,7 +3169,7 @@ combat:0:1d2:0:0:0
 charges:5+d5
 power:10
 effect:MAP_AREA
-dice:22d40
+effect-yx:22:40
 
 
 ### Healing ###
@@ -3365,9 +3365,9 @@ properties:5:15:1000
 alloc:30:8 to 75
 power:6
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 time:50
 
 name:Detection
@@ -3379,13 +3379,13 @@ combat:0:1d1:0:0:0
 flags:IGNORE_ELEC
 power:10
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 time:100
 
 name:Magic Mapping
