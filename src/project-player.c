@@ -390,14 +390,22 @@ static void project_player_handler_INERTIA(project_player_handler_context_t *con
 
 static void project_player_handler_FORCE(project_player_handler_context_t *context)
 {
-	char grids_away[5];
+	struct loc centre = origin_get_loc(context->origin);
+
+	/* Player gets pushed in a random direction if on the trap */
+	if (context->origin.what == SRC_TRAP &&
+			player->py == centre.y &&
+			player->px == centre.x) {
+		int d = randint0(8);
+		centre.y += ddy_ddd[d];
+		centre.x += ddx_ddd[d];
+	}
 
 	/* Stun */
 	(void)player_inc_timed(player, TMD_STUN, randint1(20), true, true);
 
 	/* Thrust player away. */
-	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
-	effect_simple(EF_THRUST_AWAY, context->origin, grids_away, context->y, context->x, 0, NULL);
+	thrust_away(centre, context->y, context->x, 3 + context->dam / 20);
 }
 
 static void project_player_handler_TIME(project_player_handler_context_t *context)

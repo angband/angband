@@ -96,6 +96,7 @@ enum
 extern byte proj_to_attr[PROJ_MAX][BOLT_MAX];
 extern wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
+void thrust_away(struct loc centre, int t_y, int t_x, int grids_away);
 int inven_damage(struct player *p, int type, int cperc);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
 			   int resist, bool actual);
