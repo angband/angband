@@ -55,6 +55,8 @@ void effect_simple(int index,
 	int subtype,
 	int radius,
 	int other,
+	int y,
+	int x,
 	bool *ident);
 
 #endif /* INCLUDED_EFFECTS_H */

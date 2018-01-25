@@ -55,7 +55,7 @@ desc:  The chance to get a beam goes up with your character level.
 
 spell:Detect Monsters:1:1:23:4
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
@@ -75,11 +75,11 @@ desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Find Traps, Doors & Stairs:3:3:25:2
 effect:DETECT_TRAPS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_DOORS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_STAIRS
-dice:22d40
+effect-yx:22:40
 desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Stinking Cloud:3:2:27:3
@@ -193,9 +193,9 @@ desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:15:6:40:6
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Acid Bolt:15:4:50:8
@@ -250,9 +250,9 @@ desc:Shoots a radius-2 fire ball.
 
 spell:Treasure Detection:30:10:70:10
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 desc:Detects all treasure in the immediate area.
 
 book:magic book:dungeon:[Resistances of Scarabtarices]:5:arcane
@@ -524,7 +524,7 @@ equip:prayer book:[Beginners Handbook]:1:1
 
 spell:Detect Evil:1:1:10:4
 effect:DETECT_EVIL
-dice:22d40
+effect-yx:22:40
 desc:Detects all evil monsters in the immediate area,
 desc: for one turn only.
 
@@ -804,25 +804,25 @@ book-properties:20000:15:50 to 100
 
 spell:Detect Monsters:3:3:50:2
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:10:10:80:20
 effect:DETECT_TRAPS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_DOORS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_STAIRS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Perception:20:20:80:20
@@ -1004,7 +1004,7 @@ equip:magic book:[Magic for Beginners]:1:1
 
 spell:Detect Monsters:5:1:50:1
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
@@ -1024,9 +1024,9 @@ desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Object Detection:10:3:60:1
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:DETECT_OBJECTS
-dice:22d40
+effect-yx:22:40
 desc:Detects all objects in the immediate area.
 
 spell:Detect Stairs:8:3:50:1
@@ -1110,9 +1110,9 @@ desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:20:11:50:4
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Slow Monster:28:20:70:2
@@ -1336,7 +1336,7 @@ desc:  The chance to get a beam goes up with your character level.
 
 spell:Detect Monsters:3:2:35:2
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
@@ -1476,9 +1476,9 @@ desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:25:17:50:4
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Acid Bolt:20:16:50:6
@@ -1531,9 +1531,9 @@ desc:Shoots a radius-2 fire ball.
 
 spell:Treasure Detection:35:20:70:10
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 desc:Detects all treasure in the immediate area.
 
 book:magic book:dungeon:[Resistances of Scarabtarices]:5:arcane
@@ -1764,7 +1764,7 @@ equip:prayer book:[Beginners Handbook]:1:1
 
 spell:Detect Evil:1:1:30:4
 effect:DETECT_EVIL
-dice:22d40
+effect-yx:22:40
 desc:Detects all evil monsters in the immediate area,
 desc: for one turn only.
 
@@ -2002,19 +2002,19 @@ book:prayer book:dungeon:[Godly Insights]:4:light
 
 spell:Detect Monsters:5:5:50:1
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:15:15:80:12
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Perception:25:25:80:16

@@ -67,7 +67,7 @@ typedef struct effect_handler_context_s {
 	const int beam;
 	const int boost;
 	const random_value value;
-	const int y, x, subtype, radius, other;
+	const int subtype, radius, other, y, x;
 	bool ident;
 } effect_handler_context_t;
 
@@ -1360,22 +1360,19 @@ bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
 
 /**
  * Map an area around the player.  The height to map above and below the player
- * is context->value.dice, the width either side of the player
- * context->value.sides.
+ * is context->y, the width either side of the player context->x.
  *
  */
 bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 {
 	int i, x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
 
 	/* Pick an area to map */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
+	y1 = player->py - context->y;
+	y2 = player->py + context->y;
+	x1 = player->px - context->x;
+	x2 = player->px + context->x;
 
 	/* Drag the co-ordinates into the dungeon */
 	if (y1 < 0) y1 = 0;
@@ -1436,24 +1433,22 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 
 /**
  * Detect traps around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player context->value.sides.
+ * player is context->y, the width either side of the player context->x.
  */
 bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
 
 	bool detect = false;
 
 	struct object *obj;
 
 	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
+	y1 = player->py - context->y;
+	y2 = player->py + context->y;
+	x1 = player->px - context->x;
+	x2 = player->px + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1513,23 +1508,20 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 
 /**
  * Detect doors around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player
- * context->value.sides.
+ * player is context->y, the width either side of the player context->x.
  */
 bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
 
 	bool doors = false;
 
 	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
+	y1 = player->py - context->y;
+	y2 = player->py + context->y;
+	x1 = player->px - context->x;
+	x2 = player->px + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1575,22 +1567,20 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 
 /**
  * Detect stairs around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player context->value.sides.
+ * player is context->y, the width either side of the player context->x.
  */
 bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
 
 	bool stairs = false;
 
 	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
+	y1 = player->py - context->y;
+	y2 = player->py + context->y;
+	x1 = player->px - context->x;
+	x2 = player->px + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1627,23 +1617,20 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 
 /**
  * Detect buried gold around the player.  The height to detect above and below
- * the player is context->value.dice, the width either side of the player
- * context->value.sides.
+ * the player is context->y, the width either side of the player context->x.
  */
 bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
 
 	bool gold_buried = false;
 
 	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
+	y1 = player->py - context->y;
+	y2 = player->py + context->y;
+	x1 = player->px - context->x;
+	x2 = player->px + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1682,23 +1669,20 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 
 /**
  * Sense objects around the player.  The height to sense above and below the
- * player is context->value.dice, the width either side of the player
- * context->value.sides
+ * player is context->y, the width either side of the player context->x
  */
 bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
 
 	bool objects = false;
 
 	/* Pick an area to sense */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
+	y1 = player->py - context->y;
+	y2 = player->py + context->y;
+	x1 = player->px - context->x;
+	x2 = player->px + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1735,23 +1719,20 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 
 /**
  * Detect objects around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player
- * context->value.sides
+ * player is context->y, the width either side of the player context->x
  */
 bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 {
 	int x, y;
 	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
 
 	bool objects = false;
 
 	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
+	y1 = player->py - context->y;
+	y2 = player->py + context->y;
+	x1 = player->px - context->x;
+	x2 = player->px + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1854,9 +1835,7 @@ static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
  */
 bool effect_handler_DETECT_LIVING_MONSTERS(effect_handler_context_t *context)
 {
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-	bool monsters = detect_monsters(y_dist, x_dist, monster_is_living);
+	bool monsters = detect_monsters(context->y, context->x, monster_is_living);
 
 	if (monsters)
 		msg("You sense life!");
@@ -1878,9 +1857,7 @@ bool effect_handler_DETECT_LIVING_MONSTERS(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
 {
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-	bool monsters = detect_monsters(y_dist, x_dist, monster_is_not_invisible);
+	bool monsters = detect_monsters(context->y, context->x, monster_is_not_invisible);
 
 	if (monsters)
 		msg("You sense the presence of monsters!");
@@ -1899,9 +1876,7 @@ bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
 {
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-	bool monsters = detect_monsters(y_dist, x_dist, monster_is_invisible);
+	bool monsters = detect_monsters(context->y, context->x, monster_is_invisible);
 
 	if (monsters)
 		msg("You sense the presence of invisible creatures!");
@@ -1919,9 +1894,7 @@ bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
 {
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-	bool monsters = detect_monsters(y_dist, x_dist, monster_is_evil);
+	bool monsters = detect_monsters(context->y, context->x, monster_is_evil);
 
 	if (monsters)
 		msg("You sense the presence of evil creatures!");
@@ -1939,9 +1912,7 @@ bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
  */
 bool effect_handler_DETECT_SOUL(effect_handler_context_t *context)
 {
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-	bool monsters = detect_monsters(y_dist, x_dist, monster_has_spirit);
+	bool monsters = detect_monsters(context->y, context->x, monster_has_spirit);
 
 	if (monsters)
 		msg("You sense the presence of spirits!");
@@ -2549,13 +2520,13 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
  * If no spaces are readily available, the distance may increase.
  * Try very hard to move the player/monster at least a quarter that distance.
  * Setting context->radius allows monsters to teleport the player away.
- * Setting context->subtype and context->radius treats them as y and x coordinates
+ * Setting context->y and context->x treats them as y and x coordinates
  * and teleports the monster from that grid.
  */
 bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
-	int y_start = context->subtype;
-	int x_start = context->radius;
+	int y_start = context->y;
+	int x_start = context->x;
 	int dis = context->value.base;
 	int y, x, pick;
 
@@ -2692,7 +2663,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 /**
  * Teleport player to a grid near the given location
- * Setting context->subtype and context->radius treats them as y and x coordinates
+ * Setting context->y and context->x treats them as y and x coordinates
  *
  * This function is slightly obsessive about correctness.
  * This function allows teleporting into vaults (!)
@@ -2713,10 +2684,10 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	context->ident = true;
 
 	/* Where are we going? */
-	if (context->subtype && context->radius) {
+	if (context->y && context->x) {
 		/* Effect was given co-ordinates */
-		ny = context->subtype;
-		nx = context->radius;
+		ny = context->y;
+		nx = context->x;
 	} else if (context->origin.what == SRC_MONSTER) {
 		/* Spell cast by monster */
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
@@ -4276,7 +4247,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			msg("You are surrounded by a powerful aura.");
 
 			/* Dispel monsters */
-			effect_simple(EF_PROJECT_LOS, context->origin, "1000", PROJ_DISP_ALL, 0, 0, NULL);
+			effect_simple(EF_PROJECT_LOS, context->origin, "1000", PROJ_DISP_ALL, 0, 0, 0, 0, NULL);
 
 			return true;
 		}
@@ -4465,10 +4436,10 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 		return handler(&new_context);
 	} else {
 		/* RARE */
-		effect_simple(EF_PROJECT_LOS, context->origin, "150", PROJ_DISP_ALL, 0, 0, NULL);
-		effect_simple(EF_PROJECT_LOS, context->origin, "20", PROJ_MON_SLOW, 0, 0, NULL);
-		effect_simple(EF_PROJECT_LOS, context->origin, "40", PROJ_SLEEP_ALL, 0, 0, NULL);
-		effect_simple(EF_HEAL_HP, context->origin, "300", 0, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "150", PROJ_DISP_ALL, 0, 0, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "20", PROJ_MON_SLOW, 0, 0, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "40", PROJ_SLEEP_ALL, 0, 0, 0, 0, NULL);
+		effect_simple(EF_HEAL_HP, context->origin, "300", 0, 0, 0, 0, 0, NULL);
 
 		return true;
 	}
@@ -4738,11 +4709,11 @@ bool effect_do(struct effect *effect,
 				beam,
 				boost,
 				value,
-				effect->y,
-				effect->x,
 				effect->subtype,
 				effect->radius,
 				effect->other,
+				effect->y,
+				effect->x,
 				*ident,
 			};
 
@@ -4768,12 +4739,14 @@ bool effect_do(struct effect *effect,
  * information; ident = NULL will ignore this
  */
 void effect_simple(int index,
-		struct source origin,
-		const char *dice_string,
-		int subtype,
-		int radius,
-		int other,
-		bool *ident)
+				   struct source origin,
+				   const char *dice_string,
+				   int subtype,
+				   int radius,
+				   int other,
+				   int y,
+				   int x,
+				   bool *ident)
 {
 	struct effect effect;
 	int dir = DIR_TARGET;
@@ -4787,6 +4760,8 @@ void effect_simple(int index,
 	effect.subtype = subtype;
 	effect.radius = radius;
 	effect.other = other;
+	effect.y = y;
+	effect.x = x;
 
 	/* Direction if needed */
 	if (effect_aim(&effect))

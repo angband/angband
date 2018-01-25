@@ -1038,6 +1038,24 @@ static enum parser_error parse_trap_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
+static enum parser_error parse_trap_effect_yx(struct parser *p) {
+	struct trap_kind *t = parser_priv(p);
+	struct effect *effect = t->effect;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->y = parser_getint(p, "y");
+	effect->x = parser_getint(p, "x");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_trap_param(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
 	struct effect *effect = t->effect;
@@ -1155,6 +1173,24 @@ static enum parser_error parse_trap_effect_xtra(struct parser *p) {
 
 	/* Fill in the detail */
 	return grab_effect_data(p, new_effect);
+}
+
+static enum parser_error parse_trap_effect_yx_xtra(struct parser *p) {
+	struct trap_kind *t = parser_priv(p);
+	struct effect *effect = t->effect;
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->y = parser_getint(p, "y");
+	effect->x = parser_getint(p, "x");
+
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_trap_param_xtra(struct parser *p) {
@@ -1323,10 +1359,12 @@ struct parser *init_parse_trap(void) {
     parser_reg(p, "visibility str visibility", parse_trap_visibility);
     parser_reg(p, "flags ?str flags", parse_trap_flags);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_trap_effect);
+	parser_reg(p, "effect-yx int y int x", parse_trap_effect_yx);
 	parser_reg(p, "param int p2 ?int p3", parse_trap_param);
 	parser_reg(p, "dice str dice", parse_trap_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_trap_expr);
 	parser_reg(p, "effect-xtra sym eff ?sym type ?int xtra", parse_trap_effect_xtra);
+	parser_reg(p, "effect-yx-xtra int y int x", parse_trap_effect_yx_xtra);
 	parser_reg(p, "param-xtra int p2 ?int p3", parse_trap_param_xtra);
 	parser_reg(p, "dice-xtra str dice", parse_trap_dice_xtra);
 	parser_reg(p, "expr-xtra sym name sym base str expr", parse_trap_expr_xtra);
@@ -2441,6 +2479,24 @@ static enum parser_error parse_shape_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
+static enum parser_error parse_shape_effect_yx(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	struct effect *effect = shape->effect;
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->y = parser_getint(p, "y");
+	effect->x = parser_getint(p, "x");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_shape_param(struct parser *p) {
 	struct player_shape *shape = parser_priv(p);
 	struct effect *effect = shape->effect;
@@ -2572,6 +2628,7 @@ struct parser *init_parse_shape(void) {
 	parser_reg(p, "player-flags ?str flags", parse_shape_play_flags);
 	parser_reg(p, "values str values", parse_shape_values);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_shape_effect);
+	parser_reg(p, "effect-yx int y int x", parse_shape_effect_yx);
 	parser_reg(p, "param int p2 ?int p3", parse_shape_param);
 	parser_reg(p, "dice str dice", parse_shape_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_shape_expr);
@@ -2951,6 +3008,26 @@ static enum parser_error parse_class_effect(struct parser *p) {
 	return grab_effect_data(p, new_effect);
 }
 
+static enum parser_error parse_class_effect_yx(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
+	struct class_spell *spell = &book->spells[book->num_spells - 1];
+	struct effect *effect = spell->effect;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+	effect->y = parser_getint(p, "y");
+	effect->x = parser_getint(p, "x");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_class_param(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	struct class_book *book = &c->magic.books[c->magic.num_books - 1];
@@ -3103,6 +3180,7 @@ struct parser *init_parse_class(void) {
 	parser_reg(p, "spell sym name int level int mana int fail int exp",
 			   parse_class_spell);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_class_effect);
+	parser_reg(p, "effect-yx int y int x", parse_class_effect_yx);
 	parser_reg(p, "param int p2 ?int p3", parse_class_param);
 	parser_reg(p, "dice str dice", parse_class_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_class_expr);

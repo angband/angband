@@ -1171,7 +1171,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 	} else if (context->teleport_distance > 0) {
 		char dice[5];
 		strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
-		effect_simple(EF_TELEPORT, context->origin, dice, context->y, context->x, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, dice, 0, 0, 0, context->y, context->x, NULL);
 	} else {
 		for (int i = 0; i < MON_TMD_MAX; i++) {
 			if (context->mon_timed[i] > 0) {
