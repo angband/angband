@@ -189,11 +189,11 @@ desc:  The chance to get a beam goes up with your character level.
 
 spell:Find Traps, Doors & Stairs:1:1:20:2
 effect:DETECT_TRAPS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_DOORS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_STAIRS
-dice:22d40
+effect-yx:22:40
 desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Phase Door:2:2:22:4
@@ -212,7 +212,7 @@ desc: with player level.
 
 spell:Detect Monsters:3:2:24:4
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
@@ -241,9 +241,9 @@ desc:Reveals an unknown rune on an object.
 
 spell:Treasure Detection:10:3:60:5
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 desc:Detects gold and senses objects in the immediate area.
 
 spell:Frost Bolt:13:5:40:24
@@ -257,9 +257,9 @@ desc:  The chance to get a beam goes up with your character level.
 
 spell:Reveal Monsters:15:6:40:6
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Acid Spray:20:5:50:28
@@ -339,19 +339,19 @@ desc:  This spell may have no effect when the forced descent option is set.
 
 spell:Detection:30:10:70:30
 effect:DETECT_TRAPS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_DOORS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_STAIRS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_GOLD
-dice:22d40
+effect-yx:22:40
 effect:SENSE_OBJECTS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Dimension Door:35:30:80:40
@@ -451,7 +451,7 @@ equip:nature book:[Lesser Charms]:1:1
 
 spell:Detect Life:1:1:23:4
 effect:DETECT_LIVING_MONSTERS
-dice:22d40
+effect-yx:22:40
 desc:Detects all living monsters in the immediate area, for one turn only.
 
 spell:Fox Form:1:2:20:5
@@ -692,7 +692,7 @@ desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Detect Evil:1:1:10:4
 effect:DETECT_EVIL
-dice:22d40
+effect-yx:22:40
 desc:Detects all evil monsters in the immediate area,
 desc: for one turn only.
 
