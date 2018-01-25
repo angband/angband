@@ -53,6 +53,8 @@ struct effect {
 	struct effect *next;
 	u16b index;		/**< The effect index */
 	dice_t *dice;	/**< Dice expression used in the effect */
+	int y;			/**< Y coordinate or distance */
+	int x;			/**< X coordinate or distance */
 	int subtype;	/**< Projection type, timed effect type, etc. */
 	int radius;		/**< Radius of the effect (if it has one) */
 	int other;		/**< Extra parameter to be passed to the handler */

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "effects.h"
+#include "generate.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -71,6 +72,169 @@ static struct monster_race *poly_race(struct monster_race *race)
 
 	/* If we get here, we weren't able to find a new race. */
 	return race;
+}
+
+/**
+ * Thrust the player or a monster away from the source of a projection.
+ *
+ * Monsters and players can be pushed past monsters or players weaker than
+ * they are.
+ */
+void thrust_away(struct loc centre, int t_y, int t_x, int grids_away)
+{
+	int y, x, yy, xx;
+	int i, d, first_d;
+	int angle;
+
+	/* Determine where target is in relation to caster. */
+	y = t_y - centre.y + 20;
+	x = t_x - centre.x + 20;
+
+	/* Find the angle (/2) of the line from caster to target. */
+	angle = get_angle_to_grid[y][x];
+
+	/* Start at the target grid. */
+	y = t_y;
+	x = t_x;
+
+	/* Up to the number of grids requested, force the target away from the
+	 * source of the projection, until it hits something it can't travel
+	 * around. */
+	for (i = 0; i < grids_away; i++) {
+		/* Randomize initial direction. */
+		first_d = randint0(8);
+
+		/* Look around. */
+		for (d = first_d; d < 8 + first_d; d++) {
+			/* Reject angles more than 44 degrees from line. */
+			if (d % 8 == 0) {	/* 135 */
+				if ((angle > 157) || (angle < 114))
+					continue;
+			}
+			if (d % 8 == 1) {	/* 45 */
+				if ((angle > 66) || (angle < 23))
+					continue;
+			}
+			if (d % 8 == 2) {	/* 0 */
+				if ((angle > 21) && (angle < 159))
+					continue;
+			}
+			if (d % 8 == 3) {	/* 90 */
+				if ((angle > 112) || (angle < 68))
+					continue;
+			}
+			if (d % 8 == 4) {	/* 158 */
+				if ((angle > 179) || (angle < 136))
+					continue;
+			}
+			if (d % 8 == 5) {	/* 113 */
+				if ((angle > 134) || (angle < 91))
+					continue;
+			}
+			if (d % 8 == 6) {	/* 22 */
+				if ((angle > 44) || (angle < 1))
+					continue;
+			}
+			if (d % 8 == 7) {	/* 67 */
+				if ((angle > 89) || (angle < 46))
+					continue;
+			}
+
+			/* Extract adjacent location */
+			yy = y + ddy_ddd[d % 8];
+			xx = x + ddx_ddd[d % 8];
+
+			/* Cannot switch places with stronger monsters. */
+			if (cave->squares[yy][xx].mon != 0) {
+				/* A monster is trying to pass. */
+				if (cave->squares[y][x].mon > 0) {
+
+					struct monster *mon = square_monster(cave, y, x);
+
+					if (cave->squares[yy][xx].mon > 0) {
+						struct monster *mon1 = square_monster(cave, yy, xx);
+
+						/* Monsters cannot pass by stronger monsters. */
+						if (mon1->race->mexp > mon->race->mexp)
+							continue;
+					} else {
+						/* Monsters cannot pass by stronger characters. */
+						if (player->lev * 2 > mon->race->level)
+							continue;
+					}
+				}
+
+				/* The player is trying to pass. */
+				if (cave->squares[y][x].mon < 0) {
+					if (cave->squares[yy][xx].mon > 0) {
+						struct monster *mon1 = square_monster(cave, yy, xx);
+
+						/* Players cannot pass by stronger monsters. */
+						if (mon1->race->level > player->lev * 2)
+							continue;
+					}
+				}
+			}
+
+			/* Check for obstruction. */
+			if (!square_isprojectable(cave, yy, xx)) {
+				/* Some features allow entrance, but not exit. */
+				if (square_ispassable(cave, yy, xx)) {
+					/* Travel down the path. */
+					monster_swap(y, x, yy, xx);
+
+					/* Jump to new location. */
+					y = yy;
+					x = xx;
+
+					/* We can't travel any more. */
+					i = grids_away;
+
+					/* Stop looking. */
+					break;
+				}
+
+				/* If there are walls everywhere, stop here. */
+				else if (d == (8 + first_d - 1)) {
+					/* Message for player. */
+					if (cave->squares[y][x].mon < 0)
+						msg("You come to rest next to a wall.");
+					i = grids_away;
+				}
+			} else {
+				/* Travel down the path. */
+				monster_swap(y, x, yy, xx);
+
+				/* Jump to new location. */
+				y = yy;
+				x = xx;
+
+				/* Stop looking at previous location. */
+				break;
+			}
+		}
+	}
+
+	/* Some special messages or effects for player or monster. */
+	if (square_isfiery(cave, y, x)) {
+		if (cave->squares[y][x].mon < 0) {
+			msg("You are thrown into molten lava!");
+		} else if (cave->squares[y][x].mon > 0) {
+			struct monster *mon = square_monster(cave, y, x);
+			bool fear = false;
+
+			if (!rf_has(mon->race->flags, RF_IM_FIRE)) {
+				mon_take_hit(mon, 100 + randint1(100), &fear, " is burnt up.");
+			}
+
+			if (fear && monster_is_visible(mon)) {
+				add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
+			}
+		}
+	}
+
+	/* Clear the projection mark. */
+	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
 }
 
 /**
@@ -521,20 +685,21 @@ static void project_monster_handler_INERTIA(project_monster_handler_context_t *c
 /* Force */
 static void project_monster_handler_FORCE(project_monster_handler_context_t *context)
 {
+	struct loc centre = origin_get_loc(context->origin);
+
 	if (one_in_(3)) {
-		context->mon_timed[MON_TMD_STUN] = adjust_radius(context, 5 + randint1(10));
+		context->mon_timed[MON_TMD_STUN] = adjust_radius(context,
+														 5 + randint1(10));
 	}
 
 	project_monster_breath(context, RSF_BR_WALL, 3);
 
-	/* Prevent thursting force breathers. */
+	/* Prevent thrusting force breathers. */
 	if (rsf_has(context->mon->race->spell_flags, RSF_BR_WALL))
 		return;
 
 	/* Thrust monster away */
-	char grids_away[5];
-	strnfmt(grids_away, sizeof(grids_away), "%d", 3 + context->dam / 20);
-	effect_simple(EF_THRUST_AWAY, context->origin, grids_away, context->y, context->x, 0, NULL);
+	thrust_away(centre, context->y, context->x, 3 + context->dam / 20);
 }
 
 /* Time -- breathers resist */
