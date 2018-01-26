@@ -44,7 +44,7 @@ book-properties:25:40:1 to 100
 equip:magic book:[Magic for Beginners]:1:1
 
 spell:Magic Missile:1:1:22:4
-effect:BOLT_OR_BEAM:MISSILE:-10
+effect:BOLT_OR_BEAM:MISSILE:0:-10
 dice:$Dd4
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Fires a magic missile that always hits its target and does
@@ -65,7 +65,8 @@ dice:10
 desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:1:2:26:4
-effect:LIGHT_AREA:1:10
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -130,7 +131,7 @@ desc:Fires a beam that lights up each square and hurts each
 desc: light-sensitive monster in its path.
 
 spell:Frost Bolt:7:3:40:6
-effect:BOLT_OR_BEAM:COLD:-10
+effect:BOLT_OR_BEAM:COLD:0:-10
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 5
 desc:Fires a frost bolt that always hits its target.
@@ -229,7 +230,7 @@ desc:Produces a bolt that teleports the first monster in its path
 desc: up to 100 squares away.
 
 spell:Haste Self:25:12:65:10
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
@@ -432,7 +433,7 @@ desc: damage but has a chance to confuse each monster in the area of effect.
 desc:  Uniques or monsters that resist confusion are not affected.
 
 spell:Rend Soul:25:15:80:30
-effect:BOLT_OR_BEAM:NETHER:- 20
+effect:BOLT_OR_BEAM:NETHER:0:-20
 dice:11d$S
 expr:S:PLAYER_LEVEL:+ 0
 desc:Fires a nether bolt that always hits its target. Does
@@ -544,7 +545,8 @@ effect:CURE:AFRAID
 desc:Removes fear.
 
 spell:Call Light:3:2:25:1
-effect:LIGHT_AREA:1:10
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -552,7 +554,7 @@ desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Slow Poison:3:3:28:4
-effect:TIMED_DEC:POISONED:2
+effect:TIMED_DEC:POISONED:0:2
 desc:Halves the remaining duration of any current poisoning.
 
 book:prayer book:town:[Words of Wisdom]:8:light
@@ -1006,7 +1008,8 @@ dice:10
 desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:9:3:60:1
-effect:LIGHT_AREA:1:10
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1121,7 +1124,7 @@ desc:Produces a bolt that teleports the first monster in its path
 desc: up to 100 squares away.
 
 spell:Haste Self:32:25:70:6
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
@@ -1316,7 +1319,7 @@ book:magic book:town:[Magic for Beginners]:7:arcane
 equip:magic book:[Magic for Beginners]:1:1
 
 spell:Magic Missile:3:1:30:1
-effect:BOLT_OR_BEAM:MISSILE:-10
+effect:BOLT_OR_BEAM:MISSILE:0:-10
 dice:$Dd4
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Fires a magic missile that always hits its target and does
@@ -1337,7 +1340,8 @@ dice:10
 desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:5:3:35:1
-effect:LIGHT_AREA:1:10
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1406,7 +1410,7 @@ desc:Fires a beam that lights up each square and hurts each
 desc: light-sensitive monster in its path.
 
 spell:Frost Bolt:15:12:50:4
-effect:BOLT_OR_BEAM:COLD:-10
+effect:BOLT_OR_BEAM:COLD:0:-10
 dice:$Dd8
 expr:D:PLAYER_LEVEL:- 5 / 4 + 5
 desc:Fires a frost bolt that always hits its target.
@@ -1501,7 +1505,7 @@ desc:Produces a bolt that teleports the first monster in its path
 desc: up to 100 squares away.
 
 spell:Haste Self:33:25:75:4
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
 desc:Hastes you (+10 to speed) for a level-dependent duration.
@@ -1776,7 +1780,8 @@ effect:CURE:AFRAID
 desc:Removes fear.
 
 spell:Call Light:5:4:35:4
-effect:LIGHT_AREA:1:10
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1784,7 +1789,7 @@ desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Slow Poison:9:7:40:3
-effect:TIMED_DEC:POISONED:2
+effect:TIMED_DEC:POISONED:0:2
 desc:Halves the remaining duration of any current poisoning.
 
 book:prayer book:town:[Words of Wisdom]:8:light

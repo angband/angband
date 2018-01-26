@@ -1444,11 +1444,6 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						effect->radius);
 				break;
 			}
-			case EFINFO_LIGHT: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect), dice_string,
-						effect->radius);
-				break;
-			}
 
 			/* Object generated balls are elemental */
 			case EFINFO_BALL: {
@@ -1479,11 +1474,11 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						random_breath = false;
 					}
 					strnfmt(desc, sizeof(desc), effect_desc(effect), breaths,
-							effect->radius, dice_string);
+							effect->other, dice_string);
 				} else {
 					strnfmt(desc, sizeof(desc), effect_desc(effect),
 							projections[effect->subtype].player_desc,
-							effect->radius, dice_string);
+							effect->other, dice_string);
 				}
 				break;
 			}
