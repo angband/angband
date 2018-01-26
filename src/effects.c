@@ -850,16 +850,17 @@ bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 
 /**
  * Extend a (positive or negative) player status condition.
- * If context->radius is set, increase by that amount if the status exists already
+ * If context->other is set, increase by that amount if the player already
+ * has the status
  */
 bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
 
-	if (!player->timed[context->subtype] || !context->radius)
+	if (!player->timed[context->subtype] || !context->other)
 		player_inc_timed(player, context->subtype, MAX(amount, 0), true, true);
 	else
-		player_inc_timed(player, context->subtype, context->radius, true, true);
+		player_inc_timed(player, context->subtype, context->other, true, true);
 	context->ident = true;
 	return true;
 
@@ -867,16 +868,17 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 
 /**
  * Extend a (positive or negative) player status condition unresistably.
- * If context->radius is set, increase by that amount if the status exists already
+ * If context->other is set, increase by that amount if the player already
+ * has the status
  */
 bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
 
-	if (!player->timed[context->subtype] || !context->radius)
+	if (!player->timed[context->subtype] || !context->other)
 		player_inc_timed(player, context->subtype, MAX(amount, 0), true, false);
 	else
-		player_inc_timed(player, context->subtype, context->radius, true, false);
+		player_inc_timed(player, context->subtype, context->other, true, false);
 	context->ident = true;
 	return true;
 }
@@ -901,13 +903,13 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 
 /**
  * Reduce a (positive or negative) player status condition.
- * If context->radius is set, decrease by the current value / context->radius
+ * If context->other is set, decrease by the current value / context->other
  */
 bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	if (context->radius)
-		amount = player->timed[context->subtype] / context->radius;
+	if (context->other)
+		amount = player->timed[context->subtype] / context->other;
 	(void) player_dec_timed(player, context->subtype, MAX(amount, 0), true);
 	context->ident = true;
 	return true;
@@ -1361,18 +1363,21 @@ bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
 /**
  * Map an area around the player.  The height to map above and below the player
  * is context->y, the width either side of the player context->x.
- *
+ * For player level dependent areas, we use the hack of applying value dice
+ * and sides as the height and width.
  */
 bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 {
 	int i, x, y;
 	int x1, x2, y1, y2;
+	int dist_y = context->y ? context->y : context->value.dice;
+	int dist_x = context->x ? context->x : context->value.sides;
 
 	/* Pick an area to map */
-	y1 = player->py - context->y;
-	y2 = player->py + context->y;
-	x1 = player->px - context->x;
-	x2 = player->px + context->x;
+	y1 = player->py - dist_y;
+	y2 = player->py + dist_y;
+	x1 = player->px - dist_x;
+	x2 = player->px + dist_x;
 
 	/* Drag the co-ordinates into the dungeon */
 	if (y1 < 0) y1 = 0;
@@ -2163,7 +2168,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 }
 
 /**
- * Apply a "project()" directly to all viewable monsters.  If context->radius is
+ * Apply a "project()" directly to all viewable monsters.  If context->other is
  * set, the effect damage boost is applied.  This is a hack - NRM
  *
  * Note that affected monsters are NOT auto-tracked by this usage.
@@ -2208,7 +2213,7 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 {
 	int i, x, y;
-	int dam = effect_calculate_value(context, context->radius ? true : false);
+	int dam = effect_calculate_value(context, context->other ? true : false);
 	int typ = context->subtype;
 
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
@@ -2288,7 +2293,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 {
 	int summon_max = effect_calculate_value(context, false);
 	int summon_type = context->subtype ? context->subtype : S_ANY;
-	int level_boost = context->radius;
+	int level_boost = context->other;
 	int message_type = summon_message_type(summon_type);
 	int count = 0, val = 0, attempts = 0;
 
@@ -3271,23 +3276,15 @@ bool effect_handler_LIGHT_LEVEL(effect_handler_context_t *context)
 
 /**
  * Call light around the player
- * Affect all monsters in the projection radius (context->radius)
  */
 bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int dam = effect_calculate_value(context, false);
-	int rad = context->radius + (context->other ? player->lev / context->other : 0);
-
-	int flg = PROJECT_GRID | PROJECT_KILL;
 
 	/* Message */
 	if (!player->timed[TMD_BLIND])
 		msg("You are surrounded by a white light.");
-
-	/* Hook into the "project()" function */
-	(void)project(source_player(), rad, py, px, dam, PROJ_LIGHT_WEAK, flg, 0, 0, context->obj);
 
 	/* Light up the room */
 	light_room(py, px, true);
@@ -3306,24 +3303,17 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int dam = effect_calculate_value(context, false);
-	int rad = context->radius;
-
-	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_PLAY;
 
 	/* Message */
 	if (!player->timed[TMD_BLIND])
 		msg("Darkness surrounds you.");
 
-	/* Hook into the "project()" function */
-	(void)project(context->origin, rad, py, px, dam, PROJ_DARK_WEAK, flg, 0, 0,
-				  context->obj);
-
 	/* Darken the room */
 	light_room(py, px, false);
 
 	/* Hack - blind the player directly if player-cast */
-	if (context->origin.what == SRC_PLAYER && !player_resists(player, ELEM_DARK)) {
+	if (context->origin.what == SRC_PLAYER &&
+		!player_resists(player, ELEM_DARK)) {
 		(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), true, true);
 	}
 
@@ -3453,7 +3443,8 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 /**
  * Breathe an element, in a cone from the breather
  * Affect grids, objects, and monsters
- * context->subtype is element, context->radius degrees of arc
+ * context->subtype is element, context->other degrees of arc
+ * If context->radius is set it is radius of breath, but it usually isn't
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
@@ -3468,12 +3459,12 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int diameter_of_source = 40;
 
 	/* Minimum breath width is 20 degrees */
-	int degrees_of_arc = MAX(context->radius, 20);
+	int degrees_of_arc = MAX(context->other, 20);
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
-	/* Distance breathed has no fixed limit. */
-	int rad = z_info->max_range;
+	/* Distance breathed generally has no fixed limit. */
+	int rad = context->radius ? context->radius : z_info->max_range;
 
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
@@ -3537,14 +3528,14 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
  * quickly.
  *
  * Affect grids, objects, and monsters
- * context->subtype is element, context->radius degrees of arc (minimum 10),
- * context->other radius
+ * context->subtype is element, context->radius radius, 
+ * context->other degrees of arc (minimum 20)
  */
 bool effect_handler_ARC(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, false);
 	int type = context->subtype;
-	int rad = context->other;
+	int rad = context->radius;
 
 	int ty = -1;
 	int tx = -1;
@@ -3554,7 +3545,7 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 	int diameter_of_source = 40;
 
 	/* Short beams now have their own effect, so we set a minimum arc width */
-	int degrees_of_arc = MAX(context->radius, 20);
+	int degrees_of_arc = MAX(context->other, 20);
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3813,11 +3804,11 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 
 /**
  * Cast a bolt spell, or rarely, a beam spell
- * context->radius is used as any adjustment to the regular beam chance
+ * context->other is used as any adjustment to the regular beam chance
  */
 bool effect_handler_BOLT_OR_BEAM(effect_handler_context_t *context)
 {
-	int beam = context->beam + context->radius;
+	int beam = context->beam + context->other;
 
 	if (randint0(100) < beam)
 		return effect_handler_BEAM(context);
@@ -4304,7 +4295,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 {
 	int plev = player->lev;
 	int die = effect_calculate_value(context, false);
-	int subtype = 0, radius = 0, other = 0;
+	int subtype = 0, radius = 0, other = 0, y = 0, x = 0;
 	int beam = context->beam;
 	effect_handler_f handler = NULL;
 	random_value value = { 0, 0, 0, 0 };
@@ -4423,7 +4414,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 			beam,
 			context->boost,
 			value,
-			subtype, radius, other,
+			subtype, radius, other, y, x,
 			context->ident
 		};
 

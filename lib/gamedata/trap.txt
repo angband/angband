@@ -40,14 +40,14 @@
 #    If the trap is avoided, the 'msg-good' line is printed instead.  If it
 #    isn't, 'msg-bad' is printed.
 
-# effect: trap effect
+# effect: trap effect : ? subtype : ? radius : ? extra parameter
 # dice: dice string for effect
 # expr: dice expression for effect
 #    If there is no saving throw, or it fails, then these effects are
 #    triggered.
 
 # msg-xtra: extra effect message
-# effect-xtra: extra effect
+# effect-xtra: extra effect : ? subtype : ? radius : ? extra parameter
 # dice-xtra: dice string for extra effect
 # expr-xtra: dice expression for extra effect
 #    If there is no saving throw, or it fails, then these effects are
@@ -146,7 +146,7 @@ graphics:^:B
 appear:1:3:0
 visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
-effect:SUMMON:MONSTER:5
+effect:SUMMON:MONSTER:0:5
 dice:1
 desc:A magical rune which calls a monster to attack you.
 msg:A new foe appears from nowhere!

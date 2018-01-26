@@ -79,7 +79,7 @@ message-miss:{name} fires a seeker arrow, but misses.
 name:BR_ACID
 msgt:BR_ACID
 hit:100
-effect:BREATH:ACID:30
+effect:BREATH:ACID:0:30
 lore:acid
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -90,7 +90,7 @@ message-invis:You hear an acrid roar.
 name:BR_ELEC
 msgt:BR_ELEC
 hit:100
-effect:BREATH:ELEC:30
+effect:BREATH:ELEC:0:30
 lore:lightning
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -101,7 +101,7 @@ message-invis:You hear a crackling roar.
 name:BR_FIRE
 msgt:BR_FIRE
 hit:100
-effect:BREATH:FIRE:30
+effect:BREATH:FIRE:0:30
 message-vis:{name} breathes fire.
 message-invis:You hear a scorching roar.
 lore:fire
@@ -112,7 +112,7 @@ lore-color-immune:Light Green
 name:BR_COLD
 msgt:BR_FROST
 hit:100
-effect:BREATH:COLD:30
+effect:BREATH:COLD:0:30
 lore:frost
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -123,7 +123,7 @@ message-invis:You hear a whooshing roar.
 name:BR_POIS
 msgt:BR_GAS
 hit:100
-effect:BREATH:POIS:30
+effect:BREATH:POIS:0:30
 lore:poison
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -133,7 +133,7 @@ message-invis:You hear a sickening roar.
 name:BR_NETH
 msgt:BR_NETHER
 hit:100
-effect:BREATH:NETHER:30
+effect:BREATH:NETHER:0:30
 lore:nether
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -143,7 +143,7 @@ message-invis:You hear an eerie roar.
 name:BR_LIGHT
 msgt:BR_LIGHT
 hit:100
-effect:BREATH:LIGHT:30
+effect:BREATH:LIGHT:0:30
 lore:light
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -153,7 +153,7 @@ message-invis:You hear a humming roar.
 name:BR_DARK
 msgt:BR_DARK
 hit:100
-effect:BREATH:DARK:30
+effect:BREATH:DARK:0:30
 lore:darkness
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -163,7 +163,7 @@ message-invis:You hear a hushing roar.
 name:BR_SOUN
 msgt:BR_SOUND
 hit:100
-effect:BREATH:SOUND:30
+effect:BREATH:SOUND:0:30
 lore:sound
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -174,7 +174,7 @@ message-invis:You hear an echoing roar.
 name:BR_CHAO
 msgt:BR_CHAOS
 hit:100
-effect:BREATH:CHAOS:30
+effect:BREATH:CHAOS:0:30
 lore:chaos
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -184,7 +184,7 @@ message-invis:You hear a cacophonous roar.
 name:BR_DISE
 msgt:BR_DISEN
 hit:100
-effect:BREATH:DISEN:30
+effect:BREATH:DISEN:0:30
 lore:disenchantment
 lore-color-base:Light Red
 lore-color-resist:Light Green
@@ -194,7 +194,7 @@ message-invis:You hear a dissipating roar.
 name:BR_NEXU
 msgt:BR_NEXUS
 hit:100
-effect:BREATH:NEXUS:30
+effect:BREATH:NEXUS:0:30
 lore:nexus
 lore-color-base:Light Red
 lore-color-resist:Yellow
@@ -205,7 +205,7 @@ message-invis:You hear a tearing roar.
 name:BR_TIME
 msgt:BR_TIME
 hit:100
-effect:BREATH:TIME:30
+effect:BREATH:TIME:0:30
 lore:time
 lore-color-base:Light Red
 message-vis:{name} breathes time.
@@ -214,7 +214,7 @@ message-invis:You remember hearing a roar.
 name:BR_INER
 msgt:BR_INERTIA
 hit:100
-effect:BREATH:INERTIA:30
+effect:BREATH:INERTIA:0:30
 lore:inertia
 lore-color-base:Orange
 message-vis:{name} breathes inertia.
@@ -223,7 +223,7 @@ message-invis:You hear a thrumming roar.
 name:BR_GRAV
 msgt:BR_GRAVITY
 hit:100
-effect:BREATH:GRAVITY:30
+effect:BREATH:GRAVITY:0:30
 lore:gravity
 lore-color-base:Light Red
 message-vis:{name} breathes gravity.
@@ -232,7 +232,7 @@ message-invis:You hear a heavy roar.
 name:BR_SHAR
 msgt:BR_SHARDS
 hit:100
-effect:BREATH:SHARD:30
+effect:BREATH:SHARD:0:30
 lore:shards
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -242,7 +242,7 @@ message-invis:You hear a shattering roar.
 name:BR_PLAS
 msgt:BR_PLASMA
 hit:100
-effect:BREATH:PLASMA:30
+effect:BREATH:PLASMA:0:30
 lore:plasma
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -252,7 +252,7 @@ message-invis:You hear a hissing roar.
 name:BR_WALL
 msgt:BR_FORCE
 hit:100
-effect:BREATH:FORCE:30
+effect:BREATH:FORCE:0:30
 lore:force
 lore-color-base:Orange
 lore-color-resist:Yellow
@@ -261,7 +261,7 @@ message-invis:You hear a staccato roar.
 
 name:BR_MANA
 hit:100
-effect:BREATH:MANA:30
+effect:BREATH:MANA:0:30
 lore:mana
 lore-color-base:Light Red
 message-vis:{name} breathes raw magic.
@@ -732,7 +732,8 @@ message-save:You feel unstable for a second, but it passes.
 
 name:DARKNESS
 hit:100
-effect:DARKEN_AREA:NONE:3
+effect:DARKEN_AREA
+effect:BALL:DARK_WEAK:3
 dice:10
 lore:create darkness
 lore-color-base:Light Green

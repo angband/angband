@@ -1915,7 +1915,7 @@ properties:40:5:200
 alloc:40:40 to 100
 pile:25:2
 power:9
-effect:PROJECT_LOS:DISP_UNDEAD:1
+effect:PROJECT_LOS:DISP_UNDEAD:0:1
 dice:60
 
 name:Banishment
@@ -1954,7 +1954,8 @@ properties:0:5:15
 alloc:50:0 to 60
 pile:35:2d3
 power:4
-effect:LIGHT_AREA:NONE:2
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:2
 dice:2d8
 
 name:Word of Recall
@@ -2106,7 +2107,8 @@ properties:1:5:0
 alloc:10:1 to 70
 pile:70:1d3
 power:0
-effect:DARKEN_AREA:NONE:3
+effect:DARKEN_AREA
+effect:BALL:DARK_WEAK:3
 dice:10
 
 name:Trap Creation
@@ -2450,7 +2452,7 @@ properties:1:4:75
 alloc:40:1 to 100
 pile:25:2
 power:10
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:20+2d10
 
 name:Heroism
@@ -2651,9 +2653,9 @@ pile:70:1d3
 power:8
 effect:RANDOM
 dice:2
-effect:BREATH:FIRE:20
+effect:BREATH:FIRE:0:20
 dice:80
-effect:BREATH:COLD:20
+effect:BREATH:COLD:0:20
 dice:80
 
 
@@ -2943,7 +2945,7 @@ combat:0:1d1:0:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:13
-effect:BREATH:FIRE:30
+effect:BREATH:FIRE:0:30
 dice:200
 
 name:Dragon's Frost
@@ -2955,7 +2957,7 @@ combat:0:1d1:0:0:0
 charges:1+d3
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
-effect:BREATH:COLD:30
+effect:BREATH:COLD:0:30
 dice:160
 
 name:Dragon's Breath
@@ -2969,15 +2971,15 @@ flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 power:12
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:30
+effect:BREATH:ACID:0:30
 dice:160
-effect:BREATH:ELEC:30
+effect:BREATH:ELEC:0:30
 dice:160
-effect:BREATH:FIRE:30
+effect:BREATH:FIRE:0:30
 dice:160
-effect:BREATH:COLD:30
+effect:BREATH:COLD:0:30
 dice:160
-effect:BREATH:POIS:30
+effect:BREATH:POIS:0:30
 dice:160
 
 
@@ -3068,7 +3070,8 @@ alloc:10:5 to 40
 combat:0:1d2:0:0:0
 charges:8+d8
 power:0
-effect:DARKEN_AREA:NONE:3
+effect:DARKEN_AREA
+effect:BALL:DARK_WEAK:3
 dice:10
 
 ### Destruction ###
@@ -3226,7 +3229,7 @@ alloc:50:50 to 100
 combat:0:1d2:0:0:0
 charges:4+d3
 power:9
-effect:PROJECT_LOS:DISP_EVIL:1
+effect:PROJECT_LOS:DISP_EVIL:0:1
 dice:60
 
 name:Banishment
@@ -3247,7 +3250,7 @@ alloc:20:70 to 100
 combat:0:1d2:0:0:0
 charges:1+d3
 power:11
-effect:PROJECT_LOS:DISP_ALL:1
+effect:PROJECT_LOS:DISP_ALL:0:1
 dice:120
 
 name:Holiness
@@ -3258,7 +3261,7 @@ alloc:20:70 to 100
 combat:0:1d2:0:0:0
 charges:2d2
 power:12
-effect:PROJECT_LOS:DISP_EVIL:1
+effect:PROJECT_LOS:DISP_EVIL:0:1
 dice:120
 effect:HEAL_HP
 dice:50
@@ -3287,7 +3290,8 @@ alloc:30:5 to 80
 combat:0:1d2:0:0:0
 charges:8+d20
 power:4
-effect:LIGHT_AREA:NONE:2
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:2
 dice:2d8
 
 name:Starlight
@@ -3320,7 +3324,7 @@ alloc:20:40 to 100
 combat:0:1d2:0:0:0
 charges:4+d3
 power:10
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:20+2d10
 
 name:Remove Curse
@@ -3389,7 +3393,7 @@ alloc:30:35 to 100
 combat:0:1d1:0:0:0
 power:10
 effect:MAP_AREA
-dice:33d55
+effect-yx:33:55
 time:100
 
 name:Probing
@@ -3636,7 +3640,8 @@ properties:20:15:1000
 alloc:20:10 to 100
 combat:0:1d1:0:0:0
 power:4
-effect:LIGHT_AREA:NONE:2
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:2
 dice:2d8
 time:30
 
@@ -3659,7 +3664,7 @@ alloc:10:80 to 100
 combat:0:1d1:0:0:0
 flags:IGNORE_ELEC
 power:10
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:20+2d10
 time:100
 
@@ -3723,7 +3728,7 @@ combat:16:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ACID[1]
 power:11
-effect:BREATH:ACID:20
+effect:BREATH:ACID:0:20
 dice:120
 time:50
 
@@ -3736,7 +3741,7 @@ combat:12:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_ELEC[1]
 power:18
-effect:BREATH:ELEC:20
+effect:BREATH:ELEC:0:20
 dice:150
 time:50
 
@@ -3749,7 +3754,7 @@ combat:14:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_COLD[1]
 power:10
-effect:BREATH:COLD:20
+effect:BREATH:COLD:0:20
 dice:100
 time:50
 
@@ -3762,7 +3767,7 @@ combat:24:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_FIRE[1]
 power:20
-effect:BREATH:FIRE:20
+effect:BREATH:FIRE:0:20
 dice:200
 time:50
 
@@ -3775,7 +3780,7 @@ combat:20:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_POIS[1]
 power:19
-effect:BREATH:POIS:20
+effect:BREATH:POIS:0:20
 dice:150
 time:50
 
@@ -3790,15 +3795,15 @@ values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
 power:20
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:20
+effect:BREATH:ACID:0:20
 dice:250
-effect:BREATH:ELEC:20
+effect:BREATH:ELEC:0:20
 dice:250
-effect:BREATH:FIRE:20
+effect:BREATH:FIRE:0:20
 dice:250
-effect:BREATH:COLD:20
+effect:BREATH:COLD:0:20
 dice:250
-effect:BREATH:POIS:20
+effect:BREATH:POIS:0:20
 dice:250
 time:50
 
@@ -3813,9 +3818,9 @@ values:RES_LIGHT[1] | RES_DARK[1]
 power:21
 effect:RANDOM
 dice:2
-effect:BREATH:LIGHT:20
+effect:BREATH:LIGHT:0:20
 dice:200
-effect:BREATH:DARK:20
+effect:BREATH:DARK:0:20
 dice:200
 time:50
 
@@ -3830,9 +3835,9 @@ values:RES_SOUND[1] | RES_SHARD[1]
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:SOUND:20
+effect:BREATH:SOUND:0:20
 dice:230
-effect:BREATH:SHARD:20
+effect:BREATH:SHARD:0:20
 dice:230
 time:50
 
@@ -3845,7 +3850,7 @@ combat:28:2d4:-2:0:10
 flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 values:RES_SOUND[1]
 power:19
-effect:BREATH:SOUND:20
+effect:BREATH:SOUND:0:20
 dice:150
 time:50
 
@@ -3860,9 +3865,9 @@ values:RES_CHAOS[1] | RES_DISEN[1]
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:CHAOS:20
+effect:BREATH:CHAOS:0:20
 dice:220
-effect:BREATH:DISEN:20
+effect:BREATH:DISEN:0:20
 dice:220
 time:50
 
@@ -3877,13 +3882,13 @@ values:RES_SOUND[1] | RES_SHARD[1] | RES_CHAOS[1] | RES_DISEN[1]
 power:24
 effect:RANDOM
 dice:4
-effect:BREATH:SOUND:20
+effect:BREATH:SOUND:0:20
 dice:250
-effect:BREATH:SHARD:20
+effect:BREATH:SHARD:0:20
 dice:250
-effect:BREATH:CHAOS:20
+effect:BREATH:CHAOS:0:20
 dice:250
-effect:BREATH:DISEN:20
+effect:BREATH:DISEN:0:20
 dice:250
 time:50
 
@@ -3899,7 +3904,7 @@ values:RES_ACID[1] | RES_FIRE[1] | RES_COLD[1] | RES_ELEC[1] | RES_POIS[1]
 values:RES_DISEN[1] | RES_SOUND[1] | RES_SHARD[1]
 values:RES_LIGHT[1] | RES_DARK[1] | RES_CHAOS[1]
 power:25
-effect:BREATH:MISSILE:20
+effect:BREATH:MISSILE:0:20
 dice:300
 time:50
 

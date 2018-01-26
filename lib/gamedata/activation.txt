@@ -427,7 +427,7 @@ effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 effect:MAP_AREA
-dice:11d11
+effect-yx:11:11
 desc:detects treasure and all creatures and maps an area nearby
 
 name:DETECT_OBJECTS
@@ -489,7 +489,8 @@ desc:Makes a strong attempt to remove a curse from an item
 name:LIGHT
 aim:0
 power:4
-effect:LIGHT_AREA:NONE:2
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:2
 dice:2d8
 desc:lights up an area and inflicts 2d8 damage on light-sensitive creatures
 
@@ -656,7 +657,8 @@ name:ILLUMINATION
 aim:0
 power:4
 msg:The {kind} well{s} with clear light...
-effect:LIGHT_AREA:NONE:3
+effect:LIGHT_AREA
+effect:BALL:LIGHT_WEAK:3
 dice:2d15
 desc:lights up the surrounding area, hurting light-sensitive creatures
 
@@ -678,7 +680,7 @@ desc:gives you information on the health and abilities of monsters you can see
 name:HASTE
 aim:0
 power:10
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:20+2d10
 desc:hastens you for 2d10+20 turns
 
@@ -686,7 +688,7 @@ name:HASTE1
 aim:0
 power:10
 msg:Your {kind} glow{s} bright green...
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:20+1d20
 desc:hastens you for d20+20 turns
 
@@ -694,7 +696,7 @@ name:HASTE2
 aim:0
 power:13
 msg:The {kind} glow{s} brightly...
-effect:TIMED_INC:FAST:5
+effect:TIMED_INC:FAST:0:5
 dice:75+1d75
 desc:hastens you for d75+75 turns
 
@@ -703,7 +705,7 @@ name:DISPEL_EVIL
 aim:0
 power:12
 msg:The {kind} flood{s} the area with goodness...
-effect:PROJECT_LOS:DISP_EVIL:1
+effect:PROJECT_LOS:DISP_EVIL:0:1
 dice:$B
 expr:B:PLAYER_LEVEL:* 5
 desc:deals five times your level's damage to all evil creatures that you can see
@@ -711,21 +713,21 @@ desc:deals five times your level's damage to all evil creatures that you can see
 name:DISPEL_EVIL60
 aim:0
 power:9
-effect:PROJECT_LOS:DISP_EVIL:1
+effect:PROJECT_LOS:DISP_EVIL:0:1
 dice:60
 desc:deals 60 damage to all evil creatures that you can see
 
 name:DISPEL_UNDEAD
 aim:0
 power:9
-effect:PROJECT_LOS:DISP_UNDEAD:1
+effect:PROJECT_LOS:DISP_UNDEAD:0:1
 dice:60
 desc:deals 60 damage to all undead creatures that you can see
 
 name:DISPEL_ALL
 aim:0
 power:11
-effect:PROJECT_LOS:DISP_ALL:1
+effect:PROJECT_LOS:DISP_ALL:0:1
 dice:120
 desc:deals 120 damage to all creatures that you can see
 
@@ -1133,15 +1135,15 @@ aim:1
 power:12
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:30
+effect:BREATH:ACID:0:30
 dice:160
-effect:BREATH:ELEC:30
+effect:BREATH:ELEC:0:30
 dice:160
-effect:BREATH:FIRE:30
+effect:BREATH:FIRE:0:30
 dice:160
-effect:BREATH:COLD:30
+effect:BREATH:COLD:0:30
 dice:160
-effect:BREATH:POIS:30
+effect:BREATH:POIS:0:30
 dice:160
 desc:shoots a large cone of one of the base elements for 120-200 damage
 
@@ -1155,7 +1157,7 @@ desc:restores both intelligence and manapoints to maximum
 name:STAFF_HOLY
 aim:0
 power:12
-effect:PROJECT_LOS:DISP_EVIL:1
+effect:PROJECT_LOS:DISP_EVIL:0:1
 dice:120
 effect:HEAL_HP
 dice:50
@@ -1179,9 +1181,9 @@ aim:1
 power:8
 effect:RANDOM
 dice:2
-effect:BREATH:FIRE:30
+effect:BREATH:FIRE:0:30
 dice:80
-effect:BREATH:COLD:30
+effect:BREATH:COLD:0:30
 dice:80
 desc:causes you to breathe either cold or flames for 80 damage
 
@@ -1290,21 +1292,21 @@ desc:grants electricity resistance for d20+20 turns and creates a lightning ball
 name:DRAGON_BLUE
 aim:1
 power:18
-effect:BREATH:ELEC:20
+effect:BREATH:ELEC:0:20
 dice:150
 desc:allows you to breathe lightning for 150 damage
 
 name:DRAGON_GREEN
 aim:1
 power:19
-effect:BREATH:POIS:20
+effect:BREATH:POIS:0:20
 dice:150
 desc:allows you to breathe poison gas for 150 damage
 
 name:DRAGON_RED
 aim:1
 power:20
-effect:BREATH:FIRE:20
+effect:BREATH:FIRE:0:20
 dice:200
 desc:allows you to breathe fire for 200 damage
 
@@ -1313,22 +1315,22 @@ aim:1
 power:20
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:20
+effect:BREATH:ACID:0:20
 dice:250
-effect:BREATH:ELEC:20
+effect:BREATH:ELEC:0:20
 dice:250
-effect:BREATH:FIRE:20
+effect:BREATH:FIRE:0:20
 dice:250
-effect:BREATH:COLD:20
+effect:BREATH:COLD:0:20
 dice:250
-effect:BREATH:POIS:20
+effect:BREATH:POIS:0:20
 dice:250
 desc:allows you to breathe the elements for 250 damage
 
 name:DRAGON_GOLD
 aim:1
 power:19
-effect:BREATH:SOUND:20
+effect:BREATH:SOUND:0:20
 dice:150
 desc:allows you to breathe sound for 150 damage
 
@@ -1337,9 +1339,9 @@ aim:1
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:CHAOS:20
+effect:BREATH:CHAOS:0:20
 dice:220
-effect:BREATH:DISEN:20
+effect:BREATH:DISEN:0:20
 dice:220
 desc:allows you to breathe chaos or disenchantment for 220 damage
 
@@ -1348,9 +1350,9 @@ aim:1
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:SOUND:20
+effect:BREATH:SOUND:0:20
 dice:230
-effect:BREATH:SHARD:20
+effect:BREATH:SHARD:0:20
 dice:230
 desc:allows you to breathe sound or shards for 230 damage
 
@@ -1359,13 +1361,13 @@ aim:1
 power:24
 effect:RANDOM
 dice:4
-effect:BREATH:SOUND:20
+effect:BREATH:SOUND:0:20
 dice:250
-effect:BREATH:SHARD:20
+effect:BREATH:SHARD:0:20
 dice:250
-effect:BREATH:CHAOS:20
+effect:BREATH:CHAOS:0:20
 dice:250
-effect:BREATH:DISEN:20
+effect:BREATH:DISEN:0:20
 dice:250
 desc:allows you to breathe balance for 250 damage
 
@@ -1374,15 +1376,15 @@ aim:1
 power:21
 effect:RANDOM
 dice:2
-effect:BREATH:LIGHT:20
+effect:BREATH:LIGHT:0:20
 dice:200
-effect:BREATH:DARK:20
+effect:BREATH:DARK:0:20
 dice:200
 desc:allows you to breathe light or darkness for 200 damage
 
 name:DRAGON_POWER
 aim:1
 power:25
-effect:BREATH:MISSILE:20
+effect:BREATH:MISSILE:0:20
 dice:300
 desc:allows you to breathe for 300 damage
