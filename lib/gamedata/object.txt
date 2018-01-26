@@ -19,7 +19,7 @@
 # power: power of the effect for object power eveluations
 # msg: message on using the object
 # effect: effect when used : parameter (maybe) : paramater (maybe)
-# param:parameter:parameter (if needed)
+# effect-yx: y value for effect : x value for effect
 # dice:dice string
 # expr:dice expression
 # flags: flag | flag | etc.
@@ -103,7 +103,7 @@
 # Fields are the name of the effect (as found in src/list-effects.h) and
 # possibly one or two parameters to the effect.
 
-# 'param' is for an extra to an effect if necessary
+# 'effect-yx' is y and x values for an effect if necessary
 
 # 'dice' provides a random value to be used by an effect (for damage,
 # healing, etc).  As well as the normal random value fields described above,
@@ -1954,8 +1954,7 @@ properties:0:5:15
 alloc:50:0 to 60
 pile:35:2d3
 power:4
-effect:LIGHT_AREA
-param:2
+effect:LIGHT_AREA:NONE:2
 dice:2d8
 
 name:Word of Recall
@@ -2066,8 +2065,7 @@ graphics:?:w
 properties:40:5:1000
 alloc:30:40 to 100
 power:12
-effect:DESTRUCTION
-param:15
+effect:DESTRUCTION:NONE:15
 
 ### Bad scrolls ###
 
@@ -2108,8 +2106,7 @@ properties:1:5:0
 alloc:10:1 to 70
 pile:70:1d3
 power:0
-effect:DARKEN_AREA
-param:3
+effect:DARKEN_AREA:NONE:3
 dice:10
 
 name:Trap Creation
@@ -3071,8 +3068,7 @@ alloc:10:5 to 40
 combat:0:1d2:0:0:0
 charges:8+d8
 power:0
-effect:DARKEN_AREA
-param:3
+effect:DARKEN_AREA:NONE:3
 dice:10
 
 ### Destruction ###
@@ -3085,8 +3081,7 @@ alloc:20:40 to 100
 combat:0:1d2:0:0:0
 charges:3+d5
 power:5
-effect:EARTHQUAKE
-param:10
+effect:EARTHQUAKE:NONE:10
 
 name:*Destruction*
 type:staff
@@ -3096,8 +3091,7 @@ alloc:20:50 to 100
 combat:0:1d2:0:0:0
 charges:1+d3
 power:12
-effect:DESTRUCTION
-param:15
+effect:DESTRUCTION:NONE:15
 
 ### Monster-affecting ###
 
@@ -3293,8 +3287,7 @@ alloc:30:5 to 80
 combat:0:1d2:0:0:0
 charges:8+d20
 power:4
-effect:LIGHT_AREA
-param:2
+effect:LIGHT_AREA:NONE:2
 dice:2d8
 
 name:Starlight
@@ -3643,8 +3636,7 @@ properties:20:15:1000
 alloc:20:10 to 100
 combat:0:1d1:0:0:0
 power:4
-effect:LIGHT_AREA
-param:2
+effect:LIGHT_AREA:NONE:2
 dice:2d8
 time:30
 
