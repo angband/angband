@@ -2519,7 +2519,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
  *
  * If no spaces are readily available, the distance may increase.
  * Try very hard to move the player/monster at least a quarter that distance.
- * Setting context->radius allows monsters to teleport the player away.
+ * Setting context->subtype allows monsters to teleport the player away.
  * Setting context->y and context->x treats them as y and x coordinates
  * and teleports the monster from that grid.
  */
@@ -2539,7 +2539,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	int current_score = 2 * MAX(z_info->dungeon_wid, z_info->dungeon_hgt);
 	bool only_vault_grids_possible = true;
 
-	bool is_player = (context->origin.what != SRC_MONSTER || context->radius);
+	bool is_player = (context->origin.what != SRC_MONSTER || context->subtype);
 
 	context->ident = true;
 
@@ -3813,17 +3813,11 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 
 /**
  * Cast a bolt spell, or rarely, a beam spell
- * context->radius is any adjustment to the regular beam chance
- * context->other being set means to divide by the adjustment instead of adding
+ * context->radius is used as any adjustment to the regular beam chance
  */
 bool effect_handler_BOLT_OR_BEAM(effect_handler_context_t *context)
 {
-	int beam = context->beam;
-
-	if (context->other)
-		beam /= context->radius;
-	else
-		beam += context->radius;
+	int beam = context->beam + context->radius;
 
 	if (randint0(100) < beam)
 		return effect_handler_BEAM(context);
@@ -4631,9 +4625,27 @@ int effect_subtype(int index, const char *type)
 				break;
 			}
 
-				/* Anything else shouldn't be calling this */
-			default:
-				;
+				/* Targeted earthquake */
+			case EF_EARTHQUAKE: {
+				if (streq(type, "TARGETED"))
+					val = 1;
+				else if (streq(type, "NONE"))
+					val = 0;
+				break;
+			}
+
+				/* Allow teleport away */
+			case EF_TELEPORT: {
+				if (streq(type, "AWAY"))
+					val = 1;
+				break;
+			}
+
+				/* Some effects only want a radius, so this is a dummy */
+			default: {
+				if (streq(type, "NONE"))
+					val = 0;
+			}
 		}
 	}
 

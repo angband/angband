@@ -30,8 +30,7 @@
 # book-graphics:symbol:color
 # book-properties:cost:commonness:min to max
 # spell:name:level:mana:fail:exp
-# effect:effect:parameter (if needed):parameter (if needed)
-# param:parameter:parameter (if needed)
+# effect:effect:subtype (if needed):radius (if needed):parameter (if needed)
 # dice:dice string
 # expr:dice expression
 # desc: description
@@ -85,10 +84,9 @@
 # spells in the previous 'book:' line.  The lines below are all used in
 # reference to the previous 'spell:' line.
 
-# 'effect' defines the spell effect (as listed in src/list-effects.h), along
-# with up to two effect parameters if needed
-
-# 'param' defines an extra one or two effect parameters if needed
+# 'effect' defines the spell effect (as listed in src/list-effects.h),
+# and optionally parameters for effect subtype, effect radius and
+# an extra parameter for various things
 
 # 'dice' provides a random value to be used by an effect (for damage,
 # healing, etc).  As well as the normal random value fields described above,
@@ -202,8 +200,7 @@ dice:10
 desc:Teleports you randomly up to 10 squares away.
 
 spell:Electric Arc:2:2:34:16
-effect:SHORT_BEAM:ELEC
-param:0:1
+effect:SHORT_BEAM:ELEC:0:1
 dice:$Dd6
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Creates an electrical discharge that hurts monsters and destroys
@@ -263,8 +260,7 @@ effect-yx:22:40
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Acid Spray:20:5:50:28
-effect:ARC:ACID
-param:60:4
+effect:ARC:ACID:60:4
 dice:$Dd8
 expr:D:PLAYER_LEVEL:/ 2
 desc:Sprays acid in a cone, hitting all monsters up to 4 grids away.
@@ -359,8 +355,7 @@ effect:TELEPORT_TO
 desc:Teleports you to (or near to) a square of your choice.
 
 spell:Thrust Away:40:12:90:140
-effect:SHORT_BEAM:FORCE
-param:1:10
+effect:SHORT_BEAM:FORCE:1:10
 dice:$Dd8
 expr:D:PLAYER_LEVEL:+ 0
 desc:Fires a short range beam of force.
@@ -521,8 +516,7 @@ desc:Strikes a target from above with a lightning bolt, followed by a clap
 desc: of thunder.
 
 spell:Earth Rising:14:5:40:25
-effect:SHORT_BEAM:SHARD
-param:4:5
+effect:SHORT_BEAM:SHARD:4:5
 dice:$Dd6
 expr:D:PLAYER_LEVEL:/ 3 + 2
 desc:Causes shards to explode in a line out of the earth, striking objects and
@@ -564,8 +558,7 @@ book-graphics:?:g
 book-properties:30000:15:40 to 100
 
 spell:Tremor:20:20:60:40
-effect:EARTHQUAKE:1
-param:4
+effect:EARTHQUAKE:TARGETED:4
 desc:Causes a targeted 4-square radius earthquake.
 desc:  Earthquakes may hurt the player, damage monsters and destroy items
 desc: in some squares in the area of effect.
@@ -682,8 +675,7 @@ book-properties:25:40:1 to 100
 equip:prayer book:[Spiritual World]:1:1
 
 spell:Call Light:1:1:10:2
-effect:LIGHT_AREA
-param:1:10
+effect:LIGHT_AREA:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -737,8 +729,7 @@ book-graphics:?:y
 book-properties:100:40:5 to 100
 
 spell:Orb of Draining:7:7:40:12
-effect:BALL:HOLY_ORB
-param:2:30
+effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
 expr:B:PLAYER_LEVEL:* 3 / 2
 desc:Shoots a radius-2 or radius-3 ball that does unresistable
@@ -872,8 +863,7 @@ dice:100
 desc:Teleports away each evil monster within line of sight.
 
 spell:Word of Destruction:35:35:80:115
-effect:DESTRUCTION
-param:15
+effect:DESTRUCTION:NONE:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.

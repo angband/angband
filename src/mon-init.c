@@ -790,27 +790,6 @@ static enum parser_error parse_mon_spell_effect_yx(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_mon_spell_param(struct parser *p) {
-	struct monster_spell *s = parser_priv(p);
-	struct effect *effect = s->effect;
-
-	if (!s)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	/* If there is no effect, assume that this is human and not parser error. */
-	if (effect == NULL)
-		return PARSE_ERROR_NONE;
-
-	while (effect->next) effect = effect->next;
-	effect->radius = parser_getint(p, "p2");
-
-	if (parser_hasval(p, "p3"))
-		effect->other = parser_getint(p, "p3");
-
-	return PARSE_ERROR_NONE;
-}
-
-
 static enum parser_error parse_mon_spell_dice(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	dice_t *dice = NULL;
@@ -906,9 +885,8 @@ struct parser *init_parse_mon_spell(void) {
 	parser_reg(p, "lore-color-resist sym color", parse_mon_spell_lore_color_resist);
 	parser_reg(p, "lore-color-immune sym color", parse_mon_spell_lore_color_immune);
 	parser_reg(p, "hit uint hit", parse_mon_spell_hit);
-	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_mon_spell_effect);
+	parser_reg(p, "effect sym eff ?sym type ?int radius ?int other", parse_mon_spell_effect);
 	parser_reg(p, "effect-yx int y int x", parse_mon_spell_effect_yx);
-	parser_reg(p, "param int p2 ?int p3", parse_mon_spell_param);
 	parser_reg(p, "dice str dice", parse_mon_spell_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_mon_spell_expr);
 	return p;
