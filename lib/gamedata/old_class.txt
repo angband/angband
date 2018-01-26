@@ -65,8 +65,7 @@ dice:10
 desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:1:2:26:4
-effect:LIGHT_AREA
-param:1:10
+effect:LIGHT_AREA:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -417,8 +416,7 @@ book-graphics:?:r
 book-properties:90000:10:90 to 100
 
 spell:Earthquake:20:18:60:20
-effect:EARTHQUAKE
-param:10
+effect:EARTHQUAKE:NONE:10
 desc:Causes a 10-square radius earthquake around you.
 desc:  Earthquakes may damage monsters and destroy items in some
 desc: squares in the area of effect.
@@ -434,8 +432,7 @@ desc: damage but has a chance to confuse each monster in the area of effect.
 desc:  Uniques or monsters that resist confusion are not affected.
 
 spell:Rend Soul:25:15:80:30
-effect:BOLT_OR_BEAM:NETHER
-param:4:1
+effect:BOLT_OR_BEAM:NETHER:- 20
 dice:11d$S
 expr:S:PLAYER_LEVEL:+ 0
 desc:Fires a nether bolt that always hits its target. Does
@@ -451,8 +448,7 @@ desc:  Uniques are not affected.
 desc:  You take 1d4 points of damage for every monster removed.
 
 spell:Word of Destruction:33:21:80:35
-effect:DESTRUCTION
-param:15
+effect:DESTRUCTION:NONE:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.
@@ -548,8 +544,7 @@ effect:CURE:AFRAID
 desc:Removes fear.
 
 spell:Call Light:3:2:25:1
-effect:LIGHT_AREA
-param:1:10
+effect:LIGHT_AREA:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -625,8 +620,7 @@ effect:CURE:POISONED
 desc:Neutralizes poison.
 
 spell:Orb of Draining:9:7:40:4
-effect:BALL:HOLY_ORB
-param:2:30
+effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
 expr:B:PLAYER_LEVEL:* 3 / 2
 desc:Shoots a radius-2 or radius-3 ball that does unresistable
@@ -661,8 +655,7 @@ desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
 spell:Earthquake:11:9:55:5
-effect:EARTHQUAKE
-param:10
+effect:EARTHQUAKE:NONE:10
 desc:Causes a 10-square radius earthquake around you.
 desc:  Earthquakes may damage monsters and destroy items in some
 desc: squares in the area of effect.
@@ -949,8 +942,7 @@ dice:100
 desc:Teleports away each evil monster within line of sight.
 
 spell:Word of Destruction:35:35:80:115
-effect:DESTRUCTION
-param:15
+effect:DESTRUCTION:NONE:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.
@@ -1014,8 +1006,7 @@ dice:10
 desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:9:3:60:1
-effect:LIGHT_AREA
-param:1:10
+effect:LIGHT_AREA:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1346,8 +1337,7 @@ dice:10
 desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:5:3:35:1
-effect:LIGHT_AREA
-param:1:10
+effect:LIGHT_AREA:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1699,8 +1689,7 @@ desc: slay, is broken, or is cursed.
 book:magic book:dungeon:[Kelek's Grimoire of Power]:3:arcane
 
 spell:Earthquake:30:28:60:16
-effect:EARTHQUAKE
-param:10
+effect:EARTHQUAKE:NONE:10
 desc:Causes a 10-square radius earthquake around you.
 desc:  Earthquakes may damage monsters and destroy items in some
 desc: squares in the area of effect.
@@ -1716,8 +1705,7 @@ desc: damage but has a chance to confuse each monster in the area of effect.
 desc:  Uniques or monsters that resist confusion are not affected.
 
 spell:Word of Destruction:37:30:95:30
-effect:DESTRUCTION
-param:15
+effect:DESTRUCTION:NONE:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.
@@ -1788,8 +1776,7 @@ effect:CURE:AFRAID
 desc:Removes fear.
 
 spell:Call Light:5:4:35:4
-effect:LIGHT_AREA
-param:1:10
+effect:LIGHT_AREA:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1861,8 +1848,7 @@ effect:CURE:POISONED
 desc:Neutralizes poison.
 
 spell:Orb of Draining:17:15:50:4
-effect:BALL:HOLY_ORB
-param:2:30
+effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
 expr:B:PLAYER_LEVEL:* 5 / 4
 desc:Shoots a radius-2 or radius-3 ball that does unresistable
@@ -1897,8 +1883,7 @@ desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
 spell:Earthquake:21:17:50:3
-effect:EARTHQUAKE
-param:10
+effect:EARTHQUAKE:NONE:10
 desc:Causes a 10-square radius earthquake around you.
 desc:  Earthquakes may damage monsters and destroy items in some
 desc: squares in the area of effect.
@@ -2107,8 +2092,7 @@ dice:100
 desc:Teleports away each evil monster within line of sight.
 
 spell:Word of Destruction:40:40:80:100
-effect:DESTRUCTION
-param:15
+effect:DESTRUCTION:NONE:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.

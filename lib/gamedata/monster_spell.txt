@@ -712,9 +712,8 @@ message-invis:Something commands you to come hither.
 name:TELE_AWAY
 msgt:TELEPORT
 hit:100
-effect:TELEPORT
+effect:TELEPORT:AWAY
 dice:100
-param:1
 lore:teleport away
 lore-color-base:Yellow
 message-vis:{name} commands you to go away.
@@ -733,9 +732,8 @@ message-save:You feel unstable for a second, but it passes.
 
 name:DARKNESS
 hit:100
-effect:DARKEN_AREA
+effect:DARKEN_AREA:NONE:3
 dice:10
-param:3
 lore:create darkness
 lore-color-base:Light Green
 message-vis:{name} surrounds you in darkness.

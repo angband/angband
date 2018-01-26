@@ -489,8 +489,7 @@ desc:Makes a strong attempt to remove a curse from an item
 name:LIGHT
 aim:0
 power:4
-effect:LIGHT_AREA
-param:2
+effect:LIGHT_AREA:NONE:2
 dice:2d8
 desc:lights up an area and inflicts 2d8 damage on light-sensitive creatures
 
@@ -614,15 +613,13 @@ desc:teleports you five levels down
 name:EARTHQUAKES
 aim:0
 power:5
-effect:EARTHQUAKE
-param:10
+effect:EARTHQUAKE:NONE:10
 desc:causes an earthquake around you
 
 name:DESTRUCTION2
 aim:0
 power:12
-effect:DESTRUCTION
-param:15
+effect:DESTRUCTION:NONE:15
 desc:destroys an area around you in the shape of a circle radius 15, and blinds you for 1d10+10 turns
 
 
@@ -659,8 +656,7 @@ name:ILLUMINATION
 aim:0
 power:4
 msg:The {kind} well{s} with clear light...
-effect:LIGHT_AREA
-param:3
+effect:LIGHT_AREA:NONE:3
 dice:2d15
 desc:lights up the surrounding area, hurting light-sensitive creatures
 

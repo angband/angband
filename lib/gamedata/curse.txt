@@ -3,8 +3,7 @@
 # name: effect name
 # type: valid object base
 # combat: to_hit : to_dam : to_ac
-# effect: random effect : parameter (maybe) : parameter (maybe)
-# param:parameter:parameter (if needed)
+# effect: random effect : ? parameter : ? parameter : ? parameter
 # dice:dice string
 # expr:dice expression
 # time: average frequency of random effect

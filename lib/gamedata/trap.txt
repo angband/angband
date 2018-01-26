@@ -459,8 +459,7 @@ flags:TRAP | FLOOR
 effect:DAMAGE
 dice:$Dd5
 expr:D:DUNGEON_LEVEL:/ 10 + 1
-effect:EARTHQUAKE
-param:5
+effect:EARTHQUAKE:NONE::5
 desc:A trap that causes an earthquake.
 msg:The ground shakes.
 
