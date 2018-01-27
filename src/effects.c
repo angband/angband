@@ -1361,8 +1361,9 @@ bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
 }
 
 /**
- * Map an area around the player.  The height to map above and below the player
- * is context->y, the width either side of the player context->x.
+ * Map an area around a point, usually the player.
+ * The height to map above and below the player is context->y,
+ * the width either side of the player context->x.
  * For player level dependent areas, we use the hack of applying value dice
  * and sides as the height and width.
  */
@@ -1372,12 +1373,13 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 	int x1, x2, y1, y2;
 	int dist_y = context->y ? context->y : context->value.dice;
 	int dist_x = context->x ? context->x : context->value.sides;
+	struct loc centre = origin_get_loc(context->origin);
 
 	/* Pick an area to map */
-	y1 = player->py - dist_y;
-	y2 = player->py + dist_y;
-	x1 = player->px - dist_x;
-	x2 = player->px + dist_x;
+	y1 = centre.y - dist_y;
+	y2 = centre.y + dist_y;
+	x1 = centre.x - dist_x;
+	x2 = centre.x + dist_x;
 
 	/* Drag the co-ordinates into the dungeon */
 	if (y1 < 0) y1 = 0;
@@ -1434,6 +1436,45 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 	context->ident = true;
 
 	return true;
+}
+
+/**
+ * Map an area around the recently detected monsters.
+ * The height to map above and below each monster is context->y,
+ * the width either side of each monster context->x.
+ * For player level dependent areas, we use the hack of applying value dice
+ * and sides as the height and width.
+ */
+bool effect_handler_READ_MINDS(effect_handler_context_t *context)
+{
+	int i;
+	int dist_y = context->y ? context->y : context->value.dice;
+	int dist_x = context->x ? context->x : context->value.sides;
+	bool found = false;
+
+	/* Scan monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		/* Skip dead monsters */
+		if (!mon->race) continue;
+
+		/* Detect all appropriate monsters */
+		if (mflag_has(mon->mflag, MFLAG_MARK)) {
+			/* Map around it */
+			effect_simple(EF_MAP_AREA, source_monster(i), "0", 0, 0, 0, 
+						  dist_y, dist_x, NULL);
+			found = true;
+		}
+	}
+
+	if (found) {
+		msg("Images form in your mind!");
+		context->ident = true;
+		return true;
+	}
+
+	return false;
 }
 
 /**
