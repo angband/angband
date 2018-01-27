@@ -1947,6 +1947,12 @@ void do_cmd_wiz_effect(void)
 		/* If not, find the effect with that name */
 		if (index <= EF_NONE || index >= EF_MAX)
 			index = effect_lookup(name);
+
+		/* Failed */
+		if (index <= EF_NONE || index >= EF_MAX) {
+			msg("No effect found.");
+			return;
+		}
 	}
 
 	/* Prompt */
@@ -1974,10 +1980,7 @@ void do_cmd_wiz_effect(void)
 	/* Reload the screen */
 	screen_load();
 
-	if (index > EF_NONE && index < EF_MAX)
-		effect_simple(index, source_player(), dice, p1, p2, p3, y, x, &ident);
-	else
-		msg("No effect found.");
+	effect_simple(index, source_player(), dice, p1, p2, p3, y, x, &ident);
 
 	if (ident)
 		msg("Identified!");
