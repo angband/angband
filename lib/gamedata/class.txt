@@ -170,7 +170,7 @@ title:Arch-Mage
 
 magic:1:300:5
 
-book:magic book:town:[Path of the Mage]:6:arcane
+book:magic book:town:[Path of the Mage]:7:arcane
 book-graphics:?:B
 book-properties:25:40:1 to 100
 equip:magic book:[Path of the Mage]:1:1
@@ -184,6 +184,14 @@ desc: unresistable damage.
 desc:  Sometimes a beam is fired instead that hurts each monster
 desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
+
+spell:Light Room:1:2:26:4
+effect:LIGHT_AREA
+effect:SPOT:LIGHT_WEAK:2
+dice:1
+desc:Lights up all squares within 2 grids of the player, and hurts
+desc: all light-sensitive monsters in the area of effect.
+desc:  If you are in a room, the entire room will be lit up as well.
 
 spell:Find Traps, Doors & Stairs:1:1:20:2
 effect:DETECT_TRAPS
