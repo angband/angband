@@ -449,7 +449,7 @@ desc:  Uniques are not affected.
 desc:  You take 1d4 points of damage for every monster removed.
 
 spell:Word of Destruction:33:21:80:35
-effect:DESTRUCTION:NONE:15
+effect:DESTRUCTION:LIGHT:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.
@@ -944,7 +944,7 @@ dice:100
 desc:Teleports away each evil monster within line of sight.
 
 spell:Word of Destruction:35:35:80:115
-effect:DESTRUCTION:NONE:15
+effect:DESTRUCTION:LIGHT:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.
@@ -1709,7 +1709,7 @@ desc: damage but has a chance to confuse each monster in the area of effect.
 desc:  Uniques or monsters that resist confusion are not affected.
 
 spell:Word of Destruction:37:30:95:30
-effect:DESTRUCTION:NONE:15
+effect:DESTRUCTION:LIGHT:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.
@@ -2097,7 +2097,7 @@ dice:100
 desc:Teleports away each evil monster within line of sight.
 
 spell:Word of Destruction:40:40:80:100
-effect:DESTRUCTION:NONE:15
+effect:DESTRUCTION:LIGHT:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.

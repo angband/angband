@@ -864,7 +864,7 @@ dice:100
 desc:Teleports away each evil monster within line of sight.
 
 spell:Word of Destruction:35:35:80:115
-effect:DESTRUCTION:NONE:15
+effect:DESTRUCTION:LIGHT:15
 desc:Destroys everything in a 15-square radius circle around you.
 desc:  All monsters, objects, and terrain features in the area of
 desc: effect are destroyed, except stairs and permanent walls.
