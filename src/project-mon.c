@@ -643,6 +643,13 @@ static void project_monster_handler_CHAOS(project_monster_handler_context_t *con
 static void project_monster_handler_DISEN(project_monster_handler_context_t *context)
 {
 	project_monster_resist_other(context, RF_IM_DISEN, 3, true, MON_MSG_RESIST);
+
+	/* Affect monsters which don't resist, and have non-innate spells */
+	if (!rf_has(context->mon->race->flags, RF_IM_DISEN) &&
+		monster_has_non_innate_spells(context->mon)) {
+		context->mon_timed[MON_TMD_DISEN] = adjust_radius(context,
+														  5 + randint1(10));
+	}
 }
 
 /* Water damage */

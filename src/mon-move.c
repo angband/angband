@@ -1459,6 +1459,9 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 	if (mon->m_timed[MON_TMD_HOLD])
 		mon_dec_timed(mon, MON_TMD_HOLD, 1, 0, false);
 
+	if (mon->m_timed[MON_TMD_DISEN])
+		mon_dec_timed(mon, MON_TMD_DISEN, 1, 0, false);
+
 	if (mon->m_timed[MON_TMD_STUN])
 		mon_dec_timed(mon, MON_TMD_STUN, 1, MON_TMD_FLG_NOTIFY, false);
 
