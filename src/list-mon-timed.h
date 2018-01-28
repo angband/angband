@@ -21,4 +21,5 @@ MON_TMD(FEAR,   true,   INCR,  RF_NO_FEAR,  10000,    MON_MSG_FLEE_IN_TERROR, MO
 MON_TMD(SLOW,   false,  INCR,  RF_NO_SLOW,  50,       MON_MSG_SLOWED,         MON_MSG_NOT_SLOWED,     MON_MSG_MORE_SLOWED    )
 MON_TMD(FAST,   false,  INCR,  0,           50,       MON_MSG_HASTED,         MON_MSG_NOT_HASTED,     MON_MSG_MORE_HASTED    )
 MON_TMD(HOLD,   false,  MAX,   RF_NO_HOLD,  50,       MON_MSG_HELD,           MON_MSG_NOT_HELD,       0                      )
+MON_TMD(DISEN,   false,  MAX,  RF_IM_DISEN,  50,      MON_MSG_DISEN,           MON_MSG_NOT_DISEN,       0                      )
 MON_TMD(MAX,    true,   INCR,  0,           0,        0,                      0,                      0                      )

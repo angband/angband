@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "mon-spell.h"
 #include "mon-util.h"
 
 /**
@@ -121,6 +122,37 @@ bool monster_is_evil(const struct monster *mon)
 bool monster_is_powerful(const struct monster *mon)
 {
 	return rf_has(mon->race->flags, RF_POWERFUL);
+}
+
+/**
+ * Monster has spells
+ */
+bool monster_has_spells(const struct monster *mon)
+{
+	return rsf_is_empty(mon->race->spell_flags) ? false : true;
+}
+
+/**
+ * Monster has innate spells
+ */
+bool monster_has_innate_spells(const struct monster *mon)
+{
+	bitflag innate_spells[RSF_SIZE];
+	create_mon_spell_mask(innate_spells, RST_INNATE, RST_NONE);
+	rsf_inter(innate_spells, mon->race->spell_flags);
+	return rsf_is_empty(innate_spells) ? false : true;
+}
+
+/**
+ * Monster has non-innate spells
+ */
+bool monster_has_non_innate_spells(const struct monster *mon)
+{
+	bitflag innate_spells[RSF_SIZE], mon_spells[RSF_SIZE];
+	create_mon_spell_mask(innate_spells, RST_INNATE, RST_NONE);
+	rsf_copy(mon_spells, mon->race->spell_flags);
+	rsf_diff(mon_spells, innate_spells);
+	return rsf_is_empty(mon_spells) ? false : true;
 }
 
 
