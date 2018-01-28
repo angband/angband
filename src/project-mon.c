@@ -790,6 +790,12 @@ static void project_monster_handler_AWAY_EVIL(project_monster_handler_context_t 
 	project_monster_teleport_away(context, RF_EVIL);
 }
 
+/* Teleport evil (Use "dam" as "power") */
+static void project_monster_handler_AWAY_SPIRIT(project_monster_handler_context_t *context)
+{
+	project_monster_teleport_away(context, RF_SPIRIT);
+}
+
 /* Teleport monster (Use "dam" as "power") */
 static void project_monster_handler_AWAY_ALL(project_monster_handler_context_t *context)
 {

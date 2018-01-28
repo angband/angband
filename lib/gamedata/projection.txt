@@ -391,6 +391,13 @@ blind-desc:something
 obvious:0
 color:White
 
+code:AWAY_SPIRIT
+type:monster
+desc:teleports monsters with a spirit away
+blind-desc:something
+obvious:0
+color:White
+
 code:AWAY_ALL
 type:monster
 desc:teleports monsters away
