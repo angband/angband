@@ -1862,12 +1862,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->stat_ind[i] = ind;
 	}
 
-	/* Adjust stat values if calculating possible extra blows */
-	if (!update) {
-		state->stat_ind[STAT_STR] = str_cur;
-		state->stat_ind[STAT_DEX] = dex_cur;
-	}
-
 	/* Now deal with vulnerabilities */
 	for (i = 0; i < ELEM_MAX; i++) {
 		if (vuln[i] && (state->el_info[i].res_level < 3))
@@ -2055,6 +2049,12 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		/* Normal weapons */
 		if (!state->heavy_wield) {
+			/* Adjust stat values if calculating possible extra blows */
+			if (!update) {
+				state->stat_ind[STAT_STR] = str_cur;
+				state->stat_ind[STAT_DEX] = dex_cur;
+			}
+
 			state->num_blows = calc_blows(p, weapon, state, extra_blows);
 			state->skills[SKILL_DIGGING] += (weapon->weight / 10);
 		}
