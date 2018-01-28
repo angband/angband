@@ -111,6 +111,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 	/* Effect status */
 	if (mon->m_timed[MON_TMD_SLEEP]) my_strcat(buf, ", asleep", max);
 	if (mon->m_timed[MON_TMD_HOLD]) my_strcat(buf, ", held", max);
+	if (mon->m_timed[MON_TMD_HOLD]) my_strcat(buf, ", disenchanted", max);
 	if (mon->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
 	if (mon->m_timed[MON_TMD_FEAR]) my_strcat(buf, ", afraid", max);
 	if (mon->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);

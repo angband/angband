@@ -337,8 +337,8 @@ bool make_attack_spell(struct monster *mon)
 	if (monster_is_stupid(mon))
 		failrate = 0;
 
-	/* Confusion adds 50% to fail rate */
-	if (mon->m_timed[MON_TMD_CONF])
+	/* Confusion and diesnchantment add 50% to fail rate */
+	if (mon->m_timed[MON_TMD_CONF] || mon->m_timed[MON_TMD_DISEN])
 		failrate += 50;
 
 	/* Check for spell failure (innate attacks never fail) */

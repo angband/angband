@@ -385,6 +385,9 @@ byte monster_health_attr(void)
 		/* Afraid */
 		if (mon->m_timed[MON_TMD_FEAR]) attr = COLOUR_VIOLET;
 
+		/* Disenchanted */
+		if (mon->m_timed[MON_TMD_DISEN]) attr = COLOUR_L_UMBER;
+
 		/* Confused */
 		if (mon->m_timed[MON_TMD_CONF]) attr = COLOUR_UMBER;
 
