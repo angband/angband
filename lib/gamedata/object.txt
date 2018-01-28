@@ -2066,7 +2066,7 @@ graphics:?:w
 properties:40:5:1000
 alloc:30:40 to 100
 power:12
-effect:DESTRUCTION:NONE:15
+effect:DESTRUCTION:LIGHT:15
 
 ### Bad scrolls ###
 
@@ -3094,7 +3094,7 @@ alloc:20:50 to 100
 combat:0:1d2:0:0:0
 charges:1+d3
 power:12
-effect:DESTRUCTION:NONE:15
+effect:DESTRUCTION:LIGHT:15
 
 ### Monster-affecting ###
 

@@ -2918,6 +2918,7 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 {
 	int y, x, k, r = context->radius;
+	int elem = context->subtype;
 	int y1 = player->py;
 	int x1 = player->px;
 
@@ -2988,13 +2989,22 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 		}
 	}
 
-	/* Message */
-	msg("There is a searing blast of light!");
-
-	/* Blind the player */
-	equip_learn_element(player, ELEM_LIGHT);
-	if (!player_resists(player, ELEM_LIGHT))
-		(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),true, true);
+	/* Player is affected */
+	if (elem == ELEM_LIGHT) {
+		msg("There is a searing blast of light!");
+		equip_learn_element(player, ELEM_LIGHT);
+		if (!player_resists(player, ELEM_LIGHT)) {
+			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
+								   true);
+		}
+	} else if (elem == ELEM_DARK) {
+		msg("Darkness seems to crush you!");
+		equip_learn_element(player, ELEM_DARK);
+		if (!player_resists(player, ELEM_DARK)) {
+			(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10), true,
+								   true);
+		}
+	}
 
 	/* Fully update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -4582,6 +4592,7 @@ int effect_subtype(int index, const char *type)
 				/* Projection name */
 			case EF_PROJECT_LOS:
 			case EF_PROJECT_LOS_AWARE:
+			case EF_DESTRUCTION:
 			case EF_SPOT:
 			case EF_SPHERE:
 			case EF_BALL:
