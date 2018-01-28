@@ -504,6 +504,10 @@ static void project_player_handler_AWAY_EVIL(project_player_handler_context_t *c
 {
 }
 
+static void project_player_handler_AWAY_SPIRIT(project_player_handler_context_t *context)
+{
+}
+
 static void project_player_handler_AWAY_ALL(project_player_handler_context_t *context)
 {
 }

@@ -381,6 +381,10 @@ static void project_object_handler_AWAY_EVIL(project_object_handler_context_t *c
 {
 }
 
+static void project_object_handler_AWAY_SPIRIT(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_AWAY_ALL(project_object_handler_context_t *context)
 {
 }
