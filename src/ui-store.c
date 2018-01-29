@@ -1185,6 +1185,7 @@ void enter_store(game_event_type type, game_event_data *data, void *user)
 	}
 
 	/* Shut down the normal game view */
+	event_remove_handler_type(EVENT_ENTER_STORE);
 	event_signal(EVENT_LEAVE_WORLD);
 }
 

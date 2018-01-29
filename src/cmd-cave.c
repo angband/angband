@@ -1012,7 +1012,6 @@ void move_player(int dir, bool disarm)
 		if (square_isshop(cave, y, x)) {
 			disturb(player, 0);
 			event_signal(EVENT_ENTER_STORE);
-			event_remove_handler_type(EVENT_ENTER_STORE);
 			event_signal(EVENT_USE_STORE);
 			event_remove_handler_type(EVENT_USE_STORE);
 			event_signal(EVENT_LEAVE_STORE);
@@ -1235,7 +1234,6 @@ void do_cmd_hold(struct command *cmd)
 	if (square_isshop(cave, player->py, player->px)) {
 		disturb(player, 0);
 		event_signal(EVENT_ENTER_STORE);
-		event_remove_handler_type(EVENT_ENTER_STORE);
 		event_signal(EVENT_USE_STORE);
 		event_remove_handler_type(EVENT_USE_STORE);
 		event_signal(EVENT_LEAVE_STORE);
