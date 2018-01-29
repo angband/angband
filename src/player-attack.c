@@ -319,6 +319,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 
 	/* Information about the attack */
 	int chance = py_attack_hit_chance(p, obj);
+	int drain = 0;
 	bool do_quake = false;
 	bool success = false;
 
@@ -429,8 +430,13 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	/* Pre-damage side effects */
 	blow_side_effects(p, mon);
 
-	/* Damage, check for fear and death */
+	/* Damage, check for hp drain, fear and death */
+	drain = MIN(mon->hp, dmg);
 	stop = mon_take_hit(mon, dmg, fear, NULL);
+	if (p->timed[TMD_ATT_VAMP] && monster_is_living(mon)) {
+		effect_simple(EF_HEAL_HP, source_player(), format("%d", drain), 0, 0,
+					  0, 0, 0, NULL);
+	}
 
 	if (stop)
 		(*fear) = false;
