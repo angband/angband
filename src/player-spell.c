@@ -689,6 +689,11 @@ static int spell_value_base_weapon_damage(void)
 	return (damroll(obj->dd, obj->ds) + obj->to_d);
 }
 
+static int spell_value_base_player_hp(void)
+{
+	return player->chp;
+}
+
 expression_base_value_f spell_value_base_by_name(const char *name)
 {
 	static const struct value_base_s {
@@ -702,6 +707,7 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		{ "FOOD_FAINT", spell_value_base_food_faint },
 		{ "FOOD_STARVE", spell_value_base_food_starve },
 		{ "WEAPON_DAMAGE", spell_value_base_weapon_damage },
+		{ "PLAYER_HP", spell_value_base_player_hp },
 		{ NULL, NULL },
 	};
 	const struct value_base_s *current = value_bases;
