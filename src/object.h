@@ -58,6 +58,7 @@ struct effect {
 	int subtype;	/**< Projection type, timed effect type, etc. */
 	int radius;		/**< Radius of the effect (if it has one) */
 	int other;		/**< Extra parameter to be passed to the handler */
+	char *msg;		/**< Message for deth or whatever */
 };
 
 /**
