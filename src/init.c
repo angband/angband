@@ -2537,6 +2537,23 @@ static enum parser_error parse_shape_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_shape_effect_msg(struct parser *p) {
+	struct player_shape *shape = parser_priv(p);
+	struct effect *effect = shape->effect;
+
+	if (!shape)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/* If there is no effect, assume that this is human and not parser error. */
+	if (effect == NULL)
+		return PARSE_ERROR_NONE;
+
+	while (effect->next) effect = effect->next;
+
+    effect->msg = string_append(effect->msg, parser_getstr(p, "text"));
+    return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_shape_blow(struct parser *p) {
 	const char *verb = parser_getstr(p, "blow");
 	struct player_blow *blow = mem_zalloc(sizeof(*blow));
@@ -2572,6 +2589,7 @@ struct parser *init_parse_shape(void) {
 	parser_reg(p, "effect-yx int y int x", parse_shape_effect_yx);
 	parser_reg(p, "dice str dice", parse_shape_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_shape_expr);
+	parser_reg(p, "msg str text", parse_shape_effect_msg);
 	parser_reg(p, "blow str blow", parse_shape_blow);
 	return p;
 }

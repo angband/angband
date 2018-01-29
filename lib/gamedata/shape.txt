@@ -18,6 +18,10 @@
 # obj-flags:object flags
 # player-flags:player flags
 # values:resistances and modifiers
+# effect:effect:subtype (if needed):radius (if needed):parameter (if needed)
+# dice:dice string
+# expr:dice expression
+# effect-msg:message
 # blow:blow verb
 
 # 'name' is the name of the shape.
@@ -35,6 +39,21 @@
 # from the shapechange.
 
 # 'values' is for resistances and modifiers gained from the shapechange.
+
+# 'effect' defines any effect which happens on taking the new shape,
+# and optionally parameters for effect subtype, effect radius and
+# an extra parameter for various things
+
+# 'dice' provides a random value to be used by an effect (for damage,
+# healing, etc).  As well as the normal random value fields described above,
+# it can contain expressions like $B, which refer forward to an 'expr' line.
+
+# 'expr' provides an expression for use in effect dice.  It consists of a
+# code letter (eg B) for the expression, a base function to use (for example
+# PLAYER_LEVEL), and a sequence of operations to perform on that base.
+
+# 'effect-msg' provides a message which can be used in whatever way the effect
+# needs, typically to print during the effect, or as a death message.
 
 # 'blow' is for verbs for how the shapechanged character will hit monsters.
 # Frequencies can be adjusted by having more than one line the same.
