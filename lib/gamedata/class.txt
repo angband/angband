@@ -33,6 +33,7 @@
 # effect:effect:subtype (if needed):radius (if needed):parameter (if needed)
 # dice:dice string
 # expr:dice expression
+# effect-msg:message
 # desc: description
 
 
@@ -95,6 +96,9 @@
 # 'expr' provides an expression for use in effect dice.  It consists of a
 # code letter (eg B) for the expression, a base function to use (for example
 # PLAYER_LEVEL), and a sequence of operations to perform on that base.
+
+# 'effect-msg' provides a message which can be used in whatever way the effect
+# needs, typically to print during the effect, or as a death message.
 
 # 'desc' is for description. As many desc: lines may be used as are needed
 # to describe the spell. Note that lines will need spaces at their

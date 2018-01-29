@@ -68,6 +68,7 @@ typedef struct effect_handler_context_s {
 	const int boost;
 	const random_value value;
 	const int subtype, radius, other, y, x;
+	const char *msg;
 	bool ident;
 } effect_handler_context_t;
 
@@ -620,7 +621,11 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 		}
 
 		case SRC_PLAYER: {
-			my_strcpy(killer, "yourself", sizeof(killer));
+			if (context->msg) {
+				my_strcpy(killer, context->msg, sizeof(killer));
+			} else {
+				my_strcpy(killer, "yourself", sizeof(killer));
+			}
 			break;
 		}
 
@@ -4465,6 +4470,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 			context->boost,
 			value,
 			subtype, radius, other, y, x,
+			NULL,
 			context->ident
 		};
 
@@ -4768,6 +4774,7 @@ bool effect_do(struct effect *effect,
 				effect->other,
 				effect->y,
 				effect->x,
+				effect->msg,
 				*ident,
 			};
 
