@@ -602,11 +602,15 @@ static void spell_effect_append_value_info(const struct effect *effect,
 				special = format(", rad %d", effect->radius);
 			}
 			break;
-		case EF_SHORT_BEAM:
+		case EF_SHORT_BEAM: {
 			/* Append length of beam */
-			special = format(", len %d",
-							 effect->radius + player->lev / effect->other);
+			int len = effect->radius;
+			if (effect->other) {
+				len += player->lev / effect->other;
+			}
+			special = format(", len %d", len);
 			break;
+		}
 		case EF_SWARM:
 			/* Append number of projectiles. */
 			special = format("x%d", rv.m_bonus);
