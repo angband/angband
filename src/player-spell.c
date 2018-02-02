@@ -31,6 +31,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "target.h"
 
 /**
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
@@ -698,6 +699,15 @@ static int spell_value_base_player_hp(void)
 	return player->chp;
 }
 
+static int spell_value_base_monster_percent_hp_gone(void)
+{
+	/* Get the targeted monster, fail horribly if none */
+	struct monster *mon = target_get_monster();
+	assert(mon);
+
+	return (((mon->maxhp - mon->hp) * 100) / mon->maxhp);
+}
+
 expression_base_value_f spell_value_base_by_name(const char *name)
 {
 	static const struct value_base_s {
@@ -712,6 +722,7 @@ expression_base_value_f spell_value_base_by_name(const char *name)
 		{ "FOOD_STARVE", spell_value_base_food_starve },
 		{ "WEAPON_DAMAGE", spell_value_base_weapon_damage },
 		{ "PLAYER_HP", spell_value_base_player_hp },
+		{ "MONSTER_PERCENT_HP_GONE", spell_value_base_monster_percent_hp_gone },
 		{ NULL, NULL },
 	};
 	const struct value_base_s *current = value_bases;

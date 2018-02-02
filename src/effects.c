@@ -4253,6 +4253,36 @@ bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 }
 
 /**
+ * Curse a monster for direct damage
+ */
+bool effect_handler_CURSE(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, false);
+	struct monster *mon = target_get_monster();
+	bool fear = false;
+	bool dead = false;
+
+	context->ident = true;
+
+	/* Need to choose a monster, not just point */
+	if (!mon) {
+		msg("No monster selected!");
+		return false;
+	}
+
+	/* Hit it */
+	dead = mon_take_hit(mon, dam, &fear, " dies!");
+
+	/* Handle fear for surviving monsters */
+	if (!dead && fear && monster_is_visible(mon)) {
+		message_pain(mon, dam);
+		add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
+	}
+
+	return true;
+}
+
+/**
  * Take control of a monster
  */
 bool effect_handler_COMMAND(effect_handler_context_t *context)
