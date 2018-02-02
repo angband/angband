@@ -309,6 +309,14 @@ static void decrease_timeouts(void)
 				decr = adjust;
 				break;
 			}
+
+			case TMD_COMMAND:
+			{
+				/* Keep monster timer aligned */
+				struct monster *mon = get_commanded_monster();
+				mon_dec_timed(mon, MON_TMD_COMMAND, decr, 0, false);
+				break;
+			}
 		}
 		/* Decrement the effect */
 		player_dec_timed(player, i, decr, false);
