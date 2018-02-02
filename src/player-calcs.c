@@ -1833,7 +1833,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	player_flags(p, collect_f);
 
 	/* Add player specific pflags */
-	if (!p->csp)
+	if (!p->msp)
 		pf_on(state->pflags, PF_NO_MANA);
 
 	/* Analyze equipment */
