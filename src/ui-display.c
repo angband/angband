@@ -388,6 +388,9 @@ byte monster_health_attr(void)
 		/* Disenchanted */
 		if (mon->m_timed[MON_TMD_DISEN]) attr = COLOUR_L_UMBER;
 
+		/* Commanded */
+		if (mon->m_timed[MON_TMD_DISEN]) attr = COLOUR_L_PURPLE;
+
 		/* Confused */
 		if (mon->m_timed[MON_TMD_CONF]) attr = COLOUR_UMBER;
 
@@ -724,6 +727,7 @@ static const struct state_info effects[] =
 	{ TMD_ATT_DEMON, S("AttDemon"),   COLOUR_L_RED },
 	{ TMD_ATT_VAMP,  S("AttVamp"),    COLOUR_PURPLE },
 	{ TMD_HEAL,      S("Heal"),       COLOUR_L_GREEN },
+	{ TMD_COMMAND,   S("Cmd"),        COLOUR_L_PURPLE },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \

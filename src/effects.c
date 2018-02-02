@@ -4253,6 +4253,39 @@ bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 }
 
 /**
+ * Take control of a monster
+ */
+bool effect_handler_COMMAND(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	struct monster *mon = target_get_monster();
+
+	context->ident = true;
+
+	/* Need to choose a monster, not just point */
+	if (!mon) {
+		msg("No monster selected!");
+		return false;
+	}
+
+	/* Explicit saving throw */
+	if (randint1(player->lev) < randint1(mon->race->level)) {
+		char m_name[80];
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+		msg("%s resists your command!", m_name);
+		return false;
+	}
+
+	/* Player is commanding */
+	player_set_timed(player, TMD_COMMAND, MAX(amount, 0), false);
+
+	/* Monster is commanded */
+	mon_inc_timed(mon, MON_TMD_COMMAND, MAX(amount, 0), 0, false);
+
+	return true;
+}
+
+/**
  * One Ring activation
  */
 bool effect_handler_BIZARRE(effect_handler_context_t *context)

@@ -108,7 +108,7 @@ struct monster_race *lookup_monster(const char *name)
 {
 	int i;
 	struct monster_race *closest = NULL;
-	
+
 	/* Look for it */
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
@@ -122,7 +122,7 @@ struct monster_race *lookup_monster(const char *name)
 		/* Test for close matches */
 		if (!closest && my_stristr(race->name, name))
 			closest = race;
-	} 
+	}
 
 	/* Return our best match */
 	return closest;
@@ -1085,4 +1085,25 @@ void monster_take_terrain_damage(struct monster *mon)
 			add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
 		}
 	}	
+}
+
+/**
+ * Returns the monster currently commanded, or NULL
+ */
+struct monster *get_commanded_monster(void)
+{
+	int i;
+
+	/* Look for it */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		/* Skip dead monsters */
+		if (!mon->race) continue;
+
+		/* Test for control */
+		if (mon->m_timed[MON_TMD_COMMAND]) return mon;
+	}
+
+	return NULL;
 }
