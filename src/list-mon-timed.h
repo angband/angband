@@ -22,4 +22,5 @@ MON_TMD(SLOW,   false,  INCR,  RF_NO_SLOW,  50,       MON_MSG_SLOWED,         MO
 MON_TMD(FAST,   false,  INCR,  0,           50,       MON_MSG_HASTED,         MON_MSG_NOT_HASTED,     MON_MSG_MORE_HASTED    )
 MON_TMD(HOLD,   false,  MAX,   RF_NO_HOLD,  50,       MON_MSG_HELD,           MON_MSG_NOT_HELD,       0                      )
 MON_TMD(DISEN,   false,  MAX,  RF_IM_DISEN,  50,      MON_MSG_DISEN,           MON_MSG_NOT_DISEN,       0                      )
+MON_TMD(COMMAND, false,  MAX,  0,            50,      MON_MSG_COMMAND,          MON_MSG_NOT_COMMAND,    0                      )
 MON_TMD(MAX,    true,   INCR,  0,           0,        0,                      0,                      0                      )

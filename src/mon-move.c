@@ -1474,10 +1474,11 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 		mon_dec_timed(mon, MON_TMD_FEAR, d, MON_TMD_FLG_NOTIFY, false);
 	}
 
-	/* One in __ chance of missing turn if stunned; always miss if held */
+	/* One in __ chance of missing turn if stunned, always miss if held
+	 * or commanded */
 	if (mon->m_timed[MON_TMD_STUN]) {
 		return randint0(STUN_MISS_CHANCE) == 1;
-	} else if (mon->m_timed[MON_TMD_HOLD]) {
+	} else if (mon->m_timed[MON_TMD_HOLD] || mon->m_timed[MON_TMD_COMMAND]) {
 		return true;
 	} else {
 		return false;

@@ -319,3 +319,6 @@ name:HEAL
 desc:turn-by-turn minor healing
 on-begin:You feel the healing powers of nature!
 on-end:The healing effect fades.
+
+name:COMMAND
+desc:commanding a monster
