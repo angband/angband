@@ -191,8 +191,8 @@ errr grab_effect_data(struct parser *p, struct effect *effect)
 	if (parser_hasval(p, "radius"))
 		effect->radius = parser_getint(p, "radius");
 
-	if (parser_hasval(p, "xtra"))
-		effect->other = parser_getint(p, "xtra");
+	if (parser_hasval(p, "other"))
+		effect->other = parser_getint(p, "other");
 
 	return PARSE_ERROR_NONE;
 }
@@ -2589,7 +2589,7 @@ struct parser *init_parse_shape(void) {
 	parser_reg(p, "effect-yx int y int x", parse_shape_effect_yx);
 	parser_reg(p, "dice str dice", parse_shape_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_shape_expr);
-	parser_reg(p, "msg str text", parse_shape_effect_msg);
+	parser_reg(p, "effect-msg str text", parse_shape_effect_msg);
 	parser_reg(p, "blow str blow", parse_shape_blow);
 	return p;
 }
@@ -3137,7 +3137,7 @@ struct parser *init_parse_class(void) {
 	parser_reg(p, "effect-yx int y int x", parse_class_effect_yx);
 	parser_reg(p, "dice str dice", parse_class_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_class_expr);
-	parser_reg(p, "msg str text", parse_class_effect_msg);
+	parser_reg(p, "effect-msg str text", parse_class_effect_msg);
 	parser_reg(p, "desc str desc", parse_class_desc);
 	return p;
 }
