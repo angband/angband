@@ -584,6 +584,10 @@ static void project_player_handler_MON_DRAIN(project_player_handler_context_t *c
 {
 }
 
+static void project_player_handler_MON_CRUSH(project_player_handler_context_t *context)
+{
+}
+
 static const project_player_handler_f player_handlers[] = {
 	#define ELEM(a) project_player_handler_##a,
 	#include "list-elements.h"
