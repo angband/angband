@@ -469,7 +469,9 @@ static void project_player_handler_LIGHT_WEAK(project_player_handler_context_t *
 static void project_player_handler_DARK_WEAK(project_player_handler_context_t *context)
 {
 	if (player_resists(player, ELEM_DARK)) {
-		msg("You resist the effect!");
+		if (!player_has(player, PF_UNLIGHT)) {
+			msg("You resist the effect!");
+		}
 		return;
 	}
 
