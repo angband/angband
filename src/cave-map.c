@@ -104,8 +104,14 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	if (g->in_view) {
 		g->lighting = LIGHTING_LOS;
 
-		if (!square_isglow(cave, y, x) && OPT(player, view_yellow_light))
-			g->lighting = LIGHTING_TORCH;
+		/* Darkness or torchlight */
+		if (!square_isglow(cave, y, x)) {
+			if (player_has(player, PF_UNLIGHT) && !player->state.cur_light) {
+				g->lighting = LIGHTING_DARK;
+			} else if (OPT(player, view_yellow_light)) {
+				g->lighting = LIGHTING_TORCH;
+			}
+		}
 
 		/* Remember seen feature */
 		square_memorize(cave, y, x);

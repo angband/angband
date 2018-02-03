@@ -2201,7 +2201,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	calc_mana(p, state, update);
 
 	/* Unlight - needs change if anything but resist is introduced for dark */
-	if (player_has(p, PF_UNLIGHT)) {
+	if (player_has(p, PF_UNLIGHT) && character_dungeon) {
 		state->el_info[ELEM_DARK].res_level = 1;
 		if (!square_isglow(cave, p->py, p->px) && (state->cur_light <= 0)) {
 			state->skills[SKILL_STEALTH] += 3;
