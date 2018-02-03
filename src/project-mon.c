@@ -988,6 +988,18 @@ static void project_monster_handler_MON_DRAIN(project_monster_handler_context_t 
 	}
 }
 
+/* Crush */
+static void project_monster_handler_MON_CRUSH(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = true;
+	if (context->mon->hp >= context->dam) {
+		context->hurt_msg = MON_MSG_UNAFFECTED;
+		context->obvious = false;
+		context->skipped = true;
+		context->dam = 0;
+	}
+}
+
 static const project_monster_handler_f monster_handlers[] = {
 	#define ELEM(a) project_monster_handler_##a,
 	#include "list-elements.h"

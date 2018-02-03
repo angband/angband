@@ -531,3 +531,10 @@ blind-desc:something
 obvious:1
 color:White
 
+code:MON_CRUSH
+type:monster
+desc:kills monsters below a hitpoint threshhold
+blind-desc:something
+obvious:1
+color:White
+
