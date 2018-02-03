@@ -703,9 +703,8 @@ static int spell_value_base_monster_percent_hp_gone(void)
 {
 	/* Get the targeted monster, fail horribly if none */
 	struct monster *mon = target_get_monster();
-	assert(mon);
 
-	return (((mon->maxhp - mon->hp) * 100) / mon->maxhp);
+	return mon ? (((mon->maxhp - mon->hp) * 100) / mon->maxhp) : 0;
 }
 
 expression_base_value_f spell_value_base_by_name(const char *name)

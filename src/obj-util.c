@@ -928,6 +928,9 @@ void print_custom_message(struct object *obj, const char *string, int msg_type)
 	const char *tag;
 	size_t end = 0;
 
+	/* Not always a string */
+	if (!string) return;
+
 	next = strchr(string, '{');
 	while (next) {
 		/* Copy the text leading up to this { */

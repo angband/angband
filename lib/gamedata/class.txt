@@ -688,7 +688,7 @@ equip:prayer book:[Spiritual World]:1:1
 
 spell:Call Light:1:1:10:2
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:1:10
+effect:SPOT:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -913,3 +913,249 @@ dice:100
 desc:Casts a radius 4 ball of strong light, and then bathes the entire area
 desc: in light doing 100 damage to every light-sensitive creature.
 
+
+############### NECROMANCER ###############
+name:Necromancer
+stats:-3:3:0:0:-2
+skill-disarm-phys:30:10
+skill-disarm-magic:35:12
+skill-device:36:13
+skill-save:30:9
+skill-stealth:2:0
+skill-search:10:12
+skill-melee:34:15
+skill-shoot:20:15
+skill-throw:20:15
+skill-dig:0:0
+info:0:0
+attack:4:40:2
+equip:food:Ration of Food:1:3
+equip:sword:Dagger:1:1
+equip:scroll:Word of Recall:1:1
+flags:CUMBER_GLOVE | ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT
+title:Acolyte
+title:Curser
+title:Dark Student
+title:Initiate
+title:Slavemaster
+title:Summoner
+title:Controller
+title:Commander
+title:Dark Master
+title:Night Lord
+
+magic:1:300:5
+
+book:shadow book:town:[Into the Shadows]:5:shadow
+book-graphics:?:P
+book-properties:25:40:1 to 100
+equip:shadow book:[Into the Shadows]:1:1
+
+spell:Nether Bolt:1:1:22:4
+effect:BOLT:NETHER
+dice:$Dd4
+expr:D:PLAYER_LEVEL:/ 4 + 3
+desc:Fires a bolt of nether magic.
+
+spell:Sense Invisible:2:4:25:4
+effect:TIMED_INC:SINVIS
+dice:24+d24
+desc:Enables you to see invisible monsters for 24+1d24 turns.
+
+spell:Create Darkness:3:3:10:5
+effect:DARKEN_AREA
+effect:SPOT:DARK_WEAK:1:10
+dice:1
+desc:Darkens all squares in a level-dependent area.  If you are in a room,
+desc: the entire room will be darkened as well.
+
+spell:Bat Form:3:4:20:9
+effect:SHAPECHANGE:bat
+desc:Changes you into the shape of a bat, weak but with excellent senses.
+desc:  While shapechanged you cannot use items.
+
+spell:Read Minds:4:4:10:6
+effect:DETECT_SOUL
+effect-yx:22:40
+effect:READ_MINDS
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 10
+expr:S:PLAYER_LEVEL:/ 10 + 1
+desc:Detects all monsters which have a spirit in the immediate area,
+desc: and then maps in a region around them, increasing in size with
+desc: character level.
+
+book:shadow book:town:[Dark Rituals]:5:shadow
+book-graphics:?:P
+book-properties:400:40:10 to 100
+
+spell:Banish Undead:7:5:50:10
+effect:PROJECT_LOS:AWAY_UNDEAD
+dice:5+1d$S
+expr:S:PLAYER_LEVEL:+ 0
+desc:Teleports each undead monster within line of sight a short distance.
+
+spell:Noxious Fumes:10:4:40:15
+effect:SPHERE:POIS:4
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:TIMED_INC:POISONED
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Produces a cloud of poisonous gas affecting the player and monsters within
+desc: radius 4.
+
+spell:Sleep Evil:12:5:50:20
+effect:PROJECT_LOS:SLEEP_EVIL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put to sleep each evil monster within line of sight.
+desc:  Uniques and monsters that resist confusion are not affected.
+
+spell:Shadow Shift:15:10:50:30
+effect:TELEPORT
+dice:16
+effect:DAMAGE
+dice:2d5
+effect-msg:shadow shifting
+desc:Displaces your spirit a short distance, hurting your body as it is
+desc: dragged along.
+
+spell:Vampire Strike:16:5:50:25
+effect:JUMP_AND_BITE
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Teleports you to the nearest living monster and drains a level-dependent
+desc: number of hitpoints, healing and nourishing the player.
+
+book:shadow book:town:[Fear and Torment]:5:shadow
+book-graphics:?:P
+book-properties:1600:20:30 to 100
+
+spell:Frighten:17:4:40:30
+effect:BOLT_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to scare a single monster for a level-dependent duration.
+desc:  Uniques and monsters that resist fear are not affected.
+
+spell:Disenchant:20:10:50:40
+effect:BOLT:DISEN
+dice:5d$S
+expr:S:PLAYER_LEVEL:+ 10
+desc:Casts a bolt which wounds, and makes spellcasting monsters less successful
+desc: in casting spells.
+
+spell:Dispel Life:22:20:70:70
+effect:PROJECT_LOS_AWARE:MON_DRAIN
+dice:d$S
+expr:S:PLAYER_LEVEL:* 3
+desc:Inflicts unresistable damage on each living monster within line of sight.
+
+spell:Dark Spear:25:10:60:90
+effect:LINE:DARK
+dice:2d$S
+expr:S:PLAYER_LEVEL:* 2
+desc:Fires a beam of darkness.
+
+spell:Warg Form:28:20:60:100
+effect:SHAPECHANGE:warg
+desc:Changes you into the form of a warg, and gives you temporary berserk
+desc: strength, at the cost of some hitpoints.
+
+
+book:shadow book:dungeon:[Deadly Powers]:5:shadow
+book-graphics:?:p
+book-properties:30000:15:40 to 100
+
+spell:Banish Spirits:25:25:80:250
+effect:PROJECT_LOS_AWARE:AWAY_SPIRIT
+dice:100
+desc:Teleports away each monster with a spirit within line of sight.
+
+spell:Annihilate:30:30:75:250
+effect:BOLT:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Inflicts damage equal to four times player level on a single monster that
+desc: is not undead, an elemental, a golem, or a vortex.
+
+spell:Grond's Blow:35:35:80:115
+effect:DESTRUCTION:DARK:15
+desc:Destroys everything in a 15-square radius circle around you.
+desc:  All monsters, objects, and terrain features in the area of
+desc: effect are destroyed, except stairs and permanent walls.
+desc:  You will also be blinded for 10+1d10 turns, unless you
+desc: have resistance to blindness or dark.
+desc:  This ritual has no effect when used in the town.
+
+spell:Unleash Chaos:38:15:90:120
+effect:RANDOM
+dice:3
+effect:BEAM:CHAOS
+dice:8d$S
+expr:S:PLAYER_LEVEL:+ 0
+effect:ARC:CHAOS:30:10
+dice:8d$S
+expr:S:PLAYER_LEVEL:+ 0
+effect:BALL:CHAOS:3
+dice:8d$S
+expr:S:PLAYER_LEVEL:+ 0
+effect:WAKE
+effect:PROJECT_LOS:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a chaos beam, arc or ball in the chosen direction, wakes everything
+desc: in the area, and attempts to frighten everything in line of sight.
+
+spell:Storm of Darkness:43:16:80:200
+effect:BALL:DARK:4
+dice:4d$S
+expr:S:PLAYER_LEVEL:* 2
+desc:Invokes a radius-4 darkness ball.
+
+
+book:shadow book:dungeon:[Corruption of Spirit]:5:shadow
+book-graphics:?:p
+book-properties:50000:10:60 to 100
+
+spell:Power Sacrifice:27:0:20:50
+effect:DAMAGE
+dice:50
+effect-msg:self sacrifice
+effect:RESTORE_MANA
+dice:50
+
+spell:Crush:32:30:60:130
+effect:PROJECT_LOS:MON_CRUSH
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Instantly kill any monster in line-of-sight with less than the
+desc: player's level in hitpoints.  Other monsters are unharmed.
+
+spell:Vampire Form:37:20:60:140
+effect:SHAPECHANGE:vampire
+effect:JUMP_AND_BITE
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Allows you to assume the form of a vampire at the cost of half your 
+desc: current hitpoints, than teleports you to the nearest living monster
+desc: and drains a level-dependent number of hitpoints, healing and nourishing
+desc: you.  When first transformed you will temporarily be able
+desc: to take hitpoints from living monsters with your bite attack.
+
+spell:Curse:40:50:60:180
+effect:DAMAGE
+dice:100
+effect-msg:performing a curse
+effect:CURSE
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 12 + 1
+expr:S:MONSTER_PERCENT_HP_GONE:+ 50
+desc:Deals direct damage to a single monster, more the more damaged the monster
+desc: is already, at the cost of 100 hitpoints.
+
+spell:Command:45:40:60:250
+effect:COMMAND
+dice:5+1d10
+desc:Allows you to take control of a monster, and move it instead of yourself.

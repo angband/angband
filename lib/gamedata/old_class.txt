@@ -66,7 +66,7 @@ desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:1:2:26:4
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:1:10
+effect:SPOT:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -546,7 +546,7 @@ desc:Removes fear.
 
 spell:Call Light:3:2:25:1
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:1:10
+effect:SPOT:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1009,7 +1009,7 @@ desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:9:3:60:1
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:1:10
+effect:SPOT:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1341,7 +1341,7 @@ desc:Teleports you randomly up to 10 squares away.
 
 spell:Light Area:5:3:35:1
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:1:10
+effect:SPOT:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts
@@ -1781,7 +1781,7 @@ desc:Removes fear.
 
 spell:Call Light:5:4:35:4
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:1:10
+effect:SPOT:LIGHT_WEAK:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Lights up all squares in a level-dependent area, and hurts

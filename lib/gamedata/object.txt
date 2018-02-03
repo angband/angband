@@ -1955,7 +1955,7 @@ alloc:50:0 to 60
 pile:35:2d3
 power:4
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:2
+effect:SPOT:LIGHT_WEAK:2
 dice:2d8
 
 name:Word of Recall
@@ -3291,7 +3291,7 @@ combat:0:1d2:0:0:0
 charges:8+d20
 power:4
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:2
+effect:SPOT:LIGHT_WEAK:2
 dice:2d8
 
 name:Starlight
@@ -3641,7 +3641,7 @@ alloc:20:10 to 100
 combat:0:1d1:0:0:0
 power:4
 effect:LIGHT_AREA
-effect:BALL:LIGHT_WEAK:2
+effect:SPOT:LIGHT_WEAK:2
 dice:2d8
 time:30
 

@@ -106,3 +106,38 @@ blow:claw
 blow:claw
 blow:strike
 blow:tear
+
+name:bat
+combat:-3:-3:10
+obj-flags:FEATHER | SEE_INVIS | PROT_BLIND
+values:STR[-3] | SPEED[3] | STEALTH[3] | INFRA[5]
+effect:DAMAGE
+dice:5
+effect-msg:taking bat form
+blow:bite
+blow:scratch
+
+name:warg
+combat:5:5:0
+effect:DAMAGE
+dice:1d$S
+expr:S:PLAYER_LEVEL:+ 0
+effect-msg:taking warg form
+effect:TIMED_INC:SHERO
+dice:5+1d20
+blow:bite
+blow:bite
+blow:claw
+blow:tear
+
+name:vampire
+combat:3:3:-5
+obj-flags:SEE_INVIS | HOLD_LIFE
+values:LIGHT[-1] | STEALTH[3] | INFRA[3]
+effect:DAMAGE
+dice:$B
+expr:B:PLAYER_HP:/ 2
+effect-msg:taking vampire form
+effect:TIMED_INC:ATT_VAMP
+dice:10+1d20
+blow:bite
