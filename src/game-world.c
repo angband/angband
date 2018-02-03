@@ -312,9 +312,16 @@ static void decrease_timeouts(void)
 
 			case TMD_COMMAND:
 			{
-				/* Keep monster timer aligned */
 				struct monster *mon = get_commanded_monster();
-				mon_dec_timed(mon, MON_TMD_COMMAND, decr, 0, false);
+				if (!los(cave, player->py, player->px, mon->fy, mon->fx)) {
+					/* Out of sight is out of mind */
+					mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY,
+									false);
+					player_clear_timed(player, TMD_COMMAND, true);
+				} else {
+					/* Keep monster timer aligned */
+					mon_dec_timed(mon, MON_TMD_COMMAND, decr, 0, false);
+				}
 				break;
 			}
 		}
