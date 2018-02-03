@@ -2725,8 +2725,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	int px = player->px;
 
 	int ny = py, nx = px;
-	int y, x, dis = 0, ctr = 0;
-	bool exact = false;
+	int y, x, dis = 0, ctr = 0, dir = 5;
 
 	/* Initialize */
 	y = py;
@@ -2744,14 +2743,10 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		ny = mon->fy;
 		nx = mon->fx;
-	} else if (context->other) {
-		/* Closest living monster - needs generalisation NRM */
-		target_set_closest(TARGET_KILL, monster_is_living);
-		target_get(&nx, &ny);
-		exact = true;
 	} else {
 		/* Player choice */
-		if ((context->dir == 5) && target_okay())
+		get_aim_dir(&dir);
+		if ((dir == 5) && target_okay())
 			target_get(&nx, &ny);
 	}
 
@@ -2771,12 +2766,6 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		if (++ctr > (4 * dis * dis + 4 * dis + 1)) {
 			ctr = 0;
 			dis++;
-		}
-
-		/* Needed to be adjacent */
-		if (exact && (dis > 1)) {
-			msg("No approriate target!");
-			return false;
 		}
 	}
 
@@ -4275,9 +4264,11 @@ bool effect_handler_CURSE(effect_handler_context_t *context)
 	dead = mon_take_hit(mon, dam, &fear, " dies!");
 
 	/* Handle fear for surviving monsters */
-	if (!dead && fear && monster_is_visible(mon)) {
+	if (!dead && monster_is_visible(mon)) {
 		message_pain(mon, dam);
-		add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
+		if (fear) {
+			add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
+		}
 	}
 
 	return true;
@@ -4312,6 +4303,71 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 
 	/* Monster is commanded */
 	mon_inc_timed(mon, MON_TMD_COMMAND, MAX(amount, 0), 0, false);
+
+	return true;
+}
+
+/**
+ * Jump next to a living monster and draw hitpoints and nourishment from it
+ */
+bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	int nx, ny, x, y;
+	int d, first_d = randint0(8);
+	struct monster *mon = NULL;
+	char m_name[80];
+	int drain = 0;
+	bool fear = false;
+	bool dead = false;
+
+	context->ident = true;
+
+	/* Closest living monster */
+	if (!target_set_closest(TARGET_KILL, monster_is_living)) {
+		return false;
+	}
+	target_get(&nx, &ny);
+	mon = target_get_monster();
+
+	/* Look next to the monster */
+	for (d = first_d; d < first_d + 8; d++) {
+		y = ny + ddy_ddd[d % 8];
+		x = nx + ddx_ddd[d % 8];
+		if (square_isempty(cave, y, x)) break;
+	}
+
+	/* Needed to be adjacent */
+	if (d == first_d + 8) {
+		msg("The monster is shielded!");
+		return false;
+	}
+
+	/* Sound */
+	sound(MSG_TELEPORT);
+
+	/* Move player */
+	monster_swap(player->py, player->px, y, x);
+
+	/* Now bite it */
+	monster_desc(m_name, sizeof(m_name), mon,
+				 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
+	msg("You bite the %s.", m_name);
+	drain = MIN(mon->hp, amount);
+	dead = mon_take_hit(mon, amount, &fear, " is drained dry!");
+
+	/* Heal and nourish */
+	effect_simple(EF_HEAL_HP, context->origin, format("%d", drain), 0, 0, 0,
+				  0, 0, NULL);
+	player_set_food(player, player->food + drain);
+
+	/* Handle fear for surviving monsters */
+	if (!dead && monster_is_visible(mon)) {
+		message_pain(mon, amount);
+		if (fear) {
+			add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
+		}
+	}
 
 	return true;
 }
