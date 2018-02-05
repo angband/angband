@@ -1010,8 +1010,13 @@ void move_player(int dir, bool disarm)
 
 		/* Handle store doors, or notice objects */
 		if (square_isshop(cave, y, x)) {
+			if (player_is_shapechanged(player)) {
+				msg("There is a scream and the door slams shut!");
+				return;
+			}
 			disturb(player, 0);
 			event_signal(EVENT_ENTER_STORE);
+			event_remove_handler_type(EVENT_ENTER_STORE);
 			event_signal(EVENT_USE_STORE);
 			event_remove_handler_type(EVENT_USE_STORE);
 			event_signal(EVENT_LEAVE_STORE);
@@ -1232,8 +1237,13 @@ void do_cmd_hold(struct command *cmd)
 
 	/* Enter a store if we are on one, otherwise look at the floor */
 	if (square_isshop(cave, player->py, player->px)) {
+		if (player_is_shapechanged(player)) {
+			msg("There is a scream and the door slams shut!");
+			return;
+		}
 		disturb(player, 0);
 		event_signal(EVENT_ENTER_STORE);
+		event_remove_handler_type(EVENT_ENTER_STORE);
 		event_signal(EVENT_USE_STORE);
 		event_remove_handler_type(EVENT_USE_STORE);
 		event_signal(EVENT_LEAVE_STORE);

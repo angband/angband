@@ -1179,13 +1179,9 @@ void enter_store(game_event_type type, game_event_data *data, void *user)
 	if (!square_isshop(cave, player->py, player->px)) {
 		msg("You see no store here.");
 		return;
-	} else if (player_is_shapechanged(player)) {
-		msg("There is a scream and the door slams shut!");
-		return;
 	}
 
 	/* Shut down the normal game view */
-	event_remove_handler_type(EVENT_ENTER_STORE);
 	event_signal(EVENT_LEAVE_WORLD);
 }
 
