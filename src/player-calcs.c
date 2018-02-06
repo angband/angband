@@ -1860,14 +1860,16 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 
 		/* Hack for hypothetical blows - NRM */
-		if (i == STAT_STR) {
-			ind += str_ind;
-			ind = MIN(ind, 37);
-			ind = MAX(ind, 3);
-		} else if (i == STAT_DEX) {
-			ind += dex_ind;
-			ind = MIN(ind, 37);
-			ind = MAX(ind, 3);
+		if (!update) {
+			if (i == STAT_STR) {
+				ind += str_ind;
+				ind = MIN(ind, 37);
+				ind = MAX(ind, 3);
+			} else if (i == STAT_DEX) {
+				ind += dex_ind;
+				ind = MIN(ind, 37);
+				ind = MAX(ind, 3);
+			}
 		}
 
 		/* Save the new index */
