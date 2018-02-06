@@ -315,7 +315,7 @@ static void decrease_timeouts(void)
 				struct monster *mon = get_commanded_monster();
 				if (!los(cave, player->py, player->px, mon->fy, mon->fx)) {
 					/* Out of sight is out of mind */
-					mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY,
+					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY,
 									false);
 					player_clear_timed(player, TMD_COMMAND, true);
 				} else {
