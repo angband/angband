@@ -1424,3 +1424,155 @@ void do_cmd_feeling(void)
 	display_feeling(false);
 }
 
+/**
+ * Make a monster perform an action.
+ *
+ * Currently possible actions are cast a random spell, drop a random item,
+ * stand still, or move (attacking any intervening monster).
+ */
+void do_cmd_mon_command(struct command *cmd)
+{
+	int dir;
+	struct monster *mon = get_commanded_monster();
+	struct monster_lore *lore = get_lore(mon->race);
+	char m_name[80];
+
+	assert(mon);
+
+	/* Get the monster name */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_HID);
+
+	switch (cmd->code) {
+		//case CMD_CAST: {
+		//}
+		case CMD_DROP: {
+			struct object *obj = mon->held_obj;
+			int count = 0;
+
+			if (!obj) break;
+
+			/* Count the objects */
+			while (obj) {
+				count++;
+				obj = obj->next;
+			}
+
+			/* Now pick one... */
+			obj = mon->held_obj;
+			count -= randint1(count);
+			while (count) {
+				obj = obj->next;
+				count--;
+			}
+
+			/* ...and drop it */
+			obj->held_m_idx = 0;
+			pile_excise(&mon->held_obj, obj);
+			drop_near(cave, &obj, 0, mon->fy, mon->fx, true);
+
+			break;
+		}
+		case CMD_HOLD: {
+			/* Do nothing */
+			break;
+		}
+		case CMD_WALK: {
+			int ny, nx;
+			bool can_move = false;
+
+			/* Get arguments */
+			if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
+				return;
+			ny = mon->fy + ddy[dir];
+			nx = mon->fx + ddx[dir];
+
+			/* Monster there - attack */
+			if (square_monster(cave, ny, nx)) {
+				/* DO */
+				can_move = false;
+				break;
+			} else if (square_ispassable(cave, ny, nx)) {
+				/* Floor is open? */
+				can_move = true;
+			} else if (square_iswall(cave, ny, nx) &&
+					   square_isperm(cave, ny, nx)) {
+				/* Permanent wall in the way */
+				can_move = false;
+			} else {
+				/* There's some kind of feature in the way, so learn about
+				 * kill-wall and pass-wall now */
+				if (monster_is_visible(mon)) {
+					rf_on(lore->flags, RF_PASS_WALL);
+					rf_on(lore->flags, RF_KILL_WALL);
+				}
+
+				/* Monster may be able to deal with walls and doors */
+				if (rf_has(mon->race->flags, RF_PASS_WALL)) {
+					can_move = true;
+				} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
+					/* Remove the wall */
+					square_destroy_wall(cave, ny, nx);
+					can_move = true;
+				} else if (square_iscloseddoor(cave, ny, nx) ||
+						   square_issecretdoor(cave, ny, nx)) {
+					bool can_open = rf_has(mon->race->flags, RF_OPEN_DOOR);
+					bool can_bash = rf_has(mon->race->flags, RF_BASH_DOOR);
+
+					/* Learn about door abilities */
+					if (monster_is_visible(mon)) {
+						rf_on(lore->flags, RF_OPEN_DOOR);
+						rf_on(lore->flags, RF_BASH_DOOR);
+					}
+
+					/* If the monster can deal with doors, prefer to bash */
+					if (can_bash || can_open) {
+						/* Now outcome depends on type of door */
+						if (square_islockeddoor(cave, ny, nx)) {
+							/* Test strength against door strength */
+							int k = square_door_power(cave, ny, nx);
+							if (randint0(mon->hp / 10) > k) {
+								if (can_bash) {
+									msg("%s slams against the door.", m_name);
+								} else {
+									msg("%s fiddles with the lock.", m_name);
+								}
+
+								/* Reduce the power of the door by one */
+								square_set_door_lock(cave, ny, nx, k - 1);
+							}
+						} else {
+							/* Closed or secret door -- always open or bash */
+							if (can_bash) {
+								square_smash_door(cave, ny, nx);
+
+								msg("You hear a door burst open!");
+
+								/* Fall into doorway */
+								can_move = true;
+							} else {
+								square_open_door(cave, ny, nx);
+								can_move = true;
+							}
+						}
+					}
+				}
+			}
+
+			if (can_move) {
+				monster_swap(mon->fy, mon->fx, ny, nx);
+				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+			} else {
+				msg("The way is blocked.");
+			}
+			break;
+		}
+		default: {
+			msg("Invalid monster command!");
+			return;
+		}
+	}
+
+
+	/* Take a turn */
+	player->upkeep->energy_use = z_info->move_energy;
+}

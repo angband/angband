@@ -29,6 +29,7 @@
 #include "player-birth.h"
 #include "player-calcs.h"
 #include "player-spell.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
 #include "target.h"
@@ -108,6 +109,8 @@ static const struct command_info game_cmds[] =
 	{ CMD_SUICIDE, "kill character", do_cmd_suicide, false, 0 },
 	{ CMD_HELP, "help", NULL, false, 0 },
 	{ CMD_REPEAT, "repeat", NULL, false, 0 },
+
+	{ CMD_COMMAND_MONSTER, "make a monster act", do_cmd_mon_command, false, 0 },
 };
 
 const char *cmd_verb(cmd_code cmd)
@@ -196,6 +199,11 @@ void process_command(cmd_context ctx, struct command *cmd)
 {
 	int oldrepeats = cmd->nrepeats;
 	int idx = cmd_idx(cmd->code);
+
+	/* Hack - command a monster */
+	if (player->timed[TMD_COMMAND]) {
+		idx = (int) N_ELEMENTS(game_cmds) - 1;
+	}
 
 	/* Reset so that when selecting items, we look in the default location */
 	player->upkeep->command_wrk = 0;

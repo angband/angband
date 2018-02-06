@@ -103,7 +103,8 @@ typedef enum cmd_code {
 	CMD_SUICIDE,
 
 	CMD_HELP,
-	CMD_REPEAT
+	CMD_REPEAT,
+	CMD_COMMAND_MONSTER
 } cmd_code;
 
 typedef enum cmd_context {
