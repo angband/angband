@@ -241,8 +241,7 @@ static bool monster_spell_is_breath(int index)
 
 static bool mon_spell_has_damage(int index)
 {
-	return (mon_spell_types[index].type &
-			(RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK)) ? true : false;
+	return (mon_spell_types[index].type & RST_DAMAGE) ? true : false;
 }
 
 bool mon_spell_is_innate(int index)
