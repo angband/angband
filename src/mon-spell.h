@@ -32,7 +32,7 @@ enum mon_spell_type {
     RST_BOLT       = 0x001,
     RST_BALL       = 0x002,
     RST_BREATH     = 0x004,
-    RST_ATTACK     = 0x008,    /* Direct (non-projectable) attacks */
+    RST_DIRECT     = 0x008,    /* Direct (non-projectable) attacks */
     RST_ANNOY      = 0x010,    /* Irritant spells, usually non-fatal */
     RST_HASTE      = 0x020,    /* Relative speed advantage */
     RST_HEAL       = 0x040,
@@ -42,6 +42,8 @@ enum mon_spell_type {
     RST_SUMMON     = 0x400,
     RST_INNATE     = 0x800
 };
+
+#define RST_DAMAGE (RST_BOLT | RST_BALL | RST_BREATH | RST_DIRECT)
 
 /** Macros **/
 #define rsf_has(f, flag)       flag_has_dbg(f, RSF_SIZE, flag, #f, #flag)
