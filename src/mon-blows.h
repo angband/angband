@@ -1,6 +1,6 @@
 /**
- * \file mon-blow-effects.h
- * \brief Functions for managing monster melee effects.
+ * \file mon-blows.h
+ * \brief Functions for managing monster melee.
  *
  * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
  *               2013 Ben Semmler
@@ -17,8 +17,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifndef MON_BLOW_EFFECTS_H
-#define MON_BLOW_EFFECTS_H
+#ifndef MON_BLOWS_H
+#define MON_BLOWS_H
 
 #include "player.h"
 #include "monster.h"
@@ -83,4 +83,4 @@ int blow_index(const char *name);
 extern const char *monster_blow_method_action(struct blow_method *method);
 extern melee_effect_handler_f melee_handler_for_blow_effect(const char *name);
 
-#endif /* MON_BLOW_EFFECTS_H */
+#endif /* MON_BLOWS_H */
