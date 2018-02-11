@@ -300,13 +300,13 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 
 	/* If the monster can pass through nearby walls, do that */
 	if (monster_passes_walls(mon) && !monster_near_permwall(mon, c)) {
-		mon->target = loc(player->px, player->py);
+		mon->target.grid = loc(player->px, player->py);
 		return true;
 	}
 
 	/* If the player can see monster, set target and run towards them */
 	if (square_isview(c, my, mx)) {
-		mon->target = loc(player->px, player->py);
+		mon->target.grid = loc(player->px, player->py);
 		return true;
 	}
 
@@ -369,11 +369,12 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 
 	/* Set the target */
 	if (found_dir) {
-		mon->target = loc(mx + ddx_ddd[best_dir], my + ddy_ddd[best_dir]);
+		mon->target.grid = loc(mx + ddx_ddd[best_dir], my + ddy_ddd[best_dir]);
 		return true;
 	} else if (backup_dir >= 0) {
 		/* Move around to try and improve position */
-		mon->target = loc(mx + ddx_ddd[backup_dir], my + ddy_ddd[backup_dir]);
+		mon->target.grid = loc(mx + ddx_ddd[backup_dir],
+							   my + ddy_ddd[backup_dir]);
 		return true;
 	}
 
@@ -452,7 +453,7 @@ static bool get_move_find_safety(struct chunk *c, struct monster *mon)
 		/* Check for success */
 		if (gdis > 0) {
 			/* Good location */
-			mon->target = loc(gx, gy);
+			mon->target.grid = loc(gx, gy);
 			return (true);
 		}
 	}
@@ -522,7 +523,7 @@ static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 		/* Check for success */
 		if (gdis < 999) {
 			/* Good location */
-			mon->target = loc(gx, gy);
+			mon->target.grid = loc(gx, gy);
 			return (true);
 		}
 	}
@@ -567,7 +568,7 @@ static bool get_move_flee(struct chunk *c, struct monster *mon)
 		if (!square_in_bounds(c, y, x)) continue;
 
 		/* Calculate distance of this grid from our target */
-		dis = distance(y, x, mon->target.y, mon->target.x);
+		dis = distance(y, x, mon->target.grid.y, mon->target.grid.x);
 
 		/* Score this grid
 		 * First half of calculation is inversely proportional to distance
@@ -590,7 +591,7 @@ static bool get_move_flee(struct chunk *c, struct monster *mon)
 	}
 
 	/* Set the immediate target */
-	mon->target = loc(gx, gy);
+	mon->target.grid = loc(gx, gy);
 
 	/* Success */
 	return true;
@@ -698,8 +699,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 	/* Assume we're heading towards the player */
 	if (get_move_advance(c, mon)) {
 		/* Extract the "pseudo-direction" */
-		y = mon->target.y - mon->fy;
-		x = mon->target.x - mon->fx;
+		y = mon->target.grid.y - mon->fy;
+		x = mon->target.grid.x - mon->fx;
 		*good = true;
 	} else {
 		/* Head blindly straight for the player if there's no better idea */
@@ -730,8 +731,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 			/* Find hiding place */
 			if (get_move_find_hiding(c, mon)) {
 				done = true;
-				y = mon->target.y - mon->fy;
-				x = mon->target.x - mon->fx;
+				y = mon->target.grid.y - mon->fy;
+				x = mon->target.grid.x - mon->fx;
 			}
 		}
 	}
@@ -746,8 +747,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 		} else {
 			/* Set a course for the safe place */
 			get_move_flee(c, mon);
-			y = mon->target.y - mon->fy;
-			x = mon->target.x - mon->fx;
+			y = mon->target.grid.y - mon->fy;
+			x = mon->target.grid.x - mon->fx;
 		}
 
 		done = true;
@@ -756,7 +757,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 	/* Monster groups try to surround the player */
 	if (!done && rf_has(mon->race->flags, RF_GROUP_AI) &&
 		square_isview(c, mon->fy, mon->fx)) {
-		int i, yy = mon->target.y, xx = mon->target.x;
+		int i, yy = mon->target.grid.y, xx = mon->target.grid.x;
 
 		/* If we are not already adjacent */
 		if (mon->cdis > 1) {
