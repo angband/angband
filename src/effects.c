@@ -178,7 +178,7 @@ static bool project_aimed(struct source origin,
 	get_target(origin, dir, &ty, &tx, &flg);
 
 	/* Aim at the target, do NOT explode */
-	return (project(origin, 0, ty, tx, dam, typ, flg, 0, 0, obj));
+	return (project(origin, 0, loc(tx, ty), dam, typ, flg, 0, 0, obj));
 }
 
 /**
@@ -187,12 +187,11 @@ static bool project_aimed(struct source origin,
 static bool project_touch(int dam, int rad, int typ, bool aware,
 						  const struct object *obj)
 {
-	int py = player->py;
-	int px = player->px;
+	struct loc pgrid = loc(player->px, player->py);
 
 	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
 	if (aware) flg |= PROJECT_AWARE;
-	return (project(source_player(), rad, py, px, dam, typ, flg, 0, 0, obj));
+	return (project(source_player(), rad, pgrid, dam, typ, flg, 0, 0, obj));
 }
 
 /**
@@ -2221,7 +2220,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
  */
 bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 {
-	int i, x, y;
+	int i;
 	int dam = effect_calculate_value(context, context->radius ? true : false);
 	int typ = context->subtype;
 
@@ -2230,19 +2229,19 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 	/* Affect all (nearby) monsters */
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		struct monster *mon = cave_monster(cave, i);
+		struct loc grid;
 
 		/* Paranoia -- Skip dead monsters */
 		if (!mon->race) continue;
 
 		/* Location */
-		y = mon->fy;
-		x = mon->fx;
+		grid = loc(mon->fx, mon->fy);
 
 		/* Require line of sight */
-		if (!square_isview(cave, y, x)) continue;
+		if (!square_isview(cave, grid.y, grid.x)) continue;
 
 		/* Jump directly to the target monster */
-		(void)project(source_player(), 0, y, x, dam, typ, flg, 0, 0, context->obj);
+		(void)project(source_player(), 0, grid, dam, typ, flg, 0, 0, context->obj);
 		context->ident = true;
 	}
 
@@ -2258,7 +2257,7 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
  */
 bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 {
-	int i, x, y;
+	int i;
 	int dam = effect_calculate_value(context, context->other ? true : false);
 	int typ = context->subtype;
 
@@ -2269,19 +2268,19 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 	/* Affect all (nearby) monsters */
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		struct monster *mon = cave_monster(cave, i);
+		struct loc grid;
 
 		/* Paranoia -- Skip dead monsters */
 		if (!mon->race) continue;
 
 		/* Location */
-		y = mon->fy;
-		x = mon->fx;
+		grid = loc(mon->fx, mon->fy);
 
 		/* Require line of sight */
-		if (!square_isview(cave, y, x)) continue;
+		if (!square_isview(cave, grid.y, grid.x)) continue;
 
 		/* Jump directly to the target monster */
-		(void)project(source_player(), 0, y, x, dam, typ, flg, 0, 0, context->obj);
+		(void)project(source_player(), 0, grid, dam, typ, flg, 0, 0, context->obj);
 		context->ident = true;
 	}
 
@@ -3372,15 +3371,14 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
  */
 bool effect_handler_SPOT(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
+	struct loc pgrid = loc(player->px, player->py);
 	int dam = effect_calculate_value(context, true);
 	int rad = context->radius ? context->radius : 0;
 
 	int flg = PROJECT_STOP | PROJECT_PLAY | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Aim at the target, explode */
-	if (project(context->origin, rad, py, px, dam, context->subtype, flg, 0, 0, NULL))
+	if (project(context->origin, rad, pgrid, dam, context->subtype, flg, 0, 0, NULL))
 		context->ident = true;
 
 	return true;
@@ -3392,15 +3390,14 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
  */
 bool effect_handler_SPHERE(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
+	struct loc pgrid = loc(player->px, player->py);
 	int dam = effect_calculate_value(context, true);
 	int rad = context->radius ? context->radius : 0;
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Aim at the target, explode */
-	if (project(context->origin, rad, py, px, dam, context->subtype, flg, 0, 0, NULL))
+	if (project(context->origin, rad, pgrid, dam, context->subtype, flg, 0, 0, NULL))
 		context->ident = true;
 
 	return true;
@@ -3416,8 +3413,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int rad = context->radius ? context->radius : 2;
-	int ty = -1;
-	int tx = -1;
+	struct loc target = loc(-1, -1);
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3441,11 +3437,9 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 			if (randint1(100) > accuracy) {
 				int dir = randint1(9);
-				ty = mon->fy + ddy[dir];
-				tx = mon->fx + ddx[dir];
+				target = loc(mon->fx + ddx[dir], mon->fy + ddy[dir]);
 			} else {
-				ty = player->py;
-				tx = player->px;
+				target = loc(player->px, player->py);
 			}
 
 			break;
@@ -3454,8 +3448,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		case SRC_TRAP: {
 			struct trap *trap = context->origin.which.trap;
 			flg |= PROJECT_PLAY;
-			ty = trap->fy;
-			tx = trap->fx;
+			target = loc(trap->fx, trap->fy);
 			break;
 		}
 
@@ -3463,10 +3456,10 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			/* Ask for a target if no direction given */
 			if (context->dir == 5 && target_okay()) {
 				flg &= ~(PROJECT_STOP | PROJECT_THRU);
-				target_get(&tx, &ty);
+				target_get(&target.x, &target.y);
 			} else {
-				ty = player->py + ddy[context->dir];
-				tx = player->px + ddx[context->dir];
+				target = loc(player->px + ddx[context->dir],
+							 player->py + ddy[context->dir]);
 			}
 
 			if (context->other) rad += player->lev / context->other;
@@ -3477,7 +3470,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	if (project(context->origin, rad, ty, tx, dam, context->subtype, flg, 0, 0, context->obj))
+	if (project(context->origin, rad, target, dam, context->subtype, flg, 0, 0, context->obj))
 		context->ident = true;
 
 	return true;
@@ -3495,8 +3488,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, false);
 	int type = context->subtype;
 
-	int ty = -1;
-	int tx = -1;
+	struct loc target = loc(-1, -1);
 
 	/* Diameter of source starts at 40, so full strength up to 3 grids from
 	 * the breather. */
@@ -3514,8 +3506,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		flg |= PROJECT_PLAY;
-		ty = player->py;
-		tx = player->px;
+		target = loc(player->px, player->py);
 
 		dam = breath_dam(type, mon->hp);
 
@@ -3529,10 +3520,10 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 		/* Ask for a target if no direction given */
 		if (context->dir == 5 && target_okay()) {
-			target_get(&tx, &ty);
+			target_get(&target.x, &target.y);
 		} else {
-			ty = player->py + ddy[context->dir];
-			tx = player->px + ddx[context->dir];
+			target = loc(player->px + ddx[context->dir],
+						 player->py + ddy[context->dir]);
 		}
 	}
 
@@ -3552,7 +3543,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	}
 
 	/* Breathe at the target */
-	if (project(context->origin, rad, ty, tx, dam, type, flg, degrees_of_arc,
+	if (project(context->origin, rad, target, dam, type, flg, degrees_of_arc,
 				diameter_of_source, context->obj))
 		context->ident = true;
 
@@ -3581,8 +3572,7 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 	int type = context->subtype;
 	int rad = context->radius;
 
-	int ty = -1;
-	int tx = -1;
+	struct loc target = loc(-1, -1);
 
 	/* Diameter of source starts at 40, so full strength up to 3 grids from
 	 * the caster. */
@@ -3601,15 +3591,14 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
 		flg |= PROJECT_PLAY;
-		ty = player->py;
-		tx = player->px;
+		target =  loc(player->px, player->py);
 	} else if (context->origin.what == SRC_PLAYER) {
 		/* Ask for a target if no direction given */
 		if (context->dir == 5 && target_okay()) {
-			target_get(&tx, &ty);
+			target_get(&target.x, &target.y);
 		} else {
-			ty = player->py + ddy[context->dir];
-			tx = player->px + ddx[context->dir];
+			target = loc(player->px + ddx[context->dir],
+						 player->py + ddy[context->dir]);
 		}
 	}
 
@@ -3624,7 +3613,7 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target */
-	if (project(context->origin, rad, ty, tx, dam, type, flg, degrees_of_arc,
+	if (project(context->origin, rad, target, dam, type, flg, degrees_of_arc,
 				diameter_of_source, context->obj)) {
 		context->ident = true;
 	}
@@ -3648,8 +3637,7 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 	bool addons = (context->origin.what == SRC_PLAYER) && (context->other > 0);
 	int rad = context->radius + (addons ? player->lev / context->other : 0);
 
-	int ty = -1;
-	int tx = -1;
+	struct loc target = loc(-1, -1);
 
 	/* Diameter of source is 10 times radius, so the effect is essentially
 	 * full strength for its entire length. */
@@ -3660,15 +3648,14 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
 		flg |= PROJECT_PLAY;
-		ty = player->py;
-		tx = player->px;
+		target = loc(player->px, player->py);
 	} else if (context->origin.what == SRC_PLAYER) {
 		/* Ask for a target if no direction given */
 		if (context->dir == 5 && target_okay()) {
-			target_get(&tx, &ty);
+			target_get(&target.x, &target.y);
 		} else {
-			ty = player->py + ddy[context->dir];
-			tx = player->px + ddx[context->dir];
+			target = loc(player->px + ddx[context->dir],
+						 player->py + ddy[context->dir]);
 		}
 	}
 
@@ -3678,7 +3665,7 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target */
-	if (project(context->origin, rad, ty, tx, dam, type, flg, 0,
+	if (project(context->origin, rad, target, dam, type, flg, 0,
 				diameter_of_source, context->obj)) {
 		context->ident = true;
 	}
@@ -3695,13 +3682,11 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
  */
 bool effect_handler_SWARM(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
 	int dam = effect_calculate_value(context, true);
 	int num = context->value.m_bonus;
 
-	int ty = py + ddy[context->dir];
-	int tx = px + ddx[context->dir];
+	struct loc target = loc(player->px + ddx[context->dir],
+							player->py + ddy[context->dir]);
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3709,12 +3694,12 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	if ((context->dir == 5) && target_okay()) {
 		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-		target_get(&tx, &ty);
+		target_get(&target.x, &target.y);
 	}
 
 	while (num--) {
 		/* Aim at the target.  Hurt items on floor. */
-		if (project(source_player(), context->radius, ty, tx, dam, context->subtype, flg, 0, 0,
+		if (project(source_player(), context->radius, target, dam, context->subtype, flg, 0, 0,
 					context->obj))
 			context->ident = true;
 	}
@@ -3730,22 +3715,19 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
  */
 bool effect_handler_STRIKE(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
 	int dam = effect_calculate_value(context, true);
 
-	int ty = py;
-	int tx = px;
+	struct loc target = loc(player->px, player->py);
 
 	int flg = PROJECT_JUMP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Ask for a target; if no direction given, the player is struck  */
 	if ((context->dir == 5) && target_okay()) {
-		target_get(&tx, &ty);
+		target_get(&target.x, &target.y);
 	}
 
 	/* Aim at the target.  Hurt items on floor. */
-	if (project(source_player(), context->radius, ty, tx, dam, context->subtype, flg, 0,
+	if (project(source_player(), context->radius, target, dam, context->subtype, flg, 0,
 				0, context->obj)) {
 		context->ident = true;
 	}
@@ -3760,12 +3742,9 @@ bool effect_handler_STRIKE(effect_handler_context_t *context)
  */
 bool effect_handler_STAR(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
 	int dam = effect_calculate_value(context, true);
 	int i;
-
-	s16b ty, tx;
+	struct loc target;
 
 	int flg = PROJECT_THRU | PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
 
@@ -3775,11 +3754,11 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
-		ty = py + ddy_ddd[i];
-		tx = px + ddx_ddd[i];
+		target.y = player->py + ddy_ddd[i];
+		target.x = player->px + ddx_ddd[i];
 
 		/* Aim at the target */
-		if (project(source_player(), 0, ty, tx, dam, context->subtype, flg, 0, 0, context->obj))
+		if (project(source_player(), 0, target, dam, context->subtype, flg, 0, 0, context->obj))
 			context->ident = true;
 	}
 
@@ -3794,22 +3773,19 @@ bool effect_handler_STAR(effect_handler_context_t *context)
  */
 bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
 	int dam = effect_calculate_value(context, true);
 	int i;
-
-	s16b ty, tx;
+	struct loc target;
 
 	int flg = PROJECT_STOP | PROJECT_THRU | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
-		ty = py + ddy_ddd[i];
-		tx = px + ddx_ddd[i];
+		target.y = player->py + ddy_ddd[i];
+		target.x = player->px + ddx_ddd[i];
 
 		/* Aim at the target, explode */
-		if (project(source_player(), context->radius, ty, tx, dam, context->subtype, flg, 0, 0,
+		if (project(source_player(), context->radius, target, dam, context->subtype, flg, 0, 0,
 					context->obj))
 			context->ident = true;
 	}
@@ -4417,18 +4393,18 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		{
 			/* Mana Ball */
 			int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-			int ty = player->py + ddy[context->dir];
-			int tx = player->px + ddx[context->dir];
+			struct loc target = loc(player->px + ddx[context->dir],
+									player->py + ddy[context->dir]);
 
 			/* Ask for a target if no direction given */
 			if ((context->dir == 5) && target_okay()) {
 				flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-				target_get(&tx, &ty);
+				target_get(&target.x, &target.y);
 			}
 
 			/* Aim at the target, explode */
-			if (project(source_player(), 3, ty, tx, 300, PROJ_MANA, flg, 0, 0, context->obj))
+			if (project(source_player(), 3, target, 300, PROJ_MANA, flg, 0, 0, context->obj))
 				return true;
 		}
 
@@ -4439,15 +4415,15 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		{
 			/* Mana Bolt */
 			int flg = PROJECT_STOP | PROJECT_KILL | PROJECT_THRU;
-			int ty = player->py + ddy[context->dir];
-			int tx = player->px + ddx[context->dir];
+			struct loc target = loc(player->px + ddx[context->dir],
+									player->py + ddy[context->dir]);
 
 			/* Use an actual target */
 			if ((context->dir == 5) && target_okay())
-				target_get(&tx, &ty);
+				target_get(&target.x, &target.y);
 
 			/* Aim at the target, do NOT explode */
-			return project(source_player(), 0, ty, tx, 250, PROJ_MANA, flg, 0, 0,
+			return project(source_player(), 0, target, 250, PROJ_MANA, flg, 0, 0,
 							context->obj);
 		}
 	}
