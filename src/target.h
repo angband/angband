@@ -36,7 +36,7 @@
 #define TARGET_GRID   0x08
 #define TARGET_QUIET  0x10
 
-int motion_dir(int y1, int x1, int y2, int x2);
+int motion_dir(struct loc source, struct loc target);
 void look_mon_desc(char *buf, size_t max, int m_idx);
 bool target_able(struct monster *m);
 bool target_okay(void);
