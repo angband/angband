@@ -144,7 +144,7 @@ static void get_target(struct source origin, int dir, int *ty, int *tx, int *fla
 		}
 
 		case SRC_PLAYER:
-			if (dir == 5 && target_okay()) {
+			if (dir == DIR_TARGET && target_okay()) {
 				target_get(tx, ty);
 			} else {
 				/* Use the adjacent grid in the given direction as target */
@@ -2744,7 +2744,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	} else {
 		/* Player choice */
 		get_aim_dir(&dir);
-		if ((dir == 5) && target_okay())
+		if ((dir == DIR_TARGET) && target_okay())
 			target_get(&nx, &ny);
 	}
 
@@ -3047,7 +3047,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	}
 
 	/* Sometimes ask for a target */
-	if (targeted && (context->dir == 5) && target_okay()) {
+	if (targeted && (context->dir == DIR_TARGET) && target_okay()) {
 		target_get(&centre.x, &centre.y);
 	}
 
@@ -3454,7 +3454,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 		case SRC_PLAYER:
 			/* Ask for a target if no direction given */
-			if (context->dir == 5 && target_okay()) {
+			if (context->dir == DIR_TARGET && target_okay()) {
 				flg &= ~(PROJECT_STOP | PROJECT_THRU);
 				target_get(&target.x, &target.y);
 			} else {
@@ -3519,7 +3519,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		msgt(projections[type].msgt, "You breathe %s.", projections[type].desc);
 
 		/* Ask for a target if no direction given */
-		if (context->dir == 5 && target_okay()) {
+		if (context->dir == DIR_TARGET && target_okay()) {
 			target_get(&target.x, &target.y);
 		} else {
 			target = loc(player->px + ddx[context->dir],
@@ -3594,7 +3594,7 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 		target =  loc(player->px, player->py);
 	} else if (context->origin.what == SRC_PLAYER) {
 		/* Ask for a target if no direction given */
-		if (context->dir == 5 && target_okay()) {
+		if (context->dir == DIR_TARGET && target_okay()) {
 			target_get(&target.x, &target.y);
 		} else {
 			target = loc(player->px + ddx[context->dir],
@@ -3651,7 +3651,7 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 		target = loc(player->px, player->py);
 	} else if (context->origin.what == SRC_PLAYER) {
 		/* Ask for a target if no direction given */
-		if (context->dir == 5 && target_okay()) {
+		if (context->dir == DIR_TARGET && target_okay()) {
 			target_get(&target.x, &target.y);
 		} else {
 			target = loc(player->px + ddx[context->dir],
@@ -3691,7 +3691,7 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Ask for a target if no direction given (early detonation) */
-	if ((context->dir == 5) && target_okay()) {
+	if ((context->dir == DIR_TARGET) && target_okay()) {
 		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 		target_get(&target.x, &target.y);
@@ -3722,7 +3722,7 @@ bool effect_handler_STRIKE(effect_handler_context_t *context)
 	int flg = PROJECT_JUMP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Ask for a target; if no direction given, the player is struck  */
-	if ((context->dir == 5) && target_okay()) {
+	if ((context->dir == DIR_TARGET) && target_okay()) {
 		target_get(&target.x, &target.y);
 	}
 
@@ -4397,7 +4397,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 									player->py + ddy[context->dir]);
 
 			/* Ask for a target if no direction given */
-			if ((context->dir == 5) && target_okay()) {
+			if ((context->dir == DIR_TARGET) && target_okay()) {
 				flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 				target_get(&target.x, &target.y);
@@ -4419,7 +4419,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 									player->py + ddy[context->dir]);
 
 			/* Use an actual target */
-			if ((context->dir == 5) && target_okay())
+			if ((context->dir == DIR_TARGET) && target_okay())
 				target_get(&target.x, &target.y);
 
 			/* Aim at the target, do NOT explode */
