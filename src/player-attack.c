@@ -527,7 +527,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	struct object *missile;
 
 	/* Check for target validity */
-	if ((dir == 5) && target_okay()) {
+	if ((dir == DIR_TARGET) && target_okay()) {
 		int taim;
 		target_get(&tx, &ty);
 		taim = distance(y, x, ty, tx);
