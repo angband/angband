@@ -51,29 +51,27 @@ static int target_x, target_y;
  *
  * Note that we use "diagonal" motion whenever possible.
  *
- * We return "5" if no motion is needed.
- *
- * XXX Change params to use two struct loc.
+ * We return DIR_NONE if no motion is needed.
  */
-int motion_dir(int y1, int x1, int y2, int x2)
+int motion_dir(struct loc source, struct loc target)
 {
 	/* No movement required */
-	if ((y1 == y2) && (x1 == x2)) return (DIR_NONE);
+	if (loc_eq(source, target)) return (DIR_NONE);
 
 	/* South or North */
-	if (x1 == x2) return ((y1 < y2) ? 2 : 8);
+	if (source.x == target.x) return ((source.y < target.y) ? DIR_S : DIR_N);
 
 	/* East or West */
-	if (y1 == y2) return ((x1 < x2) ? 6 : 4);
+	if (source.y == target.y) return ((source.x < target.x) ? DIR_E : DIR_W);
 
 	/* South-east or South-west */
-	if (y1 < y2) return ((x1 < x2) ? 3 : 1);
+	if (source.y < target.y) return ((source.x < target.x) ? DIR_SE : DIR_SW);
 
 	/* North-east or North-west */
-	if (y1 > y2) return ((x1 < x2) ? 9 : 7);
+	if (source.y > target.y) return ((source.x < target.x) ? DIR_NE : DIR_NW);
 
 	/* Paranoia */
-	return (5);
+	return (DIR_NONE);
 }
 
 
