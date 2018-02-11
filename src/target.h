@@ -41,7 +41,6 @@ struct target {
 	int midx;
 };
 
-int motion_dir(struct loc source, struct loc target);
 void look_mon_desc(char *buf, size_t max, int m_idx);
 bool target_able(struct monster *m);
 bool target_okay(void);
