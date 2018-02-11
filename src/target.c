@@ -35,14 +35,9 @@
 static bool target_set;
 
 /**
- * Current monster being tracked, or 0
+ * Player target
  */
-static struct monster *target_who;
-
-/**
- * Target location
- */
-static int target_x, target_y;
+static struct target target;
 
 
 /**
@@ -148,16 +143,17 @@ bool target_okay(void)
 	if (!target_set) return false;
 
 	/* Check "monster" targets */
-	if (target_who) {
-		if (target_able(target_who)) {
+	if (target.midx > 0) {
+		struct monster *mon = cave_monster(cave, target.midx);
+		if (target_able(mon)) {
 			/* Get the monster location */
-			target_y = target_who->fy;
-			target_x = target_who->fx;
+			target.grid.y = mon->fy;
+			target.grid.x = mon->fx;
 
 			/* Good target */
 			return true;
 		}
-	} else if (target_x && target_y) {
+	} else if (target.grid.x && target.grid.y) {
 		/* Allow a direction without a monster */
 		return true;
 	}
@@ -175,17 +171,17 @@ bool target_set_monster(struct monster *mon)
 	/* Acceptable target */
 	if (mon && target_able(mon)) {
 		target_set = true;
-		target_who = mon;
-		target_y = mon->fy;
-		target_x = mon->fx;
+		target.midx = mon->midx;
+		target.grid.y = mon->fy;
+		target.grid.x = mon->fx;
 		return true;
 	}
 
 	/* Reset target info */
 	target_set = false;
-	target_who = NULL;
-	target_y = 0;
-	target_x = 0;
+	target.midx = 0;
+	target.grid.y = 0;
+	target.grid.x = 0;
 
 	return false;
 }
@@ -200,17 +196,17 @@ void target_set_location(int y, int x)
 	if (square_in_bounds_fully(cave, y, x)) {
 		/* Save target info */
 		target_set = true;
-		target_who = NULL;
-		target_y = y;
-		target_x = x;
+		target.midx = 0;
+		target.grid.y = y;
+		target.grid.x = x;
 		return;
 	}
 
 	/* Reset target info */
 	target_set = false;
-	target_who = 0;
-	target_y = 0;
-	target_x = 0;
+	target.midx = 0;
+	target.grid.y = 0;
+	target.grid.x = 0;
 }
 
 /**
@@ -384,8 +380,8 @@ void target_get(int *x, int *y)
 	assert(x);
 	assert(y);
 
-	*x = target_x;
-	*y = target_y;
+	*x = target.grid.x;
+	*y = target.grid.y;
 }
 
 
@@ -394,7 +390,7 @@ void target_get(int *x, int *y)
  */
 struct monster *target_get_monster(void)
 {
-	return target_who;
+	return cave_monster(cave, target.midx);
 }
 
 
@@ -404,11 +400,11 @@ struct monster *target_get_monster(void)
 bool target_sighted(void)
 {
 	return target_okay() &&
-			panel_contains(target_y, target_x) &&
+			panel_contains(target.grid.y, target.grid.x) &&
 			 /* either the target is a grid and is visible, or it is a monster
 			  * that is visible */
-		((!target_who && square_isseen(cave, target_y, target_x)) ||
-		 (target_who && monster_is_visible(target_who)));
+		((!target.midx && square_isseen(cave, target.grid.y, target.grid.x)) ||
+		 (target.midx && monster_is_visible(cave_monster(cave, target.midx))));
 }
 
 
@@ -471,7 +467,7 @@ bool target_set_closest(int mode, monster_predicate pred)
 	struct point_set *targets;
 
 	/* Cancel old target */
-	target_set_monster(0);
+	target_set_monster(NULL);
 
 	/* Get ready to do targetting */
 	targets = target_get_monsters(mode, pred);
