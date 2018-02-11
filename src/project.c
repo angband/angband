@@ -546,7 +546,7 @@ struct loc origin_get_loc(struct source origin)
  * in the blast radius, in case the illumination of the grid was changed,
  * and "update_view()" and "update_monsters()" need to be called.
  */
-bool project(struct source origin, int rad, int y, int x,
+bool project(struct source origin, int rad, struct loc dest,
 			 int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source,
 			 const struct object *obj)
@@ -557,7 +557,6 @@ bool project(struct source origin, int rad, int y, int x,
 
 	struct loc centre;
 	struct loc source;
-	struct loc destination;
 
 	int n1y = 0;
 	int n1x = 0;
@@ -597,7 +596,7 @@ bool project(struct source origin, int rad, int y, int x,
 
 	/* No projection path - jump to target */
 	if (flg & PROJECT_JUMP) {
-		source = loc(x, y);
+		source = dest;
 
 		/* Clear the flag */
 		flg &= ~(PROJECT_JUMP);
@@ -606,15 +605,12 @@ bool project(struct source origin, int rad, int y, int x,
 
 		/* Default to destination grid */
 		if (source.y == -1 && source.x == -1) {
-			source = loc(x, y);
+			source = dest;
 		}
 	}
 
-	/* Default destination */
-	destination = loc(x, y);
-
 	/* Default center of explosion (if any) */
-	centre = loc(source.x, source.y);
+	centre = source;
 
 	/*
 	 * An arc spell with no width and a non-zero radius is actually a
@@ -634,21 +630,22 @@ bool project(struct source origin, int rad, int y, int x,
 	 * if PROJECT_JUMP is set), store it; otherwise, travel along the
 	 * projection path.
 	 */
-	if ((source.x == destination.x) && (source.y == destination.y)) {
-		blast_grid[num_grids].y = y;
-		blast_grid[num_grids].x = x;
+	if ((source.x == dest.x) && (source.y == dest.y)) {
+		blast_grid[num_grids].y = dest.y;
+		blast_grid[num_grids].x = dest.x;
+		centre.y = dest.y;
+		centre.x = dest.x;
 		distance_to_grid[num_grids] = 0;
-		sqinfo_on(cave->squares[y][x].info, SQUARE_PROJECT);
+		sqinfo_on(cave->squares[dest.y][dest.x].info, SQUARE_PROJECT);
 		num_grids++;
 	} else {
+		/* Start from caster */
+		int y = source.y;
+		int x = source.x;
+
 		/* Calculate the projection path */
 		num_path_grids = project_path(path_grid, z_info->max_range, source.y,
-									  source.x, destination.y, destination.x,
-									  flg);
-
-		/* Start from caster */
-		y = source.y;
-		x = source.x;
+									  source.x, dest.y, dest.x, flg);
 
 		/* Some beams have limited length. */
 		if (flg & (PROJECT_BEAM)) {
@@ -703,16 +700,18 @@ bool project(struct source origin, int rad, int y, int x,
 				}
 			}
 		}
-	}
 
-	/* Save the "blast epicenter" */
-	centre.y = y;
-	centre.x = x;
+		/* Save the "blast epicenter" */
+		centre.y = y;
+		centre.x = x;
+	}
 
 	/* Now check for explosions.  Beams have already stored all the grids they
 	 * will affect; all non-beam projections with positive radius explode in
 	 * some way */
 	if ((rad > 0) && (!(flg & (PROJECT_BEAM)))) {
+		int y, x;
+
 		/* Pre-calculate some things for arcs. */
 		if ((flg & (PROJECT_ARC)) && (num_path_grids != 0)) {
 			/* Explosion centers on the caster. */
@@ -900,17 +899,12 @@ bool project(struct source origin, int rad, int y, int x,
 	event_signal_blast(EVENT_EXPLOSION, typ, num_grids, distance_to_grid,
 					   drawing, player_sees_grid, blast_grid, centre);
 
-	/* Check objects */
+	/* Affect objects on every relevant grid */
 	if (flg & (PROJECT_ITEM)) {
-		/* Scan for objects */
 		for (i = 0; i < num_grids; i++) {
-			/* Get the grid location */
-			y = blast_grid[i].y;
-			x = blast_grid[i].x;
-
-			/* Affect the object in the grid */
-			if (project_o(origin, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ, obj)) {
+			if (project_o(origin, distance_to_grid[i], blast_grid[i].y,
+						  blast_grid[i].x, dam_at_dist[distance_to_grid[i]],
+						  typ, obj)) {
 				notice = true;
 			}
 		}
@@ -929,8 +923,8 @@ bool project(struct source origin, int rad, int y, int x,
 			struct monster *mon = NULL;
 
 			/* Get the grid location */
-			y = blast_grid[i].y;
-			x = blast_grid[i].x;
+			int y = blast_grid[i].y;
+			int x = blast_grid[i].x;
 			
 			/* Check this monster hasn't been processed already */
 			if (!square_isproject(cave, y, x))
@@ -962,8 +956,8 @@ bool project(struct source origin, int rad, int y, int x,
 				num_hit == 1 &&
 				!(flg & PROJECT_JUMP)) {
 			/* Location */
-			x = last_hit_x;
-			y = last_hit_y;
+			int x = last_hit_x;
+			int y = last_hit_y;
 
 			/* Track if possible */
 			if (cave->squares[y][x].mon > 0) {
@@ -978,17 +972,12 @@ bool project(struct source origin, int rad, int y, int x,
 		}
 	}
 
-	/* Check player */
+	/* Look for the player, affect them when found */
 	if (flg & (PROJECT_PLAY)) {
-		/* Scan for player */
 		for (i = 0; i < num_grids; i++) {
-			/* Get the grid location */
-			y = blast_grid[i].y;
-			x = blast_grid[i].x;
-
-			/* Affect the player, or keep scanning */
-			if (project_p(origin, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ)) {
+			if (project_p(origin, distance_to_grid[i], blast_grid[i].y,
+						  blast_grid[i].x, dam_at_dist[distance_to_grid[i]],
+						  typ)) {
 				notice = true;
 				if (player->is_dead)
 					return notice;
@@ -997,17 +986,12 @@ bool project(struct source origin, int rad, int y, int x,
 		}
 	}
 
-	/* Check features */
+	/* Affect features in every relevant grid */
 	if (flg & (PROJECT_GRID)) {
-		/* Scan for features */
 		for (i = 0; i < num_grids; i++) {
-			/* Get the grid location */
-			y = blast_grid[i].y;
-			x = blast_grid[i].x;
-
-			/* Affect the feature in that grid */
-			if (project_f(origin, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ)) {
+			if (project_f(origin, distance_to_grid[i], blast_grid[i].y,
+						  blast_grid[i].x, dam_at_dist[distance_to_grid[i]],
+						  typ)) {
 				notice = true;
 			}
 		}
@@ -1015,12 +999,9 @@ bool project(struct source origin, int rad, int y, int x,
 
 	/* Clear all the processing marks. */
 	for (i = 0; i < num_grids; i++) {
-		/* Get the grid location */
-		y = blast_grid[i].y;
-		x = blast_grid[i].x;
-
 		/* Clear the mark */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
+		sqinfo_off(cave->squares[blast_grid[i].y][blast_grid[i].x].info,
+				   SQUARE_PROJECT);
 	}
 
 	/* Update stuff if needed */

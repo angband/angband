@@ -115,8 +115,8 @@ const char *proj_idx_to_name(int type);
 
 struct loc origin_get_loc(struct source origin);
 
-bool project(struct source, int rad, int y, int x, int dam, int typ, int flg,
-			 int degrees_of_arc, byte diameter_of_source,
+bool project(struct source origin, int rad, struct loc dest, int dam, int typ,
+			 int flg, int degrees_of_arc, byte diameter_of_source,
 			 const struct object *obj);
 
 #endif /* !PROJECT_H */
