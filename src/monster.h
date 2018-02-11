@@ -23,6 +23,7 @@
 #include "z-bitflag.h"
 #include "z-rand.h"
 #include "cave.h"
+#include "target.h"
 #include "mon-timed.h"
 #include "mon-blows.h"
 
@@ -347,7 +348,7 @@ struct monster {
 
 	struct player_state known_pstate; /* Known player state */
 
-    struct loc target;		/**< Monster target */
+    struct target target;		/**< Monster target */
 
     byte min_range;	/**< What is the closest we want to be?  Not saved */
     byte best_range;	/**< How close do we want to be? Not saved */
