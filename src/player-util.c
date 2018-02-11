@@ -1051,11 +1051,11 @@ bool player_is_immune(struct player *p, int element)
 
 /*
  * Extract a "direction" which will move one step from the player location
- * towards the given "target" location (or "5" if no motion necessary).
+ * towards the given "target" location (or DIR_NONE if no motion necessary).
  */
 int coords_to_dir(struct player *p, int y, int x)
 {
-	return (motion_dir(p->py, p->px, y, x));
+	return motion_dir(loc(p->px, p->py), loc(x, y));
 }
 
 /**
