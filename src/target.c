@@ -41,36 +41,6 @@ static struct target target;
 
 
 /**
- * Given a "source" and "target" location, extract a "direction",
- * which will move one step from the "source" towards the "target".
- *
- * Note that we use "diagonal" motion whenever possible.
- *
- * We return DIR_NONE if no motion is needed.
- */
-int motion_dir(struct loc source, struct loc target)
-{
-	/* No movement required */
-	if (loc_eq(source, target)) return (DIR_NONE);
-
-	/* South or North */
-	if (source.x == target.x) return ((source.y < target.y) ? DIR_S : DIR_N);
-
-	/* East or West */
-	if (source.y == target.y) return ((source.x < target.x) ? DIR_E : DIR_W);
-
-	/* South-east or South-west */
-	if (source.y < target.y) return ((source.x < target.x) ? DIR_SE : DIR_SW);
-
-	/* North-east or North-west */
-	if (source.y > target.y) return ((source.x < target.x) ? DIR_NE : DIR_NW);
-
-	/* Paranoia */
-	return (DIR_NONE);
-}
-
-
-/**
  * Monster health description
  */
 void look_mon_desc(char *buf, size_t max, int m_idx)
