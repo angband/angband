@@ -402,6 +402,7 @@ void square_mark(struct chunk *c, int y, int x);
 void square_unmark(struct chunk *c, int y, int x);
 
 /* cave.c */
+int motion_dir(struct loc source, struct loc target);
 int lookup_feat(const char *name);
 void set_terrain(void);
 struct chunk *cave_new(int height, int width);
