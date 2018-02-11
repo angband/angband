@@ -630,11 +630,9 @@ bool project(struct source origin, int rad, struct loc dest,
 	 * if PROJECT_JUMP is set), store it; otherwise, travel along the
 	 * projection path.
 	 */
-	if ((source.x == dest.x) && (source.y == dest.y)) {
-		blast_grid[num_grids].y = dest.y;
-		blast_grid[num_grids].x = dest.x;
-		centre.y = dest.y;
-		centre.x = dest.x;
+	if (loc_eq(source, dest)) {
+		loc_set_eq(&blast_grid[num_grids], dest);
+		loc_set_eq(&centre, dest);
 		distance_to_grid[num_grids] = 0;
 		sqinfo_on(cave->squares[dest.y][dest.x].info, SQUARE_PROJECT);
 		num_grids++;
@@ -715,8 +713,7 @@ bool project(struct source origin, int rad, struct loc dest,
 		/* Pre-calculate some things for arcs. */
 		if ((flg & (PROJECT_ARC)) && (num_path_grids != 0)) {
 			/* Explosion centers on the caster. */
-			centre.y = source.y;
-			centre.x = source.x;
+			loc_set_eq(&centre, source);
 
 			/* The radius of arcs cannot be more than 20 */
 			if (rad > 20)
@@ -735,8 +732,7 @@ bool project(struct source origin, int rad, struct loc dest,
 
 		/* If the explosion centre hasn't been saved already, save it now. */
 		if (num_grids == 0) {
-			blast_grid[num_grids].y = centre.y;
-			blast_grid[num_grids].x = centre.x;
+			loc_set_eq(&blast_grid[num_grids], centre);
 			distance_to_grid[num_grids] = 0;
 			sqinfo_on(cave->squares[centre.y][centre.x].info, SQUARE_PROJECT);
 			num_grids++;
@@ -861,21 +857,17 @@ bool project(struct source origin, int rad, struct loc dest,
 
 	/* Sort the blast grids by distance, starting at the origin. */
 	for (i = 0, k = 0; i <= rad; i++) {
-		int tmp_y, tmp_x, tmp_d;
-
 		/* Collect all the grids of a given distance together. */
 		for (j = k; j < num_grids; j++) {
 			if (distance_to_grid[j] == i) {
-				tmp_y = blast_grid[k].y;
-				tmp_x = blast_grid[k].x;
-				tmp_d = distance_to_grid[k];
+				struct loc tmp;
+				int tmp_d = distance_to_grid[k];
+				loc_set_eq(&tmp, blast_grid[k]);
 
-				blast_grid[k].y = blast_grid[j].y;
-				blast_grid[k].x = blast_grid[j].x;
+				loc_set_eq(&blast_grid[k], blast_grid[j]);
 				distance_to_grid[k] = distance_to_grid[j];
 
-				blast_grid[j].y = tmp_y;
-				blast_grid[j].x = tmp_x;
+				loc_set_eq(&blast_grid[j], tmp);
 				distance_to_grid[j] = tmp_d;
 
 				/* Write to next slot */

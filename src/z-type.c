@@ -27,6 +27,23 @@ struct loc loc(int x, int y) {
 }
 
 /**
+ * Determine if two grid locations are equal
+ */
+bool loc_eq(struct loc grid1, struct loc grid2)
+{
+	return (grid1.x == grid2.x) && (grid1.y == grid2.y);
+}
+
+/**
+ * Set one grid location equal to another
+ */
+void loc_set_eq(struct loc *dest, struct loc source)
+{
+	(*dest).x = source.x;
+	(*dest).y = source.y;
+}
+
+/**
  * Utility functions to work with point_sets
  */
 struct point_set *point_set_new(int initial_size)
