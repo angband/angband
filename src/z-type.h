@@ -27,6 +27,8 @@ struct loc {
 };
 
 struct loc loc(int x, int y);
+bool loc_eq(struct loc grid1, struct loc grid2);
+void loc_set_eq(struct loc *dest, struct loc source);
 
 
 /**

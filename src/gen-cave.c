@@ -433,7 +433,7 @@ static void try_door(struct chunk *c, int y, int x)
  * \return a pointer to the generated chunk
  */
 struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
-    int i, j, k, y, x, y1, x1;
+    int i, j, k, y, x;
     int by, bx = 0, tby, tbx, key, rarity, built;
     int num_rooms, size_percent;
     int dun_unusual = dun->profile->dun_unusual;
@@ -561,12 +561,10 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
     for (i = 0; i < dun->cent_n; i++) {
 		int pick1 = randint0(dun->cent_n);
 		int pick2 = randint0(dun->cent_n);
-		y1 = dun->cent[pick1].y;
-		x1 = dun->cent[pick1].x;
-		dun->cent[pick1].y = dun->cent[pick2].y;
-		dun->cent[pick1].x = dun->cent[pick2].x;
-		dun->cent[pick2].y = y1;
-		dun->cent[pick2].x = x1;
+		struct loc tmp;
+		loc_set_eq(&tmp, dun->cent[pick1]);
+		loc_set_eq(&dun->cent[pick1], dun->cent[pick2]);
+		loc_set_eq(&dun->cent[pick2], tmp);
     }
 
     /* Start with no tunnel doors */
@@ -1639,7 +1637,7 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
  */
 struct chunk *modified_chunk(int depth, int height, int width)
 {
-    int i, y, x, y1, x1;
+    int i, y, x;
     int by = 0, bx = 0, key, rarity;
     int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
@@ -1730,12 +1728,10 @@ struct chunk *modified_chunk(int depth, int height, int width)
     for (i = 0; i < dun->cent_n; i++) {
 		int pick1 = randint0(dun->cent_n);
 		int pick2 = randint0(dun->cent_n);
-		y1 = dun->cent[pick1].y;
-		x1 = dun->cent[pick1].x;
-		dun->cent[pick1].y = dun->cent[pick2].y;
-		dun->cent[pick1].x = dun->cent[pick2].x;
-		dun->cent[pick2].y = y1;
-		dun->cent[pick2].x = x1;
+		struct loc tmp;
+		loc_set_eq(&tmp, dun->cent[pick1]);
+		loc_set_eq(&dun->cent[pick1], dun->cent[pick2]);
+		loc_set_eq(&dun->cent[pick2], tmp);
     }
 
     /* Start with no tunnel doors */
@@ -1897,7 +1893,7 @@ struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
  */
 struct chunk *moria_chunk(int depth, int height, int width)
 {
-    int i, y, x, y1, x1;
+    int i, y, x;
     int by = 0, bx = 0, key, rarity;
     int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
@@ -1969,12 +1965,10 @@ struct chunk *moria_chunk(int depth, int height, int width)
     for (i = 0; i < dun->cent_n; i++) {
 		int pick1 = randint0(dun->cent_n);
 		int pick2 = randint0(dun->cent_n);
-		y1 = dun->cent[pick1].y;
-		x1 = dun->cent[pick1].x;
-		dun->cent[pick1].y = dun->cent[pick2].y;
-		dun->cent[pick1].x = dun->cent[pick2].x;
-		dun->cent[pick2].y = y1;
-		dun->cent[pick2].x = x1;
+		struct loc tmp;
+		loc_set_eq(&tmp, dun->cent[pick1]);
+		loc_set_eq(&dun->cent[pick1], dun->cent[pick2]);
+		loc_set_eq(&dun->cent[pick2], tmp);
     }
 
     /* Start with no tunnel doors */
