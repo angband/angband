@@ -244,29 +244,29 @@ const byte side_dirs[20][8] = {
 };
 
 /**
- * Given a "source" and "target" location, extract a "direction",
- * which will move one step from the "source" towards the "target".
+ * Given a "start" and "finish" location, extract a "direction",
+ * which will move one step from the "start" towards the "finish".
  *
  * Note that we use "diagonal" motion whenever possible.
  *
  * We return DIR_NONE if no motion is needed.
  */
-int motion_dir(struct loc source, struct loc target)
+int motion_dir(struct loc start, struct loc finish)
 {
 	/* No movement required */
-	if (loc_eq(source, target)) return (DIR_NONE);
+	if (loc_eq(start, finish)) return (DIR_NONE);
 
 	/* South or North */
-	if (source.x == target.x) return ((source.y < target.y) ? DIR_S : DIR_N);
+	if (start.x == finish.x) return ((start.y < finish.y) ? DIR_S : DIR_N);
 
 	/* East or West */
-	if (source.y == target.y) return ((source.x < target.x) ? DIR_E : DIR_W);
+	if (start.y == finish.y) return ((start.x < finish.x) ? DIR_E : DIR_W);
 
 	/* South-east or South-west */
-	if (source.y < target.y) return ((source.x < target.x) ? DIR_SE : DIR_SW);
+	if (start.y < finish.y) return ((start.x < finish.x) ? DIR_SE : DIR_SW);
 
 	/* North-east or North-west */
-	if (source.y > target.y) return ((source.x < target.x) ? DIR_NE : DIR_NW);
+	if (start.y > finish.y) return ((start.x < finish.x) ? DIR_NE : DIR_NW);
 
 	/* Paranoia */
 	return (DIR_NONE);
