@@ -85,7 +85,7 @@ const char *proj_idx_to_name(int type)
  *
  * The projection will always start from the grid (y1,x1), and will travel
  * towards the grid (y2,x2), touching one grid per unit of distance along
- * the major axis, and stopping when it enters the destination grid or a
+ * the major axis, and stopping when it enters the finish grid or a
  * wall grid, or has travelled the maximum legal distance of "range".
  *
  * Note that "distance" in this function (as in the "update_view()" code)
@@ -105,7 +105,7 @@ const char *proj_idx_to_name(int type)
  * In particular, the "PROJECT_STOP" and "PROJECT_THRU" flags have the same
  * semantics as they do for the "project" function, namely, that the path
  * will stop as soon as it hits a monster, or that the path will continue
- * through the destination grid, respectively.
+ * through the finish grid, respectively.
  *
  * The "PROJECT_JUMP" flag, which for the "project()" function means to
  * start at a special grid (which makes no sense in this function), means
@@ -193,7 +193,7 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 			/* Hack -- Check maximum range */
 			if ((n + (k >> 1)) >= range) break;
 
-			/* Sometimes stop at destination grid */
+			/* Sometimes stop at finish grid */
 			if (!(flg & (PROJECT_THRU)))
 				if ((x == x2) && (y == y2)) break;
 
@@ -250,7 +250,7 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 			/* Hack -- Check maximum range */
 			if ((n + (k >> 1)) >= range) break;
 
-			/* Sometimes stop at destination grid */
+			/* Sometimes stop at finish grid */
 			if (!(flg & (PROJECT_THRU)))
 				if ((x == x2) && (y == y2)) break;
 
@@ -301,7 +301,7 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 			/* Hack -- Check maximum range */
 			if ((n + (n >> 1)) >= range) break;
 
-			/* Sometimes stop at destination grid */
+			/* Sometimes stop at finish grid */
 			if (!(flg & (PROJECT_THRU)))
 				if ((x == x2) && (y == y2)) break;
 
@@ -546,7 +546,7 @@ struct loc origin_get_loc(struct source origin)
  * in the blast radius, in case the illumination of the grid was changed,
  * and "update_view()" and "update_monsters()" need to be called.
  */
-bool project(struct source origin, int rad, struct loc dest,
+bool project(struct source origin, int rad, struct loc finish,
 			 int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source,
 			 const struct object *obj)
@@ -556,7 +556,7 @@ bool project(struct source origin, int rad, struct loc dest,
 	u32b dam_temp;
 
 	struct loc centre;
-	struct loc source;
+	struct loc start;
 
 	int n1y = 0;
 	int n1x = 0;
@@ -596,21 +596,21 @@ bool project(struct source origin, int rad, struct loc dest,
 
 	/* No projection path - jump to target */
 	if (flg & PROJECT_JUMP) {
-		source = dest;
+		start = finish;
 
 		/* Clear the flag */
 		flg &= ~(PROJECT_JUMP);
 	} else {
-		source = origin_get_loc(origin);
+		start = origin_get_loc(origin);
 
-		/* Default to destination grid */
-		if (source.y == -1 && source.x == -1) {
-			source = dest;
+		/* Default to finish grid */
+		if (start.y == -1 && start.x == -1) {
+			start = finish;
 		}
 	}
 
 	/* Default center of explosion (if any) */
-	centre = source;
+	centre = start;
 
 	/*
 	 * An arc spell with no width and a non-zero radius is actually a
@@ -626,24 +626,24 @@ bool project(struct source origin, int rad, struct loc dest,
 	}
 
 	/*
-	 * If a single grid is both source and destination (for example
+	 * If a single grid is both start and finish (for example
 	 * if PROJECT_JUMP is set), store it; otherwise, travel along the
 	 * projection path.
 	 */
-	if (loc_eq(source, dest)) {
-		loc_set_eq(&blast_grid[num_grids], dest);
-		loc_set_eq(&centre, dest);
+	if (loc_eq(start, finish)) {
+		loc_set_eq(&blast_grid[num_grids], finish);
+		loc_set_eq(&centre, finish);
 		distance_to_grid[num_grids] = 0;
-		sqinfo_on(cave->squares[dest.y][dest.x].info, SQUARE_PROJECT);
+		sqinfo_on(cave->squares[finish.y][finish.x].info, SQUARE_PROJECT);
 		num_grids++;
 	} else {
 		/* Start from caster */
-		int y = source.y;
-		int x = source.x;
+		int y = start.y;
+		int x = start.x;
 
 		/* Calculate the projection path */
-		num_path_grids = project_path(path_grid, z_info->max_range, source.y,
-									  source.x, dest.y, dest.x, flg);
+		num_path_grids = project_path(path_grid, z_info->max_range, start.y,
+									  start.x, finish.y, finish.x, flg);
 
 		/* Some beams have limited length. */
 		if (flg & (PROJECT_BEAM)) {
@@ -713,7 +713,7 @@ bool project(struct source origin, int rad, struct loc dest,
 		/* Pre-calculate some things for arcs. */
 		if ((flg & (PROJECT_ARC)) && (num_path_grids != 0)) {
 			/* Explosion centers on the caster. */
-			loc_set_eq(&centre, source);
+			loc_set_eq(&centre, start);
 
 			/* The radius of arcs cannot be more than 20 */
 			if (rad > 20)
@@ -793,8 +793,8 @@ bool project(struct source origin, int rad, struct loc dest,
 					int n2y, n2x, tmp, rotate, diff;
 
 					/* Reorient current grid for table access. */
-					n2y = y - source.y + 20;
-					n2x = x - source.x + 20;
+					n2y = y - start.y + 20;
+					n2x = x - start.x + 20;
 
 					/* 
 					 * Find the angular difference (/2) between 
@@ -855,7 +855,7 @@ bool project(struct source origin, int rad, struct loc dest,
 	}
 
 
-	/* Sort the blast grids by distance, starting at the origin. */
+	/* Sort the blast grids by distance from the centre. */
 	for (i = 0, k = 0; i <= rad; i++) {
 		/* Collect all the grids of a given distance together. */
 		for (j = k; j < num_grids; j++) {
