@@ -37,7 +37,8 @@
 typedef enum {
 	SPELL_TAG_NONE,
 	SPELL_TAG_NAME,
-	SPELL_TAG_PRONOUN
+	SPELL_TAG_PRONOUN,
+	SPELL_TAG_TARGET
 } spell_tag_t;
 
 static spell_tag_t spell_tag_lookup(const char *tag)
@@ -46,6 +47,8 @@ static spell_tag_t spell_tag_lookup(const char *tag)
 		return SPELL_TAG_NAME;
 	else if (strncmp(tag, "pronoun", 7) == 0)
 		return SPELL_TAG_PRONOUN;
+	else if (strncmp(tag, "target", 6) == 0)
+		return SPELL_TAG_TARGET;
 	else
 		return SPELL_TAG_NONE;
 }
@@ -67,10 +70,18 @@ static void spell_message(struct monster *mon,
 	const char *in_cursor;
 	size_t end = 0;
 	bool strong = mon->race->spell_power >= 60;
+	struct monster *t_mon = NULL;
+
+	/* Get the target monster, if any */
+	if (mon->target.midx > 0) {
+		t_mon = cave_monster(cave, mon->target.midx);
+	}
 
 	/* Get the message */
 	if (!seen) {
-		if (strong && spell->blind_message_strong) {
+		if (t_mon) {
+			return;
+		} else if (strong && spell->blind_message_strong) {
 			in_cursor = spell->blind_message_strong;
 		} else {
 			in_cursor = spell->blind_message;
@@ -115,6 +126,20 @@ static void spell_message(struct monster *mon,
 					monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
 
 					strnfcat(buf, sizeof(buf), &end, m_poss);
+					break;
+				}
+
+				case SPELL_TAG_TARGET: {
+					char m_name[80];
+					struct monster *t_mon;
+					if (mon->target.midx > 0) {
+						t_mon = cave_monster(cave, mon->target.midx);
+						monster_desc(m_name, sizeof(m_name), t_mon,
+									 MDESC_OBJE | MDESC_IND_HID |MDESC_PRO_HID);
+						strnfcat(buf, sizeof(buf), &end, m_name);
+					} else {
+						strnfcat(buf, sizeof(buf), &end, "you");
+					}
 					break;
 				}
 
@@ -177,6 +202,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 
 	bool ident = false;
 	bool hits;
+	int target_mon = mon->target.midx;
 
 	/* See if it hits */
 	if (spell->hit == 100) {
@@ -192,8 +218,12 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 			accuracy /= 100;
 			conf_level--;
 		}
-
-		hits = check_hit(player, spell->hit, rlev, accuracy);
+		if (target_mon > 0) {
+			hits = check_hit_monster(cave_monster(cave, target_mon),
+									 spell->hit, rlev, accuracy);
+		} else {
+			hits = check_hit(player, spell->hit, rlev, accuracy);
+		}
 	}
 
 	/* Tell the player what's going on */
@@ -202,7 +232,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 
 	if (hits) {
 		/* Try a saving throw if available */
-		if (spell->save_message &&
+		if (spell->save_message && (target_mon <= 0) &&
 				randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("%s", spell->save_message);
 			spell_check_for_fail_rune(spell);

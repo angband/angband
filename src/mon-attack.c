@@ -416,6 +416,27 @@ bool check_hit(struct player *p, int power, int level, int accuracy)
 }
 
 /**
+ * Determine if a monster attack against a monster succeeds.
+ */
+bool check_hit_monster(struct monster *mon, int power, int level, int accuracy)
+{
+	int chance, ac;
+
+	/* Calculate the "attack quality" */
+	chance = (power + (level * 3));
+
+	/* Total armor */
+	ac = mon->race->ac;
+
+	/* Apply accuracy */
+	chance *= accuracy;
+	chance /= 100;
+
+	/* Check if the monster was hit */
+	return test_hit(chance, ac, true);
+}
+
+/**
  * Calculate how much damage remains after armor is taken into account
  * (does for a physical attack what adjust_dam does for an elemental attack).
  */
