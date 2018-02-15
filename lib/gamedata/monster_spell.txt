@@ -403,7 +403,7 @@ lore:cause mind blasting
 lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
-message-vis:{name} gazes at you with psionic energy.
+message-vis:{name} gazes at {target} with psionic energy.
 message-invis:Something focuses on your mind.
 message-save:You shake off a pounding headache.
 
@@ -423,7 +423,7 @@ lore:cause brain smashing
 lore-color-base:Light Red
 lore-color-resist:Orange
 lore-color-immune:Light Green
-message-vis:{name} smashes you with psionic energy.
+message-vis:{name} smashes {target} with psionic energy.
 message-invis:Something focuses on your mind.
 message-save:You shake off a splitting migraine.
 
@@ -434,7 +434,7 @@ dice:3d8
 lore:cause light wounds
 lore-color-base:Yellow
 lore-color-resist:Light Green
-message-vis:{name} points at you and curses!
+message-vis:{name} points at {target} and curses!
 message-invis:Something curses!
 message-save:Your body tingles briefly.
 
@@ -445,7 +445,7 @@ dice:8d8
 lore:cause serious wounds
 lore-color-base:Yellow
 lore-color-resist:Light Green
-message-vis:{name} points at you and curses horribly!
+message-vis:{name} points at {target} and curses horribly!
 message-invis:Something curses horribly!
 message-save:Your body pulsates briefly.
 
@@ -456,7 +456,7 @@ dice:10d15
 lore:cause critical wounds
 lore-color-base:Orange
 lore-color-resist:Light Green
-message-vis:{name} points at you and incants terribly!
+message-vis:{name} points at {target} and incants terribly!
 message-invis:Something incants terribly!
 message-save:Your body shakes briefly.
 
@@ -469,7 +469,7 @@ dice:10d10
 lore:cause mortal wounds
 lore-color-base:Light Red
 lore-color-resist:Light Green
-message-vis:{name} points at you and screams the word 'DIE!'
+message-vis:{name} points at {target} and screams the word 'DIE!'
 message-invis:Something screams the word 'DIE!'
 message-save:Your body spasms briefly.
 
@@ -637,7 +637,7 @@ dice:3+1d4
 lore:slow
 lore-color-base:Orange
 lore-color-resist:Light Green
-message-vis:{name} tries to make you move slowly.
+message-vis:{name} tries to make {target} move slowly.
 message-invis:Something mumbles.
 message-save:You fight off a sense of sluggishness.
 
@@ -648,7 +648,7 @@ dice:3+1d4
 lore:paralyze
 lore-color-base:Light Red
 lore-color-resist:Light Green
-message-vis:{name} tries to make you stop moving.
+message-vis:{name} tries to make {target} stop moving.
 message-invis:Something mumbles.
 message-save:You fight off a sense of torpidity.
 
@@ -706,7 +706,7 @@ hit:100
 effect:TELEPORT_TO
 lore:teleport to
 lore-color-base:Yellow
-message-vis:{name} commands you to come hither.
+message-vis:{name} commands {target} to come hither.
 message-invis:Something commands you to come hither.
 
 name:TELE_AWAY
@@ -716,7 +716,7 @@ effect:TELEPORT:AWAY
 dice:100
 lore:teleport away
 lore-color-base:Yellow
-message-vis:{name} commands you to go away.
+message-vis:{name} commands {target} to go away.
 message-invis:Something commands you to go away.
 
 name:TELE_LEVEL
@@ -726,7 +726,7 @@ effect:TELEPORT_LEVEL
 lore:teleport level
 lore-color-base:Yellow
 lore-color-resist:Light Green
-message-vis:{name} commands you to go far away.
+message-vis:{name} commands {target} to go far away.
 message-invis:Something commands you to go far away.
 message-save:You feel unstable for a second, but it passes.
 
@@ -737,7 +737,7 @@ effect:BALL:DARK_WEAK:3
 dice:10
 lore:create darkness
 lore-color-base:Light Green
-message-vis:{name} surrounds you in darkness.
+message-vis:{name} surrounds {target} in darkness.
 message-invis:Something mumbles.
 
 name:TRAPS
@@ -756,7 +756,7 @@ dice:3
 lore:cause amnesia
 lore-color-base:Yellow
 lore-color-resist:Light Green
-message-vis:{name} tries to make you forget things.
+message-vis:{name} tries to make {target} forget things.
 message-invis:Something messes with your mind.
 message-save:You retain your presence of mind.
 
