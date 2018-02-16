@@ -439,7 +439,7 @@ static bool get_move_find_safety(struct chunk *c, struct monster *mon)
 			/* Check for absence of shot (more or less) */
 			if (!square_isview(c, y, x)) {
 				/* Calculate distance from player */
-				dis = distance(y, x, py, px);
+				dis = distance(loc(x, y), loc(px, py));
 
 				/* Remember if further than previous */
 				if (dis > gdis) {
@@ -472,11 +472,8 @@ static bool get_move_find_safety(struct chunk *c, struct monster *mon)
  */
 static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 {
-	int fy = mon->fy;
-	int fx = mon->fx;
-
-	int py = player->py;
-	int px = player->px;
+	struct loc mon_grid = loc(mon->fx, mon->fy);
+	struct loc player_grid = loc(player->px, player->py);
 
 	int i, y, x, dy, dx, d, dis;
 	int gy = 0, gx = 0, gdis = 999, min;
@@ -484,11 +481,11 @@ static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 	const int *y_offsets, *x_offsets;
 
 	/* Closest distance to get */
-	min = distance(py, px, fy, fx) * 3 / 4 + 2;
+	min = distance(player_grid, mon_grid) * 3 / 4 + 2;
 
 	/* Start with adjacent locations, spread further */
 	for (d = 1; d < 10; d++) {
-		/* Get the lists of points with a distance d from (fx, fy) */
+		/* Get the lists of points with a distance d from monster */
 		y_offsets = dist_offsets_y[d];
 		x_offsets = dist_offsets_x[d];
 
@@ -496,8 +493,8 @@ static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 		for (i = 0, dx = x_offsets[0], dy = y_offsets[0];
 		     dx != 0 || dy != 0;
 		     i++, dx = x_offsets[i], dy = y_offsets[i]) {
-			y = fy + dy;
-			x = fx + dx;
+			y = mon_grid.y + dy;
+			x = mon_grid.x + dx;
 
 			/* Skip illegal locations */
 			if (!square_in_bounds_fully(c, y, x)) continue;
@@ -507,9 +504,9 @@ static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 
 			/* Check for hidden, available grid */
 			if (!square_isview(c, y, x) &&
-				projectable(c, fy, fx, y, x, PROJECT_STOP)) {
+				projectable(c, mon_grid.y, mon_grid.x, y, x, PROJECT_STOP)) {
 				/* Calculate distance from player */
-				dis = distance(y, x, py, px);
+				dis = distance(loc(x, y), player_grid);
 
 				/* Remember if closer than previous */
 				if (dis < gdis && dis >= min) {
@@ -568,7 +565,7 @@ static bool get_move_flee(struct chunk *c, struct monster *mon)
 		if (!square_in_bounds(c, y, x)) continue;
 
 		/* Calculate distance of this grid from our target */
-		dis = distance(y, x, mon->target.grid.y, mon->target.grid.x);
+		dis = distance(loc(x, y), mon->target.grid);
 
 		/* Score this grid
 		 * First half of calculation is inversely proportional to distance

@@ -622,7 +622,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 				continue;
 
 			/* Get distance to grid. */
-			dist = distance(y0, x0, y, x);
+			dist = distance(loc(x0, y0), loc(x, y));
 
 			/* Reject grid if outside check distance. */
 			if (dist >= dist_check) 
