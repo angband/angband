@@ -1374,8 +1374,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 						/* Pick a nearby monster */
 						for (i = 0; i < point_set_size(targets); i++) {
-							t = distance(y, x, targets->pts[i].y,
-										 targets->pts[i].x);
+							t = distance(loc(x, y), targets->pts[i]);
 
 							/* Pick closest */
 							if (t < bd) {

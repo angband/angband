@@ -171,7 +171,7 @@ static bool summon_possible(int y1, int x1)
 			if (!square_in_bounds(cave, y, x)) continue;
 
 			/* Only check a circular area */
-			if (distance(y1, x1, y, x) > 2) continue;
+			if (distance(loc(x1, y1), loc(x, y)) > 2) continue;
 
 			/* Hack: no summon on glyph of warding */
 			if (square_iswarded(cave, y, x)) continue;
