@@ -741,7 +741,7 @@ static struct monster *get_injured_kin(struct chunk *c, const struct monster *mo
 		return NULL;
 
 	/* Check distance */
-	if (distance(mon->fy, mon->fx, y, x) > MAX_KIN_DISTANCE)
+	if (distance(loc(mon->fx, mon->fy), loc(x, y)) > MAX_KIN_DISTANCE)
 		return NULL;
 
 	return kin;

@@ -83,7 +83,7 @@ static int chance_of_missile_hit(const struct player *p,
 		chance = p->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
 	}
 
-	return chance - distance(p->py, p->px, y, x);
+	return chance - distance(loc(p->px, p->py), loc(x, y));
 }
 
 /**
@@ -530,7 +530,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	if ((dir == DIR_TARGET) && target_okay()) {
 		int taim;
 		target_get(&tx, &ty);
-		taim = distance(y, x, ty, tx);
+		taim = distance(loc(x, y), loc(tx, ty));
 		if (taim > range) {
 			char msg[80];
 			strnfmt(msg, sizeof(msg),

@@ -34,11 +34,11 @@
  *
  * Algorithm: hypot(dy,dx) = max(dy,dx) + min(dy,dx) / 2
  */
-int distance(int y1, int x1, int y2, int x2)
+int distance(struct loc grid1, struct loc grid2)
 {
 	/* Find the absolute y/x distance components */
-	int ay = abs(y2 - y1);
-	int ax = abs(x2 - x1);
+	int ay = abs(grid2.y - grid1.y);
+	int ax = abs(grid2.x - grid1.x);
 
 	/* Approximate the distance */
 	return ay > ax ? ay + (ax >> 1) : ax + (ay >> 1);
@@ -477,7 +477,7 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 					continue;
 
 				/* If the tile is too far away we won't light it */
-				if (distance(from.y, from.x, sy, sx) > z_info->max_sight)
+				if (distance(from, loc(sx, sy)) > z_info->max_sight)
 					continue;
 				
 				/* If the tile itself isn't in LOS, don't light it */
@@ -565,7 +565,7 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 	int xc = x;
 	int yc = y;
 
-	int d = distance(y, x, py, px);
+	int d = distance(loc(x, y), loc(px, py));
 	int lit = d < radius;
 
 	if (d > z_info->max_sight)

@@ -1347,7 +1347,7 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 			continue;
 
 		/* Accept far away grids */
-		if (distance(y, x, p->py, p->px) > dis) break;
+		if (distance(loc(x, y), loc(p->px, p->py)) > dis) break;
 	}
 
 	if (!attempts_left) {

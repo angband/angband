@@ -2313,9 +2313,10 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 			int radius = z_info->max_sight * 2;
 
 			/* Skip monsters too far away */
-			if (distance(origin_loc.y, origin_loc.x, mon->fy, mon->fx) < radius &&
+			if (distance(origin_loc, loc(mon->fx, mon->fy)) < radius &&
 					mon->m_timed[MON_TMD_SLEEP]) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
+								false);
 				woken = true;
 			}
 		}
@@ -2574,8 +2575,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
  */
 bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
-	int y_start = context->y;
-	int x_start = context->x;
+	struct loc start = loc(context->x, context->y);
 	int dis = context->value.base;
 	int y, x, pick;
 
@@ -2593,14 +2593,13 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	context->ident = true;
 
 	/* Establish the coordinates to teleport from, if we don't know already */
-	if (y_start && x_start) {
+	if (start.x && start.y) {
 		/* We're good */
 	} else if (is_player) {
-		y_start = player->py;
-		x_start = player->px;
+		start = loc(player->px, player->py);
 
 		/* Check for a no teleport grid */
-		if (square_isno_teleport(cave, y_start, x_start) && (dis > 10)) {
+		if (square_isno_teleport(cave, start.y, start.x) && (dis > 10)) {
 			msg("Teleportation forbidden!");
 			return true;
 		}
@@ -2614,8 +2613,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	} else {
 		assert(context->origin.what == SRC_MONSTER);
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
-		y_start = mon->fy;
-		x_start = mon->fx;
+		start = loc(mon->fx, mon->fy);
 	}
 
 	/* Randomise the distance a little */
@@ -2629,7 +2627,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	 * the distance from the start is to the distance we want */
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
-			int d = distance(y, x, y_start, x_start);
+			int d = distance(loc(x, y), start);
 			int score = ABS(d - dis);
 			struct jumps *new;
 
@@ -2699,7 +2697,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	sound(is_player ? MSG_TELEPORT : MSG_TPOTHER);
 
 	/* Move player */
-	monster_swap(y_start, x_start, spots->y, spots->x);
+	monster_swap(start.y, start.x, spots->y, spots->x);
 
 	/* Clear any projection marker to prevent double processing */
 	sqinfo_off(cave->squares[spots->y][spots->x].info, SQUARE_PROJECT);
@@ -2933,7 +2931,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			if (square_isvault(cave, y, x)) continue;
 
 			/* Extract the distance */
-			k = distance(y1, x1, y, x);
+			k = distance(loc(x1, y1), loc(x, y));
 
 			/* Stay in the circle of death */
 			if (k > r) continue;
@@ -3070,7 +3068,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 			/* Skip distant grids */
-			if (distance(centre.y, centre.x, yy, xx) > r) continue;
+			if (distance(centre, loc(xx, yy)) > r) continue;
 
 			/* Lose room and vault */
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_ROOM);

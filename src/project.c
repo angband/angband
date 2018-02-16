@@ -782,7 +782,7 @@ bool project(struct source origin, int rad, struct loc finish,
 					continue;
 
 				/* Must be within maximum distance. */
-				dist_from_centre  = (distance(centre.y, centre.x, y, x));
+				dist_from_centre  = (distance(centre, loc(x, y)));
 				if (dist_from_centre > rad)
 					continue;
 
