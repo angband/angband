@@ -1071,11 +1071,6 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
  */
 void monster_take_terrain_damage(struct monster *mon)
 {
-	char m_name[80];
-
-	/* Extract monster name */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
-
 	/* Damage the monster */
 	if (square_isfiery(cave, mon->fy, mon->fx)) {
 		bool fear = false;

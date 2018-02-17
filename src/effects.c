@@ -135,6 +135,10 @@ static void get_target(struct source origin, int dir, int *ty, int *tx, int *fla
 				dir = randint1(9);
 				*ty = monster->fy + ddy[dir];
 				*tx = monster->fx + ddx[dir];
+			} else if (monster->target.midx > 0) {
+				struct monster *mon = cave_monster(cave, monster->target.midx);
+				*ty = mon->fy;
+				*tx = mon->fx;
 			} else {
 				*ty = player->py;
 				*tx = player->px;
@@ -182,7 +186,7 @@ static bool project_aimed(struct source origin,
 }
 
 /**
- * Apply the project() function to grids around the player
+ * Apply the project() function to grids around the target
  */
 static bool project_touch(int dam, int rad, int typ, bool aware,
 						  const struct object *obj)
@@ -597,10 +601,26 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, false);
 	char killer[80];
 
+	/* Always ID */
+	context->ident = true;
+
 	switch (context->origin.what) {
 		case SRC_MONSTER: {
-			/* Get the "died from" name in case this attack kills @ */
-			struct monster *mon = cave_monster(cave, context->origin.which.monster);
+			struct monster *mon = cave_monster(cave,
+											   context->origin.which.monster);
+
+			/* Damage another monster */
+			if (mon->target.midx > 0) {
+				struct monster *t_mon = cave_monster(cave, mon->target.midx);
+				bool fear = false;
+
+				mon_take_hit(t_mon, dam, &fear, " dies.");
+				if (fear && monster_is_visible(t_mon)) {
+					add_monster_message(t_mon, MON_MSG_FLEE_IN_TERROR, true);
+				}
+				return true;
+			}
+
 			monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
 			break;
 		}
@@ -633,9 +653,6 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 			break;
 		}
 	}
-
-	/* Always ID */
-	context->ident = true;
 
 	/* Hit the player */
 	take_hit(player, dam, killer);
@@ -860,6 +877,8 @@ bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
+
+	/* Need to do monster targeted effects - NRM */
 
 	if (!player->timed[context->subtype] || !context->other)
 		player_inc_timed(player, context->subtype, MAX(amount, 0), true, true);
@@ -1166,6 +1185,14 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 	}
 
+	/* Target is another monster - disenchant it */
+	if (mon->target.midx > 0) {
+		struct monster *t_mon = cave_monster(cave, mon->target.midx);
+		mon_inc_timed(t_mon, MON_TMD_DISEN, MAX(drain, 0), 0, false);
+		return true;
+	}
+
+	/* The player has no mana */
 	if (!player->csp) {
 		msg("The draining fails.");
 		if (monster) {
@@ -2223,7 +2250,7 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 	int i;
 	int dam = effect_calculate_value(context, context->radius ? true : false);
 	int typ = context->subtype;
-
+	struct loc origin = origin_get_loc(context->origin);
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
 
 	/* Affect all (nearby) monsters */
@@ -2238,9 +2265,9 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 		grid = loc(mon->fx, mon->fy);
 
 		/* Require line of sight */
-		if (!square_isview(cave, grid.y, grid.x)) continue;
+		if (!los(cave, origin.y, origin.x, grid.y, grid.x)) continue;
 
-		/* Jump directly to the target monster */
+		/* Jump directly to the monster */
 		(void)project(source_player(), 0, grid, dam, typ, flg, 0, 0, context->obj);
 		context->ident = true;
 	}
@@ -2304,7 +2331,7 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 	int i;
 	bool woken = false;
 
-	struct loc origin_loc = origin_get_loc(context->origin);
+	struct loc origin = origin_get_loc(context->origin);
 
 	/* Wake everyone nearby */
 	for (i = 1; i < cave_monster_max(cave); i++) {
@@ -2313,7 +2340,7 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 			int radius = z_info->max_sight * 2;
 
 			/* Skip monsters too far away */
-			if (distance(origin_loc, loc(mon->fx, mon->fy)) < radius &&
+			if (distance(origin, loc(mon->fx, mon->fy)) < radius &&
 					mon->m_timed[MON_TMD_SLEEP]) {
 				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
 								false);
@@ -2593,6 +2620,15 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 	context->ident = true;
 
+	/* Check for monster targeting another monster; this overrides is_player */
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		if (mon->target.midx > 0) {
+			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			start = loc(t_mon->fx, t_mon->fy);
+		}
+	}
+
 	/* Establish the coordinates to teleport from, if we don't know already */
 	if (start.x && start.y) {
 		/* We're good */
@@ -2710,7 +2746,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 }
 
 /**
- * Teleport player to a grid near the given location
+ * Teleport player or target monster to a grid near the given location
  * Setting context->y and context->x treats them as y and x coordinates
  *
  * This function is slightly obsessive about correctness.
@@ -2718,26 +2754,38 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
  */
 bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
+	struct monster *mon = NULL;
+	struct loc start;
 
-	int ny = py, nx = px;
+	int ny = player->py, nx = player->px;
 	int y, x, dis = 0, ctr = 0, dir = 5;
 
-	/* Initialize */
-	y = py;
-	x = px;
-
 	context->ident = true;
+
+	if (context->origin.what == SRC_MONSTER) {
+		mon = cave_monster(cave, context->origin.which.monster);
+	}
+
+	/* Where are we coming from? */
+	if (mon && mon->target.midx > 0) {
+		/* Monster being teleported */
+		struct monster *t_mon = cave_monster(cave, mon->target.midx);
+		y = t_mon->fy;
+		x = t_mon->fx;
+	} else {
+		/* Player being teleported */
+		y = player->py;
+		x = player->px;
+	}
+	start = loc(x, y);
 
 	/* Where are we going? */
 	if (context->y && context->x) {
 		/* Effect was given co-ordinates */
 		ny = context->y;
 		nx = context->x;
-	} else if (context->origin.what == SRC_MONSTER) {
+	} else if (mon) {
 		/* Spell cast by monster */
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		ny = mon->fy;
 		nx = mon->fx;
 	} else {
@@ -2769,8 +2817,8 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	/* Sound */
 	sound(MSG_TELEPORT);
 
-	/* Move player */
-	monster_swap(py, px, y, x);
+	/* Move player or monster */
+	monster_swap(start.y, start.x, y, x);
 
 	/* Clear any projection marker to prevent double processing */
 	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
@@ -2792,6 +2840,18 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 
 	context->ident = true;
 
+	/* Check for monster targeting another monster */
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		if (mon->target.midx > 0) {
+			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+
+			/* Monster is just gone */
+			add_monster_message(t_mon, MON_MSG_DISAPPEAR, false);
+			delete_monster_idx(mon->target.midx);
+			return true;
+		}
+	}
 	/* Resist hostile teleport */
 	if (context->origin.what == SRC_MONSTER &&
 			player_resists(player, ELEM_NEXUS)) {
@@ -3338,20 +3398,35 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 
 
 /**
- * Call darkness around the player
- * Affect all monsters in the projection radius (context->radius)
+ * Call darkness around the player or target monster
  */
 bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
+	struct loc target = loc(player->px, player->py);
+	bool message = player->timed[TMD_BLIND] ? false : true;
 
-	/* Message */
-	if (!player->timed[TMD_BLIND])
+	/* Check for monster targeting another monster */
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		if (mon->target.midx > 0) {
+			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			char m_name[80];
+			target = loc(t_mon->fx, t_mon->fy);
+			monster_desc(m_name, sizeof(m_name), t_mon,
+						 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
+			if (message) {
+				msg("Darkness surrounds %s.", m_name);
+				message = false;
+			}
+		}
+	}
+
+	if (message) {
 		msg("Darkness surrounds you.");
+	}
 
 	/* Darken the room */
-	light_room(py, px, false);
+	light_room(target.y, target.x, false);
 
 	/* Hack - blind the player directly if player-cast */
 	if (context->origin.what == SRC_PLAYER &&
@@ -3437,6 +3512,9 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			if (randint1(100) > accuracy) {
 				int dir = randint1(9);
 				target = loc(mon->fx + ddx[dir], mon->fy + ddy[dir]);
+			} else if (mon->target.midx > 0) {
+				struct monster *t_mon = cave_monster(cave, mon->target.midx);
+				target = loc(t_mon->fx, t_mon->fy);
 			} else {
 				target = loc(player->px, player->py);
 			}
@@ -3505,7 +3583,14 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		flg |= PROJECT_PLAY;
-		target = loc(player->px, player->py);
+
+		/* Target player or monster? */
+		if (mon->target.midx > 0) {
+			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			target = loc(t_mon->fx, t_mon->fy);
+		} else {
+			target = loc(player->px, player->py);
+		}
 
 		dam = breath_dam(type, mon->hp);
 
@@ -3914,6 +3999,20 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int rad = context->radius ? context->radius : 1;
+
+	/* Monster cast at monster */
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		if (mon->target.midx > 0) {
+			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+
+			int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
+			return (project(source_monster(mon->target.midx), rad,
+							loc(t_mon->fx, t_mon->fy), dam, context->subtype,
+							flg, 0, 0, context->obj));
+		}
+	}
+
 	if (project_touch(dam, rad, context->subtype, false, context->obj))
 		context->ident = true;
 	return true;
