@@ -878,15 +878,57 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
 
-	/* Need to do monster targeted effects - NRM */
-
-	if (!player->timed[context->subtype] || !context->other)
-		player_inc_timed(player, context->subtype, MAX(amount, 0), true, true);
-	else
-		player_inc_timed(player, context->subtype, context->other, true, true);
 	context->ident = true;
-	return true;
 
+	/* Check for monster targeting another monster */
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		if (mon->target.midx > 0) {
+			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			int mon_tmd_effect = -1;
+
+			/* Will do until monster and player timed effects are fused */
+			switch (context->subtype) {
+				case TMD_CONFUSED: {
+					mon_tmd_effect = MON_TMD_CONF;
+					break;
+				}
+				case TMD_SLOW: {
+					mon_tmd_effect = MON_TMD_SLOW;
+					break;
+				}
+				case TMD_PARALYZED: {
+					mon_tmd_effect = MON_TMD_HOLD;
+					break;
+				}
+				case TMD_BLIND: {
+					mon_tmd_effect = MON_TMD_STUN;
+					break;
+				}
+				case TMD_AFRAID: {
+					mon_tmd_effect = MON_TMD_FEAR;
+					break;
+				}
+				case TMD_AMNESIA: {
+					mon_tmd_effect = MON_TMD_SLEEP;
+					break;
+				}
+				default: {
+				}
+			}
+			if (mon_tmd_effect >= 0) {
+				mon_inc_timed(t_mon, mon_tmd_effect, MAX(amount, 0), 0, false);
+			}
+			return true;
+		}
+	}
+
+	if (!player->timed[context->subtype] || !context->other) {
+		player_inc_timed(player, context->subtype, MAX(amount, 0), true, true);
+	} else {
+		player_inc_timed(player, context->subtype, context->other, true, true);
+	}
+	return true;
 }
 
 /**
