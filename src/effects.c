@@ -4410,6 +4410,9 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 		return false;
 	}
 
+	/* Wake up */
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+
 	/* Explicit saving throw */
 	if (randint1(player->lev) < randint1(mon->race->level)) {
 		char m_name[80];
