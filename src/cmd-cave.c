@@ -24,9 +24,11 @@
 #include "game-input.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-attack.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-predicate.h"
+#include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -1443,8 +1445,48 @@ void do_cmd_mon_command(struct command *cmd)
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_HID);
 
 	switch (cmd->code) {
-		//case CMD_CAST: {
-		//}
+		case CMD_CAST: {
+			int dir = DIR_UNKNOWN;
+			struct monster *t_mon = NULL;
+			bitflag f[RSF_SIZE];
+			bool seen = player->timed[TMD_BLIND] ? false : true;
+			int spell_index;
+
+			/* Choose a target monster */
+			target_set_monster(NULL);
+			get_aim_dir(&dir);
+			t_mon = target_get_monster();
+			if (!t_mon) {
+				msg("No monster selected!");
+				return;
+			}
+			mon->target.midx = t_mon->midx;
+
+			/* Pick a random spell and cast it */
+			rsf_copy(f, mon->race->spell_flags);
+			spell_index = choose_attack_spell(f);
+			do_mon_spell(spell_index, mon, seen);
+
+			/* Remember what the monster did */
+			if (seen) {
+				rsf_on(lore->spell_flags, spell_index);
+				if (mon_spell_is_innate(spell_index)) {
+					/* Innate spell */
+					if (lore->cast_innate < UCHAR_MAX)
+						lore->cast_innate++;
+				} else {
+					/* Bolt or Ball, or Special spell */
+					if (lore->cast_spell < UCHAR_MAX)
+						lore->cast_spell++;
+				}
+			}
+			if (player->is_dead && (lore->deaths < SHRT_MAX)) {
+				lore->deaths++;
+			}
+			lore_update(mon->race, lore);
+
+			break;
+		}
 		case CMD_DROP: {
 			struct object *obj = mon->held_obj;
 			int count = 0;

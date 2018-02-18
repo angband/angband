@@ -198,7 +198,7 @@ static bool summon_possible(int y1, int x1)
  *
  * This function could be an efficiency bottleneck.
  */
-static int choose_attack_spell(bitflag f[RSF_SIZE])
+int choose_attack_spell(bitflag *f)
 {
 	int num = 0;
 	byte spells[RSF_MAX];
