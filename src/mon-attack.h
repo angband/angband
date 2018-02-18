@@ -19,6 +19,7 @@
 #ifndef MONSTER_ATTACK_H
 #define MONSTER_ATTACK_H
 
+int choose_attack_spell(bitflag *f);
 bool make_attack_spell(struct monster *mon);
 bool check_hit(struct player *p, int power, int level, int accuracy);
 bool check_hit_monster(struct monster *mon, int power, int level, int accuracy);
