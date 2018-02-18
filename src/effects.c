@@ -167,6 +167,22 @@ static void get_target(struct source origin, int dir, int *ty, int *tx, int *fla
 }
 
 /**
+ * Check for monster targeting another monster
+ */
+static struct monster *monster_target_monster(effect_handler_context_t *context)
+{
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		if (mon->target.midx > 0) {
+			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			assert(t_mon);
+			return t_mon;
+		}
+	}
+	return NULL;
+}
+
+/**
  * Apply the project() function in a direction, or at a target
  */
 static bool project_aimed(struct source origin,
@@ -608,10 +624,10 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 		case SRC_MONSTER: {
 			struct monster *mon = cave_monster(cave,
 											   context->origin.which.monster);
+			struct monster *t_mon = monster_target_monster(context);
 
 			/* Damage another monster */
-			if (mon->target.midx > 0) {
-				struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			if (t_mon) {
 				bool fear = false;
 
 				mon_take_hit(t_mon, dam, &fear, " dies.");
@@ -877,50 +893,48 @@ bool effect_handler_TIMED_SET(effect_handler_context_t *context)
 bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
+	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
 
 	/* Check for monster targeting another monster */
-	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
-		if (mon->target.midx > 0) {
-			struct monster *t_mon = cave_monster(cave, mon->target.midx);
-			int mon_tmd_effect = -1;
+	if (t_mon) {
+		int mon_tmd_effect = -1;
 
-			/* Will do until monster and player timed effects are fused */
-			switch (context->subtype) {
-				case TMD_CONFUSED: {
-					mon_tmd_effect = MON_TMD_CONF;
-					break;
-				}
-				case TMD_SLOW: {
-					mon_tmd_effect = MON_TMD_SLOW;
-					break;
-				}
-				case TMD_PARALYZED: {
-					mon_tmd_effect = MON_TMD_HOLD;
-					break;
-				}
-				case TMD_BLIND: {
-					mon_tmd_effect = MON_TMD_STUN;
-					break;
-				}
-				case TMD_AFRAID: {
-					mon_tmd_effect = MON_TMD_FEAR;
-					break;
-				}
-				case TMD_AMNESIA: {
-					mon_tmd_effect = MON_TMD_SLEEP;
-					break;
-				}
-				default: {
-				}
+		/* Will do until monster and player timed effects are fused */
+		switch (context->subtype) {
+			case TMD_CONFUSED: {
+				mon_tmd_effect = MON_TMD_CONF;
+				break;
 			}
-			if (mon_tmd_effect >= 0) {
-				mon_inc_timed(t_mon, mon_tmd_effect, MAX(amount, 0), 0, false);
+			case TMD_SLOW: {
+				mon_tmd_effect = MON_TMD_SLOW;
+				break;
 			}
-			return true;
+			case TMD_PARALYZED: {
+				mon_tmd_effect = MON_TMD_HOLD;
+				break;
+			}
+			case TMD_BLIND: {
+				mon_tmd_effect = MON_TMD_STUN;
+				break;
+			}
+			case TMD_AFRAID: {
+				mon_tmd_effect = MON_TMD_FEAR;
+				break;
+			}
+			case TMD_AMNESIA: {
+				mon_tmd_effect = MON_TMD_SLEEP;
+				break;
+			}
+			default: {
+				break;
+			}
 		}
+		if (mon_tmd_effect >= 0) {
+			mon_inc_timed(t_mon, mon_tmd_effect, MAX(amount, 0), 0, false);
+		}
+		return true;
 	}
 
 	if (!player->timed[context->subtype] || !context->other) {
@@ -1215,6 +1229,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 	bool monster = context->origin.what != SRC_TRAP;
 	char m_name[80];
 	struct monster *mon = NULL;
+	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
 
@@ -1228,8 +1243,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 	}
 
 	/* Target is another monster - disenchant it */
-	if (mon->target.midx > 0) {
-		struct monster *t_mon = cave_monster(cave, mon->target.midx);
+	if (t_mon) {
 		mon_inc_timed(t_mon, MON_TMD_DISEN, MAX(drain, 0), 0, false);
 		return true;
 	}
@@ -2658,21 +2672,16 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	bool only_vault_grids_possible = true;
 
 	bool is_player = (context->origin.what != SRC_MONSTER || context->subtype);
+	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
-
-	/* Check for monster targeting another monster; this overrides is_player */
-	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
-		if (mon->target.midx > 0) {
-			struct monster *t_mon = cave_monster(cave, mon->target.midx);
-			start = loc(t_mon->fx, t_mon->fy);
-		}
-	}
 
 	/* Establish the coordinates to teleport from, if we don't know already */
 	if (start.x && start.y) {
 		/* We're good */
+	} else if (t_mon) {
+		/* Monster targeting another monster */
+		start = loc(t_mon->fx, t_mon->fy);
 	} else if (is_player) {
 		start = loc(player->px, player->py);
 
@@ -2800,6 +2809,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 	int ny = player->py, nx = player->px;
 	int y, x, dis = 0, ctr = 0, dir = 5;
+	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
 
@@ -2808,9 +2818,8 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	}
 
 	/* Where are we coming from? */
-	if (mon && mon->target.midx > 0) {
+	if (t_mon) {
 		/* Monster being teleported */
-		struct monster *t_mon = cave_monster(cave, mon->target.midx);
 		y = t_mon->fy;
 		x = t_mon->fx;
 	} else {
@@ -2878,21 +2887,18 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	bool up = true;
 	bool down = true;
 	int target_depth = dungeon_get_next_level(player->max_depth, 1);
+	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
 
 	/* Check for monster targeting another monster */
-	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
-		if (mon->target.midx > 0) {
-			struct monster *t_mon = cave_monster(cave, mon->target.midx);
-
-			/* Monster is just gone */
-			add_monster_message(t_mon, MON_MSG_DISAPPEAR, false);
-			delete_monster_idx(mon->target.midx);
-			return true;
-		}
+	if (t_mon) {
+		/* Monster is just gone */
+		add_monster_message(t_mon, MON_MSG_DISAPPEAR, false);
+		delete_monster_idx(t_mon->midx);
+		return true;
 	}
+
 	/* Resist hostile teleport */
 	if (context->origin.what == SRC_MONSTER &&
 			player_resists(player, ELEM_NEXUS)) {
@@ -3445,20 +3451,17 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 {
 	struct loc target = loc(player->px, player->py);
 	bool message = player->timed[TMD_BLIND] ? false : true;
+	struct monster *t_mon = monster_target_monster(context);
 
 	/* Check for monster targeting another monster */
-	if (context->origin.what == SRC_MONSTER) {
-		struct monster *mon = cave_monster(cave, context->origin.which.monster);
-		if (mon->target.midx > 0) {
-			struct monster *t_mon = cave_monster(cave, mon->target.midx);
-			char m_name[80];
-			target = loc(t_mon->fx, t_mon->fy);
-			monster_desc(m_name, sizeof(m_name), t_mon,
-						 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
-			if (message) {
-				msg("Darkness surrounds %s.", m_name);
-				message = false;
-			}
+	if (t_mon) {
+		char m_name[80];
+		target = loc(t_mon->fx, t_mon->fy);
+		monster_desc(m_name, sizeof(m_name), t_mon,
+					 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
+		if (message) {
+			msg("Darkness surrounds %s.", m_name);
+			message = false;
 		}
 	}
 
@@ -3538,6 +3541,8 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			struct monster *mon = cave_monster(cave, context->origin.which.monster);
 			int conf_level = monster_effect_level(mon, MON_TMD_CONF);
 			int accuracy = 100;
+			struct monster *t_mon = monster_target_monster(context);
+
 			while (conf_level) {
 				accuracy *= (100 - CONF_RANDOM_CHANCE);
 				accuracy /= 100;
@@ -3551,12 +3556,14 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 			if (randint1(100) > accuracy) {
+				/* Confiused direction */
 				int dir = randint1(9);
 				target = loc(mon->fx + ddx[dir], mon->fy + ddy[dir]);
-			} else if (mon->target.midx > 0) {
-				struct monster *t_mon = cave_monster(cave, mon->target.midx);
+			} else if (t_mon) {
+				/* Target monster */
 				target = loc(t_mon->fx, t_mon->fy);
 			} else {
+				/* Target player */
 				target = loc(player->px, player->py);
 			}
 
@@ -3623,11 +3630,11 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
+		struct monster *t_mon = monster_target_monster(context);
 		flg |= PROJECT_PLAY;
 
 		/* Target player or monster? */
-		if (mon->target.midx > 0) {
-			struct monster *t_mon = cave_monster(cave, mon->target.midx);
+		if (t_mon) {
 			target = loc(t_mon->fx, t_mon->fy);
 		} else {
 			target = loc(player->px, player->py);
@@ -4044,9 +4051,8 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
 	/* Monster cast at monster */
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
-		if (mon->target.midx > 0) {
-			struct monster *t_mon = cave_monster(cave, mon->target.midx);
-
+		struct monster *t_mon = monster_target_monster(context);
+		if (t_mon) {
 			int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
 			return (project(source_monster(mon->target.midx), rad,
 							loc(t_mon->fx, t_mon->fy), dam, context->subtype,
