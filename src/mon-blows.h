@@ -54,7 +54,6 @@ typedef struct melee_effect_handler_context_s {
 	const char *ddesc;
 	bool obvious;
 	bool blinked;
-	bool do_break;
 	int damage;
 } melee_effect_handler_context_t;
 
