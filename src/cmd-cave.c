@@ -1457,7 +1457,7 @@ void do_cmd_mon_command(struct command *cmd)
 			get_aim_dir(&dir);
 			t_mon = target_get_monster();
 			if (!t_mon) {
-				msg("No monster selected!");
+				msg("No target monster selected!");
 				return;
 			}
 			mon->target.midx = t_mon->midx;
@@ -1465,6 +1465,10 @@ void do_cmd_mon_command(struct command *cmd)
 			/* Pick a random spell and cast it */
 			rsf_copy(f, mon->race->spell_flags);
 			spell_index = choose_attack_spell(f);
+			if (!spell_index) {
+				msg("This monster has no spells!");
+				return;
+			}
 			do_mon_spell(spell_index, mon, seen);
 
 			/* Remember what the monster did */
@@ -1521,6 +1525,7 @@ void do_cmd_mon_command(struct command *cmd)
 		case CMD_WALK: {
 			int ny, nx;
 			bool can_move = false;
+			struct monster *t_mon = NULL;
 
 			/* Get arguments */
 			if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
@@ -1529,7 +1534,8 @@ void do_cmd_mon_command(struct command *cmd)
 			nx = mon->fx + ddx[dir];
 
 			/* Monster there - attack */
-			if (square_monster(cave, ny, nx)) {
+			t_mon = square_monster(cave, ny, nx);
+			if (t_mon) {
 				/* DO */
 				can_move = false;
 				break;

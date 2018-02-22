@@ -799,15 +799,8 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 
 	/* Radius 8 earthquake centered at the monster */
 	if (context->damage > 23) {
-		int px_old = context->p->px;
-		int py_old = context->p->py;
-
-		effect_simple(EF_EARTHQUAKE, source_monster(context->mon->midx), "0", 0, 8, 0, 0, 0, NULL);
-
-		/* Stop the blows if the player is pushed away */
-		if ((px_old != context->p->px) ||
-			(py_old != context->p->py))
-			context->do_break = true;
+		effect_simple(EF_EARTHQUAKE, source_monster(context->mon->midx), "0",
+					  0, 8, 0, 0, 0, NULL);
 	}
 }
 

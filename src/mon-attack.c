@@ -452,9 +452,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
-	int ac = p->state.ac + p->state.to_a;
 	int ap_cnt;
-	int k, tmp;
 	char m_name[80];
 	char ddesc[80];
 	bool blinked = false;
@@ -471,9 +469,10 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
-		bool visible = false;
+		int py = p->py, px = p->px;
+		bool visible = monster_is_visible(mon) ||
+			rf_has(mon->race->flags, RF_HAS_LIGHT);
 		bool obvious = false;
-		bool do_break = false;
 
 		int damage = 0;
 		bool do_cut = false;
@@ -487,20 +486,14 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		struct blow_method *method = mon->race->blow[ap_cnt].method;
 		random_value dice = mon->race->blow[ap_cnt].dice;
 
-		/* Hack -- no more attacks */
+		/* No more attacks */
 		if (!method) break;
-		assert(effect);
 
 		/* Handle "leaving" */
 		if (p->is_dead || p->upkeep->generate_level) break;
 
-		/* Extract visibility (before blink) */
-		if (monster_is_visible(mon)) visible = true;
-
-		/* Extract visibility from carrying light */
-		if (rf_has(mon->race->flags, RF_HAS_LIGHT)) visible = true;
-
 		/* Monster hits player */
+		assert(effect);
 		if (streq(effect->name, "NONE") ||
 				check_hit(p, effect->power, rlev,
 						  stunned ? STUN_HIT_REDUCTION : 0)) {
@@ -565,11 +558,10 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 					mon,
 					rlev,
 					method,
-					ac,
+					p->state.ac + p->state.to_a,
 					ddesc,
 					obvious,
 					blinked,
-					do_break,
 					damage,
 				};
 
@@ -579,7 +571,6 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				obvious = context.obvious;
 				blinked = context.blinked;
 				damage = context.damage;
-				do_break = context.do_break;
 			} else {
 				msg("ERROR: Effect handler not found for %s.", effect->name);
 			}
@@ -604,44 +595,44 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			/* Handle cut */
 			if (do_cut) {
 				/* Critical hit (zero if non-critical) */
-				tmp = monster_critical(dice, rlev, damage);
+				int amt, tmp = monster_critical(dice, rlev, damage);
 
 				/* Roll for damage */
 				switch (tmp) {
-					case 0: k = 0; break;
-					case 1: k = randint1(5); break;
-					case 2: k = randint1(5) + 5; break;
-					case 3: k = randint1(20) + 20; break;
-					case 4: k = randint1(50) + 50; break;
-					case 5: k = randint1(100) + 100; break;
-					case 6: k = 300; break;
-					default: k = 500; break;
+					case 0: amt = 0; break;
+					case 1: amt = randint1(5); break;
+					case 2: amt = randint1(5) + 5; break;
+					case 3: amt = randint1(20) + 20; break;
+					case 4: amt = randint1(50) + 50; break;
+					case 5: amt = randint1(100) + 100; break;
+					case 6: amt = 300; break;
+					default: amt = 500; break;
 				}
 
 				/* Apply the cut */
-				if (k) (void)player_inc_timed(p, TMD_CUT, k, true, true);
+				if (amt) (void)player_inc_timed(p, TMD_CUT, amt, true, true);
 			}
 
 			/* Handle stun */
 			if (do_stun) {
 				/* Critical hit (zero if non-critical) */
-				tmp = monster_critical(dice, rlev, damage);
+				int amt, tmp = monster_critical(dice, rlev, damage);
 
 				/* Roll for damage */
 				switch (tmp) {
-					case 0: k = 0; break;
-					case 1: k = randint1(5); break;
-					case 2: k = randint1(10) + 10; break;
-					case 3: k = randint1(20) + 20; break;
-					case 4: k = randint1(30) + 30; break;
-					case 5: k = randint1(40) + 40; break;
-					case 6: k = 100; break;
-					default: k = 200; break;
+					case 0: amt = 0; break;
+					case 1: amt = randint1(5); break;
+					case 2: amt = randint1(10) + 10; break;
+					case 3: amt = randint1(20) + 20; break;
+					case 4: amt = randint1(30) + 30; break;
+					case 5: amt = randint1(40) + 40; break;
+					case 6: amt = 100; break;
+					default: amt = 200; break;
 				}
 
 				/* Apply the stun */
-				if (k)
-					(void)player_inc_timed(p, TMD_STUN, k, true, true);
+				if (amt)
+					(void)player_inc_timed(p, TMD_STUN, amt, true, true);
 			}
 		} else {
 			/* Visible monster missed player, so notify if appropriate. */
@@ -662,8 +653,8 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			}
 		}
 
-		/* Skip the other blows if necessary */
-		if (do_break) break;
+		/* Skip the other blows if the player has moved */
+		if ((p->py != py) || (p->px != px)) break;
 	}
 
 	/* Blink away */
