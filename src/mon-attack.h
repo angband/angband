@@ -25,7 +25,6 @@ bool check_hit(struct player *p, int power, int level, int accuracy);
 bool check_hit_monster(struct monster *mon, int power, int level, int accuracy);
 int adjust_dam_armor(int damage, int ac);
 bool make_attack_normal(struct monster *mon, struct player *p);
-
-extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
+bool monster_attack_monster(struct monster *mon, struct monster *t_mon);
 
 #endif /* !MONSTER_ATTACK_H */
