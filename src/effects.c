@@ -3457,8 +3457,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	if (t_mon) {
 		char m_name[80];
 		target = loc(t_mon->fx, t_mon->fy);
-		monster_desc(m_name, sizeof(m_name), t_mon,
-					 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
+		monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
 		if (message) {
 			msg("Darkness surrounds %s.", m_name);
 			message = false;
@@ -4473,8 +4472,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	monster_swap(player->py, player->px, y, x);
 
 	/* Now bite it */
-	monster_desc(m_name, sizeof(m_name), mon,
-				 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
 	msg("You bite the %s.", m_name);
 	drain = MIN(mon->hp, amount);
 	dead = mon_take_hit(mon, amount, &fear, " is drained dry!");
