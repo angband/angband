@@ -332,8 +332,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	my_strcpy(verb, "punch", sizeof(verb));
 
 	/* Extract monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, 
-				 MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
 
 	/* Auto-Recall and track if possible and visible */
 	if (monster_is_visible(mon)) {

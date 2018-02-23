@@ -46,7 +46,7 @@ static int take1(struct player *p, struct monster *m, struct blow_method *blow,
 	m->race->blow[0].method = blow;
 	p->chp = p->mhp;
 	old = p->chp;
-	testfn_make_attack_normal(m, p);
+	make_attack_normal(m, p);
 	new = p->chp;
 	p->chp = p->mhp;
 	return old - new;

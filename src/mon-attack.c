@@ -675,8 +675,3 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	/* Assume we attacked */
 	return (true);
 }
-
-
-
-/* Test functions */
-bool (*testfn_make_attack_normal)(struct monster *m, struct player *p) = make_attack_normal;

@@ -134,8 +134,7 @@ static void spell_message(struct monster *mon,
 					struct monster *t_mon;
 					if (mon->target.midx > 0) {
 						t_mon = cave_monster(cave, mon->target.midx);
-						monster_desc(m_name, sizeof(m_name), t_mon,
-									 MDESC_OBJE | MDESC_IND_HID |MDESC_PRO_HID);
+						monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
 						strnfcat(buf, sizeof(buf), &end, m_name);
 					} else {
 						strnfcat(buf, sizeof(buf), &end, "you");
