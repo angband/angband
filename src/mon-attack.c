@@ -556,6 +556,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				melee_effect_handler_context_t context = {
 					p,
 					mon,
+					NULL,
 					rlev,
 					method,
 					p->state.ac + p->state.to_a,
@@ -668,6 +669,163 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	/* Always notice cause of death */
 	if (p->is_dead && (lore->deaths < SHRT_MAX))
 		lore->deaths++;
+
+	/* Learn lore */
+	lore_update(mon->race, lore);
+
+	/* Assume we attacked */
+	return (true);
+}
+
+/**
+ * Attack the player via physical attacks.
+ */
+bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
+{
+	struct monster_lore *lore = get_lore(mon->race);
+	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
+	int ap_cnt;
+	char m_name[80];
+	char t_name[80];
+	bool blinked = false;
+	bool stunned = mon->m_timed[MON_TMD_STUN] ? true : false;
+
+	/* Not allowed to attack */
+	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
+
+	/* Get the monster names (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+	monster_desc(t_name, sizeof(t_name), t_mon, MDESC_TARG);
+
+	/* Scan through all blows */
+	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
+		int ty = t_mon->fy, tx = t_mon->fx;
+		bool visible = monster_is_visible(mon) ||
+			rf_has(mon->race->flags, RF_HAS_LIGHT);
+		bool obvious = false;
+
+		int damage = 0;
+		bool do_stun = false;
+		int sound_msg = MSG_GENERIC;
+
+		const char *act = NULL;
+
+		/* Extract the attack infomation */
+		struct blow_effect *effect = mon->race->blow[ap_cnt].effect;
+		struct blow_method *method = mon->race->blow[ap_cnt].method;
+		random_value dice = mon->race->blow[ap_cnt].dice;
+
+		/* No more attacks */
+		if (!method) break;
+
+		/* Monster hits monster */
+		assert(effect);
+		if (streq(effect->name, "NONE") ||
+				check_hit_monster(t_mon, effect->power, rlev,
+						  stunned ? STUN_HIT_REDUCTION : 0)) {
+			melee_effect_handler_f effect_handler;
+
+			/* Describe the attack method */
+			act = monster_blow_method_action(method);
+			do_stun = method->stun;
+			sound_msg = method->msgt;
+
+			/* Hack -- assume all attacks are obvious */
+			obvious = true;
+
+			/* Roll dice */
+			damage = randcalc(dice, rlev, RANDOMISE);
+
+			/* Reduce damage when stunned */
+			if (stunned) {
+				damage = (damage * (100 - STUN_DAM_REDUCTION)) / 100;
+			}
+
+			/* Message */
+			if (act) {
+				const char *fullstop = ".";
+				if (suffix(act, "'") || suffix(act, "!")) {
+					fullstop = "";
+				}
+
+				msgt(sound_msg, "%s %s%s", m_name, act, fullstop);
+			}
+
+			/* Perform the actual effect. */
+			effect_handler = melee_handler_for_blow_effect(effect->name);
+			if (effect_handler != NULL) {
+				melee_effect_handler_context_t context = {
+					NULL,
+					mon,
+					t_mon,
+					rlev,
+					method,
+					t_mon->race->ac,
+					NULL,
+					obvious,
+					blinked,
+					damage,
+				};
+
+				effect_handler(&context);
+
+				/* Save any changes made in the handler for later use. */
+				obvious = context.obvious;
+				blinked = context.blinked;
+				damage = context.damage;
+			} else {
+				msg("ERROR: Effect handler not found for %s.", effect->name);
+			}
+
+			/* Handle stun */
+			if (do_stun && square_monster(cave, ty, tx)) {
+				/* Critical hit (zero if non-critical) */
+				int amt, tmp = monster_critical(dice, rlev, damage);
+
+				/* Roll for damage */
+				switch (tmp) {
+					case 0: amt = 0; break;
+					case 1: amt = randint1(5); break;
+					case 2: amt = randint1(10) + 10; break;
+					case 3: amt = randint1(20) + 20; break;
+					case 4: amt = randint1(30) + 30; break;
+					case 5: amt = randint1(40) + 40; break;
+					case 6: amt = 100; break;
+					default: amt = 200; break;
+				}
+
+				/* Apply the stun */
+				if (amt)
+					(void)mon_inc_timed(t_mon, MON_TMD_STUN, amt, 0, false);
+			}
+		} else {
+			/* Visible monster missed monster, so notify if appropriate. */
+			if (monster_is_visible(mon) && method->miss) {
+				msg("%s misses %s.", m_name, t_name);
+			}
+		}
+
+		/* Analyze "visible" monsters only */
+		if (visible) {
+			/* Count "obvious" attacks (and ones that cause damage) */
+			if (obvious || damage || (lore->blows[ap_cnt].times_seen > 10)) {
+				/* Count attacks of this type */
+				if (lore->blows[ap_cnt].times_seen < UCHAR_MAX)
+					lore->blows[ap_cnt].times_seen++;
+			}
+		}
+
+		/* Skip the other blows if the target has moved or died */
+		if (!square_monster(cave, ty, tx)) break;
+	}
+
+	/* Blink away */
+	if (blinked) {
+		char dice[5];
+		msg("There is a puff of smoke!");
+		strnfmt(dice, sizeof(dice), "%d", z_info->max_sight * 2 + 5);
+		effect_simple(EF_TELEPORT, source_monster(mon->midx), dice, 0, 0, 0, 0, 0, NULL);
+	}
 
 	/* Learn lore */
 	lore_update(mon->race, lore);
