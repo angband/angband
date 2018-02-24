@@ -33,6 +33,7 @@
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
+#include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -1106,4 +1107,73 @@ struct monster *get_commanded_monster(void)
 	}
 
 	return NULL;
+}
+
+/**
+ * Get a random object from a monster's inventory
+ */
+struct object *get_random_monster_object(struct monster *mon)
+{
+	struct object *obj = mon->held_obj;
+	int count = 0;
+
+	if (!obj) return NULL;
+
+	/* Count the objects */
+	while (obj) {
+		count++;
+		obj = obj->next;
+	}
+
+	/* Now pick one... */
+	obj = mon->held_obj;
+	count -= randint1(count);
+	while (count) {
+		obj = obj->next;
+		count--;
+	}
+
+	return obj;
+}
+
+/**
+ * Player or monster midx steals an item from a monster
+ *
+ * \param mon Monster stolen from
+ * \param midx Index of the thief
+ */
+void steal_monster_item(struct monster *mon, int midx)
+{
+	struct object *obj = get_random_monster_object(mon);
+	struct monster *thief = NULL;
+
+	if (midx < 0) {
+		/* Players can't steal, yet */
+		return;
+	} else {
+		char m_name[80];
+		char t_name[80];
+
+		thief = cave_monster(cave, midx);
+		assert(thief);
+
+		/* Get the monster names (or "it") */
+		monster_desc(m_name, sizeof(m_name), thief, MDESC_STANDARD);
+		monster_desc(t_name, sizeof(t_name), mon, MDESC_TARG);
+
+		/* Try to steal */
+		if (react_to_slay(obj, thief)) {
+			/* Fail to steal */
+			msg("%s tries to steal something from %s, but fails.", m_name,
+				t_name);
+		} else {
+			msg("%s steals something from %s!", m_name,
+				t_name);
+
+			/* Steal and carry */
+			obj->held_m_idx = 0;
+			pile_excise(&mon->held_obj, obj);
+			(void)monster_carry(cave, thief, obj);
+		}
+	}
 }

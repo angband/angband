@@ -24,6 +24,7 @@
 #include "monster.h"
 #include "mon-attack.h"
 #include "mon-blows.h"
+#include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-msg.h"
@@ -32,6 +33,7 @@
 #include "obj-gear.h"
 #include "obj-make.h"
 #include "obj-pile.h"
+#include "obj-slays.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
@@ -462,6 +464,68 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 	}
 }
 
+static void steal_player_item(melee_effect_handler_context_t *context)
+{
+	int tries;
+
+    /* Find an item */
+    for (tries = 0; tries < 10; tries++) {
+		struct object *obj, *stolen;
+		char o_name[80];
+		bool split = false;
+		bool none_left = false;
+
+        /* Pick an item */
+		int index = randint0(z_info->pack_size);
+
+        /* Obtain the item */
+        obj = context->p->upkeep->inven[index];
+
+		/* Skip non-objects */
+		if (obj == NULL) continue;
+
+        /* Skip artifacts */
+        if (obj->artifact) continue;
+
+        /* Get a description */
+        object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+
+		/* Is it one of a stack being stolen? */
+		if (obj->number > 1)
+			split = true;
+
+		/* Try to steal */
+		if (react_to_slay(obj, context->mon)) {
+			/* React to objects that hurt the monster */
+			char m_name[80];
+
+			/* Get the monster names (or "it") */
+			monster_desc(m_name, sizeof(m_name), context->mon, MDESC_STANDARD);
+
+			/* Fail to steal */
+			msg("%s tries to steal %s %s, but fails.", m_name,
+				(split ? "one of your" : "your"), o_name);
+		} else {
+			/* Message */
+			msg("%s %s (%c) was stolen!", (split ? "One of your" : "Your"),
+				o_name, I2A(index));
+
+			/* Steal and carry */
+			stolen = gear_object_for_use(obj, 1, false, &none_left);
+			(void)monster_carry(cave, context->mon, stolen);
+		}
+
+        /* Obvious */
+        context->obvious = true;
+
+        /* Blink away */
+        context->blinked = true;
+
+        /* Done */
+        break;
+    }
+}
+
 /**
  * ------------------------------------------------------------------------
  * Monster blow effect handlers
@@ -697,78 +761,43 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
  */
 static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *context)
 {
-	int tries;
-
     /* Take damage */
 	if (context->p) {
 		take_hit(context->p, context->damage, context->ddesc);
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
-		return;
+		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE)) return;
 	}
 
-    /* Saving throw (unless paralyzed) based on dex and level */
-    if (!context->p->timed[TMD_PARALYZED] &&
-        (randint0(100) < (adj_dex_safe[context->p->state.stat_ind[STAT_DEX]] +
-                          context->p->lev))) {
-        /* Saving throw message */
-        msg("You grab hold of your backpack!");
+	/* Steal from player or monster */
+	if (context->p) {
+		int chance = adj_dex_safe[context->p->state.stat_ind[STAT_DEX]] +
+			context->p->lev;
 
-        /* Occasional "blink" anyway */
-        context->blinked = true;
+		/* Saving throw (unless paralyzed) based on dex and level */
+		if (!context->p->timed[TMD_PARALYZED] && (randint0(100) < chance)) {
+			/* Saving throw message */
+			msg("You grab hold of your backpack!");
 
-        /* Obvious */
-        context->obvious = true;
+			/* Occasional "blink" anyway */
+			context->blinked = true;
 
-        /* Done */
-        return;
-    }
+			/* Obvious */
+			context->obvious = true;
 
-    /* Find an item */
-    for (tries = 0; tries < 10; tries++) {
-		struct object *obj, *stolen;
-		char o_name[80];
-		bool split = false;
-		bool none_left = false;
+			/* Done */
+			return;
+		}
 
-        /* Pick an item */
-		int index = randint0(z_info->pack_size);
-
-        /* Obtain the item */
-        obj = context->p->upkeep->inven[index];
-
-		/* Skip non-objects */
-		if (obj == NULL) continue;
-
-        /* Skip artifacts */
-        if (obj->artifact) continue;
-
-        /* Get a description */
-        object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
-
-		/* Is it one of a stack being stolen? */
-		if (obj->number > 1)
-			split = true;
-
-        /* Message */
-        msg("%s %s (%c) was stolen!", (split ? "One of your" : "Your"),
-			o_name, I2A(index));
-
-        /* Steal and carry */
-		stolen = gear_object_for_use(obj, 1, false, &none_left);
-        (void)monster_carry(cave, context->mon, stolen);
-
-        /* Obvious */
-        context->obvious = true;
-
-        /* Blink away */
-        context->blinked = true;
-
-        /* Done */
-        break;
-    }
+		/* Try to steal an item */
+		steal_player_item(context);
+	} else {
+		assert(context->t_mon);
+		steal_monster_item(context->t_mon, context->mon->midx);
+		context->blinked = true;
+		context->obvious = true;
+	}
 }
 
 /**
