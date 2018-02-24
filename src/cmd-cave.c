@@ -1506,6 +1506,7 @@ void do_cmd_mon_command(struct command *cmd)
 		case CMD_WALK: {
 			int ny, nx;
 			bool can_move = false;
+			bool has_hit = false;
 			struct monster *t_mon = NULL;
 
 			/* Get arguments */
@@ -1517,9 +1518,12 @@ void do_cmd_mon_command(struct command *cmd)
 			/* Monster there - attack */
 			t_mon = square_monster(cave, ny, nx);
 			if (t_mon) {
-				/* DO */
-				can_move = false;
-				break;
+				/* Attack the monster */
+				if (monster_attack_monster(mon, t_mon)) {
+					has_hit = true;
+				} else {
+					can_move = false;
+				}
 			} else if (square_ispassable(cave, ny, nx)) {
 				/* Floor is open? */
 				can_move = true;
@@ -1587,7 +1591,9 @@ void do_cmd_mon_command(struct command *cmd)
 				}
 			}
 
-			if (can_move) {
+			if (has_hit) {
+				break;
+			} else if (can_move) {
 				monster_swap(mon->fy, mon->fx, ny, nx);
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 			} else {
