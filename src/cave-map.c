@@ -106,7 +106,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 
 		/* Darkness or torchlight */
 		if (!square_isglow(cave, y, x)) {
-			if (player_has(player, PF_UNLIGHT) && !player->state.cur_light) {
+			if (player_has(player, PF_UNLIGHT) && !square_islit(cave, y, x)) {
 				g->lighting = LIGHTING_DARK;
 			} else if (OPT(player, view_yellow_light)) {
 				g->lighting = LIGHTING_TORCH;

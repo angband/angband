@@ -101,7 +101,7 @@ EFFECT(BRAND_AMMO,					false,	NULL,		0,		EFINFO_NONE,	"brands a stack of ammunit
 EFFECT(BRAND_BOLTS,					false,	NULL,		0,		EFINFO_NONE,	"brands bolts with fire, in an unbalanced fashion")
 EFFECT(TAP_DEVICE,					false,	NULL,		0,		EFINFO_NONE,	"drains magical energy from a staff or wand")
 EFFECT(SHAPECHANGE,					false,	NULL,		0,		EFINFO_NONE,	"changes the player's shape")
-EFFECT(CURSE,						true,	NULL,		0,		EFINFO_NONE,	"damages a monster directly")
+EFFECT(CURSE,						true,	"dam",		0,		EFINFO_NONE,	"damages a monster directly")
 EFFECT(COMMAND,						true,	NULL,		0,		EFINFO_NONE,	"takes control of a monster")
 EFFECT(JUMP_AND_BITE,				false,	NULL,		0,		EFINFO_NONE,	"jumps the player to the closest living monster and bites it")
 EFFECT(BIZARRE,						true,	NULL,		0,		EFINFO_NONE,	"does bizarre things")
