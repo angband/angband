@@ -479,7 +479,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		bool do_stun = false;
 		int sound_msg = MSG_GENERIC;
 
-		const char *act = NULL;
+		char *act = NULL;
 
 		/* Extract the attack infomation */
 		struct blow_effect *effect = mon->race->blow[ap_cnt].effect;
@@ -519,7 +519,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			}
 
 			/* Describe the attack method */
-			act = monster_blow_method_action(method);
+			act = monster_blow_method_action(method, -1);
 			do_cut = method->cut;
 			do_stun = method->stun;
 			sound_msg = method->msgt;
@@ -635,6 +635,8 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				if (amt)
 					(void)player_inc_timed(p, TMD_STUN, amt, true, true);
 			}
+
+			string_free(act);
 		} else {
 			/* Visible monster missed player, so notify if appropriate. */
 			if (monster_is_visible(mon) &&	method->miss) {
@@ -708,7 +710,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 		bool do_stun = false;
 		int sound_msg = MSG_GENERIC;
 
-		const char *act = NULL;
+		char *act = NULL;
 
 		/* Extract the attack infomation */
 		struct blow_effect *effect = mon->race->blow[ap_cnt].effect;
@@ -726,7 +728,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 			melee_effect_handler_f effect_handler;
 
 			/* Describe the attack method */
-			act = monster_blow_method_action(method);
+			act = monster_blow_method_action(method, t_mon->midx);
 			do_stun = method->stun;
 			sound_msg = method->msgt;
 
@@ -798,6 +800,8 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 				if (amt)
 					(void)mon_inc_timed(t_mon, MON_TMD_STUN, amt, 0, false);
 			}
+
+			string_free(act);
 		} else {
 			/* Visible monster missed monster, so notify if appropriate. */
 			if (monster_is_visible(mon) && method->miss) {
