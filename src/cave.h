@@ -331,6 +331,7 @@ bool square_iswall(struct chunk *c, int y, int x);
 bool square_isstrongwall(struct chunk *c, int y, int x);
 bool square_isbright(struct chunk *c, int y, int x);
 bool square_isfiery(struct chunk *c, int y, int x);
+bool square_islit(struct chunk *c, int y, int x);
 bool square_isdamaging(struct chunk *c, int y, int x);
 bool square_isnoflow(struct chunk *c, int y, int x);
 bool square_isnoscent(struct chunk *c, int y, int x);

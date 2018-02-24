@@ -651,7 +651,7 @@ void update_view(struct chunk *c, struct player *p)
 
 	/* Handle UNLIGHT */
 	if (!radius && player_has(p, PF_UNLIGHT)) {
-		radius = 2;
+		radius = 2 + p->lev / 6;
 	}
 
 	/* Handle real light */
