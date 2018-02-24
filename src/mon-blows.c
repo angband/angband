@@ -25,6 +25,8 @@
 #include "mon-attack.h"
 #include "mon-blows.h"
 #include "mon-lore.h"
+#include "mon-make.h"
+#include "mon-msg.h"
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
@@ -106,7 +108,7 @@ const char *monster_blow_method_action(struct blow_method *method)
 
 /**
  * ------------------------------------------------------------------------
- * Monster blow effects
+ * Monster blow effect helper functions
  * ------------------------------------------------------------------------ */
 int blow_index(const char *name)
 {
@@ -118,6 +120,134 @@ int blow_index(const char *name)
 			return i;
 	}
 	return 0;
+}
+
+static int monster_elemental_damage(melee_effect_handler_context_t *context,
+									int type, enum mon_messages *hurt_msg,
+									enum mon_messages *die_msg)
+{
+	struct monster_lore *lore = get_lore(context->t_mon->race);
+	int hurt_flag = RF_NONE;
+	int imm_flag = RF_NONE;
+	int damage = 0;
+
+	/* Deal with elemental types */
+	switch (type) {
+		case PROJ_ACID: {
+			imm_flag = RF_IM_ACID;
+			break;
+		}
+		case PROJ_ELEC: {
+			imm_flag = RF_IM_ELEC;
+			break;
+		}
+		case PROJ_FIRE: {
+			imm_flag = RF_IM_FIRE;
+			hurt_flag = RF_HURT_FIRE;
+			*hurt_msg = MON_MSG_CATCH_FIRE;
+			*die_msg = MON_MSG_DISINTEGRATES;
+			break;
+		}
+		case PROJ_COLD: {
+			imm_flag = RF_IM_COLD;
+			hurt_flag = RF_HURT_FIRE;
+			*hurt_msg = MON_MSG_BADLY_FROZEN;
+			*die_msg = MON_MSG_FREEZE_SHATTER;
+			break;
+		}
+		case PROJ_POIS: {
+			imm_flag = RF_IM_POIS;
+			break;
+		}
+		default: return 0;
+	}
+
+	rf_on(lore->flags, imm_flag);
+	rf_on(lore->flags, hurt_flag);
+
+	if (rf_has(context->t_mon->race->flags, imm_flag)) {
+		*hurt_msg = MON_MSG_RESIST_A_LOT;
+		damage = context->damage / 9;
+	} else if (rf_has(context->t_mon->race->flags, hurt_flag)) {
+		damage = context->damage * 2;
+	}
+
+	return damage;
+}
+
+/**
+ * Deal damage to a monster from another monster.
+ *
+ * This is a helper for melee handlers. It is very similar to mon_take_hit(),
+ * but eliminates the player-oriented stuff of that function.
+ *
+ * \param context is the project_m context.
+ * \param hurt_msg is the message if the monster is hurt (if any).
+ * \return true if the monster died, false if it is still alive.
+ */
+static bool melee_monster_attack(melee_effect_handler_context_t *context,
+								 enum mon_messages hurt_msg,
+								 enum mon_messages die_msg)
+{
+	bool mon_died = false;
+	int dam = context->damage;
+	struct monster *t_mon = context->t_mon;
+
+	/* "Unique" monsters can only be "killed" by the player */
+	if (rf_has(t_mon->race->flags, RF_UNIQUE)) {
+		/* Reduce monster hp to zero, but don't kill it. */
+		if (dam > t_mon->hp) dam = t_mon->hp;
+	}
+
+	/* Redraw (later) if needed */
+	if (player->upkeep->health_who == t_mon)
+		player->upkeep->redraw |= (PR_HEALTH);
+
+	/* Wake the monster up */
+	mon_clear_timed(t_mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+
+	/* Hurt the monster */
+	t_mon->hp -= dam;
+
+	/* Dead or damaged monster */
+	if (t_mon->hp < 0) {
+		/* Death message */
+		add_monster_message(t_mon, die_msg, false);
+
+		/* Generate treasure, etc */
+		monster_death(t_mon, false);
+
+		/* Delete the monster */
+		delete_monster_idx(t_mon->midx);
+		mon_died = true;
+	} else if (!monster_is_mimicking(t_mon)) {
+		/* Give detailed messages if visible */
+		if (hurt_msg != MON_MSG_NONE) {
+			add_monster_message(t_mon, hurt_msg, false);
+		} else if (dam > 0) {
+			message_pain(t_mon, dam);
+		}
+	}
+
+	/* Sometimes a monster gets scared by damage */
+	if (!t_mon->m_timed[MON_TMD_FEAR] &&
+		!rf_has(t_mon->race->flags, RF_NO_FEAR) && dam > 0) {
+		int percentage;
+
+		/* Percentage of fully healthy */
+		percentage = (100L * t_mon->hp) / t_mon->maxhp;
+
+		/* Run (sometimes) if at 10% or less of max hit points,
+		 * or (usually) when hit for half its current hit points */
+		if ((randint1(10) >= percentage) ||
+			((dam >= t_mon->hp) && (randint0(100) < 80))) {
+			int timer = randint1(10) + (((dam >= t_mon->hp) && (percentage > 7))
+										? 20 : ((11 - percentage) * 5));
+			mon_inc_timed(t_mon, MON_TMD_FEAR, timer,
+						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, false);
+		}
+	}
+	return mon_died;
 }
 
 /**
@@ -132,43 +262,59 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 								   int type, bool pure_element)
 {
 	int physical_dam, elemental_dam;
+	enum mon_messages hurt_msg = MON_MSG_NONE;
+	enum mon_messages die_msg = MON_MSG_NONE;
 
 	if (pure_element)
 		/* Obvious */
 		context->obvious = true;
 
-	switch (type) {
-		case PROJ_ACID: msg("You are covered in acid!");
-			break;
-		case PROJ_ELEC: msg("You are struck by electricity!");
-			break;
-		case PROJ_FIRE: msg("You are enveloped in flames!");
-			break;
-		case PROJ_COLD: msg("You are covered with frost!");
-			break;
+	if (context->p) {
+		switch (type) {
+			case PROJ_ACID: msg("You are covered in acid!");
+				break;
+			case PROJ_ELEC: msg("You are struck by electricity!");
+				break;
+			case PROJ_FIRE: msg("You are enveloped in flames!");
+				break;
+			case PROJ_COLD: msg("You are covered with frost!");
+				break;
+		}
 	}
 
-	/* Give the player a small bonus to ac for elemental attacks */
+	/* Give a small bonus to ac for elemental attacks */
 	physical_dam = adjust_dam_armor(context->damage, context->ac + 50);
 
 	/* Some attacks do no physical damage */
 	if (!context->method->phys)
 		physical_dam = 0;
 
-	elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE, 0,
-							   true);
+	if (context->p) {
+		elemental_dam = adjust_dam(context->p, type, context->damage,
+								   RANDOMISE, 0, true);
+	} else {
+		assert(context->t_mon);
+		elemental_dam = monster_elemental_damage(context, type, &hurt_msg,
+												 &die_msg);
+	}
 
 	/* Take the larger of physical or elemental damage */
 	context->damage = (physical_dam > elemental_dam) ?
 		physical_dam : elemental_dam;
 
-	if (elemental_dam > 0)
+	if (context->p && elemental_dam > 0)
 		inven_damage(context->p, type, MIN(elemental_dam * 5, 300));
-	if (context->damage > 0)
-		take_hit(context->p, context->damage, context->ddesc);
+	if (context->damage > 0) {
+		if (context->p) {
+			take_hit(context->p, context->damage, context->ddesc);
+		} else {
+			assert(context->t_mon);
+			melee_monster_attack(context, hurt_msg, die_msg);
+		}
+	}
 
-	if (pure_element) {
-		/* Learn about the player */
+	/* Learn about the player */
+	if (pure_element && context->p) {
 		update_smart_learn(context->mon, context->p, 0, 0, type);
 	}
 }
@@ -278,6 +424,10 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 }
 
 /**
+ * ------------------------------------------------------------------------
+ * Monster blow effect handlers
+ * ------------------------------------------------------------------------ */
+/**
  * Melee effect handler: Hit the player, but don't do any damage.
  */
 static void melee_effect_handler_NONE(melee_effect_handler_context_t *context)
@@ -316,7 +466,7 @@ static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 	melee_effect_elemental(context, PROJ_POIS, false);
 
 	/* Player is dead */
-	if (context->p->is_dead)
+	if (!context->p || context->p->is_dead)
 		return;
 
 	/* Take "poison" effect */
@@ -860,6 +1010,10 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 	update_smart_learn(context->mon, context->p, 0, 0, ELEM_CHAOS);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster blow melee handler selection
+ * ------------------------------------------------------------------------ */
 melee_effect_handler_f melee_handler_for_blow_effect(const char *name)
 {
 	static const struct effect_handler_s {
