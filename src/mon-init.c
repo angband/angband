@@ -179,10 +179,16 @@ static enum parser_error parse_meth_message_type(struct parser *p)
 }
 
 static enum parser_error parse_meth_act_msg(struct parser *p) {
+	const char *message = parser_getstr(p, "act");
 	struct blow_method *meth = parser_priv(p);
-	assert(meth);
+	struct blow_message *msg = mem_zalloc(sizeof(*msg));
+	if (!meth)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	meth->act_msg = string_append(meth->act_msg, parser_getstr(p, "act"));
+	msg->act_msg = string_make(message);
+	msg->next = meth->messages;
+	meth->messages = msg;
+	meth->num_messages++;
 	return PARSE_ERROR_NONE;
 }
 
@@ -247,8 +253,14 @@ static void cleanup_meth(void)
 	struct blow_method *meth = &blow_methods[1];
 
 	while (meth) {
+		struct blow_message *msg = meth->messages;
 		string_free(meth->desc);
-		string_free(meth->act_msg);
+		while (msg) {
+			struct blow_message *next = msg->next;
+			string_free(msg->act_msg);
+			mem_free(msg);
+			msg = next;
+		}
 		string_free(meth->name);
 		meth = meth->next;
 	}

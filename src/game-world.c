@@ -945,6 +945,9 @@ void on_new_level(void)
  * Housekeeping on leaving a level
  */
 static void on_leave_level(void) {
+	/* Cancel any command */
+	player_clear_timed(player, TMD_COMMAND, false);
+
 	/* Any pending processing */
 	notice_stuff(player);
 	update_stuff(player);
