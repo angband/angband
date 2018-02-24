@@ -45,67 +45,115 @@
  * ------------------------------------------------------------------------
  * Monster blow methods
  * ------------------------------------------------------------------------ */
-/**
- * Return a randomly chosen string to append to an INSULT message.
- */
-static const char *monster_blow_random_insult(void)
-{
-	#define MAX_DESC_INSULT 8
-	static const char *desc_insult[MAX_DESC_INSULT] =
-	{
-		"insults you!",
-		"insults your mother!",
-		"gives you the finger!",
-		"humiliates you!",
-		"defiles you!",
-		"dances around you!",
-		"makes obscene gestures!",
-		"moons you!!!"
-	};
 
-	return desc_insult[randint0(MAX_DESC_INSULT)];
-	#undef MAX_DESC_INSULT
+typedef enum {
+	BLOW_TAG_NONE,
+	BLOW_TAG_TARGET,
+	BLOW_TAG_OF_TARGET,
+	BLOW_TAG_HAS
+} blow_tag_t;
+
+static blow_tag_t blow_tag_lookup(const char *tag)
+{
+	if (strncmp(tag, "target", 6) == 0)
+		return BLOW_TAG_TARGET;
+	else if (strncmp(tag, "oftarget", 8) == 0)
+		return BLOW_TAG_OF_TARGET;
+	else if (strncmp(tag, "has", 3) == 0)
+		return BLOW_TAG_HAS;
+	else
+		return BLOW_TAG_NONE;
 }
 
 /**
- * Return a randomly chosen string to append to a MOAN message.
- */
-static const char *monster_blow_random_moan(void)
-{
-	#define MAX_DESC_MOAN 8
-	static const char *desc_moan[MAX_DESC_MOAN] = {
-		"wants his mushrooms back",
-		"tells you to get off his land",
-		"looks for his dogs",
-		"says 'Did you kill my Fang?'",
-		"asks 'Do you want to buy any mushrooms?'",
-		"seems sad about something",
-		"asks if you have seen his dogs",
-		"mumbles something about mushrooms"
-	};
-
-	return desc_moan[randint0(MAX_DESC_MOAN)];
-	#undef MAX_DESC_MOAN
-}
-
-/**
- * Return an action string to be appended on the attack message.
+ * Print a monster blow message.
  *
- * \param method is the blow method.
+ * We fill in the monster name and/or pronoun where necessary in
+ * the message to replace instances of {name} or {pronoun}.
  */
-const char *monster_blow_method_action(struct blow_method *method)
+char *monster_blow_method_action(struct blow_method *method, int midx)
 {
-	const char *action = NULL;
+	char buf[1024] = "\0";
+	const char *next;
+	const char *s;
+	const char *tag;
+	const char *in_cursor;
+	size_t end = 0;
+	struct monster *t_mon = NULL;
 
-	if (method->act_msg) {
-		action = method->act_msg;
-	} else if (streq(method->name, "INSULT")) {
-		action = monster_blow_random_insult();
-	} else if (streq(method->name, "MOAN")) {
-		action = monster_blow_random_moan();
+	int choice = randint0(method->num_messages);
+	struct blow_message *msg = method->messages;
+
+	/* Get the target monster, if any */
+	if (midx > 0) {
+		t_mon = cave_monster(cave, midx);
 	}
 
-	return action;
+	/* Pick a message */
+	while (choice--) {
+		msg = msg->next;
+	}
+	in_cursor = msg->act_msg;
+
+	/* Add info to the message */
+	next = strchr(in_cursor, '{');
+	while (next) {
+		/* Copy the text leading up to this { */
+		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor);
+
+		s = next + 1;
+		while (*s && isalpha((unsigned char) *s)) s++;
+
+		/* Valid tag */
+		if (*s == '}') {
+			/* Start the tag after the { */
+			tag = next + 1;
+			in_cursor = s + 1;
+
+			switch (blow_tag_lookup(tag)) {
+				case BLOW_TAG_TARGET: {
+					char m_name[80];
+					if (midx > 0) {
+						monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
+						strnfcat(buf, sizeof(buf), &end, m_name);
+					} else {
+						strnfcat(buf, sizeof(buf), &end, "you");
+					}
+					break;
+				}
+				case BLOW_TAG_OF_TARGET: {
+					char m_name[80];
+					if (midx > 0) {
+						monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
+						strnfcat(buf, sizeof(buf), &end, m_name);
+						strnfcat(buf, sizeof(buf), &end, "'s");
+					} else {
+						strnfcat(buf, sizeof(buf), &end, "your");
+					}
+					break;
+				}
+				case BLOW_TAG_HAS: {
+					if (midx > 0) {
+						strnfcat(buf, sizeof(buf), &end, "has");
+					} else {
+						strnfcat(buf, sizeof(buf), &end, "have");
+					}
+					break;
+				}
+
+				default: {
+					break;
+				}
+			}
+		} else {
+			/* An invalid tag, skip it */
+			in_cursor = next + 1;
+		}
+
+		next = strchr(in_cursor, '{');
+	}
+	strnfcat(buf, 1024, &end, in_cursor);
+	return string_make(buf);
 }
 
 /**
@@ -191,7 +239,6 @@ static bool melee_monster_attack(melee_effect_handler_context_t *context,
 								 enum mon_messages hurt_msg,
 								 enum mon_messages die_msg)
 {
-	bool mon_died = false;
 	int dam = context->damage;
 	struct monster *t_mon = context->t_mon;
 
@@ -221,7 +268,7 @@ static bool melee_monster_attack(melee_effect_handler_context_t *context,
 
 		/* Delete the monster */
 		delete_monster_idx(t_mon->midx);
-		mon_died = true;
+		return true;
 	} else if (!monster_is_mimicking(t_mon)) {
 		/* Give detailed messages if visible */
 		if (hurt_msg != MON_MSG_NONE) {
@@ -250,7 +297,7 @@ static bool melee_monster_attack(melee_effect_handler_context_t *context,
 		}
 	}
 
-	return mon_died;
+	return false;
 }
 
 /**
@@ -266,7 +313,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 {
 	int physical_dam, elemental_dam;
 	enum mon_messages hurt_msg = MON_MSG_NONE;
-	enum mon_messages die_msg = MON_MSG_NONE;
+	enum mon_messages die_msg = MON_MSG_DIE;
 
 	if (pure_element)
 		/* Obvious */
@@ -345,7 +392,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE)) return;
+		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE)) return;
 	}
 
 	/* Handle status */
@@ -410,7 +457,7 @@ static void melee_effect_stat(melee_effect_handler_context_t *context, int stat)
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -445,7 +492,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -555,7 +602,7 @@ static void melee_effect_handler_HURT(melee_effect_handler_context_t *context)
 		take_hit(context->p, context->damage, context->ddesc);
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 	}
 }
 
@@ -594,7 +641,7 @@ static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *cont
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -623,7 +670,7 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -692,7 +739,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -767,7 +814,7 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE)) return;
+		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE)) return;
 	}
 
 	/* Steal from player or monster */
@@ -813,7 +860,7 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -868,7 +915,7 @@ static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *conte
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -1007,7 +1054,7 @@ static void melee_effect_handler_LOSE_ALL(melee_effect_handler_context_t *contex
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 
@@ -1036,7 +1083,7 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE)) return;
+		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE)) return;
 	}
 
 	/* Radius 8 earthquake centered at the monster */
@@ -1092,7 +1139,7 @@ static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 		if (context->p->is_dead) return;
 	} else {
 		assert(context->t_mon);
-		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_DIE);
 		return;
 	}
 

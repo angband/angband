@@ -754,6 +754,11 @@ static struct monster_base TEST_DATA test_rb_info = {
 	
 };
 
+static struct blow_message TEST_DATA test_blow_message = {
+	.act_msg = "hits {target}",
+	.next = NULL
+};
+
 static struct blow_method TEST_DATA test_blow_method = {
 	.name = "HIT",
 	.cut = true,
@@ -761,7 +766,8 @@ static struct blow_method TEST_DATA test_blow_method = {
 	.miss = false,
 	.phys = false,
 	.msgt = 34,
-	.act_msg = "hits you",
+	.messages = &test_blow_message,
+	.num_messages = 1,
 	.desc = "hit",
 	.next = NULL
 };

@@ -23,6 +23,11 @@
 #include "player.h"
 #include "monster.h"
 
+struct blow_message {
+	char *act_msg;
+	struct blow_message *next;
+};
+
 struct blow_method {
 	char *name;
 	bool cut;
@@ -30,7 +35,8 @@ struct blow_method {
 	bool miss;
 	bool phys;
 	int msgt;
-	char *act_msg;
+	struct blow_message *messages;
+	int num_messages;
 	char *desc;
 	struct blow_method *next;
 };
@@ -80,7 +86,7 @@ struct blow_effect *blow_effects;
 
 /* Functions */
 int blow_index(const char *name);
-extern const char *monster_blow_method_action(struct blow_method *method);
+char *monster_blow_method_action(struct blow_method *method, int midx);
 extern melee_effect_handler_f melee_handler_for_blow_effect(const char *name);
 
 #endif /* MON_BLOWS_H */
