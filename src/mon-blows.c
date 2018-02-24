@@ -247,6 +247,7 @@ static bool melee_monster_attack(melee_effect_handler_context_t *context,
 						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, false);
 		}
 	}
+
 	return mon_died;
 }
 
@@ -309,7 +310,7 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 			take_hit(context->p, context->damage, context->ddesc);
 		} else {
 			assert(context->t_mon);
-			melee_monster_attack(context, hurt_msg, die_msg);
+			(void) melee_monster_attack(context, hurt_msg, die_msg);
 		}
 	}
 
@@ -333,30 +334,64 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
  * successful.
  */
 static void melee_effect_timed(melee_effect_handler_context_t *context,
-							   int type, int amount, int of_flag,
-							   bool attempt_save, const char *save_msg)
+							   int type, int amount, int of_flag, bool save,
+							   const char *save_msg)
 {
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE)) return;
+	}
 
-	/* Player is dead */
-	if (context->p->is_dead)
-		return;
+	/* Handle status */
+	if (context->t_mon) {
+		/* Translate to monster timed effect */
+		int mon_tmd_effect = -1;
 
-	/* Perform a saving throw if desired. */
-	if (attempt_save && randint0(100) < context->p->state.skills[SKILL_SAVE]) {
-		if (save_msg != NULL)
+		/* Will do until monster and player timed effects are fused */
+		switch (type) {
+			case TMD_CONFUSED: {
+				mon_tmd_effect = MON_TMD_CONF;
+				break;
+			}
+			case TMD_PARALYZED: {
+				mon_tmd_effect = MON_TMD_HOLD;
+				break;
+			}
+			case TMD_BLIND: {
+				mon_tmd_effect = MON_TMD_STUN;
+				break;
+			}
+			case TMD_AFRAID: {
+				mon_tmd_effect = MON_TMD_FEAR;
+				break;
+			}
+			default: {
+				break;
+			}
+		}
+		if (mon_tmd_effect >= 0) {
+			mon_inc_timed(context->t_mon, mon_tmd_effect, amount, 0, false);
+			context->obvious = true;
+		}
+	} else if (save && randint0(100) < context->p->state.skills[SKILL_SAVE]) {
+		/* Attempt a saving throw if desired. */
+		if (save_msg != NULL) {
 			msg("%s", save_msg);
-
+		}
 		context->obvious = true;
 	} else {
 		/* Increase timer for type. */
-		if (player_inc_timed(context->p, type, amount, true, true))
+		if (player_inc_timed(context->p, type, amount, true, true)) {
 			context->obvious = true;
-	}
+		}
 
-	/* Learn about the player */
-	update_smart_learn(context->mon, context->p, of_flag, 0, -1);
+		/* Learn about the player */
+		update_smart_learn(context->mon, context->p, of_flag, 0, -1);
+	}
 }
 
 /**
@@ -368,11 +403,14 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 static void melee_effect_stat(melee_effect_handler_context_t *context, int stat)
 {
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (context->p->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
 	/* Damage (stat) */
 	effect_simple(EF_DRAIN_STAT,
@@ -397,16 +435,17 @@ static void melee_effect_stat(melee_effect_handler_context_t *context, int stat)
 static void melee_effect_experience(melee_effect_handler_context_t *context,
 									int chance, int drain_amount)
 {
-	/* Obvious */
-	context->obvious = true;
-
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-	update_smart_learn(context->mon, context->p, OF_HOLD_LIFE, 0, -1);
-
-	/* Player is dead */
-	if (context->p->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		context->obvious = true;
+		update_smart_learn(context->mon, context->p, OF_HOLD_LIFE, 0, -1);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
 	if (player_of_has(context->p, OF_HOLD_LIFE) && (randint0(100) < chance)) {
 		msg("You keep hold of your life force!");
