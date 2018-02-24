@@ -1492,26 +1492,7 @@ void do_cmd_mon_command(struct command *cmd)
 			break;
 		}
 		case CMD_DROP: {
-			struct object *obj = mon->held_obj;
-			int count = 0;
-
-			if (!obj) break;
-
-			/* Count the objects */
-			while (obj) {
-				count++;
-				obj = obj->next;
-			}
-
-			/* Now pick one... */
-			obj = mon->held_obj;
-			count -= randint1(count);
-			while (count) {
-				obj = obj->next;
-				count--;
-			}
-
-			/* ...and drop it */
+			struct object *obj = get_random_monster_object(mon);
 			obj->held_m_idx = 0;
 			pile_excise(&mon->held_obj, obj);
 			drop_near(cave, &obj, 0, mon->fy, mon->fx, true);
