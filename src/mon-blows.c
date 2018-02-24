@@ -471,10 +471,7 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
  */
 static void melee_effect_handler_NONE(melee_effect_handler_context_t *context)
 {
-	/* Hack -- Assume obvious */
 	context->obvious = true;
-
-	/* Hack -- No damage */
 	context->damage = 0;
 }
 
@@ -486,11 +483,16 @@ static void melee_effect_handler_HURT(melee_effect_handler_context_t *context)
 	/* Obvious */
 	context->obvious = true;
 
-	/* Hack -- Player armor reduces total damage */
+	/* Armor reduces total damage */
 	context->damage = adjust_dam_armor(context->damage, context->ac);
 
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
+	}
 }
 
 /**
@@ -504,7 +506,7 @@ static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 {
 	melee_effect_elemental(context, PROJ_POIS, false);
 
-	/* Player is dead */
+	/* Player is dead or not attacked */
 	if (!context->p || context->p->is_dead)
 		return;
 
@@ -523,11 +525,14 @@ static void melee_effect_handler_POISON(melee_effect_handler_context_t *context)
 static void melee_effect_handler_DISENCHANT(melee_effect_handler_context_t *context)
 {
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (context->p->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
 	/* Apply disenchantment if no resist */
 	if (!player_resists(context->p, ELEM_DISEN))
@@ -549,11 +554,14 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
 	int unpower = 0, newcharge;
 
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (current_player->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
 	/* Find an item */
 	for (tries = 0; tries < 10; tries++) {
@@ -614,12 +622,15 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
 {
 	struct player *current_player = context->p;
 
-    /* Take damage */
-    take_hit(current_player, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (current_player->is_dead)
+	/* Take damage */
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
     /* Obvious */
     context->obvious = true;
@@ -689,11 +700,14 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 	int tries;
 
     /* Take damage */
-    take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (context->p->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
     /* Saving throw (unless paralyzed) based on dex and level */
     if (!context->p->timed[TMD_PARALYZED] &&
@@ -766,11 +780,14 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 	int tries;
 
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (context->p->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
 	for (tries = 0; tries < 10; tries++) {
 		/* Pick an item from the pack */
@@ -818,11 +835,14 @@ static void melee_effect_handler_EAT_FOOD(melee_effect_handler_context_t *contex
 static void melee_effect_handler_EAT_LIGHT(melee_effect_handler_context_t *context)
 {
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (context->p->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
 	/* Drain the light source */
 	effect_simple(EF_DRAIN_LIGHT,
@@ -954,11 +974,14 @@ static void melee_effect_handler_LOSE_CON(melee_effect_handler_context_t *contex
 static void melee_effect_handler_LOSE_ALL(melee_effect_handler_context_t *context)
 {
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (context->p->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
 	/* Damage (stats) */
 	effect_simple(EF_DRAIN_STAT, source_monster(context->mon->midx), "0", STAT_STR, 0, 0, 0, 0, &context->obvious);
@@ -980,11 +1003,13 @@ static void melee_effect_handler_SHATTER(melee_effect_handler_context_t *context
 	context->damage = adjust_dam_armor(context->damage, context->ac);
 
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (context->p->is_dead)
-		return;
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		if (melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE)) return;
+	}
 
 	/* Radius 8 earthquake centered at the monster */
 	if (context->damage > 23) {
@@ -1034,11 +1059,14 @@ static void melee_effect_handler_EXP_80(melee_effect_handler_context_t *context)
 static void melee_effect_handler_HALLU(melee_effect_handler_context_t *context)
 {
 	/* Take damage */
-	take_hit(context->p, context->damage, context->ddesc);
-
-	/* Player is dead */
-	if (context->p->is_dead)
+	if (context->p) {
+		take_hit(context->p, context->damage, context->ddesc);
+		if (context->p->is_dead) return;
+	} else {
+		assert(context->t_mon);
+		(void) melee_monster_attack(context, MON_MSG_NONE, MON_MSG_NONE);
 		return;
+	}
 
 	/* Increase "image" */
 	if (player_inc_timed(context->p, TMD_IMAGE, 3 + randint1(context->rlev / 2),
