@@ -1950,6 +1950,19 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	calc_shapechange(state, p->shape, &extra_blows, &extra_shots, &extra_might,
 		&extra_moves);
 
+	/* Calculate light */
+	calc_torch(p, state, update);
+
+	/* Unlight - needs change if anything but resist is introduced for dark */
+	if (player_has(p, PF_UNLIGHT) && character_dungeon) {
+		state->el_info[ELEM_DARK].res_level = 1;
+		if (square_islit(cave, p->py, p->px)) {
+			state->stat_add[STAT_CON] -= 2;
+		} else {
+			state->stat_add[STAT_CON] += 2;
+		}
+	}
+
 	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {
 		int add, use, ind;
@@ -2193,20 +2206,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
 	}
 
-	/* Movement speed */
-	state->num_moves = 1 + extra_moves;;
-
-	/* Call individual functions for other state fields */
-	calc_torch(p, state, update);
+	/* Mana */
 	calc_mana(p, state, update);
 
-	/* Unlight - needs change if anything but resist is introduced for dark */
-	if (player_has(p, PF_UNLIGHT) && character_dungeon) {
-		state->el_info[ELEM_DARK].res_level = 1;
-		if (!square_isglow(cave, p->py, p->px) && (state->cur_light <= 0)) {
-			state->skills[SKILL_STEALTH] += 3;
-		}
-	}
+	/* Movement speed */
+	state->num_moves = 1 + extra_moves;;
 
 	return;
 }

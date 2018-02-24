@@ -998,10 +998,10 @@ desc:Teleports each undead monster within line of sight a short distance.
 spell:Noxious Fumes:10:4:40:15
 effect:SPHERE:POIS:4
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 3
 effect:TIMED_INC:POISONED
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 2
 desc:Produces a cloud of poisonous gas affecting the player and monsters within
 desc: radius 4.
 
@@ -1014,7 +1014,7 @@ desc:  Uniques and monsters that resist confusion are not affected.
 
 spell:Shadow Shift:15:10:50:30
 effect:TELEPORT
-dice:16
+dice:30
 effect:DAMAGE
 dice:2d5
 effect-msg:shadow shifting
@@ -1039,14 +1039,14 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist fear are not affected.
 
-spell:Disenchant:20:10:50:40
+spell:Disenchant:20:12:50:40
 effect:BOLT:DISEN
-dice:5d$S
-expr:S:PLAYER_LEVEL:+ 10
+dice:2d$S
+expr:S:PLAYER_LEVEL:* 2 + 10
 desc:Casts a bolt which wounds, and makes spellcasting monsters less successful
 desc: in casting spells.
 
-spell:Dispel Life:22:20:70:70
+spell:Dispel Life:22:20:50:70
 effect:PROJECT_LOS_AWARE:MON_DRAIN
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
@@ -1073,7 +1073,7 @@ effect:PROJECT_LOS_AWARE:AWAY_SPIRIT
 dice:100
 desc:Teleports away each monster with a spirit within line of sight.
 
-spell:Annihilate:30:30:75:250
+spell:Annihilate:30:20:75:250
 effect:BOLT:MON_DRAIN
 dice:$B
 expr:B:PLAYER_LEVEL:* 4
@@ -1125,11 +1125,12 @@ dice:50
 effect-msg:self sacrifice
 effect:RESTORE_MANA
 dice:50
+desc:Exchanges 50 hitpoints for 50 mana.
 
 spell:Crush:32:30:60:130
 effect:PROJECT_LOS:MON_CRUSH
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 4
 desc:Instantly kill any monster in line-of-sight with less than the
 desc: player's level in hitpoints.  Other monsters are unharmed.
 

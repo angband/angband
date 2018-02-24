@@ -108,9 +108,9 @@ blow:strike
 blow:tear
 
 name:bat
-combat:-3:-3:10
+combat:0:-10:10
 obj-flags:FEATHER | SEE_INVIS | PROT_BLIND
-values:STR[-3] | SPEED[3] | STEALTH[3] | INFRA[5]
+values:SPEED[3] | STEALTH[3] | INFRA[5]
 effect:DAMAGE
 dice:5
 effect-msg:taking bat form
@@ -136,7 +136,7 @@ obj-flags:SEE_INVIS | HOLD_LIFE
 values:LIGHT[-1] | STEALTH[3] | INFRA[3]
 effect:DAMAGE
 dice:$B
-expr:B:PLAYER_HP:/ 2
+expr:B:PLAYER_HP:/ 4
 effect-msg:taking vampire form
 effect:TIMED_INC:ATT_VAMP
 dice:10+1d20

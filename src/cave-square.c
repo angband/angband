@@ -696,6 +696,30 @@ bool square_isfiery(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the cave square is lit.
+ */
+bool square_islit(struct chunk *c, int y, int x) {
+	int ny, nx;
+	assert(square_in_bounds(c, y, x));
+
+	/* Lit by itself or the player */
+	if (square_isglow(c, y, x)) return true;
+	if (player->state.cur_light > 0) return true;
+
+	/* Lit by adjacent monster or terrain */
+	for (ny = y - 1; ny <= y + 1; ny++) {
+		for (nx = x - 1; nx <= x + 1; nx++) {
+			struct monster *mon = square_monster(c, ny, nx);
+			if (mon && rf_has(mon->race->flags, RF_HAS_LIGHT)) return true;
+			if (square_isbright(c, ny, nx)) return true;
+		}
+	}
+
+	/* Unlit */
+	return false;
+}
+
+/**
  * True if the cave square can damage the inhabitant - only lava so far
  */
 bool square_isdamaging(struct chunk *c, int y, int x) {
