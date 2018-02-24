@@ -39,5 +39,7 @@ void monster_death(struct monster *mon, bool stats);
 bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note);
 void monster_take_terrain_damage(struct monster *mon);
 struct monster *get_commanded_monster(void);
+struct object *get_random_monster_object(struct monster *mon);
+void steal_monster_item(struct monster *mon, int midx);
 
 #endif /* MONSTER_UTILITIES_H */
