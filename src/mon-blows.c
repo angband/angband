@@ -795,7 +795,6 @@ static void melee_effect_handler_EAT_ITEM(melee_effect_handler_context_t *contex
 	} else {
 		assert(context->t_mon);
 		steal_monster_item(context->t_mon, context->mon->midx);
-		context->blinked = true;
 		context->obvious = true;
 	}
 }
