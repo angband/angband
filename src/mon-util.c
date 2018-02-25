@@ -865,6 +865,168 @@ void monster_death(struct monster *mon, bool stats)
 	quest_check(mon);
 }
 
+/**
+ * Handle the consequences of the killing of a monster by the player
+ */
+static void player_kill_monster(struct monster *mon, const char *note)
+{
+	s32b div, new_exp, new_exp_frac;
+	struct monster_lore *lore = get_lore(mon->race);
+	char m_name[80];
+	char buf[80];
+
+	/* Assume normal death sound */
+	int soundfx = MSG_KILL;
+
+	/* Play a special sound if the monster was unique */
+	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+		if (mon->race->base == lookup_monster_base("Morgoth"))
+			soundfx = MSG_KILL_KING;
+		else
+			soundfx = MSG_KILL_UNIQUE;
+	}
+
+	/* Extract monster name */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+
+	/* Death message */
+	if (note) {
+		if (strlen(note) <= 1) {
+			/* Death by Spell attack - messages handled by project_m() */
+		} else {
+			char *str = format("%s%s", m_name, note);
+			my_strcap(str);
+
+			/* Make sure to flush any monster messages first */
+			notice_stuff(player);
+
+			/* Death by Missile attack */
+			msgt(soundfx, "%s", str);
+		}
+	} else {
+		/* Make sure to flush any monster messages first */
+		notice_stuff(player);
+
+		if (!monster_is_visible(mon))
+			/* Death by physical attack -- invisible monster */
+			msgt(soundfx, "You have killed %s.", m_name);
+		else if (monster_is_destroyed(mon))
+			/* Death by Physical attack -- non-living monster */
+			msgt(soundfx, "You have destroyed %s.", m_name);
+		else
+			/* Death by Physical attack -- living monster */
+			msgt(soundfx, "You have slain %s.", m_name);
+	}
+
+	/* Player level */
+	div = player->lev;
+
+	/* Give some experience for the kill */
+	new_exp = ((long)mon->race->mexp * mon->race->level) / div;
+
+	/* Handle fractional experience */
+	new_exp_frac = ((((long)mon->race->mexp * mon->race->level) % div)
+					* 0x10000L / div) + player->exp_frac;
+
+	/* Keep track of experience */
+	if (new_exp_frac >= 0x10000L) {
+		new_exp++;
+		player->exp_frac = (u16b)(new_exp_frac - 0x10000L);
+	} else {
+		player->exp_frac = (u16b)new_exp_frac;
+	}
+
+	/* When the player kills a Unique, it stays dead */
+	if (rf_has(mon->race->flags, RF_UNIQUE)) {
+		char unique_name[80];
+		mon->race->max_num = 0;
+
+		/*
+		 * This gets the correct name if we slay an invisible
+		 * unique and don't have See Invisible.
+		 */
+		monster_desc(unique_name, sizeof(unique_name), mon,
+					 MDESC_DIED_FROM);
+
+		/* Log the slaying of a unique */
+		strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
+		history_add(player, buf, HIST_SLAY_UNIQUE);
+	}
+
+	/* Remove any command status */
+	if (mon->m_timed[MON_TMD_COMMAND]) {
+		(void) player_clear_timed(player, TMD_COMMAND, true);
+	}
+
+	/* Gain experience */
+	player_exp_gain(player, new_exp);
+
+	/* Generate treasure */
+	monster_death(mon, false);
+
+	/* Recall even invisible uniques or winners */
+	if (monster_is_visible(mon) || monster_is_unique(mon)) {
+		/* Count kills this life */
+		if (lore->pkills < SHRT_MAX) lore->pkills++;
+
+		/* Count kills in all lives */
+		if (lore->tkills < SHRT_MAX) lore->tkills++;
+
+		/* Update lore and tracking */
+		lore_update(mon->race, lore);
+		monster_race_track(player->upkeep, mon->race);
+	}
+
+	/* Delete the monster */
+	delete_monster_idx(mon->midx);
+}
+
+/**
+ * See how a monster reacts to damage
+ */
+static bool monster_scared_by_damage(struct monster *mon, int dam)
+{
+	int current_fear = mon->m_timed[MON_TMD_FEAR];
+
+	/* Pain can reduce or cancel existing fear, or cause fear */
+	if (current_fear) {
+		int tmp = randint1(dam);
+
+		/* Cure a little or all fear */
+		if (tmp < current_fear) {
+			/* Reduce fear */
+			mon_dec_timed(mon, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE, false);
+		} else {
+			/* Cure fear */
+			mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+			return false;
+		}
+	} else if (!rf_has(mon->race->flags, RF_NO_FEAR)) {
+		/* Percentage of fully healthy */
+		int percentage = (100L * mon->hp) / mon->maxhp;
+
+		/* Run (sometimes) if at 10% or less of max hit points... */
+		bool low_hp = randint1(10) >= percentage;
+
+		/* ...or (usually) when hit for half its current hit points */
+		bool big_hit = (dam >= mon->hp) && (randint0(100) < 80);
+
+		if (low_hp || big_hit) {
+			int time = randint1(10);
+			if ((dam >= mon->hp) && (percentage > 7)) {
+				time += 20;
+			} else {
+				time += (11 - percentage) * 5;
+			}
+
+			/* Note fear */
+			mon_inc_timed(mon, MON_TMD_FEAR, time,
+						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, false);
+			return true;
+		}
+	}
+	return false;
+}
 
 /**
  * Decreases a monster's hit points by `dam` and handle monster death.
@@ -884,9 +1046,6 @@ void monster_death(struct monster *mon, bool stats)
  **/
 bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 {
-	s32b div, new_exp, new_exp_frac;
-	struct monster_lore *lore = get_lore(mon->race);
-
 	/* Redraw (later) if needed */
 	if (player->upkeep->health_who == mon)
 		player->upkeep->redraw |= (PR_HEALTH);
@@ -899,118 +1058,14 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 	if (monster_is_camouflaged(mon))
 		become_aware(mon);
 
+	/* No damage, we're done */
+	if (dam == 0) return false;
+
 	/* Hurt it */
 	mon->hp -= dam;
-
-	/* It is dead now */
 	if (mon->hp < 0) {
-		char m_name[80];
-		char buf[80];
-
-		/* Assume normal death sound */
-		int soundfx = MSG_KILL;
-
-		/* Play a special sound if the monster was unique */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) {
-			if (mon->race->base == lookup_monster_base("Morgoth"))
-				soundfx = MSG_KILL_KING;
-			else
-				soundfx = MSG_KILL_UNIQUE;
-		}
-
-		/* Extract monster name */
-		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
-
-		/* Death message */
-		if (note) {
-			if (strlen(note) <= 1) {
-				/* Death by Spell attack - messages handled by project_m() */
-			} else {
-				char *str = format("%s%s", m_name, note);
-				my_strcap(str);
-
-				/* Make sure to flush any monster messages first */
-				notice_stuff(player);
-
-				/* Death by Missile attack */
-				msgt(soundfx, "%s", str);
-			}
-		} else {
-			/* Make sure to flush any monster messages first */
-			notice_stuff(player);
-
-			if (!monster_is_visible(mon))
-				/* Death by physical attack -- invisible monster */
-				msgt(soundfx, "You have killed %s.", m_name);
-			else if (monster_is_destroyed(mon))
-				/* Death by Physical attack -- non-living monster */
-				msgt(soundfx, "You have destroyed %s.", m_name);
-			else
-				/* Death by Physical attack -- living monster */
-				msgt(soundfx, "You have slain %s.", m_name);
-		}
-
-		/* Player level */
-		div = player->lev;
-
-		/* Give some experience for the kill */
-		new_exp = ((long)mon->race->mexp * mon->race->level) / div;
-
-		/* Handle fractional experience */
-		new_exp_frac = ((((long)mon->race->mexp * mon->race->level) % div)
-		                * 0x10000L / div) + player->exp_frac;
-
-		/* Keep track of experience */
-		if (new_exp_frac >= 0x10000L) {
-			new_exp++;
-			player->exp_frac = (u16b)(new_exp_frac - 0x10000L);
-		} else {
-			player->exp_frac = (u16b)new_exp_frac;
-		}
-
-		/* When the player kills a Unique, it stays dead */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) {
-			char unique_name[80];
-			mon->race->max_num = 0;
-
-			/*
-			 * This gets the correct name if we slay an invisible
-			 * unique and don't have See Invisible.
-			 */
-			monster_desc(unique_name, sizeof(unique_name), mon,
-						 MDESC_DIED_FROM);
-
-			/* Log the slaying of a unique */
-			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
-			history_add(player, buf, HIST_SLAY_UNIQUE);
-		}
-
-		/* Remove any command status */
-		if (mon->m_timed[MON_TMD_COMMAND]) {
-			(void) player_clear_timed(player, TMD_COMMAND, true);
-		}
-
-		/* Gain experience */
-		player_exp_gain(player, new_exp);
-
-		/* Generate treasure */
-		monster_death(mon, false);
-
-		/* Recall even invisible uniques or winners */
-		if (monster_is_visible(mon) || monster_is_unique(mon)) {
-			/* Count kills this life */
-			if (lore->pkills < SHRT_MAX) lore->pkills++;
-
-			/* Count kills in all lives */
-			if (lore->tkills < SHRT_MAX) lore->tkills++;
-
-			/* Update lore and tracking */
-			lore_update(mon->race, lore);
-			monster_race_track(player->upkeep, mon->race);
-		}
-
-		/* Delete the monster */
-		delete_monster_idx(mon->midx);
+		/* It is dead now */
+		player_kill_monster(mon, note);
 
 		/* Not afraid */
 		(*fear) = false;
@@ -1018,49 +1073,8 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 		/* Monster is dead */
 		return true;
 	} else {
-		/* Mega-Hack -- Pain cancels fear */
-		if (!(*fear) && mon->m_timed[MON_TMD_FEAR] && dam > 0) {
-			int tmp = randint1(dam);
-
-			/* Cure a little or all fear */
-			if (tmp < mon->m_timed[MON_TMD_FEAR]) {
-				/* Reduce fear */
-				mon_dec_timed(mon, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE,
-					false);
-			} else {
-				/* Cure fear */
-				mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
-
-				/* No more fear */
-				(*fear) = false;
-			}
-		}
-
-		/* Sometimes a monster gets scared by damage */
-		if (!mon->m_timed[MON_TMD_FEAR] &&
-				!rf_has(mon->race->flags, RF_NO_FEAR) &&
-				dam > 0) {
-			int percentage;
-
-			/* Percentage of fully healthy */
-			percentage = (100L * mon->hp) / mon->maxhp;
-
-			/*
-			 * Run (sometimes) if at 10% or less of max hit points,
-			 * or (usually) when hit for half its current hit points
-			 */
-			if ((randint1(10) >= percentage) ||
-			    ((dam >= mon->hp) && (randint0(100) < 80))) {
-				int timer = randint1(10) + (((dam >= mon->hp) && (percentage > 7))
-											? 20 : ((11 - percentage) * 5));
-
-				/* Hack -- note fear */
-				(*fear) = true;
-
-				mon_inc_timed(mon, MON_TMD_FEAR, timer,
-						MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, false);
-			}
-		}
+		/* Did it get frightened? */
+		(*fear) = monster_scared_by_damage(mon, dam);
 
 		/* Not dead yet */
 		return false;
