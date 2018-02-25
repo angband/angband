@@ -288,8 +288,8 @@ desc:Disables traps and destroys doors within a 1-square radius of you.
 
 spell:Teleport Self:7:6:35:5
 effect:TELEPORT
-dice:$B
-expr:B:PLAYER_LEVEL:* 5
+dice:M$M
+expr:M:PLAYER_LEVEL:* 9 / 5
 desc:Teleports you randomly within the current level.
 
 spell:Teleport Other:15:10:30:12
@@ -991,7 +991,7 @@ book-properties:400:40:10 to 100
 
 spell:Banish Undead:7:5:50:10
 effect:PROJECT_LOS:AWAY_UNDEAD
-dice:5+1d$S
+dice:15+1d$S
 expr:S:PLAYER_LEVEL:+ 0
 desc:Teleports each undead monster within line of sight a short distance.
 
