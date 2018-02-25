@@ -211,7 +211,7 @@ appear:1:1:0
 visibility:30+d30
 flags:TRAP | FLOOR | MAGICAL
 effect:TELEPORT
-dice:100
+dice:M80
 desc:A magical rune which teleports you to a random location.
 msg:You hit a teleport trap!
 

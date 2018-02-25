@@ -1735,7 +1735,7 @@ alloc:40:10 to 100
 pile:25:2
 power:6
 effect:TELEPORT
-dice:100
+dice:M60
 
 name:Teleport Level
 type:scroll
@@ -3314,7 +3314,7 @@ combat:0:1d2:0:0:0
 charges:5+d4
 power:6
 effect:TELEPORT
-dice:100
+dice:M60
 
 name:Speed
 type:staff

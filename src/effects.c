@@ -2661,6 +2661,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
 	struct loc start = loc(context->x, context->y);
 	int dis = context->value.base;
+	int perc = context->value.m_bonus;
 	int y, x, pick;
 
 	struct jumps {
@@ -2687,7 +2688,8 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		start = loc(player->px, player->py);
 
 		/* Check for a no teleport grid */
-		if (square_isno_teleport(cave, start.y, start.x) && (dis > 10)) {
+		if (square_isno_teleport(cave, start.y, start.x) && 
+			((dis > 10) || (dis == 0))) {
 			msg("Teleportation forbidden!");
 			return true;
 		}
@@ -2702,6 +2704,13 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		assert(context->origin.what == SRC_MONSTER);
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		start = loc(mon->fx, mon->fy);
+	}
+
+	/* Percentage of the largest cardinal distance to an edge */
+	if (perc) {
+		int vertical = MAX(start.y, cave->height - start.y);
+		int horizontal = MAX(start.x, cave->width - start.x);
+		dis = (MAX(vertical, horizontal) * perc) / 100;
 	}
 
 	/* Randomise the distance a little */
