@@ -559,6 +559,10 @@ void process_world(struct chunk *c)
 		if (!(turn % (10L * z_info->store_turns))) daycount++;
 	}
 
+	/* Check for light change */
+	if (player_has(player, PF_UNLIGHT)) {
+		player->upkeep->update |= PU_BONUS;
+	}
 
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))

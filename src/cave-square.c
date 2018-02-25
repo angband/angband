@@ -709,7 +709,9 @@ bool square_islit(struct chunk *c, int y, int x) {
 	/* Lit by adjacent monster or terrain */
 	for (ny = y - 1; ny <= y + 1; ny++) {
 		for (nx = x - 1; nx <= x + 1; nx++) {
-			struct monster *mon = square_monster(c, ny, nx);
+			struct monster *mon = NULL;
+			if (!square_in_bounds(c, ny, nx)) continue;
+			mon = square_monster(c, ny, nx);
 			if (mon && rf_has(mon->race->flags, RF_HAS_LIGHT)) return true;
 			if (square_isbright(c, ny, nx)) return true;
 		}
