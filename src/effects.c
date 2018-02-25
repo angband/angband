@@ -4355,6 +4355,7 @@ bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
 	}
 
 	/* Update */
+	shape_learn_on_assume(player, shape->name);
 	player->upkeep->update |= (PU_BONUS);
 	player->upkeep->redraw |= (PR_TITLE | PR_MISC);
 	handle_stuff(player);
