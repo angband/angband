@@ -428,7 +428,7 @@ skill-device:24:10
 skill-save:30:10
 skill-stealth:3:0
 skill-search:12:12
-skill-melee:48:12
+skill-melee:48:20
 skill-shoot:40:30
 skill-throw:40:30
 skill-dig:0:0
@@ -923,7 +923,7 @@ skill-device:36:13
 skill-save:30:9
 skill-stealth:2:0
 skill-search:10:12
-skill-melee:34:15
+skill-melee:34:25
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
