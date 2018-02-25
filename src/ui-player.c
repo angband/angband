@@ -380,17 +380,34 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 
 				/* Set which (if any) symbol and color are used */
 				if (rec[i].mod != -1) {
+					int k;
+
+					/* Shape modifiers */
+					for (k = 0; k < OBJ_MOD_MAX; k++) {
+						res = (player->shape->modifiers[i] > 0);
+						vul = (player->shape->modifiers[i] > 0);
+					}
+
 					/* Messy special cases */
 					if (rec[i].mod == OBJ_MOD_INFRA)
-						res = (player->race->infra > 0);
+						res |= (player->race->infra > 0);
 					if (rec[i].mod == OBJ_MOD_TUNNEL)
-						res = (player->race->r_skills[SKILL_DIGGING] > 0);
+						res |= (player->race->r_skills[SKILL_DIGGING] > 0);
 				} else if (rec[i].flag != -1) {
 					res = of_has(f, rec[i].flag);
+					res |= (of_has(player->shape->flags, rec[i].flag) &&
+							of_has(player->obj_k->flags, rec[i].flag));
 				} else if (rec[i].element != -1) {
-					imm = player->race->el_info[rec[i].element].res_level == 3;
-					res = player->race->el_info[rec[i].element].res_level == 1;
-					vul = player->race->el_info[rec[i].element].res_level == -1;
+					int el = rec[i].element;
+					imm = (player->race->el_info[el].res_level == 3) ||
+						((player->shape->el_info[el].res_level == 3) &&
+						 (player->obj_k->el_info[el].res_level));
+					res = (player->race->el_info[el].res_level == 1) ||
+						((player->shape->el_info[el].res_level == 1) &&
+						 (player->obj_k->el_info[el].res_level));
+					vul = (player->race->el_info[el].res_level == -1) ||
+						((player->shape->el_info[el].res_level == -1) &&
+						 (player->obj_k->el_info[el].res_level));
 				}
 			}
 
