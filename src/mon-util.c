@@ -527,7 +527,6 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	int m1, m2;
 
 	struct monster *mon;
-	bool lit = square_islit(cave, player->py, player->px);
 
 	/* Monsters */
 	m1 = cave->squares[y1][x1].mon;
@@ -602,11 +601,6 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	/* Redraw */
 	square_light_spot(cave, y1, x1);
 	square_light_spot(cave, y2, x2);
-
-	/* Check for light change */
-	if (lit != square_islit(cave, player->py, player->px)) {
-		player->upkeep->update |= PU_BONUS;
-	}
 }
 
 /**
