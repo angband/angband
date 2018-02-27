@@ -2213,7 +2213,7 @@ void get_debug_command(void)
 		case 'p':
 		{
 			const char *near = "10";
-			effect_simple(EF_TELEPORT, source_player(), near, 0, 1, 0, 0, 0, NULL);
+			effect_simple(EF_TELEPORT, source_player(), near, 0, 0, 0, 0, 0, NULL);
 			break;
 		}
 
@@ -2307,7 +2307,7 @@ void get_debug_command(void)
 		case 't':
 		{
 			const char *far = "100";
-			effect_simple(EF_TELEPORT, source_player(), far, 0, 1, 0, 0, 0, NULL);
+			effect_simple(EF_TELEPORT, source_player(), far, 0, 0, 0, 0, 0, NULL);
 			break;
 		}
 
