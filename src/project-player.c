@@ -283,7 +283,7 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 					  NULL);
 	} else { /* Teleport */
 		const char *miles = "200";
-		effect_simple(EF_TELEPORT, context->origin, miles, 0, 1, 0, 0, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, miles, 1, 0, 0, 0, 0, NULL);
 	}
 }
 
@@ -368,7 +368,7 @@ static void project_player_handler_GRAVITY(project_player_handler_context_t *con
 	/* Blink */
 	if (randint1(127) > player->lev) {
 		const char *five = "5";
-		effect_simple(EF_TELEPORT, context->origin, five, 0, 1, 0, 0, 0, NULL);
+		effect_simple(EF_TELEPORT, context->origin, five, 1, 0, 0, 0, 0, NULL);
 	}
 
 	/* Slow */
