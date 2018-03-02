@@ -1718,7 +1718,7 @@ static void calc_shapechange(struct player_state *state,
 	of_union(state->flags, shape->flags);
 
 	/* Player flags */
-	of_union(state->pflags, shape->pflags);
+	pf_union(state->pflags, shape->pflags);
 
 	/* Stats */
 	for (i = 0; i < STAT_MAX; i++) {
@@ -2002,12 +2002,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 		/* Save the new index */
 		state->stat_ind[i] = ind;
-	}
-
-	/* Now deal with vulnerabilities */
-	for (i = 0; i < ELEM_MAX; i++) {
-		if (vuln[i] && (state->el_info[i].res_level < 3))
-			state->el_info[i].res_level--;
 	}
 
 	/* Temporary flags */
