@@ -104,5 +104,6 @@ EFFECT(SHAPECHANGE,					false,	NULL,		0,		EFINFO_NONE,	"changes the player's sha
 EFFECT(CURSE,						true,	"dam",		0,		EFINFO_NONE,	"damages a monster directly")
 EFFECT(COMMAND,						true,	NULL,		0,		EFINFO_NONE,	"takes control of a monster")
 EFFECT(JUMP_AND_BITE,				false,	NULL,		0,		EFINFO_NONE,	"jumps the player to the closest living monster and bites it")
+EFFECT(SINGLE_COMBAT,				true,	NULL,		0,		EFINFO_NONE,	"engages a monster in single combat")
 EFFECT(BIZARRE,						true,	NULL,		0,		EFINFO_NONE,	"does bizarre things")
 EFFECT(WONDER,						true,	NULL,		0,		EFINFO_NONE,	"creates random and unpredictable effects")

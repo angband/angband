@@ -1066,6 +1066,13 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 	/* Hurt it */
 	mon->hp -= dam;
 	if (mon->hp < 0) {
+		/* Deal with arena monsters */
+		if (player->upkeep->arena_level) {
+			player->upkeep->generate_level = true;
+			(*fear) = false;
+			return true;
+		}
+
 		/* It is dead now */
 		player_kill_monster(mon, note);
 
@@ -1081,6 +1088,12 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 		/* Not dead yet */
 		return false;
 	}
+}
+
+void kill_arena_monster(struct monster *mon)
+{
+	struct monster *old_mon = cave_monster(cave, mon->midx);
+	player_kill_monster(old_mon, "is defeated!");
 }
 
 /**
