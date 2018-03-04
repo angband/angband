@@ -68,6 +68,7 @@
 #include "math.h"
 #include "mon-make.h"
 #include "mon-spell.h"
+#include "mon-util.h"
 #include "player-util.h"
 #include "store.h"
 #include "trap.h"
@@ -2648,7 +2649,7 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
  */
 struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 	struct chunk *c;
-	struct monster *mon = mem_zalloc(sizeof(*mon));
+	struct monster *mon = player->upkeep->health_who;
 
 	c = cave_new(min_height, min_width);
 	c->depth = p->depth;
@@ -2666,9 +2667,14 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 	player_place(c, p, c->height - 2, 1);
 
 	/* Place the monster */
-	memcpy(mon, &player->upkeep->health_who, sizeof(*mon));
+	memcpy(&c->monsters[mon->midx], mon, sizeof(*mon));
+	mon = &c->monsters[mon->midx];
 	mon->fy = 1;
 	mon->fx = c->width - 2;
+	c->squares[1][c->width - 2].mon = mon->midx;
+	c->mon_max = mon->midx + 1;
+	c->mon_cnt = 1;
+	update_mon(mon, c, true);
 
 	return c;
 }

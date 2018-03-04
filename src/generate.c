@@ -949,6 +949,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			p->cave->objects[i] = NULL;
 		}
 
+		wiz_light(chunk, p, false);
 		chunk->turn = turn;
 
 		return chunk;
@@ -1174,10 +1175,11 @@ void prepare_next_level(struct chunk **c, struct player *p)
 
 		if (persist) {
 			/* Arenas don't get stored */
-			if (!streq((*c)->name, "arena")) {
-				/* Tidy up, unless going to an arena */
+			if (!(*c)->name || !streq((*c)->name, "arena")) {
+				/* Tidy up */
+				compact_monsters(0);
 				if (!p->upkeep->arena_level) {
-					compact_monsters(0);
+					/* Leave the player marker if going to an arena */
 					(*c)->squares[p->py][p->px].mon = 0;
 				}
 
@@ -1233,9 +1235,9 @@ void prepare_next_level(struct chunk **c, struct player *p)
 		struct chunk *old_level = chunk_find_name(name);
 
 		/* If we found an old level, load the known level and assign */
-		if (old_level) {
+		if (old_level && (old_level != cave)) {
 			int i;
-			bool arena = streq((*c)->name, "arena");
+			bool arena = (*c)->name && streq((*c)->name, "arena");
 			char *known_name = format("%s known", name);
 			struct chunk *old_known = chunk_find_name(known_name);
 			assert(old_known);
@@ -1257,6 +1259,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 			/* Leaving arenas requires special treatment */
 			if (arena) {
 				int y, x;
+				bool found = false;
 
 				/* Find where the player has to go, place them by hand */
 				for (y = 0; y < (*c)->height; y++) {
@@ -1264,13 +1267,44 @@ void prepare_next_level(struct chunk **c, struct player *p)
 						if ((*c)->squares[y][x].mon == -1) {
 							p->py = y;
 							p->px = x;
+							found = true;
 							break;
 						}
 					}
-					if ((*c)->squares[y][x].mon == -1) {
-						break;
+					if (found) break;
+				}
+
+				/* Failed to find, try near the killed monster */
+				if (!found) {
+					int k;
+					int ty = (*c)->monsters[1].fy;
+					int tx = (*c)->monsters[1].fx;
+					for (k = 1; k < 10; k++) {
+						for (y = ty - k; y <= ty + k; y++) {
+							for (x = tx - k; x <= tx + k; x++) {
+								if (square_in_bounds_fully(*c, y, x) &&
+									square_isempty(*c, y, x) &&
+									!square_isvault(*c, y, x)) {
+									p->py = y;
+									p->px = x;
+									found = true;
+									break;
+								}
+							}
+							if (found) break;
+						}
+						if (found) break;
 					}
 				}
+
+				/* Still failed to find, try anywhere */
+				if (!found) {
+					p->py = (*c)->monsters[1].fy;
+					p->px = (*c)->monsters[1].fx;
+					sanitize_player_loc(*c, p);
+				}
+
+				(*c)->squares[p->py][p->px].mon = -1;
 			} else {
 				/* Map boundary changes may not cooperate with level teleport */
 				sanitize_player_loc(*c, p);

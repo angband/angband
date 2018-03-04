@@ -4511,12 +4511,45 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 	/* Need to choose a monster, not just point */
 	struct monster *mon = target_get_monster();
 	context->ident = true;
-	if (!mon) {
+	if (mon) {
+		struct object *obj;
+
+		/* Swap the targeted monster with the first in the monster list */
+		struct monster *first_mon = cave_monster(cave, 1);
+		struct monster *temp_mon = mem_zalloc(sizeof(*temp_mon));
+		memcpy(temp_mon, first_mon, sizeof(*temp_mon));
+		memcpy(first_mon, mon, sizeof(*first_mon));
+		memcpy(mon, temp_mon, sizeof(*mon));
+
+		/* Now tidy up */
+		mon->midx = first_mon->midx;
+		first_mon->midx = 1;
+		cave->squares[first_mon->fy][first_mon->fx].mon = 1;
+		cave->squares[mon->fy][mon->fx].mon = mon->midx;
+
+		/* Repair objects being carried by monsters */
+		for (obj = mon->held_obj; obj; obj = obj->next) {
+			obj->held_m_idx = mon->midx;
+		}
+		for (obj = first_mon->held_obj; obj; obj = obj->next) {
+			obj->held_m_idx = 1;
+		}
+
+		/* Move mimicked objects */
+		if (mon->mimicked_obj) {
+			mon->mimicked_obj->mimicking_m_idx = mon->midx;
+		}
+		if (first_mon->mimicked_obj) {
+			first_mon->mimicked_obj->mimicking_m_idx = 1;
+		}
+
+		/* Update the target and health bar */
+		target_set_monster(first_mon);
+		player->upkeep->health_who = first_mon;
+		mem_free(temp_mon);
+	} else {
 		msg("No monster selected!");
 		return false;
-	} else {
-		/* Probably unnecessary  - NRM */
-		health_track(player->upkeep, mon);
 	}
 
 	/* Head to the arena */
