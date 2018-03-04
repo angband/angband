@@ -900,7 +900,7 @@ void process_player(void)
 void on_new_level(void)
 {
 	/* Arena levels are not really a level change */
-	if (player->upkeep->arena_level) {
+	if (!player->upkeep->arena_level) {
 		/* Play ambient sound on change of level. */
 		play_ambient_sound();
 
