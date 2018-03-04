@@ -899,14 +899,17 @@ void process_player(void)
  */
 void on_new_level(void)
 {
-	/* Play ambient sound on change of level. */
-	play_ambient_sound();
+	/* Arena levels are not really a level change */
+	if (player->upkeep->arena_level) {
+		/* Play ambient sound on change of level. */
+		play_ambient_sound();
 
-	/* Cancel the target */
-	target_set_monster(0);
+		/* Cancel the target */
+		target_set_monster(0);
 
-	/* Cancel the health bar */
-	health_track(player->upkeep, NULL);
+		/* Cancel the health bar */
+		health_track(player->upkeep, NULL);
+	}
 
 	/* Disturb */
 	disturb(player, 1);
@@ -934,6 +937,10 @@ void on_new_level(void)
 
 	/* Refresh */
 	event_signal(EVENT_REFRESH);
+
+	if (player->upkeep->arena_level) {
+		return;
+	}
 
 	/* Announce (or repeat) the feeling */
 	if (player->depth)
@@ -1052,13 +1059,24 @@ void run_game_loop(void)
 
 		/* Make a new level if requested */
 		if (player->upkeep->generate_level) {
-			if (character_dungeon)
+			bool arena = false;
+			if (character_dungeon) {
 				on_leave_level();
+				if (cave->name && streq(cave->name, "arena")) {
+					arena = true;
+				}
+			}
 
 			prepare_next_level(&cave, player);
 			on_new_level();
 
 			player->upkeep->generate_level = false;
+
+			/* Kill arena monster */
+			if (arena) {
+				player->upkeep->arena_level = false;
+				kill_arena_monster(player->upkeep->health_who);
+			}
 		}
 
 		/* If the player has enough energy to move they now do so, after

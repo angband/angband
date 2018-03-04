@@ -457,7 +457,8 @@ struct player_upkeep {
 
 	bool create_up_stair;	/* Create up stair on next level */
 	bool create_down_stair;	/* Create down stair on next level */
-	bool light_level;		/* Create down stair on next level */
+	bool light_level;		/* Level is to be lit on creation */
+	bool arena_level;		/* Current level is an arena */
 
 	int resting;			/* Resting counter */
 

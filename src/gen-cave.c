@@ -2637,3 +2637,38 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 
 	return c;
 }
+
+/* ------------------ ARENA ---------------- */
+
+/**
+ * Generate an arena level - an open single combat arena.
+ *
+ * \param p is the player
+ * \return a pointer to the generated chunk
+ */
+struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
+	struct chunk *c;
+	struct monster *mon = mem_zalloc(sizeof(*mon));
+
+	c = cave_new(min_height, min_width);
+	c->depth = p->depth;
+	c->name = string_make("arena");
+
+    /* Fill cave area with floors */
+    fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_FLOOR,
+				   SQUARE_ARENA);
+
+    /* Bound with perma-rock */
+    draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
+				   SQUARE_NONE);
+
+	/* Place the player */
+	player_place(c, p, c->height - 2, 1);
+
+	/* Place the monster */
+	memcpy(mon, &player->upkeep->health_who, sizeof(*mon));
+	mon->fy = 1;
+	mon->fx = c->width - 2;
+
+	return c;
+}
