@@ -934,6 +934,26 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	int i, tries = 0;
 	struct chunk *chunk = NULL;
 
+	/* Arena levels handled separately */
+	if (p->upkeep->arena_level) {
+		/* Generate level */
+		chunk = arena_gen(p, height, width);
+
+		/* Allocate new known level, light it if requested */
+		p->cave = cave_new(chunk->height, chunk->width);
+		p->cave->depth = chunk->depth;
+		p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
+									   * sizeof(struct object*));
+		p->cave->obj_max = chunk->obj_max;
+		for (i = 0; i <= p->cave->obj_max; i++) {
+			p->cave->objects[i] = NULL;
+		}
+
+		chunk->turn = turn;
+
+		return chunk;
+	}
+
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
 		int y, x;
@@ -1146,18 +1166,25 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 */
 void prepare_next_level(struct chunk **c, struct player *p)
 {
+	bool persist = OPT(p, birth_levels_persist) || p->upkeep->arena_level;
+
 	/* Deal with any existing current level */
 	if (character_dungeon) {
 		assert (p->cave && (*c == cave));
 
-		if (OPT(p, birth_levels_persist)) {
-			/* Tidy up */
-			compact_monsters(0);
-			(*c)->squares[p->py][p->px].mon = 0;
+		if (persist) {
+			/* Arenas don't get stored */
+			if (!streq((*c)->name, "arena")) {
+				/* Tidy up, unless going to an arena */
+				if (!p->upkeep->arena_level) {
+					compact_monsters(0);
+					(*c)->squares[p->py][p->px].mon = 0;
+				}
 
-			/* Save level and known level */
-			cave_store(*c, false, true);
-			cave_store(p->cave, true, true);
+				/* Save level and known level */
+				cave_store(*c, false, true);
+				cave_store(p->cave, true, true);
+			}
 		} else {
 			/* Save the town */
 			if (!((*c)->depth) && !chunk_find_name("Town")) {
@@ -1201,13 +1228,14 @@ void prepare_next_level(struct chunk **c, struct player *p)
 	}
 
 	/* Prepare the new level */
-	if (OPT(p, birth_levels_persist)) {
+	if (persist) {
 		char *name = level_by_depth(p->depth)->name;
 		struct chunk *old_level = chunk_find_name(name);
 
 		/* If we found an old level, load the known level and assign */
 		if (old_level) {
 			int i;
+			bool arena = streq((*c)->name, "arena");
 			char *known_name = format("%s known", name);
 			struct chunk *old_known = chunk_find_name(known_name);
 			assert(old_known);
@@ -1226,15 +1254,37 @@ void prepare_next_level(struct chunk **c, struct player *p)
 			/* Allow monsters to recover */
 			restore_monsters();
 
-			/* Map boundary changes may not cooperate with level teleports */
-			sanitize_player_loc(*c,p);
+			/* Leaving arenas requires special treatment */
+			if (arena) {
+				int y, x;
 
-			/* Place the player */
-			player_place(*c, p, p->py, p->px);
+				/* Find where the player has to go, place them by hand */
+				for (y = 0; y < (*c)->height; y++) {
+					for (x = 0; x < (*c)->width; x++) {
+						if ((*c)->squares[y][x].mon == -1) {
+							p->py = y;
+							p->px = x;
+							break;
+						}
+					}
+					if ((*c)->squares[y][x].mon == -1) {
+						break;
+					}
+				}
+			} else {
+				/* Map boundary changes may not cooperate with level teleport */
+				sanitize_player_loc(*c, p);
+
+				/* Place the player */
+				player_place(*c, p, p->py, p->px);
+			}
 
 			/* Remove from the list */
 			chunk_list_remove(name);
 			chunk_list_remove(known_name);
+		} else if (p->upkeep->arena_level) {
+			/* We're creating a new arena level */
+			*c = cave_generate(p, 6, 6);
 		} else {
 			/* Check dimensions */
 			struct level *lev;

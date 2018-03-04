@@ -4505,6 +4505,29 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 }
 
 /**
+ * Enter single combat with an enemy
+ */
+bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
+{
+	/* Need to choose a monster, not just point */
+	struct monster *mon = target_get_monster();
+	context->ident = true;
+	if (!mon) {
+		msg("No monster selected!");
+		return false;
+	} else {
+		/* Probably unnecessary  - NRM */
+		health_track(player->upkeep, mon);
+	}
+
+	/* Head to the arena */
+	player->upkeep->arena_level = true;
+	dungeon_change_level(player, player->depth);
+	return true;
+}
+
+
+/**
  * One Ring activation
  */
 bool effect_handler_BIZARRE(effect_handler_context_t *context)
