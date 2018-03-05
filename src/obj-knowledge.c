@@ -965,6 +965,12 @@ void player_know_object(struct player *p, struct object *obj)
 	if (!obj->known) return;
 	if (obj->kind != obj->known->kind) return;
 
+	/* Distant objects just get base properties */
+	if (obj->kind && !(obj->notice & OBJ_NOTICE_ASSESSED)) {
+		object_set_base_known(obj);
+		return;
+	}
+
 	/* Get the dice, and the pval for anything but chests */
 	obj->known->dd = obj->dd * p->obj_k->dd;
 	obj->known->ds = obj->ds * p->obj_k->ds;

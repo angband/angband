@@ -319,33 +319,37 @@ bool target_accept(int y, int x)
 	struct object *obj;
 
 	/* Player grids are always interesting */
-	if (cave->squares[y][x].mon < 0) return (true);
+	if (cave->squares[y][x].mon < 0) return true;
 
 	/* Handle hallucination */
-	if (player->timed[TMD_IMAGE]) return (false);
+	if (player->timed[TMD_IMAGE]) return false;
 
 	/* Obvious monsters */
 	if (cave->squares[y][x].mon > 0) {
 		struct monster *mon = square_monster(cave, y, x);
-		if (monster_is_obvious(mon))
-			return (true);
+		if (monster_is_obvious(mon)) {
+			return true;
+		}
 	}
 
 	/* Traps */
-	if (square_isvisibletrap(cave, y, x))
-		return(true);
+	if (square_isvisibletrap(cave, y, x)) return true;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(player->cave, y, x); obj; obj = obj->next)
+	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
 		/* Memorized object */
-		if (!ignore_known_item_ok(obj)) return (true);
+		if ((obj->kind == unknown_item_kind) || !ignore_known_item_ok(obj)) {
+			return true;
+		}
+	}
 
 	/* Interesting memorized features */
-	if (square_isknown(cave, y, x) && square_isinteresting(cave, y, x))
-		return (true);
+	if (square_isknown(cave, y, x) && square_isinteresting(cave, y, x)) {
+		return true;
+	}
 
 	/* Nope */
-	return (false);
+	return false;
 }
 
 /**
