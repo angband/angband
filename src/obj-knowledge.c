@@ -937,11 +937,12 @@ void object_see(struct player *p, struct object *obj)
  */
 void object_touch(struct player *p, struct object *obj)
 {
-	player_know_object(p, obj);
-
 	/* Automatically notice artifacts, mark as assessed */
 	obj->known->artifact = obj->artifact;
 	obj->known->notice |= OBJ_NOTICE_ASSESSED;
+
+	/* Apply known properties to the object */
+	player_know_object(p, obj);
 
 	/* Log artifacts if found */
 	if (obj->artifact)
@@ -966,7 +967,7 @@ void player_know_object(struct player *p, struct object *obj)
 	if (obj->kind != obj->known->kind) return;
 
 	/* Distant objects just get base properties */
-	if (obj->kind && !(obj->notice & OBJ_NOTICE_ASSESSED)) {
+	if (obj->kind && !(obj->known->notice & OBJ_NOTICE_ASSESSED)) {
 		object_set_base_known(obj);
 		return;
 	}
