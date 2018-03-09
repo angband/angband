@@ -2428,6 +2428,9 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 	sound(message_type);
 
+	/* No summoning in arena levels */
+	if (player->upkeep->arena_level) return true;
+
 	/* Monster summon */
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
@@ -2678,6 +2681,9 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 	context->ident = true;
 
+	/* No teleporting in arena levels */
+	if (player->upkeep->arena_level) return true;
+
 	/* Establish the coordinates to teleport from, if we don't know already */
 	if (start.x && start.y) {
 		/* We're good */
@@ -2823,6 +2829,9 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 	context->ident = true;
 
+	/* No teleporting in arena levels */
+	if (player->upkeep->arena_level) return true;
+
 	if (context->origin.what == SRC_MONSTER) {
 		mon = cave_monster(cave, context->origin.which.monster);
 	}
@@ -2900,6 +2909,9 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
+
+	/* No teleporting in arena levels */
+	if (player->upkeep->arena_level) return true;
 
 	/* Check for monster targeting another monster */
 	if (t_mon) {
@@ -4509,9 +4521,16 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
  */
 bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 {
-	/* Need to choose a monster, not just point */
 	struct monster *mon = target_get_monster();
 	context->ident = true;
+
+	/* Already in an arena */
+	if (player->upkeep->arena_level) {
+		msg("You are already in single combat!");
+		return false;
+	}
+
+	/* Need to choose a monster, not just point */
 	if (mon) {
 		struct object *obj;
 
