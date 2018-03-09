@@ -2657,7 +2657,7 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 
     /* Fill cave area with floors */
     fill_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_FLOOR,
-				   SQUARE_ARENA);
+				   SQUARE_NONE);
 
     /* Bound with perma-rock */
     draw_rectangle(c, 0, 0, c->height - 1, c->width - 1, FEAT_PERM,
