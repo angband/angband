@@ -651,15 +651,15 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		notify = false;
 	}
 
-	/* Always mention start or finish, otherwise on request */
-	if (v == 0) {
-		print_custom_message(weapon, effect->on_end, MSG_RECOVER);
-		notify = true;
-	} else if (p->timed[idx] == 0) {
+	/* Always mention start, otherwise on request */
+	if (p->timed[idx] == 0) {
 		print_custom_message(weapon, effect->on_begin, effect->msgt);
 		notify = true;
 	} else if (notify) {
-		if (p->timed[idx] > v && effect->on_decrease) {
+		if (v == 0) {
+			/* Finishing */
+			print_custom_message(weapon, effect->on_end, MSG_RECOVER);
+		} else if (p->timed[idx] > v && effect->on_decrease) {
 			/* Decrementing */
 			print_custom_message(weapon, effect->on_decrease, effect->msgt);
 		} else if (v > p->timed[idx] && effect->on_increase) {
@@ -797,13 +797,16 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
  */
 bool player_dec_timed(struct player *p, int idx, int v, bool notify)
 {
+	int new_value;
 	assert(idx >= 0);
 	assert(idx < TMD_MAX);
+	new_value = p->timed[idx] - v;
 
-	return player_set_timed(p,
-			idx,
-			p->timed[idx] - v,
-			notify);
+	/* Obey `notify` if not finishing; if finishing, always notify */
+	if (new_value > 0) {
+		return player_set_timed(p, idx, new_value, notify);
+	}
+	return player_set_timed(p, idx, new_value, true);
 }
 
 /**
