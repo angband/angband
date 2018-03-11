@@ -30,6 +30,7 @@
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "obj-desc.h"
+#include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-pile.h"
@@ -1175,29 +1176,101 @@ void steal_monster_item(struct monster *mon, int midx)
 {
 	struct object *obj = get_random_monster_object(mon);
 	struct monster *thief = NULL;
+	char m_name[80];
+
+	/* Get the target monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
 
 	if (midx < 0) {
-		/* Players can't steal, yet */
-		return;
-	} else {
-		char m_name[80];
-		char t_name[80];
+		/* Base monster protection and player stealing skill */
+		int guard = mon->race->level + mon->mspeed - player->state.speed;
+		int steal_skill = player->state.skills[SKILL_STEALTH] +
+			adj_dex_th[player->state.stat_ind[STAT_DEX]];
+		int monster_reaction;
+		char o_name[80];
 
+		/* No object */
+		if (!obj) {
+			msg("You can find nothing to steal from %s.", m_name);
+			if (one_in_(3)) {
+				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
+								false);
+			}
+			return;
+		}
+
+		/* Penalize some status conditions */
+		if (player->timed[TMD_BLIND] || player->timed[TMD_CONFUSED] ||
+			player->timed[TMD_IMAGE]) {
+			steal_skill /= 4;
+		}
+		if (mon->m_timed[MON_TMD_SLEEP]) {
+			guard /= 2;
+		}
+
+		/* Try and steal */
+		if (tval_is_money(obj)) {
+			(void)strnfmt(o_name, sizeof(o_name), "treasure");
+		} else {
+			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+		}
+		monster_reaction = randint1(guard);
+		if (monster_reaction < steal_skill) {
+			int wake = 30 - player->state.skills[SKILL_STEALTH];
+
+			/* Success! */
+			obj->held_m_idx = 0;
+			pile_excise(&mon->held_obj, obj);
+			if (tval_is_money(obj)) {
+				msg("You steal %d gold pieces worth of treasure.", obj->pval);
+				player->au += obj->pval;
+				delist_object(cave, obj);
+				object_delete(&obj);
+			} else {
+				object_grab(player, obj);
+				delist_object(cave, obj);
+				delist_object(player->cave, obj->known);
+				inven_carry(player, obj, true, true);
+			}
+
+			/* Monster wakes a little */
+			mon_dec_timed(mon, MON_TMD_SLEEP, wake, MON_TMD_FLG_NOTIFY, false);
+		} else if (monster_reaction / 2 < steal_skill) {
+			/* Decent attempt, at least */
+			msg("You fail to steal %s from %s.", o_name, m_name);
+			/* Monster wakes */
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, false);
+		} else {
+			/* Bungled it */
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, false);
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+			msg("%s cries out in anger!", m_name);
+			effect_simple(EF_WAKE, source_monster(mon->midx), "", 0, 0, 0, 0, 0,
+						  NULL);
+		}
+
+		/* Player hit and run */
+		if (player->timed[TMD_ATT_RUN]) {
+			const char *near = "20";
+			msg("You vanish into the shadows!");
+			effect_simple(EF_TELEPORT, source_player(), near, 0, 0, 0, 0, 0,
+						  NULL);
+			(void) player_clear_timed(player, TMD_ATT_RUN, false);
+		}
+	} else {
+		/* Get the thief details */
+		char t_name[80];
 		thief = cave_monster(cave, midx);
 		assert(thief);
-
-		/* Get the monster names (or "it") */
-		monster_desc(m_name, sizeof(m_name), thief, MDESC_STANDARD);
-		monster_desc(t_name, sizeof(t_name), mon, MDESC_TARG);
+		monster_desc(t_name, sizeof(t_name), thief, MDESC_STANDARD);
 
 		/* Try to steal */
-		if (react_to_slay(obj, thief)) {
+		if (!obj || react_to_slay(obj, thief)) {
 			/* Fail to steal */
-			msg("%s tries to steal something from %s, but fails.", m_name,
-				t_name);
+			msg("%s tries to steal something from %s, but fails.", t_name,
+				m_name);
 		} else {
-			msg("%s steals something from %s!", m_name,
-				t_name);
+			msg("%s steals something from %s!", t_name, m_name);
 
 			/* Steal and carry */
 			obj->held_m_idx = 0;
