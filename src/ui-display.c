@@ -728,6 +728,7 @@ static const struct state_info effects[] =
 	{ TMD_ATT_VAMP,  S("AttVamp"),    COLOUR_PURPLE },
 	{ TMD_HEAL,      S("Heal"),       COLOUR_L_GREEN },
 	{ TMD_COMMAND,   S("Cmd"),        COLOUR_L_PURPLE },
+	{ TMD_ATT_RUN,   S("HitRun"),     COLOUR_MUD },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \

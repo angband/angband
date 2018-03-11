@@ -322,3 +322,8 @@ on-end:The healing effect fades.
 
 name:COMMAND
 desc:commanding a monster
+
+name:ATT_RUN
+desc:escape on attack
+on-begin:You tense up ready to escape!
+on-end:You relax again.
