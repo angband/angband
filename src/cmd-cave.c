@@ -865,21 +865,26 @@ void do_cmd_alter_aux(int dir)
 	}
 
 	/* Action depends on what's there */
-	if (cave->squares[y][x].mon > 0)
-		/* Attack monsters */
-		py_attack(player, y, x);
-	else if (square_isdiggable(cave, y, x))
+	if (cave->squares[y][x].mon > 0) {
+		/* Attack or steal from monsters */
+		if (player_has(player, PF_STEAL)) {
+			steal_monster_item(square_monster(cave, y, x), -1);
+		} else {
+			py_attack(player, y, x);
+		}
+	} else if (square_isdiggable(cave, y, x)) {
 		/* Tunnel through walls and rubble */
 		more = do_cmd_tunnel_aux(y, x);
-	else if (square_iscloseddoor(cave, y, x))
+	} else if (square_iscloseddoor(cave, y, x)) {
 		/* Open closed doors */
 		more = do_cmd_open_aux(y, x);
-	else if (square_isdisarmabletrap(cave, y, x))
+	} else if (square_isdisarmabletrap(cave, y, x)) {
 		/* Disarm traps */
 		more = do_cmd_disarm_aux(y, x);
-	else
+	} else {
 		/* Oops */
 		msg("You spin around.");
+	}
 
 	/* Cancel repetition unless we can continue */
 	if (!more) disturb(player, 0);
