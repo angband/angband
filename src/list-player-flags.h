@@ -13,7 +13,7 @@
 
 /* symbol            descr                                                        birth-descr */
 PF(NONE,             "",                                                          NULL)
-PF(EXTRA_SHOT,       "receive extra shots with tension bows at levels 20 and 40", "Gains extra shots with bow")
+PF(FAST_SHOT,        "improve shooting speed with tension bows every 10 levels",  "Gains extra shots with bow")
 PF(BRAVERY_30,       "become immune to fear at level 30",                         "Gains immunity to fear")
 PF(BLESS_WEAPON,     "may only wield blessed or hafted weapons",                  "Prefers blunt/blessed weapons")
 PF(CUMBER_GLOVE,     "have difficulty using magic with covered hands",            NULL)

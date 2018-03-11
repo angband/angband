@@ -546,7 +546,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL | ODESC_SINGULAR);
 
 	/* Actually "fire" the object -- Take a partial turn */
-	p->upkeep->energy_use = (z_info->move_energy / shots);
+	p->upkeep->energy_use = (z_info->move_energy * 10 / shots);
 
 	/* Calculate the path */
 	path_n = project_path(path_g, range, y, x, ty, tx, 0);
