@@ -2144,7 +2144,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->heavy_shoot = true;
 		}
 
-		state->num_shots = 1;
+		state->num_shots = 10;
 
 		/* Type of ammo */
 		if (kf_has(launcher->kind->kind_flags, KF_SHOOTS_SHOTS))
@@ -2161,15 +2161,13 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		if (!state->heavy_shoot) {
 			state->num_shots += extra_shots;
 			state->ammo_mult += extra_might;
-			if (player_has(p, PF_EXTRA_SHOT) &&
-				(state->ammo_tval == TV_ARROW)) {
-				if (p->lev >= 20) state->num_shots++;
-				if (p->lev >= 40) state->num_shots++;
+			if (player_has(p, PF_FAST_SHOT) && (state->ammo_tval == TV_ARROW)) {
+				state->num_shots += p->lev /10;
 			}
 		}
 
 		/* Require at least one shot */
-		if (state->num_shots < 1) state->num_shots = 1;
+		if (state->num_shots < 10) state->num_shots = 10;
 	}
 
 

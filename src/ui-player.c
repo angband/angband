@@ -839,7 +839,8 @@ static struct panel *get_panel_combat(void) {
 	panel_space(p);
 	panel_line(p, COLOUR_L_BLUE, "Shoot to-dam", "%+d", dam);
 	panel_line(p, COLOUR_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
-	panel_line(p, COLOUR_L_BLUE, "Shots", "%d/turn", player->state.num_shots);
+	panel_line(p, COLOUR_L_BLUE, "Shots", "%d.%d/turn",
+			   player->state.num_shots / 10, player->state.num_shots % 10);
 
 	return p;
 }
