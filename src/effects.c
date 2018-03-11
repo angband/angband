@@ -3515,6 +3515,11 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
 
 	int flg = PROJECT_STOP | PROJECT_PLAY | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
+	/* Handle increasing radius with player level */
+	if (context->other && context->origin.what == SRC_PLAYER) {
+		rad += player->lev / context->other;
+	}
+
 	/* Aim at the target, explode */
 	if (project(context->origin, rad, pgrid, dam, context->subtype, flg, 0, 0, NULL))
 		context->ident = true;

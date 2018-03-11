@@ -1323,3 +1323,111 @@ spell:Single Combat:40:50:30:300
 effect:SINGLE_COMBAT
 desc:Encases you and the targeted monster in a stone cell from which only the
 desc: winner can emerge.
+
+
+############### ROGUE ###############
+name:Rogue
+stats:0:1:-3:3:-1
+skill-disarm-phys:45:20
+skill-disarm-magic:45:20
+skill-device:32:10
+skill-save:28:10
+skill-stealth:3:1
+skill-search:20:16
+skill-melee:35:45
+skill-shoot:66:30
+skill-throw:72:45
+skill-dig:0:0
+info:6:25
+attack:5:30:4
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:sword:Dagger:1:1
+equip:soft armour:Soft Leather Armour:1:1
+equip:scroll:Word of Recall:1:1
+flags:CUMBER_GLOVE | CHOOSE_SPELLS | STEAL
+title:Vagabond
+title:Cutpurse
+title:Footpad
+title:Robber
+title:Burglar
+title:Filcher
+title:Sharper
+title:Rogue
+title:Thief
+title:Master Thief
+
+magic:5:350:3
+
+book:magic book:town:[Practical Spells]:7:arcane
+book-graphics:?:B
+book-properties:25:40:1 to 100
+equip:magic book:[Practical Spells]:1:1
+
+spell:Detect Monsters:5:1:50:10
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all non-invisible monsters in the immediate area,
+desc: for one turn only.
+
+spell:Phase Door:7:2:55:12
+effect:TELEPORT
+dice:10
+desc:Teleports you randomly up to 10 squares away.
+
+spell:Object Detection:10:3:60:15
+effect:DETECT_GOLD
+effect-yx:22:40
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects all objects in the immediate area.
+
+spell:Detect Stairs:12:3:50:20
+effect:DETECT_STAIRS
+dice:44d60
+desc:Detects all stairs in a wide area.
+
+spell:Recharging:20:10:50:30
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Adds charges to a stack of wands or staves.
+desc:  Chance of success and number of charges gained increase with your
+desc: level and decrease with level of wand or staff and number of charges.
+desc:  A failed attempt to recharge destroys one wand or staff from the stack.
+
+spell:Reveal Monsters:25:3:40:50
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters in the immediate area, for one turn only.
+
+book:magic book:dungeon:[Book of Trickery]:4:arcane
+book-graphics:?:b
+book-properties:10000:20:30 to 100
+
+spell:Teleport Self:17:6:35:60
+effect:TELEPORT
+dice:M$M
+expr:M:PLAYER_LEVEL:* 9 / 5
+desc:Teleports you randomly within the current level.
+
+spell:Hit and Run:23:20:40:80
+effect:TIMED_INC:ATT_RUN
+dice:10
+desc:Prepres you to teleport a short distance after stealing from a monster.
+
+spell:Teleport Other:30:10:30:100
+effect:BOLT_STATUS:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Produces a bolt that teleports away the first monster in its path.
+desc: Distance teleported increases with player level.
+
+spell:Teleport Level:35:17:65:120
+effect:TELEPORT_LEVEL
+desc:Teleports you 1 level up or 1 level down (chosen at random).
+desc:  This spell may have no effect when the forced descent option is set.
+
+
