@@ -856,8 +856,6 @@ void object_sense(struct player *p, struct object *obj)
 	}
 }
 
-
-
 /**
  * Gain knowledge based on seeing an object on the floor
  */
@@ -948,6 +946,49 @@ void object_touch(struct player *p, struct object *obj)
 	/* Log artifacts if found */
 	if (obj->artifact)
 		history_find_artifact(p, obj->artifact);
+}
+
+
+/**
+ * Gain knowledge based on grabbing an object from a monster
+ */
+void object_grab(struct player *p, struct object *obj)
+{
+	struct object *known_obj = p->cave->objects[obj->oidx];
+
+	/* Make new known objects, fully know sensed ones, relocate old ones */
+	if (known_obj == NULL) {
+		/* Make and/or list the new object */
+		struct object *new_obj;
+
+		/* Check whether we need to make a new one or list the old one */
+		if (obj->known) {
+			new_obj = obj->known;
+		} else {
+			new_obj = object_new();
+			obj->known = new_obj;
+			object_set_base_known(obj);
+		}
+		p->cave->objects[obj->oidx] = new_obj;
+		new_obj->oidx = obj->oidx;
+	} else {
+		int iy = known_obj->iy;
+		int ix = known_obj->ix;
+
+		/* Make sure knowledge is correct */
+		assert(known_obj == obj->known);
+
+		/* Detach from any old (incorrect) floor pile */
+		if (iy && ix && square_holds_object(p->cave, iy, ix, known_obj)) {
+			square_excise_object(p->cave, iy, ix, known_obj);
+		}
+
+		/* Copy over actual details */
+		object_set_base_known(obj);
+	}
+
+	/* Touch the object */
+	object_touch(p, obj);
 }
 
 

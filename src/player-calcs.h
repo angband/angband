@@ -95,6 +95,7 @@
 	(PR_MONSTER | PR_OBJECT | PR_MONLIST | PR_ITEMLIST)
 
 
+extern const int adj_dex_th[STAT_RANGE];
 extern const int adj_str_blow[STAT_RANGE];
 extern const int adj_dex_safe[STAT_RANGE];
 extern const int adj_con_fix[STAT_RANGE];

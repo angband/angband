@@ -71,6 +71,7 @@ void object_set_base_known(struct object *obj);
 void object_sense(struct player *p, struct object *obj);
 void object_see(struct player *p, struct object *obj);
 void object_touch(struct player *p, struct object *obj);
+void object_grab(struct player *p, struct object *obj);
 void player_know_object(struct player *p, struct object *obj);
 void update_player_object_knowledge(struct player *p);
 

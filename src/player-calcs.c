@@ -314,7 +314,7 @@ static const int adj_str_td[STAT_RANGE] =
 /**
  * Stat Table (DEX) -- bonus to hit
  */
-static const int adj_dex_th[STAT_RANGE] =
+const int adj_dex_th[STAT_RANGE] =
 {
 	-3	/* 3 */,
 	-2	/* 4 */,
