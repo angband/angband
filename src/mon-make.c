@@ -963,8 +963,8 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 	if (!square_is_monster_walkable(c, y, x))
 		return false;
 
-	/* No creation on glyph of warding */
-	if (square_iswarded(c, y, x)) return false;
+	/* No creation on glyphs */
+	if (square_iswarded(c, y, x) || square_isdecoyed(c, y, x)) return false;
 
 	/* "unique" monsters must be "unique" */
 	if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)

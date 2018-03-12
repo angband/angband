@@ -235,8 +235,10 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		/* Require "empty" floor grid */
 		if (!square_isempty(cave, y, x)) continue;
 
-		/* Hack -- no summon on glyph of warding */
-		if (square_iswarded(cave, y, x)) continue;
+		/* No summon on glyphs */
+		if (square_iswarded(cave, y, x) || square_isdecoyed(cave, y, x)) {
+			continue;
+		}
 
 		/* Okay */
 		break;

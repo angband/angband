@@ -289,6 +289,9 @@ static void get_move_find_range(struct monster *mon)
 static bool get_move_advance(struct chunk *c, struct monster *mon)
 {
 	int i;
+	struct loc decoy = cave_find_decoy(c);
+	struct loc target = (decoy.y && decoy.x) ? decoy :
+		loc(player->px, player->py);
 	int best_scent = 0;
 	bool found_dir = false;
 	int my = mon->fy, mx = mon->fx;
@@ -300,13 +303,13 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 
 	/* If the monster can pass through nearby walls, do that */
 	if (monster_passes_walls(mon) && !monster_near_permwall(mon, c)) {
-		mon->target.grid = loc(player->px, player->py);
+		mon->target.grid = target;
 		return true;
 	}
 
 	/* If the player can see monster, set target and run towards them */
 	if (square_isview(c, my, mx)) {
-		mon->target.grid = loc(player->px, player->py);
+		mon->target.grid = target;
 		return true;
 	}
 
@@ -680,8 +683,9 @@ static int get_move_choose_direction(int dy, int dx)
  */
 static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 {
-	int py = player->py;
-	int px = player->px;
+	struct loc decoy = cave_find_decoy(c);
+	struct loc target = (decoy.y && decoy.x) ? decoy :
+		loc(player->px, player->py);
 
 	int y, x;
 
@@ -700,9 +704,9 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 		x = mon->target.grid.x - mon->fx;
 		*good = true;
 	} else {
-		/* Head blindly straight for the player if there's no better idea */
-		y = player->py - mon->fy;
-		x = player->px - mon->fx;
+		/* Head blindly straight for the "player" if there's no better idea */
+		y = target.y - mon->fy;
+		x = target.x - mon->fx;
 	}
 
 	/* Normal animal packs try to get the player out of corridors. */
@@ -713,8 +717,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 
 		/* Count empty grids next to player */
 		for (i = 0; i < 8; i++) {
-			int ry = py + ddy_ddd[i];
-			int rx = px + ddx_ddd[i];
+			int ry = target.y + ddy_ddd[i];
+			int rx = target.x + ddx_ddd[i];
 			/* Check grid around the player for room interior (room walls count)
 			 * or other empty space */
 			if (square_ispassable(c, ry, rx) || square_isroom(c, ry, rx)) {
@@ -762,8 +766,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 			int tmp = randint0(8);
 			for (i = 0; i < 8; i++) {
 				/* Pick squares near player (pseudo-randomly) */
-				yy = py + ddy_ddd[(tmp + i) & 7];
-				xx = px + ddx_ddd[(tmp + i) & 7];
+				yy = target.y + ddy_ddd[(tmp + i) & 7];
+				xx = target.x + ddx_ddd[(tmp + i) & 7];
 
 				/* Ignore filled grids */
 				if (!square_isempty(c, yy, xx)) continue;
@@ -1263,6 +1267,22 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		if (square_iswarded(c, ny, nx) &&
 			!monster_turn_glyph(c, mon, nx, ny))
 			continue;
+
+		/* Break a decoy if there is one */
+		if (square_isdecoyed(c, ny, nx)) {
+			/* Learn about if the monster attacks */
+			if (monster_is_visible(mon))
+				rf_on(lore->flags, RF_NEVER_BLOW);
+
+			/* Some monsters never attack */
+			if (rf_has(mon->race->flags, RF_NEVER_BLOW))
+				continue;
+
+			/* Wait a minute... */
+			square_destroy_decoy(c, ny, nx);
+			did_something = true;
+			break;
+		}
 
 		/* The player is in the way. */
 		if (square_isplayer(c, ny, nx)) {

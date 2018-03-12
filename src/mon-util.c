@@ -524,8 +524,8 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 void monster_swap(int y1, int x1, int y2, int x2)
 {
 	int m1, m2;
-
 	struct monster *mon;
+	struct loc decoy = cave_find_decoy(cave);
 
 	/* Monsters */
 	m1 = cave->squares[y1][x1].mon;
@@ -555,6 +555,12 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		/* Player */
 		player->py = y2;
 		player->px = x2;
+
+		/* Decoys get destroyed if player is too far away */
+		if (decoy.y && decoy.x &&
+			distance(decoy, loc(player->px, player->py)) > z_info->max_sight) {
+			square_destroy_decoy(cave, decoy.y, decoy.x);
+		}
 
 		/* Update the trap detection status */
 		player->upkeep->redraw |= (PR_DTRAP);
@@ -586,6 +592,12 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		/* Player */
 		player->py = y1;
 		player->px = x1;
+
+		/* Decoys get destroyed if player is too far away */
+		if (decoy.y && decoy.x &&
+			distance(decoy, loc(player->px, player->py)) > z_info->max_sight) {
+			square_destroy_decoy(cave, decoy.y, decoy.x);
+		}
 
 		/* Update the trap detection status */
 		player->upkeep->redraw |= (PR_DTRAP);

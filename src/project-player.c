@@ -640,6 +640,11 @@ bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 		obvious,
 	};
 
+	/* Decoy has been hit */
+	if (square_isdecoyed(cave, y, x) && dam) {
+		square_destroy_decoy(cave, y, x);
+	}
+
 	/* No player here */
 	if (!square_isplayer(cave, y, x)) {
 		return false;

@@ -587,3 +587,17 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), boo
 	/* All done */
 	return count;
 }
+
+struct loc cave_find_decoy(struct chunk *c)
+{
+	int y, x;
+	struct trap_kind *decoy = lookup_trap("decoy");
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			if (square_trap_specific(c, y, x, decoy->tidx)) {
+				return loc(x, y);
+			}
+		}
+	}
+	return loc(0, 0);
+}
