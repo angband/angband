@@ -142,6 +142,8 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 	/* Slope */
 	int m;
 
+	/* Possible decoy */
+	struct loc decoy = cave_find_decoy(cave);
 
 	/* No path necessary (or allowed) */
 	if ((x1 == x2) && (y1 == y2)) return (0);
@@ -203,9 +205,11 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 				if ((n > 0) && !square_isprojectable(cave, y, x)) break;
 			} else if ((n > 0) && square_isbelievedwall(cave,y,x)) break;
 
-			/* Sometimes stop at non-initial monsters/players */
-			if (flg & (PROJECT_STOP))
+			/* Sometimes stop at non-initial monsters/players, decoys */
+			if (flg & (PROJECT_STOP)) {
 				if ((n > 0) && (cave->squares[y][x].mon != 0)) break;
+				if ((decoy.y == y) && (decoy.x == x)) break;
+			}
 
 			/* Slant */
 			if (m) {
@@ -260,9 +264,11 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 				if ((n > 0) && !square_isprojectable(cave, y, x)) break;
 			} else if ((n > 0) && square_isbelievedwall(cave,y,x)) break;
 
-			/* Sometimes stop at non-initial monsters/players */
-			if (flg & (PROJECT_STOP))
+			/* Sometimes stop at non-initial monsters/players, decoys */
+			if (flg & (PROJECT_STOP)) {
 				if ((n > 0) && (cave->squares[y][x].mon != 0)) break;
+				if ((decoy.y == y) && (decoy.x == x)) break;
+			}
 
 			/* Slant */
 			if (m) {
@@ -311,9 +317,11 @@ int project_path(struct loc *gp, int range, int y1, int x1, int y2, int x2, int 
 				if ((n > 0) && !square_isprojectable(cave, y, x)) break;
 			} else if ((n > 0) && square_isbelievedwall(cave,y,x)) break;
 
-			/* Sometimes stop at non-initial monsters/players */
-			if (flg & (PROJECT_STOP))
+			/* Sometimes stop at non-initial monsters/players, decoys */
+			if (flg & (PROJECT_STOP)) {
 				if ((n > 0) && (cave->squares[y][x].mon != 0)) break;
+				if ((decoy.y == y) && (decoy.x == x)) break;
+			}
 
 			/* Advance */
 			y += sy;
