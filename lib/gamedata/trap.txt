@@ -60,8 +60,14 @@ graphics: :w
 name:glyph of warding:glyph of warding
 graphics:;:y
 appear:0:0:0
-flags:RUNE | VISIBLE | FLOOR
+flags:GLYPH | VISIBLE | FLOOR
 desc:A magical rune which monsters cannot pass without difficulty.
+
+name:decoy:decoy
+graphics:;:G
+appear:0:0:0
+flags:GLYPH | VISIBLE | FLOOR
+desc:A magical decoy which sounds and looks like the player.
 
 name:door lock:door lock
 graphics: :w

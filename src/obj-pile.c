@@ -43,6 +43,7 @@
 #include "player-spell.h"
 #include "player-util.h"
 #include "randname.h"
+#include "trap.h"
 #include "z-queue.h"
 
 /* #define LIST_DEBUG */
@@ -940,8 +941,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 				!square_in_bounds_fully(cave, ty, tx) ||
 				!los(cave, *y, *x, ty, tx) ||
 				!square_isfloor(cave, ty, tx) ||
-				square_isplayertrap(cave, ty, tx) ||
-				square_iswarded(cave, ty, tx))
+				square_istrap(cave, ty, tx))
 				continue;
 
 			/* Analyse the grid for carrying the new object */
@@ -1061,12 +1061,9 @@ void push_object(int y, int x)
 {
 	/* Save the original terrain feature */
 	struct feature *feat_old = square_feat(cave, y, x);
-
 	struct object *obj = square_object(cave, y, x);
-
 	struct queue *queue = q_new(z_info->floor_size);
-
-	bool glyph = square_iswarded(cave, y, x);
+	struct trap *trap = square_trap(cave, y, x);
 
 	/* Push all objects on the square, stripped of pile info, into the queue */
 	while (obj) {
@@ -1099,10 +1096,11 @@ void push_object(int y, int x)
 		drop_near(cave, &obj, 0, y, x, false);
 	}
 
-	/* Reset cave feature and rune if needed */
+	/* Reset cave feature, remove trap if needed */
 	square_set_feat(cave, y, x, feat_old->fidx);
-	if (glyph)
-		square_add_ward(cave, y, x);
+	if (trap && !square_istrappable(cave, y, x)) {
+		square_remove_all_traps(cave, y, x);
+	}
 
 	q_free(queue);
 }

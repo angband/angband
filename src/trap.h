@@ -36,6 +36,13 @@ enum
 #define trf_diff(f1, f2)        flag_diff(f1, f2, TRF_SIZE)
 
 
+/* Types of glyph */
+enum {
+	GLYPH_NONE,
+	GLYPH_WARDING,
+	GLYPH_DECOY
+};
+
 /**
  * A trap template.
  */

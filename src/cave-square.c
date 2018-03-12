@@ -69,7 +69,7 @@ bool feat_is_treasure(int feat)
 }
 
 /**
- * True is the feature is a solid wall (not rubble).
+ * True if the feature is a solid wall (not rubble).
  */
 bool feat_is_wall(int feat)
 {
@@ -77,7 +77,7 @@ bool feat_is_wall(int feat)
 }
 
 /**
- * True is the feature is a floor.
+ * True if the feature is a floor.
  */
 bool feat_is_floor(int feat)
 {
@@ -85,7 +85,7 @@ bool feat_is_floor(int feat)
 }
 
 /**
- * True is the feature can hold a trap.
+ * True if the feature can hold a trap.
  */
 bool feat_is_trap_holding(int feat)
 {
@@ -93,7 +93,7 @@ bool feat_is_trap_holding(int feat)
 }
 
 /**
- * True is the feature can hold an object.
+ * True if the feature can hold an object.
  */
 bool feat_is_object_holding(int feat)
 {
@@ -612,9 +612,9 @@ bool square_isarrivable(struct chunk *c, int y, int x) {
  * True if the square is an untrapped floor square without items.
  */
 bool square_canputitem(struct chunk *c, int y, int x) {
-	if (!square_isfloor(c, y, x))
+	if (!square_isobjectholding(c, y, x))
 		return false;
-	if (square_iswarded(c, y, x) || square_isplayertrap(c, y, x))
+	if (square_istrap(c, y, x))
 		return false;
 	return !square_object(c, y, x);
 }
@@ -751,9 +751,10 @@ bool square_iswarded(struct chunk *c, int y, int x)
 	return square_trap_specific(c, y, x, rune->tidx);
 }
 
-bool square_canward(struct chunk *c, int y, int x)
+bool square_isdecoyed(struct chunk *c, int y, int x)
 {
-	return square_isfloor(c, y, x);
+	struct trap_kind *glyph = lookup_trap("decoy");
+	return square_trap_specific(c, y, x, glyph->tidx);
 }
 
 bool square_seemslikewall(struct chunk *c, int y, int x)
@@ -1124,10 +1125,24 @@ void square_add_trap(struct chunk *c, int y, int x)
 	place_trap(c, y, x, -1, c->depth);
 }
 
-void square_add_ward(struct chunk *c, int y, int x)
+void square_add_glyph(struct chunk *c, int y, int x, int type)
 {
-	struct trap_kind *rune = lookup_trap("glyph of warding");
-	place_trap(c, y, x, rune->tidx, 0);
+	struct trap_kind *glyph = NULL;
+	switch (type) {
+		case GLYPH_WARDING: {
+			glyph = lookup_trap("glyph of warding");
+			break;
+		}
+		case GLYPH_DECOY: {
+			glyph = lookup_trap("decoy");
+			break;
+		}
+		default: {
+			msg("Non-existent glyph requested. Please report this bug.");
+			return;
+		}
+	}
+	place_trap(c, y, x, glyph->tidx, 0);
 }
 
 void square_add_stairs(struct chunk *c, int y, int x, int depth) {
@@ -1223,14 +1238,6 @@ void square_earthquake(struct chunk *c, int y, int x) {
 	else
 		f = FEAT_MAGMA;
 	square_set_feat(c, y, x, f);
-}
-
-void square_remove_ward(struct chunk *c, int y, int x)
-{
-	assert(square_iswarded(c, y, x));
-
-	struct trap_kind *rune = lookup_trap("glyph of warding");
-	square_remove_trap(c, y, x, rune->tidx);
 }
 
 /**

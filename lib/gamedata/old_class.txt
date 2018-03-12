@@ -381,7 +381,7 @@ desc:  This spell has no effect when the option to restrict the use of
 desc: recall is set, unless Morgoth is dead.
 
 spell:Rune of Protection:36:60:70:40
-effect:RUNE
+effect:GLYPH:WARDING
 desc:Inscribes a glyph of warding beneath you.
 desc:  Summoned monsters can't appear on the glyph.
 desc:  If a monster attempts to move onto the glyph or melee you while you
@@ -725,7 +725,7 @@ expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each evil monster within line of sight.
 
 spell:Glyph of Warding:33:55:90:15
-effect:RUNE
+effect:GLYPH:WARDING
 desc:Inscribes a glyph of warding beneath you.
 desc:  Summoned monsters can't appear on the glyph.
 desc:  If a monster attempts to move onto the glyph or melee you while you
@@ -1301,7 +1301,7 @@ equip:sword:Dagger:1:1
 equip:bow:Short Bow:1:1
 equip:arrow:Arrow:15:20
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS
+flags:CUMBER_GLOVE | FAST_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
 title:Scout
@@ -1630,7 +1630,7 @@ desc:  This spell has no effect when the option to restrict the use of
 desc: stairs and recall is set, unless Morgoth is dead.
 
 spell:Rune of Protection:40:75:80:80
-effect:RUNE
+effect:GLYPH:WARDING
 desc:Inscribes a glyph of warding beneath you.
 desc:  Summoned monsters can't appear on the glyph.
 desc:  If a monster attempts to move onto the glyph or melee you while you

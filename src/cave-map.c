@@ -133,7 +133,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 		/* Scan the square trap list */
 		while (trap) {
 			if (trf_has(trap->flags, TRF_TRAP) ||
-				trf_has(trap->flags, TRF_RUNE)) {
+				trf_has(trap->flags, TRF_GLYPH)) {
 				/* Accept the trap - only if not disabled, maybe we need
 				 * a special graphic for this */
 				if (!trap->timeout) {

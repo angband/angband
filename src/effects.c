@@ -1006,9 +1006,9 @@ bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
 }
 
 /**
- * Create a "glyph of warding".
+ * Create a glyph.
  */
-bool effect_handler_RUNE(effect_handler_context_t *context)
+bool effect_handler_GLYPH(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
@@ -1017,13 +1017,13 @@ bool effect_handler_RUNE(effect_handler_context_t *context)
 	context->ident = true;
 
 	/* See if the effect works */
-	if (!square_canward(cave, py, px)) {
+	if (!square_istrappable(cave, py, px)) {
 		msg("There is no clear floor on which to cast the spell.");
 		return false;
 	}
 
 	/* Create a glyph */
-	square_add_ward(cave, py, px);
+	square_add_glyph(cave, py, px, context->subtype);
 
 	/* Push objects off the grid */
 	if (square_object(cave, py, px))
@@ -5011,6 +5011,15 @@ int effect_subtype(int index, const char *type)
 					val = 1;
 				else if (streq(type, "NONE"))
 					val = 0;
+				break;
+			}
+
+				/* Inscribe a glyph */
+			case EF_GLYPH: {
+				if (streq(type, "WARDING"))
+					val = GLYPH_WARDING;
+				else if (streq(type, "DECOY"))
+					val = GLYPH_DECOY;
 				break;
 			}
 

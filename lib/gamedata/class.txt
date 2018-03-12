@@ -852,7 +852,7 @@ dice:20+d20
 desc:Temporarily makes your melee attacks slay evil creatures.
 
 spell:Glyph of Warding:20:40:90:35
-effect:RUNE
+effect:GLYPH:WARDING
 desc:Inscribes a glyph of warding beneath you.
 desc:  Summoned monsters can't appear on the glyph.
 desc:  If a monster attempts to move onto the glyph or melee you while you
@@ -1338,7 +1338,7 @@ skill-melee:35:45
 skill-shoot:66:30
 skill-throw:72:45
 skill-dig:0:0
-info:6:25
+info:6:0
 attack:5:30:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1357,7 +1357,7 @@ title:Rogue
 title:Thief
 title:Master Thief
 
-magic:5:350:3
+magic:5:350:2
 
 book:magic book:town:[Practical Spells]:7:arcane
 book-graphics:?:B
