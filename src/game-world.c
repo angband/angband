@@ -466,6 +466,9 @@ static void update_scent(void)
 		}
 	}
 
+	/* Scentless player */
+	if (player->timed[TMD_SCENTLESS]) return;
+
 	/* Lay down new scent around the player */
 	for (y = 0; y < 5; y++) {
 		for (x = 0; x < 5; x++) {
