@@ -2058,7 +2058,7 @@ graphics:?:w
 properties:60:5:500
 alloc:30:70 to 100
 power:20
-effect:RUNE
+effect:GLYPH:WARDING
 
 name:*Destruction*
 type:scroll

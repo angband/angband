@@ -84,7 +84,7 @@ priority:2
 name:open floor
 graphics:.:w
 priority:5
-flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
 desc:An open floor or bare ground.  Can be walked across by anything, and can 
 desc:hold traps or items.  Does not break line of sight.
 

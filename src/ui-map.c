@@ -91,7 +91,7 @@ static void get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
 {
     /* Trap is visible */
     if (trf_has(g->trap->flags, TRF_VISIBLE) ||
-		trf_has(g->trap->flags, TRF_RUNE)) {
+		trf_has(g->trap->flags, TRF_GLYPH)) {
 		/* Get the graphics */
 		*a = trap_x_attr[g->lighting][g->trap->kind->tidx];
 		*w = trap_x_char[g->lighting][g->trap->kind->tidx];

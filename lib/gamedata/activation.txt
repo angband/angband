@@ -531,10 +531,10 @@ effect:MAP_AREA
 effect-yx:22:40
 desc:maps the area around you
 
-name:RUNE
+name:GLYPH
 aim:0
 power:20
-effect:RUNE
+effect:GLYPH:WARDING
 desc:inscribes a glyph of warding beneath you, which monsters cannot move onto
 
 

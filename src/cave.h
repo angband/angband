@@ -336,7 +336,7 @@ bool square_isdamaging(struct chunk *c, int y, int x);
 bool square_isnoflow(struct chunk *c, int y, int x);
 bool square_isnoscent(struct chunk *c, int y, int x);
 bool square_iswarded(struct chunk *c, int y, int x);
-bool square_canward(struct chunk *c, int y, int x);
+bool square_isdecoyed(struct chunk *c, int y, int x);
 bool square_seemslikewall(struct chunk *c, int y, int x);
 bool square_isinteresting(struct chunk *c, int y, int x);
 bool square_isplayertrap(struct chunk *c, int y, int x);
@@ -369,7 +369,7 @@ void square_set_feat(struct chunk *c, int y, int x, int feat);
 
 /* Feature placers */
 void square_add_trap(struct chunk *c, int y, int x);
-void square_add_ward(struct chunk *c, int y, int x);
+void square_add_glyph(struct chunk *c, int y, int x, int type);
 void square_add_stairs(struct chunk *c, int y, int x, int depth);
 void square_add_door(struct chunk *c, int y, int x, bool closed);
 
@@ -387,7 +387,6 @@ void square_tunnel_wall(struct chunk *c, int y, int x);
 void square_destroy_wall(struct chunk *c, int y, int x);
 void square_destroy(struct chunk *c, int y, int x);
 void square_earthquake(struct chunk *c, int y, int x);
-void square_remove_ward(struct chunk *c, int y, int x);
 void square_upgrade_mineral(struct chunk *c, int y, int x);
 void square_destroy_rubble(struct chunk *c, int y, int x);
 void square_force_floor(struct chunk *c, int y, int x);

@@ -1039,7 +1039,7 @@ static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
 		}
 
 		/* Break the rune */
-		square_remove_ward(c, ny, nx);
+		square_remove_all_traps(c, ny, nx);
 
 		return true;
 	}

@@ -222,7 +222,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 	}
 
 	/* Disable traps, unlock doors */
-	if (square_istrap(cave, y, x)) {
+	if (square_isdisarmabletrap(cave, y, x)) {
 		/* Check line of sight */
 		if (square_isview(cave, y, x)) {
 			msg("The trap seizes up.");
@@ -257,7 +257,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 
 	/* Push objects off the grid */
 	if (square_object(cave, y, x))
-		push_object(y,x);
+		push_object(y, x);
 
 	/* Create closed door */
 	square_add_door(cave, y, x, true);
@@ -276,9 +276,9 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 	const int x = context->x;
 	const int y = context->y;
 
-	/* Require an "empty", non-warded floor grid */
+	/* Require an "empty" floor grid with no existing traps or glyphs */
 	if (!square_isempty(cave, y, x)) return;
-	if (square_iswarded(cave, y, x)) return;
+	if (square_istrap(cave, y, x)) return;
 
 	/* Create a trap, try to notice it */
 	if (one_in_(4)) {
