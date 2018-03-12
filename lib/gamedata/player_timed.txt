@@ -327,3 +327,8 @@ name:ATT_RUN
 desc:escape on attack
 on-begin:You tense up ready to escape!
 on-end:You relax again.
+
+name:SCENTLESS
+desc:leave no scent trail
+on-begin:You begin covering your tracks.
+on-end:You stop covering your tracks.

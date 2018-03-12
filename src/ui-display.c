@@ -729,6 +729,7 @@ static const struct state_info effects[] =
 	{ TMD_HEAL,      S("Heal"),       COLOUR_L_GREEN },
 	{ TMD_COMMAND,   S("Cmd"),        COLOUR_L_PURPLE },
 	{ TMD_ATT_RUN,   S("HitRun"),     COLOUR_MUD },
+	{ TMD_SCENTLESS, S("NoTrack"),    COLOUR_TEAL },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \
