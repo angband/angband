@@ -1464,7 +1464,7 @@ title:Pathfinder
 title:Ranger
 title:Ranger Lord
 
-magic:3:400:3
+magic:3:400:2
 
 book:nature book:town:[Survival Skills]:6:nature
 book-graphics:?:G
