@@ -2386,7 +2386,7 @@ static int trap_order(int trap)
 {
 	const struct trap_kind *t = &trap_info[trap];
 
-	if (trf_has(t->flags, TRF_RUNE))
+	if (trf_has(t->flags, TRF_GLYPH))
 		return 0;
 	else if (trf_has(t->flags, TRF_LOCK))
 		return 1;
