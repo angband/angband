@@ -383,6 +383,7 @@ void square_destroy_door(struct chunk *c, int y, int x);
 void square_show_trap(struct chunk *c, int y, int x, int type);
 void square_destroy_trap(struct chunk *c, int y, int x);
 void square_disable_trap(struct chunk *c, int y, int x);
+void square_destroy_decoy(struct chunk *c, int y, int x);
 void square_tunnel_wall(struct chunk *c, int y, int x);
 void square_destroy_wall(struct chunk *c, int y, int x);
 void square_destroy(struct chunk *c, int y, int x);
@@ -417,7 +418,7 @@ int cave_monster_max(struct chunk *c);
 int cave_monster_count(struct chunk *c);
 
 int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), bool under);
-
+struct loc cave_find_decoy(struct chunk *c);
 void prepare_next_level(struct chunk **c, struct player *p);
 bool is_quest(int level);
 

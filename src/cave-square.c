@@ -25,6 +25,7 @@
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "object.h"
+#include "player-timed.h"
 #include "trap.h"
 
 
@@ -1196,6 +1197,14 @@ void square_disable_trap(struct chunk *c, int y, int x)
 {
 	if (!square_isplayertrap(c, y, x)) return;
 	square_set_trap_timeout(c, y, x, false, -1, 10);
+}
+
+void square_destroy_decoy(struct chunk *c, int y, int x)
+{
+	square_remove_all_traps(c, y, x);
+	if (los(c, player->py, player->px, y, x) && !player->timed[TMD_BLIND]) {
+		msg("The decoy is destroyed!");
+	}
 }
 
 void square_tunnel_wall(struct chunk *c, int y, int x)
