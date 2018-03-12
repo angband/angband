@@ -119,7 +119,7 @@ name:shooting speed
 type:mod
 code:SHOTS
 power:0
-mult:50
+mult:5
 type-mult:sword:0
 type-mult:polearm:0
 type-mult:hafted:0
