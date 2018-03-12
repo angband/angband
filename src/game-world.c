@@ -380,12 +380,19 @@ static void make_noise(struct player *p)
 	int y, x, d;
 	int noise = 0;
     struct queue *queue = q_new(cave->height * cave->width);
+	struct loc decoy = cave_find_decoy(cave);
 
 	/* Set all the grids to silence */
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
 			cave->noise.grids[y][x] = 0;
 		}
+	}
+
+	/* If there's a decoy, use that instead of the player */
+	if (decoy.y && decoy.x) {
+		next_y = decoy.y;
+		next_x = decoy.x;
 	}
 
 	/* Player makes noise */

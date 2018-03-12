@@ -140,8 +140,14 @@ static void get_target(struct source origin, int dir, int *ty, int *tx, int *fla
 				*ty = mon->fy;
 				*tx = mon->fx;
 			} else {
-				*ty = player->py;
-				*tx = player->px;
+				struct loc decoy = cave_find_decoy(cave);
+				if (decoy.y && decoy.x) {
+					*ty = decoy.y;
+					*tx = decoy.x;
+				} else {
+					*ty = player->py;
+					*tx = player->px;
+				}
 			}
 
 			break;
@@ -625,6 +631,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 			struct monster *mon = cave_monster(cave,
 											   context->origin.which.monster);
 			struct monster *t_mon = monster_target_monster(context);
+			struct loc decoy = cave_find_decoy(cave);
 
 			/* Damage another monster */
 			if (t_mon) {
@@ -634,6 +641,12 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 				if (fear && monster_is_visible(t_mon)) {
 					add_monster_message(t_mon, MON_MSG_FLEE_IN_TERROR, true);
 				}
+				return true;
+			}
+
+			/* Destroy a decoy */
+			if (decoy.y && decoy.x) {
+				square_destroy_decoy(cave, decoy.y, decoy.x);
 				return true;
 			}
 
@@ -894,8 +907,15 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
 	struct monster *t_mon = monster_target_monster(context);
+	struct loc decoy = cave_find_decoy(cave);
 
 	context->ident = true;
+
+	/* Destroy decoy */
+	if (decoy.y && decoy.x) {
+		square_destroy_decoy(cave, decoy.y, decoy.x);
+		return true;
+	}
 
 	/* Check for monster targeting another monster */
 	if (t_mon) {
@@ -1012,9 +1032,16 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
+	struct loc decoy = cave_find_decoy(cave);
 
 	/* Always notice */
 	context->ident = true;
+
+	/* Only one decoy at a time */
+	if (decoy.y && decoy.x && (context->subtype == GLYPH_DECOY)) {
+		msg("You can only deploy one decoy at a time.");
+		return false;
+	}
 
 	/* See if the effect works */
 	if (!square_istrappable(cave, py, px)) {
@@ -1230,6 +1257,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 	char m_name[80];
 	struct monster *mon = NULL;
 	struct monster *t_mon = monster_target_monster(context);
+	struct loc decoy = cave_find_decoy(cave);
 
 	context->ident = true;
 
@@ -1245,6 +1273,12 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 	/* Target is another monster - disenchant it */
 	if (t_mon) {
 		mon_inc_timed(t_mon, MON_TMD_DISEN, MAX(drain, 0), 0, false);
+		return true;
+	}
+
+	/* Target was a decoy - destroy it */
+	if (decoy.y && decoy.x) {
+		square_destroy_decoy(cave, decoy.y, decoy.x);
 		return true;
 	}
 
@@ -2690,6 +2724,13 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		/* Monster targeting another monster */
 		start = loc(t_mon->fx, t_mon->fy);
 	} else if (is_player) {
+		/* Decoys get destroyed */
+		struct loc decoy = cave_find_decoy(cave);
+		if (decoy.y && decoy.x && context->subtype) {
+			square_destroy_decoy(cave, decoy.y, decoy.x);
+			return true;
+		}
+
 		start = loc(player->px, player->py);
 
 		/* Check for a no teleport grid */
@@ -2841,6 +2882,13 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		y = t_mon->fy;
 		x = t_mon->fx;
 	} else {
+		/* Targeted decoys get destroyed */
+		struct loc decoy = cave_find_decoy(cave);
+		if (decoy.y && decoy.x && mon) {
+			square_destroy_decoy(cave, decoy.y, decoy.x);
+			return true;
+		}
+
 		/* Player being teleported */
 		y = player->py;
 		x = player->px;
@@ -2906,6 +2954,7 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	bool down = true;
 	int target_depth = dungeon_get_next_level(player->max_depth, 1);
 	struct monster *t_mon = monster_target_monster(context);
+	struct loc decoy = cave_find_decoy(cave);
 
 	context->ident = true;
 
@@ -2917,6 +2966,12 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 		/* Monster is just gone */
 		add_monster_message(t_mon, MON_MSG_DISAPPEAR, false);
 		delete_monster_idx(t_mon->midx);
+		return true;
+	}
+
+	/* Targeted decoys get destroyed */
+	if (decoy.y && decoy.x) {
+		square_destroy_decoy(cave, decoy.y, decoy.x);
 		return true;
 	}
 
@@ -3473,6 +3528,8 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	struct loc target = loc(player->px, player->py);
 	bool message = player->timed[TMD_BLIND] ? false : true;
 	struct monster *t_mon = monster_target_monster(context);
+	struct loc decoy = cave_find_decoy(cave);
+	bool decoy_unseen = false;
 
 	/* Check for monster targeting another monster */
 	if (t_mon) {
@@ -3481,6 +3538,19 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 		monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
 		if (message) {
 			msg("Darkness surrounds %s.", m_name);
+			message = false;
+		}
+	}
+
+	/* Check for decoy */
+	if (decoy.y && decoy.x) {
+		target = decoy;
+		if (!los(cave, player->py, player->px, decoy.y, decoy.x) ||
+			player->timed[TMD_BLIND]) {
+			decoy_unseen = true;
+		}
+		if (message && !decoy_unseen) {
+			msg("Darkness surrounds the decoy.");
 			message = false;
 		}
 	}
@@ -3499,7 +3569,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	}
 
 	/* Assume seen */
-	context->ident = true;
+	context->ident = !decoy_unseen;
 	return (true);
 }
 
@@ -3589,7 +3659,12 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 				target = loc(t_mon->fx, t_mon->fy);
 			} else {
 				/* Target player */
-				target = loc(player->px, player->py);
+				struct loc decoy = cave_find_decoy(cave);
+				if (decoy.y && decoy.x) {
+					target = decoy;
+				} else {
+					target = loc(player->px, player->py);
+				}
 			}
 
 			break;
@@ -3662,7 +3737,12 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 		if (t_mon) {
 			target = loc(t_mon->fx, t_mon->fy);
 		} else {
-			target = loc(player->px, player->py);
+			struct loc decoy = cave_find_decoy(cave);
+			if (decoy.y && decoy.x) {
+				target = decoy;
+			} else {
+				target = loc(player->px, player->py);
+			}
 		}
 
 		dam = breath_dam(type, mon->hp);
@@ -4073,10 +4153,19 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, true);
 	int rad = context->radius ? context->radius : 1;
 
-	/* Monster cast at monster */
 	if (context->origin.what == SRC_MONSTER) {
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		struct monster *t_mon = monster_target_monster(context);
+		struct loc decoy = cave_find_decoy(cave);
+
+		/* Target decoy */
+		if (decoy.y && decoy.x) {
+			int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
+			return (project(source_trap(square_trap(cave, decoy.y, decoy.x)),
+					rad, decoy, dam, context->subtype,flg, 0, 0, context->obj));
+		}
+
+		/* Monster cast at monster */
 		if (t_mon) {
 			int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
 			return (project(source_monster(mon->target.midx), rad,
