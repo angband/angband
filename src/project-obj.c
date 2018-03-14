@@ -397,6 +397,10 @@ static void project_object_handler_TURN_EVIL(project_object_handler_context_t *c
 {
 }
 
+static void project_object_handler_TURN_LIVING(project_object_handler_context_t *context)
+{
+}
+
 static void project_object_handler_TURN_ALL(project_object_handler_context_t *context)
 {
 }
