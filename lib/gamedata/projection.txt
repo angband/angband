@@ -419,6 +419,13 @@ blind-desc:something
 obvious:0
 color:White
 
+code:TURN_LIVING
+type:monster
+desc:scares living monsters
+blind-desc:something
+obvious:0
+color:White
+
 code:TURN_ALL
 type:monster
 desc:causes monsters to flee

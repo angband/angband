@@ -606,6 +606,10 @@ static void project_feature_handler_TURN_EVIL(project_feature_handler_context_t 
 {
 }
 
+static void project_feature_handler_TURN_LIVING(project_feature_handler_context_t *context)
+{
+}
+
 static void project_feature_handler_TURN_ALL(project_feature_handler_context_t *context)
 {
 }
