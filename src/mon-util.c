@@ -1226,7 +1226,7 @@ void steal_monster_item(struct monster *mon, int midx)
 		} else {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
 		}
-		monster_reaction = randint1(guard);
+		monster_reaction = randint1(MAX(guard, 1));
 		if (monster_reaction < steal_skill) {
 			int wake = 30 - player->state.skills[SKILL_STEALTH];
 
