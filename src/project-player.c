@@ -522,6 +522,10 @@ static void project_player_handler_TURN_EVIL(project_player_handler_context_t *c
 {
 }
 
+static void project_player_handler_TURN_LIVING(project_player_handler_context_t *context)
+{
+}
+
 static void project_player_handler_TURN_ALL(project_player_handler_context_t *context)
 {
 }

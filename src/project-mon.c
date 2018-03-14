@@ -826,6 +826,24 @@ static void project_monster_handler_TURN_EVIL(project_monster_handler_context_t 
 	project_monster_scare(context, RF_EVIL);
 }
 
+/* Turn living (Use "dam" as "power") */
+static void project_monster_handler_TURN_LIVING(project_monster_handler_context_t *context)
+{
+    if (context->seen) {
+		rf_on(context->lore->flags, RF_NONLIVING);
+		rf_on(context->lore->flags, RF_UNDEAD);
+	}
+
+	if (monster_is_living(context->mon)) {
+        context->mon_timed[MON_TMD_FEAR] = adjust_radius(context, context->dam);
+	} else {
+		context->skipped = true;
+	}
+
+	context->obvious = true;
+	context->dam = 0;
+}
+
 /* Turn monster (Use "dam" as "power") */
 static void project_monster_handler_TURN_ALL(project_monster_handler_context_t *context)
 {
