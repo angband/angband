@@ -976,7 +976,6 @@ struct object *store_carry(struct store *store, struct object *obj)
 		return NULL;
 
 	/* Insert the new object */
-	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	pile_insert(&store->stock, obj);
 	pile_insert(&store->stock_k, known_obj);
 	store->stock_num++;
@@ -1208,6 +1207,7 @@ static bool store_create_random(struct store *store)
 		obj->known = known_obj;
 
 		/* Know everything the player knows, no origin yet */
+		obj->known->notice |= OBJ_NOTICE_ASSESSED;
 		object_set_base_known(obj);
 		player_know_object(player, obj);
 		obj->origin = ORIGIN_NONE;
@@ -1262,6 +1262,7 @@ static struct object *store_create_item(struct store *store,
 
 	/* Know everything the player knows, no origin yet */
 	obj->known = known_obj;
+	obj->known->notice |= OBJ_NOTICE_ASSESSED;
 	object_set_base_known(obj);
 	player_know_object(player, obj);
 	obj->origin = ORIGIN_NONE;
