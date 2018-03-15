@@ -1240,6 +1240,20 @@ static bool describe_light(textblock *tb, const struct object *obj,
 
 
 /**
+ * Describe readable books.
+ */
+static bool describe_book(textblock *tb, const struct object *obj,
+						   oinfo_detail_t mode)
+{
+	if (!obj_can_browse(obj)) return false;
+
+	textblock_append(tb, "\nYou can read this book.\n");
+
+	return true;
+}
+
+
+/**
  * Gives the known effects of using the given item.
  *
  * Fills in:
@@ -1762,6 +1776,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (describe_sustains(tb, flags)) something = true;
 	if (describe_misc_magic(tb, flags)) something = true;
 	if (describe_light(tb, obj, mode)) something = true;
+	if (describe_book(tb, obj, mode)) something = true;
 	if (ego && describe_ego(tb, obj->ego)) something = true;
 	if (something) textblock_append(tb, "\n");
 

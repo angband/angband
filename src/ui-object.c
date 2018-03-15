@@ -175,10 +175,17 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	}
 
 	/* Item kind determines the color of the output */
-	if (obj)
+	if (obj) {
 		attr = obj->kind->base->attr;
-	else
+
+		/* Unreadable books are a special case */
+		if (tval_is_book_k(obj->kind) &&
+			(player_object_to_book(player, obj) == NULL)) {
+			attr = COLOUR_SLATE;
+		}
+	} else {
 		attr = COLOUR_SLATE;
+	}
 
 	/* Object name */
 	c_put_str(attr, items[obj_num].o_name, row + obj_num,
