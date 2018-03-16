@@ -332,3 +332,18 @@ name:SCENTLESS
 desc:leave no scent trail
 on-begin:You begin covering your tracks.
 on-end:You stop covering your tracks.
+
+name:POWERSHOT
+desc:piercing shot
+on-begin:You prepare to shoot powerfully!
+on-end:Your shooting power returns to normal.
+
+name:POWERBLOW
+desc:powerful blow
+on-begin:You feel you can strike with enormous force!
+on-end:Your sense of power dissipates.
+
+name:BLOODLUST
+desc:desire to kill
+on-begin:A red mist descends over your eyes!
+on-end:The mist clears.
