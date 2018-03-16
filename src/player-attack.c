@@ -36,6 +36,7 @@
 #include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
@@ -524,6 +525,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	bool none_left = false;
 
 	struct object *missile;
+	int pierce = 1;
 
 	/* Check for target validity */
 	if ((dir == DIR_TARGET) && target_okay()) {
@@ -550,6 +552,11 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 
 	/* Calculate the path */
 	path_n = project_path(path_g, range, y, x, ty, tx, 0);
+
+	/* Calculate potenital piercing */
+	if (player->timed[TMD_POWERSHOT] && tval_is_sharp_missile(obj)) {
+		pierce = player->state.ammo_mult;
+	}
 
 	/* Hack -- Handle stuff */
 	handle_stuff(p);
@@ -650,8 +657,10 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 					}
 				}
 			}
-			/* Stop the missile */
-			break;
+			/* Stop the missile, or reduce its piercing effect */
+			pierce--;
+			if (pierce) continue;
+			else break;
 		}
 
 		/* Stop if non-projectable but passable */
