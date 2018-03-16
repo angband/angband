@@ -672,6 +672,19 @@ static const struct state_info stun_data[] =
 };
 
 /**
+ * TMD_BLOODLUST descriptions
+ */
+static const struct state_info bloodlust_data[] =
+{
+	{    49, S("Bloodlust"),  COLOUR_L_PURPLE },
+	{    39, S("Bloodlust"),  COLOUR_L_RED },
+	{    29, S("Bloodlust"),  COLOUR_RED },
+	{    19, S("Bloodlust"),  COLOUR_ORANGE },
+	{     9, S("Bloodlust"),  COLOUR_L_PINK },
+	{     0, S("Bloodlust"),  COLOUR_YELLOW },
+};
+
+/**
  * player->hunger descriptions
  */
 static const struct state_info hunger_data[] =
@@ -730,6 +743,8 @@ static const struct state_info effects[] =
 	{ TMD_COMMAND,   S("Cmd"),        COLOUR_L_PURPLE },
 	{ TMD_ATT_RUN,   S("HitRun"),     COLOUR_MUD },
 	{ TMD_SCENTLESS, S("NoTrack"),    COLOUR_TEAL },
+	{ TMD_POWERSHOT, S("PShot"),      COLOUR_MAGENTA },
+	{ TMD_POWERBLOW, S("PBlow"),      COLOUR_MAGENTA },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \
@@ -809,6 +824,16 @@ static size_t prt_cut(int row, int col)
 static size_t prt_stun(int row, int col)
 {
 	PRINT_STATE(>, stun_data, player->timed[TMD_STUN], row, col);
+	return 0;
+}
+
+
+/**
+ * Print bloodlust indicator.
+ */
+static size_t prt_bloodlust(int row, int col)
+{
+	PRINT_STATE(>, bloodlust_data, player->timed[TMD_BLOODLUST], row, col);
 	return 0;
 }
 
@@ -1081,7 +1106,7 @@ typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
 { prt_level_feeling, prt_unignore, prt_recall, prt_descent, prt_state, prt_cut, 
-  prt_stun, prt_hunger, prt_study, prt_tmd, prt_dtrap };
+  prt_stun, prt_bloodlust, prt_hunger, prt_study, prt_tmd, prt_dtrap };
 
 
 /**
