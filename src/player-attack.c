@@ -22,6 +22,7 @@
 #include "effects.h"
 #include "game-event.h"
 #include "game-input.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
@@ -263,6 +264,99 @@ static void blow_side_effects(struct player *p, struct monster *mon)
 }
 
 /**
+ * Apply knock back from powerful blows
+ */
+static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
+							bool *fear)
+{
+	int y = mon->fy;
+	int x = mon->fx;
+	int dy = y - p->py;
+	int dx = x - p->px;
+	int power = (p->state.num_blows - 100) / 100;
+
+	/* Not enough power left */
+	if (!power) return false;
+
+	/* Forced backwards until power runs out */
+	while (power > 0) {
+		/* Move back a square */
+		y += dy;
+		x += dx;
+
+		/* React differently depending on the terrain behind the monster */
+		if (square_ispassable(cave, y, x)) {
+			/* Monster there - current monster takes all the damage
+			 * Note we could have more fun here by pushing it back... */
+			if (square_monster(cave, y, x)) {
+				return mon_take_hit(mon, dmg * power, fear, NULL);
+			} else {
+				/* Push back a square */
+				monster_swap(mon->fy, mon->fx, y, x);
+			}
+		} else {
+			bool moved = false;
+
+			/* Deal with impassable terrain */
+			if (square_isdoor(cave, y, x)) {
+				if (power >= 1) {
+					square_open_door(cave, y, x);
+					monster_swap(mon->fy, mon->fx, y, x);
+					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
+					power--;
+					moved = true;
+				}
+			} else if (square_isrubble(cave, y, x)) {
+				if (power >= 1) {
+					square_destroy_wall(cave, y, x);
+					monster_swap(mon->fy, mon->fx, y, x);
+					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
+					power--;
+					moved = true;
+				}
+			} else if (square_ismagma(cave, y, x)) {
+				if (power >= 1) {
+					square_destroy_wall(cave, y, x);
+					monster_swap(mon->fy, mon->fx, y, x);
+					if (square_hasgoldvein(cave, y, x)) {
+						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
+					}
+					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
+					power--;
+					moved = true;
+				}
+			} else if (square_isquartz(cave, y, x)) {
+				if (power >= 2) {
+					square_destroy_wall(cave, y, x);
+					monster_swap(mon->fy, mon->fx, y, x);
+					if (square_hasgoldvein(cave, y, x)) {
+						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
+					}
+					if (mon_take_hit(mon, dmg * 2, fear, NULL)) return true;
+					power -= 2;
+					moved = true;
+				}
+			} else if (square_isgranite(cave, y, x)) {
+				if (power >= 3) {
+					square_destroy_wall(cave, y, x);
+					monster_swap(mon->fy, mon->fx, y, x);
+					if (mon_take_hit(mon, dmg * 3, fear, NULL)) return true;
+					power -= 3;
+					moved = true;
+				}
+			}
+			if (!moved) {
+				/* Monster can't move, give it the remaining damage */
+				if (mon_take_hit(mon, dmg * power, fear, NULL)) return true;
+				break;
+			}
+		}
+	}
+	/* Player needs to stop hitting if the monster has moved */
+	return (ABS(mon->fy - p->py) > 2) || (ABS(mon->fx - p->px) > 2);
+}
+
+/**
  * Apply blow after effects
  */
 static bool blow_after_effects(int y, int x, bool quake)
@@ -365,6 +459,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	if (obj) {
 		int j;
 		int b = 0, s = 0;
+		int weight = obj->weight * (p->timed[TMD_POWERBLOW] ? 2 : 1);
 
 		my_strcpy(verb, "hit", sizeof(verb));
 
@@ -380,7 +475,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 		improve_attack_modifier(NULL, mon, &b, &s, verb, false);
 
 		dmg = melee_damage(obj, b, s);
-		dmg = critical_norm(p, mon, obj->weight, obj->to_h, dmg, &msg_type);
+		dmg = critical_norm(p, mon, weight, obj->to_h, dmg, &msg_type);
 
 		if (player_of_has(p, OF_IMPACT) && dmg > 50) {
 			do_quake = true;
@@ -430,12 +525,17 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	/* Pre-damage side effects */
 	blow_side_effects(p, mon);
 
-	/* Damage, check for hp drain, fear and death */
+	/* Damage, check for hp drain, knockback, fear and death */
 	drain = MIN(mon->hp, dmg);
 	stop = mon_take_hit(mon, dmg, fear, NULL);
-	if (!stop && p->timed[TMD_ATT_VAMP] && monster_is_living(mon)) {
-		effect_simple(EF_HEAL_HP, source_player(), format("%d", drain), 0, 0,
-					  0, 0, 0, NULL);
+	if (!stop) {
+		if (p->timed[TMD_ATT_VAMP] && monster_is_living(mon)) {
+			effect_simple(EF_HEAL_HP, source_player(), format("%d", drain),
+						  0, 0, 0, 0, 0, NULL);
+		} else if (p->timed[TMD_POWERBLOW]) {
+			stop = blow_knock_back(p, mon, dmg, fear);
+			player_clear_timed(p, TMD_POWERBLOW, true);
+		}
 	}
 
 	if (stop)
