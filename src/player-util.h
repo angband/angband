@@ -29,6 +29,19 @@
 #define PY_REGEN_HPBASE		1442	/* Min amount hp regen*2^16 */
 #define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
 
+/* Player over-exertion */
+enum {
+	PY_EXERT_NONE = 0x00,
+	PY_EXERT_CON = 0x01,
+	PY_EXERT_FAINT = 0x02,
+	PY_EXERT_SCRAMBLE = 0x04,
+	PY_EXERT_CUT = 0x08,
+	PY_EXERT_CONF = 0x10,
+	PY_EXERT_HALLU = 0x20,
+	PY_EXERT_SLOW = 0x40,
+	PY_EXERT_HP = 0x80
+};
+
 /**
  * Special values for the number of turns to rest, these need to be
  * negative numbers, as postive numbers are taken to be a turncount,
@@ -56,6 +69,7 @@ s16b modify_stat_value(int value, int amount);
 void player_regen_hp(struct player *p);
 void player_regen_mana(struct player *p);
 void player_update_light(struct player *p);
+void player_over_exert(struct player *p, int flag, int chance, int amount);
 int player_check_terrain_damage(struct player *p, int y, int x);
 void player_take_terrain_damage(struct player *p, int y, int x);
 struct player_shape *lookup_player_shape(const char *name);
