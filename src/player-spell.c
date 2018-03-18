@@ -506,30 +506,15 @@ bool spell_cast(int spell_index, int dir)
 		/* Use some mana */
 		player->csp -= spell->smana;
 	} else {
-		/* Over-exert the player */
 		int oops = spell->smana - player->csp;
 
 		/* No mana left */
 		player->csp = 0;
 		player->csp_frac = 0;
 
-		/* Message */
-		msg("You faint from the effort!");
-
-		/* Bypass free action */
-		(void)player_inc_timed(player, TMD_PARALYZED, randint1(5 * oops + 1),
-							   true, false);
-
-		/* Damage CON (possibly permanently) */
-		if (randint0(100) < 50) {
-			bool perm = (randint0(100) < 25);
-
-			/* Message */
-			msg("You have damaged your health!");
-
-			/* Reduce constitution */
-			player_stat_dec(player, STAT_CON, perm);
-		}
+		/* Over-exert the player */
+		player_over_exert(player, PY_EXERT_FAINT, 100, 5 * oops + 1);
+		player_over_exert(player, PY_EXERT_CON, 50, 0);
 	}
 
 	/* Redraw mana */
