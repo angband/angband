@@ -472,6 +472,85 @@ void player_update_light(struct player *p)
 }
 
 /**
+ * Have random bad stuff happen to the player from over-exertion
+ *
+ * This function uses the PY_EXERT_* flags
+ */
+void player_over_exert(struct player *p, int flag, int chance, int amount)
+{
+	/* CON damage */
+	if (flag & PY_EXERT_CON) {
+		if (randint0(100) < chance) {
+			bool perm = (randint0(100) < chance / 2);
+			msg("You have damaged your health!");
+			player_stat_dec(player, STAT_CON, perm);
+		}
+	}
+
+	/* Fainting */
+	if (flag & PY_EXERT_FAINT) {
+		if (randint0(100) < chance) {
+			msg("You faint from the effort!");
+
+			/* Bypass free action */
+			(void)player_inc_timed(player, TMD_PARALYZED, randint1(amount),
+								   true, false);
+		}
+	}
+
+	/* Scrambled stats */
+	if (flag & PY_EXERT_SCRAMBLE) {
+		if (randint0(100) < chance) {
+			(void)player_inc_timed(player, TMD_SCRAMBLE, randint1(amount),
+								   true, true);
+		}
+	}
+
+	/* Cut damage */
+	if (flag & PY_EXERT_CUT) {
+		if (randint0(100) < chance) {
+			msg("Wounds appear on your body!");
+			(void)player_inc_timed(player, TMD_CUT, randint1(amount),
+								   true, false);
+		}
+	}
+
+	/* Confusion */
+	if (flag & PY_EXERT_CONF) {
+		if (randint0(100) < chance) {
+			(void)player_inc_timed(player, TMD_CONFUSED, randint1(amount),
+								   true, true);
+		}
+	}
+
+	/* Hallucination */
+	if (flag & PY_EXERT_HALLU) {
+		if (randint0(100) < chance) {
+			(void)player_inc_timed(player, TMD_IMAGE, randint1(amount),
+								   true, true);
+		}
+	}
+
+	/* Slowing */
+	if (flag & PY_EXERT_SLOW) {
+		if (randint0(100) < chance) {
+			msg("You feel suddenly lethargic.");
+			(void)player_inc_timed(player, TMD_SLOW, randint1(amount),
+								   true, false);
+		}
+	}
+
+	/* HP */
+	if (flag & PY_EXERT_HP) {
+		if (randint0(100) < chance) {
+			msg("You cry out in sudden pain!");
+			take_hit(p, randint1(amount), "over-exertion");
+		}
+	}
+}
+
+
+/**
  * See how much damage the player will take from damaging terrain
  */
 int player_check_terrain_damage(struct player *p, int y, int x)
