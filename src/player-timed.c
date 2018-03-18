@@ -100,15 +100,6 @@ static enum parser_error parse_player_timed_desc(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_player_timed_begin_message(struct parser *p)
-{
-	struct timed_effect_data *t = parser_priv(p);
-	assert(t);
-
-	t->on_begin = string_append(t->on_begin, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_player_timed_end_message(struct parser *p)
 {
 	struct timed_effect_data *t = parser_priv(p);
@@ -185,18 +176,57 @@ static enum parser_error parse_player_timed_fail(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_player_timed_grade(struct parser *p)
+{
+	struct timed_effect_data *t = parser_priv(p);
+	struct timed_grade *current = t->grade;
+	struct timed_grade *l = mem_zalloc(sizeof(*l));
+    const char *color = parser_getsym(p, "color");
+    int attr = 0;
+	assert(t);
+
+	/* Make a zero grade structure if there isn't one */
+	if (!current) {
+		t->grade = mem_zalloc(sizeof(struct timed_grade));
+		current = t->grade;
+	}
+
+	/* Move to the highest grade so far */
+	while (current->next) {
+		current = current->next;
+	}
+
+	/* Add the new one */
+	current->next = l;
+	l->grade = current->grade + 1;
+
+    if (strlen(color) > 1) {
+		attr = color_text_to_attr(color);
+    } else {
+		attr = color_char_to_attr(color[0]);
+	}
+    if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+    l->color = attr;
+
+	l->max = parser_getint(p, "max");
+	l->name = string_make(parser_getsym(p, "name"));
+	l->msg = string_make(parser_getsym(p, "msg"));
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_player_timed(void)
 {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_player_timed_name);
 	parser_reg(p, "desc str text", parse_player_timed_desc);
-	parser_reg(p, "on-begin str text", parse_player_timed_begin_message);
 	parser_reg(p, "on-end str text", parse_player_timed_end_message);
 	parser_reg(p, "on-increase str text", parse_player_timed_increase_message);
 	parser_reg(p, "on-decrease str text", parse_player_timed_decrease_message);
 	parser_reg(p, "msgt sym type", parse_player_timed_message_type);
 	parser_reg(p, "fail uint code str flag", parse_player_timed_fail);
+	parser_reg(p, "grade sym color int max sym name sym msg", parse_player_timed_grade);
 	return p;
 }
 
@@ -215,11 +245,18 @@ static void cleanup_player_timed(void)
 {
 	for (size_t i = 0; i < TMD_MAX; i++) {
 		struct timed_effect_data *effect = &timed_effects[i];
+			struct timed_grade *grade = effect->grade;
+
+		while (grade) {
+			struct timed_grade *next = grade->next;
+			string_free(grade->name);
+			string_free(grade->msg);
+			mem_free(grade);
+			grade = next;
+		}
 
 		string_free(effect->desc);
 
-		if (effect->on_begin)
-			string_free(effect->on_begin);
 		if (effect->on_end)
 			string_free(effect->on_end);
 		if (effect->on_increase)
@@ -228,7 +265,6 @@ static void cleanup_player_timed(void)
 			string_free(effect->on_decrease);
 
 		effect->desc        = NULL;
-		effect->on_begin    = NULL;
 		effect->on_end      = NULL;
 		effect->on_increase = NULL;
 		effect->on_decrease = NULL;
@@ -268,250 +304,6 @@ void player_fix_scramble(struct player *p)
 		p->stat_max[i] = new_max[i];
 		p->stat_map[i] = i;
 	}
-}
-
-/**
- * Set "player->timed[TMD_STUN]", notice observable changes
- *
- * Note the special code to only notice "range" changes.
- */
-static bool set_stun(struct player *p, int v)
-{
-	int old_aux, new_aux;
-
-	bool notice = false;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Old state */
-	if (p->timed[TMD_STUN] > 100)
-		/* Knocked out */
-		old_aux = 3;
-	else if (p->timed[TMD_STUN] > 50)
-		/* Heavy stun */
-		old_aux = 2;
-	else if (p->timed[TMD_STUN] > 0)
-		/* Stun */
-		old_aux = 1;
-	else
-		/* None */
-		old_aux = 0;
-
-	/* New state */
-	if (v > 100)
-		/* Knocked out */
-		new_aux = 3;
-	else if (v > 50)
-		/* Heavy stun */
-		new_aux = 2;
-	else if (v > 0)
-		/* Stun */
-		new_aux = 1;
-	else
-		/* None */
-		new_aux = 0;
-
-	/* Increase or decrease stun */
-	if (new_aux > old_aux) {
-		/* Describe the state */
-		switch (new_aux) {
-			/* Stun */
-			case 1:	{
-				msgt(MSG_STUN, "You have been stunned.");
-				break;
-			}
-
-			/* Heavy stun */
-			case 2:	{
-				msgt(MSG_STUN, "You have been heavily stunned.");
-				break;
-			}
-
-			/* Knocked out */
-			case 3:	{
-				msgt(MSG_STUN, "You have been knocked out.");
-				break;
-			}
-		}
-
-		/* Notice */
-		notice = true;
-	} else if (new_aux < old_aux) {
-		/* Describe the state */
-		switch (new_aux) {
-			/* None */
-			case 0: {
-				msgt(MSG_RECOVER, "You are no longer stunned.");
-				disturb(player, 0);
-				break;
-			}
-		}
-
-		/* Notice */
-		notice = true;
-	}
-
-	/* Use the value */
-	p->timed[TMD_STUN] = v;
-
-	/* No change */
-	if (!notice) return (false);
-
-	/* Disturb and update */
-	disturb(player, 0);
-	p->upkeep->update |= (PU_BONUS);
-	p->upkeep->redraw |= (PR_STATUS);
-	handle_stuff(player);
-
-	/* Result */
-	return (true);
-}
-
-/**
- * Set "player->timed[TMD_CUT]", notice observable changes
- *
- * Note the special code to only notice "range" changes.
- */
-static bool set_cut(struct player *p, int v)
-{
-	int old_aux, new_aux;
-
-	bool notice = false;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Old state */
-	if (p->timed[TMD_CUT] > TMD_CUT_DEEP)
-		/* Mortal wound */
-		old_aux = 7;
-	else if (p->timed[TMD_CUT] > TMD_CUT_SEVERE)
-		/* Deep gash */
-		old_aux = 6;
-	else if (p->timed[TMD_CUT] > TMD_CUT_NASTY)
-		/* Severe cut */
-		old_aux = 5;
-	else if (p->timed[TMD_CUT] > TMD_CUT_BAD)
-		/* Nasty cut */
-		old_aux = 4;
-	else if (p->timed[TMD_CUT] > TMD_CUT_LIGHT)
-		/* Bad cut */
-		old_aux = 3;
-	else if (p->timed[TMD_CUT] > TMD_CUT_GRAZE)
-		/* Light cut */
-		old_aux = 2;
-	else if (p->timed[TMD_CUT] > TMD_CUT_NONE)
-		/* Graze */
-		old_aux = 1;
-	else
-		/* None */
-		old_aux = 0;
-
-	/* New state */
-	if (v > TMD_CUT_DEEP)
-		/* Mortal wound */
-		new_aux = 7;
-	else if (v > TMD_CUT_SEVERE)
-		/* Deep gash */
-		new_aux = 6;
-	else if (v > TMD_CUT_NASTY)
-		/* Severe cut */
-		new_aux = 5;
-	else if (v > TMD_CUT_BAD)
-		/* Nasty cut */
-		new_aux = 4;
-	else if (v > TMD_CUT_LIGHT)
-		/* Bad cut */
-		new_aux = 3;
-	else if (v > TMD_CUT_GRAZE)
-		/* Light cut */
-		new_aux = 2;
-	else if (v > TMD_CUT_NONE)
-		/* Graze */
-		new_aux = 1;
-	else
-		/* None */
-		new_aux = 0;
-
-	/* Increase or decrease cut */
-	if (new_aux > old_aux) {
-		/* Describe the state */
-		switch (new_aux) {
-			/* Graze */
-			case 1:	{
-				msgt(MSG_CUT, "You have been given a graze.");
-				break;
-			}
-
-			/* Light cut */
-			case 2:	{
-				msgt(MSG_CUT, "You have been given a light cut.");
-				break;
-			}
-
-			/* Bad cut */
-			case 3:	{
-				msgt(MSG_CUT, "You have been given a bad cut.");
-				break;
-			}
-
-			/* Nasty cut */
-			case 4:	{
-				msgt(MSG_CUT, "You have been given a nasty cut.");
-				break;
-			}
-
-			/* Severe cut */
-			case 5:	{
-				msgt(MSG_CUT, "You have been given a severe cut.");
-				break;
-			}
-
-			/* Deep gash */
-			case 6:	{
-				msgt(MSG_CUT, "You have been given a deep gash.");
-				break;
-			}
-
-			/* Mortal wound */
-			case 7:	{
-				msgt(MSG_CUT, "You have been given a mortal wound.");
-				break;
-			}
-		}
-
-		/* Notice */
-		notice = true;
-	} else if (new_aux < old_aux) {
-		/* Describe the state */
-		switch (new_aux) {
-			/* None */
-			case 0:	{
-				msgt(MSG_RECOVER, "You are no longer bleeding.");
-				disturb(player, 0);
-				break;
-			}
-		}
-
-		/* Notice */
-		notice = true;
-	}
-
-	/* Use the value */
-	p->timed[TMD_CUT] = v;
-
-	/* No change */
-	if (!notice) return (false);
-
-	/* Disturb and update */
-	disturb(player, 0);
-	p->upkeep->update |= (PU_BONUS);
-	p->upkeep->redraw |= (PR_STATUS);
-	handle_stuff(player);
-
-	/* Result */
-	return (true);
 }
 
 /**
@@ -620,10 +412,11 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	assert(idx < TMD_MAX);
 
 	struct timed_effect_data *effect = &timed_effects[idx];
+	struct timed_grade *new_grade = effect->grade;
+	struct timed_grade *current_grade = effect->grade;
 	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 
-	/* Limit values */
-	v = MIN(v, 10000);
+	/* Lower bound */
 	v = MAX(v, 0);
 
 	/* No change */
@@ -631,12 +424,18 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		return false;
 	}
 
-	/* Hack -- call other functions */
-	if (idx == TMD_STUN) {
-		return set_stun(p, v);
-	} else if (idx == TMD_CUT) {
-		return set_cut(p, v);
+	/* Find the grade we will be going to, and the current one */
+	while (v > new_grade->max) {
+		new_grade = new_grade->next;
+		if (!new_grade->next) break;
 	}
+	while (p->timed[idx] > current_grade->max) {
+		current_grade = current_grade->next;
+		if (!current_grade->next) break;
+	}
+
+	/* Upper bound */
+	v = MIN(v, new_grade->max);
 
 	/* Don't mention effects which already match the player state. */
 	if (idx == TMD_OPP_ACID && player_is_immune(p, ELEM_ACID)) {
@@ -651,9 +450,9 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 		notify = false;
 	}
 
-	/* Always mention start, otherwise on request */
-	if (p->timed[idx] == 0) {
-		print_custom_message(weapon, effect->on_begin, effect->msgt);
+	/* Always mention going up a grade, otherwise on request */
+	if (new_grade->grade > current_grade->grade) {
+		print_custom_message(weapon, new_grade->msg, effect->msgt);
 		notify = true;
 	} else if (notify) {
 		if (v == 0) {

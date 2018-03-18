@@ -648,43 +648,6 @@ struct state_info
 };
 
 /**
- * TMD_CUT descriptions
- */
-static const struct state_info cut_data[] =
-{
-	{ 1000, S("Mortal wound"), COLOUR_L_RED },
-	{  200, S("Deep gash"),    COLOUR_RED },
-	{  100, S("Severe cut"),   COLOUR_RED },
-	{   50, S("Nasty cut"),    COLOUR_ORANGE },
-	{   25, S("Bad cut"),      COLOUR_ORANGE },
-	{   10, S("Light cut"),    COLOUR_YELLOW },
-	{    0, S("Graze"),        COLOUR_YELLOW },
-};
-
-/**
- * TMD_STUN descriptions
- */
-static const struct state_info stun_data[] =
-{
-	{   100, S("Knocked out"), COLOUR_RED },
-	{    50, S("Heavy stun"),  COLOUR_ORANGE },
-	{     0, S("Stun"),        COLOUR_ORANGE },
-};
-
-/**
- * TMD_BLOODLUST descriptions
- */
-static const struct state_info bloodlust_data[] =
-{
-	{    49, S("Bloodlust"),  COLOUR_L_PURPLE },
-	{    39, S("Bloodlust"),  COLOUR_L_RED },
-	{    29, S("Bloodlust"),  COLOUR_RED },
-	{    19, S("Bloodlust"),  COLOUR_ORANGE },
-	{     9, S("Bloodlust"),  COLOUR_L_PINK },
-	{     0, S("Bloodlust"),  COLOUR_YELLOW },
-};
-
-/**
  * player->hunger descriptions
  */
 static const struct state_info hunger_data[] =
@@ -695,79 +658,6 @@ static const struct state_info hunger_data[] =
 	{ PY_FOOD_FULL,  S(""),         COLOUR_L_GREEN },
 	{ PY_FOOD_MAX,   S("Full"),     COLOUR_L_GREEN },
 };
-
-/**
- * For the various TMD_* effects
- */
-static const struct state_info effects[] =
-{
-	{ TMD_BLIND,     S("Blind"),      COLOUR_ORANGE },
-	{ TMD_PARALYZED, S("Paralyzed!"), COLOUR_RED },
-	{ TMD_CONFUSED,  S("Confused"),   COLOUR_ORANGE },
-	{ TMD_AFRAID,    S("Afraid"),     COLOUR_ORANGE },
-	{ TMD_TERROR,    S("Terror"),     COLOUR_RED },
-	{ TMD_IMAGE,     S("Halluc"),     COLOUR_ORANGE },
-	{ TMD_POISONED,  S("Poisoned"),   COLOUR_ORANGE },
-	{ TMD_PROTEVIL,  S("ProtEvil"),   COLOUR_L_GREEN },
-	{ TMD_SPRINT,    S("Sprint"),     COLOUR_L_GREEN },
-	{ TMD_TRAPSAFE,  S("TrapSafe"),   COLOUR_L_GREEN },
-	{ TMD_FASTCAST,  S("FastCast"),   COLOUR_MAGENTA },
-	{ TMD_TELEPATHY, S("ESP"),        COLOUR_L_BLUE },
-	{ TMD_INVULN,    S("Invuln"),     COLOUR_L_GREEN },
-	{ TMD_HERO,      S("Hero"),       COLOUR_L_GREEN },
-	{ TMD_SHERO,     S("Berserk"),    COLOUR_L_GREEN },
-	{ TMD_BOLD,      S("Bold"),       COLOUR_L_GREEN },
-	{ TMD_STONESKIN, S("Stone"),      COLOUR_L_GREEN },
-	{ TMD_SHIELD,    S("Shield"),     COLOUR_L_GREEN },
-	{ TMD_BLESSED,   S("Blssd"),      COLOUR_L_GREEN },
-	{ TMD_SINVIS,    S("SInvis"),     COLOUR_L_GREEN },
-	{ TMD_SINFRA,    S("Infra"),      COLOUR_L_GREEN },
-	{ TMD_OPP_ACID,  S("RAcid"),      COLOUR_SLATE },
-	{ TMD_OPP_ELEC,  S("RElec"),      COLOUR_BLUE },
-	{ TMD_OPP_FIRE,  S("RFire"),      COLOUR_RED },
-	{ TMD_OPP_COLD,  S("RCold"),      COLOUR_WHITE },
-	{ TMD_OPP_POIS,  S("RPois"),      COLOUR_GREEN },
-	{ TMD_OPP_CONF,  S("RConf"),      COLOUR_VIOLET },
-	{ TMD_AMNESIA,   S("Amnesiac"),   COLOUR_ORANGE },
-	{ TMD_SCRAMBLE,  S("Scrambled"),  COLOUR_VIOLET },
-	{ TMD_ATT_ACID,  S("AttAcid"),    COLOUR_SLATE },
-	{ TMD_ATT_ELEC,  S("AttElec"),    COLOUR_BLUE },
-	{ TMD_ATT_FIRE,  S("AttFire"),    COLOUR_RED },
-	{ TMD_ATT_COLD,  S("AttCold"),    COLOUR_WHITE },
-	{ TMD_ATT_POIS,  S("AttPois"),    COLOUR_GREEN },
-	{ TMD_ATT_CONF,  S("AttConf"),    COLOUR_L_UMBER },
-	{ TMD_ATT_EVIL,  S("AttEvil"),    COLOUR_WHITE },
-	{ TMD_ATT_DEMON, S("AttDemon"),   COLOUR_L_RED },
-	{ TMD_ATT_VAMP,  S("AttVamp"),    COLOUR_PURPLE },
-	{ TMD_HEAL,      S("Heal"),       COLOUR_L_GREEN },
-	{ TMD_COMMAND,   S("Cmd"),        COLOUR_L_PURPLE },
-	{ TMD_ATT_RUN,   S("HitRun"),     COLOUR_MUD },
-	{ TMD_SCENTLESS, S("NoTrack"),    COLOUR_TEAL },
-	{ TMD_POWERSHOT, S("PShot"),      COLOUR_MAGENTA },
-	{ TMD_POWERBLOW, S("PBlow"),      COLOUR_MAGENTA },
-};
-
-#define PRINT_STATE(sym, data, index, row, col) \
-{ \
-	size_t i; \
-	\
-	for (i = 0; i < N_ELEMENTS(data); i++) \
-	{ \
-		if (index sym data[i].value) \
-		{ \
-			if (data[i].str[0]) \
-			{ \
-				c_put_str(data[i].attr, data[i].str, row, col); \
-				return data[i].len; \
-			} \
-			else \
-			{ \
-				return 0; \
-			} \
-		} \
-	} \
-}
-
 
 /**
  * Print recall status.
@@ -798,52 +688,22 @@ static size_t prt_descent(int row, int col)
 
 
 /**
- * Print cut indicator.
- */
-static size_t prt_cut(int row, int col)
-{
-	size_t i;
-
-	for (i = 0; i < N_ELEMENTS(cut_data); i++) {
-		if (player->timed[TMD_CUT] > cut_data[i].value) {
-			if (player_has(player, PF_ROCK)) {
-				c_put_str(COLOUR_L_DARK, cut_data[i].str, row, col);
-			} else {
-				c_put_str(cut_data[i].attr, cut_data[i].str, row, col);
-			}
-			return cut_data[i].len;
-		}
-	}
-	return 0;
-}
-
-
-/**
- * Print stun indicator.
- */
-static size_t prt_stun(int row, int col)
-{
-	PRINT_STATE(>, stun_data, player->timed[TMD_STUN], row, col);
-	return 0;
-}
-
-
-/**
- * Print bloodlust indicator.
- */
-static size_t prt_bloodlust(int row, int col)
-{
-	PRINT_STATE(>, bloodlust_data, player->timed[TMD_BLOODLUST], row, col);
-	return 0;
-}
-
-
-/**
  * Prints status of hunger
  */
 static size_t prt_hunger(int row, int col)
 {
-	PRINT_STATE(<=, hunger_data, player->food, row, col);
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(hunger_data); i++) {
+		if (player->food <= hunger_data[i].value) {
+			if (hunger_data[i].str[0]) {
+				c_put_str(hunger_data[i].attr, hunger_data[i].str, row, col);
+				return hunger_data[i].len;
+			} else {
+				return 0;
+			}
+		}
+	}
 	return 0;
 }
 
@@ -1076,11 +936,16 @@ static size_t prt_tmd(int row, int col)
 {
 	size_t i, len = 0;
 
-	for (i = 0; i < N_ELEMENTS(effects); i++)
-		if (player->timed[effects[i].value]) {
-			c_put_str(effects[i].attr, effects[i].str, row, col + len);
-			len += effects[i].len;
+	for (i = 0; i < TMD_MAX; i++) {
+		if (player->timed[i]) {
+			struct timed_grade *grade = timed_effects[i].grade;
+			while (player->timed[i] > grade->max) {
+				grade = grade->next;
+			}
+			c_put_str(grade->color, grade->name, row, col + len);
+			len += strlen(grade->name) + 1;
 		}
+	}
 
 	return len;
 }
@@ -1105,8 +970,8 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_unignore, prt_recall, prt_descent, prt_state, prt_cut, 
-  prt_stun, prt_bloodlust, prt_hunger, prt_study, prt_tmd, prt_dtrap };
+{ prt_level_feeling, prt_unignore, prt_recall, prt_descent, prt_state,
+  prt_hunger, prt_study, prt_tmd, prt_dtrap };
 
 
 /**

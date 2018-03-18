@@ -64,6 +64,15 @@ enum {
 	TMD_FAIL_FLAG_PLAYER
 };
 
+struct timed_grade {
+	int grade;
+	byte color;
+	int max;
+	char *name;
+	char *msg;
+	struct timed_grade *next;
+};
+
 /**
  * Data struct
  */
@@ -74,13 +83,13 @@ struct timed_effect_data {
 
 	int index;
 	char *desc;
-	char *on_begin;
 	char *on_end;
 	char *on_increase;
 	char *on_decrease;
 	int msgt;
 	int fail_code;
 	int fail;
+	struct timed_grade *grade;
 };
 
 extern struct file_parser player_timed_parser;
