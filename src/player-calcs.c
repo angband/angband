@@ -2096,6 +2096,10 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (p->timed[TMD_IMAGE]) {
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
 	}
+	if (p->timed[TMD_BLOODLUST]) {
+		state->to_d += p->timed[TMD_BLOODLUST] / 2;
+		extra_blows += p->timed[TMD_BLOODLUST] / 20;
+	}
 
 	/* Analyze flags - check for fear */
 	if (of_has(state->flags, OF_AFRAID)) {

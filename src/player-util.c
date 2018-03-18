@@ -178,6 +178,9 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 		/* Allow cheating */
 		if ((p->wizard || OPT(p, cheat_live)) && !get_check("Die? ")) {
 			event_signal(EVENT_CHEAT_DEATH);
+		} else if (p->timed[TMD_BLOODLUST] > 48) {
+			/* Benefit of extreme bloodlust */
+			msg("Your lust for blood keeps you alive!");
 		} else {
 			/* Hack -- Note death */
 			msgt(MSG_DEATH, "You die.");

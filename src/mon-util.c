@@ -977,6 +977,12 @@ static void player_kill_monster(struct monster *mon, const char *note)
 	/* Generate treasure */
 	monster_death(mon, false);
 
+	/* Bloodlust bonus */
+	if (player->timed[TMD_BLOODLUST]) {
+		player_inc_timed(player, TMD_BLOODLUST, 10, false, false);
+		player_over_exert(player, PY_EXERT_CONF | PY_EXERT_HALLU, 5, 10);
+	}
+
 	/* Recall even invisible uniques or winners */
 	if (monster_is_visible(mon) || monster_is_unique(mon)) {
 		/* Count kills this life */
