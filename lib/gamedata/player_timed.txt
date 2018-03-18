@@ -11,7 +11,9 @@
 # Fields:
 # name - the effect name
 # desc - the effect description
-# on-begin - the message on beginning the effect
+# grade - the message on increasing a grade of the effect.  Note that most
+#         effects only have two grades (on and off); for these, the message
+#         is just the message on beginning the effect
 # on-end - the message on ending the effect
 # on-increase - the message on the effect increasing
 # on-decrease - the message on the effect decreasing
@@ -28,34 +30,34 @@
 
 name:FAST
 desc:haste
-on-begin:You feel yourself moving faster!
+grade:G:10000:Haste:You feel yourself moving faster!
 on-end:You feel yourself slow down.
 msgt:SPEED
 
 name:SLOW
 desc:slowness
-on-begin:You feel yourself moving slower!
+grade:U:10000:Slow:You feel yourself moving slower!
 on-end:You feel yourself speed up.
 msgt:SLOW
 fail:1:FREE_ACT
 
 name:BLIND
 desc:blindness
-on-begin:You are blind.
+grade:o:10000:Blind:You are blind.
 on-end:You blink and your eyes clear.
 msgt:BLIND
 fail:1:PROT_BLIND
 
 name:PARALYZED
 desc:paralysis
-on-begin:You are paralysed!
+grade:r:10000:Paralyzed!:You are paralysed!
 on-end:You can move again.
 msgt:PARALYZED
 fail:1:FREE_ACT
 
 name:CONFUSED
 desc:confusion
-on-begin:You are confused!
+grade:o:10000:Confused:You are confused!
 on-end:You are no longer confused.
 on-increase:You are more confused!
 on-decrease:You feel a little less confused.
@@ -64,7 +66,7 @@ fail:1:PROT_CONF
 
 name:AFRAID
 desc:fear
-on-begin:You are terrified!
+grade:o:10000:Afraid:You are terrified!
 on-end:You feel bolder now.
 on-increase:You are more scared!
 on-decrease:You feel a little less scared.
@@ -73,7 +75,7 @@ fail:1:PROT_FEAR
 
 name:IMAGE
 desc:hallucination
-on-begin:You feel drugged!
+grade:o:10000:Halluc:You feel drugged!
 on-end:You can see clearly again.
 on-increase:You feel more drugged!
 on-decrease:You feel less drugged.
@@ -82,7 +84,7 @@ fail:2:CHAOS
 
 name:POISONED
 desc:poisoning
-on-begin:You are poisoned!
+grade:o:10000:Poisoned:You are poisoned!
 on-end:You are no longer poisoned.
 on-increase:You are more poisoned!
 on-decrease:You are less poisoned.
@@ -91,15 +93,29 @@ fail:2:POIS
 
 name:CUT
 desc:wounds
+grade:y:10:Graze:You have been given a graze.
+grade:y:25:Light Cut:You have been given a light cut.
+grade:o:50:Bad Cut:You have been given a bad cut.
+grade:o:100:Nasty Cut:You have been given a nasty cut.
+grade:r:200:Severe Cut:You have been given a severe cut.
+grade:r:1000:Deep Gash:You have been given a deep gash.
+grade:R:10000:Mortal Wound:You have been given a mortal wound.
+on-end:You are no longer bleeding.
+msgt:CUT
 fail:4:ROCK
 
 name:STUN
 desc:stunning
+grade:o:50:Stun:You have been stunned.
+grade:o:100:Heavy Stun:You have been heavily stunned.
+grade:r:10000:Knocked Out:You have been knocked out.
+on-end:You are no longer stunned.
+msgt:STUN
 fail:1:PROT_STUN
 
 name:PROTEVIL
 desc:protection from evil
-on-begin:You feel safe from evil!
+grade:G:10000:ProtEvil:You feel safe from evil!
 on-end:You no longer feel safe from evil.
 on-increase:You feel even safer from evil!
 on-decrease:You feel less safe from evil.
@@ -107,13 +123,13 @@ msgt:PROT_EVIL
 
 name:INVULN
 desc:invulnerability
-on-begin:You feel invulnerable!
+grade:G:10000:Invuln:You feel invulnerable!
 on-end:You feel vulnerable once more.
 msgt:INVULN
 
 name:HERO
 desc:heroism
-on-begin:You feel like a hero!
+grade:G:10000:Hero:You feel like a hero!
 on-end:You no longer feel heroic.
 on-increase:You feel more like a hero!
 on-decrease:You feel less heroic.
@@ -121,7 +137,7 @@ msgt:HERO
 
 name:SHERO
 desc:berserk rage
-on-begin:You feel like a killing machine!
+grade:G:10000:Berserk:You feel like a killing machine!
 on-end:You no longer feel berserk.
 on-increase:You feel even more berserk!
 on-decrease:You feel less berserk.
@@ -129,7 +145,7 @@ msgt:BERSERK
 
 name:SHIELD
 desc:mystic shield
-on-begin:A mystic shield forms around your body!
+grade:G:10000:Shield:A mystic shield forms around your body!
 on-end:Your mystic shield crumbles away.
 on-increase:The mystic shield strengthens.
 on-decrease:The mystic shield weakens.
@@ -137,7 +153,7 @@ msgt:SHIELD
 
 name:BLESSED
 desc:your AC and to-hit bonus
-on-begin:You feel righteous!
+grade:G:10000:Blssd:You feel righteous!
 on-end:The prayer has expired.
 on-increase:You feel more righteous!
 on-decrease:You feel less righteous.
@@ -145,7 +161,7 @@ msgt:BLESSED
 
 name:SINVIS
 desc:see invisible
-on-begin:Your eyes feel very sensitive!
+grade:G:10000:SInvis:Your eyes feel very sensitive!
 on-end:Your eyes no longer feel so sensitive.
 on-increase:Your eyes feel more sensitive!
 on-decrease:Your eyes feel less sensitive.
@@ -153,7 +169,7 @@ msgt:SEE_INVIS
 
 name:SINFRA
 desc:enhanced infravision
-on-begin:Your eyes begin to tingle!
+grade:G:10000:Infra:Your eyes begin to tingle!
 on-end:Your eyes stop tingling.
 on-increase:Your eyes' tingling intensifies.
 on-decrease:Your eyes tingle less.
@@ -161,7 +177,7 @@ msgt:INFRARED
 
 name:OPP_ACID
 desc:acid resistance
-on-begin:You feel resistant to acid!
+grade:s:10000:RAcid:You feel resistant to acid!
 on-end:You are no longer resistant to acid.
 on-increase:You feel more resistant to acid!
 on-decrease:You feel less resistant to acid.
@@ -170,7 +186,7 @@ fail:3:ACID
 
 name:OPP_ELEC
 desc:electricity resistance
-on-begin:You feel resistant to electricity!
+grade:b:10000:RElec:You feel resistant to electricity!
 on-end:You are no longer resistant to electricity.
 on-increase:You feel more resistant to electricity!
 on-decrease:You feel less resistant to electricity.
@@ -179,7 +195,7 @@ fail:3:ELEC
 
 name:OPP_FIRE
 desc:fire resistance
-on-begin:You feel resistant to fire!
+grade:r:10000:RFire:You feel resistant to fire!
 on-end:You are no longer resistant to fire.
 on-increase:You feel more resistant to fire!
 on-decrease:You feel less resistant to fire.
@@ -188,7 +204,7 @@ fail:3:FIRE
 
 name:OPP_COLD
 desc:cold resistance
-on-begin:You feel resistant to cold!
+grade:w:10000:RCold:You feel resistant to cold!
 on-end:You are no longer resistant to cold.
 on-increase:You feel more resistant to cold!
 on-decrease:You feel less resistant to cold.
@@ -197,7 +213,7 @@ fail:3:COLD
 
 name:OPP_POIS
 desc:poison resistance
-on-begin:You feel resistant to poison!
+grade:g:10000:RPois:You feel resistant to poison!
 on-end:You are no longer resistant to poison.
 on-increase:You feel more resistant to poison!
 on-decrease:You feel less resistant to poison.
@@ -205,45 +221,45 @@ msgt:RES_POIS
 
 name:OPP_CONF
 desc:confusion resistance
-on-begin:You feel resistant to confusion!
+grade:v:10000:RConf:You feel resistant to confusion!
 on-end:You are no longer resistant to confusion.
 on-increase:You feel more resistant to confusion!
 on-decrease:You feel less resistant to confusion.
 
 name:AMNESIA
 desc:amnesia
-on-begin:You feel your memories fade.
+grade:o:10000:Amnesiac:You feel your memories fade.
 on-end:Your memories come flooding back.
 msgt:GENERIC
 
 name:TELEPATHY
 desc:telepathy
-on-begin:Your mind expands.
+grade:B:10000:ESP:Your mind expands.
 on-end:Your horizons are once more limited.
 on-increase:Your mind expands further.
 msgt:GENERIC
 
 name:STONESKIN
 desc:stone skin
-on-begin:Your skin turns to stone.
+grade:G:10000:Stone:Your skin turns to stone.
 on-end:A fleshy shade returns to your skin.
 msgt:GENERIC
 
 name:TERROR
 desc:terror
-on-begin:You feel the need to run away and fast!
+grade:r:10000:Terror:You feel the need to run away and fast!
 on-end:The urge to run dissipates.
 msgt:AFRAID
 
 name:SPRINT
 desc:sprinting
-on-begin:You start sprinting.
+grade:G:10000:Sprint:You start sprinting.
 on-end:You suddenly stop sprinting.
 msgt:SPEED
 
 name:BOLD
 desc:fearlessness
-on-begin:You feel bold.
+grade:G:10000:Bold:You feel bold.
 on-end:You no longer feel bold.
 on-increase:You feel even bolder!
 on-decrease:You feel less bold.
@@ -251,7 +267,7 @@ msgt:BOLD
 
 name:SCRAMBLE
 desc:scrambled
-on-begin:Your body starts to scramble...
+grade:v:10000:Scrambled:Your body starts to scramble...
 on-end:Your body reasserts its true nature.
 on-increase:You are more scrambled!
 on-decrease:You are less scrambled.
@@ -260,90 +276,97 @@ fail:2:NEXUS
 
 name:TRAPSAFE
 desc:safety from traps
-on-begin:You feel safe from traps.
+grade:G:10000:TrapSafe:You feel safe from traps.
 on-end:You feel vulnerable to traps again.
 on-increase:You feel even safer from traps!
 on-decrease:You feel less safe from traps.
 
 name:FASTCAST
 desc:mana channelling
-on-begin:You feel your mind accelerate.
+grade:i:10000:FastCast:You feel your mind accelerate.
 on-end:You feel your mind slow again.
 
 name:ATT_ACID
 desc:temporary acid brand
-on-begin:Your {kind} start{s} to drip with acid!
+grade:s:10000:AttAcid:Your {kind} start{s} to drip with acid!
 on-end:The acid disappears from your {kind}.
 
 name:ATT_ELEC
 desc:temporary lightning brand
-on-begin:Sparks gather around your {kind}!
+grade:b:10000:AttElec:Sparks gather around your {kind}!
 on-end:The sparks fade from your {kind}.
 
 name:ATT_FIRE
 desc:temporary fire brand
-on-begin:Flames surround your {kind}!
+grade:r:10000:AttFire:Flames surround your {kind}!
 on-end:The flames on your {kind} subside.
 
 name:ATT_COLD
 desc:temporary cold brand
-on-begin:Your {kind} {is} covered in frost!
+grade:w:10000:AttCold:Your {kind} {is} covered in frost!
 on-end:The frost evaporates from your {kind}.
 
 name:ATT_POIS
 desc:temporary poison brand
-on-begin:Your {kind} drip{s} with poison!
+grade:g:10000:AttPois:Your {kind} drip{s} with poison!
 on-end:The poison disappears from your {kind}.
 
 name:ATT_CONF
 desc:temporary monster confusion
-on-begin:Your {kind} begin{s} to glow!
+grade:U:10000:AttConf:Your {kind} begin{s} to glow!
 on-end:The glow fades from your {kind}.
 
 name:ATT_EVIL
 desc:temporary slay evil
-on-begin:Your {kind} {is} imbued with holy force!
+grade:w:10000:AttEvil:Your {kind} {is} imbued with holy force!
 on-end:Holy force fades from your {kind}.
 
 name:ATT_DEMON
 desc:temporary slay demon
-on-begin:Your {kind} become{s} a bane of demons!
+grade:R:10000:AttDemon:Your {kind} become{s} a bane of demons!
 on-end:Your {kind} return{s} to normal.
 
 name:ATT_VAMP
 desc:temporary hitpoint siphoning
-on-begin:Your can drain life from your victims!
+grade:p:10000:AttVamp:Your can drain life from your victims!
 on-end:Your life-draining power passes.
 
 name:HEAL
 desc:turn-by-turn minor healing
-on-begin:You feel the healing powers of nature!
+grade:G:10000:Heal:You feel the healing powers of nature!
 on-end:The healing effect fades.
 
 name:COMMAND
 desc:commanding a monster
+grade:P:10000:Cmd:Your consciousness flies outward!
+on-end:Your consciousness returns.
 
 name:ATT_RUN
 desc:escape on attack
-on-begin:You tense up ready to escape!
+grade:m:10000:HitRun:You tense up ready to escape!
 on-end:You relax again.
 
 name:SCENTLESS
 desc:leave no scent trail
-on-begin:You begin covering your tracks.
+grade:T:10000:NoTrack:You begin covering your tracks.
 on-end:You stop covering your tracks.
 
 name:POWERSHOT
 desc:piercing shot
-on-begin:You prepare to shoot powerfully!
+grade:i:10000:PShot:You prepare to shoot powerfully!
 on-end:Your shooting power returns to normal.
 
 name:POWERBLOW
 desc:powerful blow
-on-begin:You feel you can strike with enormous force!
+grade:i:10000:PBlow:You feel you can strike with enormous force!
 on-end:Your sense of power dissipates.
 
 name:BLOODLUST
 desc:desire to kill
-on-begin:A red mist descends over your eyes!
+grade:y:9:Bloodlust:A red mist descends over your eyes!
+grade:I:19:Bloodlust:Your thirst for blood increases!
+grade:o:29:Bloodlust:Your thirst for blood increases!
+grade:r:39:Bloodlust:Your thirst for blood increases!
+grade:R:48:Bloodlust:Your thirst for blood increases!
+grade:P:50:Bloodlust:Your thirst for blood is insatiable!
 on-end:The mist clears.
