@@ -774,6 +774,11 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	else
 		missile = floor_object_for_use(obj, 1, true, &none_left);
 
+	/* Terminate piercing */
+	if (p->timed[TMD_POWERSHOT]) {
+		player_clear_timed(p, TMD_POWERSHOT, true);
+	}
+
 	/* Drop (or break) near that location */
 	drop_near(cave, &missile, breakage_chance(missile, hit_target), y, x, true);
 }
