@@ -452,6 +452,13 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	/* If a miss, skip this hit */
 	if (!success) {
 		msgt(MSG_MISS, "You miss %s.", m_name);
+
+		/* Small chance of bloodlust side-effects */
+		if (p->timed[TMD_BLOODLUST] && one_in_(50)) {
+			msg("You feel strange...");
+			player_over_exert(p, PY_EXERT_SCRAMBLE, 20, 20);
+		}
+
 		return false;
 	}
 
@@ -490,9 +497,9 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	dmg += player_damage_bonus(&p->state);
 
 	/* Substitute shape-specific blows for shapechanged players */
-	if (player_is_shapechanged(player)) {
-		int choice = randint0(player->shape->num_blows);
-		struct player_blow *blow = player->shape->blows;
+	if (player_is_shapechanged(p)) {
+		int choice = randint0(p->shape->num_blows);
+		struct player_blow *blow = p->shape->blows;
 		while (choice--) {
 			blow = blow->next;
 		}
@@ -528,6 +535,13 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	/* Damage, check for hp drain, knockback, fear and death */
 	drain = MIN(mon->hp, dmg);
 	stop = mon_take_hit(mon, dmg, fear, NULL);
+
+	/* Small chance of bloodlust side-effects */
+	if (p->timed[TMD_BLOODLUST] && one_in_(50)) {
+		msg("You feel something give way!");
+		player_over_exert(p, PY_EXERT_CON, 20, 0);
+	}
+
 	if (!stop) {
 		if (p->timed[TMD_ATT_VAMP] && monster_is_living(mon)) {
 			effect_simple(EF_HEAL_HP, source_player(), format("%d", drain),
