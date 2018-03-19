@@ -98,7 +98,7 @@ bool slot_type_is(int slot, int type)
 struct object *slot_object(struct player *p, int slot)
 {
 	/* Ensure a valid body */
-	if (p->body.slots) {
+	if (p->body.slots && p->body.slots[slot].obj) {
 		return p->body.slots[slot].obj;
 	}
 

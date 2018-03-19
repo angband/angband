@@ -268,7 +268,7 @@ static const int adj_dex_ta[STAT_RANGE] =
 /**
  * Stat Table (STR) -- bonus to dam
  */
-static const int adj_str_td[STAT_RANGE] =
+const int adj_str_td[STAT_RANGE] =
 {
 	-2	/* 3 */,
 	-2	/* 4 */,
