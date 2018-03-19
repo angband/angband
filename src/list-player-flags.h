@@ -28,3 +28,4 @@ PF(CHARM,            "is extra persuasive to monsters",                         
 PF(UNLIGHT,          "gains stealth in, can see in, and resists the dark",        "Likes the dark")
 PF(ROCK,             "is made of rock",                                           "Is made of rock")
 PF(STEAL,            "can steal from monsters",                                   "Steals from monsters")
+PF(SHIELD_BASH,      "can bash monsters with a shield in melee",                  "Employs shield-bashes")
