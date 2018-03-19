@@ -227,8 +227,13 @@ void process_command(cmd_context ctx, struct command *cmd)
 	cmd->context = ctx;
 
 	/* Actually execute the command function */
-	if (game_cmds[idx].fn)
+	if (game_cmds[idx].fn) {
+		/* Occasional attack instead for bloodlust-affected characters */
+		if (randint0(200) < player->timed[TMD_BLOODLUST]) {
+			if (player_attack_random_monster(player)) return;
+		}
 		game_cmds[idx].fn(cmd);
+	}
 
 	/* If the command hasn't changed nrepeats, count this execution. */
 	if (cmd->nrepeats > 0 && oldrepeats == cmd_get_nrepeats())
