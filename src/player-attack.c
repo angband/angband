@@ -548,6 +548,13 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 						  0, 0, 0, 0, 0, NULL);
 		} else if (p->timed[TMD_POWERBLOW]) {
 			stop = blow_knock_back(p, mon, dmg, fear);
+
+			/* Small chance of side-effects */
+			if (one_in_(50)) {
+				msg("You swing around wildly!");
+				player_over_exert(p, PY_EXERT_CONF, 40, 10);
+			}
+
 			player_clear_timed(p, TMD_POWERBLOW, true);
 		}
 	}
