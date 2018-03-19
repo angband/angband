@@ -571,6 +571,82 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 
 
 /**
+ * Attempt a shield bash; return true if the monster dies
+ */
+bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
+						 int *blows)
+{
+	struct object *weapon = slot_object(p, slot_by_name(p, "weapon"));
+	struct object *shield = slot_object(p, slot_by_name(p, "shield"));
+	int bash_quality, bash_dam;
+
+	/* Bashing chance depends on melee skill, DEX, and a level bonus. */
+	int bash_chance = p->state.skills[SKILL_TO_HIT_MELEE] +
+		adj_dex_th[p->state.stat_ind[STAT_DEX]] + p->lev / 2;
+
+	/* No shield, no bash */
+	if (!shield) return false;
+
+	/* Players bash more often when they see a real need: */
+	if (!equipped_item_by_slot_name(p, "weapon")) {
+		/* Unarmed... */
+		bash_chance *= 4;
+	} else if (weapon->dd * weapon->ds * (*blows) <
+			   shield->dd * shield->ds * 3) {
+		/* ... or armed with a puny weapon */
+		bash_chance *= 2;
+	}
+
+	/* Try to get in a shield bash. */
+	if (bash_chance > randint0(240 + mon->race->level * 9)) {
+		msgt(MSG_HIT, "You get in a shield bash!");
+
+		/* Calculate attack quality, a mix of momentum and accuracy. */
+		bash_quality = p->state.skills[SKILL_TO_HIT_MELEE] + p->wt / 8 +
+			p->upkeep->total_weight / 80 + shield->weight / 2;
+
+		/* Calculate damage.  Big shields are deadly. */
+		bash_dam = damroll(shield->dd, shield->ds);
+
+		/* Multiply by quality and experience factors */
+		bash_dam *= bash_quality / 20 + p->lev / 7;
+
+		/* Strength bonus. */
+		bash_dam += adj_str_td[p->state.stat_ind[STAT_STR]];
+
+		/* Paranoia. */
+		bash_dam = MIN(bash_dam, 125);
+
+		/* Encourage the player to keep wearing that heavy shield. */
+		if (randint1(bash_dam) > 30 + randint1(bash_dam / 2)) {
+			msgt(MSG_HIT_HI_SUPERB, "WHAMM!");
+		}
+
+		/* Damage, check for fear and death. */
+		if (mon_take_hit(mon, bash_dam, fear, NULL)) return true;
+
+		/* Stunning. */
+		if (bash_quality + p->lev > randint1(200 + mon->race->level * 4)) {
+			mon_inc_timed(mon, MON_TMD_STUN, randint0(p->lev / 5) + 4, 0,
+						  false);
+		}
+
+		/* Confusion. */
+		if (bash_quality + p->lev > randint1(300 + mon->race->level * 6)) {
+			mon_inc_timed(mon, MON_TMD_CONF, randint0(p->lev / 5) + 4, 0,
+						  false);
+		}
+
+		/* The player will sometimes stumble. */
+		if (35 + adj_dex_th[p->state.stat_ind[STAT_DEX]] < randint1(60)) {
+			*blows += randint1(p->state.num_blows);
+			msgt(MSG_GENERIC, "You stumble!");
+		}
+	}
+	return false;
+}
+
+/**
  * Attack the monster at the given location
  *
  * We get blows until energy drops below that required for another blow, or
@@ -584,12 +660,19 @@ void py_attack(struct player *p, int y, int x)
 	int blows = 0;
 	bool fear = false;
 	struct monster *mon = square_monster(cave, y, x);
-	
-	/* disturb the player */
+
+	/* Disturb the player */
 	disturb(p, 0);
 
 	/* Initialize the energy used */
 	p->upkeep->energy_use = 0;
+
+	/* Player attempts a shield bash if they can, and if monster is visible
+	 * and not too pathetic */
+	if (player_has(p, PF_SHIELD_BASH) && monster_is_visible(mon) &&
+		(mon->race->level > p->lev / 2)) {
+		if (attempt_shield_bash(p, mon, &fear, &blows)) return;
+	}
 
 	/* Attack until energy runs out or enemy dies. We limit energy use to 100
 	 * to avoid giving monsters a possible double move. */
@@ -600,7 +683,7 @@ void py_attack(struct player *p, int y, int x)
 			stop) break;
 		blows++;
 	}
-	
+
 	/* Hack - delay fear messages */
 	if (fear && monster_is_visible(mon)) {
 		add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
