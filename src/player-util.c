@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmd-core.h"
+#include "cmds.h"
 #include "game-input.h"
 #include "game-world.h"
 #include "generate.h"
@@ -472,6 +473,29 @@ void player_update_light(struct player *p)
 
 	/* Calculate torch radius */
 	p->upkeep->update |= (PU_TORCH);
+}
+
+/**
+ * Melee a random adjacent monster
+ */
+bool player_attack_random_monster(struct player *p)
+{
+	int i, dir = randint0(8);
+
+	/* Confused players get a free pass */
+	if (p->timed[TMD_CONFUSED]) return false;
+
+	/* Look for a monster, attack */
+	for (i = 0; i < 8; i++, dir++) {
+		int y = player->py + ddy_ddd[dir % 8];
+		int x = player->px + ddx_ddd[dir % 8];
+		if (square_monster(cave, y, x)) {
+			p->upkeep->energy_use = z_info->move_energy;
+			move_player(dir % 8, false);
+			return true;
+		}
+	}
+	return false;
 }
 
 /**
