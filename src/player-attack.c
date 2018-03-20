@@ -289,10 +289,12 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 			/* Monster there - current monster takes all the damage
 			 * Note we could have more fun here by pushing it back... */
 			if (square_monster(cave, y, x)) {
-				return mon_take_hit(mon, dmg * power, fear, NULL);
+				if (mon_take_hit(mon, dmg * power, fear, NULL)) return true;
+				break;
 			} else {
 				/* Push back a square */
 				monster_swap(mon->fy, mon->fx, y, x);
+				power--;
 			}
 		} else {
 			bool moved = false;
@@ -321,6 +323,11 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					if (square_hasgoldvein(cave, y, x)) {
 						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
 					}
+					if (randint0(20) < power) {
+						effect_simple(EF_EARTHQUAKE,
+									  source_monster(mon->midx), "0",
+									  0, 3, 0, 0, 0, NULL);
+					}
 					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
 					power--;
 					moved = true;
@@ -332,6 +339,11 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					if (square_hasgoldvein(cave, y, x)) {
 						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
 					}
+					if (randint0(20) < power) {
+						effect_simple(EF_EARTHQUAKE,
+									  source_monster(mon->midx), "0",
+									  0, 3, 0, 0, 0, NULL);
+					}
 					if (mon_take_hit(mon, dmg * 2, fear, NULL)) return true;
 					power -= 2;
 					moved = true;
@@ -340,6 +352,11 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 				if (power >= 3) {
 					square_destroy_wall(cave, y, x);
 					monster_swap(mon->fy, mon->fx, y, x);
+					if (randint0(20) < power) {
+						effect_simple(EF_EARTHQUAKE,
+									  source_monster(mon->midx), "0",
+									  0, 3, 0, 0, 0, NULL);
+					}
 					if (mon_take_hit(mon, dmg * 3, fear, NULL)) return true;
 					power -= 3;
 					moved = true;
@@ -353,7 +370,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 		}
 	}
 	/* Player needs to stop hitting if the monster has moved */
-	return (ABS(mon->fy - p->py) > 2) || (ABS(mon->fx - p->px) > 2);
+	return (ABS(mon->fy - p->py) > 1) || (ABS(mon->fx - p->px) > 1);
 }
 
 /**
@@ -577,12 +594,12 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 						 int *blows)
 {
 	struct object *weapon = slot_object(p, slot_by_name(p, "weapon"));
-	struct object *shield = slot_object(p, slot_by_name(p, "shield"));
+	struct object *shield = slot_object(p, slot_by_name(p, "arm"));
 	int bash_quality, bash_dam;
 
 	/* Bashing chance depends on melee skill, DEX, and a level bonus. */
-	int bash_chance = p->state.skills[SKILL_TO_HIT_MELEE] +
-		adj_dex_th[p->state.stat_ind[STAT_DEX]] + p->lev / 2;
+	int bash_chance = p->state.skills[SKILL_TO_HIT_MELEE] / 4 +
+		adj_dex_th[p->state.stat_ind[STAT_DEX]];
 
 	/* No shield, no bash */
 	if (!shield) return false;
@@ -598,11 +615,11 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 	}
 
 	/* Try to get in a shield bash. */
-	if (bash_chance > randint0(240 + mon->race->level * 9)) {
+	if (bash_chance > randint0(200 + mon->race->level)) {
 		msgt(MSG_HIT, "You get in a shield bash!");
 
 		/* Calculate attack quality, a mix of momentum and accuracy. */
-		bash_quality = p->state.skills[SKILL_TO_HIT_MELEE] + p->wt / 8 +
+		bash_quality = p->state.skills[SKILL_TO_HIT_MELEE] / 4 + p->wt / 8 +
 			p->upkeep->total_weight / 80 + shield->weight / 2;
 
 		/* Calculate damage.  Big shields are deadly. */
