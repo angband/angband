@@ -2864,7 +2864,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	struct loc start;
 
 	int ny = player->py, nx = player->px;
-	int y, x, dis = 0, ctr = 0, dir = 5;
+	int y, x, dis = 0, ctr = 0, dir = DIR_TARGET;
 	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
@@ -3229,8 +3229,12 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	}
 
 	/* Sometimes ask for a target */
-	if (targeted && (context->dir == DIR_TARGET) && target_okay()) {
-		target_get(&centre.x, &centre.y);
+	if (targeted) {
+		int dir = DIR_TARGET;
+		get_aim_dir(&dir);
+		if ((dir == DIR_TARGET) && target_okay()) {
+			target_get(&(centre.x), &(centre.y));
+		}
 	}
 
 	/* Paranoia -- Enforce maximum range */
