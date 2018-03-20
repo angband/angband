@@ -70,7 +70,7 @@ EFFECT(TELEPORT_TO,					false,	NULL,		0,		EFINFO_NONE,	"teleports you to a monst
 EFFECT(TELEPORT_LEVEL,				false,	NULL,		0,		EFINFO_NONE,	"teleports you one level up or down")
 EFFECT(RUBBLE,						false,	NULL,		0,		EFINFO_NONE,	"causes rubble to fall around you")
 EFFECT(DESTRUCTION,					false,	NULL,		1,		EFINFO_QUAKE,	"destroys an area around you in the shape of a circle radius %d, and blinds you for 1d10+10 turns")
-EFFECT(EARTHQUAKE,					true,	NULL,		1,		EFINFO_QUAKE,	"causes an earthquake around you of radius %d")
+EFFECT(EARTHQUAKE,					false,	NULL,		1,		EFINFO_QUAKE,	"causes an earthquake around you of radius %d")
 EFFECT(LIGHT_LEVEL,					false,	NULL,		0,		EFINFO_NONE,	"completely lights up and magically maps the level")
 EFFECT(LIGHT_AREA,					false,	NULL,		0,		EFINFO_NONE,	"lights up the surrounding area")
 EFFECT(DARKEN_AREA,					false,	NULL,		0,		EFINFO_NONE,	"darkens the surrounding area")
