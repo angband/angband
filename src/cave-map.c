@@ -477,6 +477,70 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 
 
 /**
+ * Compeletly darken the level, and know all objects
+ *
+ * This function darkens every grid in the dungeon, memorizes all
+ * "objects" (or notes the existence of an object "if" full is true),
+ * and memorizes all grids as with magic mapping.
+ */
+void wiz_dark(struct chunk *c, struct player *p, bool full)
+{
+	int i, y, x;
+
+	/* Scan all grids */
+	for (y = 1; y < c->height - 1; y++) {
+		for (x = 1; x < c->width - 1; x++) {
+			/* Process all non-walls */
+			if (!square_seemslikewall(c, y, x)) {
+				if (!square_in_bounds_fully(c, y, x)) continue;
+
+				/* Scan all neighbors */
+				for (i = 0; i < 9; i++) {
+					int yy = y + ddy_ddd[i];
+					int xx = x + ddx_ddd[i];
+
+					/* Perma-light the grid */
+					sqinfo_off(c->squares[yy][xx].info, SQUARE_GLOW);
+
+					/* Memorize normal features */
+					if (!square_isfloor(c, yy, xx) || 
+						square_isvisibletrap(c, yy, xx)) {
+						square_memorize(c, yy, xx);
+						square_mark(c, yy, xx);
+					}
+				}
+			}
+
+			/* Memorize objects */
+			if (full) {
+				square_know_pile(c, y, x);
+			} else {
+				square_sense_pile(c, y, x);
+			}
+
+			/* Forget unprocessed, unknown grids in the mapping area */
+			if (!square_ismark(c, y, x) && square_isnotknown(c, y, x))
+				square_forget(c, y, x);
+		}
+	}
+
+	/* Unmark grids */
+	for (y = 1; y < c->height - 1; y++) {
+		for (x = 1; x < c->width - 1; x++) {
+			if (!square_in_bounds(c, y, x)) continue;
+			square_unmark(c, y, x);
+		}
+	}
+
+	/* Fully update the visuals */
+	p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	p->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+}
+
+
+/**
  * Light or Darken the town
  */
 void cave_illuminate(struct chunk *c, bool daytime)

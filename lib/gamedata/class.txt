@@ -636,7 +636,7 @@ effect:SPHERE:FIRE:5
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:* 3 / 2
 expr:S:PLAYER_LEVEL:* 3
-effect:EARTHQUAKE:5
+effect:EARTHQUAKE:NONE:5
 desc:Creates a radius 5 ball of fire, followed by a radius 5 earthquake,
 desc: around the player.
 
@@ -1064,7 +1064,7 @@ desc:Changes you into the form of a warg, and gives you temporary berserk
 desc: strength, at the cost of some hitpoints.
 
 
-book:shadow book:dungeon:[Deadly Powers]:5:shadow
+book:shadow book:dungeon:[Deadly Powers]:6:shadow
 book-graphics:?:p
 book-properties:30000:15:40 to 100
 
@@ -1107,6 +1107,12 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Fires a chaos beam, arc or ball in the chosen direction, wakes everything
 desc: in the area, and attempts to frighten everything in line of sight.
+
+spell:Fume of Mordor:40:50:80:150
+effect:DARKEN_LEVEL
+dice:1
+desc:Darkens, maps out, and detects all objects on the complete current
+desc: dungeon level.
 
 spell:Storm of Darkness:43:16:80:200
 effect:BALL:DARK:4

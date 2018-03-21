@@ -3503,6 +3503,16 @@ bool effect_handler_LIGHT_LEVEL(effect_handler_context_t *context)
 	return true;
 }
 
+bool effect_handler_DARKEN_LEVEL(effect_handler_context_t *context)
+{
+	bool full = context->value.base ? true : false;
+	if (full)
+		msg("A great blackness rolls through the dungeon...");
+	wiz_dark(cave, player, full);
+	context->ident = true;
+	return true;
+}
+
 /**
  * Call light around the player
  */
