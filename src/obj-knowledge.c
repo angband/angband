@@ -870,7 +870,7 @@ void object_see(struct player *p, struct object *obj)
 		/* Make and/or list the new object */
 		struct object *new_obj;
 
-		/* Check whether we need to make a new one or list the old one */
+		/* Check whether we need to make a new one */
 		if (obj->known) {
 			new_obj = obj->known;
 		} else {
@@ -878,6 +878,11 @@ void object_see(struct player *p, struct object *obj)
 			obj->known = new_obj;
 			object_set_base_known(obj);
 		}
+
+		/* If monster held, we're done */
+		if (obj->held_m_idx) return;
+
+		/* List the known object */
 		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;
 
