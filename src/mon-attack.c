@@ -164,6 +164,9 @@ static bool summon_possible(int y1, int x1)
 {
 	int y, x;
 
+	/* No summons in arenas */
+	if (player->upkeep->arena_level) return false;
+
 	/* Start at the location, and check 2 grids in each dir */
 	for (y = y1 - 2; y <= y1 + 2; y++) {
 		for (x = x1 - 2; x <= x1 + 2; x++) {
