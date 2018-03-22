@@ -1199,7 +1199,9 @@ void steal_monster_item(struct monster *mon, int midx)
 
 	if (midx < 0) {
 		/* Base monster protection and player stealing skill */
-		int guard = mon->race->level * 2 + mon->mspeed - player->state.speed;
+		bool unique = rf_has(mon->race->flags, RF_UNIQUE);
+		int guard = (mon->race->level * (unique ? 4 : 3)) / 2 +
+			mon->mspeed - player->state.speed;
 		int steal_skill = player->state.skills[SKILL_STEALTH] +
 			adj_dex_th[player->state.stat_ind[STAT_DEX]];
 		int monster_reaction;
@@ -1221,11 +1223,6 @@ void steal_monster_item(struct monster *mon, int midx)
 		}
 		if (mon->m_timed[MON_TMD_SLEEP]) {
 			guard /= 2;
-		}
-
-		/* Uniques are harder to steal from */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) {
-			guard += mon->race->level;
 		}
 
 		/* Try and steal */
@@ -1258,7 +1255,8 @@ void steal_monster_item(struct monster *mon, int midx)
 			if (tval_is_money(obj)) {
 				(void)strnfmt(o_name, sizeof(o_name), "treasure");
 			} else {
-				object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+				object_desc(o_name, sizeof(o_name), obj,
+							ODESC_PREFIX | ODESC_FULL);
 			}
 			msg("You fail to steal %s from %s.", o_name, m_name);
 			/* Monster wakes */
