@@ -1542,3 +1542,99 @@ dice:5+1d3
 desc:Cures all cuts, poison and stunning and heals 30 hit points on each of
 desc: the next 5+1d3 turns.
 
+
+############### BLACKGUARD ###############
+name:Blackguard
+stats:2:0:-3:0:2
+skill-disarm-phys:20:15
+skill-disarm-magic:20:10
+skill-device:24:10
+skill-save:25:11
+skill-stealth:0:0
+skill-search:10:12
+skill-melee:68:40
+skill-shoot:50:30
+skill-throw:50:30
+skill-dig:0:0
+info:6:0
+attack:5:30:5
+equip:food:Ration of Food:1:3
+equip:light:Wooden Torch:1:3
+equip:sword:Dagger:1:1
+equip:scroll:Word of Recall:1:1
+flags:CHOOSE_SPELLS | SHIELD_BASH
+title:Rat
+title:Bully
+title:Thug
+title:Ruffian
+title:Brigand
+title:Raider
+title:Tormentor
+title:Marauder
+title:Destroyer
+title:Tyrant
+
+magic:8:400:2
+
+book:shadow book:town:[Dirty Fighting]:4:shadow
+book-graphics:?:P
+book-properties:25:40:1 to 100
+equip:shadow book:[Dirty Fighting]:1:1
+
+spell:Dark Focus:8:5:20:20
+effect:TIMED_INC:BLESSED
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 5 + 10
+expr:S:PLAYER_LEVEL:/ 5 + 10
+desc:Gives you a bonus of +5 to AC and +10 to-hit, for a
+desc: level-dependent number of turns.
+
+spell:Berserk Rage:14:20:60:40
+effect:CURE:AFRAID
+effect:TIMED_INC:SHERO
+dice:25+d25
+desc:Removes fear, and grants you berserk strength (resistance to fear,
+desc: a bonus of +24 to-hit, and a penalty of -10 to AC) for 25+1d25 turns.
+
+spell:Cry of the Damned:17:5:40:60
+effect:PROJECT_LOS:TURN_LIVING
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to scare every living monster in line of sight for a
+desc: level-dependent duration.  Uniques and monsters that resist fear are not
+desc: affected.
+
+spell:Poison Brand:25:30:70:90
+effect:TIMED_INC:ATT_POIS:0:5
+dice:20+d20
+desc:Temporarily makes your melee attacks branded with poison.
+
+book:shadow book:dungeon:[Bloodwrath]:4:shadow
+book-graphics:?:p
+book-properties:30000:15:40 to 100
+
+spell:Throw Monster:27:12:90:140
+effect:SHORT_BEAM:FORCE:1
+dice:200
+desc:Hits an adjacent monster with force, throwing it back.
+
+spell:Thirst for Blood:32:30:40:170
+effect:TIMED_INC:BLOODLUST:0:-1
+dice:10
+effect:DAMAGE
+dice:50
+effect-msg:blood sacrifice
+desc:Gives you a powerful desire to kill, increased every time you satsfy it.
+desc: Gives you extra damage and, at higher levels, extra blows, but comes
+desc: with dangerous side-effects.
+
+spell:Piercing Shot:35:20:40:210
+effect:TIMED_INC:POWERSHOT
+dice:3
+desc:Makes your next shot powerful enough to pierce several enemies.
+
+spell:Forceful Blow:38:20:40:250
+effect:TIMED_INC:POWERBLOW
+dice:10
+desc:Makes your next blow strong enough to hurl your enemy back, maybe even
+desc: through walls.
