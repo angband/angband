@@ -1682,11 +1682,18 @@ void write_lore_entries(ang_file *fff)
 			char name[120] = "";
 
 			while (drop) {
-				object_short_name(name, sizeof name, kind->name);
-				file_putf(fff, "drop:%s:%s:%d:%d:%d\n",
-						  tval_find_name(kind->tval), name,
-						  drop->percent_chance, drop->min, drop->max);
-				drop = drop->next;
+				if (kind) {
+					object_short_name(name, sizeof name, kind->name);
+					file_putf(fff, "drop:%s:%s:%d:%d:%d\n",
+							  tval_find_name(kind->tval), name,
+							  drop->percent_chance, drop->min, drop->max);
+					drop = drop->next;
+				} else {
+					file_putf(fff, "drop-base:%s:%d:%d:%d\n",
+							  tval_find_name(drop->tval), drop->percent_chance,
+							  drop->min, drop->max);
+					drop = drop->next;
+				}
 			}
 		}
 
