@@ -2156,6 +2156,29 @@ static enum parser_error parse_lore_drop(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_lore_drop_base(struct parser *p) {
+	struct monster_lore *l = parser_priv(p);
+	struct monster_drop *d;
+	int tval;
+
+	if (!l)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	if (parser_getuint(p, "min") > 99 || parser_getuint(p, "max") > 99)
+		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+
+	d = mem_zalloc(sizeof *d);
+	d->tval = tval;
+	d->percent_chance = parser_getuint(p, "chance");
+	d->min = parser_getuint(p, "min");
+	d->max = parser_getuint(p, "max");
+	d->next = l->drops;
+	l->drops = d;
+	return PARSE_ERROR_NONE;
+}
 static enum parser_error parse_lore_friends(struct parser *p) {
 	struct monster_lore *l = parser_priv(p);
 	struct monster_friends *f;
@@ -2248,6 +2271,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "spell-power uint power", ignored);
 	parser_reg(p, "spells str spells", parse_lore_spells);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_lore_drop);
+	parser_reg(p, "drop-base sym tval uint chance uint min uint max", parse_lore_drop_base);
 	parser_reg(p, "drop-artifact str name", ignored);
 	parser_reg(p, "friends uint chance rand number str name", parse_lore_friends);
 	parser_reg(p, "friends-base uint chance rand number str name", parse_lore_friends_base);
