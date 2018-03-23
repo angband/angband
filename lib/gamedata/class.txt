@@ -1390,7 +1390,7 @@ desc:Detects all objects in the immediate area.
 
 spell:Detect Stairs:12:3:50:20
 effect:DETECT_STAIRS
-dice:44d60
+effect-yx:44:60
 desc:Detects all stairs in a wide area.
 
 spell:Recharging:20:10:50:30
