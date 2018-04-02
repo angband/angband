@@ -1605,6 +1605,20 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			(1000 - failure_chance) / 10, (1000 - failure_chance) % 10);
 	}
 
+	if (tval_can_have_charges(obj)) {
+		int scroll_chance = 1000 - 1000 / recharge_failure_chance(obj, 11);
+
+		textblock_append(tb, "Your chance of recharging it with the scroll is %d.%d%%\n",
+			scroll_chance / 10, scroll_chance % 10);
+
+		if (player->class->magic.total_spells &&
+				player->class->magic.books[0].realm == lookup_realm("arcane")) {
+			int spell_chance = 1000 - 1000 / recharge_failure_chance(obj, player->lev);
+			textblock_append(tb, "Your chance of recharging it with the spell is %d.%d%%\n",
+				spell_chance / 10, spell_chance % 10);
+		}
+	}
+
 	return true;
 }
 
