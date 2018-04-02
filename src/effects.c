@@ -2289,7 +2289,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 		return (used);
 
 	/* Ease of recharge ranges from 9 down to 4 (wands) or 3 (staffs) */
-	ease_of_recharge = 100 - obj->kind->level / 10;
+	ease_of_recharge = (100 - obj->kind->level) / 10;
 
 	/* Chance of failure = 1 time in
 	 * [Spell_strength + ease_of_use - 2 * charge_per_item] */
