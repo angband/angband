@@ -1160,6 +1160,25 @@ static enum parser_error parse_curse_conflict(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_curse_conflict_flags(struct parser *p) {
+	struct curse *curse = parser_priv(p);
+	char *s = string_make(parser_getstr(p, "flags"));
+	char *t;
+	assert(curse);
+
+	t = strtok(s, " |");
+	while (t) {
+		bool found = false;
+		if (!grab_flag(curse->conflict_flags, OF_SIZE, obj_flags, t))
+			found = true;
+		if (!found)
+			break;
+		t = strtok(NULL, " |");
+	}
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_curse(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -1176,6 +1195,7 @@ struct parser *init_parse_curse(void) {
 	parser_reg(p, "values str values", parse_curse_values);
 	parser_reg(p, "desc str desc", parse_curse_desc);
 	parser_reg(p, "conflict str conf", parse_curse_conflict);
+	parser_reg(p, "conflict-flags str flags", parse_curse_conflict_flags);
 	return p;
 }
 

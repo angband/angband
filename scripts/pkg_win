@@ -65,6 +65,7 @@ cp_unix2dos ../copying.txt ./Copying.txt
 cp_unix2dos ../faq.txt ./FAQ.txt
 cp ../doc/manual.pdf ./Manual.pdf
 cp ../doc/manual.html ./Manual.html
+cp ../doc/mr-att.png ./mr-att.png
 
 cp ../lib/readme.txt lib/
 

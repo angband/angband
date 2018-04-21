@@ -578,11 +578,10 @@ static void get_known_elements(const struct object *obj,
 static int obj_known_blows(const struct object *obj, int max_num,
 						   struct blow_info possible_blows[])
 {
-	int str_plus, dex_plus, old_blows = 0, new_blows, extra_blows;
+	int str_plus, dex_plus, old_blows = 0;
 	int str_faster = -1, str_done = -1;
 	int dex_plus_bound;
 	int str_plus_bound;
-	int i;
 
 	struct player_state state;
 
@@ -597,10 +596,8 @@ static int obj_known_blows(const struct object *obj, int max_num,
 	player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
+	memcpy(&state, &player->state, sizeof(state));
 	calc_bonuses(player, &state, true, false);
-
-	/* Stop pretending */
-	player->body.slots[weapon_slot].obj = current_weapon;
 
 	/* First entry is always the current num of blows. */
 	possible_blows[num].str_plus = 0;
@@ -610,34 +607,24 @@ static int obj_known_blows(const struct object *obj, int max_num,
 
 	/* Check to see if extra STR or DEX would yield extra blows */
 	old_blows = state.num_blows;
-	extra_blows = 0;
-
-	/* Start with blows from the weapon being examined */
-	extra_blows += obj->known->modifiers[OBJ_MOD_BLOWS];
-
-	/* Then we need to look for extra blows on other items, as
-	 * state does not track these */
-	for (i = 0; i < player->body.count; i++) {
-		struct object *helper = slot_object(player, i);
-
-		if ((i == slot_by_name(player, "weapon")) || !helper)
-			continue;
-
-		extra_blows += helper->known->modifiers[OBJ_MOD_BLOWS];
-	}
-
 	dex_plus_bound = STAT_RANGE - state.stat_ind[STAT_DEX];
 	str_plus_bound = STAT_RANGE - state.stat_ind[STAT_STR];
 
-	/* Then we check for extra "real" blows */
+	/* Re-calculate with increased stats */
 	for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++) {
 		for (str_plus = 0; str_plus < str_plus_bound; str_plus++) {
-			if (num == max_num)
+			int new_blows = 0;
+
+			/* Unlikely */
+			if (num == max_num) {
+				player->body.slots[weapon_slot].obj = current_weapon;
 				return num;
+			}
 
 			state.stat_ind[STAT_STR] += str_plus;
 			state.stat_ind[STAT_DEX] += dex_plus;
-			new_blows = calc_blows(player, obj, &state, extra_blows);
+			calc_bonuses(player, &state, true, false);
+			new_blows = state.num_blows;
 			state.stat_ind[STAT_STR] -= str_plus;
 			state.stat_ind[STAT_DEX] -= dex_plus;
 
@@ -670,6 +657,9 @@ static int obj_known_blows(const struct object *obj, int max_num,
 			}
 		}
 	}
+
+	/* Stop pretending */
+	player->body.slots[weapon_slot].obj = current_weapon;
 
 	return num;
 }
@@ -758,6 +748,7 @@ static bool obj_known_damage(const struct object *obj, int *normal_damage,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 	/* Calculate the player's hypothetical state */
+	memcpy(&state, &player->state, sizeof(state));
 	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
@@ -997,6 +988,7 @@ static void obj_known_misc_combat(const struct object *obj, bool *thrown_effect,
 		player->body.slots[weapon_slot].obj = (struct object *) obj;
 
 		/* Calculate the player's hypothetical state */
+		memcpy(&state, &player->state, sizeof(state));
 		calc_bonuses(player, &state, true, false);
 
 		/* Stop pretending */
@@ -1086,6 +1078,7 @@ static bool obj_known_digging(struct object *obj, int deciturns[])
 	player->body.slots[slot].obj = obj;
 
 	/* Calculate the player's hypothetical state */
+	memcpy(&state, &player->state, sizeof(state));
 	calc_bonuses(player, &state, true, false);
 
 	/* Stop pretending */
@@ -1227,9 +1220,8 @@ static bool describe_light(textblock *tb, const struct object *obj,
 			else
 				textblock_append(tb, "  Cannot be refueled.");
 		}
+		textblock_append(tb, "\n");
 	}
-
-	textblock_append(tb, "\n");
 
 	return true;
 }
@@ -1335,6 +1327,12 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 		textblock_append(tb, obj->activation->desc);
 	} else {
 		int random_choices = 0;
+		bool random_breath = (effect && (effect->index == EF_RANDOM) &&
+							  effect->next &&
+							  (effect->next->index == EF_BREATH));
+		char breaths[120];
+
+		my_strcpy(breaths, "", sizeof(breaths));
 
 		/* Get descriptions for all the effects */
 		effect = object_effect(obj);
@@ -1459,9 +1457,28 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 			/* Object generated breaths are elemental */
 			case EFINFO_BREATH: {
-				strnfmt(desc, sizeof(desc), effect_desc(effect),
-						projections[effect->params[0]].player_desc,
-						effect->params[1], dice_string);
+				/* Special treatment for several random breaths */
+				if (random_breath) {
+					my_strcat(breaths,
+							  projections[effect->params[0]].player_desc,
+							  sizeof(breaths));
+					if (random_choices > 3) {
+						my_strcat(breaths, ", ", sizeof(breaths));
+					} else if (random_choices == 3) {
+						my_strcat(breaths, " or ", sizeof(breaths));
+					}
+					random_choices--;
+
+					if ((!effect->next) || (effect->next->index != EF_BREATH)) {
+						random_breath = false;
+					}
+					strnfmt(desc, sizeof(desc), effect_desc(effect), breaths,
+							effect->params[1], dice_string);
+				} else {
+					strnfmt(desc, sizeof(desc), effect_desc(effect),
+							projections[effect->params[0]].player_desc,
+							effect->params[1], dice_string);
+				}
 				break;
 			}
 
@@ -1496,6 +1513,7 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			}
 
 			do {
+				if (random_breath && effect->index != EF_RANDOM) break;
 				if (isdigit((unsigned char) *next_char))
 					textblock_append_c(tb, COLOUR_L_GREEN, "%c", *next_char);
 				else
@@ -1505,7 +1523,10 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 			/* Random choices need special treatment - note that this code
 			 * assumes that RANDOM and the random choices will be the last
 			 * effect in the object/activation description */
-			if (random_choices >= 1) {
+			if (random_breath) {
+				/* Handled in effect description */
+				;
+			} else if (random_choices >= 1) {
 				if (effect->index == EF_RANDOM)
 					;
 				else if (random_choices > 2)

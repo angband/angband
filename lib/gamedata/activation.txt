@@ -1137,15 +1137,15 @@ power:12
 effect:RANDOM
 dice:5
 effect:BREATH:ACID:30
-dice:200
+dice:160
 effect:BREATH:ELEC:30
 dice:160
 effect:BREATH:FIRE:30
-dice:200
+dice:160
 effect:BREATH:COLD:30
 dice:160
 effect:BREATH:POIS:30
-dice:120
+dice:160
 desc:shoots a large cone of one of the base elements for 120-200 damage
 
 name:STAFF_MAGI

@@ -179,6 +179,14 @@ bool append_object_curse(struct object *obj, int pick, int power)
 		}
 	}
 
+	/* Reject curses which explicitly conflict with an object property */
+	for (i = of_next(c->conflict_flags, FLAG_START); i != FLAG_END;
+		 i = of_next(c->conflict_flags, i + 1)) {
+		if (of_has(obj->flags, i)) {
+			check_object_curses(obj);
+			return false;
+		}
+	}
 
 	/* Adjust power if our pick is a duplicate */
 	if (power > obj->curses[pick].power) {
@@ -192,16 +200,16 @@ bool append_object_curse(struct object *obj, int pick, int power)
 }
 
 /**
- * Check an artifact template for active curses, and remove the "curses" field
- * if none is found
+ * Check an artifact template for active curses, remove conflicting curses, and
+ * remove the "curses" field if no curses remain
  */
-static void check_artifact_curses(struct artifact *art)
+void check_artifact_curses(struct artifact *art)
 {
 	int i;
 
 	/* Look for a valid curse, return if one found */
 	for (i = 0; i < z_info->curse_max; i++) {
-		if (art->curses[i]) {
+		if (art->curses && art->curses[i]) {
 			return;
 		}
 	}
@@ -211,6 +219,49 @@ static void check_artifact_curses(struct artifact *art)
 	art->curses = NULL;
 }
 
+/**
+ *
+ */
+bool artifact_curse_conflicts(struct artifact *art, int pick)
+{
+	struct curse *c = &curses[pick];
+	int i;
+
+	/* Reject curses with effects foiled by an existing artifact property */
+	if (c->obj->effect && c->obj->effect->index == effect_lookup("TIMED_INC")) {
+		int idx = c->obj->effect->params[0];
+		struct timed_effect_data *status;
+		assert(idx < TMD_MAX);
+		status = &timed_effects[idx];
+		if (status->fail_code == TMD_FAIL_FLAG_OBJECT) {
+			if (of_has(art->flags, status->fail)) {
+				check_artifact_curses(art);
+				return true;
+			}
+		} else if (status->fail_code == TMD_FAIL_FLAG_RESIST) {
+			if (art->el_info[status->fail].res_level > 0) {
+				check_artifact_curses(art);
+				return true;
+			}
+		} else if (status->fail_code == TMD_FAIL_FLAG_VULN) {
+			if (art->el_info[status->fail].res_level < 0) {
+				check_artifact_curses(art);
+				return true;
+			}
+		}
+	}
+
+	/* Reject curses which explicitly conflict with an artifact property */
+	for (i = of_next(c->conflict_flags, FLAG_START); i != FLAG_END;
+		 i = of_next(c->conflict_flags, i + 1)) {
+		if (of_has(art->flags, i)) {
+			check_artifact_curses(art);
+			return true;
+		}
+	}
+
+	return false;
+}
 
 /**
  * Append a given curse with a given power to an artifact
@@ -234,14 +285,19 @@ bool append_artifact_curse(struct artifact *art, int pick, int power)
 		}
 	}
 
+	/* Reject curses with effects foiled by an existing artifact property */
+	if (artifact_curse_conflicts(art, pick)) {
+		check_artifact_curses(art);
+		return false;
+	}
+
 	/* Adjust power if our pick is a duplicate */
 	if (power > art->curses[pick]) {
 		art->curses[pick] = power;
-		return true;
 	}
 
 	check_artifact_curses(art);
-	return false;
+	return true;
 }
 
 /**

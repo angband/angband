@@ -823,6 +823,8 @@ static int apply_curse(struct object *obj, int lev)
 	int power = randint1(9) + 10 * m_bonus(9, lev);
 	int new_lev = lev;
 
+	if (of_has(obj->flags, OF_BLESSED)) return lev;
+
 	while (max_curses--) {
 		/* Try to curse it */
 		int tries = 3;
@@ -902,14 +904,14 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 			if (make_artifact(obj)) return 3;
 	}
 
+	/* Try to make an ego item */
+	if (power == 2)
+		make_ego_item(obj, lev);
+
 	/* Give it a chance to be cursed */
 	if (one_in_(20) && tval_is_wearable(obj)) {
 		lev = apply_curse(obj, lev);
 	}
-
-	/* Try to make an ego item */
-	if (power == 2)
-		make_ego_item(obj, lev);
 
 	/* Apply magic */
 	if (tval_is_weapon(obj)) {

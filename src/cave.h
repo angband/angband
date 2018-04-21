@@ -316,6 +316,7 @@ bool square_isno_map(struct chunk *c, int y, int x);
 bool square_isno_esp(struct chunk *c, int y, int x);
 bool square_isproject(struct chunk *c, int y, int x);
 bool square_isdtrap(struct chunk *c, int y, int x);
+bool square_isno_stairs(struct chunk *c, int y, int x);
 
 /* SQUARE BEHAVIOR PREDICATES */
 bool square_isopen(struct chunk *c, int y, int x);
@@ -347,6 +348,8 @@ bool square_changeable(struct chunk *c, int y, int x);
 bool square_in_bounds(struct chunk *c, int y, int x);
 bool square_in_bounds_fully(struct chunk *c, int y, int x);
 bool square_isbelievedwall(struct chunk *c, int y, int x);
+bool square_suits_stairs_well(struct chunk *c, int y, int x);
+bool square_suits_stairs_ok(struct chunk *c, int y, int x);
 
 
 struct feature *square_feat(struct chunk *c, int y, int x);
@@ -358,6 +361,8 @@ void square_excise_object(struct chunk *c, int y, int x, struct object *obj);
 void square_excise_pile(struct chunk *c, int y, int x);
 void square_sense_pile(struct chunk *c, int y, int x);
 void square_know_pile(struct chunk *c, int y, int x);
+int square_num_walls_adjacent(struct chunk *c, int y, int x);
+int square_num_walls_diagonal(struct chunk *c, int y, int x);
 
 void square_set_feat(struct chunk *c, int y, int x, int feat);
 

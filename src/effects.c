@@ -2830,6 +2830,13 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		x_start = mon->fx;
 	}
 
+	/* Randomise the distance a little */
+	if (one_in_(2)) {
+		dis -= randint0(dis / 4);
+	} else {
+		dis += randint0(dis / 4);
+	}
+
 	/* Make a list of the best grids, scoring by how good an approximation
 	 * the distance from the start is to the distance we want */
 	for (y = 1; y < cave->height - 1; y++) {
@@ -3259,7 +3266,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
 
 			/* Forget completely */
-			if (!square_isbright(cave, y, x)) {
+			if (!square_isbright(cave, yy, xx)) {
 				sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
 			}
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_SEEN);

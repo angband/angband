@@ -889,30 +889,62 @@ static void wiz_tweak_item(struct object *obj)
 	/* Hack -- leave artifacts alone */
 	if (obj->artifact) return;
 
-	p = "Enter new ego item index: ";
+	/* Get ego name */
+	p = "Enter new ego item: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
-	if (obj->ego)
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", obj->ego->eidx);
-	if (!get_string(p, tmp_val, 6)) return;
-	val = atoi(tmp_val);
+	if (obj->ego) {
+		strnfmt(tmp_val, sizeof(tmp_val), "%s", obj->ego->name);
+	}
+	if (!get_string(p, tmp_val, 30)) return;
+
+	/* Accept index or name */
+	val = get_idx_from_name(tmp_val);
 	if (val) {
 		obj->ego = &e_info[val];
+	} else {
+		obj->ego = lookup_ego_item(tmp_val, obj->tval, obj->sval);
+	}
+	if (obj->ego) {
+		struct ego_item *e = obj->ego;
+		struct object *prev = obj->prev;
+		struct object *next = obj->next;
+		struct object *known = obj->known;
+		object_prep(obj, obj->kind, player->depth, RANDOMISE);
+		obj->ego = e;
+		obj->prev = prev;
+		obj->next = next;
+		obj->known = known;
 		ego_apply_magic(obj, player->depth);
-	} else
-		obj->ego = 0;
+	}
 	wiz_display_item(obj, true);
 
-	p = "Enter new artifact index: ";
+	/* Get artifact name */
+	p = "Enter new artifact: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
 	if (obj->artifact)
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", obj->artifact->aidx);
-	if (!get_string(p, tmp_val, 6)) return;
-	val = atoi(tmp_val);
+		strnfmt(tmp_val, sizeof(tmp_val), "%s", obj->artifact->name);
+	if (!get_string(p, tmp_val, 30)) return;
+
+	/* Accept index or name */
+	val = get_idx_from_name(tmp_val);
 	if (val) {
 		obj->artifact = &a_info[val];
+	} else {
+		obj->artifact = lookup_artifact_name(tmp_val);
+	}
+	if (obj->artifact) {
+		struct artifact *a = obj->artifact;
+		struct object *prev = obj->prev;
+		struct object *next = obj->next;
+		struct object *known = obj->known;
+		obj->ego = NULL;
+		object_prep(obj, obj->kind, obj->artifact->alloc_min, RANDOMISE);
+		obj->artifact = a;
+		obj->prev = prev;
+		obj->next = next;
+		obj->known = known;
 		copy_artifact_data(obj, obj->artifact);
-	} else
-		obj->artifact = 0;
+	}
 	wiz_display_item(obj, true);
 
 #define WIZ_TWEAK(attribute) do {\

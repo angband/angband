@@ -189,10 +189,12 @@ static void activation_message(struct object *obj)
 				end += strlen(&buf[end]);
 				break;
 			case ART_TAG_VERB:
-				strnfcat(buf, 1024, &end, "s");
+				if (obj->number == 1) {
+					strnfcat(buf, 1024, &end, "s");
+				}
 				break;
 			case ART_TAG_VERB_IS:
-				if((end > 2) && (buf[end-2] == 's'))
+				if (obj->number > 1)
 					strnfcat(buf, 1024, &end, "are");
 				else
 					strnfcat(buf, 1024, &end, "is");
@@ -453,6 +455,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	struct effect *effect = object_effect(obj);
 	bool ident = false, used = false, can_use = true;
 	bool was_aware;
+	bool known_aim = false;
 	bool none_left = false;
 	int dir = 5;
 	int px = player->px, py = player->py;
@@ -461,14 +464,26 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Get arguments */
 	assert(cmd_get_arg_item(cmd, "item", &obj) == CMD_OK);
 
-	if (obj_needs_aim(obj)) {
-		if (cmd_get_target(cmd, "target", &dir) != CMD_OK)
-			return;
+	was_aware = object_flavor_is_aware(obj);
 
-		player_confuse_dir(player, &dir, false);
+	/* Determine whether we know an item needs to be be aimed */
+	if (tval_is_wand(obj) || tval_is_rod(obj) || was_aware ||
+		(obj->effect && (obj->known->effect == obj->effect)) ||
+		(obj->activation && (obj->known->activation == obj->activation))) {
+		known_aim = true;
 	}
 
-	was_aware = object_flavor_is_aware(obj);
+	if (obj_needs_aim(obj)) {
+		/* Unknown things with no obvious aim get a random direction */
+		if (!known_aim) {
+			dir = ddd[randint0(8)];
+		} else if (cmd_get_target(cmd, "target", &dir) != CMD_OK) {
+			return;
+		}
+
+		/* Confusion wrecks aim */
+		player_confuse_dir(player, &dir, false);
+	}
 
 	/* track the object used */
 	track_object(player->upkeep, obj);

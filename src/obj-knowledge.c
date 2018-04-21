@@ -639,11 +639,11 @@ bool object_has_rune(const struct object *obj, int rune_no)
 }
 
 /**
- * Check if all the runes on an object are known to the player
+ * Check if all non-curse runes on an object are known to the player
  *
  * \param obj is the object
  */
-bool object_runes_known(const struct object *obj)
+static bool object_non_curse_runes_known(const struct object *obj)
 {
 	int i;
 
@@ -688,16 +688,31 @@ bool object_runes_known(const struct object *obj)
 		}
 	}
 
-	/* Not all curses known */
-	if (!curses_are_equal(obj, obj->known)) {
-		return false;
-	}
-
 	/* Not all flags known */
 	if (!of_is_subset(obj->known->flags, obj->flags)) return false;
 
 	return true;
 }
+
+/**
+ * Check if all the runes on an object are known to the player
+ *
+ * \param obj is the object
+ */
+bool object_runes_known(const struct object *obj)
+{
+	/* No known object */
+	if (!obj->known) return false;
+
+	/* Not all curses known */
+	if (!curses_are_equal(obj, obj->known)) {
+		return false;
+	}
+
+	/* Answer is now the same as for non-curse runes */
+	return object_non_curse_runes_known(obj);
+}
+
 
 /**
  * Check if an object is fully known to the player
@@ -1032,7 +1047,7 @@ void player_know_object(struct player *p, struct object *obj)
 		obj->known->ego = obj->ego;
 	}
 
-	if (object_fully_known(obj) && tval_is_jewelry(obj)) {
+	if (object_non_curse_runes_known(obj) && tval_is_jewelry(obj)) {
 		seen = obj->kind->everseen;
 		object_flavor_aware(obj);
 	}
@@ -1471,12 +1486,12 @@ bool object_curses_find_flags(struct player *p, struct object *obj,
 					if (p->upkeep->playing) {
 						flag_message(flag, o_name);
 					}
+				}
 
-					/* Learn the curse */
-					index = rune_index(RUNE_VAR_CURSE, i);
-					if (index >= 0) {
-						player_learn_rune(p, index, true);
-					}
+				/* Learn the curse */
+				index = rune_index(RUNE_VAR_CURSE, i);
+				if (index >= 0) {
+					player_learn_rune(p, index, true);
 				}
 			}
 		}
@@ -1900,9 +1915,8 @@ void equip_learn_flag(struct player *p, int flag)
 	of_wipe(f);
 	of_on(f, flag);
 
-	/* No flag or already known */
+	/* No flag */
 	if (!flag) return;
-	if (of_has(p->obj_k->flags, flag)) return;
 
 	/* All wielded items eligible */
 	for (i = 0; i < p->body.count; i++) {
@@ -1912,18 +1926,20 @@ void equip_learn_flag(struct player *p, int flag)
 
 		/* Does the object have the flag? */
 		if (of_has(obj->flags, flag)) {
-			char o_name[80];
-			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-			flag_message(flag, o_name);
-			player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
-			return;
-		} else if (object_curses_find_flags(p, obj, f)) {
-			return;
+			if (!of_has(p->obj_k->flags, flag)) {
+				char o_name[80];
+				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+				flag_message(flag, o_name);
+				player_learn_rune(p, rune_index(RUNE_VAR_FLAG, flag), true);
+			}
 		} else if (!object_fully_known(obj)) {
 			/* Objects not fully known yet get marked as having had a chance
 			 * to display the flag */
 			of_on(obj->known->flags, flag);
 		}
+
+		/* Flag may be on a curse */
+		object_curses_find_flags(p, obj, f);
 	}
 }
 
@@ -1957,15 +1973,15 @@ void equip_learn_element(struct player *p, int element)
 
 			/* Learn the element properties */
 			player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), true);
-			return;
-		} else if (object_curses_find_element(p, obj, element)) {
-			return;
 		} else if (!object_fully_known(obj)) {
 			/* Objects not fully known yet get marked as having had a chance
 			 * to display the element */
 			obj->known->el_info[element].res_level = 1;
 			obj->known->el_info[element].flags = obj->el_info[element].flags;
 		}
+
+		/* Element may be on a curse */
+		object_curses_find_element(p, obj, element);
 	}
 }
 

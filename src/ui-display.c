@@ -459,11 +459,18 @@ static void prt_speed(int row, int col)
 		type = "Slow";
 	}
 
-	if (type)
+	if (type && !OPT(player, effective_speed))
 		strnfmt(buf, sizeof(buf), "%s (%+d)", type, (i - 110));
+	else if (type && OPT(player, effective_speed))
+	{
+		int multiplier = 10 * extract_energy[i] / extract_energy[110];
+		int int_mul = multiplier / 10;
+		int dec_mul = multiplier % 10;
+		strnfmt(buf, sizeof(buf), "%s (x%d.%d)", type, int_mul, dec_mul);
+	}
 
 	/* Display the speed */
-	c_put_str(attr, format("%-10s", buf), row, col);
+	c_put_str(attr, format("%-11s", buf), row, col);
 }
 
 
@@ -1950,13 +1957,18 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_MAP:
 		{
+			minimap_data[win_idx].win_idx = win_idx;
+
 			register_or_deregister(EVENT_MAP,
-					       update_maps,
-					       angband_term[win_idx]);
+					       update_minimap_subwindow,
+					       &minimap_data[win_idx]);
+
+			register_or_deregister(EVENT_DUNGEONLEVEL, update_minimap_subwindow,
+								   &minimap_data[win_idx]);
 
 			register_or_deregister(EVENT_END,
-					       flush_subwindow,
-					       angband_term[win_idx]);
+					       update_minimap_subwindow,
+					       &minimap_data[win_idx]);
 			break;
 		}
 
@@ -1970,18 +1982,13 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_OVERHEAD:
 		{
-			minimap_data[win_idx].win_idx = win_idx;
-
 			register_or_deregister(EVENT_MAP,
-					       update_minimap_subwindow,
-					       &minimap_data[win_idx]);
-
-			register_or_deregister(EVENT_DUNGEONLEVEL, update_minimap_subwindow,
-								   &minimap_data[win_idx]);
+					       update_maps,
+					       angband_term[win_idx]);
 
 			register_or_deregister(EVENT_END,
-					       update_minimap_subwindow,
-					       &minimap_data[win_idx]);
+					       flush_subwindow,
+					       angband_term[win_idx]);
 			break;
 		}
 

@@ -116,10 +116,11 @@ static int melee_damage(struct object *obj, int b, int s)
 {
 	int dmg = damroll(obj->dd, obj->ds);
 
-	if (s)
+	if (s) {
 		dmg *= slays[s].multiplier;
-	else if (b)
-		dmg *= slays[b].multiplier;
+	} else if (b) {
+		dmg *= brands[b].multiplier;
+	}
 
 	dmg += obj->to_d;
 
@@ -136,17 +137,19 @@ static int ranged_damage(struct object *missile, struct object *launcher,
 {
 	int dam;
 
-	/* If we have a slay, modify the multiplier appropriately */
-	if (b)
+	/* If we have a slay or brand , modify the multiplier appropriately */
+	if (b) {
 		mult += brands[b].multiplier;
-	else if (s)
+	} else if (s) {
 		mult += slays[s].multiplier;
+	}
 
 	/* Apply damage: multiplier, slays, bonuses */
 	dam = damroll(missile->dd, missile->ds);
 	dam += missile->to_d;
-	if (launcher)
+	if (launcher) {
 		dam += launcher->to_d;
+	}
 	dam *= mult;
 
 	return dam;
@@ -369,10 +372,10 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 		for (j = 2; j < p->body.count; j++) {
 			struct object *obj_local = slot_object(p, j);
 			if (obj_local)
-				improve_attack_modifier(obj_local, mon, &b, &s, verb, false, true);
+				improve_attack_modifier(obj_local, mon, &b, &s, verb, false);
 		}
 
-		improve_attack_modifier(obj, mon, &b, &s, verb, false, true);
+		improve_attack_modifier(obj, mon, &b, &s, verb, false);
 
 		dmg = melee_damage(obj, b, s);
 		dmg = critical_norm(p, mon, obj->weight, obj->to_h, dmg, &msg_type);
@@ -673,8 +676,8 @@ static struct attack_result make_ranged_shot(struct player *p,
 
 	result.success = true;
 
-	improve_attack_modifier(ammo, mon, &b, &s, result.hit_verb, true, true);
-	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, true, true);
+	improve_attack_modifier(ammo, mon, &b, &s, result.hit_verb, true);
+	improve_attack_modifier(bow, mon, &b, &s, result.hit_verb, true);
 
 	result.dmg = ranged_damage(ammo, bow, b, s, multiplier);
 	result.dmg = critical_shot(player, mon, ammo->weight, ammo->to_h, result.dmg,
@@ -707,7 +710,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 
 	result.success = true;
 
-	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, true, true);
+	improve_attack_modifier(obj, mon, &b, &s, result.hit_verb, true);
 
 	result.dmg = ranged_damage(obj, NULL, b, s, multiplier);
 	result.dmg = critical_norm(player, mon, obj->weight, obj->to_h, result.dmg,

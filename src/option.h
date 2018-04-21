@@ -53,7 +53,7 @@ enum
  * Information for "do_cmd_options()".
  */
 #define OPT_PAGE_MAX				OP_SCORE
-#define OPT_PAGE_PER				20
+#define OPT_PAGE_PER				21
 #define OPT_PAGE_BIRTH				1
 
 /**

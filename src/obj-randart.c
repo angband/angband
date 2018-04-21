@@ -544,8 +544,8 @@ void count_nonweapon_abilities(const struct artifact *art,
 	}
 
 	/* To hit and dam to bonuses */
-	if (to_hit && (to_hit == to_dam)) {
-		bonus = to_dam / data->dam_increment;
+	if ((to_hit > 0) && (to_dam > 0)) {
+		bonus = (to_hit + to_dam) / (data->hit_increment + data->dam_increment);
 		if (bonus > 0) {
 			if (art->tval == TV_GLOVES) {
 				file_putf(log_file, "Adding %d instances of extra to-hit and to-dam bonus for gloves\n", bonus);
@@ -1322,7 +1322,7 @@ static struct object_kind *get_base_item(struct artifact_set_data *data,
 
 	/* Pick an sval for that tval at random */
 	while (!kind) {
-		int r = start + randint1(kb_info[tval].num_svals - start);
+		int r = start + randint0(kb_info[tval].num_svals - start + 1);
 		kind = lookup_kind(tval, r);
 
 		/* No items based on quest artifacts or elven rings */
@@ -1611,7 +1611,9 @@ static void try_supercharge(struct artifact *art, s32b target_power,
 			file_putf(log_file, "Supercharging AC! New AC bonus is %d\n",
 					  art->to_a);
 		}
-	} else if (randint0(z_info->a_max) < data->art_probs[ART_IDX_GEN_AC_SUPER]){
+	} else if ((art->tval != TV_BOW) &&
+			   (randint0(z_info->a_max) <
+				data->art_probs[ART_IDX_GEN_AC_SUPER])) {
 		art->to_a += 19 + randint1(11);
 		if (INHIBIT_WEAK)
 			art->to_a += randint1(10);
@@ -2337,6 +2339,18 @@ static void remove_contradictory(struct artifact *art)
 
 	if (of_has(art->flags, OF_DRAIN_EXP))
 		of_off(art->flags, OF_HOLD_LIFE);
+
+	/* Remove any conflicting curses */
+	if (art->curses) {
+		int i;
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (artifact_curse_conflicts(art, i)) {
+				art->curses[i] = 0;
+				check_artifact_curses(art);
+			}
+			if (!art->curses) break;
+		}
+	}
 }
 
 /**
@@ -2369,6 +2383,8 @@ static void add_ability(struct artifact *art, s32b target_power, int *freq,
 static void add_curse(struct artifact *art, int level)
 {
 	int max_tries = 5;
+
+	if (of_has(art->flags, OF_BLESSED)) return;
 
 	while (max_tries) {
 		int pick = randint1(z_info->curse_max - 1);
@@ -2601,11 +2617,6 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		/* Copy artifact info temporarily. */
 		copy_artifact(art, a_old);
 
-		/* Curse the designated artifacts */
-		if (hurt_me) {
-			make_bad(art, art_level);
-		}
-
 		/* Add an ability */
 		add_ability(art, power, art_freq, data);
 		remove_contradictory(art);
@@ -2615,6 +2626,14 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		if (ap < 0) {
 			ap = -ap;
 			break;
+		}
+
+		/* Curse the designated artifacts */
+		if (hurt_me) {
+			make_bad(art, art_level);
+			if (one_in_(3)) {
+				hurt_me = false;
+			}
 		}
 
 		/* Check power */

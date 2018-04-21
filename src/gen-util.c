@@ -323,11 +323,43 @@ void rand_dir(int *rdir, int *cdir)
  * \param x co-ordinates
  * \return success
  */
-static bool square_isstart(struct chunk *c, int y, int x)
+static bool find_start(struct chunk *c, int *y, int *x)
 {
-    if (!square_isempty(c, y, x)) return false;
-    if (square_isvault(c, y, x)) return false;
-    return true;
+	/* Find the best possible place */
+	if (cave_find_in_range(c, y, 1, c->height - 2, x, 1, c->width - 2,
+						   square_suits_stairs_well)) {
+			return true;
+	} else if (cave_find_in_range(c, y, 1, c->height - 2, x, 1,
+								  c->width - 2, square_suits_stairs_ok)) {
+		return true;
+	} else {
+		int walls = 6;
+
+		/* Gradually reduce number of walls if having trouble */
+		while (walls >= 0) {
+			int j;
+
+			/* Try hard to find a square with the given number of walls */
+			for (j = 0; j < 10000; j++) {
+				int total_walls = 0;
+
+				cave_find_in_range(c, y, 1, c->height - 2, x, 1,
+								   c->width - 2, square_isempty);
+				if (square_isvault(c, *y, *x)|| square_isno_stairs(c, *y, *x)) {
+					continue;
+				}
+				total_walls = square_num_walls_adjacent(c, *y, *x) +
+						square_num_walls_diagonal(c, *y, *x);
+
+				if (total_walls == walls) {
+					return true;
+				}
+			}
+
+			walls--;
+		}
+	}
+    return false;
 }
 
 
@@ -346,8 +378,8 @@ void new_player_spot(struct chunk *c, struct player *p)
 		square_isstairs(c, p->py, p->px)) {
 		y = p->py;
 		x = p->px;
-	} else {
-		cave_find(c, &y, &x, square_isstart);
+	} else if (!find_start(c, &y, &x)) {
+		quit("Failed to place player!");
 	}
 
     /* Create stairs the player came down if allowed and necessary */
@@ -359,27 +391,6 @@ void new_player_spot(struct chunk *c, struct player *p)
 		square_set_feat(c, y, x, FEAT_LESS);
 
     player_place(c, p, y, x);
-}
-
-
-/**
- * Return how many cardinal directions around (x, y) contain walls.
- * \param c current chunk
- * \param y co-ordinates
- * \param x co-ordinates
- * \return the number of walls 
- */
-static int next_to_walls(struct chunk *c, int y, int x)
-{
-    int k = 0;
-    assert(square_in_bounds(c, y, x));
-
-    if (square_iswall(c, y + 1, x)) k++;
-    if (square_iswall(c, y - 1, x)) k++;
-    if (square_iswall(c, y, x + 1)) k++;
-    if (square_iswall(c, y, x - 1)) k++;
-
-    return k;
 }
 
 
@@ -558,26 +569,51 @@ void place_random_door(struct chunk *c, int y, int x)
  * \param num number of staircases to place
  * \param walls number of walls to surround the stairs (negotiable)
  */
-void alloc_stairs(struct chunk *c, int feat, int num, int walls)
+void alloc_stairs(struct chunk *c, int feat, int num)
 {
-    int y, x, i, j, done;
+    int i;
 
     /* Place "num" stairs */
     for (i = 0; i < num; i++) {
-		/* Place some stairs */
-		for (done = false; !done; ) {
-			/* Try several times, then decrease "walls" */
-			for (j = 0; !done && j <= 1000; j++) {
-				find_empty(c, &y, &x);
+		int y, x;
+		bool done = false;
 
-				if (next_to_walls(c, y, x) < walls) continue;
+		/* Find the best possible place for the stairs */
+		if (cave_find_in_range(c, &y, 1, c->height - 2, &x, 1, c->width - 2,
+							   square_suits_stairs_well)) {
+			place_stairs(c, y, x, feat);
+		} else if (cave_find_in_range(c, &y, 1, c->height - 2, &x, 1,
+									  c->width - 2, square_suits_stairs_ok)) {
+			place_stairs(c, y, x, feat);
+		} else {
+			int walls = 6;
 
-				place_stairs(c, y, x, feat);
-				done = true;
+			/* Gradually reduce number of walls if having trouble */
+			while (!done) {
+				int j;
+
+				/* Try hard to find a square with the given number of walls */
+				for (j = 0; j < 1000; j++) {
+					int total_walls = 0;
+
+					cave_find_in_range(c, &y, 1, c->height - 2, &x, 1,
+									   c->width - 2, square_isempty);
+					if (square_isvault(c, y, x)|| square_isno_stairs(c, y, x)) {
+						continue;
+					}
+					total_walls = square_num_walls_adjacent(c, y, x) +
+						square_num_walls_diagonal(c, y, x);
+
+					if (total_walls == walls) {
+						place_stairs(c, y, x, feat);
+						done = true;
+						break;
+					}
+				}
+
+				/* Require fewer walls */
+				if (walls) walls--;
 			}
-
-			/* Require fewer walls */
-			if (walls) walls--;
 		}
     }
 }

@@ -93,6 +93,7 @@ struct curse {
 	bool *poss;
 	struct object *obj;
 	char *conflict;
+	bitflag conflict_flags[OF_SIZE];
 	char *desc;
 };
 
