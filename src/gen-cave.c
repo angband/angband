@@ -432,7 +432,7 @@ static void try_door(struct chunk *c, int y, int x)
  * \param p is the player 
  * \return a pointer to the generated chunk
  */
-struct chunk *classic_gen(struct player *p) {
+struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
     int i, j, k, y, x, y1, x1;
     int by, bx = 0, tby, tbx, key, rarity, built;
     int num_rooms, size_percent;
@@ -440,6 +440,9 @@ struct chunk *classic_gen(struct player *p) {
 
     bool **blocks_tried;
 	struct chunk *c;
+
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
 
     /* This code currently does nothing - see comments below */
     i = randint1(10) + p->depth / 24;
@@ -823,7 +826,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
  * themselves (which means certain level numbers are more likely to generate
  * labyrinths than others).
  */
-struct chunk *labyrinth_gen(struct player *p) {
+struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
     int i, k, y, x;
 	struct chunk *c;
 
@@ -842,6 +845,13 @@ struct chunk *labyrinth_gen(struct player *p) {
 
     /* Most labyrinths have soft (diggable) walls */
     bool soft = randint0(p->depth) < 35 || randint0(3) < 2;
+
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
+
+	/* Enforce minimum dimensions */
+	h = MAX(h, min_height);
+	w = MAX(w, min_width);
 
 	/* Generate the actual labyrinth */
 	c = labyrinth_chunk(p->depth, h, w, lit, soft);
@@ -1366,7 +1376,7 @@ struct chunk *cavern_chunk(int depth, int h, int w)
  * Make a cavern level.
  * \param p is the player
  */
-struct chunk *cavern_gen(struct player *p) {
+struct chunk *cavern_gen(struct player *p, int min_height, int min_width) {
     int i, k;
 
     int h = rand_range(z_info->dungeon_hgt / 2, (z_info->dungeon_hgt * 3) / 4);
@@ -1374,11 +1384,18 @@ struct chunk *cavern_gen(struct player *p) {
 
 	struct chunk *c;
 
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
+
     if (p->depth < 15) {
 		/* If we're too shallow then don't do it */
 		return false;
 
     } else {
+		/* Enforce minimum dimensions */
+		h = MAX(h, min_height);
+		w = MAX(w, min_width);
+
 		/* Try to build the cavern, fail gracefully */
 		c = cavern_chunk(p->depth, h, w);
 		if (!c) return NULL;
@@ -1561,7 +1578,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
  * anything about the owners of the stores, nor the contents thereof. It only
  * handles the physical layout.
  */
-struct chunk *town_gen(struct player *p)
+struct chunk *town_gen(struct player *p, int min_height, int min_width)
 {
 	int i, y, x = 0;
 	int residents = is_daytime() ? z_info->town_monsters_day :
@@ -1578,9 +1595,10 @@ struct chunk *town_gen(struct player *p)
 		/* Build stuff */
 		town_gen_layout(c_new, p);
 	} else {
-		/* Copy from the chunk list */
+		/* Copy from the chunk list, remove the old one */
 		if (!chunk_copy(c_new, c_old, 0, 0, 0, 0))
 			quit_fmt("chunk_copy() level bounds failed!");
+		chunk_list_remove("Town");
 
 		/* Find the stairs (lame) */
 		for (y = 0; y < c_new->height; y++) {
@@ -1624,6 +1642,7 @@ struct chunk *modified_chunk(int depth, int height, int width)
     int num_floors;
 	int num_rooms = dun->profile->n_room_profiles;
     int dun_unusual = dun->profile->dun_unusual;
+	struct connector *join = dun->join;
 
     /* Make the cave */
     struct chunk *c = cave_new(height, width);
@@ -1654,8 +1673,26 @@ struct chunk *modified_chunk(int depth, int height, int width)
     dun->pit_num = 0;
     dun->cent_n = 0;
 
-    /* Build rooms until we have enough floor grids */
-    while (c->feat_count[FEAT_FLOOR] < num_floors) {
+	/* Build the special staircase rooms */
+	if (OPT(player, birth_levels_persist)) {
+		struct room_profile profile;
+		for (i = 0; i < num_rooms; i++) {
+			profile = dun->profile->room_profiles[i];
+			if (streq(profile.name, "staircase room")) {
+				break;
+			}
+		}
+		while (join) {
+			if (!room_build(c, dun->join->grid.y, dun->join->grid.x, profile,
+							true)) {
+				quit("Failed to place stairs");
+			}
+			join = join->next;
+		}
+	}
+
+    /* Build rooms until we have enough floor grids and at least two rooms */
+    while ((c->feat_count[FEAT_FLOOR] < num_floors) || (dun->cent_n < 2)) {
 
 		/* Roll for random key (to be compared against a profile's cutoff) */
 		key = randint0(100);
@@ -1761,7 +1798,7 @@ struct chunk *modified_chunk(int depth, int height, int width)
  *   interesting rooms, as well as to make general monster restrictions in
  *   areas or the whole dungeon
  */
-struct chunk *modified_gen(struct player *p) {
+struct chunk *modified_gen(struct player *p, int min_height, int min_width) {
     int i, k;
     int size_percent, y_size, x_size;
 	struct chunk *c;
@@ -1777,6 +1814,10 @@ struct chunk *modified_gen(struct player *p) {
     else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
+
+	/* Enforce minimum dimensions */
+	y_size = MAX(y_size, min_height);
+	x_size = MAX(x_size, min_width);
 
     /* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
@@ -1799,10 +1840,14 @@ struct chunk *modified_gen(struct player *p) {
 		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
     /* Place 3 or 4 down stairs near some walls */
-    alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 3);
+	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, false)) {
+		alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 3);
+	}
 
     /* Place 1 or 2 up stairs near some walls */
-    alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+	if (!OPT(p, birth_levels_persist) || !chunk_find_adjacent(p, true)) {
+		alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+	}
 
     /* General amount of rubble, traps and monsters */
     k = MAX(MIN(c->depth / 3, 10), 2);
@@ -1985,7 +2030,7 @@ struct chunk *moria_chunk(int depth, int height, int width)
  * labyrinth levels are selected) would be
  *	if ((c->depth >= 10) && (c->depth < 40) && one_in_(40))
  */
-struct chunk *moria_gen(struct player *p) {
+struct chunk *moria_gen(struct player *p, int min_height, int min_width) {
     int i, k;
     int size_percent, y_size, x_size;
 	struct chunk *c;
@@ -2001,6 +2046,10 @@ struct chunk *moria_gen(struct player *p) {
     else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
+
+	/* Enforce minimum dimensions */
+	y_size = MAX(y_size, min_height);
+	x_size = MAX(x_size, min_width);
 
     /* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
@@ -2132,7 +2181,7 @@ void connect_caverns(struct chunk *c, struct loc floor[])
  * \param p is the player
  * \return a pointer to the generated chunk
 */
-struct chunk *hard_centre_gen(struct player *p)
+struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 {
 	/* Make a vault for the centre */
 	struct chunk *centre = vault_chunk(p);
@@ -2150,6 +2199,9 @@ struct chunk *hard_centre_gen(struct player *p)
 	struct chunk *c;
 	int i, k, y, x, cavern_area;
 	struct loc floor[4];
+
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
 
 	/* Measure the vault, rotate to make it wider than it is high */
 	if (centre->height > centre->width) {
@@ -2290,12 +2342,15 @@ struct chunk *hard_centre_gen(struct player *p)
  * \param p is the player
  * \return a pointer to the generated chunk
  */
-struct chunk *lair_gen(struct player *p) {
+struct chunk *lair_gen(struct player *p, int min_height, int min_width) {
     int i, k;
     int size_percent, y_size, x_size;
 	struct chunk *c;
 	struct chunk *normal;
 	struct chunk *lair;
+
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
 
     /* Scale the level */
     i = randint1(10) + p->depth / 24;
@@ -2308,6 +2363,10 @@ struct chunk *lair_gen(struct player *p) {
     else size_percent = 100;
 	y_size = z_info->dungeon_hgt * (size_percent - 5 + randint0(10)) / 100;
 	x_size = z_info->dungeon_wid * (size_percent - 5 + randint0(10)) / 100;
+
+	/* Enforce minimum dimensions */
+	y_size = MAX(y_size, min_height);
+	x_size = MAX(x_size, min_width);
 
     /* Set the block height and width */
 	dun->block_hgt = dun->profile->block_size;
@@ -2426,7 +2485,7 @@ struct chunk *lair_gen(struct player *p) {
  * \param p is the player
  * \return a pointer to the generated chunk
  */
-struct chunk *gauntlet_gen(struct player *p) {
+struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	int i, k, y;
 	struct chunk *c;
 	struct chunk *arrival;
@@ -2437,6 +2496,9 @@ struct chunk *gauntlet_gen(struct player *p) {
 	int y_size = z_info->dungeon_hgt * gauntlet_hgt / (15 + randint1(5));
 	int x_size = z_info->dungeon_wid * gauntlet_wid / ((30 + randint1(10)) * 2);
 	int line1, line2;
+
+	/* No persistent levels of this type for now */
+	if (OPT(p, birth_levels_persist)) return NULL;
 
 	gauntlet = labyrinth_chunk(p->depth, gauntlet_hgt, gauntlet_wid, false,
 							   false);

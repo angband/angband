@@ -150,9 +150,16 @@ struct heatmap {
     u16b **grids;
 };
 
+struct connector {
+	struct loc grid;
+	byte feat;
+	bitflag *info;
+	struct connector *next;
+};
+
 struct chunk {
 	char *name;
-	s32b created_at;
+	s32b turn;
 	int depth;
 
 	byte feeling;
@@ -177,6 +184,8 @@ struct chunk {
 	u16b mon_max;
 	u16b mon_cnt;
 	int mon_current;
+
+	struct connector *join;
 };
 
 /*** Feature Indexes (see "lib/gamedata/terrain.txt") ***/
@@ -228,7 +237,7 @@ void map_info(unsigned x, unsigned y, struct grid_data *g);
 void square_note_spot(struct chunk *c, int y, int x);
 void square_light_spot(struct chunk *c, int y, int x);
 void light_room(int y1, int x1, bool light);
-void wiz_light(struct chunk *c, bool full);
+void wiz_light(struct chunk *c, struct player *p, bool full);
 void cave_illuminate(struct chunk *c, bool daytime);
 void cave_update_flow(struct chunk *c);
 void cave_forget_flow(struct chunk *c);
@@ -283,6 +292,7 @@ bool square_isupstairs(struct chunk *c, int y, int x);
 bool square_isdownstairs(struct chunk *c, int y, int x);
 bool square_isshop(struct chunk *c, int y, int x);
 bool square_isplayer(struct chunk *c, int y, int x);
+bool square_isoccupied(struct chunk *c, int y, int x);
 bool square_isknown(struct chunk *c, int y, int x);
 bool square_isnotknown(struct chunk *c, int y, int x);
 
@@ -310,6 +320,7 @@ bool square_isdtrap(struct chunk *c, int y, int x);
 /* SQUARE BEHAVIOR PREDICATES */
 bool square_isopen(struct chunk *c, int y, int x);
 bool square_isempty(struct chunk *c, int y, int x);
+bool square_isarrivable(struct chunk *c, int y, int x);
 bool square_canputitem(struct chunk *c, int y, int x);
 bool square_isdiggable(struct chunk *c, int y, int x);
 bool square_is_monster_walkable(struct chunk *c, int y, int x);
@@ -335,6 +346,8 @@ bool square_dtrap_edge(struct chunk *c, int y, int x);
 bool square_changeable(struct chunk *c, int y, int x);
 bool square_in_bounds(struct chunk *c, int y, int x);
 bool square_in_bounds_fully(struct chunk *c, int y, int x);
+bool square_isbelievedwall(struct chunk *c, int y, int x);
+
 
 struct feature *square_feat(struct chunk *c, int y, int x);
 struct monster *square_monster(struct chunk *c, int y, int x);
@@ -397,9 +410,9 @@ struct monster *cave_monster(struct chunk *c, int idx);
 int cave_monster_max(struct chunk *c);
 int cave_monster_count(struct chunk *c);
 
-int count_feats(int *y, int *x, bool (*test)(struct chunk *cave, int y, int x), bool under);
+int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), bool under);
 
-void cave_generate(struct chunk **c, struct player *p);
+void prepare_next_level(struct chunk **c, struct player *p);
 bool is_quest(int level);
 
 void cave_known(struct player *p);

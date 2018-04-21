@@ -86,6 +86,7 @@ int test_obj_piles(void *state) {
 
 	/* Free up */
 	object_pile_free(pile);
+	object_free(o3);
 
 	ok;
 }

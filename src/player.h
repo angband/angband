@@ -464,6 +464,7 @@ struct player {
 	s32b au;		/* Current Gold */
 
 	s16b max_depth;	/* Max depth */
+	s16b recall_depth;	/* Recall depth */
 	s16b depth;		/* Cur depth */
 
 	s16b max_lev;	/* Max level */

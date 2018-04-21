@@ -320,7 +320,7 @@ struct chunk *cave_new(int height, int width) {
 	c->mon_max = 1;
 	c->mon_current = -1;
 
-	c->created_at = turn;
+	c->turn = turn;
 	return c;
 }
 
@@ -329,6 +329,13 @@ struct chunk *cave_new(int height, int width) {
  */
 void cave_free(struct chunk *c) {
 	int y, x;
+
+	while (c->join) {
+		struct connector *current = c->join;
+		mem_free(current->info);
+		c->join = current->next;
+		mem_free(current);
+	}
 
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
@@ -436,7 +443,9 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 		}
 		if (known_obj) {
 			assert (obj);
-			assert(known_obj == obj->known);
+			if (player->upkeep->playing) {
+				assert(known_obj == obj->known);
+			}
 			if (known_obj->iy && known_obj->ix)
 				assert (pile_contains(c_k->squares[known_obj->iy][known_obj->ix].obj, known_obj));
 			assert (known_obj->oidx == i);

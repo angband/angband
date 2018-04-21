@@ -462,9 +462,9 @@ void wr_player(void)
 	/* Max Player and Dungeon Levels */
 	wr_s16b(player->max_lev);
 	wr_s16b(player->max_depth);
+	wr_s16b(player->recall_depth);
 
 	/* More info */
-	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
@@ -823,7 +823,26 @@ static void wr_dungeon_aux(struct chunk *c)
 	/* Write feeling */
 	wr_byte(c->feeling);
 	wr_u16b(c->feeling_squares);
-	wr_s32b(c->created_at);
+	wr_s32b(c->turn);
+
+	/* Write connector info */
+	if (OPT(player, birth_levels_persist)) {
+		if (c->join) {
+			struct connector *current = c->join;
+			while (current) {
+				wr_byte(current->grid.x);
+				wr_byte(current->grid.y);
+				wr_byte(current->feat);
+				for (i = 0; i < SQUARE_SIZE; i++) {
+					wr_byte(current->info[i]);
+				}
+				current = current->next;
+			}
+		}
+
+		/* Write a sentinel byte */
+		wr_byte(0xff);
+	}
 }
 
 /**
@@ -961,8 +980,8 @@ void wr_chunks(void)
 {
 	int j;
 
-	//if (player->is_dead)
-	//	return;
+	if (player->is_dead)
+		return;
 
 	wr_u16b(chunk_list_max);
 
@@ -981,6 +1000,25 @@ void wr_chunks(void)
 
 		/* Write the traps */
 		wr_traps_aux(c);
+
+		/* Write other chunk info */
+		if (OPT(player, birth_levels_persist)) {
+			int i;
+
+			wr_string(c->name);
+			wr_s32b(c->turn);
+			wr_u16b(c->depth);
+			wr_byte(c->feeling);
+			wr_u32b(c->obj_rating);
+			wr_u32b(c->mon_rating);
+			wr_byte(c->good_item ? 1 : 0);
+			wr_u16b(c->height);
+			wr_u16b(c->width);
+			wr_u16b(c->feeling_squares);
+			for (i = 0; i < z_info->f_max + 1; i++) {
+				wr_u16b(c->feat_count[i]);
+			}
+		}
 	}
 }
 

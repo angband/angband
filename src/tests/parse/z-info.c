@@ -12,6 +12,8 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct angband_constants *z = parser_priv(state);
+	mem_free(z);
 	parser_destroy(state);
 	return 0;
 }

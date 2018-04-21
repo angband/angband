@@ -63,10 +63,6 @@ OP(cheat_xtra,            "Cheat: Peek into something else",
 CHEAT, false)
 OP(score_xtra,            "Score: Peek into something else",
 SCORE, false)
-OP(cheat_know,            "Cheat: Know complete monster info",
-CHEAT, false)
-OP(score_know,            "Score: Know complete monster info",
-SCORE, false)
 OP(cheat_live,            "Cheat: Allow player to avoid death",
 CHEAT, false)
 OP(score_live,            "Score: Allow player to avoid death",
@@ -94,5 +90,9 @@ BIRTH, true)
 OP(birth_ai_learn,        "Monsters learn from their mistakes",
 BIRTH, false)
 OP(birth_know_runes,      "Know all runes on birth",
+BIRTH, false)
+OP(birth_know_flavors,    "Know all flavors on birth",
+BIRTH, false)
+OP(birth_levels_persist,  "Persistent levels (experimental)",
 BIRTH, false)
 

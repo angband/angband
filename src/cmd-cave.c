@@ -733,7 +733,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	/* Two chances - one to disarm, one not to set the trap off */
 	if (randint0(100) < chance) {
 		msgt(MSG_DISARM, "You have disarmed the %s.", trap->kind->name);
-		player_exp_gain(player, power);
+		player_exp_gain(player, 1 + power);
 
 		/* Trap is gone */
 		square_forget(cave, y, x);
@@ -1174,6 +1174,15 @@ void do_cmd_run(struct command *cmd)
 		x = player->px + ddx[dir];
 		if (!do_cmd_walk_test(y, x))
 			return;
+			
+		/* Hack: convert repeat count to running count */
+		if (cmd->nrepeats > 0) {
+			player->upkeep->running = cmd->nrepeats;
+			cmd->nrepeats = 0;
+		}
+		else {
+			player->upkeep->running = 0;
+		}
 	}
 
 	/* Start run */

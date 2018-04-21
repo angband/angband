@@ -795,7 +795,7 @@ static void menu_header(void)
 		/* List choices */
 		if (q1 <= q2) {
 			/* Build the header */
-			strnfmt(tmp_val, sizeof(tmp_val), " %c-%c,", I2A(q1), I2A(q2));
+			strnfmt(tmp_val, sizeof(tmp_val), " %d-%d,", q1, q2);
 
 			/* Append */
 			my_strcat(out_val, tmp_val, sizeof(out_val));

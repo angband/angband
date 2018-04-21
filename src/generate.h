@@ -127,6 +127,9 @@ struct dun_data {
 
 	/*!< Current pit profile in use */
 	struct pit_profile *pit_type;
+
+	/*!< Info for connecting to persistent levels */
+	struct connector *join;
 };
 
 
@@ -152,7 +155,7 @@ struct streamer_profile {
 /*
  * cave_builder is a function pointer which builds a level.
  */
-typedef struct chunk * (*cave_builder) (struct player *p);
+typedef struct chunk * (*cave_builder) (struct player *p, int h, int w);
 
 
 struct cave_profile {
@@ -243,24 +246,24 @@ extern struct vault *vaults;
 extern struct room_template *room_templates;
 
 /* gen-cave.c */
-struct chunk *town_gen(struct player *p);
-struct chunk *classic_gen(struct player *p);
-struct chunk *labyrinth_gen(struct player *p);
+struct chunk *town_gen(struct player *p, int min_height, int min_width);
+struct chunk *classic_gen(struct player *p, int min_height, int min_width);
+struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width);
 void ensure_connectedness(struct chunk *c);
-struct chunk *cavern_gen(struct player *p);
-struct chunk *modified_gen(struct player *p);
-struct chunk *moria_gen(struct player *p);
-struct chunk *hard_centre_gen(struct player *p);
-struct chunk *lair_gen(struct player *p);
-struct chunk *gauntlet_gen(struct player *p);
+struct chunk *cavern_gen(struct player *p, int min_height, int min_width);
+struct chunk *modified_gen(struct player *p, int min_height, int min_width);
+struct chunk *moria_gen(struct player *p, int min_height, int min_width);
+struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width);
+struct chunk *lair_gen(struct player *p, int min_height, int min_width);
+struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width);
 
 /* gen-chunk.c */
-struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
-						 bool objects, bool traps);
+struct chunk *chunk_write(struct chunk *c);
 void chunk_list_add(struct chunk *c);
 bool chunk_list_remove(char *name);
 struct chunk *chunk_find_name(char *name);
 bool chunk_find(struct chunk *c);
+struct chunk *chunk_find_adjacent(struct player *p, bool above);
 bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				int rotate, bool reflect);
 
@@ -281,6 +284,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 struct vault *random_vault(int depth, const char *typ);
 bool build_vault(struct chunk *c, int y0, int x0, struct vault *v);
 
+bool build_staircase(struct chunk *c, int y0, int x0, int rating);
 bool build_simple(struct chunk *c, int y0, int x0, int rating);
 bool build_circular(struct chunk *c, int y0, int x0, int rating);
 bool build_overlap(struct chunk *c, int y0, int x0, int rating);

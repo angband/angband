@@ -12,6 +12,11 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct artifact *a = parser_priv(state);
+	string_free(a->name);
+	string_free(a->text);
+	string_free(a->alt_msg);
+	mem_free(a);
 	parser_destroy(state);
 	return 0;
 }

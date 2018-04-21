@@ -31,7 +31,7 @@ win/$(PROGNAME).res: win/$(PROGNAME).rc
 	$(RC) $< -O coff -o $@
 
 $(PROGNAME).o: $(OBJECTS)
-	$(LD) -nostdlib -Wl,-r -o $@ $(OBJECTS)
+	$(LD) -nostdlib -r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
 tests: $(PROGNAME).o

@@ -37,12 +37,14 @@
 #include "init.h"
 #include "math.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-spell.h"
 #include "monster.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player-history.h"
+#include "player-util.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"
@@ -766,9 +768,9 @@ const struct cave_profile *find_cave_profile(char *name)
 
 /**
  * Choose a cave profile
- * \param depth is the depth of the cave the profile will be used to generate
+ * \param p is the player
  */
-const struct cave_profile *choose_profile(int depth)
+const struct cave_profile *choose_profile(struct player *p)
 {
 	const struct cave_profile *profile = NULL;
 
@@ -788,14 +790,14 @@ const struct cave_profile *choose_profile(int depth)
 	}
 
 	/* Make the profile choice */
-	if (depth == 0) {
+	if (p->depth == 0) {
 		profile = find_cave_profile("town");
-	} else if (is_quest(depth)) {
+	} else if (is_quest(p->depth) && !OPT(p, birth_levels_persist)) {
 		/* Quest levels must be normal levels */
 		profile = find_cave_profile("classic");
-	} else if (labyrinth_check(depth)) {
+	} else if (labyrinth_check(p->depth)) {
 		profile = find_cave_profile("labyrinth");
-	} else if ((depth >= 10) && (depth < 40) && one_in_(40)) {
+	} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40)) {
 		profile = find_cave_profile("moria");
 	} else {
 		int pick = randint0(200);
@@ -816,6 +818,97 @@ const struct cave_profile *choose_profile(int depth)
 }
 
 /**
+ * Get information for constructing stairs in the correct places
+ */
+static void get_join_info(struct player *p, struct dun_data *dun)
+{
+	struct level *lev = NULL;
+
+	/* Check level above */
+	lev = level_by_depth(p->depth - 1);
+	if (lev) {
+		struct chunk *check = chunk_find_name(lev->name);
+		if (check) {
+			struct connector *join = check->join;
+			while (join) {
+				if (join->feat == FEAT_MORE) {
+					struct connector *new = mem_zalloc(sizeof *new);
+					new->grid.y = join->grid.y;
+					new->grid.x = join->grid.x;
+					new->feat = FEAT_LESS;
+					new->next = dun->join;
+					dun->join = new;
+				}
+				join = join->next;
+			}
+		}
+	}
+
+	/* Check level below */
+	lev = level_by_depth(p->depth + 1);
+	if (lev) {
+		struct chunk *check = chunk_find_name(lev->name);
+		if (check) {
+			struct connector *join = check->join;
+			while (join) {
+				if (join->feat == FEAT_LESS) {
+					struct connector *new = mem_zalloc(sizeof *new);
+					new->grid.y = join->grid.y;
+					new->grid.x = join->grid.x;
+					new->feat = FEAT_MORE;
+					new->next = dun->join;
+					dun->join = new;
+				}
+				join = join->next;
+			}
+		}
+	}
+}
+
+/**
+ * Check the size of the level above or below the next level to be generated
+ * to make sure stairs can connect
+ */
+static void	get_min_level_size(struct chunk *check, int *min_height,
+							   int *min_width, bool above)
+{
+	struct connector *join = check->join;
+
+	while (join) {
+		if ((above && (join->feat == FEAT_MORE)) ||
+			(!above && (join->feat == FEAT_LESS))) {
+			*min_height = MAX(*min_height, join->grid.y + 2);
+			*min_width = MAX(*min_width, join->grid.x + 2);
+		}
+		join = join->next;
+	}
+}
+
+
+/**
+ * Store a dungeon level for reloading
+ */
+static void cave_store(struct chunk *c, bool known, bool keep_all)
+{
+	struct chunk *stored;
+	if (keep_all) {
+		stored = c;
+	} else {
+		stored = chunk_write(c);
+	}
+	if (stored->name) {
+		string_free(stored->name);
+	}
+	stored->name = string_make(level_by_depth(c->depth)->name);
+	if (known) {
+		stored->name = string_append(stored->name, " known");
+	}
+	stored->turn = turn;
+	chunk_list_add(stored);
+}
+
+
+/**
  * Clear the dungeon, ready for generation to begin.
  */
 static void cave_clear(struct chunk *c, struct player *p)
@@ -831,54 +924,19 @@ static void cave_clear(struct chunk *c, struct player *p)
 /**
  * Generate a random level.
  *
- * Confusingly, this function also generate the town level (level 0).
- * \param c is the level we're going to end up with, in practice the global cave
+ * Confusingly, this function also generates the town level (level 0).
  * \param p is the current player struct, in practice the global player
+ * \return a pointer to the new level
  */
-void cave_generate(struct chunk **c, struct player *p)
+static struct chunk *cave_generate(struct player *p, int height, int width)
 {
 	const char *error = "no generation";
-	int i, y, x, tries = 0;
+	int i, tries = 0;
 	struct chunk *chunk = NULL;
-
-	assert(c);
-
-	/* Forget old level */
-	if (p->cave && (*c == cave)) {
-		int x, y;
-
-		/* Deal with artifacts */
-		for (y = 0; y < (*c)->height; y++) {
-			for (x = 0; x < (*c)->width; x++) {
-				struct object *obj = square_object(*c, y, x);
-				while (obj) {
-					if (obj->artifact) {
-						bool found = obj->known && obj->known->artifact;
-						if (OPT(p, birth_lose_arts) || found) {
-							history_lose_artifact(p, obj->artifact);
-						} else {
-							obj->artifact->created = false;
-						}
-					}
-
-					obj = obj->next;
-				}
-			}
-		}
-
-		/* Free the known cave */
-		cave_free(p->cave);
-		p->cave = NULL;
-	}
-
-	/* Free the old cave */
-	if (*c) {
-		cave_clear(*c, p);
-		*c = NULL;
-	}
 
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
+		int y, x;
 		struct dun_data dun_body;
 
 		error = NULL;
@@ -892,12 +950,19 @@ void cave_generate(struct chunk **c, struct player *p)
 		dun->door = mem_zalloc(z_info->level_door_max * sizeof(struct loc));
 		dun->wall = mem_zalloc(z_info->wall_pierce_max * sizeof(struct loc));
 		dun->tunn = mem_zalloc(z_info->tunn_grid_max * sizeof(struct loc));
+		dun->join = NULL;
+
+		/* Get connector info for persistent levels */
+		if (OPT(p, birth_levels_persist)) {
+			get_join_info(p, dun);
+		}
 
 		/* Choose a profile and build the level */
-		dun->profile = choose_profile(p->depth);
-		chunk = dun->profile->builder(p);
+		dun->profile = choose_profile(p);
+		chunk = dun->profile->builder(p, height, width);
 		if (!chunk) {
 			error = "Failed to find builder";
+			mem_free(dun->join);
 			mem_free(dun->cent);
 			mem_free(dun->door);
 			mem_free(dun->wall);
@@ -923,13 +988,27 @@ void cave_generate(struct chunk **c, struct player *p)
 			}
 		}
 
-		/* Clear generation flags. */
+		/* Clear generation flags, add connecting info */
 		for (y = 0; y < chunk->height; y++) {
 			for (x = 0; x < chunk->width; x++) {
 				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_INNER);
 				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_OUTER);
 				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_SOLID);
 				sqinfo_off(chunk->squares[y][x].info, SQUARE_MON_RESTRICT);
+
+				if (square_isstairs(chunk, y, x)) {
+					size_t n;
+					struct connector *new = mem_zalloc(sizeof *new);
+					new->grid.y = y;
+					new->grid.x = x;
+					new->feat = square_feat(chunk, y, x)->fidx;
+					new->info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
+					for (n = 0; n < SQUARE_SIZE; n++) {
+						new->info[n] = chunk->squares[y][x].info[n];
+					}
+					new->next = chunk->join;
+					chunk->join = new;
+				}
 			}
 		}
 
@@ -944,6 +1023,7 @@ void cave_generate(struct chunk **c, struct player *p)
 			cave_clear(chunk, p);
 		}
 
+		mem_free(dun->join);
 		mem_free(dun->cent);
 		mem_free(dun->door);
 		mem_free(dun->wall);
@@ -952,54 +1032,253 @@ void cave_generate(struct chunk **c, struct player *p)
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
-	/* Use the new cave */
-	*c = chunk;
-
 	/* Place dungeon squares to trigger feeling (not in town) */
-	if (player->depth) {
-		place_feeling(*c);
-	} else if (!chunk_find_name("Town")) {
-		/* Save the town */
-		struct chunk *town = chunk_write(0, 0, z_info->town_hgt,
-										 z_info->town_wid, false, false, false);
-		town->name = string_make("Town");
-		chunk_list_add(town);
+	if (p->depth) {
+		place_feeling(chunk);
 	}
 
-	(*c)->feeling = calc_obj_feeling(*c, p) + calc_mon_feeling(*c);
+	chunk->feeling = calc_obj_feeling(chunk, p) + calc_mon_feeling(chunk);
 
 	/* Validate the dungeon (we could use more checks here) */
-	chunk_validate_objects(*c);
+	chunk_validate_objects(chunk);
+
+	/* Allocate new known level, light it if requested */
+	p->cave = cave_new(chunk->height, chunk->width);
+	p->cave->depth = chunk->depth;
+	p->cave->objects = mem_realloc(p->cave->objects, (chunk->obj_max + 1)
+								   * sizeof(struct object*));
+	p->cave->obj_max = chunk->obj_max;
+	for (i = 0; i <= p->cave->obj_max; i++) {
+		p->cave->objects[i] = NULL;
+	}
+	if (p->upkeep->light_level) {
+		wiz_light(chunk, p, false);
+		p->upkeep->light_level = false;
+	}
+
+	chunk->turn = turn;
+
+	return chunk;
+}
+
+static void sanitize_player_loc(struct chunk *c, struct player *p)
+{
+	/* TODO potential problem: stairs in vaults? */
+	
+	/* allow direct transfer if target location is teleportable */
+	if (square_in_bounds_fully(c, p->py, p->px)
+			&& square_isarrivable(c, p->py, p->px)
+			&& !square_isvault(c, p->py, p->px)) {
+		return;
+	}
+	
+	/* TODO should use something similar to teleport code, but this will
+	 *  do for now as a quick'n dirty fix
+	 */
+	int tx, ty; // test locations
+	int ix, iy; // initial location
+	int vx=1, vy=1; // fallback vault location
+	int try = 1000; // attempts
+
+	/* a bunch of random locations */
+	while (try) {
+		try = try - 1;
+		tx = randint0(c->width-1) + 1;
+		ty = randint0(c->height-1) + 1;
+		if (square_isempty(c, ty, tx)
+				&& !square_isvault(c, ty, tx)) {
+			p->py = ty;
+			p->px = tx;
+			return;
+		}
+	}
+	
+	/* whelp, that didnt work */
+	ix = randint0(c->width-1) + 1;
+	iy = randint0(c->height-1) + 1;
+	ty = iy;
+	tx = tx + 1;
+	if (tx >= c->width - 1) {
+		tx = 1;
+		ty = ty + 1;
+		if (ty >= c->height -1) {
+			ty = 1;
+		}
+	}
+	
+	while (1) {		//until full loop through dungeon
+		if (square_isempty(c, ty, tx)) {
+			if (!square_isvault(c, ty, tx)) {
+				// ok location
+				p->py = ty;
+				p->px = tx;
+				return;
+			}
+			// vault, but lets remember it just in case
+			vy = ty;
+			vx = tx;
+		}
+		// oops tried *every* tile...
+		if (tx == ix && ty == iy) {
+			break;
+		}
+		tx = tx + 1;
+		if (tx >= c->width - 1) {
+			tx = 1;
+			ty = ty + 1;
+			if (ty >= c->height -1) {
+				ty = 1;
+			}
+		}
+	}
+	
+	// fallback vault location (or at least a non-crashy square)
+	p->px=vx;
+	p->py=vy;
+}
+
+/**
+ * Prepare the level the player is about to enter, either by generating
+ * or reloading
+ *
+ * \param c is the level we're going to end up with, in practice the global cave
+ * \param p is the current player struct, in practice the global player
+*/
+void prepare_next_level(struct chunk **c, struct player *p)
+{
+	/* Deal with any existing current level */
+	if (character_dungeon) {
+		assert (p->cave && (*c == cave));
+
+		if (OPT(p, birth_levels_persist)) {
+			/* Tidy up */
+			compact_monsters(0);
+			(*c)->squares[p->py][p->px].mon = 0;
+
+			/* Save level and known level */
+			cave_store(*c, false, true);
+			cave_store(p->cave, true, true);
+		} else {
+			/* Save the town */
+			if (!((*c)->depth) && !chunk_find_name("Town")) {
+				cave_store(*c, false, false);
+			}
+
+			/* Forget knowledge of old level */
+			if (p->cave && (*c == cave)) {
+				int x, y;
+
+				/* Deal with artifacts */
+				for (y = 0; y < (*c)->height; y++) {
+					for (x = 0; x < (*c)->width; x++) {
+						struct object *obj = square_object(*c, y, x);
+						while (obj) {
+							if (obj->artifact) {
+								bool found = obj->known && obj->known->artifact;
+								if (OPT(p, birth_lose_arts) || found) {
+									history_lose_artifact(p, obj->artifact);
+								} else {
+									obj->artifact->created = false;
+								}
+							}
+
+							obj = obj->next;
+						}
+					}
+				}
+
+				/* Free the known cave */
+				cave_free(p->cave);
+				p->cave = NULL;
+			}
+
+			/* Clear the old cave */
+			if (*c) {
+				cave_clear(*c, p);
+				*c = NULL;
+			}
+		}
+	}
+
+	/* Prepare the new level */
+	if (OPT(p, birth_levels_persist)) {
+		char *name = level_by_depth(p->depth)->name;
+		struct chunk *old_level = chunk_find_name(name);
+
+		/* If we found an old level, load the known level and assign */
+		if (old_level) {
+			int i;
+			char *known_name = format("%s known", name);
+			struct chunk *old_known = chunk_find_name(known_name);
+			assert(old_known);
+
+			/* Assign the new ones */
+			*c = old_level;
+			p->cave = old_known;
+
+			/* Associate known objects */
+			for (i = 0; i < p->cave->obj_max; i++) {
+				if ((*c)->objects[i] && p->cave->objects[i]) {
+					(*c)->objects[i]->known = p->cave->objects[i];
+				}
+			}
+
+			/* Allow monsters to recover */
+			restore_monsters();
+
+			/* Map boundary changes may not cooperate with level teleports */
+			sanitize_player_loc(*c,p);
+
+			/* Place the player */
+			player_place(*c, p, p->py, p->px);
+
+			/* Remove from the list */
+			chunk_list_remove(name);
+			chunk_list_remove(known_name);
+		} else {
+			/* Check dimensions */
+			struct level *lev;
+			int min_height = 0, min_width = 0;
+
+			/* Check level above */
+			lev = level_by_depth(p->depth - 1);
+			if (lev) {
+				struct chunk *check = chunk_find_name(lev->name);
+				if (check) {
+					get_min_level_size(check, &min_height, &min_width, true);
+				}
+			}
+
+			/* Check level below */
+			lev = level_by_depth(p->depth + 1);
+			if (lev) {
+				struct chunk *check = chunk_find_name(lev->name);
+				if (check) {
+					get_min_level_size(check, &min_height, &min_width, false);
+				}
+			}
+
+			/* Generate a new level */
+			*c = cave_generate(p, min_height, min_width);
+		}
+	} else {
+		/* Generate a new level */
+		*c = cave_generate(p, 0, 0);
+	}
+
+	/* Know the town */
+	if (!(p->depth)) {
+		cave_known(p);
+	}
 
 	/* The dungeon is ready */
 	character_dungeon = true;
-
-	/* Allocate new known level, light it if requested */
-	if (*c == cave) {
-		p->cave = cave_new((*c)->height, (*c)->width);
-		p->cave->objects = mem_realloc(p->cave->objects, ((*c)->obj_max + 1)
-										 * sizeof(struct object*));
-		p->cave->obj_max = (*c)->obj_max;
-		for (i = 0; i <= p->cave->obj_max; i++) {
-			p->cave->objects[i] = NULL;
-		}
-		if (!((*c)->depth)) {
-			cave_known(p);
-		}
-		if (p->upkeep->light_level) {
-			wiz_light(*c, false);
-			p->upkeep->light_level = false;
-		}
-	}
-
-	(*c)->created_at = turn;
 }
 
 /**
  * The generate module, which initialises template rooms and vaults
  * Should it clean up?
  */
-
 struct init_module generate_module = {
 	.name = "generate",
 	.init = run_template_parser,

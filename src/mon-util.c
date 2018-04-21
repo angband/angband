@@ -276,6 +276,11 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 	assert(mon != NULL);
 
+	/* Return if this is not the current level */
+	if (c != cave) {
+		return;
+	}
+
 	lore = get_lore(mon->race);
 	
 	fy = mon->fy;

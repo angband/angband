@@ -52,7 +52,9 @@ void *mem_alloc(size_t len)
 void *mem_zalloc(size_t len)
 {
 	void *mem = mem_alloc(len);
-	memset(mem, 0, len);
+	if (len) {
+		memset(mem, 0, len);
+	}
 	return mem;
 }
 

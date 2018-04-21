@@ -291,13 +291,16 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		/* Find and set the mimicked object */
 		struct object *square_obj = square_object(c, mon->fy, mon->fx);
 
+		/* Try and find the mimicked object; if we fail, create a new one */
 		while (square_obj) {
 			if (square_obj->mimicking_m_idx == tmp16u) break;
 			square_obj = square_obj->next;
 		}
-		if (!square_obj)
-			return false;
-		mon->mimicked_obj = square_obj;
+		if (square_obj) {
+			mon->mimicked_obj = square_obj;
+		} else {
+			mon_create_mimicked_object(c, mon, tmp16u);
+		}
 	}
 
 	/* Read all the held objects (order is unimportant) */
@@ -712,12 +715,14 @@ int rd_player(void)
 
 	rd_s16b(&player->max_lev);
 	rd_s16b(&player->max_depth);
+	rd_s16b(&player->recall_depth);
 
 	/* Hack -- Repair maximum player level */
 	if (player->max_lev < player->lev) player->max_lev = player->lev;
 
 	/* Hack -- Repair maximum dungeon level */
 	if (player->max_depth < 0) player->max_depth = 1;
+	if (player->recall_depth <= 0) player->recall_depth = player->max_depth;
 
 	/* Hack -- Reset cause of death */
 	if (player->chp >= 0)
@@ -725,7 +730,7 @@ int rd_player(void)
 				  sizeof(player->died_from));
 
 	/* More info */
-	strip_bytes(9);
+	strip_bytes(7);
 	rd_byte(&player->unignoring);
 	rd_s16b(&player->deep_descent);
 
@@ -1260,7 +1265,27 @@ static int rd_dungeon_aux(struct chunk **c)
 	c1->feeling = tmp8u;
 	rd_u16b(&tmp16u);
 	c1->feeling_squares = tmp16u;
-	rd_s32b(&c1->created_at);
+	rd_s32b(&c1->turn);
+
+	/* Read connector info */
+	if (OPT(player, birth_levels_persist)) {
+		rd_byte(&tmp8u);
+		while (tmp8u != 0xff) {
+			size_t n;
+			struct connector *current = mem_zalloc(sizeof *current);
+			current->info = mem_zalloc(square_size * sizeof(bitflag));
+			current->grid.x = tmp8u;
+			rd_byte(&tmp8u);
+			current->grid.y = tmp8u;
+			rd_byte(&current->feat);
+			for (n = 0; n < square_size; n++) {
+				rd_byte(&current->info[n]);
+			}
+			current->next = c1->join;
+			c1->join = current;
+			rd_byte(&tmp8u);
+		}
+	}
 
 	/* Assign */
 	*c = c1;
@@ -1418,8 +1443,10 @@ int rd_dungeon(void)
 	character_dungeon = true;
 
 	/* Read known cave */
-	if (rd_dungeon_aux(&player->cave))
+	if (rd_dungeon_aux(&player->cave)) {
 		return 1;
+	}
+	player->cave->depth = depth;
 
 	return 0;
 }
@@ -1482,8 +1509,8 @@ int rd_chunks(void)
 	int j;
 	u16b chunk_max;
 
-	//if (player->is_dead)
-	//	return 0;
+	if (player->is_dead)
+		return 0;
 
 	rd_u16b(&chunk_max);
 	for (j = 0; j < chunk_max; j++) {
@@ -1504,6 +1531,35 @@ int rd_chunks(void)
 		/* Read traps */
 		if (rd_traps_aux(c))
 			return -1;
+
+
+		/* Read other chunk info */
+		if (OPT(player, birth_levels_persist)) {
+			char buf[80];
+			int i;
+			byte tmp8u;
+			u16b tmp16u;
+
+			rd_string(buf, sizeof(buf));
+			c->name = string_make(buf);
+			rd_s32b(&c->turn);
+			rd_u16b(&tmp16u);
+			c->depth = tmp16u;
+			rd_byte(&c->feeling);
+			rd_u32b(&c->obj_rating);
+			rd_u32b(&c->mon_rating);
+			rd_byte(&tmp8u);
+			c->good_item  = tmp8u ? true : false;
+			rd_u16b(&tmp16u);
+			c->height = tmp16u;
+			rd_u16b(&tmp16u);
+			c->width = tmp16u;
+			rd_u16b(&c->feeling_squares);
+			for (i = 0; i < z_info->f_max + 1; i++) {
+				rd_u16b(&tmp16u);
+				c->feat_count[i] = tmp16u;
+			}
+		}
 
 		chunk_list_add(c);
 	}

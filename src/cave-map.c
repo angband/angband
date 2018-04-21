@@ -264,8 +264,7 @@ static void cave_light(struct point_set *ps)
 	int i;
 
 	/* Apply flag changes */
-	for (i = 0; i < ps->n; i++)
-	{
+	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
@@ -273,15 +272,8 @@ static void cave_light(struct point_set *ps)
 		sqinfo_on(cave->squares[y][x].info, SQUARE_GLOW);
 	}
 
-	/* Fully update the visuals */
-	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Update stuff */
-	update_stuff(player);
-
 	/* Process the grids */
-	for (i = 0; i < ps->n; i++)
-	{
+	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
@@ -289,8 +281,7 @@ static void cave_light(struct point_set *ps)
 		square_light_spot(cave, y, x);
 
 		/* Process affected monsters */
-		if (cave->squares[y][x].mon > 0)
-		{
+		if (cave->squares[y][x].mon > 0) {
 			int chance = 25;
 
 			struct monster *mon = square_monster(cave, y, x);
@@ -323,28 +314,22 @@ static void cave_unlight(struct point_set *ps)
 	int i;
 
 	/* Apply flag changes */
-	for (i = 0; i < ps->n; i++)
-	{
+	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
 		/* Darken the grid */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+		if (!square_isbright(cave, y, x)) {
+			sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+		}
 
 		/* Hack -- Forget "boring" grids */
 		if (square_isfloor(cave, y, x))
 			square_forget(cave, y, x);
 	}
 
-	/* Fully update the visuals */
-	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Update stuff */
-	update_stuff(player);
-
 	/* Process the grids */
-	for (i = 0; i < ps->n; i++)
-	{
+	for (i = 0; i < ps->n; i++)	{
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
@@ -411,6 +396,12 @@ void light_room(int y1, int x1, bool light)
 		cave_unlight(ps);
 	}
 	point_set_dispose(ps);
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Update stuff */
+	update_stuff(player);
 }
 
 
@@ -422,7 +413,7 @@ void light_room(int y1, int x1, bool light)
  * "objects" (or notes the existence of an object "if" full is true),
  * and memorizes all grids as with magic mapping.
  */
-void wiz_light(struct chunk *c, bool full)
+void wiz_light(struct chunk *c, struct player *p, bool full)
 {
 	int i, y, x;
 
@@ -472,10 +463,10 @@ void wiz_light(struct chunk *c, bool full)
 	}
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	p->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw whole map, monster list */
-	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+	p->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
 
@@ -512,7 +503,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			if (daytime || !square_isfloor(c, y, x)) {
 				sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
 				square_memorize(c, y, x);
-			} else {
+			} else if (!square_isbright(c, y, x)) {
 				sqinfo_off(c->squares[y][x].info, SQUARE_GLOW);
 				square_forget(c, y, x);
 			}

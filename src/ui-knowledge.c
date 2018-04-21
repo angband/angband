@@ -165,7 +165,7 @@ static int feat_order(int feat)
 		case L'#':				return 3;
 		case L'*': case L'%' :	return 4;
 		case L';': case L':' :	return 5;
-
+		case L' ':				return 7;
 		default:
 		{
 			return 6;
@@ -591,6 +591,32 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 
 		    return true;
 	    }
+
+		case 'C':
+		case 'c':
+		{
+			/* Set the tile */
+			attr_idx = *cur_attr_ptr;
+			char_idx = *cur_char_ptr;
+
+			return true;
+		}
+
+		case 'P':
+		case 'p':
+		{
+			if (attr_idx) {
+				/* Set the char */
+				*cur_attr_ptr = attr_idx;
+			}
+
+			if (char_idx) {
+				/* Set the char */
+				*cur_char_ptr = char_idx;
+			}
+
+			return true;
+		}
 
 	    case 'i':
 	    case 'I':
@@ -1250,8 +1276,7 @@ static int count_known_monsters(void)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
-			!l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].sights) {
 			continue;
 		}
 
@@ -1286,8 +1311,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
-			!l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].sights) {
 			continue;
 		}
 
@@ -1307,8 +1331,7 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
-			!l_list[i].sights) {
+		if (!l_list[i].all_known && !l_list[i].sights) {
 			continue;
 		}
 
@@ -2124,8 +2147,9 @@ static void do_cmd_knowledge_runes(const char *name, int row)
 
 	int *runes;
 	int rune_max = max_runes();
-	int rune_count = 0;
+	int count = 0;
 	int i;
+	char buf[30];
 
 	runes = mem_zalloc(rune_max * sizeof(int));
 
@@ -2134,11 +2158,12 @@ static void do_cmd_knowledge_runes(const char *name, int row)
 		if (!player_knows_rune(player, i))
 			continue;
 
-		runes[rune_count++] = i;
+		runes[count++] = i;
 	}
 
-	display_knowledge("runes", runes, rune_count, rune_var_f, rune_f,
-					  "Inscribed");
+	my_strcpy(buf, format("runes (%d unknown)", rune_max - count), sizeof(buf));
+
+	display_knowledge(buf, runes, count, rune_var_f, rune_f, "Inscribed");
 	mem_free(runes);
 }
 
@@ -2245,7 +2270,12 @@ static void feat_lore(int oid)
 static const char *feat_prompt(int oid)
 {
 	(void)oid;
-	return ", 'l' to cycle lighting";
+		switch (f_uik_lighting) {
+				case LIGHTING_LIT:  return ", 'l/L' for lighting (lit)";
+                case LIGHTING_TORCH: return ", 'l/L' for lighting (torch)";
+				case LIGHTING_LOS:  return ", 'l/L' for lighting (LOS)";
+				default:	return ", 'l/L' for lighting (dark)";
+		}		
 }
 
 /**
@@ -3225,7 +3255,7 @@ void do_cmd_query_symbol(void)
 		struct monster_lore *lore = &l_list[i];
 
 		/* Nothing to recall */
-		if (!OPT(player, cheat_know) && !lore->all_known && !lore->sights)
+		if (!lore->all_known && !lore->sights)
 			continue;
 
 		/* Require non-unique monsters if needed */

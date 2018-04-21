@@ -21,6 +21,14 @@
 
 #include "cave.h"
 
+struct level {
+	int depth;
+	char *name;
+	char *up;
+	char *down;
+	struct level *next;
+};
+
 extern u16b daycount;
 extern u32b seed_randart;
 extern u32b seed_flavor;
@@ -28,7 +36,10 @@ extern s32b turn;
 extern bool character_generated;
 extern bool character_dungeon;
 extern const byte extract_energy[200];
+extern struct level *world;
 
+struct level *level_by_name(char *name);
+struct level *level_by_depth(int depth);
 bool is_daytime(void);
 int turn_energy(int speed);
 void play_ambient_sound(void);

@@ -10,7 +10,9 @@ Version 4.1.x
 
 Code contribution:
 
+* Alex Mooney
 * Andi Sidwell (takkaria)
+* Андрей Беньковский (AndreyB)
 * Bardur Arantsson
 * Ben Semmler
 * crayonsmelting
@@ -21,11 +23,13 @@ Code contribution:
 * Graeme Russ
 * Gwilim Owen
 * Jean-François Caron
+* kaypy
 * Kevin J. Fletcher
 * Nomad
 * Pete McIlroy
 * Peter (Hermann Döppes)
 * Peter McIlroy
+* phantom-voltage
 * PowerWyrm
 * rmzelle
 * rowanbeentje

@@ -646,7 +646,7 @@ static void project_monster_handler_MON_CLONE(project_monster_handler_context_t 
 				  context->id);
 
 	/* Attempt to clone. */
-	if (multiply_monster(context->mon))
+	if (multiply_monster(cave, context->mon))
 		context->hurt_msg = MON_MSG_SPAWN;
 
 	/* No "real" damage */
@@ -1061,7 +1061,7 @@ void project_m(struct source origin, int r, int y, int x,
 	*was_obvious = false;
 
 	/* Walls protect monsters */
-	if (!square_isprojectable(cave, y,x)) return;
+	if (!square_ispassable(cave, y, x)) return;
 
 	/* No monster here */
 	if (!(m_idx > 0)) return;

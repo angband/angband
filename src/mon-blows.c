@@ -155,7 +155,8 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context,
 	if (!context->method->phys)
 		physical_dam = 0;
 
-	elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE, 0);
+	elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE, 0,
+							   true);
 
 	/* Take the larger of physical or elemental damage */
 	context->damage = (physical_dam > elemental_dam) ?

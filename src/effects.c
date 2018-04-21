@@ -45,6 +45,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-history.h"
+#include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -233,11 +234,11 @@ static void remove_object_curse(struct object *obj, int index, bool message)
 /**
  * Attempts to remove a curse from an object.
  */
-static bool uncurse_object(struct object *obj, int strength)
+static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 {
 	int index = 0;
 
-	if (get_curse(&index, obj)) {
+	if (get_curse(&index, obj, dice_string)) {
 		struct curse_data curse = obj->curses[index];
 		char o_name[80];
 
@@ -621,6 +622,9 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 			break;
 		}
 	}
+
+	/* Always ID */
+	context->ident = true;
 
 	/* Hit the player */
 	take_hit(player, dam, killer);
@@ -1227,6 +1231,7 @@ bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 {
 	int strength = effect_calculate_value(context, false);
 	struct object *obj = NULL;
+	char dice_string[20];
 
 	context->ident = true;
 
@@ -1238,7 +1243,23 @@ bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
 				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
 		return false;
 
-	return uncurse_object(obj, strength);
+	/* Get the possible dice strings */
+	if ((context->value.dice == 1) && context->value.base) {
+		strnfmt(dice_string, sizeof(dice_string), "%d+d%d",
+				context->value.base, context->value.sides);
+	} else if (context->value.dice && context->value.base) {
+		strnfmt(dice_string, sizeof(dice_string), "%d+%dd%d",
+				context->value.base, context->value.dice, context->value.sides);
+	} else if (context->value.dice == 1) {
+		strnfmt(dice_string, sizeof(dice_string), "d%d", context->value.sides);
+	} else if (context->value.dice) {
+		strnfmt(dice_string, sizeof(dice_string), "%dd%d",
+				context->value.dice, context->value.sides);
+	} else {
+		strnfmt(dice_string, sizeof(dice_string), "%d", context->value.base);
+	}
+
+	return uncurse_object(obj, strength, dice_string);
 }
 
 /**
@@ -1273,10 +1294,19 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	/* Activate recall */
 	if (!player->word_recall) {
 		/* Reset recall depth */
-		if ((player->depth > 0) && (player->depth != player->max_depth)) {
-			/* ToDo: Add a new player field "recall_depth" */
-			if (get_check("Reset recall depth? "))
-				player->max_depth = player->depth;
+		if (player->depth > 0) {
+			if (player->depth != player->max_depth) {
+				if (get_check("Set recall depth to current depth? ")) {
+					player->recall_depth = player->max_depth = player->depth;
+				}
+			} else {
+				player->recall_depth = player->max_depth;
+			}
+		} else {
+			if (OPT(player, birth_levels_persist)) {
+				/* Persistent levels players get to choose */
+				if (!player_get_recall_depth(player)) return false;
+			}
 		}
 
 		player->word_recall = randint0(20) + 15;
@@ -2012,6 +2042,12 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 	/* Only allow stairs to be created on empty floor */
 	if (!square_isfloor(cave, py, px)) {
 		msg("There is no empty floor here.");
+		return false;
+	}
+
+	/* Fails for persistent levels (for now) */
+	if (OPT(player, birth_levels_persist)) {
+		msg("Nothing happens!");
 		return false;
 	}
 
@@ -2753,9 +2789,17 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	int y_start = context->p1;
 	int x_start = context->p2;
 	int dis = context->value.base;
-	int d, i, min, y, x;
+	int y, x, pick;
 
-	bool look = true;
+	struct jumps {
+		int y;
+		int x;
+		struct jumps *next;
+	} *spots = NULL;
+	int num_spots = 0;
+	int current_score = 2 * MAX(z_info->dungeon_wid, z_info->dungeon_hgt);
+	bool only_vault_grids_possible = true;
+
 	bool is_player = (context->origin.what != SRC_MONSTER || context->p2);
 
 	context->ident = true;
@@ -2786,62 +2830,84 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		x_start = mon->fx;
 	}
 
-	/* Initialize */
-	y = y_start;
-	x = x_start;
+	/* Make a list of the best grids, scoring by how good an approximation
+	 * the distance from the start is to the distance we want */
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
+			int d = distance(y, x, y_start, x_start);
+			int score = ABS(d - dis);
+			struct jumps *new;
 
-	/* Minimum distance */
-	min = dis / 2;
-
-	/* Look until done */
-	while (look) {
-		/* Verify max distance */
-		if (dis > 200) dis = 200;
-
-		/* Try several locations */
-		for (i = 0; i < 500; i++) {
-			/* Pick a (possibly illegal) location */
-			while (1) {
-				y = rand_spread(y_start, dis);
-				x = rand_spread(x_start, dis);
-				d = distance(y_start, x_start, y, x);
-				if ((d >= min) && (d <= dis)) break;
-			}
-
-			/* Ignore illegal locations */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			/* Must move */
+			if (d == 0) continue;
 
 			/* Require "naked" floor space */
 			if (!square_isempty(cave, y, x)) continue;
 
-			/* No teleporting into vaults and such */
-			if (square_isvault(cave, y, x)) continue;
-
 			/* No monster teleport onto glyph of warding */
 			if (!is_player && square_iswarded(cave, y, x)) continue;
 
-			/* This grid looks good */
-			look = false;
+			/* No teleporting into vaults and such, unless there's no choice */
+			if (square_isvault(cave, y, x)) {
+				if (!only_vault_grids_possible) {
+					continue;
+				}
+			} else {
+				/* Just starting to consider non-vault grids, so reset score */
+				if (only_vault_grids_possible) {
+					current_score = 2 * MAX(z_info->dungeon_wid,
+											z_info->dungeon_hgt);
+				}
+				only_vault_grids_possible = false;
+			}
 
-			/* Stop looking */
-			break;
+			/* Do we have better spots already? */
+			if (score > current_score) continue;
+
+			/* Make a new spot */
+			new = mem_zalloc(sizeof(struct jumps));
+			new->y = y;
+			new->x = x;
+
+			/* If improving start a new list, otherwise extend the old one */
+			if (score < current_score) {
+				current_score = score;
+				while (spots) {
+					struct jumps *next = spots->next;
+					mem_free(spots);
+					spots = next;
+				}
+				spots = new;
+				num_spots = 1;
+			} else {
+				new->next = spots;
+				spots = new;
+				num_spots++;
+			}
 		}
+	}
 
-		/* Increase the maximum distance */
-		dis = dis * 2;
+	/* Report failure (very unlikely) */
+	if (!num_spots) {
+		msg("Failed to find teleport destination!");
+		return true;
+	}
 
-		/* Decrease the minimum distance */
-		min = min / 2;
+	/* Pick a spot */
+	pick = randint0(num_spots);
+	while (pick) {
+		spots = spots->next;
+		pick--;
 	}
 
 	/* Sound */
 	sound(is_player ? MSG_TELEPORT : MSG_TPOTHER);
 
 	/* Move player */
-	monster_swap(y_start, x_start, y, x);
+	monster_swap(y_start, x_start, spots->y, spots->x);
 
 	/* Clear any projection marker to prevent double processing */
-	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
+	sqinfo_off(cave->squares[spots->y][spots->x].info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
@@ -3026,6 +3092,12 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 
 	context->ident = true;
 
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw monster list */
+	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
+
 	return true;
 }
 
@@ -3068,7 +3140,9 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[y][x].info, SQUARE_VAULT);
 
 			/* Forget completely */
-			sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+			if (!square_isbright(cave, y, x)) {
+				sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+			}
 			sqinfo_off(cave->squares[y][x].info, SQUARE_SEEN);
 			square_forget(cave, y, x);
 			square_light_spot(cave, y, x);
@@ -3185,7 +3259,9 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
 
 			/* Forget completely */
-			sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
+			if (!square_isbright(cave, y, x)) {
+				sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
+			}
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_SEEN);
 			square_forget(cave, yy, xx);
 			square_light_spot(cave, yy, xx);
@@ -3418,7 +3494,7 @@ bool effect_handler_LIGHT_LEVEL(effect_handler_context_t *context)
 	bool full = context->value.base ? true : false;
 	if (full)
 		msg("An image of your surroundings forms in your mind...");
-	wiz_light(cave, full);
+	wiz_light(cave, player, full);
 	context->ident = true;
 	return true;
 }
@@ -4613,7 +4689,7 @@ void effect_simple(int index,
 {
 	struct effect effect;
 	int dir = DIR_TARGET;
-	bool dummy_ident;
+	bool dummy_ident = false;
 
 	/* Set all the values */
 	memset(&effect, 0, sizeof(effect));

@@ -1,6 +1,12 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
+Angband 4.1.1
+=============
+
+This version fixes bugs in 4.1.0, and also introduces for the first time in
+Angband the option to play with persistent levels
+
 Angband 4.1.0
 =============
 
@@ -24,7 +30,7 @@ Traps
  - Trap density in vaults is reduced by 75%
 
 Identify
- - ID is now "rune-based"; once an object properry is recognised once, it will
+ - ID is now "rune-based"; once an object property is recognised once, it will
    always be recognised on all future items
  - The only forms of magical identify are scrolls and the mage spell, both of
    which identify a single unknown rune

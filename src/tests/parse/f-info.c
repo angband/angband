@@ -11,6 +11,15 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct feature *f = parser_priv(state);
+	string_free(f->die_msg);
+	string_free(f->hurt_msg);
+	string_free(f->run_msg);
+	string_free(f->walk_msg);
+	string_free(f->mimic);
+	string_free(f->desc);
+	string_free(f->name);
+	mem_free(f);
 	parser_destroy(state);
 	return 0;
 }

@@ -197,7 +197,7 @@ static bool mon_set_timed(struct monster *mon,
 	if (m_note &&
 		!(flag & MON_TMD_FLG_NOMESSAGE) &&
 		(flag & MON_TMD_FLG_NOTIFY)
-		&& (id || monster_is_obvious(mon))) {
+		&& monster_is_obvious(mon)) {
 			char m_name[80];
 			monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
 			add_monster_message(mon, m_note, true);

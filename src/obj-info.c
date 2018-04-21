@@ -1213,11 +1213,11 @@ static bool describe_light(textblock *tb, const struct object *obj,
 	if (!obj_known_light(obj, mode, &rad, &uses_fuel, &refuel_turns))
 		return false;
 
-	textblock_append(tb, "Radius ");
-	textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
-	textblock_append(tb, " light.");
-
 	if (tval_is_light(obj)) {
+		textblock_append(tb, "Radius ");
+		textblock_append_c(tb, COLOUR_L_GREEN, format("%d", rad));
+		textblock_append(tb, " light.");
+
 		if (!obj->artifact && !uses_fuel)
 			textblock_append(tb, "  No fuel required.");
 
@@ -1254,7 +1254,7 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 	random_value timeout = {0, 0, 0, 0};
 	bool store_consumable = object_is_in_store(obj) && tval_is_useable(obj);
 
-	*effect = 0;
+	*effect = NULL;
 	*min_recharge = 0;
 	*max_recharge = 0;
 	*failure_chance = 0;
@@ -1265,13 +1265,12 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 		timeout = obj->time;
 		if (effect_aim(*effect))
 			*aimed = true;;
-	} else if (object_effect(obj)) {
+	} else if (object_effect(obj) && !tval_is_wearable(obj)) {
 		/* Don't know much - be vague */
 		*effect = NULL;
-
-		if (!obj->artifact && effect_aim(object_effect(obj)))
+		if (!obj->artifact && effect_aim(object_effect(obj))) {
 			*aimed = true;
-
+		}
 		return true;
 	} else {
 		/* No effect - no info */
@@ -1304,25 +1303,28 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 	int min_time, max_time, failure_chance;
 
 	/* Sometimes we only print artifact activation info */
-	if (only_artifacts && !obj->artifact)
+	if (only_artifacts && !obj->artifact) {
 		return false;
+	}
 
 	if (obj_known_effect(obj, &effect, &aimed, &min_time, &max_time,
-							 &failure_chance) == false)
+						 &failure_chance) == false) {
 		return false;
+	}
 
 	/* Effect not known, mouth platitudes */
 	if (!effect && object_effect(obj)) {
-		if (aimed)
+		if (aimed) {
 			textblock_append(tb, "It can be aimed.\n");
-		else if (tval_is_edible(obj))
+		} else if (tval_is_edible(obj)) {
 			textblock_append(tb, "It can be eaten.\n");
-		else if (tval_is_potion(obj))
+		} else if (tval_is_potion(obj)) {
 			textblock_append(tb, "It can be drunk.\n");
-		else if (tval_is_scroll(obj))
+		} else if (tval_is_scroll(obj)) {
 			textblock_append(tb, "It can be read.\n");
-		else
+		} else {
 			textblock_append(tb, "It can be activated.\n");
+		}
 
 		return true;
 	}

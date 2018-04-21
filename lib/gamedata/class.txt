@@ -305,7 +305,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
 desc:  Uniques are not affected.
 
-spell:Identify:11:7:25:6
+spell:Identify Rune:11:7:25:6
 effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
 
@@ -478,8 +478,7 @@ desc: floor where the spell is cast.
 spell:Teleport Level:28:17:65:20
 effect:TELEPORT_LEVEL
 desc:Teleports you 1 level up or 1 level down (chosen at random).
-desc:  This spell has no effect when the option to restrict the use of
-desc: stairs and recall is set.
+desc:  This spell may have no effect when the forced descent option is set.
 
 spell:Word of Recall:30:25:75:15
 effect:RECALL
@@ -489,7 +488,7 @@ desc:  The recall effect is not immediate; it is delayed by 14+1d20 turns.
 desc:  During that delay, the spell can be canceled by invoking the spell
 desc: of recall again.
 desc:  This spell has no effect when the option to restrict the use of
-desc: stairs and recall is set, unless Morgoth is dead.
+desc: recall is set, unless Morgoth is dead.
 
 spell:Rune of Protection:36:60:70:40
 effect:RUNE
@@ -749,7 +748,7 @@ effect:CURE:AMNESIA
 desc:Cures 25% of your wounds (min 30hp) and heals all cut damage, poison,
 desc: amnesia and stunning.
 
-spell:Sense invisible:11:8:42:4
+spell:Sense Invisible:11:8:42:4
 effect:TIMED_INC:SINVIS
 dice:24+d24
 desc:Enables you to see invisible monsters for 24+1d24 turns.
@@ -929,7 +928,7 @@ spell:Probing:25:40:80:150
 effect:PROBE
 desc:Probes each monster within line of sight, giving information on the
 desc: current hit points of the monster and many of its characteristics
-desc: and abilities (excluding its melee, spellcasting, and breath attacks).
+desc: and abilities.
 
 spell:Clairvoyance:35:50:80:230
 effect:LIGHT_LEVEL
@@ -1005,13 +1004,11 @@ spell:Enchant Weapon:35:50:80:230
 effect:ENCHANT:TOBOTH
 dice:1d4
 desc:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
-desc: Also gives a chance to break a curse.
 
 spell:Enchant Armour:37:60:85:250
 effect:ENCHANT:TOAC
 dice:1+1d3
 desc:Attempts to improve the armour class bonus of a piece of armour.
-desc: Also gives a chance to break a curse.
 
 spell:Elemental Brand:45:95:85:250
 effect:BRAND_WEAPON
@@ -1197,7 +1194,7 @@ desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
-spell:Identify:18:18:60:2
+spell:Identify Rune:18:18:60:2
 effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
 
@@ -1564,7 +1561,7 @@ expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
 desc:  Uniques are not affected.
 
-spell:Identify:23:25:90:3
+spell:Identify Rune:23:25:90:3
 effect:IDENTIFY
 desc:Reveals an unknown rune on an object.
 
@@ -2120,7 +2117,7 @@ spell:Probing:30:15:80:135
 effect:PROBE
 desc:Probes each monster within line of sight, giving information on the
 desc: current hit points of the monster and many of its characteristics
-desc: and abilities (excluding its melee, spellcasting, and breath attacks).
+desc: and abilities.
 
 book:prayer book:[Purifications and Healing]:3:2
 
@@ -2174,13 +2171,11 @@ spell:Enchant Weapon:40:70:80:200
 effect:ENCHANT:TOBOTH
 dice:1d4
 desc:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
-desc: Also gives a chance to break a curse.
 
 spell:Enchant Armour:42:80:85:250
 effect:ENCHANT:TOAC
 dice:1+1d3
 desc:Attempts to improve the armour class bonus of a piece of armour.
-desc: Also gives a chance to break a curse.
 
 spell:Elemental Brand:47:95:85:250
 effect:BRAND_WEAPON

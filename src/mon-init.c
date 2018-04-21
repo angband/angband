@@ -450,6 +450,7 @@ static void cleanup_eff(void)
 
 	while (eff) {
 		next = eff->next;
+		string_free(eff->effect_type);
 		string_free(eff->desc);
 		string_free(eff->name);
 		eff = next;
@@ -870,14 +871,6 @@ static enum parser_error parse_mon_spell_expr(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_mon_spell_power(struct parser *p) {
-	struct monster_spell *s = parser_priv(p);
-
-	s->power = parser_getrand(p, "power");
-
-	return PARSE_ERROR_NONE;
-}
-
 struct parser *init_parse_mon_spell(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -899,7 +892,6 @@ struct parser *init_parse_mon_spell(void) {
 	parser_reg(p, "param int p2 ?int p3", parse_mon_spell_param);
 	parser_reg(p, "dice str dice", parse_mon_spell_dice);
 	parser_reg(p, "expr sym name sym base str expr", parse_mon_spell_expr);
-	parser_reg(p, "power rand power", parse_mon_spell_power);
 	return p;
 }
 
@@ -922,12 +914,13 @@ static void cleanup_mon_spell(void)
 		next = rs->next;
 		free_effect(rs->effect);
 		string_free(rs->message);
+		string_free(rs->message_strong);
 		string_free(rs->blind_message);
-		if (rs->miss_message)
-			string_free(rs->miss_message);
-		if (rs->save_message)
-			string_free(rs->save_message);
+		string_free(rs->blind_message_strong);
+		string_free(rs->miss_message);
+		string_free(rs->save_message);
 		string_free(rs->lore_desc);
+		string_free(rs->lore_desc_strong);
 		mem_free(rs);
 		rs = next;
 	}

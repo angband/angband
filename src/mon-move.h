@@ -19,8 +19,9 @@
 #define MONSTER_MOVE_H
 
 
-bool multiply_monster(const struct monster *m);
+bool multiply_monster(struct chunk *c, const struct monster *mon);
 void process_monsters(struct chunk *c, int minimum_energy);
 void reset_monsters(void);
+void restore_monsters(void);
 
 #endif /* !MONSTER_MOVE_H */

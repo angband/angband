@@ -1123,7 +1123,7 @@ static struct player TEST_DATA test_player = {
 
 static struct chunk TEST_DATA test_cave = {
 	.name = "Test",
-	.created_at = 1,
+	.turn = 1,
 	.depth = 1,
 
 	.feeling = 0,

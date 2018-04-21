@@ -209,6 +209,10 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
 			/* No trap doors on the deepest level */
 			if (player->depth >= z_info->max_depth - 1)
 				continue;
+
+			/* No trap doors with persistent levels (for now) */
+			if (OPT(player, birth_levels_persist))
+				continue;
 	    }
 
 		/* Trap is okay, store the cumulative probability */
@@ -476,8 +480,8 @@ extern void hit_trap(int y, int x)
 		if (trf_has(trap->kind->flags, TRF_PIT))
 			monster_swap(player->py, player->px, trap->fy, trap->fx);
 
-		/* Some traps disappear after activating */
-		if (trf_has(trap->kind->flags, TRF_ONETIME)) {
+		/* Some traps disappear after activating, all have a chance to */
+		if (trf_has(trap->kind->flags, TRF_ONETIME) || one_in_(3)) {
 			square_destroy_trap(cave, y, x);
 			square_forget(cave, y, x);
 		}

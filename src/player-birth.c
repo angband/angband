@@ -1134,7 +1134,7 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Know all runes for ID on walkover */
 	if (OPT(player, birth_know_runes))
-		player_learn_everything(player);
+		player_learn_all_runes(player);
 
 	/* Hack - player knows all combat runes.  Maybe make them not runes? NRM */
 	player->obj_k->to_a = 1;
@@ -1149,6 +1149,12 @@ void do_cmd_accept_character(struct command *cmd)
 
 	/* Randomize the artifacts if required */
 	if (OPT(player, birth_randarts)) {
+		/* First restore the standard artifacts */
+		cleanup_parser(&randart_parser);
+		deactivate_randart_file();
+		run_parser(&artifact_parser);
+
+		/* Now generate the new randarts */
 		seed_randart = randint0(0x10000000);
 		do_randart(seed_randart, true);
 	}
@@ -1156,6 +1162,10 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Seed for flavors */
 	seed_flavor = randint0(0x10000000);
 	flavor_init();
+
+	/* Know all flavors for auto-ID of consumables */
+	if (OPT(player, birth_know_flavors))
+		flavor_set_all_aware();
 
 	/* Outfit the player, if they can sell the stuff */
 	player_outfit(player);

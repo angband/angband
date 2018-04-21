@@ -13,6 +13,10 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
+	struct monster_race *mr = parser_priv(state);
+	string_free(mr->name);
+	string_free(mr->text);
+	mem_free(mr);
 	parser_destroy(state);
 	mem_free(z_info);
 	return 0;

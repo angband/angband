@@ -776,16 +776,21 @@ void object_set_base_known(struct object *obj)
 	obj->known->number = obj->number;
 
 	/* Generic dice and ac, to_h for armor, and launcher multipliers */
-	if (!obj->known->dd)
+	if (!obj->known->dd) {
 		obj->known->dd = obj->kind->dd * player->obj_k->dd;
-	if (!obj->known->ds)
+	}
+	if (!obj->known->ds) {
 		obj->known->ds = obj->kind->ds * player->obj_k->ds;
-	if (!obj->known->ac)
+	}
+	if (!obj->known->ac) {
 		obj->known->ac = obj->kind->ac * player->obj_k->ac;
-	if (object_has_standard_to_h(obj))
+	}
+	if (object_has_standard_to_h(obj)) {
 		obj->known->to_h = obj->kind->to_h.base;
-	if (tval_is_launcher(obj))
+	}
+	if (tval_is_launcher(obj)) {
 		obj->known->pval = obj->pval;
+	}
 
 	/* Aware flavours and unflavored non-wearables get info now */
 	if ((obj->kind->aware && obj->kind->flavor) ||
@@ -795,8 +800,9 @@ void object_set_base_known(struct object *obj)
 	}
 
 	/* Know standard activations for wearables */
-	if (tval_is_wearable(obj) && obj->kind->effect)
+	if (tval_is_wearable(obj) && obj->kind->effect && obj->kind->aware) {
 		obj->known->effect = obj->effect;
+	}
 }
 
 /**
@@ -1272,7 +1278,7 @@ void player_learn_innate(struct player *p)
  *
  * \param p is the player
  */
-void player_learn_everything(struct player *p)
+void player_learn_all_runes(struct player *p)
 {
 	size_t i;
 
@@ -1699,6 +1705,7 @@ void object_learn_on_use(struct player *p, struct object *obj)
 
 	object_flavor_aware(obj);
 	obj->known->effect = obj->effect;
+	update_player_object_knowledge(p);
 	player_exp_gain(p, (lev + (p->lev / 2)) / p->lev);
 
 	p->upkeep->notice |= PN_IGNORE;
@@ -2108,7 +2115,6 @@ void object_flavor_aware(struct object *obj)
 		}
 	}
 }
-
 
 /**
  * Mark an object's flavour as tried.

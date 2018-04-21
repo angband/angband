@@ -71,9 +71,10 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 	const int x = context->x;
 	const int y = context->y;
 
-	if (player->depth != 0 || !is_daytime())
+	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, y, x)) {
 		/* Turn off the light */
 		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+	}
 
 	/* Grid is in line of sight */
 	if (square_isview(cave, y, x)) {
@@ -340,10 +341,12 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 	/* Sufficiently intense cold can solidify lava. */
 	if ((context->dam > randint1(900) + 300) &&
 		square_isfiery(cave, context->y, context->x)) {
+		bool occupied = square_isoccupied(cave, context->y, context->x);
+
 		square_unmark(cave, context->y, context->x);
 		if (one_in_(2)) {
 			square_set_feat(cave, context->y, context->x, FEAT_FLOOR);
-		} else if (one_in_(2)) {
+		} else if (one_in_(2) && !occupied) {
 			square_set_feat(cave, context->y, context->x, FEAT_RUBBLE);
 		} else {
 			square_set_feat(cave, context->y, context->x, FEAT_PASS_RUBBLE);
@@ -455,10 +458,12 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 	/* Sufficiently intense cold can solidify lava. */
 	if ((context->dam > randint1(900) + 300) &&
 		square_isfiery(cave, context->y, context->x)) {
+		bool occupied = square_isoccupied(cave, context->y, context->x);
+
 		square_unmark(cave, context->y, context->x);
 		if (one_in_(2)) {
 			square_set_feat(cave, context->y, context->x, FEAT_FLOOR);
-		} else if (one_in_(2)) {
+		} else if (one_in_(2) && !occupied) {
 			square_set_feat(cave, context->y, context->x, FEAT_RUBBLE);
 		} else {
 			square_set_feat(cave, context->y, context->x, FEAT_PASS_RUBBLE);

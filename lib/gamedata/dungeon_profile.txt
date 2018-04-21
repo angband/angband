@@ -33,9 +33,10 @@
 # in some different way.  It is IMPORTANT that non-zero cutoffs appear in
 # ascending order through this file.
 
-# room: name : height : width : level : pit : rarity : cutoff
+# room: name : rating : height : width : level : pit : rarity : cutoff
 # name is the room name, which must match the name in list-rooms.h so the 
 # correct room-building function can be called.
+# rating is used only for template rooms
 # height and width are the maximum dimensions of the room, and define how much
 # space is allocated for that room.
 # level is the minimum depth at which this room can appear.
@@ -96,7 +97,7 @@ room:simple room:0:11:33:1:0:0:100
 
 ## Modified
 name:modified
-params:1:50:250:2
+params:1:50:300:2
 tunnel:10:30:15:25:50
 streamer:5:2:3:90:2:40
 cutoff:200
@@ -124,6 +125,10 @@ room:room template:3:11:33:30:0:1:100
 
 # Normal rooms (rarity = 0)
 room:simple room:0:11:33:1:0:0:100
+
+# Staircase rooms - rarity 99 to prevent random occurrence
+# these rooms are specially generated to join persistent levels
+room:staircase room:0:1:1:1:0:99:0
 
 ## Moria - these have cutoff -1, but still appear after other checks
 name:moria

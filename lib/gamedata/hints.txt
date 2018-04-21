@@ -57,7 +57,6 @@ H:Finding a way to resist blindness and confusion are critical to survival.
 H:Probing an enemy to learn its abilities is always useful.
 H:Buy at least one scroll of phase door before you enter the dungeon.
 H:Buy at least one potion of cure light wounds before you enter the dungeon.
-H:If a potion or scroll is cheaper than a scroll of Identify, buy it to ID it.
 H:Acid can destroy your stuff - watch out for water hounds and water vortices.
 H:Never underestimate monsters you haven't fought before.
 H:Quivers can hold different types of ammo in one inventory slot (max. 40).

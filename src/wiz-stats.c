@@ -1443,7 +1443,7 @@ static void scan_for_monsters(void)
 static void stats_collect_level(void)
 {
 	/* Make a dungeon */
-	cave_generate(&cave, player);
+	prepare_next_level(&cave, player);
 
 	/* Scan for objects, these are floor objects */
 	scan_for_objects();
@@ -1896,7 +1896,7 @@ void disconnect_stats(void)
 		has_dsc_from_stairs = true;
 
 		/* Make a new cave */
-		cave_generate(&cave, player);
+		prepare_next_level(&cave, player);
 
 		/* Allocate the distance array */
 		cave_dist = mem_zalloc(cave->height * sizeof(int*));

@@ -91,6 +91,7 @@ static s16b art_idx_boot[] = {
 };
 static s16b art_idx_glove[] = {
 	ART_IDX_GLOVE_AC,
+	ART_IDX_GLOVE_HIT_DAM,
 	ART_IDX_GLOVE_FA,
 	ART_IDX_GLOVE_DEX
 };
@@ -176,7 +177,7 @@ static s16b art_idx_high_resist[] =	{
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
  */
-static int artifact_power(int a_idx, char *reason)
+static int artifact_power(int a_idx, char *reason, bool verbose)
 {
 	struct object *obj = object_new();
 	struct object *known_obj = object_new();
@@ -198,7 +199,7 @@ static int artifact_power(int a_idx, char *reason)
 				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
-	power = object_power(obj, true, log_file);
+	power = object_power(obj, verbose, log_file);
 
 	object_delete(&known_obj);
 	object_delete(&obj);
@@ -230,7 +231,7 @@ static void store_base_power(struct artifact_set_data *data)
 	num = 0;
 
 	for (i = 0; i < z_info->a_max; i++, num++) {
-		data->base_power[i] = artifact_power(i, "for original power");
+		data->base_power[i] = artifact_power(i, "for original power", true);
 
 		/* Capture power stats, ignoring cursed and uber arts */
 		if (data->base_power[i] > data->max_power &&
@@ -355,7 +356,7 @@ void count_weapon_abilities(const struct artifact *art,
 	bonus = (art->to_a - min_to_a) / data->ac_increment;
 	if (art->to_a > 20) {
 		file_putf(log_file, "Adding %d for supercharged AC\n", bonus);
-		(data->art_probs[ART_IDX_GEN_AC_SUPER])++;
+		(data->art_probs[ART_IDX_MELEE_AC_SUPER])++;
 	} else if (bonus > 0) {
 		file_putf(log_file,
 				  "Adding %d instances of extra AC bonus for weapon\n", bonus);
@@ -546,8 +547,13 @@ void count_nonweapon_abilities(const struct artifact *art,
 	if (to_hit && (to_hit == to_dam)) {
 		bonus = to_dam / data->dam_increment;
 		if (bonus > 0) {
-			file_putf(log_file, "Adding %d instances of extra to-hit and to-dam bonus for non-weapon\n", bonus);
-			(data->art_probs[ART_IDX_NONWEAPON_HIT_DAM]) += bonus;
+			if (art->tval == TV_GLOVES) {
+				file_putf(log_file, "Adding %d instances of extra to-hit and to-dam bonus for gloves\n", bonus);
+				(data->art_probs[ART_IDX_GLOVE_HIT_DAM]) += bonus;
+			} else {
+				file_putf(log_file, "Adding %d instances of extra to-hit and to-dam bonus for non-weapon\n", bonus);
+				(data->art_probs[ART_IDX_NONWEAPON_HIT_DAM]) += bonus;
+			}
 		}
 	} else if (to_hit > 0) {
 		bonus = to_hit / data->hit_increment;
@@ -1316,7 +1322,7 @@ static struct object_kind *get_base_item(struct artifact_set_data *data,
 
 	/* Pick an sval for that tval at random */
 	while (!kind) {
-		int r = start + randint0(kb_info[tval].num_svals - start);
+		int r = start + randint1(kb_info[tval].num_svals - start);
 		kind = lookup_kind(tval, r);
 
 		/* No items based on quest artifacts or elven rings */
@@ -1594,7 +1600,18 @@ static void try_supercharge(struct artifact *art, s32b target_power,
 	}
 
 	/* Big AC bonus */
-	if (randint0(z_info->a_max) < data->art_probs[ART_IDX_GEN_AC_SUPER]) {
+	if (art->tval == TV_DIGGING || art->tval == TV_HAFTED ||
+		art->tval == TV_POLEARM || art->tval == TV_SWORD) {
+		if (randint0(z_info->a_max) < data->art_probs[ART_IDX_MELEE_AC_SUPER]) {
+			art->to_a += 19 + randint1(11);
+			if (INHIBIT_WEAK)
+				art->to_a += randint1(10);
+			if (INHIBIT_STRONG)
+				art->to_a += randint1(20);
+			file_putf(log_file, "Supercharging AC! New AC bonus is %d\n",
+					  art->to_a);
+		}
+	} else if (randint0(z_info->a_max) < data->art_probs[ART_IDX_GEN_AC_SUPER]){
 		art->to_a += 19 + randint1(11);
 		if (INHIBIT_WEAK)
 			art->to_a += randint1(10);
@@ -2075,6 +2092,7 @@ static void add_ability_aux(struct artifact *art, int r, s32b target_power,
 			break;
 
 		case ART_IDX_NONWEAPON_HIT_DAM:
+		case ART_IDX_GLOVE_HIT_DAM:
 			add_to_hit(art, 1, 2 * data->hit_increment);
 			add_to_dam(art, 1, 2 * data->dam_increment);
 			break;
@@ -2541,7 +2559,7 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		/* Get the kind again in case it's changed */
 		kind = lookup_kind(art->tval, art->sval);
 
-		base_power = artifact_power(*aidx, "for base item power");
+		base_power = artifact_power(*aidx, "for base item power", true);
 		file_putf(log_file, "Base item power %d\n", base_power);
 
 		/* New base item power too close to target artifact power */
@@ -2566,7 +2584,7 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 
 	/* Give this artifact a shot at being supercharged */
 	try_supercharge(art, power, data);
-	ap = artifact_power(*aidx, "result of supercharge");
+	ap = artifact_power(*aidx, "result of supercharge", true);
 	if (ap > (power * 23) / 20 + 1)	{
 		/* Too powerful -- put it back */
 		copy_artifact(a_old, art);
@@ -2583,16 +2601,9 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		/* Copy artifact info temporarily. */
 		copy_artifact(art, a_old);
 
+		/* Curse the designated artifacts */
 		if (hurt_me) {
-			/* Add two abilities, then damage it three times. */
-			add_ability(art, power, art_freq, data);
-			add_ability(art, power, art_freq, data);
 			make_bad(art, art_level);
-			make_bad(art, art_level);
-			make_bad(art, art_level);
-		} else if (one_in_(5000)) {
-			/* Occasionally curse stuff at random */
-			add_curse(art, art_level);
 		}
 
 		/* Add an ability */
@@ -2600,8 +2611,8 @@ static void design_artifact(struct artifact_set_data *data, int tv, int *aidx)
 		remove_contradictory(art);
 
 		/* Check the power, handle negative power */
-		ap = artifact_power(*aidx, "artifact attempt");
-		if (hurt_me && (ap < 0)) {
+		ap = artifact_power(*aidx, "artifact attempt", true);
+		if (ap < 0) {
 			ap = -ap;
 			break;
 		}

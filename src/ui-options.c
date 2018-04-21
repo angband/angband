@@ -57,7 +57,13 @@ static bool get_pref_path(const char *what, int row, char *buf, size_t max)
 	my_strcat(ftmp, ".prf", sizeof(ftmp));
 
 	/* Get a filename */
-	ok = askfor_aux(ftmp, sizeof ftmp, NULL);
+	
+	if(!arg_force_name)
+		ok = askfor_aux(ftmp, sizeof ftmp, NULL);
+	
+	else
+		ok = get_check(format("Confirm writing to %s? ", ftmp));
+
 	screen_load();
 
 	/* Build the filename */
@@ -374,7 +380,7 @@ static void do_cmd_options_win(const char *name, int row)
 /**
  * Current (or recent) keymap action
  */
-static struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
+static struct keypress keymap_buffer[KEYMAP_ACTION_MAX + 1];
 
 
 /**
@@ -985,6 +991,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 static void do_cmd_pref_file_hack(long row)
 {
 	char ftmp[80];
+	bool ok;
 
 	screen_save();
 
@@ -998,8 +1005,13 @@ static void do_cmd_pref_file_hack(long row)
 	player_safe_name(ftmp, sizeof(ftmp), player->full_name, true);
 	my_strcat(ftmp, ".prf", sizeof(ftmp));
 
+	if(!arg_force_name)
+		ok = askfor_aux(ftmp, sizeof ftmp, NULL);
+	else
+		ok = get_check(format("Confirm loading %s? ", ftmp));
+	
 	/* Ask for a file (or cancel) */
-	if (askfor_aux(ftmp, sizeof ftmp, NULL)) {
+	if(ok) {
 		/* Process the given filename */
 		if (process_pref_file(ftmp, false, true) == false) {
 			/* Mention failure */

@@ -45,6 +45,7 @@ u32b seed_flavor;		/* Hack -- consistent object colors */
 s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
+struct level *world;
 
 /**
  * This table allows quick conversion from "speed" to "energy"
@@ -87,6 +88,36 @@ const byte extract_energy[200] =
 	/* F+70 */    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
 	/* Fast */    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
 };
+
+/**
+ * Find a level by its name
+ */
+struct level *level_by_name(char *name)
+{
+	struct level *lev = world;
+	while (lev) {
+		if (streq(lev->name, name)) {
+			break;
+		}
+		lev = lev->next;
+	}
+	return lev;
+}
+
+/**
+ * Find a level by its depth
+ */
+struct level *level_by_depth(int depth)
+{
+	struct level *lev = world;
+	while (lev) {
+		if (lev->depth == depth) {
+			break;
+		}
+		lev = lev->next;
+	}
+	return lev;
+}
 
 /**
  * Say whether it's daytime or not
@@ -466,11 +497,11 @@ void process_world(struct chunk *c)
 	int i, y, x;
 
 	/* Compact the monster list if we're approaching the limit */
-	if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
+	if (cave_monster_count(c) + 32 > z_info->level_monster_max)
 		compact_monsters(64);
 
 	/* Too many holes in the monster list - compress */
-	if (cave_monster_count(cave) + 32 < cave_monster_max(cave))
+	if (cave_monster_count(c) + 32 < cave_monster_max(c))
 		compact_monsters(0);
 
 	/*** Check the Time ***/
@@ -510,9 +541,8 @@ void process_world(struct chunk *c)
 
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))
-		(void)pick_and_place_distant_monster(cave, player,
-											 z_info->max_sight + 5, true,
-											 player->depth);
+		(void)pick_and_place_distant_monster(c, player, z_info->max_sight + 5,
+											 true, player->depth);
 
 	/*** Damage over Time ***/
 
@@ -622,14 +652,14 @@ void process_world(struct chunk *c)
 		equip_learn_after_time(player);
 
 	/* Decrease trap timeouts */
-	for (y = 0; y < cave->height; y++) {
-		for (x = 0; x < cave->width; x++) {
-			struct trap *trap = cave->squares[y][x].trap;
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			struct trap *trap = c->squares[y][x].trap;
 			while (trap) {
 				if (trap->timeout) {
 					trap->timeout--;
 					if (!trap->timeout)
-						square_light_spot(cave, y, x);
+						square_light_spot(c, y, x);
 				}
 				trap = trap->next;
 			}
@@ -655,26 +685,18 @@ void process_world(struct chunk *c)
 				dungeon_change_level(player, 0);
 			} else {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
-                
-                /* Force descent to a lower level if allowed */
-                if (OPT(player, birth_force_descend) &&
-					player->max_depth < z_info->max_depth - 1 &&
-					!is_quest(player->max_depth)) {
-                    player->max_depth = dungeon_get_next_level(player->max_depth, 1);
-                }
-
-				/* New depth - back to max depth or 1, whichever is deeper */
-				dungeon_change_level(player, player->max_depth < 1 ? 1: player->max_depth);
+				player_set_recall_depth(player);
+				dungeon_change_level(player, player->recall_depth);
 			}
 		}
 	}
 
 	/* Delayed Deep Descent */
 	if (player->deep_descent) {
-		/* Count down towards recall */
+		/* Count down towards descent */
 		player->deep_descent--;
 
-		/* Activate the recall */
+		/* Activate the descent */
 		if (player->deep_descent == 0) {
 			int target_increment;
 			int target_depth = player->max_depth;
@@ -998,7 +1020,7 @@ void run_game_loop(void)
 			if (character_dungeon)
 				on_leave_level();
 
-			cave_generate(&cave, player);
+			prepare_next_level(&cave, player);
 			on_new_level();
 
 			player->upkeep->generate_level = false;

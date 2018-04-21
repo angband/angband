@@ -375,6 +375,13 @@ bool square_isplayer(struct chunk *c, int y, int x) {
 }
 
 /**
+ * True if the square contains the player or a monster
+ */
+bool square_isoccupied(struct chunk *c, int y, int x) {
+	return c->squares[y][x].mon != 0 ? true : false;
+}
+
+/**
  * True if the the player knows the terrain of the square
  */
 bool square_isknown(struct chunk *c, int y, int x) {
@@ -579,6 +586,18 @@ bool square_isopen(struct chunk *c, int y, int x) {
 bool square_isempty(struct chunk *c, int y, int x) {
 	if (square_isplayertrap(c, y, x)) return false;
 	return square_isopen(c, y, x) && !square_object(c, y, x);
+}
+
+/**
+ * True if the square is empty (an open square without any items).
+ */
+bool square_isarrivable(struct chunk *c, int y, int x) {
+	if (c->squares[y][x].mon) return false;
+	if (square_isplayertrap(c, y, x)) return false;
+	if (square_isfloor(c, y, x)) return true;
+	if (square_isstairs(c, y, x)) return true;
+	// maybe allow open doors or suchlike?
+	return false;
 }
 
 /**
@@ -821,6 +840,20 @@ bool square_in_bounds_fully(struct chunk *c, int y, int x)
 	return x > 0 && x < c->width - 1 && y > 0 && y < c->height - 1;
 }
 
+/**
+ * Checks if a square is thought by the player to block projections
+ */
+bool square_isbelievedwall(struct chunk *c, int y, int x)
+{
+	// the edge of the world is definitely gonna block things
+	if (!square_in_bounds_fully(c, y, x)) return true;
+	// if we dont know assume its projectable
+	if (!square_isknown(c, y, x)) return false;
+	// report what we think (we may be wrong)
+	return !square_isprojectable(player->cave, y, x);
+}
+
+
 
 /**
  * OTHER SQUARE FUNCTIONS
@@ -968,6 +1001,11 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 
 	/* Make the change */
 	c->squares[y][x].feat = feat;
+
+	/* Light bright terrain */
+	if (feat_is_bright(feat)) {
+		sqinfo_on(c->squares[y][x].info, SQUARE_GLOW);
+	}
 
 	/* Make the new terrain feel at home */
 	if (character_dungeon) {
