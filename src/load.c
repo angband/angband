@@ -1142,7 +1142,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 
 	/* Read the dungeon items until one isn't returned */
 	while (TRUE) {
-		struct object *obj = rd_item();
+		struct object *obj = (*rd_item_version)();
 		if (!obj)
 			break;
 

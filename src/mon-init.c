@@ -50,7 +50,7 @@ const char *r_info_flags[] =
 
 const char *r_info_spell_flags[] =
 {
-	#define RSF(a, b, c, d, e, f, g, h) #a,
+	#define RSF(a, b) #a,
 	#include "list-mon-spells.h"
 	#undef RSF
 	NULL
@@ -121,6 +121,65 @@ static enum parser_error parse_mon_spell_name(struct parser *p) {
 }
 
 
+static enum parser_error parse_mon_spell_message_type(struct parser *p)
+{
+	int msg_index;
+	const char *type;
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	type = parser_getsym(p, "type");
+
+	msg_index = message_lookup_by_name(type);
+
+	if (msg_index < 0)
+		return PARSE_ERROR_INVALID_MESSAGE;
+
+	s->msgt = msg_index;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_message(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	s->message = string_append(s->message, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_blind_message(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	s->blind_message = string_append(s->blind_message,
+									 parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_miss_message(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	s->miss_message = string_append(s->miss_message, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_save_message(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	s->save_message = string_append(s->save_message, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mon_spell_lore_desc(struct parser *p) {
+	struct monster_spell *s = parser_priv(p);
+	assert(s);
+
+	s->lore_desc = string_append(s->lore_desc, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_mon_spell_hit(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	assert(s);
@@ -159,7 +218,7 @@ static enum parser_error parse_mon_spell_effect(struct parser *p) {
 			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
 
 		/* Check for a value */
-		val = effect_param(type);
+	val = effect_param(new_effect->index, type);
 		if (val < 0)
 			return PARSE_ERROR_INVALID_VALUE;
 		else
@@ -283,6 +342,12 @@ struct parser *init_parse_mon_spell(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_mon_spell_name);
+	parser_reg(p, "msgt sym type", parse_mon_spell_message_type);
+	parser_reg(p, "message-vis str text", parse_mon_spell_message);
+	parser_reg(p, "message-invis str text", parse_mon_spell_blind_message);
+	parser_reg(p, "message-miss str text", parse_mon_spell_miss_message);
+	parser_reg(p, "message-save str text", parse_mon_spell_save_message);
+	parser_reg(p, "lore str text", parse_mon_spell_lore_desc);
 	parser_reg(p, "hit uint hit", parse_mon_spell_hit);
 	parser_reg(p, "effect sym eff ?sym type ?int xtra", parse_mon_spell_effect);
 	parser_reg(p, "param int p2 ?int p3", parse_mon_spell_param);
@@ -310,6 +375,13 @@ static void cleanup_mon_spell(void)
 	while (rs) {
 		next = rs->next;
 		free_effect(rs->effect);
+		string_free(rs->message);
+		string_free(rs->blind_message);
+		if (rs->miss_message)
+			string_free(rs->miss_message);
+		if (rs->save_message)
+			string_free(rs->save_message);
+		string_free(rs->lore_desc);
 		mem_free(rs);
 		rs = next;
 	}

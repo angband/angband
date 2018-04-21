@@ -2152,7 +2152,8 @@ properties:1:5:0
 alloc:10:1 to 70
 pile:70:1d3
 power:0
-effect:DARKEN_AREA:DARK_WEAK:3
+effect:DARKEN_AREA
+param:3
 dice:10
 
 name:305:Trap Creation
@@ -3112,7 +3113,8 @@ alloc:10:5 to 40
 combat:0:1d2:0:0:0
 charges:8+d8
 power:0
-effect:DARKEN_AREA:DARK_WEAK:3
+effect:DARKEN_AREA
+param:3
 dice:10
 
 ### Destruction ###

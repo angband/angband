@@ -662,11 +662,13 @@ bool square_dtrap_edge(struct chunk *c, int y, int x)
 
 bool square_in_bounds(struct chunk *c, int y, int x)
 {
+	assert(c);
 	return x >= 0 && x < c->width && y >= 0 && y < c->height;
 }
 
 bool square_in_bounds_fully(struct chunk *c, int y, int x)
 {
+	assert(c);
 	return x > 0 && x < c->width - 1 && y > 0 && y < c->height - 1;
 }
 
@@ -679,10 +681,7 @@ bool square_in_bounds_fully(struct chunk *c, int y, int x)
 
 struct feature *square_feat(struct chunk *c, int y, int x)
 {
-	assert(c);
-	assert(y >= 0 && y < c->height);
-	assert(x >= 0 && x < c->width);
-
+	assert(square_in_bounds(c, y, x));
 	return &f_info[c->squares[y][x].feat];
 }
 
@@ -691,6 +690,7 @@ struct feature *square_feat(struct chunk *c, int y, int x)
  */
 struct monster *square_monster(struct chunk *c, int y, int x)
 {
+	if (!square_in_bounds(c, y, x)) return NULL;
 	if (c->squares[y][x].mon > 0) {
 		struct monster *mon = cave_monster(c, c->squares[y][x].mon);
 		return mon->race ? mon : NULL;
@@ -703,13 +703,24 @@ struct monster *square_monster(struct chunk *c, int y, int x)
  * Get the top object of a pile on the current level by its position.
  */
 struct object *square_object(struct chunk *c, int y, int x) {
+	if (!square_in_bounds(c, y, x)) return NULL;
 	return c->squares[y][x].obj;
+}
+
+/**
+ * Get the first (and currently only) trap in a position on the current level.
+ */
+struct trap *square_trap(struct chunk *c, int y, int x)
+{
+	if (!square_in_bounds(c, y, x)) return NULL;
+    return c->squares[y][x].trap;
 }
 
 /**
  * Return TRUE if the given object is on the floor at this grid
  */
 bool square_holds_object(struct chunk *c, int y, int x, struct object *obj) {
+	assert(square_in_bounds(c, y, x));
 	return pile_contains(square_object(c, y, x), obj);
 }
 
@@ -717,6 +728,7 @@ bool square_holds_object(struct chunk *c, int y, int x, struct object *obj) {
  * Excise an object from a floor pile, leaving it orphaned.
  */
 void square_excise_object(struct chunk *c, int y, int x, struct object *obj) {
+	assert(square_in_bounds(c, y, x));
 	pile_excise(&c->squares[y][x].obj, obj);
 }
 
@@ -724,6 +736,7 @@ void square_excise_object(struct chunk *c, int y, int x, struct object *obj) {
  * Excise an entire floor pile.
  */
 void square_excise_pile(struct chunk *c, int y, int x) {
+	assert(square_in_bounds(c, y, x));
 	object_pile_free(square_object(c, y, x));
 	c->squares[y][x].obj = NULL;
 }
@@ -737,11 +750,10 @@ void square_excise_pile(struct chunk *c, int y, int x) {
  */
 void square_set_feat(struct chunk *c, int y, int x, int feat)
 {
-	int current_feat = c->squares[y][x].feat;
+	int current_feat;
 
-	assert(c);
-	assert(y >= 0 && y < c->height);
-	assert(x >= 0 && x < c->width);
+	assert(square_in_bounds(c, y, x));
+	current_feat = c->squares[y][x].feat;
 
 	/* Track changes */
 	if (current_feat) c->feat_count[current_feat]--;
@@ -768,6 +780,7 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 
 void square_add_trap(struct chunk *c, int y, int x)
 {
+	assert(square_in_bounds_fully(c, y, x));
 	place_trap(c, y, x, -1, c->depth);
 }
 

@@ -199,13 +199,9 @@ void target_set_location(int y, int x)
 {
 	/* Legal target */
 	if (square_in_bounds_fully(cave, y, x)) {
-		struct monster *mon = square_monster(cave, y, x);
-
 		/* Save target info */
 		target_set = TRUE;
 		target_who = NULL;
-		if (mon && target_able(mon))
-			target_who = mon;
 		target_y = y;
 		target_x = x;
 		return;

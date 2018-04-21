@@ -288,7 +288,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			}
 
 			/* skip | characters */
-			strskip(buf,'|');
+			strskip(buf,'|','\\');
 
 			/* escape backslashes */
 			strescape(buf,'\\');

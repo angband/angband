@@ -97,6 +97,7 @@ static bool quickstart_allowed = FALSE;
  * Quickstart? screen.
  * ------------------------------------------------------------------------ */
 static enum birth_stage textui_birth_quickstart(void)
+//phantom name change changes
 {
 	const char *prompt = "['Y' to use this character, 'N' to start afresh, 'C' to change name or history]";
 
@@ -115,7 +116,7 @@ static enum birth_stage textui_birth_quickstart(void)
 			next = BIRTH_RACE_CHOICE;
 		} else if (ke.code == KTRL('X')) {
 			quit(NULL);
-		} else if (ke.code == 'C' || ke.code == 'c') {
+		} else if ( !arg_force_name && (ke.code == 'C' || ke.code == 'c')) {
 			next = BIRTH_NAME_CHOICE;
 		} else if (ke.code == 'Y' || ke.code == 'y') {
 			cmdq_push(CMD_ACCEPT_CHARACTER);
@@ -832,12 +833,18 @@ static enum birth_stage point_based_command(void)
  * ------------------------------------------------------------------------
  * Asking for the player's chosen name.
  * ------------------------------------------------------------------------ */
+//phantom changes for server
 static enum birth_stage get_name_command(void)
 {
 	enum birth_stage next;
 	char name[32];
+	
+	if ( arg_force_name ) {
+		next = BIRTH_HISTORY_CHOICE;
+	}
 
-	if (get_character_name(name, sizeof(name))) {
+	
+	else if (get_character_name(name, sizeof(name))) {
 		cmdq_push(CMD_NAME_CHOICE);
 		cmd_set_arg_string(cmdq_peek(), "name", name);
 		next = BIRTH_HISTORY_CHOICE;
@@ -845,6 +852,7 @@ static enum birth_stage get_name_command(void)
 		next = BIRTH_BACK;
 	}
 
+	
 	return next;
 }
 

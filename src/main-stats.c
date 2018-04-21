@@ -109,12 +109,12 @@ static void create_indices()
 
 	for (i = 0; i < z_info->k_max; i++) {
 
-		struct object object_type_body;
+		struct object object_type_body = { 0 };
 		struct object *obj = &object_type_body;
 		struct object_kind *kind = &k_info[i];
 		obj->tval = kind->tval;
 
-		if (! kind->name) continue;
+		if (!kind->name) continue;
 
 		if (tval_has_variable_power(obj))
 			wearables_index[i] = ++wearable_count;

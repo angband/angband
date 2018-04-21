@@ -481,6 +481,12 @@ void object_absorb(struct object *obj1, struct object *obj2)
  */
 void object_wipe(struct object *obj)
 {
+	/* Free slays and brands */
+	if (obj->slays)
+		free_slay(obj->slays);
+	if (obj->brands)
+		free_brand(obj->brands);
+
 	/* Wipe the structure */
 	memset(obj, 0, sizeof(*obj));
 }
@@ -642,14 +648,15 @@ static struct object *floor_get_oldest_ignored(int y, int x)
 
 
 /**
- * Let the floor carry an object, deleting old ignored items if necessary
+ * Let the floor carry an object, deleting old ignored items if necessary.
+ * The calling function must deal with the dropped object on failure.
  *
  * Optionally put the object at the top or bottom of the pile
  */
 bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 {
 	int n = 0;
-	struct object *obj;
+	struct object *obj, *ignore = floor_get_oldest_ignored(y, x);
 
 	/* Scan objects in that grid for combination */
 	for (obj = square_object(c, y, x); obj; obj = obj->next) {
@@ -669,8 +676,6 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last)
 	/* The stack is already too large */
 	if (n >= z_info->floor_size || (OPT(birth_no_stacking) && n)) {
 		/* Delete the oldest ignored object */
-		struct object *ignore = floor_get_oldest_ignored(y, x);
-
 		if (ignore) {
 			square_excise_object(c, y, x, ignore);
 			object_delete(&ignore);
@@ -745,6 +750,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 			VERB_AGREEMENT(dropped->number, "breaks", "break"));
 
 		/* Failure */
+		object_delete(&dropped);
 		return;
 	}
 
@@ -848,6 +854,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (player->wizard) msg("Breakage (no floor space).");
 
 		/* Failure */
+		object_delete(&dropped);
 		return;
 	}
 
@@ -886,6 +893,7 @@ void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
 		if (dropped->artifact) dropped->artifact->created = FALSE;
 
 		/* Failure */
+		object_delete(&dropped);
 		return;
 	}
 

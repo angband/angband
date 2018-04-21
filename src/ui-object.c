@@ -1225,7 +1225,10 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		i2--;
 
 	/* Accept inventory */
-	if ((i1 <= i2) || allow_all) allow_inven = TRUE;
+	if ((i1 <= i2) || allow_all)
+		allow_inven = TRUE;
+	else if (item_mode & USE_INVEN)
+		item_mode -= USE_INVEN;
 
 	/* Full equipment */
 	e1 = 0;
@@ -1243,7 +1246,10 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	}
 
 	/* Accept equipment */
-	if ((e1 <= e2) || allow_all) allow_equip = TRUE;
+	if ((e1 <= e2) || allow_all)
+		allow_equip = TRUE;
+	else if (item_mode & USE_EQUIP)
+		item_mode -= USE_EQUIP;
 
 	/* Restrict quiver indexes */
 	q1 = 0;
@@ -1259,7 +1265,10 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		q2--;
 
 	/* Accept quiver */
-	if ((q1 <= q2) || allow_all) allow_quiver = TRUE;
+	if ((q1 <= q2) || allow_all)
+		allow_quiver = TRUE;
+	else if (item_mode & USE_QUIVER)
+		item_mode -= USE_QUIVER;
 
 	/* Scan all non-gold objects in the grid */
 	floor_num = scan_floor(floor_list, floor_max, py, px, 0x0B, tester);
@@ -1276,7 +1285,10 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	while ((f1 <= f2) && (!object_test(tester, floor_list[f2]))) f2--;
 
 	/* Accept floor */
-	if ((f1 <= f2) || allow_all) allow_floor = TRUE;
+	if ((f1 <= f2) || allow_all)
+		allow_floor = TRUE;
+	else if (item_mode & USE_FLOOR)
+		item_mode -= USE_FLOOR;
 
 	/* Require at least one legal choice */
 	if (allow_inven || allow_equip || allow_quiver || allow_floor) {

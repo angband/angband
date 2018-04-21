@@ -412,7 +412,25 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 
 		/* Change the weight */
 		player->upkeep->total_weight -= (num * obj->weight);
+
+		/* Describe if necessary */
+		if (message) 
+			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
 	} else {
+		/* Describe if necessary */
+		if (message) {
+			/* Artifacts */
+			if (artifact) {
+				object_desc(name, sizeof(name), obj,
+							ODESC_FULL | ODESC_SINGULAR);
+			} else {
+				/* Describe zero amount */
+				obj->number = 0;
+				object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL);
+				obj->number = num;
+			}
+		}
+
 		/* We're using the entire stack */
 		usable = obj;
 		gear_excise_object(usable);
@@ -680,6 +698,91 @@ bool inven_carry(struct player *p, struct object *obj, bool absorb,
 
 
 /**
+ * Wield or wear a single item from the pack or floor
+ */
+void inven_wield(struct object *obj, int slot)
+{
+	struct object *wielded, *old = player->body.slots[slot].obj;
+
+	const char *fmt;
+	char o_name[80];
+
+	/* Increase equipment counter if empty slot */
+	if (old == NULL)
+		player->upkeep->equip_cnt++;
+
+	/* Take a turn */
+	player->upkeep->energy_use = z_info->move_energy;
+
+	/* Split off a new object if necessary */
+	if (obj->number > 1) {
+		/* Split off a new single object */
+		wielded = object_split(obj, 1);
+
+		/* If it's a gear object, give the split item a list entry */
+		if (pile_contains(player->gear, obj)) {
+			wielded->next = obj->next;
+			obj->next = wielded;
+			wielded->prev = obj;
+			if (wielded->next)
+				(wielded->next)->prev = wielded;
+		}
+	} else
+		wielded = obj;
+
+	/* Carry floor items, don't allow combining */
+	if (square_holds_object(cave, player->py, player->px, wielded)) {
+		square_excise_object(cave, player->py, player->px, wielded);
+		inven_carry(player, wielded, FALSE, FALSE);
+	}
+
+	/* Wear the new stuff */
+	player->body.slots[slot].obj = wielded;
+
+	/* Do any ID-on-wield */
+	object_notice_on_wield(wielded);
+
+	/* Where is the item now */
+	if (tval_is_melee_weapon(wielded))
+		fmt = "You are wielding %s (%c).";
+	else if (wielded->tval == TV_BOW)
+		fmt = "You are shooting with %s (%c).";
+	else if (tval_is_light(wielded))
+		fmt = "Your light source is %s (%c).";
+	else
+		fmt = "You are wearing %s (%c).";
+
+	/* Describe the result */
+	object_desc(o_name, sizeof(o_name), wielded, ODESC_PREFIX | ODESC_FULL);
+
+	/* Message */
+	msgt(MSG_WIELD, fmt, o_name, I2A(slot));
+
+	/* Cursed! */
+	if (cursed_p(wielded->flags)) {
+		/* Warn the player */
+		msgt(MSG_CURSED, "Oops! It feels deathly cold!");
+
+		/* Sense the object */
+		object_notice_curses(wielded);
+	}
+
+	/* See if we have to overflow the pack */
+	combine_pack();
+	pack_overflow(old);
+
+	/* Recalculate bonuses, torch, mana, gear */
+	player->upkeep->notice |= (PN_IGNORE);
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_ARMOR);
+	player->upkeep->redraw |= (PR_STATS | PR_HP | PR_MANA | PR_SPEED);
+
+	/* Disable repeats */
+	cmd_disable_repeat();
+}
+
+
+/**
  * Take off a non-cursed equipment item
  *
  * Note that taking off an item when "full" may cause that item
@@ -712,6 +815,7 @@ void inven_takeoff(struct object *obj)
 
 	/* De-equip the object */
 	player->body.slots[slot].obj = NULL;
+	player->upkeep->equip_cnt--;
 
 	/* Message */
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, I2A(slot));

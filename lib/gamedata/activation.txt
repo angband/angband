@@ -507,7 +507,8 @@ desc:removes all curses from all equipped items
 name:LIGHT
 aim:0
 power:4
-effect:LIGHT_AREA:LIGHT_WEAK:2
+effect:LIGHT_AREA
+param:2
 dice:2d8
 desc:lights up an area and inflicts 2d8 damage on light-sensitive creatures
 
@@ -675,7 +676,8 @@ name:ILLUMINATION
 aim:0
 power:4
 msg:The {kind} well{s} with clear light...
-effect:LIGHT_AREA:LIGHT_WEAK:3
+effect:LIGHT_AREA
+param:3
 dice:2d15
 desc:lights up the surrounding area, hurting light-sensitive creatures
 

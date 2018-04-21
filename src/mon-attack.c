@@ -102,7 +102,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 
 		/* Use the memorized info */
 		of_copy(ai_flags, mon->known_pstate.flags);
-		of_copy(ai_pflags, mon->known_pstate.pflags);
+		pf_copy(ai_pflags, mon->known_pstate.pflags);
 		if (!of_is_empty(ai_flags) || !pf_is_empty(ai_pflags))
 			know_something = TRUE;
 
@@ -284,7 +284,7 @@ bool make_attack_spell(struct monster *mon)
 	    randint0(100) < 50)
 
 		/* Require intelligent spells */
-		set_spells(f, RST_HASTE | RST_ANNOY | RST_ESCAPE | RST_HEAL | RST_TACTIC | RST_SUMMON);
+		ignore_spells(f, RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK | RST_INNATE);
 
 	/* Remove the "ineffective" spells */
 	remove_bad_spells(mon, f);
@@ -296,13 +296,13 @@ bool make_attack_spell(struct monster *mon)
 			!projectable(cave, mon->fy, mon->fx, py, px, PROJECT_STOP))
 
 			/* Remove spells that will only hurt friends */
-			set_spells(f, ~RST_BOLT);
+			ignore_spells(f, RST_BOLT);
 
 		/* Check for a possible summon */
 		if (!(summon_possible(mon->fy, mon->fx)))
 
 			/* Remove summoning spells */
-			set_spells(f, ~RST_SUMMON);
+			ignore_spells(f, RST_SUMMON);
 	}
 
 	/* No spells left */
@@ -337,7 +337,7 @@ bool make_attack_spell(struct monster *mon)
 		failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
-	if ((thrown_spell >= MIN_NONINNATE_SPELL) && (randint0(100) < failrate)) {
+	if (!mon_spell_is_innate(thrown_spell) && (randint0(100) < failrate)) {
 		/* Message */
 		msg("%s tries to cast a spell, but fails.", m_name);
 
@@ -346,29 +346,18 @@ bool make_attack_spell(struct monster *mon)
 
 	/* Cast the spell. */
 	disturb(player, 1);
-
-	/* Special case RSF_HASTE until TMD_* and MON_TMD_* are rationalised */
-	if (thrown_spell == RSF_HASTE) {
-		if (blind)
-			msg("%s mumbles.", m_name);
-		else
-			msg("%s concentrates on %s body.", m_name, m_poss);
-
-		(void)mon_inc_timed(mon, MON_TMD_FAST, 50, 0, FALSE);
-	} else {
-		do_mon_spell(thrown_spell, mon, seen);
-	}
+	do_mon_spell(thrown_spell, mon, seen);
 
 	/* Remember what the monster did to us */
 	if (seen) {
 		rsf_on(lore->spell_flags, thrown_spell);
 
 		/* Innate spell */
-		if (thrown_spell < MIN_NONINNATE_SPELL) {
+		if (mon_spell_is_innate(thrown_spell)) {
 			if (lore->cast_innate < MAX_UCHAR)
 				lore->cast_innate++;
 		} else {
-		/* Bolt or Ball, or Special spell */
+			/* Bolt or Ball, or Special spell */
 			if (lore->cast_spell < MAX_UCHAR)
 				lore->cast_spell++;
 		}

@@ -1178,11 +1178,11 @@ depgen:
  list-origins.h list-player-flags.h list-magic-realms.h cmds.h cave.h \
  list-square-flags.h list-terrain-flags.h cmd-core.h game-input.h \
  game-world.h init.h parser.h list-parser-errors.h obj-gear.h \
- list-equip-slots.h obj-util.h player-path.h randname.h target.h \
- ui-command.h ui-context.h ui-input.h ui-event.h ui-term.h ui-display.h \
- ui-help.h ui-keymap.h ui-knowledge.h ui-map.h ui-object.h ui-output.h \
- z-textblock.h ui-player.h ui-prefs.h ui-signals.h ui-spell.h ui-store.h \
- ui-target.h
+ list-equip-slots.h obj-util.h player-calcs.h player-path.h randname.h \
+ target.h ui-command.h ui-context.h ui-input.h ui-event.h ui-term.h \
+ ui-display.h ui-help.h ui-keymap.h ui-knowledge.h ui-map.h ui-object.h \
+ ui-output.h z-textblock.h ui-player.h ui-prefs.h ui-signals.h ui-spell.h \
+ ui-store.h ui-target.h
 ./ui-keymap.o: ui-keymap.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
  message.h list-message.h option.h z-file.h list-options.h player.h \

@@ -199,7 +199,7 @@ errr grab_effect_data(struct parser *p, struct effect *effect)
 			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
 
 		/* Check for a value */
-		val = effect_param(type);
+		val = effect_param(effect->index, type);
 		if (val < 0)
 			return PARSE_ERROR_INVALID_VALUE;
 		else

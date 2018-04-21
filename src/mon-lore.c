@@ -391,7 +391,8 @@ void lore_update(const struct monster_race *race, struct monster_lore *lore)
 	/* Blows */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
 		if (!race->blow) break;
-		if (lore->blows[i].times_seen || lore->all_known) {
+		if (lore->blow_known[i] || lore->blows[i].times_seen ||
+			lore->all_known) {
 			lore->blow_known[i] = TRUE;
 			lore->blows[i].method = race->blow[i].method;
 			lore->blows[i].effect = race->blow[i].effect;
@@ -466,6 +467,7 @@ void lore_do_probe(struct monster *mon)
 		lore->blow_known[i] = TRUE;
 	rf_setall(lore->flags);
 	rsf_copy(lore->spell_flags, mon->race->spell_flags);
+	lore_update(mon->race, lore);
 
 	/* Update monster recall window */
 	if (player->upkeep->monster_race == mon->race)

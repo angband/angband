@@ -142,7 +142,7 @@ Original Keyset Command Summary
   \\   (special - bypass keymap)        ~     Check knowledge
   \`   (special - escape)               ?     Help
   /    Identify symbol                 
-  |    Quiver list
+  \|    Quiver list
 ====== ============================= ====== ============================
 
 .. |*| replace:: \*
@@ -209,7 +209,7 @@ Roguelike Keyset Command Summary
   \`    (special - escape)              ?    Help
   /    Identify symbol                 
   TAB  Fire default ammo at target 
-  |    Quiver list
+  \|    Quiver list
 ====== ============================= ====== ============================
 
 Special Keys

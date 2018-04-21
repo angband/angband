@@ -141,6 +141,7 @@ void delete_monster_idx(int m_idx)
 	/* Monster location */
 	y = mon->fy;
 	x = mon->fx;
+	assert(square_in_bounds(cave, y, x));
 
 	/* Hack -- Reduce the racial counter */
 	mon->race->cur_num--;
@@ -352,12 +353,17 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 	/* Delete all the monsters */
 	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--) {
 		struct monster *mon = cave_monster(c, m_idx);
+		struct object *obj = mon ? mon->held_obj : NULL;
 
 		/* Skip dead monsters */
 		if (!mon->race) continue;
 
-		/* Delete all the objects */
-		object_pile_free(mon->held_obj);
+		/* Delete all the objects, first handling artifacts */
+		if (obj) {
+			if (obj->artifact && !object_was_sensed(obj))
+				obj->artifact->created = FALSE;
+			object_pile_free(obj);
+		}
 
 		/* Reduce the racial counter */
 		mon->race->cur_num--;
@@ -700,6 +706,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 			any = TRUE;
 		else {
 			obj->artifact->created = FALSE;
+			object_wipe(obj);
 			mem_free(obj);
 		}
 	}
@@ -723,6 +730,7 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 			any = TRUE;
 		else {
 			obj->artifact->created = FALSE;
+			object_wipe(obj);
 			mem_free(obj);
 		}
 	}
@@ -810,7 +818,21 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 
 		obj->mimicking_m_idx = m_idx;
 		new_mon->mimicked_obj = obj;
-		floor_carry(c, y, x, obj, FALSE);
+
+		/* Put the object on the floor if it goes, otherwise no mimicry */
+		if (!floor_carry(c, y, x, obj, FALSE)) {
+			/* Clear the mimicry */
+			obj->mimicking_m_idx = 0;
+			new_mon->mimicked_obj = NULL;
+
+			/* Give the object to the monster if appropriate */
+			if (rf_has(new_mon->race->flags, RF_MIMIC_INV)) {
+				monster_carry(c, new_mon, obj);
+			} else {
+				/* Otherwise delete the mimicked object */
+				object_delete(&obj);
+			}
+		}
 	}
 
 	/* Result */

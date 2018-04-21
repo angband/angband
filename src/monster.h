@@ -122,7 +122,7 @@ enum
  */
 enum
 {
-    #define RSF(a, b, c, d, e, f, g, h) RSF_##a,
+    #define RSF(a, b) RSF_##a,
     #include "list-mon-spells.h"
     #undef RSF
 };
@@ -162,6 +162,12 @@ struct monster_spell {
 	struct monster_spell *next;
 
 	u16b index;				/* Numerical index (RSF_FOO) */
+	int msgt;				/* Flag for message colouring */
+	char *message;			/* Description of the attack */
+	char *blind_message;	/* Description of the attack if unseen */
+	char *miss_message;		/* Description of a missed attack */
+	char *save_message;		/* Message on passing saving throw, if any */
+	char *lore_desc;		/* Description of the attack used in lore text */
 	int hit;				/* To-hit level for the attack */
 	struct effect *effect;	/* Effect(s) of the spell */
 	random_value power;		/* Relative power of the spell */

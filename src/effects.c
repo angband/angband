@@ -392,7 +392,7 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 		cave_monster(cave, cave->mon_current) : NULL;
 
 	if (mon) {
-		mon_inc_timed(mon, context->p1, amount, MON_TMD_FLG_NOTIFY, FALSE);
+		mon_inc_timed(mon, context->p1, amount, 0, FALSE);
 		context->ident = TRUE;
 	}
 	return TRUE;
@@ -858,6 +858,11 @@ bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 		msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
 		player->deep_descent = 3 + randint1(4);
 		context->ident = TRUE;
+
+		/* Redraw status line */
+		player->upkeep->redraw |= PR_STATUS;
+		handle_stuff(player);
+
 		return TRUE;
 	} else {
 		msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");
@@ -2049,9 +2054,6 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 
 		msg("The recharge backfires!");
 		msg("There is a bright flash of light.");
-
-		/* Reduce the charges of rods/wands/staves */
-		reduce_charges(obj, 1);
 
 		/* Reduce and describe inventory */
 		if (object_is_carried(player, obj))
@@ -3313,10 +3315,10 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	int rad = context->p2 ? context->p2 : 2;
 	int source;
 
-	int ty = py + 99 * ddy[context->dir];
-	int tx = px + 99 * ddx[context->dir];
+	int ty = py + ddy[context->dir];
+	int tx = px + ddx[context->dir];
 
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Player or monster? */
 	if (cave->mon_current > 0) {
@@ -3324,7 +3326,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		source = cave->mon_current;
 		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
 		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP);
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 	} else {
 		if (context->p3) rad += player->lev / context->p3;
 		source = -1;
@@ -3332,7 +3334,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 	/* Ask for a target if no direction given */
 	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP);
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 		target_get(&tx, &ty);
 	}
@@ -3361,17 +3363,17 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	int rad = context->p2;
 	int source;
 
-	int ty = py + 99 * ddy[context->dir];
-	int tx = px + 99 * ddx[context->dir];
+	int ty = py + ddy[context->dir];
+	int tx = px + ddx[context->dir];
 
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Player or monster? */
 	if (cave->mon_current > 0) {
 		struct monster *mon = cave_monster(cave, cave->mon_current);
 		source = cave->mon_current;
 		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP);
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 		/* Breath parameters for monsters are monster-dependent */
 		dam = breath_dam(type, mon->hp); 
@@ -3383,7 +3385,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 	/* Ask for a target if no direction given */
 	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP);
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 		target_get(&tx, &ty);
 	}
@@ -3409,14 +3411,17 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	int num = context->value.m_bonus;
 
-	int ty = py + 99 * ddy[context->dir];
-	int tx = px + 99 * ddx[context->dir];
+	int ty = py + ddy[context->dir];
+	int tx = px + ddx[context->dir];
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Ask for a target if no direction given (early detonation) */
-	if ((context->dir == 5) && target_okay())
+	if ((context->dir == 5) && target_okay()) {
+		flg &= ~(PROJECT_STOP | PROJECT_THRU);
+
 		target_get(&tx, &ty);
+	}
 
 	while (num--) {
 		/* Aim at the target.  Hurt items on floor. */
@@ -3441,7 +3446,7 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 
 	s16b ty, tx;
 
-	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
+	int flg = PROJECT_THRU | PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
 
 	/* Describe */
 	if (!player->timed[TMD_BLIND])
@@ -3449,8 +3454,8 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
-		ty = py + 99 * ddy[i];
-		tx = px + 99 * ddx[i];
+		ty = py + ddy_ddd[i];
+		tx = px + ddx_ddd[i];
 
 		/* Aim at the target */
 		(void) project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0);
@@ -3474,12 +3479,12 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 
 	s16b ty, tx;
 
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	int flg = PROJECT_STOP | PROJECT_THRU | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
-		ty = py + 99 * ddy[i];
-		tx = px + 99 * ddx[i];
+		ty = py + ddy_ddd[i];
+		tx = px + ddx_ddd[i];
 
 		/* Aim at the target, explode */
 		(void) project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0);
@@ -3865,13 +3870,13 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		case 6:
 		{
 			/* Mana Ball */
-			int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-			int ty = player->py + 99 * ddy[context->dir];
-			int tx = player->px + 99 * ddx[context->dir];
+			int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+			int ty = player->py + ddy[context->dir];
+			int tx = player->px + ddx[context->dir];
 
 			/* Ask for a target if no direction given */
 			if ((context->dir == 5) && target_okay()) {
-				flg &= ~(PROJECT_STOP);
+				flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 				target_get(&tx, &ty);
 			}
@@ -4358,47 +4363,83 @@ effect_index effect_lookup(const char *name)
 /**
  * Translate a string to an effect parameter index
  */
-int effect_param(const char *type)
+int effect_param(int index, const char *type)
 {
-	int val;
+	int val = -1;
 
-	/* If not a numerical value, run through the possibilities */
+	/* If not a numerical value, assign according to effect index */
 	if (sscanf(type, "%d", &val) != 1) {
+		switch (index) {
+				/* Projection name */
+			case EF_PROJECT_LOS:
+			case EF_PROJECT_LOS_AWARE:
+			case EF_BALL:
+			case EF_BREATH:
+			case EF_SWARM:
+			case EF_STAR:
+			case EF_STAR_BALL:
+			case EF_BOLT:
+			case EF_BEAM:
+			case EF_BOLT_OR_BEAM:
+			case EF_LINE:
+			case EF_ALTER:
+			case EF_BOLT_STATUS:
+			case EF_BOLT_STATUS_DAM:
+			case EF_BOLT_AWARE:
+			case EF_TOUCH:
+			case EF_TOUCH_AWARE: {
+				val = gf_name_to_idx(type);
+				break;
+			}
 
-		/* Projection name */
-		val = gf_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Timed effect name */
+			case EF_CURE:
+			case EF_TIMED_SET:
+			case EF_TIMED_INC:
+			case EF_TIMED_INC_NO_RES:
+			case EF_TIMED_DEC: {
+				val = timed_name_to_idx(type);
+				break;
+			}
 
-		/* Timed effect name */
-		val = timed_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Monster timed effect name */
+			case EF_MON_TIMED_INC: {
+				val = mon_timed_name_to_idx(type);
+				break;
+			}
 
-		/* Monster timed effect name */
-		val = mon_timed_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Summon name */
+			case EF_SUMMON: {
+				val = summon_name_to_idx(type);
+				break;
+			}
 
-		/* Summon name */
-		val = summon_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Stat name */
+			case EF_RESTORE_STAT:
+			case EF_DRAIN_STAT:
+			case EF_LOSE_RANDOM_STAT:
+			case EF_GAIN_STAT: {
+				val = stat_name_to_idx(type);
+				break;
+			}
 
-		/* Stat name */
-		val = stat_name_to_idx(type);
-		if (val >= 0)
-			return val;
+				/* Enchant type name - not worth a separate function */
+			case EF_ENCHANT: {
+				if (streq(type, "TOBOTH"))
+					val = ENCH_TOBOTH;
+				else if (streq(type, "TOHIT"))
+					val = ENCH_TOHIT;
+				else if (streq(type, "TODAM"))
+					val = ENCH_TODAM;
+				else if (streq(type, "TOAC"))
+					val = ENCH_TOAC;
+				break;
+			}
 
-		/* Enchant type name - not worth a separate function */
-		if (streq(type, "TOBOTH"))
-			val = ENCH_TOBOTH;
-		else if (streq(type, "TOHIT"))
-			val = ENCH_TOHIT;
-		else if (streq(type, "TODAM"))
-			val = ENCH_TODAM;
-		else if (streq(type, "TOAC"))
-			val = ENCH_TOAC;
+				/* Anything else shoulcn't be calling this */
+			default:
+				;
+		}
 	}
 
 	return val;

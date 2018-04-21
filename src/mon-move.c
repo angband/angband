@@ -291,6 +291,9 @@ static bool get_moves_flow(struct chunk *c, struct monster *mon)
 		int y = my + ddy_ddd[i];
 		int x = mx + ddx_ddd[i];
 
+		/* Bounds check */
+		if (!square_in_bounds(c, y, x)) continue;
+
 		/* Ignore unvisited/unpassable locations */
 		if (c->squares[y][x].when == 0) continue;
 
@@ -359,6 +362,9 @@ static bool get_moves_fear(struct chunk *c, struct monster *mon)
 		/* Get the location */
 		int y = my + ddy_ddd[i];
 		int x = mx + ddx_ddd[i];
+
+		/* Bounds check */
+		if (!square_in_bounds(c, y, x)) continue;
 
 		/* Ignore illegal & older locations */
 		if (c->squares[y][x].when == 0 || c->squares[y][x].when < best_when)
@@ -1028,9 +1034,6 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
  */
 static bool process_monster_multiply(struct chunk *c, struct monster *mon)
 {
-	int oy = mon->fy;
-	int ox = mon->fx;
-
 	int k = 0, y, x;
 
 	struct monster_lore *lore = get_lore(mon->race);
@@ -1039,8 +1042,8 @@ static bool process_monster_multiply(struct chunk *c, struct monster *mon)
 	if (num_repro >= z_info->repro_monster_max) return FALSE;
 
 	/* Count the adjacent monsters */
-	for (y = oy - 1; y <= mon->fy + 1; y++)
-		for (x = ox - 1; x <= mon->fx + 1; x++)
+	for (y = mon->fy - 1; y <= mon->fy + 1; y++)
+		for (x = mon->fx - 1; x <= mon->fx + 1; x++)
 			if (c->squares[y][x].mon > 0) k++;
 
 	/* Multiply slower in crowded areas */

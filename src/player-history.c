@@ -243,7 +243,7 @@ static bool history_is_artifact_logged(struct artifact *artifact)
  */
 bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 {
-	struct object object_type_body;
+	struct object object_type_body = { 0 };
 	struct object *fake = &object_type_body;
 
 	char o_name[80];
@@ -252,7 +252,6 @@ bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 	assert(artifact);
 
 	/* Make fake artifact for description purposes */
-	object_wipe(fake);
 	make_fake_artifact(fake, artifact);
 	object_desc(o_name, sizeof(o_name), fake,
 				ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);

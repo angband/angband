@@ -1376,8 +1376,8 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 	struct object *obj = &object_type_body;
 
 	make_fake_artifact(obj, &a_info[a_idx]);
-	object_desc(o_name, namelen, obj,
-			ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
+	object_desc(o_name, namelen, obj, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
+	object_wipe(obj);
 }
 
 /**
@@ -1398,9 +1398,8 @@ static void display_artifact(int col, int row, bool cursor, int oid)
  */
 static struct object *find_artifact(struct artifact *artifact)
 {
-	int y, x;
+	int y, x, i;
 	struct object *obj;
-	struct store *s;
 
 	for (y = 1; y < cave->height; y++)
 		for (x = 1; x < cave->width; x++)
@@ -1412,10 +1411,12 @@ static struct object *find_artifact(struct artifact *artifact)
 		if (obj->artifact == artifact)
 			return obj;
 
-	for (s = stores; s; s = s->next)
+	for (i = 0; i < MAX_STORES; i++) {
+		struct store *s = &stores[i];
 		for (obj = s->stock; obj; obj = obj->next)
 			if (obj->artifact == artifact)
 				return obj;
+	}
 
 	return NULL;
 }
@@ -1427,6 +1428,7 @@ static void desc_art_fake(int a_idx)
 {
 	struct object *obj;
 	struct object object_type_body = { 0 };
+	bool fake = FALSE;
 
 	char header[120];
 
@@ -1437,6 +1439,7 @@ static void desc_art_fake(int a_idx)
 
 	/* If it's been lost, make a fake artifact for it */
 	if (!obj) {
+		fake = TRUE;
 		obj = &object_type_body;
 
 		make_fake_artifact(obj, &a_info[a_idx]);
@@ -1455,6 +1458,8 @@ static void desc_art_fake(int a_idx)
 	tb = object_info(obj, OINFO_NONE);
 	object_desc(header, sizeof(header), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
+	if (fake)
+		object_wipe(obj);
 
 	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
@@ -1507,9 +1512,7 @@ static bool artifact_is_known(int a_idx)
 
 	/* Check all objects to see if it exists but hasn't been IDed */
 	obj = find_artifact(&a_info[a_idx]);
-	if (!obj)
-		return FALSE;
-	if (!object_is_known_artifact(obj))
+	if (obj && !object_is_known_artifact(obj))
 		return FALSE;
 
 	return TRUE;

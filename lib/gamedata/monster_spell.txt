@@ -1,6 +1,18 @@
 # Monster spells
 
 # name - spell name
+# msgt - message type
+# lore - Description printed in monster recall after "It can",
+#        e.g. cause critical wounds
+# message-vis - Message printed when spell is cast by a visible monster,
+#               e.g. {name} points at you, incanting terribly!
+# message-invis - Message printed when spell is cast by an unseen monster,
+#                 e.g. Something utters a terrible incantation!
+# message-save - Message printed when player saves if the spell allows a save.
+#                Note that this message must be present for the player to get a 
+#                save.
+# message-miss - Message printed when a known/visible monster misses the spell
+#                attack against the player.
 # hit - to-hit chance (100 = always, 0 = never)
 # effect - effect
 # dice - damage dice of effect, if any
@@ -11,132 +23,234 @@
 #		sides = rlev-dependent power
 #		m_bonus: 1 means power is proportional to rlev, 2 means inverse
 
+# {name} and {pronoun} are markers that will be replaced with the acting
+# monster's name and his/her/its when the message is displayed,
+# e.g. {name} concentrates on {pronoun} body.
 
 name:SHRIEK
+msgt:SHRIEK
 hit:100
 effect:AGGRAVATE
 power:d150M1
+lore:shriek for help
+message-vis:{name} makes a high-pitched shriek.
+message-invis:Something makes a high-pitched shriek.
 
 name:ARROW_1
 hit:40
 effect:BOLT:ARROW
 dice:1d6
+lore:fire an arrow
+message-vis:{name} fires a small arrow.
+message-invis:You hear a soft twang.
+message-miss:{name} fires a small arrow, but misses.
 
 name:ARROW_2
 hit:40
 effect:BOLT:ARROW
 dice:3d6
+lore:fire arrows
+message-vis:{name} fires an arrow.
+message-invis:You hear a twang.
+message-miss:{name} fires an arrow, but misses.
 
 name:ARROW_3
 hit:50
 effect:BOLT:ARROW
 dice:5d6
+lore:fire a missile
+message-vis:{name} fires a large arrow.
+message-invis:You hear a loud twang.
+message-miss:{name} fires a large arrow, but misses.
 
 name:ARROW_4
 hit:50
 effect:BOLT:ARROW
 dice:7d6
+lore:fires missiles
+message-vis:{name} fires a seeker arrow, but misses.
+message-invis:You hear a loud thwang.
+message-miss:{name} fires a seeker arrow, but misses.
 
 name:BR_ACID
+msgt:BR_ACID
 hit:100
 effect:BREATH:ACID:2
 power:20
+lore:acid
+message-vis:{name} breathes acid.
+message-invis:You hear an acrid roar.
 
 name:BR_ELEC
+msgt:BR_ELEC
 hit:100
 effect:BREATH:ELEC:2
 power:10
+lore:lightning
+message-vis:{name} breathes lightning.
+message-invis:You hear a crackling roar.
 
 name:BR_FIRE
+msgt:BR_FIRE
 hit:100
 effect:BREATH:FIRE:2
 power:10
+message-vis:{name} breathes fire.
+message-invis:You hear a scorching roar.
+lore:fire
 
 name:BR_COLD
+msgt:BR_FROST
 hit:100
 effect:BREATH:COLD:2
 power:10
+lore:frost
+message-vis:{name} breathes frost.
+message-invis:You hear a whooshing roar.
 
 name:BR_POIS
+msgt:BR_GAS
 hit:100
 effect:BREATH:POIS:2
 power:125d100M1
+lore:poison
+message-vis:{name} breathes poison.
+message-invis:You hear a sickening roar.
 
 name:BR_NETH
+msgt:BR_NETHER
 hit:100
 effect:BREATH:NETHER:2
 power:d2000M2
+lore:nether
+message-vis:{name} breathes nether.
+message-invis:You hear an eerie roar.
 
 name:BR_LIGHT
+msgt:BR_LIGHT
 hit:100
 effect:BREATH:LIGHT:2
 power:10
+lore:light
+message-vis:{name} breathes light.
+message-invis:You hear a humming roar.
 
 name:BR_DARK
+msgt:BR_DARK
 hit:100
 effect:BREATH:DARK:2
 power:10
+lore:darkness
+message-vis:{name} breathes darkness.
+message-invis:You hear a hushing roar.
 
 name:BR_SOUN
+msgt:BR_SOUND
 hit:100
 effect:BREATH:SOUND:2
 power:20
+lore:sound
+message-vis:{name} breathes sound.
+message-invis:You hear an echoing roar.
 
 name:BR_CHAO
+msgt:BR_CHAOS
 hit:100
 effect:BREATH:CHAOS:2
 power:d2000M2
+lore:chaos
+message-vis:{name} breathes chaos.
+message-invis:You hear a cacophonous roar.
 
 name:BR_DISE
+msgt:BR_DISEN
 hit:100
 effect:BREATH:DISEN:2
 power:50
+lore:disenchantment
+message-vis:{name} breathes disenchantment.
+message-invis:You hear a dissipating roar.
 
 name:BR_NEXU
+msgt:BR_NEXUS
 hit:100
 effect:BREATH:NEXUS:2
 power:20
+lore:nexus
+message-vis:{name} breathes nexus.
+message-invis:You hear a tearing roar.
 
 name:BR_TIME
+msgt:BR_TIME
 hit:100
 effect:BREATH:TIME:2
 power:d2000M2
+lore:time
+message-vis:{name} breathes time.
+message-invis:You remember hearing a roar.
 
 name:BR_INER
+msgt:BR_INERTIA
 hit:100
 effect:BREATH:INERTIA:2
 power:30
+lore:inertia
+message-vis:{name} breathes inertia.
+message-invis:You hear a thrumming roar.
 
 name:BR_GRAV
+msgt:BR_GRAVITY
 hit:100
 effect:BREATH:GRAVITY:2
 power:30
+lore:gravity
+message-vis:{name} breathes gravity
+message-invis:You hear a heavy roar.
 
 name:BR_SHAR
+msgt:BR_SHARDS
 hit:100
 effect:BREATH:SHARD:2
 power:5+125d1
+lore:shards
+message-vis:{name} breathes shards.
+message-invis:You hear a shattering roar.
 
 name:BR_PLAS
+msgt:BR_PLASMA
 hit:100
 effect:BREATH:PLASMA:2
 power:30
+lore:plasma
+message-vis:{name} breathes plasma.
+message-invis:You hear a hissing roar.
 
 name:BR_WALL
+msgt:BR_FORCE
 hit:100
 effect:BREATH:FORCE:2
 power:30
+lore:force
+message-vis:{name} breathes force.
+message-invis:You hear a staccato roar.
 
 name:BR_MANA
 hit:100
 effect:BREATH:MANA:2
 power:100
+lore:mana
+message-vis:{name} breathes raw magic.
+message-invis:You hear a scintillating roar.
 
 name:BOULDER
 hit:60
 effect:BOLT:ARROW
 dice:$Dd12
 expr:D:MONSTER_LEVEL:/ 7 + 1
+lore:throw boulders
+message-vis:{name} hurls a boulder.
+message-invis:You hear a grunt of exertion.
+message-miss: {name} hurls a boulder, but misses.
 
 name:BA_ACID
 hit:100
@@ -144,6 +258,9 @@ effect:BALL:ACID:2
 dice:15+1d$S
 expr:S:MONSTER_LEVEL:* 3
 power:20
+lore:produce acid balls
+message-vis:{name} casts a ball of acid.
+message-invis:Something mumbles.
 
 name:BA_ELEC
 hit:100
@@ -151,6 +268,9 @@ effect:BALL:ELEC:2
 dice:8+1d$S
 expr:S:MONSTER_LEVEL:* 3 / 2
 power:10
+lore:produce lightning balls
+message-vis:{name} casts a ball of lightning.
+message-invis:Something mumbles.
 
 name:BA_FIRE
 hit:100
@@ -158,6 +278,9 @@ effect:BALL:FIRE:2
 dice:10+1d$S
 expr:S:MONSTER_LEVEL:* 7 / 2
 power:10
+lore:produce fire balls
+message-vis:{name} casts a ball of fire.
+message-invis:Something mumbles.
 
 name:BA_COLD
 hit:100
@@ -165,12 +288,18 @@ effect:BALL:COLD:2
 dice:10+1d$S
 expr:S:MONSTER_LEVEL:* 3 / 2
 power:10
+lore:produce frost balls
+message-vis:{name} casts a ball of frost.
+message-invis:Something mumbles.
 
 name:BA_POIS
 hit:100
 effect:BALL:POIS:2
 dice:12d2
 power:125d100M1
+lore:produce poison balls
+message-vis:{name} casts a ball of poison.
+message-invis:Something mumbles.
 
 name:BA_NETH
 hit:100
@@ -178,6 +307,9 @@ effect:BALL:NETHER:2
 dice:$B+10d10
 expr:B:MONSTER_LEVEL:+ 50
 power:d2000M2
+lore:produce nether balls
+message-vis:{name} casts a ball of nether.
+message-invis:Something mumbles.
 
 name:BA_WATE
 hit:100
@@ -185,6 +317,9 @@ effect:BALL:WATER:2
 dice:50+1d$S
 expr:S:MONSTER_LEVEL:* 5 / 2
 power:20
+lore:produce water balls
+message-vis:{name} casts a ball of water.
+message-invis:Something mumbles.
 
 name:BA_MANA
 hit:100
@@ -192,6 +327,9 @@ effect:BALL:MANA:2
 dice:$B+10d10
 expr:B:MONSTER_LEVEL:* 5
 power:100
+lore:invoke mana storms
+message-vis:{name} invokes a storm of raw magic.
+message-invis:Something screams loudly.
 
 name:BA_DARK
 hit:100
@@ -199,6 +337,9 @@ effect:BALL:DARK:2
 dice:$B+10d10
 expr:B:MONSTER_LEVEL:* 5
 power:10
+lore:invoke darkness storms
+message-vis:{name} invokes a storm of darkness.
+message-invis:Something mumbles.
 
 name:DRAIN_MANA
 hit:100
@@ -206,6 +347,9 @@ effect:DRAIN_MANA
 dice:d$S
 expr:S:MONSTER_LEVEL:/ 2 + 1
 power:5
+lore:drain mana
+message-vis:{name} drains your mana away.
+message-invis:Something moans.
 
 name:MIND_BLAST
 hit:100
@@ -213,6 +357,10 @@ effect:DAMAGE
 dice:8d8
 effect:TIMED_INC:CONFUSED
 dice:3+1d4
+lore:cause mind blasting
+message-vis:{name} gazes at you with psionic energy.
+message-invis:Something focuses on your mind.
+message-save:You shake off a pounding headache.
 
 name:BRAIN_SMASH
 hit:100
@@ -226,21 +374,37 @@ effect:TIMED_INC:PARALYZED
 dice:3+1d4
 effect:TIMED_INC:BLIND
 dice:7+1d8
+lore:cause brain smashing
+message-vis:{name} smashes you with psionic energy.
+message-invis:Something focuses on your mind.
+message-save:You shake off a splitting migraine.
 
 name:CAUSE_1
 hit:100
 effect:DAMAGE
 dice:3d8
+lore:cause light wounds
+message-vis:{name} points at you and curses!
+message-invis:Something curses!
+message-save:Your body tingles briefly.
 
 name:CAUSE_2
 hit:100
 effect:DAMAGE
 dice:8d8
+lore:cause serious wounds
+message-vis:{name} points at you and curses horribly
+message-invis:Something curses horribly!
+message-save:Your body pulsates briefly.
 
 name:CAUSE_3
 hit:100
 effect:DAMAGE
 dice:10d15
+lore:cause critical wounds
+message-vis:{name} points at you and incants terribly!
+message-invis:Something incants terribly!
+message-save:Your body shakes briefly.
 
 name:CAUSE_4
 hit:100
@@ -248,6 +412,10 @@ effect:DAMAGE
 dice:15d15
 effect:TIMED_INC:CUT
 dice:10d10
+lore:cause mortal wounds
+message-vis:{name} points at you and screams the word 'DIE!'
+message-invis:Something screams the word 'DIE!'
+message-save:Your body spasms briefly.
 
 name:BO_ACID
 hit:100
@@ -255,6 +423,9 @@ effect:BOLT:ACID
 dice:$B+7d8
 expr:B:MONSTER_LEVEL:/ 3
 power:20
+lore:produce acid bolts
+message-vis:{name} casts a bolt of acid.
+message-invis:Something mumbles.
 
 name:BO_ELEC
 hit:100
@@ -262,6 +433,9 @@ effect:BOLT:ELEC
 dice:$B+4d8
 expr:B:MONSTER_LEVEL:/ 3
 power:10
+lore:produce lightning bolts
+message-vis:{name} casts a bolt of lightning.
+message-invis:Something mumbles.
 
 name:BO_FIRE
 hit:100
@@ -269,6 +443,9 @@ effect:BOLT:FIRE
 dice:$B+9d8
 expr:B:MONSTER_LEVEL:/ 3
 power:10
+lore:produce fire bolts
+message-vis:{name} casts a bolt of fire.
+message-invis:Something mumbles.
 
 name:BO_COLD
 hit:100
@@ -276,6 +453,9 @@ effect:BOLT:COLD
 dice:$B+6d8
 expr:B:MONSTER_LEVEL:/ 3
 power:10
+lore:produce frost bolts
+message-vis:{name} casts a bolt of frost.
+message-invis:Something mumbles.
 
 name:BO_POIS
 hit:100
@@ -283,6 +463,9 @@ effect:BOLT:POIS
 dice:$B+9d8
 expr:B:MONSTER_LEVEL:/ 3
 power:125d100
+lore:produce poison bolts
+message-vis:{name} spews a stream of poison.
+message-invis:Something retches.
 
 name:BO_NETH
 hit:100
@@ -290,6 +473,9 @@ effect:BOLT:NETHER
 dice:$B+5d5
 expr:B:MONSTER_LEVEL:* 3 / 2 + 30
 power:d2000M2
+lore:produce nether bolts
+message-vis:{name} casts a bolt of nether.
+message-invis:Something mumbles.
 
 name:BO_WATE
 hit:100
@@ -297,6 +483,9 @@ effect:BOLT:WATER
 dice:$B+10d10
 expr:B:MONSTER_LEVEL:+ 0
 power:20
+lore:produce water bolts
+message-vis:{name} fires a jet of water.
+message-invis:Something gurgles.
 
 name:BO_MANA
 hit:100
@@ -304,6 +493,9 @@ effect:BOLT:MANA
 dice:50+1d$S
 expr:S:MONSTER_LEVEL:* 7 / 2
 power:100
+lore:produce mana bolts
+message-vis:{name} casts a bolt of raw magic.
+message-invis:Something screams.
 
 name:BO_PLAS
 hit:100
@@ -311,6 +503,9 @@ effect:BOLT:PLASMA
 dice:$B+8d7
 expr:B:MONSTER_LEVEL:+ 10
 power:30
+lore:produce plasma bolts
+message-vis:{name} casts a bolt of plasma.
+message-invis:Something screams.
 
 name:BO_ICEE
 hit:100
@@ -318,48 +513,78 @@ effect:BOLT:ICE
 dice:$B+6d6
 expr:B:MONSTER_LEVEL:+ 0
 power:10
+lore:produce ice bolts
+message-vis:{name} shoots a spear of ice.
+message-invis:Something mumbles.
 
 name:MISSILE
 hit:100
 effect:BOLT:MISSILE
 dice:$B+2d6
 expr:B:MONSTER_LEVEL:/ 3
+lore:produce magic missiles
+message-vis:{name} fires a magic missile.
+message-invis:Something mumbles.
 
 name:SCARE
+msgt:CAST_FEAR
 hit:100
 effect:TIMED_INC:AFRAID
 dice:3+1d4
 power:5
+lore:terrify
+message-vis:{name} conjures up scary horrors.
+message-invis:Something makes scary noises.
+message-save:You fight off a sense of dread.
 
 name:BLIND
 hit:100
 effect:TIMED_INC:BLIND
 dice:11+1d4
 power:10
+lore:blind
+message-vis:{name} sets off a blinding flash.
+message-invis:Something mumbles.
+message-save:You repel a sudden bleariness.
 
 name:CONF
 hit:100
 effect:TIMED_INC:CONFUSED
 dice:3+1d4
 power:10
+lore:confuse
+message-vis:{name} conjures up weird things.
+message-invis:Something messes with your mind.
+message-save:You retain your presence of mind.
 
 name:SLOW
 hit:100
 effect:TIMED_INC:SLOW
 dice:3+1d4
 power:15
+lore:slow
+message-vis:{name} tries to make you move slowly.
+message-invis:Something mumbles.
+message-save:You fight off a sense of sluggishness.
 
 name:HOLD
 hit:100
 effect:TIMED_INC:PARALYZED
 dice:3+1d4
 power:25
+lore:paralyze
+message-vis:{name} tries to make you stop moving.
+message-invis:Something mumbles.
+message-save:You fight off a sense of torpidity.
 
 name:HASTE
 hit:100
 effect:MON_TIMED_INC:FAST
 dice:50
 power:70
+lore:haste-self
+message-vis:{name} concentrates on {pronoun} body.
+message-invis:{name} mutters.
 
 name:HEAL
 hit:100
@@ -367,12 +592,18 @@ effect:MON_HEAL_HP
 dice:$B
 expr:B:MONSTER_LEVEL:* 6
 power:30
+lore:heal-self
+message-vis:{name} magically starts closing wounds.
+message-invis:Something mutters.
 
 name:BLINK
 hit:100
 effect:TELEPORT
 dice:10
 power:15
+lore:blink-self
+message-vis:{name} casts a phase door.
+message-invis:Something mutters.
 
 name:TPORT
 hit:100
@@ -380,23 +611,39 @@ effect:TELEPORT
 dice:$B
 expr:B:MAX_SIGHT:* 2 + 5
 power:15
+lore:teleport-self
+message-vis:{name} tries to teleport away.
+message-invis:makes a soft 'pop'.
 
 name:TELE_TO
+msgt:TELEPORT
 hit:100
 effect:TELEPORT_TO
 power:25
+lore:teleport to
+message-vis:{name} commands you to come hither.
+message-invis:Something commands you to come hither.
 
 name:TELE_AWAY
+msgt:TELEPORT
 hit:100
 effect:TELEPORT
 dice:100
 param:1
 power:25
+lore:teleport away
+message-vis:{name} commands you to go away.
+message-invis:Something commands you to go away
 
 name:TELE_LEVEL
+msgt:TPLEVEL
 hit:100
 effect:TELEPORT_LEVEL
 power:40
+lore:teleport level
+message-vis:{name} commands you to go far away.
+message-invis:Something commands you to go far away.
+message-save:You feel unstable for a second, but it passes.
 
 name:DARKNESS
 hit:100
@@ -404,111 +651,185 @@ effect:DARKEN_AREA
 dice:10
 param:3
 power:5
+lore:create darkness
+message-vis:{name} surrounds you in darkness.
+message-invis:Something mumbles.
 
 name:TRAPS
+msgt:CREATE_TRAP
 hit:100
 effect:TOUCH:MAKE_TRAP
 power:10
+lore:create traps
+message-vis:{name} cackles evilly about traps.
+message-invis:Something cackles evilly.
 
 name:FORGET
 hit:100
 effect:TIMED_INC:AMNESIA
 dice:3
 power:25
+lore:cause amnesia
+message-vis:{name} tries to make you forget things.
+message-invis:Something messes with your mind.
+message-save:You retain your presence of mind.
 
 name:S_KIN
+msgt:SUM_MONSTER
 hit:100
 effect:SUMMON:KIN
 dice:8
 power:d200M1
+lore:summon similar monsters
+message-vis:{name} summons {pronoun} kin.
+message-invis:You hear something appear nearby!
 
 name:S_MONSTER
+msgt:SUM_MONSTER
 hit:100
 effect:SUMMON:MONSTER
 dice:1
 power:40
+lore:summon a monster
+message-vis:{name} summons a companion.
+message-invis:You hear something appear nearby!
 
 name:S_MONSTERS
+msgt:SUM_MONSTER
 hit:100
 effect:SUMMON:MONSTERS
 dice:8
 power:80
+lore:summon monsters
+message-vis:{name} summons some friends.
+message-invis:You hear some things appear nearby!
 
 name:S_ANIMAL
+msgt:SUM_ANIMAL
 hit:100
 effect:SUMMON:ANIMAL
 dice:12
 power:30
+lore:summon animals
+message-vis:{name} summons animals.
+message-invis:You hear some things appear nearby!
 
 name:S_SPIDER
+msgt:SUM_SPIDER
 hit:100
 effect:SUMMON:SPIDER
 dice:12
 power:20
+lore:summon spiders
+message-vis:{name} summons spiders.
+message-invis:You hear chittering things appear nearby!
 
 name:S_HOUND
+msgt:SUM_HOUND
 hit:100
 effect:SUMMON:HOUND
 dice:12
 power:100
+lore:summon hounds
+message-vis:{name} summons hounds.
+message-invis:You hear barking things appear nearby!
 
 name:S_HYDRA
+msgt:SUM_HYDRA
 hit:100
 effect:SUMMON:HYDRA
 dice:6
 power:150
+lore:summon hydras
+message-vis:{name} summons hydrae.
+message-invis:You hear some things appear nearby!
 
 name:S_AINU
+msgt:SUM_AINU
 hit:100
 effect:SUMMON:AINU
 dice:1
 power:150
+lore:summon an ainu
+message-vis:{name} summons an ainu.
+message-invis:You hear something appear nearby!
 
 name:S_DEMON
+msgt:SUM_DEMON
 hit:100
 effect:SUMMON:DEMON
 dice:1
 power:d150M1
+lore:summon a demon
+message-vis:{name} summons a demon.
+message-invis:You hear something evil appear nearby!
 
 name:S_UNDEAD
+msgt:SUM_UNDEAD
 hit:100
 effect:SUMMON:UNDEAD
 dice:1
 power:d150M1
+lore:summon an undead
+message-vis:{name} summons the undead.
+message-invis:You hear something creepy appear nearby!
 
 name:S_DRAGON
+msgt:SUM_DRAGON
 hit:100
 effect:SUMMON:DRAGON
 dice:1
 power:d150M1
+lore:summon a dragon
+message-vis:{name} summons a dragon.
+message-invis:You hear something appear nearby!
 
 name:S_HI_DEMON
+msgt:SUM_HI_DEMON
 hit:100
 effect:SUMMON:HI_DEMON
 dice:8
 power:250
+lore:summon greater demons
+message-vis:{name} summons major demons.
+message-invis:You hear evil things appear nearby!
 
 name:S_HI_UNDEAD
+msgt:SUM_HI_UNDEAD
 hit:100
 effect:SUMMON:HI_UNDEAD
 dice:8
 power:400
+lore:summon greater undead
+message-vis:{name} summons fiends of darkness.
+message-invis:You hear creepy things appear nearby!
 
 name:S_HI_DRAGON
+msgt:SUM_HI_DRAGON
 hit:100
 effect:SUMMON:HI_DRAGON
 dice:8
 power:400
+lore:summon ancient dragons
+message-vis:{name} summons ancient dragons.
+message-invis:You hear powerful things appear nearby!
 
 name:S_WRAITH
+msgt:SUM_WRAITH
 hit:100
 effect:SUMMON:WRAITH
 dice:8
 power:450
+lore:summon ringwraiths
+message-vis:{name} summons ringwraiths.
+message-invis:You hear powerful things appear nearby!
 
 name:S_UNIQUE
+msgt:SUM_UNIQUE
 hit:100
 effect:SUMMON:UNIQUE
 dice:8
 power:500
-
+lore:summon uniques
+message-vis:{name} summons {pronoun} servants.
+message-invis:You hear powerful things appear nearby!

@@ -49,7 +49,7 @@ H:Even among the same type, some enemies will be faster or slower than others.
 H:Monsters' breath weapons grow less dangerous as they lose hitpoints.
 H:A wounded enemy's spells are as strong as a healthy one's.
 H:Don't worry about using up your potions, wands, and staves to stay alive.
-H:If you're in a bad situation, take a breather and "I"npect all your gear.
+H:If you're in a bad situation, take a breather and "I"nspect all your gear.
 H:When a character dies, memories of monsters she has fought are passed on.
 H:Even the most powerful characters can be made useless by blindness.
 H:Even the most powerful characters can be made useless by confusion.

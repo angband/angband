@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 4.0.1, bugs@rephial.org)
+AC_INIT(Angband, 4.0.2, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 
 AC_CANONICAL_HOST
@@ -11,6 +11,8 @@ BUILDSYS_TOUCH_DEPS
 AC_SUBST(PACKAGE, angband)
 
 AC_CONFIG_HEADERS(src/autoconf.h)
+
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])

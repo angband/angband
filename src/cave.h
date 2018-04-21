@@ -317,6 +317,7 @@ bool square_in_bounds_fully(struct chunk *c, int y, int x);
 struct feature *square_feat(struct chunk *c, int y, int x);
 struct monster *square_monster(struct chunk *c, int y, int x);
 struct object *square_object(struct chunk *c, int y, int x);
+struct trap *square_trap(struct chunk *c, int y, int x);
 bool square_holds_object(struct chunk *c, int y, int x, struct object *obj);
 void square_excise_object(struct chunk *c, int y, int x, struct object *obj);
 void square_excise_pile(struct chunk *c, int y, int x);

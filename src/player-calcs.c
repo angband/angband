@@ -972,13 +972,22 @@ bool earlier_object(struct object *orig, struct object *new, bool store)
 		}
 	}
 
-	/* Objects sort by decreasing value */
-	if (object_value_real(orig, 1, FALSE, FALSE) >
-		object_value_real(new, 1, FALSE, FALSE))
-		return FALSE;
-	if (object_value_real(orig, 1, FALSE, FALSE) <
-		object_value_real(new, 1, FALSE, FALSE))
-		return TRUE;
+	/* Objects sort by decreasing value, except ammo */
+	if (tval_is_ammo(orig)) {
+		if (object_value_real(orig, 1, FALSE, FALSE) <
+			object_value_real(new, 1, FALSE, FALSE))
+			return FALSE;
+		if (object_value_real(orig, 1, FALSE, FALSE) >
+			object_value_real(new, 1, FALSE, FALSE))
+			return TRUE;
+	} else {
+		if (object_value_real(orig, 1, FALSE, FALSE) >
+			object_value_real(new, 1, FALSE, FALSE))
+			return FALSE;
+		if (object_value_real(orig, 1, FALSE, FALSE) <
+			object_value_real(new, 1, FALSE, FALSE))
+			return TRUE;
+	}
 
 	/* No preference */
 	return FALSE;
@@ -2565,6 +2574,9 @@ void redraw_stuff(struct player *p)
 	/* Map is not shown, no screen updates */
 	if (!map_is_visible()) return;
 
+	/* Hack - rarely update while resting or running, makes it over quicker */
+	if ((player_resting_count(p) % 100) || (p->upkeep->running % 100)) return;
+
 	/* For each listed flag, send the appropriate signal to the UI */
 	for (i = 0; i < N_ELEMENTS(redraw_events); i++) {
 		const struct flag_event_trigger *hnd = &redraw_events[i];
@@ -2580,9 +2592,6 @@ void redraw_stuff(struct player *p)
 	}
 
 	p->upkeep->redraw = 0;
-
-	/* Hack - don't update while resting or running, makes it over quicker */
-	if (player_is_resting(p) || p->upkeep->running) return;
 
 	/*
 	 * Do any plotting, etc. delayed from earlier - this set of updates
