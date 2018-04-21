@@ -1,6 +1,6 @@
-/* File: readdib.c */
-
-/*
+/**
+ * \file readdib.c
+ *
  * This package provides a routine to read a DIB file and set up the
  * device dependent version of the image.
  *
@@ -24,7 +24,7 @@
 #include "readdib.h"
 
 
-/*
+/**
  * Needed for lcc-win32
  */
 #ifndef SEEK_SET
@@ -32,12 +32,12 @@
 #endif
 
 
-/*
+/**
  * Number of bytes to be read during each read operation
  */
 #define MAXREAD  32768
 
-/*
+/**
  * Private routine to read more than 64K at a time
  *
  * Reads data in steps of 32k till all the data has been read.
@@ -62,7 +62,7 @@ static DWORD PASCAL lread(HFILE fh, VOID FAR *pv, DWORD ul)
 }
 
 
-/*
+/**
  * Given a BITMAPINFOHEADER, create a palette based on the color table.
  *
  * Returns the handle of a palette, or zero if something went wrong.
@@ -117,7 +117,7 @@ static HPALETTE PASCAL NEAR MakeDIBPalette(LPBITMAPINFOHEADER lpInfo)
 }
 
 
-/*
+/**
  * Given a DIB, create a bitmap and corresponding palette to be used for a
  * device-dependent representation of the image.
  *
@@ -165,7 +165,7 @@ static BOOL NEAR PASCAL MakeBitmapAndPalette(HDC hDC, HANDLE hDIB,
 
 
 
-/*
+/**
  * Reads a DIB from a file, obtains a handle to its BITMAPINFO struct, and
  * loads the DIB.  Once the DIB is loaded, the function also creates a bitmap
  * and palette out of the DIB for a device-dependent form.

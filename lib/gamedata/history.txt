@@ -1,0 +1,413 @@
+# File: history.txt
+
+
+# This file is used to initialize the "player history" information for 
+# the Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# Background information:
+# Pieces of player backstory are chosen from "charts", which are lists of
+# phrases or sentences with similar general meaning.
+
+# 'chart' lines give the number of the current chart, the number of the chart
+# that will be used next (or 0 if the last chart), and a cutoff for choosing
+# the current line.  If the first field in two chart lines is the same, the
+# second should be as well, to maintain consistent choices and end up with
+# something readable.
+
+# 'phrase' lines are the actual chart entries which make up the history.
+
+# Chart progression by race:
+#   Human/Dunadan -->  1 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Half-Elf      -->  4 -->  1 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Elf           -->  5 -->  6 -->  9 --> 54 --> 55 --> 56
+#   High-Elf      -->  7 -->  8 -->  9 --> 54 --> 55 --> 56
+#   Hobbit        --> 10 --> 11 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Gnome         --> 13 --> 14 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Dwarf         --> 16 --> 17 --> 18 --> 57 --> 58 --> 59 --> 60 --> 61
+#   Half-Orc      --> 19 --> 20 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Half-Troll    --> 21 --> 22 --> 62 --> 63 --> 64 --> 65 --> 66
+#   Kobold        --> 23 --> 24 --> 25 --> 26 --> 67 --> 68 --> 69
+
+# This table *must* be correct or the history may look very silly.
+
+# Note that the "spacing" in the "description" lines is very important!
+
+
+
+chart:1:2:10
+phrase:You are the illegitimate and unacknowledged child 
+chart:1:2:20
+phrase:You are the illegitimate but acknowledged child 
+chart:1:2:95
+phrase:You are one of several children 
+chart:1:2:100
+phrase:You are the first child 
+
+chart:2:3:40
+phrase:of a Serf.  
+chart:2:3:65
+phrase:of a Yeoman.  
+chart:2:3:80
+phrase:of a Townsman.  
+chart:2:3:90
+phrase:of a Guildsman.  
+chart:2:3:96
+phrase:of a Landed Knight.  
+chart:2:3:99
+phrase:of a Titled Noble.  
+chart:2:3:100
+phrase:of a Royal Blood Line.  
+
+chart:3:50:20
+phrase:You are the black sheep of the family.  
+chart:3:50:80
+phrase:You are a credit to the family.  
+chart:3:50:100
+phrase:You are a well liked child.  
+
+chart:4:1:15
+phrase:Your mother was of the Avari. 
+chart:4:1:30
+phrase:Your father was of the Avari. 
+chart:4:1:50
+phrase:Your mother was of the Nandor. 
+chart:4:1:70
+phrase:Your father was of the Nandor.  
+chart:4:1:85
+phrase:Your mother was of the Sindar.  
+chart:4:1:95
+phrase:Your father was of the Sindar.  
+chart:4:1:98
+phrase:Your mother was of the Noldor.  
+chart:4:1:100
+phrase:Your father was of the Noldor.  
+
+chart:5:6:60
+phrase:You are one of several children 
+chart:5:6:100
+phrase:You are the only child 
+
+chart:6:9:40
+phrase:of an Avarin 
+chart:6:9:70
+phrase:of a Nandorin 
+chart:6:9:100
+phrase:of a Sindarin 
+
+chart:7:8:60
+phrase:You are one of several children 
+chart:7:8:100
+phrase:You are the only child 
+
+chart:8:9:75
+phrase:of a Telerin 
+chart:8:9:95
+phrase:of a Noldorin 
+chart:8:9:100
+phrase:of a Vanyarin 
+
+chart:9:54:40
+phrase:Ranger.  
+chart:9:54:70
+phrase:Archer.  
+chart:9:54:87
+phrase:Warrior.  
+chart:9:54:95
+phrase:Mage.  
+chart:9:54:99
+phrase:Prince.  
+chart:9:54:100
+phrase:King.  
+
+chart:10:11:85
+phrase:You are one of several children of a Hobbit 
+chart:10:11:100
+phrase:You are the only child of a Hobbit 
+
+chart:11:3:20
+phrase:Burglar.  
+chart:11:3:30
+phrase:Miller.  
+chart:11:3:40
+phrase:Tavern Owner.  
+chart:11:3:50
+phrase:Archer.  
+chart:11:3:80
+phrase:Warrior.  
+chart:11:3:95
+phrase:Shirriff.  
+chart:11:3:99
+phrase:Mayor.  
+chart:11:3:100
+phrase:Clan Elder.  
+
+chart:13:14:85
+phrase:You are one of several children of a Gnome 
+chart:13:14:100
+phrase:You are the only child of a Gnome 
+
+chart:14:3:20
+phrase:Beggar.  
+chart:14:3:50
+phrase:Braggart.  
+chart:14:3:75
+phrase:Prankster.  
+chart:14:3:95
+phrase:Warrior.  
+chart:14:3:100
+phrase:Mage.  
+
+chart:16:17:25
+phrase:You are one of two children of a Dwarven 
+chart:16:17:100
+phrase:You are the only child of a Dwarven 
+
+chart:17:18:10
+phrase:Thief.  
+chart:17:18:25
+phrase:Prison Guard.  
+chart:17:18:75
+phrase:Miner.  
+chart:17:18:90
+phrase:Warrior.  
+chart:17:18:99
+phrase:Priest.  
+chart:17:18:100
+phrase:King.  
+
+chart:18:57:15
+phrase:You are the black sheep of the family.  
+chart:18:57:85
+phrase:You are a credit to the family.  
+chart:18:57:100
+phrase:You are a well liked child.  
+
+chart:19:20:25
+phrase:Your mother was an Orc, 
+chart:19:20:100
+phrase:Your father was an Orc, 
+
+chart:20:2:20
+phrase:and it is acknowledged. You are the adopted child 
+chart:20:2:100
+phrase:but it is unacknowledged. You are the adopted child 
+
+chart:21:22:30
+phrase:Your mother was a Stone-Troll 
+chart:21:22:60
+phrase:Your father was a Stone-Troll 
+chart:21:22:75
+phrase:Your mother was a Cave-Troll 
+chart:21:22:90
+phrase:Your father was a Cave-Troll 
+chart:21:22:95
+phrase:Your mother was a Water-Troll 
+chart:21:22:100
+phrase:Your father was a Water-Troll 
+
+chart:22:62:5
+phrase:Cook.  
+chart:22:62:95
+phrase:Warrior.  
+chart:22:62:99
+phrase:Shaman.  
+chart:22:62:100
+phrase:Clan Chief.  
+
+chart:23:24:20
+phrase:You are the runt of 
+chart:23:24:80
+phrase:You come from 
+chart:23:24:100
+phrase:You are the largest of 
+
+chart:24:25:15
+phrase:a litter of 3 pups. 
+chart:24:25:40
+phrase:a litter of 4 pups. 
+chart:24:25:70
+phrase:a litter of 5 pups. 
+chart:24:25:85
+phrase:a litter of 6 pups. 
+chart:24:25:95
+phrase:a litter of 7 pups. 
+chart:24:25:100
+phrase:a litter of 8 pups. 
+
+chart:25:26:25
+phrase:Your father was a fungus farmer, 
+chart:25:26:50
+phrase:Your father was a hunter, 
+chart:25:26:75
+phrase:Your father was a warrior, 
+chart:25:26:95
+phrase:Your father was a shaman, 
+chart:25:26:100
+phrase:Your father was the tribal chief, 
+
+chart:26:67:20
+phrase:and your mother was a prisoner of war. 
+chart:26:67:95
+phrase:and your mother was a cook. 
+chart:26:67:100
+phrase:and your mother was one of the Chief's harem. 
+
+chart:50:51:20
+phrase:You have dark brown eyes, 
+chart:50:51:60
+phrase:You have brown eyes, 
+chart:50:51:70
+phrase:You have hazel eyes, 
+chart:50:51:80
+phrase:You have green eyes, 
+chart:50:51:90
+phrase:You have blue eyes, 
+chart:50:51:100
+phrase:You have blue-gray eyes, 
+
+chart:51:52:70
+phrase:straight 
+chart:51:52:90
+phrase:wavy 
+chart:51:52:100
+phrase:curly 
+
+chart:52:53:30
+phrase:black hair, 
+chart:52:53:70
+phrase:brown hair, 
+chart:52:53:80
+phrase:auburn hair, 
+chart:52:53:90
+phrase:red hair, 
+chart:52:53:100
+phrase:blond hair, 
+
+chart:53:0:10
+phrase:and a very dark complexion.
+chart:53:0:30
+phrase:and a dark complexion.
+chart:53:0:80
+phrase:and an average complexion.
+chart:53:0:90
+phrase:and a fair complexion.
+chart:53:0:100
+phrase:and a very fair complexion.
+
+chart:54:55:85
+phrase:You have light grey eyes, 
+chart:54:55:95
+phrase:You have light blue eyes, 
+chart:54:55:100
+phrase:You have light green eyes, 
+
+chart:55:56:75
+phrase:straight 
+chart:55:56:100
+phrase:wavy 
+
+chart:56:0:75
+phrase:black hair, and a fair complexion.
+chart:56:0:85
+phrase:brown hair, and a fair complexion.
+chart:56:0:95
+phrase:blond hair, and a fair complexion.
+chart:56:0:100
+phrase:silver hair, and a fair complexion.
+
+chart:57:58:99
+phrase:You have dark brown eyes, 
+chart:57:58:100
+phrase:You have glowing red eyes, 
+
+chart:58:59:90
+phrase:straight 
+chart:58:59:100
+phrase:wavy 
+
+chart:59:60:75
+phrase:black hair, 
+chart:59:60:100
+phrase:brown hair, 
+
+chart:60:61:25
+phrase:a one foot beard, 
+chart:60:61:60
+phrase:a two foot beard, 
+chart:60:61:90
+phrase:a three foot beard, 
+chart:60:61:100
+phrase:a four foot beard, 
+
+chart:61:0:100
+phrase:and a dark complexion.
+
+chart:62:63:60
+phrase:You have slime-green eyes, 
+chart:62:63:85
+phrase:You have puke-yellow eyes, 
+chart:62:63:99
+phrase:You have blue-bloodshot eyes, 
+chart:62:63:100
+phrase:You have glowing red eyes, 
+
+chart:63:64:33
+phrase:dirty 
+chart:63:64:66
+phrase:mangy 
+chart:63:64:100
+phrase:oily 
+
+chart:64:65:33
+phrase:sea-weed green hair, 
+chart:64:65:66
+phrase:bright red hair, 
+chart:64:65:100
+phrase:dark purple hair, 
+
+chart:65:66:25
+phrase:and green 
+chart:65:66:50
+phrase:and blue 
+chart:65:66:75
+phrase:and white 
+chart:65:66:100
+phrase:and black 
+
+chart:66:0:33
+phrase:ulcerous skin.
+chart:66:0:66
+phrase:scabby skin.
+chart:66:0:100
+phrase:leprous skin.
+
+chart:67:68:10
+phrase:You have black eyes, 
+chart:67:68:40
+phrase:You have dark brown eyes, 
+chart:67:68:80
+phrase:You have brown eyes, 
+chart:67:68:99
+phrase:You have light brown eyes, 
+chart:67:68:100
+phrase:You have glowing red eyes, 
+
+chart:68:69:40
+phrase:a dark brown hide, 
+chart:68:69:60
+phrase:a reddish-brown hide, 
+chart:68:69:95
+phrase:an olive green hide, 
+chart:68:69:100
+phrase:a deep blue hide, 
+
+chart:69:0:10
+phrase:and large, flat teeth.
+chart:69:0:90
+phrase:and small, sharp teeth.
+chart:69:0:100
+phrase:and large, sharp teeth.
+

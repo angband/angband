@@ -1,0 +1,261 @@
+# File: p_race.txt
+
+
+# This file is used to initialize the "player race" information for Angband.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# === Understanding p_race.txt ===
+
+# Format:
+# name:race number:race name
+# stats:str:int:wis:dex:con
+# skill-disarm:base
+# skill-device:base
+# skill-save:base
+# skill-stealth:base
+# skill-search:base
+# skill-search-freq:base
+# skill-melee:base
+# skill-shoot:base
+# skill-throw:base
+# skill-dig:base
+# info:hitdie:expbase:infra
+# history:history:agebase:agemod
+# height:hgt:modhgt
+# weight:wgt:modwgt
+# flags:object flags
+
+# 'name' indicates the beginning of an entry. The serial number must
+# increase for each new race.
+
+# 'stats' is for the stat modifiers - strength, intelligence, wisdom,
+# dexterity, constitution.
+
+# 'skill-<skill name>' is for skills that get added at birth.- disarming,
+# magic devices, saving throws, stealth, searching ability,
+# searching frequency, to hit (normal), to hit (bows), to hit (throwing),
+# digging.
+
+# 'info' is for gameplay info - max. hitpoints gained per level, experience
+# factor in percent, range of infravision in 10 feet.
+
+# 'history' is for background info - starting point of the player history,
+# base age, random age modifier.
+
+# 'height' is height info - base height, mod height.
+
+# 'weight' is weight info - base weight, mod weight.
+
+# 'obj-flags' is for object flags (as in src/list-obj-flags.h) that
+# races possess innately.
+
+# 'play-flags' is for player flags (as in src/list-player-flags.h) that
+# races possess innately.
+
+# 'values' is for object modifiers which take a value that races possess
+# innately.
+
+
+name:0:Human
+stats:0:0:0:0:0
+skill-disarm:0
+skill-device:0
+skill-save:0
+skill-stealth:0
+skill-search:0
+skill-search-freq:10
+skill-melee:0
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+info:10:100:0
+history:1:14:6
+height:69:10
+weight:165:35
+
+name:1:Half-Elf
+stats:0:1:-1:1:-1
+skill-disarm:2
+skill-device:3
+skill-save:3
+skill-stealth:1
+skill-search:6
+skill-search-freq:11
+skill-melee:-1
+skill-shoot:5
+skill-throw:5
+skill-dig:0
+info:10:110:2
+history:4:24:16
+height:64:10
+weight:115:25
+obj-flags:SUST_DEX
+
+name:2:Elf
+stats:-1:2:-1:1:-1
+skill-disarm:5
+skill-device:6
+skill-save:6
+skill-stealth:2
+skill-search:8
+skill-search-freq:12
+skill-melee:-5
+skill-shoot:15
+skill-throw:15
+skill-dig:0
+info:9:120:3
+history:5:75:75
+height:57:4
+weight:90:10
+obj-flags:SUST_DEX
+values:RES_LIGHT[1]
+
+name:3:Hobbit
+stats:-2:2:1:3:2
+skill-disarm:15
+skill-device:18
+skill-save:18
+skill-stealth:4
+skill-search:12
+skill-search-freq:15
+skill-melee:-10
+skill-shoot:20
+skill-throw:20
+skill-dig:0
+info:7:110:4
+history:10:21:12
+height:34:4
+weight:55:5
+obj-flags:HOLD_LIFE
+player-flags:KNOW_MUSHROOM
+
+name:4:Gnome
+stats:-1:2:0:2:1
+skill-disarm:10
+skill-device:22
+skill-save:12
+skill-stealth:3
+skill-search:6
+skill-search-freq:13
+skill-melee:-8
+skill-shoot:12
+skill-throw:12
+skill-dig:0
+info:8:125:4
+history:13:50:40
+height:40:5
+weight:80:5
+obj-flags:FREE_ACT
+player-flags:KNOW_ZAPPER
+
+name:5:Dwarf
+stats:2:-3:2:-2:2
+skill-disarm:2
+skill-device:9
+skill-save:9
+skill-stealth:-1
+skill-search:7
+skill-search-freq:10
+skill-melee:15
+skill-shoot:0
+skill-throw:0
+skill-dig:40
+info:11:120:5
+history:16:35:15
+height:47:4
+weight:135:20
+obj-flags:PROT_BLIND
+player-flags:SEE_ORE
+
+name:6:Half-Orc
+stats:2:-1:0:0:1
+skill-disarm:-3
+skill-device:-3
+skill-save:-3
+skill-stealth:-1
+skill-search:0
+skill-search-freq:7
+skill-melee:12
+skill-shoot:-5
+skill-throw:-5
+skill-dig:0
+info:10:110:3
+history:19:11:4
+height:64:2
+weight:135:15
+values:RES_DARK[1]
+
+name:7:Half-Troll
+stats:4:-4:-2:-4:3
+skill-disarm:-5
+skill-device:-8
+skill-save:-8
+skill-stealth:-2
+skill-search:-1
+skill-search-freq:5
+skill-melee:20
+skill-shoot:-10
+skill-throw:-10
+skill-dig:0
+info:12:120:3
+history:21:20:10
+height:90:16
+weight:240:60
+obj-flags:SUST_STR | REGEN
+
+name:8:Dunadan
+stats:1:2:2:2:3
+skill-disarm:4
+skill-device:5
+skill-save:5
+skill-stealth:1
+skill-search:3
+skill-search-freq:13
+skill-melee:15
+skill-shoot:10
+skill-throw:10
+skill-dig:0
+info:10:180:0
+history:1:50:20
+height:80:6
+weight:190:20
+obj-flags:SUST_CON
+
+name:9:High-Elf
+stats:1:3:-1:3:1
+skill-disarm:4
+skill-device:20
+skill-save:20
+skill-stealth:2
+skill-search:3
+skill-search-freq:14
+skill-melee:10
+skill-shoot:25
+skill-throw:25
+skill-dig:0
+info:10:200:4
+history:7:100:30
+height:86:15
+weight:190:20
+obj-flags:SEE_INVIS
+values:RES_LIGHT[1]
+
+name:10:Kobold
+stats:-1:-1:0:2:2
+skill-disarm:10
+skill-device:5
+skill-save:0
+skill-stealth:3
+skill-search:15
+skill-search-freq:15
+skill-melee:-5
+skill-shoot:10
+skill-throw:10
+skill-dig:0
+info:8:115:5
+history:23:15:10
+height:37:4
+weight:65:5
+values:RES_POIS[1]

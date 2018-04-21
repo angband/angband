@@ -352,7 +352,7 @@ A note on speed
 ===============
 
 Monsters which do not move at normal speed generally move "slowly" (-10 to
-peed), "fast" (+10), "very fast" (+20) or "incredibly fast" (+30). (It will
+speed), "fast" (+10), "very fast" (+20) or "incredibly fast" (+30). (It will
 surprise nobody that Morgoth is one of the few monsters in the last
 category.) This is further adjusted by the fact that any non-unique monster
 may have a random adjustment from (-2) to (+2) to its own speed.

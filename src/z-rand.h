@@ -1,8 +1,35 @@
+/**
+ * \file z-rand.h
+ * \brief A Random Number Generator for Angband
+ *
+ * Copyright (c) 1997 Ben Harrison, Randy Hutson
+ * Copyright (c) 2010 Erik Osheim
+ * 
+ * See below for copyright on the WELL random number generator.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_Z_RAND_H
 #define INCLUDED_Z_RAND_H
 
 #include "h-basic.h"
-#include "defines.h"
+
+/**
+ * Assumed maximum dungeon level.  This value is used for various 
+ * calculations involving object and monster creation.  It must be at least 
+ * 100. Setting it below 128 may prevent the creation of some objects.
+ */
+#define MAX_RAND_DEPTH	128
 
 /**
  * A struct representing a strategy for making a dice roll.
@@ -22,7 +49,9 @@ typedef struct random {
  */
 #define RAND_DEG 32
 
-/* Random aspects used by damcalc, m_bonus_calc, and ranvals */
+/**
+ * Random aspects used by damcalc, m_bonus_calc, and ranvals
+ */
 typedef enum {
 	MINIMISE,
 	AVERAGE,
@@ -84,6 +113,11 @@ extern u32b z2;
  * Initialise the RNG state with the given seed.
  */
 void Rand_state_init(u32b seed);
+
+/**
+ * Initialise the RNG
+ */
+void Rand_init(void);
 
 /**
  * Generates a random unsigned long integer X where "0 <= X < M" holds.

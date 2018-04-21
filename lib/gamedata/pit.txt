@@ -1,0 +1,391 @@
+# File: pit.txt
+
+# This file is used to initialize the "monster nest/pit" information for 
+# Angband.
+
+# Do not modify this file unless you know exactly what you are doing, unless
+# you wish to risk possible system crashes and broken savefiles.
+
+# === Understanding pit.txt ===
+
+# name: serial number : name
+# room: room type
+# alloc: rarity : average level
+# obj-rarity: object rarity
+# color: color
+# mon-base: template name
+# mon-base: template name
+# flags-req: flag | flag | ...
+# flags-ban: forbidden flag | ...
+# spell-req: spell | spell | ...
+# spell-ban: forbidden spell | ...
+# mon-ban: forbidden monster name
+#
+# Each entry must start with a 'name' line, with a new serial number,
+# and a name.
+#
+# 'room' is for room type. Currently, room type is one of the following:
+#   (1) Pits (large room filled with many monsters of a few types in an 
+#       ordered fashion)
+#   (2) Nests (large room filled with many types of monsters in a 
+#       disordered fashion)
+#   (3) Other (all monster groupings can be used to fill other areas with
+#       thematically chosen monsters; entries with all room types can be
+#       used for this, so type 3 allows grouping which don't appear in
+#       pits or nests)
+#
+# 'alloc' is for rarity and average level. A rarity of N means that the pit is 
+# N times more rare than a pit with a rarity of 1. The average level is the 
+# dungeon level at which this pit is most common.
+#
+# 'obj-rarity' is for object rarity. A rarity of N means that every square of
+# the pit has an N % chance of having an item.
+#
+# 'color' is for monster color. If any 'color' lines are present, then all
+# monsters in this pit will be one of the specified colors. 
+# As many 'color' lines as are necessary may be used.
+#
+# 'mon-base' is for monster template (see monster_base.txt). Up to 4
+# 'mon-base' lines may be  present.  If there are no 'mon-base' lines,
+# then monsters may have any monster template. Otherwise, every monster in
+# this pit/nest will be one of the listed templates.
+#
+# 'mon-ban' is for forbidden monsters. The named monster will not appear in
+# this pit.
+# As many 'mon-ban' lines as are necessary may be used.
+#
+# 'flags-req' is for monster flags. Every monster in this pit/nest will have
+# every listed flag.  
+# As many 'flags-req' lines as are necessary may be used.
+#
+# 'spell-req' is for spell flags. Every monster in this nest/pit will have
+# every listed spell flag. 
+# As many 'spell-req' lines as are necessary may be used.
+#
+# 'flags-ban' is for forbidden flags. No monster in this nest/pit will have
+# any of the listed flags.
+# As many 'flags-ban' lines as are necessary may be used.
+#
+# 'spell-ban' is for forbidden spell flags. No monster in this nest/pit will
+# have any of the listed spell flags.
+# As many 'spell-ban' lines as are necessary may be used.
+
+name:1:Orc
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:orc
+
+name:2:Troll
+room:1
+alloc:1:45
+obj-rarity:0
+mon-base:troll
+
+name:3:Giant
+room:1
+alloc:1:65
+obj-rarity:0
+mon-base:giant
+
+name:4:Acid dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_ACID
+spell-ban:BR_ELEC
+
+name:5:Electric dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_ELEC
+spell-ban:BR_ACID
+
+name:6:Fire dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_FIRE
+spell-ban:BR_COLD
+
+name:7:Ice dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_COLD
+spell-ban:BR_FIRE
+
+name:8:Poison dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_POIS
+spell-ban:BR_FIRE
+
+name:9:Multi-hued dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_ACID | BR_ELEC | BR_FIRE
+spell-req:BR_COLD | BR_POIS
+
+name:10:Demons
+room:1
+alloc:1:105
+obj-rarity:0
+mon-base:major demon
+mon-ban:Horned Reaper
+
+name:11:Jelly
+room:2
+alloc:1:20
+obj-rarity:5
+mon-base:icky thing
+mon-base:jelly
+mon-base:mold
+mon-base:mushroom
+
+name:12:Animals
+room:2
+alloc:1:50
+obj-rarity:10
+flags-req:ANIMAL
+
+name:13:Undead
+room:2
+alloc:1:80
+obj-rarity:20
+flags-req:UNDEAD
+
+# New pits and nests
+
+name:14:Ants
+room:2
+alloc:1:15
+obj-rarity:5
+mon-base:ant
+flags-ban:KILL_BODY
+
+name:15:Kobolds
+room:1
+alloc:1:15
+obj-rarity:0
+mon-base:kobold
+
+name:16:Creepy crawlies
+room:2
+alloc:1:20
+obj-rarity:5
+mon-base:centipede
+mon-base:killer beetle
+mon-base:spider
+spell-ban:BLINK
+spell-ban:CONF
+spell-ban:SLOW
+
+name:17:Minor demons
+room:1
+alloc:1:20
+obj-rarity:5
+mon-base:minor demon
+spell-ban:S_DEMON
+
+name:18:Spellcasters
+room:1
+alloc:1:20
+obj-rarity:0
+mon-base:kobold
+mon-base:humanoid
+mon-base:orc
+mon-base:person
+spell-req:MISSILE
+spell-ban:ARROW_1
+spell-ban:ARROW_2
+
+name:19:Archers
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:kobold
+mon-base:orc
+mon-base:person
+color:W
+color:D
+spell-ban:BO_NETH
+spell-ban:HASTE
+
+name:20:Naga
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:naga
+
+name:21:Thieves
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:person
+color:b
+
+name:22:Warriors
+room:1
+alloc:1:25
+obj-rarity:0
+mon-base:person
+color:u
+color:y
+
+name:23:Dark elves
+room:1
+alloc:1:30
+obj-rarity:0
+mon-base:humanoid
+flags-req:HURT_LIGHT
+
+name:24:Eyes
+room:1
+alloc:1:30
+obj-rarity:5
+mon-base:eye
+spell-ban:S_UNDEAD
+spell-ban:S_KIN
+
+name:25:Ogres
+room:1
+alloc:1:30
+obj-rarity:0
+mon-base:ogre
+
+name:26:Believers
+room:1
+alloc:1:35
+obj-rarity:0
+mon-base:person
+spell-req:HEAL
+spell-ban:S_ANIMAL
+
+name:27:Serpents
+room:2
+alloc:1:40
+obj-rarity:5
+mon-base:snake
+mon-base:naga
+mon-base:hydra
+spell-ban:BA_POIS
+spell-ban:BR_FIRE
+
+name:28:Lesser undead
+room:2
+alloc:1:40
+obj-rarity:10
+mon-base:skeleton
+mon-base:zombie
+mon-base:wraith
+spell-ban:BO_NETH
+spell-ban:TELE_AWAY
+
+name:29:Wizards
+room:1
+alloc:1:45
+obj-rarity:0
+mon-base:person
+spell-req:CONF
+
+name:30:Vampires
+room:1
+alloc:1:55
+obj-rarity:0
+mon-base:bat
+mon-base:vampire
+flags-req:UNDEAD
+
+name:31:Hydra
+room:2
+alloc:1:60
+obj-rarity:8
+mon-base:hydra
+
+name:32:Golems
+room:1
+alloc:1:65
+obj-rarity:10
+mon-base:golem
+flags-ban:DRAGON
+flags-ban:UNDEAD
+flags-ban:DEMON
+
+name:33:Gold dragons
+room:1
+alloc:6:85
+obj-rarity:0
+mon-base:dragon
+mon-base:ancient dragon
+spell-req:BR_SOUN
+spell-ban:BR_SHAR
+
+name:34:Ainur
+room:1
+alloc:1:90
+obj-rarity:0
+mon-base:ainu
+
+
+# New chosen monster types, not necessarily for pits and not used yet
+
+name:35:Insects
+room:3
+alloc:2:15
+mon-base:ant
+mon-base:centipede
+mon-base:louse
+mon-base:dragon fly
+mon-base:insect
+mon-base:killer beetle
+
+name:36:Reptiles
+room:3
+alloc:1:20
+mon-base:naga
+mon-base:snake
+mon-base:reptile
+
+name:37:Cave dwellers
+room:3
+alloc:1:25
+mon-base:yeek
+mon-base:kobold
+mon-base:orc
+mon-base:troll
+mon-base:ogre
+
+name:38:Moria dwellers
+room:3
+alloc:8:30
+mon-base:orc
+mon-base:ogre
+mon-base:troll
+mon-base:giant
+
+name:39:Creatures of Earth
+room:3
+alloc:8:35
+mon-base:xorn
+
+name:40:Elemental creatures
+room:3
+alloc:1:40
+mon-base:elemental
+mon-base:vortex

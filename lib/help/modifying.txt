@@ -1,0 +1,204 @@
+=================
+Modifying Angband
+================= 
+
+Angband is not just a great game in its own right, it is really easy to modify.
+Much of the detail of the game is contained in text data files.  These can be
+changed using nothing more than a text editor for an immediate change to how
+the game works.
+
+These data files are in lib/gamedata.
+
+Each file has a header which describes the lines which make up entries of the
+file, and for the most part this will make it clear what needs to be done to
+make changes to the files.  Below is brief description of each of the files.
+
+Those who want to change the game more than is allowed just by varying the
+data files will need the source code.  Below the data file descriptions is a
+brief discussion of where to start on such an endeavour. 
+
+
+The data files
+==============
+
+constants.txt
+`````````````
+This file contains game values such as carried item capacity, visual range and
+dungeon level and town dimensions.  
+
+object_base.txt
+```````````````
+This file contains the names and common properties of the basic object classes
+- scroll, sword, ring, and so on.  All objects have an object base.  Each
+object base is assigned a 'tval' - a numeric index.  The tvals are defined in
+src/list-tvals.h.  While adding new object bases is possible, it is unlikely to
+do much without deeper changes to the game.
+
+
+object.txt
+``````````
+This file contains the names, properties and description of all the object
+types that appear in Angband.  New object kinds can easily be added to this
+file, or existing ones edited.  Each object defined by this file has an object
+base, and is also allocated another numeric index called an 'sval'.  A
+tval-sval pair completely identifies an object - since the tval and sval are
+saved to savefiles, removing or adding objects is likely to render existing
+save files unusable.
+
+ego_item.txt
+````````````
+This file contains the names, properties and description of ego items, which
+are magically enhanced weapons and armour.  New ego items can be added or
+removed at will, although removing or changing one with an instance currently
+in the game might cause problems.
+
+artifact.txt
+````````````
+This file contains the names, properties and description of artifacts, which
+are unique items - only one of each will ever be generated.  If you are
+considering major changes, new artifacts are one of the most visible signs of
+a change of theme.  Regardless, new artifacts are easy and fun to design.
+
+names.txt
+`````````
+This file contains lists of words which are used to generate names for random
+character names, random artifacts and scrolls.  Again, in the case of a change
+of theme, this is a good way of 
+
+activation.txt
+``````````````
+Activations are used for artifacts and some regular objects, and could be used
+for ego items (although none currently are).  Some standard artifacts from
+artifact.txt have activations, and random artifacts may have any activation
+from this file chosen for them.  Activations can be made up of any effects
+(see effects.c and list-effects.h).
+
+flavor.txt
+``````````
+Items such as potions and wands are assigned a flavor per object kind,
+different in each game.  There need to be at least as many flavors for each
+flavored object base as objects with that base.
+
+monster_base.txt
+````````````````
+Monster bases are the monster equivalent of object bases - classes of monster
+like orc, troll or vampire.  This file contains the properties common across
+all monsters in each of these classes.
+
+monster.txt
+```````````
+This contains the detail of all monster races, each of which will have its
+monster base properties plus additional ones.  Some monsters are unique, and
+once killed will never reappear.
+
+monster_spell.txt
+`````````````````
+All the spells that can be cast by monsters (and are referred to in the
+'spells:' lines in monster.txt) are defined in this file.  As with activations,
+monster spells are built up from effects.
+
+pain.txt
+````````
+This file contains the various messages that are given to describe how a
+monster responds to attack.
+
+pit.txt
+```````
+Dungeon levels can contain pits - rooms full of a particular selesction of
+monsters.  This file defines these selections.  They can also be used, for
+example, to generate partial or complete dungein levels with themed monsters.
+
+class.txt
+`````````
+This file completely defines how player classes work, including all details of
+castable spells.  There are some class-specific properties hard-coded, which
+are referred to via the 'flags:' lines, and appear in list-player-flags.h.
+
+p_race.txt
+``````````
+This file defines all player race characteristics.  Race-specific code is
+handled as for classes.
+
+body.txt
+````````
+Every player race has a body, which defines what equipment thay can use.
+Currently there is only one body, which all races use, but this is easily
+changeable for significant effect.
+
+history.txt
+```````````
+This file is for creating the player background found on the character screen.
+If a new race is introduced, a selection of background information for it will
+ned to be added.
+
+hints.txt
+`````````
+This is simply a list of general pieces of advice that shopkeepers will give
+to their customers.
+
+quest.txt
+`````````
+This file defines the quest monsters (Sauron and Morgoth) and where they
+appear.  This currently can't easily be changed, as there are still hard-coded
+aspects of the quests.
+
+terrain.txt
+```````````
+This file defines the kind of terrain which can appear in Angband, and its
+properties.  Current terrain can be changed (with possibly large effects), but
+removing it without code changes is likely to break the game.  Adding new
+terrain will have no effect by itself, because there is no mechanism for it to
+appear.
+
+trap.txt
+````````
+This defines all traps, door locks and runes.  Actual trap effects appear in
+effects.c and list-effects.h.
+
+room_template.txt
+`````````````````
+This is a list of templates for interesting-shaped rooms which appear in the
+dungeon.  These can easily be changed and new ones added.
+
+vault.txt
+`````````
+Similar to room_template.txt, this handles vaults, which are very dangerous
+and lucrative rooms.
+
+dungeon_profile.txt
+```````````````````
+This file contains fairly technical details about the different types of
+dungeon level which can be generated.  The actual generation routines are in
+gen-cave.c; the information here consists of parameters for generating
+individual levels, and for how often given level types appear.
+
+store.txt
+`````````
+This details the shop owners and their relative generosity.
+
+
+Larger changes
+==============
+If changing data files is not enough for you, you will need to change actual
+game code and recompile it.  The first place to look is in the compiled data
+files, some of which have already been mentioned:
+
+list-blow-effects.h    list-message.h           list-player-flags.h
+list-blow-methods.h    list-mon-message.h       list-player-timed.h
+list-dun-profiles.h    list-mon-race-flags.h    list-project-environs.h
+list-effects.h         list-mon-spells.h        list-project-monsters.h
+list-elements.h        list-mon-temp-flags.h    list-rooms.h
+list-equip-slots.h     list-mon-timed.h         list-square-flags.h
+list-history-types.h   list-object-flags.h      list-stats.h
+list-identify-flags.h  list-object-modifiers.h  list-summon-types.h
+list-ignore-types.h    list-options.h           list-terrain-flags.h
+list-kind-flags.h      list-origins.h           list-trap-flags.h
+list-magic-realms.h    list-parser-errors.h     list-tvals.h
+
+Beyond this, you will have to have some knowledge of the C programming
+language, and can start making changes to the way the game runs or appears.
+Many people have done this - there are over 100 variants of Angband:
+http://angbandplus.github.io/AngbandPlus/
+Should you get to this point, the best thing to do is to discuss your ideas on
+the Angband forums at http://angband.oook.cz.  The people there are typically
+keen to hear new ideas and ways to play.

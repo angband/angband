@@ -3,30 +3,40 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 
-#include "monster/monster.h"
+#include "mon-attack.h"
+#include "mon-lore.h"
+#include "monster.h"
+#include "player-timed.h"
+#include "ui-input.h"
 
 int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;
 	struct monster *m = mem_zalloc(sizeof *m);
+	textui_input_init();
+	z_info = mem_zalloc(sizeof(struct angband_constants));
+	z_info->mon_blows_max = 2;
 	m->race = r;
 	r_info = r;
 	*state = m;
 
-	p_ptr = NULL;
 	rand_fix(100);
 	return 0;
 }
 
-NOTEARDOWN
+int teardown_tests(void **state) {
+	mem_free(z_info);
+	return 0;
+}
 
 static int mdam(struct monster *m)
 {
-	return m->race->blow[0].d_dice;
+	return m->race->blow[0].dice.dice;
 }
 
 static int take1(struct player *p, struct monster *m, int blow, int eff)
 {
 	int old, new;
+	cave = &test_cave;
 	m->race->blow[0].effect = eff;
 	m->race->blow[0].method = blow;
 	p->chp = p->mhp;
@@ -41,6 +51,8 @@ static int test_blows(void *state) {
 	struct monster *m = state;
 	struct player *p = &test_player;
 	int delta;
+
+	p->upkeep = &test_player_upkeep;
 
 	flags_set(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
 	delta = take1(p, m, RBM_HIT, RBE_HURT);
@@ -93,6 +105,8 @@ static int test_effects(void *state) {
 	struct monster *m = state;
 	struct player *p = &test_player;
 	int delta;
+
+	p->upkeep = &test_player_upkeep;
 
 	require(!p->timed[TMD_POISONED]);
 	delta = take1(p, m, RBM_HIT, RBE_POISON);

@@ -1,8 +1,8 @@
 /* z-quark/quark.c */
 
 #include "unit-test.h"
+#include "z-color.h"
 #include "z-textblock.h"
-#include "z-term.h"
 
 int setup_tests(void **state) {
 	ok;
@@ -40,9 +40,9 @@ int test_colour(void *state) {
 	textblock *tb = textblock_new();
 
 	const char text[] = "two";
-	const byte attrs[] = { TERM_L_GREEN, TERM_L_GREEN, TERM_L_GREEN };	
+	const byte attrs[] = { COLOUR_L_GREEN, COLOUR_L_GREEN, COLOUR_L_GREEN };	
 
-	textblock_append_c(tb, TERM_L_GREEN, text);
+	textblock_append_c(tb, COLOUR_L_GREEN, text);
 
 	require(!memcmp(textblock_attrs(tb), attrs, 3));
 

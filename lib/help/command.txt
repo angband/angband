@@ -41,15 +41,20 @@ Inventory list ('i')
  
 Equipment list ('e')
   Use this command to display a list of the objects currently being used by
-  your character. Your character has 12 slots for equipment and 10 slots
-  for ammunition (the quiver). Each equipment slot corresponds to a
-  different location on the body, and each of which may contain only a
-  single object at a time, and each of which may only contain objects of
-  the proper "type", and which include WIELD (weapon), BOW (missile
-  launcher), LEFT (ring), RIGHT (ring), NECK (amulet), LIGHT (light
-  source), BODY (armor), OUTER (cloak), ARM (shield), HEAD (helmet), HANDS
-  (gloves), FEET (boots). You must be wielding/wearing certain objects to
-  take advantage of their special powers.
+  your character. The standard body (which all races currently have) has
+  12 slots for equipment. Each equipment slot corresponds to a different
+  location on the body, and each of which may contain only a single object at
+  a time, and each of which may only contain objects of the proper "type".
+  For the standard body these are WEAPON (weapon), BOW (missile launcher),
+  RING (ring) (two of these), AMULET (amulet), LIGHT (light source),
+  BODY_ARMOR (armor), CLOAK (cloak), SHIELD (shield), HAT (helmet),
+  GLOVES (gloves), BOOTS (boots).   You must be wielding/wearing certain
+  objects to take advantage of their special powers.
+
+Quiver list ('|')
+  Missiles that you carry will automatically be put in your quiver.  The
+  quiver has 10 slots; it also takes up inventory space, so every 40 missiles
+  will reduce your number of inventory slots by 1.
 
 Drop an item ('d')
   This drops an item from your inventory or equipment onto the dungeon
@@ -58,14 +63,14 @@ Drop an item ('d')
   traps are considered objects for the purpose of determining if the space 
   is occupied. This command may take a quantity, and takes some energy.
 
-Squelch an item ('k') or Squelch an item ('^D')
-  This squelches an item in your inventory or on the dungeon floor. If the
+Ignore an item ('k') or Ignore an item ('^D')
+  This ignores an item in your inventory or on the dungeon floor. If the
   selected pile contains multiple objects, you may specify a quantity. When
-  squelched, the game will sometimes prompt you whether to squelch only this
+  ignored, the game will sometimes prompt you whether to ignore only this
   item or all others like it.  If the second option is chosen, all similar
-  items on the floor and in your inventory will be squelched.  To view all
-  items regardless of whether they are squelched, you can use 'K' to
-  toggle the squelch setting on and off.
+  items on the floor and in your inventory will be ignored.  To view all
+  items regardless of whether they are ignored, you can use 'K' to
+  toggle the ignore setting on and off.
 
 Wear/Wield equipment ('w')
   To wear or wield an object in your inventory, use this command. Since
@@ -337,10 +342,10 @@ Uninscribe an object ('}')
   This command removes the inscription on an object. This command will have
   no effect on "fake" inscriptions added by the game itself.
   
-Toggle squelch ('K') or Toggle squelch ('O')
-  This command will toggle squelch settings.  If on, all squelched items 
+Toggle ignore ('K') or Toggle ignore ('O')
+  This command will toggle ignore settings.  If on, all ignored items 
   will be hidden from view.  If off, all items will be shown regardless
-  of their squelch setting.  See the customize section for more info.
+  of their ignore setting.  See the customize section for more info.
 
 Magical Object Commands
 =======================

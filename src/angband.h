@@ -1,6 +1,7 @@
-/* File: angband.h */
-
-/*
+/**
+ * \file angband.h
+ * \brief Includes basic includes
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
  * This software may be copied and distributed for educational, research,
@@ -20,35 +21,20 @@
  * Include the mid-level includes.
  */
 #include "z-bitflag.h"
-#include "z-file.h"
+#include "z-color.h"
 #include "z-form.h"
 #include "z-util.h"
 #include "z-virt.h"
 #include "z-rand.h"
-#include "z-term.h"
-#include "z-quark.h"
-#include "z-msg.h"
 
 /*
  * Include the high-level includes.
  */
 #include "config.h"
-#include "defines.h"
-
-#include "cave.h"
-#include "game-cmd.h"
-#include "init.h"
-#include "monster/constants.h"
-#include "monster/monster.h"
-#include "object/obj-flag.h"
-#include "object/object.h"
+#include "game-event.h"
+#include "message.h"
 #include "option.h"
-#include "player/player.h"
-#include "store.h"
-
-#include "ui.h"
-#include "z-type.h"
-#include "externs.h"
+#include "player.h"
 
 
 /***** Some older copyright messages follow below *****/

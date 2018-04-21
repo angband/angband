@@ -1,6 +1,6 @@
-/*
- * File: main-xxx.c
- * Purpose: Outline how to make a new "main-xxx" file.
+/**
+ * \file main-xxx.c
+ * \brief Outline how to make a new "main-xxx" file.
  *
  * Copyright (c) 1997 Ben Harrison
  *
@@ -16,9 +16,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "init.h"
 
-
-/*
+/**
  * This file helps Angband work on non-existant computers.
  *
  * To use this file, use "Makefile.xxx", which defines USE_XXX.
@@ -29,7 +29,7 @@
  * actually work, but if the code near "XXX XXX XXX" comments were
  * replaced with functional code, then it probably would.
  *
- * See "z-term.c" for info on the concept of the "generic terminal",
+ * See "ui-term.c" for info on the concept of the "generic terminal",
  * and for more comments about what this file must supply.
  *
  * There are two basic ways to port Angband to a new system.  The
@@ -79,7 +79,7 @@
 
 #include "main.h"
 
-/*
+/**
  * Extra data to associate with each "window"
  *
  * Each "window" is represented by a "term_data" structure, which
@@ -98,7 +98,7 @@ struct term_data
 
 
 
-/*
+/**
  * Number of "term_data" structures to support XXX XXX XXX
  *
  * You MUST support at least one "term_data" structure, and the
@@ -114,7 +114,7 @@ struct term_data
 #define MAX_XXX_TERM 1
 
 
-/*
+/**
  * An array of "term_data" structures, one for each "sub-window"
  */
 static term_data data[MAX_XXX_TERM];
@@ -122,7 +122,7 @@ static term_data data[MAX_XXX_TERM];
 
 #if 0
 
-/*
+/**
  * Often, it is helpful to create an array of "color data" containing
  * a representation of the "angband_color_table" array in some "local" form.
  *
@@ -134,15 +134,17 @@ static local_color_data_type color_data[MAX_COLORS];
 #endif
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Function hooks needed by "Term"
+ * ------------------------------------------------------------------------ */
 
-/*** Function hooks needed by "Term" ***/
 
-
-/*
+/**
  * Init a new "term"
  *
  * This function should do whatever is necessary to prepare a new "term"
- * for use by the "z-term.c" package.  This may include clearing the window,
+ * for use by the "ui-term.c" package.  This may include clearing the window,
  * preparing the cursor, setting the font/colors, etc.  Usually, this
  * function does nothing, and the "init_xxx()" function does it all.
  */
@@ -155,7 +157,7 @@ static void Term_init_xxx(term *t)
 
 
 
-/*
+/**
  * Nuke an old "term"
  *
  * This function is called when an old "term" is no longer needed.  It should
@@ -172,15 +174,15 @@ static void Term_nuke_xxx(term *t)
 
 
 
-/*
+/**
  * Do a "special thing" to the current "term"
  *
  * This function must react to a large number of possible arguments, each
- * corresponding to a different "action request" by the "z-term.c" package,
+ * corresponding to a different "action request" by the "ui-term.c" package,
  * or by the application itself.
  *
  * The "action type" is specified by the first argument, which must be a
- * constant of the form "TERM_XTRA_*" as given in "z-term.h", and the second
+ * constant of the form "TERM_XTRA_*" as given in "ui-term.h", and the second
  * argument specifies the "information" for that argument, if any, and will
  * vary according to the first argument.
  *
@@ -226,7 +228,7 @@ static errr Term_xtra_xxx(int n, int v)
 			 *
 			 * This action should handle all events waiting on the
 			 * queue, optionally discarding all "keypress" events,
-			 * since they will be discarded anyway in "z-term.c".
+			 * since they will be discarded anyway in "ui-term.c".
 			 *
 			 * This action is required, but may not be "essential".
 			 */
@@ -398,14 +400,14 @@ static errr Term_xtra_xxx(int n, int v)
 }
 
 
-/*
+/**
  * Display the cursor
  *
  * This routine should display the cursor at the given location
  * (x,y) in some manner.  On some machines this involves actually
  * moving the physical cursor, on others it involves drawing a fake
  * cursor in some form of graphics mode.  Note the "soft_cursor"
- * flag which tells "z-term.c" to treat the "cursor" as a "visual"
+ * flag which tells "ui-term.c" to treat the "cursor" as a "visual"
  * thing and not as a "hardware" cursor.
  *
  * You may assume "valid" input if the window is properly sized.
@@ -425,7 +427,7 @@ static errr Term_curs_xxx(int x, int y)
 }
 
 
-/*
+/**
  * Erase some characters
  *
  * This function should erase "n" characters starting at (x,y).
@@ -443,7 +445,7 @@ static errr Term_wipe_xxx(int x, int y, int n)
 }
 
 
-/*
+/**
  * Draw some text on the screen
  *
  * This function should actually display an array of characters
@@ -486,7 +488,7 @@ static errr Term_text_xxx(int x, int y, int n, int a, const char *cp)
 }
 
 
-/*
+/**
  * Draw some attr/char pairs on the screen
  *
  * This routine should display the given "n" attr/char pairs at
@@ -525,10 +527,13 @@ static errr Term_pict_xxx(int x, int y, int n, const byte *ap, const char *cp,
 
 
 
-/*** Internal Functions ***/
+/**
+ * ------------------------------------------------------------------------
+ * Internal Functions
+ * ------------------------------------------------------------------------ */
 
 
-/*
+/**
  * Instantiate a "term_data" structure
  *
  * This is one way to prepare the "term_data" structures and to
@@ -556,7 +561,7 @@ static void term_data_link(int i)
 	/* Choose "soft" or "hard" cursor XXX XXX XXX */
 	/* A "soft" cursor must be explicitly "drawn" by the program */
 	/* while a "hard" cursor has some "physical" existance and is */
-	/* moved whenever text is drawn on the screen.  See "z-term.c". */
+	/* moved whenever text is drawn on the screen.  See "ui-term.c". */
 	/* t->soft_cursor = TRUE; */
 
 	/* Avoid the "corner" of the window XXX XXX XXX */
@@ -583,7 +588,7 @@ static void term_data_link(int i)
 	/* t->never_frosh = TRUE; */
 
 	/* Erase with "white space" XXX XXX XXX */
-	/* t->attr_blank = TERM_WHITE; */
+	/* t->attr_blank = COLOUR_WHITE; */
 	/* t->char_blank = ' '; */
 
 	/* Prepare the init/nuke hooks */
@@ -608,7 +613,7 @@ static void term_data_link(int i)
 }
 
 
-/*
+/**
  * Help message.
  *   1st line = max 68 chars.
  *   Start next lines with 11 spaces
@@ -616,7 +621,7 @@ static void term_data_link(int i)
 const char help_xxx[] = "Describe XXX, subopts -describe suboptions here";
 
 
-/*
+/**
  * Initialization function
  */
 errr init_xxx(int argc, char **argv)
@@ -644,7 +649,7 @@ errr init_xxx(int argc, char **argv)
 #ifdef INTERNAL_MAIN
 
 
-/*
+/**
  * Some special machines need their own "main()" function, which they
  * can provide here, making sure NOT to compile the "main.c" file.
  *
@@ -658,7 +663,7 @@ errr init_xxx(int argc, char **argv)
  */
 
 
-/*
+/**
  * An event handler XXX XXX XXX
  *
  * You may need an event handler, which can be used by both
@@ -677,7 +682,7 @@ static bool CheckEvents(bool wait)
 
 
 
-/*
+/**
  * Make a sound.
  *
  * This action should produce sound number "v", where the
@@ -685,13 +690,15 @@ static bool CheckEvents(bool wait)
  *
  * This action is optional, and not very important.
  */
-static void xxx_sound(int v)
+static void xxx_sound(game_event_type type, game_event_data *data, void *user)
 {
+	int v = data->message.type;
+
 	return;
 }
 
 
-/*
+/**
  * Init some stuff
  *
  * This function is used to keep the "path" variable off the stack.
@@ -710,11 +717,11 @@ static void init_stuff(void)
 	init_file_paths(path, path, path);
 
 	/* Set up sound hook */
-	sound_hook = xxx_sound;
+	event_add_handler(EVENT_SOUND, xxx_sound, NULL);
 }
 
 
-/*
+/**
  * Main function
  *
  * This function must do a lot of stuff.

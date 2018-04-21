@@ -1,3 +1,4 @@
 TESTPROGS += player/birth \
              player/history \
-             player/player
+             player/pathfind \
+             player/playerstat

@@ -1,5 +1,26 @@
+/**
+ * \file ui-menu.h
+ * \brief Generic menu interaction functions
+ *
+ * Copyright (c) 2007 Pete Mack
+ * Copyright (c) 2010 Andi Sidwell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_UI_MENU_H
 #define INCLUDED_UI_MENU_H
+
+#include "ui-output.h"
 
 /*** Constants ***/
 
@@ -46,7 +67,7 @@ extern const char all_letters[];		/* abc..zABC..Z */
    - a menu_skin, which describes the layout of the menu on the screen.
    - various bits and bobs of other data (e.g. the actual list of entries)
  */
-typedef struct menu_type menu_type;
+struct menu;
 
 
 
@@ -96,24 +117,24 @@ typedef struct
 typedef struct
 {
 	/* Returns menu item tag (optional) */
-	char (*get_tag)(menu_type *menu, int oid);
+	char (*get_tag)(struct menu *menu, int oid);
 
 	/*
 	 * Validity checker (optional--all rows are assumed valid if not present)
  	 * Return values will be interpreted as: 0 = no, 1 = yes, 2 = hide.
  	 */
-	int (*valid_row)(menu_type *menu, int oid);
+	int (*valid_row)(struct menu *menu, int oid);
 
 	/* Displays a menu row */
-	void (*display_row)(menu_type *menu, int oid, bool cursor,
+	void (*display_row)(struct menu *menu, int oid, bool cursor,
 			int row, int col, int width);
 
 	/* Handle 'positive' events (selections or cmd_keys) */
 	/* XXX split out into a select handler and a cmd_key handler */
-	bool (*row_handler)(menu_type *menu, const ui_event *event, int oid);
+	bool (*row_handler)(struct menu *menu, const ui_event *event, int oid);
 
 	/* Called when the screen resizes */
-	void (*resize)(menu_type *m);
+	void (*resize)(struct menu *m);
 } menu_iter;
 
 
@@ -126,7 +147,8 @@ typedef struct
 typedef enum
 {
 	MN_SKIN_SCROLL = 1,   /**< Ordinary scrollable single-column list */
-	MN_SKIN_COLUMNS = 2   /**< Multicolumn view */
+	MN_SKIN_OBJECT = 2,   /**< Special single-column list for object choice */
+	MN_SKIN_COLUMNS = 3   /**< Multicolumn view */
 } skin_id;
 
 
@@ -137,13 +159,13 @@ typedef struct
 	int (*get_cursor)(int row, int col, int n, int top, region *loc);
 
 	/* Displays the current list of visible menu items */
-	void (*display_list)(menu_type *menu, int cursor, int *top, region *);
+	void (*display_list)(struct menu *menu, int cursor, int *top, region *);
 
 	/* Specifies the relative menu item given the state of the menu */
-	char (*get_tag)(menu_type *menu, int pos);
+	char (*get_tag)(struct menu *menu, int pos);
 
 	/* Process a direction */
-	ui_event (*process_dir)(menu_type *menu, int dir);
+	ui_event (*process_dir)(struct menu *menu, int dir);
 } menu_skin;
 
 
@@ -172,12 +194,15 @@ enum
 	MN_DBL_TAP = 0x10,
 
 	/* no select events to be triggered */
-	MN_NO_ACTION = 0x20
+	MN_NO_ACTION = 0x20,
+
+	/* Tags can be selected via an inscription */
+	MN_INSCRIP_TAGS = 0x40
 };
 
 
 /* Base menu type */
-struct menu_type
+struct menu
 {
 	/** Public variables **/
 	const char *header;
@@ -187,14 +212,21 @@ struct menu_type
 	/* Keyboard shortcuts for menu selection-- shouldn't overlap cmd_keys */
 	const char *selections; 
 
+	/* Menu selections corresponding to inscriptions */
+	char *inscriptions; 
+
 	/* String of characters that when pressed, menu handler should be called */
 	/* Mustn't overlap with 'selections' or some items may be unselectable */
 	const char *cmd_keys;
 
+	/* String of characters that when pressed, return an EVT_SWITCH */
+	/* Mustn't overlap with previous blah blah */
+	const char *switch_keys;
+
   	/* auxiliary browser help function */
 	void (*browse_hook)(int oid, void *db, const region *loc);
 
-	/* Flags specifying the behavior of this menu (from menu_type_flags) */
+	/* Flags specifying the behavior of this menu (from struct menu_flags) */
 	int flags;
 
 
@@ -227,15 +259,15 @@ struct menu_type
 /**
  * Allocate and return a new, initialised, menu.
  */
-menu_type *menu_new(skin_id, const menu_iter *iter);
-menu_type *menu_new_action(menu_action *acts, size_t n);
-void menu_free(menu_type *m);
+struct menu *menu_new(skin_id, const menu_iter *iter);
+struct menu *menu_new_action(menu_action *acts, size_t n);
+void menu_free(struct menu *m);
 
 
 /**
  * Initialise a menu, using the skin and iter functions specified.
  */
-void menu_init(menu_type *menu, skin_id skin, const menu_iter *iter);
+void menu_init(struct menu *menu, skin_id skin, const menu_iter *iter);
 
 
 /**
@@ -250,13 +282,13 @@ const menu_iter *menu_find_iter(menu_iter_id iter_id);
  * Menu private data is then available from inside menu callbacks using
  * menu_priv().
  */
-void menu_setpriv(menu_type *menu, int count, void *data);
+void menu_setpriv(struct menu *menu, int count, void *data);
 
 
 /**
  * Return menu private data, set with menu_setpriv().
  */
-void *menu_priv(menu_type *menu);
+void *menu_priv(struct menu *menu);
 
 
 /*
@@ -267,13 +299,13 @@ void *menu_priv(menu_type *menu);
  * object_list[] should be an array of indexes to display, and n should be its
  * length.
  */
-void menu_set_filter(menu_type *menu, const int object_list[], int n);
+void menu_set_filter(struct menu *menu, const int object_list[], int n);
 
 
 /**
  * Remove any filters set on a menu by menu_set_filer().
  */
-void menu_release_filter(menu_type *menu);
+void menu_release_filter(struct menu *menu);
 
 
 /**
@@ -281,7 +313,7 @@ void menu_release_filter(menu_type *menu);
  *
  * XXX not ready for dynamic resizing just yet
  */
-bool menu_layout(menu_type *menu, const region *loc);
+bool menu_layout(struct menu *menu, const region *loc);
 
 
 /**
@@ -289,7 +321,7 @@ bool menu_layout(menu_type *menu, const region *loc);
  * If reset_screen is true, it will reset the screen to the previously saved
  * state before displaying.
  */
-void menu_refresh(menu_type *menu, bool reset_screen);
+void menu_refresh(struct menu *menu, bool reset_screen);
 
 
 /**
@@ -317,32 +349,33 @@ void menu_refresh(menu_type *menu, bool reset_screen);
  * and restored before each redraw. This allows variably-sized information
  * at the bottom of the menu.
  */
-ui_event menu_select(menu_type *menu, int notify, bool popup);
+ui_event menu_select(struct menu *menu, int notify, bool popup);
 
 /**
  * Set the menu cursor to the next valid row.
  */
-void menu_ensure_cursor_valid(menu_type *m);
+void menu_ensure_cursor_valid(struct menu *m);
 
 
 /* Interal menu stuff that cmd-know needs because it's quite horrible */
-bool menu_handle_mouse(menu_type *menu, const ui_event *in, ui_event *out);
-bool menu_handle_keypress(menu_type *menu, const ui_event *in, ui_event *out);
+bool menu_handle_mouse(struct menu *menu, const ui_event *in, ui_event *out);
+bool menu_handle_keypress(struct menu *menu, const ui_event *in, ui_event *out);
 
 /**
  * Allow adjustment of the cursor's default x offset.
  */
-void menu_set_cursor_x_offset(menu_type *m, int offset);
+void menu_set_cursor_x_offset(struct menu *m, int offset);
 
 /*** Dynamic menu handling ***/
 
-menu_type *menu_dynamic_new(void);
-void menu_dynamic_add(menu_type *m, const char *text, int value);
-void menu_dynamic_add_valid(menu_type *m, const char *text, int value, menu_row_validity_t valid);
-void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list);
-void menu_dynamic_add_label_valid(menu_type *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid);
-size_t menu_dynamic_longest_entry(menu_type *m);
-int menu_dynamic_select(menu_type *m);
-void menu_dynamic_free(menu_type *m);
+struct menu *menu_dynamic_new(void);
+void menu_dynamic_add(struct menu *m, const char *text, int value);
+void menu_dynamic_add_valid(struct menu *m, const char *text, int value, menu_row_validity_t valid);
+void menu_dynamic_add_label(struct menu *m, const char *text, const char label, int value, char *label_list);
+void menu_dynamic_add_label_valid(struct menu *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid);
+size_t menu_dynamic_longest_entry(struct menu *m);
+void menu_dynamic_calc_location(struct menu *m, int mx, int my);
+int menu_dynamic_select(struct menu *m);
+void menu_dynamic_free(struct menu *m);
 
 #endif /* INCLUDED_UI_MENU_H */

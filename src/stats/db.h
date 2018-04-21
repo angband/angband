@@ -1,5 +1,5 @@
-/*
- * File: stats/db.h
+/**
+ * \file stats/db.h
  * Purpose: interface to SQLite3 database manipulation
  *
  * Copyright (c) 2011 Robert Au
@@ -23,18 +23,20 @@
 
 #include <sqlite3.h>
 
-/* Utility macro for executing and resetting a statement; assumes existence
- * of an integer err variable */
-
+/**
+ * Utility macro for executing and resetting a statement; assumes existence
+ * of an integer err variable
+ */
 #define STATS_DB_STEP_RESET(s) \
 	err = sqlite3_step(s);\
 	if (err && err != SQLITE_DONE) return err;\
 	err = sqlite3_reset(s);\
 	if (err) return err;
 
-/* Utility macro for finalizing a statement; assumes existence
- * of an integer err variable */
-
+/**
+ * Utility macro for finalizing a statement; assumes existence
+ * of an integer err variable
+ */
 #define STATS_DB_FINALIZE(s) \
 	err = sqlite3_finalize(s);\
 	if (err) return err;
@@ -44,8 +46,8 @@ extern bool stats_db_close(void);
 extern int stats_db_exec(char *sql_str);
 extern int stats_db_stmt_prep(sqlite3_stmt **sql_stmt, char *sql_str);
 extern int stats_db_bind_ints(sqlite3_stmt *sql_stmt, int num_cols, 
-	int offset, ...);
+							  int offset, ...);
 extern int stats_db_bind_rv(sqlite3_stmt *sql_stmt, int col,
-	random_value rv);
+							random_value rv);
 
 #endif /* STATS_DB_H */

@@ -1,6 +1,6 @@
-/*
- * File: z-file.c
- * Purpose: Low-level file (and directory) handling
+/**
+ * \file z-file.c
+ * \brief Low-level file (and directory) handling
  *
  * Copyright (c) 1997-2007 Ben Harrison, pelpel, Andi Sidwell, Matthew Jones
  *
@@ -15,7 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
+#include "h-basic.h"
+#include "z-file.h"
+#include "z-form.h"
+#include "z-util.h"
+#include "z-virt.h"
+
 
 #include <sys/types.h>
 
@@ -47,7 +52,7 @@
 # define my_mkdir(path, perms) FALSE
 #endif
 
-/*
+/**
  * Player info
  */
 int player_uid;
@@ -56,7 +61,7 @@ int player_egid;
 
 
 
-/*
+/**
  * Drop permissions
  */
 void safe_setuid_drop(void)
@@ -77,7 +82,7 @@ void safe_setuid_drop(void)
 }
 
 
-/*
+/**
  * Grab permissions
  */
 void safe_setuid_grab(void)
@@ -100,7 +105,7 @@ void safe_setuid_grab(void)
 
 
 
-/*
+/**
  * Apply special system-specific processing before dealing with a filename.
  */
 static void path_parse(char *buf, size_t max, const char *file)
@@ -110,13 +115,13 @@ static void path_parse(char *buf, size_t max, const char *file)
 }
 
 
-static void path_process(char *buf, size_t len, size_t *cur_len, const char *path)
+static void path_process(char *buf, size_t len, size_t *cur_len,
+						 const char *path)
 {
 #if defined(UNIX)
 
 	/* Home directory on Unixes */
-	if (path[0] == '~')
-	{
+	if (path[0] == '~') {
 		const char *s;
 		const char *username = path + 1;
 
@@ -125,8 +130,7 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 
 		/* Look for non-user portion of the file */
 		s = strstr(username, PATH_SEP);
-		if (s)
-		{
+		if (s) {
 			int i;
 
 			/* Keep username a decent length */
@@ -144,17 +148,16 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 		/* Copy across */
 		strnfcat(buf, len, cur_len, "%s%s", pw->pw_dir, PATH_SEP);
 		if (s) strnfcat(buf, len, cur_len, "%s", s);
-	}
-	else
+	} else
 
 #endif /* defined(UNIX) */
 
-	strnfcat(buf, len, cur_len, "%s", path);
+		strnfcat(buf, len, cur_len, "%s", path);
 }
 
 
 
-/*
+/**
  * Create a new path string by appending a 'leaf' to 'base'.
  *
  * On Unixes, we convert a tidle at the beginning of a basename to mean the
@@ -167,8 +170,7 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 	size_t cur_len = 0;
 	buf[0] = '\0';
 
-	if (!leaf || !leaf[0])
-	{
+	if (!leaf || !leaf[0]) {
 		if (base && base[0])
 			path_process(buf, len, &cur_len, base);
 
@@ -193,7 +195,8 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 	}
 
 
-	/* There is both a relative leafname and a base path from which it is relative */
+	/* There is both a relative leafname and a base path from which it is
+	 * relative */
 	path_process(buf, len, &cur_len, base);
 	strnfcat(buf, len, &cur_len, "%s", PATH_SEP);
 	path_process(buf, len, &cur_len, leaf);
@@ -201,7 +204,7 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 	return cur_len;
 }
 
-/*
+/**
  * Return the index of the filename in a path, using PATH_SEPC. If no path
  * separator is found, return 0.
  */
@@ -220,7 +223,11 @@ size_t path_filename_index(const char *path)
 	return 0;
 }
 
-/*** File-handling API ***/
+/**
+ * ------------------------------------------------------------------------
+ * File-handling API
+ * ------------------------------------------------------------------------ */
+
 
 /* Some defines for compatibility between various build platforms */
 #ifndef S_IRUSR
@@ -254,7 +261,7 @@ struct ang_file
 
 /** Utility functions **/
 
-/*
+/**
  * Delete file 'fname'.
  */
 bool file_delete(const char *fname)
@@ -267,7 +274,7 @@ bool file_delete(const char *fname)
 	return (remove(buf) == 0);
 }
 
-/*
+/**
  * Move file 'fname' to 'newname'.
  */
 bool file_move(const char *fname, const char *newname)
@@ -283,7 +290,7 @@ bool file_move(const char *fname, const char *newname)
 }
 
 
-/*
+/**
  * Decide whether a file exists or not.
  */
 
@@ -324,7 +331,7 @@ bool file_exists(const char *fname)
 
 #endif
 
-/*
+/**
  * Return TRUE if first is newer than second, FALSE otherwise.
  */
 bool file_newer(const char *first, const char *second)
@@ -352,13 +359,13 @@ bool file_newer(const char *first, const char *second)
 
 void (*file_open_hook)(const char *path, file_type ftype);
 
-/*
+/**
  * Open file 'fname', in mode 'mode', with filetype 'ftype'.
  * Returns file handle or NULL.
  */
 ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 {
-	ang_file *f = ZNEW(ang_file);
+	ang_file *f = mem_zalloc(sizeof(ang_file));
 	char buf[1024];
 
 	(void)ftype;
@@ -393,9 +400,8 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 			assert(0);
 	}
 
-	if (f->fh == NULL)
-	{
-		FREE(f);
+	if (f->fh == NULL) {
+		mem_free(f);
 		return NULL;
 	}
 
@@ -409,7 +415,7 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 }
 
 
-/*
+/**
  * Close file handle 'f'.
  */
 bool file_close(ang_file *f)
@@ -417,8 +423,8 @@ bool file_close(ang_file *f)
 	if (fclose(f->fh) != 0)
 		return FALSE;
 
-	FREE(f->fname);
-	FREE(f);
+	mem_free(f->fname);
+	mem_free(f);
 
 	return TRUE;
 }
@@ -427,7 +433,7 @@ bool file_close(ang_file *f)
 
 /** Locking functions **/
 
-/*
+/**
  * Lock a file using POSIX locks, on platforms where this is supported.
  */
 void file_lock(ang_file *f)
@@ -443,7 +449,7 @@ void file_lock(ang_file *f)
 #endif /* HAVE_FCNTL_H && UNIX */
 }
 
-/*
+/**
  * Unlock a file locked using file_lock().
  */
 void file_unlock(ang_file *f)
@@ -462,7 +468,7 @@ void file_unlock(ang_file *f)
 
 /** Byte-based IO and functions **/
 
-/*
+/**
  * Seek to location 'pos' in file 'f'.
  */
 bool file_skip(ang_file *f, int bytes)
@@ -470,7 +476,7 @@ bool file_skip(ang_file *f, int bytes)
 	return (fseek(f->fh, bytes, SEEK_CUR) == 0);
 }
 
-/*
+/**
  * Read a single, 8-bit character from file 'f'.
  */
 bool file_readc(ang_file *f, byte *b)
@@ -484,7 +490,7 @@ bool file_readc(ang_file *f, byte *b)
 	return TRUE;
 }
 
-/*
+/**
  * Write a single, 8-bit character 'b' to file 'f'.
  */
 bool file_writec(ang_file *f, byte b)
@@ -492,7 +498,7 @@ bool file_writec(ang_file *f, byte b)
 	return file_write(f, (const char *)&b, 1);
 }
 
-/*
+/**
  * Read 'n' bytes from file 'f' into array 'buf'.
  */
 int file_read(ang_file *f, char *buf, size_t n)
@@ -505,7 +511,7 @@ int file_read(ang_file *f, char *buf, size_t n)
 		return read;
 }
 
-/*
+/**
  * Append 'n' bytes of array 'buf' to file 'f'.
  */
 bool file_write(ang_file *f, const char *buf, size_t n)
@@ -515,7 +521,7 @@ bool file_write(ang_file *f, const char *buf, size_t n)
 
 /** Line-based IO **/
 
-/*
+/**
  * Read a line of text from file 'f' into buffer 'buf' of size 'n' bytes.
  *
  * Support both \r\n and \n as line endings, but not the outdated \r that used
@@ -532,40 +538,34 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 	/* Leave a byte for the terminating 0 */
 	size_t max_len = len - 1;
 
-	while (i < max_len)
-	{
+	while (i < max_len) {
 		char c;
 
-		if (!file_readc(f, &b))
-		{
+		if (!file_readc(f, &b)) {
 			buf[i] = '\0';
 			return (i == 0) ? FALSE : TRUE;
 		}
 
 		c = (char) b;
 
-		if (c == '\r')
-		{
+		if (c == '\r') {
 			seen_cr = TRUE;
 			continue;
 		}
 
-		if (seen_cr && c != '\n')
-		{
+		if (seen_cr && c != '\n') {
 			fseek(f->fh, -1, SEEK_CUR);
 			buf[i] = '\0';
 			return TRUE;
 		}
 
-		if (c == '\n')
-		{
+		if (c == '\n') {
 			buf[i] = '\0';
 			return TRUE;
 		}
 
 		/* Expand tabs */
-		if (c == '\t')
-		{
+		if (c == '\t') {
 			/* Next tab stop */
 			size_t tabstop = ((i + TAB_COLUMNS) / TAB_COLUMNS) * TAB_COLUMNS;
 			if (tabstop >= len) break;
@@ -584,7 +584,7 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 	return TRUE;
 }
 
-/*
+/**
  * Append a line of text 'buf' to the end of file 'f', using system-dependent
  * line ending.
  */
@@ -667,10 +667,8 @@ bool dir_create(const char *path)
 
 	/* Iterate through the path looking for path segements. At each step,
 	 * create the path segment if it doesn't already exist. */
-	for (ptr = path; *ptr; ptr++)
-	{
-		if (*ptr == PATH_SEPC)
-		{
+	for (ptr = path; *ptr; ptr++) {
+		if (*ptr == PATH_SEPC) {
 			/* Find the length of the parent path string */
 			size_t len = (size_t)(ptr - path);
 
@@ -700,7 +698,11 @@ bool dir_create(const char *path)
 bool dir_create(const char *path) { return FALSE; }
 #endif /* !HAVE_STAT */
 
-/*** Directory scanning API ***/
+/**
+ * ------------------------------------------------------------------------
+ * Directory scanning API
+ * ------------------------------------------------------------------------ */
+
 
 /*
  * For information on what these are meant to do, please read the header file.
@@ -730,7 +732,7 @@ ang_dir *my_dopen(const char *dirname)
 		return NULL;
 
 	/* Set up the handle */
-	dir = ZNEW(ang_dir);
+	dir = mem_zalloc(sizeof(ang_dir));
 	dir->h = h;
 	dir->first_file = string_make(fd.cFileName);
 
@@ -744,19 +746,17 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 	BOOL ok;
 
 	/* Try the first file */
-	if (dir->first_file)
-	{
+	if (dir->first_file) {
 		/* Copy the string across, then free it */
 		my_strcpy(fname, dir->first_file, len);
-		FREE(dir->first_file);
+		mem_free(dir->first_file);
 
 		/* Wild success */
 		return TRUE;
 	}
 
 	/* Try the next file */
-	while (1)
-	{
+	while (1) {
 		ok = FindNextFile(dir->h, &fd);
 		if (!ok) return FALSE;
 
@@ -783,8 +783,8 @@ void my_dclose(ang_dir *dir)
 		FindClose(dir->h);
 
 	/* Free memory */
-	FREE(dir->first_file);
-	FREE(dir);
+	mem_free(dir->first_file);
+	mem_free(dir);
 }
 
 #else /* WINDOWS */
@@ -808,9 +808,8 @@ ang_dir *my_dopen(const char *dirname)
 	if (!d) return NULL;
 
 	/* Allocate memory for the handle */
-	dir = ZNEW(ang_dir);
-	if (!dir) 
-	{
+	dir = mem_zalloc(sizeof(ang_dir));
+	if (!dir) {
 		closedir(d);
 		return NULL;
 	}
@@ -832,8 +831,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 	assert(dir != NULL);
 
 	/* Try reading another entry */
-	while (1)
-	{
+	while (1) {
 		entry = readdir(dir->d);
 		if (!entry) return FALSE;
 
@@ -864,8 +862,8 @@ void my_dclose(ang_dir *dir)
 		closedir(dir->d);
 
 	/* Free memory */
-	FREE(dir->dirname);
-	FREE(dir);
+	mem_free(dir->dirname);
+	mem_free(dir);
 }
 
 #endif /* HAVE_DIRENT_H */

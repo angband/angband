@@ -2,7 +2,7 @@
 The Angband Manual
 ~~~~~~~~~~~~~~~~~~
 
-.. image:: ../lib/xtra/graf/mr_att.png
+.. image:: ../lib/icons/mr-att.png
    :alt: 
    :align: center
 

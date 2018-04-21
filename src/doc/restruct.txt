@@ -1,0 +1,122 @@
+The Restructure - an overview from Nick
+=======================================
+
+Prompted by a (very sensible) request by fizzix, this is meant to be a broad 
+overview of the restructure as I'm imagining it.  My apologies for lack of 
+acknowledgement, errors, etc; stupidity is to blame rather than malice.
+
+Principles
+----------
+
+These are the ideas underlying most of what I'm doing.  They are very 
+interrelated, and also not very clearly expressed.
+
+1. Stratify data and code, for example
+z-* files -> *.[ch] files -> list-*.h files -> edit files
+(I'm thinking of these a bit like a protocol stack, or geological strata)
+
+2. Make the code more flexible and general - gameplay assumptions should be 
+   made at the highest possible stratum
+
+3. Logical breakup - name of a file should be a good indicator of what it does
+
+
+More Detail
+-----------
+
+I'll now try to give an indication of what I think needs to change, grouped by 
+broad areas.  There's a fair bit of variation among these things as to how 
+much thought I've put in, and how sure I am about them.  I'll leave aside 
+takkaria's work on the core-UI split, commands and events; there is some 
+explanation in command.txt and event.txt.
+
+Dungeon gen
+ - allow saving of dungeon levels and the town (done)
+ - allow generation of dungeon levels piece by piece (done)
+ - generalise level generation algorithms (done)
+ - allow more control over monster generation for thematic purposes (done)
+ - allow regions where restrictions apply (eg no ESP or no mapping) (done)
+
+Player knowledge
+ - duplicate the dungeon level "cave" struct, so that there is a reality 
+ version and a player version (improves things like identify, terrain/object 
+ change when not in view, hallucination, etc)
+
+Objects
+ - replace pvals (aside from fuel, food etc) by an array of values (done)
+ - separate resistances, immunities etc from flags to allow for more values of 
+ resistance (done)
+ - separate brands and slays from flags to allow more variablilty (done)
+ - save flavors to the savefile and remove seed_flavor
+
+Inventory, quiver, equipment
+ - make ordering of the inventory and quiver a UI construct only
+ - make separate reality/player copies as for the cave
+ - use a Poschengband-style equipment template to specify equipment slots 
+ (so there is a standard player body, but more could be added)
+
+Monster memory
+ - make this a separate file, and make a full memory version available for 
+ download
+
+Birth options
+ - improve the interface so that the player can more easily choose different 
+ options (but without making the birth process annoying)
+ - use to allow players to try experimental ideas (combat system!) and broader 
+ gameplay options; as long as defaults are sensible, we don't need to worry 
+ as much about balance here
+
+Terrain/traps
+ - have a full terrain flag system to allow easier addition/removal of terrain 
+ types (done)
+ - make traps separate entities, not terrain (done)
+ - make locked/jammed doors just closed doors with a trap
+ - remove code reliance on the numerical value of terrain types (done)
+ - add facility for player-set, monster-affecting traps
+
+Artifacts
+ - save randarts to the savefile (or maybe a separate file) as for flavors
+ - generalise to allow a mix of standarts and randarts, or even infinite 
+ randarts
+
+Squelch/Ignoring
+ - add squelch by ego type
+ - maybe add even finer-grained squelch
+ - emphasise the philosophy that the items are still there, just ignored
+
+ID
+ - have a separate field for every learnable property of an item (done)
+ - remove the IDENT_* flags (done)
+ - make a clear, separate place where "ID policy" (eg rune-based ID) is enforced
+
+Monster attacks
+ - put elemental spell effects back in the projection code rather than the 
+ spellcasting code (done)
+ - name and clarify other spell effects
+ - as with ID, have a clear, separate place where AI policy is enforced
+ - put blow effects into seprate handler functions (done by molybdenum)
+
+Player spells
+ - move a lot of stuff to edit files (done by molybdenum)
+ - generalise to make it easier to introduce new realms, classes, etc
+ - consider allowing different classes to see books differently
+ - consider books as spell containers (a la Pyrel, Poschengband)
+
+Projection
+ - have separate functions to handle effects on terrain, objects, player, 
+ monsters (done by molybdenum)
+ - clarify different types of projection (done)
+ - allow for cone-shaped breaths (done)
+ - allow for a wider variety of effects (eg player/monsters pushed by force)
+
+Stats, power, etc
+ - refine and generalise stats where possible (some done by fizzix)
+ - attempt to put all the (frankly) fudge factors involved in one place where 
+ thay can easily be seen and adjusted
+
+General code stuff
+ - rename files to be more sensible, or create new ones where needed (ongoing)
+ - update debug commands to reflect the current game (ongoing)
+ - move data into list-*.h files or edit files where appropriate (ongoing)
+ - remove archaic stuff (ongoing)
+ - document! (ongoing)

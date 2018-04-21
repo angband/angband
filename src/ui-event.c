@@ -1,6 +1,6 @@
-/*
- * File: ui-event.c
- * Purpose: Utility functions relating to UI events
+/**
+ * \file ui-event.c
+ * \brief Utility functions relating to UI events
  *
  * Copyright (c) 2011 Andi Sidwell
  *
@@ -89,9 +89,7 @@ const char *keycode_find_desc(keycode_t kc)
 }
 
 
-
-
-/*
+/**
  * Convert a hexidecimal-digit into a decimal
  */
 static int dehex(char c)
@@ -127,12 +125,10 @@ void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 	}
 
 	/* Analyze the "ascii" string */
-	while (*str && cur < len)
-	{
+	while (*str && cur < len) {
 		buf[cur].type = EVT_KBRD;
 
-		if (*str == '\\')
-		{
+		if (*str == '\\') {
 			str++;
 			if (*str == '\0') break;
 
@@ -217,7 +213,7 @@ void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 	buf[cur].type = EVT_NONE;
 }
 
-/*
+/**
  * Convert a string of keypresses into their textual equivalent.
  */
 void keypress_to_text(char *buf, size_t len, const struct keypress *src,
@@ -285,7 +281,7 @@ void keypress_to_text(char *buf, size_t len, const struct keypress *src,
 }
 
 
-/*
+/**
  * Convert a keypress into something readable.
  */
 void keypress_to_readable(char *buf, size_t len, struct keypress src)
@@ -326,3 +322,18 @@ void keypress_to_readable(char *buf, size_t len, struct keypress src)
 	buf[end] = '\0';
 }
 
+
+/**
+ * Return whether the given display char matches an entered symbol
+ *
+ * Horrible hack. TODO UTF-8 find some way of entering mb chars
+ */
+bool char_matches_key(wchar_t c, keycode_t key)
+{
+	wchar_t keychar[2];
+	char k[2] = {'\0', '\0'};
+
+	k[0] = (char)key;
+	text_mbstowcs(keychar, k, 1);
+	return (c == keychar[0]);
+}

@@ -1,7 +1,18 @@
+/**
+ * \file h-basic.h
+ * \brief The lowest level header
+ *
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_H_BASIC_H
 #define INCLUDED_H_BASIC_H
 
-/*
+/**
  * Include autoconf autodetections, otherwise try to autodetect ourselves
  */
 #ifdef HAVE_CONFIG_H
@@ -10,7 +21,7 @@
 
 #else
 
-/*
+/**
  * Native MSVC compiler doesn't understand inline or snprintf
  */
 #ifdef _MSC_VER
@@ -27,7 +38,7 @@
 # include <errno.h>
 #endif
 
-/*
+/**
  * Using C99, assume we have stdint and stdbool
  */
 # if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) \
@@ -39,7 +50,7 @@
 #  define HAVE_STDBOOL_H
 # endif
 
-/*
+/**
  * Everyone except RISC OS has fcntl.h and sys/stat.h
  */
 #define HAVE_FCNTL_H
@@ -47,7 +58,7 @@
 
 #endif /* HAVE_CONFIG_H */
 
-/*
+/**
  * Extract the "WINDOWS" flag from the compiler
  */
 # if defined(_Windows) || defined(__WINDOWS__) || \
@@ -58,7 +69,7 @@
 #  endif
 # endif
 
-/*
+/**
  * Define UNIX if our OS is UNIXy
  */
 #if !defined(WINDOWS) && !defined(GAMEBOY) && !defined(NDS)
@@ -69,14 +80,14 @@
 # endif
 #endif
 
-/*
+/**
  * Define SETGID if we are running as a central install on a multiuser
  * system that has setgid support.
  */
 /* #define SETGID */
 
 
-/*
+/**
  * Every system seems to use its own symbol as a path separator.
  *
  * Default to the standard Unix slash, but attempt to change this
@@ -99,7 +110,11 @@
 #endif
 
 
-/*** Include the library header files ***/
+/**
+ * ------------------------------------------------------------------------
+ * Include the library header files
+ * ------------------------------------------------------------------------ */
+
 
 /* Use various POSIX functions if available */
 #undef _GNU_SOURCE
@@ -130,9 +145,13 @@
 
 
 
-/*** Define the basic game types ***/
+/**
+ * ------------------------------------------------------------------------
+ * Define the basic game types
+ * ------------------------------------------------------------------------ */
 
-/*
+
+/**
  * errr is an error code
  *
  * A "byte" is an unsigned byte of memory.
@@ -140,14 +159,18 @@
  * s32b/u32b are exactly 4 bytes (where possible)
  */
 
-/* C++ defines its own bool type, so we hack around it */
+/**
+ * C++ defines its own bool type, so we hack around it
+ */
+#ifdef __cplusplus
 #undef bool
 #define bool bool_hack
+#endif
 
 typedef int errr;
 
 
-/*
+/**
  * Use a real bool type where possible
  */
 #ifdef HAVE_STDBOOL_H
@@ -175,7 +198,7 @@ typedef int errr;
 
 
 
-/*
+/**
  * Use guaranteed-size ints where possible
  */
 #ifdef HAVE_STDINT_H
@@ -226,7 +249,11 @@ typedef int errr;
 #define DHERE         __FILE__ ":" DSTRING(__LINE__) ": "
 
 
-/*** Basic math macros ***/
+/**
+ * ------------------------------------------------------------------------
+ * Basic math macros
+ * ------------------------------------------------------------------------ */
+
 
 #undef MIN
 #undef MAX
@@ -241,26 +268,24 @@ typedef int errr;
 #define CMP(a,b) ((a) < (b) ? -1 : ((b) < (a) ? 1 : 0))
 
 
-/*** Useful fairly generic macros ***/
+/**
+ * ------------------------------------------------------------------------
+ * Useful fairly generic macros
+ * ------------------------------------------------------------------------ */
 
-/*
+
+/**
  * Given an array, determine how many elements are in it.
  */
 #define N_ELEMENTS(a) (sizeof(a) / sizeof((a)[0]))
 
-/*
- * Return "s" (or not) depending on whether n is singular.
- */
-#define PLURAL(n)		((n) == 1 ? "" : "s")
+/**
+ * ------------------------------------------------------------------------
+ * Some hackish character manipulation
+ * ------------------------------------------------------------------------ */
+
 
 /**
- * Return the verb form matching the given count
- */
-#define VERB_AGREEMENT(count, singular, plural)    (((count) == 1) ? (singular) : (plural))
-
-/*** Some hackish character manipulation ***/
-
-/*
  * Note that all "index" values must be "lowercase letters", while
  * all "digits" must be "digits".
  */

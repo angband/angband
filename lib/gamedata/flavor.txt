@@ -1,0 +1,389 @@
+# File: flavor.txt
+
+# This file is used to initialize the "flavor" information for the Angband game.
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# kind:<tval>:<char>
+# flavor:<index>:<attr>:<text>
+# fixed:<index>:<sval>:<attr>:<text>
+
+# To see how many items are in here vs. those required by the number of
+# objects in object.txt, the following bash script may be useful:
+#  for i in 40 45 55 65 66 70 75 80; do
+#    X=`grep "I:$i" object.txt|wc -l`
+#    Y=`grep $i\$ flavor.txt | wc -l`
+#    echo "tval $i: in object, $X, in flavor, $Y"
+#  done
+
+##### Rings #####
+
+kind:ring:=
+
+# Fixed: the One Ring
+fixed:1:Ring of Power:Yellow:Plain Gold
+
+# The Ring of Barahir 50
+# The Ring of Tulkas 51
+
+# The Ring of Fire 'Narya'
+fixed:28:Ring of Fire:Red:Ruby
+
+# The Ring of Adamant 'Nenya'
+fixed:40:Ring of Adamant:Light Blue:Mithril
+
+# The Ring of Firmament 'Vilya'
+fixed:29:Ring of Firmament:Blue:Sapphire
+
+flavor:2:Green:Alexandrite
+flavor:3:Violet:Amethyst
+flavor:4:Light Blue:Aquamarine
+flavor:5:Light Blue:Azurite
+flavor:6:Light Green:Beryl
+flavor:7:Red:Bloodstone
+flavor:8:White:Calcite
+flavor:9:Red:Carnelian
+flavor:10:Slate:Corundum
+flavor:11:White:Diamond
+flavor:12:Green:Emerald
+flavor:13:Light Green:Fluorite
+flavor:14:Red:Garnet
+flavor:15:Light Slate:Granite
+flavor:16:Light Green:Jade
+flavor:17:Umber:Jasper
+flavor:18:Blue:Lapis Lazuli
+flavor:19:Green:Malachite
+flavor:20:White:Marble
+flavor:21:Light Slate:Moonstone
+flavor:22:Light Red:Onyx
+flavor:23:Light Slate:Opal
+flavor:24:White:Pearl
+flavor:25:Light Slate:Quartz
+flavor:26:Light Slate:Quartzite
+flavor:27:Light Red:Rhodonite
+#flavor:28:Red:Ruby
+#flavor:29:Blue:Sapphire
+flavor:30:Yellow:Tiger Eye
+flavor:31:Yellow:Topaz
+flavor:32:Light Blue:Turquoise
+flavor:33:Light Umber:Zircon
+flavor:34:White:Platinum
+flavor:35:Light Umber:Bronze
+flavor:36:Yellow:Gold
+flavor:37:Light Dark:Obsidian
+flavor:38:Light Slate:Silver
+flavor:39:Umber:Tortoise Shell
+#flavor:40:Light Blue:Mithril
+flavor:41:Light Dark:Jet
+flavor:42:Yellow:Engagement
+flavor:43:Light Green:Adamantite
+
+##### Amulets #####
+
+kind:amulet:"
+
+# The Amulet of Carlammas
+fixed:52:Amulet:Light Umber:Bronze
+
+# The Amulet of Ingwe 51
+
+# The Necklace of the Dwarves
+fixed:55:Necklace:Yellow:Golden
+
+# New Artifact (14): The Elfstone 'Elessar'
+fixed:44:Elfstone:Green:Green
+
+# New Artifact (15): The Jewel 'Evenstar'
+fixed:46:Jewel:White:White
+
+#flavor:44:Yellow:Amber
+flavor:45:Light Umber:Driftwood
+#flavor:46:White:Coral
+flavor:47:Light Slate:Agate
+flavor:48:White:Ivory
+flavor:49:Light Dark:Obsidian
+flavor:50:White:Bone
+flavor:51:Light Umber:Brass
+#flavor:52:Light Umber:Bronze
+flavor:53:Slate:Pewter
+flavor:54:Umber:Tortoise Shell
+#flavor:55:Yellow:Golden
+flavor:56:Light Blue:Azure
+flavor:57:White:Crystal
+flavor:58:Light Slate:Silver
+flavor:59:Light Umber:Copper
+flavor:60:Umber:Carved Oak
+flavor:61:Light Slate:Dragon Tooth
+flavor:62:Red:Ruby
+flavor:63:Light Blue:Mithril
+flavor:64:Light Green:Adamant
+flavor:65:Slate:Flint Stone
+flavor:66:Light Blue:Sea Shell
+flavor:67:Light Slate:Mother-of-Pearl
+
+##### Staves #####
+
+kind:staff:_
+
+flavor:68:Light Umber:Aspen
+flavor:69:Light Umber:Balsa
+flavor:70:Light Umber:Banyan
+flavor:71:Light Umber:Birch
+flavor:72:Light Umber:Cedar
+flavor:73:Light Umber:Cottonwood
+flavor:74:Light Umber:Cypress
+flavor:75:Light Umber:Dogwood
+flavor:76:Light Umber:Elm
+flavor:77:Light Umber:Eucalyptus
+flavor:78:Light Umber:Hemlock
+flavor:79:Light Umber:Hickory
+flavor:80:Umber:Ironwood
+flavor:81:Light Umber:Locust
+flavor:82:Umber:Mahogany
+flavor:83:Umber:Maple
+flavor:84:Umber:Mulberry
+flavor:85:Umber:Oak
+flavor:86:Umber:Pine
+flavor:87:Red:Redwood
+flavor:88:Red:Rosewood
+flavor:89:Light Umber:Spruce
+flavor:90:Light Umber:Sycamore
+flavor:91:Light Umber:Teak
+flavor:92:Umber:Walnut
+flavor:93:Green:Mistletoe
+flavor:94:Light Umber:Hawthorn
+flavor:95:Light Umber:Bamboo
+flavor:96:Light Slate:Silver
+flavor:97:Umber:Runed
+flavor:98:Yellow:Golden
+flavor:99:Slate:Ashen
+flavor:100:Light Umber:Gnarled
+flavor:101:White:Ivory
+flavor:102:Light Umber:Willow
+
+##### Wands #####
+
+kind:wand:-
+
+flavor:103:Light Blue:Aluminium
+flavor:104:Light Dark:Cast Iron
+flavor:105:White:Chromium
+flavor:106:Light Umber:Copper
+flavor:107:Yellow:Gold
+flavor:108:Slate:Iron
+flavor:109:Light Slate:Magnesium
+flavor:110:Light Slate:Molybdenum
+flavor:111:Light Umber:Nickel
+flavor:112:Red:Rusty
+flavor:113:Light Slate:Silver
+flavor:114:Light Slate:Steel
+flavor:115:Light Slate:Tin
+flavor:116:White:Titanium
+flavor:117:White:Tungsten
+flavor:118:Light Slate:Zirconium
+flavor:119:Light Slate:Zinc
+flavor:120:Light Blue:Aluminium-Plated
+flavor:121:Light Umber:Copper-Plated
+flavor:122:Yellow:Gold-Plated
+flavor:123:Light Umber:Nickel-Plated
+flavor:124:Light Slate:Silver-Plated
+flavor:125:Light Slate:Steel-Plated
+flavor:126:Light Slate:Tin-Plated
+flavor:127:Light Slate:Zinc-Plated
+flavor:128:Light Blue:Mithril-Plated
+flavor:129:Light Blue:Mithril
+flavor:130:Umber:Runed
+flavor:131:Light Umber:Bronze
+flavor:132:Light Umber:Brass
+flavor:133:White:Platinum
+flavor:134:Slate:Lead
+flavor:135:Slate:Lead-Plated
+flavor:136:White:Ivory
+flavor:137:Slate:Pewter
+
+##### Rods #####
+
+kind:rod:-
+
+flavor:138:Light Blue:Aluminium
+flavor:139:Light Dark:Cast Iron
+flavor:140:White:Chromium
+flavor:141:Light Umber:Copper
+flavor:142:Yellow:Gold
+flavor:143:Slate:Iron
+flavor:144:Light Slate:Magnesium
+flavor:145:Light Slate:Molybdenum
+flavor:146:Light Umber:Nickel
+flavor:147:Red:Rusty
+flavor:148:Light Slate:Silver
+flavor:149:Light Slate:Steel
+flavor:150:Light Slate:Tin
+flavor:151:White:Titanium
+flavor:152:White:Tungsten
+flavor:153:Light Slate:Zirconium
+flavor:154:Light Slate:Zinc
+flavor:155:Light Blue:Aluminium-Plated
+flavor:156:Light Umber:Copper-Plated
+flavor:157:Yellow:Gold-Plated
+flavor:158:Light Umber:Nickel-Plated
+flavor:159:Light Slate:Silver-Plated
+flavor:160:Light Slate:Steel-Plated
+flavor:161:Light Slate:Tin-Plated
+flavor:162:Light Slate:Zinc-Plated
+flavor:163:Light Blue:Mithril-Plated
+flavor:164:Light Blue:Mithril
+flavor:165:Umber:Runed
+flavor:166:Light Umber:Bronze
+flavor:167:Light Umber:Brass
+flavor:168:White:Platinum
+flavor:169:Slate:Lead
+flavor:170:Slate:Lead-Plated
+flavor:171:White:Ivory
+flavor:172:Slate:Pewter
+
+##### Mushrooms #####
+
+kind:mushroom:,
+
+flavor:173:Blue:Blue
+flavor:174:Light Dark:Black
+flavor:175:Light Dark:Black Spotted
+flavor:176:Umber:Brown
+flavor:177:Blue:Dark Blue
+flavor:178:Green:Dark Green
+flavor:179:Red:Dark Red
+flavor:180:Yellow:Yellow
+flavor:181:Light Slate:Furry
+flavor:182:Green:Green
+flavor:183:Slate:Grey
+flavor:184:Light Blue:Light Blue
+flavor:185:Light Green:Light Green
+flavor:186:Violet:Violet
+flavor:187:Red:Red
+flavor:188:Slate:Slimy
+flavor:189:Light Umber:Tan
+flavor:190:White:White
+flavor:191:White:White Spotted
+flavor:192:Umber:Wrinkled
+
+##### Potions #####
+
+kind:potion:!
+
+flavor:193:White:Clear
+flavor:194:Light Umber:Light Brown
+flavor:195:Green:Icky Green
+flavor:196:Light Blue:Azure
+flavor:197:Blue:Blue
+flavor:198:Blue:Blue Speckled
+flavor:199:Light Dark:Black
+flavor:200:Umber:Brown
+flavor:201:Umber:Brown Speckled
+flavor:202:Light Slate:Bubbling
+flavor:203:Light Green:Chartreuse
+flavor:204:White:Cloudy
+flavor:205:Light Umber:Copper Speckled
+flavor:206:Red:Crimson
+flavor:207:Light Blue:Cyan
+flavor:208:Blue:Dark Blue
+flavor:209:Green:Dark Green
+flavor:210:Red:Dark Red
+flavor:211:Yellow:Gold Speckled
+flavor:212:Green:Green
+flavor:213:Green:Green Speckled
+flavor:214:Slate:Grey
+flavor:215:Slate:Grey Speckled
+flavor:216:Light Slate:Hazy
+flavor:217:Violet:Indigo
+flavor:218:Light Blue:Light Blue
+flavor:219:Light Green:Light Green
+flavor:220:Red:Magenta
+flavor:221:Blue:Metallic Blue
+flavor:222:Red:Metallic Red
+flavor:223:Green:Metallic Green
+flavor:224:Violet:Metallic Purple
+flavor:225:Light Slate:Misty
+flavor:226:Orange:Orange
+flavor:227:Orange:Orange Speckled
+flavor:228:Light Red:Pink
+flavor:229:Light Red:Pink Speckled
+flavor:230:Violet:Puce
+flavor:231:Violet:Purple
+flavor:232:Violet:Purple Speckled
+flavor:233:Red:Red
+flavor:234:Red:Red Speckled
+flavor:235:Light Slate:Silver Speckled
+flavor:236:Light Dark:Smoky
+flavor:237:Orange:Tangerine
+flavor:238:Violet:Violet
+flavor:239:Red:Vermilion
+flavor:240:White:White
+flavor:241:Yellow:Yellow
+flavor:242:Violet:Violet Speckled
+flavor:243:Light Red:Pungent
+flavor:244:Red:Clotted Red
+flavor:245:Light Red:Viscous Pink
+flavor:246:Yellow:Oily Yellow
+flavor:247:Green:Gloopy Green
+flavor:248:Violet:Shimmering
+flavor:249:Red:Coagulated Crimson
+flavor:250:Yellow:Yellow Speckled
+flavor:251:Yellow:Gold
+
+##### Scrolls #####
+
+# Scroll names are generated from randomly combined syllables
+
+kind:scroll:?
+
+flavor:252:White
+flavor:253:White
+flavor:254:White
+flavor:255:White
+flavor:256:White
+flavor:257:White
+flavor:258:White
+flavor:259:White
+flavor:260:White
+flavor:261:White
+flavor:262:White
+flavor:263:White
+flavor:264:White
+flavor:265:White
+flavor:266:White
+flavor:267:White
+flavor:268:White
+flavor:269:White
+flavor:270:White
+flavor:271:White
+flavor:272:White
+flavor:273:White
+flavor:274:White
+flavor:275:White
+flavor:276:White
+flavor:277:White
+flavor:278:White
+flavor:279:White
+flavor:280:White
+flavor:281:White
+flavor:282:White
+flavor:283:White
+flavor:284:White
+flavor:285:White
+flavor:286:White
+flavor:287:White
+flavor:288:White
+flavor:289:White
+flavor:290:White
+flavor:291:White
+flavor:292:White
+flavor:293:White
+flavor:294:White
+flavor:295:White
+flavor:296:White
+flavor:297:White
+flavor:298:White
+flavor:299:White
+flavor:300:White
+flavor:301:White
+flavor:302:White

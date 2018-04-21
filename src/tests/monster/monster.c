@@ -8,29 +8,37 @@
 
 #include "unit-test.h"
 #include "unit-test-data.h"
-#include "monster/mon-util.h"
+#include "test-utils.h"
+#include "mon-util.h"
 
-NOSETUP
-NOTEARDOWN
+int setup_tests(void **state) {
+	read_edit_files();
+	*state = 0;
+	return 0;
+}
+
+int teardown_tests(void *state) {
+	mem_free(state);
+	return 0;
+}
 
 /* Regression test for #1409 */
 int test_match_monster_bases(void *state) {
 	struct monster_base *base;
-	rb_info = &test_rb_angel;
 
 	/* Scruffy little dog */
-	base = test_r_littledog.base;
+	base = (&r_info[3])->base;
 	require(match_monster_bases(base, "canine", NULL));
 	require(match_monster_bases(base, "zephyr hound", "canine", NULL));
 	require(!match_monster_bases(base, "angel", NULL));
 	require(!match_monster_bases(base, "lich", "vampire", "wraith", NULL));
 
-	/* Human */
-	base = test_r_human.base;
+	/* Morgoth */
+	base = (&r_info[547])->base;
 	require(!match_monster_bases(base, "canine", NULL));
 	require(!match_monster_bases(base, "lich", "vampire", "wraith", NULL));
-	require(match_monster_bases(base, "person", "townsfolk", NULL));
-	require(match_monster_bases(base, "townsfolk", NULL));
+	require(match_monster_bases(base, "person", "Morgoth", NULL));
+	require(match_monster_bases(base, "Morgoth", NULL));
 
 	ok;
 }

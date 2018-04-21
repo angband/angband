@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Abort script at first error, so that the script doesn't exit with
+# status 0 for missing files 
+set -o errexit
+
 if [ $# -ne 1 ] && [ $# -ne 2 ]; then
 	echo "Simple packaging file for the Windows port.  Only really useful when"
 	echo "cross-compiling, or using Cygwin.  Originally by Robert Ruehlmann."
@@ -29,24 +33,26 @@ mkdir -p $DIR
 cd $DIR
 
 mkdir lib
-mkdir lib/apex
-mkdir lib/bone
-mkdir lib/data
-mkdir lib/edit
-mkdir lib/file
+mkdir lib/gamedata
+mkdir lib/customize
 mkdir lib/help
-mkdir lib/info
-mkdir lib/pref
-mkdir lib/save
-mkdir lib/script
+mkdir lib/screens
+mkdir lib/fonts
+mkdir lib/tiles
+mkdir lib/tiles/adam-bolt
+mkdir lib/tiles/gervais
+mkdir lib/tiles/nomad
+mkdir lib/tiles/old
+mkdir lib/tiles/shockbolt
+mkdir lib/sounds
+mkdir lib/icons
 mkdir lib/user
-mkdir lib/xtra
-mkdir lib/xtra/font
-mkdir lib/xtra/graf
-mkdir lib/xtra/sound
+mkdir lib/user/save
+mkdir lib/user/scores
+mkdir lib/user/info
 
-touch lib/apex/delete.me lib/bone/delete.me lib/data/delete.me \
-      lib/info/delete.me lib/user/delete.me lib/save/delete.me
+touch lib/user/delete.me lib/user/save/delete.me lib/user/scores/delete.me \
+      lib/user/info/delete.me
 
 cp ../*.exe .
 cp ../*.dll .
@@ -59,21 +65,31 @@ cp_unix2dos ../faq.txt ./FAQ.txt
 cp ../doc/manual.pdf ./Manual.pdf
 cp ../doc/manual.html ./Manual.html
 
-cp ../lib/edit/*.txt lib/edit
-cp ../lib/file/*.txt lib/file
+cp ../lib/readme.txt lib/
+
+cp ../lib/gamedata/*.txt lib/gamedata
+cp ../lib/screens/*.txt lib/screens
 
 cp ../lib/help/*.txt lib/help
 cp ../lib/help/*.hlp lib/help
 
-cp ../lib/pref/*.prf lib/pref
+cp ../lib/customize/*.prf lib/customize
 
-cp ../lib/xtra/font/*.fon lib/xtra/font
+cp ../lib/fonts/*.fon lib/fonts
 
-cp ../lib/xtra/graf/*.png lib/xtra/graf
-cp ../lib/xtra/graf/graphics.txt lib/xtra/graf
+cp ../lib/tiles/*.txt lib/tiles
+cp ../lib/tiles/adam-bolt/* lib/tiles/adam-bolt
+cp ../lib/tiles/gervais/* lib/tiles/gervais
+cp ../lib/tiles/nomad/* lib/tiles/nomad
+cp ../lib/tiles/old/* lib/tiles/old
+cp ../lib/tiles/shockbolt/* lib/tiles/shockbolt
+rm lib/tiles/*/Makefile
 
-cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
-cp ../lib/xtra/sound/*.mp3 lib/xtra/sound
+cp ../lib/sounds/sound.cfg lib/sounds
+cp ../lib/sounds/*.mp3 lib/sounds
+
+cp ../lib/user/info/*.txt lib/user/info
+cp ../lib/user/info/*.hlp lib/user/info
 
 cd ..
 zip -9 -r $OUT $DIR

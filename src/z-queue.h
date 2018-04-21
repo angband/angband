@@ -1,7 +1,25 @@
+/**
+ * \file z-queue.h
+ * \brief Simple circular integer queue.
+ *
+ * Copyright (c) 2011 Erik Osheim
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_Z_QUEUE_H
 #define INCLUDED_Z_QUEUE_H
 
-#include <h-basic.h>
+#include "h-basic.h"
 
 #if (!defined(HAVE_STDINT_H))
 /* MSVC doesn't have stdint.h (which is C99), so we'll just

@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 3.5.1, bugs@rephial.org)
+AC_INIT(Angband, 4.0.0, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 
 AC_CANONICAL_HOST
@@ -398,13 +398,11 @@ fi
 
 echo
 echo "-- Frontends --"
-have_frontend=no
 if test "$enable_curses" = "yes"; then
 	if test "$with_curses" = "no"; then
 		echo "- Curses                                  No; missing libraries"
 	else
 		echo "- Curses                                  Yes"
-		have_frontend=yes
 	fi
 else
 	echo "- Curses                                  Disabled"
@@ -414,7 +412,6 @@ if test "$enable_x11" = "yes"; then
 		echo "- X11                                     No; missing libraries"
 	else
 		echo "- X11                                     Yes"
-		have_frontend=yes
 	fi
 else
 	echo "- X11                                     Disabled"
@@ -424,7 +421,6 @@ if test "$enable_sdl" = "yes"; then
 		echo "- SDL                                     No; missing libraries"
 	else
 		echo "- SDL                                     Yes"
-		have_frontend=yes
 	fi
 else
 	echo "- SDL                                     Disabled"
@@ -435,7 +431,6 @@ if test "$enable_win" = "yes"; then
 		echo "- Windows                                 No; missing libraries"
 	else
 		echo "- Windows                                 Yes"
-		have_frontend=yes
 	fi
 else
 	echo "- Windows                                 Disabled"
@@ -443,16 +438,14 @@ fi
 
 if test "$enable_test" = "yes"; then
 	echo "- Test                                    Yes"
-	have_frontend=yes
 else
-	echo "- Test                                    No"
+    echo "- Test                                    No"
 fi
 
 if test "$enable_stats" = "yes"; then
 	echo "- Stats                                   Yes"
-	have_frontend=yes
 else
-	echo "- Stats                                   No"
+    echo "- Stats                                   No"
 fi
 
 echo
@@ -466,9 +459,3 @@ if test "$enable_sdl_mixer" = "yes"; then
 else
 	echo "- SDL sound                               Disabled"
 fi
-
-if test "$have_frontend" = "no"; then
-	AC_MSG_ERROR([No frontend defined (missing libraries?)])
-	rm mk/buildsys.mk
-fi
-

@@ -1,6 +1,6 @@
-/*
- * File: main.c
- * Purpose: Core game initialisation for UNIX (and other) machines
+/**
+ * \file main.c
+ * \brief Core game initialisation for UNIX (and other) machines
  *
  * Copyright (c) 1997 Ben Harrison, and others
  *
@@ -17,16 +17,24 @@
  */
 
 #include "angband.h"
-#include "dungeon.h"
-#include "files.h"
 #include "init.h"
+#include "mon-power.h"
 #include "savefile.h"
+#include "ui-command.h"
+#include "ui-display.h"
+#include "ui-game.h"
+#include "ui-init.h"
+#include "ui-input.h"
+#include "ui-prefs.h"
+#include "ui-signals.h"
 
-/* locale junk */
+/**
+ * locale junk
+ */
 #include "locale.h"
 #include "langinfo.h"
 
-/*
+/**
  * Some machines have a "main()" function in their "main-xxx.c" file,
  * all the others use this file for their "main()" function.
  */
@@ -34,10 +42,8 @@
 #if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL)
 
 #include "main.h"
-#include "textui.h"
-#include "init.h"
 
-/*
+/**
  * List of the available modules in the order they are tried.
  */
 static const struct module modules[] =
@@ -67,7 +73,7 @@ static int init_sound_dummy(int argc, char *argv[]) {
 	return 0;
 }
 
-/*
+/**
  * List of sound modules in the order they should be tried.
  */
 static const struct module sound_modules[] =
@@ -79,7 +85,7 @@ static const struct module sound_modules[] =
 	{ "none", "No sound", init_sound_dummy },
 };
 
-/*
+/**
  * A hook for "quit()".
  *
  * Close down, then fall back into "quit()".
@@ -92,8 +98,7 @@ static void quit_hook(const char *s)
 	(void)s;
 
 	/* Scan windows */
-	for (j = ANGBAND_TERM_MAX - 1; j >= 0; j--)
-	{
+	for (j = ANGBAND_TERM_MAX - 1; j >= 0; j--) {
 		/* Unused */
 		if (!angband_term[j]) continue;
 
@@ -104,7 +109,7 @@ static void quit_hook(const char *s)
 
 
 
-/*
+/**
  * SDL needs a look-in
  */
 #ifdef USE_SDL
@@ -112,7 +117,7 @@ static void quit_hook(const char *s)
 #endif
 
 
-/*
+/**
  * Initialize and verify the file paths, and the score file.
  *
  * Use the ANGBAND_PATH environment var if possible, else use
@@ -148,9 +153,12 @@ static void init_stuff(void)
 	datapath[511] = '\0';
 
 	/* Hack -- Add a path separator (only if needed) */
-	if (!suffix(configpath, PATH_SEP)) my_strcat(configpath, PATH_SEP, sizeof(configpath));
-	if (!suffix(libpath, PATH_SEP)) my_strcat(libpath, PATH_SEP, sizeof(libpath));
-	if (!suffix(datapath, PATH_SEP)) my_strcat(datapath, PATH_SEP, sizeof(datapath));
+	if (!suffix(configpath, PATH_SEP)) my_strcat(configpath, PATH_SEP,
+												 sizeof(configpath));
+	if (!suffix(libpath, PATH_SEP)) my_strcat(libpath, PATH_SEP,
+											  sizeof(libpath));
+	if (!suffix(datapath, PATH_SEP)) my_strcat(datapath, PATH_SEP,
+											   sizeof(datapath));
 
 	/* Initialize */
 	init_file_paths(configpath, libpath, datapath);
@@ -162,18 +170,21 @@ static const struct {
 	char **path;
 	bool setgid_ok;
 } change_path_values[] = {
-	{ "apex", &ANGBAND_DIR_APEX, TRUE },
-	{ "edit", &ANGBAND_DIR_EDIT, FALSE },
-	{ "file", &ANGBAND_DIR_FILE, FALSE },
+	{ "scores", &ANGBAND_DIR_SCORES, TRUE },
+	{ "gamedata", &ANGBAND_DIR_GAMEDATA, FALSE },
+	{ "screens", &ANGBAND_DIR_SCREENS, FALSE },
 	{ "help", &ANGBAND_DIR_HELP, TRUE },
 	{ "info", &ANGBAND_DIR_INFO, TRUE },
-	{ "pref", &ANGBAND_DIR_PREF, TRUE },
-	{ "xtra", &ANGBAND_DIR_XTRA, TRUE },
+	{ "pref", &ANGBAND_DIR_CUSTOMIZE, TRUE },
+	{ "fonts", &ANGBAND_DIR_FONTS, TRUE },
+	{ "tiles", &ANGBAND_DIR_TILES, TRUE },
+	{ "sounds", &ANGBAND_DIR_SOUNDS, TRUE },
+	{ "icons", &ANGBAND_DIR_ICONS, TRUE },
 	{ "user", &ANGBAND_DIR_USER, TRUE },
 	{ "save", &ANGBAND_DIR_SAVE, FALSE },
 };
 
-/*
+/**
  * Handle a "-d<dir>=<path>" option.
  *
  * Sets any of angband's special directories to <path>.
@@ -200,7 +211,8 @@ static void change_path(const char *info)
 		if (my_stricmp(path, change_path_values[i].name) == 0) {
 #ifdef SETGID
 			if (!change_path_values[i].setgid_ok)
-				quit_fmt("Can't redefine path to %s dir on multiuser setup", path);
+				quit_fmt("Can't redefine path to %s dir on multiuser setup",
+						 path);
 #endif
 
 			string_free(*change_path_values[i].path);
@@ -221,7 +233,7 @@ static void change_path(const char *info)
 
 #ifdef UNIX
 
-/*
+/**
  * Find a default user name from the system.
  */
 static void user_name(char *buf, size_t len, int id)
@@ -284,79 +296,9 @@ static void list_saves(void)
 }
 
 
-#ifndef SETGID
-
-/*
- * Transition non-setgid installs away from using uid.name style savefile
- * names.
- */
-static void transition_savefile_names(void)
-{
-	char fname[256];
-	char uid[10];
-
-	ang_dir *d = my_dopen(ANGBAND_DIR_SAVE);
-	if (!d) return;
-
-	strnfmt(uid, sizeof(uid), "%d.", player_uid);
-
-	while (my_dread(d, fname, sizeof fname)) {
-		char *newname = fname+strlen(uid);
-		char oldpath[1024];
-		char newpath[1024];
-
-		/* Check that the savefile name begins with the user'd ID */
-		if (strncmp(fname, uid, strlen(uid)) != 0)
-			continue;
-
-		/* Sanity check - can't rename "1000." to "" */
-		if (!newname[0])
-			continue;
-
-		/* Move the file */
-		path_build(oldpath, sizeof oldpath, ANGBAND_DIR_SAVE, fname);
-		path_build(newpath, sizeof newpath, ANGBAND_DIR_SAVE, newname);
-
-		printf("Moving %s to %s\n", oldpath, newpath);
-		file_move(oldpath, newpath);
-	}
-
-	my_dclose(d);
-}
-
-#endif /* SETGID */
-
-
 
 static bool new_game;
 
-/*
- * Pass the appropriate "Initialisation screen" command to the game,
- * getting user input if needed.
- */
-static errr get_init_cmd(void)
-{
-	/* Wait for response */
-	pause_line(Term);
-
-	if (new_game)
-		cmd_insert(CMD_NEWGAME);
-	else
-		/* This might be modified to supply the filename in future. */
-		cmd_insert(CMD_LOADFILE);
-
-	/* Everything's OK. */
-	return 0;
-}
-
-/* Command dispatcher for curses, etc builds */
-static errr default_get_cmd(cmd_context context, bool wait)
-{
-	if (context == CMD_INIT) 
-		return get_init_cmd();
-	else 
-		return textui_get_cmd(context, wait);
-}
 
 static void debug_opt(const char *arg) {
 	if (streq(arg, "mem-poison-alloc"))
@@ -371,7 +313,7 @@ static void debug_opt(const char *arg) {
 	}
 }
 
-/*
+/**
  * Simple "main" function for multiple platforms.
  *
  * Note the special "--" option which terminates the processing of
@@ -389,10 +331,8 @@ int main(int argc, char *argv[])
 
 	bool args = TRUE;
 
-
 	/* Save the "program name" XXX XXX XXX */
 	argv0 = argv[0];
-
 
 #ifdef UNIX
 
@@ -415,14 +355,13 @@ int main(int argc, char *argv[])
 	/* Drop permissions */
 	safe_setuid_drop();
 
-	/* Get the file paths */
-	/* paths may be overriden by -d options, so this has to occur *before* 
-	   processing command line args */
+	/* Get the file paths 
+	 * Paths may be overriden by -d options, so this has to occur *before* 
+	 * processing command line args */
 	init_stuff();
 
 	/* Process the command line arguments */
-	for (i = 1; args && (i < argc); i++)
-	{
+	for (i = 1; args && (i < argc); i++) {
 		const char *arg = argv[i];
 
 		/* Require proper options */
@@ -441,6 +380,10 @@ int main(int argc, char *argv[])
 
 			case 'w':
 				arg_wizard = TRUE;
+				break;
+
+			case 'p':
+				arg_power = TRUE;
 				break;
 
 			case 'r':
@@ -468,7 +411,7 @@ int main(int argc, char *argv[])
 				 * can do whatever the hell they want.
 				 */
 #ifdef SETGID
-				savefile_set_name(player_safe_name(p_ptr, FALSE));
+				savefile_set_name(player_safe_name(player, FALSE));
 #else
 				savefile_set_name(arg);
 #endif /* SETGID */
@@ -536,14 +479,8 @@ int main(int argc, char *argv[])
 		if (*arg) goto usage;
 	}
 
-#ifndef SETGID
-	/* Transition from 3.4 to 3.5 - rename savefiles with uid at the beginning */
-	transition_savefile_names();
-#endif
-
 	/* Hack -- Forget standard args */
-	if (args)
-	{
+	if (args) {
 		argc = 1;
 		argv[1] = NULL;
 	}
@@ -562,14 +499,11 @@ int main(int argc, char *argv[])
 	}
 
 	/* Try the modules in the order specified by modules[] */
-	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
-	{
+	for (i = 0; i < (int)N_ELEMENTS(modules); i++) {
 		/* User requested a specific module? */
-		if (!mstr || (streq(mstr, modules[i].name)))
-		{
+		if (!mstr || (streq(mstr, modules[i].name))) {
 			ANGBAND_SYS = modules[i].name;
-			if (0 == modules[i].init(argc, argv))
-			{
+			if (0 == modules[i].init(argc, argv)) {
 				done = TRUE;
 				break;
 			}
@@ -581,12 +515,12 @@ int main(int argc, char *argv[])
 
 #ifdef UNIX
 
-	/* Get the "user name" as a default player name, unless set with -u switch */
+	/* Get the "user name" as default player name, unless set with -u switch */
 	if (!op_ptr->full_name[0]) {
 		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
 
 		/* Set the savefile to load */
-		savefile_set_name(player_safe_name(p_ptr, FALSE));
+		savefile_set_name(player_safe_name(player, FALSE));
 	}
 
 	/* Create any missing directories */
@@ -604,15 +538,21 @@ int main(int argc, char *argv[])
 	signals_init();
 
 	/* Set up the command hook */
-	cmd_get_hook = default_get_cmd;
+	cmd_get_hook = textui_get_cmd;
 
 	/* Set up the display handlers and things. */
 	init_display();
+	init_angband();
+	textui_init();
+
+	/* Wait for response */
+	pause_line(Term);
 
 	/* Play the game */
-	play_game();
+	play_game(new_game);
 
 	/* Free resources */
+	textui_cleanup();
 	cleanup_angband();
 
 	/* Quit */

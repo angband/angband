@@ -1,9 +1,25 @@
+/**
+ * \file config.h
+ * \brief Configuration options
+ *
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2013 Chris Carr, Andi Sidwell
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_CONFIG_H
 #define INCLUDED_CONFIG_H
 
-/*** Some really important things you ought to change ***/
+/**
+ * ------------------------------------------------------------------------
+ * Some really important things you ought to change
+ * ------------------------------------------------------------------------ */
 
-/*
+
+/**
  * Defines the default paths to the Angband directories, for ports that use
  * the main.c file.
  *
@@ -48,7 +64,7 @@
 #endif 
 
 
-/*
+/**
  * OPTION: Create and use a hidden directory in the users home directory
  * for storing pref files and character dumps.
  */
@@ -56,81 +72,6 @@
 # define PRIVATE_USER_PATH "~/.angband"
 #endif
 
-
-/*
- * OPTION: Create and use hidden directories in the users home directory
- * for storing save files and high-scores
- */
-#ifdef PRIVATE_USER_PATH
-/* # define USE_PRIVATE_PATHS */
-#endif /* PRIVATE_USER_PATH */
-
-
-
-/*** Some no-brainer defines ***/
-
-/* Allow the game to make noises correlating to what the player does in-game */
-#define USE_SOUND
-
-/* Allow the use of graphics rather than only having a text-mode */
-#define USE_GRAPHICS
-
-/* Compile in support for debug commands */
-#define ALLOW_DEBUG
-
-/* Compile in support for spoiler generation */
-#define ALLOW_SPOILERS
-
-/* Allow changing colours at runtime */
-#define ALLOW_COLORS
-
-/* Allow changing "visuals" at runtime */
-#define ALLOW_VISUALS
-
-
-
-/*** Borg ***/
-
-/* Compile in support for the borg. */
-#define ALLOW_BORG
-
-/* Allow borgs to yield "high scores"? */
-#define SCORE_BORGS
-
-
-/*
- * Allow the Borg to use graphics.
- */
-#if defined(ALLOW_BORG) && defined(USE_GRAPHICS)
-# define ALLOW_BORG_GRAPHICS
-#endif
-
-
-/*** X11 settings ***/
-
-/*
- * OPTION: Gamma correct colours (with X11)
- */
-#define SUPPORT_GAMMA
-
-
-/*
- * OPTION: Default font (when using X11).
- */
-#define DEFAULT_X11_FONT		"9x15"
-
-
-/*
- * OPTION: Default fonts (when using X11)
- */
-#define DEFAULT_X11_FONT_0		"10x20"
-#define DEFAULT_X11_FONT_1		"9x15"
-#define DEFAULT_X11_FONT_2		"9x15"
-#define DEFAULT_X11_FONT_3		"5x8"
-#define DEFAULT_X11_FONT_4		"5x8"
-#define DEFAULT_X11_FONT_5		"5x8"
-#define DEFAULT_X11_FONT_6		"5x8"
-#define DEFAULT_X11_FONT_7		"5x8"
 
 
 #endif /* !INCLUDED_CONFIG_H */

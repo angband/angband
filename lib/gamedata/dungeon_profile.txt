@@ -1,0 +1,181 @@
+# file: dungeon_profile.txt
+
+# Contains information about how each type of dungeon level (and the town)
+# are generated.
+
+# name: The profile name.  This needs to match the corresponding entry in 
+# list-dun-profiles.h so the correct level-building function can be called
+
+# params: block_size : rooms : unusual : rarity
+# block_size is the size of the blocks which the dungeon is divided into; a
+# room will never cross a block boundary.  rooms is the number of rooms to
+# aim for.  unusual is a measure of how likely high rarity roooms are to
+# appear - higher values give less rare rooms.  rarity is the maximum rarity
+# room allowed with this cave profile
+
+# tunnel: rnd : chg : con : pen : jct
+# These are percentage chances - rnd of choosing a random tunnel direction
+# (as opposed to heading in the desired direction), chg the chance of changing
+# direction, at any tunnel grid, con the chance of just terminating a tunnel,
+# pen the chance of putting a door in a room entrance, jct the chance of a
+# door at a tunnel junction.
+
+# streamer: den : rng : mag : mc : qua : qc
+# Streamers are drawn as a random walk which stops at the dungeon edge.
+# den is the number of grids near any walk grid to make streamer; rng is how
+# far from the walk those grids can be; mag and qua are the numbers of magma
+# and quartz streamers per level; 1/mc and 1/qc are the chances of treasure in
+# magma and quartz.
+
+# cutoff is used to decide which profile to use; a random number 0 to 99
+# is picked and successive profiles are rejected until this number is smaller
+# than the cutoff.  If cutoff is -1, those profiles are not used or are picked
+# in some different way.  It is IMPORTANT that non-zero cutoffs appear in
+# ascending order through this file.
+
+# room: name : height : width : level : pit : rarity : cutoff
+# name is the room name, which must match the name in list-rooms.h so the 
+# correct room-building function can be called.
+# height and width are the maximum dimensions of the room, and define how much
+# space is allocated for that room.
+# level is the minimum depth at which this room can appear.
+# pit is 1 if the room is a pit/nest, 0 otherwise.
+# rarity is the room's rarity - normally 0, 1 or 2 (see comments about profile
+# rarity above).  Some rooms are chosen by a different means; in this case
+# rarity is usually 0.
+# cutoff is used as for profile cutoffs to pick between rooms once a rarity is
+# chosen.  It is IMPORTANT that non-zero cutoffs appear in ascending order
+# within the rooms of the same rarity for a given profile.
+
+# Note that getting a smaller cave profile cutoff or room cutoff after a larger
+# one will result in the smaller one never appearing.
+
+## Town
+name:town
+params:1:0:200:0
+cutoff:-1
+
+## Labyrinth - these have cutoff -1, but still appear after other checks
+name:labyrinth
+params:1:0:200:0
+cutoff:-1
+
+## Cavern
+name:cavern
+params:1:0:200:0
+cutoff:10
+
+## Classic
+name:classic
+params:11:50:200:2
+tunnel:10:30:15:25:90
+streamer:5:2:3:90:2:40
+cutoff:100
+
+# Greater vaults only have rarity 0 but they have other checks
+room:Greater vault:44:66:35:0:0:100
+
+# Very rare rooms (rarity = 2)
+room:monster pit:11:33:5:1:2:8
+room:monster nest:11:33:5:1:2:16
+room:Medium vault:22:33:30:0:2:38
+room:Lesser vault:22:33:20:0:2:55
+
+# Unusual rooms (rarity = 1)
+room:large room:11:33:3:0:1:15
+room:crossed room:11:33:3:0:1:35
+room:circular room:22:22:1:0:1:50
+room:overlap room:11:33:1:0:1:70
+room:room template:11:33:5:0:1:100
+
+# Normal rooms (rarity = 0)
+room:simple room:11:33:1:0:0:100
+
+## Modified
+name:modified
+params:1:50:250:2
+tunnel:10:30:15:25:90
+streamer:5:2:3:90:2:40
+cutoff:-1
+
+# Really big rooms only have rarity 0 but they have other checks
+room:Greater vault:44:66:35:0:0:100
+room:huge room:44:66:40:0:0:100
+
+# Very rare rooms (rarity = 2)
+room:room of chambers:44:66:10:0:2:4
+room:monster pit:11:33:5:1:2:12
+room:monster nest:11:33:5:1:2:20
+room:Medium vault:22:33:30:0:2:40
+room:Lesser vault:22:33:20:0:2:60
+
+# Unusual rooms (rarity = 1)
+room:Interesting room:44:55:0:0:1:10
+room:large room:11:33:3:0:1:25
+room:crossed room:11:33:3:0:1:40
+room:circular room:22:22:1:0:1:55
+room:overlap room:11:33:1:0:1:70
+room:room template:11:33:5:0:1:100
+
+# Normal rooms (rarity = 0)
+room:simple room:11:33:1:0:0:100
+
+## Moria
+name:moria
+params:1:50:250:2
+tunnel:10:30:15:25:90
+streamer:5:2:3:90:2:40
+cutoff:-1
+
+# Really big rooms only have rarity 0 but they have other checks
+room:Greater vault:44:66:35:0:0:100
+
+# Very rare rooms (rarity = 2)
+room:room of chambers:44:66:10:0:2:4
+room:monster pit:11:33:5:1:2:12
+room:monster nest:11:33:5:1:2:20
+room:Medium vault:22:33:30:0:2:40
+room:Lesser vault:22:33:20:0:2:60
+room:Interesting room:44:55:0:0:2:100
+
+# Normal moria-style rooms (rarity = 0)
+room:moria room:11:33:1:0:0:100
+
+## Lair
+name:lair
+params:1:50:500:2
+tunnel:10:30:15:25:90
+streamer:5:2:3:90:2:40
+cutoff:-1
+
+# Really big rooms only have rarity 0 but they have other checks
+room:Greater vault:44:66:35:0:0:100
+room:huge room:44:66:40:0:0:100
+
+# Very rare rooms (rarity = 2)
+room:room of chambers:44:66:10:0:2:4
+room:monster pit:11:33:5:1:2:12
+room:monster nest:11:33:5:1:2:20
+room:Medium vault:22:33:30:0:2:40
+room:Lesser vault:22:33:20:0:2:60
+
+# Unusual rooms (rarity = 1)
+room:Interesting room:44:55:0:0:1:10
+room:large room:11:33:3:0:1:25
+room:crossed room:11:33:3:0:1:40
+room:circular room:22:22:1:0:1:55
+room:overlap room:11:33:1:0:1:70
+room:room template:11:33:5:0:1:100
+
+# Normal rooms (rarity = 0)
+room:simple room:11:33:1:0:0:100
+
+## Gauntlet
+name:gauntlet
+params:1:0:200:0
+cutoff:-1
+
+## Hard Centre
+name:hard centre
+params:1:0:200:0
+cutoff:-1

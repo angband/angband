@@ -49,7 +49,7 @@ About the game
 ==============
 
 Angband has been maintained by a succession of volunteers since it was
-written in the early 1990s. The most recent maintainer is Andi Sidwell.
+written in the early 1990s. The most current maintainer is Nick McConnell.
 
 Angband will run on a wide variety of systems (including Unix, Macintosh,
 Windows). It is written in C, and the source code is freely available.
@@ -80,7 +80,7 @@ confirmation.
 Note that spoiler files are not distributed with the source since they may
 spoil the game for new players (hence their name). If you want to use them,
 you can obtain them from various places as with the source and executables.
-Spoiler files may be placed into the "lib/info" directory, or into a user
+Spoiler files may be placed into the "lib/user/info" directory, or into a user
 specified external directory, to allow access via the "online help" system.
 
 Remember to tell all your friends about how much you like Angband...
@@ -110,9 +110,9 @@ When the game starts up, depending on what platform you are using, you may
 be taken directly to the character creation screen, or you may have to ask
 to create a new character by using the File menu. In either case, you will
 be shown the character information screen, and you will be given a series
-of choices. For this demo, press 'a' four times to elect a "female human
-warrior" character with the point-based stat allocation system. You will
-now be presented with a description of your character. Look over the
+of choices. For this demo, press 'a' three times to elect a "human warrior"
+character with the point-based stat allocation system. You will now be
+presented with a description of your character. Look over the
 description briefly, there is a lot of information here, and most of it
 will not make any sense. Press enter three times and your character will be
 placed into the "town".
@@ -132,10 +132,11 @@ edge of the town represent the walls that surround the the town. You cannot
 leave the town above ground, although some games derived from Angband
 (called "variants") have an overground element.
 
-The large rectangles represent stores. The "numeric" symbols represent an
+The 3x3 squares represent stores. The "numeric" symbols represent an
 "entrance" to a store. The '.' symbols represent the "floor". It is
 currently daytime, so most of the town should consist of stores and
-illuminated floor grids.
+illuminated floor grids.  There will also be a few ':' symbols which
+represent "passable rubble".
 
 Any "alphabetic" symbols always represent monsters, where the word
 "monsters" specifies a wide variety of entities, including people, animals,

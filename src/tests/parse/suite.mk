@@ -1,15 +1,15 @@
 TESTPROGS += parse/a-info \
-             parse/c-info \
-             parse/e-info \
-	     parse/f-info \
-	     parse/flavor \
-	     parse/h-info \
-             parse/names \
-             parse/parser \
-             parse/k-info \
-	     parse/p-info \
-	     parse/r-info \
-	     parse/s-info \
-	     parse/store \
-	     parse/v-info \
-	     parse/z-info
+	parse/c-info \
+	parse/e-info \
+	parse/f-info \
+	parse/flavor \
+	parse/graphics \
+	parse/h-info \
+	parse/k-info \
+	parse/names \
+	parse/p-info \
+	parse/parse \
+	parse/r-info \
+	parse/readstore \
+	parse/v-info \
+	parse/z-info

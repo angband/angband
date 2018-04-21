@@ -3,28 +3,41 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 
-#include "object/object.h"
+#include "object.h"
+#include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-util.h"
 
 int setup_tests(void **state) {
-    p_ptr->inventory = &test_inven[0];
+	player = &test_player;
+    player->body = test_player_body;
+	player->body.slots = &test_slot_light;
+	z_info = mem_zalloc(sizeof(struct angband_constants));
+	z_info->fuel_torch = 5000;
+	z_info->fuel_lamp = 15000;
+	z_info->default_lamp = 7500;
     return 0;
 }
 
-NOTEARDOWN
+int teardown_tests(void **state) {
+	mem_free(z_info);
+	return 0;
+}
 
 /* Regression test for #1661 */
 int test_obj_can_refill(void *state) {
     struct object obj_torch, obj_lantern, obj_candidate;
-    object_type *light_ptr = &p_ptr->inventory[INVEN_LIGHT];
 
     /* Torches cannot be refilled */
     object_prep(&obj_torch, &test_torch, 1, AVERAGE);
-    object_copy(light_ptr, &obj_torch);
+	player->gear = &obj_torch;
+    player->body.slots->obj = &obj_torch; 
     eq(obj_can_refill(&obj_torch), FALSE);
 
     /* Lanterns can be refilled */    
     object_prep(&obj_lantern, &test_lantern, 1, AVERAGE);
-    object_copy(light_ptr, &obj_lantern);
+	player->gear = &obj_lantern;
+    player->body.slots->obj = &obj_lantern; 
 
     /* Not by torches */
     eq(obj_can_refill(&obj_torch), FALSE);

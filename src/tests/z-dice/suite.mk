@@ -1,0 +1,1 @@
+TESTPROGS += z-dice/dice

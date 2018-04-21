@@ -1,0 +1,935 @@
+# Plain Gold ring
+flavor:1:0xB5:0x8A
+
+# Alexandrite ring
+flavor:2:0xB5:0x82
+
+# Amethyst ring
+flavor:3:0xB5:0x80
+
+# Aquamarine ring
+flavor:4:0xB5:0x83
+
+# Azurite ring
+flavor:5:0xB5:0x83
+
+# Beryl ring
+flavor:6:0xB5:0x82
+
+# Bloodstone ring
+flavor:7:0xB5:0x81
+
+# Calcite ring
+flavor:8:0xB5:0x8C
+
+# Carnelian ring
+flavor:9:0xB5:0x81
+
+# Corundum ring
+flavor:10:0xB5:0x89
+
+# Diamond ring
+flavor:11:0xB5:0x8C
+
+# Emerald ring
+flavor:12:0xB5:0x82
+
+# Fluorite ring
+flavor:13:0xB5:0x82
+
+# Garnet ring
+flavor:14:0xB5:0x81
+
+# Granite ring
+flavor:15:0xB5:0x8C
+
+# Jade ring
+flavor:16:0xB5:0x82
+
+# Jasper ring
+flavor:17:0xB5:0x88
+
+# Lapis Lazuli ring
+flavor:18:0xB5:0x83
+
+# Malachite ring
+flavor:19:0xB5:0x82
+
+# Marble ring
+flavor:20:0xB5:0x8C
+
+# Moonstone ring
+flavor:21:0xB5:0x8C
+
+# Onyx ring
+flavor:22:0xB5:0x81
+
+# Opal ring
+flavor:23:0xB5:0x8C
+
+# Pearl ring
+flavor:24:0xB5:0x8C
+
+# Quartz ring
+flavor:25:0xB5:0x8C
+
+# Quartzite ring
+flavor:26:0xB5:0x8C
+
+# Rhodonite ring
+flavor:27:0xB5:0x81
+
+# Ruby ring
+flavor:28:0xB5:0x81
+
+# Sapphire ring
+flavor:29:0xB5:0x83
+
+# Tiger Eye ring
+flavor:30:0xB5:0x8A
+
+# Topaz ring
+flavor:31:0xB5:0x8A
+
+# Turquoise ring
+flavor:32:0xB5:0x83
+
+# Zircon ring
+flavor:33:0xB5:0x88
+
+# Platinum ring
+flavor:34:0xB5:0x8C
+
+# Bronze ring
+flavor:35:0xB5:0x88
+
+# Gold ring
+flavor:36:0xB5:0x8A
+
+# Obsidian ring
+flavor:37:0xB5:0x8B
+
+# Silver ring
+flavor:38:0xB5:0x8C
+
+# Tortoise Shell ring
+flavor:39:0xB5:0x88
+
+# Mithril ring
+flavor:40:0xB5:0x83
+
+# Jet ring
+flavor:41:0xB5:0x8B
+
+# Engagement ring
+flavor:42:0xB5:0x8A
+
+# Adamantite ring
+flavor:43:0xB5:0x82
+
+# Amber amulet
+flavor:44:0xB6:0x86
+
+# Driftwood amulet
+flavor:45:0xB6:0x8C
+
+# Coral amulet
+flavor:46:0xB6:0x88
+
+# Agate amulet
+flavor:47:0xB6:0x88
+
+# Ivory amulet
+flavor:48:0xB6:0x88
+
+# Obsidian amulet
+flavor:49:0xB6:0x87
+
+# Bone amulet
+flavor:50:0xB6:0x88
+
+# Brass amulet
+flavor:51:0xB6:0x8C
+
+# Bronze amulet
+flavor:52:0xB6:0x8C
+
+# Pewter amulet
+flavor:53:0xB6:0x85
+
+# Tortoise Shell amulet
+flavor:54:0xB6:0x84
+
+# Golden amulet
+flavor:55:0xB6:0x86
+
+# Azure amulet
+flavor:56:0xB6:0x8B
+
+# Crystal amulet
+flavor:57:0xB6:0x88
+
+# Silver amulet
+flavor:58:0xB6:0x88
+
+# Copper amulet
+flavor:59:0xB6:0x8C
+
+# Carved Oak amulet
+flavor:60:0xB6:0x84
+
+# Dragon Tooth amulet
+flavor:61:0xB6:0x88
+
+# Ruby amulet
+flavor:62:0xB6:0x81
+
+# Mithril amulet
+flavor:63:0xB6:0x8B
+
+# Adamant amulet
+flavor:64:0xB6:0x82
+
+# Flint Stone amulet
+flavor:65:0xB6:0x85
+
+# Sea Shell amulet
+flavor:66:0xB6:0x8B
+
+# Mother-of-Pearl amulet
+flavor:67:0xB6:0x88
+
+# Aspen staff
+flavor:68:0xB9:0x87
+
+# Balsa staff
+flavor:69:0xB9:0x87
+
+# Banyan staff
+flavor:70:0xB9:0x87
+
+# Birch staff
+flavor:71:0xB9:0x87
+
+# Cedar staff
+flavor:72:0xB9:0x87
+
+# Cottonwood staff
+flavor:73:0xB9:0x87
+
+# Cypress staff
+flavor:74:0xB9:0x87
+
+# Dogwood staff
+flavor:75:0xB9:0x87
+
+# Elm staff
+flavor:76:0xB9:0x87
+
+# Eucalyptus staff
+flavor:77:0xB9:0x87
+
+# Hemlock staff
+flavor:78:0xB9:0x87
+
+# Hickory staff
+flavor:79:0xB9:0x87
+
+# Ironwood staff
+flavor:80:0xB9:0x87
+
+# Locust staff
+flavor:81:0xB9:0x87
+
+# Mahogany staff
+flavor:82:0xB9:0x87
+
+# Maple staff
+flavor:83:0xB9:0x87
+
+# Mulberry staff
+flavor:84:0xB9:0x87
+
+# Oak staff
+flavor:85:0xB9:0x87
+
+# Pine staff
+flavor:86:0xB9:0x87
+
+# Redwood staff
+flavor:87:0xB9:0x81
+
+# Rosewood staff
+flavor:88:0xB9:0x81
+
+# Spruce staff
+flavor:89:0xB9:0x87
+
+# Sycamore staff
+flavor:90:0xB9:0x87
+
+# Teak staff
+flavor:91:0xB9:0x87
+
+# Walnut staff
+flavor:92:0xB9:0x87
+
+# Mistletoe staff
+flavor:93:0xB9:0x82
+
+# Hawthorn staff
+flavor:94:0xB9:0x87
+
+# Bamboo staff
+flavor:95:0xB9:0x87
+
+# Silver staff
+flavor:96:0xB9:0x85
+
+# Runed staff
+flavor:97:0xB9:0x87
+
+# Golden staff
+flavor:98:0xB9:0x82
+
+# Ashen staff
+flavor:99:0xB9:0x85
+
+# Gnarled staff
+flavor:100:0xB9:0x87
+
+# Ivory staff
+flavor:101:0xB9:0x85
+
+# Willow staff
+flavor:102:0xB9:0x87
+
+# Aluminium wand
+flavor:103:0xB7:0x80
+
+# Cast Iron wand
+flavor:104:0xB7:0x84
+
+# Chromium wand
+flavor:105:0xB7:0x85
+
+# Copper wand
+flavor:106:0xB7:0x87
+
+# Gold wand
+flavor:107:0xB7:0x86
+
+# Iron wand
+flavor:108:0xB7:0x85
+
+# Magnesium wand
+flavor:109:0xB7:0x85
+
+# Molybdenum wand
+flavor:110:0xB7:0x85
+
+# Nickel wand
+flavor:111:0xB7:0x87
+
+# Rusty wand
+flavor:112:0xB7:0x81
+
+# Silver wand
+flavor:113:0xB7:0x85
+
+# Steel wand
+flavor:114:0xB7:0x85
+
+# Tin wand
+flavor:115:0xB7:0x85
+
+# Titanium wand
+flavor:116:0xB7:0x85
+
+# Tungsten wand
+flavor:117:0xB7:0x85
+
+# Zirconium wand
+flavor:118:0xB7:0x85
+
+# Zinc wand
+flavor:119:0xB7:0x85
+
+# Aluminium-Plated wand
+flavor:120:0xB7:0x80
+
+# Copper-Plated wand
+flavor:121:0xB7:0x87
+
+# Gold-Plated wand
+flavor:122:0xB7:0x86
+
+# Nickel-Plated wand
+flavor:123:0xB7:0x87
+
+# Silver-Plated wand
+flavor:124:0xB7:0x85
+
+# Steel-Plated wand
+flavor:125:0xB7:0x85
+
+# Tin-Plated wand
+flavor:126:0xB7:0x85
+
+# Zinc-Plated wand
+flavor:127:0xB7:0x85
+
+# Mithril-Plated wand
+flavor:128:0xB7:0x80
+
+# Mithril wand
+flavor:129:0xB7:0x80
+
+# Runed wand
+flavor:130:0xB7:0x87
+
+# Bronze wand
+flavor:131:0xB7:0x87
+
+# Brass wand
+flavor:132:0xB7:0x87
+
+# Platinum wand
+flavor:133:0xB7:0x85
+
+# Lead wand
+flavor:134:0xB7:0x85
+
+# Lead-Plated wand
+flavor:135:0xB7:0x85
+
+# Ivory wand
+flavor:136:0xB7:0x85
+
+# Pewter wand
+flavor:137:0xB7:0x85
+
+# Aluminium rod
+flavor:138:0xB8:0x80
+
+# Cast Iron rod
+flavor:139:0xB8:0x84
+
+# Chromium rod
+flavor:140:0xB8:0x85
+
+# Copper rod
+flavor:141:0xB8:0x87
+
+# Gold rod
+flavor:142:0xB8:0x86
+
+# Iron rod
+flavor:143:0xB8:0x85
+
+# Magnesium rod
+flavor:144:0xB8:0x85
+
+# Molybdenum rod
+flavor:145:0xB8:0x85
+
+# Nickel rod
+flavor:146:0xB8:0x87
+
+# Rusty rod
+flavor:147:0xB8:0x81
+
+# Silver rod
+flavor:148:0xB8:0x85
+
+# Steel rod
+flavor:149:0xB8:0x85
+
+# Tin rod
+flavor:150:0xB8:0x85
+
+# Titanium rod
+flavor:151:0xB8:0x85
+
+# Tungsten rod
+flavor:152:0xB8:0x85
+
+# Zirconium rod
+flavor:153:0xB8:0x85
+
+# Zinc rod
+flavor:154:0xB8:0x85
+
+# Aluminium-Plated rod
+flavor:155:0xB8:0x80
+
+# Copper-Plated rod
+flavor:156:0xB8:0x87
+
+# Gold-Plated rod
+flavor:157:0xB8:0x86
+
+# Nickel-Plated rod
+flavor:158:0xB8:0x87
+
+# Silver-Plated rod
+flavor:159:0xB8:0x85
+
+# Steel-Plated rod
+flavor:160:0xB8:0x85
+
+# Tin-Plated rod
+flavor:161:0xB8:0x85
+
+# Zinc-Plated rod
+flavor:162:0xB8:0x85
+
+# Mithril-Plated rod
+flavor:163:0xB8:0x80
+
+# Mithril rod
+flavor:164:0xB8:0x80
+
+# Runed rod
+flavor:165:0xB8:0x87
+
+# Bronze rod
+flavor:166:0xB8:0x87
+
+# Brass rod
+flavor:167:0xB8:0x87
+
+# Platinum rod
+flavor:168:0xB8:0x85
+
+# Lead rod
+flavor:169:0xB8:0x85
+
+# Lead-Plated rod
+flavor:170:0xB8:0x85
+
+# Ivory rod
+flavor:171:0xB8:0x85
+
+# Pewter rod
+flavor:172:0xB8:0x85
+
+# Blue mushroom
+flavor:173:0xBA:0x80
+
+# Black mushroom
+flavor:174:0xBA:0x84
+
+# Black Spotted mushroom
+flavor:175:0xBA:0x84
+
+# Brown mushroom
+flavor:176:0xBA:0x87
+
+# Dark Blue mushroom
+flavor:177:0xBA:0x80
+
+# Dark Green mushroom
+flavor:178:0xBA:0x82
+
+# Dark Red mushroom
+flavor:179:0xBA:0x81
+
+# Yellow mushroom
+flavor:180:0xBA:0x86
+
+# Furry mushroom
+flavor:181:0xBA:0x85
+
+# Green mushroom
+flavor:182:0xBA:0x82
+
+# Grey mushroom
+flavor:183:0xBA:0x85
+
+# Light Blue mushroom
+flavor:184:0xBA:0x80
+
+# Light Green mushroom
+flavor:185:0xBA:0x82
+
+# Violet mushroom
+flavor:186:0xBA:0x83
+
+# Red mushroom
+flavor:187:0xBA:0x81
+
+# Slimy mushroom
+flavor:188:0xBA:0x85
+
+# Tan mushroom
+flavor:189:0xBA:0x87
+
+# White mushroom
+flavor:190:0xBA:0x85
+
+# White Spotted mushroom
+flavor:191:0xBA:0x85
+
+# Wrinkled mushroom
+flavor:192:0xBA:0x87
+
+# Clear potion
+flavor:193:0xBC:0x83
+
+# Light Brown potion
+flavor:194:0xBC:0x89
+
+# Icky Green potion
+flavor:195:0xBC:0x86
+
+# Azure potion
+flavor:196:0xBC:0x8D
+
+# Blue potion
+flavor:197:0xBC:0x85
+
+# Blue Speckled potion
+flavor:198:0xBC:0x85
+
+# Black potion
+flavor:199:0xBC:0x84
+
+# Brown potion
+flavor:200:0xBC:0x89
+
+# Brown Speckled potion
+flavor:201:0xBC:0x89
+
+# Bubbling potion
+flavor:202:0xBC:0x83
+
+# Chartreuse potion
+flavor:203:0xBC:0x8C
+
+# Cloudy potion
+flavor:204:0xBC:0x83
+
+# Copper Speckled potion
+flavor:205:0xBC:0x89
+
+# Crimson potion
+flavor:206:0xBC:0x87
+
+# Cyan potion
+flavor:207:0xBC:0x8D
+
+# Dark Blue potion
+flavor:208:0xBC:0x85
+
+# Dark Green potion
+flavor:209:0xBC:0x86
+
+# Dark Red potion
+flavor:210:0xBC:0x87
+
+# Gold Speckled potion
+flavor:211:0xBC:0x88
+
+# Green potion
+flavor:212:0xBC:0x86
+
+# Green Speckled potion
+flavor:213:0xBC:0x86
+
+# Grey potion
+flavor:214:0xBC:0x8A
+
+# Grey Speckled potion
+flavor:215:0xBC:0x8A
+
+# Hazy potion
+flavor:216:0xBC:0x83
+
+# Indigo potion
+flavor:217:0xBC:0x8E
+
+# Light Blue potion
+flavor:218:0xBC:0x8D
+
+# Light Green potion
+flavor:219:0xBC:0x8C
+
+# Magenta potion
+flavor:220:0xBC:0x87
+
+# Metallic Blue potion
+flavor:221:0xBC:0x85
+
+# Metallic Red potion
+flavor:222:0xBC:0x87
+
+# Metallic Green potion
+flavor:223:0xBC:0x86
+
+# Metallic Purple potion
+flavor:224:0xBC:0x8E
+
+# Misty potion
+flavor:225:0xBC:0x83
+
+# Orange potion
+flavor:226:0xBC:0x8B
+
+# Orange Speckled potion
+flavor:227:0xBC:0x8B
+
+# Pink potion
+flavor:228:0xBC:0x8B
+
+# Pink Speckled potion
+flavor:229:0xBC:0x8B
+
+# Puce potion
+flavor:230:0xBC:0x8E
+
+# Purple potion
+flavor:231:0xBC:0x8E
+
+# Purple Speckled potion
+flavor:232:0xBC:0x8E
+
+# Red potion
+flavor:233:0xBC:0x87
+
+# Red Speckled potion
+flavor:234:0xBC:0x87
+
+# Silver Speckled potion
+flavor:235:0xBC:0x83
+
+# Smoky potion
+flavor:236:0xBC:0x84
+
+# Tangerine potion
+flavor:237:0xBC:0x8B
+
+# Violet potion
+flavor:238:0xBC:0x8E
+
+# Vermilion potion
+flavor:239:0xBC:0x87
+
+# White potion
+flavor:240:0xBC:0x83
+
+# Yellow potion
+flavor:241:0xBC:0x88
+
+# Violet Speckled potion
+flavor:242:0xBC:0x8E
+
+# Pungent potion
+flavor:243:0xBC:0x8B
+
+# Clotted Red potion
+flavor:244:0xBC:0x87
+
+# Viscous Pink potion
+flavor:245:0xBC:0x8B
+
+# Oily Yellow potion
+flavor:246:0xBC:0x88
+
+# Gloopy Green potion
+flavor:247:0xBC:0x86
+
+# Shimmering potion
+flavor:248:0xBC:0x8E
+
+# Coagulated Crimson potion
+flavor:249:0xBC:0x87
+
+# Yellow Speckled potion
+flavor:250:0xBC:0x88
+
+# Gold potion
+flavor:251:0xBC:0x88
+
+# Scroll
+flavor:252:0x86:0x82
+
+# Scroll
+flavor:253:0x86:0x82
+
+# Scroll
+flavor:254:0x86:0x82
+
+# Scroll
+flavor:255:0x86:0x82
+
+# Scroll
+flavor:256:0x86:0x82
+
+# Scroll
+flavor:257:0x86:0x82
+
+# Scroll
+flavor:258:0x86:0x82
+
+# Scroll
+flavor:259:0x86:0x82
+
+# Scroll
+flavor:260:0x86:0x82
+
+# Scroll
+flavor:261:0x86:0x82
+
+# Scroll
+flavor:262:0x86:0x82
+
+# Scroll
+flavor:263:0x86:0x82
+
+# Scroll
+flavor:264:0x86:0x82
+
+# Scroll
+flavor:265:0x86:0x82
+
+# Scroll
+flavor:266:0x86:0x82
+
+# Scroll
+flavor:267:0x86:0x82
+
+# Scroll
+flavor:268:0x86:0x82
+
+# Scroll
+flavor:269:0x86:0x82
+
+# Scroll
+flavor:270:0x86:0x82
+
+# Scroll
+flavor:271:0x86:0x82
+
+# Scroll
+flavor:272:0x86:0x82
+
+# Scroll
+flavor:273:0x86:0x82
+
+# Scroll
+flavor:274:0x86:0x82
+
+# Scroll
+flavor:275:0x86:0x82
+
+# Scroll
+flavor:276:0x86:0x82
+
+# Scroll
+flavor:277:0x86:0x82
+
+# Scroll
+flavor:278:0x86:0x82
+
+# Scroll
+flavor:279:0x86:0x82
+
+# Scroll
+flavor:280:0x86:0x82
+
+# Scroll
+flavor:281:0x86:0x82
+
+# Scroll
+flavor:282:0x86:0x82
+
+# Scroll
+flavor:283:0x86:0x82
+
+# Scroll
+flavor:284:0x86:0x82
+
+# Scroll
+flavor:285:0x86:0x82
+
+# Scroll
+flavor:286:0x86:0x82
+
+# Scroll
+flavor:287:0x86:0x82
+
+# Scroll
+flavor:288:0x86:0x82
+
+# Scroll
+flavor:289:0x86:0x82
+
+# Scroll
+flavor:290:0x86:0x82
+
+# Scroll
+flavor:291:0x86:0x82
+
+# Scroll
+flavor:292:0x86:0x82
+
+# Scroll
+flavor:293:0x86:0x82
+
+# Scroll
+flavor:294:0x86:0x82
+
+# Scroll
+flavor:295:0x86:0x82
+
+# Scroll
+flavor:296:0x86:0x82
+
+# Scroll
+flavor:297:0x86:0x82
+
+# Scroll
+flavor:298:0x86:0x82
+
+# Scroll
+flavor:299:0x86:0x82
+
+# Scroll
+flavor:300:0x86:0x82
+
+# Scroll
+flavor:301:0x86:0x82
+
+# Scroll
+flavor:302:0x86:0x82
+
+# Ceremonial Rod
+flavor:303:0xB8:0x87
+
+# Black Rod
+flavor:304:0xB8:0x84
+
+# Red Rod
+flavor:305:0xB8:0x81
+
+# Green Rod
+flavor:306:0xB8:0x82
+
+# Blue Rod
+flavor:307:0xB8:0x80
+
+# Divining Rod
+flavor:308:0xB8:0x87
+
+# White Rod
+flavor:309:0xB8:0x85
+
+# Lightning Rod
+flavor:310:0xB8:0x86
+
+# Switch Rod
+flavor:311:0xB8:0x87
+
+# Transparent Rod
+flavor:312:0xB8:0x84

@@ -55,10 +55,10 @@ in the vein of
 and 
 .I moria.
 .B Angband 
-3.5.1 is an official stable release incorporating all the changes
+4.0.0 is an official stable release incorporating all the changes
 and improvements added since the last official stable release (
 .B Angband 
-3.4.1).
+3.5.1).
 .PP
 This version of
 .B Angband
@@ -98,7 +98,7 @@ Use <sys> core code (e.g. gcu for console mode, x11 or sdl for graphics)
 .TP
 .BR \-d<lib>=<path>  
 Define a \'lib\' dir sub-path. Valid values of lib are help info user
-bone save data apex xtra edit file
+save data scores xtra edit file
 .PD
 .SH "GETTING STARTED"
 To start with, you can just say angband \-uTest, and that creates a

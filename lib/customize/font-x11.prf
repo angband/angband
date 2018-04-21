@@ -1,0 +1,10 @@
+# File: font-x11.prf
+
+# Terrain features
+
+# open floor
+feat:1:*:0x01:0x1F
+# magma vein with treasure
+feat:19:*:0x03:0x01
+# quartz vein with treasure
+feat:20:*:0x03:0x01

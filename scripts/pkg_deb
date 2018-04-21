@@ -1,10 +1,10 @@
 #!/bin/sh
 
 if [ $# -ne 0 ]; then
-	echo "Simple packaging file for the source."
+	echo "Simple packaging file for the Debian source tarball."
 	echo ""
 	echo "Use in the root directory of the game, like so:"
-	echo "   scripts/pkg_src"
+	echo "   scripts/pkg_deb"
 	echo "The script will output a tarball angband_[git describe].orig.tar.gz"
 
 	exit 1
@@ -37,5 +37,5 @@ git checkout-index --prefix=$TAG1/ -a &&
 	./autogen.sh &&
 	rm -rf autogen.sh autom4te.cache &&
 	cd .. &&
-	tar --exclude .gitignore --exclude *.dll --exclude *.wav -czvf $OUT $TAG1 &&
+	tar --exclude .gitignore --exclude *.dll --exclude *.mp3 --exclude lib/tiles/shockbolt/64x64.png -czvf ../$OUT $TAG1 &&
 	rm -rf $TAG1

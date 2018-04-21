@@ -1,7 +1,7 @@
-/* File: readdib.c */
-
-/*
- * This package provides a routine to read a DIB file and set up the
+/**
+ * \file readpng.c
+ *
+ * This package provides a routine to read a PNG file and set up the
  * device dependent version of the image.
  *
  * This file has been modified for use with "Angband 2.9.2"
@@ -24,7 +24,7 @@
 #include "readdib.h"
 
 
-/*
+/**
  * Extract the "WIN32" flag from the compiler
  */
 #if defined(__WIN32__) || defined(__WINNT__) || defined(__NT__)
@@ -33,14 +33,14 @@
 # endif
 #endif
 
-/*
+/**
  * Imports a DIB from a PNG file. Once
  * the DIB is loaded, the function also creates a bitmap
  * and palette out of the DIB for a device-dependent form.
  *
  * Returns TRUE if the DIB is loaded and the bitmap/palette created, in which
- * case, the DIBINIT structure pointed to by pInfo is filled with the appropriate
- * handles, and FALSE if something went wrong.
+ * case, the DIBINIT structure pointed to by pInfo is filled with the
+ * appropriate handles, and FALSE if something went wrong.
  */
 BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, BOOL premultiply) {
 	png_structp png_ptr;

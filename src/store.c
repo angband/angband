@@ -1,9 +1,9 @@
-/*
- * File: store.c
- * Purpose: Store stocking and UI
+/**
+ * \file store.c
+ * \brief Store stocking
  *
  * Copyright (c) 1997 Robert A. Koeneke, James E. Wilson, Ben Harrison
- * Copyright (c) 2007 Andi Sidwell, who rewrote a fair portion
+ * Copyright (c) 2007 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -21,181 +21,111 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
-#include "history.h"
+#include "game-world.h"
+#include "hint.h"
 #include "init.h"
-#include "object/inventory.h"
-#include "object/tvalsval.h"
-#include "object/object.h"
-#include "spells.h"
-#include "squelch.h"
+#include "monster.h"
+#include "obj-desc.h"
+#include "obj-gear.h"
+#include "obj-identify.h"
+#include "obj-ignore.h"
+#include "obj-info.h"
+#include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-power.h"
+#include "obj-slays.h"
+#include "obj-tval.h"
+#include "obj-util.h"
+#include "player-calcs.h"
+#include "player-history.h"
 #include "store.h"
 #include "target.h"
-#include "textui.h"
-#include "ui-menu.h"
-#include "z-debug.h"
-
-/*** Constants and definitions ***/
-
-/* Easy names for the elements of the 'scr_places' arrays. */
-enum
-{
-	LOC_PRICE = 0,
-	LOC_OWNER,
-	LOC_HEADER,
-	LOC_MORE,
-	LOC_HELP_CLEAR,
-	LOC_HELP_PROMPT,
-	LOC_AU,
-	LOC_WEIGHT,
-
-	LOC_MAX
-};
-
-/* Places for the various things displayed onscreen */
-static unsigned int scr_places_x[LOC_MAX];
-static unsigned int scr_places_y[LOC_MAX];
-
-/* State flags */
-#define STORE_GOLD_CHANGE      0x01
-#define STORE_FRAME_CHANGE     0x02
-#define STORE_SHOW_HELP        0x04
-
-/* Compound flag for the initial display of a store */
-#define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
-
-/* Some local constants */
-#define STORE_OBJ_LEVEL 5       /* Magic Level for normal stores */
+#include "debug.h"
 
 
-/** Variables to maintain state XXX ***/
+static void store_maint(struct store *s);
 
-/* Flags for the display */
-static u16b store_flags;
-
-/* Are we in store? */
-bool store_in_store = FALSE;
-
-
-/*** Utilities ***/
-
-/* Randomly select one of the entries in an array */
-#define ONE_OF(x)	x[randint0(N_ELEMENTS(x))]
+/**
+ * ------------------------------------------------------------------------
+ * Constants and definitions
+ * ------------------------------------------------------------------------ */
 
 
-/*** Flavour text stuff ***/
-
-/*
- * Shopkeeper welcome messages.
- *
- * The shopkeeper's name must come first, then the character's name.
+/**
+ * Array[MAX_STORES] of stores
  */
-static const char *comment_welcome[] =
-{
-	"",
-	"%s nods to you.",
-	"%s says hello.",
-	"%s: \"See anything you like, adventurer?\"",
-	"%s: \"How may I help you, %s?\"",
-	"%s: \"Welcome back, %s.\"",
-	"%s: \"A pleasure to see you again, %s.\"",
-	"%s: \"How may I be of assistance, good %s?\"",
-	"%s: \"You do honour to my humble store, noble %s.\"",
-	"%s: \"I and my family are entirely at your service, %s.\""
-};
+struct store *stores;
 
-static const char *comment_hint[] =
-{
-/*	"%s tells you soberly: \"%s\".",
-	"(%s) There's a saying round here, \"%s\".",
-	"%s offers to tell you a secret next time you're about."*/
-	"\"%s\""
-};
-
-/*
- * Messages for reacting to purchase prices.
+/**
+ * The hints array
  */
-static const char *comment_worthless[] =
-{
-	"Arrgghh!",
-	"You bastard!",
-	"You hear someone sobbing...",
-	"The shopkeeper howls in agony!",
-	"The shopkeeper wails in anguish!",
-	"The shopkeeper beats his head against the counter."
+struct hint *hints;
+
+
+static const char *obj_flags[] = {
+	"NONE",
+	#define STAT(a, b, c, d, e, f, g, h) #c,
+	#include "list-stats.h"
+	#undef STAT
+	#define OF(a, b, c, d, e) #a,
+	#include "list-object-flags.h"
+	#undef OF
+	NULL
 };
 
-static const char *comment_bad[] =
+/**
+ * Return the store instance at the given location
+ */
+struct store *store_at(struct chunk *c, int y, int x)
 {
-	"Damn!",
-	"You fiend!",
-	"The shopkeeper curses at you.",
-	"The shopkeeper glares at you."
-};
+	if (square_isshop(c, y, x))
+		return &stores[square_shopnum(cave, y, x)];
 
-static const char *comment_accept[] =
-{
-	"Okay.",
-	"Fine.",
-	"Accepted!",
-	"Agreed!",
-	"Done!",
-	"Taken!"
-};
-
-static const char *comment_good[] =
-{
-	"Cool!",
-	"You've made my day!",
-	"The shopkeeper sniggers.",
-	"The shopkeeper giggles.",
-	"The shopkeeper laughs loudly."
-};
-
-static const char *comment_great[] =
-{
-	"Yipee!",
-	"I think I'll retire!",
-	"The shopkeeper jumps for joy.",
-	"The shopkeeper smiles gleefully.",
-	"Wow.  I'm going to name my new villa in your honour."
-};
+	return NULL;
+}
 
 
-/*
+/**
  * Create a new store.
  */
 static struct store *store_new(int idx) {
 	struct store *s = mem_zalloc(sizeof *s);
 	s->sidx = idx;
-	s->stock = mem_zalloc(sizeof(*s->stock) * STORE_INVEN_MAX);
-	s->stock_size = STORE_INVEN_MAX;
+	s->stock_size = z_info->store_inven_max;
 	return s;
 }
 
-/*
+/**
  * Get rid of stores at cleanup. Gets rid of everything.
  */
-void free_stores(void)
+void cleanup_stores(void)
 {
-	struct owner *o;
-	struct owner *next;
+	struct owner *o, *o_next;
+	struct object_buy *buy, *buy_next;
 	int i;
 
+	if (!stores)
+		return;
+
 	/* Free the store inventories */
-	for (i = 0; i < MAX_STORES; i++)
-	{
+	for (i = 0; i < MAX_STORES; i++) {
 		/* Get the store */
 		struct store *store = &stores[i];
 
 		/* Free the store inventory */
-		mem_free(store->stock);
+		object_pile_free(store->stock);
 		mem_free(store->always_table);
 		mem_free(store->normal_table);
 
-		for (o = store->owners; o; o = next) {
-			next = o->next;
+		for (o = store->owners; o; o = o_next) {
+			o_next = o->next;
 			string_free(o->name);
 			mem_free(o);
+		}
+
+		for (buy = store->buy; buy; buy = buy_next) {
+			buy_next = buy->next;
+			mem_free(buy);
 		}
 
 		string_free((void *)store->name);
@@ -204,7 +134,11 @@ void free_stores(void)
 }
 
 
-/*** Edit file parsing ***/
+/**
+ * ------------------------------------------------------------------------
+ * Edit file parsing
+ * ------------------------------------------------------------------------ */
+
 
 /** store.txt **/
 
@@ -213,7 +147,7 @@ static enum parser_error parse_store(struct parser *p) {
 	struct store *s;
 	unsigned int idx = parser_getuint(p, "index") - 1;
 
-	if (idx > STORE_HOME)
+	if (idx >= MAX_STORES)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	s = store_new(parser_getuint(p, "index") - 1);
@@ -300,6 +234,41 @@ static enum parser_error parse_owner(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_buy(struct parser *p) {
+	struct store *s = parser_priv(p);
+	struct object_buy *buy;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	buy = mem_zalloc(sizeof(*buy));
+	buy->tval = tval_find_idx(parser_getstr(p, "base"));
+	buy->next = s->buy;
+	s->buy = buy;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_buy_flag(struct parser *p) {
+	struct store *s = parser_priv(p);
+	struct object_buy *buy;
+	char *t;
+	int flag;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	buy = mem_zalloc(sizeof(*buy));
+	t = string_make(parser_getsym(p, "flag"));
+	flag = lookup_flag(obj_flags, t);
+	if (flag == FLAG_END)
+		return PARSE_ERROR_INVALID_FLAG;
+	buy->flag = flag;
+	buy->tval = tval_find_idx(parser_getstr(p, "base"));
+	buy->next = s->buy;
+	s->buy = buy;
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_stores(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -309,6 +278,8 @@ struct parser *init_parse_stores(void) {
 	parser_reg(p, "turnover uint turnover", parse_turnover);
 	parser_reg(p, "normal sym tval sym sval", parse_normal);
 	parser_reg(p, "always sym tval sym sval", parse_always);
+	parser_reg(p, "buy str base", parse_buy);
+	parser_reg(p, "buy-flag sym flag str base", parse_buy_flag);
 	return p;
 }
 
@@ -331,15 +302,19 @@ static struct file_parser store_parser = {
 };
 
 
-/*** Other init stuff ***/
+/**
+ * ------------------------------------------------------------------------
+ * Other init stuff
+ * ------------------------------------------------------------------------ */
+
 
 static struct store *flatten_stores(struct store *store_list) {
 	struct store *s;
 	struct store *stores = mem_zalloc(MAX_STORES * sizeof(*stores));
 
 	for (s = store_list; s; s = s->next) {
-		/* XXX bounds-check */
-		memcpy(&stores[s->sidx], s, sizeof(*s));
+		if (s->sidx < MAX_STORES)
+			memcpy(&stores[s->sidx], s, sizeof(*s));
 	}
 
 	while (store_list) {
@@ -355,8 +330,8 @@ static struct store *flatten_stores(struct store *store_list) {
 
 void store_init(void)
 {
-	event_signal_string(EVENT_INITSTATUS, "Initialising stores...");
-	if (run_parser(&store_parser)) quit("Can't initialise stores");
+	event_signal_message(EVENT_INITSTATUS, 0, "Initializing stores...");
+	if (run_parser(&store_parser)) quit("Can't initialize stores");
 	stores = flatten_stores(stores);
 }
 
@@ -368,13 +343,22 @@ void store_reset(void) {
 		s = &stores[i];
 		s->stock_num = 0;
 		store_shuffle(s);
-		for (j = 0; j < s->stock_size; j++)
-			object_wipe(&s->stock[j]);
+		object_pile_free(s->stock);
+		s->stock = NULL;
 		if (i == STORE_HOME)
 			continue;
-		for (j = 0; j < 10; j++) store_maint(s);
+		for (j = 0; j < 10; j++)
+			store_maint(s);
 	}
 }
+
+
+struct init_module store_module = {
+	.name = "store",
+	.init = store_init,
+	.cleanup = cleanup_stores
+};
+
 
 
 
@@ -413,59 +397,78 @@ static bool store_can_carry(struct store *store, struct object_kind *kind) {
 
 
 
-/*
- * The greeting a shopkeeper gives the character says a lot about his
- * general attitude.
- *
- * Taken and modified from Sangband 1.0.
+
+/**
+ * ------------------------------------------------------------------------
+ * Utilities
+ * ------------------------------------------------------------------------ */
+
+
+/* Randomly select one of the entries in an array */
+#define ONE_OF(x)	x[randint0(N_ELEMENTS(x))]
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Flavour text stuff
+ * ------------------------------------------------------------------------ */
+
+
+/**
+ * Messages for reacting to purchase prices.
  */
-static void prt_welcome(const owner_type *ot_ptr)
+static const char *comment_worthless[] =
 {
-	char short_name[20];
-	const char *owner_name = ot_ptr->name;
+	"Arrgghh!",
+	"You bastard!",
+	"You hear someone sobbing...",
+	"The shopkeeper howls in agony!",
+	"The shopkeeper wails in anguish!",
+	"The shopkeeper beats his head against the counter."
+};
 
-	int j;
+static const char *comment_bad[] =
+{
+	"Damn!",
+	"You fiend!",
+	"The shopkeeper curses at you.",
+	"The shopkeeper glares at you."
+};
 
-	if (one_in_(2))
-		return;
+static const char *comment_accept[] =
+{
+	"Okay.",
+	"Fine.",
+	"Accepted!",
+	"Agreed!",
+	"Done!",
+	"Taken!"
+};
 
-	/* Extract the first name of the store owner (stop before the first space) */
-	for (j = 0; owner_name[j] && owner_name[j] != ' '; j++)
-		short_name[j] = owner_name[j];
+static const char *comment_good[] =
+{
+	"Cool!",
+	"You've made my day!",
+	"The shopkeeper sniggers.",
+	"The shopkeeper giggles.",
+	"The shopkeeper laughs loudly."
+};
 
-	/* Truncate the name */
-	short_name[j] = '\0';
-
-	if (one_in_(3)) {
-		size_t i = randint0(N_ELEMENTS(comment_hint));
-		msg(comment_hint[i], random_hint());
-	} else if (p_ptr->lev > 5) {
-		const char *player_name;
-
-		/* We go from level 1 - 50  */
-		size_t i = ((unsigned)p_ptr->lev - 1) / 5;
-		i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
-
-		/* Get a title for the character */
-		if ((i % 2) && randint0(2)) player_name = p_ptr->class->title[(p_ptr->lev - 1) / 5];
-		else if (randint0(2))       player_name = op_ptr->full_name;
-		else {
-			switch (p_ptr->psex) {
-				case SEX_MALE:   player_name = "sir"; break;
-				case SEX_FEMALE: player_name = "madam"; break;
-				case SEX_NEUTER:
-				default:         player_name = "ser"; break;
-			}
-		}
-
-		/* Balthazar says "Welcome" */
-		prt(format(comment_welcome[i], short_name, player_name), 0, 0);
-	}
-}
+static const char *comment_great[] =
+{
+	"Yipee!",
+	"I think I'll retire!",
+	"The shopkeeper jumps for joy.",
+	"The shopkeeper smiles gleefully.",
+	"Wow.  I'm going to name my new villa in your honour."
+};
 
 
 
-/*
+
+
+
+/**
  * Let a shop-keeper React to a purchase
  *
  * We paid "price", it was worth "value", and we thought it was worth "guess"
@@ -492,185 +495,56 @@ static void purchase_analyze(s32b price, s32b value, s32b guess)
 
 
 
-/*** Check if a store will buy an object ***/
+/**
+ * ------------------------------------------------------------------------
+ * Check if a store will buy an object
+ * ------------------------------------------------------------------------ */
 
-/*
+
+/**
  * Determine if the current store will purchase the given object
  *
  * Note that a shop-keeper must refuse to buy "worthless" objects
  */
-static bool store_will_buy(struct store *store, const object_type *o_ptr)
+static bool store_will_buy(struct store *store, const struct object *obj)
 {
-	/* Switch on the store */
-	switch (store->sidx)
-	{
-		/* General Store */
-		case STORE_GENERAL:
-		{
-			/* Analyze the types */
-			switch (o_ptr->tval)
-			{
-				case TV_LIGHT:
-				case TV_FOOD:
-				case TV_FLASK:
-				case TV_DIGGING:
-					break;
+	struct object_buy *buy;
 
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Armoury */
-		case STORE_ARMOR:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_BOOTS:
-				case TV_GLOVES:
-				case TV_CROWN:
-				case TV_HELM:
-				case TV_SHIELD:
-				case TV_CLOAK:
-				case TV_SOFT_ARMOR:
-				case TV_HARD_ARMOR:
-				case TV_DRAG_ARMOR:
-					break;
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Weapon Shop */
-		case STORE_WEAPON:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_SHOT:
-				case TV_BOLT:
-				case TV_ARROW:
-				case TV_BOW:
-				case TV_DIGGING:
-				case TV_HAFTED:
-				case TV_POLEARM:
-				case TV_SWORD:
-					break;
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Temple */
-		case STORE_TEMPLE:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_PRAYER_BOOK:
-				case TV_SCROLL:
-				case TV_POTION:
-				case TV_HAFTED:
-					break;
-
-				case TV_POLEARM:
-				case TV_SWORD:
-				case TV_DIGGING:
-				{
-					/* Known blessed blades are accepted too */
-					if (object_is_known_blessed(o_ptr)) break;
-				}
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Alchemist */
-		case STORE_ALCHEMY:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_SCROLL:
-				case TV_POTION:
-					break;
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Magic Shop */
-		case STORE_MAGIC:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_MAGIC_BOOK:
-				case TV_AMULET:
-				case TV_RING:
-				case TV_STAFF:
-				case TV_WAND:
-				case TV_ROD:
-				case TV_SCROLL:
-				case TV_POTION:
-					break;
-
-				default:
-					return (FALSE);
-			}
-			break;
-		}
-
-		/* Home */
-		case STORE_HOME:
-		{
-			return TRUE;
-		}
-	}
+	/* Home accepts anything */
+	if (store->sidx == STORE_HOME) return TRUE;
 
 	/* Ignore "worthless" items */
-	if (object_value(o_ptr, 1, FALSE) <= 0) return (FALSE);
+	if (object_value(obj, 1, FALSE) <= 0) return FALSE;
 
-	/* Assume okay */
-	return (TRUE);
+	/* No buy list means we buy anything */
+	if (!store->buy) return TRUE;
+
+	/* Run through the buy list */
+	for (buy = store->buy; buy; buy = buy->next) {
+		/* Wrong tval */
+		if (buy->tval != obj->tval) continue;
+
+		/* No flag means we're good */
+		if (!buy->flag) return TRUE;
+
+		/* OK if the object is known to have the flag */
+		if (of_has(obj->flags, buy->flag) &&
+			object_flag_is_known(obj, buy->flag))
+			return TRUE;
+	}
+
+	/* Not on the list */
+	return FALSE;
 }
 
 
-/* Get the current store or NULL if there isn't one */
-static struct store *current_store(void)
-{
-	int n = STORE_NONE;
-
-	/* If we're displaying store knowledge whilst not in a store,
-	 * override the value returned
-	 */
-	if (store_knowledge != STORE_NONE)
-		n = store_knowledge;
-
-	else if (cave_isshop(cave, p_ptr->py, p_ptr->px))
-		n = cave_shopnum(cave, p_ptr->py, p_ptr->px);
-
-	if (n != STORE_NONE)
-		return &stores[n];
-	else
-		return NULL;
-}
+/**
+ * ------------------------------------------------------------------------
+ * Basics: pricing, generation, etc.
+ * ------------------------------------------------------------------------ */
 
 
-
-/*** Basics: pricing, generation, etc. ***/
-
-/*
+/**
  * Determine the price of an object (qty one) in a store.
  *
  *  store_buying == TRUE  means the shop is buying, player selling
@@ -683,38 +557,32 @@ static struct store *current_store(void)
  *
  * Hack -- the black market always charges twice as much as it should.
  */
-s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
+int price_item(struct store *store, const struct object *obj,
+			   bool store_buying, int qty)
 {
-	int adjust;
-	s32b price;
-	struct store *store = current_store();
-	owner_type *ot_ptr;
+	int adjust = 100;
+	int price;
+	struct owner *proprietor;
 
 	if (!store) return 0L;
 
-	ot_ptr = store->owner;
-
+	proprietor = store->owner;
 
 	/* Get the value of the stack of wands, or a single item */
-	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
-		price = object_value(o_ptr, qty, FALSE);
+	if (tval_can_have_charges(obj))
+		price = object_value(obj, qty, FALSE);
 	else
-		price = object_value(o_ptr, 1, FALSE);
+		price = object_value(obj, 1, FALSE);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
 
-
 	/* The black market is always a worse deal */
 	if (store->sidx == STORE_B_MARKET)
 		adjust = 150;
-	else
-		adjust = 100;
-
 
 	/* Shop is buying */
-	if (store_buying)
-	{
+	if (store_buying) {
 		/* Set the factor */
 		adjust = 100 + (100 - adjust);
 		if (adjust > 100) adjust = 100;
@@ -728,13 +596,16 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 		/* Check for no_selling option */
 		if (OPT(birth_no_selling)) return (0L);
-	}
-
-	/* Shop is selling */
-	else
-	{
-		/* Fix the factor */
-		if (adjust < 100) adjust = 100;
+	} else {
+		/* Recalculate if the player doesn't know the flavour */
+		if (!obj->kind->aware) {
+			obj->kind->aware = TRUE;
+			if (tval_can_have_charges(obj))
+				price = object_value(obj, qty, FALSE);
+			else
+				price = object_value(obj, 1, FALSE);
+			obj->kind->aware = FALSE;
+		}
 
 		/* Black market sucks */
 		if (store->sidx == STORE_B_MARKET)
@@ -745,12 +616,12 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 	price = (price * adjust + 50L) / 100L;
 
 	/* Now convert price to total price for non-wands */
-	if (!(o_ptr->tval == TV_WAND) && !(o_ptr->tval == TV_STAFF))
+	if (!tval_can_have_charges(obj))
 		price *= qty;
 
 	/* Now limit the price to the purse limit */
-	if (store_buying && (price > ot_ptr->max_cost * qty))
-		price = ot_ptr->max_cost * qty;
+	if (store_buying && (price > proprietor->max_cost * qty))
+		price = proprietor->max_cost * qty;
 
 	/* Note -- Never become "free" */
 	if (price <= 0L) return (qty);
@@ -760,7 +631,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 }
 
 
-/*
+/**
  * Special "mass production" computation.
  */
 static int mass_roll(int times, int max)
@@ -776,19 +647,20 @@ static int mass_roll(int times, int max)
 }
 
 
-/*
+/**
  * Some cheap objects should be created in piles.
  */
-static void mass_produce(object_type *o_ptr)
+static void mass_produce(struct object *obj)
 {
 	int size = 1;
-	s32b cost = object_value(o_ptr, 1, FALSE);
+	s32b cost = object_value(obj, 1, FALSE);
 
 	/* Analyze the type */
-	switch (o_ptr->tval)
+	switch (obj->tval)
 	{
 		/* Food, Flasks, and Lights */
 		case TV_FOOD:
+		case TV_MUSHROOM:
 		case TV_FLASK:
 		case TV_LIGHT:
 		{
@@ -827,7 +699,7 @@ static void mass_produce(object_type *o_ptr)
 		case TV_DIGGING:
 		case TV_BOW:
 		{
-			if (o_ptr->ego) break;
+			if (obj->ego) break;
 			if (cost <= 10L) size += mass_roll(3, 5);
 			if (cost <= 100L) size += mass_roll(3, 5);
 			break;
@@ -850,216 +722,169 @@ static void mass_produce(object_type *o_ptr)
 		}
 	}
 
-
 	/* Save the total pile size */
-	o_ptr->number = size;
+	obj->number = size;
 }
 
 
-/*
+/**
+ * Sort the store inventory into an ordered array.
+ */
+void store_stock_list(struct store *store, struct object **list, int n)
+{
+	bool home = (store->sidx != STORE_HOME);
+	int list_num;
+	int num = 0;
+
+	for (list_num = 0; list_num < n; list_num++) {
+		struct object *current, *first = NULL;
+		for (current = store->stock; current; current = current->next) {
+			int i;
+			bool possible = TRUE;
+
+			/* Skip objects already allocated */
+			for (i = 0; i < num; i++)
+				if (list[i] == current)
+					possible = FALSE;
+
+			/* If still possible, choose the first in order */
+			if (!possible)
+				continue;
+			else if (earlier_object(first, current, home))
+				first = current;
+		}
+
+		/* Allocate and count the stock */
+		list[list_num] = first;
+		if (first)
+			num++;
+	}
+}
+
+/**
  * Allow a store object to absorb another object
  */
-static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
+static void store_object_absorb(struct object *old, struct object *new)
 {
-	int total = o_ptr->number + j_ptr->number;
+	int total = old->number + new->number;
 
 	/* Combine quantity, lose excess items */
-	o_ptr->number = (total >= MAX_STACK_SIZE) ? MAX_STACK_SIZE - 1 : total;
+	old->number = (total > z_info->stack_size) ? z_info->stack_size : total;
 
-	/* Hack -- if rods are stacking, add the charging timeouts */
-	if (o_ptr->tval == TV_ROD)
-		o_ptr->timeout += j_ptr->timeout;
+	/* If rods are stacking, add the charging timeouts */
+	if (tval_can_have_timeout(old))
+		old->timeout += new->timeout;
 
-	/* Hack -- if wands/staves are stacking, combine the charges */
-	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
-	{
-		o_ptr->pval[DEFAULT_PVAL] += j_ptr->pval[DEFAULT_PVAL];
-	}
+	/* If wands/staves are stacking, combine the charges */
+	if (tval_can_have_charges(old))
+		old->pval += new->pval;
 
-	if ((o_ptr->origin != j_ptr->origin) ||
-	    (o_ptr->origin_depth != j_ptr->origin_depth) ||
-	    (o_ptr->origin_xtra != j_ptr->origin_xtra))
-	{
+	if ((old->origin != new->origin) ||
+	    (old->origin_depth != new->origin_depth) ||
+	    (old->origin_xtra != new->origin_xtra)) {
 		int act = 2;
 
-		if ((o_ptr->origin == ORIGIN_DROP) && (o_ptr->origin == j_ptr->origin))
-		{
-			monster_race *r_ptr = &r_info[o_ptr->origin_xtra];
-			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
+		if ((old->origin == ORIGIN_DROP) && (old->origin == new->origin)) {
+			struct monster_race *r_old = &r_info[old->origin_xtra];
+			struct monster_race *r_new = &r_info[new->origin_xtra];
 
-			bool r_uniq = rf_has(r_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
-			bool s_uniq = rf_has(s_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool old_uniq = rf_has(r_old->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool new_uniq = rf_has(r_new->flags, RF_UNIQUE) ? TRUE : FALSE;
 
-			if (r_uniq && !s_uniq) act = 0;
-			else if (s_uniq && !r_uniq) act = 1;
+			if (old_uniq && !new_uniq) act = 0;
+			else if (new_uniq && !old_uniq) act = 1;
 			else act = 2;
 		}
 
 		switch (act)
 		{
-			/* Overwrite with j_ptr */
+			/* Overwrite with new */
 			case 1:
 			{
-				o_ptr->origin = j_ptr->origin;
-				o_ptr->origin_depth = j_ptr->origin_depth;
-				o_ptr->origin_xtra = j_ptr->origin_xtra;
+				old->origin = new->origin;
+				old->origin_depth = new->origin_depth;
+				old->origin_xtra = new->origin_xtra;
 			}
 
 			/* Set as "mixed" */
 			case 2:
 			{
-				o_ptr->origin = ORIGIN_MIXED;
+				old->origin = ORIGIN_MIXED;
 			}
 		}
 	}
+
+	/* Fully absorbed */
+	object_delete(&new);
 }
 
 
-/*
+/**
  * Check to see if the shop will be carrying too many objects
  *
  * Note that the shop, just like a player, will not accept things
  * it cannot hold.  Before, one could "nuke" objects this way, by
  * adding them to a pile which was already full.
  */
-static bool store_check_num(struct store *store, const object_type *o_ptr)
+bool store_check_num(struct store *store, const struct object *obj)
 {
-	int i;
-	object_type *j_ptr;
+	struct object *stock_obj;
 
 	/* Free space is always usable */
 	if (store->stock_num < store->stock_size) return TRUE;
 
 	/* The "home" acts like the player */
-	if (store->sidx == STORE_HOME)
-	{
-		/* Check all the objects */
-		for (i = 0; i < store->stock_num; i++)
-		{
-			/* Get the existing object */
-			j_ptr = &store->stock[i];
-
+	if (store->sidx == STORE_HOME) {
+		for (stock_obj = store->stock; stock_obj; stock_obj = stock_obj->next) {
 			/* Can the new object be combined with the old one? */
-			if (object_similar(j_ptr, o_ptr, OSTACK_PACK))
-				return (TRUE);
+			if (object_similar(stock_obj, obj, OSTACK_PACK))
+				return TRUE;
 		}
-	}
-
-	/* Normal stores do special stuff */
-	else
-	{
-		/* Check all the objects */
-		for (i = 0; i < store->stock_num; i++)
-		{
-			/* Get the existing object */
-			j_ptr = &store->stock[i];
-
+	} else {
+		/* Normal stores do special stuff */
+		for (stock_obj = store->stock; stock_obj; stock_obj = stock_obj->next) {
 			/* Can the new object be combined with the old one? */
-			if (object_similar(j_ptr, o_ptr, OSTACK_STORE))
-				return (TRUE);
+			if (object_similar(stock_obj, obj, OSTACK_STORE))
+				return TRUE;
 		}
 	}
 
 	/* But there was no room at the inn... */
-	return (FALSE);
+	return FALSE;
 }
 
 
-
-/*
+/**
  * Add an object to the inventory of the Home.
- *
- * In all cases, return the slot (or -1) where the object was placed.
- *
- * Note that this is a hacked up version of "inven_carry()".
  *
  * Also note that it may not correctly "adapt" to "knowledge" becoming
  * known: the player may have to pick stuff up and drop it again.
  */
-static int home_carry(object_type *o_ptr)
+void home_carry(struct object *obj)
 {
-	int i, slot;
-	u32b value, j_value;
-	object_type *j_ptr;
-
+	struct object *temp_obj;
 	struct store *store = &stores[STORE_HOME];
 
 	/* Check each existing object (try to combine) */
-	for (slot = 0; slot < store->stock_num; slot++)
-	{
-		/* Get the existing object */
-		j_ptr = &store->stock[slot];
-
+	for (temp_obj = store->stock; temp_obj; temp_obj = temp_obj->next) {
 		/* The home acts just like the player */
-		if (object_similar(j_ptr, o_ptr, OSTACK_PACK))
-		{
+		if (object_similar(temp_obj, obj, OSTACK_PACK)) {
 			/* Save the new number of items */
-			object_absorb(j_ptr, o_ptr);
-
-			/* All done */
-			return (slot);
+			object_absorb(temp_obj, obj);
+			return;
 		}
 	}
 
 	/* No space? */
-	if (store->stock_num >= store->stock_size) return (-1);
+	if (store->stock_num >= store->stock_size) return;
 
-	/* Determine the "value" of the object */
-	value = object_value(o_ptr, 1, FALSE);
-
-	/* Check existing slots to see if we must "slide" */
-	for (slot = 0; slot < store->stock_num; slot++)
-	{
-		/* Get that object */
-		j_ptr = &store->stock[slot];
-
-		/* Hack -- readable books always come first */
-		if ((o_ptr->tval == p_ptr->class->spell_book) &&
-		    (j_ptr->tval != p_ptr->class->spell_book)) break;
-		if ((j_ptr->tval == p_ptr->class->spell_book) &&
-		    (o_ptr->tval != p_ptr->class->spell_book)) continue;
-
-		/* Objects sort by decreasing type */
-		if (o_ptr->tval > j_ptr->tval) break;
-		if (o_ptr->tval < j_ptr->tval) continue;
-
-		/* Can happen in the home */
-		if (!object_flavor_is_aware(o_ptr)) continue;
-		if (!object_flavor_is_aware(j_ptr)) break;
-
-		/* Objects sort by increasing sval */
-		if (o_ptr->sval < j_ptr->sval) break;
-		if (o_ptr->sval > j_ptr->sval) continue;
-
-		/* Objects in the home can be unknown */
-		if (!object_is_known(o_ptr)) continue;
-		if (!object_is_known(j_ptr)) break;
-
-		/* Objects sort by decreasing value */
-		j_value = object_value(j_ptr, 1, FALSE);
-		if (value > j_value) break;
-		if (value < j_value) continue;
-	}
-
-	/* Slide the others up */
-	for (i = store->stock_num; i > slot; i--)
-	{
-		/* Hack -- slide the objects */
-		object_copy(&store->stock[i], &store->stock[i-1]);
-	}
-
-	/* More stuff now */
+	/* Insert the new object */
+	pile_insert(&store->stock, obj);
 	store->stock_num++;
-
-	/* Hack -- Insert the new object */
-	object_copy(&store->stock[slot], o_ptr);
-
-	/* Return the location */
-	return (slot);
 }
 
 
-/*
+/**
  * Add an object to a real stores inventory.
  *
  * If the object is "worthless", it is thrown away (except in the home).
@@ -1069,281 +894,107 @@ static int home_carry(object_type *o_ptr)
  * this price will be negative, since the price will not be "fixed" yet.
  * Adding an object to a "fixed" price stack will not change the fixed price.
  *
- * In all cases, return the slot (or -1) where the object was placed
+ * Returns the object inserted (for ease of use) or NULL if it disappears
  */
-static int store_carry(struct store *store, object_type *o_ptr)
+struct object *store_carry(struct store *store, struct object *obj)
 {
 	unsigned int i;
-	unsigned int slot;
-	u32b value, j_value;
-	object_type *j_ptr;
+	u32b value;
+	struct object *temp_obj;
 
-	object_kind *kind = o_ptr->kind;
+	struct object_kind *kind = obj->kind;
 
 	/* Evaluate the object */
-	value = object_value(o_ptr, 1, FALSE);
+	value = object_value(obj, 1, FALSE);
 
 	/* Cursed/Worthless items "disappear" when sold */
-	if (value <= 0) return (-1);
+	if (value <= 0) return NULL;
 
 	/* Erase the inscription & pseudo-ID bit */
-	o_ptr->note = 0;
+	obj->note = 0;
 
 	/* Some item types require maintenance */
-	switch (o_ptr->tval)
-	{
-		/* Refuel lights to the standard amount */
-		case TV_LIGHT:
-		{
-			bitflag f[OF_SIZE];
-			object_flags(o_ptr, f);
+	if (tval_is_light(obj)) {
+		if (!of_has(obj->flags, OF_NO_FUEL)) {
+			if (of_has(obj->flags, OF_BURNS_OUT))
+				obj->timeout = z_info->fuel_torch;
 
-			if (!of_has(f, OF_NO_FUEL))
-			{
-				if (o_ptr->sval == SV_LIGHT_TORCH)
-					o_ptr->timeout = DEFAULT_TORCH;
-
-				else if (o_ptr->sval == SV_LIGHT_LANTERN)
-					o_ptr->timeout = DEFAULT_LAMP;
-			}
-
-			break;
+			else if (of_has(obj->flags, OF_TAKES_FUEL))
+				obj->timeout = z_info->default_lamp;
 		}
+	} else if (tval_can_have_timeout(obj)) {
+		obj->timeout = 0;
+	} else if (tval_can_have_charges(obj)) {
+		/* If the store can stock this item kind, we recharge */
+		if (store_can_carry(store, obj->kind)) {
+			int charges = 0;
 
-		/* Recharge rods */
-		case TV_ROD:
-		{
-			o_ptr->timeout = 0;
-			break;
-		}
+			/* Calculate the recharged number of charges */
+			for (i = 0; i < obj->number; i++)
+				charges += randcalc(kind->charge, 0, RANDOMISE);
 
-		/* Possibly recharge wands and staves */
-		case TV_STAFF:
-		case TV_WAND:
-		{
-			/* If the store can stock this item kind, we recharge */
-			if (store_can_carry(store, o_ptr->kind)) {
-				int charges = 0;
-
-				/* Calculate the recharged number of charges */
-				for (i = 0; i < o_ptr->number; i++)
-					charges += randcalc(kind->charge, 0, RANDOMISE);
-
-				/* Use recharged value only if greater */
-				if (charges > o_ptr->pval[DEFAULT_PVAL])
-					o_ptr->pval[DEFAULT_PVAL] = charges;
-			}
-
-			break;
+			/* Use recharged value only if greater */
+			if (charges > obj->pval)
+				obj->pval = charges;
 		}
 	}
 
-	/* Check each existing object (try to combine) */
-	for (slot = 0; slot < store->stock_num; slot++)
-	{
-		/* Get the existing object */
-		j_ptr = &store->stock[slot];
-
+	for (temp_obj = store->stock; temp_obj; temp_obj = temp_obj->next) {
 		/* Can the existing items be incremented? */
-		if (object_similar(j_ptr, o_ptr, OSTACK_STORE))
-		{
+		if (object_similar(temp_obj, obj, OSTACK_STORE)) {
 			/* Absorb (some of) the object */
-			store_object_absorb(j_ptr, o_ptr);
+			store_object_absorb(temp_obj, obj);
 
 			/* All done */
-			return (slot);
+			return temp_obj;
 		}
 	}
 
 	/* No space? */
-	if (store->stock_num >= store->stock_size) {
-		return (-1);
-	}
+	if (store->stock_num >= store->stock_size)
+		return NULL;
 
-	/* Check existing slots to see if we must "slide" */
-	for (slot = 0; slot < store->stock_num; slot++)
-	{
-		/* Get that object */
-		j_ptr = &store->stock[slot];
-
-		/* Objects sort by decreasing type */
-		if (o_ptr->tval > j_ptr->tval) break;
-		if (o_ptr->tval < j_ptr->tval) continue;
-
-		/* Objects sort by increasing sval */
-		if (o_ptr->sval < j_ptr->sval) break;
-		if (o_ptr->sval > j_ptr->sval) continue;
-
-		/* Evaluate that slot */
-		j_value = object_value(j_ptr, 1, FALSE);
-
-		/* Objects sort by decreasing value */
-		if (value > j_value) break;
-		if (value < j_value) continue;
-	}
-
-	/* Slide the others up */
-	for (i = store->stock_num; i > slot; i--)
-	{
-		/* Hack -- slide the objects */
-		object_copy(&store->stock[i], &store->stock[i-1]);
-	}
-
-	/* More stuff now */
+	/* Insert the new object */
+	pile_insert(&store->stock, obj);
 	store->stock_num++;
 
-	/* Hack -- Insert the new object */
-	object_copy(&store->stock[slot], o_ptr);
-
-	/* Return the location */
-	return (slot);
+	return obj;
 }
 
 
-/*
- * Increase, by a 'num', the number of an item 'item' in store 'st'.
- * This can result in zero items.
- */
-static void store_item_increase(struct store *store, int item, int num)
+void store_delete(struct store *s, struct object *obj, int amt)
 {
-	int cnt;
-	object_type *o_ptr;
-
-	/* Get the object */
-	o_ptr = &store->stock[item];
-
-	/* Verify the number */
-	cnt = o_ptr->number + num;
-	if (cnt > 255) cnt = 255;
-	else if (cnt < 0) cnt = 0;
-
-	/* Save the new number */
-	o_ptr->number = cnt;
-}
-
-
-/*
- * Remove a slot if it is empty, in store 'st'.
- */
-static void store_item_optimize(struct store *store, int item)
-{
-	int j;
-	object_type *o_ptr;
-
-	/* Get the object */
-	o_ptr = &store->stock[item];
-
-	/* Must exist */
-	if (!o_ptr->kind) return;
-
-	/* Must have no items */
-	if (o_ptr->number) return;
-
-	/* One less object */
-	store->stock_num--;
-
-	/* Slide everyone */
-	for (j = item; j < store->stock_num; j++)
-	{
-		store->stock[j] = store->stock[j + 1];
+	if (obj->number > amt) {
+		obj->number -= amt;
+	} else {
+		pile_excise(&s->stock, obj);
+		object_delete(&obj);
+		s->stock_num--;
 	}
-
-	/* Nuke the final slot */
-	object_wipe(&store->stock[j]);
 }
 
-
-
-/*
- * Delete an object from store 'st', or, if it is a stack, perhaps only
- * partially delete it.
- */
-static void store_delete_index(struct store *store, int what)
-{
-	int num;
-	object_type *o_ptr;
-
-	/* Paranoia */
-	if (store->stock_num <= 0) return;
-
-	/* Get the object */
-	o_ptr = &store->stock[what];
-
-	/* Determine how many objects are in the slot */
-	num = o_ptr->number;
-
-	/* Deal with stacks */
-	if (num > 1)
-	{
-		/* Special behaviour for arrows, bolts &tc. */
-		switch (o_ptr->tval)
-		{
-			case TV_SHOT:
-			case TV_ARROW:
-			case TV_BOLT:
-			{
-				/* 50% of the time, destroy the entire stack */
-				if (randint0(100) < 50 || num < 10)
-					num = o_ptr->number;
-
-				/* 50% of the time, reduce the size to a multiple of 5 */
-				else
-					num = randint1(num / 5) * 5 + (num % 5);
-
-				break;
-			}
-
-			default:
-			{
-				/* 50% of the time, destroy a single object */
-				if (randint0(100) < 50) num = 1;
-
-				/* 25% of the time, destroy half the objects */
-				else if (randint0(100) < 50) num = (num + 1) / 2;
-				
-				/* 25% of the time, destroy all objects */
-				else num = o_ptr->number;
-
-				/* Hack -- decrement the total charges of staves and wands. */
-				if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
-				{
-					o_ptr->pval[DEFAULT_PVAL] -= num * o_ptr->pval[DEFAULT_PVAL] / o_ptr->number;
-				}
-			}
-		}
-
-	}
-
-	if (o_ptr->artifact)
-		history_lose_artifact(o_ptr->artifact);
-
-	/* Delete the item */
-	store_item_increase(store, what, -num);
-	store_item_optimize(store, what);
-}
 
 /**
  * Find a given object kind in the store.
  */
-static object_type *store_find_kind(struct store *s, object_kind *k) {
-	int slot;
+static struct object *store_find_kind(struct store *s, object_kind *k) {
+	struct object *obj;
 
 	assert(s);
 	assert(k);
 
 	/* Check if it's already in stock */
-	for (slot = 0; slot < s->stock_num; slot++) {
-		if (s->stock[slot].kind == k && !s->stock[slot].ego) {
-			return &s->stock[slot];
-		}
+	for (obj = s->stock; obj; obj = obj->next) {
+		if (obj->kind == k && !obj->ego)
+			return obj;
 	}
 
 	return NULL;
 }
 
 
-/*
- * Delete a random object from store 'st', or, if it is a stack, perhaps only
+/**
+ * Delete an object from store 'store', or, if it is a stack, perhaps only
  * partially delete it.
  *
  * This function is used when store maintainance occurs, and is designed to
@@ -1357,62 +1008,105 @@ static object_type *store_find_kind(struct store *s, object_kind *k) {
 static void store_delete_random(struct store *store)
 {
 	int what;
+	int num;
+	struct object *obj;
 
-	if (store->stock_num <= 0) return;
+	assert(store->stock_num > 0);
 
 	/* Pick a random slot */
 	what = randint0(store->stock_num);
-	store_delete_index(store, what);
+
+	/* Walk through list until we find our item */
+	obj = store->stock;
+	while (what--) {
+		assert(obj);
+		obj = obj->next;
+	}
+
+	/* Determine how many objects are in the slot */
+	num = obj->number;
+
+	/* Deal with stacks */
+	if (num > 1) {
+		/* Special behaviour for arrows, bolts &tc. */
+		if (tval_is_ammo(obj)) {
+			/* 50% of the time, destroy the entire stack */
+			if (randint0(100) < 50 || num < 10)
+				num = obj->number;
+
+			/* 50% of the time, reduce the size to a multiple of 5 */
+			else
+				num = randint1(num / 5) * 5 + (num % 5);
+		} else {
+			/* 50% of the time, destroy a single object */
+			if (randint0(100) < 50) num = 1;
+
+			/* 25% of the time, destroy half the objects */
+			else if (randint0(100) < 50) num = (num + 1) / 2;
+
+			/* 25% of the time, destroy all objects */
+			else num = obj->number;
+
+			/* Hack -- decrement the total charges of staves and wands. */
+			if (tval_can_have_charges(obj))
+				obj->pval -= num * obj->pval / obj->number;
+		}
+	}
+
+	assert (num <= obj->number);
+
+	if (obj->artifact)
+		history_lose_artifact(obj->artifact);
+
+	/* Delete the item, wholly or in part */
+	store_delete(store, obj, num);
 }
 
 
-/*
+/**
  * This makes sure that the black market doesn't stock any object that other
  * stores have, unless it is an ego-item or has various bonuses.
  *
  * Based on a suggestion by Lee Vogt <lvogt@cig.mcel.mot.com>.
  */
-static bool black_market_ok(const object_type *o_ptr)
+static bool black_market_ok(const struct object *obj)
 {
-	int i, j;
+	int i;
 
 	/* Ego items are always fine */
-	if (o_ptr->ego) return (TRUE);
+	if (obj->ego) return TRUE;
 
 	/* Good items are normally fine */
-	if (o_ptr->to_a > 2) return (TRUE);
-	if (o_ptr->to_h > 1) return (TRUE);
-	if (o_ptr->to_d > 2) return (TRUE);
-
+	if (obj->to_a > 2) return TRUE;
+	if (obj->to_h > 1) return TRUE;
+	if (obj->to_d > 2) return TRUE;
 
 	/* No cheap items */
-	if (object_value(o_ptr, 1, FALSE) < 10) return (FALSE);
+	if (object_value(obj, 1, FALSE) < 10) return (FALSE);
 
 	/* Check the other stores */
-	for (i = 0; i < MAX_STORES; i++)
-	{
+	for (i = 0; i < MAX_STORES; i++) {
+		struct object *stock_obj;
+
 		/* Skip home and black market */
 		if (i == STORE_B_MARKET || i == STORE_HOME)
 			continue;
 
 		/* Check every object in the store */
-		for (j = 0; j < stores[i].stock_num; j++)
-		{
-			object_type *j_ptr = &stores[i].stock[j];
-
+		for (stock_obj = stores[i].stock; stock_obj; stock_obj = stock_obj->next) {
 			/* Compare object kinds */
-			if (o_ptr->kind == j_ptr->kind)
-				return (FALSE);
+			if (obj->kind == stock_obj->kind)
+				return FALSE;
 		}
 	}
 
 	/* Otherwise fine */
-	return (TRUE);
+	return TRUE;
 }
 
 
 
-/*
+/**
  * Get a choice from the store allocation table, in tables.c
  */
 static object_kind *store_get_choice(struct store *store)
@@ -1422,38 +1116,34 @@ static object_kind *store_get_choice(struct store *store)
 }
 
 
-/*
- * Creates a random object and gives it to store 'st'
+/**
+ * Creates a random object and gives it to store 'store'
  */
 static bool store_create_random(struct store *store)
 {
 	int tries, level;
 
-	object_type *i_ptr;
-	object_type object_type_body;
-
 	int min_level, max_level;
 
 	/* Decide min/max levels */
 	if (store->sidx == STORE_B_MARKET) {
-		min_level = p_ptr->max_depth + 5;
-		max_level = p_ptr->max_depth + 20;
+		min_level = player->max_depth + 5;
+		max_level = player->max_depth + 20;
 	} else {
 		min_level = 1;
-		max_level = STORE_OBJ_LEVEL + MAX(p_ptr->max_depth - 20, 0);
+		max_level = z_info->store_magic_level + MAX(player->max_depth - 20, 0);
 	}
 
 	if (min_level > 55) min_level = 55;
 	if (max_level > 70) max_level = 70;
 
 	/* Consider up to six items */
-	for (tries = 0; tries < 6; tries++)
-	{
-		object_kind *kind;
+	for (tries = 0; tries < 6; tries++) {
+		struct object_kind *kind;
+		struct object *obj;
 
 		/* Work out the level for objects to be generated at */
 		level = rand_range(min_level, max_level);
-
 
 		/* Black Markets have a random object, of a given level */
 		if (store->sidx == STORE_B_MARKET)
@@ -1466,72 +1156,54 @@ static bool store_create_random(struct store *store)
 		/* No chests in stores XXX */
 		if (kind->tval == TV_CHEST) continue;
 
-
 		/*** Generate the item ***/
 
-		/* Get local object */
-		i_ptr = &object_type_body;
-
 		/* Create a new object of the chosen kind */
-		object_prep(i_ptr, kind, level, RANDOMISE);
+		obj = object_new();
+		object_prep(obj, kind, level, RANDOMISE);
 
 		/* Apply some "low-level" magic (no artifacts) */
-		apply_magic(i_ptr, level, FALSE, FALSE, FALSE, FALSE);
+		apply_magic(obj, level, FALSE, FALSE, FALSE, FALSE);
 
 		/* Reject if item is 'damaged' (i.e. negative mods) */
-		switch (i_ptr->tval)
-		{
-			case TV_DIGGING:
-			case TV_HAFTED:
-			case TV_POLEARM:
-			case TV_SWORD:
-			case TV_BOW:
-			case TV_SHOT:
-			case TV_ARROW:
-			case TV_BOLT:
-			{
-				if ((i_ptr->to_h < 0) || (i_ptr->to_d < 0)) 
-					continue;
+		if (tval_is_weapon(obj)) {
+			if ((obj->to_h < 0) || (obj->to_d < 0)) {
+				object_delete(&obj);
+				continue;
 			}
-
-			case TV_DRAG_ARMOR:
-			case TV_HARD_ARMOR:
-			case TV_SOFT_ARMOR:
-			case TV_SHIELD:
-			case TV_HELM:
-			case TV_CROWN:
-			case TV_CLOAK:
-			case TV_GLOVES:
-			case TV_BOOTS:
-			{
-				if (i_ptr->to_a < 0) continue;
-			}
-
-			default:
-			{
-				/* nothing to do */
+		} else if (tval_is_armor(obj)) {
+			if (obj->to_a < 0) {
+				object_delete(&obj);
+				continue;
 			}
 		}
 
-		/* The object is "known" and belongs to a store */
-		i_ptr->ident |= IDENT_STORE;
-		i_ptr->origin = ORIGIN_STORE;
-
+		/* Know everything but flavor, no origin yet */
+		object_know_all_but_flavor(obj);
+		obj->origin = ORIGIN_NONE;
 
 		/*** Post-generation filters ***/
 
 		/* Black markets have expensive tastes */
-		if ((store->sidx == STORE_B_MARKET) && !black_market_ok(i_ptr))
+		if ((store->sidx == STORE_B_MARKET) && !black_market_ok(obj)) {
+			object_delete(&obj);
 			continue;
+		}
 
 		/* No "worthless" items */
-		if (object_value(i_ptr, 1, FALSE) < 1) continue;
+		if (object_value(obj, 1, FALSE) < 1)  {
+			object_delete(&obj);
+			continue;
+		}
 
 		/* Mass produce and/or apply discount */
-		mass_produce(i_ptr);
+		mass_produce(obj);
 
 		/* Attempt to carry the object */
-		(void)store_carry(store, i_ptr);
+		if (!store_carry(store, obj)) {
+			object_delete(&obj);
+			continue;
+		}
 
 		/* Definitely done */
 		return TRUE;
@@ -1541,45 +1213,42 @@ static bool store_create_random(struct store *store)
 }
 
 
-/*
+/**
  * Helper function: create an item with the given tval,sval pair, add it to the
- * store st.  Return the slot in the inventory.
+ * store st.  Return the item in the inventory.
  */
-static int store_create_item(struct store *store, object_kind *kind)
+static struct object *store_create_item(struct store *store, object_kind *kind)
 {
-	object_type object = { 0 };
+	struct object *obj = object_new();
 
 	/* Create a new object of the chosen kind */
-	object_prep(&object, kind, 0, RANDOMISE);
+	object_prep(obj, kind, 0, RANDOMISE);
 
-	/* Item belongs to a store */
-	object.ident |= IDENT_STORE;
-	object.origin = ORIGIN_STORE;
+	/* Know everything but flavor, no origin yet */
+	object_know_all_but_flavor(obj);
+	obj->origin = ORIGIN_NONE;
 
 	/* Attempt to carry the object */
-	return store_carry(store, &object);
+	return store_carry(store, obj);
 }
 
-
-/*
+/**
  * Maintain the inventory at the stores.
  */
-void store_maint(struct store *s)
+static void store_maint(struct store *s)
 {
-	int j;
-
 	/* Ignore home */
 	if (s->sidx == STORE_HOME)
 		return;
 
 	/* Destroy crappy black market items */
 	if (s->sidx == STORE_B_MARKET) {
-		for (j = s->stock_num - 1; j >= 0; j--) {
-			object_type *o_ptr = &s->stock[j];
-			if (!black_market_ok(o_ptr)) {
-				store_item_increase(s, j, 0 - o_ptr->number);
-				store_item_optimize(s, j);
-			}
+		struct object *obj = s->stock;
+		while (obj) {
+			struct object *next = obj->next;
+			if (!black_market_ok(obj))
+				store_delete(s, obj, obj->number);
+			obj = next;
 		}
 	}
 
@@ -1614,10 +1283,6 @@ void store_maint(struct store *s)
 		int min = 0;
 		int max = s->normal_stock_max;
 
-		/* Sell a few items */
-		stock = s->stock_num;
-		stock -= randint1(s->turnover);
-
 		if (stock < min) stock = min;
 		if (stock > max) stock = max;
 
@@ -1626,24 +1291,23 @@ void store_maint(struct store *s)
 			store_delete_random(s);
 
 		if (!restock_attempts)
-			quit_fmt("Unable to (de-)stock store %d. Please report this bug", s->sidx + 1);
+			quit_fmt("Unable to (de-)stock store %d. Please report this bug",
+					 s->sidx + 1);
 	}
 
 	/* Ensure staples are created */
 	if (s->always_num) {
 		size_t i;
 		for (i = 0; i < s->always_num; i++) {
-			object_kind *k = s->always_table[i];
-			object_type *o = store_find_kind(s, k);
-			if (o) {
-				/* ensure a full stack */
-				o->number = MAX_STACK_SIZE - 1;
-			} else {
-				/* Now create the item */
-				int slot = store_create_item(s, k);
-				struct object *o = &s->stock[slot];
-				o->number = MAX_STACK_SIZE - 1;
-			}
+			object_kind *kind = s->always_table[i];
+			struct object *obj = store_find_kind(s, kind);
+
+			/* Create the item if it doesn't exist */
+			if (!obj)
+				obj = store_create_item(s, kind);
+
+			/* Snsure a full stack */
+			obj->number = z_info->stack_size;
 		}
 	}
 
@@ -1671,10 +1335,50 @@ void store_maint(struct store *s)
 		while (s->stock_num < stock && --restock_attempts)
 			store_create_random(s);
 
-
 		if (!restock_attempts)
 			quit_fmt("Unable to (re-)stock store %d. Please report this bug", s->sidx + 1);
 	}
+}
+
+/**
+ * Update the stores on the return to town.
+ */
+void store_update(void)
+{
+	if (OPT(cheat_xtra)) msg("Updating Shops...");
+	while (daycount--)
+	{
+		int n;
+
+		/* Maintain each shop (except home) */
+		for (n = 0; n < MAX_STORES; n++)
+		{
+			/* Skip the home */
+			if (n == STORE_HOME) continue;
+
+			/* Maintain */
+			store_maint(&stores[n]);
+		}
+
+		/* Sometimes, shuffle the shop-keepers */
+		if (one_in_(z_info->store_shuffle))
+		{
+			/* Message */
+			if (OPT(cheat_xtra)) msg("Shuffling a Shopkeeper...");
+
+			/* Pick a random shop (except home) */
+			while (1)
+			{
+				n = randint0(MAX_STORES);
+				if (n != STORE_HOME) break;
+			}
+
+			/* Shuffle it */
+			store_shuffle(&stores[n]);
+		}
+	}
+	daycount = 0;
+	if (OPT(cheat_xtra)) msg("Done.");
 }
 
 /** Owner stuff **/
@@ -1702,7 +1406,7 @@ static struct owner *store_choose_owner(struct store *s) {
 	return store_ownerbyidx(s, n);
 }
 
-/*
+/**
  * Shuffle one of the stores.
  */
 void store_shuffle(struct store *store)
@@ -1717,325 +1421,34 @@ void store_shuffle(struct store *store)
 
 
 
-/*** Display code ***/
 
+/**
+ * ------------------------------------------------------------------------
+ * Higher-level code
+ * ------------------------------------------------------------------------ */
 
-/*
- * This function sets up screen locations based on the current term size.
- *
- * Current screen layout:
- *  line 0: reserved for messages
- *  line 1: shopkeeper and their purse / item buying price
- *  line 2: empty
- *  line 3: table headers
- *
- *  line 4: Start of items
- *
- * If help is turned off, then the rest of the display goes as:
- *
- *  line (height - 4): end of items
- *  line (height - 3): "more" prompt
- *  line (height - 2): empty
- *  line (height - 1): Help prompt and remaining gold
- *
- * If help is turned on, then the rest of the display goes as:
- *
- *  line (height - 7): end of items
- *  line (height - 6): "more" prompt
- *  line (height - 4): gold remaining
- *  line (height - 3): command help 
- */
-static void store_display_recalc(menu_type *m)
-{
-	int wid, hgt;
-	region loc;
 
-	struct store *store = current_store();
-
-	Term_get_size(&wid, &hgt);
-
-	/* Clip the width at a maximum of 104 (enough room for an 80-char item name) */
-	if (wid > 104) wid = 104;
-
-	/* Clip the text_out function at two smaller than the screen width */
-	text_out_wrap = wid - 2;
-
-
-	/* X co-ords first */
-	scr_places_x[LOC_PRICE] = wid - 14;
-	scr_places_x[LOC_AU] = wid - 26;
-	scr_places_x[LOC_OWNER] = wid - 2;
-	scr_places_x[LOC_WEIGHT] = wid - 14;
-
-	/* Add space for for prices */
-	if (store->sidx != STORE_HOME)
-		scr_places_x[LOC_WEIGHT] -= 10;
-
-	/* Then Y */
-	scr_places_y[LOC_OWNER] = 1;
-	scr_places_y[LOC_HEADER] = 3;
-
-	/* If we are displaying help, make the height smaller */
-	if (store_flags & (STORE_SHOW_HELP))
-		hgt -= 3;
-
-	scr_places_y[LOC_MORE] = hgt - 3;
-	scr_places_y[LOC_AU] = hgt - 1;
-
-	loc = m->boundary;
-
-	/* If we're displaying the help, then put it with a line of padding */
-	if (store_flags & (STORE_SHOW_HELP))
-	{
-		scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
-		scr_places_y[LOC_HELP_PROMPT] = hgt;
-		loc.page_rows = -5;
-	}
-	else
-	{
-		scr_places_y[LOC_HELP_CLEAR] = hgt - 2;
-		scr_places_y[LOC_HELP_PROMPT] = hgt - 1;
-		loc.page_rows = -2;
-	}
-
-	menu_layout(m, &loc);
-}
-
-
-/*
- * Redisplay a single store entry
- */
-static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	object_type *o_ptr;
-	s32b x;
-	int desc = ODESC_PREFIX;
-
-	char o_name[80];
-	char out_val[160];
-	byte colour;
-
-	struct store *store = current_store();
-
-	assert(store);
-
-	/* Get the object */
-	o_ptr = &store->stock[oid];
-
-	/* Describe the object - preserving insriptions in the home */
-	if (store->sidx == STORE_HOME) desc = ODESC_FULL;
-	else desc = ODESC_FULL | ODESC_STORE;
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | desc);
-
-	/* Display the object */
-	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
-
-	/* Show weights */
-	colour = curs_attrs[CURS_KNOWN][(int)cursor];
-	strnfmt(out_val, sizeof out_val, "%3d.%d lb", o_ptr->weight / 10, o_ptr->weight % 10);
-	c_put_str(colour, out_val, row, scr_places_x[LOC_WEIGHT]);
-
-	/* Describe an object (fully) in a store */
-	if (store->sidx != STORE_HOME)
-	{
-		/* Extract the "minimum" price */
-		x = price_item(o_ptr, FALSE, 1);
-
-		/* Make sure the player can afford it */
-		if ((int) p_ptr->au < (int) x)
-			colour = curs_attrs[CURS_UNKNOWN][(int)cursor];
-
-		/* Actually draw the price */
-		if (((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF)) &&
-		    (o_ptr->number > 1))
-			strnfmt(out_val, sizeof out_val, "%9ld avg", (long)x);
-		else
-			strnfmt(out_val, sizeof out_val, "%9ld    ", (long)x);
-
-		c_put_str(colour, out_val, row, scr_places_x[LOC_PRICE]);
-	}
-}
-
-
-/*
- * Display store (after clearing screen)
- */
-static void store_display_frame(void)
-{
-	char buf[80];
-	struct store *store = current_store();
-	owner_type *ot_ptr = store->owner;
-
-	/* Clear screen */
-	Term_clear();
-
-	/* The "Home" is special */
-	if (store->sidx == STORE_HOME)
-	{
-		/* Put the owner name */
-		put_str("Your Home", scr_places_y[LOC_OWNER], 1);
-
-		/* Label the object descriptions */
-		put_str("Home Inventory", scr_places_y[LOC_HEADER], 1);
-
-		/* Show weight header */
-		put_str("Weight", scr_places_y[LOC_HEADER], scr_places_x[LOC_WEIGHT] + 2);
-	}
-
-	/* Normal stores */
-	else
-	{
-		const char *store_name = store->name;
-		const char *owner_name = ot_ptr->name;
-
-		/* Put the owner name */
-		put_str(owner_name, scr_places_y[LOC_OWNER], 1);
-
-		/* Show the max price in the store (above prices) */
-		strnfmt(buf, sizeof(buf), "%s (%ld)", store_name, (long)(ot_ptr->max_cost));
-		prt(buf, scr_places_y[LOC_OWNER], scr_places_x[LOC_OWNER] - strlen(buf));
-
-		/* Label the object descriptions */
-		put_str("Store Inventory", scr_places_y[LOC_HEADER], 1);
-
-		/* Showing weight label */
-		put_str("Weight", scr_places_y[LOC_HEADER], scr_places_x[LOC_WEIGHT] + 2);
-
-		/* Label the asking price (in stores) */
-		put_str("Price", scr_places_y[LOC_HEADER], scr_places_x[LOC_PRICE] + 4);
-	}
-}
-
-
-/*
- * Display help.
- */
-static void store_display_help(void)
-{
-	int help_loc = scr_places_y[LOC_HELP_PROMPT];
-	struct store *store = current_store();
-	bool is_home = (store->sidx == STORE_HOME) ? TRUE : FALSE;
-
-	/* Clear */
-	clear_from(scr_places_y[LOC_HELP_CLEAR]);
-
-	/* Prepare help hooks */
-	text_out_hook = text_out_to_screen;
-	text_out_indent = 1;
-	Term_gotoxy(1, help_loc);
-
-	if (OPT(rogue_like_commands))
-		text_out_c(TERM_L_GREEN, "x");
-	else
-		text_out_c(TERM_L_GREEN, "l");
-
-	text_out(" examines");
-	if (store_knowledge == STORE_NONE)
-	{
-		text_out(" and ");
-		text_out_c(TERM_L_GREEN, "p");
-
-		if (is_home) text_out(" picks up");
-		else text_out(" purchases");
-	}
-	text_out(" the selected item. ");
-
-	if (store_knowledge == STORE_NONE) {
-		if (OPT(birth_no_selling)) {
-			text_out_c(TERM_L_GREEN, "d");
-			text_out(" gives an item to the store in return for its identification. Some wands and staves will also be recharged. ");
-		} else {
-			text_out_c(TERM_L_GREEN, "d");
-			if (is_home) text_out(" drops");
-			else text_out(" sells");
-			text_out(" an item from your inventory. ");
-		}
-	} else {
-		text_out_c(TERM_L_GREEN, "I");
-		text_out("' inspects an item from your inventory. ");
-	}
-
-	text_out_c(TERM_L_GREEN, "ESC");
-	if (store_knowledge == STORE_NONE)
-		text_out(" exits the building.");
-	else
-		text_out(" exits this screen.");
-
-	text_out_indent = 0;
-}
-
-/*
- * Decides what parts of the store display to redraw.  Called on terminal
- * resizings and the redraw command.
- */
-static void store_redraw(void)
-{
-	if (store_flags & (STORE_FRAME_CHANGE))
-	{
-		store_display_frame();
-
-		if (store_flags & STORE_SHOW_HELP)
-			store_display_help();
-		else
-			prt("Press '?' for help.", scr_places_y[LOC_HELP_PROMPT], 1);
-
-		store_flags &= ~(STORE_FRAME_CHANGE);
-	}
-
-	if (store_flags & (STORE_GOLD_CHANGE))
-	{
-		prt(format("Gold Remaining: %9ld", (long)p_ptr->au),
-		    scr_places_y[LOC_AU], scr_places_x[LOC_AU]);
-		store_flags &= ~(STORE_GOLD_CHANGE);
-	}
-}
-
-
-/*** Higher-level code ***/
-
-
-static bool store_get_check(const char *prompt)
-{
-	struct keypress ch;
-
-	/* Prompt for it */
-	prt(prompt, 0, 0);
-
-	/* Get an answer */
-	ch = inkey();
-
-	/* Erase the prompt */
-	prt("", 0, 0);
-
-	if (ch.code == ESCAPE) return (FALSE);
-	if (strchr("Nn", ch.code)) return (FALSE);
-
-	/* Success */
-	return (TRUE);
-}
-
-
-/*
+/**
  * Return the quantity of a given item in the pack (include quiver).
  */
-static int find_inven(const object_type *o_ptr)
+int find_inven(const struct object *obj)
 {
-	int i, j;
+	int i;
+	struct object *gear_obj;
 	int num = 0;
 
 	/* Similar slot? */
-	for (j = 0; j < QUIVER_END; j++)
-	{
-		object_type *j_ptr = &p_ptr->inventory[j];
-
+	for (gear_obj = player->gear; gear_obj; gear_obj = gear_obj->next) {
 		/* Check only the inventory and the quiver */
-		if (j >= INVEN_WIELD && j < QUIVER_START) continue;
+		if (object_is_equipped(player->body, gear_obj))
+			continue;
 
 		/* Require identical object types */
-		if (o_ptr->kind != j_ptr->kind) continue;
+		if (obj->kind != gear_obj->kind)
+			continue;
 
 		/* Analyze the items */
-		switch (o_ptr->tval)
+		switch (obj->tval)
 		{
 			/* Chests */
 			case TV_CHEST:
@@ -2046,6 +1459,7 @@ static int find_inven(const object_type *o_ptr)
 
 			/* Food and Potions and Scrolls */
 			case TV_FOOD:
+			case TV_MUSHROOM:
 			case TV_POTION:
 			case TV_SCROLL:
 			{
@@ -2093,7 +1507,8 @@ static int find_inven(const object_type *o_ptr)
 			case TV_LIGHT:
 			{
 				/* Require both items to be known */
-				if (!object_is_known(o_ptr) || !object_is_known(j_ptr)) continue;
+				if (!object_is_known(obj) || !object_is_known(gear_obj))
+					continue;
 
 				/* Fall through */
 			}
@@ -2104,35 +1519,42 @@ static int find_inven(const object_type *o_ptr)
 			case TV_SHOT:
 			{
 				/* Require identical knowledge of both items */
-				if (object_is_known(o_ptr) != object_is_known(j_ptr)) continue;
-
-				/* Require identical "bonuses" */
-				if (o_ptr->to_h != j_ptr->to_h) continue;
-				if (o_ptr->to_d != j_ptr->to_d) continue;
-				if (o_ptr->to_a != j_ptr->to_a) continue;
-
-				/* Require identical "pval" codes */
-				for (i = 0; i < MAX_PVALS; i++)
-					if (o_ptr->pval[i] != j_ptr->pval[i])
-						continue;
-
-				if (o_ptr->num_pvals != j_ptr->num_pvals)
+				if (object_is_known(obj) != object_is_known(gear_obj))
 					continue;
 
+				/* Require identical "bonuses" */
+				if (obj->to_h != gear_obj->to_h)
+					continue;
+				if (obj->to_d != gear_obj->to_d)
+					continue;
+				if (obj->to_a != gear_obj->to_a)
+					continue;
+
+				/* Require identical modifiers */
+				for (i = 0; i < OBJ_MOD_MAX; i++)
+					if (obj->modifiers[i] != gear_obj->modifiers[i])
+						continue;
+
 				/* Require identical "artifact" names */
-				if (o_ptr->artifact != j_ptr->artifact) continue;
+				if (obj->artifact != gear_obj->artifact)
+					continue;
 
 				/* Require identical "ego-item" names */
-				if (o_ptr->ego != j_ptr->ego) continue;
+				if (obj->ego != gear_obj->ego)
+					continue;
 
 				/* Lights must have same amount of fuel */
-				else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LIGHT)
+				else if (obj->timeout != gear_obj->timeout &&
+						 tval_is_light(obj))
 					continue;
 
 				/* Require identical "values" */
-				if (o_ptr->ac != j_ptr->ac) continue;
-				if (o_ptr->dd != j_ptr->dd) continue;
-				if (o_ptr->ds != j_ptr->ds) continue;
+				if (obj->ac != gear_obj->ac)
+					continue;
+				if (obj->dd != gear_obj->dd)
+					continue;
+				if (obj->ds != gear_obj->ds)
+					continue;
 
 				/* Probably okay */
 				break;
@@ -2142,7 +1564,8 @@ static int find_inven(const object_type *o_ptr)
 			default:
 			{
 				/* Require knowledge */
-				if (!object_is_known(o_ptr) || !object_is_known(j_ptr)) continue;
+				if (!object_is_known(obj) || !object_is_known(gear_obj))
+					continue;
 
 				/* Probably okay */
 				break;
@@ -2151,130 +1574,125 @@ static int find_inven(const object_type *o_ptr)
 
 
 		/* Different flags */
-		if (!of_is_equal(o_ptr->flags, j_ptr->flags))
+		if (!of_is_equal(obj->flags, gear_obj->flags))
 			continue;
 
 		/* They match, so add up */
-		num += j_ptr->number;
+		num += gear_obj->number;
 	}
 
 	return num;
 }
 
 
-/*
+/**
  * Buy the item with the given index from the current store's inventory.
  */
-void do_cmd_buy(cmd_code code, cmd_arg args[])
+void do_cmd_buy(struct command *cmd)
 {
-	int item = args[0].item;
-	int amt = args[1].number;
+	int amt;
 
-	object_type *o_ptr;	
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
+	struct object *obj;	
+	struct object *bought = mem_zalloc(sizeof(*bought));
 
 	char o_name[80];
-	int price, item_new;
+	int price;
 
-	struct store *store = current_store();
+	struct store *store = store_at(cave, player->py, player->px);
 
 	if (!store) {
 		msg("You cannot purchase items when not in a store.");
 		return;
 	}
 
-	/* Get the actual object */
-	o_ptr = &store->stock[item];
+	/* Get arguments */
+	/* XXX-AS fill this out, split into cmd-store.c */
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK)
+		return;
+
+	if (!pile_contains(store->stock, obj)) {
+		msg("You cannot buy that item because it's not in the store.");
+		return;
+	}
+
+	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
+		return;
 
 	/* Get desired object */
-	object_copy_amt(i_ptr, o_ptr, amt);
+	object_copy_amt(bought, obj, amt);
 
 	/* Ensure we have room */
-	if (!inven_carry_okay(i_ptr))
-	{
+	if (!inven_carry_okay(bought)) {
 		msg("You cannot carry that many items.");
+		object_delete(&bought);
 		return;
 	}
 
 	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), bought, ODESC_PREFIX | ODESC_FULL);
 
 	/* Extract the price for the entire stack */
-	price = price_item(i_ptr, FALSE, i_ptr->number);
+	price = price_item(store, bought, FALSE, bought->number);
 
-	if (price > p_ptr->au)
-	{
+	if (price > player->au) {
 		msg("You cannot afford that purchase.");
+		object_delete(&bought);
 		return;
 	}
 
 	/* Spend the money */
-	p_ptr->au -= price;
+	player->au -= price;
 
-	/* Update the display */
-	store_flags |= STORE_GOLD_CHANGE;
+	/* Completely ID objects on buy */
+	object_flavor_aware(bought);
 
-	/* ID objects on buy */
-	object_notice_everything(i_ptr);
+	/* Update the gear */
+	player->upkeep->update |= (PU_INVEN);
 
-	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER | PN_SQUELCH);
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
 
-	/* The object no longer belongs to the store */
-	i_ptr->ident &= ~(IDENT_STORE);
+	/* Describe the object (fully) again for the message */
+	object_desc(o_name, sizeof(o_name), bought, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
 	if (one_in_(3)) msgt(MSG_STORE5, "%s", ONE_OF(comment_accept));
-	msg("You bought %s for %ld gold.", o_name, (long)price);
+	msg("You bought %s for %d gold.", o_name, price);
 
 	/* Erase the inscription */
-	i_ptr->note = 0;
+	bought->note = 0;
 
-	/* Give it to the player */
-	item_new = inven_carry(p_ptr, i_ptr);
-
-	/* Message */
-	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],
-				ODESC_PREFIX | ODESC_FULL);
-	msg("You have %s (%c).", o_name, index_to_label(item_new));
+	/* Give it an origin if it doesn't have one */
+	if (bought->origin == ORIGIN_NONE)
+		bought->origin = ORIGIN_STORE;
 
 	/* Hack - Reduce the number of charges in the original stack */
-	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
-	{
-		o_ptr->pval[DEFAULT_PVAL] -= i_ptr->pval[DEFAULT_PVAL];
-	}
+	if (tval_can_have_charges(obj))
+		obj->pval -= bought->pval;
+
+	/* Give it to the player */
+	(void) inven_carry(player, bought, TRUE, TRUE);
 
 	/* Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* Remove the bought objects from the store if it's not a staple */
-	if (!store_is_staple(store, store->stock[item].kind)) {
-		store_item_increase(store, item, -amt);
-		store_item_optimize(store, item);
+	if (!store_is_staple(store, obj->kind)) {
+		/* Reduce or remove the item */
+		store_delete(store, obj, amt);
 
 		/* Store is empty */
-		if (store->stock_num == 0)
-		{
+		if (store->stock_num == 0) {
 			int i;
 
-			/* Shuffle */
-			if (one_in_(STORE_SHUFFLE))
-			{
-				/* Message */
+			/* Sometimes shuffle the shopkeeper */
+			if (one_in_(z_info->store_shuffle)) {
+				/* Shuffle */
 				msg("The shopkeeper retires.");
-
-				/* Shuffle the store */
 				store_shuffle(store);
-				store_flags |= STORE_FRAME_CHANGE;
-			}
-
-			/* Maintain */
-			else
-			{
-				/* Message */
+			} else
+				/* Maintain */
 				msg("The shopkeeper brings out some new stock.");
-			}
 
 			/* New inventory */
 			for (i = 0; i < 10; ++i)
@@ -2282,240 +1700,115 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 		}
 	}
 
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
 
-/*
+/**
  * Retrieve the item with the given index from the home's inventory.
  */
-void do_cmd_retrieve(cmd_code code, cmd_arg args[])
+void do_cmd_retrieve(struct command *cmd)
 {
-	int item = args[0].item;
-	int amt = args[1].number;
+	int amt;
 
-	object_type *o_ptr;	
-	object_type picked_item;
-	char o_name[80];
-	int item_new;
+	struct object *obj;	
+	struct object *picked_item;
 
-	struct store *store = current_store();
+	struct store *store = store_at(cave, player->py, player->px);
 
 	if (store->sidx != STORE_HOME) {
 		msg("You are not currently at home.");
 		return;
 	}
 
-	/* Get the actual object */
-	o_ptr = &store->stock[item];
+	/* Get arguments */
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK)
+		return;
+
+	if (!pile_contains(store->stock, obj)) {
+		msg("You cannot retrieve that item because it's not in the home.");
+		return;
+	}
+
+	if (cmd_get_arg_number(cmd, "quantity", &amt) != CMD_OK)
+		return;
 
 	/* Get desired object */
-	object_copy_amt(&picked_item, o_ptr, amt);
+	picked_item = object_new();
+	object_copy_amt(picked_item, obj, amt);
 
 	/* Ensure we have room */
-	if (!inven_carry_okay(&picked_item))
-	{
+	if (!inven_carry_okay(picked_item)) {
 		msg("You cannot carry that many items.");
+		object_delete(&picked_item);
 		return;
 	}
 
 	/* Distribute charges of wands, staves, or rods */
-	distribute_charges(o_ptr, &picked_item, amt);
+	distribute_charges(obj, picked_item, amt);
 	
 	/* Give it to the player */
-	item_new = inven_carry(p_ptr, &picked_item);
+	(void) inven_carry(player, picked_item, TRUE, TRUE);
 
-	/* Describe just the result */
-	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],
-				ODESC_PREFIX | ODESC_FULL);
-	
-	/* Message */
-	msg("You have %s (%c).", o_name, index_to_label(item_new));
-	
 	/* Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 	
-	/* Remove the items from the home */
-	store_item_increase(store, item, -amt);
-	store_item_optimize(store, item);
-	
+	/* Reduce or remove the item */
+	store_delete(store, obj, amt);
+
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
 
-/*
- * Buy an object from a store
- */
-static bool store_purchase(int item)
-{
-	int amt, num;
 
-	object_type *o_ptr;
-
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
-
-	char o_name[80];
-
-	s32b price;
-
-	struct store *store = current_store();
-
-	if (!store) {
-		msg("You cannot purchase items when not in a store.");
-		return FALSE;
-	}
-
-	if (item < 0) return FALSE;
-
-	/* Get the actual object */
-	o_ptr = &store->stock[item];
-
-	/* Clear all current messages */
-	msg_flag = FALSE;
-	prt("", 0, 0);
-
-	if (store->sidx == STORE_HOME) {
-		amt = o_ptr->number;
-	} else {
-		/* Price of one */
-		price = price_item(o_ptr, FALSE, 1);
-
-		/* Check if the player can afford any at all */
-		if ((u32b)p_ptr->au < (u32b)price)
-		{
-			/* Tell the user */
-			msg("You do not have enough gold for this item.");
-
-			/* Abort now */
-			return FALSE;
-		}
-
-		/* Work out how many the player can afford */
-		if (price == 0)
-			amt = o_ptr->number; /* Prevent division by zero */
-		else
-			amt = p_ptr->au / price;
-
-		if (amt > o_ptr->number) amt = o_ptr->number;
-		
-		/* Double check for wands/staves */
-		if ((p_ptr->au >= price_item(o_ptr, FALSE, amt+1)) && (amt < o_ptr->number))
-			amt++;
-
-	}
-
-	/* Find the number of this item in the inventory */
-	if (!object_flavor_is_aware(o_ptr))
-		num = 0;
-	else
-		num = find_inven(o_ptr);
-
-	strnfmt(o_name, sizeof o_name, "%s how many%s? (max %d) ",
-	        (store->sidx == STORE_HOME) ? "Take" : "Buy",
-	        num ? format(" (you have %d)", num) : "", amt);
-
-	/* Get a quantity */
-	amt = get_quantity(o_name, amt);
-
-	/* Allow user abort */
-	if (amt <= 0) return FALSE;
-
-	/* Get desired object */
-	object_copy_amt(i_ptr, o_ptr, amt);
-
-	/* Ensure we have room */
-	if (!inven_carry_okay(i_ptr))
-	{
-		msg("You cannot carry that many items.");
-		return FALSE;
-	}
-
-	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL |
-		ODESC_STORE);
-
-	/* Attempt to buy it */
-	if (store->sidx != STORE_HOME)
-	{
-		bool response;
-
-		/* Extract the price for the entire stack */
-		price = price_item(i_ptr, FALSE, i_ptr->number);
-
-		screen_save();
-
-		/* Show price */
-		prt(format("Price: %d", price), 1, 0);
-
-		/* Confirm purchase */
-		response = store_get_check(format("Buy %s? [ESC, any other key to accept]", o_name));
-		screen_load();
-
-		/* Negative response, so give up */
-		if (!response) return FALSE;
-
-		cmd_insert(CMD_BUY);
-		cmd_set_arg_choice(cmd_get_top(), 0, item);
-		cmd_set_arg_number(cmd_get_top(), 1, amt);
-	}
-
-	/* Home is much easier */
-	else
-	{
-		cmd_insert(CMD_RETRIEVE);
-		cmd_set_arg_choice(cmd_get_top(), 0, item);
-		cmd_set_arg_number(cmd_get_top(), 1, amt);
-	}
-
-	/* Not kicked out */
-	return TRUE;
-}
-
-
-
-/*
+/**
  * Determine if the current store will purchase the given object
  */
-static bool store_will_buy_tester(const object_type *o_ptr)
+bool store_will_buy_tester(const struct object *obj)
 {
-	struct store *store = current_store();
+	struct store *store = store_at(cave, player->py, player->px);
 	if (!store) return FALSE;
 
 	if (OPT(birth_no_selling)) {
-		switch (o_ptr->tval) {
-			case TV_STAFF:
-			case TV_WAND:
-				if (!store_can_carry(store, o_ptr->kind) && object_is_known(o_ptr))
-					return FALSE;
-				break;
-
-			default:
-				if (object_is_known(o_ptr))
-					return FALSE;
+		if (tval_can_have_charges(obj)) {
+			if (!store_can_carry(store, obj->kind) && object_is_known(obj))
+				return FALSE;
+		} else {
+			if (object_is_known(obj))
+				return FALSE;
 		}
 	}
 
-	return store_will_buy(store, o_ptr);
+	return store_will_buy(store, obj);
 }
 
-/*
+/**
  * Sell an item to the current store.
  */
-void do_cmd_sell(cmd_code code, cmd_arg args[])
+void do_cmd_sell(struct command *cmd)
 {
-	int item = args[0].item;
-	int amt = args[1].number;
-	object_type sold_item;
-	struct store *store = current_store();
+	int amt;
+	struct object dummy_item;
+	struct store *store = store_at(cave, player->py, player->px);
 	int price, dummy, value;
 	char o_name[120];
+	char label;
 
-	/* Get the item */
-	object_type *o_ptr = object_from_item_idx(item);
+	struct object *obj, *sold_item;
+	bool none_left = FALSE;
+
+	/* Get arguments */
+	/* XXX-AS fill this out, split into cmd-store.c */
+	if (cmd_get_arg_item(cmd, "item", &obj) != CMD_OK)
+		return;
+
+	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
+		return;
 
 	/* Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags)) {
+	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
 		msg("Hmmm, it seems to be cursed.");
 		return;
 	}
@@ -2527,688 +1820,139 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	}
 
 	/* Check the store wants the items being sold */
-	if (!store_will_buy(store, o_ptr)) {
+	if (!store_will_buy(store, obj)) {
 		msg("I do not wish to purchase this item.");
 		return;
 	}
 
 	/* Get a copy of the object representing the number being sold */
-	object_copy_amt(&sold_item, o_ptr, amt);
+	object_copy_amt(&dummy_item, obj, amt);
 
 	/* Check if the store has space for the items */
-	if (!store_check_num(store, &sold_item))
-	{
+	if (!store_check_num(store, &dummy_item)) {
 		msg("I have not the room in my store to keep it.");
 		return;
 	}
 
-	price = price_item(&sold_item, TRUE, amt);
+	/* Get the label */
+	label = gear_to_label(obj);
+
+	price = price_item(store, &dummy_item, TRUE, amt);
 
 	/* Get some money */
-	p_ptr->au += price;
+	player->au += price;
 
-	/* Update the display */
-	store_flags |= STORE_GOLD_CHANGE;
+	/* Update the auto-history if selling an artifact that was previously
+	 * un-IDed. (Ouch!) */
+	if (obj->artifact)
+		history_add_artifact(obj->artifact, TRUE, TRUE);
 
-	/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
-	if (o_ptr->artifact)
-		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
+	/* Update the gear */
+	player->upkeep->update |= (PU_INVEN);
 
-	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	/* Combine the pack (later) */
+	player->upkeep->notice |= (PN_COMBINE);
 
 	/* Redraw stuff */
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 
 	/* Get the "apparent" value */
-	dummy = object_value(&sold_item, amt, FALSE);
+	dummy = object_value(&dummy_item, amt, FALSE);
 
 	/* Identify original object */
-	object_notice_everything(o_ptr);
+	object_notice_everything(obj);
 
-	/* Take a new copy of the now known-about object. */
-	object_copy_amt(&sold_item, o_ptr, amt);
-
-	/* The item belongs to the store now */
-	sold_item.ident |= IDENT_STORE;
-
-	/*
-	* Hack -- Allocate charges between those wands, staves, or rods
-	* sold and retained, unless all are being sold.
-	 */
-	distribute_charges(o_ptr, &sold_item, amt);
+	/* Take a proper copy of the now known-about object. */
+	sold_item = gear_object_for_use(obj, amt, FALSE, &none_left);
 
 	/* Get the "actual" value */
-	value = object_value(&sold_item, amt, FALSE);
+	value = object_value(sold_item, amt, FALSE);
 
 	/* Get the description all over again */
-	object_desc(o_name, sizeof(o_name), &sold_item, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), sold_item, ODESC_PREFIX | ODESC_FULL);
 
 	/* Describe the result (in message buffer) */
 	if (OPT(birth_no_selling)) {
-		msg("You had %s (%c).", o_name, index_to_label(item));
+		msg("You had %s (%c).", o_name, label);
 	} else {
-		msg("You sold %s (%c) for %ld gold.", o_name, index_to_label(item), (long)price);
+		msg("You sold %s (%c) for %d gold.", o_name, label, price);
 
 		/* Analyze the prices (and comment verbally) */
 		purchase_analyze(price, value, dummy);
 	}
 
-	/* Set squelch flag */
-	p_ptr->notice |= PN_SQUELCH;
-
-	/* Take the object from the player */
-	inven_item_increase(item, -amt);
-	inven_item_optimize(item);
+	/* Set ignore flag */
+	player->upkeep->notice |= PN_IGNORE;
 
 	/* Notice if pack items need to be combined or reordered */
-	notice_stuff(p_ptr);
+	notice_stuff(player);
 
 	/* Handle stuff */
-	handle_stuff(p_ptr);
+	handle_stuff(player);
 
 	/* The store gets that (known) object */
-	store_carry(store, &sold_item);
+	store_carry(store, sold_item);
 
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
 
-/*
+/**
  * Stash an item in the home.
  */
-void do_cmd_stash(cmd_code code, cmd_arg args[])
+void do_cmd_stash(struct command *cmd)
 {
-	int item = args[0].item;
-	int amt = args[1].number;
-	object_type dropped_item;
-	object_type *o_ptr = object_from_item_idx(item);
-	struct store *store = current_store();
+	int amt;
+	struct object dummy;
+	struct store *store = store_at(cave, player->py, player->px);
 	char o_name[120];
 
+	struct object *obj, *dropped;
+	bool none_left = FALSE;
+
+	if (cmd_get_arg_item(cmd, "item", &obj))
+		return;
+
+	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
+		return;
+
 	/* Check we are somewhere we can stash items. */
-	if (store->sidx != STORE_HOME)
-	{
+	if (store->sidx != STORE_HOME) {
 		msg("You are not in your home.");
 		return;
 	}
 
 	/* Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
-	{
+	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
 		msg("Hmmm, it seems to be cursed.");
 		return;
 	}	
 
 	/* Get a copy of the object representing the number being sold */
-	object_copy_amt(&dropped_item, o_ptr, amt);
+	object_copy_amt(&dummy, obj, amt);
 
-	if (!store_check_num(store, &dropped_item))
-	{
+	if (!store_check_num(store, &dummy)) {
 		msg("Your home is full.");
 		return;
 	}
 
-	/* Distribute charges of wands/staves/rods */
-	distribute_charges(o_ptr, &dropped_item, amt);
-	
+	/* Now get the real item */
+	dropped = gear_object_for_use(obj, amt, FALSE, &none_left);
+
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), &dropped_item, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, index_to_label(item));
-	
-	/* Take it from the players inventory */
-	inven_item_increase(item, -amt);
-	inven_item_optimize(item);
-	
-	/* Handle stuff */
-	handle_stuff(p_ptr);
-	
-	/* Let the home carry it */
-	home_carry(&dropped_item);
+	msg("You drop %s (%c).", o_name, gear_to_label(obj));
 
+	/* Handle stuff */
+	handle_stuff(player);
+
+	/* Let the home carry it */
+	home_carry(dropped);
+
+	event_signal(EVENT_STORECHANGED);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
-
-/*
- * Sell an object, or drop if it we're in the home.
- */
-static bool store_sell(void)
-{
-	int amt;
-	int item;
-	int get_mode = USE_EQUIP | USE_INVEN | USE_FLOOR;
-
-	object_type *o_ptr;
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
-
-	char o_name[120];
-
-
-	const char *reject = "You have nothing that I want. ";
-	const char *prompt = OPT(birth_no_selling) ? "Give which item? " : "Sell which item? ";
-
-	struct store *store = current_store();
-
-	if (!store) {
-		msg("You cannot %s items when not in a store.", OPT(birth_no_selling) ? "give" : "sell");
-		return FALSE;
-	}
-
-	/* Clear all current messages */
-	msg_flag = FALSE;
-	prt("", 0, 0);
-
-	if (store->sidx == STORE_HOME) {
-		prompt = "Drop which item? ";
-	} else {
-		item_tester_hook = store_will_buy_tester;
-		get_mode |= SHOW_PRICES;
-	}
-
-	/* Get an item */
-	p_ptr->command_wrk = USE_INVEN;
-
-	if (!get_item(&item, prompt, reject, CMD_DROP, get_mode))
-		return FALSE;
-
-	/* Get the item */
-	o_ptr = object_from_item_idx(item);
-
-	/* Hack -- Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
-	{
-		/* Oops */
-		msg("Hmmm, it seems to be cursed.");
-
-		/* Nope */
-		return FALSE;
-	}
-
-	/* Get a quantity */
-	amt = get_quantity(NULL, o_ptr->number);
-
-	/* Allow user abort */
-	if (amt <= 0) return FALSE;
-
-	/* Get a copy of the object representing the number being sold */
-	object_copy_amt(i_ptr, object_from_item_idx(item), amt);
-
-	if (!store_check_num(store, i_ptr))
-	{
-		if (store->sidx == STORE_HOME)
-			msg("Your home is full.");
-		else
-			msg("I have not the room in my store to keep it.");
-
-		return FALSE;
-	}
-
-	/* Get a full description */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
-
-	/* Real store */
-	if (store->sidx != STORE_HOME)
-	{
-		/* Extract the value of the items */
-		u32b price = price_item(i_ptr, TRUE, amt);
-
-		screen_save();
-
-		/* Show price */
-		if (!OPT(birth_no_selling)) prt(format("Price: %d", price), 1, 0);
-
-		/* Confirm sale */
-		if (!store_get_check(format("%s %s? [ESC, any other key to accept]",
-				OPT(birth_no_selling) ? "Give" : "Sell",
-				o_name)))
-		{
-			screen_load();
-			return FALSE;
-		}
-
-		screen_load();
-
-		cmd_insert(CMD_SELL);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
-		cmd_set_arg_number(cmd_get_top(), 1, amt);
-	}
-
-	/* Player is at home */
-	else
-	{
-		cmd_insert(CMD_STASH);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
-		cmd_set_arg_number(cmd_get_top(), 1, amt);
-	}
-
-	return TRUE;
-}
-
-//static bool store_sell(int sell_count)
-
-/*
- * Examine an item in a store
- */
-static void store_examine(int item)
-{
-	struct store *store = current_store();
-	object_type *o_ptr;
-
-	char header[120];
-
-	textblock *tb;
-	region area = { 0, 0, 0, 0 };
-
-	if (item < 0) return;
-
-	/* Get the actual object */
-	o_ptr = &store->stock[item];
-
-	/* Hack -- no flush needed */
-	msg_flag = FALSE;
-
-	/* Show full info in most stores, but normal info in player home */
-	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL |
-		ODESC_STORE);
-
-	textui_textblock_show(tb, area, header);
-	textblock_free(tb);
-
-	/* Hack -- Browse book, then prompt for a command */
-	if (o_ptr->tval == p_ptr->class->spell_book)
-		textui_book_browse(o_ptr);
-}
-
-
-static void store_menu_set_selections(menu_type *menu, bool knowledge_menu)
-{
-	if (knowledge_menu)
-	{
-		if (OPT(rogue_like_commands))
-		{
-			/* These two can't intersect! */
-			menu->cmd_keys = "?Ieilx";
-			menu->selections = "abcdfghjkmnopqrstuvwyz134567";
-		}
-		/* Original */
-		else
-		{
-			/* These two can't intersect! */
-			menu->cmd_keys = "?Ieil";
-			menu->selections = "abcdfghjkmnopqrstuvwxyz13456";
-		}
-	}
-	else
-	{
-		/* Roguelike */
-		if (OPT(rogue_like_commands))
-		{
-			/* These two can't intersect! */
-			menu->cmd_keys = "\x04\x05\x10?={}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D, \x05 = ^E */
-			menu->selections = "abcfmnoqrtuvyz13456790ABDFGH";
-		}
-
-		/* Original */
-		else
-		{
-			/* These two can't intersect! */
-			menu->cmd_keys = "\x05\x010?={}~CEIbdegiklpstwx"; /* \x05 = ^E, \x10 = ^p */
-			menu->selections = "acfhjmnoqruvyz13456790ABDFGH";
-		}
-	}
-}
-
-static void store_menu_recalc(menu_type *m)
-{
-	struct store *store = current_store();
-	menu_setpriv(m, store->stock_num, store->stock);
-}
-
-/*
- * Process a command in a store
- *
- * Note that we must allow the use of a few "special" commands in the stores
- * which are not allowed in the dungeon, and we must disable some commands
- * which are allowed in the dungeon but not in the stores, to prevent chaos.
- */
-static bool store_process_command_key(struct keypress kp)
-{
-	int cmd = 0;
-
-	/* Hack -- no flush needed */
-	msg_flag = FALSE;
-
-	/* Process the keycode */
-	switch (kp.code) {
-		case 'T': /* roguelike */
-		case 't': cmd = CMD_TAKEOFF; break;
-
-		case KTRL('D'): /* roguelike */
-		case 'k': textui_cmd_destroy(); break;
-
-		case 'P': /* roguelike */
-		case 'b': textui_spell_browse(); break;
-
-		case '~': textui_browse_knowledge(); break;
-		case 'I': textui_obj_examine(); break;
-		case 'w': cmd = CMD_WIELD; break;
-		case '{': cmd = CMD_INSCRIBE; break;
-		case '}': cmd = CMD_UNINSCRIBE; break;
-
-		case 'e': do_cmd_equip(); break;
-		case 'i': do_cmd_inven(); break;
-		case KTRL('E'): toggle_inven_equip(); break;
-		case 'C': do_cmd_change_name(); break;
-		case KTRL('P'): do_cmd_messages(); break;
-		case ')': do_cmd_save_screen(); break;
-
-		default: return FALSE;
-	}
-
-	if (cmd)
-		cmd_insert_repeated(cmd, 0);
-
-	return TRUE;
-}
-
-/*
- * Select an item from the store's stock, and return the stock index
- */
-static int store_get_stock(menu_type *m, int oid)
-{
-	ui_event e;
-	int no_act = m->flags & MN_NO_ACTION;
-
-	/* set a flag to make sure that we get the selection or escape
-	 * without running the menu handler
-	 */
-	m->flags |= MN_NO_ACTION;
-	e = menu_select(m, 0, TRUE);
-	if (!no_act) {
-		m->flags &= ~MN_NO_ACTION;
-	}
-
-	if (e.type == EVT_SELECT) {
-		return m->cursor;
-	} else
-	if (e.type == EVT_ESCAPE) {
-		return -1;
-	}
-
-	/* if we do not have a new selection, just return the original item */
-	return oid;
-}
-
-/*
- *
- */
-static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
-{
-	bool processed = TRUE;
-	struct store *store = current_store();
-	
-	if (event->type == EVT_SELECT)
-	{
-		/* Nothing for now, except "handle" the event */
-		return TRUE;
-		/* In future, maybe we want a display a list of what you can do. */
-	}
-	else if (event->type == EVT_MOUSE)
-	{
-		if (event->mouse.button == 2) {
-			/* exit the store? what already does this? menu_handle_mouse
-			 * so exit this so that menu_handle_mouse will be called */
-			return FALSE;
-		} else
-		if (event->mouse.button == 1) {
-			bool action = FALSE;
-			if ((event->mouse.y == 0) || (event->mouse.y == 1)) {
-				/* show the store context menu */
-				context_menu_store(store,oid,event->mouse.x,event->mouse.y);
-				action = TRUE;
-			} else
-			/* if press is on a list item, so store item context */
-			if (event->mouse.y == 4+oid) {
-				/* click was on an item */
-				context_menu_store_item(store,oid, event->mouse.x,event->mouse.y);
-				action = TRUE;
-			}
-			if (action) {
-				store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
-
-				/* Let the game handle any core commands (equipping, etc) */
-				process_command(CMD_STORE, TRUE);
-
-				/* Notice and handle stuff */
-				notice_stuff(p_ptr);
-				handle_stuff(p_ptr);
-
-				/* Display the store */
-				store_display_recalc(m);
-				store_menu_recalc(m);
-				store_redraw();
-
-				return TRUE;
-			}
-		}
-	}
-	else if (event->type == EVT_KBRD)
-	{
-		bool storechange = FALSE;
-
-		switch (event->key.code) {
-			case 's':
-			case 'd': storechange = store_sell(); break;
-			case 'p':
-			case 'g':
-				/* use the old way of purchasing items */
-				msg_flag = FALSE;
-				if (store->sidx != STORE_HOME) {
-					prt("Purchase which item? (ESC to cancel, Enter to select)", 0, 0);
-				} else {
-					prt("Get which item? (Esc to cancel, Enter to select)", 0, 0);
-				}
-				oid = store_get_stock(m, oid);
-				prt("", 0, 0);
-				if (oid >= 0) {
-					storechange = store_purchase(oid);
-				}
-				break;
-			case 'l':
-			case 'x':
-				/* use the old way of examining items */
-				msg_flag = FALSE;
-				prt("Examine which item? (ESC to cancel, Enter to select)", 0, 0);
-				oid = store_get_stock(m, oid);
-				prt("", 0, 0);
-				if (oid >= 0) {
-					store_examine(oid);
-				}
-				break;
-
-			/* XXX redraw functionality should be another menu_iter handler */
-			case KTRL('R'): {
-				Term_clear();
-				store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
-				break;
-			}
-
-			case '?': {
-				/* Toggle help */
-				if (store_flags & STORE_SHOW_HELP)
-					store_flags &= ~(STORE_SHOW_HELP);
-				else
-					store_flags |= STORE_SHOW_HELP;
-
-				/* Redisplay */
-				store_flags |= STORE_INIT_CHANGE;
-				break;
-			}
-
-			case '=': {
-				do_cmd_options();
-				store_menu_set_selections(m, FALSE);
-				break;
-			}
-
-			default:
-				processed = store_process_command_key(event->key);
-		}
-
-		/* Let the game handle any core commands (equipping, etc) */
-		process_command(CMD_STORE, TRUE);
-
-		if (storechange)
-			store_menu_recalc(m);
-
-		if (processed) {
-			event_signal(EVENT_INVENTORY);
-			event_signal(EVENT_EQUIPMENT);
-		}
-
-		/* Notice and handle stuff */
-		notice_stuff(p_ptr);
-		handle_stuff(p_ptr);
-
-		/* Display the store */
-		store_display_recalc(m);
-		store_menu_recalc(m);
-		store_redraw();
-
-		return processed;
-	}
-
-	return FALSE;
-}
-
-static region store_menu_region = { 1, 4, -1, -2 };
-static const menu_iter store_menu =
-{
-	NULL,
-	NULL,
-	store_display_entry,
-	store_menu_handle,
-	NULL
-};
-
-/*
- * Display contents of a store from knowledge menu
- *
- * The only allowed actions are 'I' to inspect an item
- */
-void do_cmd_store_knowledge(void)
-{
-	menu_type menu;
-
-	screen_save();
-	clear_from(0);
-
-	/* Init the menu structure */
-	menu_init(&menu, MN_SKIN_SCROLL, &store_menu);
-	menu_layout(&menu, &store_menu_region);
-
-	/* Calculate the positions of things and redraw */
-	store_menu_set_selections(&menu, TRUE);
-	store_flags = STORE_INIT_CHANGE;
-	store_display_recalc(&menu);
-	store_menu_recalc(&menu);
-	store_redraw();
-
-	menu_select(&menu, 0, FALSE);
-
-	/* Flush messages XXX XXX XXX */
-	message_flush();
-
-	screen_load();
-}
-
-
-
-
-/*
- * Enter a store, and interact with it.
- */
-void do_cmd_store(cmd_code code, cmd_arg args[])
-{
-	/* Take note of the store number from the terrain feature */
-	struct store *store = current_store();
-	menu_type menu;
-
-	/* Verify that there is a store */
-	if (!store) {
-		msg("You see no store here.");
-		return;
-	}
-
-	/* Shut down the normal game view - it won't be updated - and start
-	   up the store state. */
-	event_signal(EVENT_LEAVE_GAME);
-	event_signal(EVENT_ENTER_STORE);
-
-	/* XXX ick */
-	store_in_store = TRUE;
-
-	/* Forget the view */
-	forget_view(cave);
-
-
-	/*** Display ***/
-
-	/* Save current screen (ie. dungeon) */
-	screen_save();
-
-
-	/*** Inventory display ***/
-
-	/* Wipe the menu and set it up */
-	menu_init(&menu, MN_SKIN_SCROLL, &store_menu);
-	menu_layout(&menu, &store_menu_region);
-
-	store_menu_set_selections(&menu, FALSE);
-	store_flags = STORE_INIT_CHANGE;
-	store_display_recalc(&menu);
-	store_menu_recalc(&menu);
-	store_redraw();
-
-	/* Say a friendly hello. */
-	if (store->sidx != STORE_HOME)
-		prt_welcome(store->owner);
-
-	msg_flag = FALSE;
-	menu_select(&menu, 0, FALSE);
-	msg_flag = FALSE;
-
-	/* Switch back to the normal game view. */
-	event_signal(EVENT_LEAVE_STORE);
-	event_signal(EVENT_ENTER_GAME);
-
-	/* XXX ick */
-	store_in_store = TRUE;
-
-	/* Take a turn */
-	p_ptr->energy_use = 100;
-
-
-	/* Flush messages XXX XXX XXX */
-	message_flush();
-
-
-	/* Load the screen */
-	screen_load();
-
-
-	/* Update the visuals */
-	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Redraw entire screen */
-	p_ptr->redraw |= (PR_BASIC | PR_EXTRA);
-
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
-}
-

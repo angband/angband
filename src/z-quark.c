@@ -1,6 +1,6 @@
-/*
- * File: z-quark.c
- * Purpose: Save memory by storing strings in a global array, ensuring
+/**
+ * \file z-quark.c
+ * \brief Save memory by storing strings in a global array, ensuring
  * that each is only allocated once.
  *
  * Copyright (c) 1997 Ben Harrison
@@ -19,6 +19,7 @@
  */
 #include "z-virt.h"
 #include "z-quark.h"
+#include "init.h"
 
 static char **quarks;
 static size_t nr_quarks = 1;
@@ -30,14 +31,12 @@ quark_t quark_add(const char *str)
 {
 	quark_t q;
 
-	for (q = 1; q < nr_quarks; q++)
-	{
+	for (q = 1; q < nr_quarks; q++) {
 		if (!strcmp(quarks[q], str))
 			return q;
 	}
 
-	if (nr_quarks == alloc_quarks)
-	{
+	if (nr_quarks == alloc_quarks) {
 		alloc_quarks *= 2;
 		quarks = mem_realloc(quarks, alloc_quarks * sizeof(char *));
 	}
@@ -53,15 +52,13 @@ const char *quark_str(quark_t q)
 	return (q >= nr_quarks ? NULL : quarks[q]);
 }
 
-errr quarks_init(void)
+void quarks_init(void)
 {
 	alloc_quarks = QUARKS_INIT;
-	quarks = C_ZNEW(alloc_quarks, char *);
-
-	return 0;
+	quarks = mem_zalloc(alloc_quarks * sizeof(char*));
 }
 
-errr quarks_free(void)
+void quarks_free(void)
 {
 	size_t i;
 
@@ -69,6 +66,11 @@ errr quarks_free(void)
 	for (i = 1; i < nr_quarks; i++)
 		string_free(quarks[i]);
 
-	FREE(quarks);
-	return 0;
+	mem_free(quarks);
 }
+
+struct init_module z_quark_module = {
+	.name = "z-quark",
+	.init = quarks_init,
+	.cleanup = quarks_free
+};

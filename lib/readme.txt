@@ -1,60 +1,34 @@
 The "lib" directory contains all of Angband's special sub-directories.
 
 
-=== Directory "lib/apex" ===
+=== Directory "lib/gamedata" ===
 
-The "lib/apex" directory contains the "high score" files.
+The "lib/gamedata" directory contains various special text data files.
 
-The "scores.raw" file contains the "high score" table, in a "semi-binary" form,
-that is, all the bytes in the file are normal ascii values, but this includes
-the special "nul" or "zero" byte, which is used to separate and pad records.
-You should probably not attempt to modify this file with a normal text editor.
-This file should be (more or less) portable between different platforms.  It
-must be present (or creatable) for the game to run correctly.
-
-
-=== Directory "lib/edit" ===
-
-The "lib/edit" directory contains various special ascii data files.
-
-The *.txt files are ascii template files used to construct the data 
+The *.txt files are utf8 template files used to construct the data 
 arrays for the game. These arrays describe the "terrain features", 
 "object kinds", "artifacts", "ego-items", "monster races", and "dungeon 
 vaults", "player races", "player classes", and many other things.
 
-The ascii template files are easier to edit than hard-coded arrays, prevent
+The utf8 template files are easier to edit than hard-coded arrays, prevent
 compilation errors on some machines, and also shrink the size of the binary
 executable, and also provide a user-readable spoiler file of sorts.
 
-These files should not be modified unless you know exactly what you are doing.
+These files are modifiable.  It is recommended that if you do modify any of
+these files, you put the modified version in your user directory (lib\user
+on Windows, ~/Documents/Angband on OSX, ~/.angband/Angband on Linux/Unix),
+where it will be read preferentially.  Look at the help file
+lib/help/modify.txt for more details.
 
 
-=== Directory "lib/file" ===
+=== Directory "lib/customize" ===
 
-The "lib/file" directory contains various special ascii data files.
+The "lib/customize" directory contains the "pref files" - files which help
+the game deal with graphics, keyboard input and messages, among other things.
 
-The 'news.txt' file is displayed to the user when the game starts up.  It
-contains basic information such as my name and email address, and the names
-of some of the people who have been responsible for previous versions of
-Angband.  You may edit this file (slightly) to include local "site specific"
-information such as who compiled the local executable.  You should refer the
-user to a special "online help" file, if necessary, that describes any local
-modifications in detail.  The first two lines of this file should be blank,
-and only the next 20 lines should contain information.
+In general, these files are used to "customize" aspects of the game for
+a given site or a given player.
 
-The 'dead.txt' file is displayed to the user when the player dies.  It
-contains a picture of a tombstone which is filled in with interesting
-information about the dead player.  You should not edit this file.
-
-The optional file 'time.txt' may be used to restrict the "times" at which
-the game may be played, by providing specification of which hours of each day
-of the week are legal for playing the game.  See 'files.c' for more details.
-A missing file provides no restrictions, and an empty file will, by default,
-forbid the playing of the game from 8am-5pm on weekdays.  This file is only
-used on multi-user machines, and only if CHECK_TIME is defined, otherwise,
-there are no restrictions.
-
-These files should not be modified unless you know exactly what you are doing.
 
 
 === Directory "lib/help" ===
@@ -64,47 +38,95 @@ The "lib/help" directory contains the "online help" files.
 This directory is used to search for normal "online help" files.
 
 
-=== Directory "lib/info" ===
+=== Directory "lib/screens" ===
 
-The "lib/info" directory contains the "online spoiler" files.
+The "lib/screens" directory contains various special text data files.
 
-This directory is used to search for any "online help" file that cannot
-be found in the "lib/help" directory.
+The 'news.txt' file is displayed to the user when the game starts up.  It
+contains basic information such as my name and email address, and the names
+of some of the people who have been responsible for previous versions of
+Angband.  You may edit this file (slightly) to include local "site specific"
+information such as who compiled the local executable.  You should refer the
+user to a special "online help" file, if necessary, that describes any local
+modifications in detail.  The first line of this file should be blank, and
+only the next 21 lines should contain information.
 
-This directory is empty by default. Many people use this directory for
-"online spoiler files", many of which are available. Simply download 
-whichever spoilers you want and place them in this directory.
+The 'dead.txt' file is displayed to the user when the player dies.  It
+contains a picture of a tombstone which is filled in with interesting
+information about the dead player.  You should not edit this file.
 
-Note that the default "help.hlp" file allows the "9" key to access a help
-file called "spoiler.hlp", and allows the "0" key to access "user.hlp".
+The 'crown.txt' file is displayed to the user when the player wins.  It
+contains a picture of a crown.  You should not edit this file.
 
-These special help files can thus be placed in the user's own "info"
-directory to allow the on line help to access his files.
+These files should not be modified unless you know exactly what you are doing.
 
 
-=== Directory "lib/save" ===
+=== Directory "lib/fonts" ===
 
-The "lib/save" directory contains "savefiles" for the players.
+The "lib/fonts" directory contains the font files for use in the Windows and
+SDL front ends.  More .fon files can be added and used if you wish.
 
-Each savefile is named "NNN" where "NNN" is the name of the character, or,
-on some machines, the name of the character, or, on multi-user machines,
+
+=== Directory "lib/tiles" ===
+
+The "lib/tiles" directory contains the .png images for the various tilesets,
+as well as the file graphics.txt which the game uses to display the tiles
+correctly.
+
+
+=== Directory "lib/sounds" ===
+
+The "lib/sounds" directory contains the .mp3 sound files, plus the file
+sound.cfg which tells the game which sound files to use for which game events.
+
+
+=== Directory "lib/icons" ===
+
+The "lib/icons" directory contains the Angband icon files.
+
+
+=== Directory "lib/user" ===
+
+The "lib/user" directory is used to put various game-written configuration
+files (such as the monster memory file, lore.txt, and a .prf file with the
+subwindow configuration for the current character).  It also contains the
+directories for scores and savefiles (unless these are held systemwide, as in
+some Linux/Unix installations), and for user created help files.
+
+
+=== Directory "lib/user/save" ===
+
+The "lib/user/save" directory contains "savefiles" for the players.
+
+Each savefile is named the name of the character, or, on multi-user machines,
 "UUU.NNN", where "UUU" is the player uid and "NNN" is the character name.
 
 The savefiles should be portable between systems, assuming that the
 appropriate renaming is perfomed.
 
 
-=== Directory "lib/pref" ===
+=== Directory "lib/user/scores" ===
 
-The "lib/user" directory contains the "user pref files", if any.
+The "lib/user/scores" directory contains the "high score" files.
 
-In general, these files are used to "customize" aspects of the game for
-a given site or a given player.
+The "scores.raw" file contains the "high score" table, in a "semi-binary" form,
+that is, all the bytes in the file are normal ascii values, but this includes
+the special "nul" or "zero" byte, which is used to separate and pad records.
+You should probably not attempt to modify this file with a normal text editor.
+This file should be (more or less) portable between different platforms.  It
+must be present (or creatable) for the game to run correctly.
 
-See "src/files.c" for information on the proper "format" of these files.
+On some multiuser systems there is a separate systemwide score file.
 
+=== Directory "lib/user/info" ===
 
-=== Directory "lib/xtra" ===
+The "lib/user/info" is used to search for any "online help" file that cannot
+be found in the "lib/help" directory.
 
-The "lib/xtra" directory contains special system files, if any.
+Some people use this directory for "online spoiler files", many of which are
+available on the internet, or creatable via the debug commands. Simply put 
+whichever spoilers you want in this directory, then edit the user.hlp file to
+add your files as menu items.  There is a dummy file as an example.
+
+Note that the default "help.hlp" file allows the "k" key to access user.hlp.
 

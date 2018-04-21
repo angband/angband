@@ -1,0 +1,22 @@
+
+{mud}                                       ^                        {/}
+{mud}                                      ^^^                       {/}
+{mud}                ^                    ^^^^^                   ^  {/}
+{mud}               ^^^                  ^^^^^^^                 ^^^ {/}
+{mud}              ^^^^^                ^^^^^^^^^               ^^^^^{/}
+{mud}             ^^^^  {/}{red}_{/}{mud}              ^ {/}{red}_{/}{mud}  ^^^^^^             {/}{red}_{/}{mud}  ^^^^{/}
+{mud}            ^^^^ {/}{red} / \   _ __   __ _| |__   __ _ _ __   __| | {/}{mud}^^^^^   {/}
+{mud}           ^^^^ {/}{red} / _ \ | '_ \ / _` | '_ \ / _` | '_ \ / _` | {/}{mud}^^^^^^  {/}
+{mud}          ^^^^  {/}{red}/ ___ \| | | | (_| | |_) | (_| | | | | (_| | {/}{mud}^^^^^^^ {/}
+{mud}         ^^^^  {/}{red}/_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_| {/}{mud}^^^^^^^^{/}
+{mud}        ^^^^^                {/}{red} |___/{/}  $VERSION
+{mud}       ^^^^^^^^^^^^^^^^^^                     ^^^^  ^^^^^^^^^^^^^^^^^^^ {/}
+{light slate}         "When the world is old and the Powers grow weary, then Morgoth,{/}
+{light slate}          seeing that the guard sleepeth, shall come back through the   {/}
+{light slate}          Door of Night out of the Timeless Void.  Then shall the Last  {/}
+{light slate}          Battle be gathered..."                                        {/}
+
+{light slate}                         Website: http://rephial.org/           {/}
+{light slate}                     Forums: http://angband.oook.cz/forum/      {/}
+              
+                           For help press '?' in-game

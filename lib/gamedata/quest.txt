@@ -1,0 +1,18 @@
+# quest.txt
+
+# This file contains the fixed (and only) quests.  The current system is that
+# a copy of these is made into the player data at birth, and the level field
+# in that copy is zeroed when the quest is completed.  This system could be
+# improved; it could also be easily adapted to add more fixed quests (by adding
+# to this file).  It would also only require fairly small game code changes to
+# allow other quests to be added as a result of game events.
+
+name:Sauron
+level:99
+race:Sauron, the Sorcerer
+number:1
+
+name:Morgoth
+level:100
+race:Morgoth, Lord of Darkness
+number:1

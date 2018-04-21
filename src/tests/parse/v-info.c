@@ -8,7 +8,7 @@
 
 
 int setup_tests(void **state) {
-	*state = init_parse_v();
+	*state = init_parse_vault();
 	return !*state;
 }
 
@@ -17,29 +17,80 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_n0(void *state) {
-	enum parser_error r = parser_parse(state, "N:1:round");
+int test_name0(void *state) {
+	enum parser_error r = parser_parse(state, "name:round");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
 	v = parser_priv(state);
 	require(v);
-	eq(v->vidx, 1);
 	require(streq(v->name, "round"));
 	ok;
 }
 
-int test_x0(void *state) {
-	enum parser_error r = parser_parse(state, "X:6:5:12:20");
+int test_typ0(void *state) {
+	enum parser_error r = parser_parse(state, "type:Lesser vault");
 	struct vault *v;
 
 	eq(r, PARSE_ERROR_NONE);
 	v = parser_priv(state);
 	require(v);
-	eq(v->typ, 6);
+	require(streq(v->typ, "Lesser vault"));
+	ok;
+}
+
+int test_rat0(void *state) {
+	enum parser_error r = parser_parse(state, "rating:5");
+	struct vault *v;
+
+	eq(r, PARSE_ERROR_NONE);
+	v = parser_priv(state);
 	eq(v->rat, 5);
+	require(v);
+	ok;
+}
+
+int test_hgt0(void *state) {
+	enum parser_error r = parser_parse(state, "rows:12");
+	struct vault *v;
+
+	eq(r, PARSE_ERROR_NONE);
+	v = parser_priv(state);
 	eq(v->hgt, 12);
-	eq(v->wid, 20);
+	require(v);
+	ok;
+}
+
+int test_wid0(void *state) {
+	enum parser_error r = parser_parse(state, "columns:6");
+	struct vault *v;
+
+	eq(r, PARSE_ERROR_NONE);
+	v = parser_priv(state);
+	eq(v->wid, 6);
+	require(v);
+	ok;
+}
+
+int test_min_lev0(void *state) {
+	enum parser_error r = parser_parse(state, "min-depth:15");
+	struct vault *v;
+
+	eq(r, PARSE_ERROR_NONE);
+	v = parser_priv(state);
+	eq(v->min_lev, 15);
+	require(v);
+	ok;
+}
+
+int test_max_lev0(void *state) {
+	enum parser_error r = parser_parse(state, "max-depth:25");
+	struct vault *v;
+
+	eq(r, PARSE_ERROR_NONE);
+	v = parser_priv(state);
+	eq(v->max_lev, 25);
+	require(v);
 	ok;
 }
 
@@ -58,8 +109,13 @@ int test_d0(void *state) {
 
 const char *suite_name = "parse/v-info";
 struct test tests[] = {
-	{ "n0", test_n0 },
-	{ "x0", test_x0 },
+	{ "name0", test_name0 },
+	{ "typ0", test_typ0 },
+	{ "rat0", test_rat0 },
+	{ "hgt0", test_hgt0 },
+	{ "wid0", test_wid0 },
+	{ "min_lev0", test_min_lev0 },
+	{ "max_lev0", test_max_lev0 },
 	{ "d0", test_d0 },
 	{ NULL, NULL }
 };

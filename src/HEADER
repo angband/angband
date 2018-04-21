@@ -1,6 +1,6 @@
-/*
- * File: xxx.c
- * Purpose: xxx
+/**
+ * \file xxx.c
+ * \brief [Purpose]
  *
  * Copyright (c) [yyyy] [author list]
  *

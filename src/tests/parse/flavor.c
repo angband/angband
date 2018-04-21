@@ -3,10 +3,10 @@
 #include "unit-test.h"
 
 #include "init.h"
-#include "object/tvalsval.h"
-#include "object/obj-flag.h"
-#include "object/object.h"
-#include "z-term.h"
+#include "obj-tval.h"
+#include "obj-properties.h"
+#include "object.h"
+#include "z-color.h"
 
 int setup_tests(void **state) {
 	*state = init_parse_flavor();
@@ -35,7 +35,7 @@ int test_flavor0(void *state) {
 	eq(f->fidx, 2);
 	eq(f->tval, TV_LIGHT);
 	eq(f->d_char, L'&');
-	eq(f->d_attr, TERM_BLUE);
+	eq(f->d_attr, COLOUR_BLUE);
 	require(streq(f->text, "Fishy"));
 	ok;
 }

@@ -1,0 +1,192 @@
+# File: constants.txt
+
+
+# This file is used to initialize game constants for Angband.
+
+#---------------------------------------------------------------------
+# Level Maxima
+#---------------------------------------------------------------------
+
+# Maximum number of monsters on the level
+level-max:monsters:1024
+
+#---------------------------------------------------------------------
+# Monster Generation
+#---------------------------------------------------------------------
+
+# 1/per-turn-chance of new monster generation
+mon-gen:chance:500
+
+# Minimum number of monsters generated on a level
+mon-gen:level-min:14
+
+# Number of townsfolk generated in the day */
+mon-gen:town-day:4
+
+# Number of townsfolk generated in the night */
+mon-gen:town-night:8
+
+# Maximum number of breeding monsters allowed on a level
+mon-gen:repro-max:100
+
+# Chance of a generated monster's level being inflated is one-in-this
+mon-gen:ood-chance:25
+
+# Maximum out-of-depth amount for monster generation
+mon-gen:ood-amount:10
+
+#---------------------------------------------------------------------
+# Monster Gameplay
+#---------------------------------------------------------------------
+
+# Rune of protection resistance to monster breaking
+mon-play:break-glyph:550
+
+# High value slows multiplication
+mon-play:mult-rate:8
+
+# Percent of player exp drained per hit
+mon-play:life-drain:2
+
+# Maximum flow depth when using for monster flow calculation
+mon-play:flow-depth:32
+
+# Monsters will run up to this many grids out of sight
+mon-play:flee-range:5
+
+# Terrified monsters will turn to fight if they are slower than the character,
+# and closer than this distance.
+mon-play:turn-range:5
+
+#---------------------------------------------------------------------
+# Dungeon Generation
+#---------------------------------------------------------------------
+
+# Number of possible room centres (and hence rooms) on a normal level
+dun-gen:cent-max:100
+
+# Number of possible door locations
+dun-gen:door-max:200
+
+# Number of possible places to pierce room walls with tunnels
+dun-gen:wall-max:500
+
+# Number of tunnel grids
+dun-gen:tunn-max:900
+
+# Average number of objects to place in rooms
+dun-gen:amt-room:9
+
+# Average number of objects to place in rooms/corridors
+dun-gen:amt-item:3
+
+# Average amount of treasure to place in rooms/corridors
+dun-gen:amt-gold:3
+
+# Maximum number of pits or nests allowed per level
+dun-gen:pit-max:2
+
+#---------------------------------------------------------------------
+# Game World
+#---------------------------------------------------------------------
+
+# Maximum dungeon level; must be at least 100.
+# Setting it below 128 may prevent the creation of some objects.
+world:max-depth:128
+
+# Number of turns from dawn to dawn
+world:day-length:10000
+
+# Max number of grids in each dungeon level (vertically)
+world:dungeon-hgt:66
+
+# Max number of grids in each dungeon level (horizontally)
+world:dungeon-wid:198
+
+# Max number of grids in each town level (vertically)
+world:town-hgt:22
+
+# Max number of grids in each town level (horizontally)
+world:town-wid:66
+
+# Total number of feeling squares per level
+world:feeling-total:100
+
+# Squares needed to see to get first feeling
+world:feeling-need:10
+
+# Energy needed by player or monsters to move
+world:move-energy:100
+
+#---------------------------------------------------------------------
+# Carrying Capacity
+#---------------------------------------------------------------------
+
+# Max number of pack slots for carrying inventory
+carry-cap:pack-size:23
+
+# Max number of quiver slots for carrying missiles
+carry-cap:quiver-size:10
+
+# Maximum number of objects allowed in a single dungeon grid.
+#
+# The main screen originally had a minimum size of 24 rows, so it could always
+# display 23 objects + 1 header line.
+carry-cap:floor-size:23
+
+# Max number of pack slots for carrying inventory
+carry-cap:stack-size:40
+
+
+#---------------------------------------------------------------------
+# Store Parameters
+#---------------------------------------------------------------------
+
+# Maximum number of discrete objects in store inventory
+store:inven-max:24
+
+# Number of turns between turnovers
+store:turns:1000
+
+# 1/Chance (per day) of an owner changing
+store:shuffle:25
+
+# Dungeon level to apply magic to objects for normal stores
+store:magic-level:5
+
+
+#---------------------------------------------------------------------
+# Object generation
+#---------------------------------------------------------------------
+
+# Maximum depth used in object allocation
+obj-make:max-depth:100
+
+# 1/chance of inflating the requested object level
+obj-make:great-obj:20
+
+# 1/chance of inflating the requested ego item level
+obj-make:great-ego:20
+
+# Maximum amount of fuel in a torch
+obj-make:fuel-torch:5000
+
+# Maximum amount of fuel in a lantern
+obj-make:fuel-lamp:15000
+
+# Default amount of fuel in a lantern
+obj-make:default-lamp:7500
+
+
+#---------------------------------------------------------------------
+# Player constants
+#---------------------------------------------------------------------
+
+# Maximum visual range
+player:max-sight:20
+
+# Maximum missile and spell range
+player:max-range:20
+
+# Amount of gold (or value of equipment) the player starts with
+player:start-gold:600

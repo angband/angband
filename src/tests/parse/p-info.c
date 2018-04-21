@@ -2,11 +2,11 @@
 
 #include "unit-test.h"
 #include "init.h"
-#include "player/player.h"
+#include "player.h"
 
 
 int setup_tests(void **state) {
-	*state = init_parse_p();
+	*state = init_parse_p_race();
 	return !*state;
 }
 
@@ -15,8 +15,8 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_n0(void *state) {
-	enum parser_error r = parser_parse(state, "N:1:Half-Elf");
+int test_name0(void *state) {
+	enum parser_error r = parser_parse(state, "name:1:Half-Elf");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -27,43 +27,133 @@ int test_n0(void *state) {
 	ok;
 }
 
-int test_s0(void *state) {
-	enum parser_error r = parser_parse(state, "S:1:-1:2:-2:3");
+int test_stats0(void *state) {
+	enum parser_error r = parser_parse(state, "stats:1:-1:2:-2:3");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->r_adj[A_STR], 1);
-	eq(pr->r_adj[A_INT], -1);
-	eq(pr->r_adj[A_WIS], 2);
-	eq(pr->r_adj[A_DEX], -2);
-	eq(pr->r_adj[A_CON], 3);
+	eq(pr->r_adj[STAT_STR], 1);
+	eq(pr->r_adj[STAT_INT], -1);
+	eq(pr->r_adj[STAT_WIS], 2);
+	eq(pr->r_adj[STAT_DEX], -2);
+	eq(pr->r_adj[STAT_CON], 3);
 	ok;
 }
 
-int test_r0(void *state) {
-	enum parser_error r = parser_parse(state, "R:1:3:5:7:9:2:4:6:8:10");
+int test_skill_disarm0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-disarm:1");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
 	eq(pr->r_skills[SKILL_DISARM], 1);
+	ok;
+}
+
+int test_skill_device0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-device:3");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_DEVICE], 3);
+	ok;
+}
+
+int test_skill_save0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-save:5");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_SAVE], 5);
+	ok;
+}
+
+int test_skill_stealth0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-stealth:7");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_STEALTH], 7);
+	ok;
+}
+
+int test_skill_search0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-search:9");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_SEARCH], 9);
+	ok;
+}
+
+int test_skill_search_freq0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-search-freq:2");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_SEARCH_FREQUENCY], 2);
+	ok;
+}
+
+int test_skill_melee0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-melee:4");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_TO_HIT_MELEE], 4);
+	ok;
+}
+
+int test_skill_shoot0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-shoot:6");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_TO_HIT_BOW], 6);
+	ok;
+}
+
+int test_skill_throw0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-throw:8");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_TO_HIT_THROW], 8);
+	ok;
+}
+
+int test_skill_dig0(void *state) {
+	enum parser_error r = parser_parse(state, "skill-dig:10");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
 	eq(pr->r_skills[SKILL_DIGGING], 10);
 	ok;
 }
 
-int test_x0(void *state) {
-	enum parser_error r = parser_parse(state, "X:10:20:80");
+int test_info0(void *state) {
+	enum parser_error r = parser_parse(state, "info:10:20:80");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -75,49 +165,45 @@ int test_x0(void *state) {
 	ok;
 }
 
-int test_i0(void *state) {
-	enum parser_error r = parser_parse(state, "I:0:10:3");
+int test_history0(void *state) {
+	enum parser_error r = parser_parse(state, "history:0:10:3");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	ptreq(pr->history, NULL);
+	null(pr->history);
 	eq(pr->b_age, 10);
 	eq(pr->m_age, 3);
 	ok;
 }
 
-int test_h0(void *state) {
-	enum parser_error r = parser_parse(state, "H:10:2:11:3");
+int test_height0(void *state) {
+	enum parser_error r = parser_parse(state, "height:10:2");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->m_b_ht, 10);
-	eq(pr->m_m_ht, 2);
-	eq(pr->f_b_ht, 11);
-	eq(pr->f_m_ht, 3);
+	eq(pr->base_hgt, 10);
+	eq(pr->mod_hgt, 2);
 	ok;
 }
 
-int test_w0(void *state) {
-	enum parser_error r = parser_parse(state, "W:80:10:75:7");
+int test_weight0(void *state) {
+	enum parser_error r = parser_parse(state, "weight:80:10");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->m_b_wt, 80);
-	eq(pr->m_m_wt, 10);
-	eq(pr->f_b_wt, 75);
-	eq(pr->f_m_wt, 7);
+	eq(pr->base_wgt, 80);
+	eq(pr->mod_wgt, 10);
 	ok;
 }
 
-int test_f0(void *state) {
-	enum parser_error r = parser_parse(state, "F:SUST_DEX");
+int test_obj_flags0(void *state) {
+	enum parser_error r = parser_parse(state, "obj-flags:SUST_DEX");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -127,8 +213,8 @@ int test_f0(void *state) {
 	ok;
 }
 
-int test_y0(void *state) {
-	enum parser_error r = parser_parse(state, "Y:KNOW_ZAPPER");
+int test_play_flags0(void *state) {
+	enum parser_error r = parser_parse(state, "player-flags:KNOW_ZAPPER");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -138,28 +224,25 @@ int test_y0(void *state) {
 	ok;
 }
 
-int test_c0(void *state) {
-	enum parser_error r = parser_parse(state, "C:1|3|5");
-	struct player_race *pr;
-
-	eq(r, PARSE_ERROR_NONE);
-	pr = parser_priv(state);
-	require(pr);
-	eq(pr->choice, (1 << 5) | (1 << 3) | (1 << 1));
-	ok;
-}
-
 const char *suite_name = "parse/p-info";
 struct test tests[] = {
-	{ "n0", test_n0 },
-	{ "s0", test_s0 },
-	{ "r0", test_r0 },
-	{ "x0", test_x0 },
-	{ "i0", test_i0 },
-	{ "h0", test_h0 },
-	{ "w0", test_w0 },
-	{ "f0", test_f0 },
-	{ "y0", test_y0 },
-	{ "c0", test_c0 },
+	{ "name0", test_name0 },
+	{ "stats0", test_stats0 },
+	{ "skill_disarm0", test_skill_disarm0 },
+	{ "skill_device0", test_skill_device0 },
+	{ "skill_save0", test_skill_save0 },
+	{ "skill_stealth0", test_skill_stealth0 },
+	{ "skill_search0", test_skill_search0 },
+	{ "skill_search_freq0", test_skill_search_freq0 },
+	{ "skill_melee0", test_skill_melee0 },
+	{ "skill_shoot0", test_skill_shoot0 },
+	{ "skill_throw0", test_skill_throw0 },
+	{ "skill_dig0", test_skill_dig0 },
+	{ "info0", test_info0 },
+	{ "history0", test_history0 },
+	{ "height0", test_height0 },
+	{ "weight0", test_weight0 },
+	{ "object_flags0", test_obj_flags0 },
+	{ "player_flags0", test_play_flags0 },
 	{ NULL, NULL }
 };

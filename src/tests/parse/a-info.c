@@ -2,11 +2,12 @@
 
 #include "unit-test.h"
 #include "unit-test-data.h"
-#include "object/tvalsval.h"
+#include "obj-tval.h"
+#include "object.h"
 #include "init.h"
 	
 int setup_tests(void **state) {
-	*state = init_parse_a();
+	*state = init_parse_artifact();
 	return !*state;
 }
 
@@ -15,8 +16,8 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_n0(void *state) {
-	enum parser_error r = parser_parse(state, "N:3:of Thrain");
+int test_name0(void *state) {
+	enum parser_error r = parser_parse(state, "name:3:of Thrain");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -28,32 +29,19 @@ int test_n0(void *state) {
 }
 
 int test_badtval0(void *state) {
-	enum parser_error r = parser_parse(state, "I:badtval:6:3");
+	enum parser_error r = parser_parse(state, "base-object:badtval:Junk");
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
 	ok;
 }
 
 int test_badtval1(void *state) {
-	enum parser_error r = parser_parse(state, "I:-1:6:3");
+	enum parser_error r = parser_parse(state, "base-object:-1:Junk");
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
 	ok;
 }
 
-/* Causes segfault: lookup_sval() requires z_info/k_info */
-int test_badsval(void *state) {
-	errr r = parser_parse(state, "I:light:badsval:3");
-	eq(r, PARSE_ERROR_UNRECOGNISED_SVAL);
-	ok;
-}
-
-int test_badsval1(void *state) {
-	enum parser_error r = parser_parse(state, "I:light:-2:3");
-	eq(r, PARSE_ERROR_UNRECOGNISED_SVAL);
-	ok;
-}
-
-int test_i0(void *state) {
-	enum parser_error r = parser_parse(state, "I:light:6");
+int test_base_object0(void *state) {
+	enum parser_error r = parser_parse(state, "base-object:light:6");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -64,8 +52,8 @@ int test_i0(void *state) {
 	ok;
 }
 
-int test_w0(void *state) {
-	enum parser_error r = parser_parse(state, "W:3:5:8:200");
+int test_info0(void *state) {
+	enum parser_error r = parser_parse(state, "info:3:8:200");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -77,20 +65,20 @@ int test_w0(void *state) {
 	ok;
 }
 
-int test_a0(void *state) {
-	enum parser_error r = parser_parse(state, "A:3:5");
-	eq(r, PARSE_ERROR_GENERIC);
+int test_alloc0(void *state) {
+	enum parser_error r = parser_parse(state, "alloc:3:5");
+	eq(r, PARSE_ERROR_INVALID_ALLOCATION);
 	ok;
 }
 
-int test_a1(void *state) {
-	enum parser_error r = parser_parse(state, "A:3:5 to 300");
+int test_alloc1(void *state) {
+	enum parser_error r = parser_parse(state, "alloc:3:5 to 300");
 	eq(r, PARSE_ERROR_OUT_OF_BOUNDS);
 	ok;
 }
 
-int test_a2(void *state) {
-	enum parser_error r = parser_parse(state, "A:3:5 to 10");
+int test_alloc2(void *state) {
+	enum parser_error r = parser_parse(state, "alloc:3:5 to 10");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -102,8 +90,8 @@ int test_a2(void *state) {
 	ok;
 }
 
-int test_p0(void *state) {
-	enum parser_error r = parser_parse(state, "P:3:4d5:8:2:1");
+int test_power0(void *state) {
+	enum parser_error r = parser_parse(state, "power:3:4d5:8:2:1");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -118,8 +106,8 @@ int test_p0(void *state) {
 	ok;
 }
 
-int test_f0(void *state) {
-	enum parser_error r = parser_parse(state, "F:SEE_INVIS | HOLD_LIFE");
+int test_flags0(void *state) {
+	enum parser_error r = parser_parse(state, "flags:SEE_INVIS | HOLD_LIFE");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -129,49 +117,49 @@ int test_f0(void *state) {
 	ok;
 }
 
-int test_l0(void *state) {
-	enum parser_error r = parser_parse(state, "L:17:STR | CON");
+int test_values0(void *state) {
+	enum parser_error r = parser_parse(state, "values:STR[1] | CON[1]");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
-	eq(a->pval[0], 17);
-	require(a->pval_flags[0]);
+	eq(a->modifiers[0], 1);
+	eq(a->modifiers[4], 1);
 	ok;
 }
 
-int test_e0(void *state) {
-	enum parser_error r = parser_parse(state, "E:DETECT_ALL:20+d30");
+int test_time0(void *state) {
+	enum parser_error r = parser_parse(state, "time:20+d30");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
-	require(a->effect);
 	eq(a->time.base, 20);
 	eq(a->time.sides, 30);
 	ok;
 }
 
-int test_m0(void *state) {
-	enum parser_error r = parser_parse(state, "M:foo");
+int test_msg0(void *state) {
+	enum parser_error r = parser_parse(state, "msg:foo");
 	struct artifact *a;
 
 	eq(r, 0);
-	r = parser_parse(state, "M:bar");
+	r = parser_parse(state, "msg:bar");
 	eq(r, 0);
 	a = parser_priv(state);
 	require(a);
-	require(streq(a->effect_msg, "foobar"));
+	require(streq(a->alt_msg, "foobar"));
 	ok;
 }
 
-int test_d0(void *state) {
-	enum parser_error r = parser_parse(state, "D:baz");
+
+int test_desc0(void *state) {
+	enum parser_error r = parser_parse(state, "desc:baz");
 	struct artifact *a;
 
 	eq(r, 0);
-	r = parser_parse(state, "D: quxx");
+	r = parser_parse(state, "desc: quxx");
 	eq(r, 0);
 	a = parser_priv(state);
 	require(a);
@@ -181,21 +169,19 @@ int test_d0(void *state) {
 
 const char *suite_name = "parse/a-info";
 struct test tests[] = {
-	{ "n0", test_n0 },
+	{ "name0", test_name0 },
 	{ "badtval0", test_badtval0 },
 	{ "badtval1", test_badtval1 },
-/*	{ "badsval0", test_badsval0 }, */
-	{ "badsval1", test_badsval1 },
-	{ "i0", test_i0 },
-	{ "w0", test_w0 },
-	{ "a0", test_a0 },
-	{ "a1", test_a1 },
-	{ "a2", test_a2 },
-	{ "p0", test_p0 },
-	{ "f0", test_f0 },
-	{ "e0", test_e0 },
-	{ "m0", test_m0 },
-	{ "d0", test_d0 },
-	{ "l0", test_l0 },
+	{ "base-object0", test_base_object0 },
+	{ "info0", test_info0 },
+	{ "alloc0", test_alloc0 },
+	{ "alloc1", test_alloc1 },
+	{ "alloc2", test_alloc2 },
+	{ "power0", test_power0 },
+	{ "flags0", test_flags0 },
+	{ "time0", test_time0 },
+	{ "msg0", test_msg0 },
+	{ "desc0", test_desc0 },
+	{ "values0", test_values0 },
 	{ NULL, NULL }
 };

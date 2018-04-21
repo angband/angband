@@ -10,13 +10,6 @@ CC = clang
 LD = ld
 OPT ?= -O2
 
-# NAME is how the bundle name will be displayed
-NAME = Angband
-APPNAME = $(NAME).app
-
-# EXE should stay as "angband", since there are other rules (in this file and in others) that are hardcoded as such
-EXE = angband
-
 # for consistency with older versions, use a lower case bundle ID
 BUNDLE_IDENTIFIER = org.rephial.angband
 
@@ -38,11 +31,6 @@ DEPLOYMENT_TARGET = MACOSX_DEPLOYMENT_TARGET=10.5
 # and build flags in "./config"
 -include config
 
-# -DALLOW_BORG is required for all .o files in a borg build 
-ifneq (,$(findstring borg, $(MAKECMDGOALS)))
-CFLAGS += -DALLOW_BORG
-endif
-
 # Check for autoconf.h; do not warn on nonexistence
 autoconf= $(wildcard autoconf.h)
 ifneq ($(autoconf),)
@@ -51,6 +39,10 @@ endif
 
 # Note that Makefile.inc sets VERSION, and so we must run version.sh after including Makefile.inc
 include Makefile.inc
+
+APPNAME = $(NAME).app
+EXE = $(PROGNAME)
+
 VERSION := $(shell ../scripts/version.sh)
 ifeq (${VERSION},)
 	BUNDLE_VERSION := ${VERSION}
@@ -58,7 +50,6 @@ ifeq (${VERSION},)
 endif
 
 
-BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o borg8.o borg9.o
 OBJS = $(BASEOBJS)
 OSX_OBJS = main-cocoa.o
 
@@ -74,13 +65,12 @@ $(EXE).o: $(OBJS)
 	@$(LD) -r -arch x86_64 -o $@.x86_64 $(OBJS)
 	@printf "%10s %-20s\n" LD $@.i386
 	@$(LD) -r -arch i386 -o $@.i386 $(OBJS)
-	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output angband.o
+	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output $(PROGNAME).o
+
+izzywizzy: $(OBJS) izzywizzy.o
 
 $(EXE): $(EXE).o $(OSX_OBJS)
 	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
-
-borg: $(OBJS) $(BOBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(BOBJS) $(LIBS) 
 
 #
 # Clean up old junk
@@ -127,16 +117,16 @@ APPRES = $(APPCONT)/Resources
 # of 8x8.png for Vanilla.  Make sure setting dpi to 72, *not* preserving
 # the actual size of image.  When you have them ready, put them in
 # the lib/xtra/graf directory and rebuild.
-PLIST = cocoa/Angband-Cocoa.xml
+PLIST = cocoa/$(NAME)-Cocoa.xml
 
-ICONFILES = cocoa/Angband_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
+ICONFILES = cocoa/$(NAME)_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
 
 LIBFILES = \
-  ../lib/edit/*.txt \
-  ../lib/file/*.txt \
+  ../lib/gamedata/*.txt \
+  ../lib/screens/*.txt \
   ../lib/help/*.txt \
   ../lib/help/*.hlp \
-  ../lib/pref/*.prf \
+  ../lib/customize/*.prf \
 
 install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@echo making directories...
@@ -145,28 +135,26 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@mkdir -p $(APPBIN)
 	@mkdir -p $(APPRES)
 	@mkdir -p $(APPRES)/English.lproj/MainMenu.nib 
-	@mkdir -p $(APPRES)/lib/edit
-	@mkdir -p $(APPRES)/lib/file
+	@mkdir -p $(APPRES)/lib/gamedata
+	@mkdir -p $(APPRES)/lib/screens
 	@mkdir -p $(APPRES)/lib/help
-	@mkdir -p $(APPRES)/lib/pref
+	@mkdir -p $(APPRES)/lib/customize
 	@mkdir -p $(APPRES)/lib/script
-	@mkdir -p $(APPRES)/lib/xtra/graf
-	@mkdir -p $(APPRES)/lib/xtra/sound
+	@mkdir -p $(APPRES)/lib/tiles
+	@mkdir -p $(APPRES)/lib/sounds
 
 	@echo copying files...
-	@cp ../lib/edit/*.txt $(APPRES)/lib/edit
-	@cp ../lib/file/*.txt $(APPRES)/lib/file
+	@cp ../lib/gamedata/*.txt $(APPRES)/lib/gamedata
+	@cp ../lib/screens/*.txt $(APPRES)/lib/screens
 	@cp ../lib/help/*.txt $(APPRES)/lib/help
 	@cp ../lib/help/*.hlp $(APPRES)/lib/help
-	@cp ../lib/pref/*.prf $(APPRES)/lib/pref
+	@cp ../lib/customize/*.prf $(APPRES)/lib/customize
 
 	# 'optionally' install sound and graphics tiles, if present
-	# TODO: read the tile pngs from $(APPRES)/lib/xtra/graf/
-	# so we can just recursively copy that directory.
-	-cp ../lib/xtra/graf/graphics.txt $(APPRES)/lib/xtra/graf
-	-cp ../lib/xtra/graf/*.png $(APPRES)/
-	-cp ../lib/xtra/sound/*.mp3 $(APPRES)/lib/xtra/sound
-	-cp ../lib/xtra/sound/sound.cfg $(APPRES)/lib/xtra/sound
+	-cp -r ../lib/tiles/ $(APPRES)/lib/tiles
+	-rm $(APPRES)/lib/tiles/Makefile $(APPRES)/lib/tiles/*/Makefile
+	-cp ../lib/sounds/*.mp3 $(APPRES)/lib/sounds
+	-cp ../lib/sounds/sound.cfg $(APPRES)/lib/sounds
 
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
@@ -220,7 +208,7 @@ dist: install
 	rm -rf disttemp*
 
 tests:
-	$(MAKE) -C tests all CFLAGS="-I.. $(CFLAGS)" LDFLAGS="$(LIBS)" DEFAULT_CONFIG_PATH=../lib
+	$(MAKE) -C tests all CFLAGS='-I.. -DDEFAULT_CONFIG_PATH=\"../../lib\" -DDEFAULT_LIB_PATH=\"../../lib\" -DDEFAULT_DATA_PATH=\"../../lib\" $(CFLAGS)' LDFLAGS="$(LIBS)"
 
 test-clean:
 	$(MAKE) -C tests clean

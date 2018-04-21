@@ -1,6 +1,6 @@
-/*
- * File: cmd-pickup.c
- * Purpose: Pickup code
+/**
+ * \file cmd-pickup.c
+ * \brief Pickup code
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke,
  * Copyright (c) 2007 Leon Marrick
@@ -18,148 +18,90 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
+#include "game-input.h"
 #include "generate.h"
-#include "history.h"
-#include "monster/mon-timed.h"
-#include "monster/mon-util.h"
-#include "object/inventory.h"
-#include "object/tvalsval.h"
-#include "object/object.h"
-#include "squelch.h"
+#include "init.h"
+#include "mon-lore.h"
+#include "mon-timed.h"
+#include "mon-util.h"
+#include "obj-desc.h"
+#include "obj-gear.h"
+#include "obj-identify.h"
+#include "obj-ignore.h"
+#include "obj-pile.h"
+#include "obj-tval.h"
+#include "obj-util.h"
+#include "player-attack.h"
+#include "player-calcs.h"
+#include "player-history.h"
+#include "player-util.h"
 #include "trap.h"
 
-
-
-/*
- * Pick up objects on the floor beneath you.  -LM-
+/**
+ * Pick up all gold at the player's current location.
  */
-void do_cmd_pickup(cmd_code code, cmd_arg args[])
+static void player_pickup_gold(void)
 {
-	int energy_cost;
-
-	/* Autopickup first */
-	energy_cost = do_autopickup() * 10;
-
-	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += py_pickup_item(1, args[0].item) * 10;
-
-	/* Limit */
-	if (energy_cost > 100) energy_cost = 100;
-
-	/* Charge this amount of energy. */
-	p_ptr->energy_use = energy_cost;
-}
-
-/*
- * Pick up objects on the floor beneath you.  -LM-
- */
-void do_cmd_autopickup(cmd_code code, cmd_arg args[])
-{
-	p_ptr->energy_use = do_autopickup() * 10;
-}
-
-
-
-/*
- * Pickup all gold at the player's current location.
- */
-static void py_pickup_gold(void)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
 	s32b total_gold = 0L;
-	byte *treasure;
+	char name[30] = "";
 
-	s16b this_o_idx = 0;
-	s16b next_o_idx = 0;
-
-	object_type *o_ptr;
+	struct object *obj = square_object(cave, player->py, player->px), *next;
 
 	int sound_msg;
 	bool verbal = FALSE;
-
-	/* Allocate an array of ordinary gold objects */
-	treasure = C_ZNEW(SV_GOLD_MAX, byte);
-
+	bool at_most_one = TRUE;
 
 	/* Pick up all the ordinary gold objects */
-	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
-	{
-		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
+	while (obj) {
+		struct object_kind *kind = NULL;
 
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
+		/* Get next object */
+		next = obj->next;
 
 		/* Ignore if not legal treasure */
-		if ((o_ptr->tval != TV_GOLD) ||
-		    (o_ptr->sval >= SV_GOLD_MAX)) continue;
+		kind = lookup_kind(obj->tval, obj->sval);
+		if (!tval_is_money(obj) || !kind) {
+			obj = next;
+			continue;
+		}
 
-		/* Note that we have this kind of treasure */
-		treasure[o_ptr->sval]++;
+		/* Multiple types if we have a second name, otherwise record the name */
+		if (total_gold && !streq(kind->name, name))
+			at_most_one = FALSE;
+		else
+			my_strcpy(name, kind->name, sizeof(name));
 
 		/* Remember whether feedback message is in order */
-		if (!squelch_item_ok(o_ptr))
+		if (!ignore_item_ok(obj))
 			verbal = TRUE;
 
 		/* Increment total value */
-		total_gold += (s32b)o_ptr->pval[DEFAULT_PVAL];
+		total_gold += (s32b)obj->pval;
 
 		/* Delete the gold */
-		delete_object_idx(this_o_idx);
+		square_excise_object(cave, player->py, player->px, obj);
+		object_delete(&obj);
+		obj = next;
 	}
 
 	/* Pick up the gold, if present */
-	if (total_gold)
-	{
-		char buf[1024];
-		char tmp[80];
-		int i, count, total;
-		object_kind *kind;
+	if (total_gold) {
+		char buf[100];
 
 		/* Build a message */
-		(void)strnfmt(buf, sizeof(buf), "You have found %ld gold pieces worth of ", (long)total_gold);
+		(void)strnfmt(buf, sizeof(buf),
+					  "You have found %d gold pieces worth of ", total_gold);
 
-		/* Count the types of treasure present */
-		for (total = 0, i = 0; i < SV_GOLD_MAX; i++)
-		{
-			if (treasure[i]) total++;
-		}
-
-		/* List the treasure types */
-		for (count = 0, i = 0; i < SV_GOLD_MAX; i++)
-		{
-			/* Skip if no treasure of this type */
-			if (!treasure[i]) continue;
-
-			/* Get this object index */
-			kind = lookup_kind(TV_GOLD, i);
-			if (!kind) continue;
-
-			/* Get the object name */
-			object_kind_name(tmp, sizeof tmp, kind, TRUE);
-
-			/* Build up the pickup string */
-			my_strcat(buf, tmp, sizeof(buf));
-
-			/* Added another kind of treasure */
-			count++;
-
-			/* Add a comma if necessary */
-			if ((total > 2) && (count < total)) my_strcat(buf, ",", sizeof(buf));
-
-			/* Add an "and" if necessary */
-			if ((total >= 2) && (count == total-1)) my_strcat(buf, " and", sizeof(buf));
-
-			/* Add a space or period if necessary */
-			if (count < total) my_strcat(buf, " ", sizeof(buf));
-			else               my_strcat(buf, ".", sizeof(buf));
-		}
+		/* One treasure type.. */
+		if (at_most_one)
+			my_strcat(buf, name, sizeof(buf));
+		/* ... or more */
+		else
+			my_strcat(buf, "treasures", sizeof(buf));
+		my_strcat(buf, ".", sizeof(buf));
 
 		/* Determine which sound to play */
 		if      (total_gold < 200) sound_msg = MSG_MONEY1;
@@ -171,183 +113,62 @@ static void py_pickup_gold(void)
 			msgt(sound_msg, "%s", buf);
 
 		/* Add gold to purse */
-		p_ptr->au += total_gold;
+		player->au += total_gold;
 
 		/* Redraw gold */
-		p_ptr->redraw |= (PR_GOLD);
+		player->upkeep->redraw |= (PR_GOLD);
 	}
-
-	/* Free the gold array */
-	FREE(treasure);
 }
 
 
 
-/*
- * Determine if the object can be picked up automatically.
+/**
+ * Determine if an object can be picked up automatically.
  */
-static bool auto_pickup_okay(const object_type *o_ptr)
+static bool auto_pickup_okay(const struct object *obj)
 {
-	if (!inven_carry_okay(o_ptr)) return FALSE;
-	if (OPT(pickup_always) || check_for_inscrip(o_ptr, "=g")) return TRUE;
-	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
+	if (!inven_carry_okay(obj)) return FALSE;
+	if (OPT(pickup_always) || check_for_inscrip(obj, "=g")) return TRUE;
+	if (OPT(pickup_inven) && inven_stack_okay(obj)) return TRUE;
 
 	return FALSE;
 }
 
 
-/*
- * Carry an object and delete it.
+/**
+ * Move an object from a floor pile to the player's gear
  */
-static void py_pickup_aux(int o_idx, bool domsg)
+static void player_pickup_aux(struct object *obj, bool domsg)
 {
-	int slot, quiver_slot = 0;
+	/* Confirm the object can be picked up*/
+	if (!inven_carry_okay(obj))
+		quit_fmt("Failed pickup of %s", obj->kind->name);
 
-	char o_name[80];
-	object_type *o_ptr = object_byid(o_idx);
-
-	/* Carry the object */
-	slot = inven_carry(p_ptr, o_ptr);
-
-	/* Handle errors (paranoia) */
-	if (slot < 0) return;
-
-	/* If we have picked up ammo which matches something in the quiver, note
-	 * that it so that we can wield it later (and suppress pick up message) */
-	if (obj_is_ammo(o_ptr)) 
-	{
-		int i;
-		for (i = QUIVER_START; i < QUIVER_END; i++) 
-		{
-			if (!p_ptr->inventory[i].kind) continue;
-			if (!object_similar(&p_ptr->inventory[i], o_ptr,
-				OSTACK_QUIVER)) continue;
-			quiver_slot = i;
-			break;
-		}
-	}
-
-	/* Get the new object */
-	o_ptr = &p_ptr->inventory[slot];
-
-	/* Set squelch status */
-	p_ptr->notice |= PN_SQUELCH;
+	/* Set ignore status */
+	player->upkeep->notice |= PN_IGNORE;
 
 	/* Automatically sense artifacts */
-	object_sense_artifact(o_ptr);
+	object_sense_artifact(obj);
 
 	/* Log artifacts if found */
-	if (o_ptr->artifact)
-		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
+	if (obj->artifact)
+		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
 
-	/* Optionally, display a message */
-	if (domsg && !quiver_slot)
-	{
-		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-		/* Message */
-		msg("You have %s (%c).", o_name, index_to_label(slot));
-	}
-
-	/* Update object_idx if necessary */
-	if (tracked_object_is(0 - o_idx))
-	{
-		track_object(slot);
-	}
-
-	/* Delete the object */
-	delete_object_idx(o_idx);
-
-	/* If we have a quiver slot that this ammo matches, use it */
-	if (quiver_slot) wield_item(o_ptr, slot, quiver_slot);
-}
-
-int do_autopickup(void)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	s16b this_o_idx, next_o_idx = 0;
-
-	object_type *o_ptr;
-
-	/* Objects picked up.  Used to determine time cost of command. */
-	byte objs_picked_up = 0;
-
-	size_t floor_num = 0;
-	int floor_list[MAX_FLOOR_STACK + 1];
-
-	/* Nothing to pick up -- return */
-	if (!cave->o_idx[py][px]) return (0);
-
-	/* Always pickup gold, effortlessly */
-	py_pickup_gold();
-
-
-	/* Scan the remaining objects */
-	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
-	{
-		/* Get the object and the next object */
-		o_ptr = object_byid(this_o_idx);
-		next_o_idx = o_ptr->next_o_idx;
-
-		/* Ignore all hidden objects and non-objects */
-		if (squelch_item_ok(o_ptr) || !o_ptr->kind) continue;
-
-		/* XXX Hack -- Enforce limit */
-		if (floor_num >= N_ELEMENTS(floor_list)) break;
-
-
-		/* Hack -- disturb */
-		disturb(p_ptr, 0, 0);
-
-
-		/* Automatically pick up items into the backpack */
-		if (auto_pickup_okay(o_ptr))
-		{
-			/* Pick up the object with message */
-			py_pickup_aux(this_o_idx, TRUE);
-			objs_picked_up++;
-
-			continue;
-		}
-
-
-		/* Tally objects and store them in an array. */
-
-		/* Remember this object index */
-		floor_list[floor_num] = this_o_idx;
-
-		/* Count non-gold objects that remain on the floor. */
-		floor_num++;
-	}
-
-	return objs_picked_up;
+	/* Carry the object */
+	square_excise_object(cave, player->py, player->px, obj);
+	inven_carry(player, obj, TRUE, domsg);
 }
 
 /**
  * Pick up objects and treasure on the floor.  -LM-
  *
- * Called with pickup:
- * 0 to act according to the player's settings
- * 1 to quickly pickup single objects or present a menu for more
- * 2 to force a menu for any number of objects
- *
  * Scan the list of objects in that floor grid. Pick up gold automatically.
  * Pick up objects automatically until backpack space is full if
- * auto-pickup option is on, Otherwise, store objects on
+ * auto-pickup option is on, otherwise, store objects on
  * floor in an array, and tally both how many there are and can be picked up.
  *
- * If not picking up anything, indicate objects on the floor.  Show more
- * details if the "OPT(pickup_detail)" option is set.  Do the same thing if we
- * don't have room for anything.
- *
- * [This paragraph is not true, intentional?]
- * If we are picking up objects automatically, and have room for at least
- * one, allow the "OPT(pickup_detail)" option to display information about objects
- * and prompt the player.  Otherwise, automatically pick up a single object
- * or use a menu for more than one.
+ * If not picking up anything, indicate objects on the floor.  Do the same
+ * thing if we don't have room for anything.
  *
  * Pick up multiple objects using Tim Baker's menu system.   Recursively
  * call this function (forcing menus for any number of objects) until
@@ -361,19 +182,21 @@ int do_autopickup(void)
  * Note the lack of chance for the character to be disturbed by unmarked
  * objects.  They are truly "unknown".
  *
- * \param item is the floor item index (must be negative) to pick up.
+ * \param obj is the object to pick up.
+ * \param menu is whether to present a menu to the player
  */
-byte py_pickup_item(int pickup, int item)
+static byte player_pickup_item(bool menu)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = player->py;
+	int px = player->px;
 
-	s16b this_o_idx = 0;
+	struct object *current = NULL;
 
-	size_t floor_num = 0;
-	int floor_list[MAX_FLOOR_STACK + 1];
+	int floor_max = z_info->floor_size + 1;
+	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
+	int floor_num = 0;
 
-	size_t i;
+	int i;
 	int can_pickup = 0;
 	bool call_function_again = FALSE;
 
@@ -383,65 +206,59 @@ byte py_pickup_item(int pickup, int item)
 	byte objs_picked_up = 0;
 
 	/* Always pickup gold, effortlessly */
-	py_pickup_gold();
+	player_pickup_gold();
 
 	/* Nothing else to pick up -- return */
-	if (!cave->o_idx[py][px]) return objs_picked_up;
+	if (!square_object(cave, py, px)) {
+		mem_free(floor_list);
+		return objs_picked_up;
+	}
 
 	/* Tally objects that can be picked up.*/
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x08);
+	floor_num = scan_floor(floor_list, floor_max, py, px, 0x08, NULL);
 	for (i = 0; i < floor_num; i++)
-	{
-	    can_pickup += inven_carry_okay(object_byid(floor_list[i]));
-	}
+	    if (inven_carry_okay(floor_list[i]))
+			can_pickup++;
 	
-	if (!can_pickup)
-	{
+	if (!can_pickup) {
 	    /* Can't pick up, but probably want to know what's there. */
 	    event_signal(EVENT_SEEFLOOR);
+		mem_free(floor_list);
 	    return objs_picked_up;
 	}
 
-	/* Use the item that we are given, if it is on the floor. */
-	if (item < 0)
-		this_o_idx = 0 - item;
-
 	/* Use a menu interface for multiple objects, or pickup single objects */
-	if (pickup == 1 && !this_o_idx)
-	{
+	if (!menu && !current) {
 		if (floor_num > 1)
-			pickup = 2;
+			menu = TRUE;
 		else
-			this_o_idx = floor_list[0];
+			current = floor_list[0];
 	}
 
 	/* Display a list if requested. */
-	if (pickup == 2 && !this_o_idx)
-	{
+	if (menu && !current) {
 		const char *q, *s;
-		int item;
-
-		/* Restrict the choices */
-		item_tester_hook = inven_carry_okay;
+		struct object *obj = NULL;
 
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
-		if (!get_item(&item, q, s, CMD_PICKUP, USE_FLOOR))
+		if (!get_item(&obj, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
+			mem_free(floor_list);
 			return (objs_picked_up);
+		}
 
-		this_o_idx = 0 - item;
+		current = obj;
 		call_function_again = TRUE;
 
 		/* With a list, we do not need explicit pickup messages */
-		domsg = FALSE;
+		domsg = TRUE;
 	}
 
 	/* Pick up object, if legal */
-	if (this_o_idx)
-	{
+	if (current) {
 		/* Pick up the object */
-		py_pickup_aux(this_o_idx, domsg);
+		player_pickup_aux(current, domsg);
 
 		/* Indicate an object picked up. */
 		objs_picked_up = 1;
@@ -451,180 +268,85 @@ byte py_pickup_item(int pickup, int item)
 	 * If requested, call this function recursively.  Count objects picked
 	 * up.  Force the display of a menu in all cases.
 	 */
-	if (call_function_again) objs_picked_up += py_pickup(2);
+	if (call_function_again)
+		objs_picked_up += player_pickup_item(TRUE);
+
+	mem_free(floor_list);
 
 	/* Indicate how many objects have been picked up. */
 	return (objs_picked_up);
 }
 
-byte py_pickup(int pickup)
+/**
+ * Pick up everything on the floor that requires no player action
+ */
+int do_autopickup(void)
 {
-	return py_pickup_item(pickup, 0);
+	int py = player->py;
+	int px = player->px;
+
+	struct object *obj, *next;
+
+	/* Objects picked up.  Used to determine time cost of command. */
+	byte objs_picked_up = 0;
+
+	/* Nothing to pick up -- return */
+	if (!square_object(cave, py, px))
+		return 0;
+
+	/* Always pickup gold, effortlessly */
+	player_pickup_gold();
+
+	/* Scan the remaining objects */
+	obj = square_object(cave, py, px);
+	while (obj) {
+		next = obj->next;
+
+		/* Ignore all hidden objects and non-objects */
+		if (!ignore_item_ok(obj)) {
+			/* Hack -- disturb */
+			disturb(player, 0);
+
+			/* Automatically pick up items into the backpack */
+			if (auto_pickup_okay(obj)) {
+				/* Pick up the object with message */
+				player_pickup_aux(obj, TRUE);
+				objs_picked_up++;
+			}
+		}
+		obj = next;
+	}
+
+	return objs_picked_up;
 }
 
-/*
- * Move player in the given direction.
- *
- * This routine should only be called when energy has been expended.
- *
- * Note that this routine handles monsters in the destination grid,
- * and also handles attempting to move into walls/doors/rubble/etc.
+/**
+ * Pick up objects at the player's request
  */
-void move_player(int dir, bool disarm)
+void do_cmd_pickup(struct command *cmd)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int energy_cost = 0;
 
-	int y = py + ddy[dir];
-	int x = px + ddx[dir];
+	/* Pick up floor objects with a menu for multiple objects */
+	energy_cost += player_pickup_item(FALSE) * z_info->move_energy / 10;
 
-	int m_idx = cave->m_idx[y][x];
-	struct monster *m_ptr = cave_monster(cave, m_idx);
+	/* Limit */
+	if (energy_cost > z_info->move_energy) energy_cost = z_info->move_energy;
 
-	/* Attack monsters */
-	if (m_idx > 0) {
-		/* Mimics surprise the player */
-		if (is_mimicking(m_ptr)) {
-			become_aware(m_ptr);
+	/* Charge this amount of energy. */
+	player->upkeep->energy_use = energy_cost;
+}
 
-			/* Mimic wakes up */
-			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+/**
+ * Pick up or look at objects on a square when the player steps onto it
+ */
+void do_cmd_autopickup(struct command *cmd)
+{
+	/* Get the obvious things */
+	player->upkeep->energy_use = do_autopickup() * z_info->move_energy / 10;
+	if (player->upkeep->energy_use > z_info->move_energy)
+		player->upkeep->energy_use = z_info->move_energy;
 
-		} else {
-			py_attack(y, x);
-		}
-	}
-
-	/* Optionally alter traps/doors on movement */
-	else if (disarm && (cave->info[y][x] & CAVE_MARK) &&
-			(cave_isknowntrap(cave, y, x) ||
-			cave_iscloseddoor(cave, y, x)))
-	{
-		/* Auto-repeat if not already repeating */
-		if (cmd_get_nrepeats() == 0)
-			cmd_set_repeat(99);
-
-		do_cmd_alter_aux(dir);
-	}
-
-	/* Cannot walk through walls */
-	else if (!cave_ispassable(cave, y, x))
-	{
-		/* Disturb the player */
-		disturb(p_ptr, 0, 0);
-
-		/* Notice unknown obstacles */
-		if (!(cave->info[y][x] & CAVE_MARK))
-		{
-			/* Rubble */
-			if (cave_isrubble(cave, y, x))
-			{
-				msgt(MSG_HITWALL, "You feel a pile of rubble blocking your way.");
-				cave->info[y][x] |= (CAVE_MARK);
-				cave_light_spot(cave, y, x);
-			}
-
-			/* Closed door */
-			else if (cave_iscloseddoor(cave, y, x))
-			{
-				msgt(MSG_HITWALL, "You feel a door blocking your way.");
-				cave->info[y][x] |= (CAVE_MARK);
-				cave_light_spot(cave, y, x);
-			}
-
-			/* Wall (or secret door) */
-			else
-			{
-				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
-				cave->info[y][x] |= (CAVE_MARK);
-				cave_light_spot(cave, y, x);
-			}
-		}
-
-		/* Mention known obstacles */
-		else
-		{
-			if (cave_isrubble(cave, y, x))
-				msgt(MSG_HITWALL, "There is a pile of rubble blocking your way.");
-			else if (cave_iscloseddoor(cave, y, x))
-				msgt(MSG_HITWALL, "There is a door blocking your way.");
-			else
-				msgt(MSG_HITWALL, "There is a wall blocking your way.");
-		}
-	}
-
-	/* Normal movement */
-	else
-	{
-		/* See if trap detection status will change */
-		bool old_dtrap = ((cave->info2[py][px] & (CAVE2_DTRAP)) != 0);
-		bool new_dtrap = ((cave->info2[y][x] & (CAVE2_DTRAP)) != 0);
-
-		/* Note the change in the detect status */
-		if (old_dtrap != new_dtrap)
-			p_ptr->redraw |= (PR_DTRAP);
-
-		/* Disturb player if the player is about to leave the area */
-		if (p_ptr->running && !p_ptr->running_firststep && old_dtrap && !new_dtrap)
-		{
-			disturb(p_ptr, 0, 0);
-			return;
-		}
-
-		/* Move player */
-		monster_swap(py, px, y, x);
-  
-		/* New location */
-		y = py = p_ptr->py;
-		x = px = p_ptr->px;
-
-		/* Searching */
-		if (p_ptr->searching ||
-				(p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-				one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
-			search(FALSE);
-
-		/* Handle "store doors" */
-		if (cave_isshop(cave, p_ptr->py, p_ptr->px)) {
-			/* Disturb */
-			disturb(p_ptr, 0, 0);
-			cmd_insert(CMD_ENTER_STORE);
-		}
-
-		/* All other grids (including traps) */
-		else
-		{
-			/* Handle objects (later) */
-			p_ptr->notice |= (PN_PICKUP);
-		}
-
-
-		/* Discover invisible traps */
-		if (cave_issecrettrap(cave, y, x))
-		{
-			/* Disturb */
-			disturb(p_ptr, 0, 0);
-
-			/* Message */
-			msg("You found a trap!");
-
-			/* Pick a trap */
-			pick_trap(y, x);
-
-			/* Hit the trap */
-			hit_trap(y, x);
-		}
-
-		/* Set off an visible trap */
-		else if (cave_isknowntrap(cave, y, x))
-		{
-			/* Disturb */
-			disturb(p_ptr, 0, 0);
-
-			/* Hit the trap */
-			hit_trap(y, x);
-		}
-	}
-
-	p_ptr->running_firststep = FALSE;
+	/* Look at what's left */
+	event_signal(EVENT_SEEFLOOR);
 }

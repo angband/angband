@@ -1,6 +1,6 @@
-/*
- * File: cmd-obj.c
- * Purpose: Handle objects in various ways
+/**
+ * \file cmd-obj.c
+ * \brief Handle objects in various ways
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
@@ -18,64 +18,85 @@
  */
 
 #include "angband.h"
-#include "attack.h"
 #include "cave.h"
+#include "cmd-core.h"
 #include "cmds.h"
 #include "effects.h"
-#include "game-cmd.h"
-#include "object/inventory.h"
-#include "object/tvalsval.h"
-#include "spells.h"
-#include "squelch.h"
+#include "game-input.h"
+#include "init.h"
+#include "obj-desc.h"
+#include "obj-gear.h"
+#include "obj-identify.h"
+#include "obj-ignore.h"
+#include "obj-info.h"
+#include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-tval.h"
+#include "obj-util.h"
+#include "player-attack.h"
+#include "player-calcs.h"
+#include "player-spell.h"
+#include "player-timed.h"
+#include "player-util.h"
 #include "target.h"
-#include "ui-menu.h"
-#include "ui-options.h"
+#include "trap.h"
 
-/*** Utility bits and bobs ***/
+/**
+ * ------------------------------------------------------------------------
+ * Utility bits and bobs
+ * ------------------------------------------------------------------------
+ */
 
-/*
+/**
  * Check to see if the player can use a rod/wand/staff/activatable object.
  */
-static int check_devices(object_type *o_ptr)
+static int check_devices(struct object *obj)
 {
 	int fail;
 	const char *action;
 	const char *what = NULL;
+	bool activated = FALSE;
 
 	/* Get the right string */
-	switch (o_ptr->tval)
-	{
-		case TV_ROD:   action = "zap the rod";   break;
-		case TV_WAND:  action = "use the wand";  what = "wand";  break;
-		case TV_STAFF: action = "use the staff"; what = "staff"; break;
-		default:       action = "activate it";  break;
+	if (tval_is_rod(obj)) {
+		action = "zap the rod";
+	} else if (tval_is_wand(obj)) {
+		action = "use the wand";
+		what = "wand";
+	} else if (tval_is_staff(obj)) {
+		action = "use the staff";
+		what = "staff";
+	} else {
+		action = "activate it";
+		activated = TRUE;
 	}
 
 	/* Figure out how hard the item is to use */
-	fail = get_use_device_chance(o_ptr);
+	fail = get_use_device_chance(obj);
 
 	/* Roll for usage */
-	if (randint1(1000) < fail)
-	{
-		flush();
+	if (randint1(1000) < fail) {
+		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to %s properly.", action);
 		return FALSE;
 	}
 
 	/* Notice empty staffs */
-	if (what && o_ptr->pval[DEFAULT_PVAL] <= 0)
-	{
-		flush();
+	if (what && obj->pval <= 0) {
+		event_signal(EVENT_INPUT_FLUSH);
 		msg("The %s has no charges left.", what);
-		o_ptr->ident |= (IDENT_EMPTY);
 		return FALSE;
 	}
+
+	/* Notice activations */
+	if (activated)
+		object_notice_effect(obj);
 
 	return TRUE;
 }
 
 
-/*
+/**
  * Return the chance of an effect beaming, given a tval.
  */
 static int beam_chance(int tval)
@@ -112,7 +133,7 @@ static art_tag_t art_tag_lookup(const char *tag)
 		return ART_TAG_NONE;
 }
 
-/*
+/**
  * Print an artifact activation message.
  *
  * In order to support randarts, with scrambled names, we re-write
@@ -124,7 +145,7 @@ static art_tag_t art_tag_lookup(const char *tag)
  * always singular in the current code (gloves are "Set of" and boots
  * are "Pair of")
  */
-static void activation_message(object_type *o_ptr, const char *message)
+static void activation_message(struct object *obj)
 {
 	char buf[1024] = "\0";
 	const char *next;
@@ -133,29 +154,34 @@ static void activation_message(object_type *o_ptr, const char *message)
 	const char *in_cursor;
 	size_t end = 0;
 
-	in_cursor = message;
+	/* See if we have a message */
+	if (!obj->activation) return;
+	if (!obj->activation->message) return;
+	if (obj->artifact && obj->artifact->alt_msg)
+		in_cursor = obj->artifact->alt_msg;
+	else
+		in_cursor = obj->activation->message;
 
 	next = strchr(in_cursor, '{');
-	while (next)
-	{
+	while (next) {
 		/* Copy the text leading up to this { */
 		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor); 
 
 		s = next + 1;
 		while (*s && isalpha((unsigned char) *s)) s++;
 
-		if (*s == '}')		/* Valid tag */
-		{
-			tag = next + 1; /* Start the tag after the { */
+		/* Valid tag */
+		if (*s == '}') {
+			/* Start the tag after the { */
+			tag = next + 1;
 			in_cursor = s + 1;
 
-			switch(art_tag_lookup(tag))
-			{
+			switch(art_tag_lookup(tag)) {
 			case ART_TAG_NAME:
-				end += object_desc(buf, 1024, o_ptr, ODESC_PREFIX | ODESC_BASE); 
+				end += object_desc(buf, 1024, obj, ODESC_PREFIX | ODESC_BASE); 
 				break;
 			case ART_TAG_KIND:
-				object_kind_name(&buf[end], 1024-end, o_ptr->kind, TRUE);
+				object_kind_name(&buf[end], 1024-end, obj->kind, TRUE);
 				end += strlen(&buf[end]);
 				break;
 			case ART_TAG_VERB:
@@ -169,11 +195,9 @@ static void activation_message(object_type *o_ptr, const char *message)
 			default:
 				break;
 			}
-		}
-		else    /* An invalid tag, skip it */
-		{
+		} else
+			/* An invalid tag, skip it */
 			in_cursor = next + 1;
-		}
 
 		next = strchr(in_cursor, '{');
 	}
@@ -183,487 +207,427 @@ static void activation_message(object_type *o_ptr, const char *message)
 }
 
 
-
-/*** Inscriptions ***/
-
-/* Remove inscription */
-void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
+/**
+ * Unknown item hook for get_item()
+ */
+static bool item_tester_unknown(const struct object *obj)
 {
-	object_type *o_ptr = object_from_item_idx(args[0].item);
-
-	if (obj_has_inscrip(o_ptr))
-		msg("Inscription removed.");
-
-	o_ptr->note = 0;
-
-	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+	return object_is_known(obj) ? FALSE : TRUE;
 }
 
-/* Add inscription */
-void do_cmd_inscribe(cmd_code code, cmd_arg args[])
+/**
+ * Return TRUE if there are any objects available to identify (whether on
+ * floor or in gear)
+ */
+static bool spell_identify_unknown_available(void)
 {
-	object_type *o_ptr = object_from_item_idx(args[0].item);
+	int floor_max = z_info->floor_size;
+	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
+	int floor_num;
+	struct object *obj;
+	bool unidentified_gear = FALSE;
 
-	o_ptr->note = quark_add(args[1].string);
-	string_free((void *)args[1].string);
+	floor_num = scan_floor(floor_list, floor_max, player->py, player->px, 0x0B,
+						   item_tester_unknown);
 
-	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-}
-
-
-/*** Taking off/putting on ***/
-
-/* Take off an item */
-void do_cmd_takeoff(cmd_code code, cmd_arg args[])
-{
-	int item = args[0].item;
-
-	if (!item_is_available(item, NULL, USE_EQUIP))
-	{
-		msg("You are not wielding that item.");
-		return;
+	for (obj = player->gear; obj; obj = obj->next) {
+		if (object_test(item_tester_unknown, obj)) {
+			unidentified_gear = TRUE;
+			break;
+		}
 	}
 
-	if (!obj_can_takeoff(object_from_item_idx(item)))
-	{
-		msg("You cannot take off that item.");
-		return;
-	}
-
-	(void)inven_takeoff(item, 255);
-	pack_overflow();
-	p_ptr->energy_use = 50;
+	return unidentified_gear || floor_num > 0;
 }
 
 
-/*
+
+/**
+ * ------------------------------------------------------------------------
+ * Inscriptions
+ * ------------------------------------------------------------------------
+ */
+
+/**
+ * Remove inscription
+ */
+void do_cmd_uninscribe(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get arguments */
+	if (cmd_get_item(cmd, "item", &obj,
+			/* Prompt */ "Uninscribe which item?",
+			/* Error  */ "You have nothing you can uninscribe.",
+			/* Filter */ obj_has_inscrip,
+			/* Choice */ USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR) != CMD_OK)
+		return;
+
+	obj->note = 0;
+	msg("Inscription removed.");
+
+	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+}
+
+/**
+ * Add inscription
+ */
+void do_cmd_inscribe(struct command *cmd)
+{
+	struct object *obj;
+	const char *str;
+
+	char prompt[1024];
+	char o_name[80];
+
+	/* Get arguments */
+	if (cmd_get_item(cmd, "item", &obj,
+			/* Prompt */ "Inscribe which item?",
+			/* Error  */ "You have nothing to inscribe.",
+			/* Filter */ NULL,
+			/* Choice */ USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | IS_HARMLESS) != CMD_OK)
+		return;
+
+	/* Form prompt */
+	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
+	strnfmt(prompt, sizeof prompt, "Inscribing %s.", o_name);
+
+	if (cmd_get_string(cmd, "inscription", &str,
+			quark_str(obj->note) /* Default */,
+			prompt, "Inscribe with what? ") != CMD_OK)
+		return;
+
+	obj->note = quark_add(str);
+
+	player->upkeep->notice |= (PN_COMBINE | PN_IGNORE);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+}
+
+
+/**
+ * Autoinscribe all appropriate objects
+ */
+void do_cmd_autoinscribe(struct command *cmd)
+{
+	autoinscribe_ground();
+	autoinscribe_pack();
+
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+}
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Taking off/putting on
+ * ------------------------------------------------------------------------
+ */
+
+/**
+ * Take off an item
+ */
+void do_cmd_takeoff(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get arguments */
+	if (cmd_get_item(cmd, "item", &obj,
+			/* Prompt */ "Take off or unwield which item?",
+			/* Error  */ "You have nothing to take off or unwield.",
+			/* Filter */ obj_can_takeoff,
+			/* Choice */ USE_EQUIP) != CMD_OK)
+		return;
+
+	inven_takeoff(obj);
+	pack_overflow(obj);
+	player->upkeep->energy_use = z_info->move_energy / 2;
+}
+
+
+/**
  * Wield or wear a single item from the pack or floor
  */
-void wield_item(object_type *o_ptr, int item, int slot)
+void wield_item(struct object *obj, int slot)
 {
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
+	struct object *wielded, *old = player->body.slots[slot].obj;
 
 	const char *fmt;
 	char o_name[80];
 
-	bool combined_ammo = FALSE;
-	bool track_wielded_item = FALSE;
-	int num = 1;
-
-	/* If we are stacking ammo in the quiver */
-	if (obj_is_ammo(o_ptr))
-	{
-		num = o_ptr->number;
-		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot],
-			OSTACK_QUIVER);
-	}
+	/* Increase equipment counter if empty slot */
+	if (old == NULL)
+		player->upkeep->equip_cnt++;
 
 	/* Take a turn */
-	p_ptr->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Obtain local object */
-	object_copy(i_ptr, o_ptr);
+	/* Split off a new object if necessary */
+	if (obj->number > 1) {
+		/* Split off a new single object */
+		wielded = object_split(obj, 1);
 
-	/* Modify quantity */
-	i_ptr->number = num;
+		/* If it's a gear object, give the split item a list entry */
+		if (pile_contains(player->gear, obj)) {
+			wielded->next = obj->next;
+			obj->next = wielded;
+			wielded->prev = obj;
+			if (wielded->next)
+				(wielded->next)->prev = wielded;
+		}
+	} else
+		wielded = obj;
 
-	/* Update object_idx if necessary, once object is in slot */
-	if (tracked_object_is(item))
-	{
-		track_wielded_item = TRUE;
+	/* Carry floor items, don't allow combining */
+	if (square_holds_object(cave, player->py, player->px, wielded)) {
+		square_excise_object(cave, player->py, player->px, wielded);
+		inven_carry(player, wielded, FALSE, FALSE);
 	}
 
-	/* Decrease the item (from the pack) */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -num);
-		inven_item_optimize(item);
-	}
-
-	/* Decrease the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -num);
-		floor_item_optimize(0 - item);
-	}
-
-	/* Get the wield slot */
-	o_ptr = &p_ptr->inventory[slot];
-
-	if (combined_ammo)
-	{
-		/* Add the new ammo to the already-quiver-ed ammo */
-		object_absorb(o_ptr, i_ptr);
-	}
-	else 
-	{
-		/* Take off existing item */
-		if (o_ptr->kind)
-			(void)inven_takeoff(slot, 255);
-
-		/* If we are wielding ammo we may need to "open" the slot by shifting
-		 * later ammo up the quiver; this is because we already called the
-		 * inven_item_optimize() function. */
-		if (slot >= QUIVER_START)
-			open_quiver_slot(slot);
-	
-		/* Wear the new stuff */
-		object_copy(o_ptr, i_ptr);
-
-		/* Increment the equip counter by hand */
-		p_ptr->equip_cnt++;
-	}
-
-	/* Increase the weight */
-	p_ptr->total_weight += i_ptr->weight * num;
-
-	/* Track object if necessary */
-	if (track_wielded_item)
-	{
-		track_object(slot);
-	}
+	/* Wear the new stuff */
+	player->body.slots[slot].obj = wielded;
 
 	/* Do any ID-on-wield */
-	object_notice_on_wield(o_ptr);
+	object_notice_on_wield(wielded);
 
 	/* Where is the item now */
-	if (slot == INVEN_WIELD)
+	if (tval_is_melee_weapon(wielded))
 		fmt = "You are wielding %s (%c).";
-	else if (slot == INVEN_BOW)
+	else if (wielded->tval == TV_BOW)
 		fmt = "You are shooting with %s (%c).";
-	else if (slot == INVEN_LIGHT)
+	else if (tval_is_light(wielded))
 		fmt = "Your light source is %s (%c).";
-	else if (combined_ammo)
-		fmt = "You combine %s in your quiver (%c).";
-	else if (slot >= QUIVER_START && slot < QUIVER_END)
-		fmt = "You add %s to your quiver (%c).";
 	else
 		fmt = "You are wearing %s (%c).";
 
 	/* Describe the result */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), wielded, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msgt(MSG_WIELD, fmt, o_name, index_to_label(slot));
+	msgt(MSG_WIELD, fmt, o_name, I2A(slot));
 
 	/* Cursed! */
-	if (cursed_p(o_ptr->flags))
-	{
+	if (cursed_p(wielded->flags)) {
 		/* Warn the player */
 		msgt(MSG_CURSED, "Oops! It feels deathly cold!");
 
 		/* Sense the object */
-		object_notice_curses(o_ptr);
+		object_notice_curses(wielded);
 	}
 
-	/* Save quiver size */
-	save_quiver_size(p_ptr);
-
 	/* See if we have to overflow the pack */
-	pack_overflow();
+	combine_pack();
+	pack_overflow(old);
 
-	/* Recalculate bonuses, torch, mana */
-	p_ptr->notice |= PN_SORT_QUIVER;
-	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+	/* Recalculate bonuses, torch, mana, gear */
+	player->upkeep->notice |= (PN_IGNORE);
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_ARMOR);
+	player->upkeep->redraw |= (PR_STATS | PR_HP | PR_MANA | PR_SPEED);
+
+	/* Disable repeats */
+	cmd_disable_repeat();
 }
 
 
-/* Wield or wear an item */
-void do_cmd_wield(cmd_code code, cmd_arg args[])
+/**
+ * Wield or wear an item
+ */
+void do_cmd_wield(struct command *cmd)
 {
-	object_type *equip_o_ptr;
+	struct object *equip_obj;
 	char o_name[80];
+	const char *act;
 
 	unsigned n;
 
-	int item = args[0].item;
-	int slot = args[1].number;
-	object_type *o_ptr = object_from_item_idx(item);
+	int slot;
+	struct object *obj;
 
-	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
-	{
-		msg("You do not have that item to wield.");
+	/* Get arguments */
+	if (cmd_get_item(cmd, "item", &obj,
+			/* Prompt */ "Wear or wield which item?",
+			/* Error  */ "You have nothing to wear or wield.",
+			/* Filter */ obj_can_wear,
+			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
 		return;
-	}
 
-	/* Check the slot */
-	if (!slot_can_wield_item(slot, o_ptr))
-	{
-		msg("You cannot wield that item there.");
-		return;
-	}
-
-	equip_o_ptr = &p_ptr->inventory[slot];
+	/* Get the slot the object wants to go in, and the item currently there */
+	slot = wield_slot(obj);
+	equip_obj = slot_object(player, slot);
 
 	/* If the slot is open, wield and be done */
-	if (!equip_o_ptr->kind)
-	{
-		wield_item(o_ptr, item, slot);
+	if (!equip_obj) {
+		wield_item(obj, slot);
 		return;
 	}
 
-	/* If the slot is in the quiver and objects can be combined */
-	if (obj_is_ammo(equip_o_ptr) && object_similar(equip_o_ptr, o_ptr,
-		OSTACK_QUIVER))
-	{
-		wield_item(o_ptr, item, slot);
-		return;
+	/* Usually if the slot is taken we'll just replace the item in the slot,
+	 * but for rings we need to ask the user which slot they actually
+	 * want to replace */
+	if (tval_is_ring(obj)) {
+		if (cmd_get_item(cmd, "replace", &equip_obj,
+						 /* Prompt */ "Replace which ring? ",
+						 /* Error  */ "Error in do_cmd_wield(), please report.",
+						 /* Filter */ tval_is_ring,
+						 /* Choice */ USE_EQUIP) != CMD_OK)
+			return;
+
+		/* Change slot if necessary */
+		slot = equipped_item_slot(player->body, equip_obj);
 	}
 
 	/* Prevent wielding into a cursed slot */
-	if (cursed_p(equip_o_ptr->flags))
-	{
-		object_desc(o_name, sizeof(o_name), equip_o_ptr, ODESC_BASE);
+	if (cursed_p(equip_obj->flags)) {
+		object_desc(o_name, sizeof(o_name), equip_obj, ODESC_BASE);
 		msg("The %s you are %s appears to be cursed.", o_name,
-				   describe_use(slot));
+			equip_describe(player, slot));
 		return;
 	}
 
 	/* "!t" checks for taking off */
-	n = check_for_inscrip(equip_o_ptr, "!t");
-	while (n--)
-	{
+	n = check_for_inscrip(equip_obj, "!t");
+	while (n--) {
 		/* Prompt */
-		object_desc(o_name, sizeof(o_name), equip_o_ptr,
+		object_desc(o_name, sizeof(o_name), equip_obj,
 					ODESC_PREFIX | ODESC_FULL);
 		
 		/* Forget it */
 		if (!get_check(format("Really take off %s? ", o_name))) return;
 	}
 
-	wield_item(o_ptr, item, slot);
+	/* Describe the object */
+	object_desc(o_name, sizeof(o_name), equip_obj, ODESC_PREFIX | ODESC_FULL);
+
+	/* Took off weapon */
+	if (slot_type_is(slot, EQUIP_WEAPON))
+		act = "You were wielding";
+	/* Took off bow */
+	else if (slot_type_is(slot, EQUIP_BOW))
+		act = "You were holding";
+	/* Took off light */
+	else if (slot_type_is(slot, EQUIP_LIGHT))
+		act = "You were holding";
+	/* Took off something else */
+	else
+		act = "You were wearing";
+
+	/* Message */
+	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, gear_to_label(equip_obj));
+
+	wield_item(obj, slot);
 }
 
-/* Drop an item */
-void do_cmd_drop(cmd_code code, cmd_arg args[])
+/**
+ * Drop an item
+ */
+void do_cmd_drop(struct command *cmd)
 {
-	int item = args[0].item;
-	object_type *o_ptr = object_from_item_idx(item);
-	int amt = args[1].number;
+	int amt;
+	struct object *obj;
 
-	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP))
-	{
-		msg("You do not have that item to drop it.");
+	/* Get arguments */
+	if (cmd_get_item(cmd, "item", &obj,
+			/* Prompt */ "Drop which item?",
+			/* Error  */ "You have nothing to drop.",
+			/* Filter */ NULL,
+			/* Choice */ USE_EQUIP | USE_INVEN | USE_QUIVER) != CMD_OK)
 		return;
-	}
+
+	if (cmd_get_quantity(cmd, "quantity", &amt, obj->number) != CMD_OK)
+		return;
 
 	/* Hack -- Cannot remove cursed items */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
-	{
+	if (object_is_equipped(player->body, obj) && cursed_p(obj->flags)) {
 		msg("Hmmm, it seems to be cursed.");
 		return;
 	}
 
-	inven_drop(item, amt);
-	p_ptr->energy_use = 50;
+	inven_drop(obj, amt);
+	player->upkeep->energy_use = z_info->move_energy / 2;
 }
 
-/* Destroy an item */
-void do_cmd_destroy(cmd_code code, cmd_arg args[])
-{
-	object_type *o_ptr;
-	int item = args[0].item;
-
-	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
-	{
-		msg("You do not have that item to ignore it.");
-		return;
-	}
-
-	o_ptr = object_from_item_idx(item);
-
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags)) {
-		msg("You cannot ignore cursed items.");
-	} else {	
-		char o_name[80];
-
-		object_desc(o_name, sizeof o_name, o_ptr, ODESC_PREFIX | ODESC_FULL);
-		msgt(MSG_DESTROY, "Ignoring %s.", o_name);
-
-		o_ptr->ignore = TRUE;
-		p_ptr->notice |= PN_SQUELCH;
-	}
-}
-
-
-
-/*** Using items the traditional way ***/
-
-/*
- * Use an object the right way.
- *
- * There may be a BIG problem with any "effect" that can cause "changes"
- * to the inventory.  For example, a "scroll of recharging" can cause
- * a wand/staff to "disappear", moving the inventory up.  Luckily, the
- * scrolls all appear BEFORE the staffs/wands, so this is not a problem.
- * But, for example, a "staff of recharging" could cause MAJOR problems.
- * In such a case, it will be best to either (1) "postpone" the effect
- * until the end of the function, or (2) "change" the effect, say, into
- * giving a staff "negative" charges, or "turning a staff into a stick".
- * It seems as though a "rod of recharging" might in fact cause problems.
- * The basic problem is that the act of recharging (and destroying) an
- * item causes the inducer of that action to "move", causing "o_ptr" to
- * no longer point at the correct item, with horrifying results.
+/**
+ * ------------------------------------------------------------------------
+ * Using items the traditional way
+ * ------------------------------------------------------------------------
  */
-void do_cmd_use(cmd_code code, cmd_arg args[])
+
+enum use {
+	USE_TIMEOUT,
+	USE_CHARGE,
+	USE_SINGLE
+};
+
+/**
+ * Use an object the right way.
+ */
+static void use_aux(struct command *cmd, struct object *obj, enum use use,
+					int snd)
 {
-	int item = args[0].item;
-	object_type *o_ptr = object_from_item_idx(item);
-	object_type *original = NULL;
-	int effect;
+	struct effect *effect = object_effect(obj);
 	bool ident = FALSE, used = FALSE;
-	bool was_aware = object_flavor_is_aware(o_ptr);
+	bool was_aware;
+	bool none_left = FALSE;
 	int dir = 5;
-	int px = p_ptr->px, py = p_ptr->py;
-	int snd = MSG_GENERIC, boost, level;
-	enum {
-		USE_TIMEOUT,
-		USE_CHARGE,
-		USE_SINGLE
-	} use = USE_SINGLE;
-	int items_allowed = 0;
+	int px = player->px, py = player->py;
+	enum use;
+	struct trap_kind *rune = lookup_trap("glyph of warding");
 
-	/* Determine how this item is used. */
-	if (obj_is_rod(o_ptr))
-	{
-		if (!obj_can_zap(o_ptr))
-		{
-			msg("That rod is still charging.");
-			return;
-		}
+	/* Get arguments */
+	assert(cmd_get_arg_item(cmd, "item", &obj) == CMD_OK);
 
-		use = USE_TIMEOUT;
-		snd = MSG_ZAP_ROD;
-		items_allowed = USE_INVEN | USE_FLOOR;
-	}
-	else if (obj_is_wand(o_ptr))
-	{
-		if (!obj_has_charges(o_ptr))
-		{
-			msg("That wand has no charges.");
-			return;
-		}
-
-		use = USE_CHARGE;
-		snd = MSG_ZAP_ROD;
-		items_allowed = USE_INVEN | USE_FLOOR;
-	}
-	else if (obj_is_staff(o_ptr))
-	{
-		if (!obj_has_charges(o_ptr))
-		{
-			msg("That staff has no charges.");
-			return;
-		}
-
-		use = USE_CHARGE;
-		snd = MSG_USE_STAFF;
-		items_allowed = USE_INVEN | USE_FLOOR;
-	}
-	else if (obj_is_food(o_ptr))
-	{
-		use = USE_SINGLE;
-		snd = MSG_EAT;
-		items_allowed = USE_INVEN | USE_FLOOR;
-	}
-	else if (obj_is_potion(o_ptr))
-	{
-		use = USE_SINGLE;
-		snd = MSG_QUAFF;
-		items_allowed = USE_INVEN | USE_FLOOR;
-	}
-	else if (obj_is_scroll(o_ptr))
-	{
-		/* Check player can use scroll */
-		if (!player_can_read(p_ptr, TRUE))
+	if (obj_needs_aim(obj)) {
+		if (cmd_get_target(cmd, "target", &dir) != CMD_OK)
 			return;
 
-		use = USE_SINGLE;
-		snd = MSG_GENERIC;
-		items_allowed = USE_INVEN | USE_FLOOR;
-	}
-	else if (obj_is_activatable(o_ptr))
-	{
-		if (!obj_can_activate(o_ptr))
-		{
-			msg("That item is still charging.");
-			return;
-		}
-
-		use = USE_TIMEOUT;
-		snd = MSG_ACT_ARTIFACT;
-		items_allowed = USE_EQUIP;
-	}
-	else if (obj_is_ammo(o_ptr))
-	{
-		do_cmd_fire(code,args);
-		return;
-	}
-	else
-	{
-		msg("The item cannot be used at the moment");
+		player_confuse_dir(player, &dir, FALSE);
 	}
 
-	/* Check if item is within player's reach. */
-	if (items_allowed == 0 || !item_is_available(item, NULL, items_allowed))
-	{
-		msg("You cannot use that item from its current location.");
-		return;
-	}
+	was_aware = object_flavor_is_aware(obj);
 
 	/* track the object used */
-	track_object(item);
+	track_object(player->upkeep, obj);
 
-	/* Figure out effect to use */
-	effect = object_effect(o_ptr);
+	/* Verify effect */
+	assert(effect);
 
 	/* Check for unknown objects to prevent wasted player turns. */
-	if (effect == EF_IDENTIFY && !spell_identify_unknown_available()) {
+	if (effect->index == EF_IDENTIFY &&
+		!spell_identify_unknown_available()) {
 		msg("You have nothing to identify.");
 		return;
 	}
 
-	/* If the item requires a direction, get one (allow cancelling) */
-	if (obj_needs_aim(o_ptr))
-		dir = args[1].direction;
-
-	if (item >= 0 && item < INVEN_PACK) {
-		/* Create a copy so that we can remember what we are working with, in case the
-		 * inventory is changed. */
-		original = ZNEW(object_type);
-		object_copy(original, o_ptr);
-	}
-
 	/* Check for use if necessary, and execute the effect */
-	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(o_ptr))
-	{
-		int beam = beam_chance(o_ptr->tval);
+	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(obj)) {
+		int beam = beam_chance(obj->tval);
+		int boost, level;
 
-		/* Special message for artifacts */
-		if (o_ptr->artifact)
-		{
-			msgt(snd, "You activate it.");
-			if (o_ptr->artifact->effect_msg)
-				activation_message(o_ptr, o_ptr->artifact->effect_msg);
-			level = o_ptr->artifact->level;
-		}
+		/* Get the level */
+		if (obj->artifact)
+			level = obj->artifact->level;
+		else if (obj->ego)
+			level = obj->ego->level;
 		else
-		{
+			level = obj->kind->level;
+
+		/* Sound and/or message */
+		if (obj->activation) {
+			msgt(snd, "You activate it.");
+			activation_message(obj);
+		} else if (obj->kind->effect_msg) {
+			msgt(snd, obj->kind->effect_msg);
+		} else {
 			/* Make a noise! */
 			sound(snd);
-			level = o_ptr->kind->level;
 		}
 
 		/* A bit of a hack to make ID work better.
 			-- Check for "obvious" effects beforehand. */
-		if (effect_obvious(effect)) object_flavor_aware(o_ptr);
+		if (effect->index == EF_IDENTIFY) object_flavor_aware(obj);
 
 		/* Boost damage effects if skill > difficulty */
-		boost = MAX(p_ptr->state.skills[SKILL_DEVICE] - level, 0);
+		boost = MAX(player->state.skills[SKILL_DEVICE] - level, 0);
 
 		/* Do effect */
 		used = effect_do(effect, &ident, was_aware, dir, beam, boost);
@@ -672,531 +636,466 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (!used && (was_aware || !ident)) return;
 	}
 
-	if (original != NULL) {
-		/* Restore o_ptr to the new inventory slot that contains the original object. We
-		 * have to do this because object mutating functions follow; "original" is a dummy
-		 * just so that we know what we are working with. */
-		item = inventory_index_matching_object(original);
-		o_ptr = object_from_item_idx(item);
-		FREE(original);
-	}
-
 	/* If the item is a null pointer or has been wiped, be done now */
-	if (!o_ptr || !o_ptr->kind) return;
-
-	if (ident) object_notice_effect(o_ptr);
-
-	/* Food feeds the player */
-	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
-		player_set_food(p_ptr, p_ptr->food + o_ptr->pval[DEFAULT_PVAL]);
+	if (!obj) return;
 
 	/* Use the turn */
-	p_ptr->energy_use = 100;
+	player->upkeep->energy_use = z_info->move_energy;
 
-	/* Mark as tried and redisplay */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
-
-	/*
-	 * If the player becomes aware of the item's function, then mark it as
-	 * aware and reward the player with some experience.  Otherwise, mark
-	 * it as "tried".
-	 */
-	if (ident && !was_aware)
-	{
-		/* Object level */
-		int lev = o_ptr->kind->level;
-
-		object_flavor_aware(o_ptr);
-		if (o_ptr->tval == TV_ROD) object_notice_everything(o_ptr);
-		player_exp_gain(p_ptr, (lev + (p_ptr->lev / 2)) / p_ptr->lev);
-		p_ptr->notice |= PN_SQUELCH;
+	/* ID the object by use if appropriate, otherwise, mark it as "tried" */
+	if (ident && !was_aware) {
+		object_notice_on_use(obj);
+	} else if (used) {
+		object_flavor_tried(obj);
 	}
-	else if (used)
-	{
-		object_flavor_tried(o_ptr);
-	}
-
-	/* If there are no more of the item left, then we're done. */
-	if (!o_ptr->number) return;
 
 	/* Chargeables act differently to single-used items when not used up */
-	if (used && use == USE_CHARGE)
-	{
+	if (used && use == USE_CHARGE) {
 		/* Use a single charge */
-		o_ptr->pval[DEFAULT_PVAL]--;
+		obj->pval--;
 
 		/* Describe charges */
-		if (item >= 0)
-			inven_item_charges(item);
+		if (object_is_carried(player, obj))
+			inven_item_charges(obj);
 		else
-			floor_item_charges(0 - item);
-	}
-	else if (used && use == USE_TIMEOUT)
-	{
-		/* Artifacts use their own special field */
-		if (o_ptr->artifact)
-			o_ptr->timeout = randcalc(o_ptr->artifact->time, 0, RANDOMISE);
-		else
-			o_ptr->timeout += randcalc(o_ptr->kind->time, 0, RANDOMISE);
-	}
-	else if (used && use == USE_SINGLE)
-	{
-		/* Destroy a potion in the pack */
-		if (item >= 0)
-		{
-			inven_item_increase(item, -1);
-			inven_item_describe(item);
-			inven_item_optimize(item);
-		}
+			floor_item_charges(obj);
+	} else if (used && use == USE_TIMEOUT) {
+		obj->timeout += randcalc(obj->time, 0, RANDOMISE);
+	} else if (used && use == USE_SINGLE) {
+		struct object *used_obj;
 
-		/* Destroy a potion on the floor */
+		/* Destroy an item in the pack */
+		if (object_is_carried(player, obj))
+			used_obj = gear_object_for_use(obj, 1, TRUE, &none_left);
 		else
-		{
-			floor_item_increase(0 - item, -1);
-			floor_item_describe(0 - item);
-			floor_item_optimize(0 - item);
-		}
+			/* Destroy an item on the floor */
+			used_obj = floor_object_for_use(obj, 1, TRUE, &none_left);
+		object_delete(&used_obj);
 	}
-	
+
+	/* Autoinscribe if we still have any */
+	if (!none_left)
+		apply_autoinscription(obj);
+
+	/* Mark as tried and redisplay */
+	player->upkeep->notice |= (PN_COMBINE);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
+
 	/* Hack to make Glyph of Warding work properly */
-	if (cave_isglyph(cave, py, px))
-	{
+	if (square_trap_specific(cave, py, px, rune->tidx)) {
 		/* Push objects off the grid */
-		if (cave->o_idx[py][px]) push_object(py, px);
+		if (square_object(cave, py, px))
+			push_object(py, px);
 	}
-
-
 }
 
 
-/*** Refuelling ***/
+/**
+ * Read a scroll
+ */
+void do_cmd_read_scroll(struct command *cmd)
+{
+	struct object *obj;
 
-static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
+	/* Check player can use scroll */
+	if (!player_can_read(player, TRUE))
+		return;
+
+	/* Get the scroll */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Read which scroll? ",
+			"You have no scrolls to read.",
+			tval_is_scroll,
+			USE_INVEN | USE_FLOOR) != CMD_OK) return;
+
+	use_aux(cmd, obj, USE_SINGLE, MSG_GENERIC);
+}
+
+/**
+ * Use a staff 
+ */
+void do_cmd_use_staff(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Use which staff? ",
+			"You have no staves to use.",
+			tval_is_staff,
+			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
+
+	if (!obj_has_charges(obj)) {
+		msg("That staff has no charges.");
+		return;
+	}
+
+	use_aux(cmd, obj, USE_CHARGE, MSG_USE_STAFF);
+}
+
+/**
+ * Aim a wand 
+ */
+void do_cmd_aim_wand(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Aim which wand? ",
+			"You have no wands to aim.",
+			tval_is_wand,
+			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
+
+	if (!obj_has_charges(obj)) {
+		msg("That wand has no charges.");
+		return;
+	}
+
+	use_aux(cmd, obj, USE_CHARGE, MSG_ZAP_ROD);
+}
+
+/**
+ * Zap a rod 
+ */
+void do_cmd_zap_rod(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Zap which rod? ",
+			"You have no rods to zap.",
+			tval_is_rod,
+			USE_INVEN | USE_FLOOR | SHOW_FAIL) != CMD_OK) return;
+
+	if (!obj_can_zap(obj)) {
+		msg("That rod is still charging.");
+		return;
+	}
+
+	use_aux(cmd, obj, USE_TIMEOUT, MSG_ZAP_ROD);
+}
+
+/**
+ * Activate an object 
+ */
+void do_cmd_activate(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Activate which item? ",
+			"You have no items to activate.",
+			obj_is_activatable,
+			USE_EQUIP | SHOW_FAIL) != CMD_OK) return;
+
+	if (!obj_can_activate(obj)) {
+		msg("That item is still charging.");
+		return;
+	}
+
+	use_aux(cmd, obj, USE_TIMEOUT, MSG_ACT_ARTIFACT);
+}
+
+/**
+ * Eat some food 
+ */
+void do_cmd_eat_food(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Eat which food? ",
+			"You have no food to eat.",
+			tval_is_edible,
+			USE_INVEN | USE_FLOOR) != CMD_OK) return;
+
+	use_aux(cmd, obj, USE_SINGLE, MSG_EAT);
+}
+
+/**
+ * Quaff a potion 
+ */
+void do_cmd_quaff_potion(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Quaff which potion? ",
+			"You have no potions from which to quaff.",
+			tval_is_potion,
+			USE_INVEN | USE_FLOOR) != CMD_OK) return;
+
+	use_aux(cmd, obj, USE_SINGLE, MSG_QUAFF);
+}
+
+/**
+ * Use any usable item
+ */
+void do_cmd_use(struct command *cmd)
+{
+	struct object *obj;
+
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Use which item? ",
+			"You have no items to use.",
+			obj_is_useable,
+			USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS | SHOW_FAIL) != CMD_OK)
+		return;
+
+	if (tval_is_ammo(obj))				do_cmd_fire(cmd);
+	else if (tval_is_potion(obj))		do_cmd_quaff_potion(cmd);
+	else if (tval_is_edible(obj))		do_cmd_eat_food(cmd);
+	else if (tval_is_rod(obj))			do_cmd_zap_rod(cmd);
+	else if (tval_is_wand(obj))			do_cmd_aim_wand(cmd);
+	else if (tval_is_staff(obj))		do_cmd_use_staff(cmd);
+	else if (tval_is_scroll(obj))		do_cmd_read_scroll(cmd);
+	else if (obj_can_refill(obj))		do_cmd_refill(cmd);
+	else if (obj_is_activatable(obj))	do_cmd_activate(cmd);
+	else
+		msg("The item cannot be used at the moment");
+}
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Refuelling
+ * ------------------------------------------------------------------------
+ */
+
+static void refill_lamp(struct object *lamp, struct object *obj)
 {
 	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval[DEFAULT_PVAL];
+	lamp->timeout += obj->timeout ? obj->timeout : obj->pval;
 
 	/* Message */
 	msg("You fuel your lamp.");
 
 	/* Comment */
-	if (j_ptr->timeout >= FUEL_LAMP)
-	{
-		j_ptr->timeout = FUEL_LAMP;
+	if (lamp->timeout >= z_info->fuel_lamp) {
+		lamp->timeout = z_info->fuel_lamp;
 		msg("Your lamp is full.");
 	}
 
 	/* Refilled from a lantern */
-	if (o_ptr->sval == SV_LIGHT_LANTERN)
-	{
+	if (of_has(obj->flags, OF_TAKES_FUEL)) {
 		/* Unstack if necessary */
-		if (o_ptr->number > 1)
-		{
-			object_type *i_ptr;
-			object_type object_type_body;
-
-			/* Get local object */
-			i_ptr = &object_type_body;
-
-			/* Obtain a local object */
-			object_copy(i_ptr, o_ptr);
-
-			/* Modify quantity */
-			i_ptr->number = 1;
+		if (obj->number > 1) {
+			/* Obtain a local object, split */
+			struct object *used = object_split(obj, 1);
 
 			/* Remove fuel */
-			i_ptr->timeout = 0;
-
-			/* Unstack the used item */
-			o_ptr->number--;
-			p_ptr->total_weight -= i_ptr->weight;
+			used->timeout = 0;
 
 			/* Carry or drop */
-			if (item >= 0)
-				inven_carry(p_ptr, i_ptr);
+			if (object_is_carried(player, obj))
+				inven_carry(player, used, TRUE, TRUE);
 			else
-				drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
-		}
+				drop_near(cave, used, 0, player->py, player->px, FALSE);
+		} else
+			/* Empty a single lantern */
+			obj->timeout = 0;
 
-		/* Empty a single lantern */
-		else
-		{
-			/* No more fuel */
-			o_ptr->timeout = 0;
-		}
-
-		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		/* Combine the pack (later) */
+		player->upkeep->notice |= (PN_COMBINE);
 
 		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN);
-	}
+		player->upkeep->redraw |= (PR_INVEN);
+	} else { /* Refilled from a flask */
+		struct object *used;
+		bool none_left = FALSE;
 
-	/* Refilled from a flask */
-	else
-	{
-		/* Decrease the item (from the pack) */
-		if (item >= 0)
-		{
-			inven_item_increase(item, -1);
-			inven_item_describe(item);
-			inven_item_optimize(item);
-		}
-
-		/* Decrease the item (from the floor) */
+		/* Decrease the item from the pack or the floor */
+		if (object_is_carried(player, obj))
+			used = gear_object_for_use(obj, 1, TRUE, &none_left);
 		else
-		{
-			floor_item_increase(0 - item, -1);
-			floor_item_describe(0 - item);
-			floor_item_optimize(0 - item);
-		}
+			used = floor_object_for_use(obj, 1, TRUE, &none_left);
+		object_delete(&used);
 	}
 
 	/* Recalculate torch */
-	p_ptr->update |= (PU_TORCH);
+	player->upkeep->update |= (PU_TORCH);
 
 	/* Redraw stuff */
-	p_ptr->redraw |= (PR_EQUIP);
+	player->upkeep->redraw |= (PR_EQUIP);
 }
 
 
-void do_cmd_refill(cmd_code code, cmd_arg args[])
+void do_cmd_refill(struct command *cmd)
 {
-	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
-	bitflag f[OF_SIZE];
+	struct object *light = equipped_item_by_slot_name(player, "light");
+	struct object *obj;
 
-	int item = args[0].item;
-	object_type *o_ptr = object_from_item_idx(item);
-
-	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR)) {
-		msg("You do not have that item to refill with it.");
-		return;
-	}
+	/* Get an item */
+	if (cmd_get_item(cmd, "item", &obj,
+			"Refuel with with fuel source? ",
+			"You have nothing you can refuel with.",
+			obj_can_refill,
+			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
 	/* Check what we're wielding. */
-	object_flags(j_ptr, f);
-
-	if (j_ptr->tval != TV_LIGHT) {
+	if (!tval_is_light(light)) {
 		msg("You are not wielding a light.");
 		return;
-	} else if (of_has(f, OF_NO_FUEL)) {
+	} else if (of_has(light->flags, OF_NO_FUEL)) {
 		msg("Your light cannot be refilled.");
 		return;
-	} else if (j_ptr->sval == SV_LIGHT_LANTERN) {
-		refill_lamp(j_ptr, o_ptr, item);
+	} else if (of_has(light->flags, OF_TAKES_FUEL)) {
+		refill_lamp(light, obj);
 	} else {
 		msg("Your light cannot be refilled.");
 		return;
 	}
 
-	p_ptr->energy_use = 50;
+	player->upkeep->energy_use = z_info->move_energy / 2;
 }
 
 
 
-/*** Spell casting ***/
+/**
+ * ------------------------------------------------------------------------
+ * Spell casting
+ * ------------------------------------------------------------------------
+ */
 
-/* Gain a specific spell, specified by spell number (for mages). */
-void do_cmd_study_spell(cmd_code code, cmd_arg args[])
+/**
+ * Cast a spell from a book
+ */
+void do_cmd_cast(struct command *cmd)
 {
-	int spell = args[0].choice;
+	int spell, dir;
 
-	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
-	int item_num;
-	int i;
-
-	/* Check the player can study at all atm */
-	if (!player_can_study(p_ptr, TRUE))
-		return;
-
-	/* Check that the player can actually learn the nominated spell. */
-	item_tester_hook = obj_can_browse;
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
-
-	/* Check through all available books */
-	for (i = 0; i < item_num; i++)
-	{
-		if (spell_in_book(spell, item_list[i]))
-		{
-			if (spell_okay_to_study(spell))
-			{
-				/* Spell is in an available book, and player is capable. */
-				spell_learn(spell);
-				p_ptr->energy_use = 100;
-			}
-			else
-			{
-				/* Spell is present, but player incapable. */
-				msg("You cannot learn that spell.");
-			}
-
-			return;
-		}
-	}
-}
-
-/* Cast a spell from a book */
-void do_cmd_cast(cmd_code code, cmd_arg args[])
-{
-	int spell = args[0].choice;
-	int dir = args[1].direction;
-
-	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
-	int item_num;
-	int i;
-
-	const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	const char *noun = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *verb = player->class->magic.spell_realm->verb;
+	const char *noun = player->class->magic.spell_realm->spell_noun;
+	const class_spell *s_ptr;
 
 	/* Check the player can cast spells at all */
-	if (!player_can_cast(p_ptr, TRUE))
+	if (!player_can_cast(player, TRUE))
 		return;
 
-	/* Check spell is in a book they can access */
-	item_tester_hook = obj_can_browse;
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+	/* Get arguments */
+	if (cmd_get_spell(cmd, "spell", &spell,
+			/* Verb */   "cast",
+			/* Book */   obj_can_cast_from,
+			/* Error */  "There are no spells you can cast.",
+			/* Filter */ spell_okay_to_cast) != CMD_OK)
+		return;
 
-	/* Check through all available books */
-	for (i = 0; i < item_num; i++)
-	{
-		if (spell_in_book(spell, item_list[i]))
-		{
-			if (spell_okay_to_cast(spell))
-			{
-				/* Get the spell */
-				const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
-
-				/* Check for unknown objects to prevent wasted player turns. */
-				if (spell_is_identify(p_ptr->class->spell_book, spell) && !spell_identify_unknown_available()) {
-					msg("You have nothing to identify.");
-					return;
-				}
-
-				/* Verify "dangerous" spells */
-				if (s_ptr->smana > p_ptr->csp)
-				{
-					/* Warning */
-					msg("You do not have enough mana to %s this %s.", verb, noun);
-					
-					/* Flush input */
-					flush();
-					
-					/* Verify */
-					if (!get_check("Attempt it anyway? ")) return;
-				}
-
-				/* Cast a spell */
-				if (spell_cast(spell, dir))
-					p_ptr->energy_use = 100;
-			}
-			else
-			{
-				/* Spell is present, but player incapable. */
-				msg("You cannot %s that %s.", verb, noun);
-			}
-
+	if (spell_needs_aim(spell)) {
+		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
+			player_confuse_dir(player, &dir, FALSE);
+		else
 			return;
-		}
 	}
 
+	/* Get the spell */
+	s_ptr = spell_by_index(spell);
+
+	/* Check for unknown objects to prevent wasted player turns. */
+	if (spell_is_identify(spell) && !spell_identify_unknown_available()) {
+		msg("You have nothing to identify.");
+		return;
+	}
+
+	/* Verify "dangerous" spells */
+	if (s_ptr->smana > player->csp) {
+		/* Warning */
+		msg("You do not have enough mana to %s this %s.", verb, noun);
+
+		/* Flush input */
+		event_signal(EVENT_INPUT_FLUSH);
+
+		/* Verify */
+		if (!get_check("Attempt it anyway? ")) return;
+	}
+
+	/* Cast a spell */
+	if (spell_cast(spell, dir))
+		player->upkeep->energy_use = z_info->move_energy;
 }
 
 
-/* Gain a random spell from the given book (for priests) */
-void do_cmd_study_book(cmd_code code, cmd_arg args[])
+/**
+ * Gain a specific spell, specified by spell number (for mages).
+ */
+void do_cmd_study_spell(struct command *cmd)
 {
-	int book = args[0].item;
-	object_type *o_ptr = object_from_item_idx(book);
-
-	int spell = -1;
-	struct spell *sp;
-	int k = 0;
-
-	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	int spell;
 
 	/* Check the player can study at all atm */
-	if (!player_can_study(p_ptr, TRUE))
+	if (!player_can_study(player, TRUE))
 		return;
 
-	/* Check that the player has access to the nominated spell book. */
-	if (!item_is_available(book, obj_can_browse, (USE_INVEN | USE_FLOOR)))
-	{
-		msg("That item is not within your reach.");
+	if (cmd_get_spell(cmd, "spell", &spell,
+			/* Verb */   "study",
+			/* Book */   obj_can_study,
+			/* Error  */ "You cannot learn any new spells from the books you have.",
+			/* Filter */ spell_okay_to_study) != CMD_OK)
 		return;
-	}
 
-	/* Extract spells */
-	for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
-		if (!spell_okay_to_study(sp->spell_index))
+	spell_learn(spell);
+	player->upkeep->energy_use = z_info->move_energy;
+}
+
+/**
+ * Gain a random spell from the given book (for priests)
+ */
+void do_cmd_study_book(struct command *cmd)
+{
+	struct object *book_obj;
+	const class_book *book;
+	int spell = -1;
+	class_spell *sp;
+	int i, k = 0;
+
+	const char *p = player->class->magic.spell_realm->spell_noun;
+
+	if (cmd_get_item(cmd, "item", &book_obj,
+			/* Prompt */ "Study which book? ",
+			/* Error  */ "You cannot learn any new spells from the books you have.",
+			/* Filter */ obj_can_study,
+			/* Choice */ USE_INVEN | USE_FLOOR) != CMD_OK)
+		return;
+
+	book = object_to_book(book_obj);
+	track_object(player->upkeep, book_obj);
+	handle_stuff(player);
+
+	/* Check the player can study at all atm */
+	if (!player_can_study(player, TRUE))
+		return;
+
+	for (i = 0; i < book->num_spells; i++) {
+		sp = &book->spells[i];
+		if (!spell_okay_to_study(sp->sidx))
 			continue;
 		if ((++k > 1) && (randint0(k) != 0))
 			continue;
-		spell = sp->spell_index;
+		spell = sp->sidx;
 	}
 
 	if (spell < 0)
-	{
 		msg("You cannot learn any %ss in that book.", p);
-	}
-	else
-	{
+	else {
 		spell_learn(spell);
-		p_ptr->energy_use = 100;	
+		player->upkeep->energy_use = z_info->move_energy;
 	}
 }
 
-
-
-enum
+/**
+ * Choose the way to study.  Choose life.  Choose a career.  Choose family.
+ * Choose a fucking big monster, choose orc shamans, kobolds, dark elven
+ * druids, and Mim, Betrayer of Turin.
+ */
+void do_cmd_study(struct command *cmd)
 {
-	IGNORE_THIS_ITEM,
-	UNIGNORE_THIS_ITEM,
-	IGNORE_THIS_FLAVOR,
-	UNIGNORE_THIS_FLAVOR,
-	IGNORE_THIS_QUALITY
-};
-
-void textui_cmd_destroy_menu(int item)
-{
-	object_type *o_ptr;
-	char out_val[160];
-
-	menu_type *m;
-	region r;
-	int selected;
-
-	o_ptr = object_from_item_idx(item);
-	if (!(o_ptr->kind))
-		return;
-
-	m = menu_dynamic_new();
-	m->selections = lower_case;
-
-	/* Basic ignore option */
-	if (!o_ptr->ignore) {
-		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
-	} else {
-		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
-	}
-
-	/* Flavour-aware squelch */
-	if (squelch_tval(o_ptr->tval) &&
-			(!o_ptr->artifact || !object_flavor_is_aware(o_ptr))) {
-		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
-				kind_is_squelched_unaware(o_ptr->kind);
-
-		char tmp[70];
-		object_desc(tmp, sizeof(tmp), o_ptr, ODESC_BASE | ODESC_PLURAL);
-		if (!squelched) {
-			strnfmt(out_val, sizeof out_val, "All %s", tmp);
-			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
-		} else {
-			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp);
-			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
-		}
-	}
-
-	/* Quality squelching */
-	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) ||
-			object_is_known_not_artifact(o_ptr)) {
-		byte value = squelch_level_of(o_ptr);
-		int type = squelch_type_of(o_ptr);
-
-		if (object_is_jewelry(o_ptr) &&
-					squelch_level_of(o_ptr) != SQUELCH_BAD)
-			value = SQUELCH_MAX;
-
-		if (value != SQUELCH_MAX && type != TYPE_MAX) {
-			strnfmt(out_val, sizeof out_val, "All %s %s",
-					quality_values[value].name, squelch_name_for_type(type));
-
-			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
-		}
-	}
-
-	/* work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
-	r.row = 1;
-	r.page_rows = m->count;
-
-	screen_save();
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
-
-	prt("(Enter to select, ESC) Ignore:", 0, 0);
-	selected = menu_dynamic_select(m);
-
-	screen_load();
-
-	if (selected == IGNORE_THIS_ITEM) {
-		cmd_insert(CMD_DESTROY);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
-	} else if (selected == UNIGNORE_THIS_ITEM) {
-		o_ptr->ignore = FALSE;
-	} else if (selected == IGNORE_THIS_FLAVOR) {
-		object_squelch_flavor_of(o_ptr);
-	} else if (selected == UNIGNORE_THIS_FLAVOR) {
-		kind_squelch_clear(o_ptr->kind);
-	} else if (selected == IGNORE_THIS_QUALITY) {
-		byte value = squelch_level_of(o_ptr);
-		int type = squelch_type_of(o_ptr);
-
-		squelch_level[type] = value;
-	}
-
-	p_ptr->notice |= PN_SQUELCH;
-
-	menu_dynamic_free(m);
+	if (player_has(player, PF_CHOOSE_SPELLS))
+		do_cmd_study_spell(cmd);
+	else
+		do_cmd_study_book(cmd);
 }
-
-void textui_cmd_destroy(void)
-{
-	int item;
-
-	/* Get an item */
-	const char *q = "Ignore which item? ";
-	const char *s = "You have nothing to ignore.";
-	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
-		return;
-
-	textui_cmd_destroy_menu(item);
-}
-
-void textui_cmd_toggle_ignore(void)
-{
-	p_ptr->unignoring = !p_ptr->unignoring;
-	p_ptr->notice |= PN_SQUELCH;
-	do_cmd_redraw();
-}
-
-/* Examine an object */
-void textui_obj_examine(void)
-{
-	char header[120];
-
-	textblock *tb;
-	region area = { 0, 0, 0, 0 };
-
-	object_type *o_ptr;
-	int item;
-
-	/* Select item */
-	if (!get_item(&item, "Examine which item?", "You have nothing to examine.",
-			CMD_NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS)))
-		return;
-
-	/* Track object for object recall */
-	track_object(item);
-
-	/* Display info */
-	o_ptr = object_from_item_idx(item);
-	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr,
-			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
-
-	textui_textblock_show(tb, area, header);
-	textblock_free(tb);
-}
-

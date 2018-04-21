@@ -1,6 +1,6 @@
-/*
- * File: z-virt.c
- * Purpose: Memory management routines
+/**
+ * \file z-virt.c
+ * \brief Memory management routines
  *
  * Copyright (c) 1997 Ben Harrison.
  *
@@ -22,7 +22,7 @@ unsigned int mem_flags = 0;
 
 #define SZ(uptr)	*((size_t *)((char *)(uptr) - sizeof(size_t)))
 
-/*
+/**
  * Allocate `len` bytes of memory.
  *
  * Returns:
@@ -82,7 +82,7 @@ void *mem_realloc(void *p, size_t len)
 	return m;
 }
 
-/*
+/**
  * Duplicates an existing string `str`, allocating as much memory as necessary.
  */
 char *string_make(const char *str)
@@ -120,6 +120,6 @@ char *string_append(char *s1, const char *s2)
 	}
 	len = strlen(s1);
 	s1 = mem_realloc(s1, len + strlen(s2) + 1);
-	strcpy(s1 + len, s2);
+	my_strcpy(s1 + len, s2, strlen(s2) + 1);
 	return s1;
 }

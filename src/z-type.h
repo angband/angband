@@ -1,35 +1,25 @@
+/**
+ * \file z-type.h
+ * \brief Support various data types.
+ *
+ * Copyright (c) 2007 Angband Developers
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
 #ifndef INCLUDED_ZTYPE_H
 #define INCLUDED_ZTYPE_H
 
 #include "h-basic.h"
-
-typedef struct type_union type_union;
-
-typedef enum type_val {
-	T_END = 0,
-	T_INT,
-	T_FLOAT,
-	T_CHAR,
-	T_STRING
-} type_val;
-
-struct type_union
-{
-	type_val t; 
-	union {
-		float f;
-		int i;
-		char c;
-		const char *s;
-	} u;
-};
-
-extern type_union i2u(int i);
-extern type_union f2u(float f);
-extern type_union c2u(char c);
-extern type_union s2u(const char *s);
-
-static const type_union END = { T_END, { 0 } };
 
 struct loc {
 	int x;
@@ -48,7 +38,7 @@ struct grouper {
 	const char *name;
 };
 
-/*
+/**
  * A set of points that can be constructed to apply a set of changes to
  */
 struct point_set {

@@ -1,3 +1,20 @@
+/**
+ * \file ui-event.h
+ * \brief Utility functions relating to UI events
+ *
+ * Copyright (c) 2011 Andi Sidwell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 #ifndef INCLUDED_UI_EVENT_H
 #define INCLUDED_UI_EVENT_H
 
@@ -18,7 +35,8 @@ typedef enum
 	/* 'Abstract' events */
 	EVT_ESCAPE	= 0x0010,	/* Get out of this menu */
 	EVT_MOVE	= 0x0020,	/* Menu movement */
-	EVT_SELECT	= 0x0040	/* Menu selection */
+	EVT_SELECT	= 0x0040,	/* Menu selection */
+	EVT_SWITCH	= 0x0080	/* Menu switch */
 } ui_event_type;
 
 
@@ -126,7 +144,9 @@ typedef enum
 /* we have up until 0x9F before we start edging into displayable Unicode */
 /* then we could move into private use area 1, 0xE000 onwards */
 
-/* Analogous to isdigit() etc in ctypes */
+/**
+ * Analogous to isdigit() etc in ctypes
+ */
 #define isarrow(c)  ((c >= ARROW_DOWN) && (c <= ARROW_UP))
 
 
@@ -165,37 +185,43 @@ typedef union {
 	struct keypress key;
 } ui_event;
 
-/** Easy way to initialise a ui_event without seeing the gory bits. */
+/**
+ * Easy way to initialise a ui_event without seeing the gory bits.
+ */
 #define EVENT_EMPTY		{ 0 }
 
 
 /*** Functions ***/
 
-/** Given a string (and that string's length), return the corresponding keycode */
+/**
+ * Given a string (and that string's length), return the corresponding keycode 
+ */
 keycode_t keycode_find_code(const char *str, size_t len);
 
-/** Given a keycode, return its description */
+/**
+ * Given a keycode, return its description
+ */
 const char *keycode_find_desc(keycode_t kc);
 
-/** Convert a string of keypresses into their textual representation */
+/**
+ * Convert a string of keypresses into their textual representation
+ */
 void keypress_to_text(char *buf, size_t len, const struct keypress *src,
 	bool expand_backslash);
 
-/** Convert a textual representation of keypresses into actual keypresses */
+/**
+ * Convert a textual representation of keypresses into actual keypresses
+ */
 void keypress_from_text(struct keypress *buf, size_t len, const char *str);
 
-/** Convert a keypress into something the user can read (not designed to be used internally */
+/**
+ * Convert a keypress into something the user can read (not designed to be used
+ * internally
+ */
 void keypress_to_readable(char *buf, size_t len, struct keypress src);
 
-/* Screen loading/saving */
-extern void screen_save(void);
-extern void screen_load(void);
 
-/* Placing text on screen */
-extern void c_put_str(byte attr, const char *str, int row, int col);
-extern void put_str(const char *str, int row, int col);
-extern void c_prt(byte attr, const char *str, int row, int col);
-extern void prt(const char *str, int row, int col);
+extern bool char_matches_key(wchar_t c, keycode_t key);
 
 
 #endif /* INCLUDED_UI_EVENT_H */

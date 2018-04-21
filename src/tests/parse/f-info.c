@@ -6,7 +6,7 @@
 
 
 int setup_tests(void **state) {
-	*state = init_parse_f();
+	*state = init_parse_feat();
 	return !*state;
 }
 
@@ -15,8 +15,8 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_n0(void *state) {
-	enum parser_error r = parser_parse(state, "N:3:Test Feature");
+int test_name0(void *state) {
+	enum parser_error r = parser_parse(state, "name:3:Test Feature");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -28,20 +28,20 @@ int test_n0(void *state) {
 	ok;
 }
 
-int test_g0(void *state) {
-	enum parser_error r = parser_parse(state, "G:::red");
+int test_graphics0(void *state) {
+	enum parser_error r = parser_parse(state, "graphics:::red");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
 	eq(f->d_char, L':');
-	eq(f->d_attr, TERM_RED);
+	eq(f->d_attr, COLOUR_RED);
 	ok;
 }
 
-int test_m0(void *state) {
-	enum parser_error r = parser_parse(state, "M:11");
+int test_mimic0(void *state) {
+	enum parser_error r = parser_parse(state, "mimic:11");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -51,8 +51,8 @@ int test_m0(void *state) {
 	ok;
 }
 
-int test_p0(void *state) {
-	enum parser_error r = parser_parse(state, "P:2");
+int test_priority0(void *state) {
+	enum parser_error r = parser_parse(state, "priority:2");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -62,8 +62,8 @@ int test_p0(void *state) {
 	ok;
 }
 
-int test_f0(void *state) {
-	enum parser_error r = parser_parse(state, "F:MWALK | LOOK");
+int test_flags0(void *state) {
+	enum parser_error r = parser_parse(state, "flags:LOS | PERMANENT | DOWNSTAIR");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -73,40 +73,25 @@ int test_f0(void *state) {
 	ok;
 }
 
-int test_x0(void *state) {
-	enum parser_error r = parser_parse(state, "X:3:5:9:2");
+int test_info0(void *state) {
+	enum parser_error r = parser_parse(state, "info:9:2");
 	struct feature *f;
 
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
-	eq(f->locked, 3);
-	/* eq(f->jammed, 5); 
-	 * as of 85b1ff6, the jammed field is unused */
 	eq(f->shopnum, 9);
 	eq(f->dig, 2);
 	ok;
 }
 
-int test_e0(void *state) {
-	enum parser_error r = parser_parse(state, "E:TRAP_PIT");
-	struct feature *f;
-
-	eq(r, PARSE_ERROR_NONE);
-	f = parser_priv(state);
-	require(f);
-	require(f->effect);
-	ok;
-}
-
 const char *suite_name = "parse/f-info";
 struct test tests[] = {
-	{ "n0", test_n0 },
-	{ "g0", test_g0 },
-	{ "m0", test_m0 },
-	{ "p0", test_p0 },
-	{ "f0", test_f0 },
-	{ "x0", test_x0 },
-	{ "e0", test_e0 },
+	{ "name0", test_name0 },
+	{ "graphics0", test_graphics0 },
+	{ "mimic0", test_mimic0 },
+	{ "priority0", test_priority0 },
+	{ "flags0", test_flags0 },
+	{ "info0", test_info0 },
 	{ NULL, NULL }
 };

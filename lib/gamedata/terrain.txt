@@ -1,0 +1,276 @@
+# File: terrain.txt
+
+
+# This file is used to initialize the "terrain feature" information for 
+# the Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# Note that, unlike other edit files, modifying this file casually is likely
+# to be a BAD IDEA (unless you intend to make actual programming changes)
+# for two reasons:
+
+#   1. Terrain features do not appear unless there is specific code in the
+#   level generation algorithms to include them, so adding new terrain
+#   features to this file will by itself have no effect.
+
+#   2. The game uses the names of the standard terrain features
+#   ("granite wall", etc) in terrain placement.  Changing the name of a terrain
+#   feature can thus stop the game from running; changing its properties will
+#   change game behaviour; and any changes during the playing of an individual
+#   game are likely to mess it up.
+
+# Note that terrain feature zero contains the "darkness" picture.
+
+# === Understanding terrain.txt ===
+
+# name : serial number : terrain name
+# graphics : symbol : color
+# mimic : feature to mimic
+# priority : display priority on mini-map
+# flags : terrain flags
+# info : shop number : digging
+
+# 'name' indicates the beginning of an entry. The serial number must
+# increase for each new feature.
+
+# 'graphics' is for graphics - symbol and color. There are 27 colors:
+
+# D - Dark Gray    w - White          s - Gray          o - Orange
+# r - Red          g - Green          b - Blue          u - Umber
+# W - Light Gray   P - Light Purple   y - Yellow        R - Light Red
+# G - Light Green  B - Light Blue     U - Light Umber   p - Purple
+# v - Violet       t - Teal           m - Mud           Y - Light Yellow
+# i - Magenta-Pink T - Light Teal     V - Light Violet  I - Light Pink
+# M - Mustard      z - Blue Slate     Z - Deep Light Blue
+
+# 'mimic' is the index of a feature to mimic; some features look like another
+# feature until they are discovered by the player.
+
+# 'priority' is for display priority on the minimap, where only a selection
+# of grids are chosen.  This enables the minimap to display the information
+# most likely to be useful to the player.
+
+# 'flags' is for terrain flags.
+
+# 'info' is for other terrain information;  Shop number is the index of the
+# shop if the terrain is a shop entrance, and 0 otherwise.  Digging is an
+# index used to get the difficulty of digging through this type of terrain.
+
+
+name:0:unknown grid
+graphics: :w
+priority:2
+
+
+name:1:open floor
+graphics:.:w
+priority:5
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
+desc:An open floor or bare ground.  Can be walked across by anything, and can 
+desc:hold traps or items.  Does not break line of sight.
+
+name:2:closed door
+graphics:+:U
+priority:17
+flags:DOOR_ANY | DOOR_CLOSED | INTERESTING
+info:0:5
+desc:Doors may be locked; getting through them may not be easy.  Your 
+desc:disarming skill makes all the difference to your ability to handle locks, 
+desc:but you can also take a pickaxe to them, or blast them open 
+desc:with magic.  Monsters are also slowed down by doors; you can earn yourself 
+desc:valuable time by locking them.
+
+name:3:open door
+graphics:':U
+priority:15
+flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | CLOSABLE | EASY
+desc:A door that is already open.  Player, monster, spell and missile can pass 
+desc:through as long as it stays open.
+
+name:4:broken door
+graphics:':u
+priority:15
+flags:LOS | PROJECT | PASSABLE | DOOR_ANY | INTERESTING | EASY
+desc:A door so broken that it cannot be shut.
+
+name:5:up staircase
+graphics:<:w
+priority:25
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | UPSTAIR | EASY
+desc:A staircase up to a shallower part of the dungeon.
+
+name:6:down staircase
+graphics:>:w
+priority:25
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR | EASY
+desc:A staircase down to a deeper part of the dungeon.
+
+name:7:General Store
+graphics:1:U
+priority:20
+flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+info:1:0
+desc:The General Store sells food, ammunition and lighting supplies.
+
+name:8:Armoury
+graphics:2:s
+priority:20
+flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+info:2:0
+desc:The armour sold here will give you some protection against the blows of 
+desc:your enemies.
+
+name:9:Weapon Smiths
+graphics:3:w
+priority:20
+flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+info:3:0
+desc:Weapons for hitting and shooting your enemies are forged in the hot, acrid 
+desc:backroom of this enticing shop.
+
+name:10:Temple
+graphics:4:g
+priority:20
+flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+info:4:0
+desc:A quiet, reflective place of refuge, with priestly books and supplies of 
+desc:magical and hallowed goods for the pure of heart.
+
+name:11:Alchemy Shop
+graphics:5:b
+priority:20
+flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+info:5:0
+desc:A dim, scented room where potions and scrolls are traded.
+
+name:12:Magic Shop
+graphics:6:r
+priority:20
+flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+info:6:0
+desc:A shop for devices with magic trapped within, lined with shelves of 
+desc:mystical tomes.
+
+name:13:Black Market
+graphics:7:D
+priority:20
+flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+info:7:0
+desc:Watch your back and hold onto your purse as you enter this disreputable 
+desc:haunt - and do not expect friendly service or good bargains.
+
+name:14:Home
+graphics:8:y
+priority:20
+flags:SHOP | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY
+info:8:0
+desc:Your safe piece of Middle Earth, and the only place you can store goods 
+desc:apart from on your person.
+
+name:15:secret door
+graphics:#:w
+priority:10
+mimic:21
+flags:WALL | ROCK | DOOR_ANY | GRANITE
+desc:A door that appears like a granite wall to untrained eyes.
+
+name:16:pile of rubble
+graphics:::w
+priority:13
+flags:ROCK | NO_SCENT | NO_FLOW | INTERESTING
+info:0:1
+desc:Ends LOS, stops missiles, bolts, and beams.  May dissolve or be tunnelled 
+desc:to normal floor.
+
+name:17:magma vein
+graphics:%:s
+priority:12
+flags:WALL | ROCK | NO_SCENT | NO_FLOW | MAGMA
+info:0:2
+desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
+desc:through by immaterial monsters.  It stops any spells, missiles or line of 
+desc:sight.
+
+name:18:quartz vein
+graphics:%:W
+priority:11
+flags:WALL | ROCK | NO_SCENT | NO_FLOW | QUARTZ
+info:0:3
+desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
+desc:through by immaterial monsters.  It stops any spells, missiles or line of 
+desc:sight.
+
+name:19:magma vein with treasure
+graphics:*:o
+priority:19
+flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | MAGMA
+info:0:2
+desc:A seam of soft rock.  It can be removed by digging or magic, and passed 
+desc:through by immaterial monsters.  It stops any spells, missiles or line of 
+desc:sight.  It contains visible treasure.
+
+name:20:quartz vein with treasure
+graphics:*:o
+priority:19
+flags:WALL | ROCK | INTERESTING | NO_SCENT | NO_FLOW | GOLD | QUARTZ
+info:0:3
+desc:A seam of hardish rock.  It can be removed by digging or magic, and passed 
+desc:through by immaterial monsters.  It stops any spells, missiles or line of 
+desc:sight.  It contains visible treasure.
+
+name:21:granite wall
+graphics:#:w
+priority:10
+flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
+info:0:4
+desc:A seam of hard rock.  It can be removed by digging or magic, and passed 
+desc:through by immaterial monsters.  It stops any spells, missiles or line of 
+desc:sight. 
+
+name:22:permanent wall
+graphics:#:z
+priority:10
+flags:WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW
+desc:You can dig through most walls but these are impenetrable.  The dungeon is 
+desc:surrounded by these kinds of walls and some special rooms are made of them.
+
+## holder for trap detected border floor tile
+
+name:23:dtrap edge - floor
+graphics:.:G
+priority:5
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | RUNE | TORCH
+desc:An open floor or bare ground.  Can be walked across by anything, and can 
+desc:hold traps or items.  Does not break line of sight.  It indicates the edge 
+desc:of trap detection.
+
+## holder for trap detected border overlay tile
+
+name:24:dtrap edge - wall
+graphics:#:G
+priority:10
+flags:WALL | ROCK | GRANITE | NO_SCENT | NO_FLOW
+info:0:4
+desc:A seam of hard rock.  It can be removed by digging or magic, and passed 
+desc:through by immaterial monsters.  It stops any spells, missiles or line of 
+desc:sight.  It indicates the edge of trap detection.
+
+## New terrain
+
+name:25:lava flow
+graphics:#:r
+priority:10
+flags:PROJECT | WALL | ROCK | PERMANENT | NO_SCENT | NO_FLOW | BRIGHT
+desc:An impassable pool of glowing lava.
+
+name:26:pile of passable rubble
+graphics:::u
+priority:13
+flags:ROCK | PASSABLE | NO_SCENT | NO_FLOW
+info:0:1
+desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
+desc:spells.  May dissolve or be tunnelled to normal floor, and can be walked 
+desc:through by the player and monsters.
+

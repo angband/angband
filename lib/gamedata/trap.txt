@@ -1,0 +1,187 @@
+#trap.txt
+
+#This file contains rune and trap definitions
+
+#name: index: name: short description
+#graphics: ASCII char used to represent the feature: color symbol
+#appear: rarity: minimum depth: maximum number on level
+#flags: trap flags
+#effect: trap effect
+#desc: description
+
+name:0:no trap:no trap
+graphics: :w
+
+name:3:glyph of warding:glyph of warding
+graphics:;:y
+appear:0:0:0
+flags:RUNE | VISIBLE | FLOOR
+desc:A magical rune which monsters cannot pass without difficulty.
+
+name:4:door lock:door lock
+graphics: :w
+appear:0:0:0
+flags:LOCK | INVISIBLE
+desc:A device which makes a closed door harder to open.
+
+## Player traps ##
+
+# 0x10 --> visible trap -- trap door
+
+name:16:trap door:trap door
+graphics:^:w
+appear:0:2:0
+flags:TRAP | FLOOR | DOWN
+effect:TRAP_DOOR
+dice:2d8
+desc:It looks like floor, but step incautiously and you will fall through.
+
+# 0x11 --> visible trap -- open pit
+
+name:17:pit:pit
+graphics:^:s
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_PIT
+dice:2d6
+desc:A hole dug to snare the unwary.
+
+# 0x12 --> visible trap -- spiked pit
+
+name:18:pit:spiked pit
+graphics:^:s
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_PIT_SPIKES
+dice:2d6
+desc:A hole dug to snare the unwary, with spikes.
+
+# 0x13 --> visible trap -- poison pit
+
+name:19:pit:poison pit
+graphics:^:s
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_PIT_POISON
+dice:2d6
+desc:A hole dug to snare the unwary, with poisoned spikes.
+
+# 0x14 --> visible trap -- rune -- summon
+
+name:20:strange rune:summon rune
+graphics:^:B
+appear:0:3:0
+flags:TRAP | FLOOR 
+effect:TRAP_RUNE_SUMMON
+dice:2+1d3
+desc:A magical rune which calls up monsters to attack you.
+
+# 0x15 --> visible trap -- rune -- teleport
+
+name:21:strange rune:teleport rune
+graphics:^:o
+appear:0:1:0
+flags:TRAP | FLOOR 
+effect:TRAP_RUNE_TELEPORT
+dice:100
+desc:A magical rune which teleports you to a random location.
+
+# 0x16 --> visible trap -- spot -- fire
+
+name:22:discolored spot:fire trap
+graphics:^:u
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_SPOT_FIRE
+dice:4d6
+desc:A strange coloured spot on the ground - beware its fiery attack.
+
+# 0x17 --> visible trap -- spot -- acid
+
+name:23:discolored spot:acid trap
+graphics:^:u
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_SPOT_ACID
+dice:4d6
+desc:A strange coloured spot on the ground - beware its acidic attack.
+
+# 0x18 --> visible trap -- dart -- slow
+
+name:24:dart trap:slow dart
+graphics:^:r
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_DART_SLOW
+desc:A trap which shoots slowing darts.
+
+# 0x19 --> visible trap -- dart -- lose str
+
+name:25:dart trap:strength loss dart
+graphics:^:r
+appear:0:6:0
+flags:TRAP | FLOOR 
+effect:TRAP_DART_LOSE_STR
+desc:A trap which shoots damaging darts.
+
+# 0x1A --> visible trap -- dart -- lose dex
+
+name:26:dart trap:dexterity loss dart
+graphics:^:r
+appear:0:6:0
+flags:TRAP | FLOOR 
+effect:TRAP_DART_LOSE_DEX
+desc:A trap which shoots damaging darts.
+
+# 0x1B --> visible trap -- dart -- lose con
+
+name:27:dart trap:constitution loss dart
+graphics:^:r
+appear:0:6:0
+flags:TRAP | FLOOR 
+effect:TRAP_DART_LOSE_CON
+desc:A trap which shoots damaging darts.
+
+# 0x1C --> visible trap -- gas -- blind
+
+name:28:gas trap:blinding gas trap
+graphics:^:g
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_GAS_BLIND
+desc:A trap that releases gas to blind you.
+
+# 0x1D --> visible trap -- gas -- confuse
+
+name:29:gas trap:confusion gas trap
+graphics:^:g
+appear:0:1:0
+flags:TRAP | FLOOR 
+effect:TRAP_GAS_CONFUSE
+desc:A trap that releases gas to confuse you.
+
+# 0x1E --> visible trap -- gas -- poison
+
+name:30:gas trap:poison gas trap
+graphics:^:g
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_GAS_POISON
+desc:A trap that releases gas to poison you.
+
+# 0x1F --> visible trap -- gas -- sleep
+
+name:31:gas trap:sleep gas trap
+graphics:^:g
+appear:0:2:0
+flags:TRAP | FLOOR 
+effect:TRAP_GAS_SLEEP
+desc:A trap that releases gas to put you to sleep.
+
+# ideas from v4:
+#
+# alarm
+# trap spawner
+# earthquake
+# summon2 (dlev26) & 3 (dlev50)
+# phase & teleport-max also

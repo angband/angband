@@ -1,0 +1,1254 @@
+# File: ego_item.txt
+
+
+# This file is used to initialize the "ego-item" information for Angband.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# The ego-item indexes are defined in "defines.h", and must not be changed
+# or savefile compatibility will be lost.
+
+# Note that several "ego-item" types may share the same "textual name",
+# such as with "Armor of Resistance" and "Shield of Resistance".
+
+# === Understanding ego_item.txt ===
+
+# name: serial number : ego type
+# info: depth : rarity : cost : rating
+# alloc: commonness : min " to " max
+# combat: to-hit : to-dam : to-ac
+# min-combat: min to-hit : min to-dam : min to-ac
+# type: tval
+# item: tval : sval
+# flag: flag | flag | etc.
+# values: label[value] | label[value] | etc.
+# min-values: label[value] | label[value] | etc.
+
+# Some fields accept randomized numbers of the form "10+2d3M4" where
+# 10 is the non-variable base, 2d3 is a standard die roll, and
+# M4 uses the m_bonus function to generate a number between 0 and
+# 4 according to a normal distribution.  All three components are
+# optional, and the number of dice is optional and assumed to be 1
+# when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
+# range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
+# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
+
+# 'name' indicates the beginning of an entry. The serial number must
+# increase for each new item.
+
+# 'info' is for item information. Depth is the depth the object is
+# normally found at, rarity determines how common the object is,
+# cost is the item's value and rating affects level feelings.
+
+# 'alloc' is for allocation details. commonness determines how common
+# the object is, min depth is the earliest it is normally found, max
+# depth is the deepest it is ever found. The "allocation" depth need
+# not match the depth as specified in the "info:" line.
+
+# 'combat' is for combat bonuses - to-hit, to-dam, to-ac.
+# Cursed ego-items will negate the given value.  These are
+# extra bonuses on top of the normal values, and all of these
+# fields accept randomized values.
+
+# 'min-combat' is for minimum values - minimum allowed to-hit, to-dam, to-ac.
+# The value of 255 is special, meaning "there is no minimum". This
+# allows zero to be a valid minimum (e.g. for mixed-blessing items).
+
+# 'type' is for possible tvals (object bases).  A 'type' line indicates
+# that any object kind of that type can be used to generate this ego-item.
+
+# 'item' is for possible tval-sval pairs, which correspond to object kinds.
+# One or more 'item' lines are used when we don't want all object kinds of
+# this tval to be possible for this ego-item.
+
+# 'effect' is for the effect when an item is activated.  Fields are the
+# name of the effect (as found in src/list-effects.h) and possibly one or
+# two parameters to the effect.
+
+# 'dice' provides a random value to be used by an activation effect
+
+# 'time' gives a random value to be used as the time to recharge for an
+# activatable item.
+
+# 'flags' is for flags, which can be either object flags (as found in
+# src/list-object-flags.h) or kind flags (src/list-kind-flags.h).  As many
+# flags: lines may be used as are needed to specify all the flags, and
+# flags are separated by the '|' symbol.
+
+# 'values' is for object modifiers which take a value - stats, slays, brands,
+# resistances and so on.  An example is SLAY_UNDEAD[3], which denotes that
+# the weapon concerned has a basic 3x slay against undead creatures.  Like
+# flags, values are separated by '|' and as many values: lines as needed
+# can be used.
+
+# 'min-values' is for minimum values of values recorded in a 'values' line.
+# These work like minimum combat values, but for value-defined modifiers.
+
+# 'desc' is for description. As many desc: lines may be used as are needed
+# to describe the object. Note that lines will need spaces at their
+# ends or the beginning of the next line to prevent words from running
+# together.
+
+
+# 1 (unused)
+
+# 2 (unused)
+
+# 3 (unused)
+
+### Body Armor ###
+
+name:4:of Resist Acid
+info:0:1:1000:16
+alloc:100:1 to 30
+min-combat:255:0:0
+type:soft armor
+item:hard armor:Metal Scale Mail
+item:hard armor:Chain Mail
+item:hard armor:Augmented Chain Mail
+item:hard armor:Bar Chain Mail
+item:hard armor:Metal Brigandine Armour
+item:hard armor:Partial Plate Armour
+flags:IGNORE_ACID
+values:RES_ACID[1]
+
+name:5:of Resist Lightning
+info:0:1:400:10
+alloc:100:1 to 30
+min-combat:255:0:0
+type:soft armor
+item:hard armor:Metal Scale Mail
+item:hard armor:Chain Mail
+item:hard armor:Augmented Chain Mail
+item:hard armor:Bar Chain Mail
+item:hard armor:Metal Brigandine Armour
+item:hard armor:Partial Plate Armour
+flags:IGNORE_ELEC
+values:RES_ELEC[1]
+
+name:6:of Resist Fire
+info:0:1:800:14
+alloc:100:1 to 30
+min-combat:255:0:0
+type:soft armor
+item:hard armor:Metal Scale Mail
+item:hard armor:Chain Mail
+item:hard armor:Augmented Chain Mail
+item:hard armor:Bar Chain Mail
+item:hard armor:Metal Brigandine Armour
+item:hard armor:Partial Plate Armour
+flags:IGNORE_FIRE
+values:RES_FIRE[1]
+
+name:7:of Resist Cold
+info:0:1:600:12
+alloc:100:1 to 30
+min-combat:255:0:0
+type:soft armor
+item:hard armor:Metal Scale Mail
+item:hard armor:Chain Mail
+item:hard armor:Augmented Chain Mail
+item:hard armor:Bar Chain Mail
+item:hard armor:Metal Brigandine Armour
+item:hard armor:Partial Plate Armour
+flags:IGNORE_COLD
+values:RES_COLD[1]
+
+name:8:of Resistance
+info:0:2:12500:20
+alloc:50:10 to 100
+combat:0:0:d10
+min-combat:255:0:0
+type:soft armor
+type:hard armor
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+
+name:9:of Elvenkind
+info:0:4:15000:25
+alloc:10:30 to 127
+combat:0:0:d10
+min-combat:255:0:0
+type:soft armor
+type:hard armor
+flags:RAND_HI_RES
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:STEALTH[d2] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+min-values:STEALTH[0]
+
+name:10:of Vulnerability
+info:0:2:0:0
+alloc:10:10 to 80
+combat:0:0:d50
+min-combat:255:0:0
+type:soft armor
+type:hard armor
+flags:AGGRAVATE | LIGHT_CURSE
+
+### Robes only ###
+
+name:11:of Permanence
+info:0:4:30000:30
+alloc:10:30 to 127
+combat:0:0:d20
+item:soft armor:Robe
+flags:SUST_STR | SUST_DEX | SUST_CON | SUST_INT | SUST_WIS
+flags:HOLD_LIFE
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+flags:RAND_HI_RES
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+
+### Heavy metal armor only ###
+
+name:12:(Dwarven)
+info:0:4:5000:18
+alloc:20:20 to 127
+combat:0:0:d15
+min-combat:255:0:0
+type:hard armor
+flags:IGNORE_ACID | IGNORE_FIRE
+flags:FREE_ACT | 
+values:STR[d2] | CON[d2] | INFRA[d2M3]
+min-values:STR[1] | CON[1] | INFRA[1]
+
+# 13 (unused)
+
+# 14 (unused)
+
+### Shields ###
+
+name:15:(Dwarven)
+info:0:4:5000:20
+alloc:20:40 to 127
+combat:1+M3:1+M3:d5
+item:shield:Small Metal Shield
+flags:IGNORE_ACID | IGNORE_FIRE
+flags:FREE_ACT | 
+values:STR[d2] | CON[d2]
+min-values:STR[1] | CON[1]
+
+name:16:of Resist Acid
+info:0:1:1000:16
+alloc:100:1 to 30
+type:shield
+flags:IGNORE_ACID
+values:RES_ACID[1]
+
+name:17:of Resist Lightning
+info:0:1:400:10
+alloc:100:1 to 30
+type:shield
+flags:IGNORE_ELEC
+values:RES_ELEC[1]
+
+name:18:of Resist Fire
+info:0:1:800:14
+alloc:100:1 to 30
+type:shield
+flags:IGNORE_FIRE
+values:RES_FIRE[1]
+
+name:19:of Resist Cold
+info:0:1:600:12
+alloc:100:1 to 30
+type:shield
+flags:IGNORE_COLD
+values:RES_COLD[1]
+
+name:20:of Resistance
+info:0:2:12500:20
+alloc:50:10 to 100
+combat:0:0:d10
+type:shield
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+
+name:21:of Elvenkind
+info:0:4:18000:25
+alloc:10:30 to 127
+combat:0:0:d10
+type:shield
+values:STEALTH[d2]
+min-values:STEALTH[0]
+flags:RAND_HI_RES
+flags:IGNORE_ACID | IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC
+values:RES_FIRE[1] | RES_COLD[1] | RES_ACID[1] | RES_ELEC[1]
+
+name:22:of Preservation
+info:60:4:24000:25
+alloc:5:40 to 127
+combat:0:0:d20
+type:shield
+flags:SUST_STR | SUST_CON | SUST_DEX | HOLD_LIFE
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+flags:RAND_HI_RES
+values:RES_DISEN[1]
+
+name:23:of Vulnerability
+info:0:2:0:0
+alloc:10:10 to 80
+combat:0:0:d50
+type:shield
+flags:AGGRAVATE | LIGHT_CURSE
+
+
+### Crowns and Helms ###
+
+name:24:of Intelligence
+info:0:2:500:13
+alloc:100:1 to 40
+type:helm
+flags:SUST_INT
+values:INT[d2]
+min-values:INT[0]
+
+name:25:of Wisdom
+info:0:2:500:13
+alloc:100:1 to 40
+type:helm
+flags:SUST_WIS
+values:WIS[d2]
+min-values:WIS[0]
+
+# 26 (unused)
+
+
+name:27:of the Magi
+info:0:4:7500:15
+alloc:20:20 to 127
+type:crown
+flags:SUST_INT | RAND_POWER
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:INT[d3] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+min-values:INT[0]
+
+name:28:of Might
+info:0:4:7500:19
+alloc:10:40 to 127
+type:crown
+flags:SUST_STR | SUST_DEX | SUST_CON | FREE_ACT
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:STR[d3] | DEX[d3] | CON[d3]
+min-values:STR[1] | DEX[1] | CON[1]
+
+
+name:29:of Lordliness
+info:0:2:7500:17
+alloc:20:40 to 127
+type:crown
+flags:SUST_WIS | PROT_FEAR | RAND_POWER
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:WIS[d3]
+min-values:WIS[1]
+
+name:30:of Seeing
+info:0:2:2000:8
+alloc:50:10 to 60
+type:helm
+flags:PROT_BLIND | SEE_INVIS
+values:SEARCH[d5]
+min-values:SEARCH[0]
+
+name:31:of Infravision
+info:0:2:500:11
+alloc:100:1 to 20
+type:helm
+values:INFRA[d5]
+min-values:INFRA[0]
+
+name:32:of Light
+info:0:2:1000:6
+alloc:50:5 to 30
+type:crown
+values:LIGHT[1] | RES_LIGHT[1]
+min-values:LIGHT[1]
+
+name:33:of Telepathy
+info:0:6:50000:20
+alloc:10:40 to 127
+type:helm
+flags:TELEPATHY
+
+name:34:of Regeneration
+info:0:4:1500:10
+alloc:20:1 to 60
+type:helm
+flags:REGEN
+
+name:35:of Teleportation
+info:0:2:0:0
+alloc:10:10 to 80
+type:helm
+flags:TELEPORT | LIGHT_CURSE
+
+name:36:of Serenity
+info:0:6:4000:20
+alloc:15:20 to 127
+type:crown
+flags:PROT_CONF | PROT_FEAR | PROT_STUN
+values:RES_SOUND[1]
+
+name:37:of Night and Day
+info:35:6:4000:18
+alloc:15:10 to 80
+type:crown
+flags:SEE_INVIS | PROT_BLIND | IGNORE_ACID
+values:LIGHT[1] | RES_LIGHT[1] | RES_DARK[1]
+min-values:LIGHT[1]
+
+name:38:of Dullness
+info:0:2:0:0
+alloc:10:45 to 80
+type:crown
+flags:LIGHT_CURSE
+values:INT[d5] | WIS[d5]
+min-values:INT[0] | WIS[0]
+
+name:39:of Sickliness
+info:0:2:0:0
+alloc:10:45 to 80
+type:crown
+flags:LIGHT_CURSE
+values:STR[d5] | DEX[d5] | CON[d5]
+min-values:STR[0] | DEX[0] | CON[0]
+
+
+### Cloaks ###
+
+name:40:of Protection
+info:0:2:1500:10
+alloc:30:1 to 40
+combat:0:0:d10
+type:cloak
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_SHARD[1]
+
+name:41:of Stealth
+info:0:1:500:10
+alloc:60:1 to 70
+type:cloak
+values:STEALTH[d3]
+min-values:STEALTH[0]
+
+name:42:of Aman
+info:0:6:4000:20
+alloc:10:20 to 127
+combat:0:0:d20
+type:cloak
+values:STEALTH[d3]
+min-values:STEALTH[0]
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+flags:RAND_HI_RES
+
+name:43:of the Magi
+info:30:3:2000:15
+alloc:10:30 to 127
+combat:0:0:d4
+type:cloak
+flags:SUST_INT | IGNORE_ACID | RAND_POWER
+values:INT[d2] | STEALTH[d3]
+min-values:INT[1] | STEALTH[1]
+
+name:44:of Enveloping
+info:0:1:0:0
+alloc:10:10 to 80
+combat:d10:d10:0
+type:cloak
+flags:LIGHT_CURSE
+
+name:45:of Vulnerability
+info:0:1:0:0
+alloc:10:10 to 80
+combat:0:0:d50
+type:cloak
+flags:AGGRAVATE | LIGHT_CURSE
+
+name:46:of Irritation
+info:0:1:0:0
+alloc:10:10 to 80
+combat:d15:d15:0
+type:cloak
+flags:AGGRAVATE | LIGHT_CURSE
+
+# 47 (unused)
+
+### Gloves ###
+
+name:48:of Free Action
+info:0:4:1000:11
+alloc:100:1 to 60
+type:gloves
+flags:FREE_ACT
+
+name:49:of Slaying
+info:0:4:1500:17
+alloc:20:10 to 75
+combat:d5:d5:0
+type:gloves
+desc:They boost your to-hit and to-dam values.
+
+name:50:of Agility
+info:0:6:1000:14
+alloc:10:20 to 50
+type:gloves
+values:DEX[d5]
+min-values:DEX[0]
+
+name:51:of Power
+info:0:6:2500:22
+alloc:5:30 to 127
+combat:d5:d5:0
+type:gloves
+values:STR[d5]
+min-values:STR[0]
+
+name:52:of Thievery
+info:40:12:5000:22
+alloc:5:40 to 127
+combat:d8:d3:0
+item:gloves:Set of Leather Gloves
+item:gloves:Set of Alchemist's Gloves
+flags:FEATHER | FREE_ACT
+values:DEX[1+M4] | SEARCH[1+d2M3]
+min-values:DEX[1] | SEARCH[2]
+
+name:53:of Combat
+info:50:12:7000:22
+alloc:5:50 to 127
+combat:d5:d8:0
+item:gloves:Set of Gauntlets
+item:gloves:Set of Mithril Gauntlets
+item:gloves:Set of Caestus
+flags:AGGRAVATE
+values:STR[d2] | CON[d2]
+min-values:STR[1] | CON[1]
+
+name:54:of Weakness
+info:0:2:0:0
+alloc:10:10 to 80
+type:gloves
+flags:LIGHT_CURSE | 
+values:STR[d10]
+min-values:STR[0]
+
+name:55:of Clumsiness
+info:0:2:0:0
+alloc:10:10 to 80
+type:gloves
+flags:LIGHT_CURSE | 
+values:DEX[d10]
+min-values:DEX[0]
+
+### Boots ###
+
+name:56:of Slow Descent
+info:0:5:250:7
+alloc:100:1 to 15
+type:boots
+flags:FEATHER
+
+name:57:of Stealth
+info:0:6:500:16
+alloc:20:15 to 100
+item:boots:Pair of Leather Sandals
+item:boots:Pair of Leather Boots
+item:boots:Pair of Ethereal Slippers
+values:STEALTH[d3]
+min-values:STEALTH[0]
+
+name:58:of Free Action
+info:0:8:1000:15
+alloc:20:1 to 40
+type:boots
+flags:FREE_ACT
+
+
+name:59:of Speed
+info:0:24:100000:25
+alloc:3:20 to 127
+type:boots
+values:SPEED[2+M8]
+min-values:SPEED[0]
+
+name:60:of Stability
+info:0:10:5000:20
+alloc:10:15 to 100
+type:boots
+flags:FEATHER
+values:RES_NEXUS[1]
+
+name:61:of Elvenkind
+info:60:30:200000:30
+alloc:3:60 to 127
+item:boots:Pair of Leather Boots
+item:boots:Pair of Iron Shod Boots
+flags:FEATHER | IGNORE_ACID | IGNORE_FIRE
+values:STEALTH[d4] | SPEED[4+M5]
+min-values:STEALTH[1] | SPEED[1]
+
+name:62:of Slowness
+info:0:5:0:0
+alloc:10:10 to 80
+type:boots
+values:SPEED[d5]
+min-values:SPEED[0]
+flags:LIGHT_CURSE | 
+
+name:63:of Annoyance
+info:0:10:0:0
+alloc:10:10 to 80
+type:boots
+values:SPEED[d10] | STEALTH[d10]
+min-values:SPEED[0] | STEALTH[0]
+flags:AGGRAVATE | LIGHT_CURSE | 
+
+
+### Weapons ###
+
+name:64:(Holy Avenger)
+info:0:12:20000:30
+alloc:10:15 to 127
+combat:d6:d6:d4
+type:sword
+type:polearm
+type:hafted
+values:WIS[d4]
+min-values:WIS[0]
+flags:SEE_INVIS | BLESSED | PROT_FEAR | RAND_SUSTAIN
+values:SLAY_EVIL[2] | SLAY_UNDEAD[3] | SLAY_DEMON[3]
+
+name:65:(Defender)
+info:0:12:15000:25
+alloc:10:10 to 80
+combat:d4:d4:d8
+type:sword
+type:polearm
+type:hafted
+flags:FREE_ACT | SEE_INVIS | FEATHER | REGEN | RAND_SUSTAIN
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:STEALTH[d4] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+min-values:STEALTH[0]
+
+name:66:(Blessed)
+info:0:10:5000:20
+alloc:20:1 to 60
+type:sword
+type:polearm
+type:hafted
+flags:BLESSED | RAND_POWER
+values:WIS[d3]
+min-values:WIS[0]
+
+name:67:of Gondolin
+info:30:20:25000:30
+alloc:10:20 to 127
+combat:d7:d7:0
+type:sword
+type:polearm
+type:hafted
+flags:SEE_INVIS | FREE_ACT | RAND_POWER
+flags:IGNORE_ACID | IGNORE_FIRE
+values:LIGHT[1] | SLAY_DEMON[3] | SLAY_ORC[3] | SLAY_TROLL[3] | SLAY_DRAGON[3]
+values:RES_DARK[1]
+min-values:LIGHT[1]
+
+name:68:of Westernesse
+info:0:10:20000:20
+alloc:10:10 to 70
+combat:d5:d5:0
+type:sword
+type:polearm
+type:hafted
+values:STR[d2] | DEX[d2] | CON[d2] | SLAY_ORC[3] | SLAY_TROLL[3] | SLAY_GIANT[3]
+min-values:STR[1] | DEX[1] | CON[1]
+flags:FREE_ACT | SEE_INVIS
+
+name:69:of Extra Attacks
+info:0:10:10000:20
+alloc:10:10 to 127
+type:sword
+type:polearm
+type:hafted
+values:BLOWS[d2]
+min-values:BLOWS[0]
+
+#Fury is not currently creatable
+name:70:of Fury
+info:40:20:20000:30
+alloc:2:50 to 127
+#T:21:12:99
+#T:22:10:99
+#T:23:16:99
+#type:sword
+#type:polearm
+#type:hafted
+combat:d10:d10:0
+flags:AGGRAVATE | PROT_FEAR
+flags:IGNORE_ACID | IGNORE_FIRE
+values:STR[1+d2M2] | BLOWS[d2]
+min-values:STR[2] | BLOWS[1]
+
+# 71 (unused)
+
+# The "Branded" weapons (5)
+
+name:72:of Acid
+info:0:20:5000:20
+alloc:30:1 to 60
+type:sword
+type:polearm
+type:hafted
+flags:IGNORE_ACID
+values:BRAND_ACID[3] | RES_ACID[1]
+
+name:73:of Lightning
+info:0:15:4500:20
+alloc:30:1 to 60
+type:sword
+type:polearm
+type:hafted
+flags:IGNORE_ELEC
+values:BRAND_ELEC[3] | RES_ELEC[1]
+
+name:74:of Flame
+info:0:8:3500:15
+alloc:40:1 to 50
+type:sword
+type:polearm
+type:hafted
+flags:IGNORE_FIRE
+values:BRAND_FIRE[3] | RES_FIRE[1]
+
+name:75:of Frost
+info:0:8:3000:15
+alloc:40:1 to 50
+type:sword
+type:polearm
+type:hafted
+flags:IGNORE_COLD
+values:BRAND_COLD[3] | RES_COLD[1]
+
+name:76:of Venom
+info:0:8:4000:15
+alloc:60:1 to 40
+type:sword
+type:polearm
+type:hafted
+values:BRAND_POIS[3]
+
+# 77 (unused)
+
+# 78 (unused)
+
+# 79 (unused)
+
+# The "Slay" weapons (8)
+
+name:80:of Slay Animal
+info:0:6:3000:18
+alloc:100:1 to 30
+type:sword
+type:polearm
+type:hafted
+values:SLAY_ANIMAL[2]
+
+name:81:of Slay Evil
+info:0:6:3000:18
+alloc:60:1 to 40
+type:sword
+type:polearm
+type:hafted
+values:SLAY_EVIL[2]
+
+name:82:of Slay Undead
+info:0:6:3500:18
+alloc:100:1 to 30
+type:sword
+type:polearm
+item:hafted:Whip
+item:hafted:Ball-and-Chain
+item:hafted:Morning Star
+item:hafted:Flail
+item:hafted:Two-Handed Great Flail
+item:hafted:Mace
+item:hafted:Lead-Filled Mace
+item:hafted:Quarterstaff
+item:hafted:War Hammer
+item:hafted:Maul
+item:hafted:Great Hammer
+values:SLAY_UNDEAD[3]
+
+name:83:of Slay Demon
+info:0:6:3500:14
+alloc:100:1 to 30
+type:sword
+type:polearm
+type:hafted
+values:SLAY_DEMON[3]
+
+name:84:of Slay Orc
+info:0:6:2500:10
+alloc:150:1 to 20
+type:sword
+type:polearm
+type:hafted
+values:SLAY_ORC[3]
+
+name:85:of Slay Troll
+info:0:6:2500:10
+alloc:150:1 to 25
+type:sword
+type:polearm
+type:hafted
+values:SLAY_TROLL[3]
+
+name:86:of Slay Giant
+info:0:6:2500:14
+alloc:60:1 to 30
+type:sword
+type:polearm
+type:hafted
+values:SLAY_GIANT[3]
+
+name:87:of Slay Dragon
+info:0:6:3500:18
+alloc:100:1 to 30
+type:sword
+type:polearm
+type:hafted
+values:SLAY_DRAGON[3]
+
+# The *Slay* weapons (8)
+
+name:88:of *Slay Animal*
+info:0:20:6000:20
+alloc:40:1 to 45
+type:sword
+type:polearm
+type:hafted
+flags:SLOW_DIGEST
+values:INT[d2] | SLAY_ANIMAL[2]
+min-values:INT[0]
+
+name:89:of *Slay Evil*
+info:0:20:5000:20
+alloc:15:10 to 127
+type:sword
+type:polearm
+type:hafted
+flags:BLESSED | RAND_POWER
+values:WIS[d2] | SLAY_EVIL[2]
+min-values:WIS[0]
+
+name:90:of *Slay Undead*
+info:0:20:8000:24
+alloc:30:10 to 60
+type:sword
+type:polearm
+item:hafted:Whip
+item:hafted:Ball-and-Chain
+item:hafted:Morning Star
+item:hafted:Flail
+item:hafted:Two-Handed Great Flail
+item:hafted:Mace
+item:hafted:Lead-Filled Mace
+item:hafted:Quarterstaff
+item:hafted:War Hammer
+item:hafted:Maul
+item:hafted:Great Hammer
+flags:SEE_INVIS
+values:WIS[d2] | SLAY_UNDEAD[5]
+min-values:WIS[0]
+
+name:91:of *Slay Demon*
+info:0:20:8000:16
+alloc:30:10 to 60
+type:sword
+type:polearm
+type:hafted
+values:INT[d2] | SLAY_DEMON[5] | RES_FIRE[1]
+min-values:INT[0]
+
+name:92:of *Slay Orc*
+info:0:20:4000:14
+alloc:60:1 to 40
+type:sword
+type:polearm
+type:hafted
+flags:SUST_DEX
+values:DEX[d2] | SLAY_ORC[3]
+min-values:DEX[0]
+
+name:93:of *Slay Troll*
+info:0:20:4000:14
+alloc:60:1 to 45
+type:sword
+type:polearm
+type:hafted
+flags:REGEN
+values:STR[d2] | SLAY_TROLL[3]
+min-values:STR[0]
+
+name:94:of *Slay Giant*
+info:0:20:4000:16
+alloc:20:1 to 45
+type:sword
+type:polearm
+type:hafted
+flags:SUST_STR
+values:STR[d2] | SLAY_GIANT[3]
+min-values:STR[0]
+
+name:95:of *Slay Dragon*
+info:0:20:8000:24
+alloc:30:10 to 60
+type:sword
+type:polearm
+type:hafted
+flags:PROT_FEAR
+values:CON[d2] | SLAY_DRAGON[5]
+min-values:CON[0]
+
+### Lanterns/torches
+
+# Not for now -- need to figure out how ID applies
+#N:96:of Shadows
+#X:10:0
+#W:5:4:0:1000:10 (imported from NPP)
+#A:8:10 to 100
+#T:39:0:1
+#item:light:Wooden Torch
+#item:light:Brass Lantern
+#V:STEALTH[d2] | RES_LIGHT[1]
+#L:STEALTH[0]
+
+name:97:of Brightness
+info:0:2:2000:10
+alloc:50:1 to 30
+item:light:Wooden Torch
+item:light:Lantern
+values:LIGHT[1]
+min-values:LIGHT[1]
+
+name:98:(Everburning)
+info:0:3:2500:10
+alloc:100:1 to 30
+item:light:Lantern
+flags:NO_FUEL
+
+#imported from S
+name:99:of True Sight
+info:20:8:6000:10
+alloc:10:20 to 127
+item:light:Lantern
+flags:PROT_BLIND | SEE_INVIS
+
+
+### Digging Tools
+
+name:100:of Digging
+info:0:1:500:4
+alloc:100:1 to 40
+type:digger
+values:TUNNEL[d4] | BRAND_ACID[3]
+min-values:TUNNEL[1]
+
+name:101:of Earthquakes
+info:20:4:3000:8
+alloc:10:10 to 127
+combat:d10:d10:0
+type:digger
+values:STR[d4] | TUNNEL[d6] | BRAND_ACID[3]
+min-values:STR[1] | TUNNEL[1]
+flags:IMPACT 
+
+### Cursed Weapons
+
+name:102:of Morgul
+info:0:5:1:0
+alloc:10:10 to 80
+type:sword
+type:polearm
+type:hafted
+flags:SEE_INVIS | AGGRAVATE | HEAVY_CURSE | LIGHT_CURSE
+flags:HOLD_LIFE | DRAIN_EXP
+values:BRAND_POIS[3] | SLAY_UNDEAD[3]
+
+# 103 (unused)
+
+
+### Missile Launchers ###
+
+name:104:of Accuracy
+info:0:1:1000:10
+alloc:100:5 to 70
+combat:d15:d5:0
+min-combat:15:255:0
+type:bow
+desc:It has no special abilities, but its to-hit value may be unusually
+desc: high.
+
+name:105:of Power
+info:0:1:1000:10
+alloc:100:5 to 70
+combat:d5:d15:0
+min-combat:255:15:0
+type:bow
+desc:It has no special abilities, but its to-dam value may be unusually
+desc: high.
+
+name:106:of Lothlórien
+info:50:4:20000:30
+alloc:5:20 to 127
+combat:d10:d10:0
+item:bow:Short Bow
+item:bow:Long Bow
+values:DEX[1+d2M2] | MIGHT[d2]
+min-values:DEX[2] | MIGHT[1]
+flags:FREE_ACT | IGNORE_ACID | IGNORE_FIRE | RAND_POWER
+
+name:107:of the Haradrim
+info:50:4:20000:30
+alloc:5:20 to 127
+combat:d5:d5:0
+item:bow:Light Crossbow
+values:MIGHT[1] | SHOTS[1]
+min-values:MIGHT[1] | SHOTS[1]
+flags:IGNORE_ACID | IGNORE_FIRE | 
+
+name:108:of Extra Might
+info:0:2:10000:20
+alloc:20:15 to 100
+combat:d5:d10:0
+type:bow
+values:MIGHT[1]
+min-values:MIGHT[0]
+
+name:109:of Extra Shots
+info:0:2:10000:20
+alloc:10:15 to 100
+combat:d10:d5:0
+type:bow
+values:SHOTS[1]
+min-values:SHOTS[0]
+
+name:110:of Buckland
+info:40:4:20000:25
+alloc:5:20 to 127
+combat:d8:d8:0
+item:bow:Sling
+values:DEX[1+d2M2] | SHOTS[d2] | MIGHT[d2]
+min-values:DEX[2] | SHOTS[1] | MIGHT[1]
+flags:IGNORE_ACID | IGNORE_FIRE | 
+
+name:111:of the Nazgûl
+info:0:2:0:0
+alloc:10:10 to 80
+combat:d10:d10:0
+type:bow
+flags:LIGHT_CURSE | DRAIN_EXP | SEE_INVIS
+
+
+### Ammo ###
+
+name:112:of Slay Animal
+info:0:6:20:10
+alloc:80:1 to 40
+type:shot
+type:arrow
+type:bolt
+values:SLAY_ANIMAL[2]
+
+name:113:of Slay Evil
+info:0:6:20:10
+alloc:10:10 to 100
+type:shot
+type:arrow
+type:bolt
+values:SLAY_EVIL[2]
+
+name:114:of Slay Undead
+info:0:8:25:10
+alloc:15:5 to 100
+type:shot
+type:arrow
+type:bolt
+values:SLAY_UNDEAD[3]
+
+name:115:of Slay Demon
+info:0:8:25:10
+alloc:15:5 to 100
+type:shot
+type:arrow
+type:bolt
+values:SLAY_DEMON[3]
+
+name:116:of Acid
+info:0:10:50:10
+alloc:5:10 to 100
+type:shot
+type:arrow
+type:bolt
+flags:IGNORE_ACID
+values:BRAND_ACID[3]
+
+name:117:of Lightning
+info:0:10:45:10
+alloc:5:10 to 100
+type:shot
+type:arrow
+type:bolt
+flags:IGNORE_ELEC
+values:BRAND_ELEC[3]
+
+name:118:of Slay Giant
+info:0:8:25:10
+alloc:5:5 to 60
+type:shot
+type:arrow
+type:bolt
+values:SLAY_GIANT[3]
+
+name:119:of Slay Dragon
+info:0:8:40:10
+alloc:10:10 to 100
+type:shot
+type:arrow
+type:bolt
+values:SLAY_DRAGON[3]
+
+name:120:of Holy Might
+info:40:15:60:20
+alloc:2:30 to 127
+combat:d10:d10:0
+item:shot:Mithril Shot
+item:arrow:Seeker Arrow
+item:arrow:Mithril Arrow
+item:bolt:Seeker Bolt
+item:bolt:Mithril Bolt
+flags:IGNORE_FIRE | IGNORE_ACID
+values:SLAY_EVIL[2] | SLAY_DEMON[3] | SLAY_UNDEAD[3]
+
+name:121:of Venom
+info:0:6:40:10
+alloc:20:10 to 60
+type:shot
+type:arrow
+type:bolt
+values:BRAND_POIS[3]
+
+name:122:of Flame
+info:0:6:35:10
+alloc:10:10 to 100
+type:shot
+type:arrow
+type:bolt
+flags:IGNORE_FIRE
+values:BRAND_FIRE[3]
+
+name:123:of Frost
+info:0:6:30:10
+alloc:10:10 to 100
+type:shot
+type:arrow
+type:bolt
+flags:IGNORE_COLD
+values:BRAND_COLD[3]
+
+name:124:of Wounding
+info:0:4:20:5
+alloc:15:15 to 127
+combat:3+d5:3+d5:0
+type:shot
+type:arrow
+type:bolt
+desc:Ammunition of Wounding often has unusually high to-hit and to-dam values.
+
+name:125:of Backbiting
+info:0:0:0:0
+alloc:0:10 to 80
+combat:-26+d25:-26+d25:0
+type:shot
+type:arrow
+type:bolt
+
+### Special Broken Items ###
+
+# these won't be generated by the make_ego_item code as long as
+# they keep their rarity of 0 and nobody adds 'T' lines for them.
+
+# Destroyed Weapon
+name:126:(Shattered)
+info:0:0:0:0
+alloc:0:1 to 80
+combat:d5:d5:0
+
+# Destroyed Body Armor
+
+name:127:(Blasted)
+info:0:0:0:0
+alloc:0:1 to 80
+combat:0:0:d10
+
+### Dragon Scale Mail egos ###
+
+# This is the 'default' DSM ego - roughly half of them
+name:128:of Craftsmanship
+info:0:2:500:4
+alloc:60:20 to 95
+combat:0:0:1d6M4
+min-combat:0:0:4
+type:dragon armor
+desc:This armour is finely wrought, tough yet unencumbering.
+
+name:129:of Stealth
+info:0:10:500:16
+alloc:10:20 to 100
+min-combat:255:0:0
+type:dragon armor
+values:STEALTH[d2]
+min-values:STEALTH[0]
+
+name:130:of Resistance
+info:0:10:12500:10
+alloc:5:40 to 100
+combat:0:0:d10
+min-combat:255:0:0
+item:dragon armor:Pseudo-Dragon Scale Mail
+item:dragon armor:Law Dragon Scale Mail
+item:dragon armor:Gold Dragon Scale Mail
+item:dragon armor:Chaos Dragon Scale Mail
+item:dragon armor:Balance Dragon Scale Mail
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+
+name:131:of Elvenkind
+info:0:33:15000:25
+alloc:3:50 to 127
+combat:0:0:d10
+item:dragon armor:Pseudo-Dragon Scale Mail
+item:dragon armor:Law Dragon Scale Mail
+item:dragon armor:Gold Dragon Scale Mail
+item:dragon armor:Chaos Dragon Scale Mail
+item:dragon armor:Balance Dragon Scale Mail
+values:STEALTH[d2] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
+min-values:STEALTH[0]
+flags:RAND_HI_RES
+
+name:132:(Dwarven)
+info:0:20:5000:18
+alloc:5:40 to 127
+combat:0:0:d15
+min-combat:255:0:5
+type:dragon armor
+flags:FREE_ACT
+values:STR[d2] | CON[d2] | INFRA[d2M3]
+min-values:STR[1] | CON[1] | INFRA[1]
+
+name:133:of Speed
+info:0:100:100000:25
+alloc:2:40 to 127
+min-combat:255:0:0
+type:dragon armor
+values:SPEED[d5]
+min-values:SPEED[0]

@@ -1,9 +1,30 @@
+/**
+ * \file z-file.h
+ * \brief Low-level file (and directory) handling
+ *
+ * Copyright (c) 1997-2007 Ben Harrison, pelpel, Andi Sidwell, Matthew Jones
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 #ifndef INCLUDED_Z_FILE_H
 #define INCLUDED_Z_FILE_H
 
 #include "h-basic.h"
 
-/*** Permissions code ***/
+/**
+ * ------------------------------------------------------------------------
+ * Permissions code
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Player's user ID and group ID, respectively.
@@ -29,7 +50,11 @@ void safe_setuid_grab(void);
 void safe_setuid_drop(void);
 
 
-/*** Path building code ***/
+/**
+ * ------------------------------------------------------------------------
+ * Path building code
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Concatenates "leaf" onto the end of "base", using system-specific path
@@ -45,7 +70,11 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf);
  */
 size_t path_filename_index( const char *path );
 
-/*** File access code ***/
+/**
+ * ------------------------------------------------------------------------
+ * File access code
+ * ------------------------------------------------------------------------ */
+
 
 /** Data types **/
 
@@ -215,7 +244,11 @@ bool file_writec(ang_file *f, byte b);
 
 
 
-/*** Directory code ***/
+/**
+ * ------------------------------------------------------------------------
+ * Directory code
+ * ------------------------------------------------------------------------ */
+
 
 /**
  * Return whether or not a directory exists.

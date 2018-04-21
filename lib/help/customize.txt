@@ -8,21 +8,21 @@ visuals (using graphical tiles), creating subwindows, and saving
 customizations for use on future characters.
 
 
-Squelch settings
+Ignore settings
 ================
       
 Angband allows you to ignore specific items that you don't want to see
-anymore. These items are 'squelched' and any similar items are hidden from
-view. There are several ways to squelch an item. The easiest way is to choose
+anymore. These items are marked 'ignored' and any similar items are hidden from
+view. There are several ways to ignore an item. The easiest way is to choose
 the 's' option when destroying an object. Whenever you destroy an object you
 are forced to confirm the destruction. One of the options is 's'. If you use
 this option, the object is dropped and then hidden from view.
 
-Weapons and armor have quality squelch options. These allow you to specify
+Weapons and armor have quality ignore options. These allow you to specify
 what types of weapons and armor you are no longer interested in seeing. There
-is a quality setting for each weapon and armor type. Squelching weapons and
+is a quality setting for each weapon and armor type. Ignoring weapons and
 armor by destroying the object will prompt you with a question about whether
-you wish to squelch all of that type of armor with a certain quality setting.
+you wish to ignore all of that type of armor with a certain quality setting.
 These quality settings are described below:
 
 bad
@@ -44,7 +44,7 @@ excellent but not splendid
   boosts or brands.
 
 splendid
-  Squelching all splendid items only leaves artifacts unsquelched.
+  Ignoring all splendid items only leaves artifacts unignored.
 
 Using Inscriptions
 ==================

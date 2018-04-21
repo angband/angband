@@ -1,0 +1,4226 @@
+# File: object.txt
+#
+# This file is used to initialize the "object kind" information for Angband.
+# Modifying this file when you don't know what you're doing may be harmful 
+# to you or your character's health.  It could possibly be considered cheating 
+# under some circumstances, too. :)
+
+# === Understanding object.txt ===
+
+# name: serial number : & object name~
+# graphics: symbol : color
+# type: tval 
+# properties: depth : weight : cost
+# combat: base armor class : base damage : plus to-hit : plus to-dam :
+# plus to-armor class
+# alloc: commonness : min " to " max
+# charges: charges
+# pile: chance of being generated in a pile : dice for number of items
+# effect: effect when used : parameter (maybe) : paramater (maybe)
+# param:parameter:parameter (if needed)
+# dice:dice string
+# expr:dice expression
+# flags: flag | flag | etc.
+# values: label[value] | label[value] | etc.
+# pval: pval
+# desc: description
+
+# Some fields accept randomized numbers of the form "10+2d3M4" where
+# 10 is the non-variable base, 2d3 is a standard die roll, and
+# M4 uses the m_bonus function to generate a number between 0 and
+# 4 according to a normal distribution.  All three components are
+# optional, and the number of dice is optional and assumed to be 1
+# when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
+# range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
+# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
+
+# 'name' indicates the beginning of an entry. The serial number must
+# increase for each new item. The '&' and '~' symbols are use to
+# include articles and pluralization as necessary to ensure
+# grammatical correctness in object descriptions.
+#
+# For non-English and irregular plurals, the '|' symbol may be used
+# instead, as in "|singular|plural|". The part between the first and
+# second | symbol is used for singular, and the part between the second
+# and third | for plural.  The number of | symbols in the name must
+# always be a multiple of 3.
+
+# 'graphics' is for symbol and color. There are 27 colors, as
+# follows:
+
+# D - Dark Gray    w - White          s - Gray          o - Orange
+# r - Red          g - Green          b - Blue          u - Umber
+# W - Light Gray   P - Light Purple   y - Yellow        R - Light Red
+# G - Light Green  B - Light Blue     U - Light Umber   p - Purple
+# v - Violet       t - Teal           m - Mud           Y - Light Yellow
+# i - Magenta-Pink T - Light Teal     V - Light Violet  I - Light Pink
+# M - Mustard      z - Blue Slate     Z - Deep Light Blue
+
+# Another color, "d", is used for "flavoured" items.
+
+# 'type' is for the base type of item, from object_base.txt.
+
+# 'properties' is for level, weight and cost. Level defines how "advanced"
+# the object is, when determining how easy it is to use a wand, staff or rod;
+# weight is in tenth-pounds; cost is the item's base value.
+
+# 'combat' is for combat information. The items base armor class, its base
+# damage and pluses to-hit, to-dam and to-ac.  The latter three numbers
+# accept randomized values.
+
+# 'alloc' is for allocation - depth and rarity, in pairs. It is used to
+# ensure that certain vital items such as food and identify scrolls
+# are found throughout the dungeon. The "allocation" depth need not
+# match the depth as specified in the "properties:" line.
+
+# 'charges' is for charges (wands and staves only).  This field accepts
+# randomized values.
+
+# 'pile' is for piling behaviour - how likely the item is to be found in a
+# pile, and how many (random value) objects in such a pile.  Objects
+# without a pile line appear singly.
+
+# 'flags' is for flags, which can be either object flags (as found in
+# src/list-object-flags.h) or kind flags (src/list-kind-flags.h).  As many
+# flags: lines may be used as are needed to specify all the flags, and
+# flags are separated by the '|' symbol.
+
+# 'values' is for object modifiers which take a value - stats, slays, brands,
+# resistances and so on.  An example is SLAY_UNDEAD[3], which denotes that
+# the weapon concerned has a basic 3x slay against undead creatures.  Like
+# flags, values are separated by '|' and as many values: lines as needed
+# can be used.
+
+# 'effect' is for the effect when an object is eaten, activated or whatever.
+# Fields are the name of the effect (as found in src/list-effects.h) and
+# possibly one or two parameters to the effect.
+
+# 'param' is for an extra to an effect if necessary
+
+# 'dice' provides a random value to be used by an effect (for damage,
+# healing, etc).  As well as the normal random value fields described above,
+# it can contain expressions like $B, which refer forward to an 'expr' line.
+
+# 'expr' provides an expression for use in effect dice.  It consists of a
+# code letter (eg B) for the expression, a base function to use (for example
+# PLAYER_LEVEL), and a sequence of operations to perform on that base.
+
+# 'msg' provides a message to give when the object is used.
+
+# 'time' gives a random value to be used as the time to recharge for a rod or
+# activatable item.
+
+# 'pval' is for pval - an auxiliary value that can mean food value, launcher
+# multiplier or turns of light. A pval can take a random value.
+
+# 'desc' is for description. As many desc: lines may be used as are needed
+# to describe the object. Note that lines will need spaces at their
+# ends or the beginning of the next line to prevent words from running
+# together.
+
+
+
+
+
+##### Non-kind (contains the "pile" picture) #####
+
+name:0:<pile>
+type:0
+graphics:&:w
+
+
+
+##### Various Stuff #####
+
+### 1
+
+name:2:& Wooden Torch~
+graphics:~:u
+type:light
+properties:1:22:2
+alloc:70:1 to 40
+combat:0:1d1:0:0:0
+flags:BURNS_OUT | EASY_KNOW
+values:LIGHT[1]
+
+name:3:& Lantern~
+graphics:~:U
+type:light
+properties:3:50:35
+alloc:70:5 to 100
+combat:0:1d1:0:0:0
+flags:TAKES_FUEL | EASY_KNOW | IGNORE_FIRE
+values:LIGHT[2]
+
+name:4:& Flask~ of oil
+graphics:!:y
+type:flask
+properties:1:20:3
+alloc:50:1 to 100
+combat:0:1d4:0:0:0
+values:BRAND_FIRE[3]
+pval:7500
+desc:It can be used to fuel a lantern with 7500 turns of light, up to
+desc: a maximum of 15000 turns of light.
+desc:  When thrown, it is considered lit, so it does more than nominal
+desc: damage (which occurs even against creatures resistant to fire).
+
+name:6:<unknown item>
+type:0
+graphics:*:r
+
+name:7:<unknown treasure>
+type:0
+graphics:*:o
+
+
+
+##### Food #####
+
+### Normal Food ###
+
+name:10:& Ration~ of Food
+graphics:,:U
+type:food
+properties:0:8:3
+alloc:40:0 to 50
+pile:100:1d5
+power:0
+msg:That tastes good.
+effect:NOURISH
+dice:6000
+desc:This nutritious but fairly bland food is familiar to anyone contemplating
+desc: long journeys.
+
+name:11:& Slime Mold~
+graphics:,:g
+type:food
+properties:1:2:2
+alloc:40:5 to 60
+pile:100:2d3
+power:0
+msg:That tastes good.
+effect:NOURISH
+dice:2500
+desc:A strange fungal growth, prone to moving if not observed.  Not very tasty
+desc: but quite filling.
+
+name:12:& Piece~ of Elvish Waybread
+graphics:,:B
+type:food
+properties:5:3:10
+alloc:40:30 to 100
+pile:10:1d3
+power:4
+msg:That tastes good.
+effect:NOURISH
+dice:7500
+effect:CURE:POISONED
+effect:HEAL_HP
+dice:4d8
+desc:Food of the elves is always good; their waybread is no exception.  These
+desc: thin cakes are wrapped in leaves and keep their tastiness for months.
+
+name:13:& Hard Biscuit~
+graphics:,:U
+type:food
+properties:0:2:1
+power:0
+effect:NOURISH
+dice:500
+effect:CRUNCH
+desc:A filling if tooth-breaking biscuit made mostly of rye.
+
+name:14:& Flask~ of Whisky
+graphics:,:y
+type:food
+properties:0:5:1
+power:0
+msg:That tastes great!
+effect:NOURISH
+dice:250
+effect:TIMED_INC:CONFUSED
+dice:-1+1d5
+desc:It raises your spirits.
+
+name:15:& Pint~ of Fine Wine
+graphics:,:r
+type:food
+properties:0:10:2
+power:0
+msg:That tastes great!  A fine vintage.
+effect:NOURISH
+dice:250
+effect:TIMED_INC:BOLD
+dice:79+1d41
+desc:A fine way to wash down some otherwise unappetising rations.
+
+### The shrooms, an interesting collection ###
+
+name:16:Second Sight
+graphics:,:d
+type:mushroom
+properties:0:1:200
+alloc:10:5 to 100
+pile:70:1d4
+power:10
+effect:CURE:BLIND
+effect:TIMED_INC:TELEPATHY
+dice:24+9d9
+effect:NOURISH
+dice:500
+
+name:17:Fast Recovery
+graphics:,:d
+type:mushroom
+properties:0:1:200
+alloc:10:5 to 40
+pile:70:1d4
+power:7
+effect:HEAL_HP
+dice:30
+effect:CURE:STUN
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:BLIND
+effect:NOURISH
+dice:500
+
+name:18:Vigor
+graphics:,:d
+type:mushroom
+properties:0:1:200
+alloc:25:20 to 100
+pile:13:1d3
+power:15
+effect:RESTORE_STAT:STR
+param:1
+effect:RESTORE_STAT:INT
+param:1
+effect:RESTORE_STAT:WIS
+param:1
+effect:RESTORE_STAT:DEX
+param:1
+effect:RESTORE_STAT:CON
+param:1
+effect:NOURISH
+dice:500
+
+name:19:Clear Mind
+graphics:,:d
+type:mushroom
+properties:0:1:200
+alloc:10:5 to 40
+pile:70:1d4
+power:8
+effect:RESTORE_MANA
+dice:20
+effect:CURE:CONFUSED
+effect:CURE:AFRAID
+effect:CURE:IMAGE
+effect:TIMED_INC:OPP_CONF
+dice:12+6d10
+effect:NOURISH
+dice:500
+
+name:20:Emergency
+graphics:,:d
+type:mushroom
+properties:0:1:60
+alloc:10:5 to 100
+pile:70:1d4
+power:7
+effect:TIMED_INC:IMAGE
+dice:249+1d101
+effect:TIMED_INC:OPP_FIRE
+dice:19+1d21
+effect:TIMED_INC:OPP_COLD
+dice:19+1d21
+effect:HEAL_HP
+dice:200
+effect:NOURISH
+dice:500
+
+name:21:Terror
+graphics:,:d
+type:mushroom
+properties:0:1:60
+alloc:10:5 to 40
+pile:70:1d4
+power:5
+effect:TIMED_SET:TERROR
+dice:79+1d41
+effect:NOURISH
+dice:500
+desc:It allows you to run for your life.
+
+name:22:Stoneskin
+graphics:,:d
+type:mushroom
+properties:0:1:60
+alloc:10:10 to 40
+pile:70:1d4
+power:5
+effect:TIMED_SET:STONESKIN
+dice:79+1d41
+effect:NOURISH
+dice:500
+desc:Its poison turns your skin to stone, albeit briefly.
+
+name:23:Turbulence
+graphics:,:d
+type:mushroom
+properties:0:1:60
+#alloc:10:5 to 100
+pile:70:1d4
+#E:SHROOM_TURB
+pval:500
+
+name:24:Debility
+graphics:,:d
+type:mushroom
+properties:0:1:20
+alloc:10:10 to 40
+pile:70:1d4
+power:5
+effect:RESTORE_MANA
+effect:NOURISH
+dice:500
+effect:RANDOM
+dice:2
+effect:DRAIN_STAT:STR
+effect:DRAIN_STAT:CON
+
+name:25:Sprinting
+graphics:,:d
+type:mushroom
+properties:0:1:100
+alloc:1:15 to 100
+pile:70:1d4
+power:5
+effect:TIMED_INC:SPRINT
+dice:100
+effect:NOURISH
+dice:500
+desc:It hastes you for a while, but then makes you slower for a while afterward.
+
+name:26:Purging
+graphics:,:d
+type:mushroom
+properties:0:1:60
+alloc:1:15 to 100
+pile:70:1d4
+power:5
+effect:SET_NOURISH
+dice:$B
+expr:B:FOOD_FAINT:- 1
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:CON
+effect:CURE:POISONED
+desc:It makes you very hungry but otherwise healthy.
+
+
+##### Weapons #####
+
+### Swords ###
+
+name:30:& Dagger~
+graphics:|:W
+type:sword
+properties:0:12:30
+alloc:20:0 to 100
+combat:0:1d4:0:0:0
+desc:A short two-edged blade perfect for thrusting.
+
+name:31:& Main Gauche~
+graphics:|:W
+type:sword
+properties:3:30:45
+alloc:20:3 to 100
+combat:0:1d5:0:0:0
+
+name:32:& Rapier~
+graphics:|:W
+type:sword
+properties:5:40:70
+alloc:20:5 to 100
+combat:0:1d6:0:0:0
+
+name:33:& Short Sword~
+graphics:|:W
+type:sword
+properties:5:80:90
+alloc:20:5 to 100
+combat:0:1d7:0:0:0
+
+name:34:& Cutlass~
+graphics:|:W
+type:sword
+properties:5:110:120
+alloc:20:5 to 100
+combat:0:1d8:0:0:0
+desc:A thicker and slightly longer dagger, the cutlass is a slashing sword.  It
+desc: possesses a slight curve and only one side is sharp.
+
+name:35:& Tulwar~
+graphics:|:W
+type:sword
+properties:5:100:170
+alloc:20:5 to 100
+combat:0:2d4:0:0:0
+desc:A wider-bladed cousin of the shamshir, with less of a curve.
+
+name:36:& Scimitar~
+graphics:|:W
+type:sword
+properties:10:150:300
+alloc:20:10 to 100
+combat:0:4d2:0:0:0
+desc:A long sabre with an extreme curve to the blade.
+
+
+name:37:& Long Sword~
+graphics:|:W
+type:sword
+properties:10:130:300
+alloc:20:10 to 100
+combat:0:2d5:0:0:0
+
+name:38:& Broad Sword~
+graphics:|:W
+type:sword
+properties:10:150:300
+alloc:20:10 to 100
+combat:0:2d5:0:0:0
+
+
+name:39:& Bastard Sword~
+graphics:|:W
+type:sword
+properties:15:140:400
+alloc:20:15 to 100
+combat:0:3d4:0:0:0
+
+name:40:& Katana~
+graphics:|:W
+type:sword
+properties:20:120:600
+alloc:20:20 to 100
+combat:0:3d5:0:0:0
+
+name:41:& Zweihander~
+graphics:|:W
+type:sword
+properties:30:200:700
+alloc:20:30 to 100
+combat:0:3d6:0:0:0
+desc:A sword designed for two hands.
+
+name:42:& Executioner's Sword~
+graphics:|:r
+type:sword
+properties:40:260:850
+alloc:20:40 to 100
+combat:0:4d5:0:0:0
+
+name:43:& Blade~ of Chaos
+graphics:|:v
+type:sword
+properties:70:180:4000
+alloc:10:70 to 100
+combat:0:6d5:0:0:0
+values:RES_CHAOS[1]
+
+
+
+### Whips ###
+
+name:50:& Whip~
+graphics:\:D
+type:hafted
+properties:3:30:30
+alloc:20:3 to 100
+combat:0:1d3:0:0:0
+
+name:51:& Ball-and-Chain~
+graphics:\:D
+type:hafted
+properties:20:150:200
+alloc:20:20 to 100
+combat:0:2d4:0:0:0
+
+name:52:& Morning Star~
+graphics:\:D
+type:hafted
+properties:10:150:396
+alloc:20:10 to 100
+combat:0:2d6:0:0:0
+
+name:53:& Flail~
+graphics:\:D
+type:hafted
+properties:10:150:353
+alloc:20:10 to 100
+combat:0:2d6:0:0:0
+
+name:54:& Two-Handed Great Flail~
+graphics:\:y
+type:hafted
+properties:45:280:590
+alloc:20:45 to 100
+combat:0:3d6:0:0:0
+
+
+### Clubs ###
+
+name:55:& Mace~
+graphics:\:D
+type:hafted
+properties:5:120:130
+alloc:20:5 to 100
+combat:0:2d4:0:0:0
+
+name:56:& Lead-Filled Mace~
+graphics:\:D
+type:hafted
+properties:15:180:502
+alloc:20:15 to 100
+combat:0:4d3:0:0:0
+
+name:57:& Quarterstaff~
+graphics:\:U
+type:hafted
+properties:10:150:200
+alloc:20:10 to 100
+combat:0:1d9:0:0:0
+
+name:58:& War Hammer~
+graphics:\:D
+type:hafted
+properties:5:120:225
+alloc:20:5 to 100
+combat:0:3d3:0:0:0
+
+name:59:& Maul~
+graphics:\:D
+type:hafted
+properties:5:200:130
+alloc:20:5 to 100
+combat:0:4d4:0:0:0
+
+name:60:& Great Hammer~
+graphics:\:D
+type:hafted
+properties:5:180:500
+alloc:20:20 to 100
+combat:0:8d1:0:0:0
+
+
+name:61:& Mace~ of Disruption
+graphics:\:v
+type:hafted
+properties:80:400:4300
+alloc:10:80 to 100
+combat:0:5d8:0:0:0
+values:SLAY_UNDEAD[3]
+
+
+
+### Spears ###
+
+name:65:& Spear~
+graphics:/:s
+type:polearm
+properties:5:50:36
+alloc:20:5 to 100
+combat:0:1d6:0:0:0
+
+name:66:& Awl-Pike~
+graphics:/:s
+type:polearm
+properties:10:160:340
+alloc:20:10 to 100
+combat:0:1d8:0:0:0
+
+name:67:& Trident~
+graphics:/:y
+type:polearm
+properties:5:70:120
+alloc:20:5 to 100
+combat:0:1d10:0:0:0
+
+name:68:& Halberd~
+graphics:/:s
+type:polearm
+properties:25:190:430
+alloc:20:25 to 100
+combat:0:3d5:0:0:0
+
+name:69:& Pike~
+graphics:/:s
+type:polearm
+properties:15:160:358
+alloc:20:15 to 100
+combat:0:2d5:0:0:0
+
+
+### Axes ###
+
+name:70:& Beaked Axe~
+graphics:/:s
+type:polearm
+properties:15:180:408
+alloc:20:15 to 100
+combat:0:2d6:0:0:0
+
+name:71:& Broad Axe~
+graphics:/:s
+type:polearm
+properties:15:160:304
+alloc:20:15 to 100
+combat:0:2d6:0:0:0
+
+name:72:& Battle Axe~
+graphics:/:s
+type:polearm
+properties:15:170:334
+alloc:20:15 to 100
+combat:0:2d8:0:0:0
+
+name:73:& Lochaber Axe~
+graphics:/:D
+type:polearm
+properties:45:250:750
+alloc:20:45 to 100
+combat:0:3d8:0:0:0
+
+name:74:& Great Axe~
+graphics:/:s
+type:polearm
+properties:40:230:500
+alloc:20:40 to 100
+combat:0:4d4:0:0:0
+
+
+### Other misc polearms ###
+
+name:75:& Scythe~
+graphics:/:s
+type:polearm
+properties:45:250:800
+alloc:20:45 to 100
+combat:0:5d3:0:0:0
+
+name:76:& Glaive~
+graphics:/:s
+type:polearm
+properties:20:190:363
+alloc:20:20 to 100
+combat:0:2d6:0:0:0
+
+name:77:& Lance~
+graphics:/:s
+type:polearm
+properties:10:300:230
+alloc:20:10 to 100
+combat:0:2d8:0:0:0
+
+name:78:& Scythe~ of Slicing
+graphics:/:r
+type:polearm
+properties:60:250:3500
+alloc:10:60 to 100
+combat:0:8d4:0:0:0
+
+name:79:& Lucerne Hammer~
+graphics:/:B
+type:polearm
+properties:10:120:376
+alloc:20:10 to 100
+combat:0:2d5:0:0:0
+
+
+
+##### Bows, Crossbows, Slings #####
+
+name:90:& Sling~
+graphics:}:u
+type:bow
+properties:1:5:5
+alloc:20:1 to 100
+flags:SHOOTS_SHOTS
+pval:2
+
+name:91:& Short Bow~
+graphics:}:U
+type:bow
+properties:3:30:50
+alloc:20:3 to 100
+flags:SHOOTS_ARROWS
+pval:2
+
+name:92:& Long Bow~
+graphics:}:U
+type:bow
+properties:10:40:120
+alloc:20:10 to 100
+flags:SHOOTS_ARROWS
+pval:3
+
+name:93:& Light Crossbow~
+graphics:}:s
+type:bow
+properties:15:110:140
+alloc:20:15 to 100
+flags:SHOOTS_BOLTS
+pval:3
+
+name:94:& Heavy Crossbow~
+graphics:}:s
+type:bow
+properties:30:200:300
+alloc:20:30 to 100
+flags:SHOOTS_BOLTS
+pval:4
+
+
+##### Missiles #####
+
+name:100:& Arrow~
+graphics:{:U
+type:arrow
+properties:3:2:1
+pile:100:7d7
+alloc:30:3 to 100
+combat:0:1d4:0:0:0
+desc:It can be shot with a bow.
+
+name:101:& Seeker Arrow~
+graphics:{:G
+type:arrow
+properties:55:2:20
+alloc:25:55 to 100
+pile:100:7d7
+combat:0:4d4:0:0:0
+desc:It can be shot with a bow.
+
+name:102:& Mithril Arrow~
+graphics:{:B
+type:arrow
+properties:55:2:25
+pile:100:7d7
+alloc:20:50 to 100
+combat:0:3d4:0:0:0
+flags:IGNORE_ACID | IGNORE_FIRE
+desc:It can be shot with a bow.
+
+
+name:105:& Bolt~
+graphics:{:s
+type:bolt
+properties:3:3:2
+pile:100:5d7
+alloc:30:3 to 100
+combat:0:1d5:0:0:0
+desc:It can be shot with a crossbow.
+
+name:106:& Seeker Bolt~
+graphics:{:g
+type:bolt
+properties:65:3:25
+pile:100:5d7
+alloc:25:65 to 100
+combat:0:4d5:0:0:0
+desc:It can be shot with a crossbow.
+
+name:107:& Mithril Bolt~
+graphics:{:B
+type:bolt
+properties:50:2:30
+pile:100:5d7
+alloc:20:60 to 100
+combat:0:3d5:0:0:0
+flags:IGNORE_ACID
+desc:It can be shot with a crossbow.
+
+
+name:110:& Rounded Pebble~
+graphics:{:s
+type:shot
+properties:0:4:1
+pile:100:5d7
+alloc:30:0 to 100
+combat:0:1d2:0:0:0
+desc:It can be shot with a sling.
+
+name:111:& Iron Shot~
+graphics:{:s
+type:shot
+properties:3:5:2
+pile:100:5d7
+alloc:25:3 to 100
+combat:0:1d4:0:0:0
+desc:It can be shot with a sling.
+
+name:112:& Mithril Shot~
+graphics:{:B
+type:shot
+properties:40:4:20
+pile:100:5d7
+alloc:20:40 to 100
+combat:0:2d4:5:5:0
+flags:IGNORE_ACID
+desc:It can be shot with a sling.
+
+
+##### Digging Tools #####
+
+name:120:& Shovel~
+graphics:\:s
+type:digger
+properties:1:60:10
+alloc:20:5 to 100
+combat:0:1d2:0:0:0
+values:TUNNEL[1]
+
+name:121:& Pick~
+graphics:\:g
+type:digger
+properties:30:180:300
+alloc:20:30 to 100
+combat:0:1d3:0:0:0
+values:TUNNEL[2]
+
+name:122:& Mattock~
+graphics:\:D
+type:digger
+properties:50:250:700
+alloc:20:50 to 100
+combat:0:1d8:0:0:0
+values:TUNNEL[3]
+
+
+##### Armor #####
+
+name:130:& Pair~ of Leather Sandals
+graphics:]:U
+type:boots
+properties:0:15:4
+alloc:20:1 to 100
+combat:1:1d1:0:0:0
+desc:A set of open-topped footgear with soft calfskin lacings and a sturdy 
+desc:cured leather base.
+
+name:131:& Pair~ of Leather Boots
+graphics:]:U
+type:boots
+properties:3:20:7
+alloc:20:3 to 100
+combat:2:1d1:0:0:0
+
+name:132:& Pair~ of Iron Shod Boots
+graphics:]:U
+type:boots
+properties:5:35:12
+alloc:20:5 to 100
+combat:4:1d1:0:0:0
+flags:IGNORE_FIRE
+
+name:133:& Pair~ of Steel Shod Boots
+graphics:]:s
+type:boots
+properties:20:60:50
+alloc:20:20 to 100
+combat:7:1d1:0:0:0
+flags:IGNORE_FIRE
+
+name:134:& Pair~ of Mithril Shod Boots
+graphics:]:B
+type:boots
+properties:60:40:500
+alloc:20:60 to 100
+combat:8:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_FIRE
+
+name:135:& Pair~ of Ethereal Slippers
+graphics:]:U
+type:boots
+properties:0:0:4
+alloc:10:30 to 100
+combat:0:0d0:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
+
+
+
+### Headgear ###
+
+name:140:& Hard Leather Cap~
+graphics:]:u
+type:helm
+properties:3:20:12
+alloc:20:3 to 100
+combat:2:0d0:0:0:0
+
+name:141:& Metal Cap~
+graphics:]:s
+type:helm
+properties:10:25:30
+alloc:20:10 to 100
+combat:3:1d1:0:0:0
+
+name:142:& Iron Helm~
+graphics:]:s
+type:helm
+properties:20:50:75
+alloc:20:20 to 100
+combat:7:1d3:0:0:0
+
+name:143:& Steel Helm~
+graphics:]:W
+type:helm
+properties:40:60:200
+alloc:20:40 to 100
+combat:9:1d3:0:0:0
+
+name:144:& Iron Crown~
+graphics:]:s
+type:crown
+properties:45:20:500
+alloc:20:45 to 100
+combat:0:1d1:0:0:0
+
+name:145:& Golden Crown~
+graphics:]:y
+type:crown
+properties:45:30:1000
+alloc:10:45 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID
+
+name:146:& Jewel Encrusted Crown~
+graphics:]:v
+type:crown
+properties:50:40:2000
+alloc:10:50 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID
+
+
+### Body armours ###
+
+name:150:& Robe~
+graphics:(:b
+type:soft armor
+properties:1:20:4
+alloc:20:1 to 100
+combat:2:0d0:0:0:0
+
+name:151:Soft Leather Armour~
+graphics:(:U
+type:soft armor
+properties:3:80:20
+alloc:20:3 to 100
+combat:8:0d0:0:0:0
+
+name:152:Studded Leather Armour~
+graphics:(:U
+type:soft armor
+properties:10:100:100
+alloc:20:5 to 100
+combat:12:1d1:-1:0:0
+
+name:153:Hard Leather Armour~
+graphics:(:U
+type:soft armor
+properties:5:120:150
+alloc:20:10 to 100
+combat:16:1d2:-1:0:0
+
+name:154:Leather Scale Mail~
+graphics:(:U
+type:soft armor
+properties:15:140:370
+alloc:20:15 to 100
+combat:20:1d1:-1:0:0
+
+name:155:Metal Scale Mail~
+graphics:[:s
+type:hard armor
+properties:25:250:550
+alloc:20:25 to 100
+combat:38:1d4:-2:0:0
+
+name:156:Chain Mail~
+graphics:[:s
+type:hard armor
+properties:25:220:750
+alloc:20:20 to 100
+combat:32:1d4:-2:0:0
+
+name:157:Augmented Chain Mail~
+graphics:[:s
+type:hard armor
+properties:30:270:900
+alloc:20:35 to 100
+combat:42:1d4:-2:0:0
+
+name:158:Bar Chain Mail~
+graphics:[:s
+type:hard armor
+properties:35:280:950
+alloc:20:40 to 100
+combat:45:1d4:-2:0:0
+
+name:159:Metal Brigandine Armour~
+graphics:[:s
+type:hard armor
+properties:35:290:1100
+alloc:20:45 to 100
+combat:48:1d4:-3:0:0
+
+name:160:Partial Plate Armour~
+graphics:[:W
+type:hard armor
+properties:45:260:1200
+alloc:20:30 to 100
+combat:40:1d6:-3:0:0
+
+name:161:Metal Lamellar Armour~
+graphics:[:W
+type:hard armor
+properties:45:340:1250
+alloc:20:50 to 100
+combat:58:1d6:-3:0:0
+
+name:162:Full Plate Armour~
+graphics:[:W
+type:hard armor
+properties:45:360:1350
+alloc:15:55 to 100
+combat:62:2d4:-3:0:0
+
+name:163:Ribbed Plate Armour~
+graphics:[:W
+type:hard armor
+properties:50:380:1500
+alloc:15:60 to 100
+combat:66:2d4:-3:0:0
+
+name:164:Mithril Chain Mail~
+graphics:[:B
+type:hard armor
+properties:55:150:7000
+alloc:10:55 to 100
+combat:28:1d4:-1:0:0
+flags:IGNORE_ACID
+
+name:165:Mithril Plate Mail~
+graphics:[:B
+type:hard armor
+properties:60:300:15000
+alloc:10:65 to 100
+combat:60:2d4:-3:0:0
+flags:IGNORE_ACID
+
+name:166:Adamantite Plate Mail~
+graphics:[:G
+type:hard armor
+properties:75:420:20000
+alloc:10:75 to 100
+combat:80:2d4:-4:0:0
+flags:IGNORE_ACID
+
+
+
+### The Cloaks ###
+
+name:170:& Cloak~
+graphics:(:g
+type:cloak
+properties:1:10:3
+alloc:20:1 to 100
+combat:1:0d0:0:0:0
+desc:A traveller's sturdy outer garment.
+
+name:171:& Fur Cloak~
+graphics:(:o
+type:cloak
+properties:1:25:600
+alloc:20:20 to 100
+combat:3:0d0:0:0:0
+desc:A heavy cloak made from fur and lined with leather; a luxury.
+
+name:172:& Elven Cloak~
+graphics:(:D
+type:cloak
+properties:60:5:2000
+alloc:8:40 to 100
+combat:6:0d0:0:0:0
+values:STEALTH[1] | SPEED[1]
+desc:A mantle made of curious silken material by the Galadrim that wondrously 
+desc:takes on the hues and shapes of its surroundings.
+
+name:173:& Ethereal Cloak~
+graphics:(:W
+type:cloak
+properties:50:0:4500
+alloc:10:70 to 100
+combat:0:0d0:0:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD 
+desc:This unearthly, completely transparent body mantle folds and drapes in 
+desc:iridescent patterns around you.  It weighs absolutely nothing.
+
+
+### The Gloves ###
+
+name:174:& Set~ of Leather Gloves
+graphics:]:U
+type:gloves
+properties:0:10:5
+alloc:20:1 to 100
+combat:1:0d0:0:0:0
+
+name:175:& Set~ of Gauntlets
+graphics:]:s
+type:gloves
+properties:0:25:45
+alloc:20:10 to 100
+combat:3:1d1:0:0:0
+
+name:176:& Set~ of Mithril Gauntlets
+graphics:]:B
+type:gloves
+properties:0:25:700
+alloc:20:40 to 100
+combat:6:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_FIRE
+
+name:177:& Set~ of Caestus
+graphics:]:U
+type:gloves
+properties:0:40:100
+alloc:10:20 to 100
+combat:5:1d1:0:3:0
+desc:An ancient battle glove designed for hand-to-hand fighting.  Its layered
+desc: leather thongs are enhanced for combat by bloody-looking spikes.
+
+name:178:& Set~ of Alchemist's Gloves
+graphics:]:R
+type:gloves
+properties:0:5:500
+alloc:10:50 to 100
+combat:0:1d1:0:0:2
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+flags:SPELLS_OK
+desc:Highly protective gloves designed for an alchemist's elemental magics.
+
+#N:179:& Set~ of Mining Gloves
+#G:]:U
+#I:gloves
+#W:0:0:5:500 
+#A:10:50 to 100
+#P:0:1d1:0:0:2
+#V:TUNNEL[1d3]
+
+
+### The shields ###
+
+#N:180:& Buckler~
+#G:):U
+#I:shield
+#W:3:0:20:30
+#A:100:3 to 100
+#P:1:1d1:0:0:0
+#D:A small round shield designed to be useful in deflecting enemy swords.
+
+name:181:& Wicker Shield~
+graphics:):U
+type:shield
+properties:1:30:20
+alloc:20:1 to 100
+combat:2:1d1:0:0:0
+desc:A light circular frame of wood surrounding fine-grained wickerwork.
+
+name:182:& Small Metal Shield~
+graphics:):s
+type:shield
+properties:10:60:80
+alloc:20:15 to 100
+combat:5:1d2:0:0:0
+
+name:183:& Leather Shield~
+graphics:):U
+type:shield
+properties:15:90:200
+alloc:20:10 to 100
+combat:8:1d3:0:0:0
+
+name:184:& Large Metal Shield~
+graphics:):s
+type:shield
+properties:30:120:500
+alloc:20:30 to 100
+combat:12:1d5:0:0:0
+
+name:185:& Mithril Shield~
+graphics:):B
+type:shield
+properties:70:100:10000
+alloc:10:70 to 100
+combat:16:1d4:0:0:10
+flags:IGNORE_ACID
+
+
+
+
+##### Rings #####
+
+### Stat rings ###
+
+name:190:Strength
+graphics:=:d
+type:ring
+properties:30:2:500
+alloc:50:30 to 100
+flags:SUST_STR | 
+values:STR[1+M5]
+
+name:191:Intelligence
+graphics:=:d
+type:ring
+properties:30:2:500
+alloc:50:30 to 100
+flags:SUST_INT | 
+values:INT[1+M5]
+
+name:192:Dexterity
+graphics:=:d
+type:ring
+properties:30:2:500
+alloc:50:30 to 100
+flags:SUST_DEX | 
+values:DEX[1+M5]
+
+name:193:Constitution
+graphics:=:d
+type:ring
+properties:30:2:500
+alloc:50:30 to 100
+flags:SUST_CON | 
+values:CON[1+M5]
+
+name:194:Speed
+graphics:=:d
+type:ring
+properties:75:2:100000
+alloc:40:75 to 100
+flags:GOOD
+values:SPEED[4+M6]
+
+name:195:Searching
+graphics:=:d
+type:ring
+properties:5:2:250
+alloc:20:5 to 90
+values:SEARCH[1+M5]
+
+### 196, sval 7
+### 197, sval 8
+
+### Stat sustain rings ###
+
+name:198:Bodykeeping
+graphics:=:d
+type:ring
+properties:30:2:750
+alloc:20:30 to 100
+flags:SUST_STR | SUST_DEX | SUST_CON | EASY_KNOW
+
+name:199:Soulkeeping
+graphics:=:d
+type:ring
+properties:30:2:600
+alloc:20:30 to 100
+flags:SUST_STR | SUST_INT | SUST_WIS | EASY_KNOW
+
+### 200, sval 11
+
+
+### Resistance rings ###
+
+name:201:Resist Poison
+graphics:=:d
+type:ring
+properties:40:2:16000
+alloc:50:40 to 100
+flags:EASY_KNOW
+values:RES_POIS[1]
+
+name:202:Resist Fire and Cold
+graphics:=:d
+type:ring
+properties:10:2:250
+alloc:50:10 to 50
+flags:IGNORE_COLD | IGNORE_FIRE | EASY_KNOW
+values:RES_FIRE[1] | RES_COLD[1]
+
+### 203, sval 14
+### 204, sval 15
+
+### Elemental rings ###
+
+name:205:Light
+graphics:=:d
+type:ring
+properties:0:2:400
+alloc:20:25 to 100
+values:SEARCH[1+M5] | LIGHT[1] | RES_LIGHT[1]
+
+### 206, sval 17
+
+name:207:Flames
+graphics:=:d
+type:ring
+properties:50:2:500
+alloc:20:20 to 100
+combat:0:0d0:0:0:5+d5M10
+flags:IGNORE_FIRE
+values:RES_FIRE[1]
+power:11
+effect:BALL:FIRE:2
+dice:80
+effect:TIMED_INC:OPP_FIRE
+dice:20+1d20
+time:50+d50
+
+name:208:Acid
+graphics:=:d
+type:ring
+properties:50:2:500
+alloc:20:20 to 100
+combat:0:0d0:0:0:5+d5M10
+flags:IGNORE_ACID
+values:RES_ACID[1]
+power:11
+effect:BALL:ACID:2
+dice:70
+effect:TIMED_INC:OPP_ACID
+dice:20+1d20
+time:50+d50
+
+name:209:Ice
+graphics:=:d
+type:ring
+properties:50:2:500
+alloc:20:20 to 100
+combat:0:0d0:0:0:5+d5M10
+flags:IGNORE_COLD
+values:RES_COLD[1]
+power:11
+effect:BALL:COLD:2
+dice:75
+effect:TIMED_INC:OPP_COLD
+dice:20+1d20
+time:50+d50
+
+name:210:Lightning
+graphics:=:d
+type:ring
+properties:50:2:500
+alloc:20:20 to 100
+combat:0:0d0:0:0:5+d5M10
+flags:IGNORE_ELEC
+values:RES_ELEC[1]
+power:11
+effect:BALL:ELEC:2
+dice:85
+effect:TIMED_INC:OPP_ELEC
+dice:20+1d20
+time:50+d50
+
+### 211, sval 22
+
+### Combat rings ###
+
+name:212:Damage
+graphics:=:d
+type:ring
+properties:20:2:500
+alloc:30:20 to 100
+combat:0:0d0:0:5+d3M7:0
+desc:It boosts your to-dam value.
+
+name:213:Accuracy
+graphics:=:d
+type:ring
+properties:20:2:500
+alloc:30:20 to 100
+combat:0:0d0:10+d6M7:0:0
+desc:It boosts your to-hit value.
+
+name:214:Slaying
+graphics:=:d
+type:ring
+properties:40:2:1000
+alloc:20:40 to 100
+combat:0:0d0:d10M10:d5M5:0
+desc:It boosts your to-hit and to-dam values.
+
+name:215:Protection
+graphics:=:d
+type:ring
+properties:10:2:500
+alloc:50:10 to 40
+combat:0:0d0:0:0:5+d5M10
+desc:It increases your armor class.
+
+
+### Mixed blessings ###
+
+name:216:Teleportation
+graphics:=:d
+type:ring
+properties:5:2:1000
+alloc:20:10 to 50
+flags:TELEPORT | EASY_KNOW
+values:SPEED[2]
+
+name:217:Reckless Attacks
+graphics:=:d
+type:ring
+properties:0:2:200
+alloc:30:10 to 50
+combat:0:0d0:2+d3:2+d3:-8+4d3
+
+name:218:Open Wounds
+graphics:=:d
+type:ring
+properties:0:2:700
+alloc:20:10 to 50
+flags:IMPAIR_HP | EASY_KNOW
+power:6
+effect:HEAL_HP
+dice:40
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:CONFUSED
+time:10+5d8
+
+name:219:Escaping
+graphics:=:d
+type:ring
+properties:30:2:4000
+alloc:50:15 to 80
+flags:AFRAID | EASY_KNOW
+values:SPEED[4]
+
+name:220:the Mouse
+graphics:=:d
+type:ring
+properties:30:2:100
+alloc:50:10 to 50
+combat:0:0d0:0:-3d5:0
+values:DEX[d4] | STEALTH[d4]
+
+name:221:the Dog
+graphics:=:d
+type:ring
+properties:0:2:100
+alloc:50:10 to 50
+flags:PROT_FEAR | EASY_KNOW
+values:STEALTH[-2]
+
+### 222, sval 33
+
+### Misc rings ###
+
+name:223:Slow Digestion
+graphics:=:d
+type:ring
+properties:5:2:250
+alloc:30:10 to 50
+flags:SLOW_DIGEST | EASY_KNOW
+
+name:224:Feather Falling
+graphics:=:d
+type:ring
+properties:5:2:200
+alloc:20:10 to 50
+flags:FEATHER | EASY_KNOW
+
+name:225:Free Action
+graphics:=:d
+type:ring
+properties:20:2:1500
+alloc:50:20 to 100
+flags:FREE_ACT | EASY_KNOW
+
+name:226:See Invisible
+graphics:=:d
+type:ring
+properties:30:2:340
+alloc:50:30 to 100
+flags:SEE_INVIS | EASY_KNOW
+
+name:227:Digging
+graphics:=:d
+type:ring
+properties:0:2:800
+alloc:20:10 to 50
+values:TUNNEL[2+d3]
+power:6
+effect:LINE:KILL_WALL
+dice:20+1d30
+time:15+2d10
+
+
+
+##### Amulets #####
+
+### Stat boosts ###
+
+name:230:Wisdom
+graphics:":d
+type:amulet
+properties:30:3:500
+alloc:50:20 to 90
+flags:SUST_WIS | 
+values:WIS[1+M5]
+
+### 231, sval 2
+
+### Resistances ###
+
+name:232:Resist Lightning
+graphics:":d
+type:amulet
+properties:10:3:300
+alloc:50:10 to 50
+flags:IGNORE_ELEC | EASY_KNOW
+values:RES_ELEC[1]
+
+name:233:Resist Acid
+graphics:":d
+type:amulet
+properties:10:3:300
+alloc:50:10 to 50
+flags:IGNORE_ACID | EASY_KNOW
+values:RES_ACID[1]
+
+name:234:Resistance
+graphics:":d
+type:amulet
+properties:60:3:20000
+alloc:10:60 to 100
+flags:EASY_KNOW
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_FIRE[1] | RES_ACID[1] | RES_ELEC[1] | RES_COLD[1]
+
+### JLE amulets ###
+
+name:235:Sustenance
+graphics:":d
+type:amulet
+properties:60:3:20000
+alloc:10:60 to 100
+flags:SUST_STR | SUST_INT | SUST_WIS | SUST_DEX | SUST_CON |
+flags:HOLD_LIFE | SLOW_DIGEST | EASY_KNOW | 
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+
+name:236:the Magi
+graphics:":d
+type:amulet
+properties:70:3:30000
+alloc:10:70 to 100
+combat:0:0d0:0:0:d5M5
+flags:FREE_ACT | SEE_INVIS | SUST_INT | PROT_BLIND | GOOD
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:SEARCH[1+M3] | INT[1+M3]
+
+name:237:ESP
+graphics:":d
+type:amulet
+properties:50:3:25000
+alloc:10:60 to 100
+flags:TELEPATHY
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | 
+values:SEARCH[d5M5]
+
+name:238:Devotion
+graphics:":d
+type:amulet
+properties:70:3:30000
+alloc:10:70 to 100
+flags:HOLD_LIFE | SUST_WIS | GOOD
+values:WIS[1+M3] | LIGHT[1] | RES_DARK[1] | RES_LIGHT[1] | RES_FIRE[1]
+
+name:239:Weaponmastery
+graphics:":d
+type:amulet
+properties:70:3:30000
+alloc:10:70 to 100
+combat:0:0d0:1+M4:1+M4:0
+flags:SUST_STR | SUST_CON | FREE_ACT | PROT_FEAR | GOOD
+values:STR[1+M2] | RES_DISEN[1]
+
+name:240:Trickery
+graphics:":d
+type:amulet
+properties:70:3:30000
+alloc:10:70 to 100
+flags:SUST_DEX | GOOD
+values:DEX[1+M4] | SPEED[1+M2] | STEALTH[1+M2] | SEARCH[1+d3M3] | INFRA[1+d3M3]
+values:RES_NEXUS[1] | RES_POIS[1]
+
+# 241
+# 242
+# 243
+
+### Ability boosts ###
+
+name:244:Regeneration
+graphics:":d
+type:amulet
+properties:30:3:600
+alloc:20:30 to 100
+flags:REGEN | EASY_KNOW
+
+name:245:Infravision
+graphics:":d
+type:amulet
+properties:10:3:200
+alloc:30:10 to 70
+values:INFRA[1+M5]
+
+name:246:Searching
+graphics:":d
+type:amulet
+properties:15:3:600
+alloc:20:10 to 40
+values:SEARCH[d5M5]
+
+### Powers ###
+
+name:247:Teleportation
+graphics:":d
+type:amulet
+properties:10:3:10
+alloc:20:10 to 40
+flags:TELEPORT | EASY_KNOW
+
+name:248:Slow Digestion
+graphics:":d
+type:amulet
+properties:15:3:200
+alloc:20:15 to 40
+flags:SLOW_DIGEST | EASY_KNOW
+
+name:249:Adornment
+graphics:":d
+type:amulet
+properties:10:3:0
+alloc:20:10 to 40
+flags:EASY_KNOW
+
+
+### Mixed ###
+
+name:250:Inertia
+graphics:":d
+type:amulet
+properties:15:3:10
+alloc:20:15 to 40
+flags:FREE_ACT
+values:SPEED[-3+1d2]
+
+
+
+
+##### Scrolls #####
+
+### Teleportation ###
+
+name:260:Phase Door
+graphics:?:w
+type:scroll
+properties:1:5:15
+alloc:50:1 to 100
+pile:100:1d3
+power:5
+effect:TELEPORT
+dice:10
+
+name:261:Teleportation
+graphics:?:w
+type:scroll
+properties:10:5:40
+alloc:40:10 to 100
+pile:25:2
+power:6
+effect:TELEPORT
+dice:100
+
+name:262:Teleport Level
+graphics:?:w
+type:scroll
+properties:20:5:800
+alloc:16:20 to 100
+pile:10:2
+power:15
+effect:TELEPORT_LEVEL
+
+
+### Detection ###
+
+name:263:Magic Mapping
+graphics:?:w
+type:scroll
+properties:5:5:65
+alloc:50:5 to 100
+pile:70:1d3
+power:10
+effect:MAP_AREA
+dice:22d40
+
+name:264:Treasure Detection
+graphics:?:w
+type:scroll
+properties:0:5:70
+alloc:50:0 to 70
+pile:40:1d5
+power:6
+effect:DETECT_GOLD
+dice:22d40
+effect:SENSE_OBJECTS
+dice:22d40
+
+name:265:Trap Detection
+graphics:?:w
+type:scroll
+properties:5:5:35
+alloc:50:0 to 70
+pile:70:1d3
+power:6
+effect:DETECT_TRAPS
+dice:22d40
+
+name:266:Door/Stair Location
+graphics:?:w
+type:scroll
+properties:5:5:50
+alloc:50:5 to 70
+pile:70:1d3
+power:6
+effect:DETECT_DOORS
+dice:22d40
+effect:DETECT_STAIRS
+dice:22d40
+
+name:267:Detect Invisible
+graphics:?:w
+type:scroll
+properties:1:5:15
+alloc:50:1 to 70
+pile:70:1d3
+power:6
+effect:DETECT_INVISIBLE_MONSTERS
+dice:22d40
+
+### 268
+### 269
+
+### Enchantments ###
+
+name:270:Enchant Weapon To-Hit
+graphics:?:w
+type:scroll
+properties:15:5:125
+alloc:40:15 to 70
+pile:25:2
+power:15
+effect:ENCHANT:TOHIT
+dice:1
+
+name:271:Enchant Weapon To-Dam
+graphics:?:w
+type:scroll
+properties:15:5:125
+alloc:40:15 to 70
+pile:25:2
+power:20
+effect:ENCHANT:TODAM
+dice:1
+
+name:272:Enchant Armour
+graphics:?:w
+type:scroll
+properties:15:5:125
+alloc:40:15 to 70
+pile:25:2
+power:12
+effect:ENCHANT:TOAC
+dice:1
+
+name:273:*Enchant Weapon*
+graphics:?:w
+type:scroll
+properties:50:5:500
+alloc:40:50 to 100
+pile:25:2
+power:22
+effect:ENCHANT:TOBOTH
+dice:1d3
+
+
+name:274:*Enchant Armour*
+graphics:?:w
+type:scroll
+properties:50:5:500
+alloc:40:50 to 100
+pile:25:2
+power:15
+effect:ENCHANT:TOAC
+dice:2+1d3
+
+## Removed in 3.4 until curses are redone
+name:275:Remove Curse
+graphics:?:w
+type:scroll
+properties:10:5:100
+#A:16:10 to 100
+pile:25:2
+power:8
+effect:REMOVE_CURSE
+
+## Removed in 3.4 until curses are redone
+name:276:*Remove Curse*
+graphics:?:w
+type:scroll
+properties:50:5:8000
+#A:16:50 to 100
+pile:25:2
+power:20
+effect:REMOVE_ALL_CURSE
+
+### 277, sval 18
+
+### Summoning ###
+
+name:278:Summon Monster
+graphics:?:w
+type:scroll
+properties:1:5:0
+alloc:10:1 to 100
+pile:70:1d3
+power:0
+effect:SUMMON
+dice:1d3
+
+name:279:Summon Undead
+graphics:?:w
+type:scroll
+properties:15:5:0
+alloc:10:15 to 100
+pile:70:1d3
+power:0
+effect:SUMMON:UNDEAD
+dice:1d3
+
+name:280:Acquirement
+graphics:?:w
+type:scroll
+properties:20:5:5000
+alloc:10:20 to 100
+power:20000
+effect:ACQUIRE
+dice:1
+
+name:281:*Acquirement*
+graphics:?:w
+type:scroll
+properties:60:5:10000
+alloc:5:60 to 100
+power:20000
+effect:ACQUIRE
+dice:1+1d2
+
+
+### Killing scrolls ###
+
+name:282:Dispel Undead
+graphics:?:w
+type:scroll
+properties:40:5:200
+alloc:40:40 to 100
+pile:25:2
+power:9
+effect:PROJECT_LOS:DISP_UNDEAD:1
+dice:60
+
+name:283:Banishment
+graphics:?:w
+type:scroll
+properties:40:5:2500
+alloc:25:40 to 100
+power:20
+effect:BANISH
+
+name:284:Mass Banishment
+graphics:?:w
+type:scroll
+properties:50:5:3000
+alloc:20:50 to 100
+power:25
+effect:MASS_BANISH
+
+
+### Utility ###
+
+name:285:Satisfy Hunger
+graphics:?:w
+type:scroll
+properties:5:5:10
+alloc:60:5 to 100
+pile:100:2d3
+power:7
+effect:SET_NOURISH
+dice:16999
+
+name:286:Identify
+graphics:?:w
+type:scroll
+properties:1:5:100
+alloc:60:5 to 100
+pile:100:2d3
+power:9
+effect:IDENTIFY
+
+name:289:Light
+graphics:?:w
+type:scroll
+properties:0:5:15
+alloc:50:0 to 60
+pile:35:2d3
+power:4
+effect:LIGHT_AREA
+param:2
+dice:2d8
+
+name:290:Word of Recall
+graphics:?:w
+type:scroll
+properties:5:5:125
+alloc:50:5 to 100
+pile:35:2d3
+power:15
+effect:RECALL
+
+name:291:Recharging
+graphics:?:w
+type:scroll
+properties:40:5:200
+alloc:40:40 to 100
+pile:12:2d3
+power:11
+effect:RECHARGE
+dice:60
+
+name:292:Trap/Door Destruction
+graphics:?:w
+type:scroll
+properties:10:5:50
+alloc:40:10 to 60
+pile:25:2d3
+power:6
+effect:TOUCH:KILL_DOOR
+
+name:293:Deep Descent
+graphics:?:w
+type:scroll
+properties:10:5:250
+alloc:20:1 to 100
+pile:20:2
+power:19
+effect:DEEP_DESCENT
+
+
+### "Holy" spells ###
+
+name:294:Blessing
+graphics:?:w
+type:scroll
+properties:1:5:15
+alloc:50:1 to 50
+pile:70:1d3
+power:6
+effect:TIMED_INC:BLESSED
+dice:6+1d12
+
+name:295:Holy Chant
+graphics:?:w
+type:scroll
+properties:10:5:40
+alloc:40:10 to 70
+pile:25:2
+power:7
+effect:TIMED_INC:BLESSED
+dice:12+1d24
+
+name:296:Holy Prayer
+graphics:?:w
+type:scroll
+properties:25:5:80
+alloc:40:50 to 100
+pile:25:2
+power:8
+effect:TIMED_INC:BLESSED
+dice:24+1d48
+
+name:297:Protection from Evil
+graphics:?:w
+type:scroll
+properties:30:5:50
+alloc:40:30 to 100
+pile:25:2
+power:6
+effect:TIMED_INC:PROTEVIL
+dice:$B+1d25
+expr:B:PLAYER_LEVEL:* 3
+
+
+### Misc. ###
+
+name:298:Monster Confusion
+graphics:?:w
+type:scroll
+properties:5:5:30
+alloc:16:5 to 60
+pile:25:2
+power:8
+effect:CONFUSING
+
+name:299:Rune of Protection
+graphics:?:w
+type:scroll
+properties:60:5:500
+alloc:30:70 to 100
+power:20
+effect:RUNE
+
+name:300:*Destruction*
+graphics:?:w
+type:scroll
+properties:40:5:1000
+alloc:30:40 to 100
+power:12
+effect:DESTRUCTION
+param:15
+
+### Bad scrolls ###
+
+name:301:Aggravate Monster
+graphics:?:w
+type:scroll
+properties:5:5:0
+alloc:10:5 to 70
+pile:70:1d3
+power:0
+effect:AGGRAVATE
+
+name:302:Curse Weapon
+graphics:?:w
+type:scroll
+properties:50:5:0
+#A:10:50 to 100
+pile:70:1d3
+power:0
+effect:CURSE_WEAPON
+
+name:303:Curse Armour
+graphics:?:w
+type:scroll
+properties:50:5:0
+#A:10:50 to 100
+pile:70:1d3
+power:0
+effect:CURSE_ARMOR
+
+name:304:Darkness
+graphics:?:w
+type:scroll
+properties:1:5:0
+alloc:10:1 to 70
+pile:70:1d3
+power:0
+effect:DARKEN_AREA:DARK_WEAK:3
+dice:10
+
+name:305:Trap Creation
+graphics:?:w
+type:scroll
+properties:10:5:0
+alloc:10:10 to 70
+pile:70:1d3
+power:0
+msg:You hear a low-pitched whistling sound.
+effect:TOUCH:MAKE_TRAP
+
+
+
+
+##### Potions #####
+
+### Statgain ###
+
+name:310:Strength
+graphics:!:d
+type:potion
+properties:30:4:8000
+alloc:30:30 to 100
+pile:10:2
+power:20000
+effect:RESTORE_STAT:STR
+effect:GAIN_STAT:STR
+
+name:311:Intelligence
+graphics:!:d
+type:potion
+properties:30:4:8000
+alloc:30:30 to 100
+pile:10:2
+power:20000
+effect:RESTORE_STAT:INT
+effect:GAIN_STAT:INT
+
+name:312:Wisdom
+graphics:!:d
+type:potion
+properties:30:4:8000
+alloc:30:30 to 100
+pile:10:2
+power:20000
+effect:RESTORE_STAT:WIS
+effect:GAIN_STAT:WIS
+
+name:313:Dexterity
+graphics:!:d
+type:potion
+properties:30:4:8000
+alloc:30:30 to 100
+pile:10:2
+power:20000
+effect:RESTORE_STAT:DEX
+effect:GAIN_STAT:DEX
+
+name:314:Constitution
+graphics:!:d
+type:potion
+properties:30:4:8000
+alloc:30:30 to 100
+pile:10:2
+power:20000
+effect:RESTORE_STAT:CON
+effect:GAIN_STAT:CON
+
+### 315, sval 6
+
+name:316:Augmentation
+graphics:!:d
+type:potion
+properties:40:4:50000
+alloc:20:40 to 100
+combat:0:1d1:0:0:0
+power:20000
+effect:RESTORE_STAT:STR
+effect:GAIN_STAT:STR
+effect:RESTORE_STAT:INT
+effect:GAIN_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:GAIN_STAT:WIS
+effect:RESTORE_STAT:DEX
+effect:GAIN_STAT:DEX
+effect:RESTORE_STAT:CON
+effect:GAIN_STAT:CON
+
+name:317:Experience
+graphics:!:d
+type:potion
+properties:65:4:25000
+alloc:50:65 to 100
+power:20000
+effect:GAIN_EXP
+dice:100000
+
+### Healings ###
+
+name:318:Cure Light Wounds
+graphics:!:d
+type:potion
+properties:0:4:20
+alloc:80:1 to 15
+pile:90:2d3
+power:3
+effect:HEAL_HP
+dice:20
+effect:CURE:BLIND
+effect:TIMED_DEC:CUT
+dice:20
+effect:TIMED_DEC:CONFUSED
+dice:20
+effect:NOURISH
+dice:150
+
+name:319:Cure Serious Wounds
+graphics:!:d
+type:potion
+properties:3:4:70
+alloc:80:5 to 40
+pile:80:2d3
+power:6
+effect:HEAL_HP
+dice:40
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:CONFUSED
+effect:NOURISH
+dice:150
+
+name:320:Cure Critical Wounds
+graphics:!:d
+type:potion
+properties:5:4:200
+alloc:80:12 to 100
+pile:70:2d3
+power:9
+effect:HEAL_HP
+dice:60
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+effect:NOURISH
+dice:150
+
+name:321:Healing
+graphics:!:d
+type:potion
+properties:15:4:800
+alloc:64:30 to 100
+pile:25:2
+power:12
+effect:HEAL_HP
+dice:300+m35
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+effect:NOURISH
+dice:200
+
+name:322:*Healing*
+graphics:!:d
+type:potion
+properties:40:4:1500
+alloc:40:40 to 100
+combat:0:1d1:0:0:0
+power:18
+effect:HEAL_HP
+dice:1200
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+effect:NOURISH
+dice:300
+
+name:323:Life
+graphics:!:d
+type:potion
+properties:60:4:5000
+alloc:20:60 to 100
+combat:0:1d1:0:0:0
+msg:You feel life flow through your body!
+power:21
+effect:RESTORE_EXP
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+effect:CURE:IMAGE
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:RESTORE_STAT:DEX
+effect:RESTORE_STAT:CON
+effect:HEAL_HP
+dice:5000
+
+name:324:Neutralize Poison
+graphics:!:d
+type:potion
+properties:5:4:75
+alloc:40:1 to 35
+pile:25:2
+power:1
+effect:CURE:POISONED
+
+name:325:Restore Mana
+graphics:!:d
+type:potion
+properties:25:4:350
+alloc:64:15 to 100
+pile:25:2
+power:20
+effect:RESTORE_MANA
+
+
+### Stat restore ###
+
+# removed: old stat restoration
+
+name:332:Restore Life Levels
+graphics:!:d
+type:potion
+properties:40:4:400
+alloc:40:30 to 100
+pile:25:2
+power:8
+effect:RESTORE_EXP
+
+
+### Gain one/lose one potions ###
+
+name:333:Brawn
+graphics:!:d
+type:potion
+properties:3:4:1000
+alloc:30:20 to 40
+pile:10:2
+power:30
+effect:RESTORE_STAT:STR
+effect:GAIN_STAT:STR
+effect:LOSE_RANDOM_STAT:STR
+
+name:334:Intellect
+graphics:!:d
+type:potion
+properties:20:4:1000
+alloc:30:20 to 40
+pile:10:2
+power:25
+effect:RESTORE_STAT:INT
+effect:GAIN_STAT:INT
+effect:LOSE_RANDOM_STAT:INT
+
+name:335:Contemplation
+graphics:!:d
+type:potion
+properties:20:4:1000
+alloc:30:20 to 40
+pile:10:2
+power:25
+effect:RESTORE_STAT:WIS
+effect:GAIN_STAT:WIS
+effect:LOSE_RANDOM_STAT:WIS
+
+name:336:Nimbleness
+graphics:!:d
+type:potion
+properties:5:4:1000
+alloc:30:20 to 40
+pile:10:2
+power:25
+effect:RESTORE_STAT:DEX
+effect:GAIN_STAT:DEX
+effect:LOSE_RANDOM_STAT:DEX
+
+name:337:Toughness
+graphics:!:d
+type:potion
+properties:10:4:1000
+alloc:30:20 to 40
+pile:10:2
+power:30
+effect:RESTORE_STAT:CON
+effect:GAIN_STAT:CON
+effect:LOSE_RANDOM_STAT:CON
+
+
+### Knowledge ###
+
+name:341:Enlightenment
+graphics:!:d
+type:potion
+properties:25:4:800
+alloc:40:25 to 100
+pile:25:2
+power:22
+effect:ENLIGHTENMENT
+dice:1
+
+name:342:*Enlightenment*
+graphics:!:d
+type:potion
+properties:70:4:12000
+alloc:8:70 to 100
+combat:0:1d1:0:0:0
+power:20000
+effect:ENLIGHTENMENT
+dice:1
+effect:RESTORE_STAT:INT
+effect:GAIN_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:GAIN_STAT:WIS
+effect:DETECT_TRAPS
+dice:22d40
+effect:DETECT_DOORS
+dice:22d40
+effect:DETECT_STAIRS
+dice:22d40
+effect:DETECT_GOLD
+dice:22d40
+effect:DETECT_OBJECTS
+dice:22d40
+effect:DETECT_INVISIBLE_MONSTERS
+dice:500d500
+effect:DETECT_VISIBLE_MONSTERS
+dice:500d500
+effect:IDENTIFY_PACK
+
+
+### Buffs ###
+
+name:343:Speed
+graphics:!:d
+type:potion
+properties:1:4:75
+alloc:40:1 to 100
+pile:25:2
+power:10
+effect:TIMED_INC:FAST:5
+dice:20+2d10
+
+name:344:Heroism
+graphics:!:d
+type:potion
+properties:1:4:25
+alloc:40:1 to 100
+pile:25:2
+power:7
+effect:HEAL_HP
+dice:10
+effect:CURE:AFRAID
+effect:TIMED_INC:HERO
+dice:25+1d25
+
+name:345:Berserk Strength
+graphics:!:d
+type:potion
+properties:3:4:100
+alloc:40:3 to 100
+pile:25:2
+power:9
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+effect:TIMED_INC:SHERO
+dice:25+1d25
+
+name:346:Boldness
+graphics:!:d
+type:potion
+properties:1:4:8
+alloc:40:1 to 90
+pile:25:2
+power:2
+effect:CURE:AFRAID
+
+name:347:Resist Heat
+graphics:!:d
+type:potion
+properties:1:4:30
+alloc:40:1 to 100
+pile:25:2
+power:4
+effect:TIMED_INC:OPP_FIRE
+dice:10+1d10
+
+name:348:Resist Cold
+graphics:!:d
+type:potion
+properties:1:4:30
+alloc:40:1 to 100
+pile:25:2
+power:4
+effect:TIMED_INC:OPP_COLD
+dice:10+1d10
+
+name:349:Resist Poison
+graphics:!:d
+type:potion
+properties:1:4:30
+alloc:40:8 to 100
+pile:25:2
+power:4
+effect:TIMED_INC:OPP_POIS
+dice:10+1d10
+
+name:350:True Seeing
+graphics:!:d
+type:potion
+properties:3:4:50
+alloc:40:3 to 40
+pile:25:2
+power:7
+effect:CURE:BLIND
+effect:TIMED_INC:SINVIS
+dice:12+2d6
+
+name:351:Infravision
+graphics:!:d
+type:potion
+properties:3:4:20
+alloc:40:3 to 40
+pile:25:2
+power:5
+effect:TIMED_INC:SINFRA
+dice:100+4d25
+
+
+### Useless buggers ###
+
+name:355:Slime Mold Juice
+graphics:!:d
+type:potion
+properties:0:4:2
+alloc:10:1 to 10
+pile:70:2d3
+power:0
+effect:NOURISH
+dice:1000
+
+name:356:Sleep
+graphics:!:d
+type:potion
+properties:0:4:0
+alloc:10:0 to 10
+pile:70:2d3
+combat:0:3d4:0:0:0
+power:0
+effect:TIMED_INC:PARALYZED
+dice:5+1d5
+effect:NOURISH
+dice:100
+
+name:357:Blindness
+graphics:!:d
+type:potion
+properties:0:4:0
+alloc:10:0 to 10
+pile:70:2d3
+combat:0:3d4:0:0:0
+power:0
+effect:TIMED_INC:BLIND
+dice:75+4d25
+
+name:358:Confusion
+graphics:!:d
+type:potion
+properties:0:4:0
+alloc:10:0 to 10
+pile:70:2d3
+combat:0:3d4:0:0:0
+power:0
+effect:TIMED_INC:CONFUSED
+dice:10+4d5
+effect:NOURISH
+dice:50
+
+name:359:Poison
+graphics:!:d
+type:potion
+properties:3:4:0
+alloc:10:0 to 10
+pile:70:2d3
+combat:0:3d4:0:0:0
+power:0
+effect:TIMED_INC:POISONED
+dice:10+2d7
+
+name:360:Slowness
+graphics:!:d
+type:potion
+properties:1:4:0
+alloc:10:0 to 10
+pile:70:2d3
+combat:0:3d4:0:0:0
+power:0
+effect:TIMED_INC:SLOW
+dice:15+1d25
+effect:NOURISH
+dice:50
+
+name:361:Lose Memories
+graphics:!:d
+type:potion
+properties:10:4:0
+alloc:10:10 to 15
+pile:25:2
+power:0
+effect:LOSE_EXP
+
+name:362:Salt Water
+graphics:!:d
+type:potion
+properties:0:4:0
+alloc:10:3 to 15
+pile:100:1d2
+msg:The potion makes you vomit!
+power:0
+effect:SET_NOURISH
+dice:$B
+expr:B:FOOD_STARVE:- 1
+effect:CURE:POISONED
+effect:TIMED_INC_NO_RES:PARALYZED
+dice:4
+
+
+### Weird one ###
+
+name:363:Dragon Breath
+graphics:!:d
+type:potion
+properties:0:4:100
+pile:100:1d2
+alloc:20:40 to 100
+pile:70:1d3
+power:8
+effect:RANDOM
+dice:2
+effect:BREATH:FIRE:2
+dice:80
+effect:BREATH:COLD:2
+dice:80
+
+
+
+##### Wands #####
+
+### Bolts ###
+
+name:370:Magic Missile
+graphics:-:d
+type:wand
+properties:3:10:200
+alloc:20:3 to 60
+combat:0:1d1:0:0:0
+charges:6+d10
+power:3
+effect:BOLT_OR_BEAM:MISSILE
+dice:3d4
+
+name:371:Lightning Bolts
+graphics:-:d
+type:wand
+properties:15:10:600
+alloc:20:15 to 60
+combat:0:1d1:0:0:0
+charges:6+d8
+power:5
+effect:BEAM:ELEC
+dice:6d6
+
+name:372:Frost Bolts
+graphics:-:d
+type:wand
+properties:20:10:800
+alloc:20:20 to 60
+combat:0:1d1:0:0:0
+charges:6+d5
+power:4
+effect:BOLT:COLD
+dice:12d8
+
+name:373:Fire Bolts
+graphics:-:d
+type:wand
+properties:30:10:1000
+alloc:20:30 to 60
+combat:0:1d1:0:0:0
+charges:6+d8
+power:7
+effect:BOLT_OR_BEAM:FIRE
+dice:12d8
+
+name:374:Acid Bolts
+graphics:-:d
+type:wand
+properties:30:10:950
+alloc:20:30 to 60
+combat:0:1d1:0:0:0
+charges:6+d8
+power:6
+effect:BOLT_OR_BEAM:ACID
+dice:10d8
+
+
+### Balls ###
+
+name:375:Stinking Cloud
+graphics:-:d
+type:wand
+properties:5:10:400
+alloc:20:5 to 60
+combat:0:1d1:0:0:0
+charges:6+d8
+power:3
+effect:BALL:POIS:3
+dice:12
+
+name:376:Lightning Balls
+graphics:-:d
+type:wand
+properties:35:10:1200
+alloc:20:35 to 100
+combat:0:1d1:0:0:0
+charges:4+d8
+flags:IGNORE_ELEC
+power:9
+effect:BALL:ELEC:2
+dice:64
+
+name:377:Cold Balls
+graphics:-:d
+type:wand
+properties:40:10:1500
+alloc:20:40 to 100
+combat:0:1d1:0:0:0
+charges:2+d6
+flags:IGNORE_COLD
+power:10
+effect:BALL:COLD:2
+dice:100
+
+name:378:Fire Balls
+graphics:-:d
+type:wand
+properties:50:10:1800
+alloc:20:50 to 100
+combat:0:1d1:0:0:0
+charges:2+d4
+flags:IGNORE_FIRE
+power:11
+effect:BALL:FIRE:2
+dice:144
+
+name:379:Acid Balls
+graphics:-:d
+type:wand
+properties:50:10:1650
+alloc:20:50 to 100
+combat:0:1d1:0:0:0
+charges:2+d5
+flags:IGNORE_ACID
+power:11
+effect:BALL:ACID:2
+dice:120
+
+
+### Monster status changing ###
+
+name:380:Slow Monster
+graphics:-:d
+type:wand
+properties:5:10:500
+alloc:20:5 to 60
+combat:0:1d1:0:0:0
+charges:6+d10
+power:3
+effect:BOLT_AWARE:OLD_SLOW
+dice:20
+
+name:381:Confuse Monster
+graphics:-:d
+type:wand
+properties:5:10:500
+alloc:20:5 to 60
+combat:0:1d1:0:0:0
+charges:6+d12
+power:3
+effect:BOLT_AWARE:OLD_CONF
+dice:10
+
+name:382:Sleep Monster
+graphics:-:d
+type:wand
+properties:5:10:500
+alloc:20:5 to 60
+combat:0:1d1:0:0:0
+charges:8+d15
+power:3
+effect:BOLT_AWARE:OLD_SLEEP
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+
+name:383:Scare Monster
+graphics:-:d
+type:wand
+properties:10:10:500
+alloc:20:10 to 60
+combat:0:1d1:0:0:0
+charges:3+d5
+power:3
+effect:BOLT_AWARE:TURN_ALL
+dice:10
+
+
+### Utility ###
+
+name:384:Light
+graphics:-:d
+type:wand
+properties:3:10:200
+alloc:20:3 to 60
+combat:0:1d1:0:0:0
+charges:6+d10
+msg:A line of shimmering blue light appears.
+power:6
+effect:LINE:LIGHT_WEAK
+dice:6d8
+
+name:385:Stone to Mud
+graphics:-:d
+type:wand
+properties:10:10:300
+alloc:20:10 to 100
+combat:0:1d1:0:0:0
+charges:3+d4
+power:6
+effect:LINE:KILL_WALL
+dice:20+1d30
+
+name:386:Polymorph
+graphics:-:d
+type:wand
+properties:20:10:400
+alloc:20:20 to 60
+combat:0:1d1:0:0:0
+charges:6+d8
+power:7
+effect:BOLT_AWARE:OLD_POLY
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+
+name:387:Trap/Door Destruction
+graphics:-:d
+type:wand
+properties:10:10:100
+alloc:20:10 to 60
+combat:0:1d1:0:0:0
+charges:6+d8
+power:5
+effect:ALTER:KILL_DOOR
+
+name:388:Clone Monster
+graphics:-:d
+type:wand
+properties:15:10:0
+alloc:20:15 to 100
+combat:0:1d1:0:0:0
+charges:3+d5
+power:0
+effect:BOLT_STATUS:OLD_CLONE
+
+name:389:Teleport Other
+graphics:-:d
+type:wand
+properties:20:10:3500
+alloc:20:20 to 100
+combat:0:1d1:0:0:0
+charges:6+d5
+power:11
+effect:BOLT_STATUS:AWAY_ALL
+dice:$B
+expr:B:MAX_SIGHT:* 5
+
+name:390:Disarming
+graphics:-:d
+type:wand
+properties:20:10:700
+alloc:20:20 to 60
+combat:0:1d1:0:0:0
+charges:4+d5
+power:7
+effect:ALTER:KILL_TRAP
+
+name:391:Wonder
+graphics:-:d
+type:wand
+properties:3:10:250
+alloc:20:3 to 60
+combat:0:1d1:0:0:0
+charges:8+d15
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+power:9
+effect:WONDER
+dice:$B+1d100
+expr:B:PLAYER_LEVEL:/ 5
+
+
+
+### Dragons' wands ###
+
+name:392:Dragon's Flame
+graphics:-:d
+type:wand
+properties:50:10:2400
+alloc:20:50 to 100
+combat:0:1d1:0:0:0
+charges:1+d3
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+power:13
+effect:BREATH:FIRE:3
+dice:200
+
+name:393:Dragon's Frost
+graphics:-:d
+type:wand
+properties:50:10:2400
+alloc:20:50 to 100
+combat:0:1d1:0:0:0
+charges:1+d3
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+power:12
+effect:BREATH:COLD:3
+dice:160
+
+name:394:Dragon's Breath
+graphics:-:d
+type:wand
+properties:60:10:2400
+alloc:20:60 to 100
+combat:0:1d1:0:0:0
+charges:1+d3
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+power:12
+effect:RANDOM
+dice:5
+effect:BREATH:ACID:3
+dice:200
+effect:BREATH:ELEC:3
+dice:160
+effect:BREATH:FIRE:3
+dice:200
+effect:BREATH:COLD:3
+dice:160
+effect:BREATH:POIS:3
+dice:120
+
+
+### Drain lifes ###
+
+name:395:Drain Life
+graphics:-:d
+type:wand
+properties:50:10:1200
+alloc:50:50 to 100
+combat:0:1d1:0:0:0
+charges:3+d3
+power:11
+effect:BOLT_STATUS_DAM:OLD_DRAIN
+dice:150
+
+name:396:Annihilation
+graphics:-:d
+type:wand
+properties:60:10:3000
+alloc:20:60 to 100
+combat:0:1d1:0:0:0
+charges:1+d2
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+power:12
+effect:BOLT_STATUS_DAM:OLD_DRAIN
+dice:250
+
+
+### Rubbish ###
+
+name:397:Heal Monster
+graphics:-:d
+type:wand
+properties:3:10:0
+alloc:10:3 to 40
+combat:0:1d1:0:0:0
+charges:8+d20
+power:0
+effect:BOLT_STATUS:OLD_HEAL
+dice:4d6
+
+name:398:Haste Monster
+graphics:-:d
+type:wand
+properties:3:10:0
+alloc:10:3 to 40
+combat:0:1d1:0:0:0
+charges:8+d20
+power:0
+effect:BOLT_STATUS:OLD_SPEED
+dice:100
+
+
+
+
+##### Staffs #####
+
+### Bad staffs ###
+
+name:400:Summoning
+graphics:_:d
+type:staff
+properties:10:50:0
+alloc:10:10 to 100
+combat:0:1d2:0:0:0
+charges:2d3
+power:0
+effect:SUMMON
+dice:1d3
+
+name:401:Haste Monsters
+graphics:_:d
+type:staff
+properties:10:50:0
+alloc:10:10 to 40
+combat:0:1d2:0:0:0
+charges:8+d8
+power:0
+effect:PROJECT_LOS:OLD_SPEED
+dice:50
+
+name:402:Darkness
+graphics:_:d
+type:staff
+properties:5:50:0
+alloc:10:5 to 40
+combat:0:1d2:0:0:0
+charges:8+d8
+power:0
+effect:DARKEN_AREA:DARK_WEAK:3
+dice:10
+
+### Destruction ###
+
+name:403:Earthquakes
+graphics:_:d
+type:staff
+properties:40:50:350
+alloc:20:40 to 100
+combat:0:1d2:0:0:0
+charges:3+d5
+power:5
+effect:EARTHQUAKE
+param:10
+
+name:404:*Destruction*
+graphics:_:d
+type:staff
+properties:50:50:6000
+alloc:20:50 to 100
+combat:0:1d2:0:0:0
+charges:1+d3
+power:12
+effect:DESTRUCTION
+param:15
+
+### Monster-affecting ###
+
+name:405:Confuse Monsters
+graphics:_:d
+type:staff
+properties:10:50:800
+alloc:20:10 to 100
+combat:0:1d2:0:0:0
+charges:6+d5
+power:10
+effect:PROJECT_LOS_AWARE:OLD_CONF
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+
+name:406:Slow Monsters
+graphics:_:d
+type:staff
+properties:10:50:800
+alloc:20:10 to 100
+combat:0:1d2:0:0:0
+charges:6+d5
+power:7
+effect:PROJECT_LOS:OLD_SLOW
+dice:20
+
+name:407:Sleep Monsters
+graphics:_:d
+type:staff
+properties:10:50:700
+alloc:20:10 to 100
+combat:0:1d2:0:0:0
+charges:6+d5
+power:8
+effect:PROJECT_LOS_AWARE:OLD_SLEEP
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+
+
+### Detect ###
+
+name:408:Detect Invisible
+graphics:_:d
+type:staff
+properties:5:50:200
+alloc:30:5 to 100 
+combat:0:1d2:0:0:0
+charges:8+d15
+power:6
+effect:DETECT_INVISIBLE_MONSTERS
+dice:22d40
+
+name:409:Detect Evil
+graphics:_:d
+type:staff
+properties:20:50:350
+alloc:30:20 to 100
+combat:0:1d2:0:0:0
+charges:8+d15
+power:6
+effect:DETECT_EVIL
+dice:22d40
+
+name:410:Mapping
+graphics:_:d
+type:staff
+properties:20:50:600
+alloc:30:20 to 100
+combat:0:1d2:0:0:0
+charges:5+d5
+power:10
+effect:MAP_AREA
+dice:22d40
+
+
+### Healing ###
+
+name:411:Curing
+graphics:_:d
+type:staff
+properties:25:50:500
+alloc:30:10 to 100
+combat:0:1d2:0:0:0
+charges:4+d3
+power:9
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:CONFUSED
+
+name:412:Cure Light Wounds
+graphics:_:d
+type:staff
+properties:5:50:350
+alloc:30:5 to 100
+combat:0:1d2:0:0:0
+charges:6+d5
+power:3
+effect:HEAL_HP
+dice:20
+effect:CURE:BLIND
+effect:TIMED_DEC:CUT
+dice:20
+effect:TIMED_DEC:CONFUSED
+dice:20
+
+name:413:Healing
+graphics:_:d
+type:staff
+properties:70:50:5000
+alloc:10:70 to 100
+combat:0:1d2:0:0:0
+charges:1+d2
+power:12
+effect:HEAL_HP
+dice:300+m35
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:AMNESIA
+effect:CURE:CONFUSED
+
+
+### Killing staffs ###
+
+name:414:Dispel Evil
+graphics:_:d
+type:staff
+properties:50:50:1200
+alloc:50:50 to 100
+combat:0:1d2:0:0:0
+charges:4+d3
+power:9
+effect:PROJECT_LOS:DISP_EVIL:1
+dice:60
+
+name:415:Banishment
+graphics:_:d
+type:staff
+properties:70:50:5000
+alloc:10:70 to 100
+combat:0:1d2:0:0:0
+charges:1+d2
+power:20
+effect:BANISH
+
+name:416:Power
+graphics:_:d
+type:staff
+properties:70:50:4000
+alloc:20:70 to 100
+combat:0:1d2:0:0:0
+charges:1+d3
+power:11
+effect:PROJECT_LOS:DISP_ALL:1
+dice:120
+
+name:417:Holiness
+graphics:_:d
+type:staff
+properties:70:50:3500
+alloc:20:70 to 100
+combat:0:1d2:0:0:0
+charges:2d2
+power:12
+effect:PROJECT_LOS:DISP_EVIL:1
+dice:120
+effect:HEAL_HP
+dice:50
+effect:TIMED_INC:PROTEVIL
+dice:$B+1d25
+expr:B:PLAYER_LEVEL:* 3
+effect:CURE:POISONED
+effect:CURE:TERROR
+effect:CURE:AFRAID
+effect:CURE:STUN
+effect:CURE:CUT
+effect:CURE:SLOW
+effect:CURE:BLIND
+effect:CURE:CONFUSED
+effect:CURE:IMAGE
+effect:CURE:AMNESIA
+
+
+### Utility ###
+
+name:418:Light
+graphics:_:d
+type:staff
+properties:5:50:250
+alloc:20:5 to 80
+combat:0:1d2:0:0:0
+charges:8+d20
+power:4
+effect:LIGHT_AREA
+param:2
+dice:2d8
+
+name:419:Starlight
+graphics:_:d
+type:staff
+properties:20:50:800
+alloc:20:20 to 80
+combat:0:1d2:0:0:0
+charges:6+d5
+power:5
+effect:STAR:LIGHT_WEAK
+dice:6d8
+
+name:420:Teleportation
+graphics:_:d
+type:staff
+properties:20:50:2000
+alloc:50:20 to 100
+combat:0:1d2:0:0:0
+charges:5+d4
+power:6
+effect:TELEPORT
+dice:100
+
+name:421:Speed
+graphics:_:d
+type:staff
+properties:40:50:2000
+alloc:20:40 to 100
+combat:0:1d2:0:0:0
+charges:4+d3
+power:10
+effect:TIMED_INC:FAST:5
+dice:20+2d10
+
+## Remove in 3.4 until curses are redone
+name:422:Remove Curse
+graphics:_:d
+type:staff
+properties:40:50:500
+#A:20:40 to 100
+combat:0:1d2:0:0:0
+charges:4+d3
+power:8
+effect:REMOVE_CURSE
+
+name:423:the Magi
+graphics:_:d
+type:staff
+properties:70:50:4500
+alloc:10:70 to 100
+combat:0:1d2:0:0:0
+charges:2+1d2
+power:20
+effect:RESTORE_STAT:INT
+effect:RESTORE_MANA
+
+name:424:Identify
+graphics:_:d
+type:staff
+properties:10:50:600
+alloc:50:10 to 100
+combat:0:1d2:0:0:0
+charges:5+d15
+power:9
+effect:IDENTIFY
+
+
+
+##### Rods #####
+
+### Detection ###
+
+name:430:Treasure Location
+graphics:-:d
+type:rod
+properties:5:15:1000
+alloc:30:8 to 75
+power:6
+effect:DETECT_GOLD
+dice:22d40
+effect:SENSE_OBJECTS
+dice:22d40
+time:50
+
+name:431:Door/Stair Location
+graphics:-:d
+type:rod
+properties:15:15:1000
+alloc:30:8 to 75
+combat:0:1d1:0:0:0
+power:6
+effect:DETECT_DOORS
+dice:22d40
+effect:DETECT_STAIRS
+dice:22d40
+time:70
+
+name:432:Trap Location
+graphics:-:d
+type:rod
+properties:5:15:1000
+alloc:30:8 to 75
+combat:0:1d1:0:0:0
+power:6
+effect:DETECT_TRAPS
+dice:22d40
+time:50
+
+name:433:Detection
+graphics:-:d
+type:rod
+properties:30:15:3000
+alloc:30:50 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ELEC
+power:10
+effect:DETECT_TRAPS
+dice:22d40
+effect:DETECT_DOORS
+dice:22d40
+effect:DETECT_STAIRS
+dice:22d40
+effect:DETECT_GOLD
+dice:22d40
+effect:SENSE_OBJECTS
+dice:22d40
+effect:DETECT_INVISIBLE_MONSTERS
+dice:22d40
+effect:DETECT_VISIBLE_MONSTERS
+dice:22d40
+time:100
+
+name:434:Magic Mapping
+graphics:-:d
+type:rod
+properties:65:15:2000
+alloc:10:65 to 100
+combat:0:1d1:0:0:0
+power:10
+effect:MAP_AREA
+dice:22d40
+time:100
+
+name:435:Probing
+graphics:-:d
+type:rod
+properties:35:15:1000
+alloc:20:35 to 100
+combat:0:1d1:0:0:0
+power:8
+effect:PROBE
+time:100
+
+
+### Bolts ###
+
+name:436:Fire Bolts
+graphics:-:d
+type:rod
+properties:30:15:3000
+alloc:20:30 to 80
+combat:0:1d1:0:0:0
+power:7
+effect:BOLT_OR_BEAM:FIRE
+dice:12d8
+time:15
+
+name:437:Frost Bolts
+graphics:-:d
+type:rod
+properties:25:15:2500
+alloc:20:25 to 80
+combat:0:1d1:0:0:0
+power:7
+effect:BOLT:COLD
+dice:12d8
+time:13
+
+name:438:Lightning Bolts
+graphics:-:d
+type:rod
+properties:20:15:2000
+alloc:20:20 to 80
+combat:0:1d1:0:0:0
+power:5
+effect:BEAM:ELEC
+dice:6d6
+time:11
+
+name:439:Acid Bolts
+graphics:-:d
+type:rod
+properties:40:15:3500
+alloc:20:40 to 80
+combat:0:1d1:0:0:0
+power:7
+effect:BOLT_OR_BEAM:ACID
+dice:12d8
+time:12
+
+
+### Balls ###
+
+name:440:Fire Balls
+graphics:-:d
+type:rod
+properties:75:15:5000
+alloc:20:75 to 100
+combat:0:1d1:0:0:0
+power:11
+effect:BALL:FIRE:2
+dice:144
+time:30
+
+name:441:Cold Balls
+graphics:-:d
+type:rod
+properties:60:15:4500
+alloc:20:60 to 100
+combat:0:1d1:0:0:0
+power:10
+effect:BALL:COLD:2
+dice:100
+time:25
+
+name:442:Lightning Balls
+graphics:-:d
+type:rod
+properties:55:15:4000
+alloc:20:55 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ELEC
+power:9
+effect:BALL:ELEC:2
+dice:64
+time:23
+
+name:443:Acid Balls
+graphics:-:d
+type:rod
+properties:70:15:5500
+alloc:20:70 to 100
+combat:0:1d1:0:0:0
+power:11
+effect:BALL:ACID:2
+dice:120
+time:27
+
+
+### Status-affecting ###
+
+name:444:Slow Monster
+graphics:-:d
+type:rod
+properties:30:15:1500
+alloc:20:30 to 100
+combat:0:1d1:0:0:0
+power:3
+effect:BOLT_AWARE:OLD_SLOW
+dice:20
+time:20
+
+name:445:Sleep Monster
+graphics:-:d
+type:rod
+properties:30:15:1500
+alloc:20:30 to 100
+combat:0:1d1:0:0:0
+power:3
+effect:BOLT_AWARE:OLD_SLEEP
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+time:18
+
+
+### Healing ###
+
+name:446:Curing
+graphics:-:d
+type:rod
+properties:65:15:1000
+alloc:20:10 to 80
+combat:0:1d1:0:0:0
+power:9
+effect:CURE:BLIND
+effect:CURE:CUT
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:CONFUSED
+time:100
+
+name:447:Healing
+graphics:-:d
+type:rod
+properties:80:15:20000
+alloc:20:80 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ELEC
+power:14
+effect:HEAL_HP
+dice:500
+effect:CURE:CUT
+effect:CURE:STUN
+time:1000
+
+name:448:Restoration
+graphics:-:d
+type:rod
+properties:80:15:25000
+alloc:10:80 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ELEC
+power:17
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:RESTORE_STAT:DEX
+effect:RESTORE_STAT:CON
+effect:RESTORE_EXP
+time:1000
+
+
+### Other ###
+
+name:449:Polymorph
+graphics:-:d
+type:rod
+properties:35:15:1200
+alloc:20:35 to 80
+combat:0:1d1:0:0:0
+power:7
+effect:BOLT_STATUS:OLD_POLY
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+time:25
+
+name:450:Drain Life
+graphics:-:d
+type:rod
+properties:75:15:3600
+alloc:20:75 to 100
+combat:0:1d1:0:0:0
+power:11
+effect:BOLT_STATUS_DAM:OLD_DRAIN
+dice:150
+time:23
+
+name:451:Teleport Other
+graphics:-:d
+type:rod
+properties:45:15:5000
+alloc:20:45 to 100
+combat:0:1d1:0:0:0
+power:11
+effect:BOLT_STATUS:AWAY_ALL
+dice:$B
+expr:B:MAX_SIGHT:* 5
+time:25
+
+name:452:Disarming
+graphics:-:d
+type:rod
+properties:35:15:2100
+alloc:10:10 to 100
+combat:0:1d1:0:0:0
+power:7
+effect:ALTER:KILL_TRAP
+time:30
+
+name:453:Light
+graphics:-:d
+type:rod
+properties:10:15:500
+alloc:20:8 to 100
+combat:0:1d1:0:0:0
+msg:A line of shimmering blue light appears.
+power:6
+effect:LINE:LIGHT_WEAK
+dice:6d8
+time:9
+
+name:454:Illumination
+graphics:-:d
+type:rod
+properties:20:15:1000
+alloc:20:20 to 100
+combat:0:1d1:0:0:0
+power:4
+effect:LIGHT_AREA
+param:2
+dice:2d8
+time:30
+
+name:455:Recall
+graphics:-:d
+type:rod
+properties:30:15:4000
+alloc:10:30 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ELEC
+power:15
+effect:RECALL
+time:60
+
+name:456:Identify
+graphics:-:d
+type:rod
+properties:50:15:10000
+alloc:15:50 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ELEC
+power:9
+effect:IDENTIFY
+time:10
+
+name:457:Speed
+graphics:-:d
+type:rod
+properties:95:15:25000
+alloc:10:80 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ELEC
+power:10
+effect:TIMED_INC:FAST:5
+dice:20+2d10
+time:100
+
+
+
+##### Basic Books #####
+
+name:460:[Magic for Beginners]
+graphics:?:R
+type:magic book
+properties:1:30:25
+alloc:40:1 to 100
+combat:0:1d1:0:0:0
+
+name:461:[Conjurings and Tricks]
+graphics:?:R
+type:magic book
+properties:5:30:100
+alloc:40:5 to 100
+combat:0:1d1:0:0:0
+
+name:462:[Incantations and Illusions]
+graphics:?:R
+type:magic book
+properties:10:30:400
+alloc:40:10 to 100
+combat:0:1d1:0:0:0
+
+name:463:[Sorcery and Evocations]
+graphics:?:R
+type:magic book
+properties:20:30:800
+alloc:40:20 to 100
+combat:0:1d1:0:0:0
+
+name:464:[Beginners Handbook]
+graphics:?:G
+type:prayer book
+properties:1:30:25
+alloc:40:1 to 100
+combat:0:1d1:0:0:0
+
+name:465:[Words of Wisdom]
+graphics:?:G
+type:prayer book
+properties:5:30:100
+alloc:40:5 to 100
+combat:0:1d1:0:0:0
+
+name:466:[Chants and Blessings]
+graphics:?:G
+type:prayer book
+properties:10:30:400
+alloc:40:10 to 100
+combat:0:1d1:0:0:0
+
+name:467:[Exorcism and Dispelling]
+graphics:?:G
+type:prayer book
+properties:40:30:800
+alloc:50:20 to 100
+combat:0:1d1:0:0:0
+
+
+
+##### Special Books (note resistances) #####
+
+name:468:[Resistances of Scarabtarices]
+graphics:?:r
+type:magic book
+properties:40:30:10000
+alloc:15:40 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:469:[Raal's Tome of Destruction]
+graphics:?:r
+type:magic book
+properties:50:30:20000
+alloc:15:50 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:470:[Mordenkainen's Escapes]
+graphics:?:r
+type:magic book
+properties:60:30:30000
+alloc:15:60 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:471:[Tenser's Transformations]
+graphics:?:r
+type:magic book
+properties:70:30:50000
+alloc:15:70 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:472:[Kelek's Grimoire of Power]
+graphics:?:r
+type:magic book
+properties:80:30:90000
+alloc:10:90 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:473:[Ethereal Openings]
+graphics:?:g
+type:prayer book
+properties:40:30:10000
+alloc:15:40 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:474:[Godly Insights]
+graphics:?:g
+type:prayer book
+properties:50:30:20000
+alloc:15:50 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:475:[Purifications and Healing]
+graphics:?:g
+type:prayer book
+properties:60:30:30000
+alloc:15:60 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:476:[Holy Infusions]
+graphics:?:g
+type:prayer book
+properties:70:30:50000
+alloc:15:70 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+name:477:[Wrath of God]
+graphics:?:g
+type:prayer book
+properties:80:30:90000
+alloc:10:90 to 100
+combat:0:1d1:0:0:0
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | GOOD
+
+
+
+##### Chests #####
+
+name:480:& Small wooden chest~
+graphics:~:s
+type:chest
+properties:5:250:20
+alloc:30:5 to 100
+combat:0:2d3:0:0:0
+
+name:481:& Large wooden chest~
+graphics:~:s
+type:chest
+properties:15:500:60
+alloc:30:15 to 100
+combat:0:2d5:0:0:0
+
+name:482:& Small iron chest~
+graphics:~:s
+type:chest
+properties:25:300:100
+alloc:30:25 to 100
+combat:0:2d4:0:0:0
+
+name:483:& Large iron chest~
+graphics:~:s
+type:chest
+properties:35:1000:150
+alloc:30:35 to 100
+combat:0:2d6:0:0:0
+
+name:484:& Small steel chest~
+graphics:~:s
+type:chest
+properties:45:500:200
+alloc:30:45 to 100
+combat:0:2d4:0:0:0
+
+name:485:& Large steel chest~
+graphics:~:s
+type:chest
+properties:55:1000:250
+alloc:30:55 to 100
+combat:0:2d6:0:0:0
+
+name:486:& Ruined chest~
+graphics:~:s
+type:chest
+properties:0:250:0
+#A:100:75 to 100
+
+
+
+##### Dragon Scale Mail #####
+
+name:500:Black Dragon Scale Mail~
+graphics:[:s
+type:dragon armor
+properties:50:120:40000
+alloc:8:35 to 100
+combat:16:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_ACID[1]
+power:11
+effect:BREATH:ACID:2
+dice:120
+time:50
+
+name:501:Blue Dragon Scale Mail~
+graphics:[:b
+type:dragon armor
+properties:50:100:40000
+alloc:8:25 to 100
+combat:12:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_ELEC[1]
+power:18
+effect:BREATH:ELEC:2
+dice:150
+time:50
+
+name:502:White Dragon Scale Mail~
+graphics:[:w
+type:dragon armor
+properties:50:110:40000
+alloc:8:30 to 100
+combat:14:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_COLD[1]
+power:10
+effect:BREATH:COLD:2
+dice:100
+time:50
+
+name:503:Red Dragon Scale Mail~
+graphics:[:r
+type:dragon armor
+properties:50:160:40000
+alloc:8:40 to 100
+combat:24:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_FIRE[1]
+power:20
+effect:BREATH:FIRE:2
+dice:200
+time:50
+
+name:504:Green Dragon Scale Mail~
+graphics:[:g
+type:dragon armor
+properties:60:140:60000
+alloc:8:60 to 100
+combat:20:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_POIS[1]
+power:19
+effect:BREATH:POIS:2
+dice:150
+time:50
+
+name:505:Multi-Hued Dragon Scale Mail~
+graphics:[:v
+type:dragon armor
+properties:90:260:150000
+alloc:5:75 to 100
+combat:45:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1]
+power:20
+effect:RANDOM
+dice:5
+effect:BREATH:ACID:2
+dice:250
+effect:BREATH:ELEC:2
+dice:250
+effect:BREATH:FIRE:2
+dice:250
+effect:BREATH:COLD:2
+dice:250
+effect:BREATH:POIS:2
+dice:250
+time:50
+
+name:506:Pseudo-Dragon Scale Mail~
+graphics:[:o
+type:dragon armor
+properties:65:200:60000
+alloc:6:75 to 100
+combat:32:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_LIGHT[1] | RES_DARK[1]
+power:21
+effect:RANDOM
+dice:2
+effect:BREATH:LIGHT:2
+dice:200
+effect:BREATH:DARK:2
+dice:200
+time:50
+
+name:507:Law Dragon Scale Mail~
+graphics:[:B
+type:dragon armor
+properties:80:220:80000
+alloc:6:80 to 100
+combat:36:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_SOUND[1] | RES_SHARD[1]
+power:23
+effect:RANDOM
+dice:2
+effect:BREATH:SOUND:2
+dice:230
+effect:BREATH:SHARD:2
+dice:230
+time:50
+
+name:509:Gold Dragon Scale Mail~
+graphics:[:y
+type:dragon armor
+properties:50:180:40000
+alloc:8:70 to 100
+combat:28:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_SOUND[1]
+power:19
+effect:BREATH:SOUND:2
+dice:150
+time:50
+
+name:510:Chaos Dragon Scale Mail~
+graphics:[:v
+type:dragon armor
+properties:80:240:80000
+alloc:5:85 to 100
+combat:40:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_CHAOS[1] | RES_DISEN[1]
+power:23
+effect:RANDOM
+dice:2
+effect:BREATH:CHAOS:2
+dice:220
+effect:BREATH:DISEN:2
+dice:220
+time:50
+
+name:511:Balance Dragon Scale Mail~
+graphics:[:v
+type:dragon armor
+properties:95:280:100000
+alloc:3:95 to 100
+combat:50:2d4:-2:0:10
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_SOUND[1] | RES_SHARD[1] | RES_CHAOS[1] | RES_DISEN[1]
+power:24
+effect:RANDOM
+dice:4
+effect:BREATH:SOUND:2
+dice:250
+effect:BREATH:SHARD:2
+dice:250
+effect:BREATH:CHAOS:2
+dice:250
+effect:BREATH:DISEN:2
+dice:250
+time:50
+
+name:512:Power Dragon Scale Mail~
+graphics:[:v
+type:dragon armor
+properties:100:300:300000
+alloc:1:100 to 100
+combat:60:2d4:-3:0:15
+flags:PROT_CONF
+flags:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+values:RES_ACID[1] | RES_FIRE[1] | RES_COLD[1] | RES_ELEC[1] | RES_POIS[1]
+values:RES_DISEN[1] | RES_SOUND[1] | RES_SHARD[1]
+values:RES_LIGHT[1] | RES_DARK[1] | RES_CHAOS[1]
+power:25
+effect:BREATH:MISSILE:2
+dice:300
+time:50
+
+
+
+##### Gold/gems #####
+
+name:520:copper
+graphics:$:u
+type:gold
+
+name:521:silver
+graphics:$:s
+type:gold
+
+name:522:garnets
+graphics:$:r
+type:gold
+
+name:523:gold
+graphics:$:y
+type:gold
+
+name:524:opals
+graphics:$:W
+type:gold
+
+name:525:sapphires
+graphics:$:b
+type:gold
+
+name:526:rubies
+graphics:$:r
+type:gold
+
+name:527:diamonds
+graphics:$:w
+type:gold
+
+name:528:emeralds
+graphics:$:g
+type:gold
+
+name:529:mithril
+graphics:$:B
+type:gold
+
+name:530:adamantite
+graphics:$:G
+type:gold
+
+
+##### "Morgoth Artifacts" #####
+
+# These objects are never created without being turned into artifacts.
+# This simplifies the code for "killing the winner monster".
+
+name:540:& Mighty Hammer~
+graphics:\:D
+type:hafted
+properties:15:200:1000
+combat:0:3d9:0:0:0
+flags:INSTA_ART | QUEST_ART
+
+name:542:& Massive Iron Crown~
+graphics:]:D
+type:crown
+properties:44:20:1000
+combat:0:1d1:0:0:0
+flags:INSTA_ART | QUEST_ART
+
+
+#The "Special Artifacts" are now automatically generated from artifact.txt
+

@@ -397,7 +397,7 @@ Public License instead of this License.
 ------------------------------------------------------------------------------
 
 The Shockbolt Angband 64x64/128x64 tileset is copyright (C) Raymond Gaustadnes
-2012.  It can be found in the file lib/xtra/graf/128x128.png.
+2012.  It can be found in the file lib/tiles/shockbolt/64x64.png.
 
 Permission is granted to:
 * use the tileset with in-development and released versions of Angband

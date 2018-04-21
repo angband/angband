@@ -1,0 +1,178 @@
+Angband's command system
+========================
+
+The command system in Angband is one of the two key ways that the game stays separate from the interface that displays it.  The other is the event system, which is currently underutilised.
+
+The idea beyond the command system is that every action the player can perform in-game is encoded as an atomic command sent to the game.  These commands form the basic dialect of Angband.  
+
+Note that the game command system does not cover 'UI actions', such as adjusting the game panel, looking around, and similar.  Targetting can be accomplished by sending a command ("target monster:'small kobold'") but the UI has to do the work to allow that command to be formed (allow the cursor to scroll around the screen, show what monster is currently highlighted, etc. - these things do not fall within the remit of the game core).
+
+
+The anatomy of a command
+------------------------
+
+A command is made up of:
+* a command type, e.g. 'eat', 'read'
+* a list of arguments, which have a type and a name
+
+Arguments can have any of the following types:
+|| null      | No data held
+|| string    | An ASCII string
+|| item      | An integer 'item' - i.e. one referring to the backpack/equipment or the dungeon inventory array
+|| direction | one of the 9 directions
+|| target    | one of the directions or -1 for a target
+|| check     | a 'yes' or 'no' answer
+|| quantity  | the quantity of an item
+|| spell     | a spell index
+|| storeitem | an item from the inventory of the current store
+
+In C a command is represented by the type 'struct command'.  Command arguments can be set using the cmd_set_arg_*() functions.
+
+Limitations: There can be at most [5 XXX] parameters. 
+
+
+Command handlers
+----------------
+
+Each command type has a command handler function, which takes the command and acts upon it.  A command handler must take the form:
+
+	void command_handler(struct command *);
+
+There is a table that relates command types to command values in [game-cmd.c XXX].
+
+Inside the command handler, code can access the arguments using the cmd_get_arg_*() functions.  If there is a parameter with the name and type provided, these functions will return it.  If there is not, it ask the UI to provide the appropriate data, set the named parameter in case of future repetition, and return the data.  They return FALSE if this data is not provided and TRUE otherwise.
+
+If the data type has a validity filter (e.g. cmd_get_arg_item() has both an item type filter and an item location filter) then the getter will ensure that the object returned passes this/these filter(s).
+
+For example:
+
+	/* Gain a random spell from the given book (for priests) */
+	void do_cmd_study_book(struct command *cmd) {
+		if (!player_can_study()) {
+			msg("Sorry, you can't learn any spells right now.");
+			return;
+		}
+
+		int item;
+		if (!cmd_get_item(
+				/* Our command */ cmd,
+				/* Item to return */ &item,
+				/* Name of parameter we're looking for */ "item",
+				/* Prompts */ "Learn from which book?",
+				/* Error */ "You have no books to learn from.",
+				/* Only allow objects passing this filter */ obj_can_browse,
+				/* Where are valid choices? */ USE_INVEN | USE_FLOOR));
+			return;
+
+		/* ... learn from 'item' */
+	}
+
+
+
+
+UI handlers
+-----------
+
+The UI must provide a set of functions (equivalent to the old get_*() functions) that allow the game to get information from the player.
+
+For each of the above parameter types, there is a corresponding function.
+
+If you do not provide a handler for the following types, the game will implement it in terms of another prompt type:
+* [XXX]
+
+
+List of commands and their arguments
+------------------------------------
+
+"eat"
+Constant: CMD_EAT
+Arguments:
+- 'item' (type itemref): the item to be eaten
+- (plus 'effect' parameters, see below)
+
+
+Effect parameters:
+- These are variable, depend on effect and are preceded by "effect."
+
+
+
+Design problems to be resolved
+------------------------------
+
+Because there is no way to uniquely identify an item in Angband, repeating commands will work only so well.  For example, take the following situation:
+
+ * Say the fourth item in the inventory is "2 Blue Mushrooms"
+ * The player inputs the command 'eat item:-4' (eat fourth inventory item)
+ * The mushroom is identified and the inventory is shuffled, putting a ration of food as the fourth item
+ * The player hits 'repeat'
+ * The ration is eaten instead of the mushroom.
+
+Solving this problem would also allow keymaps to be replaced with command chains in text files, since you could then specify "item:inventory:tval=mushroom,sval=Blue" instead of "item:-4", and similarly:
+
+map '2' => { walk(direction: down) }
+map 'M' => { cast(spell: "Magic Missile") }
+map '^E' => { read(item: "Phase Door") && quaff(item: "Healing") }
+
+
+
+Implementation plan
+-------------------
+
+DONE:
+
+0a. Move check_state somewhere useful, refactor it so that its data is kept in 3rd normal form.
+0b. Move cmd2.c(count_feats + coords_to_dir) => cave.c
+
+1. Clarify split between command and command queue functions (prefixes cmd_ and cmdq_).
+
+2. Refactor get_item() to not use item_tester_hook.
+
+3. Change the argument system
+
+3a. Replace 'cmd_code code, cmd_arg args[]' in command handlers with 'struct command *', remove direct arg access (replace with a halfway house - e.g. cmd_get_arg_item(cmd, 0) )
+
+3b. Slowly switch things across to using the new system, which allows compilation and testing, without breaking things.  This involves relocating the 'fill-in' code from game-cmd.c to the various do_cmd_* functions as well as writing new cmd_get_* functions that check validity of inputs, etc. as above.
+
+3c. Switch from numbered to named arguments.
+
+NOT DONE:
+
+4. Reimplement the following in terms of a core-UI split:
+
+  - ignore / destroy
+
+    This is currently almost entirely done in UI.
+
+  - resting
+
+    Instead of having magic numbers and using the 'choice' type, it should take strings (e.g. "*" or "mana" or "hp") or numbers.
+
+  - stores
+
+    There should not be a CMD_ENTER_STORE.  It should just be that the player can sell and purchase on the grid and the UI side deals with the implications.
+
+  - pickup
+
+    This is currently just a "pickup" command.  It should be separated into a "pick up item x" command and the UI frontend to it. This might be impossible until we get an event-driven game.
+
+  - targetting
+
+    This currently doesn't use the command system at all.
+
+
+5. Reorganise files:
+
+	cmd-process.c -> ui-cmd.c
+	{game-cmd.h + cmds.h} -> cmds.h
+	{cmd-misc.c + cmd-cave.c(textui_cmd_rest)} -> [ui-misc.c XXX]
+	cmd-know.c -> [ui-know.c XXX]
+	cmd-context.c -> [ui-context.c XXX]
+	attack.c -> {cmd-attack.c + ui-cmd.c}
+	cmd-pickup.c(move_player) -> cmd-cave.c
+
+
+Later
+-----
+
+Refactor the get_* functions so that textui.c has the textui get_*() functions which it registers near game start, with the actual get_*() functions being generic dispatchers.
+

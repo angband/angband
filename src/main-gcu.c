@@ -1,9 +1,9 @@
-/*
- * File: main-gcu.c
- * Purpose: Support for "curses" systems
+/**
+ * \file main-gcu.c
+ * \brief Support for "curses" systems
  *
  * Copyright (c) 1997 Ben Harrison, and others
- * Copyright (c) 2009-2011 Erik Osheim
+ * Copyright (c) 2009-2015 Erik Osheim
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -20,16 +20,20 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cmds.h"
-#include "dungeon.h"
+#include "cave.h"
+#include "ui-command.h"
+#include "ui-display.h"
+#include "ui-prefs.h"
 
 #ifdef USE_GCU
 #include "main.h"
-#include "files.h"
 
-/* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
+/**
+ * Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX
+ */
 #define term System_term
 
-/*
+/**
  * Include the proper "header" file
  */
 #ifdef USE_NCURSES
@@ -46,13 +50,13 @@
 
 #undef term
 
-/*
+/**
  * Use POSIX terminal I/O
  */
 #define USE_TPOSIX
 
 
-/*
+/**
  * Hack -- Windows Console mode uses PDCURSES and cannot do any terminal stuff
  * Hack -- Windows needs Sleep(), and I really don't want to pull in all
  *         the Win32 headers for this one function
@@ -63,19 +67,19 @@ _stdcall void Sleep(int);
 #define usleep(v) Sleep(v / 1000)
 #endif
 
-/*
+/**
  * POSIX stuff
  */
 #ifdef USE_TPOSIX
 # include <termios.h>
 #endif
 
-/*
+/**
  * If you have errors relating to curs_set(), comment out the following line
  */
 #define USE_CURS_SET
 
-/*
+/**
  * If you have errors with any of the functions mentioned below, try
  * uncommenting the line it's mentioned on.
  */
@@ -83,7 +87,7 @@ _stdcall void Sleep(int);
 /* #define nonl() */
 /* #define nl() */
 
-/*
+/**
  * Save the "normal" and "angband" terminal settings
  */
 
@@ -94,13 +98,13 @@ static struct termios  game_termios;
 
 #endif
 
-/*
+/**
  * The TERM environment variable; used for terminal capabilities.
  */
 static char *termtype;
 static bool loaded_terminfo;
 
-/*
+/**
  * Information about a term
  */
 typedef struct term_data {
@@ -127,7 +131,7 @@ static int active = 0;
 
 #ifdef A_COLOR
 
-/*
+/**
  * Hack -- define "A_BRIGHT" to be "A_BOLD", because on many
  * machines, "A_BRIGHT" produces ugly "inverse" video.
  */
@@ -135,12 +139,12 @@ static int active = 0;
 # define A_BRIGHT A_BOLD
 #endif
 
-/*
+/**
  * Software flag -- we are allowed to use color
  */
 static int can_use_color = FALSE;
 
-/*
+/**
  * Simple Angband to Curses color conversion table
  */
 static int colortable[BASIC_COLORS];
@@ -150,7 +154,7 @@ static bool bold_extended = FALSE;
 static bool ascii_walls = FALSE;
 static int term_count = 4;
 
-/*
+/**
  * Background color we should draw with; either BLACK or DEFAULT
  */
 static int bg_color = COLOR_BLACK;
@@ -167,7 +171,7 @@ static int bg_color = COLOR_BLACK;
 
 #endif
 
-/*
+/**
  * Place the "keymap" into its "normal" state
  */
 static void keymap_norm(void) {
@@ -177,7 +181,7 @@ static void keymap_norm(void) {
 }
 
 
-/*
+/**
  * Place the "keymap" into the "game" state
  */
 static void keymap_game(void) {
@@ -188,7 +192,7 @@ static void keymap_game(void) {
 }
 
 
-/*
+/**
  * Save the normal keymap
  */
 static void keymap_norm_prepare(void) {
@@ -199,7 +203,7 @@ static void keymap_norm_prepare(void) {
 }
 
 
-/*
+/**
  * Save the keymaps (normal and game)
  */
 static void keymap_game_prepare(void) {
@@ -235,7 +239,7 @@ static void keymap_game_prepare(void) {
 }
 
 
-/*
+/**
  * Suspend/Resume
  */
 static errr Term_xtra_gcu_alive(int v) {
@@ -287,7 +291,7 @@ static errr Term_xtra_gcu_alive(int v) {
 
 const char help_gcu[] = "Text mode, subopts\n              -a     Use ASCII walls\n              -b     Big screen (equivalent to -n1)\n              -B     Use brighter bold characters\n              -nN    Use N terminals (up to 6)";
 
-/*
+/**
  * Usage:
  *
  * angband -mgcu -- [-a] [-b] [-B] [-nN]
@@ -298,7 +302,7 @@ const char help_gcu[] = "Text mode, subopts\n              -a     Use ASCII wall
  *   -nN     Use N terminals (up to 6)
  */
 
-/*
+/**
  * Init the "curses" system
  */
 static void Term_init_gcu(term *t) {
@@ -327,7 +331,7 @@ static void Term_init_gcu(term *t) {
 }
 
 
-/*
+/**
  * Nuke the "curses" system
  */
 static void Term_nuke_gcu(term *t) {
@@ -367,7 +371,7 @@ static void Term_nuke_gcu(term *t) {
 	keymap_norm();
 }
 
-/*
+/**
  * Helper function for get_gcu_term_size:
  * Given inputs, populates size and start (rows and y, or cols and x)
  * with correct values for a group (column or row) of terms.
@@ -419,7 +423,7 @@ static void balance_dimension(int *size, int *start, int term_group_index,
 	}
 }
 
-/*
+/**
  * For a given term number (i) set the upper left corner (x, y) and the
  * correct dimensions. Remember to leave one row and column between
  * subterms.
@@ -474,7 +478,7 @@ static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 }
 
 
-/*
+/**
  * Query ncurses for new screen size and try to resize the GCU terms.
  */
 static void do_gcu_resize(void) {
@@ -497,7 +501,7 @@ static void do_gcu_resize(void) {
 }
 
 
-/*
+/**
  * Process events, with optional wait
  */
 static errr Term_xtra_gcu_event(int v) {
@@ -661,7 +665,7 @@ static int create_color(int i, int scale) {
 }
 
 
-/*
+/**
  * React to changes
  */
 static errr Term_xtra_gcu_react(void) {
@@ -670,24 +674,24 @@ static errr Term_xtra_gcu_react(void) {
 		ascii_walls = FALSE;
 		for (i = 0; i < 4; i++) {
 			// magma as %:D
-			f_info[50].x_char[i] = f_info[52].x_char[i] = 0x23;
-			f_info[50].x_attr[i] = f_info[52].x_attr[i] = 0x01;
+			feat_x_char[i][FEAT_MAGMA] = 0x23;
+			feat_x_attr[i][FEAT_MAGMA] = 0x01;
 
 			// quartz as %:D
-			f_info[51].x_char[i] = f_info[53].x_char[i] = 0x23;
-			f_info[51].x_attr[i] = f_info[53].x_attr[i] = 0x01;
+			feat_x_char[i][FEAT_QUARTZ] = 0x23;
+			feat_x_attr[i][FEAT_QUARTZ] = 0x01;
 
 			// quartz/magma w treasure as *:o
-			f_info[54].x_char[i] = f_info[55].x_char[i] = 0x2A;
-			f_info[54].x_attr[i] = f_info[55].x_attr[i] = 0x03;
+			feat_x_char[i][FEAT_MAGMA_K] = feat_x_char[i][FEAT_QUARTZ_K] = 0x2A;
+			feat_x_attr[i][FEAT_MAGMA_K] = feat_x_attr[i][FEAT_QUARTZ_K] = 0x03;
 
 			// granite walls as #:D
-			f_info[56].x_char[i] = 0x23;
-			f_info[56].x_attr[i] = 0x01;
+			feat_x_char[i][FEAT_GRANITE] = 0x23;
+			feat_x_attr[i][FEAT_GRANITE] = 0x01;
 
 			// permanent walls as #:r
-			f_info[60].x_char[i] = 0x23;
-			f_info[60].x_attr[i] = 0x04;
+			feat_x_char[i][FEAT_PERM] = 0x23;
+			feat_x_attr[i][FEAT_PERM] = 0x04;
 		}
 	}
 
@@ -719,7 +723,7 @@ static errr Term_xtra_gcu_react(void) {
 }
 
 
-/*
+/**
  * Handle a "special request"
  */
 static errr Term_xtra_gcu(int n, int v) {
@@ -762,7 +766,7 @@ static errr Term_xtra_gcu(int n, int v) {
 }
 
 
-/*
+/**
  * Actually MOVE the hardware cursor
  */
 static errr Term_curs_gcu(int x, int y) {
@@ -772,7 +776,7 @@ static errr Term_curs_gcu(int x, int y) {
 }
 
 
-/*
+/**
  * Erase a grid of space
  * Hack -- try to be "semi-efficient".
  */
@@ -792,7 +796,7 @@ static errr Term_wipe_gcu(int x, int y, int n) {
 }
 
 
-/*
+/**
  * Place some text on the screen using an attribute
  */
 static errr Term_text_gcu(int x, int y, int n, int a, const wchar_t *s) {
@@ -828,12 +832,13 @@ static errr Term_text_gcu(int x, int y, int n, int a, const wchar_t *s) {
 }
 
 
-/*
+/**
  * Create a window for the given "term_data" argument.
  *
  * Assumes legal arguments.
  */
-static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) {
+static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
+{
 	term *t = &td->t;
 
 	/* Create new window */
@@ -850,7 +855,7 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	t->icky_corner = TRUE;
 
 	/* Erase with "white space" */
-	t->attr_blank = TERM_WHITE;
+	t->attr_blank = COLOUR_WHITE;
 	t->char_blank = ' ';
 
 	/* Differentiate between BS/^h, Tab/^i, etc. */
@@ -887,8 +892,8 @@ static void hook_quit(const char *str) {
 	endwin();
 }
 
-/*
- * Prepare "curses" for use by the file "z-term.c"
+/**
+ * Prepare "curses" for use by the file "ui-term.c"
  *
  * Installs the "hook" functions defined above, and then activates
  * the main screen "term", which clears the screen and such things.
@@ -962,35 +967,35 @@ errr init_gcu(int argc, char **argv) {
 		init_pair(PAIR_BLACK, COLOR_BLACK, bg_color);
 
 		/* Prepare the colors */
-		colortable[TERM_DARK]     = (COLOR_PAIR(PAIR_BLACK));
-		colortable[TERM_WHITE]    = (COLOR_PAIR(PAIR_WHITE) | A_BRIGHT);
-		colortable[TERM_SLATE]    = (COLOR_PAIR(PAIR_WHITE));
-		colortable[TERM_ORANGE]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
-		colortable[TERM_RED]      = (COLOR_PAIR(PAIR_RED));
-		colortable[TERM_GREEN]    = (COLOR_PAIR(PAIR_GREEN));
-		colortable[TERM_BLUE]     = (COLOR_PAIR(PAIR_BLUE));
-		colortable[TERM_UMBER]    = (COLOR_PAIR(PAIR_YELLOW));
-		colortable[TERM_L_DARK]   = (COLOR_PAIR(PAIR_BLACK) | A_BRIGHT);
-		colortable[TERM_L_WHITE]  = (COLOR_PAIR(PAIR_WHITE));
-		colortable[TERM_L_PURPLE] = (COLOR_PAIR(PAIR_MAGENTA));
-		colortable[TERM_YELLOW]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
-		colortable[TERM_L_RED]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
-		colortable[TERM_L_GREEN]  = (COLOR_PAIR(PAIR_GREEN) | A_BRIGHT);
-		colortable[TERM_L_BLUE]   = (COLOR_PAIR(PAIR_BLUE) | A_BRIGHT);
-		colortable[TERM_L_UMBER]  = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[COLOUR_DARK]     = (COLOR_PAIR(PAIR_BLACK));
+		colortable[COLOUR_WHITE]    = (COLOR_PAIR(PAIR_WHITE) | A_BRIGHT);
+		colortable[COLOUR_SLATE]    = (COLOR_PAIR(PAIR_WHITE));
+		colortable[COLOUR_ORANGE]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
+		colortable[COLOUR_RED]      = (COLOR_PAIR(PAIR_RED));
+		colortable[COLOUR_GREEN]    = (COLOR_PAIR(PAIR_GREEN));
+		colortable[COLOUR_BLUE]     = (COLOR_PAIR(PAIR_BLUE));
+		colortable[COLOUR_UMBER]    = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[COLOUR_L_DARK]   = (COLOR_PAIR(PAIR_BLACK) | A_BRIGHT);
+		colortable[COLOUR_L_WHITE]  = (COLOR_PAIR(PAIR_WHITE));
+		colortable[COLOUR_L_PURPLE] = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[COLOUR_YELLOW]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
+		colortable[COLOUR_L_RED]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[COLOUR_L_GREEN]  = (COLOR_PAIR(PAIR_GREEN) | A_BRIGHT);
+		colortable[COLOUR_L_BLUE]   = (COLOR_PAIR(PAIR_BLUE) | A_BRIGHT);
+		colortable[COLOUR_L_UMBER]  = (COLOR_PAIR(PAIR_YELLOW));
 
-		colortable[TERM_PURPLE]      = (COLOR_PAIR(PAIR_MAGENTA));
-		colortable[TERM_VIOLET]      = (COLOR_PAIR(PAIR_MAGENTA));
-		colortable[TERM_TEAL]        = (COLOR_PAIR(PAIR_CYAN));
-		colortable[TERM_MUD]         = (COLOR_PAIR(PAIR_YELLOW));
-		colortable[TERM_L_YELLOW]    = (COLOR_PAIR(PAIR_YELLOW | A_BRIGHT));
-		colortable[TERM_MAGENTA]     = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
-		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN) | A_BRIGHT);
-		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
-		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
-		colortable[TERM_MUSTARD]     = (COLOR_PAIR(PAIR_YELLOW));
-		colortable[TERM_BLUE_SLATE]  = (COLOR_PAIR(PAIR_BLUE));
-		colortable[TERM_DEEP_L_BLUE] = (COLOR_PAIR(PAIR_BLUE));
+		colortable[COLOUR_PURPLE]      = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[COLOUR_VIOLET]      = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[COLOUR_TEAL]        = (COLOR_PAIR(PAIR_CYAN));
+		colortable[COLOUR_MUD]         = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[COLOUR_L_YELLOW]    = (COLOR_PAIR(PAIR_YELLOW | A_BRIGHT));
+		colortable[COLOUR_MAGENTA]     = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
+		colortable[COLOUR_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN) | A_BRIGHT);
+		colortable[COLOUR_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[COLOUR_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[COLOUR_MUSTARD]     = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[COLOUR_BLUE_SLATE]  = (COLOR_PAIR(PAIR_BLUE));
+		colortable[COLOUR_DEEP_L_BLUE] = (COLOR_PAIR(PAIR_BLUE));
 	}
 #endif
 
