@@ -1,7 +1,28 @@
-Angband 4.0.0
+Welcome to the changelog for Angband 4.0. This file tracks the changes made since 3.5.1.
+
+Angband 4.0.1
 =============
 
-Welcome to the changelog for Angband 4.0. This file tracks the changes made since 3.5.0.
+This is chiefly a bugfix version.
+
+Changes
+-------
+ - Allow barehanded combat to get multiple blows
+ - Triple the number of room templates
+
+Bugfixes
+--------
+ - Stop spell books from claiming spells like teleport do damage
+ - A lot of coding style consistency improvements
+ - Improve device skill boost description
+ - Fix resistance to side effects of elemental attacks
+ - Reduce carried weight correctly when items leave the gear
+ - Remove potential crash when dropping from the equipment
+ - Some other minor issues identified by PowerWyrm
+
+
+Angband 4.0.0
+=============
 
 Please note that no 3.x characters, living or dead, will move gracefully into this version.  Finish off your character in your current version before moving over.
 

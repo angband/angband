@@ -42,8 +42,8 @@
 #define MDESC_DIED_FROM (MDESC_SHOW | MDESC_IND_VIS)
 
 void plural_aux(char *name, size_t max);
-void get_mon_name(char *output_name, size_t max, const monster_race *r_ptr,
-				  int num);
-void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
+void get_mon_name(char *output_name, size_t max,
+				  const struct monster_race *race, int num);
+void monster_desc(char *desc, size_t max, const struct monster *mon, int mode);
 
 #endif /* MONSTER_DESC_H */

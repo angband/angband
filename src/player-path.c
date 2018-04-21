@@ -549,10 +549,10 @@ static bool run_test(void)
 
 		/* Visible monsters abort running */
 		if (cave->squares[row][col].mon > 0) {
-			monster_type *m_ptr = square_monster(cave, row, col);
+			struct monster *mon = square_monster(cave, row, col);
 
 			/* Visible monster */
-			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) return (TRUE);
+			if (mflag_has(mon->mflag, MFLAG_VISIBLE)) return (TRUE);
 		}
 
 		/* Visible objects abort running */
@@ -626,10 +626,10 @@ static bool run_test(void)
 
 		/* Visible monsters abort running */
 		if (cave->squares[row][col].mon > 0) {
-			monster_type *m_ptr = square_monster(cave, row, col);
+			struct monster *mon = square_monster(cave, row, col);
 			
 			/* Visible monster */
-			if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE) && !is_mimicking(m_ptr))
+			if (mflag_has(mon->mflag, MFLAG_VISIBLE) && !is_mimicking(mon))
 				return (TRUE);
 		}
 	}
@@ -779,10 +779,10 @@ void run_step(int dir)
 
 				/* Visible monsters abort running */
 				if (cave->squares[y][x].mon > 0) {
-					monster_type *m_ptr = square_monster(cave, y, x);
+					struct monster *mon = square_monster(cave, y, x);
 
 					/* Visible monster */
-					if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
+					if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
 						disturb(player, 0);
 						player->upkeep->running_withpathfind = FALSE;
 						return;

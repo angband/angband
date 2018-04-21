@@ -18,21 +18,23 @@
 
 void player_spells_init(struct player *p);
 void player_spells_free(struct player *p);
-const class_book *object_to_book(const struct object *obj);
-const class_spell *spell_by_index(int index);
-int spell_collect_from_book(const object_type *o_ptr, int **spells);
-int spell_book_count_spells(const object_type *o_ptr, bool (*tester)(int spell));
-bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
-bool spell_okay_to_cast(int spell);
-bool spell_okay_to_study(int spell);
-bool spell_okay_to_browse(int spell);
-s16b spell_chance(int spell);
-void spell_learn(int spell);
-bool spell_cast(int spell, int dir);
+const struct class_book *object_to_book(const struct object *obj);
+const struct class_spell *spell_by_index(int index);
+int spell_collect_from_book(const struct object *obj, int **spells);
+int spell_book_count_spells(const struct object *obj,
+							bool (*tester)(int spell_index));
+bool spell_okay_list(bool (*spell_test)(int spell_index), const int spells[],
+					 int n_spells);
+bool spell_okay_to_cast(int spell_index);
+bool spell_okay_to_study(int spell_index);
+bool spell_okay_to_browse(int spell_index);
+s16b spell_chance(int spell_index);
+void spell_learn(int spell_index);
+bool spell_cast(int spell_index, int dir);
 
 extern void get_spell_info(int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);
-extern bool spell_needs_aim(int spell);
-extern bool spell_is_identify(int spell);
+extern bool spell_needs_aim(int spell_index);
+extern bool spell_is_identify(int spell_index);
 extern expression_base_value_f spell_value_base_by_name(const char *name);
 

@@ -131,6 +131,7 @@ typedef union
 		int gf_type;
 		int num_grids;
 		int *distance_to_grid;
+		bool drawing;
 		bool *player_sees_grid;
 		struct loc *blast_grid;
 		struct loc centre;
@@ -139,6 +140,7 @@ typedef union
 	struct
 	{
 		int gf_type;
+		bool drawing;
 		bool seen;
 		bool beam;
 		int oy;
@@ -184,11 +186,13 @@ void event_signal_blast(game_event_type type,
 						int gf_type,
 						int num_grids,
 						int *distance_to_grid,
+						bool seen,
 						bool *player_sees_grid,
 						struct loc *blast_grid,
 						struct loc centre);
 void event_signal_bolt(game_event_type type,
 					   int gf_type,
+					   bool drawing,
 					   bool seen,
 					   bool beam,
 					   int oy,

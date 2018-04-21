@@ -133,7 +133,7 @@ void object_list_reset(object_list_t *list)
 /**
  * Return TRUE if the object should be omitted from the object list.
  */
-static bool object_list_should_ignore_object(const object_type *object)
+static bool object_list_should_ignore_object(const struct object *object)
 {
 	assert(object->kind);
 
@@ -271,8 +271,8 @@ static int object_list_distance_compare(const void *a, const void *b)
 int object_list_standard_compare(const void *a, const void *b)
 {
 	int result;
-	const object_type *ao = ((object_list_entry_t *)a)->object;
-	const object_type *bo = ((object_list_entry_t *)b)->object;
+	const struct object *ao = ((object_list_entry_t *)a)->object;
+	const struct object *bo = ((object_list_entry_t *)b)->object;
 
 	/* If this happens, something might be wrong in the collect function. */
 	if (ao == NULL || bo == NULL)

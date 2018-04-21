@@ -35,16 +35,16 @@ struct attack_result {
  * keeping the core projectile tracking, monster cleanup, and display code
  * in common.
  */
-typedef struct attack_result (*ranged_attack) (object_type *o_ptr, int y, int x);
+typedef struct attack_result (*ranged_attack) (struct object *obj, int y, int x);
 
 extern void do_cmd_fire(struct command *cmd);
 extern void do_cmd_fire_at_nearest(void);
 extern void do_cmd_throw(struct command *cmd);
 
 
-extern int breakage_chance(const object_type *o_ptr, bool hit_target);
+extern int breakage_chance(const struct object *obj, bool hit_target);
 extern bool test_hit(int chance, int ac, int vis);
 extern void py_attack(int y, int x);
-int py_attack_hit_chance(const object_type *weapon);
+int py_attack_hit_chance(const struct object *weapon);
 
 #endif /* !PLAYER_ATTACK_H */

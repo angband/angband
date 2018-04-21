@@ -43,14 +43,14 @@ void pile_excise(struct object **pile, struct object *obj);
 struct object *pile_last_item(struct object *const pile);
 bool pile_contains(const struct object *top, const struct object *obj);
 
-bool object_stackable(const struct object *o_ptr, const struct object *j_ptr,
+bool object_stackable(const struct object *obj1, const struct object *obj2,
 					  object_stack_t mode);
-bool object_similar(const struct object *o_ptr, const struct object *j_ptr,
+bool object_similar(const struct object *obj1, const struct object *obj2,
 					object_stack_t mode);
-void object_absorb_partial(struct object *o_ptr, struct object *j_ptr);
-void object_absorb(struct object *o_ptr, struct object *j_ptr);
-void object_wipe(struct object *o_ptr);
-void object_copy(struct object *o_ptr, const struct object *j_ptr);
+void object_absorb_partial(struct object *obj1, struct object *obj2);
+void object_absorb(struct object *obj1, struct object *obj2);
+void object_wipe(struct object *obj);
+void object_copy(struct object *obj1, const struct object *obj2);
 void object_copy_amt(struct object *dest, struct object *src, int amt);
 struct object *object_split(struct object *src, int amt);
 struct object *floor_object_for_use(struct object *obj, int num, bool message,

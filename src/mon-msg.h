@@ -56,7 +56,7 @@ enum mon_msg_flags {
  */
 typedef struct monster_race_message
 {
-	monster_race *race;	/* The race of the monster */
+	struct monster_race *race;	/* The race of the monster */
 	byte mon_flags;		/* Flags */
  	int  msg_code;		/* The coded message */
 	byte mon_count;		/* How many monsters triggered this message */

@@ -75,13 +75,14 @@ enum mon_spell_type {
 
 /** Functions **/
 int breath_dam(int element, int hp);
-void do_mon_spell(int index, struct monster *m_ptr, bool seen);
+void do_mon_spell(int index, struct monster *mon, bool seen);
 bool test_spells(bitflag *f, int types);
 void set_spells(bitflag *f, int types);
-int best_spell_power(const monster_race *r_ptr, int resist);
+int best_spell_power(const struct monster_race *race, int resist);
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
-				  struct element_info *el, const monster_race *r_ptr);
+				  struct element_info *el, const struct monster_race *race);
 const char *mon_spell_lore_description(int index);
-int mon_spell_lore_damage(int index, const monster_race *race, bool know_hp);
+int mon_spell_lore_damage(int index, const struct monster_race *race,
+						  bool know_hp);
 
 #endif /* MONSTER_SPELL_H */

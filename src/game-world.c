@@ -108,7 +108,7 @@ int turn_energy(int speed)
  * Also inform player when first item of a stack has recharged. -HK-
  * Notify all recharges w/o inscription if notify_recharge option set -WP-
  */
-static void recharged_notice(const object_type *obj, bool all)
+static void recharged_notice(const struct object *obj, bool all)
 {
 	char o_name[120];
 

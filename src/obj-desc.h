@@ -45,8 +45,10 @@ enum {
 extern const char *inscrip_text[];
 
 void object_base_name(char *buf, size_t max, int tval, bool plural);
-void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know);
-size_t obj_desc_name_format(char *buf, size_t max, size_t end, const char *fmt, const char *modstr, bool pluralise);
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode);
+void object_kind_name(char *buf, size_t max, const struct object_kind *kind,
+					  bool easy_know);
+size_t obj_desc_name_format(char *buf, size_t max, size_t end, const char *fmt,
+							const char *modstr, bool pluralise);
+size_t object_desc(char *buf, size_t max, const struct object *obj, int mode);
 
 #endif /* OBJECT_DESC_H */

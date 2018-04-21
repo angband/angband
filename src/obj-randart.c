@@ -224,19 +224,12 @@ static int verbose = 1;
 int fake_pval[3] = {0, 0, 0};
 
 /**
- * Describes an element-name pair.
- */
-typedef struct
-{
-	int index;
-	const char *name;
-} element_type;
-
-/**
  * Include the elements and names
  */
-static const element_type elements[] =
-{
+static const struct element_type {
+	int index;
+	const char *name;
+} elements[] = {
 	#define ELEM(a, b, c, d, e, f, g, h, i, col) {ELEM_##a, b},
 	#include "list-elements.h"
 	#undef ELEM
@@ -2392,35 +2385,35 @@ static void do_curse(struct artifact *art)
 }
 
 /**
- * Copy artifact fields from a_src_ptr to a_dst_ptr, and fake pvals from
+ * Copy artifact fields from a_src to a_dst, and fake pvals from
  * fake_pval_src to fake_pval_dst
  */
 
-static void copy_artifact(struct artifact *a_src_ptr, 
-	struct artifact *a_dst_ptr, int *fake_pval_src, int *fake_pval_dst)
+static void copy_artifact(struct artifact *a_src, 
+	struct artifact *a_dst, int *fake_pval_src, int *fake_pval_dst)
 {
 	int i;
 
-	if (a_dst_ptr->slays) {
-		free_slay(a_dst_ptr->slays);
+	if (a_dst->slays) {
+		free_slay(a_dst->slays);
 	}
-	if (a_dst_ptr->brands) {
-		free_brand(a_dst_ptr->brands);
+	if (a_dst->brands) {
+		free_brand(a_dst->brands);
 	}
 	/* Copy the structure */
-	memcpy(a_dst_ptr, a_src_ptr, sizeof(struct artifact));
+	memcpy(a_dst, a_src, sizeof(struct artifact));
 
-	a_dst_ptr->next = NULL;
-	a_dst_ptr->slays = NULL;
-	a_dst_ptr->brands = NULL;
-	a_dst_ptr->activation = NULL;
-	a_dst_ptr->alt_msg = NULL;
+	a_dst->next = NULL;
+	a_dst->slays = NULL;
+	a_dst->brands = NULL;
+	a_dst->activation = NULL;
+	a_dst->alt_msg = NULL;
 
-	if (a_src_ptr->slays) {
-		copy_slay(&a_dst_ptr->slays, a_src_ptr->slays);
+	if (a_src->slays) {
+		copy_slay(&a_dst->slays, a_src->slays);
 	}
-	if (a_src_ptr->brands) {
-		copy_brand(&a_dst_ptr->brands, a_src_ptr->brands);
+	if (a_src->brands) {
+		copy_brand(&a_dst->brands, a_src->brands);
 	}
 
 	/* Save contents of fake_pval */

@@ -213,13 +213,12 @@ static void get_stats(int stat_use[STAT_MAX])
 {
 	int i, j;
 
-	int dice[18];
-
+	int dice[3 * STAT_MAX];
 
 	/* Roll and verify some stats */
 	while (TRUE) {
 		/* Roll some dice */
-		for (j = i = 0; i < 18; i++) {
+		for (j = i = 0; i < 3 * STAT_MAX; i++) {
 			/* Roll the dice */
 			dice[i] = randint1(3 + i % 3);
 
@@ -228,7 +227,7 @@ static void get_stats(int stat_use[STAT_MAX])
 		}
 
 		/* Verify totals */
-		if ((j > 42) && (j < 54)) break;
+		if ((j > 7 * STAT_MAX) && (j < 9 * STAT_MAX)) break;
 	}
 
 	/* Roll the stats */
@@ -369,34 +368,34 @@ void player_init(struct player *p)
 
 	/* Start with no artifacts made yet */
 	for (i = 0; z_info && i < z_info->a_max; i++) {
-		artifact_type *a_ptr = &a_info[i];
-		a_ptr->created = FALSE;
-		a_ptr->seen = FALSE;
+		struct artifact *art = &a_info[i];
+		art->created = FALSE;
+		art->seen = FALSE;
 	}
 
 	/* Start with no quests */
 	player_quests_reset(p);
 
 	for (i = 1; z_info && i < z_info->k_max; i++) {
-		object_kind *k_ptr = &k_info[i];
-		k_ptr->tried = FALSE;
-		k_ptr->aware = FALSE;
+		struct object_kind *kind = &k_info[i];
+		kind->tried = FALSE;
+		kind->aware = FALSE;
 	}
 
 	for (i = 1; z_info && i < z_info->r_max; i++) {
-		monster_race *r_ptr = &r_info[i];
-		monster_lore *l_ptr = &l_list[i];
-		r_ptr->cur_num = 0;
-		r_ptr->max_num = 100;
-		if (rf_has(r_ptr->flags, RF_UNIQUE))
-			r_ptr->max_num = 1;
-		l_ptr->pkills = 0;
+		struct monster_race *race = &r_info[i];
+		struct monster_lore *lore = &l_list[i];
+		race->cur_num = 0;
+		race->max_num = 100;
+		if (rf_has(race->flags, RF_UNIQUE))
+			race->max_num = 1;
+		lore->pkills = 0;
 	}
 
 	/* Always start with a well fed player (this is surely in the wrong fn) */
 	p->food = PY_FOOD_FULL - 1;
 
-	p->upkeep = mem_zalloc(sizeof(player_upkeep));
+	p->upkeep = mem_zalloc(sizeof(struct player_upkeep));
 	p->upkeep->inven = mem_zalloc((z_info->pack_size + 1) *
 								  sizeof(struct object *));
 	p->upkeep->quiver = mem_zalloc(z_info->quiver_size *

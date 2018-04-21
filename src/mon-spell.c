@@ -164,15 +164,15 @@ void set_spells(bitflag *f, int types)
  * \param flags is the set of object flags we're testing
  * \param pflags is the set of player flags we're testing
  * \param el is what we know about the monster's elemental resists
- * \param r_ptr is the monster type we're operating on
+ * \param race is the monster type we're operating on
  */
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
-				  struct element_info *el, const monster_race *r_ptr)
+				  struct element_info *el, const struct monster_race *race)
 {
 	const struct mon_spell_info *info;
 	const struct monster_spell *spell;
 	const struct effect *effect;
-	bool smart = rf_has(r_ptr->flags, RF_SMART);
+	bool smart = rf_has(race->flags, RF_SMART);
 
 	for (info = mon_spell_info_table; info->index < RSF_MAX; info++) {
 		/* Ignore missing spells */
@@ -230,7 +230,8 @@ static bool monster_spell_is_breath(int index)
  * \param race is the monster race of the attacker
  * \param dam_aspect is the damage calc required (min, avg, max, random)
  */
-static int nonhp_dam(const struct monster_spell *spell, const monster_race *race, aspect dam_aspect)
+static int nonhp_dam(const struct monster_spell *spell,
+					 const struct monster_race *race, aspect dam_aspect)
 {
 	int dam = 0;
 	struct effect *effect = spell->effect;
@@ -281,7 +282,8 @@ int breath_dam(int element, int hp)
  * \param race is the race of the casting monster.
  * \param dam_aspect is the damage calc we want (min, max, avg, random).
  */
-static int mon_spell_dam(int index, int hp, const monster_race *race, aspect dam_aspect)
+static int mon_spell_dam(int index, int hp, const struct monster_race *race,
+						 aspect dam_aspect)
 {
 	const struct monster_spell *spell = monster_spell_by_index(index);
 
@@ -295,24 +297,24 @@ static int mon_spell_dam(int index, int hp, const monster_race *race, aspect dam
 /**
  * Calculate a monster's maximum spell power.
  *
- * \param r_ptr is the monster we're studying
+ * \param race is the monster we're studying
  * \param resist is the degree of resistance we're assuming to any
  *   attack type (-1 = vulnerable ... 3 = immune)
  */
-int best_spell_power(const monster_race *r_ptr, int resist)
+int best_spell_power(const struct monster_race *race, int resist)
 {
 	const struct mon_spell_info *info;
 	const struct monster_spell *spell;
 	int dam = 0, best_dam = 0; 
 
 	/* Extract the monster level */
-	int rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+	int rlev = ((race->level >= 1) ? race->level : 1);
 
 	for (info = mon_spell_info_table; info->index < RSF_MAX; info++) {
-		if (rsf_has(r_ptr->spell_flags, info->index)) {
+		if (rsf_has(race->spell_flags, info->index)) {
 
 			/* Get the maximum basic damage output of the spell (could be 0) */
-			dam = mon_spell_dam(info->index, mon_hp(r_ptr, MAXIMISE), r_ptr,
+			dam = mon_spell_dam(info->index, mon_hp(race, MAXIMISE), race,
 				MAXIMISE);
 
 			/* For all attack forms the player can save against, damage
@@ -371,7 +373,8 @@ const char *mon_spell_lore_description(int index)
 	return mon_spell_info_table[index].lore_desc;
 }
 
-int mon_spell_lore_damage(int index, const monster_race *race, bool know_hp)
+int mon_spell_lore_damage(int index, const struct monster_race *race,
+						  bool know_hp)
 {
 	int hp;
 

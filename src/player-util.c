@@ -126,7 +126,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
 void death_knowledge(void)
 {
 	struct store *home = &stores[STORE_HOME];
-	object_type *obj;
+	struct object *obj;
 	time_t death_time = (time_t)0;
 
 	/* Retire in the town in a good state */
@@ -486,7 +486,7 @@ bool player_can_read(struct player *p, bool show_msg)
  */
 bool player_can_fire(struct player *p, bool show_msg)
 {
-	object_type *obj = equipped_item_by_slot_name(player, "shooting");
+	struct object *obj = equipped_item_by_slot_name(player, "shooting");
 
 	/* Require a usable launcher */
 	if (!obj || !p->state.ammo_tval)
@@ -509,7 +509,7 @@ bool player_can_fire(struct player *p, bool show_msg)
  */
 bool player_can_refuel(struct player *p, bool show_msg)
 {
-	object_type *obj = equipped_item_by_slot_name(player, "light");
+	struct object *obj = equipped_item_by_slot_name(player, "light");
 
 	if (obj && of_has(obj->flags, OF_TAKES_FUEL))
 		return TRUE;
@@ -569,7 +569,7 @@ bool player_can_refuel_prereq(void)
 bool player_book_has_unlearned_spells(struct player *p)
 {
 	int i, j;
-	const class_book *book;
+	const struct class_book *book;
 
 	/* Check if the player can learn new spells */
 	if (!p->upkeep->new_spells)

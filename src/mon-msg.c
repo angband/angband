@@ -53,7 +53,7 @@ static const char *msg_repository[] = {
  * Adds to the message queue a message describing a monster's reaction
  * to damage.
  */
-void message_pain(struct monster *m_ptr, int dam)
+void message_pain(struct monster *mon, int dam)
 {
 	long oldhp, newhp, tmp;
 	int percentage;
@@ -63,16 +63,16 @@ void message_pain(struct monster *m_ptr, int dam)
 
 	/* Get the monster name  - don't use monster_desc flags because
 	 * add_monster_message does string processing on m_name */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
 	/* Notice non-damage */
 	if (dam == 0) {
-		add_monster_message(m_name, m_ptr, msg_code, FALSE);
+		add_monster_message(m_name, mon, msg_code, FALSE);
 		return;
 	}
 
 	/* Note -- subtle fix -CFT */
-	newhp = (long)(m_ptr->hp);
+	newhp = (long)(mon->hp);
 	oldhp = newhp + (long)(dam);
 	tmp = (newhp * 100L) / oldhp;
 	percentage = (int)(tmp);
@@ -92,7 +92,7 @@ void message_pain(struct monster *m_ptr, int dam)
 	else
 		msg_code = MON_MSG_0;
 
-	add_monster_message(m_name, m_ptr, msg_code, FALSE);
+	add_monster_message(m_name, mon, msg_code, FALSE);
 }
 
 #define SINGULAR_MON   1
@@ -189,11 +189,11 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural,
  * messages don't happen due to monster attacks hitting other monsters.
  * Returns TRUE if the message is redundant.
  */
-static bool redundant_monster_message(struct monster *m_ptr, int msg_code)
+static bool redundant_monster_message(struct monster *mon, int msg_code)
 {
 	int i;
 
-	assert(m_ptr);
+	assert(mon);
 	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
 
 	/* No messages yet */
@@ -201,7 +201,7 @@ static bool redundant_monster_message(struct monster *m_ptr, int msg_code)
 
 	for (i = 0; i < size_mon_hist; i++) {
 		/* Not the same monster */
-		if (m_ptr != mon_message_hist[i].mon) continue;
+		if (mon != mon_message_hist[i].mon) continue;
 
 		/* Not the same code */
 		if (msg_code != mon_message_hist[i].message_code) continue;
@@ -220,7 +220,7 @@ static bool redundant_monster_message(struct monster *m_ptr, int msg_code)
  * different monster descriptions for the same race.
  * Return TRUE on success.
  */
-bool add_monster_message(const char *mon_name, struct monster *m_ptr,
+bool add_monster_message(const char *mon_name, struct monster *mon,
 		int msg_code, bool delay)
 {
 	int i;
@@ -228,7 +228,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 
 	assert(msg_code >= 0 && msg_code < MON_MSG_MAX);
 
-	if (redundant_monster_message(m_ptr, msg_code)) return (FALSE);
+	if (redundant_monster_message(mon, msg_code)) return (FALSE);
 
 	/* Paranoia */
 	if (!mon_name || !mon_name[0]) mon_name = "it";
@@ -246,7 +246,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	/* Query if the message is already stored */
 	for (i = 0; i < size_mon_msg; i++) {
 		/* We found the race and the message code */
-		if ((mon_msg[i].race == m_ptr->race) &&
+		if ((mon_msg[i].race == mon->race) &&
 			(mon_msg[i].mon_flags == mon_flags) &&
 			(mon_msg[i].msg_code == msg_code)) {
 			/* Can we increment the counter? */
@@ -264,7 +264,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	if (size_mon_msg >= MAX_STORED_MON_MSG) return (FALSE);
 
 	/* Assign the message data to the free slot */
-	mon_msg[i].race = m_ptr->race;
+	mon_msg[i].race = mon->race;
 	mon_msg[i].mon_flags = mon_flags;
 	mon_msg[i].msg_code = msg_code;
 	mon_msg[i].delay = delay;
@@ -286,7 +286,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 
 	/* record which monster had this message stored */
 	if (size_mon_hist >= MAX_STORED_MON_CODES) return (TRUE);
-	mon_message_hist[size_mon_hist].mon = m_ptr;
+	mon_message_hist[size_mon_hist].mon = mon;
 	mon_message_hist[size_mon_hist].message_code = msg_code;
 	size_mon_hist++;
 
@@ -302,7 +302,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
  */
 static void flush_monster_messages(bool delay, byte delay_tag)
 {
-	const monster_race *r_ptr;
+	const struct monster_race *race;
 	int i, count;
 	char buf[512];
 	char *action;
@@ -327,32 +327,32 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 		buf[0] = '\0';
 
 		/* Cache the race index */
-		r_ptr = mon_msg[i].race;
+		race = mon_msg[i].race;
 		   
 		/* Get the proper message action */
-		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), r_ptr);
+		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), race);
 
 		/* Monster is marked as invisible */
-		if (mon_msg[i].mon_flags & MON_MSG_FLAG_INVISIBLE) r_ptr = NULL;
+		if (mon_msg[i].mon_flags & MON_MSG_FLAG_INVISIBLE) race = NULL;
 
 		/* Special message? */
 		action_only = (*action == '~');
 
 		/* Format the proper message depending on type, number and visibility */
-		if (r_ptr && !action_only) {
+		if (race && !action_only) {
 			char race_name[80];
 
 			/* Get the race name */
-			my_strcpy(race_name, r_ptr->name, sizeof(race_name));
+			my_strcpy(race_name, race->name, sizeof(race_name));
 
 			/* Uniques, multiple monsters, or just one */
-			if (rf_has(r_ptr->flags, RF_UNIQUE)) {
+			if (rf_has(race->flags, RF_UNIQUE)) {
 				/* Just copy the race name */
-				my_strcpy(buf, (r_ptr->name), sizeof(buf));
+				my_strcpy(buf, (race->name), sizeof(buf));
 			} else if (count > 1) {
 				/* Get the plural of the race name */
-				if (r_ptr->plural != NULL) {
-					my_strcpy(race_name, r_ptr->plural, sizeof(race_name));
+				if (race->plural != NULL) {
+					my_strcpy(race_name, race->plural, sizeof(race_name));
 				} else {
 					plural_aux(race_name, sizeof(race_name));
 				}
@@ -363,7 +363,7 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 				/* Just add a slight flavor */
 				strnfmt(buf, sizeof(buf), "the %s", race_name);
 			}
-		} else if (!r_ptr && !action_only) {
+		} else if (!race && !action_only) {
 			if (count > 1) {
 				/* Show the counter */
 				strnfmt(buf, sizeof(buf), "%d monsters", count);
@@ -409,8 +409,8 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 				type = MSG_KILL;
 
 				/* Play a special sound if the monster was unique */
-				if (r_ptr != NULL && rf_has(r_ptr->flags, RF_UNIQUE)) {
-					if (r_ptr->base == lookup_monster_base("Morgoth"))
+				if (race != NULL && rf_has(race->flags, RF_UNIQUE)) {
+					if (race->base == lookup_monster_base("Morgoth"))
 						type = MSG_KILL_KING;
 					else
 						type = MSG_KILL_UNIQUE;

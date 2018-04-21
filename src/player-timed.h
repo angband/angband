@@ -49,18 +49,6 @@ enum
 	TMD_MAX
 };
 
-typedef struct {
-	const char *description;
-	const char *on_begin;
-	const char *on_end;
-	const char *on_increase;
-	const char *on_decrease;
-	u32b flag_redraw, flag_update;
-	int msg;
-	int fail_code;
-	int fail;
-} timed_effect;
-
 int timed_name_to_idx(const char *name);
 const char *timed_idx_to_name(int type);
 const char *timed_idx_to_desc(int type);

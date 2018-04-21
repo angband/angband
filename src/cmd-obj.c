@@ -339,6 +339,7 @@ void do_cmd_takeoff(struct command *cmd)
 		return;
 
 	inven_takeoff(obj);
+	combine_pack();
 	pack_overflow(obj);
 	player->upkeep->energy_use = z_info->move_energy / 2;
 }
@@ -968,25 +969,25 @@ void do_cmd_refill(struct command *cmd)
  */
 void do_cmd_cast(struct command *cmd)
 {
-	int spell, dir;
+	int spell_index, dir;
 
 	const char *verb = player->class->magic.spell_realm->verb;
 	const char *noun = player->class->magic.spell_realm->spell_noun;
-	const class_spell *s_ptr;
+	const struct class_spell *spell;
 
 	/* Check the player can cast spells at all */
 	if (!player_can_cast(player, TRUE))
 		return;
 
 	/* Get arguments */
-	if (cmd_get_spell(cmd, "spell", &spell,
+	if (cmd_get_spell(cmd, "spell", &spell_index,
 			/* Verb */   "cast",
 			/* Book */   obj_can_cast_from,
 			/* Error */  "There are no spells you can cast.",
 			/* Filter */ spell_okay_to_cast) != CMD_OK)
 		return;
 
-	if (spell_needs_aim(spell)) {
+	if (spell_needs_aim(spell_index)) {
 		if (cmd_get_target(cmd, "target", &dir) == CMD_OK)
 			player_confuse_dir(player, &dir, FALSE);
 		else
@@ -994,16 +995,16 @@ void do_cmd_cast(struct command *cmd)
 	}
 
 	/* Get the spell */
-	s_ptr = spell_by_index(spell);
+	spell = spell_by_index(spell_index);
 
 	/* Check for unknown objects to prevent wasted player turns. */
-	if (spell_is_identify(spell) && !spell_identify_unknown_available()) {
+	if (spell_is_identify(spell_index) && !spell_identify_unknown_available()) {
 		msg("You have nothing to identify.");
 		return;
 	}
 
 	/* Verify "dangerous" spells */
-	if (s_ptr->smana > player->csp) {
+	if (spell->smana > player->csp) {
 		/* Warning */
 		msg("You do not have enough mana to %s this %s.", verb, noun);
 
@@ -1015,7 +1016,7 @@ void do_cmd_cast(struct command *cmd)
 	}
 
 	/* Cast a spell */
-	if (spell_cast(spell, dir))
+	if (spell_cast(spell_index, dir))
 		player->upkeep->energy_use = z_info->move_energy;
 }
 
@@ -1025,20 +1026,20 @@ void do_cmd_cast(struct command *cmd)
  */
 void do_cmd_study_spell(struct command *cmd)
 {
-	int spell;
+	int spell_index;
 
 	/* Check the player can study at all atm */
 	if (!player_can_study(player, TRUE))
 		return;
 
-	if (cmd_get_spell(cmd, "spell", &spell,
+	if (cmd_get_spell(cmd, "spell", &spell_index,
 			/* Verb */   "study",
 			/* Book */   obj_can_study,
 			/* Error  */ "You cannot learn any new spells from the books you have.",
 			/* Filter */ spell_okay_to_study) != CMD_OK)
 		return;
 
-	spell_learn(spell);
+	spell_learn(spell_index);
 	player->upkeep->energy_use = z_info->move_energy;
 }
 
@@ -1048,9 +1049,9 @@ void do_cmd_study_spell(struct command *cmd)
 void do_cmd_study_book(struct command *cmd)
 {
 	struct object *book_obj;
-	const class_book *book;
-	int spell = -1;
-	class_spell *sp;
+	const struct class_book *book;
+	int spell_index = -1;
+	struct class_spell *spell;
 	int i, k = 0;
 
 	const char *p = player->class->magic.spell_realm->spell_noun;
@@ -1071,18 +1072,18 @@ void do_cmd_study_book(struct command *cmd)
 		return;
 
 	for (i = 0; i < book->num_spells; i++) {
-		sp = &book->spells[i];
-		if (!spell_okay_to_study(sp->sidx))
+		spell = &book->spells[i];
+		if (!spell_okay_to_study(spell->sidx))
 			continue;
 		if ((++k > 1) && (randint0(k) != 0))
 			continue;
-		spell = sp->sidx;
+		spell_index = spell->sidx;
 	}
 
-	if (spell < 0)
+	if (spell_index < 0)
 		msg("You cannot learn any %ss in that book.", p);
 	else {
-		spell_learn(spell);
+		spell_learn(spell_index);
 		player->upkeep->energy_use = z_info->move_energy;
 	}
 }

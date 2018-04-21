@@ -82,7 +82,7 @@ static byte side_dirs[20][8] = {
 /**
  * Calculate minimum and desired combat ranges.  -BR-
  */
-static void find_range(monster_type *mon)
+static void find_range(struct monster *mon)
 {
 	u16b p_lev, m_lev;
 	u16b p_chp, p_mhp;
@@ -178,7 +178,7 @@ static void find_range(monster_type *mon)
  *
  * Returns TRUE if the monster successfully reproduced.
  */
-bool multiply_monster(const monster_type *mon)
+bool multiply_monster(const struct monster *mon)
 {
 	int i, y, x;
 
@@ -212,7 +212,7 @@ bool multiply_monster(const monster_type *mon)
  * this decides whether PASS_WALL & KILL_WALL monsters 
  * use the monster flow code
  */
-static bool near_permwall(const monster_type *mon, struct chunk *c)
+static bool near_permwall(const struct monster *mon, struct chunk *c)
 {
 	int y, x;
 	int my = mon->fy;
@@ -933,7 +933,7 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
  */
 static bool process_monster_timed(struct chunk *c, struct monster *mon)
 {
-	monster_lore *lore = get_lore(mon->race);
+	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Handle "sleep" */
 	if (mon->m_timed[MON_TMD_SLEEP]) {
@@ -1033,7 +1033,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *mon)
 
 	int k = 0, y, x;
 
-	monster_lore *lore = get_lore(mon->race);
+	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Too many breeders on the level already */
 	if (num_repro >= z_info->repro_monster_max) return FALSE;
@@ -1073,7 +1073,7 @@ static bool process_monster_multiply(struct chunk *c, struct monster *mon)
  */
 static bool process_monster_should_stagger(struct monster *mon)
 {
-	monster_lore *lore = get_lore(mon->race);
+	struct monster_lore *lore = get_lore(mon->race);
 
 	int chance = 0;
 
@@ -1107,7 +1107,7 @@ static bool process_monster_should_stagger(struct monster *mon)
 static bool process_monster_can_move(struct chunk *c, struct monster *mon,
 		const char *m_name, int nx, int ny, bool *did_something)
 {
-	monster_lore *lore = get_lore(mon->race);
+	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Floor is open? */
 	if (square_ispassable(c, ny, nx))
@@ -1261,8 +1261,8 @@ static int compare_monsters(const struct monster *mon1,
  */
 static bool process_monster_try_push(struct chunk *c, struct monster *mon, const char *m_name, int nx, int ny)
 {
-	monster_type *mon1 = square_monster(c, ny, nx);
-	monster_lore *lore = get_lore(mon->race);
+	struct monster *mon1 = square_monster(c, ny, nx);
+	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Kill weaker monsters */
 	int kill_ok = rf_has(mon->race->flags, RF_KILL_BODY);
@@ -1312,22 +1312,27 @@ static bool process_monster_try_push(struct chunk *c, struct monster *mon, const
 void process_monster_grab_objects(struct chunk *c, struct monster *mon, 
 		const char *m_name, int nx, int ny)
 {
-	monster_lore *lore = get_lore(mon->race);
-	struct object *obj = square_object(c, ny, nx);
+	struct monster_lore *lore = get_lore(mon->race);
+	struct object *obj;
+	bool visible = mflag_has(mon->mflag, MFLAG_VISIBLE);
 
-	bool is_item = obj ? TRUE : FALSE;;
-	if (is_item && mflag_has(mon->mflag, MFLAG_VISIBLE)) {
-		rf_on(lore->flags, RF_TAKE_ITEM);
-		rf_on(lore->flags, RF_KILL_ITEM);
+	/* Learn about item pickup behavior */
+	for (obj = square_object(c, ny, nx); obj; obj = obj->next) {
+		if (!tval_is_money(obj) && visible) {
+			rf_on(lore->flags, RF_TAKE_ITEM);
+			rf_on(lore->flags, RF_KILL_ITEM);
+			break;
+		}
 	}
 
 	/* Abort if can't pickup/kill */
 	if (!rf_has(mon->race->flags, RF_TAKE_ITEM) &&
-			!rf_has(mon->race->flags, RF_KILL_ITEM)) {
+		!rf_has(mon->race->flags, RF_KILL_ITEM)) {
 		return;
 	}
 
 	/* Take or kill objects on the floor */
+	obj = square_object(c, ny, nx);
 	while (obj) {
 		char o_name[80];
 		bool safe = obj->artifact ? TRUE : FALSE;
@@ -1355,8 +1360,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
 		/* The object cannot be picked up by the monster */
 		if (safe) {
 			/* Only give a message for "take_item" */
-			if (rf_has(mon->race->flags, RF_TAKE_ITEM) &&
-				mflag_has(mon->mflag, MFLAG_VISIBLE) &&
+			if (rf_has(mon->race->flags, RF_TAKE_ITEM) && visible &&
 				square_isview(c, ny, nx) && !ignore_item_ok(obj)) {
 				/* Dump a message */
 				msg("%s tries to pick up %s, but fails.", m_name, o_name);
@@ -1412,7 +1416,7 @@ void process_monster_grab_objects(struct chunk *c, struct monster *mon,
  */
 static void process_monster(struct chunk *c, struct monster *mon)
 {
-	monster_lore *lore = get_lore(mon->race);
+	struct monster_lore *lore = get_lore(mon->race);
 
 	bool did_something = FALSE;
 
@@ -1522,7 +1526,7 @@ static void process_monster(struct chunk *c, struct monster *mon)
 /**
  * Monster regeneration of HPs.
  */
-static void regen_monster(monster_type *mon)
+static void regen_monster(struct monster *mon)
 {
 	/* Regenerate (if needed) */
 	if (mon->hp < mon->maxhp) {
@@ -1574,7 +1578,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 	/* Process the monsters (backwards) */
 	for (i = cave_monster_max(c) - 1; i >= 1; i--)
 	{
-		monster_type *mon;
+		struct monster *mon;
 
 		/* Handle "leaving" */
 		if (player->is_dead || player->upkeep->generate_level) break;
@@ -1647,7 +1651,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 void reset_monsters(void)
 {
 	int i;
-	monster_type *mon;
+	struct monster *mon;
 
 	/* Process the monsters (backwards) */
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {

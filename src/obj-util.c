@@ -275,7 +275,7 @@ bool object_test(item_tester tester, const struct object *obj)
  */
 bool is_unknown(const struct object *obj)
 {
-	grid_data gd = { 0 };
+	struct grid_data gd = { 0 };
 	map_info(obj->iy, obj->ix, &gd);
 	return gd.unseen_object;
 }	
@@ -537,7 +537,7 @@ bool obj_can_browse(const struct object *obj)
 	int i;
 
 	for (i = 0; i < player->class->magic.num_books; i++) {
-		class_book book = player->class->magic.books[i];
+		struct class_book book = player->class->magic.books[i];
 		if (obj->kind == lookup_kind(book.tval, book.sval))
 			return TRUE;
 	}

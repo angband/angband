@@ -41,18 +41,20 @@ typedef enum {
 
 byte object_kind_attr(const struct object_kind *kind);
 wchar_t object_kind_char(const struct object_kind *kind);
-byte object_attr(const struct object *o_ptr);
-wchar_t object_char(const struct object *o_ptr);
+byte object_attr(const struct object *obj);
+wchar_t object_char(const struct object *obj);
 void show_inven(int mode, item_tester tester);
 void show_equip(int mode, item_tester tester);
-void show_floor(struct object **floor_list, int floor_num, int mode, item_tester tester);
+void show_floor(struct object **floor_list, int floor_num, int mode,
+				item_tester tester);
 bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 					 cmd_code cmd, item_tester tester, int mode);
-bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd, bool is_harmless);
+bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
+					bool is_harmless);
 
 void display_object_recall(struct object *obj);
 void display_object_kind_recall(struct object_kind *kind);
-void display_object_recall_interactive(object_type *o_ptr);
+void display_object_recall_interactive(struct object *obj);
 void textui_obj_examine(void);
 void textui_cmd_ignore_menu(struct object *obj);
 void textui_cmd_ignore(void);

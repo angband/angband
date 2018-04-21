@@ -459,7 +459,7 @@ int rd_monster_memory(void)
 
 	/* Reset maximum numbers per level */
 	for (i = 1; z_info && i < z_info->r_max; i++) {
-		monster_race *race = &r_info[i];
+		struct monster_race *race = &r_info[i];
 		race->max_num = 100;
 		if (rf_has(race->flags, RF_UNIQUE))
 			race->max_num = 1;
@@ -467,7 +467,7 @@ int rd_monster_memory(void)
 
 	rd_string(buf, sizeof(buf));
 	while (!streq(buf, "No more monsters")) {
-		monster_race *race = lookup_monster(buf);
+		struct monster_race *race = lookup_monster(buf);
 
 		/* Get the kill count, skip if monster invalid */
 		rd_u16b(&tmp16u);
@@ -531,16 +531,16 @@ int rd_object_memory(void)
 	/* Read the object memory */
 	for (i = 0; i < tmp16u; i++) {
 		byte tmp8u;
-		object_kind *k_ptr = &k_info[i];
+		struct object_kind *kind = &k_info[i];
 
 		rd_byte(&tmp8u);
 
-		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
-		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
-		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
+		kind->aware = (tmp8u & 0x01) ? TRUE : FALSE;
+		kind->tried = (tmp8u & 0x02) ? TRUE : FALSE;
+		kind->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
 
-		if (tmp8u & 0x04) kind_ignore_when_aware(k_ptr);
-		if (tmp8u & 0x10) kind_ignore_when_unaware(k_ptr);
+		if (tmp8u & 0x04) kind_ignore_when_aware(kind);
+		if (tmp8u & 0x10) kind_ignore_when_unaware(kind);
 	}
 
 	return 0;

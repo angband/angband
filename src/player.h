@@ -111,7 +111,7 @@ enum
 };
 
 /**
- * player_type.noscore flags
+ * player noscore flags
  */
 #define NOSCORE_WIZARD		0x0002
 #define NOSCORE_DEBUG		0x0008
@@ -229,7 +229,7 @@ extern struct player_race *races;
  * class.txt.
  */
 struct start_item {
-	object_kind *kind;
+	struct object_kind *kind;
 	int min;	/* Minimum starting amount */
 	int max;	/* Maximum starting amount */
 
@@ -254,7 +254,7 @@ extern struct magic_realm realms[REALM_MAX];
 /**
  * A structure to hold class-dependent information on spells.
  */
-typedef struct {
+struct class_spell {
 	char *name;
 	char *text;
 
@@ -266,38 +266,38 @@ typedef struct {
 	int smana;		/**< Required mana (to cast) */
 	int sfail;		/**< Base chance of failure */
 	int sexp;		/**< Encoded experience bonus */
-} class_spell;
+};
 
 
 /**
  * A structure to hold class-dependent information on spell books.
  */
-typedef struct {
+struct class_book {
 	int tval;			/**< Item type of the book */
 	int sval;			/**< Item sub-type for book (book number) */
 	int realm;			/**< The magic realm of this book */
 	int num_spells;	/**< Number of spells in this book */
-	class_spell *spells;	/**< Spells in the book*/
-} class_book;
+	struct class_spell *spells;	/**< Spells in the book*/
+};
 
 
 /**
  * Information about class magic knowledge
  */
-typedef struct {
+struct class_magic {
 	int spell_first;		/**< Level of first spell */
 	int spell_weight;		/**< Max armour weight to avoid mana penalties */
 	struct magic_realm *spell_realm;  		/**< Primary spellcasting realm */
 	int num_books;			/**< Number of spellbooks */
-	class_book *books;		/**< Details of spellbooks */
+	struct class_book *books;		/**< Details of spellbooks */
 	int total_spells;		/**< Number of spells for this class */
-} class_magic;
+};
 
 
 /**
  * Player class info
  */
-typedef struct player_class {
+struct player_class {
 	struct player_class *next;
 	const char *name;
 	unsigned int cidx;
@@ -323,8 +323,8 @@ typedef struct player_class {
 	
 	struct start_item *start_items; /* Starting inventory */
 	
-	class_magic magic; /* Magic spells */
-} player_class;
+	struct class_magic magic; /* Magic spells */
+};
 
 extern struct player_class *classes;
 
@@ -389,7 +389,7 @@ typedef struct {
  * Player flags are not currently variable, but useful here so monsters can
  * learn them.
  */
-typedef struct player_state {
+struct player_state {
 	s16b speed;		/* Current speed */
 
 	s16b num_blows;		/* Number of blows x100 */
@@ -426,14 +426,14 @@ typedef struct player_state {
 	bitflag flags[OF_SIZE];	/* Status flags from race and items */
 	bitflag pflags[PF_SIZE];	/* Player intrinsic flags */
 	struct element_info el_info[ELEM_MAX]; /* Resists from race and items */
-} player_state;
+};
 
 /**
  * Temporary, derived, player-related variables used during play but not saved
  *
  * Some of these probably should go to the UI
  */
-typedef struct player_upkeep {
+struct player_upkeep {
 	bool playing;			/* True if player is playing */
 	bool autosave;			/* True if autosave is pending */
 	bool generate_level;	/* True if level needs regenerating */
@@ -475,7 +475,7 @@ typedef struct player_upkeep {
 	int inven_cnt;				/* Number of items in inventory */
 	int equip_cnt;				/* Number of items in equipment */
 	int quiver_cnt;				/* Number of items in the quiver */
-} player_upkeep;
+};
 
 
 /**
@@ -489,7 +489,7 @@ typedef struct player_upkeep {
  * which must be saved in the savefile precedes all the information
  * which can be recomputed as needed.
  */
-typedef struct player {
+struct player {
 	s16b py;			/* Player location */
 	s16b px;			/* Player location */
 
@@ -576,7 +576,7 @@ typedef struct player {
 	struct object *gear_k;
 
 	struct player_body body;
-} player_type;
+};
 
 
 /**
@@ -586,7 +586,7 @@ typedef struct player {
 
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern player_other *op_ptr;
-extern player_type *player;
+extern struct player *player;
 
 
 /* player-class.c */

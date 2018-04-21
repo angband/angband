@@ -79,9 +79,9 @@ struct chunk *chunk_write(int y0, int x0, int height, int width, bool monsters,
 			/* Monsters and held objects */
 			if (monsters) {
 				if (cave->squares[y0 + y][x0 + x].mon > 0) {
-					monster_type *source_mon = square_monster(cave, y0 + y,
+					struct monster *source_mon = square_monster(cave, y0 + y,
 															  x0 + x);
-					monster_type *dest_mon = NULL;
+					struct monster *dest_mon = NULL;
 
 					/* Valid monster */
 					if (!source_mon->race)
@@ -291,8 +291,8 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 			/* Monsters */
 			if (source->squares[y][x].mon > 0) {
-				monster_type *source_mon = square_monster(source, y, x);
-				monster_type *dest_mon = NULL;
+				struct monster *source_mon = square_monster(source, y, x);
+				struct monster *dest_mon = NULL;
 				int idx;
 
 				/* Valid monster */
@@ -369,7 +369,7 @@ void chunk_validate_objects(struct chunk *c) {
 			for (obj = square_object(c, y, x); obj; obj = obj->next)
 				assert(obj->tval != 0);
 			if (c->squares[y][x].mon > 0) {
-				monster_type *mon = square_monster(c, y, x);
+				struct monster *mon = square_monster(c, y, x);
 				if (mon->held_obj)
 					for (obj = mon->held_obj; obj; obj = obj->next)
 						assert(obj->tval != 0);

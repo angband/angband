@@ -1037,18 +1037,18 @@ void move_player(int dir, bool disarm)
 	int x = px + ddx[dir];
 
 	int m_idx = cave->squares[y][x].mon;
-	struct monster *m_ptr = cave_monster(cave, m_idx);
+	struct monster *mon = cave_monster(cave, m_idx);
 	bool alterable = (square_isknowntrap(cave, y, x) ||
 					  square_iscloseddoor(cave, y, x));
 
 	/* Attack monsters, alter traps/doors on movement, hit obstacles or move */
 	if (m_idx > 0) {
 		/* Mimics surprise the player */
-		if (is_mimicking(m_ptr)) {
-			become_aware(m_ptr);
+		if (is_mimicking(mon)) {
+			become_aware(mon);
 
 			/* Mimic wakes up */
-			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 		} else {
 			py_attack(y, x);
@@ -1161,16 +1161,16 @@ void move_player(int dir, bool disarm)
 static bool do_cmd_walk_test(int y, int x)
 {
 	int m_idx = cave->squares[y][x].mon;
-	struct monster *m_ptr = cave_monster(cave, m_idx);
+	struct monster *mon = cave_monster(cave, m_idx);
 
 	/* Allow attack on visible monsters if unafraid */
-	if (m_idx > 0 && mflag_has(m_ptr->mflag, MFLAG_VISIBLE) &&
-		!is_mimicking(m_ptr)) {
+	if (m_idx > 0 && mflag_has(mon->mflag, MFLAG_VISIBLE) &&
+		!is_mimicking(mon)) {
 		/* Handle player fear */
 		if (player_of_has(player, OF_AFRAID)) {
 			/* Extract monster name (or "it") */
 			char m_name[80];
-			monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
 			/* Message */
 			msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);

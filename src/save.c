@@ -63,7 +63,7 @@ void wr_description(void)
 /**
  * Write an "item" record
  */
-static void wr_item(const object_type *obj)
+static void wr_item(const struct object *obj)
 {
 	size_t i;
 	struct brand *b;
@@ -169,7 +169,7 @@ static void wr_item(const object_type *obj)
 /**
  * Write a monster record (including held or mimicked objects)
  */
-static void wr_monster(const monster_type *mon)
+static void wr_monster(const struct monster *mon)
 {
 	size_t j;
 	struct object *obj = mon->held_obj; 
@@ -310,13 +310,13 @@ void wr_monster_memory(void)
 	wr_byte(MFLAG_SIZE);
 
 	for (r_idx = 0; r_idx < z_info->r_max; r_idx++) {
-		monster_race *r_ptr = &r_info[r_idx];
-		monster_lore *l_ptr = &l_list[r_idx];
+		struct monster_race *race = &r_info[r_idx];
+		struct monster_lore *lore = &l_list[r_idx];
 
 		/* Names and kill counts */
-		if (!r_ptr->name || !l_ptr->pkills) continue;
-		wr_string(r_ptr->name);
-		wr_u16b(l_ptr->pkills);
+		if (!race->name || !lore->pkills) continue;
+		wr_string(race->name);
+		wr_u16b(lore->pkills);
 	}
 	wr_string("No more monsters");
 }
@@ -334,13 +334,13 @@ void wr_object_memory(void)
 	wr_byte(ELEM_MAX);
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
 		byte tmp8u = 0;
-		object_kind *k_ptr = &k_info[k_idx];
+		struct object_kind *kind = &k_info[k_idx];
 
-		if (k_ptr->aware) tmp8u |= 0x01;
-		if (k_ptr->tried) tmp8u |= 0x02;
-		if (kind_is_ignored_aware(k_ptr)) tmp8u |= 0x04;
-		if (k_ptr->everseen) tmp8u |= 0x08;
-		if (kind_is_ignored_unaware(k_ptr)) tmp8u |= 0x10;
+		if (kind->aware) tmp8u |= 0x01;
+		if (kind->tried) tmp8u |= 0x02;
+		if (kind_is_ignored_aware(kind)) tmp8u |= 0x04;
+		if (kind->everseen) tmp8u |= 0x08;
+		if (kind_is_ignored_unaware(kind)) tmp8u |= 0x10;
 
 		wr_byte(tmp8u);
 	}
@@ -369,10 +369,10 @@ void wr_artifacts(void)
 	tmp16u = z_info->a_max;
 	wr_u16b(tmp16u);
 	for (i = 0; i < tmp16u; i++) {
-		artifact_type *a_ptr = &a_info[i];
-		wr_byte(a_ptr->created);
-		wr_byte(a_ptr->seen);
-		wr_byte(a_ptr->everseen);
+		struct artifact *art = &a_info[i];
+		wr_byte(art->created);
+		wr_byte(art->seen);
+		wr_byte(art->everseen);
 		wr_byte(0);
 	}
 }
@@ -744,7 +744,7 @@ static void wr_monsters_aux(struct chunk *c)
 
 	/* Dump the monsters */
 	for (i = 1; i < cave_monster_max(c); i++) {
-		const monster_type *mon = cave_monster(c, i);
+		const struct monster *mon = cave_monster(c, i);
 
 		wr_monster(mon);
 	}

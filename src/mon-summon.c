@@ -72,7 +72,7 @@ const char *summon_desc(int type)
  * summon_specific_type. Returns TRUE if the monster is eligible to
  * be summoned, FALSE otherwise. 
  */
-static bool summon_specific_okay(monster_race *race)
+static bool summon_specific_okay(struct monster_race *race)
 {
 	struct summon_details *info = &summon_info[summon_specific_type];
 	bool unique = rf_has(race->flags, RF_UNIQUE);
@@ -109,19 +109,19 @@ int summon_message_type(int summon_type)
 /**
  * Check to see if you can call the monster
  */
-bool can_call_monster(int y, int x, monster_type *m_ptr)
+bool can_call_monster(int y, int x, struct monster *mon)
 {
 	int oy, ox;
 
 	/* Skip dead monsters */
-	if (!m_ptr->race) return (FALSE);
+	if (!mon->race) return (FALSE);
 
 	/* Only consider callable monsters */
-	if (!summon_specific_okay(m_ptr->race)) return (FALSE);
+	if (!summon_specific_okay(mon->race)) return (FALSE);
 
 	/* Extract monster location */
-	oy = m_ptr->fy;
-	ox = m_ptr->fx;
+	oy = mon->fy;
+	ox = mon->fx;
 
 	/* Make sure the summoned monster is not in LOS of the summoner */
 	if (los(cave, y, x, oy, ox)) return (FALSE);
@@ -138,15 +138,15 @@ int call_monster(int y, int x)
 	int i, mon_count, choice;
 	int oy, ox;
 	int *mon_indices;
-	monster_type *m_ptr;
+	struct monster *mon;
 
 	mon_count = 0;
 
 	for (i = 1; i < cave_monster_max(cave); i++) {
-		m_ptr = cave_monster(cave, i);
+		mon = cave_monster(cave, i);
 
 		/* Figure out how many good monsters there are */
-		if (can_call_monster(y, x, m_ptr)) mon_count++;
+		if (can_call_monster(y, x, mon)) mon_count++;
 	}
 
 	/* There were no good monsters on the level */
@@ -160,10 +160,10 @@ int call_monster(int y, int x)
 
 	/* Now go through a second time and store the indices */
 	for (i = 1; i < cave_monster_max(cave); i++) {
-		m_ptr = cave_monster(cave, i);
+		mon = cave_monster(cave, i);
 		
 		/* Save the values of the good monster */
-		if (can_call_monster(y, x, m_ptr)){
+		if (can_call_monster(y, x, mon)){
 			mon_indices[mon_count] = i;
 			mon_count++;
 		}
@@ -173,23 +173,23 @@ int call_monster(int y, int x)
 	choice = randint0(mon_count - 1);
 
 	/* Get the lucky monster */
-	m_ptr = cave_monster(cave, mon_indices[choice]);
+	mon = cave_monster(cave, mon_indices[choice]);
 	mem_free(mon_indices);
 
 	/* Extract monster location */
-	oy = m_ptr->fy;
-	ox = m_ptr->fx;
+	oy = mon->fy;
+	ox = mon->fx;
 
 	/* Swap the moster */
 	monster_swap(oy, ox, y, x);
 
 	/* Wake it up */
-	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 	/* Set it's energy to 0 */
-	m_ptr->energy = 0;
+	mon->energy = 0;
 
-	return (m_ptr->race->level);
+	return (mon->race->level);
 }
 
 
@@ -221,8 +221,8 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 {
 	int i, x = 0, y = 0;
 
-	monster_type *m_ptr;
-	monster_race *race;
+	struct monster *mon;
+	struct monster_race *race;
 
 	/* Look for a location, allow up to 4 squares away */
 	for (i = 0; i < 60; ++i) {
@@ -270,17 +270,17 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		return (0);
 
 	/* Success, return the level of the monster */
-	m_ptr = square_monster(cave, y, x);
+	mon = square_monster(cave, y, x);
 
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including slowing down faster monsters for one turn */
 	if (delay) {
-		m_ptr->energy = 0;
-		if (m_ptr->race->speed > player->state.speed)
-			mon_inc_timed(m_ptr, MON_TMD_SLOW, 1,
+		mon->energy = 0;
+		if (mon->race->speed > player->state.speed)
+			mon_inc_timed(mon, MON_TMD_SLOW, 1,
 				MON_TMD_FLG_NOMESSAGE, FALSE);
 	}
 
-	return (m_ptr->race->level);
+	return (mon->race->level);
 }
 

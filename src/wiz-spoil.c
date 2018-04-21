@@ -141,7 +141,7 @@ static const grouper group_item[] =
 static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 					  char *wgt, size_t wgt_len, int *lev, s32b *val, int k)
 {
-	object_kind *kind = &k_info[k];
+	struct object_kind *kind = &k_info[k];
 	struct object *obj = object_new();
 	int i;
 
@@ -612,7 +612,7 @@ static void spoil_mon_info(const char *fname)
 	for (n = 0; n < count; n++) {
 		int r_idx = who[n];
 		const struct monster_race *race = &r_info[r_idx];
-		const monster_lore *lore = &l_list[r_idx];
+		const struct monster_lore *lore = &l_list[r_idx];
 		tb = textblock_new();
 
 		/* Line 1: prefix, name, color, and symbol */

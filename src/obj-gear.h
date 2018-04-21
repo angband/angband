@@ -42,7 +42,7 @@ bool object_is_equipped(struct player_body body, const struct object *obj);
 bool object_is_carried(struct player *p, const struct object *obj);
 const char *equip_mention(struct player *p, int slot);
 const char *equip_describe(struct player *p, int slot);
-int wield_slot(const struct object *o_ptr);
+int wield_slot(const struct object *obj);
 int minus_ac(struct player *p);
 char gear_to_label(struct object *obj);
 bool gear_excise_object(struct object *obj);
@@ -50,7 +50,7 @@ struct object *gear_last_item(void);
 struct object *gear_object_for_use(struct object *obj, int num, bool message,
 								   bool *none_left);
 bool inven_carry_okay(const struct object *obj);
-bool inven_stack_okay(const struct object *o_ptr);
+bool inven_stack_okay(const struct object *obj);
 void inven_item_charges(struct object *obj);
 bool inven_carry(struct player *p, struct object *obj, bool absorb,
 				 bool message);

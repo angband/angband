@@ -71,7 +71,7 @@ int test_defaults(void *state) {
 	eq(process_pref_file_command("monster-base:giant:3:3"), 0);
 
 	for (i = 0; i < z_info->r_max; i++) {
-		monster_race *race = &r_info[i];
+		struct monster_race *race = &r_info[i];
 
 		if (race->base != mb) continue;
 

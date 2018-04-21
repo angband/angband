@@ -68,12 +68,12 @@ struct store {
 	/* Always stock these items */
 	size_t always_size;
 	size_t always_num;
-	object_kind **always_table;
+	struct object_kind **always_table;
 
 	/* Select a number of these items to stock */
 	size_t normal_size;
 	size_t normal_num;
-	object_kind **normal_table;
+	struct object_kind **normal_table;
 
 	/* Buy these items */
 	struct object_buy *buy;
@@ -94,7 +94,8 @@ struct object *store_carry(struct store *store, struct object *obj);
 void store_reset(void);
 void store_shuffle(struct store *store);
 void store_update(void);
-int price_item(struct store *store, const object_type *o_ptr, bool store_buying, int qty);
+int price_item(struct store *store, const struct object *obj,
+			   bool store_buying, int qty);
 
 bool store_will_buy_tester(const struct object *obj);
 bool store_check_num(struct store *store, const struct object *obj);

@@ -37,7 +37,7 @@ struct spell_menu_data {
 	int n_spells;
 
 	bool browse;
-	bool (*is_valid)(int spell);
+	bool (*is_valid)(int spell_index);
 	bool show_description;
 
 	int selected_spell;
@@ -62,8 +62,8 @@ static void spell_menu_display(struct menu *m, int oid, bool cursor,
 		int row, int col, int wid)
 {
 	struct spell_menu_data *d = menu_priv(m);
-	int spell = d->spells[oid];
-	const class_spell *s_ptr = spell_by_index(spell);
+	int spell_index = d->spells[oid];
+	const struct class_spell *spell = spell_by_index(spell_index);
 
 	char help[30];
 	char out[80];
@@ -72,23 +72,23 @@ static void spell_menu_display(struct menu *m, int oid, bool cursor,
 	const char *illegible = NULL;
 	const char *comment = NULL;
 
-	if (s_ptr->slevel >= 99) {
+	if (spell->slevel >= 99) {
 		illegible = "(illegible)";
 		attr = COLOUR_L_DARK;
-	} else if (player->spell_flags[spell] & PY_SPELL_FORGOTTEN) {
+	} else if (player->spell_flags[spell_index] & PY_SPELL_FORGOTTEN) {
 		comment = " forgotten";
 		attr = COLOUR_YELLOW;
-	} else if (player->spell_flags[spell] & PY_SPELL_LEARNED) {
-		if (player->spell_flags[spell] & PY_SPELL_WORKED) {
+	} else if (player->spell_flags[spell_index] & PY_SPELL_LEARNED) {
+		if (player->spell_flags[spell_index] & PY_SPELL_WORKED) {
 			/* Get extra info */
-			get_spell_info(spell, help, sizeof(help));
+			get_spell_info(spell_index, help, sizeof(help));
 			comment = help;
 			attr = COLOUR_WHITE;
 		} else {
 			comment = " untried";
 			attr = COLOUR_L_GREEN;
 		}
-	} else if (s_ptr->slevel <= player->lev) {
+	} else if (spell->slevel <= player->lev) {
 		comment = " unknown";
 		attr = COLOUR_L_BLUE;
 	} else {
@@ -97,8 +97,8 @@ static void spell_menu_display(struct menu *m, int oid, bool cursor,
 	}
 
 	/* Dump the spell --(-- */
-	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s", s_ptr->name,
-			s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
+	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s", spell->name,
+			spell->slevel, spell->smana, spell_chance(spell_index), comment);
 	c_prt(attr, illegible ? illegible : out, row, col);
 }
 
@@ -128,7 +128,7 @@ static bool spell_menu_handler(struct menu *m, const ui_event *e, int oid)
 static void spell_menu_browser(int oid, void *data, const region *loc)
 {
 	struct spell_menu_data *d = data;
-	int spell = d->spells[oid];
+	int spell_index = d->spells[oid];
 
 	if (d->show_description) {
 		/* Redirect output to the screen */
@@ -138,7 +138,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 		text_out_pad = 1;
 
 		Term_gotoxy(loc->col, loc->row + loc->page_rows);
-		text_out("\n%s\n", spell_by_index(spell)->text);
+		text_out("\n%s\n", spell_by_index(spell_index)->text);
 
 		/* XXX */
 		text_out_pad = 0;
@@ -157,8 +157,8 @@ static const menu_iter spell_menu_iter = {
 /**
  * Create and initialise a spell menu, given an object and a validity hook
  */
-static struct menu *spell_menu_new(const object_type *o_ptr,
-		bool (*is_valid)(int spell))
+static struct menu *spell_menu_new(const struct object *obj,
+								   bool (*is_valid)(int spell_index))
 {
 	struct menu *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
 	struct spell_menu_data *d = mem_alloc(sizeof *d);
@@ -166,7 +166,7 @@ static struct menu *spell_menu_new(const object_type *o_ptr,
 	region loc = { -60, 1, 60, -99 };
 
 	/* collect spells from object */
-	d->n_spells = spell_collect_from_book(o_ptr, &d->spells);
+	d->n_spells = spell_collect_from_book(obj, &d->spells);
 	if (d->n_spells == 0 || !spell_okay_list(is_valid, d->spells, d->n_spells)){
 		mem_free(m);
 		mem_free(d);
@@ -249,12 +249,12 @@ static void spell_menu_browse(struct menu *m, const char *noun)
 /**
  * Browse a given book.
  */
-void textui_book_browse(const object_type *o_ptr)
+void textui_book_browse(const struct object *obj)
 {
 	struct menu *m;
 	const char *noun = player->class->magic.spell_realm->spell_noun;
 
-	m = spell_menu_new(o_ptr, spell_okay_to_browse);
+	m = spell_menu_new(obj, spell_okay_to_browse);
 	if (m) {
 		spell_menu_browse(m, noun);
 		spell_menu_destroy(m);
@@ -288,7 +288,7 @@ void textui_spell_browse(void)
  */
 int textui_get_spell_from_book(const char *verb, struct object *book,
 							   const char *error,
-							   bool (*spell_filter)(int spell))
+							   bool (*spell_filter)(int spell_index))
 {
 	const char *noun = player->class->magic.spell_realm->spell_noun;
 
@@ -299,9 +299,9 @@ int textui_get_spell_from_book(const char *verb, struct object *book,
 
 	m = spell_menu_new(book, spell_filter);
 	if (m) {
-		int spell = spell_menu_select(m, noun, verb);
+		int spell_index = spell_menu_select(m, noun, verb);
 		spell_menu_destroy(m);
-		return spell;
+		return spell_index;
 	}
 
 	return -1;
@@ -312,7 +312,7 @@ int textui_get_spell_from_book(const char *verb, struct object *book,
  */
 int textui_get_spell(const char *verb, item_tester book_filter,
 					 cmd_code cmd, const char *error,
-					 bool (*spell_filter)(int spell))
+					 bool (*spell_filter)(int spell_index))
 {
 	char prompt[1024];
 	struct object *book;

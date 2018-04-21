@@ -43,7 +43,7 @@ enum monster_blow_effect_e {
  */
 typedef struct melee_effect_handler_context_s {
 	struct player * const p;
-	struct monster * const m_ptr;
+	struct monster * const mon;
 	const int rlev;
 	const monster_blow_method_t method;
 	const int ac;

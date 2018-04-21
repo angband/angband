@@ -902,7 +902,7 @@ static void context_menu_store_item(struct store_context *ctx, const int oid, in
 	bool home = (store->sidx == STORE_HOME) ? TRUE : FALSE;
 
 	struct menu *m = menu_dynamic_new();
-	object_type *obj = ctx->list[oid];
+	struct object *obj = ctx->list[oid];
 
 	int selected;
 	char *labels;

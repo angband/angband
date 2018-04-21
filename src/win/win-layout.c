@@ -18,14 +18,12 @@
 
 #include <windows.h>
 #include <windowsx.h>
+#include "ui-prefs.h"
 #include "ui-term.h"
 #include "z-virt.h"
 
 typedef unsigned int uint;
 #include "win-term.h"
-
-extern int arg_graphics;
-extern int arg_graphics_nice;
 
 
 /**

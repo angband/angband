@@ -597,6 +597,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	/* Assume the player sees nothing */
 	bool notice = FALSE;
 
+	/* Notify the UI if it can draw this projection */
+	bool drawing = FALSE;
+
 	/* Is the player blind? */
 	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
 
@@ -734,7 +737,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 					bool beam = flg & (PROJECT_BEAM);
 
 					/* Tell the UI to display the bolt */
-					event_signal_bolt(EVENT_BOLT, typ, seen, beam, oy, ox, y, x);
+					event_signal_bolt(EVENT_BOLT, typ, drawing, seen, beam, oy,
+									  ox, y, x);
 				}
 			}
 	}
@@ -942,7 +946,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 	/* Tell the UI to display the blast */
 	event_signal_blast(EVENT_EXPLOSION, typ, num_grids, distance_to_grid,
-					   player_sees_grid, blast_grid, centre);
+					   drawing, player_sees_grid, blast_grid, centre);
 
 	/* Check objects */
 	if (flg & (PROJECT_ITEM)) {
@@ -989,12 +993,12 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 			/* Track if possible */
 			if (cave->squares[y][x].mon > 0) {
-				monster_type *m_ptr = square_monster(cave, y, x);
+				struct monster *mon = square_monster(cave, y, x);
 
 				/* Recall and track */
-				if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
-					monster_race_track(player->upkeep, m_ptr->race);
-					health_track(player->upkeep, m_ptr);
+				if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+					monster_race_track(player->upkeep, mon->race);
+					health_track(player->upkeep, mon);
 				}
 			}
 		}

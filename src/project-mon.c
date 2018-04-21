@@ -34,7 +34,7 @@
  *
  * Note that this function is one of the more "dangerous" ones...
  */
-static monster_race *poly_race(monster_race *race)
+static struct monster_race *poly_race(struct monster_race *race)
 {
 	int i, minlvl, maxlvl, goal;
 
@@ -53,7 +53,7 @@ static monster_race *poly_race(monster_race *race)
 
 	/* Try to pick a new, non-unique race within our level range */
 	for (i = 0; i < 1000; i++) {
-		monster_race *new_race = get_mon_num(goal);
+		struct monster_race *new_race = get_mon_num(goal);
 
 		if (!new_race || new_race == race) continue;
 		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
@@ -83,8 +83,8 @@ typedef struct project_monster_handler_context_s {
 	const int type;
 	bool seen; /* Ideally, this would be const, but we can't with C89 initialization. */
 	const bool id;
-	monster_type *m_ptr;
-	monster_lore *l_ptr;
+	struct monster *mon;
+	struct monster_lore *lore;
 	bool obvious;
 	bool skipped;
 	u16b flag;
@@ -108,8 +108,8 @@ typedef void (*project_monster_handler_f)(project_monster_handler_context_t *);
  */
 static void project_monster_resist_element(project_monster_handler_context_t *context, int flag, int factor)
 {
-	if (context->seen) rf_on(context->l_ptr->flags, flag);
-	if (rf_has(context->m_ptr->race->flags, flag)) {
+	if (context->seen) rf_on(context->lore->flags, flag);
+	if (rf_has(context->mon->race->flags, flag)) {
 		context->hurt_msg = MON_MSG_RESIST_A_LOT;
 		context->dam /= factor;
 	}
@@ -131,8 +131,8 @@ static void project_monster_resist_element(project_monster_handler_context_t *co
  */
 static void project_monster_resist_other(project_monster_handler_context_t *context, int flag, int factor, bool reduce, enum mon_messages msg)
 {
-	if (context->seen) rf_on(context->l_ptr->flags, flag);
-	if (rf_has(context->m_ptr->race->flags, flag)) {
+	if (context->seen) rf_on(context->lore->flags, flag);
+	if (rf_has(context->mon->race->flags, flag)) {
 		context->hurt_msg = msg;
 		context->dam *= factor;
 
@@ -159,15 +159,15 @@ static void project_monster_resist_other(project_monster_handler_context_t *cont
 static void project_monster_hurt_immune(project_monster_handler_context_t *context, int hurt_flag, int imm_flag, int hurt_factor, int imm_factor, enum mon_messages hurt_msg, enum mon_messages die_msg)
 {
 	if (context->seen) {
-		rf_on(context->l_ptr->flags, imm_flag);
-		rf_on(context->l_ptr->flags, hurt_flag);
+		rf_on(context->lore->flags, imm_flag);
+		rf_on(context->lore->flags, hurt_flag);
 	}
 
-	if (rf_has(context->m_ptr->race->flags, imm_flag)) {
+	if (rf_has(context->mon->race->flags, imm_flag)) {
 		context->hurt_msg = MON_MSG_RESIST_A_LOT;
 		context->dam /= imm_factor;
 	}
-	else if (rf_has(context->m_ptr->race->flags, hurt_flag)) {
+	else if (rf_has(context->mon->race->flags, hurt_flag)) {
 		context->hurt_msg = hurt_msg;
 		context->die_msg = die_msg;
 		context->dam *= hurt_factor;
@@ -187,9 +187,9 @@ static void project_monster_hurt_immune(project_monster_handler_context_t *conte
  */
 static void project_monster_hurt_only(project_monster_handler_context_t *context, int flag, enum mon_messages hurt_msg, enum mon_messages die_msg)
 {
-	if (context->seen) rf_on(context->l_ptr->flags, flag);
+	if (context->seen) rf_on(context->lore->flags, flag);
 
-	if (rf_has(context->m_ptr->race->flags, flag)) {
+	if (rf_has(context->mon->race->flags, flag)) {
 		context->hurt_msg = hurt_msg;
 		context->die_msg = die_msg;
 	}
@@ -211,9 +211,9 @@ static void project_monster_hurt_only(project_monster_handler_context_t *context
  */
 static void project_monster_breath(project_monster_handler_context_t *context, int flag, int factor)
 {
-	if (rsf_has(context->m_ptr->race->spell_flags, flag)) {
+	if (rsf_has(context->mon->race->spell_flags, flag)) {
 		/* Learn about breathers through resistance */
-		if (context->seen) rsf_on(context->l_ptr->spell_flags, flag);
+		if (context->seen) rsf_on(context->lore->spell_flags, flag);
 
 		context->hurt_msg = MON_MSG_RESIST;
 		context->dam *= factor;
@@ -268,9 +268,9 @@ static void project_monster_timed_no_damage(project_monster_handler_context_t *c
  */
 static void project_monster_teleport_away(project_monster_handler_context_t *context, int flag)
 {
-	if (context->seen) rf_on(context->l_ptr->flags, flag);
+	if (context->seen) rf_on(context->lore->flags, flag);
 
-	if (rf_has(context->m_ptr->race->flags, flag)) {
+	if (rf_has(context->mon->race->flags, flag)) {
 		if (context->seen) context->obvious = TRUE;
 		context->teleport_distance = context->dam;
 		context->hurt_msg = MON_MSG_DISAPPEAR;
@@ -294,9 +294,9 @@ static void project_monster_teleport_away(project_monster_handler_context_t *con
  */
 static void project_monster_scare(project_monster_handler_context_t *context, int flag)
 {
-    if (context->seen) rf_on(context->l_ptr->flags, flag);
+    if (context->seen) rf_on(context->lore->flags, flag);
 
-	if (rf_has(context->m_ptr->race->flags, flag)) {
+	if (rf_has(context->mon->race->flags, flag)) {
 		if (context->seen) context->obvious = TRUE;
         project_monster_timed_no_damage(context, MON_TMD_FEAR);
 	}
@@ -320,9 +320,9 @@ static void project_monster_scare(project_monster_handler_context_t *context, in
  */
 static void project_monster_dispel(project_monster_handler_context_t *context, int flag)
 {
-	if (context->seen) rf_on(context->l_ptr->flags, flag);
+	if (context->seen) rf_on(context->lore->flags, flag);
 
-	if (rf_has(context->m_ptr->race->flags, flag)) {
+	if (rf_has(context->mon->race->flags, flag)) {
 		if (context->seen) context->obvious = TRUE;
 		context->hurt_msg = MON_MSG_SHUDDER;
 		context->die_msg = MON_MSG_DISSOLVE;
@@ -366,17 +366,17 @@ static void project_monster_handler_POIS(project_monster_handler_context_t *cont
 /* Light -- opposite of Dark */
 static void project_monster_handler_LIGHT(project_monster_handler_context_t *context)
 {
-	if (context->seen) rf_on(context->l_ptr->flags, RF_HURT_LIGHT);
+	if (context->seen) rf_on(context->lore->flags, RF_HURT_LIGHT);
 
-	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_LIGHT)) {
+	if (rsf_has(context->mon->race->spell_flags, RSF_BR_LIGHT)) {
 		/* Learn about breathers through resistance */
-		if (context->seen) rsf_on(context->l_ptr->spell_flags, RSF_BR_LIGHT);
+		if (context->seen) rsf_on(context->lore->spell_flags, RSF_BR_LIGHT);
 
 		context->hurt_msg = MON_MSG_RESIST;
 		context->dam *= 2;
 		context->dam /= randint1(6) + 6;
 	}
-	else if (rf_has(context->m_ptr->race->flags, RF_HURT_LIGHT)) {
+	else if (rf_has(context->mon->race->flags, RF_HURT_LIGHT)) {
 		context->hurt_msg = MON_MSG_CRINGE_LIGHT;
 		context->die_msg = MON_MSG_SHRIVEL_LIGHT;
 		context->dam *= 2;
@@ -416,33 +416,33 @@ static void project_monster_handler_NETHER(project_monster_handler_context_t *co
 	/* Update the lore */
 	if (context->seen) {
 		/* Acquire knowledge of undead type and nether resistance */
-		rf_on(context->l_ptr->flags, RF_UNDEAD);
-		rf_on(context->l_ptr->flags, RF_IM_NETHER);
+		rf_on(context->lore->flags, RF_UNDEAD);
+		rf_on(context->lore->flags, RF_IM_NETHER);
 
 		/* If it isn't undead, acquire extra knowledge */
-		if (!rf_has(context->m_ptr->race->flags, RF_UNDEAD)) {
+		if (!rf_has(context->mon->race->flags, RF_UNDEAD)) {
 			/* Learn this creature breathes nether if true */
-			if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_NETH)) {
-				rsf_on(context->l_ptr->spell_flags, RSF_BR_NETH);
+			if (rsf_has(context->mon->race->spell_flags, RSF_BR_NETH)) {
+				rsf_on(context->lore->spell_flags, RSF_BR_NETH);
 			}
 
 			/* Otherwise learn about evil type */
 			else {
-				rf_on(context->l_ptr->flags, RF_EVIL);
+				rf_on(context->lore->flags, RF_EVIL);
 			}
 		}
 	}
 
-	if (rf_has(context->m_ptr->race->flags, RF_UNDEAD)) {
+	if (rf_has(context->mon->race->flags, RF_UNDEAD)) {
 		context->hurt_msg = MON_MSG_IMMUNE;
 		context->dam = 0;
 	}
-	else if (rf_has(context->m_ptr->race->flags, RF_IM_NETHER)) {
+	else if (rf_has(context->mon->race->flags, RF_IM_NETHER)) {
 		context->hurt_msg = MON_MSG_RESIST;
 		context->dam *= 3;
 		context->dam /= (randint1(6)+6);
 	}
-	else if (rf_has(context->m_ptr->race->flags, RF_EVIL)) {
+	else if (rf_has(context->mon->race->flags, RF_EVIL)) {
 		context->dam /= 2;
 		context->hurt_msg = MON_MSG_RESIST_SOMEWHAT;
 	}
@@ -455,7 +455,7 @@ static void project_monster_handler_CHAOS(project_monster_handler_context_t *con
 	int monster_amount = (5 + randint1(11) + context->r) / (context->r + 1);
 
 	/* Prevent polymorph on chaos breathers. */
-	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_CHAO))
+	if (rsf_has(context->mon->race->spell_flags, RSF_BR_CHAO))
 		context->do_poly = 0;
 	else
 		context->do_poly = 1;
@@ -492,11 +492,11 @@ static void project_monster_handler_ICE(project_monster_handler_context_t *conte
 static void project_monster_handler_GRAVITY(project_monster_handler_context_t *context)
 {
 	/* Higher level monsters can resist the teleportation better */
-	if (randint1(127) > context->m_ptr->race->level)
+	if (randint1(127) > context->mon->race->level)
 		context->teleport_distance = 10;
 
 	/* Prevent displacement on gravity breathers. */
-	if (rsf_has(context->m_ptr->race->spell_flags, RSF_BR_GRAV))
+	if (rsf_has(context->mon->race->spell_flags, RSF_BR_GRAV))
 		context->teleport_distance = 0;
 
 	project_monster_breath(context, RSF_BR_GRAV, 3);
@@ -657,14 +657,14 @@ static void project_monster_handler_DISP_ALL(project_monster_handler_context_t *
 static void project_monster_handler_OLD_CLONE(project_monster_handler_context_t *context)
 {
 	/* Heal fully */
-	context->m_ptr->hp = context->m_ptr->maxhp;
+	context->mon->hp = context->mon->maxhp;
 
 	/* Speed up */
-	mon_inc_timed(context->m_ptr, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, 
+	mon_inc_timed(context->mon, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, 
 				  context->id);
 
 	/* Attempt to clone. */
-	if (multiply_monster(context->m_ptr))
+	if (multiply_monster(context->mon))
 		context->hurt_msg = MON_MSG_SPAWN;
 
 	/* No "real" damage */
@@ -686,18 +686,18 @@ static void project_monster_handler_OLD_POLY(project_monster_handler_context_t *
 static void project_monster_handler_OLD_HEAL(project_monster_handler_context_t *context)
 {
 	/* Wake up */
-	mon_clear_timed(context->m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, 
+	mon_clear_timed(context->mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, 
 					context->id);
 
 	/* Heal */
-	context->m_ptr->hp += context->dam;
+	context->mon->hp += context->dam;
 
 	/* No overflow */
-	if (context->m_ptr->hp > context->m_ptr->maxhp)
-		context->m_ptr->hp = context->m_ptr->maxhp;
+	if (context->mon->hp > context->mon->maxhp)
+		context->mon->hp = context->mon->maxhp;
 
 	/* Redraw (later) if needed */
-	if (player->upkeep->health_who == context->m_ptr)
+	if (player->upkeep->health_who == context->mon)
 		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Message */
@@ -736,10 +736,10 @@ static void project_monster_handler_OLD_DRAIN(project_monster_handler_context_t 
 {
 	if (context->seen) context->obvious = TRUE;
 	if (context->seen) {
-		rf_on(context->l_ptr->flags, RF_UNDEAD);
-		rf_on(context->l_ptr->flags, RF_DEMON);
+		rf_on(context->lore->flags, RF_UNDEAD);
+		rf_on(context->lore->flags, RF_DEMON);
 	}
-	if (monster_is_nonliving(context->m_ptr->race)) {
+	if (monster_is_nonliving(context->mon->race)) {
 		context->hurt_msg = MON_MSG_UNAFFECTED;
 		context->obvious = FALSE;
 		context->dam = 0;
@@ -786,47 +786,47 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 	int dam = context->dam;
 	enum mon_messages die_msg = context->die_msg;
 	enum mon_messages hurt_msg = context->hurt_msg;
-	monster_type *m_ptr = context->m_ptr;
+	struct monster *mon = context->mon;
 
 	/* "Unique" monsters can only be "killed" by the player */
-	if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+	if (rf_has(mon->race->flags, RF_UNIQUE)) {
 		/* Reduce monster hp to zero, but don't kill it. */
-		if (dam > m_ptr->hp) dam = m_ptr->hp;
+		if (dam > mon->hp) dam = mon->hp;
 	}
 
 	/* Redraw (later) if needed */
-	if (player->upkeep->health_who == m_ptr)
+	if (player->upkeep->health_who == mon)
 		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Wake the monster up */
-	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 	/* Hurt the monster */
-	m_ptr->hp -= dam;
+	mon->hp -= dam;
 
 	/* Dead monster */
-	if (m_ptr->hp < 0) {
+	if (mon->hp < 0) {
 		/* Give detailed messages if destroyed */
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
 
 		/* dump the note*/
-		add_monster_message(m_name, m_ptr, die_msg, FALSE);
+		add_monster_message(m_name, mon, die_msg, FALSE);
 
 		/* Generate treasure, etc */
-		monster_death(m_ptr, FALSE);
+		monster_death(mon, FALSE);
 
 		/* Delete the monster */
 		delete_monster_idx(m_idx);
 
 		mon_died = TRUE;
-	} else if (!is_mimicking(m_ptr)) { /* Damaged monster */
+	} else if (!is_mimicking(mon)) { /* Damaged monster */
 		/* Give detailed messages if visible or destroyed */
 		if ((hurt_msg != MON_MSG_NONE) && seen)
-			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+			add_monster_message(m_name, mon, hurt_msg, FALSE);
 
 		/* Hack -- Pain message */
 		else if (dam > 0)
-			message_pain(m_ptr, dam);
+			message_pain(mon, dam);
 	}
 
 	return mon_died;
@@ -850,7 +850,7 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	int dam = context->dam;
 	enum mon_messages die_msg = context->die_msg;
 	enum mon_messages hurt_msg = context->hurt_msg;
-	monster_type *m_ptr = context->m_ptr;
+	struct monster *mon = context->mon;
 
 	/*
 	 * The monster is going to be killed, so display a specific death message
@@ -858,12 +858,12 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	 * killed/destroyed the monster. If the monster is not visible to
 	 * the player, use a generic message.
 	 */
-	if (dam > m_ptr->hp) {
+	if (dam > mon->hp) {
 		if (!seen) die_msg = MON_MSG_MORIA_DEATH;
-		add_monster_message(m_name, m_ptr, die_msg, FALSE);
+		add_monster_message(m_name, mon, die_msg, FALSE);
 	}
 
-	mon_died = mon_take_hit(m_ptr, dam, &fear, "");
+	mon_died = mon_take_hit(mon, dam, &fear, "");
 
 	/*
 	 * If the monster didn't die, provide additional messages about how it was
@@ -873,12 +873,12 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 	 */
 	if (!mon_died) {
 		if (seen && hurt_msg != MON_MSG_NONE)
-			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+			add_monster_message(m_name, mon, hurt_msg, FALSE);
 		else if (dam > 0)
-			message_pain(m_ptr, dam);
+			message_pain(mon, dam);
 
 		if (seen && fear)
-			add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
+			add_monster_message(m_name, mon, MON_MSG_FLEE_IN_TERROR, TRUE);
 	}
 
 	return mon_died;
@@ -897,7 +897,7 @@ static bool project_m_player_attack(project_monster_handler_context_t *context, 
 static void project_m_apply_side_effects(project_monster_handler_context_t *context, const char *m_name, int m_idx)
 {
 	int typ = context->type;
-	monster_type *m_ptr = context->m_ptr;
+	struct monster *mon = context->mon;
 
 	/*
 	 * Handle side effects of an attack. First we check for polymorphing since
@@ -911,12 +911,12 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		const int x = context->x;
 		const int y = context->y;
 		int savelvl = 0;
-		monster_race *old;
-		monster_race *new;
+		struct monster_race *old;
+		struct monster_race *new;
 
 		/* Uniques cannot be polymorphed */
-		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
-			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+		if (rf_has(mon->race->flags, RF_UNIQUE)) {
+			add_monster_message(m_name, mon, hurt_msg, FALSE);
 			return;
 		}
 
@@ -927,27 +927,27 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			savelvl = randint1(MAX(1, context->do_poly - 10)) + 10;
 		else
 			savelvl = randint1(90);
-		if (m_ptr->race->level > savelvl) {
+		if (mon->race->level > savelvl) {
 			if (typ == GF_OLD_POLY) hurt_msg = MON_MSG_MAINTAIN_SHAPE;
-			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+			add_monster_message(m_name, mon, hurt_msg, FALSE);
 			return;
 		}
 
-		old = m_ptr->race;
+		old = mon->race;
 		new = poly_race(old);
 
 		/* Handle polymorph */
 		if (new != old) {
 			/* Report the polymorph before changing the monster */
 			hurt_msg = MON_MSG_CHANGE;
-			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+			add_monster_message(m_name, mon, hurt_msg, FALSE);
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(m_idx);
 			place_new_monster(cave, y, x, new, FALSE, FALSE, ORIGIN_DROP_POLY);
-			context->m_ptr = square_monster(cave, y, x);
+			context->mon = square_monster(cave, y, x);
 		} else {
-			add_monster_message(m_name, m_ptr, hurt_msg, FALSE);
+			add_monster_message(m_name, mon, hurt_msg, FALSE);
 		}
 	} else if (context->teleport_distance > 0) {
 		char dice[5];
@@ -958,7 +958,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		/* Reduce stun if the monster is already stunned. */
 		if (context->mon_timed[MON_TMD_STUN] > 0 &&
-			m_ptr->m_timed[MON_TMD_STUN] > 0) {
+			mon->m_timed[MON_TMD_STUN] > 0) {
 			context->mon_timed[MON_TMD_STUN] /= 2;
 			context->mon_timed[MON_TMD_STUN] += 1;
 		}
@@ -975,7 +975,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		for (i = 0; i < MON_TMD_MAX; i++) {
 			if (context->mon_timed[i] > 0)
-				context->obvious = mon_inc_timed(m_ptr, i, context->mon_timed[i], context->flag | MON_TMD_FLG_NOTIFY, context->id);
+				context->obvious = mon_inc_timed(mon, i, context->mon_timed[i], context->flag | MON_TMD_FLG_NOTIFY, context->id);
 		}
 	}
 }
@@ -1041,8 +1041,8 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  */
 bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 {
-	monster_type *m_ptr;
-	monster_lore *l_ptr;
+	struct monster *mon;
+	struct monster_lore *lore;
 
 	/* Is the monster "seen"? */
 	bool seen = FALSE;
@@ -1070,8 +1070,8 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 		typ,
 		seen,
 		id,
-		NULL, /* m_ptr */
-		NULL, /* l_ptr */
+		NULL, /* mon */
+		NULL, /* lore */
 		obvious,
 		FALSE, /* skipped */
 		0, /* flag */
@@ -1092,13 +1092,13 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	if (m_idx == who) return (FALSE);
 
 	/* Obtain monster info */
-	m_ptr = cave_monster(cave, m_idx);
-	l_ptr = get_lore(m_ptr->race);
-	context.m_ptr = m_ptr;
-	context.l_ptr = l_ptr;
+	mon = cave_monster(cave, m_idx);
+	lore = get_lore(mon->race);
+	context.mon = mon;
+	context.lore = lore;
 
 	/* See visible monsters */
-	if (mflag_has(m_ptr->mflag, MFLAG_VISIBLE)) {
+	if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
 		seen = TRUE;
 		context.seen = seen;
 	}
@@ -1106,19 +1106,19 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	/* Breathers may not blast members of the same race. */
 	if ((who > 0) && (flg & (PROJECT_SAFE))) {
 		/* Point to monster information of caster */
-		monster_type *caster = cave_monster(cave, who);
+		struct monster *caster = cave_monster(cave, who);
 
 		/* Skip monsters with the same race */
-		if (caster->race == m_ptr->race)
+		if (caster->race == mon->race)
 			return (FALSE);
 	}
 
 	/* Get monster name and possessive here, in case of polymorphing. */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
-	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO_VIS | MDESC_POSS);
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
 
 	/* Some monsters get "destroyed" */
-	if (monster_is_unusual(m_ptr->race))
+	if (monster_is_unusual(mon->race))
 		context.die_msg = MON_MSG_DESTROYED;
 
 	/* Force obviousness for certain types if seen. */
@@ -1135,7 +1135,7 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 	if (context.skipped) return (FALSE);
 
 	/* Extract method of death, if the monster will be killed. */
-	if (dam > m_ptr->hp)
+	if (dam > mon->hp)
 		context.hurt_msg = context.die_msg;
 
 	/* Apply damage to the monster, based on who did the damage. */
@@ -1149,24 +1149,24 @@ bool project_m(int who, int r, int y, int x, int dam, int typ, int flg)
 
 	/* Update locals again, since the project_m_* functions can change
 	 * some values. */
-	m_ptr = context.m_ptr;
+	mon = context.mon;
 	obvious = context.obvious;
 
 	/* Verify this code XXX XXX XXX */
 	/* Check for NULL, since polymorph can occasionally return NULL. */
-	if (m_ptr != NULL) {
+	if (mon != NULL) {
 		/* Update the monster */
-		if (!mon_died) update_mon(m_ptr, cave, FALSE);
+		if (!mon_died) update_mon(mon, cave, FALSE);
 
 		/* Hack -- get new location in case of teleport */
-		y = m_ptr->fy;
-		x = m_ptr->fx;
+		y = mon->fy;
+		x = mon->fx;
 
 		/* Redraw the monster grid */
 		square_light_spot(cave, y, x);
 
 		/* Update monster recall window */
-		if (player->upkeep->monster_race == m_ptr->race) {
+		if (player->upkeep->monster_race == mon->race) {
 			/* Window stuff */
 			player->upkeep->redraw |= (PR_MONSTER);
 		}

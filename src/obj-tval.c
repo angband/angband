@@ -1,6 +1,6 @@
 /**
-   \file obj-tval.c
-   \brief Wrapper functions for tvals.
+ * \file obj-tval.c
+ * \brief Wrapper functions for tvals.
  *
  * Copyright (c) 2014 Ben Semmler
  *
@@ -21,34 +21,34 @@
 #include "z-type.h"
 #include "z-util.h"
 
-bool tval_is_staff(const struct object *o_ptr)
+bool tval_is_staff(const struct object *obj)
 {
-	return o_ptr->tval == TV_STAFF;
+	return obj->tval == TV_STAFF;
 }
 
-bool tval_is_wand(const struct object *o_ptr)
+bool tval_is_wand(const struct object *obj)
 {
-	return o_ptr->tval == TV_WAND;
+	return obj->tval == TV_WAND;
 }
 
-bool tval_is_rod(const struct object *o_ptr)
+bool tval_is_rod(const struct object *obj)
 {
-	return o_ptr->tval == TV_ROD;
+	return obj->tval == TV_ROD;
 }
 
-bool tval_is_potion(const struct object *o_ptr)
+bool tval_is_potion(const struct object *obj)
 {
-	return o_ptr->tval == TV_POTION;
+	return obj->tval == TV_POTION;
 }
 
-bool tval_is_scroll(const struct object *o_ptr)
+bool tval_is_scroll(const struct object *obj)
 {
-	return o_ptr->tval == TV_SCROLL;
+	return obj->tval == TV_SCROLL;
 }
 
-bool tval_is_food(const struct object *o_ptr)
+bool tval_is_food(const struct object *obj)
 {
-	return o_ptr->tval == TV_FOOD;
+	return obj->tval == TV_FOOD;
 }
 
 bool tval_is_food_k(const struct object_kind *kind)
@@ -56,9 +56,9 @@ bool tval_is_food_k(const struct object_kind *kind)
 	return kind->tval == TV_FOOD;
 }
 
-bool tval_is_mushroom(const struct object *o_ptr)
+bool tval_is_mushroom(const struct object *obj)
 {
-	return o_ptr->tval == TV_MUSHROOM;
+	return obj->tval == TV_MUSHROOM;
 }
 
 bool tval_is_mushroom_k(const struct object_kind *kind)
@@ -66,9 +66,9 @@ bool tval_is_mushroom_k(const struct object_kind *kind)
 	return kind->tval == TV_MUSHROOM;
 }
 
-bool tval_is_light(const struct object *o_ptr)
+bool tval_is_light(const struct object *obj)
 {
-	return o_ptr->tval == TV_LIGHT;
+	return obj->tval == TV_LIGHT;
 }
 
 bool tval_is_light_k(const struct object_kind *kind)
@@ -76,24 +76,24 @@ bool tval_is_light_k(const struct object_kind *kind)
 	return kind->tval == TV_LIGHT;
 }
 
-bool tval_is_ring(const struct object *o_ptr)
+bool tval_is_ring(const struct object *obj)
 {
-	return o_ptr->tval == TV_RING;
+	return obj->tval == TV_RING;
 }
 
-bool tval_is_chest(const struct object *o_ptr)
+bool tval_is_chest(const struct object *obj)
 {
-	return o_ptr->tval == TV_CHEST;
+	return obj->tval == TV_CHEST;
 }
 
-bool tval_is_fuel(const struct object *o_ptr)
+bool tval_is_fuel(const struct object *obj)
 {
-	return o_ptr->tval == TV_FLASK;
+	return obj->tval == TV_FLASK;
 }
 
-bool tval_is_money(const struct object *o_ptr)
+bool tval_is_money(const struct object *obj)
 {
-	return o_ptr->tval == TV_GOLD;
+	return obj->tval == TV_GOLD;
 }
 
 bool tval_is_money_k(const struct object_kind *kind)
@@ -101,30 +101,30 @@ bool tval_is_money_k(const struct object_kind *kind)
 	return kind->tval == TV_GOLD;
 }
 
-bool tval_is_pointy(const struct object *o_ptr)
+bool tval_is_pointy(const struct object *obj)
 {
-	return o_ptr->tval == TV_SWORD || o_ptr->tval == TV_POLEARM;
+	return obj->tval == TV_SWORD || obj->tval == TV_POLEARM;
 }
 
-bool tval_can_have_nourishment(const struct object *o_ptr)
+bool tval_can_have_nourishment(const struct object *obj)
 {
-	return o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
-			o_ptr->tval == TV_MUSHROOM;
+	return obj->tval == TV_FOOD || obj->tval == TV_POTION ||
+			obj->tval == TV_MUSHROOM;
 }
 
-bool tval_can_have_charges(const struct object *o_ptr)
+bool tval_can_have_charges(const struct object *obj)
 {
-	return o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND;
+	return obj->tval == TV_STAFF || obj->tval == TV_WAND;
 }
 
-bool tval_can_have_timeout(const struct object *o_ptr)
+bool tval_can_have_timeout(const struct object *obj)
 {
-	return o_ptr->tval == TV_ROD;
+	return obj->tval == TV_ROD;
 }
 
-bool tval_is_body_armor(const struct object *o_ptr)
+bool tval_is_body_armor(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
@@ -134,14 +134,14 @@ bool tval_is_body_armor(const struct object *o_ptr)
 	}
 }
 
-bool tval_is_head_armor(const struct object *o_ptr)
+bool tval_is_head_armor(const struct object *obj)
 {
-	return o_ptr->tval == TV_HELM || o_ptr->tval == TV_CROWN;
+	return obj->tval == TV_HELM || obj->tval == TV_CROWN;
 }
 
-bool tval_is_ammo(const struct object *o_ptr)
+bool tval_is_ammo(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_SHOT:
 		case TV_ARROW:
 		case TV_BOLT:
@@ -151,14 +151,14 @@ bool tval_is_ammo(const struct object *o_ptr)
 	}
 }
 
-bool tval_is_launcher(const struct object *o_ptr)
+bool tval_is_launcher(const struct object *obj)
 {
-	return o_ptr->tval == TV_BOW;
+	return obj->tval == TV_BOW;
 }
 
-bool tval_is_useable(const struct object *o_ptr)
+bool tval_is_useable(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_ROD:
 		case TV_WAND:
 		case TV_STAFF:
@@ -172,9 +172,9 @@ bool tval_is_useable(const struct object *o_ptr)
 	}
 }
 
-bool tval_can_have_failure(const struct object *o_ptr)
+bool tval_can_have_failure(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_STAFF:
 		case TV_WAND:
 		case TV_ROD:
@@ -184,14 +184,14 @@ bool tval_can_have_failure(const struct object *o_ptr)
 	}
 }
 
-bool tval_is_jewelry(const struct object *o_ptr)
+bool tval_is_jewelry(const struct object *obj)
 {
-	return o_ptr->tval == TV_RING || o_ptr->tval == TV_AMULET;
+	return obj->tval == TV_RING || obj->tval == TV_AMULET;
 }
 
-bool tval_is_weapon(const struct object *o_ptr)
+bool tval_is_weapon(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_SWORD:
 		case TV_HAFTED:
 		case TV_POLEARM:
@@ -206,9 +206,9 @@ bool tval_is_weapon(const struct object *o_ptr)
 	}
 }
 
-bool tval_is_armor(const struct object *o_ptr)
+bool tval_is_armor(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_DRAG_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_SOFT_ARMOR:
@@ -224,9 +224,9 @@ bool tval_is_armor(const struct object *o_ptr)
 	}
 }
 
-bool tval_is_melee_weapon(const struct object *o_ptr)
+bool tval_is_melee_weapon(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_SWORD:
 		case TV_HAFTED:
 		case TV_POLEARM:
@@ -237,9 +237,9 @@ bool tval_is_melee_weapon(const struct object *o_ptr)
 	}
 }
 
-bool tval_has_variable_power(const struct object *o_ptr)
+bool tval_has_variable_power(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_SHOT:
 		case TV_ARROW:
 		case TV_BOLT:
@@ -266,9 +266,9 @@ bool tval_has_variable_power(const struct object *o_ptr)
 	}
 }
 
-bool tval_is_wearable(const struct object *o_ptr)
+bool tval_is_wearable(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_BOW:
 		case TV_DIGGING:
 		case TV_HAFTED:
@@ -292,9 +292,9 @@ bool tval_is_wearable(const struct object *o_ptr)
 	}
 }
 
-bool tval_is_edible(const struct object *o_ptr)
+bool tval_is_edible(const struct object *obj)
 {
-	switch (o_ptr->tval) {
+	switch (obj->tval) {
 		case TV_FOOD:
 		case TV_MUSHROOM:
 			return TRUE;
@@ -331,9 +331,9 @@ bool tval_is_book_k(const struct object_kind *kind)
 	}
 }
 
-bool tval_is_zapper(const struct object *o_ptr)
+bool tval_is_zapper(const struct object *obj)
 {
-	return o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF;
+	return obj->tval == TV_WAND || obj->tval == TV_STAFF;
 }
 
 /**
@@ -414,7 +414,7 @@ int tval_sval_count(const char *name)
 	if (tval < 0) return 0;
 
 	for (i = 0; i < z_info->k_max; i++) {
-		object_kind *kind = &k_info[i];
+		struct object_kind *kind = &k_info[i];
 
 		if (!kind->tval) continue;
 		if (kind->tval != tval) continue;
@@ -437,7 +437,7 @@ int tval_sval_list(const char *name, int *list, int max_size)
 	if (tval < 0) return 0;
 
 	for (i = 0; i < z_info->k_max; i++) {
-		object_kind *kind = &k_info[i];
+		struct object_kind *kind = &k_info[i];
 
 		if (!kind->tval) continue;
 		if (kind->tval != tval) continue;

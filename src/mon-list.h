@@ -29,7 +29,7 @@ typedef enum monster_list_section_e {
 } monster_list_section_t;
 
 typedef struct monster_list_entry_s {
-	monster_race *race;
+	struct monster_race *race;
 	u16b count[MONSTER_LIST_SECTION_MAX];
 	u16b asleep[MONSTER_LIST_SECTION_MAX];
 	s16b dx, dy;

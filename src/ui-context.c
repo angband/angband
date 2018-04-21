@@ -258,7 +258,7 @@ int context_menu_player(int mx, int my)
 	bool allowed = TRUE;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
-	struct object *o_ptr;
+	struct object *obj;
 
 	m = menu_dynamic_new();
 	if (!m) {
@@ -297,13 +297,13 @@ int context_menu_player(int mx, int my)
 	menu_dynamic_add_label(m, "Inventory", 'i', MENU_VALUE_INVENTORY, labels);
 
 	/* if object under player add pickup option */
-	o_ptr = square_object(cave, player->py, player->px);
-	if (o_ptr && !ignore_item_ok(o_ptr)) {
+	obj = square_object(cave, player->py, player->px);
+	if (obj && !ignore_item_ok(obj)) {
 			menu_row_validity_t valid;
 
 			/* 'f' isn't in rogue keymap, so we can use it here. */
   			menu_dynamic_add_label(m, "Floor", 'f', MENU_VALUE_FLOOR, labels);
-			valid = (inven_carry_okay(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			valid = (inven_carry_okay(obj)) ? MN_ROW_VALID : MN_ROW_INVALID;
 			ADD_LABEL("Pick up", CMD_PICKUP, valid);
 	}
 
@@ -520,10 +520,10 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
 	} else if (c->squares[y][x].mon) {
 		char m_name[80];
-		monster_type *m_ptr = square_monster(c, y, x);
+		struct monster *mon = square_monster(c, y, x);
 
 		/* Get the monster name ("a kobold") */
-		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_VIS);
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:",
 				   m_name), 0, 0);
@@ -608,10 +608,10 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 		case MENU_VALUE_RECALL: {
 			/* Recall monster Info */
-			monster_type *m_ptr = square_monster(c, y, x);
-			if (m_ptr) {
-				monster_lore *lore = get_lore(m_ptr->race);
-				lore_show_interactive(m_ptr->race, lore);
+			struct monster *mon = square_monster(c, y, x);
+			if (mon) {
+				struct monster_lore *lore = get_lore(mon->race);
+				lore_show_interactive(mon->race, lore);
 			}
 		}
 			break;
