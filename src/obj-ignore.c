@@ -617,6 +617,7 @@ void ignore_drop(void)
 
 			/* We're allowed to drop it. */
 			if (!square_isshop(cave, player->py, player->px)) {
+				player->upkeep->dropping = TRUE;
 				cmdq_push(CMD_DROP);
 				cmd_set_arg_item(cmdq_peek(), "item", obj);
 				cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);

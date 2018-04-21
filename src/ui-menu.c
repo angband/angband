@@ -46,6 +46,7 @@ static void display_menu_row(struct menu *menu, int pos, int top,
 			     bool cursor, int row, int col, int width);
 static bool menu_calc_size(struct menu *menu);
 static bool is_valid_row(struct menu *menu, int cursor);
+static bool no_valid_row(struct menu *menu, int count);
 
 
 /**
@@ -449,6 +450,17 @@ static bool is_valid_row(struct menu *menu, int cursor)
 	return TRUE;
 }
 
+static bool no_valid_row(struct menu *menu, int count)
+{
+	int i;
+
+	for (i = 0; i < count; i++)
+		if (is_valid_row(menu, i))
+			return FALSE;
+
+	return TRUE;
+}
+
 /* 
  * Return a new position in the menu based on the key
  * pressed and the flags and various handler functions.
@@ -701,7 +713,7 @@ bool menu_handle_keypress(struct menu *menu, const ui_event *in,
 		/* Try directional movement */
 		int dir = target_dir(in->key);
 
-		if (dir) {
+		if (dir && !no_valid_row(menu, count)) {
 			*out = menu->skin->process_dir(menu, dir);
 
 			if (out->type == EVT_MOVE) {

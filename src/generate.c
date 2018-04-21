@@ -345,7 +345,7 @@ static enum parser_error parse_room_height(struct parser *p) {
 			break;
 	if (i == N_ELEMENTS(room_builders))
 		return PARSE_ERROR_NO_ROOM_FOUND;
-	if (t->wid > room_builders[i].max_height)
+	if (t->hgt > room_builders[i].max_height)
 		return PARSE_ERROR_VAULT_TOO_BIG;
 	return PARSE_ERROR_NONE;
 }
@@ -917,7 +917,10 @@ void cave_generate(struct chunk **c, struct player *p)
 		if (cave_monster_max(chunk) >= z_info->level_monster_max)
 			error = "too many monsters";
 
-		if (error) ROOM_LOG("Generation restarted: %s.", error);
+		if (error) {
+			ROOM_LOG("Generation restarted: %s.", error);
+			cave_clear(chunk, p);
+		}
 
 		mem_free(dun->cent);
 		mem_free(dun->door);

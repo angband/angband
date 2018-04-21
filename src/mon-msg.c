@@ -47,8 +47,6 @@ static const char *msg_repository[] = {
 	#undef MON_MSG
 };
 
-
-
 /**
  * Adds to the message queue a message describing a monster's reaction
  * to damage.
@@ -250,11 +248,16 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
 			(mon_msg[i].mon_flags == mon_flags) &&
 			(mon_msg[i].msg_code == msg_code)) {
 			/* Can we increment the counter? */
-			if (mon_msg[i].mon_count < MAX_UCHAR) {
+			if (mon_msg[i].mon_count < MAX_UCHAR)
 				/* Stack the message */
 				++(mon_msg[i].mon_count);
-			}
    
+			/* Record which monster had this message stored */
+			if (size_mon_hist >= MAX_STORED_MON_CODES) return (TRUE);
+			mon_message_hist[size_mon_hist].mon = mon;
+			mon_message_hist[size_mon_hist].message_code = msg_code;
+			size_mon_hist++;
+
 			/* Success */
 			return (TRUE);
 		}
@@ -284,7 +287,7 @@ bool add_monster_message(const char *mon_name, struct monster *mon,
  
 	player->upkeep->notice |= PN_MON_MESSAGE;
 
-	/* record which monster had this message stored */
+	/* Record which monster had this message stored */
 	if (size_mon_hist >= MAX_STORED_MON_CODES) return (TRUE);
 	mon_message_hist[size_mon_hist].mon = mon;
 	mon_message_hist[size_mon_hist].message_code = msg_code;

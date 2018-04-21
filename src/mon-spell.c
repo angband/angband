@@ -161,6 +161,8 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	disturb(player, 1);
 	spell_message(mon, spell, seen, hits);
 
+	if (!hits) return;
+
 	/* Try a saving throw if available */
 	if (spell->save_message &&
 		randint0(100) < player->state.skills[SKILL_SAVE]) {

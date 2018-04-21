@@ -100,7 +100,7 @@ power that the character needs at two separate times.
 Weapons have two main magical characteristics, their enchanted ability to
 hit and their enchanted ability to do damage, expressed as '(+#,+#)'. A
 normal weapon would be '(+0,+0)'. Many weapons in Angband have bonuses to
-hit and/or do damage. A very few weapons are cursed, and have penalties
+hit and/or to damage. A very few weapons are cursed, and have penalties
 that diminish your hit and/or damage bonuses. Cursed weapons cannot be
 unwielded until the curse is lifted.  Luckily, all cursed items will be
 immediately shown as {cursed} when you pick them up.  Unluckily, it is 
@@ -195,7 +195,7 @@ versa. This damage generally is not affected by armor class, and does not
 need a hit roll to hit the player or monster being aimed at.
 
 Some attacks are purely magical: attack spells which blind, confuse, slow,
-care or paralyze the target. These attacks are resisted by monsters of
+scare or paralyze the target. These attacks are resisted by monsters of
 higher level (native to deeper dungeon depths) and characters with a high
 saving throw - saving throws being dependent on class, level and wisdom.
 There are also available resistances to fear, blindness, confusion and 
@@ -222,7 +222,7 @@ no saving throw, except to those that would actually teleport him up or
 down one dungeon level. Having resistance to nexus will also prevent being
 level-teleported, but will not help against normal teleportation spell
 attacks. The player may teleport monsters in the same way, with a spell,
-wand or rod. No monsters, even Morgoth himself, canresist this 
+wand or rod. No monsters, even Morgoth himself, can resist this 
 teleportation.  Yet...
 
 Other attacks are usually element-based, including the aforementioned
@@ -304,9 +304,9 @@ they have protection from blindness or resistance to light or dark), sound
 stunning), crystal shards (which will cut a non-resistant character),
 inertia (which will slow a character even if he has free action), gravity
 (which will blink a character, also stunning and slowing), force (which
-will stun the character), plasma and force (which will stun), time (which 
-may drain experience regardless of hold life, or drain stats regardless of 
-sustains), water bolts and balls (which may confuse and stun, and do 
+will stun the character), plasma (which will stun), time (which may
+drain experience regardless of hold life, or drain stats regardless of
+sustains), water bolts and balls (which may confuse and stun, and do
 considerable damage from high-level monsters), ice bolts (which may
 cut and stun, and damage potions), and mana bolts and balls (the latter
 usually known as Mana Storms.) Magic missiles are included in the "mana"
@@ -465,7 +465,7 @@ Launchers of Accuracy
   These launchers have an unnaturally high to-hit number, making them
   extremely accurate.
 
-Launchers of Velocity
+Launchers of Power
   These launchers do an unnaturally high amount of damage due to their high
   to-dam number.
 
@@ -488,7 +488,7 @@ Ammo of Wounding
 
 Ammo of Elemental Brands, and Ammo of Slaying enemies
   This works in the same way as melee weapons of the same type: double
-  damage for slay evil and slay animal, triple damage for all other lays
+  damage for slay evil and slay animal, triple damage for all other slays
   and for all elemental brands. Unlike melee weapons, the slays and
   elemental brands **do** affect the magical damage bonus for ammo.
 

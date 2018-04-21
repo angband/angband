@@ -52,7 +52,7 @@ struct object *gear_object_for_use(struct object *obj, int num, bool message,
 bool inven_carry_okay(const struct object *obj);
 bool inven_stack_okay(const struct object *obj);
 void inven_item_charges(struct object *obj);
-bool inven_carry(struct player *p, struct object *obj, bool absorb,
+void inven_carry(struct player *p, struct object *obj, bool absorb,
 				 bool message);
 void inven_wield(struct object *obj, int slot);
 void inven_takeoff(struct object *item);

@@ -1,6 +1,6 @@
 /**
-   \file src/obj-properties.c
-   \brief functions to deal with object flags and modifiers
+ * \file src/obj-properties.c
+ * \brief functions to deal with object flags and modifiers
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
@@ -24,6 +24,8 @@
  *
  * Note that sustain stat flags are included first, so that the index into 
  * the flag table for a sustain is the stat index + 1
+ *
+ * Note that any strings in the last position must have exactly one %s
  */
 static const struct object_flag object_flag_table[] =
 {

@@ -508,11 +508,12 @@ static void player_outfit(struct player *p)
 		object_notice_everything(obj);
 		apply_autoinscription(obj);
 
-		inven_carry(p, obj, TRUE, FALSE);
-		si->kind->everseen = TRUE;
-
 		/* Deduct the cost of the item from starting cash */
 		p->au -= object_value(obj, obj->number, FALSE);
+
+		/* Carry the item */
+		inven_carry(p, obj, TRUE, FALSE);
+		si->kind->everseen = TRUE;
 	}
 
 	/* Sanity check */

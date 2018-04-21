@@ -37,6 +37,34 @@
 #include "target.h"
 
 /**
+ * Increment to the next or decrement to the preceeding level
+   accounting for the stair skip value in constants
+   Keep in mind to check all intermediate level for unskippable
+   quests
+*/
+int dungeon_get_next_level(int dlev, int added)
+{
+	int target_level, i;
+
+	/* Get target level */
+	target_level = dlev + added * z_info->stair_skip;
+	
+	/* Don't allow levels below max */
+	if (target_level > z_info->max_depth - 1)
+		target_level = z_info->max_depth - 1;
+
+	/* Don't allow levels above the town */
+	if (target_level < 0) target_level = 0;
+	
+	/* Check intermediate levels for quests */
+	for (i = dlev; i <= target_level; i++) {
+		if (is_quest(i)) return i;
+	}
+	
+	return target_level;
+}
+
+/**
  * Change dungeon level - e.g. by going up stairs or with WoR.
  */
 void dungeon_change_level(int dlev)

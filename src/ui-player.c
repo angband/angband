@@ -25,6 +25,7 @@
 #include "obj-info.h"
 #include "obj-util.h"
 #include "player.h"
+#include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
@@ -704,6 +705,8 @@ static struct panel *get_panel_topleft(void) {
 
 static struct panel *get_panel_midleft(void) {
 	struct panel *p = panel_allocate(9);
+	int diff = weight_remaining(player);
+	byte attr = diff < 0 ? COLOUR_L_RED : COLOUR_L_GREEN;
 
 	panel_line(p, max_color(player->lev, player->max_lev),
 			"Level", "%d", player->lev);
@@ -713,9 +716,9 @@ static struct panel *get_panel_midleft(void) {
 	panel_line(p, COLOUR_L_GREEN, "Adv Exp", "%s", show_adv_exp());
 	panel_space(p);
 	panel_line(p, COLOUR_L_GREEN, "Gold", "%d", player->au);
-	panel_line(p, COLOUR_L_GREEN, "Burden", "%.1f lbs",
-			player->upkeep->total_weight / 10.0F);
-	panel_line(p, COLOUR_L_GREEN, "Speed", "%s", show_speed());
+	panel_line(p, attr, "Burden", "%.1f lb",
+			   player->upkeep->total_weight / 10.0F);
+	panel_line(p, attr, "Overweight", "%d.%d lb", -diff / 10, abs(diff) % 10);
 	panel_line(p, COLOUR_L_GREEN, "Max Depth", "%s", show_depth());
 
 	return p;
@@ -764,7 +767,7 @@ static struct panel *get_panel_combat(void) {
 }
 
 static struct panel *get_panel_skills(void) {
-	struct panel *p = panel_allocate(7);
+	struct panel *p = panel_allocate(8);
 
 	int skill;
 	byte attr;
@@ -806,6 +809,14 @@ static struct panel *get_panel_skills(void) {
 	/* Infravision */
 	panel_line(p, COLOUR_L_GREEN, "Infravision", "%d ft",
 			player->state.see_infra * 10);
+
+	/* Speed */
+	skill = player->state.speed;
+	if (player->timed[TMD_FAST]) skill -= 10;
+	if (player->timed[TMD_SLOW]) skill += 10;
+	if (player->searching) skill += 10;
+	attr = skill < 110 ? COLOUR_L_UMBER : COLOUR_L_GREEN;
+	panel_line(p, attr, "Speed", "%s", show_speed());
 
 	return p;
 }

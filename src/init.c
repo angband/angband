@@ -585,6 +585,8 @@ static enum parser_error parse_constants_world(struct parser *p) {
 		z->feeling_total = value;
 	else if (streq(label, "feeling-need"))
 		z->feeling_need = value;
+	else if (streq(label, "stair-skip"))
+		z->stair_skip = value;
 	else if (streq(label, "move-energy"))
 		z->move_energy = value;
 	else
@@ -4360,8 +4362,9 @@ void init_arrays(void)
 	unsigned int i;
 
 	for (i = 0; i < N_ELEMENTS(pl); i++) {
-
-		event_signal_message(EVENT_INITSTATUS, 0, format("Initializing %s...", pl[i].name));
+		char *msg = string_make(format("Initializing %s...", pl[i].name));
+		event_signal_message(EVENT_INITSTATUS, 0, msg);
+		string_free(msg);
 		if (run_parser(pl[i].parser))
 			quit_fmt("Cannot initialize %s.", pl[i].name);
 	}

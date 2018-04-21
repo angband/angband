@@ -2250,7 +2250,7 @@ properties:65:4:25000
 alloc:50:65 to 100
 power:20000
 effect:GAIN_EXP
-dice:100000
+dice:200000
 
 ### Healings ###
 

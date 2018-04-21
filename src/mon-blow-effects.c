@@ -112,7 +112,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 	/* Perform a saving throw if desired. */
 	if (attempt_save && randint0(100) < context->p->state.skills[SKILL_SAVE]) {
 		if (save_msg != NULL)
-			msg(save_msg);
+			msg("%s", save_msg);
 
 		context->obvious = TRUE;
 	}

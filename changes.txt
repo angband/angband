@@ -1,5 +1,32 @@
 Welcome to the changelog for Angband 4.0. This file tracks the changes made since 3.5.1.
 
+Angband 4.0.3
+=============
+
+More bugfixes, (very) hopefully the last of the 4.0.x series.
+
+Changes
+-------
+ - Add stair-skip constant, making stairs go up or down that number of levels
+ - Another 200 room templates (for a total of 500)
+ - A number of code improvements, mainly from PowerWyrm
+ - Shorten inventory prompt, put overweight info in 'C' screen
+
+Bugfixes
+--------
+ - Correct OOD boost for object feelings
+ - Really fix lack of artifacts this time
+ - Make RNexus prevent hostile teleport level
+ - Stop crash from summoning traps
+ - Improve object ID from ball spells
+ - Stop game hanging on empty quiver
+ - Stop crash during inventory item damage by elements
+ - Stop auto-ignore from cancelling monster detection
+ - Make sure all changes to equipment are counted
+ - Correct monster energy/turn order, stopping double moves by slower monsters
+ - Correct food descriptions
+ - Improve quitting in OS X
+
 Angband 4.0.2
 =============
 

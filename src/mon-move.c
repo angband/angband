@@ -1582,6 +1582,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 	for (i = cave_monster_max(c) - 1; i >= 1; i--)
 	{
 		struct monster *mon;
+		bool moving;
 
 		/* Handle "leaving" */
 		if (player->is_dead || player->upkeep->generate_level) break;
@@ -1596,6 +1597,9 @@ void process_monsters(struct chunk *c, int minimum_energy)
 
 		/* Not enough energy to move yet */
 		if (mon->energy < minimum_energy) continue;
+
+		/* Does this monster have enough energy to move? */
+		moving = mon->energy >= z_info->move_energy ? TRUE : FALSE;
 
 		/* Prevent reprocessing */
 		mflag_on(mon->mflag, MFLAG_HANDLED);
@@ -1615,7 +1619,7 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		mon->energy += turn_energy(mspeed);
 
 		/* End the turn of monsters without enough energy to move */
-		if (mon->energy < z_info->move_energy)
+		if (!moving)
 			continue;
 
 		/* Use up "some" energy */

@@ -128,8 +128,8 @@ void monster_list_reset(monster_list_t *list)
 	}
 
 	memset(list->entries, 0, list->entries_size * sizeof(monster_list_entry_t));
-	memset(&list->total_entries, 0, MONSTER_LIST_SECTION_MAX * sizeof(u16b));
-	memset(&list->total_monsters, 0, MONSTER_LIST_SECTION_MAX * sizeof(u16b));
+	memset(list->total_entries, 0, MONSTER_LIST_SECTION_MAX * sizeof(u16b));
+	memset(list->total_monsters, 0, MONSTER_LIST_SECTION_MAX * sizeof(u16b));
 	list->distinct_entries = 0;
 	list->creation_turn = 0;
 	list->sorted = FALSE;

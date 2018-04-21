@@ -9,9 +9,10 @@ Please choose one of the following online help files:
     (g) Option descriptions        (option.txt)
     (h) Customising the game       (customize.txt)
     (i) Modifying the game         (modifying.txt)
-    (j) Historic information       (version.txt)
-    (k) Licence information        (copying.txt)
-    (l) User menu (if any)         (user.hlp)
+    (j) Debug commands             (debug.txt)
+    (k) Historic information       (version.txt)
+    (l) Licence information        (copying.txt)
+    (m) User menu (if any)         (user.hlp)
 
 Browser/help commands:
   #     go to line         %  go to file         ?  go to last file/main menu
@@ -37,8 +38,10 @@ Browser/help commands:
 
 .. menu:: [i] modifying.txt
 
-.. menu:: [j] version.txt
+.. menu:: [j] debug.txt
 
-.. menu:: [k] copying.txt
+.. menu:: [k] version.txt
 
-.. menu:: [l] user.hlp
+.. menu:: [l] copying.txt
+
+.. menu:: [m] user.hlp

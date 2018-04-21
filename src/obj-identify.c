@@ -899,6 +899,7 @@ static void equip_notice_after_time(void)
 	char o_name[80];
 
 	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
+	bool redraw = FALSE;
 
 	create_mask(timed_mask, TRUE, OFID_TIMED, OFT_MAX);
 
@@ -922,6 +923,7 @@ static void equip_notice_after_time(void)
 
 				/* Notice the flag */
 				object_notice_flag(obj, flag);
+				redraw = TRUE;
 
 				if (tval_is_jewelry(obj) &&
 					 (!object_effect(obj) || object_effect_is_known(obj))) {
@@ -930,15 +932,12 @@ static void equip_notice_after_time(void)
 					object_check_for_ident(obj);
 					apply_autoinscription(obj);
 				}
-			} else {
-				/* Notice the flag is absent */
-				object_notice_flag(obj, flag);
 			}
 		}
 	}
 
 	/* Notice new info */
-	event_signal(EVENT_EQUIPMENT);
+	if (redraw) event_signal(EVENT_EQUIPMENT);
 }
 
 

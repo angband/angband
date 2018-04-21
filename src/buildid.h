@@ -26,7 +26,7 @@
 # define XSTR(x) STR(x)
 # define VERSION_STRING XSTR(BUILD_ID)
 #else
-# define VERSION_STRING "4.0.2"
+# define VERSION_STRING "4.0.3"
 #endif
 
 extern const char *buildid;

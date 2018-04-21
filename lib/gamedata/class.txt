@@ -2147,7 +2147,7 @@ dice:22d40
 desc:Detects all treasure, objects, doors, stairs, traps, and monsters
 desc: in the immediate area.
 
-spell:Pereption:25:25:80:16
+spell:Perception:25:25:80:16
 effect:IDENTIFY
 desc:Reveals the powers of an object.
 

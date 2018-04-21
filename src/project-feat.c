@@ -334,22 +334,52 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 
 static void project_feature_handler_ACID(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_ELEC(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_FIRE(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_COLD(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_POIS(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 /* Light up the grid */
@@ -366,74 +396,182 @@ static void project_feature_handler_DARK(project_feature_handler_context_t *cont
 
 static void project_feature_handler_SOUND(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_SHARD(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_NEXUS(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_NETHER(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_CHAOS(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_DISEN(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_WATER(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_ICE(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_GRAVITY(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_INERTIA(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_FORCE(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_TIME(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_PLASMA(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_METEOR(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_MISSILE(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_MANA(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_HOLY_ORB(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static void project_feature_handler_ARROW(project_feature_handler_context_t *context)
 {
+	/* Grid is in line of sight and player is not blind */
+	if (square_isview(cave, context->y, context->x) &&
+		!player->timed[TMD_BLIND]) {
+		/* Observe */
+		context->obvious = TRUE;
+	}
 }
 
 static const project_feature_handler_f feature_handlers[] = {

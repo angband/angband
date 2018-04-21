@@ -602,12 +602,13 @@ bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 	return (TRUE);
 }
 
+/* Note the divisor of 2, a slight hack to simplify food description */
 bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, FALSE);
 	if (player->exp < PY_MAX_EXP) {
 		msg("You feel more experienced.");
-		player_exp_gain(player, amount);
+		player_exp_gain(player, amount / 2);
 		context->ident = TRUE;
 	}
 	return TRUE;
@@ -793,7 +794,8 @@ bool effect_handler_REMOVE_ALL_CURSE(effect_handler_context_t *context)
  */
 bool effect_handler_RECALL(effect_handler_context_t *context)
 {
-	context->ident = TRUE;
+	int target_depth;
+	context->ident = TRUE;	
 
 	/* No recall */
 	if (OPT(birth_no_recall) && !player->total_winner) {
@@ -808,8 +810,9 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	}
 
 	/* Warn the player if they're descending to an unrecallable level */
+	target_depth = dungeon_get_next_level(player->max_depth, 1);
 	if (OPT(birth_force_descend) && !(player->depth) &&
-			(is_quest(player->max_depth + 1))) {
+			(is_quest(target_depth))) {
 		if (!get_check("Are you sure you want to descend? ")) {
 			return FALSE;
 		}
@@ -844,9 +847,11 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 
 bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
 {
-	int i, target_depth = player->max_depth;
+	int i, target_increment, target_depth = player->max_depth;
 
 	/* Calculate target depth */
+	target_increment = (4 / z_info->stair_skip) + 1;
+	target_depth = dungeon_get_next_level(player->max_depth, target_increment);
 	for (i = 5; i > 0; i--) {
 		if (is_quest(target_depth)) break;
 		if (target_depth >= z_info->max_depth - 1) break;
@@ -2790,19 +2795,22 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 {
 	bool up = TRUE, down = TRUE;
+	int target_depth = dungeon_get_next_level(player->max_depth, 1);
 
 	context->ident = TRUE;
 
 	/* Resist hostile teleport */
-	if (cave->mon_current && player_resists(player, ELEM_NEXUS))
+	if ((cave->mon_current > 0) && player_resists(player, ELEM_NEXUS)) {
 		msg("You resist the effect!");
+		return TRUE;
+	}
 
 	/* No going up with force_descend or in the town */
 	if (OPT(birth_force_descend) || !player->depth)
 		up = FALSE;
 
 	/* No forcing player down to quest levels if they can't leave */
-	if (!up && is_quest(player->max_depth + 1))
+	if (!up && is_quest(target_depth))
 		down = FALSE;
 
 	/* Can't leave quest levels or go down deeper than the dungeon */
@@ -2820,14 +2828,18 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 	/* Now actually do the level change */
 	if (up) {
 		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-		dungeon_change_level(player->depth - 1);
+		target_depth = dungeon_get_next_level(player->depth, -1);
+		dungeon_change_level(target_depth);
 	} else if (down) {
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
-		if (OPT(birth_force_descend))
-			dungeon_change_level(player->max_depth + 1);
-		else
-			dungeon_change_level(player->depth + 1);
+		if (OPT(birth_force_descend)) {
+			target_depth = dungeon_get_next_level(player->max_depth, 1);
+			dungeon_change_level(target_depth);
+		} else {
+			target_depth = dungeon_get_next_level(player->depth, 1);
+			dungeon_change_level(target_depth);
+		}
 	} else {
 		msg("Nothing happens.");
 	}
@@ -3340,8 +3352,8 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	(void) project(source, rad, ty, tx, dam, context->p1, flg, 0, 0);
-	context->ident = TRUE;
+	if (project(source, rad, ty, tx, dam, context->p1, flg, 0, 0))
+		context->ident = TRUE;
 
 	return TRUE;
 }
@@ -3391,8 +3403,8 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 	}
 
 	/* Aim at the target, explode */
-	(void) project(source, rad, ty, tx, dam, type, flg, 0, 0);
-	context->ident = TRUE;
+	if (project(source, rad, ty, tx, dam, type, flg, 0, 0))
+		context->ident = TRUE;
 
 	return TRUE;
 }
@@ -3458,9 +3470,9 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target */
-		(void) project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0);
+		if (project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0))
+			context->ident = TRUE;
 	}
-	context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3487,9 +3499,9 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target, explode */
-		(void) project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0);
+		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0))
+			context->ident = TRUE;
 	}
-	context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3503,7 +3515,8 @@ bool effect_handler_BOLT(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	int flg = PROJECT_STOP | PROJECT_KILL;
 	(void) project_aimed(context->p1, context->dir, dam, flg);
-	context->ident = TRUE;
+	if (!player->timed[TMD_BLIND])
+		context->ident = TRUE;
 	return TRUE;
 }
 
@@ -3517,7 +3530,8 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, TRUE);
 	int flg = PROJECT_BEAM | PROJECT_KILL;
 	(void) project_aimed(context->p1, context->dir, dam, flg);
-	context->ident = TRUE;
+	if (!player->timed[TMD_BLIND])
+		context->ident = TRUE;
 	return TRUE;
 }
 
@@ -4060,9 +4074,15 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	return TRUE;
 }
 
-
 bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 {
+	int target_depth = dungeon_get_next_level(player->depth, 1);
+
+	if (target_depth == player->depth) {
+		msg("You feel quite certain something really awful just happened...");
+		return TRUE;
+	}
+
 	msg("You fall through a trap door!");
 	if (player_of_has(player, OF_FEATHER)) {
 		msg("You float gently down to the next level.");
@@ -4072,7 +4092,7 @@ bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
 	}
 	equip_notice_flag(player, OF_FEATHER);
 
-	dungeon_change_level(player->depth + 1);
+	dungeon_change_level(target_depth);
 	return TRUE;
 }
 

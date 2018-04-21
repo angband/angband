@@ -125,7 +125,7 @@ void do_cmd_note(void)
 		strnfmt(note, sizeof(note), "-- Note: %s", tmp);
 
 	/* Display the note (omitting the "-- " prefix) */
-	msg(&note[3]);
+	msg("%s", &note[3]);
 
 	/* Add a history entry */
 	history_add(note, HIST_USER_INPUT, 0);
