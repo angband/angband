@@ -129,19 +129,22 @@ static bool auto_pickup_okay(const struct object *obj)
 {
 	if (!inven_carry_okay(obj)) return FALSE;
 	if (OPT(pickup_always) || check_for_inscrip(obj, "=g")) return TRUE;
-	if (OPT(pickup_inven) && inven_stack_okay(obj)) return TRUE;
+	if (OPT(pickup_inven) && inven_carry_num(obj, TRUE)) return TRUE;
 
 	return FALSE;
 }
 
 
 /**
- * Move an object from a floor pile to the player's gear
+ * Move an object from a floor pile to the player's gear, checking first
+ * whether partial pickup is needed
  */
-static void player_pickup_aux(struct object *obj, bool domsg)
+static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 {
-	/* Confirm the object can be picked up*/
-	if (!inven_carry_okay(obj))
+	int max = inven_carry_num(obj, FALSE);
+
+	/* Confirm at least some of the object can be picked up */
+	if (max == 0)
 		quit_fmt("Failed pickup of %s", obj->kind->name);
 
 	/* Set ignore status */
@@ -154,9 +157,23 @@ static void player_pickup_aux(struct object *obj, bool domsg)
 	if (obj->artifact)
 		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
 
-	/* Carry the object */
-	square_excise_object(cave, player->py, player->px, obj);
-	inven_carry(player, obj, TRUE, domsg);
+	/* Carry the object, prompting for number if necessary */
+	if (max == obj->number) {
+		square_excise_object(cave, player->py, player->px, obj);
+		inven_carry(player, obj, TRUE, domsg);
+	} else {
+		int num;
+		bool dummy;
+		struct object *picked_up;
+
+		if (auto_max)
+			num = auto_max;
+		else
+			num = get_quantity(NULL, max);
+		if (!num) return;
+		picked_up = floor_object_for_use(obj, num, FALSE, &dummy);
+		inven_carry(player, picked_up, TRUE, domsg);
+	}
 }
 
 /**
@@ -216,18 +233,18 @@ static byte player_pickup_item(struct object *obj, bool menu)
 
 	/* We're given an object - pick it up */
 	if (obj) {
-		player_pickup_aux(obj, domsg);
+		player_pickup_aux(obj, 0, domsg);
 		objs_picked_up = 1;
 		mem_free(floor_list);
 		return objs_picked_up;
 	}
 
-	/* Tally objects that can be picked up.*/
+	/* Tally objects that can be at least partially picked up.*/
 	floor_num = scan_floor(floor_list, floor_max, py, px, 0x08, NULL);
 	for (i = 0; i < floor_num; i++)
 	    if (inven_carry_okay(floor_list[i]))
 			can_pickup++;
-	
+
 	if (!can_pickup) {
 	    /* Can't pick up, but probably want to know what's there. */
 	    event_signal(EVENT_SEEFLOOR);
@@ -266,7 +283,7 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	/* Pick up object, if legal */
 	if (current) {
 		/* Pick up the object */
-		player_pickup_aux(current, domsg);
+		player_pickup_aux(current, 0, domsg);
 
 		/* Indicate an object picked up. */
 		objs_picked_up = 1;
@@ -317,8 +334,8 @@ int do_autopickup(void)
 
 			/* Automatically pick up items into the backpack */
 			if (auto_pickup_okay(obj)) {
-				/* Pick up the object with message */
-				player_pickup_aux(obj, TRUE);
+				/* Pick up the object (as much as possible) with message */
+				player_pickup_aux(obj, inven_carry_num(obj, TRUE), TRUE);
 				objs_picked_up++;
 			}
 		}

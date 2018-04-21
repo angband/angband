@@ -447,6 +447,7 @@ const char *gf_idx_to_name(int type)
  *   \param flg: Extra bit flags that control projection behavior
  *   \param degrees_of_arc: How wide an arc spell is (in degrees).
  *   \param diameter_of_source: how wide the source diameter is.
+ *   \param obj: An object that the projection ignores
  *
  *   \return TRUE if any effects of the projection were observed, else FALSE
  *
@@ -581,7 +582,8 @@ const char *gf_idx_to_name(int type)
  * and "update_view()" and "update_monsters()" need to be called.
  */
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
-			 int degrees_of_arc, byte diameter_of_source)
+			 int degrees_of_arc, byte diameter_of_source,
+			 const struct object *obj)
 {
 	int i, j, k, dist_from_centre;
 
@@ -957,38 +959,56 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 
 			/* Affect the object in the grid */
 			if (project_o(who, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ))
+						  dam_at_dist[distance_to_grid[i]], typ, obj))
 				notice = TRUE;
 		}
 	}
 
 	/* Check monsters */
 	if (flg & (PROJECT_KILL)) {
-		/* Mega-Hack */
-		project_m_n = 0;
-		project_m_x = 0;
-		project_m_y = 0;
+		bool was_obvious = false;
+		bool did_hit = false;
+		int num_hit = 0;
+		int last_hit_x = 0;
+		int last_hit_y = 0;
 
 		/* Scan for monsters */
 		for (i = 0; i < num_grids; i++) {
+			struct monster *mon = NULL;
+
 			/* Get the grid location */
 			y = blast_grid[i].y;
 			x = blast_grid[i].x;
 			
 			/* Check this monster hasn't been processed already */
-			if (!square_isproject(cave, y, x)) continue;
+			if (!square_isproject(cave, y, x))
+				continue;
+
+			/* Check there is actually a monster here */
+			mon = square_monster(cave, y, x);
+			if (mon == NULL)
+				continue;
 
 			/* Affect the monster in the grid */
-			if (project_m(who, distance_to_grid[i], y, x,
-						  dam_at_dist[distance_to_grid[i]], typ, flg))
+			project_m(who, distance_to_grid[i], y, x,
+			          dam_at_dist[distance_to_grid[i]], typ, flg,
+			          &did_hit, &was_obvious);
+			if (was_obvious)
 				notice = TRUE;
+			if (did_hit) {
+				num_hit++;
+
+				/* Monster location may have been updated by project_m() */
+				last_hit_x = mon->fx;
+				last_hit_y = mon->fy;
+			}
 		}
 
 		/* Player affected one monster (without "jumping") */
-		if ((who < 0) && (project_m_n == 1) && !(flg & (PROJECT_JUMP))) {
+		if ((who < 0) && (num_hit == 1) && !(flg & (PROJECT_JUMP))) {
 			/* Location */
-			x = project_m_x;
-			y = project_m_y;
+			x = last_hit_x;
+			y = last_hit_y;
 
 			/* Track if possible */
 			if (cave->squares[y][x].mon > 0) {
@@ -1015,6 +1035,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			if (project_p(who, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ)) {
 				notice = TRUE;
+				if (player->is_dead)
+					return notice;
 				break;
 			}
 		}

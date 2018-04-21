@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "effects.h"
 #include "game-world.h"
 #include "init.h"
 #include "mon-make.h"

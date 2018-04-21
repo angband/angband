@@ -590,34 +590,40 @@ bool player_can_refuel_prereq(void)
 }
 
 /**
- * Return TRUE if the player has a book in their inventory that has unlearned
- * spells.
+ * Return TRUE if the player has access to a book that has unlearned spells.
  *
  * \param p is the player
  */
 bool player_book_has_unlearned_spells(struct player *p)
 {
 	int i, j;
-	const struct class_book *book;
+	int item_max = z_info->pack_size + z_info->floor_size;
+	struct object **item_list = mem_zalloc(item_max * sizeof(struct object *));
+	int item_num;
 
 	/* Check if the player can learn new spells */
-	if (!p->upkeep->new_spells)
+	if (!p->upkeep->new_spells) {
+		mem_free(item_list);
 		return FALSE;
+	}
 
 	/* Check through all available books */
-	for (i = 0; i < z_info->pack_size; i++) {
-		struct object *obj = player->upkeep->inven[i];
-		if (!obj || !obj_can_browse(obj)) continue;
-		book = object_to_book(player->upkeep->inven[i]);
+	item_num = scan_items(item_list, item_max, USE_INVEN | USE_FLOOR,
+						  obj_can_study);
+	for (i = 0; i < item_num; i++) {
+		const struct class_book *book = object_to_book(item_list[i]);
 		if (!book) continue;
 
 		/* Extract spells */
 		for (j = 0; j < book->num_spells; j++)
-			if (spell_okay_to_study(book->spells[j].sidx))
+			if (spell_okay_to_study(book->spells[j].sidx)) {
 				/* There is a spell the player can study */
+				mem_free(item_list);
 				return TRUE;
+			}
 	}
 
+	mem_free(item_list);
 	return FALSE;
 }
 

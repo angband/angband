@@ -171,7 +171,7 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	}
 
 	/* Do effects */
-	effect_do(spell->effect, &ident, TRUE, 0, 0, 0);
+	effect_do(spell->effect, NULL, &ident, TRUE, 0, 0, 0);
 
 	return;
 }

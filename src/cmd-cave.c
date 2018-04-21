@@ -1496,19 +1496,20 @@ void display_feeling(bool obj_only)
 		msg("Looks like a typical town.");
 		return;
 	}
-	
+
 	/* Display only the object feeling when it's first discovered. */
-	if (obj_only){
+	if (obj_only) {
+		disturb(player, 0);
 		msg("You feel that %s", obj_feeling_text[obj_feeling]);
 		return;
 	}
-	
+
 	/* Players automatically get a monster feeling. */
-	if (cave->feeling_squares < z_info->feeling_need){
+	if (cave->feeling_squares < z_info->feeling_need) {
 		msg("%s.", mon_feeling_text[mon_feeling]);
 		return;
 	}
-	
+
 	/* Verify the feelings */
 	if (obj_feeling >= N_ELEMENTS(obj_feeling_text))
 		obj_feeling = N_ELEMENTS(obj_feeling_text) - 1;

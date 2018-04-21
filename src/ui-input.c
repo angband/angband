@@ -367,6 +367,9 @@ static int message_column = 0;
 
 /**
  * Player has pending message
+ *
+ * This variable is also checked when deciding whether to do animations, and
+ * set (rather hackishly) during targeting to prevent animations
  */
 bool msg_flag;
 

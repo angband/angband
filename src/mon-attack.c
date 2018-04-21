@@ -22,6 +22,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "effects.h"
 #include "init.h"
 #include "mon-blow-methods.h"
 #include "mon-blow-effects.h"
@@ -564,10 +565,16 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				obvious = context.obvious;
 				blinked = context.blinked;
 				damage = context.damage;
+				do_break = context.do_break;
 			} else {
 				msg("ERROR: Effect handler not found for %d.", effect);
 			}
 
+			/* Don't cut or stun if player is dead */
+			if (p->is_dead) {
+				do_cut = FALSE;
+				do_stun = FALSE;
+			}
 
 			/* Hack -- only one of cut or stun */
 			if (do_cut && do_stun) {

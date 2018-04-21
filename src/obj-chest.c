@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "effects.h"
 #include "mon-lore.h"
 #include "obj-chest.h"
 #include "obj-identify.h"

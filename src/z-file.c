@@ -168,6 +168,8 @@ static void path_process(char *buf, size_t len, size_t *cur_len,
 size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 {
 	size_t cur_len = 0;
+	int starts_with_separator;
+
 	buf[0] = '\0';
 
 	if (!leaf || !leaf[0]) {
@@ -184,12 +186,11 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 	 *   or there's no base path,
 	 * We use the leafname only.
 	 */
+	starts_with_separator = (!base || !base[0]) || prefix(leaf, PATH_SEP);
 #if defined(UNIX)
-	if ((!base || !base[0]) || prefix(leaf, PATH_SEP) || leaf[0] == '~')
-#else
-	if ((!base || !base[0]) || prefix(leaf, PATH_SEP))
+	starts_with_separator = starts_with_separator || leaf[0] == '~';
 #endif
-	{
+	if (starts_with_separator) {
 		path_process(buf, len, &cur_len, leaf);
 		return cur_len;
 	}
