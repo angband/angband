@@ -477,6 +477,23 @@ void window_make(int origin_x, int origin_y, int end_x, int end_y)
 	}
 }
 
+bool panel_should_modify(term *t, int wy, int wx)
+{
+	int dungeon_hgt = cave->height;
+	int dungeon_wid = cave->width;
+
+	/* Verify wy, adjust if needed */
+	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;
+	if (wy < 0) wy = 0;
+
+	/* Verify wx, adjust if needed */
+	if (wx > dungeon_wid - SCREEN_WID) wx = dungeon_wid - SCREEN_WID;
+	if (wx < 0) wx = 0;
+
+	/* Needs changes? */
+	return ((t->offset_y != wy) || (t->offset_x != wx));
+}
+
 /**
  * Modify the current panel to the given coordinates, adjusting only to
  * ensure the coordinates are legal, and return TRUE if anything done.
@@ -502,7 +519,7 @@ bool modify_panel(term *t, int wy, int wx)
 	if (wx < 0) wx = 0;
 
 	/* React to changes */
-	if ((t->offset_y != wy) || (t->offset_x != wx)) {
+	if (panel_should_modify(t, wy, wx)) {
 		/* Save wy, wx */
 		t->offset_y = wy;
 		t->offset_x = wx;
@@ -541,7 +558,7 @@ static void verify_panel_int(bool centered)
 		if (!t) continue;
 
 		/* No relevant flags */
-		if ((j > 0) && !(window_flag[j] & (PW_MAP))) continue;
+		if ((j > 0) && !(window_flag[j] & (PW_MAPS))) continue;
 
 		wy = t->offset_y;
 		wx = t->offset_x;
@@ -598,7 +615,7 @@ bool change_panel(int dir)
 		if (!t) continue;
 
 		/* No relevant flags */
-		if ((j > 0) && !(window_flag[j] & PW_MAP)) continue;
+		if ((j > 0) && !(window_flag[j] & PW_MAPS)) continue;
 
 		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
 		screen_wid = (j == 0) ? SCREEN_WID : t->wid;

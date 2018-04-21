@@ -308,6 +308,8 @@ int yx_to_i(int y, int x, int w);
 void i_to_yx(int i, int w, int *y, int *x);
 void shuffle(int *arr, int n);
 bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred);
+bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1,
+						int x2, square_predicate pred);
 bool find_empty(struct chunk *c, int *y, int *x);
 bool find_empty_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1, int x2);
 bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, int xd);

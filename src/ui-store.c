@@ -634,6 +634,12 @@ static bool store_purchase(struct store_context *ctx, int item, bool single)
 		/* Limit to the number that can be carried */
 		amt = MIN(amt, inven_carry_num(obj, FALSE));
 
+		/* Fail if there is no room */
+		if ((amt <= 0) || (!object_flavor_is_aware(obj) && pack_is_full())) {
+			msg("You cannot carry that many items.");
+			return FALSE;
+		}
+
 		/* Find the number of this item in the inventory */
 		if (!object_flavor_is_aware(obj))
 			num = 0;
@@ -1220,6 +1226,9 @@ void use_store(game_event_type type, game_event_data *data, void *user)
 
 void leave_store(game_event_type type, game_event_data *data, void *user)
 {
+	/* Disable repeats */
+	cmd_disable_repeat();
+
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_ENTER_WORLD);
 

@@ -764,7 +764,7 @@ s32b check_slay_cache(const struct object *obj)
 {
 	int i = 0;
 
-	while ((slay_cache[i].brands != NULL) && (slay_cache[i].slays != NULL)) {
+	while ((slay_cache[i].brands != NULL) || (slay_cache[i].slays != NULL)) {
 		if (brands_are_equal(obj->brands, slay_cache[i].brands, TRUE) &&
 			slays_are_equal(obj->slays, slay_cache[i].slays, TRUE)) 
 			break;
@@ -785,7 +785,7 @@ bool fill_slay_cache(const struct object *obj, s32b value)
 {
 	int i = 0;
 
-	while ((slay_cache[i].brands != NULL) && (slay_cache[i].slays != NULL)) {
+	while ((slay_cache[i].brands != NULL) || (slay_cache[i].slays != NULL)) {
 		if (brands_are_equal(obj->brands, slay_cache[i].brands, TRUE) &&
 			slays_are_equal(obj->slays, slay_cache[i].slays, TRUE)) {
 			slay_cache[i].value = value;

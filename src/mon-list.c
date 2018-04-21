@@ -100,13 +100,12 @@ monster_list_t *monster_list_shared_instance(void)
  * Return TRUE if the list needs to be updated. Usually this is each turn or if
  * the number of cave monsters changes.
  */
-static bool monster_list_needs_update(const monster_list_t *list)
+static bool monster_list_can_update(const monster_list_t *list)
 {
 	if (list == NULL || list->entries == NULL)
 		return FALSE;
 
-	return list->creation_turn != turn ||
-		(int)list->entries_size < cave_monster_max(cave);
+	return (int)list->entries_size >= cave_monster_max(cave);
 }
 
 /**
@@ -116,9 +115,6 @@ static bool monster_list_needs_update(const monster_list_t *list)
 void monster_list_reset(monster_list_t *list)
 {
 	if (list == NULL || list->entries == NULL)
-		return;
-
-	if (!monster_list_needs_update(list))
 		return;
 
 	if ((int)list->entries_size < cave_monster_max(cave)) {
@@ -145,6 +141,9 @@ void monster_list_collect(monster_list_t *list)
 	if (list == NULL || list->entries == NULL)
 		return;
 
+	if (!monster_list_can_update(list))
+		return;
+
 	/* Use cave_monster_max() here in case the monster list isn't compacted. */
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		struct monster *mon = cave_monster(cave, i);
@@ -164,7 +163,6 @@ void monster_list_collect(monster_list_t *list)
 				entry = &list->entries[j];
 				memset(entry, 0, sizeof(monster_list_entry_t));
 				entry->race = mon->race;
-
 				break;
 			}
 			else if (list->entries[j].race == mon->race) {
@@ -181,10 +179,6 @@ void monster_list_collect(monster_list_t *list)
 		 * animation works. If this is 0, it needs to be replaced by 
 		 * the standard glyph in the UI */
 		entry->attr = mon->attr;
-
-		/* Skip the projection and location checks if nothing has changed. */
-		if (!monster_list_needs_update(list))
-			continue;
 
 		/*
 		 * Check for LOS
@@ -205,11 +199,6 @@ void monster_list_collect(monster_list_t *list)
 		entry->dx = mon->fx - player->px;
 		entry->dy = mon->fy - player->py;
 	}
-
-	/* Skip calculations if nothing has changed, otherwise this will yield
-	 * incorrect numbers. */
-	if (!monster_list_needs_update(list))
-		return;
 
 	/* Collect totals for easier calculations of the list. */
 	for (i = 0; i < (int)list->entries_size; i++) {
@@ -282,7 +271,7 @@ void monster_list_sort(monster_list_t *list,
 	if (elements <= 1)
 		return;
 
-	sort(list->entries, elements, sizeof(list->entries[0]), compare);
+	sort(list->entries, MIN(elements, list->entries_size), sizeof(list->entries[0]), compare);
 	list->sorted = TRUE;
 }
 

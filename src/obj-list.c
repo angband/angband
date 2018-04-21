@@ -167,11 +167,15 @@ void object_list_collect(object_list_t *list)
 	/* Scan each object in the dungeon. */
 	for (y = 1; y < cave->height; y++) {
 		for (x = 1; x < cave->width; x++) {
-			bool los = projectable(cave, py, px, y, x, PROJECT_NONE) || 
-				((y == py) && (x == px));
-			int field = (los) ? OBJECT_LIST_SECTION_LOS :
-				OBJECT_LIST_SECTION_NO_LOS;
+			bool los;
+			int field = OBJECT_LIST_SECTION_LOS;
 			struct object *obj = square_object(cave, y, x);
+			if (obj) {
+				los = projectable(cave, py, px, y, x, PROJECT_NONE) || 
+					((y == py) && (x == px));
+				field = (los) ? OBJECT_LIST_SECTION_LOS :
+					OBJECT_LIST_SECTION_NO_LOS;
+			}
 			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
 				object_list_entry_t *entry = NULL;
 				int entry_index;

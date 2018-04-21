@@ -28,13 +28,16 @@ Code contribution:
  * Michel Carroll
  * Nick McConnell
  * Nomad
+ * Pete Mack
  * Peter Denison (noz)
  * phantom-voltage
  * PowerWyrm
  * redlumf
  * Robert Au (myshkin)
+ * Rowan Beentje
  * Rydelfox
  * Timothy Collett
+ * Twisted Pair in my Hair
 
 Beta testing and bug reporting/fixing:
 
@@ -74,6 +77,14 @@ Beta testing and bug reporting/fixing:
  * Egavactip
  * zog
  * troycheek
+ * bertoid
+ * spara
+ * mzhr
+ * bron
+ * petebull
+ * tprice
+ * geoff_tewierik
+ * luneya
 
 Previous maintainers
 ====================

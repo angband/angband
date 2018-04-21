@@ -23,6 +23,7 @@
 #include "mon-lore.h"
 #include "obj-chest.h"
 #include "obj-identify.h"
+#include "obj-ignore.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -127,6 +128,10 @@ bool is_trapped_chest(const struct object *obj)
 	if (!tval_is_chest(obj))
 		return FALSE;
 
+	/* Ignore if requested */
+	if (ignore_item_ok(obj))
+		return FALSE;
+
 	/* Disarmed or opened chests are not trapped */
 	if (obj->pval <= 0)
 		return FALSE;
@@ -142,6 +147,10 @@ bool is_trapped_chest(const struct object *obj)
 bool is_locked_chest(const struct object *obj)
 {
 	if (!tval_is_chest(obj))
+		return FALSE;
+
+	/* Ignore if requested */
+	if (ignore_item_ok(obj))
 		return FALSE;
 
 	/* Disarmed or opened chests are not locked */
@@ -166,6 +175,9 @@ struct object *chest_check(int y, int x, enum chest_query check_type)
 
 	/* Scan all objects in the grid */
 	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+		/* Ignore if requested */
+		if (ignore_item_ok(obj)) continue;
+
 		/* Check for chests */
 		switch (check_type) {
 		case CHEST_ANY:

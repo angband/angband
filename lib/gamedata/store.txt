@@ -76,7 +76,7 @@ buy:hard armor
 buy:dragon armor
 
 # Weaponsmith
-store:3:Weaponsmith
+store:3:Weapon Smiths
 owner:5000:Ithyl-Mak the Beastly (Half-Troll)
 owner:10000:Arndal Beast-Slayer (Half-Elf)
 owner:25000:Tarl Beast-Master (Hobbit)
@@ -159,7 +159,7 @@ buy-flag:BLESSED:sword
 buy-flag:BLESSED:polearm
 
 # Alchemist
-store:5:Alchemist
+store:5:Alchemy Shop
 owner:10000:Mauser the Chemist (Half-Elf)
 owner:10000:Wizzle the Chaotic (Hobbit)
 owner:15000:Ga-nat the Greedy (Gnome)

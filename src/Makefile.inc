@@ -523,9 +523,9 @@ depgen:
  monster.h mon-timed.h list-mon-timed.h mon-blow-methods.h \
  list-blow-methods.h mon-blow-effects.h list-blow-effects.h \
  list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h \
- obj-chest.h obj-identify.h obj-make.h obj-pile.h obj-tval.h list-tvals.h \
- obj-util.h player-calcs.h player-timed.h list-player-timed.h \
- player-util.h
+ obj-chest.h obj-identify.h obj-ignore.h list-ignore-types.h obj-make.h \
+ obj-pile.h obj-tval.h list-tvals.h obj-util.h player-calcs.h \
+ player-timed.h list-player-timed.h player-util.h
 ./obj-desc.o: obj-desc.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  list-message.h option.h z-file.h list-options.h player.h guid.h \

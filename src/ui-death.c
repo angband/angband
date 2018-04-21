@@ -103,7 +103,7 @@ static void print_tomb(void)
 
 	line++;
 
-	put_str_centred(line++, 8, 8+31, "by %-.24s", ctime(&death_time));
+	put_str_centred(line++, 8, 8+31, "on %-.24s", ctime(&death_time));
 }
 
 
@@ -200,7 +200,7 @@ static void death_info(const char *title, int row)
 	/* Equipment -- if any */
 	if (player->upkeep->equip_cnt) {
 		Term_clear();
-		show_equip(OLIST_WEIGHT | OLIST_SEMPTY, NULL);
+		show_equip(OLIST_WEIGHT | OLIST_SEMPTY | OLIST_DEATH, NULL);
 		prt("You are using: -more-", 0, 0);
 		(void)anykey();
 	}
@@ -208,8 +208,16 @@ static void death_info(const char *title, int row)
 	/* Inventory -- if any */
 	if (player->upkeep->inven_cnt) {
 		Term_clear();
-		show_inven(OLIST_WEIGHT, NULL);
+		show_inven(OLIST_WEIGHT | OLIST_DEATH, NULL);
 		prt("You are carrying: -more-", 0, 0);
+		(void)anykey();
+	}
+
+	/* Quiver -- if any */
+	if (player->upkeep->quiver_cnt) {
+		Term_clear();
+		show_quiver(OLIST_WEIGHT | OLIST_DEATH, NULL);
+		prt("Your quiver holds: -more-", 0, 0);
 		(void)anykey();
 	}
 

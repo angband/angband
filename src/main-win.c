@@ -1769,17 +1769,18 @@ static errr Term_xtra_win_noise(void)
 }
 
 
+static MCIDEVICEID pDevice[MSG_MAX][SAMPLE_MAX];
+
 /**
  * Hack -- make a sound
  */
 static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
 								void *user)
 {
-	int i;
+	int i, j;
 	char buf[1024];
 	MCI_OPEN_PARMS op;
 	MCI_PLAY_PARMS pp;
-	MCIDEVICEID pDevice;
 
 	int v = data->message.type;
 
@@ -1796,29 +1797,35 @@ static void Term_xtra_win_sound(game_event_type type, game_event_data *data,
 	if (i == 0) return;
 
 	/* Build the path */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_SOUNDS,
-			   sound_file[v][Rand_simple(i)]);
+	j = Rand_simple(i);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_SOUNDS, sound_file[v][j]);
 
 	/* Check for file type */
 	if (streq(buf + strlen(buf) - 3, "mp3")) {
-		op.dwCallback = 0;
-		op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
-		op.lpstrElementName = buf;
-		op.lpstrAlias = NULL;
+		/* Open if not already */
+		if (!pDevice[v][j]) {
+			op.dwCallback = 0;
+			op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
+			op.lpstrElementName = buf;
+			op.lpstrAlias = NULL;
 
-		/* Open command */
-		mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT,
-			       (DWORD)&op);
-		pDevice = op.wDeviceID;
+			/* Open command */
+			mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT,
+						   (DWORD)&op);
+			pDevice[v][j] = op.wDeviceID;
+		}
 
 		/* Play command */
 		pp.dwCallback = 0;
 		pp.dwFrom = 0;
-		mciSendCommand(pDevice, MCI_PLAY, MCI_NOTIFY | MCI_FROM,
-			       (DWORD)&pp);
+		mciSendCommand(pDevice[v][j], MCI_PLAY, MCI_NOTIFY | MCI_FROM,
+					   (DWORD)&pp);
 	} else {
-	        /* Play the sound, catch errors */
-	        PlaySound(buf, 0, SND_FILENAME | SND_ASYNC);
+		/* If another sound is currently playing, stop it */
+		PlaySound(NULL, 0, SND_PURGE);
+
+		/* Play the sound, catch errors */
+		PlaySound(buf, 0, SND_FILENAME | SND_ASYNC);
 	}
 }
 

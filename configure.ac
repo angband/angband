@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 4.0.4, bugs@rephial.org)
+AC_INIT(Angband, 4.0.5, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 
 AC_CANONICAL_HOST

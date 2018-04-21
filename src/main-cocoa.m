@@ -131,7 +131,7 @@ static NSFont *default_font;
     
     /* The buffered image */
     CGLayerRef angbandLayer;
-    
+
     /* The font of this context */
     NSFont *angbandViewFont;
     
@@ -623,18 +623,34 @@ static int compare_advances(const void *ap, const void *bp)
             size = [activeView bounds].size;
         }
     }
-    
-    size.width = fmax(1, ceil(size.width));
-    size.height = fmax(1, ceil(size.height));
-    
+
     CGLayerRelease(angbandLayer);
     
+    /* Use the highest monitor scale factor on the system to work out what
+     * scale to draw at - not the recommended method, but works where we
+     * can't easily get the monitor the current draw is occurring on. */
+    float angbandLayerScale = 1.0;
+    if ([[NSScreen mainScreen] respondsToSelector:@selector(backingScaleFactor)]) {
+        for (NSScreen *screen in [NSScreen screens]) {
+            angbandLayerScale = fmax(angbandLayerScale, [screen backingScaleFactor]);
+        }
+    }
+
     /* Make a bitmap context as an example for our layer */
     CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
     CGContextRef exampleCtx = CGBitmapContextCreate(NULL, 1, 1, 8 /* bits per component */, 48 /* bytesPerRow */, cs, kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host);
     CGColorSpaceRelease(cs);
+
+    /* Create the layer at the appropriate size */
+    size.width = fmax(1, ceil(size.width * angbandLayerScale));
+    size.height = fmax(1, ceil(size.height * angbandLayerScale));
     angbandLayer = CGLayerCreateWithContext(exampleCtx, *(CGSize *)&size, NULL);
+
     CFRelease(exampleCtx);
+
+    /* Set the new context of the layer to draw at the correct scale */
+    CGContextRef ctx = CGLayerGetContext(angbandLayer);
+    CGContextScaleCTM(ctx, angbandLayerScale, angbandLayerScale);
 
     [self lockFocus];
     [[NSColor blackColor] set];
@@ -949,8 +965,7 @@ static int compare_advances(const void *ap, const void *bp)
         exit( 0 );
     }
 
-    /* Angband requires the trailing slash for the directory path */
-    return [bundleLibPath stringByAppendingString: @"/"];
+	return bundleLibPath;
 }
 
 /**
@@ -959,14 +974,35 @@ static int compare_advances(const void *ap, const void *bp)
  */
 + (NSString *)angbandDocumentsPath
 {
-    NSString *documents = [NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES ) lastObject];
+	NSString *documents = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
 
 #if defined(SAFE_DIRECTORY)
-    NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
-    return [documents stringByAppendingPathComponent: versionedDirectory];
+	NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
+	return [documents stringByAppendingPathComponent: versionedDirectory];
 #else
-    return [documents stringByAppendingPathComponent: AngbandDirectoryNameBase];
+	return [documents stringByAppendingPathComponent: AngbandDirectoryNameBase];
 #endif
+}
+
+/**
+ * Adjust directory paths as needed to correct for any differences needed by
+ * Angband. \c init_file_paths() currently requires that all paths provided have
+ * a trailing slash and all other platforms honor this.
+ *
+ * \param originalPath The directory path to adjust.
+ * \return A path suitable for Angband or nil if an error occurred.
+ */
+static NSString *AngbandCorrectedDirectoryPath(NSString *originalPath)
+{
+	if ([originalPath length] == 0) {
+		return nil;
+	}
+
+	if (![originalPath hasSuffix: @"/"]) {
+		return [originalPath stringByAppendingString: @"/"];
+	}
+
+	return originalPath;
 }
 
 /**
@@ -975,14 +1011,16 @@ static int compare_advances(const void *ap, const void *bp)
  */
 + (void)prepareFilePathsAndDirectories
 {
-    char libpath[PATH_MAX + 1] = "\0";
-    char basepath[PATH_MAX + 1] = "\0";
+	char libpath[PATH_MAX + 1] = "\0";
+	NSString *libDirectoryPath = AngbandCorrectedDirectoryPath([self libDirectoryPath]);
+	[libDirectoryPath getFileSystemRepresentation: libpath maxLength: sizeof(libpath)];
 
-    [[self libDirectoryPath] getFileSystemRepresentation: libpath maxLength: sizeof(libpath)];
-    [[self angbandDocumentsPath] getFileSystemRepresentation: basepath maxLength: sizeof(basepath)];
+	char basepath[PATH_MAX + 1] = "\0";
+	NSString *angbandDocumentsPath = AngbandCorrectedDirectoryPath([self angbandDocumentsPath]);
+	[angbandDocumentsPath getFileSystemRepresentation: basepath maxLength: sizeof(basepath)];
 
-    init_file_paths( libpath, libpath, basepath );
-    create_needed_dirs();
+	init_file_paths(libpath, libpath, basepath);
+	create_needed_dirs();
 }
 
 #pragma mark -
@@ -3444,7 +3482,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     for( NSInteger i = 1; i < ANGBAND_TERM_MAX; i++ )
     {
         NSString *title = [NSString stringWithFormat: @"Term %ld", (long)i];
-        NSMenuItem *windowItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(selectWindow:) keyEquivalent: @""];
+        NSString *keyEquivalent = [NSString stringWithFormat: @"%ld", (long)i];
+        NSMenuItem *windowItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(selectWindow:) keyEquivalent: keyEquivalent];
         [windowItem setTarget: self];
         [windowItem setTag: AngbandWindowMenuItemTagBase + i];
         [windowsMenu addItem: windowItem];

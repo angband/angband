@@ -424,8 +424,7 @@ void play_game(bool new_game)
 	/* Get commands from the user, then process the game world until the
 	 * command queue is empty and a new player command is needed */
 	while (!player->is_dead && player->upkeep->playing) {
-		if (current_graphics_mode && current_graphics_mode->overdrawRow)
-			pre_turn_refresh();
+		pre_turn_refresh();
 		cmd_get_hook(CMD_GAME);
 		run_game_loop();
 	}

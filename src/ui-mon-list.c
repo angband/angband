@@ -100,6 +100,8 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 		byte line_attr;
 		size_t full_width;
 		size_t name_width;
+		u16b count_in_section = 0;
+		u16b asleep_in_section = 0;
 
 		line_buffer[0] = '\0';
 
@@ -119,10 +121,12 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 		 * space; location includes padding; last -1 for some reason? */
 		full_width = max_width - 2 - utf8_strlen(location) - 1;
 
-		if (list->entries[index].asleep[section] > 1)
-			strnfmt(asleep, sizeof(asleep), " (%d asleep)",
-					list->entries[index].asleep[section]);
-		else if (list->entries[index].asleep[section] == 1)
+		asleep_in_section = list->entries[index].asleep[section];
+		count_in_section = list->entries[index].count[section];
+
+		if (asleep_in_section > 0 && count_in_section > 1)
+			strnfmt(asleep, sizeof(asleep), " (%d asleep)", asleep_in_section);
+		else if (asleep_in_section == 1 && count_in_section == 1)
 			strnfmt(asleep, sizeof(asleep), " (asleep)");
 
 		/* Clip the monster name to fit, and append the sleep tag. */
@@ -339,12 +343,21 @@ void monster_list_show_subwindow(int height, int width)
 {
 	textblock *tb;
 	monster_list_t *list;
+	int i;
 
 	if (height < 1 || width < 1)
 		return;
 
 	tb = textblock_new();
 	list = monster_list_shared_instance();
+
+	/* Force an update if detected monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		if (mflag_has(cave_monster(cave, i)->mflag, MFLAG_MARK)) {
+			list->creation_turn = -1;
+			break;
+		}
+	}
 
 	monster_list_reset(list);
 	monster_list_collect(list);

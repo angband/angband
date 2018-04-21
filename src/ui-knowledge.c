@@ -3140,8 +3140,7 @@ void do_cmd_query_symbol(void)
 		tb = textblock_new();
 		lore_title(tb, race);
 
-		/* Line break is needed for proper display */
-		textblock_append(tb, " [(r)ecall, ESC]\n");
+		textblock_append(tb, " [(r)ecall, ESC]");
 		textui_textblock_place(tb, SCREEN_REGION, NULL);
 		textblock_free(tb);
 

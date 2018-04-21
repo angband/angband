@@ -29,6 +29,11 @@
 #include "monster.h"
 
 /**
+ * Store total monster power for use in slay cache calculations
+ */
+static int tot_mon_power;
+
+/**
  * Define a set of constants for dealing with launchers and ammo:
  * - the assumed average damage of ammo (for rating launchers)
  * (the current values assume normal (non-seeker) ammo enchanted to +9)
@@ -325,7 +330,6 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 	u32b sv = 0;
 	int i, q, num_brands = 0, num_slays = 0, num_kills = 0;
 	int mult;
-	int tot_mon_power = 0;
 	struct brand *brands = obj->brands;
 	struct slay *slays = obj->slays;
 
@@ -362,6 +366,7 @@ static s32b slay_power(const struct object *obj, int p, int verbose,
 		 * for this combination (multiplied by the total number of
 		 * monsters, which we'll divide out later).
 		 */
+		tot_mon_power = 0;
 		for (i = 0; i < z_info->r_max; i++)	{
 			struct monster *mon = mem_zalloc(sizeof(*mon));
 			const struct brand *b = NULL;
