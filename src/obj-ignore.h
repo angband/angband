@@ -1,6 +1,6 @@
 /**
-   \file obj-ignore.h
-   \brief Item ignoring
+ * \file obj-ignore.h
+ * \brief Item ignoring
  *
  * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
  * David Vestal, Pete Mack, Andi Sidwell.
@@ -56,8 +56,6 @@ enum
 	IGNORE_BAD,
 	IGNORE_AVERAGE,
 	IGNORE_GOOD,
-	IGNORE_EXCELLENT_NO_HI,
-	IGNORE_EXCELLENT_NO_SPL,
 	IGNORE_ALL,
 
 	IGNORE_MAX
@@ -83,21 +81,22 @@ struct ego_desc {
 
 extern quality_name_struct quality_values[IGNORE_MAX];
 extern quality_name_struct quality_choices[ITYPE_MAX];
-bool **ego_ignore_types;
+extern bool **ego_ignore_types;
 
 
 /* obj-ignore.c */
 void ignore_birth_init(void);
-const char *get_autoinscription(struct object_kind *kind);
+void rune_autoinscribe(int i);
+const char *get_autoinscription(struct object_kind *kind, bool aware);
 int apply_autoinscription(struct object *obj);
 int remove_autoinscription(s16b kind);
-int add_autoinscription(s16b kind, const char *inscription);
+int add_autoinscription(s16b kind, const char *inscription, bool aware);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
 void object_ignore_flavor_of(const struct object *obj);
 ignore_type_t ignore_type_of(const struct object *obj);
 byte ignore_level_of(const struct object *obj);
-bool tval_has_ignore_type(int tval, ignore_type_t itype);
+bool ego_has_ignore_type(struct ego_item *ego, ignore_type_t itype);
 void kind_ignore_clear(struct object_kind *kind);
 void ego_ignore(struct object *obj);
 void ego_ignore_clear(struct object *obj);
@@ -109,6 +108,7 @@ void kind_ignore_when_aware(struct object_kind *kind);
 void kind_ignore_when_unaware(struct object_kind *kind);
 bool object_is_ignored(const struct object *obj);
 bool ignore_item_ok(const struct object *obj);
+bool ignore_known_item_ok(const struct object *obj);
 void ignore_drop(void);
 const char *ignore_name_for_type(ignore_type_t type);
 

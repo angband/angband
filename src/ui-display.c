@@ -27,6 +27,7 @@
 #include "hint.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
@@ -41,6 +42,7 @@
 #include "savefile.h"
 #include "target.h"
 #include "ui-birth.h"
+#include "ui-display.h"
 #include "ui-game.h"
 #include "ui-input.h"
 #include "ui-map.h"
@@ -348,7 +350,7 @@ byte monster_health_attr(void)
 		/* Not tracking */
 		attr = COLOUR_DARK;
 
-	} else if (!mflag_has(mon->mflag, MFLAG_VISIBLE) || mon->hp < 0 ||
+	} else if (!monster_is_visible(mon) || mon->hp < 0 ||
 			   player->timed[TMD_IMAGE]) {
 		/* The monster health is "unknown" */
 		attr = COLOUR_WHITE;
@@ -385,8 +387,11 @@ byte monster_health_attr(void)
 
 		/* Asleep */
 		if (mon->m_timed[MON_TMD_SLEEP]) attr = COLOUR_BLUE;
+
+		/* Held */
+		if (mon->m_timed[MON_TMD_HOLD]) attr = COLOUR_BLUE;
 	}
-	
+
 	return attr;
 }
 
@@ -413,7 +418,7 @@ static void prt_health(int row, int col)
 	}
 
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	if (!mflag_has(mon->mflag, MFLAG_VISIBLE) || /* Unseen */
+	if (!monster_is_visible(mon) || /* Unseen */
 		(player->timed[TMD_IMAGE]) || /* Hallucination */
 		(mon->hp < 0)) { /* Dead (?) */
 		/* The monster health is "unknown" */
@@ -444,9 +449,6 @@ static void prt_speed(int row, int col)
 	byte attr = COLOUR_WHITE;
 	const char *type = NULL;
 	char buf[32] = "";
-
-	/* Hack -- Visually "undo" the Search Mode Slowdown */
-	if (player->searching) i += 10;
 
 	/* 110 is normal speed, and requires no display */
 	if (i > 110) {
@@ -556,12 +558,12 @@ static void update_sidebar(game_event_type type, game_event_data *data,
 	for (i = 0, row = 1; i < N_ELEMENTS(side_handlers); i++) {
 		const struct side_handler_t *hnd = &side_handlers[i];
 		int priority = hnd->priority;
-		bool from_bottom = FALSE;
+		bool from_bottom = false;
 
 		/* Negative means print from bottom */
 		if (priority < 0) {
 			priority = -priority;
-			from_bottom = TRUE;
+			from_bottom = true;
 		}
 
 		/* If this is high enough priority, display it */
@@ -587,7 +589,7 @@ static void update_sidebar(game_event_type type, game_event_data *data,
 static void hp_colour_change(game_event_type type, game_event_data *data,
 							 void *user)
 {
-	if ((OPT(hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
+	if ((OPT(player, hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
 		square_light_spot(cave, player->py, player->px);
 }
 
@@ -664,6 +666,7 @@ static const struct state_info effects[] =
 	{ TMD_POISONED,  S("Poisoned"),   COLOUR_ORANGE },
 	{ TMD_PROTEVIL,  S("ProtEvil"),   COLOUR_L_GREEN },
 	{ TMD_SPRINT,    S("Sprint"),     COLOUR_L_GREEN },
+	{ TMD_TRAPSAFE,  S("TrapSafe"),   COLOUR_L_GREEN },
 	{ TMD_TELEPATHY, S("ESP"),        COLOUR_L_BLUE },
 	{ TMD_INVULN,    S("Invuln"),     COLOUR_L_GREEN },
 	{ TMD_HERO,      S("Hero"),       COLOUR_L_GREEN },
@@ -681,6 +684,7 @@ static const struct state_info effects[] =
 	{ TMD_OPP_POIS,  S("RPois"),      COLOUR_GREEN },
 	{ TMD_OPP_CONF,  S("RConf"),      COLOUR_VIOLET },
 	{ TMD_AMNESIA,   S("Amnesiac"),   COLOUR_ORANGE },
+	{ TMD_SCRAMBLE,   S("Scrambled"),   COLOUR_VIOLET },
 };
 
 #define PRINT_STATE(sym, data, index, row, col) \
@@ -765,7 +769,7 @@ static size_t prt_hunger(int row, int col)
 
 
 /**
- * Prints Searching, Resting, or 'count' status
+ * Prints Resting, or 'count' status
  * Display is always exactly 10 characters wide (see below)
  *
  * This function was a major bottleneck when resting, so a lot of
@@ -778,7 +782,7 @@ static size_t prt_state(int row, int col)
 	char text[16] = "";
 
 
-	/* Displayed states are resting, repeating and searching */
+	/* Displayed states are resting and repeating */
 	if (player_is_resting(player)) {
 		int i;
 		int n = player_resting_count(player);
@@ -825,8 +829,6 @@ static size_t prt_state(int row, int col)
 			strnfmt(text, sizeof(text), "Rep. %3d00", nrepeats / 100);
 		else
 			strnfmt(text, sizeof(text), "Repeat %3d", nrepeats);
-	} else if (player->searching) {
-		my_strcpy(text, "Searching ", sizeof(text));
 	}
 
 	/* Display the info (or blanks) */
@@ -869,7 +871,7 @@ static const byte mon_feeling_color[] =
 /**
  * Prints level feelings at status if they are enabled.
  */
-static size_t prt_level_feeling(int row, int col) 
+static size_t prt_level_feeling(int row, int col)
 {
 	u16b obj_feeling;
 	u16b mon_feeling;
@@ -879,7 +881,7 @@ static size_t prt_level_feeling(int row, int col)
 	byte obj_feeling_color_print;
 
 	/* Don't show feelings for cold-hearted characters */
-	if (OPT(birth_no_feelings)) return 0;
+	if (!OPT(player, birth_feelings)) return 0;
 
 	/* No useful feeling in town */
 	if (!player->depth) return 0;
@@ -888,7 +890,7 @@ static size_t prt_level_feeling(int row, int col)
 	obj_feeling = cave->feeling / 10;
 	mon_feeling = cave->feeling - (10 * obj_feeling);
 
-	/* 
+	/*
 	 *   Convert object feeling to a symbol easier to parse
 	 * for a human.
 	 *   0 -> * "Looks like any other level."
@@ -950,7 +952,7 @@ static size_t prt_dtrap(int row, int col)
 	/* The player is in a trap-detected grid */
 	if (square_isdtrap(cave, player->py, player->px)) {
 		/* The player is on the border */
-		if (square_isdedge(cave, player->py, player->px))
+		if (square_dtrap_edge(cave, player->py, player->px))
 			c_put_str(COLOUR_YELLOW, "DTrap", row, col);
 		else
 			c_put_str(COLOUR_L_GREEN, "DTrap", row, col);
@@ -960,7 +962,6 @@ static size_t prt_dtrap(int row, int col)
 
 	return 0;
 }
-
 
 /**
  * Print how many spells the player can study.
@@ -1134,7 +1135,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	}
 
 	/* Refresh the main screen unless the map needs to center */
-	if (player->upkeep->update & (PU_PANEL) && OPT(center_player)) {
+	if (player->upkeep->update & (PU_PANEL) && OPT(player, center_player)) {
 		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 : t->hgt / 2;
 		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 : t->wid / 2;
 
@@ -1150,6 +1151,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
  * Animations.
  * ------------------------------------------------------------------------ */
 
+static bool animations_allowed = true;
 static byte flicker = 0;
 static byte color_flicker[MAX_COLORS][3] = 
 {
@@ -1204,7 +1206,7 @@ static void do_animation(void)
 		byte attr;
 		struct monster *mon = cave_monster(cave, i);
 
-		if (!mon || !mon->race || !mflag_has(mon->mflag, MFLAG_VISIBLE))
+		if (!mon || !mon->race || !monster_is_visible(mon))
 			continue;
 		else if (rf_has(mon->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
@@ -1220,6 +1222,21 @@ static void do_animation(void)
 	flicker++;
 }
 
+/**
+ * Set animations to allowed
+ */
+void allow_animations(void)
+{
+	animations_allowed = true;
+}
+
+/**
+ * Set animations to disallowed
+ */
+void disallow_animations(void)
+{
+	animations_allowed = false;
+}
 
 /**
  * Update animations on request
@@ -1235,11 +1252,11 @@ static void animate(game_event_type type, game_event_data *data, void *user)
  */
 void idle_update(void)
 {
+	if (!animations_allowed) return;
 	if (msg_flag) return;
-
 	if (!character_dungeon) return;
-
-	if (!OPT(animate_flicker) || (use_graphics != GRAPHICS_NONE)) return;
+	if (!OPT(player, animate_flicker) || (use_graphics != GRAPHICS_NONE))
+		return;
 
 	/* Animate and redraw if necessary */
 	do_animation();
@@ -1281,10 +1298,10 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a,
 		wchar_t chars[] = L"*|/-\\";
 
 		*c = chars[motion];
-		*a = gf_color(typ);
+		*a = projections[typ].color;
 	} else {
-		*a = gf_to_attr[typ][motion];
-		*c = gf_to_char[typ][motion];
+		*a = proj_to_attr[typ][motion];
+		*c = proj_to_char[typ][motion];
 	}
 }
 
@@ -1294,11 +1311,11 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a,
 static void display_explosion(game_event_type type, game_event_data *data,
 							  void *user)
 {
-	bool new_radius = FALSE;
-	bool drawn = FALSE;
+	bool new_radius = false;
+	bool drawn = false;
 	int i, y, x;
-	int msec = op_ptr->delay_factor;
-	int gf_type = data->explosion.gf_type;
+	int msec = player->opts.delay_factor;
+	int proj_type = data->explosion.proj_type;
 	int num_grids = data->explosion.num_grids;
 	int *distance_to_grid = data->explosion.distance_to_grid;
 	bool drawing = data->explosion.drawing;
@@ -1317,10 +1334,10 @@ static void display_explosion(game_event_type type, game_event_data *data,
 			byte a;
 			wchar_t c;
 
-			drawn = TRUE;
+			drawn = true;
 
 			/* Obtain the explosion pict */
-			bolt_pict(y, x, y, x, gf_type, &a, &c);
+			bolt_pict(y, x, y, x, proj_type, &a, &c);
 
 			/* Just display the pict, ignoring what was under it */
 			print_rel(c, a, y, x);
@@ -1331,9 +1348,9 @@ static void display_explosion(game_event_type type, game_event_data *data,
 
 		/* Check for new radius, taking care not to overrun array */
 		if (i == num_grids - 1)
-			new_radius = TRUE;
+			new_radius = true;
 		else if (distance_to_grid[i + 1] > distance_to_grid[i])
-			new_radius = TRUE;
+			new_radius = true;
 
 		/* We have all the grids at the current radius, so draw it */
 		if (new_radius) {
@@ -1347,7 +1364,7 @@ static void display_explosion(game_event_type type, game_event_data *data,
 				Term_xtra(TERM_XTRA_DELAY, msec);
 			}
 
-			new_radius = FALSE;
+			new_radius = false;
 		}
 	}
 
@@ -1380,8 +1397,8 @@ static void display_explosion(game_event_type type, game_event_data *data,
 static void display_bolt(game_event_type type, game_event_data *data,
 						 void *user)
 {
-	int msec = op_ptr->delay_factor;
-	int gf_type = data->bolt.gf_type;
+	int msec = player->opts.delay_factor;
+	int proj_type = data->bolt.proj_type;
 	bool drawing = data->bolt.drawing;
 	bool seen = data->bolt.seen;
 	bool beam = data->bolt.beam;
@@ -1396,7 +1413,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 		wchar_t c;
 
 		/* Obtain the bolt pict */
-		bolt_pict(oy, ox, y, x, gf_type, &a, &c);
+		bolt_pict(oy, ox, y, x, proj_type, &a, &c);
 
 		/* Visual effects */
 		print_rel(c, a, y, x);
@@ -1414,7 +1431,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 		if (beam) {
 
 			/* Obtain the explosion pict */
-			bolt_pict(y, x, y, x, gf_type, &a, &c);
+			bolt_pict(y, x, y, x, proj_type, &a, &c);
 
 			/* Visual effects */
 			print_rel(c, a, y, x);
@@ -1431,7 +1448,7 @@ static void display_bolt(game_event_type type, game_event_data *data,
 static void display_missile(game_event_type type, game_event_data *data,
 							void *user)
 {
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 	struct object *obj = data->missile.obj;
 	bool seen = data->missile.seen;
 	int y = data->missile.y;
@@ -1459,7 +1476,7 @@ static void display_missile(game_event_type type, game_event_data *data,
  * ------------------------------------------------------------------------ */
 
 /**
- * TRUE when we're supposed to display the equipment in the inventory 
+ * true when we're supposed to display the equipment in the inventory 
  * window, or vice-versa.
  */
 static bool flip_inven;
@@ -1693,7 +1710,7 @@ static void update_minimap_subwindow(game_event_type type,
 		/* Restore */
 		Term_activate(old);
 
-		flags->needs_redraw = FALSE;
+		flags->needs_redraw = false;
 	} else if (type == EVENT_DUNGEONLEVEL) {
 		/* XXX map_height and map_width need to be kept in sync with
 		 * display_map() */
@@ -1704,7 +1721,7 @@ static void update_minimap_subwindow(game_event_type type,
 		/* Clear the entire term if the new map isn't going to fit the
 		 * entire thing */
 		if (cave->height <= map_height || cave->width <= map_width) {
-			flags->needs_redraw = TRUE;
+			flags->needs_redraw = true;
 		}
 	}
 }
@@ -1878,7 +1895,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 									   game_event_handler *fn, void *user);
 
 	/* Decide whether to register or deregister an evenrt handler */
-	if (new_state == FALSE) {
+	if (new_state == false) {
 		register_or_deregister = event_remove_handler;
 		set_register_or_deregister = event_remove_handler_set;
 	} else {
@@ -2156,7 +2173,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data,
 static void refresh(game_event_type type, game_event_data *data, void *user)
 {
 	/* Place cursor on player/target */
-	if (OPT(show_target) && target_sighted()) {
+	if (OPT(player, show_target) && target_sighted()) {
 		int col, row;
 		target_get(&col, &row);
 		move_cursor_relative(row, col);
@@ -2169,7 +2186,7 @@ static void repeated_command_display(game_event_type type,
 									 game_event_data *data, void *user)
 {
 	/* Assume messages were seen */
-	msg_flag = FALSE;
+	msg_flag = false;
 
 	/* Clear the top line */
 	prt("", 0, 0);
@@ -2188,14 +2205,14 @@ static void new_level_display_update(game_event_type type,
 	/* If autosave is pending, do it now. */
 	if (player->upkeep->autosave) {
 		save_game();
-		player->upkeep->autosave = FALSE;
+		player->upkeep->autosave = false;
 	}
 
 	/* Choose panel */
 	verify_panel();
 
 	/* Hack -- Invoke partial update mode */
-	player->upkeep->only_partial = TRUE;
+	player->upkeep->only_partial = true;
 
 	/* Clear */
 	Term_clear();
@@ -2210,10 +2227,7 @@ static void new_level_display_update(game_event_type type,
 	update_stuff(player);
 
 	/* Fully update the visuals (and monster distances) */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_DISTANCE);
-
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
 	/* Redraw dungeon */
 	player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
@@ -2232,7 +2246,7 @@ static void new_level_display_update(game_event_type type,
 	redraw_stuff(player);
 
 	/* Hack -- Kill partial update mode */
-	player->upkeep->only_partial = FALSE;
+	player->upkeep->only_partial = false;
 
 	/* Refresh */
 	Term_fresh();
@@ -2259,20 +2273,18 @@ static void check_panel(game_event_type type, game_event_data *data, void *user)
 static void see_floor_items(game_event_type type, game_event_data *data,
 							void *user)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int floor_max = z_info->floor_size;
 	struct object **floor_list = mem_zalloc(floor_max * sizeof(*floor_list));
 	int floor_num = 0;
 	bool blind = ((player->timed[TMD_BLIND]) || (no_light()));
 
 	const char *p = "see";
-	bool can_pickup = FALSE;
+	bool can_pickup = false;
 	int i;
 
-	/* Scan all marked objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x09, FALSE);
+	/* Scan all visible, sensed objects in the grid */
+	floor_num = scan_floor(floor_list, floor_max,
+						   OFLOOR_SENSE | OFLOOR_VISIBLE, NULL);
 	if (floor_num == 0) {
 		mem_free(floor_list);
 		return;
@@ -2281,7 +2293,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 	/* Can we pick any up? */
 	for (i = 0; i < floor_num; i++)
 	    if (inven_carry_okay(floor_list[i]))
-			can_pickup = TRUE;
+			can_pickup = true;
 
 	/* One object */
 	if (floor_num == 1) {
@@ -2324,16 +2336,6 @@ static void see_floor_items(game_event_type type, game_event_data *data,
 		screen_load();
 	}
 
-	/* Update the map to display the items that are felt during blindness. */
-	if (blind) {
-		for (i = 0; i < floor_num; i++) {
-			/* Since the messages are detailed, we use MARK_SEEN to match
-			 * description. */
-			struct object *obj = floor_list[i];
-			obj->marked = MARK_SEEN;
-		}
-	}
-
 	mem_free(floor_list);
 }
 
@@ -2341,6 +2343,7 @@ static void see_floor_items(game_event_type type, game_event_data *data,
  * ------------------------------------------------------------------------
  * Initialising
  * ------------------------------------------------------------------------ */
+
 /**
  * Process the user pref files relevant to a newly loaded character
  */
@@ -2350,14 +2353,16 @@ static void process_character_pref_files(void)
 	char buf[1024];
 
 	/* Process the "window.prf" file */
-	process_pref_file("window.prf", TRUE, TRUE);
+	process_pref_file("window.prf", true, true);
 
 	/* Process the "user.prf" file */
-	process_pref_file("user.prf", TRUE, TRUE);
+	process_pref_file("user.prf", true, true);
 
-	/* Process the pref file based on the character name */
-	strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(player, TRUE));
-	found = process_pref_file(buf, TRUE, TRUE);
+	/* Get the filesystem-safe name and append .prf */
+	player_safe_name(buf, sizeof(buf), player->full_name, true);
+	my_strcat(buf, ".prf", sizeof(buf));
+
+	found = process_pref_file(buf, true, true);
 
     /* Try pref file using savefile name if we fail using character name */
     if (!found) {
@@ -2366,7 +2371,7 @@ static void process_character_pref_files(void)
 
 		my_strcpy(filename, &savefile[filename_index], sizeof(filename));
 		strnfmt(buf, sizeof(buf), "%s.prf", filename);
-		process_pref_file(buf, TRUE, TRUE);
+		process_pref_file(buf, true, true);
     }
 }
 
@@ -2384,7 +2389,7 @@ static void ui_leave_init(game_event_type type, game_event_data *data,
 						  void *user)
 {
 	/* Reset visuals, then load prefs */
-	reset_visuals(TRUE);
+	reset_visuals(true);
 	process_character_pref_files();
 
 	/* Remove our splashscreen handlers */
@@ -2401,7 +2406,7 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 						  void *user)
 {
 	/* Allow big cursor */
-	smlcurs = FALSE;
+	smlcurs = false;
 
 	/* Redraw stuff */
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
@@ -2473,7 +2478,7 @@ static void ui_leave_world(game_event_type type, game_event_data *data,
 						  void *user)
 {
 	/* Disallow big cursor */
-	smlcurs = TRUE;
+	smlcurs = true;
 
 	/* Because of the "flexible" sidebar, all these things trigger
 	   the same function. */

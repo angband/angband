@@ -108,26 +108,26 @@ typedef enum
 /** Utility functions **/
 
 /**
- * Returns TRUE if `fname` exists (and is a file), FALSE otherwise.
+ * Returns true if `fname` exists (and is a file), false otherwise.
  */
 bool file_exists(const char *fname);
 
 /**
  * Tries to delete `fname`.
  *
- * Returns TRUE if successful, FALSE otherwise.
+ * Returns true if successful, false otherwise.
  */
 bool file_delete(const char *fname);
 
 /**
  * Moves the file `fname` to `newname`.
  *
- * Returns TRUE if successful, FALSE otherwise.
+ * Returns true if successful, false otherwise.
  */
 bool file_move(const char *fname, const char *newname);
 
 /**
- * Returns TRUE if the file `first` is newer than `second`.
+ * Returns true if the file `first` is newer than `second`.
  */
 bool file_newer(const char *first, const char *second);
 
@@ -161,7 +161,7 @@ extern void (*file_open_hook)(const char *path, file_type ftype);
 /**
  * Attempt to close the file handle `f`.
  *
- * Returns TRUE if successful, FALSE otherwise.
+ * Returns true if successful, false otherwise.
  */
 bool file_close(ang_file *f);
 
@@ -187,14 +187,14 @@ void file_unlock(ang_file *f);
  * This expands tabs, replaces non-printables with '?', and deals with differing
  * line endings.
  *
- * Returns TRUE when data is returned; FALSE otherwise.
+ * Returns true when data is returned; false otherwise.
  */
 bool file_getl(ang_file *f, char *buf, size_t n);
 
 /**
  * Write the string pointed to by `buf` to the file represented by `f`.
  *
- * Returns TRUE if successful, FALSE otherwise.
+ * Returns true if successful, false otherwise.
  */
 bool file_put(ang_file *f, const char *buf);
 
@@ -209,7 +209,7 @@ bool file_vputf(ang_file *f, const char *fmt, va_list vp);
 
 /**
  * Skip 'bytes' bytes.
- * \returns TRUE if successful, FALSE otherwise.
+ * \returns true if successful, false otherwise.
  */
 bool file_skip(ang_file *f, int bytes);
 
@@ -223,7 +223,7 @@ int file_read(ang_file *f, char *buf, size_t n);
  * Write the first `n` bytes following the pointer `buf` to the file represented
  * by `f`.  Do not mix with calls to file_writec().
  *
- * Returns TRUE if successful, FALSE otherwise.
+ * Returns true if successful, false otherwise.
  */
 bool file_write(ang_file *f, const char *buf, size_t n);
 
@@ -231,14 +231,14 @@ bool file_write(ang_file *f, const char *buf, size_t n);
  * Read a byte from the file represented by `f` and place it at the location
  * specified by 'b'.
  *
- * Returns TRUE if successful, FALSE otherwise.
+ * Returns true if successful, false otherwise.
  */
 bool file_readc(ang_file *f, byte *b);
 
 /**
  * Write the byte `b` to the file represented by `f`.
  *
- * Returns TRUE if successful, FALSE otherwise.
+ * Returns true if successful, false otherwise.
  */
 bool file_writec(ang_file *f, byte b);
 
@@ -284,8 +284,8 @@ ang_dir *my_dopen(const char *dirname);
  * `dir` must point to a directory handle previously returned by my_dopen().
  * `fname` must be a pointer to a writeable chunk of memory `len` long.
  *
- * Returns TRUE on successful reading, FALSE otherwise.
- * (FALSE generally indicates that there are no more files to be read.)
+ * Returns true on successful reading, false otherwise.
+ * (false generally indicates that there are no more files to be read.)
  */
 bool my_dread(ang_dir *dir, char *fname, size_t len);
 

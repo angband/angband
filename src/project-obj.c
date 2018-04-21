@@ -22,12 +22,13 @@
 #include "obj-chest.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "source.h"
+
 
 /**
  * Destroys a type of item on a given percent chance.
@@ -71,7 +72,7 @@ int inven_damage(struct player *p, int type, int cperc)
 			int chance = cperc;
 
 			/* Track if it is damaged instead of destroyed */
-			damage = FALSE;
+			damage = false;
 
 			/* Analyze the type to see if we just damage it
 			 * - we also check for rods to reduce chance */
@@ -80,10 +81,14 @@ int inven_damage(struct player *p, int type, int cperc)
 				if (randint0(10000) < cperc) {
 					/* Damage the item */
 					obj->to_h--;
+					if (p->obj_k->to_h)
+						obj->known->to_h = obj->to_h;
 					obj->to_d--;
+					if (p->obj_k->to_d)
+						obj->known->to_d = obj->to_d;
 
 					/* Damaged! */
-					damage = TRUE;
+					damage = true;
 				} else {
 					obj = next;
 					continue;
@@ -93,9 +98,11 @@ int inven_damage(struct player *p, int type, int cperc)
 				if (randint0(10000) < cperc) {
 					/* Damage the item */
 					obj->to_a--;
+					if (p->obj_k->to_a)
+						obj->known->to_a = obj->to_a;
 
 					/* Damaged! */
-					damage = TRUE;
+					damage = true;
 				} else {
 					obj = next;
 					continue;
@@ -120,7 +127,7 @@ int inven_damage(struct player *p, int type, int cperc)
 			/* Some casualities */
 			if (amt) {
 				struct object *destroyed;
-				bool none_left = FALSE;
+				bool none_left = false;
 
 				/* Get a description */
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
@@ -139,7 +146,9 @@ int inven_damage(struct player *p, int type, int cperc)
 					continue;
 
 				/* Destroy "amt" items */
-				destroyed = gear_object_for_use(obj, amt, FALSE, &none_left);
+				destroyed = gear_object_for_use(obj, amt, false, &none_left);
+				if (destroyed->known)
+					object_delete(&destroyed->known);
 				object_delete(&destroyed);
 
 				/* Count the casualties */
@@ -159,7 +168,7 @@ int inven_damage(struct player *p, int type, int cperc)
  * ------------------------------------------------------------------------ */
 
 typedef struct project_object_handler_context_s {
-	const int who;
+	const struct source origin;
 	const int r;
 	const int y;
 	const int x;
@@ -189,11 +198,11 @@ static void project_object_elemental(project_object_handler_context_t *context,
 									 const char *plural_verb)
 {
 	if (context->obj->el_info[element].flags & EL_INFO_HATES) {
-		context->do_kill = TRUE;
+		context->do_kill = true;
 		context->note_kill = VERB_AGREEMENT(context->obj->number,
 											singular_verb, plural_verb);
 		context->ignore = (context->obj->el_info[element].flags &
-						   EL_INFO_IGNORE) ? TRUE : FALSE;
+						   EL_INFO_IGNORE) ? true : false;
 	}
 }
 
@@ -310,17 +319,13 @@ static void project_object_handler_MISSILE(project_object_handler_context_t *con
 /* Mana -- destroys everything */
 static void project_object_handler_MANA(project_object_handler_context_t *context)
 {
-	context->do_kill = TRUE;
+	context->do_kill = true;
 	context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
 }
 
 /* Holy Orb -- destroys cursed non-artifacts */
 static void project_object_handler_HOLY_ORB(project_object_handler_context_t *context)
 {
-	if (cursed_p(context->obj->flags)) {
-		context->do_kill = TRUE;
-		context->note_kill = VERB_AGREEMENT(context->obj->number, "is destroyed", "are destroyed");
-	}
 }
 
 static void project_object_handler_ARROW(project_object_handler_context_t *context)
@@ -339,23 +344,8 @@ static void project_object_handler_KILL_WALL(project_object_handler_context_t *c
 {
 }
 
-/* Unlock chests */
 static void project_object_handler_KILL_DOOR(project_object_handler_context_t *context)
 {
-	/* Chests are noticed only if trapped or locked */
-	if (is_locked_chest(context->obj)) {
-		/* Disarm or Unlock */
-		unlock_chest((struct object * const)context->obj);
-
-		/* Identify */
-		object_notice_everything((struct object * const)context->obj);
-
-		/* Notice */
-		if (context->obj->marked > MARK_UNAWARE && !ignore_item_ok(context->obj)) {
-			msg("Click!");
-			context->obvious = TRUE;
-		}
-	}
 }
 
 /* Unlock chests */
@@ -366,13 +356,11 @@ static void project_object_handler_KILL_TRAP(project_object_handler_context_t *c
 		/* Disarm or Unlock */
 		unlock_chest((struct object * const)context->obj);
 
-		/* Identify */
-		object_notice_everything((struct object * const)context->obj);
-
 		/* Notice */
-		if (context->obj->marked > MARK_UNAWARE && !ignore_item_ok(context->obj)) {
+		if (context->obj->known && !ignore_item_ok(context->obj)) {
+			context->obj->known->pval = context->obj->pval;
 			msg("Click!");
-			context->obvious = TRUE;
+			context->obvious = true;
 		}
 	}
 }
@@ -385,16 +373,89 @@ static void project_object_handler_MAKE_TRAP(project_object_handler_context_t *c
 {
 }
 
+static void project_object_handler_AWAY_UNDEAD(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_AWAY_EVIL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_AWAY_ALL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_TURN_UNDEAD(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_TURN_EVIL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_TURN_ALL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_DISP_UNDEAD(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_DISP_EVIL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_DISP_ALL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_CLONE(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_POLY(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_HEAL(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_SPEED(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_SLOW(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_CONF(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_SLEEP(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_HOLD(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_STUN(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_MON_DRAIN(project_object_handler_context_t *context)
+{
+}
+
 static const project_object_handler_f object_handlers[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) project_object_handler_##a,
+	#define ELEM(a) project_object_handler_##a,
 	#include "list-elements.h"
 	#undef ELEM
-	#define PROJ_ENV(a, col, desc) project_object_handler_##a,
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-	#define PROJ_MON(a, obv, desc) NULL, 
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
+	#define PROJ(a) project_object_handler_##a,
+	#include "list-projections.h"
+	#undef PROJ
 	NULL
 };
 
@@ -404,13 +465,13 @@ static const project_object_handler_f object_handlers[] = {
  * Called for projections with the PROJECT_ITEM flag set, which includes
  * beam, ball and breath effects.
  *
- * \param who is the monster list index of the caster
+ * \param origin is the origin of the effect
  * \param r is the distance from the centre of the effect
- * \param y
+ * \param y the coordinates of the grid being handled
  * \param x the coordinates of the grid being handled
  * \param dam is the "damage" from the effect at distance r from the centre
- * \param typ is the projection (GF_) type
- * \param protected_obj is an object that should not be affected by the 
+ * \param typ is the projection (PROJ_) type
+ * \param protected_obj is an object that should not be affected by the
  *        projection, typically the object that created it
  * \return whether the effects were obvious
  *
@@ -419,20 +480,22 @@ static const project_object_handler_f object_handlers[] = {
  *
  * Hack -- effects on objects which are memorized but not in view are also seen.
  */
-bool project_o(int who, int r, int y, int x, int dam, int typ,
+bool project_o(struct source origin, int r, int y, int x, int dam, int typ,
 			   const struct object *protected_obj)
 {
 	struct object *obj = square_object(cave, y, x);
-	bool obvious = FALSE;
+	bool obvious = false;
 
 	/* Scan all objects in the grid */
 	while (obj) {
-		bool ignore = FALSE;
-		bool do_kill = FALSE;
+		bool ignore = false;
+		bool do_kill = false;
 		const char *note_kill = NULL;
 		struct object *next = obj->next;
+
+		project_object_handler_f object_handler = object_handlers[typ];
 		project_object_handler_context_t context = {
-			who,
+			origin,
 			r,
 			y,
 			x,
@@ -444,7 +507,6 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 			ignore,
 			note_kill,
 		};
-		project_object_handler_f object_handler = object_handlers[typ];
 
 		if (object_handler != NULL)
 			object_handler(&context);
@@ -458,31 +520,35 @@ bool project_o(int who, int r, int y, int x, int dam, int typ,
 		if (do_kill) {
 			char o_name[80];
 
-			/* Effect "observed" */
-			if (obj->marked && !ignore_item_ok(obj)) {
-				obvious = TRUE;
+			/* Effect observed */
+			if (obj->known && !ignore_item_ok(obj) &&
+				square_isseen(cave, y, x)) {
+				obvious = true;
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 			}
 
 			/* Artifacts, and other objects, get to resist */
 			if (obj->artifact || ignore) {
 				/* Observe the resist */
-				if (obj->marked && !ignore_item_ok(obj))
+				if (obvious && obj->known && !ignore_item_ok(obj))
 					msg("The %s %s unaffected!", o_name,
 						VERB_AGREEMENT(obj->number, "is", "are"));
 			} else if (obj->mimicking_m_idx) {
 				/* Reveal mimics */
-				become_aware(cave_monster(cave, obj->mimicking_m_idx));
+				if (obvious)
+					become_aware(cave_monster(cave, obj->mimicking_m_idx));
 			} else {
 				/* Describe if needed */
-				if (obj->marked && note_kill && !ignore_item_ok(obj))
+				if (obvious && obj->known && note_kill && !ignore_item_ok(obj))
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */
 				square_excise_object(cave, y, x, obj);
+				delist_object(cave, obj);
 				object_delete(&obj);
 
 				/* Redraw */
+				square_note_spot(cave, y, x);
 				square_light_spot(cave, y, x);
 			}
 		}

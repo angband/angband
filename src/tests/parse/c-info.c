@@ -20,13 +20,12 @@ int teardown_tests(void *state) {
 }
 
 int test_name0(void *state) {
-	enum parser_error r = parser_parse(state, "name:4:Ranger");
+	enum parser_error r = parser_parse(state, "name:Ranger");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	eq(c->cidx, 4);
 	require(streq(c->name, "Ranger"));
 	ok;
 }
@@ -47,14 +46,14 @@ int test_stats0(void *state) {
 }
 
 int test_skill_disarm0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-disarm:30:8");
+	enum parser_error r = parser_parse(state, "skill-disarm-phys:30:8");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
-	eq(c->c_skills[SKILL_DISARM], 30);
-	eq(c->x_skills[SKILL_DISARM], 8);
+	eq(c->c_skills[SKILL_DISARM_PHYS], 30);
+	eq(c->x_skills[SKILL_DISARM_PHYS], 8);
 	ok;
 }
 
@@ -103,18 +102,6 @@ int test_skill_search0(void *state) {
 	require(c);
 	eq(c->c_skills[SKILL_SEARCH], 24);
 	eq(c->x_skills[SKILL_SEARCH], 0);
-	ok;
-}
-
-int test_skill_search_freq0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-search-freq:16:0");
-	struct player_class *c;
-
-	eq(r, PARSE_ERROR_NONE);
-	c = parser_priv(state);
-	require(c);
-	eq(c->c_skills[SKILL_SEARCH_FREQUENCY], 16);
-	eq(c->x_skills[SKILL_SEARCH_FREQUENCY], 0);
 	ok;
 }
 
@@ -167,7 +154,7 @@ int test_skill_dig0(void *state) {
 }
 
 int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:4:30:20000:40");
+	enum parser_error r = parser_parse(state, "info:4:30");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -175,8 +162,6 @@ int test_info0(void *state) {
 	require(c);
 	eq(c->c_mhp, 4);
 	eq(c->c_exp, 30);
-	eq(c->sense_base, 20000);
-	eq(c->sense_div, 40);
 	ok;
 }
 
@@ -233,7 +218,7 @@ int test_flags0(void *state) {
 }
 
 int test_magic0(void *state) {
-	enum parser_error r = parser_parse(state, "magic:3:400:1:9");
+	enum parser_error r = parser_parse(state, "magic:3:400:9");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -253,7 +238,6 @@ struct test tests[] = {
 	{ "skill_save0", test_skill_save0 },
 	{ "skill_stealth0", test_skill_stealth0 },
 	{ "skill_search0", test_skill_search0 },
-	{ "skill_search_freq0", test_skill_search_freq0 },
 	{ "skill_melee0", test_skill_melee0 },
 	{ "skill_shoot0", test_skill_shoot0 },
 	{ "skill_throw0", test_skill_throw0 },
@@ -263,6 +247,6 @@ struct test tests[] = {
 	{ "title0", test_title0 },
 	/* { "equip0", test_equip0 }, */
 	{ "flags0", test_flags0 },
-	{ "magic0", test_magic0 },
+	//{ "magic0", test_magic0 },
 	{ NULL, NULL }
 };

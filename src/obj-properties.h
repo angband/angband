@@ -1,6 +1,6 @@
 /**
-   \file obj-properties.h
-   \brief definitions and functions for object flags and modifiers
+ * \file obj-properties.h
+ * \brief definitions and functions for object flags and modifiers
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
@@ -27,14 +27,26 @@
  * ------------------------------------------------------------------------ */
 
 /**
+ * The values for the "tval" field of various objects.
+ *
+ * This value is the primary means by which items are sorted in the
+ * player inventory, followed by "sval" and "cost".
+ */
+enum
+{
+	#define TV(a, b, c) TV_##a,
+	#include "list-tvals.h"
+	#undef TV
+
+	TV_MAX
+};
+
+/**
  * The object flags
  */
 enum {
 	OF_NONE,
-    #define STAT(a, b, c, d, e, f, g, h) OF_##c,
-    #include "list-stats.h"
-    #undef STAT
-    #define OF(a, b, c, d, e) OF_##a,
+	#define OF(a) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -52,10 +64,10 @@ enum {
  * The object modifiers
  */
 enum {
-    #define STAT(a, b, c, d, e, f, g, h) OBJ_MOD_##a,
+	#define STAT(a) OBJ_MOD_##a,
     #include "list-stats.h"
     #undef STAT
-    #define OBJ_MOD(a, b, c, d) OBJ_MOD_##a,
+    #define OBJ_MOD(a) OBJ_MOD_##a,
     #include "list-object-modifiers.h"
     #undef OBJ_MOD
 	OBJ_MOD_MAX
@@ -74,8 +86,8 @@ enum object_flag_type {
 	OFT_MISC,		/* a good property, suitable for ego items */
 	OFT_LIGHT,		/* applicable only to light sources */
 	OFT_MELEE,		/* applicable only to melee weapons */
-	OFT_CURSE,		/* a "sticky" curse */
-	OFT_BAD,		/* an undesirable flag that isn't a curse */
+	OFT_BAD,		/* an undesirable flag */
+	OFT_DIG,		/* applicable only to diggers */
 
 	OFT_MAX
 };
@@ -90,10 +102,26 @@ enum object_flag_id {
 	OFID_WIELD			/* obvious on wield */
 };
 
+/**
+ * The object property types
+ */
+enum obj_property_type {
+	OBJ_PROPERTY_NONE = 0,
+	OBJ_PROPERTY_STAT,
+	OBJ_PROPERTY_MOD,
+	OBJ_PROPERTY_FLAG,
+	OBJ_PROPERTY_IGNORE,
+	OBJ_PROPERTY_RESIST,
+	OBJ_PROPERTY_VULN,
+	OBJ_PROPERTY_IMM,
+	OBJ_PROPERTY_MAX
+};
+
 #define OF_SIZE                	FLAG_SIZE(OF_MAX)
 
 #define of_has(f, flag)        	flag_has_dbg(f, OF_SIZE, flag, #f, #flag)
 #define of_next(f, flag)       	flag_next(f, OF_SIZE, flag)
+#define of_count(f)             flag_count(f, OF_SIZE)
 #define of_is_empty(f)         	flag_is_empty(f, OF_SIZE)
 #define of_is_full(f)          	flag_is_full(f, OF_SIZE)
 #define of_is_inter(f1, f2)    	flag_is_inter(f1, f2, OF_SIZE)
@@ -106,7 +134,6 @@ enum object_flag_id {
 #define of_negate(f)           	flag_negate(f, OF_SIZE)
 #define of_copy(f1, f2)        	flag_copy(f1, f2, OF_SIZE)
 #define of_union(f1, f2)       	flag_union(f1, f2, OF_SIZE)
-#define of_comp_union(f1, f2)  	flag_comp_union(f1, f2, OF_SIZE)
 #define of_inter(f1, f2)       	flag_inter(f1, f2, OF_SIZE)
 #define of_diff(f1, f2)        	flag_diff(f1, f2, OF_SIZE)
 
@@ -126,7 +153,6 @@ enum object_flag_id {
 #define kf_negate(f)           	flag_negate(f, KF_SIZE)
 #define kf_copy(f1, f2)        	flag_copy(f1, f2, KF_SIZE)
 #define kf_union(f1, f2)       	flag_union(f1, f2, KF_SIZE)
-#define kf_comp_union(f1, f2)  	flag_comp_union(f1, f2, KF_SIZE)
 #define kf_inter(f1, f2)       	flag_inter(f1, f2, KF_SIZE)
 #define kf_diff(f1, f2)        	flag_diff(f1, f2, KF_SIZE)
 
@@ -137,43 +163,33 @@ enum object_flag_id {
  * ------------------------------------------------------------------------ */
 
 /**
- * The object flag structure
+ * The object property structure
  */
-struct object_flag {
-	u16b index;				/* the OF_ index */
-	u16b id;				/* how is it identified */
-	u16b type;				/* OFT_ category */
-	s16b power;				/* base power rating */
-	const char *message;	/* id message */
+struct obj_property {
+	struct obj_property *next;
+	int type;				/* type of property */
+	int subtype;			/* subtype of property */
+	int id_type;			/* how the property is identified (flags only?) */
+	int index;				/* index of the property for its type */
+	int power;				/* base power rating */
+	int mult;				/* relative weight rating */
+	int type_mult[TV_MAX];	/* relative weight rating specific to object type */
+	char *name;				/* property name */
+	char *adjective;		/* adjective for property */
+	char *neg_adj;			/* adjective for negative of property */
+	char *msg;				/* message on noticing property */
+	char *desc;				/* extra text for object info */
 };
 
-/**
- * The object modifier structure
- */
-struct object_mod {
-	u16b index;				/* the OBJ_MOD_ index */
-	s16b power;				/* base power rating */
-	s16b mod_mult;			/* modifier weight rating */
-	const char *name;		/* id message */
-};
-
+extern struct obj_property *obj_properties;
 
 /**
  * ------------------------------------------------------------------------
  * Functions
  * ------------------------------------------------------------------------ */
-bool cursed_p(const bitflag *f);
-void create_mask(bitflag *f, bool id, ...);
-s32b flag_power(int flag);
-void log_flags(bitflag *f, ang_file *log_file);
-const char *flag_name(int flag);
-s16b flag_slot_mult(int flag, int slot);
-int obj_flag_type(int flag);
+struct obj_property *lookup_obj_property(int type, int index);
+void create_obj_flag_mask(bitflag *f, bool id, ...);
 void flag_message(int flag, char *name);
 int sustain_flag(int stat);
-const char *mod_name(int mod);
-s32b mod_power(int mod);
-int mod_mult(int mod);
-s16b mod_slot_mult(int mod, int slot);
 
 #endif /* !INCLUDED_OBJPROPERTIES_H */

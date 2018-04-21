@@ -549,10 +549,10 @@ void text_out_c(byte a, const char *fmt, ...)
 /**
  * Given a "formatted" chunk of text (i.e. one including tags like {red}{/})
  * in 'source', with starting point 'init', this finds the next section of
- * text and any tag that goes with it, return TRUE if it finds something to 
+ * text and any tag that goes with it, return true if it finds something to 
  * print.
  * 
- * If it returns TRUE, then it also fills 'text' with a pointer to the start
+ * If it returns true, then it also fills 'text' with a pointer to the start
  * of the next printable section of text, and 'len' with the length of that 
  * text, and 'end' with a pointer to the start of the next section.  This
  * may differ from "text + len" because of the presence of tags.  If a tag
@@ -570,7 +570,7 @@ static bool next_section(const char *source, size_t init, const char **text,
 
 	*tag = NULL;
 	*text = source + init;
-	if (*text[0] == '\0') return FALSE;
+	if (*text[0] == '\0') return false;
 
 	next = strchr(*text, '{');
 	while (next)
@@ -594,24 +594,24 @@ static bool next_section(const char *source, size_t init, const char **text,
 					*text = s + 1;
 					*len = close - *text;
 					*end = close + 3;
-					return TRUE;
+					return true;
 				} else {
 					/* Otherwise return the chunk up to this */
 					*len = next - *text;
 					*end = *text + *len;
-					return TRUE;
+					return true;
 				}
 			} else {
 				/* No closing thing, therefore all one lump of text. */
 				*len = strlen(*text);
 				*end = *text + *len;
-				return TRUE;
+				return true;
 			}
 		} else if (*s == '\0') {
 			/* End of the string, that's fine. */
 			*len = strlen(*text);
 			*end = *text + *len;
-			return TRUE;
+			return true;
 		} else {
 			/* An invalid tag, skip it. */
 			next = next + 1;
@@ -624,7 +624,7 @@ static bool next_section(const char *source, size_t init, const char **text,
 	*len = strlen(*text);
 	*end = *text + *len;
 
-	return TRUE;
+	return true;
 }
 
 /**

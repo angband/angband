@@ -19,6 +19,7 @@
 #ifndef INCLUDED_EFFECTS_H
 #define INCLUDED_EFFECTS_H
 
+#include "source.h"
 #include "object.h"
 
 /* Types of effect */
@@ -33,8 +34,6 @@ typedef enum
 
 /*** Functions ***/
 
-bool remove_all_curse(void);
-
 void free_effect(struct effect *source);
 bool effect_valid(struct effect *effect);
 bool effect_aim(struct effect *effect);
@@ -42,8 +41,20 @@ const char *effect_info(struct effect *effect);
 const char *effect_desc(struct effect *effect);
 effect_index effect_lookup(const char *name);
 int effect_param(int index, const char *type);
-bool effect_do(struct effect *effect, struct object *obj, bool *ident,
-			   bool aware, int dir, int beam, int boost);
-void effect_simple(int index, const char* dice_string, int p1, int p2, int p3, bool *ident);
+bool effect_do(struct effect *effect,
+	struct source origin,
+	struct object *obj,
+	bool *ident,
+	bool aware,
+	int dir,
+	int beam,
+	int boost);
+void effect_simple(int index,
+	struct source origin,
+	const char *dice_string,
+	int p1,
+	int p2,
+	int p3,
+	bool *ident);
 
 #endif /* INCLUDED_EFFECTS_H */

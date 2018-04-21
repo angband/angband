@@ -1,0 +1,20 @@
+# realm.txt
+
+# name: realm name
+# stat: primary spellcasting stat
+# verb: verb used for creating a magic effect
+# spell-noun: name of magic effects
+# book-noun: type of book used
+
+
+name:arcane
+stat:INT
+verb:cast
+spell-noun:spell
+book-noun:magic book
+
+name:divine
+stat:WIS
+verb:recite
+spell-noun:prayer
+book-noun:prayer book

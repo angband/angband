@@ -1,4 +1,89 @@
-Welcome to the changelog for Angband 4.0. This file tracks the changes made since 3.5.1.
+Welcome to the changelog for Angband 4. This file tracks the changes made since
+3.5.1.
+
+Angband 4.1.0
+=============
+
+This version has the first major gameplay changes since 3.5.0.  Some of these
+changes have significant impact on the game, and affect longstanding parts of
+the game quite radically.  Given that aver 750 individual changes have been
+pushed to the main game repository since the last release, what is presented
+here will be more of a summary than a detailed changelog.
+
+Traps
+ - The general philosophy is that all players will hit traps at some time
+ - Magical trap detection has been removed, except as a spell for mages
+ - Active searching has been removed
+ - Characters have one chance to detect a trap, on seeing the grid it is on;
+   this chance is dependent on searching skill
+ - Traps are either physical or magical, and there is a corresponding split
+   in the player disarming skill
+ - Many new traps have been introduced, and old ones amended
+ - Traps are placed almost exclusively at corridor intersections or other
+   chokepoints
+ - Trap density in vaults is reduced by 75%
+
+Identify
+ - ID is now "rune-based"; once an object properry is recognised once, it will
+   always be recognised on all future items
+ - The only forms of magical identify are scrolls and the mage spell, both of
+   which identify a single unknown rune
+ - All scrolls, potions, mushrooms are identified on their first use
+ - Most wands, staffs and rods are identified on first use, the main exceptions
+   being when they affect monsters and are tested in the absence of monsters
+ - Ego item names become known once all the relevant runes are known
+
+Player knowledge
+ - Changes to previously known terrain outside the player's field of view
+   (doors opening, etc) are no longer immediately known by the player
+ - Secret doors are now always found on stepping adjacent (or at a distance
+   by the mage spell)
+
+Dungeon generation
+ - A new generation algorithm has been introduced, and appears roughly as often
+   as the classical generation algorithm
+ - There are many new vaults in the new algorithm, and also new room types -
+   huge rooms, rooms of chambers, and interesting rooms (like small vaults)
+ - There is also an infrequently occurring generation type, the "moria level",
+   which features large rough-edged rooms and many orcs, trolls and ogres
+ - Lava has changed from being a visual curiosity in town in 4.0.x to being
+   generated in the dungeon; it will burn those without fire immunity
+ - Another new type of terrain has been introduced: passable rubble, which
+   behaves like regular rubble except it can be walked through
+
+Monsters
+ - Monster breaths are now cone-shaped starting at the monster, instead of
+   being indistinguishable from ball spells
+ - Monster pathfinding has been improved (mostly), with monsters tracking
+   explicitly by sight, sound or scent
+ - The relationship between player stealth and monsters waking has changed
+
+Random artifacts
+ - Lights, rings and amulets are now fully randomised instead of based closely
+   on the standard special artifacts
+ - The artifact set generation algorithm has been changed so that random
+   artifacts no longer correspond to individual standard artifacts, but rather
+   are generated so as to get a statistically similar distribution
+ - Calculation of object power has been simplified
+ - Generating a set of random artifacts now actually writes a data file like
+   artifact.txt, which can be used for future games
+
+Curses
+ - Sticky curses have been removed completely
+ - A large number of new curses have been introduced
+ - Items can have multiple curses
+ - Curse removal targets individual known curses on items
+ - Failed curse removal causes an item to become fragile
+ - Fragile items have a chance to be destroyed on future failed curse removals
+
+Status effects
+ - Monster status effects have been redone to rebalance reliability and
+   effectiveness, so that they may actually be interesting to use
+ - New types of status-inducing spells and magic devices have been included
+
+Other
+ - Much more detail has been moved out to text files in lib/gamedata
+ - Many underlying code improvements
 
 Angband 4.0.5
 =============
@@ -28,7 +113,7 @@ Bugfixes
  - Remove duplicate labels in death info
  - Remove help about bashing and jamming doors
  - Code improvements to directory paths
- - Fix bug where two players temporarily appeared on panel change while running
+ - Fix bug where two players temporarily appeared on panel change while runni$
  - Fix subwindow map drawing
  - Plug some memory leaks
  - Grammatical correction to tombstone

@@ -21,30 +21,6 @@
 #define OBJECT_POWER_H
 
 /**
- * Constants for the power algorithm:
- * - fudge factor for extra damage from rings etc. (used if extra blows)
- * - assumed damage for off-weapon brands
- * - base power for jewelry
- * - base power for armour items (for halving acid damage)
- * - power per point of damage
- * - power per point of +to_hit
- * - power per point of base AC
- * - power per point of +to_ac
- * (these four are all halved in the algorithm)
- * - assumed max blows
- * - inhibiting values for +blows/might/shots/immunities (max is one less)
- */
-#define NONWEAP_DAMAGE   		15 /* fudge to boost extra blows */
-#define WEAP_DAMAGE				12 /* and for off-weapon combat flags */
-#define BASE_JEWELRY_POWER		 4
-#define BASE_ARMOUR_POWER		 1
-#define DAMAGE_POWER             5 /* i.e. 2.5 */
-#define TO_HIT_POWER             3 /* i.e. 1.5 */
-#define BASE_AC_POWER            2 /* i.e. 1 */
-#define TO_AC_POWER              2 /* i.e. 1 */
-#define MAX_BLOWS                5
-
-/**
  * Some constants used in randart generation and power calculation
  * - thresholds for limiting to_hit, to_dam and to_ac
  * - fudge factor for rescaling ammo cost
@@ -63,13 +39,44 @@
 #define VERYHIGH_TO_DAM		26
 #define AMMO_RESCALER		20 /* this value is also used for torches */
 
+
+enum power_calc_operation {
+	POWER_CALC_NONE,
+	POWER_CALC_ADD,
+	POWER_CALC_ADD_IF_POSITIVE,
+	POWER_CALC_SQUARE_ADD_IF_POSITIVE,
+	POWER_CALC_MULTIPLY,
+	POWER_CALC_DIVIDE,
+	POWER_CALC_MAX
+};
+
+/*** Structures ***/
+
+struct iterate {
+	int property_type;
+	int max;
+};
+
+struct power_calc {
+	struct power_calc *next;
+	char *name;			/**< Name of the calculation */
+	struct poss_item *poss_items;
+	dice_t *dice;		/**< Dice expression used in the calculation */
+	int operation;		/**< How the calculation operates on power */
+	struct iterate iterate;	/**< What the calculation iterates over */
+	char *apply_to;		/**< What the calculation is applied to */
+};
+
+
+extern struct power_calc *calculations;
+
 /*** Functions ***/
 
-s32b object_power(const struct object *obj, int verbose, ang_file *log_file,
-				  bool known);
-s32b object_value_real(const struct object *obj, int qty, int verbose,
-					   bool known);
-s32b object_value(const struct object *obj, int qty, int verbose);
+extern expression_base_value_f power_calculation_by_name(const char *name);
+
+int object_power(const struct object *obj, bool verbose, ang_file *log_file);
+int object_value_real(const struct object *obj, int qty);
+int object_value(const struct object *obj, int qty);
 
 
 #endif /* OBJECT_POWER_H */

@@ -37,7 +37,7 @@ extern char *argv0;
 /**
  * Aux functions
  */
-size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
+extern size_t (*text_mbcs_hook)(wchar_t *dest, const char *src, int n);
 extern void (*plog_aux)(const char *);
 extern void (*quit_aux)(const char *);
 
@@ -163,6 +163,11 @@ extern void quit(const char *str);
  */
 extern void sort(void *array, size_t nmemb, size_t smemb,
 		 int (*comp)(const void *a, const void *b));
+
+/**
+ * Create a hash for a string
+ */
+u32b djb2_hash(const char *str);
 
 /**
  * Mathematical functions

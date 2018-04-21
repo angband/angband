@@ -63,7 +63,7 @@ int test_newgame(void *state) {
 	cmdq_push(CMD_ACCEPT_CHARACTER);
 	cmdq_execute(CMD_BIRTH);
 
-	eq(player->is_dead, FALSE);
+	eq(player->is_dead, false);
 	cave_generate(&cave, player);
 	on_new_level();
 	notnull(cave);
@@ -71,10 +71,10 @@ int test_newgame(void *state) {
 	eq(player->food, PY_FOOD_FULL - 1);
 
 	/* Should be all set up to save properly now */
-	eq(savefile_save("Test1"), TRUE);
+	eq(savefile_save("Test1"), true);
 
 	/* Make sure it saved properly */
-	eq(file_exists("Test1"), TRUE);
+	eq(file_exists("Test1"), true);
 
 	ok;
 }
@@ -82,9 +82,9 @@ int test_newgame(void *state) {
 int test_loadgame(void *state) {
 
 	/* Try loading the just-saved game */
-	eq(savefile_load("Test1", FALSE), TRUE);
+	eq(savefile_load("Test1", false), true);
 
-	eq(player->is_dead, FALSE);
+	eq(player->is_dead, false);
 	notnull(cave);
 	eq(player->chp, player->mhp);
 	eq(player->food, PY_FOOD_FULL - 1);
@@ -95,7 +95,7 @@ int test_loadgame(void *state) {
 int test_stairs1(void *state) {
 
 	/* Load the saved game */
-	eq(savefile_load("Test1", FALSE), TRUE);
+	eq(savefile_load("Test1", false), true);
 
 	cmdq_push(CMD_GO_DOWN);
 	run_game_loop();
@@ -107,7 +107,7 @@ int test_stairs1(void *state) {
 int test_stairs2(void *state) {
 
 	/* Load the saved game */
-	eq(savefile_load("Test1", FALSE), TRUE);
+	eq(savefile_load("Test1", false), true);
 
 	cmdq_push(CMD_WALK);
 	cmd_set_arg_direction(cmdq_peek(), "direction", 2);
@@ -125,7 +125,7 @@ int test_stairs2(void *state) {
 int test_drop_pickup(void *state) {
 
 	/* Load the saved game */
-	eq(savefile_load("Test1", FALSE), TRUE);
+	eq(savefile_load("Test1", false), true);
 
 	cmdq_push(CMD_WALK);
 	cmd_set_arg_direction(cmdq_peek(), "direction", 2);
@@ -148,7 +148,7 @@ int test_drop_eat(void *state) {
 	int num = 0;
 
 	/* Load the saved game */
-	eq(savefile_load("Test1", FALSE), TRUE);
+	eq(savefile_load("Test1", false), true);
 	num = player->upkeep->inven[0]->number;
 
 	cmdq_push(CMD_WALK);

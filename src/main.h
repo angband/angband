@@ -23,9 +23,6 @@
 #include "angband.h"
 #include "ui-term.h"
 
-extern errr init_sound_sdl(int argc, char **argv);
-
-
 extern errr init_lfb(int argc, char **argv);
 extern errr init_x11(int argc, char **argv);
 extern errr init_xpj(int argc, char **argv);

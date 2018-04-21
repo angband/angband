@@ -19,13 +19,12 @@ int teardown_tests(void *state) {
 }
 
 int test_name0(void *state) {
-	enum parser_error r = parser_parse(state, "name:544:Carcharoth, the Jaws of Thirst");
+	enum parser_error r = parser_parse(state, "name:Carcharoth, the Jaws of Thirst");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
-	eq(mr->ridx, 544);
 	require(streq(mr->name, "Carcharoth, the Jaws of Thirst"));
 	ok;
 }
@@ -54,32 +53,101 @@ int test_color0(void *state) {
 	ok;
 }
 
-int test_info0(void *state) {
-	enum parser_error r = parser_parse(state, "info:7:500:80:22:3");
+int test_speed0(void *state) {
+	enum parser_error r = parser_parse(state, "speed:7");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
 	eq(mr->speed, 7);
+	ok;
+}
+
+int test_hp0(void *state) {
+	enum parser_error r = parser_parse(state, "hit-points:500");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->avg_hp, 500);
-	eq(mr->aaf, 80);
+	ok;
+}
+
+int test_hearing0(void *state) {
+	enum parser_error r = parser_parse(state, "hearing:80");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	eq(mr->hearing, 80);
+	ok;
+}
+
+int test_smell0(void *state) {
+	enum parser_error r = parser_parse(state, "smell:30");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	eq(mr->smell, 30);
+	ok;
+}
+
+int test_ac0(void *state) {
+	enum parser_error r = parser_parse(state, "armor-class:22");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->ac, 22);
+	ok;
+}
+
+int test_sleep0(void *state) {
+	enum parser_error r = parser_parse(state, "sleepiness:3");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->sleep, 3);
 	ok;
 }
 
-int test_power0(void *state) {
-	enum parser_error r = parser_parse(state, "power:42:11:27:6:4");
+int test_depth0(void *state) {
+	enum parser_error r = parser_parse(state, "depth:42");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
 	eq(mr->level, 42);
+	ok;
+}
+
+int test_rarity0(void *state) {
+	enum parser_error r = parser_parse(state, "rarity:11");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->rarity, 11);
-	eq(mr->power, 27);
-	eq(mr->scaled_power, 6);
+	ok;
+}
+
+int test_mexp0(void *state) {
+	enum parser_error r = parser_parse(state, "experience:4");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
 	eq(mr->mexp, 4);
 	ok;
 }
@@ -164,10 +232,17 @@ struct test tests[] = {
 	{ "name0", test_name0 },
 	{ "color0", test_color0 },
 	{ "base0", test_base0 },
-	{ "info0", test_info0 },
-	{ "power0", test_power0 },
-	{ "blow0", test_blow0 },
-	{ "blow1", test_blow1 },
+	{ "speed0", test_speed0 },
+	{ "hp0", test_hp0 },
+	{ "hearing0", test_hearing0 },
+	{ "smell0", test_smell0 },
+	{ "ac0", test_ac0 },
+	{ "sleep0", test_sleep0 },
+	{ "depth0", test_depth0 },
+	{ "rarity0", test_rarity0 },
+	{ "mexp0", test_mexp0 },
+	//{ "blow0", test_blow0 },
+	//{ "blow1", test_blow1 },
 	{ "flags0", test_flags0 },
 	{ "desc0", test_desc0 },
 	{ "spell-freq0", test_spell_freq0 },

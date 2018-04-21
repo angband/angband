@@ -45,7 +45,7 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 
 # Basic compiler stuff
 CC = gcc
-WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wdeclaration-after-statement -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
+WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
 CFLAGS = -O0 -g $(WARNINGS)
 
 # Add additional search directives here
@@ -67,7 +67,7 @@ LIBS = -lm
 
 # Extract CFLAGS and LIBS from the system definitions
 MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_sdl) $(SOUND_sdl) $(SYS_stats)
-CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
+CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES) -DPRIVATE_USER_PATH="~/.angband"
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
@@ -114,7 +114,8 @@ clean:
 
 # make a distribution
 DIRS = lib/gamedata lib/customize lib/help lib/screens lib/fonts lib/tiles \
-       lib/sounds lib/icons lib/user lib/user/save lib/user/scores lib/user/info
+       lib/sounds lib/icons lib/user lib/user/save lib/user/scores \
+       lib/user/info lib/user/archive
 
 TMPDIR = ./$(EXE)-$(VERSION)
 dist:

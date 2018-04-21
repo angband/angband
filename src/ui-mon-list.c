@@ -110,11 +110,13 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 
 		/* Only display directions for the case of a single monster. */
 		if (list->entries[index].count[section] == 1) {
-			const char *direction1 = (list->entries[index].dy <= 0) ? "N" : "S";
-			const char *direction2 = (list->entries[index].dx <= 0) ? "W" : "E";
+			const char *direction1 =
+				(list->entries[index].dy[section] <= 0)	? "N" : "S";
+			const char *direction2 =
+				(list->entries[index].dx[section] <= 0) ? "W" : "E";
 			strnfmt(location, sizeof(location), " %d %s %d %s",
-					abs(list->entries[index].dy), direction1,
-					abs(list->entries[index].dx), direction2);
+					abs(list->entries[index].dy[section]), direction1,
+					abs(list->entries[index].dx[section]), direction2);
 		}
 
 		/* Get width available for monster name and sleep tag: 2 for char and
@@ -190,7 +192,7 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 /**
  * Allow the standard list formatted to be bypassed for special cases.
  *
- * Returning TRUE will bypass any other formatteding in
+ * Returning true will bypass any other formatteding in
  * monster_list_format_textblock().
  *
  * \param list is the monster list to format.
@@ -202,7 +204,7 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
  * format the list without truncation.
  * \param max_width_result is returned with the width needed to format the list
  * without truncation.
- * \return TRUE if further formatting should be bypassed.
+ * \return true if further formatting should be bypassed.
  */
 static bool monster_list_format_special(const monster_list_t *list, textblock *tb, int max_lines, int max_width, size_t *max_height_result, size_t *max_width_result)
 {
@@ -219,10 +221,10 @@ static bool monster_list_format_special(const monster_list_t *list, textblock *t
 		if (tb != NULL)
 			textblock_append_c(tb, COLOUR_ORANGE, "%s", message);
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -232,7 +234,7 @@ static bool monster_list_format_special(const monster_list_t *list, textblock *t
  * by passing in a NULL textblock. The LOS section of the list will always be
  * shown, while the other section will be added conditionally. Also, this
  * function calls monster_list_format_special() first; if that function returns
- * TRUE, it will bypass normal list formatting.
+ * true, it will bypass normal list formatting.
  *
  * \param list is the monster list to format.
  * \param tb is the textblock to produce or NULL if only the dimensions need to
@@ -291,7 +293,7 @@ static void monster_list_format_textblock(const monster_list_t *list, textblock 
 
 	monster_list_format_section(list, tb, MONSTER_LIST_SECTION_LOS,
 								los_lines_to_display, max_width,
-								"You can see", FALSE, &max_los_line);
+								"You can see", false, &max_los_line);
 
 	if (list->total_entries[MONSTER_LIST_SECTION_ESP] > 0) {
 		bool show_others = list->total_monsters[MONSTER_LIST_SECTION_LOS] > 0;

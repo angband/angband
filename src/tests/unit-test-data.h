@@ -20,6 +20,7 @@
 #include "obj-tval.h"
 #include "player.h"
 #include "player-calcs.h"
+#include "project.h"
 
 /* 30 = TMD_MAX */
 static s16b TEST_DATA test_timed[30] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
@@ -603,12 +604,12 @@ static struct player_race TEST_DATA test_race = {
 		[STAT_WIS] = -2,
 	},
 	.r_skills = {
-		[SKILL_DISARM] = 0,
+		[SKILL_DISARM_PHYS] = 0,
+		[SKILL_DISARM_MAGIC] = 0,
 		[SKILL_DEVICE] = 5,
 		[SKILL_SAVE] = 10,
 		[SKILL_STEALTH] = -5,
 		[SKILL_SEARCH] = -10,
-		[SKILL_SEARCH_FREQUENCY] = 10,
 		[SKILL_TO_HIT_MELEE] = 0,
 		[SKILL_TO_HIT_BOW] = 0,
 		[SKILL_TO_HIT_THROW] = 0,
@@ -654,12 +655,12 @@ static struct class_book TEST_DATA test_book = {
 };
 
 static struct magic_realm TEST_DATA test_realm = {
-	.index = 1,
+	.next = NULL,
+	.name = "realm",
 	.stat = 1,
 	.verb = "spell_verb",
 	.spell_noun = "spell_noun",
 	.book_noun = "book_noun",
-	.adjective = "realm_adjective",
 };
 
 static struct player_class TEST_DATA test_class = {
@@ -686,12 +687,12 @@ static struct player_class TEST_DATA test_class = {
 	},
 
 	.c_skills = {
-		[SKILL_DISARM] = 25,
+		[SKILL_DISARM_PHYS] = 25,
+		[SKILL_DISARM_MAGIC] = 25,
 		[SKILL_DEVICE] = 18,
 		[SKILL_SAVE] = 18,
 		[SKILL_STEALTH] = 1,
 		[SKILL_SEARCH] = 14,
-		[SKILL_SEARCH_FREQUENCY] = 2,
 		[SKILL_TO_HIT_MELEE] = 70,
 		[SKILL_TO_HIT_BOW] = 55,
 		[SKILL_TO_HIT_THROW] = 55,
@@ -699,12 +700,12 @@ static struct player_class TEST_DATA test_class = {
 	},
 
 	.x_skills = {
-		[SKILL_DISARM] = 10,
+		[SKILL_DISARM_PHYS] = 10,
+		[SKILL_DISARM_MAGIC] = 10,
 		[SKILL_DEVICE] = 7,
 		[SKILL_SAVE] = 10,
 		[SKILL_STEALTH] = 0,
 		[SKILL_SEARCH] = 0,
-		[SKILL_SEARCH_FREQUENCY] = 0,
 		[SKILL_TO_HIT_MELEE] = 45,
 		[SKILL_TO_HIT_BOW] = 45,
 		[SKILL_TO_HIT_THROW] = 45,
@@ -717,9 +718,6 @@ static struct player_class TEST_DATA test_class = {
 	.max_attacks = 6,
 	.min_weight = 30,
 	.att_multiply = 5,
-
-	.sense_base = 7000,
-	.sense_div = 40,
 
 	.start_items = &start_longsword,
 	.magic =  {
@@ -743,12 +741,78 @@ static struct monster_base TEST_DATA test_rb_info = {
 	
 };
 
-#define _NOBLOW { .method = RBM_NONE, .effect = RBE_NONE, .d_dice = 0, .d_side = 0 }
+static struct blow_method TEST_DATA test_blow_method = {
+	.name = "HIT",
+	.cut = true,
+	.stun = true,
+	.miss = false,
+	.phys = false,
+	.msgt = 34,
+	.act_msg = "hits you",
+	.desc = "hit",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_hurt = {
+	.name = "HURT",
+	.power = 40,
+	.eval = 0,
+	.desc = "attack",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_poison = {
+	.name = "POISON",
+	.power = 20,
+	.eval = 10,
+	.desc = "poison",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_acid = {
+	.name = "ACID",
+	.power = 20,
+	.eval = 20,
+	.desc = "shoot acid",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_elec = {
+	.name = "ELEC",
+	.power = 40,
+	.eval = 10,
+	.desc = "electrify",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_fire = {
+	.name = "FIRE",
+	.power = 40,
+	.eval = 10,
+	.desc = "burn",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_cold = {
+	.name = "COLD",
+	.power = 40,
+	.eval = 10,
+	.desc = "freeze",
+	.next = NULL
+};
+
+static struct blow_effect TEST_DATA test_blow_effect_blind = {
+	.name = "BLIND",
+	.power = 0,
+	.eval = 20,
+	.desc = "blind",
+	.next = NULL
+};
 
 static struct monster_blow TEST_DATA test_blow[4] = {
 	{
-		.method = RBM_HIT,
-		.effect = RBE_HURT,
+		.method = &test_blow_method,
+		.effect = &test_blow_effect_hurt,
 		.dice = {
 			.base = 0,
 			.dice = 3,
@@ -758,8 +822,8 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 		.times_seen = 1,
 	},
 	{
-		.method = RBM_NONE,
-		.effect = RBE_NONE,
+		.method = NULL,
+		.effect = NULL,
 		.dice = {
 			.base = 0,
 			.dice = 0,
@@ -769,8 +833,8 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 		.times_seen = 0,
 	},
 	{
-		.method = RBM_NONE,
-		.effect = RBE_NONE,
+		.method = NULL,
+		.effect = NULL,
 		.dice = {
 			.base = 0,
 			.dice = 0,
@@ -780,8 +844,8 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 		.times_seen = 0,
 	},
 	{
-		.method = RBM_NONE,
-		.effect = RBE_NONE,
+		.method = NULL,
+		.effect = NULL,
 		.dice = {
 			.base = 0,
 			.dice = 0,
@@ -793,10 +857,10 @@ static struct monster_blow TEST_DATA test_blow[4] = {
 };
 
 static bool TEST_DATA test_blows_known[4] = {
-	TRUE,
-	FALSE,
-	FALSE,
-	FALSE,
+	true,
+	false,
+	false,
+	false,
 };
 
 static struct monster_race TEST_DATA test_r_human = {
@@ -810,11 +874,10 @@ static struct monster_race TEST_DATA test_r_human = {
 	.avg_hp = 10,
 	.ac = 12,
 	.sleep = 0,
-	.aaf = 20,
+	.hearing = 20,
+	.smell = 20,
 	.speed = 110,
 	.mexp = 50,
-	.power = 1,
-	.scaled_power = 1,
 	.freq_innate = 0,
 	.freq_spell = 0,
 
@@ -853,15 +916,13 @@ static monster_lore TEST_DATA test_lore = {
 	.friends = NULL,
 	.friends_base = NULL,
 	.mimic_kinds = NULL,
-	.all_known = FALSE,
+	.all_known = false,
 	.blow_known = &test_blows_known[0],
-	.armour_known = FALSE,
-	.drop_known = FALSE,
-	.sleep_known = FALSE,
-	.spell_freq_known = FALSE
+	.armour_known = false,
+	.drop_known = false,
+	.sleep_known = false,
+	.spell_freq_known = false
 };
-
-#undef _NOBLOW
 
 static struct angband_constants TEST_DATA test_z_info = {
 	.f_max    = 2,
@@ -933,6 +994,78 @@ static struct player_upkeep TEST_DATA test_player_upkeep = {
 	.quiver_cnt = 0,
 };
 
+static struct object TEST_DATA test_player_knowledge = {
+	.kind = NULL,
+	.ego = NULL,
+	.artifact = NULL,
+	.prev = NULL,
+	.next = NULL,
+	.known = NULL,
+	.oidx = 0,
+	.iy = 0,
+	.ix = 0,
+	.tval = 0,
+	.sval = 0,
+	.pval = 0,
+	.weight = 0,
+
+	.modifiers = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	.el_info = {
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 },
+		{ 0, 0 }
+	},
+	.brands = NULL,
+	.slays = NULL,
+
+	.ac = 0,
+	.to_h = 0,
+	.to_d = 0,
+	.to_a = 0,
+
+	.dd = 0,
+	.ds = 0,
+
+	.effect = NULL,
+	.effect_msg = NULL,
+	.activation = NULL,
+	.time = { 0, 0, 0, 0, },
+	.timeout = 0,
+
+	.number = 0,
+	.notice = 0,
+
+	.held_m_idx = 0,
+	.mimicking_m_idx = 0,
+	.origin = 0,
+	.origin_depth = 0,
+	.origin_race = NULL,
+	.note = 0,
+};
+
+
 static struct player TEST_DATA test_player = {
 	.py = 1,
 	.px = 1,
@@ -982,8 +1115,10 @@ static struct player TEST_DATA test_player = {
 	.history = "no history",
 	.is_dead = 0,
 	.wizard = 0,
-	.gear = NULL,
 	.upkeep = &test_player_upkeep,
+	.gear = NULL,
+	.gear_k = NULL,
+	.obj_k = &test_player_knowledge,
 };
 
 static struct chunk TEST_DATA test_cave = {
@@ -994,16 +1129,13 @@ static struct chunk TEST_DATA test_cave = {
 	.feeling = 0,
 	.obj_rating = 0,
 	.mon_rating = 0,
-	.good_item = FALSE,
+	.good_item = false,
 
 	.height = 2,
 	.width = 2,
 
 	.feeling_squares = 0,
 	.feat_count = NULL,
-
-	.feat = NULL,
-	.m_idx = NULL,
 
 	.squares = NULL,
 
@@ -1012,4 +1144,72 @@ static struct chunk TEST_DATA test_cave = {
 	.mon_cnt = 0,
 	.mon_current = -1,
 };
+
+static struct projection TEST_DATA test_projections[4] = {
+	{
+		.index = 0,
+		.name = "acid",
+		.type = "element",
+		.desc = "acid",
+		.player_desc = "acid",
+		.blind_desc = "acid",
+		.numerator = 1,
+		.denominator = {3, 0, 0, 0},
+		.divisor = 3,
+		.damage_cap = 1600,
+		.msgt = 0,
+		.obvious = true,
+		.color = 2,
+		.next = NULL
+	},
+	{
+		.index = 1,
+		.name = "electricity",
+		.type = "element",
+		.desc = "electricity",
+		.player_desc = "electricity",
+		.blind_desc = "electricity",
+		.numerator = 1,
+		.denominator = {3, 0, 0, 0},
+		.divisor = 3,
+		.damage_cap = 1600,
+		.msgt = 0,
+		.obvious = true,
+		.color = 6,
+		.next = NULL
+	},
+	{
+		.index = 2,
+		.name = "fire",
+		.type = "element",
+		.desc = "fire",
+		.player_desc = "fire",
+		.blind_desc = "fire",
+		.numerator = 1,
+		.denominator = {3, 0, 0, 0},
+		.divisor = 3,
+		.damage_cap = 1600,
+		.msgt = 0,
+		.obvious = true,
+		.color = 4,
+		.next = NULL
+	},
+	{
+		.index = 3,
+		.name = "cold",
+		.type = "element",
+		.desc = "cold",
+		.player_desc = "cold",
+		.blind_desc = "cold",
+		.numerator = 1,
+		.denominator = {3, 0, 0, 0},
+		.divisor = 3,
+		.damage_cap = 1600,
+		.msgt = 0,
+		.obvious = true,
+		.color = 1,
+		.next = NULL
+	}
+};
+
 #endif /* !UNIT_TEST_DATA */

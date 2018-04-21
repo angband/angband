@@ -48,7 +48,7 @@ int distance(int y1, int x1, int y2, int x2)
  * A simple, fast, integer-based line-of-sight algorithm.  By Joseph Hall,
  * 4116 Brewster Drive, Raleigh NC 27606.  Email to jnh@ecemwl.ncsu.edu.
  *
- * This function returns TRUE if a "line of sight" can be traced from the
+ * This function returns true if a "line of sight" can be traced from the
  * center of the grid (x1,y1) to the center of the grid (x2,y2), with all
  * of the grids along this path (except for the endpoints) being non-wall
  * grids.  Actually, the "chess knight move" situation is handled by some
@@ -114,7 +114,7 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 
 
 	/* Handle adjacent (or identical) grids */
-	if ((ax < 2) && (ay < 2)) return (TRUE);
+	if ((ax < 2) && (ay < 2)) return (true);
 
 
 	/* Directly South/North */
@@ -122,14 +122,14 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 		/* South -- check for walls */
 		if (dy > 0) {
 			for (ty = y1 + 1; ty < y2; ty++)
-				if (!square_isprojectable(c, ty, x1)) return (FALSE);
+				if (!square_isprojectable(c, ty, x1)) return (false);
 		} else { /* North -- check for walls */
 			for (ty = y1 - 1; ty > y2; ty--)
-				if (!square_isprojectable(c, ty, x1)) return (FALSE);
+				if (!square_isprojectable(c, ty, x1)) return (false);
 		}
 
 		/* Assume los */
-		return (TRUE);
+		return (true);
 	}
 
 	/* Directly East/West */
@@ -137,14 +137,14 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 		/* East -- check for walls */
 		if (dx > 0) {
 			for (tx = x1 + 1; tx < x2; tx++)
-				if (!square_isprojectable(c, y1, tx)) return (FALSE);
+				if (!square_isprojectable(c, y1, tx)) return (false);
 		} else { /* West -- check for walls */
 			for (tx = x1 - 1; tx > x2; tx--)
-				if (!square_isprojectable(c, y1, tx)) return (FALSE);
+				if (!square_isprojectable(c, y1, tx)) return (false);
 		}
 
 		/* Assume los */
-		return (TRUE);
+		return (true);
 	}
 
 
@@ -154,11 +154,11 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 
 	/* Vertical "knights" */
 	if ((ax == 1) && (ay == 2) && square_isprojectable(c, y1 + sy, x1))
-		return (TRUE);
+		return (true);
 	
 	/* Horizontal "knights" */
 	else if ((ay == 1) && (ax == 2) && square_isprojectable(c, y1, x1 + sx))
-		return (TRUE);
+		return (true);
 
 	/* Calculate scale factor div 2 */
 	f2 = (ax * ay);
@@ -187,7 +187,7 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 		/* the LOS exactly meets the corner of a tile. */
 		while (x2 - tx) {
 			if (!square_isprojectable(c, ty, tx))
-				return (FALSE);
+				return (false);
 
 			qy += m;
 
@@ -196,7 +196,7 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 			} else if (qy > f2) {
 				ty += sy;
 				if (!square_isprojectable(c, ty, tx))
-					return (FALSE);
+					return (false);
 				qy -= f1;
 				tx += sx;
 			} else {
@@ -223,7 +223,7 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 		/* the LOS exactly meets the corner of a tile. */
 		while (y2 - ty) {
 			if (!square_isprojectable(c, ty, tx))
-				return (FALSE);
+				return (false);
 
 			qx += m;
 
@@ -232,7 +232,7 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 			} else if (qx > f2) {
 				tx += sx;
 				if (!square_isprojectable(c, ty, tx))
-					return (FALSE);
+					return (false);
 				qx -= f1;
 				ty += sy;
 			} else {
@@ -244,7 +244,7 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 	}
 
 	/* Assume los */
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -298,11 +298,6 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
  * "vaults", and thus which grids cannot serve as the destinations of player 
  * teleportation.
  *
- * The "SQUARE_MARK" flag is used to determine which grids have been memorized 
- * by the player.  This flag is used by the "map_info()" function to determine
- * if a grid should be displayed. This flag is used in a few other places to 
- * determine if the player can * "know" about a given grid.
- *
  * The "SQUARE_GLOW" flag is used to determine which grids are "permanently 
  * illuminated".  This flag is used by the update_view() function to help 
  * determine which viewable flags may be "seen" by the player.  This flag 
@@ -344,16 +339,6 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
  * during the "update_view()" function.  This flag is used to "spread" light
  * or darkness through a room.  This flag is used by the "monster flow code".
  * This flag must always be cleared by any code which sets it.
- *
- * Note that the "SQUARE_MARK" flag is used for many reasons, some of which
- * are strictly for optimization purposes.  The "SQUARE_MARK" flag means that
- * even if the player cannot "see" the grid, he "knows" about the terrain in
- * that grid.  This is used to "memorize" grids when they are first "seen" by
- * the player, and to allow certain grids to be "detected" by certain magic.
- *
- * Objects are "memorized" in a different way, using a special "marked" flag
- * on the object itself, which is set when an object is observed or detected.
- * This allows objects to be "memorized" independant of the terrain features.
  *
  * The "update_view()" function is an extremely important function.  It is
  * called only when the player moves, significant terrain changes, or the
@@ -441,30 +426,11 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
  *
  */
 
-/**
- * Forget the "SQUARE_VIEW" grids, redrawing as needed
- */
-void forget_view(struct chunk *c)
-{
-	int x, y;
-
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			if (!square_isview(c, y, x))
-				continue;
-			sqinfo_off(c->squares[y][x].info, SQUARE_VIEW);
-			sqinfo_off(c->squares[y][x].info, SQUARE_SEEN);
-			square_light_spot(c, y, x);
-		}
-	}
-}
-
-
 
 /**
  * Mark the currently seen grids, then wipe in preparation for recalculating
  */
-static void mark_wasseen(struct chunk *c) 
+static void mark_wasseen(struct chunk *c)
 {
 	int x, y;
 	/* Save the old "view" grids for later */
@@ -540,7 +506,7 @@ static void update_one(struct chunk *c, int y, int x, int blind)
 			/* Don't display feeling if it will display for the new level */
 			if ((c->feeling_squares == z_info->feeling_need) &&
 				!player->upkeep->only_partial) {
-				display_feeling(TRUE);
+				display_feeling(true);
 				player->upkeep->redraw |= PR_FEELING;
 			}
 		}
@@ -604,7 +570,7 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 		if (!square_in_bounds(c, y + ddy_ddd[dir], x + ddx_ddd[dir]))
 			continue;
 		if (square_isbright(c, y + ddy_ddd[dir], x + ddx_ddd[dir]))
-			lit = TRUE;
+			lit = true;
 	}
 
 	/* Special case for wall lighting. If we are a wall and the square in
@@ -701,4 +667,3 @@ bool no_light(void)
 {
 	return (!square_isseen(cave, player->py, player->px));
 }
-

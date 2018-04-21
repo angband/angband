@@ -1148,10 +1148,10 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
     [pool drain];
     
     while (!game_in_progress) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        NSAutoreleasePool *splashScreenPool = [[NSAutoreleasePool alloc] init];
         NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES];
         if (event) [NSApp sendEvent:event];
-        [pool drain];
+        [splashScreenPool drain];
     }
 
     Term_fresh();
@@ -3149,20 +3149,21 @@ static BOOL check_events(int wait)
 
 			static BOOL periodicStarted = NO;
 
-			if (OPT(animate_flicker) && !periodicStarted) {
+			if (OPT(player, animate_flicker) && !periodicStarted) {
 				[NSEvent startPeriodicEventsAfterDelay: 0.0 withPeriod: 0.2];
 				periodicStarted = YES;
 			}
-			else if (!OPT(animate_flicker) && periodicStarted) {
+			else if (!OPT(player, animate_flicker) && periodicStarted) {
 				[NSEvent stopPeriodicEvents];
 				periodicStarted = NO;
 			}
 
-			if (OPT(animate_flicker) && wait && periodicStarted && [event type] == NSPeriodic)
+			if (OPT(player, animate_flicker) && wait && periodicStarted &&
+				[event type] == NSPeriodic) {
 				idle_update();
+			}
 
-            if (! event)
-            {
+            if (! event) {
                 [pool drain];
                 return FALSE;
             }
@@ -3633,8 +3634,8 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     SEL action = @selector(setGraphicsMode:);
     
     /* Add an initial Classic ASCII menu item */
-    NSMenuItem *item = [menu addItemWithTitle:@"Classic ASCII" action:action keyEquivalent:@""];
-    [item setTag:GRAPHICS_NONE];
+    NSMenuItem *classicItem = [menu addItemWithTitle:@"Classic ASCII" action:action keyEquivalent:@""];
+    [classicItem setTag:GRAPHICS_NONE];
     
     /* Walk through the list of graphics modes */
     NSInteger i;

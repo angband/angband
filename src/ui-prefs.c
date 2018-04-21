@@ -29,12 +29,15 @@
 #include "obj-util.h"
 #include "object.h"
 #include "project.h"
+#include "player.h"
 #include "trap.h"
 #include "ui-display.h"
 #include "ui-keymap.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
+#include "sound.h"
 
+char arg_name[PLAYER_NAME_LEN];		/* Command arg -- request character name */
 int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;		/* Command arg -- Request nice graphics mode */
 int use_graphics;			/* The "graphics" mode is enabled */
@@ -49,7 +52,7 @@ byte *trap_x_attr[LIGHTING_MAX];
 wchar_t *trap_x_char[LIGHTING_MAX];
 byte *flavor_x_attr;
 wchar_t *flavor_x_char;
-size_t flavor_max = 0;
+static size_t flavor_max = 0;
 
 /**
  * ------------------------------------------------------------------------
@@ -70,9 +73,9 @@ static const char *dump_separator = "#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#";
  */
 static void remove_old_dump(const char *cur_fname, const char *mark)
 {
-	bool between_marks = FALSE;
-	bool changed = FALSE;
-	bool skip_one = FALSE;
+	bool between_marks = false;
+	bool changed = false;
+	bool skip_one = false;
 
 	char buf[1024];
 
@@ -109,17 +112,17 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	while (file_getl(cur_file, buf, sizeof(buf))) {
 		/* Turn on at the start line, turn off at the finish line */
 		if (!strcmp(buf, start_line))
-			between_marks = TRUE;
+			between_marks = true;
 		else if (!strcmp(buf, end_line)) {
-			between_marks = FALSE;
-			skip_one = TRUE;
-			changed = TRUE;
+			between_marks = false;
+			skip_one = true;
+			changed = true;
 		}
 
 		if (!between_marks && !skip_one)
 			file_putf(new_file, "%s\n", buf);
 
-		skip_one = FALSE;
+		skip_one = false;
 	}
 
 	/* Close files */
@@ -194,7 +197,7 @@ void dump_objects(ang_file *fff)
 
 	file_putf(fff, "# Objects\n");
 
-	for (i = 1; i < z_info->k_max; i++) {
+	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *kind = &k_info[i];
 		char name[120] = "";
 
@@ -211,13 +214,15 @@ void dump_objects(ang_file *fff)
  */
 void dump_autoinscriptions(ang_file *f) {
 	int i;
-	for (i = 1; i < z_info->k_max; i++) {
+	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *k = &k_info[i];
 		char name[120];
 		const char *note;
 
 		if (!k->name || !k->tval) continue;
-		note = get_autoinscription(k);
+
+		/* Only aware autoinscriptions go to the prefs file */
+		note = get_autoinscription(k, true);
 		if (note) {
 			object_short_name(name, sizeof name, k->name);
 			file_putf(f, "inscribe:%s:%s:%s\n", tval_find_name(k->tval), name, note);
@@ -239,8 +244,8 @@ void dump_features(ang_file *fff)
 		/* Skip non-entries */
 		if (!feat->name) continue;
 
-		/* Skip mimic entries -- except invisible trap */
-		if (feat->mimic != i) continue;
+		/* Skip mimic entries  */
+		if (feat->mimic) continue;
 
 		file_putf(fff, "# Terrain: %s\n", feat->name);
 		for (j = 0; j < LIGHTING_MAX; j++) {
@@ -259,7 +264,7 @@ void dump_features(ang_file *fff)
 
 			assert(light);
 
-			file_putf(fff, "feat:%d:%s:%d:%d\n", i, light, attr, chr);
+			file_putf(fff, "feat:%s:%s:%d:%d\n", feat->name, light, attr, chr);
 		}
 	}
 }
@@ -350,7 +355,7 @@ void option_dump(ang_file *fff)
  * \param dump is a pointer to the function that does the writing to file
  * \param title is the name of this set of preferences
  *
- * \returns TRUE on success, FALSE otherwise.
+ * \returns true on success, false otherwise.
  */
 bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 {
@@ -364,7 +369,7 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 	fff = file_open(path, MODE_APPEND, FTYPE_TEXT);
 	if (!fff) {
 		safe_setuid_drop();
-		return FALSE;
+		return false;
 	}
 
 	/* Append the header */
@@ -379,7 +384,7 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 
 	safe_setuid_drop();
 
-	return TRUE;
+	return true;
 }
 
 
@@ -391,20 +396,6 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
  * ------------------------------------------------------------------------
  * Pref file parser
  * ------------------------------------------------------------------------ */
-
-
-/**
- * Private data for pref file parsing.
- */
-struct prefs_data
-{
-	bool bypass;
-	struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
-	bool user;
-	bool loaded_window_flag[ANGBAND_TERM_MAX];
-	u32b window_flags[ANGBAND_TERM_MAX];
-};
-
 
 /**
  * Load another file.
@@ -418,7 +409,7 @@ static enum parser_error parse_prefs_load(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	file = parser_getstr(p, "file");
-	(void)process_pref_file(file, TRUE, d->user);
+	(void)process_pref_file(file, true, d->user);
 
 	return PARSE_ERROR_NONE;
 }
@@ -542,8 +533,6 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 				v = player->race->name;
 			else if (streq(b+1, "CLASS"))
 				v = player->class->name;
-			else if (streq(b+1, "PLAYER"))
-				v = player_safe_name(player, TRUE);
 		} else {
 			v = b;
 		}
@@ -607,10 +596,10 @@ static enum parser_error parse_prefs_object(struct parser *p)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
 		for (i = 0; i < z_info->k_max; i++) {
-			struct object_kind *kind = &k_info[i];
+			struct object_kind *kind_local = &k_info[i];
 
-			kind_x_attr[kind->kidx] = attr;
-			kind_x_char[kind->kidx] = chr;
+			kind_x_attr[kind_local->kidx] = attr;
+			kind_x_char[kind_local->kidx] = chr;
 		}
 
 		for (flavor = flavors; flavor; flavor = flavor->next) {
@@ -630,13 +619,13 @@ static enum parser_error parse_prefs_object(struct parser *p)
 			struct flavor *flavor;
 
 			for (i = 0; i < z_info->k_max; i++) {
-				struct object_kind *kind = &k_info[i];
+				struct object_kind *kind_local = &k_info[i];
 
-				if (kind->tval != tvi)
+				if (kind_local->tval != tvi)
 					continue;
 
-				kind_x_attr[kind->kidx] = attr;
-				kind_x_char[kind->kidx] = chr;
+				kind_x_attr[kind_local->kidx] = attr;
+				kind_x_char[kind_local->kidx] = chr;
 			}
 
 			for (flavor = flavors; flavor; flavor = flavor->next)
@@ -736,20 +725,17 @@ static enum parser_error parse_prefs_trap(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	/* idx can be "*" or a number */
+	/* idx can be "*" or a name */
 	idx_sym = parser_getsym(p, "idx");
 
 	if (!strcmp(idx_sym, "*")) {
 		trap_idx = -1;
 	} else {
-		char *z = NULL;
-		trap_idx = strtoul(idx_sym, NULL, 0);
-		if (z == idx_sym || *idx_sym == '-') {
-			return PARSE_ERROR_NOT_NUMBER;
-		}
-
-		if (trap_idx >= z_info->trap_max) {
-			return PARSE_ERROR_OUT_OF_BOUNDS;
+		struct trap_kind *trap = lookup_trap(idx_sym);
+		if (!trap) {
+			return PARSE_ERROR_UNRECOGNISED_TRAP;
+		} else {
+			trap_idx = trap->tidx;
 		}
 	}
 
@@ -791,7 +777,7 @@ static enum parser_error parse_prefs_feat(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getuint(p, "idx");
+	idx = lookup_feat(parser_getsym(p, "idx"));
 	if (idx >= z_info->f_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
@@ -824,7 +810,7 @@ static enum parser_error parse_prefs_feat(struct parser *p)
 
 static enum parser_error parse_prefs_gf(struct parser *p)
 {
-	bool types[GF_MAX] = { 0 };
+	bool types[PROJ_MAX] = { 0 };
 	const char *direction;
 	int motion;
 
@@ -836,18 +822,18 @@ static enum parser_error parse_prefs_gf(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	/* Parse the type, which is a | seperated list of GF_ constants */
+	/* Parse the type, which is a | seperated list of PROJ_ constants */
 	s = string_make(parser_getsym(p, "type"));
 	t = strtok(s, "| ");
 	while (t) {
 		if (streq(t, "*")) {
-			memset(types, TRUE, sizeof types);
+			memset(types, true, sizeof types);
 		} else {
-			int idx = gf_name_to_idx(t);
+			int idx = proj_name_to_idx(t);
 			if (idx == -1)
 				return PARSE_ERROR_INVALID_VALUE;
 
-			types[idx] = TRUE;
+			types[idx] = true;
 		}
 
 		t = strtok(NULL, "| ");
@@ -869,11 +855,11 @@ static enum parser_error parse_prefs_gf(struct parser *p)
 	else
 		return PARSE_ERROR_INVALID_VALUE;
 
-	for (i = 0; i < GF_MAX; i++) {
+	for (i = 0; i < PROJ_MAX; i++) {
 		if (!types[i]) continue;
 
-		gf_to_attr[i][motion] = (byte)parser_getuint(p, "attr");
-		gf_to_char[i][motion] = (wchar_t)parser_getuint(p, "char");
+		proj_to_attr[i][motion] = (byte)parser_getuint(p, "attr");
+		proj_to_char[i][motion] = (wchar_t)parser_getuint(p, "char");
 	}
 
 	return PARSE_ERROR_NONE;
@@ -922,7 +908,7 @@ static enum parser_error parse_prefs_inscribe(struct parser *p)
 	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	add_autoinscription(kind->kidx, parser_getstr(p, "text"));
+	add_autoinscription(kind->kidx, parser_getstr(p, "text"), true);
 
 	return PARSE_ERROR_NONE;
 }
@@ -1042,8 +1028,13 @@ static enum parser_error parse_prefs_window(struct parser *p)
 			d->window_flags[window] &= ~(1L << flag);
 	}
 
-	d->loaded_window_flag[window] = TRUE;
+	d->loaded_window_flag[window] = true;
 
+	return PARSE_ERROR_NONE;
+}
+
+enum parser_error parse_prefs_dummy(struct parser *p)
+{
 	return PARSE_ERROR_NONE;
 }
 
@@ -1056,7 +1047,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_setpriv(p, pd);
 	pd->user = user;
 	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
-		pd->loaded_window_flag[i] = FALSE;
+		pd->loaded_window_flag[i] = false;
 	}
 
 	parser_reg(p, "% str file", parse_prefs_load);
@@ -1064,7 +1055,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "object sym tval sym sval int attr int char", parse_prefs_object);
 	parser_reg(p, "monster sym name int attr int char", parse_prefs_monster);
 	parser_reg(p, "monster-base sym name int attr int char", parse_prefs_monster_base);
-	parser_reg(p, "feat uint idx sym lighting int attr int char", parse_prefs_feat);
+	parser_reg(p, "feat sym idx sym lighting int attr int char", parse_prefs_feat);
 	parser_reg(p, "trap sym idx sym lighting int attr int char", parse_prefs_trap);
 	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "flavor uint idx int attr int char", parse_prefs_flavor);
@@ -1074,6 +1065,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "message sym type sym attr", parse_prefs_message);
 	parser_reg(p, "color uint idx int k int r int g int b", parse_prefs_color);
 	parser_reg(p, "window int window uint flag uint value", parse_prefs_window);
+	register_sound_pref_parser(p);
 
 	return p;
 }
@@ -1103,7 +1095,7 @@ static errr finish_parse_prefs(struct parser *p)
 
 errr process_pref_file_command(const char *s)
 {
-	struct parser *p = init_parse_prefs(TRUE);
+	struct parser *p = init_parse_prefs(true);
 	errr e = parser_parse(p, s);
 	mem_free(parser_priv(p));
 	parser_destroy(p);
@@ -1123,9 +1115,9 @@ static void print_error(const char *name, struct parser *p) {
 /**
  * Process the user pref file with a given path.
  *
- * \param name is the name of the pref file.
+ * \param path is the name of the pref file.
  * \param quiet means "don't complain about not finding the file".
- * \param user should be TRUE if the pref file is user-specific and not a game
+ * \param user should be true if the pref file is user-specific and not a game
  * default.
  */
 static bool process_pref_file_named(const char *path, bool quiet, bool user) {
@@ -1168,14 +1160,14 @@ static bool process_pref_file_named(const char *path, bool quiet, bool user) {
  *
  * \param name is the name of the pref file.
  * \param quiet means "don't complain about not finding the file".
- * \param user should be TRUE if the pref file is user-specific and not a game
+ * \param user should be true if the pref file is user-specific and not a game
  * default.
  * \param base_search_path is the first path that should be checked for the file
  * \param fallback_search_path is the path that should be checked if the file
  * couldn't be found at the base path.
- * \param used_fallback will be set on return to TRUE if the fallback path was
- * used, FALSE otherwise.
- * \returns TRUE if everything worked OK, FALSE otherwise.
+ * \param used_fallback will be set on return to true if the fallback path was
+ * used, false otherwise.
+ * \returns true if everything worked OK, false otherwise.
  */
 static bool process_pref_file_layered(const char *name, bool quiet, bool user,
 									  const char *base_search_path,
@@ -1190,13 +1182,13 @@ static bool process_pref_file_layered(const char *name, bool quiet, bool user,
 	path_build(buf, sizeof(buf), base_search_path, name);
 
 	if (used_fallback != NULL)
-		*used_fallback = FALSE;
+		*used_fallback = false;
 
 	if (!file_exists(buf) && fallback_search_path != NULL) {
 		path_build(buf, sizeof(buf), fallback_search_path, name);
 
 		if (used_fallback != NULL)
-			*used_fallback = TRUE;
+			*used_fallback = true;
 	}
 
 	return process_pref_file_named(buf, quiet, user);
@@ -1216,15 +1208,15 @@ static bool process_pref_file_layered(const char *name, bool quiet, bool user,
  *
  * \param name is the name of the pref file.
  * \param quiet means "don't complain about not finding the file".
- * \param user should be TRUE if the pref file is user-specific and not a game
+ * \param user should be true if the pref file is user-specific and not a game
  * default.
- * \returns TRUE if everything worked OK, FALSE otherwise.
+ * \returns true if everything worked OK, false otherwise.
  */
 bool process_pref_file(const char *name, bool quiet, bool user)
 {
-	bool root_success = FALSE;
-	bool user_success = FALSE;
-	bool used_fallback = FALSE;
+	bool root_success = false;
+	bool user_success = false;
+	bool used_fallback = false;
 
 	/* This supports the old behavior: look for a file first in 'pref/', and
 	 * if not found there, then 'user/'. */
@@ -1246,7 +1238,7 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 	if (!used_fallback) {
 		/* Force quiet (since this is an optional file) and force user
 		 * (since this should always be considered user-specific). */
-		user_success = process_pref_file_layered(name, TRUE, TRUE,
+		user_success = process_pref_file_layered(name, true, true,
 												 ANGBAND_DIR_USER, NULL,
 												 &used_fallback);
 	}
@@ -1260,7 +1252,7 @@ bool process_pref_file(const char *name, bool quiet, bool user)
  *
  * This involves resetting various things to their "default" state.
  *
- * If the "prefs" flag is TRUE, then we will also load the appropriate
+ * If the "prefs" flag is true, then we will also load the appropriate
  * "user pref file" based on the current setting of the "use_graphics"
  * flag.  This is useful for switching "graphics" on/off.
  */
@@ -1329,10 +1321,10 @@ void reset_visuals(bool load_prefs)
 		/* Build path to the pref file */
 		path_build(buf, sizeof buf, mode->path, mode->pref);
 
-		process_pref_file_named(buf, FALSE, FALSE);
+		process_pref_file_named(buf, false, false);
 	} else {
 		/* Normal symbols */
-		process_pref_file("font.prf", FALSE, FALSE);
+		process_pref_file("font.prf", false, false);
 	}
 }
 
@@ -1362,7 +1354,7 @@ void textui_prefs_init(void)
 	flavor_x_attr = mem_zalloc((flavor_max + 1) * sizeof(byte));
 	flavor_x_char = mem_zalloc((flavor_max + 1) * sizeof(wchar_t));
 
-	reset_visuals(FALSE);
+	reset_visuals(false);
 }
 
 /**

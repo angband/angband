@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "init.h"
 #include "mon-lore.h"
 #include "ui-mon-lore.h"
 #include "ui-output.h"
@@ -52,7 +53,7 @@ void lore_title(textblock *tb, const struct monster_race *race)
 	/* A title (use "The" for non-uniques) */
 	if (!rf_has(race->flags, RF_UNIQUE))
 		textblock_append(tb, "The ");
-	else if (OPT(purple_uniques)) {
+	else if (OPT(player, purple_uniques)) {
 		standard_attr = COLOUR_VIOLET;
 		if (!(optional_attr & 0x80))
 			optional_attr = COLOUR_VIOLET;
@@ -81,9 +82,9 @@ void lore_title(textblock *tb, const struct monster_race *race)
  * \param tb is the textblock we are placing the description into.
  * \param race is the monster race we are describing.
  * \param original_lore is the known information about the monster race.
- * \param spoilers indicates what information is used; `TRUE` will display full
+ * \param spoilers indicates what information is used; `true` will display full
  *        information without subjective information and monster flavor,
- *        while `FALSE` only shows what the player knows.
+ *        while `false` only shows what the player knows.
  */
 void lore_description(textblock *tb, const struct monster_race *race,
 					  const struct monster_lore *original_lore, bool spoilers)
@@ -91,12 +92,8 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	struct monster_lore mutable_lore;
 	struct monster_lore *lore = &mutable_lore;
 	bitflag known_flags[RF_SIZE];
-	int melee_colors[RBE_MAX], spell_colors[RSF_MAX];
 
 	assert(tb && race && original_lore);
-
-	/* Determine the special attack colors */
-	get_attack_colors(melee_colors, spell_colors);
 
 	/* Hack -- create a copy of the monster-memory that we can modify */
 	memcpy(lore, original_lore, sizeof(struct monster_lore));
@@ -105,7 +102,7 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	monster_flags_known(race, lore, known_flags);
 
 	/* Cheat -- know everything */
-	if (OPT(cheat_know) || spoilers)
+	if (OPT(player, cheat_know) || spoilers)
 		cheat_monster_lore(race, lore);
 
 	/* Appending the title here simplifies code in the callers. It also causes
@@ -142,13 +139,13 @@ void lore_description(textblock *tb, const struct monster_race *race,
 	lore_append_friends(tb, race, lore, known_flags);
 
 	/* Describe the spells, spell-like abilities and melee attacks */
-	lore_append_spells(tb, race, lore, known_flags, spell_colors);
-	lore_append_attack(tb, race, lore, known_flags, melee_colors);
-	
+	lore_append_spells(tb, race, lore, known_flags);
+	lore_append_attack(tb, race, lore, known_flags);
+
 	/* Do we know everything */
 	if (lore_is_fully_known(race))
 		textblock_append(tb, "You know everything about this monster.");
-	
+
 	/* Notice "Quest" monsters */
 	if (rf_has(race->flags, RF_QUESTOR))
 		textblock_append(tb, "You feel an intense desire to kill this monster...  ");
@@ -174,7 +171,7 @@ void lore_show_interactive(const struct monster_race *race,
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	tb = textblock_new();
-	lore_description(tb, race, lore, FALSE);
+	lore_description(tb, race, lore, false);
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
 }
@@ -202,7 +199,7 @@ void lore_show_subwindow(const struct monster_race *race,
 		Term_erase(0, y, 255);
 
 	tb = textblock_new();
-	lore_description(tb, race, lore, FALSE);
+	lore_description(tb, race, lore, false);
 	textui_textblock_place(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
 }

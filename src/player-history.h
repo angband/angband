@@ -53,16 +53,19 @@ struct history_info {
 	char event[80];			/* The text of the item */
 };
 
-extern struct history_info *history_list;
-
-void history_clear(void);
-size_t history_get_num(void);
-bool history_add_full(bitflag *type, struct artifact *artifact, s16b dlev, s16b clev, s32b turn, const char *text);
-bool history_add(const char *event, int type, struct artifact *art);
-bool history_add_artifact(struct artifact *art, bool known, bool found);
-void history_unmask_unknown(void);
-bool history_lose_artifact(struct artifact *art);
-bool history_is_artifact_known(struct artifact *art);
-size_t history_get_list(struct history_info **list);
+void history_clear(struct player *p);
+bool history_add_full(struct player *p,
+		bitflag *type,
+		int aidx,
+		int dlev,
+		int clev,
+		int turn,
+		const char *text);
+bool history_add(struct player *p, const char *text, int type);
+bool history_is_artifact_known(struct player *p, const struct artifact *artifact);
+void history_find_artifact(struct player *p, const struct artifact *artifact);
+void history_lose_artifact(struct player *p, const struct artifact *artifact);
+void history_unmask_unknown(struct player *p);
+size_t history_get_list(struct player *p, struct history_info **list);
 
 #endif /* !HISTORY_H */

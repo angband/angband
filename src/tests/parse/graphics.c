@@ -32,11 +32,11 @@ static void getmsg(game_event_type type, game_event_data *data, void *user) {
 	bool *error = user;
 
 	fprintf(stderr, "Message: %s\n", data->message.msg);
-	*error = TRUE;
+	*error = true;
 }
 
 int test_prefs(void *state) {
-	bool error = FALSE;
+	bool error = false;
 	graphics_mode *mode;
 
 	/* This is a bit of a hack to ensure we have a player struct set up */
@@ -54,10 +54,10 @@ int test_prefs(void *state) {
 
 		/* Load pref file */
 		use_graphics = mode->grafID;
-		reset_visuals(TRUE);
+		reset_visuals(true);
 	}
 
-	eq(error, FALSE);
+	eq(error, false);
 
 	ok;
 }

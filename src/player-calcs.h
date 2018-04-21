@@ -26,8 +26,8 @@
  * Bit flags for the "player->upkeep->notice" variable
  */
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
-#define PN_IGNORE       0x00000008L    /* Ignore stuff */
-#define PN_MON_MESSAGE	0x00000010L	   /* flush monster pain messages */
+#define PN_IGNORE       0x00000002L    /* Ignore stuff */
+#define PN_MON_MESSAGE	0x00000004L	   /* flush monster pain messages */
 
 
 /**
@@ -38,14 +38,11 @@
 #define PU_HP			0x00000004L	/* Calculate chp and mhp */
 #define PU_MANA			0x00000008L	/* Calculate csp and msp */
 #define PU_SPELLS		0x00000010L	/* Calculate spells */
-#define PU_FORGET_VIEW	0x00000020L	/* Forget field of view */
-#define PU_UPDATE_VIEW	0x00000040L	/* Update field of view */
-#define PU_FORGET_FLOW	0x00000080L	/* Forget flow data */
-#define PU_UPDATE_FLOW	0x00000100L	/* Update flow data */
-#define PU_MONSTERS		0x00000200L	/* Update monsters */
-#define PU_DISTANCE		0x00000400L	/* Update distances */
-#define PU_PANEL		0x00000800L	/* Update panel */
-#define PU_INVEN		0x00001000L	/* Update inventory */
+#define PU_UPDATE_VIEW	0x00000020L	/* Update field of view */
+#define PU_MONSTERS		0x00000040L	/* Update monsters */
+#define PU_DISTANCE		0x00000080L	/* Update distances */
+#define PU_PANEL		0x00000100L	/* Update panel */
+#define PU_INVEN		0x00000200L	/* Update inventory */
 
 
 /**
@@ -68,30 +65,40 @@
 #define PR_DTRAP		0x00004000L /* Trap detection indicator */
 #define PR_STATE		0x00008000L	/* Display Extra (State) */
 #define PR_MAP			0x00010000L	/* Redraw whole map */
-#define PR_INVEN		0x00010000L /* Display inven/equip */
+#define PR_INVEN		0x00020000L /* Display inven/equip */
 #define PR_EQUIP		0x00040000L /* Display equip/inven */
 #define PR_MESSAGE		0x00080000L /* Display messages */
 #define PR_MONSTER		0x00100000L /* Display monster recall */
 #define PR_OBJECT		0x00200000L /* Display object recall */
 #define PR_MONLIST		0x00400000L /* Display monster list */
-#define PR_ITEMLIST     0x00800000L /* Display item list */
-#define PR_FEELING      0x01000000L /* Display level feeling */
+#define PR_ITEMLIST		0x00800000L /* Display item list */
+#define PR_FEELING		0x01000000L /* Display level feeling */
 
-/* Display Basic Info */
+/**
+ * Display Basic Info
+ */
 #define PR_BASIC \
 	(PR_MISC | PR_TITLE | PR_STATS | PR_LEV |\
 	 PR_EXP | PR_GOLD | PR_ARMOR | PR_HP |\
 	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_SPEED)
 
-/* Display Extra Info */
+/**
+ * Display Extra Info
+ */
 #define PR_EXTRA \
 	(PR_STATUS | PR_STATE | PR_STUDY)
 
+/**
+ * Display Subwindow Info
+ */
+#define PR_SUBWINDOW \
+	(PR_MONSTER | PR_OBJECT | PR_MONLIST | PR_ITEMLIST)
 
-extern const byte adj_str_blow[STAT_RANGE];
-extern const byte adj_dex_safe[STAT_RANGE];
-extern const byte adj_con_fix[STAT_RANGE];
-extern const byte adj_str_hold[STAT_RANGE];
+
+extern const int adj_str_blow[STAT_RANGE];
+extern const int adj_dex_safe[STAT_RANGE];
+extern const int adj_con_fix[STAT_RANGE];
+extern const int adj_str_hold[STAT_RANGE];
 
 bool earlier_object(struct object *orig, struct object *new, bool store);
 int equipped_item_slot(struct player_body body, struct object *obj);
@@ -108,6 +115,7 @@ void monster_race_track(struct player_upkeep *upkeep,
 						struct monster_race *race);
 void track_object(struct player_upkeep *upkeep, struct object *obj);
 void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind);
+void track_object_cancel(struct player_upkeep *upkeep);
 bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj);
 
 void notice_stuff(struct player *p);

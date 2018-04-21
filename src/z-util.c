@@ -52,7 +52,7 @@ size_t utf8_strlen(char *s)
 void utf8_clipto(char *s, size_t n)
 {
 	size_t i = 0, j = 0;
-	bool terminate_next = FALSE;
+	bool terminate_next = false;
 
 	if (n == 0) {
 		s[i] = 0;
@@ -65,7 +65,7 @@ void utf8_clipto(char *s, size_t n)
 			if (terminate_next)
 				break;
 			if (j == n)
-				terminate_next = TRUE;
+				terminate_next = true;
 		}
 		i++;
 	}
@@ -81,7 +81,7 @@ int my_stricmp(const char *s1, const char *s2)
 	char ch2 = 0;
 
 	/* Just loop */
-	while (TRUE) {
+	while (true) {
 		/* We've reached the end of both strings simultaneously */
 		if ((*s1 == 0) && (*s2 == 0)) {
 			/* We're still here, so s1 and s2 are equal */
@@ -244,7 +244,7 @@ bool suffix(const char *s, const char *t)
 	size_t slen = strlen(s);
 
 	/* Check for incompatible lengths */
-	if (tlen > slen) return (FALSE);
+	if (tlen > slen) return (false);
 
 	/* Compare "t" to the end of "s" */
 	return (!strcmp(s + slen - tlen, t));
@@ -260,11 +260,11 @@ bool prefix(const char *s, const char *t)
 	while (*t)
 	{
 		/* Compare content and length */
-		if (*t++ != *s++) return (FALSE);
+		if (*t++ != *s++) return (false);
 	}
 
 	/* Matched, we have a prefix */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -277,7 +277,7 @@ bool prefix_i(const char *s, const char *t)
 	while (*t)
 	{
 		if (toupper((unsigned char)*t) != toupper((unsigned char)*s))
-			return (FALSE);
+			return (false);
 		else
 		{
 			t++;
@@ -286,7 +286,7 @@ bool prefix_i(const char *s, const char *t)
 	}
 
 	/* Matched, we have a prefix */
-	return (TRUE);
+	return (true);
 }
 
 /**
@@ -296,7 +296,7 @@ bool prefix_i(const char *s, const char *t)
 void strskip(char *s, const char c, const char e) {
 	char *in = s;
 	char *out = s;
-	bool escapeseen = FALSE;
+	bool escapeseen = false;
 	while (*in) {
 		if ((*in != c) && ((*in != e) || escapeseen)) {
 			if (escapeseen) {
@@ -306,15 +306,15 @@ void strskip(char *s, const char c, const char e) {
 			}
 			*out = *in;
 			out++;
-			escapeseen = FALSE;
+			escapeseen = false;
 		} else if (*in == e) {
 			/* Maybe escaping something */
-			escapeseen = TRUE;
+			escapeseen = true;
 		} else if (escapeseen) {
 			/* Add the escaped character */
 			*out = *in;
 			out++;
-			escapeseen = FALSE;
+			escapeseen = false;
 		}
 		in++;
 	}
@@ -328,14 +328,14 @@ void strskip(char *s, const char c, const char e) {
 void strescape(char *s, const char c) {
 	char *in = s;
 	char *out = s;
-	bool escapenext = FALSE;
+	bool escapenext = false;
 	while (*in) {
 		if (*in != c || escapenext) {
 			*out = *in;
 			out++;
-			escapenext = FALSE;
+			escapenext = false;
 		} else if (*in == c) {
-			escapenext = TRUE;
+			escapenext = true;
 		}
 		in++;
 	}
@@ -343,16 +343,16 @@ void strescape(char *s, const char c) {
 }
 
 /**
- * returns TRUE if string only contains spaces
+ * returns true if string only contains spaces
  */
 bool contains_only_spaces(const char* s){
 	char spaces[]=" \t";
 	while(*s){
 		if(strchr(spaces,*s)!=NULL)
-			return FALSE;
+			return false;
 		s++;
 	}
-	return TRUE;
+	return true;
 }
 
 /**
@@ -368,11 +368,11 @@ bool is_a_vowel(int ch)
 		case 'o':
 		case 'u':
 		{
-			return (TRUE);
+			return (true);
 		}
 	}
 
-	return (FALSE);
+	return (false);
 }
 
 /**
@@ -466,3 +466,18 @@ void sort(void *base, size_t nmemb, size_t smemb,
 {
 	qsort(base, nmemb, smemb, comp);
 }
+
+u32b djb2_hash(const char *str)
+{
+	u32b hash = 5381;
+	int c = *str;
+
+	while (c)
+	{
+		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+		c = *++str;
+	}
+
+	return hash;
+}
+

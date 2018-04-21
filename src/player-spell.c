@@ -22,6 +22,7 @@
 #include "effects.h"
 #include "init.h"
 #include "monster.h"
+#include "obj-gear.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -34,7 +35,7 @@
 /**
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
  */
-const byte adj_mag_fail[STAT_RANGE] =
+static const int adj_mag_fail[STAT_RANGE] =
 {
 	99	/* 3 */,
 	99	/* 4 */,
@@ -79,7 +80,7 @@ const byte adj_mag_fail[STAT_RANGE] =
 /**
  * Stat Table (INT/WIS) -- failure rate adjustment
  */
-const int adj_mag_stat[STAT_RANGE] =
+static const int adj_mag_stat[STAT_RANGE] =
 {
 	-5	/* 3 */,
 	-4	/* 4 */,
@@ -230,11 +231,11 @@ bool spell_okay_list(bool (*spell_test)(int spell),
 		const int spells[], int n_spells)
 {
 	int i;
-	bool okay = FALSE;
+	bool okay = false;
 
 	for (i = 0; i < n_spells; i++)
 		if (spell_test(spells[i]))
-			okay = TRUE;
+			okay = true;
 
 	return okay;
 }
@@ -296,7 +297,7 @@ s16b spell_chance(int spell_index)
 	const struct class_spell *spell;
 
 	/* Paranoia -- must be literate */
-	if (player->class->magic.total_spells == 0) return (100);
+	if (!player->class->magic.spell_realm) return (100);
 
 	/* Get the spell */
 	spell = spell_by_index(spell_index);
@@ -410,9 +411,9 @@ bool spell_cast(int spell_index, int dir)
 		msg("You failed to concentrate hard enough!");
 	} else {
 		/* Cast the spell */
-		if (!effect_do(spell->effect, NULL, ident, TRUE, dir, beam, FALSE)) {
+		if (!effect_do(spell->effect, source_player(), NULL, ident, true, dir, beam, false)) {
 			mem_free(ident);
-			return FALSE;
+			return false;
 		}
 
 		/* A spell was cast */
@@ -449,7 +450,7 @@ bool spell_cast(int spell_index, int dir)
 
 		/* Bypass free action */
 		(void)player_inc_timed(player, TMD_PARALYZED, randint1(5 * oops + 1),
-							   TRUE, FALSE);
+							   true, false);
 
 		/* Damage CON (possibly permanently) */
 		if (randint0(100) < 50) {
@@ -467,15 +468,9 @@ bool spell_cast(int spell_index, int dir)
 	player->upkeep->redraw |= (PR_MANA);
 
 	mem_free(ident);
-	return TRUE;
+	return true;
 }
 
-
-bool spell_is_identify(int spell_index)
-{
-	const struct class_spell *spell = spell_by_index(spell_index);
-	return (spell->effect->index == EF_IDENTIFY);
-}
 
 bool spell_needs_aim(int spell_index)
 {
@@ -548,23 +543,28 @@ void get_spell_info(int spell_index, char *p, size_t len)
 	spell_append_value_info(spell_index, p, len);
 }
 
-static int spell_value_base_monster_level(void)
+static int spell_value_base_spell_power(void)
 {
-	int level = 0;
+	int power = 0;
 
 	/* Check the reference race first */
 	if (ref_race)
-		level = ref_race->level;
+	   power = ref_race->spell_power;
 	/* Otherwise the current monster if there is one */
 	else if (cave->mon_current > 0)
-		level = cave_monster(cave, cave->mon_current)->race->level;
+		power = cave_monster(cave, cave->mon_current)->race->spell_power;
 
-	return level;
+	return power;
 }
 
 static int spell_value_base_player_level(void)
 {
 	return player->lev;
+}
+
+static int spell_value_base_dungeon_level(void)
+{
+	return cave->depth;
 }
 
 static int spell_value_base_max_sight(void)
@@ -582,17 +582,28 @@ static int spell_value_base_food_starve(void)
 	return PY_FOOD_STARVE;
 }
 
+static int spell_value_base_weapon_damage(void)
+{
+	struct object *obj = player->body.slots[slot_by_name(player, "weapon")].obj;
+	if (!obj) {
+		return 0;
+	}
+	return (damroll(obj->dd, obj->ds) + obj->to_d);
+}
+
 expression_base_value_f spell_value_base_by_name(const char *name)
 {
 	static const struct value_base_s {
 		const char *name;
 		expression_base_value_f function;
 	} value_bases[] = {
-		{ "MONSTER_LEVEL", spell_value_base_monster_level },
+		{ "SPELL_POWER", spell_value_base_spell_power },
 		{ "PLAYER_LEVEL", spell_value_base_player_level },
+		{ "DUNGEON_LEVEL", spell_value_base_dungeon_level },
 		{ "MAX_SIGHT", spell_value_base_max_sight },
 		{ "FOOD_FAINT", spell_value_base_food_faint },
 		{ "FOOD_STARVE", spell_value_base_food_starve },
+		{ "WEAPON_DAMAGE", spell_value_base_weapon_damage },
 		{ NULL, NULL },
 	};
 	const struct value_base_s *current = value_bases;

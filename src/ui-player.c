@@ -19,10 +19,11 @@
 #include "buildid.h"
 #include "game-world.h"
 #include "init.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-util.h"
 #include "player.h"
 #include "player-calcs.h"
@@ -272,7 +273,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS * 4] = {
 	{ "Sear.",	OBJ_MOD_SEARCH,		-1,				-1, 		-1 },
 	{ "Infra",	OBJ_MOD_INFRA,		-1,				-1,			TMD_SINFRA },
 	{ "Tunn.",	OBJ_MOD_TUNNEL,		-1,				-1, 		-1 },
-	{ "Speed",	OBJ_MOD_SPEED,		-1,				-1,			 TMD_FAST },
+	{ "Speed",	OBJ_MOD_SPEED,		-1,				-1,			TMD_FAST },
 	{ "Blows",	OBJ_MOD_BLOWS,		-1,				-1, 		-1 },
 	{ "Shots",	OBJ_MOD_SHOTS,		-1,				-1, 		-1 },
 	{ "Might",	OBJ_MOD_MIGHT,		-1,				-1, 		-1 },
@@ -295,86 +296,141 @@ static void display_resistance_panel(const struct player_flag_record *rec,
 
 		/* Repeated extraction of flags is inefficient but more natural */
 		for (j = 0; j <= player->body.count; j++) {
-			struct object *obj;
 			bitflag f[OF_SIZE];
-
 			byte attr = COLOUR_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
+			bool res = false, imm = false, vul = false, rune = false;
+			bool timed = false;
+			bool known = false;
 
-			bool res = FALSE, imm = FALSE, vul = FALSE;
-			bool timed = FALSE;
-			bool known = FALSE;
+			/* Object or player info? */
+			if (j < player->body.count) {
+				int index = 0;
+				struct object *obj = slot_object(player, j);
+				struct curse_data *curse = obj ? obj->curses : NULL;
 
-			/* Wipe flagset */
-			of_wipe(f);
+				while (obj) {
+					/* Wipe flagset */
+					of_wipe(f);
 
-			/* Get the object or player info */
-			obj = j < player->body.count ? slot_object(player, j) : NULL;
-			if (j < player->body.count && obj) {
-				/* Get known properties */
-				object_flags_known(obj, f);
-				if (rec[i].element != -1)
-					known = object_element_is_known(obj, rec[i].element);
-				else if (rec[i].flag != -1)
-					known = object_flag_is_known(obj, rec[i].flag);
-				else
-					known = TRUE;
-			} else if (j == player->body.count) {
+					/* Get known properties */
+					object_flags_known(obj, f);
+					if (rec[i].element != -1) {
+						known = object_element_is_known(obj, rec[i].element);
+					} else if (rec[i].flag != -1) {
+						known = object_flag_is_known(obj, rec[i].flag);
+					} else {
+						known = true;
+					}
+
+					/* Get resistance, immunity and vulnerability info */
+					if (rec[i].mod != -1) {
+						if (obj->modifiers[rec[i].mod] != 0) {
+							res = true;
+						}
+						rune = (player->obj_k->modifiers[rec[i].mod] == 1);
+					} else if (rec[i].flag != -1) {
+						if (of_has(f, rec[i].flag)) {
+							res = true;
+						}
+						rune = of_has(player->obj_k->flags, rec[i].flag);
+					} else if (rec[i].element != -1) {
+						if (known) {
+							if (obj->el_info[rec[i].element].res_level == 3) {
+								imm = true;
+							}
+							if (obj->el_info[rec[i].element].res_level == 1) {
+								res = true;
+							}
+							if (obj->el_info[rec[i].element].res_level == -1) {
+								vul = true;
+							}
+						}
+						rune = (player->obj_k->el_info[rec[i].element].res_level == 1);
+					}
+
+					/* Move to any unprocessed curse object */
+					if (curse) {
+						index++;
+						obj = NULL;
+						while (index < z_info->curse_max) {
+							if (curse[index].power) {
+								obj = curses[index].obj;
+								break;
+							} else {
+								index++;
+							}
+						}
+					} else {
+						obj = NULL;
+					}
+				}
+			} else {
 				player_flags(player, f);
-				known = TRUE;
+				known = true;
 
 				/* Timed flags only in the player column */
 				if (rec[i].tmd_flag >= 0) {
-	 				timed = player->timed[rec[i].tmd_flag] ? TRUE : FALSE;
+	 				timed = player->timed[rec[i].tmd_flag] ? true : false;
 					/* There has to be one special case... */
 					if ((rec[i].tmd_flag == TMD_AFRAID) &&
 						(player->timed[TMD_TERROR]))
-						timed = TRUE;
+						timed = true;
 				}
-			}
 
-			/* Set which (if any) symbol and color are used */
-			if (rec[i].mod != -1) {
-				if (j != player->body.count)
-					res = (obj && (obj->modifiers[rec[i].mod] != 0));
-				else {
+				/* Set which (if any) symbol and color are used */
+				if (rec[i].mod != -1) {
 					/* Messy special cases */
 					if (rec[i].mod == OBJ_MOD_INFRA)
 						res = (player->race->infra > 0);
 					if (rec[i].mod == OBJ_MOD_TUNNEL)
 						res = (player->race->r_skills[SKILL_DIGGING] > 0);
-				}
-			} else if (rec[i].flag != -1) {
-				res = of_has(f, rec[i].flag);
-			} else if (rec[i].element != -1) {
-				if (j != player->body.count) {
-					imm = obj && known &&
-						(obj->el_info[rec[i].element].res_level == 3);
-					res = obj && known &&
-						(obj->el_info[rec[i].element].res_level == 1);
-					vul = obj && known &&
-						(obj->el_info[rec[i].element].res_level == -1);
-				} else {
+				} else if (rec[i].flag != -1) {
+					res = of_has(f, rec[i].flag);
+				} else if (rec[i].element != -1) {
 					imm = player->race->el_info[rec[i].element].res_level == 3;
 					res = player->race->el_info[rec[i].element].res_level == 1;
 					vul = player->race->el_info[rec[i].element].res_level == -1;
 				}
 			}
 
-			/* Set the symbols and print them */
-			if (imm) name_attr = COLOUR_GREEN;
-			else if (res && (name_attr != COLOUR_GREEN))
+			/* Colour the name appropriately */
+			if (imm) {
+				name_attr = COLOUR_GREEN;
+			} else if (res && (name_attr != COLOUR_GREEN)) {
 				name_attr = COLOUR_L_BLUE;
+			} else if (vul && (name_attr != COLOUR_GREEN)) {
+				name_attr = COLOUR_RED;
+			}
 
-			if (vul) sym = '-';
-			else if (imm) sym = '*';
-			else if (res) sym = '+';
-			else if (timed) { sym = '!'; attr = COLOUR_L_GREEN; }
-			else if ((j < player->body.count) && obj && !known)
+			/* Set the symbols and print them */
+			if (vul) {
+				sym = '-';
+			} else if (imm) {
+				sym = '*';
+			} else if (res) {
+				sym = '+';
+			} else if (timed) {
+				sym = '!';
+				attr = COLOUR_L_GREEN;
+			} else if ((j < player->body.count) && slot_object(player, j) &&
+					   !known && !rune) {
 				sym = '?';
+			}
 
 			Term_addch(attr, sym);
 		}
+
+		/* Check if the rune is known */
+		if (((rec[i].mod >= 0) &&
+			 (player->obj_k->modifiers[rec[i].mod] == 0))
+			|| ((rec[i].flag >= 0) &&
+				!of_has(player->obj_k->flags, rec[i].flag))
+			|| ((rec[i].element >= 0) &&
+				(player->obj_k->el_info[rec[i].element].res_level == 0))) {
+			name_attr = COLOUR_SLATE;
+		}
+
 		Term_putstr(col, row, 6, name_attr, format("%5s:", rec[i].name));
 	}
 	Term_putstr(col, row++, res_cols, COLOUR_WHITE, "      abcdefghijkl@");
@@ -668,7 +724,6 @@ static const char *show_speed(void)
 	int tmp = player->state.speed;
 	if (player->timed[TMD_FAST]) tmp -= 10;
 	if (player->timed[TMD_SLOW]) tmp += 10;
-	if (player->searching) tmp += 10;
 	if (tmp == 110) return "Normal";
 	strnfmt(buffer, sizeof(buffer), "%d", tmp - 110);
 	return buffer;
@@ -693,7 +748,7 @@ static const byte colour_table[] =
 static struct panel *get_panel_topleft(void) {
 	struct panel *p = panel_allocate(6);
 
-	panel_line(p, COLOUR_L_BLUE, "Name", "%s", op_ptr->full_name);
+	panel_line(p, COLOUR_L_BLUE, "Name", "%s", player->full_name);
 	panel_line(p, COLOUR_L_BLUE, "Race",	"%s", player->race->name);
 	panel_line(p, COLOUR_L_BLUE, "Class", "%s", player->class->name);
 	panel_line(p, COLOUR_L_BLUE, "Title", "%s", show_title());
@@ -737,8 +792,8 @@ static struct panel *get_panel_combat(void) {
 	/* Melee */
 	obj = equipped_item_by_slot_name(player, "weapon");
 	bth = (player->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
-	dam = player->known_state.to_d + (obj && object_attack_plusses_are_visible(obj) ? obj->to_d : 0);
-	hit = player->known_state.to_h + (obj && object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
+	dam = player->known_state.to_d + (obj ? obj->known->to_d : 0);
+	hit = player->known_state.to_h + (obj ? obj->known->to_h : 0);
 
 	panel_space(p);
 
@@ -755,8 +810,8 @@ static struct panel *get_panel_combat(void) {
 	/* Ranged */
 	obj = equipped_item_by_slot_name(player, "shooting");
 	bth = (player->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
-	hit = player->known_state.to_h + (obj && object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
-	dam = obj && object_attack_plusses_are_visible(obj) ? obj->to_d : 0;
+	hit = player->known_state.to_h + (obj ? obj->known->to_h : 0);
+	dam = obj ? obj->known->to_d : 0;
 
 	panel_space(p);
 	panel_line(p, COLOUR_L_BLUE, "Shoot to-dam", "%+d", dam);
@@ -772,6 +827,7 @@ static struct panel *get_panel_skills(void) {
 	int skill;
 	byte attr;
 	const char *desc;
+	int depth = cave ? cave->depth : 0;
 
 #define BOUND(x, min, max)		MIN(max, MAX(min, x))
 
@@ -783,24 +839,17 @@ static struct panel *get_panel_skills(void) {
 	desc = likert(player->state.skills[SKILL_STEALTH], 1, &attr);
 	panel_line(p, attr, "Stealth", "%s", desc);
 
-	/* Disarming: -5 because we assume we're disarming a dungeon trap */
-	skill = BOUND(player->state.skills[SKILL_DISARM] - 5, 2, 100);
-	panel_line(p, colour_table[skill / 10], "Disarming", "%d%%", skill);
+	/* Physical disarming: assume we're disarming a dungeon trap */
+	skill = BOUND(player->state.skills[SKILL_DISARM_PHYS] - depth / 5, 2, 100);
+	panel_line(p, colour_table[skill / 10], "Disarm - phys.", "%d%%", skill);
+
+	/* Magical disarming */
+	skill = BOUND(player->state.skills[SKILL_DISARM_MAGIC] - depth / 5, 2, 100);
+	panel_line(p, colour_table[skill / 10], "Disarm - magic", "%d%%", skill);
 
 	/* Magic devices */
 	skill = player->state.skills[SKILL_DEVICE];
 	panel_line(p, colour_table[skill / 13], "Magic Devices", "%d", skill);
-
-	/* Search frequency */
-	skill = MAX(player->state.skills[SKILL_SEARCH_FREQUENCY], 1);
-	if (skill >= 50) {
-		panel_line(p, colour_table[10], "Perception", "1 in 1");
-	} else {
-		/* convert to chance of searching */
-		skill = 50 - skill;
-		panel_line(p, colour_table[(100 - skill*2) / 10],
-				"Perception", "1 in %d", skill);
-	}
 
 	/* Searching ability */
 	skill = BOUND(player->state.skills[SKILL_SEARCH], 0, 100);
@@ -814,7 +863,6 @@ static struct panel *get_panel_skills(void) {
 	skill = player->state.speed;
 	if (player->timed[TMD_FAST]) skill -= 10;
 	if (player->timed[TMD_SLOW]) skill += 10;
-	if (player->searching) skill += 10;
 	attr = skill < 110 ? COLOUR_L_UMBER : COLOUR_L_GREEN;
 	panel_line(p, attr, "Speed", "%s", show_speed());
 
@@ -846,11 +894,11 @@ static const struct {
 } panels[] =
 {
 	/*   x  y wid rows */
-	{ {  1, 1, 40, 7 }, TRUE,  get_panel_topleft },	/* Name, Class, ... */
-	{ { 21, 1, 18, 3 }, FALSE, get_panel_misc },	/* Age, ht, wt, ... */
-	{ {  1, 9, 24, 9 }, FALSE, get_panel_midleft },	/* Cur Exp, Max Exp, ... */
-	{ { 29, 9, 19, 9 }, FALSE, get_panel_combat },
-	{ { 52, 9, 20, 8 }, FALSE, get_panel_skills },
+	{ {  1, 1, 40, 7 }, true,  get_panel_topleft },	/* Name, Class, ... */
+	{ { 21, 1, 18, 3 }, false, get_panel_misc },	/* Age, ht, wt, ... */
+	{ {  1, 9, 24, 9 }, false, get_panel_midleft },	/* Cur Exp, Max Exp, ... */
+	{ { 29, 9, 19, 9 }, false, get_panel_combat },
+	{ { 52, 9, 20, 8 }, false, get_panel_skills },
 };
 
 void display_player_xtra_info(void)
@@ -1108,7 +1156,7 @@ void write_character_dump(ang_file *fff)
 
 			file_putf(fff, "%-45s: %s (%s)\n",
 			        option_desc(opt),
-			        op_ptr->opt[opt] ? "yes" : "no ",
+			        player->opts.opt[opt] ? "yes" : "no ",
 			        option_name(opt));
 		}
 
@@ -1124,16 +1172,16 @@ void write_character_dump(ang_file *fff)
  *
  * \param path is the path to the filename
  *
- * \returns TRUE on success, FALSE otherwise.
+ * \returns true on success, false otherwise.
  */
 bool dump_save(const char *path)
 {
 	if (text_lines_to_file(path, write_character_dump)) {
 		msg("Failed to create file %s.new", path);
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1151,7 +1199,7 @@ void do_cmd_change_name(void)
 
 	const char *p;
 
-	bool more = TRUE;
+	bool more = true;
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
@@ -1172,14 +1220,14 @@ void do_cmd_change_name(void)
 
 		if ((ke.type == EVT_KBRD)||(ke.type == EVT_BUTTON)) {
 			switch (ke.key.code) {
-				case ESCAPE: more = FALSE; break;
+				case ESCAPE: more = false; break;
 				case 'c': {
 					char namebuf[32] = "";
 
 					/* Set player name */
 					if (get_character_name(namebuf, sizeof namebuf))
-						my_strcpy(op_ptr->full_name, namebuf,
-								  sizeof(op_ptr->full_name));
+						my_strcpy(player->full_name, namebuf,
+								  sizeof(player->full_name));
 
 					break;
 				}
@@ -1188,11 +1236,11 @@ void do_cmd_change_name(void)
 					char buf[1024];
 					char fname[80];
 
-					strnfmt(fname, sizeof fname, "%s.txt",
-							player_safe_name(player, FALSE));
+					/* Get the filesystem-safe name and append .txt */
+					player_safe_name(fname, sizeof(fname), player->full_name, false);
+					my_strcat(fname, ".txt", sizeof(fname));
 
-					if (get_file(fname, buf, sizeof buf))
-					{
+					if (get_file(fname, buf, sizeof buf)) {
 						if (dump_save(buf))
 							msg("Character dump successful.");
 						else
@@ -1218,7 +1266,7 @@ void do_cmd_change_name(void)
 				mode = (mode + 1) % INFO_SCREENS;
 			} else if (ke.mouse.button == 2) {
 				/* exit the screen */
-				more = FALSE;
+				more = false;
 			} else {
 				/* Flip backwards through the screens */			
 				mode = (mode - 1) % INFO_SCREENS;

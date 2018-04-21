@@ -18,13 +18,12 @@ int teardown_tests(void *state) {
 }
 
 int test_name0(void *state) {
-	errr r = parser_parse(state, "name:3:Test Object Kind");
+	errr r = parser_parse(state, "name:Test Object Kind");
 	struct object_kind *k;
 
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
-	eq(k->kidx, 3);
 	require(streq(k->name, "Test Object Kind"));
 	ok;
 }

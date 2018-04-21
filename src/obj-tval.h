@@ -1,6 +1,6 @@
 /**
-   \file obj-tval.h
-   \brief Wrapper functions for tvals.
+ * \file obj-tval.h
+ * \brief Wrapper functions for tvals.
  *
  * Copyright (c) 2014 Ben Semmler
  *
@@ -20,21 +20,6 @@
 #define OBJECT_TVAL_H
 
 #include "object.h"
-
-/**
- * The values for the "tval" field of various objects.
- *
- * This value is the primary means by which items are sorted in the
- * player inventory, followed by "sval" and "cost".
- */
-enum
-{
-	#define TV(a, b) TV_##a,
-	#include "list-tvals.h"
-	#undef TV
-
-	TV_MAX
-};
 
 /**
  * Special "sval" value -- unknown "sval"
@@ -67,6 +52,7 @@ bool tval_is_melee_weapon(const struct object *obj);
 bool tval_is_money(const struct object *obj);
 bool tval_is_money_k(const struct object_kind *kind);
 bool tval_is_pointy(const struct object *obj);
+bool tval_is_digger(const struct object *obj);
 bool tval_is_potion(const struct object *obj);
 bool tval_is_ring(const struct object *obj);
 bool tval_is_rod(const struct object *obj);

@@ -49,8 +49,8 @@ struct pit_profile *lookup_pit_profile(const char *name)
 	struct pit_profile *profile;
 
 	/* Look for it */
-	for (profile = &pit_info[z_info->pit_max - 1]; profile; profile = profile->next) {
-		if (streq(name, profile->name))
+	for (profile = pit_info; profile; profile = profile->next) {
+		if (profile->name && streq(name, profile->name))
 			return profile;
 	}
 
@@ -61,7 +61,7 @@ struct pit_profile *lookup_pit_profile(const char *name)
  * This function selects monsters by monster base symbol 
  * (may be any of the characters allowed)
  * \param race the monster race being tested for suitability
- * \return TRUE if the race is accepted
+ * \return true if the race is accepted
  *
  * Uniques may be forbidden, or allowed on rare occasions.
  *
@@ -72,24 +72,24 @@ static bool mon_select(struct monster_race *race)
     /* Require that the monster symbol be correct. */
     if (base_d_char[0] != '\0') {
 		if (strchr(base_d_char, race->base->d_char) == 0)
-			return (FALSE);
+			return (false);
     }
 
 	/* No invisible undead until deep. */
 	if ((player->depth < 40) && (rf_has(race->flags, RF_UNDEAD))
 		&& (rf_has(race->flags, RF_INVISIBLE)))
-		return (FALSE);
+		return (false);
 
     /* Usually decline unique monsters. */
     if (rf_has(race->flags, RF_UNIQUE)) {
 		if (!allow_unique)
-			return (FALSE);
+			return (false);
 		else if (randint0(5) != 0)
-			return (FALSE);
+			return (false);
     }
 
     /* Okay */
-    return (TRUE);
+    return (true);
 }
 
 /**
@@ -114,7 +114,7 @@ static bool mon_select(struct monster_race *race)
  */
 bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 {
-    int i, j;
+    int i, j = 0;
 
     /* Clear global monster restriction variables. */
     allow_unique = unique_ok;
@@ -124,7 +124,7 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
     /* No monster type specified, no restrictions. */
     if (monster_type == NULL) {
 		get_mon_num_prep(NULL);
-		return TRUE;
+		return true;
 	} else if (streq(monster_type, "random")) {
 		/* Handle random */
 		for (i = 0; i < 2500; i++) {
@@ -153,14 +153,14 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 		if (i < 2499) {
 			/* Use that monster's base type for all monsters. */
 			my_strcpy(base_d_char, format("%c", r_info[j].base->d_char),
-					  sizeof(r_info[j].base->d_char));
+					  sizeof(base_d_char));
 
 			/* Prepare allocation table */
 			get_mon_num_prep(mon_select);
-			return TRUE;
+			return true;
 		} else
 			/* Paranoia - area stays empty if no monster is found */
-			return FALSE;
+			return false;
     } else {
 		/* Use a pit profile */
 		struct pit_profile *profile = lookup_pit_profile(monster_type);
@@ -169,11 +169,11 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
 		if (profile)
 			dun->pit_type = profile;
 		else
-			return FALSE;
+			return false;
 
 		/* Prepare allocation table */
 		get_mon_num_prep(mon_pit_hook);
-		return TRUE;
+		return true;
 	}
 }
 
@@ -187,9 +187,9 @@ bool mon_restrict(const char *monster_type, int depth, bool unique_ok)
  * \param type the type of monster (see comments to mon_restrict())
  * \param depth selection depth
  * \param num the number of monsters to try and place - inexact due to groups
- * \param y0
+ * \param y0 the centre of the rectangle for monster placement
  * \param x0 the centre of the rectangle for monster placement
- * \param dy
+ * \param dy the dimensions of the rectangle
  * \param dx the dimensions of the rectangle
  * \param origin the origin for monster drops
  *
@@ -205,7 +205,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
     int start_mon_num = c->mon_max;
 
     /* Restrict monsters.  Allow uniques. Leave area empty if none found. */
-    if (!mon_restrict(type, depth, TRUE))
+    if (!mon_restrict(type, depth, true))
 		return;
 
     /* Build the monster probability table. */
@@ -219,17 +219,21 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 		if ((dy == 0) && (dx == 0)) {
 			y = y0;
 			x = x0;
-			if (!square_in_bounds(c, y, x))
+			if (!square_in_bounds(c, y, x)) {
+				(void) mon_restrict(NULL, depth, true);
 				return;
+			}
 		} else {
 			for (j = 0; j < 10; j++) {
 				y = rand_spread(y0, dy);
 				x = rand_spread(x0, dx);
 				if (!square_in_bounds(c, y, x)) {
-					if (j < 9)
+					if (j < 9) {
 						continue;
-					else
+					} else {
+						(void) mon_restrict(NULL, depth, true);
 						return;
+					}
 				}
 				break;
 			}
@@ -239,7 +243,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 		if (!square_isempty(c, y, x)) continue;
 
 		/* Place the monster (sleeping, allow groups) */
-		pick_and_place_monster(c, y, x, depth, TRUE, TRUE, origin);
+		pick_and_place_monster(c, y, x, depth, true, true, origin);
 
 		/* Rein in monster groups and escorts a little. */
 		if (c->mon_max - start_mon_num > num * 2)
@@ -251,7 +255,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
     }
 
     /* Remove monster restrictions. */
-    (void) mon_restrict(NULL, depth, TRUE);
+    (void) mon_restrict(NULL, depth, true);
 }
 
 
@@ -263,9 +267,9 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
  * \param racial_symbol the allowable monster_base symbols
  * \param vault_type the type of vault, which affects monster selection depth
  * \param data the vault text description, which contains the racial symbol
- * \param y1
- * \param y2
- * \param x1
+ * \param y1 the limits of the vault
+ * \param y2 the limits of the vault
+ * \param x1 the limits of the vault
  * \param x2 the limits of the vault
  */
 void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
@@ -276,9 +280,9 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 
     for (i = 0; racial_symbol[i] != '\0'; i++) {
 		/* Require correct race, allow uniques. */
-		allow_unique = TRUE;
+		allow_unique = true;
 		my_strcpy(base_d_char, format("%c", racial_symbol[i]),
-				  sizeof(racial_symbol[i]));
+				  sizeof(base_d_char));
 
 		/* Determine level of monster */
 		if (strstr(vault_type, "Lesser vault"))
@@ -303,8 +307,8 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 			for (x = x1; x <= x2; x++, t++) {
 				if (*t == racial_symbol[i]) {
 					/* Place a monster */
-					pick_and_place_monster(c, y, x, depth, FALSE,
-										   FALSE, ORIGIN_DROP_SPECIAL);
+					pick_and_place_monster(c, y, x, depth, false,
+										   false, ORIGIN_DROP_SPECIAL);
 				}
 			}
 		}
@@ -318,9 +322,9 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
  * Funtion for placing appropriate monsters in a room of chambers
  *
  * \param c the current chunk being generated
- * \param y1
- * \param x1
- * \param y2
+ * \param y1 the limits of the vault
+ * \param x1 the limits of the vault
+ * \param y2 the limits of the vault
  * \param x2 the limits of the vault
  * \param name the name of the monster type for use in mon_select()
  * \param area the total room area, used for scaling monster quantity
@@ -344,18 +348,18 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 
 	/* Set monster generation restrictions. Occasionally random. */
 	if (random) {
-		if (!mon_restrict("random", depth, TRUE))
+		if (!mon_restrict("random", depth, true))
 			return;
 		my_strcpy(name, "random", sizeof(name));
 	} else {
-		if (!mon_restrict(dun->pit_type->name, depth, TRUE))
+		if (!mon_restrict(dun->pit_type->name, depth, true))
 			return;
 		my_strcpy(name, dun->pit_type->name, sizeof(name));
 	}
 
 	/* Build the monster probability table. */
 	if (!get_mon_num(depth)) {
-		(void) mon_restrict(NULL, depth, FALSE);
+		(void) mon_restrict(NULL, depth, false);
 		name = NULL;
 		return;
 	}
@@ -381,7 +385,7 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 			continue;
 
 		/* Place a single monster.  Sleeping 2/3rds of the time. */
-		pick_and_place_monster(c, y, x, c->depth, (randint0(3) != 0), FALSE,
+		pick_and_place_monster(c, y, x, c->depth, (randint0(3) != 0), false,
 											 ORIGIN_DROP_SPECIAL);
 
 		/* One less monster to place. */
@@ -389,6 +393,6 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	}
 
 	/* Remove our restrictions. */
-	(void) mon_restrict(NULL, depth, FALSE);
+	(void) mon_restrict(NULL, depth, false);
 }
 

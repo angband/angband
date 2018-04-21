@@ -69,7 +69,7 @@ static bool option_is_cheat(int opt)
 }
 
 /**
- * Set an option, return TRUE if successful
+ * Set an option, return true if successful
  */
 bool option_set(const char *name, int val)
 {
@@ -80,18 +80,49 @@ bool option_set(const char *name, int val)
 		if (!options[opt].name || !streq(options[opt].name, name))
 			continue;
 
-		op_ptr->opt[opt] = val ? TRUE : FALSE;
+		player->opts.opt[opt] = val ? true : false;
 		if (val && option_is_cheat(opt))
-			op_ptr->opt[opt + 1] = TRUE;
+			player->opts.opt[opt + 1] = true;
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
- * Initialise options to defaults
+ * Set score options from cheat options
+ */
+void options_init_cheat(void)
+{
+	int i;
+
+	for (i = 0; i < OPT_MAX; i++) {
+		if (option_is_cheat(i))
+			player->opts.opt[i + 1] = player->opts.opt[i];
+	}
+
+}
+
+/**
+ * Set player default options
+ */
+void options_init_defaults(struct player_options *opts)
+{
+	/* Set defaults */
+	int opt;
+	for (opt = 0; opt < OPT_MAX; opt++)
+		(*opts).opt[opt] = options[opt].normal;
+
+	/* 40ms for the delay factor */
+	(*opts).delay_factor = 40;
+
+	/* 30% of HP */
+	(*opts).hitpoint_warn = 3;
+}
+
+/**
+ * Initialise options package
  */
 void init_options(void)
 {
@@ -107,18 +138,7 @@ void init_options(void)
 		while (page_opts < OPT_PAGE_PER)
 			option_page[page][page_opts++] = OPT_none;
 	}
-
-	/* Set defaults */
-	for (opt = 0; opt < OPT_MAX; opt++)
-		op_ptr->opt[opt] = options[opt].normal;
-
-	/* 40ms for the delay factor */
-	op_ptr->delay_factor = 40;
-
-	/* 30% of HP */
-	op_ptr->hitpoint_warn = 3;
 }
-
 
 struct init_module options_module = {
 	.name = "options",

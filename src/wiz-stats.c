@@ -77,9 +77,9 @@ int iter;
 /* amount to add each time an item comes up */
 static double addval;
 /* flag for whether we are in clearing mode */
-bool clearing = FALSE;
+bool clearing = false;
 /* flag for regenning randart */
-bool regen = FALSE;
+bool regen = false;
 
 /*** These are items to track for each iteration ***/
 /* total number of artifacts found */
@@ -414,16 +414,16 @@ static void init_stat_vals()
 static bool first_find(stat_first_find st)
 {
 	/* make sure we're not on an iteration above our array limit */
-	if (iter >= TRIES_SIZE) return FALSE;
+	if (iter >= TRIES_SIZE) return false;
 
 	/* make sure we haven't found it earlier on this iteration */
-	if (stat_ff_all[st][iter] > 0) return FALSE;
+	if (stat_ff_all[st][iter] > 0) return false;
 
 	/* assign the depth to this value */
 	stat_ff_all[st][iter] = player->depth;
 
 	/* success */
-	return TRUE;
+	return true;
 }
 
 /*
@@ -594,7 +594,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			if (obj->modifiers[OBJ_MOD_CON] != 0)
 				add_stats(ST_CON_ARMOR, vault, mon, number);
 
-			if (of_has(obj->flags, OF_LIGHT_CURSE))
+			if (obj->curses)
 				add_stats(ST_CURSED_ARMOR, vault, mon, number);
 
 			break;
@@ -725,7 +725,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 				add_stats(ST_TELEP_BOWS, vault, mon, number);
 
 			/* is cursed */
-			if (of_has(obj->flags, OF_LIGHT_CURSE))
+			if (obj->curses)
 				add_stats(ST_CURSED_BOWS, vault, mon, number);
 			break;
 		}
@@ -838,7 +838,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			add_stats(ST_RINGS, vault, mon, number);
 
 			/* is it cursed */
-			if (of_has(obj->flags,OF_LIGHT_CURSE))
+			if (obj->curses)
 				add_stats(ST_CURSED_RINGS, vault, mon, number);
 
 			if (strstr(obj->kind->name, "Speed")) {
@@ -886,7 +886,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			}
 
 			/* is cursed */
-			if (of_has(obj->flags, OF_LIGHT_CURSE))
+			if (obj->curses)
 				add_stats(ST_CURSED_AMULETS, vault, mon, number);
 
 			break;
@@ -1057,7 +1057,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 			}
 		}
 		/* preserve the artifact */
-		if (!(clearing)) art->created = FALSE;
+		if (!(clearing)) art->created = false;
 	}
 
 	/* Get info on gold. */
@@ -1108,9 +1108,10 @@ void monster_death_stats(int m_idx)
 		obj->held_m_idx = 0;
 
 		/* Get data */
-		get_obj_data(obj, mon->fy, mon->fx, TRUE, uniq);
+		get_obj_data(obj, mon->fy, mon->fx, true, uniq);
 
 		/* Delete the object */
+		delist_object(cave, obj);
 		object_delete(&obj);
 
 		/* Next */
@@ -1180,7 +1181,7 @@ static bool stats_monster(struct monster *mon, int i)
 	delete_monster_idx(i);
 
 	/* success */
-	return TRUE;
+	return true;
 }
 
 
@@ -1406,10 +1407,11 @@ static void scan_for_objects(void)
 
 			while ((obj = square_object(cave, y, x))) {
 				/* Get data on the object */
-				get_obj_data(obj, y, x, FALSE, FALSE);
+				get_obj_data(obj, y, x, false, false);
 
 				/* Delete the object */
 				square_excise_object(cave, y, x, obj);
+				delist_object(cave, obj);
 				object_delete(&obj);
 			}
 		}
@@ -1464,7 +1466,7 @@ static void uncreate_artifacts(void)
 		struct artifact *art = &a_info[i];
 
 		/* Uncreate */
-		art->created = FALSE;
+		art->created = false;
 	}
 }
 
@@ -1532,7 +1534,7 @@ static void clearing_stats(void)
 			int seed_randart = randint0(0x10000000);
 
 			/* regen randarts */
-			do_randart(seed_randart,TRUE);
+			do_randart(seed_randart, false);
 		}
 
 		/* Do game iterations */
@@ -1616,7 +1618,7 @@ static int stats_prompt(void)
 		/* Prompt */
 		strnfmt(prompt, sizeof(prompt), "Regen randarts? (warning SLOW)");
 
-		regen = get_check(prompt) ? TRUE : FALSE;
+		regen = get_check(prompt) ? true : false;
 	}
 
 	return simtype;
@@ -1640,9 +1642,9 @@ void stats_collect(void)
 
 	/* Are we in diving or clearing mode */
 	if (simtype == 2)
-		clearing = TRUE;
+		clearing = true;
 	else
-		clearing = FALSE;
+		clearing = false;
 
 	/* Open log file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "stats.log");
@@ -1660,14 +1662,14 @@ void stats_collect(void)
 	 * of items, even on deeper levels, so it's not worth worrying
 	 * too much about.
 	 */
-	 auto_flag = FALSE;
+	 auto_flag = false;
 	 
-	 if (!OPT(auto_more)) {
+	 if (!OPT(player, auto_more)) {
 		/* Remember that we turned off auto_more */
-		auto_flag = TRUE;
+		auto_flag = true;
 
 		/* Turn on auto-more */
-		option_set(option_name(OPT_auto_more),TRUE);
+		option_set(option_name(OPT_auto_more),true);
 	}
 
 	/* Print heading for the file */
@@ -1683,7 +1685,7 @@ void stats_collect(void)
 	if (clearing) clearing_stats();
 
 	/* Turn auto-more back off */
-	if (auto_flag) option_set(option_name(OPT_auto_more), FALSE);
+	if (auto_flag) option_set(option_name(OPT_auto_more), false);
 
 	/* Close log file */
 	if (!file_close(stats_log)) {
@@ -1888,10 +1890,10 @@ void disconnect_stats(void)
 
 	for (i = 1; i <= tries; i++) {
 		/* Assume no disconnected areas */
-		has_dsc = FALSE;
+		has_dsc = false;
 
 		/* Assume you can't get to stairs */
-		has_dsc_from_stairs = TRUE;
+		has_dsc_from_stairs = true;
 
 		/* Make a new cave */
 		cave_generate(&cave, player);
@@ -1922,7 +1924,7 @@ void disconnect_stats(void)
 					/* Is it a  down stairs? */
 					if (square_isdownstairs(cave, y, x)) {
 
-						has_dsc_from_stairs = FALSE;
+						has_dsc_from_stairs = false;
 
 						/* debug
 						msg("dist to stairs: %d",cave_dist[y][x]); */
@@ -1934,7 +1936,7 @@ void disconnect_stats(void)
 				if (square_isvault(cave, y, x)) continue;
 
 				/* We have a disconnected area */
-				has_dsc = TRUE;
+				has_dsc = true;
 			}
 		}
 

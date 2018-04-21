@@ -20,7 +20,6 @@ PF(CUMBER_GLOVE,     "have difficulty using magic with covered hands",          
 PF(ZERO_FAIL,        "may obtain a perfect success rate with magic",              "Advanced spellcasting")
 PF(BEAM,             "frequently turn bolt spells into beams",                    NULL)
 PF(CHOOSE_SPELLS,    "may choose their own spells to study",                      NULL)
-PF(PSEUDO_ID_IMPROV, "get better at psudo id with experience",                    NULL)
 PF(KNOW_MUSHROOM,    "easily recognize mushrooms",                                "Identifies mushrooms")
 PF(KNOW_ZAPPER,      "easily recognize magic devices",                            "Identifies magic devices")
 PF(SEE_ORE,          "can sense ore in the walls",                                "Senses ore/minerals")

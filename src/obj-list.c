@@ -19,8 +19,8 @@
 #include "angband.h"
 #include "game-world.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-list.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -100,15 +100,15 @@ object_list_t *object_list_shared_instance(void)
 }
 
 /**
- * Return TRUE if the list needs to be updated. Usually this is each turn.
+ * Return true if the list needs to be updated. Usually this is each turn.
  */
 static bool object_list_needs_update(const object_list_t *list)
 {
 	if (list == NULL || list->entries == NULL)
-		return FALSE;
+		return false;
 
 	/* For now, always update when requested. */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -127,26 +127,26 @@ void object_list_reset(object_list_t *list)
 	memset(list->total_objects, 0, OBJECT_LIST_SECTION_MAX * sizeof(u16b));
 	list->distinct_entries = 0;
 	list->creation_turn = 0;
-	list->sorted = FALSE;
+	list->sorted = false;
 }
 
 /**
- * Return TRUE if the object should be omitted from the object list.
+ * Return true if the object should be omitted from the object list.
  */
-static bool object_list_should_ignore_object(const struct object *object)
+static bool object_list_should_ignore_object(const struct object *obj)
 {
-	assert(object->kind);
+	struct object *base_obj = cave->objects[obj->oidx];
 
-	if (!object->marked)
-		return TRUE;
+	assert(obj->kind);
+	assert(base_obj);
 
-	if (!is_unknown(object) && ignore_item_ok(object))
-		return TRUE;
+	if (!is_unknown(base_obj) && ignore_known_item_ok(obj))
+		return true;
 
-	if (tval_is_money(object))
-		return TRUE;
+	if (tval_is_money(base_obj))
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -154,7 +154,7 @@ static bool object_list_should_ignore_object(const struct object *object)
  */
 void object_list_collect(object_list_t *list)
 {
-	int i, y, x;
+	int i;
 	int py = player->py;
 	int px = player->px;
 
@@ -165,67 +165,67 @@ void object_list_collect(object_list_t *list)
 		return;
 
 	/* Scan each object in the dungeon. */
-	for (y = 1; y < cave->height; y++) {
-		for (x = 1; x < cave->width; x++) {
-			bool los;
-			int field = OBJECT_LIST_SECTION_LOS;
-			struct object *obj = square_object(cave, y, x);
-			if (obj) {
-				los = projectable(cave, py, px, y, x, PROJECT_NONE) || 
-					((y == py) && (x == px));
-				field = (los) ? OBJECT_LIST_SECTION_LOS :
-					OBJECT_LIST_SECTION_NO_LOS;
+	for (i = 1; i < player->cave->obj_max; i++) {
+		object_list_entry_t *entry = NULL;
+		int entry_index;
+		int current_distance;
+		int entry_distance;
+		int y, x, field;
+		bool los = false;
+		struct object *obj = player->cave->objects[i];
+
+		/* Skip unfilled entries, unknown objects and monster-held objects */
+		if (!obj) continue;
+		if ((obj->iy == 0) && (obj->ix == 0)) {
+			continue;
+		} else {
+			y = obj->iy;
+			x = obj->ix;
+		}
+
+		/* Determine which section of the list the object entry is in */
+		los = projectable(cave, py, px, y, x, PROJECT_NONE) ||
+			((y == py) && (x == px));
+		field = (los) ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
+
+		if (object_list_should_ignore_object(obj)) continue;
+
+		/* Find or add a list entry. */
+		for (entry_index = 0; entry_index < (int)list->entries_size;
+			 entry_index++) {
+			int j;
+			struct object *list_obj = list->entries[entry_index].object;
+
+			if (list_obj == NULL) {
+				/* We found an empty slot, so add this object here. */
+				list->entries[entry_index].object = obj;
+				for (j = 0; j < OBJECT_LIST_SECTION_MAX; j++)
+					list->entries[entry_index].count[j] = 0;
+				list->entries[entry_index].dy = y - player->py;
+				list->entries[entry_index].dx = x - player->px;
+				entry = &list->entries[entry_index];
+				break;
 			}
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-				object_list_entry_t *entry = NULL;
-				int entry_index;
-				int current_distance;
-				int entry_distance;
+		}
 
-				if (object_list_should_ignore_object(obj))
-					continue;
+		if (entry == NULL)
+			return;
 
-				/* Find or add a list entry. */
-				for (entry_index = 0; entry_index < (int)list->entries_size;
-					 entry_index++) {
-					int j;
+		/* We only know the number of objects we've actually seen */
+		if (obj->kind == cave->objects[obj->oidx]->kind)
+			entry->count[field] += obj->number;
+		else
+			entry->count[field] = 1;
 
-					if (list->entries[entry_index].object == NULL) {
-						/* We found an empty slot, so add this object here. */
-						list->entries[entry_index].object = obj;
-						for (j = 0; j < OBJECT_LIST_SECTION_MAX; j++)
-							list->entries[entry_index].count[j] = 0;
-						list->entries[entry_index].dy = y - player->py;
-						list->entries[entry_index].dx = x - player->px;
-						entry = &list->entries[entry_index];
-						break;
-					} else if (!is_unknown(obj) && object_similar(obj, list->entries[entry_index].object, OSTACK_LIST)) {
-						/* We found a matching object and we'll use that. */
-						entry = &list->entries[entry_index];
-						break;
-					}
-				}
+		/* Store the distance to the object in the stack that is
+		 * closest to the player. */
+		current_distance = (y - player->py) * (y - player->py) +
+			(x - player->px) * (x - player->px);
+		entry_distance = entry->dy * entry->dy + entry->dx * entry->dx;
 
-				if (entry == NULL)
-					return;
-
-				/* We only know the number of objects we've actually seen */
-				if (obj->marked == MARK_SEEN)
-					entry->count[field] += obj->number;
-				else
-					entry->count[field] = 1;
-
-				/* Store the distance to the object in the stack that is
-				 * closest to the player. */
-				current_distance = (y - player->py) * (y - player->py) +
-					(x - player->px) * (x - player->px);
-				entry_distance = entry->dy * entry->dy + entry->dx * entry->dx;
-
-				if (current_distance < entry_distance) {
-					entry->dy = y - player->py;
-					entry->dx = x - player->px;
-				}
-			}
+		if (current_distance < entry_distance) {
+			entry->dy = y - player->py;
+			entry->dx = x - player->px;
 		}
 	}
 
@@ -248,7 +248,7 @@ void object_list_collect(object_list_t *list)
 	}
 
 	list->creation_turn = turn;
-	list->sorted = FALSE;
+	list->sorted = false;
 }
 
 /**
@@ -275,8 +275,8 @@ static int object_list_distance_compare(const void *a, const void *b)
 int object_list_standard_compare(const void *a, const void *b)
 {
 	int result;
-	const struct object *ao = ((object_list_entry_t *)a)->object;
-	const struct object *bo = ((object_list_entry_t *)b)->object;
+	const struct object *ao = cave->objects[(((object_list_entry_t *)a)->object)->oidx];
+	const struct object *bo = cave->objects[(((object_list_entry_t *)b)->object)->oidx];
 
 	/* If this happens, something might be wrong in the collect function. */
 	if (ao == NULL || bo == NULL)
@@ -311,7 +311,7 @@ void object_list_sort(object_list_t *list,
 		return;
 
 	sort(list->entries, elements, sizeof(list->entries[0]), compare);
-	list->sorted = TRUE;
+	list->sorted = true;
 }
 
 /**
@@ -323,24 +323,27 @@ void object_list_sort(object_list_t *list,
 byte object_list_entry_line_attribute(const object_list_entry_t *entry)
 {
 	byte attr;
+	struct object *base_obj;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
 		return COLOUR_WHITE;
 
-	if (is_unknown(entry->object))
-	/* unknown object */
+	base_obj = cave->objects[entry->object->oidx];
+
+	if (is_unknown(base_obj))
+		/* unknown object */
 		attr = COLOUR_RED;
-	else if (entry->object->artifact && object_is_known(entry->object))
-	/* known artifact */
+	else if (base_obj->known->artifact)
+		/* known artifact */
 		attr = COLOUR_VIOLET;
-	else if (!object_flavor_is_aware(entry->object))
-	/* unaware of kind */
+	else if (!object_flavor_is_aware(base_obj))
+		/* unaware of kind */
 		attr = COLOUR_L_RED;
-	else if (entry->object->kind->cost == 0)
-	/* worthless */
+	else if (base_obj->kind->cost == 0)
+		/* worthless */
 		attr = COLOUR_SLATE;
 	else
-	/* default */
+		/* default */
 		attr = COLOUR_WHITE;
 
 	return attr;
@@ -365,38 +368,49 @@ void object_list_format_name(const object_list_entry_t *entry,
 	const char *chunk;
 	char *source;
 	bool has_singular_prefix;
-	bool los = FALSE;
+	bool los = false;
 	int field;
 	byte old_number;
 	int py = player->py;
 	int px = player->px;
-	int iy = entry->object->iy;
-	int ix = entry->object->ix;
+	struct object *base_obj;
+	int iy;
+	int ix;
+	bool object_is_recognized_artifact;
 
 	if (entry == NULL || entry->object == NULL || entry->object->kind == NULL)
 		return;
+
+	base_obj = cave->objects[entry->object->oidx];
+	iy = entry->object->iy;
+	ix = entry->object->ix;
+	object_is_recognized_artifact = object_is_known_artifact(base_obj);
 
 	/* Hack - these don't have a prefix when there is only one, so just pad
 	 * with a space. */
 	switch (entry->object->kind->tval) {
 		case TV_SOFT_ARMOR:
-			has_singular_prefix = (entry->object->kind->sval == lookup_sval(TV_SOFT_ARMOR, "Robe"));
+			if (object_is_recognized_artifact)
+				has_singular_prefix = true;
+			else if (base_obj->kind->sval == lookup_sval(TV_SOFT_ARMOR, "Robe"))
+				has_singular_prefix = true;
+			else
+				has_singular_prefix = false;
 			break;
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-			if ((object_name_is_visible(entry->object) ||
-				 object_is_known(entry->object)) && entry->object->artifact)
-				has_singular_prefix = TRUE;
+			if (object_is_recognized_artifact)
+				has_singular_prefix = true;
 			else
-				has_singular_prefix = FALSE;				
+				has_singular_prefix = false;
 			break;
 		default:
-			has_singular_prefix = TRUE;
+			has_singular_prefix = true;
 			break;
 	}
 
-	if (entry->object->marked == MARK_AWARE)
-		has_singular_prefix = TRUE;
+	if (entry->object->kind != base_obj->kind)
+		has_singular_prefix = true;
 
 	/* Work out if the object is in view */
 	los = projectable(cave, py, px, iy, ix, PROJECT_NONE) || 
@@ -411,7 +425,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 	 */
 	old_number = entry->object->number;
 	entry->object->number = entry->count[field];
-	object_desc(name, sizeof(name), entry->object, ODESC_PREFIX | ODESC_FULL);
+	object_desc(name, sizeof(name), base_obj, ODESC_PREFIX | ODESC_FULL);
 	entry->object->number = old_number;
 
 	/* The source string for strtok() needs to be set properly, depending on

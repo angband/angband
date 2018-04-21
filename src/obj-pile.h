@@ -19,6 +19,9 @@
 #include "cave.h"
 #include "player.h"
 
+#define OBJECT_LIST_SIZE  128
+#define OBJECT_LIST_INCR  128
+
 /**
  * Modes for stacking by object_similar()
  */
@@ -33,7 +36,20 @@ typedef enum
 	OSTACK_QUIVER  = 0x20  /* Quiver */
 } object_stack_t;
 
+/**
+ * Modes for floor scanning by scan_floor()
+ */
+typedef enum
+{
+	OFLOOR_NONE    = 0x00, /* No options */
+	OFLOOR_TEST    = 0x01, /* Verify item tester */
+	OFLOOR_SENSE   = 0x02, /* Sensed or known items only */
+	OFLOOR_TOP     = 0x04, /* Only the top item */
+	OFLOOR_VISIBLE = 0x08, /* Visible items only */
+} object_floor_t;
+
 struct object *object_new(void);
+void object_free(struct object *obj);
 void object_delete(struct object **obj_address);
 void object_pile_free(struct object *obj);
 
@@ -47,6 +63,7 @@ bool object_stackable(const struct object *obj1, const struct object *obj2,
 					  object_stack_t mode);
 bool object_similar(const struct object *obj1, const struct object *obj2,
 					object_stack_t mode);
+void object_origin_combine(struct object *obj1, const struct object *obj2);
 void object_absorb_partial(struct object *obj1, struct object *obj2);
 void object_absorb(struct object *obj1, struct object *obj2);
 void object_wipe(struct object *obj);
@@ -55,13 +72,15 @@ void object_copy_amt(struct object *dest, struct object *src, int amt);
 struct object *object_split(struct object *src, int amt);
 struct object *floor_object_for_use(struct object *obj, int num, bool message,
 									bool *none_left);
-bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool last);
-void drop_near(struct chunk *c, struct object *dropped, int chance, int y,
+bool floor_carry(struct chunk *c, int y, int x, struct object *drop,
+				 bool *note);
+void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 			   int x, bool verbose);
 void push_object(int y, int x);
 void floor_item_charges(struct object *obj);
-int scan_floor(struct object **items, int max_size, int y, int x, int mode,
+int scan_floor(struct object **items, int max_size, object_floor_t mode,
 			   item_tester tester);
+int scan_distant_floor(struct object **items, int max_size, int y, int x);
 int scan_items(struct object **item_list, size_t item_list_max, int mode,
 			   item_tester tester);
-bool item_is_available(struct object *obj, bool (*tester)(const struct object *), int mode);
+bool item_is_available(struct object *obj);

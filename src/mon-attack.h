@@ -20,10 +20,10 @@
 #define MONSTER_ATTACK_H
 
 bool make_attack_spell(struct monster *mon);
-bool check_hit(struct player *p, int power, int level);
+bool check_hit(struct player *p, int power, int level, int debuff);
 int adjust_dam_armor(int damage, int ac);
 bool make_attack_normal(struct monster *mon, struct player *p);
 
-bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
+extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
 
 #endif /* !MONSTER_ATTACK_H */

@@ -1,6 +1,6 @@
 /**
-  \file obj-slays.h
-  \brief Structures and functions for dealing with slays and brands
+ * \file obj-slays.h
+ * \brief Structures and functions for dealing with slays and brands
  *
  * Copyright (c) 2014 Chris Carr, Nick McConnell
  *
@@ -20,41 +20,20 @@
 
 #include "monster.h"
 
-/**
- * Slay cache. Used for looking up slay values in obj-power.c
- */
-struct slay_cache {
-	struct brand *brands;   	/* Brands */
-	struct slay *slays;   	/* Slays */
-	s32b value;            		/* Value of this combination */
-};
-
+extern struct slay *slays;
+extern struct brand *brands;
 
 /*** Functions ***/
-void copy_slay(struct slay **dest, struct slay *source);
-void copy_brand(struct brand **dest, struct brand *source);
-void free_slay(struct slay *source);
-void free_brand(struct brand *source);
-bool append_random_brand(struct brand **current, char **name);
-bool append_random_slay(struct slay **current, char **name);
-int brand_count(struct brand *brands);
-int slay_count(struct slay *slays);
-struct brand *brand_collect(struct brand *b, const struct object *obj2, 
-							bool known);
-struct slay *slay_collect(struct slay *s, const struct object *obj2,
-						  bool known);
-void object_notice_brands(struct object *obj, const struct monster *mon);
-void object_notice_slays(struct object *obj, const struct monster *mon);
+bool same_monsters_slain(int slay1, int slay2);
+void copy_slays(bool **dest, bool *source);
+void copy_brands(bool **dest, bool *source);
+bool append_random_brand(bool **current, struct brand **brand);
+bool append_random_slay(bool **current, struct slay **slay);
+int brand_count(bool *brands);
+int slay_count(bool *slays);
 void improve_attack_modifier(struct object *obj, const struct monster *mon, 
-							 const struct brand **brand_used, 
-							 const struct slay **slay_used, 
-							 char *verb, bool range, bool real, bool known_only);
+							 int *brand_used, int *slay_used, char *verb,
+							 bool range, bool real);
 bool react_to_slay(struct object *obj, const struct monster *mon);
-void wipe_brands(struct brand *brands);
-void wipe_slays(struct slay *slays);
-errr create_slay_cache(struct ego_item *items);
-s32b check_slay_cache(const struct object *obj);
-bool fill_slay_cache(const struct object *obj, s32b value);
-void free_slay_cache(void);
 
 #endif /* OBJECT_SLAYS_H */

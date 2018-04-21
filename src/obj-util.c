@@ -27,10 +27,11 @@
 #include "init.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-slays.h"
@@ -154,12 +155,26 @@ void flavor_init(void)
 	int i, j;
 
 	/* Hack -- Use the "simple" RNG */
-	Rand_quick = TRUE;
+	Rand_quick = true;
 
 	/* Hack -- Induce consistant flavors */
 	Rand_value = seed_flavor;
 
-	if (OPT(birth_randarts))
+	/* Scrub all flavors and re-parse for new players */
+	if (turn == 1) {
+		struct flavor *f;
+
+		for (i = 0; i < z_info->k_max; i++) {
+			k_info[i].flavor = NULL;
+		}
+		for (f = flavors; f; f = f->next) {
+			f->sval = SV_UNKNOWN;
+		}
+		cleanup_parser(&flavor_parser);
+		run_parser(&flavor_parser);
+	}
+
+	if (OPT(player, birth_randarts))
 		flavor_reset_fixed();
 
 	flavor_assign_fixed();
@@ -178,7 +193,7 @@ void flavor_init(void)
 		char *end = buf + 1;
 		int titlelen = 0;
 		int wordlen;
-		bool okay = TRUE;
+		bool okay = true;
 
 		my_strcpy(buf, "\"", 2);
 		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24, name_sections);
@@ -195,7 +210,7 @@ void flavor_init(void)
 		/* Check the scroll name hasn't already been generated */
 		for (j = 0; j < i; j++) {
 			if (streq(buf, scroll_adj[j])) {
-				okay = FALSE;
+				okay = false;
 				break;
 			}
 		}
@@ -209,17 +224,17 @@ void flavor_init(void)
 	flavor_assign_random(TV_SCROLL);
 
 	/* Hack -- Use the "complex" RNG */
-	Rand_quick = FALSE;
+	Rand_quick = false;
 
 	/* Analyze every object */
-	for (i = 1; i < z_info->k_max; i++) {
+	for (i = 0; i < z_info->k_max; i++) {
 		struct object_kind *kind = &k_info[i];
 
 		/* Skip "empty" objects */
 		if (!kind->name) continue;
 
 		/* No flavor yields aware */
-		if (!kind->flavor) kind->aware = TRUE;
+		if (!kind->flavor) kind->aware = true;
 	}
 }
 
@@ -230,10 +245,7 @@ void flavor_init(void)
 void object_flags(const struct object *obj, bitflag flags[OF_SIZE])
 {
 	of_wipe(flags);
-
-	if (!obj)
-		return;
-
+	if (!obj) return;
 	of_copy(flags, obj->flags);
 }
 
@@ -244,11 +256,15 @@ void object_flags(const struct object *obj, bitflag flags[OF_SIZE])
 void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE])
 {
 	object_flags(obj, flags);
+	of_inter(flags, obj->known->flags);
 
-	of_inter(flags, obj->known_flags);
+	if (!obj->kind) {
+		return;
+	}
 
-	if (object_flavor_is_aware(obj))
+	if (object_flavor_is_aware(obj)) {
 		of_union(flags, obj->kind->flags);
+	}
 
 	if (obj->ego && easy_know(obj)) {
 		of_union(flags, obj->ego->flags);
@@ -262,10 +278,10 @@ void object_flags_known(const struct object *obj, bitflag flags[OF_SIZE])
 bool object_test(item_tester tester, const struct object *obj)
 {
 	/* Require object */
-	if (!obj) return FALSE;
+	if (!obj) return false;
 
 	/* Ignore gold */
-	if (tval_is_money(obj)) return FALSE;
+	if (tval_is_money(obj)) return false;
 
 	/* Pass without a tester, or tail-call the tester if it exists */
 	return !tester || tester(obj);
@@ -277,7 +293,19 @@ bool object_test(item_tester tester, const struct object *obj)
  */
 bool is_unknown(const struct object *obj)
 {
-	struct grid_data gd = { 0 };
+	struct grid_data gd = {
+		.m_idx = 0,
+		.f_idx = 0,
+		.first_kind = NULL,
+		.trap = NULL,
+		.multiple_objects = false,
+		.unseen_object = false,
+		.unseen_money = false,
+		.lighting = LIGHTING_LOS,
+		.in_view = false,
+		.is_player = false,
+		.hallucinate = false,
+	};
 	map_info(obj->iy, obj->ix, &gd);
 	return gd.unseen_object;
 }	
@@ -332,7 +360,7 @@ struct object_kind *lookup_kind(int tval, int sval)
 }
 
 struct object_kind *objkind_byid(int kidx) {
-	if (kidx < 1 || kidx > z_info->k_max)
+	if (kidx < 0 || kidx >= z_info->k_max)
 		return NULL;
 	return &k_info[kidx];
 }
@@ -343,18 +371,18 @@ struct object_kind *objkind_byid(int kidx) {
 /**
  * Return the a_idx of the artifact with the given name
  */
-int lookup_artifact_name(const char *name)
+struct artifact *lookup_artifact_name(const char *name)
 {
 	int i;
 	int a_idx = -1;
 
 	/* Look for it */
-	for (i = 1; i < z_info->a_max; i++) {
+	for (i = 0; i < z_info->a_max; i++) {
 		struct artifact *art = &a_info[i];
 
 		/* Test for equality */
 		if (art->name && streq(name, art->name))
-			return i;
+			return art;
 		
 		/* Test for close matches */
 		if (strlen(name) >= 3 && art->name && my_stristr(art->name, name)
@@ -363,9 +391,40 @@ int lookup_artifact_name(const char *name)
 	}
 
 	/* Return our best match */
-	return a_idx;
+	return a_idx > 0 ? &a_info[a_idx] : NULL;
 }
 
+/**
+ * \param name ego type name
+ * \param tval object tval
+ * \param sval object sval
+ * \return eidx of the ego item type
+ */
+struct ego_item *lookup_ego_item(const char *name, int tval, int sval)
+{
+	int i;
+
+	/* Look for it */
+	for (i = 0; i < z_info->e_max; i++) {
+		struct ego_item *ego = &e_info[i];
+		struct poss_item *poss_item = ego->poss_items;
+
+		/* Reject nameless and wrong names */
+		if (!ego->name) continue;
+		if (!streq(name, ego->name)) continue;
+
+		/* Check tval and sval */
+		while (poss_item) {
+			struct object_kind *kind = lookup_kind(tval, sval);
+			if (kind->kidx == poss_item->kidx) {
+				return ego;
+			}
+			poss_item = poss_item->next;
+		}
+	}
+
+	return NULL;
+}
 
 /**
  * Return the numeric sval of the object kind with the given `tval` and
@@ -387,7 +446,7 @@ int lookup_sval(int tval, const char *name)
 		if (!kind || !kind->name) continue;
 
 		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, kind->name, 0,
-							 FALSE);
+							 false);
 
 		/* Found a match */
 		if (kind->tval == tval && !my_stricmp(cmp_name, name))
@@ -426,7 +485,7 @@ static int compare_types(const struct object *o1, const struct object *o2)
 	else
 		return CMP(o1->tval, o2->tval);
 }	
-	
+
 
 /**
  * Sort comparator for objects
@@ -471,11 +530,11 @@ int compare_items(const struct object *o1, const struct object *o2)
  */
 bool obj_has_charges(const struct object *obj)
 {
-	if (!tval_can_have_charges(obj)) return FALSE;
+	if (!tval_can_have_charges(obj)) return false;
 
-	if (obj->pval <= 0) return FALSE;
+	if (obj->pval <= 0) return false;
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -485,9 +544,9 @@ bool obj_can_zap(const struct object *obj)
 {
 	/* Any rods not charging? */
 	if (tval_can_have_timeout(obj) && number_charging(obj) < obj->number)
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -495,7 +554,8 @@ bool obj_can_zap(const struct object *obj)
  */
 bool obj_is_activatable(const struct object *obj)
 {
-	return object_effect(obj) ? TRUE : FALSE;
+	if (!tval_is_wearable(obj)) return false;
+	return object_effect(obj) ? true : false;
 }
 
 /**
@@ -506,10 +566,10 @@ bool obj_can_activate(const struct object *obj)
 	if (obj_is_activatable(obj))
 	{
 		/* Check the recharge */
-		if (!obj->timeout) return TRUE;
+		if (!obj->timeout) return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -520,18 +580,18 @@ bool obj_can_refill(const struct object *obj)
 	const struct object *light = equipped_item_by_slot_name(player, "light");
 
 	/* Need fuel? */
-	if (of_has(obj->flags, OF_NO_FUEL)) return FALSE;
+	if (of_has(obj->flags, OF_NO_FUEL)) return false;
 
 	/* A lantern can be refueled from a flask or another lantern */
 	if (light && of_has(light->flags, OF_TAKES_FUEL)) {
 		if (tval_is_fuel(obj))
-			return TRUE;
+			return true;
 		else if (tval_is_light(obj) && of_has(obj->flags, OF_TAKES_FUEL) &&
 				 obj->timeout > 0) 
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 bool obj_can_browse(const struct object *obj)
@@ -541,10 +601,10 @@ bool obj_can_browse(const struct object *obj)
 	for (i = 0; i < player->class->magic.num_books; i++) {
 		struct class_book book = player->class->magic.books[i];
 		if (obj->kind == lookup_kind(book.tval, book.sval))
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 bool obj_can_cast_from(const struct object *obj)
@@ -563,7 +623,7 @@ bool obj_can_study(const struct object *obj)
 /* Can only take off non-cursed items */
 bool obj_can_takeoff(const struct object *obj)
 {
-	return !cursed_p((bitflag *)obj->flags);
+	return !obj_has_flag(obj, OF_STICKY);
 }
 
 /* Can only put on wieldable items */
@@ -581,21 +641,42 @@ bool obj_can_fire(const struct object *obj)
 /* Can has inscrip pls */
 bool obj_has_inscrip(const struct object *obj)
 {
-	return (obj->note ? TRUE : FALSE);
+	return (obj->note ? true : false);
+}
+
+bool obj_has_flag(const struct object *obj, int flag)
+{
+	struct curse_data *c = obj->curses;
+
+	/* Check the object's own flags */
+	if (of_has(obj->flags, flag)) {
+		return true;
+	}
+
+	/* Check any curse object flags */
+	if (c) {
+		int i;
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (c[i].power && of_has(curses[i].obj->flags, flag)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 bool obj_is_useable(const struct object *obj)
 {
 	if (tval_is_useable(obj))
-		return TRUE;
+		return true;
 
 	if (object_effect(obj))
-		return TRUE;
+		return true;
 
 	if (tval_is_ammo(obj))
 		return obj->tval == player->state.ammo_tval;
 
-	return FALSE;
+	return false;
 }
 
 /*** Generic utility functions ***/
@@ -633,9 +714,9 @@ bool obj_needs_aim(struct object *obj)
 bool obj_can_fail(const struct object *o)
 {
 	if (tval_can_have_failure(o))
-		return TRUE;
+		return true;
 
-	return wield_slot(o) == -1 ? FALSE : TRUE;
+	return wield_slot(o) == -1 ? false : true;
 }
 
 
@@ -747,7 +828,7 @@ int number_charging(const struct object *obj)
 
 /**
  * Allow a stack of charging objects to charge by one unit per charging object
- * Return TRUE if something recharged
+ * Return true if something recharged
  */
 bool recharge_timeout(struct object *obj)
 {
@@ -758,7 +839,7 @@ bool recharge_timeout(struct object *obj)
 
 	/* Nothing to charge */	
 	if (charging_before == 0)
-		return FALSE;
+		return false;
 
 	/* Decrease the timeout */
 	obj->timeout -= MIN(charging_before, obj->timeout);
@@ -768,9 +849,9 @@ bool recharge_timeout(struct object *obj)
 
 	/* Return true if at least 1 item obtained a charge */
 	if (charging_after < charging_before)
-		return TRUE;
+		return true;
 	else
-		return FALSE;
+		return false;
 }
 
 /**

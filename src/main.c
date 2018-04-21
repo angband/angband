@@ -18,7 +18,6 @@
 
 #include "angband.h"
 #include "init.h"
-#include "mon-power.h"
 #include "savefile.h"
 #include "ui-command.h"
 #include "ui-display.h"
@@ -27,6 +26,10 @@
 #include "ui-input.h"
 #include "ui-prefs.h"
 #include "ui-signals.h"
+
+#ifdef SOUND
+#include "sound.h"
+#endif
 
 /**
  * locale junk
@@ -69,22 +72,6 @@ static const struct module modules[] =
 #endif /* USE_STATS */
 };
 
-static int init_sound_dummy(int argc, char *argv[]) {
-	return 0;
-}
-
-/**
- * List of sound modules in the order they should be tried.
- */
-static const struct module sound_modules[] =
-{
-#ifdef SOUND_SDL
-	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
-#endif /* SOUND_SDL */
-
-	{ "none", "No sound", init_sound_dummy },
-};
-
 /**
  * A hook for "quit()".
  *
@@ -106,16 +93,6 @@ static void quit_hook(const char *s)
 		term_nuke(angband_term[j]);
 	}
 }
-
-
-
-/**
- * SDL needs a look-in
- */
-#ifdef USE_SDL
-# include "SDL.h"
-#endif
-
 
 /**
  * Initialize and verify the file paths, and the score file.
@@ -170,18 +147,18 @@ static const struct {
 	char **path;
 	bool setgid_ok;
 } change_path_values[] = {
-	{ "scores", &ANGBAND_DIR_SCORES, TRUE },
-	{ "gamedata", &ANGBAND_DIR_GAMEDATA, FALSE },
-	{ "screens", &ANGBAND_DIR_SCREENS, FALSE },
-	{ "help", &ANGBAND_DIR_HELP, TRUE },
-	{ "info", &ANGBAND_DIR_INFO, TRUE },
-	{ "pref", &ANGBAND_DIR_CUSTOMIZE, TRUE },
-	{ "fonts", &ANGBAND_DIR_FONTS, TRUE },
-	{ "tiles", &ANGBAND_DIR_TILES, TRUE },
-	{ "sounds", &ANGBAND_DIR_SOUNDS, TRUE },
-	{ "icons", &ANGBAND_DIR_ICONS, TRUE },
-	{ "user", &ANGBAND_DIR_USER, TRUE },
-	{ "save", &ANGBAND_DIR_SAVE, FALSE },
+	{ "scores", &ANGBAND_DIR_SCORES, true },
+	{ "gamedata", &ANGBAND_DIR_GAMEDATA, false },
+	{ "screens", &ANGBAND_DIR_SCREENS, false },
+	{ "help", &ANGBAND_DIR_HELP, true },
+	{ "info", &ANGBAND_DIR_INFO, true },
+	{ "pref", &ANGBAND_DIR_CUSTOMIZE, true },
+	{ "fonts", &ANGBAND_DIR_FONTS, true },
+	{ "tiles", &ANGBAND_DIR_TILES, true },
+	{ "sounds", &ANGBAND_DIR_SOUNDS, true },
+	{ "icons", &ANGBAND_DIR_ICONS, true },
+	{ "user", &ANGBAND_DIR_USER, true },
+	{ "save", &ANGBAND_DIR_SAVE, false },
 };
 
 /**
@@ -324,12 +301,13 @@ int main(int argc, char *argv[])
 {
 	int i;
 
-	bool done = FALSE;
+	bool done = false;
 
 	const char *mstr = NULL;
+#ifdef SOUND
 	const char *soundstr = NULL;
-
-	bool args = TRUE;
+#endif
+	bool args = true;
 
 	/* Save the "program name" XXX XXX XXX */
 	argv0 = argv[0];
@@ -375,19 +353,11 @@ int main(int argc, char *argv[])
 				exit(0);
 
 			case 'n':
-				new_game = TRUE;
+				new_game = true;
 				break;
 
 			case 'w':
-				arg_wizard = TRUE;
-				break;
-
-			case 'p':
-				arg_power = TRUE;
-				break;
-
-			case 'r':
-				arg_rebalance = TRUE;
+				arg_wizard = true;
 				break;
 
 			case 'g':
@@ -398,9 +368,9 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'u': {
-
 				if (!*arg) goto usage;
-				my_strcpy(op_ptr->full_name, arg, sizeof op_ptr->full_name);
+
+				my_strcpy(arg_name, arg, sizeof(arg_name));
 
 				/* The difference here is because on setgid we have to be
 				 * careful to only let the player have savefiles stored in
@@ -411,28 +381,28 @@ int main(int argc, char *argv[])
 				 * can do whatever the hell they want.
 				 */
 #ifdef SETGID
-				savefile_set_name(player_safe_name(player, FALSE));
+				savefile_set_name(arg, true, false);
 #else
-				savefile_set_name(arg);
+				savefile_set_name(arg, false, false);
 #endif /* SETGID */
 
 				continue;
 			}
 
 			case 'f':
-				arg_force_name = TRUE;
+				arg_force_name = true;
 				break;
 
 			case 'm':
 				if (!*arg) goto usage;
 				mstr = arg;
 				continue;
-
+#ifdef SOUND
 			case 's':
 				if (!*arg) goto usage;
 				soundstr = arg;
 				continue;
-
+#endif
 			case 'd':
 				change_path(arg);
 				continue;
@@ -445,7 +415,7 @@ int main(int argc, char *argv[])
 				argv[i] = argv[0];
 				argc = argc - i;
 				argv = argv + i;
-				args = FALSE;
+				args = false;
 				break;
 
 			default:
@@ -454,7 +424,6 @@ int main(int argc, char *argv[])
 				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
 				puts("  -l             Lists all savefiles you can play");
 				puts("  -w             Resurrect dead character (marks savefile)");
-				puts("  -r             Rebalance monsters");
 				puts("  -g             Request graphics mode");
 				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
@@ -466,10 +435,10 @@ int main(int argc, char *argv[])
 					printf("    %s (default is %s)\n", change_path_values[i].name, *change_path_values[i].path);
 				}
 				puts("                 Multiple -d options are allowed.");
+#ifdef SOUND
 				puts("  -s<mod>        Use sound module <sys>:");
-				for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
-					printf("     %s   %s\n", sound_modules[i].name,
-					       sound_modules[i].help);
+				print_sound_help();
+#endif
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
@@ -508,7 +477,7 @@ int main(int argc, char *argv[])
 		if (!mstr || (streq(mstr, modules[i].name))) {
 			ANGBAND_SYS = modules[i].name;
 			if (0 == modules[i].init(argc, argv)) {
-				done = TRUE;
+				done = true;
 				break;
 			}
 		}
@@ -520,11 +489,11 @@ int main(int argc, char *argv[])
 #ifdef UNIX
 
 	/* Get the "user name" as default player name, unless set with -u switch */
-	if (!op_ptr->full_name[0]) {
-		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
+	if (!arg_name[0]) {
+		user_name(arg_name, sizeof(arg_name), player_uid);
 
-		/* Set the savefile to load */
-		savefile_set_name(player_safe_name(player, FALSE));
+		/* Sanitise name and set as savefile */
+		savefile_set_name(arg_name, true, false);
 	}
 
 	/* Create any missing directories */
@@ -532,17 +501,16 @@ int main(int argc, char *argv[])
 
 #endif /* UNIX */
 
-	/* Try the modules in the order specified by sound_modules[] */
-	for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
-		if (!soundstr || streq(soundstr, sound_modules[i].name))
-			if (0 == sound_modules[i].init(argc, argv))
-				break;
-
 	/* Catch nasty signals */
 	signals_init();
 
 	/* Set up the command hook */
 	cmd_get_hook = textui_get_cmd;
+
+#ifdef SOUND
+	/* Initialise sound */
+	init_sound(soundstr, argc, argv);
+#endif
 
 	/* Set up the display handlers and things. */
 	init_display();

@@ -26,9 +26,6 @@
 /* cmd-cave.c */
 void do_cmd_go_up(struct command *cmd);
 void do_cmd_go_down(struct command *cmd);
-bool search(bool verbose);
-void do_cmd_search(struct command *cmd);
-void do_cmd_toggle_search(struct command *cmd);
 void do_cmd_open(struct command *cmd);
 void do_cmd_close(struct command *cmd);
 void do_cmd_tunnel(struct command *cmd);
@@ -49,7 +46,6 @@ void do_cmd_feeling(void);
 /* cmd-misc.c */
 void do_cmd_wizard(void);
 void do_cmd_suicide(struct command *cmd);
-void do_cmd_version(void);
 void do_cmd_note(void);
 
 /* cmd-obj.c */
@@ -74,7 +70,7 @@ void do_cmd_study_book(struct command *cmd);
 void do_cmd_study(struct command *cmd);
 
 /* cmd-pickup.c */
-int do_autopickup(void);
+int do_autopickup(struct player *p);
 void do_cmd_pickup(struct command *cmd);
 void do_cmd_autopickup(struct command *cmd);
 

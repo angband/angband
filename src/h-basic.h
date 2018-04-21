@@ -47,7 +47,7 @@
 # endif
 
 # if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#  define HAVE_STDBOOL_H
+#  define HAVE_STDbool_H
 # endif
 
 /**
@@ -122,6 +122,8 @@
 
 /** ANSI C headers **/
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <errno.h>
 #include <limits.h>
 #include <assert.h>
@@ -159,87 +161,19 @@
  * s32b/u32b are exactly 4 bytes (where possible)
  */
 
-/**
- * C++ defines its own bool type, so we hack around it
- */
-#ifdef __cplusplus
-#undef bool
-#define bool bool_hack
-#endif
-
 typedef int errr;
 
+/* Use guaranteed-size types */
+typedef uint8_t byte;
 
-/**
- * Use a real bool type where possible
- */
-#ifdef HAVE_STDBOOL_H
+typedef uint16_t u16b;
+typedef int16_t s16b;
 
-  #include <stdbool.h>
+typedef uint32_t u32b;
+typedef int32_t s32b;
 
-  #undef TRUE
-  #undef FALSE
-
-  #define TRUE  true
-  #define FALSE false
-
-#else
-
-  /* Use a char otherwise */
-  typedef char bool;
-
-  #undef TRUE
-  #undef FALSE
-
-  #define TRUE   1
-  #define FALSE  0
-
-#endif
-
-
-
-/**
- * Use guaranteed-size ints where possible
- */
-#ifdef HAVE_STDINT_H
-
-  /* Use guaranteed-size types */
-  #include <stdint.h>
-
-  typedef uint8_t byte;
-
-  typedef uint16_t u16b;
-  typedef int16_t s16b;
-
-  typedef uint32_t u32b;
-  typedef int32_t s32b;
-
-  typedef uint64_t u64b;
-  typedef int64_t s64b;
-
-#define MAX_UCHAR		UINT8_MAX
-#define MAX_SHORT		INT16_MAX
-
-#else /* HAVE_STDINT_H */
-
-  /* Try hacks instead (not guaranteed to work) */
-  typedef unsigned char byte;
-  typedef signed short s16b;
-  typedef unsigned short u16b;
-
-#define MAX_UCHAR		UCHAR_MAX
-#define MAX_SHORT		32767
-
-  /* Detect >32-bit longs */
-  #if (UINT_MAX == 0xFFFFFFFFUL) && (ULONG_MAX > 0xFFFFFFFFUL)
-    typedef signed int s32b;
-    typedef unsigned int u32b;
-  #else
-    typedef signed long s32b;
-    typedef unsigned long u32b;
-  #endif
-
-#endif /* HAVE_STDINT_H */
+typedef uint64_t u64b;
+typedef int64_t s64b;
 
 
 /** Debugging macros ***/

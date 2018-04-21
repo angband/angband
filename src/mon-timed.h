@@ -19,14 +19,24 @@
 #ifndef MONSTER_TIMED_H
 #define MONSTER_TIMED_H
 
+/**
+ * Monster timed effect constants
+ */
+#define STUN_MISS_CHANCE		10  /* 1 in __ chance of missing turn when stunned */
+#define STUN_HIT_REDUCTION		25  /* Percentage reduction in accuracy for combat */
+#define STUN_DAM_REDUCTION		25  /* Percentage reduction in damage */
 
-/** Constants **/
+#define CONF_ERRATIC_CHANCE		30  /* Percentage chance of erratic movement when confused */
+#define CONF_HIT_REDUCTION		20  /* Percentage reduction in accuracy for spells */
+#define CONF_RANDOM_CHANCE		2   /* 1 in __ chance of an aimed spell going in random direction */
+
+#define DEBUFF_CRITICAL_HIT		10  /* Effective increase in to-hit for critical hit calcs */
 
 /**
  * Monster Timed Effects
  */
 enum {
-	#define MON_TMD(a, b, c, d, e, f) MON_TMD_##a,
+	#define MON_TMD(a, b, c, d, e, f, g, h) MON_TMD_##a,
 	#include "list-mon-timed.h"
 	#undef MON_TMD
 };
@@ -35,17 +45,14 @@ enum {
  * Flags for the monster timed functions
  */
 #define MON_TMD_FLG_NOTIFY		0x01 /* Give notification */
-#define MON_TMD_MON_SOURCE		0x02 /* Monster is causing the damage */
+/* 0x02 */
 #define MON_TMD_FLG_NOMESSAGE	0x04 /* Never show a message */
 #define MON_TMD_FLG_NOFAIL		0x08 /* Never fail */
 
 /** Functions **/
 int mon_timed_name_to_idx(const char *name);
-bool mon_inc_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
-				   bool id);
-bool mon_dec_timed(struct monster *mon, int ef_idx, int timer, u16b flag,
-				   bool id);
-bool mon_clear_timed(struct monster *mon, int ef_idx, u16b flag, bool id);
-
+bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag, bool id);
+bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag, bool id);
+bool mon_clear_timed(struct monster *mon, int effect_type, int flag, bool id);
 
 #endif /* MONSTER_TIMED_H */

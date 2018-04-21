@@ -42,8 +42,8 @@ Inventory list ('i')
 Equipment list ('e')
   Use this command to display a list of the objects currently being used by
   your character. The standard body (which all races currently have) has
-  12 slots for equipment. Each equipment slot corresponds to a different
-  location on the body, and each of which may contain only a single object at
+  12 slots for equipment. Every equipment slot corresponds to a different
+  location on the body, and each of which may contain only one object at
   a time, and each of which may only contain objects of the proper "type".
   For the standard body these are WEAPON (weapon), BOW (missile launcher),
   RING (ring) (two of these), AMULET (amulet), LIGHT (light source),
@@ -53,8 +53,8 @@ Equipment list ('e')
 
 Quiver list ('\|')
   Missiles that you carry will automatically be put in your quiver.  The
-  quiver has 10 slots; it also takes up inventory space, so every 40 missiles
-  will reduce your number of inventory slots by 1.
+  quiver has 10 slots; it also takes up inventory space, so every 40 
+  missiles will reduce your number of inventory slots by 1.
 
 Drop an item ('d')
   This drops an item from your inventory or equipment onto the dungeon
@@ -94,10 +94,10 @@ Movement Commands
 =================
 
 Moving (arrow keys, number keys) or (arrow keys, number keys, 'yuhjklbn')
-  This causes you to move one step in a given direction. If the quare you
+  This causes you to move one step in a given direction. If the square you
   wish to move into is occupied by a monster, you will attack it. If the
   square is occupied by a door or a trap you may attempt to open or disarm
-  it if the appropriate option is set. Preceeding this command with CTRL
+  it if the appropriate option is set. Preceding this command with CTRL
   will cause you to attack in the appropriate direction, but will not move
   your character if no monster is there. These commands take some energy.
 
@@ -159,28 +159,6 @@ Rest ('R')
   rest until your hitpoints and mana are restored, or '&' to rest until
   you are fully "healed". This command may take an argument (used for the
   number of turns to rest), and takes some energy.
-
-Searching Commands
-==================
-
-Search ('s')
-  This command can be used to locate hidden traps and secret doors in the
-  spaces adjacent to the player. More than a single turn of searching will
-  be required in most cases, so it is affected by the 'always repeat'
-  option. You should always search a chest before trying to open it, since
-  they are generally trapped. This command can take a count, which is
-  useful if you are fairly sure of finding something eventually, since the
-  command stops as soon as anything is found. This command takes some
-  energy.
-
-Toggle search mode ('S') or Toggle search mode ('#')
-  This command will take you into and out of search mode. When first
-  pressed, the message "Searching" will appear at the bottom of the screen.
-  You are now taking two turns for each command, one for the command and
-  one turn to search. This means that you are taking twice the time to move
-  around the dungeon, and therefore twice the food. Search mode will
-  automatically turn off if you are disturbed. You may also turn off search
-  mode by entering the Search Mode command again.
 
 Alter Commands
 ==============
@@ -404,20 +382,20 @@ Targeting Mode ('*')
   if this is not a "compass" direction) when you are asked for a direction.
   You can set a target using this command, or you can set a new target at
   the "Direction?" prompt when appropriate. At the targeting prompt, you
-  have many options. First of all, targetting mode starts targetting nearby
+  have many options. First of all, targeting mode starts targeting nearby
   monsters which can be reached by "projectable" spells and thrown objects.
   In this mode, you can press 't' (or '5' or '.') to select the
   current monster, pace to advance to the next monster, '-' to back up to
   the previous monster, direction keys to advance to a monster more or less
   in that direction, 'r' to "recall" the current monster, 'q' to exit
-  targetting mode, and 'p' (or 'o') to stop targetting monsters and
-  enter the mode for targetting a location on the floor or in a wall. Note
+  targeting mode, and 'p' (or 'o') to stop targeting monsters and
+  enter the mode for targeting a location on the floor or in a wall. Note
   that if there are no nearby monsters, you will automatically enter this
   mode. Note that hitting 'o' is just like 'p', except that the
   location cursor starts on the last examined monster instead of on the
   player. In this mode, you use the "direction" keys to move around, and
   the 'q' key to quit, and the 't' (or '5' or '.') key to target
-  the cursor location. Note that targetting a location is slightly
+  the cursor location. Note that targeting a location is slightly
   "dangerous", as the target is maintained even if you are far away. To
   cancel an old target, simply hit '*' and then 'ESCAPE' (or 'q').
   Note that when you cast a spell or throw an object at the target
@@ -533,7 +511,7 @@ Save ('Ctrl-S')
   if you are paranoid about having your computer crash (or your power go
   out) while you are playing.
 
-Quit (commit suicide) ('Q')
+Quit ('Q')
   Kills your character and exits Angband. You will be prompted to make sure
   you really want to do this, and then asked to verify that choice. Note
   that dead characters are dead forever.
@@ -622,12 +600,9 @@ Load screen dump (left-paren)
   'dump.txt', and displays it on the screen.
 
 Save screen dump (|')'|)
-  This command dumps a "snap-shot" of the current screen to the file
-  'dump.txt', including encoded color information. The command has three
-  variants:
+  This command dumps a "snap-shot" of the current screen to a file,
+  including encoded color information. The command has two variants:
 
-  - text, a simple ascii dump of the screen concatenated with a dump of the
-    color attributes.  It may be viewed in color with the '(' command.
   - html, suitable for viewing in a web browser.
   - forum embedded html for vBulletin, suitable for pasting in
     web forums like http://angband.oook.cz/forums.

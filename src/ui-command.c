@@ -91,7 +91,7 @@ void do_cmd_redraw(void)
 		player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 
 		/* Fully update the visuals */
-		player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Redraw everything */
 		player->upkeep->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN |
@@ -107,8 +107,14 @@ void do_cmd_redraw(void)
 		handle_stuff(player);
 
 		/* Place the cursor on the player */
-		if (0 != character_dungeon)
-			move_cursor_relative(player->px, player->py);
+		if ((0 != character_dungeon) && OPT(player, show_target) &&
+			target_sighted()) {
+			int col, row;
+			target_get(&col, &row);
+			move_cursor_relative(row, col);
+		} else {
+			move_cursor_relative(player->py, player->px);
+		}
 	}
 
 	/* Redraw every window */
@@ -142,6 +148,25 @@ void do_cmd_unknown(void)
 	prt("Type '?' for help.", 0, 0);
 }
 
+
+/**
+ * Print the version and copyright notice.
+ */
+void do_cmd_version(void)
+{
+	char header_buf[120];
+
+	textblock *tb = textblock_new();
+	region local_area = { 0, 0, 0, 0 };
+
+	my_strcpy(header_buf,
+			  format("You are playing %s.  Type '?' for more info.", buildver),
+			  sizeof(header_buf));
+	textblock_append(tb, "\n");
+	textblock_append(tb, copyright);
+	textui_textblock_show(tb, local_area, header_buf);
+	textblock_free(tb);
+}
 
 /**
  * Verify use of "debug" mode
@@ -182,11 +207,11 @@ void textui_cmd_suicide(void)
 	} else {
 		struct keypress ch;
 
-		if (!get_check("Do you really want to commit suicide? "))
+		if (!get_check("Do you really want to kill this character? "))
 			return;
 
 		/* Special Verification for suicide */
-		prt("Please verify SUICIDE by typing the '@' sign: ", 0, 0);
+		prt("Please verify KILLING THIS CHARACTER by typing the '@' sign: ", 0, 0);
 		event_signal(EVENT_INPUT_FLUSH);
 		ch = inkey();
 		prt("", 0, 0);
@@ -238,7 +263,7 @@ void textui_cmd_rest(void)
  */
 void textui_quit(void)
 {
-	player->upkeep->playing = FALSE;
+	player->upkeep->playing = false;
 }
 
 
@@ -246,165 +271,6 @@ void textui_quit(void)
  * ------------------------------------------------------------------------
  * Screenshot loading/saving code
  * ------------------------------------------------------------------------ */
-
-/**
- * Encode the screen colors
- */
-static const char hack[BASIC_COLORS + 1] = "dwsorgbuDWvyRGBUpvtmYiTVIMzZ";
-
-
-/**
- * Hack -- load a screen dump from a file
- *
- * ToDo: Add support for loading/saving screen-dumps with graphics
- * and pseudo-graphics.  Allow the player to specify the filename
- * of the dump.
- */
-void do_cmd_load_screen(void)
-{
-	int i, y, x;
-	int a = 0;
-	wchar_t c = L' ';
-	bool okay = TRUE;
-	ang_file *fp;
-	char buf[1024];
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
-	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
-	if (!fp) return;
-
-	/* Save screen */
-	screen_save();
-
-	/* Clear the screen */
-	Term_clear();
-
-	/* Load the screen */
-	for (y = 0; okay && (y < 24); y++) {
-		/* Get a line of data */
-		if (!file_getl(fp, buf, sizeof(buf))) okay = FALSE;
-
-		/* Show each row */
-		for (x = 0; x < 79; x++) {
-			text_mbstowcs(&c, &buf[x], 1);
-			/* Put the attr/char */
-			Term_draw(x, y, COLOUR_WHITE, c);
-		}
-	}
-
-	/* Get the blank line */
-	if (!file_getl(fp, buf, sizeof(buf))) okay = FALSE;
-
-	/* Dump the screen */
-	for (y = 0; okay && (y < 24); y++) {
-		/* Get a line of data */
-		if (!file_getl(fp, buf, sizeof(buf))) okay = FALSE;
-
-		/* Dump each row */
-		for (x = 0; x < 79; x++) {
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-
-			/* Look up the attr */
-			for (i = 0; i < BASIC_COLORS; i++)
-				/* Use attr matches */
-				if (hack[i] == buf[x]) a = i;
-
-			/* Put the attr/char */
-			Term_draw(x, y, a, c);
-		}
-	}
-
-	/* Close it */
-	file_close(fp);
-
-	/* Message */
-	msg("Screen dump loaded.");
-	event_signal(EVENT_MESSAGE_FLUSH);
-
-	/* Load screen */
-	screen_load();
-}
-
-
-/**
- * Save a simple text screendump.
- */
-static void do_cmd_save_screen_text(void)
-{
-	int y, x;
-	int a = 0;
-	wchar_t c = L' ';
-	ang_file *fff;
-	char buf[1024];
-	char *p;
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
-	fff = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	if (!fff) return;
-
-	/* Save screen */
-	screen_save();
-
-	/* Dump the screen */
-	for (y = 0; y < 24; y++) {
-		p = buf;
-		/* Dump each row */
-		for (x = 0; x < 79; x++) {
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-
-			/* Dump it */
-			p += wctomb(p, c);
-		}
-
-		/* Terminate */
-		*p = '\0';
-
-		/* End the row */
-		file_putf(fff, "%s\n", buf);
-	}
-
-	/* Skip a line */
-	file_putf(fff, "\n");
-
-	/* Dump the screen */
-	for (y = 0; y < 24; y++) {
-		/* Dump each row */
-		for (x = 0; x < 79; x++) {
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-
-			/* Dump it */
-			buf[x] = hack[a & 0x0F];
-		}
-
-		/* Terminate */
-		buf[x] = '\0';
-
-		/* End the row */
-		file_putf(fff, "%s\n", buf);
-	}
-
-	/* Skip a line */
-	file_putf(fff, "\n");
-
-
-	/* Close it */
-	file_close(fff);
-
-
-	/* Message */
-	msg("Screen dump saved.");
-	event_signal(EVENT_MESSAGE_FLUSH);
-
-
-	/* Load screen */
-	screen_load();
-}
-
 
 static void write_html_escape_char(ang_file *fp, wchar_t c)
 {
@@ -602,17 +468,17 @@ static void do_cmd_save_screen_html(int mode)
 	file_close(fff);
 
 	/* Dump the screen with raw character attributes */
-	reset_visuals(FALSE);
+	reset_visuals(false);
 	do_cmd_redraw();
 	html_screenshot(tmp_val, mode);
 
 	/* Recover current graphics settings */
-	reset_visuals(TRUE);
-	process_pref_file(file_name, TRUE, FALSE);
+	reset_visuals(true);
+	process_pref_file(file_name, true, false);
 	file_delete(file_name);
 	do_cmd_redraw();
 
-	msg("HTML screen dump saved.");
+	msg("%s screen dump saved.", mode ? "Forum text" : "HTML");
 	event_signal(EVENT_MESSAGE_FLUSH);
 }
 
@@ -623,11 +489,10 @@ static void do_cmd_save_screen_html(int mode)
 void do_cmd_save_screen(void)
 {
 	char ch;
-	ch = get_char("Dump as (T)ext, (H)TML, or (F)orum text? ", "thf", 3, ' ');
+	ch = get_char("Dump as (H)TML or (F)orum text? ", "hf", 2, ' ');
 
 	switch (ch)
 	{
-		case 't': do_cmd_save_screen_text(); break;
 		case 'h': do_cmd_save_screen_html(0); break;
 		case 'f': do_cmd_save_screen_html(1); break;
 	}

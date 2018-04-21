@@ -1,0 +1,755 @@
+# object_property.txt
+
+# name: the property name
+# type: the type of object property.  Each property needs one, and it must 
+#       appear before the code in this file 
+# subtype: subtype of object property, currently only used by flags
+# id-type: how a property is identified, currently only used by flags
+# code: a code for the object property, which is used to associate it with its
+#       index among the other properties of that type
+# power: the value given to the property in object power calculations
+# mult: relative value of properties, used in power calculations
+# type-mult: extra multiplier used in power for particular properties on
+#            particular types of object.  Assumed 1 if not mentioned
+# adjective: adjective describing the property as a player attribute, currently
+#            only used by stats
+# neg-adjective: adjective describing the opposite of the property as a player
+#                attribute, currently only used by stats
+# msg: message printed on noticing a property, currently used for flags which
+#      are identified after time or on an effect
+# desc: an extra piece of descriptive text used in object information
+
+name:strength
+type:stat
+code:STR
+power:9
+mult:13
+adjective:strong
+neg-adjective:weak
+
+name:intelligence
+type:stat
+code:INT
+power:5
+mult:10
+adjective:smart
+neg-adjective:stupid
+
+name:wisdom
+type:stat
+code:WIS
+power:5
+mult:10
+adjective:wise
+neg-adjective:naive
+
+name:dexterity
+type:stat
+code:DEX
+power:8
+mult:10
+type-mult:gloves:2
+adjective:dextrous
+neg-adjective:clumsy
+
+name:constitution
+type:stat
+code:CON
+power:12
+mult:15
+adjective:healthy
+neg-adjective:sickly
+
+name:stealth
+type:mod
+code:STEALTH
+power:8
+mult:12
+
+name:searching skill
+type:mod
+code:SEARCH
+power:2
+mult:5
+
+name:infravision
+type:mod
+code:INFRA
+power:4
+mult:8
+
+name:tunneling
+type:mod
+code:TUNNEL
+power:3
+mult:8
+
+name:speed
+type:mod
+code:SPEED
+power:20
+mult:6
+
+name:attack speed
+type:mod
+code:BLOWS
+power:0
+mult:50
+type-mult:bow:0
+type-mult:ring:3
+type-mult:amulet:3
+type-mult:light:3
+type-mult:soft armor:3
+type-mult:hard armor:3
+type-mult:dragon armor:3
+type-mult:cloak:3
+type-mult:shield:3
+type-mult:helm:3
+type-mult:crown:3
+type-mult:gloves:3
+type-mult:boots:3
+
+name:shooting speed
+type:mod
+code:SHOTS
+power:0
+mult:50
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:ring:4
+type-mult:amulet:4
+type-mult:light:4
+type-mult:soft armor:4
+type-mult:hard armor:4
+type-mult:dragon armor:4
+type-mult:cloak:4
+type-mult:shield:4
+type-mult:helm:4
+type-mult:crown:4
+type-mult:gloves:4
+type-mult:boots:4
+
+name:shooting power
+type:mod
+code:MIGHT
+power:0
+mult:30
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:light
+type:mod
+code:LIGHT
+power:3
+mult:6
+type-mult:light:3
+
+name:sustain strength
+type:flag
+subtype:sustain
+id-type:on effect
+code:SUST_STR
+power:9
+msg:Your {name} glows.
+
+name:sustain intelligence
+type:flag
+subtype:sustain
+id-type:on effect
+code:SUST_INT
+power:4
+msg:Your {name} glows.
+
+name:sustain wisdom
+type:flag
+subtype:sustain
+id-type:on effect
+code:SUST_WIS
+power:4
+msg:Your {name} glows.
+
+name:sustain dexterity
+type:flag
+subtype:sustain
+id-type:on effect
+code:SUST_DEX
+power:7
+msg:Your {name} glows.
+
+name:sustain constitution
+type:flag
+subtype:sustain
+id-type:on effect
+code:SUST_CON
+power:8
+msg:Your {name} glows.
+
+name:protection from fear
+type:flag
+code:PROT_FEAR
+subtype:protection
+id-type:on effect
+power:6
+msg:Your {name} strengthens your courage.
+desc:fear
+
+name:protection from blindness
+type:flag
+code:PROT_BLIND
+subtype:protection
+id-type:on effect
+power:16
+msg:Your {name} soothes your eyes.
+desc:blindness
+
+name:protection from confusion
+type:flag
+code:PROT_CONF
+subtype:protection
+id-type:on effect
+power:24
+msg:Your {name} clears your thoughts.
+desc:confusion
+
+name:protection from stunning
+type:flag
+code:PROT_STUN
+subtype:protection
+id-type:on effect
+power:12
+msg:Your {name} steadies you.
+desc:stunning
+
+name:slow digestion
+type:flag
+subtype:misc ability
+id-type:timed
+code:SLOW_DIGEST
+power:2
+msg:You realise your {name} is slowing your metabolism.
+desc:Slows your metabolism
+
+name:feather falling
+type:flag
+subtype:misc ability
+id-type:on effect
+code:FEATHER
+power:1
+msg:Your {name} slows your fall.
+desc:Feather Falling
+
+name:regeneration
+type:flag
+subtype:misc ability
+id-type:timed
+code:REGEN
+power:5
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
+msg:You note that your {name} is speeding up your recovery.
+desc:Speeds regeneration
+
+name:telepathy
+type:flag
+subtype:misc ability
+id-type:on wield
+code:TELEPATHY
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
+power:35
+desc:Grants telepathy
+
+name:see invisible
+type:flag
+subtype:misc ability
+id-type:on wield
+code:SEE_INVIS
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
+power:6
+desc:Grants the ability to see invisible things
+
+name:free action
+type:flag
+subtype:misc ability
+id-type:on effect
+code:FREE_ACT
+power:8
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:5
+type-mult:boots:2
+msg:Your {name} keeps you moving.
+desc:Prevents paralysis
+
+name:hold life
+type:flag
+subtype:misc ability
+id-type:on effect
+code:HOLD_LIFE
+power:5
+type-mult:ring:2
+type-mult:amulet:2
+type-mult:light:2
+type-mult:soft armor:2
+type-mult:hard armor:2
+type-mult:dragon armor:2
+type-mult:cloak:2
+type-mult:shield:2
+type-mult:helm:2
+type-mult:crown:2
+type-mult:gloves:2
+type-mult:boots:2
+msg:Your {name} warms your spirit.
+desc:Sustains your life force
+
+name:earthquakes
+type:flag
+subtype:melee
+id-type:on effect
+code:IMPACT
+power:10
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+msg:Your {name} causes an earthquake!
+desc:Sometimes creates earthquakes on impact
+
+name:blessed melee
+type:flag
+subtype:melee
+id-type:on wield
+code:BLESSED
+power:1
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+desc:Blessed by the gods
+
+name:burns out
+type:flag
+subtype:light
+id-type:on wield
+code:BURNS_OUT
+power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:takes fuel
+type:flag
+subtype:light
+id-type:on wield
+code:TAKES_FUEL
+power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:no fuel
+type:flag
+subtype:light
+id-type:on wield
+code:NO_FUEL
+power:5
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:impaired hitpoint recovery
+type:flag
+subtype:bad
+id-type:timed
+code:IMPAIR_HP
+power:-9
+msg:You feel your {name} is slowing your recovery.
+desc:Impairs hitpoint recovery
+
+name:impaired mana recovery
+type:flag
+subtype:bad
+id-type:timed
+code:IMPAIR_MANA
+power:-9
+msg:You feel your {name} is slowing your mana recovery.
+desc:Impairs mana recovery
+
+name:constant fear
+type:flag
+subtype:bad
+id-type:on wield
+code:AFRAID
+power:-20
+desc:Makes you afraid of melee, and worse at shooting and casting spells
+
+name:teleportation ban
+type:flag
+subtype:bad
+id-type:on effect
+code:NO_TELEPORT
+power:-20
+msg:Your {name} prevents you teleporting.
+desc:Prevents teleportation
+
+name:aggravation
+type:flag
+subtype:bad
+id-type:timed
+code:AGGRAVATE
+power:-20
+msg:You notice your {name} aggravating things around you.
+desc:Aggravates creatures nearby
+
+name:experience drain
+type:flag
+subtype:bad
+id-type:timed
+code:DRAIN_EXP
+power:-5
+msg:You sense your {name} is draining your life.
+desc:Drains experience
+
+name:stuck on
+type:flag
+subtype:bad
+id-type:on wield
+code:STICKY
+power:-5
+desc:Can't be removed
+
+name:fragile
+type:flag
+subtype:bad
+id-type:on wield
+code:FRAGILE
+power:0
+desc:Can be destroyed if you attempt to remove its curses
+
+name:radius 1 light
+type:flag
+subtype:light
+id-type:on wield
+code:LIGHT_1
+power:9
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:radius 2 light
+type:flag
+subtype:light
+id-type:on wield
+code:LIGHT_2
+power:18
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:power 1 digging
+type:flag
+subtype:dig
+id-type:on wield
+code:DIG_1
+power:3
+
+name:power 2 digging
+type:flag
+subtype:dig
+id-type:on wield
+code:DIG_2
+power:6
+
+name:power 3 digging
+type:flag
+subtype:dig
+id-type:on wield
+code:DIG_3
+power:9
+
+name:explode
+type:flag
+subtype:light
+id-type:on wield
+code:EXPLODE
+power:0
+type-mult:sword:0
+type-mult:polearm:0
+type-mult:hafted:0
+type-mult:digger:0
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+
+name:ignore acid
+type:ignore
+code:ACID
+power:3
+
+name:ignore electricity
+type:ignore
+code:ELEC
+power:1
+
+name:ignore fire
+type:ignore
+code:FIRE
+power:3
+
+name:ignore cold
+type:ignore
+code:COLD
+power:1
+
+name:acid resistance
+type:resistance
+code:ACID
+power:5
+
+name:electricity resistance
+type:resistance
+code:ELEC
+power:6
+
+name:fire resistance
+type:resistance
+code:FIRE
+power:6
+
+name:cold resistance
+type:resistance
+code:COLD
+power:6
+
+name:poison resistance
+type:resistance
+code:POIS
+power:28
+
+name:light resistance
+type:resistance
+code:LIGHT
+power:6
+
+name:dark resistance
+type:resistance
+code:DARK
+power:16
+
+name:sound resistance
+type:resistance
+code:SOUND
+power:14
+
+name:shards resistance
+type:resistance
+code:SHARD
+power:8
+
+name:nexus resistance
+type:resistance
+code:NEXUS
+power:15
+
+name:nether resistance
+type:resistance
+code:NETHER
+power:20
+
+name:chaos resistance
+type:resistance
+code:CHAOS
+power:20
+
+name:disenchantment resistance
+type:resistance
+code:DISEN
+power:20
+
+name:acid vulnerability
+type:vulnerability
+code:ACID
+power:-6
+
+name:lightning vulnerability
+type:vulnerability
+code:ELEC
+power:-6
+
+name:fire vulnerability
+type:vulnerability
+code:FIRE
+power:-6
+
+name:cold vulnerability
+type:vulnerability
+code:COLD
+power:-6
+
+name:acid immunity
+type:immunity
+code:ACID
+power:43
+
+name:lightning immunity
+type:immunity
+code:ELEC
+power:41
+
+name:fire immunity
+type:immunity
+code:FIRE
+power:46
+
+name:cold immunity
+type:immunity
+code:COLD
+power:43
+

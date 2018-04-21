@@ -19,7 +19,7 @@
  */
 enum
 {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) ELEM_##a,
+	#define ELEM(a) ELEM_##a,
 	#include "list-elements.h"
 	#undef ELEM
 
@@ -27,50 +27,9 @@ enum
 };
 
 #define ELEM_BASE_MIN  ELEM_ACID
+#define ELEM_BASE_MAX  (ELEM_COLD + 1)
 #define ELEM_HIGH_MIN  ELEM_POIS
-#define ELEM_HIGH_MAX  ELEM_DISEN
-
-/**
- * Identify flags
- */
-enum
-{
-	ID_NONE,
-	#define STAT(a, b, c, d, e, f, g, h) ID_##a,
-	#include "list-stats.h"
-	#undef STAT
-	#define OBJ_MOD(a, b, c, d) ID_##a,
-	#include "list-object-modifiers.h"
-	#undef OBJ_MOD
-	#define ID(a) ID_##a,
-	#include "list-identify-flags.h"
-	#undef ID
-	ID_MAX
-};
-
-#define ID_MOD_MIN  ID_STR
-#define ID_MISC_MIN ID_ARTIFACT
-
-#define ID_SIZE                	FLAG_SIZE(ID_MAX)
-
-#define id_has(f, flag)        	flag_has_dbg(f, ID_SIZE, flag, #f, #flag)
-#define id_next(f, flag)       	flag_next(f, ID_SIZE, flag)
-#define id_is_empty(f)         	flag_is_empty(f, ID_SIZE)
-#define id_is_full(f)          	flag_is_full(f, ID_SIZE)
-#define id_is_inter(f1, f2)    	flag_is_inter(f1, f2, ID_SIZE)
-#define id_is_subset(f1, f2)   	flag_is_subset(f1, f2, ID_SIZE)
-#define id_is_equal(f1, f2)    	flag_is_equal(f1, f2, ID_SIZE)
-#define id_on(f, flag)         	flag_on_dbg(f, ID_SIZE, flag, #f, #flag)
-#define id_off(f, flag)        	flag_off(f, ID_SIZE, flag)
-#define id_wipe(f)             	flag_wipe(f, ID_SIZE)
-#define id_setall(f)           	flag_setall(f, ID_SIZE)
-#define id_negate(f)           	flag_negate(f, ID_SIZE)
-#define id_copy(f1, f2)        	flag_copy(f1, f2, ID_SIZE)
-#define id_union(f1, f2)       	flag_union(f1, f2, ID_SIZE)
-#define id_comp_union(f1, f2)  	flag_comp_union(f1, f2, ID_SIZE)
-#define id_inter(f1, f2)       	flag_inter(f1, f2, ID_SIZE)
-#define id_diff(f1, f2)        	flag_diff(f1, f2, ID_SIZE)
-
+#define ELEM_HIGH_MAX  (ELEM_DISEN + 1)
 
 /**
  * Object origin kinds
@@ -85,18 +44,11 @@ enum {
 };
 
 
-/* Values for struct object->marked */
-enum {
-	MARK_UNAWARE = 0,
-	MARK_AWARE = 1,
-	MARK_SEEN = 2
-};
-
-
-
 /*** Structures ***/
 
-/* Effect */
+/**
+ * Effect
+ */
 struct effect {
 	struct effect *next;
 	u16b index;		/**< The effect index */
@@ -104,34 +56,55 @@ struct effect {
 	int params[3];	/**< Extra parameters to be passed to the handler */
 };
 
-/* Brand type */
+/**
+ * Brand type
+ */
 struct brand {
+	char *code;
 	char *name;
-	int element;
+	char *verb;
+	int resist_flag;
 	int multiplier;
-	int damage; /* Storage for damage during description */
-	bool known;
+	int power;
 	struct brand *next;
 };
 
-/* Slay type */
+/**
+ * Slay type
+ */
 struct slay {
+	char *code;
 	char *name;
+	char *base;
+	char *melee_verb;
+	char *range_verb;
 	int race_flag;
 	int multiplier;
-	int damage; /* Storage for damage during description */
-	bool known;
+	int power;
 	struct slay *next;
 };
 
-enum {
-	EL_INFO_KNOWN = 0x01,
-	EL_INFO_HATES = 0x02,
-	EL_INFO_IGNORE = 0x04,
-	EL_INFO_RANDOM = 0x08,
+/**
+ * Curse type
+ */
+struct curse {
+	struct curse *next;
+	char *name;
+	bool *poss;
+	struct object *obj;
+	char *conflict;
+	char *desc;
 };
 
-/* Element info type */
+enum {
+	EL_INFO_HATES = 0x01,
+	EL_INFO_IGNORE = 0x02,
+	EL_INFO_RANDOM = 0x04,
+};
+
+/**
+ * Element info type
+ */
 struct element_info {
 	s16b res_level;
 	bitflag flags;
@@ -169,6 +142,7 @@ struct object_base {
 	struct element_info el_info[ELEM_MAX];
 
 	int break_perc;
+	int max_stack;
 	int num_svals;
 };
 
@@ -211,8 +185,9 @@ struct object_kind {
 	random_value modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
 
-	struct brand *brands;
-	struct slay *slays;
+	bool *brands;
+	bool *slays;
+	int *curses;			/**< Array of curse powers */
 
 	byte d_attr;			/**< Default object attribute */
 	wchar_t d_char;			/**< Default object character */
@@ -222,6 +197,7 @@ struct object_kind {
 	int alloc_max;			/**< Lowest normal dungeon level */
 	int level;				/**< Level (difficulty of activation) */
 
+	struct activation *activation;	/**< Artifact-like activation */
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
 	int power;				/**< Power of the item's effect */
 	char *effect_msg;
@@ -235,7 +211,8 @@ struct object_kind {
 
 	/** Also saved in savefile **/
 
-	quark_t note; 	/**< Autoinscription quark number */
+	quark_t note_aware; 	/**< Autoinscription quark number */
+	quark_t note_unaware; 	/**< Autoinscription quark number */
 
 	bool aware;		/**< Set if player is aware of the kind's effects */
 	bool tried;		/**< Set if kind has been tried */
@@ -245,6 +222,10 @@ struct object_kind {
 };
 
 extern struct object_kind *k_info;
+extern struct object_kind *unknown_item_kind;
+extern struct object_kind *unknown_gold_kind;
+extern struct object_kind *pile_kind;
+extern struct object_kind *curse_object_kind;
 
 /**
  * Information about artifacts.
@@ -282,8 +263,9 @@ struct artifact {
 	int modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
 
-	struct brand *brands;
-	struct slay *slays;
+	bool *brands;
+	bool *slays;
+	int *curses;		/**< Array of curse powers */
 
 	int level;			/** Difficulty level for activation */
 
@@ -308,11 +290,11 @@ extern struct artifact *a_info;
 
 
 /**
- * Stricture for possible object kinds for an ego item
+ * Structure for possible object kinds for an ego item
  */
-struct ego_poss_item {
+struct poss_item {
 	u32b kidx;
-	struct ego_poss_item *next;
+	struct poss_item *next;
 };
 
 /**
@@ -336,17 +318,16 @@ struct ego_item {
 	int min_modifiers[OBJ_MOD_MAX];
 	struct element_info el_info[ELEM_MAX];
 
-	struct brand *brands;
-	struct slay *slays;
+	bool *brands;
+	bool *slays;
+	int *curses;			/**< Array of curse powers */
 
-	int level;				/* Minimum level */
-	int rarity;			/* Object rarity */
 	int rating;			/* Level rating boost */
 	int alloc_prob; 		/** Chance of being generated (i.e. rarity) */
 	int alloc_min;			/** Minimum depth (can appear earlier) */
 	int alloc_max;			/** Maximum depth (will NEVER appear deeper) */
 
-	struct ego_poss_item *poss_items;
+	struct poss_item *poss_items;
 
 	random_value to_h;		/* Extra to-hit bonus */
 	random_value to_d;		/* Extra to-dam bonus */
@@ -368,8 +349,22 @@ struct ego_item {
  */
 extern struct ego_item *e_info;
 
+/**
+ * Flags for the obj->notice field
+ */
+enum {
+	OBJ_NOTICE_WORN = 0x01,
+	OBJ_NOTICE_ASSESSED = 0x02,
+	OBJ_NOTICE_IGNORE = 0x04,
+	OBJ_NOTICE_IMAGINED = 0x08,
+};
 
-/*
+struct curse_data {
+	int power;
+	int timeout;
+};
+
+/**
  * Object information, for a specific object.
  *
  * Note that inscriptions are now handled via the "quark_str()" function
@@ -396,58 +391,101 @@ extern struct ego_item *e_info;
  * regular basis, and care must be taken when handling such objects.
  */
 struct object {
-	struct object_kind *kind;
-	struct ego_item *ego;
-	struct artifact *artifact;
+	struct object_kind *kind;	/**< Kind of the object */
+	struct ego_item *ego;		/**< Ego item info of the object, if any */
+	struct artifact *artifact;	/**< Artifact info of the object, if any */
 
-	struct object *prev;	/* Previous object in a pile */
-	struct object *next;	/* Next object in a pile */
+	struct object *prev;	/**< Previous object in a pile */
+	struct object *next;	/**< Next object in a pile */
+	struct object *known;	/**< Known version of this object */
 
-	byte iy;			/* Y-position on map, or zero */
-	byte ix;			/* X-position on map, or zero */
+	u16b oidx;				/**< Item list index, if any */
 
-	byte tval;			/* Item type (from kind) */
-	byte sval;			/* Item sub-type (from kind) */
+	byte iy;				/**< Y-position on map, or zero */
+	byte ix;				/**< X-position on map, or zero */
 
-	s16b pval;			/* Item extra-parameter */
+	byte tval;				/**< Item type (from kind) */
+	byte sval;				/**< Item sub-type (from kind) */
 
-	s16b weight;		/* Item weight */
+	s16b pval;				/**< Item extra-parameter */
 
-	bitflag flags[OF_SIZE];			/**< Flags */
-	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
-	bitflag id_flags[ID_SIZE];		/**< Object property ID flags */
+	s16b weight;			/**< Item weight */
 
-	s16b modifiers[OBJ_MOD_MAX];
-	struct element_info el_info[ELEM_MAX];
+	byte dd;				/**< Number of damage dice */
+	byte ds;				/**< Number of sides on each damage die */
+	s16b ac;				/**< Normal AC */
+	s16b to_a;				/**< Plusses to AC */
+	s16b to_h;				/**< Plusses to hit */
+	s16b to_d;				/**< Plusses to damage */
 
-	struct brand *brands;
-	struct slay *slays;
-
-	s16b ac;			/* Normal AC */
-	s16b to_a;			/* Plusses to AC */
-	s16b to_h;			/* Plusses to hit */
-	s16b to_d;			/* Plusses to damage */
-
-	byte dd, ds;		/* Damage dice/sides */
+	bitflag flags[OF_SIZE];	/**< Object flags */
+	s16b modifiers[OBJ_MOD_MAX];	/**< Object modifiers*/
+	struct element_info el_info[ELEM_MAX];	/**< Object element info */
+	bool *brands;			/**< Array of brand structures */
+	bool *slays;			/**< Array of slay structures */
+	struct curse_data *curses;	/**< Array of curse powers and timeouts */
 
 	struct effect *effect;	/**< Effect this item produces (effects.c) */
-	char *effect_msg;
+	char *effect_msg;		/**< Message on use */
 	struct activation *activation;	/**< Artifact activation, if applicable */
-	random_value time;	/**< Recharge time (rods/activation) */
-	s16b timeout;		/* Timeout Counter */
+	random_value time;		/**< Recharge time (rods/activation) */
+	s16b timeout;			/**< Timeout Counter */
 
-	byte number;		/* Number of items */
-	byte marked;		/* Object is marked */
-	byte ignore;		/* Object is ignored */
+	byte number;			/**< Number of items */
+	bitflag notice;			/**< Attention paid to the object */
 
-	s16b held_m_idx;	/* Monster holding us (if any) */
-	s16b mimicking_m_idx; /* Monster mimicking us (if any) */
+	s16b held_m_idx;		/**< Monster holding us (if any) */
+	s16b mimicking_m_idx;	/**< Monster mimicking us (if any) */
 
-	byte origin;		/* How this item was found */
-	byte origin_depth;  /* What depth the item was found at */
-	u16b origin_xtra;   /* Extra information about origin */
+	byte origin;			/**< How this item was found */
+	byte origin_depth;		/**< What depth the item was found at */
+	struct monster_race *origin_race;	/**< Monster race that dropped it */
 
-	quark_t note; 		/* Inscription index */
+	quark_t note; 			/**< Inscription index */
+};
+
+/**
+ * Null object constant, for safe initialization.
+ */
+static struct object const OBJECT_NULL = {
+	.kind = NULL,
+	.ego = NULL,
+	.artifact = NULL,
+	.prev = NULL,
+	.next = NULL,
+	.known = NULL,
+	.oidx = 0,
+	.iy = 0,
+	.ix = 0,
+	.tval = 0,
+	.sval = 0,
+	.pval = 0,
+	.weight = 0,
+	.dd = 0,
+	.ds = 0,
+	.ac = 0,
+	.to_a = 0,
+	.to_h = 0,
+	.to_d = 0,
+	.flags = { 0 },
+	.modifiers = { 0 },
+	.el_info = { { 0, 0 } },
+	.brands = NULL,
+	.slays = NULL,
+	.curses = NULL,
+	.effect = NULL,
+	.effect_msg = NULL,
+	.activation = NULL,
+	.time = { 0, 0, 0, 0 },
+	.timeout = 0,
+	.number = 0,
+	.notice = 0,
+	.held_m_idx = 0,
+	.mimicking_m_idx = 0,
+	.origin = 0,
+	.origin_depth = 0,
+	.origin_race = NULL,
+	.note = 0,
 };
 
 struct flavor

@@ -38,17 +38,17 @@
  * the DIB is loaded, the function also creates a bitmap
  * and palette out of the DIB for a device-dependent form.
  *
- * Returns TRUE if the DIB is loaded and the bitmap/palette created, in which
+ * Returns true if the DIB is loaded and the bitmap/palette created, in which
  * case, the DIBINIT structure pointed to by pInfo is filled with the
- * appropriate handles, and FALSE if something went wrong.
+ * appropriate handles, and false if something went wrong.
  */
-BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, BOOL premultiply) {
+bool ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, bool premultiply) {
 	png_structp png_ptr;
 	png_infop info_ptr;
 	byte header[8];
 	png_bytep *row_pointers;
 	
-	BOOL noerror = TRUE;
+	bool noerror = true;
 	
 	HBITMAP hBitmap;
 	HPALETTE hPalette, hOldPal;
@@ -60,21 +60,21 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	int width, height;
 	int y;
 
-	BOOL update = FALSE;
+	bool update = false;
 	
 	/* open the file and test it for being a png */
 	FILE *fp = fopen(lpFileName, "rb");
 	if (!fp)
 	{
 		/*plog_fmt("Unable to open PNG file."); */
-		return (FALSE);
+		return (false);
 	}
 
 	fread(header, 1, 8, fp);
 	if (png_sig_cmp(header, 0, 8)) {
 		/*plog_fmt("Unable to open PNG file - not a PNG file."); */
 		fclose(fp);
-		return (FALSE);
+		return (false);
 	}
 	
 	/* Create the png structure */
@@ -83,7 +83,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	{
 		/*plog_fmt("Unable to initialize PNG library"); */
 		fclose(fp);
-		return (FALSE);
+		return (false);
 	}
 	
 	/* create the info structure */
@@ -92,7 +92,8 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	{
 		png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
 		/*plog_fmt("Failed to create PNG info structure."); */
-		return FALSE;
+		fclose(fp);
+		return false;
 	}
 	
 	/* setup error handling for init */
@@ -110,25 +111,25 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	if (color_type == PNG_COLOR_TYPE_PALETTE)
 	{
 		png_set_palette_to_rgb(png_ptr);
-		update = TRUE;
+		update = true;
 	}
 
 	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
 	{
 		png_set_tRNS_to_alpha(png_ptr);
-		update = TRUE;
+		update = true;
 	}
 
 	if (bit_depth == 16)
 	{
 		png_set_strip_16(png_ptr);
-		update = TRUE;
+		update = true;
 	}
 
 	if (color_type == PNG_COLOR_TYPE_GRAY ||
 		color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
 		png_set_gray_to_rgb(png_ptr);
-		update = TRUE;
+		update = true;
 	}
 
 	if (update) {
@@ -142,10 +143,10 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 
 	/* initialize row_pointers */
 	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-	if (!row_pointers) return FALSE;
+	if (!row_pointers) return false;
 	for (y = 0; y < height; ++y) {
 		row_pointers[y] = (png_bytep) malloc(png_get_rowbytes(png_ptr, info_ptr));
-		if (!row_pointers[y]) return FALSE;
+		if (!row_pointers[y]) return false;
 	}
 
 	/* read the image data into row_pointers */
@@ -237,7 +238,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	
 	hPalette = GetStockObject(DEFAULT_PALETTE);
 	/* Need to realize palette for converting DIB to bitmap. */
-	hOldPal = SelectPalette(hDC, hPalette, TRUE);
+	hOldPal = SelectPalette(hDC, hPalette, true);
 	RealizePalette(hDC);
 
 	/* copy the data to the DIB */
@@ -253,17 +254,17 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 				/*plog_fmt("Failed to alloc temporary memory for PNG data."); */
 				DeleteObject(hBitmap);
 				hBitmap = NULL;
-				noerror = FALSE;
+				noerror = false;
 				break;
 			}
 		}
 	}
-	SelectPalette(hDC, hOldPal, TRUE);
+	SelectPalette(hDC, hOldPal, true);
 	RealizePalette(hDC);
 	if (!hBitmap)
 	{
 		DeleteObject(hPalette);
-		noerror = FALSE;
+		noerror = false;
 	}
 	else
 	{
@@ -281,17 +282,17 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 		DWORD *srcrow;
 		HBITMAP hBitmap2 = NULL;
 		HPALETTE hPalette2 = GetStockObject(DEFAULT_PALETTE);
-		BOOL have_alpha = FALSE;
+		bool have_alpha = false;
 		
 		/* Need to realize palette for converting DIB to bitmap. */
-		hOldPal = SelectPalette(hDC, hPalette2, TRUE);
+		hOldPal = SelectPalette(hDC, hPalette2, true);
 		RealizePalette(hDC);
 		
 		/* allocate the storage space */
 		pBits = (byte*)malloc(sizeof(byte)*width*height*3);
 		if (!pBits)
 		{
-			noerror = FALSE;
+			noerror = false;
 		}
 
 		if (noerror)
@@ -304,7 +305,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 					v = 255 - v;
 					if (v==255) 
 					{
-						have_alpha = TRUE;
+						have_alpha = true;
 					}
 					/* write the alpha byte to the three colors of the storage space */
 					*(pBits + (y*width*3) + (x*3)) = v;
@@ -320,12 +321,12 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 			}
 			free(pBits);
 		}
-		SelectPalette(hDC, hOldPal, TRUE);
+		SelectPalette(hDC, hOldPal, true);
 		RealizePalette(hDC);
 		if (!hBitmap2)
 		{
 			DeleteObject(hPalette2);
-			noerror = FALSE;
+			noerror = false;
 		}
 		else
 		{
@@ -357,8 +358,8 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	
 	if (!noerror)
 	{
-		return (FALSE);
+		return (false);
 	}
-	return (TRUE);
+	return (true);
 }
 

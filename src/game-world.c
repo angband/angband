@@ -20,19 +20,24 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "mon-make.h"
 #include "mon-move.h"
 #include "mon-util.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "source.h"
 #include "target.h"
+#include "trap.h"
+#include "z-queue.h"
 
 u16b daycount = 0;
 u32b seed_randart;		/* Hack -- consistent random artifacts */
@@ -40,7 +45,6 @@ u32b seed_flavor;		/* Hack -- consistent object colors */
 s32b turn;				/* Current game turn */
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
-bool character_saved;		/* The character was just saved to a savefile */
 
 /**
  * This table allows quick conversion from "speed" to "energy"
@@ -90,9 +94,9 @@ const byte extract_energy[200] =
 bool is_daytime(void)
 {
 	if ((turn % (10L * z_info->day_length)) < ((10L * z_info->day_length) / 2)) 
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -115,10 +119,10 @@ static void recharged_notice(const struct object *obj, bool all)
 
 	const char *s;
 
-	bool notify = FALSE;
+	bool notify = false;
 
-	if (OPT(notify_recharge)) {
-		notify = TRUE;
+	if (OPT(player, notify_recharge)) {
+		notify = true;
 	} else if (obj->note) {
 		/* Find a '!' */
 		s = strchr(quark_str(obj->note), '!');
@@ -127,7 +131,7 @@ static void recharged_notice(const struct object *obj, bool all)
 		while (s) {
 			/* Find another '!' */
 			if (s[1] == '!') {
-				notify = TRUE;
+				notify = true;
 				break;
 			}
 
@@ -161,10 +165,8 @@ static void recharged_notice(const struct object *obj, bool all)
  */
 static void recharge_objects(void)
 {
-	int y, x;
-
+	int i;
 	bool discharged_stack;
-
 	struct object *obj;
 
 	/* Recharge carried gear */
@@ -177,7 +179,7 @@ static void recharge_objects(void)
 			/* Recharge activatable objects */
 			if (recharge_timeout(obj)) {
 				/* Message if an item recharged */
-				recharged_notice(obj, TRUE);
+				recharged_notice(obj, true);
 
 				/* Window stuff */
 				player->upkeep->redraw |= (PR_EQUIP);
@@ -185,17 +187,17 @@ static void recharge_objects(void)
 		} else {
 			/* Recharge the inventory */
 			discharged_stack =
-				(number_charging(obj) == obj->number) ? TRUE : FALSE;
+				(number_charging(obj) == obj->number) ? true : false;
 
 			/* Recharge rods, and update if any rods are recharged */
 			if (tval_can_have_timeout(obj) && recharge_timeout(obj)) {
 				/* Entire stack is recharged */
 				if (obj->timeout == 0)
-					recharged_notice(obj, TRUE);
+					recharged_notice(obj, true);
 
 				/* Previously exhausted stack has acquired a charge */
 				else if (discharged_stack)
-					recharged_notice(obj, FALSE);
+					recharged_notice(obj, false);
 
 				/* Combine pack */
 				player->upkeep->notice |= (PN_COMBINE);
@@ -206,13 +208,15 @@ static void recharge_objects(void)
 		}
 	}
 
-	/* Recharge the ground */
-	for (y = 1; y < cave->height; y++)
-		for (x = 1; x < cave->width; x++)
-			for (obj = square_object(cave, y, x); obj; obj = obj->next)
-				/* Recharge rods on the ground */
-				if (tval_can_have_timeout(obj))
-					recharge_timeout(obj);
+	/* Recharge other level objects */
+	for (i = 1; i < cave->obj_max; i++) {
+		obj = cave->objects[i];
+		if (!obj) continue;
+
+		/* Recharge rods */
+		if (tval_can_have_timeout(obj))
+			recharge_timeout(obj);
+	}
 }
 
 
@@ -240,14 +244,14 @@ void play_ambient_sound(void)
 }
 
 /**
- * Helper for process_world -- decrement player->timed[] fields.
+ * Helper for process_world -- decrement player->timed[] and curse effect fields
  */
 static void decrease_timeouts(void)
 {
 	int adjust = (adj_con_fix[player->state.stat_ind[STAT_CON]] + 1);
 	int i;
 
-	/* Most effects decrement by 1 */
+	/* Most timed effects decrement by 1 */
 	for (i = 0; i < TMD_MAX; i++) {
 		int decr = 1;
 		if (!player->timed[i])
@@ -258,7 +262,7 @@ static void decrease_timeouts(void)
 			case TMD_CUT:
 			{
 				/* Hack -- check for truly "mortal" wound */
-				decr = (player->timed[i] > 1000) ? 0 : adjust;
+				decr = (player->timed[i] > TMD_CUT_DEEP) ? 0 : adjust;
 				break;
 			}
 
@@ -270,7 +274,31 @@ static void decrease_timeouts(void)
 			}
 		}
 		/* Decrement the effect */
-		player_dec_timed(player, i, decr, FALSE);
+		player_dec_timed(player, i, decr, false);
+	}
+
+	/* Curse effects always decrement by 1 */
+	for (i = 0; i < player->body.count; i++) {
+		struct curse_data *curse = NULL;
+		if (player->body.slots[i].obj == NULL) {
+			continue;
+		}
+		curse = player->body.slots[i].obj->curses;
+		if (curse) {
+			int j;
+			for (j = 0; j < z_info->curse_max; j++) {
+				if (curse[j].power) {
+					curse[j].timeout--;
+					if (!curse[j].timeout) {
+						struct curse *c = &curses[j];
+						if (do_curse_effect(j, player->body.slots[i].obj)) {
+							player_learn_curse(player, c);
+						}
+						curse[j].timeout = randcalc(c->obj->time, 0, RANDOMISE);
+					}
+				}
+			}
+		}
 	}
 
 	return;
@@ -278,11 +306,164 @@ static void decrease_timeouts(void)
 
 
 /**
+ * Every turn, the character makes enough noise that nearby monsters can use
+ * it to home in.
+ *
+ * This function actually just computes distance from the player; this is
+ * used in combination with the player's stealth value to determine what
+ * monsters can hear.  We mark the player's grid with 0, then fill in the noise
+ * field of every grid that the player can reach with that "noise"
+ * (actally distance) plus the number of steps needed to reach that grid
+ * - so higher values mean further from the player.
+ *
+ * Monsters use this information by moving to adjacent grids with lower noise
+ * values, thereby homing in on the player even though twisty tunnels and
+ * mazes.  Monsters have a hearing value, which is the largest sound value
+ * they can detect.
+ */
+static void make_noise(struct player *p)
+{
+	int next_y = p->py;
+	int next_x = p->px;
+	int y, x, d;
+	int noise = 0;
+    struct queue *queue = q_new(cave->height * cave->width);
+
+	/* Set all the grids to silence */
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
+			cave->noise.grids[y][x] = 0;
+		}
+	}
+
+	/* Player makes noise */
+	cave->noise.grids[next_y][next_x] = noise;
+	q_push_int(queue, yx_to_i(next_y, next_x, cave->width));
+	noise++;
+
+	/* Propagate noise */
+	while (q_len(queue) > 0) {
+		/* Get the next grid */
+		i_to_yx(q_pop_int(queue), cave->width, &next_y, &next_x);
+
+		/* If we've reached the current noise level, put it back and step */
+		if (cave->noise.grids[next_y][next_x] == noise) {
+			q_push_int(queue, yx_to_i(next_y, next_x, cave->width));
+			noise++;
+			continue;
+		}
+
+		/* Assign noise to the children and enqueue them */
+		for (d = 0; d < 8; d++)	{
+			/* Child location */
+			y = next_y + ddy_ddd[d];
+			x = next_x + ddx_ddd[d];
+			if (!square_in_bounds(cave, y, x)) continue;
+
+			/* Ignore features that don't transmit sound */
+			if (square_isnoflow(cave, y, x)) continue;
+
+			/* Skip grids that already have noise */
+			if (cave->noise.grids[y][x] != 0) continue;
+
+			/* Skip the player grid */
+			if (y == player->py && x == player->px) continue;
+
+			/* Save the noise */
+			cave->noise.grids[y][x] = noise;
+
+			/* Enqueue that entry */
+			q_push_int(queue, yx_to_i(y, x, cave->width));
+		}
+	}
+
+	q_free(queue);
+}
+
+/**
+ * Characters leave scent trails for perceptive monsters to track.
+ *
+ * Scent is rather more limited than sound.  Many creatures cannot use
+ * it at all, it doesn't extend very far outwards from the character's
+ * current position, and monsters can use it to home in the character,
+ * but not to run away.
+ *
+ * Scent is valued according to age.  When a character takes his turn,
+ * scent is aged by one, and new scent is laid down.  Monsters have a smell
+ * value which indicates the oldest scent they can detect.  Grids where the
+ * player has never been will have scent 0.  The player's grid will also have
+ * scent 0, but this is OK as no monster will ever be smelling it.
+ */
+static void update_scent(void)
+{
+	int y, x;
+	int scent_strength[5][5] = {
+		{2, 2, 2, 2, 2},
+		{2, 1, 1, 1, 2},
+		{2, 1, 0, 1, 2},
+		{2, 1, 1, 1, 2},
+		{2, 2, 2, 2, 2},
+	};
+
+	/* Update scent for all grids */
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
+			if (cave->scent.grids[y][x] > 0) {
+				cave->scent.grids[y][x]++;
+			}
+		}
+	}
+
+	/* Lay down new scent around the player */
+	for (y = 0; y < 5; y++) {
+		for (x = 0; x < 5; x++) {
+			int scent_y = y + player->py - 2;
+			int scent_x = x + player->px - 2;
+			int new_scent = scent_strength[y][x];
+			int d;
+			bool add_scent = false;
+
+			/* Ignore invalid or non-scent-carrying grids */
+			if (!square_in_bounds(cave, scent_y, scent_x)) continue;
+			if (square_isnoscent(cave, scent_y, scent_x)) continue;
+
+			/* Check scent is spreading on floors, not going through walls */
+			for (d = 0; d < 8; d++)	{
+				int adj_y = scent_y + ddy_ddd[d];
+				int adj_x = scent_x + ddx_ddd[d];
+
+				if (!square_in_bounds(cave, adj_y, adj_x)) {
+					continue;
+				}
+
+				/* Player grid is always valid */
+				if (x == 2 && y == 2) {
+					add_scent = true;
+				}
+
+				/* Adjacent to a closer grid, so valid */
+				if (cave->scent.grids[adj_y][adj_x] == new_scent - 1) {
+					add_scent = true;
+				}
+			}
+
+			/* Not valid */
+			if (!add_scent) {
+				continue;
+			}
+
+			/* Mark the scent */
+			cave->scent.grids[scent_y][scent_x] = new_scent;
+		}
+	}
+}
+
+/**
  * Handle things that need updating once every 10 game turns
  */
 void process_world(struct chunk *c)
 {
-	int i;
+	int i, y, x;
 
 	/* Compact the monster list if we're approaching the limit */
 	if (cave_monster_count(cave) + 32 > z_info->level_monster_max)
@@ -329,8 +510,8 @@ void process_world(struct chunk *c)
 
 	/* Check for creature generation */
 	if (one_in_(z_info->alloc_monster_chance))
-		(void)pick_and_place_distant_monster(cave, loc(player->px, player->py),
-											 z_info->max_sight + 5, TRUE,
+		(void)pick_and_place_distant_monster(cave, player,
+											 z_info->max_sight + 5, true,
 											 player->depth);
 
 	/*** Damage over Time ***/
@@ -342,11 +523,11 @@ void process_world(struct chunk *c)
 	/* Take damage from cuts */
 	if (player->timed[TMD_CUT]) {
 		/* Mortal wound or Deep Gash */
-		if (player->timed[TMD_CUT] > 200)
+		if (player->timed[TMD_CUT] > TMD_CUT_SEVERE)
 			i = 3;
 
 		/* Severe cut */
-		else if (player->timed[TMD_CUT] > 100)
+		else if (player->timed[TMD_CUT] > TMD_CUT_NASTY)
 			i = 2;
 
 		/* Other cuts */
@@ -388,7 +569,7 @@ void process_world(struct chunk *c)
 
 			/* Faint (bypass free action) */
 			(void)player_inc_timed(player, TMD_PARALYZED, 1 + randint0(5),
-								   TRUE, FALSE);
+								   true, false);
 		}
 	}
 
@@ -403,17 +584,21 @@ void process_world(struct chunk *c)
 
 	/* Regenerate Hit Points if needed */
 	if (player->chp < player->mhp)
-		player_regen_hp();
+		player_regen_hp(player);
 
 	/* Regenerate mana if needed */
 	if (player->csp < player->msp)
-		player_regen_mana();
+		player_regen_mana(player);
 
 	/* Timeout various things */
 	decrease_timeouts();
 
 	/* Process light */
-	player_update_light();
+	player_update_light(player);
+
+	/* Update noise and scent */
+	make_noise(player);
+	update_scent();
 
 
 	/*** Process Inventory ***/
@@ -423,28 +608,36 @@ void process_world(struct chunk *c)
 		if ((player->exp > 0) && one_in_(10)) {
 			s32b d = damroll(10, 6) +
 				(player->exp / 100) * z_info->life_drain_percent;
-			player_exp_lose(player, d / 10, FALSE);
+			player_exp_lose(player, d / 10, false);
 		}
 
-		equip_notice_flag(player, OF_DRAIN_EXP);
+		equip_learn_flag(player, OF_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
 	recharge_objects();
 
-	/* Feel the inventory */
-	sense_inventory();
+	/* Notice things after time */
+	if (!(turn % 100))
+		equip_learn_after_time(player);
+
+	/* Decrease trap timeouts */
+	for (y = 0; y < cave->height; y++) {
+		for (x = 0; x < cave->width; x++) {
+			struct trap *trap = cave->squares[y][x].trap;
+			while (trap) {
+				if (trap->timeout) {
+					trap->timeout--;
+					if (!trap->timeout)
+						square_light_spot(cave, y, x);
+				}
+				trap = trap->next;
+			}
+		}
+	}
 
 
 	/*** Involuntary Movement ***/
-
-	/* Random teleportation */
-	if (player_of_has(player, OF_TELEPORT) && one_in_(50)) {
-		const char *forty = "40";
-		equip_notice_flag(player, OF_TELEPORT);
-		effect_simple(EF_TELEPORT, forty, 0, 1, 0, NULL);
-		disturb(player, 0);
-	}
 
 	/* Delayed Word-of-Recall */
 	if (player->word_recall) {
@@ -459,19 +652,19 @@ void process_world(struct chunk *c)
 			/* Determine the level */
 			if (player->depth) {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked upwards!");
-				dungeon_change_level(0);
+				dungeon_change_level(player, 0);
 			} else {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
                 
                 /* Force descent to a lower level if allowed */
-                if (OPT(birth_force_descend) &&
+                if (OPT(player, birth_force_descend) &&
 					player->max_depth < z_info->max_depth - 1 &&
 					!is_quest(player->max_depth)) {
                     player->max_depth = dungeon_get_next_level(player->max_depth, 1);
                 }
 
 				/* New depth - back to max depth or 1, whichever is deeper */
-				dungeon_change_level(player->max_depth < 1 ? 1: player->max_depth);
+				dungeon_change_level(player, player->max_depth < 1 ? 1: player->max_depth);
 			}
 		}
 	}
@@ -495,12 +688,12 @@ void process_world(struct chunk *c)
 			/* Determine the level */
 			if (target_depth > player->depth) {
 				msgt(MSG_TPLEVEL, "The floor opens beneath you!");
-				dungeon_change_level(target_depth);
+				dungeon_change_level(player, target_depth);
 			} else {
 				/* Otherwise do something disastrous */
 				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
-				effect_simple(EF_DESTRUCTION, "0", 0, 5, 0, NULL);
-			}		
+				effect_simple(EF_DESTRUCTION, source_none(), "0", 0, 5, 0, NULL);
+			}
 		}
 	}
 }
@@ -520,6 +713,9 @@ static void process_player_cleanup(void)
 
 		/* Increment the total energy counter */
 		player->total_energy += player->upkeep->energy_use;
+
+		/* Player can be damaged by terrain */
+		player_take_terrain_damage(player, player->py, player->px);
 
 		/* Do nothing else if player has auto-dropped stuff */
 		if (!player->upkeep->dropping) {
@@ -544,7 +740,7 @@ static void process_player_cleanup(void)
 				if (mflag_has(mon->mflag, MFLAG_MARK)) {
 					if (!mflag_has(mon->mflag, MFLAG_SHOW)) {
 						mflag_off(mon->mflag, MFLAG_MARK);
-						update_mon(mon, cave, FALSE);
+						update_mon(mon, cave, false);
 					}
 				}
 			}
@@ -556,7 +752,7 @@ static void process_player_cleanup(void)
 		struct monster *mon = cave_monster(cave, i);
 		mflag_off(mon->mflag, MFLAG_SHOW);
 	}
-	player->upkeep->dropping = FALSE;
+	player->upkeep->dropping = false;
 
 	/* Hack - update needed first because inventory may have changed */
 	update_stuff(player);
@@ -609,7 +805,7 @@ void process_player(void)
 				!player->timed[TMD_PARALYZED] &&
 				!player->timed[TMD_TERROR] &&
 				!player->timed[TMD_AFRAID])
-				effect_simple(EF_DETECT_GOLD, "3d3", 1, 0, 0, NULL);
+				effect_simple(EF_DETECT_GOLD, source_none(), "3d3", 1, 0, 0, NULL);
 		}
 
 		/* Paralyzed or Knocked Out player gets no turn */
@@ -687,7 +883,7 @@ void on_new_level(void)
 
 	/* Announce (or repeat) the feeling */
 	if (player->depth)
-		display_feeling(FALSE);
+		display_feeling(false);
 
 	/* Give player minimum energy to start a new level, but do not reduce
 	 * higher value from savefile for level in progress */
@@ -703,9 +899,6 @@ static void on_leave_level(void) {
 	notice_stuff(player);
 	update_stuff(player);
 	redraw_stuff(player);
-
-	/* Forget the view */
-	forget_view(cave);
 
 	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);
@@ -757,7 +950,7 @@ void run_game_loop(void)
 
 	/* Now that the player's turn is fully complete, we run the main loop 
 	 * until player input is needed again */
-	while (TRUE) {
+	while (true) {
 		notice_stuff(player);
 		handle_stuff(player);
 		event_signal(EVENT_REFRESH);
@@ -808,7 +1001,7 @@ void run_game_loop(void)
 			cave_generate(&cave, player);
 			on_new_level();
 
-			player->upkeep->generate_level = FALSE;
+			player->upkeep->generate_level = false;
 		}
 
 		/* If the player has enough energy to move they now do so, after

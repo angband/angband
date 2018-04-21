@@ -21,7 +21,6 @@
 #include "game-input.h"
 #include "init.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
 #include "obj-info.h"
 #include "savefile.h"
 #include "store.h"
@@ -85,7 +84,7 @@ static void print_tomb(void)
 
 	line = 7;
 
-	put_str_centred(line++, 8, 8+31, "%s", op_ptr->full_name);
+	put_str_centred(line++, 8, 8+31, "%s", player->full_name);
 	put_str_centred(line++, 8, 8+31, "the");
 	if (player->total_winner)
 		put_str_centred(line++, 8, 8+31, "Magnificent");
@@ -155,7 +154,9 @@ static void death_file(const char *title, int row)
 	char buf[1024];
 	char ftmp[80];
 
-	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(player, FALSE));
+	/* Get the filesystem-safe name and append .txt */
+	player_safe_name(ftmp, sizeof(ftmp), player->full_name, false);
+	my_strcat(ftmp, ".txt", sizeof(ftmp));
 
 	if (get_file(ftmp, buf, sizeof buf)) {
 		bool success;
@@ -330,17 +331,6 @@ static void death_spoilers(const char *title, int row)
 	do_cmd_spoilers();
 }
 
-/* Menu command: toggle birth_keep_randarts option. */
-static void death_randarts(const char *title, int row)
-{
-	if (OPT(birth_randarts))
-		option_set(option_name(OPT_birth_keep_randarts),
-			get_check("Keep randarts for next game? "));
-	else
-		msg("You are not playing with randarts!");
-}
-
-
 /**
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
@@ -354,7 +344,6 @@ static menu_action death_actions[] =
 	{ 0, 'x', "Examine items", death_examine   },
 	{ 0, 'h', "History",       death_history   },
 	{ 0, 's', "Spoilers",      death_spoilers  },
-	{ 0, 'r', "Keep randarts", death_randarts  },
 	{ 0, 'q', "Quit",          NULL            },
 };
 
@@ -366,7 +355,7 @@ static menu_action death_actions[] =
 void death_screen(void)
 {
 	struct menu *death_menu;
-	bool done = FALSE;
+	bool done = false;
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	/* Winner */
@@ -392,7 +381,7 @@ void death_screen(void)
 
 	while (!done)
 	{
-		ui_event e = menu_select(death_menu, EVT_KBRD, FALSE);
+		ui_event e = menu_select(death_menu, EVT_KBRD, false);
 		if (e.type == EVT_KBRD)
 		{
 			if (e.key.code == KTRL('X')) break;

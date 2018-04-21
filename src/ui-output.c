@@ -22,6 +22,8 @@
 #include "ui-output.h"
 #include "z-textblock.h"
 
+s16b screen_save_depth;
+
 /**
  * ------------------------------------------------------------------------
  * Regions
@@ -75,13 +77,13 @@ void region_erase(const region *loc)
 bool region_inside(const region *loc, const ui_event *key)
 {
 	if ((loc->col > key->mouse.x) || (loc->col + loc->width <= key->mouse.x))
-		return FALSE;
+		return false;
 
 	if ((loc->row > key->mouse.y) ||
 		(loc->row + loc->page_rows <= key->mouse.y))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -496,7 +498,7 @@ bool panel_should_modify(term *t, int wy, int wx)
 
 /**
  * Modify the current panel to the given coordinates, adjusting only to
- * ensure the coordinates are legal, and return TRUE if anything done.
+ * ensure the coordinates are legal, and return true if anything done.
  *
  * The town should never be scrolled around.
  *
@@ -531,11 +533,11 @@ bool modify_panel(term *t, int wy, int wx)
 		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(player);
 
 		/* Changed */
-		return (TRUE);
+		return (true);
 	}
 
 	/* No change */
-	return (FALSE);
+	return (false);
 }
 
 static void verify_panel_int(bool centered)
@@ -596,11 +598,11 @@ static void verify_panel_int(bool centered)
 /**
  * Change the current panel to the panel lying in the given direction.
  *
- * Return TRUE if the panel was changed.
+ * Return true if the panel was changed.
  */
 bool change_panel(int dir)
 {
-	bool changed = FALSE;
+	bool changed = false;
 	int j;
 
 	/* Scan windows */
@@ -625,7 +627,7 @@ bool change_panel(int dir)
 		wx = t->offset_x + ddx[dir] * screen_wid / 2;
 
 		/* Use "modify_panel" */
-		if (modify_panel(t, wy, wx)) changed = TRUE;
+		if (modify_panel(t, wy, wx)) changed = true;
 	}
 
 	return (changed);
@@ -639,18 +641,18 @@ bool change_panel(int dir)
  * panel, the map scrolls one panel in that direction so that the player
  * is no longer so close to the edge.
  *
- * The "OPT(center_player)" option allows the current panel to always be
+ * The "OPT(player, center_player)" option allows the current panel to always be
  * centered around the player, which is very expensive, and also has some
  * interesting gameplay ramifications.
  */
 void verify_panel(void)
 {
-	verify_panel_int(OPT(center_player));
+	verify_panel_int(OPT(player, center_player));
 }
 
 void center_panel(void)
 {
-	verify_panel_int(TRUE);
+	verify_panel_int(true);
 }
 
 void textui_get_panel(int *min_y, int *min_x, int *max_y, int *max_x)
@@ -670,7 +672,7 @@ bool textui_panel_contains(unsigned int y, unsigned int x)
 	unsigned int hgt;
 	unsigned int wid;
 	if (!Term)
-		return TRUE;
+		return true;
 	hgt = SCREEN_HGT;
 	wid = SCREEN_WID;
 	return (y - Term->offset_y) < hgt && (x - Term->offset_x) < wid;

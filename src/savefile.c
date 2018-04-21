@@ -68,6 +68,10 @@
  * - 
  */
 
+/**
+ * Global "we've just saved" variable
+ */
+bool character_saved;
 
 /**
  * Magic bits at beginning of savefile
@@ -105,10 +109,10 @@ static const struct {
 	{ "monster memory", wr_monster_memory, 1 },
 	{ "object memory", wr_object_memory, 1 },
 	{ "quests", wr_quests, 1 },
-	{ "artifacts", wr_artifacts, 1 },
 	{ "player", wr_player, 1 },
 	{ "ignore", wr_ignore, 1 },
 	{ "misc", wr_misc, 1 },
+	{ "artifacts", wr_artifacts, 1 },
 	{ "player hp", wr_player_hp, 1 },
 	{ "player spells", wr_player_spells, 1 },
 	{ "gear", wr_gear, 1 },
@@ -132,10 +136,10 @@ static const struct blockinfo loaders[] = {
 	{ "monster memory", rd_monster_memory, 1 },
 	{ "object memory", rd_object_memory, 1 },
 	{ "quests", rd_quests, 1 },
-	{ "artifacts", rd_artifacts, 1 },
 	{ "player", rd_player, 1 },
 	{ "ignore", rd_ignore, 1 },
 	{ "misc", rd_misc, 1 },
+	{ "artifacts", rd_artifacts, 1 },
 	{ "player hp", rd_player_hp, 1 },
 	{ "player spells", rd_player_spells, 1 },
 	{ "gear", rd_gear, 1 },	
@@ -360,7 +364,7 @@ static bool try_save(ang_file *file)
 
 	mem_free(buffer);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -402,16 +406,16 @@ bool savefile_save(const char *path)
 	}
 
 	if (character_saved) {
-		bool err = FALSE;
+		bool err = false;
 
 		safe_setuid_grab();
 
 		if (file_exists(path) && !file_move(path, old_savefile))
-			err = TRUE;
+			err = true;
 
 		if (!err) {
 			if (!file_move(new_savefile, path))
-				err = TRUE;
+				err = true;
 
 			if (err)
 				file_move(old_savefile, path);
@@ -421,7 +425,7 @@ bool savefile_save(const char *path)
 
 		safe_setuid_drop();
 
-		return err ? FALSE : TRUE;
+		return err ? false : true;
 	}
 
 	/* Delete temp file if the save failed */
@@ -432,7 +436,7 @@ bool savefile_save(const char *path)
 		file_delete(new_savefile);
 		safe_setuid_drop();
 	}
-	return FALSE;
+	return false;
 }
 
 
@@ -451,9 +455,9 @@ static bool check_header(ang_file *f) {
 	if (file_read(f, (char *) &head, 8) == 8 &&
 			memcmp(&head[0], savefile_magic, 4) == 0 &&
 			memcmp(&head[4], savefile_name, 4) == 0)
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -492,16 +496,16 @@ static errr next_blockheader(ang_file *f, struct blockheader *b) {
  * Find the right loader for this block, return it
  */
 static loader_t find_loader(struct blockheader *b,
-							const struct blockinfo *loaders)
+							const struct blockinfo *local_loaders)
 {
 	size_t i = 0;
 
 	/* Find the right loader */
-	for (i = 0; loaders[i].name[0]; i++) {
-		if (!streq(b->name, loaders[i].name)) continue;
-		if (b->version != loaders[i].version) continue;
+	for (i = 0; local_loaders[i].name[0]; i++) {
+		if (!streq(b->name, local_loaders[i].name)) continue;
+		if (b->version != local_loaders[i].version) continue;
 
-		return loaders[i].loader;
+		return local_loaders[i].loader;
 	} 
 
 	return NULL;
@@ -521,11 +525,11 @@ static bool load_block(ang_file *f, struct blockheader *b, loader_t loader)
 	if (buffer_size != b->size ||
 			loader() != 0) {
 		mem_free(buffer);
-		return FALSE;
+		return false;
 	}
 
 	mem_free(buffer);
-	return TRUE;
+	return true;
 }
 
 /**
@@ -539,37 +543,37 @@ static void skip_block(ang_file *f, struct blockheader *b)
 /**
  * Try to load a savefile
  */
-static bool try_load(ang_file *f, const struct blockinfo *loaders)
+static bool try_load(ang_file *f, const struct blockinfo *local_loaders)
 {
 	struct blockheader b;
 	errr err;
 
 	if (!check_header(f)) {
 		note("Savefile is corrupted -- incorrect file header.");
-		return FALSE;
+		return false;
 	}
 
 	/* Get the next block header */
 	while ((err = next_blockheader(f, &b)) == 0) {
-		loader_t loader = find_loader(&b, loaders);
+		loader_t loader = find_loader(&b, local_loaders);
 		if (!loader) {
 			note("Savefile block can't be read.");
 			note("Maybe try and load the savefile in an earlier version of Angband.");
-			return FALSE;
+			return false;
 		}
 
 		if (!load_block(f, &b, loader)) {
 			note(format("Savefile corrupted - Couldn't load block %s", b.name));
-			return FALSE;
+			return false;
 		}
 	}
 
 	if (err == -1) {
 		note("Savefile is corrupted -- block header mangled.");
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /* XXX this isn't nice but it'll have to do */
@@ -619,25 +623,25 @@ bool savefile_load(const char *path, bool cheat_death)
 	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
 	if (!f) {
 		note("Couldn't open savefile.");
-		return FALSE;
+		return false;
 	}
 
 	ok = try_load(f, loaders);
 	file_close(f);
 
 	if (player->chp < 0) {
-		player->is_dead = TRUE;
+		player->is_dead = true;
 	}
 
 	if (player->is_dead && cheat_death) {
-			player->is_dead = FALSE;
+			player->is_dead = false;
 			player->chp = player->mhp;
 			player->noscore |= NOSCORE_WIZARD;
 	}
 
 	/* Character is now "complete" */
-	character_generated = TRUE;
-	player->upkeep->playing = TRUE;
+	character_generated = true;
+	player->upkeep->playing = true;
 
 	return ok;
 }

@@ -20,8 +20,10 @@
 #include "cave.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "player-timed.h"
 #include "trap.h"
@@ -101,8 +103,6 @@ static void get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
  */
 static void grid_get_attr(struct grid_data *g, int *a)
 {
-    struct feature *feat = &f_info[g->f_idx];
-
 	/* Save the high-bit, since it's used for attr inversion in GCU */
 	int a0 = *a & 0x80;
 
@@ -111,17 +111,12 @@ static void grid_get_attr(struct grid_data *g, int *a)
 
 	/* Never play with fg colours for treasure */
 	if (!feat_is_treasure(g->f_idx)) {
-
-		/* Tint trap detection borders */
-		if (g->trapborder)
-			*a = (g->in_view ? COLOUR_L_GREEN : COLOUR_GREEN);
-
 		/* Only apply lighting effects when the attr is white and it's a 
 		 * floor or wall */
 		if ((*a == COLOUR_WHITE) &&
-			(tf_has(feat->flags, TF_FLOOR) || feat_is_wall(g->f_idx))) {
+			(feat_is_floor(g->f_idx) || feat_is_wall(g->f_idx))) {
 			/* If it's a floor tile then we'll tint based on lighting. */
-			if (tf_has(feat->flags, TF_TORCH))
+			if (feat_is_torch(g->f_idx))
 				switch (g->lighting) {
 					case LIGHTING_TORCH: *a = COLOUR_YELLOW; break;
 					case LIGHTING_LIT: *a = COLOUR_L_DARK; break;
@@ -144,9 +139,9 @@ static void grid_get_attr(struct grid_data *g, int *a)
 	if (a0) {
 		*a = a0 | *a;
 	} else if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
-		if (OPT(hybrid_walls))
+		if (OPT(player, hybrid_walls))
 			*a = *a + (MAX_COLORS * BG_DARK);
-		else if (OPT(solid_walls))
+		else if (OPT(player, solid_walls))
 			*a = *a + (MAX_COLORS * BG_SAME);
 	}
 }
@@ -194,16 +189,9 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	int a = feat_x_attr[g->lighting][feat->fidx];
 	wchar_t c = feat_x_char[g->lighting][feat->fidx];
 
-	/* Check for trap detection boundaries */
+	/* Get the colour for ASCII */
 	if (use_graphics == GRAPHICS_NONE)
 		grid_get_attr(g, &a);
-	else if (g->trapborder && tf_has(feat->flags, TF_FLOOR)
-			 && (g->m_idx || g->first_kind)) {
-		/* if there is an object or monster here, and this is a plain floor
-		 * display the border here rather than an overlay below */
-		a = feat_x_attr[g->lighting][FEAT_DTRAP_FLOOR];
-		c = feat_x_char[g->lighting][FEAT_DTRAP_FLOOR];
-	}
 
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
@@ -218,14 +206,14 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	if (g->unseen_money) {
 	
 		/* $$$ gets an orange star*/
-		a = object_kind_attr(&k_info[7]);
-		c = object_kind_char(&k_info[7]);
+		a = object_kind_attr(unknown_gold_kind);
+		c = object_kind_char(unknown_gold_kind);
 		
 	} else if (g->unseen_object) {	
 	
 		/* Everything else gets a red star */    
-		a = object_kind_attr(&k_info[6]);
-		c = object_kind_char(&k_info[6]);
+		a = object_kind_attr(unknown_item_kind);
+		c = object_kind_char(unknown_item_kind);
 		
 	} else if (g->first_kind) {
 		if (g->hallucinate) {
@@ -233,8 +221,8 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 			hallucinatory_object(&a, &c);
 		} else if (g->multiple_objects) {
 			/* Get the "pile" feature instead */
-			a = object_kind_attr(&k_info[0]);
-			c = object_kind_char(&k_info[0]);
+			a = object_kind_attr(pile_kind);
+			c = object_kind_char(pile_kind);
 		} else {
 			/* Normal attr and char */
 			a = object_kind_attr(g->first_kind);
@@ -247,7 +235,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 		if (g->hallucinate) {
 			/* Just pick a random monster to display. */
 			hallucinatory_monster(&a, &c);
-		} else if (!is_mimicking(cave_monster(cave, g->m_idx)))	{
+		} else if (!monster_is_mimicking(cave_monster(cave, g->m_idx)))	{
 			struct monster *mon = cave_monster(cave, g->m_idx);
 
 			byte da;
@@ -262,7 +250,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				/* Special attr/char codes */
 				a = da;
 				c = dc;
-			} else if (OPT(purple_uniques) && 
+			} else if (OPT(player, purple_uniques) && 
 					   rf_has(mon->race->flags, RF_UNIQUE)) {
 				/* Turn uniques purple if desired (violet, actually) */
 				a = COLOUR_VIOLET;
@@ -301,7 +289,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 		/* Get the "player" attr */
 		a = monster_x_attr[race->ridx];
-		if ((OPT(hp_changes_color)) && !(a & 0x80)) {
+		if ((OPT(player, hp_changes_color)) && !(a & 0x80)) {
 			switch(player->chp * 10 / player->mhp)
 			{
 			case 10:
@@ -345,11 +333,6 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 		/* Get the "player" char */
 		c = monster_x_char[race->ridx];
-	} else if (g->trapborder && (g->f_idx) && !(g->first_kind)
-			   && (use_graphics != GRAPHICS_NONE)) {
-		/* No overlay is used, so we can use the trap border overlay */
-		a = feat_x_attr[g->lighting][FEAT_DTRAP_WALL];
-		c = feat_x_char[g->lighting][FEAT_DTRAP_WALL];
 	}
 
 	/* Result */

@@ -93,7 +93,7 @@ void prt(const char *str, int row, int col);
  * ------------------------------------------------------------------------
  * Screen loading/saving
  * ------------------------------------------------------------------------ */
-s16b screen_save_depth;
+extern s16b screen_save_depth;
 void screen_save(void);
 void screen_load(void);
 bool textui_map_is_visible(void);

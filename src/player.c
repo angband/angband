@@ -29,17 +29,6 @@
 #include "z-color.h"
 #include "z-util.h"
 
-
-/**
- * The player other record (static)
- */
-static player_other player_other_body;
-
-/**
- * Pointer to the player other record
- */
-player_other *op_ptr = &player_other_body;
-
 /**
  * Pointer to the player struct
  */
@@ -48,18 +37,7 @@ struct player *player;
 struct player_body *bodies;
 struct player_race *races;
 struct player_class *classes;
-
-/**
- * Magic realms:
- * index, spell stat, verb, spell noun, book noun, realm name
- */
-struct magic_realm realms[REALM_MAX] =
-{
-	#define REALM(a, b, c, d, e, f) { REALM_##a, b, c, d, e, f },
-	#include "list-magic-realms.h"
-	#undef REALM
-};
-
+struct magic_realm *realms;
 
 /**
  * Base experience levels, may be adjusted up for race and/or class
@@ -120,7 +98,7 @@ const s32b player_exp[PY_MAX_LEVEL] =
 
 
 static const char *stat_name_list[] = {
-	#define STAT(a, b, c, d, e, f, g, h) #a,
+	#define STAT(a) #a,
 	#include "list-stats.h"
 	#undef STAT
 	"MAX",
@@ -146,12 +124,27 @@ const char *stat_idx_to_name(int type)
     return stat_name_list[type];
 }
 
+const struct magic_realm *lookup_realm(const char *name)
+{
+	struct magic_realm *realm = realms;
+	while (realm) {
+		if (!my_stricmp(name, realm->name)) {
+			return realm;
+		}
+		realm = realm->next;
+	}
+
+	/* Fail horribly */
+	quit_fmt("Failed to find %s magic realm", name);
+	return realm;
+}
+
 bool player_stat_inc(struct player *p, int stat)
 {
 	int v = p->stat_cur[stat];
 
 	if (v >= 18 + 100)
-		return FALSE;
+		return false;
 	if (v < 18) {
 		p->stat_cur[stat]++;
 	} else if (v < 18 + 90) {
@@ -169,12 +162,12 @@ bool player_stat_inc(struct player *p, int stat)
 		p->stat_max[stat] = p->stat_cur[stat];
 	
 	p->upkeep->update |= PU_BONUS;
-	return TRUE;
+	return true;
 }
 
 bool player_stat_dec(struct player *p, int stat, bool permanent)
 {
-	int cur, max, res = FALSE;
+	int cur, max, res = false;
 
 	cur = p->stat_cur[stat];
 	max = p->stat_max[stat];
@@ -248,17 +241,17 @@ static void adjust_level(struct player *p, bool verbose)
 		if (verbose) {
 			/* Log level updates */
 			strnfmt(buf, sizeof(buf), "Reached level %d", p->lev);
-			history_add(buf, HIST_GAIN_LEVEL, 0);
+			history_add(p, buf, HIST_GAIN_LEVEL);
 
 			/* Message */
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);
 		}
 
-		effect_simple(EF_RESTORE_STAT, "0", STAT_STR, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, "0", STAT_INT, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, "0", STAT_WIS, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, "0", STAT_DEX, 1, 0, NULL);
-		effect_simple(EF_RESTORE_STAT, "0", STAT_CON, 1, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_STR, 1, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_INT, 1, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_WIS, 1, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_DEX, 1, 0, NULL);
+		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_CON, 1, 0, NULL);
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&
@@ -275,7 +268,7 @@ void player_exp_gain(struct player *p, s32b amount)
 	p->exp += amount;
 	if (p->exp < p->max_exp)
 		p->max_exp += amount / 10;
-	adjust_level(p, TRUE);
+	adjust_level(p, true);
 }
 
 void player_exp_lose(struct player *p, s32b amount, bool permanent)
@@ -285,7 +278,7 @@ void player_exp_lose(struct player *p, s32b amount, bool permanent)
 	p->exp -= amount;
 	if (permanent)
 		p->max_exp -= amount;
-	adjust_level(p, TRUE);
+	adjust_level(p, true);
 }
 
 /**
@@ -308,7 +301,7 @@ byte player_hp_attr(struct player *p)
 	
 	if (p->chp >= p->mhp)
 		attr = COLOUR_L_GREEN;
-	else if (p->chp > (p->mhp * op_ptr->hitpoint_warn) / 10)
+	else if (p->chp > (p->mhp * p->opts.hitpoint_warn) / 10)
 		attr = COLOUR_YELLOW;
 	else
 		attr = COLOUR_RED;
@@ -322,7 +315,7 @@ byte player_sp_attr(struct player *p)
 	
 	if (p->csp >= p->msp)
 		attr = COLOUR_L_GREEN;
-	else if (p->csp > (p->msp * op_ptr->hitpoint_warn) / 10)
+	else if (p->csp > (p->msp * p->opts.hitpoint_warn) / 10)
 		attr = COLOUR_YELLOW;
 	else
 		attr = COLOUR_RED;
@@ -346,40 +339,44 @@ bool player_restore_mana(struct player *p, int amt) {
 
 /**
  * Return a version of the player's name safe for use in filesystems.
+ *
+ * XXX This does not belong here.
  */
-const char *player_safe_name(struct player *p, bool strip_suffix)
+void player_safe_name(char *safe, size_t safelen, const char *name, bool strip_suffix)
 {
-	static char buf[40];
-	int i;
-	int limit = 0;
+	size_t i;
+	size_t limit = 0;
 
-	if (op_ptr->full_name[0]) {
-		char *suffix = find_roman_suffix_start(op_ptr->full_name);
-		if (suffix)
-			limit = suffix - op_ptr->full_name - 1; /* -1 for preceding space */
-		else
-			limit = strlen(op_ptr->full_name);
+	if (name) {
+		char *suffix = find_roman_suffix_start(name);
+
+		if (suffix) {
+			limit = suffix - name - 1; /* -1 for preceding space */
+		} else {
+			limit = strlen(name);
+		}
 	}
 
+	/* Limit to maximum size of safename buffer */
+	limit = MIN(limit, safelen);
+
 	for (i = 0; i < limit; i++) {
-		char c = op_ptr->full_name[i];
+		char c = name[i];
 
 		/* Convert all non-alphanumeric symbols */
 		if (!isalpha((unsigned char)c) && !isdigit((unsigned char)c))
 			c = '_';
 
 		/* Build "base_name" */
-		buf[i] = c;
+		safe[i] = c;
 	}
 
 	/* Terminate */
-	buf[i] = '\0';
+	safe[i] = '\0';
 
 	/* Require a "base" name */
-	if (!buf[0])
-		my_strcpy(buf, "PLAYER", sizeof buf);
-
-	return buf;
+	if (!safe[0])
+		my_strcpy(safe, "PLAYER", safelen);
 }
 
 
@@ -395,6 +392,13 @@ static void init_player(void) {
 	player->upkeep->inven = mem_zalloc((z_info->pack_size + 1) * sizeof(struct object *));
 	player->upkeep->quiver = mem_zalloc(z_info->quiver_size * sizeof(struct object *));
 	player->timed = mem_zalloc(TMD_MAX * sizeof(s16b));
+	player->obj_k = object_new();
+	player->obj_k->brands = mem_zalloc(z_info->brand_max * sizeof(bool));
+	player->obj_k->slays = mem_zalloc(z_info->slay_max * sizeof(bool));
+	player->obj_k->curses = mem_zalloc(z_info->curse_max *
+									   sizeof(struct curse_data));
+
+	options_init_defaults(&player->opts);
 }
 
 /**
@@ -403,25 +407,38 @@ static void init_player(void) {
 static void cleanup_player(void) {
 	int i;
 
+	/* Free the history */
+	history_clear(player);
+
 	/* Free the things that are always initialised */
+	object_free(player->obj_k);
 	mem_free(player->timed);
 	mem_free(player->upkeep->quiver);
 	mem_free(player->upkeep->inven);
 	mem_free(player->upkeep);
 	player->upkeep = NULL;
 
-	/* Free the things that are only there if there is a loaded player -
-	 * checking if there are quests will suffice */
+	/* Free the things that are only sometimes initialised */
 	if (player->quests) {
 		player_quests_free(player);
+	}
+	if (player->spell_flags) {
 		player_spells_free(player);
+	}
+	if (player->gear) {
 		object_pile_free(player->gear);
 		object_pile_free(player->gear_k);
+	}
+	if (player->body.slots) {
 		for (i = 0; i < player->body.count; i++)
 			string_free(player->body.slots[i].name);
 		mem_free(player->body.slots);
-		string_free(player->body.name);
-		mem_free(player->history);
+	}
+	string_free(player->body.name);
+	string_free(player->history);
+	if (player->cave) {
+		cave_free(player->cave);
+		player->cave = NULL;
 	}
 
 	/* Free the basic player struct */

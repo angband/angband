@@ -50,117 +50,62 @@
  * Numerical index values for the different learned probabilities
  * These are to make the code more readable.
  */
-
 enum {
-	ART_IDX_BOW_SHOTS,
-	ART_IDX_BOW_MIGHT,
-	ART_IDX_BOW_BRAND,
-	ART_IDX_BOW_SLAY,
-
-	ART_IDX_WEAPON_HIT,
-	ART_IDX_WEAPON_DAM,
-
-	ART_IDX_NONWEAPON_HIT,
-	ART_IDX_NONWEAPON_DAM,
-	ART_IDX_NONWEAPON_HIT_DAM,
-	ART_IDX_NONWEAPON_BRAND,
-	ART_IDX_NONWEAPON_SLAY,
-	ART_IDX_NONWEAPON_BLOWS,
-	ART_IDX_NONWEAPON_SHOTS,
-
-	ART_IDX_MELEE_BLESS,
-	ART_IDX_MELEE_BRAND,
-	ART_IDX_MELEE_SLAY,
-	ART_IDX_MELEE_SINV,
-	ART_IDX_MELEE_BLOWS,
-	ART_IDX_MELEE_AC,
-	ART_IDX_MELEE_DICE,
-	ART_IDX_MELEE_WEIGHT,
-	ART_IDX_MELEE_TUNN,
-
-	ART_IDX_ALLARMOR_WEIGHT,
-
-	ART_IDX_BOOT_AC,
-	ART_IDX_BOOT_FEATHER,
-	ART_IDX_BOOT_STEALTH,
-	ART_IDX_BOOT_SPEED,
-
-	ART_IDX_GLOVE_AC,
-	ART_IDX_GLOVE_FA,
-	ART_IDX_GLOVE_DEX,
-
-	ART_IDX_HELM_AC,
-	ART_IDX_HELM_RBLIND,
-	ART_IDX_HELM_ESP,
-	ART_IDX_HELM_SINV,
-	ART_IDX_HELM_WIS,
-	ART_IDX_HELM_INT,
-
-	ART_IDX_SHIELD_AC,
-	ART_IDX_SHIELD_LRES,
-
-	ART_IDX_CLOAK_AC,
-	ART_IDX_CLOAK_STEALTH,
-
-	ART_IDX_ARMOR_AC,
-	ART_IDX_ARMOR_STEALTH,
-	ART_IDX_ARMOR_HLIFE,
-	ART_IDX_ARMOR_CON,
-	ART_IDX_ARMOR_LRES,
-	ART_IDX_ARMOR_ALLRES,
-	ART_IDX_ARMOR_HRES,
-
-	ART_IDX_GEN_STAT,
-	ART_IDX_GEN_SUST,
-	ART_IDX_GEN_STEALTH,
-	ART_IDX_GEN_SEARCH,
-	ART_IDX_GEN_INFRA,
-	ART_IDX_GEN_SPEED,
-	ART_IDX_GEN_IMMUNE,
-	ART_IDX_GEN_FA,
-	ART_IDX_GEN_HLIFE,
-	ART_IDX_GEN_FEATHER,
-	ART_IDX_GEN_LIGHT,
-	ART_IDX_GEN_SINV,
-	ART_IDX_GEN_ESP,
-	ART_IDX_GEN_SDIG,
-	ART_IDX_GEN_REGEN,
-	ART_IDX_GEN_LRES,
-	ART_IDX_GEN_RPOIS,
-	ART_IDX_GEN_RFEAR,
-	ART_IDX_GEN_RLIGHT,
-	ART_IDX_GEN_RDARK,
-	ART_IDX_GEN_RBLIND,
-	ART_IDX_GEN_RCONF,
-	ART_IDX_GEN_RSOUND,
-	ART_IDX_GEN_RSHARD,
-	ART_IDX_GEN_RNEXUS,
-	ART_IDX_GEN_RNETHER,
-	ART_IDX_GEN_RCHAOS,
-	ART_IDX_GEN_RDISEN,
-	ART_IDX_GEN_AC,
-	ART_IDX_GEN_TUNN,
-	ART_IDX_GEN_ACTIV,
-	ART_IDX_GEN_PSTUN,
-
-/* Supercharged abilities - treated differently in algorithm */
-
-	ART_IDX_MELEE_DICE_SUPER,
-	ART_IDX_BOW_SHOTS_SUPER,
-	ART_IDX_BOW_MIGHT_SUPER,
-	ART_IDX_GEN_SPEED_SUPER,
-	ART_IDX_MELEE_BLOWS_SUPER,
-	ART_IDX_GEN_AC_SUPER,
-
-/* Aggravation - weapon and nonweapon */
-	ART_IDX_WEAPON_AGGR,
-	ART_IDX_NONWEAPON_AGGR,
-
-/* Total of abilities */
-	ART_IDX_TOTAL
+	#define ART_IDX(a, b) ART_IDX_##a,
+	#include "list-randart-properties.h"
+	#undef ART_IDX
 };
 
+struct artifact_set_data {
+	/* Mean start and increment values for to_hit, to_dam and AC */
+	int hit_increment;
+	int dam_increment;
+	int hit_startval;
+	int dam_startval;
+	int ac_startval;
+	int ac_increment;
+
+	/* Data structures for learned probabilities */
+	int *art_probs;
+	int *tv_probs;
+	int *tv_num;
+	int bow_total;
+	int melee_total;
+	int boot_total;
+	int glove_total;
+	int headgear_total;
+	int shield_total;
+	int cloak_total;
+	int armor_total;
+	int other_total;
+	int total;
+	int neg_power_total;
+
+	/* Tval frequency values */
+	int *tv_freq;
+
+	/* Artifact power ratings */
+	int *base_power;
+	int max_power;
+	int min_power;
+	int avg_power;
+	int var_power;
+	int *avg_tv_power;
+	int *min_tv_power;
+	int *max_tv_power;
+
+	/* Base item levels */
+	int *base_item_level;
+
+	/* Base item rarities */
+	int *base_item_prob;
+
+	/* Artifact rarities */
+	int *base_art_alloc;
+};
+
+
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
-errr do_randart(u32b randart_seed, bool full);
+void do_randart(u32b randart_seed, bool create_file);
 
 #endif /* OBJECT_RANDART_H */

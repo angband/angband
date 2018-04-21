@@ -1,0 +1,310 @@
+# curse.txt
+
+# name: effect name
+# type: valid object base
+# combat: to_hit : to_dam : to_ac
+# effect: random effect : parameter (maybe) : parameter (maybe)
+# param:parameter:parameter (if needed)
+# dice:dice string
+# expr:dice expression
+# time: average frequency of random effect
+# flags: flag | flag | etc.
+# values: label[value] | label[value] | etc.
+# desc: description
+
+name:vulnerability
+combat:0:0:-50
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:shield
+flags:AGGRAVATE
+desc:attracts opponents and weakens the defences
+
+name:teleportation
+type:helm
+type:crown
+type:amulet
+type:ring
+effect:TELEPORT
+dice:40
+time:d100
+desc:randomly makes you teleport
+conflict:anti-teleportation
+
+name:dullness
+type:helm
+type:crown
+values:INT[-5] | WIS[-5]
+desc:makes you mentally slow
+
+name:sickliness
+type:helm
+type:crown
+values:STR[-5] | DEX[-5] | CON[-5]
+desc:makes you frail
+
+name:enveloping
+combat:-5:-5:20
+type:cloak
+desc:protects you at the expense of free movement
+
+name:irritation
+combat:-15:-15:0
+type:cloak
+flags:AGGRAVATE
+desc:annoys monsters and makes it hard for you to hit them
+
+name:weakness
+type:gloves
+values:STR[-10]
+desc:weakens your grasp
+
+name:clumsiness
+type:gloves
+values:DEX[-10]
+desc:gives you butterfingers
+
+name:slowness
+type:boots
+values:SPEED[-5]
+desc:drags at your feet
+
+name:annoyance
+type:boots
+values:SPEED[-10] | STEALTH[-10]
+flags:AGGRAVATE
+desc:wakes up and annoys nearby monsters, and delays your escape
+
+name:poison
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:TIMED_INC:POISONED
+dice:10+d10
+time:1d500
+desc:poisons you from time to time
+
+name:siren
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:WAKE
+time:100+1d50
+msg:A horn blares out!
+desc:occasionally makes a loud noise
+
+name:hallucination
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:TIMED_INC:IMAGE
+dice:10+d10
+time:1d500
+desc:makes you hallucinate sometimes
+
+name:paralysis
+type:bow
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:TIMED_INC:PARALYZED
+dice:5+1d5
+time:1d1000
+msg:Your equipment grabs you!
+desc:paralyses you every now and then
+
+name:dragon summon
+type:dragon armor
+effect:SUMMON:DRAGON
+dice:1
+time:1d500
+msg:Your armour lets out a cry...
+desc:sometimes summons a dragon
+
+name:demon summon
+type:digger
+type:hafted
+type:polearm
+type:sword
+effect:SUMMON:DEMON
+dice:1
+time:1d500
+msg:Your weapon gives out a demonic shriek!
+desc:occasionally summons a demon
+
+name:undead summon
+type:digger
+type:hafted
+type:polearm
+type:sword
+effect:SUMMON:UNDEAD
+dice:1
+time:1d500
+msg:Your weapon calls beyond the grave!
+desc:occasionally summons an undead
+
+name:impair mana recovery
+type:helm
+type:crown
+flags:IMPAIR_MANA
+desc:makes you slow to recover mana
+
+name:impair hitpoint recovery
+type:boots
+type:gloves
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+flags:IMPAIR_HP
+desc:makes you slow to recover hitpoints
+
+name:cowardice
+type:amulet
+type:ring
+flags:AFRAID
+desc:makes you too scared to fight
+
+name:stone
+type:amulet
+type:ring
+effect:TIMED_INC:STONESKIN
+dice:20+1d20
+time:1d1000
+desc:periodically turns your skin to stone
+
+name:anti-teleportation
+type:boots
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:amulet
+type:ring
+flags:NO_TELEPORT
+desc:prevents you from teleporting
+conflict:teleportation
+
+name:treacherous weapon
+type:digger
+type:hafted
+type:polearm
+type:sword
+effect:DAMAGE
+dice:$B
+expr:B:WEAPON_DAMAGE:+ 0
+time:1d200
+msg:Your weapon turns on you!
+desc:makes your weapon attack you
+
+name:burning up
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+values:RES_FIRE[-1] | RES_COLD[1]
+desc:makes you vulnerable to fire attacks, but resistant to cold
+conflict:chilled to the bone
+
+name:chilled to the bone
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+values:RES_FIRE[1] | RES_COLD[-1]
+desc:makes you vulnerable to cold attacks, but resistant to fire
+conflict:burning up
+
+name:steelskin
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:helm
+type:crown
+type:shield
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+combat:0:0:20
+values:RES_ELEC[-1] | RES_SHARD[1]
+desc:makes your skin harder to damage, but conduct electricity
+
+name:air swing
+combat:-20:0:0
+type:digger
+type:hafted
+type:polearm
+type:sword
+desc:makes it hard to hit anything
+

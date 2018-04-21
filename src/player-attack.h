@@ -29,13 +29,21 @@ struct attack_result {
 };
 
 /**
+ * A list of the different hit types and their associated special message
+ */
+struct hit_types {
+	u32b msg_type;
+	const char *text;
+};
+
+/**
  * ranged_attack is a function pointer, used to execute a kind of attack.
  *
  * This allows us to abstract details of throwing, shooting, etc. out while
  * keeping the core projectile tracking, monster cleanup, and display code
  * in common.
  */
-typedef struct attack_result (*ranged_attack) (struct object *obj, int y, int x);
+typedef struct attack_result (*ranged_attack) (struct player *p, struct object *obj, int y, int x);
 
 extern void do_cmd_fire(struct command *cmd);
 extern void do_cmd_fire_at_nearest(void);
@@ -44,7 +52,7 @@ extern void do_cmd_throw(struct command *cmd);
 
 extern int breakage_chance(const struct object *obj, bool hit_target);
 extern bool test_hit(int chance, int ac, int vis);
-extern void py_attack(int y, int x);
-int py_attack_hit_chance(const struct object *weapon);
+extern void py_attack(struct player *p, int y, int x);
+int py_attack_hit_chance(const struct player *p, const struct object *weapon);
 
 #endif /* !PLAYER_ATTACK_H */

@@ -80,7 +80,7 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 bool get_character_name(char *buf, size_t buflen);
 char get_char(const char *prompt, const char *options, size_t len,
 			  char fallback);
-bool (*get_file)(const char *suggested_name, char *path, size_t len);
+extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 bool get_com_ex(const char *prompt, ui_event *command);
 void pause_line(struct term *term);
 void textui_input_init(void);

@@ -21,6 +21,7 @@
 #include "cmd-core.h"
 #include "game-input.h"
 #include "mon-desc.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
@@ -84,10 +85,10 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 {
 	struct monster *mon = cave_monster(cave, m_idx);
 
-	bool living = TRUE;
+	bool living = true;
 
 	/* Determine if the monster is "living" (vs "undead") */
-	if (monster_is_unusual(mon->race)) living = FALSE;
+	if (monster_is_destroyed(mon)) living = false;
 
 	/* Assess health */
 	if (mon->hp >= mon->maxhp) {
@@ -110,6 +111,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 
 	/* Effect status */
 	if (mon->m_timed[MON_TMD_SLEEP]) my_strcat(buf, ", asleep", max);
+	if (mon->m_timed[MON_TMD_HOLD]) my_strcat(buf, ", held", max);
 	if (mon->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
 	if (mon->m_timed[MON_TMD_FEAR]) my_strcat(buf, ", afraid", max);
 	if (mon->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);
@@ -130,8 +132,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
  */
 bool target_able(struct monster *m)
 {
-	return m && m->race && mflag_has(m->mflag, MFLAG_VISIBLE) &&
-		!mflag_has(m->mflag, MFLAG_UNAWARE) &&
+	return m && m->race && monster_is_obvious(m) &&
 		projectable(cave, player->py, player->px, m->fy, m->fx, PROJECT_NONE) &&
 		!player->timed[TMD_IMAGE];
 }
@@ -141,12 +142,12 @@ bool target_able(struct monster *m)
 /**
  * Update (if necessary) and verify (if possible) the target.
  *
- * We return TRUE if the target is "okay" and FALSE otherwise.
+ * We return true if the target is "okay" and false otherwise.
  */
 bool target_okay(void)
 {
 	/* No target */
-	if (!target_set) return FALSE;
+	if (!target_set) return false;
 
 	/* Check "monster" targets */
 	if (target_who) {
@@ -156,15 +157,15 @@ bool target_okay(void)
 			target_x = target_who->fx;
 
 			/* Good target */
-			return TRUE;
+			return true;
 		}
 	} else if (target_x && target_y) {
 		/* Allow a direction without a monster */
-		return TRUE;
+		return true;
 	}
 
 	/* Assume no target */
-	return FALSE;
+	return false;
 }
 
 
@@ -175,20 +176,20 @@ bool target_set_monster(struct monster *mon)
 {
 	/* Acceptable target */
 	if (mon && target_able(mon)) {
-		target_set = TRUE;
+		target_set = true;
 		target_who = mon;
 		target_y = mon->fy;
 		target_x = mon->fx;
-		return TRUE;
+		return true;
 	}
 
 	/* Reset target info */
-	target_set = FALSE;
+	target_set = false;
 	target_who = NULL;
 	target_y = 0;
 	target_x = 0;
 
-	return FALSE;
+	return false;
 }
 
 
@@ -200,7 +201,7 @@ void target_set_location(int y, int x)
 	/* Legal target */
 	if (square_in_bounds_fully(cave, y, x)) {
 		/* Save target info */
-		target_set = TRUE;
+		target_set = true;
 		target_who = NULL;
 		target_y = y;
 		target_x = x;
@@ -208,7 +209,7 @@ void target_set_location(int y, int x)
 	}
 
 	/* Reset target info */
-	target_set = FALSE;
+	target_set = false;
 	target_who = 0;
 	target_y = 0;
 	target_x = 0;
@@ -318,36 +319,33 @@ bool target_accept(int y, int x)
 	struct object *obj;
 
 	/* Player grids are always interesting */
-	if (cave->squares[y][x].mon < 0) return (TRUE);
+	if (cave->squares[y][x].mon < 0) return (true);
 
 	/* Handle hallucination */
-	if (player->timed[TMD_IMAGE]) return (FALSE);
+	if (player->timed[TMD_IMAGE]) return (false);
 
-	/* Visible monsters */
+	/* Obvious monsters */
 	if (cave->squares[y][x].mon > 0) {
 		struct monster *mon = square_monster(cave, y, x);
-
-		/* Visible monsters */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE) &&
-			!mflag_has(mon->mflag, MFLAG_UNAWARE))
-			return (TRUE);
+		if (monster_is_obvious(mon))
+			return (true);
 	}
 
 	/* Traps */
 	if (square_isvisibletrap(cave, y, x))
-		return(TRUE);
+		return(true);
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next)
+	for (obj = square_object(player->cave, y, x); obj; obj = obj->next)
 		/* Memorized object */
-		if (obj->marked && !ignore_item_ok(obj)) return (TRUE);
+		if (!ignore_known_item_ok(obj)) return (true);
 
 	/* Interesting memorized features */
-	if (square_ismark(cave, y, x) && square_isinteresting(cave, y, x))
-		return (TRUE);
+	if (square_isknown(cave, y, x) && square_isinteresting(cave, y, x))
+		return (true);
 
 	/* Nope */
-	return (FALSE);
+	return (false);
 }
 
 /**
@@ -408,7 +406,7 @@ bool target_sighted(void)
 			 /* either the target is a grid and is visible, or it is a monster
 			  * that is visible */
 		((!target_who && square_isseen(cave, target_y, target_x)) ||
-			 (target_who && mflag_has(target_who->mflag, MFLAG_VISIBLE)));
+		 (target_who && monster_is_visible(target_who)));
 }
 
 
@@ -475,7 +473,7 @@ bool target_set_closest(int mode)
 	if (point_set_size(targets) < 1) {
 		msg("No Available Target.");
 		point_set_dispose(targets);
-		return FALSE;
+		return false;
 	}
 
 	/* Find the first monster in the queue */
@@ -487,7 +485,7 @@ bool target_set_closest(int mode)
 	if (!target_able(mon)) {
 		msg("No Available Target.");
 		point_set_dispose(targets);
-		return FALSE;
+		return false;
 	}
 
 	/* Target the monster */
@@ -501,5 +499,5 @@ bool target_set_closest(int mode)
 	target_set_monster(mon);
 
 	point_set_dispose(targets);
-	return TRUE;
+	return true;
 }

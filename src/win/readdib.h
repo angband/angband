@@ -9,6 +9,8 @@
 #ifndef INCLUDED_READDIB_H
 #define INCLUDED_READDIB_H
 
+#include <stdbool.h>
+
 /**
  * Information about a bitmap
  */
@@ -25,7 +27,7 @@ typedef struct {
 /**
  * Read a DIB from a file
  */
-extern BOOL ReadDIB(HWND, LPSTR, DIBINIT *);
+extern bool ReadDIB(HWND, LPSTR, DIBINIT *);
 
 /**
  * Free a DIB
@@ -35,7 +37,7 @@ extern void FreeDIB(DIBINIT *dib);
 /**
  * New png stuff
  */
-extern BOOL ReadDIB_PNG(HWND, LPSTR, DIBINIT *);
-extern BOOL ReadDIB2_PNG(HWND, LPSTR, DIBINIT *, DIBINIT *, BOOL);
+extern bool ReadDIB_PNG(HWND, LPSTR, DIBINIT *);
+extern bool ReadDIB2_PNG(HWND, LPSTR, DIBINIT *, DIBINIT *, bool);
 
 #endif /* !INCLUDED_READDIB_H */

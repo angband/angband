@@ -1,0 +1,80 @@
+# brand.txt
+
+# code: code for brand to use in object data files
+# name: name of element of the brand
+# multiplier: slay multiplier applied to damage dice
+# power: weighting in object power calculations (100 is neutral)
+# verb: verb used when a susceptible monster is hit
+# resist-flag: monster race flag for resist to the brand element
+
+# This file encodes the brands that can appear on object.
+
+code:ACID_3
+name:acid
+verb:dissolve
+multiplier:3
+power:161
+resist-flag:IM_ACID
+
+code:ELEC_3
+name:lightning
+verb:shock
+multiplier:3
+power:116
+resist-flag:IM_ELEC
+
+code:FIRE_3
+name:fire
+verb:burn
+multiplier:3
+power:113
+resist-flag:IM_FIRE
+
+code:COLD_3
+name:cold
+verb:freeze
+multiplier:3
+power:119
+resist-flag:IM_COLD
+
+code:POIS_3
+name:poison
+verb:poison
+multiplier:3
+power:122
+resist-flag:IM_POIS
+
+code:ACID_2
+name:acid
+verb:corrode
+multiplier:2
+power:130
+resist-flag:IM_ACID
+
+code:ELEC_2
+name:lightning
+verb:zap
+multiplier:2
+power:108
+resist-flag:IM_ELEC
+
+code:FIRE_2
+name:fire
+verb:singe
+multiplier:2
+power:107
+resist-flag:IM_FIRE
+
+code:COLD_2
+name:cold
+verb:chill
+multiplier:2
+power:109
+resist-flag:IM_COLD
+
+code:POIS_2
+name:poison
+verb:sicken
+multiplier:2
+power:111
+resist-flag:IM_POIS

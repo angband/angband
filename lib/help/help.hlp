@@ -18,7 +18,7 @@ Browser/help commands:
   #     go to line         %  go to file         ?  go to last file/main menu
   SPACE advance 1 page     -  back up 1 page     /  search for text
   RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
-  +     advance 1/2 page   _  back up 1/2 page   !  toggle case sentitivity
+  +     advance 1/2 page   _  back up 1/2 page   !  toggle case sensitivity
   
 .. menu:: [a] general.txt
 

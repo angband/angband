@@ -312,10 +312,10 @@ desc:cures blindness and gives you telepathy for 9d9+24 turns
 
 name:ENLIGHTENMENT
 aim:0
-power:22
-effect:ENLIGHTENMENT
+power:25
+effect:LIGHT_LEVEL
 dice:1
-desc:completely lights up and magically maps the level
+desc:completely lights up and magically maps the level, detecting all objects
 
 
 name:HERO
@@ -400,22 +400,6 @@ effect:SENSE_OBJECTS
 dice:22d40
 desc:detects gold and objects nearby
 
-name:DETECT_TRAP
-aim:0
-power:6
-effect:DETECT_TRAPS
-dice:22d40
-desc:detects traps nearby
-
-name:DETECT_DOORSTAIR
-aim:0
-power:6
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:detects doors and stairs nearby
-
 name:DETECT_INVIS
 aim:0
 power:6
@@ -434,12 +418,6 @@ name:DETECT_ALL
 aim:0
 power:10
 msg:{name} forms an image in your mind...
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -448,61 +426,65 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:detects treasure, traps, doors, stairs, and all creatures nearby
+effect:MAP_AREA
+dice:11d11
+desc:detects treasure and all creatures and maps an area nearby
 
+name:DETECT_OBJECTS
+aim:0
+power:10
+effect:DETECT_OBJECTS
+dice:22d40
+desc:detects all objects in the immediate area.
 
 name:ENCHANT_TOHIT
 aim:0
 power:15
 effect:ENCHANT:TOHIT
 dice:1
-desc:attempts to magically enhance a weapon's to-hit bonus.  Also gives a chance to break a curse
+desc:attempts to magically enhance a weapon's to-hit bonus.
 
 name:ENCHANT_TODAM
 aim:0
 power:20
 effect:ENCHANT:TODAM
 dice:1
-desc:attempts to magically enhance a weapon's to-dam bonus.  Also gives a chance to break a curse
+desc:attempts to magically enhance a weapon's to-dam bonus.
 
 name:ENCHANT_WEAPON
 aim:0
 power:22
 effect:ENCHANT:TOBOTH
 dice:1d3
-desc:attempts to magically enhance a weapon both to-hit and to-dam.  Also gives a chance to break a curse
+desc:attempts to magically enhance a weapon both to-hit and to-dam.
 
 name:ENCHANT_ARMOR
 aim:0
 power:12
 effect:ENCHANT:TOAC
 dice:1
-desc:attempts to magically enhance a piece of armour.  Also gives a chance to break a curse
+desc:attempts to magically enhance a piece of armour.
 
 name:ENCHANT_ARMOR2
 aim:0
 power:15
 effect:ENCHANT:TOAC
 dice:2+1d3
-desc:attempts to magically enhance a piece of armour with high chance of success.  Also gives a chance to break a curse
-
-name:IDENTIFY
-aim:0
-power:9
-effect:IDENTIFY
-desc:reveals to you the extent of an item's magical powers
+desc:attempts to magically enhance a piece of armour with high chance of success.
 
 name:REMOVE_CURSE
 aim:0
-power:20000
+power:8
 effect:REMOVE_CURSE
-desc:removes all ordinary curses from all equipped items
+dice:20+d20
+desc:attempts to remove a curse from an item
 
 name:REMOVE_CURSE2
 aim:0
-power:20000
-effect:REMOVE_ALL_CURSE
-desc:removes all curses from all equipped items
+power:20
+effect:REMOVE_CURSE
+dice:50+d50
+desc:Makes a strong attempt to remove a curse from an item
 
 name:LIGHT
 aim:0
@@ -555,12 +537,12 @@ effect:RUNE
 desc:inscribes a glyph of warding beneath you, which monsters cannot move onto
 
 
-name:DESTROY_TDOORS
+name:DESTROY_DOORS
 aim:0
 power:6
 msg:Your {kind} glow{s} bright red...
 effect:TOUCH:KILL_DOOR
-desc:destroys all traps and doors surrounding you
+desc:destroys all doors surrounding you
 
 name:RECHARGE
 aim:0
@@ -645,24 +627,23 @@ desc:destroys an area around you in the shape of a circle radius 15, and blinds 
 name:LOSSLOW
 aim:0
 power:7
-effect:PROJECT_LOS:OLD_SLOW
+effect:PROJECT_LOS:MON_SLOW
 dice:20
 desc:slows all non-unique monsters within line of sight
 
 name:LOSSLEEP
 aim:0
 power:8
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:sleeps all non-unique creatures within line of sight
 
 name:LOSCONF
 aim:0
 power:10
-effect:PROJECT_LOS:OLD_CONF
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+effect:PROJECT_LOS:MON_CONF
+dice:5+1d5
 desc:confuses all non-unique creatures within line of sight
 
 name:LOSKILL
@@ -683,16 +664,10 @@ desc:lights up the surrounding area, hurting light-sensitive creatures
 
 name:CLAIRVOYANCE
 aim:0
-power:23
+power:22
 msg:The {kind} form{s} an image in your mind...
-effect:ENLIGHTENMENT
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:maps the entire level and detects nearby objects, traps, doors, and stairs
+effect:LIGHT_LEVEL
+desc:lights and maps the entire level, sensing objects
 
 name:PROBING
 aim:0
@@ -761,9 +736,9 @@ name:SLEEPII
 aim:0
 power:8
 msg:{name} glows deep blue...
-effect:TOUCH_AWARE:OLD_SLEEP
+effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:puts to sleep the monsters around you
 
 name:STAR_BALL
@@ -973,7 +948,7 @@ name:DRAIN_LIFE1
 aim:1
 power:9
 msg:{name} glows white...
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:90
 desc:drains up to 90 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
@@ -981,21 +956,21 @@ name:DRAIN_LIFE2
 aim:1
 power:10
 msg:Your {kind} glow{s} black...
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:120
 desc:drains up to 120 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
 name:DRAIN_LIFE3
 aim:1
 power:11
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:150
 desc:drains up to 150 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
 name:DRAIN_LIFE4
 aim:1
 power:12
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:250
 desc:drains up to 250 hit points of life from a target creature.  Does not affect undead, demons, golems, elementals or vortices
 
@@ -1059,30 +1034,30 @@ name:CONFUSE2
 aim:1
 power:3
 msg:{name} glows in scintillating colours...
-effect:BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:MON_CONF
 dice:20
 desc:confuses a target monster
 
 name:MON_SLOW
 aim:1
 power:3
-effect:BOLT_AWARE:OLD_SLOW
+effect:BOLT_AWARE:MON_SLOW
 dice:20
 desc:attempts to magically slow a single monster
 
 name:MON_CONFUSE
 aim:1
 power:3
-effect:BOLT_AWARE:OLD_CONF
+effect:BOLT_AWARE:MON_CONF
 dice:10
 desc:attempts to magically confuse a single monster
 
 name:MON_SLEEP
 aim:1
 power:3
-effect:BOLT_AWARE:OLD_SLEEP
+effect:BOLT_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:attempts to induce magical sleep in a single monster
 
 name:MON_SCARE
@@ -1101,22 +1076,22 @@ effect:LINE:LIGHT_WEAK
 dice:6d8
 desc:lights up part of the dungeon in a straight line
 
-name:DISARMING
+name:DISABLE_TRAPS
 aim:1
 power:7
 effect:ALTER:KILL_TRAP
-desc:destroys traps, unlocks doors and reveals all secret doors in a given direction
+desc:disables traps, unlocks doors and reveals all secret doors in a given direction
 
-name:TDOOR_DEST
+name:DOOR_DEST
 aim:1
 power:5
 effect:ALTER:KILL_DOOR
-desc:destroys traps and doors
+desc:destroys doors
 
 name:POLYMORPH
 aim:1
 power:7
-effect:BOLT_AWARE:OLD_POLY
+effect:BOLT_AWARE:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:polymorphs a monster into another kind of creature
@@ -1160,17 +1135,17 @@ aim:1
 power:12
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:3
+effect:BREATH:ACID:30
 dice:200
-effect:BREATH:ELEC:3
+effect:BREATH:ELEC:30
 dice:160
-effect:BREATH:FIRE:3
+effect:BREATH:FIRE:30
 dice:200
-effect:BREATH:COLD:3
+effect:BREATH:COLD:30
 dice:160
-effect:BREATH:POIS:3
+effect:BREATH:POIS:30
 dice:120
-desc:shoots a large ball of one of the base elements for 120-200 damage
+desc:shoots a large cone of one of the base elements for 120-200 damage
 
 name:STAFF_MAGI
 aim:0
@@ -1206,9 +1181,9 @@ aim:1
 power:8
 effect:RANDOM
 dice:2
-effect:BREATH:FIRE
+effect:BREATH:FIRE:30
 dice:80
-effect:BREATH:COLD
+effect:BREATH:COLD:30
 dice:80
 desc:causes you to breathe either cold or flames for 80 damage
 
@@ -1317,21 +1292,21 @@ desc:grants electricity resistance for d20+20 turns and creates a lightning ball
 name:DRAGON_BLUE
 aim:1
 power:18
-effect:BREATH:ELEC:2
+effect:BREATH:ELEC:20
 dice:150
 desc:allows you to breathe lightning for 150 damage
 
 name:DRAGON_GREEN
 aim:1
 power:19
-effect:BREATH:POIS:2
+effect:BREATH:POIS:20
 dice:150
 desc:allows you to breathe poison gas for 150 damage
 
 name:DRAGON_RED
 aim:1
 power:20
-effect:BREATH:FIRE:2
+effect:BREATH:FIRE:20
 dice:200
 desc:allows you to breathe fire for 200 damage
 
@@ -1340,22 +1315,22 @@ aim:1
 power:20
 effect:RANDOM
 dice:5
-effect:BREATH:ACID:2
+effect:BREATH:ACID:20
 dice:250
-effect:BREATH:ELEC:2
+effect:BREATH:ELEC:20
 dice:250
-effect:BREATH:FIRE:2
+effect:BREATH:FIRE:20
 dice:250
-effect:BREATH:COLD:2
+effect:BREATH:COLD:20
 dice:250
-effect:BREATH:POIS:2
+effect:BREATH:POIS:20
 dice:250
 desc:allows you to breathe the elements for 250 damage
 
 name:DRAGON_GOLD
 aim:1
 power:19
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:150
 desc:allows you to breathe sound for 150 damage
 
@@ -1364,9 +1339,9 @@ aim:1
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:CHAOS:2
+effect:BREATH:CHAOS:20
 dice:220
-effect:BREATH:DISEN:2
+effect:BREATH:DISEN:20
 dice:220
 desc:allows you to breathe chaos or disenchantment for 220 damage
 
@@ -1375,9 +1350,9 @@ aim:1
 power:23
 effect:RANDOM
 dice:2
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:230
-effect:BREATH:SHARD:2
+effect:BREATH:SHARD:20
 dice:230
 desc:allows you to breathe sound or shards for 230 damage
 
@@ -1386,13 +1361,13 @@ aim:1
 power:24
 effect:RANDOM
 dice:4
-effect:BREATH:SOUND:2
+effect:BREATH:SOUND:20
 dice:250
-effect:BREATH:SHARD:2
+effect:BREATH:SHARD:20
 dice:250
-effect:BREATH:CHAOS:2
+effect:BREATH:CHAOS:20
 dice:250
-effect:BREATH:DISEN:2
+effect:BREATH:DISEN:20
 dice:250
 desc:allows you to breathe balance for 250 damage
 
@@ -1401,15 +1376,15 @@ aim:1
 power:21
 effect:RANDOM
 dice:2
-effect:BREATH:LIGHT:2
+effect:BREATH:LIGHT:20
 dice:200
-effect:BREATH:DARK:2
+effect:BREATH:DARK:20
 dice:200
 desc:allows you to breathe light or darkness for 200 damage
 
 name:DRAGON_POWER
 aim:1
 power:25
-effect:BREATH:MISSILE:2
+effect:BREATH:MISSILE:20
 dice:300
 desc:allows you to breathe for 300 damage

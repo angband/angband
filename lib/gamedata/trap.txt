@@ -1,24 +1,69 @@
-#trap.txt
+# File: trap.txt
 
-#This file contains rune and trap definitions
+# This file contains rune and trap definitions
 
-#name: index: name: short description
-#graphics: ASCII char used to represent the feature: color symbol
-#appear: rarity: minimum depth: maximum number on level
-#flags: trap flags
-#effect: trap effect
-#desc: description
+### Understanding trap.txt ###
 
-name:0:no trap:no trap
+# name: name: short description
+# graphics: ASCII char used to represent the feature: color symbol
+# appear: rarity: minimum depth: maximum number on level
+# visibility: player trap visibility value
+# desc: description
+
+# flags: trap flags
+#    These include:
+#    - DOWN: after running effects, drops the player down a dungeon level
+#    - ONEITME: after running effects, trap disappears
+#    - MAGICAL: uses the magic disarm skill - other traps use physical disarm
+#    - VISIBLE: trap will not be hidden when generated
+#    - FLOOR: * can be set on the floor
+#    - TRAP: * is a trap
+#
+#    Flags marked '*' must be set for a trap to be generated as part of
+#    normal dungeon generation.
+#
+#    See list-trap-flags.h for a full list.
+
+# msg: activation message
+#    This is shown to the user when the trap is triggered.
+
+# save: object flags that provide a saving throw
+# msg-good: save message
+# msg-bad: fail to save message
+#    There are two ways to give the player a chance of avoiding the trap:
+#
+#    1. If the 'save' line is provided, then if player has the flags
+#       specified on the 'save' line, the trap is avoided, and/or
+#    2. If the 'msg-bad' line is provided, then a roll is made against the
+#       player's AC, which if successful avoids the trap.
+#
+#    If the trap is avoided, the 'msg-good' line is printed instead.  If it
+#    isn't, 'msg-bad' is printed.
+
+# effect: trap effect
+# dice: dice string for effect
+# expr: dice expression for effect
+#    If there is no saving throw, or it fails, then these effects are
+#    triggered.
+
+# msg-xtra: extra effect message
+# effect-xtra: extra effect
+# dice-xtra: dice string for extra effect
+# expr-xtra: dice expression for extra effect
+#    If there is no saving throw, or it fails, then these effects are
+#    also triggered 50% of the time.  If they are triggered, the 'msg-xtra'
+#    line is printed, if present.
+
+name:no trap:no trap
 graphics: :w
 
-name:3:glyph of warding:glyph of warding
+name:glyph of warding:glyph of warding
 graphics:;:y
 appear:0:0:0
 flags:RUNE | VISIBLE | FLOOR
 desc:A magical rune which monsters cannot pass without difficulty.
 
-name:4:door lock:door lock
+name:door lock:door lock
 graphics: :w
 appear:0:0:0
 flags:LOCK | INVISIBLE
@@ -26,162 +71,495 @@ desc:A device which makes a closed door harder to open.
 
 ## Player traps ##
 
-# 0x10 --> visible trap -- trap door
+# trap door
 
-name:16:trap door:trap door
+name:trap door:trap door
 graphics:^:w
-appear:0:2:0
+appear:1:2:0
+visibility:2d10M50
 flags:TRAP | FLOOR | DOWN
-effect:TRAP_DOOR
+effect:DAMAGE
 dice:2d8
+save:FEATHER
 desc:It looks like floor, but step incautiously and you will fall through.
+msg:You fall through a trap door!
+msg-good:You float gently down to the next level.
 
-# 0x11 --> visible trap -- open pit
+# open pit
 
-name:17:pit:pit
+name:pit:pit
 graphics:^:s
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_PIT
+appear:1:2:0
+visibility:90
+flags:TRAP | FLOOR | PIT
+effect:DAMAGE
 dice:2d6
+save:FEATHER
 desc:A hole dug to snare the unwary.
+msg:You fall into a pit!
+msg-good:You float gently to the bottom of the pit.
 
-# 0x12 --> visible trap -- spiked pit
+# spiked pit
 
-name:18:pit:spiked pit
+name:pit:spiked pit
 graphics:^:s
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_PIT_SPIKES
+appear:1:2:0
+visibility:80
+flags:TRAP | FLOOR | PIT
+effect:DAMAGE
 dice:2d6
+effect-xtra:DAMAGE
+dice-xtra:2d6
+effect-xtra:TIMED_INC:CUT
+dice-xtra:4d6
+save:FEATHER
 desc:A hole dug to snare the unwary, with spikes.
+msg:You fall into a spiked pit!
+msg-good:You float gently to the bottom of the pit, neatly avoiding the spikes.
+msg-xtra:You are impaled!
 
-# 0x13 --> visible trap -- poison pit
+# poison pit
 
-name:19:pit:poison pit
+name:pit:poison pit
 graphics:^:s
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_PIT_POISON
+appear:1:2:0
+visibility:70
+flags:TRAP | FLOOR | PIT
+effect:DAMAGE
 dice:2d6
+effect-xtra:TIMED_INC:CUT
+dice-xtra:4d6
+effect-xtra:TIMED_INC:POISONED
+dice-xtra:8d6
+save:FEATHER
 desc:A hole dug to snare the unwary, with poisoned spikes.
+msg:You fall into a spiked pit!
+msg-good:You float gently to the bottom of the pit, neatly avoiding the spikes.
+msg-xtra:You are impaled on poisonous spikes!
 
-# 0x14 --> visible trap -- rune -- summon
+### 14
 
-name:20:strange rune:summon rune
+# rune -- summon (OoD) monster
+
+name:strange rune:rune of summon foe
 graphics:^:B
-appear:0:3:0
-flags:TRAP | FLOOR 
-effect:TRAP_RUNE_SUMMON
+appear:1:3:0
+visibility:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON:MONSTER:5
+dice:1
+desc:A magical rune which calls a monster to attack you.
+msg:A new foe appears from nowhere!
+visibility:0
+
+# rune -- summon monsters
+
+name:strange rune:rune of summoning
+graphics:^:B
+appear:2:3:0
+visibility:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON
 dice:2+1d3
 desc:A magical rune which calls up monsters to attack you.
+msg:You are enveloped in a cloud of smoke!
 
-# 0x15 --> visible trap -- rune -- teleport
+# rune -- summon undead
 
-name:21:strange rune:teleport rune
+name:strange rune:rune of necromancy
+graphics:^:B
+appear:1:20:0
+visibility:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON:UNDEAD
+dice:1d3M2
+desc:A magical rune which calls the undead to attack you.
+msg:A sense of dread washes over you...
+
+# rune -- summon dragons
+
+name:strange rune:rune of dragonsong
+graphics:^:B
+appear:1:20:0
+visibility:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON:DRAGON
+dice:1d3
+desc:A magical rune which calls dragons to attack you.
+msg:You hear a dragon's call!
+
+# rune -- summon demons
+
+name:strange rune:hellhole
+graphics:^:B
+appear:1:20:0
+visibility:0
+flags:TRAP | FLOOR | ONETIME | MAGICAL
+effect:SUMMON:DEMON
+dice:1+1d3
+desc:A magical rune which calls demons to attack you.
+msg:Demons appear!
+visibility:0
+
+### 20
+
+# rune -- teleport
+
+name:strange rune:teleport rune
 graphics:^:o
-appear:0:1:0
-flags:TRAP | FLOOR 
-effect:TRAP_RUNE_TELEPORT
+appear:1:1:0
+visibility:30+d30
+flags:TRAP | FLOOR | MAGICAL
+effect:TELEPORT
 dice:100
 desc:A magical rune which teleports you to a random location.
+msg:You hit a teleport trap!
 
-# 0x16 --> visible trap -- spot -- fire
+# spot -- fire
 
-name:22:discolored spot:fire trap
+name:discolored spot:fire trap
 graphics:^:u
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_SPOT_FIRE
-dice:4d6
+appear:1:2:0
+visibility:20
+flags:TRAP | FLOOR | MAGICAL
+effect:SPOT:FIRE:0
+dice:4d$S
+expr:S:DUNGEON_LEVEL:/ 2
 desc:A strange coloured spot on the ground - beware its fiery attack.
+msg:You are enveloped in flames!
 
-# 0x17 --> visible trap -- spot -- acid
+# spot -- acid
 
-name:23:discolored spot:acid trap
+name:discolored spot:acid trap
 graphics:^:u
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_SPOT_ACID
-dice:4d6
+appear:1:2:0
+visibility:0
+flags:TRAP | FLOOR | MAGICAL
+effect:SPOT:ACID:0
+dice:4d$S
+expr:S:DUNGEON_LEVEL:/ 2
 desc:A strange coloured spot on the ground - beware its acidic attack.
+msg:You are splashed with acid!
 
-# 0x18 --> visible trap -- dart -- slow
+# dart -- slow
 
-name:24:dart trap:slow dart
+name:dart trap:slow dart
 graphics:^:r
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_DART_SLOW
+appear:1:2:0
+visibility:M50
+flags:TRAP | FLOOR | SAVE_ARMOR
+effect:DAMAGE
+dice:1d4
+effect:TIMED_INC_NO_RES:SLOW
+dice:20+1d20
 desc:A trap which shoots slowing darts.
+msg-good:A small dart barely misses you.
+msg-bad:A small dart hits you!
 
-# 0x19 --> visible trap -- dart -- lose str
+# dart -- lose str
 
-name:25:dart trap:strength loss dart
+name:dart trap:strength loss dart
 graphics:^:r
-appear:0:6:0
-flags:TRAP | FLOOR 
-effect:TRAP_DART_LOSE_STR
+appear:2:6:0
+visibility:30
+flags:TRAP | FLOOR | SAVE_ARMOR
+effect:DAMAGE
+dice:1d4
+effect:DRAIN_STAT:STR
 desc:A trap which shoots damaging darts.
+msg-good:A small dart barely misses you.
+msg-bad:A small dart hits you!
 
-# 0x1A --> visible trap -- dart -- lose dex
+# dart -- lose dex
 
-name:26:dart trap:dexterity loss dart
+name:dart trap:dexterity loss dart
 graphics:^:r
-appear:0:6:0
-flags:TRAP | FLOOR 
-effect:TRAP_DART_LOSE_DEX
+appear:2:6:0
+visibility:30
+flags:TRAP | FLOOR | SAVE_ARMOR
+effect:DAMAGE
+dice:1d4
+effect:DRAIN_STAT:DEX
 desc:A trap which shoots damaging darts.
+msg-good:A small dart barely misses you.
+msg-bad:A small dart hits you!
 
-# 0x1B --> visible trap -- dart -- lose con
+# dart -- lose con
 
-name:27:dart trap:constitution loss dart
+name:dart trap:constitution loss dart
 graphics:^:r
-appear:0:6:0
-flags:TRAP | FLOOR 
-effect:TRAP_DART_LOSE_CON
+appear:2:6:0
+visibility:30
+flags:TRAP | FLOOR | SAVE_ARMOR
+effect:DAMAGE
+dice:1d4
+effect:DRAIN_STAT:CON
 desc:A trap which shoots damaging darts.
+msg-good:A small dart barely misses you.
+msg-bad:A small dart hits you!
 
-# 0x1C --> visible trap -- gas -- blind
+# gas -- blind
 
-name:28:gas trap:blinding gas trap
+name:gas trap:blinding gas trap
 graphics:^:g
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_GAS_BLIND
+appear:1:2:0
+visibility:20+d5
+flags:TRAP | FLOOR
+effect:TIMED_INC:BLIND
+dice:25+1d50
 desc:A trap that releases gas to blind you.
+msg:You are surrounded by a black gas!
 
-# 0x1D --> visible trap -- gas -- confuse
+# gas -- confuse
 
-name:29:gas trap:confusion gas trap
+name:gas trap:confusion gas trap
 graphics:^:g
-appear:0:1:0
-flags:TRAP | FLOOR 
-effect:TRAP_GAS_CONFUSE
+appear:1:1:0
+visibility:20+d5
+flags:TRAP | FLOOR
+effect:TIMED_INC:CONFUSED
+dice:10+1d20
 desc:A trap that releases gas to confuse you.
+msg:You are surrounded by a gas of scintillating colors!
 
-# 0x1E --> visible trap -- gas -- poison
+# gas -- poison
 
-name:30:gas trap:poison gas trap
+name:gas trap:poison gas trap
 graphics:^:g
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_GAS_POISON
+appear:1:2:0
+visibility:20+d5
+flags:TRAP | FLOOR
+effect:TIMED_INC:POISONED
+dice:10+1d20
 desc:A trap that releases gas to poison you.
+msg:You are surrounded by a pungent green gas!
 
-# 0x1F --> visible trap -- gas -- sleep
+# gas -- sleep
 
-name:31:gas trap:sleep gas trap
+name:gas trap:sleep gas trap
 graphics:^:g
-appear:0:2:0
-flags:TRAP | FLOOR 
-effect:TRAP_GAS_SLEEP
+appear:1:2:0
+visibility:20+d5
+flags:TRAP | FLOOR
+effect:TIMED_INC:PARALYZED
+dice:5+1d10
 desc:A trap that releases gas to put you to sleep.
+msg:You are surrounded by a strange white mist!
 
-# ideas from v4:
-#
-# alarm
-# trap spawner
-# earthquake
-# summon2 (dlev26) & 3 (dlev50)
-# phase & teleport-max also
+# alarm -- aggravation
+
+name:alarm:aggravation trap
+graphics:^:R
+appear:1:5:0
+visibility:M50
+flags:TRAP | FLOOR | MAGICAL
+effect:WAKE
+effect:PROJECT_LOS:MON_SPEED
+dice:25
+desc:A trap that wakes nearby monsters and impels them toward you.
+msg:A high-pitched whistle blares through the dungeon!
+
+# explosion -- mine
+
+name:explosion:mine trap
+graphics:^:M
+appear:1:15:0
+visibility:10+d5
+flags:TRAP | FLOOR | ONETIME
+effect:SPOT:SHARD:2
+dice:$B
+expr:B:DUNGEON_LEVEL:* 2
+desc:A trap that blows up the floor.
+msg:The floor explodes around you!
+
+# explosion -- blast
+
+name:explosion:blast trap
+graphics:^:M
+appear:2:25:0
+visibility:0
+flags:TRAP | FLOOR | ONETIME
+effect:SPOT:LIGHT:1
+dice:2d6
+effect:SPOT:SOUND:2
+dice:$B
+expr:B:DUNGEON_LEVEL:/ 2
+effect:SPOT:FIRE:2
+dice:$B
+expr:B:DUNGEON_LEVEL:+ 0
+effect:SPOT:FORCE:2
+dice:$B
+expr:B:DUNGEON_LEVEL:+ 0
+desc:A trap that creates an explosion.
+msg:The air seems to catch fire!
+
+# mental assault -- mind blast
+
+name:mind blast trap:mind blasting trap
+graphics:^:G
+appear:1:20:0
+visibility:30+d10
+flags:TRAP | FLOOR | MAGICAL | SAVE_THROW
+effect:DAMAGE
+dice:8d$S
+expr:S:DUNGEON_LEVEL:/ 10
+effect:TIMED_INC:CONFUSED
+dice:3+1d4
+desc:A trap that blasts your senses.
+msg:You feel pressure on your mind.
+msg-good:You shake your head and are back to normal.
+msg-bad:Your mind is blasted by psionic energy!
+
+# mental assault -- brain smash
+
+name:mind blast trap:brain smashing trap
+graphics:^:G
+appear:2:40:0
+visibility:30+d10
+flags:TRAP | FLOOR | MAGICAL | SAVE_THROW
+effect:DAMAGE
+dice:10d$S
+expr:S:DUNGEON_LEVEL:/ 5
+effect:TIMED_INC:SLOW
+dice:3+1d4
+effect:TIMED_INC:CONFUSED
+dice:3+1d4
+effect:TIMED_INC:PARALYZED
+dice:3+1d4
+effect:TIMED_INC:BLIND
+dice:7+1d8
+desc:A trap that blasts your senses.
+msg:You feel pressure on your mind.
+msg-good:You shake your head and are back to normal.
+msg-bad:Your mind is blasted by psionic energy!
+
+# dungeon alter -- rock fall
+
+name:ancient mechanism:rock fall trap
+graphics:^:U
+appear:1:4:0
+visibility:40+d5
+flags:TRAP | FLOOR | ONETIME
+effect:DAMAGE
+dice:$Dd5
+expr:D:DUNGEON_LEVEL:/ 10 + 1
+effect:TIMED_INC_NO_RES:STUN
+dice:2d20
+effect:RUBBLE
+desc:A trap that drops a boulder on you.
+msg:A rock falls on your head!
+
+# dungeon alter -- earthquake
+
+name:ancient mechanism:earthquake trap
+graphics:^:U
+appear:1:30:0
+visibility:30+d5
+flags:TRAP | FLOOR
+effect:DAMAGE
+dice:$Dd5
+expr:D:DUNGEON_LEVEL:/ 10 + 1
+effect:EARTHQUAKE
+param:5
+desc:A trap that causes an earthquake.
+msg:The ground shakes.
+
+# dungeon alter - stone to mud
+# XXX this currently prints loads of annoying messages
+
+name:ancient mechanism:area blast trap
+graphics:^:U
+appear:2:40:0
+visibility:20+d5
+flags:TRAP | FLOOR | ONETIME
+effect:BALL:KILL_WALL:2
+dice:20
+effect:BALL:FORCE:2
+dice:$B
+expr:B:DUNGEON_LEVEL:+ 0
+effect:RUBBLE
+desc:A trap that clears the surrounding area.
+msg:The trap explodes, blasting the area clear!
+
+# blinding flash
+
+name:trap:blinding flash trap
+graphics:^:light yellow
+appear:1:5:0
+visibility:30+d5
+flags:TRAP | FLOOR | MAGICAL | ONETIME
+effect:BALL:LIGHT:4
+dice:$Dd8
+expr:D:DUNGEON_LEVEL:/ 10 + 2
+desc:A trap that creates a ball of light.
+msg:A blazing light descends on you!
+
+# blinding trap
+
+name:trap:blinding trap
+graphics:^:light slate
+appear:1:5:0
+visibility:20+d5
+flags:TRAP | FLOOR | MAGICAL | ONETIME
+effect:BALL:DARK:4
+dice:$Dd8
+expr:D:DUNGEON_LEVEL:/ 10 + 2
+effect:DRAIN_LIGHT
+dice:100+1d100
+desc:A trap that envelops you in darkness.
+msg:Everything starts to fade...
+
+# mana drain
+
+name:trap:mana drain trap
+graphics:^:light purple
+appear:1:5:0
+visibility:50+d10
+flags:TRAP | FLOOR | MAGICAL
+effect:DRAIN_MANA
+dice:1d$D
+expr:D:DUNGEON_LEVEL:/ 2 + 1
+msg:You feel your energies sap away.
+desc:A trap that drains your mana.
+
+# whirling knives
+# XXX ideally this would have an effect that wasn't cured in one turn
+#   - maybe make CSW only heal 100 points of cuts?
+
+name:trap:knife trap
+graphics:^:yellow
+appear:1:20:0
+visibility:20+d5
+flags:TRAP | FLOOR
+effect:TIMED_INC:CUT
+dice:150
+effect:DAMAGE
+dice:$D
+expr:D:DUNGEON_LEVEL:/ 2
+msg:Blades whirl around you, slicing your skin!
+desc:A trap designed to bleed you to death.
+
+# petrifier
+
+name:trap:petrifying trap
+graphics:^:blue
+appear:1:5:0
+visibility:20+d5
+flags:TRAP | FLOOR | MAGICAL
+effect:TIMED_INC:STONESKIN
+dice:20+1d20
+effect:TIMED_INC:STUN
+dice:20+1d20
+msg:You feel yourself turning to stone!
+desc:A trap that stuns you and gives you stoneskin.
+
+# alarm -- aggravation
+
+name:alarm:siren
+graphics:^:R
+appear:1:1:0
+visibility:60+d10
+flags:TRAP | FLOOR | MAGICAL
+effect:WAKE
+desc:A trap that wakes nearby monsters.
+msg:A horn blast sounds!

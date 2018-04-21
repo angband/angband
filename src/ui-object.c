@@ -27,9 +27,9 @@
 #include "init.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-info.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -68,12 +68,12 @@ struct object_menu_data {
 	char key;
 };
 
-struct object_menu_data items[MAX_ITEMS];
-int num_obj;
-int num_head;
-size_t max_len;
-int ex_width;
-int ex_offset;
+static struct object_menu_data items[MAX_ITEMS];
+static int num_obj;
+static int num_head;
+static size_t max_len;
+static int ex_width;
+static int ex_offset;
 
 /**
  * ------------------------------------------------------------------------
@@ -144,7 +144,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	int ex_offset_ctr;
 	char buf[80];
 	struct object *obj = items[obj_num].object;
-	bool show_label = mode & (OLIST_WINDOW | OLIST_DEATH) ? TRUE : FALSE;
+	bool show_label = mode & (OLIST_WINDOW | OLIST_DEATH) ? true : false;
 	int label_size = show_label ? strlen(items[obj_num].label) : 0;
 	int equip_label_size = strlen(items[obj_num].equip_label);
 
@@ -194,7 +194,7 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 	if (mode & OLIST_PRICE) {
 		struct store *store = store_at(cave, player->py, player->px);
 		if (store) {
-			int price = price_item(store, obj, TRUE, obj->number);
+			int price = price_item(store, obj, true, obj->number);
 
 			strnfmt(buf, sizeof(buf), "%6d au", price);
 			put_str(buf, row + obj_num, col + ex_offset_ctr);
@@ -257,18 +257,17 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 						   olist_detail_t mode)
 {
 	int i;
-	struct object *obj;
-	char buf[80];
-	bool gold_ok = (mode & OLIST_GOLD) ? TRUE : FALSE;
-	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
-	bool dead = (mode & OLIST_DEATH) ? TRUE : FALSE;
-	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
-	bool equip = list ? FALSE : TRUE;
-	bool quiver = list == player->upkeep->quiver ? TRUE : FALSE;
+	bool gold_ok = (mode & OLIST_GOLD) ? true : false;
+	bool in_term = (mode & OLIST_WINDOW) ? true : false;
+	bool dead = (mode & OLIST_DEATH) ? true : false;
+	bool show_empty = (mode & OLIST_SEMPTY) ? true : false;
+	bool equip = list ? false : true;
+	bool quiver = list == player->upkeep->quiver ? true : false;
 
 	/* Build the object list */
 	for (i = 0; i <= last; i++) {
-		obj = equip ? slot_object(player, i) : list[i];
+		char buf[80];
+		struct object *obj = equip ? slot_object(player, i) : list[i];
 
 		/* Acceptable items get a label */
 		if (object_test(tester, obj) ||	(obj && tval_is_money(obj) && gold_ok))
@@ -286,7 +285,6 @@ static void build_obj_list(int last, struct object **list, item_tester tester,
 		/* Show full slot labels for equipment (or quiver in subwindow) */
 		if (equip) {
 			strnfmt(buf, sizeof(buf), "%-14s: ", equip_mention(player, i));
-			my_strcap(buf);
 			my_strcpy(items[num_obj].equip_label, buf,
 					  sizeof(items[num_obj].equip_label));
 		} else if ((in_term || dead) && quiver) {
@@ -350,8 +348,8 @@ static void show_obj_list(olist_detail_t mode)
 	int i, row = 0, col = 0;
 	char tmp_val[80];
 
-	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
-	bool terse = FALSE;
+	bool in_term = (mode & OLIST_WINDOW) ? true : false;
+	bool terse = false;
 
 	/* Initialize */
 	max_len = 0;
@@ -361,7 +359,7 @@ static void show_obj_list(olist_detail_t mode)
 	if (in_term) max_len = 40;
 	if (in_term && Term->wid < 40) mode &= ~(OLIST_WEIGHT);
 
-	if (Term->wid < 50) terse = TRUE;
+	if (Term->wid < 50) terse = true;
 
 	/* Set the names and get the max length */
 	set_obj_names(terse);
@@ -393,12 +391,12 @@ static void show_obj_list(olist_detail_t mode)
 
 	/* Output the list */
 	for (i = 0; i < num_obj; i++)
-		show_obj(i, row, col, FALSE, mode);
+		show_obj(i, row, col, false, mode);
 
 	/* For the inventory: print the quiver count */
 	if (mode & OLIST_QUIVER) {
 		int count, j;
-		int quiver_slots = (player->upkeep->quiver_cnt + z_info->stack_size - 1) / z_info->stack_size;
+		int quiver_slots = (player->upkeep->quiver_cnt + z_info->quiver_slot_size - 1) / z_info->quiver_slot_size;
 
 		/* Quiver may take multiple lines */
 		for (j = 0; j < quiver_slots; j++, i++) {
@@ -407,9 +405,9 @@ static void show_obj_list(olist_detail_t mode)
 
 			/* Number of missiles in this "slot" */
 			if (j == quiver_slots - 1)
-				count = player->upkeep->quiver_cnt - (z_info->stack_size * (quiver_slots - 1));
+				count = player->upkeep->quiver_cnt - (z_info->quiver_slot_size * (quiver_slots - 1));
 			else
-				count = z_info->stack_size;
+				count = z_info->quiver_slot_size;
 
 			/* Clear the line */
 			prt("", row + i, MAX(col - 2, 0));
@@ -445,7 +443,7 @@ void show_inven(int mode, item_tester tester)
 	int i, last_slot = -1;
 	int diff = weight_remaining(player);
 
-	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool in_term = (mode & OLIST_WINDOW) ? true : false;
 
 	/* Intialize */
 	wipe_obj_list();
@@ -511,7 +509,7 @@ void show_quiver(int mode, item_tester tester)
 void show_equip(int mode, item_tester tester)
 {
 	int i;
-	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool in_term = (mode & OLIST_WINDOW) ? true : false;
 
 	/* Intialize */
 	wipe_obj_list();
@@ -570,21 +568,21 @@ void show_floor(struct object **floor_list, int floor_num, int mode,
  * Variables for object selection
  * ------------------------------------------------------------------------ */
 
-item_tester tester_m;
+static item_tester tester_m;
 static region area = { 20, 1, -1, -2 };
 static struct object *selection;
-const char *prompt;
-char header[80];
-int i1, i2;
-int e1, e2;
-int q1, q2;
-int f1, f2;
-struct object **floor_list;
+static const char *prompt;
+static char header[80];
+static int i1, i2;
+static int e1, e2;
+static int q1, q2;
+static int f1, f2;
+static struct object **floor_list;
 static olist_detail_t olist_mode = 0;
-int item_mode;
-cmd_code item_cmd;
-bool newmenu = FALSE;
-bool allow_all = FALSE;
+static int item_mode;
+static cmd_code item_cmd;
+static bool newmenu = false;
+static bool allow_all = false;
 
 /**
  * ------------------------------------------------------------------------
@@ -619,23 +617,23 @@ bool get_item_allow(const struct object *obj, unsigned char ch, cmd_code cmd,
 
 	/* Choose string for the prompt */
 	if (n) {
-		char prompt[1024];
+		char prompt_buf[1024];
 
 		const char *verb = cmd_verb(cmd);
 		if (!verb)
 			verb = "do that with";
 
-		strnfmt(prompt, sizeof(prompt), "Really %s", verb);
+		strnfmt(prompt_buf, sizeof(prompt_buf), "Really %s", verb);
 
 		/* Prompt for confirmation n times */
 		while (n--) {
-			if (!verify_object(prompt, (struct object *) obj))
-				return (FALSE);
+			if (!verify_object(prompt_buf, (struct object *) obj))
+				return (false);
 		}
 	}
 
 	/* Allow it */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -654,14 +652,14 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 				   bool quiver_tags)
 {
 	int i;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (quiver_tags) {
 		i = tag - '0';
 		if (player->upkeep->quiver[i]) {
 			*tagged_obj = player->upkeep->quiver[i];
-			return TRUE;
+			return true;
 		}
 	}
 
@@ -689,7 +687,7 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 				*tagged_obj = obj;
 
 				/* Success */
-				return TRUE;
+				return true;
 			}
 
 			cmdkey = cmd_lookup_key(cmd, mode);
@@ -704,7 +702,7 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 				*tagged_obj = obj;
 
 				/* Success */
-				return TRUE;
+				return true;
 			}
 
 			/* Find another '@' */
@@ -713,7 +711,7 @@ static bool get_tag(struct object **tagged_obj, char tag, cmd_code cmd,
 	}
 
 	/* No such tag */
-	return FALSE;
+	return false;
 }
 
 
@@ -730,9 +728,9 @@ static void menu_header(void)
 	char tmp_val[75];
 	char out_val[75];
 
-	bool use_inven = ((item_mode & USE_INVEN) ? TRUE : FALSE);
-	bool use_equip = ((item_mode & USE_EQUIP) ? TRUE : FALSE);
-	bool use_quiver = ((item_mode & USE_QUIVER) ? TRUE : FALSE);
+	bool use_inven = ((item_mode & USE_INVEN) ? true : false);
+	bool use_equip = ((item_mode & USE_EQUIP) ? true : false);
+	bool use_quiver = ((item_mode & USE_QUIVER) ? true : false);
 	bool allow_floor = ((f1 <= f2) || allow_all);
 
 	/* Viewing inventory */
@@ -884,8 +882,8 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 {
 	struct object_menu_data *choice = menu_priv(menu);
 	char key = event->key.code;
-	bool is_harmless = item_mode & IS_HARMLESS ? TRUE : FALSE;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	bool is_harmless = item_mode & IS_HARMLESS ? true : false;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	if (event->type == EVT_SELECT) {
 		if (get_item_allow(choice[oid].object, cmd_lookup_key(item_cmd, mode),
@@ -899,11 +897,11 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			if (((item_mode & USE_INVEN) || allow_all)
 				&& (player->upkeep->command_wrk != USE_INVEN)) {
 				player->upkeep->command_wrk = USE_INVEN;
-				newmenu = TRUE;
+				newmenu = true;
 			} else if (((item_mode & USE_EQUIP) || allow_all) &&
 					   (player->upkeep->command_wrk != USE_EQUIP)) {
 				player->upkeep->command_wrk = USE_EQUIP;
-				newmenu = TRUE;
+				newmenu = true;
 			} else {
 				bell("Cannot switch item selector!");
 			}
@@ -916,7 +914,7 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			} else {
 				/* Toggle to quiver */
 				player->upkeep->command_wrk = (USE_QUIVER);
-				newmenu = TRUE;
+				newmenu = true;
 			}
 		}
 
@@ -927,31 +925,31 @@ bool get_item_action(struct menu *menu, const ui_event *event, int oid)
 			} else {
 				/* Toggle to floor */
 				player->upkeep->command_wrk = (USE_FLOOR);
-				newmenu = TRUE;
+				newmenu = true;
 			}
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
  * Show quiver missiles in full inventory
  */
-static void item_menu_browser(int oid, void *data, const region *area)
+static void item_menu_browser(int oid, void *data, const region *local_area)
 {
 	char tmp_val[80];
 	int count, j, i = num_obj;
-	int quiver_slots = (player->upkeep->quiver_cnt + z_info->stack_size - 1)
-		/ z_info->stack_size;
+	int quiver_slots = (player->upkeep->quiver_cnt + z_info->quiver_slot_size - 1)
+		/ z_info->quiver_slot_size;
 
 	/* Set up to output below the menu */
 	text_out_hook = text_out_to_screen;
 	text_out_wrap = 0;
-	text_out_indent = area->col - 1;
+	text_out_indent = local_area->col - 1;
 	text_out_pad = 1;
-	prt("", area->row + area->page_rows, MAX(0, area->col - 1));
-	Term_gotoxy(area->col, area->row + area->page_rows);
+	prt("", local_area->row + local_area->page_rows, MAX(0, local_area->col - 1));
+	Term_gotoxy(local_area->col, local_area->row + local_area->page_rows);
 
 	/* If we're printing pack slots the quiver takes up */
 	if (olist_mode & OLIST_QUIVER && player->upkeep->command_wrk == USE_INVEN) {
@@ -962,29 +960,29 @@ static void item_menu_browser(int oid, void *data, const region *area)
 
 			/* Number of missiles in this "slot" */
 			if (j == quiver_slots - 1)
-				count = player->upkeep->quiver_cnt - (z_info->stack_size *
+				count = player->upkeep->quiver_cnt - (z_info->quiver_slot_size *
 													  (quiver_slots - 1));
 			else
-				count = z_info->stack_size;
+				count = z_info->quiver_slot_size;
 
 			/* Print the (disabled) label */
 			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);
-			text_out_c(COLOUR_SLATE, tmp_val, area->row + i, area->col);
+			text_out_c(COLOUR_SLATE, tmp_val, local_area->row + i, local_area->col);
 
 			/* Print the count */
 			strnfmt(tmp_val, sizeof(tmp_val), fmt, count,
 					count == 1 ? "" : "s");
-			text_out_c(COLOUR_L_UMBER, tmp_val, area->row + i, area->col + 3);
+			text_out_c(COLOUR_L_UMBER, tmp_val, local_area->row + i, local_area->col + 3);
 		}
 	}
 
 	/* Always print a blank line */
-	prt("", area->row + i, MAX(0, area->col - 1));
+	prt("", local_area->row + i, MAX(0, local_area->col - 1));
 
 	/* Blank out whole tiles */
-	while ((tile_height > 1) && ((area->row + i) % tile_height != 0)) {
+	while ((tile_height > 1) && ((local_area->row + i) % tile_height != 0)) {
 		i++;
-		prt("", area->row + i, MAX(0, area->col - 1));
+		prt("", local_area->row + i, MAX(0, local_area->col - 1));
 	}
 
 	text_out_pad = 0;
@@ -1032,7 +1030,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 
 	/* Set up the item list variables */
 	selection = NULL;
-	set_obj_names(FALSE);
+	set_obj_names(false);
 
 	if (mode & OLIST_QUIVER && player->upkeep->quiver[0] != NULL)
 		max_len = MAX(max_len, 24);
@@ -1069,7 +1067,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 	menu_layout(m, &area);
 
 	/* Choose */
-	evt = menu_select(m, 0, TRUE);
+	evt = menu_select(m, 0, true);
 
 	/* Clean up */
 	mem_free(m->inscriptions);
@@ -1121,7 +1119,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 			}
 		}
 
-		newmenu = TRUE;
+		newmenu = true;
 	}
 
 	/* Result */
@@ -1133,7 +1131,7 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 /**
  * Let the user select an object, save its address
  *
- * Return TRUE only if an acceptable item was chosen by the user.
+ * Return true only if an acceptable item was chosen by the user.
  *
  * The user is allowed to choose acceptable items from the equipment,
  * inventory, quiver, or floor, respectively, if the proper flag was given,
@@ -1146,12 +1144,12 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
  * not NULL, then it will be used as the text of a warning message
  * before the function returns.
  *
- * If a legal item is selected , we save it in "choice" and return TRUE.
+ * If a legal item is selected , we save it in "choice" and return true.
  *
  * If no item is available, we do nothing to "choice", and we display a
- * warning message, using "str" if available, and return FALSE.
+ * warning message, using "str" if available, and return false.
  *
- * If no item is selected, we do nothing to "choice", and return FALSE.
+ * If no item is selected, we do nothing to "choice", and return false.
  *
  * Global "player->upkeep->command_wrk" is used to choose between
  * equip/inven/quiver/floor listings.  It is equal to USE_INVEN or USE_EQUIP or
@@ -1167,21 +1165,18 @@ struct object *item_menu(cmd_code cmd, int prompt_size, int mode)
 bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 					 cmd_code cmd, item_tester tester, int mode)
 {
-	int py = player->py;
-	int px = player->px;
+	bool use_inven = ((mode & USE_INVEN) ? true : false);
+	bool use_equip = ((mode & USE_EQUIP) ? true : false);
+	bool use_quiver = ((mode & USE_QUIVER) ? true : false);
+	bool use_floor = ((mode & USE_FLOOR) ? true : false);
+	bool quiver_tags = ((mode & QUIVER_TAGS) ? true : false);
 
-	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
-	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
-	bool use_quiver = ((mode & USE_QUIVER) ? TRUE : FALSE);
-	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
-	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
+	bool allow_inven = false;
+	bool allow_equip = false;
+	bool allow_quiver = false;
+	bool allow_floor = false;
 
-	bool allow_inven = FALSE;
-	bool allow_equip = FALSE;
-	bool allow_quiver = FALSE;
-	bool allow_floor = FALSE;
-
-	bool toggle = FALSE;
+	bool toggle = false;
 
 	int floor_max = z_info->floor_size;
 	int floor_num;
@@ -1192,7 +1187,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	item_cmd = cmd;
 	tester_m = tester;
 	prompt = pmt;
-	allow_all = str ? FALSE : TRUE;
+	allow_all = str ? false : true;
 
 	/* Object list display modes */
 	if (mode & SHOW_FAIL)
@@ -1227,7 +1222,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	/* Accept inventory */
 	if ((i1 <= i2) || allow_all)
-		allow_inven = TRUE;
+		allow_inven = true;
 	else if (item_mode & USE_INVEN)
 		item_mode -= USE_INVEN;
 
@@ -1248,7 +1243,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	/* Accept equipment */
 	if ((e1 <= e2) || allow_all)
-		allow_equip = TRUE;
+		allow_equip = true;
 	else if (item_mode & USE_EQUIP)
 		item_mode -= USE_EQUIP;
 
@@ -1267,12 +1262,13 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	/* Accept quiver */
 	if ((q1 <= q2) || allow_all)
-		allow_quiver = TRUE;
+		allow_quiver = true;
 	else if (item_mode & USE_QUIVER)
 		item_mode -= USE_QUIVER;
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x0B, tester);
+	floor_num = scan_floor(floor_list, floor_max,
+						   OFLOOR_TEST | OFLOOR_SENSE | OFLOOR_VISIBLE, tester);
 
 	/* Full floor */
 	f1 = 0;
@@ -1287,7 +1283,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	/* Accept floor */
 	if ((f1 <= f2) || allow_all)
-		allow_floor = TRUE;
+		allow_floor = true;
 	else if (item_mode & USE_FLOOR)
 		item_mode -= USE_FLOOR;
 
@@ -1321,7 +1317,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 		else
 			player->upkeep->command_wrk = USE_INVEN;
 
-		while (TRUE) {
+		while (true) {
 			int j;
 			int ni = 0;
 			int ne = 0;
@@ -1390,7 +1386,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 			}
 
 			/* No menu change request */
-			newmenu = FALSE;
+			newmenu = false;
 
 			/* Get an item choice */
 			*choice = item_menu(cmd, MAX(strlen(pmt), 15), mode);
@@ -1422,7 +1418,7 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 	mem_free(floor_list);
 
 	/* Result */
-	return (*choice != NULL) ? TRUE : FALSE;
+	return (*choice != NULL) ? true : false;
 }
 
 
@@ -1438,13 +1434,13 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
  */
 void display_object_recall(struct object *obj)
 {
-	char header[120];
+	char header_buf[120];
 
 	textblock *tb = object_info(obj, OINFO_NONE);
-	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header_buf, sizeof(header_buf), obj, ODESC_PREFIX | ODESC_FULL);
 
 	clear_from(0);
-	textui_textblock_place(tb, SCREEN_REGION, header);
+	textui_textblock_place(tb, SCREEN_REGION, header_buf);
 	textblock_free(tb);
 }
 
@@ -1455,10 +1451,9 @@ void display_object_recall(struct object *obj)
  */
 void display_object_kind_recall(struct object_kind *kind)
 {
-	struct object object = { 0 };
+	struct object object = OBJECT_NULL, known_obj = OBJECT_NULL;
 	object_prep(&object, kind, 0, EXTREMIFY);
-	if (kind->aware)
-		object_notice_everything(&object);
+	object.known = &known_obj;
 
 	display_object_recall(&object);
 }
@@ -1472,14 +1467,14 @@ void display_object_kind_recall(struct object_kind *kind)
  */
 void display_object_recall_interactive(struct object *obj)
 {
-	char header[120];
+	char header_buf[120];
 	textblock *tb;
 
 	event_signal(EVENT_MESSAGE_FLUSH);
 
 	tb = object_info(obj, OINFO_NONE);
-	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_FULL);
-	textui_textblock_show(tb, SCREEN_REGION, header);
+	object_desc(header_buf, sizeof(header_buf), obj, ODESC_PREFIX | ODESC_FULL);
+	textui_textblock_show(tb, SCREEN_REGION, header_buf);
 	textblock_free(tb);
 }
 
@@ -1488,10 +1483,10 @@ void display_object_recall_interactive(struct object *obj)
  */
 void textui_obj_examine(void)
 {
-	char header[120];
+	char header_buf[120];
 
 	textblock *tb;
-	region area = { 0, 0, 0, 0 };
+	region local_area = { 0, 0, 0, 0 };
 
 	struct object *obj;
 
@@ -1505,10 +1500,10 @@ void textui_obj_examine(void)
 
 	/* Display info */
 	tb = object_info(obj, OINFO_NONE);
-	object_desc(header, sizeof(header), obj,
+	object_desc(header_buf, sizeof(header_buf), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
-	textui_textblock_show(tb, area, header);
+	textui_textblock_show(tb, local_area, header_buf);
 	textblock_free(tb);
 }
 
@@ -1535,6 +1530,8 @@ void textui_cmd_ignore_menu(struct object *obj)
 	struct menu *m;
 	region r;
 	int selected;
+	byte value;
+	int type;
 
 	if (!obj)
 		return;
@@ -1543,7 +1540,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 	m->selections = lower_case;
 
 	/* Basic ignore option */
-	if (!obj->ignore) {
+	if (!(obj->known->notice & OBJ_NOTICE_IGNORE)) {
 		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
 	} else {
 		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
@@ -1568,7 +1565,7 @@ void textui_cmd_ignore_menu(struct object *obj)
 	}
 
 	/* Ego ignoring */
-	if (object_ego_is_visible(obj)) {
+	if (obj->known->ego) {
 		struct ego_desc choice;
 		struct ego_item *ego = obj->ego;
 		char tmp[80] = "";
@@ -1587,21 +1584,17 @@ void textui_cmd_ignore_menu(struct object *obj)
 	}
 
 	/* Quality ignoring */
-	if (object_was_sensed(obj) || object_was_worn(obj) ||
-			object_is_known_not_artifact(obj)) {
-		byte value = ignore_level_of(obj);
-		int type = ignore_type_of(obj);
+	value = ignore_level_of(obj);
+	type = ignore_type_of(obj);
 
-		if (tval_is_jewelry(obj) &&
-					ignore_level_of(obj) != IGNORE_BAD)
-			value = IGNORE_MAX;
+	if (tval_is_jewelry(obj) &&	ignore_level_of(obj) != IGNORE_BAD)
+		value = IGNORE_MAX;
 
-		if (value != IGNORE_MAX && type != ITYPE_MAX) {
-			strnfmt(out_val, sizeof out_val, "All %s %s",
-					quality_values[value].name, ignore_name_for_type(type));
+	if (value != IGNORE_MAX && type != ITYPE_MAX) {
+		strnfmt(out_val, sizeof out_val, "All %s %s",
+				quality_values[value].name, ignore_name_for_type(type));
 
-			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
-		}
+		menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
 	}
 
 	/* Work out display region */
@@ -1620,9 +1613,9 @@ void textui_cmd_ignore_menu(struct object *obj)
 	screen_load();
 
 	if (selected == IGNORE_THIS_ITEM) {
-		obj->ignore = TRUE;
+		obj->known->notice |= OBJ_NOTICE_IGNORE;
 	} else if (selected == UNIGNORE_THIS_ITEM) {
-		obj->ignore = FALSE;
+		obj->known->notice &= ~(OBJ_NOTICE_IGNORE);
 	} else if (selected == IGNORE_THIS_FLAVOR) {
 		object_ignore_flavor_of(obj);
 	} else if (selected == UNIGNORE_THIS_FLAVOR) {
@@ -1632,10 +1625,10 @@ void textui_cmd_ignore_menu(struct object *obj)
 	} else if (selected == UNIGNORE_THIS_EGO) {
 		ego_ignore_clear(obj);
 	} else if (selected == IGNORE_THIS_QUALITY) {
-		byte value = ignore_level_of(obj);
-		int type = ignore_type_of(obj);
+		byte ignore_value = ignore_level_of(obj);
+		int ignore_type = ignore_type_of(obj);
 
-		ignore_level[type] = value;
+		ignore_level[ignore_type] = ignore_value;
 	}
 
 	player->upkeep->notice |= PN_IGNORE;

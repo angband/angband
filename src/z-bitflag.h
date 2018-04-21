@@ -63,6 +63,7 @@ bool flag_has       (const bitflag *flags, const size_t size, const int flag);
 bool flag_has_dbg   (const bitflag *flags, const size_t size, const int flag,
 					 const char *fi, const char *fl);
 int  flag_next      (const bitflag *flags, const size_t size, const int flag);
+int  flag_count     (const bitflag *flags, const size_t size);
 bool flag_is_empty  (const bitflag *flags, const size_t size);
 bool flag_is_full   (const bitflag *flags, const size_t size);
 bool flag_is_inter  (const bitflag *flags1, const bitflag *flags2,
@@ -80,7 +81,6 @@ void flag_setall    (bitflag *flags, const size_t size);
 void flag_negate    (bitflag *flags, const size_t size);
 void flag_copy      (bitflag *flags1, const bitflag *flags2, const size_t size);
 bool flag_union     (bitflag *flags1, const bitflag *flags2, const size_t size);
-bool flag_comp_union(bitflag *flags1, const bitflag *flags2, const size_t size);
 bool flag_inter     (bitflag *flags1, const bitflag *flags2, const size_t size);
 bool flag_diff      (bitflag *flags1, const bitflag *flags2, const size_t size);
 

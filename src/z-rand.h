@@ -85,7 +85,7 @@ typedef enum {
 #define rand_spread(A, D) ((A) + (randint0(1 + (D) + (D))) - (D))
 
 /**
- * Return TRUE one time in `x`.
+ * Return true one time in `x`.
  */
 #define one_in_(x) (!randint0(x))
 
@@ -131,6 +131,14 @@ u32b Rand_div(u32b m);
  * `mean`, following a normal distribution.
  */
 s16b Rand_normal(int mean, int stand);
+
+/**
+ * Generate a signed random integer following a normal distribution, where
+ * `upper` and `lower` are approximate bounds, and `stand_u and `stand_l` are
+ * ten times the number of standard deviations from the mean we are assuming
+ * the bounds are.
+ */
+int Rand_sample(int mean, int upper, int lower, int stand_u, int stand_l);
 
 /**
  * Generate a semi-random number from 0 to m-1, in a way that doesn't affect

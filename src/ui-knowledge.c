@@ -27,8 +27,8 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-info.h"
 #include "obj-make.h"
 #include "obj-pile.h"
@@ -272,10 +272,10 @@ static void remove_tiles(int col, int row, bool *picker_ptr, int width,
 	int i;
 
 	/* No more big cursor */
-	bigcurs = FALSE;
+	bigcurs = false;
 
 	/* Cancel visual list */
-	*picker_ptr = FALSE;
+	*picker_ptr = false;
 
 	/* Clear the display lines */
 	for (i = 0; i < height; i++)
@@ -337,21 +337,21 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			if (ke.mouse.button)
 			  remove_tiles(col, row, tile_picker_ptr, width, height);
 
-			return TRUE;
+			return true;
 		} else if (ke.mouse.button == 2) {
 			/* Cancel change */
 			*cur_attr_ptr = attr_old;
 			*cur_char_ptr = char_old;
 			remove_tiles(col, row, tile_picker_ptr, width, height);
 
-			return TRUE;
+			return true;
 		} else {
-			return FALSE;
+			return false;
 		}
 	}
 
 	if (ke.type != EVT_KBRD)
-		return FALSE;
+		return false;
 
 
 	switch (ke.key.code)
@@ -364,7 +364,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 				*cur_char_ptr = char_old;
 				remove_tiles(col, row, tile_picker_ptr, width, height);
 
-				return TRUE;
+				return true;
 			}
 
 			break;
@@ -375,7 +375,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			if (*tile_picker_ptr) {
 				/* Accept change */
 				remove_tiles(col, row, tile_picker_ptr, width, height);
-				return TRUE;
+				return true;
 			}
 
 			break;
@@ -390,8 +390,8 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 					break;
 
 			if (!*tile_picker_ptr) {
-				*tile_picker_ptr = TRUE;
-				bigcurs = TRUE;
+				*tile_picker_ptr = true;
+				bigcurs = true;
 
 				*attr_top_ptr = (byte)MAX(0, (int)*cur_attr_ptr - frame_top);
 				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
@@ -405,7 +405,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 				remove_tiles(col, row, tile_picker_ptr, width, height);
 			}
 
-			return TRUE;
+			return true;
 		}
 
 		case 'C':
@@ -415,7 +415,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			attr_idx = *cur_attr_ptr;
 			char_idx = *cur_char_ptr;
 
-			return TRUE;
+			return true;
 		}
 
 		case 'P':
@@ -433,7 +433,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
 			}
 
-			return TRUE;
+			return true;
 		}
 
 		default:
@@ -445,7 +445,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			if (!*tile_picker_ptr)
 				break;
 
-			bigcurs = TRUE;
+			bigcurs = true;
 
 			/* Restrict direction */
 			if ((a == 0) && (ddy[d] < 0)) d = 0;
@@ -481,12 +481,12 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 			 * otherwise it will be interpreted as a change object
 			 * selection command with messy results.
 			 */
-			return TRUE;
+			return true;
 		}
 	}
 
 	/* Tile picker command is not used */
-	return FALSE;
+	return false;
 }
 
 
@@ -528,7 +528,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 
 		int mx = logical_width(ke.mouse.x - col);
 		
-		if (ke.mouse.y != row + height/2) return FALSE;
+		if (ke.mouse.y != row + height/2) return false;
 		
 		if ((mx >= 0) && (mx < MAX_COLORS) && (ke.mouse.button == 1)) {
 		        /* Set the visual */
@@ -537,14 +537,14 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 			/* Accept change */
 			remove_tiles(col, row, glyph_picker_ptr, width, height);
 			
-			return TRUE;
+			return true;
 		} else {
-		        return FALSE;
+		        return false;
 		}
 	}
 
 	if (ke.type != EVT_KBRD)
-	        return FALSE;
+	        return false;
 
 
 	switch (ke.key.code)
@@ -557,7 +557,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 				*cur_char_ptr = char_old;
 				remove_tiles(col, row, glyph_picker_ptr, width, height);
 				
-				return TRUE;
+				return true;
 			}
 
 			break;
@@ -568,7 +568,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 		    if (*glyph_picker_ptr) {
 			    /* Accept change */
 			    remove_tiles(col, row, glyph_picker_ptr, width, height);
-			    return TRUE;
+			    return true;
 		    }
 		    
 		    break;
@@ -578,7 +578,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 	    case 'v':
 	    {
 		    if (!*glyph_picker_ptr) {
-			    *glyph_picker_ptr = TRUE;
+			    *glyph_picker_ptr = true;
 
 			    attr_old = *cur_attr_ptr;
 			    char_old = *cur_char_ptr;
@@ -589,7 +589,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 			    remove_tiles(col, row, glyph_picker_ptr, width, height);
 		    }
 
-		    return TRUE;
+		    return true;
 	    }
 
 	    case 'i':
@@ -597,7 +597,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 	    {
 		    if (*glyph_picker_ptr) {
 			    char code_point[6];
-			    bool res = FALSE;
+			    bool res = false;
 	
 			    /* Ask the user for a code point */
 			    Term_gotoxy(col, row + height/2 + 2);
@@ -608,7 +608,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 				    unsigned long int point = strtoul(code_point,
 													  (char **)NULL, 16);
 				    *cur_char_ptr = (wchar_t) point;
-				    return TRUE;
+				    return true;
 			    }
 		    }
 		    
@@ -640,12 +640,12 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 		     * otherwise it will be interpreted as a change object
 		     * selection command with messy results.
 		     */
-		    return TRUE;
+		    return true;
 	    }
 	}
 
 	/* Glyph picker command is not used */
-	return FALSE;
+	return false;
 }
 
 static void display_group_member(struct menu *menu, int oid,
@@ -714,8 +714,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	/* display state variables */
 	bool tiles = (current_graphics_mode != NULL);
-	bool tile_picker = FALSE;
-	bool glyph_picker = FALSE;
+	bool tile_picker = false;
+	bool glyph_picker = false;
 	byte attr_top = 0;
 	byte char_left = 0;
 
@@ -733,17 +733,17 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int panel = 0;
 
 	void *swapspace;
-	bool do_swap = FALSE;
+	bool do_swap = false;
 
-	bool flag = FALSE;
-	bool redraw = TRUE;
+	bool flag = false;
+	bool redraw = true;
 
 	int browser_rows;
 	int wid, hgt;
 	int i;
 	int prev_g = -1;
 
-	int omode = OPT(rogue_like_commands);
+	int omode = OPT(player, rogue_like_commands);
 	ui_event ke;
 
 	/* Get size */
@@ -751,7 +751,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	browser_rows = hgt - 8;
 
 	/* Disable the roguelike commands for the duration */
-	OPT(rogue_like_commands) = FALSE;
+	OPT(player, rogue_like_commands) = false;
 
 	/* Determine if using tiles or not */
 	if (tiles) tiles = (current_graphics_mode->grafID != 0);
@@ -807,7 +807,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	menu_layout(&object_menu, &object_region);
 	object_menu.flags |= MN_DBL_TAP;
 
-	o_funcs.is_visual = FALSE;
+	o_funcs.is_visual = false;
 
 	/* Save screen */
 	screen_save();
@@ -817,7 +817,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* Panels are -- text panels, two menus, and visual browser */
 	/* with "pop-up menu" for lore */
 	while ((!flag) && (grp_cnt)) {
-		bool recall = FALSE;
+		bool recall = false;
 
 		if (redraw) {
 			/* Print the title bits */
@@ -839,7 +839,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 			/* Reset redraw flag */
-			redraw = FALSE;
+			redraw = false;
 		}
 
 		if (g_cur != grp_old) {
@@ -855,13 +855,13 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		/* HACK ... */
 		if (!(tile_picker || glyph_picker)) {
 			/* ... The object menu may be browsing the entire group... */
-			o_funcs.is_visual = FALSE;
+			o_funcs.is_visual = false;
 			menu_set_filter(&object_menu, obj_list + g_offset[g_cur],
 							g_o_count);
 			object_menu.cursor = o_cur;
 		} else {
 			/* ... or just a single element in the group. */
-			o_funcs.is_visual = TRUE;
+			o_funcs.is_visual = true;
 			menu_set_filter(&object_menu, obj_list + o_cur + g_offset[g_cur],
 							1);
 			object_menu.cursor = 0;
@@ -886,7 +886,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		}
 
 		if (do_swap) {
-			do_swap = FALSE;
+			do_swap = false;
 			swap(active_menu, inactive_menu);
 			swap(active_cursor, inactive_cursor);
 			panel = 1 - panel;
@@ -899,13 +899,13 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			                object_region.col);
 		}
 
-		menu_refresh(inactive_menu, FALSE);
-		menu_refresh(active_menu, FALSE);
+		menu_refresh(inactive_menu, false);
+		menu_refresh(active_menu, false);
 
 		handle_stuff(player);
 
 		if (tile_picker) {
-		        bigcurs = TRUE;
+		        bigcurs = true;
 			display_tiles(g_name_len + 3, 7, browser_rows - 1,
 				      wid - (g_name_len + 3), attr_top, 
 				      char_left);
@@ -970,7 +970,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_KBRD:
 			{
 				if (ke.key.code == 'r' || ke.key.code == 'R')
-					recall = TRUE;
+					recall = true;
 				else if (o_funcs.xtra_act)
 					o_funcs.xtra_act(ke.key, oid);
 
@@ -992,9 +992,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_ESCAPE:
 			{
 				if (panel == 1)
-					do_swap = TRUE;
+					do_swap = true;
 				else
-					flag = TRUE;
+					flag = true;
 
 				break;
 			}
@@ -1002,9 +1002,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_SELECT:
 			{
 				if (panel == 0)
-					do_swap = TRUE;
+					do_swap = true;
 				else if (panel == 1 && oid >= 0 && o_cur == active_menu->cursor)
-					recall = TRUE;
+					recall = true;
 				break;
 			}
 
@@ -1025,12 +1025,12 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			if (oid >= 0)
 				o_funcs.lore(oid);
 
-			redraw = TRUE;
+			redraw = true;
 		}
 	}
 
 	/* Restore roguelike option */
-	OPT(rogue_like_commands) = omode;
+	OPT(player, rogue_like_commands) = omode;
 
 	/* Prompt */
 	if (!grp_cnt)
@@ -1126,11 +1126,11 @@ static void display_monster(int col, int row, bool cursor, int oid)
 		a = race->d_attr;
 		c = race->d_char;
 		/* If uniques are purple, make it so */
-		if (OPT(purple_uniques) && rf_has(race->flags, RF_UNIQUE))
+		if (OPT(player, purple_uniques) && rf_has(race->flags, RF_UNIQUE))
 			a = COLOUR_VIOLET;
 	}
 	/* If uniques are purple, make it so */
-	else if (OPT(purple_uniques) && !(a & 0x80) &&
+	else if (OPT(player, purple_uniques) && !(a & 0x80) &&
 			 rf_has(race->flags, RF_UNIQUE))
 		a = COLOUR_VIOLET;
 
@@ -1210,7 +1210,7 @@ static void mon_lore(int oid)
 	handle_stuff(player);
 
 	tb = textblock_new();
-	lore_description(tb, race, lore, FALSE);
+	lore_description(tb, race, lore, false);
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
 }
@@ -1250,8 +1250,11 @@ static int count_known_monsters(void)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
+			!l_list[i].sights) {
 			continue;
+		}
+
 		if (!race->name) continue;
 
 		if (rf_has(race->flags, RF_UNIQUE)) m_count++;
@@ -1271,7 +1274,7 @@ static int count_known_monsters(void)
 static void do_cmd_knowledge_monsters(const char *name, int row)
 {
 	group_funcs r_funcs = {race_name, m_cmp_race, default_group_id, mon_summary,
-						   N_ELEMENTS(monster_group), FALSE};
+						   N_ELEMENTS(monster_group), false};
 
 	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr,
 							recall_prompt, 0, 0};
@@ -1283,8 +1286,11 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
+			!l_list[i].sights) {
 			continue;
+		}
+
 		if (!race->name) continue;
 
 		if (rf_has(race->flags, RF_UNIQUE)) m_count++;
@@ -1301,8 +1307,11 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
-		if (!OPT(cheat_know) && !l_list[i].all_known && !l_list[i].sights)
+		if (!OPT(player, cheat_know) && !l_list[i].all_known &&
+			!l_list[i].sights) {
 			continue;
+		}
+
 		if (!race->name) continue;
 
 		for (j = 0; j < N_ELEMENTS(monster_group) - 1; j++) {
@@ -1372,11 +1381,15 @@ static int *obj_group_order = NULL;
 
 static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 {
-	struct object object_type_body = { 0 };
-	struct object *obj = &object_type_body;
+	struct object body = OBJECT_NULL, known_body = OBJECT_NULL;
+	struct object *obj = &body, *known_obj = &known_body;
 
 	make_fake_artifact(obj, &a_info[a_idx]);
+	object_wipe(known_obj);
+	object_copy(known_obj, obj);
+	obj->known = known_obj;
 	object_desc(o_name, namelen, obj, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
+	object_wipe(known_obj);
 	object_wipe(obj);
 }
 
@@ -1441,9 +1454,9 @@ static struct object *find_artifact(struct artifact *artifact)
  */
 static void desc_art_fake(int a_idx)
 {
-	struct object *obj;
-	struct object object_type_body = { 0 };
-	bool fake = FALSE;
+	struct object *obj, *known_obj = NULL;
+	struct object object_body = OBJECT_NULL, known_object_body = OBJECT_NULL;
+	bool fake = false;
 
 	char header[120];
 
@@ -1454,17 +1467,20 @@ static void desc_art_fake(int a_idx)
 
 	/* If it's been lost, make a fake artifact for it */
 	if (!obj) {
-		fake = TRUE;
-		obj = &object_type_body;
+		fake = true;
+		obj = &object_body;
+		known_obj = &known_object_body;
 
 		make_fake_artifact(obj, &a_info[a_idx]);
-		id_on(obj->id_flags, ID_ARTIFACT);
+		obj->known = known_obj;
+		known_obj->artifact = obj->artifact;
+		known_obj->kind = obj->kind;
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
-		if (history_is_artifact_known(obj->artifact))
+		if (history_is_artifact_known(player, obj->artifact))
 			/* Be very careful not to influence anything but this object */
-			object_know_all_but_flavor(obj);
+			object_copy(known_obj, obj);
 	}
 
 	/* Hack -- Handle stuff */
@@ -1473,8 +1489,10 @@ static void desc_art_fake(int a_idx)
 	tb = object_info(obj, OINFO_NONE);
 	object_desc(header, sizeof(header), obj,
 			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
-	if (fake)
+	if (fake) {
+		object_wipe(known_obj);
 		object_wipe(obj);
+	}
 
 	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
@@ -1517,20 +1535,20 @@ static bool artifact_is_known(int a_idx)
 	struct object *obj;
 
 	if (!a_info[a_idx].name)
-		return FALSE;
+		return false;
 
 	if (player->wizard)
-		return TRUE;
+		return true;
 
 	if (!a_info[a_idx].created)
-		return FALSE;
+		return false;
 
 	/* Check all objects to see if it exists but hasn't been IDed */
 	obj = find_artifact(&a_info[a_idx]);
 	if (obj && !object_is_known_artifact(obj))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1550,7 +1568,7 @@ static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
 		/* Artifact doesn't exist */
 		if (!a_info[j].name) continue;
 
-		if (OPT(cheat_xtra) || artifact_is_known(j)) {
+		if (OPT(player, cheat_xtra) || artifact_is_known(j)) {
 			if (artifacts)
 				artifacts[a_count++] = j;
 			else
@@ -1567,7 +1585,7 @@ static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
 static void do_cmd_knowledge_artifacts(const char *name, int row)
 {
 	/* HACK -- should be TV_MAX */
-	group_funcs obj_f = {kind_name, a_cmp_tval, art2gid, 0, TV_MAX, FALSE};
+	group_funcs obj_f = {kind_name, a_cmp_tval, art2gid, 0, TV_MAX, false};
 	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, recall_prompt,
 						  0, 0};
 
@@ -1647,7 +1665,7 @@ static int e_cmp_tval(const void *a, const void *b)
 static void do_cmd_knowledge_ego_items(const char *name, int row)
 {
 	group_funcs obj_f =
-		{ego_grp_name, e_cmp_tval, default_group_id, 0, TV_MAX, FALSE};
+		{ego_grp_name, e_cmp_tval, default_group_id, 0, TV_MAX, false};
 
 	member_funcs ego_f =
 		{display_ego_item, desc_ego_fake, 0, 0, recall_prompt, 0, 0};
@@ -1664,10 +1682,10 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
 	/* Look at all the ego items */
 	for (i = 0; i < z_info->e_max; i++)	{
 		struct ego_item *ego = &e_info[i];
-		if (ego->everseen || OPT(cheat_xtra)) {
+		if (ego->everseen || OPT(player, cheat_xtra)) {
 			size_t j;
 			int *tval = mem_zalloc(N_ELEMENTS(object_text_order) * sizeof(int));
-			struct ego_poss_item *poss;
+			struct poss_item *poss;
 
 			/* Note the tvals which are possible for this ego */
 			for (poss = ego->poss_items; poss; poss = poss->next) {
@@ -1706,32 +1724,12 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
  * ------------------------------------------------------------------------ */
 
 /**
- * Looks up an artifact idx given an object_kind *that's already known
- * to be an artifact*.  Behaviour is distinctly unfriendly if passed
- * flavours which don't correspond to an artifact.
- */
-static int get_artifact_from_kind(struct object_kind *kind)
-{
-	int i;
-
-	assert(kf_has(kind->kind_flags, KF_INSTA_ART));
-
-	/* Look for the corresponding artifact */
-	for (i = 0; i < z_info->a_max; i++)
-		if (kind->tval == a_info[i].tval && kind->sval == a_info[i].sval)
-			break;
-
-	assert(i < z_info->a_max);
-	return i;
-}
-
-/**
  * Display the objects in a group.
  */
 static void display_object(int col, int row, bool cursor, int oid)
 {
 	struct object_kind *kind = &k_info[oid];
-	const char *inscrip = get_autoinscription(kind);
+	const char *inscrip = get_autoinscription(kind, kind->aware);
 
 	char o_name[80];
 
@@ -1743,13 +1741,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 	byte a = object_kind_attr(kind);
 	wchar_t c = object_kind_char(kind);
 
-	/* Display known artifacts differently */
-	if (kf_has(kind->kind_flags, KF_INSTA_ART) && 
-		artifact_is_known(get_artifact_from_kind(kind)))
-		get_artifact_display_name(o_name, sizeof(o_name), 
-								  get_artifact_from_kind(kind));
-	else
- 		object_kind_name(o_name, sizeof(o_name), kind, OPT(cheat_xtra));
+	/* Don't display special artifacts */
+	if (!kf_has(kind->kind_flags, KF_INSTA_ART))
+ 		object_kind_name(o_name, sizeof(o_name), kind, OPT(player, cheat_xtra));
 
 	/* If the type is "tried", display that */
 	if (kind->tried && !aware)
@@ -1765,7 +1759,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 
 
 	/* Show autoinscription if around */
-	if (aware && inscrip)
+	if (inscrip)
 		c_put_str(COLOUR_YELLOW, inscrip, row, 55);
 
 	if (tile_height == 1) {
@@ -1779,19 +1773,14 @@ static void display_object(int col, int row, bool cursor, int oid)
 static void desc_obj_fake(int k_idx)
 {
 	struct object_kind *kind = &k_info[k_idx];
-	struct object *obj = object_new();
+	struct object_kind *old_kind = player->upkeep->object_kind;
+	struct object *old_obj = player->upkeep->object;
+	struct object *obj = object_new(), *known_obj = object_new();
 
 	char header[120];
 
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
-
-	/* Check for known artifacts, display them as artifacts */
-	if (kf_has(kind->kind_flags, KF_INSTA_ART) && 
-		artifact_is_known(get_artifact_from_kind(kind))) {
-		desc_art_fake(get_artifact_from_kind(kind));
-		return;
-	}
 
 	/* Update the object recall window */
 	track_object_kind(player->upkeep, kind);
@@ -1800,22 +1789,30 @@ static void desc_obj_fake(int k_idx)
 	/* Create the artifact */
 	object_prep(obj, kind, 0, EXTREMIFY);
 
-	/* Hack -- its in the store */
-	if (kind->aware) object_know_all_but_flavor(obj);
-
-	/* It's fully know */
-	if (!kind->flavor) object_notice_everything(obj);
+	/* It's fully known */
+	if (kind->aware || !kind->flavor)
+		object_copy(known_obj, obj);
+	obj->known = known_obj;
 
 	/* Hack -- Handle stuff */
 	handle_stuff(player);
 
-	tb = object_info(obj, OINFO_NONE);
+	tb = object_info(obj, OINFO_FAKE);
 	object_desc(header, sizeof(header), obj,
-			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
+			ODESC_PREFIX | ODESC_CAPITAL);
 
 	textui_textblock_show(tb, area, header);
+	object_delete(&known_obj);
 	object_delete(&obj);
 	textblock_free(tb);
+
+	/* Restore the old trackee */
+	if (old_kind)
+		track_object_kind(player->upkeep, old_kind);
+	else if (old_obj)
+		track_object(player->upkeep, old_obj);
+	else
+		track_object_cancel(player->upkeep);
 }
 
 static int o_cmp_tval(const void *a, const void *b)
@@ -1893,11 +1890,11 @@ static const char *o_xtra_prompt(int oid)
 	const char *no_insc = ", 's' to toggle ignore, 'r'ecall, '{'";
 	const char *with_insc = ", 's' to toggle ignore, 'r'ecall, '{', '}'";
 
-	/* Forget it if we've never seen the thing */
-	if (kind->flavor && !kind->aware)
-		return "";
-
-	return kind->note ? with_insc : no_insc;
+	/* Appropriate prompt */
+	if (kind->aware)
+		return kind->note_aware ? with_insc : no_insc;
+	else
+		return kind->note_unaware ? with_insc : no_insc;
 }
 
 /**
@@ -1924,17 +1921,12 @@ static void o_xtra_act(struct keypress ch, int oid)
 		return;
 	}
 
-	/* Forget it if we've never seen the thing */
-	if (k->flavor && !k->aware)
-		return;
-
 	/* Uninscribe */
 	if (ch.code == '}') {
-		if (k->note)
-			remove_autoinscription(oid);
+		remove_autoinscription(oid);
 	} else if (ch.code == '{') {
 		/* Inscribe */
-		char note_text[80] = "";
+		char text[80] = "";
 
 		/* Avoid the prompt getting in the way */
 		screen_save();
@@ -1943,17 +1935,17 @@ static void o_xtra_act(struct keypress ch, int oid)
 		prt("Inscribe with: ", 0, 0);
 
 		/* Default note */
-		if (k->note)
-			strnfmt(note_text, sizeof(note_text), "%s", get_autoinscription(k));
+		if (k->note_aware || k->note_unaware)
+			strnfmt(text, sizeof(text), "%s", get_autoinscription(k, k->aware));
 
 		/* Get an inscription */
-		if (askfor_aux(note_text, sizeof(note_text), NULL)) {
+		if (askfor_aux(text, sizeof(text), NULL)) {
 			/* Remove old inscription if existent */
-			if (k->note)
+			if (k->note_aware || k->note_unaware)
 				remove_autoinscription(oid);
 
 			/* Add the autoinscription */
-			add_autoinscription(oid, note_text);
+			add_autoinscription(oid, text, k->aware);
 			cmdq_push(CMD_AUTOINSCRIBE);
 
 			/* Redraw gear */
@@ -1972,7 +1964,7 @@ static void o_xtra_act(struct keypress ch, int oid)
  */
 void textui_browse_object_knowledge(const char *name, int row)
 {
-	group_funcs kind_f = {kind_name, o_cmp_tval, obj2gid, 0, TV_MAX, FALSE};
+	group_funcs kind_f = {kind_name, o_cmp_tval, obj2gid, 0, TV_MAX, false};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr,
 						  o_xtra_prompt, o_xtra_act, 0};
 
@@ -1986,13 +1978,10 @@ void textui_browse_object_knowledge(const char *name, int row)
 	for (i = 0; i < z_info->k_max; i++) {
 		kind = &k_info[i];
 		/* It's in the list if we've ever seen it, or it has a flavour,
-		 * and either it's not one of the special artifacts, or if it is,
-		 * we're not aware of it yet. This way the flavour appears in the list
-		 * until it is found.
-		 */
-		if ((kind->everseen || kind->flavor || OPT(cheat_xtra)) &&
-				(!kf_has(kind->kind_flags, KF_INSTA_ART) ||
-				 !artifact_is_known(get_artifact_from_kind(kind)))) {
+		 * and it's not one of the special artifacts. This way the flavour
+		 * appears in the list until it is found. */
+		if ((kind->everseen || kind->flavor || OPT(player, cheat_xtra)) &&
+			(!kf_has(kind->kind_flags, KF_INSTA_ART))) {
 			int c = obj_group_order[k_info[i].tval];
 			if (c >= 0) objects[o_count++] = i;
 		}
@@ -2002,6 +1991,155 @@ void textui_browse_object_knowledge(const char *name, int row)
 					  "Ignore  Inscribed          Sym");
 
 	mem_free(objects);
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * OBJECT RUNES
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Description of each rune group.
+ */
+static const char *rune_group_text[] =
+{
+	"Combat",
+	"Modifiers",
+	"Resists",
+	"Brands",
+	"Slays",
+	"Curses",
+	"Other",
+	NULL
+};
+
+/**
+ * Display the runes in a group.
+ */
+static void display_rune(int col, int row, bool cursor, int oid )
+{
+	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	const char *inscrip = quark_str(rune_note(oid));
+
+	c_prt(attr, rune_name(oid), row, col);
+
+	/* Show autoinscription if around */
+	if (inscrip)
+		c_put_str(COLOUR_YELLOW, inscrip, row, 47);
+}
+
+
+static const char *rune_var_name(int gid)
+{
+	return rune_group_text[gid];
+}
+
+static int rune_var(int oid)
+{
+	return (int) rune_variety(oid);
+}
+
+static void rune_lore(int oid)
+{
+	textblock *tb = textblock_new();
+	char *title = string_make(rune_name(oid));
+
+	my_strcap(title);
+	textblock_append_c(tb, COLOUR_L_BLUE, title);
+	textblock_append(tb, "\n");
+	textblock_append(tb, rune_desc(oid));
+	textblock_append(tb, "\n");
+	textui_textblock_show(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
+
+	string_free(title);
+}
+
+/**
+ * Display special prompt for rune inscription.
+ */
+static const char *rune_xtra_prompt(int oid)
+{
+	const char *no_insc = ", 'r'ecall, '{'";
+	const char *with_insc = ", 'r'ecall, '{', '}'";
+
+	/* Appropriate prompt */
+	return rune_note(oid) ? with_insc : no_insc;
+}
+
+/**
+ * Special key actions for rune inscription.
+ */
+static void rune_xtra_act(struct keypress ch, int oid)
+{
+	/* Uninscribe */
+	if (ch.code == '}') {
+		rune_set_note(oid, NULL);
+	} else if (ch.code == '{') {
+		/* Inscribe */
+		char note_text[80] = "";
+
+		/* Avoid the prompt getting in the way */
+		screen_save();
+
+		/* Prompt */
+		prt("Inscribe with: ", 0, 0);
+
+		/* Default note */
+		if (rune_note(oid))
+			strnfmt(note_text, sizeof(note_text), "%s",
+					quark_str(rune_note(oid)));
+
+		/* Get an inscription */
+		if (askfor_aux(note_text, sizeof(note_text), NULL)) {
+			/* Remove old inscription if existent */
+			if (rune_note(oid))
+				rune_set_note(oid, NULL);
+
+			/* Add the autoinscription */
+			rune_set_note(oid, note_text);
+			rune_autoinscribe(oid);
+
+			/* Redraw gear */
+			player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+		}
+
+		/* Reload the screen */
+		screen_load();
+	}
+}
+
+
+
+/**
+ * Display rune knowledge.
+ */
+static void do_cmd_knowledge_runes(const char *name, int row)
+{
+	group_funcs rune_var_f = {rune_var_name, NULL, rune_var, 0,
+							  N_ELEMENTS(rune_group_text), false};
+
+	member_funcs rune_f = {display_rune, rune_lore, NULL, NULL,
+						   rune_xtra_prompt, rune_xtra_act, 0};
+
+	int *runes;
+	int rune_max = max_runes();
+	int rune_count = 0;
+	int i;
+
+	runes = mem_zalloc(rune_max * sizeof(int));
+
+	for (i = 0; i < rune_max; i++) {
+		/* Ignore unknown runes */
+		if (!player_knows_rune(player, i))
+			continue;
+
+		runes[rune_count++] = i;
+	}
+
+	display_knowledge("runes", runes, rune_count, rune_var_f, rune_f,
+					  "Inscribed");
+	mem_free(runes);
 }
 
 /**
@@ -2141,7 +2279,7 @@ static void f_xtra_act(struct keypress ch, int oid)
 static void do_cmd_knowledge_features(const char *name, int row)
 {
 	group_funcs fkind_f = {fkind_name, f_cmp_fkind, feat_order, 0,
-						   N_ELEMENTS(feature_group_text), FALSE};
+						   N_ELEMENTS(feature_group_text), false};
 
 	member_funcs feat_f = {display_feature, feat_lore, f_xchar, f_xattr,
 						   feat_prompt, f_xtra_act, 0};
@@ -2154,7 +2292,7 @@ static void do_cmd_knowledge_features(const char *name, int row)
 
 	for (i = 0; i < z_info->f_max; i++) {
 		/* Ignore non-features and mimics */
-		if (f_info[i].name == 0 || f_info[i].mimic != i)
+		if (f_info[i].name == 0 || f_info[i].mimic)
 			continue;
 
 		/* Currently no filter for features */
@@ -2322,7 +2460,7 @@ static void t_xtra_act(struct keypress ch, int oid)
 static void do_cmd_knowledge_traps(const char *name, int row)
 {
 	group_funcs tkind_f = {tkind_name, t_cmp_tkind, trap_order, 0,
-						   N_ELEMENTS(trap_group_text), FALSE};
+						   N_ELEMENTS(trap_group_text), false};
 
 	member_funcs trap_f = {display_trap, trap_lore, t_xchar, t_xattr,
 						   trap_prompt, t_xtra_act, 0};
@@ -2351,7 +2489,7 @@ static void do_cmd_knowledge_traps(const char *name, int row)
  * ------------------------------------------------------------------------ */
 
 /* The first row of the knowledge_actions menu which does store knowledge */
-#define STORE_KNOWLEDGE_ROW 6
+#define STORE_KNOWLEDGE_ROW 7
 
 static void do_cmd_knowledge_store(const char *name, int row)
 {
@@ -2375,6 +2513,7 @@ static void do_cmd_knowledge_history(const char *name, int row)
 static menu_action knowledge_actions[] =
 {
 { 0, 0, "Display object knowledge",   	   textui_browse_object_knowledge },
+{ 0, 0, "Display rune knowledge",   	   do_cmd_knowledge_runes },
 { 0, 0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts },
 { 0, 0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items },
 { 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
@@ -2433,37 +2572,49 @@ void textui_knowledge_init(void)
 
 
 /**
- * Display the "player knowledge" menu.
+ * Display the "player knowledge" menu, greying out items that won't display
+ * anything.
  */
 void textui_browse_knowledge(void)
 {
-	int i;
-	region knowledge_region = { 0, 0, -1, 18 };
+	int i, rune_max = max_runes();
+	region knowledge_region = { 0, 0, -1, 19 };
 
-	/* Grey out menu items that won't display anything */
+	/* Runes */
+	knowledge_actions[1].flags = MN_ACT_GRAYED;
+	for (i = 0; i < rune_max; i++) {
+		if (player_knows_rune(player, i) || OPT(player, cheat_xtra)) {
+			knowledge_actions[1].flags = 0;
+		    break;
+		}
+	}
+		
+	/* Artifacts */
 	if (collect_known_artifacts(NULL, 0) > 0)
-		knowledge_actions[1].flags = 0;
+		knowledge_actions[2].flags = 0;
 	else
-		knowledge_actions[1].flags = MN_ACT_GRAYED;
+		knowledge_actions[2].flags = MN_ACT_GRAYED;
 
-	knowledge_actions[2].flags = MN_ACT_GRAYED;
+	/* Ego items */
+	knowledge_actions[3].flags = MN_ACT_GRAYED;
 	for (i = 0; i < z_info->e_max; i++) {
-		if (e_info[i].everseen || OPT(cheat_xtra)) {
-			knowledge_actions[2].flags = 0;
+		if (e_info[i].everseen || OPT(player, cheat_xtra)) {
+			knowledge_actions[3].flags = 0;
 			break;
 		}
 	}
 
+	/* Monsters */
 	if (count_known_monsters() > 0)
-		knowledge_actions[3].flags = 0;
+		knowledge_actions[4].flags = 0;
 	else
-		knowledge_actions[3].flags = MN_ACT_GRAYED;
+		knowledge_actions[4].flags = MN_ACT_GRAYED;
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
 
 	clear_from(0);
-	menu_select(&knowledge_menu, 0, FALSE);
+	menu_select(&knowledge_menu, 0, false);
 
 	screen_load();
 }
@@ -2503,7 +2654,7 @@ void do_cmd_messages(void)
 {
 	ui_event ke;
 
-	bool more = TRUE;
+	bool more = true;
 
 	int i, j, n, q;
 	int wid, hgt;
@@ -2592,13 +2743,13 @@ void do_cmd_messages(void)
 					i = (i >= 20) ? (i - 20) : 0;
 				}
 			} else if (ke.mouse.button == 2) {
-				more = FALSE;
+				more = false;
 			}
 		} else if (ke.type == EVT_KBRD) {
 			switch (ke.key.code) {
 				case ESCAPE:
 				{
-					more = FALSE;
+					more = false;
 					break;
 				}
 
@@ -2870,7 +3021,7 @@ void do_cmd_locate(void)
 		        (y2 / panel_hgt), (x2 / panel_wid), tmp_val);
 
 		/* More detail */
-		if (OPT(center_player)) {
+		if (OPT(player, center_player)) {
 			strnfmt(out_val, sizeof(out_val),
 		        	"Map sector [%d(%02d),%d(%02d)], which is%s your sector.  Direction?",
 					(y2 / panel_hgt), (y2 % panel_hgt),
@@ -2879,7 +3030,7 @@ void do_cmd_locate(void)
 
 		/* Get a direction */
 		while (!dir) {
-			struct keypress command = { 0 };
+			struct keypress command = KEYPRESS_NULL;
 
 			/* Get a command (or Cancel) */
 			if (!get_com(out_val, (char *)&command.code)) break;
@@ -2979,7 +3130,7 @@ static void lookup_symbol(char sym, char *buf, size_t max)
 	 * find a match.
 	 * It would make more sense to loop through tvals, but then we need to
 	 * associate a display character with each tval. */
-	for (i = 1; i < z_info->k_max; i++) {
+	for (i = 0; i < z_info->k_max; i++) {
 		if (char_matches_key(k_info[i].d_char, sym)) {
 			strnfmt(buf, max, "%c - %s.", sym, tval_find_name(k_info[i].tval));
 			return;
@@ -3036,11 +3187,11 @@ void do_cmd_query_symbol(void)
 	char sym;
 	struct keypress query;
 
-	bool all = FALSE;
-	bool uniq = FALSE;
-	bool norm = FALSE;
+	bool all = false;
+	bool uniq = false;
+	bool norm = false;
 
-	bool recall = FALSE;
+	bool recall = false;
 
 	u16b *who;
 
@@ -3050,13 +3201,13 @@ void do_cmd_query_symbol(void)
 
 	/* Describe */
 	if (sym == KTRL('A')) {
-		all = TRUE;
+		all = true;
 		my_strcpy(buf, "Full monster list.", sizeof(buf));
 	} else if (sym == KTRL('U')) {
-		all = uniq = TRUE;
+		all = uniq = true;
 		my_strcpy(buf, "Unique monster list.", sizeof(buf));
 	} else if (sym == KTRL('N')) {
-		all = norm = TRUE;
+		all = norm = true;
 		my_strcpy(buf, "Non-unique monster list.", sizeof(buf));
 	} else {
 		lookup_symbol(sym, buf, sizeof(buf));
@@ -3074,7 +3225,8 @@ void do_cmd_query_symbol(void)
 		struct monster_lore *lore = &l_list[i];
 
 		/* Nothing to recall */
-		if (!OPT(cheat_know) && !lore->all_known && !lore->sights) continue;
+		if (!OPT(player, cheat_know) && !lore->all_known && !lore->sights)
+			continue;
 
 		/* Require non-unique monsters if needed */
 		if (norm && rf_has(race->flags, RF_UNIQUE)) continue;

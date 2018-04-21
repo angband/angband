@@ -3,7 +3,7 @@
  * \brief Handler and auxiliary functions for every effect in the game
  *
  * Copyright (c) 2007 Andi Sidwell
- * Copyright (c) 2014 Ben Semmler, Nick McConnell
+ * Copyright (c) 2016 Ben Semmler, Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -26,14 +26,18 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-msg.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-summon.h"
 #include "mon-util.h"
+#include "mon-timed.h"
 #include "obj-chest.h"
+#include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -44,12 +48,18 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
+#include "source.h"
 #include "target.h"
 #include "trap.h"
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Structures and helper functions for effects
+ * ------------------------------------------------------------------------ */
 typedef struct effect_handler_context_s {
 	const effect_index effect;
+	const struct source origin;
 	const struct object *obj;
 	const bool aware;
 	const int dir;
@@ -75,38 +85,17 @@ struct effect_kind {
 
 
 /**
- * Element info for player breaths
+ * Stat adjectives
  */
-static struct breath_info {
-	const char *desc;    /* Element description */
-	int msgt;            /* Element message type */
-} elements[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) { c, i },
-	#include "list-elements.h"
-	#undef ELEM
-};
-
-
-/**
- * Array of stat adjectives
- */
-static const char *desc_stat_pos[] =
+static const char *desc_stat(int stat, bool positive)
 {
-	#define STAT(a, b, c, d, e, f, g, h) f,
-	#include "list-stats.h"
-	#undef STAT
-};
+	struct obj_property *prop = lookup_obj_property(OBJ_PROPERTY_STAT, stat);
+	if (positive) {
+		return prop->adjective;
+	}
+	return prop->neg_adj;
+}
 
-
-/**
- * Array of stat opposite adjectives
- */
-static const char *desc_stat_neg[] =
-{
-	#define STAT(a, b, c, d, e, f, g, h) g,
-	#include "list-stats.h"
-	#undef STAT
-};
 
 int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 {
@@ -117,49 +106,76 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 		final = context->value.base +
 			damroll(context->value.dice, context->value.sides);
 
-	if (use_boost)
-		final *= (100 + context->boost) / 100;
+	if (use_boost) {
+		final *= (100 + context->boost);
+		final /= 100;
+	}
 
 	return final;
 }
 
+static void get_target(struct source origin, int dir, int *ty, int *tx, int *flags)
+{
+	switch (origin.what) {
+		case SRC_MONSTER: {
+			struct monster *monster = cave_monster(cave, origin.which.monster);
+
+			*flags |= (PROJECT_PLAY);
+
+			if (monster->m_timed[MON_TMD_CONF] > 0 && one_in_(CONF_RANDOM_CHANCE)) {
+				dir = randint1(9);
+				*ty = monster->fy + ddy[dir];
+				*tx = monster->fx + ddx[dir];
+			} else {
+				*ty = player->py;
+				*tx = player->px;
+			}
+
+			break;
+		}
+
+		case SRC_PLAYER:
+			if (dir == 5 && target_okay()) {
+				target_get(tx, ty);
+			} else {
+				/* Use the adjacent grid in the given direction as target */
+				*ty = player->py + ddy[dir];
+				*tx = player->px + ddx[dir];
+			}
+
+			break;
+
+		default:
+			*flags |= PROJECT_PLAY;
+			*ty = player->py;
+			*tx = player->px;
+			break;
+	}
+}
 
 /**
  * Apply the project() function in a direction, or at a target
  */
-static bool project_aimed(int typ, int dir, int dam, int flg,
+static bool project_aimed(struct source origin,
+						  int typ, int dir, int dam, int flg,
 						  const struct object *obj)
 {
-	int py = player->py;
-	int px = player->px;
-	/* Player or monster? */
-	int source = (cave->mon_current > 0) ? cave->mon_current : -1;
-
-	int ty, tx;
+	int ty = -1;
+	int tx = -1;
 
 	/* Pass through the target if needed */
 	flg |= (PROJECT_THRU);
 
-	/* Can hurt the player */
-	if (source > 0)
-		flg |= (PROJECT_PLAY);
-
-	/* Use the adjacent grid in the given direction as target */
-	ty = py + ddy[dir];
-	tx = px + ddx[dir];
-
-	/* Ask for a target if no direction given */
-	if ((dir == 5) && target_okay() && source == -1)
-		target_get(&tx, &ty);
+	get_target(origin, dir, &ty, &tx, &flg);
 
 	/* Aim at the target, do NOT explode */
-	return (project(source, 0, ty, tx, dam, typ, flg, 0, 0, obj));
+	return (project(origin, 0, ty, tx, dam, typ, flg, 0, 0, obj));
 }
 
 /**
- * Apply the project() function to grids the player is touching
+ * Apply the project() function to grids around the player
  */
-static bool project_touch(int dam, int typ, bool aware,
+static bool project_touch(int dam, int rad, int typ, bool aware,
 						  const struct object *obj)
 {
 	int py = player->py;
@@ -167,1489 +183,112 @@ static bool project_touch(int dam, int typ, bool aware,
 
 	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
 	if (aware) flg |= PROJECT_AWARE;
-	return (project(-1, 1, py, px, dam, typ, flg, 0, 0, obj));
+	return (project(source_player(), rad, py, px, dam, typ, flg, 0, 0, obj));
 }
 
 /**
- * Dummy effect, to tell the effect code to pick one of the next 
- * context->value.base effects at random.
+ * Selects items that have at least one removable curse.
  */
-bool effect_handler_RANDOM(effect_handler_context_t *context)
+static bool item_tester_uncursable(const struct object *obj)
 {
-	return TRUE;
-}
-
-/**
- * Deal damage from the current monster to the player
- */
-bool effect_handler_DAMAGE(effect_handler_context_t *context)
-{
-	int dam = effect_calculate_value(context, FALSE);
-	char ddesc[80];
-	struct monster *mon;
-
-	/* Get the monster */
-	mon = cave_monster(cave, cave->mon_current);
-
-	/* Get the "died from" name in case this attack kills @ */
-	monster_desc(ddesc, sizeof(ddesc), mon, MDESC_DIED_FROM);
-
-	/* Hit the player */
-	take_hit(player, dam, ddesc);
-
-	return TRUE;
-}
-
-
-/**
- * Heal the player by a given percentage of their wounds, or a minimum
- * amount, whichever is larger.
- *
- * context->value.base should be the minimum, and
- * context->value.m_bonus the percentage
- */
-bool effect_handler_HEAL_HP(effect_handler_context_t *context)
-{
-	int num;
-
-	/* Paranoia */
-	if ((context->value.m_bonus <= 0) && (context->value.base <= 0))
-		return (TRUE);
-
-	/* Slight hack to ID !Life */
-	if (context->value.base >= 5000) context->ident = TRUE;
-
-	/* No healing needed */
-	if (player->chp >= player->mhp) return (TRUE);
-
-	/* Figure percentage healing level */
-	num = ((player->mhp - player->chp) * context->value.m_bonus) / 100;
-
-	/* Enforce minimum */
-	if (num < context->value.base) num = context->value.base;
-
-	/* Gain hitpoints */
-	player->chp += num;
-
-	/* Enforce maximum */
-	if (player->chp >= player->mhp) {
-		player->chp = player->mhp;
-		player->chp_frac = 0;
-	}
-
-	/* Redraw */
-	player->upkeep->redraw |= (PR_HP);
-
-	/* Print a nice message */
-	if (num < 5)
-		msg("You feel a little better.");
-	else if (num < 15)
-		msg("You feel better.");
-	else if (num < 35)
-		msg("You feel much better.");
-	else
-		msg("You feel very good.");
-
-	/* Notice */
-	context->ident = TRUE;
-
-	return (TRUE);
-}
-
-
-/**
- * Monster self-healing.
- */
-bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
-{
-	int midx = cave->mon_current;
-	int amount = effect_calculate_value(context, FALSE);
-	struct monster *mon = midx > 0 ? cave_monster(cave, midx) : NULL;
-	char m_name[80], m_poss[80];
-	bool seen;
-
-	if (!mon) return TRUE;
-
-	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
-
-	/* Get the monster possessive ("his"/"her"/"its") */
-	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
-
-	seen = (!player->timed[TMD_BLIND] && mflag_has(mon->mflag, MFLAG_VISIBLE));
-
-	/* Heal some */
-	mon->hp += amount;
-
-	/* Fully healed */
-	if (mon->hp >= mon->maxhp) {
-		mon->hp = mon->maxhp;
-
-		if (seen)
-			msg("%s looks REALLY healthy!", m_name);
-		else
-			msg("%s sounds REALLY healthy!", m_name);
-	} else if (seen) { /* Partially healed */
-		msg("%s looks healthier.", m_name);
-	} else {
-		msg("%s sounds healthier.", m_name);
-	}
-
-	/* Redraw (later) if needed */
-	if (player->upkeep->health_who == mon)
-		player->upkeep->redraw |= (PR_HEALTH);
-
-	/* Cancel fear */
-	if (mon->m_timed[MON_TMD_FEAR]) {
-		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
-		msg("%s recovers %s courage.", m_name, m_poss);
-	}
-
-	return TRUE;
-}
-
-/**
- * Feed the player.
- */
-bool effect_handler_NOURISH(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	player_set_food(player, player->food + amount);
-	return TRUE;
-}
-
-bool effect_handler_CRUNCH(effect_handler_context_t *context)
-{
-	if (one_in_(2))
-		msg("It's crunchy.");
-	else
-		msg("It nearly breaks your tooth!");
-	context->ident = TRUE;
-	return TRUE;
-}
-
-/**
- * Cure a player status condition.
- */
-bool effect_handler_CURE(effect_handler_context_t *context)
-{
-	int type = context->p1;
-	if (player_clear_timed(player, type, TRUE))
-		context->ident = TRUE;
-	return TRUE;
-}
-
-/**
- * Set a (positive or negative) player status condition.
- */
-bool effect_handler_TIMED_SET(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	player_set_timed(player, context->p1, amount, TRUE);
-	context->ident = TRUE;
-	return TRUE;
-
-}
-
-/**
- * Extend a (positive or negative) player status condition.
- * If context->p2 is set, increase by that amount if the status exists already
- */
-bool effect_handler_TIMED_INC(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-
-	if (!player->timed[context->p1] || !context->p2)
-		player_inc_timed(player, context->p1, amount, TRUE, TRUE);
-	else
-		player_inc_timed(player, context->p1, context->p2, TRUE, TRUE);
-	context->ident = TRUE;
-	return TRUE;
-
-}
-
-/**
- * Extend a (positive or negative) player status condition unresistably.
- * If context->p2 is set, increase by that amount if the status exists already
- */
-bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-
-	if (!player->timed[context->p1] || !context->p2)
-		player_inc_timed(player, context->p1, amount, TRUE, FALSE);
-	else
-		player_inc_timed(player, context->p1, context->p2, TRUE, FALSE);
-	context->ident = TRUE;
-	return TRUE;
-
-}
-
-/**
- * Extend a (positive or negative) monster status condition.
- */
-bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	struct monster *mon  = cave->mon_current > 0 ?
-		cave_monster(cave, cave->mon_current) : NULL;
-
-	if (mon) {
-		mon_inc_timed(mon, context->p1, amount, 0, FALSE);
-		context->ident = TRUE;
-	}
-	return TRUE;
-
-}
-
-/**
- * Reduce a (positive or negative) player status condition.
- * If context->p2 is set, decrease by the current value / context->p2
- */
-bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	if (context->p2)
-		amount = player->timed[context->p1] / context->p2;
-	if (player_dec_timed(player, context->p1, amount, TRUE))
-		context->ident = TRUE;
-	return TRUE;
-
-}
-
-/**
- * Make the player, um, lose food.  Or gain it.
- */
-bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	if (player_set_food(player, amount))
-		context->ident = TRUE;
-	return TRUE;
-}
-
-bool effect_handler_CONFUSING(effect_handler_context_t *context)
-{
-	if (player->confusing == 0) {
-		msg("Your hands begin to glow.");
-		player->confusing = TRUE;
-		context->ident = TRUE;
-	}
-	return TRUE;
-}
-
-/**
- * Create a "glyph of warding".
- */
-bool effect_handler_RUNE(effect_handler_context_t *context)
-{
-	int py = player->py;
-	int px = player->px;
-
-	/* Always notice */
-	context->ident = TRUE;
-
-	/* See if the effect works */
-	if (!square_canward(cave, py, px)) {
-		msg("There is no clear floor on which to cast the spell.");
-		return FALSE;
-	}
-
-	/* Create a glyph */
-	square_add_ward(cave, py, px);
-
-	/* Push objects off the grid */
-	if (square_object(cave, py, px))
-		push_object(py, px);
-
-	return TRUE;
-}
-
-/**
- * Restore a stat.  The stat index is context->p1, message printed if
- * context->p2 is non-zero.
- */
-bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
-{
-	int stat = context->p1;
-
-	/* Check bounds */
-	if (stat < 0 || stat >= STAT_MAX) return FALSE;
-
-	/* Not needed */
-	if (player->stat_cur[stat] == player->stat_max[stat])
-		return TRUE;
-
-	/* Restore */
-	player->stat_cur[stat] = player->stat_max[stat];
-
-	/* Recalculate bonuses */
-	player->upkeep->update |= (PU_BONUS);
-	update_stuff(player);
-
-	/* Message */
-	if (context->p2)
-		msg("You feel less %s.", desc_stat_neg[stat]);
-
-	/* Success */
-	context->ident = TRUE;
-
-	return (TRUE);
-}
-
-/**
- * Drain a stat temporarily.  The stat index is context->p1.
- */
-bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
-{
-	int stat = context->p1;
-	int flag = sustain_flag(stat);
-
-	/* Bounds check */
-	if (flag < 0) return FALSE;
-
-	/* Sustain */
-	if (player_of_has(player, flag)) {
-		/* Notice effect */
-		equip_notice_flag(player, flag);
-
-		/* Message */
-		msg("You feel very %s for a moment, but the feeling passes.",
-				   desc_stat_neg[stat]);
-
-		/* Notice */
-		context->ident = TRUE;
-
-		return (TRUE);
-	}
-
-	/* Attempt to reduce the stat */
-	if (player_stat_dec(player, stat, FALSE)){
-		int dam = effect_calculate_value(context, FALSE);
-
-		/* Message */
-		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[stat]);
-		if (dam)
-			take_hit(player, dam, "stat drain");
-
-		/* Notice */
-		context->ident = TRUE;
-	}
-
-	return (TRUE);
-}
-
-/**
- * Lose a stat point permanently, in a stat other than the one specified
- * in context->p1.
- */
-bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
-{
-	int safe_stat = context->p1;
-	int loss_stat = randint0(STAT_MAX - 1);
-
-	/* Skip the safe stat */
-	if (loss_stat == safe_stat) loss_stat++;
-
-	/* Attempt to reduce the stat */
-	if (player_stat_dec(player, loss_stat, TRUE)) {
-		/* Notice */
-		context->ident = TRUE;
-
-		/* Message */
-		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat_neg[loss_stat]);
-	}
-
-	return (TRUE);
-}
-
-
-/**
- * Gain a stat point.  The stat index is context->p1.
- */
-bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
-{
-	int stat = context->p1;
-
-	/* Attempt to increase */
-	if (player_stat_inc(player, stat)) {
-		/* Message */
-		msg("You feel very %s!", desc_stat_pos[stat]);
-
-		/* Notice */
-		context->ident = TRUE;
-	}
-
-	return (TRUE);
-}
-
-/**
- * Restores any drained experience; message suppressed if context->p1 is set
- */
-bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
-{
-	/* Restore experience */
-	if (player->exp < player->max_exp) {
-		/* Message */
-		if (context->p1 == 0)
-			msg("You feel your life energies returning.");
-		player_exp_gain(player, player->max_exp - player->exp);
-
-		/* Recalculate max. hitpoints */
-		update_stuff(player);
-
-		/* Did something */
-		context->ident = TRUE;
-	}
-
-	return (TRUE);
-}
-
-/* Note the divisor of 2, a slight hack to simplify food description */
-bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	if (player->exp < PY_MAX_EXP) {
-		msg("You feel more experienced.");
-		player_exp_gain(player, amount / 2);
-		context->ident = TRUE;
-	}
-	return TRUE;
-}
-
-bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
-{
-	if (!player_of_has(player, OF_HOLD_LIFE) && (player->exp > 0)) {
-		msg("You feel your memories fade.");
-		player_exp_lose(player, player->exp / 4, FALSE);
-	}
-	context->ident = TRUE;
-	equip_notice_flag(player, OF_HOLD_LIFE);
-	return TRUE;
-}
-
-/**
- * Drain mana from the player, healing the caster.
- */
-bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
-{
-	int drain = effect_calculate_value(context, FALSE);
-	char m_name[80];
-	struct monster *mon = cave_monster(cave, cave->mon_current);
-
-	if (!mon) return TRUE;
-
-	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
-
-	if (!player->csp) {
-		msg("The draining fails.");
-		update_smart_learn(mon, player, 0, PF_NO_MANA, -1);
-		return TRUE;
-	}
-
-	/* Full drain */
-	if (drain >= player->csp) {
-		drain = player->csp;
-		player->csp = 0;
-		player->csp_frac = 0;
-	}
-	/* Partial drain */
-	else
-		player->csp -= drain;
-
-	/* Redraw mana */
-	player->upkeep->redraw |= PR_MANA;
-
-	/* Heal the monster */
-	if (mon->hp < mon->maxhp) {
-		mon->hp += (6 * drain);
-		if (mon->hp > mon->maxhp)
-			mon->hp = mon->maxhp;
-
-		/* Redraw (later) if needed */
-		if (player->upkeep->health_who == mon)
-			player->upkeep->redraw |= (PR_HEALTH);
-
-		/* Special message */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE))
-			msg("%s appears healthier.", m_name);
-	}
-
-	return TRUE;
-}
-
-bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	if (!amount) amount = player->msp;
-	if (player->csp < player->msp) {
-		player->csp += amount;
-		if (player->csp > player->msp) {
-			player->csp = player->msp;
-			player->csp_frac = 0;
-			msg("You feel your head clear.");
-		} else
-			msg("You feel your head clear somewhat.");
-		player->upkeep->redraw |= (PR_MANA);
-		context->ident = TRUE;
-	}
-	return TRUE;
-}
-
-/*
- * Hack -- Removes curse from an object.
- */
-static void uncurse_object(struct object *obj)
-{
-	bitflag f[OF_SIZE];
-
-	create_mask(f, FALSE, OFT_CURSE, OFT_MAX);
-
-	of_diff(obj->flags, f);
-}
-
-
-/*
- * Removes curses from items in inventory.
- *
- * \param heavy removes heavy curses if true
- *
- * \returns number of items uncursed
- */
-static int remove_curse_aux(bool heavy)
-{
-	int i, cnt = 0;
-
-	/* Attempt to uncurse items being worn */
-	for (i = 0; i < player->body.count; i++) {
-		struct object *obj = slot_object(player, i);
-
-		if (!obj) continue;
-		if (!cursed_p(obj->flags)) continue;
-
-		/* Heavily cursed items need a special spell */
-		if (of_has(obj->flags, OF_HEAVY_CURSE) && !heavy) continue;
-
-		/* Perma-cursed items can never be removed */
-		if (of_has(obj->flags, OF_PERMA_CURSE)) continue;
-
-		/* Uncurse, and update things */
-		uncurse_object(obj);
-
-		player->upkeep->update |= (PU_BONUS);
-		player->upkeep->redraw |= (PR_EQUIP);
-
-		/* Count the uncursings */
-		cnt++;
-	}
-
-	/* Return "something uncursed" */
-	return (cnt);
-}
-
-
-/*
- * Remove most curses
- */
-bool remove_curse(void)
-{
-	return (remove_curse_aux(FALSE));
-}
-
-/*
- * Remove all curses
- */
-bool remove_all_curse(void)
-{
-	return (remove_curse_aux(TRUE));
-}
-
-/**
- * Will need revamping with curses - NRM
- */
-bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
-{
-	if (remove_curse())
-	{
-		if (!player->timed[TMD_BLIND])
-			msg("The air around your body glows blue for a moment...");
-		else
-			msg("You feel as if someone is watching over you.");
-
-		context->ident = TRUE;
-	}
-	return TRUE;
-}
-
-/**
- * Will need revamping with curses - NRM
- */
-bool effect_handler_REMOVE_ALL_CURSE(effect_handler_context_t *context)
-{
-	remove_all_curse();
-	context->ident = TRUE;
-	return TRUE;
-}
-
-/**
- * Set word of recall as appropriate
- */
-bool effect_handler_RECALL(effect_handler_context_t *context)
-{
-	int target_depth;
-	context->ident = TRUE;	
-
-	/* No recall */
-	if (OPT(birth_no_recall) && !player->total_winner) {
-		msg("Nothing happens.");
-		return TRUE;
-	}
-
-	/* No recall from quest levels with force_descend */
-	if (OPT(birth_force_descend) && (is_quest(player->depth))) {
-		msg("Nothing happens.");
-		return TRUE;
-	}
-
-	/* Warn the player if they're descending to an unrecallable level */
-	target_depth = dungeon_get_next_level(player->max_depth, 1);
-	if (OPT(birth_force_descend) && !(player->depth) &&
-			(is_quest(target_depth))) {
-		if (!get_check("Are you sure you want to descend? ")) {
-			return FALSE;
-		}
-	}
-
-	/* Activate recall */
-	if (!player->word_recall) {
-		/* Reset recall depth */
-		if ((player->depth > 0) && (player->depth != player->max_depth)) {
-			/* ToDo: Add a new player field "recall_depth" */
-			if (get_check("Reset recall depth? "))
-				player->max_depth = player->depth;
-		}
-
-		player->word_recall = randint0(20) + 15;
-		msg("The air about you becomes charged...");
-	} else {
-		/* Deactivate recall */
-		if (!get_check("Word of Recall is already active.  Do you want to cancel it? "))
-			return FALSE;
-
-		player->word_recall = 0;
-		msg("A tension leaves the air around you...");
-	}
-
-	/* Redraw status line */
-	player->upkeep->redraw |= PR_STATUS;
-	handle_stuff(player);
-
-	return TRUE;
-}
-
-bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
-{
-	int i, target_increment, target_depth = player->max_depth;
-
-	/* Calculate target depth */
-	target_increment = (4 / z_info->stair_skip) + 1;
-	target_depth = dungeon_get_next_level(player->max_depth, target_increment);
-	for (i = 5; i > 0; i--) {
-		if (is_quest(target_depth)) break;
-		if (target_depth >= z_info->max_depth - 1) break;
-
-		target_depth++;
-	}
-
-	if (target_depth > player->depth) {
-		msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
-		player->deep_descent = 3 + randint1(4);
-		context->ident = TRUE;
-
-		/* Redraw status line */
-		player->upkeep->redraw |= PR_STATUS;
-		handle_stuff(player);
-
-		return TRUE;
-	} else {
-		msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");
-		context->ident = TRUE;
-		return TRUE;
-	}
-}
-
-bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
-{
-	msg("The world changes!");
-	dungeon_change_level(player->depth);
-
-	return TRUE;
-}
-
-/**
- * Map an area around the player.  The height to map above and below the player
- * is context->value.dice, the width either side of the player
- * context->value.sides.
- *
- */
-bool effect_handler_MAP_AREA(effect_handler_context_t *context)
-{
-	int i, x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	/* Pick an area to map */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	/* Drag the co-ordinates into the dungeon */
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan the dungeon */
-	for (y = y1; y < y2; y++) {
-		for (x = x1; x < x2; x++) {
-			/* Some squares can't be mapped */
-			if (square_isno_map(cave, y, x)) continue;
-
-			/* All non-walls are "checked" */
-			if (!square_seemslikewall(cave, y, x)) {
-				if (!square_in_bounds_fully(cave, y, x)) continue;
-
-				/* Memorize normal features */
-				if (!square_isfloor(cave, y, x)) {
-					sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-					square_light_spot(cave, y, x);
-				}
-
-				/* Memorize known walls */
-				for (i = 0; i < 8; i++) {
-					int yy = y + ddy_ddd[i];
-					int xx = x + ddx_ddd[i];
-
-					/* Memorize walls (etc) */
-					if (square_seemslikewall(cave, yy, xx)) {
-						sqinfo_on(cave->squares[yy][xx].info, SQUARE_MARK);
-						cave_k->squares[yy][xx].feat = cave->squares[yy][xx].feat;
-						square_light_spot(cave, yy, xx);
-					}
-				}
+	struct curse_data *c = obj->known->curses;
+	if (c) {
+		size_t i;
+		for (i = 1; i < z_info->curse_max; i++) {
+			if (c[i].power < 100) {
+				return true;
 			}
 		}
 	}
-	/* Notice */
-	context->ident = TRUE;
-
-	return TRUE;
+    return false;
 }
 
 /**
- * Detect traps around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player context->value.sides.
+ * Removes an individual curse from an object.
  */
-bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
+static void remove_object_curse(struct object *obj, int index, bool message)
 {
-	int x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
+	struct curse_data *c = &obj->curses[index];
+	char *name = curses[index].name;
+	char *removed = format("The %s curse is removed!", name);
+	int i;
 
-	bool detect = FALSE;
+	c->power = 0;
+	c->timeout = 0;
+	if (message) {
+		msg(removed);
+	}
 
-	struct object *obj;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-
-	/* Scan the dungeon */
-	for (y = y1; y < y2; y++) {
-		for (x = x1; x < x2; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
-
-			/* Detect traps */
-			if (square_isplayertrap(cave, y, x))
-				/* Reveal trap */
-				if (square_reveal_trap(cave, y, x, 100, FALSE))
-					detect = TRUE;
-
-			/* Scan all objects in the grid to look for traps on chests */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
-				/* Skip anything not a trapped chest */
-				if (!is_trapped_chest(obj)) continue;
-
-				/* Identify once */
-				if (!object_is_known(obj)) {
-					/* Know the trap */
-					object_notice_everything(obj);
-
-					/* Notice it */
-					disturb(player, 0);
-
-					/* We found something to detect */
-					detect = TRUE;
-				}
-			}
-
-			/* Mark as trap-detected */
-			sqinfo_on(cave->squares[y][x].info, SQUARE_DTRAP);
+	/* Check to see if that was the last one */
+	for (i = 1; i < z_info->curse_max; i++) {
+		if (obj->curses[i].power) {
+			return;
 		}
 	}
 
-	/* Rescan the map for the new dtrap edge */
-	for (y = y1 - 1; y < y2 + 1; y++) {
-		for (x = x1 - 1; x < x2 + 1; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+	mem_free(obj->curses);
+	obj->curses = NULL;
+}
 
-			/* See if this grid is on the edge */
-			if (square_dtrap_edge(cave, y, x)) {
-				sqinfo_on(cave->squares[y][x].info, SQUARE_DEDGE);
+/**
+ * Attempts to remove a curse from an object.
+ */
+static bool uncurse_object(struct object *obj, int strength)
+{
+	int index = 0;
+
+	if (get_curse(&index, obj)) {
+		struct curse_data curse = obj->curses[index];
+		char o_name[80];
+
+		if (curse.power >= 100) {
+			/* Curse is permanent */
+			return false;
+		} else if (strength >= curse.power) {
+			/* Successfully removed this curse */
+			remove_object_curse(obj->known, index, false);
+			remove_object_curse(obj, index, true);
+		} else if (!of_has(obj->flags, OF_FRAGILE)) {
+			/* Failure to remove, object is now fragile */
+			object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
+			msgt(MSG_CURSED, "The spell fails; your %s is now fragile.", o_name);
+			of_on(obj->flags, OF_FRAGILE);
+			player_learn_flag(player, OF_FRAGILE);
+		} else if (one_in_(4)) {
+			/* Failure - unlucky fragile object is destroyed */
+			struct object *destroyed;
+			bool none_left = false;
+			msg("There is a bang and a flash!");
+			take_hit(player, damroll(5, 5), "Failed uncursing");
+			if (object_is_carried(player, obj)) {
+				destroyed = gear_object_for_use(obj, 1, false, &none_left);
+				object_delete(&destroyed->known);
+				object_delete(&destroyed);
 			} else {
-				sqinfo_off(cave->squares[y][x].info, SQUARE_DEDGE);
+				square_excise_object(cave, obj->iy, obj->ix, obj);
+				delist_object(cave, obj);
+				object_delete(&obj);
+				square_note_spot(cave, player->py, player->px);
+				square_light_spot(cave, player->py, player->px);
 			}
-
-			/* Redraw */
-			square_light_spot(cave, y, x);
+		} else {
+			/* Non-destructive failure */
+			msg("The removal fails.");
 		}
-	}
-
-	/* Describe */
-	if (detect)
-		msg("You sense the presence of traps!");
-
-	/* Trap detection always makes you aware, even if no traps are present */
-	else
-		msg("You sense no traps.");
-
-	/* Mark the redraw flag */
-	player->upkeep->redraw |= (PR_DTRAP);
-
-	/* Notice */
-	context->ident = TRUE;
-
-	return TRUE;
-}
-
-/**
- * Detect doors around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player context->value.sides.
- */
-bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
-{
-	int x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool doors = FALSE;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan the dungeon */
-	for (y = y1; y < y2; y++) {
-		for (x = x1; x < x2; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
-
-			/* Detect secret doors - improve later NRM */
-			if (square_issecretdoor(cave, y, x))
-				place_closed_door(cave, y, x);
-
-			/* Detect doors */
-			if (square_isdoor(cave, y, x)) {
-				/* Hack -- Memorize */
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
-				/* Redraw */
-				square_light_spot(cave, y, x);
-
-				/* Obvious */
-				doors = TRUE;
-				context->ident = TRUE;
-			}
-		}
-	}
-
-	/* Describe */
-	if (doors)
-		msg("You sense the presence of doors!");
-	else if (context->aware)
-		msg("You sense no doors.");
-
-	return TRUE;
-}
-
-/**
- * Detect stairs around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player context->value.sides.
- */
-bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
-{
-	int x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool stairs = FALSE;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan the dungeon */
-	for (y = y1; y < y2; y++) {
-		for (x = x1; x < x2; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
-
-			/* Detect stairs */
-			if (square_isstairs(cave, y, x)) {
-				/* Hack -- Memorize */
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-				cave_k->squares[y][x].feat = cave->squares[y][x].feat;
-				/* Redraw */
-				square_light_spot(cave, y, x);
-
-				/* Obvious */
-				stairs = TRUE;
-				context->ident = TRUE;
-			}
-		}
-	}
-
-	/* Describe */
-	if (stairs)
-		msg("You sense the presence of stairs!");
-	else if (context->aware)
-		msg("You sense no stairs.");
-
-	return TRUE;
-}
-
-
-/**
- * Detect buried gold around the player.  The height to detect above and below
- * the player is context->value.dice, the width either side of the player
- * context->value.sides, and setting context->p1 to 1 suppresses messages.
- */
-bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
-{
-	int x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool gold_buried = FALSE;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan the dungeon */
-	for (y = y1; y < y2; y++) {
-		for (x = x1; x < x2; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
-
-			/* Magma/Quartz + Known Gold */
-			if (square_hasgoldvein(cave, y, x)) {
-				/* Hack -- Memorize */
-				sqinfo_on(cave->squares[y][x].info, SQUARE_MARK);
-
-				/* Redraw */
-				square_light_spot(cave, y, x);
-
-				/* Detect */
-				gold_buried = TRUE;
-				context->ident = TRUE;
-			}
-		}
-	}
-
-	/* Message unless we're silently detecting */
-	if (context->p1 != 1) {
-		if (gold_buried)
-			msg("You sense the presence of buried treasure!");
-		else if (context->aware)
-			msg("You sense no buried treasure.");
-	}
-
-	return TRUE;
-}
-
-/**
- * Sense objects around the player.  The height to sense above and below the
- * player is context->value.dice, the width either side of the player
- * context->value.sides
- */
-bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
-{
-	int x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool objects = FALSE;
-
-	/* Pick an area to sense */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan the area for objects */
-	for (y = y1; y <= y2; y++) {
-		for (x = x1; x <= x2; x++) {
-			struct object *obj = square_object(cave, y, x);
-
-			/* Skip empty grids */
-			if (!obj) continue;
-
-			/* Notice an object is detected */
-			objects = TRUE;
-			context->ident = TRUE;
-
-			/* Mark the pile as aware */
-			while (obj) {
-				if (obj->marked == MARK_UNAWARE)
-					obj->marked = MARK_AWARE;
-				obj = obj->next;
-			}
-
-			/* Redraw */
-			square_light_spot(cave, y, x);
-		}
-	}
-
-	if (objects)
-		msg("You sense the presence of objects!");
-	else if (context->aware)
-		msg("You sense no objects.");
-
-	return TRUE;
-}
-
-/**
- * Detect objects around the player.  The height to detect above and below the
- * player is context->value.dice, the width either side of the player
- * context->value.sides
- */
-bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
-{
-	int x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool objects = FALSE;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan the area for objects */
-	for (y = y1; y <= y2; y++) {
-		for (x = x1; x <= x2; x++) {
-			struct object *obj = square_object(cave, y, x);
-
-			/* Skip empty grids */
-			if (!obj) continue;
-
-			/* Notice an object is detected */
-			if (!ignore_item_ok(obj)) {
-				objects = TRUE;
-				context->ident = TRUE;
-			}
-
-			/* Markthe pile as seen */
-			while (obj) {
-				obj->marked = MARK_SEEN;
-				obj = obj->next;
-			}
-
-			/* Redraw */
-			square_light_spot(cave, y, x);
-		}
-	}
-
-	if (objects)
-		msg("You detect the presence of objects!");
-	else if (context->aware)
-		msg("You detect no objects.");
-
-	return TRUE;
-}
-
-/**
- * Detect visible monsters around the player.  The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
- */
-bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
-{
-	int i, x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool monsters = FALSE;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
-
-		/* Skip dead monsters */
-		if (!mon->race) continue;
-
-		/* Location */
-		y = mon->fy;
-		x = mon->fx;
-
-		/* Only detect nearby monsters */
-		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
-
-		/* Detect all non-invisible, obvious monsters */
-		if (!rf_has(mon->race->flags, RF_INVISIBLE) &&
-			!mflag_has(mon->mflag, MFLAG_UNAWARE)) {
-			/* Hack -- Detect the monster */
-			mflag_on(mon->mflag, MFLAG_MARK);
-			mflag_on(mon->mflag, MFLAG_SHOW);
-
-			/* Update monster recall window */
-			if (player->upkeep->monster_race == mon->race)
-				/* Redraw stuff */
-				player->upkeep->redraw |= (PR_MONSTER);
-
-			/* Update the monster */
-			update_mon(mon, cave, FALSE);
-
-			/* Detect */
-			monsters = TRUE;
-			context->ident = TRUE;
-		}
-	}
-
-	if (monsters)
-		msg("You sense the presence of monsters!");
-	else if (context->aware)
-		msg("You sense no monsters.");
-
-	return TRUE;
-}
-
-
-/**
- * Detect invisible monsters around the player.  The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
- */
-bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
-{
-	int i, x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool monsters = FALSE;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
-		struct monster_lore *lore;
-
-		/* Skip dead monsters */
-		if (!mon->race) continue;
-
-		lore = get_lore(mon->race);
-
-		/* Location */
-		y = mon->fy;
-		x = mon->fx;
-
-		/* Only detect nearby monsters */
-		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
-
-		/* Detect invisible monsters */
-		if (rf_has(mon->race->flags, RF_INVISIBLE)) {
-			/* Take note that they are invisible */
-			rf_on(lore->flags, RF_INVISIBLE);
-
-			/* Update monster recall window */
-			if (player->upkeep->monster_race == mon->race)
-				player->upkeep->redraw |= (PR_MONSTER);
-
-			/* Detect the monster */
-			mflag_on(mon->mflag, MFLAG_MARK);
-			mflag_on(mon->mflag, MFLAG_SHOW);
-
-			/* Update the monster */
-			update_mon(mon, cave, FALSE);
-
-			/* Detect */
-			monsters = TRUE;
-			context->ident = TRUE;
-		}
-	}
-
-	if (monsters)
-		msg("You sense the presence of invisible creatures!");
-	else if (context->aware)
-		msg("You sense no invisible creatures.");
-
-	return TRUE;
-}
-
-
-
-/**
- * Detect evil monsters around the player.  The height to detect above and
- * below the player is context->value.dice, the width either side of the player
- * context->value.sides.
- */
-bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
-{
-	int i, x, y;
-	int x1, x2, y1, y2;
-	int y_dist = context->value.dice;
-	int x_dist = context->value.sides;
-
-	bool monsters = FALSE;
-
-	/* Pick an area to detect */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
-
-	if (y1 < 0) y1 = 0;
-	if (x1 < 0) x1 = 0;
-	if (y2 > cave->height - 1) y2 = cave->height - 1;
-	if (x2 > cave->width - 1) x2 = cave->width - 1;
-
-	/* Scan monsters */
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
-		struct monster_lore *lore;
-
-		/* Skip dead monsters */
-		if (!mon->race) continue;
-
-		lore = get_lore(mon->race);
-
-		/* Location */
-		y = mon->fy;
-		x = mon->fx;
-
-		/* Only detect nearby monsters */
-		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
-
-		/* Detect evil monsters */
-		if (rf_has(mon->race->flags, RF_EVIL)) {
-			/* Take note that they are evil */
-			rf_on(lore->flags, RF_EVIL);
-
-			/* Update monster recall window */
-			if (player->upkeep->monster_race == mon->race)
-				player->upkeep->redraw |= (PR_MONSTER);
-
-			/* Detect the monster */
-			mflag_on(mon->mflag, MFLAG_MARK);
-			mflag_on(mon->mflag, MFLAG_SHOW);
-
-			/* Update the monster */
-			update_mon(mon, cave, FALSE);
-
-			/* Detect */
-			monsters = TRUE;
-			context->ident = TRUE;
-		}
-	}
-
-	if (monsters)
-		msg("You sense the presence of evil creatures!");
-	else if (context->aware)
-		msg("You sense no evil creatures.");
-
-	return TRUE;
-}
-
-/**
- * Create stairs at the player location
- */
-bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
-{
-	int py = player->py;
-	int px = player->px;
-
-	context->ident = TRUE;
-
-	/* Only allow stairs to be created on empty floor */
-	if (!square_isfloor(cave, py, px)) {
-		msg("There is no empty floor here.");
-		return FALSE;
-	}
-
-	/* Push objects off the grid */
-	if (square_object(cave, py, px))
-		push_object(py, px);
-
-	square_add_stairs(cave, py, px, player->depth);
-
-	return TRUE;
-}
-
-/**
- * Apply disenchantment to the player's stuff.
- */
-bool effect_handler_DISENCHANT(effect_handler_context_t *context)
-{
-	int i, count = 0;
-	struct object *obj;
-	char o_name[80];
-
-	/* Count slots */
-	for (i = 0; i < player->body.count; i++) {
-		/* Ignore rings, amulets and lights */
-		if (slot_type_is(i, EQUIP_RING)) continue;
-		if (slot_type_is(i, EQUIP_AMULET)) continue;
-		if (slot_type_is(i, EQUIP_LIGHT)) continue;
-
-		/* Count disenchantable slots */
-		count++;
-	}
-
-	/* Pick one at random */
-	for (i = player->body.count - 1; i >= 0; i--) {
-		/* Ignore rings, amulets and lights */
-		if (slot_type_is(i, EQUIP_RING)) continue;
-		if (slot_type_is(i, EQUIP_AMULET)) continue;
-		if (slot_type_is(i, EQUIP_LIGHT)) continue;
-
-		if (one_in_(count--)) break;
-	}
-
-	/* Get the item */
-	obj = slot_object(player, i);
-
-	/* No item, nothing happens */
-	if (!obj) return TRUE;
-
-	/* Nothing to disenchant */
-	if ((obj->to_h <= 0) && (obj->to_d <= 0) && (obj->to_a <= 0))
-		return TRUE;
-
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
-
-	/* Artifacts have a 60% chance to resist */
-	if (obj->artifact && (randint0(100) < 60)) {
-		/* Message */
-		msg("Your %s (%c) resist%s disenchantment!", o_name, I2A(i),
-			((obj->number != 1) ? "" : "s"));
-
-		/* Notice */
-		context->ident = TRUE;
-
-		return TRUE;
-	}
-
-	/* Apply disenchantment, depending on which kind of equipment */
-	if (slot_type_is(i, EQUIP_WEAPON) || slot_type_is(i, EQUIP_BOW)) {
-		/* Disenchant to-hit */
-		if (obj->to_h > 0) obj->to_h--;
-		if ((obj->to_h > 5) && (randint0(100) < 20)) obj->to_h--;
-
-		/* Disenchant to-dam */
-		if (obj->to_d > 0) obj->to_d--;
-		if ((obj->to_d > 5) && (randint0(100) < 20)) obj->to_d--;
 	} else {
-		/* Disenchant to-ac */
-		if (obj->to_a > 0) obj->to_a--;
-		if ((obj->to_a > 5) && (randint0(100) < 20)) obj->to_a--;
+		return false;
 	}
-
-	/* Message */
-	msg("Your %s (%c) %s disenchanted!", o_name, I2A(i),
-		((obj->number != 1) ? "were" : "was"));
-
-	/* Recalculate bonuses */
 	player->upkeep->update |= (PU_BONUS);
+	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
+	return true;
+}
 
-	/* Window stuff */
-	player->upkeep->redraw |= (PR_EQUIP);
-
-	/* Notice */
-	context->ident = TRUE;
-
-	return TRUE;
+/**
+ * Selects items that have at least one unknown rune.
+ */
+static bool item_tester_unknown(const struct object *obj)
+{
+    return object_runes_known(obj) ? false : true;
 }
 
 /**
@@ -1698,7 +337,7 @@ static bool enchant_score(s16b *score, bool is_artifact)
 	int chance;
 
 	/* Artifacts resist enchantment half the time */
-	if (is_artifact && randint0(100) < 50) return FALSE;
+	if (is_artifact && randint0(100) < 50) return false;
 
 	/* Figure out the chance to enchant */
 	if (*score < 0) chance = 0;
@@ -1706,49 +345,24 @@ static bool enchant_score(s16b *score, bool is_artifact)
 	else chance = enchant_table[*score];
 
 	/* If we roll less-than-or-equal to chance, it fails */
-	if (randint1(1000) <= chance) return FALSE;
+	if (randint1(1000) <= chance) return false;
 
 	/* Increment the score */
 	++*score;
 
-	return TRUE;
+	return true;
 }
 
 /**
- * Tries to uncurse a cursed item, if possible
+ * Helper function for enchant() which tries increasing an item's bonuses
  *
- * \returns true if a curse was broken
- */
-static bool enchant_curse(struct object *obj, bool is_artifact)
-{
-	/* If the item isn't cursed (or is perma-cursed) this doesn't work */
-	if (!cursed_p(obj->flags) || of_has(obj->flags, OF_PERMA_CURSE)) 
-		return FALSE;
-
-	/* Artifacts resist enchanting curses away half the time */
-	if (is_artifact && randint0(100) < 50) return FALSE;
-
-	/* Normal items are uncursed 25% of the tiem */
-	if (randint0(100) >= 25) return FALSE;
-
-	/* Uncurse the item */
-	msg("The curse is broken!");
-	uncurse_object(obj);
-	return TRUE;
-}
-
-/**
- * Helper function for enchant() which tries to do the two things that
- * enchanting an item does, namely increasing its bonuses and breaking curses
- *
- * \returns true if a bonus was increased or a curse was broken
+ * \returns true if a bonus was increased
  */
 static bool enchant2(struct object *obj, s16b *score)
 {
-	bool result = FALSE;
-	bool is_artifact = obj->artifact ? TRUE : FALSE;
-	if (enchant_score(score, is_artifact)) result = TRUE;
-	if (enchant_curse(obj, is_artifact)) result = TRUE;
+	bool result = false;
+	bool is_artifact = obj->artifact ? true : false;
+	if (enchant_score(score, is_artifact)) result = true;
 	return result;
 }
 
@@ -1772,7 +386,7 @@ static bool enchant2(struct object *obj, s16b *score)
 bool enchant(struct object *obj, int n, int eflag)
 {
 	int i, prob;
-	bool res = FALSE;
+	bool res = false;
 
 	/* Large piles resist enchantment */
 	prob = obj->number * 100;
@@ -1787,13 +401,19 @@ bool enchant(struct object *obj, int n, int eflag)
 		if (prob > 100 && randint0(prob) >= 100) continue;
 
 		/* Try the three kinds of enchantment we can do */
-		if ((eflag & ENCH_TOHIT) && enchant2(obj, &obj->to_h)) res = TRUE;
-		if ((eflag & ENCH_TODAM) && enchant2(obj, &obj->to_d)) res = TRUE;
-		if ((eflag & ENCH_TOAC)  && enchant2(obj, &obj->to_a)) res = TRUE;
+		if ((eflag & ENCH_TOHIT) && enchant2(obj, &obj->to_h)) res = true;
+		if ((eflag & ENCH_TODAM) && enchant2(obj, &obj->to_d)) res = true;
+		if ((eflag & ENCH_TOAC)  && enchant2(obj, &obj->to_a)) res = true;
 	}
 
+	/* Update knowledge */
+	assert(obj->known);
+	obj->known->to_h = obj->to_h;
+	obj->known->to_d = obj->to_d;
+	obj->known->to_a = obj->to_a;
+
 	/* Failure */
-	if (!res) return (FALSE);
+	if (!res) return (false);
 
 	/* Recalculate bonuses, gear */
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
@@ -1805,15 +425,13 @@ bool enchant(struct object *obj, int n, int eflag)
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP );
 
 	/* Success */
-	return (TRUE);
+	return (true);
 }
-
-
 
 /**
  * Enchant an item (in the inventory or on the floor)
  * Note that "num_ac" requires armour, else weapon
- * Returns TRUE if attempted, FALSE if cancelled
+ * Returns true if attempted, false if cancelled
  *
  * Enchanting with the TOBOTH flag will try to enchant
  * both to_hit and to_dam with the same flag.  This
@@ -1821,7 +439,7 @@ bool enchant(struct object *obj, int n, int eflag)
  */
 bool enchant_spell(int num_hit, int num_dam, int num_ac)
 {
-	bool okay = FALSE;
+	bool okay = false;
 
 	struct object *obj;
 
@@ -1835,7 +453,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	if (!get_item(&obj, q, s, 0, 
 		num_ac ? item_tester_hook_armour : item_tester_hook_weapon,
 		(USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return FALSE;
+		return false;
 
 	/* Description */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
@@ -1846,10 +464,10 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 			   ((obj->number > 1) ? "" : "s"));
 
 	/* Enchant */
-	if (num_dam && enchant(obj, num_hit, ENCH_TOBOTH)) okay = TRUE;
-	else if (enchant(obj, num_hit, ENCH_TOHIT)) okay = TRUE;
-	else if (enchant(obj, num_dam, ENCH_TODAM)) okay = TRUE;
-	if (enchant(obj, num_ac, ENCH_TOAC)) okay = TRUE;
+	if (num_dam && enchant(obj, num_hit, ENCH_TOBOTH)) okay = true;
+	else if (enchant(obj, num_hit, ENCH_TOHIT)) okay = true;
+	else if (enchant(obj, num_dam, ENCH_TODAM)) okay = true;
+	if (enchant(obj, num_ac, ENCH_TOAC)) okay = true;
 
 	/* Failure */
 	if (!okay) {
@@ -1860,9 +478,8 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	}
 
 	/* Something happened */
-	return (TRUE);
+	return (true);
 }
-
 
 /**
  * Brand weapons (or ammo)
@@ -1873,12 +490,10 @@ void brand_object(struct object *obj, const char *name)
 {
 	int i;
 	struct ego_item *ego;
-	bool ok = FALSE;
+	bool ok = false;
 
-	/* you can never modify artifacts / ego-items */
-	/* you can never modify cursed / worthless items */
-	if (obj && !cursed_p(obj->flags) && obj->kind->cost &&
-		!obj->artifact && !obj->ego) {
+	/* You can never modify artifacts, ego items or worthless items */
+	if (obj && obj->kind->cost && !obj->artifact && !obj->ego) {
 		char o_name[80];
 		char brand[20];
 
@@ -1896,10 +511,10 @@ void brand_object(struct object *obj, const char *name)
 			/* Match the name */
 			if (!ego->name) continue;
 			if (streq(ego->name, brand)) {
-				struct ego_poss_item *poss;
+				struct poss_item *poss;
 				for (poss = ego->poss_items; poss; poss = poss->next)
 					if (poss->kidx == obj->kind->kidx)
-						ok = TRUE;
+						ok = true;
 			}
 			if (ok) break;
 		}
@@ -1907,7 +522,7 @@ void brand_object(struct object *obj, const char *name)
 		/* Make it an ego item */
 		obj->ego = &e_info[i];
 		ego_apply_magic(obj, 0);
-		object_notice_ego(obj);
+		player_know_object(player, obj);
 
 		/* Update the gear */
 		player->upkeep->update |= (PU_INVEN);
@@ -1926,6 +541,1574 @@ void brand_object(struct object *obj, const char *name)
 	}
 }
 
+/**
+ * Hook for "get_item()".  Determine if something is rechargable.
+ */
+static bool item_tester_hook_recharge(const struct object *obj)
+{
+	/* Recharge staves and wands */
+	if (tval_can_have_charges(obj)) return true;
+
+	return false;
+}
+
+/**
+ * Hook to specify "ammo"
+ */
+static bool item_tester_hook_ammo(const struct object *obj)
+{
+	return tval_is_ammo(obj);
+}
+
+/**
+ * Hook to specify bolts
+ */
+static bool item_tester_hook_bolt(const struct object *obj)
+{
+	return obj->tval == TV_BOLT;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Effect handlers
+ * ------------------------------------------------------------------------ */
+/**
+ * Dummy effect, to tell the effect code to pick one of the next
+ * context->value.base effects at random.
+ */
+bool effect_handler_RANDOM(effect_handler_context_t *context)
+{
+	return true;
+}
+
+/**
+ * Deal damage from the current monster or trap to the player
+ */
+bool effect_handler_DAMAGE(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, false);
+	char killer[80];
+
+	switch (context->origin.what) {
+		case SRC_MONSTER: {
+			/* Get the "died from" name in case this attack kills @ */
+			struct monster *mon = cave_monster(cave, context->origin.which.monster);
+			monster_desc(killer, sizeof(killer), mon, MDESC_DIED_FROM);
+			break;
+		}
+
+		case SRC_TRAP: {
+			struct trap *trap = context->origin.which.trap;
+			char *article = is_a_vowel(trap->kind->desc[0]) ? "an " : "a ";
+			strnfmt(killer, sizeof(killer), "%s%s", article, trap->kind->desc);
+			break;
+		}
+
+		case SRC_OBJECT: {
+			/* Must be a cursed weapon */
+			struct object *obj = context->origin.which.object;
+			object_desc(killer, sizeof(killer), obj, ODESC_PREFIX | ODESC_BASE);
+			break;
+		}
+
+		case SRC_PLAYER: {
+			my_strcpy(killer, "yourself", sizeof(killer));
+			break;
+		}
+
+		case SRC_NONE: {
+			my_strcpy(killer, "a bug", sizeof(killer));
+			break;
+		}
+	}
+
+	/* Hit the player */
+	take_hit(player, dam, killer);
+
+	return true;
+}
+
+
+/**
+ * Heal the player by a given percentage of their wounds, or a minimum
+ * amount, whichever is larger.
+ *
+ * context->value.base should be the minimum, and
+ * context->value.m_bonus the percentage
+ */
+bool effect_handler_HEAL_HP(effect_handler_context_t *context)
+{
+	int num;
+
+	/* Paranoia */
+	if ((context->value.m_bonus <= 0) && (context->value.base <= 0))
+		return (true);
+
+	/* Always ID */
+	context->ident = true;
+
+	/* No healing needed */
+	if (player->chp >= player->mhp) return (true);
+
+	/* Figure percentage healing level */
+	num = ((player->mhp - player->chp) * context->value.m_bonus) / 100;
+
+	/* Enforce minimum */
+	if (num < context->value.base) num = context->value.base;
+
+	/* Gain hitpoints */
+	player->chp += num;
+
+	/* Enforce maximum */
+	if (player->chp >= player->mhp) {
+		player->chp = player->mhp;
+		player->chp_frac = 0;
+	}
+
+	/* Redraw */
+	player->upkeep->redraw |= (PR_HP);
+
+	/* Print a nice message */
+	if (num < 5)
+		msg("You feel a little better.");
+	else if (num < 15)
+		msg("You feel better.");
+	else if (num < 35)
+		msg("You feel much better.");
+	else
+		msg("You feel very good.");
+
+	return (true);
+}
+
+
+/**
+ * Monster self-healing.
+ */
+bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
+{
+	assert(context->origin.what == SRC_MONSTER);
+
+	int midx = context->origin.which.monster;
+	struct monster *mon = midx > 0 ? cave_monster(cave, midx) : NULL;
+
+	int amount = effect_calculate_value(context, false);
+	char m_name[80], m_poss[80];
+	bool seen;
+
+	if (!mon) return true;
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+	/* Get the monster possessive ("his"/"her"/"its") */
+	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
+
+	seen = (!player->timed[TMD_BLIND] && monster_is_visible(mon));
+
+	/* Heal some */
+	mon->hp += amount;
+
+	/* Fully healed */
+	if (mon->hp >= mon->maxhp) {
+		mon->hp = mon->maxhp;
+
+		if (seen)
+			msg("%s looks REALLY healthy!", m_name);
+		else
+			msg("%s sounds REALLY healthy!", m_name);
+	} else if (seen) { /* Partially healed */
+		msg("%s looks healthier.", m_name);
+	} else {
+		msg("%s sounds healthier.", m_name);
+	}
+
+	/* Redraw (later) if needed */
+	if (player->upkeep->health_who == mon)
+		player->upkeep->redraw |= (PR_HEALTH);
+
+	/* Cancel fear */
+	if (mon->m_timed[MON_TMD_FEAR]) {
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+		msg("%s recovers %s courage.", m_name, m_poss);
+	}
+
+	/* ID */
+	context->ident = true;
+
+	return true;
+}
+
+/**
+ * Monster healing of kin.
+ */
+bool effect_handler_MON_HEAL_KIN(effect_handler_context_t *context)
+{
+	assert(context->origin.what == SRC_MONSTER);
+
+	int midx = context->origin.which.monster;
+	struct monster *mon = midx > 0 ? cave_monster(cave, midx) : NULL;
+	if (!mon) return true;
+
+	int amount = effect_calculate_value(context, false);
+	char m_name[80], m_poss[80];
+	bool seen;
+
+	/* Find a nearby monster */
+	mon = choose_nearby_injured_kin(cave, mon);
+	if (!mon) return true;
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+	/* Get the monster possessive ("his"/"her"/"its") */
+	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
+
+	seen = (!player->timed[TMD_BLIND] && monster_is_visible(mon));
+
+	/* Heal some */
+	mon->hp = MIN(mon->hp + amount, mon->maxhp);
+
+	if (seen) {
+		if (mon->hp == mon->maxhp) {
+			msg("%s looks REALLY healthy!", m_name);
+		} else if (seen) { /* Partially healed */
+			msg("%s looks healthier.", m_name);
+		}
+	}
+
+	/* Redraw (later) if needed */
+	if (player->upkeep->health_who == mon)
+		player->upkeep->redraw |= (PR_HEALTH);
+
+	/* Cancel fear */
+	if (mon->m_timed[MON_TMD_FEAR]) {
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+		msg("%s recovers %s courage.", m_name, m_poss);
+	}
+
+	/* ID */
+	context->ident = true;
+
+	return true;
+}
+
+/**
+ * Feed the player.
+ */
+bool effect_handler_NOURISH(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	player_set_food(player, player->food + amount);
+	context->ident = true;
+	return true;
+}
+
+bool effect_handler_CRUNCH(effect_handler_context_t *context)
+{
+	if (one_in_(2))
+		msg("It's crunchy.");
+	else
+		msg("It nearly breaks your tooth!");
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Cure a player status condition.
+ */
+bool effect_handler_CURE(effect_handler_context_t *context)
+{
+	int type = context->p1;
+	(void) player_clear_timed(player, type, true);
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Set a (positive or negative) player status condition.
+ */
+bool effect_handler_TIMED_SET(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	player_set_timed(player, context->p1, amount, true);
+	context->ident = true;
+	return true;
+
+}
+
+/**
+ * Extend a (positive or negative) player status condition.
+ * If context->p2 is set, increase by that amount if the status exists already
+ */
+bool effect_handler_TIMED_INC(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+
+	if (!player->timed[context->p1] || !context->p2)
+		player_inc_timed(player, context->p1, amount, true, true);
+	else
+		player_inc_timed(player, context->p1, context->p2, true, true);
+	context->ident = true;
+	return true;
+
+}
+
+/**
+ * Extend a (positive or negative) player status condition unresistably.
+ * If context->p2 is set, increase by that amount if the status exists already
+ */
+bool effect_handler_TIMED_INC_NO_RES(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+
+	if (!player->timed[context->p1] || !context->p2)
+		player_inc_timed(player, context->p1, amount, true, false);
+	else
+		player_inc_timed(player, context->p1, context->p2, true, false);
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Extend a (positive or negative) monster status condition.
+ */
+bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
+{
+	assert(context->origin.what == SRC_MONSTER);
+
+	int amount = effect_calculate_value(context, false);
+	struct monster *mon = cave_monster(cave, context->origin.which.monster);
+
+	if (mon) {
+		mon_inc_timed(mon, context->p1, amount, 0, false);
+		context->ident = true;
+	}
+
+	return true;
+}
+
+/**
+ * Reduce a (positive or negative) player status condition.
+ * If context->p2 is set, decrease by the current value / context->p2
+ */
+bool effect_handler_TIMED_DEC(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	if (context->p2)
+		amount = player->timed[context->p1] / context->p2;
+	(void) player_dec_timed(player, context->p1, amount, true);
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Make the player, um, lose food.  Or gain it.
+ */
+bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	(void) player_set_food(player, amount);
+	context->ident = true;
+	return true;
+}
+
+bool effect_handler_CONFUSING(effect_handler_context_t *context)
+{
+	if (!player->confusing) {
+		msg("Your hands begin to glow.");
+		player->confusing = true;
+	}
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Create a "glyph of warding".
+ */
+bool effect_handler_RUNE(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+
+	/* Always notice */
+	context->ident = true;
+
+	/* See if the effect works */
+	if (!square_canward(cave, py, px)) {
+		msg("There is no clear floor on which to cast the spell.");
+		return false;
+	}
+
+	/* Create a glyph */
+	square_add_ward(cave, py, px);
+
+	/* Push objects off the grid */
+	if (square_object(cave, py, px))
+		push_object(py, px);
+
+	return true;
+}
+
+/**
+ * Restore a stat.  The stat index is context->p1, message printed if
+ * context->p2 is non-zero.
+ */
+bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
+{
+	int stat = context->p1;
+
+	/* ID */
+	context->ident = true;
+
+	/* Check bounds */
+	if (stat < 0 || stat >= STAT_MAX) return false;
+
+	/* Not needed */
+	if (player->stat_cur[stat] == player->stat_max[stat])
+		return true;
+
+	/* Restore */
+	player->stat_cur[stat] = player->stat_max[stat];
+
+	/* Recalculate bonuses */
+	player->upkeep->update |= (PU_BONUS);
+	update_stuff(player);
+
+	/* Message */
+	if (context->p2)
+		msg("You feel less %s.", desc_stat(stat, false));
+
+	return (true);
+}
+
+/**
+ * Drain a stat temporarily.  The stat index is context->p1.
+ */
+bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
+{
+	int stat = context->p1;
+	int flag = sustain_flag(stat);
+
+	/* Bounds check */
+	if (flag < 0) return false;
+
+	/* ID */
+	context->ident = true;
+
+	/* Sustain */
+	if (player_of_has(player, flag)) {
+		/* Notice effect */
+		equip_learn_flag(player, flag);
+
+		/* Message */
+		msg("You feel very %s for a moment, but the feeling passes.",
+				   desc_stat(stat, false));
+
+		return (true);
+	}
+
+	/* Attempt to reduce the stat */
+	if (player_stat_dec(player, stat, false)){
+		int dam = effect_calculate_value(context, false);
+
+		/* Notice effect */
+		equip_learn_flag(player, flag);
+
+		/* Message */
+		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat(stat, false));
+		if (dam)
+			take_hit(player, dam, "stat drain");
+	}
+
+	return (true);
+}
+
+/**
+ * Lose a stat point permanently, in a stat other than the one specified
+ * in context->p1.
+ */
+bool effect_handler_LOSE_RANDOM_STAT(effect_handler_context_t *context)
+{
+	int safe_stat = context->p1;
+	int loss_stat = randint1(STAT_MAX - 1);
+
+	/* Avoid the safe stat */
+	loss_stat = (loss_stat + safe_stat) % STAT_MAX;
+
+	/* Attempt to reduce the stat */
+	if (player_stat_dec(player, loss_stat, true)) {
+		msgt(MSG_DRAIN_STAT, "You feel very %s.", desc_stat(loss_stat, false));
+	}
+
+	/* ID */
+	context->ident = true;
+
+	return (true);
+}
+
+
+/**
+ * Gain a stat point.  The stat index is context->p1.
+ */
+bool effect_handler_GAIN_STAT(effect_handler_context_t *context)
+{
+	int stat = context->p1;
+
+	/* Attempt to increase */
+	if (player_stat_inc(player, stat)) {
+		msg("You feel very %s!", desc_stat(stat, true));
+	}
+
+	/* Notice */
+	context->ident = true;
+
+	return (true);
+}
+
+/**
+ * Restores any drained experience; message suppressed if context->p1 is set
+ */
+bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
+{
+	/* Restore experience */
+	if (player->exp < player->max_exp) {
+		/* Message */
+		if (context->p1 == 0)
+			msg("You feel your life energies returning.");
+		player_exp_gain(player, player->max_exp - player->exp);
+
+		/* Recalculate max. hitpoints */
+		update_stuff(player);
+	}
+	
+	/* Did something */
+	context->ident = true;
+
+	return (true);
+}
+
+/* Note the divisor of 2, a slight hack to simplify food description */
+bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	if (player->exp < PY_MAX_EXP) {
+		msg("You feel more experienced.");
+		player_exp_gain(player, amount / 2);
+	}
+	context->ident = true;
+
+	return true;
+}
+
+bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
+{
+	if (!player_of_has(player, OF_HOLD_LIFE) && (player->exp > 0)) {
+		msg("You feel your memories fade.");
+		player_exp_lose(player, player->exp / 4, false);
+	}
+	context->ident = true;
+	equip_learn_flag(player, OF_HOLD_LIFE);
+	return true;
+}
+
+/**
+ * Drain some light from the player's light source, if possible
+ */
+bool effect_handler_DRAIN_LIGHT(effect_handler_context_t *context)
+{
+	int drain = effect_calculate_value(context, false);
+
+	int light_slot = slot_by_name(player, "light");
+	struct object *obj = slot_object(player, light_slot);
+
+	if (obj && !of_has(obj->flags, OF_NO_FUEL) && (obj->timeout > 0)) {
+		/* Reduce fuel */
+		obj->timeout -= drain;
+		if (obj->timeout < 1) obj->timeout = 1;
+
+		/* Notice */
+		if (!player->timed[TMD_BLIND]) {
+			msg("Your light dims.");
+			context->ident = true;
+		}
+
+		/* Redraw stuff */
+		player->upkeep->redraw |= (PR_EQUIP);
+	}
+
+	return true;
+}
+
+/**
+ * Drain mana from the player, healing the caster.
+ */
+bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
+{
+	int drain = effect_calculate_value(context, false);
+	bool monster = context->origin.what != SRC_TRAP;
+	char m_name[80];
+	struct monster *mon = NULL;
+
+	context->ident = true;
+
+	if (monster) {
+		assert(context->origin.what == SRC_MONSTER);
+
+		mon = cave_monster(cave, context->origin.which.monster);
+
+		/* Get the monster name (or "it") */
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+	}
+
+	if (!player->csp) {
+		msg("The draining fails.");
+		if (monster) {
+			update_smart_learn(mon, player, 0, PF_NO_MANA, -1);
+		}
+		return true;
+	}
+
+	/* Drain the given amount if the player has that many, or all of them */
+	if (drain >= player->csp) {
+		drain = player->csp;
+		player->csp = 0;
+		player->csp_frac = 0;
+	} else {
+		player->csp -= drain;
+	}
+
+	/* Heal the monster */
+	if (monster) {
+		if (mon->hp < mon->maxhp) {
+			mon->hp += (6 * drain);
+			if (mon->hp > mon->maxhp)
+				mon->hp = mon->maxhp;
+
+			/* Redraw (later) if needed */
+			if (player->upkeep->health_who == mon)
+				player->upkeep->redraw |= (PR_HEALTH);
+
+			/* Special message */
+			if (monster_is_visible(mon))
+				msg("%s appears healthier.", m_name);
+		}
+	}
+
+	/* Redraw mana */
+	player->upkeep->redraw |= PR_MANA;
+
+	return true;
+}
+
+bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	if (!amount) amount = player->msp;
+	if (player->csp < player->msp) {
+		player->csp += amount;
+		if (player->csp > player->msp) {
+			player->csp = player->msp;
+			player->csp_frac = 0;
+			msg("You feel your head clear.");
+		} else
+			msg("You feel your head clear somewhat.");
+		player->upkeep->redraw |= (PR_MANA);
+	}
+	context->ident = true;
+
+	return true;
+}
+
+/**
+ * Attempt to uncurse an object
+ */
+bool effect_handler_REMOVE_CURSE(effect_handler_context_t *context)
+{
+	int strength = effect_calculate_value(context, false);
+	struct object *obj = NULL;
+
+	context->ident = true;
+
+	if (!get_item(&obj,
+				  "Uncurse which item? ",
+				  "You have no curses to remove.",
+				  0,
+				  item_tester_uncursable,
+				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+		return false;
+
+	return uncurse_object(obj, strength);
+}
+
+/**
+ * Set word of recall as appropriate
+ */
+bool effect_handler_RECALL(effect_handler_context_t *context)
+{
+	int target_depth;
+	context->ident = true;	
+
+	/* No recall */
+	if (OPT(player, birth_no_recall) && !player->total_winner) {
+		msg("Nothing happens.");
+		return true;
+	}
+
+	/* No recall from quest levels with force_descend */
+	if (OPT(player, birth_force_descend) && (is_quest(player->depth))) {
+		msg("Nothing happens.");
+		return true;
+	}
+
+	/* Warn the player if they're descending to an unrecallable level */
+	target_depth = dungeon_get_next_level(player->max_depth, 1);
+	if (OPT(player, birth_force_descend) && !(player->depth) &&
+			(is_quest(target_depth))) {
+		if (!get_check("Are you sure you want to descend? ")) {
+			return false;
+		}
+	}
+
+	/* Activate recall */
+	if (!player->word_recall) {
+		/* Reset recall depth */
+		if ((player->depth > 0) && (player->depth != player->max_depth)) {
+			/* ToDo: Add a new player field "recall_depth" */
+			if (get_check("Reset recall depth? "))
+				player->max_depth = player->depth;
+		}
+
+		player->word_recall = randint0(20) + 15;
+		msg("The air about you becomes charged...");
+	} else {
+		/* Deactivate recall */
+		if (!get_check("Word of Recall is already active.  Do you want to cancel it? "))
+			return false;
+
+		player->word_recall = 0;
+		msg("A tension leaves the air around you...");
+	}
+
+	/* Redraw status line */
+	player->upkeep->redraw |= PR_STATUS;
+	handle_stuff(player);
+
+	return true;
+}
+
+bool effect_handler_DEEP_DESCENT(effect_handler_context_t *context)
+{
+	int i, target_increment, target_depth = player->max_depth;
+
+	/* Calculate target depth */
+	target_increment = (4 / z_info->stair_skip) + 1;
+	target_depth = dungeon_get_next_level(player->max_depth, target_increment);
+	for (i = 5; i > 0; i--) {
+		if (is_quest(target_depth)) break;
+		if (target_depth >= z_info->max_depth - 1) break;
+
+		target_depth++;
+	}
+
+	if (target_depth > player->depth) {
+		msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
+		player->deep_descent = 3 + randint1(4);
+
+		/* Redraw status line */
+		player->upkeep->redraw |= PR_STATUS;
+		handle_stuff(player);
+	} else {
+		msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");
+	}
+	context->ident = true;
+	return true;
+}
+
+bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
+{
+	msg("The world changes!");
+	dungeon_change_level(player, player->depth);
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Map an area around the player.  The height to map above and below the player
+ * is context->value.dice, the width either side of the player
+ * context->value.sides.
+ *
+ */
+bool effect_handler_MAP_AREA(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	/* Pick an area to map */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	/* Drag the co-ordinates into the dungeon */
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			/* Some squares can't be mapped */
+			if (square_isno_map(cave, y, x)) continue;
+
+			/* All non-walls are "checked" */
+			if (!square_seemslikewall(cave, y, x)) {
+				if (!square_in_bounds_fully(cave, y, x)) continue;
+
+				/* Memorize normal features */
+				if (!square_isfloor(cave, y, x))
+					square_memorize(cave, y, x);
+
+				/* Memorize known walls */
+				for (i = 0; i < 8; i++) {
+					int yy = y + ddy_ddd[i];
+					int xx = x + ddx_ddd[i];
+
+					/* Memorize walls (etc) */
+					if (square_seemslikewall(cave, yy, xx))
+						square_memorize(cave, yy, xx);
+				}
+			}
+
+			/* Forget unprocessed, unknown grids in the mapping area */
+			if (square_isnotknown(cave, y, x))
+				square_forget(cave, y, x);
+		}
+	}
+
+	/* Unmark grids */
+	for (y = y1 - 1; y < y2 + 1; y++) {
+		for (x = x1 - 1; x < x2 + 1; x++) {
+			if (!square_in_bounds(cave, y, x)) continue;
+			square_unmark(cave, y, x);
+		}
+	}
+
+	/* Fully update the visuals */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
+
+	/* Notice */
+	context->ident = true;
+
+	return true;
+}
+
+/**
+ * Detect traps around the player.  The height to detect above and below the
+ * player is context->value.dice, the width either side of the player context->value.sides.
+ */
+bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool detect = false;
+
+	struct object *obj;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Detect traps */
+			if (square_isplayertrap(cave, y, x))
+				/* Reveal trap */
+				if (square_reveal_trap(cave, y, x, true, false))
+					detect = true;
+
+			/* Scan all objects in the grid to look for traps on chests */
+			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+				/* Skip anything not a trapped chest */
+				if (!is_trapped_chest(obj)) continue;
+
+				/* Identify once */
+				if (!obj->known || obj->known->pval != obj->pval) {
+					/* Hack - know the pile */
+					square_know_pile(cave, y, x);
+
+					/* Know the trap */
+					obj->known->pval = obj->pval;
+
+					/* Notice it */
+					disturb(player, 0);
+
+					/* We found something to detect */
+					detect = true;
+				}
+			}
+			/* Mark as trap-detected */
+			sqinfo_on(cave->squares[y][x].info, SQUARE_DTRAP);
+		}
+	}
+
+	/* Describe */
+	if (detect)
+		msg("You sense the presence of traps!");
+
+	/* Trap detection always makes you aware, even if no traps are present */
+	else
+		msg("You sense no traps.");
+
+	/* Notice */
+	context->ident = true;
+
+	return true;
+}
+
+/**
+ * Detect doors around the player.  The height to detect above and below the
+ * player is context->value.dice, the width either side of the player
+ * context->value.sides.
+ */
+bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool doors = false;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Detect secret doors */
+			if (square_issecretdoor(cave, y, x)) {
+				/* Put an actual door */
+				place_closed_door(cave, y, x);
+
+				/* Memorize */
+				square_memorize(cave, y, x);
+				square_light_spot(cave, y, x);
+
+				/* Obvious */
+				doors = true;
+			}
+
+			/* Forget unknown doors in the mapping area */
+			if (square_isdoor(player->cave, y, x) &&
+				square_isnotknown(cave, y, x)) {
+				square_forget(cave, y, x);
+			}
+		}
+	}
+
+	/* Describe */
+	if (doors)
+		msg("You sense the presence of doors!");
+	else if (context->aware)
+		msg("You sense no doors.");
+
+	context->ident = true;
+
+	return true;
+}
+
+/**
+ * Detect stairs around the player.  The height to detect above and below the
+ * player is context->value.dice, the width either side of the player context->value.sides.
+ */
+bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool stairs = false;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Detect stairs */
+			if (square_isstairs(cave, y, x)) {
+				/* Memorize */
+				square_memorize(cave, y, x);
+				square_light_spot(cave, y, x);
+
+				/* Obvious */
+				stairs = true;
+			}
+		}
+	}
+
+	/* Describe */
+	if (stairs)
+		msg("You sense the presence of stairs!");
+	else if (context->aware)
+		msg("You sense no stairs.");
+
+	context->ident = true;
+	return true;
+}
+
+
+/**
+ * Detect buried gold around the player.  The height to detect above and below
+ * the player is context->value.dice, the width either side of the player
+ * context->value.sides, and setting context->p1 to 1 suppresses messages.
+ */
+bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool gold_buried = false;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
+			if (!square_in_bounds_fully(cave, y, x)) continue;
+
+			/* Magma/Quartz + Known Gold */
+			if (square_hasgoldvein(cave, y, x)) {
+				/* Memorize */
+				square_memorize(cave, y, x);
+				square_light_spot(cave, y, x);
+
+				/* Detect */
+				gold_buried = true;
+			}
+		}
+	}
+
+	/* Message unless we're silently detecting */
+	if (context->p1 != 1) {
+		if (gold_buried)
+			msg("You sense the presence of buried treasure!");
+		else if (context->aware)
+			msg("You sense no buried treasure.");
+	}
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Sense objects around the player.  The height to sense above and below the
+ * player is context->value.dice, the width either side of the player
+ * context->value.sides
+ */
+bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool objects = false;
+
+	/* Pick an area to sense */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the area for objects */
+	for (y = y1; y <= y2; y++) {
+		for (x = x1; x <= x2; x++) {
+			struct object *obj = square_object(cave, y, x);
+
+			/* Skip empty grids */
+			if (!obj) continue;
+
+			/* Notice an object is detected */
+			objects = true;
+
+			/* Mark the pile as aware */
+			square_sense_pile(cave, y, x);
+		}
+	}
+
+	if (objects)
+		msg("You sense the presence of objects!");
+	else if (context->aware)
+		msg("You sense no objects.");
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= PR_ITEMLIST;
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Detect objects around the player.  The height to detect above and below the
+ * player is context->value.dice, the width either side of the player
+ * context->value.sides
+ */
+bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
+{
+	int x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool objects = false;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan the area for objects */
+	for (y = y1; y <= y2; y++) {
+		for (x = x1; x <= x2; x++) {
+			struct object *obj = square_object(cave, y, x);
+
+			/* Skip empty grids */
+			if (!obj) continue;
+
+			/* Notice an object is detected */
+			if (!ignore_item_ok(obj)) {
+				objects = true;
+			}
+
+			/* Mark the pile as seen */
+			square_know_pile(cave, y, x);
+		}
+	}
+
+	if (objects)
+		msg("You detect the presence of objects!");
+	else if (context->aware)
+		msg("You detect no objects.");
+
+	/* Redraw whole map, monster list */
+	player->upkeep->redraw |= PR_ITEMLIST;
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Detect visible monsters around the player.  The height to detect above and
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
+ */
+bool effect_handler_DETECT_VISIBLE_MONSTERS(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool monsters = false;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		/* Skip dead monsters */
+		if (!mon->race) continue;
+
+		/* Location */
+		y = mon->fy;
+		x = mon->fx;
+
+		/* Only detect nearby monsters */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
+		/* Detect all non-invisible, obvious monsters */
+		if (!monster_is_invisible(mon) && !monster_is_camouflaged(mon)) {
+			/* Detect the monster */
+			mflag_on(mon->mflag, MFLAG_MARK);
+			mflag_on(mon->mflag, MFLAG_SHOW);
+
+			/* Update monster recall window */
+			if (player->upkeep->monster_race == mon->race)
+				/* Redraw stuff */
+				player->upkeep->redraw |= (PR_MONSTER);
+
+			/* Update the monster */
+			update_mon(mon, cave, false);
+
+			/* Detect */
+			monsters = true;
+		}
+	}
+
+	if (monsters)
+		msg("You sense the presence of monsters!");
+	else if (context->aware)
+		msg("You sense no monsters.");
+
+	context->ident = true;
+	return true;
+}
+
+
+/**
+ * Detect invisible monsters around the player.  The height to detect above and
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
+ */
+bool effect_handler_DETECT_INVISIBLE_MONSTERS(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool monsters = false;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+		struct monster_lore *lore;
+
+		/* Skip dead monsters */
+		if (!mon->race) continue;
+
+		lore = get_lore(mon->race);
+
+		/* Location */
+		y = mon->fy;
+		x = mon->fx;
+
+		/* Only detect nearby monsters */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
+		/* Detect invisible monsters */
+		if (monster_is_invisible(mon)) {
+			/* Take note that they are invisible */
+			rf_on(lore->flags, RF_INVISIBLE);
+
+			/* Update monster recall window */
+			if (player->upkeep->monster_race == mon->race)
+				player->upkeep->redraw |= (PR_MONSTER);
+
+			/* Detect the monster */
+			mflag_on(mon->mflag, MFLAG_MARK);
+			mflag_on(mon->mflag, MFLAG_SHOW);
+
+			/* Update the monster */
+			update_mon(mon, cave, false);
+
+			/* Detect */
+			monsters = true;
+		}
+	}
+
+	if (monsters)
+		msg("You sense the presence of invisible creatures!");
+	else if (context->aware)
+		msg("You sense no invisible creatures.");
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Identify an unknown rune of an item.
+ */
+bool effect_handler_IDENTIFY(effect_handler_context_t *context)
+{
+    struct object *obj;
+    const char *q, *s;
+    bool used = false;
+
+    context->ident = true;
+
+    /* Get an item */
+    q = "Identify which item? ";
+    s = "You have nothing to identify.";
+    if (!get_item(&obj, q, s, 0, item_tester_unknown,
+                  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
+        return used;
+
+    /* Identify the object */
+    object_learn_unknown_rune(player, obj);
+
+    return true;
+}
+
+
+/**
+ * Detect evil monsters around the player.  The height to detect above and
+ * below the player is context->value.dice, the width either side of the player
+ * context->value.sides.
+ */
+bool effect_handler_DETECT_EVIL(effect_handler_context_t *context)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+	int y_dist = context->value.dice;
+	int x_dist = context->value.sides;
+
+	bool monsters = false;
+
+	/* Pick an area to detect */
+	y1 = player->py - y_dist;
+	y2 = player->py + y_dist;
+	x1 = player->px - x_dist;
+	x2 = player->px + x_dist;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
+
+	/* Scan monsters */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+		struct monster_lore *lore;
+
+		/* Skip dead monsters */
+		if (!mon->race) continue;
+
+		lore = get_lore(mon->race);
+
+		/* Location */
+		y = mon->fy;
+		x = mon->fx;
+
+		/* Only detect nearby monsters */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
+		/* Detect evil monsters */
+		if (monster_is_evil(mon)) {
+			/* Take note that they are evil */
+			rf_on(lore->flags, RF_EVIL);
+
+			/* Update monster recall window */
+			if (player->upkeep->monster_race == mon->race)
+				player->upkeep->redraw |= (PR_MONSTER);
+
+			/* Detect the monster */
+			mflag_on(mon->mflag, MFLAG_MARK);
+			mflag_on(mon->mflag, MFLAG_SHOW);
+
+			/* Update the monster */
+			update_mon(mon, cave, false);
+
+			/* Detect */
+			monsters = true;
+		}
+	}
+
+	if (monsters)
+		msg("You sense the presence of evil creatures!");
+	else if (context->aware)
+		msg("You sense no evil creatures.");
+
+	context->ident = true;
+	return true;
+}
+
+/**
+ * Create stairs at the player location
+ */
+bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+
+	context->ident = true;
+
+	/* Only allow stairs to be created on empty floor */
+	if (!square_isfloor(cave, py, px)) {
+		msg("There is no empty floor here.");
+		return false;
+	}
+
+	/* Push objects off the grid */
+	if (square_object(cave, py, px))
+		push_object(py, px);
+
+	square_add_stairs(cave, py, px, player->depth);
+
+	return true;
+}
+
+/**
+ * Apply disenchantment to the player's stuff.
+ */
+bool effect_handler_DISENCHANT(effect_handler_context_t *context)
+{
+	int i, count = 0;
+	struct object *obj;
+	char o_name[80];
+
+	/* Count slots */
+	for (i = 0; i < player->body.count; i++) {
+		/* Ignore rings, amulets and lights */
+		if (slot_type_is(i, EQUIP_RING)) continue;
+		if (slot_type_is(i, EQUIP_AMULET)) continue;
+		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+
+		/* Count disenchantable slots */
+		count++;
+	}
+
+	/* Pick one at random */
+	for (i = player->body.count - 1; i >= 0; i--) {
+		/* Ignore rings, amulets and lights */
+		if (slot_type_is(i, EQUIP_RING)) continue;
+		if (slot_type_is(i, EQUIP_AMULET)) continue;
+		if (slot_type_is(i, EQUIP_LIGHT)) continue;
+
+		if (one_in_(count--)) break;
+	}
+
+	/* Notice */
+	context->ident = true;
+
+	/* Get the item */
+	obj = slot_object(player, i);
+
+	/* No item, nothing happens */
+	if (!obj) return true;
+
+	/* Nothing to disenchant */
+	if ((obj->to_h <= 0) && (obj->to_d <= 0) && (obj->to_a <= 0))
+		return true;
+
+	/* Describe the object */
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
+
+	/* Artifacts have a 60% chance to resist */
+	if (obj->artifact && (randint0(100) < 60)) {
+		/* Message */
+		msg("Your %s (%c) resist%s disenchantment!", o_name, I2A(i),
+			((obj->number != 1) ? "" : "s"));
+
+		return true;
+	}
+
+	/* Apply disenchantment, depending on which kind of equipment */
+	if (slot_type_is(i, EQUIP_WEAPON) || slot_type_is(i, EQUIP_BOW)) {
+		/* Disenchant to-hit */
+		if (obj->to_h > 0) obj->to_h--;
+		if ((obj->to_h > 5) && (randint0(100) < 20)) obj->to_h--;
+		obj->known->to_h = obj->to_h;
+
+		/* Disenchant to-dam */
+		if (obj->to_d > 0) obj->to_d--;
+		if ((obj->to_d > 5) && (randint0(100) < 20)) obj->to_d--;
+		obj->known->to_d = obj->to_d;
+	} else {
+		/* Disenchant to-ac */
+		if (obj->to_a > 0) obj->to_a--;
+		if ((obj->to_a > 5) && (randint0(100) < 20)) obj->to_a--;
+		obj->known->to_a = obj->to_a;
+	}
+
+	/* Message */
+	msg("Your %s (%c) %s disenchanted!", o_name, I2A(i),
+		((obj->number != 1) ? "were" : "was"));
+
+	/* Recalculate bonuses */
+	player->upkeep->update |= (PU_BONUS);
+
+	/* Window stuff */
+	player->upkeep->redraw |= (PR_EQUIP);
+
+	return true;
+}
 
 /**
  * Enchant an item (in the inventory or on the floor)
@@ -1936,93 +2119,28 @@ void brand_object(struct object *obj, const char *name)
 bool effect_handler_ENCHANT(effect_handler_context_t *context)
 {
 	int value = randcalc(context->value, player->depth, RANDOMISE);
-	bool used = FALSE;
-	context->ident = TRUE;
+	bool used = false;
+	context->ident = true;
 
 	if ((context->p1 & ENCH_TOBOTH) == ENCH_TOBOTH) {
 		if (enchant_spell(value, value, 0))
-			used = TRUE;
+			used = true;
 	}
 	else if (context->p1 & ENCH_TOHIT) {
 		if (enchant_spell(value, 0, 0))
-			used = TRUE;
+			used = true;
 	}
 	else if (context->p1 & ENCH_TODAM) {
 		if (enchant_spell(0, value, 0))
-			used = TRUE;
+			used = true;
 	}
 	if (context->p1 & ENCH_TOAC) {
 		if (enchant_spell(0, 0, value))
-			used = TRUE;
+			used = true;
 	}
 
 	return used;
 }
-
-/**
- * Hopefully this is OK now
- */
-static bool item_tester_unknown(const struct object *obj)
-{
-	return object_is_known(obj) ? FALSE : TRUE;
-}
-
-/**
- * Identify an unknown item
- */
-bool effect_handler_IDENTIFY(effect_handler_context_t *context)
-{
-	struct object *obj;
-	const char *q, *s;
-	bool used = FALSE;
-
-	context->ident = TRUE;
-
-	/* Get an item */
-	q = "Identify which item? ";
-	s = "You have nothing to identify.";
-	if (!get_item(&obj, q, s, 0, item_tester_unknown,
-				  (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR)))
-		return used;
-
-	/* Identify the object */
-	do_ident_item(obj);
-
-	return TRUE;
-}
-
-/**
- * Identify everything worn or carried by the player
- */
-bool effect_handler_IDENTIFY_PACK(effect_handler_context_t *context)
-{
-	struct object *obj;
-
-	context->ident = TRUE;
-
-	/* Simply identify and know every item */
-	for (obj = player->gear; obj; obj = obj->next) {
-		/* Aware and Known */
-		if (object_is_known(obj)) continue;
-
-		/* Identify it */
-		do_ident_item(obj);
-	}
-
-	return TRUE;
-}
-
-/*
- * Hook for "get_item()".  Determine if something is rechargable.
- */
-static bool item_tester_hook_recharge(const struct object *obj)
-{
-	/* Recharge staves and wands */
-	if (tval_can_have_charges(obj)) return TRUE;
-
-	return FALSE;
-}
-
 
 /**
  * Recharge a wand or staff from the pack or on the floor.  Recharge strength
@@ -2035,11 +2153,11 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	int i, t, lev;
 	int strength = context->value.base;
 	struct object *obj;
-	bool used = FALSE;
+	bool used = false;
 	const char *q, *s;
 
 	/* Immediately obvious */
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* Get an item */
 	q = "Recharge which item? ";
@@ -2058,16 +2176,18 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	/* Back-fire */
 	if ((i <= 1) || one_in_(i)) {
 		struct object *destroyed;
-		bool none_left = FALSE;
+		bool none_left = false;
 
 		msg("The recharge backfires!");
 		msg("There is a bright flash of light.");
 
 		/* Reduce and describe inventory */
 		if (object_is_carried(player, obj))
-			destroyed = gear_object_for_use(obj, 1, TRUE, &none_left);
+			destroyed = gear_object_for_use(obj, 1, true, &none_left);
 		else
-			destroyed = floor_object_for_use(obj, 1, TRUE, &none_left);
+			destroyed = floor_object_for_use(obj, 1, true, &none_left);
+		if (destroyed->known)
+			object_delete(&destroyed->known);
 		object_delete(&destroyed);
 	} else {
 		/* Extract a "power" */
@@ -2084,7 +2204,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	player->upkeep->redraw |= (PR_INVEN);
 
 	/* Something was done */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2096,7 +2216,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 {
 	int i, x, y;
-	int dam = effect_calculate_value(context, context->p2 ? TRUE : FALSE);
+	int dam = effect_calculate_value(context, context->p2 ? true : false);
 	int typ = context->p1;
 
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
@@ -2116,12 +2236,12 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 		if (!square_isview(cave, y, x)) continue;
 
 		/* Jump directly to the target monster */
-		if (project(-1, 0, y, x, dam, typ, flg, 0, 0, context->obj))
-			context->ident = TRUE;
+		(void)project(source_player(), 0, y, x, dam, typ, flg, 0, 0, context->obj);
+		context->ident = true;
 	}
 
 	/* Result */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2133,7 +2253,7 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 {
 	int i, x, y;
-	int dam = effect_calculate_value(context, context->p2 ? TRUE : FALSE);
+	int dam = effect_calculate_value(context, context->p2 ? true : false);
 	int typ = context->p1;
 
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
@@ -2155,72 +2275,55 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 		if (!square_isview(cave, y, x)) continue;
 
 		/* Jump directly to the target monster */
-		if (project(-1, 0, y, x, dam, typ, flg, 0, 0, context->obj))
-			context->ident = TRUE;
+		(void)project(source_player(), 0, y, x, dam, typ, flg, 0, 0, context->obj);
+		context->ident = true;
 	}
 
 	/* Result */
-	return TRUE;
+	return true;
 }
 
 bool effect_handler_ACQUIRE(effect_handler_context_t *context)
 {
-	int num = effect_calculate_value(context, FALSE);
-	acquirement(player->py, player->px, player->depth, num, TRUE);
-	context->ident = TRUE;
-	return TRUE;
+	int num = effect_calculate_value(context, false);
+	acquirement(player->py, player->px, player->depth, num, true);
+	context->ident = true;
+	return true;
 }
 
 /**
- * Wake up all monsters, and speed up "los" monsters.
- *
- * Possibly the los test should be from the aggravating monster, rather than
- * automatically the player - NRM
+ * Wake up all monsters in line of sight
  */
-bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
+bool effect_handler_WAKE(effect_handler_context_t *context)
 {
 	int i;
-	bool sleep = FALSE;
-	int midx = cave->mon_current;
-	struct monster *who = midx > 0 ? cave_monster(cave, midx) : NULL;
+	bool woken = false;
 
-	/* Immediately obvious if the player did it */
-	if (!who) {
-		msg("There is a high pitched humming noise.");
-		context->ident = TRUE;
-	}
+	struct loc origin_loc = origin_get_loc(context->origin);
 
-	/* Aggravate everyone nearby */
+	/* Wake everyone nearby */
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		struct monster *mon = cave_monster(cave, i);
+		if (mon->race) {
+			int radius = z_info->max_sight * 2;
 
-		/* Paranoia -- Skip dead monsters */
-		if (!mon->race) continue;
-
-		/* Skip aggravating monster (or player) */
-		if (mon == who) continue;
-
-		/* Wake up nearby sleeping monsters */
-		if ((mon->cdis < z_info->max_sight * 2) &&
-			mon->m_timed[MON_TMD_SLEEP]) {
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
-			sleep = TRUE;
-			context->ident = TRUE;
-		}
-
-		/* Speed up monsters in line of sight */
-		if (square_isview(cave, mon->fy, mon->fx)) {
-			mon_inc_timed(mon, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
-			if (is_mimicking(mon))
-				become_aware(mon);
-			context->ident = TRUE;
+			/* Skip monsters too far away */
+			if (distance(origin_loc.y, origin_loc.x, mon->fy, mon->fx) < radius &&
+					mon->m_timed[MON_TMD_SLEEP]) {
+				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+				woken = true;
+			}
 		}
 	}
 
 	/* Messages */
-	if (sleep) msg("You hear a sudden stirring in the distance!");
+	if (woken) {
+		msg("You hear a sudden stirring in the distance!");
+	}
 
-	return TRUE;
+	context->ident = true;
+
+	return true;
 }
 
 /**
@@ -2228,16 +2331,17 @@ bool effect_handler_AGGRAVATE(effect_handler_context_t *context)
  */
 bool effect_handler_SUMMON(effect_handler_context_t *context)
 {
-	int summon_max = effect_calculate_value(context, FALSE);
+	int summon_max = effect_calculate_value(context, false);
 	int summon_type = context->p1 ? context->p1 : S_ANY;
-	struct monster *mon = cave_monster(cave, cave->mon_current);
+	int level_boost = context->p2;
 	int message_type = summon_message_type(summon_type);
 	int count = 0, val = 0, attempts = 0;
 
 	sound(message_type);
 
 	/* Monster summon */
-	if (mon) {
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		int rlev = mon->race->level;
 
 		/* Set the kin_base if necessary */
@@ -2249,8 +2353,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 			int temp;
 
 			/* Get a monster */
-			temp = summon_specific(mon->fy, mon->fx, rlev, summon_type, FALSE,
-								   FALSE);
+			temp = summon_specific(mon->fy, mon->fx, rlev + level_boost,
+					summon_type, false, false);
 
 			val += temp * temp;
 
@@ -2264,16 +2368,16 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 
 		/* In the special case that uniques or wraiths were summoned but all
 		 * were dead S_HI_UNDEAD is used instead */
-		if ((!count) &&
-			((summon_type == S_WRAITH) || (summon_type == S_UNIQUE))) {
+		if (count == 0 &&
+			(summon_type == S_WRAITH || summon_type == S_UNIQUE)) {
 			attempts = 0;
 			summon_type = S_HI_UNDEAD;
 			while ((val < player->depth * rlev) && (attempts < summon_max)) {
 				int temp;
 
 				/* Get a monster */
-				temp = summon_specific(mon->fy, mon->fx, rlev, summon_type,
-									   FALSE, FALSE);
+				temp = summon_specific(mon->fy, mon->fx, rlev + level_boost,
+						summon_type, false, false);
 
 				val += temp * temp;
 
@@ -2285,29 +2389,28 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 					count++;
 			}
 		}
+
+		/* Summoner failed */
+		if (!count)
+			msg("But nothing comes.");
 	} else {
 		/* If not a monster summon, it's simple */
 		while (summon_max) {
-			count += summon_specific(player->py, player->px, player->depth,
-									 summon_type, TRUE, FALSE);
+			count += summon_specific(player->py, player->px,
+					player->depth + level_boost, summon_type, true, false);
 			summon_max--;
 		}
 	}
 
-	/* Identify if some monsters arrive */
-	if (count)
-		context->ident = TRUE;
+	/* Identify */
+	context->ident = true;
 
 	/* Message for the blind */
 	if (count && player->timed[TMD_BLIND])
 		msgt(message_type, "You hear %s appear nearby.",
 			 (count > 1 ? "many things" : "something"));
 
-	/* Summoner failed */
-	if (mon && !count)
-		msg("But nothing comes.");
-
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2324,10 +2427,10 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 
 	char typ;
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	if (!get_com("Choose a monster race (by symbol) to banish: ", &typ))
-		return FALSE;
+		return false;
 
 	/* Delete the monsters of that "type" */
 	for (i = 1; i < cave_monster_max(cave); i++) {
@@ -2337,7 +2440,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 		if (!mon->race) continue;
 
 		/* Hack -- Skip Unique Monsters */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) continue;
+		if (monster_is_unique(mon)) continue;
 
 		/* Skip "wrong" monsters (see warning above) */
 		if ((char) mon->race->d_char != typ) continue;
@@ -2356,7 +2459,7 @@ bool effect_handler_BANISH(effect_handler_context_t *context)
 	player->upkeep->redraw |= PR_MONLIST;
 
 	/* Success */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2369,7 +2472,7 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 	int radius = context->p2 ? context->p2 : z_info->max_sight;
 	unsigned dam = 0;
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* Delete the (nearby) monsters */
 	for (i = 1; i < cave_monster_max(cave); i++) {
@@ -2379,7 +2482,7 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 		if (!mon->race) continue;
 
 		/* Hack -- Skip unique monsters */
-		if (rf_has(mon->race->flags, RF_UNIQUE)) continue;
+		if (monster_is_unique(mon)) continue;
 
 		/* Skip distant monsters */
 		if (mon->cdis > radius) continue;
@@ -2397,7 +2500,7 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 	/* Update monster list window */
 	player->upkeep->redraw |= PR_MONLIST;
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2407,7 +2510,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 {
 	int i;
 
-	bool probe = FALSE;
+	bool probe = false;
 
 	/* Probe all (nearby) monsters */
 	for (i = 1; i < cave_monster_max(cave); i++) {
@@ -2420,7 +2523,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 		if (!square_isview(cave, mon->fy, mon->fx)) continue;
 
 		/* Probe visible monsters */
-		if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+		if (monster_is_visible(mon)) {
 			char m_name[80];
 
 			/* Start the message */
@@ -2437,23 +2540,23 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 			lore_do_probe(mon);
 
 			/* Probe worked */
-			probe = TRUE;
+			probe = true;
 		}
 	}
 
 	/* Done */
 	if (probe) {
 		msg("That's all.");
-		context->ident = TRUE;
+		context->ident = true;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
- * Thrust the player or a monster away from the source of a projection.   
+ * Thrust the player or a monster away from the source of a projection.
  *
- * Monsters and players can be pushed past monsters or players weaker than 
+ * Monsters and players can be pushed past monsters or players weaker than
  * they are.
  * If set, context->p1 and context->p2 act as y and x coordinates
  */
@@ -2463,21 +2566,20 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 	int i, d, first_d;
 	int angle;
 
-	int c_y, c_x;
-
-	int who = (cave->mon_current > 0) ? cave->mon_current : -1;
 	int t_y = context->p1, t_x = context->p2;
-	int grids_away = effect_calculate_value(context, FALSE);
+	int grids_away = effect_calculate_value(context, false);
 
-	/*** Find a suitable endpoint for testing. ***/
+	context->ident = true;
 
-	/* Get location of caster (assumes index of caster is not zero) */
-	if (who > 0) {
-		c_y = cave_monster(cave, who)->fy;
-		c_x = cave_monster(cave, who)->fx;
-	} else {
-		c_y = player->py;
-		c_x = player->px;
+	struct loc centre = origin_get_loc(context->origin);
+
+	/* Player gets pushed in a random direction if on the trap */
+	if (context->origin.what == SRC_TRAP &&
+			player->py == centre.y &&
+			player->px == centre.x) {
+		d = randint0(8);
+		centre.y += ddy_ddd[d];
+		centre.x += ddx_ddd[d];
 	}
 
 	/* Ask for a target if none given */
@@ -2485,8 +2587,8 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 		target_get(&t_x, &t_y);
 
 	/* Determine where target is in relation to caster. */
-	y = t_y - c_y + 20;
-	x = t_x - c_x + 20;
+	y = t_y - centre.y + 20;
+	x = t_x - centre.x + 20;
 
 	/* Find the angle (/2) of the line from caster to target. */
 	angle = get_angle_to_grid[y][x];
@@ -2613,10 +2715,28 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
 		}
 	}
 
+	/* Some special messages or effects for player or monster. */
+	if (square_isfiery(cave, y, x)) {
+		if (cave->squares[y][x].mon < 0) {
+			msg("You are thrown into molten lava!");
+		} else if (cave->squares[y][x].mon > 0) {
+			struct monster *mon = square_monster(cave, y, x);
+			bool fear = false;
+
+			if (!rf_has(mon->race->flags, RF_IM_FIRE)) {
+				mon_take_hit(mon, 100 + randint1(100), &fear, " is burnt up.");
+			}
+
+			if (fear && monster_is_visible(mon)) {
+				add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
+			}
+		}
+	}
+
 	/* Clear the projection mark. */
 	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2630,16 +2750,15 @@ bool effect_handler_THRUST_AWAY(effect_handler_context_t *context)
  */
 bool effect_handler_TELEPORT(effect_handler_context_t *context)
 {
-	int y_start = context->p1, x_start = context->p2;
+	int y_start = context->p1;
+	int x_start = context->p2;
 	int dis = context->value.base;
 	int d, i, min, y, x;
-	int midx = cave->mon_current;
-	struct monster *mon;
 
-	bool look = TRUE;
-	bool is_player = (midx < 0 || context->p2);
+	bool look = true;
+	bool is_player = (context->origin.what != SRC_MONSTER || context->p2);
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* Establish the coordinates to teleport from, if we don't know already */
 	if (y_start && x_start) {
@@ -2651,11 +2770,18 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		/* Check for a no teleport grid */
 		if (square_isno_teleport(cave, y_start, x_start) && (dis > 10)) {
 			msg("Teleportation forbidden!");
-			return TRUE;
+			return true;
+		}
+
+		/* Check for a no teleport curse */
+		if (player_of_has(player, OF_NO_TELEPORT)) {
+			equip_learn_flag(player, OF_NO_TELEPORT);
+			msg("Teleportation forbidden!");
+			return true;
 		}
 	} else {
-		mon = cave_monster(cave, midx);
-		if (!mon->race) return TRUE;
+		assert(context->origin.what == SRC_MONSTER);
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		y_start = mon->fy;
 		x_start = mon->fx;
 	}
@@ -2695,7 +2821,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 			if (!is_player && square_iswarded(cave, y, x)) continue;
 
 			/* This grid looks good */
-			look = FALSE;
+			look = false;
 
 			/* Stop looking */
 			break;
@@ -2720,7 +2846,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2737,22 +2863,19 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 
 	int ny = py, nx = px;
 	int y, x, dis = 0, ctr = 0;
-	int midx = cave->mon_current;
-	struct monster *mon;
 
 	/* Initialize */
 	y = py;
 	x = px;
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* Where are we going? */
 	if (context->p1 && context->p2) {
 		ny = context->p1;
 		nx = context->p2;
-	} else if (midx > 0) {
-		mon = cave_monster(cave, midx);
-		if (!mon) return TRUE;
+	} else if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		ny = mon->fy;
 		nx = mon->fx;
 	} else {
@@ -2791,7 +2914,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2799,57 +2922,111 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
  */
 bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 {
-	bool up = TRUE, down = TRUE;
+	bool up = true;
+	bool down = true;
 	int target_depth = dungeon_get_next_level(player->max_depth, 1);
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* Resist hostile teleport */
-	if ((cave->mon_current > 0) && player_resists(player, ELEM_NEXUS)) {
+	if (context->origin.what == SRC_MONSTER &&
+			player_resists(player, ELEM_NEXUS)) {
 		msg("You resist the effect!");
-		return TRUE;
+		return true;
 	}
 
 	/* No going up with force_descend or in the town */
-	if (OPT(birth_force_descend) || !player->depth)
-		up = FALSE;
+	if (OPT(player, birth_force_descend) || !player->depth)
+		up = false;
 
 	/* No forcing player down to quest levels if they can't leave */
 	if (!up && is_quest(target_depth))
-		down = FALSE;
+		down = false;
 
 	/* Can't leave quest levels or go down deeper than the dungeon */
 	if (is_quest(player->depth) || (player->depth >= z_info->max_depth - 1))
-		down = FALSE;
+		down = false;
 
 	/* Determine up/down if not already done */
 	if (up && down) {
 		if (randint0(100) < 50)
-			up = FALSE;
+			up = false;
 		else
-			down = FALSE;
+			down = false;
 	}
 
 	/* Now actually do the level change */
 	if (up) {
 		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
 		target_depth = dungeon_get_next_level(player->depth, -1);
-		dungeon_change_level(target_depth);
+		dungeon_change_level(player, target_depth);
 	} else if (down) {
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
-		if (OPT(birth_force_descend)) {
+		if (OPT(player, birth_force_descend)) {
 			target_depth = dungeon_get_next_level(player->max_depth, 1);
-			dungeon_change_level(target_depth);
+			dungeon_change_level(player, target_depth);
 		} else {
 			target_depth = dungeon_get_next_level(player->depth, 1);
-			dungeon_change_level(target_depth);
+			dungeon_change_level(player, target_depth);
 		}
 	} else {
 		msg("Nothing happens.");
 	}
 
-	return TRUE;
+	return true;
+}
+
+/**
+ * The rubble effect
+ *
+ * This causes rubble to fall into empty squares.
+ */
+bool effect_handler_RUBBLE(effect_handler_context_t *context)
+{
+	/*
+	 * First we work out how many grids we want to fill with rubble.  Then we
+	 * check that we can actually do this, by counting the number of grids
+	 * available, limiting the number of rubble grids to this number if
+	 * necessary.
+	 */
+	int rubble_grids = randint1(3);
+	int open_grids = count_feats(NULL, NULL, square_isempty, false);
+
+	if (rubble_grids > open_grids) {
+		rubble_grids = open_grids;
+	}
+
+	/* Avoid infinite loops */
+	int iterations = 0;
+
+	while (rubble_grids > 0 && iterations < 10) {
+		/* Look around the player */
+		for (int d = 0; d < 9; d++) {
+			/* Ignore the player's location */
+			if (d == 8) continue;
+
+			/* Extract adjacent (legal) location */
+			int yy = player->py + ddy_ddd[d];
+			int xx = player->px + ddx_ddd[d];
+
+			if (square_in_bounds_fully(cave, yy, xx) &&
+					square_isempty(cave, yy, xx) &&
+					one_in_(3)) {
+				if (one_in_(2))
+					square_set_feat(cave, yy, xx, FEAT_PASS_RUBBLE);
+				else
+					square_set_feat(cave, yy, xx, FEAT_RUBBLE);
+				rubble_grids--;
+			}
+		}
+
+		iterations++;
+	}
+
+	context->ident = true;
+
+	return true;
 }
 
 /**
@@ -2866,12 +3043,12 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 	int y1 = player->py;
 	int x1 = player->px;
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* No effect in town */
 	if (!player->depth) {
 		msg("The ground shakes for a moment.");
-		return TRUE;
+		return true;
 	}
 
 	/* Big area of affect */
@@ -2890,8 +3067,10 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			sqinfo_off(cave->squares[y][x].info, SQUARE_ROOM);
 			sqinfo_off(cave->squares[y][x].info, SQUARE_VAULT);
 
-			/* Lose light */
+			/* Forget completely */
 			sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+			sqinfo_off(cave->squares[y][x].info, SQUARE_SEEN);
+			square_forget(cave, y, x);
 			square_light_spot(cave, y, x);
 
 			/* Deal with player later */
@@ -2903,24 +3082,23 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			/* Don't remove stairs */
 			if (square_isstairs(cave, y, x)) continue;
 
-			/* Lose knowledge (keeping knowledge of stairs) */
-			sqinfo_off(cave->squares[y][x].info, SQUARE_MARK);
-
 			/* Destroy any grid that isn't a permament wall */
 			if (!square_isperm(cave, y, x)) {
 				/* Deal with artifacts */
 				struct object *obj = square_object(cave, y, x);
 				while (obj) {
 					if (obj->artifact) {
-						if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
-							obj->artifact->created = FALSE;
+						if (!OPT(player, birth_lose_arts) && 
+							!(obj->known && obj->known->artifact))
+							obj->artifact->created = false;
 						else
-							history_lose_artifact(obj->artifact);
+							history_lose_artifact(player, obj->artifact);
 					}
 					obj = obj->next;
 				}
 
 				/* Delete objects */
+				square_excise_pile(player->cave, y, x);
 				square_excise_pile(cave, y, x);
 				square_destroy(cave, y, x);
 			}
@@ -2931,20 +3109,17 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 	msg("There is a searing blast of light!");
 
 	/* Blind the player */
-	equip_notice_element(player, ELEM_LIGHT);
+	equip_learn_element(player, ELEM_LIGHT);
 	if (!player_resists(player, ELEM_LIGHT))
-		(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),TRUE, TRUE);
+		(void)player_inc_timed(player, TMD_BLIND, 10 + randint1(10),true, true);
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw monster list */
 	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -2967,28 +3142,21 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	int py = player->py;
 	int px = player->px;
 	int r = context->p2;
-	int i, y, x, yy, xx, dy, dx, cy, cx;
+	int i, y, x, yy, xx, dy, dx;
 	int damage = 0;
 	int safe_grids = 0, safe_y = 0, safe_x = 0;
 
-	bool hurt = FALSE;
+	bool hurt = false;
 	bool map[32][32];
 
-	context->ident = TRUE;
+	struct loc centre = origin_get_loc(context->origin);
 
-	/* Determine the epicentre */
-	if (cave->mon_current > 0) {
-		cy = cave_monster(cave, cave->mon_current)->fy;
-		cx = cave_monster(cave, cave->mon_current)->fx;
-	} else {
-		cy = py;
-		cx = px;
-	}
+	context->ident = true;
 
 	/* No effect in town */
 	if (!player->depth) {
 		msg("The ground shakes for a moment.");
-		return TRUE;
+		return true;
 	}
 
 	/* Paranoia -- Enforce maximum range */
@@ -2997,28 +3165,30 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	/* Clear the "maximal blast" area */
 	for (y = 0; y < 32; y++)
 		for (x = 0; x < 32; x++)
-			map[y][x] = FALSE;
+			map[y][x] = false;
 
 	/* Check around the epicenter */
 	for (dy = -r; dy <= r; dy++) {
 		for (dx = -r; dx <= r; dx++) {
 			/* Extract the location */
-			yy = cy + dy;
-			xx = cx + dx;
+			yy = centre.y + dy;
+			xx = centre.x + dx;
 
 			/* Skip illegal grids */
 			if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 			/* Skip distant grids */
-			if (distance(cy, cx, yy, xx) > r) continue;
+			if (distance(centre.y, centre.x, yy, xx) > r) continue;
 
 			/* Lose room and vault */
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_ROOM);
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
 
-			/* Lose light and knowledge */
+			/* Forget completely */
 			sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
-			sqinfo_off(cave->squares[yy][xx].info, SQUARE_MARK);
+			sqinfo_off(cave->squares[yy][xx].info, SQUARE_SEEN);
+			square_forget(cave, yy, xx);
+			square_light_spot(cave, yy, xx);
 
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;
@@ -3027,10 +3197,10 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (randint0(100) < 85) continue;
 
 			/* Damage this grid */
-			map[16 + yy - cy][16 + xx - cx] = TRUE;
+			map[16 + yy - centre.y][16 + xx - centre.x] = true;
 
 			/* Hack -- Take note of player damage */
-			if ((yy == py) && (xx == px)) hurt = TRUE;
+			if ((yy == py) && (xx == px)) hurt = true;
 		}
 	}
 
@@ -3046,7 +3216,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (!square_isempty(cave, y, x)) continue;
 
 			/* Important -- Skip "quake" grids */
-			if (map[16 + y - cy][16 + x - cx]) continue;
+			if (map[16 + y - centre.y][16 + x - centre.x]) continue;
 
 			/* Count "safe" grids, apply the randomizer */
 			if ((++safe_grids > 1) && (randint0(safe_grids) != 0)) continue;
@@ -3092,13 +3262,13 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				case 2: {
 					msg("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)player_inc_timed(player, TMD_STUN, randint1(50), TRUE, TRUE);
+					(void)player_inc_timed(player, TMD_STUN, randint1(50), true, true);
 					break;
 				}
 				case 3: {
 					msg("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)player_inc_timed(player, TMD_STUN, randint1(50), TRUE, TRUE);
+					(void)player_inc_timed(player, TMD_STUN, randint1(50), true, true);
 					break;
 				}
 			}
@@ -3116,11 +3286,11 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	for (dy = -r; dy <= r; dy++) {
 		for (dx = -r; dx <= r; dx++) {
 			/* Extract the location */
-			yy = cy + dy;
-			xx = cx + dx;
+			yy = centre.y + dy;
+			xx = centre.x + dx;
 
 			/* Skip unaffected grids */
-			if (!map[16 + yy - cy][16 + xx - cx]) continue;
+			if (!map[16 + yy - centre.y][16 + xx - centre.x]) continue;
 
 			/* Process monsters */
 			if (cave->squares[yy][xx].mon > 0) {
@@ -3150,7 +3320,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 								continue;
 
 							/* Important -- Skip quake grids */
-							if (map[16 + y - cy][16 + x - cx]) continue;
+							if (map[16 + y - centre.y][16 + x - centre.x]) continue;
 
 							/* Count safe grids, apply the randomizer */
 							if ((++safe_grids > 1) &&
@@ -3174,7 +3344,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 					/* Monster is certainly awake */
 					mon_clear_timed(mon, MON_TMD_SLEEP,
-							MON_TMD_FLG_NOMESSAGE, FALSE);
+							MON_TMD_FLG_NOMESSAGE, false);
 
 					/* If the quake finished the monster off, show message */
 					if (mon->hp < damage && mon->hp >= 0)
@@ -3206,21 +3376,21 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	px = player->px;
 
 	/* Important -- no wall on player */
-	map[16 + py - cy][16 + px - cx] = FALSE;
+	map[16 + py - centre.y][16 + px - centre.x] = false;
 
 
 	/* Examine the quaked region */
 	for (dy = -r; dy <= r; dy++) {
 		for (dx = -r; dx <= r; dx++) {
 			/* Extract the location */
-			yy = cy + dy;
-			xx = cx + dx;
+			yy = centre.y + dy;
+			xx = centre.x + dx;
 
 			/* Ignore invalid grids */
 			if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 			/* Note unaffected grids for light changes, etc. */
-			if (!map[16 + yy - cy][16 + xx - cx])
+			if (!map[16 + yy - centre.y][16 + xx - centre.x])
 				square_light_spot(cave, yy, xx);
 
 			/* Destroy location and all objects (if valid) */
@@ -3232,10 +3402,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	}
 
 	/* Fully update the visuals */
-	player->upkeep->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update the health bar */
 	player->upkeep->redraw |= (PR_HEALTH);
@@ -3243,17 +3410,17 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	/* Window stuff */
 	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 
-	return TRUE;
+	return true;
 }
 
-bool effect_handler_ENLIGHTENMENT(effect_handler_context_t *context)
+bool effect_handler_LIGHT_LEVEL(effect_handler_context_t *context)
 {
-	bool full = context->value.base ? TRUE : FALSE;
+	bool full = context->value.base ? true : false;
 	if (full)
 		msg("An image of your surroundings forms in your mind...");
 	wiz_light(cave, full);
-	context->ident = TRUE;
-	return TRUE;
+	context->ident = true;
+	return true;
 }
 
 /**
@@ -3264,7 +3431,7 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int dam = effect_calculate_value(context, FALSE);
+	int dam = effect_calculate_value(context, false);
 	int rad = context->p2 + (context->p3 ? player->lev / context->p3 : 0);
 
 	int flg = PROJECT_GRID | PROJECT_KILL;
@@ -3274,14 +3441,14 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 		msg("You are surrounded by a white light.");
 
 	/* Hook into the "project()" function */
-	(void)project(-1, rad, py, px, dam, GF_LIGHT_WEAK, flg, 0, 0, context->obj);
+	(void)project(source_player(), rad, py, px, dam, PROJ_LIGHT_WEAK, flg, 0, 0, context->obj);
 
 	/* Light up the room */
-	light_room(py, px, TRUE);
+	light_room(py, px, true);
 
 	/* Assume seen */
-	context->ident = TRUE;
-	return (TRUE);
+	context->ident = true;
+	return (true);
 }
 
 
@@ -3293,9 +3460,8 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int dam = effect_calculate_value(context, FALSE);
+	int dam = effect_calculate_value(context, false);
 	int rad = context->p2;
-	int source = (cave->mon_current > 0) ? cave->mon_current : -1;
 
 	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_PLAY;
 
@@ -3304,19 +3470,40 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 		msg("Darkness surrounds you.");
 
 	/* Hook into the "project()" function */
-	(void)project(source, rad, py, px, dam, GF_DARK_WEAK, flg, 0, 0,
+	(void)project(context->origin, rad, py, px, dam, PROJ_DARK_WEAK, flg, 0, 0,
 				  context->obj);
 
 	/* Darken the room */
-	light_room(py, px, FALSE);
+	light_room(py, px, false);
 
 	/* Hack - blind the player directly if player-cast */
-	if ((source == -1) && !player_resists(player, ELEM_DARK))
-		(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), TRUE, TRUE);
+	if (context->origin.what == SRC_PLAYER && !player_resists(player, ELEM_DARK)) {
+		(void)player_inc_timed(player, TMD_BLIND, 3 + randint1(5), true, true);
+	}
 
 	/* Assume seen */
-	context->ident = TRUE;
-	return (TRUE);
+	context->ident = true;
+	return (true);
+}
+
+/**
+ * Project from the player's grid at the player, act as a ball
+ * Affect the player, grids, objects, and monsters
+ */
+bool effect_handler_SPOT(effect_handler_context_t *context)
+{
+	int py = player->py;
+	int px = player->px;
+	int dam = effect_calculate_value(context, true);
+	int rad = context->p2 ? context->p2 : 0;
+
+	int flg = PROJECT_STOP | PROJECT_PLAY | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Aim at the target, explode */
+	if (project(context->origin, rad, py, px, dam, context->p1, flg, 0, 0, NULL))
+		context->ident = true;
+
+	return true;
 }
 
 /**
@@ -3327,92 +3514,145 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
  */
 bool effect_handler_BALL(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int rad = context->p2 ? context->p2 : 2;
-	int source;
-
-	int ty = py + ddy[context->dir];
-	int tx = px + ddx[context->dir];
+	int ty = -1;
+	int tx = -1;
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Player or monster? */
-	if (cave->mon_current > 0) {
-		struct monster *mon = cave_monster(cave, cave->mon_current);
-		source = cave->mon_current;
-		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
-		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
-	} else {
-		if (context->p3) rad += player->lev / context->p3;
-		source = -1;
-	}
+	switch (context->origin.what) {
+		case SRC_MONSTER: {
+			struct monster *mon = cave_monster(cave, context->origin.which.monster);
+			if (monster_is_powerful(mon)) {
+				rad++;
+			}
+			flg |= PROJECT_PLAY;
+			flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
+			if (mon->m_timed[MON_TMD_CONF] > 0 && one_in_(CONF_RANDOM_CHANCE)) {
+				int dir = randint1(9);
+				ty = mon->fy + ddy[dir];
+				tx = mon->fx + ddx[dir];
+			} else {
+				ty = player->py;
+				tx = player->px;
+			}
 
-		target_get(&tx, &ty);
+			break;
+		}
+
+		case SRC_TRAP: {
+			struct trap *trap = context->origin.which.trap;
+			flg |= PROJECT_PLAY;
+			ty = trap->fy;
+			tx = trap->fx;
+			break;
+		}
+
+		case SRC_PLAYER:
+			/* Ask for a target if no direction given */
+			if (context->dir == 5 && target_okay()) {
+				flg &= ~(PROJECT_STOP | PROJECT_THRU);
+				target_get(&tx, &ty);
+			} else {
+				ty = player->py + ddy[context->dir];
+				tx = player->px + ddx[context->dir];
+			}
+
+			if (context->p3) rad += player->lev / context->p3;
+			break;
+
+		default:
+			break;
 	}
 
 	/* Aim at the target, explode */
-	if (project(source, rad, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
-		context->ident = TRUE;
+	if (project(context->origin, rad, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
+		context->ident = true;
 
-	return TRUE;
+	return true;
 }
 
 
 /**
- * Breathe an element
- * Stop if we hit a monster or the player, act as a ball (for now)
- * Allow target mode to pass over monsters
+ * Breathe an element, in a cone from the breather
  * Affect grids, objects, and monsters
- * context->p1 is element, context->p2 radius
+ * context->p1 is element, context->p2 degrees of arc, context->p3 radius
  */
 bool effect_handler_BREATH(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, false);
 	int type = context->p1;
-	int rad = context->p2;
-	int source;
+	int rad = context->p3;
 
-	int ty = py + ddy[context->dir];
-	int tx = px + ddx[context->dir];
+	int ty = -1;
+	int tx = -1;
 
-	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	/* Diameter of source starts at 40, so full strength up to 3 grids from
+	 * the breather. */
+	int diameter_of_source = 40;
+	int degrees_of_arc = context->p2;
+
+	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Radius of zero means no fixed limit. */
+	if (rad == 0)
+		rad = z_info->max_range;
 
 	/* Player or monster? */
-	if (cave->mon_current > 0) {
-		struct monster *mon = cave_monster(cave, cave->mon_current);
-		source = cave->mon_current;
+	if (context->origin.what == SRC_MONSTER) {
+		struct monster *mon = cave_monster(cave, context->origin.which.monster);
 		flg |= PROJECT_PLAY;
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
+		ty = player->py;
+		tx = player->px;
 
-		/* Breath parameters for monsters are monster-dependent */
-		dam = breath_dam(type, mon->hp); 
-		if (rf_has(mon->race->flags, RF_POWERFUL)) rad++;
-	} else {
-		msgt(elements[type].msgt, "You breathe %s.", elements[type].desc);
-		source = -1;
+		dam = breath_dam(type, mon->hp);
+
+		/* Powerful monsters' breath is now full strength at 5 grids */
+		if (monster_is_powerful(mon)) {
+			diameter_of_source *= 3;
+			diameter_of_source /= 2;
+		}
+	} else if (context->origin.what == SRC_PLAYER) {
+		msgt(projections[type].msgt, "You breathe %s.", projections[type].desc);
+
+		/* Ask for a target if no direction given */
+		if (context->dir == 5 && target_okay()) {
+			target_get(&tx, &ty);
+		} else {
+			ty = player->py + ddy[context->dir];
+			tx = player->px + ddx[context->dir];
+		}
 	}
 
-	/* Ask for a target if no direction given */
-	if ((context->dir == 5) && target_okay() && source == -1) {
-		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-		target_get(&tx, &ty);
+	/* Diameter of the energy source. */
+	if (degrees_of_arc < 60) {
+		if (degrees_of_arc == 0)
+			/* This handles finite length beams */
+			diameter_of_source = rad * 10;
+		else
+			/* Narrower cone means energy drops off less quickly. We now have:
+			 * - 30 degree regular breath  | full strength at 5 grids
+			 * - 30 degree powerful breath | full strength at 9 grids
+			 * - 20 degree regular breath  | full strength at 11 grids
+			 * - 20 degree powerful breath | full strength at 17 grids
+			 * where grids are measured from the breather. */
+			diameter_of_source = diameter_of_source * 60 / degrees_of_arc;
 	}
 
-	/* Aim at the target, explode */
-	if (project(source, rad, ty, tx, dam, type, flg, 0, 0, context->obj))
-		context->ident = TRUE;
+	/* Max */
+	if (diameter_of_source > 250)
+		diameter_of_source = 250;
 
-	return TRUE;
+	/* Breathe at the target */
+	if (project(context->origin, rad, ty, tx, dam, type, flg, degrees_of_arc,
+				diameter_of_source, context->obj))
+		context->ident = true;
+
+	return true;
 }
 
 
@@ -3426,7 +3666,7 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int num = context->value.m_bonus;
 
 	int ty = py + ddy[context->dir];
@@ -3443,12 +3683,12 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 
 	while (num--) {
 		/* Aim at the target.  Hurt items on floor. */
-		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0,
+		if (project(source_player(), context->p2, ty, tx, dam, context->p1, flg, 0, 0,
 					context->obj))
-			context->ident = TRUE;
+			context->ident = true;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -3460,7 +3700,7 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int i;
 
 	s16b ty, tx;
@@ -3477,10 +3717,11 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target */
-		if (project(-1, 0, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
-			context->ident = TRUE;
+		if (project(source_player(), 0, ty, tx, dam, context->p1, flg, 0, 0, context->obj))
+			context->ident = true;
 	}
-	return TRUE;
+
+	return true;
 }
 
 
@@ -3493,7 +3734,7 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 {
 	int py = player->py;
 	int px = player->px;
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int i;
 
 	s16b ty, tx;
@@ -3506,11 +3747,11 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 		tx = px + ddx_ddd[i];
 
 		/* Aim at the target, explode */
-		if (project(-1, context->p2, ty, tx, dam, context->p1, flg, 0, 0,
+		if (project(source_player(), context->p2, ty, tx, dam, context->p1, flg, 0, 0,
 					context->obj))
-			context->ident = TRUE;
+			context->ident = true;
 	}
-	return TRUE;
+	return true;
 }
 
 /**
@@ -3520,12 +3761,12 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
  */
 bool effect_handler_BOLT(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	(void) project_aimed(context->p1, context->dir, dam, flg, context->obj);
+	(void) project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj);
 	if (!player->timed[TMD_BLIND])
-		context->ident = TRUE;
-	return TRUE;
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3535,12 +3776,12 @@ bool effect_handler_BOLT(effect_handler_context_t *context)
  */
 bool effect_handler_BEAM(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_BEAM | PROJECT_KILL;
-	(void) project_aimed(context->p1, context->dir, dam, flg, context->obj);
+	(void) project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj);
 	if (!player->timed[TMD_BLIND])
-		context->ident = TRUE;
-	return TRUE;
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3570,11 +3811,11 @@ bool effect_handler_BOLT_OR_BEAM(effect_handler_context_t *context)
  */
 bool effect_handler_LINE(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
-	if (project_aimed(context->p1, context->dir, dam, flg, context->obj))
-		context->ident = TRUE;
-	return TRUE;
+	if (project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj))
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3584,9 +3825,9 @@ bool effect_handler_LINE(effect_handler_context_t *context)
 bool effect_handler_ALTER(effect_handler_context_t *context)
 {
 	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
-	if (project_aimed(context->p1, context->dir, 0, flg, context->obj))
-		context->ident = TRUE;
-	return TRUE;
+	if (project_aimed(context->origin, context->p1, context->dir, 0, flg, context->obj))
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3597,11 +3838,11 @@ bool effect_handler_ALTER(effect_handler_context_t *context)
  */
 bool effect_handler_BOLT_STATUS(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	if (project_aimed(context->p1, context->dir, dam, flg, context->obj))
-		context->ident = TRUE;
-	return TRUE;
+	if (project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj))
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3612,11 +3853,11 @@ bool effect_handler_BOLT_STATUS(effect_handler_context_t *context)
  */
 bool effect_handler_BOLT_STATUS_DAM(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	if (project_aimed(context->p1, context->dir, dam, flg, context->obj))
-		context->ident = TRUE;
-	return TRUE;
+	if (project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj))
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3627,12 +3868,12 @@ bool effect_handler_BOLT_STATUS_DAM(effect_handler_context_t *context)
  */
 bool effect_handler_BOLT_AWARE(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
+	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
 	if (context->aware) flg |= PROJECT_AWARE;
-	if (project_aimed(context->p1, context->dir, dam, flg, context->obj))
-		context->ident = TRUE;
-	return TRUE;
+	if (project_aimed(context->origin, context->p1, context->dir, dam, flg, context->obj))
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3640,10 +3881,11 @@ bool effect_handler_BOLT_AWARE(effect_handler_context_t *context)
  */
 bool effect_handler_TOUCH(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
-	if (project_touch(dam, context->p1, FALSE, context->obj))
-		context->ident = TRUE;
-	return TRUE;
+	int dam = effect_calculate_value(context, true);
+	int rad = context->p2 ? context->p2 : 1;
+	if (project_touch(dam, rad, context->p1, false, context->obj))
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3652,10 +3894,11 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
  */
 bool effect_handler_TOUCH_AWARE(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
-	if (project_touch(dam, context->p1, context->aware, context->obj))
-		context->ident = TRUE;
-	return TRUE;
+	int dam = effect_calculate_value(context, true);
+	int rad = context->p2 ? context->p2 : 1;
+	if (project_touch(dam, rad, context->p1, context->aware, context->obj))
+		context->ident = true;
+	return true;
 }
 
 /**
@@ -3671,27 +3914,34 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 	obj = equipped_item_by_slot_name(player, "body");
 
 	/* Nothing to curse */
-	if (!obj) return (TRUE);
+	if (!obj) return (true);
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
 
 	/* Attempt a saving throw for artifacts */
-	if (obj->artifact && (randint0(100) < 50))
-		/* Cool */
+	if (obj->artifact && (randint0(100) < 50)) {
 		msg("A %s tries to %s, but your %s resists the effects!",
 				   "terrible black aura", "surround your armor", o_name);
-
-	/* not artifact or failed save... */
-	else {
-		/* Oops */
+	} else {
+		int num = randint1(3);
+		int max_tries = 20;
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Take down bonus a wee bit */
 		obj->to_a -= randint1(3);
 
-		/* Curse it */
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+		/* Try to find enough appropriate curses */
+		while (num && max_tries) {
+			int pick = randint1(z_info->curse_max - 1);
+			int power = 10 * m_bonus(9, player->depth);
+			if (!curses[pick].poss[obj->tval]) {
+				max_tries--;
+				continue;
+			}
+			append_object_curse(obj, pick, power);
+			num--;
+		}
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);
@@ -3703,9 +3953,9 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
-	context->ident = TRUE;
+	context->ident = true;
 
-	return (TRUE);
+	return (true);
 }
 
 
@@ -3722,20 +3972,18 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 	obj = equipped_item_by_slot_name(player, "weapon");
 
 	/* Nothing to curse */
-	if (!obj) return (TRUE);
+	if (!obj) return (true);
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), obj, ODESC_FULL);
 
 	/* Attempt a saving throw */
-	if (obj->artifact && (randint0(100) < 50))
-		/* Cool */
+	if (obj->artifact && (randint0(100) < 50)) {
 		msg("A %s tries to %s, but your %s resists the effects!",
 				   "terrible black aura", "surround your weapon", o_name);
-
-	/* not artifact or failed save... */
-	else {
-		/* Oops */
+	} else {
+		int num = randint1(3);
+		int max_tries = 20;
 		msg("A terrible black aura blasts your %s!", o_name);
 
 		/* Hurt it a bit */
@@ -3743,7 +3991,16 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 		obj->to_d = 0 - randint1(3);
 
 		/* Curse it */
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
+		while (num) {
+			int pick = randint1(z_info->curse_max - 1);
+			int power = 10 * m_bonus(9, player->depth);
+			if (!curses[pick].poss[obj->tval]) {
+				max_tries--;
+				continue;
+			}
+			append_object_curse(obj, pick, power);
+			num--;
+		}
 
 		/* Recalculate bonuses */
 		player->upkeep->update |= (PU_BONUS);
@@ -3755,10 +4012,10 @@ bool effect_handler_CURSE_WEAPON(effect_handler_context_t *context)
 		player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* Notice */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -3775,17 +4032,8 @@ bool effect_handler_BRAND_WEAPON(effect_handler_context_t *context)
 	/* Brand the weapon */
 	brand_object(obj, brand);
 
-	context->ident = TRUE;
-	return TRUE;
-}
-
-
-/*
- * Hook to specify "ammo"
- */
-static bool item_tester_hook_ammo(const struct object *obj)
-{
-	return tval_is_ammo(obj);
+	context->ident = true;
+	return true;
 }
 
 
@@ -3796,12 +4044,12 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 {
 	struct object *obj;
 	const char *q, *s;
-	bool used = FALSE;
+	bool used = false;
 
 	/* Select the brand */
 	const char *brand = one_in_(3) ? "Flame" : (one_in_(2) ? "Frost" : "Venom");
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* Get an item */
 	q = "Brand which kind of ammunition? ";
@@ -3813,12 +4061,7 @@ bool effect_handler_BRAND_AMMO(effect_handler_context_t *context)
 	brand_object(obj, brand);
 
 	/* Done */
-	return (TRUE);
-}
-
-static bool item_tester_hook_bolt(const struct object *obj)
-{
-	return obj->tval == TV_BOLT;
+	return (true);
 }
 
 /**
@@ -3828,9 +4071,9 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 {
 	struct object *obj;
 	const char *q, *s;
-	bool used = FALSE;
+	bool used = false;
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	/* Get an item */
 	q = "Brand which bolts? ";
@@ -3842,7 +4085,7 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 	brand_object(obj, "Flame");
 
 	/* Done */
-	return (TRUE);
+	return (true);
 }
 
 
@@ -3851,7 +4094,8 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
  */
 bool effect_handler_BIZARRE(effect_handler_context_t *context)
 {
-	context->ident = TRUE;
+	context->ident = true;
+
 	/* Pick a random effect */
 	switch (randint1(10))
 	{
@@ -3862,29 +4106,27 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			msg("You are surrounded by a malignant aura.");
 
 			/* Decrease all stats (permanently) */
-			player_stat_dec(player, STAT_STR, TRUE);
-			player_stat_dec(player, STAT_INT, TRUE);
-			player_stat_dec(player, STAT_WIS, TRUE);
-			player_stat_dec(player, STAT_DEX, TRUE);
-			player_stat_dec(player, STAT_CON, TRUE);
+			player_stat_dec(player, STAT_STR, true);
+			player_stat_dec(player, STAT_INT, true);
+			player_stat_dec(player, STAT_WIS, true);
+			player_stat_dec(player, STAT_DEX, true);
+			player_stat_dec(player, STAT_CON, true);
 
 			/* Lose some experience (permanently) */
-			player_exp_lose(player, player->exp / 4, TRUE);
+			player_exp_lose(player, player->exp / 4, true);
 
-			return TRUE;
+			return true;
 		}
 
 		case 3:
 		{
-			struct effect *effect = mem_zalloc(sizeof(*effect));
-
 			/* Message */
 			msg("You are surrounded by a powerful aura.");
 
 			/* Dispel monsters */
-			effect_simple(EF_PROJECT_LOS, "1000", GF_DISP_ALL, 0, 0, NULL);
+			effect_simple(EF_PROJECT_LOS, context->origin, "1000", PROJ_DISP_ALL, 0, 0, NULL);
 
-			return TRUE;
+			return true;
 		}
 
 		case 4:
@@ -3904,9 +4146,8 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			}
 
 			/* Aim at the target, explode */
-			if (project(-1, 3, ty, tx, 300, GF_MANA, flg, 0, 0, context->obj))
-
-			return TRUE;
+			if (project(source_player(), 3, ty, tx, 300, PROJ_MANA, flg, 0, 0, context->obj))
+				return true;
 		}
 
 		case 7:
@@ -3924,13 +4165,12 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 				target_get(&tx, &ty);
 
 			/* Aim at the target, do NOT explode */
-			return (project(-1, 0, ty, tx, 250, GF_MANA, flg, 0, 0,
-							context->obj));
-
-			return TRUE;
+			return project(source_player(), 0, ty, tx, 250, PROJ_MANA, flg, 0, 0,
+							context->obj);
 		}
 	}
-	return FALSE;
+
+	return false;
 }
 
 /**
@@ -3946,101 +4186,100 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 bool effect_handler_WONDER(effect_handler_context_t *context)
 {
 	int plev = player->lev;
-	int die = effect_calculate_value(context, FALSE);
+	int die = effect_calculate_value(context, false);
 	int p1 = 0, p2 = 0, p3 = 0;
 	int beam = context->beam;
 	effect_handler_f handler = NULL;
 	random_value value = { 0, 0, 0, 0 };
-	bool *ident = mem_zalloc(sizeof(*ident));
 
-	context->ident = TRUE;
+	context->ident = true;
 
 	if (die > 100)
 		msg("You feel a surge of power!");
 
 	if (die < 8) {
-		p1 = GF_OLD_CLONE;
+		p1 = PROJ_MON_CLONE;
 		handler = effect_handler_BOLT;
 	} else if (die < 14) {
-		p1 = GF_OLD_SPEED;
+		p1 = PROJ_MON_SPEED;
 		value.base = 100;
 		handler = effect_handler_BOLT;
 	} else if (die < 26) {
-		p1 = GF_OLD_HEAL;
+		p1 = PROJ_MON_HEAL;
 		value.dice = 4;
 		value.sides = 6;
 		handler = effect_handler_BOLT;
 	} else if (die < 31) {
-		p1 = GF_OLD_POLY;
+		p1 = PROJ_MON_POLY;
 		value.base = plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 36) {
 		beam -= 10;
-		p1 = GF_MISSILE;
+		p1 = PROJ_MISSILE;
 		value.dice = 3 + ((plev - 1) / 5);
 		value.sides = 4;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 41) {
-		p1 = GF_OLD_CONF;
+		p1 = PROJ_MON_CONF;
 		value.base = plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 46) {
-		p1 = GF_POIS;
+		p1 = PROJ_POIS;
 		value.base = 20 + plev / 2;
 		p2 = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 51) {
-		p1 = GF_LIGHT_WEAK;
+		p1 = PROJ_LIGHT_WEAK;
 		value.dice = 6;
 		value.sides = 8;
 		handler = effect_handler_LINE;
 	} else if (die < 56) {
-		p1 = GF_ELEC;
+		p1 = PROJ_ELEC;
 		value.dice = 3 + ((plev - 5) / 6);
 		value.sides = 6;
 		handler = effect_handler_BEAM;
 	} else if (die < 61) {
 		beam -= 10;
-		p1 = GF_COLD;
+		p1 = PROJ_COLD;
 		value.dice = 5 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 66) {
-		p1 = GF_ACID;
+		p1 = PROJ_ACID;
 		value.dice = 6 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 71) {
-		p1 = GF_FIRE;
+		p1 = PROJ_FIRE;
 		value.dice = 8 + ((plev - 5) / 4);
 		value.sides = 8;
 		handler = effect_handler_BOLT_OR_BEAM;
 	} else if (die < 76) {
-		p1 = GF_OLD_DRAIN;
+		p1 = PROJ_MON_DRAIN;
 		value.base = 75;
 		handler = effect_handler_BOLT;
 	} else if (die < 81) {
-		p1 = GF_ELEC;
+		p1 = PROJ_ELEC;
 		value.base = 30 + plev / 2;
 		p2 = 2;
 		handler = effect_handler_BALL;
 	} else if (die < 86) {
-		p1 = GF_ACID;
+		p1 = PROJ_ACID;
 		value.base = 40 + plev;
 		p2 = 2;
 		handler = effect_handler_BALL;
 	} else if (die < 91) {
-		p1 = GF_ICE;
+		p1 = PROJ_ICE;
 		value.base = 70 + plev;
 		p2 = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 96) {
-		p1 = GF_FIRE;
+		p1 = PROJ_FIRE;
 		value.base = 80 + plev;
 		p2 = 3;
 		handler = effect_handler_BALL;
 	} else if (die < 101) {
-		p1 = GF_OLD_DRAIN;
+		p1 = PROJ_MON_DRAIN;
 		value.base = 100 + plev;
 		handler = effect_handler_BOLT;
 	} else if (die < 104) {
@@ -4052,7 +4291,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	} else if (die < 108) {
 		handler = effect_handler_BANISH;
 	} else if (die < 110) {
-		p1 = GF_DISP_ALL;
+		p1 = PROJ_DISP_ALL;
 		value.base = 120;
 		handler = effect_handler_PROJECT_LOS;
 	}
@@ -4060,6 +4299,7 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 	if (handler != NULL) {
 		effect_handler_context_t new_context = {
 			context->effect,
+			context->origin,
 			context->obj,
 			context->aware,
 			context->dir,
@@ -4067,247 +4307,38 @@ bool effect_handler_WONDER(effect_handler_context_t *context)
 			context->boost,
 			value,
 			p1, p2, p3,
-			ident
+			context->ident
 		};
 
-		mem_free(ident);
-		return (handler(&new_context));
-	}
-
-	/* RARE */
-	effect_simple(EF_PROJECT_LOS, "150", GF_DISP_ALL, 0, 0, ident);
-	effect_simple(EF_PROJECT_LOS, "20", GF_OLD_SLOW, 0, 0, ident);
-	effect_simple(EF_PROJECT_LOS, "40", GF_OLD_SLEEP, 0, 0, ident);
-	effect_simple(EF_HEAL_HP, "300", 0, 0, 0, ident);
-	mem_free(ident);
-
-	return TRUE;
-}
-
-bool effect_handler_TRAP_DOOR(effect_handler_context_t *context)
-{
-	int target_depth = dungeon_get_next_level(player->depth, 1);
-
-	if (target_depth == player->depth) {
-		msg("You feel quite certain something really awful just happened...");
-		return TRUE;
-	}
-
-	msg("You fall through a trap door!");
-	if (player_of_has(player, OF_FEATHER)) {
-		msg("You float gently down to the next level.");
+		return handler(&new_context);
 	} else {
-		int dam = effect_calculate_value(context, FALSE);
-		take_hit(player, dam, "a trap");
+		/* RARE */
+		effect_simple(EF_PROJECT_LOS, context->origin, "150", PROJ_DISP_ALL, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "20", PROJ_MON_SLOW, 0, 0, NULL);
+		effect_simple(EF_PROJECT_LOS, context->origin, "40", PROJ_MON_SLEEP, 0, 0, NULL);
+		effect_simple(EF_HEAL_HP, context->origin, "300", 0, 0, 0, NULL);
+
+		return true;
 	}
-	equip_notice_flag(player, OF_FEATHER);
-
-	dungeon_change_level(target_depth);
-	return TRUE;
-}
-
-bool effect_handler_TRAP_PIT(effect_handler_context_t *context)
-{
-	msg("You fall into a pit!");
-	if (player_of_has(player, OF_FEATHER)) {
-		msg("You float gently to the bottom of the pit.");
-	} else {
-		int dam = effect_calculate_value(context, FALSE);
-		take_hit(player, dam, "a trap");
-	}
-	equip_notice_flag(player, OF_FEATHER);
-	return TRUE;
-}
-
-bool effect_handler_TRAP_PIT_SPIKES(effect_handler_context_t *context)
-{
-	msg("You fall into a spiked pit!");
-
-	if (player_of_has(player, OF_FEATHER)) {
-		msg("You float gently to the floor of the pit.");
-		msg("You carefully avoid touching the spikes.");
-	} else {
-		int dam = effect_calculate_value(context, FALSE);
-
-		/* Extra spike damage */
-		if (one_in_(2)) {
-			msg("You are impaled!");
-			dam *= 2;
-			(void)player_inc_timed(player, TMD_CUT, randint1(dam), TRUE, TRUE);
-		}
-
-		take_hit(player, dam, "a trap");
-	}
-	equip_notice_flag(player, OF_FEATHER);
-	return TRUE;
-}
-
-bool effect_handler_TRAP_PIT_POISON(effect_handler_context_t *context)
-{
-	msg("You fall into a spiked pit!");
-
-	if (player_of_has(player, OF_FEATHER)) {
-		msg("You float gently to the floor of the pit.");
-		msg("You carefully avoid touching the spikes.");
-	} else {
-		int dam = effect_calculate_value(context, FALSE);
-
-		/* Extra spike damage */
-		if (one_in_(2)) {
-			msg("You are impaled on poisonous spikes!");
-			(void)player_inc_timed(player, TMD_CUT, randint1(dam * 2),
-								   TRUE, TRUE);
-			(void)player_inc_timed(player, TMD_POISONED, randint1(dam * 4),
-								   TRUE, TRUE);
-		}
-
-		take_hit(player, dam, "a trap");
-	}
-	equip_notice_flag(player, OF_FEATHER);
-	return TRUE;
-}
-
-bool effect_handler_TRAP_RUNE_SUMMON(effect_handler_context_t *context)
-{
-	int i;
-	int num = effect_calculate_value(context, FALSE);
-
-	msgt(MSG_SUM_MONSTER, "You are enveloped in a cloud of smoke!");
-
-	/* Remove trap */
-	sqinfo_off(cave->squares[player->py][player->px].info, SQUARE_MARK);
-	square_destroy_trap(cave, player->py, player->px);
-
-	for (i = 0; i < num; i++)
-		(void)summon_specific(player->py, player->px, player->depth, 0, TRUE,
-							  FALSE);
-
-	return TRUE;
-}
-
-bool effect_handler_TRAP_RUNE_TELEPORT(effect_handler_context_t *context)
-{
-	int radius = effect_calculate_value(context, FALSE);
-	char dist[5];
-	strnfmt(dist, sizeof(dist), "%d", radius);
-	msg("You hit a teleport trap!");
-	effect_simple(EF_TELEPORT, dist, 0, 1, 0, NULL);
-	return TRUE;
-}
-
-bool effect_handler_TRAP_SPOT_FIRE(effect_handler_context_t *context)
-{
-	int dam = effect_calculate_value(context, FALSE);
-	msg("You are enveloped in flames!");
-	dam = adjust_dam(player, GF_FIRE, dam, RANDOMISE, 0);
-	if (dam) {
-		take_hit(player, dam, "a fire trap");
-		inven_damage(player, GF_FIRE, MIN(dam * 5, 300));
-	}
-	return TRUE;
-}
-
-bool effect_handler_TRAP_SPOT_ACID(effect_handler_context_t *context)
-{
-	int dam = effect_calculate_value(context, FALSE);
-	msg("You are splashed with acid!");
-	dam = adjust_dam(player, GF_ACID, dam, RANDOMISE, 0);
-	if (dam) {
-		take_hit(player, dam, "an acid trap");
-		inven_damage(player, GF_ACID, MIN(dam * 5, 300));
-	}
-	return TRUE;
-}
-
-bool effect_handler_TRAP_DART_SLOW(effect_handler_context_t *context)
-{
-	if (trap_check_hit(125)) {
-		msg("A small dart hits you!");
-		take_hit(player, damroll(1, 4), "a trap");
-		(void)player_inc_timed(player, TMD_SLOW, randint0(20) + 20, TRUE, FALSE);
-	} else {
-		msg("A small dart barely misses you.");
-	}
-	return TRUE;
-}
-
-bool effect_handler_TRAP_DART_LOSE_STR(effect_handler_context_t *context)
-{
-	if (trap_check_hit(125)) {
-		msg("A small dart hits you!");
-		take_hit(player, damroll(1, 4), "a trap");
-		effect_simple(EF_DRAIN_STAT, "0", STAT_STR, 0, 0, NULL);
-	} else {
-		msg("A small dart barely misses you.");
-	}
-	return TRUE;
-}
-
-bool effect_handler_TRAP_DART_LOSE_DEX(effect_handler_context_t *context)
-{
-	if (trap_check_hit(125)) {
-		msg("A small dart hits you!");
-		take_hit(player, damroll(1, 4), "a trap");
-		effect_simple(EF_DRAIN_STAT, "0", STAT_DEX, 0, 0, NULL);
-	} else {
-		msg("A small dart barely misses you.");
-	}
-	return TRUE;
-}
-
-bool effect_handler_TRAP_DART_LOSE_CON(effect_handler_context_t *context)
-{
-	if (trap_check_hit(125)) {
-		msg("A small dart hits you!");
-		take_hit(player, damroll(1, 4), "a trap");
-		effect_simple(EF_DRAIN_STAT, "0", STAT_CON, 0, 0, NULL);
-	} else {
-		msg("A small dart barely misses you.");
-	}
-	return TRUE;
-}
-
-bool effect_handler_TRAP_GAS_BLIND(effect_handler_context_t *context)
-{
-	msg("You are surrounded by a black gas!");
-	(void)player_inc_timed(player, TMD_BLIND, randint0(50) + 25, TRUE, TRUE);
-	return TRUE;
-}
-
-bool effect_handler_TRAP_GAS_CONFUSE(effect_handler_context_t *context)
-{
-	msg("You are surrounded by a gas of scintillating colors!");
-	(void)player_inc_timed(player, TMD_CONFUSED, randint0(20) + 10, TRUE, TRUE);
-	return TRUE;
-}
-
-bool effect_handler_TRAP_GAS_POISON(effect_handler_context_t *context)
-{
-	msg("You are surrounded by a pungent green gas!");
-	(void)player_inc_timed(player, TMD_POISONED, randint0(20) + 10, TRUE, TRUE);
-	return TRUE;
-}
-
-bool effect_handler_TRAP_GAS_SLEEP(effect_handler_context_t *context)
-{
-	msg("You are surrounded by a strange white mist!");
-	(void)player_inc_timed(player, TMD_PARALYZED, randint0(10) + 5, TRUE, TRUE);
-	return TRUE;
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Properties of effects
+ * ------------------------------------------------------------------------ */
 /**
  * Useful things about effects.
  */
 static const struct effect_kind effects[] =
 {
-	{ EF_NONE, FALSE, NULL, NULL, NULL },
+	{ EF_NONE, false, NULL, NULL, NULL },
 	#define F(x) effect_handler_##x
 	#define EFFECT(x, a, b, c, d, e)	{ EF_##x, a, b, F(x), e },
 	#include "list-effects.h"
 	#undef EFFECT
 	#undef F
-	{ EF_MAX, FALSE, NULL, NULL, NULL }
+	{ EF_MAX, false, NULL, NULL, NULL }
 };
 
 
@@ -4340,7 +4371,7 @@ void free_effect(struct effect *source)
 
 bool effect_valid(struct effect *effect)
 {
-	if (!effect) return FALSE;
+	if (!effect) return false;
 	return effect->index > EF_NONE && effect->index < EF_MAX;
 }
 
@@ -4349,14 +4380,14 @@ bool effect_aim(struct effect *effect)
 	struct effect *e = effect;
 
 	if (!effect_valid(effect))
-		return FALSE;
+		return false;
 
 	while (e) {
-		if (effects[e->index].aim) return TRUE;
+		if (effects[e->index].aim) return true;
 		e = e->next;
 	}
 
-	return FALSE;
+	return false;
 }
 
 const char *effect_info(struct effect *effect)
@@ -4403,6 +4434,7 @@ int effect_param(int index, const char *type)
 				/* Projection name */
 			case EF_PROJECT_LOS:
 			case EF_PROJECT_LOS_AWARE:
+			case EF_SPOT:
 			case EF_BALL:
 			case EF_BREATH:
 			case EF_SWARM:
@@ -4418,7 +4450,7 @@ int effect_param(int index, const char *type)
 			case EF_BOLT_AWARE:
 			case EF_TOUCH:
 			case EF_TOUCH_AWARE: {
-				val = gf_name_to_idx(type);
+				val = proj_name_to_idx(type);
 				break;
 			}
 
@@ -4476,16 +4508,33 @@ int effect_param(int index, const char *type)
 }
 
 /**
- * Do an effect, given an object.
- * Boost is the extent to which skill surpasses difficulty, used as % boost. It
- * ranges from 0 to 138.
+ * ------------------------------------------------------------------------
+ * Execution of effects
+ * ------------------------------------------------------------------------ */
+/**
+ * Execute an effect chain.
  *
- * Note that no effect ever sets `*ident` to FALSE
+ * \param effect is the effect chain
+ * \param origin is the origin of the effect (player, monster etc.)
+ * \param obj    is the object making the effect happen (or NULL)
+ * \param ident  will be updated if the effect is identifiable
+ *               (NB: no effect ever sets *ident to false)
+ * \param aware  indicates whether the player is aware of the effect already
+ * \param dir    is the direction the effect will go in
+ * \param beam   is the base chance out of 100 that a BOLT_OR_BEAM effect will beam
+ * \param boost  is the extent to which skill surpasses difficulty, used as % boost. It
+ *               ranges from 0 to 138.
  */
-bool effect_do(struct effect *effect, struct object *obj, bool *ident,
-			   bool aware, int dir, int beam, int boost)
+bool effect_do(struct effect *effect,
+		struct source origin,
+		struct object *obj,
+		bool *ident,
+		bool aware,
+		int dir,
+		int beam,
+		int boost)
 {
-	bool completed = FALSE;
+	bool completed = false;
 	effect_handler_f handler;
 	random_value value = { 0, 0, 0, 0 };
 
@@ -4494,7 +4543,7 @@ bool effect_do(struct effect *effect, struct object *obj, bool *ident,
 
 		if (!effect_valid(effect)) {
 			msg("Bad effect passed to effect_do(). Please report this bug.");
-			return FALSE;
+			return false;
 		}
 
 		if (effect->dice != NULL)
@@ -4520,6 +4569,7 @@ bool effect_do(struct effect *effect, struct object *obj, bool *ident,
 		if (handler != NULL) {
 			effect_handler_context_t context = {
 				effect->index,
+				origin,
 				obj,
 				aware,
 				dir,
@@ -4551,31 +4601,38 @@ bool effect_do(struct effect *effect, struct object *obj, bool *ident,
 /**
  * Perform a single effect with a simple dice string and parameters
  * Calling with ident a valid pointer will (depending on effect) give success
- * information; ident = NULL will ignore this 
+ * information; ident = NULL will ignore this
  */
-void effect_simple(int index, const char* dice_string, int p1, int p2, int p3, bool *ident)
+void effect_simple(int index,
+		struct source origin,
+		const char *dice_string,
+		int p1,
+		int p2,
+		int p3,
+		bool *ident)
 {
-	struct effect *effect = mem_zalloc(sizeof(*effect));
+	struct effect effect;
 	int dir = DIR_TARGET;
 	bool dummy_ident;
 
 	/* Set all the values */
-	effect->index = index;
-	effect->dice = dice_new();
-	dice_parse_string(effect->dice, dice_string);
-	effect->params[0] = p1;
-	effect->params[1] = p2;
-	effect->params[2] = p3;
+	memset(&effect, 0, sizeof(effect));
+	effect.index = index;
+	effect.dice = dice_new();
+	dice_parse_string(effect.dice, dice_string);
+	effect.params[0] = p1;
+	effect.params[1] = p2;
+	effect.params[2] = p3;
 
 	/* Direction if needed */
-	if (effect_aim(effect))
+	if (effect_aim(&effect))
 		get_aim_dir(&dir);
 
 	/* Do the effect */
-	if (ident)
-		effect_do(effect, NULL, ident, TRUE, dir, 0, 0);
-	else
-		effect_do(effect, NULL, &dummy_ident, TRUE, dir, 0, 0);
+	if (!ident) {
+		ident = &dummy_ident;
+	}
 
-	free_effect(effect);
+	effect_do(&effect, origin, NULL, ident, true, dir, 0, 0);
+	dice_free(effect.dice);
 }

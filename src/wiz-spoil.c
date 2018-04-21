@@ -24,7 +24,6 @@
 #include "mon-lore.h"
 #include "monster.h"
 #include "obj-desc.h"
-#include "obj-identify.h"
 #include "obj-info.h"
 #include "obj-make.h"
 #include "obj-pile.h"
@@ -142,7 +141,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 					  char *wgt, size_t wgt_len, int *lev, s32b *val, int k)
 {
 	struct object_kind *kind = &k_info[k];
-	struct object *obj = object_new();
+	struct object *obj = object_new(), *known_obj = object_new();
 	int i;
 
 	/* Prepare a fake item */
@@ -159,10 +158,11 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	(*lev) = kind->level;
 
 	/* Make known */
-	object_notice_everything(obj);
+	object_copy(known_obj, obj);
+	obj->known = known_obj;
 
 	/* Value */
-	(*val) = object_value(obj, 1, FALSE);
+	(*val) = object_value(obj, 1);
 
 	/* Description (too brief) */
 	if (buf)
@@ -185,6 +185,7 @@ static void kind_info(char *buf, size_t buf_len, char *dam, size_t dam_len,
 	else if (tval_is_armor(obj))
 		strnfmt(dam, dam_len, "%d", obj->ac);
 
+	object_delete(&known_obj);
 	object_delete(&obj);
 }
 
@@ -220,7 +221,7 @@ static void spoil_obj_desc(const char *fname)
 	        "------", "---", "---", "----");
 
 	/* List the groups */
-	for (i = 0; TRUE; i++) {
+	for (i = 0; true; i++) {
 		/* Write out the group title */
 		if (group_item[i].name) {
 			/* Hack -- bubble-sort by cost and then level */
@@ -341,7 +342,6 @@ static const grouper group_artifact[] =
 static void spoil_artifact(const char *fname)
 {
 	int i, j;
-	struct object *obj;
 	char buf[1024];
 
 	/* Build the filename */
@@ -377,28 +377,30 @@ static void spoil_artifact(const char *fname)
 			struct artifact *art = &a_info[j];
 			char buf2[80];
 			char *temp;
+			struct object *obj, *known_obj;
 
 			/* We only want objects in the current group */
 			if (art->tval != group_artifact[i].tval) continue;
 
 			/* Get local object */
 			obj = object_new();
+			known_obj = object_new();
 
 			/* Attempt to "forge" the artifact */
 			if (!make_fake_artifact(obj, art)) {
+				object_delete(&known_obj);
 				object_delete(&obj);
 				continue;
 			}
 
 			/* Grab artifact name */
+			object_copy(known_obj, obj);
+			obj->known = known_obj;
 			object_desc(buf2, sizeof(buf2), obj, ODESC_PREFIX |
 				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL);
 
 			/* Print name and underline */
 			spoiler_underline(buf2, '-');
-
-			/* Cheat extra knowledge */
-			object_know_all_but_flavor(obj); 
 
 			/* Temporarily blank the artifact flavour text - spoilers
 			   spoil the mechanics, not the atmosphere. */
@@ -417,15 +419,15 @@ static void spoil_artifact(const char *fname)
 			 * its power rating.
 			 */
 			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %d, %d.%d lbs\n",
-				art->alloc_min, art->alloc_max,
-				art->alloc_prob, object_power(obj, FALSE,
-				NULL, TRUE), (art->weight / 10),
-				(art->weight % 10));
+					 art->alloc_min, art->alloc_max, art->alloc_prob,
+					 object_power(obj, false, NULL), (art->weight / 10),
+					 (art->weight % 10));
 
-			if (OPT(birth_randarts)) text_out("%s.\n", art->text);
+			if (OPT(player, birth_randarts)) text_out("%s.\n", art->text);
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);
+			object_delete(&known_obj);
 			object_delete(&obj);
 		}
 	}
@@ -646,7 +648,7 @@ static void spoil_mon_info(const char *fname)
 		textblock_append(tb, "Exp:%ld\n", (long)(race->mexp));
 
 		/* Normal description (with automatic line breaks) */
-		lore_description(tb, race, lore, TRUE);
+		lore_description(tb, race, lore, true);
 		textblock_append(tb, "\n");
 
 		textblock_to_file(tb, fh, 0, 75);
@@ -704,6 +706,6 @@ void do_cmd_spoilers(void)
 	screen_save();
 	clear_from(0);
 	menu_layout(spoil_menu, &SCREEN_REGION);
-	menu_select(spoil_menu, 0, FALSE);
+	menu_select(spoil_menu, 0, false);
 	screen_load();
 }

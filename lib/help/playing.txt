@@ -42,7 +42,7 @@ a monster race, a sub-command, a verification, an amount of time, a
 quantity, a file name, or various other things. Normally you can hit return
 to choose the "default" response, or escape to cancel the command entirely.
 
-Some commands will prompt for a spell or an inventory item. Pressing pace
+Some commands will prompt for a spell or an inventory item. Pressing space
 (or '*') will give you a list of choices. Pressing '-' (minus) selects
 the item on the floor. Pressing a lowercase letter selects the given item.
 Pressing a capital letter selects the given item after verification.
@@ -103,9 +103,9 @@ Original Keyset Command Summary
   n    Repeat previous command         N    (unused)
   o    Open a door or chest            O    (unused)
   p    Cast a spell                    P    (unused)
-  q    Quaff a potion                  Q    Quit (commit suicide)
+  q    Quaff a potion                  Q    End character & quit
   r    Read a scroll                   R    Rest for a period
-  s    Search for traps/doors          S    Toggle search mode
+  s    (unused)                        S    (unused)
   t    Take off equipment              T    Dig a tunnel
   u    Use a staff                     U    Use an item
   v    Throw an item                   V    Version info
@@ -113,7 +113,7 @@ Original Keyset Command Summary
   x    (unused)                        X    (unused)
   y    (unused)                        Y    (unused)
   z    Zap a rod                       Z    (unused)
-  !    Interact with system            ^A    (special - debug command)
+  !    (unused)                        ^A    Debug mode
   @    (unused)                        ^B    (unused)
   #    (unused)                        ^C    (special - break)
   $    (unused)                        ^D    (unused)
@@ -131,7 +131,7 @@ Original Keyset Command Summary
   _    Enter store                     ^P    Show previous messages
   |+|    Alter grid                      ^Q    (unused)
   =    Set options                     ^R    Redraw the screen
-  ;    Walk (with pickup)              ^S    Save and dont quit
+  ;    Walk (with pickup)              ^S    Save and don't quit
   :    Take notes                      ^T    (unused)
   '    Target closest monster          ^U    (unused)
   "    Enter a user pref command       ^V    (unused)
@@ -141,7 +141,7 @@ Original Keyset Command Summary
   >    Go down staircase               ^Z    (unused)
   \\   (special - bypass keymap)        ~     Check knowledge
   \`   (special - escape)               ?     Help
-  /    Identify symbol                 
+  /    Identify symbol
   \|    Quiver list
 ====== ============================= ====== ============================
 
@@ -169,9 +169,9 @@ Roguelike Keyset Command Summary
   n    (walk - south east)             N    (run - south east)
   o    Open a door or chest            O    Toggle ignore
   p    Cast a spell                    P    Browse a book
-  q    Quaff a potion                  Q    Quit (commit suicide)
+  q    Quaff a potion                  Q    End character & quit
   r    Read a scroll                   R    Rest for a period
-  s    Search for traps/doors          S    (unused)
+  s    (unused)                        S    (unused)
   t    Fire an item                    T    Take off equipment
   u    (walk - north east)             U    (run - north east)
   v    Throw an item                   V    Version info
@@ -179,9 +179,9 @@ Roguelike Keyset Command Summary
   x    Look around                     X    Use an item
   y    (walk - north west)             Y    (run - north west)
   z    Aim a wand (Zap)                Z    Use a staff (Zap)
-  !    Interact with system            ^A   (special - debug command)
+  !    (unused)                        ^A   (special - debug command)
   @    Center map                      ^B   (alter - south west)
-  #    Toggle search mode              ^C   (special - break)
+  #    (unused)                        ^C   (special - break)
   $    (unused)                        ^D   Ignore an item
   %    (unused)                        ^E   Toggle inven/equip window
   ^    (special - control key)         ^F   Repeat level feeling
@@ -197,7 +197,7 @@ Roguelike Keyset Command Summary
   _    Enter store                     ^P   Show previous messages
   |+|    Alter grid                      ^Q   (unused)
   =    Set options                     ^R   Redraw the screen
-  ;    Walk (with pickup)              ^S   Save and dont quit
+  ;    Walk (with pickup)              ^S   Save and don't quit
   :    Take notes                      ^T   Dig a tunnel
   '    Target closest monster          ^U   (alter - north east)
   "    Enter a user pref command       ^V   Repeat previous command
@@ -222,7 +222,7 @@ control keys, and often, you can disable their special effects.
 If you are playing on a UNIX or similar system, then 'Ctrl-C' will
 interrupt Angband. The second and third interrupt will induce a warning
 bell, and the fourth will induce both a warning bell and a special message,
-ince the fifth will quit the game, after killing your character. Also,
+since the fifth will quit the game, after killing your character. Also,
 'Ctrl-Z' will suspend the game, and return you to the original command
 shell, until you resume the game with the 'fg' command. There is now a
 compilation option to force the game to prevent the "double 'ctrl-z'
@@ -238,7 +238,7 @@ Pressing backslash ('\\') before a command will bypass all keymaps, and
 the next keypress will be interpreted as an "underlying command" key,
 unless it is a caret ('^'), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
-angband keyset. The backslash key is useful for creating actions which are
+Angband keyset. The backslash key is useful for creating actions which are
 not affected by any keymap definitions that may be in force, for example,
 the sequence '\\' + '.' + '6' will always mean "run east", even if the
 '.' key has been mapped to a different underlying command.

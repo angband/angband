@@ -16,7 +16,8 @@
 #include "z-bitflag.h"
 #include "z-file.h"
 #include "z-rand.h"
-#include "parser.h"
+#include "datafile.h"
+#include "object.h"
 
 /**
  * Information about maximal indices of certain arrays.
@@ -36,10 +37,19 @@ struct angband_constants
 	u16b s_max;			/**< Maximum number of magic spells */
 	u16b pit_max;		/**< Maximum number of monster pit types */
 	u16b act_max;		/**< Maximum number of activations for randarts */
+	u16b curse_max;		/**< Maximum number of curses */
+	u16b slay_max;		/**< Maximum number of slays */
+	u16b brand_max;		/**< Maximum number of brands */
 	u16b mon_blows_max;	/**< Maximum number of monster blows */
+	u16b blow_methods_max;	/**< Maximum number of monster blow methods */
+	u16b blow_effects_max;	/**< Maximum number of monster blow effects */
 	u16b equip_slots_max;	/**< Maximum number of player equipment slots */
 	u16b profile_max;	/**< Maximum number of cave_profiles */
 	u16b quest_max;		/**< Maximum number of quests */
+	u16b projection_max;	/**< Maximum number of projection types */
+	u16b calculation_max;	/**< Maximum number of object power calculations */
+	u16b property_max;	/**< Maximum number of object properties */
+	u16b ordinary_kind_max;	/**< Maximum number of objects in object.txt */
 
 	/* Maxima of things on a given level, read from constants.txt */
 	u16b level_monster_max;	/**< Maximum number of monsters on a given level */
@@ -57,7 +67,6 @@ struct angband_constants
 	u16b glyph_hardness;		/**< How hard for a monster to break a glyph */
 	u16b repro_monster_rate;	/**< Monster reproduction rate-slower */
 	u16b life_drain_percent;	/**< Percent of player life drained */
-	u16b max_flow_depth;		/**< Maximum depth for flow calculation */
 	u16b flee_range;			/**< Monsters run this many grids out of view */
 	u16b turn_range;			/**< Monsters turn to fight closer than this */
 
@@ -86,8 +95,8 @@ struct angband_constants
 	/* Carrying capacity constants, read from constants.txt */
 	u16b pack_size;		/**< Maximum number of pack slots */
 	u16b quiver_size;	/**< Maximum number of quiver slots */
+	u16b quiver_slot_size;	/**< Maximum number of missiles per quiver slot */
 	u16b floor_size;	/**< Maximum number of items per floor grid */
-	u16b stack_size;	/**< Maximum number of items per stack */
 
 	/* Store parameters, read from constants.txt */
 	u16b store_inven_max;	/**< Maximum number of objects in store inventory */
@@ -115,7 +124,10 @@ struct init_module {
 	void (*cleanup)(void);
 };
 
-struct angband_constants *z_info;
+extern const char *list_element_names[];
+extern const char *list_obj_flag_names[];
+
+extern struct angband_constants *z_info;
 
 extern const char *ANGBAND_SYS;
 
@@ -131,6 +143,7 @@ extern char *ANGBAND_DIR_USER;
 extern char *ANGBAND_DIR_SAVE;
 extern char *ANGBAND_DIR_SCORES;
 extern char *ANGBAND_DIR_INFO;
+extern char *ANGBAND_DIR_ARCHIVE;
 
 extern struct parser *init_parse_artifact(void);
 extern struct parser *init_parse_class(void);
@@ -151,6 +164,9 @@ extern struct parser *init_parse_hints(void);
 extern struct parser *init_parse_trap(void);
 extern struct parser *init_parse_quest(void);
 
+extern struct file_parser flavor_parser;
+
+errr grab_effect_data(struct parser *p, struct effect *effect);
 extern void init_file_paths(const char *config, const char *lib, const char *data);
 extern void init_game_constants(void);
 extern void init_arrays(void);

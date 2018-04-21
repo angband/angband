@@ -13,143 +13,175 @@
 # flags: default flags
 
 default:break-chance:10
+default:max-stack:40
 
 name:chest:Chest~
 graphics:slate
+# max-stack:1
 flags:HATES_ACID | HATES_FIRE
 
 name:shot:Shot~
 graphics:light umber
 break:25
+# max-stack:40
 flags:SHOW_DICE
 
 name:arrow:Arrow~
 graphics:light umber
 break:35
+# max-stack:40
 flags:HATES_ACID | HATES_FIRE
 flags:SHOW_DICE
 
 name:bolt:Bolt~
 graphics:light umber
 break:25
+# max-stack:40
 flags:HATES_ACID
 flags:SHOW_DICE
 
 name:bow:Bow~
 graphics:umber
+# max-stack:1
 flags:HATES_ACID | HATES_FIRE
 flags:SHOW_MULT
 
 name:digger:Digger~
 graphics:slate
+# max-stack:1
 flags:SHOW_DICE
 
 name:hafted:Hafted weapon~
 graphics:white
+# max-stack:1
 flags:HATES_ACID | HATES_FIRE
 flags:SHOW_DICE
 
 name:polearm:Polearm~
 graphics:white
+# max-stack:1
 flags:HATES_ACID | HATES_FIRE
 flags:SHOW_DICE
 
 name:sword:Bladed weapon~
 graphics:white
+# max-stack:1
 flags:HATES_ACID
 flags:SHOW_DICE
 
 name:boots:Boot~
 graphics:light umber
+# max-stack:1
 flags:HATES_ACID | HATES_FIRE
 
 name:gloves:Glove~
 graphics:light umber
+# max-stack:1
 flags:HATES_ACID | HATES_FIRE
 
 name:helm:Helm~
 graphics:light umber
+# max-stack:1
 flags:HATES_ACID
 
 name:crown:Crown~
 graphics:light umber
+# max-stack:1
 flags:HATES_ACID
 
 name:shield:Shield~
 graphics:light umber
+# max-stack:1
 flags:HATES_ACID
 
 name:cloak:Cloak~
 graphics:light umber
+# max-stack:1
 flags:HATES_ACID | HATES_FIRE
 
 name:soft armor:Soft Armor~
 graphics:slate
+# max-stack:1
 flags:HATES_ACID | HATES_FIRE
 
 name:hard armor:Hard Armor~
 graphics:slate
+# max-stack:1
 flags:HATES_ACID
 
 name:dragon armor:Dragon Armor~
 graphics:slate
+# max-stack:1
 
 name:light:Light~
 graphics:yellow
 break:50
+# max-stack:10
 flags:HATES_FIRE
 
 name:amulet:Amulet~
 graphics:orange
+# max-stack:2
 
 name:ring:Ring~
 graphics:red
+# max-stack:5
 flags:HATES_ELEC
 
 name:staff:Staff~
 graphics:light umber
+# max-stack:5
 flags:HATES_ACID | HATES_FIRE | EASY_KNOW
 
 name:wand:Wand~
 graphics:green
+# max-stack:5
 flags:HATES_ELEC | EASY_KNOW
 
 name:rod:Rod~
 graphics:light purple
+# max-stack:5
 flags:HATES_ELEC | EASY_KNOW
 
 name:scroll:Scroll~
 graphics:white
+# max-stack:20
 flags:HATES_ACID | HATES_FIRE | EASY_KNOW
 
 name:potion:Potion~
 graphics:light blue
 break:100
+# max-stack:20
 flags:HATES_COLD | HATES_SOUND | HATES_SHARD | HATES_ICE | HATES_FORCE
 flags:EASY_KNOW
 
 name:flask:Flask~
 graphics:yellow
 break:100
+# max-stack:20
 flags:HATES_COLD | HATES_SOUND | HATES_SHARD | HATES_ICE | HATES_FORCE
 flags:EASY_KNOW
 
 name:food:Food
 graphics:light umber
 break:100
+# max-stack:10
 flags:EASY_KNOW
 
 name:mushroom:Mushroom~
 graphics:light umber
 break:100
+# max-stack:10
 flags:EASY_KNOW
 
 name:magic book:Magic Book~
 graphics:light red
+# max-stack:5
 flags:HATES_FIRE | EASY_KNOW
 
 name:prayer book:Prayer Book~
 graphics:light green
+# max-stack:5
 flags:HATES_FIRE | EASY_KNOW
 
 name:gold

@@ -16,12 +16,12 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "datafile.h"
 #include "init.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-pile.h"
 #include "obj-util.h"
-#include "parser.h"
 #include "player-calcs.h"
 #include "player-quest.h"
 
@@ -84,7 +84,7 @@ struct parser *init_parse_quest(void) {
 }
 
 static errr run_parse_quest(struct parser *p) {
-	return parse_file(p, "quest");
+	return parse_file_quit_not_found(p, "quest");
 }
 
 static errr finish_parse_quest(struct parser *p) {
@@ -142,13 +142,13 @@ bool is_quest(int level)
 	size_t i;
 
 	/* Town is never a quest */
-	if (!level) return FALSE;
+	if (!level) return false;
 
 	for (i = 0; i < z_info->quest_max; i++)
 		if (player->quests[i].level == level)
-			return TRUE;
+			return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -187,13 +187,14 @@ void player_quests_free(struct player *p)
  */
 static void build_quest_stairs(int y, int x)
 {
-	int ny, nx;
+	int ny = player->py;
+	int nx = player->px;
 
 	/* Stagger around */
 	while (!square_changeable(cave, y, x) && !square_iswall(cave, y, x) &&
 		   !square_isdoor(cave, y, x)) {
 		/* Pick a location */
-		scatter(cave, &ny, &nx, y, x, 1, FALSE);
+		scatter(cave, &ny, &nx, y, x, 1, false);
 
 		/* Stagger */
 		y = ny; x = nx;
@@ -210,9 +211,6 @@ static void build_quest_stairs(int y, int x)
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Fully update the flow */
-	player->upkeep->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 }
 
 /**
@@ -222,7 +220,7 @@ bool quest_check(const struct monster *m) {
 	int i, total = 0;
 
 	/* Don't bother with non-questors */
-	if (!rf_has(m->race->flags, RF_QUESTOR)) return FALSE;
+	if (!rf_has(m->race->flags, RF_QUESTOR)) return false;
 
 	/* Mark quests as complete */
 	for (i = 0; i < z_info->quest_max; i++) {
@@ -241,12 +239,12 @@ bool quest_check(const struct monster *m) {
 
 	/* Nothing left, game over... */
 	if (total == 0) {
-		player->total_winner = TRUE;
+		player->total_winner = true;
 		player->upkeep->redraw |= (PR_TITLE);
 		msg("*** CONGRATULATIONS ***");
 		msg("You have won the game!");
 		msg("You may retire (commit suicide) when you are ready.");
 	}
 
-	return TRUE;
+	return true;
 }

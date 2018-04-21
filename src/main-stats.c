@@ -25,9 +25,9 @@
 #include "init.h"
 #include "main.h"
 #include "mon-make.h"
+#include "mon-util.h"
 #include "monster.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-power.h"
 #include "obj-randart.h"
 #include "obj-tval.h"
@@ -66,7 +66,7 @@
 static int randarts = 0;
 static int no_selling = 0;
 static u32b num_runs = 1;
-static bool quiet = FALSE;
+static bool quiet = false;
 static int nextkey = 0;
 static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
@@ -179,10 +179,10 @@ static void free_stats_memory(void)
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats()
 {
-	OPT(birth_randarts) = randarts;
-	OPT(birth_no_selling) = no_selling;
-	OPT(birth_no_stacking) = FALSE;
-	OPT(auto_more) = TRUE;
+	OPT(player, birth_randarts) = randarts;
+	OPT(player, birth_no_selling) = no_selling;
+	OPT(player, birth_stacking) = true;
+	OPT(player, auto_more) = true;
 
 	player->wizard = 1; /* Set wizard mode on */
 
@@ -223,7 +223,7 @@ static void initialize_character(void)
 	}
 
 	seed = (time(NULL));
-	Rand_quick = FALSE;
+	Rand_quick = false;
 	Rand_state_init(seed);
 
 	player_init(player);
@@ -232,15 +232,14 @@ static void initialize_character(void)
 	seed_flavor = randint0(0x10000000);
 	seed_randart = randint0(0x10000000);
 
-	if (randarts)
-	{
-		do_randart(seed_randart, TRUE);
+	if (randarts) {
+		do_randart(seed_randart, false);
 	}
 
 	store_reset();
 	flavor_init();
-	player->upkeep->playing = TRUE;
-	player->upkeep->autosave = FALSE;
+	player->upkeep->playing = true;
+	player->upkeep->autosave = false;
 	cave_generate(&cave, player);
 }
 
@@ -253,7 +252,7 @@ static void kill_all_monsters(int level)
 
 		level_data[level].monsters[mon->race->ridx]++;
 
-		monster_death(mon, TRUE);
+		monster_death(mon, true);
 
 		if (rf_has(mon->race->flags, RF_UNIQUE))
 			mon->race->max_num = 0;
@@ -287,7 +286,7 @@ static void reset_artifacts(void)
 	}
 
 	for (i = 0; i < z_info->a_max; i++)
-		a_info[i].created = FALSE;
+		a_info[i].created = false;
 
 }
 
@@ -302,10 +301,7 @@ static void log_all_objects(int level)
 			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
 				/*	u32b o_power = 0; */
 
-				/* Mark object as fully known */
-				object_notice_everything(obj);
-
-/*				o_power = object_power(obj, FALSE, NULL, TRUE); */
+/*				o_power = object_power(obj, false, NULL, true); */
 
 				/* Capture gold amounts */
 				if (tval_is_money(obj))
@@ -365,7 +361,7 @@ static void descend_dungeon(void)
 			}
 		}
 
-		dungeon_change_level(level);
+		dungeon_change_level(player, level);
 		cave_generate(&cave, player);
 
 		/* Store level feelings */
@@ -503,8 +499,8 @@ static int stats_dump_egos(void)
 		err = stats_db_bind_rv(info_stmt, 5, ego->to_a); 
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 8, 5, 
-			ego->cost, ego->level, ego->rarity,
-			ego->rating, ego->min_to_h, 
+			ego->cost, ego->alloc_min, ego->alloc_max,
+			ego->alloc_prob, ego->rating, ego->min_to_h, 
 			ego->min_to_d, ego->min_to_a);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
@@ -552,7 +548,7 @@ static int stats_dump_objects(void)
 
 		err = sqlite3_bind_int(info_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(info_stmt, 2, kind->name, 
+		err = sqlite3_bind_text(info_stmt, 2, kind->name,
 			strlen(kind->name), SQLITE_STATIC);
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 13, 2,
@@ -741,13 +737,13 @@ static int stats_dump_lists(void)
 	 * description field. */
 	info_entry effects[] =
 	{
-		{ EF_NONE, FALSE, NULL },
+		{ EF_NONE, false, NULL },
 		#define F(x) effect_handler_##x
 		#define EFFECT(x, a, b, c, d, e)    { EF_##x, a, #x },
 		#include "list-effects.h"
 		#undef EFFECT
 		#undef F
-		{ EF_MAX, FALSE, NULL }
+		{ EF_MAX, false, NULL }
 	};
 
 	char *r_info_flags[] =
@@ -760,26 +756,23 @@ static int stats_dump_lists(void)
 
 	/** Really want elements (at least) here - NRM **/
 
-	struct object_flag object_flag_table[] =
+	char *object_flag_names[] =
 	{
-		{ OF_NONE, OFID_NONE, OFT_NONE, 0, "NONE" },
-        #define STAT(a, b, c, d, e, f, g, h)  \
-			{ OF_##c, OFID_NORMAL, OFT_SUST, d, #c },
-        #include "list-stats.h"
-        #undef STAT
-		#define OF(a, b, c, d, e) { OF_##a, b, c, d, #a },
+		"NONE",
+		#define OF(a) #a,
 		#include "list-object-flags.h"
 		#undef OF
 	};
 
-	struct object_mod object_mod_table[] =
+	char *object_mods[] =
 	{
-        #define STAT(a, b, c, d, e, f, g, h)  { OBJ_MOD_##a, b, e, #a },
+		#define STAT(a) #a,
         #include "list-stats.h"
         #undef STAT
-        #define OBJ_MOD(a, b, c, d)  { OBJ_MOD_##a, b, c, #a },
+        #define OBJ_MOD(a) #a,
         #include "list-object-modifiers.h"
         #undef OBJ_MOD
+		NULL
 	};
 
 	err = stats_db_stmt_prep(&sql_stmt, 
@@ -816,18 +809,14 @@ static int stats_dump_lists(void)
 	STATS_DB_FINALIZE(sql_stmt)
 
 	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_flags_list VALUES(?,?,?,?);");
+		"INSERT INTO object_flags_list VALUES(?,?);");
 	if (err) return err;
 
-	for (idx = 1; idx < OF_MAX; idx++) {
-		struct object_flag *of = &object_flag_table[idx];
-		if (! of->message) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, 
-			of->type, of->power);
+	for (idx = 0; idx < OF_MAX; idx++) {
+		err = stats_db_bind_ints(sql_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 4, of->message,
-			strlen(of->message), SQLITE_STATIC);
+		err = sqlite3_bind_text(sql_stmt, 2, object_flag_names[idx],
+			strlen(object_flag_names[idx]), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}
@@ -835,17 +824,14 @@ static int stats_dump_lists(void)
 	STATS_DB_FINALIZE(sql_stmt)
 
 	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO object_mods_list VALUES(?,?,?,?,?);");
+		"INSERT INTO object_mods_list VALUES(?,?);");
 	if (err) return err;
 
-	for (idx = 0; idx < OBJ_MOD_MAX; idx++) {
-		struct object_mod *om = &object_mod_table[idx];
-		if (!om->name) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, om->power, om->mod_mult);
+	for (idx = 0; object_mods[idx] != NULL; idx++) {
+		err = stats_db_bind_ints(sql_stmt, 1, idx);
 		if (err) return err;
-		err = sqlite3_bind_text(sql_stmt, 4, om->name,
-			strlen(om->name), SQLITE_STATIC);
+		err = sqlite3_bind_text(sql_stmt, 2, object_mods[idx],
+			strlen(object_mods[idx]), SQLITE_STATIC);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}
@@ -1656,8 +1642,8 @@ static void term_data_link(int i) {
 	term_init(t, 80, 24, 256);
 
 	/* Ignore some actions for efficiency and safety */
-	t->never_bored = TRUE;
-	t->never_frosh = TRUE;
+	t->never_bored = true;
+	t->never_frosh = true;
 
 	t->init_hook = term_init_stats;
 	t->nuke_hook = term_nuke_stats;
@@ -1697,7 +1683,7 @@ errr init_stats(int argc, char *argv[]) {
 			continue;
 		}
 		if (streq(argv[i], "-q")) {
-			quiet = TRUE;
+			quiet = true;
 			continue;
 		}
 		if (prefix(argv[i], "-n")) {

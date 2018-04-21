@@ -29,6 +29,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "datafile.h"
 #include "game-event.h"
 #include "game-input.h"
 #include "game-world.h"
@@ -38,11 +39,9 @@
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "monster.h"
-#include "obj-identify.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
-#include "parser.h"
 #include "player-history.h"
 #include "trap.h"
 #include "z-queue.h"
@@ -53,8 +52,9 @@
  */
 struct pit_profile *pit_info;
 struct vault *vaults;
-struct cave_profile *cave_profiles;
-
+static struct cave_profile *cave_profiles;
+struct dun_data *dun;
+struct room_template *room_templates;
 
 static const struct {
 	const char *name;
@@ -165,6 +165,7 @@ static enum parser_error parse_profile_room(struct parser *p) {
 	if (i == N_ELEMENTS(room_builders))
 		return PARSE_ERROR_NO_ROOM_FOUND;
 	r->builder = room_builders[i].builder;
+	r->rating = parser_getint(p, "rating");
     r->height = parser_getint(p, "height");
     r->width = parser_getint(p, "width");
     r->level = parser_getint(p, "level");
@@ -190,13 +191,13 @@ static struct parser *init_parse_profile(void) {
 	parser_reg(p, "params int block int rooms int unusual int rarity", parse_profile_params);
 	parser_reg(p, "tunnel int rnd int chg int con int pen int jct", parse_profile_tunnel);
 	parser_reg(p, "streamer int den int rng int mag int mc int qua int qc", parse_profile_streamer);
-	parser_reg(p, "room sym name int height int width int level int pit int rarity int cutoff", parse_profile_room);
+	parser_reg(p, "room sym name int rating int height int width int level int pit int rarity int cutoff", parse_profile_room);
 	parser_reg(p, "cutoff int cutoff", parse_profile_cutoff);
 	return p;
 }
 
 static errr run_parse_profile(struct parser *p) {
-	return parse_file(p, "dungeon_profile");
+	return parse_file_quit_not_found(p, "dungeon_profile");
 }
 
 static errr finish_parse_profile(struct parser *p) {
@@ -415,7 +416,7 @@ static struct parser *init_parse_room(void) {
 }
 
 static errr run_parse_room(struct parser *p) {
-	return parse_file(p, "room_template");
+	return parse_file_quit_not_found(p, "room_template");
 }
 
 static errr finish_parse_room(struct parser *p) {
@@ -562,7 +563,7 @@ struct parser *init_parse_vault(void) {
 }
 
 static errr run_parse_vault(struct parser *p) {
-	return parse_file(p, "vault");
+	return parse_file_quit_not_found(p, "vault");
 }
 
 static errr finish_parse_vault(struct parser *p) {
@@ -662,15 +663,15 @@ static void place_feeling(struct chunk *c)
  * Calculate the level feeling for objects.
  * \param c is the cave where the feeling is being measured
  */
-static int calc_obj_feeling(struct chunk *c)
+static int calc_obj_feeling(struct chunk *c, struct player *p)
 {
 	u32b x;
 
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
 
-	/* Artifacts trigger a special feeling when preserve=no */
-	if (c->good_item && OPT(birth_no_preserve)) return 10;
+	/* Artifacts trigger a special feeling when they can be easily lost */
+	if (c->good_item && OPT(p, birth_lose_arts)) return 10;
 
 	/* Check the loot adjusted for depth */
 	x = c->obj_rating / c->depth;
@@ -701,7 +702,7 @@ static int calc_mon_feeling(struct chunk *c)
 	if (c->depth == 0) return 0;
 
 	/* Check the monster power adjusted for depth */
-	x = c->mon_rating / (c->depth * c->depth);
+	x = c->mon_rating / c->depth;
 
 	if (x > 7000) return 1;
 	if (x > 4500) return 2;
@@ -724,10 +725,10 @@ bool labyrinth_check(int depth)
 	int chance = 2;
 
 	/* If we're too shallow then don't do it */
-	if (depth < 13) return FALSE;
+	if (depth < 13) return false;
 
 	/* Don't try this on quest levels, kids... */
-	if (is_quest(depth)) return FALSE;
+	if (is_quest(depth)) return false;
 
 	/* Certain numbers increase the chance of having a labyrinth */
 	if (depth % 3 == 0) chance += 1;
@@ -737,10 +738,10 @@ bool labyrinth_check(int depth)
 	if (depth % 13 == 0) chance += 1;
 
 	/* Only generate the level if we pass a check */
-	if (randint0(100) >= chance) return FALSE;
+	if (randint0(100) >= chance) return false;
 
 	/* Successfully ran the gauntlet! */
-	return TRUE;
+	return true;
 }
 
 /**
@@ -773,7 +774,7 @@ const struct cave_profile *choose_profile(int depth)
 
 	/* A bit of a hack, but worth it for now NRM */
 	if (player->noscore & NOSCORE_JUMPING) {
-		char name[30];
+		char name[30] = "";
 
 		/* Cancel the query */
 		player->noscore &= ~(NOSCORE_JUMPING);
@@ -787,19 +788,21 @@ const struct cave_profile *choose_profile(int depth)
 	}
 
 	/* Make the profile choice */
-	if (depth == 0)
+	if (depth == 0) {
 		profile = find_cave_profile("town");
-	else if (is_quest(depth))
+	} else if (is_quest(depth)) {
 		/* Quest levels must be normal levels */
 		profile = find_cave_profile("classic");
-	else if (labyrinth_check(depth))
+	} else if (labyrinth_check(depth)) {
 		profile = find_cave_profile("labyrinth");
-	else {
-		int perc = randint0(100);
+	} else if ((depth >= 10) && (depth < 40) && one_in_(40)) {
+		profile = find_cave_profile("moria");
+	} else {
+		int pick = randint0(200);
 		size_t i;
 		for (i = 0; i < z_info->profile_max; i++) {
 			profile = &cave_profiles[i];
-			if (profile->cutoff >= perc) break;
+			if (profile->cutoff >= pick) break;
 		}
 	}
 
@@ -817,26 +820,9 @@ const struct cave_profile *choose_profile(int depth)
  */
 static void cave_clear(struct chunk *c, struct player *p)
 {
-	int x, y;
-
 	/* Clear the monsters */
 	wipe_mon_list(c, p);
 
-	/* Deal with artifacts */
-	for (y = 0; y < c->height; y++) {
-		for (x = 0; x < c->width; x++) {
-			struct object *obj = square_object(c, y, x);
-			while (obj) {
-				if (obj->artifact) {
-					if (!OPT(birth_no_preserve) && !object_was_sensed(obj))
-						obj->artifact->created = FALSE;
-					else
-						history_lose_artifact(obj->artifact);
-				}
-				obj = obj->next;
-			}
-		}
-	}
 	/* Free the chunk */
 	cave_free(c);
 }
@@ -852,10 +838,44 @@ static void cave_clear(struct chunk *c, struct player *p)
 void cave_generate(struct chunk **c, struct player *p)
 {
 	const char *error = "no generation";
-	int y, x, tries = 0;
-	struct chunk *chunk;
+	int i, y, x, tries = 0;
+	struct chunk *chunk = NULL;
 
 	assert(c);
+
+	/* Forget old level */
+	if (p->cave && (*c == cave)) {
+		int x, y;
+
+		/* Deal with artifacts */
+		for (y = 0; y < (*c)->height; y++) {
+			for (x = 0; x < (*c)->width; x++) {
+				struct object *obj = square_object(*c, y, x);
+				while (obj) {
+					if (obj->artifact) {
+						bool found = obj->known && obj->known->artifact;
+						if (OPT(p, birth_lose_arts) || found) {
+							history_lose_artifact(p, obj->artifact);
+						} else {
+							obj->artifact->created = false;
+						}
+					}
+
+					obj = obj->next;
+				}
+			}
+		}
+
+		/* Free the known cave */
+		cave_free(p->cave);
+		p->cave = NULL;
+	}
+
+	/* Free the old cave */
+	if (*c) {
+		cave_clear(*c, p);
+		*c = NULL;
+	}
 
 	/* Generate */
 	for (tries = 0; tries < 100 && error; tries++) {
@@ -864,7 +884,7 @@ void cave_generate(struct chunk **c, struct player *p)
 		error = NULL;
 
 		/* Mark the dungeon as being unready (to avoid artifact loss, etc) */
-		character_dungeon = FALSE;
+		character_dungeon = false;
 
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
@@ -887,19 +907,19 @@ void cave_generate(struct chunk **c, struct player *p)
 
 		/* Ensure quest monsters */
 		if (is_quest(chunk->depth)) {
-			int i;
-			for (i = 1; i < z_info->r_max; i++) {
-				struct monster_race *race = &r_info[i];
-				int y, x;
-				
+			int i2;
+			for (i2 = 1; i2 < z_info->r_max; i2++) {
+				struct monster_race *race = &r_info[i2];
+				int y2, x2;
+
 				/* The monster must be an unseen quest monster of this depth. */
 				if (race->cur_num > 0) continue;
 				if (!rf_has(race->flags, RF_QUESTOR)) continue;
 				if (race->level != chunk->depth) continue;
 	
 				/* Pick a location and place the monster */
-				find_empty(chunk, &y, &x);
-				place_new_monster(chunk, y, x, race, TRUE, TRUE, ORIGIN_DROP);
+				find_empty(chunk, &y2, &x2);
+				place_new_monster(chunk, y2, x2, race, true, true, ORIGIN_DROP);
 			}
 		}
 
@@ -918,7 +938,9 @@ void cave_generate(struct chunk **c, struct player *p)
 			error = "too many monsters";
 
 		if (error) {
-			ROOM_LOG("Generation restarted: %s.", error);
+			if (OPT(p, cheat_room)) {
+				msg("Generation restarted: %s.", error);
+			}
 			cave_clear(chunk, p);
 		}
 
@@ -930,37 +952,45 @@ void cave_generate(struct chunk **c, struct player *p)
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
-	/* Free the old cave, use the new one */
-	if (*c)
-		cave_clear(*c, p);
+	/* Use the new cave */
 	*c = chunk;
 
 	/* Place dungeon squares to trigger feeling (not in town) */
-	if (player->depth)
+	if (player->depth) {
 		place_feeling(*c);
-
-	/* Save the town */
-	else if (!chunk_find_name("Town")) {
+	} else if (!chunk_find_name("Town")) {
+		/* Save the town */
 		struct chunk *town = chunk_write(0, 0, z_info->town_hgt,
-										 z_info->town_wid, FALSE, FALSE, FALSE);
+										 z_info->town_wid, false, false, false);
 		town->name = string_make("Town");
 		chunk_list_add(town);
 	}
 
-	(*c)->feeling = calc_obj_feeling(*c) + calc_mon_feeling(*c);
+	(*c)->feeling = calc_obj_feeling(*c, p) + calc_mon_feeling(*c);
 
 	/* Validate the dungeon (we could use more checks here) */
 	chunk_validate_objects(*c);
 
 	/* The dungeon is ready */
-	character_dungeon = TRUE;
+	character_dungeon = true;
 
-	/* Free old and allocate new known level */
-	if (cave_k)
-		cave_free(cave_k);
-	cave_k = cave_new(cave->height, cave->width);
-	if (!cave->depth)
-		cave_known();
+	/* Allocate new known level, light it if requested */
+	if (*c == cave) {
+		p->cave = cave_new((*c)->height, (*c)->width);
+		p->cave->objects = mem_realloc(p->cave->objects, ((*c)->obj_max + 1)
+										 * sizeof(struct object*));
+		p->cave->obj_max = (*c)->obj_max;
+		for (i = 0; i <= p->cave->obj_max; i++) {
+			p->cave->objects[i] = NULL;
+		}
+		if (!((*c)->depth)) {
+			cave_known(p);
+		}
+		if (p->upkeep->light_level) {
+			wiz_light(*c, false);
+			p->upkeep->light_level = false;
+		}
+	}
 
 	(*c)->created_at = turn;
 }

@@ -52,9 +52,10 @@ static bool get_pref_path(const char *what, int row, char *buf, size_t max)
 	prt(format("%s to a pref file", what), row, 0);
 	prt("File: ", row + 2, 0);
 
-	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, TRUE));
-	
+	/* Get the filesystem-safe name and append .prf */
+	player_safe_name(ftmp, sizeof(ftmp), player->full_name, true);
+	my_strcat(ftmp, ".prf", sizeof(ftmp));
+
 	/* Get a filename */
 	ok = askfor_aux(ftmp, sizeof ftmp, NULL);
 	screen_load();
@@ -118,33 +119,33 @@ static void option_toggle_display(struct menu *m, int oid, bool cursor,
 static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		int oid)
 {
-	bool next = FALSE;
+	bool next = false;
 
 	if (event->type == EVT_SELECT) {
 		/* Hack -- birth options can not be toggled after birth */
 		/* At birth, m->flags == MN_DBL_TAP. */
 		/* After birth, m->flags == MN_NO_TAGS */
 		if (!((option_type(oid) == OP_BIRTH) && (m->flags == MN_NO_TAGS))) {
-			option_set(option_name(oid), !op_ptr->opt[oid]);
+			option_set(option_name(oid), !player->opts.opt[oid]);
 		}
 	} else if (event->type == EVT_KBRD) {
 		if (event->key.code == 'y' || event->key.code == 'Y') {
-			option_set(option_name(oid), TRUE);
-			next = TRUE;
+			option_set(option_name(oid), true);
+			next = true;
 		} else if (event->key.code == 'n' || event->key.code == 'N') {
-			option_set(option_name(oid), FALSE);
-			next = TRUE;
+			option_set(option_name(oid), false);
+			next = true;
 		} else if (event->key.code == 't' || event->key.code == 'T') {
-			option_set(option_name(oid), !op_ptr->opt[oid]);
+			option_set(option_name(oid), !player->opts.opt[oid]);
 		} else if (event->key.code == '?') {
 			screen_save();
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
 			screen_load();
 		} else {
-			return FALSE;
+			return false;
 		}
 	} else {
-		return FALSE;
+		return false;
 	}
 
 	if (next) {
@@ -152,7 +153,7 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		m->cursor = (m->cursor + m->filter_count) % m->filter_count;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**
@@ -201,7 +202,7 @@ static void option_toggle_menu(const char *name, int page)
 	}
 
 	/* Set the data to the player's options */
-	menu_setpriv(m, OPT_MAX, &op_ptr->opt);
+	menu_setpriv(m, OPT_MAX, &player->opts.opt);
 	menu_set_filter(m, option_page[page], i);
 	menu_layout(m, &SCREEN_REGION);
 
@@ -209,7 +210,7 @@ static void option_toggle_menu(const char *name, int page)
 	screen_save();
 
 	clear_from(0);
-	menu_select(m, 0, FALSE);
+	menu_select(m, 0, false);
 
 	screen_load();
 
@@ -388,7 +389,7 @@ static struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 static struct keypress keymap_get_trigger(void)
 {
 	char tmp[80];
-	struct keypress buf[2] = { { 0 }, { 0 } };
+	struct keypress buf[2] = { KEYPRESS_NULL, KEYPRESS_NULL };
 
 	/* Flush */
 	event_signal(EVENT_INPUT_FLUSH);
@@ -397,7 +398,7 @@ static struct keypress keymap_get_trigger(void)
 	buf[0] = inkey();
 
 	/* Convert to ascii */
-	keypress_to_text(tmp, sizeof(tmp), buf, FALSE);
+	keypress_to_text(tmp, sizeof(tmp), buf, false);
 
 	/* Hack -- display the trigger */
 	Term_addstr(-1, COLOUR_WHITE, tmp);
@@ -427,7 +428,7 @@ static void ui_keymap_pref_append(const char *title, int row)
 static void ui_keymap_query(const char *title, int row)
 {
 	char tmp[1024];
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	struct keypress c;
 	const struct keypress *act;
 
@@ -445,7 +446,7 @@ static void ui_keymap_query(const char *title, int row)
 		inkey();
 	} else {
 		/* Analyze the current action */
-		keypress_to_text(tmp, sizeof(tmp), act, FALSE);
+		keypress_to_text(tmp, sizeof(tmp), act, false);
 	
 		/* Display the current action */
 		prt("Found: ", 15, 0);
@@ -458,12 +459,12 @@ static void ui_keymap_query(const char *title, int row)
 
 static void ui_keymap_create(const char *title, int row)
 {
-	bool done = FALSE;
+	bool done = false;
 	size_t n = 0;
 
 	struct keypress c;
 	char tmp[1024];
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);
@@ -484,7 +485,7 @@ static void ui_keymap_create(const char *title, int row)
 		if (n == 0) color = COLOUR_YELLOW;
 		if (n == KEYMAP_ACTION_MAX) color = COLOUR_L_RED;
 
-		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
+		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, false);
 		c_prt(color, format("Action: %s", tmp), 15, 0);
 
 		c_prt(COLOUR_L_BLUE, "  Press '$' when finished.", 17, 0);
@@ -495,7 +496,7 @@ static void ui_keymap_create(const char *title, int row)
 		kp = inkey();
 
 		if (kp.code == '$') {
-			done = TRUE;
+			done = true;
 			continue;
 		}
 
@@ -530,7 +531,7 @@ static void ui_keymap_create(const char *title, int row)
 	}
 
 	if (c.code && get_check("Save this keymap? ")) {
-		keymap_add(mode, c, keymap_buffer, TRUE);
+		keymap_add(mode, c, keymap_buffer, true);
 		prt("Keymap added.  Press any key to continue.", 17, 0);
 		inkey();
 	}
@@ -539,7 +540,7 @@ static void ui_keymap_create(const char *title, int row)
 static void ui_keymap_remove(const char *title, int row)
 {
 	struct keypress c;
-	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);
@@ -566,7 +567,7 @@ static void keymap_browse_hook(int oid, void *db, const region *loc)
 
 	/* Show current action */
 	prt("Current action (if any) shown below:", 13, 0);
-	keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
+	keypress_to_text(tmp, sizeof(tmp), keymap_buffer, false);
 	prt(tmp, 14, 0);
 }
 
@@ -597,7 +598,7 @@ static void do_cmd_keymaps(const char *title, int row)
 	}
 
 	menu_layout(keymap_menu, &loc);
-	menu_select(keymap_menu, 0, FALSE);
+	menu_select(keymap_menu, 0, false);
 
 	screen_load();
 }
@@ -637,7 +638,7 @@ static void visuals_dump_flavors(const char *title, int row)
 static void visuals_reset(const char *title, int row)
 {
 	/* Reset */
-	reset_visuals(TRUE);
+	reset_visuals(true);
 
 	/* Message */
 	prt("", 0, 0);
@@ -685,7 +686,7 @@ static void do_cmd_visuals(const char *title, int row)
 	}
 
 	menu_layout(visual_menu, &SCREEN_REGION);
-	menu_select(visual_menu, 0, FALSE);
+	menu_select(visual_menu, 0, false);
 
 	screen_load();
 }
@@ -836,7 +837,7 @@ static void do_cmd_colors(const char *title, int row)
 	}
 
 	menu_layout(color_menu, &SCREEN_REGION);
-	menu_select(color_menu, 0, FALSE);
+	menu_select(color_menu, 0, false);
 
 	screen_load();
 }
@@ -871,7 +872,7 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 									   firsttime);
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -881,9 +882,9 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 static void do_cmd_delay(const char *name, int row)
 {
 	char tmp[4] = "";
-	int msec = op_ptr->delay_factor;
+	int msec = player->opts.delay_factor;
 
-	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->delay_factor);
+	strnfmt(tmp, sizeof(tmp), "%i", player->opts.delay_factor);
 
 	screen_save();
 
@@ -891,13 +892,13 @@ static void do_cmd_delay(const char *name, int row)
 	prt("Command: Base Delay Factor", 20, 0);
 
 	prt(format("Current base delay factor: %d msec",
-			   op_ptr->delay_factor, msec), 22, 0);
+			   player->opts.delay_factor, msec), 22, 0);
 	prt("New base delay factor (0-255): ", 21, 0);
 
 	/* Ask for a numeric value */
 	if (askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers)) {
 		u16b val = (u16b) strtoul(tmp, NULL, 0);
-		op_ptr->delay_factor = MIN(val, 255);
+		player->opts.delay_factor = MIN(val, 255);
 	}
 
 	screen_load();
@@ -913,7 +914,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 	char tmp[4] = "";
 	byte warn;
 
-	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
+	strnfmt(tmp, sizeof(tmp), "%i", player->opts.hitpoint_warn);
 
 	screen_save();
 
@@ -921,7 +922,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 	prt("Command: Hitpoint Warning", 20, 0);
 
 	prt(format("Current hitpoint warning: %d (%d%%)",
-			   op_ptr->hitpoint_warn, op_ptr->hitpoint_warn * 10), 22, 0);
+			   player->opts.hitpoint_warn, player->opts.hitpoint_warn * 10), 22, 0);
 	prt("New hitpoint warning (0-9): ", 21, 0);
 
 	/* Ask the user for a string */
@@ -935,7 +936,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 		if (warn > 9)
 			warn = 0;
 
-		op_ptr->hitpoint_warn = warn;
+		player->opts.hitpoint_warn = warn;
 	}
 
 	screen_load();
@@ -950,7 +951,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	bool res;
 	char tmp[4] = "";
 
-	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->lazymove_delay);
+	strnfmt(tmp, sizeof(tmp), "%i", player->opts.lazymove_delay);
 
 	screen_save();
 
@@ -958,7 +959,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	prt("Command: Movement Delay Factor", 20, 0);
 
 	prt(format("Current movement delay: %d (%d msec)",
-			   op_ptr->lazymove_delay, op_ptr->lazymove_delay * 10), 22, 0);
+			   player->opts.lazymove_delay, player->opts.lazymove_delay * 10), 22, 0);
 	prt("New movement delay: ", 21, 0);
 
 	/* Ask the user for a string */
@@ -966,7 +967,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 
 	/* Process input */
 	if (res)
-		op_ptr->lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
+		player->opts.lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
 
 	screen_load();
 }
@@ -993,13 +994,14 @@ static void do_cmd_pref_file_hack(long row)
 	/* Prompt */
 	prt("File: ", row + 2, 0);
 
-	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(player, TRUE));
+	/* Get the filesystem-safe name and append .prf */
+	player_safe_name(ftmp, sizeof(ftmp), player->full_name, true);
+	my_strcat(ftmp, ".prf", sizeof(ftmp));
 
 	/* Ask for a file (or cancel) */
 	if (askfor_aux(ftmp, sizeof ftmp, NULL)) {
 		/* Process the given filename */
-		if (process_pref_file(ftmp, FALSE, TRUE) == FALSE) {
+		if (process_pref_file(ftmp, false, true) == false) {
 			/* Mention failure */
 			prt("", 0, 0);
 			msg("Failed to load '%s'!", ftmp);
@@ -1158,10 +1160,10 @@ static bool ego_action(struct menu * menu, const ui_event * event, int oid)
 	if (event->type == EVT_SELECT) {
 		ego_ignore_toggle(choice[oid].e_idx, choice[oid].itype);
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -1172,7 +1174,6 @@ static void ego_menu(const char *unused, int also_unused)
 	int max_num = 0;
 	struct ego_item *ego;
 	struct ego_desc *choice;
-	struct ego_poss_item *poss;
 
 	struct menu menu;
 	menu_iter menu_f = { 0, 0, ego_display, ego_action, 0 };
@@ -1186,37 +1187,23 @@ static void ego_menu(const char *unused, int also_unused)
 
 	/* Get the valid ego-items */
 	for (i = 0; i < z_info->e_max; i++) {
-		int itype, tval;
-		int tval_table[TV_MAX] = { 0 };
+		int itype;
 		ego = &e_info[i];
 
 		/* Only valid known ego-items allowed */
 		if (!ego->name || !ego->everseen)
 			continue;
 
-		/* Note the tvals which are possible for this ego */
-		for (poss = ego->poss_items; poss; poss = poss->next) {
-			struct object_kind *kind = &k_info[poss->kidx];
-			tval_table[kind->tval]++;
-		}
-
 		/* Find appropriate ignore types */
 		for (itype = ITYPE_NONE + 1; itype < ITYPE_MAX; itype++)
-			for (tval = 1; tval < TV_MAX; tval++) {
-				/* Skip invalid types */
-				if (!tval_table[tval]) continue;
-				if (tval_has_ignore_type(tval, itype)) {
+			if (ego_has_ignore_type(ego, itype)) {
 
-					/* Fill in the details */
-					choice[max_num].e_idx = i;
-					choice[max_num].itype = itype;
-					choice[max_num].short_name = strip_ego_name(ego->name);
+				/* Fill in the details */
+				choice[max_num].e_idx = i;
+				choice[max_num].itype = itype;
+				choice[max_num].short_name = strip_ego_name(ego->name);
 
-					++max_num;
-
-					/* Done with this tval */
-					break;
-				}
+				++max_num;
 			}
 	}
 
@@ -1257,7 +1244,7 @@ static void ego_menu(const char *unused, int also_unused)
 	menu_layout(&menu, &area);
 
 	/* Select an entry */
-	(void) menu_select(&menu, cursor, FALSE);
+	(void) menu_select(&menu, cursor, false);
 
 	/* Free memory */
 	mem_free(choice);
@@ -1329,7 +1316,7 @@ static void quality_display(struct menu *menu, int oid, bool cursor, int row,
 	byte attr = (cursor ? COLOUR_L_BLUE : COLOUR_WHITE);
 
 	if (oid)
-		c_put_str(attr, format("%-20s : %s", name, level_name), row, col);
+		c_put_str(attr, format("%-30s : %s", name, level_name), row, col);
 }
 
 
@@ -1353,7 +1340,7 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 {
 	struct menu menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
-	region area = { 27, 2, 29, IGNORE_MAX };
+	region area = { 37, 2, 29, IGNORE_MAX };
 	ui_event evt;
 	int count;
 
@@ -1381,7 +1368,7 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2,
 				area.row + area.page_rows);
 
-	evt = menu_select(&menu, 0, TRUE);
+	evt = menu_select(&menu, 0, true);
 
 	/* Set the new value appropriately */
 	if (evt.type == EVT_SELECT)
@@ -1389,7 +1376,7 @@ static bool quality_action(struct menu *m, const ui_event *event, int oid)
 
 	/* Load and finish */
 	screen_load();
-	return TRUE;
+	return true;
 }
 
 /**
@@ -1413,7 +1400,7 @@ static void quality_menu(void *unused, const char *also_unused)
 	menu_layout(&menu, &area);
 
 	/* Select an entry */
-	menu_select(&menu, 0, FALSE);
+	menu_select(&menu, 0, false);
 
 	/* Load screen */
 	screen_load();
@@ -1469,10 +1456,10 @@ bool ignore_tval(int tval)
 	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
 	{
 		if (tval == sval_dependent[i].tval)
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1520,10 +1507,10 @@ static bool ignore_sval_menu_action(struct menu *m, const ui_event *event,
 			kind->ignore ^= IGNORE_IF_UNAWARE;
 
 		player->upkeep->notice |= PN_IGNORE;
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 static const menu_iter ignore_sval_menu =
@@ -1559,7 +1546,7 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
 		if (!kind->aware) {
 			/* can unaware ignore anything */
 			choice[num].kind = kind;
-			choice[num++].aware = FALSE;
+			choice[num++].aware = false;
 		}
 
 		if ((kind->everseen && !kf_has(kind->kind_flags, KF_INSTA_ART)) || 
@@ -1569,7 +1556,7 @@ static int ignore_collect_kind(int tval, ignore_choice **ch)
 			 * do not require awareness for aware ignore, so people can set 
 			 * at game start */
 			choice[num].kind = kind;
-			choice[num++].aware = TRUE;
+			choice[num++].aware = true;
 		}
 	}
 
@@ -1593,7 +1580,7 @@ static bool sval_menu(int tval, const char *desc)
 
 	int n_choices = ignore_collect_kind(tval, &choices);
 	if (!n_choices)
-		return FALSE;
+		return false;
 
 	/* Sort by name in ignore menus except for categories of items that are
 	 * aware from the start */
@@ -1626,19 +1613,19 @@ static bool sval_menu(int tval, const char *desc)
 	menu->cmd_keys = "Tt";
 	menu_layout(menu, &area);
 	menu_set_cursor_x_offset(menu, 1); /* Place cursor in brackets. */
-	menu_select(menu, 0, FALSE);
+	menu_select(menu, 0, false);
 
 	/* Free memory */
 	mem_free(choices);
 
 	/* Load screen */
 	screen_load();
-	return TRUE;
+	return true;
 }
 
 
 /**
- * Returns TRUE if there's anything to display a menu of
+ * Returns true if there's anything to display a menu of
  */
 static bool seen_tval(int tval)
 {
@@ -1652,11 +1639,11 @@ static bool seen_tval(int tval)
 		if (!kind->everseen) continue;
 		if (kind->tval != tval) continue;
 
-		 return TRUE;
+		 return true;
 	}
 
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1746,10 +1733,10 @@ static bool handle_options_item(struct menu *menu, const ui_event *event,
 			extra_item_options[oid].action();
 		}
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1779,7 +1766,7 @@ void do_cmd_options_item(const char *title, int row)
 
 	screen_save();
 	clear_from(0);
-	menu_select(&menu, 0, FALSE);
+	menu_select(&menu, 0, false);
 	screen_load();
 
 	player->upkeep->notice |= PN_IGNORE;
@@ -1803,14 +1790,14 @@ static menu_action option_actions[] =
 	{ 0, 'w', "Subwindow setup", do_cmd_options_win },
 	{ 0, 'i', "Item ignoring setup", do_cmd_options_item },
 	{ 0, '{', "Auto-inscription setup", textui_browse_object_knowledge },
-	{ 0 },
+	{ 0, 0, NULL, NULL },
 	{ 0, 'd', "Set base delay factor", do_cmd_delay },
 	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
 	{ 0, 'm', "Set movement delay", do_cmd_lazymove_delay },
-	{ 0 },
+	{ 0, 0, NULL, NULL },
 	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
 	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
-	{ 0 },
+	{ 0, 0, NULL, NULL },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
 	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },
 	{ 0, 'c', "Edit colours (advanced)", do_cmd_colors },
@@ -1836,7 +1823,7 @@ void do_cmd_options(void)
 	clear_from(0);
 
 	menu_layout(option_menu, &SCREEN_REGION);
-	menu_select(option_menu, 0, FALSE);
+	menu_select(option_menu, 0, false);
 
 	screen_load();
 }

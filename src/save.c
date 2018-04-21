@@ -24,9 +24,13 @@
 #include "mon-make.h"
 #include "monster.h"
 #include "object.h"
+#include "obj-desc.h"
+#include "obj-knowledge.h"
 #include "obj-pile.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
+#include "obj-tval.h"
+#include "obj-util.h"
 #include "option.h"
 #include "player.h"
 #include "savefile.h"
@@ -46,11 +50,11 @@ void wr_description(void)
 
 	if (player->is_dead)
 		strnfmt(buf, sizeof buf, "%s, dead (%s)",
-				op_ptr->full_name,
+				player->full_name,
 				player->died_from);
 	else
 		strnfmt(buf, sizeof buf, "%s, L%d %s %s, at DL%d",
-				op_ptr->full_name,
+				player->full_name,
 				player->lev,
 				player->race->name,
 				player->class->name,
@@ -66,29 +70,48 @@ void wr_description(void)
 static void wr_item(const struct object *obj)
 {
 	size_t i;
-	struct brand *b;
-	struct slay *s;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
+
+	wr_u16b(obj->oidx);
 
 	/* Location */
 	wr_byte(obj->iy);
 	wr_byte(obj->ix);
 
-	wr_byte(obj->tval);
-	wr_byte(obj->sval);
+	/* Names of object base and object */
+	wr_string(tval_find_name(obj->tval));
+	if (obj->sval) {
+		char name[1024];
+		obj_desc_name_format(name, sizeof name, 0,
+							 lookup_kind(obj->tval, obj->sval)->name, 0, false);
+		wr_string(name);
+	} else {
+		wr_string("");
+	}
 
 	wr_s16b(obj->pval);
 
 	wr_byte(obj->number);
 	wr_s16b(obj->weight);
 
-	if (obj->artifact) wr_byte(obj->artifact->aidx);
-	else wr_byte(0);
+	if (obj->artifact) {
+		wr_string(obj->artifact->name);
+	} else {
+		wr_string("");
+	}
 
-	if (obj->ego) wr_byte(obj->ego->eidx);
-	else wr_byte(0);
+	if (obj->ego) {
+		wr_string(obj->ego->name);
+	} else {
+		wr_string("");
+	}
+
+	if (obj->effect)
+		wr_byte(1);
+	else
+		wr_byte(0);
 
 	wr_s16b(obj->timeout);
 
@@ -99,44 +122,51 @@ static void wr_item(const struct object *obj)
 	wr_byte(obj->dd);
 	wr_byte(obj->ds);
 
-	wr_byte(obj->marked);
-
 	wr_byte(obj->origin);
 	wr_byte(obj->origin_depth);
-	wr_u16b(obj->origin_xtra);
-	wr_byte(obj->ignore);
+	if (obj->origin_race) {
+		wr_string(obj->origin_race->name);
+	} else {
+		wr_string("");
+	}
+	wr_byte(obj->notice);
 
 	for (i = 0; i < OF_SIZE; i++)
 		wr_byte(obj->flags[i]);
-
-	for (i = 0; i < OF_SIZE; i++)
-		wr_byte(obj->known_flags[i]);
-
-	for (i = 0; i < ID_SIZE; i++)
-		wr_byte(obj->id_flags[i]);
 
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		wr_s16b(obj->modifiers[i]);
 	}
 
-	/* Write a sentinel byte */
-	wr_byte(obj->brands ? 1 : 0);
-	for (b = obj->brands; b; b = b->next) {
-		wr_string(b->name);
-		wr_s16b(b->element);
-		wr_s16b(b->multiplier);
-		wr_byte(b->known ? 1 : 0);
-		wr_byte(b->next ? 1 : 0);
+	/* Write brands if any */
+	if (obj->brands) {
+		wr_byte(1);
+		for (i = 0; i < z_info->brand_max; i++) {
+			wr_byte(obj->brands[i] ? 1 : 0);
+		}
+	} else {
+		wr_byte(0);
 	}
 
-	/* Write a sentinel byte */
-	wr_byte(obj->slays ? 1 : 0);
-	for (s = obj->slays; s; s = s->next) {
-		wr_string(s->name);
-		wr_s16b(s->race_flag);
-		wr_s16b(s->multiplier);
-		wr_byte(s->known ? 1 : 0);
-		wr_byte(s->next ? 1 : 0);
+	/* Write slays if any */
+	if (obj->slays) {
+		wr_byte(1);
+		for (i = 0; i < z_info->slay_max; i++) {
+			wr_byte(obj->slays[i] ? 1 : 0);
+		}
+	} else {
+		wr_byte(0);
+	}
+
+	/* Write curses if any */
+	if (obj->curses) {
+		wr_byte(1);
+		for (i = 0; i < z_info->curse_max; i++) {
+			wr_byte(obj->curses[i].power);
+			wr_u16b(obj->curses[i].timeout);
+		}
+	} else {
+		wr_byte(0);
 	}
 
 	for (i = 0; i < ELEM_MAX; i++) {
@@ -175,7 +205,7 @@ static void wr_monster(const struct monster *mon)
 	struct object *obj = mon->held_obj; 
 	struct object *dummy = object_new();
 
-	wr_s16b(mon->race->ridx);
+	wr_string(mon->race->name);
 	wr_byte(mon->fy);
 	wr_byte(mon->fx);
 	wr_s16b(mon->hp);
@@ -218,10 +248,15 @@ static void wr_trap(struct trap *trap)
 {
     size_t i;
 
-    wr_byte(trap->t_idx);
+	if (trap->t_idx) {
+		wr_string(trap_info[trap->t_idx].desc);
+	} else {
+		wr_string("");
+	}
     wr_byte(trap->fy);
     wr_byte(trap->fx);
-    wr_byte(trap->xtra);
+    wr_byte(trap->power);
+    wr_byte(trap->timeout);
 
     for (i = 0; i < TRF_SIZE; i++)
 		wr_byte(trap->flags[i]);
@@ -267,18 +302,17 @@ void wr_options(void)
 	int i;
 
 	/* Special Options */
-	wr_byte(op_ptr->delay_factor);
-	wr_byte(op_ptr->hitpoint_warn);
-	wr_u16b(op_ptr->lazymove_delay);
+	wr_byte(player->opts.delay_factor);
+	wr_byte(player->opts.hitpoint_warn);
+	wr_u16b(player->opts.lazymove_delay);
 
 	/* Normal options */
 	for (i = 0; i < OPT_MAX; i++) {
 		const char *name = option_name(i);
-		if (!name)
-			continue;
-
-		wr_string(name);
-		wr_byte(op_ptr->opt[i]);
+		if (name) {
+			wr_string(name);
+			wr_byte(player->opts.opt[i]);
+		}
    }
 
 	/* Sentinel */
@@ -329,9 +363,13 @@ void wr_object_memory(void)
 
 	wr_u16b(z_info->k_max);
 	wr_byte(OF_SIZE);
-	wr_byte(ID_SIZE);
 	wr_byte(OBJ_MOD_MAX);
 	wr_byte(ELEM_MAX);
+	wr_byte(z_info->brand_max);
+	wr_byte(z_info->slay_max);
+	wr_byte(z_info->curse_max);
+
+	/* Kind knowledge */
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
 		byte tmp8u = 0;
 		struct object_kind *kind = &k_info[k_idx];
@@ -360,38 +398,20 @@ void wr_quests(void)
 }
 
 
-void wr_artifacts(void)
-{
-	int i;
-	u16b tmp16u;
-
-	/* Hack -- Dump the artifacts */
-	tmp16u = z_info->a_max;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++) {
-		struct artifact *art = &a_info[i];
-		wr_byte(art->created);
-		wr_byte(art->seen);
-		wr_byte(art->everseen);
-		wr_byte(0);
-	}
-}
-
-
 void wr_player(void)
 {
 	int i;
 
-	wr_string(op_ptr->full_name);
+	wr_string(player->full_name);
 
 	wr_string(player->died_from);
 
 	wr_string(player->history);
 
 	/* Race/Class/Gender/Spells */
-	wr_byte(player->race->ridx);
-	wr_byte(player->class->cidx);
-	wr_byte(op_ptr->name_suffix);
+	wr_string(player->race->name);
+	wr_string(player->class->name);
+	wr_byte(player->opts.name_suffix);
 
 	wr_byte(player->hitdie);
 	wr_byte(player->expfact);
@@ -400,10 +420,11 @@ void wr_player(void)
 	wr_s16b(player->ht);
 	wr_s16b(player->wt);
 
-	/* Dump the stats (maximum and current and birth) */
+	/* Dump the stats (maximum and current and birth and swap-mapping) */
 	wr_byte(STAT_MAX);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_max[i]);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_cur[i]);
+	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_map[i]);
 	for (i = 0; i < STAT_MAX; ++i) wr_s16b(player->stat_birth[i]);
 
 	wr_s16b(player->ht_birth);
@@ -455,7 +476,6 @@ void wr_player(void)
 	wr_s16b(player->energy);
 	wr_s16b(player->word_recall);
 	wr_byte(player->confusing);
-	wr_byte(player->searching);
 
 	/* Find the number of timed effects */
 	wr_byte(TMD_MAX);
@@ -504,20 +524,61 @@ void wr_ignore(void)
 			wr_byte(itypes[j]);
 	}
 
+	/* Write the current number of aware object auto-inscriptions */
 	n = 0;
 	for (i = 0; i < z_info->k_max; i++)
-		if (k_info[i].note)
+		if (k_info[i].note_aware)
 			n++;
 
-	/* Write the current number of auto-inscriptions */
 	wr_u16b(n);
 
-	/* Write the autoinscriptions array */
+	/* Write the aware object autoinscriptions array */
 	for (i = 0; i < z_info->k_max; i++) {
-		if (!k_info[i].note)
-			continue;
-		wr_s16b(i);
-		wr_string(quark_str(k_info[i].note));
+		if (k_info[i].note_aware) {
+			char name[1024];
+			wr_string(tval_find_name(k_info[i].tval));
+			obj_desc_name_format(name, sizeof name, 0, k_info[i].name, 0,
+								 false);
+			wr_string(name);
+			wr_string(quark_str(k_info[i].note_aware));
+		}
+	}
+
+	/* Write the current number of unaware object auto-inscriptions */
+	n = 0;
+	for (i = 0; i < z_info->k_max; i++)
+		if (k_info[i].note_unaware)
+			n++;
+
+	wr_u16b(n);
+
+	/* Write the unaware object autoinscriptions array */
+	for (i = 0; i < z_info->k_max; i++) {
+		if (k_info[i].note_unaware) {
+			char name[1024];
+			wr_string(tval_find_name(k_info[i].tval));
+			obj_desc_name_format(name, sizeof name, 0, k_info[i].name, 0,
+								 false);
+			wr_string(name);
+			wr_string(quark_str(k_info[i].note_unaware));
+		}
+	}
+
+	/* Write the current number of rune auto-inscriptions */
+	j = 0;
+	n = max_runes();
+	for (i = 0; i < n; i++)
+		if (rune_note(i))
+			j++;
+
+	wr_u16b(j);
+
+	/* Write the rune autoinscriptions array */
+	for (i = 0; i < n; i++) {
+		if (rune_note(i)) {
+			wr_s16b(i);
+			wr_string(quark_str(rune_note(i)));
+		}
 	}
 
 	return;
@@ -526,6 +587,8 @@ void wr_ignore(void)
 
 void wr_misc(void)
 {
+	size_t i;
+
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
 
@@ -541,6 +604,66 @@ void wr_misc(void)
 
 	/* Current turn */
 	wr_s32b(turn);
+
+	/* Property knowledge */
+	//if (player->is_dead)
+	//	return;
+
+	/* Flags */
+	for (i = 0; i < OF_SIZE; i++)
+		wr_byte(player->obj_k->flags[i]);
+
+	/* Modifiers */
+	for (i = 0; i < OBJ_MOD_MAX; i++) {
+		wr_s16b(player->obj_k->modifiers[i]);
+	}
+
+	/* Elements */
+	for (i = 0; i < ELEM_MAX; i++) {
+		wr_s16b(player->obj_k->el_info[i].res_level);
+		wr_byte(player->obj_k->el_info[i].flags);
+	}
+
+	/* Brands */
+	for (i = 0; i < z_info->brand_max; i++) {
+		wr_byte(player->obj_k->brands[i] ? 1 : 0);
+	}
+
+	/* Slays */
+	for (i = 0; i < z_info->slay_max; i++) {
+		wr_byte(player->obj_k->slays[i] ? 1 : 0);
+	}
+
+	/* Curses */
+	for (i = 0; i < z_info->curse_max; i++) {
+		wr_byte(player->obj_k->curses[i].power ? 1 : 0);
+	}
+
+	/* Combat data */
+	wr_s16b(player->obj_k->ac);
+	wr_s16b(player->obj_k->to_a);
+	wr_s16b(player->obj_k->to_h);
+	wr_s16b(player->obj_k->to_d);
+	wr_byte(player->obj_k->dd);
+	wr_byte(player->obj_k->ds);
+}
+
+
+void wr_artifacts(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Hack -- Dump the artifacts */
+	tmp16u = z_info->a_max;
+	wr_u16b(tmp16u);
+	for (i = 0; i < tmp16u; i++) {
+		struct artifact *art = &a_info[i];
+		wr_byte(art->created);
+		wr_byte(art->seen);
+		wr_byte(art->everseen);
+		wr_byte(0);
+	}
 }
 
 
@@ -612,8 +735,10 @@ void wr_stores(void)
 		wr_byte(store->stock_num);
 
 		/* Save the stock */
-		for (obj = store->stock; obj; obj = obj->next)
+		for (obj = store->stock; obj; obj = obj->next) {
+			wr_item(obj->known);
 			wr_item(obj);
+		}
 	}
 }
 
@@ -651,7 +776,7 @@ static void wr_dungeon_aux(struct chunk *c)
 				tmp8u = c->squares[y][x].info[i];
 
 				/* If the run is broken, or too full, flush it */
-				if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {
+				if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
 					wr_byte((byte)count);
 					wr_byte((byte)prev_char);
 					prev_char = tmp8u;
@@ -679,7 +804,7 @@ static void wr_dungeon_aux(struct chunk *c)
 			tmp8u = c->squares[y][x].feat;
 
 			/* If the run is broken, or too full, flush it */
-			if ((tmp8u != prev_char) || (count == MAX_UCHAR)) {
+			if ((tmp8u != prev_char) || (count == UCHAR_MAX)) {
 				wr_byte((byte)count);
 				wr_byte((byte)prev_char);
 				prev_char = tmp8u;
@@ -706,13 +831,14 @@ static void wr_dungeon_aux(struct chunk *c)
  */
 static void wr_objects_aux(struct chunk *c)
 {
-	int y, x;
+	int y, x, i;
 	struct object *dummy;
 
 	if (player->is_dead)
 		return;
 	
 	/* Write the objects */
+	wr_u16b(c->obj_max);
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			struct object *obj = c->squares[y][x].obj;
@@ -721,6 +847,19 @@ static void wr_objects_aux(struct chunk *c)
 				obj = obj->next;
 			}
 		}
+	}
+
+	/* Write known objects we don't know the location of, and imagined versions
+	 * of known objects */
+	for (i = 1; i < c->obj_max; i++) {
+		struct object *obj = c->objects[i];
+		if (!obj) continue;
+		if (square_in_bounds_fully(c, obj->iy, obj->ix)) continue;
+		if (obj->held_m_idx) continue;
+		if (obj->mimicking_m_idx) continue;
+		if (obj->known && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) continue;
+		assert(obj->oidx == i);
+		wr_item(obj);
 	}
 
 	/* Write a dummy record as a marker */
@@ -756,7 +895,7 @@ static void wr_traps_aux(struct chunk *c)
 	struct trap *dummy;
 
     if (player->is_dead)
-	return;
+		return;
 
     wr_byte(TRF_SIZE);
 
@@ -778,9 +917,6 @@ static void wr_traps_aux(struct chunk *c)
 
 void wr_dungeon(void)
 {
-	if (player->is_dead)
-		return;
-
 	/* Dungeon specific info follows */
 	wr_u16b(player->depth);
 	wr_u16b(daycount);
@@ -788,9 +924,12 @@ void wr_dungeon(void)
 	wr_u16b(player->px);
 	wr_byte(SQUARE_SIZE);
 
+	if (player->is_dead)
+		return;
+
 	/* Write caves */
 	wr_dungeon_aux(cave);
-	wr_dungeon_aux(cave_k);
+	wr_dungeon_aux(player->cave);
 
 	/* Compact the monsters */
 	compact_monsters(0);
@@ -800,19 +939,19 @@ void wr_dungeon(void)
 void wr_objects(void)
 {
 	wr_objects_aux(cave);
-	wr_objects_aux(cave_k);
+	wr_objects_aux(player->cave);
 }
 
 void wr_monsters(void)
 {
 	wr_monsters_aux(cave);
-	wr_monsters_aux(cave_k);
+	wr_monsters_aux(player->cave);
 }
 
 void wr_traps(void)
 {
 	wr_traps_aux(cave);
-	wr_traps_aux(cave_k);
+	wr_traps_aux(player->cave);
 }
 
 /*
@@ -822,8 +961,8 @@ void wr_chunks(void)
 {
 	int j;
 
-	if (player->is_dead)
-		return;
+	//if (player->is_dead)
+	//	return;
 
 	wr_u16b(chunk_list_max);
 
@@ -849,17 +988,23 @@ void wr_chunks(void)
 void wr_history(void)
 {
 	size_t i, j;
-	u32b tmp32u = history_get_num();
+
+	struct history_info *history_list;
+	u32b length = history_get_list(player, &history_list);
 
 	wr_byte(HIST_SIZE);
-	wr_u32b(tmp32u);
-	for (i = 0; i < tmp32u; i++) {
+	wr_u32b(length);
+	for (i = 0; i < length; i++) {
 		for (j = 0; j < HIST_SIZE; j++)
 			wr_byte(history_list[i].type[j]);
 		wr_s32b(history_list[i].turn);
 		wr_s16b(history_list[i].dlev);
 		wr_s16b(history_list[i].clev);
-		wr_byte(history_list[i].a_idx);
+		if (history_list[i].a_idx) {
+			wr_string(a_info[history_list[i].a_idx].name);
+		} else {
+			wr_string("");
+		}
 		wr_string(history_list[i].event);
 	}
 }

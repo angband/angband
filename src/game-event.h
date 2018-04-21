@@ -42,10 +42,9 @@ typedef enum game_event_type
 	EVENT_RACE_CLASS,	/* Race or Class */
 	EVENT_STUDYSTATUS,	/* "Study" availability */
 	EVENT_STATUS,		/* Status */
-	EVENT_DETECTIONSTATUS,	/* Trap detection status */
+	EVENT_DETECTIONSTATUS,  /* Trap detection status */
 	EVENT_FEELING,		/* Object level feeling */
-	EVENT_STATE,		/* The three 'R's: Resting, Repeating and
-				   Searching */
+	EVENT_STATE,		/* The two 'R's: Resting and Repeating */
 
 	EVENT_PLAYERMOVED,
 	EVENT_SEEFLOOR,         /* When the player would "see" floor objects */
@@ -128,7 +127,7 @@ typedef union
 
 	struct
 	{
-		int gf_type;
+		int proj_type;
 		int num_grids;
 		int *distance_to_grid;
 		bool drawing;
@@ -139,7 +138,7 @@ typedef union
 
 	struct
 	{
-		int gf_type;
+		int proj_type;
 		bool drawing;
 		bool seen;
 		bool beam;
@@ -183,7 +182,7 @@ void event_signal_message(game_event_type type, int t, const char *s);
 void event_signal_flag(game_event_type type, bool flag);
 void event_signal(game_event_type);
 void event_signal_blast(game_event_type type,
-						int gf_type,
+						int proj_type,
 						int num_grids,
 						int *distance_to_grid,
 						bool seen,
@@ -191,7 +190,7 @@ void event_signal_blast(game_event_type type,
 						struct loc *blast_grid,
 						struct loc centre);
 void event_signal_bolt(game_event_type type,
-					   int gf_type,
+					   int proj_type,
 					   bool drawing,
 					   bool seen,
 					   bool beam,

@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 4.0.5, bugs@rephial.org)
+AC_INIT(Angband, 4.1.0, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 
 AC_CANONICAL_HOST
@@ -235,7 +235,16 @@ if test "$enable_curses" = "yes"; then
 		CFLAGS="${CFLAGS} ${NCURSES_CFLAGS}"
 		LIBS="${LIBS} ${NCURSES_LIBS}"
 		MAINFILES="${MAINFILES} \$(GCUMAINFILES)"
-	fi 
+	else
+		AC_CHECK_LIB([ncursesw], [initscr], [
+			AC_DEFINE(USE_NCURSES, 1, [Define to 1 if NCurses is found.])
+			AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
+			AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Defined for systems that guard ncurses decls with _XOPEN_SOURCE_EXTENDED])
+			with_curses=yes
+			LIBS="${LIBS} -lncursesw"
+			MAINFILES="${MAINFILES} \$(GCUMAINFILES)"
+		])
+	fi
 fi
 
 AC_CHECK_FUNCS([mvwaddnwstr use_default_colors can_change_color])
@@ -277,6 +286,7 @@ fi
 dnl Windows checking
 if test "$enable_win" = "yes"; then
 	AC_DEFINE(USE_WIN, 1, [Define to 1 if using the Windows interface.])
+	AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
 	CFLAGS="${CFLAGS} -DWINDOWS -static -Iwin/include"
 	LDFLAGS="${LDFLAGS} -Lwin/lib"
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
@@ -290,6 +300,7 @@ if test "$enable_sdl_mixer" = "yes"; then
 
 	if test "$found_sdl_mixer" = "yes"; then
 		AC_DEFINE(SOUND_SDL, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
+		AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
 		if test "$with_sdl" = "yes"; then
 			LIBS="${LIBS} -lSDL_mixer"
 		else

@@ -22,18 +22,64 @@
 #include "game-input.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "project.h"
+#include "source.h"
+#include "trap.h"
+
+struct projection *projections;
 
 /*
  * Specify attr/char pairs for visual special effects for project()
- * Ideally move these and GF-type colors to the UI - NRM
+ * Ideally move these and PROJ-type colors to the UI - NRM
  */
-byte gf_to_attr[GF_MAX][BOLT_MAX];
-wchar_t gf_to_char[GF_MAX][BOLT_MAX];
+byte proj_to_attr[PROJ_MAX][BOLT_MAX];
+wchar_t proj_to_char[PROJ_MAX][BOLT_MAX];
 
+/**
+ * ------------------------------------------------------------------------
+ * PROJ type info needed for projections
+ *
+ * Note that elements come first, so PROJ_ACID == ELEM_ACID, etc
+ * ------------------------------------------------------------------------ */
+static const char *proj_name_list[] =
+{
+	#define ELEM(a) #a,
+	#include "list-elements.h"
+	#undef ELEM
+	#define PROJ(a) #a,
+	#include "list-projections.h"
+	#undef PROJ
+	"MAX",
+    NULL
+};
+
+int proj_name_to_idx(const char *name)
+{
+    int i;
+    for (i = 0; proj_name_list[i]; i++) {
+        if (!my_stricmp(name, proj_name_list[i]))
+            return i;
+    }
+
+    return -1;
+}
+
+const char *proj_idx_to_name(int type)
+{
+    assert(type >= 0);
+    assert(type < PROJ_MAX);
+
+    return proj_name_list[type];
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Projection paths
+ * ------------------------------------------------------------------------ */
 /**
  * Determine the path taken by a projection.
  *
@@ -292,141 +338,24 @@ bool projectable(struct chunk *c, int y1, int x1, int y2, int x2, int flg)
 	grid_n = project_path(grid_g, z_info->max_range, y1, x1, y2, x2, flg);
 
 	/* No grid is ever projectable from itself */
-	if (!grid_n) return (FALSE);
+	if (!grid_n) return (false);
 
 	/* Final grid */
 	y = grid_g[grid_n - 1].y;
 	x = grid_g[grid_n - 1].x;
 
 	/* May not end in a wall grid */
-	if (!square_ispassable(c, y, x)) return (FALSE);
+	if (!square_ispassable(c, y, x)) return (false);
 
 	/* May not end in an unrequested grid */
-	if ((y != y2) || (x != x2)) return (FALSE);
+	if ((y != y2) || (x != x2)) return (false);
 
 	/* Assume okay */
-	return (TRUE);
+	return (true);
 }
 
 
 
-
-/**
- * ------------------------------------------------------------------------
- * GF type info needed for projections
- *
- * Note that elements come first, so GF_ACID == ELEM_ACID, etc
- * ------------------------------------------------------------------------ */
-static const struct gf_type {
-	const char *desc;	/* text description */
-	const char *blind_desc;	/* text description (if blind) */
-	int num;			/* numerator for resistance */
-	random_value denom;	/* denominator for resistance */
-	bool force_obvious; /* */
- 	byte color;			/* */
-} gf_table[] = {
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) { c, d, e, f, TRUE, col },
-	#define RV(b, x, y, m) {b, x, y, m}
-	#include "list-elements.h"
-	#undef ELEM
-	#undef RV
-
-	#define PROJ_ENV(a, col, desc) { desc, NULL, 0, {0, 0, 0, 0}, FALSE, col },
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-
-	#define PROJ_MON(a, obv, desc) \
-		{ desc, NULL, 0, {0, 0, 0, 0}, obv, COLOUR_WHITE }, 
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
-	{ NULL, NULL, 0, {0, 0, 0, 0}, FALSE, COLOUR_WHITE }
-};
-
-static const char *gf_name_list[] =
-{
-	#define ELEM(a, b, c, d, e, f, g, h, i, col) #a,
-	#include "list-elements.h"
-	#undef ELEM
-	#define PROJ_ENV(a, col, desc) #a,
-	#include "list-project-environs.h"
-	#undef PROJ_ENV
-	#define PROJ_MON(a, obv, desc) #a,
-	#include "list-project-monsters.h"
-	#undef PROJ_MON
-	"MAX",
-    NULL
-};
-
-bool gf_force_obvious(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return FALSE;
-
-	return gf_table[type].force_obvious;
-}
-
-int gf_color(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return COLOUR_WHITE;
-
-	return gf_table[type].color;
-}
-
-int gf_num(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return 0;
-
-	return gf_table[type].num;
-}
-
-random_value gf_denom(int type)
-{
-	random_value rand = { 0, 0, 0, 0};
-	if (type < 0 || type >= GF_MAX)
-		return rand;
-
-	return gf_table[type].denom;
-}
-
-const char *gf_desc(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return 0;
-
-	return gf_table[type].desc;
-}
-
-const char *gf_blind_desc(int type)
-{
-	if (type < 0 || type >= GF_MAX)
-		return 0;
-
-	if (gf_table[type].blind_desc)
-		return gf_table[type].blind_desc;
-	else
-		return "something";
-}
-
-int gf_name_to_idx(const char *name)
-{
-    int i;
-    for (i = 0; gf_name_list[i]; i++) {
-        if (!my_stricmp(name, gf_name_list[i]))
-            return i;
-    }
-
-    return -1;
-}
-
-const char *gf_idx_to_name(int type)
-{
-    assert(type >= 0);
-    assert(type < GF_MAX);
-
-    return gf_name_list[type];
-}
 
 /**
  * ------------------------------------------------------------------------
@@ -434,22 +363,51 @@ const char *gf_idx_to_name(int type)
  * ------------------------------------------------------------------------ */
 
 /**
- * Generic "beam"/"bolt"/"ball" projection routine.  
+ * Given an origin, find its coordinates and return them
+ *
+ * If there is no origin, return (-1, -1)
+ */
+struct loc origin_get_loc(struct source origin)
+{
+	switch (origin.what) {
+		case SRC_MONSTER: {
+			struct monster *who = cave_monster(cave, origin.which.monster);
+			return loc(who->fx, who->fy);
+		}
+
+		case SRC_TRAP: {
+			struct trap *trap = origin.which.trap;
+			return loc(trap->fx, trap->fy);
+		}
+
+		case SRC_PLAYER:
+		case SRC_OBJECT:	/* At the moment only worn cursed objects use this */
+			return loc(player->px, player->py);
+
+		case SRC_NONE:
+			return loc(-1, -1);
+	}
+
+	return loc(-1, -1);
+}
+
+/**
+ * Generic "beam"/"bolt"/"ball" projection routine.
  *   -BEN-, some changes by -LM-
  *
- *   \param who: Index of "source" monster (negative for the character)
- *   \param rad: Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
+ *   \param origin Origin of the projection
+ *   \param rad Radius of explosion (0 = beam/bolt, 1 to 20 = ball), or maximum
  *	  length of arc from the source.
- *   \param y
- *   \param x: Target location (or location to travel towards)
- *   \param dam: Base damage to apply to monsters, terrain, objects, or player
- *   \param typ: Type of projection (fire, frost, dispel demons etc.)
- *   \param flg: Extra bit flags that control projection behavior
- *   \param degrees_of_arc: How wide an arc spell is (in degrees).
- *   \param diameter_of_source: how wide the source diameter is.
- *   \param obj: An object that the projection ignores
+ *   \param y Target location (or location to travel towards)
+ *   \param x Target location (or location to travel towards)
+ *   \param dam Base damage to apply to monsters, terrain, objects, or player
+ *   \param typ Type of projection (fire, frost, dispel demons etc.)
+ *   \param flg Extra bit flags that control projection behavior
+ *   \param degrees_of_arc How wide an arc spell is (in degrees).
+ *   \param diameter_of_source how wide the source diameter is.
+ *   \param obj An object that the projection ignores
  *
- *   \return TRUE if any effects of the projection were observed, else FALSE
+ *   \return true if any effects of the projection were observed, else false
  *
  *
  * At present, there are five major types of projections:
@@ -528,14 +486,12 @@ const char *gf_idx_to_name(int type)
  *   degrees_of_arc of zero, arcs act like beams of defined length.
  *
  * diameter_of_source controls how quickly explosions lose strength with dis-
- *   tance from the target.  Most ball spells have a source diameter of 10, 
- *   which means that they do 1/2 damage at range 1, 1/3 damage at range 2, 
- *   and so on.   Caster-centered balls usually have a source diameter of 20, 
- *   which allows them to do full damage to all adjacent grids.   Arcs have 
- *   source diameters ranging up to 20, which allows the spell designer to 
+ *   tance from the target.  Most ball spells have a source diameter of 10,
+ *   which means that they do 1/2 damage at range 1, 1/3 damage at range 2,
+ *   and so on.   Caster-centered balls usually have a source diameter of 20,
+ *   which allows them to do full damage to all adjacent grids.   Arcs have
+ *   source diameters ranging up from 20, which allows the spell designer to
  *   fine-tune how quickly a breath loses strength outwards from the breather.
- *   It is expected, but not required, that wide arcs lose strength more 
- *   quickly over distance.
  *
  *
  * Implementation notes:
@@ -581,7 +537,8 @@ const char *gf_idx_to_name(int type)
  * in the blast radius, in case the illumination of the grid was changed,
  * and "update_view()" and "update_monsters()" need to be called.
  */
-bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
+bool project(struct source origin, int rad, int y, int x,
+			 int dam, int typ, int flg,
 			 int degrees_of_arc, byte diameter_of_source,
 			 const struct object *obj)
 {
@@ -597,13 +554,13 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	int n1x = 0;
 
 	/* Assume the player sees nothing */
-	bool notice = FALSE;
+	bool notice = false;
 
 	/* Notify the UI if it can draw this projection */
-	bool drawing = FALSE;
+	bool drawing = false;
 
 	/* Is the player blind? */
-	bool blind = (player->timed[TMD_BLIND] ? TRUE : FALSE);
+	bool blind = (player->timed[TMD_BLIND] ? true : false);
 
 	/* Number of grids in the "path" */
 	int num_path_grids = 0;
@@ -630,33 +587,28 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 	handle_stuff(player);
 
 	/* No projection path - jump to target */
-	if (flg & (PROJECT_JUMP)) {
+	if (flg & PROJECT_JUMP) {
 		source = loc(x, y);
 
 		/* Clear the flag */
 		flg &= ~(PROJECT_JUMP);
+	} else {
+		source = origin_get_loc(origin);
+
+		/* Default to destination grid */
+		if (source.y == -1 && source.x == -1) {
+			source = loc(x, y);
+		}
 	}
 
-	/* Start at player */
-	else if (who < 0)
-		source = loc(player->px, player->py);
-
-	/* Start at monster */
-	else if (who > 0)
-		source = loc(cave_monster(cave, who)->fx, cave_monster(cave, who)->fy);
-
-	/* Implies no caster, so assume source is target */
-	else
-		source = loc(x, y);
-
 	/* Default destination */
-		destination = loc(x, y);
+	destination = loc(x, y);
 
 	/* Default center of explosion (if any) */
 	centre = loc(source.x, source.y);
 
-	/* 
-	 * An arc spell with no width and a non-zero radius is actually a 
+	/*
+	 * An arc spell with no width and a non-zero radius is actually a
 	 * beam of defined length.  Mark it as such.
 	 */
 	if ((flg & (PROJECT_ARC)) && (degrees_of_arc == 0) && (rad != 0)) {
@@ -668,9 +620,10 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		flg |= (PROJECT_THRU);
 	}
 
-
-	/* If a single grid is both source and destination (for example
-	 * if PROJECT_JUMP is set), store it. */
+	/*
+	 * If a single grid is both source and destination (for example
+	 * if PROJECT_JUMP is set), store it.
+	 */
 	if ((source.x == destination.x) && (source.y == destination.y)) {
 		blast_grid[num_grids].y = y;
 		blast_grid[num_grids].x = x;
@@ -754,7 +707,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		/* No special actions */
 	}
 
-	/* 
+	/*
 	 * All non-beam projections with a positive radius explode in some way.
 	 */
 	else if (rad > 0) {
@@ -898,7 +851,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		}
 
 		/* If a particular diameter for the source of the explosion's energy is 
-		 * given, calculate an adjusted damage. */
+		 * given, it is full strength to that diameter and then reduces. */
 		else {
 			dam_temp = (diameter_of_source * dam) / ((i + 1) * 10);
 			if (dam_temp > (u32b) dam)
@@ -940,9 +893,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
 			square_isview(cave, blast_grid[i].y, blast_grid[i].x) &&
 			!blind && !(flg & (PROJECT_HIDE)))
-			player_sees_grid[i] = TRUE;
+			player_sees_grid[i] = true;
 		else
-			player_sees_grid[i] = FALSE;
+			player_sees_grid[i] = false;
 	}
 
 	/* Tell the UI to display the blast */
@@ -958,9 +911,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the object in the grid */
-			if (project_o(who, distance_to_grid[i], y, x,
+			if (project_o(origin, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ, obj))
-				notice = TRUE;
+				notice = true;
 		}
 	}
 
@@ -990,11 +943,11 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				continue;
 
 			/* Affect the monster in the grid */
-			project_m(who, distance_to_grid[i], y, x,
+			project_m(origin, distance_to_grid[i], y, x,
 			          dam_at_dist[distance_to_grid[i]], typ, flg,
 			          &did_hit, &was_obvious);
 			if (was_obvious)
-				notice = TRUE;
+				notice = true;
 			if (did_hit) {
 				num_hit++;
 
@@ -1005,7 +958,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 		}
 
 		/* Player affected one monster (without "jumping") */
-		if ((who < 0) && (num_hit == 1) && !(flg & (PROJECT_JUMP))) {
+		if (origin.what == SRC_PLAYER &&
+				num_hit == 1 &&
+				!(flg & PROJECT_JUMP)) {
 			/* Location */
 			x = last_hit_x;
 			y = last_hit_y;
@@ -1015,7 +970,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 				struct monster *mon = square_monster(cave, y, x);
 
 				/* Recall and track */
-				if (mflag_has(mon->mflag, MFLAG_VISIBLE)) {
+				if (monster_is_visible(mon)) {
 					monster_race_track(player->upkeep, mon->race);
 					health_track(player->upkeep, mon);
 				}
@@ -1032,9 +987,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the player, or keep scanning */
-			if (project_p(who, distance_to_grid[i], y, x,
+			if (project_p(origin, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ)) {
-				notice = TRUE;
+				notice = true;
 				if (player->is_dead)
 					return notice;
 				break;
@@ -1051,9 +1006,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg,
 			x = blast_grid[i].x;
 
 			/* Affect the feature in that grid */
-			if (project_f(who, distance_to_grid[i], y, x,
+			if (project_f(origin, distance_to_grid[i], y, x,
 						  dam_at_dist[distance_to_grid[i]], typ))
-				notice = TRUE;
+				notice = true;
 		}
 	}
 

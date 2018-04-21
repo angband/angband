@@ -144,7 +144,10 @@ int stats_db_bind_ints(sqlite3_stmt *sql_stmt, int num_cols, int offset, ...) {
 	for (col = offset + 1; col <= offset + num_cols; col++) {
 		u32b value = va_arg(vp, u32b);
 		err = sqlite3_bind_int(sql_stmt, col, value);
-		if (err) return err;
+		if (err) {
+			va_end(vp);
+			return err;
+		}
 	}
 	va_end(vp);
 

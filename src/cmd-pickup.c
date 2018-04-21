@@ -29,7 +29,6 @@
 #include "mon-util.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -43,16 +42,16 @@
 /**
  * Pick up all gold at the player's current location.
  */
-static void player_pickup_gold(void)
+static void player_pickup_gold(struct player *p)
 {
 	s32b total_gold = 0L;
 	char name[30] = "";
 
-	struct object *obj = square_object(cave, player->py, player->px), *next;
+	struct object *obj = square_object(cave, p->py, p->px), *next;
 
 	int sound_msg;
-	bool verbal = FALSE;
-	bool at_most_one = TRUE;
+	bool verbal = false;
+	bool at_most_one = true;
 
 	/* Pick up all the ordinary gold objects */
 	while (obj) {
@@ -70,19 +69,25 @@ static void player_pickup_gold(void)
 
 		/* Multiple types if we have a second name, otherwise record the name */
 		if (total_gold && !streq(kind->name, name))
-			at_most_one = FALSE;
+			at_most_one = false;
 		else
 			my_strcpy(name, kind->name, sizeof(name));
 
 		/* Remember whether feedback message is in order */
 		if (!ignore_item_ok(obj))
-			verbal = TRUE;
+			verbal = true;
 
 		/* Increment total value */
 		total_gold += (s32b)obj->pval;
 
 		/* Delete the gold */
-		square_excise_object(cave, player->py, player->px, obj);
+		if (obj->known) {
+			square_excise_object(p->cave, p->py, p->px, obj->known);
+			delist_object(p->cave, obj->known);
+			object_delete(&obj->known);
+		}
+		square_excise_object(cave, p->py, p->px, obj);
+		delist_object(cave, obj);
 		object_delete(&obj);
 		obj = next;
 	}
@@ -113,13 +118,30 @@ static void player_pickup_gold(void)
 			msgt(sound_msg, "%s", buf);
 
 		/* Add gold to purse */
-		player->au += total_gold;
+		p->au += total_gold;
 
 		/* Redraw gold */
-		player->upkeep->redraw |= (PR_GOLD);
+		p->upkeep->redraw |= (PR_GOLD);
 	}
 }
 
+
+/**
+ * Find the specified object in the inventory (not equipment)
+ */
+static struct object *find_stack_object_in_inventory(const struct object *obj)
+{
+	struct object *gear_obj;
+	for (gear_obj = player->gear; gear_obj; gear_obj = gear_obj->next) {
+		if (!object_is_equipped(player->body, gear_obj) &&
+				object_stackable(gear_obj, obj, OSTACK_PACK)) {
+			/* We found the object */
+			return gear_obj;
+		}
+	}
+
+	return NULL;
+}
 
 
 /**
@@ -127,11 +149,15 @@ static void player_pickup_gold(void)
  */
 static bool auto_pickup_okay(const struct object *obj)
 {
-	if (!inven_carry_okay(obj)) return FALSE;
-	if (OPT(pickup_always) || check_for_inscrip(obj, "=g")) return TRUE;
-	if (OPT(pickup_inven) && inven_carry_num(obj, TRUE)) return TRUE;
+	if (!inven_carry_okay(obj)) return false;
+	if (OPT(player, pickup_always) || check_for_inscrip(obj, "=g")) return true;
+	if (OPT(player, pickup_inven)) {
+		struct object *gear_obj = find_stack_object_in_inventory(obj);
+		if (inven_carry_num(obj, true) && !check_for_inscrip(gear_obj, "!g"))
+			return true;
+	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -139,28 +165,27 @@ static bool auto_pickup_okay(const struct object *obj)
  * Move an object from a floor pile to the player's gear, checking first
  * whether partial pickup is needed
  */
-static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
+static void player_pickup_aux(struct player *p, struct object *obj,
+							  int auto_max, bool domsg)
 {
-	int max = inven_carry_num(obj, FALSE);
+	int max = inven_carry_num(obj, false);
 
 	/* Confirm at least some of the object can be picked up */
 	if (max == 0)
 		quit_fmt("Failed pickup of %s", obj->kind->name);
 
 	/* Set ignore status */
-	player->upkeep->notice |= PN_IGNORE;
-
-	/* Automatically sense artifacts */
-	object_sense_artifact(obj);
-
-	/* Log artifacts if found */
-	if (obj->artifact)
-		history_add_artifact(obj->artifact, object_is_known(obj), TRUE);
+	p->upkeep->notice |= PN_IGNORE;
 
 	/* Carry the object, prompting for number if necessary */
 	if (max == obj->number) {
-		square_excise_object(cave, player->py, player->px, obj);
-		inven_carry(player, obj, TRUE, domsg);
+		if (obj->known) {
+			square_excise_object(p->cave, p->py, p->px, obj->known);
+			delist_object(p->cave, obj->known);
+		}
+		square_excise_object(cave, p->py, p->px, obj);
+		delist_object(cave, obj);
+		inven_carry(p, obj, true, domsg);
 	} else {
 		int num;
 		bool dummy;
@@ -171,8 +196,8 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
 		else
 			num = get_quantity(NULL, max);
 		if (!num) return;
-		picked_up = floor_object_for_use(obj, num, FALSE, &dummy);
-		inven_carry(player, picked_up, TRUE, domsg);
+		picked_up = floor_object_for_use(obj, num, false, &dummy);
+		inven_carry(p, picked_up, true, domsg);
 	}
 }
 
@@ -202,11 +227,8 @@ static void player_pickup_aux(struct object *obj, int auto_max, bool domsg)
  * \param obj is the object to pick up.
  * \param menu is whether to present a menu to the player
  */
-static byte player_pickup_item(struct object *obj, bool menu)
+static byte player_pickup_item(struct player *p, struct object *obj, bool menu)
 {
-	int py = player->py;
-	int px = player->px;
-
 	struct object *current = NULL;
 
 	int floor_max = z_info->floor_size + 1;
@@ -215,38 +237,40 @@ static byte player_pickup_item(struct object *obj, bool menu)
 
 	int i;
 	int can_pickup = 0;
-	bool call_function_again = FALSE;
+	bool call_function_again = false;
 
-	bool domsg = TRUE;
+	bool domsg = true;
 
 	/* Objects picked up.  Used to determine time cost of command. */
 	byte objs_picked_up = 0;
 
+	/* Always know what's on the floor */
+	square_know_pile(cave, p->py, p->px);
+
 	/* Always pickup gold, effortlessly */
-	player_pickup_gold();
+	player_pickup_gold(p);
 
 	/* Nothing else to pick up -- return */
-	if (!square_object(cave, py, px)) {
+	if (!square_object(cave, p->py, p->px)) {
 		mem_free(floor_list);
 		return objs_picked_up;
 	}
 
 	/* We're given an object - pick it up */
 	if (obj) {
-		player_pickup_aux(obj, 0, domsg);
+		player_pickup_aux(p, obj, 0, domsg);
 		objs_picked_up = 1;
 		mem_free(floor_list);
 		return objs_picked_up;
 	}
 
 	/* Tally objects that can be at least partially picked up.*/
-	floor_num = scan_floor(floor_list, floor_max, py, px, 0x08, NULL);
+	floor_num = scan_floor(floor_list, floor_max, OFLOOR_VISIBLE, NULL);
 	for (i = 0; i < floor_num; i++)
 	    if (inven_carry_okay(floor_list[i]))
 			can_pickup++;
 
 	if (!can_pickup) {
-	    /* Can't pick up, but probably want to know what's there. */
 	    event_signal(EVENT_SEEFLOOR);
 		mem_free(floor_list);
 	    return objs_picked_up;
@@ -255,7 +279,7 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	/* Use a menu interface for multiple objects, or pickup single objects */
 	if (!menu && !current) {
 		if (floor_num > 1)
-			menu = TRUE;
+			menu = true;
 		else
 			current = floor_list[0];
 	}
@@ -263,27 +287,27 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	/* Display a list if requested. */
 	if (menu && !current) {
 		const char *q, *s;
-		struct object *obj = NULL;
+		struct object *obj_local = NULL;
 
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
-		if (!get_item(&obj, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
+		if (!get_item(&obj_local, q, s, CMD_PICKUP, inven_carry_okay, USE_FLOOR)) {
 			mem_free(floor_list);
 			return (objs_picked_up);
 		}
 
-		current = obj;
-		call_function_again = TRUE;
+		current = obj_local;
+		call_function_again = true;
 
 		/* With a list, we do not need explicit pickup messages */
-		domsg = TRUE;
+		domsg = true;
 	}
 
 	/* Pick up object, if legal */
 	if (current) {
 		/* Pick up the object */
-		player_pickup_aux(current, 0, domsg);
+		player_pickup_aux(p, current, 0, domsg);
 
 		/* Indicate an object picked up. */
 		objs_picked_up = 1;
@@ -294,7 +318,7 @@ static byte player_pickup_item(struct object *obj, bool menu)
 	 * up.  Force the display of a menu in all cases.
 	 */
 	if (call_function_again)
-		objs_picked_up += player_pickup_item(NULL, TRUE);
+		objs_picked_up += player_pickup_item(p, NULL, true);
 
 	mem_free(floor_list);
 
@@ -305,37 +329,32 @@ static byte player_pickup_item(struct object *obj, bool menu)
 /**
  * Pick up everything on the floor that requires no player action
  */
-int do_autopickup(void)
+int do_autopickup(struct player *p)
 {
-	int py = player->py;
-	int px = player->px;
-
 	struct object *obj, *next;
-
-	/* Objects picked up.  Used to determine time cost of command. */
 	byte objs_picked_up = 0;
 
 	/* Nothing to pick up -- return */
-	if (!square_object(cave, py, px))
+	if (!square_object(cave, p->py, p->px))
 		return 0;
 
 	/* Always pickup gold, effortlessly */
-	player_pickup_gold();
+	player_pickup_gold(p);
 
 	/* Scan the remaining objects */
-	obj = square_object(cave, py, px);
+	obj = square_object(cave, p->py, p->px);
 	while (obj) {
 		next = obj->next;
 
 		/* Ignore all hidden objects and non-objects */
 		if (!ignore_item_ok(obj)) {
 			/* Hack -- disturb */
-			disturb(player, 0);
+			disturb(p, 0);
 
 			/* Automatically pick up items into the backpack */
 			if (auto_pickup_okay(obj)) {
 				/* Pick up the object (as much as possible) with message */
-				player_pickup_aux(obj, inven_carry_num(obj, TRUE), TRUE);
+				player_pickup_aux(p, obj, inven_carry_num(obj, true), true);
 				objs_picked_up++;
 			}
 		}
@@ -357,7 +376,8 @@ void do_cmd_pickup(struct command *cmd)
 	(void) cmd_get_arg_item(cmd, "item", &obj);
 
 	/* Pick up floor objects with a menu for multiple objects */
-	energy_cost += player_pickup_item(obj, FALSE) * z_info->move_energy / 10;
+	energy_cost += player_pickup_item(player, obj, false)
+		* z_info->move_energy / 10;
 
 	/* Limit */
 	if (energy_cost > z_info->move_energy) energy_cost = z_info->move_energy;
@@ -376,11 +396,12 @@ void do_cmd_pickup(struct command *cmd)
 void do_cmd_autopickup(struct command *cmd)
 {
 	/* Get the obvious things */
-	player->upkeep->energy_use = do_autopickup() * z_info->move_energy / 10;
+	player->upkeep->energy_use = do_autopickup(player)
+		* z_info->move_energy / 10;
 	if (player->upkeep->energy_use > z_info->move_energy)
 		player->upkeep->energy_use = z_info->move_energy;
 
-	/* Look at what's left */
+	/* Look at or feel what's left */
 	event_signal(EVENT_SEEFLOOR);
 
 	/* Redraw the object list using the upkeep flag so that the update can be

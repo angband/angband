@@ -48,9 +48,6 @@ mon-play:mult-rate:8
 # Percent of player exp drained per hit
 mon-play:life-drain:2
 
-# Maximum flow depth when using for monster flow calculation
-mon-play:flow-depth:32
-
 # Monsters will run up to this many grids out of sight
 mon-play:flee-range:5
 
@@ -131,14 +128,14 @@ carry-cap:pack-size:23
 # Max number of quiver slots for carrying missiles
 carry-cap:quiver-size:10
 
+# Max number of missiles per quiver slot
+carry-cap:quiver-slot-size:40
+
 # Maximum number of objects allowed in a single dungeon grid.
 #
 # The main screen originally had a minimum size of 24 rows, so it could always
 # display 23 objects + 1 header line.
 carry-cap:floor-size:23
-
-# Max number of pack slots for carrying inventory
-carry-cap:stack-size:40
 
 
 #---------------------------------------------------------------------

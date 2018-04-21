@@ -6,8 +6,8 @@
 #
 
 NAME = Angband
-VERSION = 4.0.5
-COPYRIGHT = (c) 1995-2016 Angband contributors
+VERSION = 4.1.0
+COPYRIGHT = (c) 1995-2017 Angband contributors
 PROGNAME = angband
 
 HEADERS = \
@@ -23,7 +23,6 @@ HEADERS = \
 	main.h \
 	option.h \
 	parser.h \
-	types.h \
 	ui-event.h \
 	ui-menu.h \
 	wizard.h \
@@ -89,6 +88,7 @@ ANGFILES = \
 	cmd-misc.o \
 	cmd-obj.o \
 	cmd-pickup.o \
+	datafile.o \
 	debug.o \
 	effects.o \
 	game-event.o \
@@ -106,8 +106,7 @@ ANGFILES = \
 	load.o \
 	message.o \
 	mon-attack.o \
-	mon-blow-effects.o \
-	mon-blow-methods.o \
+	mon-blows.o \
 	mon-desc.o \
 	mon-init.o \
 	mon-list.o \
@@ -115,17 +114,19 @@ ANGFILES = \
 	mon-make.o \
 	mon-move.o \
 	mon-msg.o \
-	mon-power.o \
+	mon-predicate.o \
 	mon-spell.o \
 	mon-summon.o \
 	mon-timed.o \
 	mon-util.o \
 	obj-chest.o \
+	obj-curse.o \
 	obj-desc.o \
 	obj-gear.o \
-	obj-identify.o \
 	obj-ignore.o \
 	obj-info.o \
+	obj-init.o \
+	obj-knowledge.o \
 	obj-list.o \
 	obj-make.o \
 	obj-pile.o \
@@ -158,12 +159,15 @@ ANGFILES = \
 	score.o \
 	save.o \
 	savefile.o \
+	sound-core.o \
+	source.o \
 	store.o \
 	target.o \
 	trap.o \
 	ui-birth.o \
 	ui-command.o \
 	ui-context.o \
+	ui-curse.o \
 	ui-death.o \
 	ui-display.o \
 	ui-event.o \

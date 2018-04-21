@@ -55,14 +55,14 @@ else
   CFLAGS += -Iwin/include -Lwin/lib
   LDFLAGS += -Lwin/lib
 
-  IOBJS = $(BASEOBJS) win/$(PROGNAME).res main-win.o win/readdib.o win/readpng.o win/scrnshot.o win/win-layout.o
+  IOBJS = $(BASEOBJS) win/$(PROGNAME).res $(SOUNDFILES) main-win.o win/readdib.o win/readpng.o win/scrnshot.o win/win-layout.o
   LIBS = -mwindows -lwinmm -lzlib -llibpng -lmsimg32
 endif
 
 CC = $(CROSS)gcc
 WRES = $(CROSS)windres
 WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
-CFLAGS += $(WARNINGS) -std=c99 -DUSE_PRIVATE_PATHS -Wdeclaration-after-statement -O2 -I.
+CFLAGS += $(WARNINGS) -std=c99 -DUSE_PRIVATE_PATHS -DSOUND -O2 -I.
 
 ifdef BUILD_ID
   CFLAGS += -DBUILD_ID="$(BUILD_ID)"

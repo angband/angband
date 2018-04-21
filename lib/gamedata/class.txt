@@ -16,12 +16,11 @@
 # skill-save:base:increment
 # skill-stealth:base:increment
 # skill-search:base:increment
-# skill-search-freq:base:increment
 # skill-melee:base:increment
 # skill-shoot:base:increment
 # skill-throw:base:increment
 # skill-dig:base:increment
-# info:mhp:exp:sense_base:sense_div
+# info:mhp:exp
 # attack:max_attacks:min_weight:att_multiply
 # title:title
 # equip:tval:sval:min:max
@@ -42,15 +41,14 @@
 # 'stats' is for the stat modifiers - strength, intelligence, wisdom,
 # dexterity, constitution.
 
-# 'skill-<skill name>' is for skills - disarming, magic devices, saving throws,
-# stealth, searching ability, searching frequency, to hit (normal),
-# to hit (bows), to hit (throwing), digging.  The base entry is what the 
-# gets added to the character's skills at birth, the increments are added to
-# the base skill every ten levels.
+# 'skill-<skill name>' is for skills - physical and magical disarming,
+# magic devices, saving throws, stealth, to hit (normal), to hit (bows),
+# to hit (throwing), digging.  The base entry is what gets added to the
+# character's skills at birth, the increments are added to the base skill
+# every ten levels.
 
 # 'info' is for extra info - max. hitpoints gained per level, experience
-# factor in percent, base chance for pseudo-id (smaller is better),
-# level dependent divisor for the pseudo-id chance.
+# factor in percent.
 
 # 'attack' is for attack info - maximum possible number of attacks, minimum
 # weapon weight for calculating the number of attacks, multiplier for
@@ -63,9 +61,10 @@
 
 # 'title' is for class titles.
 
+# 'realm' (if it is present) is for magic realm
+
 # 'magic' is for general magic info - level of the first spell, weight that
-# hurts spells, primary spellcasting realm (as in src/list=magic-realms.h),
-# number of books used.
+# hurts spells, number of books used.
 
 # 'book' defines one of these books - object base, object kind, number of 
 # spells, book realm.  'spell:' lines always refer to spells in the previous
@@ -96,19 +95,19 @@
 
 
 ############### WARRIOR ###############
-name:0:Warrior
+name:Warrior
 stats:3:-2:-2:2:2
-skill-disarm:25:10
+skill-disarm-phys:25:15
+skill-disarm-magic:20:10
 skill-device:18:7
 skill-save:18:10
 skill-stealth:0:0
-skill-search:14:0
-skill-search-freq:2:0
+skill-search:10:12
 skill-melee:70:45
 skill-shoot:55:45
 skill-throw:55:45
 skill-dig:0:0
-info:9:0:7000:40
+info:9:0
 attack:6:30:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -116,7 +115,7 @@ equip:potion:Berserk Strength:1:1
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:BRAVERY_30 | PSEUDO_ID_IMPROV | NO_MANA
+flags:BRAVERY_30 | NO_MANA
 title:Rookie
 title:Soldier
 title:Swordsman
@@ -128,23 +127,21 @@ title:Champion
 title:Hero
 title:Lord
 
-magic:0:0:0:0
-
 
 ############### MAGE ###############
-name:1:Mage
+name:Mage
 stats:-3:3:0:0:-2
-skill-disarm:30:7
+skill-disarm-phys:30:10
+skill-disarm-magic:35:12
 skill-device:36:13
 skill-save:30:9
 skill-stealth:2:0
-skill-search:16:0
-skill-search-freq:20:0
+skill-search:10:12
 skill-melee:34:15
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
-info:0:30:170000:5
+info:0:30
 attack:4:40:2
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -163,7 +160,8 @@ title:Warlock
 title:Sorcerer
 title:Arch-Mage
 
-magic:1:300:1:9
+realm:arcane
+magic:1:300:9
 
 book:magic book:[Magic for Beginners]:6:1
 
@@ -193,7 +191,7 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
@@ -215,11 +213,9 @@ desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:9:1
 
 spell:Confuse Monster:5:4:30:4
-effect:BOLT_AWARE:OLD_CONF
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to confuse a single monster for a level-dependant duration.
-desc:  Uniques and monsters that resist confusion are not affected.
+effect:BOLT_AWARE:MON_CONF
+dice:5+1d5
+desc:Confuse a single monster.
 
 spell:Lightning Bolt:5:4:30:4
 effect:BEAM:ELEC
@@ -227,20 +223,20 @@ dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
 desc:Fires a lightning beam that hurts each monster in its path.
 
-spell:Trap/Door Destruction:5:5:30:6
+spell:Disable Traps, Destroy Doors:5:5:30:6
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TOUCH:KILL_TRAP
+desc:Disables traps and destroys doors within a 1-square radius of you.
 
 spell:Cure Poison:5:5:35:4
 effect:CURE:POISONED
 desc:Neutralizes poison.
 
-spell:Sleep Monster:7:5:30:4
-effect:BOLT_AWARE:OLD_SLEEP
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to put to sleep a single monster.
-desc:  Uniques and monsters that resist confusion are not affected.
+spell:Hold Monster:7:5:30:4
+effect:BOLT_AWARE:MON_HOLD
+dice:3+1d5
+desc:Prevents a monster from moving. If you attack it, the spell will
+desc: be released.
 
 spell:Teleport Self:7:6:35:5
 effect:TELEPORT
@@ -303,7 +299,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Polymorph Other:11:7:45:9
-effect:BOLT_STATUS:OLD_POLY
+effect:BOLT_STATUS:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
@@ -311,7 +307,7 @@ desc:  Uniques are not affected.
 
 spell:Identify:11:7:25:6
 effect:IDENTIFY
-desc:Reveals the powers of an object.
+desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:15:6:40:6
 effect:DETECT_INVISIBLE_MONSTERS
@@ -330,10 +326,9 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Slow Monster:17:9:50:7
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_STATUS:MON_SLOW
 dice:20
-desc:Attempts to slow a single monster.
-desc:  Uniques are not affected.
+desc:Slows down a monster.
 
 book:magic book:[Sorcery and Evocations]:6:1
 
@@ -354,12 +349,12 @@ spell:Haste Self:25:12:65:10
 effect:TIMED_INC:FAST:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
-desc:Hastes you (+10 to speed) for a level-dependant duration.
+desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:25:7:50:6
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 
@@ -538,7 +533,7 @@ desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 
 spell:Bedlam:25:15:60:24
-effect:BALL:OLD_CONF:4
+effect:BALL:MON_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
@@ -596,19 +591,19 @@ desc: damage to each monster in its area of effect.
 
 
 ############### PRIEST ###############
-name:2:Priest
+name:Priest
 stats:-1:-3:3:-1:1
-skill-disarm:25:7
+skill-disarm-phys:25:12
+skill-disarm-magic:25:12
 skill-device:30:10
 skill-save:32:12
 skill-stealth:2:0
-skill-search:16:0
-skill-search-freq:8:0
+skill-search:10:14
 skill-melee:48:20
 skill-shoot:35:20
 skill-throw:35:20
 skill-dig:0:0
-info:2:20:15000:40
+info:2:20
 attack:4:35:3
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -616,7 +611,7 @@ equip:prayer book:[Beginners Handbook]:1:1
 equip:hafted:Mace:1:1
 equip:potion:Cure Serious Wounds:2:2
 equip:scroll:Word of Recall:1:1
-flags:BLESS_WEAPON | ZERO_FAIL | PSEUDO_ID_IMPROV
+flags:BLESS_WEAPON | ZERO_FAIL
 title:Believer
 title:Acolyte
 title:Adept
@@ -628,7 +623,8 @@ title:Bishop
 title:Prophet
 title:Patriarch
 
-magic:1:350:2:9
+realm:divine
+magic:1:350:9
 
 book:prayer book:[Beginners Handbook]:7:2
 
@@ -662,30 +658,21 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
-
-spell:Find Traps, Doors & Stairs:3:3:27:2
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Slow Poison:3:3:28:4
 effect:TIMED_DEC:POISONED:2
 desc:Halves the remaining duration of any current poisoning.
 
-book:prayer book:[Words of Wisdom]:7:2
+book:prayer book:[Words of Wisdom]:8:2
 
 spell:Scare Monster:5:4:29:3
 effect:BOLT_AWARE:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare a single monster for a level-dependant duration.
+desc:Attempts to scare a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist fear are not affected.
 
 spell:Portal:5:4:30:4
@@ -709,9 +696,9 @@ desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
 desc: turns.
 
 spell:Sanctuary:7:5:36:3
-effect:TOUCH_AWARE:OLD_SLEEP
+effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster directly adjacent to you.
 desc:  Uniques and monsters that resist sleep are not affected.
 
@@ -720,11 +707,11 @@ effect:SET_NOURISH
 dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
-## get rid of remove_curse in 3.4 until curses are redone
-#spell:Remove Curse:7:6:38:5
-#effect:REMOVE_CURSE
-#D:Removes all ordinary curses from all equipped items.
-#D:  Heavy or permanent curses are not affected.
+
+spell:Remove Curse:7:6:38:5
+effect:REMOVE_CURSE
+dice:20+d20
+desc:Attempts to remove a curse from an item.
 
 spell:Resist Heat and Cold:7:7:38:5
 effect:TIMED_INC:OPP_COLD
@@ -771,7 +758,7 @@ spell:Protection from Evil:11:8:42:4
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
-desc:Protects you from evil for a level-dependant duration:
+desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
@@ -786,8 +773,11 @@ desc:  This prayer has no effect when used in the town.
 
 spell:Sense Surroundings:13:10:45:4
 effect:MAP_AREA
-dice:22d40
-desc:Maps out a portion of the level around you.
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
+expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
+desc:Maps the nearby area.
+
 
 spell:Cure Mortal Wounds:13:11:45:4
 effect:HEAL_HP
@@ -806,7 +796,7 @@ effect:PROJECT_LOS_AWARE:TURN_UNDEAD
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare each undead monster within line of sight,
-desc: causing it to flee in terror for a level-dependant duration.
+desc: causing it to flee in terror for a level-dependent duration.
 
 book:prayer book:[Exorcism and Dispelling]:6:2
 
@@ -929,12 +919,11 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:Detects all treasure, objects, doors, stairs, traps, and monsters
-desc: in the immediate area.
+desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Perception:20:20:80:20
 effect:IDENTIFY
-desc:Reveals the powers of an object.
+desc:Reveals an unknown rune on an object.
 
 spell:Probing:25:40:80:150
 effect:PROBE
@@ -943,8 +932,8 @@ desc: current hit points of the monster and many of its characteristics
 desc: and abilities (excluding its melee, spellcasting, and breath attacks).
 
 spell:Clairvoyance:35:50:80:230
-effect:ENLIGHTENMENT
-desc:Lights up, maps out, and detects all objects on the complete current
+effect:LIGHT_LEVEL
+desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
 book:prayer book:[Purifications and Healing]:5:2
@@ -988,11 +977,14 @@ spell:Remembrance:35:70:90:250
 effect:RESTORE_EXP
 desc:Restores experience points to maximum if it is currently below maximum.
 
-book:prayer book:[Holy Infusions]:5:2
+book:prayer book:[Holy Infusions]:6:2
 
 spell:Unbarring Ways:5:6:50:40
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TIMED_INC:TRAPSAFE
+dice:10+d10
+desc:Destroys all doors within a 1-square radius of you and renders you safe
+desc: from traps for a short while.
 
 spell:Recharging:15:20:80:25
 effect:RECHARGE
@@ -1002,11 +994,12 @@ desc:Adds charges to a stack of wands or staves.
 desc:  Chance of success and number of charges gained increase with your
 desc: level and decrease with level of wand or staff and number of charges.
 desc:  A failed attempt to recharge destroys one wand or staff from the stack.
-## get rid of dispel_curse in 3.4 until curses are redone
-#spell:Dispel Curse:25:40:80:160
-#effect:REMOVE_ALL_CURSE
-#D:Removes all ordinary and heavy curses from all equipped objects.
-#D:  Permanent curses are not affected.
+
+spell:Dispel Curse:25:40:80:160
+effect:REMOVE_CURSE
+dice:$B+d50
+expr:B:PLAYER_LEVEL:+ 0
+desc:Strongly attempts to remove a curse from an item.
 
 spell:Enchant Weapon:35:50:80:230
 effect:ENCHANT:TOBOTH
@@ -1058,26 +1051,26 @@ desc: have resistance to blindness or light.
 desc:  This prayer has no effect when used in the town.
 
 spell:Annihilation:45:60:75:250
-effect:BOLT:OLD_DRAIN
+effect:BOLT:MON_DRAIN
 dice:200
 desc:Inflicts 200 points of damage on a single monster that is not
 desc: undead, a demon, an elemental, a golem, or a vortex.
 
 
 ############### ROGUE ###############
-name:3:Rogue
+name:Rogue
 stats:0:1:-3:3:-1
-skill-disarm:45:15
+skill-disarm-phys:45:20
+skill-disarm-magic:45:20
 skill-device:32:10
 skill-save:28:10
 skill-stealth:3:1
-skill-search:32:0
-skill-search-freq:24:0
+skill-search:20:16
 skill-melee:60:40
 skill-shoot:66:30
 skill-throw:66:30
 skill-dig:0:0
-info:6:25:10000:40
+info:6:25
 attack:5:30:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1085,7 +1078,7 @@ equip:magic book:[Magic for Beginners]:1:1
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
+flags:CUMBER_GLOVE | CHOOSE_SPELLS
 title:Vagabond
 title:Cutpurse
 title:Footpad
@@ -1097,7 +1090,8 @@ title:Rogue
 title:Thief
 title:Master Thief
 
-magic:5:350:1:9
+realm:arcane
+magic:5:350:9
 
 book:magic book:[Magic for Beginners]:6:1
 
@@ -1117,7 +1111,7 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
@@ -1128,14 +1122,10 @@ effect:DETECT_OBJECTS
 dice:22d40
 desc:Detects all objects in the immediate area.
 
-spell:Find Traps, Doors & Stairs:8:3:50:1
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
+spell:Detect Stairs:8:3:50:1
 effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+dice:44d60
+desc:Detects all stairs in a wide area.
 
 spell:Stinking Cloud:21:12:50:10
 effect:BALL:POIS:2
@@ -1146,26 +1136,24 @@ desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:7:1
 
 spell:Confuse Monster:15:6:75:1
-effect:BOLT_AWARE:OLD_CONF
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to confuse a single monster for a level-dependant duration.
-desc:  Uniques and monsters that resist confusion are not affected.
+effect:BOLT_AWARE:MON_CONF
+dice:5+1d5
+desc:Confuse a single monster.
 
-spell:Trap/Door Destruction:14:7:60:2
+spell:Disable Traps, Destroy Doors:14:7:60:2
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TOUCH:KILL_TRAP
+desc:Disables traps and destroys doors within a 1-square radius of you.
 
 spell:Cure Poison:21:9:90:1
 effect:CURE:POISONED
 desc:Neutralizes poison.
 
-spell:Sleep Monster:19:8:85:1
-effect:BOLT_AWARE:OLD_SLEEP
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to put to sleep a single monster.
-desc:  Uniques and monsters that resist confusion are not affected.
+spell:Hold Monster:19:8:85:1
+effect:BOLT_AWARE:MON_HOLD
+dice:3+1d5
+desc:Prevents a monster from moving. If you attack it, the spell will
+desc: be released.
 
 spell:Teleport Self:22:9:50:1
 effect:TELEPORT
@@ -1211,7 +1199,7 @@ desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
 spell:Identify:18:18:60:2
 effect:IDENTIFY
-desc:Reveals the powers of an object.
+desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:20:11:50:4
 effect:DETECT_INVISIBLE_MONSTERS
@@ -1221,10 +1209,9 @@ dice:22d40
 desc:Detects all monsters in the immediate area, for one turn only.
 
 spell:Slow Monster:28:20:70:2
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_STATUS:MON_SLOW
 dice:20
-desc:Attempts to slow a single monster.
-desc:  Uniques are not affected.
+desc:Slows down a monster.
 
 book:magic book:[Sorcery and Evocations]:3:1
 
@@ -1239,12 +1226,12 @@ spell:Haste Self:32:25:70:6
 effect:TIMED_INC:FAST:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
-desc:Hastes you (+10 to speed) for a level-dependant duration.
+desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:24:15:80:10
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 
@@ -1384,7 +1371,7 @@ desc: slay, is broken, or is cursed.
 book:magic book:[Kelek's Grimoire of Power]:1:1
 
 spell:Bedlam:29:20:70:20
-effect:BALL:OLD_CONF:4
+effect:BALL:MON_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
@@ -1393,19 +1380,19 @@ desc:  Uniques or monsters that resist confusion are not affected.
 
 
 ############### RANGER ###############
-name:4:Ranger
+name:Ranger
 stats:0:2:-2:1:-1
-skill-disarm:30:8
+skill-disarm-phys:30:13
+skill-disarm-magic:20:13
 skill-device:32:10
 skill-save:28:10
 skill-stealth:3:0
-skill-search:24:0
-skill-search-freq:16:0
+skill-search:15:15
 skill-melee:56:30
 skill-shoot:72:45
 skill-throw:72:45
 skill-dig:0:0
-info:4:30:20000:40
+info:4:30
 attack:5:35:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1414,7 +1401,7 @@ equip:sword:Dagger:1:1
 equip:bow:Short Bow:1:1
 equip:arrow:Arrow:15:20
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
+flags:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
 title:Scout
@@ -1426,7 +1413,8 @@ title:Pathfinder
 title:Ranger
 title:Ranger Lord
 
-magic:3:400:1:9
+realm:arcane
+magic:3:400:9
 
 book:magic book:[Magic for Beginners]:7:1
 
@@ -1456,7 +1444,7 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
 
@@ -1470,14 +1458,10 @@ effect:TIMED_DEC:CONFUSED
 dice:20
 desc:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
-spell:Find Traps, Doors & Stairs:5:4:45:2
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
+spell:Detect Stairs:5:4:45:2
 effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
+dice:44d60
+desc:Detects all stairs in a wide area.
 
 spell:Stinking Cloud:7:5:40:3
 effect:BALL:POIS:2
@@ -1488,11 +1472,9 @@ desc:Shoots a radius-2 poison ball.
 book:magic book:[Conjurings and Tricks]:9:1
 
 spell:Confuse Monster:7:6:40:2
-effect:BOLT_AWARE:OLD_CONF
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to confuse a single monster for a level-dependant duration.
-desc:  Uniques and monsters that resist confusion are not affected.
+effect:BOLT_AWARE:MON_CONF
+dice:5+1d5
+desc:Confuse a single monster.
 
 spell:Lightning Bolt:9:7:40:3
 effect:BEAM:ELEC
@@ -1500,20 +1482,20 @@ dice:$Dd6
 expr:D:PLAYER_LEVEL:- 5 / 6 + 3
 desc:Fires a lightning beam that hurts each monster in its path.
 
-spell:Trap/Door Destruction:9:8:45:3
+spell:Disable Traps, Destroy Doors:9:8:45:3
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TOUCH:KILL_TRAP
+desc:Disables traps and destroys doors within a 1-square radius of you.
 
 spell:Cure Poison:11:9:45:3
 effect:CURE:POISONED
 desc:Neutralizes poison.
 
-spell:Sleep Monster:11:8:40:3
-effect:BOLT_AWARE:OLD_SLEEP
-dice:$B
-expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to put to sleep a single monster.
-desc:  Uniques and monsters that resist confusion are not affected.
+spell:Hold Monster:11:8:40:3
+effect:BOLT_AWARE:MON_HOLD
+dice:3+1d5
+desc:Prevents a monster from moving. If you attack it, the spell will
+desc: be released.
 
 spell:Teleport Self:13:10:45:3
 effect:TELEPORT
@@ -1576,7 +1558,7 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Polymorph Other:21:19:60:3
-effect:BOLT_STATUS:OLD_POLY
+effect:BOLT_STATUS:MON_POLY
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to polymorph a single monster.
@@ -1584,7 +1566,7 @@ desc:  Uniques are not affected.
 
 spell:Identify:23:25:90:3
 effect:IDENTIFY
-desc:Reveals the powers of an object.
+desc:Reveals an unknown rune on an object.
 
 spell:Reveal Monsters:25:17:50:4
 effect:DETECT_INVISIBLE_MONSTERS
@@ -1603,10 +1585,9 @@ desc: in its path.
 desc:  The chance to get a beam goes up with your character level.
 
 spell:Slow Monster:25:21:65:3
-effect:BOLT_STATUS:OLD_SLOW
+effect:BOLT_STATUS:MON_SLOW
 dice:20
-desc:Attempts to slow a single monster.
-desc:  Uniques are not affected.
+desc:Slows down a monster.
 
 book:magic book:[Sorcery and Evocations]:6:1
 
@@ -1627,12 +1608,12 @@ spell:Haste Self:33:25:75:4
 effect:TIMED_INC:FAST:5
 dice:$B+d20
 expr:B:PLAYER_LEVEL:+ 0
-desc:Hastes you (+10 to speed) for a level-dependant duration.
+desc:Hastes you (+10 to speed) for a level-dependent duration.
 
 spell:Mass Sleep:23:20:60:4
-effect:PROJECT_LOS:OLD_SLEEP
+effect:PROJECT_LOS:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 
@@ -1821,7 +1802,7 @@ desc:  Artifacts will not be destroyed by this spell.
 desc:  This spell has no effect when used in the town.
 
 spell:Bedlam:32:30:70:12
-effect:BALL:OLD_CONF:4
+effect:BALL:MON_CONF:4
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Shoots a radius-4 confusion ball that doesn't cause physical
@@ -1840,19 +1821,19 @@ desc:  This spell has no effect when used in the town.
 
 
 ############### PALADIN ###############
-name:5:Paladin
+name:Paladin
 stats:1:-3:1:-1:2
-skill-disarm:20:7
+skill-disarm-phys:20:12
+skill-disarm-magic:20:10
 skill-device:24:10
 skill-save:25:11
 skill-stealth:0:0
-skill-search:12:0
-skill-search-freq:2:0
+skill-search:10:12
 skill-melee:68:35
 skill-shoot:40:30
 skill-throw:40:30
 skill-dig:0:0
-info:6:35:60000:40
+info:6:35
 attack:5:30:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
@@ -1860,7 +1841,6 @@ equip:prayer book:[Beginners Handbook]:1:1
 equip:sword:Dagger:1:1
 equip:scroll:Protection from Evil:1:1
 equip:scroll:Word of Recall:1:1
-flags:PSEUDO_ID_IMPROV
 title:Gallant
 title:Keeper
 title:Protector
@@ -1872,7 +1852,8 @@ title:Chevalier
 title:Paladin
 title:Paladin Lord
 
-magic:1:400:2:9
+realm:divine
+magic:1:400:9
 
 book:prayer book:[Beginners Handbook]:7:2
 
@@ -1906,30 +1887,21 @@ effect:LIGHT_AREA
 param:1:10
 dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
-desc:Lights up all squares in a level-dependant area, and hurts
+desc:Lights up all squares in a level-dependent area, and hurts
 desc: all light-sensitive monsters in the area of effect.
 desc:  If you are in a room, the entire room will be lit up as well.
-
-spell:Find Traps, Doors & Stairs:7:5:40:3
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
-desc:Detects all traps, doors, and stairs in the immediate area.
 
 spell:Slow Poison:9:7:40:3
 effect:TIMED_DEC:POISONED:2
 desc:Halves the remaining duration of any current poisoning.
 
-book:prayer book:[Words of Wisdom]:7:2
+book:prayer book:[Words of Wisdom]:8:2
 
 spell:Scare Monster:9:7:40:3
 effect:BOLT_AWARE:TURN_ALL
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Attempts to scare a single monster for a level-dependant duration.
+desc:Attempts to scare a single monster for a level-dependent duration.
 desc:  Uniques and monsters that resist fear are not affected.
 
 spell:Portal:9:8:40:3
@@ -1953,9 +1925,9 @@ desc:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
 desc: turns.
 
 spell:Sanctuary:11:10:45:3
-effect:TOUCH_AWARE:OLD_SLEEP
+effect:TOUCH_AWARE:MON_SLEEP
 dice:$B
-expr:B:PLAYER_LEVEL:+ 0
+expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each monster directly adjacent to you.
 desc:  Uniques and monsters that resist sleep are not affected.
 
@@ -1964,18 +1936,16 @@ effect:SET_NOURISH
 dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
-## get rid of remove_curse in 3.4 until curses are redone
-#spell:Remove Curse:13:11:45:4
-#effect:REMOVE_CURSE
-#D:Removes all ordinary curses from all equipped items.
-#D:  Heavy or permanent curses are not affected.
+
+spell:Remove Curse:13:11:45:4
+effect:REMOVE_CURSE
+dice:20+d20
+desc:Attempts to removes a curse from an item.
 
 spell:Resist Heat and Cold:15:13:45:4
 effect:TIMED_INC:OPP_COLD
 dice:10+d10
 effect:TIMED_INC:OPP_FIRE
-dice:10+d10
-desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 dice:10+d10
 desc:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
 
@@ -2017,7 +1987,7 @@ spell:Protection from Evil:19:15:50:4
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
-desc:Protects you from evil for a level-dependant duration:
+desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
@@ -2032,8 +2002,10 @@ desc:  This prayer has no effect when used in the town.
 
 spell:Sense Surroundings:23:17:50:3
 effect:MAP_AREA
-dice:22d40
-desc:Maps out a portion of the level around you.
+dice:$Dd$S
+expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
+expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
+desc:Maps the nearby area.
 
 spell:Cure Mortal Wounds:25:20:50:3
 effect:HEAL_HP
@@ -2052,7 +2024,7 @@ effect:PROJECT_LOS_AWARE:TURN_UNDEAD
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Attempts to scare each undead monster within line of sight,
-desc: causing it to flee in terror for a level-dependant duration.
+desc: causing it to flee in terror for a level-dependent duration.
 
 book:prayer book:[Exorcism and Dispelling]:4:2
 
@@ -2130,12 +2102,6 @@ desc:Detects all non-invisible monsters in the immediate area,
 desc: for one turn only.
 
 spell:Detection:15:15:80:12
-effect:DETECT_TRAPS
-dice:22d40
-effect:DETECT_DOORS
-dice:22d40
-effect:DETECT_STAIRS
-dice:22d40
 effect:DETECT_GOLD
 dice:22d40
 effect:SENSE_OBJECTS
@@ -2144,12 +2110,11 @@ effect:DETECT_INVISIBLE_MONSTERS
 dice:22d40
 effect:DETECT_VISIBLE_MONSTERS
 dice:22d40
-desc:Detects all treasure, objects, doors, stairs, traps, and monsters
-desc: in the immediate area.
+desc:Detects all treasure, objects and monsters in the immediate area.
 
 spell:Perception:25:25:80:16
 effect:IDENTIFY
-desc:Reveals the powers of an object.
+desc:Reveals an unknown rune on an object.
 
 spell:Probing:30:15:80:135
 effect:PROBE
@@ -2191,7 +2156,10 @@ book:prayer book:[Holy Infusions]:5:2
 
 spell:Unbarring Ways:10:16:50:20
 effect:TOUCH:KILL_DOOR
-desc:Destroys all traps and doors within a 1-square radius of you.
+effect:TIMED_INC:TRAPSAFE
+dice:10+d10
+desc:Destroys all doors within a 1-square radius of you and renders you safe
+desc: from traps for a short while.
 
 spell:Recharging:25:30:80:15
 effect:RECHARGE

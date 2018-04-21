@@ -16,13 +16,12 @@ int teardown_tests(void *state) {
 }
 
 int test_name0(void *state) {
-	enum parser_error r = parser_parse(state, "name:1:Half-Elf");
+	enum parser_error r = parser_parse(state, "name:Half-Elf");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->ridx, 1);
 	require(streq(pr->name, "Half-Elf"));
 	ok;
 }
@@ -43,13 +42,13 @@ int test_stats0(void *state) {
 }
 
 int test_skill_disarm0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-disarm:1");
+	enum parser_error r = parser_parse(state, "skill-disarm-magic:1");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->r_skills[SKILL_DISARM], 1);
+	eq(pr->r_skills[SKILL_DISARM_MAGIC], 1);
 	ok;
 }
 
@@ -94,17 +93,6 @@ int test_skill_search0(void *state) {
 	pr = parser_priv(state);
 	require(pr);
 	eq(pr->r_skills[SKILL_SEARCH], 9);
-	ok;
-}
-
-int test_skill_search_freq0(void *state) {
-	enum parser_error r = parser_parse(state, "skill-search-freq:2");
-	struct player_race *pr;
-
-	eq(r, PARSE_ERROR_NONE);
-	pr = parser_priv(state);
-	require(pr);
-	eq(pr->r_skills[SKILL_SEARCH_FREQUENCY], 2);
 	ok;
 }
 
@@ -233,7 +221,6 @@ struct test tests[] = {
 	{ "skill_save0", test_skill_save0 },
 	{ "skill_stealth0", test_skill_stealth0 },
 	{ "skill_search0", test_skill_search0 },
-	{ "skill_search_freq0", test_skill_search_freq0 },
 	{ "skill_melee0", test_skill_melee0 },
 	{ "skill_shoot0", test_skill_shoot0 },
 	{ "skill_throw0", test_skill_throw0 },

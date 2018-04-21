@@ -53,10 +53,10 @@ void do_cmd_wizard(void)
 
 	/* Toggle mode */
 	if (player->wizard) {
-		player->wizard = FALSE;
+		player->wizard = false;
 		msg("Wizard mode off.");
 	} else {
-		player->wizard = TRUE;
+		player->wizard = true;
 		msg("Wizard mode on.");
 	}
 
@@ -67,31 +67,17 @@ void do_cmd_wizard(void)
 	player->upkeep->redraw |= (PR_TITLE);
 }
 
-
-
-
 /**
  * Commit suicide
  */
 void do_cmd_suicide(struct command *cmd)
 {
 	/* Commit suicide */
-	player->is_dead = TRUE;
+	player->is_dead = true;
 
 	/* Cause of death */
 	my_strcpy(player->died_from, "Quitting", sizeof(player->died_from));
 }
-
-
-/**
- * Mention the current version
- */
-void do_cmd_version(void)
-{
-	/* Silly message */
-	msg("You are playing %s.  Type '?' for more info.", buildver);
-}
-
 
 /**
  * Record the player's thoughts as a note.
@@ -117,10 +103,10 @@ void do_cmd_note(void)
 
 	/* Format the note correctly, supporting some cute /me commands */
 	if (strncmp(tmp, "/say ", 5) == 0)
-		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", op_ptr->full_name,
+		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", player->full_name,
 				&tmp[5]);
 	else if (strncmp(tmp, "/me", 3) == 0)
-		strnfmt(note, sizeof(note), "-- %s%s", op_ptr->full_name, &tmp[3]);
+		strnfmt(note, sizeof(note), "-- %s%s", player->full_name, &tmp[3]);
 	else
 		strnfmt(note, sizeof(note), "-- Note: %s", tmp);
 
@@ -128,5 +114,5 @@ void do_cmd_note(void)
 	msg("%s", &note[3]);
 
 	/* Add a history entry */
-	history_add(note, HIST_USER_INPUT, 0);
+	history_add(player, note, HIST_USER_INPUT);
 }

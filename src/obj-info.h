@@ -1,6 +1,6 @@
 /**
-   \file obj-info.h
-   \brief Object description code.
+ * \file obj-info.h
+ * \brief Object description code.
  *
  * Copyright (c) 2010 Andi Sidwell
  * Copyright (c) 2004 Robert Ruehlmann
@@ -30,6 +30,8 @@ typedef enum {
 	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
 	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
 	OINFO_EGO    = 0x04, /* Describe an ego template */
+	OINFO_FAKE   = 0x08, /* Describe any template */
+	OINFO_SPOIL  = 0x10, /* Description is for spoilers */
 } oinfo_detail_t;
 
 
@@ -49,6 +51,7 @@ enum {
 	EFINFO_QUAKE,
 	EFINFO_LIGHT,
 	EFINFO_BALL,
+	EFINFO_BREATH,
 	EFINFO_BOLT,
 	EFINFO_BOLTD,
 	EFINFO_TOUCH

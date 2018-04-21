@@ -27,14 +27,16 @@
 #ifdef WINDOWS
 # include <windows.h>
 # include <io.h>
-# include <direct.h>
+# ifndef CYGWIN
+#  include <direct.h>
+# endif
 #endif
 
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
 
-#ifdef HAVE_DIRENT_H
+#if defined (HAVE_DIRENT_H) || defined (CYGWIN)
 # include <sys/types.h>
 # include <dirent.h>
 #endif
@@ -44,12 +46,12 @@
 # include <sys/types.h>
 #endif
 
-#ifdef WINDOWS
+#if defined (WINDOWS) && !defined (CYGWIN)
 # define my_mkdir(path, perms) mkdir(path)
-#elif defined(HAVE_MKDIR) || defined(MACH_O_CARBON)
+#elif defined(HAVE_MKDIR) || defined(MACH_O_CARBON) || defined (CYGWIN)
 # define my_mkdir(path, perms) mkdir(path, perms)
 #else
-# define my_mkdir(path, perms) FALSE
+# define my_mkdir(path, perms) false
 #endif
 
 /**
@@ -319,10 +321,10 @@ bool file_exists(const char *fname)
 	my_strcpy(path, s, sizeof(path));
 
 	attrib = GetFileAttributes(path);
-	if (attrib == INVALID_FILE_NAME) return FALSE;
-	if (attrib & FILE_ATTRIBUTE_DIRECTORY) return FALSE;
+	if (attrib == INVALID_FILE_NAME) return false;
+	if (attrib & FILE_ATTRIBUTE_DIRECTORY) return false;
 
-	return TRUE;
+	return true;
 }
 
 #else
@@ -332,13 +334,13 @@ bool file_exists(const char *fname)
 	ang_file *f = file_open(fname, MODE_READ, 0);
 
 	if (f) file_close(f);
-	return (f ? TRUE : FALSE);
+	return (f ? true : false);
 }
 
 #endif
 
 /**
- * Return TRUE if first is newer than second, FALSE otherwise.
+ * Return true if first is newer than second, false otherwise.
  */
 bool file_newer(const char *first, const char *second)
 {
@@ -346,15 +348,15 @@ bool file_newer(const char *first, const char *second)
 	struct stat stat1, stat2;
 
 	/* If the first doesn't exist, the first is not newer. */
-	if (stat(first, &stat1) != 0) return FALSE;
+	if (stat(first, &stat1) != 0) return false;
 
 	/* If the second doesn't exist, the first is always newer. */
-	if (stat(second, &stat2) != 0) return TRUE;
+	if (stat(second, &stat2) != 0) return true;
 
 	/* Compare modification times. */
-	return stat1.st_mtime > stat2.st_mtime ? TRUE : FALSE;
+	return stat1.st_mtime > stat2.st_mtime ? true : false;
 #else /* HAVE_STAT */
-	return FALSE;
+	return false;
 #endif /* !HAVE_STAT */
 }
 
@@ -427,12 +429,12 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 bool file_close(ang_file *f)
 {
 	if (fclose(f->fh) != 0)
-		return FALSE;
+		return false;
 
 	mem_free(f->fname);
 	mem_free(f);
 
-	return TRUE;
+	return true;
 }
 
 
@@ -490,10 +492,10 @@ bool file_readc(ang_file *f, byte *b)
 	int i = fgetc(f->fh);
 
 	if (i == EOF)
-		return FALSE;
+		return false;
 
 	*b = (byte)i;
-	return TRUE;
+	return true;
 }
 
 /**
@@ -537,7 +539,7 @@ bool file_write(ang_file *f, const char *buf, size_t n)
 
 bool file_getl(ang_file *f, char *buf, size_t len)
 {
-	bool seen_cr = FALSE;
+	bool seen_cr = false;
 	byte b;
 	size_t i = 0;
 
@@ -549,25 +551,25 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 
 		if (!file_readc(f, &b)) {
 			buf[i] = '\0';
-			return (i == 0) ? FALSE : TRUE;
+			return (i == 0) ? false : true;
 		}
 
 		c = (char) b;
 
 		if (c == '\r') {
-			seen_cr = TRUE;
+			seen_cr = true;
 			continue;
 		}
 
 		if (seen_cr && c != '\n') {
 			fseek(f->fh, -1, SEEK_CUR);
 			buf[i] = '\0';
-			return TRUE;
+			return true;
 		}
 
 		if (c == '\n') {
 			buf[i] = '\0';
-			return TRUE;
+			return true;
 		}
 
 		/* Expand tabs */
@@ -587,7 +589,7 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 	}
 
 	buf[i] = '\0';
-	return TRUE;
+	return true;
 }
 
 /**
@@ -608,15 +610,15 @@ bool file_put(ang_file *f, const char *buf)
  * Append a formatted line of text to the end of file 'f'.
  *
  * file_putf() is the ellipsis version. Most file output will call this
- * version. It calls file_vputf() to do the real work. It returns TRUE
- * if the write was successful and FALSE otherwise.
+ * version. It calls file_vputf() to do the real work. It returns true
+ * if the write was successful and false otherwise.
  */
 bool file_putf(ang_file *f, const char *fmt, ...)
 {
 	va_list vp;
 	bool status;
 
-	if (!f) return FALSE;
+	if (!f) return false;
 
 	va_start(vp, fmt);
 	status = file_vputf(f, fmt, vp);
@@ -628,14 +630,14 @@ bool file_putf(ang_file *f, const char *fmt, ...)
 /**
  * Append a formatted line of text to the end of file 'f'.
  *
- * file_vputf() is the va_list version. It returns TRUE if the write was
- * successful and FALSE otherwise.
+ * file_vputf() is the va_list version. It returns true if the write was
+ * successful and false otherwise.
  */
 bool file_vputf(ang_file *f, const char *fmt, va_list vp)
 {
 	char buf[1024];
 
-	if (!f) return FALSE;
+	if (!f) return false;
 
 	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
 	return file_put(f, buf);
@@ -647,13 +649,13 @@ bool dir_exists(const char *path)
 	#ifdef HAVE_STAT
 	struct stat buf;
 	if (stat(path, &buf) != 0)
-		return FALSE;
+		return false;
 	else if (buf.st_mode & S_IFDIR)
-		return TRUE;
+		return true;
 	else
-		return FALSE;
+		return false;
 	#else
-	return TRUE;
+	return true;
 	#endif
 }
 
@@ -664,7 +666,7 @@ bool dir_create(const char *path)
 	char buf[512];
 
 	/* If the directory already exists then we're done */
-	if (dir_exists(path)) return TRUE;
+	if (dir_exists(path)) return true;
 
 	#ifdef WINDOWS
 	/* If we're on windows, we need to skip past the "C:" part. */
@@ -685,7 +687,7 @@ bool dir_create(const char *path)
 			if (*(ptr - 1) == PATH_SEPC) continue;
 
 			/* We can't handle really big filenames */
-			if (len - 1 > 512) return FALSE;
+			if (len - 1 > 512) return false;
 
 			/* Create the parent path string, plus null-padding */
 			my_strcpy(buf, path, len + 1);
@@ -694,14 +696,14 @@ bool dir_create(const char *path)
 			if (dir_exists(buf)) continue;
 
 			/* The parent doesn't exist, so create it or fail */
-			if (my_mkdir(buf, 0755) != 0) return FALSE;
+			if (my_mkdir(buf, 0755) != 0) return false;
 		}
 	}
-	return my_mkdir(path, 0755) == 0 ? TRUE : FALSE;
+	return my_mkdir(path, 0755) == 0 ? true : false;
 }
 
 #else /* HAVE_STAT */
-bool dir_create(const char *path) { return FALSE; }
+bool dir_create(const char *path) { return false; }
 #endif /* !HAVE_STAT */
 
 /**
@@ -749,7 +751,7 @@ ang_dir *my_dopen(const char *dirname)
 bool my_dread(ang_dir *dir, char *fname, size_t len)
 {
 	WIN32_FIND_DATA fd;
-	BOOL ok;
+	bool ok;
 
 	/* Try the first file */
 	if (dir->first_file) {
@@ -758,13 +760,13 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 		mem_free(dir->first_file);
 
 		/* Wild success */
-		return TRUE;
+		return true;
 	}
 
 	/* Try the next file */
 	while (1) {
 		ok = FindNextFile(dir->h, &fd);
-		if (!ok) return FALSE;
+		if (!ok) return false;
 
 		/* Skip directories */
 		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ||
@@ -779,7 +781,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 	/* Copy name */
 	my_strcpy(fname, fd.cFileName, len);
 
-	return TRUE;
+	return true;
 }
 
 void my_dclose(ang_dir *dir)
@@ -839,7 +841,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 	/* Try reading another entry */
 	while (1) {
 		entry = readdir(dir->d);
-		if (!entry) return FALSE;
+		if (!entry) return false;
 
 		path_build(path, sizeof path, dir->dirname, entry->d_name);
             
@@ -858,7 +860,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 	/* Copy the filename */
 	my_strcpy(fname, entry->d_name, len);
 
-	return TRUE;
+	return true;
 }
 
 void my_dclose(ang_dir *dir)

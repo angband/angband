@@ -31,6 +31,7 @@
 #include "ui-menu.h"
 #include "ui-options.h"
 #include "ui-player.h"
+#include "ui-prefs.h"
 #include "ui-target.h"
 
 /**
@@ -49,7 +50,6 @@
  * the state of the character being rolled.  Once the player is happy
  * with their character, we send the CMD_ACCEPT_CHARACTER command.
  */
-
 
 /**
  * A local-to-this-file global to hold the most important bit of state
@@ -90,7 +90,8 @@ enum birth_rollers
 
 
 static void point_based_start(void);
-static bool quickstart_allowed = FALSE;
+static bool quickstart_allowed = false;
+bool arg_force_name;
 
 /**
  * ------------------------------------------------------------------------
@@ -217,15 +218,14 @@ static void skill_help(const int r_skills[], const int c_skills[], int mhp, int 
 	text_out_e("Hit/Shoot/Throw: %+d/%+d/%+d\n", skills[SKILL_TO_HIT_MELEE],
 			   skills[SKILL_TO_HIT_BOW], skills[SKILL_TO_HIT_THROW]);
 	text_out_e("Hit die: %2d   XP mod: %d%%\n", mhp, exp);
-	text_out_e("Disarm: %+3d   Devices: %+3d\n", skills[SKILL_DISARM],
-			   skills[SKILL_DEVICE]);
+	text_out_e("Disarm: %+3d/%+3d   Devices: %+3d\n", skills[SKILL_DISARM_PHYS],
+			   skills[SKILL_DISARM_MAGIC], skills[SKILL_DEVICE]);
 	text_out_e("Save:   %+3d   Stealth: %+3d\n", skills[SKILL_SAVE],
 			   skills[SKILL_STEALTH]);
 	if (infra >= 0)
 		text_out_e("Infravision:  %d ft\n", infra * 10);
 	text_out_e("Digging:      %+d\n", skills[SKILL_DIGGING]);
-	text_out_e("Search:       %+d/%d", skills[SKILL_SEARCH],
-			   skills[SKILL_SEARCH_FREQUENCY]);
+	text_out_e("Search:       %+d", skills[SKILL_SEARCH]);
 	if (infra < 0)
 		text_out_e("\n");
 }
@@ -309,7 +309,7 @@ static void race_help(int i, void *db, const region *l)
 	skill_help(r->r_skills, NULL, r->r_mhp, r->r_exp, r->infra);
 	text_out_e("\n");
 
-	for (k = 0; k < OF_MAX; k++) {
+	for (k = 1; k < OF_MAX; k++) {
 		if (n_flags >= flag_space) break;
 		if (!of_has(r->flags, k)) continue;
 		text_out_e("\n%s", get_flag_desc(k));
@@ -379,8 +379,8 @@ static void class_help(int i, void *db, const region *l)
 	skill_help(r->r_skills, c->c_skills, r->r_mhp + c->c_mhp,
 			   r->r_exp + c->c_exp, -1);
 
-	if (c->magic.spell_realm->index != REALM_NONE)
-		text_out_e("\nLearns %s magic", c->magic.spell_realm->adjective);
+	if (c->magic.spell_realm)
+		text_out_e("\nLearns %s magic", c->magic.spell_realm->name);
 
 	for (k = 0; k < PF_MAX; k++) {
 		const char *s;
@@ -461,7 +461,7 @@ static void setup_menus(void)
 
 	/* Race menu. */
 	init_birth_menu(&race_menu, n, player->race ? player->race->ridx : 0,
-	                &race_region, TRUE, race_help);
+	                &race_region, true, race_help);
 	mdata = race_menu.menu_data;
 
 	for (i = 0, r = races; r; r = r->next, i++)
@@ -474,7 +474,7 @@ static void setup_menus(void)
 
 	/* Class menu similar to race. */
 	init_birth_menu(&class_menu, n, player->class ? player->class->cidx : 0,
-	                &class_region, TRUE, class_help);
+	                &class_region, true, class_help);
 	mdata = class_menu.menu_data;
 
 	for (i = 0, c = classes; c; c = c->next, i++)
@@ -482,7 +482,7 @@ static void setup_menus(void)
 	mdata->hint = "Class affects stats, skills, and other character traits.";
 		
 	/* Roller menu straightforward */
-	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, FALSE,
+	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, false,
 					NULL);
 	mdata = roller_menu.menu_data;
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
@@ -576,7 +576,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 
 	while (next == BIRTH_RESET) {
 		/* Display the menu, wait for a selection of some sort to be made. */
-		cx = menu_select(current_menu, EVT_KBRD, FALSE);
+		cx = menu_select(current_menu, EVT_KBRD, false);
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
 		   use of "back" (left arrow key or equivalent) to step back in 
@@ -600,7 +600,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 					 */
 					point_based_start();
 					cmdq_push(CMD_RESET_STATS);
-					cmd_set_arg_choice(cmdq_peek(), "choice", TRUE);
+					cmd_set_arg_choice(cmdq_peek(), "choice", true);
 					next = current + 1;
 				}
 			} else {
@@ -615,7 +615,7 @@ static enum birth_stage menu_question(enum birth_stage current,
 				cmdq_push(choice_command);
 				cmd_set_arg_choice(cmdq_peek(), "choice", current_menu->cursor);
 
-				menu_refresh(current_menu, FALSE);
+				menu_refresh(current_menu, false);
 				next = current + 1;
 			} else if (cx.key.code == '=') {
 				do_cmd_options_birth();
@@ -645,13 +645,13 @@ static enum birth_stage roller_command(bool first_call)
 	enum birth_stage next = BIRTH_ROLLER;
 
 	/* Used to keep track of whether we've rolled a character before or not. */
-	static bool prev_roll = FALSE;
+	static bool prev_roll = false;
 
 	/* Display the player - a bit cheaty, but never mind. */
 	display_player(0);
 
 	if (first_call)
-		prev_roll = FALSE;
+		prev_roll = false;
 
 	/* Prepare a prompt (must squeeze everything in) */
 	strnfcat(prompt, sizeof (prompt), &promptlen, "['r' to reroll");
@@ -675,7 +675,7 @@ static enum birth_stage roller_command(bool first_call)
 	} else if ((ch.code == ' ') || (ch.code == 'r')) {
 		/* Reroll this character */
 		cmdq_push(CMD_ROLL_STATS);
-		prev_roll = TRUE;
+		prev_roll = true;
 	} else if (prev_roll && (ch.code == 'p')) {
 		/* Previous character */
 		cmdq_push(CMD_PREV_STATS);
@@ -798,7 +798,7 @@ static enum birth_stage point_based_command(void)
 		next = BIRTH_BACK;
 	} else if (ch.code == 'r' || ch.code == 'R') {
 		cmdq_push(CMD_RESET_STATS);
-		cmd_set_arg_choice(cmdq_peek(), "choice", FALSE);
+		cmd_set_arg_choice(cmdq_peek(), "choice", false);
 	} else if (ch.code == KC_ENTER) {
 		/* Done */
 		next = BIRTH_NAME_CHOICE;
@@ -837,14 +837,16 @@ static enum birth_stage point_based_command(void)
 static enum birth_stage get_name_command(void)
 {
 	enum birth_stage next;
-	char name[32];
-	
-	if ( arg_force_name ) {
-		next = BIRTH_HISTORY_CHOICE;
+	char name[PLAYER_NAME_LEN];
+
+	/* Use frontend-provided savefile name if requested */
+	if (arg_name[0]) {
+		my_strcpy(player->full_name, arg_name, sizeof(player->full_name));
 	}
 
-	
-	else if (get_character_name(name, sizeof(name))) {
+	if (arg_force_name) {
+		next = BIRTH_HISTORY_CHOICE;
+	} else if (get_character_name(name, sizeof(name))) {
 		cmdq_push(CMD_NAME_CHOICE);
 		cmd_set_arg_string(cmdq_peek(), "name", name);
 		next = BIRTH_HISTORY_CHOICE;
@@ -875,7 +877,7 @@ void get_screen_loc(size_t cursor, int *x, int *y, size_t n_lines, size_t *line_
 
 int edit_text(char *buffer, int buflen) {
 	int len = strlen(buffer);
-	bool done = FALSE;
+	bool done = false;
 	int cursor = 0;
 
 	while (!done) {
@@ -906,7 +908,7 @@ int edit_text(char *buffer, int buflen) {
 				return -1;
 
 			case KC_ENTER:
-				done = TRUE;
+				done = true;
 				break;
 
 			case ARROW_LEFT:
@@ -1099,7 +1101,7 @@ int textui_do_birth(void)
 	enum birth_stage roller = BIRTH_RESET;
 	enum birth_stage next = current_stage;
 
-	bool done = FALSE;
+	bool done = false;
 
 	cmdq_push(CMD_BIRTH_INIT);
 	cmdq_execute(CMD_BIRTH);
@@ -1127,7 +1129,7 @@ int textui_do_birth(void)
 				display_player(0);
 				next = textui_birth_quickstart();
 				if (next == BIRTH_COMPLETE)
-					done = TRUE;
+					done = true;
 				break;
 			}
 
@@ -1142,13 +1144,13 @@ int textui_do_birth(void)
 				print_menu_instructions();
 
 				if (current_stage > BIRTH_RACE_CHOICE) {
-					menu_refresh(&race_menu, FALSE);
+					menu_refresh(&race_menu, false);
 					menu = &class_menu;
 					command = CMD_CHOOSE_CLASS;
 				}
 
 				if (current_stage > BIRTH_CLASS_CHOICE) {
-					menu_refresh(&class_menu, FALSE);
+					menu_refresh(&class_menu, false);
 					menu = &roller_menu;
 				}
 
@@ -1226,7 +1228,7 @@ int textui_do_birth(void)
 					next = BIRTH_HISTORY_CHOICE;
 
 				if (next == BIRTH_COMPLETE)
-					done = TRUE;
+					done = true;
 
 				break;
 			}
@@ -1265,7 +1267,7 @@ static void ui_leave_birthscreen(game_event_type type, game_event_data *data,
 {
 	/* Set the savefile name if it's not already set */
 	if (!savefile[0])
-		savefile_set_name(player_safe_name(player, TRUE));
+		savefile_set_name(player->full_name, true, true);
 
 	free_birth_menus();
 }

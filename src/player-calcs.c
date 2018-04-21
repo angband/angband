@@ -26,9 +26,10 @@
 #include "init.h"
 #include "mon-msg.h"
 #include "mon-util.h"
+#include "obj-curse.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
+#include "obj-knowledge.h"
 #include "obj-power.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -40,7 +41,7 @@
 /**
  * Stat Table (INT) -- Magic devices
  */
-const byte adj_int_dev[STAT_RANGE] =
+static const int adj_int_dev[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -85,7 +86,7 @@ const byte adj_int_dev[STAT_RANGE] =
 /**
  * Stat Table (WIS) -- Saving throw
  */
-const byte adj_wis_sav[STAT_RANGE] =
+static const int adj_wis_sav[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -131,53 +132,53 @@ const byte adj_wis_sav[STAT_RANGE] =
 /**
  * Stat Table (DEX) -- disarming
  */
-const byte adj_dex_dis[STAT_RANGE] =
+static const int adj_dex_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
 	0	/* 5 */,
 	0	/* 6 */,
 	0	/* 7 */,
-	0	/* 8 */,
-	0	/* 9 */,
-	0	/* 10 */,
-	0	/* 11 */,
-	0	/* 12 */,
+	1	/* 8 */,
+	1	/* 9 */,
+	1	/* 10 */,
+	1	/* 11 */,
+	1	/* 12 */,
 	1	/* 13 */,
 	1	/* 14 */,
-	1	/* 15 */,
+	2	/* 15 */,
 	2	/* 16 */,
 	2	/* 17 */,
-	4	/* 18/00-18/09 */,
-	4	/* 18/10-18/19 */,
-	4	/* 18/20-18/29 */,
+	3	/* 18/00-18/09 */,
+	3	/* 18/10-18/19 */,
+	3	/* 18/20-18/29 */,
 	4	/* 18/30-18/39 */,
-	5	/* 18/40-18/49 */,
+	4	/* 18/40-18/49 */,
 	5	/* 18/50-18/59 */,
-	5	/* 18/60-18/69 */,
-	6	/* 18/70-18/79 */,
-	6	/* 18/80-18/89 */,
-	7	/* 18/90-18/99 */,
-	8	/* 18/100-18/109 */,
-	8	/* 18/110-18/119 */,
-	8	/* 18/120-18/129 */,
-	8	/* 18/130-18/139 */,
-	8	/* 18/140-18/149 */,
-	9	/* 18/150-18/159 */,
-	9	/* 18/160-18/169 */,
-	9	/* 18/170-18/179 */,
-	9	/* 18/180-18/189 */,
-	9	/* 18/190-18/199 */,
-	10	/* 18/200-18/209 */,
-	10	/* 18/210-18/219 */,
-	10	/* 18/220+ */
+	6	/* 18/60-18/69 */,
+	7	/* 18/70-18/79 */,
+	8	/* 18/80-18/89 */,
+	9	/* 18/90-18/99 */,
+	10	/* 18/100-18/109 */,
+	10	/* 18/110-18/119 */,
+	11	/* 18/120-18/129 */,
+	12	/* 18/130-18/139 */,
+	13	/* 18/140-18/149 */,
+	14	/* 18/150-18/159 */,
+	15	/* 18/160-18/169 */,
+	16	/* 18/170-18/179 */,
+	17	/* 18/180-18/189 */,
+	18	/* 18/190-18/199 */,
+	19	/* 18/200-18/209 */,
+	19	/* 18/210-18/219 */,
+	19	/* 18/220+ */
 };
 
 
 /**
  * Stat Table (INT) -- disarming
  */
-const byte adj_int_dis[STAT_RANGE] =
+static const int adj_int_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -220,192 +221,192 @@ const byte adj_int_dis[STAT_RANGE] =
 };
 
 /**
- * Stat Table (DEX) -- bonus to ac (plus 128)
+ * Stat Table (DEX) -- bonus to ac
  */
-const byte adj_dex_ta[STAT_RANGE] =
+static const int adj_dex_ta[STAT_RANGE] =
 {
-	128 + -4	/* 3 */,
-	128 + -3	/* 4 */,
-	128 + -2	/* 5 */,
-	128 + -1	/* 6 */,
-	128 + 0	/* 7 */,
-	128 + 0	/* 8 */,
-	128 + 0	/* 9 */,
-	128 + 0	/* 10 */,
-	128 + 0	/* 11 */,
-	128 + 0	/* 12 */,
-	128 + 0	/* 13 */,
-	128 + 0	/* 14 */,
-	128 + 1	/* 15 */,
-	128 + 1	/* 16 */,
-	128 + 1	/* 17 */,
-	128 + 2	/* 18/00-18/09 */,
-	128 + 2	/* 18/10-18/19 */,
-	128 + 2	/* 18/20-18/29 */,
-	128 + 2	/* 18/30-18/39 */,
-	128 + 2	/* 18/40-18/49 */,
-	128 + 3	/* 18/50-18/59 */,
-	128 + 3	/* 18/60-18/69 */,
-	128 + 3	/* 18/70-18/79 */,
-	128 + 4	/* 18/80-18/89 */,
-	128 + 5	/* 18/90-18/99 */,
-	128 + 6	/* 18/100-18/109 */,
-	128 + 7	/* 18/110-18/119 */,
-	128 + 8	/* 18/120-18/129 */,
-	128 + 9	/* 18/130-18/139 */,
-	128 + 9	/* 18/140-18/149 */,
-	128 + 10	/* 18/150-18/159 */,
-	128 + 11	/* 18/160-18/169 */,
-	128 + 12	/* 18/170-18/179 */,
-	128 + 13	/* 18/180-18/189 */,
-	128 + 14	/* 18/190-18/199 */,
-	128 + 15	/* 18/200-18/209 */,
-	128 + 15	/* 18/210-18/219 */,
-	128 + 15	/* 18/220+ */
+	-4	/* 3 */,
+	-3	/* 4 */,
+	-2	/* 5 */,
+	-1	/* 6 */,
+	0	/* 7 */,
+	0	/* 8 */,
+	0	/* 9 */,
+	0	/* 10 */,
+	0	/* 11 */,
+	0	/* 12 */,
+	0	/* 13 */,
+	0	/* 14 */,
+	1	/* 15 */,
+	1	/* 16 */,
+	1	/* 17 */,
+	2	/* 18/00-18/09 */,
+	2	/* 18/10-18/19 */,
+	2	/* 18/20-18/29 */,
+	2	/* 18/30-18/39 */,
+	2	/* 18/40-18/49 */,
+	3	/* 18/50-18/59 */,
+	3	/* 18/60-18/69 */,
+	3	/* 18/70-18/79 */,
+	4	/* 18/80-18/89 */,
+	5	/* 18/90-18/99 */,
+	6	/* 18/100-18/109 */,
+	7	/* 18/110-18/119 */,
+	8	/* 18/120-18/129 */,
+	9	/* 18/130-18/139 */,
+	9	/* 18/140-18/149 */,
+	10	/* 18/150-18/159 */,
+	11	/* 18/160-18/169 */,
+	12	/* 18/170-18/179 */,
+	13	/* 18/180-18/189 */,
+	14	/* 18/190-18/199 */,
+	15	/* 18/200-18/209 */,
+	15	/* 18/210-18/219 */,
+	15	/* 18/220+ */
 };
 
 /**
- * Stat Table (STR) -- bonus to dam (plus 128)
+ * Stat Table (STR) -- bonus to dam
  */
-const byte adj_str_td[STAT_RANGE] =
+static const int adj_str_td[STAT_RANGE] =
 {
-	128 + -2	/* 3 */,
-	128 + -2	/* 4 */,
-	128 + -1	/* 5 */,
-	128 + -1	/* 6 */,
-	128 + 0	/* 7 */,
-	128 + 0	/* 8 */,
-	128 + 0	/* 9 */,
-	128 + 0	/* 10 */,
-	128 + 0	/* 11 */,
-	128 + 0	/* 12 */,
-	128 + 0	/* 13 */,
-	128 + 0	/* 14 */,
-	128 + 0	/* 15 */,
-	128 + 1	/* 16 */,
-	128 + 2	/* 17 */,
-	128 + 2	/* 18/00-18/09 */,
-	128 + 2	/* 18/10-18/19 */,
-	128 + 3	/* 18/20-18/29 */,
-	128 + 3	/* 18/30-18/39 */,
-	128 + 3	/* 18/40-18/49 */,
-	128 + 3	/* 18/50-18/59 */,
-	128 + 3	/* 18/60-18/69 */,
-	128 + 4	/* 18/70-18/79 */,
-	128 + 5	/* 18/80-18/89 */,
-	128 + 5	/* 18/90-18/99 */,
-	128 + 6	/* 18/100-18/109 */,
-	128 + 7	/* 18/110-18/119 */,
-	128 + 8	/* 18/120-18/129 */,
-	128 + 9	/* 18/130-18/139 */,
-	128 + 10	/* 18/140-18/149 */,
-	128 + 11	/* 18/150-18/159 */,
-	128 + 12	/* 18/160-18/169 */,
-	128 + 13	/* 18/170-18/179 */,
-	128 + 14	/* 18/180-18/189 */,
-	128 + 15	/* 18/190-18/199 */,
-	128 + 16	/* 18/200-18/209 */,
-	128 + 18	/* 18/210-18/219 */,
-	128 + 20	/* 18/220+ */
-};
-
-
-/**
- * Stat Table (DEX) -- bonus to hit (plus 128)
- */
-const byte adj_dex_th[STAT_RANGE] =
-{
-	128 + -3	/* 3 */,
-	128 + -2	/* 4 */,
-	128 + -2	/* 5 */,
-	128 + -1	/* 6 */,
-	128 + -1	/* 7 */,
-	128 + 0	/* 8 */,
-	128 + 0	/* 9 */,
-	128 + 0	/* 10 */,
-	128 + 0	/* 11 */,
-	128 + 0	/* 12 */,
-	128 + 0	/* 13 */,
-	128 + 0	/* 14 */,
-	128 + 0	/* 15 */,
-	128 + 1	/* 16 */,
-	128 + 2	/* 17 */,
-	128 + 3	/* 18/00-18/09 */,
-	128 + 3	/* 18/10-18/19 */,
-	128 + 3	/* 18/20-18/29 */,
-	128 + 3	/* 18/30-18/39 */,
-	128 + 3	/* 18/40-18/49 */,
-	128 + 4	/* 18/50-18/59 */,
-	128 + 4	/* 18/60-18/69 */,
-	128 + 4	/* 18/70-18/79 */,
-	128 + 4	/* 18/80-18/89 */,
-	128 + 5	/* 18/90-18/99 */,
-	128 + 6	/* 18/100-18/109 */,
-	128 + 7	/* 18/110-18/119 */,
-	128 + 8	/* 18/120-18/129 */,
-	128 + 9	/* 18/130-18/139 */,
-	128 + 9	/* 18/140-18/149 */,
-	128 + 10	/* 18/150-18/159 */,
-	128 + 11	/* 18/160-18/169 */,
-	128 + 12	/* 18/170-18/179 */,
-	128 + 13	/* 18/180-18/189 */,
-	128 + 14	/* 18/190-18/199 */,
-	128 + 15	/* 18/200-18/209 */,
-	128 + 15	/* 18/210-18/219 */,
-	128 + 15	/* 18/220+ */
+	-2	/* 3 */,
+	-2	/* 4 */,
+	-1	/* 5 */,
+	-1	/* 6 */,
+	0	/* 7 */,
+	0	/* 8 */,
+	0	/* 9 */,
+	0	/* 10 */,
+	0	/* 11 */,
+	0	/* 12 */,
+	0	/* 13 */,
+	0	/* 14 */,
+	0	/* 15 */,
+	1	/* 16 */,
+	2	/* 17 */,
+	2	/* 18/00-18/09 */,
+	2	/* 18/10-18/19 */,
+	3	/* 18/20-18/29 */,
+	3	/* 18/30-18/39 */,
+	3	/* 18/40-18/49 */,
+	3	/* 18/50-18/59 */,
+	3	/* 18/60-18/69 */,
+	4	/* 18/70-18/79 */,
+	5	/* 18/80-18/89 */,
+	5	/* 18/90-18/99 */,
+	6	/* 18/100-18/109 */,
+	7	/* 18/110-18/119 */,
+	8	/* 18/120-18/129 */,
+	9	/* 18/130-18/139 */,
+	10	/* 18/140-18/149 */,
+	11	/* 18/150-18/159 */,
+	12	/* 18/160-18/169 */,
+	13	/* 18/170-18/179 */,
+	14	/* 18/180-18/189 */,
+	15	/* 18/190-18/199 */,
+	16	/* 18/200-18/209 */,
+	18	/* 18/210-18/219 */,
+	20	/* 18/220+ */
 };
 
 
 /**
- * Stat Table (STR) -- bonus to hit (plus 128)
+ * Stat Table (DEX) -- bonus to hit
  */
-const byte adj_str_th[STAT_RANGE] =
+static const int adj_dex_th[STAT_RANGE] =
 {
-	128 + -3	/* 3 */,
-	128 + -2	/* 4 */,
-	128 + -1	/* 5 */,
-	128 + -1	/* 6 */,
-	128 + 0	/* 7 */,
-	128 + 0	/* 8 */,
-	128 + 0	/* 9 */,
-	128 + 0	/* 10 */,
-	128 + 0	/* 11 */,
-	128 + 0	/* 12 */,
-	128 + 0	/* 13 */,
-	128 + 0	/* 14 */,
-	128 + 0	/* 15 */,
-	128 + 0	/* 16 */,
-	128 + 0	/* 17 */,
-	128 + 1	/* 18/00-18/09 */,
-	128 + 1	/* 18/10-18/19 */,
-	128 + 1	/* 18/20-18/29 */,
-	128 + 1	/* 18/30-18/39 */,
-	128 + 1	/* 18/40-18/49 */,
-	128 + 1	/* 18/50-18/59 */,
-	128 + 1	/* 18/60-18/69 */,
-	128 + 2	/* 18/70-18/79 */,
-	128 + 3	/* 18/80-18/89 */,
-	128 + 4	/* 18/90-18/99 */,
-	128 + 5	/* 18/100-18/109 */,
-	128 + 6	/* 18/110-18/119 */,
-	128 + 7	/* 18/120-18/129 */,
-	128 + 8	/* 18/130-18/139 */,
-	128 + 9	/* 18/140-18/149 */,
-	128 + 10	/* 18/150-18/159 */,
-	128 + 11	/* 18/160-18/169 */,
-	128 + 12	/* 18/170-18/179 */,
-	128 + 13	/* 18/180-18/189 */,
-	128 + 14	/* 18/190-18/199 */,
-	128 + 15	/* 18/200-18/209 */,
-	128 + 15	/* 18/210-18/219 */,
-	128 + 15	/* 18/220+ */
+	-3	/* 3 */,
+	-2	/* 4 */,
+	-2	/* 5 */,
+	-1	/* 6 */,
+	-1	/* 7 */,
+	0	/* 8 */,
+	0	/* 9 */,
+	0	/* 10 */,
+	0	/* 11 */,
+	0	/* 12 */,
+	0	/* 13 */,
+	0	/* 14 */,
+	0	/* 15 */,
+	1	/* 16 */,
+	2	/* 17 */,
+	3	/* 18/00-18/09 */,
+	3	/* 18/10-18/19 */,
+	3	/* 18/20-18/29 */,
+	3	/* 18/30-18/39 */,
+	3	/* 18/40-18/49 */,
+	4	/* 18/50-18/59 */,
+	4	/* 18/60-18/69 */,
+	4	/* 18/70-18/79 */,
+	4	/* 18/80-18/89 */,
+	5	/* 18/90-18/99 */,
+	6	/* 18/100-18/109 */,
+	7	/* 18/110-18/119 */,
+	8	/* 18/120-18/129 */,
+	9	/* 18/130-18/139 */,
+	9	/* 18/140-18/149 */,
+	10	/* 18/150-18/159 */,
+	11	/* 18/160-18/169 */,
+	12	/* 18/170-18/179 */,
+	13	/* 18/180-18/189 */,
+	14	/* 18/190-18/199 */,
+	15	/* 18/200-18/209 */,
+	15	/* 18/210-18/219 */,
+	15	/* 18/220+ */
+};
+
+
+/**
+ * Stat Table (STR) -- bonus to hit
+ */
+static const int adj_str_th[STAT_RANGE] =
+{
+	-3	/* 3 */,
+	-2	/* 4 */,
+	-1	/* 5 */,
+	-1	/* 6 */,
+	0	/* 7 */,
+	0	/* 8 */,
+	0	/* 9 */,
+	0	/* 10 */,
+	0	/* 11 */,
+	0	/* 12 */,
+	0	/* 13 */,
+	0	/* 14 */,
+	0	/* 15 */,
+	0	/* 16 */,
+	0	/* 17 */,
+	1	/* 18/00-18/09 */,
+	1	/* 18/10-18/19 */,
+	1	/* 18/20-18/29 */,
+	1	/* 18/30-18/39 */,
+	1	/* 18/40-18/49 */,
+	1	/* 18/50-18/59 */,
+	1	/* 18/60-18/69 */,
+	2	/* 18/70-18/79 */,
+	3	/* 18/80-18/89 */,
+	4	/* 18/90-18/99 */,
+	5	/* 18/100-18/109 */,
+	6	/* 18/110-18/119 */,
+	7	/* 18/120-18/129 */,
+	8	/* 18/130-18/139 */,
+	9	/* 18/140-18/149 */,
+	10	/* 18/150-18/159 */,
+	11	/* 18/160-18/169 */,
+	12	/* 18/170-18/179 */,
+	13	/* 18/180-18/189 */,
+	14	/* 18/190-18/199 */,
+	15	/* 18/200-18/209 */,
+	15	/* 18/210-18/219 */,
+	15	/* 18/220+ */
 };
 
 
 /**
  * Stat Table (STR) -- weight limit in deca-pounds
  */
-const byte adj_str_wgt[STAT_RANGE] =
+static const int adj_str_wgt[STAT_RANGE] =
 {
 	5	/* 3 */,
 	6	/* 4 */,
@@ -451,7 +452,7 @@ const byte adj_str_wgt[STAT_RANGE] =
 /**
  * Stat Table (STR) -- weapon weight limit in pounds
  */
-const byte adj_str_hold[STAT_RANGE] =
+const int adj_str_hold[STAT_RANGE] =
 {
 	4	/* 3 */,
 	5	/* 4 */,
@@ -497,7 +498,7 @@ const byte adj_str_hold[STAT_RANGE] =
 /**
  * Stat Table (STR) -- digging value
  */
-const byte adj_str_dig[STAT_RANGE] =
+static const int adj_str_dig[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -543,7 +544,7 @@ const byte adj_str_dig[STAT_RANGE] =
 /**
  * Stat Table (STR) -- help index into the "blow" table
  */
-const byte adj_str_blow[STAT_RANGE] =
+const int adj_str_blow[STAT_RANGE] =
 {
 	3	/* 3 */,
 	4	/* 4 */,
@@ -589,7 +590,7 @@ const byte adj_str_blow[STAT_RANGE] =
 /**
  * Stat Table (DEX) -- index into the "blow" table
  */
-const byte adj_dex_blow[STAT_RANGE] =
+static const int adj_dex_blow[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -635,7 +636,7 @@ const byte adj_dex_blow[STAT_RANGE] =
 /**
  * Stat Table (DEX) -- chance of avoiding "theft" and "falling"
  */
-const byte adj_dex_safe[STAT_RANGE] =
+const int adj_dex_safe[STAT_RANGE] =
 {
 	0	/* 3 */,
 	1	/* 4 */,
@@ -681,7 +682,7 @@ const byte adj_dex_safe[STAT_RANGE] =
 /**
  * Stat Table (CON) -- base regeneration rate
  */
-const byte adj_con_fix[STAT_RANGE] =
+const int adj_con_fix[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -727,7 +728,7 @@ const byte adj_con_fix[STAT_RANGE] =
 /**
  * Stat Table (CON) -- extra 1/100th hitpoints per level
  */
-const int adj_con_mhp[STAT_RANGE] =
+static const int adj_con_mhp[STAT_RANGE] =
 {
 	-250	/* 3 */,
 	-150	/* 4 */,
@@ -769,7 +770,7 @@ const int adj_con_mhp[STAT_RANGE] =
 	1250	/* 18/220+ */
 };
 
-const int adj_mag_study[STAT_RANGE] =
+static const int adj_mag_study[STAT_RANGE] =
 {
 	  0	/* 3 */,
 	  0	/* 4 */,
@@ -814,7 +815,7 @@ const int adj_mag_study[STAT_RANGE] =
 /**
  * Stat Table (INT/WIS) -- extra 1/100 mana-points per level
  */
-const int adj_mag_mana[STAT_RANGE] =
+static const int adj_mag_mana[STAT_RANGE] =
 {
 	  0	/* 3 */,
 	 10	/* 4 */,
@@ -884,7 +885,7 @@ const int adj_mag_mana[STAT_RANGE] =
  * The player gets blows/round equal to 100/this number, up to a maximum of
  * "num" blows/round, plus any "bonus" blows/round.
  */
-const byte blows_table[12][12] =
+static const int blows_table[12][12] =
 {
 	/* P */
    /* D:   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11+ */
@@ -937,60 +938,60 @@ const byte blows_table[12][12] =
 bool earlier_object(struct object *orig, struct object *new, bool store)
 {
 	/* Check we have actual objects */
-	if (!new) return FALSE;
-	if (!orig) return TRUE;
+	if (!new) return false;
+	if (!orig) return true;
 
 	if (!store) {
 		/* Readable books always come first */
-		if (obj_can_browse(orig) && !obj_can_browse(new)) return FALSE;
-		if (!obj_can_browse(orig) && obj_can_browse(new)) return TRUE;
+		if (obj_can_browse(orig) && !obj_can_browse(new)) return false;
+		if (!obj_can_browse(orig) && obj_can_browse(new)) return true;
 	}
 
 	/* Objects sort by decreasing type */
-	if (orig->tval > new->tval) return FALSE;
-	if (orig->tval < new->tval) return TRUE;
+	if (orig->tval > new->tval) return false;
+	if (orig->tval < new->tval) return true;
 
 	if (!store) {
 		/* Non-aware (flavored) items always come last (default to orig) */
-		if (!object_flavor_is_aware(new)) return FALSE;
-		if (!object_flavor_is_aware(orig)) return TRUE;
+		if (!object_flavor_is_aware(new)) return false;
+		if (!object_flavor_is_aware(orig)) return true;
 	}
 
 	/* Objects sort by increasing sval */
-	if (orig->sval < new->sval) return FALSE;
-	if (orig->sval > new->sval) return TRUE;
+	if (orig->sval < new->sval) return false;
+	if (orig->sval > new->sval) return true;
 
 	if (!store) {
-		/* Unidentified objects always come last (default to orig) */
-		if (!object_is_known(new)) return FALSE;
-		if (!object_is_known(orig)) return TRUE;
+		/* Unaware objects always come last (default to orig) */
+		if (new->kind->flavor && !object_flavor_is_aware(new)) return false;
+		if (orig->kind->flavor && !object_flavor_is_aware(orig)) return true;
 
 		/* Lights sort by decreasing fuel */
 		if (tval_is_light(orig)) {
-			if (orig->pval > new->pval) return FALSE;
-			if (orig->pval < new->pval) return TRUE;
+			if (orig->pval > new->pval) return false;
+			if (orig->pval < new->pval) return true;
 		}
 	}
 
 	/* Objects sort by decreasing value, except ammo */
 	if (tval_is_ammo(orig)) {
-		if (object_value_real(orig, 1, FALSE, FALSE) <
-			object_value_real(new, 1, FALSE, FALSE))
-			return FALSE;
-		if (object_value_real(orig, 1, FALSE, FALSE) >
-			object_value_real(new, 1, FALSE, FALSE))
-			return TRUE;
+		if (object_value(orig, 1) <
+			object_value(new, 1))
+			return false;
+		if (object_value(orig, 1) >
+			object_value(new, 1))
+			return true;
 	} else {
-		if (object_value_real(orig, 1, FALSE, FALSE) >
-			object_value_real(new, 1, FALSE, FALSE))
-			return FALSE;
-		if (object_value_real(orig, 1, FALSE, FALSE) <
-			object_value_real(new, 1, FALSE, FALSE))
-			return TRUE;
+		if (object_value(orig, 1) >
+			object_value(new, 1))
+			return false;
+		if (object_value(orig, 1) <
+			object_value(new, 1))
+			return true;
 	}
 
 	/* No preference */
-	return FALSE;
+	return false;
 }
 
 int equipped_item_slot(struct player_body body, struct object *item)
@@ -1054,9 +1055,8 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 						upkeep->quiver[i] = current;
 						upkeep->quiver_cnt += current->number;
 
-						/* Notice stuff if it's first time in the quiver */
-						if (!object_was_worn(current))
-							object_notice_on_wield(current);
+						/* In the quiver counts as worn */
+						object_learn_on_wield(player, current);
 
 						/* Done with this slot */
 						break;
@@ -1076,7 +1076,7 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 
 		/* Find the first quiver object not yet allocated */
 		for (current = gear; current; current = current->next) {
-			bool already = FALSE;
+			bool already = false;
 
 			/* Ignore non-ammo */
 			if (!tval_is_ammo(current)) continue;
@@ -1084,11 +1084,11 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			/* Ignore stuff already quivered */
 			for (j = 0; j < z_info->quiver_size; j++)
 				if (upkeep->quiver[j] == current)
-					already = TRUE;
+					already = true;
 			if (already) continue;
 
 			/* Choose the first in order */
-			if (earlier_object(first, current, FALSE)) {
+			if (earlier_object(first, current, false)) {
 				first = current;
 			}
 		}
@@ -1100,9 +1100,8 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 		upkeep->quiver[i] = first;
 		upkeep->quiver_cnt += first->number;
 
-		/* Notice stuff if it's first time in the quiver */
-		if (!object_was_worn(first))
-			object_notice_on_wield(first);
+		/* In the quiver counts as worn */
+		object_learn_on_wield(player, first);
 	}
 
 	/* Note reordering */
@@ -1123,27 +1122,27 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 	for (i = 0; i <= z_info->pack_size; i++) {
 		struct object *current, *first = NULL;
 		for (current = gear; current; current = current->next) {
-			bool possible = TRUE;
+			bool possible = true;
 			int j;
 
 			/* Skip equipment */
 			if (object_is_equipped(body, current))
-				possible = FALSE;
+				possible = false;
 
 			/* Skip quivered objects */
 			for (j = 0; j < z_info->quiver_size; j++)
 				if (upkeep->quiver[j] == current)
-					possible = FALSE;
+					possible = false;
 
 			/* Skip objects already allocated to the inventory */
 			for (j = 0; j < upkeep->inven_cnt; j++)
 				if (upkeep->inven[j] == current)
-					possible = FALSE;
+					possible = false;
 
 			/* If still possible, choose the first in order */
 			if (!possible)
 				continue;
-			else if (earlier_object(first, current, FALSE)) {
+			else if (earlier_object(first, current, false)) {
 				first = current;
 			}
 		}
@@ -1176,7 +1175,7 @@ static void update_inventory(struct player *p)
  * "Percentage" (actually some complicated hack that needs redoing) of
  * player's spells they can learn per level (-> realms - NRM)
  */
-int level_spells(struct player *p)
+static int level_spells(struct player *p)
 {
 	int stat = p->class->magic.spell_realm->stat;
 	return adj_mag_study[p->state.stat_ind[stat]];
@@ -1369,7 +1368,7 @@ static void calc_spells(struct player *p)
 /**
  * Get the player's max spell points per effective level
  */
-int mana_per_level(struct player *p, struct player_state *state)
+static int mana_per_level(struct player *p, struct player_state *state)
 {
 	int stat = p->class->magic.spell_realm->stat;
 	return adj_mag_mana[state->stat_ind[stat]];
@@ -1387,7 +1386,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	struct object *obj;
 
 	/* Hack -- Must be literate */
-	if (!p->class->magic.total_spells) {
+	if (!p->class->magic.spell_realm) {
 		p->msp = 0;
 		p->csp = 0;
 		p->csp_frac = 0;
@@ -1407,7 +1406,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	/* Process gloves for those disturbed by them */
 	if (player_has(p, PF_CUMBER_GLOVE)) {
 		/* Assume player is not encumbered by gloves */
-		state->cumber_glove = FALSE;
+		state->cumber_glove = false;
 
 		/* Get the gloves */
 		obj = equipped_item_by_slot_name(p, "hands");
@@ -1417,7 +1416,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 			!kf_has(obj->kind->kind_flags, KF_SPELLS_OK) &&
 			(obj->modifiers[OBJ_MOD_DEX] <= 0)) {
 			/* Encumbered */
-			state->cumber_glove = TRUE;
+			state->cumber_glove = true;
 
 			/* Reduce mana */
 			msp = (3 * msp) / 4;
@@ -1425,12 +1424,12 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	}
 
 	/* Assume player not encumbered by armor */
-	state->cumber_armor = FALSE;
+	state->cumber_armor = false;
 
 	/* Weigh the armor */
 	cur_wgt = 0;
 	for (i = 0; i < p->body.count; i++) {
-		struct object *obj = slot_object(p, i);
+		struct object *obj_local = slot_object(p, i);
 
 		/* Ignore non-armor */
 		if (slot_type_is(i, EQUIP_WEAPON)) continue;
@@ -1440,8 +1439,8 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 		if (slot_type_is(i, EQUIP_LIGHT)) continue;
 
 		/* Add weight */
-		if (obj)
-			cur_wgt += obj->weight;
+		if (obj_local)
+			cur_wgt += obj_local->weight;
 	}
 
 	/* Determine the weight allowance */
@@ -1450,7 +1449,7 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	/* Heavy armor penalizes mana */
 	if (((cur_wgt - max_wgt) / 10) > 0) {
 		/* Encumbered */
-		state->cumber_armor = TRUE;
+		state->cumber_armor = true;
 
 		/* Reduce mana */
 		msp -= ((cur_wgt - max_wgt) / 10);
@@ -1548,12 +1547,12 @@ static void calc_torch(struct player *p, struct player_state *state,
 		/* Skip empty slots */
 		if (!obj) continue;
 
-		/* Light radius is now a modifier */
-		amt = obj->modifiers[OBJ_MOD_LIGHT];
-
-		/* Cursed objects emit no light */
-		if (of_has(obj->flags, OF_LIGHT_CURSE))
-			amt = 0;
+		/* Light radius - innate plus modifier */
+		if (of_has(obj->flags, OF_LIGHT_1))
+			amt = 1;
+		else if (of_has(obj->flags, OF_LIGHT_2))
+			amt = 2;
+		amt += obj->modifiers[OBJ_MOD_LIGHT];
 
 		/* Examine actual lights */
 		if (tval_is_light(obj) && !of_has(obj->flags, OF_NO_FUEL) &&
@@ -1691,13 +1690,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 				  bool update)
 {
 	int i, j, hold;
-
 	int extra_blows = 0;
 	int extra_shots = 0;
 	int extra_might = 0;
-
-	struct object *obj;
-
+	struct object *launcher = equipped_item_by_slot_name(p, "shooting");
+	struct object *weapon = equipped_item_by_slot_name(p, "weapon");
 	bitflag f[OF_SIZE];
 	bitflag collect_f[OF_SIZE];
 	bool vuln[ELEM_MAX];
@@ -1709,24 +1706,15 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	state->speed = 110;
 	state->num_blows = 100;
 
-
-	/* ------------------------------------
-	 * Extract race/class info
-	 * ------------------------------------ */
-
-	/* Base infravision (purely racial) */
+	/* Extract race/class info */
 	state->see_infra = p->race->infra;
-
-	/* Base skills */
-	for (i = 0; i < SKILL_MAX; i++)
-		state->skills[i] = p->race->r_skills[i]
-			+ p->class->c_skills[i];
-
-	/* Base resists */
+	for (i = 0; i < SKILL_MAX; i++) {
+		state->skills[i] = p->race->r_skills[i]	+ p->class->c_skills[i];
+	}
 	for (i = 0; i < ELEM_MAX; i++) {
-		vuln[i] = FALSE;
+		vuln[i] = false;
 		if (p->race->el_info[i].res_level == -1)
-			vuln[i] = TRUE;
+			vuln[i] = true;
 		else
 			state->el_info[i].res_level = p->race->el_info[i].res_level;
 	}
@@ -1736,10 +1724,6 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	pf_copy(state->pflags, p->race->pflags);
 	pf_union(state->pflags, p->class->pflags);
 
-	/* ------------------------------------
-	 * Analyze player
-	 * ------------------------------------ */
-
 	/* Extract the player flags */
 	player_flags(p, collect_f);
 
@@ -1747,137 +1731,126 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (!p->csp)
 		pf_on(state->pflags, PF_NO_MANA);
 
-	/* ------------------------------------
-	 * Analyze equipment
-	 * ------------------------------------ */
-
-	/* Scan the equipment */
+	/* Analyze equipment */
 	for (i = 0; i < p->body.count; i++) {
-		obj = slot_object(p, i);
+		int dig = 0;
+		int index = 0;
+		struct object *obj = slot_object(p, i);
+		struct curse_data *curse = obj ? obj->curses : NULL;
 
-		/* Skip non-objects */
-		if (!obj) continue;
+		while (obj) {
+			/* Extract the item flags */
+			if (known_only) {
+				object_flags_known(obj, f);
+			} else {
+				object_flags(obj, f);
+			}
+			of_union(collect_f, f);
 
-		/* Extract the item flags */
-		if (known_only)
-			object_flags_known(obj, f);
-		else
-			object_flags(obj, f);
+			/* Apply modifiers */
+			state->stat_add[STAT_STR] += obj->modifiers[OBJ_MOD_STR]
+				* p->obj_k->modifiers[OBJ_MOD_STR];
+			state->stat_add[STAT_INT] += obj->modifiers[OBJ_MOD_INT]
+				* p->obj_k->modifiers[OBJ_MOD_INT];
+			state->stat_add[STAT_WIS] += obj->modifiers[OBJ_MOD_WIS]
+				* p->obj_k->modifiers[OBJ_MOD_WIS];
+			state->stat_add[STAT_DEX] += obj->modifiers[OBJ_MOD_DEX]
+				* p->obj_k->modifiers[OBJ_MOD_DEX];
+			state->stat_add[STAT_CON] += obj->modifiers[OBJ_MOD_CON]
+				* p->obj_k->modifiers[OBJ_MOD_CON];
+			state->skills[SKILL_STEALTH] += obj->modifiers[OBJ_MOD_STEALTH]
+				* p->obj_k->modifiers[OBJ_MOD_STEALTH];
+			state->skills[SKILL_SEARCH] += (obj->modifiers[OBJ_MOD_SEARCH] * 5)
+				* p->obj_k->modifiers[OBJ_MOD_SEARCH];
 
-		of_union(collect_f, f);
+			state->see_infra += obj->modifiers[OBJ_MOD_INFRA]
+				* p->obj_k->modifiers[OBJ_MOD_INFRA];
+			if (tval_is_digger(obj)) {
+				if (of_has(obj->flags, OF_DIG_1))
+					dig = 1;
+				else if (of_has(obj->flags, OF_DIG_2))
+					dig = 2;
+				else if (of_has(obj->flags, OF_DIG_3))
+					dig = 3;
+			}
+			dig += obj->modifiers[OBJ_MOD_TUNNEL]
+				* p->obj_k->modifiers[OBJ_MOD_TUNNEL];
+			state->skills[SKILL_DIGGING] += (dig * 20);
+			state->speed += obj->modifiers[OBJ_MOD_SPEED]
+				* p->obj_k->modifiers[OBJ_MOD_SPEED];
+			extra_blows += obj->modifiers[OBJ_MOD_BLOWS]
+				* p->obj_k->modifiers[OBJ_MOD_BLOWS];
+			extra_shots += obj->modifiers[OBJ_MOD_SHOTS]
+				* p->obj_k->modifiers[OBJ_MOD_SHOTS];
+			extra_might += obj->modifiers[OBJ_MOD_MIGHT]
+				* p->obj_k->modifiers[OBJ_MOD_MIGHT];
 
-		/* Affect stats */
-		state->stat_add[STAT_STR] += obj->modifiers[OBJ_MOD_STR];
-		state->stat_add[STAT_INT] += obj->modifiers[OBJ_MOD_INT];
-		state->stat_add[STAT_WIS] += obj->modifiers[OBJ_MOD_WIS];
-		state->stat_add[STAT_DEX] += obj->modifiers[OBJ_MOD_DEX];
-		state->stat_add[STAT_CON] += obj->modifiers[OBJ_MOD_CON];
+			/* Apply element info, noting vulnerabilites for later processing */
+			for (j = 0; j < ELEM_MAX; j++) {
+				if (!known_only || obj->known->el_info[j].res_level) {
+					if (obj->el_info[j].res_level == -1)
+						vuln[i] = true;
 
-		/* Affect stealth */
-		state->skills[SKILL_STEALTH] += obj->modifiers[OBJ_MOD_STEALTH];
-
-		/* Affect searching ability (factor of five) */
-		state->skills[SKILL_SEARCH] += (obj->modifiers[OBJ_MOD_SEARCH] * 5);
-
-		/* Affect searching frequency (factor of five) */
-		state->skills[SKILL_SEARCH_FREQUENCY] += 
-			(obj->modifiers[OBJ_MOD_SEARCH] * 5);
-
-		/* Affect infravision */
-		state->see_infra += obj->modifiers[OBJ_MOD_INFRA];
-
-		/* Affect digging (factor of 20) */
-		state->skills[SKILL_DIGGING] += (obj->modifiers[OBJ_MOD_TUNNEL] * 20);
-
-		/* Affect speed */
-		state->speed += obj->modifiers[OBJ_MOD_SPEED];
-
-		/* Affect blows */
-		extra_blows += obj->modifiers[OBJ_MOD_BLOWS];
-
-		/* Affect shots */
-		extra_shots += obj->modifiers[OBJ_MOD_SHOTS];
-
-		/* Affect Might */
-		extra_might += obj->modifiers[OBJ_MOD_MIGHT];
-
-		/* Affect resists */
-		for (j = 0; j < ELEM_MAX; j++)
-			if (!known_only || object_is_known(obj) ||
-				object_element_is_known(obj, j)) {
-
-				/* Note vulnerability for later processing */
-				if (obj->el_info[j].res_level == -1)
-					vuln[i] = TRUE;
-
-				/* OK because res_level has not included vulnerability yet */
-				if (obj->el_info[j].res_level > state->el_info[j].res_level)
-					state->el_info[j].res_level = obj->el_info[j].res_level;
+					/* OK because res_level hasn't included vulnerability yet */
+					if (obj->el_info[j].res_level > state->el_info[j].res_level)
+						state->el_info[j].res_level = obj->el_info[j].res_level;
+				}
 			}
 
-		/* Modify the base armor class */
-		state->ac += obj->ac;
+			/* Apply combat bonuses */
+			state->ac += obj->ac;
+			if (!known_only || obj->known->to_a)
+				state->to_a += obj->to_a;
+			if (!slot_type_is(i, EQUIP_WEAPON) && !slot_type_is(i, EQUIP_BOW)) {
+				if (!known_only || obj->known->to_h) {
+					state->to_h += obj->to_h;
+				}
+				if (!known_only || obj->known->to_d) {
+					state->to_d += obj->to_d;
+				}
+			}
 
-		/* Apply the bonuses to armor class */
-		if (!known_only || object_is_known(obj) ||
-			object_defence_plusses_are_visible(obj))
-			state->to_a += obj->to_a;
-
-		/* Do not apply weapon and bow bonuses until combat calculations */
-		if (slot_type_is(i, EQUIP_WEAPON)) continue;
-		if (slot_type_is(i, EQUIP_BOW)) continue;
-
-		/* Apply the bonuses to hit/damage */
-		if (!known_only || object_is_known(obj) ||
-			object_attack_plusses_are_visible(obj))
-		{
-			state->to_h += obj->to_h;
-			state->to_d += obj->to_d;
+			/* Move to any unprocessed curse object */
+			if (curse) {
+				index++;
+				obj = NULL;
+				while (index < z_info->curse_max) {
+					if (curse[index].power) {
+						obj = curses[index].obj;
+						break;
+					} else {
+						index++;
+					}
+				}
+			} else {
+				obj = NULL;
+			}
 		}
 	}
 
-
-	/* ------------------------------------
-	 * Update all flags
-	 * ------------------------------------ */
-
+	/* Apply the collected flags */
 	of_union(state->flags, collect_f);
 
-	/* ------------------------------------
-	 * Handle stats
-	 * ------------------------------------ */
-
-	/* Calculate stats */
+	/* Calculate the various stat values */
 	for (i = 0; i < STAT_MAX; i++) {
-		int add, top, use, ind;
+		int add, use, ind;
 
-		/* Extract modifier */
 		add = state->stat_add[i];
-
-		/* Modify the stats for race/class */
 		add += (p->race->r_adj[i] + p->class->c_adj[i]);
-
-		/* Extract the new "stat_top" value for the stat */
-		top = modify_stat_value(p->stat_max[i], add);
-
-		/* Save the new value */
-		state->stat_top[i] = top;
-
-		/* Extract the new "stat_use" value for the stat */
+		state->stat_top[i] =  modify_stat_value(p->stat_max[i], add);
 		use = modify_stat_value(p->stat_cur[i], add);
 
-		/* Save the new value */
 		state->stat_use[i] = use;
 
-		/* Values: n/a */
-		if (use <= 3)
+		if (use <= 3) {/* Values: n/a */
 			ind = 0;
-		else if (use <= 18) /* Values: 3, 4, ..., 18 */
+		} else if (use <= 18) {/* Values: 3, 4, ..., 18 */
 			ind = (use - 3);
-		else if (use <= 18+219) /* Ranges: 18/00-18/09, ..., 18/210-18/219 */
+		} else if (use <= 18+219) {/* Ranges: 18/00-18/09, ..., 18/210-18/219 */
 			ind = (15 + (use - 18) / 10);
-		else /* Range: 18/220+ */
+		} else {/* Range: 18/220+ */
 			ind = (37);
+		}
 
 		assert((0 <= ind) && (ind < STAT_RANGE));
 
@@ -1891,11 +1864,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->el_info[i].res_level--;
 	}
 
-	/* ------------------------------------
-	 * Temporary flags
-	 * ------------------------------------ */
-
-	/* Apply temporary "stun" */
+	/* Temporary flags */
 	if (p->timed[TMD_STUN] > 50) {
 		state->to_h -= 20;
 		state->to_d -= 20;
@@ -1907,249 +1876,154 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 9 / 10;
 	}
-
-	/* Invulnerability */
-	if (p->timed[TMD_INVULN])
+	if (p->timed[TMD_INVULN]) {
 		state->to_a += 100;
-
-	/* Temporary blessing */
+	}
 	if (p->timed[TMD_BLESSED]) {
 		state->to_a += 5;
 		state->to_h += 10;
-		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
-			* 105 / 100;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 105 / 100;
 	}
-
-	/* Temporary shield */
-	if (p->timed[TMD_SHIELD])
+	if (p->timed[TMD_SHIELD]) {
 		state->to_a += 50;
-
-	/* Temporary stoneskin */
+	}
 	if (p->timed[TMD_STONESKIN]) {
 		state->to_a += 40;
 		state->speed -= 5;
 	}
-
-	/* Temporary resistance to fear */
-	if (p->timed[TMD_BOLD])
+	if (p->timed[TMD_BOLD]) {
 		of_on(state->flags, OF_PROT_FEAR);
-
-	/* Temporary "Hero" */
+	}
 	if (p->timed[TMD_HERO]) {
 		of_on(state->flags, OF_PROT_FEAR);
 		state->to_h += 12;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 105 / 100;
 	}
-
-	/* Temporary "Berserk" */
 	if (p->timed[TMD_SHERO]) {
 		of_on(state->flags, OF_PROT_FEAR);
 		state->to_h += 24;
 		state->to_a -= 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 9 / 10;
 	}
-
-	/* Temporary "fast" */
-	if (p->timed[TMD_FAST] || p->timed[TMD_SPRINT])
+	if (p->timed[TMD_FAST] || p->timed[TMD_SPRINT]) {
 		state->speed += 10;
-
-	/* Temporary "slow" */
-	if (p->timed[TMD_SLOW])
+	}
+	if (p->timed[TMD_SLOW]) {
 		state->speed -= 10;
-
-	/* Temporary infravision boost */
-	if (p->timed[TMD_SINFRA])
+	}
+	if (p->timed[TMD_SINFRA]) {
 		state->see_infra += 5;
-
-	/* Temporary ESP */
-	if (p->timed[TMD_TELEPATHY])
+	}
+	if (p->timed[TMD_TELEPATHY]) {
 		of_on(state->flags, OF_TELEPATHY);
-
-	/* Temporary see invisible */
-	if (p->timed[TMD_SINVIS])
+	}
+	if (p->timed[TMD_SINVIS]) {
 		of_on(state->flags, OF_SEE_INVIS);
-
-	/* Fear / terror flags */
-	if (p->timed[TMD_AFRAID] || p->timed[TMD_TERROR])
+	}
+	if (p->timed[TMD_AFRAID] || p->timed[TMD_TERROR]) {
 		of_on(state->flags, OF_AFRAID);
-	if (p->timed[TMD_TERROR])
+	}
+	if (p->timed[TMD_TERROR]) {
 		state->speed += 10;
-
-	/* Resist acid */
-	if (p->timed[TMD_OPP_ACID])
-		if (state->el_info[ELEM_ACID].res_level < 2)
+	}
+	if (p->timed[TMD_OPP_ACID] && (state->el_info[ELEM_ACID].res_level < 2)) {
 			state->el_info[ELEM_ACID].res_level++;
-
-	/* Resist electricity */
-	if (p->timed[TMD_OPP_ELEC])
-		if (state->el_info[ELEM_ELEC].res_level < 2)
+	}
+	if (p->timed[TMD_OPP_ELEC] && (state->el_info[ELEM_ELEC].res_level < 2)) {
 			state->el_info[ELEM_ELEC].res_level++;
-
-	/* Resist fire */
-	if (p->timed[TMD_OPP_FIRE])
-		if (state->el_info[ELEM_FIRE].res_level < 2)
+	}
+	if (p->timed[TMD_OPP_FIRE] && (state->el_info[ELEM_FIRE].res_level < 2)) {
 			state->el_info[ELEM_FIRE].res_level++;
-
-	/* Resist cold */
-	if (p->timed[TMD_OPP_COLD])
-		if (state->el_info[ELEM_COLD].res_level < 2)
+	}
+	if (p->timed[TMD_OPP_COLD] && (state->el_info[ELEM_COLD].res_level < 2)) {
 			state->el_info[ELEM_COLD].res_level++;
-
-	/* Resist poison */
-	if (p->timed[TMD_OPP_POIS])
-		if (state->el_info[ELEM_POIS].res_level < 2)
+	}
+	if (p->timed[TMD_OPP_POIS] && (state->el_info[ELEM_POIS].res_level < 2)) {
 			state->el_info[ELEM_POIS].res_level++;
-
-	/* Resist confusion */
-	if (p->timed[TMD_OPP_CONF])
+	}
+	if (p->timed[TMD_OPP_CONF]) {
 		of_on(state->flags, OF_PROT_CONF);
-
-	/* Confusion */
-	if (p->timed[TMD_CONFUSED])
+	}
+	if (p->timed[TMD_CONFUSED]) {
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 75 / 100;
-
-	/* Amnesia */
-	if (p->timed[TMD_AMNESIA])
+	}
+	if (p->timed[TMD_AMNESIA]) {
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
-
-	/* Poison */
-	if (p->timed[TMD_POISONED])
+	}
+	if (p->timed[TMD_POISONED]) {
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 95 / 100;
-
-	/* Hallucination */
-	if (p->timed[TMD_IMAGE])
+	}
+	if (p->timed[TMD_IMAGE]) {
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 8 / 10;
+	}
 
-	/* ------------------------------------
-	 * Analyze flags
-	 * ------------------------------------ */
-
-	/* Check for fear */
+	/* Analyze flags - check for fear */
 	if (of_has(state->flags, OF_AFRAID)) {
 		state->to_h -= 20;
 		state->to_a += 8;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE] * 95 / 100;
 	}
 
-	/* ------------------------------------
-	 * Analyze weight
-	 * ------------------------------------ */
-
-	/* Extract the current weight (in tenth pounds) */
+	/* Analyze weight */
 	j = p->upkeep->total_weight;
-
-	/* Extract the "weight limit" (in tenth pounds) */
 	i = weight_limit(state);
-
-	/* Apply "encumbrance" from weight */
 	if (j > i / 2)
 		state->speed -= ((j - (i / 2)) / (i / 10));
-
-	/* Searching slows the player down */
-	if (p->searching)
-		state->speed -= 10;
-
-	/* Sanity check on extreme speeds */
 	if (state->speed < 0)
 		state->speed = 0;
 	if (state->speed > 199)
 		state->speed = 199;
 
-	/* ------------------------------------
-	 * Apply modifier bonuses
-	 * ------------------------------------ */
-
-	/* Modifier Bonuses (Un-inflate stat bonuses) */
-	state->to_a += ((int)(adj_dex_ta[state->stat_ind[STAT_DEX]]) - 128);
-	state->to_d += ((int)(adj_str_td[state->stat_ind[STAT_STR]]) - 128);
-	state->to_h += ((int)(adj_dex_th[state->stat_ind[STAT_DEX]]) - 128);
-	state->to_h += ((int)(adj_str_th[state->stat_ind[STAT_STR]]) - 128);
+	/* Apply modifier bonuses (Un-inflate stat bonuses) */
+	state->to_a += adj_dex_ta[state->stat_ind[STAT_DEX]];
+	state->to_d += adj_str_td[state->stat_ind[STAT_STR]];
+	state->to_h += adj_dex_th[state->stat_ind[STAT_DEX]];
+	state->to_h += adj_str_th[state->stat_ind[STAT_STR]];
 
 
-	/* ------------------------------------
-	 * Modify skills
-	 * ------------------------------------ */
-
-	/* Affect Skill -- disarming (DEX and INT) */
-	state->skills[SKILL_DISARM] += adj_dex_dis[state->stat_ind[STAT_DEX]];
-	state->skills[SKILL_DISARM] += adj_int_dis[state->stat_ind[STAT_INT]];
-
-	/* Affect Skill -- magic devices (INT) */
+	/* Modify skills */
+	state->skills[SKILL_DISARM_PHYS] += adj_dex_dis[state->stat_ind[STAT_DEX]];
+	state->skills[SKILL_DISARM_MAGIC] += adj_int_dis[state->stat_ind[STAT_INT]];
 	state->skills[SKILL_DEVICE] += adj_int_dev[state->stat_ind[STAT_INT]];
-
-	/* Affect Skill -- saving throw (WIS) */
 	state->skills[SKILL_SAVE] += adj_wis_sav[state->stat_ind[STAT_WIS]];
-
-	/* Affect Skill -- digging (STR) */
 	state->skills[SKILL_DIGGING] += adj_str_dig[state->stat_ind[STAT_STR]];
-
-	/* Affect Skills (Level, by Class) */
 	for (i = 0; i < SKILL_MAX; i++)
 		state->skills[i] += (p->class->x_skills[i] * p->lev / 10);
 
-	/* Limit Skill -- digging from 1 up */
 	if (state->skills[SKILL_DIGGING] < 1) state->skills[SKILL_DIGGING] = 1;
-
-	/* Limit Skill -- stealth from 0 to 30 */
 	if (state->skills[SKILL_STEALTH] > 30) state->skills[SKILL_STEALTH] = 30;
 	if (state->skills[SKILL_STEALTH] < 0) state->skills[SKILL_STEALTH] = 0;
-
-	/* Apply Skill -- Extract noise from stealth */
-	state->noise = (1L << (30 - state->skills[SKILL_STEALTH]));
-
-	/* Obtain the "hold" value */
 	hold = adj_str_hold[state->stat_ind[STAT_STR]];
 
 
-	/* ------------------------------------
-	 * Analyze current bow
-	 * ------------------------------------ */
-
-	/* Examine the "current bow" */
-	obj = equipped_item_by_slot_name(p, "shooting");
-
-	/* Assume not heavy */
-	state->heavy_shoot = FALSE;
-
 	/* Analyze launcher */
-	if (obj) {
-		if (hold < obj->weight / 10) {
-			/* Hard to wield a heavy bow */
-			state->to_h += 2 * (hold - obj->weight / 10);
-			
-			/* Heavy Bow */
-			state->heavy_shoot = TRUE;
+	state->heavy_shoot = false;
+	if (launcher) {
+		if (hold < launcher->weight / 10) {
+			state->to_h += 2 * (hold - launcher->weight / 10);
+			state->heavy_shoot = true;
 		}
 
-		/* Get to shoot */
 		state->num_shots = 1;
 
 		/* Type of ammo */
-		if (kf_has(obj->kind->kind_flags, KF_SHOOTS_SHOTS))
+		if (kf_has(launcher->kind->kind_flags, KF_SHOOTS_SHOTS))
 			state->ammo_tval = TV_SHOT;
-		else if (kf_has(obj->kind->kind_flags, KF_SHOOTS_ARROWS))
+		else if (kf_has(launcher->kind->kind_flags, KF_SHOOTS_ARROWS))
 			state->ammo_tval = TV_ARROW;
-		else if (kf_has(obj->kind->kind_flags, KF_SHOOTS_BOLTS))
+		else if (kf_has(launcher->kind->kind_flags, KF_SHOOTS_BOLTS))
 			state->ammo_tval = TV_BOLT;
 
 		/* Multiplier */
-		state->ammo_mult = obj->pval;
+		state->ammo_mult = launcher->pval;
 
 		/* Apply special flags */
 		if (!state->heavy_shoot) {
-			/* Extra shots */
 			state->num_shots += extra_shots;
-
-			/* Extra might */
 			state->ammo_mult += extra_might;
-
-			/* Hack -- Rangers love Bows */
 			if (player_has(p, PF_EXTRA_SHOT) &&
 				(state->ammo_tval == TV_ARROW)) {
-				/* Extra shot at level 20 */
 				if (p->lev >= 20) state->num_shots++;
-
-				/* Extra shot at level 40 */
 				if (p->lev >= 40) state->num_shots++;
 			}
 		}
@@ -2159,47 +2033,28 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 
-	/* ------------------------------------
-	 * Analyze weapon
-	 * ------------------------------------ */
-
-	/* Examine the "current weapon" */
-	obj = equipped_item_by_slot_name(p, "weapon");
-
-	/* Assume not heavy */
-	state->heavy_wield = FALSE;
-
-	/* Assume no pointy problem */
-	state->icky_wield = FALSE;
-
-	if (obj) {
+	/* Analyze weapon */
+	state->heavy_wield = false;
+	state->icky_wield = false;
+	if (weapon) {
 		/* It is hard to hold a heavy weapon */
-		if (hold < obj->weight / 10) {
-			/* Hard to wield a heavy weapon */
-			state->to_h += 2 * (hold - obj->weight / 10);
-			
-			/* Heavy weapon */
-			state->heavy_wield = TRUE;
+		if (hold < weapon->weight / 10) {
+			state->to_h += 2 * (hold - weapon->weight / 10);
+			state->heavy_wield = true;
 		}
 
 		/* Normal weapons */
 		if (!state->heavy_wield) {
-			/* Calculate number of blows */
-			state->num_blows = calc_blows(p, obj, state, extra_blows);
-
-			/* Boost digging skill by weapon weight */
-			state->skills[SKILL_DIGGING] += (obj->weight / 10);
+			state->num_blows = calc_blows(p, weapon, state, extra_blows);
+			state->skills[SKILL_DIGGING] += (weapon->weight / 10);
 		}
 
 		/* Priest weapon penalty for non-blessed edged weapons */
 		if (player_has(p, PF_BLESS_WEAPON) &&
-			!of_has(state->flags, OF_BLESSED) && tval_is_pointy(obj)) {
-			/* Reduce the real bonuses */
+			!of_has(state->flags, OF_BLESSED) && tval_is_pointy(weapon)) {
 			state->to_h -= 2;
 			state->to_d -= 2;
-
-			/* Icky weapon */
-			state->icky_wield = TRUE;
+			state->icky_wield = true;
 		}
 	} else {
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
@@ -2227,8 +2082,8 @@ static void update_bonuses(struct player *p)
 	 * Calculate bonuses
 	 * ------------------------------------ */
 
-	calc_bonuses(p, &state, FALSE, TRUE);
-	calc_bonuses(p, &known_state, TRUE, TRUE);
+	calc_bonuses(p, &state, false, true);
+	calc_bonuses(p, &known_state, true, true);
 
 
 	/* ------------------------------------
@@ -2393,6 +2248,16 @@ void track_object_kind(struct player_upkeep *upkeep, struct object_kind *kind)
 }
 
 /**
+ * Cancel all object tracking
+ */
+void track_object_cancel(struct player_upkeep *upkeep)
+{
+	upkeep->object = NULL;
+	upkeep->object_kind = NULL;
+	upkeep->redraw |= (PR_OBJECT);
+}
+
+/**
  * Is the given item tracked?
  */
 bool tracked_object_is(struct player_upkeep *upkeep, struct object *obj)
@@ -2432,7 +2297,7 @@ void notice_stuff(struct player *p)
 		p->upkeep->notice &= ~(PN_MON_MESSAGE);
 
 		/* Make sure this comes after all of the monster messages */
-		flush_all_monster_messages();
+		show_monster_messages();
 	}
 }
 
@@ -2457,7 +2322,7 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_TORCH)) {
 		p->upkeep->update &= ~(PU_TORCH);
-		calc_torch(p, &p->state, TRUE);
+		calc_torch(p, &p->state, true);
 	}
 
 	if (p->upkeep->update & (PU_HP)) {
@@ -2467,12 +2332,13 @@ void update_stuff(struct player *p)
 
 	if (p->upkeep->update & (PU_MANA)) {
 		p->upkeep->update &= ~(PU_MANA);
-		calc_mana(p, &p->state, TRUE);
+		calc_mana(p, &p->state, true);
 	}
 
 	if (p->upkeep->update & (PU_SPELLS)) {
 		p->upkeep->update &= ~(PU_SPELLS);
-		calc_spells(p);
+		if (p->class->magic.spell_realm)
+			calc_spells(p);
 	}
 
 	/* Character is not ready yet, no map updates */
@@ -2481,37 +2347,20 @@ void update_stuff(struct player *p)
 	/* Map is not shown, no map updates */
 	if (!map_is_visible()) return;
 
-	if (p->upkeep->update & (PU_FORGET_VIEW)) {
-		p->upkeep->update &= ~(PU_FORGET_VIEW);
-		forget_view(cave);
-	}
-
 	if (p->upkeep->update & (PU_UPDATE_VIEW)) {
 		p->upkeep->update &= ~(PU_UPDATE_VIEW);
 		update_view(cave, p);
 	}
 
-
-	if (p->upkeep->update & (PU_FORGET_FLOW)) {
-		p->upkeep->update &= ~(PU_FORGET_FLOW);
-		cave_forget_flow(cave);
-	}
-
-	if (p->upkeep->update & (PU_UPDATE_FLOW)) {
-		p->upkeep->update &= ~(PU_UPDATE_FLOW);
-		cave_update_flow(cave);
-	}
-
-
 	if (p->upkeep->update & (PU_DISTANCE)) {
 		p->upkeep->update &= ~(PU_DISTANCE);
 		p->upkeep->update &= ~(PU_MONSTERS);
-		update_monsters(TRUE);
+		update_monsters(true);
 	}
 
 	if (p->upkeep->update & (PU_MONSTERS)) {
 		p->upkeep->update &= ~(PU_MONSTERS);
-		update_monsters(FALSE);
+		update_monsters(false);
 	}
 
 
@@ -2569,36 +2418,41 @@ static const struct flag_event_trigger redraw_events[] =
 void redraw_stuff(struct player *p)
 {
 	size_t i;
+	u32b redraw = p->upkeep->redraw;
 
 	/* Redraw stuff */
-	if (!p->upkeep->redraw) return;
+	if (!redraw) return;
 
 	/* Character is not ready yet, no screen updates */
 	if (!character_generated) return;
 
-	/* Map is not shown, no screen updates */
-	if (!map_is_visible()) return;
+	/* Map is not shown, subwindow updates only */
+	if (!map_is_visible()) 
+		redraw &= PR_SUBWINDOW;
 
 	/* Hack - rarely update while resting or running, makes it over quicker */
 	if (((player_resting_count(p) % 100) || (p->upkeep->running % 100))
-		&& !(p->upkeep->redraw & PR_MESSAGE))
+		&& !(redraw & PR_MESSAGE))
 		return;
 
 	/* For each listed flag, send the appropriate signal to the UI */
 	for (i = 0; i < N_ELEMENTS(redraw_events); i++) {
 		const struct flag_event_trigger *hnd = &redraw_events[i];
 
-		if (p->upkeep->redraw & hnd->flag)
+		if (redraw & hnd->flag)
 			event_signal(hnd->event);
 	}
 
 	/* Then the ones that require parameters to be supplied. */
-	if (p->upkeep->redraw & PR_MAP) {
+	if (redraw & PR_MAP) {
 		/* Mark the whole map to be redrawn */
 		event_signal_point(EVENT_MAP, -1, -1);
 	}
 
-	p->upkeep->redraw = 0;
+	p->upkeep->redraw &= ~redraw;
+
+	/* Map is not shown, subwindow updates only */
+	if (!map_is_visible()) return;
 
 	/*
 	 * Do any plotting, etc. delayed from earlier - this set of updates

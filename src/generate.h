@@ -10,9 +10,9 @@
 #include "monster.h"
 
 #if  __STDC_VERSION__ < 199901L
-#define ROOM_LOG  if (OPT(cheat_room)) msg
+#define ROOM_LOG  if (OPT(player, cheat_room)) msg
 #else
-#define ROOM_LOG(...) if (OPT(cheat_room)) msg(__VA_ARGS__);
+#define ROOM_LOG(...) if (OPT(player, cheat_room)) msg(__VA_ARGS__);
 #endif
 
 /**
@@ -176,7 +176,7 @@ struct cave_profile {
  * room_builder is a function pointer which builds rooms in the cave given
  * anchor coordinates.
  */
-typedef bool (*room_builder) (struct chunk *c, int y0, int x0);
+typedef bool (*room_builder) (struct chunk *c, int y0, int x0, int rating);
 
 
 /**
@@ -188,6 +188,7 @@ struct room_profile {
 
     const char *name;
     room_builder builder;	/*!< Function used to build fixed size rooms */
+	int rating;				/*!< Extra control for template rooms */
     int height, width;		/*!< Space required in grids */
     int level;				/*!< Minimum dungeon level */
     bool pit;				/*!< Whether this room is a pit/nest or not */
@@ -237,9 +238,9 @@ struct room_template {
     byte tval;			/*!< tval for objects in this room */
 };
 
-struct dun_data *dun;
-struct vault *vaults;
-struct room_template *room_templates;
+extern struct dun_data *dun;
+extern struct vault *vaults;
+extern struct room_template *room_templates;
 
 /* gen-cave.c */
 struct chunk *town_gen(struct player *p);
@@ -280,36 +281,34 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 struct vault *random_vault(int depth, const char *typ);
 bool build_vault(struct chunk *c, int y0, int x0, struct vault *v);
 
-bool build_simple(struct chunk *c, int y0, int x0);
-bool build_circular(struct chunk *c, int y0, int x0);
-bool build_overlap(struct chunk *c, int y0, int x0);
-bool build_crossed(struct chunk *c, int y0, int x0);
-bool build_large(struct chunk *c, int y0, int x0);
+bool build_simple(struct chunk *c, int y0, int x0, int rating);
+bool build_circular(struct chunk *c, int y0, int x0, int rating);
+bool build_overlap(struct chunk *c, int y0, int x0, int rating);
+bool build_crossed(struct chunk *c, int y0, int x0, int rating);
+bool build_large(struct chunk *c, int y0, int x0, int rating);
 bool mon_pit_hook(struct monster_race *race);
 void set_pit_type(int depth, int type);
-bool build_nest(struct chunk *c, int y0, int x0);
-bool build_pit(struct chunk *c, int y0, int x0);
-bool build_template(struct chunk *c, int y0, int x0);
-bool build_interesting(struct chunk *c, int y0, int x0);
-bool build_lesser_vault(struct chunk *c, int y0, int x0);
-bool build_medium_vault(struct chunk *c, int y0, int x0);
-bool build_greater_vault(struct chunk *c, int y0, int x0);
-bool build_moria(struct chunk *c, int y0, int x0);
-bool build_room_of_chambers(struct chunk *c, int y0, int x0);
-bool build_huge(struct chunk *c, int y0, int x0);
+bool build_nest(struct chunk *c, int y0, int x0, int rating);
+bool build_pit(struct chunk *c, int y0, int x0, int rating);
+bool build_template(struct chunk *c, int y0, int x0, int rating);
+bool build_interesting(struct chunk *c, int y0, int x0, int rating);
+bool build_lesser_vault(struct chunk *c, int y0, int x0, int rating);
+bool build_medium_vault(struct chunk *c, int y0, int x0, int rating);
+bool build_greater_vault(struct chunk *c, int y0, int x0, int rating);
+bool build_moria(struct chunk *c, int y0, int x0, int rating);
+bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating);
+bool build_huge(struct chunk *c, int y0, int x0, int rating);
 bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	bool finds_own_space);
 
 
 /* gen-util.c */
-byte get_angle_to_grid[41][41];
+extern byte get_angle_to_grid[41][41];
 
 int yx_to_i(int y, int x, int w);
 void i_to_yx(int i, int w, int *y, int *x);
 void shuffle(int *arr, int n);
 bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred);
-bool cave_find_in_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1,
-						int x2, square_predicate pred);
 bool find_empty(struct chunk *c, int *y, int *x);
 bool find_empty_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1, int x2);
 bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, int xd);

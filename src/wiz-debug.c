@@ -29,7 +29,7 @@
 #include "monster.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
-#include "obj-identify.h"
+#include "obj-knowledge.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-power.h"
@@ -42,6 +42,7 @@
 #include "player-util.h"
 #include "project.h"
 #include "target.h"
+#include "trap.h"
 #include "ui-command.h"
 #include "ui-event.h"
 #include "ui-display.h"
@@ -54,17 +55,17 @@
 #include "wizard.h"
 
 
-static void gf_display(struct menu *m, int type, bool cursor,
+static void proj_display(struct menu *m, int type, bool cursor,
 		int row, int col, int wid)
 {
 	size_t i;
 
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	const char *gf_name = gf_idx_to_name(type);
+	const char *proj_name = proj_idx_to_name(type);
 
 	if (type % 2)
 		c_prt(attr, ".........................", row, col);
-	c_put_str(attr, gf_name, row, col);
+	c_put_str(attr, proj_name, row, col);
 
 	col += 25;
 
@@ -74,10 +75,10 @@ static void gf_display(struct menu *m, int type, bool cursor,
 				/* ASCII is simple */
 				wchar_t chars[] = L"*|/-\\";
 
-				col += big_pad(col, row, gf_color(type), chars[i]);
+				col += big_pad(col, row, projections[type].color, chars[i]);
 			} else {
-				col += big_pad(col, row, gf_to_attr[type][i],
-							   gf_to_char[type][i]);
+				col += big_pad(col, row, proj_to_attr[type][i],
+							   proj_to_char[type][i]);
 			}
 		}
 	} else {
@@ -85,27 +86,27 @@ static void gf_display(struct menu *m, int type, bool cursor,
 	}
 }
 
-static const menu_iter gf_iter = {
+static const menu_iter proj_iter = {
 	NULL, /* get_tag */
 	NULL, /* validity */
-	gf_display,
+	proj_display,
 	NULL, /* action */
 	NULL /* resize */
 };
 
-static void wiz_gf_demo(void)
+static void wiz_proj_demo(void)
 {
-	struct menu *m = menu_new(MN_SKIN_SCROLL, &gf_iter);
+	struct menu *m = menu_new(MN_SKIN_SCROLL, &proj_iter);
 	region loc = { 0, 0, 0, 0 };
 
-	menu_setpriv(m, GF_MAX, NULL);
+	menu_setpriv(m, PROJ_MAX, NULL);
 
-	m->title = "GF_ types display";
+	m->title = "PROJ_ types display";
 	menu_layout(m, &loc);
 
 	screen_save();
 	clear_from(0);
-	menu_select(m, 0, FALSE);
+	menu_select(m, 0, false);
 	screen_load();
 }
 
@@ -129,9 +130,9 @@ static s16b get_idx_from_name(char *s)
 
 /**
  * Display in sequence the squares at n grids from the player, as measured by
- * the flow algorithm; n goes from 1 to max flow depth
+ * the noise and scent algorithms; n goes from 1 to max flow depth
  */
-static void do_cmd_wiz_hack_ben(void)
+static void do_cmd_wiz_hack_nick(void)
 {
 	int py = player->py;
 	int px = player->px;
@@ -140,7 +141,8 @@ static void do_cmd_wiz_hack_ben(void)
 
 	char kp;
 
-	for (i = 0; i < z_info->max_flow_depth; ++i) {
+	/* Noise */
+	for (i = 0; i < 100; i++) {
 		/* Update map */
 		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
@@ -148,12 +150,37 @@ static void do_cmd_wiz_hack_ben(void)
 
 				if (!square_in_bounds_fully(cave, y, x)) continue;
 
-				/* Display proper cost */
-				if (cave->squares[y][x].cost != i) continue;
+				/* Display proper noise */
+				if (cave->noise.grids[y][x] != i) continue;
 
-				/* Reliability in yellow */
-				if (cave->squares[y][x].when == cave->squares[py][px].when)
-					a = COLOUR_YELLOW;
+				/* Display player/floors/walls */
+				if ((y == py) && (x == px))
+					print_rel(L'@', a, y, x);
+				else if (square_ispassable(cave, y, x))
+					print_rel(L'*', a, y, x);
+				else
+					print_rel(L'#', a, y, x);
+			}
+
+		/* Get key */
+		if (!get_com(format("Depth %d: ", i), &kp))
+			break;
+
+		/* Redraw map */
+		prt_map();
+	}
+
+	/* Smell */
+	for (i = 0; i < 50; i++) {
+		/* Update map */
+		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
+			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
+				byte a = COLOUR_YELLOW;
+
+				if (!square_in_bounds_fully(cave, y, x)) continue;
+
+				/* Display proper smell */
+				if (cave->scent.grids[y][x] != i) continue;
 
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
@@ -205,7 +232,7 @@ static void do_cmd_keylog(void) {
 	int i;
 	char buf[50];
 	char buf2[12];
-	struct keypress keys[2] = {{EVT_NONE, 0}, {EVT_NONE, 0}};
+	struct keypress keys[2] = {KEYPRESS_NULL, KEYPRESS_NULL};
 
 	screen_save();
 
@@ -220,7 +247,7 @@ static void do_cmd_keylog(void) {
 			/* ugh. it would be nice if there was a verion of keypress_to_text
 			 * which took only one keypress. */
 			keys[0] = k;
-			keypress_to_text(buf2, sizeof(buf2), keys, TRUE);
+			keypress_to_text(buf2, sizeof(buf2), keys, true);
 
 			/* format this line of output */
 			strnfmt(buf, sizeof(buf), "    %-12s (code=%u mods=%u)", buf2,
@@ -259,7 +286,7 @@ static void do_cmd_wiz_bamf(void)
 
 	/* Teleport to the target */
 	else
-		effect_simple(EF_TELEPORT_TO, "0", y, x, 0, NULL);
+		effect_simple(EF_TELEPORT_TO, source_player(), "0", y, x, 0, NULL);
 }
 
 
@@ -334,7 +361,7 @@ static void do_cmd_wiz_change_aux(void)
 	if (tmp_long > player->exp)
 		player_exp_gain(player, tmp_long - player->exp);
 	else
-		player_exp_lose(player, player->exp - tmp_long, FALSE);
+		player_exp_lose(player, player->exp - tmp_long, false);
 }
 
 
@@ -438,7 +465,7 @@ static void wiz_display_item(const struct object *obj, bool all)
 			   obj->number, obj->pval,
 			   obj->artifact ? obj->artifact->aidx : 0,
 			   obj->ego ? obj->ego->eidx : 0,
-			   (long)object_value(obj, 1, FALSE)), 6, j);
+			   (long)object_value(obj, 1)), 6, j);
 
 	prt("+------------FLAGS-------------+", 16, j);
 	prt("SUST.PROT<-OTHER--><BAD->CUR....", 17, j);
@@ -447,13 +474,13 @@ static void wiz_display_item(const struct object *obj, bool all)
 	prt("tnieoannuiaesnfhcefhsrlgxuuu....", 20, j);
 	prt("rtsxnrdfnglgpvaltsuppderprrr....", 21, j);
 	prt_binary(f, 0, 22, j, '*', 28);
-	prt_binary(obj->known_flags, 0, 23, j, '+', 28);
+	prt_binary(obj->known->flags, 0, 23, j, '+', 28);
 }
 
 
 
 /** Object creation code **/
-bool choose_artifact = FALSE;
+static bool choose_artifact = false;
 
 static const region wiz_create_item_area = { 0, 0, 0, 0 };
 
@@ -462,7 +489,7 @@ static const region wiz_create_item_area = { 0, 0, 0, 0 };
  */
 static void get_art_name(char *buf, int max, int a_idx)
 {
-	struct object *obj;
+	struct object *obj, *known_obj;
 	struct object_kind *kind;
 	struct artifact *art = &a_info[a_idx];
 
@@ -483,12 +510,131 @@ static void get_art_name(char *buf, int max, int a_idx)
 	obj->artifact = art;
 
 	/* Make it known to us */
-	object_notice_everything(obj);
+	known_obj = object_new();
+	obj->known = known_obj;
+	object_copy(known_obj, obj);
+	known_obj->notice |= OBJ_NOTICE_IMAGINED;
 
 	/* Create the artifact description */
 	object_desc(buf, max, obj, ODESC_SINGULAR | ODESC_SPOIL);
 
+	object_delete(&known_obj);
+	obj->known = NULL;
 	object_delete(&obj);
+}
+
+#define WIZ_CREATE_ALL_MENU_ITEM -9999
+
+/**
+ * Create an instance of an object of a given kind.
+ *
+ * \param kind The base type of object to instantiate.
+ * \return An object of the provided object type.
+ */
+static struct object *wiz_create_item_object_from_kind(struct object_kind *kind)
+{
+	struct object *obj;
+
+	/* Create the item */
+	if (tval_is_money_k(kind))
+		obj = make_gold(player->depth, kind->name);
+	else {
+		/* Get object */
+		obj = object_new();
+		object_prep(obj, kind, player->depth, RANDOMISE);
+
+		/* Apply magic (no messages, no artifacts) */
+		apply_magic(obj, player->depth, false, false, false, false);
+	}
+
+	return obj;
+}
+
+/**
+ * Create an instance of an artifact.
+ *
+ * \param art The artifact to instantiate.
+ * \return An object that represents the artifact.
+ */
+static struct object *wiz_create_item_object_from_artifact(struct artifact *art)
+{
+	struct object_kind *kind;
+	struct object *obj;
+
+	/* Ignore "empty" artifacts */
+	if (!art->name) return NULL;
+
+	/* Acquire the "kind" index */
+	kind = lookup_kind(art->tval, art->sval);
+	if (!kind)
+		return NULL;
+
+	/* Get object */
+	obj = object_new();
+
+	/* Create the artifact */
+	object_prep(obj, kind, art->alloc_min, RANDOMISE);
+	obj->artifact = art;
+	copy_artifact_data(obj, art);
+
+	/* Mark that the artifact has been created. */
+	art->created = true;
+
+	return obj;
+}
+
+/**
+ * Drop an object near the player in a manner suitable for debugging.
+ *
+ * \param obj The object to drop.
+ */
+static void wiz_create_item_drop_object(struct object *obj)
+{
+	if (obj == NULL)
+		return;
+
+	/* Mark as cheat, and where created */
+	obj->origin = ORIGIN_CHEAT;
+	obj->origin_depth = player->depth;
+
+	/* Drop the object from heaven */
+	drop_near(cave, &obj, 0, player->py, player->px, true);
+}
+
+/**
+ * Drop all possible artifacts or objects by the player.
+ *
+ * \param create_artifacts When true, all artifacts will be created; when false,
+ *		  all regular objects will be created.
+ */
+static void wiz_create_item_all_items(bool create_artifacts)
+{
+	int i;
+	struct object *obj;
+	struct object_kind *kind;
+	struct artifact *art;
+
+	if (create_artifacts) {
+		for (i = 1; i < z_info->a_max; i++) {
+			art = &a_info[i];
+			obj = wiz_create_item_object_from_artifact(art);
+			wiz_create_item_drop_object(obj);
+		}
+	}
+	else {
+		for (i = 0; i < z_info->k_max; i++) {
+			kind = &k_info[i];
+
+			if (kind->base == NULL || kind->base->name == NULL)
+				continue;
+
+			if (kf_has(kind->kind_flags, KF_INSTA_ART))
+				continue;
+
+			obj = wiz_create_item_object_from_kind(kind);
+			wiz_create_item_drop_object(obj);
+		}
+	}
 }
 
 /**
@@ -498,79 +644,70 @@ static void wiz_create_item_subdisplay(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	int *choices = menu_priv(m);
+	int selected = choices[oid];
 	char buf[70];
 
-	/* Artifacts */
-	if (choose_artifact) {
-		get_art_name(buf, sizeof(buf), choices[oid]);
-		c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
-	} else {
-		/* Regular objects */
-		object_kind_name(buf, sizeof(buf), &k_info[choices[oid]], TRUE);
-		c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
+	if (selected == WIZ_CREATE_ALL_MENU_ITEM) {
+		/* Super big hack: the special flag should be the last menu item, with
+		 * the selected tval stored in the next element. */
+		int current_tval = choices[oid + 1];
+		char name[70];
+
+		object_base_name(name, sizeof(name), current_tval, true);
+		if (choose_artifact)
+			strnfmt(buf, sizeof(buf), "All artifact %s", name);
+		else
+			strnfmt(buf, sizeof(buf), "All %s", name);
 	}
+	else {
+		if (choose_artifact)
+			get_art_name(buf, sizeof(buf), selected);
+		else
+			object_kind_name(buf, sizeof(buf), &k_info[selected], true);
+	}
+
+	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
 static bool wiz_create_item_subaction(struct menu *m, const ui_event *e, int oid)
 {
 	int *choices = menu_priv(m);
+	int selected = choices[oid];
 	struct object_kind *kind;
 	struct object *obj;
+	struct artifact *art;
 
 	if (e->type != EVT_SELECT)
-		return TRUE;
+		return true;
 
-	/* Artifacts */
-	if (choose_artifact) {
-		struct artifact *art = &a_info[choices[oid]];
-
-		/* Ignore "empty" artifacts */
-		if (!art->name) return FALSE;
-
-		/* Acquire the "kind" index */
-		kind = lookup_kind(art->tval, art->sval);
-		if (!kind)
-			return FALSE;
-
-		/* Get object */
-		obj = object_new();
-
-		/* Create the artifact */
-		object_prep(obj, kind, art->alloc_min, RANDOMISE);
-
-		/* Save the artifact type */
-		obj->artifact = art;
-
-		/* Extract the fields */
-		copy_artifact_data(obj, art);
-
-		/* Mark that the artifact has been created. */
-		art->created = TRUE;
-	} else {
-		/* Regular objects */
-		kind = &k_info[choices[oid]];
-
-		/* Create the item */
-		if (tval_is_money_k(kind))
-			obj = make_gold(player->depth, kind->name);
-		else {
-			/* Get object */
-			obj = object_new();
-			object_prep(obj, kind, player->depth, RANDOMISE);
-
-			/* Apply magic (no messages, no artifacts) */
-			apply_magic(obj, player->depth, FALSE, FALSE, FALSE, FALSE);
+	if (selected == WIZ_CREATE_ALL_MENU_ITEM && !choose_artifact) {
+		int cur;
+		for (cur = 0; cur < oid; cur++) {
+			kind = &k_info[choices[cur]];
+			obj = wiz_create_item_object_from_kind(kind);
+			wiz_create_item_drop_object(obj);
 		}
 	}
+	else if (selected == WIZ_CREATE_ALL_MENU_ITEM && choose_artifact) {
+		int cur;
+		for (cur = 0; cur < oid; cur++) {
+			art = &a_info[choices[cur]];
+			obj = wiz_create_item_object_from_artifact(art);
+			wiz_create_item_drop_object(obj);
+		}
+	}
+	else if (selected != WIZ_CREATE_ALL_MENU_ITEM && !choose_artifact) {
+		kind = &k_info[choices[oid]];
+		obj = wiz_create_item_object_from_kind(kind);
+		wiz_create_item_drop_object(obj);
+	}
+	else if (selected != WIZ_CREATE_ALL_MENU_ITEM && choose_artifact) {
+		art = &a_info[choices[oid]];
+		obj = wiz_create_item_object_from_artifact(art);
+		wiz_create_item_drop_object(obj);
+	}
 
-	/* Mark as cheat, and where created */
-	obj->origin = ORIGIN_CHEAT;
-	obj->origin_depth = player->depth;
-
-	/* Drop the object from heaven */
-	drop_near(cave, obj, 0, player->py, player->px, TRUE);
-
-	return FALSE;
+	return false;
 }
 
 static menu_iter wiz_create_item_submenu =
@@ -590,7 +727,17 @@ static void wiz_create_item_display(struct menu *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	char buf[80];
-	object_base_name(buf, sizeof(buf), oid, TRUE);
+
+	if (oid == WIZ_CREATE_ALL_MENU_ITEM) {
+		if (choose_artifact)
+			my_strcpy(buf, "All artifacts", sizeof(buf));
+		else
+			my_strcpy(buf, "All objects", sizeof(buf));
+	}
+	else {
+		object_base_name(buf, sizeof(buf), oid, true);
+	}
+
 	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
@@ -608,7 +755,12 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 	int i;
 
 	if (e->type != EVT_SELECT)
-		return TRUE;
+		return true;
+
+	if (oid == WIZ_CREATE_ALL_MENU_ITEM) {
+		wiz_create_item_all_items(choose_artifact);
+		return false;
+	}
 
 	/* Artifacts */
 	if (choose_artifact) {
@@ -632,13 +784,20 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 		}
 	}
 
+	/* Add a flag for an "All <tval>" item to create all svals of that tval. The
+	 * tval is stored (in a super hacky way) beyond the end of the valid menu
+	 * items. The menu won't render it, but we can still get to it without 
+	 * doing a bunch of work. */
+	choice[num++] = WIZ_CREATE_ALL_MENU_ITEM;
+	choice[num] = oid;
+
 	screen_save();
 	clear_from(0);
 
 	menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_submenu);
 	menu->selections = all_letters;
 
-	object_base_name(buf, sizeof(buf), oid, TRUE);
+	object_base_name(buf, sizeof(buf), oid, true);
 	if (choose_artifact)
 		strnfmt(title, sizeof(title), "Which artifact %s? ", buf);
 	else
@@ -647,7 +806,7 @@ static bool wiz_create_item_action(struct menu *m, const ui_event *e, int oid)
 
 	menu_setpriv(menu, num, choice);
 	menu_layout(menu, &wiz_create_item_area);
-	ret = menu_select(menu, 0, FALSE);
+	ret = menu_select(menu, 0, false);
 
 	screen_load();
 
@@ -688,8 +847,8 @@ static void wiz_create_item(bool art)
 		if (art) {
 			int j;
 			for (j = 1; j < z_info->a_max; j++) {
-				struct artifact *art = &a_info[j];
-				if (art->tval == i) break;
+				struct artifact *art_local = &a_info[j];
+				if (art_local->tval == i) break;
 			}
 			if (j == z_info->a_max) continue;
 		}
@@ -697,13 +856,15 @@ static void wiz_create_item(bool art)
 		tvals[n++] = i;
 	}
 
+	tvals[n++] = WIZ_CREATE_ALL_MENU_ITEM;
+
 	screen_save();
 	clear_from(0);
 
 	menu_setpriv(menu, TV_MAX, kb_info);
 	menu_set_filter(menu, tvals, n);
 	menu_layout(menu, &wiz_create_item_area);
-	menu_select(menu, 0, FALSE);
+	menu_select(menu, 0, false);
 
 	screen_load();
 	
@@ -737,7 +898,7 @@ static void wiz_tweak_item(struct object *obj)
 		ego_apply_magic(obj, player->depth);
 	} else
 		obj->ego = 0;
-	wiz_display_item(obj, TRUE);
+	wiz_display_item(obj, true);
 
 	p = "Enter new artifact index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
@@ -750,14 +911,14 @@ static void wiz_tweak_item(struct object *obj)
 		copy_artifact_data(obj, obj->artifact);
 	} else
 		obj->artifact = 0;
-	wiz_display_item(obj, TRUE);
+	wiz_display_item(obj, true);
 
 #define WIZ_TWEAK(attribute) do {\
 	p = "Enter new '" #attribute "' setting: ";\
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", obj->attribute);\
 	if (!get_string(p, tmp_val, 6)) return;\
 	obj->attribute = atoi(tmp_val);\
-	wiz_display_item(obj, TRUE);\
+	wiz_display_item(obj, true);\
 } while (0)
 	for (i = 0; i < OBJ_MOD_MAX; i++) {
 		WIZ_TWEAK(modifiers[i]);
@@ -778,7 +939,7 @@ static void wiz_reroll_item(struct object *obj)
 
 	char ch;
 
-	bool changed = FALSE;
+	bool changed = false;
 
 	/* Hack -- leave artifacts alone */
 	if (obj->artifact) return;
@@ -790,9 +951,9 @@ static void wiz_reroll_item(struct object *obj)
 	new->brands = NULL;
 
 	/* Main loop. Ask for magification and artifactification */
-	while (TRUE) {
+	while (true) {
 		/* Display full item debug information */
-		wiz_display_item(new, TRUE);
+		wiz_display_item(new, true);
 
 		/* Ask wizard what to do. */
 		if (!get_com("[a]ccept, [n]ormal, [g]ood, [e]xcellent? ", &ch))
@@ -803,22 +964,22 @@ static void wiz_reroll_item(struct object *obj)
 			break;
 		} else if (ch == 'n' || ch == 'N') {
 			/* Apply normal magic, but first clear object */
-			changed = TRUE;
+			changed = true;
 			object_wipe(new);
 			object_prep(new, obj->kind, player->depth, RANDOMISE);
-			apply_magic(new, player->depth, FALSE, FALSE, FALSE, FALSE);
+			apply_magic(new, player->depth, false, false, false, false);
 		} else if (ch == 'g' || ch == 'G') {
 			/* Apply good magic, but first clear object */
-			changed = TRUE;
+			changed = true;
 			object_wipe(new);
 			object_prep(new, obj->kind, player->depth, RANDOMISE);
-			apply_magic(new, player->depth, FALSE, TRUE, FALSE, FALSE);
+			apply_magic(new, player->depth, false, true, false, false);
 		} else if (ch == 'e' || ch == 'E') {
 			/* Apply great magic, but first clear object */
-			changed = TRUE;
+			changed = true;
 			object_wipe(new);
 			object_prep(new, obj->kind, player->depth, RANDOMISE);
-			apply_magic(new, player->depth, FALSE, TRUE, TRUE, FALSE);
+			apply_magic(new, player->depth, false, true, true, false);
 		}
 	}
 
@@ -827,15 +988,21 @@ static void wiz_reroll_item(struct object *obj)
 		/* Record the old pile info */
 		struct object *prev = obj->prev;
 		struct object *next = obj->next;
+		struct object *known_obj = obj->known;
 
 		/* Free slays and brands on the old object by hand */
-		free_slay(obj->slays);
-		free_brand(obj->brands);
+		mem_free(obj->slays);
+		obj->slays = NULL;
+		mem_free(obj->brands);
+		obj->brands = NULL;
+		mem_free(obj->curses);
+		obj->curses = NULL;
 
 		/* Copy over - slays and brands OK, pile info needs restoring */
 		object_copy(obj, new);
 		obj->prev = prev;
 		obj->next = next;
+		obj->known = known_obj;
 
 		/* Mark as cheat */
 		obj->origin = ORIGIN_CHEAT;
@@ -886,35 +1053,35 @@ static void wiz_statistics(struct object *obj, int level)
 
 
 	/* Allow multiple artifacts, because breaking the game is fine here */
-	if (obj->artifact) obj->artifact->created = FALSE;
+	if (obj->artifact) obj->artifact->created = false;
 
 
 	/* Interact */
-	while (TRUE) {
+	while (true) {
 		const char *pmt = "Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ";
 
 		/* Display item */
-		wiz_display_item(obj, TRUE);
+		wiz_display_item(obj, true);
 
 		/* Get choices */
 		if (!get_com(pmt, &ch)) break;
 
 		if (ch == 'n' || ch == 'N') {
-			good = FALSE;
-			great = FALSE;
+			good = false;
+			great = false;
 			quality = "normal";
 		} else if (ch == 'g' || ch == 'G') {
-			good = TRUE;
-			great = FALSE;
+			good = true;
+			great = false;
 			quality = "good";
 		} else if (ch == 'e' || ch == 'E') {
-			good = TRUE;
-			great = TRUE;
+			good = true;
+			great = true;
 			quality = "excellent";
 		} else {
 #if 0 /* unused */
-			good = FALSE;
-			great = FALSE;
+			good = false;
+			great = false;
 #endif /* unused */
 			break;
 		}
@@ -949,30 +1116,30 @@ static void wiz_statistics(struct object *obj, int level)
 			}
 
 			/* Create an object */
-			test_obj = make_object(cave, level, good, great, FALSE, NULL, 0);
+			test_obj = make_object(cave, level, good, great, false, NULL, 0);
 
 			/* Allow multiple artifacts, because breaking the game is OK here */
-			if (obj->artifact) obj->artifact->created = FALSE;
+			if (obj->artifact) obj->artifact->created = false;
 
 			/* Test for the same tval and sval. */
 			if ((obj->tval) != (test_obj->tval)) continue;
 			if ((obj->sval) != (test_obj->sval)) continue;
 
 			/* Check modifiers */
-			ismatch = TRUE;
+			ismatch = true;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
 				if (test_obj->modifiers[j] != obj->modifiers[j])
-					ismatch = FALSE;
+					ismatch = false;
 
-			isbetter = TRUE;
+			isbetter = true;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
 				if (test_obj->modifiers[j] < obj->modifiers[j])
-					isbetter = FALSE;
+					isbetter = false;
 
-			isworse = TRUE;
+			isworse = true;
 			for (j = 0; j < OBJ_MOD_MAX; j++)
 				if (test_obj->modifiers[j] > obj->modifiers[j])
-					isworse = FALSE;
+					isworse = false;
 
 			/* Check for match */
 			if (ismatch && (test_obj->to_a == obj->to_a) &&
@@ -1007,7 +1174,7 @@ static void wiz_statistics(struct object *obj, int level)
 
 
 	/* Hack -- Normally only make a single artifact */
-	if (obj->artifact) obj->artifact->created = TRUE;
+	if (obj->artifact) obj->artifact->created = true;
 }
 
 
@@ -1062,22 +1229,7 @@ static void wiz_quantity_item(struct object *obj, bool carried)
  */
 static void wiz_tweak_curse(struct object *obj)
 {
-	if (cursed_p(obj->flags)) {
-		bitflag f[OF_SIZE];
-		msg("Resetting existing curses.");
-
-		create_mask(f, FALSE, OFT_CURSE, OFT_MAX);
-		of_diff(obj->flags, f);
-	}
-
-	if (get_check("Set light curse? "))
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, FLAG_END);
-	else if (get_check("Set heavy curse? "))
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
-				  FLAG_END);
-	else if (get_check("Set permanent curse? "))
-		flags_set(obj->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE,
-				  OF_PERMA_CURSE, FLAG_END);
+	// DO SOMETHING - NRM
 }
 
 
@@ -1098,8 +1250,8 @@ static void do_cmd_wiz_play(void)
 
 	const char *q, *s;
 
-	bool changed = FALSE;
-	bool all = TRUE;
+	bool changed = false;
+	bool all = true;
 
 
 	/* Get an item */
@@ -1111,7 +1263,7 @@ static void do_cmd_wiz_play(void)
 	screen_save();
 
 	/* The main loop */
-	while (TRUE) {
+	while (true) {
 		/* Display the item */
 		wiz_display_item(obj, all);
 
@@ -1120,7 +1272,7 @@ static void do_cmd_wiz_play(void)
 			break;
 
 		if (ch == 'A' || ch == 'a') {
-			changed = TRUE;
+			changed = true;
 			break;
 		} else if (ch == 'c' || ch == 'C')
 			wiz_tweak_curse(obj);
@@ -1133,7 +1285,7 @@ static void do_cmd_wiz_play(void)
 		else if (ch == 'k' || ch == 'K')
 			all = !all;
 		else if (ch == 'q' || ch == 'Q') {
-			bool carried = (object_is_carried(player, obj)) ? TRUE : FALSE;
+			bool carried = (object_is_carried(player, obj)) ? true : false;
 			wiz_quantity_item(obj, carried);
 		}
 	}
@@ -1167,7 +1319,7 @@ void wiz_cheat_death(void)
 	player->age = 1;
 	player->noscore |= NOSCORE_WIZARD;
 
-	player->is_dead = FALSE;
+	player->is_dead = false;
 
 	/* Restore hit & spell points */
 	player->chp = player->mhp;
@@ -1176,14 +1328,14 @@ void wiz_cheat_death(void)
 	player->csp_frac = 0;
 
 	/* Healing */
-	(void)player_clear_timed(player, TMD_BLIND, TRUE);
-	(void)player_clear_timed(player, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(player, TMD_POISONED, TRUE);
-	(void)player_clear_timed(player, TMD_AFRAID, TRUE);
-	(void)player_clear_timed(player, TMD_PARALYZED, TRUE);
-	(void)player_clear_timed(player, TMD_IMAGE, TRUE);
-	(void)player_clear_timed(player, TMD_STUN, TRUE);
-	(void)player_clear_timed(player, TMD_CUT, TRUE);
+	(void)player_clear_timed(player, TMD_BLIND, true);
+	(void)player_clear_timed(player, TMD_CONFUSED, true);
+	(void)player_clear_timed(player, TMD_POISONED, true);
+	(void)player_clear_timed(player, TMD_AFRAID, true);
+	(void)player_clear_timed(player, TMD_PARALYZED, true);
+	(void)player_clear_timed(player, TMD_IMAGE, true);
+	(void)player_clear_timed(player, TMD_STUN, true);
+	(void)player_clear_timed(player, TMD_CUT, true);
 
 	/* Prevent starvation */
 	player_set_food(player, PY_FOOD_MAX - 1);
@@ -1214,7 +1366,7 @@ void wiz_cheat_death(void)
 	my_strcpy(player->died_from, "Cheating death", sizeof(player->died_from));
 
 	/* Back to the town */
-	dungeon_change_level(0);
+	dungeon_change_level(player, 0);
 }
 
 /**
@@ -1222,18 +1374,25 @@ void wiz_cheat_death(void)
  */
 static void do_cmd_wiz_cure_all(void)
 {
+	int i;
+
 	/* Remove curses */
-	(void)remove_all_curse();
+	for (i = 0; i < player->body.count; i++) {
+		if (player->body.slots[i].obj && player->body.slots[i].obj->curses) {
+			mem_free(player->body.slots[i].obj->curses);
+			player->body.slots[i].obj->curses = NULL;
+		}
+	}
 
 	/* Restore stats */
-	effect_simple(EF_RESTORE_STAT, "0", STAT_STR, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, "0", STAT_INT, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, "0", STAT_WIS, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, "0", STAT_DEX, 0, 0, NULL);
-	effect_simple(EF_RESTORE_STAT, "0", STAT_CON, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_STR, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_INT, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_WIS, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_DEX, 0, 0, NULL);
+	effect_simple(EF_RESTORE_STAT, source_player(), "0", STAT_CON, 0, 0, NULL);
 
 	/* Restore the level */
-	effect_simple(EF_RESTORE_EXP, "0", 1, 0, 0, NULL);
+	effect_simple(EF_RESTORE_EXP, source_player(), "0", 1, 0, 0, NULL);
 
 	/* Heal the player */
 	player->chp = player->mhp;
@@ -1244,16 +1403,16 @@ static void do_cmd_wiz_cure_all(void)
 	player->csp_frac = 0;
 
 	/* Cure stuff */
-	(void)player_clear_timed(player, TMD_BLIND, TRUE);
-	(void)player_clear_timed(player, TMD_CONFUSED, TRUE);
-	(void)player_clear_timed(player, TMD_POISONED, TRUE);
-	(void)player_clear_timed(player, TMD_AFRAID, TRUE);
-	(void)player_clear_timed(player, TMD_PARALYZED, TRUE);
-	(void)player_clear_timed(player, TMD_IMAGE, TRUE);
-	(void)player_clear_timed(player, TMD_STUN, TRUE);
-	(void)player_clear_timed(player, TMD_CUT, TRUE);
-	(void)player_clear_timed(player, TMD_SLOW, TRUE);
-	(void)player_clear_timed(player, TMD_AMNESIA, TRUE);
+	(void)player_clear_timed(player, TMD_BLIND, true);
+	(void)player_clear_timed(player, TMD_CONFUSED, true);
+	(void)player_clear_timed(player, TMD_POISONED, true);
+	(void)player_clear_timed(player, TMD_AFRAID, true);
+	(void)player_clear_timed(player, TMD_PARALYZED, true);
+	(void)player_clear_timed(player, TMD_IMAGE, true);
+	(void)player_clear_timed(player, TMD_STUN, true);
+	(void)player_clear_timed(player, TMD_CUT, true);
+	(void)player_clear_timed(player, TMD_SLOW, true);
+	(void)player_clear_timed(player, TMD_AMNESIA, true);
 
 	/* No longer hungry */
 	player_set_food(player, PY_FOOD_MAX - 1);
@@ -1306,7 +1465,7 @@ static void do_cmd_wiz_jump(void)
 	msg("You jump to dungeon level %d.", depth);
 
 	/* New depth */
-	dungeon_change_level(depth);
+	dungeon_change_level(player, depth);
 
 	/* Hack - should be handled by redoing how debug commands work - NRM */
 	cmdq_push(CMD_HOLD);
@@ -1328,7 +1487,7 @@ static void do_cmd_wiz_learn(int lev)
 
 		/* Induce awareness */
 		if (kind->level <= lev)
-			kind->aware = TRUE;
+			kind->aware = true;
 	}
 	
 	msg("You now know about many items!");
@@ -1388,7 +1547,7 @@ static void do_cmd_wiz_summon(int num)
 	int i;
 
 	for (i = 0; i < num; i++)
-		effect_simple(EF_SUMMON, "1", 0, 0, 0, NULL);
+		effect_simple(EF_SUMMON, source_player(), "1", 0, 0, 0, NULL);
 }
 
 
@@ -1410,13 +1569,13 @@ static void do_cmd_wiz_named(struct monster_race *r, bool slp)
 		int d = 1;
 
 		/* Pick a location */
-		scatter(cave, &y, &x, py, px, d, TRUE);
+		scatter(cave, &y, &x, py, px, d, true);
 
 		/* Require empty grids */
 		if (!square_isempty(cave, y, x)) continue;
 
 		/* Place it (allow groups) */
-		if (place_new_monster(cave, y, x, r, slp, TRUE, ORIGIN_DROP_WIZARD))
+		if (place_new_monster(cave, y, x, r, slp, true, ORIGIN_DROP_WIZARD))
 			break;
 	}
 }
@@ -1471,7 +1630,6 @@ static void do_cmd_wiz_query(void)
 	/* Extract a flag */
 	switch (cmd)
 	{
-		case 'm': flag = (SQUARE_MARK); break;
 		case 'g': flag = (SQUARE_GLOW); break;
 		case 'r': flag = (SQUARE_ROOM); break;
 		case 'a': flag = (SQUARE_VAULT); break;
@@ -1480,8 +1638,6 @@ static void do_cmd_wiz_query(void)
 		case 'w': flag = (SQUARE_WASSEEN); break;
 		case 'd': flag = (SQUARE_DTRAP); break;
 		case 'f': flag = (SQUARE_FEEL); break;
-		case 'e': flag = (SQUARE_DEDGE); break;
-		case 'z': flag = (SQUARE_VERT); break;
 		case 't': flag = (SQUARE_TRAP); break;
 		case 'n': flag = (SQUARE_INVIS); break;
 		case 'i': flag = (SQUARE_WALL_INNER); break;
@@ -1498,10 +1654,10 @@ static void do_cmd_wiz_query(void)
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Given flag, show only those grids */
-			if (!sqinfo_has(cave->squares[y][x].info, flag)) continue;
+			if (flag && !sqinfo_has(cave->squares[y][x].info, flag)) continue;
 
-			/* Given no flag, show unknown grids */
-			if (!flag && (!square_ismark(cave, y, x))) continue;
+			/* Given no flag, show known grids */
+			if (!flag && (!square_isknown(cave, y, x))) continue;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
@@ -1555,6 +1711,7 @@ static void do_cmd_wiz_features(void)
 	int featg[] = {FEAT_GRANITE};
 	int featp[] = {FEAT_PERM};
 	int featr[] = {FEAT_RUBBLE};
+	int feata[] = {FEAT_PASS_RUBBLE};
 	int length = 0;
 
 
@@ -1592,20 +1749,22 @@ static void do_cmd_wiz_features(void)
 		case 'p': feat = featp; length = 1; break;
 		/* Rubble */
 		case 'r': feat = featr; length = 1; break;
+		/* Passable rubble */
+		case 'a': feat = feata; length = 1; break;
 	}
 
 	/* Scan map */
 	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 			byte a = COLOUR_RED;
-			bool show = FALSE;
+			bool show = false;
 			int i;
 
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Given feature, show only those grids */
 			for (i = 0; i < length; i++)
-				if (cave->squares[y][x].feat == feat[i]) show = TRUE;
+				if (cave->squares[y][x].feat == feat[i]) show = true;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
@@ -1642,7 +1801,7 @@ static void wiz_test_kind(int tval)
 	int px = player->px;
 	int sval;
 
-	struct object *obj;
+	struct object *obj, *known_obj;
 
 	for (sval = 0; sval < 255; sval++) {
 		/* This spams failure messages, but that's the downside of wizardry */
@@ -1657,15 +1816,19 @@ static void wiz_test_kind(int tval)
 			object_prep(obj, kind, player->depth, RANDOMISE);
 
 			/* Apply magic (no messages, no artifacts) */
-			apply_magic(obj, player->depth, FALSE, FALSE, FALSE, FALSE);
+			apply_magic(obj, player->depth, false, false, false, false);
 
 			/* Mark as cheat, and where created */
 			obj->origin = ORIGIN_CHEAT;
 			obj->origin_depth = player->depth;
 		}
 
+		/* Make a known object */
+		known_obj = object_new();
+		obj->known = known_obj;
+
 		/* Drop the object from heaven */
-		drop_near(cave, obj, 0, py, px, TRUE);
+		drop_near(cave, &obj, 0, py, px, true);
 	}
 
 	msg("Done.");
@@ -1733,7 +1896,7 @@ void do_cmd_wiz_effect(void)
 	char dice[80] = "0";
 	int index = -1;
 	int p1 = 0, p2 = 0, p3 = 0;
-	bool ident = FALSE;
+	bool ident = false;
 
 	/* Avoid the prompt getting in the way */
 	screen_save();
@@ -1775,7 +1938,7 @@ void do_cmd_wiz_effect(void)
 	screen_load();
 
 	if (index > EF_NONE && index < EF_MAX)
-		effect_simple(index, dice, p1, p2, p3, &ident);
+		effect_simple(index, source_player(), dice, p1, p2, p3, &ident);
 	else
 		msg("No effect found.");
 
@@ -1844,30 +2007,30 @@ void get_debug_command(void)
 		/* Create any object */
 		case 'c':
 		{
-			wiz_create_item(FALSE);
+			wiz_create_item(false);
 			break;
 		}
 
 		/* Create an artifact */
 		case 'C':
 		{
-			wiz_create_item(TRUE);
+			wiz_create_item(true);
 			break;
 		}
 
 		/* Detect everything */
 		case 'd':
 		{
-			effect_simple(EF_DETECT_TRAPS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_DOORS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_STAIRS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_GOLD, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_OBJECTS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_VISIBLE_MONSTERS, "22d40", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_TRAPS, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_DOORS, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_STAIRS, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_GOLD, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_OBJECTS, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "22d40", 0, 0, 0, NULL);
 			break;
 		}
-		
+
 		/* Test for disconnected dungeon */
 		case 'D':
 		{
@@ -1909,14 +2072,14 @@ void get_debug_command(void)
 			n= get_quantity("How many good objects? ", 40);
 			screen_load();
 			if (n < 1) n = 1;
-			acquirement(py, px, player->depth, n, FALSE);
+			acquirement(py, px, player->depth, n, false);
 			break;
 		}
 
 		/* GF demo */
 		case 'G':
 		{
-			wiz_gf_demo();
+			wiz_proj_demo();
 			break;
 		}
 
@@ -1930,14 +2093,7 @@ void get_debug_command(void)
 		/* Hit all monsters in LOS */
 		case 'H':
 		{
-			effect_simple(EF_PROJECT_LOS, "10000", GF_DISP_ALL, 0, 0, NULL);
-			break;
-		}
-
-		/* Identify */
-		case 'i':
-		{
-			effect_simple(EF_IDENTIFY, "0", 0, 0, 0, NULL);
+			effect_simple(EF_PROJECT_LOS, source_player(), "10000", PROJ_DISP_ALL, 0, 0, NULL);
 			break;
 		}
 
@@ -1955,7 +2111,7 @@ void get_debug_command(void)
 			break;
 		}
 
-		/* Work out what the kayer is typing */
+		/* Work out what the player is typing */
 		case 'L': 
 		{
 			do_cmd_keylog();
@@ -1965,7 +2121,7 @@ void get_debug_command(void)
 		/* Magic Mapping */
 		case 'm':
 		{
-			effect_simple(EF_MAP_AREA, "22d40", 0, 0, 0, NULL);
+			effect_simple(EF_MAP_AREA, source_player(), "22d40", 0, 0, 0, NULL);
 			break;
 		}
 
@@ -1999,7 +2155,7 @@ void get_debug_command(void)
 			screen_load();
 
 			if (r)
-				do_cmd_wiz_named(r, TRUE);
+				do_cmd_wiz_named(r, true);
 			else
 				msg("No monster found.");
 			
@@ -2017,7 +2173,7 @@ void get_debug_command(void)
 		case 'p':
 		{
 			const char *near = "10";
-			effect_simple(EF_TELEPORT, near, 0, 1, 0, NULL);
+			effect_simple(EF_TELEPORT, source_player(), near, 0, 1, 0, NULL);
 			break;
 		}
 
@@ -2111,28 +2267,40 @@ void get_debug_command(void)
 		case 't':
 		{
 			const char *far = "100";
-			effect_simple(EF_TELEPORT, far, 0, 1, 0, NULL);
+			effect_simple(EF_TELEPORT, source_player(), far, 0, 1, 0, NULL);
 			break;
 		}
 
 		/* Create a trap */
 		case 'T':
 		{
-			if (!square_isfloor(cave, player->py, player->px))
+			if (!square_isfloor(cave, player->py, player->px)) {
 				msg("You can't place a trap there!");
-			else if (player->depth == 0)
+				break;
+			} else if (player->depth == 0) {
 				msg("You can't place a trap in the town!");
-			else
-				square_add_trap(cave, player->py, player->px);
+				break;
+			}
+
+			char buf[40];
+			if (!get_string("Create which trap? ", buf, sizeof(buf)))
+				break;
+
+			struct trap_kind *trap = lookup_trap(buf);
+			if (trap) {
+				place_trap(cave, player->py, player->px, trap->tidx, 0);
+			} else {
+				msg("Trap not found.");
+			}
+
 			break;
 		}
 
 		/* Un-hide all monsters */
 		case 'u':
 		{
-			effect_simple(EF_DETECT_VISIBLE_MONSTERS, "500d500", 0, 0, 0, NULL);
-			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, "500d500", 0, 0, 0,
-						  NULL);
+			effect_simple(EF_DETECT_VISIBLE_MONSTERS, source_player(), "500d500", 0, 0, 0, NULL);
+			effect_simple(EF_DETECT_INVISIBLE_MONSTERS, source_player(), "500d500", 0, 0, 0, NULL);
 			break;
 		}
 
@@ -2144,7 +2312,7 @@ void get_debug_command(void)
 			n = get_quantity("How many great objects? ", 40);
 			screen_load();
 			if (n < 1) n = 1;
-			acquirement(py, px, player->depth, n, TRUE);
+			acquirement(py, px, player->depth, n, true);
 			break;
 		}
 
@@ -2162,7 +2330,7 @@ void get_debug_command(void)
 		/* Wizard Light the Level */
 		case 'w':
 		{
-			wiz_light(cave, TRUE);
+			wiz_light(cave, true);
 			break;
 		}
 
@@ -2250,7 +2418,7 @@ void get_debug_command(void)
 		/* Hack */
 		case '_':
 		{
-			do_cmd_wiz_hack_ben();
+			do_cmd_wiz_hack_nick();
 			break;
 		}
 

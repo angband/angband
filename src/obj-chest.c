@@ -22,7 +22,6 @@
 #include "effects.h"
 #include "mon-lore.h"
 #include "obj-chest.h"
-#include "obj-identify.h"
 #include "obj-ignore.h"
 #include "obj-make.h"
 #include "obj-pile.h"
@@ -126,15 +125,15 @@ byte chest_trap_type(const struct object *obj)
 bool is_trapped_chest(const struct object *obj)
 {
 	if (!tval_is_chest(obj))
-		return FALSE;
+		return false;
 
 	/* Ignore if requested */
 	if (ignore_item_ok(obj))
-		return FALSE;
+		return false;
 
 	/* Disarmed or opened chests are not trapped */
 	if (obj->pval <= 0)
-		return FALSE;
+		return false;
 
 	/* Some chests simply don't have traps */
 	return (chest_traps[obj->pval] != 0);
@@ -147,11 +146,11 @@ bool is_trapped_chest(const struct object *obj)
 bool is_locked_chest(const struct object *obj)
 {
 	if (!tval_is_chest(obj))
-		return FALSE;
+		return false;
 
 	/* Ignore if requested */
 	if (ignore_item_ok(obj))
-		return FALSE;
+		return false;
 
 	/* Disarmed or opened chests are not locked */
 	return (obj->pval > 0);
@@ -189,7 +188,7 @@ struct object *chest_check(int y, int x, enum chest_query check_type)
 				return obj;
 			break;
 		case CHEST_TRAPPED:
-			if (is_trapped_chest(obj) && object_is_known(obj))
+			if (is_trapped_chest(obj) && obj->known && obj->known->pval)
 				return obj;
 			break;
 		}
@@ -238,71 +237,54 @@ int count_chests(int *y, int *x, enum chest_query check_type)
  *
  * Disperse treasures from the given chest, centered at (x,y).
  *
- * Small chests often contain "gold", while Large chests always contain
- * items.  Wooden chests contain 2 items, Iron chests contain 4 items,
- * and Steel chests contain 6 items.  The "value" of the items in a
- * chest is based on the level on which the chest is generated.
+ * Wooden chests contain 1 item, Iron chests contain 2 items,
+ * and Steel chests contain 3 items.  Small chests now contain good items,
+ * large chests great items, out of depth for the level on which the chest
+ * is generated.
  *
  * Judgment of size and construction of chests is currently made from the name.
  */
 static void chest_death(int y, int x, struct object *chest)
 {
-	int number, value;
-
-	bool tiny;
-
-	struct object *treasure;
-
-	/* Small chests often hold "gold" */
-	tiny = strstr(chest->kind->name, "Small") ? TRUE : FALSE;
-
-	/* Determine how much to drop (see above) */
-	if (strstr(chest->kind->name, "wooden"))
-		number = 2;
-	else if (strstr(chest->kind->name, "iron"))
-		number = 4;
-	else if (strstr(chest->kind->name, "steel"))
-		number = 6;
-	else
-		number = 2 * (randint1(3));
+	int number, level;
+	bool large = strstr(chest->kind->name, "Large") ? true : false;;
 
 	/* Zero pval means empty chest */
-	if (!chest->pval) number = 0;
+	if (!chest->pval)
+		return;
 
-	/* Determine the "value" of the items */
-	value = chest->origin_depth - 10 + 2 * chest->sval;
-	if (value < 1)
-		value = 1;
-
-	/* Drop some objects (non-chests) */
-	for (; number > 0; --number) {
-		/* Small chests often drop gold */
-		if (tiny && (randint0(100) < 75))
-			treasure = make_gold(value, "any");
-
-		/* Otherwise drop an item, as long as it isn't a chest */
-		else {
-			treasure = make_object(cave, value, FALSE, FALSE, FALSE, NULL, 0);
-			if (!treasure) continue;
-			if (tval_is_chest(treasure)) {
-				mem_free(treasure);
-				continue;
-			}
-		}
-
-		/* Record origin */
-		treasure->origin = ORIGIN_CHEST;
-		treasure->origin_depth = chest->origin_depth;
-
-		/* Drop it in the dungeon */
-		drop_near(cave, treasure, 0, y, x, TRUE);
+	/* Determine how much to drop (see above) */
+	if (strstr(chest->kind->name, "wooden")) {
+		number = 1;
+	} else if (strstr(chest->kind->name, "iron")) {
+		number = 2;
+	} else if (strstr(chest->kind->name, "steel")) {
+		number = 3;
+	} else {
+		number = randint1(3);
 	}
 
-	/* Empty */
-	chest->pval = 0;
+	/* Drop some valuable objects (non-chests) */
+	level = chest->origin_depth + 5;
+	while (number > 0) {
+		struct object *treasure;
+		treasure = make_object(cave, level, true, large, false, NULL, 0);
+		if (!treasure)
+			continue;
+		if (tval_is_chest(treasure)) {
+			object_delete(&treasure);
+			continue;
+		}
 
-	/* Known */
-	object_notice_everything(chest);
+		treasure->origin = ORIGIN_CHEST;
+		treasure->origin_depth = chest->origin_depth;
+		drop_near(cave, &treasure, 0, y, x, true);
+		number--;
+	}
+
+	/* Chest is now empty */
+	chest->pval = 0;
+	chest->known->pval = 0;
 }
 
 
@@ -326,32 +308,32 @@ static void chest_trap(int y, int x, struct object *obj)
 	if (trap & (CHEST_LOSE_STR)) {
 		msg("A small needle has pricked you!");
 		take_hit(player, damroll(1, 4), "a poison needle");
-		effect_simple(EF_DRAIN_STAT, "0", STAT_STR, 0, 0, NULL);
+		effect_simple(EF_DRAIN_STAT, source_object(obj), "0", STAT_STR, 0, 0, NULL);
 	}
 
 	/* Lose constitution */
 	if (trap & (CHEST_LOSE_CON)) {
 		msg("A small needle has pricked you!");
 		take_hit(player, damroll(1, 4), "a poison needle");
-		effect_simple(EF_DRAIN_STAT, "0", STAT_CON, 0, 0, NULL);
+		effect_simple(EF_DRAIN_STAT, source_object(obj), "0", STAT_CON, 0, 0, NULL);
 	}
 
 	/* Poison */
 	if (trap & (CHEST_POISON)) {
 		msg("A puff of green gas surrounds you!");
-		effect_simple(EF_TIMED_INC, "10+1d20", TMD_POISONED, 0, 0, NULL);
+		effect_simple(EF_TIMED_INC, source_object(obj), "10+1d20", TMD_POISONED, 0, 0, NULL);
 	}
 
 	/* Paralyze */
 	if (trap & (CHEST_PARALYZE)) {
 		msg("A puff of yellow gas surrounds you!");
-		effect_simple(EF_TIMED_INC, "10+1d20", TMD_PARALYZED, 0, 0, NULL);
+		effect_simple(EF_TIMED_INC, source_object(obj), "10+1d20", TMD_PARALYZED, 0, 0, NULL);
 	}
 
 	/* Summon monsters */
 	if (trap & (CHEST_SUMMON)) {
 		msg("You are enveloped in a cloud of smoke!");
-		effect_simple(EF_SUMMON, "2+1d3", 0, 0, 0, NULL);
+		effect_simple(EF_SUMMON, source_object(obj), "2+1d3", 0, 0, 0, NULL);
 	}
 
 	/* Explode */
@@ -369,23 +351,23 @@ static void chest_trap(int y, int x, struct object *obj)
  *
  * Assume there is no monster blocking the destination
  *
- * Returns TRUE if repeated commands may continue
+ * Returns true if repeated commands may continue
  */
 bool do_cmd_open_chest(int y, int x, struct object *obj)
 {
 	int i, j;
 
-	bool flag = TRUE;
+	bool flag = true;
 
-	bool more = FALSE;
+	bool more = false;
 
 	/* Attempt to unlock it */
 	if (obj->pval > 0) {
 		/* Assume locked, and thus not open */
-		flag = FALSE;
+		flag = false;
 
 		/* Get the "disarm" factor */
-		i = player->state.skills[SKILL_DISARM];
+		i = player->state.skills[SKILL_DISARM_PHYS];
 
 		/* Penalize some conditions */
 		if (player->timed[TMD_BLIND] || no_light()) i = i / 10;
@@ -401,10 +383,10 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 		if (randint0(100) < j) {
 			msgt(MSG_LOCKPICK, "You have picked the lock.");
 			player_exp_gain(player, 1);
-			flag = TRUE;
+			flag = true;
 		} else {
 			/* We may continue repeating */
-			more = TRUE;
+			more = true;
 			event_signal(EVENT_INPUT_FLUSH);
 			msgt(MSG_LOCKPICK_FAIL, "You failed to pick the lock.");
 		}
@@ -412,8 +394,10 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 
 	/* Allowed to open */
 	if (flag) {
-		/* Apply chest traps, if any */
-		chest_trap(y, x, obj);
+		/* Apply chest traps, if any and player is not trapsafe */
+		if (!player->timed[TMD_TRAPSAFE]) {
+			chest_trap(y, x, obj);
+		}
 
 		/* Let the Chest drop items */
 		chest_death(y, x, obj);
@@ -426,7 +410,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 	 * might as well ignore it here
 	 */
 	if (obj->pval == 0)
-		obj->ignore = TRUE;
+		obj->known->notice |= OBJ_NOTICE_IGNORE;
 
 	/* Redraw chest, to be on the safe side (it may have been ignored) */
 	square_light_spot(cave, y, x);
@@ -441,16 +425,19 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
  *
  * Assume there is no monster blocking the destination
  *
- * Returns TRUE if repeated commands may continue
+ * Returns true if repeated commands may continue
  */
 bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 {
 	int i, j;
 
-	bool more = FALSE;
+	bool more = false;
 
 	/* Get the "disarm" factor */
-	i = player->state.skills[SKILL_DISARM];
+	if (obj->pval > 0 && (chest_traps[obj->pval] & CHEST_SUMMON))
+		i = player->state.skills[SKILL_DISARM_MAGIC];
+	else
+		i = player->state.skills[SKILL_DISARM_PHYS];
 
 	/* Penalize some conditions */
 	if (player->timed[TMD_BLIND] || no_light()) i = i / 10;
@@ -463,7 +450,7 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 	if (j < 2) j = 2;
 
 	/* Must find the trap first. */
-	if (!object_is_known(obj)) {
+	if (!obj->known->pval) {
 		msg("I don't see any traps.");
 	} else if (!is_trapped_chest(obj)) {
 		/* Already disarmed/unlocked or no traps */
@@ -473,9 +460,9 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 		msgt(MSG_DISARM, "You have disarmed the chest.");
 		player_exp_gain(player, obj->pval);
 		obj->pval = (0 - obj->pval);
-	} else if ((i > 5) && (randint1(i) > 5)) {
+	} else if (randint0(100) < j) {
 		/* Failure -- Keep trying */
-		more = TRUE;
+		more = true;
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to disarm the chest.");
 	} else {

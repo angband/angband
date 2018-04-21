@@ -34,7 +34,24 @@
 
 struct feature *f_info;
 struct chunk *cave = NULL;
-struct chunk *cave_k = NULL;
+
+int FEAT_NONE;
+int FEAT_FLOOR;
+int FEAT_CLOSED;
+int FEAT_OPEN;
+int FEAT_BROKEN;
+int FEAT_LESS;
+int FEAT_MORE;
+int FEAT_SECRET;
+int FEAT_RUBBLE;
+int FEAT_PASS_RUBBLE;
+int FEAT_MAGMA;
+int FEAT_QUARTZ;
+int FEAT_MAGMA_K;
+int FEAT_QUARTZ_K;
+int FEAT_GRANITE;
+int FEAT_PERM;
+int FEAT_LAVA;
 
 /**
  * Global array for looping through the "keypad directions".
@@ -64,9 +81,172 @@ const s16b ddy_ddd[9] =
 { 1, -1, 0, 0, 1, 1, -1, -1, 0 };
 
 /**
+ * Hack -- Precompute a bunch of calls to distance().
+ *
+ * The pair of arrays dist_offsets_y[n] and dist_offsets_x[n] contain the
+ * offsets of all the locations with a distance of n from a central point,
+ * with an offset of (0,0) indicating no more offsets at this distance.
+ *
+ * This is, of course, fairly unreadable, but it eliminates multiple loops
+ * from the previous version.
+ *
+ * It is probably better to replace these arrays with code to compute
+ * the relevant arrays, even if the storage is pre-allocated in hard
+ * coded sizes.  At the very least, code should be included which is
+ * able to generate and dump these arrays (ala "los()").  XXX XXX XXX
+ */
+
+
+static const int d_off_y_0[] =
+{ 0 };
+
+static const int d_off_x_0[] =
+{ 0 };
+
+
+static const int d_off_y_1[] =
+{ -1, -1, -1, 0, 0, 1, 1, 1, 0 };
+
+static const int d_off_x_1[] =
+{ -1, 0, 1, -1, 1, -1, 0, 1, 0 };
+
+
+static const int d_off_y_2[] =
+{ -1, -1, -2, -2, -2, 0, 0, 1, 1, 2, 2, 2, 0 };
+
+static const int d_off_x_2[] =
+{ -2, 2, -1, 0, 1, -2, 2, -2, 2, -1, 0, 1, 0 };
+
+
+static const int d_off_y_3[] =
+{ -1, -1, -2, -2, -3, -3, -3, 0, 0, 1, 1, 2, 2,
+  3, 3, 3, 0 };
+
+static const int d_off_x_3[] =
+{ -3, 3, -2, 2, -1, 0, 1, -3, 3, -3, 3, -2, 2,
+  -1, 0, 1, 0 };
+
+
+static const int d_off_y_4[] =
+{ -1, -1, -2, -2, -3, -3, -3, -3, -4, -4, -4, 0,
+  0, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 0 };
+
+static const int d_off_x_4[] =
+{ -4, 4, -3, 3, -2, -3, 2, 3, -1, 0, 1, -4, 4,
+  -4, 4, -3, 3, -2, -3, 2, 3, -1, 0, 1, 0 };
+
+
+static const int d_off_y_5[] =
+{ -1, -1, -2, -2, -3, -3, -4, -4, -4, -4, -5, -5,
+  -5, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5,
+  5, 0 };
+
+static const int d_off_x_5[] =
+{ -5, 5, -4, 4, -4, 4, -2, -3, 2, 3, -1, 0, 1,
+  -5, 5, -5, 5, -4, 4, -4, 4, -2, -3, 2, 3, -1,
+  0, 1, 0 };
+
+
+static const int d_off_y_6[] =
+{ -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -5, -5,
+  -6, -6, -6, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
+  5, 5, 6, 6, 6, 0 };
+
+static const int d_off_x_6[] =
+{ -6, 6, -5, 5, -5, 5, -4, 4, -2, -3, 2, 3, -1,
+  0, 1, -6, 6, -6, 6, -5, 5, -5, 5, -4, 4, -2,
+  -3, 2, 3, -1, 0, 1, 0 };
+
+
+static const int d_off_y_7[] =
+{ -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -5, -5,
+  -6, -6, -6, -6, -7, -7, -7, 0, 0, 1, 1, 2, 2, 3,
+  3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 0 };
+
+static const int d_off_x_7[] =
+{ -7, 7, -6, 6, -6, 6, -5, 5, -4, -5, 4, 5, -2,
+  -3, 2, 3, -1, 0, 1, -7, 7, -7, 7, -6, 6, -6,
+  6, -5, 5, -4, -5, 4, 5, -2, -3, 2, 3, -1, 0,
+  1, 0 };
+
+
+static const int d_off_y_8[] =
+{ -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -6, -6,
+  -6, -6, -7, -7, -7, -7, -8, -8, -8, 0, 0, 1, 1,
+  2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7,
+  8, 8, 8, 0 };
+
+static const int d_off_x_8[] =
+{ -8, 8, -7, 7, -7, 7, -6, 6, -6, 6, -4, -5, 4,
+  5, -2, -3, 2, 3, -1, 0, 1, -8, 8, -8, 8, -7,
+  7, -7, 7, -6, 6, -6, 6, -4, -5, 4, 5, -2, -3,
+  2, 3, -1, 0, 1, 0 };
+
+
+static const int d_off_y_9[] =
+{ -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -6, -6,
+  -7, -7, -7, -7, -8, -8, -8, -8, -9, -9, -9, 0,
+  0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 7,
+  7, 8, 8, 8, 8, 9, 9, 9, 0 };
+
+static const int d_off_x_9[] =
+{ -9, 9, -8, 8, -8, 8, -7, 7, -7, 7, -6, 6, -4,
+  -5, 4, 5, -2, -3, 2, 3, -1, 0, 1, -9, 9, -9,
+  9, -8, 8, -8, 8, -7, 7, -7, 7, -6, 6, -4, -5,
+  4, 5, -2, -3, 2, 3, -1, 0, 1, 0 };
+
+
+const int *dist_offsets_y[10] =
+{
+	d_off_y_0, d_off_y_1, d_off_y_2, d_off_y_3, d_off_y_4,
+	d_off_y_5, d_off_y_6, d_off_y_7, d_off_y_8, d_off_y_9
+};
+
+const int *dist_offsets_x[10] =
+{
+	d_off_x_0, d_off_x_1, d_off_x_2, d_off_x_3, d_off_x_4,
+	d_off_x_5, d_off_x_6, d_off_x_7, d_off_x_8, d_off_x_9
+};
+
+
+/**
+ * Given a central direction at position [dir #][0], return a series
+ * of directions radiating out on both sides from the central direction
+ * all the way back to its rear.
+ *
+ * Side directions come in pairs; for example, directions '1' and '3'
+ * flank direction '2'.  The code should know which side to consider
+ * first.  If the left, it must add 10 to the central direction to
+ * access the second part of the table.
+ */
+const byte side_dirs[20][8] = {
+	{0, 0, 0, 0, 0, 0, 0, 0},	/* bias right */
+	{1, 4, 2, 7, 3, 8, 6, 9},
+	{2, 1, 3, 4, 6, 7, 9, 8},
+	{3, 2, 6, 1, 9, 4, 8, 7},
+	{4, 7, 1, 8, 2, 9, 3, 6},
+	{5, 5, 5, 5, 5, 5, 5, 5},
+	{6, 3, 9, 2, 8, 1, 7, 4},
+	{7, 8, 4, 9, 1, 6, 2, 3},
+	{8, 9, 7, 6, 4, 3, 1, 2},
+	{9, 6, 8, 3, 7, 2, 4, 1},
+
+	{0, 0, 0, 0, 0, 0, 0, 0},	/* bias left */
+	{1, 2, 4, 3, 7, 6, 8, 9},
+	{2, 3, 1, 6, 4, 9, 7, 8},
+	{3, 6, 2, 9, 1, 8, 4, 7},
+	{4, 1, 7, 2, 8, 3, 9, 6},
+	{5, 5, 5, 5, 5, 5, 5, 5},
+	{6, 9, 3, 8, 2, 7, 1, 4},
+	{7, 4, 8, 1, 9, 2, 6, 3},
+	{8, 7, 9, 4, 6, 1, 3, 2},
+	{9, 8, 6, 7, 3, 4, 2, 1}
+};
+
+/**
  * Find a terrain feature index by name
  */
-static int lookup_feat(const char *name)
+int lookup_feat(const char *name)
 {
 	int i;
 
@@ -107,9 +287,7 @@ void set_terrain(void)
 	FEAT_QUARTZ_K = lookup_feat("quartz vein with treasure");
 	FEAT_GRANITE = lookup_feat("granite wall");
 	FEAT_PERM = lookup_feat("permanent wall");
-	FEAT_LAVA = lookup_feat("lava flow");
-	FEAT_DTRAP_FLOOR = lookup_feat("dtrap edge - floor");
-	FEAT_DTRAP_WALL = lookup_feat("dtrap edge - wall");
+	FEAT_LAVA = lookup_feat("lava");
 }
 
 /**
@@ -124,11 +302,19 @@ struct chunk *cave_new(int height, int width) {
 	c->feat_count = mem_zalloc((z_info->f_max + 1) * sizeof(int));
 
 	c->squares = mem_zalloc(c->height * sizeof(struct square*));
+	c->noise.grids = mem_zalloc(c->height * sizeof(u16b*));
+	c->scent.grids = mem_zalloc(c->height * sizeof(u16b*));
 	for (y = 0; y < c->height; y++) {
 		c->squares[y] = mem_zalloc(c->width * sizeof(struct square));
-		for (x = 0; x < c->width; x++)
+		for (x = 0; x < c->width; x++) {
 			c->squares[y][x].info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
+		}
+		c->noise.grids[y] = mem_zalloc(c->width * sizeof(u16b));
+		c->scent.grids[y] = mem_zalloc(c->width * sizeof(u16b));
 	}
+
+	c->objects = mem_zalloc(OBJECT_LIST_SIZE * sizeof(struct object*));
+	c->obj_max = OBJECT_LIST_SIZE - 1;
 
 	c->monsters = mem_zalloc(z_info->level_monster_max *sizeof(struct monster));
 	c->mon_max = 1;
@@ -153,10 +339,15 @@ void cave_free(struct chunk *c) {
 				object_pile_free(c->squares[y][x].obj);
 		}
 		mem_free(c->squares[y]);
+		mem_free(c->noise.grids[y]);
+		mem_free(c->scent.grids[y]);
 	}
 	mem_free(c->squares);
+	mem_free(c->noise.grids);
+	mem_free(c->scent.grids);
 
 	mem_free(c->feat_count);
+	mem_free(c->objects);
 	mem_free(c->monsters);
 	if (c->name)
 		string_free(c->name);
@@ -165,7 +356,96 @@ void cave_free(struct chunk *c) {
 
 
 /**
- * Standard "find me a location" function
+ * Enter an object in the list of objects for the current level/chunk.  This
+ * function is robust against listing of duplicates or non-objects
+ */
+void list_object(struct chunk *c, struct object *obj)
+{
+	int i, newsize;
+
+	/* Check for duplicates and objects already deleted or combined */
+	if (!obj) return;
+	for (i = 1; i < c->obj_max; i++)
+		if (c->objects[i] == obj)
+			return;
+
+	/* Put objects in holes in the object list */
+	for (i = 1; i < c->obj_max; i++) {
+		/* If there is a known object, skip this slot */
+		if ((c == cave) && player->cave && player->cave->objects[i]) {
+			continue;
+		}
+
+		/* Put the object in a hole */
+		if (c->objects[i] == NULL) {
+			c->objects[i] = obj;
+			obj->oidx = i;
+			return;
+		}
+	}
+
+	/* Extend the list */
+	newsize = (c->obj_max + OBJECT_LIST_INCR + 1) * sizeof(struct object*);
+	c->objects = mem_realloc(c->objects, newsize);
+	c->objects[c->obj_max] = obj;
+	obj->oidx = c->obj_max;
+	for (i = c->obj_max + 1; i <= c->obj_max + OBJECT_LIST_INCR; i++)
+		c->objects[i] = NULL;
+	c->obj_max += OBJECT_LIST_INCR;
+
+	/* If we're on the current level, extend the known list */
+	if ((c == cave) && player->cave) {
+		player->cave->objects = mem_realloc(player->cave->objects, newsize);
+		for (i = player->cave->obj_max; i <= c->obj_max; i++)
+			player->cave->objects[i] = NULL;
+		player->cave->obj_max = c->obj_max;
+	}
+}
+
+/**
+ * Remove an object from the list of objects for the current level/chunk.  This
+ * function is robust against delisting of unlisted objects.
+ */
+void delist_object(struct chunk *c, struct object *obj)
+{
+	if (!obj->oidx) return;
+	assert(c->objects[obj->oidx] == obj);
+
+	/* Don't delist an actual object if it still has a listed known object */
+	if ((c == cave) && player->cave->objects[obj->oidx]) return;
+
+	c->objects[obj->oidx] = NULL;
+	obj->oidx = 0;
+}
+
+/**
+ * Check that a pair of object lists are consistent and relate to locations of
+ * objects correctly
+ */
+void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
+{
+	int i;
+	assert(c->obj_max == c_k->obj_max);
+	for (i = 0; i < c->obj_max; i++) {
+		struct object *obj = c->objects[i];
+		struct object *known_obj = c_k->objects[i];
+		if (obj) {
+			assert(obj->oidx == i);
+			if (obj->iy && obj->ix)
+				assert(pile_contains(c->squares[obj->iy][obj->ix].obj, obj));
+		}
+		if (known_obj) {
+			assert (obj);
+			assert(known_obj == obj->known);
+			if (known_obj->iy && known_obj->ix)
+				assert (pile_contains(c_k->squares[known_obj->iy][known_obj->ix].obj, known_obj));
+			assert (known_obj->oidx == i);
+		}
+	}
+}
+
+/**
+ * Standard "find me a location" function, now with all legal outputs!
  *
  * Obtains a legal location within the given distance of the initial
  * location, and with "los()" from the source to destination location.
@@ -175,17 +455,18 @@ void cave_free(struct chunk *c) {
  *
  * need_los determines whether line of sight is needed
  */
-void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los)
+void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d,
+			 bool need_los)
 {
 	int nx, ny;
+	int tries = 0;
 
-
-	/* Pick a location */
-	while (TRUE)
-	{
+	/* Pick a location, try many times */
+	while (tries < 1000) {
 		/* Pick a new location */
 		ny = rand_spread(y, d);
 		nx = rand_spread(x, d);
+		tries++;
 
 		/* Ignore annoying locations */
 		if (!square_in_bounds_fully(c, ny, nx)) continue;
@@ -193,16 +474,14 @@ void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_l
 		/* Ignore "excessively distant" locations */
 		if ((d > 1) && (distance(y, x, ny, nx) > d)) continue;
 		
-		/* Don't need los */
-		if (!need_los) break;
-
 		/* Require "line of sight" if set */
-		if (need_los && (los(c, y, x, ny, nx))) break;
-	}
+		if (need_los && !los(c, y, x, ny, nx)) continue;
 
-	/* Save the location */
-	(*yp) = ny;
-	(*xp) = nx;
+		/* Set the location and return */
+		(*yp) = ny;
+		(*xp) = nx;
+		return;
+	}
 }
 
 
@@ -251,7 +530,7 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), boo
 		if (!square_in_bounds_fully(cave, yy, xx)) continue;
 
 		/* Must have knowledge */
-		if (!square_ismark(cave, yy, xx)) continue;
+		if (!square_isknown(cave, yy, xx)) continue;
 
 		/* Not looking for this feature */
 		if (!((*test)(cave, yy, xx))) continue;
@@ -260,8 +539,10 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), boo
 		++count;
 
 		/* Remember the location of the last door found */
-		*y = yy;
-		*x = xx;
+		if (x && y) {
+			*y = yy;
+			*x = xx;
+		}
 	}
 
 	/* All done */

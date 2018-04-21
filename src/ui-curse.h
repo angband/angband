@@ -1,8 +1,9 @@
 /**
- * \file mon-power.h
- * \brief structures and functions for monster power
+ * \file ui-curse.h
+ * \brief Curse selection menu
  *
- * Copyright (c) 2011 Chris Carr
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2016 Nick McConnell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -16,16 +17,4 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#ifndef MONSTER_POWER_H
-#define MONSTER_POWER_H
-
-#include "monster.h"
-
-extern bool arg_power;
-extern bool arg_rebalance;
-
-/** Functions **/
-errr eval_monster_power(struct monster_race *races);
-
-
-#endif /* MONSTER_POWER_H */
+bool textui_get_curse(int *choice, struct object *obj);

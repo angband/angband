@@ -11,6 +11,17 @@
 #include "init.h"
 #include "z-util.h"
 
+#ifdef SOUND_SDL
+#include "sound.h"
+#include "snd-sdl.h"
+
+errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv)
+{
+	return (0);
+}
+
+#endif
+
 /*
  * Call this to initialise Angband's file paths before calling init_angband()
  * or similar.

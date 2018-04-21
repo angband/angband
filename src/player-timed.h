@@ -17,6 +17,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#ifndef PLAYER_TIMED_H
+#define PLAYER_TIMED_H
+
 #include "player.h"
 
 /**
@@ -30,6 +33,28 @@
 #define PY_FOOD_STARVE	100		/* Food value (Starving) */
 
 /**
+ * Player cut timer values
+ */
+#define TMD_CUT_NONE    0
+#define TMD_CUT_GRAZE   10
+#define TMD_CUT_LIGHT   25
+#define TMD_CUT_BAD     50
+#define TMD_CUT_NASTY   100
+#define TMD_CUT_SEVERE  200
+#define TMD_CUT_DEEP    1000
+
+/**
+ * Timed effects
+ */
+enum
+{
+	#define TMD(a, b, c) TMD_##a,
+	#include "list-player-timed.h"
+	#undef TMD
+	TMD_MAX
+};
+
+/**
  * Effect failure flag types
  */
 enum {
@@ -39,24 +64,34 @@ enum {
 };
 
 /**
- * Timed effects
+ * Data struct
  */
-enum
-{
-	#define TMD(a, b, c, d, e, f, g, h, i, j, k) TMD_##a,
-	#include "list-player-timed.h"
-	#undef TMD
-	TMD_MAX
+struct timed_effect_data {
+	const char *name;
+	u32b flag_redraw;
+	u32b flag_update;
+
+	int index;
+	char *desc;
+	char *on_begin;
+	char *on_end;
+	char *on_increase;
+	char *on_decrease;
+	int msgt;
+	int fail_code;
+	int fail;
 };
 
+extern struct file_parser player_timed_parser;
+extern struct timed_effect_data timed_effects[TMD_MAX];
+
 int timed_name_to_idx(const char *name);
-const char *timed_idx_to_name(int type);
-const char *timed_idx_to_desc(int type);
-int timed_protect_flag(int type);
 bool player_set_timed(struct player *p, int idx, int v, bool notify);
+bool player_inc_check(struct player *p, int idx, bool lore);
 bool player_inc_timed(struct player *p, int idx, int v, bool notify,
 					  bool check);
 bool player_dec_timed(struct player *p, int idx, int v, bool notify);
 bool player_clear_timed(struct player *p, int idx, bool notify);
 bool player_set_food(struct player *p, int v);
 
+#endif /* !PLAYER_TIMED_H */

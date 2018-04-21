@@ -106,7 +106,7 @@ p_race.txt
   handled as for classes.
 
 body.txt
-  Every player race has a body, which defines what equipment thay can use.
+  Every player race has a body, which defines what equipment they can use.
   Currently there is only one body, which all races use, but this is easily
   changeable for significant effect.
 
@@ -152,6 +152,62 @@ dungeon_profile.txt
 store.txt
   This details the shop owners and their relative generosity.
 
+blow_effects.txt
+  This defines effects to the player caused by monster attacks.  The simplest
+  monster attacks just deal damage, but others can affect the player's status,
+  stats or inventory.
+
+blow_methods.txt
+  This details the different ways monsters can attack (hit, claw, etc.).  It
+  affects the messages the player gets, and also whether the blow can stun
+  or cut the player.
+
+brand.txt
+  This details how weapon brands work.
+
+slay.txt
+  This details how weapons can be more effective against certain monsters.
+
+curse.txt
+  This file contains all the different curses that can be applied to objects.
+  It includes what type of object they can be applied to, random effects they
+  can cause, and how they change an object's properties.
+
+object_property.txt
+  This file gives details about what properties an object can have (apart from
+  basic combat and armor class).  Every property has a code which is used
+  in the game to refer to that property in some way. This means it is not
+  possible to add new properties to this file and expect to have any effect,
+  but it is possible to change how existing proeprties work.
+
+object_power.txt
+  This file contains formulas for calculating power of objects (used in 
+  determining prices and generating random artifacts).  You should only change
+  this file if you understand the way they are used (defined in
+  src/obj-power.c).
+
+player_timed.txt
+  This file defines some of the properties of timed effects (such as haste and
+  confusion) that can apply to the player.  It chiefly contains the messages
+  on changes in these effects, and player attributes which prevent the effects.
+  To add new timed effects are change the way existing ones operate, you will
+  have to alter src/list-player-timed.h and probably other files, and 
+  re-compile the game.
+
+projection.txt
+  This file contains a lot of the defining information about projections - 
+  effects which can be produced at a distance by player or monsters, and 
+  affecting player, monsters, objects, and/or terrain.  In particular, this
+  file defines details of the effects of elemental attacks (such as fire or
+  shards) and the effectiveness of corresponding player resistance.  New
+  projections have to be included in src/list-projections.h, and the code to
+  implement their effects put in other source files - src/project-obj.c for
+  effects on objects, and other similarly-named files.
+
+realm.txt
+  This contains a small amount of information about the two current magic
+  realms.
+
 
 Larger changes
 ==============
@@ -159,17 +215,16 @@ If changing data files is not enough for you, you will need to change actual
 game code and recompile it.  The first place to look is in the compiled data
 files, some of which have already been mentioned:
 
-list-blow-effects.h    list-message.h           list-player-flags.h
-list-blow-methods.h    list-mon-message.h       list-player-timed.h
-list-dun-profiles.h    list-mon-race-flags.h    list-project-environs.h
-list-effects.h         list-mon-spells.h        list-project-monsters.h
-list-elements.h        list-mon-temp-flags.h    list-rooms.h
-list-equip-slots.h     list-mon-timed.h         list-square-flags.h
-list-history-types.h   list-object-flags.h      list-stats.h
-list-identify-flags.h  list-object-modifiers.h  list-summon-types.h
-list-ignore-types.h    list-options.h           list-terrain-flags.h
-list-kind-flags.h      list-origins.h           list-trap-flags.h
-list-magic-realms.h    list-parser-errors.h     list-tvals.h
+list-dun-profiles.h    list-mon-spells.h        list-projections.h
+list-effects.h         list-mon-temp-flags.h    list-randart-properties.h
+list-elements.h        list-mon-timed.h         list-rooms.h
+list-equip-slots.h     list-object-flags.h      list-square-flags.h
+list-history-types.h   list-object-modifiers.h  list-stats.h
+list-ignore-types.h    list-options.h           list-summon-types.h
+list-kind-flags.h      list-origins.h           list-terrain-flags.h
+list-message.h         list-parser-errors.h     list-trap-flags.h
+list-mon-message.h     list-player-flags.h      list-tvals.h
+list-mon-race-flags.h  list-player-timed.h
 
 Beyond this, you will have to have some knowledge of the C programming
 language, and can start making changes to the way the game runs or appears.

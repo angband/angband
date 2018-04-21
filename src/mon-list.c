@@ -20,6 +20,7 @@
 #include "game-world.h"
 #include "mon-desc.h"
 #include "mon-list.h"
+#include "mon-predicate.h"
 #include "project.h"
 
 /**
@@ -97,13 +98,13 @@ monster_list_t *monster_list_shared_instance(void)
 }
 
 /**
- * Return TRUE if the list needs to be updated. Usually this is each turn or if
- * the number of cave monsters changes.
+ * Return true if there is nothing preventing the list from being updated. This
+ * should be for structural sanity checks and not gameplay checks.
  */
 static bool monster_list_can_update(const monster_list_t *list)
 {
 	if (list == NULL || list->entries == NULL)
-		return FALSE;
+		return false;
 
 	return (int)list->entries_size >= cave_monster_max(cave);
 }
@@ -128,7 +129,7 @@ void monster_list_reset(monster_list_t *list)
 	memset(list->total_monsters, 0, MONSTER_LIST_SECTION_MAX * sizeof(u16b));
 	list->distinct_entries = 0;
 	list->creation_turn = 0;
-	list->sorted = FALSE;
+	list->sorted = false;
 }
 
 /**
@@ -149,11 +150,10 @@ void monster_list_collect(monster_list_t *list)
 		struct monster *mon = cave_monster(cave, i);
 		monster_list_entry_t *entry = NULL;
 		int j, field;
-		bool los = FALSE;
+		bool los = false;
 
 		/* Only consider visible, known monsters */
-		if (!mflag_has(mon->mflag, MFLAG_VISIBLE) ||
-			mflag_has(mon->mflag, MFLAG_UNAWARE))
+		if (!monster_is_visible(mon) ||	monster_is_camouflaged(mon))
 			continue;
 
 		/* Find or add a list entry. */
@@ -196,8 +196,8 @@ void monster_list_collect(monster_list_t *list)
 
 		/* Store the location offset from the player; this is only used for
 		 * monster counts of 1 */
-		entry->dx = mon->fx - player->px;
-		entry->dy = mon->fy - player->py;
+		entry->dx[field] = mon->fx - player->px;
+		entry->dy[field] = mon->fy - player->py;
 	}
 
 	/* Collect totals for easier calculations of the list. */
@@ -219,7 +219,7 @@ void monster_list_collect(monster_list_t *list)
 	}
 
 	list->creation_turn = turn;
-	list->sorted = FALSE;
+	list->sorted = false;
 }
 
 /**
@@ -240,13 +240,6 @@ int monster_list_standard_compare(const void *a, const void *b)
 		return -1;
 
 	if (ar->level < br->level)
-		return 1;
-
-	/* Depths are equal, check power. */
-	if (ar->power > br->power)
-		return -1;
-
-	if (ar->power < br->power)
 		return 1;
 
 	return 0;
@@ -272,7 +265,7 @@ void monster_list_sort(monster_list_t *list,
 		return;
 
 	sort(list->entries, MIN(elements, list->entries_size), sizeof(list->entries[0]), compare);
-	list->sorted = TRUE;
+	list->sorted = true;
 }
 
 /**

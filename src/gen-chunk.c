@@ -39,9 +39,9 @@ u16b chunk_list_max = 0;      /**< current max actual chunk index */
  * Write a chunk to memory and return a pointer to it.  Optionally write
  * monsters, objects and/or traps, and in those cases delete those things from
  * the source chunk
- * \param y0
+ * \param y0 coordinates of the top left corner of the chunk being written
  * \param x0 coordinates of the top left corner of the chunk being written
- * \param height
+ * \param height dimensions of the chunk being written
  * \param width dimensions of the chunk being written
  * \param monsters whether monsters get written
  * \param objects whether objects get written
@@ -166,11 +166,11 @@ bool chunk_list_remove(char *name)
 			if (newsize)
 				chunk_list = (struct chunk **) mem_realloc(chunk_list, newsize);
 
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -199,17 +199,17 @@ bool chunk_find(struct chunk *c)
 	int i;
 
 	for (i = 0; i < chunk_list_max; i++)
-		if (c == chunk_list[i]) return TRUE;
+		if (c == chunk_list[i]) return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
  * Transform y, x coordinates by rotation, reflection and translation
  * Stolen from PosChengband
- * \param y
+ * \param y the coordinates being transformed
  * \param x the coordinates being transformed
- * \param y0
+ * \param y0 how much the coordinates are being translated
  * \param x0 how much the coordinates are being translated
  * \param height height of the chunk
  * \param width width of the chunk
@@ -242,9 +242,9 @@ void symmetry_transform(int *y, int *x, int y0, int x0, int height, int width,
  * objects are copied from the old chunk and not retained there
  * \param dest the chunk where the copy is going
  * \param source the chunk being copied
- * \param y0
- * \param x0 
- * \param rotate 
+ * \param y0 transformation parameters  - see symmetry_transform()
+ * \param x0 transformation parameters  - see symmetry_transform()
+ * \param rotate transformation parameters  - see symmetry_transform()
  * \param reflect transformation parameters  - see symmetry_transform()
  * \return success - fails if the copy would not fit in the destination chunk
  */
@@ -258,10 +258,10 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 	/* Check bounds */
 	if (rotate % 1) {
 		if ((w + y0 > dest->height) || (h + x0 > dest->width))
-			return FALSE;
+			return false;
 	} else {
 		if ((h + y0 > dest->height) || (w + x0 > dest->width))
-			return FALSE;
+			return false;
 	}
 
 	/* Write the location stuff */
@@ -287,6 +287,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 					obj->iy = dest_y;
 					obj->ix = dest_x;
 				}
+				source->squares[y][x].obj = NULL;
 			}
 
 			/* Monsters */
@@ -324,7 +325,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 			/* Traps */
 			if (source->squares[y][x].trap) {
 				struct trap *trap = source->squares[y][x].trap;
-				dest->squares[y][x].trap = trap;
+				dest->squares[dest_y][dest_x].trap = trap;
 
 				/* Traverse the trap list */
 				while (trap) {
@@ -333,6 +334,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 					trap->fx = dest_x;
 					trap = trap->next;
 				}
+				source->squares[y][x].trap = NULL;
 			}
 
 			/* Player */
@@ -345,17 +347,27 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 	for (i = 0; i < z_info->f_max + 1; i++)
 		dest->feat_count[i] += source->feat_count[i];
 
+	dest->objects = mem_realloc(dest->objects,
+								(dest->obj_max + source->obj_max + 2)
+								* sizeof(struct object*));
+	for (i = 0; i <= source->obj_max; i++) {
+		dest->objects[dest->obj_max + i] = source->objects[i];
+		if (dest->objects[dest->obj_max + i] != NULL)
+			dest->objects[dest->obj_max + i]->oidx = dest->obj_max + i;
+	}
+	dest->obj_max += source->obj_max + 1;
+
 	dest->obj_rating += source->obj_rating;
 	dest->mon_rating += source->mon_rating;
 
 	if (source->good_item)
-		dest->good_item = TRUE;
+		dest->good_item = true;
 
-	return TRUE;
+	return true;
 }
 
 /**
- * Validate that the chunk contains no NULL objects. 
+ * Validate that the chunk contains no NULL objects.
  * Only checks for nonzero tval.
  * \param c is the chunk to validate.
  */

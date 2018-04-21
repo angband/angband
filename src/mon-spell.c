@@ -21,9 +21,11 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
+#include "obj-knowledge.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -59,31 +61,34 @@ static void spell_message(struct monster *mon,
 						  bool seen, bool hits)
 {
 	char buf[1024] = "\0";
-	char m_name[80], m_poss[80];
 	const char *next;
 	const char *s;
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
-
-	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
-
-	/* Get the monster possessive ("his"/"her"/"its") */
-	monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
+	bool strong = mon->race->spell_power >= 60;
 
 	/* Get the message */
-	if (!seen)
-		in_cursor = spell->blind_message;
-	else if (!hits)
+	if (!seen) {
+		if (strong && spell->blind_message_strong) {
+			in_cursor = spell->blind_message_strong;
+		} else {
+			in_cursor = spell->blind_message;
+		}
+	} else if (!hits) {
 		in_cursor = spell->miss_message;
-	else
-		in_cursor = spell->message;
+	} else {
+		if (strong && spell->message_strong) {
+			in_cursor = spell->message_strong;
+		} else {
+			in_cursor = spell->message;
+		}
+	}
 
 	next = strchr(in_cursor, '{');
 	while (next) {
 		/* Copy the text leading up to this { */
-		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor); 
+		strnfcat(buf, 1024, &end, "%.*s", next - in_cursor, in_cursor);
 
 		s = next + 1;
 		while (*s && isalpha((unsigned char) *s)) s++;
@@ -94,31 +99,42 @@ static void spell_message(struct monster *mon,
 			tag = next + 1;
 			in_cursor = s + 1;
 
-			switch(spell_tag_lookup(tag)) {
-			case SPELL_TAG_NAME:
-				strnfcat(buf, sizeof(buf), &end, m_name);
-				break;
-			case SPELL_TAG_PRONOUN:
-				strnfcat(buf, sizeof(buf), &end, m_poss);
-				break;
-			default:
-				break;
+			switch (spell_tag_lookup(tag)) {
+				case SPELL_TAG_NAME: {
+					char m_name[80];
+					monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+					strnfcat(buf, sizeof(buf), &end, m_name);
+					break;
+				}
+
+				case SPELL_TAG_PRONOUN: {
+					char m_poss[80];
+
+					/* Get the monster possessive ("his"/"her"/"its") */
+					monster_desc(m_poss, sizeof(m_poss), mon, MDESC_PRO_VIS | MDESC_POSS);
+
+					strnfcat(buf, sizeof(buf), &end, m_poss);
+					break;
+				}
+
+				default: {
+					break;
+				}
 			}
-		} else
+		} else {
 			/* An invalid tag, skip it */
 			in_cursor = next + 1;
+		}
 
 		next = strchr(in_cursor, '{');
 	}
 	strnfcat(buf, 1024, &end, in_cursor);
 
-	if (spell->msgt)
-		msgt(spell->msgt, "%s", buf);
-	else
-		msg("%s", buf);
+	msgt(spell->msgt, "%s", buf);
 }
 
-static const struct monster_spell *monster_spell_by_index(int index)
+const struct monster_spell *monster_spell_by_index(int index)
 {
 	const struct monster_spell *spell = monster_spells;
 	while (spell) {
@@ -130,6 +146,25 @@ static const struct monster_spell *monster_spell_by_index(int index)
 }
 
 /**
+ * Check if a spell effect which has been saved against would also have
+ * been prevented by an object property, and learn the appropriate rune
+ */
+static void spell_check_for_fail_rune(const struct monster_spell *spell)
+{
+	struct effect *effect = spell->effect;
+	while (effect) {
+		if (effect->index == EF_TELEPORT_LEVEL) {
+			/* Special case - teleport level */
+			equip_learn_element(player, ELEM_NEXUS);
+		} else if (effect->index == EF_TIMED_INC) {
+			/* Timed effects */
+			(void) player_inc_check(player, effect->params[0], false);
+		}
+		effect = effect->next;
+	}
+}
+
+/**
  * Process a monster spell 
  *
  * \param index is the monster spell flag (RSF_FOO)
@@ -138,42 +173,37 @@ static const struct monster_spell *monster_spell_by_index(int index)
  */
 void do_mon_spell(int index, struct monster *mon, bool seen)
 {
-	char m_name[80];
-	bool ident, hits = FALSE;
-
-	/* Extract the monster level */
-	int rlev = ((mon->race->level >= 1) ? mon->race->level : 1);
-
 	const struct monster_spell *spell = monster_spell_by_index(index);
 
-	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+	bool ident = false;
+	bool hits;
 
 	/* See if it hits */
-	if (spell->hit == 100)
-		hits = TRUE;
-	else if (spell->hit == 0)
-		hits = FALSE;
-	else
-		hits = check_hit(player, spell->hit, rlev);
+	if (spell->hit == 100) {
+		hits = true;
+	} else if (spell->hit == 0) {
+		hits = false;
+	} else {
+		int rlev = MAX(mon->race->level, 1);
+		int debuff = mon->m_timed[MON_TMD_CONF] ? CONF_HIT_REDUCTION : 0;
+
+		hits = check_hit(player, spell->hit, rlev, debuff);
+	}
 
 	/* Tell the player what's going on */
 	disturb(player, 1);
 	spell_message(mon, spell, seen, hits);
 
-	if (!hits) return;
-
-	/* Try a saving throw if available */
-	if (spell->save_message &&
-		randint0(100) < player->state.skills[SKILL_SAVE]) {
-		msg("%s", spell->save_message);
-		return;
+	if (hits) {
+		/* Try a saving throw if available */
+		if (spell->save_message &&
+				randint0(100) < player->state.skills[SKILL_SAVE]) {
+			msg("%s", spell->save_message);
+			spell_check_for_fail_rune(spell);
+		} else {
+			effect_do(spell->effect, source_monster(mon->midx), NULL, &ident, true, 0, 0, 0);
+		}
 	}
-
-	/* Do effects */
-	effect_do(spell->effect, NULL, &ident, TRUE, 0, 0, 0);
-
-	return;
 }
 
 /**
@@ -193,18 +223,6 @@ static const struct mon_spell_info {
 };
 
 
-/**
- * Elemental damage properties of monster breaths.
- */
-static const struct breath_damage {
-	int divisor;
-	int cap;
-} breath[] = {
-    #define ELEM(a, b, c, d, e, f, g, h, i, col) { g, h },
-    #include "list-elements.h"
-    #undef ELEM
-};
-
 static bool mon_spell_is_valid(int index)
 {
 	return index > RSF_NONE && index < RSF_MAX;
@@ -213,18 +231,18 @@ static bool mon_spell_is_valid(int index)
 static bool monster_spell_is_projectable(int index)
 {
 	return (mon_spell_types[index].type &
-			(RST_BOLT | RST_BALL | RST_BREATH)) ? TRUE : FALSE;
+			(RST_BOLT | RST_BALL | RST_BREATH)) ? true : false;
 }
 
 static bool monster_spell_is_breath(int index)
 {
-	return (mon_spell_types[index].type & RST_BREATH) ? TRUE : FALSE;
+	return (mon_spell_types[index].type & RST_BREATH) ? true : false;
 }
 
 static bool mon_spell_has_damage(int index)
 {
 	return (mon_spell_types[index].type &
-			(RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK)) ? TRUE : FALSE;
+			(RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK)) ? true : false;
 }
 
 bool mon_spell_is_innate(int index)
@@ -234,7 +252,7 @@ bool mon_spell_is_innate(int index)
 
 /**
  * Test a spell bitflag for a type of spell.
- * Returns TRUE if any desired type is among the flagset
+ * Returns true if any desired type is among the flagset
  *
  * \param f is the set of spell flags we're testing
  * \param types is the spell type(s) we're looking for
@@ -245,9 +263,9 @@ bool test_spells(bitflag *f, int types)
 
 	for (info = mon_spell_types; info->index < RSF_MAX; info++)
 		if (rsf_has(f, info->index) && (info->type & types))
-			return TRUE;
+			return true;
 
-	return FALSE;
+	return false;
 }
 
 /**
@@ -263,12 +281,10 @@ void ignore_spells(bitflag *f, int types)
 	for (info = mon_spell_types; info->index < RSF_MAX; info++)
 		if (rsf_has(f, info->index) && (info->type & types))
 			rsf_off(f, info->index);
-
-	return;
 }
 
 /**
- * Turn off spells with a side effect or a gf_type that is resisted by
+ * Turn off spells with a side effect or a proj_type that is resisted by
  * something in flags, subject to intelligence and chance.
  *
  * \param spells is the set of spells we're pruning
@@ -278,10 +294,10 @@ void ignore_spells(bitflag *f, int types)
  * \param race is the monster type we're operating on
  */
 void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
-				  struct element_info *el, const struct monster_race *race)
+				  struct element_info *el, const struct monster *mon)
 {
 	const struct mon_spell_info *info;
-	bool smart = rf_has(race->flags, RF_SMART);
+	bool smart = monster_is_smart(mon);
 
 	for (info = mon_spell_types; info->index < RSF_MAX; info++) {
 		const struct monster_spell *spell = monster_spell_by_index(info->index);
@@ -298,19 +314,22 @@ void unset_spells(bitflag *spells, bitflag *flags, bitflag *pflags,
 		if (info->type & (RST_BOLT | RST_BALL | RST_BREATH)) {
 			int element = effect->params[0];
 			int learn_chance = el[element].res_level * (smart ? 50 : 25);
-			if (randint0(100) < learn_chance)
+			if (randint0(100) < learn_chance) {
 				rsf_off(spells, info->index);
+			}
 		} else {
 			/* Now others with resisted effects */
 			while (effect) {
 				/* Timed effects */
-				if ((smart || !one_in_(3)) && (effect->index == EF_TIMED_INC) &&
-					of_has(flags, timed_protect_flag(effect->params[0])))
+				if ((smart || !one_in_(3)) &&
+						effect->index == EF_TIMED_INC &&
+						of_has(flags, timed_effects[effect->params[0]].fail))
 					break;
 
 				/* Mana drain */
-				if ((smart || one_in_(2)) && (effect->index == EF_DRAIN_MANA) &&
-					pf_has(pflags, PF_NO_MANA))
+				if ((smart || one_in_(2)) &&
+						effect->index == EF_DRAIN_MANA &&
+						pf_has(pflags, PF_NO_MANA))
 					break;
 
 				effect = effect->next;
@@ -356,19 +375,20 @@ static int nonhp_dam(const struct monster_spell *spell,
 /**
  * Determine the damage of a monster breath attack
  *
- * \param element is the attack element
+ * \param type is the attack element type
  * \param hp is the monster's hp
  */
-int breath_dam(int element, int hp)
+int breath_dam(int type, int hp)
 {
+	struct projection *element = &projections[type];
 	int dam;
 
 	/* Damage is based on monster's current hp */
-	dam = hp / breath[element].divisor;
+	dam = hp / element->divisor;
 
 	/* Check for maximum damage */
-	if (dam > breath[element].cap)
-		dam = breath[element].cap;
+	if (dam > element->damage_cap)
+		dam = element->damage_cap;
 
 	return dam;
 }
@@ -403,10 +423,10 @@ static int mon_spell_dam(int index, int hp, const struct monster_race *race,
 int best_spell_power(const struct monster_race *race, int resist)
 {
 	const struct mon_spell_info *info;
-	int dam = 0, best_dam = 0; 
+	int dam = 0, best_dam = 0;
 
 	/* Extract the monster level */
-	int rlev = ((race->level >= 1) ? race->level : 1);
+	int rlev = MAX(race->level, 1);
 
 	for (info = mon_spell_types; info->index < RSF_MAX; info++) {
 		if (rsf_has(race->spell_flags, info->index)) {
@@ -416,8 +436,10 @@ int best_spell_power(const struct monster_race *race, int resist)
 			if (!spell) continue;
 
 			/* Get the maximum basic damage output of the spell (could be 0) */
-			dam = mon_spell_dam(info->index, mon_hp(race, MAXIMISE), race,
-				MAXIMISE);
+			dam = mon_spell_dam(info->index,
+					mon_hp(race, MAXIMISE),
+					race,
+					MAXIMISE);
 
 			/* For all attack forms the player can save against, damage
 			 * is halved */
@@ -454,24 +476,57 @@ int best_spell_power(const struct monster_race *race, int resist)
 	return best_dam;
 }
 
-const char *mon_spell_lore_description(int index)
+/**
+ * Create a mask of monster spell flags of a specific type.
+ *
+ * \param f is the flag array we're filling
+ * \param ... is the list of flags we're looking for
+ *
+ * N.B. RST_NONE must be the last item in the ... list
+ */
+void create_mon_spell_mask(bitflag *f, ...)
 {
-	const struct monster_spell *spell = monster_spell_by_index(index);
-	if (!mon_spell_is_valid(index))
-		return "";
+	const struct mon_spell_info *rs;
+	int i;
+	va_list args;
 
-	return spell->lore_desc;
+	rsf_wipe(f);
+
+	va_start(args, f);
+
+	/* Process each type in the va_args */
+    for (i = va_arg(args, int); i != RST_NONE; i = va_arg(args, int)) {
+		for (rs = mon_spell_types; rs->index < RSF_MAX; rs++) {
+			if (rs->type & i) {
+				rsf_on(f, rs->index);
+			}
+		}
+	}
+
+	va_end(args);
+
+	return;
+}
+
+const char *mon_spell_lore_description(int index,
+									   const struct monster_race *race)
+{
+	if (mon_spell_is_valid(index)) {
+		const struct monster_spell *spell = monster_spell_by_index(index);
+		bool strong = (race->spell_power >= 60) && spell->lore_desc_strong;
+		return strong ? spell->lore_desc_strong : spell->lore_desc;
+	} else {
+		return "";
+	}
 }
 
 int mon_spell_lore_damage(int index, const struct monster_race *race,
-						  bool know_hp)
+		bool know_hp)
 {
-	int hp;
-
-	if (!mon_spell_is_valid(index) || !mon_spell_has_damage(index))
+	if (mon_spell_is_valid(index) && mon_spell_has_damage(index)) {
+		int hp = know_hp ? race->avg_hp : 0;
+		return mon_spell_dam(index, hp, race, MAXIMISE);
+	} else {
 		return 0;
-
-	hp = (know_hp) ? race->avg_hp : 0;
-	return mon_spell_dam(index, hp, race, MAXIMISE);
+	}
 }
-

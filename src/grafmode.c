@@ -17,9 +17,9 @@
  */
 
 #include "angband.h"
+#include "datafile.h"
 #include "grafmode.h"
 #include "init.h"
-#include "parser.h"
 
 graphics_mode *graphics_modes;
 graphics_mode *current_graphics_mode = NULL;

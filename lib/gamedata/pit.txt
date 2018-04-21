@@ -8,7 +8,7 @@
 
 # === Understanding pit.txt ===
 
-# name: serial number : name
+# name: name
 # room: room type
 # alloc: rarity : average level
 # obj-rarity: object rarity
@@ -21,8 +21,7 @@
 # spell-ban: forbidden spell | ...
 # mon-ban: forbidden monster name
 #
-# Each entry must start with a 'name' line, with a new serial number,
-# and a name.
+# Each entry must start with a 'name' line, with a name.
 #
 # 'room' is for room type. Currently, room type is one of the following:
 #   (1) Pits (large room filled with many monsters of a few types in an 
@@ -70,25 +69,25 @@
 # have any of the listed spell flags.
 # As many 'spell-ban' lines as are necessary may be used.
 
-name:1:Orc
+name:Orc
 room:1
 alloc:1:25
 obj-rarity:0
 mon-base:orc
 
-name:2:Troll
+name:Troll
 room:1
 alloc:1:45
 obj-rarity:0
 mon-base:troll
 
-name:3:Giant
+name:Giant
 room:1
 alloc:1:65
 obj-rarity:0
 mon-base:giant
 
-name:4:Acid dragons
+name:Acid dragons
 room:1
 alloc:6:85
 obj-rarity:0
@@ -97,7 +96,7 @@ mon-base:ancient dragon
 spell-req:BR_ACID
 spell-ban:BR_ELEC
 
-name:5:Electric dragons
+name:Electric dragons
 room:1
 alloc:6:85
 obj-rarity:0
@@ -106,7 +105,7 @@ mon-base:ancient dragon
 spell-req:BR_ELEC
 spell-ban:BR_ACID
 
-name:6:Fire dragons
+name:Fire dragons
 room:1
 alloc:6:85
 obj-rarity:0
@@ -115,7 +114,7 @@ mon-base:ancient dragon
 spell-req:BR_FIRE
 spell-ban:BR_COLD
 
-name:7:Ice dragons
+name:Ice dragons
 room:1
 alloc:6:85
 obj-rarity:0
@@ -124,7 +123,7 @@ mon-base:ancient dragon
 spell-req:BR_COLD
 spell-ban:BR_FIRE
 
-name:8:Poison dragons
+name:Poison dragons
 room:1
 alloc:6:85
 obj-rarity:0
@@ -133,7 +132,7 @@ mon-base:ancient dragon
 spell-req:BR_POIS
 spell-ban:BR_FIRE
 
-name:9:Multi-hued dragons
+name:Multi-hued dragons
 room:1
 alloc:6:85
 obj-rarity:0
@@ -142,14 +141,14 @@ mon-base:ancient dragon
 spell-req:BR_ACID | BR_ELEC | BR_FIRE
 spell-req:BR_COLD | BR_POIS
 
-name:10:Demons
+name:Demons
 room:1
 alloc:1:105
 obj-rarity:0
 mon-base:major demon
 mon-ban:Horned Reaper
 
-name:11:Jelly
+name:Jelly
 room:2
 alloc:1:20
 obj-rarity:5
@@ -158,13 +157,13 @@ mon-base:jelly
 mon-base:mold
 mon-base:mushroom
 
-name:12:Animals
+name:Animals
 room:2
 alloc:1:50
 obj-rarity:10
 flags-req:ANIMAL
 
-name:13:Undead
+name:Undead
 room:2
 alloc:1:80
 obj-rarity:20
@@ -172,20 +171,20 @@ flags-req:UNDEAD
 
 # New pits and nests
 
-name:14:Ants
+name:Ants
 room:2
 alloc:1:15
 obj-rarity:5
 mon-base:ant
 flags-ban:KILL_BODY
 
-name:15:Kobolds
+name:Kobolds
 room:1
 alloc:1:15
 obj-rarity:0
 mon-base:kobold
 
-name:16:Creepy crawlies
+name:Creepy crawlies
 room:2
 alloc:1:20
 obj-rarity:5
@@ -196,14 +195,14 @@ spell-ban:BLINK
 spell-ban:CONF
 spell-ban:SLOW
 
-name:17:Minor demons
+name:Minor demons
 room:1
 alloc:1:20
 obj-rarity:5
 mon-base:minor demon
 spell-ban:S_DEMON
 
-name:18:Spellcasters
+name:Spellcasters
 room:1
 alloc:1:20
 obj-rarity:0
@@ -215,7 +214,7 @@ spell-req:MISSILE
 spell-ban:ARROW_1
 spell-ban:ARROW_2
 
-name:19:Archers
+name:Archers
 room:1
 alloc:1:25
 obj-rarity:0
@@ -227,35 +226,36 @@ color:D
 spell-ban:BO_NETH
 spell-ban:HASTE
 
-name:20:Naga
+name:Naga
 room:1
 alloc:1:25
 obj-rarity:0
 mon-base:naga
 
-name:21:Thieves
+name:Thieves
 room:1
 alloc:1:25
 obj-rarity:0
 mon-base:person
 color:b
 
-name:22:Warriors
+name:Warriors
 room:1
 alloc:1:25
 obj-rarity:0
 mon-base:person
 color:u
 color:y
+spell-ban:HEAL_KIN
 
-name:23:Dark elves
+name:Dark elves
 room:1
 alloc:1:30
 obj-rarity:0
 mon-base:humanoid
 flags-req:HURT_LIGHT
 
-name:24:Eyes
+name:Eyes
 room:1
 alloc:1:30
 obj-rarity:5
@@ -263,13 +263,13 @@ mon-base:eye
 spell-ban:S_UNDEAD
 spell-ban:S_KIN
 
-name:25:Ogres
+name:Ogres
 room:1
 alloc:1:30
 obj-rarity:0
 mon-base:ogre
 
-name:26:Believers
+name:Believers
 room:1
 alloc:1:35
 obj-rarity:0
@@ -277,7 +277,7 @@ mon-base:person
 spell-req:HEAL
 spell-ban:S_ANIMAL
 
-name:27:Serpents
+name:Serpents
 room:2
 alloc:1:40
 obj-rarity:5
@@ -287,7 +287,7 @@ mon-base:hydra
 spell-ban:BA_POIS
 spell-ban:BR_FIRE
 
-name:28:Lesser undead
+name:Lesser undead
 room:2
 alloc:1:40
 obj-rarity:10
@@ -297,14 +297,14 @@ mon-base:wraith
 spell-ban:BO_NETH
 spell-ban:TELE_AWAY
 
-name:29:Wizards
+name:Wizards
 room:1
 alloc:1:45
 obj-rarity:0
 mon-base:person
 spell-req:CONF
 
-name:30:Vampires
+name:Vampires
 room:1
 alloc:1:55
 obj-rarity:0
@@ -312,13 +312,13 @@ mon-base:bat
 mon-base:vampire
 flags-req:UNDEAD
 
-name:31:Hydra
+name:Hydra
 room:2
 alloc:1:60
 obj-rarity:8
 mon-base:hydra
 
-name:32:Golems
+name:Golems
 room:1
 alloc:1:65
 obj-rarity:10
@@ -327,7 +327,7 @@ flags-ban:DRAGON
 flags-ban:UNDEAD
 flags-ban:DEMON
 
-name:33:Gold dragons
+name:Gold dragons
 room:1
 alloc:6:85
 obj-rarity:0
@@ -336,7 +336,7 @@ mon-base:ancient dragon
 spell-req:BR_SOUN
 spell-ban:BR_SHAR
 
-name:34:Ainur
+name:Ainur
 room:1
 alloc:1:90
 obj-rarity:0
@@ -345,7 +345,7 @@ mon-base:ainu
 
 # New chosen monster types, not necessarily for pits and not used yet
 
-name:35:Insects
+name:Insects
 room:3
 alloc:2:15
 mon-base:ant
@@ -355,14 +355,14 @@ mon-base:dragon fly
 mon-base:insect
 mon-base:killer beetle
 
-name:36:Reptiles
+name:Reptiles
 room:3
 alloc:1:20
 mon-base:naga
 mon-base:snake
 mon-base:reptile
 
-name:37:Cave dwellers
+name:Cave dwellers
 room:3
 alloc:1:25
 mon-base:yeek
@@ -371,7 +371,7 @@ mon-base:orc
 mon-base:troll
 mon-base:ogre
 
-name:38:Moria dwellers
+name:Moria dwellers
 room:3
 alloc:8:30
 mon-base:orc
@@ -379,12 +379,12 @@ mon-base:ogre
 mon-base:troll
 mon-base:giant
 
-name:39:Creatures of Earth
+name:Creatures of Earth
 room:3
 alloc:8:35
 mon-base:xorn
 
-name:40:Elemental creatures
+name:Elemental creatures
 room:3
 alloc:1:40
 mon-base:elemental

@@ -32,7 +32,6 @@ enum
 #define trf_negate(f)           flag_negate(f, TRF_SIZE)
 #define trf_copy(f1, f2)        flag_copy(f1, f2, TRF_SIZE)
 #define trf_union(f1, f2)       flag_union(f1, f2, TRF_SIZE)
-#define trf_comp_union(f1, f2)  flag_comp_union(f1, f2, TRF_SIZE)
 #define trf_inter(f1, f2)       flag_inter(f1, f2, TRF_SIZE)
 #define trf_diff(f1, f2)        flag_diff(f1, f2, TRF_SIZE)
 
@@ -45,6 +44,10 @@ struct trap_kind
 	char *name;					/**< Name  */
 	char *text;					/**< Text  */
 	char *desc;					/**< Short description  */
+	char *msg;					/**< Message on hitting */
+	char *msg_good;				/**< Message on saving */
+	char *msg_bad;				/**< Message on failing to save */
+	char *msg_xtra;				/**< Message on getting an extra effect */
 
 	struct trap_kind *next;
 	int tidx;					/**< Trap kind index */
@@ -55,13 +58,16 @@ struct trap_kind
 	int rarity;					/**< Rarity */
 	int min_depth;				/**< Minimum depth */
 	int max_num;				/**< Unused */
+	random_value power;			/**< Visibility of player trap */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (all traps of this kind) */
+	bitflag save_flags[OF_SIZE];/**< Save flags (player with these saves) */
 
 	struct effect *effect;		/**< Effect on entry to grid */
+	struct effect *effect_xtra;	/**< Possible extra effect */
 };
 
-struct trap_kind *trap_info;
+extern struct trap_kind *trap_info;
 
 /**
  * An actual trap.
@@ -75,7 +81,8 @@ struct trap
 	byte fy;					/**< Location of trap */
 	byte fx;
 
-	byte xtra;					/**< Used for door locks, so far */
+	byte power;					/**< Power for locks, visibility for traps */
+	byte timeout;				/**< Timer for disabled traps */
 
 	bitflag flags[TRF_SIZE];	/**< Trap flags (only this particular trap) */
 };
@@ -83,14 +90,18 @@ struct trap
 struct trap_kind *lookup_trap(const char *desc);
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
 bool square_trap_flag(struct chunk *c, int y, int x, int flag);
-bool square_reveal_trap(struct chunk *c, int y, int x, int chance, bool domsg);
+bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg);
 bool trap_check_hit(int power);
 void hit_trap(int y, int x);
 bool square_player_trap_allowed(struct chunk *c, int y, int x);
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
 void square_free_trap(struct chunk *c, int y, int x);
 void wipe_trap_list(struct chunk *c);
-bool square_remove_trap(struct chunk *c, int y, int x, bool domsg, int t_idx);
+bool square_remove_all_traps(struct chunk *c, int y, int x);
+bool square_remove_trap(struct chunk *c, int y, int x, int t_idx);
+bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
+							 int t_idx, int time);
+int square_trap_timeout(struct chunk *c, int y, int x, int t_idx);
 void square_set_door_lock(struct chunk *c, int y, int x, int power);
 int square_door_power(struct chunk *c, int y, int x);
 
