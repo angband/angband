@@ -1727,7 +1727,7 @@ type:scroll
 graphics:?:w
 properties:1:5:15
 alloc:50:1 to 100
-pile:100:1d3
+pile:100:2d3
 power:5
 effect:TELEPORT
 dice:10
