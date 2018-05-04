@@ -2498,8 +2498,8 @@ effect:CURE:AFRAID
 name:Resist Heat
 type:potion
 graphics:!:d
-properties:1:4:30
-alloc:40:1 to 100
+properties:30:4:30
+alloc:40:30 to 100
 pile:25:2
 power:4
 effect:TIMED_INC:OPP_FIRE
@@ -2508,8 +2508,8 @@ dice:10+1d10
 name:Resist Cold
 type:potion
 graphics:!:d
-properties:1:4:30
-alloc:40:1 to 100
+properties:30:4:30
+alloc:40:30 to 100
 pile:25:2
 power:4
 effect:TIMED_INC:OPP_COLD
@@ -2518,8 +2518,8 @@ dice:10+1d10
 name:Resist Poison
 type:potion
 graphics:!:d
-properties:1:4:30
-alloc:40:8 to 100
+properties:20:4:30
+alloc:40:20 to 100
 pile:25:2
 power:4
 effect:TIMED_INC:OPP_POIS
