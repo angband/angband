@@ -28,7 +28,7 @@
 # spell-power: spell power
 # spells: spell type | spell type | etc
 # desc: Description
-# drop: tval : sval : percent drop chance : min : max
+# drop: item type : item name : percent drop chance : min : max
 # mimic: tval : sval
 # friends: chance: number: name
 # friends-base: chance: number: name
