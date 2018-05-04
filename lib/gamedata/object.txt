@@ -2535,7 +2535,7 @@ pile:25:2
 power:7
 effect:CURE:BLIND
 effect:TIMED_INC:SINVIS
-dice:12+2d6
+dice:50+2d6
 
 name:Infravision
 type:potion
