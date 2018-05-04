@@ -2503,7 +2503,7 @@ alloc:40:30 to 100
 pile:25:2
 power:4
 effect:TIMED_INC:OPP_FIRE
-dice:10+1d10
+dice:50+1d10
 
 name:Resist Cold
 type:potion
@@ -2513,7 +2513,7 @@ alloc:40:30 to 100
 pile:25:2
 power:4
 effect:TIMED_INC:OPP_COLD
-dice:10+1d10
+dice:50+1d10
 
 name:Resist Poison
 type:potion
@@ -2523,7 +2523,7 @@ alloc:40:20 to 100
 pile:25:2
 power:4
 effect:TIMED_INC:OPP_POIS
-dice:10+1d10
+dice:50+1d10
 effect:CURE:POISONED
 
 name:True Seeing
