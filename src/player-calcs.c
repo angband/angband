@@ -1125,6 +1125,13 @@ void calc_inventory(struct player_upkeep *upkeep, struct object *gear,
 			bool possible = true;
 			int j;
 
+			/* Hack - sanity check on gear objects */
+			if (current->known->number != current->number) {
+				msg("Gear object mismatch %s - please report",
+					current->kind->name);
+				current->known->number = current->number;
+			}
+
 			/* Skip equipment */
 			if (object_is_equipped(body, current))
 				possible = false;
