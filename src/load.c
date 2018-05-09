@@ -1412,6 +1412,11 @@ static int rd_traps_aux(struct chunk *c)
 			/* Put the trap at the front of the grid trap list */
 			trap->next = c->squares[y][x].trap;
 			c->squares[y][x].trap = trap;
+
+			/* Set decoy if appropriate */
+			if ((trap->kind == lookup_trap("decoy")) && (c == cave)) {
+				c->decoy = loc(x, y);
+			}
 		}
 	}
 
