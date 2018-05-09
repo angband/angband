@@ -176,6 +176,7 @@ struct chunk {
 	struct square **squares;
 	struct heatmap noise;
 	struct heatmap scent;
+	struct loc decoy;
 
 	struct object **objects;
 	u16b obj_max;

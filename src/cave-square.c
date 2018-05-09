@@ -1136,6 +1136,7 @@ void square_add_glyph(struct chunk *c, int y, int x, int type)
 		}
 		case GLYPH_DECOY: {
 			glyph = lookup_trap("decoy");
+			c->decoy = loc(x, y);
 			break;
 		}
 		default: {
@@ -1202,6 +1203,7 @@ void square_disable_trap(struct chunk *c, int y, int x)
 void square_destroy_decoy(struct chunk *c, int y, int x)
 {
 	square_remove_all_traps(c, y, x);
+	c->decoy = loc(0, 0);
 	if (los(c, player->py, player->px, y, x) && !player->timed[TMD_BLIND]) {
 		msg("The decoy is destroyed!");
 	}
