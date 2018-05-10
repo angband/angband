@@ -1583,7 +1583,7 @@ book-properties:25:40:1 to 100
 equip:shadow book:[Dirty Fighting]:1:1
 
 spell:Dark Focus:8:5:20:20
-effect:TIMED_INC:BLESSED
+effect:TIMED_INC:BLESSED:0:5
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:/ 5 + 10
 expr:S:PLAYER_LEVEL:/ 5 + 10
@@ -1592,7 +1592,7 @@ desc: level-dependent number of turns.
 
 spell:Berserk Rage:14:20:60:40
 effect:CURE:AFRAID
-effect:TIMED_INC:SHERO
+effect:TIMED_INC:SHERO:0:5
 dice:25+d25
 desc:Removes fear, and grants you berserk strength (resistance to fear,
 desc: a bonus of +24 to-hit, and a penalty of -10 to AC) for 25+1d25 turns.
