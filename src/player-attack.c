@@ -626,7 +626,7 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 		bash_dam = damroll(shield->dd, shield->ds);
 
 		/* Multiply by quality and experience factors */
-		bash_dam *= bash_quality / 20 + p->lev / 7;
+		bash_dam *= bash_quality / 40 + p->lev / 14;
 
 		/* Strength bonus. */
 		bash_dam += adj_str_td[p->state.stat_ind[STAT_STR]];
@@ -643,13 +643,13 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 		if (mon_take_hit(mon, bash_dam, fear, NULL)) return true;
 
 		/* Stunning. */
-		if (bash_quality + p->lev > randint1(200 + mon->race->level * 4)) {
+		if (bash_quality + p->lev > randint1(200 + mon->race->level * 8)) {
 			mon_inc_timed(mon, MON_TMD_STUN, randint0(p->lev / 5) + 4, 0,
 						  false);
 		}
 
 		/* Confusion. */
-		if (bash_quality + p->lev > randint1(300 + mon->race->level * 6)) {
+		if (bash_quality + p->lev > randint1(300 + mon->race->level * 12)) {
 			mon_inc_timed(mon, MON_TMD_CONF, randint0(p->lev / 5) + 4, 0,
 						  false);
 		}
