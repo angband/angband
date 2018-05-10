@@ -289,6 +289,7 @@ void player_flags(struct player *p, bitflag f[OF_SIZE])
 {
 	/* Add racial flags */
 	memcpy(f, p->race->flags, sizeof(p->race->flags));
+	of_union(f, p->class->flags);
 
 	/* Some classes become immune to fear at a certain plevel */
 	if (player_has(p, PF_BRAVERY_30) && p->lev >= 30) {

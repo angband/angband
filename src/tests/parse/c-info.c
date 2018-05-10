@@ -215,13 +215,24 @@ int test_equip0(void *state) {
 }
 
 int test_flags0(void *state) {
-	enum parser_error r = parser_parse(state, "flags:CUMBER_GLOVE | CHOOSE_SPELLS");
+	enum parser_error r = parser_parse(state, "player-flags:CUMBER_GLOVE | CHOOSE_SPELLS");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
 	c = parser_priv(state);
 	require(c);
 	require(c->pflags);
+	ok;
+}
+
+int test_flags1(void *state) {
+	enum parser_error r = parser_parse(state, "obj-flags:SEE_INVIS | IMPAIR_HP");
+	struct player_class *c;
+
+	eq(r, PARSE_ERROR_NONE);
+	c = parser_priv(state);
+	require(c);
+	require(c->flags);
 	ok;
 }
 
@@ -255,6 +266,7 @@ struct test tests[] = {
 	{ "title0", test_title0 },
 	/* { "equip0", test_equip0 }, */
 	{ "flags0", test_flags0 },
+	{ "flags1", test_flags1 },
 	//{ "magic0", test_magic0 },
 	{ NULL, NULL }
 };
