@@ -317,6 +317,7 @@ struct player_class {
 	int c_mhp;					/**< Hit-dice adjustment */
 	int c_exp;					/**< Experience factor */
 
+	bitflag flags[OF_SIZE];		/**< (Object) flags */
 	bitflag pflags[PF_SIZE];	/**< (Player) flags */
 
 	int max_attacks;			/**< Maximum possible attacks */

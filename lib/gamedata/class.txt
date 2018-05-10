@@ -24,7 +24,7 @@
 # attack:max_attacks:min_weight:att_multiply
 # title:title
 # equip:tval:sval:min:max
-# flags:class flags
+# player-flags:class flags
 # magic:spell_first:spell_weight:num_books
 # book:tval:quality:name:spells:realm
 # book-graphics:symbol:color
@@ -128,7 +128,7 @@ equip:potion:Berserk Strength:1:1
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:BRAVERY_30 | NO_MANA
+player-flags:BRAVERY_30 | NO_MANA
 title:Rookie
 title:Soldier
 title:Swordsman
@@ -160,7 +160,7 @@ equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
+player-flags:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
 title:Novice
 title:Apprentice
 title:Trickster
@@ -437,7 +437,7 @@ attack:4:35:3
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:scroll:Word of Recall:1:1
-flags:ZERO_FAIL | CHOOSE_SPELLS | CHARM
+player-flags:ZERO_FAIL | CHOOSE_SPELLS | CHARM
 title:Wanderer
 title:Tamer
 title:Nurturer
@@ -667,7 +667,7 @@ equip:light:Wooden Torch:1:3
 equip:hafted:Mace:1:1
 equip:potion:Cure Serious Wounds:2:2
 equip:scroll:Word of Recall:1:1
-flags:BLESS_WEAPON | ZERO_FAIL
+player-flags:BLESS_WEAPON | ZERO_FAIL
 title:Believer
 title:Acolyte
 title:Devotee
@@ -932,7 +932,7 @@ attack:4:35:2
 equip:food:Ration of Food:1:3
 equip:sword:Dagger:1:1
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT
+player-flags:CUMBER_GLOVE | ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT
 title:Acolyte
 title:Curser
 title:Dark Student
@@ -1351,7 +1351,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | CHOOSE_SPELLS | STEAL
+player-flags:CUMBER_GLOVE | CHOOSE_SPELLS | STEAL
 title:Vagabond
 title:Cutpurse
 title:Footpad
@@ -1458,7 +1458,7 @@ equip:sword:Dagger:1:1
 equip:bow:Short Bow:1:1
 equip:arrow:Arrow:15:20
 equip:scroll:Word of Recall:1:1
-flags:FAST_SHOT | CHOOSE_SPELLS
+player-flags:FAST_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
 title:Scout
@@ -1562,7 +1562,8 @@ equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
 equip:scroll:Word of Recall:1:1
-flags:CHOOSE_SPELLS | SHIELD_BASH
+obj-flags:IMPAIR_HP
+player-flags:CHOOSE_SPELLS | SHIELD_BASH
 title:Rat
 title:Bully
 title:Thug
