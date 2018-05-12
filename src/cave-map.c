@@ -324,9 +324,14 @@ static void cave_unlight(struct point_set *ps)
 		int y = ps->pts[i].y;
 		int x = ps->pts[i].x;
 
-		/* Darken the grid */
+		/* Darken the grid... */
 		if (!square_isbright(cave, y, x)) {
 			sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+		}
+
+		/* ...but dark-loving characters remember them */
+		if (player_has(player, PF_UNLIGHT)) {
+			square_memorize(cave, y, x);
 		}
 
 		/* Hack -- Forget "boring" grids */
