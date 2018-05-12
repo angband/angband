@@ -2438,9 +2438,9 @@ effect-yx:22:40
 effect:DETECT_OBJECTS
 effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
-dice:500d500
+effect-yx:500:500
 effect:DETECT_VISIBLE_MONSTERS
-dice:500d500
+effect-yx:500:500
 
 
 ### Buffs ###
