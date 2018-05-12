@@ -459,7 +459,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	char m_name[80];
 	char ddesc[80];
 	bool blinked = false;
-	bool stunned = mon->m_timed[MON_TMD_STUN] ? true : false;
+	int accuracy = 100 - (mon->m_timed[MON_TMD_STUN] ? STUN_HIT_REDUCTION : 0);
 
 	/* Not allowed to attack */
 	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
@@ -498,8 +498,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		/* Monster hits player */
 		assert(effect);
 		if (streq(effect->name, "NONE") ||
-				check_hit(p, effect->power, rlev,
-						  stunned ? STUN_HIT_REDUCTION : 0)) {
+			check_hit(p, effect->power, rlev, accuracy)) {
 			melee_effect_handler_f effect_handler;
 
 			/* Always disturbing */
@@ -534,7 +533,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 			damage = randcalc(dice, rlev, RANDOMISE);
 
 			/* Reduce damage when stunned */
-			if (stunned) {
+			if (mon->m_timed[MON_TMD_STUN]) {
 				damage = (damage * (100 - STUN_DAM_REDUCTION)) / 100;
 			}
 
@@ -693,7 +692,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 	char m_name[80];
 	char t_name[80];
 	bool blinked = false;
-	bool stunned = mon->m_timed[MON_TMD_STUN] ? true : false;
+	int accuracy = 100 - (mon->m_timed[MON_TMD_STUN] ? STUN_HIT_REDUCTION : 0);
 
 	/* Not allowed to attack */
 	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
@@ -726,8 +725,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 		/* Monster hits monster */
 		assert(effect);
 		if (streq(effect->name, "NONE") ||
-				check_hit_monster(t_mon, effect->power, rlev,
-						  stunned ? STUN_HIT_REDUCTION : 0)) {
+			check_hit_monster(t_mon, effect->power, rlev, accuracy)) {
 			melee_effect_handler_f effect_handler;
 
 			/* Describe the attack method */
@@ -742,7 +740,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 			damage = randcalc(dice, rlev, RANDOMISE);
 
 			/* Reduce damage when stunned */
-			if (stunned) {
+			if (mon->m_timed[MON_TMD_STUN]) {
 				damage = (damage * (100 - STUN_DAM_REDUCTION)) / 100;
 			}
 
