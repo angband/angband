@@ -396,6 +396,12 @@ s16b spell_chance(int spell_index)
 		chance += 25;
 	}
 
+	/* Necromancers are punished by being on lit squares */
+	if (player_has(player, PF_UNLIGHT) &&
+		square_islit(cave, player->py, player->px)) {
+		chance += 25;
+	}
+
 	/* Fear makes spells harder (before minfail) */
 	/* Note that spells that remove fear have a much lower fail rate than
 	 * surrounding spells, to make sure this doesn't cause mega fail */
@@ -404,12 +410,6 @@ s16b spell_chance(int spell_index)
 	/* Minimal and maximal failure rate */
 	if (chance < minfail) chance = minfail;
 	if (chance > 50) chance = 50;
-
-	/* Necromancers are punished by being on lit squares */
-	if (player_has(player, PF_UNLIGHT) &&
-		square_islit(cave, player->py, player->px)) {
-		chance += 10;
-	}
 
 	/* Stunning makes spells harder (after minfail) */
 	if (player->timed[TMD_STUN] > 50) {
