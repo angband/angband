@@ -387,12 +387,14 @@ s16b spell_chance(int spell_index)
 	minfail = min_fail(player, spell);
 
 	/* Non mage/priest characters never get better than 5 percent */
-	if (!player_has(player, PF_ZERO_FAIL) && minfail < 5)
+	if (!player_has(player, PF_ZERO_FAIL) && minfail < 5) {
 		minfail = 5;
+	}
 
 	/* Priest prayer penalty for "edged" weapons (before minfail) */
-	if (player->state.icky_wield)
+	if (player->state.icky_wield) {
 		chance += 25;
+	}
 
 	/* Fear makes spells harder (before minfail) */
 	/* Note that spells that remove fear have a much lower fail rate than
@@ -403,15 +405,28 @@ s16b spell_chance(int spell_index)
 	if (chance < minfail) chance = minfail;
 	if (chance > 50) chance = 50;
 
+	/* Necromancers are punished by being on lit squares */
+	if (player_has(player, PF_UNLIGHT) &&
+		square_islit(cave, player->py, player->px)) {
+		chance += 10;
+	}
+
 	/* Stunning makes spells harder (after minfail) */
-	if (player->timed[TMD_STUN] > 50) chance += 25;
-	else if (player->timed[TMD_STUN]) chance += 15;
+	if (player->timed[TMD_STUN] > 50) {
+		chance += 25;
+	} else if (player->timed[TMD_STUN]) {
+		chance += 15;
+	}
 
 	/* Amnesia doubles failure change */
-	if (player->timed[TMD_AMNESIA]) chance = 50 + chance / 2;
+	if (player->timed[TMD_AMNESIA]) {
+		chance = 50 + chance / 2;
+	}
 
 	/* Always a 5 percent chance of working */
-	if (chance > 95) chance = 95;
+	if (chance > 95) {
+		chance = 95;
+	}
 
 	/* Return the chance */
 	return (chance);
