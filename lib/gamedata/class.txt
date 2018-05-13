@@ -436,7 +436,7 @@ skill-melee:48:20
 skill-shoot:40:30
 skill-throw:40:30
 skill-dig:0:0
-hitdie:0
+hitdie:2
 max-attacks:5
 min-weight:35
 strength-multiplier:3
@@ -936,7 +936,7 @@ skill-melee:34:25
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
-hitdie:0
+hitdie:2
 max-attacks:5
 min-weight:35
 strength-multiplier:3
@@ -1357,7 +1357,7 @@ skill-melee:35:45
 skill-shoot:66:30
 skill-throw:72:45
 skill-dig:0:0
-hitdie:6
+hitdie:4
 max-attacks:5
 min-weight:20
 strength-multiplier:4
@@ -1465,7 +1465,7 @@ skill-melee:60:40
 skill-shoot:72:45
 skill-throw:66:30
 skill-dig:0:0
-hitdie:4
+hitdie:5
 max-attacks:5
 min-weight:35
 strength-multiplier:4
@@ -1573,7 +1573,7 @@ skill-melee:68:40
 skill-shoot:50:30
 skill-throw:50:30
 skill-dig:0:0
-hitdie:6
+hitdie:7
 max-attacks:5
 min-weight:100
 strength-multiplier:5
