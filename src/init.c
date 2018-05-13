@@ -2751,23 +2751,38 @@ static enum parser_error parse_class_skill_dig(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_class_info(struct parser *p) {
+static enum parser_error parse_class_hitdie(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	c->c_mhp = parser_getint(p, "mhp");
-	c->c_exp = parser_getint(p, "exp");
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_class_attack(struct parser *p) {
+static enum parser_error parse_class_max_attacks(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	c->max_attacks = parser_getint(p, "max-attacks");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_min_weight(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	c->min_weight = parser_getint(p, "min-weight");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_str_mult(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	c->att_multiply = parser_getint(p, "att-multiply");
 	return PARSE_ERROR_NONE;
 }
@@ -3138,9 +3153,10 @@ struct parser *init_parse_class(void) {
 	parser_reg(p, "skill-shoot int base int incr", parse_class_skill_shoot);
 	parser_reg(p, "skill-throw int base int incr", parse_class_skill_throw);
 	parser_reg(p, "skill-dig int base int incr", parse_class_skill_dig);
-	parser_reg(p, "info int mhp int exp", parse_class_info);
-	parser_reg(p, "attack int max-attacks int min-weight int att-multiply",
-			   parse_class_attack);
+	parser_reg(p, "hitdie int mhp", parse_class_hitdie);
+	parser_reg(p, "max-attacks int max-attacks", parse_class_max_attacks);
+	parser_reg(p, "min-weight int min-weight", parse_class_min_weight);
+	parser_reg(p, "strength-multiplier int att-multiply", parse_class_str_mult);
 	parser_reg(p, "title str title", parse_class_title);
 	parser_reg(p, "equip sym tval sym sval uint min uint max",
 			   parse_class_equip);
