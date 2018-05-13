@@ -120,8 +120,10 @@ skill-melee:70:45
 skill-shoot:55:45
 skill-throw:55:45
 skill-dig:0:0
-info:9:0
-attack:6:30:5
+hitdie:9
+max-attacks:6
+min-weight:30
+strength-multiplier:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:potion:Berserk Strength:1:1
@@ -154,11 +156,13 @@ skill-melee:34:15
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
-info:0:0
-attack:4:40:2
+hitdie:0
+max-attacks:4
+min-weight:40
+strength-multiplier:2
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
+equip:sword:Rapier:1:1
 equip:scroll:Word of Recall:1:1
 player-flags:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
 title:Novice
@@ -432,8 +436,10 @@ skill-melee:48:20
 skill-shoot:40:30
 skill-throw:40:30
 skill-dig:0:0
-info:0:0
-attack:4:35:3
+hitdie:0
+max-attacks:5
+min-weight:35
+strength-multiplier:3
 equip:food:Ration of Food:1:3
 equip:hafted:Whip:1:1
 equip:light:Wooden Torch:1:3
@@ -661,8 +667,10 @@ skill-melee:48:20
 skill-shoot:35:20
 skill-throw:35:20
 skill-dig:0:0
-info:2:0
-attack:4:35:3
+hitdie:2
+max-attacks:4
+min-weight:35
+strength-multiplier:3
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:hafted:Mace:1:1
@@ -928,10 +936,12 @@ skill-melee:34:25
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
-info:0:0
-attack:4:35:2
+hitdie:0
+max-attacks:5
+min-weight:35
+strength-multiplier:3
 equip:food:Ration of Food:1:3
-equip:sword:Dagger:1:1
+equip:sword:Main Gauche:1:1
 equip:scroll:Word of Recall:1:1
 player-flags:CUMBER_GLOVE | ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT
 title:Acolyte
@@ -1181,11 +1191,13 @@ skill-melee:68:40
 skill-shoot:50:30
 skill-throw:50:30
 skill-dig:0:0
-info:6:0
-attack:5:30:5
+hitdie:6
+max-attacks:5
+min-weight:30
+strength-multiplier:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
+equip:sword:Main Gauche:1:1
 equip:scroll:Protection from Evil:1:1
 equip:scroll:Word of Recall:1:1
 title:Gallant
@@ -1345,8 +1357,10 @@ skill-melee:35:45
 skill-shoot:66:30
 skill-throw:72:45
 skill-dig:0:0
-info:6:0
-attack:5:30:4
+hitdie:6
+max-attacks:5
+min-weight:20
+strength-multiplier:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
@@ -1451,11 +1465,13 @@ skill-melee:60:40
 skill-shoot:72:45
 skill-throw:66:30
 skill-dig:0:0
-info:4:0
-attack:5:35:4
+hitdie:4
+max-attacks:5
+min-weight:35
+strength-multiplier:4
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
+equip:sword:Main Gauche:1:1
 equip:bow:Short Bow:1:1
 equip:arrow:Arrow:15:20
 equip:scroll:Word of Recall:1:1
@@ -1557,11 +1573,13 @@ skill-melee:68:40
 skill-shoot:50:30
 skill-throw:50:30
 skill-dig:0:0
-info:6:0
-attack:5:30:5
+hitdie:6
+max-attacks:5
+min-weight:100
+strength-multiplier:5
 equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
-equip:sword:Dagger:1:1
+equip:sword:Cutlass:1:1
 equip:scroll:Word of Recall:1:1
 obj-flags:IMPAIR_HP
 player-flags:CHOOSE_SPELLS | SHIELD_BASH
