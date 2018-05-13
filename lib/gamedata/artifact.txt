@@ -1067,7 +1067,7 @@ info:25:30:9000
 alloc:10:30 to 80
 power:0:0d0:12:15:0
 flags:SLOW_DIGEST
-values:INT[2] | WIS[2] | DEX[2] | SHOTS[3] | MIGHT[1] | SPEED[1]
+values:INT[2] | WIS[2] | DEX[2] | SHOTS[5] | MIGHT[1] | SPEED[1]
 values:RES_FIRE[1] | RES_ELEC[1] | RES_COLD[1]
 desc:One of a pair of hunting bows once belonging to Fëanor's two youngest 
 desc:sons.  The bows are like and yet unlike, much as the twin brothers were.
@@ -1077,7 +1077,7 @@ base-object:bow:Long Bow
 info:40:40:35000
 alloc:5:40 to 127
 power:0:0d0:20:22:0
-values:DEX[3] | SPEED[1] | STEALTH[1] | SHOTS[5] | RES_DISEN[1]
+values:DEX[3] | SPEED[1] | STEALTH[1] | SHOTS[10] | RES_DISEN[1]
 desc:The great bow of Beleg Cúthalion, the most famous archer of the Elves.  
 desc:Its backbone of black yew holds strings of bear sinew, and of old, only 
 desc:Beleg himself could draw them.
