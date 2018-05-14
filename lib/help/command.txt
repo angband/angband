@@ -251,7 +251,7 @@ Eat some food ('E')
   You must eat regularly to prevent starvation. As you grow hungry, a
   message will appear at the bottom of the screen saying "Hungry". If you
   go hungry long enough, you will become weak, then start fainting, and
-  eventually, you may will die of starvation. You may use this command to
+  eventually, you may well die of starvation. You may use this command to
   eat food in your inventory. Note that you can sometimes find food in the
   dungeon, but it is not always wise to eat strange food. This command
   takes some energy.
