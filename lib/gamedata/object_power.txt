@@ -133,10 +133,10 @@ dice:$P
 expr:P:OBJ_POWER_EXTRA_BLOWS:* 15 * 5 / 2
 operation:add
 
-# more than 5 (ie half of one) extra shots not allowed
+# more than 10 (ie one) extra shots not allowed
 name:extra shots inhibitor
 dice:$P
-expr:P:OBJ_POWER_EXTRA_SHOTS:- 5 * 20000
+expr:P:OBJ_POWER_EXTRA_SHOTS:- 10 * 20000
 operation:add if positive
 
 # extra (tenth) shots is a straight 10 + number multiplier...
