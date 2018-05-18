@@ -982,7 +982,8 @@ static void player_kill_monster(struct monster *mon, const char *note)
 	/* Bloodlust bonus */
 	if (player->timed[TMD_BLOODLUST]) {
 		player_inc_timed(player, TMD_BLOODLUST, 10, false, false);
-		player_over_exert(player, PY_EXERT_CONF | PY_EXERT_HALLU, 5, 10);
+		player_over_exert(player, PY_EXERT_CONF, 5, 3);
+		player_over_exert(player, PY_EXERT_HALLU, 5, 10);
 	}
 
 	/* Recall even invisible uniques or winners */
