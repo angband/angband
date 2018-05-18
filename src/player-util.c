@@ -508,7 +508,8 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	/* CON damage */
 	if (flag & PY_EXERT_CON) {
 		if (randint0(100) < chance) {
-			bool perm = (randint0(100) < chance / 2);
+			/* Hack - only permanent with high chance (no-mana casting) */
+			bool perm = (randint0(100) < chance / 2) && (chance >= 50);
 			msg("You have damaged your health!");
 			player_stat_dec(player, STAT_CON, perm);
 		}
