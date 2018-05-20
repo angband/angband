@@ -17,9 +17,11 @@
  */
 
 #include "angband.h"
+#include "datafile.h"
 #include "mon-make.h"
 #include "mon-summon.h"
 #include "mon-util.h"
+#include "parser.h"
 
 /**
  * The "type" of the current "summon specific"
@@ -27,42 +29,233 @@
 static int summon_specific_type = 0;
 
 /**
+ * Maximum number of summon types
+ */
+static int summon_max = 0;
+
+/**
  * The kin base for S_KIN
  */
 struct monster_base *kin_base;
 
-static struct summon_details {
-	const char *name;
-	int message_type;
-	bool unique_allowed;
-	const char *base1;
-	const char *base2;
-	const char *base3;
-	int race_flag;
-	const char *description;
-} summon_info[] = {
-	#define S(a, b, c, d, e, f, g, h) { #a, b, c, d, e, f, g, h },
-	#include "list-summon-types.h"
-	#undef S
+/**
+ * The summon array
+ */
+struct summon *summons;
+
+static const char *mon_race_flags[] =
+{
+	#define RF(a, b, c) #a,
+	#include "list-mon-race-flags.h"
+	#undef RF
+	NULL
 };
 
+/**
+ * ------------------------------------------------------------------------
+ * Initialize monster summon types
+ * ------------------------------------------------------------------------ */
+
+static enum parser_error parse_summon_name(struct parser *p) {
+	struct summon *h = parser_priv(p);
+	struct summon *s = mem_zalloc(sizeof *s);
+	s->next = h;
+	parser_setpriv(p, s);
+	s->name = string_make(parser_getstr(p, "name"));
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_summon_message_type(struct parser *p) {
+	struct summon *s = parser_priv(p);
+	int msg_index;
+	const char *type;
+	assert(s);
+	type = parser_getsym(p, "type");
+	msg_index = message_lookup_by_name(type);
+
+	if (msg_index < 0)
+		return PARSE_ERROR_INVALID_MESSAGE;
+
+	s->message_type = msg_index;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_summon_unique(struct parser *p) {
+	struct summon *s = parser_priv(p);
+	int unique = 0;
+	assert(s);
+	unique = parser_getint(p, "allowed");
+	if (unique) {
+		s->unique_allowed = true;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_summon_base(struct parser *p) {
+	struct summon *s = parser_priv(p);
+	struct monster_base *base;
+	struct monster_base_list *b = mem_zalloc(sizeof(*b));
+	assert(s);
+	base = lookup_monster_base(parser_getsym(p, "base"));
+	if (base == NULL) {
+		mem_free(b);
+		return PARSE_ERROR_INVALID_MONSTER_BASE;
+	}
+	b->base = base;
+	b->next = s->bases;
+	s->bases = b;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_summon_race_flag(struct parser *p) {
+	struct summon *s = parser_priv(p);
+	int flag;
+	assert(s);
+
+	flag = lookup_flag(mon_race_flags, parser_getsym(p, "flag"));
+
+	if (flag == FLAG_END) {
+		return PARSE_ERROR_INVALID_FLAG;
+	} else {
+		s->race_flag = flag;
+	}
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_summon_fallback(struct parser *p) {
+	struct summon *s = parser_priv(p);
+	assert(s);
+	s->fallback_name = string_make(parser_getstr(p, "fallback"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_summon_desc(struct parser *p) {
+	struct summon *s = parser_priv(p);
+	assert(s);
+	s->desc = string_make(parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+
+
+struct parser *init_parse_summon(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "name str name", parse_summon_name);
+	parser_reg(p, "msgt sym type", parse_summon_message_type);
+	parser_reg(p, "uniques int allowed", parse_summon_unique);
+	parser_reg(p, "base sym base", parse_summon_base);
+	parser_reg(p, "race-flag sym flag", parse_summon_race_flag);
+	parser_reg(p, "fallback str fallback", parse_summon_fallback);
+	parser_reg(p, "desc str desc", parse_summon_desc);
+	return p;
+}
+
+static errr run_parse_summon(struct parser *p) {
+	return parse_file_quit_not_found(p, "summon");
+}
+
+static errr finish_parse_summon(struct parser *p) {
+	struct summon *summon, *next;
+	int count = 0;
+
+	/* Count the entries */
+	summon_max = 0;
+	summon = parser_priv(p);
+	while (summon) {
+		summon_max++;
+		summon = summon->next;
+	}
+
+	/* Allocate the direct access list and copy the data to it */
+	summons = mem_zalloc((summon_max + 1) * sizeof(*summon));
+	for (summon = parser_priv(p); summon; summon = next, count++) {
+		memcpy(&summons[count], summon, sizeof(*summon));
+		next = summon->next;
+		summons[count].next = NULL;
+
+		mem_free(summon);
+	}
+	summon_max += 1;
+
+	/* Add indices of fallback summons */
+	for (count = 0; count < summon_max; count++) {
+		char *name = summons[count].fallback_name;
+		summons[count].fallback = summon_name_to_idx(name);
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_summon(void)
+{
+	int idx;
+	for (idx = 0; idx < summon_max; idx++) {
+		struct monster_base_list *s = summons[idx].bases;
+		while (s) {
+			struct monster_base_list *next = s->next;
+			mem_free(s);
+			s = next;
+		}
+		string_free(summons[idx].desc);
+		string_free(summons[idx].fallback_name);
+		string_free(summons[idx].name);
+	}
+	mem_free(summons);
+}
+
+struct file_parser summon_parser = {
+	"summon",
+	init_parse_summon,
+	run_parse_summon,
+	finish_parse_summon,
+	cleanup_summon
+};
+
+
+/**
+ * Lookup function to translate names of summons to indices
+ */
 int summon_name_to_idx(const char *name)
 {
     int i;
-    for (i = 0; !streq(summon_info[i].name, "MAX"); i++) {
-        if (streq(name, summon_info[i].name))
+    for (i = 0; i < summon_max; i++) {
+        if (name && streq(name, summons[i].name)) {
             return i;
+		}
     }
 
     return -1;
 }
 
+/**
+ * The message type for a particular summon
+ */
+int summon_message_type(int summon_type)
+{
+	return summons[summon_type].message_type;
+}
+
+/**
+ * The fallback type for a particular summon
+ */
+int summon_fallback_type(int summon_type)
+{
+	return summons[summon_type].fallback;
+}
+
+/**
+ * The description for a particular summon
+ */
 const char *summon_desc(int type)
 {
-	if (type < 0 || type >= S_MAX)
+	if (type < 0 || type >= summon_max)
 		return 0;
 
-	return summon_info[type].description;
+	return summons[type].desc;
 }
 
 /**
@@ -74,36 +267,34 @@ const char *summon_desc(int type)
  */
 static bool summon_specific_okay(struct monster_race *race)
 {
-	struct summon_details *info = &summon_info[summon_specific_type];
+	struct summon *summon = &summons[summon_specific_type];
+	struct monster_base_list *bases = summon->bases;
 	bool unique = rf_has(race->flags, RF_UNIQUE);
 
 	/* Forbid uniques? */
-	if (!info->unique_allowed && unique)
+	if (!summon->unique_allowed && unique) {
 		return false;
+	}
 
 	/* A valid base and no match means disallowed */
-	if (info->base1 && !match_monster_bases(race->base, info->base1,
-											info->base2, info->base3, NULL))
-		return false;
+	while (bases) {
+		if (race->base == bases->base) return true;
+		if (bases->next == NULL) return false;
+		bases = bases->next;
+	}
 
 	/* A valid race flag and no match means disallowed */
-	if (info->race_flag && !rf_has(race->flags, info->race_flag))
+	if (summon->race_flag && !rf_has(race->flags, summon->race_flag)) {
 		return false;
+	}
 
 	/* Special case - summon kin */
-	if (summon_specific_type == S_KIN)
+	if (summon_specific_type == summon_name_to_idx("KIN")) {
 		return (!unique && race->base == kin_base);
+	}
 
 	/* If we made it here, we're fine */
 	return true;
-}
-
-/**
- * The message type for a particular summon
- */
-int summon_message_type(int summon_type)
-{
-	return summon_info[summon_type].message_type;
 }
 
 /**
@@ -195,15 +386,12 @@ int call_monster(int y, int x)
 
 /**
  * Places a monster (of the specified "type") near the given
- * location.  Return true iff a monster was actually summoned.
+ * location.  Return the siummoned monster's level iff a monster was
+ * actually summoned.
  *
  * We will attempt to place the monster up to 10 times before giving up.
  *
- * Note: S_UNIQUE and S_WRAITH will summon Uniques
- * Note: S_ANY, S_HI_UNDEAD, S_HI_DEMON and S_HI_DRAGON may summon Uniques
- * Note: None of the other summon codes will ever summon Uniques.
- *
- * This function has been changed.  We now take the "monster level"
+ * This function takes the "monster level"
  * of the summoning monster as a parameter, and use that, along with
  * the current dungeon level, to help determine the level of the
  * desired monster.  Note that this is an upper bound, and also
@@ -249,7 +437,8 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 	summon_specific_type = type;
 
 	/* Use the new calling scheme if requested */
-	if (call && (type != S_UNIQUE) && (type != S_WRAITH)) {
+	if (call && (type != summon_name_to_idx("UNIQUE")) &&
+		(type != summon_name_to_idx("WRAITH"))) {
 		return (call_monster(y, x));
 	}
 
@@ -278,8 +467,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 	if (delay) {
 		mon->energy = 0;
 		if (mon->race->speed > player->state.speed)
-			mon_inc_timed(mon, MON_TMD_SLOW, 1,
-				MON_TMD_FLG_NOMESSAGE, false);
+			mon_inc_timed(mon, MON_TMD_SLOW, 1,	MON_TMD_FLG_NOMESSAGE, false);
 	}
 
 	return (mon->race->level);

@@ -39,6 +39,7 @@
 #include "mon-list.h"
 #include "mon-lore.h"
 #include "mon-msg.h"
+#include "mon-summon.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
@@ -2866,11 +2867,13 @@ static struct {
 	{ "world", &world_parser },
 	{ "projections", &projection_parser },
 	{ "timed effects", &player_timed_parser },
-	{ "traps", &trap_parser },
 	{ "features", &feat_parser },
 	{ "object bases", &object_base_parser },
 	{ "slays", &slay_parser },
 	{ "brands", &brand_parser },
+	{ "monster pain messages", &pain_parser },
+	{ "monster bases", &mon_base_parser },
+	{ "summons", &summon_parser },
 	{ "curses", &curse_parser },
 	{ "objects", &object_parser },
 	{ "activations", &act_parser },
@@ -2880,12 +2883,11 @@ static struct {
 	{ "object power calculations", &object_power_parser },
 	{ "blow methods", &meth_parser },
 	{ "blow effects", &eff_parser },
-	{ "monster pain messages", &pain_parser },
 	{ "monster spells", &mon_spell_parser },
-	{ "monster bases", &mon_base_parser },
 	{ "monsters", &monster_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
+	{ "traps", &trap_parser },
 	{ "quests", &quests_parser },
 	{ "history charts", &history_parser },
 	{ "bodies", &body_parser },

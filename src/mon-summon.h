@@ -30,14 +30,32 @@ enum summon_flag {
 	#undef S
 };
 
+struct monster_base_list {
+	struct monster_base *base;
+	struct monster_base_list *next;
+};
+
+struct summon {
+	struct summon *next;
+	char *name;
+	int message_type;
+	bool unique_allowed;
+	struct monster_base_list *bases;
+	int race_flag;
+	char *fallback_name;
+	int fallback;
+	char *desc;
+};
+
 /** Variables **/
 extern struct monster_base *kin_base;
-
+extern struct file_parser summon_parser;
 
 /** Functions **/
 int summon_name_to_idx(const char *name);
-const char *summon_desc(int type);
+int summon_fallback_type(int summon_type);
 int summon_message_type(int summon_type);
+const char *summon_desc(int type);
 int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call);
 
 #endif /* MONSTER_SUMMON_H */

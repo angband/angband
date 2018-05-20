@@ -4693,6 +4693,7 @@ flags:HURT_COLD
 spell-freq:6
 spell-power:18
 spells:BO_COLD
+spells:BLIND | CAUSE_2 | CONF | SCARE
 desc:A strange creature that disguises itself as a discarded potion bottle to
 desc: lure unsuspecting adventurers within reach of its venomous claws.
 mimic:potion:Healing
@@ -5281,6 +5282,7 @@ spell-freq:5
 spell-power:21
 spells:BO_FIRE
 spells:S_MONSTER
+spells:BLIND | CAUSE_2 | CONF | SCARE
 desc:A strange creature that disguises itself as a discarded scroll to lure
 desc: unsuspecting adventurers within reach of its venomous claws.
 mimic:scroll:Banishment
@@ -5900,6 +5902,7 @@ flags:DROP_40
 flags:OPEN_DOOR
 spell-freq:10
 spell-power:25
+spells:BOULDER
 friends:60:1d7:Wolf
 friends:80:1d3:Same
 desc:A ten foot tall humanoid with powerful muscles.
@@ -6482,6 +6485,7 @@ flags:DROP_40 | DROP_1
 spell-freq:9
 spell-power:27
 spells:CAUSE_2 | DARKNESS | MIND_BLAST | TELE_TO
+spells:HOLD | SCARE
 desc:It is a humanoid with an aura of power.  You notice a sharp set of front
 desc: teeth.
 
@@ -6597,6 +6601,7 @@ flags:OPEN_DOOR
 flags:IM_COLD
 spell-freq:10
 spell-power:28
+spells:BOULDER
 friends:60:1d7:Cold Hound
 friends:80:1d3:Same
 desc:A twelve foot tall giant covered in furs.
@@ -6979,6 +6984,7 @@ spell-freq:4
 spell-power:29
 spells:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 spells:S_MONSTER
+spells:BLIND | CAUSE_2 | CONF | SCARE
 desc:A strange creature that disguises itself as a discarded ring to lure
 desc: unsuspecting adventurers within reach of its venomous claws.
 mimic:ring:Speed
@@ -7086,6 +7092,7 @@ flags:OPEN_DOOR
 flags:IM_FIRE
 spell-freq:8
 spell-power:30
+spells:BOULDER
 friends:60:1d7:Fire Hound
 friends:80:1d3:Same
 desc:A glowing fourteen foot tall giant.  Flames drip from its red skin.
@@ -7552,6 +7559,7 @@ flags:DROP_40
 flags:OPEN_DOOR | TAKE_ITEM
 spell-freq:5
 spell-power:33
+spells:BOULDER
 friends:60:1d7:Earth hound
 friends:80:1d3:Same
 desc:It is eighteen feet tall and looking at you.
@@ -8100,7 +8108,7 @@ flags:DROP_1
 flags:HURT_LIGHT
 spell-freq:4
 spell-power:34
-spells:BLIND | BLINK | CAUSE_3 | DRAIN_MANA | HOLD
+spells:BLIND | BLINK | CAUSE_3 | DRAIN_MANA | HOLD | BRAIN_SMASH
 spells:SCARE | SLOW | TELE_AWAY | TELE_TO
 friends-base:70:1d3:skeleton
 desc:It is a skeletal form dressed in robes.  It radiates vastly evil power.
@@ -8521,6 +8529,7 @@ spell-freq:5
 spell-power:35
 spells:BA_POIS
 spells:S_MONSTER
+spells:BLIND | CAUSE_2 | CONF | SCARE
 desc:A strange creature that disguises itself as a chest to lure unsuspecting
 desc: adventurers within reach of its venomous claws.  The first that most
 desc: adventurers realise of the deception is when the seemingly invitingly open
@@ -8599,6 +8608,7 @@ flags:OPEN_DOOR | TAKE_ITEM
 flags:IM_ELEC
 spell-freq:8
 spell-power:36
+spells:BOULDER
 friends:60:1d7:Energy hound
 friends:80:1d3:Same
 desc:It is a twenty foot tall giant wreathed in clouds.
@@ -8625,6 +8635,7 @@ spell-power:36
 spells:CAUSE_3 | CONF | DARKNESS | MIND_BLAST
 spells:TELE_TO
 spells:BO_NETH
+spells:HOLD | SCARE
 desc:It is a humanoid form dressed in robes.  Power emanates from its chilling
 desc: frame.
 
@@ -9714,8 +9725,7 @@ flags:FORCE_SLEEP
 spell-freq:8
 spell-power:40
 spells:BLINK | CONF | SCARE | TELE_TO
-spells:BA_ELEC
-spells:BO_ELEC
+spells:BA_ELEC | BO_ELEC | BOULDER
 friends:60:1d7:Energy hound
 friends:80:1d3:Same
 desc:It is a twenty-five foot tall giant wreathed in lightning.
@@ -10286,7 +10296,7 @@ blow:TOUCH:LOSE_DEX:2d12
 flags:DROP_4 | ONLY_ITEM
 spell-freq:3
 spell-power:41
-spells:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF
+spells:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF | BRAIN_SMASH
 spells:DRAIN_MANA | HOLD | SCARE | TELE_TO
 spells:S_UNDEAD
 friends-base:80:1d3:zombie
@@ -10461,6 +10471,7 @@ spell-freq:7
 spell-power:42
 spells:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 spells:BO_NETH
+spells:HOLD | SCARE
 friends:40:1d4:Vampire
 desc:A foul wind chills your bones as this ghastly figure approaches.
 
@@ -11110,6 +11121,7 @@ flags:IM_ACID | IM_COLD | IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:8
 spell-power:45
+spells:BOULDER
 desc:A gigantic ugly humanoid with but one eye and very thick skin.
 
 ### Dungeon level 46 ###
@@ -11699,7 +11711,7 @@ blow:TOUCH:LOSE_DEX:4d12
 flags:DROP_3 | ONLY_ITEM
 spell-freq:3
 spell-power:54
-spells:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF
+spells:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF | BRAIN_SMASH
 spells:DRAIN_MANA | FORGET | HEAL | HOLD | SCARE | TELE_TO
 spells:TPORT
 spells:S_DEMON | S_UNDEAD
@@ -11729,6 +11741,7 @@ spell-power:54
 spells:BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 spells:BO_NETH
 spells:S_UNDEAD
+spells:HOLD | SCARE
 friends-base:30:1d3:ghost
 desc:A terrible robed undead figure, this creature has existed in its unlife for
 desc: many centuries by stealing the life of others.  It can summon the very
@@ -11928,7 +11941,7 @@ flags:OPEN_DOOR | TAKE_ITEM
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:56
-spells:HEAL | TELE_TO
+spells:HEAL | TELE_TO | BOULDER
 spells:S_MONSTERS
 desc:It is a humanoid figure thirty feet tall that gives off an aura of power
 desc: and hate.
@@ -12605,7 +12618,7 @@ flags:DROP_4 | ONLY_ITEM
 flags:PASS_WALL
 spell-freq:3
 spell-power:64
-spells:BLINK | CAUSE_4 | DRAIN_MANA | FORGET | HEAL
+spells:BLINK | CAUSE_4 | DRAIN_MANA | FORGET | HEAL | BRAIN_SMASH
 spells:HOLD | SCARE | TELE_TO | TPORT
 spells:BA_NETH
 spells:S_DEMON | S_HI_UNDEAD
@@ -12697,7 +12710,7 @@ flags:TAKE_ITEM
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:66
-spells:HEAL | TELE_TO
+spells:HEAL | TELE_TO | BOULDER
 spells:S_MONSTERS
 desc:A forty foot tall humanoid that shakes the ground as it walks.  The power
 desc: radiating from its frame shakes your courage, its hatred inspired by your
@@ -12759,6 +12772,7 @@ spell-power:67
 spells:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DRAIN_MANA
 spells:BA_NETH
 spells:S_HI_UNDEAD | S_KIN
+spells:HOLD | SCARE
 desc:Chief messenger between Sauron and Morgoth, she is surely the most deadly
 desc: of her vampire race.  At first she is charming to meet, but her wings and
 desc: eyes give away her true form.
@@ -13016,6 +13030,7 @@ spell-freq:5
 spell-power:69
 spells:BA_ACID | BA_WATE
 spells:BO_ICEE | BO_WATE
+spells:BOULDER
 desc:No ordinary cyclops, but the son of a sea-god: he wields the powers of
 desc: elemental water as well as the considerable strength of a cyclops.  His
 desc: one eye was blinded long ago by the warrior Odysseus, but he has trained
@@ -13292,7 +13307,7 @@ flags:DROP_2 | ONLY_ITEM
 flags:KILL_WALL
 spell-freq:3
 spell-power:74
-spells:BLIND | CAUSE_3 | CAUSE_4 | CONF | DRAIN_MANA
+spells:BLIND | CAUSE_3 | CAUSE_4 | CONF | DRAIN_MANA | BRAIN_SMASH
 spells:HOLD | TELE_TO
 spells:BA_MANA | BA_NETH
 spells:S_UNDEAD
@@ -13493,6 +13508,7 @@ flags:HURT_ROCK | IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 flags:FORCE_SLEEP
 spell-freq:5
 spell-power:76
+spells:BOULDER
 desc:The strongest of all the Titans.  Legend has it that he used to hold the
 desc: sky on his shoulders; and the mountain range that now does so is named
 desc: after him.
@@ -13518,7 +13534,7 @@ flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 spell-freq:2
 spell-power:77
-spells:BLIND | BLINK | CAUSE_4 | HOLD | SCARE
+spells:BLIND | BLINK | CAUSE_4 | HOLD | SCARE | BRAIN_SMASH
 spells:TELE_TO | TRAPS
 spells:BA_MANA | BA_NETH
 spells:BO_MANA
@@ -13927,7 +13943,7 @@ flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_STUN
 flags:FORCE_SLEEP
 spell-freq:3
 spell-power:87
-spells:HEAL | TELE_TO
+spells:HEAL | TELE_TO | BOULDER
 spells:BR_COLD | BR_FIRE | BR_SHAR | BR_SOUN
 spells:S_KIN | S_MONSTERS
 friends:50:1d4:Cloud giant
@@ -14058,7 +14074,7 @@ flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:IM_ELEC | IM_FIRE
 spell-freq:2
 spell-power:92
-spells:BLIND | CAUSE_4 | SCARE | TPORT
+spells:BLIND | CAUSE_4 | SCARE | TPORT | BRAIN_SMASH
 spells:BA_FIRE | BA_MANA | BA_NETH
 spells:BO_MANA
 spells:S_HI_DEMON | S_HI_UNDEAD | S_KIN | S_MONSTERS
