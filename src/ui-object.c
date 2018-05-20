@@ -220,6 +220,17 @@ static void show_obj(int obj_num, int row, int col, bool cursor,
 		ex_offset_ctr += 10;
 	}
 
+	/* Failure chances for recharging an item; see effect_handler_RECHARGE */
+	if (mode & OLIST_RECHARGE) {
+		int fail = 1000 / recharge_failure_chance(obj, player->upkeep->recharge_pow);
+		if (object_effect_is_known(obj))
+			strnfmt(buf, sizeof(buf), "%2d.%1d%% fail", fail / 10, fail % 10);
+		else
+			my_strcpy(buf, "    ? fail", sizeof(buf));
+		put_str(buf, row + obj_num, col + ex_offset_ctr);
+		ex_offset_ctr += 10;
+	}
+
 	/* Weight */
 	if (mode & OLIST_WEIGHT) {
 		int weight = obj->weight * obj->number;
@@ -1210,6 +1221,9 @@ bool textui_get_item(struct object **choice, const char *pmt, const char *str,
 
 	if (mode & SHOW_QUIVER)
 		olist_mode |= OLIST_QUIVER;
+
+	if (mode & SHOW_RECHARGE)
+		olist_mode |= OLIST_RECHARGE;
 
 	/* Paranoia XXX XXX XXX */
 	event_signal(EVENT_MESSAGE_FLUSH);
