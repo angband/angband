@@ -473,6 +473,7 @@ struct player_upkeep {
 	int inven_cnt;			/* Number of items in inventory */
 	int equip_cnt;			/* Number of items in equipment */
 	int quiver_cnt;			/* Number of items in the quiver */
+	int recharge_pow;		/* Power of recharge effect */
 };
 
 /**

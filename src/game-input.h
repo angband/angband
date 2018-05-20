@@ -34,6 +34,7 @@
 #define SHOW_QUIVER   0x0080	/* Show quiver summary when in inventory */
 #define SHOW_EMPTY    0x0100	/* Show empty slots in equipment display */
 #define QUIVER_TAGS   0x0200	/* 0-9 are quiver slots when selecting */
+#define SHOW_RECHARGE 0x0400	/* Show item recharge failure in item lists */
 
 
 extern bool (*get_string_hook)(const char *prompt, char *buf, size_t len);

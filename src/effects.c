@@ -2265,6 +2265,16 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
 }
 
 /**
+ * Returns N which is the 1 in N chance for recharging to fail.
+ */
+int recharge_failure_chance(const struct object *obj, int strength) {
+	/* Ease of recharge ranges from 9 down to 4 (wands) or 3 (staffs) */
+	int ease_of_recharge = (100 - obj->kind->level) / 10;
+	int raw_chance = strength + ease_of_recharge - 2 * (obj->pval / obj->number);
+	return raw_chance > 1 ? raw_chance : 1;
+}
+
+/**
  * Recharge a wand or staff from the pack or on the floor.  Recharge strength
  * is context->value.base.
  *
@@ -2272,8 +2282,9 @@ bool effect_handler_ENCHANT(effect_handler_context_t *context)
  */
 bool effect_handler_RECHARGE(effect_handler_context_t *context)
 {
-	int i, t, ease_of_recharge;
+	int i, t;
 	int strength = context->value.base;
+	player->upkeep->recharge_pow = strength; // Used to show recharge failure rates
 	struct object *obj;
 	bool used = false;
 	const char *q, *s;
@@ -2285,16 +2296,11 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 	q = "Recharge which item? ";
 	s = "You have nothing to recharge.";
 	if (!get_item(&obj, q, s, 0, item_tester_hook_recharge,
-				  (USE_INVEN | USE_FLOOR)))
+				  (USE_INVEN | USE_FLOOR | SHOW_RECHARGE))) {
 		return (used);
+	}
 
-	/* Ease of recharge ranges from 9 down to 4 (wands) or 3 (staffs) */
-	ease_of_recharge = (100 - obj->kind->level) / 10;
-
-	/* Chance of failure = 1 time in
-	 * [Spell_strength + ease_of_use - 2 * charge_per_item] */
-	i = strength + ease_of_recharge - 2 * (obj->pval / obj->number);
-
+	i = recharge_failure_chance(obj, strength);
 	/* Back-fire */
 	if ((i <= 1) || one_in_(i)) {
 		struct object *destroyed;
@@ -2313,6 +2319,7 @@ bool effect_handler_RECHARGE(effect_handler_context_t *context)
 		object_delete(&destroyed);
 	} else {
 		/* Extract a "power" */
+		int ease_of_recharge = (100 - obj->kind->level) / 10;
 		t = (strength / (10 - ease_of_recharge)) + 1;
 
 		/* Recharge based on the power */
