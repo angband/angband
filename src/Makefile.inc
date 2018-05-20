@@ -154,12 +154,12 @@ depgen:
  list-mon-race-flags.h list-mon-spells.h init.h datafile.h parser.h \
  list-parser-errors.h mon-desc.h mon-lore.h z-textblock.h mon-make.h \
  mon-msg.h list-mon-message.h mon-predicate.h mon-spell.h mon-summon.h \
- list-summon-types.h mon-util.h obj-chest.h obj-curse.h obj-desc.h \
- obj-gear.h list-equip-slots.h obj-ignore.h list-ignore-types.h \
- obj-knowledge.h obj-make.h obj-pile.h obj-power.h obj-tval.h obj-util.h \
- player-calcs.h player-history.h list-history-types.h player-spell.h \
- player-timed.h list-player-timed.h player-util.h project.h \
- list-projections.h target.h trap.h list-trap-flags.h
+ mon-util.h obj-chest.h obj-curse.h obj-desc.h obj-gear.h \
+ list-equip-slots.h obj-ignore.h list-ignore-types.h obj-knowledge.h \
+ obj-make.h obj-pile.h obj-power.h obj-tval.h obj-util.h player-calcs.h \
+ player-history.h list-history-types.h player-spell.h player-timed.h \
+ list-player-timed.h player-util.h project.h list-projections.h target.h \
+ trap.h list-trap-flags.h
 ./game-event.o: game-event.c game-event.h z-type.h h-basic.h object.h \
  z-rand.h z-quark.h z-bitflag.h z-form.h z-virt.h z-dice.h z-expression.h \
  obj-properties.h z-file.h list-tvals.h list-object-flags.h \
@@ -276,12 +276,13 @@ depgen:
  generate.h monster.h mon-timed.h list-mon-timed.h mon-blows.h \
  list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h hint.h \
  init.h mon-init.h mon-list.h mon-lore.h z-textblock.h mon-msg.h \
- list-mon-message.h mon-util.h obj-ignore.h list-ignore-types.h \
- obj-init.h obj-list.h obj-make.h obj-pile.h obj-power.h obj-randart.h \
- list-randart-properties.h obj-slays.h obj-tval.h obj-util.h \
- player-history.h list-history-types.h player-quest.h player-spell.h \
- player-timed.h list-player-timed.h project.h list-projections.h \
- randname.h store.h trap.h list-trap-flags.h list-equip-slots.h
+ list-mon-message.h mon-summon.h mon-util.h obj-ignore.h \
+ list-ignore-types.h obj-init.h obj-list.h obj-make.h obj-pile.h \
+ obj-power.h obj-randart.h list-randart-properties.h obj-slays.h \
+ obj-tval.h obj-util.h player-history.h list-history-types.h \
+ player-quest.h player-spell.h player-timed.h list-player-timed.h \
+ project.h list-projections.h randname.h store.h trap.h list-trap-flags.h \
+ list-equip-slots.h
 ./load.o: load.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  list-message.h player.h guid.h obj-properties.h z-file.h list-tvals.h \
@@ -373,14 +374,14 @@ depgen:
  list-object-flags.h list-kind-flags.h list-stats.h \
  list-object-modifiers.h object.h z-quark.h z-dice.h z-expression.h \
  list-elements.h list-origins.h option.h list-options.h \
- list-player-flags.h effects.h source.h list-effects.h init.h datafile.h \
- parser.h list-parser-errors.h mon-blows.h monster.h cave.h \
- list-square-flags.h list-terrain-flags.h mon-timed.h list-mon-timed.h \
- list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h mon-init.h \
- mon-lore.h z-textblock.h mon-make.h mon-predicate.h mon-spell.h \
- mon-util.h obj-gear.h list-equip-slots.h obj-tval.h obj-util.h \
- player-attack.h cmd-core.h player-calcs.h player-timed.h \
- list-player-timed.h project.h list-projections.h
+ list-player-flags.h effects.h source.h list-effects.h game-world.h \
+ cave.h list-square-flags.h list-terrain-flags.h init.h datafile.h \
+ parser.h list-parser-errors.h mon-blows.h monster.h mon-timed.h \
+ list-mon-timed.h list-mon-temp-flags.h list-mon-race-flags.h \
+ list-mon-spells.h mon-init.h mon-lore.h z-textblock.h mon-make.h \
+ mon-predicate.h mon-spell.h mon-util.h obj-gear.h list-equip-slots.h \
+ obj-tval.h obj-util.h player-attack.h cmd-core.h player-calcs.h \
+ player-timed.h list-player-timed.h project.h list-projections.h
 ./mon-make.o: mon-make.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  list-message.h player.h guid.h obj-properties.h z-file.h list-tvals.h \
@@ -446,10 +447,10 @@ depgen:
  list-tvals.h list-object-flags.h list-kind-flags.h list-stats.h \
  list-object-modifiers.h object.h z-quark.h z-dice.h z-expression.h \
  list-elements.h list-origins.h option.h list-options.h \
- list-player-flags.h mon-make.h monster.h cave.h list-square-flags.h \
- list-terrain-flags.h mon-timed.h list-mon-timed.h mon-blows.h \
- list-mon-temp-flags.h list-mon-race-flags.h list-mon-spells.h \
- mon-summon.h list-summon-types.h mon-util.h
+ list-player-flags.h datafile.h parser.h list-parser-errors.h mon-make.h \
+ monster.h cave.h list-square-flags.h list-terrain-flags.h mon-timed.h \
+ list-mon-timed.h mon-blows.h list-mon-temp-flags.h list-mon-race-flags.h \
+ list-mon-spells.h mon-summon.h mon-util.h
 ./mon-timed.o: mon-timed.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
@@ -539,11 +540,11 @@ depgen:
  list-terrain-flags.h cmd-core.h effects.h source.h list-effects.h \
  game-world.h init.h datafile.h parser.h list-parser-errors.h monster.h \
  mon-timed.h list-mon-timed.h mon-blows.h list-mon-temp-flags.h \
- list-mon-race-flags.h list-mon-spells.h mon-summon.h list-summon-types.h \
- mon-util.h obj-curse.h obj-gear.h list-equip-slots.h obj-info.h \
- z-textblock.h obj-knowledge.h obj-make.h obj-pile.h obj-slays.h \
- obj-tval.h obj-util.h player-attack.h player-calcs.h player-timed.h \
- list-player-timed.h project.h list-projections.h
+ list-mon-race-flags.h list-mon-spells.h mon-summon.h mon-util.h \
+ obj-curse.h obj-gear.h list-equip-slots.h obj-info.h z-textblock.h \
+ obj-knowledge.h obj-make.h obj-pile.h obj-slays.h obj-tval.h obj-util.h \
+ player-attack.h player-calcs.h player-timed.h list-player-timed.h \
+ project.h list-projections.h
 ./obj-init.o: obj-init.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
  list-message.h player.h guid.h obj-properties.h z-file.h list-tvals.h \

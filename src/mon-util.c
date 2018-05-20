@@ -148,6 +148,8 @@ struct monster_base *lookup_monster_base(const char *name)
  * Return whether the given base matches any of the names given.
  *
  * Accepts a variable-length list of name strings. The list must end with NULL.
+ *
+ * This function is currently unused, except in a test... -NRM-
  */
 bool match_monster_bases(const struct monster_base *base, ...)
 {
