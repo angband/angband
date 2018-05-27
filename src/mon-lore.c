@@ -1497,7 +1497,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE])
 {
-	int i, total_attacks, described_count;
+	int i, total_attacks, described_count, total_centidamage;
 	monster_sex_t msex = MON_SEX_NEUTER;
 
 	assert(tb && race && lore);
@@ -1530,6 +1530,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 	}
 
 	described_count = 0;
+	total_centidamage = 99; // round up the final result to the next higher point
 
 	/* Describe each melee attack */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
@@ -1593,12 +1594,16 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 				textblock_append(tb, "n");
 			textblock_append_c(tb, COLOUR_L_BLUE, " %d", chance2);
 			textblock_append(tb, " percent chance to hit");
+
+			total_centidamage += (chance2 * randcalc(dice, 0, AVERAGE));
 		}
 
 		described_count++;
 	}
 
-	textblock_append(tb, ".  ");
+	textblock_append(tb, ", which is about");
+	textblock_append_c(tb, COLOUR_L_GREEN, " %d", total_centidamage/100);
+	textblock_append(tb, " damage per turn total.  ");
 }
 
 /**
