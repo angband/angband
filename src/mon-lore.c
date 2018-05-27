@@ -1565,7 +1565,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 
 			/* Describe damage (if known) */
 			if (dice.base || dice.dice || dice.sides || dice.m_bonus) {
-				textblock_append(tb, " with damage ");
+				textblock_append(tb, " (");
 
 				if (dice.base)
 					textblock_append_c(tb, COLOUR_L_GREEN, "%d", dice.base);
@@ -1589,11 +1589,11 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			if (chance2 < 12) {
 				chance2 = 12;
 			}
-			textblock_append(tb, " with a");
+			textblock_append(tb, ", ");
 			if ((chance2 == 8) || ((chance2 / 10) == 8))
 				textblock_append(tb, "n");
 			textblock_append_c(tb, COLOUR_L_BLUE, " %d", chance2);
-			textblock_append(tb, " percent chance to hit");
+			textblock_append(tb, "%%)");
 
 			total_centidamage += (chance2 * randcalc(dice, 0, AVERAGE));
 		}
@@ -1601,9 +1601,12 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		described_count++;
 	}
 
-	textblock_append(tb, ", which is about");
+	textblock_append(tb, ", averaging");
+	if (described_count < z_info->mon_blows_max) {
+		textblock_append_c(tb, COLOUR_ORANGE, " at least");
+	}
 	textblock_append_c(tb, COLOUR_L_GREEN, " %d", total_centidamage/100);
-	textblock_append(tb, " damage per turn total.  ");
+	textblock_append(tb, " damage.  ");
 }
 
 /**
