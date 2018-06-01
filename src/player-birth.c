@@ -582,7 +582,7 @@ static void player_outfit(struct player *p)
 /**
  * Cost of each "point" of a stat.
  */
-static const int birth_stat_costs[18 + 1] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 4 };
+static const int birth_stat_costs[19] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 4 };
 
 /* It was feasible to get base 17 in 3 stats with the autoroller */
 #define MAX_BIRTH_POINTS 20 /* 3 * (1+1+1+1+1+1+2) */
@@ -702,7 +702,7 @@ static bool sell_stat(int choice, int stats_local[STAT_MAX], int points_spent_lo
  * http://angband.oook.cz/forum/showpost.php?p=17588&postcount=6:
  *
  * 0. buy base STR 17
- * 1. if possible buy adj DEX of 18/10
+ * 1. if possible buy adj DEX of 19
  * 2. spend up to half remaining points on each of spell-stat and con, 
  *    but only up to max base of 16 unless a pure class 
  *    [mage or priest or warrior]
@@ -751,10 +751,10 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 				break;
 			}
 
-			/* Try and buy adj DEX of 18/10 */
+			/* Try and buy adj DEX of 19 */
 			case 1: {
 				if (!maxed[STAT_DEX] && player->state.stat_top[STAT_DEX]
-					< 18+10) {
+					< 19) {
 					if (!buy_stat(STAT_DEX, stats_local, points_spent_local, points_left_local,
 								  false))
 						maxed[STAT_DEX] = true;
@@ -765,9 +765,9 @@ static void generate_stats(int stats_local[STAT_MAX], int points_spent_local[STA
 				break;
 			}
 
-			/* If we can't get 18/10 dex, sell it back. */
+			/* If we can't get 19 dex, sell it back. */
 			case 2: {
-				if (player->state.stat_top[STAT_DEX] < 18+10) {
+				if (player->state.stat_top[STAT_DEX] < 19) {
 					while (stats_local[STAT_DEX] > 10)
 						sell_stat(STAT_DEX, stats_local, points_spent_local, points_left_local,
 								  false);

@@ -71,9 +71,9 @@ enum
 
 /**
  * The range of possible indexes into tables based upon stats.
- * Currently things range from 3 to 18/220 = 40.
+ * Currently things range from 1 to 40.
  */
-#define STAT_RANGE 38
+#define STAT_RANGE 40
 
 /**
  * Player constants

@@ -107,26 +107,6 @@ const char *stat_names_reduced[STAT_MAX] =
 };
 
 /**
- * Converts stat num into a six-char (right justified) string
- */
-void cnv_stat(int val, char *out_val, size_t out_len)
-{
-	/* Stats above 18 need special treatment*/
-	if (val > 18) {
-		int bonus = (val - 18);
-
-		if (bonus >= 220)
-			strnfmt(out_val, out_len, "18/***");
-		else if (bonus >= 100)
-			strnfmt(out_val, out_len, "18/%03d", bonus);
-		else
-			strnfmt(out_val, out_len, " 18/%02d", bonus);
-	} else {
-		strnfmt(out_val, out_len, "    %2d", val);
-	}
-}
-
-/**
  * ------------------------------------------------------------------------
  * Sidebar display functions
  * ------------------------------------------------------------------------ */
@@ -154,16 +134,16 @@ static void prt_stat(int stat, int row, int col)
 	/* Injured or healthy stat */
 	if (player->stat_cur[stat] < player->stat_max[stat]) {
 		put_str(stat_names_reduced[stat], row, col);
-		cnv_stat(player->state.stat_use[stat], tmp, sizeof(tmp));
+		strnfmt(tmp, sizeof(tmp), " %2d", player->state.stat_use[stat]);
 		c_put_str(COLOUR_YELLOW, tmp, row, col + 6);
 	} else {
 		put_str(stat_names[stat], row, col);
-		cnv_stat(player->state.stat_use[stat], tmp, sizeof(tmp));
+		strnfmt(tmp, sizeof(tmp), " %2d", player->state.stat_use[stat]);
 		c_put_str(COLOUR_L_GREEN, tmp, row, col + 6);
 	}
 
 	/* Indicate natural maximum */
-	if (player->stat_max[stat] == 18+100)
+	if (player->stat_max[stat] == 28)
 		put_str("!", row, col + 3);
 }
 
