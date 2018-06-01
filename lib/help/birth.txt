@@ -31,11 +31,9 @@ during character birth.
 Each character also has five primary "stats": strength, intelligence,
 wisdom, dexterity, and constitution; they modify the abilities
 of the character in a variety of ways. Every stat has a numerical value,
-ranging from a minimum of 3, up to a normal maximum of 18, and even higher,
-into the "percentile" range, represented as '18/01' through '18/100':
-this is the maximum that can be achieved intrinsically, for any given stat.
-These stats can be modified further by equipment, race and class bonuses up
-to a maximum of '18/220'.
+ranging from a minimum of 1, up to a normal maximum of 28, and even higher,
+through modifiers from equipment, race, and class bonuses up to a maxumum
+of 40.
 
 Each character also has several primary "skills": disarming, magic devices,
 saving throws, stealth, searching ability, fighting skill, shooting skill, 
@@ -341,7 +339,7 @@ levels your character will have, by allocating a finite number of
 by selection or with a random roller (as described below in the "Stat 
 Rollers" section).  Each race/class combination also has a recommended 
 default setting for these statistics.  Statistics can be permanently 
-raised by various potions in the dungeon up to 18/100.  They can also be 
+raised by various potions in the dungeon up to 28.  They can also be 
 temporarily drained by some monster attacks.
 
 Strength

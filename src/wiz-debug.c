@@ -310,7 +310,7 @@ static void do_cmd_wiz_change_aux(void)
 	/* Query the stats */
 	for (i = 0; i < STAT_MAX; i++) {
 		/* Prompt */
-		strnfmt(ppp, sizeof(ppp), "%s (3-118): ", stat_names[i]);
+		strnfmt(ppp, sizeof(ppp), "%s (1-28): ", stat_names[i]);
 
 		/* Default */
 		strnfmt(tmp_val, sizeof(tmp_val), "%d", player->stat_max[i]);
@@ -322,8 +322,8 @@ static void do_cmd_wiz_change_aux(void)
 		tmp_int = atoi(tmp_val);
 
 		/* Verify */
-		if (tmp_int > 18+100) tmp_int = 18+100;
-		else if (tmp_int < 3) tmp_int = 3;
+		if (tmp_int > 28) tmp_int = 28;
+		else if (tmp_int < 1) tmp_int = 1;
 
 		/* Save it */
 		player->stat_cur[i] = player->stat_max[i] = tmp_int;
@@ -1889,7 +1889,7 @@ static void do_cmd_wiz_advance(void)
 
 	/* Max stats */
 	for (i = 0; i < STAT_MAX; i++)
-		player->stat_cur[i] = player->stat_max[i] = 118;
+		player->stat_cur[i] = player->stat_max[i] = 28;
 
 	/* Lots of money */
 	player->au = 1000000L;

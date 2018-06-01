@@ -1,5 +1,4 @@
 /**
- * \file ui-player.c
  * \brief character screens and dumps
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -491,11 +490,11 @@ void display_player_stat_info(void)
 			put_str(stat_names[i], row+i, col);
 
 		/* Indicate natural maximum */
-		if (player->stat_max[i] == 18+100)
+		if (player->stat_max[i] == 28)
 			put_str("!", row+i, col+3);
 
 		/* Internal "natural" maximum value */
-		cnv_stat(player->stat_max[i], buf, sizeof(buf));
+		strnfmt(buf, sizeof(buf), " %2d", player->stat_max[i]);
 		c_put_str(COLOUR_L_GREEN, buf, row+i, col+5);
 
 		/* Race Bonus */
@@ -511,12 +510,12 @@ void display_player_stat_info(void)
 		c_put_str(COLOUR_L_BLUE, buf, row+i, col+20);
 
 		/* Resulting "modified" maximum value */
-		cnv_stat(player->state.stat_top[i], buf, sizeof(buf));
+		strnfmt(buf, sizeof(buf), " %2d", player->state.stat_top[i]);
 		c_put_str(COLOUR_L_GREEN, buf, row+i, col+24);
 
 		/* Only display stat_use if there has been draining */
 		if (player->stat_cur[i] < player->stat_max[i]) {
-			cnv_stat(player->state.stat_use[i], buf, sizeof(buf));
+			strnfmt(buf, sizeof(buf), " %2d", player->state.stat_use[i]);
 			c_put_str(COLOUR_YELLOW, buf, row+i, col+31);
 		}
 	}

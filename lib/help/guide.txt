@@ -51,7 +51,7 @@ a character with 3 or 4 blows (Don't pick a class/race combinations, like Dwarf
 Ranger, that can only get 2 blows.)
 
 First, set your stats to get maximum blows. If you have a combination with good
-dexterity, select 18/10 dexterity, and then set your strength to 17 or 18. Set
+dexterity, select 19 dexterity, and then set your strength to 17 or 18. Set
 your spell-casting stat to something low but usable (~12), and spend the rest
 on constitution. For a beginning character, constitution is least important,
 because it doesn't add significant HP until well above 18.
@@ -64,7 +64,7 @@ Example character::
  Sex    Female       Height       5'11"   STR:     17  +1  +0  +0     18
  Race   High-Elf     Weight    14st 0lb   INT:     10  +3  +2  +0     15
  Class  Ranger       Turns used:          WIS:     10  -1  -2  +0      7
- Title  Runner       Game             1   DEX:     18  +3  +1  +0  18/40
+ Title  Runner       Game             1   DEX:     18  +3  +1  +0     22
  HP     14/14        Standard         0   CON:     10  +1  -1  +0     10
  SP     0/0          Resting          0
 
