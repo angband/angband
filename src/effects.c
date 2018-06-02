@@ -4453,8 +4453,10 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 
 			player->upkeep->redraw |= (PR_MANA);
 		} else {
-			my_strcap(item);
-			msg("Your mana was already at its maximum.  %s not drained.", item);
+			char *cap = string_make(item);
+			my_strcap(cap);
+			msg("Your mana was already at its maximum.  %s not drained.", cap);
+			string_free(cap);
 		}
 	}
 
