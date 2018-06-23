@@ -181,13 +181,12 @@ normal:ring:Feather Falling
 normal:ring:Protection
 normal:amulet:Slow Digestion
 normal:amulet:Resist Acid
+normal:wand:Light
 normal:wand:Slow Monster
 normal:wand:Confuse Monster
-normal:wand:Hold Monster
-normal:wand:Stun Monster
 normal:wand:Magic Missile
 normal:wand:Stinking Cloud
-normal:wand:Wonder
+normal:wand:Stone to Mud
 normal:staff:Teleportation
 normal:staff:Light
 normal:staff:Mapping

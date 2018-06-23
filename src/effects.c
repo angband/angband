@@ -4442,7 +4442,7 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 			player->upkeep->redraw |= (PR_INVEN);
 
 			/* Increase mana. */
-			player->csp += energy / 12;
+			player->csp += energy / 6;
 			player->csp_frac = 0;
 			if (player->csp > player->msp) {
 				(player->csp = player->msp);

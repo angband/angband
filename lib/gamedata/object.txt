@@ -2321,7 +2321,7 @@ name:Neutralize Poison
 type:potion
 graphics:!:d
 properties:5:4:75
-alloc:40:1 to 35
+alloc:60:1 to 35
 pile:25:2
 power:1
 effect:CURE:POISONED
