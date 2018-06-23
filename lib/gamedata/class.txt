@@ -275,15 +275,15 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects all monsters in the immediate area, for one turn only.
 
-spell:Acid Spray:20:5:50:28
-effect:ARC:ACID:4:60
+spell:Acid Spray:20:5:30:28
+effect:ARC:ACID:10:60
 dice:$Dd8
 expr:D:PLAYER_LEVEL:/ 2
-desc:Sprays acid in a 60-degree cone, hitting all monsters up to 4 grids away.
+desc:Sprays acid in a 60-degree cone, hitting all monsters up to 10 grids away.
 
-book:magic book:dungeon:[Magical Defences]:6:arcane
-book-graphics:?:b
-book-properties:10000:20:30 to 100
+book:magic book:town:[Magical Defences]:6:arcane
+book-graphics:?:B
+book-properties:1600:20:30 to 100
 
 spell:Disable Traps, Destroy Doors:5:5:30:6
 effect:TOUCH:KILL_DOOR
@@ -314,19 +314,17 @@ effect:TIMED_INC:OPP_FIRE
 dice:20+d20
 desc:Grants you resistance to acid, cold, fire and lightning for 20+1d20 turns.
 
-spell:Tap Magical Energy:22:2:50:12
+spell:Tap Magical Energy:22:2:30:12
 effect:TAP_DEVICE
 desc:Turns wand or staff energy into mana.
 
-spell:Disruption:25:15:70:35
-effect:BALL:NEXUS:4
-dice:$B
-expr:B:PLAYER_LEVEL:/ 2
-desc:Shoots a radius-4 nexus ball that causes minimal damage but has a chance
-desc: to blink or teleport each monster in the area of effect.
+spell:Mana Channel:25:3:50:20
+effect:TIMED_INC:FASTCAST
+dice:25+1d25
+desc:Doubles spellcasting speed for 25 +1d25 turns.
 
 book:magic book:dungeon:[Arcane Control]:6:arcane
-book-graphics:?:b
+book-graphics:?:Z
 book-properties:30000:15:40 to 100
 
 spell:Door Creation:13:9:40:12
@@ -337,7 +335,7 @@ desc: adjacent to you.  These doors are closed, but not locked.
 spell:Mana Bolt:25:8:60:100
 effect:BOLT_OR_BEAM:MISSILE
 dice:$Dd8
-expr:D:PLAYER_LEVEL:/ 2
+expr:D:PLAYER_LEVEL:- 10
 desc:Fires a magic missile that always hits its target and does
 desc: unresistable damage.
 desc:  Sometimes a beam is fired instead that hurts each monster
@@ -376,8 +374,8 @@ dice:$Dd8
 expr:D:PLAYER_LEVEL:+ 0
 desc:Fires a short range beam of force.
 
-book:magic book:dungeon:[Wizard's Tome of Power]:6:arcane
-book-graphics:?:b
+book:magic book:dungeon:[Wizard's Tome of Power]:5:arcane
+book-graphics:?:Z
 book-properties:50000:10:60 to 100
 
 spell:Shock Wave:20:5:40:16
@@ -387,11 +385,6 @@ expr:B:PLAYER_LEVEL:* 2
 desc:Shoots a radius-2 sound ball.
 desc:  Apart from doing sound damage, this also has a chance to stun
 desc: each monster in the area of effect.
-
-spell:Mana Channel:25:3:50:20
-effect:TIMED_INC:FASTCAST
-dice:25+1d25
-desc:Doubles spellcasting speed for 25 +1d25 turns.
 
 spell:Explosion:30:10:50:20
 effect:BALL:SHARD:2
