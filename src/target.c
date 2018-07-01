@@ -115,6 +115,8 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 	if (mon->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
 	if (mon->m_timed[MON_TMD_FEAR]) my_strcat(buf, ", afraid", max);
 	if (mon->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);
+	if (mon->m_timed[MON_TMD_SLOW]) my_strcat(buf, ", slowed", max);
+	if (mon->m_timed[MON_TMD_FAST]) my_strcat(buf, ", hasted", max);
 }
 
 
