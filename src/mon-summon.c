@@ -278,7 +278,7 @@ static bool summon_specific_okay(struct monster_race *race)
 
 	/* A valid base and no match means disallowed */
 	while (bases) {
-		if (race->base == bases->base) return true;
+		if (race->base == bases->base) break;
 		if (bases->next == NULL) return false;
 		bases = bases->next;
 	}
