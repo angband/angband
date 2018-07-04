@@ -1263,10 +1263,10 @@ static bool obj_known_effect(const struct object *obj, struct effect **effect,
 		timeout = obj->time;
 		if (effect_aim(*effect))
 			*aimed = true;;
-	} else if (object_effect(obj) && !tval_is_wearable(obj)) {
+	} else if (object_effect(obj)) {
 		/* Don't know much - be vague */
 		*effect = NULL;
-		if (!obj->artifact && effect_aim(object_effect(obj))) {
+		if (tval_is_wand(obj) || tval_is_rod(obj)) {
 			*aimed = true;
 		}
 		return true;
@@ -1312,14 +1312,14 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 	/* Effect not known, mouth platitudes */
 	if (!effect && object_effect(obj)) {
-		if (aimed) {
-			textblock_append(tb, "It can be aimed.\n");
-		} else if (tval_is_edible(obj)) {
+		if (tval_is_edible(obj)) {
 			textblock_append(tb, "It can be eaten.\n");
 		} else if (tval_is_potion(obj)) {
 			textblock_append(tb, "It can be drunk.\n");
 		} else if (tval_is_scroll(obj)) {
 			textblock_append(tb, "It can be read.\n");
+		} else if (aimed) {
+			textblock_append(tb, "It can be aimed.\n");
 		} else {
 			textblock_append(tb, "It can be activated.\n");
 		}
