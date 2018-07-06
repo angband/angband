@@ -1356,6 +1356,8 @@ struct chunk *cavern_chunk(int depth, int h, int w)
 
 	/* If we couldn't make a big enough cavern then fail */
 	if (tries == MAX_CAVERN_TRIES) {
+		mem_free(colors);
+		mem_free(counts);
 		cave_free(c);
 		return NULL;
 	}
