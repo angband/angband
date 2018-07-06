@@ -340,8 +340,16 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 	depth = c->depth + randint0(11) - 5;
 
 	/* Choose a pit profile, using that depth. */
-	if (!random)
-		set_pit_type(depth, 0);
+	if (!random) {
+		while (true) {
+			/* Choose a pit profile */
+			set_pit_type(depth, 0);
+
+			/* Set monster generation restrictions */
+			if (mon_restrict(dun->pit_type->name, depth, true))
+				break;
+		}
+	}
 
 	/* Allow (slightly) tougher monsters. */
 	depth = c->depth + (c->depth < 60 ? c->depth / 12 : 5);
