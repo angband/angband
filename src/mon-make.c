@@ -718,18 +718,24 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 
 		/* Specified by tval or by kind */
 		if (drop->kind) {
+     
 			/* Allocate by hand, prep, apply magic */
 			obj = mem_zalloc(sizeof(*obj));
 			object_prep(obj, drop->kind, level, RANDOMISE);
 			apply_magic(obj, level, true, good, great, extra_roll);
 		} else {
+     
 			/* Choose by set tval */
 			assert(drop->tval);
 			obj = make_object(c, level, good, great, extra_roll, NULL,
 							  drop->tval);
 		}
 
+		/* Abort if no good object is found */
+		if (!obj) continue;
+
 		/* Set origin details */
+    
 		obj->origin = origin;
 		obj->origin_depth = player->depth;
 		obj->origin_race = mon->race;
