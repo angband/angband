@@ -729,6 +729,9 @@ static bool mon_create_drop(struct chunk *c, struct monster *mon, byte origin)
 							  drop->tval);
 		}
 
+		/* Abort if no good object is found */
+		if (!obj) continue;
+
 		/* Set origin details */
 		obj->origin = origin;
 		obj->origin_depth = player->depth;
