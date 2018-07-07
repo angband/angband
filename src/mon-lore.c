@@ -1497,7 +1497,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 						const struct monster_lore *lore,
 						bitflag known_flags[RF_SIZE])
 {
-	int i, total_attacks, described_count;
+	int i, known_attacks, total_attacks, described_count, total_centidamage;
 	monster_sex_t msex = MON_SEX_NEUTER;
 
 	assert(tb && race && lore);
@@ -1512,24 +1512,28 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		return;
 	}
 
-	/* Count the number of known attacks */
-	for (total_attacks = 0, i = 0; i < z_info->mon_blows_max; i++) {
+	total_attacks = 0;
+	known_attacks = 0;
+
+	/* Count the number of defined and known attacks */
+	for (i = 0; i < z_info->mon_blows_max; i++) {
 		/* Skip non-attacks */
 		if (!race->blow[i].method) continue;
 
-		/* Count known attacks */
+		total_attacks++;
 		if (lore->blow_known[i])
-			total_attacks++;
+			known_attacks++;
 	}
 
 	/* Describe the lack of knowledge */
-	if (total_attacks == 0) {
-		textblock_append(tb, "Nothing is known about %s attack.  ",
+	if (known_attacks == 0) {
+		textblock_append_c(tb, COLOUR_ORANGE, "Nothing is known about %s attack.  ",
 						 lore_pronoun_possessive(msex, false));
 		return;
 	}
 
 	described_count = 0;
+	total_centidamage = 99; // round up the final result to the next higher point
 
 	/* Describe each melee attack */
 	for (i = 0; i < z_info->mon_blows_max; i++) {
@@ -1547,7 +1551,7 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 		if (described_count == 0)
 			textblock_append(tb, "%s can ",
 							 lore_pronoun_nominative(msex, true));
-		else if (described_count < total_attacks - 1)
+		else if (described_count < known_attacks - 1)
 			textblock_append(tb, ", ");
 		else
 			textblock_append(tb, ", and ");
@@ -1562,10 +1566,9 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, " to ");
 			textblock_append_c(tb, blow_color(player, index), effect_str);
 
+			textblock_append(tb, " (");
 			/* Describe damage (if known) */
-			if (dice.base || dice.dice || dice.sides || dice.m_bonus) {
-				textblock_append(tb, " with damage ");
-
+			if (dice.base || (dice.dice && dice.sides) || dice.m_bonus) {
 				if (dice.base)
 					textblock_append_c(tb, COLOUR_L_GREEN, "%d", dice.base);
 
@@ -1574,6 +1577,8 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 
 				if (dice.m_bonus)
 					textblock_append_c(tb, COLOUR_L_GREEN, "M%d", dice.m_bonus);
+
+				textblock_append(tb, ", ");
 			}
 
 			/* Describe hit chances */
@@ -1588,17 +1593,21 @@ void lore_append_attack(textblock *tb, const struct monster_race *race,
 			if (chance2 < 12) {
 				chance2 = 12;
 			}
-			textblock_append(tb, " with a");
-			if ((chance2 == 8) || ((chance2 / 10) == 8))
-				textblock_append(tb, "n");
-			textblock_append_c(tb, COLOUR_L_BLUE, " %d", chance2);
-			textblock_append(tb, " percent chance to hit");
+			textblock_append_c(tb, COLOUR_L_BLUE, "%d", chance2);
+			textblock_append(tb, "%%)");
+
+			total_centidamage += (chance2 * randcalc(dice, 0, AVERAGE));
 		}
 
 		described_count++;
 	}
 
-	textblock_append(tb, ".  ");
+	textblock_append(tb, ", averaging");
+	if (known_attacks < total_attacks) {
+		textblock_append_c(tb, COLOUR_ORANGE, " at least");
+	}
+	textblock_append_c(tb, COLOUR_L_GREEN, " %d", total_centidamage/100);
+	textblock_append(tb, " damage.  ");
 }
 
 /**
