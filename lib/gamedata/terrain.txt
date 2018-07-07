@@ -269,7 +269,7 @@ resist-flag:IM_FIRE
 name:pile of passable rubble
 graphics:::u
 priority:13
-flags:ROCK | PASSABLE
+flags:ROCK | PASSABLE | INTERESTING
 info:0:1
 desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball 
 desc:spells.  May dissolve or be tunnelled to normal floor, and can be walked 

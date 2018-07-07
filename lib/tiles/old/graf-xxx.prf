@@ -223,10 +223,10 @@ feat:lava:los:0x8F:0xB7
 feat:lava:torch:0x8F:0xB7
 
 # pile of passable rubble
-feat:pile of passable rubble:dark:0x81:0xB8
-feat:pile of passable rubble:lit:0x81:0xB9
-feat:pile of passable rubble:los:0x81:0xBA
-feat:pile of passable rubble:torch:0x81:0xBA
+feat:pile of passable rubble:dark:0x81:0xBB
+feat:pile of passable rubble:lit:0x81:0xBC
+feat:pile of passable rubble:los:0x81:0xBD
+feat:pile of passable rubble:torch:0x81:0xBD
 
 
 

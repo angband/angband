@@ -71,7 +71,7 @@ feat:Black Market:*:0x99:0x9B
 feat:Home:*:0x99:0x97
 
 # pile of rubble
-feat:pile of rubble:*:0x87:0xB7
+feat:pile of rubble:*:0x88:0xBF
 
 # magma vein
 feat:magma vein:torch:0x96:0xB3
@@ -110,7 +110,7 @@ feat:lava:lit:0x97:0xA5
 feat:lava:dark:0x97:0xA6
 
 # pile of passable rubble
-feat:pile of passable rubble:*:0x87:0xB7
+feat:pile of passable rubble:*:0x88:0xC0
 
 
 
