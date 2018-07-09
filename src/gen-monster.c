@@ -345,8 +345,9 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 			/* Choose a pit profile */
 			set_pit_type(depth, 0);
 
-			/* Set monster generation restrictions */
-			if (mon_restrict(dun->pit_type->name, depth, true))
+			/* Check if the pit was set correctly
+			   Done currently by checking if a name was saved */
+			if (dun->pit_type->name)
 				break;
 		}
 	}
