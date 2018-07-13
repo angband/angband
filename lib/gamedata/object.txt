@@ -1879,7 +1879,7 @@ properties:1:5:0
 alloc:10:1 to 100
 pile:70:1d3
 power:0
-effect:SUMMON
+effect:SUMMON:ANY
 dice:1d3
 
 name:Summon Undead
@@ -3053,7 +3053,7 @@ alloc:10:10 to 100
 combat:0:1d2:0:0:0
 charges:2d3
 power:0
-effect:SUMMON
+effect:SUMMON:ANY
 dice:1d3
 
 name:Haste Monsters
