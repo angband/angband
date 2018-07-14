@@ -525,7 +525,7 @@ bool object_is_known_artifact(const struct object *obj)
 }
 
 /**
- * Checks whether the object is in a store
+ * Checks whether the object is in a store (not the home)
  *
  * \param obj is the object
  */
@@ -537,6 +537,7 @@ bool object_is_in_store(const struct object *obj)
 	/* Check all the store objects */
 	for (i = 0; i < MAX_STORES; i++) {
 		struct store *s = &stores[i];
+		if (s->sidx == STORE_HOME) continue;
 		for (obj1 = s->stock; obj1; obj1 = obj1->next)
 			if (obj1 == obj) return true;
 	}
