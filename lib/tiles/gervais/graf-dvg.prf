@@ -80,10 +80,10 @@ feat:Black Market:*:0x96:0xAB
 feat:Home:*:0x96:0xAA
 
 # pile of rubble
-feat:pile of rubble:torch:0x97:0xE0
-feat:pile of rubble:los:0x97:0xE0
-feat:pile of rubble:lit:0x97:0xE1
-feat:pile of rubble:dark:0x97:0xE2
+feat:pile of rubble:torch:0x9B:0x96
+feat:pile of rubble:los:0x9B:0x96
+feat:pile of rubble:lit:0x9B:0x97
+feat:pile of rubble:dark:0x9B:0x98
 
 # magma vein
 feat:magma vein:torch:0x96:0x95
@@ -128,10 +128,10 @@ feat:lava:lit:0x98:0xB7
 feat:lava:dark:0x98:0xB9
 
 # pile of passable rubble
-feat:pile of passable rubble:torch:0x97:0xDD
-feat:pile of passable rubble:los:0x97:0xDD
-feat:pile of passable rubble:lit:0x97:0xDE
-feat:pile of passable rubble:dark:0x97:0xDF
+feat:pile of passable rubble:torch:0x9B:0x99
+feat:pile of passable rubble:los:0x9B:0x99
+feat:pile of passable rubble:lit:0x9B:0x9A
+feat:pile of passable rubble:dark:0x9B:0x9B
 
 # glyph of warding
 trap:glyph of warding:torch:0x96:0xB4
