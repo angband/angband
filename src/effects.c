@@ -4641,6 +4641,14 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 	if (mon) {
 		struct object *obj;
 
+		/* Monsters with high spell power can resist */
+		if (randint0(mon->race->spell_power) > player->lev) {
+			char m_name[80];
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL);
+			msg("%s resists!", m_name);
+			return true;
+		}
+
 		/* Swap the targeted monster with the first in the monster list */
 		struct monster *first_mon = cave_monster(cave, 1);
 		struct monster *temp_mon = mem_zalloc(sizeof(*temp_mon));
