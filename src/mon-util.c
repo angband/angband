@@ -1228,8 +1228,11 @@ void steal_monster_item(struct monster *mon, int midx)
 			guard /= 2;
 		}
 
-		/* Try and steal */
+		/* Monster base reaction, plus allowance for item weight */
 		monster_reaction = guard / 2 + randint1(MAX(guard / 2, 1));
+		monster_reaction += obj->weight / 10;
+
+		/* Try and steal */
 		if (monster_reaction < steal_skill) {
 			int wake = 35 - player->state.skills[SKILL_STEALTH];
 
