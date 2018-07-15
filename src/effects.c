@@ -2908,8 +2908,12 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	} else {
 		/* Player choice */
 		get_aim_dir(&dir);
-		if ((dir == DIR_TARGET) && target_okay())
+		if ((dir == DIR_TARGET) && target_okay()) {
 			target_get(&nx, &ny);
+		}
+
+		/* Randomise the landing a bit if it's a vault */
+		if (square_isvault(cave, ny, nx)) dis = 10;
 	}
 
 	/* Find a usable location */
