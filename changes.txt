@@ -1,7 +1,30 @@
 Welcome to the changelog for Angband 4. This file tracks the changes made since
 3.5.1.
 
-Angband 4.1.
+Angband 4.1.3
+=============
+
+More minor changes and bugfixes, the last of the 4.1.x series.
+
+Changes
+-------
+ - Passable rubble tiles distinguished from regular rubble
+ - Details of different summon types moved to a data file
+ - Tweaks to some potions and scrolls
+ - Minor improvements to monster lore
+ - Reduction in frequency of traps and greater vaults
+ - Show if monsters are hasted and slowed when targeting
+
+Bugfixes
+--------
+ - Correct weapon damage and blows information
+ - Fix several minor ID and knowledge bugs
+ - Correct some spelling errors in text files
+ - Check bounds properly in targeting, preventing the game hanging
+ - Fix some interesting room descriptions which were causing disconnected levels
+ - Small adjustments to object structures
+
+Angband 4.1.2
 =============
 
 This version fixes bugs in 4.1.1 and makes some other small improvements
