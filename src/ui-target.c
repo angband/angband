@@ -962,7 +962,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 	/* If we haven't been given an initial location, start on the
 	   player, otherwise  honour it by going into "free targetting" mode. */
-	if (x == -1 || y == -1) {
+	if (x == -1 || y == -1 || !square_in_bounds_fully(cave, y, x)) {
 		x = player->px;
 		y = player->py;
 	} else {
