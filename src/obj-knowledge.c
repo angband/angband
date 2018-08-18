@@ -1719,12 +1719,6 @@ void object_learn_on_wield(struct player *p, struct object *obj)
 		}
 	}
 
-	/* Special case FA, needed for mages wielding gloves */
-	if (player_has(p, PF_CUMBER_GLOVE) && obj->tval == TV_GLOVES &&
-		(obj->modifiers[OBJ_MOD_DEX] <= 0) && 
-		!kf_has(obj->kind->kind_flags, KF_SPELLS_OK))
-		of_on(obvious_mask, OF_FREE_ACT);
-
 	/* Learn about obvious, previously unknown flags */
 	object_flags(obj, f);
 	of_inter(f, obvious_mask);

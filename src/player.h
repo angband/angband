@@ -414,7 +414,6 @@ struct player_state {
 	bool bless_wield;	/**< Blessed (or blunt) weapon */
 
 	bool cumber_armor;	/**< Mana draining armor */
-	bool cumber_glove;	/**< Mana draining gloves */
 
 	bitflag flags[OF_SIZE];					/**< Status flags from race and items */
 	bitflag pflags[PF_SIZE];				/**< Player intrinsic flags */

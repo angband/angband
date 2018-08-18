@@ -24,7 +24,7 @@ equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
+flags:ZERO_FAIL | BEAM | CHOOSE_SPELLS
 title:Novice
 title:Apprentice
 title:Trickster
@@ -979,7 +979,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | CHOOSE_SPELLS
+flags:CHOOSE_SPELLS
 title:Vagabond
 title:Cutpurse
 title:Footpad
@@ -1301,7 +1301,7 @@ equip:sword:Dagger:1:1
 equip:bow:Short Bow:1:1
 equip:arrow:Arrow:15:20
 equip:scroll:Word of Recall:1:1
-flags:CUMBER_GLOVE | FAST_SHOT | CHOOSE_SPELLS
+flags:FAST_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
 title:Scout

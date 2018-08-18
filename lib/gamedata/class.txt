@@ -164,7 +164,7 @@ equip:food:Ration of Food:1:3
 equip:light:Wooden Torch:1:3
 equip:sword:Rapier:1:1
 equip:scroll:Word of Recall:1:1
-player-flags:CUMBER_GLOVE | ZERO_FAIL | BEAM | CHOOSE_SPELLS
+player-flags:ZERO_FAIL | BEAM | CHOOSE_SPELLS
 title:Novice
 title:Apprentice
 title:Trickster
@@ -936,7 +936,7 @@ strength-multiplier:3
 equip:food:Ration of Food:1:3
 equip:sword:Main Gauche:1:1
 equip:scroll:Word of Recall:1:1
-player-flags:CUMBER_GLOVE | ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT
+player-flags:ZERO_FAIL | CHOOSE_SPELLS | UNLIGHT
 title:Acolyte
 title:Curser
 title:Dark Student
@@ -1360,7 +1360,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-player-flags:CUMBER_GLOVE | CHOOSE_SPELLS | STEAL
+player-flags:CHOOSE_SPELLS | STEAL
 title:Vagabond
 title:Cutpurse
 title:Footpad

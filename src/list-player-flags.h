@@ -16,7 +16,6 @@ PF(NONE,             "",                                                        
 PF(FAST_SHOT,        "improve shooting speed with tension bows every 10 levels",  "Gains extra shots with bow")
 PF(BRAVERY_30,       "become immune to fear at level 30",                         "Gains immunity to fear")
 PF(BLESS_WEAPON,     "may only wield blessed or hafted weapons",                  "Prefers blunt/blessed weapons")
-PF(CUMBER_GLOVE,     "have difficulty using magic with covered hands",            NULL)
 PF(ZERO_FAIL,        "may obtain a perfect success rate with magic",              "Advanced spellcasting")
 PF(BEAM,             "frequently turn bolt spells into beams",                    NULL)
 PF(CHOOSE_SPELLS,    "may choose their own spells to study",                      NULL)
