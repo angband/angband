@@ -130,7 +130,7 @@ equip:potion:Berserk Strength:1:1
 equip:sword:Dagger:1:1
 equip:soft armour:Soft Leather Armour:1:1
 equip:scroll:Word of Recall:1:1
-player-flags:BRAVERY_30 | NO_MANA
+player-flags:BRAVERY_30 | NO_MANA | SHIELD_BASH
 title:Rookie
 title:Soldier
 title:Swordsman
@@ -1193,7 +1193,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Main Gauche:1:1
 equip:scroll:Protection from Evil:1:1
 equip:scroll:Word of Recall:1:1
-player-flags:BLESS_WEAPON
+player-flags:BLESS_WEAPON | SHIELD_BASH
 title:Gallant
 title:Keeper
 title:Protector

@@ -598,8 +598,8 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
 	int bash_quality, bash_dam;
 
 	/* Bashing chance depends on melee skill, DEX, and a level bonus. */
-	int bash_chance = p->state.skills[SKILL_TO_HIT_MELEE] / 4 +
-		adj_dex_th[p->state.stat_ind[STAT_DEX]];
+	int bash_chance = p->state.skills[SKILL_TO_HIT_MELEE] / 8 +
+		adj_dex_th[p->state.stat_ind[STAT_DEX]] / 2;
 
 	/* No shield, no bash */
 	if (!shield) return false;
