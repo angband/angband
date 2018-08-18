@@ -386,14 +386,9 @@ s16b spell_chance(int spell_index)
 	/* Get the minimum failure rate for the casting stat level */
 	minfail = min_fail(player, spell);
 
-	/* Non mage/priest characters never get better than 5 percent */
+	/* Non zero-fail characters never get better than 5 percent */
 	if (!player_has(player, PF_ZERO_FAIL) && minfail < 5) {
 		minfail = 5;
-	}
-
-	/* Priest prayer penalty for "edged" weapons (before minfail) */
-	if (player->state.icky_wield) {
-		chance += 25;
 	}
 
 	/* Necromancers are punished by being on lit squares */

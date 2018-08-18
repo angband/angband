@@ -2172,7 +2172,7 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* Analyze weapon */
 	state->heavy_wield = false;
-	state->icky_wield = false;
+	state->bless_wield = false;
 	if (weapon) {
 		/* It is hard to hold a heavy weapon */
 		if (hold < weapon->weight / 10) {
@@ -2186,12 +2186,11 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->skills[SKILL_DIGGING] += (weapon->weight / 10);
 		}
 
-		/* Priest weapon penalty for non-blessed edged weapons */
-		if (player_has(p, PF_BLESS_WEAPON) &&
-			!of_has(state->flags, OF_BLESSED) && tval_is_pointy(weapon)) {
-			state->to_h -= 2;
-			state->to_d -= 2;
-			state->icky_wield = true;
+		/* Divine weapon bonus for blessed weapons */
+		if (player_has(p, PF_BLESS_WEAPON) && of_has(state->flags, OF_BLESSED)){
+			state->to_h += 2;
+			state->to_d += 2;
+			state->bless_wield = true;
 		}
 	} else {
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
@@ -2304,14 +2303,13 @@ static void update_bonuses(struct player *p)
 		}
 
 		/* Take note when "illegal weapon" changes */
-		if (p->state.icky_wield != state.icky_wield) {
+		if (p->state.bless_wield != state.bless_wield) {
 			/* Message */
-			if (state.icky_wield)
-				msg("You do not feel comfortable with your weapon.");
-			else if (equipped_item_by_slot_name(p, "weapon"))
-				msg("You feel comfortable with your weapon.");
-			else
-				msg("You feel more comfortable after removing your weapon.");
+			if (state.bless_wield) {
+				msg("You feel attuned to your weapon.");
+			} else if (equipped_item_by_slot_name(p, "weapon")) {
+				msg("You feel less attuned to your weapon.");
+			}
 		}
 
 		/* Take note when "glove state" changes */

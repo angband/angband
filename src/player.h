@@ -411,7 +411,7 @@ struct player_state {
 
 	bool heavy_wield;	/**< Heavy weapon */
 	bool heavy_shoot;	/**< Heavy shooter */
-	bool icky_wield;	/**< Icky weapon shooter */
+	bool bless_wield;	/**< Blessed (or blunt) weapon */
 
 	bool cumber_armor;	/**< Mana draining armor */
 	bool cumber_glove;	/**< Mana draining gloves */

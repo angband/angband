@@ -101,11 +101,6 @@ bool tval_is_money_k(const struct object_kind *kind)
 	return kind->tval == TV_GOLD;
 }
 
-bool tval_is_pointy(const struct object *obj)
-{
-	return obj->tval == TV_SWORD || obj->tval == TV_POLEARM;
-}
-
 bool tval_is_digger(const struct object *obj)
 {
 	return obj->tval == TV_DIGGING;

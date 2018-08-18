@@ -1193,6 +1193,7 @@ equip:light:Wooden Torch:1:3
 equip:sword:Main Gauche:1:1
 equip:scroll:Protection from Evil:1:1
 equip:scroll:Word of Recall:1:1
+player-flags:BLESS_WEAPON
 title:Gallant
 title:Keeper
 title:Protector
