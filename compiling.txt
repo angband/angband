@@ -91,7 +91,7 @@ Using MinGW
 -----------
 
 This build now also uses autotools, so should be very similar to the Linux
-build:
+build. Open the MinGW shell (MSYS) by running msys.bat then run these commands:
 
 	./autogen.sh
 	./configure --enable-win
