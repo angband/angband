@@ -1,0 +1,100 @@
+# File: Makefile.std
+# Standard makefile for Angband.
+#
+# This makefile probably requires GNU make.
+#
+# This makefile is intended for use with Unix machines running X11, gtk or 
+# (n)curses.  You can choose which you want to compile for below.
+#
+# You can also place your alterations to a file in the src/ directory called 
+# "config", in which case that file will override what is specified here.
+#
+
+# By default, copy the executable to ../ so that
+# you don't find yourself debugging a stale copy.
+.PHONY: default
+default: install
+
+# Support SDL2 frontend
+VIDEO_sdl2 := -DUSE_SDL2 \
+	$(shell sdl2-config --cflags) \
+	$(shell sdl2-config --libs) \
+	-lSDL2_ttf -lSDL2_image
+
+## Support SDL_mixer for sound
+SOUND_sdl2 := -DSOUND_SDL -DSOUND \
+	$(shell sdl2-config --cflags) \
+	$(shell sdl2-config --libs) -lSDL2_mixer
+
+# Compiler to use
+CC := gcc
+
+# Flags to use in compilation
+CFLAGS := -std=c99 \
+	-g \
+	-O2 \
+	-W -Wall -Wextra -Wno-unused-parameter -pedantic \
+	-DHAVE_CONFIG_H \
+
+# Linker flags
+LDFLAGS := -lm
+
+# Frontends to compile
+MODULES := $(VIDEO_sdl2)
+
+ifdef SOUND
+	MODULES += $(SOUND_sdl2)
+endif
+
+# Extract CFLAGS and LDFLAGS from the module definitions
+CFLAGS += $(patsubst -l%,,$(MODULES))
+LDFLAGS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
+
+# Makefile.inc contains an up-to-date set of object files to compile,
+# so we include it
+include Makefile.inc
+
+#### Targets and objects #####
+
+# Program name (PROGNAME comes from Makefile.src via Makefile.inc)
+EXE := $(PROGNAME)
+
+# Object definitions (BASEOBJS come from Makefile.inc)
+OBJS := main.o main-sdl2.o $(BASEOBJS)
+
+ifdef SOUND
+	OBJS += snd-sdl.o
+endif
+
+# Build the "Angband" program
+$(EXE): $(OBJS)
+	@printf "%10s %-20s\n" LINK $@
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LDFLAGS)
+
+# Install the game.
+.PHONY: install
+install: ../$(EXE)
+
+../$(EXE): $(EXE)
+	cp $(EXE) ..
+
+# Clean up old junk
+.PHONY: clean
+clean:
+	-rm -f $(OBJS) $(EXE) snd-sdl.o
+
+# Verify module arguments
+.PHONY: args
+args:
+	@echo CFLAGS = $(CFLAGS)
+	@echo "---"
+	@echo LDFLAGS = $(LDFLAGS)
+	@echo "---"
+	@echo MODULES = $(MODULES)
+	@echo "---"
+	@echo INCLUDES = $(INCLUDES)
+
+# Some file dependencies
+%.o: %.c
+	@printf "%10s %-20s\n" CC $<
+	@$(CC) $(CFLAGS) -o $@ -c $<
