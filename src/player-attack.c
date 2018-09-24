@@ -919,7 +919,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	int multiplier = p->state.ammo_mult;
 	int b = 0, s = 0;
 
-	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
+	my_strcpy(hit_verb, "hits", 20);
 
 	/* Did we hit it (penalize distance travelled) */
 	if (!test_hit(chance, mon->race->ac, monster_is_visible(mon)))
@@ -953,7 +953,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	int multiplier = 1;
 	int b = 0, s = 0;
 
-	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
+	my_strcpy(hit_verb, "hits", 20);
 
 	/* If we missed then we're done */
 	if (!test_hit(chance, mon->race->ac, monster_is_visible(mon)))
