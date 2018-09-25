@@ -1,13 +1,22 @@
-# File: Makefile.std
-# Standard makefile for Angband.
+# File: Makefile.sdl2
+# Makefile for compiling Angband with SDL2.
 #
-# This makefile probably requires GNU make.
+# This makefile requires GNU make.
 #
-# This makefile is intended for use with Unix machines running X11, gtk or 
-# (n)curses.  You can choose which you want to compile for below.
+# This makefile is intended for use with Unix machines that have SDL2 library.
+# The video subsystem requires libsdl2, libsdl2-ttf and libsdl2-image.
+# The sound subsystem requires libsdl2 and libsdl2-mixer.
 #
-# You can also place your alterations to a file in the src/ directory called 
-# "config", in which case that file will override what is specified here.
+# If you want only video (but not sound), use it like this:
+# (from angband directory)
+#
+# ./autogen.sh
+# ./configure --with-no-install --disable-curses --disable-x11
+# cd src
+# make -f Makefile.sdl2
+#
+# If you do want sound, the last command should be instead:
+# SOUND=yes make -f Makefile.sdl2
 #
 
 # By default, copy the executable to ../ so that
@@ -50,8 +59,7 @@ endif
 CFLAGS += $(patsubst -l%,,$(MODULES))
 LDFLAGS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
-# Makefile.inc contains an up-to-date set of object files to compile,
-# so we include it
+# Makefile.inc contains an up-to-date set of object files to compile
 include Makefile.inc
 
 #### Targets and objects #####
@@ -69,7 +77,7 @@ endif
 # Build the "Angband" program
 $(EXE): $(OBJS)
 	@printf "%10s %-20s\n" LINK $@
-	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS)
 
 # Install the game.
 .PHONY: install
