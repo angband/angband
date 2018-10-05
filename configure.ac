@@ -201,6 +201,10 @@ AC_ARG_ENABLE(x11,
 	[AS_HELP_STRING([--enable-x11],       [Enables X11 frontend (default: enabled)])],
 	[enable_x11=$enableval],
 	[enable_x11=yes])
+AC_ARG_ENABLE(sdl2,
+	[AS_HELP_STRING([--enable-sdl2],       [Enables SDL2 frontend (default: disabled)])],
+	[enable_sdl2=$enableval],
+	[enable_sdl2=no])
 AC_ARG_ENABLE(sdl,
 	[AS_HELP_STRING([--enable-sdl],       [Enables SDL frontend (default: disabled)])],
 	[enable_sdl=$enableval],
@@ -219,6 +223,10 @@ AC_ARG_ENABLE(stats,
 	[enable_stats=no])
 
 dnl Sound modules
+AC_ARG_ENABLE(sdl2_mixer,
+	[AS_HELP_STRING([--enable-sdl2-mixer], [Enables SDL2 mixer sound support (default: disabled unless SDL2 enabled)])],
+	[enable_sdl2_mixer=$enable_sdl2_mixer],
+	[enable_sdl2_mixer=$enable_sdl2])
 AC_ARG_ENABLE(sdl_mixer,
 	[AS_HELP_STRING([--enable-sdl-mixer], [Enables SDL mixer sound support (default: disabled unless SDL enabled)])],
 	[enable_sdl_mixer=$enable_sdl_mixer],
@@ -264,6 +272,25 @@ if test "$enable_x11" = "yes"; then
 	fi
 fi
 
+dnl SDL2 checking
+if test "$enable_sdl2" = "yes"; then
+	AM_PATH_SDL(2.0.0,,)
+
+	if test "$SDL2_CONFIG" = "no"; then
+		with_sdl2=no
+	else
+		AC_CHECK_LIB(SDL2_image, IMG_LoadPNG_RW, with_sdl2=yes, with_sdl2=no)
+		AC_CHECK_LIB(SDL2_ttf, TTF_Init, with_sdl2x=yes, with_sdl2=no)
+
+		if test "$with_sdl2" = "yes"; then
+			AC_DEFINE(USE_SDL2, 1, [Define to 1 if using the SDL2 interface and SDL2 is found.])
+			CFLAGS="${CFLAGS} ${SDL2_CFLAGS}"
+			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_image -lSDL2_ttf"
+			MAINFILES="${MAINFILES} \$(SDL2MAINFILES)"
+		fi
+	fi
+fi
+
 dnl SDL checking
 if test "$enable_sdl" = "yes"; then
 	AM_PATH_SDL(1.2.10,,)
@@ -292,6 +319,25 @@ if test "$enable_win" = "yes"; then
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
 dnl Note complete replacement of all main files
 	MAINFILES="\$(WINMAINFILES)"
+fi
+
+dnl SDL2 mixer checking
+if test "$enable_sdl2_mixer" = "yes"; then
+	AC_CHECK_LIB(SDL2_mixer, Mix_OpenAudio, found_sdl2_mixer=yes, found_sdl2_mixer=no)
+
+	if test "$found_sdl2_mixer" = "yes"; then
+		AC_DEFINE(SOUND_SDL2, 1, [Define to 1 if using SDL2_mixer sound support and it's found.])
+		AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
+		if test "$with_sdl2" = "yes"; then
+			LIBS="${LIBS} -lSDL2_mixer"
+		else
+			SDL2_CFLAGS=`sdl2-config --cflags`
+			CFLAGS="${CFLAGS} ${SDL2_CFLAGS}"
+			SDL2_LIBS=`sdl2-config --libs`
+			LIBS="${LIBS} ${SDL2_LIBS} -lSDL2_mixer"
+		fi
+		MAINFILES="${MAINFILES} \$(SNDSDL2FILES)"
+	fi
 fi
 
 dnl SDL mixer checking
@@ -429,6 +475,15 @@ if test "$enable_x11" = "yes"; then
 else
 	echo "- X11                                     Disabled"
 fi
+if test "$enable_sdl2" = "yes"; then
+	if test "$with_sdl2" = "no"; then
+		echo "- SDL2                                    No; missing libraries"
+	else
+		echo "- SDL2                                    Yes"
+	fi
+else
+	echo "- SDL2                                    Disabled"
+fi
 if test "$enable_sdl" = "yes"; then
 	if test "$with_sdl" = "no"; then
 		echo "- SDL                                     No; missing libraries"
@@ -463,6 +518,15 @@ fi
 
 echo
 
+if test "$enable_sdl2_mixer" = "yes"; then
+	if test "$found_sdl2_mixer" = "no"; then
+		echo "- SDL2 sound                              No; missing libraries"
+	else
+		echo "- SDL2 sound                              Yes"
+	fi
+else
+	echo "- SDL2 sound                              Disabled"
+fi
 if test "$enable_sdl_mixer" = "yes"; then
 	if test "$found_sdl_mixer" = "no"; then
 		echo "- SDL sound                               No; missing libraries"

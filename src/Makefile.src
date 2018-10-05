@@ -62,6 +62,8 @@ BASEMAINFILES = main.o
 
 GCUMAINFILES = main-gcu.o
 
+SDL2MAINFILES = main-sdl2.o
+
 SDLMAINFILES = main-sdl.o
 
 SNDSDLFILES = snd-sdl.o
