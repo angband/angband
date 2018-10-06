@@ -274,7 +274,7 @@ fi
 
 dnl SDL2 checking
 if test "$enable_sdl2" = "yes"; then
-	AM_PATH_SDL(2.0.0,,)
+	AM_PATH_SDL2(2.0.0,,)
 
 	if test "$SDL2_CONFIG" = "no"; then
 		with_sdl2=no

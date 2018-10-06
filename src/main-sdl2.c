@@ -16,13 +16,14 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "angband.h"
+
 #ifdef USE_SDL2
 
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 
-#include "angband.h"
 #include "init.h"
 #include "ui-term.h"
 #include "buildid.h"
