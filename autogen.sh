@@ -27,7 +27,7 @@ run_or_die ()
     OPTIONS="$@"
 
     # print a message
-    echo -n "*info* running $COMMAND"
+    printf "*info* running %s" "$COMMAND"
     if test -n "$OPTIONS" ; then
         echo " ($OPTIONS)"
     else
