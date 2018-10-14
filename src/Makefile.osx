@@ -13,13 +13,14 @@ OPT ?= -O2
 # for consistency with older versions, use a lower case bundle ID
 BUNDLE_IDENTIFIER = org.rephial.angband
 
-ARCH = -arch i386 -arch x86_64
+ARCHS = i386 x86_64
+ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers \
 	-Wunused-macros
 JUST_C = -std=c99
 OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.5
 CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
-	-fno-stack-protector $(ARCH)
+	-fno-stack-protector $(ARCHFLAGS)
 LIBS = -framework Cocoa
 # Fix for bug #1663: Set the deployment target via environment variable
 # for the final link command. See http://grauonline.de/wordpress/?p=71
@@ -61,11 +62,12 @@ OSX_OBJS = main-cocoa.o
 
 
 $(EXE).o: $(OBJS)
-	@printf "%10s %-20s\n" LD $@.x86_64
-	@$(LD) -r -arch x86_64 -o $@.x86_64 $(OBJS)
-	@printf "%10s %-20s\n" LD $@.i386
-	@$(LD) -r -arch i386 -o $@.i386 $(OBJS)
-	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output $(PROGNAME).o
+	@for A in $(ARCHS); do \
+		printf "%10s %-20s\n" LD $@.$$A; \
+		$(LD) -r -arch $$A -o $@.$$A $(OBJS); \
+		LIPO_ARGS="$$LIPO_ARGS -arch $$A $@.$$A"; \
+	done; \
+	lipo $$LIPO_ARGS -create -output $@
 
 izzywizzy: $(OBJS) izzywizzy.o
 
@@ -77,7 +79,7 @@ $(EXE): $(EXE).o $(OSX_OBJS)
 #
 
 clean:
-	-rm -f $(OBJS) $(EXE) $(EXE).o.i386 $(EXE).o.x86_64 $(EXE).o $(OSX_OBJS)
+	-rm -f $(OBJS) $(EXE) $(addprefix $(EXE).o.,$(ARCHS)) $(EXE).o $(OSX_OBJS)
 
 
 #
