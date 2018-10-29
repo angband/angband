@@ -1,3 +1,5 @@
+# Note: Many of the rooms originating in other variants are not in there original form. Sometimes by mistake, sometimes as a joke or reference. For instance, some use their original symbols which have a different meaning in Vs code - MC
+
 # File: vault.txt
 
 
@@ -1676,7 +1678,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:12
-min-depth:0
+min-depth:6
 max-depth:0
 D:%%%%%%%%%%% 
 D:%.........% 
@@ -1695,7 +1697,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:9
-min-depth:0
+min-depth:7
 max-depth:0
 D:%%%%%%%%%
 D:%.......%
@@ -1714,7 +1716,7 @@ type:Interesting room
 rating:0
 rows:5
 columns:5
-min-depth:0
+min-depth:7
 max-depth:0
 D:%%%%%
 D:%BBB%
@@ -1727,7 +1729,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:13
-min-depth:0
+min-depth:8
 max-depth:0
 D:%%%%%%%%%%%%%
 D:%#.........#%
@@ -1746,7 +1748,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:18
-min-depth:0
+min-depth:9
 max-depth:0
 D:%%%%%%%%%%%%%%%%%%
 D:%................%
@@ -1765,7 +1767,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:15
-min-depth:0
+min-depth:10
 max-depth:0
 D:   %%%%%%%%%   
 D:   %.......%   
@@ -1784,7 +1786,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:17
-min-depth:0
+min-depth:10
 max-depth:0
 D:      %%%%       
 D:     %%..%%      
@@ -1803,7 +1805,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:11
-min-depth:0
+min-depth:8
 max-depth:0
 D:%%%%%%%%%%%
 D:%.........%
@@ -1822,7 +1824,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:18
-min-depth:0
+min-depth:10
 max-depth:0
 D:        %%%%%%%   
 D:  %%%%%%%.....%   
@@ -1841,7 +1843,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:12
-min-depth:0
+min-depth:7
 max-depth:0
 D:    %%%%%%%%
 D:    %......%
@@ -1860,7 +1862,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:12
-min-depth:0
+min-depth:8
 max-depth:0
 D:%%%%%%%%    
 D:%......%%   
@@ -1879,7 +1881,7 @@ type:Interesting room
 rating:0
 rows:10
 columns:20
-min-depth:0
+min-depth:10
 max-depth:0
 D:  %%%   %%%   %%%   
 D:  %.%% %%.%% %%.%%% 
@@ -1897,7 +1899,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:12
-min-depth:8
+min-depth:10
 max-depth:16
 D:%%%%%%%%%%%%
 D:%.........1%
@@ -1916,7 +1918,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:17
-min-depth:0
+min-depth:10
 max-depth:0
 D:%%%%         %%%%
 D:%..%%%     %%%..%
@@ -1935,7 +1937,7 @@ type:Interesting room
 rating:0
 rows:9
 columns:24
-min-depth:0
+min-depth:10
 max-depth:0
 D:     %%%%%%%%%%%%%%     
 D:  %%%%............%%%%  
@@ -1952,7 +1954,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:15
-min-depth:0
+min-depth:8
 max-depth:0
 D:%%%%%%%%%%%%%%%
 D:%.............%
@@ -1971,7 +1973,7 @@ type:Interesting room
 rating:0
 rows:10
 columns:12
-min-depth:0
+min-depth:8
 max-depth:0
 D:   %%%%%%   
 D:  %%....%%  
@@ -1989,7 +1991,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:26
-min-depth:0
+min-depth:9
 max-depth:0
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%........................%
@@ -2008,7 +2010,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:26
-min-depth:0
+min-depth:10
 max-depth:0
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%.........@1@1@...@......%
@@ -2027,7 +2029,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:33
-min-depth:0
+min-depth:15
 max-depth:0
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%...............................%
@@ -2046,7 +2048,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:26
-min-depth:0
+min-depth:10
 max-depth:0
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%........................%
@@ -2065,7 +2067,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:20
-min-depth:0
+min-depth:10
 max-depth:0
 D:%%%%%%%      %%%%%%%
 D:%.....%      %.....%
@@ -2084,7 +2086,7 @@ type:Interesting room
 rating:0
 rows:10
 columns:28
-min-depth:0
+min-depth:10
 max-depth:0
 D: %%%%%%%   %%%%%%%%%%       
 D: %.....%%%%%........%%%%    
@@ -2102,7 +2104,7 @@ type:Interesting room
 rating:0
 rows:10
 columns:18
-min-depth:6
+min-depth:10
 max-depth:35
 D:   %%%%%%%%%%%%%%%
 D:%%%%*.:..u:.#...:%
@@ -2153,7 +2155,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:20
-min-depth:3
+min-depth:6
 max-depth:40
 D:%%%%%%%%%%%%%%%%%%%%
 D:%;;.;;;;.;.;;.;.;;;%
@@ -2172,7 +2174,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:24
-min-depth:5
+min-depth:7
 max-depth:40
 D:%%%%%%%%%%%%%%%%%%%%%%%%
 D:%..............f.......%
@@ -2191,7 +2193,7 @@ type:Interesting room
 rating:0
 rows:6
 columns:16
-min-depth:3
+min-depth:7
 max-depth:0
 D:%%%%%%%%%%%%%%%%
 D:%....p.........%
@@ -2205,7 +2207,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:13
-min-depth:0
+min-depth:10
 max-depth:0
 D:  %%%%%%%%%  
 D:%%%.......%%%
@@ -2262,7 +2264,7 @@ type:Interesting room
 rating:0
 rows:9
 columns:16
-min-depth:0
+min-depth:10
 max-depth:0
 D:   %%%%%%%%%%   
 D:  %%.;....;.%%  
@@ -2279,7 +2281,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:33
-min-depth:0
+min-depth:15
 max-depth:0
 D:   %%%%%%%%           %%%%%%%%   
 D:  %%....;.%%         %%.;....%%  
@@ -2298,7 +2300,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:20
-min-depth:0
+min-depth:12
 max-depth:0
 D:%%%%%%%%%%%%%%%%%%%%
 D:%....1.............%
@@ -2317,7 +2319,7 @@ type:Interesting room
 rating:0
 rows:10
 columns:17
-min-depth:0
+min-depth:12
 max-depth:0
 D:%%%%%%%%%%%%%%%%%
 D:%....1..........%
@@ -2352,7 +2354,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:31
-min-depth:5
+min-depth:10
 max-depth:40
 D:            %%%%%%%%%%%%%%%%%%%
 D:          %%%;;;;;;;;;;;;;;;;;%
@@ -2386,7 +2388,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:15
-min-depth:3
+min-depth:13
 max-depth:50
 D:%%%%%%%%%%%%%%%
 D:%.............%
@@ -2405,7 +2407,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:13
-min-depth:0
+min-depth:5
 max-depth:0
 D:  %%%%%%%%%  
 D: %%..,.,..%% 
@@ -2424,7 +2426,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:25
-min-depth:0
+min-depth:15
 max-depth:0
 D:%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%.......1...............%
@@ -2443,7 +2445,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:33
-min-depth:0
+min-depth:15
 max-depth:0
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%...................1...........%
@@ -2462,7 +2464,7 @@ type:Interesting room
 rating:0
 rows:10
 columns:25
-min-depth:10
+min-depth:15
 max-depth:20
 D:%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%...;...:........;..S...%
@@ -2506,7 +2508,7 @@ type:Interesting room
 rating:0
 rows:8
 columns:24
-min-depth:0
+min-depth:7
 max-depth:0
 D:%%%%%%%%%%    %%%%%%%%%%
 D:%.../....%%%%%%.1../...%
@@ -2522,7 +2524,7 @@ type:Interesting room
 rating:0
 rows:8
 columns:24
-min-depth:0
+min-depth:7
 max-depth:0
 D:       %%%%%%%%%%       
 D:    %%%%........%%%%    
@@ -2538,7 +2540,7 @@ type:Interesting room
 rating:0
 rows:8
 columns:23
-min-depth:3
+min-depth:6
 max-depth:50
 D:  %%%%%%%%%%           
 D: %%...r..r.%%%         
@@ -2554,7 +2556,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:15
-min-depth:0
+min-depth:6
 max-depth:0
 D:    %%%%%%%    
 D:  %%%.....%%%  
@@ -2573,7 +2575,7 @@ type:Interesting room
 rating:0
 rows:10
 columns:15
-min-depth:0
+min-depth:6
 max-depth:0
 D:%%%%       %%%%
 D:%p.%%%%%%%%%.p%
@@ -2630,7 +2632,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:22
-min-depth:4
+min-depth:8
 max-depth:14
 D:%%%%%%%%%%%%%%%%%%%%%%
 D:%....y##.##y#........%
@@ -2649,7 +2651,7 @@ type:Interesting room
 rating:0
 rows:11
 columns:29
-min-depth:2
+min-depth:5
 max-depth:10
 D: %%%%%%%         %%%%%%      
 D: %c....%         %....%%%    
@@ -2685,7 +2687,7 @@ type:Interesting room
 rating:5
 rows:18
 columns:39
-min-depth:4
+min-depth:11
 max-depth:14
 D:   %%%%%%%%%% %%%%%%%%%%%%%%%%%%%%     
 D:  %%........%%%..................%%%   
@@ -3973,4 +3975,2265 @@ D:    %%%@@@@^@@@@@;@@;@@@@@^@@@@%%%
 D:      %%%%@@@@@;;;@*;;;@@@@@%%%%      
 D:        %%%%%%@@@@@@@@%@%%%%%         
 D:             %%%%%%%%%%%%             
+
+
+# Extras from variants are often in altered form - MC
+
+### Borrowed from FrogComposband ###
+
+name:Kennel
+type:Interesting room
+rating:0
+rows:11
+columns:21
+min-depth:3
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%
+D:%...................%
+D:%.#################.%
+D:%.#C#C#C#C#C#C#C#C#.%
+D:%.#+#+#+#+#+#+#+#+#.%
+D:%.+...............#.%
+D:%.#+#+#+#+#+#+#+#+#.%
+D:%.#C#C#C#C#C#C#C#C#.%
+D:%.#################.%
+D:%...................%
+D:%%%%%%%%%%%%%%%%%%%%%
+
+name:Zennel
+type:Interesting room
+rating:0
+rows:11
+columns:21
+min-depth:20
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%
+D:%...................%
+D:%.#################.%
+D:%.#Z#Z#Z#Z#Z#Z#Z#Z#.%
+D:%.#+#+#+#+#+#+#+#+#.%
+D:%.+...............#.%
+D:%.#+#+#+#+#+#+#+#+#.%
+D:%.#Z#Z#Z#Z#Z#Z#Z#Z#.%
+D:%.#################.%
+D:%...................%
+D:%%%%%%%%%%%%%%%%%%%%%
+
+name:Rennel
+type:Interesting room
+rating:0
+rows:11
+columns:21
+min-depth:4
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%
+D:%...................%
+D:%.#################.%
+D:%.#R#R#R#R#R#R#R#R#.%
+D:%.#+#+#+#+#+#+#+#+#.%
+D:%.+...............#.%
+D:%.#+#+#+#+#+#+#+#+#.%
+D:%.#R#R#R#R#R#R#R#R#.%
+D:%.#################.%
+D:%...................%
+D:%%%%%%%%%%%%%%%%%%%%%
+
+name:Mennel
+type:Interesting room
+rating:0
+rows:11
+columns:21
+min-depth:5
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%
+D:%...................%
+D:%.#################.%
+D:%.#p#p#p#p#p#p#p#p#.%
+D:%.#+#+#+#+#+#+#+#+#.%
+D:%.+...............#.%
+D:%.#+#+#+#+#+#+#+#+#.%
+D:%.#p#p#p#p#p#p#p#p#.%
+D:%.#################.%
+D:%...................%
+D:%%%%%%%%%%%%%%%%%%%%%
+
+name:Coffee House
+type:Interesting room
+rating:0
+rows:11
+columns:17
+min-depth:6
+max-depth:0
+D:%%%%%%%%%%%%%%%%%
+D:%...............%
+D:%.#############.%
+D:%.#c#o#f#f#e#e#.%
+D:%.#+#+#+#+#+#+#.%
+D:%.+...........#.%
+D:%.#+#+#+#+#+#+#.%
+D:%.#1#1#1#1#1#1#.%
+D:%.#############.%
+D:%...............%
+D:%%%%%%%%%%%%%%%%%
+
+name:Asylum
+type:Interesting room
+rating:0
+rows:11
+columns:17
+min-depth:10
+max-depth:0
+D:%%%%%%%%%%%%%%%%%
+D:%p.............p%
+D:%.#############.%
+D:%.#p#C#4#f#e#4#.%
+D:%.#+#+#+#+#+#+#.%
+D:%.+1......1...#.%
+D:%.#+#+#+#+#+#+#.%
+D:%.#y#4#z#s#4#h#.%
+D:%.#############.%
+D:%p.............p%
+D:%%%%%%%%%%%%%%%%%
+
+name:Raided Vault (Diagonal)
+type:Interesting room
+rating:0
+rows:12
+columns:20
+min-depth:7
+max-depth:0
+D:   %%%%%%%%%%%%%%%%%
+D:  %%....##.1..##.1.%
+D: %%....##....##....%
+D:%%....##....##....#%
+D:%..1.##....##....##%
+D:%...+#....1.....##.%
+D:%..##....1.....+#..%
+D:%.##....##....##1..%
+D:%##....##....##...%%
+D:%#....##....##...%% 
+D:%.1..##.1..##...%%  
+D:%%%%%%%%%%%%%%%%%   
+
+name:Zelazny
+type:Interesting room
+rating:0
+rows:14
+columns:17
+min-depth:13
+max-depth:24
+D:%%%%%%%%%%%%%%%% 
+D:%............1.% 
+D:%###########...% 
+D:###########...###
+D:##########...####
+D:#########...#####
+D:########...######
+D:#######.1.#######
+D:######...########
+D:#####...#########
+D:####...##########
+D: %#...##########%
+D: %..1...........%
+D: %%%%%%%%%%%%%%%%
+
+name:Little Z
+type:Interesting room
+rating:0
+rows:10
+columns:14
+min-depth:8
+max-depth:0
+D:%%%%%%%%%%%%%%
+D:%..1........1%
+D:%########...##
+D:%#######...###
+D:%######...####
+D:%#####.Z.#####
+D:%####...######
+D:###...#######%
+D:%.1......1...%
+D:%%%%%%%%%%%%%%
+
+name:Zounds
+type:Interesting room
+rating:0
+rows:14
+columns:17
+min-depth:15
+max-depth:24
+D:%%%%%%%%%%%%%%%% 
+D:%Z.....Z.....Z.% 
+D:%###########...% 
+D:###########...###
+D:##########.Z.####
+D:#########...#####
+D:########...######
+D:#######.Z.#######
+D:######...########
+D:#####.Z.#########
+D:####...##########
+D: %#...##########%
+D: %..Z.....Z...Z.%
+D: %%%%%%%%%%%%%%%%
+
+#Probably Wrong at the moment
+name:Pattern 16
+type:Interesting room
+rating:0
+rows:22
+columns:27
+min-depth:20
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%52....#...........#....25%
+D:%22....#...........#....22%
+D:%...52##.#########.##25...%
+D:%..2###..#6.....6#..###2..%
+D:%####...##.......##...####%
+D:%.....###....6....###.....%
+D:%..####.....###.....####..%
+D:%..#6......#####......6#..%
+D:%..#....###6###6###....#..%
+D:%..#...#####999#####...#..%
+D:%..#...#####999#####...#..%
+D:%..#....###6###6###....#..%
+D:%..#6......#####......6#..%
+D:%..####.....###.....####..%
+D:%.....###....6....###.....%
+D:%####...##.......##...####%
+D:%..2###..#1.....1#..###2..%
+D:%...52##.#########.##25...%
+D:%22....#...........#....22%
+D:%52....#...........#....25%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# ^^^^^^^
+# clouded  (Huge thanks, btw!!!)
+################################
+
+name:DEL
+type:Lesser vault
+rating:5
+rows:21
+columns:9
+min-depth:13
+max-depth:0
+D:#########
+D:#..."...#
+D:#.h.h.h.#
+D:#.......#
+D:#.h...h.#
+D:#.......#
+D:#P.P.g.g#
+D:%+++@+++%
+D:%...@...%
+D:%y^y@z^z%
+D:%y^y@z^z%
+D:%y^y@z^z%
+D:%...@...%
+D:%...@...%
+D:%+++@+++%
+D:%P.P@g.g%
+D:%.......%
+D:%.......%
+D:%..@@@..%
+D:%...<...%
+D:%%%%%%%%%
+
+name:Ap
+type:Interesting room
+rating:0
+rows:10
+columns:15
+min-depth:2
+max-depth:0
+D:%%%%%%%%%%%%%%%
+D:%.............%
+D:%.........ap..%
+D:%..........}..%
+D:%....@@@@@@@@@%
+D:%.............%
+D:%.........lm..%
+D:%.............%
+D:%<............%
+D:%%%%%%%%%%%%%%%
+
+name:Basement
+type:Interesting room
+rating:0
+rows:10
+columns:11
+min-depth:6
+max-depth:0
+D:###########
+D:#!!..._ooc#
+D:#####.#####
+D:%k.......k%
+D:%....s....%
+D:%.........%
+D:%........f%
+D:%........%%
+D:%.........%
+D:%%%%%%%%%%%
+
+name:Basement Clone
+type:Interesting room
+rating:0
+rows:10
+columns:11
+min-depth:12
+max-depth:0
+D:###########
+D:#??...411!#
+D:#####.#####
+D:%.1.......%
+D:%....W..1.%
+D:%.......C.%
+D:%.a.......%
+D:%........%%
+D:%.........%
+D:%%%%%%%%%%%
+
+name:Basement Random
+type:Interesting room
+rating:0
+rows:10
+columns:11
+min-depth:18
+max-depth:0
+D:###########
+D:#1.1..1.1.#
+D:#####.#####
+D:%1.......1%
+D:%....1....%
+D:%.........%
+D:%........1%
+D:%.1...1..%%
+D:%.........%
+D:%%%%%%%%%%%
+
+name:Doom1
+type:Greater vault
+rating:30
+rows:11
+columns:47
+min-depth:13
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%###.c.##########.c........#######.....4444444%
+D:%###...#l.....l.+....##.......a........a444444%
+D:%....#..........+....a#.........a..4...4444444%
+D:%.e.............#....##..c.#######444..a44.b..%
+D:%....#..........#c.........#...#.+44c..444..d.%
+D:%###...#.......######WWWW###...#.####++#####+#%
+D:%###.c.#.......W....444........#.#.aW..Wa.#h..%
+D:%#######j.....jW....4f4....#####.#..#..#..#h..%
+D:%#########.<.###....444....+....g#.k.b..k.#i..%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+name:Object Vault (Arrows)
+type:Interesting room
+rows:11
+columns:25
+min-depth:10
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%1.....................1%
+D:%.#####################.%
+D:%.#......1#{{{+1......#.%
+D:%.#.....11#####11.....#.%
+D:%.+....11111111111....#.%
+D:%.#.....11#####11.....#.%
+D:%.#......1#{{{+1......#.%
+D:%.#####################.%
+D:%1.....................1%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%
+
+name:Inner Circle I
+type:Interesting room
+rows:17
+columns:17
+min-depth:5
+max-depth:0
+D:%%%%%%%%%%%%%%%%%
+D:%......+.+......%
+D:%.....##.##.....%
+D:%....##...##....%
+D:%...##.....##...%
+D:%..##.......##..%
+D:%.##.........##.%
+D:%+#...........#+%
+D:%.......1.......%
+D:%+#...........#+%
+D:%.##.........##.%
+D:%..##.......##..%
+D:%...##.....##...%
+D:%....##...##....%
+D:%.....##.##.....%
+D:%......+.+......%
+D:%%%%%%%%%%%%%%%%%
+
+name:Inner Circle II
+type:Interesting room
+rows:17
+columns:17
+min-depth:6
+max-depth:0
+D:%%%%%%%%%%%%%%%%%
+D:%......+.+......%
+D:%.....##.##.....%
+D:%.1..##...##..1.%
+D:%...##.....##...%
+D:%..##.......##..%
+D:%.##.........##.%
+D:%+#...........#+%
+D:%.......1.......%
+D:%+#...........#+%
+D:%.##.........##.%
+D:%..##.......##..%
+D:%...##.....##...%
+D:%.1..##...##..1.%
+D:%.....##.##.....%
+D:%......+.+......%
+D:%%%%%%%%%%%%%%%%%
+
+name:Pillars I
+type:Interesting room
+rows:10
+columns:21
+min-depth:6
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%
+D:%...................%
+D:%.#####+#####+#####.%
+D:%..###...###...###..%
+D:%...#..1..#.....#...%
+D:%...#.....#..1..#...%
+D:%..###...###...###..%
+D:%.#####+#####+#####.%
+D:%...................%
+D:%%%%%%%%%%%%%%%%%%%%%
+
+name:Pillars II
+type:Interesting room
+rows:15
+columns:21
+min-depth:8
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%
+D:%...................%
+D:%.#####+#####+#####.%
+D:%..###...###...###..%
+D:%...#..1..#.....#...%
+D:%...#.....#..1..#...%
+D:%..###...###...###..%
+D:%.#####+#####+#####.%
+D:%..###...###...###..%
+D:%...#.....#..1..#...%
+D:%...#..1..#.....#...%
+D:%..###...###...###..%
+D:%.#####+#####+#####.%
+D:%...................%
+D:%%%%%%%%%%%%%%%%%%%%%
+
+name:Pillars III
+type:Interesting room
+rows:15
+columns:21
+min-depth:10
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%%%
+D:%...................%
+D:%.#####+#####+#####.%
+D:%..###...###...###..%
+D:%...#..1..#.....#...%
+D:%...#.....#..1..#...%
+D:%..###...###...###..%
+D:%.##1##+##1##+##1##.%
+D:%..###...###...###..%
+D:%...#.....#..1..#...%
+D:%...#..1..#.....#...%
+D:%..###...###...###..%
+D:%.#####+#####+#####.%
+D:%...................%
+D:%%%%%%%%%%%%%%%%%%%%%
+
+
+### Borrowed from Sil ###
+
+name:Mazesil
+type:Interesting room
+rows:8
+columns:15
+min-depth:3
+max-depth:0 
+D:%%%%%%%%%%%%%%%
+D:%.......#.....%
+D:%.#.###.#.#.#.%
+D:%.#..1#...#.#.%
+D:%.#########.#.%
+D:%..1#.......#.%
+D:%####.####.##.%
+D:%.......#1.#1.%
+D:%%%%%%%%%%%%%%%
+
+
+name:Mazesil 2
+type:Interesting room
+rows:10
+columns:17
+min-depth:5
+max-depth:0 
+D:%%%%%%%%%%%%%%%%%
+D:%......#....#...%
+D:%#####...##.###.%
+D:%#...#.####.....%
+D:%..#.#..32#####.%
+D:%.######23#...#.%
+D:%..#...####.#.#.%
+D:%.##.#...#..#.#.%
+D:%....#.#...##...%
+D:%%%%%%%%%%%%%%%%%
+
+
+name:Mazesil 3
+type:Interesting room
+rows:7
+columns:8
+min-depth:7
+max-depth:0 
+D:%%%%%%%%
+D:%.#4...%
+D:%.###.#%
+D:%...#..%
+D:%.#.##.%
+D:%4#....%
+D:%%%%%%%%
+
+
+name:Mazesil 4
+type:Interesting room
+rows:7
+columns:8
+min-depth:9
+max-depth:0 
+D:%%%%%%%%
+D:%4..#4.%
+D:%##.##.%
+D:%...#..%
+D:%.###.#%
+D:%......%
+D:%%%%%%%%
+
+name:Snakemazing
+type:Interesting room
+rating:0
+rows:7
+columns:8
+min-depth:2
+max-depth:0 
+D:%%%%%%%%
+D:%J..#J.%
+D:%##.##.%
+D:%...#..%
+D:%.###.#%
+D:%......%
+D:%%%%%%%%
+
+name:Batmaze
+type:Interesting room
+rating:0
+rows:7
+columns:8
+min-depth:4
+max-depth:0 
+D:%%%%%%%%
+D:%b..#b.%
+D:%##.##.%
+D:%...#..%
+D:%.###.#%
+D:%......%
+D:%%%%%%%%
+
+name:Maize
+type:Interesting room
+rating:0
+rows:7
+columns:8
+min-depth:9
+max-depth:0 
+D:%%%%%%%%
+D:%1ii#1i%
+D:%##.##i%
+D:%...#..%
+D:%.###.#%
+D:%......%
+D:%%%%%%%%
+
+name:Haze
+type:Interesting room
+rows:10
+columns:17
+min-depth:1
+max-depth:0 
+D:%%%%%%%%%%%%%%%%%
+D:%......#....#...%
+D:%#####...##.###.%
+D:%#...#.####.....%
+D:%..#.#..11#####.%
+D:%.######H3#...#.%
+D:%..#...####.#.#.%
+D:%.##.#...#..#.#.%
+D:%....#.#...##...%
+D:%%%%%%%%%%%%%%%%%
+
+name:Well
+type:Interesting room
+rating:0
+rows:7
+columns:7
+min-depth:0
+max-depth:0
+D: %%%%% 
+D:%%...%%
+D:%.....%
+D:%..1..%
+D:%.....%
+D:%%...%%
+D: %%%%% 
+
+name:Overgrown Well
+type:Interesting room
+rating:0
+rows:7
+columns:7
+min-depth:0
+max-depth:0
+D: %%%%% 
+D:%%...%%
+D:%.....%
+D:%..&..%
+D:%.....%
+D:%%...%%
+D: %%%%% 
+
+name:Alcoved Plant Room
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:10
+max-depth:0
+D:#%%%%####
+D:#....+1?#
+D:#....####
+D:%.......#
+D:%..2..&.#
+D:%.......#
+D:#....####
+D:#....+1?#
+D:#%%%%####
+
+name:Tiny Room
+type:Interesting room
+rating:0
+rows:4
+columns:4
+min-depth:2
+max-depth:0
+D:%%%%
+D:%.1%
+D:%..%
+D:%%%%
+
+name:Small Square Pillar
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:1
+max-depth:0
+D:%%%%%
+D:%...%
+D:%.#.%
+D:%...%
+D:%%%%%
+
+name:Small Square Overgrown Forge
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:3
+max-depth:0
+D:%%%%%
+D:%...%
+D:%.&.%
+D:%...%
+D:%%%%%
+
+name:Small Round
+type:Interesting room
+rating:0
+rows:6
+columns:6
+min-depth:4
+max-depth:0
+D: %%%% 
+D:%%..%%
+D:%....%
+D:%..1.%
+D:%%..%%
+D: %%%% 
+
+name:Diamond 1
+type:Interesting room
+rating:0
+rows:7
+columns:7
+min-depth:4
+max-depth:0
+D:  #%#  
+D: ##.## 
+D:##...##
+D:%..#..%
+D:##...##
+D: ##.## 
+D:  #%#  
+
+name:Cave in
+type:Interesting room
+rating:0
+rows:9
+columns:19
+min-depth:11
+max-depth:0
+D:   #%%##%%%%%%#%%%%
+D:  ##....#..:.....:%
+D:###:..##.2....:.1.%
+D:%.2:....#....##...%
+D:%...:#.....#3...:##
+D:%.#...........:...%
+D:%.....1.##::#....:%
+D:##..#...#44.:..#..%
+D: #%%%%#:#:#%%%%%%  
+
+### Borrowed from Sangband ###
+
+name:Wheel
+type:Interesting room
+rating:0
+rows:14
+columns:14
+min-depth:4
+max-depth:0
+D:    %%%%%%    
+D:  %%%....%%%  
+D: %%#......#%% 
+D: %###....###% 
+D:%%.###..###.%%
+D:%...##..##...%
+D:%.1..........%
+D:%......1.....%
+D:%...##..##...%
+D:%%.###..###.%%
+D: %###....###% 
+D: %%#......#%% 
+D:  %%%....%%%  
+D:    %%%%%%    
+
+name:Script 'x'
+type:Interesting room
+rating:0
+rows:11
+columns:33
+min-depth:6
+max-depth:0
+D:    %%%%%%%%         %%%%%%%%    
+D: %%%%......%%%%% %%%%%......%%%% 
+D:%%.............%%%.............%%
+D:%..%%%%%%....1..........%%%%%%..%
+D:%%%%    %%%%.........%%%%    %%%%
+D:           %%%.....%%%           
+D:%%%%    %%%%.........%%%%    %%%%
+D:%..%%%%%%...............%%%%%%..%
+D:%%.............%%%.......1.....%%
+D: %%%%......%%%%% %%%%%......%%%% 
+D:    %%%%%%%%         %%%%%%%%    
+
+name:Serpent 'x'
+type:Interesting room
+rating:0
+rows:11
+columns:33
+min-depth:10
+max-depth:0
+D:    %%%%%%%%         %%%%%%%%    
+D: %%%%......%%%%% %%%%%......%%%% 
+D:%%.............%%%.............%%
+D:%..%%%%%%....4.....J....%%%%%%..%
+D:%%%%    %%%%.........%%%%    %%%%
+D:           %%%J..4.%%%           
+D:%%%%    %%%%.........%%%%    %%%%
+D:%..%%%%%%..........J....%%%%%%..%
+D:%%....1..J.....%%%.......1.....%%
+D: %%%%......%%%%% %%%%%......%%%% 
+D:    %%%%%%%%         %%%%%%%%    
+
+name:Loot 'x'
+type:Interesting room
+rating:0
+rows:11
+columns:33
+min-depth:14
+max-depth:0
+D:    %%%%%%%%         %%%%%%%%    
+D: %%%%......%%%%% %%%%%......%%%% 
+D:%%.............%%%....1........%%
+D:%..%%%%%%....1..........%%%%%%..%
+D:%%%%    %%%%.....4...%%%%    %%%%
+D:           %%%.....%%%           
+D:%%%%    %%%%..4.4....%%%%    %%%%
+D:%..%%%%%%...............%%%%%%..%
+D:%%......1......%%%.......1.....%%
+D: %%%%......%%%%% %%%%%......%%%% 
+D:    %%%%%%%%         %%%%%%%%    
+
+name:Lava 'x'
+type:Interesting room
+rating:0
+rows:11
+columns:33
+min-depth:14
+max-depth:0
+D:    %%%%%%%%         %%%%%%%%    
+D: %%%%......%%%%% %%%%%......%%%% 
+D:%%..........1..%%%.............%%
+D:%..%%%%%%.......14...1..%%%%%%..%
+D:%%%%    %%%%....``...%%%%    %%%%
+D:           %%%.```.%%%           
+D:%%%%    %%%%....``...%%%%    %%%%
+D:%..%%%%%%.......41......%%%%%%..%
+D:%%......1......%%%.............%%
+D: %%%%....1.%%%%% %%%%%..1...%%%% 
+D:    %%%%%%%%         %%%%%%%%    
+
+name:Barren 'x'
+type:Interesting room
+rating:0
+rows:11
+columns:33
+min-depth:4
+max-depth:0
+D:    %%%%%%%%         %%%%%%%%    
+D: %%%%......%%%%% %%%%%......%%%% 
+D:%%.............%%%.............%%
+D:%..%%%%%%...............%%%%%%..%
+D:%%%%    %%%%.........%%%%    %%%%
+D:           %%%.....%%%           
+D:%%%%    %%%%.........%%%%    %%%%
+D:%..%%%%%%...............%%%%%%..%
+D:%%.............%%%.............%%
+D: %%%%......%%%%% %%%%%......%%%% 
+D:    %%%%%%%%         %%%%%%%%    
+
+name:Oblong cross 1
+type:Interesting room
+rating:0
+rows:21
+columns:21
+min-depth:11
+max-depth:0
+D:         %%%         
+D:        %%.%%        
+D:        %...%        
+D:       %%...%%       
+D:       %.....%       
+D:       %...1.%       
+D:      %%.....%%      
+D:   %%%%.......%%%%   
+D: %%%.............%%% 
+D:%%.................%%
+D:%...................%
+D:%%..........1......%%
+D: %%%.............%%% 
+D:   %%%%.......%%%%   
+D:      %%.....%%      
+D:       %.....%       
+D:       %.....%       
+D:       %%...%%       
+D:        %...%        
+D:        %%.%%        
+D:         %%%         
+
+name:Quadruple circles
+type:Interesting room
+rating:0
+rows:11
+columns:17
+min-depth:2
+max-depth:0
+D: %%%%%%   %%%%%% 
+D:%%%..%%% %%%..%%%
+D:%...1..%%%......%
+D:%......###......%
+D:%%%..##...##..%%%
+D:  %###.....###%  
+D:%%%..##..1##..%%%
+D:%......###......%
+D:%......%%%......%
+D:%%%..%%% %%%..%%%
+D: %%%%%%   %%%%%% 
+
+name:Shrubery
+type:Interesting room
+rating:0
+rows:11
+columns:17
+min-depth:4
+max-depth:0
+D: %%%%%%   %%%%%% 
+D:%%%..%%% %%%..%%%
+D:%...1..%%%..&...%
+D:%......###...1..%
+D:%%%..##...##..%%%
+D:  %###..&..###%  
+D:%%%..##..1##..%%%
+D:%......###......%
+D:%..&...%%%....&.%
+D:%%%..%%% %%%..%%%
+D: %%%%%%   %%%%%% 
+
+name:Bendz
+type:Interesting room
+rating:0
+rows:11
+columns:20
+min-depth:11
+max-depth:0
+D: %%%%%%   %%%%%%    
+D:%%%.%%%%%%%.1..%    
+D:%1...%%%......%     
+D:%.....###......%    
+D:%%%....4##..%%%%    
+D:  %###........%     
+D:%%%..##..4##..%%%%% 
+D:%........####..1..%%
+D:%....1....%%%...1..%
+D:%%%.1%%%%%%%...%%%%%
+D: %%%%%%   %%%%%%    
+
+name:Bendz c
+type:Interesting room
+rating:0
+rows:11
+columns:20
+min-depth:2
+max-depth:0
+D: %%%%%%   %%%%%%    
+D:%%%.%%%%%%%.c..%    
+D:%c...%%%......%     
+D:%.....###......%    
+D:%%%....1##..%%%%    
+D:  %###........%     
+D:%%%..##..1##..%%%%% 
+D:%........####..c..%%
+D:%....c....%%%...c..%
+D:%%%.c%%%%%%%...%%%%%
+D: %%%%%%   %%%%%%    
+
+name:Bendz a
+type:Interesting room
+rating:0
+rows:11
+columns:20
+min-depth:4
+max-depth:0
+D: %%%%%%   %%%%%%    
+D:%%%.%%%%%%%.a..%    
+D:%a...%%%......%     
+D:%.....###......%    
+D:%%%....1##..%%%%    
+D:  %###..a.....%     
+D:%%%..##..4##..%%%%% 
+D:%........####..1..%%
+D:%....a....%%%...1..%
+D:%%%.1%%%%%%%...%%%%%
+D: %%%%%%   %%%%%%    
+
+name:Bendz S
+type:Interesting room
+rating:0
+rows:11
+columns:20
+min-depth:6
+max-depth:0
+D: %%%%%%   %%%%%%    
+D:%%%.%%%%%%%.1..%    
+D:%1..S%%%..S...%     
+D:%..SSS###SSS...%    
+D:%%%.S..4##..%%%%    
+D:  %###........%     
+D:%%%SS##..4##..%%%%% 
+D:%.SSS....####.1.SS%%
+D:%.SS.1....%%%S.1.S.%
+D:%%%.1%%%%%%%SSS%%%%%
+D: %%%%%%   %%%%%%    
+
+### Sil Chasms converted to lava ###
+
+name:Barrow chasm
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:32
+max-depth:0
+D:  #%%%#  
+D: ##...## 
+D:##..W..##
+D:%...*...%
+D:#```````#
+D:%...*...%
+D:##..W..##
+D: ##...## 
+D:  #%%%#  
+
+name:A path between
+type:Interesting room
+rating:0
+rows:9
+columns:7
+min-depth:34
+max-depth:0
+D:%%%%%%%
+D:%.?...%
+D:#..``.%
+D:````..%
+D:#.....#
+D:%.`````
+D:%.....#
+D:%...?.%
+D:%%%%%%%
+
+
+name:Trapped Foe
+type:Interesting room
+rating:0
+rows:9
+columns:12
+min-depth:36
+max-depth:49
+D:  ########  
+D:  #......#  
+D:  #.>..4.###
+D: ##...`````#
+D:##``````.###
+D:#````....%  
+D:###......%  
+D:  %......%  
+D:  %%%%%%%%  
+
+
+name:Hidden lair
+type:Interesting room
+rating:0
+rows:6
+columns:9
+min-depth:38
+max-depth:0
+D:%%%%#####
+D:%...#D$3#
+D:%...#$53#
+D:%...##`##
+D:%.....`# 
+D:%%%%#### 
+
+
+name:Wide Chasm
+type:Interesting room
+rating:0
+rows:10
+columns:13
+min-depth:40
+max-depth:0
+D:  %%%%%%%%%  
+D:  %.......%  
+D:  %....2..###
+D: ##..?..````#
+D:##``````````#
+D:#``````````##
+D:##``...a..## 
+D: ##..a....%  
+D:  %.a...?.%  
+D:  %%%%%%%%%  
+
+
+name:Wide Chasm with Pillars
+type:Interesting room
+rating:0
+rows:10
+columns:16
+min-depth:42
+max-depth:0
+D:  %%%%%%%%%%%%  
+D:  %..........%  
+D:  %......b...###
+D:###.``````#````#
+D:#`````#``````###
+D:#```#``````#`#  
+D:###`````..b..%  
+D:  %....b.....%  
+D:  %..........%  
+D:  %%%%%%%%%%%%  
+
+
+name:Well
+type:Interesting room
+rating:0
+rows:7
+columns:7
+min-depth:44
+max-depth:0
+D: %%%%% 
+D:%%...%%
+D:%.....%
+D:%..`..%
+D:%...?.%
+D:%%...%%
+D: %%%%% 
+
+
+name:Sink Hole
+type:Interesting room
+rating:0
+rows:8
+columns:8
+min-depth:46
+max-depth:0
+D:  %%%%  
+D: #....# 
+D:#..``..#
+D:%.````2%
+D:%.````.%
+D:#?.``..#
+D: #....# 
+D:  %%%%  
+
+
+name:Bridges
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:48
+max-depth:0
+D:####%####
+D:#```.```#
+D:#```.```#
+D:#``...``#
+D:%...?...%
+D:#``...``#
+D:#```.```#
+D:#```.```#
+D:####$####
+
+
+name:Island
+type:Interesting room
+rating:0
+rows:10
+columns:14
+min-depth:50
+max-depth:0
+D: %%%%%%%%%%%% 
+D: %..........% 
+D: %...```````##
+D:##```````````#
+D:#`````.b.````#
+D:#````.5.````##
+D:##``````````# 
+D: %.``````...% 
+D: %.b.`...aa.% 
+D: %%%%#%%%%%%% 
+
+### Coffee Corridors ###
+
+name:CC1
+type:Interesting room
+rating:0
+rows:4
+columns:8
+min-depth:13
+max-depth:21
+D:%%%%%%%%
+D:%coffee%
+D:%#band#%
+D:#%%%%%%#
+
+name:CC2
+type:Interesting room
+rating:0
+rows:5
+columns:8
+min-depth:12
+max-depth:22
+D:%%%%%%%%
+D:%coffee%
+D:%.1an1.%
+D:###..###
+D:##%%%%##
+
+name:CC3
+type:Interesting room
+rating:0
+rows:5
+columns:8
+min-depth:11
+max-depth:23
+D:%%%%%%%%
+D:%1offe1%
+D:%..11..%
+D:##....##
+D:#%%%%%%#
+
+name:CC4
+type:Interesting room
+rating:0
+rows:5
+columns:8
+min-depth:9
+max-depth:25
+D:%%%%%%%%
+D:%.1ff1.%
+D:%......%
+D:%......%
+D:%%%%%%%%
+
+name:CC5
+type:Interesting room
+rating:0
+rows:5
+columns:8
+min-depth:7
+max-depth:27
+D:%%%%%%%%
+D:%..11..%
+D:%......%
+D:%......%
+D:%%%%%%%%
+
+name:Snakesandladders
+type:Interesting room
+rating:0
+rows:5
+columns:8
+min-depth:5
+max-depth:29
+D:%%%%%%%%
+D:%<....>%
+D:%..JJ..%
+D:%>....<%
+D:%%%%%%%%
+
+name:CC6
+type:Interesting room
+rating:0
+rows:4
+columns:8
+min-depth:4
+max-depth:30
+D:%%%%%%%%
+D:%......%
+D:%......%
+D:%%%%%%%%
+
+name:CC7
+type:Interesting room
+rating:0
+rows:4
+columns:9
+min-depth:3
+max-depth:31
+D:%%%%%%%%%
+D:%.......%
+D:%.......%
+D:%%%%%%%%%
+
+name:CC8
+type:Interesting room
+rating:0
+rows:4
+columns:9
+min-depth:2
+max-depth:32
+D:%%%%%%%%%
+D:%.......%
+D:%...1...%
+D:%%%%%%%%%
+
+name:CC9
+type:Interesting room
+rating:0
+rows:4
+columns:10
+min-depth:1
+max-depth:33
+D:%%%%%%%%%%
+D:%........%
+D:%........%
+D:%%%%%%%%%%
+
+### Eyes ###
+
+name:Blob Eye
+type:Interesting room
+rating:0
+rows:9
+columns:16
+min-depth:13
+max-depth:21
+D:   %%%%%%%%%%   
+D:  %....1.....%  
+D: %...#####...%  
+D:%..###**###...% 
+D:%1.#******#.4..%
+D:%..###**###...% 
+D: %..######j...% 
+D:  %....1.....%  
+D:   %%%%%%%%%%   
+
+name:Elemental Eye
+type:Interesting room
+rating:0
+rows:9
+columns:16
+min-depth:15
+max-depth:29
+D:   %%%%%%%%%%   
+D:  %....1.....%  
+D: %..E#####...%  
+D:%..###**###...% 
+D:%..#******#.4..%
+D:%..###**###...% 
+D: %..######....% 
+D:  %....4.....%  
+D:   %%%%%%%%%%   
+
+name:Quivering Eye
+type:Interesting room
+rating:0
+rows:9
+columns:16
+min-depth:16
+max-depth:18
+D:   %%%%%%%%%%   
+D:  %..........%  
+D: %...#####Q..%  
+D:%..###**###...% 
+D:%1.#******#.1..%
+D:%..###**###...% 
+D: %..######....% 
+D:  %....1.....%  
+D:   %%%%%%%%%%   
+
+name:Eye R
+type:Interesting room
+rating:0
+rows:9
+columns:15
+min-depth:10
+max-depth:30
+D:   %%%%%%%%    
+D:  %....1...%   
+D: %...###....%  
+D:%..###*###...% 
+D:%R.#*****#.1..%
+D:%..###*###...% 
+D: %..#####...%  
+D:  %....1...%   
+D:   %%%%%%%%    
+
+name:Eye L
+type:Interesting room
+rating:0
+rows:9
+columns:15
+min-depth:30
+max-depth:48
+D:    %%%%%%%%   
+D:   %....1...%  
+D:  %....###...% 
+D: %...###*###..%
+D:%..1.#*****#.L%
+D: %...###*###..%
+D:  %...#####..% 
+D:   %....1...%  
+D:    %%%%%%%%   
+
+name:Eye 1
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:100
+D:   %%%   
+D:  %...%  
+D: %.###.% 
+D:%.##*##.%
+D:%.#*1*#.%
+D:%.##*##.%
+D: %.###.% 
+D:  %...%  
+D:   %%%   
+
+name:Eye s
+type:Interesting room
+rating:0
+rows:8
+columns:10
+min-depth:5
+max-depth:95
+D:  %%%%%%  
+D: %......% 
+D:%..###...%
+D:%.##.##..%
+D:%......s.%
+D: %.###..% 
+D: %......% 
+D:  %%%%%%  
+
+name:Eye eye
+type:Interesting room
+rating:0
+rows:8
+columns:10
+min-depth:2
+max-depth:15
+D:  %%%%%%  
+D: %......% 
+D:%...###..%
+D:%..#e.e#.%
+D:%....1...%
+D: %..###.% 
+D: %......% 
+D:  %%%%%%  
+
+name:Eye i
+type:Interesting room
+rating:0
+rows:8
+columns:10
+min-depth:2
+max-depth:15
+D:  %%%%%%  
+D: %......% 
+D:%..###...%
+D:%.#...#..%
+D:%...i....%
+D: %.###..% 
+D: %......% 
+D:  %%%%%%  
+
+name:Eye I
+type:Interesting room
+rating:0
+rows:8
+columns:10
+min-depth:10
+max-depth:25
+D:  %%%%%%  
+D: %......% 
+D:%...###..%
+D:%..#...#.%
+D:%....I...%
+D: %..###.% 
+D: %......% 
+D:  %%%%%%  
+
+name:Eyelava
+type:Interesting room
+rating:0
+rows:9
+columns:15
+min-depth:1
+max-depth:0
+D:    %%%%%%%    
+D:   %%.....%%   
+D:  %%..:::..%%% 
+D:%%...:;;;:...%%
+D:%....`````....%
+D:%%...:;;;:...%%
+D: %%%..:::..%%% 
+D:   %%.....%%   
+D:    %%%%%%%    
+
+name:Eyeoftiger
+type:Interesting room
+rating:0
+rows:9
+columns:15
+min-depth:1
+max-depth:0
+D:    %%%%%%%    
+D:   %%.....%%   
+D:  %%..;;;..%%% 
+D:%%...;...;...%%
+D:%......f......%
+D:%%...;...;...%%
+D: %%%..;;;..%%% 
+D:   %%.....%%   
+D:    %%%%%%%    
+
+
+### Ls, Cave-ins & Erruptions ###
+
+name:L1
+type:Interesting room
+rating:0
+rows:4
+columns:5
+min-depth:1
+max-depth:6
+D:##%%%
+D:%##.%
+D:%...%
+D:%%%%%
+
+name:L2
+type:Interesting room
+rating:0
+rows:5
+columns:4
+min-depth:2
+max-depth:12
+D:%%%#
+D:%;##
+D:%.#%
+D:%..%
+D:%%%%
+
+name:L3
+type:Interesting room
+rating:0
+rows:4
+columns:5
+min-depth:3
+max-depth:18
+D:%%%##
+D:%.##%
+D:%..:%
+D:%%%%%
+
+name:L4
+type:Interesting room
+rating:0
+rows:5
+columns:4
+min-depth:4
+max-depth:24
+D:%%%%
+D:%..%
+D:%.#%
+D:%`##
+D:####
+
+name:L5
+type:Interesting room
+rating:0
+rows:4
+columns:5
+min-depth:5
+max-depth:30
+D:##%%%
+D:%##.%
+D:%;..%
+D:%%%%%
+
+name:L6
+type:Interesting room
+rating:0
+rows:5
+columns:4
+min-depth:6
+max-depth:36
+D:%%%#
+D:%:##
+D:%.#%
+D:%..%
+D:%%%%
+
+name:L7
+type:Interesting room
+rating:0
+rows:4
+columns:5
+min-depth:7
+max-depth:42
+D:%%%##
+D:%.###
+D:%..`#
+D:%%%%#
+
+name:L8
+type:Interesting room
+rating:0
+rows:5
+columns:4
+min-depth:8
+max-depth:48
+D:%%%%
+D:%..%
+D:%.#%
+D:%.##
+D:%%%#
+
+name:L9
+type:Interesting room
+rating:0
+rows:4
+columns:6
+min-depth:9
+max-depth:54
+D:###%%%
+D:%###.%
+D:%:...%
+D:%%%%%%
+
+name:L10
+type:Interesting room
+rating:0
+rows:6
+columns:4
+min-depth:10
+max-depth:60
+D:%%%#
+D:%`##
+D:%.##
+D:%.#%
+D:%..%
+D:%%%%
+
+name:L11
+type:Interesting room
+rating:0
+rows:4
+columns:6
+min-depth:11
+max-depth:66
+D:%%%###
+D:%.###%
+D:%....%
+D:%%%%%%
+
+name:L12
+type:Interesting room
+rating:0
+rows:6
+columns:4
+min-depth:12
+max-depth:72
+D:%%%%
+D:%..%
+D:%.#%
+D:%.##
+D:%;##
+D:%%%#
+
+name:L13
+type:Interesting room
+rating:0
+rows:4
+columns:7
+min-depth:13
+max-depth:78
+D:####%%%
+D:%####.%
+D:%`....%
+D:%%%%%%%
+
+name:L14
+type:Interesting room
+rating:0
+rows:7
+columns:4
+min-depth:14
+max-depth:84
+D:%%%#
+D:%.##
+D:%.##
+D:%.##
+D:%.#%
+D:%..%
+D:%%%%
+
+name:L15
+type:Interesting room
+rating:0
+rows:4
+columns:7
+min-depth:15
+max-depth:90
+D:%%%####
+D:%.####%
+D:%....;%
+D:%%%%%%%
+
+name:L16
+type:Interesting room
+rating:0
+rows:7
+columns:4
+min-depth:16
+max-depth:96
+D:%%%%
+D:%..%
+D:%.#%
+D:%.#%
+D:%.##
+D:%:##
+D:%%%#
+
+### Beans ###
+
+name:Bean 1
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:1
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%m..%% 
+D:  %%%%%  
+
+name:Bean 2
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:2
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%.,.%% 
+D:  %%%%%  
+
+name:Bean 3
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:3
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%..c%% 
+D:  %%%%%  
+
+name:Bean 4
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:4
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%i.#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 5
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:5
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%.r#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 6
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:6
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#J.%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 7
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:7
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#.k%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 8
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:8
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%w.###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 9
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:9
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%.e###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 10
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:10
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###R.%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 11
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:11
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###.C%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 12
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:12
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%a#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 13
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:13
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###..%
+D:%.#####b%
+D:%..###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 14
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:14
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%p.###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 15
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:15
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%.j###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 16
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:16
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###H.%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 17
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:17
+D:  %%%%%  
+D: %%...%% 
+D:%%..#..%%
+D:%..###.S%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 18
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:5
+max-depth:18
+D:  %%%%%  
+D: %%...%% 
+D:%%B.#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+name:Bean 19
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:5
+max-depth:19
+D:  %%%%%  
+D: %%...%% 
+D:%%.h#..%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%m..%% 
+D:  %%%%%  
+
+name:Bean 20
+type:Interesting room
+rating:0
+rows:9
+columns:9
+min-depth:1
+max-depth:20
+D:  %%%%%  
+D: %%...%% 
+D:%%..#E.%%
+D:%..###..%
+D:%.#####.%
+D:%..###..%
+D:%%..#..%%
+D: %%...%% 
+D:  %%%%%  
+
+### Now Shrink ###
+
+name:Sils Square Pillar Ainu
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:5
+max-depth:10
+D:%%%%%
+D:%A..%
+D:%.#.%
+D:%...%
+D:%%%%%
+
+name:Sils Square Pillar n
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:6
+max-depth:15
+D:%%%%%
+D:%.n.%
+D:%.#.%
+D:%...%
+D:%%%%%
+
+name:Sils Square Pillar g
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:8
+max-depth:20
+D:%%%%%
+D:%..g%
+D:%.#.%
+D:%...%
+D:%%%%%
+
+name:Sils Square Pillar b
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:11
+max-depth:25
+D:%%%%%
+D:%...%
+D:%.#b%
+D:%...%
+D:%%%%%
+
+name:Sils Square Pillar a
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:15
+max-depth:30
+D:%%%%%
+D:%...%
+D:%.#.%
+D:%..a%
+D:%%%%%
+
+name:Sils Square Pillar 2n
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:20
+max-depth:35
+D:%%%%%
+D:%...%
+D:%.#.%
+D:%.n.%
+D:%%%%%
+
+name:Sils Square Pillar d
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:26
+max-depth:0
+D:%%%%%
+D:%...%
+D:%.#.%
+D:%d..%
+D:%%%%%
+
+name:Sils Square Pillar stair
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:1
+max-depth:49
+D:%%%%%
+D:%...%
+D:%<#.%
+D:%...%
+D:%%%%%
+
+### More Stairs ###
+
+name:SSPS 2
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:1
+max-depth:10
+D:%%%%%
+D:%>..%
+D:%.#.%
+D:%...%
+D:%%%%%
+
+name:SSPS 3
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:5
+max-depth:14
+D:%%%%%
+D:%.<.%
+D:%.#.%
+D:%...%
+D:%%%%%
+
+name:SSPS 4
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:7
+max-depth:15
+D:%%%%%
+D:%..>%
+D:%.#.%
+D:%...%
+D:%%%%%
+
+name:SSPS 5
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:9
+max-depth:20
+D:%%%%%
+D:%...%
+D:%.#<%
+D:%...%
+D:%%%%%
+
+name:SSPS 6
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:10
+max-depth:25
+D:%%%%%
+D:%...%
+D:%.#.%
+D:%..>%
+D:%%%%%
+
+name:SSPS 7
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:23
+max-depth:32
+D:%%%%%
+D:%...%
+D:%.#.%
+D:%.<.%
+D:%%%%%
+
+name:SSPS 8
+type:Interesting room
+rating:0
+rows:5
+columns:5
+min-depth:21
+max-depth:34
+D:%%%%%
+D:%...%
+D:%.#.%
+D:%>..%
+D:%%%%%
 

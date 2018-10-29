@@ -1118,9 +1118,11 @@ void do_cmd_accept_character(struct command *cmd)
 
 	ignore_birth_init();
 
+
+	/* Changed start history - MC */
 	/* Clear old messages, add new starting message */
 	history_clear(player);
-	history_add(player, "Began the quest to destroy Morgoth.", HIST_PLAYER_BIRTH);
+	history_add(player, "Took a winding path", HIST_PLAYER_BIRTH);
 
 	/* Note player birth in the message recall */
 	message_add(" ", MSG_GENERIC);

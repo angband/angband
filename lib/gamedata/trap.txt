@@ -81,7 +81,7 @@ desc:A device which makes a closed door harder to open.
 
 name:trap door:trap door
 graphics:^:w
-appear:1:2:0
+appear:1:10:0
 visibility:2d10M50
 flags:TRAP | FLOOR | DOWN
 effect:DAMAGE
@@ -95,7 +95,7 @@ msg-good:You float gently down to the next level.
 
 name:pit:pit
 graphics:^:s
-appear:1:2:0
+appear:1:6:0
 visibility:90
 flags:TRAP | FLOOR | PIT
 effect:DAMAGE
@@ -109,7 +109,7 @@ msg-good:You float gently to the bottom of the pit.
 
 name:pit:spiked pit
 graphics:^:s
-appear:1:2:0
+appear:1:8:0
 visibility:80
 flags:TRAP | FLOOR | PIT
 effect:DAMAGE
@@ -128,7 +128,7 @@ msg-xtra:You are impaled!
 
 name:pit:poison pit
 graphics:^:s
-appear:1:2:0
+appear:1:9:0
 visibility:70
 flags:TRAP | FLOOR | PIT
 effect:DAMAGE
@@ -149,7 +149,7 @@ msg-xtra:You are impaled on poisonous spikes!
 
 name:strange rune:rune of summon foe
 graphics:^:B
-appear:1:3:0
+appear:1:11:0
 visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
 effect:SUMMON:MONSTER:0:5
@@ -162,7 +162,7 @@ visibility:0
 
 name:strange rune:rune of summoning
 graphics:^:B
-appear:2:3:0
+appear:2:7:0
 visibility:0
 flags:TRAP | FLOOR | ONETIME | MAGICAL
 effect:SUMMON:ANY
@@ -213,7 +213,7 @@ visibility:0
 
 name:strange rune:teleport rune
 graphics:^:o
-appear:1:1:0
+appear:1:6:0
 visibility:30+d30
 flags:TRAP | FLOOR | MAGICAL
 effect:TELEPORT
@@ -225,7 +225,7 @@ msg:You hit a teleport trap!
 
 name:discolored spot:fire trap
 graphics:^:u
-appear:1:2:0
+appear:1:11:0
 visibility:20
 flags:TRAP | FLOOR | MAGICAL
 effect:SPOT:FIRE:0
@@ -238,7 +238,7 @@ msg:You are enveloped in flames!
 
 name:discolored spot:acid trap
 graphics:^:u
-appear:1:2:0
+appear:1:12:0
 visibility:0
 flags:TRAP | FLOOR | MAGICAL
 effect:SPOT:ACID:0
@@ -251,7 +251,7 @@ msg:You are splashed with acid!
 
 name:dart trap:slow dart
 graphics:^:r
-appear:1:2:0
+appear:1:8:0
 visibility:M50
 flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
@@ -266,7 +266,7 @@ msg-bad:A small dart hits you!
 
 name:dart trap:strength loss dart
 graphics:^:r
-appear:2:6:0
+appear:2:10:0
 visibility:30
 flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
@@ -280,7 +280,7 @@ msg-bad:A small dart hits you!
 
 name:dart trap:dexterity loss dart
 graphics:^:r
-appear:2:6:0
+appear:2:10:0
 visibility:30
 flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
@@ -294,7 +294,7 @@ msg-bad:A small dart hits you!
 
 name:dart trap:constitution loss dart
 graphics:^:r
-appear:2:6:0
+appear:2:10:0
 visibility:30
 flags:TRAP | FLOOR | SAVE_ARMOR
 effect:DAMAGE
@@ -308,7 +308,7 @@ msg-bad:A small dart hits you!
 
 name:gas trap:blinding gas trap
 graphics:^:g
-appear:1:2:0
+appear:1:7:0
 visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:BLIND
@@ -320,7 +320,7 @@ msg:You are surrounded by a black gas!
 
 name:gas trap:confusion gas trap
 graphics:^:g
-appear:1:1:0
+appear:1:9:0
 visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:CONFUSED
@@ -332,7 +332,7 @@ msg:You are surrounded by a gas of scintillating colors!
 
 name:gas trap:poison gas trap
 graphics:^:g
-appear:1:2:0
+appear:1:8:0
 visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:POISONED
@@ -344,7 +344,7 @@ msg:You are surrounded by a pungent green gas!
 
 name:gas trap:sleep gas trap
 graphics:^:g
-appear:1:2:0
+appear:1:10:0
 visibility:20+d5
 flags:TRAP | FLOOR
 effect:TIMED_INC:PARALYZED
@@ -356,7 +356,7 @@ msg:You are surrounded by a strange white mist!
 
 name:alarm:aggravation trap
 graphics:^:R
-appear:1:5:0
+appear:1:11:0
 visibility:M50
 flags:TRAP | FLOOR | MAGICAL
 effect:WAKE
@@ -490,7 +490,7 @@ msg:The trap explodes, blasting the area clear!
 
 name:trap:blinding flash trap
 graphics:^:light yellow
-appear:1:5:0
+appear:1:7:0
 visibility:30+d5
 flags:TRAP | FLOOR | MAGICAL | ONETIME
 effect:BALL:LIGHT:4
@@ -503,7 +503,7 @@ msg:A blazing light descends on you!
 
 name:trap:blinding trap
 graphics:^:light slate
-appear:1:5:0
+appear:1:9:0
 visibility:20+d5
 flags:TRAP | FLOOR | MAGICAL | ONETIME
 effect:BALL:DARK:4
@@ -518,7 +518,7 @@ msg:Everything starts to fade...
 
 name:trap:mana drain trap
 graphics:^:light purple
-appear:1:5:0
+appear:1:10:0
 visibility:50+d10
 flags:TRAP | FLOOR | MAGICAL
 effect:DRAIN_MANA
@@ -548,7 +548,7 @@ desc:A trap designed to bleed you to death.
 
 name:trap:petrifying trap
 graphics:^:blue
-appear:1:5:0
+appear:1:10:0
 visibility:20+d5
 flags:TRAP | FLOOR | MAGICAL
 effect:TIMED_INC:STONESKIN
@@ -562,7 +562,7 @@ desc:A trap that stuns you and gives you stoneskin.
 
 name:alarm:siren
 graphics:^:R
-appear:1:1:0
+appear:1:6:0
 visibility:60+d10
 flags:TRAP | FLOOR | MAGICAL
 effect:WAKE

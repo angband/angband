@@ -1580,10 +1580,11 @@ void process_monsters(struct chunk *c, int minimum_energy)
 		if (regen)
 			regen_monster(mon, 1);
 
+		/* Changed haste to +5 - MC */
 		/* Calculate the net speed */
 		mspeed = mon->mspeed;
 		if (mon->m_timed[MON_TMD_FAST])
-			mspeed += 10;
+			mspeed += 5;
 		if (mon->m_timed[MON_TMD_SLOW]) {
 			int slow_level = monster_effect_level(mon, MON_TMD_SLOW);
 			mspeed -= (2 * slow_level);

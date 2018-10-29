@@ -82,11 +82,11 @@
 name:of Galadriel
 base-object:light:Phial
 graphics:~:y
-info:5:10:10000
-alloc:40:5 to 100
+info:25:10:10000
+alloc:10:26 to 100
 power:0:1d1:0:0:0
 flags:NO_FUEL
-values:LIGHT[3]
+values:LIGHT[3] | RES_DARK[1]
 act:ILLUMINATION
 time:10+d10
 desc:A small crystal phial containing the light of Eärendil's Star.  
@@ -95,8 +95,8 @@ desc:Its light is imperishable, and near it darkness cannot endure.
 name:of Elendil
 base-object:light:Star
 graphics:~:y
-info:30:5:30000
-alloc:4:30 to 100
+info:60:5:30000
+alloc:5:55 to 100
 power:0:1d1:0:0:0
 flags:SEE_INVIS | NO_FUEL
 values:LIGHT[3]
@@ -108,7 +108,7 @@ name:of Thráin
 base-object:light:Arkenstone
 graphics:~:y
 info:50:5:50000
-alloc:2:50 to 127
+alloc:5:45 to 127
 power:0:1d1:0:0:0
 flags:SEE_INVIS | HOLD_LIFE | NO_FUEL
 values:LIGHT[3] | RES_LIGHT[1] | RES_DARK[1]
@@ -140,9 +140,9 @@ desc:sparks of white radiance shot with glints of the rainbow.
 
 name:'Angrist'
 base-object:sword:Dagger
-info:20:12:100000
-alloc:2:20 to 100
-power:0:2d4:10:15:5
+info:20:5:100000
+alloc:5:15 to 100
+power:0:1d5:10:15:5
 flags:FREE_ACT | SUST_DEX
 values:DEX[4] | RES_ACID[1] | RES_DARK[1]
 brand:ACID_3
@@ -155,9 +155,9 @@ desc: through ordinary metal as easily as its name, "Iron Cleaver", suggests.
 
 name:'Narthanc'
 base-object:sword:Dagger
-info:1:12:12000
-alloc:40:1 to 50
-power:0:2d4:9:12:10
+info:1:6:12000
+alloc:10:5 to 100
+power:0:1d5:10:5:5
 values:RES_FIRE[1]
 brand:FIRE_3
 act:FIRE_BOLT
@@ -166,9 +166,9 @@ desc:Instead of a blade, a flame seems to emerge from this dagger's hilt.
 
 name:'Nimthanc'
 base-object:sword:Dagger
-info:1:12:11000
-alloc:40:1 to 50
-power:0:2d4:9:12:10
+info:1:6:11000
+alloc:10:5 to 100
+power:0:1d5:10:5:5
 values:RES_COLD[1]
 brand:COLD_3
 act:COLD_BOLT
@@ -177,9 +177,9 @@ desc:From the hilt of this dagger springs not so much a blade as an icicle.
 
 name:'Dethanc'
 base-object:sword:Dagger
-info:1:12:13000
-alloc:40:1 to 50
-power:0:2d4:9:12:10
+info:1:6:13000
+alloc:10:5 to 100
+power:0:1d5:10:5:5
 values:RES_ELEC[1]
 brand:ELEC_3
 act:ELEC_BOLT
@@ -188,9 +188,9 @@ desc:In this dagger is bound the very force of lightning.
 
 name:of Rilia
 base-object:sword:Dagger
-info:5:12:15000
-alloc:5:5 to 75
-power:0:2d4:14:13:0
+info:5:15:15000
+alloc:5:5 to 100
+power:0:2d5:14:13:0
 values:RES_POIS[1] | RES_DISEN[1]
 slay:ORC_3
 slay:TROLL_3
@@ -202,9 +202,9 @@ desc:wearer seems oddly immune.
 
 name:'Belangil'
 base-object:sword:Dagger
-info:10:12:40000
-alloc:2:10 to 80
-power:0:3d4:16:14:0
+info:10:15:40000
+alloc:5:5 to 80
+power:0:3d5:16:14:0
 flags:SEE_INVIS | SLOW_DIGEST | REGEN
 values:DEX[2] | RES_COLD[1]
 brand:COLD_3
@@ -215,8 +215,8 @@ desc:an edge to wound the wind.
 
 name:of Azaghâl
 base-object:sword:Main Gauche
-info:18:30:50000
-alloc:3:18 to 100
+info:18:20:50000
+alloc:10:13 to 100
 power:0:2d5:12:14:0
 flags:PROT_FEAR
 values:RES_FIRE[3] | RES_ACID[1]
@@ -229,8 +229,8 @@ desc:wounded.
 
 name:of Maedhros
 base-object:sword:Main Gauche
-info:15:30:20000
-alloc:3:15 to 65
+info:15:15:20000
+alloc:10:10 to 65
 power:0:2d5:12:15:0
 flags:FREE_ACT | SEE_INVIS
 values:INT[3] | DEX[3]
@@ -242,8 +242,8 @@ desc:from Angband.
 
 name:'Forasgil'
 base-object:sword:Rapier
-info:1:40:15000
-alloc:38:5 to 50
+info:1:12:15000
+alloc:10:10 to 50
 power:0:1d6:12:19:0
 values:LIGHT[1] | RES_COLD[1] | RES_LIGHT[1]
 brand:COLD_3
@@ -252,8 +252,8 @@ desc:A slender, tapered needle of ice that coldly grips its impaled prey.
 
 name:'Careth Asdriag'
 base-object:sword:Rapier
-info:15:40:25000
-alloc:10:15 to 80
+info:15:12:25000
+alloc:10:10 to 80
 power:0:2d6:16:12:0
 values:BLOWS[1] | STR[2] | DEX[2] | CON[2]
 slay:DRAGON_3
@@ -266,9 +266,9 @@ desc:of dismay to creatures natural and unnatural.
 
 name:'Sting'
 base-object:sword:Short Sword
-info:20:75:100000
-alloc:6:20 to 100
-power:0:1d7:7:8:0
+info:20:20:100000
+alloc:20:25 to 100
+power:0:1d8:7:8:2
 flags:PROT_FEAR | FREE_ACT | SEE_INVIS
 values:SPEED[3] | BLOWS[2] | STR[1] | DEX[1] | CON[1] | LIGHT[1] | RES_LIGHT[1]
 slay:EVIL_2
@@ -282,9 +282,9 @@ desc:abilities he did not know he had.
 
 name:'Dagmor'
 base-object:sword:Short Sword
-info:20:80:15000
-alloc:12:20 to 80
-power:0:1d7:13:11:0
+info:20:20:15000
+alloc:10:15 to 80
+power:0:1d8:13:11:1
 flags:SLOW_DIGEST | REGEN
 values:BLOWS[2]
 brand:POIS_3
@@ -294,9 +294,9 @@ desc:Brethil.
 
 name:'Gondricam'
 base-object:sword:Cutlass
-info:20:110:28000
-alloc:12:20 to 65
-power:0:1d8:10:11:50
+info:20:55:28000
+alloc:10:15 to 65
+power:0:1d9:10:11:10
 flags:FEATHER | SEE_INVIS | REGEN | FREE_ACT
 values:DEX[4] | STEALTH[2]
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
@@ -306,9 +306,9 @@ desc:men of Umbar who met it in combat.
 
 name:'Haradekket'
 base-object:sword:Scimitar
-info:20:130:30000
-alloc:7:20 to 80
-power:0:4d2:9:11:0
+info:20:50:30000
+alloc:10:15 to 80
+power:0:4d2:9:11:1
 flags:SEE_INVIS
 values:DEX[2] | BLOWS[2]
 slay:ANIMAL_2
@@ -319,9 +319,9 @@ desc:as the "Sickle of Harad", and a deadly foe to the undead.
 
 name:'Ringil'
 base-object:sword:Long Sword
-info:20:130:300000
-alloc:1:20 to 127
-power:0:4d5:22:25:0
+info:50:40:300000
+alloc:1:50 to 127
+power:0:4d5:22:25:5
 flags:PROT_FEAR | BLESSED | FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN
 values:SPEED[10] | LIGHT[1] | RES_COLD[1] | RES_LIGHT[1]
 brand:COLD_3
@@ -337,8 +337,8 @@ desc:of old; his lame foot will remind him of its might should he face it again.
 
 name:'Andúril'
 base-object:sword:Long Sword
-info:20:130:80000
-alloc:3:20 to 127
+info:20:40:80000
+alloc:10:50 to 127
 power:0:3d5:10:15:10
 flags:PROT_FEAR | FREE_ACT | BLESSED | SUST_STR | SUST_DEX | SEE_INVIS
 values:STR[4] | DEX[4] | RES_FIRE[1] | RES_DISEN[1]
@@ -355,9 +355,9 @@ desc:and no creature of Sauron can withstand it.
 
 name:'Anguirel'
 base-object:sword:Long Sword
-info:20:130:40000
-alloc:3:20 to 127
-power:0:2d5:10:12:0
+info:20:40:40000
+alloc:10:50 to 127
+power:0:2d5:10:12:2
 flags:AGGRAVATE | FREE_ACT | SEE_INVIS
 values:SPEED[3] | STR[2] | CON[2] | BLOWS[1] | LIGHT[1] | 
 values:RES_ELEC[1] | RES_LIGHT[1] | RES_DARK[1]
@@ -369,9 +369,9 @@ desc:other blade he forged.
 
 name:'Elvagil'
 base-object:sword:Long Sword
-info:1:130:30000
-alloc:50:10 to 50
-power:0:2d5:12:12:0
+info:1:40:30000
+alloc:10:10 to 50
+power:0:2d5:12:12:2
 flags:FEATHER | SEE_INVIS
 values:DEX[2] | STEALTH[2]
 slay:TROLL_3
@@ -381,9 +381,9 @@ desc:and secret places of the earth.
 
 name:'Aranrúth'
 base-object:sword:Broad Sword
-info:20:150:50000
-alloc:2:20 to 100
-power:0:3d5:20:12:0
+info:20:60:50000
+alloc:10:50 to 100
+power:0:3d6:20:12:2
 flags:FREE_ACT | FEATHER | SLOW_DIGEST
 values:DEX[4] | RES_COLD[1]
 slay:DEMON_3
@@ -396,9 +396,9 @@ desc:lightfooted as you clasp its hilt of gold and silver inlay.
 
 name:'Glamdring'
 base-object:sword:Broad Sword
-info:20:150:40000
-alloc:5:20 to 80
-power:0:2d5:10:15:0
+info:20:60:40000
+alloc:10:20 to 80
+power:0:2d5:10:15:2
 flags:BLESSED | SLOW_DIGEST
 values:SEARCH[1] | LIGHT[1] | RES_FIRE[1] | RES_LIGHT[1]
 brand:FIRE_3
@@ -410,9 +410,9 @@ desc:from dying orcs who dared to behold hidden Gondolin.
 
 name:'Aeglin'
 base-object:sword:Broad Sword
-info:20:150:45000
-alloc:3:20 to 100
-power:0:2d5:12:16:0
+info:20:60:45000
+alloc:10:15 to 100
+power:0:2d6:12:16:2
 flags:BLESSED | PROT_BLIND | SLOW_DIGEST
 values:SEARCH[1] | LIGHT[1] | RES_ELEC[1]
 brand:ELEC_3
@@ -425,9 +425,9 @@ desc:eerily in the globes of light they create.
 
 name:'Orcrist'
 base-object:sword:Broad Sword
-info:20:150:40000
-alloc:5:20 to 80
-power:0:2d5:10:15:0
+info:20:40:40000
+alloc:20:15 to 80
+power:0:2d5:10:15:2
 flags:BLESSED | SLOW_DIGEST
 values:SEARCH[1] | LIGHT[1] | RES_COLD[1] | RES_DARK[1]
 brand:COLD_3
@@ -439,9 +439,9 @@ desc:by orcs who came to know its power all too well.
 
 name:'Calris'
 base-object:sword:Bastard Sword
-info:30:140:100000
-alloc:7:30 to 127
-power:0:5d4:0:20:0
+info:30:70:100000
+alloc:10:30 to 127
+power:0:5d4:0:20:2
 # F:DRAIN_HP | 
 flags:AGGRAVATE
 values:CON[5] | RES_DISEN[1]
@@ -456,9 +456,9 @@ desc:peril.
 
 name:of Éowyn
 base-object:sword:Bastard Sword
-info:30:140:120000
-alloc:3:30 to 127
-power:0:4d4:12:16:0
+info:30:70:120000
+alloc:10:50 to 127
+power:0:4d4:12:16:2
 flags:PROT_FEAR
 values:STR[4] | STEALTH[2] | RES_NETHER[1] | RES_DARK[1] | RES_COLD[1]
 slay:EVIL_2
@@ -472,8 +472,8 @@ desc:himself, whom no mortal man could hinder.
 name:'Aglarang'
 base-object:sword:Katana
 info:30:50:40000
-alloc:4:30 to 100
-power:0:6d5:10:10:0
+alloc:10:50 to 100
+power:0:6d5:10:10:5
 flags:SUST_DEX
 values:SPEED[5] | DEX[5] | BLOWS[1]
 desc:An utterly perfect, cleanly chiseled sword, with an edge that effortlessly 
@@ -482,9 +482,9 @@ desc:  It is combat incarnate.
 
 name:'Gurthang'
 base-object:sword:Zweihander
-info:30:200:100000
-alloc:3:30 to 100
-power:0:3d6:13:17:0
+info:30:80:100000
+alloc:10:25 to 100
+power:0:3d7:13:17:2
 flags:FREE_ACT | SLOW_DIGEST | REGEN
 values:STR[2] | RES_FIRE[1] | RES_POIS[1]
 brand:POIS_3
@@ -496,9 +496,9 @@ desc:Glaurung's blood?
 
 name:'Zarcuthra'
 base-object:sword:Zweihander
-info:30:240:200000
-alloc:1:30 to 127
-power:0:4d6:19:21:0
+info:30:80:200000
+alloc:10:25 to 127
+power:0:4d7:19:21:2
 # F:DRAIN_MANA | 
 flags:FREE_ACT | SEE_INVIS | AGGRAVATE
 values:STR[4] | INFRA[2] | RES_FIRE[1] | RES_CHAOS[1]
@@ -517,9 +517,9 @@ desc:slowly approach.
 
 name:'Mormegil'
 base-object:sword:Zweihander
-info:30:250:10000
-alloc:7:30 to 100
-power:0:3d6:-15:-15:-10
+info:30:80:10000
+alloc:10:25 to 100
+power:0:3d7:-15:-15:-10
 # F:DRAIN_HP | DRAIN_MANA | 
 flags: SEE_INVIS | HOLD_LIFE | AGGRAVATE | DRAIN_EXP
 values:SPEED[-10]
@@ -532,9 +532,9 @@ desc:very lifeblood of its wielder.
 
 name:'Crisdurian'
 base-object:sword:Executioner's Sword
-info:40:260:100000
-alloc:4:40 to 127
-power:0:4d5:18:19:0
+info:40:110:100000
+alloc:10:40 to 127
+power:0:4d7:18:19:2
 flags:SEE_INVIS
 slay:DRAGON_3
 slay:EVIL_2
@@ -548,8 +548,8 @@ desc:both the living and undead.
 
 name:'Doomcaller'
 base-object:sword:Blade of Chaos
-info:70:180:200000
-alloc:4:70 to 127
+info:70:120:200000
+alloc:5:61 to 127
 power:0:6d5:18:28:-50
 # F:DRAIN_HP | 
 flags:FREE_ACT | SEE_INVIS | TELEPATHY | AGGRAVATE
@@ -570,7 +570,7 @@ desc:shadow of death even as you inflict wounds that will not heal.
 name:of Gothmog
 base-object:hafted:Whip
 info:60:90:25000
-alloc:4:60 to 127
+alloc:5:60 to 127
 power:0:6d3:13:15:0
 # F:DRAIN_HP | 
 flags:AGGRAVATE
@@ -589,7 +589,7 @@ desc:even Ungoliant to heel.
 name:of Fundin Bluecloak
 base-object:hafted:Ball-and-Chain
 info:65:130:60000
-alloc:2:65 to 127
+alloc:5:65 to 127
 power:0:4d4:13:17:10
 flags:HOLD_LIFE
 values:STR[4] | WIS[4] | LIGHT[1] | RES_FIRE[1] | RES_ELEC[1] | RES_NETHER[1]
@@ -603,7 +603,7 @@ desc:haunt the halls of Angband still.
 name:'Bloodspike'
 base-object:hafted:Morning Star
 info:20:150:30000
-alloc:3:20 to 75
+alloc:5:20 to 75
 power:0:2d6:8:22:0
 flags:SEE_INVIS
 values:STR[4] | RES_NEXUS[1]
@@ -617,7 +617,7 @@ desc:bathe it in the blood of your foes.
 name:'Firestar'
 base-object:hafted:Morning Star
 info:20:150:35000
-alloc:7:20 to 100
+alloc:5:20 to 100
 power:0:2d6:15:17:2
 values:RES_FIRE[3]
 brand:FIRE_3
@@ -629,7 +629,7 @@ desc: up in wrath.
 name:'Totila'
 base-object:hafted:Flail
 info:20:150:55000
-alloc:12:20 to 65
+alloc:10:20 to 65
 power:0:3d6:16:12:0
 flags:PROT_CONF
 act:CONFUSE2
@@ -643,7 +643,7 @@ desc:becomes a fiery comet as you bring it down.
 name:'Thunderfist'
 base-object:hafted:Two-Handed Great Flail
 info:45:300:160000
-alloc:3:45 to 127
+alloc:5:45 to 127
 power:0:4d6:5:18:0
 flags:PROT_FEAR | 
 values:STR[4] | CON[3] | RES_ELEC[1] | RES_FIRE[1] | RES_DARK[1]
@@ -659,7 +659,7 @@ desc:crackle around its massive head.
 name:'Taratol'
 base-object:hafted:Mace
 info:20:200:50000
-alloc:7:20 to 100
+alloc:5:20 to 100
 power:0:3d4:12:12:0
 values:RES_ELEC[3]
 brand:ELEC_3
@@ -673,7 +673,7 @@ desc:fingers and eyebrows.
 name:'Nar-i-vagil'
 base-object:hafted:Quarterstaff
 info:20:150:70000
-alloc:5:20 to 80
+alloc:10:20 to 80
 power:0:1d9:10:20:0
 values:INT[4] | RES_FIRE[1] | RES_POIS[1]
 brand:FIRE_3
@@ -684,7 +684,7 @@ desc:auras of protection and thought.
 name:'Eriril'
 base-object:hafted:Quarterstaff
 info:20:150:20000
-alloc:5:20 to 100
+alloc:10:20 to 100
 power:0:1d9:13:15:0
 flags:SEE_INVIS
 values:INT[4] | WIS[4] | LIGHT[1] | RES_LIGHT[1]
@@ -697,7 +697,7 @@ desc:grants keen sight and clear knowledge of many hidden things.
 name:of Olórin
 base-object:hafted:Quarterstaff
 info:30:150:130000
-alloc:1:30 to 100
+alloc:10:30 to 100
 power:0:2d9:10:13:0
 flags:HOLD_LIFE | SEE_INVIS
 values:INT[4] | WIS[4] | RES_FIRE[1] | RES_NETHER[1]
@@ -716,7 +716,7 @@ desc:deals.
 name:of Aulë
 base-object:hafted:Great Hammer
 info:40:120:250000
-alloc:1:40 to 127
+alloc:5:40 to 127
 power:0:18d1:19:21:5
 # F:DRAIN_MANA | 
 flags:PROT_FEAR | FREE_ACT | SEE_INVIS
@@ -734,7 +734,7 @@ desc:invokes the strength of mountains to ward off the tumult of the elements.
 name:'Deathwreaker'
 base-object:hafted:Mace of Disruption
 info:80:400:400000
-alloc:3:80 to 127
+alloc:5:80 to 127
 power:0:7d8:18:18:0
 # F:DRAIN_MANA | 
 flags:AGGRAVATE
@@ -757,7 +757,7 @@ desc:of the Undead!
 name:'Aiglos'
 base-object:polearm:Spear
 info:15:50:140000
-alloc:2:15 to 100
+alloc:5:25 to 100
 power:0:3d6:15:25:5
 flags:PROT_FEAR | FREE_ACT | SLOW_DIGEST | BLESSED
 values:DEX[4] | WIS[2] | RES_COLD[1]
@@ -773,8 +773,8 @@ desc:  Against it, all the foul corruptions of Sauron dashed in vain.
 
 name:of Oromë
 base-object:polearm:Spear
-info:15:50:60000
-alloc:2:15 to 127
+info:25:50:60000
+alloc:5:25 to 127
 power:0:4d6:15:15:0
 # F:DRAIN_MANA | 
 flags:FEATHER | SEE_INVIS | BLESSED | 
@@ -790,7 +790,7 @@ desc:frost, and able to pierce rock or flesh with ease.
 name:'Nimloth'
 base-object:polearm:Spear
 info:15:50:30000
-alloc:8:15 to 65
+alloc:10:15 to 65
 power:0:1d6:11:13:0
 flags:BLESSED | SEE_INVIS
 values:STEALTH[3] | SPEED[3] | RES_COLD[1]
@@ -803,8 +803,8 @@ desc:spear.
 
 name:of Melkor
 base-object:polearm:Spear
-info:65:200:100000
-alloc:2:65 to 127
+info:65:150:100000
+alloc:5:65 to 127
 power:0:4d6:-12:20:0 
 # F:DRAIN_MANA | DRAIN_HP | 
 flags:DRAIN_EXP | AGGRAVATE | PROT_BLIND
@@ -816,8 +816,8 @@ desc:the Two Trees with wounds that would not heal.
 
 name:of Wrath
 base-object:polearm:Trident
-info:15:70:90000
-alloc:3:15 to 100
+info:30:150:90000
+alloc:5:50 to 100
 power:0:3d10:16:18:0 
 flags:SEE_INVIS | BLESSED | 
 values:STR[2] | DEX[2] | RES_LIGHT[1] | RES_DARK[1]
@@ -830,8 +830,8 @@ desc:evil and undead.
 
 name:of Ulmo
 base-object:polearm:Trident
-info:30:70:120000
-alloc:1:30 to 127
+info:30:100:120000
+alloc:5:50 to 127
 power:0:4d10:15:19:0
 flags:FREE_ACT | HOLD_LIFE | SEE_INVIS | SLOW_DIGEST | REGEN | BLESSED
 values:DEX[4] | RES_ACID[3] | RES_NETHER[1]
@@ -845,8 +845,8 @@ desc:of the undead, and is utterly in command of the Element of water.
 
 name:'Osondir'
 base-object:polearm:Halberd
-info:20:140:22000
-alloc:12:25 to 80
+info:20:100:22000
+alloc:10:15 to 80
 power:0:3d5:16:12:0
 flags:BLESSED | FEATHER | SEE_INVIS
 values:STR[3] | WIS[3] | RES_FIRE[1] | RES_SOUND[1]
@@ -858,8 +858,8 @@ desc:clear-eyed in barrows fell, wielding a halberd glowing ruby red.
 
 name:'Til-i-arc'
 base-object:polearm:Pike
-info:20:160:32000
-alloc:7:20 to 80
+info:20:100:32000
+alloc:5:15 to 80
 power:0:3d5:10:12:10
 flags:SUST_INT | SLOW_DIGEST
 values:STR[3] | INT[3] | SPEED[2] | RES_FIRE[1] | RES_COLD[1]
@@ -873,8 +873,8 @@ desc:fire demons, who war forever, fettered by sorcerous binds.
 
 name:of Théoden
 base-object:polearm:Beaked Axe
-info:20:180:40000
-alloc:7:20 to 100
+info:20:90:40000
+alloc:5:50 to 100
 power:0:2d6:8:10:0
 flags:TELEPATHY | SLOW_DIGEST
 values:WIS[3] | CON[3]
@@ -886,8 +886,8 @@ desc:Dragon, and the designs of your enemies stand naked and revealed.
 
 name:of Húrin
 base-object:polearm:Beaked Axe
-info:20:180:90000
-alloc:7:20 to 100
+info:20:90:90000
+alloc:5:50 to 100
 power:0:3d6:12:15:0
 # F:DRAIN_MANA | 
 act:BERSERKER
@@ -906,8 +906,8 @@ desc:come again!"
 
 name:'Barukkheled'
 base-object:polearm:Broad Axe
-info:20:160:50000
-alloc:12:20 to 75
+info:20:90:50000
+alloc:10:50 to 75
 power:0:2d6:13:19:0
 flags:SEE_INVIS
 values:CON[3]
@@ -920,8 +920,8 @@ desc:creatures of earth.
 
 name:of Balli Stonehand
 base-object:polearm:Battle Axe
-info:30:170:90000
-alloc:7:30 to 100
+info:30:90:90000
+alloc:5:50 to 100
 power:0:3d8:8:11:5
 flags:FREE_ACT | PROT_BLIND | FEATHER | SEE_INVIS | REGEN
 values:STR[3] | CON[3] | STEALTH[1] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1]
@@ -935,8 +935,8 @@ desc:more.
 
 name:'Lotharang'
 base-object:polearm:Battle Axe
-info:30:170:21000
-alloc:7:30 to 100
+info:30:90:21000
+alloc:10:50 to 100
 power:0:2d8:14:13:0
 act:CURE_SERIOUS
 time:3+d3
@@ -948,8 +948,8 @@ desc:of the Rangers of Arnor.
 
 name:'Mundwine'
 base-object:polearm:Lochaber Axe
-info:30:240:30000
-alloc:12:30 to 100
+info:30:100:30000
+alloc:10:50 to 100
 power:0:3d8:12:17:0
 values:RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1]
 slay:EVIL_2
@@ -961,8 +961,8 @@ desc:intricately engraved upon its surface in filleted gold.
 
 name:of Durin
 base-object:polearm:Great Axe
-info:30:230:150000
-alloc:1:40 to 127
+info:30:150:150000
+alloc:5:50 to 127
 power:0:4d4:10:20:15
 flags:FREE_ACT | PROT_FEAR
 values:TUNNEL[5] | STR[3] | CON[3] | STEALTH[-1]
@@ -979,8 +979,8 @@ desc:Khazad-dûm protect its wielder and slay all evils found underground.
 
 name:of Eönwë
 base-object:polearm:Great Axe
-info:30:230:200000
-alloc:1:40 to 127
+info:30:150:200000
+alloc:5:50 to 127
 power:0:5d4:15:18:8
 flags:PROT_FEAR | FREE_ACT | SEE_INVIS | BLESSED
 values:STR[2] | INT[2] | WIS[2] | DEX[2] | CON[2] | RES_COLD[3]
@@ -997,8 +997,8 @@ desc:evil at a word, and grants Maia-like powers of body and mind.
 
 name:'Avavir'
 base-object:polearm:Scythe
-info:40:180:18000
-alloc:12:45 to 100
+info:40:150:18000
+alloc:5:50 to 100
 power:0:5d3:18:12:30
 flags:FREE_ACT | SEE_INVIS
 act:RECALL
@@ -1012,8 +1012,8 @@ desc:returning.
 
 name:of Pain
 base-object:polearm:Glaive
-info:30:300:50000
-alloc:4:30 to 127
+info:30:150:50000
+alloc:5:50 to 127
 power:0:9d6:0:30:0
 desc:The massive cleaver that crowns this glaive glows blood-red and black; 
 desc:fell spells of annihilation swirl and dance as you swing death's myrmidon 
@@ -1021,8 +1021,8 @@ desc:down.
 
 name:of the Eorlingas
 base-object:polearm:Lance
-info:20:360:55000
-alloc:4:20 to 100
+info:20:150:55000
+alloc:5:50 to 100
 power:0:3d8:13:21:0
 flags:PROT_FEAR | SEE_INVIS
 values:STR[2] | DEX[2] | SPEED[2]
@@ -1035,8 +1035,8 @@ desc:and dire wolves.
 
 name:'Turmil'
 base-object:polearm:Lucerne Hammer
-info:20:120:30000
-alloc:7:20 to 100
+info:20:100:30000
+alloc:5:50 to 100
 power:0:2d5:10:11:8
 flags:BLESSED | REGEN
 act:DRAIN_LIFE1
@@ -1120,7 +1120,7 @@ desc:with mighty power for those brave enough to risk betrayal.
 name:of Erebor
 base-object:digger:Pick
 info:55:180:30000
-alloc:20:55 to 100
+alloc:10:55 to 100
 power:0:4d3:5:20:0
 flags:SUST_STR
 values:TUNNEL[5] | STR[3] | CON[3] | LIGHT[1]
@@ -1233,7 +1233,7 @@ desc: the main host.
 name:of Thranduil
 base-object:helm:Hard Leather Cap
 info:50:15:50000
-alloc:14:40 to 100
+alloc:10:40 to 100
 power:2:0d0:0:0:10
 flags:PROT_BLIND | TELEPATHY
 values:INT[2] | WIS[2]
@@ -1243,7 +1243,7 @@ desc:his forest domain.
 name:of Thengel
 base-object:helm:Metal Cap
 info:10:20:22000
-alloc:18:10 to 100
+alloc:10:10 to 100
 power:3:1d1:0:0:12
 flags:PROT_CONF
 values:WIS[3]
@@ -1278,7 +1278,7 @@ desc:hearts of the servants of Morgoth.
 name:'Holhenneth'
 base-object:helm:Iron Helm
 info:20:50:100000
-alloc:18:20 to 100
+alloc:10:20 to 100
 power:7:1d3:0:0:10
 flags:PROT_BLIND | PROT_CONF | SEE_INVIS
 values:INT[2] | WIS[2] | SEARCH[2]
@@ -1290,7 +1290,7 @@ desc:awareness.
 name:of Gorlim
 base-object:helm:Iron Helm
 info:20:75:1
-alloc:18:20 to 75
+alloc:10:20 to 75
 power:7:1d3:8:8:10
 # F: DRAIN_HP | 
 flags:PROT_FEAR | 
@@ -1302,7 +1302,7 @@ desc:needed succor.
 name:of Hammerhand
 base-object:helm:Steel Helm
 info:20:60:45000
-alloc:11:40 to 127
+alloc:10:40 to 127
 power:9:1d3:0:0:20
 flags:FREE_ACT
 values:STR[3] | DEX[3] | CON[3]
@@ -1576,7 +1576,7 @@ desc:A hero's handgear that lends great prowess in battle.
 name:'Cammithrim'
 base-object:gloves:Set of Leather Gloves
 info:10:5:30000
-alloc:18:10 to 80
+alloc:10:10 to 80
 power:1:0d0:5:5:10
 flags:FREE_ACT | SUST_CON
 values:LIGHT[1] | RES_LIGHT[1]
@@ -1588,7 +1588,7 @@ desc:magical bolts with great frequency.
 name:'Paurhach'
 base-object:gloves:Set of Gauntlets
 info:1:25:15000
-alloc:40:10 to 60
+alloc:10:10 to 60
 power:3:1d1:0:0:14
 flags:REGEN
 values:RES_FIRE[1]
@@ -1611,7 +1611,7 @@ desc:A set of handgear, freezing with unnatural cold.
 name:'Pauraegen'
 base-object:gloves:Set of Gauntlets
 info:1:25:11000
-alloc:23:10 to 75
+alloc:10:10 to 75
 power:3:1d1:0:0:14
 values:LIGHT[1] | RES_ELEC[1] | RES_LIGHT[1]
 act:ELEC_BOLT
@@ -1621,7 +1621,7 @@ desc:A set of handgear with sparks that crackle across its knuckleguards.
 name:'Paurnen'
 base-object:gloves:Set of Gauntlets
 info:1:25:12000
-alloc:30:10 to 60
+alloc:10:10 to 60
 power:3:1d1:3:3:14
 flags:FEATHER
 act:ACID_BOLT

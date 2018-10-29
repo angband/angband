@@ -1,3 +1,5 @@
+# Modified for coffeeband - MC
+
 # File: constants.txt
 
 
@@ -15,25 +17,25 @@ level-max:monsters:1024
 #---------------------------------------------------------------------
 
 # 1/per-turn-chance of new monster generation
-mon-gen:chance:500
+mon-gen:chance:250
 
 # Minimum number of monsters generated on a level
-mon-gen:level-min:14
+mon-gen:level-min:12
 
 # Number of townsfolk generated in the day */
-mon-gen:town-day:4
+mon-gen:town-day:6
 
 # Number of townsfolk generated in the night */
-mon-gen:town-night:8
+mon-gen:town-night:6
 
 # Maximum number of breeding monsters allowed on a level
 mon-gen:repro-max:100
 
 # Chance of a generated monster's level being inflated is one-in-this
-mon-gen:ood-chance:25
+mon-gen:ood-chance:20
 
 # Maximum out-of-depth amount for monster generation
-mon-gen:ood-amount:10
+mon-gen:ood-amount:8
 
 #---------------------------------------------------------------------
 # Monster Gameplay
@@ -43,7 +45,7 @@ mon-gen:ood-amount:10
 mon-play:break-glyph:550
 
 # High value slows multiplication
-mon-play:mult-rate:8
+mon-play:mult-rate:10
 
 # Percent of player exp drained per hit
 mon-play:life-drain:2
@@ -78,10 +80,10 @@ dun-gen:amt-room:9
 dun-gen:amt-item:3
 
 # Average amount of treasure to place in rooms/corridors
-dun-gen:amt-gold:3
+dun-gen:amt-gold:2
 
 # Maximum number of pits or nests allowed per level
-dun-gen:pit-max:2
+dun-gen:pit-max:3
 
 #---------------------------------------------------------------------
 # Game World
@@ -104,13 +106,13 @@ world:dungeon-wid:198
 world:town-hgt:22
 
 # Max number of grids in each town level (horizontally)
-world:town-wid:66
+world:town-wid:55
 
 # Total number of feeling squares per level
-world:feeling-total:100
+world:feeling-total:80
 
 # Squares needed to see to get first feeling
-world:feeling-need:10
+world:feeling-need:15
 
 # Number of levels for each stair
 world:stair-skip:1
@@ -146,13 +148,13 @@ carry-cap:floor-size:23
 store:inven-max:24
 
 # Number of turns between turnovers
-store:turns:1000
+store:turns:500
 
 # 1/Chance (per day) of an owner changing
-store:shuffle:25
+store:shuffle:20
 
 # Dungeon level to apply magic to objects for normal stores
-store:magic-level:5
+store:magic-level:10
 
 
 #---------------------------------------------------------------------
@@ -163,19 +165,19 @@ store:magic-level:5
 obj-make:max-depth:100
 
 # 1/chance of inflating the requested object level
-obj-make:great-obj:20
+obj-make:great-obj:40
 
 # 1/chance of inflating the requested ego item level
-obj-make:great-ego:20
+obj-make:great-ego:40
 
 # Maximum amount of fuel in a torch
-obj-make:fuel-torch:5000
+obj-make:fuel-torch:3000
 
 # Maximum amount of fuel in a lantern
-obj-make:fuel-lamp:15000
+obj-make:fuel-lamp:10000
 
 # Default amount of fuel in a lantern
-obj-make:default-lamp:7500
+obj-make:default-lamp:5000
 
 
 #---------------------------------------------------------------------

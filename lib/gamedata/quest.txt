@@ -7,12 +7,12 @@
 # to this file).  It would also only require fairly small game code changes to
 # allow other quests to be added as a result of game events.
 
-name:Sauron
-level:99
-race:Sauron, the Sorcerer
+name:The Balrog
+level:50
+race:The Balrog of Moria
 number:1
 
-name:Morgoth
+name:Shelob
 level:100
-race:Morgoth, Lord of Darkness
+race:Shelob, Spider of Darkness
 number:1

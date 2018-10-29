@@ -71,19 +71,19 @@
 
 name:Orc
 room:1
-alloc:1:25
+alloc:1:22
 obj-rarity:0
 mon-base:orc
 
 name:Troll
 room:1
-alloc:1:45
+alloc:1:40
 obj-rarity:0
 mon-base:troll
 
 name:Giant
 room:1
-alloc:1:65
+alloc:1:60
 obj-rarity:0
 mon-base:giant
 
@@ -150,7 +150,7 @@ mon-ban:Horned Reaper
 
 name:Jelly
 room:2
-alloc:1:20
+alloc:1:18
 obj-rarity:5
 mon-base:icky thing
 mon-base:jelly
@@ -159,34 +159,33 @@ mon-base:mushroom
 
 name:Animals
 room:2
-alloc:1:50
+alloc:1:45
 obj-rarity:10
 flags-req:ANIMAL
 
 name:Undead
 room:2
-alloc:1:80
+alloc:1:78
 obj-rarity:20
 flags-req:UNDEAD
 
 # New pits and nests
+name:Kobolds
+room:1
+alloc:4:14
+obj-rarity:0
+mon-base:kobold
+mon-base:canine
 
 name:Ants
 room:2
-alloc:1:15
+alloc:4:18
 obj-rarity:5
 mon-base:ant
-flags-ban:KILL_BODY
-
-name:Kobolds
-room:1
-alloc:1:15
-obj-rarity:0
-mon-base:kobold
 
 name:Creepy crawlies
 room:2
-alloc:1:20
+alloc:5:20
 obj-rarity:5
 mon-base:centipede
 mon-base:killer beetle
@@ -197,14 +196,14 @@ spell-ban:SLOW
 
 name:Minor demons
 room:1
-alloc:1:20
+alloc:4:18
 obj-rarity:5
 mon-base:minor demon
 spell-ban:S_DEMON
 
 name:Spellcasters
 room:1
-alloc:1:20
+alloc:1:16
 obj-rarity:0
 mon-base:kobold
 mon-base:humanoid
@@ -216,7 +215,7 @@ spell-ban:ARROW_2
 
 name:Archers
 room:1
-alloc:1:25
+alloc:1:20
 obj-rarity:0
 mon-base:kobold
 mon-base:orc
@@ -234,14 +233,14 @@ mon-base:naga
 
 name:Thieves
 room:1
-alloc:1:25
+alloc:10:23
 obj-rarity:0
 mon-base:person
 color:b
 
 name:Warriors
 room:1
-alloc:1:25
+alloc:1:24
 obj-rarity:0
 mon-base:person
 color:u
@@ -250,14 +249,14 @@ spell-ban:HEAL_KIN
 
 name:Dark elves
 room:1
-alloc:1:30
+alloc:1:26
 obj-rarity:0
 mon-base:humanoid
 flags-req:HURT_LIGHT
 
 name:Eyes
 room:1
-alloc:1:30
+alloc:1:28
 obj-rarity:5
 mon-base:eye
 spell-ban:S_UNDEAD
@@ -265,13 +264,13 @@ spell-ban:S_KIN
 
 name:Ogres
 room:1
-alloc:1:30
+alloc:1:20
 obj-rarity:0
 mon-base:ogre
 
 name:Believers
 room:1
-alloc:1:35
+alloc:1:33
 obj-rarity:0
 mon-base:person
 spell-req:HEAL
@@ -279,17 +278,15 @@ spell-ban:S_ANIMAL
 
 name:Serpents
 room:2
-alloc:1:40
+alloc:1:48
 obj-rarity:5
 mon-base:snake
 mon-base:naga
 mon-base:hydra
-spell-ban:BA_POIS
-spell-ban:BR_FIRE
 
 name:Lesser undead
 room:2
-alloc:1:40
+alloc:1:35
 obj-rarity:10
 mon-base:skeleton
 mon-base:zombie
@@ -299,14 +296,14 @@ spell-ban:TELE_AWAY
 
 name:Wizards
 room:1
-alloc:1:45
+alloc:1:40
 obj-rarity:0
 mon-base:person
 spell-req:CONF
 
 name:Vampires
 room:1
-alloc:1:55
+alloc:1:50
 obj-rarity:0
 mon-base:bat
 mon-base:vampire
@@ -314,7 +311,7 @@ flags-req:UNDEAD
 
 name:Hydra
 room:2
-alloc:1:60
+alloc:1:56
 obj-rarity:8
 mon-base:hydra
 
@@ -338,7 +335,7 @@ spell-ban:BR_SHAR
 
 name:Ainur
 room:1
-alloc:1:90
+alloc:5:10
 obj-rarity:0
 mon-base:ainu
 
@@ -346,7 +343,7 @@ mon-base:ainu
 # New chosen monster types, not necessarily for pits and not used yet
 
 name:Insects
-room:3
+room:1
 alloc:2:15
 mon-base:ant
 mon-base:centipede
@@ -356,15 +353,15 @@ mon-base:insect
 mon-base:killer beetle
 
 name:Reptiles
-room:3
+room:2
 alloc:1:20
 mon-base:naga
 mon-base:snake
 mon-base:reptile
 
 name:Cave dwellers
-room:3
-alloc:1:25
+room:2
+alloc:10:25
 mon-base:yeek
 mon-base:kobold
 mon-base:orc
@@ -372,20 +369,203 @@ mon-base:troll
 mon-base:ogre
 
 name:Moria dwellers
-room:3
-alloc:8:30
+room:2
+alloc:10:30
 mon-base:orc
 mon-base:ogre
 mon-base:troll
 mon-base:giant
 
 name:Creatures of Earth
-room:3
+room:1
 alloc:8:35
 mon-base:xorn
 
 name:Elemental creatures
-room:3
+room:1
 alloc:1:40
 mon-base:elemental
 mon-base:vortex
+
+#Coffee Pits
+
+name:Yeek Chess
+room:1
+alloc:1:15
+obj-rarity:5
+mon-base:yeek
+flags-req:GROUP_AI
+
+name:Noids
+room:2
+alloc:4:15
+obj-rarity:3
+mon-base:humanoid
+mon-base:person
+mon-base:naga
+mon-base:rodent
+mon-base:yeek
+
+name:Pit 1
+room:2
+alloc:13:1
+mon-base:mold
+mon-base:mushroom
+mon-base:centipede
+mon-base:icky thing
+
+name:Pit 2
+room:2
+alloc:12:2
+obj-rarity:1
+mon-base:rodent
+mon-base:snake
+mon-base:kobold
+mon-base:worm
+spell-ban:S_KIN
+
+name:Pit 3
+room:2
+alloc:11:3
+obj-rarity:2
+mon-base:eye
+mon-base:reptile
+mon-base:canine
+mon-base:bat
+spell-ban:S_UNDEAD
+spell-ban:S_KIN
+
+name:Pit 4
+room:2
+alloc:10:4
+obj-rarity:3
+mon-base:bat
+mon-base:kobold
+mon-base:mushroom
+mon-base:icky thing
+
+name:Pit 5
+room:2
+alloc:9:5
+obj-rarity:4
+mon-base:centipede
+mon-base:person
+mon-base:mushroom
+mon-base:jelly
+
+name:Jungle
+room:2
+alloc:8:6
+obj-rarity:5
+mon-base:snake
+mon-base:naga
+mon-base:reptile
+mon-base:plant
+
+name:Rats
+room:2
+alloc:7:7
+obj-rarity:4
+mon-base:rodent
+mon-base:bird
+mon-base:bat
+mon-base:feline
+
+name:Dogs
+room:2
+alloc:6:8
+obj-rarity:3
+mon-base:canine
+
+name:Orcs and Friends
+room:2
+alloc:5:9
+obj-rarity:4
+mon-base:orc
+mon-base:ogre
+mon-base:canine
+mon-base:bird
+
+name:More
+room:2
+alloc:4:10
+obj-rarity:5
+mon-base:minor demon
+mon-base:hybrid
+mon-base:spider
+mon-base:centipede
+spell-ban:S_DEMON
+spell-ban:BLINK
+
+name:Baby dragons
+room:1
+alloc:3:11
+obj-rarity:6
+mon-base:dragon
+spell-ban:SCARE
+
+name:Bokold and Friends
+room:1
+alloc:2:12
+obj-rarity:7
+mon-base:reptile
+mon-base:humanoid
+mon-base:hybrid
+mon-base:plant
+
+name:ZZZ
+room:1
+alloc:1:15
+obj-rarity:8
+mon-base:zephyr hound
+spell-ban:BR_SHAR
+spell-ban:BR_SOUN
+spell-ban:BR_NEXU
+spell-ban:BR_GRAV
+spell-ban:BR_INER
+spell-ban:BR_WALL
+spell-ban:BR_POIS
+
+name:Breeders
+room:2
+alloc:10:1
+obj-rarity:1
+mon-base:rodent
+mon-base:louse
+mon-base:insect
+mon-base:worm
+
+name:Spooky
+room:2
+alloc:10:10
+obj-rarity:2
+mon-base:skeleton
+mon-base:zombie
+mon-base:wraith
+mon-base:rodent
+mon-base:bat
+
+name:Tolkienizer
+room:1
+alloc:10:25
+obj-rarity:5
+mon-base:ancient dragon
+mon-base:dragon
+mon-base:spider
+mon-base:snake
+mon-base:giant
+mon-base:troll
+mon-base:orc
+mon-base:canine
+mon-base:ainu
+
+name:Angband
+room:2
+alloc:10:30
+obj-rarity:7
+mon-base:ainu
+mon-base:naga
+mon-base:golem
+mon-base:bat
+mon-base:ant
+mon-base:dragon

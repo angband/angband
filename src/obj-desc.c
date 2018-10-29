@@ -74,6 +74,7 @@ static const char *obj_desc_get_modstr(const struct object_kind *kind)
 	return "";
 }
 
+/* Change shadow book name - MC */
 /**
  * An object's basic name - a generic name for flavored objects (with the
  * actual name added later depending on awareness, the name from object.txt
@@ -162,7 +163,7 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 			if (terse)
 				return "& Tome~ #";
 			else
-				return "& Necromantic Tome~ #";
+				return "& Shadow Tome~ #";
 
 		case TV_OTHER_BOOK:
 			if (terse)

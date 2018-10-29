@@ -248,10 +248,16 @@ extern struct room_template *room_templates;
 /* gen-cave.c */
 struct chunk *town_gen(struct player *p, int min_height, int min_width);
 struct chunk *classic_gen(struct player *p, int min_height, int min_width);
+struct chunk *twists_gen(struct player *p, int min_height, int min_width);
 struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width);
 void ensure_connectedness(struct chunk *c);
 struct chunk *cavern_gen(struct player *p, int min_height, int min_width);
 struct chunk *modified_gen(struct player *p, int min_height, int min_width);
+struct chunk *earliest_gen(struct player *p, int min_height, int min_width);
+struct chunk *early_gen(struct player *p, int min_height, int min_width);
+struct chunk *lucky_gen(struct player *p, int min_height, int min_width);
+struct chunk *squarified_gen(struct player *p, int min_height, int min_width);
+struct chunk *moriafied_gen(struct player *p, int min_height, int min_width);
 struct chunk *moria_gen(struct player *p, int min_height, int min_width);
 struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width);
 struct chunk *lair_gen(struct player *p, int min_height, int min_width);

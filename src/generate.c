@@ -789,16 +789,38 @@ const struct cave_profile *choose_profile(struct player *p)
 		if (profile) return profile;
 	}
 
+	/* Edited for coffeeband - MC */
 	/* Make the profile choice */
 	if (p->depth == 0) {
 		profile = find_cave_profile("town");
-	} else if (is_quest(p->depth) && !OPT(p, birth_levels_persist)) {
-		/* Quest levels must be normal levels */
+	} else if (p->depth < 6) {
+		profile = find_cave_profile("earliest");
+	} else if (p->depth < 11) {
+		profile = find_cave_profile("early");
+	} else if (p->depth == 11) {
+		profile = find_cave_profile("twists");
+	} else if (p->depth == 12) {
 		profile = find_cave_profile("classic");
-	} else if (labyrinth_check(p->depth)) {
-		profile = find_cave_profile("labyrinth");
-	} else if ((p->depth >= 10) && (p->depth < 40) && one_in_(40)) {
+	} else if (p->depth == 13) {
+		profile = find_cave_profile("lucky");
+	} else if (p->depth == 21) {
+		profile = find_cave_profile("lucky");
+	} else if (p->depth == 22) {
+		profile = find_cave_profile("classic");
+	} else if (p->depth == 23) {
+		profile = find_cave_profile("twists");
+	} else if (p->depth == 24) {
+		profile = find_cave_profile("early");
+	} else if (p->depth == 25) {
+		profile = find_cave_profile("earliest");
+	} else if ((p->depth > 25) && (p->depth < 31)) {
 		profile = find_cave_profile("moria");
+	} else if ((p->depth > 30) && (p->depth < 41)) {
+		profile = find_cave_profile("squarified");
+	} else if ((p->depth > 40) && (p->depth < 51)) {
+		profile = find_cave_profile("moriafied");
+	} else if ((p->depth > 52) && (p->depth < 56)) {
+     		profile = find_cave_profile("cavern");     
 	} else {
 		int pick = randint0(200);
 		size_t i;

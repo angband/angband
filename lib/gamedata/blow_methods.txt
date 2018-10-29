@@ -9,6 +9,78 @@
 # act: action string to append
 # desc: monster lore description
 
+name:THORN
+cut:1
+stun:0
+miss:1
+phys:1
+msg:MON_HIT
+act:slashes {target}
+desc:slash
+
+name:SCREECH
+cut:0
+stun:1
+miss:1
+phys:0
+msg:MON_TOUCH
+act:screeches at {target}
+desc:screech
+
+name:ROAR
+cut:0
+stun:1
+miss:1
+phys:0
+msg:MON_TOUCH
+act:roars at {target}
+desc:roar
+
+name:HISS
+cut:0
+stun:1
+miss:1
+phys:0
+msg:MON_TOUCH
+act:hisses at {target}
+desc:hiss
+
+name:SING
+cut:0
+stun:0
+miss:1
+phys:0
+msg:MON_TOUCH
+act:sings to {target}
+desc:sing
+
+name:CHANT
+cut:0
+stun:0
+miss:1
+phys:0
+msg:MON_TOUCH
+act:chants
+desc:chant
+
+name:PECK
+cut:1
+stun:1
+miss:1
+phys:1
+msg:MON_HIT
+act:pecks {target}
+desc:peck
+
+name:TAIL
+cut:1
+stun:1
+miss:1
+phys:1
+msg:MON_HIT
+act:tailslaps {target}
+desc:tailslap
+
 name:HIT
 cut:1
 stun:1
@@ -53,6 +125,24 @@ phys:1
 msg:MON_CLAW
 act:claws {target}
 desc:claw
+
+name:GORE
+cut:1
+stun:1
+miss:1
+phys:1
+msg:MON_BITE
+act:gores {target}
+desc:gore
+
+name:BORE
+cut:1
+stun:1
+miss:1
+phys:1
+msg:MON_BITE
+act:bores {target}
+desc:bore
 
 name:BITE
 cut:1

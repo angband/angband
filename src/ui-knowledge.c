@@ -1074,6 +1074,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
  *  MONSTERS
  * ------------------------------------------------------------------------ */
 
+/* Added plants - MC */
 /**
  * Description of each monster group.
  */
@@ -1109,7 +1110,7 @@ static struct
 	{ L"tp",       "Men" },
 	{ L".$!?=~_",  "Mimics" },
 	{ L"m",        "Molds" },
-	{ L",",        "Mushroom Patches" },
+	{ L",&",        "Mushrooms/Plants" },
 	{ L"n",        "Nagas" },
 	{ L"o",        "Orcs" },
 	{ L"q",        "Quadrupeds" },
@@ -2543,6 +2544,7 @@ static void do_cmd_knowledge_history(const char *name, int row)
 }
 
 
+/* Changed Stores - MC */
 /**
  * Definition of the "player knowledge" menu.
  */
@@ -2555,14 +2557,16 @@ static menu_action knowledge_actions[] =
 { 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
 { 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
 { 0, 0, "Display trap knowledge",          do_cmd_knowledge_traps  },
-{ 0, 0, "Display contents of general store", do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of armourer",      do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of weaponsmith",   do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of bookseller",    do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of alchemist",     do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of magic shop",    do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of black market",  do_cmd_knowledge_store     },
-{ 0, 0, "Display contents of home",   	   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of the Inn",
+do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of the Cartographers",      do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of the Chapterhouse",   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of the Bookseller",    do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of the Alchemist",     do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of the Markets",
+do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of the Black Market",  do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of the Home",   	   do_cmd_knowledge_store     },
 { 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
 { 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
 };

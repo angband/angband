@@ -130,12 +130,13 @@ bool is_daytime(void)
 	return false;
 }
 
+/* Trying random energy again, let's hope this way doesn't break stuff - MC */
 /**
  * The amount of energy gained in a turn by a player or monster
  */
 int turn_energy(int speed)
 {
-	return extract_energy[speed] * z_info->move_energy / 100;
+	return extract_energy[speed] * ( (z_info->move_energy) + randint1(12) +randint1(12) - ( extract_energy[speed] ) ) / 100;
 }
 
 /**
@@ -581,9 +582,25 @@ void process_world(struct chunk *c)
 
 	/*** Damage (or healing) over Time ***/
 
+	/* Testing - MC */
+
 	/* Take damage from poison */
-	if (player->timed[TMD_POISONED])
-		take_hit(player, 1, "poison");
+	if (player->timed[TMD_POISONED]) {
+		if (player->timed[TMD_POISONED] > TMD_CUT_SEVERE) {
+			/* Extreme poison */
+			i = 3;
+		} else if (player->timed[TMD_POISONED] > TMD_CUT_NASTY) {
+			/* Severe poison */
+			i = 2;
+		} else {
+		/* Other poison */
+			i = 1;
+		}
+
+		/* Take damage */
+		take_hit(player, i, "poison");
+	}
+
 
 	/* Take damage from cuts */
 	if (player->timed[TMD_CUT]) {

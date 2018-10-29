@@ -11,46 +11,83 @@
 # buy-flag: flag : type name		- types to buy if the flag is present
 #
 
-# General store
-store:1:General Store
+# Inn
+store:1:Inn
 owner:5000:Bilbo the Friendly (Hobbit)
 owner:10000:Rincewind the Chicken (Human)
 owner:20000:Snafu the Midget (Gnome)
 owner:30000:Lyar-el the Comely (Elf)
-slots:0:4
+slots:0:6
 turnover:2
-always:cloak:Cloak
 always:food:Ration of Food
-always:light:Wooden Torch
-always:flask:Flask of Oil
-always:digger:Shovel
-always:digger:Pick
-always:shot:Iron Shot
-always:arrow:Arrow
-always:bolt:Bolt
+normal:food:Flask of Hobbiton Tea
+normal:food:Flask of Bree Coffee
 normal:food:Pint of Fine Wine
-normal:food:Slime Mold
 normal:food:Flask of Whisky
 normal:food:Hard Biscuit
+normal:food:Slime Mold
 normal:mushroom:Stoneskin
-buy:light
 buy:food
 buy:mushroom
-buy:flask
-buy:digger
 
-# Armoury
-store:2:Armoury
+# Cartographers
+store:2:Cartographers
 owner:5000:Kon-Dar the Ugly (Half-Orc)
 owner:10000:Darg-Low the Grim (Human)
 owner:25000:Decado the Handsome (Dunadan)
 owner:30000:Mauglin the Grumpy (Dwarf)
-slots:6:18
-turnover:9
-normal:boots:Pair of Leather Sandals
+slots:0:6
+turnover:2
+always:light:Lantern
+always:light:Wooden Torch
+always:flask:Flask of Oil
+always:scroll:Mapping
+always:scroll:Word of Recall
+normal:potion:Cure Light Wounds
+normal:potion:Sight
+normal:food:Flask of Easterling Coffee
+normal:food:Flask of Hobbiton Tea
+normal:food:Flask of Bree Coffee
+normal:food:Flask of Whisky
+normal:food:Hard Biscuit
+normal:food:Slime Mold
+normal:mushroom:Sustenance
+buy:food
+buy:light
+buy:scroll
+buy:potion
+buy:food
+buy:dragon armor
+
+# Chapterhouse
+store:3:Chapterhouse
+owner:5000:Ithyl-Mak the Beastly (Half-Troll)
+owner:10000:Arndal Beast-Slayer (Half-Elf)
+owner:25000:Tarl Beast-Master (Hobbit)
+owner:30000:Oglign Dragon-Slayer (Dwarf)
+slots:6:16
+turnover:10
+always:shield:Small Metal Shield
+always:potion:Cure Light Wounds
+normal:potion:Cure Serious Wounds
+normal:potion:Cure Critical Wounds
+normal:shot:Iron Shot
+normal:arrow:Arrow
+normal:bolt:Bolt
+normal:sword:Dagger
+normal:sword:Short Sword
+normal:sword:Broad Sword
+normal:sword:Long Sword
+normal:sword:Bastard Sword
+normal:polearm:Spear
+normal:polearm:Pike
+normal:polearm:Battle Axe
+normal:bow:Sling
+normal:bow:Short Bow
+normal:bow:Long Bow
+normal:bow:Light Crossbow
 normal:boots:Pair of Leather Boots
 normal:boots:Pair of Iron Shod Boots
-normal:helm:Hard Leather Cap
 normal:helm:Metal Cap
 normal:helm:Iron Helm
 normal:soft armour:Robe
@@ -60,11 +97,7 @@ normal:soft armour:Hard Leather Armour
 normal:soft armour:Leather Scale Mail
 normal:hard armour:Metal Scale Mail
 normal:hard armour:Chain Mail
-normal:gloves:Set of Leather Gloves
 normal:gloves:Set of Gauntlets
-normal:shield:Wicker Shield
-normal:shield:Small Metal Shield
-normal:shield:Leather Shield
 buy:boots
 buy:gloves
 buy:crown
@@ -74,18 +107,79 @@ buy:cloak
 buy:soft armor
 buy:hard armor
 buy:dragon armor
+buy:shot
+buy:bolt
+buy:arrow
+buy:bow
+buy:digger
 
-# Weaponsmith
-store:3:Weapon Smiths
-owner:5000:Ithyl-Mak the Beastly (Half-Troll)
-owner:10000:Arndal Beast-Slayer (Half-Elf)
-owner:25000:Tarl Beast-Master (Hobbit)
-owner:30000:Oglign Dragon-Slayer (Dwarf)
-slots:3:14
-turnover:9
+
+# Bookseller
+store:4:Bookseller
+owner:15000:Ludwig the Humble (Human)
+owner:20000:Gunnar the Paladin (Human)
+owner:25000:Delilah the Pure (Elf)
+owner:30000:Bosk the Wise (Dwarf)
+slots:0:6
+turnover:0
+always:prayer book
+always:magic book
+always:nature book
+always:shadow book
+buy:magic book
+buy:prayer book
+buy:nature book
+buy:shadow book
+
+# Alchemist
+store:5:Alchemy Shop
+owner:10000:Mauser the Chemist (Half-Elf)
+owner:10000:Wizzle the Chaotic (Hobbit)
+owner:15000:Ga-nat the Greedy (Gnome)
+owner:15000:Vella the Slender (Human)
+slots:0:6
+turnover:2
+always:potion:Cure Light Wounds
+always:potion:Cure Serious Wounds
+always:mushroom:Purging
+always:digger:Shovel
+normal:digger:Pick
+normal:potion:Sight
+normal:mushroom:Curing
+normal:potion:Cure Critical Wounds
+buy:potion
+buy:mushroom
+buy:digger
+
+
+# Markets
+store:6:Markets
+owner:15000:Ariel the Sorceress (Half-Elf)
+owner:20000:Buggerby the Great (Gnome)
+owner:25000:Inglorian the Mage (Human)
+owner:30000:Luthien Starshine (High-Elf)
+slots:4:14
+turnover:8
+always:cloak:Cloak
+always:bow:Sling
+normal:bow:Sling
+normal:bow:Short Bow
+normal:bow:Long Bow
+normal:bow:Light Crossbow
+normal:food:Ration of Food
+normal:light:Lantern
+normal:light:Wooden Torch
+normal:flask:Flask of Oil
+normal:digger:Shovel
+normal:digger:Pick
 normal:shot:Iron Shot
 normal:arrow:Arrow
 normal:bolt:Bolt
+normal:food:Pint of Fine Wine
+normal:food:Slime Mold
+normal:food:Flask of Whisky
+normal:food:Hard Biscuit
+normal:mushroom:Stoneskin
 normal:sword:Dagger
 normal:sword:Main Gauche
 normal:sword:Rapier
@@ -107,99 +201,7 @@ normal:polearm:Battle Axe
 normal:polearm:Lance
 normal:polearm:Lucerne Hammer
 normal:hafted:Whip
-normal:bow:Sling
-normal:bow:Short Bow
-normal:bow:Long Bow
-normal:bow:Light Crossbow
-buy:shot
-buy:bolt
-buy:arrow
-buy:bow
-buy:digger
-buy:sword
-buy:polearm
-buy:hafted
 
-
-# Bookseller
-store:4:Bookseller
-owner:15000:Ludwig the Humble (Human)
-owner:20000:Gunnar the Paladin (Human)
-owner:25000:Delilah the Pure (Elf)
-owner:30000:Bosk the Wise (Dwarf)
-slots:0:2
-turnover:0
-always:prayer book
-always:magic book
-always:nature book
-always:shadow book
-buy:magic book
-buy:prayer book
-buy:nature book
-buy:shadow book
-
-# Alchemist
-store:5:Alchemy Shop
-owner:10000:Mauser the Chemist (Half-Elf)
-owner:10000:Wizzle the Chaotic (Hobbit)
-owner:15000:Ga-nat the Greedy (Gnome)
-owner:15000:Vella the Slender (Human)
-slots:6:10
-turnover:9
-always:scroll:Word of Recall
-always:scroll:Phase Door
-always:scroll:Remove Curse
-always:potion:Cure Light Wounds
-normal:scroll:Monster Confusion
-normal:scroll:Magic Mapping
-normal:scroll:Detect Invisible
-normal:scroll:Recharging
-normal:scroll:Satisfy Hunger
-normal:scroll:Blessing
-normal:scroll:Holy Chant
-normal:potion:Boldness
-normal:potion:Berserk Strength
-normal:potion:Resist Heat
-normal:potion:Resist Cold
-normal:potion:Restore Life Levels
-normal:potion:Neutralize Poison
-normal:potion:Cure Serious Wounds
-normal:potion:Cure Critical Wounds
-buy:scroll
-buy:potion
-
-# Magic-user's
-store:6:Magic Shop
-owner:15000:Ariel the Sorceress (Half-Elf)
-owner:20000:Buggerby the Great (Gnome)
-owner:25000:Inglorian the Mage (Human)
-owner:30000:Luthien Starshine (High-Elf)
-slots:4:14
-turnover:9
-normal:ring:Searching
-normal:ring:Feather Falling
-normal:ring:Protection
-normal:amulet:Slow Digestion
-normal:amulet:Resist Acid
-normal:wand:Light
-normal:wand:Slow Monster
-normal:wand:Confuse Monster
-normal:wand:Magic Missile
-normal:wand:Stinking Cloud
-normal:wand:Stone to Mud
-normal:staff:Teleportation
-normal:staff:Light
-normal:staff:Mapping
-normal:staff:Detect Invisible
-normal:staff:Detect Evil
-buy:magic book
-buy:amulet
-buy:ring
-buy:staff
-buy:wand
-buy:rod
-buy:scroll
-buy:potion
 
 # Black Market - no stock given but we still need slot/turnover info
 store:7:Black Market
@@ -207,8 +209,15 @@ owner:15000:Lo-Hak the Awful (Half-Troll)
 owner:20000:Histor the Goblin (Kobold)
 owner:25000:Durwin the Shifty (Half-Orc)
 owner:30000:Drago the Fair (Elf)
-slots:6:18
+slots:6:20
 turnover:9
+always:scroll:Phase Door
+normal:potion:Resistance
+normal:potion:Cure Critical Wounds
+normal:mushroom:Vigor
+normal:scroll:Identify rune
+normal:staff:Mapping
+
 
 store:8:Home
 owner:0:Your home

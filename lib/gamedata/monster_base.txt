@@ -44,7 +44,7 @@ glyph:A
 pain:1
 flags:POWERFUL | SPIRIT
 flags:ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
+flags:BASH_DOOR | TAKE_ITEM
 flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Ainu/maia
@@ -52,7 +52,7 @@ desc:Ainu/maia
 name:ant
 glyph:a
 pain:7
-flags:ANIMAL | WEIRD_MIND
+flags:ANIMAL | WEIRD_MIND | KILL_BODY
 flags:BASH_DOOR
 desc:Ant
 
@@ -71,13 +71,13 @@ desc:Bird
 name:canine
 glyph:C
 pain:3
-flags:ANIMAL
+flags:ANIMAL | MOVE_BODY
 desc:Canine (Dog)
 
 name:centipede
 glyph:c
 pain:5
-flags:ANIMAL | WEIRD_MIND
+flags:ANIMAL | WEIRD_MIND | KILL_BODY
 desc:Centipede
 
 name:creeping coins
@@ -121,7 +121,7 @@ desc:Elemental
 name:feline
 glyph:f
 pain:6
-flags:ANIMAL
+flags:ANIMAL | MOVE_BODY
 desc:Feline (Cat)
 
 name:ghost
@@ -271,21 +271,21 @@ name:naga
 glyph:n
 pain:1
 flags:FEMALE | EVIL | HURT_COLD | SPIRIT
-flags:BASH_DOOR
+flags:BASH_DOOR | TAKE_ITEM | GROUP_AI | MOVE_BODY
 desc:Naga
 
 name:ogre
 glyph:O
 pain:1
 flags:GIANT | EVIL | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:BASH_DOOR
 desc:Ogre
 
 name:orc
 glyph:o
 pain:1
 flags:MALE | ORC | EVIL | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR 
 desc:Orc
 
 name:person
@@ -293,6 +293,12 @@ glyph:p
 pain:1
 flags:BASH_DOOR | SPIRIT
 desc:Person/Human
+
+name:plant
+glyph:&
+pain:2
+flags:HURT_FIRE | WEIRD_MIND | COLD_BLOOD
+desc:Plant
 
 name:quadruped
 glyph:q
@@ -351,7 +357,7 @@ name:troll
 glyph:T
 pain:1
 flags:TROLL | EVIL | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:BASH_DOOR | MOVE_BODY
 desc:Troll
 
 name:vampire

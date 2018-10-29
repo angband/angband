@@ -970,8 +970,10 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 
 	assert(c);
 
+	/*fiddling with light - MC */
+
 	/* Occasional light */
-	light = c->depth <= randint1(25) ? true : false;
+	light = (2 * (c->depth)) - (MIN(20, c->depth/2) * (c->depth / 14)) <= randint1(25) ? true : false;
 
 	/* Set the random door position here so it generates doors in all squares
 	 * marked with the same number */
@@ -1601,8 +1603,12 @@ bool build_circular(struct chunk *c, int y0, int x0, int rating)
 	/* Pick a room size */
 	int radius = 2 + randint1(2) + randint1(3);
 
+	/*fiddling with light - MC */
+
 	/* Occasional light */
-	bool light = c->depth <= randint1(25) ? true : false;
+	bool light = (2 * (c->depth)) - (MIN(20, c->depth/2) * (c->depth / 14)) <= randint1(25) ? true : false;
+
+
 
 	/* Find and reserve lots of space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {
@@ -1665,8 +1671,12 @@ bool build_simple(struct chunk *c, int y0, int x0, int rating)
 	y2 = y1 + height - 1;
 	x2 = x1 + width - 1;
 
+	/*fiddling with light - MC */
+
 	/* Occasional light */
-	if (c->depth <= randint1(25)) light = true;
+	if ((2 * (c->depth)) - (MIN(20, c->depth/2) * (c->depth / 14)) <= randint1(25)) light = true;
+
+
 
 	/* Generate new room */
 	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
@@ -1712,8 +1722,11 @@ bool build_overlap(struct chunk *c, int y0, int x0, int rating)
 
 	int light = false;
 
+		/*fiddling with light - MC */
+
 	/* Occasional light */
-	if (c->depth <= randint1(25)) light = true;
+	if ((2 * (c->depth)) - (MIN(20, c->depth/2) * (c->depth / 14)) <= randint1(25)) light = true;
+
 
 	/* Determine extents of room (a) */
 	y1a = randint1(4);
@@ -1799,8 +1812,11 @@ bool build_crossed(struct chunk *c, int y0, int x0, int rating)
 
 	int light = false;
 
+		/*fiddling with light - MC */
+
 	/* Occasional light */
-	if (c->depth <= randint1(25)) light = true;
+	if ((2 * (c->depth)) - (MIN(20, c->depth/2) * (c->depth / 14)) <= randint1(25)) light = true;
+
 
 	/* Pick inner dimension */
 	wy = 1;
@@ -1958,8 +1974,11 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 
 	int light = false;
 
+		/*fiddling with light - MC */
+
 	/* Occasional light */
-	if (c->depth <= randint1(25)) light = true;
+	if ((2 * (c->depth)) - (MIN(20, c->depth/2) * (c->depth / 14)) <= randint1(25)) light = true;
+
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((y0 >= c->height) || (x0 >= c->width)) {

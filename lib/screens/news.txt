@@ -9,7 +9,7 @@
 {mud}           ^^^^ {/}{red} / _ \ | '_ \ / _` | '_ \ / _` | '_ \ / _` | {/}{mud}^^^^^^  {/}
 {mud}          ^^^^  {/}{red}/ ___ \| | | | (_| | |_) | (_| | | | | (_| | {/}{mud}^^^^^^^ {/}
 {mud}         ^^^^  {/}{red}/_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_| {/}{mud}^^^^^^^^{/}
-{mud}        ^^^^^                {/}{red} |___/{/}  $VERSION
+{mud}        ^^^^^                {/}{red} |___/{/} Coffeeband $VERSION
 {mud}       ^^^^^^^^^^^^^^^^^^                     ^^^^  ^^^^^^^^^^^^^^^^^^^ {/}
 {light slate}         "When the world is old and the Powers grow weary, then Morgoth,{/}
 {light slate}          seeing that the guard sleepeth, shall come back through the   {/}

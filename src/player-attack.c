@@ -201,6 +201,7 @@ static int critical_shot(const struct player *p,
 	}
 }
 
+/* Altered Criticals - MC */
 /**
  * Determine damage for critical hits from melee.
  *
@@ -212,8 +213,8 @@ static int critical_norm(const struct player *p,
 		int dam, u32b *msg_type)
 {
 	int debuff_to_hit = is_debuffed(monster) ? DEBUFF_CRITICAL_HIT : 0;
-	int power = weight + randint1(650);
-	int chance = weight + (p->state.to_h + plus + debuff_to_hit) * 5 + p->lev * 3;
+	int power = 2 * MIN( 2 * (p->state.to_h + plus + debuff_to_hit), weight) + weight + 2 * (p->state.to_h + plus + debuff_to_hit) + randint1(650);
+	int chance = MAX(2 * (p->state.to_h + plus + debuff_to_hit), weight) + 2 * (weight + (p->state.to_h + plus + debuff_to_hit) * 5 + p->lev * 3);
 
 	if (randint1(5000) > chance) {
 		*msg_type = MSG_HIT;
@@ -919,7 +920,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	int multiplier = p->state.ammo_mult;
 	int b = 0, s = 0;
 
-	my_strcpy(hit_verb, "hits", 20);
+	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* Did we hit it (penalize distance travelled) */
 	if (!test_hit(chance, mon->race->ac, monster_is_visible(mon)))
@@ -953,7 +954,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 	int multiplier = 1;
 	int b = 0, s = 0;
 
-	my_strcpy(hit_verb, "hits", 20);
+	my_strcpy(hit_verb, "hits", sizeof(hit_verb));
 
 	/* If we missed then we're done */
 	if (!test_hit(chance, mon->race->ac, monster_is_visible(mon)))

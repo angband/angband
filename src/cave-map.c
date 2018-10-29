@@ -261,9 +261,12 @@ void square_light_spot(struct chunk *c, int y, int x)
  *
  * Also, process all affected monsters.
  *
- * SMART monsters always wake up when illuminated
- * NORMAL monsters wake up 1/4 the time when illuminated
- * STUPID monsters wake up 1/10 the time when illuminated
+ 
+ * Changed odds for illumination waking monsters - MC
+ 
+ * SMART monsters wake up 9/10 the thime when illuminated
+ * NORMAL monsters wake up 1/3 the time when illuminated
+ * STUPID monsters wake up 1/5 the time when illuminated
  */
 static void cave_light(struct point_set *ps)
 {
@@ -288,15 +291,15 @@ static void cave_light(struct point_set *ps)
 
 		/* Process affected monsters */
 		if (cave->squares[y][x].mon > 0) {
-			int chance = 25;
+			int chance = 33;
 
 			struct monster *mon = square_monster(cave, y, x);
 
 			/* Stupid monsters rarely wake up */
-			if (monster_is_stupid(mon)) chance = 10;
+			if (monster_is_stupid(mon)) chance = 20;
 
 			/* Smart monsters always wake up */
-			if (monster_is_smart(mon)) chance = 100;
+			if (monster_is_smart(mon)) chance = 90;
 
 			/* Sometimes monsters wake up */
 			if (mon->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance)) {
