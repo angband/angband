@@ -583,6 +583,10 @@ static void spell_effect_append_value_info(const struct effect *effect,
 			/* Append percentage only, as the fixed value is always displayed */
 			if (rv.m_bonus) special = format("/%d%%", rv.m_bonus);
 			break;
+		case EF_TELEPORT:
+			/* m_bonus means it's a weird random thing */
+			if (rv.m_bonus) special = "random";
+			break;
 		case EF_SPHERE:
 		case EF_BALL:
 			/* Append radius */

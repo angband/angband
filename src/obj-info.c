@@ -1451,12 +1451,17 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 
 			/* Only currently used for the player, but can handle monsters */
 			case EFINFO_TELE: {
-				if (effect->subtype)
+				char *dist = value.m_bonus ?
+					" a level dependent distance" :
+					format(" %d grids", value.base);
+
+				if (effect->subtype) {
 					strnfmt(desc, sizeof(desc), effect_desc(effect),
-							"a monster", value.base);
-				else
+							"a monster", dist);
+				} else {
 					strnfmt(desc, sizeof(desc), effect_desc(effect), "you",
-							value.base);
+							dist);
+				}
 				break;
 			}
 			case EFINFO_QUAKE: {
