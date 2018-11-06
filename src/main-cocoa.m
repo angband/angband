@@ -49,6 +49,12 @@
 /* Mac headers */
 #include <Cocoa/Cocoa.h>
 //#include <Carbon/Carbon.h> /* For keycodes */
+/* Hack - keycodes to enable compiling in macOS 10.14 */
+#define kVK_Return 0x24
+#define kVK_Tab    0x30
+#define kVK_Delete 0x33
+#define kVK_Escape 0x35
+#define kVK_ANSI_KeypadEnter 0x4C
 
 static NSSize const AngbandScaleIdentity = {1.0, 1.0};
 static NSString * const AngbandDirectoryNameLib = @"lib";
