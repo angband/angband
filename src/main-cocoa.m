@@ -48,7 +48,7 @@
 
 /* Mac headers */
 #include <Cocoa/Cocoa.h>
-#include <Carbon/Carbon.h> /* For keycodes */
+//#include <Carbon/Carbon.h> /* For keycodes */
 
 static NSSize const AngbandScaleIdentity = {1.0, 1.0};
 static NSString * const AngbandDirectoryNameLib = @"lib";
