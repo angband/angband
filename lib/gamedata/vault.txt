@@ -31,6 +31,7 @@
 #    @ - impenetrable rock
 #    * - treasure vein
 #    : - rubble
+#    ` - lava
 #    & - treasure or trap
 #    + - secret door
 #    ^ - trap
@@ -57,6 +58,9 @@
 #    _ - staff up to 3 levels OOD
 #    - - rod or wand up to 3 levels OOD
 #    , - food up to 3 levels OOD
+
+#    a-z and A-Z can be used for a monster with that symbol
+#    (see monster_base.txt)
 
 # Use this to measure columns
 #          1         2         3         4         5         6         7

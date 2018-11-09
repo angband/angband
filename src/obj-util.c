@@ -612,17 +612,22 @@ bool obj_can_refill(const struct object *obj)
 	return false;
 }
 
-bool obj_can_browse(const struct object *obj)
+bool obj_kind_can_browse(const struct object_kind *kind)
 {
 	int i;
 
 	for (i = 0; i < player->class->magic.num_books; i++) {
 		struct class_book book = player->class->magic.books[i];
-		if (obj->kind == lookup_kind(book.tval, book.sval))
+		if (kind == lookup_kind(book.tval, book.sval))
 			return true;
 	}
 
 	return false;
+}
+
+bool obj_can_browse(const struct object *obj)
+{
+	return obj_kind_can_browse(obj->kind);
 }
 
 bool obj_can_cast_from(const struct object *obj)
