@@ -152,7 +152,7 @@ skill-device:36:13
 skill-save:30:9
 skill-stealth:2:0
 skill-search:10:12
-skill-melee:34:15
+skill-melee:35:15
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
@@ -425,7 +425,7 @@ skill-device:24:10
 skill-save:30:10
 skill-stealth:3:0
 skill-search:12:12
-skill-melee:48:20
+skill-melee:45:20
 skill-shoot:40:30
 skill-throw:40:30
 skill-dig:0:0
@@ -656,7 +656,7 @@ skill-device:30:10
 skill-save:32:12
 skill-stealth:2:0
 skill-search:10:14
-skill-melee:48:20
+skill-melee:45:20
 skill-shoot:35:20
 skill-throw:35:20
 skill-dig:0:0
@@ -925,7 +925,7 @@ skill-device:36:13
 skill-save:30:9
 skill-stealth:2:0
 skill-search:10:12
-skill-melee:34:25
+skill-melee:35:25
 skill-shoot:20:15
 skill-throw:20:15
 skill-dig:0:0
@@ -1180,7 +1180,7 @@ skill-device:24:10
 skill-save:25:11
 skill-stealth:0:0
 skill-search:10:12
-skill-melee:68:40
+skill-melee:65:40
 skill-shoot:50:30
 skill-throw:50:30
 skill-dig:0:0
@@ -1563,7 +1563,7 @@ skill-device:24:10
 skill-save:25:11
 skill-stealth:0:0
 skill-search:10:12
-skill-melee:68:40
+skill-melee:60:40
 skill-shoot:50:30
 skill-throw:50:30
 skill-dig:0:0
@@ -1595,7 +1595,7 @@ book-graphics:?:P
 book-properties:25:40:1 to 100
 equip:shadow book:[Dirty Fighting]:1:1
 
-spell:Dark Focus:8:5:20:20
+spell:Dark Focus:8:5:5:10
 effect:TIMED_INC:BLESSED:0:5
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:/ 5 + 10
@@ -1603,14 +1603,14 @@ expr:S:PLAYER_LEVEL:/ 5 + 10
 desc:Gives you a bonus of +5 to AC and +10 to-hit, for a
 desc: level-dependent number of turns.
 
-spell:Berserk Rage:14:20:60:40
+spell:Berserk Rage:14:10:10:40
 effect:CURE:AFRAID
 effect:TIMED_INC:SHERO:0:5
 dice:25+d25
 desc:Removes fear, and grants you berserk strength (resistance to fear,
 desc: a bonus of +24 to-hit, and a penalty of -10 to AC) for 25+1d25 turns.
 
-spell:Cry of the Damned:17:5:40:60
+spell:Cry of the Damned:17:5:30:60
 effect:PROJECT_LOS:TURN_LIVING
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -1618,7 +1618,7 @@ desc:Attempts to scare every living monster in line of sight for a
 desc: level-dependent duration.  Uniques and monsters that resist fear are not
 desc: affected.
 
-spell:Poison Brand:25:30:70:90
+spell:Poison Brand:20:30:40:90
 effect:TIMED_INC:ATT_POIS:0:5
 dice:20+d20
 desc:Temporarily makes your melee attacks branded with poison.
@@ -1627,7 +1627,7 @@ book:shadow book:dungeon:[Bloodwrath]:4:shadow
 book-graphics:?:p
 book-properties:30000:15:40 to 100
 
-spell:Throw Monster:27:12:90:140
+spell:Throw Monster:27:12:50:140
 effect:SHORT_BEAM:FORCE:1
 dice:200
 desc:Hits an adjacent monster with force, throwing it back.
