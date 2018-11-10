@@ -472,7 +472,7 @@ dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
-spell:Stinking Cloud:3:2:27:3
+spell:Stinking Cloud:3:2:27:5
 effect:BALL:POIS:2
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 10
@@ -743,7 +743,7 @@ book:prayer book:town:[Cleansing Power]:6:divine
 book-graphics:?:y
 book-properties:100:40:5 to 100
 
-spell:Orb of Draining:7:7:40:12
+spell:Orb of Draining:7:7:40:8
 effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
 expr:B:PLAYER_LEVEL:* 3 / 2
@@ -753,25 +753,25 @@ desc:  Evil monsters take double damage.
 desc:  All cursed items in the area of effect are destroyed.
 desc:  The bigger area of effect is attained at character level 30.
 
-spell:Spear of Light:7:6:30:15
+spell:Spear of Light:7:6:30:10
 effect:LINE:LIGHT_WEAK
 dice:6d8
 desc:Fires a beam that lights up each square and hurts each
 desc: light-sensitive monster in its path.
 
-spell:Dispel Undead:10:14:55:17
+spell:Dispel Undead:10:14:55:12
 effect:PROJECT_LOS_AWARE:DISP_UNDEAD
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each undead monster within line of sight.
 
-spell:Dispel Evil:12:20:70:22
+spell:Dispel Evil:12:20:70:15
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each evil monster within line of sight.
 
-spell:Protection from Evil:14:8:42:25
+spell:Protection from Evil:14:8:42:17
 effect:TIMED_INC:PROTEVIL
 dice:$B+d25
 expr:B:PLAYER_LEVEL:* 3
@@ -779,7 +779,7 @@ desc:Protects you from evil for a level-dependent duration:
 desc: all melee attacks by evil monsters have a chance to be repelled,
 desc: unless the monster's level is higher than your character level.
 
-spell:Remove Curse:16:6:38:30
+spell:Remove Curse:16:6:38:20
 effect:REMOVE_CURSE
 dice:$B+d$S
 expr:B:PLAYER_LEVEL:+ 0
@@ -791,7 +791,7 @@ book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
 book-graphics:?:o
 book-properties:10000:20:30 to 100
 
-spell:Portal:10:4:30:15
+spell:Portal:10:4:30:10
 effect:TELEPORT
 dice:$B
 expr:B:PLAYER_LEVEL:/ 2 + 30
@@ -993,13 +993,13 @@ book:shadow book:town:[Dark Rituals]:5:shadow
 book-graphics:?:P
 book-properties:400:40:10 to 100
 
-spell:Banish Undead:7:5:50:10
+spell:Banish Undead:7:5:50:8
 effect:PROJECT_LOS:AWAY_UNDEAD
 dice:15+1d$S
 expr:S:PLAYER_LEVEL:+ 0
 desc:Teleports each undead monster within line of sight a short distance.
 
-spell:Noxious Fumes:10:4:40:15
+spell:Noxious Fumes:10:4:40:10
 effect:SPHERE:POIS:4
 dice:$B
 expr:B:PLAYER_LEVEL:* 3
@@ -1009,14 +1009,14 @@ expr:B:PLAYER_LEVEL:* 2
 desc:Produces a cloud of poisonous gas affecting the player and monsters within
 desc: radius 4.
 
-spell:Sleep Evil:12:5:50:20
+spell:Sleep Evil:12:5:50:14
 effect:PROJECT_LOS:SLEEP_EVIL
 dice:$B
 expr:B:PLAYER_LEVEL:* 10 + 500
 desc:Attempts to put to sleep each evil monster within line of sight.
 desc:  Uniques and monsters that resist confusion are not affected.
 
-spell:Shadow Shift:15:10:50:30
+spell:Shadow Shift:15:10:50:17
 effect:TELEPORT
 dice:30
 effect:DAMAGE
@@ -1025,7 +1025,7 @@ effect-msg:shadow shifting
 desc:Displaces your spirit a short distance, hurting your body as it is
 desc: dragged along.
 
-spell:Vampire Strike:16:5:50:25
+spell:Vampire Strike:16:5:50:20
 effect:JUMP_AND_BITE
 dice:$B
 expr:B:PLAYER_LEVEL:+ 0
@@ -1050,19 +1050,19 @@ expr:S:PLAYER_LEVEL:* 2 + 10
 desc:Casts a bolt which wounds, and makes spellcasting monsters less successful
 desc: in casting spells.
 
-spell:Dispel Life:22:20:50:70
+spell:Dispel Life:22:20:50:50
 effect:PROJECT_LOS_AWARE:MON_DRAIN
 dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Inflicts unresistable damage on each living monster within line of sight.
 
-spell:Dark Spear:25:10:60:90
+spell:Dark Spear:25:10:60:60
 effect:LINE:DARK
 dice:2d$S
 expr:S:PLAYER_LEVEL:* 2
 desc:Fires a beam of darkness.
 
-spell:Warg Form:28:20:60:100
+spell:Warg Form:28:20:60:70
 effect:SHAPECHANGE:warg
 desc:Changes you into the form of a warg, and gives you temporary berserk
 desc: strength, at the cost of some hitpoints.
@@ -1494,28 +1494,28 @@ dice:16999
 desc:Magically renders you well-fed (but not satiated).
 desc:  This will also cure a bloated stomach.
 
-spell:Detect Life:5:2:23:10
+spell:Detect Life:5:2:23:7
 effect:DETECT_LIVING_MONSTERS
 effect-yx:22:40
 desc:Detects all living monsters in the immediate area, for one turn only.
 
-spell:Cure Poison:9:4:30:20
+spell:Cure Poison:9:4:30:10
 effect:CURE:POISONED
 desc:Neutralizes poison.
 
-spell:Resist Poison:12:10:32:30
+spell:Resist Poison:12:10:32:12
 effect:TIMED_INC:OPP_POIS
 dice:20+d20
 desc:Grants you resistance to poison for 20+1d20 turns.
 
-spell:Turn Stone to Mud:15:5:25:50
+spell:Turn Stone to Mud:15:5:25:17
 effect:LINE:KILL_WALL
 dice:20+1d30
 desc:Produces a beam that destroys the first section of wall it hits,
 desc: unless it is a permanent wall.  Each monster caught in the beam that
 desc: is susceptible to rock remover takes 20+1d30 points of damage.
 
-spell:Sense Surroundings:20:8:35:60
+spell:Sense Surroundings:20:8:35:20
 effect:MAP_AREA
 dice:$Dd$S
 expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
