@@ -1536,6 +1536,11 @@ static bool describe_effect(textblock *tb, const struct object *obj,
 						projections[effect->subtype].desc);
 				break;
 			}
+			case EFINFO_TAP: {
+				strnfmt(desc, sizeof(desc), effect_desc(effect),
+						dice_string);
+				break;
+			}
 			case EFINFO_NONE: {
 				strnfmt(desc, sizeof(desc), effect_desc(effect));
 				break;

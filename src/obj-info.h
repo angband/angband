@@ -54,7 +54,8 @@ enum {
 	EFINFO_SHORT,
 	EFINFO_BOLT,
 	EFINFO_BOLTD,
-	EFINFO_TOUCH
+	EFINFO_TOUCH,
+	EFINFO_TAP
 };
 
 textblock *object_info(const struct object *obj, oinfo_detail_t mode);

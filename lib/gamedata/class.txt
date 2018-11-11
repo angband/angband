@@ -993,11 +993,11 @@ book:shadow book:town:[Dark Rituals]:5:shadow
 book-graphics:?:P
 book-properties:400:40:10 to 100
 
-spell:Banish Undead:7:5:50:8
-effect:PROJECT_LOS:AWAY_UNDEAD
-dice:15+1d$S
-expr:S:PLAYER_LEVEL:+ 0
-desc:Teleports each undead monster within line of sight a short distance.
+spell:Tap Unlife:7:0:50:8
+effect:TAP_UNLIFE
+dice:$Dd4
+expr:D:PLAYER_LEVEL:/ 10 + 2
+desc:Targets the nearest undead monster and damages it to gain player mana.
 
 spell:Noxious Fumes:10:4:40:10
 effect:SPHERE:POIS:4

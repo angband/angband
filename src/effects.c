@@ -4468,6 +4468,49 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 }
 
 /**
+ * Draw energy from a nearby undead
+ */
+bool effect_handler_TAP_UNLIFE(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+	int nx, ny;
+	struct monster *mon = NULL;
+	char m_name[80];
+	int drain = 0;
+	bool fear = false;
+	bool dead = false;
+
+	context->ident = true;
+
+	/* Closest living monster */
+	if (!target_set_closest(TARGET_KILL, monster_is_undead)) {
+		return false;
+	}
+	target_get(&nx, &ny);
+	mon = target_get_monster();
+
+	/* Hurt the monster */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
+	msg("You draw power from the %s.", m_name);
+	drain = MIN(mon->hp, amount);
+	dead = mon_take_hit(mon, amount, &fear, " is destroyed!");
+
+	/* Gain mana */
+	effect_simple(EF_RESTORE_MANA, context->origin, format("%d", drain), 0, 0,
+				  0, 0, 0, NULL);
+
+	/* Handle fear for surviving monsters */
+	if (!dead && monster_is_visible(mon)) {
+		message_pain(mon, amount);
+		if (fear) {
+			add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
+		}
+	}
+
+	return true;
+}
+
+/**
  * Perform a player shapechange
  */
 bool effect_handler_SHAPECHANGE(effect_handler_context_t *context)
