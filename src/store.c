@@ -1945,6 +1945,7 @@ void do_cmd_stash(struct command *cmd)
 	struct object dummy;
 	struct store *store = store_at(cave, player->py, player->px);
 	char o_name[120];
+	char label;
 
 	struct object *obj, *dropped;
 	bool none_left = false;
@@ -1975,6 +1976,9 @@ void do_cmd_stash(struct command *cmd)
 		return;
 	}
 
+	/* Get where the object is now */
+	label = gear_to_label(obj);
+
 	/* Now get the real item */
 	dropped = gear_object_for_use(obj, amt, false, &none_left);
 
@@ -1982,7 +1986,7 @@ void do_cmd_stash(struct command *cmd)
 	object_desc(o_name, sizeof(o_name), dropped, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg("You drop %s (%c).", o_name, gear_to_label(obj));
+	msg("You drop %s (%c).", o_name, label);
 
 	/* Handle stuff */
 	handle_stuff(player);
