@@ -589,7 +589,7 @@ int cmd_get_direction(struct command *cmd, const char *arg, int *dir,
 {
 	if (cmd_get_arg_direction(cmd, arg, dir) == CMD_OK) {
 		/* Validity check */
-		if (dir != DIR_UNKNOWN)
+		if (*dir != DIR_UNKNOWN)
 			return CMD_OK;
 	}
 
