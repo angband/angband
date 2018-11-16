@@ -260,7 +260,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	mon->race = lookup_monster(race_name);
 	if (!mon->race) {
 		note(format("Monster race %s no longer exists!", race_name));
-		return (-1);
+		return false;
 	}
 
 	/* Read the other information */
