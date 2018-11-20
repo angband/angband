@@ -241,6 +241,22 @@ struct monster_friends_base {
 	unsigned int number_side;
 };
 
+enum monster_group_role {
+	MON_GROUP_INDIVIDUAL,
+	MON_GROUP_SERVANT,
+	MON_GROUP_BODYGUARD,
+	MON_GROUP_MEMBER,
+	MON_GROUP_SUMMON
+};
+
+/**
+ * Monster group info
+ */
+struct monster_group_info {
+	int leader;
+	enum monster_group_role role;
+};
+
 /**
  * How monsters mimic
  */
@@ -323,34 +339,38 @@ struct monster_race {
  * of objects (if any) being carried by the monster (see above).
  */
 struct monster {
-	struct monster_race *race;
+	struct monster_race *race;			/* Monster's (current) race */
+	struct monster_race *original_race;	/* Changed monster's original race */
 	int midx;
 
 	struct loc grid;					/* Location on map */
 
-	s16b hp;			/* Current Hit points */
-	s16b maxhp;			/* Max Hit points */
+	s16b hp;							/* Current Hit points */
+	s16b maxhp;							/* Max Hit points */
 
-	s16b m_timed[MON_TMD_MAX]; /* Timed monster status effects */
+	s16b m_timed[MON_TMD_MAX];			/* Timed monster status effects */
 
-	byte mspeed;		/* Monster "speed" */
-	byte energy;		/* Monster "energy" */
+	byte mspeed;						/* Monster "speed" */
+	byte energy;						/* Monster "energy" */
 
-	byte cdis;			/* Current dis from player */
+	byte cdis;							/* Current dis from player */
 
-	bitflag mflag[MFLAG_SIZE];	/* Temporary monster flags */
+	bitflag mflag[MFLAG_SIZE];			/* Temporary monster flags */
 
-	struct object *mimicked_obj; /* Object this monster is mimicking */
-	struct object *held_obj;	/* Object being held (if any) */
+	struct object *mimicked_obj;		/* Object this monster is mimicking */
+	struct object *held_obj;			/* Object being held (if any) */
 
-	byte attr;  		/* attr last used for drawing monster */
+	byte attr;  						/* attr last used for drawing monster */
 
-	struct player_state known_pstate; /* Known player state */
+	struct player_state known_pstate;	/* Known player state */
 
-    struct target target;		/**< Monster target */
+    struct target target;				/* Monster target */
 
-    byte min_range;	/**< What is the closest we want to be?  Not saved */
-    byte best_range;	/**< How close do we want to be? Not saved */
+	struct monster_group_info group_info;/* Monster group details */
+	struct heatmap heatmap;				/* Monster location heatmap */
+
+    byte min_range;						/* What is the closest we want to be? */
+    byte best_range;					/* How close do we want to be? */
 };
 
 /** Variables **/
