@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-group.h"
 #include "monster.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
@@ -366,6 +367,9 @@ struct chunk *cave_new(int height, int width) {
 	c->mon_max = 1;
 	c->mon_current = -1;
 
+	c->monster_groups = mem_zalloc(z_info->level_monster_max *
+								   sizeof(struct monster_group*));
+
 	c->turn = turn;
 	return c;
 }
@@ -402,6 +406,7 @@ void cave_free(struct chunk *c) {
 	mem_free(c->feat_count);
 	mem_free(c->objects);
 	mem_free(c->monsters);
+	mem_free(c->monster_groups);
 	if (c->name)
 		string_free(c->name);
 	mem_free(c);

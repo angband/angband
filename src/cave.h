@@ -24,6 +24,7 @@
 
 struct player;
 struct monster;
+struct monster_group;
 
 extern const s16b ddd[9];
 extern const s16b ddx[10];
@@ -201,6 +202,8 @@ struct chunk {
 	u16b mon_max;
 	u16b mon_cnt;
 	int mon_current;
+
+	struct monster_group **monster_groups;
 
 	struct connector *join;
 };

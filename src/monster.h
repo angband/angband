@@ -253,7 +253,7 @@ enum monster_group_role {
  * Monster group info
  */
 struct monster_group_info {
-	int leader;
+	int index;
 	enum monster_group_role role;
 };
 

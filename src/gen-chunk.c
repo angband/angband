@@ -37,7 +37,7 @@ struct chunk **chunk_list;     /**< list of pointers to saved chunks */
 u16b chunk_list_max = 0;      /**< current max actual chunk index */
 
 /**
- * Write a the terrain info of a chunk to memory and return a pointer to it
+ * Write the terrain info of a chunk to memory and return a pointer to it
  *
  * \param c chunk being written
  * \return the memory location of the chunk
