@@ -18,15 +18,22 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "init.h"
 #include "mon-group.h"
 #include "monster.h"
 
+/**
+ * Allocate a new monster group
+ */
 struct monster_group *monster_group_new(void)
 {
 	struct monster_group *group = mem_zalloc(sizeof(struct monster_group));
 	return group;
 }
 
+/**
+ * Free a monster group
+ */
 void monster_group_free(struct chunk *c, struct monster_group *group)
 {
 	/* Free the member list */
@@ -46,4 +53,44 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
 	}
 
 	mem_free(group);
+}
+
+/**
+ * Get the next available monster group index
+ */
+int monster_group_index_new(struct chunk *c)
+{
+	int index;
+
+	for (index = 1; index < z_info->level_monster_max; index++) {
+		if (!(c->monster_groups[index])) return index;
+	}
+
+	/* Fail, very unlikely */
+	return 0;
+}
+
+/**
+ * Get the index of a monster group
+ */
+int monster_group_index(struct monster_group *group)
+{
+	return group->index;
+}
+
+/**
+ * Get the index of the leader of a monster group
+ */
+int monster_group_leader_idx(struct monster_group *group)
+{
+	return group->leader;
+}
+
+/**
+ * Get the leader of a monster group
+ */
+struct monster *monster_group_leader(struct chunk *c,
+									 struct monster_group *group)
+{
+	return cave_monster(c, group->leader);
 }
