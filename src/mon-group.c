@@ -79,6 +79,35 @@ int monster_group_index(struct monster_group *group)
 }
 
 /**
+ * Get a monster group from its index
+ */
+struct monster_group *monster_group_by_index(struct chunk *c, int index)
+{
+	return c->monster_groups[index];
+}
+
+/**
+ * Change the group record of the index of a monster
+ */
+bool monster_group_change_index(struct chunk *c, int new, int old)
+{
+	int index = cave_monster(c, old)->group_info.index;
+	struct monster_group *group = monster_group_by_index(c, index);
+	struct mon_group_list_entry *entry = group->member_list;
+
+	while (entry) {
+		if (entry->midx == old) {
+			entry->midx = new;
+			return true;
+		}
+		entry = entry->next;
+	}
+
+	return false;
+}
+
+
+/**
  * Get the index of the leader of a monster group
  */
 int monster_group_leader_idx(struct monster_group *group)

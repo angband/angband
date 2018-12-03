@@ -20,6 +20,7 @@
 #include "alloc.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-predicate.h"
@@ -218,6 +219,11 @@ static void compact_monsters_aux(int i1, int i2)
 
 	/* Update midx */
 	mon->midx = i2;
+
+	/* Update group */
+	if (!monster_group_change_index(cave, i2, i1)) {
+		quit("Bad monster group info!") ;
+	}
 
 	/* Repair objects being carried by monster */
 	for (obj = mon->held_obj; obj; obj = obj->next)

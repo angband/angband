@@ -35,6 +35,8 @@ struct monster_group *monster_group_new(void);
 void monster_group_free(struct chunk *c, struct monster_group *group);
 int monster_group_index_new(struct chunk *c);
 int monster_group_index(struct monster_group *group);
+struct monster_group *monster_group_by_index(struct chunk *c, int index);
+bool monster_group_change_index(struct chunk *c, int new, int old);
 int monster_group_leader_idx(struct monster_group *group);
 struct monster *monster_group_leader(struct chunk *c,
 									 struct monster_group *group);
