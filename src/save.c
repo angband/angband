@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-world.h"
 #include "init.h"
+#include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "monster.h"
@@ -206,6 +207,11 @@ static void wr_monster(const struct monster *mon)
 	struct object *dummy = object_new();
 
 	wr_string(mon->race->name);
+	if (mon->original_race) {
+		wr_string(mon->original_race->name);
+	} else {
+		wr_string("none");
+	}
 	wr_byte(mon->grid.y);
 	wr_byte(mon->grid.x);
 	wr_s16b(mon->hp);
@@ -239,6 +245,10 @@ static void wr_monster(const struct monster *mon)
 	}
 	wr_item(dummy);
 	object_delete(&dummy);
+
+	/* Write group info */
+	wr_u16b(mon->group_info.index);
+	wr_byte(mon->group_info.role);
 }
 
 /**
@@ -908,6 +918,35 @@ static void wr_monsters_aux(struct chunk *c)
 	}
 }
 
+static void wr_monster_groups_aux(struct chunk *c)
+{
+	int i;
+
+	for (i = 0; i < z_info->level_monster_max; i++) {
+		struct mon_group_list_entry *list_entry;
+
+		/* Only write actual groups */
+		if (!c->monster_groups[i]) {
+			wr_u16b(0);
+			continue;
+		}
+
+		/* Write group details */
+		wr_u16b(c->monster_groups[i]->index);
+		wr_u16b(c->monster_groups[i]->leader);
+		list_entry = c->monster_groups[i]->member_list;
+		while (list_entry) {
+			wr_u16b(list_entry->midx);
+			list_entry = list_entry->next;
+		}
+		wr_u16b(0);
+		wr_u16b(c->monster_groups[i]->home.y);
+		wr_u16b(c->monster_groups[i]->home.x);
+		wr_u16b(c->monster_groups[i]->destination.y);
+		wr_u16b(c->monster_groups[i]->destination.x);
+	}
+}
+
 static void wr_traps_aux(struct chunk *c)
 {
     int x, y;
@@ -967,6 +1006,11 @@ void wr_monsters(void)
 	wr_monsters_aux(player->cave);
 }
 
+void wr_monster_groups(void)
+{
+	wr_monster_groups_aux(cave);
+}
+
 void wr_traps(void)
 {
 	wr_traps_aux(cave);
@@ -997,6 +1041,9 @@ void wr_chunks(void)
 
 		/* Write the monsters */
 		wr_monsters_aux(c);
+
+		/* Write the monster groups */
+		wr_monster_groups_aux(c);
 
 		/* Write the traps */
 		wr_traps_aux(c);

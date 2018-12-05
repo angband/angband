@@ -28,6 +28,7 @@ struct monster_group {
 	int leader;
 	struct mon_group_list_entry *member_list;
 	struct loc home;
+	struct loc destination;
 	struct heatmap heatmap;
 };
 
