@@ -34,7 +34,9 @@ struct monster_group {
 
 struct monster_group *monster_group_new(void);
 void monster_group_free(struct chunk *c, struct monster_group *group);
+void monster_remove_from_group(struct chunk *c, struct monster *mon);
 int monster_group_index_new(struct chunk *c);
+void monster_group_start(struct chunk *c, struct monster *mon);
 int monster_group_index(struct monster_group *group);
 struct monster_group *monster_group_by_index(struct chunk *c, int index);
 bool monster_group_change_index(struct chunk *c, int new, int old);

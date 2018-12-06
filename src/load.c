@@ -1431,7 +1431,6 @@ static int rd_monster_groups_aux(struct chunk *c)
 		if (!tmp16u) continue;
 
 		/* Read group details */
-		rd_u16b(&tmp16u);
 		c->monster_groups[i]->index = tmp16u;
 
 		/* Check this is an actual monster */

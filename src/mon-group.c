@@ -56,6 +56,42 @@ void monster_group_free(struct chunk *c, struct monster_group *group)
 }
 
 /**
+ * Remove a monster from a monster group, deleting the group if it's empty
+ */
+void monster_remove_from_group(struct chunk *c, struct monster *mon)
+{
+	struct monster_group *group = c->monster_groups[mon->group_info.index];
+	struct mon_group_list_entry *list_entry = group->member_list;
+
+	/* Check if the first entry is the one we want */
+	if (list_entry->midx == mon->midx) {
+		if (!list_entry->next) {
+			/* If it's the only monster, remove the group */
+			monster_group_free(c, group);
+			c->monster_groups[mon->group_info.index] = NULL;
+			return;
+		} else {
+			/* Otherwise remove the first entry */
+			group->member_list = list_entry->next;
+			mem_free(list_entry);
+			return;
+		}
+	}
+
+	/* We have to look further down the member list */
+	while (list_entry) {
+		if (list_entry->next->midx == mon->midx) {
+			list_entry->next = list_entry->next->next;
+			mem_free(list_entry);
+			return;
+		}
+	}
+
+	/* Shouldn't get here */
+	quit("Deleted monster not found in group");
+}
+
+/**
  * Get the next available monster group index
  */
 int monster_group_index_new(struct chunk *c)
@@ -68,6 +104,26 @@ int monster_group_index_new(struct chunk *c)
 
 	/* Fail, very unlikely */
 	return 0;
+}
+
+/**
+ * Make a monster group for a single monster
+ */
+void monster_group_start(struct chunk *c, struct monster *mon)
+{
+	int index = monster_group_index_new(c);
+	struct monster_group *group = monster_group_new();
+
+	/* Put the group in the group list */
+	c->monster_groups[index] = group;
+
+	/* Fill out the group */
+	group->index = index;
+	group->member_list = mem_zalloc(sizeof(struct mon_group_list_entry));
+	group->member_list->midx = mon->midx;
+
+	/* Write the index to the monster's group info */
+	mon->group_info.index = index;
 }
 
 /**

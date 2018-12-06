@@ -149,8 +149,9 @@ void delete_monster_idx(int m_idx)
 	if (player->upkeep->health_who == mon)
 		health_track(player->upkeep, NULL);
 
-	/* Monster is gone */
+	/* Monster is gone from square and group */
 	square_set_mon(cave, mon->grid, 0);
+	monster_remove_from_group(cave, mon);
 
 	/* Delete objects */
 	struct object *obj = mon->held_obj;
@@ -372,8 +373,9 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 		/* Reduce the racial counter */
 		mon->race->cur_num--;
 
-		/* Monster is gone from square */
+		/* Monster is gone from square and group*/
 		square_set_mon(c, mon->grid, 0);
+		monster_remove_from_group(c, mon);
 
 		/* Wipe the Monster */
 		memset(mon, 0, sizeof(struct monster));
@@ -868,6 +870,9 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	assert(square_monster(c, grid) == new_mon);
 
 	update_mon(new_mon, c, true);
+
+	/* Give the monster a group (one each for now - NRM) */
+	monster_group_start(c, new_mon);
 
 	/* Hack -- Count the number of "reproducers" */
 	if (rf_has(new_mon->race->flags, RF_MULTIPLY)) num_repro++;
