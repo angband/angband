@@ -63,6 +63,8 @@ struct angband_constants
 	u16b repro_monster_max;		/**< Maximum breeders on a level */
 	u16b ood_monster_chance;	/**< Chance of OoD monster is 1 in this */
 	u16b ood_monster_amount;	/**< Max number of levels OoD */
+	u16b monster_group_max;		/**< Maximum size of a group */
+	u16b monster_group_dist;	/**< Max dist of a group from a related group */
 
 	/* Monster gameplay constants, read from constants.txt */
 	u16b glyph_hardness;		/**< How hard for a monster to break a glyph */

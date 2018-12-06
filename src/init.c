@@ -467,6 +467,10 @@ static enum parser_error parse_constants_mon_gen(struct parser *p) {
 		z->ood_monster_chance = value;
 	else if (streq(label, "ood-amount"))
 		z->ood_monster_amount = value;
+	else if (streq(label, "group-max"))
+		z->monster_group_max = value;
+	else if (streq(label, "group-dist"))
+		z->monster_group_dist = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

@@ -36,6 +36,10 @@
 
 s16b num_repro;
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster allocation tables
+ * ------------------------------------------------------------------------ */
 static s16b alloc_race_size;
 static struct alloc_entry *alloc_race_table;
 
@@ -122,6 +126,10 @@ static void cleanup_race_allocs(void) {
 	mem_free(alloc_race_table);
 }
 
+/**
+ * ------------------------------------------------------------------------
+ * Deleting of monsters and monster list handling
+ * ------------------------------------------------------------------------ */
 /**
  * Deletes a monster by index.
  *
@@ -398,6 +406,10 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 }
 
 /**
+ * ------------------------------------------------------------------------
+ * Choosing a monster and preparing a placce for it in the monster list
+ * ------------------------------------------------------------------------ */
+/**
  * Returns the index of a "free" monster, or 0 if no slot is available.
  *
  * This routine should almost never fail, but it *can* happen.
@@ -604,6 +616,11 @@ struct monster_race *get_mon_num(int level)
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * Monster creation utilities
+ * Creating objects for monsters to carry or mimic, calculating hitpoints
+ * ------------------------------------------------------------------------ */
 /**
  * Return the number of things dropped by a monster.
  *
@@ -830,12 +847,48 @@ void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
 }
 
 /**
+ * Calculates hp for a monster. This function assumes that the Rand_normal
+ * function has limits of +/- 4x std_dev. If that changes, this function
+ * will become inaccurate.
+ *
+ * \param race is the race of the monster in question.
+ * \param hp_aspect is the hp calc we want (min, max, avg, random).
+ */
+int mon_hp(const struct monster_race *race, aspect hp_aspect)
+{
+	int std_dev = (((race->avg_hp * 10) / 8) + 5) / 10;
+
+	if (race->avg_hp > 1) std_dev++;
+
+	switch (hp_aspect) {
+		case MINIMISE:
+			return (race->avg_hp - (4 * std_dev));
+		case MAXIMISE:
+		case EXTREMIFY:
+			return (race->avg_hp + (4 * std_dev));
+		case AVERAGE:
+			return race->avg_hp;
+		case RANDOMISE:
+			return Rand_normal(race->avg_hp, std_dev);
+	}
+
+	assert(0 && "Should never reach here");
+	return 0;
+}
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Placement of a single monster
+ * These are the functions that actually put the monster into the world
+ * ------------------------------------------------------------------------ */
+/**
  * Attempts to place a copy of the given monster at the given position in
  * the dungeon.
  *
  * All of the monster placement routines eventually call this function. This
  * is what actually puts the monster in the dungeon (i.e., it notifies the cave
- * and sets the monsters position). The dungeon loading code also calls this
+ * and sets the monster's position). The dungeon loading code also calls this
  * function directly.
  *
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
@@ -892,37 +945,6 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	/* Result */
 	return m_idx;
 }
-
-/**
- * Calculates hp for a monster. This function assumes that the Rand_normal
- * function has limits of +/- 4x std_dev. If that changes, this function
- * will become inaccurate.
- *
- * \param race is the race of the monster in question.
- * \param hp_aspect is the hp calc we want (min, max, avg, random).
- */
-int mon_hp(const struct monster_race *race, aspect hp_aspect)
-{
-	int std_dev = (((race->avg_hp * 10) / 8) + 5) / 10;
-
-	if (race->avg_hp > 1) std_dev++;
-
-	switch (hp_aspect) {
-		case MINIMISE:
-			return (race->avg_hp - (4 * std_dev));
-		case MAXIMISE:
-		case EXTREMIFY:
-			return (race->avg_hp + (4 * std_dev));
-		case AVERAGE:
-			return race->avg_hp;
-		case RANDOMISE:
-			return Rand_normal(race->avg_hp, std_dev);
-	}
-
-	assert(0 && "Should never reach here");
-	return 0;
-}
-
 
 /**
  * Attempts to place a monster of the given race at the given location.
@@ -1065,6 +1087,10 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 }
 
 
+/**
+ * ------------------------------------------------------------------------
+ * More complex monster placement routines
+ * ------------------------------------------------------------------------ */
 /*
  * Maximum size of a group of monsters
  */
@@ -1119,9 +1145,6 @@ static bool place_new_monster_group(struct chunk *c, struct loc grid,
 	/* Success */
 	return (true);
 }
-
-/* Maximum distance from center for a group of monsters */
-#define GROUP_DISTANCE 5
 
 static struct monster_base *place_monster_base = NULL;
 
@@ -1192,7 +1215,7 @@ bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 
 			/* Find a nearby place to put the other groups */
 			for (j = 0; j < 50; j++) {
-				scatter(c, &new, grid, GROUP_DISTANCE, false);
+				scatter(c, &new, grid, z_info->monster_group_dist, false);
 				if (square_isopen(c, new)) {
 					break;
 				}
