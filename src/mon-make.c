@@ -1091,12 +1091,6 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
  * ------------------------------------------------------------------------
  * More complex monster placement routines
  * ------------------------------------------------------------------------ */
-/*
- * Maximum size of a group of monsters
- */
-#define GROUP_MAX	25
-
-
 /**
  * Attempts to place a group of monsters of race `r_idx` around
  * the given location. The number of monsters to place is `total`.
@@ -1116,9 +1110,12 @@ static bool place_new_monster_group(struct chunk *c, struct loc grid,
 	int loc_num;
 
 	/* Locations of the placed monsters */
-	struct loc loc_list[GROUP_MAX];
+	struct loc *loc_list = mem_zalloc(sizeof(struct loc) *
+									  z_info->monster_group_max);
 
+	/* Sanity and bounds check */
 	assert(race);
+	total = MIN(total, z_info->monster_group_max);
 
 	/* Start on the monster */
 	loc_num = 1;
@@ -1143,6 +1140,7 @@ static bool place_new_monster_group(struct chunk *c, struct loc grid,
 	}
 
 	/* Success */
+	mem_free(loc_list);
 	return (true);
 }
 
