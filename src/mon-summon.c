@@ -400,6 +400,7 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	struct loc near;
 	struct monster *mon;
 	struct monster_race *race;
+	struct monster_group_info info = { 0, 0 };
 
 	/* Look for a location, allow up to 4 squares away */
 	for (i = 0; i < 60; ++i) {
@@ -445,8 +446,15 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	/* Handle failure */
 	if (!race) return (0);
 
+	/* Put summons in the group of any summoner */
+	if (cave->mon_current > 0) {
+		info.index = cave_monster(cave, cave->mon_current)->group_info.index;
+		info.role = MON_GROUP_SUMMON;
+	}
+
 	/* Attempt to place the monster (awake, don't allow groups) */
-	if (!place_new_monster(cave, near, race, false, false, ORIGIN_DROP_SUMMON)){
+	if (!place_new_monster(cave, near, race, false, false, info,
+						   ORIGIN_DROP_SUMMON)) {
 		return (0);
 	}
 

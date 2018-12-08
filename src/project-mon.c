@@ -1183,13 +1183,15 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 		/* Handle polymorph */
 		if (new != old) {
+			struct monster_group_info info = {0, 0 };
+
 			/* Report the polymorph before changing the monster */
 			hurt_msg = MON_MSG_CHANGE;
 			add_monster_message(mon, hurt_msg, false);
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(m_idx);
-			place_new_monster(cave, grid, new, false, false,
+			place_new_monster(cave, grid, new, false, false, info,
 							  ORIGIN_DROP_POLY);
 			context->mon = square_monster(cave, grid);
 		} else {

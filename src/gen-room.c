@@ -35,6 +35,7 @@
 #include "game-event.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-group.h"
 #include "mon-make.h"
 #include "mon-spell.h"
 #include "obj-tval.h"
@@ -2218,6 +2219,7 @@ bool build_nest(struct chunk *c, struct loc centre, int rating)
 	int size_vary = randint0(4);
 	int height = 9;
 	int width = 11 + 2 * size_vary;
+	struct monster_group_info info = {0, 0};
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((centre.y >= c->height) || (centre.x >= c->width)) {
@@ -2289,7 +2291,8 @@ bool build_nest(struct chunk *c, struct loc centre, int rating)
 		for (grid.x = x1; grid.x <= x2; grid.x++) {
 			/* Figure out what monster is being used, and place that monster */
 			struct monster_race *race = what[randint0(64)];
-			place_new_monster(c, grid, race, false, false, ORIGIN_DROP_PIT);
+			place_new_monster(c, grid, race, false, false, info,
+							  ORIGIN_DROP_PIT);
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
@@ -2344,6 +2347,8 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 	int alloc_obj;
 	int height = 9;
 	int width = 15;
+	int group_index = 0;
+	struct monster_group_info info = {0, 0};
 
 	/* Find and reserve some space in the dungeon.  Get center of room. */
 	if ((centre.y >= c->height) || (centre.x >= c->width)) {
@@ -2427,29 +2432,34 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 	/* Increase the level rating */
 	c->mon_rating += (3 + dun->pit_type->ave / 20);
 
+	/* Get a group ID */
+	group_index = monster_group_index_new(c);
+
 	/* Center monster */
-	place_new_monster(c, centre, what[7], false, false, ORIGIN_DROP_PIT);
+	info.index = group_index;
+	info.role = MON_GROUP_LEADER;
+	place_new_monster(c, centre, what[7], false, false, info, ORIGIN_DROP_PIT);
 
 	/* Top and bottom rows (middle) */
 	for (x = centre.x - 3; x <= centre.x + 3; x++) {
-		place_new_monster(c, loc(x, centre.y - 2), what[0], false, false,
+		place_new_monster(c, loc(x, centre.y - 2), what[0], false, false, info,
 						  ORIGIN_DROP_PIT);
-		place_new_monster(c, loc(x, centre.y + 2), what[0], false, false,
+		place_new_monster(c, loc(x, centre.y + 2), what[0], false, false, info,
 						  ORIGIN_DROP_PIT);
 	}
     
 	/* Corners */
 	for (x = centre.x - 5; x <= centre.x - 4; x++) {
-		place_new_monster(c, loc(x, centre.y - 2), what[1], false, false,
+		place_new_monster(c, loc(x, centre.y - 2), what[1], false, false, info,
 						  ORIGIN_DROP_PIT);
-		place_new_monster(c, loc(x, centre.y + 2), what[1], false, false,
+		place_new_monster(c, loc(x, centre.y + 2), what[1], false, false, info,
 						  ORIGIN_DROP_PIT);
 	}
     
 	for (x = centre.x + 4; x <= centre.x + 5; x++) {
-		place_new_monster(c, loc(x, centre.y - 2), what[1], false, false,
+		place_new_monster(c, loc(x, centre.y - 2), what[1], false, false, info,
 						  ORIGIN_DROP_PIT);
-		place_new_monster(c, loc(x, centre.y + 2), what[1], false, false,
+		place_new_monster(c, loc(x, centre.y + 2), what[1], false, false, info,
 						  ORIGIN_DROP_PIT);
 	}
     
@@ -2457,50 +2467,51 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 
 	/* Middle columns */
 	for (y = centre.y - 1; y <= centre.y + 1; y++) {
-		place_new_monster(c, loc(centre.x - 5, y), what[0], false, false,
+		place_new_monster(c, loc(centre.x - 5, y), what[0], false, false, info,
 						  ORIGIN_DROP_PIT);
-		place_new_monster(c, loc(centre.x + 5, y), what[0], false, false,
-						  ORIGIN_DROP_PIT);
-
-		place_new_monster(c, loc(centre.x - 4, y), what[1], false, false,
-						  ORIGIN_DROP_PIT);
-		place_new_monster(c, loc(centre.x + 4, y), what[1], false, false,
+		place_new_monster(c, loc(centre.x + 5, y), what[0], false, false, info,
 						  ORIGIN_DROP_PIT);
 
-		place_new_monster(c, loc(centre.x - 3, y), what[2], false, false,
+		place_new_monster(c, loc(centre.x - 4, y), what[1], false, false, info,
 						  ORIGIN_DROP_PIT);
-		place_new_monster(c, loc(centre.x + 3, y), what[2], false, false,
+		place_new_monster(c, loc(centre.x + 4, y), what[1], false, false, info,
 						  ORIGIN_DROP_PIT);
 
-		place_new_monster(c, loc(centre.x - 2, y), what[3], false, false,
+		place_new_monster(c, loc(centre.x - 3, y), what[2], false, false, info,
 						  ORIGIN_DROP_PIT);
-		place_new_monster(c, loc(centre.x + 2, y), what[3], false, false,
+		place_new_monster(c, loc(centre.x + 3, y), what[2], false, false, info,
+						  ORIGIN_DROP_PIT);
+
+		place_new_monster(c, loc(centre.x - 2, y), what[3], false, false, info,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(centre.x + 2, y), what[3], false, false, info,
 						  ORIGIN_DROP_PIT);
 	}
     
 	/* Corners around the middle monster */
 	place_new_monster(c, loc(centre.x - 1, centre.y - 1), what[4], false, false,
-					  ORIGIN_DROP_PIT);
+					  info, ORIGIN_DROP_PIT);
 	place_new_monster(c, loc(centre.x + 1, centre.y - 1), what[4], false, false,
-					  ORIGIN_DROP_PIT);
-	place_new_monster(c, loc(centre.x - 1, centre.y + 1),  what[4], false,false,
-					  ORIGIN_DROP_PIT);
+					  info, ORIGIN_DROP_PIT);
+	place_new_monster(c, loc(centre.x - 1, centre.y + 1), what[4], false, false,
+					  info, ORIGIN_DROP_PIT);
 	place_new_monster(c, loc(centre.x + 1, centre.y + 1), what[4], false, false,
-					  ORIGIN_DROP_PIT);
+					  info, ORIGIN_DROP_PIT);
 
 	/* Above/Below the center monster */
 	for (x = centre.x - 1; x <= centre.x + 1; x++) {
-		place_new_monster(c, loc(x, centre.y + 1), what[5], false, false,
+		place_new_monster(c, loc(x, centre.y + 1), what[5], false, false, info,
 						  ORIGIN_DROP_PIT);
-		place_new_monster(c, loc(x, centre.y - 1), what[5], false, false,
+		place_new_monster(c, loc(x, centre.y - 1), what[5], false, false, info,
 						  ORIGIN_DROP_PIT);
 	}
 
 	/* Next to the center monster */
 	place_new_monster(c, loc(centre.x + 1, centre.y), what[6], false, false,
-					  ORIGIN_DROP_PIT);
+					  info, ORIGIN_DROP_PIT);
 	place_new_monster(c, loc(centre.x - 1, centre.y), what[6], false, false,
-					  ORIGIN_DROP_PIT);
+					  info, ORIGIN_DROP_PIT);
+
 
 	/* Place some objects */
 	for (y = centre.y - 2; y <= centre.y + 2; y++) {

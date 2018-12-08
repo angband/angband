@@ -1248,7 +1248,7 @@ bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
  */
 bool place_new_monster(struct chunk *c, struct loc grid,
 					   struct monster_race *race, bool sleep, bool group_ok,
-					   byte origin)
+					   struct monster_group_info group_info, byte origin)
 {
 	struct monster_friends *friends;
 	struct monster_friends_base *friends_base;
@@ -1328,10 +1328,13 @@ bool place_new_monster(struct chunk *c, struct loc grid,
 bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 							bool sleep, bool group_okay, byte origin)
 {
-	/* Pick a monster race */
+	/* Pick a monster race, no specified group */
 	struct monster_race *race = get_mon_num(depth);
+	struct monster_group_info info = { 0, 0 };
+
 	if (race) {
-		return place_new_monster(c, grid, race, sleep, group_okay, origin);
+		return place_new_monster(c, grid, race, sleep, group_okay, info,
+								 origin);
 	} else {
 		return false;
 	}

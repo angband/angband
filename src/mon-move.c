@@ -795,6 +795,7 @@ bool multiply_monster(struct chunk *c, const struct monster *mon)
 	struct loc grid;
 	int i;
 	bool result = false;
+	struct monster_group_info info = { 0, 0 };
 
 	/* Try up to 18 times */
 	for (i = 0; i < 18; i++) {
@@ -807,7 +808,7 @@ bool multiply_monster(struct chunk *c, const struct monster *mon)
 		if (!square_isempty(c, grid)) continue;
 
 		/* Create a new monster (awake, no groups) */
-		result = place_new_monster(c, grid, mon->race, false, false,
+		result = place_new_monster(c, grid, mon->race, false, false, info,
 								   ORIGIN_DROP_BREED);
 
 		/* Done */
