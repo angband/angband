@@ -107,12 +107,34 @@ int monster_group_index_new(struct chunk *c)
 }
 
 /**
+ * Add a monster to an existing monster group
+ */
+void monster_add_to_group(struct chunk *c, struct monster *mon,
+						  struct monster_group *group)
+{
+	struct mon_group_list_entry *list_entry;
+
+	/* Confirm we're adding to the right group */
+	assert(mon->group_info.index == group->index);
+
+	/* Make a new list entry and add it to the start of the list */
+	list_entry = mem_zalloc(sizeof(struct mon_group_list_entry));
+	list_entry->midx = mon->midx;
+	list_entry->next = group->member_list;
+	group->member_list = list_entry;
+}
+
+
+/**
  * Make a monster group for a single monster
  */
 void monster_group_start(struct chunk *c, struct monster *mon)
 {
-	int index = monster_group_index_new(c);
 	struct monster_group *group = monster_group_new();
+
+	/* Use the monster's group index */
+	int index = mon->group_info.index;
+	assert(index);
 
 	/* Put the group in the group list */
 	c->monster_groups[index] = group;

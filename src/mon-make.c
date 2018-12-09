@@ -902,6 +902,7 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 {
 	s16b m_idx;
 	struct monster *new_mon;
+	struct monster_group *group;
 
 	assert(square_in_bounds(c, grid));
 	assert(!square_monster(c, grid));
@@ -922,10 +923,16 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	new_mon->grid = grid;
 	assert(square_monster(c, grid) == new_mon);
 
-	update_mon(new_mon, c, true);
+	/* Assign monster to its monster group, creating the group if necessary */
+	group = monster_group_by_index(c, new_mon->group_info.index);
+	if (group) {
+		monster_add_to_group(c, new_mon, group);
+	} else {
+		monster_group_start(c, new_mon);
+		c->monster_groups[new_mon->group_info.index]->leader = new_mon->midx;
+	}
 
-	/* Give the monster a group (one each for now - NRM) */
-	monster_group_start(c, new_mon);
+	update_mon(new_mon, c, true);
 
 	/* Hack -- Count the number of "reproducers" */
 	if (rf_has(new_mon->race->flags, RF_MULTIPLY)) num_repro++;
@@ -970,6 +977,7 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
  */
 static bool place_new_monster_one(struct chunk *c, struct loc grid,
 								  struct monster_race *race, bool sleep,
+								  struct monster_group_info group_info,
 								  byte origin)
 {
 	int i;
@@ -1078,6 +1086,10 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	if (rf_has(race->flags, RF_ATTR_RAND))
 		mon->attr = randint1(BASIC_COLORS - 1);
 
+	/* Set the group info */
+	mon->group_info.index = group_info.index;
+	mon->group_info.role = group_info.role;
+
 	/* Place the monster in the dungeon */
 	if (!place_monster(c, grid, mon, origin))
 		return (false);
@@ -1103,6 +1115,7 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
  */
 static bool place_new_monster_group(struct chunk *c, struct loc grid,
 									struct monster_race *race, bool sleep,
+									struct monster_group_info group_info,
 									int total, byte origin)
 {
 	int n, i;
@@ -1131,7 +1144,8 @@ static bool place_new_monster_group(struct chunk *c, struct loc grid,
 			if (!square_isempty(c, try)) continue;
 
 			/* Attempt to place another monster */
-			if (place_new_monster_one(c, try, race, sleep, origin)){
+			if (place_new_monster_one(c, try, race, sleep, group_info,
+									  origin)) {
 				/* Add it to the "hack" set */
 				loc_list[loc_num] = try;
 				loc_num++;
@@ -1170,7 +1184,7 @@ static bool place_monster_base_okay(struct monster_race *race)
  */
 bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 					struct monster_race *friends_race, int total, bool sleep,
-					byte origin)
+					struct monster_group_info group_info, byte origin)
 {
 	int extra_chance;
 
@@ -1206,7 +1220,8 @@ bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 	if (total > 0) {
 		/* Handle friends same as original monster */
 		if (race->ridx == friends_race->ridx) {
-			return place_new_monster_group(c, grid, race, sleep, total, origin);
+			return place_new_monster_group(c, grid, race, sleep, group_info,
+										   total, origin);
 		} else {
 			int j;
 			struct loc new;
@@ -1221,10 +1236,11 @@ bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 
 			/* Place the monsters */
 			bool success = place_new_monster_one(c, new, friends_race, sleep,
-												 origin);
+												 group_info, origin);
 			if (total > 1)
-				success = place_new_monster_group(c, new, friends_race, sleep,
-												  total, origin);
+				success = place_new_monster_group(c, new, friends_race,
+												  sleep, group_info, total,
+												  origin);
 
 			return success;
 		}
@@ -1257,8 +1273,16 @@ bool place_new_monster(struct chunk *c, struct loc grid,
 	assert(c);
 	assert(race);
 
+	/* If we don't have a group index already, make one; our first monster
+	 * will be the leader */
+	if (!group_info.index) {
+		group_info.index = monster_group_index_new(c);
+	}
+
 	/* Place one monster, or fail */
-	if (!place_new_monster_one(c, grid, race, sleep, origin)) return (false);
+	if (!place_new_monster_one(c, grid, race, sleep, group_info, origin)) {
+		return (false);
+	}
 
 	/* We're done unless the group flag is set */
 	if (!group_ok) return (true);
@@ -1271,7 +1295,12 @@ bool place_new_monster(struct chunk *c, struct loc grid,
 		/* Calculate the base number of monsters to place */
 		total = damroll(friends->number_dice, friends->number_side);
 
-		place_friends(c, grid, race, friends->race, total, sleep, origin);
+		/* Set group role */
+		group_info.role = friends->role;
+
+		/* Place them */
+		place_friends(c, grid, race, friends->race, total, sleep, group_info,
+					  origin);
 
 	}
 
@@ -1301,7 +1330,12 @@ bool place_new_monster(struct chunk *c, struct loc grid,
 		/* Handle failure */
 		if (!friends_race) break;
 
-		place_friends(c, grid, race, friends_race, total, sleep, origin);
+		/* Set group role */
+		group_info.role = friends_base->role;
+
+		/* Place them */
+		place_friends(c, grid, race, friends_race, total, sleep, group_info,
+					  origin);
 	}
 
 	/* Success */

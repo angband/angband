@@ -219,7 +219,6 @@ struct monster_drop {
 };
 
 enum monster_group_role {
-	MON_GROUP_INDIVIDUAL,
 	MON_GROUP_LEADER,
 	MON_GROUP_SERVANT,
 	MON_GROUP_BODYGUARD,
