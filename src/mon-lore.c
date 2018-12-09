@@ -1711,8 +1711,21 @@ void write_lore_entries(ang_file *fff)
 			struct monster_friends *f = lore->friends;
 
 			while (f) {
-				file_putf(fff, "friends:%d:%dd%d:%s\n", f->percent_chance,
-						  f->number_dice, f->number_side, f->race->name);
+				if (f->role == MON_GROUP_MEMBER) {
+					file_putf(fff, "friends:%d:%dd%d:%s\n", f->percent_chance,
+							  f->number_dice, f->number_side, f->race->name);
+				} else {
+					char *role_name;
+					if (f->role == MON_GROUP_SERVANT) {
+						role_name = string_make("servant");
+					} else if (f->role == MON_GROUP_BODYGUARD) {
+						role_name = string_make("bodyguard");
+					}
+					file_putf(fff, "friends:%d:%dd%d:%s:%s\n",
+							  f->percent_chance, f->number_dice,
+							  f->number_side, f->race->name, role_name);
+					string_free(role_name);
+				}
 				f = f->next;
 			}
 		}
@@ -1722,8 +1735,22 @@ void write_lore_entries(ang_file *fff)
 			struct monster_friends_base *b = lore->friends_base;
 
 			while (b) {
-				file_putf(fff, "friends-base:%d:%dd%d:%s\n", b->percent_chance,
-						  b->number_dice, b->number_side, b->base->name);
+				if (b->role == MON_GROUP_MEMBER) {
+					file_putf(fff, "friends-base:%d:%dd%d:%s\n",
+							  b->percent_chance, b->number_dice,
+							  b->number_side, b->base->name);
+				} else {
+					char *role_name;
+					if (b->role == MON_GROUP_SERVANT) {
+						role_name = string_make("servant");
+					} else if (b->role == MON_GROUP_BODYGUARD) {
+						role_name = string_make("bodyguard");
+					}
+					file_putf(fff, "friends-base:%d:%dd%d:%s:%s\n",
+							  b->percent_chance, b->number_dice,
+							  b->number_side, b->base->name, role_name);
+					string_free(role_name);
+				}
 				b = b->next;
 			}
 		}

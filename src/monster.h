@@ -218,6 +218,15 @@ struct monster_drop {
 	unsigned int max;
 };
 
+enum monster_group_role {
+	MON_GROUP_INDIVIDUAL,
+	MON_GROUP_LEADER,
+	MON_GROUP_SERVANT,
+	MON_GROUP_BODYGUARD,
+	MON_GROUP_MEMBER,
+	MON_GROUP_SUMMON
+};
+
 /**
  * Monster friends (specific monster)
  */
@@ -225,6 +234,7 @@ struct monster_friends {
 	struct monster_friends *next;
 	char *name;
 	struct monster_race *race;
+	enum monster_group_role role;
 	unsigned int percent_chance;
 	unsigned int number_dice;
 	unsigned int number_side;
@@ -236,18 +246,10 @@ struct monster_friends {
 struct monster_friends_base {
 	struct monster_friends_base *next;
 	struct monster_base *base;
+	enum monster_group_role role;
 	unsigned int percent_chance;
 	unsigned int number_dice;
 	unsigned int number_side;
-};
-
-enum monster_group_role {
-	MON_GROUP_INDIVIDUAL,
-	MON_GROUP_LEADER,
-	MON_GROUP_SERVANT,
-	MON_GROUP_BODYGUARD,
-	MON_GROUP_MEMBER,
-	MON_GROUP_SUMMON
 };
 
 /**
