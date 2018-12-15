@@ -1013,10 +1013,10 @@ static bool monster_scared_by_damage(struct monster *mon, int dam)
 		/* Cure a little or all fear */
 		if (tmp < current_fear) {
 			/* Reduce fear */
-			mon_dec_timed(mon, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE, false);
+			mon_dec_timed(mon, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE);
 		} else {
 			/* Cure fear */
-			mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+			mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 			return false;
 		}
 	} else if (!rf_has(mon->race->flags, RF_NO_FEAR)) {
@@ -1039,7 +1039,7 @@ static bool monster_scared_by_damage(struct monster *mon, int dam)
 
 			/* Note fear */
 			mon_inc_timed(mon, MON_TMD_FEAR, time,
-						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, false);
+						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL);
 			return true;
 		}
 	}
@@ -1069,8 +1069,8 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Wake it up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
-	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY, false);
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
 
 	/* Become aware of its presence */
 	if (monster_is_camouflaged(mon))
@@ -1209,8 +1209,7 @@ void steal_monster_item(struct monster *mon, int midx)
 		if (!obj) {
 			msg("You can find nothing to steal from %s.", m_name);
 			if (one_in_(3)) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
-								false);
+				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 			}
 			return;
 		}
@@ -1248,7 +1247,7 @@ void steal_monster_item(struct monster *mon, int midx)
 			}
 
 			/* Monster wakes a little */
-			mon_dec_timed(mon, MON_TMD_SLEEP, wake, MON_TMD_FLG_NOTIFY, false);
+			mon_dec_timed(mon, MON_TMD_SLEEP, wake, MON_TMD_FLG_NOTIFY);
 		} else if (monster_reaction / 2 < steal_skill) {
 			/* Decent attempt, at least */
 			char o_name[80];
@@ -1262,10 +1261,10 @@ void steal_monster_item(struct monster *mon, int midx)
 			}
 			msg("You fail to steal %s from %s.", o_name, m_name);
 			/* Monster wakes */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, false);
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
 		} else {
 			/* Bungled it */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, false);
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
 			monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 			msg("%s cries out in anger!", m_name);
 			effect_simple(EF_WAKE, source_monster(mon->midx), "", 0, 0, 0, 0, 0,

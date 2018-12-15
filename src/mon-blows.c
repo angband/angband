@@ -321,7 +321,7 @@ static bool monster_melee_monster(melee_effect_handler_context_t *context,
 		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Wake the monster up */
-	mon_clear_timed(t_mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	mon_clear_timed(t_mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 	/* Hurt the monster */
 	t_mon->hp -= dam;
@@ -361,7 +361,7 @@ static bool monster_melee_monster(melee_effect_handler_context_t *context,
 			int timer = randint1(10) + (((dam >= t_mon->hp) && (percentage > 7))
 										? 20 : ((11 - percentage) * 5));
 			mon_inc_timed(t_mon, MON_TMD_FEAR, timer,
-						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, false);
+						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL);
 		}
 	}
 
@@ -512,7 +512,7 @@ static void melee_effect_timed(melee_effect_handler_context_t *context,
 			}
 		}
 		if (mon_tmd_effect >= 0) {
-			mon_inc_timed(context->t_mon, mon_tmd_effect, amount, 0, false);
+			mon_inc_timed(context->t_mon, mon_tmd_effect, amount, 0);
 			context->obvious = true;
 		}
 	} else if (save && randint0(100) < context->p->state.skills[SKILL_SAVE]) {

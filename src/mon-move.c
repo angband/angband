@@ -1319,7 +1319,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 
 	/* Hack -- get "bold" if out of options */
 	if (!did_something && mon->m_timed[MON_TMD_FEAR])
-		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, false);
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
 
 	/* If we see an unaware monster do something, become aware of it */
 	if (did_something && monster_is_camouflaged(mon))
@@ -1381,7 +1381,7 @@ static void monster_reduce_sleep(struct chunk *c, struct monster *mon)
 		char m_name[80];
 
 		/* Wake the monster */
-		mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+		mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 		/* Get the monster name */
 		monster_desc(m_name, sizeof(m_name), mon,
@@ -1409,8 +1409,7 @@ static void monster_reduce_sleep(struct chunk *c, struct monster *mon)
 		}
 
 		/* Monster wakes up a bit */
-		mon_dec_timed(mon, MON_TMD_SLEEP, sleep_reduction, MON_TMD_FLG_NOTIFY,
-					  false);
+		mon_dec_timed(mon, MON_TMD_SLEEP, sleep_reduction, MON_TMD_FLG_NOTIFY);
 
 		/* Update knowledge */
 		if (monster_is_obvious(mon)) {
@@ -1437,27 +1436,27 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 	}
 
 	if (mon->m_timed[MON_TMD_FAST])
-		mon_dec_timed(mon, MON_TMD_FAST, 1, 0, false);
+		mon_dec_timed(mon, MON_TMD_FAST, 1, 0);
 
 	if (mon->m_timed[MON_TMD_SLOW])
-		mon_dec_timed(mon, MON_TMD_SLOW, 1, 0, false);
+		mon_dec_timed(mon, MON_TMD_SLOW, 1, 0);
 
 	if (mon->m_timed[MON_TMD_HOLD])
-		mon_dec_timed(mon, MON_TMD_HOLD, 1, 0, false);
+		mon_dec_timed(mon, MON_TMD_HOLD, 1, 0);
 
 	if (mon->m_timed[MON_TMD_DISEN])
-		mon_dec_timed(mon, MON_TMD_DISEN, 1, 0, false);
+		mon_dec_timed(mon, MON_TMD_DISEN, 1, 0);
 
 	if (mon->m_timed[MON_TMD_STUN])
-		mon_dec_timed(mon, MON_TMD_STUN, 1, MON_TMD_FLG_NOTIFY, false);
+		mon_dec_timed(mon, MON_TMD_STUN, 1, MON_TMD_FLG_NOTIFY);
 
 	if (mon->m_timed[MON_TMD_CONF]) {
-		mon_dec_timed(mon, MON_TMD_CONF, 1, MON_TMD_FLG_NOTIFY, false);
+		mon_dec_timed(mon, MON_TMD_CONF, 1, MON_TMD_FLG_NOTIFY);
 	}
 
 	if (mon->m_timed[MON_TMD_FEAR]) {
 		int d = randint1(mon->race->level / 10 + 1);
-		mon_dec_timed(mon, MON_TMD_FEAR, d, MON_TMD_FLG_NOTIFY, false);
+		mon_dec_timed(mon, MON_TMD_FEAR, d, MON_TMD_FLG_NOTIFY);
 	}
 
 	/* One in __ chance of missing turn if stunned, always miss if held
@@ -1652,7 +1651,7 @@ void restore_monsters(void)
 		if (status_red > 0) {
 			for (status = 0; status < MON_TMD_MAX; status++) {
 				if (mon->m_timed[status]) {
-					mon_dec_timed(mon, status, status_red, 0, false);
+					mon_dec_timed(mon, status, status_red, 0);
 				}
 			}
 		}

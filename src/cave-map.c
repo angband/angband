@@ -294,7 +294,7 @@ static void cave_light(struct point_set *ps)
 
 			/* Sometimes monsters wake up */
 			if (mon->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance)) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, false);
+				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
 			}
 		}
 	}

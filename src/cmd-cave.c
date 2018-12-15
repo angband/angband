@@ -290,7 +290,7 @@ void do_cmd_open(struct command *cmd)
 			become_aware(m);
 
 			/* Mimic wakes up */
-			mon_clear_timed(m, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+			mon_clear_timed(m, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 		} else {
 			/* Message */
 			msg("There is a monster in the way!");
@@ -920,7 +920,7 @@ void move_player(int dir, bool disarm)
 			become_aware(mon);
 
 			/* Mimic wakes up */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 		} else {
 			py_attack(player, grid);

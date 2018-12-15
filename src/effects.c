@@ -784,7 +784,7 @@ bool effect_handler_MON_HEAL_HP(effect_handler_context_t *context)
 
 	/* Cancel fear */
 	if (mon->m_timed[MON_TMD_FEAR]) {
-		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 		msg("%s recovers %s courage.", m_name, m_poss);
 	}
 
@@ -838,7 +838,7 @@ bool effect_handler_MON_HEAL_KIN(effect_handler_context_t *context)
 
 	/* Cancel fear */
 	if (mon->m_timed[MON_TMD_FEAR]) {
-		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, false);
+		mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 		msg("%s recovers %s courage.", m_name, m_poss);
 	}
 
@@ -946,7 +946,7 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 			}
 		}
 		if (mon_tmd_effect >= 0) {
-			mon_inc_timed(t_mon, mon_tmd_effect, MAX(amount, 0), 0, false);
+			mon_inc_timed(t_mon, mon_tmd_effect, MAX(amount, 0), 0);
 		}
 		return true;
 	}
@@ -987,7 +987,7 @@ bool effect_handler_MON_TIMED_INC(effect_handler_context_t *context)
 	struct monster *mon = cave_monster(cave, context->origin.which.monster);
 
 	if (mon) {
-		mon_inc_timed(mon, context->subtype, MAX(amount, 0), 0, false);
+		mon_inc_timed(mon, context->subtype, MAX(amount, 0), 0);
 		context->ident = true;
 	}
 
@@ -1264,7 +1264,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 
 	/* Target is another monster - disenchant it */
 	if (t_mon) {
-		mon_inc_timed(t_mon, MON_TMD_DISEN, MAX(drain, 0), 0, false);
+		mon_inc_timed(t_mon, MON_TMD_DISEN, MAX(drain, 0), 0);
 		return true;
 	}
 
@@ -2438,8 +2438,7 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 			/* Skip monsters too far away */
 			if (distance(origin, mon->grid) < radius &&
 					mon->m_timed[MON_TMD_SLEEP]) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
-								false);
+				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 				woken = true;
 			}
 		}
@@ -3409,8 +3408,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					damage = (safe_grids ? damroll(4, 8) : (mon->hp + 1));
 
 					/* Monster is certainly awake */
-					mon_clear_timed(mon, MON_TMD_SLEEP,
-							MON_TMD_FLG_NOMESSAGE, false);
+					mon_clear_timed(mon, MON_TMD_SLEEP,	MON_TMD_FLG_NOMESSAGE);
 
 					/* If the quake finished the monster off, show message */
 					if (mon->hp < damage && mon->hp >= 0)
@@ -4625,7 +4623,7 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 	}
 
 	/* Wake up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 	/* Explicit saving throw */
 	if (randint1(player->lev) < randint1(mon->race->level)) {
@@ -4639,7 +4637,7 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 	player_set_timed(player, TMD_COMMAND, MAX(amount, 0), false);
 
 	/* Monster is commanded */
-	mon_inc_timed(mon, MON_TMD_COMMAND, MAX(amount, 0), 0, false);
+	mon_inc_timed(mon, MON_TMD_COMMAND, MAX(amount, 0), 0);
 
 	return true;
 }

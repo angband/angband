@@ -134,8 +134,7 @@ static bool does_resist(const struct monster *mon, int effect_type, int timer, i
 static bool mon_set_timed(struct monster *mon,
 		int effect_type,
 		int timer,
-		int flag,
-		bool id)
+		int flag)
 {
 	assert(mon != NULL);
 	assert(mon->race != NULL);
@@ -219,8 +218,7 @@ static bool mon_set_timed(struct monster *mon,
  *
  * Returns true if the monster's timer changed.
  */
-bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag,
-				   bool id)
+bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag)
 {
 	assert(effect_type >= 0);
 	assert(effect_type < MON_TMD_MAX);
@@ -255,7 +253,7 @@ bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag,
 		}
 	}
 
-	return mon_set_timed(mon, effect_type, new_value, flag, id);
+	return mon_set_timed(mon, effect_type, new_value, flag);
 }
 
 /**
@@ -267,8 +265,7 @@ bool mon_inc_timed(struct monster *mon, int effect_type, int timer, int flag,
  *
  * Returns true if the monster's timer changed.
  */
-bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag,
-				   bool id)
+bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag)
 {
 	assert(effect_type >= 0);
 	assert(effect_type < MON_TMD_MAX);
@@ -279,7 +276,7 @@ bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag,
 		new_level = 0;
 	}
 
-	return mon_set_timed(mon, effect_type, new_level, flag, id);
+	return mon_set_timed(mon, effect_type, new_level, flag);
 }
 
 /**
@@ -287,7 +284,7 @@ bool mon_dec_timed(struct monster *mon, int effect_type, int timer, int flag,
  *
  * Returns true if the monster's timer was changed.
  */
-bool mon_clear_timed(struct monster *mon, int effect_type, int flag, bool id)
+bool mon_clear_timed(struct monster *mon, int effect_type, int flag)
 {
 	assert(effect_type >= 0);
 	assert(effect_type < MON_TMD_MAX);
@@ -295,7 +292,7 @@ bool mon_clear_timed(struct monster *mon, int effect_type, int flag, bool id)
 	if (mon->m_timed[effect_type] == 0) {
 		return false;
 	} else {
-		return mon_set_timed(mon, effect_type, 0, flag, id);
+		return mon_set_timed(mon, effect_type, 0, flag);
 	}
 }
 

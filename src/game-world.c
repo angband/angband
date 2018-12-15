@@ -315,12 +315,11 @@ static void decrease_timeouts(void)
 				struct monster *mon = get_commanded_monster();
 				if (!los(cave, player->grid, mon->grid)) {
 					/* Out of sight is out of mind */
-					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY,
-									false);
+					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY);
 					player_clear_timed(player, TMD_COMMAND, true);
 				} else {
 					/* Keep monster timer aligned */
-					mon_dec_timed(mon, MON_TMD_COMMAND, decr, 0, false);
+					mon_dec_timed(mon, MON_TMD_COMMAND, decr, 0);
 				}
 				break;
 			}

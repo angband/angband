@@ -366,7 +366,7 @@ static int call_monster(struct loc grid)
 	monster_swap(mon->grid, grid);
 
 	/* Wake it up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 	/* Set it's energy to 0 */
 	mon->energy = 0;
@@ -469,8 +469,9 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	/* XXX should this now be hold monster for a turn? */
 	if (delay) {
 		mon->energy = 0;
-		if (mon->race->speed > player->state.speed)
-			mon_inc_timed(mon, MON_TMD_SLOW, 1,	MON_TMD_FLG_NOMESSAGE, false);
+		if (mon->race->speed > player->state.speed) {
+			mon_inc_timed(mon, MON_TMD_SLOW, 1,	MON_TMD_FLG_NOMESSAGE);
+		}
 	}
 
 	return (mon->race->level);

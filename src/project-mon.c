@@ -879,8 +879,7 @@ static void project_monster_handler_MON_CLONE(project_monster_handler_context_t 
 	context->mon->hp = context->mon->maxhp;
 
 	/* Speed up */
-	mon_inc_timed(context->mon, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, 
-				  context->id);
+	mon_inc_timed(context->mon, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY);
 
 	/* Attempt to clone. */
 	if (multiply_monster(cave, context->mon))
@@ -908,8 +907,7 @@ static void project_monster_handler_MON_POLY(project_monster_handler_context_t *
 static void project_monster_handler_MON_HEAL(project_monster_handler_context_t *context)
 {
 	/* Wake up */
-	mon_clear_timed(context->mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
-					context->id);
+	mon_clear_timed(context->mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 	/* Heal */
 	context->mon->hp += context->dam;
@@ -1044,7 +1042,7 @@ static bool project_m_monster_attack(project_monster_handler_context_t *context,
 		player->upkeep->redraw |= (PR_HEALTH);
 
 	/* Wake the monster up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);
+	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 	/* Hurt the monster */
 	mon->hp -= dam;
@@ -1208,8 +1206,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 				mon_inc_timed(mon,
 							  i,
 							  context->mon_timed[i],
-							  context->flag | MON_TMD_FLG_NOTIFY,
-							  context->id);
+							  context->flag | MON_TMD_FLG_NOTIFY);
 				context->obvious = true;
 			}
 		}

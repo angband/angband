@@ -797,7 +797,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 
 				/* Apply the stun */
 				if (amt)
-					(void)mon_inc_timed(t_mon, MON_TMD_STUN, amt, 0, false);
+					(void)mon_inc_timed(t_mon, MON_TMD_STUN, amt, 0);
 			}
 
 			string_free(act);
