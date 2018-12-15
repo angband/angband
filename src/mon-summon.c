@@ -17,7 +17,9 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "datafile.h"
+#include "mon-group.h"
 #include "mon-make.h"
 #include "mon-summon.h"
 #include "mon-util.h"
@@ -448,7 +450,8 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 
 	/* Put summons in the group of any summoner */
 	if (cave->mon_current > 0) {
-		info.index = cave_monster(cave, cave->mon_current)->group_info.index;
+		struct monster_group *group = summon_group(cave, cave->mon_current);
+		info.index = group->index;
 		info.role = MON_GROUP_SUMMON;
 	}
 

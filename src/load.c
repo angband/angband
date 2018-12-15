@@ -328,9 +328,13 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 
 	/* Read group info */
 	rd_u16b(&tmp16u);
-	mon->group_info.index = tmp16u;
+	mon->group_info[0].index = tmp16u;
 	rd_byte(&tmp8u);
-	mon->group_info.role = tmp8u;
+	mon->group_info[0].role = tmp8u;
+	rd_u16b(&tmp16u);
+	mon->group_info[1].index = tmp16u;
+	rd_byte(&tmp8u);
+	mon->group_info[1].role = tmp8u;
 
 	return true;
 }
@@ -1425,13 +1429,18 @@ static int rd_monster_groups_aux(struct chunk *c)
 	/* Read the monster groups */
 	for (i = 0; i < z_info->level_monster_max; i++) {
 		struct mon_group_list_entry *list_entry;
+		int index;
 
 		/* Check if this index has a group */
 		rd_u16b(&tmp16u);
 		if (!tmp16u) continue;
 
 		/* Read group details */
-		c->monster_groups[i]->index = tmp16u;
+		index = tmp16u;
+		c->monster_groups[index] = monster_group_new();
+		c->monster_groups[index]->index = tmp16u;
+		rd_u16b(&tmp16u);
+		c->monster_groups[index]->leader = tmp16u;
 
 		/* Check this is an actual monster */
 		if (!cave_monster(c, tmp16u)->race) {
@@ -1440,22 +1449,21 @@ static int rd_monster_groups_aux(struct chunk *c)
 		}
 		
 		rd_u16b(&tmp16u);
-		c->monster_groups[i]->leader = tmp16u;
-		rd_u16b(&tmp16u);
 		while (tmp16u) {
 			list_entry = mem_zalloc(sizeof(struct mon_group_list_entry));
 			list_entry->midx = tmp16u;
-			list_entry->next = c->monster_groups[i]->member_list;
+			list_entry->next = c->monster_groups[index]->member_list;
+			c->monster_groups[index]->member_list = list_entry;
 			rd_u16b(&tmp16u);
 		}
 		rd_u16b(&tmp16u);
-		c->monster_groups[i]->home.y = tmp16u;
+		c->monster_groups[index]->home.y = tmp16u;
 		rd_u16b(&tmp16u);
-		c->monster_groups[i]->home.x = tmp16u;
+		c->monster_groups[index]->home.x = tmp16u;
 		rd_u16b(&tmp16u);
-		c->monster_groups[i]->destination.y = tmp16u;
+		c->monster_groups[index]->destination.y = tmp16u;
 		rd_u16b(&tmp16u);
-		c->monster_groups[i]->destination.x = tmp16u;
+		c->monster_groups[index]->destination.x = tmp16u;
 	}
 	return 0;
 }

@@ -2437,8 +2437,11 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 
 	/* Center monster */
 	info.index = group_index;
-	info.role = MON_GROUP_LEADER;
+	info.role = MON_GROUP_NONE;
 	place_new_monster(c, centre, what[7], false, false, info, ORIGIN_DROP_PIT);
+
+	/* Remaining monsters are servants */
+	info.role = MON_GROUP_SERVANT;
 
 	/* Top and bottom rows (middle) */
 	for (x = centre.x - 3; x <= centre.x + 3; x++) {

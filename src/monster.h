@@ -219,7 +219,7 @@ struct monster_drop {
 };
 
 enum monster_group_role {
-	MON_GROUP_LEADER,
+	MON_GROUP_NONE,
 	MON_GROUP_SERVANT,
 	MON_GROUP_BODYGUARD,
 	MON_GROUP_MEMBER,
@@ -368,7 +368,7 @@ struct monster {
 
     struct target target;				/* Monster target */
 
-	struct monster_group_info group_info;/* Monster group details */
+	struct monster_group_info group_info[2];/* Monster group details */
 	struct heatmap heatmap;				/* Monster location heatmap */
 
     byte min_range;						/* What is the closest we want to be? */
