@@ -1126,7 +1126,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	/* Try to choose an object kind; reject most books the player can't read */
 	while (tries) {
 		kind = get_obj_num(base, good || great, tval);
-		if (tval_is_book_k(kind) && !obj_kind_can_browse(kind)) {
+		if (kind && tval_is_book_k(kind) && !obj_kind_can_browse(kind)) {
 			if (one_in_(5)) break;
 			kind = NULL;
 			tries--;
