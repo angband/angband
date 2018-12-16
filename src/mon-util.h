@@ -30,6 +30,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full);
 void update_monsters(bool full);
 bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj);
 void monster_swap(struct loc grid1, struct loc grid2);
+void monster_wake(struct monster *mon, bool notify, int aware_chance);
 void become_aware(struct monster *m);
 void update_smart_learn(struct monster *mon, struct player *p, int flag,
 						int pflag, int element);

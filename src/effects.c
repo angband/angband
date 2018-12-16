@@ -2434,11 +2434,12 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 		struct monster *mon = cave_monster(cave, i);
 		if (mon->race) {
 			int radius = z_info->max_sight * 2;
+			int dist = distance(origin, mon->grid);
 
 			/* Skip monsters too far away */
-			if (distance(origin, mon->grid) < radius &&
-					mon->m_timed[MON_TMD_SLEEP]) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+			if ((dist < radius) && mon->m_timed[MON_TMD_SLEEP]) {
+				/* Monster wakes, closer means likelier to become aware */
+				monster_wake(mon, false, 100 - 2 * dist);
 				woken = true;
 			}
 		}
@@ -3407,8 +3408,8 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					/* Take damage from the quake */
 					damage = (safe_grids ? damroll(4, 8) : (mon->hp + 1));
 
-					/* Monster is certainly awake */
-					mon_clear_timed(mon, MON_TMD_SLEEP,	MON_TMD_FLG_NOMESSAGE);
+					/* Monster is certainly awake, not thinking about player */
+					monster_wake(mon, false, 0);
 
 					/* If the quake finished the monster off, show message */
 					if (mon->hp < damage && mon->hp >= 0)
@@ -4622,8 +4623,8 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 		return false;
 	}
 
-	/* Wake up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+	/* Wake up, become aware */
+	monster_wake(mon, false, 100);
 
 	/* Explicit saving throw */
 	if (randint1(player->lev) < randint1(mon->race->level)) {

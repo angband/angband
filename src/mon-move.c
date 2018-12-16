@@ -1380,8 +1380,8 @@ static void monster_reduce_sleep(struct chunk *c, struct monster *mon)
 	if (player_of_has(player, OF_AGGRAVATE)) {
 		char m_name[80];
 
-		/* Wake the monster */
-		mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+		/* Wake the monster, make it aware */
+		mon_clear_timed(mon, false, 100);
 
 		/* Get the monster name */
 		monster_desc(m_name, sizeof(m_name), mon,

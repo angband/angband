@@ -365,8 +365,8 @@ static int call_monster(struct loc grid)
 	/* Swap the monster */
 	monster_swap(mon->grid, grid);
 
-	/* Wake it up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+	/* Wake it up, make it aware */
+	monster_wake(mon, false, 100);
 
 	/* Set it's energy to 0 */
 	mon->energy = 0;

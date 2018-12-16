@@ -238,7 +238,7 @@ void do_cmd_open(struct command *cmd)
 	struct object *obj;
 	bool more = false;
 	int err;
-	struct monster *m;
+	struct monster *mon;
 
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
@@ -283,14 +283,14 @@ void do_cmd_open(struct command *cmd)
 	}
 
 	/* Monster */
-	m = square_monster(cave, grid);
-	if (m) {
+	mon = square_monster(cave, grid);
+	if (mon) {
 		/* Mimics surprise the player */
-		if (monster_is_mimicking(m)) {
-			become_aware(m);
+		if (monster_is_mimicking(mon)) {
+			become_aware(mon);
 
-			/* Mimic wakes up */
-			mon_clear_timed(m, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+			/* Mimic wakes up and becomes aware*/
+			monster_wake(mon, false, 100);
 		} else {
 			/* Message */
 			msg("There is a monster in the way!");
@@ -919,9 +919,8 @@ void move_player(int dir, bool disarm)
 		if (monster_is_mimicking(mon)) {
 			become_aware(mon);
 
-			/* Mimic wakes up */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
-
+			/* Mimic wakes up and becomes aware*/
+			monster_wake(mon, false, 100);
 		} else {
 			py_attack(player, grid);
 		}

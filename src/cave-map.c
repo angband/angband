@@ -21,6 +21,7 @@
 #include "init.h"
 #include "monster.h"
 #include "mon-predicate.h"
+#include "mon-util.h"
 #include "obj-ignore.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
@@ -292,9 +293,9 @@ static void cave_light(struct point_set *ps)
 			/* Smart monsters always wake up */
 			if (monster_is_smart(mon)) chance = 100;
 
-			/* Sometimes monsters wake up */
+			/* Sometimes monsters wake up, and become aware if they do */
 			if (mon->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance)) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
+				monster_wake(mon, true, 100);
 			}
 		}
 	}

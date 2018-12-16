@@ -604,6 +604,19 @@ void monster_swap(struct loc grid1, struct loc grid2)
 }
 
 /**
+ * Monster wakes up and possibly becomes aware of the player
+ */
+void monster_wake(struct monster *mon, bool notify, int aware_chance)
+{
+	int flag = notify ? MON_TMD_FLG_NOTIFY : MON_TMD_FLG_NOMESSAGE;
+	mon_clear_timed(mon, MON_TMD_SLEEP, flag);
+	if (randint0(100) < aware_chance) {
+		mflag_on(mon->mflag, MFLAG_AWARE);
+	}
+}
+
+
+/**
  * Make player fully aware of the given mimic.
  *
  * When a player becomes aware of a mimic, we update the monster memory
@@ -1068,8 +1081,8 @@ bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note)
 	if (player->upkeep->health_who == mon)
 		player->upkeep->redraw |= (PR_HEALTH);
 
-	/* Wake it up */
-	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+	/* Wake it up, make it aware of the player */
+	monster_wake(mon, false, 100);
 	mon_clear_timed(mon, MON_TMD_HOLD, MON_TMD_FLG_NOTIFY);
 
 	/* Become aware of its presence */
@@ -1209,7 +1222,8 @@ void steal_monster_item(struct monster *mon, int midx)
 		if (!obj) {
 			msg("You can find nothing to steal from %s.", m_name);
 			if (one_in_(3)) {
-				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+				/* Monster notices */
+				monster_wake(mon, false, 100);
 			}
 			return;
 		}
@@ -1260,11 +1274,11 @@ void steal_monster_item(struct monster *mon, int midx)
 							ODESC_PREFIX | ODESC_FULL);
 			}
 			msg("You fail to steal %s from %s.", o_name, m_name);
-			/* Monster wakes */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
+			/* Monster wakes, may notice */
+			mon_clear_timed(mon, true, 50);
 		} else {
 			/* Bungled it */
-			mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
+			monster_wake(mon, true, 100);
 			monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 			msg("%s cries out in anger!", m_name);
 			effect_simple(EF_WAKE, source_monster(mon->midx), "", 0, 0, 0, 0, 0,

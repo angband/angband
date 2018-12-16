@@ -320,8 +320,8 @@ static bool monster_melee_monster(melee_effect_handler_context_t *context,
 	if (player->upkeep->health_who == t_mon)
 		player->upkeep->redraw |= (PR_HEALTH);
 
-	/* Wake the monster up */
-	mon_clear_timed(t_mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+	/* Wake the monster up, doesn't become aware of the player */
+	monster_wake(t_mon, false, 0);
 
 	/* Hurt the monster */
 	t_mon->hp -= dam;
