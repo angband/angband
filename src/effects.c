@@ -631,7 +631,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 			if (t_mon) {
 				bool fear = false;
 
-				mon_take_hit(t_mon, dam, &fear, " dies.");
+				mon_take_nonplayer_hit(dam, t_mon, MON_MSG_NONE, MON_MSG_DIE);
 				if (fear && monster_is_visible(t_mon)) {
 					add_monster_message(t_mon, MON_MSG_FLEE_IN_TERROR, true);
 				}

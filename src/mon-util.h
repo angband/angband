@@ -20,6 +20,7 @@
 #define MONSTER_UTILITIES_H
 
 #include "monster.h"
+#include "mon-msg.h"
 
 const char *describe_race_flag(int flag);
 void create_mon_flag_mask(bitflag *f, ...);
@@ -37,6 +38,9 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
 bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon);
 struct monster *choose_nearby_injured_kin(struct chunk *c, const struct monster *mon);
 void monster_death(struct monster *mon, bool stats);
+bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
+							enum mon_messages hurt_msg,
+							enum mon_messages die_msg);
 bool mon_take_hit(struct monster *mon, int dam, bool *fear, const char *note);
 void kill_arena_monster(struct monster *mon);
 void monster_take_terrain_damage(struct monster *mon);
