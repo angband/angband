@@ -155,7 +155,7 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 
 		/* Record the leader */
 		if (mon->midx == poss_leader) {
-			mon->group_info[0].role = MON_GROUP_NONE;
+			mon->group_info[0].role = MON_GROUP_LEADER;
 		}
 		list_entry = list_entry->next;
 	}
@@ -268,7 +268,7 @@ void monster_group_start(struct chunk *c, struct monster *mon, int which)
 
 	/* Write the index to the monster's group info, make it leader */
 	mon->group_info[which].index = index;
-	mon->group_info[which].role = MON_GROUP_NONE;
+	mon->group_info[which].role = MON_GROUP_LEADER;
 }
 
 /**
