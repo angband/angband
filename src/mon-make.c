@@ -356,7 +356,7 @@ void compact_monsters(int num_to_compact)
  */
 void wipe_mon_list(struct chunk *c, struct player *p)
 {
-	int m_idx;
+	int m_idx, i;
 
 	/* Delete all the monsters */
 	for (m_idx = cave_monster_max(c) - 1; m_idx >= 1; m_idx--) {
@@ -381,12 +381,18 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 		/* Reduce the racial counter */
 		mon->race->cur_num--;
 
-		/* Monster is gone from square and group*/
+		/* Monster is gone from square */
 		square_set_mon(c, mon->grid, 0);
-		monster_remove_from_group(c, mon);
 
 		/* Wipe the Monster */
 		memset(mon, 0, sizeof(struct monster));
+	}
+
+	/* Delete all the monster groups */
+	for (i = 1; i < z_info->level_monster_max; i++) {
+		if (c->monster_groups[i]) {
+			monster_group_free(c, c->monster_groups[i]);
+		}
 	}
 
 	/* Reset "cave->mon_max" */

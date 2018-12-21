@@ -298,15 +298,23 @@ bool monster_group_change_index(struct chunk *c, int new, int old)
 	struct monster_group *group1 = monster_group_by_index(c, index1);
 	struct mon_group_list_entry *entry = group0->member_list;
 
+	if (group0->leader == old) {
+		group0->leader = new;
+	}
 	while (entry) {
 		if (entry->midx == old) {
 			entry->midx = new;
-			return true;
+			if (!group1) {
+				return true;
+			}
 		}
 		entry = entry->next;
 	}
 
 	if (group1) {
+		if (group1->leader == old) {
+			group1->leader = new;
+		}
 		entry = group1->member_list;
 		while (entry) {
 			if (entry->midx == old) {
