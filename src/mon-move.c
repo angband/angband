@@ -182,6 +182,8 @@ static bool monster_hates_grid(struct chunk *c, struct monster *mon,
  * ------------------------------------------------------------------------ */
 /**
  * Calculate minimum and desired combat ranges.  -BR-
+ *
+ * Afraid monsters will set this to their maximum flight distance.
  */
 static void get_move_find_range(struct monster *mon)
 {
@@ -273,14 +275,15 @@ static void get_move_find_range(struct monster *mon)
 /**
  * Choose the best direction to advance toward the player, using sound or scent.
  *
- * Note that ghosts and rock-eaters generally just head straight for the player.
+ * Ghosts and rock-eaters generally just head straight for the player. Other
+ * monsters try sight, then current sound as saved in c->noise.grids[y][x],
+ * then current scent as saved in c->scent.grids[y][x].
  *
- * Monsters first try to use current sound information as saved in
- * c->noise.grids[y][x].  Failing that, they'll try using scent, saved in 
- * c->scent.grids[y][x].
- *
- * Note that this function assumes the monster is moving to an adjacent grid,
- * and so the noise can be louder by at most 1.
+ * This function assumes the monster is moving to an adjacent grid, and so the
+ * noise can be louder by at most 1.  The monster target grid set by sound or
+ * scent tracking in this function will be a grid they can step to in one turn,
+ * so is the preferred option for get_move() unless there's some reason
+ * not to use it.
  *
  * Tracking by 'scent' means that monsters end up near enough the player to
  * switch to 'sound' (noise), or they end up somewhere the player left via 
@@ -289,7 +292,7 @@ static void get_move_find_range(struct monster *mon)
  * is still near enough to "annoy" them without being close enough to chase
  * directly.
  */
-static bool get_move_advance(struct chunk *c, struct monster *mon)
+static bool get_move_advance(struct chunk *c, struct monster *mon, bool *track)
 {
 	int i;
 	struct loc decoy = cave_find_decoy(c);
@@ -357,7 +360,7 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 	}
 
 	/* If no good sound, use scent */
-	if (!found_dir) {
+	if (!found) {
 		for (i = 0; i < 8; i++) {
 			/* Get the location */
 			struct loc grid = loc_sum(mon->grid, ddgrid_ddd[i]);
@@ -377,10 +380,12 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 	/* Set the target */
 	if (found_dir) {
 		mon->target.grid = best_grid;
+		*track = true;
 		return true;
 	} else if (found_backup) {
 		/* Move around to try and improve position */
 		mon->target.grid = backup_grid;
+		*track = true;
 		return true;
 	}
 
@@ -672,12 +677,31 @@ static int get_move_choose_direction(struct loc offset)
 
 /**
  * Choose "logical" directions for monster movement
+ *
+ * This function is responsible for deciding where the monster wants to move,
+ * and so is the core of monster "AI".
+ *
+ * First, we work out how best to advance toward the player:
+ * - Try to head toward the player directly if we can pass through walls or
+ *   if we can see them
+ * - Failing that follow the player by sound, or failing that by scent
+ * - If none of that works, just head in the general direction
+ * Then we look at possible reasons not to just advance:
+ * - If we're part of a pack, try to lure the player into the open
+ * - If we're afraid, try to find a safe place to run to, and if no safe place
+ *   just run in the opposite direction to the advance move
+ * - If we can see the player and we're part of a group, try and surround them
+ *
+ * The function then returns false if we're already where we want to be, and
+ * otherwise sets the chosen direction to step and returns true.
  */
 static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 {
 	struct loc decoy = cave_find_decoy(c);
 	struct loc target = loc_is_zero(decoy) ? player->grid : decoy;
 	bool group_ai = rf_has(mon->race->flags, RF_GROUP_AI);
+	bool can_pass_walls = flags_test(mon->race->flags, RF_SIZE, RF_PASS_WALL,
+									 RF_KILL_WALL, FLAG_END);
 
 	/* Offset to current position to move toward */
 	struct loc grid;
@@ -691,8 +715,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 	get_move_find_range(mon);
 
 	/* Assume we're heading towards the player */
-	if (get_move_advance(c, mon)) {
-		/* Extract the "pseudo-direction" */
+	if (get_move_advance(c, mon, good)) {
+		/* We have a good move, use it */
 		grid = loc_diff(mon->target.grid, mon->grid);
 	} else {
 		/* Head blindly straight for the "player" if there's no better idea */
@@ -700,9 +724,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 	}
 
 	/* Normal animal packs try to get the player out of corridors. */
-	if (rf_has(mon->race->flags, RF_GROUP_AI) &&
-	    !flags_test(mon->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL,
-					FLAG_END)) {
+	if (group_ai && !can_pass_walls) {
 		int i, open = 0;
 
 		/* Count empty grids next to player */
@@ -718,7 +740,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 
 		/* Not in an empty space and strong player */
 		if ((open < 5) && (player->chp > player->mhp / 2)) {
-			/* Find hiding place */
+			/* Find hiding place for an ambush */
 			if (get_move_find_hiding(c, mon)) {
 				done = true;
 				grid = loc_diff(mon->target.grid, mon->grid);
@@ -726,16 +748,16 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 		}
 	}
 
-	/* Apply fear */
+	/* Not hiding and monster is afraid */
 	if (!done && (mon->min_range == flee_range)) {
 		/* Try to find safe place */
-		if (!get_move_find_safety(c, mon)) {
-			/* Just leg it away from the player */
-			grid = loc_diff(loc(0, 0), grid);
-		} else {
+		if (get_move_find_safety(c, mon)) {
 			/* Set a course for the safe place */
 			get_move_flee(c, mon);
 			grid = loc_diff(mon->target.grid, mon->grid);
+		} else {
+			/* Just leg it away from the player */
+			grid = loc_diff(loc(0, 0), grid);
 		}
 
 		done = true;
@@ -862,8 +884,9 @@ static bool monster_turn_multiply(struct chunk *c, struct monster *mon)
 }
 
 /**
- * Check if a monster should stagger or not.  Always stagger when confused,
- * but also deal with random movement for RAND_25 and _50 monsters.
+ * Check if a monster should stagger (that is, step at random) or not.
+ * Always stagger when confused, but also deal with random movement for
+ * RAND_25 and RAND_50 monsters.
  */
 static bool monster_turn_should_stagger(struct monster *mon)
 {
@@ -1011,7 +1034,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 /**
  * Try to break a glyph.
  */
-static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
+static bool monster_turn_attack_glyph(struct chunk *c, struct monster *mon,
 									  struct loc new)
 {
 	assert(square_iswarded(c, new));
@@ -1218,14 +1241,18 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 	/* Attempt to cast a spell */
 	if (make_attack_spell(mon)) return;
 
-	/* Work out what kind of movement to use - AI or staggered movement */
-	if (!monster_turn_should_stagger(mon)) {
-		if (!get_move(c, mon, &dir, &tracking)) return;
-	} else {
+	/* Work out what kind of movement to use - random movement or AI */
+	if (monster_turn_should_stagger(mon)) {
 		stagger = true;
+	} else {
+		/* If there's no sensible move, we're done */
+		if (!get_move(c, mon, &dir, &tracking)) return;
 	}
 
-	/* Process moves */
+	/* Try to move first in the chosen direction, or next either side of the
+	 * chosen direction, or next at right angles to the chosen direction.
+	 * Monsters which are tracking by sound or scent will not move if they
+	 * can't move in their chosen direction. */
 	for (i = 0; i < 5 && !did_something; i++) {
 		/* Get the direction (or stagger) */
 		int d = (stagger ? ddd[randint0(8)] : side_dirs[dir][i]);
@@ -1244,7 +1271,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 
 		/* Try to break the glyph if there is one.  This can happen multiple
 		 * times per turn because failure does not break the loop */
-		if (square_iswarded(c, new) && !monster_turn_glyph(c, mon, new))
+		if (square_iswarded(c, new) && !monster_turn_attack_glyph(c, mon, new))
 			continue;
 
 		/* Break a decoy if there is one */
