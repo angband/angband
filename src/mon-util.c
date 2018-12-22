@@ -1039,7 +1039,7 @@ static bool monster_scared_by_damage(struct monster *mon, int dam)
 			mon_clear_timed(mon, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 			return false;
 		}
-	} else if (!rf_has(mon->race->flags, RF_NO_FEAR)) {
+	} else if (monster_can_be_scared(mon)) {
 		/* Percentage of fully healthy */
 		int percentage = (100L * mon->hp) / mon->maxhp;
 
@@ -1119,22 +1119,8 @@ bool mon_take_nonplayer_hit(int dam, struct monster *t_mon,
 	}
 
 	/* Sometimes a monster gets scared by damage */
-	if (!t_mon->m_timed[MON_TMD_FEAR] &&
-		!rf_has(t_mon->race->flags, RF_NO_FEAR) && dam > 0) {
-		int percentage;
-
-		/* Percentage of fully healthy */
-		percentage = (100L * t_mon->hp) / t_mon->maxhp;
-
-		/* Run (sometimes) if at 10% or less of max hit points,
-		 * or (usually) when hit for half its current hit points */
-		if ((randint1(10) >= percentage) ||
-			((dam >= t_mon->hp) && (randint0(100) < 80))) {
-			int timer = randint1(10) + (((dam >= t_mon->hp) && (percentage > 7))
-										? 20 : ((11 - percentage) * 5));
-			mon_inc_timed(t_mon, MON_TMD_FEAR, timer,
-						  MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL);
-		}
+	if (!t_mon->m_timed[MON_TMD_FEAR] && dam > 0) {
+		(void) monster_scared_by_damage(t_mon, dam);
 	}
 
 	return false;

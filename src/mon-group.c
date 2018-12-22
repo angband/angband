@@ -374,6 +374,24 @@ void monster_group_rouse(struct chunk *c, struct monster *mon)
 		entry = entry->next;
 	}
 }
+
+/**
+ * Get the size of a monster's primary group
+ */
+int monster_primary_group_size(struct chunk *c, const struct monster *mon)
+{
+	int count = 0;
+	int index = mon->group_info[PRIMARY_GROUP].index;
+	struct monster_group *group = c->monster_groups[index];
+	struct mon_group_list_entry *entry = group->member_list;
+
+	while (entry) {
+		count++;
+		entry = entry->next;
+	}
+	return count;
+}
+
 /**
  * Get the index of the leader of a monster group
  */
