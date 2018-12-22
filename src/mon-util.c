@@ -615,6 +615,13 @@ void monster_wake(struct monster *mon, bool notify, int aware_chance)
 	}
 }
 
+/**
+ * Monster can see a grid
+ */
+bool monster_can_see(struct chunk *c, struct monster *mon, struct loc grid)
+{
+	return los(c, mon->fy, mon->fx, grid.y, grid.x);
+}
 
 /**
  * Make player fully aware of the given mimic.
@@ -1350,7 +1357,7 @@ void steal_monster_item(struct monster *mon, int midx)
 			}
 			msg("You fail to steal %s from %s.", o_name, m_name);
 			/* Monster wakes, may notice */
-			mon_clear_timed(mon, true, 50);
+			monster_wake(mon, true, 50);
 		} else {
 			/* Bungled it */
 			monster_wake(mon, true, 100);

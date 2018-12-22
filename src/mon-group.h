@@ -43,6 +43,7 @@ int monster_group_index(struct monster_group *group);
 struct monster_group *monster_group_by_index(struct chunk *c, int index);
 bool monster_group_change_index(struct chunk *c, int new, int old);
 struct monster_group *summon_group(struct chunk *c, int midx);
+void monster_group_rouse(struct chunk *c, struct monster *mon);
 int monster_group_leader_idx(struct monster_group *group);
 struct monster *monster_group_leader(struct chunk *c,
 									 struct monster_group *group);

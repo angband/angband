@@ -21,6 +21,7 @@
 #include "init.h"
 #include "mon-group.h"
 #include "mon-make.h"
+#include "mon-util.h"
 #include "monster.h"
 
 /**
@@ -251,9 +252,8 @@ void monster_add_to_group(struct chunk *c, struct monster *mon,
  */
 void monster_group_start(struct chunk *c, struct monster *mon, int which)
 {
+	/* Get a group and a group index */
 	struct monster_group *group = monster_group_new();
-
-	/* Use the monster's group index */
 	int index = monster_group_index_new(c);
 	assert(index);
 
@@ -346,6 +346,32 @@ struct monster_group *summon_group(struct chunk *c, int midx)
 }
 
 
+/**
+ * Monster who is aware of the player tries to let its group know
+ */
+void monster_group_rouse(struct chunk *c, struct monster *mon)
+{
+	struct monster_group *group = c->monster_groups[mon->group_info[0].index];
+	struct mon_group_list_entry *entry = group->member_list;
+	struct loc mon_grid = loc(mon->fx, mon->fy);
+
+	/* Not aware means don't rouse */
+	if (!mflag_has(mon->mflag, MFLAG_AWARE)) return;
+
+	while (entry) {
+		struct monster *friend = &c->monsters[entry->midx];
+		struct loc fgrid = loc(friend->fx, friend->fy);
+		if (friend->m_timed[MON_TMD_SLEEP] && monster_can_see(c, mon, fgrid)) {
+			int dist = distance(mon_grid, fgrid);
+
+			/* Closer means more likely to be roused */
+			if (one_in_(dist * 20)) {
+				monster_wake(friend, true, 50);
+			}
+		}
+		entry = entry->next;
+	}
+}
 /**
  * Get the index of the leader of a monster group
  */

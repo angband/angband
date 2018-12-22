@@ -29,6 +29,7 @@
 #include "monster.h"
 #include "mon-attack.h"
 #include "mon-desc.h"
+#include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-predicate.h"
@@ -1234,6 +1235,9 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_HID);
 
+	/* Let other group monsters know about the player */
+	monster_group_rouse(c, mon);
+
 	/* Try to multiply - this can use up a turn */
 	if (monster_turn_multiply(c, mon))
 		return;
@@ -1408,7 +1412,7 @@ static void monster_reduce_sleep(struct chunk *c, struct monster *mon)
 		char m_name[80];
 
 		/* Wake the monster, make it aware */
-		mon_clear_timed(mon, false, 100);
+		monster_wake(mon, false, 100);
 
 		/* Get the monster name */
 		monster_desc(m_name, sizeof(m_name), mon,
@@ -1460,6 +1464,11 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 	if (mon->m_timed[MON_TMD_SLEEP]) {
 		monster_reduce_sleep(c, mon);
 		return true;
+	} else {
+		/* Awake, active monsters may become aware */
+		if (one_in_(10) && mflag_has(mon->mflag, MFLAG_ACTIVE)) {
+			mflag_on(mon->mflag, MFLAG_AWARE);
+		}
 	}
 
 	if (mon->m_timed[MON_TMD_FAST])
