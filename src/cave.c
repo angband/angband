@@ -514,7 +514,7 @@ void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d,
 		if ((d > 1) && (distance(loc(x, y), loc(nx, ny)) > d)) continue;
 		
 		/* Require "line of sight" if set */
-		if (need_los && !los(c, y, x, ny, nx)) continue;
+		if (need_los && !los(c, loc(x, y), loc(nx, ny))) continue;
 
 		/* Set the location and return */
 		(*yp) = ny;

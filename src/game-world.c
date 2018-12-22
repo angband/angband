@@ -313,7 +313,7 @@ static void decrease_timeouts(void)
 			case TMD_COMMAND:
 			{
 				struct monster *mon = get_commanded_monster();
-				if (!los(cave, player->py, player->px, mon->grid.y, mon->grid.x)) {
+				if (!los(cave, loc(player->px, player->py), mon->grid)) {
 					/* Out of sight is out of mind */
 					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY,
 									false);

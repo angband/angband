@@ -2353,19 +2353,16 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 	/* Affect all (nearby) monsters */
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		struct monster *mon = cave_monster(cave, i);
-		struct loc grid;
 
 		/* Paranoia -- Skip dead monsters */
 		if (!mon->race) continue;
 
-		/* Location */
-		grid = mon->grid;
-
 		/* Require line of sight */
-		if (!los(cave, origin.y, origin.x, grid.y, grid.x)) continue;
+		if (!los(cave, origin, mon->grid)) continue;
 
 		/* Jump directly to the monster */
-		(void)project(source_player(), 0, grid, dam, typ, flg, 0, 0, context->obj);
+		(void)project(source_player(), 0, mon->grid, dam, typ, flg, 0, 0,
+					  context->obj);
 		context->ident = true;
 	}
 
@@ -3561,7 +3558,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	/* Check for decoy */
 	if (decoy.y && decoy.x) {
 		target = decoy;
-		if (!los(cave, player->py, player->px, decoy.y, decoy.x) ||
+		if (!los(cave, loc(player->px, player->py), decoy) ||
 			player->timed[TMD_BLIND]) {
 			decoy_unseen = true;
 		}

@@ -776,7 +776,7 @@ bool project(struct source origin, int rad, struct loc finish,
 							int yy = y + ddy_ddd[i];
 							int xx = x + ddx_ddd[i];
 
-							if (los(cave, centre.y, centre.x, yy, xx)) {
+							if (los(cave, centre, loc(xx, yy))) {
 								k++;
 								break;
 							}
@@ -818,7 +818,7 @@ bool project(struct source origin, int rad, struct loc finish,
 					 * allowed, and the grid is in LOS, accept it.
 					 */
 					if (diff < (degrees_of_arc + 6) / 4) {
-						if (los(cave, centre.y, centre.x, y, x)) {
+						if (los(cave, centre, loc(x, y))) {
 							blast_grid[num_grids].y = y;
 							blast_grid[num_grids].x = x;
 							distance_to_grid[num_grids] = dist_from_centre;
@@ -828,7 +828,7 @@ bool project(struct source origin, int rad, struct loc finish,
 					}
 				} else {
 					/* Accept all grids in LOS */
-					if (los(cave, centre.y, centre.x, y, x)) {
+					if (los(cave, centre, loc(x, y))) {
 						blast_grid[num_grids].y = y;
 						blast_grid[num_grids].x = x;
 						distance_to_grid[num_grids] = dist_from_centre;

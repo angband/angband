@@ -944,7 +944,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 			/* Lots of reasons to say no */
 			if ((dist > 10) ||
 				!square_in_bounds_fully(cave, ty, tx) ||
-				!los(cave, *y, *x, ty, tx) ||
+				!los(cave, loc(*x, *y), loc(tx, ty)) ||
 				!square_isfloor(cave, ty, tx) ||
 				square_istrap(cave, ty, tx))
 				continue;

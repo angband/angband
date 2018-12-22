@@ -1204,7 +1204,8 @@ void square_destroy_decoy(struct chunk *c, int y, int x)
 {
 	square_remove_all_traps(c, y, x);
 	c->decoy = loc(0, 0);
-	if (los(c, player->py, player->px, y, x) && !player->timed[TMD_BLIND]) {
+	if (los(c, loc(player->px, player->py), loc(x, y)) &&
+		!player->timed[TMD_BLIND]) {
 		msg("The decoy is destroyed!");
 	}
 }

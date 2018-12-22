@@ -180,7 +180,7 @@ static bool summon_possible(int y1, int x1)
 			if (square_iswarded(cave, y, x)) continue;
 
 			/* If it's empty floor grid in line of sight, we're good */
-			if (square_isempty(cave, y, x) && los(cave, y1, x1, y, x))
+			if (square_isempty(cave, y, x) && los(cave, loc(x1, y1), loc(x, y)))
 				return (true);
 		}
 	}

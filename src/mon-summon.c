@@ -302,20 +302,14 @@ static bool summon_specific_okay(struct monster_race *race)
  */
 bool can_call_monster(int y, int x, struct monster *mon)
 {
-	int oy, ox;
-
 	/* Skip dead monsters */
 	if (!mon->race) return (false);
 
 	/* Only consider callable monsters */
 	if (!summon_specific_okay(mon->race)) return (false);
 
-	/* Extract monster location */
-	oy = mon->grid.y;
-	ox = mon->grid.x;
-
 	/* Make sure the summoned monster is not in LOS of the summoner */
-	if (los(cave, y, x, oy, ox)) return (false);
+	if (los(cave, loc(x, y), mon->grid)) return (false);
 
 	return (true);
 }

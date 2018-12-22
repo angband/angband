@@ -81,7 +81,7 @@ int distance(struct loc grid1, struct loc grid2)
  * determining which grids are illuminated by the player's torch, and which
  * grids and monsters can be "seen" by the player, etc).
  */
-bool los(struct chunk *c, int y1, int x1, int y2, int x2)
+bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 {
 	/* Delta */
 	int dx, dy;
@@ -104,29 +104,26 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 	/* Slope, or 1/Slope, of LOS */
 	int m;
 
-
 	/* Extract the offset */
-	dy = y2 - y1;
-	dx = x2 - x1;
+	dy = grid2.y - grid1.y;
+	dx = grid2.x - grid1.x;
 
 	/* Extract the absolute offset */
 	ay = ABS(dy);
 	ax = ABS(dx);
 
-
 	/* Handle adjacent (or identical) grids */
 	if ((ax < 2) && (ay < 2)) return (true);
-
 
 	/* Directly South/North */
 	if (!dx) {
 		/* South -- check for walls */
 		if (dy > 0) {
-			for (ty = y1 + 1; ty < y2; ty++)
-				if (!square_isprojectable(c, ty, x1)) return (false);
+			for (ty = grid1.y + 1; ty < grid2.y; ty++)
+				if (!square_isprojectable(c, ty, grid1.x)) return (false);
 		} else { /* North -- check for walls */
-			for (ty = y1 - 1; ty > y2; ty--)
-				if (!square_isprojectable(c, ty, x1)) return (false);
+			for (ty = grid1.y - 1; ty > grid2.y; ty--)
+				if (!square_isprojectable(c, ty, grid1.x)) return (false);
 		}
 
 		/* Assume los */
@@ -137,11 +134,11 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 	if (!dy) {
 		/* East -- check for walls */
 		if (dx > 0) {
-			for (tx = x1 + 1; tx < x2; tx++)
-				if (!square_isprojectable(c, y1, tx)) return (false);
+			for (tx = grid1.x + 1; tx < grid2.x; tx++)
+				if (!square_isprojectable(c, grid1.y, tx)) return (false);
 		} else { /* West -- check for walls */
-			for (tx = x1 - 1; tx > x2; tx--)
-				if (!square_isprojectable(c, y1, tx)) return (false);
+			for (tx = grid1.x - 1; tx > grid2.x; tx--)
+				if (!square_isprojectable(c, grid1.y, tx)) return (false);
 		}
 
 		/* Assume los */
@@ -153,13 +150,14 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 	sx = (dx < 0) ? -1 : 1;
 	sy = (dy < 0) ? -1 : 1;
 
-	/* Vertical "knights" */
-	if ((ax == 1) && (ay == 2) && square_isprojectable(c, y1 + sy, x1))
+	/* Vertical and horizontal "knights" */
+	if ((ax == 1) && (ay == 2) &&
+		square_isprojectable(c, grid1.y + sy, grid1.x)) {
 		return (true);
-	
-	/* Horizontal "knights" */
-	else if ((ay == 1) && (ax == 2) && square_isprojectable(c, y1, x1 + sx))
+	} else if ((ay == 1) && (ax == 2) &&
+			   square_isprojectable(c, grid1.y, grid1.x + sx)) {
 		return (true);
+	}
 
 	/* Calculate scale factor div 2 */
 	f2 = (ax * ay);
@@ -174,19 +172,19 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 		qy = ay * ay;
 		m = qy << 1;
 
-		tx = x1 + sx;
+		tx = grid1.x + sx;
 
 		/* Consider the special case where slope == 1. */
 		if (qy == f2) {
-			ty = y1 + sy;
+			ty = grid1.y + sy;
 			qy -= f1;
 		} else {
-			ty = y1;
+			ty = grid1.y;
 		}
 
 		/* Note (below) the case (qy == f2), where */
 		/* the LOS exactly meets the corner of a tile. */
-		while (x2 - tx) {
+		while (grid2.x - tx) {
 			if (!square_isprojectable(c, ty, tx))
 				return (false);
 
@@ -211,18 +209,18 @@ bool los(struct chunk *c, int y1, int x1, int y2, int x2)
 		qx = ax * ax;
 		m = qx << 1;
 
-		ty = y1 + sy;
+		ty = grid1.y + sy;
 
 		if (qx == f2) {
-			tx = x1 + sx;
+			tx = grid1.x + sx;
 			qx -= f1;
 		} else {
-			tx = x1;
+			tx = grid1.x;
 		}
 
 		/* Note (below) the case (qx == f2), where */
 		/* the LOS exactly meets the corner of a tile. */
-		while (y2 - ty) {
+		while (grid2.y - ty) {
 			if (!square_isprojectable(c, ty, tx))
 				return (false);
 
@@ -456,7 +454,7 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 		/* Check the k'th monster */
 		struct monster *m = cave_monster(c, k);
 
-		bool in_los = los(c, from.y, from.x, m->grid.y, m->grid.x);
+		bool in_los = los(c, from, m->grid);
 
 		/* Skip dead monsters */
 		if (!m->race)
@@ -481,7 +479,7 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 					continue;
 				
 				/* If the tile itself isn't in LOS, don't light it */
-				if (!los(c, from.y, from.x, sy, sx))
+				if (!los(c, from, loc(sx, sy)))
 					continue;
 
 				/* Mark the square lit and seen */
@@ -631,7 +629,7 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 	}
 
 
-	if (los(c, py, px, yc, xc))
+	if (los(c, loc(px, py), loc(xc, yc)))
 		become_viewable(c, y, x, lit, py, px);
 }
 

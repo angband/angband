@@ -745,7 +745,7 @@ static struct monster *get_injured_kin(struct chunk *c, const struct monster *mo
 		return NULL;
 
 	/* Check line of sight */
-	if (los(c, mon->grid.y, mon->grid.x, y, x) == false)
+	if (los(c, mon->grid, loc(x, y)) == false)
 		return NULL;
 
 	/* Check injury */

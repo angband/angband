@@ -229,7 +229,7 @@ extern u16b chunk_list_max;
 
 /* cave-view.c */
 int distance(struct loc grid1, struct loc grid2);
-bool los(struct chunk *c, int y1, int x1, int y2, int x2);
+bool los(struct chunk *c, struct loc grid1, struct loc grid2);
 void update_view(struct chunk *c, struct player *p);
 bool no_light(void);
 
