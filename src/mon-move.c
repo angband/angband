@@ -202,6 +202,9 @@ static void get_move_find_range(struct monster *mon)
 	/* All "afraid" monsters will run away */
 	if (mon->m_timed[MON_TMD_FEAR]) {
 		mon->min_range = flee_range;
+	} else if (mon->group_info[PRIMARY_GROUP].role == MON_GROUP_BODYGUARD) {
+		/* Bodyguards don't flee */
+		mon->min_range = 1;
 	} else {
 		/* Minimum distance - stay at least this far if possible */
 		mon->min_range = 1;
@@ -274,6 +277,67 @@ static void get_move_find_range(struct monster *mon)
 }
 
 /**
+ * Choose the best direction for a bodyguard.
+ *
+ * The idea is to stay close to the group leader, but attack the player if the
+ * chance arises
+ */
+static bool get_move_bodyguard(struct chunk *c, struct monster *mon)
+{
+	int i;
+	struct monster *leader = monster_group_leader(c, mon);
+	int dist = distance(loc(mon->fx, mon->fy), loc(leader->fx, leader->fy));
+	struct loc best;
+	bool found = false;
+
+	/* If currently adjacent to the leader, we can afford a move */
+	if (dist <= 1) return false;
+
+	/* Check nearby adjacent grids and assess */
+	for (i = 0; i < 8; i++) {
+		/* Get the location */
+		int y = mon->fy + ddy_ddd[i];
+		int x = mon->fx + ddx_ddd[i];
+		int new_dist = distance(loc(x, y), loc(leader->fx, leader->fy));
+		int char_dist = distance(loc(x, y), loc(player->px, player->py));
+
+		/* Bounds check */
+		if (!square_in_bounds(c, y, x)) {
+			continue;
+		}
+
+		/* There's a monster blocking that we can't deal with */
+		if (!monster_can_kill(c, mon, y, x) && !monster_can_move(c, mon, y, x)){
+			continue;
+		}
+
+		/* There's damaging terrain */
+		if (monster_hates_grid(c, mon, y, x)) {
+			continue;
+		}
+
+		/* Closer to the leader is always better */
+		if (new_dist < dist) {
+			best = loc(x, y);
+			found = true;
+			/* If there's a grid that's also closer to the player, that wins */
+			if (char_dist < mon->cdis) {
+				break;
+			}
+		}
+	}
+
+	/* If we found one, set the target */
+	if (found) {
+		mon->target.grid = best;
+		return true;
+	}
+
+	return false;
+}
+
+
+/**
  * Choose the best direction to advance toward the player, using sound or scent.
  *
  * Ghosts and rock-eaters generally just head straight for the player. Other
@@ -308,6 +372,13 @@ static bool get_move_advance(struct chunk *c, struct monster *mon, bool *track)
 	struct loc backup_grid;
 	bool found_dir = false;
 	bool found_backup = false;
+
+	/* Bodyguards are special */
+	if (mon->group_info[PRIMARY_GROUP].role == MON_GROUP_BODYGUARD) {
+		if (get_move_bodyguard(c, mon)) {
+			return true;
+		}
+	}
 
 	/* If the monster can pass through nearby walls, do that */
 	if (monster_passes_walls(mon) && !monster_near_permwall(mon, c)) {

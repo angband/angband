@@ -46,7 +46,6 @@ struct monster_group *summon_group(struct chunk *c, int midx);
 void monster_group_rouse(struct chunk *c, struct monster *mon);
 int monster_primary_group_size(struct chunk *c, const struct monster *mon);
 int monster_group_leader_idx(struct monster_group *group);
-struct monster *monster_group_leader(struct chunk *c,
-									 struct monster_group *group);
+struct monster *monster_group_leader(struct chunk *c, struct monster *mon);
 
 #endif /* !MON_GROUP_H */

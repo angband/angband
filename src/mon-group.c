@@ -403,8 +403,9 @@ int monster_group_leader_idx(struct monster_group *group)
 /**
  * Get the leader of a monster group
  */
-struct monster *monster_group_leader(struct chunk *c,
-									 struct monster_group *group)
+struct monster *monster_group_leader(struct chunk *c, struct monster *mon)
 {
+	int index = mon->group_info[PRIMARY_GROUP].index;
+	struct monster_group *group = c->monster_groups[index];
 	return cave_monster(c, group->leader);
 }
