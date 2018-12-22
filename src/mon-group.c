@@ -79,19 +79,19 @@ static void monster_group_split(struct chunk *c, struct monster_group *group)
 
 			/* If it's the right group, add the monster and stop checking */
 			if (c->monsters[new_group->member_list->midx].race == mon->race) {
-				mon->group_info[0].index = temp[i];
-				mon->group_info[0].role = MON_GROUP_MEMBER;
+				mon->group_info[PRIMARY_GROUP].index = temp[i];
+				mon->group_info[PRIMARY_GROUP].role = MON_GROUP_MEMBER;
 				monster_add_to_group(c, mon, new_group);
 				break;
 			}
 		}
 
 		/* If the monster's still in the old group, make a new one */
-		if (mon->group_info[0].index == group->index) {
+		if (mon->group_info[PRIMARY_GROUP].index == group->index) {
 			monster_group_start(c, mon, 0);
 
 			/* Store the new index */
-			temp[current++] = mon->group_info[0].index;
+			temp[current++] = mon->group_info[PRIMARY_GROUP].index;
 		}
 		list_entry = list_entry->next;
 	}
@@ -140,14 +140,15 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 		struct monster *mon = cave_monster(c, list_entry->midx);
 
 		/* Summoned living monsters make their own group, others evaporate */
-		if (mon->group_info[0].role == MON_GROUP_SUMMON) {
+		if (mon->group_info[PRIMARY_GROUP].role == MON_GROUP_SUMMON) {
 			if (monster_is_nonliving(mon)) {
 				delete_monster_idx(list_entry->midx);
 			} else {
 				/* Some monsters have a group of summons already */
-				if (mon->group_info[1].index) {
-					mon->group_info[0].index = mon->group_info[1].index;
-					mon->group_info[1].index = 0;
+				if (mon->group_info[SUMMON_GROUP].index) {
+					mon->group_info[PRIMARY_GROUP].index =
+						mon->group_info[SUMMON_GROUP].index;
+					mon->group_info[SUMMON_GROUP].index = 0;
 				} else {
 					monster_group_start(c, mon, 0);
 				}
@@ -156,7 +157,7 @@ static void monster_group_remove_leader(struct chunk *c, struct monster *leader,
 
 		/* Record the leader */
 		if (mon->midx == poss_leader) {
-			mon->group_info[0].role = MON_GROUP_LEADER;
+			mon->group_info[PRIMARY_GROUP].role = MON_GROUP_LEADER;
 		}
 		list_entry = list_entry->next;
 	}
@@ -237,7 +238,7 @@ void monster_add_to_group(struct chunk *c, struct monster *mon,
 	struct mon_group_list_entry *list_entry;
 
 	/* Confirm we're adding to the right group */
-	assert(mon->group_info[0].index == group->index);
+	assert(mon->group_info[PRIMARY_GROUP].index == group->index);
 
 	/* Make a new list entry and add it to the start of the list */
 	list_entry = mem_zalloc(sizeof(struct mon_group_list_entry));
@@ -292,8 +293,8 @@ struct monster_group *monster_group_by_index(struct chunk *c, int index)
  */
 bool monster_group_change_index(struct chunk *c, int new, int old)
 {
-	int index0 = cave_monster(c, old)->group_info[0].index;
-	int index1 = cave_monster(c, old)->group_info[1].index;
+	int index0 = cave_monster(c, old)->group_info[PRIMARY_GROUP].index;
+	int index1 = cave_monster(c, old)->group_info[SUMMON_GROUP].index;
 	struct monster_group *group0 = monster_group_by_index(c, index0);
 	struct monster_group *group1 = monster_group_by_index(c, index1);
 	struct mon_group_list_entry *entry = group0->member_list;
@@ -334,12 +335,12 @@ bool monster_group_change_index(struct chunk *c, int new, int old)
 struct monster_group *summon_group(struct chunk *c, int midx)
 {
 	struct monster *mon = cave_monster(c, midx);
-	int index = mon->group_info[1].index;
+	int index = mon->group_info[SUMMON_GROUP].index;
 
 	/* Make a group if there isn't one already */
 	if (!index) {
 		monster_group_start(c, mon, 1);
-		index = mon->group_info[1].index;
+		index = mon->group_info[SUMMON_GROUP].index;
 	}
 
 	return monster_group_by_index(c, index);
@@ -351,7 +352,8 @@ struct monster_group *summon_group(struct chunk *c, int midx)
  */
 void monster_group_rouse(struct chunk *c, struct monster *mon)
 {
-	struct monster_group *group = c->monster_groups[mon->group_info[0].index];
+	int index = mon->group_info[PRIMARY_GROUP].index;
+	struct monster_group *group = c->monster_groups[index];
 	struct mon_group_list_entry *entry = group->member_list;
 	struct loc mon_grid = loc(mon->fx, mon->fy);
 

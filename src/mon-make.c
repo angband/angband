@@ -930,7 +930,7 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	assert(square_monster(c, grid) == new_mon);
 
 	/* Assign monster to its monster group, creating the group if necessary */
-	group = monster_group_by_index(c, new_mon->group_info[0].index);
+	group = monster_group_by_index(c, new_mon->group_info[PRIMARY_GROUP].index);
 	if (group) {
 		monster_add_to_group(c, new_mon, group);
 	} else {
@@ -1092,8 +1092,8 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 		mon->attr = randint1(BASIC_COLORS - 1);
 
 	/* Set the group info */
-	mon->group_info[0].index = group_info.index;
-	mon->group_info[0].role = group_info.role;
+	mon->group_info[PRIMARY_GROUP].index = group_info.index;
+	mon->group_info[PRIMARY_GROUP].role = group_info.role;
 
 	/* Place the monster in the dungeon */
 	if (!place_monster(c, grid, mon, origin))

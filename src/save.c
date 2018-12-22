@@ -247,10 +247,10 @@ static void wr_monster(const struct monster *mon)
 	object_delete(&dummy);
 
 	/* Write group info */
-	wr_u16b(mon->group_info[0].index);
-	wr_byte(mon->group_info[0].role);
-	wr_u16b(mon->group_info[1].index);
-	wr_byte(mon->group_info[1].role);
+	wr_u16b(mon->group_info[PRIMARY_GROUP].index);
+	wr_byte(mon->group_info[PRIMARY_GROUP].role);
+	wr_u16b(mon->group_info[SUMMON_GROUP].index);
+	wr_byte(mon->group_info[SUMMON_GROUP].role);
 }
 
 /**

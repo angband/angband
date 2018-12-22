@@ -259,6 +259,12 @@ struct monster_group_info {
 	enum monster_group_role role;
 };
 
+enum monster_group_type {
+	PRIMARY_GROUP,
+	SUMMON_GROUP,
+	GROUP_MAX
+};
+
 /**
  * How monsters mimic
  */
@@ -368,7 +374,7 @@ struct monster {
 
     struct target target;				/* Monster target */
 
-	struct monster_group_info group_info[2];/* Monster group details */
+	struct monster_group_info group_info[GROUP_MAX];/* Monster group details */
 	struct heatmap heatmap;				/* Monster location heatmap */
 
     byte min_range;						/* What is the closest we want to be? */
