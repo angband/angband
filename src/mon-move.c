@@ -1148,34 +1148,32 @@ static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
 	int move_ok = (monster_can_move(c, mon, new) &&
 				   square_ispassable(c, mon->grid));
 
-	if (compare_monsters(mon, mon1) > 0) {
+	if (kill_ok || move_ok) {
+		/* Get the names of the monsters involved */
+		char n_name[80];
+		monster_desc(n_name, sizeof(n_name), mon1, MDESC_IND_HID);
+
 		/* Learn about pushing and shoving */
 		if (monster_is_visible(mon)) {
 			rf_on(lore->flags, RF_KILL_BODY);
 			rf_on(lore->flags, RF_MOVE_BODY);
 		}
 
-		if (kill_ok || move_ok) {
-			/* Get the names of the monsters involved */
-			char n_name[80];
-			monster_desc(n_name, sizeof(n_name), mon1, MDESC_IND_HID);
+		/* Reveal mimics */
+		if (monster_is_mimicking(mon1))
+			become_aware(mon1);
 
-			/* Reveal mimics */
-			if (monster_is_mimicking(mon1))
-				become_aware(mon1);
+		/* Note if visible */
+		if (monster_is_visible(mon) && monster_is_in_view(mon))
+			msg("%s %s %s.", m_name, kill_ok ? "tramples over" : "pushes past",
+				n_name);
 
-			/* Note if visible */
-			if (monster_is_visible(mon) && monster_is_in_view(mon))
-				msg("%s %s %s.", m_name,
-					kill_ok ? "tramples over" : "pushes past", n_name);
+		/* Monster ate another monster */
+		if (kill_ok)
+			delete_monster(new);
 
-			/* Monster ate another monster */
-			if (kill_ok)
-				delete_monster(new);
-
-			monster_swap(mon->grid, new);
-			return true;
-		} 
+		monster_swap(mon->grid, new);
+		return true;
 	}
 
 	return false;

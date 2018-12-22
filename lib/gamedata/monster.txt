@@ -2330,7 +2330,7 @@ experience:100
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
 blow:HIT:HURT:1d10
-flags:UNIQUE | MALE
+flags:UNIQUE | MALE | MOVE_BODY
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 friends:100:1d10:Small kobold:servant
 friends:100:1d10:Kobold:servant
@@ -4900,7 +4900,7 @@ blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
-flags:UNIQUE
+flags:UNIQUE | MOVE_BODY
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 friends:50:3d4:Half-orc:servant
 friends:80:2d7:Warg
@@ -5409,7 +5409,7 @@ blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
-flags:UNIQUE
+flags:UNIQUE | MOVE_BODY
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 friends:50:2d4:Half-orc:servant
@@ -5553,7 +5553,7 @@ experience:1111
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
-flags:UNIQUE
+flags:UNIQUE | MOVE_BODY
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 friends:50:3d4:Half-orc:servant
 friends:80:2d7:Warg
@@ -7426,7 +7426,7 @@ experience:1500
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
-flags:UNIQUE | MALE
+flags:UNIQUE | MALE | MOVE_BODY
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 friends:100:3d3:Ogre:servant
 friends:100:3d3:Black ogre:servant
@@ -8890,7 +8890,7 @@ blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
 flags:UNIQUE | MALE | EVIL | HAS_LIGHT
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR
+flags:OPEN_DOOR | MOVE_BODY
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
