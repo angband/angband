@@ -1407,7 +1407,7 @@ void project_m(struct source origin, int r, int y, int x,
 			update_mon(mon, cave, false);
 
 		/* Redraw the (possibly new) monster grid */
-		square_light_spot(cave, mon->fy, mon->fx);
+		square_light_spot(cave, mon->grid.y, mon->grid.x);
 
 		/* Update monster recall window */
 		if (player->upkeep->monster_race == mon->race) {

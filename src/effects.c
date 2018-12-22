@@ -133,12 +133,12 @@ static void get_target(struct source origin, int dir, int *ty, int *tx, int *fla
 
 			if (randint1(100) > accuracy) {
 				dir = randint1(9);
-				*ty = monster->fy + ddy[dir];
-				*tx = monster->fx + ddx[dir];
+				*ty = monster->grid.y + ddy[dir];
+				*tx = monster->grid.x + ddx[dir];
 			} else if (monster->target.midx > 0) {
 				struct monster *mon = cave_monster(cave, monster->target.midx);
-				*ty = mon->fy;
-				*tx = mon->fx;
+				*ty = mon->grid.y;
+				*tx = mon->grid.x;
 			} else {
 				struct loc decoy = cave_find_decoy(cave);
 				if (decoy.y && decoy.x) {
@@ -1967,8 +1967,8 @@ static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
 		if (!mon->race) continue;
 
 		/* Location */
-		y = mon->fy;
-		x = mon->fx;
+		y = mon->grid.y;
+		x = mon->grid.x;
 
 		/* Only detect nearby monsters */
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
@@ -2359,7 +2359,7 @@ bool effect_handler_PROJECT_LOS(effect_handler_context_t *context)
 		if (!mon->race) continue;
 
 		/* Location */
-		grid = loc(mon->fx, mon->fy);
+		grid = mon->grid;
 
 		/* Require line of sight */
 		if (!los(cave, origin.y, origin.x, grid.y, grid.x)) continue;
@@ -2398,7 +2398,7 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 		if (!mon->race) continue;
 
 		/* Location */
-		grid = loc(mon->fx, mon->fy);
+		grid = mon->grid;
 
 		/* Require line of sight */
 		if (!square_isview(cave, grid.y, grid.x)) continue;
@@ -2437,7 +2437,7 @@ bool effect_handler_WAKE(effect_handler_context_t *context)
 			int radius = z_info->max_sight * 2;
 
 			/* Skip monsters too far away */
-			if (distance(origin, loc(mon->fx, mon->fy)) < radius &&
+			if (distance(origin, mon->grid) < radius &&
 					mon->m_timed[MON_TMD_SLEEP]) {
 				mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
 								false);
@@ -2488,7 +2488,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 			int temp;
 
 			/* Get a monster */
-			temp = summon_specific(mon->fy, mon->fx, rlev + level_boost,
+			temp = summon_specific(mon->grid.y, mon->grid.x, rlev + level_boost,
 					summon_type, false, false);
 
 			val += temp * temp;
@@ -2508,7 +2508,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 				int temp;
 
 				/* Get a monster */
-				temp = summon_specific(mon->fy, mon->fx, rlev + level_boost,
+				temp = summon_specific(mon->grid.y, mon->grid.x, rlev + level_boost,
 						fallback_type, false, false);
 
 				val += temp * temp;
@@ -2652,7 +2652,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 		if (!mon->race) continue;
 
 		/* Require line of sight */
-		if (!square_isview(cave, mon->fy, mon->fx)) continue;
+		if (!square_isview(cave, mon->grid.y, mon->grid.x)) continue;
 
 		/* Probe visible monsters */
 		if (monster_is_visible(mon)) {
@@ -2723,7 +2723,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		/* We're good */
 	} else if (t_mon) {
 		/* Monster targeting another monster */
-		start = loc(t_mon->fx, t_mon->fy);
+		start = loc(t_mon->grid.x, t_mon->grid.y);
 	} else if (is_player) {
 		/* Decoys get destroyed */
 		struct loc decoy = cave_find_decoy(cave);
@@ -2750,7 +2750,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	} else {
 		assert(context->origin.what == SRC_MONSTER);
 		struct monster *mon = cave_monster(cave, context->origin.which.monster);
-		start = loc(mon->fx, mon->fy);
+		start = mon->grid;
 	}
 
 	/* Percentage of the largest cardinal distance to an edge */
@@ -2880,8 +2880,8 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	/* Where are we coming from? */
 	if (t_mon) {
 		/* Monster being teleported */
-		y = t_mon->fy;
-		x = t_mon->fx;
+		y = t_mon->grid.y;
+		x = t_mon->grid.x;
 	} else {
 		/* Targeted decoys get destroyed */
 		struct loc decoy = cave_find_decoy(cave);
@@ -2903,8 +2903,8 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		nx = context->x;
 	} else if (mon) {
 		/* Spell cast by monster */
-		ny = mon->fy;
-		nx = mon->fx;
+		ny = mon->grid.y;
+		nx = mon->grid.x;
 	} else {
 		/* Player choice */
 		get_aim_dir(&dir);
@@ -3550,7 +3550,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	/* Check for monster targeting another monster */
 	if (t_mon) {
 		char m_name[80];
-		target = loc(t_mon->fx, t_mon->fy);
+		target = t_mon->grid;
 		monster_desc(m_name, sizeof(m_name), t_mon, MDESC_TARG);
 		if (message) {
 			msg("Darkness surrounds %s.", m_name);
@@ -3669,10 +3669,10 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			if (randint1(100) > accuracy) {
 				/* Confiused direction */
 				int dir = randint1(9);
-				target = loc(mon->fx + ddx[dir], mon->fy + ddy[dir]);
+				target = loc(mon->grid.x + ddx[dir], mon->grid.y + ddy[dir]);
 			} else if (t_mon) {
 				/* Target monster */
-				target = loc(t_mon->fx, t_mon->fy);
+				target = t_mon->grid;
 			} else {
 				/* Target player */
 				struct loc decoy = cave_find_decoy(cave);
@@ -3751,7 +3751,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 		/* Target player or monster? */
 		if (t_mon) {
-			target = loc(t_mon->fx, t_mon->fy);
+			target = t_mon->grid;
 		} else {
 			struct loc decoy = cave_find_decoy(cave);
 			if (decoy.y && decoy.x) {
@@ -4185,7 +4185,7 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
 		if (t_mon) {
 			int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
 			return (project(source_monster(mon->target.midx), rad,
-							loc(t_mon->fx, t_mon->fy), dam, context->subtype,
+							t_mon->grid, dam, context->subtype,
 							flg, 0, 0, context->obj));
 		}
 	}
@@ -4706,8 +4706,8 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 		/* Now tidy up */
 		mon->midx = first_mon->midx;
 		first_mon->midx = 1;
-		cave->squares[first_mon->fy][first_mon->fx].mon = 1;
-		cave->squares[mon->fy][mon->fx].mon = mon->midx;
+		cave->squares[first_mon->grid.y][first_mon->grid.x].mon = 1;
+		cave->squares[mon->grid.y][mon->grid.x].mon = mon->midx;
 
 		/* Repair objects being carried by monsters */
 		for (obj = mon->held_obj; obj; obj = obj->next) {

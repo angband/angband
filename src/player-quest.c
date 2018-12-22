@@ -235,7 +235,7 @@ bool quest_check(const struct monster *m) {
 	}
 
 	/* Build magical stairs */
-	build_quest_stairs(m->fy, m->fx);
+	build_quest_stairs(m->grid.y, m->grid.x);
 
 	/* Nothing left, game over... */
 	if (total == 0) {

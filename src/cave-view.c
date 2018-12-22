@@ -456,7 +456,7 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 		/* Check the k'th monster */
 		struct monster *m = cave_monster(c, k);
 
-		bool in_los = los(c, from.y, from.x, m->fy, m->fx);
+		bool in_los = los(c, from.y, from.x, m->grid.y, m->grid.x);
 
 		/* Skip dead monsters */
 		if (!m->race)
@@ -469,8 +469,8 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 		/* Light a 3x3 box centered on the monster */
 		for (i = -1; i <= 1; i++)
 			for (j = -1; j <= 1; j++) {
-				int sy = m->fy + i;
-				int sx = m->fx + j;
+				int sy = m->grid.y + i;
+				int sx = m->grid.x + j;
 				
 				/* If the monster isn't visible we can only light open tiles */
 				if (!in_los && !square_isprojectable(c, sy, sx))

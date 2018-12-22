@@ -389,7 +389,7 @@ struct loc origin_get_loc(struct source origin)
 	switch (origin.what) {
 		case SRC_MONSTER: {
 			struct monster *who = cave_monster(cave, origin.which.monster);
-			return loc(who->fx, who->fy);
+			return who->grid;
 		}
 
 		case SRC_TRAP: {
@@ -946,8 +946,8 @@ bool project(struct source origin, int rad, struct loc finish,
 				num_hit++;
 
 				/* Monster location may have been updated by project_m() */
-				last_hit_x = mon->fx;
-				last_hit_y = mon->fy;
+				last_hit_x = mon->grid.x;
+				last_hit_y = mon->grid.y;
 			}
 		}
 

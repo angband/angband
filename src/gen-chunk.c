@@ -270,8 +270,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 				/* Adjust stuff */
 				dest_mon->midx = idx;
-				dest_mon->fy = dest_y;
-				dest_mon->fx = dest_x;
+				dest_mon->grid = loc(dest_x, dest_y);
 
 				/* Held objects */
 				if (source_mon->held_obj)

@@ -326,8 +326,7 @@ struct monster {
 	struct monster_race *race;
 	int midx;
 
-	byte fy;			/* Y location on map */
-	byte fx;			/* X location on map */
+	struct loc grid;					/* Location on map */
 
 	s16b hp;			/* Current Hit points */
 	s16b maxhp;			/* Max Hit points */

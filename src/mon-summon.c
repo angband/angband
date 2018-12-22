@@ -311,8 +311,8 @@ bool can_call_monster(int y, int x, struct monster *mon)
 	if (!summon_specific_okay(mon->race)) return (false);
 
 	/* Extract monster location */
-	oy = mon->fy;
-	ox = mon->fx;
+	oy = mon->grid.y;
+	ox = mon->grid.x;
 
 	/* Make sure the summoned monster is not in LOS of the summoner */
 	if (los(cave, y, x, oy, ox)) return (false);
@@ -368,8 +368,8 @@ int call_monster(int y, int x)
 	mem_free(mon_indices);
 
 	/* Extract monster location */
-	oy = mon->fy;
-	ox = mon->fx;
+	oy = mon->grid.y;
+	ox = mon->grid.x;
 
 	/* Swap the moster */
 	monster_swap(oy, ox, y, x);

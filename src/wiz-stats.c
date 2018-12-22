@@ -1107,7 +1107,7 @@ void monster_death_stats(int m_idx)
 		obj->held_m_idx = 0;
 
 		/* Get data */
-		get_obj_data(obj, mon->fy, mon->fx, true, uniq);
+		get_obj_data(obj, mon->grid.y, mon->grid.x, true, uniq);
 
 		/* Delete the object */
 		delist_object(cave, obj);

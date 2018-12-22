@@ -2669,8 +2669,7 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 	/* Place the monster */
 	memcpy(&c->monsters[mon->midx], mon, sizeof(*mon));
 	mon = &c->monsters[mon->midx];
-	mon->fy = 1;
-	mon->fx = c->width - 2;
+	mon->grid = loc(c->width - 2, 1);
 	c->squares[1][c->width - 2].mon = mon->midx;
 	c->mon_max = mon->midx + 1;
 	c->mon_cnt = 1;

@@ -273,7 +273,7 @@ static void project_player_handler_NEXUS(project_player_handler_context_t *conte
 
 	if (one_in_(3) && mon) { /* Teleport to */
 		effect_simple(EF_TELEPORT_TO, context->origin, "0", 0, 0, 0,
-					  mon->fy, mon->fx, NULL);
+					  mon->grid.y, mon->grid.x, NULL);
 	} else if (one_in_(4)) { /* Teleport level */
 		if (randint0(100) < player->state.skills[SKILL_SAVE]) {
 			msg("You avoid the effect!");

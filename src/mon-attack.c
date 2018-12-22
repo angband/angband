@@ -78,7 +78,7 @@ bool monster_can_cast(struct monster *mon)
 	if (mon->cdis > z_info->max_range) return false;
 
 	/* Check path */
-	if (!projectable(cave, mon->fy, mon->fx, py, px, PROJECT_NONE))
+	if (!projectable(cave, mon->grid.y, mon->grid.x, py, px, PROJECT_NONE))
 		return false;
 
 	return true;
@@ -301,12 +301,12 @@ bool make_attack_spell(struct monster *mon)
 
 		/* Check for a clean bolt shot */
 		if (test_spells(f, RST_BOLT) &&
-			!projectable(cave, mon->fy, mon->fx, py, px, PROJECT_STOP)) {
+			!projectable(cave, mon->grid.y, mon->grid.x, py, px, PROJECT_STOP)) {
 			ignore_spells(f, RST_BOLT);
 		}
 
 		/* Check for a possible summon */
-		if (!summon_possible(mon->fy, mon->fx)) {
+		if (!summon_possible(mon->grid.y, mon->grid.x)) {
 			ignore_spells(f, RST_SUMMON);
 		}
 	}
@@ -703,7 +703,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
-		int ty = t_mon->fy, tx = t_mon->fx;
+		int ty = t_mon->grid.y, tx = t_mon->grid.x;
 		bool visible = monster_is_visible(mon) ||
 			rf_has(mon->race->flags, RF_HAS_LIGHT);
 		bool obvious = false;

@@ -98,7 +98,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 bool target_able(struct monster *m)
 {
 	return m && m->race && monster_is_obvious(m) &&
-		projectable(cave, player->py, player->px, m->fy, m->fx, PROJECT_NONE) &&
+		projectable(cave, player->py, player->px, m->grid.y, m->grid.x, PROJECT_NONE) &&
 		!player->timed[TMD_IMAGE];
 }
 
@@ -119,8 +119,7 @@ bool target_okay(void)
 		struct monster *mon = cave_monster(cave, target.midx);
 		if (target_able(mon)) {
 			/* Get the monster location */
-			target.grid.y = mon->fy;
-			target.grid.x = mon->fx;
+			target.grid = mon->grid;
 
 			/* Good target */
 			return true;
@@ -144,8 +143,7 @@ bool target_set_monster(struct monster *mon)
 	if (mon && target_able(mon)) {
 		target_set = true;
 		target.midx = mon->midx;
-		target.grid.y = mon->fy;
-		target.grid.x = mon->fx;
+		target.grid = mon->grid;
 		return true;
 	}
 

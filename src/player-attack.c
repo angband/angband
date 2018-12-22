@@ -269,8 +269,8 @@ static void blow_side_effects(struct player *p, struct monster *mon)
 static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 							bool *fear)
 {
-	int y = mon->fy;
-	int x = mon->fx;
+	int y = mon->grid.y;
+	int x = mon->grid.x;
 	int dy = y - p->py;
 	int dx = x - p->px;
 	int power = (p->state.num_blows - 100) / 100;
@@ -293,7 +293,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 				break;
 			} else {
 				/* Push back a square */
-				monster_swap(mon->fy, mon->fx, y, x);
+				monster_swap(mon->grid.y, mon->grid.x, y, x);
 				power--;
 			}
 		} else {
@@ -303,7 +303,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 			if (square_isdoor(cave, y, x)) {
 				if (power >= 1) {
 					square_open_door(cave, y, x);
-					monster_swap(mon->fy, mon->fx, y, x);
+					monster_swap(mon->grid.y, mon->grid.x, y, x);
 					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
 					power--;
 					moved = true;
@@ -311,7 +311,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 			} else if (square_isrubble(cave, y, x)) {
 				if (power >= 1) {
 					square_destroy_wall(cave, y, x);
-					monster_swap(mon->fy, mon->fx, y, x);
+					monster_swap(mon->grid.y, mon->grid.x, y, x);
 					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
 					power--;
 					moved = true;
@@ -319,7 +319,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 			} else if (square_ismagma(cave, y, x)) {
 				if (power >= 1) {
 					square_destroy_wall(cave, y, x);
-					monster_swap(mon->fy, mon->fx, y, x);
+					monster_swap(mon->grid.y, mon->grid.x, y, x);
 					if (square_hasgoldvein(cave, y, x)) {
 						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
 					}
@@ -335,7 +335,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 			} else if (square_isquartz(cave, y, x)) {
 				if (power >= 2) {
 					square_destroy_wall(cave, y, x);
-					monster_swap(mon->fy, mon->fx, y, x);
+					monster_swap(mon->grid.y, mon->grid.x, y, x);
 					if (square_hasgoldvein(cave, y, x)) {
 						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
 					}
@@ -351,7 +351,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 			} else if (square_isgranite(cave, y, x)) {
 				if (power >= 3) {
 					square_destroy_wall(cave, y, x);
-					monster_swap(mon->fy, mon->fx, y, x);
+					monster_swap(mon->grid.y, mon->grid.x, y, x);
 					if (randint0(20) < power) {
 						effect_simple(EF_EARTHQUAKE,
 									  source_monster(mon->midx), "0",
@@ -370,7 +370,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 		}
 	}
 	/* Player needs to stop hitting if the monster has moved */
-	return (ABS(mon->fy - p->py) > 1) || (ABS(mon->fx - p->px) > 1);
+	return (ABS(mon->grid.y - p->py) > 1) || (ABS(mon->grid.x - p->px) > 1);
 }
 
 /**

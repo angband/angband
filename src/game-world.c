@@ -313,7 +313,7 @@ static void decrease_timeouts(void)
 			case TMD_COMMAND:
 			{
 				struct monster *mon = get_commanded_monster();
-				if (!los(cave, player->py, player->px, mon->fy, mon->fx)) {
+				if (!los(cave, player->py, player->px, mon->grid.y, mon->grid.x)) {
 					/* Out of sight is out of mind */
 					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY,
 									false);
@@ -801,7 +801,7 @@ static void process_player_cleanup(void)
 					continue;
 				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
 					continue;
-				square_light_spot(cave, mon->fy, mon->fx);
+				square_light_spot(cave, mon->grid.y, mon->grid.x);
 			}
 
 			/* Clear NICE flag, and show marked monsters */

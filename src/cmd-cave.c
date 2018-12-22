@@ -1500,7 +1500,7 @@ void do_cmd_mon_command(struct command *cmd)
 			struct object *obj = get_random_monster_object(mon);
 			obj->held_m_idx = 0;
 			pile_excise(&mon->held_obj, obj);
-			drop_near(cave, &obj, 0, mon->fy, mon->fx, true);
+			drop_near(cave, &obj, 0, mon->grid.y, mon->grid.x, true);
 
 			break;
 		}
@@ -1517,8 +1517,8 @@ void do_cmd_mon_command(struct command *cmd)
 			/* Get arguments */
 			if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 				return;
-			ny = mon->fy + ddy[dir];
-			nx = mon->fx + ddx[dir];
+			ny = mon->grid.y + ddy[dir];
+			nx = mon->grid.x + ddx[dir];
 
 			/* Monster there - attack */
 			t_mon = square_monster(cave, ny, nx);
@@ -1599,7 +1599,7 @@ void do_cmd_mon_command(struct command *cmd)
 			if (has_hit) {
 				break;
 			} else if (can_move) {
-				monster_swap(mon->fy, mon->fx, ny, nx);
+				monster_swap(mon->grid.y, mon->grid.x, ny, nx);
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 			} else {
 				msg("The way is blocked.");

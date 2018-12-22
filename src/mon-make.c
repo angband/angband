@@ -132,8 +132,8 @@ void delete_monster_idx(int m_idx)
 
 	struct monster *mon = cave_monster(cave, m_idx);
 
-	int y = mon->fy;
-	int x = mon->fx;
+	int y = mon->grid.y;
+	int x = mon->grid.x;
 	assert(square_in_bounds(cave, y, x));
 
 	/* Hack -- Reduce the racial counter */
@@ -216,8 +216,8 @@ static void compact_monsters_aux(int i1, int i2)
 
 	/* Old monster */
 	mon = cave_monster(cave, i1);
-	y = mon->fy;
-	x = mon->fx;
+	y = mon->grid.y;
+	x = mon->grid.x;
 
 	/* Update the cave */
 	cave->squares[y][x].mon = i2;
@@ -312,7 +312,7 @@ void compact_monsters(int num_to_compact)
 			if (randint0(100) < chance) continue;
 
 			/* Delete the monster */
-			delete_monster(mon->fy, mon->fx);
+			delete_monster(mon->grid.y, mon->grid.x);
 
 			/* Count the monster */
 			num_compacted++;
@@ -372,8 +372,8 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 		/* Reduce the racial counter */
 		mon->race->cur_num--;
 
-		/* Monster is gone */
-		c->squares[mon->fy][mon->fx].mon = 0;
+		/* Monster is gone from square */
+		c->squares[mon->grid.y][mon->grid.x].mon = 0;
 
 		/* Wipe the Monster */
 		memset(mon, 0, sizeof(struct monster));
@@ -810,7 +810,7 @@ void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
 	mon->mimicked_obj = obj;
 
 	/* Put the object on the floor if it goes, otherwise no mimicry */
-	if (floor_carry(c, mon->fy, mon->fx, obj, &dummy)) {
+	if (floor_carry(c, mon->grid.y, mon->grid.x, obj, &dummy)) {
 		list_object(c, obj);
 	} else {
 		/* Clear the mimicry */
@@ -864,8 +864,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 
 	/* Set the location */
 	c->squares[y][x].mon = new_mon->midx;
-	new_mon->fy = y;
-	new_mon->fx = x;
+	new_mon->grid = loc(x, y);
 	assert(square_monster(c, y, x) == new_mon);
 
 	update_mon(new_mon, c, true);

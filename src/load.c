@@ -264,8 +264,10 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	}
 
 	/* Read the other information */
-	rd_byte(&mon->fy);
-	rd_byte(&mon->fx);
+	rd_byte(&tmp8u);
+	mon->grid.y = tmp8u;
+	rd_byte(&tmp8u);
+	mon->grid.x = tmp8u;
 	rd_s16b(&mon->hp);
 	rd_s16b(&mon->maxhp);
 	rd_byte(&mon->mspeed);
@@ -289,7 +291,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 
 	if (tmp16u) {
 		/* Find and set the mimicked object */
-		struct object *square_obj = square_object(c, mon->fy, mon->fx);
+		struct object *square_obj = square_object(c, mon->grid.y, mon->grid.x);
 
 		/* Try and find the mimicked object; if we fail, create a new one */
 		while (square_obj) {
@@ -1380,7 +1382,7 @@ static int rd_monsters_aux(struct chunk *c)
 		}
 
 		/* Place monster in dungeon */
-		if (place_monster(c, mon->fy, mon->fx, mon, 0) != i) {
+		if (place_monster(c, mon->grid.y, mon->grid.x, mon, 0) != i) {
 			note(format("Cannot place monster %d", i));
 			return (-1);
 		}

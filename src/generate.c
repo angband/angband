@@ -1277,8 +1277,8 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				/* Failed to find, try near the killed monster */
 				if (!found) {
 					int k;
-					int ty = (*c)->monsters[1].fy;
-					int tx = (*c)->monsters[1].fx;
+					int ty = (*c)->monsters[1].grid.y;
+					int tx = (*c)->monsters[1].grid.x;
 					for (k = 1; k < 10; k++) {
 						for (y = ty - k; y <= ty + k; y++) {
 							for (x = tx - k; x <= tx + k; x++) {
@@ -1299,8 +1299,8 @@ void prepare_next_level(struct chunk **c, struct player *p)
 
 				/* Still failed to find, try anywhere */
 				if (!found) {
-					p->py = (*c)->monsters[1].fy;
-					p->px = (*c)->monsters[1].fx;
+					p->py = (*c)->monsters[1].grid.y;
+					p->px = (*c)->monsters[1].grid.x;
 					sanitize_player_loc(*c, p);
 				}
 

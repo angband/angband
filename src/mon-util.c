@@ -287,8 +287,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 	lore = get_lore(mon->race);
 	
-	fy = mon->fy;
-	fx = mon->fx;
+	fy = mon->grid.y;
+	fx = mon->grid.x;
 
 	/* Compute distance, or just use the current one */
 	if (full) {
@@ -541,8 +541,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	if (m1 > 0) {
 		/* Monster */
 		mon = cave_monster(cave, m1);
-		mon->fy = y2;
-		mon->fx = x2;
+		mon->grid = loc(x2, y2);
 
 		/* Update monster */
 		update_mon(mon, cave, true);
@@ -578,8 +577,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	if (m2 > 0) {
 		/* Monster */
 		mon = cave_monster(cave, m2);
-		mon->fy = y1;
-		mon->fx = x1;
+		mon->grid = loc(x1, y1);
 
 		/* Update monster */
 		update_mon(mon, cave, true);
@@ -664,8 +662,8 @@ void become_aware(struct monster *mon)
 		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
 
-	square_note_spot(cave, mon->fy, mon->fx);
-	square_light_spot(cave, mon->fy, mon->fx);
+	square_note_spot(cave, mon->grid.y, mon->grid.x);
+	square_light_spot(cave, mon->grid.y, mon->grid.x);
 }
 
 /**
@@ -735,7 +733,7 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
 static struct monster *get_injured_kin(struct chunk *c, const struct monster *mon, int x, int y)
 {
 	/* Ignore the monster itself */
-	if (y == mon->fy && x == mon->fx)
+	if (y == mon->grid.y && x == mon->grid.x)
 		return NULL;
 
 	/* Check kin */
@@ -747,7 +745,7 @@ static struct monster *get_injured_kin(struct chunk *c, const struct monster *mo
 		return NULL;
 
 	/* Check line of sight */
-	if (los(c, mon->fy, mon->fx, y, x) == false)
+	if (los(c, mon->grid.y, mon->grid.x, y, x) == false)
 		return NULL;
 
 	/* Check injury */
@@ -755,7 +753,7 @@ static struct monster *get_injured_kin(struct chunk *c, const struct monster *mo
 		return NULL;
 
 	/* Check distance */
-	if (distance(loc(mon->fx, mon->fy), loc(x, y)) > MAX_KIN_DISTANCE)
+	if (distance(mon->grid, loc(x, y)) > MAX_KIN_DISTANCE)
 		return NULL;
 
 	return kin;
@@ -768,8 +766,8 @@ static struct monster *get_injured_kin(struct chunk *c, const struct monster *mo
  */
 bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon)
 {
-	for (int y = mon->fy - MAX_KIN_RADIUS; y <= mon->fy + MAX_KIN_RADIUS; y++) {
-		for (int x = mon->fx - MAX_KIN_RADIUS; x <= mon->fx + MAX_KIN_RADIUS; x++) {
+	for (int y = mon->grid.y - MAX_KIN_RADIUS; y <= mon->grid.y + MAX_KIN_RADIUS; y++) {
+		for (int x = mon->grid.x - MAX_KIN_RADIUS; x <= mon->grid.x + MAX_KIN_RADIUS; x++) {
 			if (get_injured_kin(c, mon, x, y) != NULL) {
 				return true;
 			}
@@ -789,8 +787,8 @@ struct monster *choose_nearby_injured_kin(struct chunk *c, const struct monster 
 {
 	struct set *set = set_new();
 
-	for (int y = mon->fy - MAX_KIN_RADIUS; y <= mon->fy + MAX_KIN_RADIUS; y++) {
-		for (int x = mon->fx - MAX_KIN_RADIUS; x <= mon->fx + MAX_KIN_RADIUS; x++) {
+	for (int y = mon->grid.y - MAX_KIN_RADIUS; y <= mon->grid.y + MAX_KIN_RADIUS; y++) {
+		for (int x = mon->grid.x - MAX_KIN_RADIUS; x <= mon->grid.x + MAX_KIN_RADIUS; x++) {
 			struct monster *kin = get_injured_kin(c, mon, x, y);
 			if (kin != NULL) {
 				set_add(set, kin);
@@ -858,7 +856,7 @@ void monster_death(struct monster *mon, bool stats)
 		if (!visible && !stats)
 			obj->origin = ORIGIN_DROP_UNKNOWN;
 
-		drop_near(cave, &obj, 0, mon->fy, mon->fx, true);
+		drop_near(cave, &obj, 0, mon->grid.y, mon->grid.x, true);
 		obj = next;
 	}
 
@@ -1124,7 +1122,7 @@ void kill_arena_monster(struct monster *mon)
 void monster_take_terrain_damage(struct monster *mon)
 {
 	/* Damage the monster */
-	if (square_isfiery(cave, mon->fy, mon->fx)) {
+	if (square_isfiery(cave, mon->grid.y, mon->grid.x)) {
 		bool fear = false;
 
 		if (!rf_has(mon->race->flags, RF_IM_FIRE)) {

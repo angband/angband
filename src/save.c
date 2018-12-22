@@ -206,8 +206,8 @@ static void wr_monster(const struct monster *mon)
 	struct object *dummy = object_new();
 
 	wr_string(mon->race->name);
-	wr_byte(mon->fy);
-	wr_byte(mon->fx);
+	wr_byte(mon->grid.y);
+	wr_byte(mon->grid.x);
 	wr_s16b(mon->hp);
 	wr_s16b(mon->maxhp);
 	wr_byte(mon->mspeed);
