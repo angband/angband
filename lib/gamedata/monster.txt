@@ -1493,11 +1493,11 @@ rarity:1
 experience:18
 blow:HIT:HURT:1d5
 blow:HIT:HURT:1d5
-flags:MALE | HAS_LIGHT
+flags:MALE | HAS_LIGHT | ARCHER
 flags:DROP_60
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
-spell-freq:9
+spell-freq:3
 spell-power:4
 spells:ARROW_1 | MISSILE
 drop-base:magic book:3:1:1
@@ -1657,8 +1657,8 @@ depth:4
 rarity:1
 experience:20
 blow:HIT:HURT:1d9
-flags:DROP_40
-spell-freq:5
+flags:DROP_40 | ARCHER
+spell-freq:3
 spell-power:4
 spells:ARROW_2
 friends-base:30:1d2:kobold

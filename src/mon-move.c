@@ -262,8 +262,9 @@ static void get_move_find_range(struct monster *mon)
 	mon->best_range = mon->min_range;
 
 	/* Archers are quite happy at a good distance */
-	//if (rf_has(mon->race->flags, RF_ARCHER))
-	//	mon->best_range += 3;
+	if (rf_has(mon->race->flags, RF_ARCHER)) {
+		mon->best_range += 3;
+	}
 
 	if (mon->race->freq_spell > 24) {
 		/* Breathers like point blank range */
