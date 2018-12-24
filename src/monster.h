@@ -274,6 +274,16 @@ struct monster_mimic {
 };
 
 /**
+ * Different shapes a monster can take
+ */
+struct monster_shape {
+	struct monster_shape *next;
+	char *name;
+	struct monster_race *race;
+	struct monster_base *base;
+};
+
+/**
  * Monster "race" information, including racial memories
  *
  * Note that "d_attr" and "d_char" are used for MORE than "visual" stuff.
@@ -335,6 +345,9 @@ struct monster_race {
     struct monster_friends_base *friends_base;
     
 	struct monster_mimic *mimic_kinds;
+
+	struct monster_shape *shapes;
+	int num_shapes;
 };
 
 
