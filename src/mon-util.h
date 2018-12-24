@@ -48,5 +48,7 @@ void monster_take_terrain_damage(struct monster *mon);
 struct monster *get_commanded_monster(void);
 struct object *get_random_monster_object(struct monster *mon);
 void steal_monster_item(struct monster *mon, int midx);
+bool monster_change_shape(struct monster *mon);
+bool monster_revert_shape(struct monster *mon);
 
 #endif /* MONSTER_UTILITIES_H */

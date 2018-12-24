@@ -1383,3 +1383,20 @@ void steal_monster_item(struct monster *mon, int midx)
 		}
 	}
 }
+
+
+/**
+ * Monster shapechange
+ */
+bool monster_change_shape(struct monster *mon)
+{
+	return false;
+}
+
+/**
+ * Monster reverse shapechange
+ */
+bool monster_revert_shape(struct monster *mon)
+{
+	return false;
+}

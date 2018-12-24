@@ -35,7 +35,7 @@
  * ------------------------------------------------------------------------ */
 
 const char *list_player_flag_names[] = {
-#define PF(a, b, c) #a,
+	#define PF(a, b, c) #a,
 	#include "list-player-flags.h"
 	#undef ELEM
 	NULL

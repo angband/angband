@@ -780,6 +780,15 @@ message-vis:{name} tries to make {target} forget things.
 message-invis:Something messes with your mind.
 message-save:You retain your presence of mind.
 
+name:SHAPECHANGE
+hit:100
+effect:MON_TIMED_INC:CHANGED
+dice:5+d10
+lore:change shape
+lore-color-base:Orange
+message-vis:{name} intones strange sounds.
+message-invis:Something mutters.
+
 name:S_KIN
 msgt:SUM_MONSTER
 hit:100

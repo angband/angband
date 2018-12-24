@@ -202,6 +202,17 @@ static bool mon_set_timed(struct monster *mon,
 			add_monster_message(mon, m_note, true);
 	}
 
+	/* Special case - deal with monster shapechanges */
+	if (effect_type == MON_TMD_CHANGED) {
+		if (timer) {
+			if (!monster_change_shape(mon))
+				quit ("Monster shapechange failed!");
+		} else {
+			if (!monster_revert_shape(mon))
+				quit ("Monster shapechange reversion failed!");
+		}
+	}
+
 	return !resisted;
 }
 
