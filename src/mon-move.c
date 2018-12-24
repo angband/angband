@@ -1560,6 +1560,10 @@ static bool process_monster_timed(struct chunk *c, struct monster *mon)
 		mon_dec_timed(mon, MON_TMD_CONF, 1, MON_TMD_FLG_NOTIFY);
 	}
 
+	if (mon->m_timed[MON_TMD_CHANGED]) {
+		mon_dec_timed(mon, MON_TMD_CHANGED, 1, MON_TMD_FLG_NOTIFY);
+	}
+
 	if (mon->m_timed[MON_TMD_FEAR]) {
 		int d = randint1(mon->race->level / 10 + 1);
 		mon_dec_timed(mon, MON_TMD_FEAR, d, MON_TMD_FLG_NOTIFY);

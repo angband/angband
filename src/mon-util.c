@@ -27,6 +27,7 @@
 #include "mon-msg.h"
 #include "mon-predicate.h"
 #include "mon-spell.h"
+#include "mon-summon.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "obj-desc.h"
@@ -909,6 +910,17 @@ static void player_kill_monster(struct monster *mon, const char *note)
 	/* Assume normal death sound */
 	int soundfx = MSG_KILL;
 
+	/* Extract monster name */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+
+	/* Shapechanged monsters revert on death */
+	if (mon->original_race) {
+		msg("A change comes over %s", m_name);
+		monster_revert_shape(mon);
+		lore = get_lore(mon->race);
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
+	}
+
 	/* Play a special sound if the monster was unique */
 	if (rf_has(mon->race->flags, RF_UNIQUE)) {
 		if (mon->race->base == lookup_monster_base("Morgoth"))
@@ -916,9 +928,6 @@ static void player_kill_monster(struct monster *mon, const char *note)
 		else
 			soundfx = MSG_KILL_UNIQUE;
 	}
-
-	/* Extract monster name */
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_DEFAULT);
 
 	/* Death message */
 	if (note) {
@@ -1386,11 +1395,98 @@ void steal_monster_item(struct monster *mon, int midx)
 
 
 /**
+ * The shape base for shapechanges
+ */
+struct monster_base *shape_base;
+
+/**
+ * Predicate function for get_mon_num_prep
+ * Check to see if the monster race has the same base as the desired shape
+ */
+static bool monster_base_shape_okay(struct monster_race *race)
+{
+	assert(race);
+
+	/* Check if it matches */
+	if (race->base != shape_base) return false;
+
+	return true;
+}
+
+/**
  * Monster shapechange
  */
 bool monster_change_shape(struct monster *mon)
 {
-	return false;
+	struct monster_shape *shape = mon->race->shapes;
+	struct monster_race *race = NULL;
+
+	/* Use the monster's preferred shapes if any */
+	if (shape) {
+		/* Pick one */
+		int choice = randint0(mon->race->num_shapes);
+		while (choice--) {
+			shape = shape->next;
+		}
+
+		/* Race or base? */
+		if (shape->race) {
+			/* Simple */
+			race = shape->race;
+		} else {
+			/* Set the shape base */
+			shape_base = shape->base;
+
+			/* Choose a race of the given base */
+			get_mon_num_prep(monster_base_shape_okay);
+
+			/* Pick a random race */
+			race = get_mon_num(player->depth + 5);
+
+			/* Reset allocation table */
+			get_mon_num_prep(NULL);
+		}
+	} else {
+		/* Choose something the monster can summon */
+		bitflag summon_spells[RSF_SIZE];
+		int i, poss = 0, which, index, summon_type;
+		const struct monster_spell *spell;
+
+		/* Extract the summon spells */
+		create_mon_spell_mask(summon_spells, RST_SUMMON, RST_NONE);
+		rsf_inter(summon_spells, mon->race->spell_flags);
+
+		/* Count possibilities */
+		for (i = rsf_next(summon_spells, FLAG_START); i != FLAG_END;
+			 i = rsf_next(summon_spells, i + 1)) {
+			poss++;
+		}
+
+		/* Pick one */
+		which = randint0(poss);
+		index = rsf_next(summon_spells, FLAG_START);
+		for (i = 0; i < which; i++) {
+			index = rsf_next(summon_spells, index);
+		}
+		spell = monster_spell_by_index(index);
+
+		/* Set the summon type, and the kin_base if necessary */
+		summon_type = spell->effect->subtype;
+		if (summon_type == summon_name_to_idx("KIN")) {
+			kin_base = mon->race->base;
+		}
+
+		/* Choose a race */
+		race = select_shape(mon, summon_type);
+	}
+
+	/* Set the race */
+	if (race) {
+		mon->original_race = mon->race;
+		mon->race = race;
+	}
+
+	return mon->original_race != NULL;
 }
 
 /**
@@ -1398,5 +1494,11 @@ bool monster_change_shape(struct monster *mon)
  */
 bool monster_revert_shape(struct monster *mon)
 {
+	if (mon->original_race) {
+		mon->race = mon->original_race;
+		mon->original_race = NULL;
+		return true;
+	}
+
 	return false;
 }

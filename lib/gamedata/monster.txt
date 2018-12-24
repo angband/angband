@@ -3743,7 +3743,7 @@ flags:FORCE_SLEEP
 spell-freq:3
 spell-power:13
 spells:BLIND | BLINK | HASTE | HOLD | SLOW
-spells:BO_ELEC | BO_FIRE
+spells:BO_ELEC | BO_FIRE | SHAPECHANGE
 spells:S_ANIMAL
 drop-base:prayer book:8:1:1
 drop-base:prayer book:8:1:1
@@ -6896,9 +6896,9 @@ desc: mouth, a large central eye, and four smaller eyes on stalks protruding
 desc: from the top of its body.
 
 name:Beorn, the Shape-Changer
-base:quadruped
+base:person
 color:p
-speed:120
+speed:110
 hit-points:1400
 hearing:25
 smell:20
@@ -6907,21 +6907,45 @@ sleepiness:25
 depth:28
 rarity:3
 experience:1000
+blow:PUNCH:HURT:2d8
+blow:PUNCH:HURT:2d8
+blow:HIT:HURT:2d6
+blow:HIT:HURT:2d6
+flags:UNIQUE | MALE | SMART | SPIRIT
+flags:DROP_2 | DROP_GOOD | ONLY_ITEM
+flags:FORCE_SLEEP
+spell-freq:2
+spell-power:28
+spells:SHAPECHANGE
+friends:100:2d3:Cave bear
+friends:100:2d3:Grizzly bear
+friends:100:2d3:Werebear
+shape:Beorn, the Mountain Bear
+desc:Beorn is only occasionally seen in human form these days, preferring to
+desc: appear in the shape of a giant black bear: he also prefers the company of
+desc: beasts to that of humans.  He has never taken kindly to strangers, even
+desc: in human form.
+
+name:Beorn, the Mountain Bear
+base:quadruped
+color:p
+speed:120
+hearing:25
+smell:20
+armor-class:72
+sleepiness:25
+depth:28
+rarity:0
+experience:1000
 blow:CLAW:HURT:2d10
 blow:CLAW:HURT:2d10
 blow:BITE:HURT:4d8
 blow:CRUSH:HURT:3d6
 flags:UNIQUE | MALE | ANIMAL | SMART | SPIRIT
-flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:MOVE_BODY
-flags:FORCE_SLEEP
-friends:100:2d3:Cave bear
-friends:100:2d3:Grizzly bear
-friends:100:2d3:Werebear
-desc:Beorn is only occasionally seen in human form these days, preferring to
-desc: appear in the shape of a giant black bear: he also prefers the company of
-desc: beasts to that of humans.  He has never taken kindly to strangers, even
-desc: in human form - and still less when in bear's shape, as he is now.
+desc:Beorn in his form as a great black bear of the mountains, grown to
+desc: giant-size in wrath.  The roar of his voice is like drums, and no weapon
+desc: seems to bite upon him.
 
 ### Dungeon level 29 ###
 
@@ -9912,11 +9936,12 @@ flags:FORCE_SLEEP
 spell-freq:2
 spell-power:40
 spells:BLIND
-spells:S_DRAGON
+spells:SHAPECHANGE | S_DRAGON
 drop-base:magic book:8:1:1
 drop-base:magic book:8:1:1
 friends-base:30:1d1:dragon:servant
 friends-base:60:1d1:dragon:servant
+shape:ancient dragon
 desc:This elusive female spellcaster has a special affinity for dragons, whom
 desc: she rarely fights without.
 

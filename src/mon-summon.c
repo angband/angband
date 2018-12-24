@@ -477,3 +477,24 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 	return (mon->race->level);
 }
 
+/**
+ * Select a race for a monster shapechange from its possible summons
+ */
+struct monster_race *select_shape(struct monster *mon, int type)
+{
+	struct monster_race *race = NULL;
+
+	/* Save the "summon" type */
+	summon_specific_type = type;
+
+	/* Prepare allocation table */
+	get_mon_num_prep(summon_specific_okay);
+
+	/* Pick a monster */
+	race = get_mon_num(player->depth + 5);
+
+	/* Prepare allocation table */
+	get_mon_num_prep(NULL);
+
+	return race;
+}

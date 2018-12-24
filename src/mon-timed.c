@@ -146,6 +146,7 @@ static bool mon_set_timed(struct monster *mon,
 
 	bool check_resist;
 	bool resisted = false;
+	bool update = false;
 
 	int m_note = 0;
 	int old_timer = mon->m_timed[effect_type];
@@ -183,12 +184,7 @@ static bool mon_set_timed(struct monster *mon,
 		m_note = MON_MSG_UNAFFECTED;
 	} else {
 		mon->m_timed[effect_type] = timer;
-
-		if (player->upkeep->health_who == mon)
-			player->upkeep->redraw |= (PR_HEALTH);
-
-		/* Update the visuals, as appropriate. */
-		player->upkeep->redraw |= (PR_MONLIST);
+		update = true;
 	}
 
 	/* Print a message if there is one, if the effect allows for it, and if
@@ -204,13 +200,21 @@ static bool mon_set_timed(struct monster *mon,
 
 	/* Special case - deal with monster shapechanges */
 	if (effect_type == MON_TMD_CHANGED) {
-		if (timer) {
+		if (timer > old_timer) {
 			if (!monster_change_shape(mon))
 				quit ("Monster shapechange failed!");
-		} else {
+		} else if (timer == 0) {
 			if (!monster_revert_shape(mon))
 				quit ("Monster shapechange reversion failed!");
 		}
+	}
+
+	/* Update the visuals, as appropriate. */
+	if (update) {
+		if (player->upkeep->health_who == mon)
+			player->upkeep->redraw |= (PR_HEALTH);
+
+		player->upkeep->redraw |= (PR_MONLIST);
 	}
 
 	return !resisted;
