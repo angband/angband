@@ -703,7 +703,8 @@ void process_world(struct chunk *c)
 	/* Decrease trap timeouts */
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			struct trap *trap = c->squares[y][x].trap;
+			struct loc grid = loc(x, y);
+			struct trap *trap = square(c, grid).trap;
 			while (trap) {
 				if (trap->timeout) {
 					trap->timeout--;

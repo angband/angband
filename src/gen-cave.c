@@ -84,8 +84,8 @@
  */
 static bool square_is_granite_with_flag(struct chunk *c, int y, int x, int flag)
 {
-	if (c->squares[y][x].feat != FEAT_GRANITE) return false;
-	if (!sqinfo_has(c->squares[y][x].info, flag)) return false;
+	if (square(c, loc(x, y)).feat != FEAT_GRANITE) return false;
+	if (!sqinfo_has(square(c, loc(x, y)).info, flag)) return false;
 
 	return true;
 }
@@ -751,7 +751,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 			int k_local = yx_to_i(y, x, w);
 			sets[k_local] = k_local;
 			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
-			if (lit) sqinfo_on(c->squares[y + 1][x + 1].info, SQUARE_GLOW);
+			if (lit) sqinfo_on(square(c, loc(x + 1, y + 1)).info, SQUARE_GLOW);
 		}
     }
 
@@ -780,7 +780,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 			int sa = sets[a];
 			int sb = sets[b];
 			square_set_feat(c, y_local + 1, x_local + 1, FEAT_FLOOR);
-			if (lit) sqinfo_on(c->squares[y_local + 1][x_local + 1].info, SQUARE_GLOW);
+			if (lit) sqinfo_on(square(c, loc(x_local + 1, y_local + 1)).info, SQUARE_GLOW);
 
 			for (k = 0; k < n; k++) {
 				if (sets[k] == sb) sets[k] = sa;
@@ -968,7 +968,7 @@ static void mutate_cavern(struct chunk *c) {
 			else if (count < 4)
 				temp[y * w + x] = FEAT_FLOOR;
 			else
-				temp[y * w + x] = c->squares[y][x].feat;
+				temp[y * w + x] = square(c, loc(x, y)).feat;
 		}
     }
 
@@ -1023,7 +1023,7 @@ static void glow_point(struct chunk *c, int y, int x) {
     int i, j;
     for (i = -1; i <= -1; i++)
 		for (j = -1; j <= -1; j++)
-			sqinfo_on(c->squares[y + i][x + j].info, SQUARE_GLOW);
+			sqinfo_on(square(c, loc(x + j, y + i)).info, SQUARE_GLOW);
 }
 #endif
 
@@ -1504,7 +1504,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
 			if (square_isfloor(c, y, x))
-				sqinfo_off(c->squares[y][x].info, SQUARE_ROOM);
+				sqinfo_off(square(c, loc(x, y)).info, SQUARE_ROOM);
 			else if (!square_isperm(c, y, x) && !square_isfiery(c, y, x))
 				square_set_feat(c, y, x, FEAT_PERM);
 		}

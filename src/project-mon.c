@@ -145,13 +145,13 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 			xx = x + ddx_ddd[d % 8];
 
 			/* Cannot switch places with stronger monsters. */
-			if (cave->squares[yy][xx].mon != 0) {
+			if (square(cave, loc(xx, yy)).mon != 0) {
 				/* A monster is trying to pass. */
-				if (cave->squares[y][x].mon > 0) {
+				if (square(cave, loc(x, y)).mon > 0) {
 
 					struct monster *mon = square_monster(cave, y, x);
 
-					if (cave->squares[yy][xx].mon > 0) {
+					if (square(cave, loc(xx, yy)).mon > 0) {
 						struct monster *mon1 = square_monster(cave, yy, xx);
 
 						/* Monsters cannot pass by stronger monsters. */
@@ -165,8 +165,8 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				}
 
 				/* The player is trying to pass. */
-				if (cave->squares[y][x].mon < 0) {
-					if (cave->squares[yy][xx].mon > 0) {
+				if (square(cave, loc(x, y)).mon < 0) {
+					if (square(cave, loc(xx, yy)).mon > 0) {
 						struct monster *mon1 = square_monster(cave, yy, xx);
 
 						/* Players cannot pass by stronger monsters. */
@@ -197,7 +197,7 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				/* If there are walls everywhere, stop here. */
 				else if (d == (8 + first_d - 1)) {
 					/* Message for player. */
-					if (cave->squares[y][x].mon < 0)
+					if (square(cave, loc(x, y)).mon < 0)
 						msg("You come to rest next to a wall.");
 					i = grids_away;
 				}
@@ -217,9 +217,9 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 
 	/* Some special messages or effects for player or monster. */
 	if (square_isfiery(cave, y, x)) {
-		if (cave->squares[y][x].mon < 0) {
+		if (square(cave, loc(x, y)).mon < 0) {
 			msg("You are thrown into molten lava!");
-		} else if (cave->squares[y][x].mon > 0) {
+		} else if (square(cave, loc(x, y)).mon > 0) {
 			struct monster *mon = square_monster(cave, y, x);
 			bool fear = false;
 
@@ -234,7 +234,7 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 	}
 
 	/* Clear the projection mark. */
-	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, loc(x, y)).info, SQUARE_PROJECT);
 }
 
 /**
@@ -1308,7 +1308,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	bool charm = (origin.what == SRC_PLAYER) ?
 		player_has(player, PF_CHARM) : false;
 
-	int m_idx = cave->squares[grid.y][grid.x].mon;
+	int m_idx = square(cave, grid).mon;
 
 	project_monster_handler_f monster_handler = monster_handlers[typ];
 	project_monster_handler_context_t context = {

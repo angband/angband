@@ -418,7 +418,7 @@ void do_cmd_close(struct command *cmd)
 	}
 
 	/* Monster - alert, then attack */
-	if (cave->squares[y][x].mon > 0) {
+	if (square(cave, loc(x, y)).mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(player, y, x);
 	} else
@@ -591,7 +591,7 @@ void do_cmd_tunnel(struct command *cmd)
 	}
 
 	/* Attack any monster we run into */
-	if (cave->squares[y][x].mon > 0) {
+	if (square(cave, loc(x, y)).mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(player, y, x);
 	} else {
@@ -695,7 +695,7 @@ static bool do_cmd_lock_door(int y, int x)
 static bool do_cmd_disarm_aux(int y, int x)
 {
 	int skill, power, chance;
-    struct trap *trap = cave->squares[y][x].trap;
+    struct trap *trap = square(cave, loc(x, y)).trap;
 	bool more = false;
 
 	/* Verify legality */
@@ -816,7 +816,7 @@ void do_cmd_disarm(struct command *cmd)
 
 
 	/* Monster */
-	if (cave->squares[y][x].mon > 0) {
+	if (square(cave, loc(x, y)).mon > 0) {
 		msg("There is a monster in the way!");
 		py_attack(player, y, x);
 	} else if (obj)
@@ -865,7 +865,7 @@ void do_cmd_alter_aux(int dir)
 	}
 
 	/* Action depends on what's there */
-	if (cave->squares[y][x].mon > 0) {
+	if (square(cave, loc(x, y)).mon > 0) {
 		/* Attack or steal from monsters */
 		if (player_has(player, PF_STEAL)) {
 			steal_monster_item(square_monster(cave, y, x), -1);
@@ -914,7 +914,7 @@ void move_player(int dir, bool disarm)
 	int y = player->py + ddy[dir];
 	int x = player->px + ddx[dir];
 
-	int m_idx = cave->squares[y][x].mon;
+	int m_idx = square(cave, loc(x, y)).mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 	bool trapsafe = player_is_trapsafe(player);
 	bool alterable = square_isdisarmabletrap(cave, y, x) ||
@@ -1055,7 +1055,7 @@ void move_player(int dir, bool disarm)
  */
 static bool do_cmd_walk_test(int y, int x)
 {
-	int m_idx = cave->squares[y][x].mon;
+	int m_idx = square(cave, loc(x, y)).mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 
 	/* Allow attack on visible monsters if unafraid */

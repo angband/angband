@@ -49,7 +49,7 @@ static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t
 	const struct loc grid = context->grid;
 
 	/* Turn on the light */
-	sqinfo_on(cave->squares[grid.y][grid.x].info, SQUARE_GLOW);
+	sqinfo_on(square(cave, grid).info, SQUARE_GLOW);
 
 	/* Grid is in line of sight */
 	if (square_isview(cave, grid.y, grid.x)) {
@@ -70,7 +70,7 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 
 	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, grid.y, grid.x)) {
 		/* Turn off the light */
-		sqinfo_off(cave->squares[grid.y][grid.x].info, SQUARE_GLOW);
+		sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
 	}
 
 	/* Grid is in line of sight */

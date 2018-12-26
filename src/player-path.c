@@ -102,7 +102,7 @@ bool findpath(int y, int x)
 	terrain[player->py - oy][player->px - ox] = 1;
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey)) {
-		if ((cave->squares[y][x].mon > 0) &&
+		if ((square(cave, loc(x, y)).mon > 0) &&
 			monster_is_visible(square_monster(cave, y, x))) {
 			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
 		}
@@ -551,7 +551,7 @@ static bool run_test(void)
 
 
 		/* Visible monsters abort running */
-		if (cave->squares[row][col].mon > 0) {
+		if (square(cave, loc(col, row)).mon > 0) {
 			struct monster *mon = square_monster(cave, row, col);
 			if (monster_is_visible(mon)) {
 				return (true);
@@ -628,7 +628,7 @@ static bool run_test(void)
 		if (row < 0 || col < 0) continue;
 
 		/* Obvious monsters abort running */
-		if (cave->squares[row][col].mon > 0) {
+		if (square(cave, loc(col, row)).mon > 0) {
 			struct monster *mon = square_monster(cave, row, col);
 			if (monster_is_obvious(mon))
 				return (true);
@@ -783,7 +783,7 @@ void run_step(int dir)
 				}
 
 				/* Visible monsters abort running */
-				if (cave->squares[y][x].mon > 0) {
+				if (square(cave, loc(x, y)).mon > 0) {
 					struct monster *mon = square_monster(cave, y, x);
 
 					/* Visible monster */

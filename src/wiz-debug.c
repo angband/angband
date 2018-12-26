@@ -1688,7 +1688,7 @@ static void do_cmd_wiz_query(void)
 			if (!square_in_bounds_fully(cave, y, x)) continue;
 
 			/* Given flag, show only those grids */
-			if (flag && !sqinfo_has(cave->squares[y][x].info, flag)) continue;
+			if (flag && !sqinfo_has(square(cave, loc(x, y)).info, flag)) continue;
 
 			/* Given no flag, show known grids */
 			if (!flag && (!square_isknown(cave, y, x))) continue;
@@ -1798,7 +1798,7 @@ static void do_cmd_wiz_features(void)
 
 			/* Given feature, show only those grids */
 			for (i = 0; i < length; i++)
-				if (cave->squares[y][x].feat == feat[i]) show = true;
+				if (square(cave, loc(x, y)).feat == feat[i]) show = true;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;

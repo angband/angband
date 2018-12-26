@@ -191,7 +191,7 @@ static void path_analyse(struct chunk *c, int y, int x)
 
 		/* Forget grids which would block los */
 		if (square_iswall(player->cave, ny, nx)) {
-			sqinfo_off(c->squares[ny][nx].info, SQUARE_SEEN);
+			sqinfo_off(square(c, path_g[i]).info, SQUARE_SEEN);
 			square_forget(c, ny, nx);
 			square_light_spot(c, ny, nx);
 		}

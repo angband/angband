@@ -650,7 +650,7 @@ static void place_feeling(struct chunk *c)
 				continue;
 
 			/* Set the cave square appropriately */
-			sqinfo_on(c->squares[y][x].info, SQUARE_FEEL);
+			sqinfo_on(square(c, loc(x, y)).info, SQUARE_FEEL);
 			
 			break;
 		}
@@ -1012,10 +1012,10 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		/* Clear generation flags, add connecting info */
 		for (y = 0; y < chunk->height; y++) {
 			for (x = 0; x < chunk->width; x++) {
-				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_INNER);
-				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_OUTER);
-				sqinfo_off(chunk->squares[y][x].info, SQUARE_WALL_SOLID);
-				sqinfo_off(chunk->squares[y][x].info, SQUARE_MON_RESTRICT);
+				sqinfo_off(square(chunk, loc(x, y)).info, SQUARE_WALL_INNER);
+				sqinfo_off(square(chunk, loc(x, y)).info, SQUARE_WALL_OUTER);
+				sqinfo_off(square(chunk, loc(x, y)).info, SQUARE_WALL_SOLID);
+				sqinfo_off(square(chunk, loc(x, y)).info, SQUARE_MON_RESTRICT);
 
 				if (square_isstairs(chunk, y, x)) {
 					size_t n;
@@ -1025,7 +1025,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 					new->feat = square_feat(chunk, y, x)->fidx;
 					new->info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 					for (n = 0; n < SQUARE_SIZE; n++) {
-						new->info[n] = chunk->squares[y][x].info[n];
+						new->info[n] = square(chunk, loc(x, y)).info[n];
 					}
 					new->next = chunk->join;
 					chunk->join = new;
@@ -1264,7 +1264,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				/* Find where the player has to go, place them by hand */
 				for (y = 0; y < (*c)->height; y++) {
 					for (x = 0; x < (*c)->width; x++) {
-						if ((*c)->squares[y][x].mon == -1) {
+						if (square(*c, loc(x, y)).mon == -1) {
 							p->py = y;
 							p->px = x;
 							found = true;

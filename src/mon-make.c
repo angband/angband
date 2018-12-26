@@ -197,8 +197,8 @@ void delete_monster(int y, int x)
 	assert(square_in_bounds(cave, y, x));
 
 	/* Delete the monster (if any) */
-	if (cave->squares[y][x].mon > 0)
-		delete_monster_idx(cave->squares[y][x].mon);
+	if (square(cave, loc(x, y)).mon > 0)
+		delete_monster_idx(square(cave, loc(x, y)).mon);
 }
 
 

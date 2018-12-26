@@ -135,7 +135,7 @@ static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
     /* No traps in this location. */
     if (!trap_exists) {
 		/* No traps */
-		sqinfo_off(c->squares[y][x].info, SQUARE_TRAP);
+		sqinfo_off(square(c, loc(x, y)).info, SQUARE_TRAP);
 
 		/* Take note */
 		square_note_spot(c, y, x);
@@ -258,7 +258,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 		/* Require the correct terrain */
 		if (!square_player_trap_allowed(c, y, x)) return;
 
-		t_idx = pick_trap(c, c->squares[y][x].feat, trap_level);
+		t_idx = pick_trap(c, square(c, loc(x, y)).feat, trap_level);
     }
 
     /* Failure */
@@ -278,7 +278,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 	trf_copy(new_trap->flags, trap_info[t_idx].flags);
 
 	/* Toggle on the trap marker */
-	sqinfo_on(c->squares[y][x].info, SQUARE_TRAP);
+	sqinfo_on(square(c, loc(x, y)).info, SQUARE_TRAP);
 
 	/* Redraw the grid */
 	square_light_spot(c, y, x);
@@ -507,7 +507,7 @@ bool square_remove_all_traps(struct chunk *c, int y, int x)
 {
 	assert(square_in_bounds(c, y, x));
 
-	struct trap *trap = c->squares[y][x].trap;
+	struct trap *trap = square(c, loc(x, y)).trap;
 	bool were_there_traps = trap == NULL ? false : true;
 
 	while (trap) {
@@ -544,7 +544,7 @@ bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
 
 	/* Look at the traps in this grid */
 	struct trap *prev_trap = NULL;
-	struct trap *trap = c->squares[y][x].trap;
+	struct trap *trap = square(c, loc(x, y)).trap;
 	while (trap) {
 		struct trap *next_trap = trap->next;
 
@@ -592,7 +592,7 @@ bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
 	assert(square_in_bounds(c, y, x));
 
 	/* Look at the traps in this grid */
-	current_trap = c->squares[y][x].trap;
+	current_trap = square(c, loc(x, y)).trap;
 	while (current_trap) {
 		/* Get the next trap (may be NULL) */
 		struct trap *next_trap = current_trap->next;
@@ -631,7 +631,7 @@ bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
  */
 int square_trap_timeout(struct chunk *c, int y, int x, int t_idx)
 {
-	struct trap *current_trap = c->squares[y][x].trap;
+	struct trap *current_trap = square(c, loc(x, y)).trap;
 	while (current_trap) {
 		/* Get the next trap (may be NULL) */
 		struct trap *next_trap = current_trap->next;

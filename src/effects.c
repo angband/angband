@@ -1655,7 +1655,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 				}
 			}
 			/* Mark as trap-detected */
-			sqinfo_on(cave->squares[y][x].info, SQUARE_DTRAP);
+			sqinfo_on(square(cave, loc(x, y)).info, SQUARE_DTRAP);
 		}
 	}
 
@@ -2841,7 +2841,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	monster_swap(start.y, start.x, spots->y, spots->x);
 
 	/* Clear any projection marker to prevent double processing */
-	sqinfo_off(cave->squares[spots->y][spots->x].info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, loc(spots->x, spots->y)).info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
@@ -2939,7 +2939,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	monster_swap(start.y, start.x, y, x);
 
 	/* Clear any projection marker to prevent double processing */
-	sqinfo_off(cave->squares[y][x].info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, loc(x, y)).info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
@@ -3120,14 +3120,14 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			if (k > r) continue;
 
 			/* Lose room and vault */
-			sqinfo_off(cave->squares[y][x].info, SQUARE_ROOM);
-			sqinfo_off(cave->squares[y][x].info, SQUARE_VAULT);
+			sqinfo_off(square(cave, loc(x, y)).info, SQUARE_ROOM);
+			sqinfo_off(square(cave, loc(x, y)).info, SQUARE_VAULT);
 
 			/* Forget completely */
 			if (!square_isbright(cave, y, x)) {
-				sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+				sqinfo_off(square(cave, loc(x, y)).info, SQUARE_GLOW);
 			}
-			sqinfo_off(cave->squares[y][x].info, SQUARE_SEEN);
+			sqinfo_off(square(cave, loc(x, y)).info, SQUARE_SEEN);
 			square_forget(cave, y, x);
 			square_light_spot(cave, y, x);
 
@@ -3258,14 +3258,14 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (distance(centre, loc(xx, yy)) > r) continue;
 
 			/* Lose room and vault */
-			sqinfo_off(cave->squares[yy][xx].info, SQUARE_ROOM);
-			sqinfo_off(cave->squares[yy][xx].info, SQUARE_VAULT);
+			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_ROOM);
+			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_VAULT);
 
 			/* Forget completely */
 			if (!square_isbright(cave, yy, xx)) {
-				sqinfo_off(cave->squares[yy][xx].info, SQUARE_GLOW);
+				sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_GLOW);
 			}
-			sqinfo_off(cave->squares[yy][xx].info, SQUARE_SEEN);
+			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_SEEN);
 			square_forget(cave, yy, xx);
 			square_light_spot(cave, yy, xx);
 
@@ -3372,7 +3372,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			if (!map[16 + yy - centre.y][16 + xx - centre.x]) continue;
 
 			/* Process monsters */
-			if (cave->squares[yy][xx].mon > 0) {
+			if (square(cave, loc(xx, yy)).mon > 0) {
 				struct monster *mon = square_monster(cave, yy, xx);
 
 				/* Most monsters cannot co-exist with rock */

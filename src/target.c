@@ -283,13 +283,13 @@ bool target_accept(int y, int x)
 	struct object *obj;
 
 	/* Player grids are always interesting */
-	if (cave->squares[y][x].mon < 0) return true;
+	if (square(cave, loc(x, y)).mon < 0) return true;
 
 	/* Handle hallucination */
 	if (player->timed[TMD_IMAGE]) return false;
 
 	/* Obvious monsters */
-	if (cave->squares[y][x].mon > 0) {
+	if (square(cave, loc(x, y)).mon > 0) {
 		struct monster *mon = square_monster(cave, y, x);
 		if (monster_is_obvious(mon)) {
 			return true;
