@@ -78,7 +78,7 @@ bool monster_can_cast(struct monster *mon)
 	if (mon->cdis > z_info->max_range) return false;
 
 	/* Check path */
-	if (!projectable(cave, mon->grid.y, mon->grid.x, py, px, PROJECT_NONE))
+	if (!projectable(cave, mon->grid, loc(px, py), PROJECT_NONE))
 		return false;
 
 	return true;
@@ -301,7 +301,7 @@ bool make_attack_spell(struct monster *mon)
 
 		/* Check for a clean bolt shot */
 		if (test_spells(f, RST_BOLT) &&
-			!projectable(cave, mon->grid.y, mon->grid.x, py, px, PROJECT_STOP)) {
+			!projectable(cave, mon->grid, loc(px, py), PROJECT_STOP)) {
 			ignore_spells(f, RST_BOLT);
 		}
 

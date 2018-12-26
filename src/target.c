@@ -98,7 +98,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 bool target_able(struct monster *m)
 {
 	return m && m->race && monster_is_obvious(m) &&
-		projectable(cave, player->py, player->px, m->grid.y, m->grid.x, PROJECT_NONE) &&
+		projectable(cave, loc(player->px, player->py), m->grid, PROJECT_NONE) &&
 		!player->timed[TMD_IMAGE];
 }
 

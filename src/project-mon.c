@@ -80,22 +80,22 @@ static struct monster_race *poly_race(struct monster_race *race)
  * Monsters and players can be pushed past monsters or players weaker than
  * they are.
  */
-void thrust_away(struct loc centre, int t_y, int t_x, int grids_away)
+void thrust_away(struct loc centre, struct loc target, int grids_away)
 {
 	int y, x, yy, xx;
 	int i, d, first_d;
 	int angle;
 
 	/* Determine where target is in relation to caster. */
-	y = t_y - centre.y + 20;
-	x = t_x - centre.x + 20;
+	y = target.y - centre.y + 20;
+	x = target.x - centre.x + 20;
 
 	/* Find the angle (/2) of the line from caster to target. */
 	angle = get_angle_to_grid[y][x];
 
 	/* Start at the target grid. */
-	y = t_y;
-	x = t_x;
+	y = target.y;
+	x = target.x;
 
 	/* Up to the number of grids requested, force the target away from the
 	 * source of the projection, until it hits something it can't travel
@@ -245,8 +245,7 @@ void thrust_away(struct loc centre, int t_y, int t_x, int grids_away)
 typedef struct project_monster_handler_context_s {
 	const struct source origin;
 	const int r;
-	const int y;
-	const int x;
+	const struct loc grid;
 	int dam;
 	const int type;
 	bool seen; /* Ideally, this would be const, but we can't with C89 initialization. */
@@ -706,7 +705,7 @@ static void project_monster_handler_FORCE(project_monster_handler_context_t *con
 		return;
 
 	/* Thrust monster away */
-	thrust_away(centre, context->y, context->x, 3 + context->dam / 20);
+	thrust_away(centre, context->grid, 3 + context->dam / 20);
 }
 
 /* Time -- breathers resist */
@@ -1170,8 +1169,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 	 */
 	if (context->do_poly) {
 		enum mon_messages hurt_msg = MON_MSG_UNAFFECTED;
-		const int x = context->x;
-		const int y = context->y;
+		const struct loc grid = context->grid;
 		int savelvl = 0;
 		struct monster_race *old;
 		struct monster_race *new;
@@ -1206,15 +1204,17 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(m_idx);
-			place_new_monster(cave, y, x, new, false, false, ORIGIN_DROP_POLY);
-			context->mon = square_monster(cave, y, x);
+			place_new_monster(cave, grid.y, grid.x, new, false, false,
+							  ORIGIN_DROP_POLY);
+			context->mon = square_monster(cave, grid.y, grid.x);
 		} else {
 			add_monster_message(mon, hurt_msg, false);
 		}
 	} else if (context->teleport_distance > 0) {
 		char dice[5];
 		strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
-		effect_simple(EF_TELEPORT, context->origin, dice, 0, 0, 0, context->y, context->x, NULL);
+		effect_simple(EF_TELEPORT, context->origin, dice, 0, 0, 0,
+					  context->grid.y, context->grid.x, NULL);
 	} else {
 		for (int i = 0; i < MON_TMD_MAX; i++) {
 			if (context->mon_timed[i] > 0) {
@@ -1288,9 +1288,8 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  *
  * Hack -- effects on grids which are memorized but not in view are also seen.
  */
-void project_m(struct source origin, int r, int y, int x,
-				int dam, int typ, int flg,
-				bool *did_hit, bool *was_obvious)
+void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
+			   int flg, bool *did_hit, bool *was_obvious)
 {
 	struct monster *mon;
 	struct monster_lore *lore;
@@ -1309,14 +1308,13 @@ void project_m(struct source origin, int r, int y, int x,
 	bool charm = (origin.what == SRC_PLAYER) ?
 		player_has(player, PF_CHARM) : false;
 
-	int m_idx = cave->squares[y][x].mon;
+	int m_idx = cave->squares[grid.y][grid.x].mon;
 
 	project_monster_handler_f monster_handler = monster_handlers[typ];
 	project_monster_handler_context_t context = {
 		origin,
 		r,
-		y,
-		x,
+		grid,
 		dam,
 		typ,
 		seen,
@@ -1338,7 +1336,7 @@ void project_m(struct source origin, int r, int y, int x,
 	*was_obvious = false;
 
 	/* Walls protect monsters */
-	if (!square_ispassable(cave, y, x)) return;
+	if (!square_ispassable(cave, grid.y, grid.x)) return;
 
 	/* No monster here */
 	if (!(m_idx > 0)) return;

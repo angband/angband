@@ -36,8 +36,7 @@
 typedef struct project_feature_handler_context_s {
 	const struct source origin;
 	const int r;
-	const int y;
-	const int x;
+	const struct loc grid;
 	const int dam;
 	const int type;
 	bool obvious;
@@ -47,14 +46,13 @@ typedef void (*project_feature_handler_f)(project_feature_handler_context_t *);
 /* Light up the grid */
 static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
+	const struct loc grid = context->grid;
 
 	/* Turn on the light */
-	sqinfo_on(cave->squares[y][x].info, SQUARE_GLOW);
+	sqinfo_on(cave->squares[grid.y][grid.x].info, SQUARE_GLOW);
 
 	/* Grid is in line of sight */
-	if (square_isview(cave, y, x)) {
+	if (square_isview(cave, grid.y, grid.x)) {
 		if (!player->timed[TMD_BLIND]) {
 			/* Observe */
 			context->obvious = true;
@@ -68,16 +66,15 @@ static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t
 /* Darken the grid */
 static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
+	const struct loc grid = context->grid;
 
-	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, y, x)) {
+	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, grid.y, grid.x)) {
 		/* Turn off the light */
-		sqinfo_off(cave->squares[y][x].info, SQUARE_GLOW);
+		sqinfo_off(cave->squares[grid.y][grid.x].info, SQUARE_GLOW);
 	}
 
 	/* Grid is in line of sight */
-	if (square_isview(cave, y, x)) {
+	if (square_isview(cave, grid.y, grid.x)) {
 		/* Observe */
 		context->obvious = true;
 
@@ -89,91 +86,90 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 /* Destroy walls (and doors) */
 static void project_feature_handler_KILL_WALL(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
+	const struct loc grid = context->grid;
 
 	/* Non-walls (etc) */
-	if (square_ispassable(cave, y, x) && !square_seemslikewall(cave, y, x))
+	if (square_ispassable(cave, grid.y, grid.x) && !square_seemslikewall(cave, grid.y, grid.x))
 		return;
 
 	/* Permanent walls */
-	if (square_isperm(cave, y, x)) return;
+	if (square_isperm(cave, grid.y, grid.x)) return;
 
 	/* Different treatment for different walls */
-	if (square_isrubble(cave, y, x)) {
+	if (square_isrubble(cave, grid.y, grid.x)) {
 		/* Message */
-		if (square_isseen(cave, y, x)) {
+		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The rubble turns into mud!");
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, y, x);
+			square_forget(cave, grid.y, grid.x);
 		}
 
 		/* Destroy the rubble */
-		square_destroy_rubble(cave, y, x);
+		square_destroy_rubble(cave, grid.y, grid.x);
 
 		/* Hack -- place an object */
 		if (randint0(100) < 10){
-			if (square_isseen(cave, y, x)) {
+			if (square_isseen(cave, grid.y, grid.x)) {
 				msg("There was something buried in the rubble!");
 				context->obvious = true;
 			}
-			place_object(cave, y, x, player->depth, false, false,
+			place_object(cave, grid.y, grid.x, player->depth, false, false,
 						 ORIGIN_RUBBLE, 0);
 		}
-	} else if (square_isdoor(cave, y, x)) {
+	} else if (square_isdoor(cave, grid.y, grid.x)) {
 		/* Hack -- special message */
-		if (square_isseen(cave, y, x)) {
+		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The door turns into mud!");
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, y, x);
+			square_forget(cave, grid.y, grid.x);
 		}
 
 		/* Destroy the feature */
-		square_destroy_door(cave, y, x);
-	} else if (square_hasgoldvein(cave, y, x)) {
+		square_destroy_door(cave, grid.y, grid.x);
+	} else if (square_hasgoldvein(cave, grid.y, grid.x)) {
 		/* Message */
-		if (square_isseen(cave, y, x)) {
+		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The vein turns into mud!");
 			msg("You have found something!");
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, y, x);
+			square_forget(cave, grid.y, grid.x);
 		}
 
 		/* Destroy the wall */
-		square_destroy_wall(cave, y, x);
+		square_destroy_wall(cave, grid.y, grid.x);
 
 		/* Place some gold */
-		place_gold(cave, y, x, player->depth, ORIGIN_FLOOR);
-	} else if (square_ismagma(cave, y, x) || square_isquartz(cave, y, x)) {
+		place_gold(cave, grid.y, grid.x, player->depth, ORIGIN_FLOOR);
+	} else if (square_ismagma(cave, grid.y, grid.x) || square_isquartz(cave, grid.y, grid.x)) {
 		/* Message */
-		if (square_isseen(cave, y, x)) {
+		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The vein turns into mud!");
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, y, x);
+			square_forget(cave, grid.y, grid.x);
 		}
 
 		/* Destroy the wall */
-		square_destroy_wall(cave, y, x);
-	} else if (square_iswall(cave, y, x)) {
+		square_destroy_wall(cave, grid.y, grid.x);
+	} else if (square_iswall(cave, grid.y, grid.x)) {
 		/* Message */
-		if (square_isseen(cave, y, x)) {
+		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The wall turns into mud!");
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, y, x);
+			square_forget(cave, grid.y, grid.x);
 		}
 
 		/* Destroy the wall */
-		square_destroy_wall(cave, y, x);
+		square_destroy_wall(cave, grid.y, grid.x);
 	}
 
 	/* Update the visuals */
@@ -183,13 +179,12 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 /* Destroy Doors */
 static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
+	const struct loc grid = context->grid;
 
 	/* Destroy all doors */
-	if (square_isdoor(cave, y, x)) {
+	if (square_isdoor(cave, grid.y, grid.x)) {
 		/* Check line of sight */
-		if (square_isview(cave, y, x)) {
+		if (square_isview(cave, grid.y, grid.x)) {
 			/* Message */
 			msg("There is a bright flash of light!");
 			context->obvious = true;
@@ -198,45 +193,44 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Forget the door */
-			square_forget(cave, y, x);
+			square_forget(cave, grid.y, grid.x);
 		}
 
 		/* Destroy the feature */
-		square_destroy_door(cave, y, x);
+		square_destroy_door(cave, grid.y, grid.x);
 	}
 }
 
 /* Disable traps, unlock doors */
 static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
+	const struct loc grid = context->grid;
 
 	/* Reveal secret doors */
-	if (square_issecretdoor(cave, y, x)) {
-		place_closed_door(cave, y, x);
+	if (square_issecretdoor(cave, grid.y, grid.x)) {
+		place_closed_door(cave, grid.y, grid.x);
 
 		/* Check line of sight */
-		if (square_isseen(cave, y, x))
+		if (square_isseen(cave, grid.y, grid.x))
 			context->obvious = true;
 	}
 
 	/* Disable traps, unlock doors */
-	if (square_isdisarmabletrap(cave, y, x)) {
+	if (square_isdisarmabletrap(cave, grid.y, grid.x)) {
 		/* Check line of sight */
-		if (square_isview(cave, y, x)) {
+		if (square_isview(cave, grid.y, grid.x)) {
 			msg("The trap seizes up.");
 			context->obvious = true;
 		}
 
 		/* Disable the trap */
-		square_disable_trap(cave, y, x);
-	} else if (square_islockeddoor(cave, y, x)) {
+		square_disable_trap(cave, grid.y, grid.x);
+	} else if (square_islockeddoor(cave, grid.y, grid.x)) {
 		/* Unlock the door */
-		square_unlock_door(cave, y, x);
+		square_unlock_door(cave, grid.y, grid.x);
 
 		/* Check line of sound */
-		if (square_isview(cave, y, x)) {
+		if (square_isview(cave, grid.y, grid.x)) {
 			msg("Click!");
 			context->obvious = true;
 		}
@@ -246,24 +240,23 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 /* Make doors */
 static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
+	const struct loc grid = context->grid;
 
 	/* Require a grid without monsters */
-	if (square_monster(cave, y, x) || square_isplayer(cave, y, x)) return;
+	if (square_monster(cave, grid.y, grid.x) || square_isplayer(cave, grid.y, grid.x)) return;
 
 	/* Require a floor grid */
-	if (!square_isfloor(cave, y, x)) return;
+	if (!square_isfloor(cave, grid.y, grid.x)) return;
 
 	/* Push objects off the grid */
-	if (square_object(cave, y, x))
-		push_object(y, x);
+	if (square_object(cave, grid.y, grid.x))
+		push_object(grid.y, grid.x);
 
 	/* Create closed door */
-	square_add_door(cave, y, x, true);
+	square_add_door(cave, grid.y, grid.x, true);
 
 	/* Observe */
-	if (square_isknown(cave, y, x))
+	if (square_isknown(cave, grid.y, grid.x))
 		context->obvious = true;
 
 	/* Update the visuals */
@@ -273,17 +266,16 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 /* Make traps */
 static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t *context)
 {
-	const int x = context->x;
-	const int y = context->y;
+	const struct loc grid = context->grid;
 
 	/* Require an "empty" floor grid with no existing traps or glyphs */
-	if (!square_isempty(cave, y, x)) return;
-	if (square_istrap(cave, y, x)) return;
+	if (!square_isempty(cave, grid.y, grid.x)) return;
+	if (square_istrap(cave, grid.y, grid.x)) return;
 
 	/* Create a trap, try to notice it */
 	if (one_in_(4)) {
-		square_add_trap(cave, y, x);
-		(void) square_reveal_trap(cave, y, x, false, false);
+		square_add_trap(cave, grid.y, grid.x);
+		(void) square_reveal_trap(cave, grid.y, grid.x, false, false);
 	}
 	context->obvious = true;
 }
@@ -291,7 +283,7 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 static void project_feature_handler_ACID(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -301,7 +293,7 @@ static void project_feature_handler_ACID(project_feature_handler_context_t *cont
 static void project_feature_handler_ELEC(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -311,7 +303,7 @@ static void project_feature_handler_ELEC(project_feature_handler_context_t *cont
 static void project_feature_handler_FIRE(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -319,20 +311,20 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 
 	/* Can create lava if extremely powerful. */
 	if ((context->dam > randint1(1800) + 600) &&
-		square_isfloor(cave, context->y, context->x)) {
+		square_isfloor(cave, context->grid.y, context->grid.x)) {
 		/* Forget the floor, make lava. */
-		square_unmark(cave, context->y, context->x);
-		square_set_feat(cave, context->y, context->x, FEAT_LAVA);
+		square_unmark(cave, context->grid.y, context->grid.x);
+		square_set_feat(cave, context->grid.y, context->grid.x, FEAT_LAVA);
 
 		/* Objects that have survived should move */
-		push_object(context->y, context->x);
+		push_object(context->grid.y, context->grid.x);
 	}
 }
 
 static void project_feature_handler_COLD(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -340,16 +332,16 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 
 	/* Sufficiently intense cold can solidify lava. */
 	if ((context->dam > randint1(900) + 300) &&
-		square_isfiery(cave, context->y, context->x)) {
-		bool occupied = square_isoccupied(cave, context->y, context->x);
+		square_isfiery(cave, context->grid.y, context->grid.x)) {
+		bool occupied = square_isoccupied(cave, context->grid.y, context->grid.x);
 
-		square_unmark(cave, context->y, context->x);
+		square_unmark(cave, context->grid.y, context->grid.x);
 		if (one_in_(2)) {
-			square_set_feat(cave, context->y, context->x, FEAT_FLOOR);
+			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_FLOOR);
 		} else if (one_in_(2) && !occupied) {
-			square_set_feat(cave, context->y, context->x, FEAT_RUBBLE);
+			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_RUBBLE);
 		} else {
-			square_set_feat(cave, context->y, context->x, FEAT_PASS_RUBBLE);
+			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_PASS_RUBBLE);
 		}
 	}
 }
@@ -357,7 +349,7 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 static void project_feature_handler_POIS(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -379,7 +371,7 @@ static void project_feature_handler_DARK(project_feature_handler_context_t *cont
 static void project_feature_handler_SOUND(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -389,7 +381,7 @@ static void project_feature_handler_SOUND(project_feature_handler_context_t *con
 static void project_feature_handler_SHARD(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -399,7 +391,7 @@ static void project_feature_handler_SHARD(project_feature_handler_context_t *con
 static void project_feature_handler_NEXUS(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -409,7 +401,7 @@ static void project_feature_handler_NEXUS(project_feature_handler_context_t *con
 static void project_feature_handler_NETHER(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -419,7 +411,7 @@ static void project_feature_handler_NETHER(project_feature_handler_context_t *co
 static void project_feature_handler_CHAOS(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -429,7 +421,7 @@ static void project_feature_handler_CHAOS(project_feature_handler_context_t *con
 static void project_feature_handler_DISEN(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -439,7 +431,7 @@ static void project_feature_handler_DISEN(project_feature_handler_context_t *con
 static void project_feature_handler_WATER(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -449,7 +441,7 @@ static void project_feature_handler_WATER(project_feature_handler_context_t *con
 static void project_feature_handler_ICE(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -457,16 +449,16 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 
 	/* Sufficiently intense cold can solidify lava. */
 	if ((context->dam > randint1(900) + 300) &&
-		square_isfiery(cave, context->y, context->x)) {
-		bool occupied = square_isoccupied(cave, context->y, context->x);
+		square_isfiery(cave, context->grid.y, context->grid.x)) {
+		bool occupied = square_isoccupied(cave, context->grid.y, context->grid.x);
 
-		square_unmark(cave, context->y, context->x);
+		square_unmark(cave, context->grid.y, context->grid.x);
 		if (one_in_(2)) {
-			square_set_feat(cave, context->y, context->x, FEAT_FLOOR);
+			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_FLOOR);
 		} else if (one_in_(2) && !occupied) {
-			square_set_feat(cave, context->y, context->x, FEAT_RUBBLE);
+			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_RUBBLE);
 		} else {
-			square_set_feat(cave, context->y, context->x, FEAT_PASS_RUBBLE);
+			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_PASS_RUBBLE);
 		}
 	}
 }
@@ -474,7 +466,7 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 static void project_feature_handler_GRAVITY(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -484,7 +476,7 @@ static void project_feature_handler_GRAVITY(project_feature_handler_context_t *c
 static void project_feature_handler_INERTIA(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -494,7 +486,7 @@ static void project_feature_handler_INERTIA(project_feature_handler_context_t *c
 static void project_feature_handler_FORCE(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -504,7 +496,7 @@ static void project_feature_handler_FORCE(project_feature_handler_context_t *con
 static void project_feature_handler_TIME(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -514,7 +506,7 @@ static void project_feature_handler_TIME(project_feature_handler_context_t *cont
 static void project_feature_handler_PLASMA(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -522,20 +514,20 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 
 	/* Can create lava if extremely powerful. */
 	if ((context->dam > randint1(1800) + 600) &&
-		square_isfloor(cave, context->y, context->x)) {
+		square_isfloor(cave, context->grid.y, context->grid.x)) {
 		/* Forget the floor, make lava. */
-		square_unmark(cave, context->y, context->x);
-		square_set_feat(cave, context->y, context->x, FEAT_LAVA);
+		square_unmark(cave, context->grid.y, context->grid.x);
+		square_set_feat(cave, context->grid.y, context->grid.x, FEAT_LAVA);
 
 		/* Objects that have survived should move */
-		push_object(context->y, context->x);
+		push_object(context->grid.y, context->grid.x);
 	}
 }
 
 static void project_feature_handler_METEOR(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -545,7 +537,7 @@ static void project_feature_handler_METEOR(project_feature_handler_context_t *co
 static void project_feature_handler_MISSILE(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -555,7 +547,7 @@ static void project_feature_handler_MISSILE(project_feature_handler_context_t *c
 static void project_feature_handler_MANA(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -565,7 +557,7 @@ static void project_feature_handler_MANA(project_feature_handler_context_t *cont
 static void project_feature_handler_HOLY_ORB(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -575,7 +567,7 @@ static void project_feature_handler_HOLY_ORB(project_feature_handler_context_t *
 static void project_feature_handler_ARROW(project_feature_handler_context_t *context)
 {
 	/* Grid is in line of sight and player is not blind */
-	if (square_isview(cave, context->y, context->x) &&
+	if (square_isview(cave, context->grid.y, context->grid.x) &&
 		!player->timed[TMD_BLIND]) {
 		/* Observe */
 		context->obvious = true;
@@ -707,15 +699,14 @@ static const project_feature_handler_f feature_handlers[] = {
  *
  * Hack -- effects on grids which are memorized but not in view are also seen.
  */
-bool project_f(struct source origin, int r, int y, int x, int dam, int typ)
+bool project_f(struct source origin, int r, struct loc grid, int dam, int typ)
 {
 	bool obvious = false;
 
 	project_feature_handler_context_t context = {
 		origin,
 		r,
-		y,
-		x,
+		grid,
 		dam,
 		typ,
 		obvious,

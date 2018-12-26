@@ -161,8 +161,7 @@ typedef struct project_player_handler_context_s {
 	/* Input values */
 	const struct source origin;
 	const int r;
-	const int y;
-	const int x;
+	const struct loc grid;
 	const int dam;
 	const int type;
 
@@ -407,7 +406,7 @@ static void project_player_handler_FORCE(project_player_handler_context_t *conte
 	(void)player_inc_timed(player, TMD_STUN, randint1(20), true, true);
 
 	/* Thrust player away. */
-	thrust_away(centre, context->y, context->x, 3 + context->dam / 20);
+	thrust_away(centre, context->grid, 3 + context->dam / 20);
 }
 
 static void project_player_handler_TIME(project_player_handler_context_t *context)
@@ -624,7 +623,7 @@ static const project_player_handler_f player_handlers[] = {
  *
  * We assume the player is aware of some effect, and always return "true".
  */
-bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
+bool project_p(struct source origin, int r, struct loc grid, int dam, int typ)
 {
 	bool blind = (player->timed[TMD_BLIND] ? true : false);
 	bool seen = !blind;
@@ -637,20 +636,19 @@ bool project_p(struct source origin, int r, int y, int x, int dam, int typ)
 	project_player_handler_context_t context = {
 		origin,
 		r,
-		y,
-		x,
+		grid,
 		dam,
 		typ,
 		obvious,
 	};
 
 	/* Decoy has been hit */
-	if (square_isdecoyed(cave, y, x) && dam) {
-		square_destroy_decoy(cave, y, x);
+	if (square_isdecoyed(cave, grid.y, grid.x) && dam) {
+		square_destroy_decoy(cave, grid.y, grid.x);
 	}
 
 	/* No player here */
-	if (!square_isplayer(cave, y, x)) {
+	if (!square_isplayer(cave, grid.y, grid.x)) {
 		return false;
 	}
 

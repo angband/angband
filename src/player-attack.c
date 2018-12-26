@@ -772,7 +772,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	p->upkeep->energy_use = (z_info->move_energy * 10 / shots);
 
 	/* Calculate the path */
-	path_n = project_path(path_g, range, y, x, ty, tx, 0);
+	path_n = project_path(path_g, range, loc(x, y), loc(tx, ty), 0);
 
 	/* Calculate potenital piercing */
 	if (player->timed[TMD_POWERSHOT] && tval_is_sharp_missile(obj)) {

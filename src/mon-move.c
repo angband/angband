@@ -64,7 +64,7 @@ static bool monster_near_permwall(const struct monster *mon, struct chunk *c)
 	int mx = mon->grid.x;
 
 	/* If player is in LOS, there's no need to go around walls */
-    if (projectable(c, my, mx, player->py, player->px, PROJECT_NONE))
+    if (projectable(c, mon->grid, loc(player->px, player->py), PROJECT_NONE))
 		return false;
 
     /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */
@@ -507,7 +507,7 @@ static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 
 			/* Check for hidden, available grid */
 			if (!square_isview(c, y, x) &&
-				projectable(c, mon->grid.y, mon->grid.x, y, x, PROJECT_STOP)) {
+				projectable(c, mon->grid, loc(x, y), PROJECT_STOP)) {
 				/* Calculate distance from player */
 				dis = distance(loc(x, y), player_grid);
 

@@ -186,7 +186,7 @@ void monster_list_collect(monster_list_t *list)
 		 * but this does not catch monsters detected by ESP which are
 		 * targetable, so we cheat and use projectable() instead
 		 */
-		los = projectable(cave, player->py, player->px, mon->grid.y, mon->grid.x,
+		los = projectable(cave, loc(player->px, player->py), mon->grid,
 						  PROJECT_NONE);
 		field = (los) ? MONSTER_LIST_SECTION_LOS : MONSTER_LIST_SECTION_ESP;
 		entry->count[field]++;

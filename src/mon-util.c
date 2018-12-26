@@ -181,8 +181,8 @@ static void path_analyse(struct chunk *c, int y, int x)
 	}
 
 	/* Plot the path. */
-	path_n = project_path(path_g, z_info->max_range, player->py, player->px,
-						  y, x, PROJECT_NONE);
+	path_n = project_path(path_g, z_info->max_range,
+						  loc(player->px, player->py), loc(x, y), PROJECT_NONE);
 
 	/* Project along the path */
 	for (i = 0; i < path_n - 1; ++i) {

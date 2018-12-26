@@ -184,7 +184,7 @@ void object_list_collect(object_list_t *list)
 		}
 
 		/* Determine which section of the list the object entry is in */
-		los = projectable(cave, py, px, y, x, PROJECT_NONE) ||
+		los = projectable(cave, loc(px, py), loc(x, y), PROJECT_NONE) ||
 			((y == py) && (x == px));
 		field = (los) ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
 
@@ -413,7 +413,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 		has_singular_prefix = true;
 
 	/* Work out if the object is in view */
-	los = projectable(cave, py, px, iy, ix, PROJECT_NONE) || 
+	los = projectable(cave, loc(px, py), loc(ix, iy), PROJECT_NONE) || 
 		((iy == py) && (ix == px));
 	field = los ? OBJECT_LIST_SECTION_LOS : OBJECT_LIST_SECTION_NO_LOS;
 
