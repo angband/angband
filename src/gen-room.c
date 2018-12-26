@@ -611,6 +611,8 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	/* Change grids between (and not including) the edges. */
 	for (y = y1 + 1; y < y2; y++) {
 		for (x = x1 + 1; x < x2; x++) {
+			struct loc grid = loc(x, y);
+
 			/* Do not touch vault grids. */
 			if (square_isvault(c, y, x))
 				continue;
@@ -669,11 +671,11 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 						else {
 							/* Replace old feature entirely in some cases. */
 							if (feat_is_smooth(feat)) {
-								if (square_isfloor(c, y, x))
+								if (square_isfloor(c, grid))
 									square_set_feat(c, y, x, feat);
 							} else {
 								/* Make denser in the middle. */
-								if (square_isfloor(c, y, x) &&
+								if (square_isfloor(c, grid) &&
 									(randint1(max_dist + 5) >= dist + 5))
 									square_set_feat(c, y, x, feat);
 							}
@@ -698,8 +700,10 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	if (feat_is_floor(feat) || feat == FEAT_GRANITE) {
 		for (y = y1 + 1; y < y2; y++) {
 			for (x = x1 + 1; x < x2; x++) {
+
+				struct loc grid = loc(x, y);
 				/* Floor grids only */
-				if (square_isfloor(c, y, x)) {
+				if (square_isfloor(c, grid)) {
 					/* Look in all directions. */
 					for (d = 0; d < 8; d++) {
 						/* Extract adjacent location */
@@ -1000,7 +1004,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			square_set_feat(c, y, x, FEAT_FLOOR);
 
 			/* Debugging assertion */
-			assert(square_isempty(c, y, x));
+			assert(square_isempty(c, loc(x, y)));
 
 			/* Analyze the grid */
 			switch (*t) {
@@ -1167,7 +1171,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 			square_set_feat(c, y, x, FEAT_FLOOR);
 
 			/* Debugging assertion */
-			assert(square_isempty(c, y, x));
+			assert(square_isempty(c, loc(x, y)));
 
 			/* By default vault squares are marked icky */
 			icky = true;
@@ -1480,7 +1484,7 @@ static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 			continue;
 
 		/* Paranoia */
-		if (!square_in_bounds_fully(c, y, x))
+		if (!square_in_bounds_fully(c, loc(x, y)))
 			continue;
 
 		/* Reset wall count */
@@ -2015,7 +2019,7 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 		generate_hole(c, y0 - 1, x0 - 1, y0 + 1, x0 + 1, FEAT_CLOSED);
 		for (y = y0 - 1; y <= y0 + 1; y++)
 			for (x = x0 - 1; x <= x0 + 1; x++)
-				if (square_iscloseddoor(c, y, x))
+				if (square_iscloseddoor(c, loc(x, y)))
 					square_set_door_lock(c, y, x, randint1(7));
 
 		/* Monsters to guard the treasure */
@@ -2736,7 +2740,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 			count = 0;
 
 			/* Stay legal. */
-			if (!square_in_bounds_fully(c, y, x))
+			if (!square_in_bounds_fully(c, loc(x, y)))
 				continue;
 
 			/* Check all adjacent grids. */
@@ -2786,7 +2790,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 				if (square(c, loc(x, y)).feat != FEAT_MAGMA) continue;
 
 				/* Stay legal. */
-				if (!square_in_bounds_fully(c, y, x)) continue;
+				if (!square_in_bounds_fully(c, loc(x, y))) continue;
 
 				/* Check only horizontal and vertical directions. */
 				for (d = 0; d < 4; d++) {
@@ -2867,6 +2871,8 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 		 y < (y2 + 2 < c->height ? y2 + 2 : c->height); y++) {
 		for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
 			 x < (x2 + 2 < c->width ? x2 + 2 : c->width); x++) {
+			struct loc grid = loc(x, y);
+
 			if (square_iswall_inner(c, y, x)
 				|| (square(c, loc(x, y)).feat == FEAT_MAGMA)) {
 				for (d = 0; d < 9; d++) {
@@ -2885,7 +2891,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 						set_marked_granite(c, y, x, SQUARE_NONE);
 				}
 			}
-			if (square_isfloor(c, y, x)) {
+			if (square_isfloor(c, grid)) {
 				for (d = 0; d < 9; d++) {
 					/* Extract adjacent location */
 					int yy = y + ddy_ddd[d];
@@ -2912,7 +2918,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 		for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
 			 x < (x2 + 2 < c->width ? x2 + 2 : c->width); x++) {
 			/* Stay legal. */
-			if (!square_in_bounds_fully(c, y, x)) continue;
+			if (!square_in_bounds_fully(c, loc(x, y))) continue;
 
 			if (square_iswall_inner(c, y, x)) {
 				for (d = 0; d < 9; d++) {

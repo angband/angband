@@ -124,7 +124,7 @@ static void build_streamer(struct chunk *c, int feat, int chance)
 			find_nearby_grid(c, &ty, y, d, &tx, x, d);
 
 			/* Only convert walls */
-			if (square_isrock(c, ty, tx)) {
+			if (square_isrock(c, loc(tx, ty))) {
 				/* Turn the rock into the vein type */
 				square_set_feat(c, ty, tx, feat);
 
@@ -225,7 +225,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 
 
 		/* Avoid the edge of the dungeon */
-		if (square_isperm(c, tmp_row, tmp_col)) continue;
+		if (square_isperm(c, loc(tmp_col, tmp_row))) continue;
 
 		/* Avoid "solid" granite walls */
 		if (square_is_granite_with_flag(c, tmp_row, tmp_col, 
@@ -243,7 +243,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 			if (!square_in_bounds(c, y, x)) continue;
  
 			/* Hack -- Avoid solid permanent walls */
-			if (square_isperm(c, y, x)) continue;
+			if (square_isperm(c, loc(x, y))) continue;
 
 			/* Hack -- Avoid outer/solid granite walls */
 			if (square_is_granite_with_flag(c, y, x, SQUARE_WALL_OUTER)) 
@@ -274,8 +274,8 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 			row1 = tmp_row;
 			col1 = tmp_col;
 
-		} else if (square_isgranite(c, tmp_row, tmp_col)||
-				   square_isperm(c, tmp_row, tmp_col)) {
+		} else if (square_isgranite(c, loc(tmp_col, tmp_row))||
+				   square_isperm(c, loc(tmp_col, tmp_row))) {
 			/* Tunnel through all other walls */
 			/* Accept this location */
 			row1 = tmp_row;
@@ -372,11 +372,10 @@ static int next_to_corr(struct chunk *c, int y1, int x1)
     /* Scan adjacent grids */
     for (i = 0; i < 4; i++) {
 		/* Extract the location */
-		int y = y1 + ddy_ddd[i];
-		int x = x1 + ddx_ddd[i];
+		struct loc grid = loc_sum(loc(x1, y1), ddgrid_ddd[i]);
 
 		/* Count only floors which aren't part of rooms */
-		if (square_isfloor(c, y, x) && !square_isroom(c, y, x)) k++;
+		if (square_isfloor(c, grid) && !square_isroom(c, grid.y, grid.x)) k++;
     }
 
     /* Return the number of corridors */
@@ -414,12 +413,13 @@ static bool possible_doorway(struct chunk *c, int y, int x)
  */
 static void try_door(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
     assert(square_in_bounds(c, y, x));
 
     if (square_isstrongwall(c, y, x)) return;
     if (square_isroom(c, y, x)) return;
     if (square_isplayertrap(c, y, x)) return;
-    if (square_isdoor(c, y, x)) return;
+    if (square_isdoor(c, grid)) return;
 
     if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
 		place_random_door(c, y, x);
@@ -919,10 +919,9 @@ static void init_cavern(struct chunk *c, int density) {
     fill_rectangle(c, 0, 0, h - 1, w - 1, FEAT_GRANITE, SQUARE_WALL_SOLID);
 	
     while (count > 0) {
-		int y = randint1(h - 2);
-		int x = randint1(w - 2);
-		if (square_isrock(c, y, x)) {
-			square_set_feat(c, y, x, FEAT_FLOOR);
+		struct loc grid = loc(randint1(w - 2), randint1(h - 2));
+		if (square_isrock(c, grid)) {
+			square_set_feat(c, grid.y, grid.x, FEAT_FLOOR);
 			count--;
 		}
     }
@@ -941,7 +940,7 @@ static int count_adj_walls(struct chunk *c, int y, int x) {
     for (yd = -1; yd <= 1; yd++) {
 		for (xd = -1; xd <= 1; xd++) {
 			if (yd == 0 && xd == 0) continue;
-			if (square_isfloor(c, y + yd, x + xd)) continue;
+			if (square_isfloor(c, loc_sum(loc(x, y), loc(xd, yd)))) continue;
 			count++;
 		}
     }
@@ -1006,12 +1005,13 @@ static int ignore_point(struct chunk *c, int colors[], int y, int x) {
     int h = c->height;
     int w = c->width;
     int n = yx_to_i(y, x, w);
+	struct loc grid = loc(x, y);
 
     if (y < 0 || x < 0 || y >= h || x >= w) return true;
     if (colors[n]) return true;
     //if (square_isvault(c, y, x)) return false;
     if (square_ispassable(c, y, x)) return false;
-    if (square_isdoor(c, y, x)) return false;
+    if (square_isdoor(c, grid)) return false;
     return true;
 }
 
@@ -1227,7 +1227,7 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 				int x, y;
 				i_to_yx(n, w, &y, &x);
 				colors[n] = color;
-				if (!square_isperm(c, y, x) && !square_isvault(c, y, x)) {
+				if (!square_isperm(c, loc(x, y)) && !square_isvault(c, y, x)) {
 					square_set_feat(c, y, x, FEAT_FLOOR);
 				}
 				n = previous[n];
@@ -1503,9 +1503,10 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	/* Turn off room illumination flag */
 	for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
-			if (square_isfloor(c, y, x))
-				sqinfo_off(square(c, loc(x, y)).info, SQUARE_ROOM);
-			else if (!square_isperm(c, y, x) && !square_isfiery(c, y, x))
+			struct loc grid = loc(x, y);
+			if (square_isfloor(c, grid))
+				sqinfo_off(square(c, grid).info, SQUARE_ROOM);
+			else if (!square_isperm(c, loc(x, y)) && !square_isfiery(c, y, x))
 				square_set_feat(c, y, x, FEAT_PERM);
 		}
 	}
@@ -1513,8 +1514,8 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	/* Place the stairs in the north wall */
 	px = rand_spread(z_info->town_wid / 2, z_info->town_wid / 12);
 	py = z_info->town_hgt / 2;
-	while (square_isfloor(c, py, px) && (py > 2)) py--;
-	if (square_isfloor(c, py - 1, px) && (py == 2)) py--;
+	while (square_isfloor(c, loc(px, py)) && (py > 2)) py--;
+	if (square_isfloor(c, loc(px, py - 1)) && (py == 2)) py--;
 
 	/* Clear previous contents, add down stairs */
 	square_set_feat(c, py, px, FEAT_MORE);
@@ -1531,7 +1532,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 							 z_info->town_wid - 3);
 			for (yy = y - 2; yy <= y + 2; yy++)
 				for (xx = x - 2; xx <= x + 2; xx++)
-					if (!square_isfloor(c, yy, xx))
+					if (!square_isfloor(c, loc(xx, yy)))
 						found_non_floor = true;
 
 			if (!found_non_floor) enough_space = true;
@@ -1553,7 +1554,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 							 z_info->town_wid - 3);
 			for (yy = y - 2; yy <= y + 2; yy++)
 				for (xx = x - 2; xx <= x + 2; xx++)
-					if (!square_isfloor(c, yy, xx))
+					if (!square_isfloor(c, loc(xx, yy)))
 						found_non_floor = true;
 
 			if (!found_non_floor) enough_space = true;

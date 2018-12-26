@@ -1337,7 +1337,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		if (!obj)
 			break;
 
-		if (square_in_bounds_fully(c, obj->iy, obj->ix))
+		if (square_in_bounds_fully(c, loc(obj->ix, obj->iy)))
 			pile_insert_end(&c->squares[obj->iy][obj->ix].obj, obj);
 		assert(obj->oidx);
 		assert(c->objects[obj->oidx] == NULL);

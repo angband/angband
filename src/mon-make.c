@@ -1106,7 +1106,7 @@ static bool place_new_monster_group(struct chunk *c, int y, int x,
 			int my = hy + ddy_ddd[i];
 
 			/* Walls and Monsters block flow */
-			if (!square_isempty(c, my, mx)) continue;
+			if (!square_isempty(c, loc(mx, my))) continue;
 
 			/* Attempt to place another monster */
 			if (place_new_monster_one(c, my, mx, race, sleep, origin)) {
@@ -1342,7 +1342,7 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 		x = randint0(c->width);
 
 		/* Require "naked" floor grid */
-		if (!square_isempty(c, y, x)) continue;
+		if (!square_isempty(c, loc(x, y))) continue;
 
 		/* Do not put random monsters in marked rooms. */
 		if ((!character_dungeon) && square_ismon_restrict(c, y, x))

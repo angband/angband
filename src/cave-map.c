@@ -116,7 +116,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 
 		/* Remember seen feature */
 		square_memorize(cave, y, x);
-	} else if (!square_isknown(cave, y, x)) {
+	} else if (!square_isknown(cave, grid)) {
 		g->f_idx = FEAT_NONE;
 	} else if (square_isglow(cave, y, x)) {
 		g->lighting = LIGHTING_LIT;
@@ -128,7 +128,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
 
     /* There is a trap in this square */
-    if (square_istrap(cave, y, x) && square_isknown(cave, y, x)) {
+    if (square_istrap(cave, y, x) && square_isknown(cave, grid)) {
 		struct trap *trap = square(cave, grid).trap;
 
 		/* Scan the square trap list */
@@ -218,9 +218,11 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
  */
 void square_note_spot(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
+
 	/* Require "seen" flag and the current level */
 	if (c != cave) return;
-	if (!square_isseen(c, y, x) && !square_isplayer(c, y, x)) return;
+	if (!square_isseen(c, y, x) && !square_isplayer(c, grid)) return;
 
 	/* Make the player know precisely what is on this grid */
 	square_know_pile(c, y, x);
@@ -230,7 +232,7 @@ void square_note_spot(struct chunk *c, int y, int x)
 		square_reveal_trap(c, y, x, false, true);
 	}
 
-	if (square_isknown(c, y, x))
+	if (square_isknown(c, grid))
 		return;
 
 	/* Memorize this grid */
@@ -329,7 +331,7 @@ static void cave_unlight(struct point_set *ps)
 		}
 
 		/* Hack -- Forget "boring" grids */
-		if (square_isfloor(cave, grid.y, grid.x))
+		if (square_isfloor(cave, grid))
 			square_forget(cave, grid.y, grid.x);
 	}
 
@@ -426,7 +428,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 
 			/* Process all non-walls */
 			if (!square_seemslikewall(c, grid.y, grid.x)) {
-				if (!square_in_bounds_fully(c, grid.y, grid.x)) continue;
+				if (!square_in_bounds_fully(c, grid)) continue;
 
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++) {
@@ -436,7 +438,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 					sqinfo_on(square(cave, a_grid).info, SQUARE_GLOW);
 
 					/* Memorize normal features */
-					if (!square_isfloor(c, a_grid.y, a_grid.x) || 
+					if (!square_isfloor(c, a_grid) || 
 						square_isvisibletrap(c, a_grid.y, a_grid.x)) {
 						square_memorize(c, a_grid.y, a_grid.x);
 						square_mark(c, a_grid.y, a_grid.x);
@@ -452,7 +454,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
-			if (!square_ismark(c, grid.y, grid.x) && square_isnotknown(c, grid.y, grid.x))
+			if (!square_ismark(c, grid.y, grid.x) && square_isnotknown(c, grid))
 				square_forget(c, grid.y, grid.x);
 		}
 	}
@@ -492,7 +494,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 
 			/* Process all non-walls */
 			if (!square_seemslikewall(c, grid.y, grid.x)) {
-				if (!square_in_bounds_fully(c, grid.y, grid.x)) continue;
+				if (!square_in_bounds_fully(c, grid)) continue;
 
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++) {
@@ -502,7 +504,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 					sqinfo_off(square(cave, a_grid).info, SQUARE_GLOW);
 
 					/* Memorize normal features */
-					if (!square_isfloor(c, a_grid.y, a_grid.x) || 
+					if (!square_isfloor(c, a_grid) || 
 						square_isvisibletrap(c, a_grid.y, a_grid.x)) {
 						square_memorize(c, a_grid.y, a_grid.x);
 						square_mark(c, a_grid.y, a_grid.x);
@@ -518,7 +520,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
-			if (!square_ismark(c, grid.y, grid.x) && square_isnotknown(c, grid.y, grid.x))
+			if (!square_ismark(c, grid.y, grid.x) && square_isnotknown(c, grid))
 				square_forget(c, grid.y, grid.x);
 		}
 	}
@@ -560,17 +562,17 @@ void cave_illuminate(struct chunk *c, bool daytime)
 				struct loc a_grid = loc_sum(grid, ddgrid_ddd[d]);
 
 				/* Paranoia */
-				if (!square_in_bounds_fully(c, a_grid.y, a_grid.x)) continue;
+				if (!square_in_bounds_fully(c, a_grid)) continue;
 
 				/* Test */
-				if (square_isfloor(c, a_grid.y, a_grid.x) || square_isstairs(c, a_grid.y, a_grid.x))
+				if (square_isfloor(c, a_grid) || square_isstairs(c, a_grid))
 					light = true;
 			}
 
 			if (!light) continue;
 
 			/* Only interesting grids at night */
-			if (daytime || !square_isfloor(c, grid.y, grid.x)) {
+			if (daytime || !square_isfloor(c, grid)) {
 				sqinfo_on(square(c, grid).info, SQUARE_GLOW);
 				square_memorize(c, grid.y, grid.x);
 			} else if (!square_isbright(c, grid.y, grid.x)) {
@@ -585,7 +587,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
 			struct loc grid = loc(x, y);
-			if (!square_isshop(c, grid.y, grid.x))
+			if (!square_isshop(c, grid))
 				continue;
 			for (i = 0; i < 8; i++) {
 				struct loc a_grid = loc_sum(grid, ddgrid_ddd[i]);

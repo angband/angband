@@ -162,13 +162,14 @@ bool target_set_monster(struct monster *mon)
  */
 void target_set_location(int y, int x)
 {
+	struct loc grid = loc(x, y);
+
 	/* Legal target */
-	if (square_in_bounds_fully(cave, y, x)) {
+	if (square_in_bounds_fully(cave, grid)) {
 		/* Save target info */
 		target_set = true;
 		target.midx = 0;
-		target.grid.y = y;
-		target.grid.x = x;
+		target.grid = grid;
 		return;
 	}
 
@@ -280,16 +281,17 @@ s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
  */
 bool target_accept(int y, int x)
 {
+	struct loc grid = loc(x, y);
 	struct object *obj;
 
 	/* Player grids are always interesting */
-	if (square(cave, loc(x, y)).mon < 0) return true;
+	if (square(cave, grid).mon < 0) return true;
 
 	/* Handle hallucination */
 	if (player->timed[TMD_IMAGE]) return false;
 
 	/* Obvious monsters */
-	if (square(cave, loc(x, y)).mon > 0) {
+	if (square(cave, grid).mon > 0) {
 		struct monster *mon = square_monster(cave, y, x);
 		if (monster_is_obvious(mon)) {
 			return true;
@@ -308,7 +310,7 @@ bool target_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (square_isknown(cave, y, x) && square_isinteresting(cave, y, x)) {
+	if (square_isknown(cave, grid) && square_isinteresting(cave, y, x)) {
 		return true;
 	}
 
@@ -395,8 +397,10 @@ struct point_set *target_get_monsters(int mode, monster_predicate pred)
 	/* Scan for targets */
 	for (y = min_y; y < max_y; y++) {
 		for (x = min_x; x < max_x; x++) {
+			struct loc grid = loc(x, y);
+
 			/* Check bounds */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Require "interesting" contents */
 			if (!target_accept(y, x)) continue;

@@ -1,4 +1,4 @@
-/**
+ /**
  * \file cave-square.c
  * \brief functions for dealing with individual squares
  *
@@ -185,7 +185,8 @@ bool feat_is_smooth(int feat)
  * SQUARE FEATURE PREDICATES
  *
  * These functions are used to figure out what kind of square something is,
- * via square(c, grid).feat. All direct testing of square(c, grid).feat should be rewritten
+ * via c->squares[y][x].feat (preferably accessed via square(c, grid)).
+ * All direct testing of square(c, grid).feat should be rewritten
  * in terms of these functions.
  *
  * It's often better to use square behavior predicates (written in terms of
@@ -199,46 +200,49 @@ bool feat_is_smooth(int feat)
 /**
  * True if the square is normal open floor.
  */
-bool square_isfloor(struct chunk *c, int y, int x)
+bool square_isfloor(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	return feat_is_floor(square(c, grid).feat);
 }
 
 /**
  * True if the square can hold a trap.
  */
-bool square_istrappable(struct chunk *c, int y, int x)
+bool square_istrappable(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	return feat_is_trap_holding(square(c, grid).feat);
 }
 
 /**
  * True if the square can hold an object.
  */
-bool square_isobjectholding(struct chunk *c, int y, int x)
+bool square_isobjectholding(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	return feat_is_object_holding(square(c, grid).feat);
 }
 
 /**
  * True if the square is a normal granite rock wall.
  */
-bool square_isrock(struct chunk *c, int y, int x)
+bool square_isrock(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	return (tf_has(f_info[square(c, grid).feat].flags, TF_GRANITE) &&
 			!tf_has(f_info[square(c, grid).feat].flags, TF_DOOR_ANY));
 }
 
 /**
+ * True if the square is granite.
+ */
+bool square_isgranite(struct chunk *c, struct loc grid)
+{
+	return feat_is_granite(square(c, grid).feat);
+}
+
+/**
  * True if the square is a permanent wall.
  */
-bool square_isperm(struct chunk *c, int y, int x)
+bool square_isperm(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	return (tf_has(f_info[square(c, grid).feat].flags, TF_PERMANENT) &&
 			tf_has(f_info[square(c, grid).feat].flags, TF_ROCK));
 }
@@ -246,51 +250,38 @@ bool square_isperm(struct chunk *c, int y, int x)
 /**
  * True if the square is a magma wall.
  */
-bool square_ismagma(struct chunk *c, int y, int x)
+bool square_ismagma(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	return feat_is_magma(square(c, grid).feat);
 }
 
 /**
  * True if the square is a quartz wall.
  */
-bool square_isquartz(struct chunk *c, int y, int x)
+bool square_isquartz(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	return feat_is_quartz(square(c, grid).feat);
 }
 
 /**
- * True if the square is granite.
+ * True if the square is a mineral wall (magma/quartz/granite).
  */
-bool square_isgranite(struct chunk *c, int y, int x)
+bool square_ismineral(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
-	return feat_is_granite(square(c, grid).feat);
+	return square_isrock(c, grid) || square_ismagma(c, grid) ||
+		square_isquartz(c, grid);
 }
 
-/**
- * True if the square is a mineral wall (magma/quartz).
- */
-bool square_ismineral(struct chunk *c, int y, int x)
+bool square_hasgoldvein(struct chunk *c, struct loc grid)
 {
-	return square_isrock(c, y, x) || square_ismagma(c, y, x) ||
-		square_isquartz(c, y, x);
-}
-
-bool square_hasgoldvein(struct chunk *c, int y, int x)
-{
-	struct loc grid = loc(x, y);
 	return tf_has(f_info[square(c, grid).feat].flags, TF_GOLD);
 }
 
 /**
  * True if the square is rubble.
  */
-bool square_isrubble(struct chunk *c, int y, int x)
+bool square_isrubble(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
     return (!tf_has(f_info[square(c, grid).feat].flags, TF_WALL) &&
 			tf_has(f_info[square(c, grid).feat].flags, TF_ROCK));
 }
@@ -301,9 +292,8 @@ bool square_isrubble(struct chunk *c, int y, int x)
  * These squares appear as if they were granite--when detected a secret door
  * is replaced by a closed door.
  */
-bool square_issecretdoor(struct chunk *c, int y, int x)
+bool square_issecretdoor(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
     return (tf_has(f_info[square(c, grid).feat].flags, TF_DOOR_ANY) &&
 			tf_has(f_info[square(c, grid).feat].flags, TF_ROCK));
 }
@@ -311,25 +301,22 @@ bool square_issecretdoor(struct chunk *c, int y, int x)
 /**
  * True if the square is an open door.
  */
-bool square_isopendoor(struct chunk *c, int y, int x)
+bool square_isopendoor(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
     return (tf_has(f_info[square(c, grid).feat].flags, TF_CLOSABLE));
 }
 
 /**
  * True if the square is a closed door (possibly locked or jammed).
  */
-bool square_iscloseddoor(struct chunk *c, int y, int x)
+bool square_iscloseddoor(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	int feat = square(c, grid).feat;
 	return tf_has(f_info[feat].flags, TF_DOOR_CLOSED);
 }
 
-bool square_isbrokendoor(struct chunk *c, int y, int x)
+bool square_isbrokendoor(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	int feat = square(c, grid).feat;
     return (tf_has(f_info[feat].flags, TF_DOOR_ANY) &&
 			tf_has(f_info[feat].flags, TF_PASSABLE) &&
@@ -341,9 +328,8 @@ bool square_isbrokendoor(struct chunk *c, int y, int x)
  *
  * This includes open, closed, and hidden doors.
  */
-bool square_isdoor(struct chunk *c, int y, int x)
+bool square_isdoor(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	int feat = square(c, grid).feat;
 	return tf_has(f_info[feat].flags, TF_DOOR_ANY);
 }
@@ -351,9 +337,8 @@ bool square_isdoor(struct chunk *c, int y, int x)
 /**
  * True if square is any stair
  */
-bool square_isstairs(struct chunk *c, int y, int x)
+bool square_isstairs(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	int feat = square(c, grid).feat;
 	return tf_has(f_info[feat].flags, TF_STAIR);
 }
@@ -361,9 +346,8 @@ bool square_isstairs(struct chunk *c, int y, int x)
 /**
  * True if square is an up stair.
  */
-bool square_isupstairs(struct chunk*c, int y, int x)
+bool square_isupstairs(struct chunk*c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	int feat = square(c, grid).feat;
 	return tf_has(f_info[feat].flags, TF_UPSTAIR);
 }
@@ -371,9 +355,8 @@ bool square_isupstairs(struct chunk*c, int y, int x)
 /**
  * True if square is a down stair.
  */
-bool square_isdownstairs(struct chunk *c, int y, int x)
+bool square_isdownstairs(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	int feat = square(c, grid).feat;
 	return tf_has(f_info[feat].flags, TF_DOWNSTAIR);
 }
@@ -381,33 +364,29 @@ bool square_isdownstairs(struct chunk *c, int y, int x)
 /**
  * True if the square is a shop entrance.
  */
-bool square_isshop(struct chunk *c, int y, int x)
+bool square_isshop(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	return feat_is_shop(square(c, grid).feat);
 }
 
 /**
  * True if the square contains the player
  */
-bool square_isplayer(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isplayer(struct chunk *c, struct loc grid) {
 	return square(c, grid).mon < 0 ? true : false;
 }
 
 /**
  * True if the square contains the player or a monster
  */
-bool square_isoccupied(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isoccupied(struct chunk *c, struct loc grid) {
 	return square(c, grid).mon != 0 ? true : false;
 }
 
 /**
  * True if the the player knows the terrain of the square
  */
-bool square_isknown(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isknown(struct chunk *c, struct loc grid) {
 	if (c != cave) return false;
 	if (player->cave == NULL) return false;
 	return square(player->cave, grid).feat == FEAT_NONE ? false : true;
@@ -417,8 +396,7 @@ bool square_isknown(struct chunk *c, int y, int x) {
  * True if the the player's knowledge of the terrain of the square is wrong
  * or missing
  */
-bool square_isnotknown(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isnotknown(struct chunk *c, struct loc grid) {
 	if (c != cave) return false;
 	if (player->cave == NULL) return true;
 	return square(player->cave, grid).feat != square(c, grid).feat;
@@ -630,15 +608,15 @@ bool square_isno_stairs(struct chunk *c, int y, int x) {
  */
 bool square_isopen(struct chunk *c, int y, int x) {
 	struct loc grid = loc(x, y);
-	return square_isfloor(c, y, x) && !square(c, grid).mon;
+	return square_isfloor(c, grid) && !square(c, grid).mon;
 }
 
 /**
  * True if the square is empty (an open square without any items).
  */
-bool square_isempty(struct chunk *c, int y, int x) {
-	if (square_isplayertrap(c, y, x)) return false;
-	return square_isopen(c, y, x) && !square_object(c, y, x);
+bool square_isempty(struct chunk *c, struct loc grid) {
+	if (square_isplayertrap(c, grid.y, grid.x)) return false;
+	return square_isopen(c, grid.y, grid.x) && !square_object(c, grid.y, grid.x);
 }
 
 /**
@@ -648,8 +626,8 @@ bool square_isarrivable(struct chunk *c, int y, int x) {
 	struct loc grid = loc(x, y);
 	if (square(c, grid).mon) return false;
 	if (square_isplayertrap(c, y, x)) return false;
-	if (square_isfloor(c, y, x)) return true;
-	if (square_isstairs(c, y, x)) return true;
+	if (square_isfloor(c, grid)) return true;
+	if (square_isstairs(c, grid)) return true;
 	// maybe allow open doors or suchlike?
 	return false;
 }
@@ -658,7 +636,8 @@ bool square_isarrivable(struct chunk *c, int y, int x) {
  * True if the square is an untrapped floor square without items.
  */
 bool square_canputitem(struct chunk *c, int y, int x) {
-	if (!square_isobjectholding(c, y, x))
+	struct loc grid = loc(x, y);
+	if (!square_isobjectholding(c, grid))
 		return false;
 	if (square_istrap(c, y, x))
 		return false;
@@ -669,9 +648,10 @@ bool square_canputitem(struct chunk *c, int y, int x) {
  * True if the square can be dug: this includes rubble and non-permanent walls.
  */
 bool square_isdiggable(struct chunk *c, int y, int x) {
-	return (square_ismineral(c, y, x) ||
-			square_issecretdoor(c, y, x) || 
-			square_isrubble(c, y, x));
+	struct loc grid = loc(x, y);
+	return (square_ismineral(c, grid) ||
+			square_issecretdoor(c, grid) || 
+			square_isrubble(c, grid));
 }
 
 /**
@@ -724,8 +704,9 @@ bool square_iswall(struct chunk *c, int y, int x) {
  * secret doors and rubble.
  */
 bool square_isstrongwall(struct chunk *c, int y, int x) {
+	struct loc grid = loc(x, y);
 	assert(square_in_bounds(c, y, x));
-	return square_ismineral(c, y, x) || square_isperm(c, y, x);
+	return square_ismineral(c, grid) || square_isperm(c, grid);
 }
 
 /**
@@ -868,10 +849,10 @@ bool square_isdisabledtrap(struct chunk *c, int y, int x)
 /**
  * True if the square is a known, disarmable player trap.
  */
-bool square_isdisarmabletrap(struct chunk *c, int y, int x)
+bool square_isdisarmabletrap(struct chunk *c, struct loc grid)
 {
-	if (square_isdisabledtrap(c, y, x)) return false;
-	return square_isvisibletrap(c, y, x) && square_isplayertrap(c, y, x);
+	if (square_isdisabledtrap(c, grid.y, grid.x)) return false;
+	return square_isvisibletrap(c, grid.y, grid.x) && square_isplayertrap(c, grid.y, grid.x);
 }
 
 /**
@@ -883,13 +864,13 @@ bool square_dtrap_edge(struct chunk *c, int y, int x)
 	if (!square_isdtrap(c, y, x)) return false;
 
 	/* Check for non-dtrap adjacent grids */
-	if (square_in_bounds_fully(c, y + 1, x) && (!square_isdtrap(c, y + 1, x)))
+	if (square_in_bounds_fully(c, loc(x, y + 1)) && (!square_isdtrap(c, y + 1, x)))
 		return true;
-	if (square_in_bounds_fully(c, y, x + 1) && (!square_isdtrap(c, y, x + 1)))
+	if (square_in_bounds_fully(c, loc(x + 1, y)) && (!square_isdtrap(c, y, x + 1)))
 		return true;
-	if (square_in_bounds_fully(c, y - 1, x) && (!square_isdtrap(c, y - 1, x)))
+	if (square_in_bounds_fully(c, loc(x, y - 1)) && (!square_isdtrap(c, y - 1, x)))
 		return true;
-	if (square_in_bounds_fully(c, y, x - 1) && (!square_isdtrap(c, y, x - 1)))
+	if (square_in_bounds_fully(c, loc(x - 1, y)) && (!square_isdtrap(c, y, x - 1)))
 		return true;
 
 	return false;
@@ -902,11 +883,12 @@ bool square_dtrap_edge(struct chunk *c, int y, int x)
  */
 bool square_changeable(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	struct object *obj;
 
 	/* Forbid perma-grids */
-	if (square_isperm(c, y, x) || square_isshop(c, y, x) ||
-		square_isstairs(c, y, x))
+	if (square_isperm(c, grid) || square_isshop(c, grid) ||
+		square_isstairs(c, grid))
 		return (false);
 
 	/* Check objects */
@@ -925,10 +907,11 @@ bool square_in_bounds(struct chunk *c, int y, int x)
 	return x >= 0 && x < c->width && y >= 0 && y < c->height;
 }
 
-bool square_in_bounds_fully(struct chunk *c, int y, int x)
+bool square_in_bounds_fully(struct chunk *c, struct loc grid)
 {
 	assert(c);
-	return x > 0 && x < c->width - 1 && y > 0 && y < c->height - 1;
+	return grid.x > 0 && grid.x < c->width - 1 &&
+		grid.y > 0 && grid.y < c->height - 1;
 }
 
 /**
@@ -936,10 +919,11 @@ bool square_in_bounds_fully(struct chunk *c, int y, int x)
  */
 bool square_isbelievedwall(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	// the edge of the world is definitely gonna block things
-	if (!square_in_bounds_fully(c, y, x)) return true;
+	if (!square_in_bounds_fully(c, grid)) return true;
 	// if we dont know assume its projectable
-	if (!square_isknown(c, y, x)) return false;
+	if (!square_isknown(c, grid)) return false;
 	// report what we think (we may be wrong)
 	return !square_isprojectable(player->cave, y, x);
 }
@@ -947,21 +931,21 @@ bool square_isbelievedwall(struct chunk *c, int y, int x)
 /**
  * Checks if a square is in a cul-de-sac
  */
-bool square_suits_stairs_well(struct chunk *c, int y, int x)
+bool square_suits_stairs_well(struct chunk *c, struct loc grid)
 {
-	if (square_isvault(c, y, x) || square_isno_stairs(c, y, x)) return false;
-	return (square_num_walls_adjacent(c, y, x) == 3) &&
-		(square_num_walls_diagonal(c, y, x) == 4) && square_isempty(c, y, x);
+	if (square_isvault(c, grid.y, grid.x) || square_isno_stairs(c, grid.y, grid.x)) return false;
+	return (square_num_walls_adjacent(c, grid.y, grid.x) == 3) &&
+		(square_num_walls_diagonal(c, grid.y, grid.x) == 4) && square_isempty(c, grid);
 }
 
 /**
  * Checks if a square is in a corridor
  */
-bool square_suits_stairs_ok(struct chunk *c, int y, int x)
+bool square_suits_stairs_ok(struct chunk *c, struct loc grid)
 {
-	if (square_isvault(c, y, x) || square_isno_stairs(c, y, x)) return false;
-	return (square_num_walls_adjacent(c, y, x) == 2) &&
-		(square_num_walls_diagonal(c, y, x) == 4) && square_isempty(c, y, x);
+	if (square_isvault(c, grid.y, grid.x) || square_isno_stairs(c, grid.y, grid.x)) return false;
+	return (square_num_walls_adjacent(c, grid.y, grid.x) == 2) &&
+		(square_num_walls_diagonal(c, grid.y, grid.x) == 4) && square_isempty(c, grid);
 }
 
 
@@ -1199,7 +1183,8 @@ void square_set_known_feat(struct chunk *c, int y, int x, int feat)
 
 void square_add_trap(struct chunk *c, int y, int x)
 {
-	assert(square_in_bounds_fully(c, y, x));
+	struct loc grid = loc(x, y);
+	assert(square_in_bounds_fully(c, grid));
 	place_trap(c, y, x, -1, c->depth);
 }
 
@@ -1262,7 +1247,8 @@ void square_unlock_door(struct chunk *c, int y, int x) {
 }
 
 void square_destroy_door(struct chunk *c, int y, int x) {
-	assert(square_isdoor(c, y, x));
+	struct loc grid = loc(x, y);
+	assert(square_isdoor(c, grid));
 	square_remove_all_traps(c, y, x);
 	square_set_feat(c, y, x, FEAT_FLOOR);
 }
@@ -1344,7 +1330,8 @@ void square_upgrade_mineral(struct chunk *c, int y, int x)
 }
 
 void square_destroy_rubble(struct chunk *c, int y, int x) {
-	assert(square_isrubble(c, y, x));
+	struct loc grid = loc(x, y);
+	assert(square_isrubble(c, grid));
 	square_set_feat(c, y, x, FEAT_FLOOR);
 }
 
@@ -1355,7 +1342,7 @@ void square_force_floor(struct chunk *c, int y, int x) {
 /* Note that this returns the STORE_ index, which is one less than shopnum */
 int square_shopnum(struct chunk *c, int y, int x) {
 	struct loc grid = loc(x, y);
-	if (square_isshop(c, y, x))
+	if (square_isshop(c, grid))
 		return f_info[square(c, grid).feat].shopnum - 1;
 	return -1;
 }

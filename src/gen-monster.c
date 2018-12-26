@@ -240,7 +240,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 		}
 
 		/* Require "empty" floor grids */
-		if (!square_isempty(c, y, x)) continue;
+		if (!square_isempty(c, loc(x, y))) continue;
 
 		/* Place the monster (sleeping, allow groups) */
 		pick_and_place_monster(c, y, x, depth, true, true, origin);
@@ -390,7 +390,7 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 		x = x1 + randint0(1 + ABS(x2 - x1));
 
 		/* Require a passable square with no monster in it already. */
-		if (!square_isempty(c, y, x))
+		if (!square_isempty(c, loc(x, y)))
 			continue;
 
 		/* Place a single monster.  Sleeping 2/3rds of the time. */

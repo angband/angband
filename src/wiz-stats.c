@@ -1741,7 +1741,7 @@ void calc_cave_distances(int **cave_dist)
 				ty = oy + ddy_ddd[d];
 				tx = ox + ddx_ddd[d];
 
-				if (!(square_in_bounds_fully(cave, ty, tx))) continue;
+				if (!(square_in_bounds_fully(cave, loc(tx, ty)))) continue;
 
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;
@@ -1921,7 +1921,7 @@ void disconnect_stats(void)
 				if (cave_dist[y][x] >= 0) {
 
 					/* Is it a  down stairs? */
-					if (square_isdownstairs(cave, y, x)) {
+					if (square_isdownstairs(cave, loc(x, y))) {
 
 						has_dsc_from_stairs = false;
 

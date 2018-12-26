@@ -685,13 +685,13 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			/* Hack -- handle unknown grids */
 
 			/* Pick a prefix */
-			if (*s2 && square_isdoor(cave, y, x)) s2 = "in ";
+			if (*s2 && square_isdoor(cave, loc(x, y))) s2 = "in ";
 
 			/* Pick proper indefinite article */
 			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
 
 			/* Hack -- special introduction for store doors */
-			if (square_isshop(cave, y, x))
+			if (square_isshop(cave, loc(x, y)))
 				s3 = "the entrance to the ";
 
 			/* Display a message */
@@ -810,10 +810,9 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		byte colour;
 
 		/* Find the co-ordinates on the level. */
-		int y = path_g[i].y;
-		int x = path_g[i].x;
-		struct monster *mon = square_monster(cave, y, x);
-		struct object *obj = square_object(player->cave, y, x);
+		struct loc grid = path_g[i];
+		struct monster *mon = square_monster(cave, grid.y, grid.x);
+		struct object *obj = square_object(player->cave, grid.y, grid.x);
 
 		/*
 		 * As path[] is a straight line and the screen is oblong,
@@ -824,15 +823,15 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 		 * If some of it has been drawn, finish now as there are no
 		 * more visible squares to draw.
 		 */
-		 if (panel_contains(y,x)) on_screen = true;
+		 if (panel_contains(grid.y, grid.x)) on_screen = true;
 		 else if (on_screen) break;
 		 else continue;
 
 	 	/* Find the position on-screen */
-		move_cursor_relative(y,x);
+		move_cursor_relative(grid.y, grid.x);
 
 		/* This square is being overwritten, so save the original. */
-		Term_what(Term->scr->cx, Term->scr->cy, a+i, c+i);
+		Term_what(Term->scr->cx, Term->scr->cy, a + i, c + i);
 
 		/* Choose a colour. */
 		if (pastknown) {
@@ -850,12 +849,12 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;
 
-		else if (!square_isprojectable(cave, y, x) &&
-				  (square_isknown(cave, y, x) || square_isseen(cave, y, x)))
+		else if (!square_isprojectable(cave, grid.y, grid.x) &&
+				 (square_isknown(cave, grid) || square_isseen(cave, grid.y, grid.x)))
 			/* Known walls are blue. */
 			colour = COLOUR_BLUE;
 
-		else if (!square_isknown(cave, y, x) && !square_isseen(cave, y, x)) {
+		else if (!square_isknown(cave, grid) && !square_isseen(cave, grid.y, grid.x)) {
 			/* Unknown squares are grey. */
 			pastknown = true;
 			colour = COLOUR_L_DARK;
@@ -962,7 +961,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 	/* If we haven't been given an initial location, start on the
 	   player, otherwise  honour it by going into "free targetting" mode. */
-	if (x == -1 || y == -1 || !square_in_bounds_fully(cave, y, x)) {
+	if (x == -1 || y == -1 || !square_in_bounds_fully(cave, loc(x, y))) {
 		x = player->px;
 		y = player->py;
 	} else {

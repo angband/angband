@@ -648,7 +648,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ)
 	}
 
 	/* No player here */
-	if (!square_isplayer(cave, grid.y, grid.x)) {
+	if (!square_isplayer(cave, grid)) {
 		return false;
 	}
 

@@ -162,7 +162,7 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
 		return false;
 
     /* Check it's a trappable square */
-    return (square_istrappable(c, y, x));
+    return (square_istrappable(c, loc(x, y)));
 }
 
 /**
@@ -663,7 +663,7 @@ void square_set_door_lock(struct chunk *c, int y, int x, int power)
 	struct trap *trap;
 
 	/* Verify it's a closed door */
-	if (!square_iscloseddoor(c, y, x))
+	if (!square_iscloseddoor(c, loc(x, y)))
 		return;
 
 	/* If there's no lock there, add one */
@@ -688,7 +688,7 @@ int square_door_power(struct chunk *c, int y, int x)
 	struct trap *trap;
 
 	/* Verify it's a closed door */
-	if (!square_iscloseddoor(c, y, x))
+	if (!square_iscloseddoor(c, loc(x, y)))
 		return 0;
 
 	/* Is there a lock there? */

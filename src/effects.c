@@ -1044,7 +1044,7 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 	}
 
 	/* See if the effect works */
-	if (!square_istrappable(cave, py, px)) {
+	if (!square_istrappable(cave, loc(px, py))) {
 		msg("There is no clear floor on which to cast the spell.");
 		return false;
 	}
@@ -1511,15 +1511,17 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
+			struct loc grid = loc(x, y);
+
 			/* Some squares can't be mapped */
 			if (square_isno_map(cave, y, x)) continue;
 
 			/* All non-walls are "checked" */
 			if (!square_seemslikewall(cave, y, x)) {
-				if (!square_in_bounds_fully(cave, y, x)) continue;
+				if (!square_in_bounds_fully(cave, grid)) continue;
 
 				/* Memorize normal features */
-				if (!square_isfloor(cave, y, x))
+				if (!square_isfloor(cave, grid))
 					square_memorize(cave, y, x);
 
 				/* Memorize known walls */
@@ -1534,7 +1536,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
-			if (square_isnotknown(cave, y, x))
+			if (square_isnotknown(cave, grid))
 				square_forget(cave, y, x);
 		}
 	}
@@ -1626,7 +1628,9 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			struct loc grid = loc(x, y);
+
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Detect traps */
 			if (square_isplayertrap(cave, y, x))
@@ -1698,10 +1702,12 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			struct loc grid = loc(x, y);
+
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Detect secret doors */
-			if (square_issecretdoor(cave, y, x)) {
+			if (square_issecretdoor(cave, grid)) {
 				/* Put an actual door */
 				place_closed_door(cave, y, x);
 
@@ -1714,8 +1720,8 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 			}
 
 			/* Forget unknown doors in the mapping area */
-			if (square_isdoor(player->cave, y, x) &&
-				square_isnotknown(cave, y, x)) {
+			if (square_isdoor(player->cave, grid) &&
+				square_isnotknown(cave, grid)) {
 				square_forget(cave, y, x);
 			}
 		}
@@ -1757,10 +1763,12 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			struct loc grid = loc(x, y);
+
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Detect stairs */
-			if (square_isstairs(cave, y, x)) {
+			if (square_isstairs(cave, grid)) {
 				/* Memorize */
 				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
@@ -1807,10 +1815,12 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			struct loc grid = loc(x, y);
+
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Magma/Quartz + Known Gold */
-			if (square_hasgoldvein(cave, y, x)) {
+			if (square_hasgoldvein(cave, grid)) {
 				/* Memorize */
 				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
@@ -2126,7 +2136,7 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 	context->ident = true;
 
 	/* Only allow stairs to be created on empty floor */
-	if (!square_isfloor(cave, py, px)) {
+	if (!square_isfloor(cave, loc(px, py))) {
 		msg("There is no empty floor here.");
 		return false;
 	}
@@ -2776,7 +2786,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 			if (d == 0) continue;
 
 			/* Require "naked" floor space */
-			if (!square_isempty(cave, y, x)) continue;
+			if (!square_isempty(cave, loc(x, y))) continue;
 
 			/* No monster teleport onto glyph of warding */
 			if (!is_player && square_iswarded(cave, y, x)) continue;
@@ -2919,11 +2929,11 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		while (1) {
 			y = rand_spread(ny, dis);
 			x = rand_spread(nx, dis);
-			if (square_in_bounds_fully(cave, y, x)) break;
+			if (square_in_bounds_fully(cave, loc(x, y))) break;
 		}
 
 		/* Accept "naked" floor grids */
-		if (square_isempty(cave, y, x)) break;
+		if (square_isempty(cave, loc(x, y))) break;
 
 		/* Occasionally advance the distance */
 		if (++ctr > (4 * dis * dis + 4 * dis + 1)) {
@@ -3059,8 +3069,8 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 			int yy = player->py + ddy_ddd[d];
 			int xx = player->px + ddx_ddd[d];
 
-			if (square_in_bounds_fully(cave, yy, xx) &&
-					square_isempty(cave, yy, xx) &&
+			if (square_in_bounds_fully(cave, loc(xx, yy)) &&
+				square_isempty(cave, loc(xx, yy)) &&
 					one_in_(3)) {
 				if (one_in_(2))
 					square_set_feat(cave, yy, xx, FEAT_PASS_RUBBLE);
@@ -3110,8 +3120,10 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 	/* Big area of affect */
 	for (y = (y1 - r); y <= (y1 + r); y++) {
 		for (x = (x1 - r); x <= (x1 + r); x++) {
+			struct loc grid = loc(x, y);
+
 			/* Skip illegal grids */
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Extract the distance */
 			k = distance(loc(x1, y1), loc(x, y));
@@ -3138,10 +3150,10 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			delete_monster(y, x);
 
 			/* Don't remove stairs */
-			if (square_isstairs(cave, y, x)) continue;
+			if (square_isstairs(cave, grid)) continue;
 
 			/* Destroy any grid that isn't a permament wall */
-			if (!square_isperm(cave, y, x)) {
+			if (!square_isperm(cave, grid)) {
 				/* Deal with artifacts */
 				struct object *obj = square_object(cave, y, x);
 				while (obj) {
@@ -3252,7 +3264,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			xx = centre.x + dx;
 
 			/* Skip illegal grids */
-			if (!square_in_bounds_fully(cave, yy, xx)) continue;
+			if (!square_in_bounds_fully(cave, loc(xx, yy))) continue;
 
 			/* Skip distant grids */
 			if (distance(centre, loc(xx, yy)) > r) continue;
@@ -3292,7 +3304,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			x = px + ddx_ddd[i];
 
 			/* Skip non-empty grids */
-			if (!square_isempty(cave, y, x)) continue;
+			if (!square_isempty(cave, loc(x, y))) continue;
 
 			/* Important -- Skip "quake" grids */
 			if (map[16 + y - centre.y][16 + x - centre.x]) continue;
@@ -3392,7 +3404,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 							x = xx + ddx_ddd[i];
 
 							/* Skip non-empty grids */
-							if (!square_isempty(cave, y, x)) continue;
+							if (!square_isempty(cave, loc(x, y))) continue;
 
 							/* Hack -- no safety on glyph of warding */
 							if (square_iswarded(cave, y, x))
@@ -3466,7 +3478,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			xx = centre.x + dx;
 
 			/* Ignore invalid grids */
-			if (!square_in_bounds_fully(cave, yy, xx)) continue;
+			if (!square_in_bounds_fully(cave, loc(xx, yy))) continue;
 
 			/* Note unaffected grids for light changes, etc. */
 			if (!map[16 + yy - centre.y][16 + xx - centre.x])
@@ -4630,7 +4642,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	for (d = first_d; d < first_d + 8; d++) {
 		y = ny + ddy_ddd[d % 8];
 		x = nx + ddx_ddd[d % 8];
-		if (square_isempty(cave, y, x)) break;
+		if (square_isempty(cave, loc(x, y))) break;
 	}
 
 	/* Needed to be adjacent */

@@ -300,7 +300,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 			bool moved = false;
 
 			/* Deal with impassable terrain */
-			if (square_isdoor(cave, y, x)) {
+			if (square_isdoor(cave, loc(x, y))) {
 				if (power >= 1) {
 					square_open_door(cave, y, x);
 					monster_swap(mon->grid.y, mon->grid.x, y, x);
@@ -308,7 +308,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					power--;
 					moved = true;
 				}
-			} else if (square_isrubble(cave, y, x)) {
+			} else if (square_isrubble(cave, loc(x, y))) {
 				if (power >= 1) {
 					square_destroy_wall(cave, y, x);
 					monster_swap(mon->grid.y, mon->grid.x, y, x);
@@ -316,11 +316,11 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					power--;
 					moved = true;
 				}
-			} else if (square_ismagma(cave, y, x)) {
+			} else if (square_ismagma(cave, loc(x, y))) {
 				if (power >= 1) {
 					square_destroy_wall(cave, y, x);
 					monster_swap(mon->grid.y, mon->grid.x, y, x);
-					if (square_hasgoldvein(cave, y, x)) {
+					if (square_hasgoldvein(cave, loc(x, y))) {
 						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
 					}
 					if (randint0(20) < power) {
@@ -332,11 +332,11 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					power--;
 					moved = true;
 				}
-			} else if (square_isquartz(cave, y, x)) {
+			} else if (square_isquartz(cave, loc(x, y))) {
 				if (power >= 2) {
 					square_destroy_wall(cave, y, x);
 					monster_swap(mon->grid.y, mon->grid.x, y, x);
-					if (square_hasgoldvein(cave, y, x)) {
+					if (square_hasgoldvein(cave, loc(x, y))) {
 						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
 					}
 					if (randint0(20) < power) {
@@ -348,7 +348,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					power -= 2;
 					moved = true;
 				}
-			} else if (square_isgranite(cave, y, x)) {
+			} else if (square_isgranite(cave, loc(x, y))) {
 				if (power >= 3) {
 					square_destroy_wall(cave, y, x);
 					monster_swap(mon->grid.y, mon->grid.x, y, x);

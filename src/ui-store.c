@@ -1176,7 +1176,7 @@ static void refresh_stock(game_event_type type, game_event_data *unused, void *u
 void enter_store(game_event_type type, game_event_data *data, void *user)
 {
 	/* Check that we're on a store */
-	if (!square_isshop(cave, player->py, player->px)) {
+	if (!square_isshop(cave, loc(player->px, player->py))) {
 		msg("You see no store here.");
 		return;
 	}

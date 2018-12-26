@@ -73,8 +73,9 @@ static bool monster_near_permwall(const struct monster *mon, struct chunk *c)
 	/* Search the nearby grids, which are always in bounds */
 	for (y = (my - 2); y <= (my + 2); y++) {
 		for (x = (mx - 2); x <= (mx + 2); x++) {
-            if (!square_in_bounds_fully(c, y, x)) continue;
-            if (square_isperm(c, y, x)) return true;
+			struct loc grid = loc(x, y);
+           if (!square_in_bounds_fully(c, grid)) continue;
+            if (square_isperm(c, grid)) return true;
 		}
 	}
 	return false;
@@ -426,7 +427,7 @@ static bool get_move_find_safety(struct chunk *c, struct monster *mon)
 			x = fx + dx;
 
 			/* Skip illegal locations */
-			if (!square_in_bounds_fully(c, y, x)) continue;
+			if (!square_in_bounds_fully(c, loc(x, y))) continue;
 
 			/* Skip locations in a wall */
 			if (!square_ispassable(c, y, x)) continue;
@@ -500,10 +501,10 @@ static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 			x = mon->grid.x + dx;
 
 			/* Skip illegal locations */
-			if (!square_in_bounds_fully(c, y, x)) continue;
+			if (!square_in_bounds_fully(c, loc(x, y))) continue;
 
 			/* Skip occupied locations */
-			if (!square_isempty(c, y, x)) continue;
+			if (!square_isempty(c, loc(x, y))) continue;
 
 			/* Check for hidden, available grid */
 			if (!square_isview(c, y, x) &&
@@ -770,7 +771,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 				xx = target.x + ddx_ddd[(tmp + i) & 7];
 
 				/* Ignore filled grids */
-				if (!square_isempty(c, yy, xx)) continue;
+				if (!square_isempty(c, loc(xx, yy))) continue;
 
 				/* Try to fill this hole */
 				break;
@@ -820,7 +821,7 @@ bool multiply_monster(struct chunk *c, const struct monster *mon)
 		scatter(c, &y, &x, mon->grid.y, mon->grid.x, d, true);
 
 		/* Require an "empty" floor grid */
-		if (!square_isempty(c, y, x)) continue;
+		if (!square_isempty(c, loc(x, y))) continue;
 
 		/* Create a new monster (awake, no groups) */
 		result = place_new_monster(c, y, x, mon->race, false, false,
@@ -922,6 +923,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 		const char *m_name, int nx, int ny, bool *did_something)
 {
 	struct monster_lore *lore = get_lore(mon->race);
+	struct loc new = loc(nx, ny);
 
 	/* Dangerous terrain in the way */
 	if (monster_hates_grid(c, mon, ny, nx)) {
@@ -934,7 +936,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 	}
 
 	/* Permanent wall in the way */
-	if (square_iswall(c, ny, nx) && square_isperm(c, ny, nx)) {
+	if (square_iswall(c, ny, nx) && square_isperm(c, new)) {
 		return false;
 	}
 
@@ -959,8 +961,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		return true;
-	} else if (square_iscloseddoor(c, ny, nx) ||
-			   square_issecretdoor(c, ny, nx)) {
+	} else if (square_iscloseddoor(c, new) || square_issecretdoor(c, new)) {
 		bool can_open = rf_has(mon->race->flags, RF_OPEN_DOOR);
 		bool can_bash = rf_has(mon->race->flags, RF_BASH_DOOR);
 		bool will_bash = false;
@@ -1285,7 +1286,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		}
 
 		/* The player is in the way. */
-		if (square_isplayer(c, ny, nx)) {
+		if (square_isplayer(c, loc(nx, ny))) {
 			/* Learn about if the monster attacks */
 			if (monster_is_visible(mon))
 				rf_on(lore->flags, RF_NEVER_BLOW);

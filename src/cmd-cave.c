@@ -54,7 +54,7 @@ void do_cmd_go_up(struct command *cmd)
 	int ascend_to;
 
 	/* Verify stairs */
-	if (!square_isupstairs(cave, player->py, player->px)) {
+	if (!square_isupstairs(cave, loc(player->px, player->py))) {
 		msg("I see no up staircase here.");
 		return;
 	}
@@ -95,7 +95,7 @@ void do_cmd_go_down(struct command *cmd)
 	int descend_to = dungeon_get_next_level(player->depth, 1);
 
 	/* Verify stairs */
-	if (!square_isdownstairs(cave, player->py, player->px)) {
+	if (!square_isdownstairs(cave, loc(player->px, player->py))) {
 		msg("I see no down staircase here.");
 		return;
 	}
@@ -135,14 +135,15 @@ void do_cmd_go_down(struct command *cmd)
  */
 static bool do_cmd_open_test(int y, int x)
 {
+	struct loc grid = loc(x, y);
 	/* Must have knowledge */
-	if (!square_isknown(cave, y, x)) {
+	if (!square_isknown(cave, grid)) {
 		msg("You see nothing there.");
 		return false;
 	}
 
 	/* Must be a closed door */
-	if (!square_iscloseddoor(cave, y, x)) {
+	if (!square_iscloseddoor(cave, grid)) {
 		msgt(MSG_NOTHING_TO_OPEN, "You see nothing there to open.");
 		return false;
 	}
@@ -317,8 +318,10 @@ void do_cmd_open(struct command *cmd)
  */
 static bool do_cmd_close_test(int y, int x)
 {
+	struct loc grid = loc(x, y);
+
 	/* Must have knowledge */
-	if (!square_isknown(cave, y, x)) {
+	if (!square_isknown(cave, grid)) {
 		/* Message */
 		msg("You see nothing there.");
 
@@ -327,7 +330,7 @@ static bool do_cmd_close_test(int y, int x)
 	}
 
  	/* Require open/broken door */
-	if (!square_isopendoor(cave, y, x) && !square_isbrokendoor(cave, y, x)) {
+	if (!square_isopendoor(cave, grid) && !square_isbrokendoor(cave, grid)) {
 		/* Message */
 		msg("You see nothing there to close.");
 
@@ -350,13 +353,13 @@ static bool do_cmd_close_test(int y, int x)
 static bool do_cmd_close_aux(int y, int x)
 {
 	bool more = false;
+	struct loc grid = loc(x, y);
 
 	/* Verify legality */
 	if (!do_cmd_close_test(y, x)) return (false);
 
 	/* Broken door */
-	if (square_isbrokendoor(cave, y, x))
-	{
+	if (square_isbrokendoor(cave, grid)) {
 		msg("The door appears to be broken.");
 	} else {
 		/* Close door */
@@ -435,20 +438,22 @@ void do_cmd_close(struct command *cmd)
  */
 static bool do_cmd_tunnel_test(int y, int x)
 {
+	struct loc grid = loc(x, y);
+
 	/* Must have knowledge */
-	if (!square_isknown(cave, y, x)) {
+	if (!square_isknown(cave, grid)) {
 		msg("You see nothing there.");
 		return (false);
 	}
 
 	/* Titanium */
-	if (square_isperm(cave, y, x)) {
+	if (square_isperm(cave, grid)) {
 		msg("This seems to be permanent rock.");
 		return (false);
 	}
 
 	/* Must be a wall/door/etc */
-	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, y, x))) {
+	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, grid))) {
 		msg("You see nothing there to tunnel.");
 		return (false);
 	}
@@ -470,8 +475,9 @@ static bool do_cmd_tunnel_test(int y, int x)
  */
 static bool twall(int y, int x)
 {
+	struct loc grid = loc(x, y);
 	/* Paranoia -- Require a wall or door or some such */
-	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, y, x)))
+	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, grid)))
 		return (false);
 
 	/* Sound */
@@ -503,8 +509,8 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	bool more = false;
 	int digging_chances[DIGGING_MAX];
 	bool okay = false;
-	bool gold = square_hasgoldvein(cave, y, x);
-	bool rubble = square_isrubble(cave, y, x);
+	bool gold = square_hasgoldvein(cave, loc(x, y));
+	bool rubble = square_isrubble(cave, loc(x, y));
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(y, x)) return (false);
@@ -608,18 +614,19 @@ void do_cmd_tunnel(struct command *cmd)
  */
 static bool do_cmd_disarm_test(int y, int x)
 {
+	struct loc grid = loc(x, y);
 	/* Must have knowledge */
-	if (!square_isknown(cave, y, x)) {
+	if (!square_isknown(cave, grid)) {
 		msg("You see nothing there.");
 		return false;
 	}
 
 	/* Look for a closed, unlocked door to lock */
-	if (square_iscloseddoor(cave, y, x) && !square_islockeddoor(cave, y, x))
+	if (square_iscloseddoor(cave, grid) && !square_islockeddoor(cave, y, x))
 		return true;
 
 	/* Look for a trap */
-	if (!square_isdisarmabletrap(cave, y, x)) {
+	if (!square_isdisarmabletrap(cave, grid)) {
 		msg("You see nothing there to disarm.");
 		return false;
 	}
@@ -822,7 +829,7 @@ void do_cmd_disarm(struct command *cmd)
 	} else if (obj)
 		/* Chest */
 		more = do_cmd_disarm_chest(y, x, obj);
-	else if (square_iscloseddoor(cave, y, x) &&
+	else if (square_iscloseddoor(cave, loc(x, y)) &&
 			 !square_islockeddoor(cave, y, x))
 		/* Door to lock */
 		more = do_cmd_lock_door(y, x);
@@ -875,10 +882,10 @@ void do_cmd_alter_aux(int dir)
 	} else if (square_isdiggable(cave, y, x)) {
 		/* Tunnel through walls and rubble */
 		more = do_cmd_tunnel_aux(y, x);
-	} else if (square_iscloseddoor(cave, y, x)) {
+	} else if (square_iscloseddoor(cave, loc(x, y))) {
 		/* Open closed doors */
 		more = do_cmd_open_aux(y, x);
-	} else if (square_isdisarmabletrap(cave, y, x)) {
+	} else if (square_isdisarmabletrap(cave, loc(x, y))) {
 		/* Disarm traps */
 		more = do_cmd_disarm_aux(y, x);
 	} else {
@@ -913,12 +920,13 @@ void move_player(int dir, bool disarm)
 {
 	int y = player->py + ddy[dir];
 	int x = player->px + ddx[dir];
+	struct loc grid = loc(x, y);
 
-	int m_idx = square(cave, loc(x, y)).mon;
+	int m_idx = square(cave, grid).mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 	bool trapsafe = player_is_trapsafe(player);
-	bool alterable = square_isdisarmabletrap(cave, y, x) ||
-		square_iscloseddoor(cave, y, x);
+	bool alterable = square_isdisarmabletrap(cave, grid) ||
+		square_iscloseddoor(cave, grid);
 
 	/* Many things can happen on movement */
 	if (m_idx > 0) {
@@ -932,12 +940,12 @@ void move_player(int dir, bool disarm)
 		} else {
 			py_attack(player, y, x);
 		}
-	} else if (alterable && disarm && square_isknown(cave, y, x)) {
+	} else if (alterable && disarm && square_isknown(cave, grid)) {
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
 			cmd_set_repeat(99);
 		do_cmd_alter_aux(dir);
-	} else if (player->upkeep->running && square_isdisarmabletrap(cave, y, x)
+	} else if (player->upkeep->running && square_isdisarmabletrap(cave, grid)
 		&& !trapsafe) {
 		/* Stop running before known traps */
 		disturb(player, 0);
@@ -945,13 +953,13 @@ void move_player(int dir, bool disarm)
 		disturb(player, 0);
 
 		/* Notice unknown obstacles, mention known obstacles */
-		if (!square_isknown(cave, y, x)) {
-			if (square_isrubble(cave, y, x)) {
+		if (!square_isknown(cave, grid)) {
+			if (square_isrubble(cave, grid)) {
 				msgt(MSG_HITWALL,
 					 "You feel a pile of rubble blocking your way.");
 				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
-			} else if (square_iscloseddoor(cave, y, x)) {
+			} else if (square_iscloseddoor(cave, grid)) {
 				msgt(MSG_HITWALL, "You feel a door blocking your way.");
 				square_memorize(cave, y, x);
 				square_light_spot(cave, y, x);
@@ -961,10 +969,10 @@ void move_player(int dir, bool disarm)
 				square_light_spot(cave, y, x);
 			}
 		} else {
-			if (square_isrubble(cave, y, x))
+			if (square_isrubble(cave, grid))
 				msgt(MSG_HITWALL,
 					 "There is a pile of rubble blocking your way.");
-			else if (square_iscloseddoor(cave, y, x))
+			else if (square_iscloseddoor(cave, grid))
 				msgt(MSG_HITWALL, "There is a door blocking your way.");
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
@@ -1016,7 +1024,7 @@ void move_player(int dir, bool disarm)
 		monster_swap(player->py, player->px, y, x);
 
 		/* Handle store doors, or notice objects */
-		if (square_isshop(cave, y, x)) {
+		if (square_isshop(cave, grid)) {
 			if (player_is_shapechanged(player)) {
 				msg("There is a scream and the door slams shut!");
 				return;
@@ -1037,7 +1045,7 @@ void move_player(int dir, bool disarm)
 		if (square_issecrettrap(cave, y, x)) {
 			disturb(player, 0);
 			hit_trap(y, x);
-		} else if (square_isdisarmabletrap(cave, y, x) && !trapsafe) {
+		} else if (square_isdisarmabletrap(cave, grid) && !trapsafe) {
 			disturb(player, 0);
 			hit_trap(y, x);
 		}
@@ -1055,7 +1063,8 @@ void move_player(int dir, bool disarm)
  */
 static bool do_cmd_walk_test(int y, int x)
 {
-	int m_idx = square(cave, loc(x, y)).mon;
+	struct loc grid = loc(x, y);
+	int m_idx = square(cave, grid).mon;
 	struct monster *mon = cave_monster(cave, m_idx);
 
 	/* Allow attack on visible monsters if unafraid */
@@ -1078,15 +1087,15 @@ static bool do_cmd_walk_test(int y, int x)
 	}
 
 	/* If we don't know the grid, allow attempts to walk into it */
-	if (!square_isknown(cave, y, x))
+	if (!square_isknown(cave, grid))
 		return true;
 
 	/* Require open space */
 	if (!square_ispassable(cave, y, x)) {
-		if (square_isrubble(cave, y, x)) {
+		if (square_isrubble(cave, grid)) {
 			/* Rubble */
 			msgt(MSG_HITWALL, "There is a pile of rubble in the way!");
-		} else if (square_iscloseddoor(cave, y, x)) {
+		} else if (square_iscloseddoor(cave, grid)) {
 			/* Door */
 			return true;
 		} else {
@@ -1132,7 +1141,7 @@ void do_cmd_walk(struct command *cmd)
 	player->upkeep->energy_use = z_info->move_energy / player->state.num_moves;
 
 	/* Attempt to disarm unless it's a trap and we're trapsafe */
-	move_player(dir, !(square_isdisarmabletrap(cave, y, x) && trapsafe));
+	move_player(dir, !(square_isdisarmabletrap(cave, loc(x, y)) && trapsafe));
 }
 
 
@@ -1243,7 +1252,7 @@ void do_cmd_hold(struct command *cmd)
 	do_autopickup(player);
 
 	/* Enter a store if we are on one, otherwise look at the floor */
-	if (square_isshop(cave, player->py, player->px)) {
+	if (square_isshop(cave, loc(player->px, player->py))) {
 		if (player_is_shapechanged(player)) {
 			msg("There is a scream and the door slams shut!");
 			return;
@@ -1533,7 +1542,7 @@ void do_cmd_mon_command(struct command *cmd)
 				/* Floor is open? */
 				can_move = true;
 			} else if (square_iswall(cave, ny, nx) &&
-					   square_isperm(cave, ny, nx)) {
+					   square_isperm(cave, loc(nx, ny))) {
 				/* Permanent wall in the way */
 				can_move = false;
 			} else {
@@ -1551,8 +1560,8 @@ void do_cmd_mon_command(struct command *cmd)
 					/* Remove the wall */
 					square_destroy_wall(cave, ny, nx);
 					can_move = true;
-				} else if (square_iscloseddoor(cave, ny, nx) ||
-						   square_issecretdoor(cave, ny, nx)) {
+				} else if (square_iscloseddoor(cave, loc(nx, ny)) ||
+						   square_issecretdoor(cave, loc(nx, ny))) {
 					bool can_open = rf_has(mon->race->flags, RF_OPEN_DOOR);
 					bool can_bash = rf_has(mon->race->flags, RF_BASH_DOOR);
 

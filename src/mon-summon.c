@@ -415,7 +415,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		scatter(cave, &y, &x, y1, x1, d, true);
 
 		/* Require "empty" floor grid */
-		if (!square_isempty(cave, y, x)) continue;
+		if (!square_isempty(cave, loc(x, y))) continue;
 
 		/* No summon on glyphs */
 		if (square_iswarded(cave, y, x) || square_isdecoyed(cave, y, x)) {

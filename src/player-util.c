@@ -1240,10 +1240,11 @@ void search(struct player *p)
 	/* Search the nearby grids, which are always in bounds */
 	for (y = (p->py - 1); y <= (p->py + 1); y++) {
 		for (x = (p->px - 1); x <= (p->px + 1); x++) {
+			struct loc grid = loc(x, y);
 			struct object *obj;
 
 			/* Secret doors */
-			if (square_issecretdoor(cave, y, x)) {
+			if (square_issecretdoor(cave, grid)) {
 				msg("You have found a secret door.");
 				place_closed_door(cave, y, x);
 				disturb(p, 0);

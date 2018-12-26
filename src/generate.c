@@ -1012,20 +1012,21 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		/* Clear generation flags, add connecting info */
 		for (y = 0; y < chunk->height; y++) {
 			for (x = 0; x < chunk->width; x++) {
-				sqinfo_off(square(chunk, loc(x, y)).info, SQUARE_WALL_INNER);
-				sqinfo_off(square(chunk, loc(x, y)).info, SQUARE_WALL_OUTER);
-				sqinfo_off(square(chunk, loc(x, y)).info, SQUARE_WALL_SOLID);
-				sqinfo_off(square(chunk, loc(x, y)).info, SQUARE_MON_RESTRICT);
+				struct loc grid = loc(x, y);
 
-				if (square_isstairs(chunk, y, x)) {
+				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_INNER);
+				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_OUTER);
+				sqinfo_off(square(chunk, grid).info, SQUARE_WALL_SOLID);
+				sqinfo_off(square(chunk, grid).info, SQUARE_MON_RESTRICT);
+
+				if (square_isstairs(chunk, grid)) {
 					size_t n;
 					struct connector *new = mem_zalloc(sizeof *new);
-					new->grid.y = y;
-					new->grid.x = x;
+					new->grid = grid;
 					new->feat = square_feat(chunk, y, x)->fidx;
 					new->info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 					for (n = 0; n < SQUARE_SIZE; n++) {
-						new->info[n] = square(chunk, loc(x, y)).info[n];
+						new->info[n] = square(chunk, grid).info[n];
 					}
 					new->next = chunk->join;
 					chunk->join = new;
@@ -1087,7 +1088,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	/* TODO potential problem: stairs in vaults? */
 	
 	/* allow direct transfer if target location is teleportable */
-	if (square_in_bounds_fully(c, p->py, p->px)
+	if (square_in_bounds_fully(c, loc(p->px, p->py))
 			&& square_isarrivable(c, p->py, p->px)
 			&& !square_isvault(c, p->py, p->px)) {
 		return;
@@ -1106,7 +1107,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 		try = try - 1;
 		tx = randint0(c->width-1) + 1;
 		ty = randint0(c->height-1) + 1;
-		if (square_isempty(c, ty, tx)
+		if (square_isempty(c, loc(tx, ty))
 				&& !square_isvault(c, ty, tx)) {
 			p->py = ty;
 			p->px = tx;
@@ -1128,7 +1129,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	}
 	
 	while (1) {		//until full loop through dungeon
-		if (square_isempty(c, ty, tx)) {
+		if (square_isempty(c, loc(tx, ty))) {
 			if (!square_isvault(c, ty, tx)) {
 				// ok location
 				p->py = ty;
@@ -1282,8 +1283,9 @@ void prepare_next_level(struct chunk **c, struct player *p)
 					for (k = 1; k < 10; k++) {
 						for (y = ty - k; y <= ty + k; y++) {
 							for (x = tx - k; x <= tx + k; x++) {
-								if (square_in_bounds_fully(*c, y, x) &&
-									square_isempty(*c, y, x) &&
+								struct loc grid = loc(x, y);
+								if (square_in_bounds_fully(*c, grid) &&
+									square_isempty(*c, grid) &&
 									!square_isvault(*c, y, x)) {
 									p->py = y;
 									p->px = x;

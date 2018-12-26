@@ -93,10 +93,10 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		return;
 
 	/* Permanent walls */
-	if (square_isperm(cave, grid.y, grid.x)) return;
+	if (square_isperm(cave, grid)) return;
 
 	/* Different treatment for different walls */
-	if (square_isrubble(cave, grid.y, grid.x)) {
+	if (square_isrubble(cave, grid)) {
 		/* Message */
 		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The rubble turns into mud!");
@@ -118,7 +118,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 			place_object(cave, grid.y, grid.x, player->depth, false, false,
 						 ORIGIN_RUBBLE, 0);
 		}
-	} else if (square_isdoor(cave, grid.y, grid.x)) {
+	} else if (square_isdoor(cave, grid)) {
 		/* Hack -- special message */
 		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The door turns into mud!");
@@ -130,7 +130,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 		/* Destroy the feature */
 		square_destroy_door(cave, grid.y, grid.x);
-	} else if (square_hasgoldvein(cave, grid.y, grid.x)) {
+	} else if (square_hasgoldvein(cave, grid)) {
 		/* Message */
 		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The vein turns into mud!");
@@ -146,7 +146,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 		/* Place some gold */
 		place_gold(cave, grid.y, grid.x, player->depth, ORIGIN_FLOOR);
-	} else if (square_ismagma(cave, grid.y, grid.x) || square_isquartz(cave, grid.y, grid.x)) {
+	} else if (square_ismagma(cave, grid) || square_isquartz(cave, grid)) {
 		/* Message */
 		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The vein turns into mud!");
@@ -182,7 +182,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 	const struct loc grid = context->grid;
 
 	/* Destroy all doors */
-	if (square_isdoor(cave, grid.y, grid.x)) {
+	if (square_isdoor(cave, grid)) {
 		/* Check line of sight */
 		if (square_isview(cave, grid.y, grid.x)) {
 			/* Message */
@@ -207,7 +207,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 	const struct loc grid = context->grid;
 
 	/* Reveal secret doors */
-	if (square_issecretdoor(cave, grid.y, grid.x)) {
+	if (square_issecretdoor(cave, grid)) {
 		place_closed_door(cave, grid.y, grid.x);
 
 		/* Check line of sight */
@@ -216,7 +216,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 	}
 
 	/* Disable traps, unlock doors */
-	if (square_isdisarmabletrap(cave, grid.y, grid.x)) {
+	if (square_isdisarmabletrap(cave, grid)) {
 		/* Check line of sight */
 		if (square_isview(cave, grid.y, grid.x)) {
 			msg("The trap seizes up.");
@@ -243,10 +243,10 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	const struct loc grid = context->grid;
 
 	/* Require a grid without monsters */
-	if (square_monster(cave, grid.y, grid.x) || square_isplayer(cave, grid.y, grid.x)) return;
+	if (square_monster(cave, grid.y, grid.x) || square_isplayer(cave, grid)) return;
 
 	/* Require a floor grid */
-	if (!square_isfloor(cave, grid.y, grid.x)) return;
+	if (!square_isfloor(cave, grid)) return;
 
 	/* Push objects off the grid */
 	if (square_object(cave, grid.y, grid.x))
@@ -256,7 +256,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	square_add_door(cave, grid.y, grid.x, true);
 
 	/* Observe */
-	if (square_isknown(cave, grid.y, grid.x))
+	if (square_isknown(cave, grid))
 		context->obvious = true;
 
 	/* Update the visuals */
@@ -269,7 +269,7 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 	const struct loc grid = context->grid;
 
 	/* Require an "empty" floor grid with no existing traps or glyphs */
-	if (!square_isempty(cave, grid.y, grid.x)) return;
+	if (!square_isempty(cave, grid)) return;
 	if (square_istrap(cave, grid.y, grid.x)) return;
 
 	/* Create a trap, try to notice it */
@@ -311,7 +311,7 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 
 	/* Can create lava if extremely powerful. */
 	if ((context->dam > randint1(1800) + 600) &&
-		square_isfloor(cave, context->grid.y, context->grid.x)) {
+		square_isfloor(cave, context->grid)) {
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->grid.y, context->grid.x);
 		square_set_feat(cave, context->grid.y, context->grid.x, FEAT_LAVA);
@@ -333,7 +333,7 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 	/* Sufficiently intense cold can solidify lava. */
 	if ((context->dam > randint1(900) + 300) &&
 		square_isfiery(cave, context->grid.y, context->grid.x)) {
-		bool occupied = square_isoccupied(cave, context->grid.y, context->grid.x);
+		bool occupied = square_isoccupied(cave, context->grid);
 
 		square_unmark(cave, context->grid.y, context->grid.x);
 		if (one_in_(2)) {
@@ -450,7 +450,7 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 	/* Sufficiently intense cold can solidify lava. */
 	if ((context->dam > randint1(900) + 300) &&
 		square_isfiery(cave, context->grid.y, context->grid.x)) {
-		bool occupied = square_isoccupied(cave, context->grid.y, context->grid.x);
+		bool occupied = square_isoccupied(cave, context->grid);
 
 		square_unmark(cave, context->grid.y, context->grid.x);
 		if (one_in_(2)) {
@@ -514,7 +514,7 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 
 	/* Can create lava if extremely powerful. */
 	if ((context->dam > randint1(1800) + 600) &&
-		square_isfloor(cave, context->grid.y, context->grid.x)) {
+		square_isfloor(cave, context->grid)) {
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->grid.y, context->grid.x);
 		square_set_feat(cave, context->grid.y, context->grid.x, FEAT_LAVA);

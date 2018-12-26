@@ -148,7 +148,7 @@ static void do_cmd_wiz_hack_nick(void)
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 				byte a = COLOUR_RED;
 
-				if (!square_in_bounds_fully(cave, y, x)) continue;
+				if (!square_in_bounds_fully(cave, loc(x, y))) continue;
 
 				/* Display proper noise */
 				if (cave->noise.grids[y][x] != i) continue;
@@ -177,7 +177,7 @@ static void do_cmd_wiz_hack_nick(void)
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 				byte a = COLOUR_YELLOW;
 
-				if (!square_in_bounds_fully(cave, y, x)) continue;
+				if (!square_in_bounds_fully(cave, loc(x, y))) continue;
 
 				/* Display proper smell */
 				if (cave->scent.grids[y][x] != i) continue;
@@ -1606,7 +1606,7 @@ static void do_cmd_wiz_named(struct monster_race *r, bool slp)
 		scatter(cave, &y, &x, py, px, d, true);
 
 		/* Require empty grids */
-		if (!square_isempty(cave, y, x)) continue;
+		if (!square_isempty(cave, loc(x, y))) continue;
 
 		/* Place it (allow groups) */
 		if (place_new_monster(cave, y, x, r, slp, true, ORIGIN_DROP_WIZARD))
@@ -1684,14 +1684,15 @@ static void do_cmd_wiz_query(void)
 	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 			byte a = COLOUR_RED;
+			struct loc grid = loc(x, y);
 
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Given flag, show only those grids */
-			if (flag && !sqinfo_has(square(cave, loc(x, y)).info, flag)) continue;
+			if (flag && !sqinfo_has(square(cave, grid).info, flag)) continue;
 
 			/* Given no flag, show known grids */
-			if (!flag && (!square_isknown(cave, y, x))) continue;
+			if (!flag && (!square_isknown(cave, grid))) continue;
 
 			/* Color */
 			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
@@ -1794,7 +1795,7 @@ static void do_cmd_wiz_features(void)
 			bool show = false;
 			int i;
 
-			if (!square_in_bounds_fully(cave, y, x)) continue;
+			if (!square_in_bounds_fully(cave, loc(x, y))) continue;
 
 			/* Given feature, show only those grids */
 			for (i = 0; i < length; i++)
@@ -2314,7 +2315,7 @@ void get_debug_command(void)
 		/* Create a trap */
 		case 'T':
 		{
-			if (!square_isfloor(cave, player->py, player->px)) {
+			if (!square_isfloor(cave, loc(player->px, player->py))) {
 				msg("You can't place a trap there!");
 				break;
 			} else if (player->depth == 0) {

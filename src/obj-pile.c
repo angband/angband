@@ -820,10 +820,11 @@ static struct object *floor_get_oldest_ignored(struct chunk *c, int y, int x)
 bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 {
 	int n = 0;
+	struct loc grid = loc(x, y);
 	struct object *obj, *ignore = floor_get_oldest_ignored(c, y, x);
 
 	/* Fail if the square can't hold objects */
-	if (!square_isobjectholding(c, y, x))
+	if (!square_isobjectholding(c, grid))
 		return false;
 
 	/* Scan objects in that grid for combination */
@@ -925,8 +926,8 @@ static void floor_carry_fail(struct object *drop, bool broke)
 static void drop_find_grid(struct object *drop, int *y, int *x)
 {
 	int best_score = -1;
-	int best_y = *y;
-	int best_x = *x;
+	struct loc start = loc(*x, *y);
+	struct loc best = start;
 	int i, dy, dx;
 	struct object *obj;
 
@@ -935,22 +936,21 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 		for (dx = -3; dx <= 3; dx++) {
 			bool combine = false;
 			int dist = (dy * dy) + (dx * dx);
-			int ty = *y + dy;
-			int tx = *x + dx;
+			struct loc try = loc_sum(start, loc(dx, dy));
 			int num_shown = 0;
 			int num_ignored = 0;
 			int score;
 
 			/* Lots of reasons to say no */
 			if ((dist > 10) ||
-				!square_in_bounds_fully(cave, ty, tx) ||
-				!los(cave, loc(*x, *y), loc(tx, ty)) ||
-				!square_isfloor(cave, ty, tx) ||
-				square_istrap(cave, ty, tx))
+				!square_in_bounds_fully(cave, try) ||
+				!los(cave, start, try) ||
+				!square_isfloor(cave, try) ||
+				square_istrap(cave, try.y, try.x))
 				continue;
 
 			/* Analyse the grid for carrying the new object */
-			for (obj = square_object(cave, ty, tx); obj; obj = obj->next) {
+			for (obj = square_object(cave, try.y, try.x); obj; obj = obj->next){
 				/* Check for possible combination */
 				if (object_similar(obj, drop, OSTACK_FLOOR))
 					combine = true;
@@ -967,7 +967,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 			/* Disallow if the stack size is too big */
 			if ((!OPT(player, birth_stacking) && (num_shown > 1)) ||
 				((num_shown + num_ignored) > z_info->floor_size &&
-				 !floor_get_oldest_ignored(cave, ty, tx)))
+				 !floor_get_oldest_ignored(cave, try.y, try.x)))
 				continue;
 
 			/* Score the location based on how close and how full the grid is */
@@ -977,15 +977,14 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 				continue;
 
 			best_score = score;
-			best_y = ty;
-			best_x = tx;
+			best = try;
 		}
 	}
 
 	/* Return if we have a score, otherwise fail or try harder for artifacts */
 	if (best_score >= 0) {
-		*y = best_y;
-		*x = best_x;
+		*y = best.y;
+		*x = best.x;
 		return;
 	} else if (!drop->artifact) {
 		return;
@@ -993,16 +992,16 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 	for (i = 0; i < 2000; i++) {
 		/* Start bouncing from grid to grid, stopping if we find an empty one */
 		if (i < 1000) {
-			best_y = rand_spread(best_y, 1);
-			best_x = rand_spread(best_x, 1);
+			best.y = rand_spread(best.y, 1);
+			best.x = rand_spread(best.x, 1);
 		} else {
 			/* Now go to purely random locations */
-			best_y = randint0(cave->height);
-			best_x = randint0(cave->width);
+			best.y = randint0(cave->height);
+			best.x = randint0(cave->width);
 		}
-		if (square_canputitem(cave, best_y, best_x)) {
-			*y = best_y;
-			*x = best_x;
+		if (square_canputitem(cave, best.y, best.x)) {
+			*y = best.y;
+			*x = best.x;
 			return;
 		}
 	}
@@ -1103,7 +1102,7 @@ void push_object(int y, int x)
 
 	/* Reset cave feature, remove trap if needed */
 	square_set_feat(cave, y, x, feat_old->fidx);
-	if (trap && !square_istrappable(cave, y, x)) {
+	if (trap && !square_istrappable(cave, loc(x, y))) {
 		square_remove_all_traps(cave, y, x);
 	}
 

@@ -524,7 +524,7 @@ void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d,
 		tries++;
 
 		/* Ignore annoying locations */
-		if (!square_in_bounds_fully(c, ny, nx)) continue;
+		if (!square_in_bounds_fully(c, loc(nx, ny))) continue;
 
 		/* Ignore "excessively distant" locations */
 		if ((d > 1) && (distance(loc(x, y), loc(nx, ny)) > d)) continue;
@@ -565,38 +565,37 @@ int cave_monster_count(struct chunk *c) {
 /**
  * Return the number of doors/traps around (or under) the character.
  */
-int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), bool under)
+int count_feats(int *y, int *x, bool (*test)(struct chunk *c, struct loc grid), bool under)
 {
 	int d;
-	int xx, yy;
+	struct loc grid;
 	int count = 0; /* Count how many matches */
 
 	/* Check around (and under) the character */
-	for (d = 0; d < 9; d++)
-	{
+	for (d = 0; d < 9; d++) {
 		/* if not searching under player continue */
 		if ((d == 8) && !under) continue;
 
 		/* Extract adjacent (legal) location */
-		yy = player->py + ddy_ddd[d];
-		xx = player->px + ddx_ddd[d];
+		grid.y = player->py + ddy_ddd[d];
+		grid.x = player->px + ddx_ddd[d];
 
 		/* Paranoia */
-		if (!square_in_bounds_fully(cave, yy, xx)) continue;
+		if (!square_in_bounds_fully(cave, grid)) continue;
 
 		/* Must have knowledge */
-		if (!square_isknown(cave, yy, xx)) continue;
+		if (!square_isknown(cave, grid)) continue;
 
 		/* Not looking for this feature */
-		if (!((*test)(cave, yy, xx))) continue;
+		if (!((*test)(cave, grid))) continue;
 
 		/* Count it */
 		++count;
 
 		/* Remember the location of the last door found */
 		if (x && y) {
-			*y = yy;
-			*x = xx;
+			*y = grid.y;
+			*x = grid.x;
 		}
 	}
 

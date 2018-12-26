@@ -873,7 +873,7 @@ static void wr_objects_aux(struct chunk *c)
 	for (i = 1; i < c->obj_max; i++) {
 		struct object *obj = c->objects[i];
 		if (!obj) continue;
-		if (square_in_bounds_fully(c, obj->iy, obj->ix)) continue;
+		if (square_in_bounds_fully(c, loc(obj->ix, obj->iy))) continue;
 		if (obj->held_m_idx) continue;
 		if (obj->mimicking_m_idx) continue;
 		if (obj->known && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) continue;

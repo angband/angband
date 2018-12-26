@@ -265,7 +265,7 @@ void cave_forget_flow(struct chunk *c);
  * square_predicate is a function pointer which tests a given square to
  * see if the predicate in question is true.
  */
-typedef bool (*square_predicate)(struct chunk *c, int y, int x);
+typedef bool (*square_predicate)(struct chunk *c, struct loc grid);
 
 /* FEATURE PREDICATES */
 bool feat_is_magma(int feat);
@@ -288,31 +288,30 @@ bool feat_is_no_scent(int feat);
 bool feat_is_smooth(int feat);
 
 /* SQUARE FEATURE PREDICATES */
-bool square_isfloor(struct chunk *c, int y, int x);
-bool square_istrappable(struct chunk *c, int y, int x);
-bool square_isobjectholding(struct chunk *c, int y, int x);
-bool square_isrock(struct chunk *c, int y, int x);
-bool square_isgranite(struct chunk *c, int y, int x);
-bool square_isperm(struct chunk *c, int y, int x);
-bool square_ismagma(struct chunk *c, int y, int x);
-bool square_isquartz(struct chunk *c, int y, int x);
-bool square_ismineral(struct chunk *c, int y, int x);
-bool square_hasgoldvein(struct chunk *c, int y, int x);
-bool square_isrubble(struct chunk *c, int y, int x);
-bool square_issecretdoor(struct chunk *c, int y, int x);
-bool square_isopendoor(struct chunk *c, int y, int x);
-bool square_iscloseddoor(struct chunk *c, int y, int x);
-bool square_islockeddoor(struct chunk *c, int y, int x);
-bool square_isbrokendoor(struct chunk *c, int y, int x);
-bool square_isdoor(struct chunk *c, int y, int x);
-bool square_isstairs(struct chunk *c, int y, int x);
-bool square_isupstairs(struct chunk *c, int y, int x);
-bool square_isdownstairs(struct chunk *c, int y, int x);
-bool square_isshop(struct chunk *c, int y, int x);
-bool square_isplayer(struct chunk *c, int y, int x);
-bool square_isoccupied(struct chunk *c, int y, int x);
-bool square_isknown(struct chunk *c, int y, int x);
-bool square_isnotknown(struct chunk *c, int y, int x);
+bool square_isfloor(struct chunk *c, struct loc grid);
+bool square_istrappable(struct chunk *c, struct loc grid);
+bool square_isobjectholding(struct chunk *c, struct loc grid);
+bool square_isrock(struct chunk *c, struct loc grid);
+bool square_isgranite(struct chunk *c, struct loc grid);
+bool square_isperm(struct chunk *c, struct loc grid);
+bool square_ismagma(struct chunk *c, struct loc grid);
+bool square_isquartz(struct chunk *c, struct loc grid);
+bool square_ismineral(struct chunk *c, struct loc grid);
+bool square_hasgoldvein(struct chunk *c, struct loc grid);
+bool square_isrubble(struct chunk *c, struct loc grid);
+bool square_issecretdoor(struct chunk *c, struct loc grid);
+bool square_isopendoor(struct chunk *c, struct loc grid);
+bool square_iscloseddoor(struct chunk *c, struct loc grid);
+bool square_isbrokendoor(struct chunk *c, struct loc grid);
+bool square_isdoor(struct chunk *c, struct loc grid);
+bool square_isstairs(struct chunk *c, struct loc grid);
+bool square_isupstairs(struct chunk *c, struct loc grid);
+bool square_isdownstairs(struct chunk *c, struct loc grid);
+bool square_isshop(struct chunk *c, struct loc grid);
+bool square_isplayer(struct chunk *c, struct loc grid);
+bool square_isoccupied(struct chunk *c, struct loc grid);
+bool square_isknown(struct chunk *c, struct loc grid);
+bool square_isnotknown(struct chunk *c, struct loc grid);
 
 /* SQUARE INFO PREDICATES */
 bool square_ismark(struct chunk *c, int y, int x);
@@ -338,7 +337,7 @@ bool square_isno_stairs(struct chunk *c, int y, int x);
 
 /* SQUARE BEHAVIOR PREDICATES */
 bool square_isopen(struct chunk *c, int y, int x);
-bool square_isempty(struct chunk *c, int y, int x);
+bool square_isempty(struct chunk *c, struct loc grid);
 bool square_isarrivable(struct chunk *c, int y, int x);
 bool square_canputitem(struct chunk *c, int y, int x);
 bool square_isdiggable(struct chunk *c, int y, int x);
@@ -357,18 +356,19 @@ bool square_iswarded(struct chunk *c, int y, int x);
 bool square_isdecoyed(struct chunk *c, int y, int x);
 bool square_seemslikewall(struct chunk *c, int y, int x);
 bool square_isinteresting(struct chunk *c, int y, int x);
+bool square_islockeddoor(struct chunk *c, int y, int x);
 bool square_isplayertrap(struct chunk *c, int y, int x);
 bool square_isvisibletrap(struct chunk *c, int y, int x);
 bool square_issecrettrap(struct chunk *c, int y, int x);
 bool square_isdisabledtrap(struct chunk *c, int y, int x);
-bool square_isdisarmabletrap(struct chunk *c, int y, int x);
+bool square_isdisarmabletrap(struct chunk *c, struct loc grid);
 bool square_dtrap_edge(struct chunk *c, int y, int x);
 bool square_changeable(struct chunk *c, int y, int x);
 bool square_in_bounds(struct chunk *c, int y, int x);
-bool square_in_bounds_fully(struct chunk *c, int y, int x);
+bool square_in_bounds_fully(struct chunk *c, struct loc grid);
 bool square_isbelievedwall(struct chunk *c, int y, int x);
-bool square_suits_stairs_well(struct chunk *c, int y, int x);
-bool square_suits_stairs_ok(struct chunk *c, int y, int x);
+bool square_suits_stairs_well(struct chunk *c, struct loc grid);
+bool square_suits_stairs_ok(struct chunk *c, struct loc grid);
 
 
 struct square square(struct chunk *c, struct loc grid);
@@ -437,7 +437,7 @@ struct monster *cave_monster(struct chunk *c, int idx);
 int cave_monster_max(struct chunk *c);
 int cave_monster_count(struct chunk *c);
 
-int count_feats(int *y, int *x, bool (*test)(struct chunk *c, int y, int x), bool under);
+int count_feats(int *y, int *x, bool (*test)(struct chunk *c, struct loc grid), bool under);
 struct loc cave_find_decoy(struct chunk *c);
 void prepare_next_level(struct chunk **c, struct player *p);
 bool is_quest(int level);

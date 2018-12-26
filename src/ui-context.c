@@ -271,10 +271,10 @@ int context_menu_player(int mx, int my)
 	}
 
 	/* if player is on stairs add option to use them */
-	if (square_isupstairs(cave, player->py, player->px)) {
+	if (square_isupstairs(cave, loc(player->px, player->py))) {
 		ADD_LABEL("Go Up", CMD_GO_UP, MN_ROW_VALID);
 	}
-	else if (square_isdownstairs(cave, player->py, player->px)) {
+	else if (square_isdownstairs(cave, loc(player->px, player->py))) {
 		ADD_LABEL("Go Down", CMD_GO_DOWN, MN_ROW_VALID);
 	}
 
@@ -467,15 +467,15 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			}
 		}
 
-		if (square_isdisarmabletrap(c, y, x)) {
+		if (square_isdisarmabletrap(c, loc(x, y))) {
 			ADD_LABEL("Disarm", CMD_DISARM, MN_ROW_VALID);
 			ADD_LABEL("Jump Onto", CMD_JUMP, MN_ROW_VALID);
 		}
 
-		if (square_isopendoor(c, y, x)) {
+		if (square_isopendoor(c, loc(x, y))) {
 			ADD_LABEL("Close", CMD_CLOSE, MN_ROW_VALID);
 		}
-		else if (square_iscloseddoor(c, y, x)) {
+		else if (square_iscloseddoor(c, loc(x, y))) {
 			ADD_LABEL("Open", CMD_OPEN, MN_ROW_VALID);
 			ADD_LABEL("Lock", CMD_DISARM, MN_ROW_VALID);
 		}
@@ -531,7 +531,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		const char *name = square_apparent_name(c, player, y, x);
 
 		/* Hack -- special introduction for store doors */
-		if (square_isshop(cave, y, x)) {
+		if (square_isshop(cave, loc(x, y))) {
 			prt(format("(Enter to select command, ESC to cancel) You see the entrance to the %s:", name), 0, 0);
 		} else {
 			prt(format("(Enter to select command, ESC to cancel) You see %s %s:", (is_a_vowel(name[0])) ? "an" : "a", name), 0, 0);
@@ -720,7 +720,7 @@ int context_menu_object(struct object *obj)
 	}
 
 	if (object_is_carried(player, obj)) {
-		if (!square_isshop(cave, player->py, player->px)) {
+		if (!square_isshop(cave, loc(player->px, player->py))) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (obj->number > 1) {
@@ -807,7 +807,7 @@ int context_menu_object(struct object *obj)
 		case MENU_VALUE_DROP_ALL:
 			/* Drop entire stack with confirmation. */
 			if (get_check(format("Drop %s? ", header))) {
-				if (square_isshop(cave, player->py, player->px))
+				if (square_isshop(cave, loc(player->px, player->py)))
 					cmdq_push(CMD_STASH);
 				else
 					cmdq_push(CMD_DROP);
@@ -873,7 +873,7 @@ int context_menu_object(struct object *obj)
 
 		/* If we're in a store, change the "drop" command to "stash". */
 		if (selected == CMD_DROP &&
-			square_isshop(cave, player->py, player->px)) {
+			square_isshop(cave, loc(player->px, player->py))) {
 			struct command *gc = cmdq_peek();
 			if (square_shopnum(cave, player->py, player->px) == STORE_HOME)
 				gc->code = CMD_STASH;
@@ -991,7 +991,7 @@ void textui_process_click(ui_event e)
 	x = KEY_GRID_X(e);
 
 	/* Check for a valid location */
-	if (!square_in_bounds_fully(cave, y, x)) return;
+	if (!square_in_bounds_fully(cave, loc(x, y))) return;
 
 	/* XXX show context menu here */
 	if ((player->py == y) && (player->px == x)) {
@@ -1006,9 +1006,9 @@ void textui_process_click(ui_event e)
 			/* ctrl-click - use feature / use inventory item */
 			/* switch with default */
 			if (e.mouse.button == 1) {
-				if (square_isupstairs(cave, player->py, player->px))
+				if (square_isupstairs(cave, loc(player->px, player->py)))
 					cmdq_push(CMD_GO_UP);
-				else if (square_isdownstairs(cave, player->py, player->px))
+				else if (square_isdownstairs(cave, loc(player->px, player->py)))
 					cmdq_push(CMD_GO_DOWN);
 			} else if (e.mouse.button == 2) {
 				cmdq_push(CMD_USE);

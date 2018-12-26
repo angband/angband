@@ -181,7 +181,7 @@ static bool _find_in_range(struct chunk *c, int *y, int y1, int y2, int *x,
 
 		*y = (k / xd) + y1;
 		*x = (k % xd) + x1;
-		if (pred(c, *y, *x)) found = true;
+		if (pred(c, loc(*x, *y))) found = true;
     }
 
 	mem_free(squares);
@@ -374,8 +374,8 @@ void new_player_spot(struct chunk *c, struct player *p)
 
     /* Try to find a good place to put the player */
 	if (OPT(p, birth_levels_persist) &&
-		square_in_bounds_fully(c, p->py, p->px) &&
-		square_isstairs(c, p->py, p->px)) {
+		square_in_bounds_fully(c, loc(p->px, p->py)) &&
+		square_isstairs(c, loc(p->px, p->py))) {
 		y = p->py;
 		x = p->px;
 	} else if (!find_start(c, &y, &x)) {
@@ -733,7 +733,7 @@ static void vault_trap_aux(struct chunk *c, int y, int x, int yd, int xd)
     /* Find a nearby empty grid and place a trap */
     for (tries = 0; tries <= 5; tries++) {
 		find_nearby_grid(c, &y1, y, yd, &x1, x, xd);
-		if (!square_isempty(c, y1, x1)) continue;
+		if (!square_isempty(c, loc(x1, y1))) continue;
 
 		square_add_trap(c, y1, x1);
 		break;
@@ -783,7 +783,7 @@ void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
 			scatter(c, &y, &x, y1, x1, d, true);
 
 			/* Require "empty" floor grids */
-			if (!square_isempty(c, y, x)) continue;
+			if (!square_isempty(c, loc(x, y))) continue;
 
 			/* Place the monster (allow groups) */
 			pick_and_place_monster(c, y, x, depth, true, true,
