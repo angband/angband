@@ -69,7 +69,8 @@ const s16b ddy[10] =
 { 0, 1, 1, 1, 0, 0, 0, -1, -1, -1 };
 
 /**
- * Global arrays for optimizing "ddx[ddd[i]]" and "ddy[ddd[i]]".
+ * Global arrays for optimizing "ddx[ddd[i]]", "ddy[ddd[i]]" and
+ * "loc(ddx[ddd[i]], ddy[ddd[i]])".
  *
  * This means that each entry in this array corresponds to the direction
  * with the same array index in ddd[].
@@ -79,6 +80,9 @@ const s16b ddx_ddd[9] =
 
 const s16b ddy_ddd[9] =
 { 1, -1, 0, 0, 1, 1, -1, -1, 0 };
+
+const struct loc griddd[9] =
+{{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 0}};
 
 /**
  * Hack -- Precompute a bunch of calls to distance().

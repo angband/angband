@@ -30,6 +30,7 @@ extern const s16b ddx[10];
 extern const s16b ddy[10];
 extern const s16b ddx_ddd[9];
 extern const s16b ddy_ddd[9];
+extern const struct loc griddd[9];
 extern const int *dist_offsets_y[10];
 extern const int *dist_offsets_x[10];
 extern const byte side_dirs[20][8];
@@ -355,6 +356,7 @@ bool square_suits_stairs_well(struct chunk *c, int y, int x);
 bool square_suits_stairs_ok(struct chunk *c, int y, int x);
 
 
+struct square square(struct chunk *c, struct loc grid);
 struct feature *square_feat(struct chunk *c, int y, int x);
 struct monster *square_monster(struct chunk *c, int y, int x);
 struct object *square_object(struct chunk *c, int y, int x);

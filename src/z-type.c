@@ -44,6 +44,14 @@ void loc_set_eq(struct loc *dest, struct loc source)
 }
 
 /**
+ * Sum two grid locations
+ */
+struct loc loc_sum(struct loc grid1, struct loc grid2)
+{
+	return loc(grid1.x + grid2.x, grid1.y + grid2.y);
+}
+
+/**
  * Utility functions to work with point_sets
  */
 struct point_set *point_set_new(int initial_size)

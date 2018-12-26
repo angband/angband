@@ -917,6 +917,12 @@ bool square_suits_stairs_ok(struct chunk *c, int y, int x)
  * Below are various square-specific functions which are not predicates
  */
 
+struct square square(struct chunk *c, struct loc grid)
+{
+	assert(square_in_bounds(c, grid.y, grid.x));
+	return c->squares[grid.y][grid.x];
+}
+
 struct feature *square_feat(struct chunk *c, int y, int x)
 {
 	assert(square_in_bounds(c, y, x));
