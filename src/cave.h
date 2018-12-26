@@ -28,12 +28,27 @@ struct monster;
 extern const s16b ddd[9];
 extern const s16b ddx[10];
 extern const s16b ddy[10];
+extern const struct loc ddgrid[10];
 extern const s16b ddx_ddd[9];
 extern const s16b ddy_ddd[9];
-extern const struct loc griddd[9];
+extern const struct loc ddgrid_ddd[9];
 extern const int *dist_offsets_y[10];
 extern const int *dist_offsets_x[10];
 extern const byte side_dirs[20][8];
+
+enum {
+	DIR_UNKNOWN = 0,
+	DIR_NW = 7,
+	DIR_N = 8,
+	DIR_NE = 9,
+	DIR_W = 4,
+	DIR_TARGET = 5,
+	DIR_NONE = 5,
+	DIR_E = 6,
+	DIR_SW = 1,
+	DIR_S = 2,
+	DIR_SE = 3,
+};
 
 /**
  * Square flags
@@ -408,6 +423,7 @@ void square_unmark(struct chunk *c, int y, int x);
 
 /* cave.c */
 int motion_dir(struct loc source, struct loc target);
+struct loc next_grid(struct loc grid, int dir);
 int lookup_feat(const char *name);
 void set_terrain(void);
 struct chunk *cave_new(int height, int width);

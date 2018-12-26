@@ -430,7 +430,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++) {
-					struct loc a_grid = loc_sum(grid, griddd[i]);
+					struct loc a_grid = loc_sum(grid, ddgrid_ddd[i]);
 
 					/* Perma-light the grid */
 					sqinfo_on(square(cave, a_grid).info, SQUARE_GLOW);
@@ -496,7 +496,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++) {
-					struct loc a_grid = loc_sum(grid, griddd[i]);
+					struct loc a_grid = loc_sum(grid, ddgrid_ddd[i]);
 
 					/* Perma-darken the grid */
 					sqinfo_off(square(cave, a_grid).info, SQUARE_GLOW);
@@ -557,7 +557,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			/* Skip grids with no surrounding floors or stairs */
 			for (d = 0; d < 9; d++) {
 				/* Extract adjacent (legal) location */
-				struct loc a_grid = loc_sum(grid, griddd[d]);
+				struct loc a_grid = loc_sum(grid, ddgrid_ddd[d]);
 
 				/* Paranoia */
 				if (!square_in_bounds_fully(c, a_grid.y, a_grid.x)) continue;
@@ -588,7 +588,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			if (!square_isshop(c, grid.y, grid.x))
 				continue;
 			for (i = 0; i < 8; i++) {
-				struct loc a_grid = loc_sum(grid, griddd[i]);
+				struct loc a_grid = loc_sum(grid, ddgrid_ddd[i]);
 				sqinfo_on(square(c, a_grid).info, SQUARE_GLOW);
 				square_memorize(c, a_grid.y, a_grid.x);
 			}
@@ -618,7 +618,7 @@ void cave_known(struct player *p)
 			/* Check around the grid */
 			for (d = 0; d < 8; d++) {
 				/* Extract adjacent location */
-				struct loc a_grid = loc_sum(grid, griddd[d]);
+				struct loc a_grid = loc_sum(grid, ddgrid_ddd[d]);
 
 				/* Don't count projectable or lava squares */
 				if (!square_isprojectable(cave, a_grid.y, a_grid.x) ||

@@ -68,6 +68,11 @@ const s16b ddx[10] =
 const s16b ddy[10] =
 { 0, 1, 1, 1, 0, 0, 0, -1, -1, -1 };
 
+
+const struct loc ddgrid[10] =
+{ {0, 0}, {-1, 1}, {0, 1}, {1, 1}, {-1, 0}, {0, 0}, {1, 0}, {-1, -1}, {0, -1},
+  {1, -1} };
+
 /**
  * Global arrays for optimizing "ddx[ddd[i]]", "ddy[ddd[i]]" and
  * "loc(ddx[ddd[i]], ddy[ddd[i]])".
@@ -81,7 +86,7 @@ const s16b ddx_ddd[9] =
 const s16b ddy_ddd[9] =
 { 1, -1, 0, 0, 1, 1, -1, -1, 0 };
 
-const struct loc griddd[9] =
+const struct loc ddgrid_ddd[9] =
 {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 0}};
 
 /**
@@ -276,6 +281,13 @@ int motion_dir(struct loc start, struct loc finish)
 	return (DIR_NONE);
 }
 
+/**
+ * Given a grid and a direction, extract the adjacent grid in that direction
+ */
+struct loc next_grid(struct loc grid, int dir)
+{
+	return loc(grid.x + ddgrid[dir].x, grid.y + ddgrid[dir].y);
+}
 
 /**
  * Find a terrain feature index by name
