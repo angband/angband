@@ -999,7 +999,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 			best.y = randint0(cave->height);
 			best.x = randint0(cave->width);
 		}
-		if (square_canputitem(cave, best.y, best.x)) {
+		if (square_canputitem(cave, best)) {
 			*y = best.y;
 			*x = best.x;
 			return;
@@ -1141,7 +1141,7 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(cave, py, px)) return 0;
+	if (!square_in_bounds(cave, loc(px, py))) return 0;
 
 	/* Scan all objects in the grid */
 	for (obj = square_object(cave, py, px); obj; obj = obj->next) {
@@ -1175,11 +1175,12 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
  */
 int scan_distant_floor(struct object **items, int max_size, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	struct object *obj;
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(player->cave, y, x)) return 0;
+	if (!square_in_bounds(player->cave, grid)) return 0;
 
 	/* Scan all objects in the grid */
 	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {

@@ -163,12 +163,13 @@ static bool do_cmd_open_aux(int y, int x)
 {
 	int i, j;
 	bool more = false;
+	struct loc grid = loc(x, y);
 
 	/* Verify legality */
 	if (!do_cmd_open_test(y, x)) return (false);
 
 	/* Locked door */
-	if (square_islockeddoor(cave, y, x)) {
+	if (square_islockeddoor(cave, grid)) {
 		/* Disarm factor */
 		i = player->state.skills[SKILL_DISARM_PHYS];
 
@@ -453,7 +454,7 @@ static bool do_cmd_tunnel_test(int y, int x)
 	}
 
 	/* Must be a wall/door/etc */
-	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, grid))) {
+	if (!(square_isdiggable(cave, grid) || square_iscloseddoor(cave, grid))) {
 		msg("You see nothing there to tunnel.");
 		return (false);
 	}
@@ -477,7 +478,7 @@ static bool twall(int y, int x)
 {
 	struct loc grid = loc(x, y);
 	/* Paranoia -- Require a wall or door or some such */
-	if (!(square_isdiggable(cave, y, x) || square_iscloseddoor(cave, grid)))
+	if (!(square_isdiggable(cave, grid) || square_iscloseddoor(cave, grid)))
 		return (false);
 
 	/* Sound */
@@ -622,7 +623,7 @@ static bool do_cmd_disarm_test(int y, int x)
 	}
 
 	/* Look for a closed, unlocked door to lock */
-	if (square_iscloseddoor(cave, grid) && !square_islockeddoor(cave, y, x))
+	if (square_iscloseddoor(cave, grid) && !square_islockeddoor(cave, grid))
 		return true;
 
 	/* Look for a trap */
@@ -830,7 +831,7 @@ void do_cmd_disarm(struct command *cmd)
 		/* Chest */
 		more = do_cmd_disarm_chest(y, x, obj);
 	else if (square_iscloseddoor(cave, loc(x, y)) &&
-			 !square_islockeddoor(cave, y, x))
+			 !square_islockeddoor(cave, loc(x, y)))
 		/* Door to lock */
 		more = do_cmd_lock_door(y, x);
 	else
@@ -879,7 +880,7 @@ void do_cmd_alter_aux(int dir)
 		} else {
 			py_attack(player, y, x);
 		}
-	} else if (square_isdiggable(cave, y, x)) {
+	} else if (square_isdiggable(cave, loc(x, y))) {
 		/* Tunnel through walls and rubble */
 		more = do_cmd_tunnel_aux(y, x);
 	} else if (square_iscloseddoor(cave, loc(x, y))) {
@@ -949,7 +950,7 @@ void move_player(int dir, bool disarm)
 		&& !trapsafe) {
 		/* Stop running before known traps */
 		disturb(player, 0);
-	} else if (!square_ispassable(cave, y, x)) {
+	} else if (!square_ispassable(cave, grid)) {
 		disturb(player, 0);
 
 		/* Notice unknown obstacles, mention known obstacles */
@@ -977,7 +978,7 @@ void move_player(int dir, bool disarm)
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
 		}
-	} else if (square_isdamaging(cave, y, x)) {
+	} else if (square_isdamaging(cave, grid)) {
 		/* Some terrain can damage the player */
 		bool step = true;
 		struct feature *feat = square_feat(cave, y, x);
@@ -1042,7 +1043,7 @@ void move_player(int dir, bool disarm)
 		}
 
 		/* Discover invisible traps, set off visible ones */
-		if (square_issecrettrap(cave, y, x)) {
+		if (square_issecrettrap(cave, grid)) {
 			disturb(player, 0);
 			hit_trap(y, x);
 		} else if (square_isdisarmabletrap(cave, grid) && !trapsafe) {
@@ -1091,7 +1092,7 @@ static bool do_cmd_walk_test(int y, int x)
 		return true;
 
 	/* Require open space */
-	if (!square_ispassable(cave, y, x)) {
+	if (!square_ispassable(cave, grid)) {
 		if (square_isrubble(cave, grid)) {
 			/* Rubble */
 			msgt(MSG_HITWALL, "There is a pile of rubble in the way!");
@@ -1538,10 +1539,10 @@ void do_cmd_mon_command(struct command *cmd)
 				} else {
 					can_move = false;
 				}
-			} else if (square_ispassable(cave, ny, nx)) {
+			} else if (square_ispassable(cave, loc(nx, ny))) {
 				/* Floor is open? */
 				can_move = true;
-			} else if (square_iswall(cave, ny, nx) &&
+			} else if (square_iswall(cave, loc(nx, ny)) &&
 					   square_isperm(cave, loc(nx, ny))) {
 				/* Permanent wall in the way */
 				can_move = false;
@@ -1574,7 +1575,7 @@ void do_cmd_mon_command(struct command *cmd)
 					/* If the monster can deal with doors, prefer to bash */
 					if (can_bash || can_open) {
 						/* Now outcome depends on type of door */
-						if (square_islockeddoor(cave, ny, nx)) {
+						if (square_islockeddoor(cave, loc(nx, ny))) {
 							/* Test strength against door strength */
 							int k = square_door_power(cave, ny, nx);
 							if (randint0(mon->hp / 10) > k) {

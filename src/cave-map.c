@@ -107,7 +107,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 
 		/* Darkness or torchlight */
 		if (!square_isglow(cave, y, x)) {
-			if (player_has(player, PF_UNLIGHT) && !square_islit(cave, y, x)) {
+			if (player_has(player, PF_UNLIGHT) && !square_islit(cave, grid)) {
 				g->lighting = LIGHTING_DARK;
 			} else if (OPT(player, view_yellow_light)) {
 				g->lighting = LIGHTING_TORCH;
@@ -228,7 +228,7 @@ void square_note_spot(struct chunk *c, int y, int x)
 	square_know_pile(c, y, x);
 
 	/* Notice traps */
-	if (square_issecrettrap(c, y, x)) {
+	if (square_issecrettrap(c, grid)) {
 		square_reveal_trap(c, y, x, false, true);
 	}
 
@@ -321,7 +321,7 @@ static void cave_unlight(struct point_set *ps)
 		struct loc grid = ps->pts[i];
 
 		/* Darken the grid... */
-		if (!square_isbright(cave, grid.y, grid.x)) {
+		if (!square_isbright(cave, grid)) {
 			sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
 		}
 
@@ -347,10 +347,11 @@ static void cave_unlight(struct point_set *ps)
  */
 static void cave_room_aux(struct point_set *seen, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	if (point_set_contains(seen, y, x))
 		return;
 
-	if (!square_in_bounds(cave, y, x))
+	if (!square_in_bounds(cave, grid))
 		return;
 
 	if (!square_isroom(cave, y, x))
@@ -378,7 +379,7 @@ void light_room(int y1, int x1, bool light)
 		x = ps->pts[i].x, y = ps->pts[i].y;
 
 		/* Walls get lit, but stop light */
-		if (!square_isprojectable(cave, y, x)) continue;
+		if (!square_isprojectable(cave, ps->pts[i])) continue;
 
 		/* Spread adjacent */
 		cave_room_aux(ps, y + 1, x);
@@ -427,7 +428,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 			struct loc grid = loc(x, y);
 
 			/* Process all non-walls */
-			if (!square_seemslikewall(c, grid.y, grid.x)) {
+			if (!square_seemslikewall(c, grid)) {
 				if (!square_in_bounds_fully(c, grid)) continue;
 
 				/* Scan all neighbors */
@@ -439,7 +440,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 
 					/* Memorize normal features */
 					if (!square_isfloor(c, a_grid) || 
-						square_isvisibletrap(c, a_grid.y, a_grid.x)) {
+						square_isvisibletrap(c, a_grid)) {
 						square_memorize(c, a_grid.y, a_grid.x);
 						square_mark(c, a_grid.y, a_grid.x);
 					}
@@ -463,7 +464,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 	for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
 			struct loc grid = loc(x, y);
-			if (!square_in_bounds(c, grid.y, grid.x)) continue;
+			if (!square_in_bounds(c, grid)) continue;
 			square_unmark(c, grid.y, grid.x);
 		}
 	}
@@ -493,7 +494,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 			struct loc grid = loc(x, y);
 
 			/* Process all non-walls */
-			if (!square_seemslikewall(c, grid.y, grid.x)) {
+			if (!square_seemslikewall(c, grid)) {
 				if (!square_in_bounds_fully(c, grid)) continue;
 
 				/* Scan all neighbors */
@@ -505,7 +506,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 
 					/* Memorize normal features */
 					if (!square_isfloor(c, a_grid) || 
-						square_isvisibletrap(c, a_grid.y, a_grid.x)) {
+						square_isvisibletrap(c, a_grid)) {
 						square_memorize(c, a_grid.y, a_grid.x);
 						square_mark(c, a_grid.y, a_grid.x);
 					}
@@ -529,7 +530,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 	for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
 			struct loc grid = loc(x, y);
-			if (!square_in_bounds(c, grid.y, grid.x)) continue;
+			if (!square_in_bounds(c, grid)) continue;
 			square_unmark(c, grid.y, grid.x);
 		}
 	}
@@ -575,7 +576,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			if (daytime || !square_isfloor(c, grid)) {
 				sqinfo_on(square(c, grid).info, SQUARE_GLOW);
 				square_memorize(c, grid.y, grid.x);
-			} else if (!square_isbright(c, grid.y, grid.x)) {
+			} else if (!square_isbright(c, grid)) {
 				sqinfo_off(square(c, grid).info, SQUARE_GLOW);
 				square_forget(c, grid.y, grid.x);
 			}
@@ -620,11 +621,11 @@ void cave_known(struct player *p)
 			/* Check around the grid */
 			for (d = 0; d < 8; d++) {
 				/* Extract adjacent location */
-				struct loc a_grid = loc_sum(grid, ddgrid_ddd[d]);
+				struct loc adj_grid = loc_sum(grid, ddgrid_ddd[d]);
 
 				/* Don't count projectable or lava squares */
-				if (!square_isprojectable(cave, a_grid.y, a_grid.x) ||
-					square_isbright(cave, a_grid.y, a_grid.x))
+				if (!square_isprojectable(cave, adj_grid) ||
+					square_isbright(cave, adj_grid))
 					++count;
 			}
 

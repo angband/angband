@@ -584,8 +584,9 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 int player_check_terrain_damage(struct player *p, int y, int x)
 {
 	int dam_taken = 0;
+	struct loc grid = loc(x, y);
 
-	if (square_isfiery(cave, y, x)) {
+	if (square_isfiery(cave, grid)) {
 		int base_dam = 100 + randint1(100);
 		int res = p->state.el_info[ELEM_FIRE].res_level;
 
@@ -606,6 +607,7 @@ int player_check_terrain_damage(struct player *p, int y, int x)
  */
 void player_take_terrain_damage(struct player *p, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	int dam_taken = player_check_terrain_damage(p, y, x);
 
 	if (!dam_taken) {
@@ -614,7 +616,7 @@ void player_take_terrain_damage(struct player *p, int y, int x)
 
 	/* Damage the player and inventory */
 	take_hit(player, dam_taken, square_feat(cave, y, x)->die_msg);
-	if (square_isfiery(cave, y, x)) {
+	if (square_isfiery(cave, grid)) {
 		msg(square_feat(cave, y, x)->hurt_msg);
 		inven_damage(player, PROJ_FIRE, dam_taken);
 	}

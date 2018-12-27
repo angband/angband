@@ -632,25 +632,24 @@ static void cleanup_template_parser(void)
  */
 static void place_feeling(struct chunk *c)
 {
-	int y,x,i,j;
+	int i, j;
 	int tries = 500;
 	
 	for (i = 0; i < z_info->feeling_total; i++) {
 		for (j = 0; j < tries; j++) {
 			/* Pick a random dungeon coordinate */
-			y = randint0(c->height);
-			x = randint0(c->width);
+			struct loc grid = loc(randint0(c->width), randint0(c->height));
 
 			/* Check to see if it is not a wall */
-			if (square_iswall(c, y, x))
+			if (square_iswall(c, grid))
 				continue;
 
 			/* Check to see if it is already marked */
-			if (square_isfeel(c, y, x))
+			if (square_isfeel(c, grid.y, grid.x))
 				continue;
 
 			/* Set the cave square appropriately */
-			sqinfo_on(square(c, loc(x, y)).info, SQUARE_FEEL);
+			sqinfo_on(square(c, grid).info, SQUARE_FEEL);
 			
 			break;
 		}
@@ -1089,7 +1088,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	
 	/* allow direct transfer if target location is teleportable */
 	if (square_in_bounds_fully(c, loc(p->px, p->py))
-			&& square_isarrivable(c, p->py, p->px)
+		&& square_isarrivable(c, loc(p->px, p->py))
 			&& !square_isvault(c, p->py, p->px)) {
 		return;
 	}

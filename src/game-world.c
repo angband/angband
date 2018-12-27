@@ -417,10 +417,10 @@ static void make_noise(struct player *p)
 			/* Child location */
 			y = next_y + ddy_ddd[d];
 			x = next_x + ddx_ddd[d];
-			if (!square_in_bounds(cave, y, x)) continue;
+			if (!square_in_bounds(cave, loc(x, y))) continue;
 
 			/* Ignore features that don't transmit sound */
-			if (square_isnoflow(cave, y, x)) continue;
+			if (square_isnoflow(cave, loc(x, y))) continue;
 
 			/* Skip grids that already have noise */
 			if (cave->noise.grids[y][x] != 0) continue;
@@ -486,15 +486,15 @@ static void update_scent(void)
 			bool add_scent = false;
 
 			/* Ignore invalid or non-scent-carrying grids */
-			if (!square_in_bounds(cave, scent_y, scent_x)) continue;
-			if (square_isnoscent(cave, scent_y, scent_x)) continue;
+			if (!square_in_bounds(cave, loc(scent_x, scent_y))) continue;
+			if (square_isnoscent(cave, loc(scent_x, scent_y))) continue;
 
 			/* Check scent is spreading on floors, not going through walls */
 			for (d = 0; d < 8; d++)	{
 				int adj_y = scent_y + ddy_ddd[d];
 				int adj_x = scent_x + ddx_ddd[d];
 
-				if (!square_in_bounds(cave, adj_y, adj_x)) {
+				if (!square_in_bounds(cave, loc(adj_x, adj_y))) {
 					continue;
 				}
 

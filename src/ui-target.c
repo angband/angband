@@ -332,7 +332,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		s3 = "";
 
 		/* Bail if looking at a forbidden grid */
-		if (!square_in_bounds(cave, y, x)) {
+		if (!square_in_bounds(cave, loc(x, y))) {
 			break;
 		}
 
@@ -522,7 +522,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* A trap */
-		if (square_isvisibletrap(cave, y, x)) {
+		if (square_isvisibletrap(cave, loc(x, y))) {
 			struct trap *trap = square(cave, loc(x, y)).trap;
 
 			/* Not boring */
@@ -573,7 +573,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		}
 	
 		/* Double break */
-		if (square_isvisibletrap(cave, y, x))
+		if (square_isvisibletrap(cave, loc(x, y)))
 			break;
 	
 		/* Scan all sensed objects in the grid */
@@ -681,7 +681,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		name = square_apparent_name(cave, player, y, x);
 
 		/* Terrain feature if needed */
-		if (boring || square_isinteresting(cave, y, x)) {
+		if (boring || square_isinteresting(cave, loc(x, y))) {
 			/* Hack -- handle unknown grids */
 
 			/* Pick a prefix */
@@ -849,7 +849,7 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 			/* Known objects are yellow. */
 			colour = COLOUR_YELLOW;
 
-		else if (!square_isprojectable(cave, grid.y, grid.x) &&
+		else if (!square_isprojectable(cave, grid) &&
 				 (square_isknown(cave, grid) || square_isseen(cave, grid.y, grid.x)))
 			/* Known walls are blue. */
 			colour = COLOUR_BLUE;

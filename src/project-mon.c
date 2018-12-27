@@ -177,9 +177,9 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 			}
 
 			/* Check for obstruction. */
-			if (!square_isprojectable(cave, yy, xx)) {
+			if (!square_isprojectable(cave, loc(xx, yy))) {
 				/* Some features allow entrance, but not exit. */
-				if (square_ispassable(cave, yy, xx)) {
+				if (square_ispassable(cave, loc(xx, yy))) {
 					/* Travel down the path. */
 					monster_swap(y, x, yy, xx);
 
@@ -216,7 +216,7 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 	}
 
 	/* Some special messages or effects for player or monster. */
-	if (square_isfiery(cave, y, x)) {
+	if (square_isfiery(cave, loc(x, y))) {
 		if (square(cave, loc(x, y)).mon < 0) {
 			msg("You are thrown into molten lava!");
 		} else if (square(cave, loc(x, y)).mon > 0) {
@@ -1336,7 +1336,7 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	*was_obvious = false;
 
 	/* Walls protect monsters */
-	if (!square_ispassable(cave, grid.y, grid.x)) return;
+	if (!square_ispassable(cave, grid)) return;
 
 	/* No monster here */
 	if (!(m_idx > 0)) return;

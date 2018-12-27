@@ -418,7 +418,8 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 	int arc_num;
 
 	/* Make certain the room does not cross the dungeon edge. */
-	if ((!square_in_bounds(c, y1, x1)) || (!square_in_bounds(c, y2, x2)))
+	if ((!square_in_bounds(c, loc(x1, y1))) ||
+		(!square_in_bounds(c, loc(x2, y2))))
 		return (false);
 
 	/* Robustness -- test sanity of input coordinates. */
@@ -661,7 +662,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 
 							if (light) {
 								sqinfo_on(square(c, loc(x, y)).info, SQUARE_GLOW);
-							} else if (!square_isbright(c, y, x)) {
+							} else if (!square_isbright(c, loc(x, y))) {
 								sqinfo_off(square(c, loc(x, y)).info, SQUARE_GLOW);
 							}
 						}
@@ -2700,7 +2701,8 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 	x2 = x0 + (width - 1) / 2;
 
 	/* Make certain the room does not cross the dungeon edge. */
-	if ((!square_in_bounds(c, y1, x1)) || (!square_in_bounds(c, y2, x2)))
+	if ((!square_in_bounds(c, loc(x1, y1))) || 
+		(!square_in_bounds(c, loc(x2, y2))))
 		return (false);
 
 	/* Determine how much space we have. */
@@ -2807,7 +2809,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 					/* Keep going in the same direction, if in bounds. */
 					yy2 = yy1 + ddy_ddd[d];
 					xx2 = xx1 + ddx_ddd[d];
-					if (!square_in_bounds(c, yy2, xx2)) continue;
+					if (!square_in_bounds(c, loc(xx2, yy2))) continue;
 
 					/* If we find open floor, place a door. */
 					if (square(c, loc(xx2, yy2)).feat == FEAT_FLOOR) {
@@ -2828,7 +2830,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 						/* ...Keep going in the same direction. */
 						yy3 = yy2 + ddy_ddd[d];
 						xx3 = xx2 + ddx_ddd[d];
-						if (!square_in_bounds(c, yy3, xx3)) continue;
+						if (!square_in_bounds(c, loc(xx3, yy3))) continue;
 
 						/* If we /now/ find floor, make a tunnel. */
 						if (square(c, loc(xx3, yy3)).feat == FEAT_FLOOR) {
@@ -2881,7 +2883,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 					int xx = x + ddx_ddd[d];
 
 					/* Stay legal */
-					if (!square_in_bounds(c, yy, xx)) continue;
+					if (!square_in_bounds(c, loc(xx, yy))) continue;
 
 					/* No floors allowed */
 					if (square(c, loc(xx, yy)).feat == FEAT_FLOOR) break;
@@ -2898,7 +2900,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 					int xx = x + ddx_ddd[d];
 
 					/* Stay legal */
-					if (!square_in_bounds(c, yy, xx)) continue;
+					if (!square_in_bounds(c, loc(xx, yy))) continue;
 
 					/* Turn into room, forbid stairs. */
 					sqinfo_on(square(c, loc(xx, yy)).info, SQUARE_ROOM);

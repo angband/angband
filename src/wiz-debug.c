@@ -147,8 +147,9 @@ static void do_cmd_wiz_hack_nick(void)
 		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 				byte a = COLOUR_RED;
+				struct loc grid = loc(x, y);
 
-				if (!square_in_bounds_fully(cave, loc(x, y))) continue;
+				if (!square_in_bounds_fully(cave, grid)) continue;
 
 				/* Display proper noise */
 				if (cave->noise.grids[y][x] != i) continue;
@@ -156,7 +157,7 @@ static void do_cmd_wiz_hack_nick(void)
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
 					print_rel(L'@', a, y, x);
-				else if (square_ispassable(cave, y, x))
+				else if (square_ispassable(cave, grid))
 					print_rel(L'*', a, y, x);
 				else
 					print_rel(L'#', a, y, x);
@@ -176,8 +177,9 @@ static void do_cmd_wiz_hack_nick(void)
 		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
 				byte a = COLOUR_YELLOW;
+				struct loc grid = loc(x, y);
 
-				if (!square_in_bounds_fully(cave, loc(x, y))) continue;
+				if (!square_in_bounds_fully(cave, grid)) continue;
 
 				/* Display proper smell */
 				if (cave->scent.grids[y][x] != i) continue;
@@ -185,7 +187,7 @@ static void do_cmd_wiz_hack_nick(void)
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
 					print_rel(L'@', a, y, x);
-				else if (square_ispassable(cave, y, x))
+				else if (square_ispassable(cave, grid))
 					print_rel(L'*', a, y, x);
 				else
 					print_rel(L'#', a, y, x);
@@ -281,7 +283,7 @@ static void do_cmd_wiz_bamf(void)
 	target_get(&x, &y);
 
 	/* Test for passable terrain. */
-	if (!square_ispassable(cave, y, x))
+	if (!square_ispassable(cave, loc(x, y)))
 		msg("The square you are aiming for is impassable.");
 
 	/* Teleport to the target */
@@ -1695,12 +1697,12 @@ static void do_cmd_wiz_query(void)
 			if (!flag && (!square_isknown(cave, grid))) continue;
 
 			/* Color */
-			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
+			if (square_ispassable(cave, grid)) a = COLOUR_YELLOW;
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
 				print_rel(L'@', a, y, x);
-			else if (square_ispassable(cave, y, x))
+			else if (square_ispassable(cave, grid))
 				print_rel(L'*', a, y, x);
 			else
 				print_rel(L'#', a, y, x);
@@ -1791,6 +1793,7 @@ static void do_cmd_wiz_features(void)
 	/* Scan map */
 	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++) {
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++) {
+			struct loc grid = loc(x, y);
 			byte a = COLOUR_RED;
 			bool show = false;
 			int i;
@@ -1799,17 +1802,17 @@ static void do_cmd_wiz_features(void)
 
 			/* Given feature, show only those grids */
 			for (i = 0; i < length; i++)
-				if (square(cave, loc(x, y)).feat == feat[i]) show = true;
+				if (square(cave, grid).feat == feat[i]) show = true;
 
 			/* Color */
-			if (square_ispassable(cave, y, x)) a = COLOUR_YELLOW;
+			if (square_ispassable(cave, grid)) a = COLOUR_YELLOW;
 
 			if (!show) continue;
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
 				print_rel(L'@', a, y, x);
-			else if (square_ispassable(cave, y, x))
+			else if (square_ispassable(cave, grid))
 				print_rel(L'*', a, y, x);
 			else
 				print_rel(L'#', a, y, x);

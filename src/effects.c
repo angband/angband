@@ -1517,7 +1517,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 			if (square_isno_map(cave, y, x)) continue;
 
 			/* All non-walls are "checked" */
-			if (!square_seemslikewall(cave, y, x)) {
+			if (!square_seemslikewall(cave, grid)) {
 				if (!square_in_bounds_fully(cave, grid)) continue;
 
 				/* Memorize normal features */
@@ -1530,7 +1530,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 					int xx = x + ddx_ddd[i];
 
 					/* Memorize walls (etc) */
-					if (square_seemslikewall(cave, yy, xx))
+					if (square_seemslikewall(cave, loc(xx, yy)))
 						square_memorize(cave, yy, xx);
 				}
 			}
@@ -1544,7 +1544,8 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 	/* Unmark grids */
 	for (y = y1 - 1; y < y2 + 1; y++) {
 		for (x = x1 - 1; x < x2 + 1; x++) {
-			if (!square_in_bounds(cave, y, x)) continue;
+			struct loc grid = loc(x, y);
+			if (!square_in_bounds(cave, grid)) continue;
 			square_unmark(cave, y, x);
 		}
 	}
@@ -1633,7 +1634,7 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Detect traps */
-			if (square_isplayertrap(cave, y, x))
+			if (square_isplayertrap(cave, grid))
 				/* Reveal trap */
 				if (square_reveal_trap(cave, y, x, true, false))
 					detect = true;
@@ -2778,7 +2779,8 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	 * the distance from the start is to the distance we want */
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
-			int d = distance(loc(x, y), start);
+			struct loc grid = loc(x, y);
+			int d = distance(grid, start);
 			int score = ABS(d - dis);
 			struct jumps *new;
 
@@ -2786,10 +2788,10 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 			if (d == 0) continue;
 
 			/* Require "naked" floor space */
-			if (!square_isempty(cave, loc(x, y))) continue;
+			if (!square_isempty(cave, grid)) continue;
 
 			/* No monster teleport onto glyph of warding */
-			if (!is_player && square_iswarded(cave, y, x)) continue;
+			if (!is_player && square_iswarded(cave, grid)) continue;
 
 			/* No teleporting into vaults and such, unless there's no choice */
 			if (square_isvault(cave, y, x)) {
@@ -3126,7 +3128,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Extract the distance */
-			k = distance(loc(x1, y1), loc(x, y));
+			k = distance(loc(x1, y1), grid);
 
 			/* Stay in the circle of death */
 			if (k > r) continue;
@@ -3136,10 +3138,10 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			sqinfo_off(square(cave, loc(x, y)).info, SQUARE_VAULT);
 
 			/* Forget completely */
-			if (!square_isbright(cave, y, x)) {
-				sqinfo_off(square(cave, loc(x, y)).info, SQUARE_GLOW);
+			if (!square_isbright(cave, grid)) {
+				sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
 			}
-			sqinfo_off(square(cave, loc(x, y)).info, SQUARE_SEEN);
+			sqinfo_off(square(cave, grid).info, SQUARE_SEEN);
 			square_forget(cave, y, x);
 			square_light_spot(cave, y, x);
 
@@ -3274,7 +3276,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_VAULT);
 
 			/* Forget completely */
-			if (!square_isbright(cave, yy, xx)) {
+			if (!square_isbright(cave, loc(xx, yy))) {
 				sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_GLOW);
 			}
 			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_SEEN);
@@ -3407,7 +3409,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 							if (!square_isempty(cave, loc(x, y))) continue;
 
 							/* Hack -- no safety on glyph of warding */
-							if (square_iswarded(cave, y, x))
+							if (square_iswarded(cave, loc(x, y)))
 								continue;
 
 							/* Important -- Skip quake grids */
@@ -3485,7 +3487,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				square_light_spot(cave, yy, xx);
 
 			/* Destroy location and all objects (if valid) */
-			else if (square_changeable(cave, yy, xx)) {
+			else if (square_changeable(cave, loc(xx, yy))) {
 				square_excise_pile(cave, yy, xx);
 				square_earthquake(cave, yy, xx);
 			}

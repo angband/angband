@@ -1747,7 +1747,7 @@ void calc_cave_distances(int **cave_dist)
 				if (cave_dist[ty][tx] >= 0) continue;
 
 				/* Is it a wall? */
-				if (square_iswall(cave, ty, tx)) continue;
+				if (square_iswall(cave, loc(tx, ty))) continue;
 
 				/* Add the new location */
 				d_y_new[d_new_max] = ty;
@@ -1913,15 +1913,16 @@ void disconnect_stats(void)
 		/* Cycle through the dungeon */
 		for (y = 1; y < cave->height - 1; y++) {
 			for (x = 1; x < cave->width - 1; x++) {
+				struct loc grid = loc(x, y);
 
 				/* Don't care about walls */
-				if (square_iswall(cave, y, x)) continue;
+				if (square_iswall(cave, grid)) continue;
 
 				/* Can we get there? */
 				if (cave_dist[y][x] >= 0) {
 
 					/* Is it a  down stairs? */
-					if (square_isdownstairs(cave, loc(x, y))) {
+					if (square_isdownstairs(cave, grid)) {
 
 						has_dsc_from_stairs = false;
 

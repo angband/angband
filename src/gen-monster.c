@@ -219,7 +219,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 		if ((dy == 0) && (dx == 0)) {
 			y = y0;
 			x = x0;
-			if (!square_in_bounds(c, y, x)) {
+			if (!square_in_bounds(c, loc(x, y))) {
 				(void) mon_restrict(NULL, depth, true);
 				return;
 			}
@@ -227,7 +227,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 			for (j = 0; j < 10; j++) {
 				y = rand_spread(y0, dy);
 				x = rand_spread(x0, dx);
-				if (!square_in_bounds(c, y, x)) {
+				if (!square_in_bounds(c, loc(x, y))) {
 					if (j < 9) {
 						continue;
 					} else {

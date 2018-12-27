@@ -285,7 +285,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 		x += dx;
 
 		/* React differently depending on the terrain behind the monster */
-		if (square_ispassable(cave, y, x)) {
+		if (square_ispassable(cave, loc(x, y))) {
 			/* Monster there - current monster takes all the damage
 			 * Note we could have more fun here by pushing it back... */
 			if (square_monster(cave, y, x)) {
@@ -794,8 +794,8 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 		bool see = square_isseen(cave, ny, nx);
 
 		/* Stop before hitting walls */
-		if (!(square_ispassable(cave, ny, nx)) &&
-			!(square_isprojectable(cave, ny, nx)))
+		if (!(square_ispassable(cave, path_g[i])) &&
+			!(square_isprojectable(cave, path_g[i])))
 			break;
 
 		/* Advance */
@@ -885,7 +885,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 		}
 
 		/* Stop if non-projectable but passable */
-		if (!(square_isprojectable(cave, ny, nx))) 
+		if (!(square_isprojectable(cave, path_g[i]))) 
 			break;
 	}
 

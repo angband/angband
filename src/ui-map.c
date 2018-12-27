@@ -559,7 +559,7 @@ static void prt_map_aux(void)
 			if (vy + tile_height - 1 >= t->hgt) continue;
 			for (x = t->offset_x, vx = 0; x < tx; vx++, x++) {
 				/* Check bounds */
-				if (!square_in_bounds(cave, y, x)) continue;
+				if (!square_in_bounds(cave, loc(x, y))) continue;
 				if (vx + tile_width - 1 >= t->wid) continue;
 
 				/* Determine what is there */
@@ -604,7 +604,7 @@ void prt_map(void)
 	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy+=tile_height, y++)
 		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx+=tile_width, x++) {
 			/* Check bounds */
-			if (!square_in_bounds(cave, y, x)) continue;
+			if (!square_in_bounds(cave, loc(x, y))) continue;
 
 			/* Determine what is there */
 			map_info(y, x, &g);

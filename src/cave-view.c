@@ -120,10 +120,10 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 		/* South -- check for walls */
 		if (dy > 0) {
 			for (ty = grid1.y + 1; ty < grid2.y; ty++)
-				if (!square_isprojectable(c, ty, grid1.x)) return (false);
+				if (!square_isprojectable(c, loc(grid1.x, ty))) return (false);
 		} else { /* North -- check for walls */
 			for (ty = grid1.y - 1; ty > grid2.y; ty--)
-				if (!square_isprojectable(c, ty, grid1.x)) return (false);
+				if (!square_isprojectable(c, loc(grid1.x, ty))) return (false);
 		}
 
 		/* Assume los */
@@ -135,10 +135,10 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 		/* East -- check for walls */
 		if (dx > 0) {
 			for (tx = grid1.x + 1; tx < grid2.x; tx++)
-				if (!square_isprojectable(c, grid1.y, tx)) return (false);
+				if (!square_isprojectable(c, loc(tx, grid1.y))) return (false);
 		} else { /* West -- check for walls */
 			for (tx = grid1.x - 1; tx > grid2.x; tx--)
-				if (!square_isprojectable(c, grid1.y, tx)) return (false);
+				if (!square_isprojectable(c, loc(tx, grid1.y))) return (false);
 		}
 
 		/* Assume los */
@@ -152,10 +152,10 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 
 	/* Vertical and horizontal "knights" */
 	if ((ax == 1) && (ay == 2) &&
-		square_isprojectable(c, grid1.y + sy, grid1.x)) {
+		square_isprojectable(c, loc(grid1.x, grid1.y + sy))) {
 		return (true);
 	} else if ((ay == 1) && (ax == 2) &&
-			   square_isprojectable(c, grid1.y, grid1.x + sx)) {
+			   square_isprojectable(c, loc(grid1.x + sx, grid1.y))) {
 		return (true);
 	}
 
@@ -185,7 +185,7 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 		/* Note (below) the case (qy == f2), where */
 		/* the LOS exactly meets the corner of a tile. */
 		while (grid2.x - tx) {
-			if (!square_isprojectable(c, ty, tx))
+			if (!square_isprojectable(c, loc(tx, ty)))
 				return (false);
 
 			qy += m;
@@ -194,7 +194,7 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 				tx += sx;
 			} else if (qy > f2) {
 				ty += sy;
-				if (!square_isprojectable(c, ty, tx))
+				if (!square_isprojectable(c, loc(tx, ty)))
 					return (false);
 				qy -= f1;
 				tx += sx;
@@ -221,7 +221,7 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 		/* Note (below) the case (qx == f2), where */
 		/* the LOS exactly meets the corner of a tile. */
 		while (grid2.y - ty) {
-			if (!square_isprojectable(c, ty, tx))
+			if (!square_isprojectable(c, loc(tx, ty)))
 				return (false);
 
 			qx += m;
@@ -230,7 +230,7 @@ bool los(struct chunk *c, struct loc grid1, struct loc grid2)
 				ty += sy;
 			} else if (qx > f2) {
 				tx += sx;
-				if (!square_isprojectable(c, ty, tx))
+				if (!square_isprojectable(c, loc(tx, ty)))
 					return (false);
 				qx -= f1;
 				ty += sy;
@@ -471,7 +471,7 @@ static void add_monster_lights(struct chunk *c, struct loc from)
 				int sx = m->grid.x + j;
 				
 				/* If the monster isn't visible we can only light open tiles */
-				if (!in_los && !square_isprojectable(c, sy, sx))
+				if (!in_los && !square_isprojectable(c, loc(sx, sy)))
 					continue;
 
 				/* If the tile is too far away we won't light it */
@@ -533,16 +533,18 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
 {
 	int xc = x;
 	int yc = y;
+	struct loc grid = loc(x, y);
+
 	if (square_isview(c, y, x))
 		return;
 
-	sqinfo_on(square(c, loc(x, y)).info, SQUARE_VIEW);
+	sqinfo_on(square(c, grid).info, SQUARE_VIEW);
 
 	if (lit)
-		sqinfo_on(square(c, loc(x, y)).info, SQUARE_SEEN);
+		sqinfo_on(square(c, grid).info, SQUARE_SEEN);
 
 	if (square_isglow(c, y, x)) {
-		if (square_iswall(c, y, x)) {
+		if (square_iswall(c, grid)) {
 			/* For walls, move a bit towards the player.
 			 * TODO(elly): huh? why?
 			 */
@@ -550,7 +552,7 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
 			yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
 		}
 		if (square_isglow(c, yc, xc))
-			sqinfo_on(square(c, loc(x, y)).info, SQUARE_SEEN);
+			sqinfo_on(square(c, grid).info, SQUARE_SEEN);
 	}
 }
 
@@ -562,22 +564,23 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 	int dir;
 	int xc = x;
 	int yc = y;
+	struct loc grid = loc(x, y);
 
-	int d = distance(loc(x, y), loc(px, py));
+	int d = distance(grid, loc(px, py));
 	int lit = d < radius;
 
 	if (d > z_info->max_sight)
 		return;
 
 	/* Light squares with bright terrain, or squares adjacent */
-	if (square_isbright(c, y, x)) {
+	if (square_isbright(c, grid)) {
 		lit = true;
 	}
 	for (dir = 0; dir < 8; dir++) {
-		if (!square_in_bounds(c, y + ddy_ddd[dir], x + ddx_ddd[dir])) {
+		if (!square_in_bounds(c, loc(x + ddx_ddd[dir], y + ddy_ddd[dir]))) {
 			continue;
 		}
-		if (square_isbright(c, y + ddy_ddd[dir], x + ddx_ddd[dir])) {
+		if (square_isbright(c, loc(x + ddx_ddd[dir], y + ddy_ddd[dir]))) {
 			lit = true;
 		}
 	}
@@ -591,7 +594,7 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 	 * where the wall cell marked '1' would not be lit because the LOS
 	 * algorithm runs into the adjacent wall cell.
 	 */
-	if (square_iswall(c, y, x)) {
+	if (square_iswall(c, grid)) {
 		int dx = x - px;
 		int dy = y - py;
 		int ax = ABS(dx);
@@ -606,7 +609,7 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 		 * wall. If we don't do this, double-thickness walls will have
 		 * both sides visible.
 		 */
-		if (square_iswall(c, yc, xc)) {
+		if (square_iswall(c, loc(xc, yc))) {
 			xc = x;
 			yc = y;
 		}
@@ -614,14 +617,14 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 		/* Check that we got here via the 'knight's move' rule. If so,
 		 * don't steal LOS. */
 		if (ax == 2 && ay == 1) {
-			if (  !square_iswall(c, y, x - sx)
-				  && square_iswall(c, y - sy, x - sx)) {
+			if (  !square_iswall(c, loc(x - sx, y))
+				  && square_iswall(c, loc(x - sx, y - sy))) {
 				xc = x;
 				yc = y;
 			}
 		} else if (ax == 1 && ay == 2) {
-			if (  !square_iswall(c, y - sy, x)
-				  && square_iswall(c, y - sy, x - sx)) {
+			if (  !square_iswall(c, loc(x, y - sy))
+				  && square_iswall(c, loc(x - sx, y - sy))) {
 				xc = x;
 				yc = y;
 			}

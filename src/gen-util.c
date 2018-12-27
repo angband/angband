@@ -434,8 +434,9 @@ static void place_stairs(struct chunk *c, int y, int x, int feat)
  */
 void place_random_stairs(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
     int feat = randint0(100) < 50 ? FEAT_LESS : FEAT_MORE;
-    if (square_canputitem(c, y, x))
+    if (square_canputitem(c, grid))
 		place_stairs(c, y, x, feat);
 }
 
@@ -454,12 +455,13 @@ void place_random_stairs(struct chunk *c, int y, int x)
 void place_object(struct chunk *c, int y, int x, int level, bool good,
 				  bool great, byte origin, int tval)
 {
+	struct loc grid = loc(x, y);
     s32b rating = 0;
     struct object *new_obj;
 	bool dummy = true;
 
-    if (!square_in_bounds(c, y, x)) return;
-    if (!square_canputitem(c, y, x)) return;
+    if (!square_in_bounds(c, grid)) return;
+    if (!square_canputitem(c, grid)) return;
 
 	/* Make an appropriate object */
     new_obj = make_object(c, level, good, great, false, &rating, tval);
@@ -498,11 +500,12 @@ void place_object(struct chunk *c, int y, int x, int level, bool good,
  */
 void place_gold(struct chunk *c, int y, int x, int level, byte origin)
 {
+	struct loc grid = loc(x, y);
     struct object *money = NULL;
 	bool dummy = true;
 
-    if (!square_in_bounds(c, y, x)) return;
-    if (!square_canputitem(c, y, x)) return;
+    if (!square_in_bounds(c, grid)) return;
+    if (!square_canputitem(c, grid)) return;
 
     money = make_gold(level, "any");
     money->origin = origin;
@@ -704,7 +707,7 @@ void vault_objects(struct chunk *c, int y, int x, int depth, int num)
 			find_nearby_grid(c, &j, y, 2, &k, x, 3);
 
 			/* Require "clean" floor space */
-			if (!square_canputitem(c, j, k)) continue;
+			if (!square_canputitem(c, loc(k, j))) continue;
 
 			/* Place an item or gold */
 			if (randint0(100) < 75)
@@ -771,7 +774,7 @@ void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
     int k, i, y, x;
 
 	/* If the starting location is illegal, don't even start */
-	if (!square_in_bounds(c, y1, x1)) return;
+	if (!square_in_bounds(c, loc(x1, y1))) return;
 
     /* Try to summon "num" monsters "near" the given location */
     for (k = 0; k < num; k++) {

@@ -418,7 +418,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		if (!square_isempty(cave, loc(x, y))) continue;
 
 		/* No summon on glyphs */
-		if (square_iswarded(cave, y, x) || square_isdecoyed(cave, y, x)) {
+		if (square_iswarded(cave, loc(x, y)) || square_isdecoyed(cave, loc(x, y))) {
 			continue;
 		}
 

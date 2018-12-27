@@ -299,7 +299,7 @@ bool target_accept(int y, int x)
 	}
 
 	/* Traps */
-	if (square_isvisibletrap(cave, y, x)) return true;
+	if (square_isvisibletrap(cave, grid)) return true;
 
 	/* Scan all objects in the grid */
 	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
@@ -310,7 +310,7 @@ bool target_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (square_isknown(cave, grid) && square_isinteresting(cave, y, x)) {
+	if (square_isknown(cave, grid) && square_isinteresting(cave, grid)) {
 		return true;
 	}
 

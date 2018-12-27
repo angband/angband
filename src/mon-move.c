@@ -164,8 +164,9 @@ static bool monster_can_move(struct chunk *c, struct monster *mon, int y, int x)
 static bool monster_hates_grid(struct chunk *c, struct monster *mon, int y,
 							   int x)
 {
+	struct loc grid = loc(x, y);
 	/* Only some creatures can handle damaging terrain */
-	if (square_isdamaging(c, y, x) &&
+	if (square_isdamaging(c, grid) &&
 		!rf_has(mon->race->flags, square_feat(c, y, x)->resist_flag)) {
 		return true;
 	}
@@ -323,7 +324,7 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 		int heard_noise = base_hearing - c->noise.grids[y][x];
 
 		/* Bounds check */
-		if (!square_in_bounds(c, y, x)) {
+		if (!square_in_bounds(c, loc(x, y))) {
 			continue;
 		}
 
@@ -430,14 +431,14 @@ static bool get_move_find_safety(struct chunk *c, struct monster *mon)
 			if (!square_in_bounds_fully(c, loc(x, y))) continue;
 
 			/* Skip locations in a wall */
-			if (!square_ispassable(c, y, x)) continue;
+			if (!square_ispassable(c, loc(x, y))) continue;
 
 			/* Ignore too-distant grids */
 			if (c->noise.grids[y][x] > c->noise.grids[fy][fx] + 2 * d)
 				continue;
 
 			/* Ignore damaging terrain if they can't handle it */
-			if (square_isdamaging(c, y, x) &&
+			if (square_isdamaging(c, loc(x, y)) &&
 				!rf_has(mon->race->flags, square_feat(c, y, x)->resist_flag))
 				continue;
 
@@ -566,7 +567,7 @@ static bool get_move_flee(struct chunk *c, struct monster *mon)
 		int x = mx + ddx_ddd[i];
 
 		/* Bounds check */
-		if (!square_in_bounds(c, y, x)) continue;
+		if (!square_in_bounds(c, loc(x, y))) continue;
 
 		/* Calculate distance of this grid from our target */
 		dis = distance(loc(x, y), mon->target.grid);
@@ -722,7 +723,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 			int rx = target.x + ddx_ddd[i];
 			/* Check grid around the player for room interior (room walls count)
 			 * or other empty space */
-			if (square_ispassable(c, ry, rx) || square_isroom(c, ry, rx)) {
+			if (square_ispassable(c, loc(rx, ry)) || square_isroom(c, ry, rx)) {
 				/* One more open grid */
 				open++;
 			}
@@ -931,12 +932,12 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 	}
 
 	/* Floor is open? */
-	if (square_ispassable(c, ny, nx)) {
+	if (square_ispassable(c, new)) {
 		return true;
 	}
 
 	/* Permanent wall in the way */
-	if (square_iswall(c, ny, nx) && square_isperm(c, new)) {
+	if (square_iswall(c, new) && square_isperm(c, new)) {
 		return false;
 	}
 
@@ -990,7 +991,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 		}
 
 		/* Now outcome depends on type of door */
-		if (square_islockeddoor(c, ny, nx)) {
+		if (square_islockeddoor(c, new)) {
 			/* Locked door -- test monster strength against door strength */
 			int k = square_door_power(c, ny, nx);
 			if (randint0(mon->hp / 10) > k) {
@@ -1031,7 +1032,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
 								  int nx, int ny)
 {
-	assert(square_iswarded(c, ny, nx));
+	assert(square_iswarded(c, loc(nx, ny)));
 
 	/* Break the ward */
 	if (randint1(z_info->glyph_hardness) < mon->race->level) {
@@ -1068,7 +1069,7 @@ static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
 	/* Move weaker monsters if they can swap places */
 	/* (not in a wall) */
 	int move_ok = (rf_has(mon->race->flags, RF_MOVE_BODY) &&
-				   square_ispassable(c, mon->grid.y, mon->grid.x));
+				   square_ispassable(c, mon->grid));
 
 	if (compare_monsters(mon, mon1) > 0) {
 		/* Learn about pushing and shoving */
@@ -1265,12 +1266,12 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 
 		/* Try to break the glyph if there is one.  This can happen multiple
 		 * times per turn because failure does not break the loop */
-		if (square_iswarded(c, ny, nx) &&
+		if (square_iswarded(c, loc(nx, ny)) &&
 			!monster_turn_glyph(c, mon, nx, ny))
 			continue;
 
 		/* Break a decoy if there is one */
-		if (square_isdecoyed(c, ny, nx)) {
+		if (square_isdecoyed(c, loc(nx, ny))) {
 			/* Learn about if the monster attacks */
 			if (monster_is_visible(mon))
 				rf_on(lore->flags, RF_NEVER_BLOW);

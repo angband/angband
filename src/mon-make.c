@@ -134,7 +134,7 @@ void delete_monster_idx(int m_idx)
 
 	int y = mon->grid.y;
 	int x = mon->grid.x;
-	assert(square_in_bounds(cave, y, x));
+	assert(square_in_bounds(cave, mon->grid));
 
 	/* Hack -- Reduce the racial counter */
 	mon->race->cur_num--;
@@ -194,11 +194,12 @@ void delete_monster_idx(int m_idx)
  */
 void delete_monster(int y, int x)
 {
-	assert(square_in_bounds(cave, y, x));
+	struct loc grid = loc(x, y);
+	assert(square_in_bounds(cave, grid));
 
 	/* Delete the monster (if any) */
-	if (square(cave, loc(x, y)).mon > 0)
-		delete_monster_idx(square(cave, loc(x, y)).mon);
+	if (square(cave, grid).mon > 0)
+		delete_monster_idx(square(cave, grid).mon);
 }
 
 
@@ -847,8 +848,9 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 {
 	s16b m_idx;
 	struct monster *new_mon;
+	struct loc grid = loc(x, y);
 
-	assert(square_in_bounds(c, y, x));
+	assert(square_in_bounds(c, grid));
 	assert(!square_monster(c, y, x));
 
 	/* Get a new record */
@@ -949,8 +951,9 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 
 	struct monster *mon;
 	struct monster monster_body;
+	struct loc grid = loc(x, y);
 
-	assert(square_in_bounds(c, y, x));
+	assert(square_in_bounds(c, grid));
 	assert(race && race->name);
 
 	/* Not where monsters already are */
@@ -962,11 +965,11 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 		return false;
 
 	/* Prevent monsters from being placed where they cannot walk, but allow other feature types */
-	if (!square_is_monster_walkable(c, y, x))
+	if (!square_is_monster_walkable(c, grid))
 		return false;
 
 	/* No creation on glyphs */
-	if (square_iswarded(c, y, x) || square_isdecoyed(c, y, x)) return false;
+	if (square_iswarded(c, grid) || square_isdecoyed(c, grid)) return false;
 
 	/* "unique" monsters must be "unique" */
 	if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)
@@ -1196,7 +1199,7 @@ static bool place_monster_base_okay(struct monster_race *race)
 			/* Find a nearby place to put the other groups */
 			for (j = 0; j < 50; j++) {
 				scatter(c, &ny, &nx, y, x, GROUP_DISTANCE, false);
-				if (square_isopen(c, ny, nx)) {
+				if (square_isopen(c, loc(nx, ny))) {
 					break;
 				}
 			}

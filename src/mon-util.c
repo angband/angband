@@ -190,7 +190,7 @@ static void path_analyse(struct chunk *c, int y, int x)
 		int nx = path_g[i].x;
 
 		/* Forget grids which would block los */
-		if (square_iswall(player->cave, ny, nx)) {
+		if (square_iswall(player->cave, path_g[i])) {
 			sqinfo_off(square(c, path_g[i]).info, SQUARE_SEEN);
 			square_forget(c, ny, nx);
 			square_light_spot(c, ny, nx);
@@ -1122,7 +1122,7 @@ void kill_arena_monster(struct monster *mon)
 void monster_take_terrain_damage(struct monster *mon)
 {
 	/* Damage the monster */
-	if (square_isfiery(cave, mon->grid.y, mon->grid.x)) {
+	if (square_isfiery(cave, mon->grid)) {
 		bool fear = false;
 
 		if (!rf_has(mon->race->flags, RF_IM_FIRE)) {

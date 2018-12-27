@@ -304,10 +304,11 @@ void square_free_trap(struct chunk *c, int y, int x)
 bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
 {
     int found_trap = 0;
+	struct loc grid = loc(x, y);
 	struct trap *trap = square_trap(c, y, x);
     
     /* Check there is a player trap */
-    if (!square_isplayertrap(c, y, x))
+    if (!square_isplayertrap(c, grid))
 		return false;
 
 	/* Scan the grid */
@@ -505,11 +506,11 @@ extern void hit_trap(int y, int x)
  */
 bool square_remove_all_traps(struct chunk *c, int y, int x)
 {
-	assert(square_in_bounds(c, y, x));
-
-	struct trap *trap = square(c, loc(x, y)).trap;
+	struct loc grid = loc(x, y);
+	struct trap *trap = square(c, grid).trap;
 	bool were_there_traps = trap == NULL ? false : true;
 
+	assert(square_in_bounds(c, grid));
 	while (trap) {
 		struct trap *next_trap = trap->next;
 		mem_free(trap);
@@ -538,13 +539,14 @@ bool square_remove_all_traps(struct chunk *c, int y, int x)
  */
 bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
 {
-	assert(square_in_bounds(c, y, x));
-
+	struct loc grid = loc(x, y);
 	bool removed = false;
 
 	/* Look at the traps in this grid */
 	struct trap *prev_trap = NULL;
-	struct trap *trap = square(c, loc(x, y)).trap;
+	struct trap *trap = square(c, grid).trap;
+
+	assert(square_in_bounds(c, grid));
 	while (trap) {
 		struct trap *next_trap = trap->next;
 
@@ -587,12 +589,13 @@ bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
 {
     bool trap_exists;
 	struct trap *current_trap = NULL;
+	struct loc grid = loc(x, y);
 
 	/* Bounds check */
-	assert(square_in_bounds(c, y, x));
+	assert(square_in_bounds(c, grid));
 
 	/* Look at the traps in this grid */
-	current_trap = square(c, loc(x, y)).trap;
+	current_trap = square(c, grid).trap;
 	while (current_trap) {
 		/* Get the next trap (may be NULL) */
 		struct trap *next_trap = current_trap->next;

@@ -170,17 +170,19 @@ static bool summon_possible(int y1, int x1)
 	/* Start at the location, and check 2 grids in each dir */
 	for (y = y1 - 2; y <= y1 + 2; y++) {
 		for (x = x1 - 2; x <= x1 + 2; x++) {
+			struct loc grid = loc(x, y);
+
 			/* Ignore illegal locations */
-			if (!square_in_bounds(cave, y, x)) continue;
+			if (!square_in_bounds(cave, grid)) continue;
 
 			/* Only check a circular area */
-			if (distance(loc(x1, y1), loc(x, y)) > 2) continue;
+			if (distance(loc(x1, y1), grid) > 2) continue;
 
 			/* Hack: no summon on glyph of warding */
-			if (square_iswarded(cave, y, x)) continue;
+			if (square_iswarded(cave, grid)) continue;
 
 			/* If it's empty floor grid in line of sight, we're good */
-			if (square_isempty(cave, loc(x, y)) && los(cave, loc(x1, y1), loc(x, y)))
+			if (square_isempty(cave, grid) && los(cave, loc(x1, y1), grid))
 				return (true);
 		}
 	}

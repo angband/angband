@@ -68,7 +68,7 @@ static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t 
 {
 	const struct loc grid = context->grid;
 
-	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, grid.y, grid.x)) {
+	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, grid)) {
 		/* Turn off the light */
 		sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
 	}
@@ -89,7 +89,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 	const struct loc grid = context->grid;
 
 	/* Non-walls (etc) */
-	if (square_ispassable(cave, grid.y, grid.x) && !square_seemslikewall(cave, grid.y, grid.x))
+	if (square_ispassable(cave, grid) && !square_seemslikewall(cave, grid))
 		return;
 
 	/* Permanent walls */
@@ -158,7 +158,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 
 		/* Destroy the wall */
 		square_destroy_wall(cave, grid.y, grid.x);
-	} else if (square_iswall(cave, grid.y, grid.x)) {
+	} else if (square_iswall(cave, grid)) {
 		/* Message */
 		if (square_isseen(cave, grid.y, grid.x)) {
 			msg("The wall turns into mud!");
@@ -225,7 +225,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 
 		/* Disable the trap */
 		square_disable_trap(cave, grid.y, grid.x);
-	} else if (square_islockeddoor(cave, grid.y, grid.x)) {
+	} else if (square_islockeddoor(cave, grid)) {
 		/* Unlock the door */
 		square_unlock_door(cave, grid.y, grid.x);
 
@@ -332,7 +332,7 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 
 	/* Sufficiently intense cold can solidify lava. */
 	if ((context->dam > randint1(900) + 300) &&
-		square_isfiery(cave, context->grid.y, context->grid.x)) {
+		square_isfiery(cave, context->grid)) {
 		bool occupied = square_isoccupied(cave, context->grid);
 
 		square_unmark(cave, context->grid.y, context->grid.x);
@@ -449,7 +449,7 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 
 	/* Sufficiently intense cold can solidify lava. */
 	if ((context->dam > randint1(900) + 300) &&
-		square_isfiery(cave, context->grid.y, context->grid.x)) {
+		square_isfiery(cave, context->grid)) {
 		bool occupied = square_isoccupied(cave, context->grid);
 
 		square_unmark(cave, context->grid.y, context->grid.x);

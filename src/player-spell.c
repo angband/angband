@@ -393,7 +393,7 @@ s16b spell_chance(int spell_index)
 
 	/* Necromancers are punished by being on lit squares */
 	if (player_has(player, PF_UNLIGHT) &&
-		square_islit(cave, player->py, player->px)) {
+		square_islit(cave, loc(player->px, player->py))) {
 		chance += 25;
 	}
 

@@ -55,14 +55,16 @@ static int dir_search[8] = {2,4,6,8,1,3,7,9};
 
 static bool is_valid_pf(int y, int x)
 {
+	struct loc grid = loc(x, y);
+
 	/* Unvisited means allowed */
-	if (!square_isknown(cave, loc(x, y))) return (true);
+	if (!square_isknown(cave, grid)) return (true);
 
 	/* No damaging terrain */
-	if (!square_isdamaging(cave, y, x)) return (true);
+	if (!square_isdamaging(cave, grid)) return (true);
 
 	/* Require open space */
-	return (square_ispassable(cave, y, x));
+	return (square_ispassable(cave, grid));
 }
 
 static void fill_terrain_info(void)
@@ -404,10 +406,10 @@ static int see_wall(int dir, int y, int x)
 	x += ddx[dir];
 
 	/* Illegal grids are not known walls XXX XXX XXX */
-	if (!square_in_bounds(cave, y, x)) return (false);
+	if (!square_in_bounds(cave, loc(x, y))) return (false);
 
 	/* Non-wall grids are not known walls */
-	if (!square_seemslikewall(cave, y, x))
+	if (!square_seemslikewall(cave, loc(x, y)))
 		return false;
 
 	/* Unknown walls are not known walls */
@@ -568,7 +570,7 @@ static bool run_test(void)
 
 		/* Check memorized grids */
 		if (square_isknown(cave, loc(col, row))) {
-			bool notice = square_isinteresting(cave, row, col);
+			bool notice = square_isinteresting(cave, loc(col, row));
 
 			/* Interesting feature */
 			if (notice) return (true);
@@ -578,7 +580,7 @@ static bool run_test(void)
 		}
 
 		/* Analyze unknown grids and floors */
-		if (inv || square_ispassable(cave, row, col)) {
+		if (inv || square_ispassable(cave, loc(col, row))) {
 			/* Looking for open area */
 			if (run_open_area) {
 				/* Nothing */
@@ -647,7 +649,7 @@ static bool run_test(void)
 			/* Unknown grid or non-wall */
 			/* Was: square_ispassable(cave, row, col) */
 			if (!square_isknown(cave, loc(col, row)) ||
-			    (square_ispassable(cave, row, col))) {
+			    (square_ispassable(cave, loc(col, row)))) {
 				/* Looking to break right */
 				if (run_break_right) {
 					return (true);
@@ -670,7 +672,7 @@ static bool run_test(void)
 			/* Unknown grid or non-wall */
 			/* Was: square_ispassable(cave, row, col) */
 			if (!square_isknown(cave, loc(col, row)) ||
-			    (square_ispassable(cave, row, col))) {
+			    (square_ispassable(cave, loc(col, row)))) {
 				/* Looking to break left */
 				if (run_break_left) {
 					return (true);
@@ -756,7 +758,7 @@ void run_step(int dir)
 			if (pf_result_index == 0) {
 				/* Known wall */
 				if (square_isknown(cave, loc(x, y)) &&
-					!square_ispassable(cave, y, x)) {
+					!square_ispassable(cave, loc(x, y))) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = false;
 					return;
@@ -776,7 +778,7 @@ void run_step(int dir)
 
 				/* Known wall */
 				if (square_isknown(cave, loc(x, y)) &&
-					!square_ispassable(cave, y, x)) {
+					!square_ispassable(cave, loc(x, y))) {
 					disturb(player, 0);
 					player->upkeep->running_withpathfind = false;
 					return;
@@ -809,7 +811,7 @@ void run_step(int dir)
 
 				/* Known wall, so run the direction we were going */
 				if (square_isknown(cave, loc(x, y)) &&
-					!square_ispassable(cave, y, x)) {
+					!square_ispassable(cave, loc(x, y))) {
 					player->upkeep->running_withpathfind = false;
 					run_init(pf_result[pf_result_index] - '0');
 				}

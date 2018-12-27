@@ -138,7 +138,7 @@ static void build_streamer(struct chunk *c, int feat, int chance)
 		x += ddx[dir];
 
 		/* Stop at dungeon edge */
-		if (!square_in_bounds(c, y, x)) break;
+		if (!square_in_bounds(c, loc(x, y))) break;
     }
 }
 
@@ -210,7 +210,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 		tmp_row = row1 + row_dir;
 		tmp_col = col1 + col_dir;
 
-		while (!square_in_bounds(c, tmp_row, tmp_col)) {
+		while (!square_in_bounds(c, loc(tmp_col, tmp_row))) {
 			/* Get the correct direction */
 			correct_dir(&row_dir, &col_dir, row1, col1, row2, col2);
 
@@ -240,7 +240,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 			x = tmp_col + col_dir;
 
 			/* Stay in bounds */
-			if (!square_in_bounds(c, y, x)) continue;
+			if (!square_in_bounds(c, loc(x, y))) continue;
  
 			/* Hack -- Avoid solid permanent walls */
 			if (square_isperm(c, loc(x, y))) continue;
@@ -367,7 +367,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 static int next_to_corr(struct chunk *c, int y1, int x1)
 {
     int i, k = 0;
-    assert(square_in_bounds(c, y1, x1));
+    assert(square_in_bounds(c, loc(x1, y1)));
 
     /* Scan adjacent grids */
     for (i = 0; i < 4; i++) {
@@ -393,12 +393,15 @@ static int next_to_corr(struct chunk *c, int y1, int x1)
  */
 static bool possible_doorway(struct chunk *c, int y, int x)
 {
-    assert(square_in_bounds(c, y, x));
+	struct loc grid = loc(x, y);
+    assert(square_in_bounds(c, grid));
     if (next_to_corr(c, y, x) < 2)
 		return false;
-    else if (square_isstrongwall(c, y - 1, x) && square_isstrongwall(c, y + 1, x))
+    else if (square_isstrongwall(c, next_grid(grid, DIR_N)) &&
+			 square_isstrongwall(c, next_grid(grid, DIR_S)))
 		return true;
-    else if (square_isstrongwall(c, y, x - 1) && square_isstrongwall(c, y, x + 1))
+    else if (square_isstrongwall(c, next_grid(grid, DIR_W)) &&
+			 square_isstrongwall(c, next_grid(grid, DIR_E)))
 		return true;
     else
 		return false;
@@ -414,11 +417,11 @@ static bool possible_doorway(struct chunk *c, int y, int x)
 static void try_door(struct chunk *c, int y, int x)
 {
 	struct loc grid = loc(x, y);
-    assert(square_in_bounds(c, y, x));
+    assert(square_in_bounds(c, grid));
 
-    if (square_isstrongwall(c, y, x)) return;
+    if (square_isstrongwall(c, grid)) return;
     if (square_isroom(c, y, x)) return;
-    if (square_isplayertrap(c, y, x)) return;
+    if (square_isplayertrap(c, grid)) return;
     if (square_isdoor(c, grid)) return;
 
     if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
@@ -686,10 +689,11 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
  * walking diagonally around them).
  */
 static bool lab_is_tunnel(struct chunk *c, int y, int x) {
-    bool west = square_isopen(c, y, x - 1);
-    bool east = square_isopen(c, y, x + 1);
-    bool north = square_isopen(c, y - 1, x);
-    bool south = square_isopen(c, y + 1, x);
+ 	struct loc grid = loc(x, y);
+	bool west = square_isopen(c, next_grid(grid, DIR_W));
+    bool east = square_isopen(c, next_grid(grid, DIR_E));
+    bool north = square_isopen(c, next_grid(grid, DIR_N));
+    bool south = square_isopen(c, next_grid(grid, DIR_S));
 
     return north == south && west == east && north != west;
 }
@@ -1010,7 +1014,7 @@ static int ignore_point(struct chunk *c, int colors[], int y, int x) {
     if (y < 0 || x < 0 || y >= h || x >= w) return true;
     if (colors[n]) return true;
     //if (square_isvault(c, y, x)) return false;
-    if (square_ispassable(c, y, x)) return false;
+    if (square_ispassable(c, grid)) return false;
     if (square_isdoor(c, grid)) return false;
     return true;
 }
@@ -1506,7 +1510,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 			struct loc grid = loc(x, y);
 			if (square_isfloor(c, grid))
 				sqinfo_off(square(c, grid).info, SQUARE_ROOM);
-			else if (!square_isperm(c, loc(x, y)) && !square_isfiery(c, y, x))
+			else if (!square_isperm(c, grid) && !square_isfiery(c, grid))
 				square_set_feat(c, y, x, FEAT_PERM);
 		}
 	}

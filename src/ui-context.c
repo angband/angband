@@ -425,6 +425,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	bool allowed = true;
 	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
+	struct loc grid = loc(x, y);
 	struct object *square_obj = square_object(c, y, x);
 
 	m = menu_dynamic_new();
@@ -439,7 +440,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'l' : 'x';
 	menu_dynamic_add_label(m, "Look At", cmdkey, MENU_VALUE_LOOK, labels);
 
-	if (square(c, loc(x, y)).mon)
+	if (square(c, grid).mon)
 		/* '/' is used for recall in both keymaps. */
 		menu_dynamic_add_label(m, "Recall Info", '/', MENU_VALUE_RECALL,
 							   labels);
@@ -451,7 +452,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 	if (adjacent) {
 		struct object *obj = chest_check(y, x, CHEST_ANY);
-		ADD_LABEL((square(c, loc(x, y)).mon) ? "Attack" : "Alter", CMD_ALTER,
+		ADD_LABEL((square(c, grid).mon) ? "Attack" : "Alter", CMD_ALTER,
 				  MN_ROW_VALID);
 
 		if (obj && !ignore_item_ok(obj)) {
@@ -467,19 +468,19 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 			}
 		}
 
-		if (square_isdisarmabletrap(c, loc(x, y))) {
+		if (square_isdisarmabletrap(c, grid)) {
 			ADD_LABEL("Disarm", CMD_DISARM, MN_ROW_VALID);
 			ADD_LABEL("Jump Onto", CMD_JUMP, MN_ROW_VALID);
 		}
 
-		if (square_isopendoor(c, loc(x, y))) {
+		if (square_isopendoor(c, grid)) {
 			ADD_LABEL("Close", CMD_CLOSE, MN_ROW_VALID);
 		}
-		else if (square_iscloseddoor(c, loc(x, y))) {
+		else if (square_iscloseddoor(c, grid)) {
 			ADD_LABEL("Open", CMD_OPEN, MN_ROW_VALID);
 			ADD_LABEL("Lock", CMD_DISARM, MN_ROW_VALID);
 		}
-		else if (square_isdiggable(c, y, x)) {
+		else if (square_isdiggable(c, grid)) {
 			ADD_LABEL("Tunnel", CMD_TUNNEL, MN_ROW_VALID);
 		}
 
@@ -508,7 +509,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 	if (player->timed[TMD_IMAGE]) {
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
-	} else if (square(c, loc(x, y)).mon) {
+	} else if (square(c, grid).mon) {
 		char m_name[80];
 		struct monster *mon = square_monster(c, y, x);
 
@@ -531,7 +532,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		const char *name = square_apparent_name(c, player, y, x);
 
 		/* Hack -- special introduction for store doors */
-		if (square_isshop(cave, loc(x, y))) {
+		if (square_isshop(cave, grid)) {
 			prt(format("(Enter to select command, ESC to cancel) You see the entrance to the %s:", name), 0, 0);
 		} else {
 			prt(format("(Enter to select command, ESC to cancel) You see %s %s:", (is_a_vowel(name[0])) ? "an" : "a", name), 0, 0);
