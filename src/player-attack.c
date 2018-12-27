@@ -288,7 +288,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 		if (square_ispassable(cave, loc(x, y))) {
 			/* Monster there - current monster takes all the damage
 			 * Note we could have more fun here by pushing it back... */
-			if (square_monster(cave, y, x)) {
+			if (square_monster(cave, loc(x, y))) {
 				if (mon_take_hit(mon, dmg * power, fear, NULL)) return true;
 				break;
 			} else {
@@ -383,7 +383,7 @@ static bool blow_after_effects(int y, int x, bool quake)
 		effect_simple(EF_EARTHQUAKE, source_player(), "0", 0, 10, 0, 0, 0, NULL);
 
 		/* Monster may be dead or moved */
-		if (!square_monster(cave, y, x))
+		if (!square_monster(cave, loc(x, y)))
 			return true;
 	}
 
@@ -422,7 +422,7 @@ static bool py_attack_real(struct player *p, int y, int x, bool *fear)
 	size_t i;
 
 	/* Information about the target of the attack */
-	struct monster *mon = square_monster(cave, y, x);
+	struct monster *mon = square_monster(cave, loc(x, y));
 	char m_name[80];
 	bool stop = false;
 
@@ -676,7 +676,7 @@ void py_attack(struct player *p, int y, int x)
 	int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
 	int blows = 0;
 	bool fear = false;
-	struct monster *mon = square_monster(cave, y, x);
+	struct monster *mon = square_monster(cave, loc(x, y));
 
 	/* Disturb the player */
 	disturb(p, 0);
@@ -806,7 +806,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 		event_signal_missile(EVENT_MISSILE, obj, see, y, x);
 
 		/* Try the attack on the monster at (x, y) if any */
-		mon = square_monster(cave, y, x);
+		mon = square_monster(cave, path_g[i]);
 		if (mon) {
 			int visible = monster_is_visible(mon);
 
@@ -914,7 +914,7 @@ static struct attack_result make_ranged_shot(struct player *p,
 	char *hit_verb = mem_alloc(20 * sizeof(char));
 	struct attack_result result = {false, 0, 0, hit_verb};
 	struct object *bow = equipped_item_by_slot_name(p, "shooting");
-	struct monster *mon = square_monster(cave, y, x);
+	struct monster *mon = square_monster(cave, loc(x, y));
 	int chance = chance_of_missile_hit(p, ammo, bow, y, x);
 	int multiplier = p->state.ammo_mult;
 	int b = 0, s = 0;
@@ -948,7 +948,7 @@ static struct attack_result make_ranged_throw(struct player *p,
 {
 	char *hit_verb = mem_alloc(20*sizeof(char));
 	struct attack_result result = {false, 0, 0, hit_verb};
-	struct monster *mon = square_monster(cave, y, x);
+	struct monster *mon = square_monster(cave, loc(x, y));
 	int chance = chance_of_missile_hit(p, obj, NULL, y, x);
 	int multiplier = 1;
 	int b = 0, s = 0;

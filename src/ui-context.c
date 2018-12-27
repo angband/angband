@@ -290,7 +290,7 @@ int context_menu_player(int mx, int my)
 	menu_dynamic_add_label(m, "Inventory", 'i', MENU_VALUE_INVENTORY, labels);
 
 	/* if object under player add pickup option */
-	obj = square_object(cave, player->py, player->px);
+	obj = square_object(cave, loc(player->px, player->py));
 	if (obj && !ignore_item_ok(obj)) {
 			menu_row_validity_t valid;
 
@@ -426,7 +426,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	int mode = OPT(player, rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 	unsigned char cmdkey;
 	struct loc grid = loc(x, y);
-	struct object *square_obj = square_object(c, y, x);
+	struct object *square_obj = square_object(c, grid);
 
 	m = menu_dynamic_new();
 	if (!m)
@@ -511,7 +511,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
 	} else if (square(c, grid).mon) {
 		char m_name[80];
-		struct monster *mon = square_monster(c, y, x);
+		struct monster *mon = square_monster(c, grid);
 
 		/* Get the monster name ("a kobold") */
 		monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
@@ -529,7 +529,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 				   o_name), 0, 0);
 	} else {
 		/* Feature (apply mimic) */
-		const char *name = square_apparent_name(c, player, y, x);
+		const char *name = square_apparent_name(c, player, grid);
 
 		/* Hack -- special introduction for store doors */
 		if (square_isshop(cave, grid)) {
@@ -598,7 +598,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 
 		case MENU_VALUE_RECALL: {
 			/* Recall monster Info */
-			struct monster *mon = square_monster(c, y, x);
+			struct monster *mon = square_monster(c, grid);
 			if (mon) {
 				struct monster_lore *lore = get_lore(mon->race);
 				lore_show_interactive(mon->race, lore);
@@ -730,7 +730,7 @@ int context_menu_object(struct object *obj)
 				menu_dynamic_add_label(m, "Drop All", cmdkey,
 									   MENU_VALUE_DROP_ALL, labels);
 			}
-		} else if (square_shopnum(cave, player->py, player->px) == STORE_HOME) {
+		} else if (square_shopnum(cave, loc(player->px, player->py)) == STORE_HOME) {
 			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
 			if (obj->number > 1) {
@@ -876,7 +876,7 @@ int context_menu_object(struct object *obj)
 		if (selected == CMD_DROP &&
 			square_isshop(cave, loc(player->px, player->py))) {
 			struct command *gc = cmdq_peek();
-			if (square_shopnum(cave, player->py, player->px) == STORE_HOME)
+			if (square_shopnum(cave, loc(player->px, player->py)) == STORE_HOME)
 				gc->code = CMD_STASH;
 			else
 				gc->code = CMD_SELL;
@@ -1022,7 +1022,7 @@ void textui_process_click(ui_event e)
 			}
 		} else {
 			if (e.mouse.button == 1) {
-				if (square_object(cave, y, x)) {
+				if (square_object(cave, loc(x, y))) {
 					cmdq_push(CMD_PICKUP);
 				} else {
 					cmdq_push(CMD_HOLD);
@@ -1066,7 +1066,7 @@ void textui_process_click(ui_event e)
 			}
 		}
 	} else if (e.mouse.button == 2) {
-		struct monster *m = square_monster(cave, y, x);
+		struct monster *m = square_monster(cave, loc(x, y));
 		if (m && target_able(m)) {
 			/* Set up target information */
 			monster_race_track(player->upkeep, m->race);

@@ -173,7 +173,7 @@ void delete_monster_idx(int m_idx)
 
 	/* Delete mimicked objects */
 	if (mon->mimicked_obj) {
-		square_excise_object(cave, y, x, mon->mimicked_obj);
+		square_excise_object(cave, mon->grid, mon->mimicked_obj);
 		delist_object(cave, mon->mimicked_obj);
 		object_delete(&mon->mimicked_obj);
 	}
@@ -851,7 +851,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 	struct loc grid = loc(x, y);
 
 	assert(square_in_bounds(c, grid));
-	assert(!square_monster(c, y, x));
+	assert(!square_monster(c, grid));
 
 	/* Get a new record */
 	m_idx = mon_pop(c);
@@ -866,8 +866,8 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 
 	/* Set the location */
 	c->squares[y][x].mon = new_mon->midx;
-	new_mon->grid = loc(x, y);
-	assert(square_monster(c, y, x) == new_mon);
+	new_mon->grid = grid;
+	assert(square_monster(c, grid) == new_mon);
 
 	update_mon(new_mon, c, true);
 
@@ -957,7 +957,7 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 	assert(race && race->name);
 
 	/* Not where monsters already are */
-	if (square_monster(c, y, x))
+	if (square_monster(c, grid))
 		return false;
 
 	/* Not where the player already is */

@@ -234,11 +234,11 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 						square(source, loc(x, y)).info);
 
 			/* Dungeon objects */
-			if (square_object(source, y, x)) {
+			if (square_object(source, loc(x, y))) {
 				struct object *obj;
-				dest->squares[dest_y][dest_x].obj = square_object(source, y, x);
+				dest->squares[dest_y][dest_x].obj = square_object(source, loc(x, y));
 
-				for (obj = square_object(source, y, x); obj; obj = obj->next) {
+				for (obj = square_object(source, loc(x, y)); obj; obj = obj->next) {
 					/* Adjust position */
 					obj->iy = dest_y;
 					obj->ix = dest_x;
@@ -248,7 +248,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 			/* Monsters */
 			if (square(source, loc(x, y)).mon > 0) {
-				struct monster *source_mon = square_monster(source, y, x);
+				struct monster *source_mon = square_monster(source, loc(x, y));
 				struct monster *dest_mon = NULL;
 				int idx;
 
@@ -333,10 +333,11 @@ void chunk_validate_objects(struct chunk *c) {
 
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			for (obj = square_object(c, y, x); obj; obj = obj->next)
+			struct loc grid = loc(x, y);
+			for (obj = square_object(c, grid); obj; obj = obj->next)
 				assert(obj->tval != 0);
-			if (square(c, loc(x, y)).mon > 0) {
-				struct monster *mon = square_monster(c, y, x);
+			if (square(c, grid).mon > 0) {
+				struct monster *mon = square_monster(c, grid);
 				if (mon->held_obj)
 					for (obj = mon->held_obj; obj; obj = obj->next)
 						assert(obj->tval != 0);

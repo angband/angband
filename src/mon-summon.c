@@ -455,7 +455,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		return (0);
 
 	/* Success, return the level of the monster */
-	mon = square_monster(cave, y, x);
+	mon = square_monster(cave, loc(x, y));
 
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including slowing down faster monsters for one turn */

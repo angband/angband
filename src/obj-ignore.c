@@ -203,7 +203,7 @@ void rune_autoinscribe(int i)
 
 	/* Autoinscribe each object on the ground */
 	if (cave)
-		for (obj = square_object(cave, py, px); obj; obj = obj->next)
+		for (obj = square_object(cave, loc(px, py)); obj; obj = obj->next)
 			if (object_has_rune(obj, i))
 				rune_add_autoinscription(obj, i);
 
@@ -341,7 +341,7 @@ void autoinscribe_ground(void)
 	struct object *obj;
 
 	/* Autoinscribe each object in the pile */
-	for (obj = square_object(cave, py, px); obj; obj = obj->next)
+	for (obj = square_object(cave, loc(px, py)); obj; obj = obj->next)
 		apply_autoinscription(obj);
 }
 

@@ -751,10 +751,10 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		square_excise_object(player->cave, usable->iy, usable->ix,
+		square_excise_object(player->cave, loc(usable->ix, usable->iy),
 							 usable->known);
 		delist_object(player->cave, usable->known);
-		square_excise_object(cave, usable->iy, usable->ix, usable);
+		square_excise_object(cave, loc(usable->ix, usable->iy), usable);
 		delist_object(cave, usable);
 		*none_left = true;
 
@@ -801,9 +801,10 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
  */
 static struct object *floor_get_oldest_ignored(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	struct object *obj, *ignore = NULL;
 
-	for (obj = square_object(c, y, x); obj; obj = obj->next)
+	for (obj = square_object(c, grid); obj; obj = obj->next)
 		if (ignore_item_ok(obj))
 			ignore = obj;
 
@@ -828,7 +829,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 		return false;
 
 	/* Scan objects in that grid for combination */
-	for (obj = square_object(c, y, x); obj; obj = obj->next) {
+	for (obj = square_object(c, grid); obj; obj = obj->next) {
 		/* Check for combination */
 		if (object_similar(obj, drop, OSTACK_FLOOR)) {
 			/* Combine the items */
@@ -856,7 +857,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 	if (n >= z_info->floor_size || (!OPT(player, birth_stacking) && n)) {
 		/* Delete the oldest ignored object */
 		if (ignore) {
-			square_excise_object(c, y, x, ignore);
+			square_excise_object(c, grid, ignore);
 			delist_object(c, ignore);
 			object_delete(&ignore);
 		} else {
@@ -906,7 +907,7 @@ static void floor_carry_fail(struct object *drop, bool broke)
 		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
 		msg("The %s %s.", o_name, verb);
 		if (known->iy && known->ix)
-			square_excise_object(player->cave, known->iy, known->ix, known);
+			square_excise_object(player->cave, loc(known->ix, known->iy), known);
 		delist_object(player->cave, known);
 		object_delete(&known);
 	}
@@ -950,7 +951,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 				continue;
 
 			/* Analyse the grid for carrying the new object */
-			for (obj = square_object(cave, try.y, try.x); obj; obj = obj->next){
+			for (obj = square_object(cave, try); obj; obj = obj->next){
 				/* Check for possible combination */
 				if (object_similar(obj, drop, OSTACK_FLOOR))
 					combine = true;
@@ -1064,10 +1065,11 @@ void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 void push_object(int y, int x)
 {
 	/* Save the original terrain feature */
-	struct feature *feat_old = square_feat(cave, y, x);
-	struct object *obj = square_object(cave, y, x);
+	struct loc grid = loc(x, y);
+	struct feature *feat_old = square_feat(cave, grid);
+	struct object *obj = square_object(cave, grid);
 	struct queue *queue = q_new(z_info->floor_size);
-	struct trap *trap = square_trap(cave, y, x);
+	struct trap *trap = square_trap(cave, grid);
 
 	/* Push all objects on the square, stripped of pile info, into the queue */
 	while (obj) {
@@ -1102,7 +1104,7 @@ void push_object(int y, int x)
 
 	/* Reset cave feature, remove trap if needed */
 	square_set_feat(cave, y, x, feat_old->fidx);
-	if (trap && !square_istrappable(cave, loc(x, y))) {
+	if (trap && !square_istrappable(cave, grid)) {
 		square_remove_all_traps(cave, y, x);
 	}
 
@@ -1144,7 +1146,7 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
 	if (!square_in_bounds(cave, loc(px, py))) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, py, px); obj; obj = obj->next) {
+	for (obj = square_object(cave, loc(px, py)); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
@@ -1183,7 +1185,7 @@ int scan_distant_floor(struct object **items, int max_size, int y, int x)
 	if (!square_in_bounds(player->cave, grid)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(player->cave, grid); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
@@ -1269,7 +1271,7 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 bool item_is_available(struct object *obj)
 {
 	if (object_is_carried(player, obj)) return true;
-	if (cave && square_holds_object(cave, player->py, player->px, obj))
+	if (cave && square_holds_object(cave, loc(player->px, player->py), obj))
 		return true;
 	return false;
 }

@@ -98,14 +98,15 @@ bool findpath(int y, int x)
 	int dir = 10;
 	bool try_again;
 	int cur_distance;
+	struct loc grid = loc(x, y);
 
 	fill_terrain_info();
 
 	terrain[player->py - oy][player->px - ox] = 1;
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey)) {
-		if ((square(cave, loc(x, y)).mon > 0) &&
-			monster_is_visible(square_monster(cave, y, x))) {
+		if ((square(cave, grid).mon > 0) &&
+			monster_is_visible(square_monster(cave, grid))) {
 			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
 		}
 	} else {
@@ -554,14 +555,14 @@ static bool run_test(void)
 
 		/* Visible monsters abort running */
 		if (square(cave, loc(col, row)).mon > 0) {
-			struct monster *mon = square_monster(cave, row, col);
+			struct monster *mon = square_monster(cave, loc(col, row));
 			if (monster_is_visible(mon)) {
 				return (true);
 			}
 		}
 
 		/* Visible objects abort running */
-		for (obj = square_object(cave, row, col); obj; obj = obj->next)
+		for (obj = square_object(cave, loc(col, row)); obj; obj = obj->next)
 			/* Visible object */
 			if (obj->known && !ignore_item_ok(obj)) return (true);
 
@@ -631,7 +632,7 @@ static bool run_test(void)
 
 		/* Obvious monsters abort running */
 		if (square(cave, loc(col, row)).mon > 0) {
-			struct monster *mon = square_monster(cave, row, col);
+			struct monster *mon = square_monster(cave, loc(col, row));
 			if (monster_is_obvious(mon))
 				return (true);
 		}
@@ -786,7 +787,7 @@ void run_step(int dir)
 
 				/* Visible monsters abort running */
 				if (square(cave, loc(x, y)).mon > 0) {
-					struct monster *mon = square_monster(cave, y, x);
+					struct monster *mon = square_monster(cave, loc(x, y));
 
 					/* Visible monster */
 					if (monster_is_visible(mon)) {
@@ -797,7 +798,7 @@ void run_step(int dir)
 				}
 
 				/* Visible objects abort running */
-				for (obj = square_object(cave, y, x); obj; obj = obj->next)
+				for (obj = square_object(cave, loc(x, y)); obj; obj = obj->next)
 					/* Visible object */
 					if (obj->known && !ignore_item_ok(obj)) {
 					disturb(player, 0);

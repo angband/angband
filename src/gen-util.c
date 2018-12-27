@@ -349,8 +349,8 @@ static bool find_start(struct chunk *c, int *y, int *x)
 					square_isno_stairs(c, loc(*x, *y))) {
 					continue;
 				}
-				total_walls = square_num_walls_adjacent(c, *y, *x) +
-						square_num_walls_diagonal(c, *y, *x);
+				total_walls = square_num_walls_adjacent(c, loc(*x, *y)) +
+					square_num_walls_diagonal(c, loc(*x, *y));
 
 				if (total_walls == walls) {
 					return true;
@@ -606,8 +606,8 @@ void alloc_stairs(struct chunk *c, int feat, int num)
 						square_isno_stairs(c, loc(x, y))) {
 						continue;
 					}
-					total_walls = square_num_walls_adjacent(c, y, x) +
-						square_num_walls_diagonal(c, y, x);
+					total_walls = square_num_walls_adjacent(c, loc(x, y)) +
+						square_num_walls_diagonal(c, loc(x, y));
 
 					if (total_walls == walls) {
 						place_stairs(c, y, x, feat);

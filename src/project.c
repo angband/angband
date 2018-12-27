@@ -922,7 +922,7 @@ bool project(struct source origin, int rad, struct loc finish,
 				continue;
 
 			/* Check there is actually a monster here */
-			mon = square_monster(cave, blast_grid[i].y, blast_grid[i].x);
+			mon = square_monster(cave, blast_grid[i]);
 			if (mon == NULL)
 				continue;
 
@@ -951,7 +951,7 @@ bool project(struct source origin, int rad, struct loc finish,
 
 			/* Track if possible */
 			if (square(cave, loc(x, y)).mon > 0) {
-				struct monster *mon = square_monster(cave, y, x);
+				struct monster *mon = square_monster(cave, loc(x, y));
 
 				/* Recall and track */
 				if (monster_is_visible(mon)) {

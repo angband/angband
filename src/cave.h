@@ -372,21 +372,21 @@ bool square_suits_stairs_ok(struct chunk *c, struct loc grid);
 
 
 struct square square(struct chunk *c, struct loc grid);
-struct feature *square_feat(struct chunk *c, int y, int x);
-struct monster *square_monster(struct chunk *c, int y, int x);
-struct object *square_object(struct chunk *c, int y, int x);
-struct trap *square_trap(struct chunk *c, int y, int x);
-bool square_holds_object(struct chunk *c, int y, int x, struct object *obj);
-void square_excise_object(struct chunk *c, int y, int x, struct object *obj);
-void square_excise_pile(struct chunk *c, int y, int x);
-void square_sense_pile(struct chunk *c, int y, int x);
-void square_know_pile(struct chunk *c, int y, int x);
-int square_num_walls_adjacent(struct chunk *c, int y, int x);
-int square_num_walls_diagonal(struct chunk *c, int y, int x);
+struct feature *square_feat(struct chunk *c, struct loc grid);
+struct monster *square_monster(struct chunk *c, struct loc grid);
+struct object *square_object(struct chunk *c, struct loc grid);
+struct trap *square_trap(struct chunk *c, struct loc grid);
+bool square_holds_object(struct chunk *c, struct loc grid, struct object *obj);
+void square_excise_object(struct chunk *c, struct loc grid, struct object *obj);
+void square_excise_pile(struct chunk *c, struct loc grid);
+void square_sense_pile(struct chunk *c, struct loc grid);
+void square_know_pile(struct chunk *c, struct loc grid);
+int square_num_walls_adjacent(struct chunk *c, struct loc grid);
+int square_num_walls_diagonal(struct chunk *c, struct loc grid);
 
-void square_set_feat(struct chunk *c, int y, int x, int feat);
 
 /* Feature placers */
+void square_set_feat(struct chunk *c, int y, int x, int feat);
 void square_add_trap(struct chunk *c, int y, int x);
 void square_add_glyph(struct chunk *c, int y, int x, int type);
 void square_add_stairs(struct chunk *c, int y, int x, int depth);
@@ -412,14 +412,14 @@ void square_destroy_rubble(struct chunk *c, int y, int x);
 void square_force_floor(struct chunk *c, int y, int x);
 
 
-int square_shopnum(struct chunk *c, int y, int x);
-int square_digging(struct chunk *c, int y, int x);
-const char *square_apparent_name(struct chunk *c, struct player *p, int y, int x);
+int square_shopnum(struct chunk *c, struct loc grid);
+int square_digging(struct chunk *c, struct loc grid);
+const char *square_apparent_name(struct chunk *c, struct player *p, struct loc grid);
 
-void square_memorize(struct chunk *c, int y, int x);
-void square_forget(struct chunk *c, int y, int x);
-void square_mark(struct chunk *c, int y, int x);
-void square_unmark(struct chunk *c, int y, int x);
+void square_memorize(struct chunk *c, struct loc grid);
+void square_forget(struct chunk *c, struct loc grid);
+void square_mark(struct chunk *c, struct loc grid);
+void square_unmark(struct chunk *c, struct loc grid);
 
 /* cave.c */
 int motion_dir(struct loc source, struct loc target);

@@ -296,9 +296,10 @@ static void log_all_objects(int level)
 
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
-			struct object *obj = square_object(cave, y, x);
+			struct loc grid = loc(x, y);
+			struct object *obj;
 
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+			for (obj = square_object(cave, grid); obj; obj = obj->next) {
 				/*	u32b o_power = 0; */
 
 /*				o_power = object_power(obj, false, NULL, true); */

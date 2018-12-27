@@ -502,7 +502,7 @@ static const project_object_handler_f object_handlers[] = {
 bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 			   const struct object *protected_obj)
 {
-	struct object *obj = square_object(cave, grid.y, grid.x);
+	struct object *obj = square_object(cave, grid);
 	bool obvious = false;
 
 	/* Scan all objects in the grid */
@@ -561,7 +561,7 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */
-				square_excise_object(cave, grid.y, grid.x, obj);
+				square_excise_object(cave, grid, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
 

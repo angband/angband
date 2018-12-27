@@ -1441,16 +1441,19 @@ static struct object *find_artifact(struct artifact *artifact)
 	struct object *obj;
 
 	/* Ground objects */
-	for (y = 1; y < cave->height; y++)
-		for (x = 1; x < cave->width; x++)
-			for (obj = square_object(cave, y, x); obj; obj = obj->next)
-				if (obj->artifact == artifact)
-					return obj;
+	for (y = 1; y < cave->height; y++) {
+		for (x = 1; x < cave->width; x++) {
+			struct loc grid = loc(x, y);
+			for (obj = square_object(cave, grid); obj; obj = obj->next) {
+				if (obj->artifact == artifact) return obj;
+			}
+		}
+	}
 
 	/* Player objects */
-	for (obj = player->gear; obj; obj = obj->next)
-		if (obj->artifact == artifact)
-			return obj;
+	for (obj = player->gear; obj; obj = obj->next) {
+		if (obj->artifact == artifact) return obj;
+	}
 
 	/* Monster objects */
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
@@ -1458,8 +1461,7 @@ static struct object *find_artifact(struct artifact *artifact)
 		obj = mon ? mon->held_obj : NULL;
 
 		while (obj) {
-			if (obj->artifact == artifact)
-				return obj;
+			if (obj->artifact == artifact) return obj;
 			obj = obj->next;
 		}
 	}
@@ -1467,9 +1469,9 @@ static struct object *find_artifact(struct artifact *artifact)
 	/* Store objects */
 	for (i = 0; i < MAX_STORES; i++) {
 		struct store *s = &stores[i];
-		for (obj = s->stock; obj; obj = obj->next)
-			if (obj->artifact == artifact)
-				return obj;
+		for (obj = s->stock; obj; obj = obj->next) {
+			if (obj->artifact == artifact) return obj;
+		}
 	}
 
 	return NULL;

@@ -705,7 +705,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
-		int ty = t_mon->grid.y, tx = t_mon->grid.x;
+		struct loc grid = t_mon->grid;
 		bool visible = monster_is_visible(mon) ||
 			rf_has(mon->race->flags, RF_HAS_LIGHT);
 		bool obvious = false;
@@ -783,7 +783,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 			}
 
 			/* Handle stun */
-			if (do_stun && square_monster(cave, ty, tx)) {
+			if (do_stun && square_monster(cave, grid)) {
 				/* Critical hit (zero if non-critical) */
 				int amt, tmp = monster_critical(dice, rlev, damage);
 
@@ -823,7 +823,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 		}
 
 		/* Skip the other blows if the target has moved or died */
-		if (!square_monster(cave, ty, tx)) break;
+		if (!square_monster(cave, grid)) break;
 	}
 
 	/* Blink away */

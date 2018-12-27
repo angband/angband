@@ -127,7 +127,8 @@ static int compare_monsters(const struct monster *mon1,
  */
 static bool monster_can_kill(struct chunk *c, struct monster *mon, int y, int x)
 {
-	struct monster *mon1 = square_monster(c, y, x);
+	struct loc grid = loc(x, y);
+	struct monster *mon1 = square_monster(c, grid);
 
 	/* No monster */
 	if (!mon1) return true;
@@ -145,7 +146,8 @@ static bool monster_can_kill(struct chunk *c, struct monster *mon, int y, int x)
  */
 static bool monster_can_move(struct chunk *c, struct monster *mon, int y, int x)
 {
-	struct monster *mon1 = square_monster(c, y, x);
+	struct loc grid = loc(x, y);
+	struct monster *mon1 = square_monster(c, grid);
 
 	/* No monster */
 	if (!mon1) return true;
@@ -167,7 +169,7 @@ static bool monster_hates_grid(struct chunk *c, struct monster *mon, int y,
 	struct loc grid = loc(x, y);
 	/* Only some creatures can handle damaging terrain */
 	if (square_isdamaging(c, grid) &&
-		!rf_has(mon->race->flags, square_feat(c, y, x)->resist_flag)) {
+		!rf_has(mon->race->flags, square_feat(c, grid)->resist_flag)) {
 		return true;
 	}
 	return false;
@@ -439,7 +441,7 @@ static bool get_move_find_safety(struct chunk *c, struct monster *mon)
 
 			/* Ignore damaging terrain if they can't handle it */
 			if (square_isdamaging(c, loc(x, y)) &&
-				!rf_has(mon->race->flags, square_feat(c, y, x)->resist_flag))
+				!rf_has(mon->race->flags, square_feat(c, loc(x, y))->resist_flag))
 				continue;
 
 			/* Check for absence of shot (more or less) */
@@ -1043,7 +1045,7 @@ static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
 			msg("The rune of protection is broken!");
 
 			/* Forget the rune */
-			square_forget(c, ny, nx);
+			square_forget(c, new);
 		}
 
 		/* Break the rune */
@@ -1062,7 +1064,8 @@ static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
 static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
 									 const char *m_name, int nx, int ny)
 {
-	struct monster *mon1 = square_monster(c, ny, nx);
+	struct loc new = loc(nx, ny);
+	struct monster *mon1 = square_monster(c, new);
 	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Kill weaker monsters */
@@ -1118,7 +1121,7 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 	bool visible = monster_is_visible(mon);
 
 	/* Learn about item pickup behavior */
-	for (obj = square_object(c, ny, nx); obj; obj = obj->next) {
+	for (obj = square_object(c, new); obj; obj = obj->next) {
 		if (!tval_is_money(obj) && visible) {
 			rf_on(lore->flags, RF_TAKE_ITEM);
 			rf_on(lore->flags, RF_KILL_ITEM);
@@ -1133,7 +1136,7 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 	}
 
 	/* Take or kill objects on the floor */
-	obj = square_object(c, ny, nx);
+	obj = square_object(c, new);
 	while (obj) {
 		char o_name[80];
 		bool safe = obj->artifact ? true : false;
@@ -1172,7 +1175,7 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 				msg("%s picks up %s.", m_name, o_name);
 
 			/* Carry the object */
-			square_excise_object(c, ny, nx, obj);
+			square_excise_object(c, new, obj);
 			monster_carry(c, mon, obj);
 			square_note_spot(c, new);
 			square_light_spot(c, new);
@@ -1182,7 +1185,7 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 				msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 
 			/* Delete the object */
-			square_excise_object(c, ny, nx, obj);
+			square_excise_object(c, new, obj);
 			delist_object(c, obj);
 			object_delete(&obj);
 			square_note_spot(c, new);
@@ -1316,7 +1319,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		}
 
 		/* A monster is in the way, try to push past/kill */
-		if (square_monster(c, ny, nx)) {
+		if (square_monster(c, loc(nx, ny))) {
 			did_something = monster_turn_try_push(c, mon, m_name, nx, ny);
 		} else {
 			/* Otherwise we can just move */
@@ -1325,7 +1328,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		}
 
 		/* Scan all objects in the grid, if we reached it */
-		if (mon == square_monster(c, ny, nx)) {
+		if (mon == square_monster(c, loc(nx, ny))) {
 			monster_desc(m_name, sizeof(m_name), mon,
 						 MDESC_CAPITAL | MDESC_IND_HID);
 			monster_turn_grab_objects(c, mon, m_name, nx, ny);

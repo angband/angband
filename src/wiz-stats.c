@@ -1402,14 +1402,15 @@ static void scan_for_objects(void)
 
 	for (y = 1; y < cave->height - 1; y++) {
 		for (x = 1; x < cave->width - 1; x++) {
+			struct loc grid = loc(x, y);
 			struct object *obj;
 
-			while ((obj = square_object(cave, y, x))) {
+			while ((obj = square_object(cave, grid))) {
 				/* Get data on the object */
 				get_obj_data(obj, y, x, false, false);
 
 				/* Delete the object */
-				square_excise_object(cave, y, x, obj);
+				square_excise_object(cave, grid, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
 			}

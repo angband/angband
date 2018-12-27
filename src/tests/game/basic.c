@@ -135,11 +135,11 @@ int test_drop_pickup(void *state) {
 		cmd_set_arg_item(cmdq_peek(), "item", player->upkeep->inven[0]);
 		cmd_set_arg_number(cmdq_peek(), "quantity", 1);
 		run_game_loop();
-		eq(square_object(cave, player->py, player->px)->number, 1);
+		eq(square_object(cave, loc(player->px, player->py))->number, 1);
 		cmdq_push(CMD_AUTOPICKUP);
 		run_game_loop();
 	}
-	null(square_object(cave, player->py, player->px));
+	null(square_object(cave, loc(player->px, player->py)));
 
 	ok;
 }
@@ -159,15 +159,15 @@ int test_drop_eat(void *state) {
 	cmd_set_arg_number(cmdq_peek(), "quantity",
 					   player->upkeep->inven[0]->number);
 	run_game_loop();
-	eq(square_object(cave, player->py, player->px)->number, num);
+	eq(square_object(cave, loc(player->px, player->py))->number, num);
 	cmdq_push(CMD_EAT);
 	cmd_set_arg_item(cmdq_peek(), "item",
-					 square_object(cave, player->py, player->px));
+					 square_object(cave, loc(player->px, player->py)));
 	run_game_loop();
 	if (num > 1) {
-		eq(square_object(cave, player->py, player->px)->number, num - 1);
+		eq(square_object(cave, loc(player->px, player->py))->number, num - 1);
 	} else {
-		null(square_object(cave, player->py, player->px));
+		null(square_object(cave, loc(player->px, player->py)));
 	}
 
 	ok;

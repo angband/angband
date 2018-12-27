@@ -1022,7 +1022,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 					size_t n;
 					struct connector *new = mem_zalloc(sizeof *new);
 					new->grid = grid;
-					new->feat = square_feat(chunk, y, x)->fidx;
+					new->feat = square_feat(chunk, grid)->fidx;
 					new->info = mem_zalloc(SQUARE_SIZE * sizeof(bitflag));
 					for (n = 0; n < SQUARE_SIZE; n++) {
 						new->info[n] = square(chunk, grid).info[n];
@@ -1200,7 +1200,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				/* Deal with artifacts */
 				for (y = 0; y < (*c)->height; y++) {
 					for (x = 0; x < (*c)->width; x++) {
-						struct object *obj = square_object(*c, y, x);
+						struct object *obj = square_object(*c, loc(x, y));
 						while (obj) {
 							if (obj->artifact) {
 								bool found = obj->known && obj->known->artifact;

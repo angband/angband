@@ -186,13 +186,10 @@ static void path_analyse(struct chunk *c, int y, int x)
 
 	/* Project along the path */
 	for (i = 0; i < path_n - 1; ++i) {
-		int ny = path_g[i].y;
-		int nx = path_g[i].x;
-
 		/* Forget grids which would block los */
 		if (square_iswall(player->cave, path_g[i])) {
 			sqinfo_off(square(c, path_g[i]).info, SQUARE_SEEN);
-			square_forget(c, ny, nx);
+			square_forget(c, path_g[i]);
 			square_light_spot(c, path_g[i]);
 		}
 	}
@@ -645,7 +642,7 @@ void become_aware(struct monster *mon)
 			obj->mimicking_m_idx = 0;
 			mon->mimicked_obj = NULL;
 
-			square_excise_object(cave, obj->iy, obj->ix, obj);
+			square_excise_object(cave, loc(obj->ix, obj->iy), obj);
 
 			/* Give the object to the monster if appropriate */
 			if (rf_has(mon->race->flags, RF_MIMIC_INV)) {
@@ -732,12 +729,14 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
  */
 static struct monster *get_injured_kin(struct chunk *c, const struct monster *mon, int x, int y)
 {
+	struct loc grid = loc(x, y);
+
 	/* Ignore the monster itself */
 	if (y == mon->grid.y && x == mon->grid.x)
 		return NULL;
 
 	/* Check kin */
-	struct monster *kin = square_monster(c, y, x);
+	struct monster *kin = square_monster(c, grid);
 	if (!kin)
 		return NULL;
 
@@ -745,7 +744,7 @@ static struct monster *get_injured_kin(struct chunk *c, const struct monster *mo
 		return NULL;
 
 	/* Check line of sight */
-	if (los(c, mon->grid, loc(x, y)) == false)
+	if (los(c, mon->grid, grid) == false)
 		return NULL;
 
 	/* Check injury */
@@ -753,7 +752,7 @@ static struct monster *get_injured_kin(struct chunk *c, const struct monster *mo
 		return NULL;
 
 	/* Check distance */
-	if (distance(mon->grid, loc(x, y)) > MAX_KIN_DISTANCE)
+	if (distance(mon->grid, grid) > MAX_KIN_DISTANCE)
 		return NULL;
 
 	return kin;

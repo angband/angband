@@ -489,7 +489,7 @@ bool player_attack_random_monster(struct player *p)
 	for (i = 0; i < 8; i++, dir++) {
 		int y = player->py + ddy_ddd[dir % 8];
 		int x = player->px + ddx_ddd[dir % 8];
-		if (square_monster(cave, y, x)) {
+		if (square_monster(cave, loc(x, y))) {
 			p->upkeep->energy_use = z_info->move_energy;
 			move_player(dir % 8, false);
 			return true;
@@ -615,9 +615,9 @@ void player_take_terrain_damage(struct player *p, int y, int x)
 	}
 
 	/* Damage the player and inventory */
-	take_hit(player, dam_taken, square_feat(cave, y, x)->die_msg);
+	take_hit(player, dam_taken, square_feat(cave, grid)->die_msg);
 	if (square_isfiery(cave, grid)) {
-		msg(square_feat(cave, y, x)->hurt_msg);
+		msg(square_feat(cave, grid)->hurt_msg);
 		inven_damage(player, PROJ_FIRE, dam_taken);
 	}
 }
@@ -1253,7 +1253,7 @@ void search(struct player *p)
 			}
 
 			/* Traps on chests */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+			for (obj = square_object(cave, grid); obj; obj = obj->next) {
 				if (!obj->known || !is_trapped_chest(obj))
 					continue;
 

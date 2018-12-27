@@ -170,10 +170,11 @@ void unlock_chest(struct object *obj)
  */
 struct object *chest_check(int y, int x, enum chest_query check_type)
 {
+	struct loc grid = loc(x, y);
 	struct object *obj;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(cave, grid); obj; obj = obj->next) {
 		/* Ignore if requested */
 		if (ignore_item_ok(obj)) continue;
 

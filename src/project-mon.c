@@ -149,10 +149,10 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				/* A monster is trying to pass. */
 				if (square(cave, loc(x, y)).mon > 0) {
 
-					struct monster *mon = square_monster(cave, y, x);
+					struct monster *mon = square_monster(cave, loc(x, y));
 
 					if (square(cave, loc(xx, yy)).mon > 0) {
-						struct monster *mon1 = square_monster(cave, yy, xx);
+						struct monster *mon1 = square_monster(cave, loc(xx, yy));
 
 						/* Monsters cannot pass by stronger monsters. */
 						if (mon1->race->mexp > mon->race->mexp)
@@ -167,7 +167,7 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				/* The player is trying to pass. */
 				if (square(cave, loc(x, y)).mon < 0) {
 					if (square(cave, loc(xx, yy)).mon > 0) {
-						struct monster *mon1 = square_monster(cave, yy, xx);
+						struct monster *mon1 = square_monster(cave, loc(xx, yy));
 
 						/* Players cannot pass by stronger monsters. */
 						if (mon1->race->level > player->lev * 2)
@@ -220,16 +220,8 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 		if (square(cave, loc(x, y)).mon < 0) {
 			msg("You are thrown into molten lava!");
 		} else if (square(cave, loc(x, y)).mon > 0) {
-			struct monster *mon = square_monster(cave, y, x);
-			bool fear = false;
-
-			if (!rf_has(mon->race->flags, RF_IM_FIRE)) {
-				mon_take_hit(mon, 100 + randint1(100), &fear, " is burnt up.");
-			}
-
-			if (fear && monster_is_visible(mon)) {
-				add_monster_message(mon, MON_MSG_FLEE_IN_TERROR, true);
-			}
+			struct monster *mon = square_monster(cave, loc(x, y));
+			monster_take_terrain_damage(mon);
 		}
 	}
 
@@ -1206,7 +1198,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 			delete_monster_idx(m_idx);
 			place_new_monster(cave, grid.y, grid.x, new, false, false,
 							  ORIGIN_DROP_POLY);
-			context->mon = square_monster(cave, grid.y, grid.x);
+			context->mon = square_monster(cave, grid);
 		} else {
 			add_monster_message(mon, hurt_msg, false);
 		}

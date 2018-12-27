@@ -299,7 +299,7 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 				object_delete(&destroyed->known);
 				object_delete(&destroyed);
 			} else {
-				square_excise_object(cave, obj->iy, obj->ix, obj);
+				square_excise_object(cave, loc(obj->ix, obj->iy), obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
 				square_note_spot(cave, loc(player->px, player->py));
@@ -1053,7 +1053,7 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 	square_add_glyph(cave, py, px, context->subtype);
 
 	/* Push objects off the grid */
-	if (square_object(cave, py, px))
+	if (square_object(cave, loc(px, py)))
 		push_object(py, px);
 
 	return true;
@@ -1522,7 +1522,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 
 				/* Memorize normal features */
 				if (!square_isfloor(cave, grid))
-					square_memorize(cave, y, x);
+					square_memorize(cave, grid);
 
 				/* Memorize known walls */
 				for (i = 0; i < 8; i++) {
@@ -1531,13 +1531,13 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 
 					/* Memorize walls (etc) */
 					if (square_seemslikewall(cave, loc(xx, yy)))
-						square_memorize(cave, yy, xx);
+						square_memorize(cave, loc(xx, yy));
 				}
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
 			if (square_isnotknown(cave, grid))
-				square_forget(cave, y, x);
+				square_forget(cave, grid);
 		}
 	}
 
@@ -1546,7 +1546,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 		for (x = x1 - 1; x < x2 + 1; x++) {
 			struct loc grid = loc(x, y);
 			if (!square_in_bounds(cave, grid)) continue;
-			square_unmark(cave, y, x);
+			square_unmark(cave, grid);
 		}
 	}
 
@@ -1640,14 +1640,14 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 					detect = true;
 
 			/* Scan all objects in the grid to look for traps on chests */
-			for (obj = square_object(cave, y, x); obj; obj = obj->next) {
+			for (obj = square_object(cave, grid); obj; obj = obj->next) {
 				/* Skip anything not a trapped chest */
 				if (!is_trapped_chest(obj)) continue;
 
 				/* Identify once */
 				if (!obj->known || obj->known->pval != obj->pval) {
 					/* Hack - know the pile */
-					square_know_pile(cave, y, x);
+					square_know_pile(cave, grid);
 
 					/* Know the trap */
 					obj->known->pval = obj->pval;
@@ -1713,7 +1713,7 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 				place_closed_door(cave, y, x);
 
 				/* Memorize */
-				square_memorize(cave, y, x);
+				square_memorize(cave, grid);
 				square_light_spot(cave, grid);
 
 				/* Obvious */
@@ -1723,7 +1723,7 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 			/* Forget unknown doors in the mapping area */
 			if (square_isdoor(player->cave, grid) &&
 				square_isnotknown(cave, grid)) {
-				square_forget(cave, y, x);
+				square_forget(cave, grid);
 			}
 		}
 	}
@@ -1771,7 +1771,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 			/* Detect stairs */
 			if (square_isstairs(cave, grid)) {
 				/* Memorize */
-				square_memorize(cave, y, x);
+				square_memorize(cave, grid);
 				square_light_spot(cave, grid);
 
 				/* Obvious */
@@ -1823,7 +1823,7 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 			/* Magma/Quartz + Known Gold */
 			if (square_hasgoldvein(cave, grid)) {
 				/* Memorize */
-				square_memorize(cave, y, x);
+				square_memorize(cave, grid);
 				square_light_spot(cave, grid);
 
 				/* Detect */
@@ -1870,7 +1870,8 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 	/* Scan the area for objects */
 	for (y = y1; y <= y2; y++) {
 		for (x = x1; x <= x2; x++) {
-			struct object *obj = square_object(cave, y, x);
+			struct loc grid = loc(x, y);
+			struct object *obj = square_object(cave, grid);
 
 			/* Skip empty grids */
 			if (!obj) continue;
@@ -1879,7 +1880,7 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 			objects = true;
 
 			/* Mark the pile as aware */
-			square_sense_pile(cave, y, x);
+			square_sense_pile(cave, grid);
 		}
 	}
 
@@ -1920,7 +1921,8 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 	/* Scan the area for objects */
 	for (y = y1; y <= y2; y++) {
 		for (x = x1; x <= x2; x++) {
-			struct object *obj = square_object(cave, y, x);
+			struct loc grid = loc(x, y);
+			struct object *obj = square_object(cave, grid);
 
 			/* Skip empty grids */
 			if (!obj) continue;
@@ -1931,7 +1933,7 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 			}
 
 			/* Mark the pile as seen */
-			square_know_pile(cave, y, x);
+			square_know_pile(cave, grid);
 		}
 	}
 
@@ -2149,7 +2151,7 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 	}
 
 	/* Push objects off the grid */
-	if (square_object(cave, py, px))
+	if (square_object(cave, loc(px, py)))
 		push_object(py, px);
 
 	square_add_stairs(cave, py, px, player->depth);
@@ -3142,7 +3144,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
 			}
 			sqinfo_off(square(cave, grid).info, SQUARE_SEEN);
-			square_forget(cave, y, x);
+			square_forget(cave, grid);
 			square_light_spot(cave, grid);
 
 			/* Deal with player later */
@@ -3157,7 +3159,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			/* Destroy any grid that isn't a permament wall */
 			if (!square_isperm(cave, grid)) {
 				/* Deal with artifacts */
-				struct object *obj = square_object(cave, y, x);
+				struct object *obj = square_object(cave, grid);
 				while (obj) {
 					if (obj->artifact) {
 						if (!OPT(player, birth_lose_arts) && 
@@ -3170,8 +3172,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				}
 
 				/* Delete objects */
-				square_excise_pile(player->cave, y, x);
-				square_excise_pile(cave, y, x);
+				square_excise_pile(player->cave, grid);
+				square_excise_pile(cave, grid);
 				square_destroy(cave, y, x);
 			}
 		}
@@ -3280,7 +3282,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_GLOW);
 			}
 			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_SEEN);
-			square_forget(cave, yy, xx);
+			square_forget(cave, loc(xx, yy));
 			square_light_spot(cave, loc(xx, yy));
 
 			/* Skip the epicenter */
@@ -3387,7 +3389,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 			/* Process monsters */
 			if (square(cave, loc(xx, yy)).mon > 0) {
-				struct monster *mon = square_monster(cave, yy, xx);
+				struct monster *mon = square_monster(cave, loc(xx, yy));
 
 				/* Most monsters cannot co-exist with rock */
 				if (!flags_test(mon->race->flags, RF_SIZE, RF_KILL_WALL,
@@ -3488,7 +3490,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 			/* Destroy location and all objects (if valid) */
 			else if (square_changeable(cave, loc(xx, yy))) {
-				square_excise_pile(cave, yy, xx);
+				square_excise_pile(cave, loc(xx, yy));
 				square_earthquake(cave, yy, xx);
 			}
 		}
@@ -4185,7 +4187,7 @@ bool effect_handler_TOUCH(effect_handler_context_t *context)
 		/* Target decoy */
 		if (decoy.y && decoy.x) {
 			int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
-			return (project(source_trap(square_trap(cave, decoy.y, decoy.x)),
+			return (project(source_trap(square_trap(cave, decoy)),
 					rad, decoy, dam, context->subtype,flg, 0, 0, context->obj));
 		}
 

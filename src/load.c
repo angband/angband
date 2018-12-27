@@ -291,7 +291,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 
 	if (tmp16u) {
 		/* Find and set the mimicked object */
-		struct object *square_obj = square_object(c, mon->grid.y, mon->grid.x);
+		struct object *square_obj = square_object(c, mon->grid);
 
 		/* Try and find the mimicked object; if we fail, create a new one */
 		while (square_obj) {

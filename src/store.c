@@ -76,8 +76,9 @@ static const char *obj_flags[] = {
  */
 struct store *store_at(struct chunk *c, int y, int x)
 {
-	if (square_isshop(c, loc(x, y)))
-		return &stores[square_shopnum(cave, y, x)];
+	struct loc grid = loc(x, y);
+	if (square_isshop(c, grid))
+		return &stores[square_shopnum(cave, grid)];
 
 	return NULL;
 }

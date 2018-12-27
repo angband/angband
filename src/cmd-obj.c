@@ -563,7 +563,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	/* Hack to make Glyph of Warding work properly */
 	if (square_trap_specific(cave, py, px, rune->tidx)) {
 		/* Push objects off the grid */
-		if (square_object(cave, py, px))
+		if (square_object(cave, loc(px, py)))
 			push_object(py, px);
 	}
 }

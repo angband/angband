@@ -292,7 +292,7 @@ bool target_accept(int y, int x)
 
 	/* Obvious monsters */
 	if (square(cave, grid).mon > 0) {
-		struct monster *mon = square_monster(cave, y, x);
+		struct monster *mon = square_monster(cave, grid);
 		if (monster_is_obvious(mon)) {
 			return true;
 		}
@@ -302,7 +302,7 @@ bool target_accept(int y, int x)
 	if (square_isvisibletrap(cave, grid)) return true;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(player->cave, grid); obj; obj = obj->next) {
 		/* Memorized object */
 		if ((obj->kind == unknown_item_kind) || !ignore_known_item_ok(obj)) {
 			return true;
@@ -407,7 +407,7 @@ struct point_set *target_get_monsters(int mode, monster_predicate pred)
 
 			/* Special mode */
 			if (mode & (TARGET_KILL)) {
-				struct monster *mon = square_monster(cave, y, x);
+				struct monster *mon = square_monster(cave, grid);
 
 				/* Must contain a monster */
 				if (mon == NULL) continue;
@@ -435,7 +435,6 @@ struct point_set *target_get_monsters(int mode, monster_predicate pred)
  */
 bool target_set_closest(int mode, monster_predicate pred)
 {
-	int y, x;
 	struct monster *mon;
 	char m_name[80];
 	struct point_set *targets;
@@ -454,9 +453,7 @@ bool target_set_closest(int mode, monster_predicate pred)
 	}
 
 	/* Find the first monster in the queue */
-	y = targets->pts[0].y;
-	x = targets->pts[0].x;
-	mon = square_monster(cave, y, x);
+	mon = square_monster(cave, targets->pts[0]);
 	
 	/* Target the monster, if possible */
 	if (!target_able(mon)) {

@@ -103,7 +103,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, grid.y, grid.x);
+			square_forget(cave, grid);
 		}
 
 		/* Destroy the rubble */
@@ -125,7 +125,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, grid.y, grid.x);
+			square_forget(cave, grid);
 		}
 
 		/* Destroy the feature */
@@ -138,7 +138,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, grid.y, grid.x);
+			square_forget(cave, grid);
 		}
 
 		/* Destroy the wall */
@@ -153,7 +153,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, grid.y, grid.x);
+			square_forget(cave, grid);
 		}
 
 		/* Destroy the wall */
@@ -165,7 +165,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 			context->obvious = true;
 
 			/* Forget the wall */
-			square_forget(cave, grid.y, grid.x);
+			square_forget(cave, grid);
 		}
 
 		/* Destroy the wall */
@@ -193,7 +193,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Forget the door */
-			square_forget(cave, grid.y, grid.x);
+			square_forget(cave, grid);
 		}
 
 		/* Destroy the feature */
@@ -243,13 +243,13 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 	const struct loc grid = context->grid;
 
 	/* Require a grid without monsters */
-	if (square_monster(cave, grid.y, grid.x) || square_isplayer(cave, grid)) return;
+	if (square_monster(cave, grid) || square_isplayer(cave, grid)) return;
 
 	/* Require a floor grid */
 	if (!square_isfloor(cave, grid)) return;
 
 	/* Push objects off the grid */
-	if (square_object(cave, grid.y, grid.x))
+	if (square_object(cave, grid))
 		push_object(grid.y, grid.x);
 
 	/* Create closed door */
@@ -310,7 +310,7 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 	if ((context->dam > randint1(1800) + 600) &&
 		square_isfloor(cave, context->grid)) {
 		/* Forget the floor, make lava. */
-		square_unmark(cave, context->grid.y, context->grid.x);
+		square_unmark(cave, context->grid);
 		square_set_feat(cave, context->grid.y, context->grid.x, FEAT_LAVA);
 
 		/* Objects that have survived should move */
@@ -331,7 +331,7 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 		square_isfiery(cave, context->grid)) {
 		bool occupied = square_isoccupied(cave, context->grid);
 
-		square_unmark(cave, context->grid.y, context->grid.x);
+		square_unmark(cave, context->grid);
 		if (one_in_(2)) {
 			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_FLOOR);
 		} else if (one_in_(2) && !occupied) {
@@ -439,7 +439,7 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 		square_isfiery(cave, context->grid)) {
 		bool occupied = square_isoccupied(cave, context->grid);
 
-		square_unmark(cave, context->grid.y, context->grid.x);
+		square_unmark(cave, context->grid);
 		if (one_in_(2)) {
 			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_FLOOR);
 		} else if (one_in_(2) && !occupied) {
@@ -498,7 +498,7 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 	if ((context->dam > randint1(1800) + 600) &&
 		square_isfloor(cave, context->grid)) {
 		/* Forget the floor, make lava. */
-		square_unmark(cave, context->grid.y, context->grid.x);
+		square_unmark(cave, context->grid);
 		square_set_feat(cave, context->grid.y, context->grid.x, FEAT_LAVA);
 
 		/* Objects that have survived should move */

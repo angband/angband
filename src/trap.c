@@ -62,7 +62,7 @@ struct trap_kind *lookup_trap(const char *desc)
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
 {
 	struct loc grid = loc(x, y);
-    struct trap *trap = square_trap(c, y, x);
+    struct trap *trap = square_trap(c, grid);
 	
     /* First, check the trap marker */
     if (!square_istrap(c, grid))
@@ -86,7 +86,7 @@ bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
 bool square_trap_flag(struct chunk *c, int y, int x, int flag)
 {
 	struct loc grid = loc(x, y);
-    struct trap *trap = square_trap(c, y, x);
+    struct trap *trap = square_trap(c, grid);
 
     /* First, check the trap marker */
     if (!square_istrap(c, grid))
@@ -115,7 +115,7 @@ bool square_trap_flag(struct chunk *c, int y, int x, int flag)
 static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
 {
 	struct loc grid = loc(x, y);
-    struct trap *trap = square_trap(c, y, x);
+    struct trap *trap = square_trap(c, grid);
     bool trap_exists = false;
 
     /* Scan the square trap list */
@@ -162,7 +162,7 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
 		return false;
 
     /* We currently forbid traps in a grid with objects. */
-    if (square_object(c, y, x))
+    if (square_object(c, grid))
 		return false;
 
     /* Check it's a trappable square */
@@ -271,7 +271,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 
 	/* Allocate a new trap for this grid (at the front of the list) */
 	new_trap = mem_zalloc(sizeof(*new_trap));
-	new_trap->next = square_trap(c, y, x);
+	new_trap->next = square_trap(c, grid);
 	c->squares[y][x].trap = new_trap;
 
 	/* Set the details */
@@ -294,7 +294,8 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
  */
 void square_free_trap(struct chunk *c, int y, int x)
 {
-	struct trap *next, *trap = square_trap(c, y, x);
+	struct loc grid = loc(x, y);
+	struct trap *next, *trap = square_trap(c, grid);
 
 	while (trap) {
 		next = trap->next;
@@ -310,7 +311,7 @@ bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
 {
     int found_trap = 0;
 	struct loc grid = loc(x, y);
-	struct trap *trap = square_trap(c, y, x);
+	struct trap *trap = square_trap(c, grid);
     
     /* Check there is a player trap */
     if (!square_isplayertrap(c, grid))
@@ -334,7 +335,7 @@ bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
 		if (!trf_has(trap->flags, TRF_VISIBLE)) {
 			/* See the trap */
 			trf_on(trap->flags, TRF_VISIBLE);
-			square_memorize(c, y, x);
+			square_memorize(c, grid);
 
 			/* We found a trap */
 			found_trap++;
@@ -353,7 +354,7 @@ bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
 		}
 
 		/* Memorize */
-		square_memorize(c, y, x);
+		square_memorize(c, grid);
 
 		/* Redraw */
 		square_light_spot(c, grid);
@@ -371,11 +372,12 @@ bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
  */
 int num_traps(struct chunk *c, int y, int x, int vis)
 {
+	struct loc grid = loc(x, y);
     int num = 0;
 	struct trap *trap;
 
 	/* Look at the traps in this grid */
-	for (trap = square_trap(c, y, x); trap; trap = trap->next) {
+	for (trap = square_trap(c, grid); trap; trap = trap->next) {
 		/* Require that trap be capable of affecting the character */
 		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
 	    
@@ -409,6 +411,7 @@ bool trap_check_hit(int power)
  */
 extern void hit_trap(int y, int x)
 {
+	struct loc grid = loc(x, y);
 	bool ident = false;
 	struct trap *trap;
 	struct effect *effect;
@@ -425,7 +428,7 @@ extern void hit_trap(int y, int x)
 
 
 	/* Look at the traps in this grid */
-	for (trap = square_trap(cave, y, x); trap; trap = trap->next) {
+	for (trap = square_trap(cave, grid); trap; trap = trap->next) {
 		int flag;
 		bool saved = false;
 
@@ -489,15 +492,15 @@ extern void hit_trap(int y, int x)
 		/* Some traps disappear after activating, all have a chance to */
 		if (trf_has(trap->kind->flags, TRF_ONETIME) || one_in_(3)) {
 			square_destroy_trap(cave, y, x);
-			square_forget(cave, y, x);
+			square_forget(cave, grid);
 		}
 
 		/* Trap may have gone */
-		if (!square_trap(cave, y, x)) break;
+		if (!square_trap(cave, grid)) break;
 
 		/* Trap becomes visible (always XXX) */
 		trf_on(trap->flags, TRF_VISIBLE);
-		square_memorize(cave, y, x);
+		square_memorize(cave, grid);
 	}
 
     /* Verify traps (remove marker if appropriate) */
@@ -667,6 +670,7 @@ int square_trap_timeout(struct chunk *c, int y, int x, int t_idx)
  */
 void square_set_door_lock(struct chunk *c, int y, int x, int power)
 {
+	struct loc grid = loc(x, y);
 	struct trap_kind *lock = lookup_trap("door lock");
 	struct trap *trap;
 
@@ -679,7 +683,7 @@ void square_set_door_lock(struct chunk *c, int y, int x, int power)
 		place_trap(c, y, x, lock->tidx, 0);
 
 	/* Set the power (of all locks - there should be only one) */
-	trap = square_trap(c, y, x);
+	trap = square_trap(c, grid);
 	while (trap) {
 		if (trap->kind == lock)
 			trap->power = power;
@@ -692,6 +696,7 @@ void square_set_door_lock(struct chunk *c, int y, int x, int power)
  */
 int square_door_power(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	struct trap_kind *lock = lookup_trap("door lock");
 	struct trap *trap;
 
@@ -704,7 +709,7 @@ int square_door_power(struct chunk *c, int y, int x)
 		return 0;
 
 	/* Get the power and return it */
-	trap = square_trap(c, y, x);
+	trap = square_trap(c, grid);
 	while (trap) {
 		if (trap->kind == lock)
 			return trap->power;

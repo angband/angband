@@ -374,7 +374,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 		/* Actual monsters */
 		if (square(cave, loc(x, y)).mon > 0) {
-			struct monster *mon = square_monster(cave, y, x);
+			struct monster *mon = square_monster(cave, loc(x, y));
 			const struct monster_lore *lore = get_lore(mon->race);
 
 			/* Visible */
@@ -678,7 +678,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		/* Double break */
 		if (obj) break;
 
-		name = square_apparent_name(cave, player, y, x);
+		name = square_apparent_name(cave, player, loc(x, y));
 
 		/* Terrain feature if needed */
 		if (boring || square_isinteresting(cave, loc(x, y))) {
@@ -811,8 +811,8 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 
 		/* Find the co-ordinates on the level. */
 		struct loc grid = path_g[i];
-		struct monster *mon = square_monster(cave, grid.y, grid.x);
-		struct object *obj = square_object(player->cave, grid.y, grid.x);
+		struct monster *mon = square_monster(cave, grid);
+		struct object *obj = square_object(player->cave, grid);
 
 		/*
 		 * As path[] is a straight line and the screen is oblong,
@@ -1001,7 +1001,8 @@ bool target_set_interactive(int mode, int x, int y)
 		
 			/* Update help */
 			if (help) {
-				bool good_target = target_able(square_monster(cave, y, x));
+				bool good_target =
+					target_able(square_monster(cave, targets->pts[m]));
 				target_display_help(good_target,
 									!(flag && point_set_size(targets)));
 			}
@@ -1037,7 +1038,7 @@ bool target_set_interactive(int mode, int x, int y)
 					x = KEY_GRID_X(press);
 					if (press.mouse.mods & KC_MOD_CONTROL) {
 						/* same as keyboard target selection command below */
-						struct monster *m_local = square_monster(cave, y, x);
+						struct monster *m_local = square_monster(cave, loc(x, y));
 
 						if (target_able(m_local)) {
 							/* Set up target information */
@@ -1060,8 +1061,8 @@ bool target_set_interactive(int mode, int x, int y)
 				} else {
 					y = KEY_GRID_Y(press);
 					x = KEY_GRID_X(press);
-					if (square_monster(cave, y, x) ||
-						square_object(cave, y, x)) {
+					if (square_monster(cave, loc(x, y)) ||
+						square_object(cave, loc(x, y))) {
 							/* reset the flag, to make sure we stay in this
 							 * mode if something is actually there */
 						flag = false;
@@ -1135,7 +1136,7 @@ bool target_set_interactive(int mode, int x, int y)
 					case '0':
 					case '.':
 					{
-						struct monster *m_local = square_monster(cave, y, x);
+						struct monster *m_local = square_monster(cave, loc(x, y));
 
 						if (target_able(m_local)) {
 							health_track(player->upkeep, m_local);
@@ -1221,7 +1222,7 @@ bool target_set_interactive(int mode, int x, int y)
 		} else {
 			/* Update help */
 			if (help) {
-				bool good_target = target_able(square_monster(cave, y, x));
+				bool good_target = target_able(square_monster(cave, loc(x, y)));
 				target_display_help(good_target,
 									!(flag && point_set_size(targets)));
 			}
@@ -1313,8 +1314,8 @@ bool target_set_interactive(int mode, int x, int y)
 						targets = target_get_monsters(mode, NULL);
 					}
 
-					if (square_monster(cave, y, x) ||
-						square_object(cave, y, x)) {
+					if (square_monster(cave, loc(x, y)) ||
+						square_object(cave, loc(x, y))) {
 						/* scan the interesting list and see if there in
 						 * anything here */
 						for (i = 0; i < point_set_size(targets); i++) {
