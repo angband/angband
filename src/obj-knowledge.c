@@ -2249,6 +2249,7 @@ void object_flavor_aware(struct object *obj)
 		for (x = 1; x < cave->width; x++) {
 			bool light = false;
 			const struct object *floor_obj;
+			struct loc grid = loc(x, y);
 
 			for (floor_obj = square_object(cave, y, x); floor_obj;
 				 floor_obj = floor_obj->next)
@@ -2257,7 +2258,7 @@ void object_flavor_aware(struct object *obj)
 					break;
 				}
 
-			if (light) square_light_spot(cave, y, x);
+			if (light) square_light_spot(cave, grid);
 		}
 	}
 }

@@ -185,7 +185,7 @@ void delete_monster_idx(int m_idx)
 	cave->mon_cnt--;
 
 	/* Visual update */
-	square_light_spot(cave, y, x);
+	square_light_spot(cave, mon->grid);
 }
 
 

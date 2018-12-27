@@ -709,7 +709,7 @@ void process_world(struct chunk *c)
 				if (trap->timeout) {
 					trap->timeout--;
 					if (!trap->timeout)
-						square_light_spot(c, y, x);
+						square_light_spot(c, grid);
 				}
 				trap = trap->next;
 			}
@@ -802,7 +802,7 @@ static void process_player_cleanup(void)
 					continue;
 				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
 					continue;
-				square_light_spot(cave, mon->grid.y, mon->grid.x);
+				square_light_spot(cave, mon->grid);
 			}
 
 			/* Clear NICE flag, and show marked monsters */

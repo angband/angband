@@ -2426,7 +2426,7 @@ static void windows_map_aux(void)
 		for (y = min_y; y < max_y; y++) {
 			struct grid_data g;
 
-			map_info(y, x, &g);
+			map_info(loc(x, y), &g);
 			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Ignore non-graphics */

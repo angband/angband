@@ -197,7 +197,7 @@ static bool do_cmd_open_aux(int y, int x)
 
 			/* Update the visuals */
 			square_memorize(cave, y, x);
-			square_light_spot(cave, y, x);
+			square_light_spot(cave, grid);
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Experience */
@@ -216,7 +216,7 @@ static bool do_cmd_open_aux(int y, int x)
 		/* Closed door */
 		square_open_door(cave, y, x);
 		square_memorize(cave, y, x);
-		square_light_spot(cave, y, x);
+		square_light_spot(cave, grid);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 		sound(MSG_OPENDOOR);
 	}
@@ -366,7 +366,7 @@ static bool do_cmd_close_aux(int y, int x)
 		/* Close door */
 		square_close_door(cave, y, x);
 		square_memorize(cave, y, x);
-		square_light_spot(cave, y, x);
+		square_light_spot(cave, grid);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 		sound(MSG_SHUTDOOR);
 	}
@@ -960,15 +960,15 @@ void move_player(int dir, bool disarm)
 				msgt(MSG_HITWALL,
 					 "You feel a pile of rubble blocking your way.");
 				square_memorize(cave, y, x);
-				square_light_spot(cave, y, x);
+				square_light_spot(cave, grid);
 			} else if (square_iscloseddoor(cave, grid)) {
 				msgt(MSG_HITWALL, "You feel a door blocking your way.");
 				square_memorize(cave, y, x);
-				square_light_spot(cave, y, x);
+				square_light_spot(cave, grid);
 			} else {
 				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
 				square_memorize(cave, y, x);
-				square_light_spot(cave, y, x);
+				square_light_spot(cave, grid);
 			}
 		} else {
 			if (square_isrubble(cave, grid))

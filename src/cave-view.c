@@ -517,13 +517,13 @@ static void update_one(struct chunk *c, int y, int x, int blind)
 			}
 		}
 
-		square_note_spot(c, y, x);
-		square_light_spot(c, y, x);
+		square_note_spot(c, grid);
+		square_light_spot(c, grid);
 	}
 
 	/* Square went from seen -> unseen */
 	if (!square_isseen(c, grid) && square_wasseen(c, grid))
-		square_light_spot(c, y, x);
+		square_light_spot(c, grid);
 
 	sqinfo_off(square(c, grid).info, SQUARE_WASSEEN);
 }

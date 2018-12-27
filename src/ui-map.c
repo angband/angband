@@ -563,7 +563,7 @@ static void prt_map_aux(void)
 				if (vx + tile_width - 1 >= t->wid) continue;
 
 				/* Determine what is there */
-				map_info(y, x, &g);
+				map_info(loc(x, y), &g);
 				grid_data_as_text(&g, &a, &c, &ta, &tc);
 				Term_queue_char(t, vx, vy, a, c, ta, tc);
 
@@ -607,7 +607,7 @@ void prt_map(void)
 			if (!square_in_bounds(cave, loc(x, y))) continue;
 
 			/* Determine what is there */
-			map_info(y, x, &g);
+			map_info(loc(x, y), &g);
 			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Hack -- Queue it */
@@ -693,7 +693,7 @@ void display_map(int *cy, int *cx)
 				row = row - (row % tile_height);
 
 			/* Get the attr/char at that map location */
-			map_info(y, x, &g);
+			map_info(loc(x, y), &g);
 			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Get the priority of that attr/char */

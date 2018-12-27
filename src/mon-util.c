@@ -193,7 +193,7 @@ static void path_analyse(struct chunk *c, int y, int x)
 		if (square_iswall(player->cave, path_g[i])) {
 			sqinfo_off(square(c, path_g[i]).info, SQUARE_SEEN);
 			square_forget(c, ny, nx);
-			square_light_spot(c, ny, nx);
+			square_light_spot(c, path_g[i]);
 		}
 	}
 }
@@ -401,7 +401,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			mflag_on(mon->mflag, MFLAG_VISIBLE);
 
 			/* Draw the monster */
-			square_light_spot(c, fy, fx);
+			square_light_spot(c, mon->grid);
 
 			/* Update health bar as needed */
 			if (player->upkeep->health_who == mon)
@@ -421,7 +421,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			mflag_off(mon->mflag, MFLAG_VISIBLE);
 
 			/* Erase the monster */
-			square_light_spot(c, fy, fx);
+			square_light_spot(c, mon->grid);
 
 			/* Update health bar as needed */
 			if (player->upkeep->health_who == mon)
@@ -610,8 +610,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Redraw */
-	square_light_spot(cave, y1, x1);
-	square_light_spot(cave, y2, x2);
+	square_light_spot(cave, loc(x1, y1));
+	square_light_spot(cave, loc(x2, y2));
 }
 
 /**
@@ -662,8 +662,8 @@ void become_aware(struct monster *mon)
 		player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
 
-	square_note_spot(cave, mon->grid.y, mon->grid.x);
-	square_light_spot(cave, mon->grid.y, mon->grid.x);
+	square_note_spot(cave, mon->grid);
+	square_light_spot(cave, mon->grid);
 }
 
 /**

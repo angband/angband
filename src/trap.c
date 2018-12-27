@@ -114,6 +114,7 @@ bool square_trap_flag(struct chunk *c, int y, int x, int flag)
  */
 static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
 {
+	struct loc grid = loc(x, y);
     struct trap *trap = square_trap(c, y, x);
     bool trap_exists = false;
 
@@ -137,10 +138,10 @@ static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
     /* No traps in this location. */
     if (!trap_exists) {
 		/* No traps */
-		sqinfo_off(square(c, loc(x, y)).info, SQUARE_TRAP);
+		sqinfo_off(square(c, grid).info, SQUARE_TRAP);
 
 		/* Take note */
-		square_note_spot(c, y, x);
+		square_note_spot(c, grid);
     }
 
     /* Report failure */
@@ -255,13 +256,14 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
 void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 {
 	struct trap *new_trap;
+	struct loc grid = loc(x, y);
 
     /* We've been called with an illegal index; choose a random trap */
     if ((t_idx <= 0) || (t_idx >= z_info->trap_max)) {
 		/* Require the correct terrain */
 		if (!square_player_trap_allowed(c, y, x)) return;
 
-		t_idx = pick_trap(c, square(c, loc(x, y)).feat, trap_level);
+		t_idx = pick_trap(c, square(c, grid).feat, trap_level);
     }
 
     /* Failure */
@@ -281,10 +283,10 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 	trf_copy(new_trap->flags, trap_info[t_idx].flags);
 
 	/* Toggle on the trap marker */
-	sqinfo_on(square(c, loc(x, y)).info, SQUARE_TRAP);
+	sqinfo_on(square(c, grid).info, SQUARE_TRAP);
 
 	/* Redraw the grid */
-	square_light_spot(c, y, x);
+	square_light_spot(c, grid);
 }
 
 /**
@@ -354,7 +356,7 @@ bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
 		square_memorize(c, y, x);
 
 		/* Redraw */
-		square_light_spot(c, y, x);
+		square_light_spot(c, grid);
     }
 
     /* Return true if we found any traps */
@@ -524,7 +526,7 @@ bool square_remove_all_traps(struct chunk *c, int y, int x)
 
 	/* Refresh grids that the character can see */
 	if (square_isseen(c, grid)) {
-		square_light_spot(c, y, x);
+		square_light_spot(c, grid);
 	}
 
 	(void)square_verify_trap(c, y, x, 0);
@@ -572,7 +574,7 @@ bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
 
 	/* Refresh grids that the character can see */
 	if (square_isseen(c, grid))
-		square_light_spot(c, y, x);
+		square_light_spot(c, grid);
 
 	(void)square_verify_trap(c, y, x, 0);
 
@@ -622,7 +624,7 @@ bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
 
     /* Refresh grids that the character can see */
     if (square_isseen(c, grid))
-		square_light_spot(c, y, x);
+		square_light_spot(c, grid);
 
     /* Verify traps (remove marker if appropriate) */
     trap_exists = square_verify_trap(c, y, x, 0);

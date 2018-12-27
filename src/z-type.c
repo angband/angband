@@ -73,10 +73,9 @@ void point_set_dispose(struct point_set *ps)
  * Add the point to the given point set, making more space if there is
  * no more space left.
  */
-void add_to_point_set(struct point_set *ps, int y, int x)
+void add_to_point_set(struct point_set *ps, struct loc grid)
 {
-	ps->pts[ps->n].x = x;
-	ps->pts[ps->n].y = y;
+	ps->pts[ps->n] = grid;
 	ps->n++;
 	if (ps->n >= ps->allocated) {
 		ps->allocated *= 2;
@@ -89,11 +88,11 @@ int point_set_size(struct point_set *ps)
 	return ps->n;
 }
 
-int point_set_contains(struct point_set *ps, int y, int x)
+int point_set_contains(struct point_set *ps, struct loc grid)
 {
 	int i;
 	for (i = 0; i < ps->n; i++)
-		if (ps->pts[i].x == x && ps->pts[i].y == y)
+		if (loc_eq(ps->pts[i], grid))
 			return 1;
 	return 0;
 }

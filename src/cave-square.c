@@ -1134,8 +1134,8 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 		if (!square_player_trap_allowed(c, y, x))
 			square_destroy_trap(c, y, x);
 
-		square_note_spot(c, y, x);
-		square_light_spot(c, y, x);
+		square_note_spot(c, grid);
+		square_light_spot(c, grid);
 	} else {
 		/* Make sure no incorrect wall flags set for dungeon generation */
 		sqinfo_off(square(c, grid).info, SQUARE_WALL_INNER);

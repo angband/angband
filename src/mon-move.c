@@ -1174,8 +1174,8 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 			/* Carry the object */
 			square_excise_object(c, ny, nx, obj);
 			monster_carry(c, mon, obj);
-			square_note_spot(c, ny, nx);
-			square_light_spot(c, ny, nx);
+			square_note_spot(c, new);
+			square_light_spot(c, new);
 		} else {
 			/* Describe observable situations */
 			if (square_isseen(c, new) && !ignore_item_ok(obj))
@@ -1185,8 +1185,8 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 			square_excise_object(c, ny, nx, obj);
 			delist_object(c, obj);
 			object_delete(&obj);
-			square_note_spot(c, ny, nx);
-			square_light_spot(c, ny, nx);
+			square_note_spot(c, new);
+			square_light_spot(c, new);
 		}
 
 		/* Next object */

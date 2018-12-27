@@ -621,7 +621,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data,
 							 void *user)
 {
 	if ((OPT(player, hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
-		square_light_spot(cave, player->py, player->px);
+		square_light_spot(cave, loc(player->px, player->py));
 }
 
 
@@ -1068,7 +1068,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 
 
 		/* Redraw the grid spot */
-		map_info(data->point.y, data->point.x, &g);
+		map_info(data->point, &g);
 		grid_data_as_text(&g, &a, &c, &ta, &tc);
 		Term_queue_char(t, vx, vy, a, c, ta, tc);
 #ifdef MAP_DEBUG

@@ -302,8 +302,8 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 				square_excise_object(cave, obj->iy, obj->ix, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
-				square_note_spot(cave, player->py, player->px);
-				square_light_spot(cave, player->py, player->px);
+				square_note_spot(cave, loc(player->px, player->py));
+				square_light_spot(cave, loc(player->px, player->py));
 			}
 		} else {
 			/* Non-destructive failure */
@@ -1714,7 +1714,7 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 
 				/* Memorize */
 				square_memorize(cave, y, x);
-				square_light_spot(cave, y, x);
+				square_light_spot(cave, grid);
 
 				/* Obvious */
 				doors = true;
@@ -1772,7 +1772,7 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 			if (square_isstairs(cave, grid)) {
 				/* Memorize */
 				square_memorize(cave, y, x);
-				square_light_spot(cave, y, x);
+				square_light_spot(cave, grid);
 
 				/* Obvious */
 				stairs = true;
@@ -1824,7 +1824,7 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 			if (square_hasgoldvein(cave, grid)) {
 				/* Memorize */
 				square_memorize(cave, y, x);
-				square_light_spot(cave, y, x);
+				square_light_spot(cave, grid);
 
 				/* Detect */
 				gold_buried = true;
@@ -3143,7 +3143,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			}
 			sqinfo_off(square(cave, grid).info, SQUARE_SEEN);
 			square_forget(cave, y, x);
-			square_light_spot(cave, y, x);
+			square_light_spot(cave, grid);
 
 			/* Deal with player later */
 			if ((y == y1) && (x == x1)) continue;
@@ -3281,7 +3281,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			}
 			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_SEEN);
 			square_forget(cave, yy, xx);
-			square_light_spot(cave, yy, xx);
+			square_light_spot(cave, loc(xx, yy));
 
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;
@@ -3484,7 +3484,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 			/* Note unaffected grids for light changes, etc. */
 			if (!map[16 + yy - centre.y][16 + xx - centre.x])
-				square_light_spot(cave, yy, xx);
+				square_light_spot(cave, loc(xx, yy));
 
 			/* Destroy location and all objects (if valid) */
 			else if (square_changeable(cave, loc(xx, yy))) {
@@ -3531,15 +3531,12 @@ bool effect_handler_DARKEN_LEVEL(effect_handler_context_t *context)
  */
 bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
-
 	/* Message */
 	if (!player->timed[TMD_BLIND])
 		msg("You are surrounded by a white light.");
 
 	/* Light up the room */
-	light_room(py, px, true);
+	light_room(loc(player->px, player->py), true);
 
 	/* Assume seen */
 	context->ident = true;
@@ -3587,7 +3584,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	}
 
 	/* Darken the room */
-	light_room(target.y, target.x, false);
+	light_room(target, false);
 
 	/* Hack - blind the player directly if player-cast */
 	if (context->origin.what == SRC_PLAYER &&

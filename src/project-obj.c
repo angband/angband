@@ -566,8 +566,8 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 				object_delete(&obj);
 
 				/* Redraw */
-				square_note_spot(cave, grid.y, grid.x);
-				square_light_spot(cave, grid.y, grid.x);
+				square_note_spot(cave, grid);
+				square_light_spot(cave, grid);
 			}
 		}
 

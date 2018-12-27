@@ -836,7 +836,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 
 			/* Note the pile */
 			if (square_isview(c, grid)) {
-				square_note_spot(c, y, x);
+				square_note_spot(c, grid);
 			}
 
 			/* Don't mention if ignored */
@@ -878,8 +878,8 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 	list_object(c, drop);
 
 	/* Redraw */
-	square_note_spot(c, y, x);
-	square_light_spot(c, y, x);
+	square_note_spot(c, grid);
+	square_light_spot(c, grid);
 
 	/* Don't mention if ignored */
 	if (ignore_item_ok(drop)) {

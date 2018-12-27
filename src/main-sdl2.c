@@ -969,7 +969,7 @@ static void render_grid_cell_text(const struct subwindow *subwindow,
 	wchar_t c;
 	wchar_t tc;
 
-	map_info(y, x, &grid_data);
+	map_info(loc(x, y), &grid_data);
 	grid_data_as_text(&grid_data, &a, &c, &ta, &tc);
 	/* apparently either the same as a or obscured by a */
 	(void) tc;
@@ -1088,7 +1088,7 @@ static void render_grid_cell_tile(const struct subwindow *subwindow,
 	wchar_t c;
 	wchar_t tc;
 
-	map_info(y, x, &grid_data);
+	map_info(loc(x, y), &grid_data);
 	grid_data_as_text(&grid_data, &a, &c, &ta, &tc);
 
 	SDL_SetRenderTarget(subwindow->window->renderer, texture);

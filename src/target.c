@@ -420,7 +420,7 @@ struct point_set *target_get_monsters(int mode, monster_predicate pred)
 			}
 
 			/* Save the location */
-			add_to_point_set(targets, y, x);
+			add_to_point_set(targets, grid);
 		}
 	}
 

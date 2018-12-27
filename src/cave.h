@@ -250,10 +250,10 @@ void update_view(struct chunk *c, struct player *p);
 bool no_light(void);
 
 /* cave-map.c */
-void map_info(unsigned x, unsigned y, struct grid_data *g);
-void square_note_spot(struct chunk *c, int y, int x);
-void square_light_spot(struct chunk *c, int y, int x);
-void light_room(int y1, int x1, bool light);
+void map_info(struct loc grid, struct grid_data *g);
+void square_note_spot(struct chunk *c, struct loc grid);
+void square_light_spot(struct chunk *c, struct loc grid);
+void light_room(struct loc grid, bool light);
 void wiz_light(struct chunk *c, struct player *p, bool full);
 void wiz_dark(struct chunk *c, struct player *p, bool full);
 void cave_illuminate(struct chunk *c, bool daytime);

@@ -30,7 +30,7 @@
 #include "trap.h"
 
 /**
- * This function takes a grid location (x, y) and extracts information the
+ * This function takes a grid location and extracts information the
  * player is allowed to know about it, filling in the grid_data structure
  * passed in 'g'.
  *
@@ -76,13 +76,12 @@
  * may turn into different objects, monsters into different monsters, and
  * terrain may be objects, monsters, or stay the same.
  */
-void map_info(unsigned y, unsigned x, struct grid_data *g)
+void map_info(struct loc grid, struct grid_data *g)
 {
 	struct object *obj;
-	struct loc grid = loc(x, y);
 
-	assert(x < (unsigned) cave->width);
-	assert(y < (unsigned) cave->height);
+	assert(grid.x < cave->width);
+	assert(grid.y < cave->height);
 
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;
@@ -115,7 +114,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 		}
 
 		/* Remember seen feature */
-		square_memorize(cave, y, x);
+		square_memorize(cave, grid.y, grid.x);
 	} else if (!square_isknown(cave, grid)) {
 		g->f_idx = FEAT_NONE;
 	} else if (square_isglow(cave, grid)) {
@@ -147,7 +146,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
     }
 
 	/* Objects */
-	for (obj = square_object(player->cave, y, x); obj; obj = obj->next) {
+	for (obj = square_object(player->cave, grid.y, grid.x); obj; obj = obj->next) {
 		if (obj->kind == unknown_gold_kind) {
 			g->unseen_money = true;
 		} else if (obj->kind == unknown_item_kind) {
@@ -216,27 +215,25 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
  * This function is called primarily from the "update_view()" function, for
  * each grid which becomes newly "see-able".
  */
-void square_note_spot(struct chunk *c, int y, int x)
+void square_note_spot(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
-
 	/* Require "seen" flag and the current level */
 	if (c != cave) return;
 	if (!square_isseen(c, grid) && !square_isplayer(c, grid)) return;
 
 	/* Make the player know precisely what is on this grid */
-	square_know_pile(c, y, x);
+	square_know_pile(c, grid.y, grid.x);
 
 	/* Notice traps */
 	if (square_issecrettrap(c, grid)) {
-		square_reveal_trap(c, y, x, false, true);
+		square_reveal_trap(c, grid.y, grid.x, false, true);
 	}
 
 	if (square_isknown(c, grid))
 		return;
 
 	/* Memorize this grid */
-	square_memorize(c, y, x);
+	square_memorize(c, grid.y, grid.x);
 }
 
 
@@ -246,11 +243,11 @@ void square_note_spot(struct chunk *c, int y, int x)
  *
  * This function should only be called on "legal" grids.
  */
-void square_light_spot(struct chunk *c, int y, int x)
+void square_light_spot(struct chunk *c, struct loc grid)
 {
 	if ((c == cave) && player->cave) {
 		player->upkeep->redraw |= PR_ITEMLIST;
-		event_signal_point(EVENT_MAP, x, y);
+		event_signal_point(EVENT_MAP, grid.x, grid.y);
 	}
 }
 
@@ -281,7 +278,7 @@ static void cave_light(struct point_set *ps)
 	/* Process the grids */
 	for (i = 0; i < ps->n; i++)	{
 		/* Redraw the grid */
-		square_light_spot(cave, ps->pts[i].y, ps->pts[i].x);
+		square_light_spot(cave, ps->pts[i]);
 
 		/* Process affected monsters */
 		if (square(cave, ps->pts[i]).mon > 0) {
@@ -321,8 +318,8 @@ static void cave_unlight(struct point_set *ps)
 		struct loc grid = ps->pts[i];
 
 		/* Darken the grid... */
-		if (!square_isbright(cave, grid)) {
-			sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
+		if (!square_isbright(cave, ps->pts[i])) {
+			sqinfo_off(square(cave, ps->pts[i]).info, SQUARE_GLOW);
 		}
 
 		/* ...but dark-loving characters remember them */
@@ -338,17 +335,16 @@ static void cave_unlight(struct point_set *ps)
 	/* Process the grids */
 	for (i = 0; i < ps->n; i++)	{
 		/* Redraw the grid */
-		square_light_spot(cave, ps->pts[i].y, ps->pts[i].x);
+		square_light_spot(cave, ps->pts[i]);
 	}
 }
 
 /*
  * Aux function -- see below
  */
-static void cave_room_aux(struct point_set *seen, int y, int x)
+static void cave_room_aux(struct point_set *seen, struct loc grid)
 {
-	struct loc grid = loc(x, y);
-	if (point_set_contains(seen, y, x))
+	if (point_set_contains(seen, grid))
 		return;
 
 	if (!square_in_bounds(cave, grid))
@@ -358,40 +354,31 @@ static void cave_room_aux(struct point_set *seen, int y, int x)
 		return;
 
 	/* Add it to the "seen" set */
-	add_to_point_set(seen, y, x);
+	add_to_point_set(seen, grid);
 }
 
 /**
  * Illuminate or darken any room containing the given location.
  */
-void light_room(int y1, int x1, bool light)
+void light_room(struct loc grid, bool light)
 {
-	int i, x, y;
+	int i, d;
 	struct point_set *ps;
 
 	ps = point_set_new(200);
+
 	/* Add the initial grid */
-	cave_room_aux(ps, y1, x1);
+	cave_room_aux(ps, grid);
 
 	/* While grids are in the queue, add their neighbors */
-	for (i = 0; i < ps->n; i++)
-	{
-		x = ps->pts[i].x, y = ps->pts[i].y;
-
+	for (i = 0; i < ps->n; i++) {
 		/* Walls get lit, but stop light */
 		if (!square_isprojectable(cave, ps->pts[i])) continue;
 
-		/* Spread adjacent */
-		cave_room_aux(ps, y + 1, x);
-		cave_room_aux(ps, y - 1, x);
-		cave_room_aux(ps, y, x + 1);
-		cave_room_aux(ps, y, x - 1);
-
-		/* Spread diagonal */
-		cave_room_aux(ps, y + 1, x + 1);
-		cave_room_aux(ps, y - 1, x - 1);
-		cave_room_aux(ps, y - 1, x + 1);
-		cave_room_aux(ps, y + 1, x - 1);
+		/* Spread to the adjacent grids */
+		for (d = 0; d < 8; d++) {
+			cave_room_aux(ps, loc_sum(ps->pts[i], ddgrid_ddd[d]));
+		}
 	}
 
 	/* Now, lighten or darken them all at once */
