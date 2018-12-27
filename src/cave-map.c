@@ -97,7 +97,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 	if (f_info[g->f_idx].mimic)
 		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
 
-	g->in_view = (square_isseen(cave, y, x)) ? true : false;
+	g->in_view = (square_isseen(cave, grid)) ? true : false;
 	g->is_player = (square(cave, grid).mon < 0) ? true : false;
 	g->m_idx = (g->is_player) ? 0 : square(cave, grid).mon;
 	g->hallucinate = player->timed[TMD_IMAGE] ? true : false;
@@ -106,7 +106,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 		g->lighting = LIGHTING_LOS;
 
 		/* Darkness or torchlight */
-		if (!square_isglow(cave, y, x)) {
+		if (!square_isglow(cave, grid)) {
 			if (player_has(player, PF_UNLIGHT) && !square_islit(cave, grid)) {
 				g->lighting = LIGHTING_DARK;
 			} else if (OPT(player, view_yellow_light)) {
@@ -118,7 +118,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 		square_memorize(cave, y, x);
 	} else if (!square_isknown(cave, grid)) {
 		g->f_idx = FEAT_NONE;
-	} else if (square_isglow(cave, y, x)) {
+	} else if (square_isglow(cave, grid)) {
 		g->lighting = LIGHTING_LIT;
 	}
 
@@ -128,7 +128,7 @@ void map_info(unsigned y, unsigned x, struct grid_data *g)
 		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
 
     /* There is a trap in this square */
-    if (square_istrap(cave, y, x) && square_isknown(cave, grid)) {
+    if (square_istrap(cave, grid) && square_isknown(cave, grid)) {
 		struct trap *trap = square(cave, grid).trap;
 
 		/* Scan the square trap list */
@@ -222,7 +222,7 @@ void square_note_spot(struct chunk *c, int y, int x)
 
 	/* Require "seen" flag and the current level */
 	if (c != cave) return;
-	if (!square_isseen(c, y, x) && !square_isplayer(c, grid)) return;
+	if (!square_isseen(c, grid) && !square_isplayer(c, grid)) return;
 
 	/* Make the player know precisely what is on this grid */
 	square_know_pile(c, y, x);
@@ -354,7 +354,7 @@ static void cave_room_aux(struct point_set *seen, int y, int x)
 	if (!square_in_bounds(cave, grid))
 		return;
 
-	if (!square_isroom(cave, y, x))
+	if (!square_isroom(cave, grid))
 		return;
 
 	/* Add it to the "seen" set */
@@ -455,7 +455,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
-			if (!square_ismark(c, grid.y, grid.x) && square_isnotknown(c, grid))
+			if (!square_ismark(c, grid) && square_isnotknown(c, grid))
 				square_forget(c, grid.y, grid.x);
 		}
 	}
@@ -521,7 +521,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 			}
 
 			/* Forget unprocessed, unknown grids in the mapping area */
-			if (!square_ismark(c, grid.y, grid.x) && square_isnotknown(c, grid))
+			if (!square_ismark(c, grid) && square_isnotknown(c, grid))
 				square_forget(c, grid.y, grid.x);
 		}
 	}

@@ -692,7 +692,7 @@ bool project(struct source origin, int rad, struct loc finish,
 
 				/* Only do visuals if requested and within range limit. */
 				if (!blind && !(flg & (PROJECT_HIDE))) {
-					bool seen = square_isview(cave, y, x);
+					bool seen = square_isview(cave, loc(x, y));
 					bool beam = flg & (PROJECT_BEAM);
 
 					/* Tell the UI to display the bolt */
@@ -883,7 +883,7 @@ bool project(struct source origin, int rad, struct loc finish,
 	/* Establish which grids are visible - no blast visuals with PROJECT_HIDE */
 	for (i = 0; i < num_grids; i++) {
 		if (panel_contains(blast_grid[i].y, blast_grid[i].x) &&
-			square_isview(cave, blast_grid[i].y, blast_grid[i].x) &&
+			square_isview(cave, blast_grid[i]) &&
 			!blind && !(flg & (PROJECT_HIDE))) {
 			player_sees_grid[i] = true;
 		} else {
@@ -918,7 +918,7 @@ bool project(struct source origin, int rad, struct loc finish,
 			struct monster *mon = NULL;
 
 			/* Check this monster hasn't been processed already */
-			if (!square_isproject(cave, blast_grid[i].y, blast_grid[i].x))
+			if (!square_isproject(cave, blast_grid[i]))
 				continue;
 
 			/* Check there is actually a monster here */

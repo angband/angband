@@ -345,7 +345,8 @@ static bool find_start(struct chunk *c, int *y, int *x)
 
 				cave_find_in_range(c, y, 1, c->height - 2, x, 1,
 								   c->width - 2, square_isempty);
-				if (square_isvault(c, *y, *x)|| square_isno_stairs(c, *y, *x)) {
+				if (square_isvault(c, loc(*x, *y))||
+					square_isno_stairs(c, loc(*x, *y))) {
 					continue;
 				}
 				total_walls = square_num_walls_adjacent(c, *y, *x) +
@@ -601,7 +602,8 @@ void alloc_stairs(struct chunk *c, int feat, int num)
 
 					cave_find_in_range(c, &y, 1, c->height - 2, &x, 1,
 									   c->width - 2, square_isempty);
-					if (square_isvault(c, y, x)|| square_isno_stairs(c, y, x)) {
+					if (square_isvault(c, loc(x, y)) ||
+						square_isno_stairs(c, loc(x, y))) {
 						continue;
 					}
 					total_walls = square_num_walls_adjacent(c, y, x) +
@@ -667,10 +669,10 @@ bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
 		find_empty(c, &y, &x);
 
 		/* If we are ok with a corridor and we're in one, we're done */
-		if (set & SET_CORR && !square_isroom(c, y, x)) break;
+		if (set & SET_CORR && !square_isroom(c, loc(x, y))) break;
 
 		/* If we are ok with a room and we're in one, we're done */
-		if (set & SET_ROOM && square_isroom(c, y, x)) break;
+		if (set & SET_ROOM && square_isroom(c, loc(x, y))) break;
     }
 
     if (tries == 2000) return false;

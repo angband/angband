@@ -435,10 +435,11 @@ static void mark_wasseen(struct chunk *c)
 	/* Save the old "view" grids for later */
 	for (y = 0; y < c->height; y++) {
 		for (x = 0; x < c->width; x++) {
-			if (square_isseen(c, y, x))
-				sqinfo_on(square(c, loc(x, y)).info, SQUARE_WASSEEN);
-			sqinfo_off(square(c, loc(x, y)).info, SQUARE_VIEW);
-			sqinfo_off(square(c, loc(x, y)).info, SQUARE_SEEN);
+			struct loc grid = loc(x, y);
+			if (square_isseen(c, grid))
+				sqinfo_on(square(c, grid).info, SQUARE_WASSEEN);
+			sqinfo_off(square(c, grid).info, SQUARE_VIEW);
+			sqinfo_off(square(c, grid).info, SQUARE_SEEN);
 		}
 	}
 }
@@ -494,19 +495,20 @@ static void add_monster_lights(struct chunk *c, struct loc from)
  */
 static void update_one(struct chunk *c, int y, int x, int blind)
 {
+	struct loc grid = loc(x, y);
 
 	/* Remove view if blind, check visible squares for traps */
 	if (blind) {
-		sqinfo_off(square(c, loc(x, y)).info, SQUARE_SEEN);
-	} else if (square_isseen(c, y, x)) {
+		sqinfo_off(square(c, grid).info, SQUARE_SEEN);
+	} else if (square_isseen(c, grid)) {
 		square_reveal_trap(c, y, x, false, true);
 	}
 
 	/* Square went from unseen -> seen */
-	if (square_isseen(c, y, x) && !square_wasseen(c, y, x)) {
-		if (square_isfeel(c, y, x)) {
+	if (square_isseen(c, grid) && !square_wasseen(c, grid)) {
+		if (square_isfeel(c, grid)) {
 			c->feeling_squares++;
-			sqinfo_off(square(c, loc(x, y)).info, SQUARE_FEEL);
+			sqinfo_off(square(c, grid).info, SQUARE_FEEL);
 			/* Don't display feeling if it will display for the new level */
 			if ((c->feeling_squares == z_info->feeling_need) &&
 				!player->upkeep->only_partial) {
@@ -520,10 +522,10 @@ static void update_one(struct chunk *c, int y, int x, int blind)
 	}
 
 	/* Square went from seen -> unseen */
-	if (!square_isseen(c, y, x) && square_wasseen(c, y, x))
+	if (!square_isseen(c, grid) && square_wasseen(c, grid))
 		square_light_spot(c, y, x);
 
-	sqinfo_off(square(c, loc(x, y)).info, SQUARE_WASSEEN);
+	sqinfo_off(square(c, grid).info, SQUARE_WASSEEN);
 }
 
 /**
@@ -535,7 +537,7 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
 	int yc = y;
 	struct loc grid = loc(x, y);
 
-	if (square_isview(c, y, x))
+	if (square_isview(c, grid))
 		return;
 
 	sqinfo_on(square(c, grid).info, SQUARE_VIEW);
@@ -543,7 +545,7 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
 	if (lit)
 		sqinfo_on(square(c, grid).info, SQUARE_SEEN);
 
-	if (square_isglow(c, y, x)) {
+	if (square_isglow(c, grid)) {
 		if (square_iswall(c, grid)) {
 			/* For walls, move a bit towards the player.
 			 * TODO(elly): huh? why?
@@ -551,7 +553,7 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
 			xc = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
 			yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
 		}
-		if (square_isglow(c, yc, xc))
+		if (square_isglow(c, loc(xc, yc)))
 			sqinfo_on(square(c, grid).info, SQUARE_SEEN);
 	}
 }
@@ -662,7 +664,7 @@ void update_view(struct chunk *c, struct player *p)
 
 	/* Assume we can view the player grid */
 	sqinfo_on(square(c, loc(p->px, p->py)).info, SQUARE_VIEW);
-	if (radius > 0 || square_isglow(c, p->py, p->px))
+	if (radius > 0 || square_isglow(c, loc(p->px, p->py)))
 		sqinfo_on(square(c, loc(p->px, p->py)).info, SQUARE_SEEN);
 
 	/* View squares we have LOS to */
@@ -682,5 +684,5 @@ void update_view(struct chunk *c, struct player *p)
  */
 bool no_light(void)
 {
-	return (!square_isseen(cave, player->py, player->px));
+	return (!square_isseen(cave, loc(player->px, player->py)));
 }

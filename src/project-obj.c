@@ -540,7 +540,7 @@ bool project_o(struct source origin, int r, struct loc grid, int dam, int typ,
 
 			/* Effect observed */
 			if (obj->known && !ignore_item_ok(obj) &&
-				square_isseen(cave, grid.y, grid.x)) {
+				square_isseen(cave, grid)) {
 				obvious = true;
 				object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 			}

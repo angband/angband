@@ -311,7 +311,7 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 	}
 
 	/* If the player can see monster, set target and run towards them */
-	if (square_isview(c, my, mx)) {
+	if (square_isview(c, mon->grid)) {
 		mon->target.grid = target;
 		return true;
 	}
@@ -443,7 +443,7 @@ static bool get_move_find_safety(struct chunk *c, struct monster *mon)
 				continue;
 
 			/* Check for absence of shot (more or less) */
-			if (!square_isview(c, y, x)) {
+			if (!square_isview(c, loc(x, y))) {
 				/* Calculate distance from player */
 				dis = distance(loc(x, y), loc(px, py));
 
@@ -508,7 +508,7 @@ static bool get_move_find_hiding(struct chunk *c, struct monster *mon)
 			if (!square_isempty(c, loc(x, y))) continue;
 
 			/* Check for hidden, available grid */
-			if (!square_isview(c, y, x) &&
+			if (!square_isview(c, loc(x, y)) &&
 				projectable(c, mon->grid, loc(x, y), PROJECT_STOP)) {
 				/* Calculate distance from player */
 				dis = distance(loc(x, y), player_grid);
@@ -723,7 +723,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 			int rx = target.x + ddx_ddd[i];
 			/* Check grid around the player for room interior (room walls count)
 			 * or other empty space */
-			if (square_ispassable(c, loc(rx, ry)) || square_isroom(c, ry, rx)) {
+			if (square_ispassable(c, loc(rx, ry)) ||
+				square_isroom(c, loc(rx, ry))) {
 				/* One more open grid */
 				open++;
 			}
@@ -759,7 +760,7 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 
 	/* Monster groups try to surround the player */
 	if (!done && rf_has(mon->race->flags, RF_GROUP_AI) &&
-		square_isview(c, mon->grid.y, mon->grid.x)) {
+		square_isview(c, mon->grid)) {
 		int i, yy = mon->target.grid.y, xx = mon->target.grid.x;
 
 		/* If we are not already adjacent */
@@ -958,7 +959,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 		square_destroy_wall(c, ny, nx);
 
 		/* Note changes to viewable region */
-		if (square_isview(c, ny, nx))
+		if (square_isview(c, new))
 			player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		return true;
@@ -1006,7 +1007,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 			}
 		} else {
 			/* Closed or secret door -- always open or bash */
-			if (square_isview(c, ny, nx))
+			if (square_isview(c, new))
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			if (will_bash) {
@@ -1032,12 +1033,13 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
 								  int nx, int ny)
 {
-	assert(square_iswarded(c, loc(nx, ny)));
+	struct loc new = loc(nx, ny);
+	assert(square_iswarded(c, new));
 
 	/* Break the ward */
 	if (randint1(z_info->glyph_hardness) < mon->race->level) {
 		/* Describe observable breakage */
-		if (square_isseen(c, ny, nx)) {
+		if (square_isseen(c, new)) {
 			msg("The rune of protection is broken!");
 
 			/* Forget the rune */
@@ -1110,6 +1112,7 @@ static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
 void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 		const char *m_name, int nx, int ny)
 {
+	struct loc new = loc(nx, ny);
 	struct monster_lore *lore = get_lore(mon->race);
 	struct object *obj;
 	bool visible = monster_is_visible(mon);
@@ -1159,13 +1162,13 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 		if (safe) {
 			/* Only give a message for "take_item" */
 			if (rf_has(mon->race->flags, RF_TAKE_ITEM) && visible &&
-				square_isview(c, ny, nx) && !ignore_item_ok(obj)) {
+				square_isview(c, new) && !ignore_item_ok(obj)) {
 				/* Dump a message */
 				msg("%s tries to pick up %s, but fails.", m_name, o_name);
 			}
 		} else if (rf_has(mon->race->flags, RF_TAKE_ITEM)) {
 			/* Describe observable situations */
-			if (square_isseen(c, ny, nx) && !ignore_item_ok(obj))
+			if (square_isseen(c, new) && !ignore_item_ok(obj))
 				msg("%s picks up %s.", m_name, o_name);
 
 			/* Carry the object */
@@ -1175,7 +1178,7 @@ void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
 			square_light_spot(c, ny, nx);
 		} else {
 			/* Describe observable situations */
-			if (square_isseen(c, ny, nx) && !ignore_item_ok(obj))
+			if (square_isseen(c, new) && !ignore_item_ok(obj))
 				msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 
 			/* Delete the object */
@@ -1256,7 +1259,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		int nx = ox + ddx[d];
 
 		/* Tracking monsters have their best direction, don't change */
-		if ((i > 0) && !stagger && !square_isview(c, oy, ox) && tracking) {
+		if ((i > 0) && !stagger && !square_isview(c, mon->grid) && tracking) {
 			break;
 		}
 
@@ -1366,7 +1369,7 @@ static bool monster_check_active(struct chunk *c, struct monster *mon)
 	} else if (mon->hp < mon->maxhp) {
 		/* Monster is hurt */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
-	} else if (square_isview(c, mon->grid.y, mon->grid.x)) {
+	} else if (square_isview(c, mon->grid)) {
 		/* Monster can "see" the player (checked backwards) */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 	} else if (monster_can_hear(c, mon)) {

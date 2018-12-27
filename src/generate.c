@@ -645,7 +645,7 @@ static void place_feeling(struct chunk *c)
 				continue;
 
 			/* Check to see if it is already marked */
-			if (square_isfeel(c, grid.y, grid.x))
+			if (square_isfeel(c, grid))
 				continue;
 
 			/* Set the cave square appropriately */
@@ -1089,7 +1089,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	/* allow direct transfer if target location is teleportable */
 	if (square_in_bounds_fully(c, loc(p->px, p->py))
 		&& square_isarrivable(c, loc(p->px, p->py))
-			&& !square_isvault(c, p->py, p->px)) {
+		&& !square_isvault(c, loc(p->px, p->py))) {
 		return;
 	}
 	
@@ -1107,7 +1107,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 		tx = randint0(c->width-1) + 1;
 		ty = randint0(c->height-1) + 1;
 		if (square_isempty(c, loc(tx, ty))
-				&& !square_isvault(c, ty, tx)) {
+			&& !square_isvault(c, loc(tx, ty))) {
 			p->py = ty;
 			p->px = tx;
 			return;
@@ -1129,7 +1129,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	
 	while (1) {		//until full loop through dungeon
 		if (square_isempty(c, loc(tx, ty))) {
-			if (!square_isvault(c, ty, tx)) {
+			if (!square_isvault(c, loc(tx, ty))) {
 				// ok location
 				p->py = ty;
 				p->px = tx;
@@ -1285,7 +1285,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 								struct loc grid = loc(x, y);
 								if (square_in_bounds_fully(*c, grid) &&
 									square_isempty(*c, grid) &&
-									!square_isvault(*c, y, x)) {
+									!square_isvault(*c, grid)) {
 									p->py = y;
 									p->px = x;
 									found = true;

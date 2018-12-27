@@ -413,8 +413,7 @@ bool square_isnotknown(struct chunk *c, struct loc grid) {
 /**
  * True if the square is marked
  */
-bool square_ismark(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_ismark(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_MARK);
 }
@@ -422,8 +421,7 @@ bool square_ismark(struct chunk *c, int y, int x) {
 /**
  * True if the square is lit
  */
-bool square_isglow(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isglow(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_GLOW);
 }
@@ -433,8 +431,7 @@ bool square_isglow(struct chunk *c, int y, int x) {
  *
  * This doesn't say what kind of square it is, just that it is part of a vault.
  */
-bool square_isvault(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isvault(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_VAULT);
 }
@@ -442,8 +439,7 @@ bool square_isvault(struct chunk *c, int y, int x) {
 /**
  * True if the square is part of a room.
  */
-bool square_isroom(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isroom(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_ROOM);
 }
@@ -451,8 +447,7 @@ bool square_isroom(struct chunk *c, int y, int x) {
 /**
  * True if the square has been seen by the player
  */
-bool square_isseen(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isseen(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_SEEN);
 }
@@ -460,8 +455,7 @@ bool square_isseen(struct chunk *c, int y, int x) {
 /**
  * True if the cave square is currently viewable by the player
  */
-bool square_isview(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isview(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_VIEW);
 }
@@ -469,8 +463,7 @@ bool square_isview(struct chunk *c, int y, int x) {
 /**
  * True if the cave square was seen before the current update
  */
-bool square_wasseen(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_wasseen(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_WASSEEN);
 }
@@ -478,8 +471,7 @@ bool square_wasseen(struct chunk *c, int y, int x) {
 /**
  * True if cave square is a feeling trigger square 
  */
-bool square_isfeel(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isfeel(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_FEEL);
 }
@@ -487,8 +479,7 @@ bool square_isfeel(struct chunk *c, int y, int x) {
 /**
  * True if the square has a known trap
  */
-bool square_istrap(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_istrap(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_TRAP);
 }
@@ -496,8 +487,7 @@ bool square_istrap(struct chunk *c, int y, int x) {
 /**
  * True if the square has an unknown trap
  */
-bool square_isinvis(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isinvis(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_INVIS);
 }
@@ -505,8 +495,7 @@ bool square_isinvis(struct chunk *c, int y, int x) {
 /**
  * True if cave square is an inner wall (generation)
  */
-bool square_iswall_inner(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_iswall_inner(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_WALL_INNER);
 }
@@ -514,8 +503,7 @@ bool square_iswall_inner(struct chunk *c, int y, int x) {
 /**
  * True if cave square is an outer wall (generation)
  */
-bool square_iswall_outer(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_iswall_outer(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_WALL_OUTER);
 }
@@ -523,8 +511,7 @@ bool square_iswall_outer(struct chunk *c, int y, int x) {
 /**
  * True if cave square is a solid wall (generation)
  */
-bool square_iswall_solid(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_iswall_solid(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_WALL_SOLID);
 }
@@ -532,8 +519,7 @@ bool square_iswall_solid(struct chunk *c, int y, int x) {
 /**
  * True if cave square has monster restrictions (generation)
  */
-bool square_ismon_restrict(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_ismon_restrict(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_MON_RESTRICT);
 }
@@ -541,8 +527,7 @@ bool square_ismon_restrict(struct chunk *c, int y, int x) {
 /**
  * True if cave square can't be teleported from by the player
  */
-bool square_isno_teleport(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isno_teleport(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_NO_TELEPORT);
 }
@@ -550,8 +535,7 @@ bool square_isno_teleport(struct chunk *c, int y, int x) {
 /**
  * True if cave square can't be magically mapped by the player
  */
-bool square_isno_map(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isno_map(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_NO_MAP);
 }
@@ -559,8 +543,7 @@ bool square_isno_map(struct chunk *c, int y, int x) {
 /**
  * True if cave square can't be detected by player ESP
  */
-bool square_isno_esp(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isno_esp(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_NO_ESP);
 }
@@ -568,8 +551,7 @@ bool square_isno_esp(struct chunk *c, int y, int x) {
 /**
  * True if cave square is marked for projection processing
  */
-bool square_isproject(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isproject(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_PROJECT);
 }
@@ -577,8 +559,7 @@ bool square_isproject(struct chunk *c, int y, int x) {
 /**
  * True if cave square has been detected for traps
  */
-bool square_isdtrap(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isdtrap(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_DTRAP);
 }
@@ -586,8 +567,7 @@ bool square_isdtrap(struct chunk *c, int y, int x) {
 /**
  * True if cave square is inappropriate to place stairs
  */
-bool square_isno_stairs(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+bool square_isno_stairs(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	return sqinfo_has(square(c, grid).info, SQUARE_NO_STAIRS);
 }
@@ -636,7 +616,7 @@ bool square_isarrivable(struct chunk *c, struct loc grid) {
 bool square_canputitem(struct chunk *c, struct loc grid) {
 	if (!square_isobjectholding(c, grid))
 		return false;
-	if (square_istrap(c, grid.y, grid.x))
+	if (square_istrap(c, grid))
 		return false;
 	return !square_object(c, grid.y, grid.x);
 }
@@ -725,7 +705,7 @@ bool square_islit(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 
 	/* Lit by itself or the player */
-	if (square_isglow(c, grid.y, grid.x)) return true;
+	if (square_isglow(c, grid)) return true;
 	if (player->state.cur_light > 0) return true;
 
 	/* Lit by adjacent monster or terrain */
@@ -847,20 +827,20 @@ bool square_isdisarmabletrap(struct chunk *c, struct loc grid)
 bool square_dtrap_edge(struct chunk *c, struct loc grid)
 {
 	/* Check if the square is a dtrap in the first place */
-	if (!square_isdtrap(c, grid.y, grid.x)) return false;
+	if (!square_isdtrap(c, grid)) return false;
 
 	/* Check for non-dtrap adjacent grids */
 	if (square_in_bounds_fully(c, next_grid(grid, DIR_S)) &&
-		(!square_isdtrap(c, grid.y + 1, grid.x)))
+		(!square_isdtrap(c, next_grid(grid, DIR_S))))
 		return true;
 	if (square_in_bounds_fully(c, next_grid(grid, DIR_E)) &&
-		(!square_isdtrap(c, grid.y, grid.x + 1)))
+		(!square_isdtrap(c, next_grid(grid, DIR_E))))
 		return true;
 	if (square_in_bounds_fully(c, next_grid(grid, DIR_N)) &&
-		(!square_isdtrap(c, grid.y - 1, grid.x)))
+		(!square_isdtrap(c, next_grid(grid, DIR_N))))
 		return true;
 	if (square_in_bounds_fully(c, next_grid(grid, DIR_W)) &&
-		(!square_isdtrap(c, grid.y, grid.x - 1)))
+		(!square_isdtrap(c, next_grid(grid, DIR_W))))
 		return true;
 
 	return false;
@@ -922,7 +902,7 @@ bool square_isbelievedwall(struct chunk *c, struct loc grid)
  */
 bool square_suits_stairs_well(struct chunk *c, struct loc grid)
 {
-	if (square_isvault(c, grid.y, grid.x) || square_isno_stairs(c, grid.y, grid.x)) return false;
+	if (square_isvault(c, grid) || square_isno_stairs(c, grid)) return false;
 	return (square_num_walls_adjacent(c, grid.y, grid.x) == 3) &&
 		(square_num_walls_diagonal(c, grid.y, grid.x) == 4) && square_isempty(c, grid);
 }
@@ -932,7 +912,7 @@ bool square_suits_stairs_well(struct chunk *c, struct loc grid)
  */
 bool square_suits_stairs_ok(struct chunk *c, struct loc grid)
 {
-	if (square_isvault(c, grid.y, grid.x) || square_isno_stairs(c, grid.y, grid.x)) return false;
+	if (square_isvault(c, grid) || square_isno_stairs(c, grid)) return false;
 	return (square_num_walls_adjacent(c, grid.y, grid.x) == 2) &&
 		(square_num_walls_diagonal(c, grid.y, grid.x) == 4) && square_isempty(c, grid);
 }

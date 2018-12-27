@@ -835,7 +835,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 			object_absorb(obj, drop);
 
 			/* Note the pile */
-			if (square_isview(c, y, x)) {
+			if (square_isview(c, grid)) {
 				square_note_spot(c, y, x);
 			}
 
@@ -946,7 +946,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 				!square_in_bounds_fully(cave, try) ||
 				!los(cave, start, try) ||
 				!square_isfloor(cave, try) ||
-				square_istrap(cave, try.y, try.x))
+				square_istrap(cave, try))
 				continue;
 
 			/* Analyse the grid for carrying the new object */

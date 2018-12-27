@@ -1348,7 +1348,7 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 		if (!square_isempty(c, loc(x, y))) continue;
 
 		/* Do not put random monsters in marked rooms. */
-		if ((!character_dungeon) && square_ismon_restrict(c, y, x))
+		if ((!character_dungeon) && square_ismon_restrict(c, loc(x, y)))
 			continue;
 
 		/* Accept far away grids */

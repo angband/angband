@@ -891,7 +891,7 @@ static size_t prt_level_feeling(int row, int col)
 static size_t prt_dtrap(int row, int col)
 {
 	/* The player is in a trap-detected grid */
-	if (square_isdtrap(cave, player->py, player->px)) {
+	if (square_isdtrap(cave, loc(player->px, player->py))) {
 		/* The player is on the border */
 		if (square_dtrap_edge(cave, loc(player->px, player->py)))
 			c_put_str(COLOUR_YELLOW, "DTrap", row, col);

@@ -791,7 +791,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 		struct monster *mon = NULL;
 		int ny = path_g[i].y;
 		int nx = path_g[i].x;
-		bool see = square_isseen(cave, ny, nx);
+		bool see = square_isseen(cave, path_g[i]);
 
 		/* Stop before hitting walls */
 		if (!(square_ispassable(cave, path_g[i])) &&

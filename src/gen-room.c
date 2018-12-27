@@ -615,7 +615,7 @@ extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2,
 			struct loc grid = loc(x, y);
 
 			/* Do not touch vault grids. */
-			if (square_isvault(c, y, x))
+			if (square_isvault(c, grid))
 				continue;
 
 			/* Do not touch occupied grids. */
@@ -1424,11 +1424,12 @@ static bool build_vault_type(struct chunk *c, int y0, int x0, const char *typ)
  */
 static void make_inner_chamber_wall(struct chunk *c, int y, int x)
 {
-	if ((square(c, loc(x, y)).feat != FEAT_GRANITE) &&
-		(square(c, loc(x, y)).feat != FEAT_MAGMA))
+	struct loc grid = loc(x, y);
+	if ((square(c, grid).feat != FEAT_GRANITE) &&
+		(square(c, grid).feat != FEAT_MAGMA))
 		return;
-	if (square_iswall_outer(c, y, x)) return;
-	if (square_iswall_solid(c, y, x)) return;
+	if (square_iswall_outer(c, grid)) return;
+	if (square_iswall_solid(c, grid)) return;
 	set_marked_granite(c, y, x, SQUARE_WALL_INNER);
 }
 
@@ -1481,7 +1482,7 @@ static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 		}
 
 		/* If not an inner wall square, try again. */
-		if (!square_iswall_inner(c, y, x))
+		if (!square_iswall_inner(c, loc(x, y)))
 			continue;
 
 		/* Paranoia */
@@ -1503,7 +1504,7 @@ static void make_chamber(struct chunk *c, int y1, int x1, int y2, int x2)
 				break;
 
 			/* Count the inner walls. */
-			if (square_iswall_inner(c, yy, xx))
+			if (square_iswall_inner(c, loc(xx, yy)))
 				count++;
 
 			/* No more than two walls adjacent (plus the one we're on). */
@@ -2753,8 +2754,8 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 
 				/* Count the walls and dungeon granite. */
 				if ((square(c, loc(xx, yy)).feat == FEAT_GRANITE) &&
-					(!square_iswall_outer(c, yy, xx)) &&
-					(!square_iswall_solid(c, yy, xx)))
+					(!square_iswall_outer(c, loc(xx, yy))) &&
+					(!square_iswall_solid(c, loc(xx, yy))))
 					count++;
 			}
 
@@ -2803,7 +2804,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 					xx1 = x + ddx_ddd[d];
 
 					/* Need inner wall. */
-					if (!square_iswall_inner(c, yy1, xx1)) 
+					if (!square_iswall_inner(c, loc(xx1, yy1))) 
 						continue;
 
 					/* Keep going in the same direction, if in bounds. */
@@ -2826,7 +2827,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 					}
 
 					/* If we find more inner wall... */
-					if (square_iswall_inner(c, yy2, xx2)) {
+					if (square_iswall_inner(c, loc(xx2, yy2))) {
 						/* ...Keep going in the same direction. */
 						yy3 = yy2 + ddy_ddd[d];
 						xx3 = xx2 + ddx_ddd[d];
@@ -2875,7 +2876,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 			 x < (x2 + 2 < c->width ? x2 + 2 : c->width); x++) {
 			struct loc grid = loc(x, y);
 
-			if (square_iswall_inner(c, y, x)
+			if (square_iswall_inner(c, grid)
 				|| (square(c, loc(x, y)).feat == FEAT_MAGMA)) {
 				for (d = 0; d < 9; d++) {
 					/* Extract adjacent location */
@@ -2919,10 +2920,12 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 		 y < (y2 + 2 < c->height ? y2 + 2 : c->height); y++) {
 		for (x = (x1 - 1 > 0 ? x1 - 1 : 0);
 			 x < (x2 + 2 < c->width ? x2 + 2 : c->width); x++) {
-			/* Stay legal. */
-			if (!square_in_bounds_fully(c, loc(x, y))) continue;
+			struct loc grid = loc(x, y);
 
-			if (square_iswall_inner(c, y, x)) {
+			/* Stay legal. */
+			if (!square_in_bounds_fully(c, grid)) continue;
+
+			if (square_iswall_inner(c, grid)) {
 				for (d = 0; d < 9; d++) {
 					/* Extract adjacent location */
 					int yy = y + ddy_ddd[d];
@@ -2930,9 +2933,9 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 
 					/* Look for dungeon granite */
 					if ((square(c, loc(xx, yy)).feat == FEAT_GRANITE) && 
-						(!square_iswall_inner(c, y, x)) &&
-						(!square_iswall_outer(c, y, x)) &&
-						(!square_iswall_solid(c, y, x)))
+						(!square_iswall_inner(c, grid)) &&
+						(!square_iswall_outer(c, grid)) &&
+						(!square_iswall_solid(c, grid)))
 					{
 						/* Turn me into outer wall. */
 						set_marked_granite(c, y, x, SQUARE_WALL_OUTER);

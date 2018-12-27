@@ -314,26 +314,26 @@ bool square_isknown(struct chunk *c, struct loc grid);
 bool square_isnotknown(struct chunk *c, struct loc grid);
 
 /* SQUARE INFO PREDICATES */
-bool square_ismark(struct chunk *c, int y, int x);
-bool square_isglow(struct chunk *c, int y, int x);
-bool square_isvault(struct chunk *c, int y, int x);
-bool square_isroom(struct chunk *c, int y, int x);
-bool square_isseen(struct chunk *c, int y, int x);
-bool square_isview(struct chunk *c, int y, int x);
-bool square_wasseen(struct chunk *c, int y, int x);
-bool square_isfeel(struct chunk *c, int y, int x);
-bool square_istrap(struct chunk *c, int y, int x);
-bool square_isinvis(struct chunk *c, int y, int x);
-bool square_iswall_inner(struct chunk *c, int y, int x);
-bool square_iswall_outer(struct chunk *c, int y, int x);
-bool square_iswall_solid(struct chunk *c, int y, int x);
-bool square_ismon_restrict(struct chunk *c, int y, int x);
-bool square_isno_teleport(struct chunk *c, int y, int x);
-bool square_isno_map(struct chunk *c, int y, int x);
-bool square_isno_esp(struct chunk *c, int y, int x);
-bool square_isproject(struct chunk *c, int y, int x);
-bool square_isdtrap(struct chunk *c, int y, int x);
-bool square_isno_stairs(struct chunk *c, int y, int x);
+bool square_ismark(struct chunk *c, struct loc grid);
+bool square_isglow(struct chunk *c, struct loc grid);
+bool square_isvault(struct chunk *c, struct loc grid);
+bool square_isroom(struct chunk *c, struct loc grid);
+bool square_isseen(struct chunk *c, struct loc grid);
+bool square_isview(struct chunk *c, struct loc grid);
+bool square_wasseen(struct chunk *c, struct loc grid);
+bool square_isfeel(struct chunk *c, struct loc grid);
+bool square_istrap(struct chunk *c, struct loc grid);
+bool square_isinvis(struct chunk *c, struct loc grid);
+bool square_iswall_inner(struct chunk *c, struct loc grid);
+bool square_iswall_outer(struct chunk *c, struct loc grid);
+bool square_iswall_solid(struct chunk *c, struct loc grid);
+bool square_ismon_restrict(struct chunk *c, struct loc grid);
+bool square_isno_teleport(struct chunk *c, struct loc grid);
+bool square_isno_map(struct chunk *c, struct loc grid);
+bool square_isno_esp(struct chunk *c, struct loc grid);
+bool square_isproject(struct chunk *c, struct loc grid);
+bool square_isdtrap(struct chunk *c, struct loc grid);
+bool square_isno_stairs(struct chunk *c, struct loc grid);
 
 /* SQUARE BEHAVIOR PREDICATES */
 bool square_isopen(struct chunk *c, struct loc grid);

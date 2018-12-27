@@ -61,10 +61,11 @@ struct trap_kind *lookup_trap(const char *desc)
  */
 bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
 {
+	struct loc grid = loc(x, y);
     struct trap *trap = square_trap(c, y, x);
 	
     /* First, check the trap marker */
-    if (!square_istrap(c, y, x))
+    if (!square_istrap(c, grid))
 		return false;
 	
     /* Scan the square trap list */
@@ -84,10 +85,11 @@ bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
  */
 bool square_trap_flag(struct chunk *c, int y, int x, int flag)
 {
+	struct loc grid = loc(x, y);
     struct trap *trap = square_trap(c, y, x);
 
     /* First, check the trap marker */
-    if (!square_istrap(c, y, x))
+    if (!square_istrap(c, grid))
 		return false;
 	
     /* Scan the square trap list */
@@ -150,11 +152,12 @@ static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
  */
 bool square_player_trap_allowed(struct chunk *c, int y, int x)
 {
-    /*
-     * We currently forbid multiple traps in a grid under normal conditions.
+	struct loc grid = loc(x, y);
+
+    /* We currently forbid multiple traps in a grid under normal conditions.
      * If this changes, various bits of code elsewhere will have to change too.
      */
-    if (square_istrap(c, y, x))
+    if (square_istrap(c, grid))
 		return false;
 
     /* We currently forbid traps in a grid with objects. */
@@ -520,7 +523,7 @@ bool square_remove_all_traps(struct chunk *c, int y, int x)
 	c->squares[y][x].trap = NULL;
 
 	/* Refresh grids that the character can see */
-	if (square_isseen(c, y, x)) {
+	if (square_isseen(c, grid)) {
 		square_light_spot(c, y, x);
 	}
 
@@ -568,7 +571,7 @@ bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
 	}
 
 	/* Refresh grids that the character can see */
-	if (square_isseen(c, y, x))
+	if (square_isseen(c, grid))
 		square_light_spot(c, y, x);
 
 	(void)square_verify_trap(c, y, x, 0);
@@ -618,7 +621,7 @@ bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
     }
 
     /* Refresh grids that the character can see */
-    if (square_isseen(c, y, x))
+    if (square_isseen(c, grid))
 		square_light_spot(c, y, x);
 
     /* Verify traps (remove marker if appropriate) */

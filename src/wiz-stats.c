@@ -461,7 +461,7 @@ static void get_obj_data(const struct object *obj, int y, int x, bool mon,
 						 bool uniq)
 {
 
-	bool vault = square_isvault(cave, y, x);
+	bool vault = square_isvault(cave, loc(x, y));
 	int number = obj->number;
 	static int lvl;
 	struct artifact *art;
@@ -1933,7 +1933,7 @@ void disconnect_stats(void)
 				}
 
 				/* Ignore vaults as they are often disconnected */
-				if (square_isvault(cave, y, x)) continue;
+				if (square_isvault(cave, grid)) continue;
 
 				/* We have a disconnected area */
 				has_dsc = true;

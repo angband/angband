@@ -507,11 +507,12 @@ static bool twall(int y, int x)
  */
 static bool do_cmd_tunnel_aux(int y, int x)
 {
+	struct loc grid = loc(x, y);
 	bool more = false;
 	int digging_chances[DIGGING_MAX];
 	bool okay = false;
-	bool gold = square_hasgoldvein(cave, loc(x, y));
-	bool rubble = square_isrubble(cave, loc(x, y));
+	bool gold = square_hasgoldvein(cave, grid);
+	bool rubble = square_isrubble(cave, grid);
 
 	/* Verify legality */
 	if (!do_cmd_tunnel_test(y, x)) return (false);
@@ -536,7 +537,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 
 				/* Observe the new object */
 				if (!ignore_item_ok(square_object(cave, y, x)) &&
-					square_isseen(cave, y, x))
+					square_isseen(cave, grid))
 					msg("You have found something!");
 			} 
 		} else if (gold) {
@@ -1007,8 +1008,8 @@ void move_player(int dir, bool disarm)
 		}
 	} else {
 		/* See if trap detection status will change */
-		bool old_dtrap = square_isdtrap(cave, player->py, player->px);
-		bool new_dtrap = square_isdtrap(cave, y, x);
+		bool old_dtrap = square_isdtrap(cave, loc(player->px, player->py));
+		bool new_dtrap = square_isdtrap(cave, grid);
 
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap)

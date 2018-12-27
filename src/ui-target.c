@@ -850,11 +850,11 @@ static int draw_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a,
 			colour = COLOUR_YELLOW;
 
 		else if (!square_isprojectable(cave, grid) &&
-				 (square_isknown(cave, grid) || square_isseen(cave, grid.y, grid.x)))
+				 (square_isknown(cave, grid) || square_isseen(cave, grid)))
 			/* Known walls are blue. */
 			colour = COLOUR_BLUE;
 
-		else if (!square_isknown(cave, grid) && !square_isseen(cave, grid.y, grid.x)) {
+		else if (!square_isknown(cave, grid) && !square_isseen(cave, grid)) {
 			/* Unknown squares are grey. */
 			pastknown = true;
 			colour = COLOUR_L_DARK;

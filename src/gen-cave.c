@@ -268,7 +268,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 					if (square_is_granite_with_flag(c, y, x, SQUARE_WALL_OUTER))
 						set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
 
-		} else if (square_isroom(c, tmp_row, tmp_col)) {
+		} else if (square_isroom(c, loc(tmp_col, tmp_row))) {
 			/* Travel quickly through rooms */
 			/* Accept the location */
 			row1 = tmp_row;
@@ -375,7 +375,7 @@ static int next_to_corr(struct chunk *c, int y1, int x1)
 		struct loc grid = loc_sum(loc(x1, y1), ddgrid_ddd[i]);
 
 		/* Count only floors which aren't part of rooms */
-		if (square_isfloor(c, grid) && !square_isroom(c, grid.y, grid.x)) k++;
+		if (square_isfloor(c, grid) && !square_isroom(c, grid)) k++;
     }
 
     /* Return the number of corridors */
@@ -420,7 +420,7 @@ static void try_door(struct chunk *c, int y, int x)
     assert(square_in_bounds(c, grid));
 
     if (square_isstrongwall(c, grid)) return;
-    if (square_isroom(c, y, x)) return;
+    if (square_isroom(c, grid)) return;
     if (square_isplayertrap(c, grid)) return;
     if (square_isdoor(c, grid)) return;
 
@@ -1013,7 +1013,7 @@ static int ignore_point(struct chunk *c, int colors[], int y, int x) {
 
     if (y < 0 || x < 0 || y >= h || x >= w) return true;
     if (colors[n]) return true;
-    //if (square_isvault(c, y, x)) return false;
+    //if (square_isvault(c, grid)) return false;
     if (square_ispassable(c, grid)) return false;
     if (square_isdoor(c, grid)) return false;
     return true;
@@ -1231,7 +1231,8 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 				int x, y;
 				i_to_yx(n, w, &y, &x);
 				colors[n] = color;
-				if (!square_isperm(c, loc(x, y)) && !square_isvault(c, y, x)) {
+				if (!square_isperm(c, loc(x, y)) &&
+					!square_isvault(c, loc(x, y))) {
 					square_set_feat(c, y, x, FEAT_FLOOR);
 				}
 				n = previous[n];

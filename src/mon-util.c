@@ -313,7 +313,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	if (mflag_has(mon->mflag, MFLAG_MARK)) flag = true;
 
 	/* Check if telepathy works */
-	if (square_isno_esp(c, fy, fx) || square_isno_esp(c, py, px))
+	if (square_isno_esp(c, mon->grid) || square_isno_esp(c, loc(px, py)))
 		telepathy_ok = false;
 
 	/* Nearby */
@@ -329,19 +329,19 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 					flag = true;
 
 					/* Check for LOS so that MFLAG_VIEW is set later */
-					if (square_isview(c, fy, fx)) easy = true;
+					if (square_isview(c, mon->grid)) easy = true;
 				}
 			} else {
 				/* Normal mind, allow telepathy */
 				flag = true;
 
 				/* Check for LOS to that MFLAG_VIEW is set later */
-				if (square_isview(c, fy, fx)) easy = true;
+				if (square_isview(c, mon->grid)) easy = true;
 			}
 		}
 
 		/* Normal line of sight and player is not blind */
-		if (square_isview(c, fy, fx) && !player->timed[TMD_BLIND]) {
+		if (square_isview(c, mon->grid) && !player->timed[TMD_BLIND]) {
 			/* Use "infravision" */
 			if (d <= player->state.see_infra) {
 				/* Learn about warm/cold blood */
@@ -355,7 +355,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			}
 
 			/* Use illumination */
-			if (square_isseen(c, fy, fx)) {
+			if (square_isseen(c, mon->grid)) {
 				/* Learn it emits light */
 				rf_on(lore->flags, RF_HAS_LIGHT);
 
@@ -638,7 +638,7 @@ void become_aware(struct monster *mon)
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 			/* Print a message */
-			if (square_isseen(cave, obj->iy, obj->ix))
+			if (square_isseen(cave, loc(obj->ix, obj->iy)))
 				msg("The %s was really a monster!", o_name);
 
 			/* Clear the mimicry */

@@ -1514,7 +1514,7 @@ bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 			struct loc grid = loc(x, y);
 
 			/* Some squares can't be mapped */
-			if (square_isno_map(cave, y, x)) continue;
+			if (square_isno_map(cave, grid)) continue;
 
 			/* All non-walls are "checked" */
 			if (!square_seemslikewall(cave, grid)) {
@@ -2409,7 +2409,7 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 		grid = mon->grid;
 
 		/* Require line of sight */
-		if (!square_isview(cave, grid.y, grid.x)) continue;
+		if (!square_isview(cave, grid)) continue;
 
 		/* Jump directly to the target monster */
 		(void)project(source_player(), 0, grid, dam, typ, flg, 0, 0, context->obj);
@@ -2660,7 +2660,7 @@ bool effect_handler_PROBE(effect_handler_context_t *context)
 		if (!mon->race) continue;
 
 		/* Require line of sight */
-		if (!square_isview(cave, mon->grid.y, mon->grid.x)) continue;
+		if (!square_isview(cave, mon->grid)) continue;
 
 		/* Probe visible monsters */
 		if (monster_is_visible(mon)) {
@@ -2743,7 +2743,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		start = loc(player->px, player->py);
 
 		/* Check for a no teleport grid */
-		if (square_isno_teleport(cave, start.y, start.x) && 
+		if (square_isno_teleport(cave, start) && 
 			((dis > 10) || (dis == 0))) {
 			msg("Teleportation forbidden!");
 			return true;
@@ -2794,7 +2794,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 			if (!is_player && square_iswarded(cave, grid)) continue;
 
 			/* No teleporting into vaults and such, unless there's no choice */
-			if (square_isvault(cave, y, x)) {
+			if (square_isvault(cave, grid)) {
 				if (!only_vault_grids_possible) {
 					continue;
 				}
@@ -2922,7 +2922,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		}
 
 		/* Randomise the landing a bit if it's a vault */
-		if (square_isvault(cave, ny, nx)) dis = 10;
+		if (square_isvault(cave, loc(nx, ny))) dis = 10;
 	}
 
 	/* Find a usable location */

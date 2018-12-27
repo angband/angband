@@ -375,7 +375,7 @@ bool target_sighted(void)
 			panel_contains(target.grid.y, target.grid.x) &&
 			 /* either the target is a grid and is visible, or it is a monster
 			  * that is visible */
-		((!target.midx && square_isseen(cave, target.grid.y, target.grid.x)) ||
+		((!target.midx && square_isseen(cave, target.grid)) ||
 		 (target.midx && monster_is_visible(cave_monster(cave, target.midx))));
 }
 
