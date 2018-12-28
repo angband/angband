@@ -5,7 +5,7 @@
 #ifndef INCLUDED_OBJECT_H
 #define INCLUDED_OBJECT_H
 
-#include "z-rand.h"
+#include "z-type.h"
 #include "z-quark.h"
 #include "z-bitflag.h"
 #include "z-dice.h"
@@ -389,7 +389,7 @@ struct curse_data {
  * monster's inventory.
  *
  * The "held_m_idx" field is used to indicate which monster, if any,
- * is holding the object.  Objects being held have "ix = 0" and "iy = 0".
+ * is holding the object.  Objects being held have (0, 0) as a grid.
  *
  * Note that object records are not now copied, but allocated on object
  * creation and freed on object destruction.  These records are handed
@@ -407,8 +407,7 @@ struct object {
 
 	u16b oidx;				/**< Item list index, if any */
 
-	byte iy;				/**< Y-position on map, or zero */
-	byte ix;				/**< X-position on map, or zero */
+	struct loc grid;		/**< position on map, or (0, 0) */
 
 	byte tval;				/**< Item type (from kind) */
 	byte sval;				/**< Item sub-type (from kind) */
@@ -461,8 +460,7 @@ static struct object const OBJECT_NULL = {
 	.next = NULL,
 	.known = NULL,
 	.oidx = 0,
-	.iy = 0,
-	.ix = 0,
+	.grid = { 0, 0 },
 	.tval = 0,
 	.sval = 0,
 	.pval = 0,

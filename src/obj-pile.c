@@ -327,8 +327,7 @@ void object_delete(struct object **obj_address)
 	if (cave && player && player->cave && obj->oidx &&
 		(obj == cave->objects[obj->oidx]) &&
 		player->cave->objects[obj->oidx]) {
-		obj->iy = 0;
-		obj->ix = 0;
+		obj->grid = loc(0, 0);
 		obj->held_m_idx = 0;
 		obj->mimicking_m_idx = 0;
 
@@ -751,10 +750,9 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 		usable = object_split(obj, num);
 	} else {
 		usable = obj;
-		square_excise_object(player->cave, loc(usable->ix, usable->iy),
-							 usable->known);
+		square_excise_object(player->cave, usable->grid, usable->known);
 		delist_object(player->cave, usable->known);
-		square_excise_object(cave, loc(usable->ix, usable->iy), usable);
+		square_excise_object(cave, usable->grid, usable);
 		delist_object(cave, usable);
 		*none_left = true;
 
@@ -767,10 +765,8 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 	}
 
 	/* Object no longer has a location */
-	usable->known->iy = 0;
-	usable->known->ix = 0;
-	usable->iy = 0;
-	usable->ix = 0;
+	usable->known->grid = loc(0, 0);
+	usable->grid = loc(0, 0);
 
 	/* Housekeeping */
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
@@ -866,8 +862,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 	}
 
 	/* Location */
-	drop->iy = y;
-	drop->ix = x;
+	drop->grid = grid;
 
 	/* Forget monster */
 	drop->held_m_idx = 0;
@@ -906,8 +901,8 @@ static void floor_carry_fail(struct object *drop, bool broke)
 			: VERB_AGREEMENT(drop->number, "disappears", "disappear");
 		object_desc(o_name, sizeof(o_name), drop, ODESC_BASE);
 		msg("The %s %s.", o_name, verb);
-		if (known->iy && known->ix)
-			square_excise_object(player->cave, loc(known->ix, known->iy), known);
+		if (!loc_is_zero(known->grid))
+			square_excise_object(player->cave, known->grid, known);
 		delist_object(player->cave, known);
 		object_delete(&known);
 	}
@@ -1079,8 +1074,7 @@ void push_object(int y, int x)
 		/* Orphan the object */
 		obj->next = NULL;
 		obj->prev = NULL;
-		obj->iy = 0;
-		obj->ix = 0;
+		obj->grid = loc(0, 0);
 
 		/* Next object */
 		obj = next;

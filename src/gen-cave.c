@@ -561,10 +561,9 @@ struct chunk *classic_gen(struct player *p, int min_height, int min_width) {
     for (i = 0; i < dun->cent_n; i++) {
 		int pick1 = randint0(dun->cent_n);
 		int pick2 = randint0(dun->cent_n);
-		struct loc tmp;
-		loc_set_eq(&tmp, dun->cent[pick1]);
-		loc_set_eq(&dun->cent[pick1], dun->cent[pick2]);
-		loc_set_eq(&dun->cent[pick2], tmp);
+		struct loc tmp = dun->cent[pick1];
+		dun->cent[pick1] = dun->cent[pick2];
+		dun->cent[pick2] = tmp;
     }
 
     /* Start with no tunnel doors */
@@ -1733,10 +1732,9 @@ struct chunk *modified_chunk(int depth, int height, int width)
     for (i = 0; i < dun->cent_n; i++) {
 		int pick1 = randint0(dun->cent_n);
 		int pick2 = randint0(dun->cent_n);
-		struct loc tmp;
-		loc_set_eq(&tmp, dun->cent[pick1]);
-		loc_set_eq(&dun->cent[pick1], dun->cent[pick2]);
-		loc_set_eq(&dun->cent[pick2], tmp);
+		struct loc tmp = dun->cent[pick1];
+		dun->cent[pick1] = dun->cent[pick2];
+		dun->cent[pick2] = tmp;
     }
 
     /* Start with no tunnel doors */
@@ -1970,10 +1968,9 @@ struct chunk *moria_chunk(int depth, int height, int width)
     for (i = 0; i < dun->cent_n; i++) {
 		int pick1 = randint0(dun->cent_n);
 		int pick2 = randint0(dun->cent_n);
-		struct loc tmp;
-		loc_set_eq(&tmp, dun->cent[pick1]);
-		loc_set_eq(&dun->cent[pick1], dun->cent[pick2]);
-		loc_set_eq(&dun->cent[pick2], tmp);
+		struct loc tmp = dun->cent[pick1];
+		dun->cent[pick1] = dun->cent[pick2];
+		dun->cent[pick2] = tmp;
     }
 
     /* Start with no tunnel doors */

@@ -77,8 +77,8 @@ static void wr_item(const struct object *obj)
 	wr_u16b(obj->oidx);
 
 	/* Location */
-	wr_byte(obj->iy);
-	wr_byte(obj->ix);
+	wr_byte(obj->grid.y);
+	wr_byte(obj->grid.x);
 
 	/* Names of object base and object */
 	wr_string(tval_find_name(obj->tval));
@@ -873,7 +873,7 @@ static void wr_objects_aux(struct chunk *c)
 	for (i = 1; i < c->obj_max; i++) {
 		struct object *obj = c->objects[i];
 		if (!obj) continue;
-		if (square_in_bounds_fully(c, loc(obj->ix, obj->iy))) continue;
+		if (square_in_bounds_fully(c, obj->grid)) continue;
 		if (obj->held_m_idx) continue;
 		if (obj->mimicking_m_idx) continue;
 		if (obj->known && !(obj->known->notice & OBJ_NOTICE_IMAGINED)) continue;

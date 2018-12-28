@@ -36,12 +36,11 @@ bool loc_eq(struct loc grid1, struct loc grid2)
 }
 
 /**
- * Set one grid location equal to another
+ * Determine if a grid location is the (0, 0) location
  */
-void loc_set_eq(struct loc *dest, struct loc source)
+bool loc_is_zero(struct loc grid)
 {
-	(*dest).x = source.x;
-	(*dest).y = source.y;
+	return loc_eq(grid, loc(0, 0));
 }
 
 /**

@@ -299,7 +299,7 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 				object_delete(&destroyed->known);
 				object_delete(&destroyed);
 			} else {
-				square_excise_object(cave, loc(obj->ix, obj->iy), obj);
+				square_excise_object(cave, obj->grid, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
 				square_note_spot(cave, loc(player->px, player->py));

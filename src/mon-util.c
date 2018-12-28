@@ -504,7 +504,7 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 	}
 
 	/* Forget location */
-	obj->iy = obj->ix = 0;
+	obj->grid = loc(0, 0);
 
 	/* Link the object to the monster */
 	obj->held_m_idx = mon->midx;
@@ -635,14 +635,14 @@ void become_aware(struct monster *mon)
 			object_desc(o_name, sizeof(o_name), obj, ODESC_BASE);
 
 			/* Print a message */
-			if (square_isseen(cave, loc(obj->ix, obj->iy)))
+			if (square_isseen(cave, obj->grid))
 				msg("The %s was really a monster!", o_name);
 
 			/* Clear the mimicry */
 			obj->mimicking_m_idx = 0;
 			mon->mimicked_obj = NULL;
 
-			square_excise_object(cave, loc(obj->ix, obj->iy), obj);
+			square_excise_object(cave, obj->grid, obj);
 
 			/* Give the object to the monster if appropriate */
 			if (rf_has(mon->race->flags, RF_MIMIC_INV)) {

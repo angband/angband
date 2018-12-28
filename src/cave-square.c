@@ -1035,8 +1035,7 @@ void square_know_pile(struct chunk *c, struct loc grid)
 		if (!square_holds_object(c, grid, c->objects[obj->oidx])) {
 			struct object *original = c->objects[obj->oidx];
 			square_excise_object(player->cave, grid, obj);
-			obj->iy = 0;
-			obj->ix = 0;
+			obj->grid = loc(0, 0);
 
 			/* Delete objects which no longer exist anywhere */
 			if (obj->notice & OBJ_NOTICE_IMAGINED) {

@@ -634,8 +634,8 @@ bool project(struct source origin, int rad, struct loc finish,
 	 * projection path.
 	 */
 	if (loc_eq(start, finish)) {
-		loc_set_eq(&blast_grid[num_grids], finish);
-		loc_set_eq(&centre, finish);
+		blast_grid[num_grids] =  finish;
+		centre = finish;
 		distance_to_grid[num_grids] = 0;
 		sqinfo_on(square(cave, finish).info, SQUARE_PROJECT);
 		num_grids++;
@@ -716,7 +716,7 @@ bool project(struct source origin, int rad, struct loc finish,
 		/* Pre-calculate some things for arcs. */
 		if ((flg & (PROJECT_ARC)) && (num_path_grids != 0)) {
 			/* Explosion centers on the caster. */
-			loc_set_eq(&centre, start);
+			centre = start;
 
 			/* The radius of arcs cannot be more than 20 */
 			if (rad > 20)
@@ -735,7 +735,7 @@ bool project(struct source origin, int rad, struct loc finish,
 
 		/* If the explosion centre hasn't been saved already, save it now. */
 		if (num_grids == 0) {
-			loc_set_eq(&blast_grid[num_grids], centre);
+			blast_grid[num_grids] = centre;
 			distance_to_grid[num_grids] = 0;
 			sqinfo_on(square(cave, centre).info, SQUARE_PROJECT);
 			num_grids++;
@@ -866,12 +866,12 @@ bool project(struct source origin, int rad, struct loc finish,
 			if (distance_to_grid[j] == i) {
 				struct loc tmp;
 				int tmp_d = distance_to_grid[k];
-				loc_set_eq(&tmp, blast_grid[k]);
+				tmp = blast_grid[k];
 
-				loc_set_eq(&blast_grid[k], blast_grid[j]);
+				blast_grid[k] = blast_grid[j];
 				distance_to_grid[k] = distance_to_grid[j];
 
-				loc_set_eq(&blast_grid[j], tmp);
+				blast_grid[j] = tmp;
 				distance_to_grid[j] = tmp_d;
 
 				/* Write to next slot */

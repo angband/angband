@@ -324,7 +324,7 @@ bool is_unknown(const struct object *obj)
 		.is_player = false,
 		.hallucinate = false,
 	};
-	map_info(loc(obj->ix, obj->iy), &gd);
+	map_info(obj->grid, &gd);
 	return gd.unseen_object;
 }	
 

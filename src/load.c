@@ -106,8 +106,10 @@ static struct object *rd_item(void)
 	rd_u16b(&obj->oidx);
 
 	/* Location */
-	rd_byte(&obj->iy);
-	rd_byte(&obj->ix);
+	rd_byte(&tmp8u);
+	obj->grid.y = tmp8u;
+	rd_byte(&tmp8u);
+	obj->grid.x = tmp8u;
 
 	/* Type/Subtype */
 	rd_string(buf, sizeof(buf));
@@ -1340,8 +1342,8 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		if (!obj)
 			break;
 
-		if (square_in_bounds_fully(c, loc(obj->ix, obj->iy)))
-			pile_insert_end(&c->squares[obj->iy][obj->ix].obj, obj);
+		if (square_in_bounds_fully(c, obj->grid))
+			pile_insert_end(&c->squares[obj->grid.y][obj->grid.x].obj, obj);
 		assert(obj->oidx);
 		assert(c->objects[obj->oidx] == NULL);
 		c->objects[obj->oidx] = obj;

@@ -240,8 +240,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 
 				for (obj = square_object(source, loc(x, y)); obj; obj = obj->next) {
 					/* Adjust position */
-					obj->iy = dest_y;
-					obj->ix = dest_x;
+					obj->grid = loc(dest_x, dest_y);
 				}
 				source->squares[y][x].obj = NULL;
 			}

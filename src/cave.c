@@ -484,16 +484,17 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 		struct object *known_obj = c_k->objects[i];
 		if (obj) {
 			assert(obj->oidx == i);
-			if (obj->iy && obj->ix)
-				assert(pile_contains(c->squares[obj->iy][obj->ix].obj, obj));
+			if (!loc_is_zero(obj->grid))
+				assert(pile_contains(c->squares[obj->grid.y][obj->grid.x].obj,
+									 obj));
 		}
 		if (known_obj) {
 			assert (obj);
 			if (player->upkeep->playing) {
 				assert(known_obj == obj->known);
 			}
-			if (known_obj->iy && known_obj->ix)
-				assert (pile_contains(c_k->squares[known_obj->iy][known_obj->ix].obj, known_obj));
+			if (!loc_is_zero(known_obj->grid))
+				assert (pile_contains(c_k->squares[known_obj->grid.y][known_obj->grid.x].obj, known_obj));
 			assert (known_obj->oidx == i);
 		}
 	}

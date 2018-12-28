@@ -28,7 +28,7 @@ struct loc {
 
 struct loc loc(int x, int y);
 bool loc_eq(struct loc grid1, struct loc grid2);
-void loc_set_eq(struct loc *dest, struct loc source);
+bool loc_is_zero(struct loc grid);
 struct loc loc_sum(struct loc grid1, struct loc grid2);
 struct loc rand_loc(struct loc grid, int x_spread, int y_spread);
 
