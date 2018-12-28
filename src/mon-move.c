@@ -958,7 +958,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 		return true;
 	} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
 		/* Remove the wall */
-		square_destroy_wall(c, ny, nx);
+		square_destroy_wall(c, new);
 
 		/* Note changes to viewable region */
 		if (square_isview(c, new))
@@ -1013,7 +1013,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			if (will_bash) {
-				square_smash_door(c, ny, nx);
+				square_smash_door(c, new);
 
 				msg("You hear a door burst open!");
 				disturb(player, 0);
@@ -1021,7 +1021,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 				/* Fall into doorway */
 				return true;
 			} else {
-				square_open_door(c, ny, nx);
+				square_open_door(c, new);
 			}
 		}
 	}
@@ -1287,7 +1287,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 				continue;
 
 			/* Wait a minute... */
-			square_destroy_decoy(c, ny, nx);
+			square_destroy_decoy(c, loc(nx, ny));
 			did_something = true;
 			break;
 		}

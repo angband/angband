@@ -644,7 +644,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ)
 
 	/* Decoy has been hit */
 	if (square_isdecoyed(cave, grid) && dam) {
-		square_destroy_decoy(cave, grid.y, grid.x);
+		square_destroy_decoy(cave, grid);
 	}
 
 	/* No player here */

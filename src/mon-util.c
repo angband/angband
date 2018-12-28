@@ -557,7 +557,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		/* Decoys get destroyed if player is too far away */
 		if (decoy.y && decoy.x &&
 			distance(decoy, loc(player->px, player->py)) > z_info->max_sight) {
-			square_destroy_decoy(cave, decoy.y, decoy.x);
+			square_destroy_decoy(cave, decoy);
 		}
 
 		/* Update the trap detection status */
@@ -593,7 +593,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		/* Decoys get destroyed if player is too far away */
 		if (decoy.y && decoy.x &&
 			distance(decoy, loc(player->px, player->py)) > z_info->max_sight) {
-			square_destroy_decoy(cave, decoy.y, decoy.x);
+			square_destroy_decoy(cave, decoy);
 		}
 
 		/* Update the trap detection status */

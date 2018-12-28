@@ -491,7 +491,7 @@ extern void hit_trap(int y, int x)
 
 		/* Some traps disappear after activating, all have a chance to */
 		if (trf_has(trap->kind->flags, TRF_ONETIME) || one_in_(3)) {
-			square_destroy_trap(cave, y, x);
+			square_destroy_trap(cave, grid);
 			square_forget(cave, grid);
 		}
 

@@ -1122,7 +1122,7 @@ void square_set_feat(struct chunk *c, struct loc grid, int feat)
 	if (character_dungeon) {
 		/* Remove traps if necessary */
 		if (!square_player_trap_allowed(c, grid.y, grid.x))
-			square_destroy_trap(c, grid.y, grid.x);
+			square_destroy_trap(c, grid);
 
 		square_note_spot(c, grid);
 		square_light_spot(c, grid);
@@ -1184,76 +1184,65 @@ void square_add_door(struct chunk *c, struct loc grid, bool closed) {
 	square_set_feat(c, grid, closed ? FEAT_CLOSED : FEAT_OPEN);
 }
 
-void square_open_door(struct chunk *c, int y, int x)
+void square_open_door(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
-	square_remove_all_traps(c, y, x);
+	square_remove_all_traps(c, grid.y, grid.x);
 	square_set_feat(c, grid, FEAT_OPEN);
 }
 
-void square_close_door(struct chunk *c, int y, int x)
+void square_close_door(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	square_set_feat(c, grid, FEAT_CLOSED);
 }
 
-void square_smash_door(struct chunk *c, int y, int x)
+void square_smash_door(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
-	square_remove_all_traps(c, y, x);
+	square_remove_all_traps(c, grid.y, grid.x);
 	square_set_feat(c, grid, FEAT_BROKEN);
 }
 
-void square_unlock_door(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+void square_unlock_door(struct chunk *c, struct loc grid) {
 	assert(square_islockeddoor(c, grid));
-	square_set_door_lock(c, y, x, 0);
+	square_set_door_lock(c, grid.y, grid.x, 0);
 }
 
-void square_destroy_door(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+void square_destroy_door(struct chunk *c, struct loc grid) {
 	assert(square_isdoor(c, grid));
-	square_remove_all_traps(c, y, x);
+	square_remove_all_traps(c, grid.y, grid.x);
 	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
-void square_destroy_trap(struct chunk *c, int y, int x)
+void square_destroy_trap(struct chunk *c, struct loc grid)
 {
-	square_remove_all_traps(c, y, x);
+	square_remove_all_traps(c, grid.y, grid.x);
 }
 
-void square_disable_trap(struct chunk *c, int y, int x)
+void square_disable_trap(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	if (!square_isplayertrap(c, grid)) return;
-	square_set_trap_timeout(c, y, x, false, -1, 10);
+	square_set_trap_timeout(c, grid.y, grid.x, false, -1, 10);
 }
 
-void square_destroy_decoy(struct chunk *c, int y, int x)
+void square_destroy_decoy(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
-	square_remove_all_traps(c, y, x);
+	square_remove_all_traps(c, grid.y, grid.x);
 	c->decoy = loc(0, 0);
-	if (los(c, loc(player->px, player->py), grid) &&
-		!player->timed[TMD_BLIND]) {
+	if (los(c, loc(player->px, player->py), grid) && !player->timed[TMD_BLIND]){
 		msg("The decoy is destroyed!");
 	}
 }
 
-void square_tunnel_wall(struct chunk *c, int y, int x)
+void square_tunnel_wall(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
-void square_destroy_wall(struct chunk *c, int y, int x)
+void square_destroy_wall(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
-void square_destroy(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+void square_destroy(struct chunk *c, struct loc grid) {
 	int feat = FEAT_FLOOR;
 	int r = randint0(200);
 
@@ -1267,8 +1256,7 @@ void square_destroy(struct chunk *c, int y, int x) {
 	square_set_feat(c, grid, feat);
 }
 
-void square_earthquake(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+void square_earthquake(struct chunk *c, struct loc grid) {
 	int t = randint0(100);
 	int f;
 
@@ -1289,23 +1277,20 @@ void square_earthquake(struct chunk *c, int y, int x) {
 /**
  * Add visible treasure to a mineral square.
  */
-void square_upgrade_mineral(struct chunk *c, int y, int x)
+void square_upgrade_mineral(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	if (square(c, grid).feat == FEAT_MAGMA)
 		square_set_feat(c, grid, FEAT_MAGMA_K);
 	if (square(c, grid).feat == FEAT_QUARTZ)
 		square_set_feat(c, grid, FEAT_QUARTZ_K);
 }
 
-void square_destroy_rubble(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+void square_destroy_rubble(struct chunk *c, struct loc grid) {
 	assert(square_isrubble(c, grid));
 	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
-void square_force_floor(struct chunk *c, int y, int x) {
-	struct loc grid = loc(x, y);
+void square_force_floor(struct chunk *c, struct loc grid) {
 	square_set_feat(c, grid, FEAT_FLOOR);
 }
 

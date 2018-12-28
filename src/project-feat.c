@@ -107,7 +107,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Destroy the rubble */
-		square_destroy_rubble(cave, grid.y, grid.x);
+		square_destroy_rubble(cave, grid);
 
 		/* Hack -- place an object */
 		if (randint0(100) < 10){
@@ -129,7 +129,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Destroy the feature */
-		square_destroy_door(cave, grid.y, grid.x);
+		square_destroy_door(cave, grid);
 	} else if (square_hasgoldvein(cave, grid)) {
 		/* Message */
 		if (square_isseen(cave, grid)) {
@@ -142,7 +142,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Destroy the wall */
-		square_destroy_wall(cave, grid.y, grid.x);
+		square_destroy_wall(cave, grid);
 
 		/* Place some gold */
 		place_gold(cave, grid.y, grid.x, player->depth, ORIGIN_FLOOR);
@@ -157,7 +157,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Destroy the wall */
-		square_destroy_wall(cave, grid.y, grid.x);
+		square_destroy_wall(cave, grid);
 	} else if (square_iswall(cave, grid)) {
 		/* Message */
 		if (square_isseen(cave, grid)) {
@@ -169,7 +169,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		}
 
 		/* Destroy the wall */
-		square_destroy_wall(cave, grid.y, grid.x);
+		square_destroy_wall(cave, grid);
 	}
 
 	/* Update the visuals */
@@ -197,7 +197,7 @@ static void project_feature_handler_KILL_DOOR(project_feature_handler_context_t 
 		}
 
 		/* Destroy the feature */
-		square_destroy_door(cave, grid.y, grid.x);
+		square_destroy_door(cave, grid);
 	}
 }
 
@@ -224,10 +224,10 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 		}
 
 		/* Disable the trap */
-		square_disable_trap(cave, grid.y, grid.x);
+		square_disable_trap(cave, grid);
 	} else if (square_islockeddoor(cave, grid)) {
 		/* Unlock the door */
-		square_unlock_door(cave, grid.y, grid.x);
+		square_unlock_door(cave, grid);
 
 		/* Check line of sound */
 		if (square_isview(cave, grid)) {

@@ -646,7 +646,7 @@ bool effect_handler_DAMAGE(effect_handler_context_t *context)
 
 			/* Destroy a decoy */
 			if (decoy.y && decoy.x) {
-				square_destroy_decoy(cave, decoy.y, decoy.x);
+				square_destroy_decoy(cave, decoy);
 				return true;
 			}
 
@@ -913,7 +913,7 @@ bool effect_handler_TIMED_INC(effect_handler_context_t *context)
 
 	/* Destroy decoy */
 	if (decoy.y && decoy.x) {
-		square_destroy_decoy(cave, decoy.y, decoy.x);
+		square_destroy_decoy(cave, decoy);
 		return true;
 	}
 
@@ -1278,7 +1278,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 
 	/* Target was a decoy - destroy it */
 	if (decoy.y && decoy.x) {
-		square_destroy_decoy(cave, decoy.y, decoy.x);
+		square_destroy_decoy(cave, decoy);
 		return true;
 	}
 
@@ -2738,7 +2738,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 		/* Decoys get destroyed */
 		struct loc decoy = cave_find_decoy(cave);
 		if (decoy.y && decoy.x && context->subtype) {
-			square_destroy_decoy(cave, decoy.y, decoy.x);
+			square_destroy_decoy(cave, decoy);
 			return true;
 		}
 
@@ -2897,7 +2897,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		/* Targeted decoys get destroyed */
 		struct loc decoy = cave_find_decoy(cave);
 		if (decoy.y && decoy.x && mon) {
-			square_destroy_decoy(cave, decoy.y, decoy.x);
+			square_destroy_decoy(cave, decoy);
 			return true;
 		}
 
@@ -2987,7 +2987,7 @@ bool effect_handler_TELEPORT_LEVEL(effect_handler_context_t *context)
 
 	/* Targeted decoys get destroyed */
 	if (decoy.y && decoy.x) {
-		square_destroy_decoy(cave, decoy.y, decoy.x);
+		square_destroy_decoy(cave, decoy);
 		return true;
 	}
 
@@ -3174,7 +3174,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 				/* Delete objects */
 				square_excise_pile(player->cave, grid);
 				square_excise_pile(cave, grid);
-				square_destroy(cave, y, x);
+				square_destroy(cave, grid);
 			}
 		}
 	}
@@ -3491,7 +3491,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 			/* Destroy location and all objects (if valid) */
 			else if (square_changeable(cave, loc(xx, yy))) {
 				square_excise_pile(cave, loc(xx, yy));
-				square_earthquake(cave, yy, xx);
+				square_earthquake(cave, loc(xx, yy));
 			}
 		}
 	}

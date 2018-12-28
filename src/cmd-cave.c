@@ -193,7 +193,7 @@ static bool do_cmd_open_aux(int y, int x)
 			msgt(MSG_LOCKPICK, "You have picked the lock.");
 
 			/* Open the door */
-			square_open_door(cave, y, x);
+			square_open_door(cave, grid);
 
 			/* Update the visuals */
 			square_memorize(cave, grid);
@@ -214,7 +214,7 @@ static bool do_cmd_open_aux(int y, int x)
 		}
 	} else {
 		/* Closed door */
-		square_open_door(cave, y, x);
+		square_open_door(cave, grid);
 		square_memorize(cave, grid);
 		square_light_spot(cave, grid);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -364,7 +364,7 @@ static bool do_cmd_close_aux(int y, int x)
 		msg("The door appears to be broken.");
 	} else {
 		/* Close door */
-		square_close_door(cave, y, x);
+		square_close_door(cave, grid);
 		square_memorize(cave, grid);
 		square_light_spot(cave, grid);
 		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -488,7 +488,7 @@ static bool twall(int y, int x)
 	square_forget(cave, grid);
 
 	/* Remove the feature */
-	square_tunnel_wall(cave, y, x);
+	square_tunnel_wall(cave, grid);
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -749,7 +749,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 
 		/* Trap is gone */
 		square_forget(cave, grid);
-		square_destroy_trap(cave, y, x);
+		square_destroy_trap(cave, grid);
 	} else if (randint0(100) < chance) {
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to disarm the %s.", trap->kind->name);
@@ -1561,7 +1561,7 @@ void do_cmd_mon_command(struct command *cmd)
 					can_move = true;
 				} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
 					/* Remove the wall */
-					square_destroy_wall(cave, ny, nx);
+					square_destroy_wall(cave, loc(nx, ny));
 					can_move = true;
 				} else if (square_iscloseddoor(cave, loc(nx, ny)) ||
 						   square_issecretdoor(cave, loc(nx, ny))) {
@@ -1593,14 +1593,14 @@ void do_cmd_mon_command(struct command *cmd)
 						} else {
 							/* Closed or secret door -- always open or bash */
 							if (can_bash) {
-								square_smash_door(cave, ny, nx);
+								square_smash_door(cave, loc(nx, ny));
 
 								msg("You hear a door burst open!");
 
 								/* Fall into doorway */
 								can_move = true;
 							} else {
-								square_open_door(cave, ny, nx);
+								square_open_door(cave, loc(nx, ny));
 								can_move = true;
 							}
 						}

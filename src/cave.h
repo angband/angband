@@ -393,23 +393,21 @@ void square_add_stairs(struct chunk *c, struct loc grid, int depth);
 void square_add_door(struct chunk *c, struct loc grid, bool closed);
 
 /* Feature modifiers */
-void square_open_door(struct chunk *c, int y, int x);
-void square_close_door(struct chunk *c, int y, int x);
-void square_smash_door(struct chunk *c, int y, int x);
-void square_lock_door(struct chunk *c, int y, int x, int power);
-void square_unlock_door(struct chunk *c, int y, int x);
-void square_destroy_door(struct chunk *c, int y, int x);
-void square_show_trap(struct chunk *c, int y, int x, int type);
-void square_destroy_trap(struct chunk *c, int y, int x);
-void square_disable_trap(struct chunk *c, int y, int x);
-void square_destroy_decoy(struct chunk *c, int y, int x);
-void square_tunnel_wall(struct chunk *c, int y, int x);
-void square_destroy_wall(struct chunk *c, int y, int x);
-void square_destroy(struct chunk *c, int y, int x);
-void square_earthquake(struct chunk *c, int y, int x);
-void square_upgrade_mineral(struct chunk *c, int y, int x);
-void square_destroy_rubble(struct chunk *c, int y, int x);
-void square_force_floor(struct chunk *c, int y, int x);
+void square_open_door(struct chunk *c, struct loc grid);
+void square_close_door(struct chunk *c, struct loc grid);
+void square_smash_door(struct chunk *c, struct loc grid);
+void square_unlock_door(struct chunk *c, struct loc grid);
+void square_destroy_door(struct chunk *c, struct loc grid);
+void square_destroy_trap(struct chunk *c, struct loc grid);
+void square_disable_trap(struct chunk *c, struct loc grid);
+void square_destroy_decoy(struct chunk *c, struct loc grid);
+void square_tunnel_wall(struct chunk *c, struct loc grid);
+void square_destroy_wall(struct chunk *c, struct loc grid);
+void square_destroy(struct chunk *c, struct loc grid);
+void square_earthquake(struct chunk *c, struct loc grid);
+void square_upgrade_mineral(struct chunk *c, struct loc grid);
+void square_destroy_rubble(struct chunk *c, struct loc grid);
+void square_force_floor(struct chunk *c, struct loc grid);
 
 
 int square_shopnum(struct chunk *c, struct loc grid);
