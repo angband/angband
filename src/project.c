@@ -389,7 +389,7 @@ struct loc origin_get_loc(struct source origin)
 
 		case SRC_TRAP: {
 			struct trap *trap = origin.which.trap;
-			return loc(trap->fx, trap->fy);
+			return trap->grid;
 		}
 
 		case SRC_PLAYER:

@@ -253,8 +253,8 @@ static void wr_trap(struct trap *trap)
 	} else {
 		wr_string("");
 	}
-    wr_byte(trap->fy);
-    wr_byte(trap->fx);
+    wr_byte(trap->grid.y);
+    wr_byte(trap->grid.x);
     wr_byte(trap->power);
     wr_byte(trap->timeout);
 

@@ -327,6 +327,7 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 static void rd_trap(struct trap *trap)
 {
     int i;
+	byte tmp8u;
 	char buf[80];
 
 	rd_string(buf, sizeof(buf));
@@ -334,8 +335,10 @@ static void rd_trap(struct trap *trap)
 		trap->kind = lookup_trap(buf);
 		trap->t_idx = trap->kind->tidx;
 	}
-    rd_byte(&trap->fy);
-    rd_byte(&trap->fx);
+    rd_byte(&tmp8u);
+	trap->grid.y = tmp8u;
+    rd_byte(&tmp8u);
+	trap->grid.x = tmp8u;
     rd_byte(&trap->power);
     rd_byte(&trap->timeout);
 
@@ -1393,7 +1396,7 @@ static int rd_monsters_aux(struct chunk *c)
 
 static int rd_traps_aux(struct chunk *c)
 {
-	int y, x;
+	struct loc grid;
 	struct trap *trap;
 
     /* Only if the player's alive */
@@ -1406,18 +1409,17 @@ static int rd_traps_aux(struct chunk *c)
 	while (true) {
 		trap = mem_zalloc(sizeof(*trap));
 		rd_trap(trap);
-		y = trap->fy;
-		x = trap->fx;
-		if ((y == 0) && (x == 0))
+		grid = trap->grid;
+		if ((grid.y == 0) && (grid.x == 0))
 			break;
 		else {
 			/* Put the trap at the front of the grid trap list */
-			trap->next = c->squares[y][x].trap;
-			c->squares[y][x].trap = trap;
+			trap->next = c->squares[grid.y][grid.x].trap;
+			c->squares[grid.y][grid.x].trap = trap;
 
 			/* Set decoy if appropriate */
 			if ((trap->kind == lookup_trap("decoy")) && (c == cave)) {
-				c->decoy = loc(x, y);
+				c->decoy = grid;
 			}
 		}
 	}

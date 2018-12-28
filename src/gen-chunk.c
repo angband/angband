@@ -285,8 +285,7 @@ bool chunk_copy(struct chunk *dest, struct chunk *source, int y0, int x0,
 				/* Traverse the trap list */
 				while (trap) {
 					/* Adjust location */
-					trap->fy = dest_y;
-					trap->fx = dest_x;
+					trap->grid = loc(dest_x, dest_y);
 					trap = trap->next;
 				}
 				source->squares[y][x].trap = NULL;

@@ -3699,7 +3699,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 		case SRC_TRAP: {
 			struct trap *trap = context->origin.which.trap;
 			flg |= PROJECT_PLAY;
-			target = loc(trap->fx, trap->fy);
+			target = trap->grid;
 			break;
 		}
 

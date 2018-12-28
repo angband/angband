@@ -277,8 +277,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 	/* Set the details */
 	new_trap->t_idx = t_idx;
 	new_trap->kind = &trap_info[t_idx];
-	new_trap->fy = y;
-	new_trap->fx = x;
+	new_trap->grid = grid;
 	new_trap->power = randcalc(new_trap->kind->power, trap_level, RANDOMISE);
 	trf_copy(new_trap->flags, trap_info[t_idx].flags);
 
@@ -487,7 +486,7 @@ extern void hit_trap(int y, int x)
 
 		/* Some traps drop you onto them */
 		if (trf_has(trap->kind->flags, TRF_PIT))
-			monster_swap(player->py, player->px, trap->fy, trap->fx);
+			monster_swap(player->py, player->px, trap->grid.y, trap->grid.x);
 
 		/* Some traps disappear after activating, all have a chance to */
 		if (trf_has(trap->kind->flags, TRF_ONETIME) || one_in_(3)) {
