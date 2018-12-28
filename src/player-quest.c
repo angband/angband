@@ -208,7 +208,7 @@ static void build_quest_stairs(int y, int x)
 	msg("A magical staircase appears...");
 
 	/* Create stairs down */
-	square_set_feat(cave, y, x, FEAT_MORE);
+	square_set_feat(cave, loc(x, y), FEAT_MORE);
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);

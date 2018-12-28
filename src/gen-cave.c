@@ -126,7 +126,7 @@ static void build_streamer(struct chunk *c, int feat, int chance)
 			/* Only convert walls */
 			if (square_isrock(c, loc(tx, ty))) {
 				/* Turn the rock into the vein type */
-				square_set_feat(c, ty, tx, feat);
+				square_set_feat(c, loc(tx, ty), feat);
 
 				/* Sometimes add known treasure */
 				if (one_in_(chance)) square_upgrade_mineral(c, ty, tx);
@@ -329,12 +329,8 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 
     /* Turn the tunnel into corridor */
     for (i = 0; i < dun->tunn_n; i++) {
-		/* Get the grid */
-		y = dun->tunn[i].y;
-		x = dun->tunn[i].x;
-
 		/* Clear previous contents, add a floor */
-		square_set_feat(c, y, x, FEAT_FLOOR);
+		square_set_feat(c, dun->tunn[i], FEAT_FLOOR);
     }
 
 
@@ -345,7 +341,7 @@ static void build_tunnel(struct chunk *c, int row1, int col1, int row2, int col2
 		x = dun->wall[i].x;
 
 		/* Convert to floor grid */
-		square_set_feat(c, y, x, FEAT_FLOOR);
+		square_set_feat(c, dun->wall[i], FEAT_FLOOR);
 
 		/* Place a random door */
 		if (randint0(100) < dun->profile->tun.pen)
@@ -754,7 +750,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 		for (x = 0; x < w; x += 2) {
 			int k_local = yx_to_i(y, x, w);
 			sets[k_local] = k_local;
-			square_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
+			square_set_feat(c, loc(x + 1, y + 1), FEAT_FLOOR);
 			if (lit) sqinfo_on(square(c, loc(x + 1, y + 1)).info, SQUARE_GLOW);
 		}
     }
@@ -783,7 +779,7 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
 		if (sets[a] != sets[b]) {
 			int sa = sets[a];
 			int sb = sets[b];
-			square_set_feat(c, y_local + 1, x_local + 1, FEAT_FLOOR);
+			square_set_feat(c, loc(x_local + 1, y_local + 1), FEAT_FLOOR);
 			if (lit) sqinfo_on(square(c, loc(x_local + 1, y_local + 1)).info, SQUARE_GLOW);
 
 			for (k = 0; k < n; k++) {
@@ -925,7 +921,7 @@ static void init_cavern(struct chunk *c, int density) {
     while (count > 0) {
 		struct loc grid = loc(randint1(w - 2), randint1(h - 2));
 		if (square_isrock(c, grid)) {
-			square_set_feat(c, grid.y, grid.x, FEAT_FLOOR);
+			square_set_feat(c, grid, FEAT_FLOOR);
 			count--;
 		}
     }
@@ -977,10 +973,11 @@ static void mutate_cavern(struct chunk *c) {
 
     for (y = 1; y < h - 1; y++) {
 		for (x = 1; x < w - 1; x++) {
+			struct loc grid = loc(x, y);
 			if (temp[y * w + x] == FEAT_GRANITE)
 				set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
 			else
-				square_set_feat(c, y, x, temp[y * w + x]);
+				square_set_feat(c, grid, temp[y * w + x]);
 		}
     }
 
@@ -1233,7 +1230,7 @@ static void join_region(struct chunk *c, int colors[], int counts[], int color,
 				colors[n] = color;
 				if (!square_isperm(c, loc(x, y)) &&
 					!square_isvault(c, loc(x, y))) {
-					square_set_feat(c, y, x, FEAT_FLOOR);
+					square_set_feat(c, loc(x, y), FEAT_FLOOR);
 				}
 				n = previous[n];
 			}
@@ -1473,7 +1470,7 @@ static void build_store(struct chunk *c, int n, int yy, int xx)
 	/* Clear previous contents, add a store door */
 	for (feat = 0; feat < z_info->f_max; feat++)
 		if (feat_is_shop(feat) && (f_info[feat].shopnum == n + 1))
-			square_set_feat(c, dy, dx, feat);
+			square_set_feat(c, loc(dx, dy), feat);
 }
 
 
@@ -1494,7 +1491,8 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	/* Initialize to ROCK for build_streamer precondition */
 	for (y = 1; y < c->height - 1; y++)
 		for (x = 1; x < c->width - 1; x++) {
-			square_set_feat(c, y, x, FEAT_GRANITE);
+			struct loc grid = loc(x, y);
+			square_set_feat(c, grid, FEAT_GRANITE);
 		}
 
 	/* Make some lava streamers */
@@ -1512,7 +1510,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 			if (square_isfloor(c, grid))
 				sqinfo_off(square(c, grid).info, SQUARE_ROOM);
 			else if (!square_isperm(c, grid) && !square_isfiery(c, grid))
-				square_set_feat(c, y, x, FEAT_PERM);
+				square_set_feat(c, grid, FEAT_PERM);
 		}
 	}
 
@@ -1523,7 +1521,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	if (square_isfloor(c, loc(px, py - 1)) && (py == 2)) py--;
 
 	/* Clear previous contents, add down stairs */
-	square_set_feat(c, py, px, FEAT_MORE);
+	square_set_feat(c, loc(px, py), FEAT_MORE);
 
 	/* Place stores */
 	for (n = 0; n < MAX_STORES; n++) {
@@ -1569,7 +1567,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		for (yy = y - 1; yy <= y + 1; yy++)
 			for (xx = x - 1; xx <= x + 1; xx++)
 				if (one_in_(1 + ABS(x - xx) + ABS(y - yy)))
-					square_set_feat(c, yy, xx, FEAT_PASS_RUBBLE);
+					square_set_feat(c, loc(xx, yy), FEAT_PASS_RUBBLE);
 	}
 
 	/* Place the player */
@@ -2278,16 +2276,17 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 
 	/* Temporary until connecting to vault entrances works better */
 	for (y = 0; y < centre->height; y++) {
-		square_set_feat(c, y + centre_cavern_hgt, side_cavern_wid,
+		square_set_feat(c, loc(side_cavern_wid, y + centre_cavern_hgt),
 						FEAT_FLOOR);
-		square_set_feat(c, y + centre_cavern_hgt,
-						side_cavern_wid + centre_cavern_wid - 1, FEAT_FLOOR);
+		square_set_feat(c, loc(side_cavern_wid + centre_cavern_wid - 1,
+							   y + centre_cavern_hgt), FEAT_FLOOR);
 	}
 	for (x = 0; x < centre->width; x++) {
-		square_set_feat(c, centre_cavern_hgt, x + side_cavern_wid,
+		square_set_feat(c, loc(x + side_cavern_wid, centre_cavern_hgt),
 						FEAT_FLOOR);
-		square_set_feat(c, centre_cavern_hgt + centre->height - 1,
-						x + side_cavern_wid, FEAT_FLOOR);
+		square_set_feat(c, loc(x + side_cavern_wid,
+							   centre_cavern_hgt + centre->height - 1),
+						FEAT_FLOOR);
 	}
 
 	/* Free all the chunks */
@@ -2542,9 +2541,11 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 	alloc_stairs(arrival, FEAT_LESS, rand_range(1, 3));
 
 	/* Open the ends of the gauntlet */
-	square_set_feat(gauntlet, randint1(gauntlet->height - 2), 0, FEAT_GRANITE);
-	square_set_feat(gauntlet, randint1(gauntlet->height - 2),
-					gauntlet->width - 1, FEAT_GRANITE);
+	square_set_feat(gauntlet, loc(0, randint1(gauntlet->height - 2)),
+					FEAT_GRANITE);
+	square_set_feat(gauntlet, loc(gauntlet->width - 1,
+								  randint1(gauntlet->height - 2)),
+					FEAT_GRANITE);
 
 	/* General amount of rubble, traps and monsters */
 	k = MAX(MIN(p->depth / 3, 10), 2) / 2;
@@ -2621,9 +2622,10 @@ struct chunk *gauntlet_gen(struct player *p, int min_height, int min_width) {
 
 	/* Temporary until connecting to vault entrances works better */
 	for (y = 0; y < gauntlet_hgt; y++) {
-		square_set_feat(c, y + (y_size - gauntlet_hgt) / 2, line1 - 1,
+		square_set_feat(c, loc(line1 - 1, y + (y_size - gauntlet_hgt) / 2),
 						FEAT_FLOOR);
-		square_set_feat(c, y + (y_size - gauntlet_hgt) / 2, line2, FEAT_FLOOR);
+		square_set_feat(c, loc(line2, y + (y_size - gauntlet_hgt) / 2),
+						FEAT_FLOOR);
 	}
 
 	/* Put some rubble in corridors */

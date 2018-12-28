@@ -387,9 +387,9 @@ void new_player_spot(struct chunk *c, struct player *p)
     if (!OPT(p, birth_connect_stairs))
 		;
 	else if (p->upkeep->create_down_stair)
-		square_set_feat(c, y, x, FEAT_MORE);
+		square_set_feat(c, loc(x, y), FEAT_MORE);
 	else if (p->upkeep->create_up_stair)
-		square_set_feat(c, y, x, FEAT_LESS);
+		square_set_feat(c, loc(x, y), FEAT_LESS);
 
     player_place(c, p, y, x);
 }
@@ -403,7 +403,8 @@ void new_player_spot(struct chunk *c, struct player *p)
  */
 static void place_rubble(struct chunk *c, int y, int x)
 {
-    square_set_feat(c, y, x, one_in_(2) ? FEAT_RUBBLE : FEAT_PASS_RUBBLE);
+	struct loc grid = loc(x, y);
+    square_set_feat(c, grid, one_in_(2) ? FEAT_RUBBLE : FEAT_PASS_RUBBLE);
 }
 
 
@@ -418,12 +419,13 @@ static void place_rubble(struct chunk *c, int y, int x)
  */
 static void place_stairs(struct chunk *c, int y, int x, int feat)
 {
+	struct loc grid = loc(x, y);
     if (!c->depth)
-		square_set_feat(c, y, x, FEAT_MORE);
+		square_set_feat(c, grid, FEAT_MORE);
     else if (is_quest(c->depth) || c->depth >= z_info->max_depth - 1)
-		square_set_feat(c, y, x, FEAT_LESS);
+		square_set_feat(c, grid, FEAT_LESS);
     else
-		square_set_feat(c, y, x, feat);
+		square_set_feat(c, grid, feat);
 }
 
 
@@ -528,7 +530,8 @@ void place_gold(struct chunk *c, int y, int x, int level, byte origin)
  */
 void place_secret_door(struct chunk *c, int y, int x)
 {
-    square_set_feat(c, y, x, FEAT_SECRET);
+	struct loc grid = loc(x, y);
+    square_set_feat(c, grid, FEAT_SECRET);
 }
 
 
@@ -540,7 +543,8 @@ void place_secret_door(struct chunk *c, int y, int x)
  */
 void place_closed_door(struct chunk *c, int y, int x)
 {
-	square_set_feat(c, y, x, FEAT_CLOSED);
+	struct loc grid = loc(x, y);
+	square_set_feat(c, grid, FEAT_CLOSED);
 	if (one_in_(4))
 		square_set_door_lock(c, y, x, randint1(7));
 }
@@ -556,12 +560,13 @@ void place_closed_door(struct chunk *c, int y, int x)
  */
 void place_random_door(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
     int tmp = randint0(100);
 
     if (tmp < 30)
-		square_set_feat(c, y, x, FEAT_OPEN);
+		square_set_feat(c, grid, FEAT_OPEN);
     else if (tmp < 40)
-		square_set_feat(c, y, x, FEAT_BROKEN);
+		square_set_feat(c, grid, FEAT_BROKEN);
     else
 		place_closed_door(c, y, x);
 }
@@ -740,7 +745,7 @@ static void vault_trap_aux(struct chunk *c, int y, int x, int yd, int xd)
 		find_nearby_grid(c, &y1, y, yd, &x1, x, xd);
 		if (!square_isempty(c, loc(x1, y1))) continue;
 
-		square_add_trap(c, y1, x1);
+		square_add_trap(c, loc(x1, y1));
 		break;
     }
 }

@@ -253,7 +253,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 		push_object(grid.y, grid.x);
 
 	/* Create closed door */
-	square_add_door(cave, grid.y, grid.x, true);
+	square_add_door(cave, grid, true);
 
 	/* Observe */
 	if (square_isknown(cave, grid))
@@ -274,7 +274,7 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 
 	/* Create a trap, try to notice it */
 	if (one_in_(4)) {
-		square_add_trap(cave, grid.y, grid.x);
+		square_add_trap(cave, grid);
 		(void) square_reveal_trap(cave, grid.y, grid.x, false, false);
 	}
 	context->obvious = true;
@@ -311,7 +311,7 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 		square_isfloor(cave, context->grid)) {
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->grid);
-		square_set_feat(cave, context->grid.y, context->grid.x, FEAT_LAVA);
+		square_set_feat(cave, context->grid, FEAT_LAVA);
 
 		/* Objects that have survived should move */
 		push_object(context->grid.y, context->grid.x);
@@ -333,11 +333,11 @@ static void project_feature_handler_COLD(project_feature_handler_context_t *cont
 
 		square_unmark(cave, context->grid);
 		if (one_in_(2)) {
-			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_FLOOR);
+			square_set_feat(cave, context->grid, FEAT_FLOOR);
 		} else if (one_in_(2) && !occupied) {
-			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_RUBBLE);
+			square_set_feat(cave, context->grid, FEAT_RUBBLE);
 		} else {
-			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_PASS_RUBBLE);
+			square_set_feat(cave, context->grid, FEAT_PASS_RUBBLE);
 		}
 	}
 }
@@ -441,11 +441,11 @@ static void project_feature_handler_ICE(project_feature_handler_context_t *conte
 
 		square_unmark(cave, context->grid);
 		if (one_in_(2)) {
-			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_FLOOR);
+			square_set_feat(cave, context->grid, FEAT_FLOOR);
 		} else if (one_in_(2) && !occupied) {
-			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_RUBBLE);
+			square_set_feat(cave, context->grid, FEAT_RUBBLE);
 		} else {
-			square_set_feat(cave, context->grid.y, context->grid.x, FEAT_PASS_RUBBLE);
+			square_set_feat(cave, context->grid, FEAT_PASS_RUBBLE);
 		}
 	}
 }
@@ -499,7 +499,7 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 		square_isfloor(cave, context->grid)) {
 		/* Forget the floor, make lava. */
 		square_unmark(cave, context->grid);
-		square_set_feat(cave, context->grid.y, context->grid.x, FEAT_LAVA);
+		square_set_feat(cave, context->grid, FEAT_LAVA);
 
 		/* Objects that have survived should move */
 		push_object(context->grid.y, context->grid.x);

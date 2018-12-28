@@ -386,11 +386,11 @@ int square_num_walls_diagonal(struct chunk *c, struct loc grid);
 
 
 /* Feature placers */
-void square_set_feat(struct chunk *c, int y, int x, int feat);
-void square_add_trap(struct chunk *c, int y, int x);
-void square_add_glyph(struct chunk *c, int y, int x, int type);
-void square_add_stairs(struct chunk *c, int y, int x, int depth);
-void square_add_door(struct chunk *c, int y, int x, bool closed);
+void square_set_feat(struct chunk *c, struct loc grid, int feat);
+void square_add_trap(struct chunk *c, struct loc grid);
+void square_add_glyph(struct chunk *c, struct loc grid, int type);
+void square_add_stairs(struct chunk *c, struct loc grid, int depth);
+void square_add_door(struct chunk *c, struct loc grid, bool closed);
 
 /* Feature modifiers */
 void square_open_door(struct chunk *c, int y, int x);

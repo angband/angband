@@ -1266,7 +1266,7 @@ static int rd_dungeon_aux(struct chunk **c)
 		/* Apply the RLE info */
 		for (i = count; i > 0; i--) {
 			/* Extract "feat" */
-			square_set_feat(c1, y, x, tmp8u);
+			square_set_feat(c1, loc(x, y), tmp8u);
 
 			/* Advance/Wrap */
 			if (++x >= c1->width) {

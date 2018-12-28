@@ -1091,7 +1091,7 @@ void push_object(int y, int x)
 
 	/* Set feature to an open door */
 	square_force_floor(cave, y, x);
-	square_add_door(cave, y, x, false);
+	square_add_door(cave, grid, false);
 
 	/* Drop objects back onto the floor */
 	while (q_len(queue) > 0) {
@@ -1103,7 +1103,7 @@ void push_object(int y, int x)
 	}
 
 	/* Reset cave feature, remove trap if needed */
-	square_set_feat(cave, y, x, feat_old->fidx);
+	square_set_feat(cave, grid, feat_old->fidx);
 	if (trap && !square_istrappable(cave, grid)) {
 		square_remove_all_traps(cave, y, x);
 	}

@@ -1050,7 +1050,7 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 	}
 
 	/* Create a glyph */
-	square_add_glyph(cave, py, px, context->subtype);
+	square_add_glyph(cave, loc(px, py), context->subtype);
 
 	/* Push objects off the grid */
 	if (square_object(cave, loc(px, py)))
@@ -2154,7 +2154,7 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 	if (square_object(cave, loc(px, py)))
 		push_object(py, px);
 
-	square_add_stairs(cave, py, px, player->depth);
+	square_add_stairs(cave, loc(px, py), player->depth);
 
 	return true;
 }
@@ -3077,9 +3077,9 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 				square_isempty(cave, loc(xx, yy)) &&
 					one_in_(3)) {
 				if (one_in_(2))
-					square_set_feat(cave, yy, xx, FEAT_PASS_RUBBLE);
+					square_set_feat(cave, loc(xx, yy), FEAT_PASS_RUBBLE);
 				else
-					square_set_feat(cave, yy, xx, FEAT_RUBBLE);
+					square_set_feat(cave, loc(xx, yy), FEAT_RUBBLE);
 				rubble_grids--;
 			}
 		}

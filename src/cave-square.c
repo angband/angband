@@ -1099,9 +1099,8 @@ int square_num_walls_diagonal(struct chunk *c, struct loc grid)
  * This should be the only function that sets terrain, apart from the savefile
  * loading code.
  */
-void square_set_feat(struct chunk *c, int y, int x, int feat)
+void square_set_feat(struct chunk *c, struct loc grid, int feat)
 {
-	struct loc grid = loc(x, y);
 	int current_feat;
 
 	assert(square_in_bounds(c, grid));
@@ -1112,7 +1111,7 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 	if (feat) c->feat_count[feat]++;
 
 	/* Make the change */
-	c->squares[y][x].feat = feat;
+	c->squares[grid.y][grid.x].feat = feat;
 
 	/* Light bright terrain */
 	if (feat_is_bright(feat)) {
@@ -1122,8 +1121,8 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 	/* Make the new terrain feel at home */
 	if (character_dungeon) {
 		/* Remove traps if necessary */
-		if (!square_player_trap_allowed(c, y, x))
-			square_destroy_trap(c, y, x);
+		if (!square_player_trap_allowed(c, grid.y, grid.x))
+			square_destroy_trap(c, grid.y, grid.x);
 
 		square_note_spot(c, grid);
 		square_light_spot(c, grid);
@@ -1138,22 +1137,20 @@ void square_set_feat(struct chunk *c, int y, int x, int feat)
 /**
  * Set the player-"known" terrain type for a square.
  */
-void square_set_known_feat(struct chunk *c, int y, int x, int feat)
+static void square_set_known_feat(struct chunk *c, struct loc grid, int feat)
 {
 	if (c != cave) return;
-	player->cave->squares[y][x].feat = feat;
+	player->cave->squares[grid.y][grid.x].feat = feat;
 }
 
-void square_add_trap(struct chunk *c, int y, int x)
+void square_add_trap(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	assert(square_in_bounds_fully(c, grid));
-	place_trap(c, y, x, -1, c->depth);
+	place_trap(c, grid.y, grid.x, -1, c->depth);
 }
 
-void square_add_glyph(struct chunk *c, int y, int x, int type)
+void square_add_glyph(struct chunk *c, struct loc grid, int type)
 {
-	struct loc grid = loc(x, y);
 	struct trap_kind *glyph = NULL;
 	switch (type) {
 		case GLYPH_WARDING: {
@@ -1170,38 +1167,41 @@ void square_add_glyph(struct chunk *c, int y, int x, int type)
 			return;
 		}
 	}
-	place_trap(c, y, x, glyph->tidx, 0);
+	place_trap(c, grid.y, grid.x, glyph->tidx, 0);
 }
 
-void square_add_stairs(struct chunk *c, int y, int x, int depth) {
+void square_add_stairs(struct chunk *c, struct loc grid, int depth) {
 	int down = randint0(100) < 50;
 	if (depth == 0)
 		down = 1;
 	else if (is_quest(depth) || depth >= z_info->max_depth - 1)
 		down = 0;
 
-	square_set_feat(c, y, x, down ? FEAT_MORE : FEAT_LESS);
+	square_set_feat(c, grid, down ? FEAT_MORE : FEAT_LESS);
 }
 
-void square_add_door(struct chunk *c, int y, int x, bool closed) {
-	square_set_feat(c, y, x, closed ? FEAT_CLOSED : FEAT_OPEN);
+void square_add_door(struct chunk *c, struct loc grid, bool closed) {
+	square_set_feat(c, grid, closed ? FEAT_CLOSED : FEAT_OPEN);
 }
 
 void square_open_door(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	square_remove_all_traps(c, y, x);
-	square_set_feat(c, y, x, FEAT_OPEN);
+	square_set_feat(c, grid, FEAT_OPEN);
 }
 
 void square_close_door(struct chunk *c, int y, int x)
 {
-	square_set_feat(c, y, x, FEAT_CLOSED);
+	struct loc grid = loc(x, y);
+	square_set_feat(c, grid, FEAT_CLOSED);
 }
 
 void square_smash_door(struct chunk *c, int y, int x)
 {
+	struct loc grid = loc(x, y);
 	square_remove_all_traps(c, y, x);
-	square_set_feat(c, y, x, FEAT_BROKEN);
+	square_set_feat(c, grid, FEAT_BROKEN);
 }
 
 void square_unlock_door(struct chunk *c, int y, int x) {
@@ -1214,7 +1214,7 @@ void square_destroy_door(struct chunk *c, int y, int x) {
 	struct loc grid = loc(x, y);
 	assert(square_isdoor(c, grid));
 	square_remove_all_traps(c, y, x);
-	square_set_feat(c, y, x, FEAT_FLOOR);
+	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
 void square_destroy_trap(struct chunk *c, int y, int x)
@@ -1242,15 +1242,18 @@ void square_destroy_decoy(struct chunk *c, int y, int x)
 
 void square_tunnel_wall(struct chunk *c, int y, int x)
 {
-	square_set_feat(c, y, x, FEAT_FLOOR);
+	struct loc grid = loc(x, y);
+	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
 void square_destroy_wall(struct chunk *c, int y, int x)
 {
-	square_set_feat(c, y, x, FEAT_FLOOR);
+	struct loc grid = loc(x, y);
+	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
 void square_destroy(struct chunk *c, int y, int x) {
+	struct loc grid = loc(x, y);
 	int feat = FEAT_FLOOR;
 	int r = randint0(200);
 
@@ -1261,7 +1264,7 @@ void square_destroy(struct chunk *c, int y, int x) {
 	else if (r < 100)
 		feat = FEAT_MAGMA;
 
-	square_set_feat(c, y, x, feat);
+	square_set_feat(c, grid, feat);
 }
 
 void square_earthquake(struct chunk *c, int y, int x) {
@@ -1270,7 +1273,7 @@ void square_earthquake(struct chunk *c, int y, int x) {
 	int f;
 
 	if (!square_ispassable(c, grid)) {
-		square_set_feat(c, y, x, FEAT_FLOOR);
+		square_set_feat(c, grid, FEAT_FLOOR);
 		return;
 	}
 
@@ -1280,7 +1283,7 @@ void square_earthquake(struct chunk *c, int y, int x) {
 		f = FEAT_QUARTZ;
 	else
 		f = FEAT_MAGMA;
-	square_set_feat(c, y, x, f);
+	square_set_feat(c, grid, f);
 }
 
 /**
@@ -1290,19 +1293,20 @@ void square_upgrade_mineral(struct chunk *c, int y, int x)
 {
 	struct loc grid = loc(x, y);
 	if (square(c, grid).feat == FEAT_MAGMA)
-		square_set_feat(c, y, x, FEAT_MAGMA_K);
+		square_set_feat(c, grid, FEAT_MAGMA_K);
 	if (square(c, grid).feat == FEAT_QUARTZ)
-		square_set_feat(c, y, x, FEAT_QUARTZ_K);
+		square_set_feat(c, grid, FEAT_QUARTZ_K);
 }
 
 void square_destroy_rubble(struct chunk *c, int y, int x) {
 	struct loc grid = loc(x, y);
 	assert(square_isrubble(c, grid));
-	square_set_feat(c, y, x, FEAT_FLOOR);
+	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
 void square_force_floor(struct chunk *c, int y, int x) {
-	square_set_feat(c, y, x, FEAT_FLOOR);
+	struct loc grid = loc(x, y);
+	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
 /* Note that this returns the STORE_ index, which is one less than shopnum */
@@ -1327,12 +1331,12 @@ const char *square_apparent_name(struct chunk *c, struct player *p, struct loc g
 
 void square_memorize(struct chunk *c, struct loc grid) {
 	if (c != cave) return;
-	square_set_known_feat(c, grid.y, grid.x, square(c, grid).feat);
+	square_set_known_feat(c, grid, square(c, grid).feat);
 }
 
 void square_forget(struct chunk *c, struct loc grid) {
 	if (c != cave) return;
-	square_set_known_feat(c, grid.y, grid.x, FEAT_NONE);
+	square_set_known_feat(c, grid, FEAT_NONE);
 }
 
 void square_mark(struct chunk *c, struct loc grid) {
