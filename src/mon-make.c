@@ -1156,6 +1156,7 @@ static bool place_monster_base_okay(struct monster_race *race)
 					struct monster_race *friends_race, int total, bool sleep,
 					byte origin)
  {
+	struct loc grid = loc(x, y);
 	int extra_chance;
 
 	/* Find the difference between current dungeon depth and monster level */
@@ -1190,24 +1191,26 @@ static bool place_monster_base_okay(struct monster_race *race)
 	if (total > 0) {
 		/* Handle friends same as original monster */
 		if (race->ridx == friends_race->ridx) {
-			return place_new_monster_group(c, y, x, race, sleep, total, origin);
+			return place_new_monster_group(c, grid.y, grid.x, race, sleep,
+										   total, origin);
 		} else {
 			int j;
-			int nx = 0;
-			int ny = 0;
+			struct loc new = loc(0, 0);
 
 			/* Find a nearby place to put the other groups */
 			for (j = 0; j < 50; j++) {
-				scatter(c, &ny, &nx, y, x, GROUP_DISTANCE, false);
-				if (square_isopen(c, loc(nx, ny))) {
+				scatter(c, &new, grid, GROUP_DISTANCE, false);
+				if (square_isopen(c, new)) {
 					break;
 				}
 			}
 
 			/* Place the monsters */
-			bool success = place_new_monster_one(c, ny, nx, friends_race, sleep, origin);
+			bool success = place_new_monster_one(c, new.y, new.x, friends_race,
+												 sleep, origin);
 			if (total > 1)
-				success = place_new_monster_group(c, ny, nx, friends_race, sleep, total, origin);
+				success = place_new_monster_group(c, new.y, new.x, friends_race,
+												  sleep, total, origin);
 
 			return success;
 		}

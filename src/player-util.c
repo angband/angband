@@ -1158,15 +1158,6 @@ bool player_is_immune(struct player *p, int element)
 	return (p->state.el_info[element].res_level == 3);
 }
 
-/*
- * Extract a "direction" which will move one step from the player location
- * towards the given "target" location (or DIR_NONE if no motion necessary).
- */
-int coords_to_dir(struct player *p, int y, int x)
-{
-	return motion_dir(loc(p->px, p->py), loc(x, y));
-}
-
 /**
  * Places the player at the given coordinates in the cave.
  */

@@ -104,7 +104,6 @@ void player_set_resting_repeat_count(struct player *p, s16b count);
 bool player_of_has(struct player *p, int flag);
 bool player_resists(struct player *p, int element);
 bool player_is_immune(struct player *p, int element);
-int coords_to_dir(struct player *p, int y, int x);
 void player_place(struct chunk *c, struct player *p, int y, int x);
 void disturb(struct player *p, int stop_search);
 void search(struct player *p);

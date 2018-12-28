@@ -813,8 +813,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
  */
 bool multiply_monster(struct chunk *c, const struct monster *mon)
 {
-	int i, y, x;
-
+	struct loc grid;
+	int i;
 	bool result = false;
 
 	/* Try up to 18 times */
@@ -822,14 +822,14 @@ bool multiply_monster(struct chunk *c, const struct monster *mon)
 		int d = 1;
 
 		/* Pick a location */
-		scatter(c, &y, &x, mon->grid.y, mon->grid.x, d, true);
+		scatter(c, &grid, mon->grid, d, true);
 
 		/* Require an "empty" floor grid */
-		if (!square_isempty(c, loc(x, y))) continue;
+		if (!square_isempty(c, grid)) continue;
 
 		/* Create a new monster (awake, no groups) */
-		result = place_new_monster(c, y, x, mon->race, false, false,
-			ORIGIN_DROP_BREED);
+		result = place_new_monster(c, grid.y, grid.x, mon->race, false, false,
+								   ORIGIN_DROP_BREED);
 
 		/* Done */
 		break;

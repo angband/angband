@@ -1592,27 +1592,27 @@ static void do_cmd_wiz_summon(int num)
  */
 static void do_cmd_wiz_named(struct monster_race *r, bool slp)
 {
-	int py = player->py;
-	int px = player->px;
-
-	int i, x, y;
+	int i;
 
 	/* Paranoia */
 	assert(r);
 
 	/* Try 10 times */
 	for (i = 0; i < 10; i++) {
+		struct loc grid;
 		int d = 1;
 
 		/* Pick a location */
-		scatter(cave, &y, &x, py, px, d, true);
+		scatter(cave, &grid, loc(player->px, player->py), d, true);
 
 		/* Require empty grids */
-		if (!square_isempty(cave, loc(x, y))) continue;
+		if (!square_isempty(cave, grid)) continue;
 
 		/* Place it (allow groups) */
-		if (place_new_monster(cave, y, x, r, slp, true, ORIGIN_DROP_WIZARD))
+		if (place_new_monster(cave, grid.y, grid.x, r, slp, true,
+							  ORIGIN_DROP_WIZARD)) {
 			break;
+		}
 	}
 }
 

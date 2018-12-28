@@ -401,8 +401,8 @@ int call_monster(int y, int x)
  */
 int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 {
-	int i, x = 0, y = 0;
-
+	int i;
+	struct loc grid;
 	struct monster *mon;
 	struct monster_race *race;
 
@@ -412,13 +412,13 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 		int d = (i / 15) + 1;
 
 		/* Pick a location */
-		scatter(cave, &y, &x, y1, x1, d, true);
+		scatter(cave, &grid, loc(x1, y1), d, true);
 
 		/* Require "empty" floor grid */
-		if (!square_isempty(cave, loc(x, y))) continue;
+		if (!square_isempty(cave, grid)) continue;
 
 		/* No summon on glyphs */
-		if (square_iswarded(cave, loc(x, y)) || square_isdecoyed(cave, loc(x, y))) {
+		if (square_iswarded(cave, grid) || square_isdecoyed(cave, grid)) {
 			continue;
 		}
 
@@ -435,7 +435,7 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 	/* Use the new calling scheme if requested */
 	if (call && (type != summon_name_to_idx("UNIQUE")) &&
 		(type != summon_name_to_idx("WRAITH"))) {
-		return (call_monster(y, x));
+		return (call_monster(grid.y, grid.x));
 	}
 
 	/* Prepare allocation table */
@@ -451,11 +451,12 @@ int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call)
 	if (!race) return (0);
 
 	/* Attempt to place the monster (awake, don't allow groups) */
-	if (!place_new_monster(cave, y, x, race, false, false, ORIGIN_DROP_SUMMON))
+	if (!place_new_monster(cave, grid.y, grid.x, race, false, false, ORIGIN_DROP_SUMMON)) {
 		return (0);
+	}
 
 	/* Success, return the level of the monster */
-	mon = square_monster(cave, loc(x, y));
+	mon = square_monster(cave, grid);
 
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including slowing down faster monsters for one turn */

@@ -168,9 +168,8 @@ void unlock_chest(struct object *obj)
  * Determine if a grid contains a chest matching the query type, and
  * return a pointer to the first such chest
  */
-struct object *chest_check(int y, int x, enum chest_query check_type)
+struct object *chest_check(struct loc grid, enum chest_query check_type)
 {
-	struct loc grid = loc(x, y);
 	struct object *obj;
 
 	/* Scan all objects in the grid */
@@ -204,7 +203,7 @@ struct object *chest_check(int y, int x, enum chest_query check_type)
  * Return the number of grids holding a chests around (or under) the character.
  * If requested, count only trapped chests.
  */
-int count_chests(int *y, int *x, enum chest_query check_type)
+int count_chests(struct loc *grid, enum chest_query check_type)
 {
 	int d, count;
 
@@ -214,18 +213,16 @@ int count_chests(int *y, int *x, enum chest_query check_type)
 	/* Check around (and under) the character */
 	for (d = 0; d < 9; d++) {
 		/* Extract adjacent (legal) location */
-		int yy = player->py + ddy_ddd[d];
-		int xx = player->px + ddx_ddd[d];
+		struct loc grid1 = loc_sum(loc(player->px, player->py), ddgrid_ddd[d]);
 
 		/* No (visible) chest is there */
-		if (!chest_check(yy, xx, check_type)) continue;
+		if (!chest_check(grid1, check_type)) continue;
 
 		/* Count it */
 		++count;
 
 		/* Remember the location of the last chest found */
-		*y = yy;
-		*x = xx;
+		*grid = grid1;
 	}
 
 	/* All done */

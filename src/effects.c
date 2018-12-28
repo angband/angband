@@ -3054,7 +3054,7 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 	 * necessary.
 	 */
 	int rubble_grids = randint1(3);
-	int open_grids = count_feats(NULL, NULL, square_isempty, false);
+	int open_grids = count_feats(NULL, square_isempty, false);
 
 	if (rubble_grids > open_grids) {
 		rubble_grids = open_grids;

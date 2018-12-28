@@ -778,7 +778,7 @@ void vault_traps(struct chunk *c, int y, int x, int yd, int xd, int num)
  */
 void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
 {
-    int k, i, y, x;
+    int k, i;
 
 	/* If the starting location is illegal, don't even start */
 	if (!square_in_bounds(c, loc(x1, y1))) return;
@@ -787,16 +787,16 @@ void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num)
     for (k = 0; k < num; k++) {
 		/* Try nine locations */
 		for (i = 0; i < 9; i++) {
-			int d = 1;
+			struct loc grid;
 
 			/* Pick a nearby location */
-			scatter(c, &y, &x, y1, x1, d, true);
+			scatter(c, &grid, loc(x1, y1), 1, true);
 
 			/* Require "empty" floor grids */
-			if (!square_isempty(c, loc(x, y))) continue;
+			if (!square_isempty(c, grid)) continue;
 
 			/* Place the monster (allow groups) */
-			pick_and_place_monster(c, y, x, depth, true, true,
+			pick_and_place_monster(c, grid.y, grid.x, depth, true, true,
 								   ORIGIN_DROP_SPECIAL);
 
 			break;

@@ -429,13 +429,15 @@ void cave_free(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);
 void delist_object(struct chunk *c, struct object *obj);
 void object_lists_check_integrity(struct chunk *c, struct chunk *c_k);
-void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d, bool need_los);
+void scatter(struct chunk *c, struct loc *place, struct loc grid, int d,
+			 bool need_los);
 
 struct monster *cave_monster(struct chunk *c, int idx);
 int cave_monster_max(struct chunk *c);
 int cave_monster_count(struct chunk *c);
 
-int count_feats(int *y, int *x, bool (*test)(struct chunk *c, struct loc grid), bool under);
+int count_feats(struct loc *grid,
+				bool (*test)(struct chunk *c, struct loc grid), bool under);
 struct loc cave_find_decoy(struct chunk *c);
 void prepare_next_level(struct chunk **c, struct player *p);
 bool is_quest(int level);

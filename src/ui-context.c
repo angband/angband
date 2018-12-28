@@ -451,7 +451,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		ADD_LABEL("Cast On", CMD_CAST, MN_ROW_VALID);
 
 	if (adjacent) {
-		struct object *obj = chest_check(y, x, CHEST_ANY);
+		struct object *obj = chest_check(grid, CHEST_ANY);
 		ADD_LABEL((square(c, grid).mon) ? "Attack" : "Alter", CMD_ALTER,
 				  MN_ROW_VALID);
 
@@ -621,7 +621,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 		case CMD_RUN:
 			cmdq_push(selected);
 			cmd_set_arg_direction(cmdq_peek(), "direction",
-								  coords_to_dir(player, y, x));
+								  motion_dir(loc(player->px, player->py), loc(x, y)));
 			break;
 
 		case CMD_CAST:
@@ -1040,12 +1040,14 @@ void textui_process_click(ui_event e)
 				/* shift-click - run */
 				cmdq_push(CMD_RUN);
 				cmd_set_arg_direction(cmdq_peek(), "direction",
-									  coords_to_dir(player, y, x));
+									  motion_dir(loc(player->px, player->py),
+												 loc(x, y)));
 			} else if (e.mouse.mods & KC_MOD_CONTROL) {
 				/* control-click - alter */
 				cmdq_push(CMD_ALTER);
 				cmd_set_arg_direction(cmdq_peek(), "direction",
-									  coords_to_dir(player, y,x));
+									  motion_dir(loc(player->px, player->py),
+												 loc(x, y)));
 			} else if (e.mouse.mods & KC_MOD_ALT) {
 				/* alt-click - look */
 				if (target_set_interactive(TARGET_LOOK, x, y)) {
@@ -1058,7 +1060,7 @@ void textui_process_click(ui_event e)
 					&& (x-player->px >= -1) && (x-player->px <= 1)) {
 					cmdq_push(CMD_WALK);
 					cmd_set_arg_direction(cmdq_peek(), "direction",
-										  coords_to_dir(player, y, x));
+										  motion_dir(loc(player->px, player->py), loc(x, y)));
 				} else {
 					cmdq_push(CMD_PATHFIND);
 					cmd_set_arg_point(cmdq_peek(), "point", y, x);

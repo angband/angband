@@ -235,7 +235,8 @@ static bool do_cmd_open_aux(int y, int x)
  */
 void do_cmd_open(struct command *cmd)
 {
-	int y, x, dir;
+	struct loc grid;
+	int dir;
 	struct object *obj;
 	bool more = false;
 	int err;
@@ -244,14 +245,14 @@ void do_cmd_open(struct command *cmd)
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
-		int y2, x2;
+		struct loc grid1;
 		int n_closed_doors, n_locked_chests;
 
-		n_closed_doors = count_feats(&y2, &x2, square_iscloseddoor, false);
-		n_locked_chests = count_chests(&y2, &x2, CHEST_OPENABLE);
+		n_closed_doors = count_feats(&grid1, square_iscloseddoor, false);
+		n_locked_chests = count_chests(&grid1, CHEST_OPENABLE);
 
 		if (n_closed_doors + n_locked_chests == 1) {
-			dir = coords_to_dir(player, y2, x2);
+			dir = motion_dir(loc(player->px, player->py), grid1);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
 			return;
@@ -259,14 +260,13 @@ void do_cmd_open(struct command *cmd)
 	}
 
 	/* Get location */
-	y = player->py + ddy[dir];
-	x = player->px + ddx[dir];
+	grid = loc_sum(loc(player->px, player->py), ddgrid[dir]);
 
 	/* Check for chest */
-	obj = chest_check(y, x, CHEST_OPENABLE);
+	obj = chest_check(grid, CHEST_OPENABLE);
 
 	/* Check for door */
-	if (!obj && !do_cmd_open_test(y, x)) {
+	if (!obj && !do_cmd_open_test(grid.y, grid.x)) {
 		/* Cancel repeat */
 		disturb(player, 0);
 		return;
@@ -278,15 +278,14 @@ void do_cmd_open(struct command *cmd)
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, false)) {
 		/* Get location */
-		y = player->py + ddy[dir];
-		x = player->px + ddx[dir];
+		grid = loc_sum(loc(player->px, player->py), ddgrid[dir]);
 
 		/* Check for chest */
-		obj = chest_check(y, x, CHEST_OPENABLE);
+		obj = chest_check(grid, CHEST_OPENABLE);
 	}
 
 	/* Monster */
-	m = square_monster(cave, loc(x, y));
+	m = square_monster(cave, grid);
 	if (m) {
 		/* Mimics surprise the player */
 		if (monster_is_mimicking(m)) {
@@ -299,14 +298,14 @@ void do_cmd_open(struct command *cmd)
 			msg("There is a monster in the way!");
 
 			/* Attack */
-			py_attack(player, y, x);
+			py_attack(player, grid.y, grid.x);
 		}
 	} else if (obj) {
 		/* Chest */
-		more = do_cmd_open_chest(y, x, obj);
+		more = do_cmd_open_chest(grid.y, grid.x, obj);
 	} else {
 		/* Door */
-		more = do_cmd_open_aux(y, x);
+		more = do_cmd_open_aux(grid.y, grid.x);
 	}
 
 	/* Cancel repeat unless we may continue */
@@ -381,7 +380,8 @@ static bool do_cmd_close_aux(int y, int x)
  */
 void do_cmd_close(struct command *cmd)
 {
-	int y, x, dir;
+	struct loc grid;
+	int dir;
 	int err;
 
 	bool more = false;
@@ -389,11 +389,11 @@ void do_cmd_close(struct command *cmd)
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
-		int y2, x2;
+		struct loc grid1;
 
 		/* Count open doors */
-		if (count_feats(&y2, &x2, square_isopendoor, false) == 1) {
-			dir = coords_to_dir(player, y2, x2);
+		if (count_feats(&grid1, square_isopendoor, false) == 1) {
+			dir = motion_dir(loc(player->px, player->py), grid1);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, false)) {
 			return;
@@ -401,11 +401,10 @@ void do_cmd_close(struct command *cmd)
 	}
 
 	/* Get location */
-	y = player->py + ddy[dir];
-	x = player->px + ddx[dir];
+	grid = loc_sum(loc(player->px, player->py), ddgrid[dir]);
 
 	/* Verify legality */
-	if (!do_cmd_close_test(y, x)) {
+	if (!do_cmd_close_test(grid.y, grid.x)) {
 		/* Cancel repeat */
 		disturb(player, 0);
 		return;
@@ -417,17 +416,16 @@ void do_cmd_close(struct command *cmd)
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, false)) {
 		/* Get location */
-		y = player->py + ddy[dir];
-		x = player->px + ddx[dir];
+		grid = loc_sum(loc(player->px, player->py), ddgrid[dir]);
 	}
 
 	/* Monster - alert, then attack */
-	if (square(cave, loc(x, y)).mon > 0) {
+	if (square(cave, grid).mon > 0) {
 		msg("There is a monster in the way!");
-		py_attack(player, y, x);
+		py_attack(player, grid.y, grid.x);
 	} else
 		/* Door - close it */
-		more = do_cmd_close_aux(y, x);
+		more = do_cmd_close_aux(grid.y, grid.x);
 
 	/* Cancel repeat unless told not to */
 	if (!more) disturb(player, 0);
@@ -773,7 +771,8 @@ static bool do_cmd_disarm_aux(int y, int x)
  */
 void do_cmd_disarm(struct command *cmd)
 {
-	int y, x, dir;
+	struct loc grid;
+	int dir;
 	int err;
 
 	struct object *obj;
@@ -782,14 +781,14 @@ void do_cmd_disarm(struct command *cmd)
 	/* Get arguments */
 	err = cmd_get_arg_direction(cmd, "direction", &dir);
 	if (err || dir == DIR_UNKNOWN) {
-		int y2, x2;
+		struct loc grid1;
 		int n_traps, n_chests;
 
-		n_traps = count_feats(&y2, &x2, square_isdisarmabletrap, true);
-		n_chests = count_chests(&y2, &x2, CHEST_TRAPPED);
+		n_traps = count_feats(&grid1, square_isdisarmabletrap, true);
+		n_chests = count_chests(&grid1, CHEST_TRAPPED);
 
 		if (n_traps + n_chests == 1) {
-			dir = coords_to_dir(player, y2, x2);
+			dir = motion_dir(loc(player->px, player->py), grid1);
 			cmd_set_arg_direction(cmd, "direction", dir);
 		} else if (cmd_get_direction(cmd, "direction", &dir, n_chests > 0)) {
 			/* If there are chests to disarm, 5 is allowed as a direction */
@@ -798,14 +797,13 @@ void do_cmd_disarm(struct command *cmd)
 	}
 
 	/* Get location */
-	y = player->py + ddy[dir];
-	x = player->px + ddx[dir];
+	grid = loc_sum(loc(player->px, player->py), ddgrid[dir]);
 
 	/* Check for chests */
-	obj = chest_check(y, x, CHEST_TRAPPED);
+	obj = chest_check(grid, CHEST_TRAPPED);
 
 	/* Verify legality */
-	if (!obj && !do_cmd_disarm_test(y, x)) {
+	if (!obj && !do_cmd_disarm_test(grid.y, grid.x)) {
 		/* Cancel repeat */
 		disturb(player, 0);
 		return;
@@ -817,28 +815,27 @@ void do_cmd_disarm(struct command *cmd)
 	/* Apply confusion */
 	if (player_confuse_dir(player, &dir, false)) {
 		/* Get location */
-		y = player->py + ddy[dir];
-		x = player->px + ddx[dir];
+		grid = loc_sum(loc(player->px, player->py), ddgrid[dir]);
 
 		/* Check for chests */
-		obj = chest_check(y, x, CHEST_TRAPPED);
+		obj = chest_check(grid, CHEST_TRAPPED);
 	}
 
 
 	/* Monster */
-	if (square(cave, loc(x, y)).mon > 0) {
+	if (square(cave, grid).mon > 0) {
 		msg("There is a monster in the way!");
-		py_attack(player, y, x);
+		py_attack(player, grid.y, grid.x);
 	} else if (obj)
 		/* Chest */
-		more = do_cmd_disarm_chest(y, x, obj);
-	else if (square_iscloseddoor(cave, loc(x, y)) &&
-			 !square_islockeddoor(cave, loc(x, y)))
+		more = do_cmd_disarm_chest(grid.y, grid.x, obj);
+	else if (square_iscloseddoor(cave, grid) &&
+			 !square_islockeddoor(cave, grid))
 		/* Door to lock */
-		more = do_cmd_lock_door(y, x);
+		more = do_cmd_lock_door(grid.y, grid.x);
 	else
 		/* Disarm trap */
-		more = do_cmd_disarm_aux(y, x);
+		more = do_cmd_disarm_aux(grid.y, grid.x);
 
 	/* Cancel repeat unless told not to */
 	if (!more) disturb(player, 0);

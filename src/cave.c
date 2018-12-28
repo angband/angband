@@ -510,31 +510,28 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
  *
  * need_los determines whether line of sight is needed
  */
-void scatter(struct chunk *c, int *yp, int *xp, int y, int x, int d,
+void scatter(struct chunk *c, struct loc *place, struct loc grid, int d,
 			 bool need_los)
 {
-	int nx, ny;
 	int tries = 0;
 
 	/* Pick a location, try many times */
 	while (tries < 1000) {
 		/* Pick a new location */
-		ny = rand_spread(y, d);
-		nx = rand_spread(x, d);
+		struct loc new_grid = rand_loc(grid, d, d);
 		tries++;
 
 		/* Ignore annoying locations */
-		if (!square_in_bounds_fully(c, loc(nx, ny))) continue;
+		if (!square_in_bounds_fully(c, new_grid)) continue;
 
 		/* Ignore "excessively distant" locations */
-		if ((d > 1) && (distance(loc(x, y), loc(nx, ny)) > d)) continue;
+		if ((d > 1) && (distance(grid, new_grid) > d)) continue;
 		
 		/* Require "line of sight" if set */
-		if (need_los && !los(c, loc(x, y), loc(nx, ny))) continue;
+		if (need_los && !los(c, grid, new_grid)) continue;
 
 		/* Set the location and return */
-		(*yp) = ny;
-		(*xp) = nx;
+		*place = new_grid;
 		return;
 	}
 }
@@ -565,10 +562,11 @@ int cave_monster_count(struct chunk *c) {
 /**
  * Return the number of doors/traps around (or under) the character.
  */
-int count_feats(int *y, int *x, bool (*test)(struct chunk *c, struct loc grid), bool under)
+int count_feats(struct loc *grid,
+				bool (*test)(struct chunk *c, struct loc grid), bool under)
 {
 	int d;
-	struct loc grid;
+	struct loc grid1;
 	int count = 0; /* Count how many matches */
 
 	/* Check around (and under) the character */
@@ -577,25 +575,23 @@ int count_feats(int *y, int *x, bool (*test)(struct chunk *c, struct loc grid), 
 		if ((d == 8) && !under) continue;
 
 		/* Extract adjacent (legal) location */
-		grid.y = player->py + ddy_ddd[d];
-		grid.x = player->px + ddx_ddd[d];
+		grid1 = loc_sum(loc(player->px, player->py), ddgrid_ddd[d]);
 
 		/* Paranoia */
-		if (!square_in_bounds_fully(cave, grid)) continue;
+		if (!square_in_bounds_fully(cave, grid1)) continue;
 
 		/* Must have knowledge */
-		if (!square_isknown(cave, grid)) continue;
+		if (!square_isknown(cave, grid1)) continue;
 
 		/* Not looking for this feature */
-		if (!((*test)(cave, grid))) continue;
+		if (!((*test)(cave, grid1))) continue;
 
 		/* Count it */
 		++count;
 
 		/* Remember the location of the last door found */
-		if (x && y) {
-			*y = grid.y;
-			*x = grid.x;
+		if ((*grid).x && (*grid).y) {
+			*grid = grid1;
 		}
 	}
 

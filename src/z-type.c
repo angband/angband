@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "z-rand.h"
 #include "z-type.h"
 #include "z-virt.h"
 
@@ -49,6 +50,14 @@ void loc_set_eq(struct loc *dest, struct loc source)
 struct loc loc_sum(struct loc grid1, struct loc grid2)
 {
 	return loc(grid1.x + grid2.x, grid1.y + grid2.y);
+}
+
+/**
+ * Get a random location with the given x and y centres and spread 
+ */
+struct loc rand_loc(struct loc grid, int x_spread, int y_spread)
+{
+	return loc(rand_spread(grid.x, x_spread), rand_spread(grid.y, y_spread));
 }
 
 /**

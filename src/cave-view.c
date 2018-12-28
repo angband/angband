@@ -448,60 +448,55 @@ static void mark_wasseen(struct chunk *c)
  */
 static void add_monster_lights(struct chunk *c, struct loc from)
 {
-	int i, j, k;
+	int d, k;
 
 	/* Scan monster list and add monster lights */
 	for (k = 1; k < cave_monster_max(c); k++) {
 		/* Check the k'th monster */
-		struct monster *m = cave_monster(c, k);
-
-		bool in_los = los(c, from, m->grid);
+		struct monster *mon = cave_monster(c, k);
+		bool in_los = los(c, from, mon->grid);
 
 		/* Skip dead monsters */
-		if (!m->race)
+		if (!mon->race)
 			continue;
 
 		/* Skip monsters not carrying light */
-		if (!rf_has(m->race->flags, RF_HAS_LIGHT))
+		if (!rf_has(mon->race->flags, RF_HAS_LIGHT))
 			continue;
 
 		/* Light a 3x3 box centered on the monster */
-		for (i = -1; i <= 1; i++)
-			for (j = -1; j <= 1; j++) {
-				int sy = m->grid.y + i;
-				int sx = m->grid.x + j;
-				
-				/* If the monster isn't visible we can only light open tiles */
-				if (!in_los && !square_isprojectable(c, loc(sx, sy)))
-					continue;
+		for (d = 0; d < 9; d++) {
+			struct loc grid = loc_sum(mon->grid, ddgrid_ddd[d]);
 
-				/* If the tile is too far away we won't light it */
-				if (distance(from, loc(sx, sy)) > z_info->max_sight)
-					continue;
-				
-				/* If the tile itself isn't in LOS, don't light it */
-				if (!los(c, from, loc(sx, sy)))
-					continue;
+			/* If the monster isn't visible we can only light open grids */
+			if (!in_los && !square_isprojectable(c, grid))
+				continue;
 
-				/* Mark the square lit and seen */
-				sqinfo_on(square(c, loc(sx, sy)).info, SQUARE_VIEW);
-				sqinfo_on(square(c, loc(sx, sy)).info, SQUARE_SEEN);
-			}
+			/* If the grid is too far away we won't light it */
+			if (distance(from, grid) > z_info->max_sight)
+				continue;
+
+			/* If the grid itself isn't in LOS, don't light it */
+			if (!los(c, from, grid))
+				continue;
+
+			/* Mark the grid lit and seen */
+			sqinfo_on(square(c, grid).info, SQUARE_VIEW);
+			sqinfo_on(square(c, grid).info, SQUARE_SEEN);
+		}
 	}
 }
 
 /**
  * Update view for a single square
  */
-static void update_one(struct chunk *c, int y, int x, int blind)
+static void update_one(struct chunk *c, struct loc grid, int blind)
 {
-	struct loc grid = loc(x, y);
-
 	/* Remove view if blind, check visible squares for traps */
 	if (blind) {
 		sqinfo_off(square(c, grid).info, SQUARE_SEEN);
 	} else if (square_isseen(c, grid)) {
-		square_reveal_trap(c, y, x, false, true);
+		square_reveal_trap(c, grid.y, grid.x, false, true);
 	}
 
 	/* Square went from unseen -> seen */
@@ -675,7 +670,7 @@ void update_view(struct chunk *c, struct player *p)
 	/* Complete the algorithm */
 	for (y = 0; y < c->height; y++)
 		for (x = 0; x < c->width; x++)
-			update_one(c, y, x, p->timed[TMD_BLIND]);
+			update_one(c, loc(x, y), p->timed[TMD_BLIND]);
 }
 
 
