@@ -522,23 +522,24 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
  */
 void monster_swap(int y1, int x1, int y2, int x2)
 {
+	struct loc grid1 = loc(x1, y1), grid2 = loc(x2, y2);
 	int m1, m2;
 	struct monster *mon;
 	struct loc decoy = cave_find_decoy(cave);
 
 	/* Monsters */
-	m1 = cave->squares[y1][x1].mon;
-	m2 = cave->squares[y2][x2].mon;
+	m1 = cave->squares[grid1.y][grid1.x].mon;
+	m2 = cave->squares[grid2.y][grid2.x].mon;
 
 	/* Update grids */
-	cave->squares[y1][x1].mon = m2;
-	cave->squares[y2][x2].mon = m1;
+	square_set_mon(cave, grid1, m2);
+	square_set_mon(cave, grid2, m1);
 
 	/* Monster 1 */
 	if (m1 > 0) {
 		/* Monster */
 		mon = cave_monster(cave, m1);
-		mon->grid = loc(x2, y2);
+		mon->grid = grid2;
 
 		/* Update monster */
 		update_mon(mon, cave, true);
@@ -551,11 +552,10 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		player->upkeep->redraw |= (PR_MONLIST);
 	} else if (m1 < 0) {
 		/* Player */
-		player->grid.y = y2;
-		player->grid.x = x2;
+		player->grid = grid2;
 
 		/* Decoys get destroyed if player is too far away */
-		if (decoy.y && decoy.x &&
+		if (!loc_is_zero(decoy) &&
 			distance(decoy, player->grid) > z_info->max_sight) {
 			square_destroy_decoy(cave, decoy);
 		}
@@ -574,7 +574,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	if (m2 > 0) {
 		/* Monster */
 		mon = cave_monster(cave, m2);
-		mon->grid = loc(x1, y1);
+		mon->grid = grid1;
 
 		/* Update monster */
 		update_mon(mon, cave, true);
@@ -587,11 +587,10 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		player->upkeep->redraw |= (PR_MONLIST);
 	} else if (m2 < 0) {
 		/* Player */
-		player->grid.y = y1;
-		player->grid.x = x1;
+		player->grid = grid1;
 
 		/* Decoys get destroyed if player is too far away */
-		if (decoy.y && decoy.x &&
+		if (!loc_is_zero(decoy) &&
 			distance(decoy, player->grid) > z_info->max_sight) {
 			square_destroy_decoy(cave, decoy);
 		}
@@ -607,8 +606,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Redraw */
-	square_light_spot(cave, loc(x1, y1));
-	square_light_spot(cave, loc(x2, y2));
+	square_light_spot(cave, grid1);
+	square_light_spot(cave, grid2);
 }
 
 /**

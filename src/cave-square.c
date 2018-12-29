@@ -990,7 +990,7 @@ void square_excise_object(struct chunk *c, struct loc grid, struct object *obj){
 void square_excise_pile(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
 	object_pile_free(square_object(c, grid));
-	c->squares[grid.y][grid.x].obj = NULL;
+	square_set_obj(c, grid, NULL);
 }
 
 /**
@@ -1140,6 +1140,30 @@ static void square_set_known_feat(struct chunk *c, struct loc grid, int feat)
 {
 	if (c != cave) return;
 	player->cave->squares[grid.y][grid.x].feat = feat;
+}
+
+/**
+ * Set the occupying monster for a square.
+ */
+void square_set_mon(struct chunk *c, struct loc grid, int midx)
+{
+	c->squares[grid.y][grid.x].mon = midx;
+}
+
+/**
+ * Set the (first) object for a square.
+ */
+void square_set_obj(struct chunk *c, struct loc grid, struct object *obj)
+{
+	c->squares[grid.y][grid.x].obj = obj;
+}
+
+/**
+ * Set the (first) trap for a square.
+ */
+void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap)
+{
+	c->squares[grid.y][grid.x].trap = trap;
 }
 
 void square_add_trap(struct chunk *c, struct loc grid)

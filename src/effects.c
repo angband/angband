@@ -4687,8 +4687,8 @@ bool effect_handler_SINGLE_COMBAT(effect_handler_context_t *context)
 		/* Now tidy up */
 		mon->midx = first_mon->midx;
 		first_mon->midx = 1;
-		cave->squares[first_mon->grid.y][first_mon->grid.x].mon = 1;
-		cave->squares[mon->grid.y][mon->grid.x].mon = mon->midx;
+		square_set_mon(cave, first_mon->grid, 1);
+		square_set_mon(cave, mon->grid, mon->midx);
 
 		/* Repair objects being carried by monsters */
 		for (obj = mon->held_obj; obj; obj = obj->next) {

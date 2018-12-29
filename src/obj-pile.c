@@ -868,7 +868,7 @@ bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
 	drop->held_m_idx = 0;
 
 	/* Link to the first object in the pile */
-	pile_insert(&c->squares[y][x].obj, drop);
+	pile_insert(&c->squares[grid.y][grid.x].obj, drop);
 
 	/* Record in the level list */
 	list_object(c, drop);
@@ -1081,7 +1081,7 @@ void push_object(int y, int x)
 	}
 
 	/* Disassociate the objects from the square */
-	cave->squares[y][x].obj = NULL;
+	square_set_obj(cave, grid, NULL);
 
 	/* Set feature to an open door */
 	square_force_floor(cave, grid);

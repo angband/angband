@@ -1162,13 +1162,14 @@ bool player_is_immune(struct player *p, int element)
  */
 void player_place(struct chunk *c, struct player *p, int y, int x)
 {
-	assert(!c->squares[y][x].mon);
+	struct loc grid = loc(x, y);
+	assert(!square_monster(c, grid));
 
 	/* Save player location */
-	p->grid = loc(x, y);
+	p->grid = grid;
 
 	/* Mark cave grid */
-	c->squares[y][x].mon = -1;
+	square_set_mon(c, grid, -1);
 
 	/* Clear stair creation */
 	p->upkeep->create_down_stair = false;

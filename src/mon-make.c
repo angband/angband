@@ -128,12 +128,9 @@ static void cleanup_race_allocs(void) {
  */
 void delete_monster_idx(int m_idx)
 {
-	assert(m_idx > 0);
-
 	struct monster *mon = cave_monster(cave, m_idx);
 
-	int y = mon->grid.y;
-	int x = mon->grid.x;
+	assert(m_idx > 0);
 	assert(square_in_bounds(cave, mon->grid));
 
 	/* Hack -- Reduce the racial counter */
@@ -152,7 +149,7 @@ void delete_monster_idx(int m_idx)
 		health_track(player->upkeep, NULL);
 
 	/* Monster is gone */
-	cave->squares[y][x].mon = 0;
+	square_set_mon(cave, mon->grid, 0);
 
 	/* Delete objects */
 	struct object *obj = mon->held_obj;
@@ -208,7 +205,6 @@ void delete_monster(int y, int x)
  */
 static void compact_monsters_aux(int i1, int i2)
 {
-	int y, x;
 	struct monster *mon;
 	struct object *obj;
 
@@ -217,11 +213,9 @@ static void compact_monsters_aux(int i1, int i2)
 
 	/* Old monster */
 	mon = cave_monster(cave, i1);
-	y = mon->grid.y;
-	x = mon->grid.x;
 
 	/* Update the cave */
-	cave->squares[y][x].mon = i2;
+	square_set_mon(cave, mon->grid, i2);
 
 	/* Update midx */
 	mon->midx = i2;
@@ -374,7 +368,7 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 		mon->race->cur_num--;
 
 		/* Monster is gone from square */
-		c->squares[mon->grid.y][mon->grid.x].mon = 0;
+		square_set_mon(c, mon->grid, 0);
 
 		/* Wipe the Monster */
 		memset(mon, 0, sizeof(struct monster));
@@ -865,7 +859,7 @@ s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
 	new_mon->midx = m_idx;
 
 	/* Set the location */
-	c->squares[y][x].mon = new_mon->midx;
+	square_set_mon(c, grid, new_mon->midx);
 	new_mon->grid = grid;
 	assert(square_monster(c, grid) == new_mon);
 

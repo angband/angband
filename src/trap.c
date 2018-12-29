@@ -272,7 +272,7 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 	/* Allocate a new trap for this grid (at the front of the list) */
 	new_trap = mem_zalloc(sizeof(*new_trap));
 	new_trap->next = square_trap(c, grid);
-	c->squares[y][x].trap = new_trap;
+	square_set_trap(c, grid, new_trap);
 
 	/* Set the details */
 	new_trap->t_idx = t_idx;
@@ -524,7 +524,7 @@ bool square_remove_all_traps(struct chunk *c, int y, int x)
 		trap = next_trap;
 	}
 
-	c->squares[y][x].trap = NULL;
+	square_set_trap(c, grid, NULL);
 
 	/* Refresh grids that the character can see */
 	if (square_isseen(c, grid)) {
@@ -564,7 +564,7 @@ bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
 			if (prev_trap) {
 				prev_trap->next = next_trap;
 			} else {
-				c->squares[y][x].trap = next_trap;
+				square_set_trap(c, grid, next_trap);
 			}
 
 			break;

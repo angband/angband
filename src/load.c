@@ -1342,8 +1342,9 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 		if (!obj)
 			break;
 
-		if (square_in_bounds_fully(c, obj->grid))
+		if (square_in_bounds_fully(c, obj->grid)) {
 			pile_insert_end(&c->squares[obj->grid.y][obj->grid.x].obj, obj);
+		}
 		assert(obj->oidx);
 		assert(c->objects[obj->oidx] == NULL);
 		c->objects[obj->oidx] = obj;
@@ -1412,12 +1413,12 @@ static int rd_traps_aux(struct chunk *c)
 		trap = mem_zalloc(sizeof(*trap));
 		rd_trap(trap);
 		grid = trap->grid;
-		if ((grid.y == 0) && (grid.x == 0))
+		if (loc_is_zero(grid))
 			break;
 		else {
 			/* Put the trap at the front of the grid trap list */
-			trap->next = c->squares[grid.y][grid.x].trap;
-			c->squares[grid.y][grid.x].trap = trap;
+			trap->next = square_trap(c, grid);
+			square_set_trap(c, grid, trap);
 
 			/* Set decoy if appropriate */
 			if ((trap->kind == lookup_trap("decoy")) && (c == cave)) {

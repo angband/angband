@@ -828,12 +828,12 @@ void object_set_base_known(struct object *obj)
 void object_sense(struct player *p, struct object *obj)
 {
 	struct object *known_obj = p->cave->objects[obj->oidx];
-	struct loc grid = obj->grid;
 	int none = tval_find_idx("none");
 
 	/* Make new sensed objects where necessary */
 	if (known_obj == NULL) {
 		/* Make and list the new object */
+		struct loc grid = obj->grid;
 		struct object *new_obj = object_new();
 		p->cave->objects[obj->oidx] = new_obj;
 		new_obj->oidx = obj->oidx;

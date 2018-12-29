@@ -1608,7 +1608,7 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
 		for (y = 0; y < c_new->height; y++) {
 			bool found = false;
 			for (x = 0; x < c_new->width; x++) {
-				if (c_new->squares[y][x].feat == FEAT_MORE) {
+				if (square_feat(c_new, loc(x, y))->fidx == FEAT_MORE) {
 					found = true;
 					break;
 				}
@@ -2675,7 +2675,7 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 	memcpy(&c->monsters[mon->midx], mon, sizeof(*mon));
 	mon = &c->monsters[mon->midx];
 	mon->grid = loc(c->width - 2, 1);
-	c->squares[1][c->width - 2].mon = mon->midx;
+	square_set_mon(c, mon->grid, mon->midx);
 	c->mon_max = mon->midx + 1;
 	c->mon_cnt = 1;
 	update_mon(mon, c, true);

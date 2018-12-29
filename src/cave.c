@@ -485,8 +485,7 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 		if (obj) {
 			assert(obj->oidx == i);
 			if (!loc_is_zero(obj->grid))
-				assert(pile_contains(c->squares[obj->grid.y][obj->grid.x].obj,
-									 obj));
+				assert(pile_contains(square_object(c, obj->grid), obj));
 		}
 		if (known_obj) {
 			assert (obj);
@@ -494,7 +493,8 @@ void object_lists_check_integrity(struct chunk *c, struct chunk *c_k)
 				assert(known_obj == obj->known);
 			}
 			if (!loc_is_zero(known_obj->grid))
-				assert (pile_contains(c_k->squares[known_obj->grid.y][known_obj->grid.x].obj, known_obj));
+				assert (pile_contains(square_object(c_k, known_obj->grid),
+									  known_obj));
 			assert (known_obj->oidx == i);
 		}
 	}

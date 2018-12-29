@@ -1180,7 +1180,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				compact_monsters(0);
 				if (!p->upkeep->arena_level) {
 					/* Leave the player marker if going to an arena */
-					(*c)->squares[p->grid.y][p->grid.x].mon = 0;
+					square_set_mon(*c, p->grid, 0);
 				}
 
 				/* Save level and known level */
@@ -1303,7 +1303,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 					sanitize_player_loc(*c, p);
 				}
 
-				(*c)->squares[p->grid.y][p->grid.x].mon = -1;
+				square_set_mon(*c, p->grid, -1);;
 			} else {
 				/* Map boundary changes may not cooperate with level teleport */
 				sanitize_player_loc(*c, p);
