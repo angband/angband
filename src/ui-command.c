@@ -113,7 +113,7 @@ void do_cmd_redraw(void)
 			target_get(&col, &row);
 			move_cursor_relative(row, col);
 		} else {
-			move_cursor_relative(player->py, player->px);
+			move_cursor_relative(player->grid.y, player->grid.x);
 		}
 	}
 

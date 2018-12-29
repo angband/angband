@@ -3646,7 +3646,7 @@ static void refresh_angband_terms(void)
 
 		Term_clear();
 		handle_stuff(player);
-		move_cursor_relative(player->px, player->py);
+		move_cursor_relative(player->grid.x, player->grid.y);
 
 		for (size_t i = 0; i < ANGBAND_TERM_MAX; i++) {
 			if (angband_term[i] == NULL) {
@@ -3949,7 +3949,8 @@ static void term_view_map_tile(struct subwindow *subwindow)
 		}
 	}
 
-	SDL_Rect cursor = {player->px * tile.w, player->py * tile.h, tile.w, tile.h};
+	SDL_Rect cursor = {player->grid.x * tile.w, player->grid.y * tile.h, tile.w,
+					   tile.h};
 
 	/* render cursor around player */
 	render_outline_rect_width(subwindow->window,
@@ -3984,8 +3985,8 @@ static void term_view_map_text(struct subwindow *subwindow)
 	}
 
 	SDL_Rect cursor = {
-		player->px * subwindow->font_width,
-		player->py * subwindow->font_height,
+		player->grid.x * subwindow->font_width,
+		player->grid.y * subwindow->font_height,
 		subwindow->font_width,
 		subwindow->font_height
 	};

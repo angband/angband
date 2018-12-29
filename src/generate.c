@@ -1087,9 +1087,9 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	/* TODO potential problem: stairs in vaults? */
 	
 	/* allow direct transfer if target location is teleportable */
-	if (square_in_bounds_fully(c, loc(p->px, p->py))
-		&& square_isarrivable(c, loc(p->px, p->py))
-		&& !square_isvault(c, loc(p->px, p->py))) {
+	if (square_in_bounds_fully(c, p->grid)
+		&& square_isarrivable(c, p->grid)
+		&& !square_isvault(c, p->grid)) {
 		return;
 	}
 	
@@ -1098,7 +1098,7 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	 */
 	int tx, ty; // test locations
 	int ix, iy; // initial location
-	int vx=1, vy=1; // fallback vault location
+	int vx = 1, vy = 1; // fallback vault location
 	int try = 1000; // attempts
 
 	/* a bunch of random locations */
@@ -1108,8 +1108,8 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 		ty = randint0(c->height-1) + 1;
 		if (square_isempty(c, loc(tx, ty))
 			&& !square_isvault(c, loc(tx, ty))) {
-			p->py = ty;
-			p->px = tx;
+			p->grid.y = ty;
+			p->grid.x = tx;
 			return;
 		}
 	}
@@ -1131,8 +1131,8 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 		if (square_isempty(c, loc(tx, ty))) {
 			if (!square_isvault(c, loc(tx, ty))) {
 				// ok location
-				p->py = ty;
-				p->px = tx;
+				p->grid.y = ty;
+				p->grid.x = tx;
 				return;
 			}
 			// vault, but lets remember it just in case
@@ -1154,8 +1154,8 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 	}
 	
 	// fallback vault location (or at least a non-crashy square)
-	p->px=vx;
-	p->py=vy;
+	p->grid.x = vx;
+	p->grid.y = vy;
 }
 
 /**
@@ -1180,7 +1180,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				compact_monsters(0);
 				if (!p->upkeep->arena_level) {
 					/* Leave the player marker if going to an arena */
-					(*c)->squares[p->py][p->px].mon = 0;
+					(*c)->squares[p->grid.y][p->grid.x].mon = 0;
 				}
 
 				/* Save level and known level */
@@ -1264,9 +1264,9 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				/* Find where the player has to go, place them by hand */
 				for (y = 0; y < (*c)->height; y++) {
 					for (x = 0; x < (*c)->width; x++) {
-						if (square(*c, loc(x, y)).mon == -1) {
-							p->py = y;
-							p->px = x;
+						struct loc grid = loc(x, y);
+						if (square(*c, grid).mon == -1) {
+							p->grid = grid;
 							found = true;
 							break;
 						}
@@ -1286,8 +1286,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 								if (square_in_bounds_fully(*c, grid) &&
 									square_isempty(*c, grid) &&
 									!square_isvault(*c, grid)) {
-									p->py = y;
-									p->px = x;
+									p->grid = grid;
 									found = true;
 									break;
 								}
@@ -1300,18 +1299,17 @@ void prepare_next_level(struct chunk **c, struct player *p)
 
 				/* Still failed to find, try anywhere */
 				if (!found) {
-					p->py = (*c)->monsters[1].grid.y;
-					p->px = (*c)->monsters[1].grid.x;
+					p->grid = (*c)->monsters[1].grid;
 					sanitize_player_loc(*c, p);
 				}
 
-				(*c)->squares[p->py][p->px].mon = -1;
+				(*c)->squares[p->grid.y][p->grid.x].mon = -1;
 			} else {
 				/* Map boundary changes may not cooperate with level teleport */
 				sanitize_player_loc(*c, p);
 
 				/* Place the player */
-				player_place(*c, p, p->py, p->px);
+				player_place(*c, p, p->grid.y, p->grid.x);
 			}
 
 			/* Remove from the list */

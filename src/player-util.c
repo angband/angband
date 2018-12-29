@@ -487,9 +487,8 @@ bool player_attack_random_monster(struct player *p)
 
 	/* Look for a monster, attack */
 	for (i = 0; i < 8; i++, dir++) {
-		int y = player->py + ddy_ddd[dir % 8];
-		int x = player->px + ddx_ddd[dir % 8];
-		if (square_monster(cave, loc(x, y))) {
+		struct loc grid = loc_sum(player->grid, ddgrid_ddd[dir % 8]);
+		if (square_monster(cave, grid)) {
 			p->upkeep->energy_use = z_info->move_energy;
 			move_player(dir % 8, false);
 			return true;
@@ -1166,8 +1165,7 @@ void player_place(struct chunk *c, struct player *p, int y, int x)
 	assert(!c->squares[y][x].mon);
 
 	/* Save player location */
-	p->py = y;
-	p->px = x;
+	p->grid = loc(x, y);
 
 	/* Mark cave grid */
 	c->squares[y][x].mon = -1;
@@ -1223,7 +1221,7 @@ void disturb(struct player *p, int stop_search)
  */
 void search(struct player *p)
 {
-	int y, x;
+	struct loc grid;
 
 	/* Various conditions mean no searching */
 	if (p->timed[TMD_BLIND] || no_light() ||
@@ -1231,15 +1229,14 @@ void search(struct player *p)
 		return;
 
 	/* Search the nearby grids, which are always in bounds */
-	for (y = (p->py - 1); y <= (p->py + 1); y++) {
-		for (x = (p->px - 1); x <= (p->px + 1); x++) {
-			struct loc grid = loc(x, y);
+	for (grid.y = (p->grid.y - 1); grid.y <= (p->grid.y + 1); grid.y++) {
+		for (grid.x = (p->grid.x - 1); grid.x <= (p->grid.x + 1); grid.x++) {
 			struct object *obj;
 
 			/* Secret doors */
 			if (square_issecretdoor(cave, grid)) {
 				msg("You have found a secret door.");
-				place_closed_door(cave, y, x);
+				place_closed_door(cave, grid.y, grid.x);
 				disturb(p, 0);
 			}
 

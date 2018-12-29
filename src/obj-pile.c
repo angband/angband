@@ -1132,15 +1132,13 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
 			   item_tester tester)
 {
 	struct object *obj;
-	int py = player->py;
-	int px = player->px;
 	int num = 0;
 
 	/* Sanity */
-	if (!square_in_bounds(cave, loc(px, py))) return 0;
+	if (!square_in_bounds(cave, player->grid)) return 0;
 
 	/* Scan all objects in the grid */
-	for (obj = square_object(cave, loc(px, py)); obj; obj = obj->next) {
+	for (obj = square_object(cave, player->grid); obj; obj = obj->next) {
 		/* Enforce limit */
 		if (num >= max_size) break;
 
@@ -1265,7 +1263,7 @@ int scan_items(struct object **item_list, size_t item_max, int mode,
 bool item_is_available(struct object *obj)
 {
 	if (object_is_carried(player, obj)) return true;
-	if (cave && square_holds_object(cave, loc(player->px, player->py), obj))
+	if (cave && square_holds_object(cave, player->grid, obj))
 		return true;
 	return false;
 }

@@ -85,7 +85,7 @@ static int chance_of_missile_hit(const struct player *p,
 		chance = p->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
 	}
 
-	return chance - distance(loc(p->px, p->py), loc(x, y));
+	return chance - distance(p->grid, loc(x, y));
 }
 
 /**
@@ -271,8 +271,8 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 {
 	int y = mon->grid.y;
 	int x = mon->grid.x;
-	int dy = y - p->py;
-	int dx = x - p->px;
+	int dy = y - p->grid.y;
+	int dx = x - p->grid.x;
 	int power = (p->state.num_blows - 100) / 100;
 
 	/* Not enough power left */
@@ -370,7 +370,8 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 		}
 	}
 	/* Player needs to stop hitting if the monster has moved */
-	return (ABS(mon->grid.y - p->py) > 1) || (ABS(mon->grid.x - p->px) > 1);
+	return (ABS(mon->grid.y - p->grid.y) > 1) ||
+		(ABS(mon->grid.x - p->grid.x) > 1);
 }
 
 /**
@@ -735,12 +736,10 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	struct loc path_g[256];
 
 	/* Start at the player */
-	int x = p->px;
-	int y = p->py;
+	struct loc grid = p->grid;
 
 	/* Predict the "target" location */
-	int ty = y + 99 * ddy[dir];
-	int tx = x + 99 * ddx[dir];
+	struct loc target = loc_sum(grid, loc(99 * ddx[dir], 99 * ddy[dir]));
 
 	bool hit_target = false;
 	bool none_left = false;
@@ -751,8 +750,8 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	/* Check for target validity */
 	if ((dir == DIR_TARGET) && target_okay()) {
 		int taim;
-		target_get(&tx, &ty);
-		taim = distance(loc(x, y), loc(tx, ty));
+		target_get(&(target.x), &(target.y));
+		taim = distance(grid, target);
 		if (taim > range) {
 			char msg[80];
 			strnfmt(msg, sizeof(msg),
@@ -772,7 +771,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	p->upkeep->energy_use = (z_info->move_energy * 10 / shots);
 
 	/* Calculate the path */
-	path_n = project_path(path_g, range, loc(x, y), loc(tx, ty), 0);
+	path_n = project_path(path_g, range, grid, target, 0);
 
 	/* Calculate potenital piercing */
 	if (player->timed[TMD_POWERSHOT] && tval_is_sharp_missile(obj)) {
@@ -782,15 +781,9 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	/* Hack -- Handle stuff */
 	handle_stuff(p);
 
-	/* Start at the player */
-	x = p->px;
-	y = p->py;
-
 	/* Project along the path */
 	for (i = 0; i < path_n; ++i) {
 		struct monster *mon = NULL;
-		int ny = path_g[i].y;
-		int nx = path_g[i].x;
 		bool see = square_isseen(cave, path_g[i]);
 
 		/* Stop before hitting walls */
@@ -799,11 +792,10 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 			break;
 
 		/* Advance */
-		x = nx;
-		y = ny;
+		grid = path_g[i];
 
 		/* Tell the UI to display the missile */
-		event_signal_missile(EVENT_MISSILE, obj, see, y, x);
+		event_signal_missile(EVENT_MISSILE, obj, see, grid.y, grid.x);
 
 		/* Try the attack on the monster at (x, y) if any */
 		mon = square_monster(cave, path_g[i]);
@@ -814,7 +806,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 			const char *note_dies = monster_is_destroyed(mon) ? 
 				" is destroyed." : " dies.";
 
-			struct attack_result result = attack(p, obj, y, x);
+			struct attack_result result = attack(p, obj, grid.y, grid.x);
 			int dmg = result.dmg;
 			u32b msg_type = result.msg_type;
 			char hit_verb[20];
@@ -901,7 +893,7 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	}
 
 	/* Drop (or break) near that location */
-	drop_near(cave, &missile, breakage_chance(missile, hit_target), y, x, true);
+	drop_near(cave, &missile, breakage_chance(missile, hit_target), grid.y, grid.x, true);
 }
 
 

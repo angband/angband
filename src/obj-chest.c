@@ -213,7 +213,7 @@ int count_chests(struct loc *grid, enum chest_query check_type)
 	/* Check around (and under) the character */
 	for (d = 0; d < 9; d++) {
 		/* Extract adjacent (legal) location */
-		struct loc grid1 = loc_sum(loc(player->px, player->py), ddgrid_ddd[d]);
+		struct loc grid1 = loc_sum(player->grid, ddgrid_ddd[d]);
 
 		/* No (visible) chest is there */
 		if (!chest_check(grid1, check_type)) continue;

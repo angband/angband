@@ -375,10 +375,10 @@ void new_player_spot(struct chunk *c, struct player *p)
 
     /* Try to find a good place to put the player */
 	if (OPT(p, birth_levels_persist) &&
-		square_in_bounds_fully(c, loc(p->px, p->py)) &&
-		square_isstairs(c, loc(p->px, p->py))) {
-		y = p->py;
-		x = p->px;
+		square_in_bounds_fully(c, p->grid) &&
+		square_isstairs(c, p->grid)) {
+		y = p->grid.y;
+		x = p->grid.x;
 	} else if (!find_start(c, &y, &x)) {
 		quit("Failed to place player!");
 	}

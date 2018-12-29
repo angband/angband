@@ -62,8 +62,6 @@
 bool monster_can_cast(struct monster *mon)
 {
 	int chance = (mon->race->freq_innate + mon->race->freq_spell) / 2;
-	int px = player->px;
-	int py = player->py;
 
 	/* Cannot cast spells when nice */
 	if (mflag_has(mon->mflag, MFLAG_NICE)) return false;
@@ -78,7 +76,7 @@ bool monster_can_cast(struct monster *mon)
 	if (mon->cdis > z_info->max_range) return false;
 
 	/* Check path */
-	if (!projectable(cave, mon->grid, loc(px, py), PROJECT_NONE))
+	if (!projectable(cave, mon->grid, player->grid, PROJECT_NONE))
 		return false;
 
 	return true;
@@ -281,8 +279,6 @@ bool make_attack_spell(struct monster *mon)
 	int thrown_spell, failrate;
 	bitflag f[RSF_SIZE];
 	char m_name[80];
-	int px = player->px;
-	int py = player->py;
 	bool seen = (player->timed[TMD_BLIND] == 0) && monster_is_visible(mon);
 
 	/* Check prerequisites */
@@ -303,7 +299,7 @@ bool make_attack_spell(struct monster *mon)
 
 		/* Check for a clean bolt shot */
 		if (test_spells(f, RST_BOLT) &&
-			!projectable(cave, mon->grid, loc(px, py), PROJECT_STOP)) {
+			!projectable(cave, mon->grid, player->grid, PROJECT_STOP)) {
 			ignore_spells(f, RST_BOLT);
 		}
 
@@ -474,7 +470,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
-		int py = p->py, px = p->px;
+		struct loc pgrid = p->grid;
 		bool visible = monster_is_visible(mon) ||
 			rf_has(mon->race->flags, RF_HAS_LIGHT);
 		bool obvious = false;
@@ -661,7 +657,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 		}
 
 		/* Skip the other blows if the player has moved */
-		if ((p->py != py) || (p->px != px)) break;
+		if (!loc_eq(p->grid, pgrid)) break;
 	}
 
 	/* Blink away */

@@ -1712,8 +1712,8 @@ void calc_cave_distances(int **cave_dist)
 	int d_new_max;
 
 	/* Get player location */
-	oy = d_y_old[0] = player->py;
-	ox = d_x_old[0] = player->px;
+	oy = d_y_old[0] = player->grid.y;
+	ox = d_x_old[0] = player->grid.x;
 	d_old_max = 1;
 
 	/* Distance from player starts at 0 */

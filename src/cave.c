@@ -576,7 +576,7 @@ int count_feats(struct loc *grid,
 		if ((d == 8) && !under) continue;
 
 		/* Extract adjacent (legal) location */
-		grid1 = loc_sum(loc(player->px, player->py), ddgrid_ddd[d]);
+		grid1 = loc_sum(player->grid, ddgrid_ddd[d]);
 
 		/* Paranoia */
 		if (!square_in_bounds_fully(cave, grid1)) continue;

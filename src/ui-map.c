@@ -635,9 +635,6 @@ void prt_map(void)
  */
 void display_map(int *cy, int *cx)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int map_hgt, map_wid;
 	int row, col;
 
@@ -721,8 +718,8 @@ void display_map(int *cy, int *cx)
 	/*** Display the player ***/
 
 	/* Player location */
-	row = (py * map_hgt / cave->height);
-	col = (px * map_wid / cave->width);
+	row = (player->grid.y * map_hgt / cave->height);
+	col = (player->grid.x * map_wid / cave->width);
 
 	if (tile_width > 1)
 		col = col - (col % tile_width);

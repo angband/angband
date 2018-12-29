@@ -181,8 +181,8 @@ static void path_analyse(struct chunk *c, int y, int x)
 	}
 
 	/* Plot the path. */
-	path_n = project_path(path_g, z_info->max_range,
-						  loc(player->px, player->py), loc(x, y), PROJECT_NONE);
+	path_n = project_path(path_g, z_info->max_range, player->grid, loc(x, y),
+						  PROJECT_NONE);
 
 	/* Project along the path */
 	for (i = 0; i < path_n - 1; ++i) {
@@ -263,8 +263,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	int fy, fx;
 
 	/* If still generating the level, measure distances from the middle */
-	int py = character_dungeon ? player->py : c->height / 2;
-	int px = character_dungeon ? player->px : c->width / 2;
+	struct loc pgrid = character_dungeon ? player->grid :
+		loc(c->width / 2, c->height / 2);
 
 	/* Seen at all */
 	bool flag = false;
@@ -290,8 +290,8 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* Compute distance, or just use the current one */
 	if (full) {
 		/* Distance components */
-		int dy = (py > fy) ? (py - fy) : (fy - py);
-		int dx = (px > fx) ? (px - fx) : (fx - px);
+		int dy = (pgrid.y > fy) ? (pgrid.y - fy) : (fy - pgrid.y);
+		int dx = (pgrid.x > fx) ? (pgrid.x - fx) : (fx - pgrid.x);
 
 		/* Approximate distance */
 		d = (dy > dx) ? (dy + (dx>>1)) : (dx + (dy>>1));
@@ -310,7 +310,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	if (mflag_has(mon->mflag, MFLAG_MARK)) flag = true;
 
 	/* Check if telepathy works */
-	if (square_isno_esp(c, mon->grid) || square_isno_esp(c, loc(px, py)))
+	if (square_isno_esp(c, mon->grid) || square_isno_esp(c, pgrid))
 		telepathy_ok = false;
 
 	/* Nearby */
@@ -551,12 +551,12 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		player->upkeep->redraw |= (PR_MONLIST);
 	} else if (m1 < 0) {
 		/* Player */
-		player->py = y2;
-		player->px = x2;
+		player->grid.y = y2;
+		player->grid.x = x2;
 
 		/* Decoys get destroyed if player is too far away */
 		if (decoy.y && decoy.x &&
-			distance(decoy, loc(player->px, player->py)) > z_info->max_sight) {
+			distance(decoy, player->grid) > z_info->max_sight) {
 			square_destroy_decoy(cave, decoy);
 		}
 
@@ -587,12 +587,12 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		player->upkeep->redraw |= (PR_MONLIST);
 	} else if (m2 < 0) {
 		/* Player */
-		player->py = y1;
-		player->px = x1;
+		player->grid.y = y1;
+		player->grid.x = x1;
 
 		/* Decoys get destroyed if player is too far away */
 		if (decoy.y && decoy.x &&
-			distance(decoy, loc(player->px, player->py)) > z_info->max_sight) {
+			distance(decoy, player->grid) > z_info->max_sight) {
 			square_destroy_decoy(cave, decoy);
 		}
 

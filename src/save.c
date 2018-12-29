@@ -939,8 +939,8 @@ void wr_dungeon(void)
 	/* Dungeon specific info follows */
 	wr_u16b(player->depth);
 	wr_u16b(daycount);
-	wr_u16b(player->py);
-	wr_u16b(player->px);
+	wr_u16b(player->grid.y);
+	wr_u16b(player->grid.x);
 	wr_byte(SQUARE_SIZE);
 
 	if (player->is_dead)

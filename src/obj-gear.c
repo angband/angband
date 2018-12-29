@@ -820,8 +820,6 @@ void inven_takeoff(struct object *obj)
  */
 void inven_drop(struct object *obj, int amt)
 {
-	int py = player->py;
-	int px = player->px;
 	struct object *dropped;
 	bool none_left = false;
 	bool quiver = false;
@@ -880,7 +878,7 @@ void inven_drop(struct object *obj, int amt)
 	}
 
 	/* Drop it near the player */
-	drop_near(cave, &dropped, 0, py, px, false);
+	drop_near(cave, &dropped, 0, player->grid.y, player->grid.x, false);
 
 	/* Sound for quiver objects */
 	if (quiver)
@@ -1020,7 +1018,7 @@ void pack_overflow(struct object *obj)
 
 	/* Excise the object and drop it (carefully) near the player */
 	gear_excise_object(obj);
-	drop_near(cave, &obj, 0, player->py, player->px, false);
+	drop_near(cave, &obj, 0, player->grid.y, player->grid.x, false);
 
 	/* Describe */
 	if (artifact)

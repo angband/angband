@@ -1176,7 +1176,7 @@ static void refresh_stock(game_event_type type, game_event_data *unused, void *u
 void enter_store(game_event_type type, game_event_data *data, void *user)
 {
 	/* Check that we're on a store */
-	if (!square_isshop(cave, loc(player->px, player->py))) {
+	if (!square_isshop(cave, player->grid)) {
 		msg("You see no store here.");
 		return;
 	}
@@ -1190,7 +1190,7 @@ void enter_store(game_event_type type, game_event_data *data, void *user)
  */
 void use_store(game_event_type type, game_event_data *data, void *user)
 {
-	struct store *store = store_at(cave, player->py, player->px);
+	struct store *store = store_at(cave, player->grid);
 	struct store_context ctx;
 
 	/* Check that we're on a store */

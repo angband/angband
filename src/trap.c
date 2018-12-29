@@ -486,7 +486,7 @@ extern void hit_trap(int y, int x)
 
 		/* Some traps drop you onto them */
 		if (trf_has(trap->kind->flags, TRF_PIT))
-			monster_swap(player->py, player->px, trap->grid.y, trap->grid.x);
+			monster_swap(player->grid.y, player->grid.x, trap->grid.y, trap->grid.x);
 
 		/* Some traps disappear after activating, all have a chance to */
 		if (trf_has(trap->kind->flags, TRF_ONETIME) || one_in_(3)) {

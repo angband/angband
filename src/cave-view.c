@@ -526,11 +526,11 @@ static void update_one(struct chunk *c, struct loc grid, int blind)
 /**
  * Make a square part of the current view
  */
-static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int px)
+static void become_viewable(struct chunk *c, struct loc grid, struct player *p,
+							bool lit)
 {
-	int xc = x;
-	int yc = y;
-	struct loc grid = loc(x, y);
+	int x = grid.x;
+	int y = grid.y;
 
 	if (square_isview(c, grid))
 		return;
@@ -545,26 +545,30 @@ static void become_viewable(struct chunk *c, int y, int x, int lit, int py, int 
 			/* For walls, move a bit towards the player.
 			 * TODO(elly): huh? why?
 			 */
-			xc = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
-			yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
-		}
-		if (square_isglow(c, loc(xc, yc)))
+			int xc = (x < p->grid.x) ? (x + 1) : (x > p->grid.x) ? (x - 1) : x;
+			int yc = (y < p->grid.y) ? (y + 1) : (y > p->grid.y) ? (y - 1) : y;
+			if (square_isglow(c, loc(xc, yc))) {
+				sqinfo_on(square(c, grid).info, SQUARE_SEEN);
+			}
+		} else {
 			sqinfo_on(square(c, grid).info, SQUARE_SEEN);
+		}
 	}
 }
 
 /**
  * Decide whether to include a square in the current view
  */
-static void update_view_one(struct chunk *c, int y, int x, int radius, int py, int px)
+static void update_view_one(struct chunk *c, struct loc grid, int radius,
+							struct player *p)
 {
 	int dir;
-	int xc = x;
-	int yc = y;
-	struct loc grid = loc(x, y);
+	int x = grid.x;
+	int y = grid.y;
+	int xc = x, yc = y;
 
-	int d = distance(grid, loc(px, py));
-	int lit = d < radius;
+	int d = distance(grid, p->grid);
+	bool lit = d < radius;
 
 	if (d > z_info->max_sight)
 		return;
@@ -574,10 +578,10 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 		lit = true;
 	}
 	for (dir = 0; dir < 8; dir++) {
-		if (!square_in_bounds(c, loc(x + ddx_ddd[dir], y + ddy_ddd[dir]))) {
+		if (!square_in_bounds(c, loc_sum(grid, ddgrid_ddd[dir]))) {
 			continue;
 		}
-		if (square_isbright(c, loc(x + ddx_ddd[dir], y + ddy_ddd[dir]))) {
+		if (square_isbright(c, loc_sum(grid, ddgrid_ddd[dir]))) {
 			lit = true;
 		}
 	}
@@ -592,15 +596,15 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 	 * algorithm runs into the adjacent wall cell.
 	 */
 	if (square_iswall(c, grid)) {
-		int dx = x - px;
-		int dy = y - py;
+		int dx = x - p->grid.x;
+		int dy = y - p->grid.y;
 		int ax = ABS(dx);
 		int ay = ABS(dy);
 		int sx = dx > 0 ? 1 : -1;
 		int sy = dy > 0 ? 1 : -1;
 
-		xc = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
-		yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
+		xc = (x < p->grid.x) ? (x + 1) : (x > p->grid.x) ? (x - 1) : x;
+		yc = (y < p->grid.y) ? (y + 1) : (y > p->grid.y) ? (y - 1) : y;
 
 		/* Check that the cell we're trying to steal LOS from isn't a
 		 * wall. If we don't do this, double-thickness walls will have
@@ -614,8 +618,8 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 		/* Check that we got here via the 'knight's move' rule. If so,
 		 * don't steal LOS. */
 		if (ax == 2 && ay == 1) {
-			if (  !square_iswall(c, loc(x - sx, y))
-				  && square_iswall(c, loc(x - sx, y - sy))) {
+			if (!square_iswall(c, loc(x - sx, y))
+				&& square_iswall(c, loc(x - sx, y - sy))) {
 				xc = x;
 				yc = y;
 			}
@@ -629,8 +633,8 @@ static void update_view_one(struct chunk *c, int y, int x, int radius, int py, i
 	}
 
 
-	if (los(c, loc(px, py), loc(xc, yc)))
-		become_viewable(c, y, x, lit, py, px);
+	if (los(c, p->grid, loc(xc, yc)))
+		become_viewable(c, grid, p, lit);
 }
 
 /**
@@ -655,17 +659,17 @@ void update_view(struct chunk *c, struct player *p)
 	/* Handle real light */
 	if (radius > 0) ++radius;
 
-	add_monster_lights(c, loc(p->px, p->py));
+	add_monster_lights(c, p->grid);
 
 	/* Assume we can view the player grid */
-	sqinfo_on(square(c, loc(p->px, p->py)).info, SQUARE_VIEW);
-	if (radius > 0 || square_isglow(c, loc(p->px, p->py)))
-		sqinfo_on(square(c, loc(p->px, p->py)).info, SQUARE_SEEN);
+	sqinfo_on(square(c, p->grid).info, SQUARE_VIEW);
+	if (radius > 0 || square_isglow(c, p->grid))
+		sqinfo_on(square(c, p->grid).info, SQUARE_SEEN);
 
 	/* View squares we have LOS to */
 	for (y = 0; y < c->height; y++)
 		for (x = 0; x < c->width; x++)
-			update_view_one(c, y, x, radius, p->py, p->px);
+			update_view_one(c, loc(x, y), radius, p);
 
 	/* Complete the algorithm */
 	for (y = 0; y < c->height; y++)
@@ -679,5 +683,5 @@ void update_view(struct chunk *c, struct player *p)
  */
 bool no_light(void)
 {
-	return (!square_isseen(cave, loc(player->px, player->py)));
+	return (!square_isseen(cave, player->grid));
 }

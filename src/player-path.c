@@ -71,11 +71,11 @@ static void fill_terrain_info(void)
 {
 	int i, j;
 
-	ox = MAX(player->px - MAX_PF_RADIUS / 2, 0);
-	oy = MAX(player->py - MAX_PF_RADIUS / 2, 0);
+	ox = MAX(player->grid.x - MAX_PF_RADIUS / 2, 0);
+	oy = MAX(player->grid.y - MAX_PF_RADIUS / 2, 0);
 
-	ex = MIN(player->px + MAX_PF_RADIUS / 2 - 1, cave->width);
-	ey = MIN(player->py + MAX_PF_RADIUS / 2 - 1, cave->height);
+	ex = MIN(player->grid.x + MAX_PF_RADIUS / 2 - 1, cave->width);
+	ey = MIN(player->grid.y + MAX_PF_RADIUS / 2 - 1, cave->height);
 
 	for (i = 0; i < MAX_PF_RADIUS; i++)
 		for (j = 0; j < MAX_PF_RADIUS; j++)
@@ -86,7 +86,7 @@ static void fill_terrain_info(void)
 			if (is_valid_pf(j, i))
 				terrain[j - oy][i - ox] = MAX_PF_LENGTH;
 
-	terrain[player->py - oy][player->px - ox] = 1;
+	terrain[player->grid.y - oy][player->grid.x - ox] = 1;
 }
 
 #define MARK_DISTANCE(c,d) if ((c <= MAX_PF_LENGTH) && (c > d)) \
@@ -102,7 +102,7 @@ bool findpath(int y, int x)
 
 	fill_terrain_info();
 
-	terrain[player->py - oy][player->px - ox] = 1;
+	terrain[player->grid.y - oy][player->grid.x - ox] = 1;
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey)) {
 		if ((square(cave, grid).mon > 0) &&
@@ -157,7 +157,7 @@ bool findpath(int y, int x)
 
 	pf_result_index = 0;
 
-	while ((i != player->px) || (j != player->py)) {
+	while ((i != player->grid.x) || (j != player->grid.y)) {
 		cur_distance = terrain[j - oy][i - ox] - 1;
 		for (k = 0; k < 8; k++) {
 			dir = dir_search[k];
@@ -437,8 +437,8 @@ static int see_wall(int dir, int y, int x)
  */
 static void run_init(int dir)
 {
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	int i, row, col;
 
@@ -518,8 +518,8 @@ static void run_init(int dir)
  */
 static bool run_test(void)
 {
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	int prev_dir;
 	int new_dir;
@@ -753,8 +753,8 @@ void run_step(int dir)
 			player->upkeep->running_withpathfind = false;
 			return;
 		} else {
-			int y = player->py + ddy[pf_result[pf_result_index] - '0'];
-			int x = player->px + ddx[pf_result[pf_result_index] - '0'];
+			int y = player->grid.y + ddy[pf_result[pf_result_index] - '0'];
+			int x = player->grid.x + ddx[pf_result[pf_result_index] - '0'];
 
 			if (pf_result_index == 0) {
 				/* Known wall */
@@ -774,8 +774,8 @@ void run_step(int dir)
 				 * We have to look ahead two, otherwise we don't know which is
 				 * the last direction moved and don't initialise the run
 				 * properly. */
-				y = player->py + ddy[pf_result[pf_result_index] - '0'];
-				x = player->px + ddx[pf_result[pf_result_index] - '0'];
+				y = player->grid.y + ddy[pf_result[pf_result_index] - '0'];
+				x = player->grid.x + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
 				if (square_isknown(cave, loc(x, y)) &&

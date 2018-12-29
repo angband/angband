@@ -490,8 +490,7 @@ struct player {
 	const struct player_race *race;
 	const struct player_class *class;
 
-	s16b py;		/* Player location */
-	s16b px;		/* Player location */
+	struct loc grid;/* Player location */
 
 	byte hitdie;	/* Hit dice (sides) */
 	byte expfact;	/* Experience factor */

@@ -961,10 +961,11 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 		return false;
 
 	/* Not where the player already is */
-	if ((player->py == y) && (player->px == x))
+	if (loc_eq(player->grid, grid))
 		return false;
 
-	/* Prevent monsters from being placed where they cannot walk, but allow other feature types */
+	/* Prevent monsters from being placed where they cannot walk, but allow
+	 * other feature types */
 	if (!square_is_monster_walkable(c, grid))
 		return false;
 
@@ -1336,7 +1337,7 @@ bool pick_and_place_monster(struct chunk *c, int y, int x, int depth,
 bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 		bool sleep, int depth)
 {
-	int y = 0, x = 0;
+	struct loc grid;
 	int	attempts_left = 10000;
 
 	assert(c);
@@ -1344,18 +1345,17 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 	/* Find a legal, distant, unoccupied, space */
 	while (--attempts_left) {
 		/* Pick a location */
-		y = randint0(c->height);
-		x = randint0(c->width);
+		grid = loc(randint0(c->width), randint0(c->height));
 
 		/* Require "naked" floor grid */
-		if (!square_isempty(c, loc(x, y))) continue;
+		if (!square_isempty(c, grid)) continue;
 
 		/* Do not put random monsters in marked rooms. */
-		if ((!character_dungeon) && square_ismon_restrict(c, loc(x, y)))
+		if ((!character_dungeon) && square_ismon_restrict(c, grid))
 			continue;
 
 		/* Accept far away grids */
-		if (distance(loc(x, y), loc(p->px, p->py)) > dis) break;
+		if (distance(grid, p->grid) > dis) break;
 	}
 
 	if (!attempts_left) {
@@ -1366,7 +1366,7 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 	}
 
 	/* Attempt to place the monster, allow groups */
-	if (pick_and_place_monster(c, y, x, depth, sleep, true, ORIGIN_DROP))
+	if (pick_and_place_monster(c, grid.y, grid.x, depth, sleep, true, ORIGIN_DROP))
 		return (true);
 
 	/* Nope */

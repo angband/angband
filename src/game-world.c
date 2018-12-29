@@ -313,7 +313,7 @@ static void decrease_timeouts(void)
 			case TMD_COMMAND:
 			{
 				struct monster *mon = get_commanded_monster();
-				if (!los(cave, loc(player->px, player->py), mon->grid)) {
+				if (!los(cave, player->grid, mon->grid)) {
 					/* Out of sight is out of mind */
 					mon_clear_timed(mon, MON_TMD_COMMAND, MON_TMD_FLG_NOTIFY,
 									false);
@@ -375,8 +375,7 @@ static void decrease_timeouts(void)
  */
 static void make_noise(struct player *p)
 {
-	int next_y = p->py;
-	int next_x = p->px;
+	struct loc next = p->grid;
 	int y, x, d;
 	int noise = 0;
     struct queue *queue = q_new(cave->height * cave->width);
@@ -390,24 +389,23 @@ static void make_noise(struct player *p)
 	}
 
 	/* If there's a decoy, use that instead of the player */
-	if (decoy.y && decoy.x) {
-		next_y = decoy.y;
-		next_x = decoy.x;
+	if (!loc_is_zero(decoy)) {
+		next = decoy;
 	}
 
 	/* Player makes noise */
-	cave->noise.grids[next_y][next_x] = noise;
-	q_push_int(queue, yx_to_i(next_y, next_x, cave->width));
+	cave->noise.grids[next.y][next.x] = noise;
+	q_push_int(queue, yx_to_i(next.y, next.x, cave->width));
 	noise++;
 
 	/* Propagate noise */
 	while (q_len(queue) > 0) {
 		/* Get the next grid */
-		i_to_yx(q_pop_int(queue), cave->width, &next_y, &next_x);
+		i_to_yx(q_pop_int(queue), cave->width, &(next.y), &(next.x));
 
 		/* If we've reached the current noise level, put it back and step */
-		if (cave->noise.grids[next_y][next_x] == noise) {
-			q_push_int(queue, yx_to_i(next_y, next_x, cave->width));
+		if (cave->noise.grids[next.y][next.x] == noise) {
+			q_push_int(queue, yx_to_i(next.y, next.x, cave->width));
 			noise++;
 			continue;
 		}
@@ -415,24 +413,24 @@ static void make_noise(struct player *p)
 		/* Assign noise to the children and enqueue them */
 		for (d = 0; d < 8; d++)	{
 			/* Child location */
-			y = next_y + ddy_ddd[d];
-			x = next_x + ddx_ddd[d];
-			if (!square_in_bounds(cave, loc(x, y))) continue;
+			struct loc grid = loc_sum(next, ddgrid_ddd[d]);
+
+			if (!square_in_bounds(cave, grid)) continue;
 
 			/* Ignore features that don't transmit sound */
-			if (square_isnoflow(cave, loc(x, y))) continue;
+			if (square_isnoflow(cave, grid)) continue;
 
 			/* Skip grids that already have noise */
-			if (cave->noise.grids[y][x] != 0) continue;
+			if (cave->noise.grids[grid.y][grid.x] != 0) continue;
 
 			/* Skip the player grid */
-			if (y == player->py && x == player->px) continue;
+			if (loc_eq(player->grid, grid)) continue;
 
 			/* Save the noise */
-			cave->noise.grids[y][x] = noise;
+			cave->noise.grids[grid.y][grid.x] = noise;
 
 			/* Enqueue that entry */
-			q_push_int(queue, yx_to_i(y, x, cave->width));
+			q_push_int(queue, yx_to_i(grid.y, grid.x, cave->width));
 		}
 	}
 
@@ -479,22 +477,24 @@ static void update_scent(void)
 	/* Lay down new scent around the player */
 	for (y = 0; y < 5; y++) {
 		for (x = 0; x < 5; x++) {
-			int scent_y = y + player->py - 2;
-			int scent_x = x + player->px - 2;
+			struct loc scent;
 			int new_scent = scent_strength[y][x];
 			int d;
 			bool add_scent = false;
 
+			/* Initialize */
+			scent.y = y + player->grid.y - 2;
+			scent.x = x + player->grid.x - 2;
+
 			/* Ignore invalid or non-scent-carrying grids */
-			if (!square_in_bounds(cave, loc(scent_x, scent_y))) continue;
-			if (square_isnoscent(cave, loc(scent_x, scent_y))) continue;
+			if (!square_in_bounds(cave, scent)) continue;
+			if (square_isnoscent(cave, scent)) continue;
 
 			/* Check scent is spreading on floors, not going through walls */
 			for (d = 0; d < 8; d++)	{
-				int adj_y = scent_y + ddy_ddd[d];
-				int adj_x = scent_x + ddx_ddd[d];
+				struct loc adj = loc_sum(scent, ddgrid_ddd[d]);
 
-				if (!square_in_bounds(cave, loc(adj_x, adj_y))) {
+				if (!square_in_bounds(cave, adj)) {
 					continue;
 				}
 
@@ -504,7 +504,7 @@ static void update_scent(void)
 				}
 
 				/* Adjacent to a closer grid, so valid */
-				if (cave->scent.grids[adj_y][adj_x] == new_scent - 1) {
+				if (cave->scent.grids[adj.y][adj.x] == new_scent - 1) {
 					add_scent = true;
 				}
 			}
@@ -515,7 +515,7 @@ static void update_scent(void)
 			}
 
 			/* Mark the scent */
-			cave->scent.grids[scent_y][scent_x] = new_scent;
+			cave->scent.grids[scent.y][scent.x] = new_scent;
 		}
 	}
 }
@@ -787,7 +787,7 @@ static void process_player_cleanup(void)
 		player->total_energy += player->upkeep->energy_use;
 
 		/* Player can be damaged by terrain */
-		player_take_terrain_damage(player, player->py, player->px);
+		player_take_terrain_damage(player, player->grid.y, player->grid.x);
 
 		/* Do nothing else if player has auto-dropped stuff */
 		if (!player->upkeep->dropping) {

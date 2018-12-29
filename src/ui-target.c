@@ -579,8 +579,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		/* Scan all sensed objects in the grid */
 		floor_num = scan_distant_floor(floor_list, floor_max, y, x);
 		if ((floor_num > 0) &&
-		    (!(player->timed[TMD_BLIND]) ||
-			 (y == player->py && x == player->px))) {
+		    (!(player->timed[TMD_BLIND]) || loc_eq(loc(x, y), player->grid))) {
 			/* Not boring */
 			boring = false;
 
@@ -939,8 +938,8 @@ static void load_path(u16b path_n, struct loc *path_g, wchar_t *c, int *a)
  */
 bool target_set_interactive(int mode, int x, int y)
 {
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	int path_n;
 	struct loc path_g[256];
@@ -962,8 +961,8 @@ bool target_set_interactive(int mode, int x, int y)
 	/* If we haven't been given an initial location, start on the
 	   player, otherwise  honour it by going into "free targetting" mode. */
 	if (x == -1 || y == -1 || !square_in_bounds_fully(cave, loc(x, y))) {
-		x = player->px;
-		y = player->py;
+		x = player->grid.x;
+		y = player->grid.y;
 	} else {
 		flag = false;
 	}
@@ -1116,8 +1115,8 @@ bool target_set_interactive(int mode, int x, int y)
 						/* Handle stuff */
 						handle_stuff(player);
 
-						y = player->py;
-						x = player->px;
+						y = player->grid.y;
+						x = player->grid.x;
 					}
 
 					case 'o':
@@ -1356,8 +1355,8 @@ bool target_set_interactive(int mode, int x, int y)
 						/* Handle stuff */
 						handle_stuff(player);
 
-						y = player->py;
-						x = player->px;
+						y = player->grid.y;
+						x = player->grid.x;
 					}
 
 					case 'o':

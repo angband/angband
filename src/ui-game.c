@@ -372,7 +372,7 @@ void pre_turn_refresh(void)
 			target_get(&col, &row);
 			move_cursor_relative(row, col);
 		} else {
-			move_cursor_relative(player->py, player->px);
+			move_cursor_relative(player->grid.y, player->grid.x);
 		}
 
 		for (j = 0; j < ANGBAND_TERM_MAX; j++) {

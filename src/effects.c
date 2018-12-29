@@ -116,7 +116,8 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 	return final;
 }
 
-static void get_target(struct source origin, int dir, int *ty, int *tx, int *flags)
+static void get_target(struct source origin, int dir, struct loc *grid,
+					   int *flags)
 {
 	switch (origin.what) {
 		case SRC_MONSTER: {
@@ -133,20 +134,16 @@ static void get_target(struct source origin, int dir, int *ty, int *tx, int *fla
 
 			if (randint1(100) > accuracy) {
 				dir = randint1(9);
-				*ty = monster->grid.y + ddy[dir];
-				*tx = monster->grid.x + ddx[dir];
+				*grid = loc_sum(monster->grid, ddgrid[dir]);
 			} else if (monster->target.midx > 0) {
 				struct monster *mon = cave_monster(cave, monster->target.midx);
-				*ty = mon->grid.y;
-				*tx = mon->grid.x;
+				*grid = mon->grid;
 			} else {
 				struct loc decoy = cave_find_decoy(cave);
-				if (decoy.y && decoy.x) {
-					*ty = decoy.y;
-					*tx = decoy.x;
+				if (!loc_is_zero(decoy)) {
+					*grid = decoy;
 				} else {
-					*ty = player->py;
-					*tx = player->px;
+					*grid = player->grid;
 				}
 			}
 
@@ -155,19 +152,17 @@ static void get_target(struct source origin, int dir, int *ty, int *tx, int *fla
 
 		case SRC_PLAYER:
 			if (dir == DIR_TARGET && target_okay()) {
-				target_get(tx, ty);
+				target_get(&((*grid).x), &((*grid).y));
 			} else {
 				/* Use the adjacent grid in the given direction as target */
-				*ty = player->py + ddy[dir];
-				*tx = player->px + ddx[dir];
+				*grid = loc_sum(player->grid, ddgrid[dir]);
 			}
 
 			break;
 
 		default:
 			*flags |= PROJECT_PLAY;
-			*ty = player->py;
-			*tx = player->px;
+			*grid = player->grid;
 			break;
 	}
 }
@@ -195,16 +190,15 @@ static bool project_aimed(struct source origin,
 						  int typ, int dir, int dam, int flg,
 						  const struct object *obj)
 {
-	int ty = -1;
-	int tx = -1;
+	struct loc grid = loc(-1, -1);
 
 	/* Pass through the target if needed */
 	flg |= (PROJECT_THRU);
 
-	get_target(origin, dir, &ty, &tx, &flg);
+	get_target(origin, dir, &grid, &flg);
 
 	/* Aim at the target, do NOT explode */
-	return (project(origin, 0, loc(tx, ty), dam, typ, flg, 0, 0, obj));
+	return (project(origin, 0, grid, dam, typ, flg, 0, 0, obj));
 }
 
 /**
@@ -213,7 +207,7 @@ static bool project_aimed(struct source origin,
 static bool project_touch(int dam, int rad, int typ, bool aware,
 						  const struct object *obj)
 {
-	struct loc pgrid = loc(player->px, player->py);
+	struct loc pgrid = player->grid;
 
 	int flg = PROJECT_GRID | PROJECT_KILL | PROJECT_HIDE | PROJECT_ITEM | PROJECT_THRU;
 	if (aware) flg |= PROJECT_AWARE;
@@ -302,8 +296,8 @@ static bool uncurse_object(struct object *obj, int strength, char *dice_string)
 				square_excise_object(cave, obj->grid, obj);
 				delist_object(cave, obj);
 				object_delete(&obj);
-				square_note_spot(cave, loc(player->px, player->py));
-				square_light_spot(cave, loc(player->px, player->py));
+				square_note_spot(cave, player->grid);
+				square_light_spot(cave, player->grid);
 			}
 		} else {
 			/* Non-destructive failure */
@@ -1030,31 +1024,29 @@ bool effect_handler_SET_NOURISH(effect_handler_context_t *context)
  */
 bool effect_handler_GLYPH(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
 	struct loc decoy = cave_find_decoy(cave);
 
 	/* Always notice */
 	context->ident = true;
 
 	/* Only one decoy at a time */
-	if (decoy.y && decoy.x && (context->subtype == GLYPH_DECOY)) {
+	if (!loc_is_zero(decoy) && (context->subtype == GLYPH_DECOY)) {
 		msg("You can only deploy one decoy at a time.");
 		return false;
 	}
 
 	/* See if the effect works */
-	if (!square_istrappable(cave, loc(px, py))) {
+	if (!square_istrappable(cave, player->grid)) {
 		msg("There is no clear floor on which to cast the spell.");
 		return false;
 	}
 
 	/* Create a glyph */
-	square_add_glyph(cave, loc(px, py), context->subtype);
+	square_add_glyph(cave, player->grid, context->subtype);
 
 	/* Push objects off the grid */
-	if (square_object(cave, loc(px, py)))
-		push_object(py, px);
+	if (square_object(cave, player->grid))
+		push_object(player->grid.y, player->grid.x);
 
 	return true;
 }
@@ -1615,10 +1607,10 @@ bool effect_handler_DETECT_TRAPS(effect_handler_context_t *context)
 	struct object *obj;
 
 	/* Pick an area to detect */
-	y1 = player->py - context->y;
-	y2 = player->py + context->y;
-	x1 = player->px - context->x;
-	x2 = player->px + context->x;
+	y1 = player->grid.y - context->y;
+	y2 = player->grid.y + context->y;
+	x1 = player->grid.x - context->x;
+	x2 = player->grid.x + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1690,10 +1682,10 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 	bool doors = false;
 
 	/* Pick an area to detect */
-	y1 = player->py - context->y;
-	y2 = player->py + context->y;
-	x1 = player->px - context->x;
-	x2 = player->px + context->x;
+	y1 = player->grid.y - context->y;
+	y2 = player->grid.y + context->y;
+	x1 = player->grid.x - context->x;
+	x2 = player->grid.x + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1751,10 +1743,10 @@ bool effect_handler_DETECT_STAIRS(effect_handler_context_t *context)
 	bool stairs = false;
 
 	/* Pick an area to detect */
-	y1 = player->py - context->y;
-	y2 = player->py + context->y;
-	x1 = player->px - context->x;
-	x2 = player->px + context->x;
+	y1 = player->grid.y - context->y;
+	y2 = player->grid.y + context->y;
+	x1 = player->grid.x - context->x;
+	x2 = player->grid.x + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1803,10 +1795,10 @@ bool effect_handler_DETECT_GOLD(effect_handler_context_t *context)
 	bool gold_buried = false;
 
 	/* Pick an area to detect */
-	y1 = player->py - context->y;
-	y2 = player->py + context->y;
-	x1 = player->px - context->x;
-	x2 = player->px + context->x;
+	y1 = player->grid.y - context->y;
+	y2 = player->grid.y + context->y;
+	x1 = player->grid.x - context->x;
+	x2 = player->grid.x + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1857,10 +1849,10 @@ bool effect_handler_SENSE_OBJECTS(effect_handler_context_t *context)
 	bool objects = false;
 
 	/* Pick an area to sense */
-	y1 = player->py - context->y;
-	y2 = player->py + context->y;
-	x1 = player->px - context->x;
-	x2 = player->px + context->x;
+	y1 = player->grid.y - context->y;
+	y2 = player->grid.y + context->y;
+	x1 = player->grid.x - context->x;
+	x2 = player->grid.x + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1908,10 +1900,10 @@ bool effect_handler_DETECT_OBJECTS(effect_handler_context_t *context)
 	bool objects = false;
 
 	/* Pick an area to detect */
-	y1 = player->py - context->y;
-	y2 = player->py + context->y;
-	x1 = player->px - context->x;
-	x2 = player->px + context->x;
+	y1 = player->grid.y - context->y;
+	y2 = player->grid.y + context->y;
+	x1 = player->grid.x - context->x;
+	x2 = player->grid.x + context->x;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -1962,10 +1954,10 @@ static bool detect_monsters(int y_dist, int x_dist, monster_predicate pred)
 	bool monsters = false;
 
 	/* Set the detection area */
-	y1 = player->py - y_dist;
-	y2 = player->py + y_dist;
-	x1 = player->px - x_dist;
-	x2 = player->px + x_dist;
+	y1 = player->grid.y - y_dist;
+	y2 = player->grid.y + y_dist;
+	x1 = player->grid.x - x_dist;
+	x2 = player->grid.x + x_dist;
 
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
@@ -2133,13 +2125,10 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
  */
 bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
-
 	context->ident = true;
 
 	/* Only allow stairs to be created on empty floor */
-	if (!square_isfloor(cave, loc(px, py))) {
+	if (!square_isfloor(cave, player->grid)) {
 		msg("There is no empty floor here.");
 		return false;
 	}
@@ -2151,10 +2140,10 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 	}
 
 	/* Push objects off the grid */
-	if (square_object(cave, loc(px, py)))
-		push_object(py, px);
+	if (square_object(cave, player->grid))
+		push_object(player->grid.y, player->grid.x);
 
-	square_add_stairs(cave, loc(px, py), player->depth);
+	square_add_stairs(cave, player->grid, player->depth);
 
 	return true;
 }
@@ -2425,7 +2414,7 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 bool effect_handler_ACQUIRE(effect_handler_context_t *context)
 {
 	int num = effect_calculate_value(context, false);
-	acquirement(player->py, player->px, player->depth, num, true);
+	acquirement(player->grid.y, player->grid.x, player->depth, num, true);
 	context->ident = true;
 	return true;
 }
@@ -2538,7 +2527,7 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	} else {
 		/* If not a monster summon, it's simple */
 		while (summon_max) {
-			count += summon_specific(player->py, player->px,
+			count += summon_specific(player->grid.y, player->grid.x,
 					player->depth + level_boost, summon_type, true, false);
 			summon_max--;
 		}
@@ -2742,7 +2731,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 			return true;
 		}
 
-		start = loc(player->px, player->py);
+		start = player->grid;
 
 		/* Check for a no teleport grid */
 		if (square_isno_teleport(cave, start) && 
@@ -2873,10 +2862,8 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 {
 	struct monster *mon = NULL;
-	struct loc start;
-
-	int ny = player->py, nx = player->px;
-	int y, x, dis = 0, ctr = 0, dir = DIR_TARGET;
+	struct loc start, aim, land;
+	int dis = 0, ctr = 0, dir = DIR_TARGET;
 	struct monster *t_mon = monster_target_monster(context);
 
 	context->ident = true;
@@ -2891,53 +2878,47 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	/* Where are we coming from? */
 	if (t_mon) {
 		/* Monster being teleported */
-		y = t_mon->grid.y;
-		x = t_mon->grid.x;
+		start = t_mon->grid;
 	} else {
 		/* Targeted decoys get destroyed */
 		struct loc decoy = cave_find_decoy(cave);
-		if (decoy.y && decoy.x && mon) {
+		if (!loc_is_zero(decoy) && mon) {
 			square_destroy_decoy(cave, decoy);
 			return true;
 		}
 
 		/* Player being teleported */
-		y = player->py;
-		x = player->px;
+		start = player->grid;
 	}
-	start = loc(x, y);
 
 	/* Where are we going? */
 	if (context->y && context->x) {
 		/* Effect was given co-ordinates */
-		ny = context->y;
-		nx = context->x;
+		aim = loc(context->x, context->y);
 	} else if (mon) {
 		/* Spell cast by monster */
-		ny = mon->grid.y;
-		nx = mon->grid.x;
+		aim = mon->grid;
 	} else {
 		/* Player choice */
 		get_aim_dir(&dir);
 		if ((dir == DIR_TARGET) && target_okay()) {
-			target_get(&nx, &ny);
+			target_get(&(aim.x), &(aim.y));
 		}
 
 		/* Randomise the landing a bit if it's a vault */
-		if (square_isvault(cave, loc(nx, ny))) dis = 10;
+		if (square_isvault(cave, aim)) dis = 10;
 	}
 
 	/* Find a usable location */
 	while (1) {
 		/* Pick a nearby legal location */
 		while (1) {
-			y = rand_spread(ny, dis);
-			x = rand_spread(nx, dis);
-			if (square_in_bounds_fully(cave, loc(x, y))) break;
+			land = rand_loc(aim, dis, dis);
+			if (square_in_bounds_fully(cave, land)) break;
 		}
 
 		/* Accept "naked" floor grids */
-		if (square_isempty(cave, loc(x, y))) break;
+		if (square_isempty(cave, land)) break;
 
 		/* Occasionally advance the distance */
 		if (++ctr > (4 * dis * dis + 4 * dis + 1)) {
@@ -2950,10 +2931,10 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	sound(MSG_TELEPORT);
 
 	/* Move player or monster */
-	monster_swap(start.y, start.x, y, x);
+	monster_swap(start.y, start.x, land.y, land.x);
 
 	/* Clear any projection marker to prevent double processing */
-	sqinfo_off(square(cave, loc(x, y)).info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, land).info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
@@ -3065,21 +3046,17 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 
 	while (rubble_grids > 0 && iterations < 10) {
 		/* Look around the player */
-		for (int d = 0; d < 9; d++) {
-			/* Ignore the player's location */
-			if (d == 8) continue;
-
+		for (int d = 0; d < 8; d++) {
 			/* Extract adjacent (legal) location */
-			int yy = player->py + ddy_ddd[d];
-			int xx = player->px + ddx_ddd[d];
+			struct loc grid = loc_sum(player->grid, ddgrid_ddd[d]);
+			if (!square_in_bounds_fully(cave, grid)) continue;
+			if (!square_isempty(cave, grid)) continue;
 
-			if (square_in_bounds_fully(cave, loc(xx, yy)) &&
-				square_isempty(cave, loc(xx, yy)) &&
-					one_in_(3)) {
+			if (one_in_(3)) {
 				if (one_in_(2))
-					square_set_feat(cave, loc(xx, yy), FEAT_PASS_RUBBLE);
+					square_set_feat(cave, grid, FEAT_PASS_RUBBLE);
 				else
-					square_set_feat(cave, loc(xx, yy), FEAT_RUBBLE);
+					square_set_feat(cave, grid, FEAT_RUBBLE);
 				rubble_grids--;
 			}
 		}
@@ -3108,10 +3085,11 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
  */
 bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 {
-	int y, x, k, r = context->radius;
+	int k, r = context->radius;
 	int elem = context->subtype;
-	int y1 = player->py;
-	int x1 = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
+	struct loc grid;
 
 	context->ident = true;
 
@@ -3122,22 +3100,20 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 	}
 
 	/* Big area of affect */
-	for (y = (y1 - r); y <= (y1 + r); y++) {
-		for (x = (x1 - r); x <= (x1 + r); x++) {
-			struct loc grid = loc(x, y);
-
+	for (grid.y = (py - r); grid.y <= (py + r); grid.y++) {
+		for (grid.x = (px - r); grid.x <= (px + r); grid.x++) {
 			/* Skip illegal grids */
 			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Extract the distance */
-			k = distance(loc(x1, y1), grid);
+			k = distance(loc(px, py), grid);
 
 			/* Stay in the circle of death */
 			if (k > r) continue;
 
 			/* Lose room and vault */
-			sqinfo_off(square(cave, loc(x, y)).info, SQUARE_ROOM);
-			sqinfo_off(square(cave, loc(x, y)).info, SQUARE_VAULT);
+			sqinfo_off(square(cave, grid).info, SQUARE_ROOM);
+			sqinfo_off(square(cave, grid).info, SQUARE_VAULT);
 
 			/* Forget completely */
 			if (!square_isbright(cave, grid)) {
@@ -3148,10 +3124,10 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			square_light_spot(cave, grid);
 
 			/* Deal with player later */
-			if ((y == y1) && (x == x1)) continue;
+			if (loc_eq(grid, player->grid)) continue;
 
 			/* Delete the monster (if any) */
-			delete_monster(y, x);
+			delete_monster(grid.y, grid.x);
 
 			/* Don't remove stairs */
 			if (square_isstairs(cave, grid)) continue;
@@ -3222,8 +3198,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
  */
 bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 {
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 	int r = context->radius;
 	int i, y, x, yy, xx, dy, dx;
 	int damage = 0;
@@ -3467,8 +3443,8 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	}
 
 	/* Player may have moved */
-	py = player->py;
-	px = player->px;
+	py = player->grid.y;
+	px = player->grid.x;
 
 	/* Important -- no wall on player */
 	map[16 + py - centre.y][16 + px - centre.x] = false;
@@ -3538,7 +3514,7 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
 		msg("You are surrounded by a white light.");
 
 	/* Light up the room */
-	light_room(loc(player->px, player->py), true);
+	light_room(player->grid, true);
 
 	/* Assume seen */
 	context->ident = true;
@@ -3551,7 +3527,7 @@ bool effect_handler_LIGHT_AREA(effect_handler_context_t *context)
  */
 bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 {
-	struct loc target = loc(player->px, player->py);
+	struct loc target = player->grid;
 	bool message = player->timed[TMD_BLIND] ? false : true;
 	struct monster *t_mon = monster_target_monster(context);
 	struct loc decoy = cave_find_decoy(cave);
@@ -3569,9 +3545,9 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
 	}
 
 	/* Check for decoy */
-	if (decoy.y && decoy.x) {
+	if (!loc_is_zero(decoy)) {
 		target = decoy;
-		if (!los(cave, loc(player->px, player->py), decoy) ||
+		if (!los(cave, player->grid, decoy) ||
 			player->timed[TMD_BLIND]) {
 			decoy_unseen = true;
 		}
@@ -3605,7 +3581,7 @@ bool effect_handler_DARKEN_AREA(effect_handler_context_t *context)
  */
 bool effect_handler_SPOT(effect_handler_context_t *context)
 {
-	struct loc pgrid = loc(player->px, player->py);
+	struct loc pgrid = player->grid;
 	int dam = effect_calculate_value(context, true);
 	int rad = context->radius ? context->radius : 0;
 
@@ -3629,7 +3605,7 @@ bool effect_handler_SPOT(effect_handler_context_t *context)
  */
 bool effect_handler_SPHERE(effect_handler_context_t *context)
 {
-	struct loc pgrid = loc(player->px, player->py);
+	struct loc pgrid = player->grid;
 	int dam = effect_calculate_value(context, true);
 	int rad = context->radius ? context->radius : 0;
 
@@ -3677,19 +3653,19 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
 			if (randint1(100) > accuracy) {
-				/* Confiused direction */
+				/* Confused direction */
 				int dir = randint1(9);
-				target = loc(mon->grid.x + ddx[dir], mon->grid.y + ddy[dir]);
+				target = loc_sum(mon->grid, ddgrid[dir]);
 			} else if (t_mon) {
 				/* Target monster */
 				target = t_mon->grid;
 			} else {
 				/* Target player */
 				struct loc decoy = cave_find_decoy(cave);
-				if (decoy.y && decoy.x) {
+				if (!loc_is_zero(decoy)) {
 					target = decoy;
 				} else {
-					target = loc(player->px, player->py);
+					target = player->grid;
 				}
 			}
 
@@ -3707,10 +3683,9 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			/* Ask for a target if no direction given */
 			if (context->dir == DIR_TARGET && target_okay()) {
 				flg &= ~(PROJECT_STOP | PROJECT_THRU);
-				target_get(&target.x, &target.y);
+				target_get(&(target.x), &(target.y));
 			} else {
-				target = loc(player->px + ddx[context->dir],
-							 player->py + ddy[context->dir]);
+				target = loc_sum(player->grid, ddgrid[context->dir]);
 			}
 
 			if (context->other) rad += player->lev / context->other;
@@ -3764,10 +3739,10 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 			target = t_mon->grid;
 		} else {
 			struct loc decoy = cave_find_decoy(cave);
-			if (decoy.y && decoy.x) {
+			if (!loc_is_zero(decoy)) {
 				target = decoy;
 			} else {
-				target = loc(player->px, player->py);
+				target = player->grid;
 			}
 		}
 
@@ -3783,10 +3758,9 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 		/* Ask for a target if no direction given */
 		if (context->dir == DIR_TARGET && target_okay()) {
-			target_get(&target.x, &target.y);
+			target_get(&(target.x), &(target.y));
 		} else {
-			target = loc(player->px + ddx[context->dir],
-						 player->py + ddy[context->dir]);
+			target = loc_sum(player->grid, ddgrid[context->dir]);
 		}
 	}
 
@@ -3854,14 +3828,13 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
 		flg |= PROJECT_PLAY;
-		target =  loc(player->px, player->py);
+		target =  player->grid;
 	} else if (context->origin.what == SRC_PLAYER) {
 		/* Ask for a target if no direction given */
 		if (context->dir == DIR_TARGET && target_okay()) {
-			target_get(&target.x, &target.y);
+			target_get(&(target.x), &(target.y));
 		} else {
-			target = loc(player->px + ddx[context->dir],
-						 player->py + ddy[context->dir]);
+			target = loc_sum(player->grid, ddgrid[context->dir]);
 		}
 	}
 
@@ -3911,14 +3884,13 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
 		flg |= PROJECT_PLAY;
-		target = loc(player->px, player->py);
+		target = player->grid;
 	} else if (context->origin.what == SRC_PLAYER) {
 		/* Ask for a target if no direction given */
 		if (context->dir == DIR_TARGET && target_okay()) {
-			target_get(&target.x, &target.y);
+			target_get(&(target.x), &(target.y));
 		} else {
-			target = loc(player->px + ddx[context->dir],
-						 player->py + ddy[context->dir]);
+			target = loc_sum(player->grid, ddgrid[context->dir]);
 		}
 	}
 
@@ -3936,7 +3908,6 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 	return true;
 }
 
-
 /**
  * Cast multiple non-jumping ball spells at the same target.
  *
@@ -3948,8 +3919,7 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	int dam = effect_calculate_value(context, true);
 	int num = context->value.m_bonus;
 
-	struct loc target = loc(player->px + ddx[context->dir],
-							player->py + ddy[context->dir]);
+	struct loc target = loc_sum(player->grid, ddgrid[context->dir]);
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3957,13 +3927,13 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	if ((context->dir == DIR_TARGET) && target_okay()) {
 		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-		target_get(&target.x, &target.y);
+		target_get(&(target.x), &(target.y));
 	}
 
 	while (num--) {
 		/* Aim at the target.  Hurt items on floor. */
-		if (project(source_player(), context->radius, target, dam, context->subtype, flg, 0, 0,
-					context->obj))
+		if (project(source_player(), context->radius, target, dam,
+					context->subtype, flg, 0, 0, context->obj))
 			context->ident = true;
 	}
 
@@ -3980,18 +3950,18 @@ bool effect_handler_STRIKE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 
-	struct loc target = loc(player->px, player->py);
+	struct loc target = player->grid;
 
 	int flg = PROJECT_JUMP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Ask for a target; if no direction given, the player is struck  */
 	if ((context->dir == DIR_TARGET) && target_okay()) {
-		target_get(&target.x, &target.y);
+		target_get(&(target.x), &(target.y));
 	}
 
 	/* Aim at the target.  Hurt items on floor. */
-	if (project(source_player(), context->radius, target, dam, context->subtype, flg, 0,
-				0, context->obj)) {
+	if (project(source_player(), context->radius, target, dam, context->subtype,
+				flg, 0, 0, context->obj)) {
 		context->ident = true;
 	}
 
@@ -4017,11 +3987,11 @@ bool effect_handler_STAR(effect_handler_context_t *context)
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
-		target.y = player->py + ddy_ddd[i];
-		target.x = player->px + ddx_ddd[i];
+		target = loc_sum(player->grid, ddgrid_ddd[i]);
 
 		/* Aim at the target */
-		if (project(source_player(), 0, target, dam, context->subtype, flg, 0, 0, context->obj))
+		if (project(source_player(), 0, target, dam, context->subtype, flg, 0,
+					0, context->obj))
 			context->ident = true;
 	}
 
@@ -4044,12 +4014,11 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
-		target.y = player->py + ddy_ddd[i];
-		target.x = player->px + ddx_ddd[i];
+		target = loc_sum(player->grid, ddgrid_ddd[i]);
 
 		/* Aim at the target, explode */
-		if (project(source_player(), context->radius, target, dam, context->subtype, flg, 0, 0,
-					context->obj))
+		if (project(source_player(), context->radius, target, dam,
+					context->subtype, flg, 0, 0, context->obj))
 			context->ident = true;
 	}
 	return true;
@@ -4064,7 +4033,8 @@ bool effect_handler_BOLT(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	(void) project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj);
+	(void) project_aimed(context->origin, context->subtype, context->dir, dam,
+						 flg, context->obj);
 	if (!player->timed[TMD_BLIND])
 		context->ident = true;
 	return true;
@@ -4079,7 +4049,8 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_BEAM | PROJECT_KILL;
-	(void) project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj);
+	(void) project_aimed(context->origin, context->subtype, context->dir, dam,
+						 flg, context->obj);
 	if (!player->timed[TMD_BLIND])
 		context->ident = true;
 	return true;
@@ -4656,7 +4627,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	sound(MSG_TELEPORT);
 
 	/* Move player */
-	monster_swap(player->py, player->px, y, x);
+	monster_swap(player->grid.y, player->grid.x, y, x);
 
 	/* Now bite it */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
@@ -4797,18 +4768,18 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		{
 			/* Mana Ball */
 			int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-			struct loc target = loc(player->px + ddx[context->dir],
-									player->py + ddy[context->dir]);
+			struct loc target = loc_sum(player->grid, ddgrid[context->dir]);
 
 			/* Ask for a target if no direction given */
 			if ((context->dir == DIR_TARGET) && target_okay()) {
 				flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-				target_get(&target.x, &target.y);
+				target_get(&(target.x), &(target.y));
 			}
 
 			/* Aim at the target, explode */
-			if (project(source_player(), 3, target, 300, PROJ_MANA, flg, 0, 0, context->obj))
+			if (project(source_player(), 3, target, 300, PROJ_MANA, flg, 0, 0,
+						context->obj))
 				return true;
 		}
 
@@ -4819,16 +4790,15 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 		{
 			/* Mana Bolt */
 			int flg = PROJECT_STOP | PROJECT_KILL | PROJECT_THRU;
-			struct loc target = loc(player->px + ddx[context->dir],
-									player->py + ddy[context->dir]);
+			struct loc target = loc_sum(player->grid, ddgrid[context->dir]);
 
 			/* Use an actual target */
 			if ((context->dir == DIR_TARGET) && target_okay())
-				target_get(&target.x, &target.y);
+				target_get(&(target.x), &(target.y));
 
 			/* Aim at the target, do NOT explode */
-			return project(source_player(), 0, target, 250, PROJ_MANA, flg, 0, 0,
-							context->obj);
+			return project(source_player(), 0, target, 250, PROJ_MANA, flg, 0,
+						   0, context->obj);
 		}
 	}
 

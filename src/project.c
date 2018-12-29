@@ -394,7 +394,7 @@ struct loc origin_get_loc(struct source origin)
 
 		case SRC_PLAYER:
 		case SRC_OBJECT:	/* At the moment only worn cursed objects use this */
-			return loc(player->px, player->py);
+			return player->grid;
 
 		case SRC_NONE:
 			return loc(-1, -1);

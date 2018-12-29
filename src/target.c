@@ -98,7 +98,7 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 bool target_able(struct monster *m)
 {
 	return m && m->race && monster_is_obvious(m) &&
-		projectable(cave, loc(player->px, player->py), m->grid, PROJECT_NONE) &&
+		projectable(cave, player->grid, m->grid, PROJECT_NONE) &&
 		!player->timed[TMD_IMAGE];
 }
 
@@ -196,8 +196,8 @@ bool target_is_set(void)
  */
 int cmp_distance(const void *a, const void *b)
 {
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	const struct loc *pa = a;
 	const struct loc *pb = b;
@@ -327,8 +327,8 @@ void coords_desc(char *buf, int size, int y, int x)
 	const char *east_or_west;
 	const char *north_or_south;
 
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	if (y > py)
 		north_or_south = "S";
@@ -341,7 +341,7 @@ void coords_desc(char *buf, int size, int y, int x)
 		east_or_west = "E";
 
 	strnfmt(buf, size, "%d %s, %d %s",
-		ABS(y-py), north_or_south, ABS(x-px), east_or_west);
+		ABS(y - py), north_or_south, ABS(x-px), east_or_west);
 }
 
 /**

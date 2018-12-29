@@ -1085,8 +1085,7 @@ static struct object TEST_DATA test_player_knowledge = {
 
 
 static struct player TEST_DATA test_player = {
-	.py = 1,
-	.px = 1,
+	.grid = { 1, 1 },
 	.race = &test_race,
 	.class = &test_class,
 	.hitdie = 10,

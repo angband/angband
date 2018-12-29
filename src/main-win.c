@@ -2436,7 +2436,7 @@ static void windows_map_aux(void)
 	}
 
 	/* Highlight the player */
-	Term_curs_win(player->px - min_x, player->py - min_y);
+	Term_curs_win(player->grid.x - min_x, player->grid.y - min_y);
 }
 
 

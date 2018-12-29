@@ -86,7 +86,7 @@ struct store {
 
 extern struct store *stores;
 
-struct store *store_at(struct chunk *c, int y, int x);
+struct store *store_at(struct chunk *c, struct loc grid);
 void store_init(void);
 void free_stores(void);
 void store_stock_list(struct store *store, struct object **list, int n);

@@ -621,7 +621,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data,
 							 void *user)
 {
 	if ((OPT(player, hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
-		square_light_spot(cave, loc(player->px, player->py));
+		square_light_spot(cave, player->grid);
 }
 
 
@@ -891,9 +891,9 @@ static size_t prt_level_feeling(int row, int col)
 static size_t prt_dtrap(int row, int col)
 {
 	/* The player is in a trap-detected grid */
-	if (square_isdtrap(cave, loc(player->px, player->py))) {
+	if (square_isdtrap(cave, player->grid)) {
 		/* The player is on the border */
-		if (square_dtrap_edge(cave, loc(player->px, player->py)))
+		if (square_dtrap_edge(cave, player->grid))
 			c_put_str(COLOUR_YELLOW, "DTrap", row, col);
 		else
 			c_put_str(COLOUR_L_GREEN, "DTrap", row, col);
@@ -1085,7 +1085,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		int hgt = (t == angband_term[0]) ? SCREEN_HGT / 2 : t->hgt / 2;
 		int wid = (t == angband_term[0]) ? SCREEN_WID / 2 : t->wid / 2;
 
-		if (panel_should_modify(t, player->py - hgt, player->px - wid))
+		if (panel_should_modify(t, player->grid.y - hgt, player->grid.x - wid))
 			return;
 	}
 

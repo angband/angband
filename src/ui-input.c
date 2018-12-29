@@ -1159,7 +1159,7 @@ bool textui_get_rep_dir(int *dp, bool allow_5)
 			if (ke.mouse.button == 1) {
 				int y = KEY_GRID_Y(ke);
 				int x = KEY_GRID_X(ke);
-				struct loc from = loc(player->px, player->py);
+				struct loc from = player->grid;
 				struct loc to = loc(x, y);
 
 				dir = pathfind_direction_to(from, to);
@@ -1427,7 +1427,7 @@ ui_event textui_get_command(int *count)
 		/* Toggle on cursor if requested */
 		if (OPT(player, highlight_player)) {
 			Term_set_cursor(true);
-			move_cursor_relative(player->py, player->px);
+			move_cursor_relative(player->grid.y, player->grid.x);
 		}
 
 		/* Get a command */

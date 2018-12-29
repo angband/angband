@@ -426,7 +426,6 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	bool known_aim = false;
 	bool none_left = false;
 	int dir = 5;
-	int px = player->px, py = player->py;
 	struct trap_kind *rune = lookup_trap("glyph of warding");
 
 	/* Get arguments */
@@ -561,10 +560,10 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
 
 	/* Hack to make Glyph of Warding work properly */
-	if (square_trap_specific(cave, py, px, rune->tidx)) {
+	if (square_trap_specific(cave, player->grid.y, player->grid.x, rune->tidx)) {
 		/* Push objects off the grid */
-		if (square_object(cave, loc(px, py)))
-			push_object(py, px);
+		if (square_object(cave, player->grid))
+			push_object(player->grid.y, player->grid.x);
 	}
 }
 
@@ -838,7 +837,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 			if (object_is_carried(player, obj))
 				inven_carry(player, used, true, true);
 			else
-				drop_near(cave, &used, 0, player->py, player->px, false);
+				drop_near(cave, &used, 0, player->grid.y, player->grid.x, false);
 		} else
 			/* Empty a single lantern */
 			obj->timeout = 0;

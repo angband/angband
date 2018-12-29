@@ -155,7 +155,7 @@ static bool object_list_should_ignore_object(const struct object *obj)
 void object_list_collect(object_list_t *list)
 {
 	int i;
-	struct loc pgrid = loc(player->px, player->py);
+	struct loc pgrid = player->grid;
 
 	if (list == NULL || list->entries == NULL)
 		return;
@@ -370,7 +370,7 @@ void object_list_format_name(const object_list_entry_t *entry,
 	bool los = false;
 	int field;
 	byte old_number;
-	struct loc pgrid = loc(player->px, player->py);
+	struct loc pgrid = player->grid;
 	struct object *base_obj;
 	struct loc grid;
 	bool object_is_recognized_artifact;

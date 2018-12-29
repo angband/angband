@@ -52,6 +52,14 @@ struct loc loc_sum(struct loc grid1, struct loc grid2)
 }
 
 /**
+ * Take the difference of two grid locations
+ */
+struct loc loc_diff(struct loc grid1, struct loc grid2)
+{
+	return loc(grid1.x - grid2.x, grid1.y - grid2.y);
+}
+
+/**
  * Get a random location with the given x and y centres and spread 
  */
 struct loc rand_loc(struct loc grid, int x_spread, int y_spread)

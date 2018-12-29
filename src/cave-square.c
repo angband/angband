@@ -1022,7 +1022,7 @@ void square_know_pile(struct chunk *c, struct loc grid)
 	/* Know every item on this grid, greater knowledge for the player grid */
 	for (obj = square_object(c, grid); obj; obj = obj->next) {
 		object_see(player, obj);
-		if ((grid.y == player->py) && (grid.x == player->px)) {
+		if (loc_eq(grid, player->grid)) {
 			object_touch(player, obj);
 		}
 	}
@@ -1226,7 +1226,7 @@ void square_destroy_decoy(struct chunk *c, struct loc grid)
 {
 	square_remove_all_traps(c, grid.y, grid.x);
 	c->decoy = loc(0, 0);
-	if (los(c, loc(player->px, player->py), grid) && !player->timed[TMD_BLIND]){
+	if (los(c, player->grid, grid) && !player->timed[TMD_BLIND]){
 		msg("The decoy is destroyed!");
 	}
 }

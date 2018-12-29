@@ -547,8 +547,8 @@ static void verify_panel_int(bool centered)
 
 	int panel_wid, panel_hgt;
 
-	int py = player->py;
-	int px = player->px;
+	int py = player->grid.y;
+	int px = player->grid.x;
 
 	int j;
 

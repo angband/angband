@@ -134,9 +134,6 @@ static s16b get_idx_from_name(char *s)
  */
 static void do_cmd_wiz_hack_nick(void)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int i, y, x;
 
 	char kp;
@@ -155,7 +152,7 @@ static void do_cmd_wiz_hack_nick(void)
 				if (cave->noise.grids[y][x] != i) continue;
 
 				/* Display player/floors/walls */
-				if ((y == py) && (x == px))
+				if (loc_eq(grid, player->grid))
 					print_rel(L'@', a, y, x);
 				else if (square_ispassable(cave, grid))
 					print_rel(L'*', a, y, x);
@@ -185,7 +182,7 @@ static void do_cmd_wiz_hack_nick(void)
 				if (cave->scent.grids[y][x] != i) continue;
 
 				/* Display player/floors/walls */
-				if ((y == py) && (x == px))
+				if (loc_eq(grid, player->grid))
 					print_rel(L'@', a, y, x);
 				else if (square_ispassable(cave, grid))
 					print_rel(L'*', a, y, x);
@@ -602,7 +599,7 @@ static void wiz_create_item_drop_object(struct object *obj)
 	obj->origin_depth = player->depth;
 
 	/* Drop the object from heaven */
-	drop_near(cave, &obj, 0, player->py, player->px, true);
+	drop_near(cave, &obj, 0, player->grid.y, player->grid.x, true);
 }
 
 /**
@@ -1603,7 +1600,7 @@ static void do_cmd_wiz_named(struct monster_race *r, bool slp)
 		int d = 1;
 
 		/* Pick a location */
-		scatter(cave, &grid, loc(player->px, player->py), d, true);
+		scatter(cave, &grid, player->grid, d, true);
 
 		/* Require empty grids */
 		if (!square_isempty(cave, grid)) continue;
@@ -1650,13 +1647,8 @@ static void do_cmd_wiz_zap(int d)
  */
 static void do_cmd_wiz_query(void)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int y, x;
-
 	char cmd;
-
 	int flag = 0;
 
 
@@ -1700,7 +1692,7 @@ static void do_cmd_wiz_query(void)
 			if (square_ispassable(cave, grid)) a = COLOUR_YELLOW;
 
 			/* Display player/floors/walls */
-			if ((y == py) && (x == px))
+			if (loc_eq(grid, player->grid))
 				print_rel(L'@', a, y, x);
 			else if (square_ispassable(cave, grid))
 				print_rel(L'*', a, y, x);
@@ -1725,9 +1717,6 @@ static void do_cmd_wiz_query(void)
  */
 static void do_cmd_wiz_features(void)
 {
-	int py = player->py;
-	int px = player->px;
-
 	int y, x;
 
 	char cmd;
@@ -1810,7 +1799,7 @@ static void do_cmd_wiz_features(void)
 			if (!show) continue;
 
 			/* Display player/floors/walls */
-			if ((y == py) && (x == px))
+			if (loc_eq(grid, player->grid))
 				print_rel(L'@', a, y, x);
 			else if (square_ispassable(cave, grid))
 				print_rel(L'*', a, y, x);
@@ -1835,8 +1824,6 @@ static void do_cmd_wiz_features(void)
  */
 static void wiz_test_kind(int tval)
 {
-	int py = player->py;
-	int px = player->px;
 	int sval;
 
 	struct object *obj, *known_obj;
@@ -1866,7 +1853,7 @@ static void wiz_test_kind(int tval)
 		obj->known = known_obj;
 
 		/* Drop the object from heaven */
-		drop_near(cave, &obj, 0, py, px, true);
+		drop_near(cave, &obj, 0, player->grid.y, player->grid.x, true);
 	}
 
 	msg("Done.");
@@ -1996,9 +1983,6 @@ void do_cmd_wiz_effect(void)
  */
 void get_debug_command(void)
 {
-	int py = player->py;
-	int px = player->px;
-
 	char cmd;
 
 	/* Get a "debug command" */
@@ -2116,7 +2100,7 @@ void get_debug_command(void)
 			n= get_quantity("How many good objects? ", 40);
 			screen_load();
 			if (n < 1) n = 1;
-			acquirement(py, px, player->depth, n, false);
+			acquirement(player->grid.y, player->grid.x, player->depth, n, false);
 			break;
 		}
 
@@ -2318,7 +2302,7 @@ void get_debug_command(void)
 		/* Create a trap */
 		case 'T':
 		{
-			if (!square_isfloor(cave, loc(player->px, player->py))) {
+			if (!square_isfloor(cave, player->grid)) {
 				msg("You can't place a trap there!");
 				break;
 			} else if (player->depth == 0) {
@@ -2332,7 +2316,7 @@ void get_debug_command(void)
 
 			struct trap_kind *trap = lookup_trap(buf);
 			if (trap) {
-				place_trap(cave, player->py, player->px, trap->tidx, 0);
+				place_trap(cave, player->grid.y, player->grid.x, trap->tidx, 0);
 			} else {
 				msg("Trap not found.");
 			}
@@ -2356,7 +2340,7 @@ void get_debug_command(void)
 			n = get_quantity("How many great objects? ", 40);
 			screen_load();
 			if (n < 1) n = 1;
-			acquirement(py, px, player->depth, n, true);
+			acquirement(player->grid.y, player->grid.x, player->depth, n, true);
 			break;
 		}
 

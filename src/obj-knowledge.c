@@ -1106,7 +1106,7 @@ void player_know_object(struct player *p, struct object *obj)
 		if (object_is_carried(p, obj)) {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 			msg("You have %s (%c).", o_name, gear_to_label(obj));
-		} else if (cave && square_holds_object(cave, loc(p->px, p->py), obj)) {
+		} else if (cave && square_holds_object(cave, p->grid, obj)) {
 			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL);
 			msg("On the ground: %s.", o_name);
 		}
