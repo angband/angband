@@ -175,6 +175,18 @@ bool monster_has_non_innate_spells(const struct monster *mon)
 	return rsf_is_empty(mon_spells) ? false : true;
 }
 
+/**
+ * Monster has frequent and good archery attacks
+ */
+bool monster_loves_archery(const struct monster *mon)
+{
+	bitflag shooting[RSF_SIZE];
+	create_mon_spell_mask(shooting, RST_ARCHERY, RST_NONE);
+	rsf_inter(shooting, mon->race->spell_flags);
+	if (rsf_is_empty(shooting)) return false;
+	return (mon->race->freq_innate < 4) ? true : false;
+}
+
 
 /**
  * ------------------------------------------------------------------------

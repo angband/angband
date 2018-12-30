@@ -259,7 +259,7 @@ static void get_move_find_range(struct monster *mon)
 	mon->best_range = mon->min_range;
 
 	/* Archers are quite happy at a good distance */
-	if (rf_has(mon->race->flags, RF_ARCHER)) {
+	if (monster_loves_archery(mon)) {
 		mon->best_range += 3;
 	}
 

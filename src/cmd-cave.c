@@ -1461,7 +1461,7 @@ void do_cmd_mon_command(struct command *cmd)
 
 			/* Pick a random spell and cast it */
 			rsf_copy(f, mon->race->spell_flags);
-			spell_index = choose_attack_spell(f);
+			spell_index = choose_attack_spell(f, true, true);
 			if (!spell_index) {
 				msg("This monster has no spells!");
 				return;
