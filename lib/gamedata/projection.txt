@@ -82,10 +82,10 @@ desc:light
 player-desc:light
 blind-desc:something
 lash-desc:brightness
-numerator:4  
-denominator:6+1d6
+numerator:6
+denominator:8+1d4
 divisor:6
-damage-cap:400
+damage-cap:500
 msgt:BR_LIGHT
 obvious:1
 color:Orange
@@ -97,10 +97,10 @@ desc:dark
 player-desc:dark
 blind-desc:something
 lash-desc:blackness
-numerator:4  
-denominator:6+1d6
+numerator:6
+denominator:8+1d4
 divisor:6
-damage-cap:400
+damage-cap:500
 msgt:BR_DARK
 obvious:1
 color:Light Dark
@@ -112,8 +112,8 @@ desc:sound
 player-desc:sound
 blind-desc:noise
 lash-desc:sound
-numerator:5  
-denominator:6+1d6
+numerator:6
+denominator:8+1d4
 divisor:6
 damage-cap:500
 msgt:BR_SOUND
@@ -127,8 +127,8 @@ desc:shards
 player-desc:shards
 blind-desc:something sharp
 lash-desc:razors
-numerator:6  
-denominator:6+1d6
+numerator:6
+denominator:8+1d4
 divisor:6
 damage-cap:500
 msgt:BR_SHARDS
@@ -143,7 +143,7 @@ player-desc:nexus
 blind-desc:something strange
 lash-desc:dislocation
 numerator:6
-denominator:6+1d6
+denominator:8+1d4
 divisor:6
 damage-cap:400
 msgt:BR_NEXUS
@@ -157,10 +157,10 @@ desc:nether
 player-desc:nether
 blind-desc:something cold
 lash-desc:withering
-numerator:6  
-denominator:6+1d6
+numerator:6
+denominator:8+1d4
 divisor:6
-damage-cap:550
+damage-cap:600
 msgt:BR_NETHER
 obvious:1
 color:Light Green
@@ -173,9 +173,9 @@ player-desc:chaos
 blind-desc:something strange
 lash-desc:confusion
 numerator:6
-denominator:6+1d6
+denominator:8+1d4
 divisor:6
-damage-cap:500
+damage-cap:600
 msgt:BR_CHAOS
 obvious:1
 color:Violet
@@ -187,8 +187,8 @@ desc:disenchantment
 player-desc:disenchantment
 blind-desc:something strange
 lash-desc:unmagic
-numerator:6  
-denominator:6+1d6
+numerator:6
+denominator:8+1d4
 divisor:6
 damage-cap:500
 msgt:BR_DISEN
