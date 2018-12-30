@@ -82,20 +82,18 @@ static struct monster_race *poly_race(struct monster_race *race)
  */
 void thrust_away(struct loc centre, struct loc target, int grids_away)
 {
-	int y, x, yy, xx;
+	struct loc grid, next;
 	int i, d, first_d;
 	int angle;
 
-	/* Determine where target is in relation to caster. */
-	y = target.y - centre.y + 20;
-	x = target.x - centre.x + 20;
+	/* Determine where target is in relation to caster, extend. */
+	grid = loc_sum(loc_diff(target, centre), loc(20, 20));
 
 	/* Find the angle (/2) of the line from caster to target. */
-	angle = get_angle_to_grid[y][x];
+	angle = get_angle_to_grid[grid.y][grid.x];
 
 	/* Start at the target grid. */
-	y = target.y;
-	x = target.x;
+	grid = target;
 
 	/* Up to the number of grids requested, force the target away from the
 	 * source of the projection, until it hits something it can't travel
@@ -104,9 +102,9 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 		/* Randomize initial direction. */
 		first_d = randint0(8);
 
-		/* Look around. */
+		/* Look around (two possibilities for most angles). */
 		for (d = first_d; d < 8 + first_d; d++) {
-			/* Reject angles more than 44 degrees from line. */
+			/* Reject angles more than 44 degrees from desired direction. */
 			if (d % 8 == 0) {	/* 135 */
 				if ((angle > 157) || (angle < 114))
 					continue;
@@ -141,18 +139,15 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 			}
 
 			/* Extract adjacent location */
-			yy = y + ddy_ddd[d % 8];
-			xx = x + ddx_ddd[d % 8];
+			next = loc_sum(grid, ddgrid_ddd[d % 8]);
 
-			/* Cannot switch places with stronger monsters. */
-			if (square(cave, loc(xx, yy)).mon != 0) {
+			/* There's someone there, try to switch places. */
+			if (square(cave, next).mon != 0) {
 				/* A monster is trying to pass. */
-				if (square(cave, loc(x, y)).mon > 0) {
-
-					struct monster *mon = square_monster(cave, loc(x, y));
-
-					if (square(cave, loc(xx, yy)).mon > 0) {
-						struct monster *mon1 = square_monster(cave, loc(xx, yy));
+				if (square(cave, grid).mon > 0) {
+					struct monster *mon = square_monster(cave, grid);
+					if (square(cave, next).mon > 0) {
+						struct monster *mon1 = square_monster(cave, next);
 
 						/* Monsters cannot pass by stronger monsters. */
 						if (mon1->race->mexp > mon->race->mexp)
@@ -165,9 +160,9 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				}
 
 				/* The player is trying to pass. */
-				if (square(cave, loc(x, y)).mon < 0) {
-					if (square(cave, loc(xx, yy)).mon > 0) {
-						struct monster *mon1 = square_monster(cave, loc(xx, yy));
+				if (square(cave, grid).mon < 0) {
+					if (square(cave, next).mon > 0) {
+						struct monster *mon1 = square_monster(cave, next);
 
 						/* Players cannot pass by stronger monsters. */
 						if (mon1->race->level > player->lev * 2)
@@ -177,15 +172,14 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 			}
 
 			/* Check for obstruction. */
-			if (!square_isprojectable(cave, loc(xx, yy))) {
+			if (!square_isprojectable(cave, next)) {
 				/* Some features allow entrance, but not exit. */
-				if (square_ispassable(cave, loc(xx, yy))) {
+				if (square_ispassable(cave, next)) {
 					/* Travel down the path. */
-					monster_swap(y, x, yy, xx);
+					monster_swap(grid, next);
 
 					/* Jump to new location. */
-					y = yy;
-					x = xx;
+					grid = next;
 
 					/* We can't travel any more. */
 					i = grids_away;
@@ -197,17 +191,16 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 				/* If there are walls everywhere, stop here. */
 				else if (d == (8 + first_d - 1)) {
 					/* Message for player. */
-					if (square(cave, loc(x, y)).mon < 0)
+					if (square(cave, grid).mon < 0)
 						msg("You come to rest next to a wall.");
 					i = grids_away;
 				}
 			} else {
 				/* Travel down the path. */
-				monster_swap(y, x, yy, xx);
+				monster_swap(grid, next);
 
 				/* Jump to new location. */
-				y = yy;
-				x = xx;
+				grid = next;
 
 				/* Stop looking at previous location. */
 				break;
@@ -216,17 +209,17 @@ void thrust_away(struct loc centre, struct loc target, int grids_away)
 	}
 
 	/* Some special messages or effects for player or monster. */
-	if (square_isfiery(cave, loc(x, y))) {
-		if (square(cave, loc(x, y)).mon < 0) {
+	if (square_isfiery(cave, grid)) {
+		if (square(cave, grid).mon < 0) {
 			msg("You are thrown into molten lava!");
-		} else if (square(cave, loc(x, y)).mon > 0) {
-			struct monster *mon = square_monster(cave, loc(x, y));
+		} else if (square(cave, grid).mon > 0) {
+			struct monster *mon = square_monster(cave, grid);
 			monster_take_terrain_damage(mon);
 		}
 	}
 
 	/* Clear the projection mark. */
-	sqinfo_off(square(cave, loc(x, y)).info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, grid).info, SQUARE_PROJECT);
 }
 
 /**

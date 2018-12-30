@@ -2698,11 +2698,11 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	struct loc start = loc(context->x, context->y);
 	int dis = context->value.base;
 	int perc = context->value.m_bonus;
-	int y, x, pick;
+	int pick;
+	struct loc grid;
 
 	struct jumps {
-		int y;
-		int x;
+		struct loc grid;
 		struct jumps *next;
 	} *spots = NULL;
 	int num_spots = 0;
@@ -2718,15 +2718,15 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	if (player->upkeep->arena_level) return true;
 
 	/* Establish the coordinates to teleport from, if we don't know already */
-	if (start.x && start.y) {
+	if (!loc_is_zero(start)) {
 		/* We're good */
 	} else if (t_mon) {
 		/* Monster targeting another monster */
-		start = loc(t_mon->grid.x, t_mon->grid.y);
+		start = t_mon->grid;
 	} else if (is_player) {
 		/* Decoys get destroyed */
 		struct loc decoy = cave_find_decoy(cave);
-		if (decoy.y && decoy.x && context->subtype) {
+		if (!loc_is_zero(decoy) && context->subtype) {
 			square_destroy_decoy(cave, decoy);
 			return true;
 		}
@@ -2768,9 +2768,8 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 	/* Make a list of the best grids, scoring by how good an approximation
 	 * the distance from the start is to the distance we want */
-	for (y = 1; y < cave->height - 1; y++) {
-		for (x = 1; x < cave->width - 1; x++) {
-			struct loc grid = loc(x, y);
+	for (grid.y = 1; grid.y < cave->height - 1; grid.y++) {
+		for (grid.x = 1; grid.x < cave->width - 1; grid.x++) {
 			int d = distance(grid, start);
 			int score = ABS(d - dis);
 			struct jumps *new;
@@ -2803,8 +2802,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 
 			/* Make a new spot */
 			new = mem_zalloc(sizeof(struct jumps));
-			new->y = y;
-			new->x = x;
+			new->grid = grid;
 
 			/* If improving start a new list, otherwise extend the old one */
 			if (score < current_score) {
@@ -2841,10 +2839,10 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 	sound(is_player ? MSG_TELEPORT : MSG_TPOTHER);
 
 	/* Move player */
-	monster_swap(start.y, start.x, spots->y, spots->x);
+	monster_swap(start, spots->grid);
 
 	/* Clear any projection marker to prevent double processing */
-	sqinfo_off(square(cave, loc(spots->x, spots->y)).info, SQUARE_PROJECT);
+	sqinfo_off(square(cave, spots->grid).info, SQUARE_PROJECT);
 
 	/* Lots of updates after monster_swap */
 	handle_stuff(player);
@@ -2931,7 +2929,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	sound(MSG_TELEPORT);
 
 	/* Move player or monster */
-	monster_swap(start.y, start.x, land.y, land.x);
+	monster_swap(start, land);
 
 	/* Clear any projection marker to prevent double processing */
 	sqinfo_off(square(cave, land).info, SQUARE_PROJECT);
@@ -3198,14 +3196,14 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
  */
 bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 {
-	int py = player->grid.y;
-	int px = player->grid.x;
 	int r = context->radius;
-	int i, y, x, yy, xx, dy, dx;
-	int damage = 0;
-	int safe_grids = 0, safe_y = 0, safe_x = 0;
-
 	bool targeted = context->subtype ? true : false;
+
+	struct loc pgrid = player->grid;
+	int i, y, x;
+	struct loc offset, safe_grid = loc(0, 0);
+	int safe_grids = 0;
+	int damage = 0;
 	bool hurt = false;
 	bool map[32][32];
 
@@ -3231,47 +3229,46 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 	/* Paranoia -- Enforce maximum range */
 	if (r > 12) r = 12;
 
-	/* Clear the "maximal blast" area */
+	/* Initialize a map of the maximal blast area */
 	for (y = 0; y < 32; y++)
 		for (x = 0; x < 32; x++)
 			map[y][x] = false;
 
 	/* Check around the epicenter */
-	for (dy = -r; dy <= r; dy++) {
-		for (dx = -r; dx <= r; dx++) {
+	for (offset.y = -r; offset.y <= r; offset.y++) {
+		for (offset.x = -r; offset.x <= r; offset.x++) {
 			/* Extract the location */
-			yy = centre.y + dy;
-			xx = centre.x + dx;
+			struct loc grid = loc_sum(centre, offset);
 
 			/* Skip illegal grids */
-			if (!square_in_bounds_fully(cave, loc(xx, yy))) continue;
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Skip distant grids */
-			if (distance(centre, loc(xx, yy)) > r) continue;
+			if (distance(centre, grid) > r) continue;
 
 			/* Lose room and vault */
-			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_ROOM);
-			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_VAULT);
+			sqinfo_off(square(cave, grid).info, SQUARE_ROOM);
+			sqinfo_off(square(cave, grid).info, SQUARE_VAULT);
 
 			/* Forget completely */
-			if (!square_isbright(cave, loc(xx, yy))) {
-				sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_GLOW);
+			if (!square_isbright(cave, grid)) {
+				sqinfo_off(square(cave, grid).info, SQUARE_GLOW);
 			}
-			sqinfo_off(square(cave, loc(xx, yy)).info, SQUARE_SEEN);
-			square_forget(cave, loc(xx, yy));
-			square_light_spot(cave, loc(xx, yy));
+			sqinfo_off(square(cave, grid).info, SQUARE_SEEN);
+			square_forget(cave, grid);
+			square_light_spot(cave, grid);
 
 			/* Skip the epicenter */
-			if (!dx && !dy) continue;
+			if (loc_is_zero(offset)) continue;
 
 			/* Skip most grids */
 			if (randint0(100) < 85) continue;
 
 			/* Damage this grid */
-			map[16 + yy - centre.y][16 + xx - centre.x] = true;
+			map[16 + grid.y - centre.y][16 + grid.x - centre.x] = true;
 
-			/* Hack -- Take note of player damage */
-			if ((yy == py) && (xx == px)) hurt = true;
+			/* Take note of player damage */
+			if (loc_eq(grid, pgrid)) hurt = true;
 		}
 	}
 
@@ -3280,20 +3277,19 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 		/* Check around the player */
 		for (i = 0; i < 8; i++) {
 			/* Get the location */
-			y = py + ddy_ddd[i];
-			x = px + ddx_ddd[i];
+			struct loc grid = loc_sum(pgrid, ddgrid_ddd[i]);
 
 			/* Skip non-empty grids */
-			if (!square_isempty(cave, loc(x, y))) continue;
+			if (!square_isempty(cave, grid)) continue;
 
-			/* Important -- Skip "quake" grids */
+			/* Important -- Skip grids marked for damage */
 			if (map[16 + y - centre.y][16 + x - centre.x]) continue;
 
 			/* Count "safe" grids, apply the randomizer */
 			if ((++safe_grids > 1) && (randint0(safe_grids) != 0)) continue;
 
 			/* Save the safe location */
-			safe_y = y; safe_x = x;
+			safe_grid = grid;
 		}
 
 		/* Random message */
@@ -3333,19 +3329,21 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 				case 2: {
 					msg("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)player_inc_timed(player, TMD_STUN, randint1(50), true, true);
+					(void)player_inc_timed(player, TMD_STUN, randint1(50),
+										   true, true);
 					break;
 				}
 				case 3: {
 					msg("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)player_inc_timed(player, TMD_STUN, randint1(50), true, true);
+					(void)player_inc_timed(player, TMD_STUN, randint1(50),
+										   true, true);
 					break;
 				}
 			}
 
 			/* Move player */
-			monster_swap(py, px, safe_y, safe_x);
+			monster_swap(pgrid, safe_grid);
 		}
 
 		/* Take some damage */
@@ -3354,18 +3352,17 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 
 	/* Examine the quaked region */
-	for (dy = -r; dy <= r; dy++) {
-		for (dx = -r; dx <= r; dx++) {
+	for (offset.y = -r; offset.y <= r; offset.y++) {
+		for (offset.x = -r; offset.x <= r; offset.x++) {
 			/* Extract the location */
-			yy = centre.y + dy;
-			xx = centre.x + dx;
+			struct loc grid = loc_sum(centre, offset);
 
 			/* Skip unaffected grids */
-			if (!map[16 + yy - centre.y][16 + xx - centre.x]) continue;
+			if (!map[16 + grid.y - centre.y][16 + grid.x - centre.x]) continue;
 
 			/* Process monsters */
-			if (square(cave, loc(xx, yy)).mon > 0) {
-				struct monster *mon = square_monster(cave, loc(xx, yy));
+			if (square(cave, grid).mon > 0) {
+				struct monster *mon = square_monster(cave, grid);
 
 				/* Most monsters cannot co-exist with rock */
 				if (!flags_test(mon->race->flags, RF_SIZE, RF_KILL_WALL,
@@ -3380,18 +3377,17 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 						/* Look for safety */
 						for (i = 0; i < 8; i++) {
 							/* Get the grid */
-							y = yy + ddy_ddd[i];
-							x = xx + ddx_ddd[i];
+							struct loc safe = loc_sum(grid, ddgrid_ddd[i]);
 
 							/* Skip non-empty grids */
-							if (!square_isempty(cave, loc(x, y))) continue;
+							if (!square_isempty(cave, safe)) continue;
 
 							/* Hack -- no safety on glyph of warding */
-							if (square_iswarded(cave, loc(x, y)))
-								continue;
+							if (square_iswarded(cave, safe)) continue;
 
 							/* Important -- Skip quake grids */
-							if (map[16 + y - centre.y][16 + x - centre.x]) continue;
+							if (map[16 + safe.y - centre.y]
+								[16 + safe.x - centre.x]) continue;
 
 							/* Count safe grids, apply the randomizer */
 							if ((++safe_grids > 1) &&
@@ -3399,8 +3395,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 								continue;
 
 							/* Save the safe grid */
-							safe_y = y;
-							safe_x = x;
+							safe_grid = safe;
 						}
 					}
 
@@ -3427,7 +3422,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					/* Delete (not kill) "dead" monsters */
 					if (mon->hp < 0) {
 						/* Delete the monster */
-						delete_monster(yy, xx);
+						delete_monster(grid.y, grid.x);
 
 						/* No longer safe */
 						safe_grids = 0;
@@ -3436,38 +3431,36 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					/* Escape from the rock */
 					if (safe_grids)
 						/* Move the monster */
-						monster_swap(yy, xx, safe_y, safe_x);
+						monster_swap(grid, safe_grid);
 				}
 			}
 		}
 	}
 
 	/* Player may have moved */
-	py = player->grid.y;
-	px = player->grid.x;
+	pgrid = player->grid;
 
 	/* Important -- no wall on player */
-	map[16 + py - centre.y][16 + px - centre.x] = false;
+	map[16 + pgrid.y - centre.y][16 + pgrid.x - centre.x] = false;
 
 
-	/* Examine the quaked region */
-	for (dy = -r; dy <= r; dy++) {
-		for (dx = -r; dx <= r; dx++) {
+	/* Examine the quaked region and damage marked grids if possible */
+	for (offset.y = -r; offset.y <= r; offset.y++) {
+		for (offset.x = -r; offset.x <= r; offset.x++) {
 			/* Extract the location */
-			yy = centre.y + dy;
-			xx = centre.x + dx;
+			struct loc grid = loc_sum(centre, offset);
 
 			/* Ignore invalid grids */
-			if (!square_in_bounds_fully(cave, loc(xx, yy))) continue;
+			if (!square_in_bounds_fully(cave, grid)) continue;
 
 			/* Note unaffected grids for light changes, etc. */
-			if (!map[16 + yy - centre.y][16 + xx - centre.x])
-				square_light_spot(cave, loc(xx, yy));
+			if (!map[16 + grid.y - centre.y][16 + grid.x - centre.x])
+				square_light_spot(cave, grid);
 
 			/* Destroy location and all objects (if valid) */
-			else if (square_changeable(cave, loc(xx, yy))) {
-				square_excise_pile(cave, loc(xx, yy));
-				square_earthquake(cave, loc(xx, yy));
+			else if (square_changeable(cave, grid)) {
+				square_excise_pile(cave, grid);
+				square_earthquake(cave, grid);
 			}
 		}
 	}
@@ -4593,7 +4586,7 @@ bool effect_handler_COMMAND(effect_handler_context_t *context)
 bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	int nx, ny, x, y;
+	struct loc victim, grid;
 	int d, first_d = randint0(8);
 	struct monster *mon = NULL;
 	char m_name[80];
@@ -4607,14 +4600,13 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	if (!target_set_closest(TARGET_KILL, monster_is_living)) {
 		return false;
 	}
-	target_get(&nx, &ny);
+	target_get(&(victim.x), &(victim.y));
 	mon = target_get_monster();
 
 	/* Look next to the monster */
 	for (d = first_d; d < first_d + 8; d++) {
-		y = ny + ddy_ddd[d % 8];
-		x = nx + ddx_ddd[d % 8];
-		if (square_isempty(cave, loc(x, y))) break;
+		grid = loc_sum(victim, ddgrid_ddd[d % 8]);
+		if (square_isempty(cave, grid)) break;
 	}
 
 	/* Needed to be adjacent */
@@ -4627,7 +4619,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	sound(MSG_TELEPORT);
 
 	/* Move player */
-	monster_swap(player->grid.y, player->grid.x, y, x);
+	monster_swap(player->grid, grid);
 
 	/* Now bite it */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);

@@ -269,10 +269,8 @@ static void blow_side_effects(struct player *p, struct monster *mon)
 static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 							bool *fear)
 {
-	int y = mon->grid.y;
-	int x = mon->grid.x;
-	int dy = y - p->grid.y;
-	int dx = x - p->grid.x;
+	struct loc grid = mon->grid;
+	struct loc offset = loc_diff(grid, p->grid);
 	int power = (p->state.num_blows - 100) / 100;
 
 	/* Not enough power left */
@@ -281,47 +279,46 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 	/* Forced backwards until power runs out */
 	while (power > 0) {
 		/* Move back a square */
-		y += dy;
-		x += dx;
+		grid = loc_sum(grid, offset);
 
 		/* React differently depending on the terrain behind the monster */
-		if (square_ispassable(cave, loc(x, y))) {
+		if (square_ispassable(cave, grid)) {
 			/* Monster there - current monster takes all the damage
 			 * Note we could have more fun here by pushing it back... */
-			if (square_monster(cave, loc(x, y))) {
+			if (square_monster(cave, grid)) {
 				if (mon_take_hit(mon, dmg * power, fear, NULL)) return true;
 				break;
 			} else {
 				/* Push back a square */
-				monster_swap(mon->grid.y, mon->grid.x, y, x);
+				monster_swap(mon->grid, grid);
 				power--;
 			}
 		} else {
 			bool moved = false;
 
 			/* Deal with impassable terrain */
-			if (square_isdoor(cave, loc(x, y))) {
+			if (square_isdoor(cave, grid)) {
 				if (power >= 1) {
-					square_open_door(cave, loc(x, y));
-					monster_swap(mon->grid.y, mon->grid.x, y, x);
+					square_open_door(cave, grid);
+					monster_swap(mon->grid, grid);
 					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
 					power--;
 					moved = true;
 				}
-			} else if (square_isrubble(cave, loc(x, y))) {
+			} else if (square_isrubble(cave, grid)) {
 				if (power >= 1) {
-					square_destroy_wall(cave, loc(x, y));
-					monster_swap(mon->grid.y, mon->grid.x, y, x);
+					square_destroy_wall(cave, grid);
+					monster_swap(mon->grid, grid);
 					if (mon_take_hit(mon, dmg, fear, NULL)) return true;
 					power--;
 					moved = true;
 				}
-			} else if (square_ismagma(cave, loc(x, y))) {
+			} else if (square_ismagma(cave, grid)) {
 				if (power >= 1) {
-					square_destroy_wall(cave, loc(x, y));
-					monster_swap(mon->grid.y, mon->grid.x, y, x);
-					if (square_hasgoldvein(cave, loc(x, y))) {
-						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
+					square_destroy_wall(cave, grid);
+					monster_swap(mon->grid, grid);
+					if (square_hasgoldvein(cave, grid)) {
+						place_gold(cave, grid.y, grid.x, p->depth, ORIGIN_FLOOR);
 					}
 					if (randint0(20) < power) {
 						effect_simple(EF_EARTHQUAKE,
@@ -332,12 +329,12 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					power--;
 					moved = true;
 				}
-			} else if (square_isquartz(cave, loc(x, y))) {
+			} else if (square_isquartz(cave, grid)) {
 				if (power >= 2) {
-					square_destroy_wall(cave, loc(x, y));
-					monster_swap(mon->grid.y, mon->grid.x, y, x);
-					if (square_hasgoldvein(cave, loc(x, y))) {
-						place_gold(cave, y, x, p->depth, ORIGIN_FLOOR);
+					square_destroy_wall(cave, grid);
+					monster_swap(mon->grid, grid);
+					if (square_hasgoldvein(cave, grid)) {
+						place_gold(cave, grid.y, grid.x, p->depth, ORIGIN_FLOOR);
 					}
 					if (randint0(20) < power) {
 						effect_simple(EF_EARTHQUAKE,
@@ -348,10 +345,10 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					power -= 2;
 					moved = true;
 				}
-			} else if (square_isgranite(cave, loc(x, y))) {
+			} else if (square_isgranite(cave, grid)) {
 				if (power >= 3) {
-					square_destroy_wall(cave, loc(x, y));
-					monster_swap(mon->grid.y, mon->grid.x, y, x);
+					square_destroy_wall(cave, grid);
+					monster_swap(mon->grid, grid);
 					if (randint0(20) < power) {
 						effect_simple(EF_EARTHQUAKE,
 									  source_monster(mon->midx), "0",

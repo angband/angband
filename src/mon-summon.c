@@ -321,7 +321,6 @@ bool can_call_monster(int y, int x, struct monster *mon)
 int call_monster(int y, int x)
 {
 	int i, mon_count, choice;
-	int oy, ox;
 	int *mon_indices;
 	struct monster *mon;
 
@@ -361,12 +360,8 @@ int call_monster(int y, int x)
 	mon = cave_monster(cave, mon_indices[choice]);
 	mem_free(mon_indices);
 
-	/* Extract monster location */
-	oy = mon->grid.y;
-	ox = mon->grid.x;
-
-	/* Swap the moster */
-	monster_swap(oy, ox, y, x);
+	/* Swap the monster */
+	monster_swap(mon->grid, loc(x, y));
 
 	/* Wake it up */
 	mon_clear_timed(mon, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, false);

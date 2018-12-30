@@ -993,7 +993,7 @@ void move_player(int dir, bool disarm)
 		/* Enter if OK or confirmed. */
 		if (step) {
 			/* Move player */
-			monster_swap(player->grid.y, player->grid.x, grid.y, grid.x);
+			monster_swap(player->grid, grid);
 
 			/* Update view and search */
 			update_view(cave, player);
@@ -1016,7 +1016,7 @@ void move_player(int dir, bool disarm)
 		}
 
 		/* Move player */
-		monster_swap(player->grid.y, player->grid.x, grid.y, grid.x);
+		monster_swap(player->grid, grid);
 
 		/* Handle store doors, or notice objects */
 		if (square_isshop(cave, grid)) {
@@ -1513,7 +1513,7 @@ void do_cmd_mon_command(struct command *cmd)
 			break;
 		}
 		case CMD_WALK: {
-			int ny, nx;
+			struct loc grid;
 			bool can_move = false;
 			bool has_hit = false;
 			struct monster *t_mon = NULL;
@@ -1521,11 +1521,10 @@ void do_cmd_mon_command(struct command *cmd)
 			/* Get arguments */
 			if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 				return;
-			ny = mon->grid.y + ddy[dir];
-			nx = mon->grid.x + ddx[dir];
+			grid = loc_sum(mon->grid, ddgrid[dir]);
 
 			/* Monster there - attack */
-			t_mon = square_monster(cave, loc(nx, ny));
+			t_mon = square_monster(cave, grid);
 			if (t_mon) {
 				/* Attack the monster */
 				if (monster_attack_monster(mon, t_mon)) {
@@ -1533,11 +1532,10 @@ void do_cmd_mon_command(struct command *cmd)
 				} else {
 					can_move = false;
 				}
-			} else if (square_ispassable(cave, loc(nx, ny))) {
+			} else if (square_ispassable(cave, grid)) {
 				/* Floor is open? */
 				can_move = true;
-			} else if (square_iswall(cave, loc(nx, ny)) &&
-					   square_isperm(cave, loc(nx, ny))) {
+			} else if (square_iswall(cave, grid) && square_isperm(cave, grid)) {
 				/* Permanent wall in the way */
 				can_move = false;
 			} else {
@@ -1553,10 +1551,10 @@ void do_cmd_mon_command(struct command *cmd)
 					can_move = true;
 				} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
 					/* Remove the wall */
-					square_destroy_wall(cave, loc(nx, ny));
+					square_destroy_wall(cave, grid);
 					can_move = true;
-				} else if (square_iscloseddoor(cave, loc(nx, ny)) ||
-						   square_issecretdoor(cave, loc(nx, ny))) {
+				} else if (square_iscloseddoor(cave, grid) ||
+						   square_issecretdoor(cave, grid)) {
 					bool can_open = rf_has(mon->race->flags, RF_OPEN_DOOR);
 					bool can_bash = rf_has(mon->race->flags, RF_BASH_DOOR);
 
@@ -1569,9 +1567,9 @@ void do_cmd_mon_command(struct command *cmd)
 					/* If the monster can deal with doors, prefer to bash */
 					if (can_bash || can_open) {
 						/* Now outcome depends on type of door */
-						if (square_islockeddoor(cave, loc(nx, ny))) {
+						if (square_islockeddoor(cave, grid)) {
 							/* Test strength against door strength */
-							int k = square_door_power(cave, ny, nx);
+							int k = square_door_power(cave, grid.y, grid.x);
 							if (randint0(mon->hp / 10) > k) {
 								if (can_bash) {
 									msg("%s slams against the door.", m_name);
@@ -1580,19 +1578,19 @@ void do_cmd_mon_command(struct command *cmd)
 								}
 
 								/* Reduce the power of the door by one */
-								square_set_door_lock(cave, ny, nx, k - 1);
+								square_set_door_lock(cave, grid.y, grid.x, k - 1);
 							}
 						} else {
 							/* Closed or secret door -- always open or bash */
 							if (can_bash) {
-								square_smash_door(cave, loc(nx, ny));
+								square_smash_door(cave, grid);
 
 								msg("You hear a door burst open!");
 
 								/* Fall into doorway */
 								can_move = true;
 							} else {
-								square_open_door(cave, loc(nx, ny));
+								square_open_door(cave, grid);
 								can_move = true;
 							}
 						}
@@ -1603,7 +1601,7 @@ void do_cmd_mon_command(struct command *cmd)
 			if (has_hit) {
 				break;
 			} else if (can_move) {
-				monster_swap(mon->grid.y, mon->grid.x, ny, nx);
+				monster_swap(mon->grid, grid);
 				player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 			} else {
 				msg("The way is blocked.");

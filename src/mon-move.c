@@ -1081,7 +1081,7 @@ static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
 			if (kill_ok)
 				delete_monster(ny, nx);
 
-			monster_swap(mon->grid.y, mon->grid.x, ny, nx);
+			monster_swap(mon->grid, new);
 			return true;
 		} 
 	}
@@ -1231,15 +1231,11 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 
 	/* Process moves */
 	for (i = 0; i < 5 && !did_something; i++) {
-		int oy = mon->grid.y;
-		int ox = mon->grid.x;
-
 		/* Get the direction (or stagger) */
 		int d = (stagger ? ddd[randint0(8)] : side_dirs[dir][i]);
 
-		/* Get the destination */
-		int ny = oy + ddy[d];
-		int nx = ox + ddx[d];
+		/* Get the grid to step to or attack */
+		struct loc new = loc_sum(mon->grid, ddgrid[d]);
 
 		/* Tracking monsters have their best direction, don't change */
 		if ((i > 0) && !stagger && !square_isview(c, mon->grid) && tracking) {
@@ -1247,17 +1243,16 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		}
 
 		/* Check if we can move */
-		if (!monster_turn_can_move(c, mon, m_name, nx, ny, &did_something))
+		if (!monster_turn_can_move(c, mon, m_name, new.x, new.y, &did_something))
 			continue;
 
 		/* Try to break the glyph if there is one.  This can happen multiple
 		 * times per turn because failure does not break the loop */
-		if (square_iswarded(c, loc(nx, ny)) &&
-			!monster_turn_glyph(c, mon, nx, ny))
+		if (square_iswarded(c, new) && !monster_turn_glyph(c, mon, new.x, new.y))
 			continue;
 
 		/* Break a decoy if there is one */
-		if (square_isdecoyed(c, loc(nx, ny))) {
+		if (square_isdecoyed(c, new)) {
 			/* Learn about if the monster attacks */
 			if (monster_is_visible(mon))
 				rf_on(lore->flags, RF_NEVER_BLOW);
@@ -1267,13 +1262,13 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 				continue;
 
 			/* Wait a minute... */
-			square_destroy_decoy(c, loc(nx, ny));
+			square_destroy_decoy(c, new);
 			did_something = true;
 			break;
 		}
 
 		/* The player is in the way. */
-		if (square_isplayer(c, loc(nx, ny))) {
+		if (square_isplayer(c, new)) {
 			/* Learn about if the monster attacks */
 			if (monster_is_visible(mon))
 				rf_on(lore->flags, RF_NEVER_BLOW);
@@ -1299,19 +1294,19 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		}
 
 		/* A monster is in the way, try to push past/kill */
-		if (square_monster(c, loc(nx, ny))) {
-			did_something = monster_turn_try_push(c, mon, m_name, nx, ny);
+		if (square_monster(c, new)) {
+			did_something = monster_turn_try_push(c, mon, m_name, new.x, new.y);
 		} else {
 			/* Otherwise we can just move */
-			monster_swap(oy, ox, ny, nx);
+			monster_swap(mon->grid, new);
 			did_something = true;
 		}
 
 		/* Scan all objects in the grid, if we reached it */
-		if (mon == square_monster(c, loc(nx, ny))) {
+		if (mon == square_monster(c, new)) {
 			monster_desc(m_name, sizeof(m_name), mon,
 						 MDESC_CAPITAL | MDESC_IND_HID);
-			monster_turn_grab_objects(c, mon, m_name, nx, ny);
+			monster_turn_grab_objects(c, mon, m_name, new.x, new.y);
 		}
 	}
 

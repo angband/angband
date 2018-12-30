@@ -520,9 +520,8 @@ bool monster_carry(struct chunk *c, struct monster *mon, struct object *obj)
 /**
  * Swap the players/monsters (if any) at two locations.
  */
-void monster_swap(int y1, int x1, int y2, int x2)
+void monster_swap(struct loc grid1, struct loc grid2)
 {
-	struct loc grid1 = loc(x1, y1), grid2 = loc(x2, y2);
 	int m1, m2;
 	struct monster *mon;
 	struct loc decoy = cave_find_decoy(cave);
