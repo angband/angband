@@ -2,9 +2,8 @@
  * \file list-mon-spells.h
  * \brief List of monster spell flags 
  *
- * Changing flag order will break savefiles.  Flags
- * below start from 0 on line 20, so a flag's sequence number is its line
- * number minus 20.
+ * Flags below start from 0 on line 13, so a flag's sequence number is its line
+ * number minus 13.
  *
  * Fields:
  * name - spell name

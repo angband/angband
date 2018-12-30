@@ -196,9 +196,6 @@ static void get_move_find_range(struct monster *mon)
 	/* Monsters will run up to z_info->flee_range grids out of sight */
 	int flee_range = z_info->max_sight + z_info->flee_range;
 
-	bool breathes = flags_test(mon->race->spell_flags, RSF_SIZE,
-							   RSF_BREATH_MASK, FLAG_END);
-
 	/* All "afraid" monsters will run away */
 	if (mon->m_timed[MON_TMD_FEAR]) {
 		mon->min_range = flee_range;
@@ -268,8 +265,8 @@ static void get_move_find_range(struct monster *mon)
 
 	if (mon->race->freq_spell > 24) {
 		/* Breathers like point blank range */
-		if (breathes && (mon->best_range < 6) && (mon->hp > mon->maxhp / 2)) {
-			mon->best_range = 6;
+		if (monster_breathes(mon) && (mon->hp > mon->maxhp / 2)) {
+			mon->best_range = MAX(6, mon->best_range);
 		} else {
 			/* Other spell casters will sit back and cast */
 			mon->best_range += 3;

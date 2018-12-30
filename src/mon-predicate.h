@@ -40,6 +40,7 @@ bool monster_has_spirit(const struct monster *mon);
 bool monster_is_evil(const struct monster *mon);
 bool monster_is_powerful(const struct monster *mon);
 bool monster_has_spells(const struct monster *mon);
+bool monster_breathes(const struct monster *mon);
 bool monster_has_innate_spells(const struct monster *mon);
 bool monster_has_non_innate_spells(const struct monster *mon);
 

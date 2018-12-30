@@ -142,6 +142,17 @@ bool monster_has_spells(const struct monster *mon)
 }
 
 /**
+ * Monster has damaging breath
+ */
+bool monster_breathes(const struct monster *mon)
+{
+	bitflag breaths[RSF_SIZE];
+	create_mon_spell_mask(breaths, RST_BREATH, RST_NONE);
+	rsf_inter(breaths, mon->race->spell_flags);
+	return rsf_is_empty(breaths) ? false : true;
+}
+
+/**
  * Monster has innate spells
  */
 bool monster_has_innate_spells(const struct monster *mon)
