@@ -591,7 +591,7 @@ int count_feats(struct loc *grid,
 		++count;
 
 		/* Remember the location of the last door found */
-		if ((*grid).x && (*grid).y) {
+		if (grid) {
 			*grid = grid1;
 		}
 	}

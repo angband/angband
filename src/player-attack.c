@@ -669,12 +669,12 @@ bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fear,
  * We don't allow @ to spend more than 100 energy in one go, to avoid slower
  * monsters getting double moves.
  */
-void py_attack(struct player *p, int y, int x)
+void py_attack(struct player *p, struct loc grid)
 {
 	int blow_energy = 100 * z_info->move_energy / p->state.num_blows;
 	int blows = 0;
 	bool fear = false;
-	struct monster *mon = square_monster(cave, loc(x, y));
+	struct monster *mon = square_monster(cave, grid);
 
 	/* Disturb the player */
 	disturb(p, 0);
@@ -692,7 +692,7 @@ void py_attack(struct player *p, int y, int x)
 	/* Attack until energy runs out or enemy dies. We limit energy use to 100
 	 * to avoid giving monsters a possible double move. */
 	while (p->energy >= blow_energy * (blows + 1)) {
-		bool stop = py_attack_real(player, y, x, &fear);
+		bool stop = py_attack_real(player, grid.y, grid.x, &fear);
 		p->upkeep->energy_use += blow_energy;
 		if (p->upkeep->energy_use + blow_energy > z_info->move_energy ||
 			stop) break;
