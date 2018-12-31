@@ -397,7 +397,7 @@ static void try_door(struct chunk *c, struct loc grid)
     if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, grid))
 		place_random_door(c, grid.y, grid.x);
     else if (randint0(500) < dun->profile->tun.jct && possible_doorway(c, grid))
-		place_trap(c, grid.y, grid.x, -1, c->depth);
+		place_trap(c, grid, -1, c->depth);
 }
 
 

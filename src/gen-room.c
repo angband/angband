@@ -1014,7 +1014,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			case '%': set_marked_granite(c, grid.y, grid.x, SQUARE_WALL_OUTER); break;
 			case '#': set_marked_granite(c, grid.y, grid.x, SQUARE_WALL_SOLID); break;
 			case '+': place_closed_door(c, grid.y, grid.x); break;
-			case '^': if (one_in_(4)) place_trap(c, grid.y, grid.x, -1, c->depth); break;
+			case '^': if (one_in_(4)) place_trap(c, grid, -1, c->depth); break;
 			case 'x': {
 
 				/* If optional walls are generated, put a wall in this square */
@@ -1210,13 +1210,13 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				/* Secret door */
 			case '+': place_secret_door(c, grid.y, grid.x); break;
 				/* Trap */
-			case '^': if (one_in_(4)) place_trap(c, grid.y, grid.x, -1, c->depth); break;
+			case '^': if (one_in_(4)) place_trap(c, grid, -1, c->depth); break;
 				/* Treasure or a trap */
 			case '&': {
 				if (randint0(100) < 75) {
 					place_object(c, grid.y, grid.x, c->depth, false, false, ORIGIN_VAULT, 0);
 				} else if (one_in_(4)) {
-					place_trap(c, grid.y, grid.x, -1, c->depth);
+					place_trap(c, grid, -1, c->depth);
 				}
 				break;
 			}
@@ -1278,7 +1278,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 									 one_in_(8) ? true : false, false,
 									 ORIGIN_VAULT, 0);
 					} else if (one_in_(4)) {
-						place_trap(c, grid.y, grid.x, -1, c->depth);
+						place_trap(c, grid, -1, c->depth);
 					}
 					break;
 				}
@@ -2023,10 +2023,14 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 
 		/* Open the inner room with a locked door */
 		generate_hole(c, y0 - 1, x0 - 1, y0 + 1, x0 + 1, FEAT_CLOSED);
-		for (y = y0 - 1; y <= y0 + 1; y++)
-			for (x = x0 - 1; x <= x0 + 1; x++)
-				if (square_iscloseddoor(c, loc(x, y)))
-					square_set_door_lock(c, y, x, randint1(7));
+		for (y = y0 - 1; y <= y0 + 1; y++) {
+			for (x = x0 - 1; x <= x0 + 1; x++) {
+				struct loc grid = loc(x, y);
+				if (square_iscloseddoor(c, grid)) {
+					square_set_door_lock(c, grid, randint1(7));
+				}
+			}
+		}
 
 		/* Monsters to guard the treasure */
 		vault_monsters(c, y0, x0, c->depth + 2, randint1(3) + 2);

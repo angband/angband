@@ -976,7 +976,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 		/* Now outcome depends on type of door */
 		if (square_islockeddoor(c, new)) {
 			/* Locked door -- test monster strength against door strength */
-			int k = square_door_power(c, ny, nx);
+			int k = square_door_power(c, new);
 			if (randint0(mon->hp / 10) > k) {
 				if (will_bash) {
 					msg("%s slams against the door.", m_name);
@@ -985,7 +985,7 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
 				}
 
 				/* Reduce the power of the door by one */
-				square_set_door_lock(c, ny, nx, k - 1);
+				square_set_door_lock(c, new, k - 1);
 			}
 		} else {
 			/* Closed or secret door -- always open or bash */
@@ -1029,7 +1029,7 @@ static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
 		}
 
 		/* Break the rune */
-		square_remove_all_traps(c, ny, nx);
+		square_remove_all_traps(c, new);
 
 		return true;
 	}

@@ -94,21 +94,22 @@ struct trap
 };
 
 struct trap_kind *lookup_trap(const char *desc);
-bool square_trap_specific(struct chunk *c, int y, int x, int t_idx);
-bool square_trap_flag(struct chunk *c, int y, int x, int flag);
-bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg);
+bool square_trap_specific(struct chunk *c, struct loc grid, int t_idx);
+bool square_trap_flag(struct chunk *c, struct loc grid, int flag);
+bool square_reveal_trap(struct chunk *c, struct loc grid, bool always,
+						bool domsg);
 bool trap_check_hit(int power);
-void hit_trap(int y, int x);
-bool square_player_trap_allowed(struct chunk *c, int y, int x);
-void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level);
-void square_free_trap(struct chunk *c, int y, int x);
+void hit_trap(struct loc grid);
+bool square_player_trap_allowed(struct chunk *c, struct loc grid);
+void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level);
+void square_free_trap(struct chunk *c, struct loc grid);
 void wipe_trap_list(struct chunk *c);
-bool square_remove_all_traps(struct chunk *c, int y, int x);
-bool square_remove_trap(struct chunk *c, int y, int x, int t_idx);
-bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
+bool square_remove_all_traps(struct chunk *c, struct loc grid);
+bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx);
+bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
 							 int t_idx, int time);
-int square_trap_timeout(struct chunk *c, int y, int x, int t_idx);
-void square_set_door_lock(struct chunk *c, int y, int x, int power);
-int square_door_power(struct chunk *c, int y, int x);
+int square_trap_timeout(struct chunk *c, struct loc grid, int t_idx);
+void square_set_door_lock(struct chunk *c, struct loc grid, int power);
+int square_door_power(struct chunk *c, struct loc grid);
 
 #endif /* !TRAP_H */

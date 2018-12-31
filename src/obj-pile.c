@@ -1099,7 +1099,7 @@ void push_object(int y, int x)
 	/* Reset cave feature, remove trap if needed */
 	square_set_feat(cave, grid, feat_old->fidx);
 	if (trap && !square_istrappable(cave, grid)) {
-		square_remove_all_traps(cave, y, x);
+		square_remove_all_traps(cave, grid);
 	}
 
 	q_free(queue);

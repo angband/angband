@@ -2316,7 +2316,7 @@ void get_debug_command(void)
 
 			struct trap_kind *trap = lookup_trap(buf);
 			if (trap) {
-				place_trap(cave, player->grid.y, player->grid.x, trap->tidx, 0);
+				place_trap(cave, player->grid, trap->tidx, 0);
 			} else {
 				msg("Trap not found.");
 			}

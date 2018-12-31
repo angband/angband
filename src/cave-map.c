@@ -226,7 +226,7 @@ void square_note_spot(struct chunk *c, struct loc grid)
 
 	/* Notice traps */
 	if (square_issecrettrap(c, grid)) {
-		square_reveal_trap(c, grid.y, grid.x, false, true);
+		square_reveal_trap(c, grid, false, true);
 	}
 
 	if (square_isknown(c, grid))

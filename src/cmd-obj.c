@@ -560,7 +560,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
 
 	/* Hack to make Glyph of Warding work properly */
-	if (square_trap_specific(cave, player->grid.y, player->grid.x, rune->tidx)) {
+	if (square_trap_specific(cave, player->grid, rune->tidx)) {
 		/* Push objects off the grid */
 		if (square_object(cave, player->grid))
 			push_object(player->grid.y, player->grid.x);

@@ -496,7 +496,7 @@ static void update_one(struct chunk *c, struct loc grid, int blind)
 	if (blind) {
 		sqinfo_off(square(c, grid).info, SQUARE_SEEN);
 	} else if (square_isseen(c, grid)) {
-		square_reveal_trap(c, grid.y, grid.x, false, true);
+		square_reveal_trap(c, grid, false, true);
 	}
 
 	/* Square went from unseen -> seen */

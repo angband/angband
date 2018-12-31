@@ -59,9 +59,8 @@ struct trap_kind *lookup_trap(const char *desc)
 /**
  * Is there a specific kind of trap in this square?
  */
-bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
+bool square_trap_specific(struct chunk *c, struct loc grid, int t_idx)
 {
-	struct loc grid = loc(x, y);
     struct trap *trap = square_trap(c, grid);
 	
     /* First, check the trap marker */
@@ -83,9 +82,8 @@ bool square_trap_specific(struct chunk *c, int y, int x, int t_idx)
 /**
  * Is there a trap with a given flag in this square?
  */
-bool square_trap_flag(struct chunk *c, int y, int x, int flag)
+bool square_trap_flag(struct chunk *c, struct loc grid, int flag)
 {
-	struct loc grid = loc(x, y);
     struct trap *trap = square_trap(c, grid);
 
     /* First, check the trap marker */
@@ -112,9 +110,8 @@ bool square_trap_flag(struct chunk *c, int y, int x, int flag)
  *
  * Clear the SQUARE_TRAP flag if none exist.
  */
-static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
+static bool square_verify_trap(struct chunk *c, struct loc grid, int vis)
 {
-	struct loc grid = loc(x, y);
     struct trap *trap = square_trap(c, grid);
     bool trap_exists = false;
 
@@ -151,9 +148,8 @@ static bool square_verify_trap(struct chunk *c, int y, int x, int vis)
 /**
  * Determine if a cave grid is allowed to have player traps in it.
  */
-bool square_player_trap_allowed(struct chunk *c, int y, int x)
+bool square_player_trap_allowed(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 
     /* We currently forbid multiple traps in a grid under normal conditions.
      * If this changes, various bits of code elsewhere will have to change too.
@@ -166,7 +162,7 @@ bool square_player_trap_allowed(struct chunk *c, int y, int x)
 		return false;
 
     /* Check it's a trappable square */
-    return (square_istrappable(c, loc(x, y)));
+    return (square_istrappable(c, grid));
 }
 
 /**
@@ -253,15 +249,14 @@ static int pick_trap(struct chunk *c, int feat, int trap_level)
  * This should be the only function that places traps in the dungeon
  * except the savefile loading code.
  */
-void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
+void place_trap(struct chunk *c, struct loc grid, int t_idx, int trap_level)
 {
 	struct trap *new_trap;
-	struct loc grid = loc(x, y);
 
     /* We've been called with an illegal index; choose a random trap */
     if ((t_idx <= 0) || (t_idx >= z_info->trap_max)) {
 		/* Require the correct terrain */
-		if (!square_player_trap_allowed(c, y, x)) return;
+		if (!square_player_trap_allowed(c, grid)) return;
 
 		t_idx = pick_trap(c, square(c, grid).feat, trap_level);
     }
@@ -291,9 +286,8 @@ void place_trap(struct chunk *c, int y, int x, int t_idx, int trap_level)
 /**
  * Free memory for all traps on a grid
  */
-void square_free_trap(struct chunk *c, int y, int x)
+void square_free_trap(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	struct trap *next, *trap = square_trap(c, grid);
 
 	while (trap) {
@@ -306,10 +300,9 @@ void square_free_trap(struct chunk *c, int y, int x)
 /**
  * Reveal some of the player traps in a square
  */
-bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
+bool square_reveal_trap(struct chunk *c, struct loc grid, bool always, bool domsg)
 {
     int found_trap = 0;
-	struct loc grid = loc(x, y);
 	struct trap *trap = square_trap(c, grid);
     
     /* Check there is a player trap */
@@ -369,9 +362,8 @@ bool square_reveal_trap(struct chunk *c, int y, int x, bool always, bool domsg)
  * Called with vis = 0 to accept any trap, = 1 to accept only visible
  * traps, and = -1 to accept only invisible traps.
  */
-int num_traps(struct chunk *c, int y, int x, int vis)
+int num_traps(struct chunk *c, struct loc grid, int vis)
 {
-	struct loc grid = loc(x, y);
     int num = 0;
 	struct trap *trap;
 
@@ -408,15 +400,14 @@ bool trap_check_hit(int power)
 /**
  * Hit a trap. 
  */
-extern void hit_trap(int y, int x)
+extern void hit_trap(struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	bool ident = false;
 	struct trap *trap;
 	struct effect *effect;
 
     /* Count the hidden traps here */
-    int num = num_traps(cave, y, x, -1);
+    int num = num_traps(cave, grid, -1);
 
 	/* The player is safe from all traps */
 	if (player_is_trapsafe(player)) return;
@@ -503,7 +494,7 @@ extern void hit_trap(int y, int x)
 	}
 
     /* Verify traps (remove marker if appropriate) */
-    (void)square_verify_trap(cave, y, x, 0);
+    (void)square_verify_trap(cave, grid, 0);
 }
 
 /**
@@ -511,9 +502,8 @@ extern void hit_trap(int y, int x)
  *
  * Return true if traps were removed.
  */
-bool square_remove_all_traps(struct chunk *c, int y, int x)
+bool square_remove_all_traps(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	struct trap *trap = square(c, grid).trap;
 	bool were_there_traps = trap == NULL ? false : true;
 
@@ -531,7 +521,7 @@ bool square_remove_all_traps(struct chunk *c, int y, int x)
 		square_light_spot(c, grid);
 	}
 
-	(void)square_verify_trap(c, y, x, 0);
+	(void)square_verify_trap(c, grid, 0);
 
 	return were_there_traps;
 }
@@ -544,9 +534,8 @@ bool square_remove_all_traps(struct chunk *c, int y, int x)
  *
  * Return true if traps were removed.
  */
-bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
+bool square_remove_trap(struct chunk *c, struct loc grid, int t_idx_remove)
 {
-	struct loc grid = loc(x, y);
 	bool removed = false;
 
 	/* Look at the traps in this grid */
@@ -578,7 +567,7 @@ bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
 	if (square_isseen(c, grid))
 		square_light_spot(c, grid);
 
-	(void)square_verify_trap(c, y, x, 0);
+	(void)square_verify_trap(c, grid, 0);
 
 	return removed;
 }
@@ -591,12 +580,11 @@ bool square_remove_trap(struct chunk *c, int y, int x, int t_idx_remove)
  *
  * Return true if no traps now exist in this grid.
  */
-bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
+bool square_set_trap_timeout(struct chunk *c, struct loc grid, bool domsg,
 							 int t_idx, int time)
 {
     bool trap_exists;
 	struct trap *current_trap = NULL;
-	struct loc grid = loc(x, y);
 
 	/* Bounds check */
 	assert(square_in_bounds(c, grid));
@@ -629,7 +617,7 @@ bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
 		square_light_spot(c, grid);
 
     /* Verify traps (remove marker if appropriate) */
-    trap_exists = square_verify_trap(c, y, x, 0);
+    trap_exists = square_verify_trap(c, grid, 0);
 
     /* Report whether any traps exist in this grid */
     return (!trap_exists);
@@ -639,9 +627,9 @@ bool square_set_trap_timeout(struct chunk *c, int y, int x, bool domsg,
  * Give the remaining time for a trap to be disabled; note it chooses the first
  * appropriate trap on the grid
  */
-int square_trap_timeout(struct chunk *c, int y, int x, int t_idx)
+int square_trap_timeout(struct chunk *c, struct loc grid, int t_idx)
 {
-	struct trap *current_trap = square(c, loc(x, y)).trap;
+	struct trap *current_trap = square(c, grid).trap;
 	while (current_trap) {
 		/* Get the next trap (may be NULL) */
 		struct trap *next_trap = current_trap->next;
@@ -667,19 +655,18 @@ int square_trap_timeout(struct chunk *c, int y, int x, int t_idx)
 /**
  * Lock a closed door to a given power
  */
-void square_set_door_lock(struct chunk *c, int y, int x, int power)
+void square_set_door_lock(struct chunk *c, struct loc grid, int power)
 {
-	struct loc grid = loc(x, y);
 	struct trap_kind *lock = lookup_trap("door lock");
 	struct trap *trap;
 
 	/* Verify it's a closed door */
-	if (!square_iscloseddoor(c, loc(x, y)))
+	if (!square_iscloseddoor(c, grid))
 		return;
 
 	/* If there's no lock there, add one */
-	if (!square_trap_specific(c, y, x, lock->tidx))
-		place_trap(c, y, x, lock->tidx, 0);
+	if (!square_trap_specific(c, grid, lock->tidx))
+		place_trap(c, grid, lock->tidx, 0);
 
 	/* Set the power (of all locks - there should be only one) */
 	trap = square_trap(c, grid);
@@ -693,18 +680,17 @@ void square_set_door_lock(struct chunk *c, int y, int x, int power)
 /**
  * Return the power of the lock on a door
  */
-int square_door_power(struct chunk *c, int y, int x)
+int square_door_power(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	struct trap_kind *lock = lookup_trap("door lock");
 	struct trap *trap;
 
 	/* Verify it's a closed door */
-	if (!square_iscloseddoor(c, loc(x, y)))
+	if (!square_iscloseddoor(c, grid))
 		return 0;
 
 	/* Is there a lock there? */
-	if (!square_trap_specific(c, y, x, lock->tidx))
+	if (!square_trap_specific(c, grid, lock->tidx))
 		return 0;
 
 	/* Get the power and return it */

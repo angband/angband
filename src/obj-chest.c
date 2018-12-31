@@ -242,7 +242,7 @@ int count_chests(struct loc *grid, enum chest_query check_type)
  *
  * Judgment of size and construction of chests is currently made from the name.
  */
-static void chest_death(int y, int x, struct object *chest)
+static void chest_death(struct loc grid, struct object *chest)
 {
 	int number, level;
 	bool large = strstr(chest->kind->name, "Large") ? true : false;;
@@ -276,7 +276,7 @@ static void chest_death(int y, int x, struct object *chest)
 
 		treasure->origin = ORIGIN_CHEST;
 		treasure->origin_depth = chest->origin_depth;
-		drop_near(cave, &treasure, 0, y, x, true);
+		drop_near(cave, &treasure, 0, grid.y, grid.x, true);
 		number--;
 	}
 
@@ -292,7 +292,7 @@ static void chest_death(int y, int x, struct object *chest)
  * Exploding chest destroys contents (and traps).
  * Note that the chest itself is never destroyed.
  */
-static void chest_trap(int y, int x, struct object *obj)
+static void chest_trap(struct object *obj)
 {
 	int trap;
 
@@ -351,7 +351,7 @@ static void chest_trap(int y, int x, struct object *obj)
  *
  * Returns true if repeated commands may continue
  */
-bool do_cmd_open_chest(int y, int x, struct object *obj)
+bool do_cmd_open_chest(struct loc grid, struct object *obj)
 {
 	int i, j;
 
@@ -394,11 +394,11 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 	if (flag) {
 		/* Apply chest traps, if any and player is not trapsafe */
 		if (!player_is_trapsafe(player)) {
-			chest_trap(y, x, obj);
+			chest_trap(obj);
 		}
 
 		/* Let the Chest drop items */
-		chest_death(y, x, obj);
+		chest_death(grid, obj);
 
 		/* Ignore chest if autoignore calls for it */
 		player->upkeep->notice |= PN_IGNORE;
@@ -411,7 +411,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
 		obj->known->notice |= OBJ_NOTICE_IGNORE;
 
 	/* Redraw chest, to be on the safe side (it may have been ignored) */
-	square_light_spot(cave, loc(x, y));
+	square_light_spot(cave, grid);
 
 	/* Result */
 	return (more);
@@ -425,7 +425,7 @@ bool do_cmd_open_chest(int y, int x, struct object *obj)
  *
  * Returns true if repeated commands may continue
  */
-bool do_cmd_disarm_chest(int y, int x, struct object *obj)
+bool do_cmd_disarm_chest(struct object *obj)
 {
 	int i, j;
 
@@ -466,7 +466,7 @@ bool do_cmd_disarm_chest(int y, int x, struct object *obj)
 	} else {
 		/* Failure -- Set off the trap */
 		msg("You set off a trap!");
-		chest_trap(y, x, obj);
+		chest_trap(obj);
 	}
 
 	/* Result */

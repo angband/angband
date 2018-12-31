@@ -751,13 +751,13 @@ bool square_isnoscent(struct chunk *c, struct loc grid) {
 bool square_iswarded(struct chunk *c, struct loc grid)
 {
 	struct trap_kind *rune = lookup_trap("glyph of warding");
-	return square_trap_specific(c, grid.y, grid.x, rune->tidx);
+	return square_trap_specific(c, grid, rune->tidx);
 }
 
 bool square_isdecoyed(struct chunk *c, struct loc grid)
 {
 	struct trap_kind *glyph = lookup_trap("decoy");
-	return square_trap_specific(c, grid.y, grid.x, glyph->tidx);
+	return square_trap_specific(c, grid, glyph->tidx);
 }
 
 bool square_seemslikewall(struct chunk *c, struct loc grid)
@@ -776,7 +776,7 @@ bool square_isinteresting(struct chunk *c, struct loc grid)
  */
 bool square_islockeddoor(struct chunk *c, struct loc grid)
 {
-	return square_door_power(c, grid.y, grid.x) > 0;
+	return square_door_power(c, grid) > 0;
 }
 
 /**
@@ -784,7 +784,7 @@ bool square_islockeddoor(struct chunk *c, struct loc grid)
  */
 bool square_isplayertrap(struct chunk *c, struct loc grid)
 {
-    return square_trap_flag(c, grid.y, grid.x, TRF_TRAP);
+    return square_trap_flag(c, grid, TRF_TRAP);
 }
 
 /**
@@ -793,7 +793,7 @@ bool square_isplayertrap(struct chunk *c, struct loc grid)
 bool square_isvisibletrap(struct chunk *c, struct loc grid)
 {
     /* Look for a visible trap */
-    return square_trap_flag(c, grid.y, grid.x, TRF_VISIBLE);
+    return square_trap_flag(c, grid, TRF_VISIBLE);
 }
 /**
  * True if the square is an unknown player trap (it will appear as a floor tile)
@@ -809,7 +809,7 @@ bool square_issecrettrap(struct chunk *c, struct loc grid)
 bool square_isdisabledtrap(struct chunk *c, struct loc grid)
 {
 	return square_isvisibletrap(c, grid) &&
-		(square_trap_timeout(c, grid.y, grid.x, -1) > 0);
+		(square_trap_timeout(c, grid, -1) > 0);
 }
 
 /**
@@ -1120,7 +1120,7 @@ void square_set_feat(struct chunk *c, struct loc grid, int feat)
 	/* Make the new terrain feel at home */
 	if (character_dungeon) {
 		/* Remove traps if necessary */
-		if (!square_player_trap_allowed(c, grid.y, grid.x))
+		if (!square_player_trap_allowed(c, grid))
 			square_destroy_trap(c, grid);
 
 		square_note_spot(c, grid);
@@ -1169,7 +1169,7 @@ void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap)
 void square_add_trap(struct chunk *c, struct loc grid)
 {
 	assert(square_in_bounds_fully(c, grid));
-	place_trap(c, grid.y, grid.x, -1, c->depth);
+	place_trap(c, grid, -1, c->depth);
 }
 
 void square_add_glyph(struct chunk *c, struct loc grid, int type)
@@ -1190,7 +1190,7 @@ void square_add_glyph(struct chunk *c, struct loc grid, int type)
 			return;
 		}
 	}
-	place_trap(c, grid.y, grid.x, glyph->tidx, 0);
+	place_trap(c, grid, glyph->tidx, 0);
 }
 
 void square_add_stairs(struct chunk *c, struct loc grid, int depth) {
@@ -1209,7 +1209,7 @@ void square_add_door(struct chunk *c, struct loc grid, bool closed) {
 
 void square_open_door(struct chunk *c, struct loc grid)
 {
-	square_remove_all_traps(c, grid.y, grid.x);
+	square_remove_all_traps(c, grid);
 	square_set_feat(c, grid, FEAT_OPEN);
 }
 
@@ -1220,35 +1220,35 @@ void square_close_door(struct chunk *c, struct loc grid)
 
 void square_smash_door(struct chunk *c, struct loc grid)
 {
-	square_remove_all_traps(c, grid.y, grid.x);
+	square_remove_all_traps(c, grid);
 	square_set_feat(c, grid, FEAT_BROKEN);
 }
 
 void square_unlock_door(struct chunk *c, struct loc grid) {
 	assert(square_islockeddoor(c, grid));
-	square_set_door_lock(c, grid.y, grid.x, 0);
+	square_set_door_lock(c, grid, 0);
 }
 
 void square_destroy_door(struct chunk *c, struct loc grid) {
 	assert(square_isdoor(c, grid));
-	square_remove_all_traps(c, grid.y, grid.x);
+	square_remove_all_traps(c, grid);
 	square_set_feat(c, grid, FEAT_FLOOR);
 }
 
 void square_destroy_trap(struct chunk *c, struct loc grid)
 {
-	square_remove_all_traps(c, grid.y, grid.x);
+	square_remove_all_traps(c, grid);
 }
 
 void square_disable_trap(struct chunk *c, struct loc grid)
 {
 	if (!square_isplayertrap(c, grid)) return;
-	square_set_trap_timeout(c, grid.y, grid.x, false, -1, 10);
+	square_set_trap_timeout(c, grid, false, -1, 10);
 }
 
 void square_destroy_decoy(struct chunk *c, struct loc grid)
 {
-	square_remove_all_traps(c, grid.y, grid.x);
+	square_remove_all_traps(c, grid);
 	c->decoy = loc(0, 0);
 	if (los(c, player->grid, grid) && !player->timed[TMD_BLIND]){
 		msg("The decoy is destroyed!");

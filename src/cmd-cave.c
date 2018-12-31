@@ -178,7 +178,7 @@ static bool do_cmd_open_aux(struct loc grid)
 			i = i / 10;
 
 		/* Extract the lock power */
-		j = square_door_power(cave, grid.y, grid.x);
+		j = square_door_power(cave, grid);
 
 		/* Extract the difficulty XXX XXX XXX */
 		j = i - (j * 4);
@@ -300,7 +300,7 @@ void do_cmd_open(struct command *cmd)
 		}
 	} else if (obj) {
 		/* Chest */
-		more = do_cmd_open_chest(grid.y, grid.x, obj);
+		more = do_cmd_open_chest(grid, obj);
 	} else {
 		/* Door */
 		more = do_cmd_open_aux(grid);
@@ -662,7 +662,7 @@ static bool do_cmd_lock_door(struct loc grid)
 	/* Success */
 	if (randint0(100) < j) {
 		msg("You lock the door.");
-		square_set_door_lock(cave, grid.y, grid.x, power);
+		square_set_door_lock(cave, grid, power);
 	}
 
 	/* Failure -- Keep trying */
@@ -745,7 +745,7 @@ static bool do_cmd_disarm_aux(struct loc grid)
 		more = true;
 	} else {
 		msg("You set off the %s!", trap->kind->name);
-		hit_trap(grid.y, grid.x);
+		hit_trap(grid);
 	}
 
 	/* Result */
@@ -817,7 +817,7 @@ void do_cmd_disarm(struct command *cmd)
 		py_attack(player, grid);
 	} else if (obj)
 		/* Chest */
-		more = do_cmd_disarm_chest(grid.y, grid.x, obj);
+		more = do_cmd_disarm_chest(obj);
 	else if (square_iscloseddoor(cave, grid) &&
 			 !square_islockeddoor(cave, grid))
 		/* Door to lock */
@@ -1029,10 +1029,10 @@ void move_player(int dir, bool disarm)
 		/* Discover invisible traps, set off visible ones */
 		if (square_issecrettrap(cave, grid)) {
 			disturb(player, 0);
-			hit_trap(grid.y, grid.x);
+			hit_trap(grid);
 		} else if (square_isdisarmabletrap(cave, grid) && !trapsafe) {
 			disturb(player, 0);
-			hit_trap(grid.y, grid.x);
+			hit_trap(grid);
 		}
 
 		/* Update view and search */
@@ -1558,7 +1558,7 @@ void do_cmd_mon_command(struct command *cmd)
 						/* Now outcome depends on type of door */
 						if (square_islockeddoor(cave, grid)) {
 							/* Test strength against door strength */
-							int k = square_door_power(cave, grid.y, grid.x);
+							int k = square_door_power(cave, grid);
 							if (randint0(mon->hp / 10) > k) {
 								if (can_bash) {
 									msg("%s slams against the door.", m_name);
@@ -1567,7 +1567,7 @@ void do_cmd_mon_command(struct command *cmd)
 								}
 
 								/* Reduce the power of the door by one */
-								square_set_door_lock(cave, grid.y, grid.x, k - 1);
+								square_set_door_lock(cave, grid, k - 1);
 							}
 						} else {
 							/* Closed or secret door -- always open or bash */

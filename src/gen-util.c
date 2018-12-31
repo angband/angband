@@ -541,7 +541,7 @@ void place_closed_door(struct chunk *c, int y, int x)
 	struct loc grid = loc(x, y);
 	square_set_feat(c, grid, FEAT_CLOSED);
 	if (one_in_(4))
-		square_set_door_lock(c, y, x, randint1(7));
+		square_set_door_lock(c, grid, randint1(7));
 }
 
 
@@ -659,32 +659,32 @@ void alloc_objects(struct chunk *c, int set, int typ, int num, int depth,
  */
 bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin)
 {
-    int x = 0, y = 0;
     int tries = 0;
+	struct loc grid;
 
     /* Pick a "legal" spot */
     while (tries < 2000) {
 		tries++;
 
-		find_empty(c, &y, &x);
+		find_empty(c, &(grid.y), &(grid.x));
 
 		/* If we are ok with a corridor and we're in one, we're done */
-		if (set & SET_CORR && !square_isroom(c, loc(x, y))) break;
+		if (set & SET_CORR && !square_isroom(c, grid)) break;
 
 		/* If we are ok with a room and we're in one, we're done */
-		if (set & SET_ROOM && square_isroom(c, loc(x, y))) break;
+		if (set & SET_ROOM && square_isroom(c, grid)) break;
     }
 
     if (tries == 2000) return false;
 
     /* Place something */
     switch (typ) {
-    case TYP_RUBBLE: place_rubble(c, y, x); break;
-    case TYP_TRAP: place_trap(c, y, x, -1, depth); break;
-    case TYP_GOLD: place_gold(c, y, x, depth, origin); break;
-    case TYP_OBJECT: place_object(c, y, x, depth, false, false, origin, 0); break;
-    case TYP_GOOD: place_object(c, y, x, depth, true, false, origin, 0); break;
-    case TYP_GREAT: place_object(c, y, x, depth, true, true, origin, 0); break;
+    case TYP_RUBBLE: place_rubble(c, grid.y, grid.x); break;
+    case TYP_TRAP: place_trap(c, grid, -1, depth); break;
+    case TYP_GOLD: place_gold(c, grid.y, grid.x, depth, origin); break;
+    case TYP_OBJECT: place_object(c, grid.y, grid.x, depth, false, false, origin, 0); break;
+    case TYP_GOOD: place_object(c, grid.y, grid.x, depth, true, false, origin, 0); break;
+    case TYP_GREAT: place_object(c, grid.y, grid.x, depth, true, true, origin, 0); break;
     }
     return true;
 }

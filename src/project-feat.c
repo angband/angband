@@ -275,7 +275,7 @@ static void project_feature_handler_MAKE_TRAP(project_feature_handler_context_t 
 	/* Create a trap, try to notice it */
 	if (one_in_(4)) {
 		square_add_trap(cave, grid);
-		(void) square_reveal_trap(cave, grid.y, grid.x, false, false);
+		(void) square_reveal_trap(cave, grid, false, false);
 	}
 	context->obvious = true;
 }

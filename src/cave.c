@@ -387,7 +387,7 @@ void cave_free(struct chunk *c) {
 		for (x = 0; x < c->width; x++) {
 			mem_free(c->squares[y][x].info);
 			if (c->squares[y][x].trap)
-				square_free_trap(c, y, x);
+				square_free_trap(c, loc(x, y));
 			if (c->squares[y][x].obj)
 				object_pile_free(c->squares[y][x].obj);
 		}
