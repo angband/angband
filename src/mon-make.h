@@ -22,7 +22,7 @@
 #include "monster.h"
 
 void delete_monster_idx(int m_idx);
-void delete_monster(int y, int x);
+void delete_monster(struct loc grid);
 void compact_monsters(int num_to_compact);
 void wipe_mon_list(struct chunk *c, struct player *p);
 s16b mon_pop(struct chunk *c);
@@ -31,12 +31,13 @@ struct monster_race *get_mon_num(int level);
 int mon_create_drop_count(const struct monster_race *race, bool maximize);
 void mon_create_mimicked_object(struct chunk *c, struct monster *mon,
 								int index);
-s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
+s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 				   byte origin);
 int mon_hp(const struct monster_race *race, aspect hp_aspect);
-bool place_new_monster(struct chunk *, int y, int x, struct monster_race *race, 
-					   bool sleep, bool group_okay, byte origin);
-bool pick_and_place_monster(struct chunk *c, int y, int x, int depth, 
+bool place_new_monster(struct chunk *c, struct loc grid,
+					   struct monster_race *race, bool sleep, bool group_ok,
+					   byte origin);
+bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth, 
 							bool sleep,	bool group_okay, byte origin);
 bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 									bool sleep, int depth);

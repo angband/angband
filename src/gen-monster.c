@@ -243,7 +243,7 @@ void spread_monsters(struct chunk *c, const char *type, int depth, int num,
 		if (!square_isempty(c, loc(x, y))) continue;
 
 		/* Place the monster (sleeping, allow groups) */
-		pick_and_place_monster(c, y, x, depth, true, true, origin);
+		pick_and_place_monster(c, loc(x, y), depth, true, true, origin);
 
 		/* Rein in monster groups and escorts a little. */
 		if (c->mon_max - start_mon_num > num * 2)
@@ -307,7 +307,7 @@ void get_vault_monsters(struct chunk *c, char racial_symbol[], char *vault_type,
 			for (x = x1; x <= x2; x++, t++) {
 				if (*t == racial_symbol[i]) {
 					/* Place a monster */
-					pick_and_place_monster(c, y, x, depth, false,
+					pick_and_place_monster(c, loc(x, y), depth, false,
 										   false, ORIGIN_DROP_SPECIAL);
 				}
 			}
@@ -394,8 +394,8 @@ void get_chamber_monsters(struct chunk *c, int y1, int x1, int y2, int x2,
 			continue;
 
 		/* Place a single monster.  Sleeping 2/3rds of the time. */
-		pick_and_place_monster(c, y, x, c->depth, (randint0(3) != 0), false,
-											 ORIGIN_DROP_SPECIAL);
+		pick_and_place_monster(c, loc(x, y), c->depth, (randint0(3) != 0),
+							   false, ORIGIN_DROP_SPECIAL);
 
 		/* One less monster to place. */
 		monsters_left--;

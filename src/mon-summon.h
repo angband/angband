@@ -47,6 +47,6 @@ int summon_name_to_idx(const char *name);
 int summon_fallback_type(int summon_type);
 int summon_message_type(int summon_type);
 const char *summon_desc(int type);
-int summon_specific(int y1, int x1, int lev, int type, bool delay, bool call);
+int summon_specific(struct loc grid, int lev, int type, bool delay, bool call);
 
 #endif /* MONSTER_SUMMON_H */

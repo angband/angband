@@ -1189,7 +1189,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(m_idx);
-			place_new_monster(cave, grid.y, grid.x, new, false, false,
+			place_new_monster(cave, grid, new, false, false,
 							  ORIGIN_DROP_POLY);
 			context->mon = square_monster(cave, grid);
 		} else {

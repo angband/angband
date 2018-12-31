@@ -750,7 +750,7 @@ void vault_monsters(struct chunk *c, struct loc grid, int depth, int num)
 			if (!square_isempty(c, near)) continue;
 
 			/* Place the monster (allow groups) */
-			pick_and_place_monster(c, near.y, near.x, depth, true, true,
+			pick_and_place_monster(c, near, depth, true, true,
 								   ORIGIN_DROP_SPECIAL);
 
 			break;

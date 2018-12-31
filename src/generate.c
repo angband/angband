@@ -1004,7 +1004,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 	
 				/* Pick a location and place the monster */
 				find_empty(chunk, &grid);
-				place_new_monster(chunk, grid.y, grid.x, race, true, true,
+				place_new_monster(chunk, grid, race, true, true,
 								  ORIGIN_DROP);
 			}
 		}

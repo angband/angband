@@ -1388,7 +1388,7 @@ static int rd_monsters_aux(struct chunk *c)
 		}
 
 		/* Place monster in dungeon */
-		if (place_monster(c, mon->grid.y, mon->grid.x, mon, 0) != i) {
+		if (place_monster(c, mon->grid, mon, 0) != i) {
 			note(format("Cannot place monster %d", i));
 			return (-1);
 		}

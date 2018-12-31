@@ -158,7 +158,7 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
  * Determine if there is a space near the selected spot in which
  * a summoned creature can appear
  */
-static bool summon_possible(int y1, int x1)
+static bool summon_possible(struct loc grid)
 {
 	int y, x;
 
@@ -166,21 +166,21 @@ static bool summon_possible(int y1, int x1)
 	if (player->upkeep->arena_level) return false;
 
 	/* Start at the location, and check 2 grids in each dir */
-	for (y = y1 - 2; y <= y1 + 2; y++) {
-		for (x = x1 - 2; x <= x1 + 2; x++) {
-			struct loc grid = loc(x, y);
+	for (y = grid.y - 2; y <= grid.y + 2; y++) {
+		for (x = grid.x - 2; x <= grid.x + 2; x++) {
+			struct loc near = loc(x, y);
 
 			/* Ignore illegal locations */
-			if (!square_in_bounds(cave, grid)) continue;
+			if (!square_in_bounds(cave, near)) continue;
 
 			/* Only check a circular area */
-			if (distance(loc(x1, y1), grid) > 2) continue;
+			if (distance(grid, near) > 2) continue;
 
 			/* Hack: no summon on glyph of warding */
-			if (square_iswarded(cave, grid)) continue;
+			if (square_iswarded(cave, near)) continue;
 
 			/* If it's empty floor grid in line of sight, we're good */
-			if (square_isempty(cave, grid) && los(cave, loc(x1, y1), grid))
+			if (square_isempty(cave, near) && los(cave, grid, near))
 				return (true);
 		}
 	}
@@ -304,7 +304,7 @@ bool make_attack_spell(struct monster *mon)
 		}
 
 		/* Check for a possible summon */
-		if (!summon_possible(mon->grid.y, mon->grid.x)) {
+		if (!summon_possible(mon->grid)) {
 			ignore_spells(f, RST_SUMMON);
 		}
 	}

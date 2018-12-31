@@ -125,9 +125,9 @@ static int compare_monsters(const struct monster *mon1,
 /**
  * Check if the monster can kill any monster on the relevant grid
  */
-static bool monster_can_kill(struct chunk *c, struct monster *mon, int y, int x)
+static bool monster_can_kill(struct chunk *c, struct monster *mon,
+							 struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	struct monster *mon1 = square_monster(c, grid);
 
 	/* No monster */
@@ -144,9 +144,9 @@ static bool monster_can_kill(struct chunk *c, struct monster *mon, int y, int x)
 /**
  * Check if the monster can move any monster on the relevant grid
  */
-static bool monster_can_move(struct chunk *c, struct monster *mon, int y, int x)
+static bool monster_can_move(struct chunk *c, struct monster *mon,
+							 struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	struct monster *mon1 = square_monster(c, grid);
 
 	/* No monster */
@@ -163,10 +163,9 @@ static bool monster_can_move(struct chunk *c, struct monster *mon, int y, int x)
 /**
  * Check if the monster can occupy a grid safely
  */
-static bool monster_hates_grid(struct chunk *c, struct monster *mon, int y,
-							   int x)
+static bool monster_hates_grid(struct chunk *c, struct monster *mon,
+							   struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	/* Only some creatures can handle damaging terrain */
 	if (square_isdamaging(c, grid) &&
 		!rf_has(mon->race->flags, square_feat(c, grid)->resist_flag)) {
@@ -335,12 +334,12 @@ static bool get_move_advance(struct chunk *c, struct monster *mon)
 		}
 
 		/* There's a monster blocking that we can't deal with */
-		if (!monster_can_kill(c, mon, grid.y, grid.x) && !monster_can_move(c, mon, grid.y, grid.x)){
+		if (!monster_can_kill(c, mon, grid) && !monster_can_move(c, mon, grid)){
 			continue;
 		}
 
 		/* There's damaging terrain */
-		if (monster_hates_grid(c, mon, grid.y, grid.x)) {
+		if (monster_hates_grid(c, mon, grid)) {
 			continue;
 		}
 
@@ -808,7 +807,7 @@ bool multiply_monster(struct chunk *c, const struct monster *mon)
 		if (!square_isempty(c, grid)) continue;
 
 		/* Create a new monster (awake, no groups) */
-		result = place_new_monster(c, grid.y, grid.x, mon->race, false, false,
+		result = place_new_monster(c, grid, mon->race, false, false,
 								   ORIGIN_DROP_BREED);
 
 		/* Done */
@@ -904,13 +903,12 @@ static bool monster_turn_should_stagger(struct monster *mon)
  * Returns true if the monster is able to move through the grid.
  */
 static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
-		const char *m_name, int nx, int ny, bool *did_something)
+		const char *m_name, struct loc new, bool *did_something)
 {
 	struct monster_lore *lore = get_lore(mon->race);
-	struct loc new = loc(nx, ny);
 
 	/* Dangerous terrain in the way */
-	if (monster_hates_grid(c, mon, ny, nx)) {
+	if (monster_hates_grid(c, mon, new)) {
 		return false;
 	}
 
@@ -1013,9 +1011,8 @@ static bool monster_turn_can_move(struct chunk *c, struct monster *mon,
  * Try to break a glyph.
  */
 static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
-								  int nx, int ny)
+									  struct loc new)
 {
-	struct loc new = loc(nx, ny);
 	assert(square_iswarded(c, new));
 
 	/* Break the ward */
@@ -1042,18 +1039,17 @@ static bool monster_turn_glyph(struct chunk *c, struct monster *mon,
  * Try to push past / kill another monster.  Returns true on success.
  */
 static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
-									 const char *m_name, int nx, int ny)
+									 const char *m_name, struct loc new)
 {
-	struct loc new = loc(nx, ny);
 	struct monster *mon1 = square_monster(c, new);
 	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Kill weaker monsters */
-	int kill_ok = rf_has(mon->race->flags, RF_KILL_BODY);
+	int kill_ok = monster_can_kill(c, mon, new);
 
 	/* Move weaker monsters if they can swap places */
 	/* (not in a wall) */
-	int move_ok = (rf_has(mon->race->flags, RF_MOVE_BODY) &&
+	int move_ok = (monster_can_move(c, mon, new) &&
 				   square_ispassable(c, mon->grid));
 
 	if (compare_monsters(mon, mon1) > 0) {
@@ -1079,7 +1075,7 @@ static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
 
 			/* Monster ate another monster */
 			if (kill_ok)
-				delete_monster(ny, nx);
+				delete_monster(new);
 
 			monster_swap(mon->grid, new);
 			return true;
@@ -1093,9 +1089,8 @@ static bool monster_turn_try_push(struct chunk *c, struct monster *mon,
  * Grab all objects from the grid.
  */
 void monster_turn_grab_objects(struct chunk *c, struct monster *mon,
-		const char *m_name, int nx, int ny)
+							   const char *m_name, struct loc new)
 {
-	struct loc new = loc(nx, ny);
 	struct monster_lore *lore = get_lore(mon->race);
 	struct object *obj;
 	bool visible = monster_is_visible(mon);
@@ -1243,12 +1238,12 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		}
 
 		/* Check if we can move */
-		if (!monster_turn_can_move(c, mon, m_name, new.x, new.y, &did_something))
+		if (!monster_turn_can_move(c, mon, m_name, new, &did_something))
 			continue;
 
 		/* Try to break the glyph if there is one.  This can happen multiple
 		 * times per turn because failure does not break the loop */
-		if (square_iswarded(c, new) && !monster_turn_glyph(c, mon, new.x, new.y))
+		if (square_iswarded(c, new) && !monster_turn_glyph(c, mon, new))
 			continue;
 
 		/* Break a decoy if there is one */
@@ -1295,7 +1290,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 
 		/* A monster is in the way, try to push past/kill */
 		if (square_monster(c, new)) {
-			did_something = monster_turn_try_push(c, mon, m_name, new.x, new.y);
+			did_something = monster_turn_try_push(c, mon, m_name, new);
 		} else {
 			/* Otherwise we can just move */
 			monster_swap(mon->grid, new);
@@ -1306,7 +1301,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 		if (mon == square_monster(c, new)) {
 			monster_desc(m_name, sizeof(m_name), mon,
 						 MDESC_CAPITAL | MDESC_IND_HID);
-			monster_turn_grab_objects(c, mon, m_name, new.x, new.y);
+			monster_turn_grab_objects(c, mon, m_name, new);
 		}
 	}
 

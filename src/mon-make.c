@@ -189,9 +189,8 @@ void delete_monster_idx(int m_idx)
 /**
  * Deletes the monster, if any, at the given location.
  */
-void delete_monster(int y, int x)
+void delete_monster(struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	assert(square_in_bounds(cave, grid));
 
 	/* Delete the monster (if any) */
@@ -307,7 +306,7 @@ void compact_monsters(int num_to_compact)
 			if (randint0(100) < chance) continue;
 
 			/* Delete the monster */
-			delete_monster(mon->grid.y, mon->grid.x);
+			delete_monster(mon->grid);
 
 			/* Count the monster */
 			num_compacted++;
@@ -837,12 +836,11 @@ void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
  *
  * Returns the m_idx of the newly copied monster, or 0 if the placement fails.
  */
-s16b place_monster(struct chunk *c, int y, int x, struct monster *mon,
+s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 				   byte origin)
 {
 	s16b m_idx;
 	struct monster *new_mon;
-	struct loc grid = loc(x, y);
 
 	assert(square_in_bounds(c, grid));
 	assert(!square_monster(c, grid));
@@ -937,7 +935,7 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
  * except for the savefile loading code, which calls place_monster()
  * directly.
  */
-static bool place_new_monster_one(struct chunk *c, int y, int x,
+static bool place_new_monster_one(struct chunk *c, struct loc grid,
 								  struct monster_race *race, bool sleep,
 								  byte origin)
 {
@@ -945,7 +943,6 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 
 	struct monster *mon;
 	struct monster monster_body;
-	struct loc grid = loc(x, y);
 
 	assert(square_in_bounds(c, grid));
 	assert(race && race->name);
@@ -1049,7 +1046,7 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
 		mon->attr = randint1(BASIC_COLORS - 1);
 
 	/* Place the monster in the dungeon */
-	if (!place_monster(c, y, x, mon, origin))
+	if (!place_monster(c, grid, mon, origin))
 		return (false);
 
 	/* Success */
@@ -1073,45 +1070,37 @@ static bool place_new_monster_one(struct chunk *c, int y, int x,
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
  * ORIGIN_DROP_PIT, etc.)
  */
-static bool place_new_monster_group(struct chunk *c, int y, int x,
+static bool place_new_monster_group(struct chunk *c, struct loc grid,
 									struct monster_race *race, bool sleep,
 									int total, byte origin)
 {
 	int n, i;
 
-	int hack_n;
+	int loc_num;
 
-	/* x and y coordinates of the placed monsters */
-	byte hack_y[GROUP_MAX];
-	byte hack_x[GROUP_MAX];
+	/* Locations of the placed monsters */
+	struct loc loc_list[GROUP_MAX];
 
 	assert(race);
 
 	/* Start on the monster */
-	hack_n = 1;
-	hack_x[0] = x;
-	hack_y[0] = y;
+	loc_num = 1;
+	loc_list[0] = grid;
 
 	/* Puddle monsters, breadth first, up to total */
-	for (n = 0; (n < hack_n) && (hack_n < total); n++) {
-		/* Grab the location */
-		int hx = hack_x[n];
-		int hy = hack_y[n];
-
+	for (n = 0; (n < loc_num) && (loc_num < total); n++) {
 		/* Check each direction, up to total */
-		for (i = 0; (i < 8) && (hack_n < total); i++) {
-			int mx = hx + ddx_ddd[i];
-			int my = hy + ddy_ddd[i];
+		for (i = 0; (i < 8) && (loc_num < total); i++) {
+			struct loc try = loc_sum(loc_list[n], ddgrid_ddd[i]);
 
 			/* Walls and Monsters block flow */
-			if (!square_isempty(c, loc(mx, my))) continue;
+			if (!square_isempty(c, try)) continue;
 
 			/* Attempt to place another monster */
-			if (place_new_monster_one(c, my, mx, race, sleep, origin)) {
+			if (place_new_monster_one(c, try, race, sleep, origin)){
 				/* Add it to the "hack" set */
-				hack_y[hack_n] = my;
-				hack_x[hack_n] = mx;
-				hack_n++;
+				loc_list[loc_num] = try;
+				loc_num++;
 			}
 		}
 	}
@@ -1147,11 +1136,10 @@ static bool place_monster_base_okay(struct monster_race *race)
 /**
  * Helper function to place monsters that appear as friends or escorts
  */
- bool place_friends(struct chunk *c, int y, int x, struct monster_race *race,
+bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 					struct monster_race *friends_race, int total, bool sleep,
 					byte origin)
- {
-	struct loc grid = loc(x, y);
+{
 	int extra_chance;
 
 	/* Find the difference between current dungeon depth and monster level */
@@ -1186,11 +1174,10 @@ static bool place_monster_base_okay(struct monster_race *race)
 	if (total > 0) {
 		/* Handle friends same as original monster */
 		if (race->ridx == friends_race->ridx) {
-			return place_new_monster_group(c, grid.y, grid.x, race, sleep,
-										   total, origin);
+			return place_new_monster_group(c, grid, race, sleep, total, origin);
 		} else {
 			int j;
-			struct loc new = loc(0, 0);
+			struct loc new;
 
 			/* Find a nearby place to put the other groups */
 			for (j = 0; j < 50; j++) {
@@ -1201,11 +1188,11 @@ static bool place_monster_base_okay(struct monster_race *race)
 			}
 
 			/* Place the monsters */
-			bool success = place_new_monster_one(c, new.y, new.x, friends_race,
-												 sleep, origin);
+			bool success = place_new_monster_one(c, new, friends_race, sleep,
+												 origin);
 			if (total > 1)
-				success = place_new_monster_group(c, new.y, new.x, friends_race,
-												  sleep, total, origin);
+				success = place_new_monster_group(c, new, friends_race, sleep,
+												  total, origin);
 
 			return success;
 		}
@@ -1227,8 +1214,9 @@ static bool place_monster_base_okay(struct monster_race *race)
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
  * ORIGIN_DROP_PIT, etc.)
  */
-bool place_new_monster(struct chunk *c, int y, int x, struct monster_race *race,
-					   bool sleep, bool group_okay, byte origin)
+bool place_new_monster(struct chunk *c, struct loc grid,
+					   struct monster_race *race, bool sleep, bool group_ok,
+					   byte origin)
 {
 	struct monster_friends *friends;
 	struct monster_friends_base *friends_base;
@@ -1238,10 +1226,10 @@ bool place_new_monster(struct chunk *c, int y, int x, struct monster_race *race,
 	assert(race);
 
 	/* Place one monster, or fail */
-	if (!place_new_monster_one(c, y, x, race, sleep, origin)) return (false);
+	if (!place_new_monster_one(c, grid, race, sleep, origin)) return (false);
 
 	/* We're done unless the group flag is set */
-	if (!group_okay) return (true);
+	if (!group_ok) return (true);
 
 	/* Go through friends flags */
 	for (friends = race->friends; friends; friends = friends->next) {
@@ -1251,7 +1239,7 @@ bool place_new_monster(struct chunk *c, int y, int x, struct monster_race *race,
 		/* Calculate the base number of monsters to place */
 		total = damroll(friends->number_dice, friends->number_side);
 
-		place_friends(c, y, x, race, friends->race, total, sleep, origin);
+		place_friends(c, grid, race, friends->race, total, sleep, origin);
 
 	}
 
@@ -1281,7 +1269,7 @@ bool place_new_monster(struct chunk *c, int y, int x, struct monster_race *race,
 		/* Handle failure */
 		if (!friends_race) break;
 
-		place_friends(c, y, x, race, friends_race, total, sleep, origin);
+		place_friends(c, grid, race, friends_race, total, sleep, origin);
 	}
 
 	/* Success */
@@ -1305,13 +1293,13 @@ bool place_new_monster(struct chunk *c, int y, int x, struct monster_race *race,
  *
  * Returns true if we successfully place a monster.
  */
-bool pick_and_place_monster(struct chunk *c, int y, int x, int depth,
+bool pick_and_place_monster(struct chunk *c, struct loc grid, int depth,
 							bool sleep, bool group_okay, byte origin)
 {
 	/* Pick a monster race */
 	struct monster_race *race = get_mon_num(depth);
 	if (race) {
-		return place_new_monster(c, y, x, race, sleep, group_okay, origin);
+		return place_new_monster(c, grid, race, sleep, group_okay, origin);
 	} else {
 		return false;
 	}
@@ -1360,7 +1348,7 @@ bool pick_and_place_distant_monster(struct chunk *c, struct player *p, int dis,
 	}
 
 	/* Attempt to place the monster, allow groups */
-	if (pick_and_place_monster(c, grid.y, grid.x, depth, sleep, true, ORIGIN_DROP))
+	if (pick_and_place_monster(c, grid, depth, sleep, true, ORIGIN_DROP))
 		return (true);
 
 	/* Nope */

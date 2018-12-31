@@ -1606,7 +1606,7 @@ static void do_cmd_wiz_named(struct monster_race *r, bool slp)
 		if (!square_isempty(cave, grid)) continue;
 
 		/* Place it (allow groups) */
-		if (place_new_monster(cave, grid.y, grid.x, r, slp, true,
+		if (place_new_monster(cave, grid, r, slp, true,
 							  ORIGIN_DROP_WIZARD)) {
 			break;
 		}

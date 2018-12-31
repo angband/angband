@@ -171,7 +171,7 @@ bool match_monster_bases(const struct monster_base *base, ...)
  * Analyse the path from player to infravision-seen monster and forget any
  * grids which would have blocked line of sight
  */
-static void path_analyse(struct chunk *c, int y, int x)
+static void path_analyse(struct chunk *c, struct loc grid)
 {
 	int path_n, i;
 	struct loc path_g[256];
@@ -181,7 +181,7 @@ static void path_analyse(struct chunk *c, int y, int x)
 	}
 
 	/* Plot the path. */
-	path_n = project_path(path_g, z_info->max_range, player->grid, loc(x, y),
+	path_n = project_path(path_g, z_info->max_range, player->grid, grid,
 						  PROJECT_NONE);
 
 	/* Project along the path */
@@ -259,9 +259,6 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 	int d;
 
-	/* Current location */
-	int fy, fx;
-
 	/* If still generating the level, measure distances from the middle */
 	struct loc pgrid = character_dungeon ? player->grid :
 		loc(c->width / 2, c->height / 2);
@@ -284,17 +281,14 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 	lore = get_lore(mon->race);
 	
-	fy = mon->grid.y;
-	fx = mon->grid.x;
-
 	/* Compute distance, or just use the current one */
 	if (full) {
 		/* Distance components */
-		int dy = (pgrid.y > fy) ? (pgrid.y - fy) : (fy - pgrid.y);
-		int dx = (pgrid.x > fx) ? (pgrid.x - fx) : (fx - pgrid.x);
+		int dy = ABS(pgrid.y - mon->grid.y);
+		int dx = ABS(pgrid.x - mon->grid.x);
 
 		/* Approximate distance */
-		d = (dy > dx) ? (dy + (dx>>1)) : (dx + (dy>>1));
+		d = (dy > dx) ? (dy + (dx >>  1)) : (dx + (dy >> 1));
 
 		/* Restrict distance */
 		if (d > 255) d = 255;
@@ -373,7 +367,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			}
 
 			/* Learn about intervening squares */
-			path_analyse(c, fy, fx);
+			path_analyse(c, mon->grid);
 		}
 	}
 
@@ -725,12 +719,12 @@ void update_smart_learn(struct monster *mon, struct player *p, int flag,
  * an injured monster with the same base kind in LOS and less than
  * MAX_KIN_DISTANCE away.
  */
-static struct monster *get_injured_kin(struct chunk *c, const struct monster *mon, int x, int y)
+static struct monster *get_injured_kin(struct chunk *c,
+									   const struct monster *mon,
+									   struct loc grid)
 {
-	struct loc grid = loc(x, y);
-
 	/* Ignore the monster itself */
-	if (y == mon->grid.y && x == mon->grid.x)
+	if (loc_eq(grid, mon->grid))
 		return NULL;
 
 	/* Check kin */
@@ -763,9 +757,12 @@ static struct monster *get_injured_kin(struct chunk *c, const struct monster *mo
  */
 bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon)
 {
-	for (int y = mon->grid.y - MAX_KIN_RADIUS; y <= mon->grid.y + MAX_KIN_RADIUS; y++) {
-		for (int x = mon->grid.x - MAX_KIN_RADIUS; x <= mon->grid.x + MAX_KIN_RADIUS; x++) {
-			if (get_injured_kin(c, mon, x, y) != NULL) {
+	struct loc grid;
+	for (grid.y = mon->grid.y - MAX_KIN_RADIUS;
+		 grid.y <= mon->grid.y + MAX_KIN_RADIUS; grid.y++) {
+		for (grid.x = mon->grid.x - MAX_KIN_RADIUS;
+			 grid.x <= mon->grid.x + MAX_KIN_RADIUS; grid.x++) {
+			if (get_injured_kin(c, mon, grid) != NULL) {
 				return true;
 			}
 		}
@@ -780,13 +777,17 @@ bool find_any_nearby_injured_kin(struct chunk *c, const struct monster *mon)
  * Scan MAX_KIN_RADIUS grids around the monster to find potential grids,
  * make a list of kin, and choose a random one.
  */
-struct monster *choose_nearby_injured_kin(struct chunk *c, const struct monster *mon)
+struct monster *choose_nearby_injured_kin(struct chunk *c,
+										  const struct monster *mon)
 {
 	struct set *set = set_new();
+	struct loc grid;
 
-	for (int y = mon->grid.y - MAX_KIN_RADIUS; y <= mon->grid.y + MAX_KIN_RADIUS; y++) {
-		for (int x = mon->grid.x - MAX_KIN_RADIUS; x <= mon->grid.x + MAX_KIN_RADIUS; x++) {
-			struct monster *kin = get_injured_kin(c, mon, x, y);
+	for (grid.y = mon->grid.y - MAX_KIN_RADIUS;
+		 grid.y <= mon->grid.y + MAX_KIN_RADIUS; grid.y++) {
+		for (grid.x = mon->grid.x - MAX_KIN_RADIUS;
+			 grid.x <= mon->grid.x + MAX_KIN_RADIUS; grid.x++) {
+			struct monster *kin = get_injured_kin(c, mon, grid);
 			if (kin != NULL) {
 				set_add(set, kin);
 			}

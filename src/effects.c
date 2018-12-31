@@ -2487,8 +2487,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 			int temp;
 
 			/* Get a monster */
-			temp = summon_specific(mon->grid.y, mon->grid.x, rlev + level_boost,
-					summon_type, false, false);
+			temp = summon_specific(mon->grid, rlev + level_boost, summon_type,
+								   false, false);
 
 			val += temp * temp;
 
@@ -2507,8 +2507,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 				int temp;
 
 				/* Get a monster */
-				temp = summon_specific(mon->grid.y, mon->grid.x, rlev + level_boost,
-						fallback_type, false, false);
+				temp = summon_specific(mon->grid, rlev + level_boost,
+									   fallback_type, false, false);
 
 				val += temp * temp;
 
@@ -2527,8 +2527,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	} else {
 		/* If not a monster summon, it's simple */
 		while (summon_max) {
-			count += summon_specific(player->grid.y, player->grid.x,
-					player->depth + level_boost, summon_type, true, false);
+			count += summon_specific(player->grid, player->depth + level_boost,
+									 summon_type, true, false);
 			summon_max--;
 		}
 	}
@@ -3125,7 +3125,7 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 			if (loc_eq(grid, player->grid)) continue;
 
 			/* Delete the monster (if any) */
-			delete_monster(grid.y, grid.x);
+			delete_monster(grid);
 
 			/* Don't remove stairs */
 			if (square_isstairs(cave, grid)) continue;
@@ -3422,7 +3422,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 					/* Delete (not kill) "dead" monsters */
 					if (mon->hp < 0) {
 						/* Delete the monster */
-						delete_monster(grid.y, grid.x);
+						delete_monster(grid);
 
 						/* No longer safe */
 						safe_grids = 0;

@@ -1278,7 +1278,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					/* An ordinary monster, object (sometimes good), or trap. */
 				case '1': {
 					if (one_in_(2)) {
-						pick_and_place_monster(c, grid.y, grid.x, c->depth , true, true,
+						pick_and_place_monster(c, grid, c->depth , true, true,
 											   ORIGIN_DROP_VAULT);
 					} else if (one_in_(2)) {
 						place_object(c, grid, c->depth,
@@ -1290,14 +1290,14 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					break;
 				}
 					/* Slightly out of depth monster. */
-				case '2': pick_and_place_monster(c, grid.y, grid.x, c->depth + 5, true, true, ORIGIN_DROP_VAULT); break;
+				case '2': pick_and_place_monster(c, grid, c->depth + 5, true, true, ORIGIN_DROP_VAULT); break;
 					/* Slightly out of depth object. */
 				case '3': place_object(c, grid, c->depth + 3, false, false, 
 									   ORIGIN_VAULT, 0); break;
 					/* Monster and/or object */
 				case '4': {
 					if (one_in_(2))
-						pick_and_place_monster(c, grid.y, grid.x, c->depth + 3, true, 
+						pick_and_place_monster(c, grid, c->depth + 3, true, 
 											   true, ORIGIN_DROP_VAULT);
 					if (one_in_(2))
 						place_object(c, grid, c->depth + 7, false, false,
@@ -1308,15 +1308,15 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				case '5': place_object(c, grid, c->depth + 7, false, false,
 									   ORIGIN_VAULT, 0); break;
 					/* Out of depth monster. */
-				case '6': pick_and_place_monster(c, grid.y, grid.x, c->depth + 11, true, true, ORIGIN_DROP_VAULT); break;
+				case '6': pick_and_place_monster(c, grid, c->depth + 11, true, true, ORIGIN_DROP_VAULT); break;
 					/* Very out of depth object. */
 				case '7': place_object(c, grid, c->depth + 15, false, false,
 									   ORIGIN_VAULT, 0); break;
 					/* Very out of depth monster. */
-				case '0': pick_and_place_monster(c, grid.y, grid.x, c->depth + 20, true, true, ORIGIN_DROP_VAULT); break;
+				case '0': pick_and_place_monster(c, grid, c->depth + 20, true, true, ORIGIN_DROP_VAULT); break;
 					/* Meaner monster, plus treasure */
 				case '9': {
-					pick_and_place_monster(c, grid.y, grid.x, c->depth + 9, true, true,
+					pick_and_place_monster(c, grid, c->depth + 9, true, true,
 										   ORIGIN_DROP_VAULT);
 					place_object(c, grid, c->depth + 7, true, false,
 								 ORIGIN_VAULT, 0);
@@ -1324,7 +1324,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				}
 					/* Nasty monster and treasure */
 				case '8': {
-					pick_and_place_monster(c, grid.y, grid.x, c->depth + 40, true, true,
+					pick_and_place_monster(c, grid, c->depth + 40, true, true,
 										   ORIGIN_DROP_VAULT);
 					place_object(c, grid, c->depth + 20, true, true,
 								 ORIGIN_VAULT, 0);
@@ -2276,7 +2276,7 @@ bool build_nest(struct chunk *c, int y0, int x0, int rating)
 		for (x = x1; x <= x2; x++) {
 			/* Figure out what monster is being used, and place that monster */
 			struct monster_race *race = what[randint0(64)];
-			place_new_monster(c, y, x, race, false, false, ORIGIN_DROP_PIT);
+			place_new_monster(c, loc(x, y), race, false, false, ORIGIN_DROP_PIT);
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
@@ -2413,58 +2413,82 @@ bool build_pit(struct chunk *c, int y0, int x0, int rating)
 	/* Increase the level rating */
 	c->mon_rating += (3 + dun->pit_type->ave / 20);
 
+	place_new_monster(c, loc(x0, y0), what[7], false, false, ORIGIN_DROP_PIT);
+
 	/* Top and bottom rows (middle) */
 	for (x = x0 - 3; x <= x0 + 3; x++) {
-		place_new_monster(c, y0 - 2, x, what[0], false, false, ORIGIN_DROP_PIT);
-		place_new_monster(c, y0 + 2, x, what[0], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x, y0 - 2), what[0], false, false,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x, y0 + 2), what[0], false, false,
+						  ORIGIN_DROP_PIT);
 	}
     
 	/* Corners */
 	for (x = x0 - 5; x <= x0 - 4; x++) {
-		place_new_monster(c, y0 - 2, x, what[1], false, false, ORIGIN_DROP_PIT);
-		place_new_monster(c, y0 + 2, x, what[1], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x, y0 - 2), what[1], false, false,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x, y0 + 2), what[1], false, false,
+						  ORIGIN_DROP_PIT);
 	}
     
 	for (x = x0 + 4; x <= x0 + 5; x++) {
-		place_new_monster(c, y0 - 2, x, what[1], false, false, ORIGIN_DROP_PIT);
-		place_new_monster(c, y0 + 2, x, what[1], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x, y0 - 2), what[1], false, false,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x, y0 + 2), what[1], false, false,
+						  ORIGIN_DROP_PIT);
 	}
     
 	/* Corners */
 
 	/* Middle columns */
 	for (y = y0 - 1; y <= y0 + 1; y++) {
-		place_new_monster(c, y, x0 - 5, what[0], false, false, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 5, what[0], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x0 - 5, y), what[0], false, false,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x0 + 5, y), what[0], false, false,
+						  ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 4, what[1], false, false, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 4, what[1], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x0 - 4, y), what[1], false, false,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x0 + 4, y), what[1], false, false,
+						  ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 3, what[2], false, false, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 3, what[2], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x0 - 3, y), what[2], false, false,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x0 + 3, y), what[2], false, false,
+						  ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 2, what[3], false, false, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 2, what[3], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x0 - 2, y), what[3], false, false,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x0 + 2, y), what[3], false, false,
+						  ORIGIN_DROP_PIT);
 	}
     
 	/* Corners around the middle monster */
-	place_new_monster(c, y0 - 1, x0 - 1, what[4], false, false, ORIGIN_DROP_PIT);
-	place_new_monster(c, y0 - 1, x0 + 1, what[4], false, false, ORIGIN_DROP_PIT);
-	place_new_monster(c, y0 + 1, x0 - 1, what[4], false, false, ORIGIN_DROP_PIT);
-	place_new_monster(c, y0 + 1, x0 + 1, what[4], false, false, ORIGIN_DROP_PIT);
+	place_new_monster(c, loc(x0 - 1, y0 - 1), what[4], false, false,
+					  ORIGIN_DROP_PIT);
+	place_new_monster(c, loc(x0 + 1, y0 - 1), what[4], false, false,
+					  ORIGIN_DROP_PIT);
+	place_new_monster(c, loc(x0 - 1, y0 + 1),  what[4], false, false,
+					  ORIGIN_DROP_PIT);
+	place_new_monster(c, loc(x0 + 1, y0 + 1), what[4], false, false,
+					  ORIGIN_DROP_PIT);
 
 	/* Above/Below the center monster */
 	for (x = x0 - 1; x <= x0 + 1; x++) {
-		place_new_monster(c, y0 + 1, x, what[5], false, false, ORIGIN_DROP_PIT);
-		place_new_monster(c, y0 - 1, x, what[5], false, false, ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x, y0 + 1), what[5], false, false,
+						  ORIGIN_DROP_PIT);
+		place_new_monster(c, loc(x, y0 - 1), what[5], false, false,
+						  ORIGIN_DROP_PIT);
 	}
 
 	/* Next to the center monster */
-	place_new_monster(c, y0, x0 + 1, what[6], false, false, ORIGIN_DROP_PIT);
-	place_new_monster(c, y0, x0 - 1, what[6], false, false, ORIGIN_DROP_PIT);
+	place_new_monster(c, loc(x0 + 1, y0), what[6], false, false,
+					  ORIGIN_DROP_PIT);
+	place_new_monster(c, loc(x0 - 1, y0), what[6], false, false,
+					  ORIGIN_DROP_PIT);
 
 	/* Center monster */
-	place_new_monster(c, y0, x0, what[7], false, false, ORIGIN_DROP_PIT);
+	place_new_monster(c, loc(x0, y0), what[7], false, false, ORIGIN_DROP_PIT);
 
 	/* Place some objects */
 	for (y = y0 - 2; y <= y0 + 2; y++) {
