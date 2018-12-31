@@ -108,26 +108,26 @@ byte get_angle_to_grid[41][41] =
 
 
 /**
- * Used to convert (x, y) into an array index (i) in a chunk of width w.
- * \param y co-ordinates
- * \param x co-ordinates
+ * Used to convert grid into an array index (i) in a chunk of width w.
+ * \param grid location
  * \param w area width
- * \return grid index
+ * \return index
  */
-int yx_to_i(int y, int x, int w) {
-    return y * w + x;
+int grid_to_i(struct loc grid, int w)
+{
+    return grid.y * w + grid.x;
 }
 
 /**
- * Used to convert an array index (i) into (x, y) in a chunk of width w.
+ * Used to convert an array index (i) into grid in a chunk of width w.
  * \param i grid index
  * \param w area width
- * \param y co-ordinates
- * \param x co-ordinates
+ * \param grid location
  */
-void i_to_yx(int i, int w, int *y, int *x) {
-    *y = i / w;
-    *x = i % w;
+void i_to_grid(int i, int w, struct loc *grid)
+{
+    grid->y = i / w;
+    grid->x = i % w;
 }
 
 /**
@@ -278,41 +278,36 @@ bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, i
 
 /**
  * Given two points, pick a valid cardinal direction from one to the other.
- * \param rdir found row change (up or down)
- * \param cdir found column change (left or right)
- * \param y1 starting co-ordinates
- * \param x1 starting co-ordinates
- * \param y2 target co-ordinates
- * \param x2 target co-ordinates
+ * \param offset found offset direction from grid 1 to grid2
+ * \param grid1 starting grid
+ * \param grid2 target grid
  */
-void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2)
+void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2)
 {
-    /* Extract vertical and horizontal directions */
-    *rdir = CMP(y2, y1);
-    *cdir = CMP(x2, x1);
+    /* Extract horizontal and vertical directions */
+    offset->x = CMP(grid2.x, grid1.x);
+	offset->y = CMP(grid2.y, grid1.y);
 
     /* If we only have one direction to go, then we're done */
-    if (!*rdir || !*cdir) return;
+    if (!offset->x || !offset->y) return;
 
     /* If we need to go diagonally, then choose a random direction */
     if (randint0(100) < 50)
-		*rdir = 0;
+		offset->y = 0;
     else
-		*cdir = 0;
+		offset->x = 0;
 }
 
 
 /**
  * Pick a random cardinal direction.
- * \param rdir direction co-ordinates
- * \param cdir direction co-ordinates
+ * \param offset direction offset
  */
-void rand_dir(int *rdir, int *cdir)
+void rand_dir(struct loc *offset)
 {
     /* Pick a random direction and extract the dy/dx components */
     int i = randint0(4);
-    *rdir = ddy_ddd[i];
-    *cdir = ddx_ddd[i];
+    *offset = ddgrid_ddd[i];
 }
 
 

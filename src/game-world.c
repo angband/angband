@@ -395,17 +395,17 @@ static void make_noise(struct player *p)
 
 	/* Player makes noise */
 	cave->noise.grids[next.y][next.x] = noise;
-	q_push_int(queue, yx_to_i(next.y, next.x, cave->width));
+	q_push_int(queue, grid_to_i(next, cave->width));
 	noise++;
 
 	/* Propagate noise */
 	while (q_len(queue) > 0) {
 		/* Get the next grid */
-		i_to_yx(q_pop_int(queue), cave->width, &(next.y), &(next.x));
+		i_to_grid(q_pop_int(queue), cave->width, &next);
 
 		/* If we've reached the current noise level, put it back and step */
 		if (cave->noise.grids[next.y][next.x] == noise) {
-			q_push_int(queue, yx_to_i(next.y, next.x, cave->width));
+			q_push_int(queue, grid_to_i(next, cave->width));
 			noise++;
 			continue;
 		}
@@ -430,7 +430,7 @@ static void make_noise(struct player *p)
 			cave->noise.grids[grid.y][grid.x] = noise;
 
 			/* Enqueue that entry */
-			q_push_int(queue, yx_to_i(grid.y, grid.x, cave->width));
+			q_push_int(queue, grid_to_i(grid, cave->width));
 		}
 	}
 

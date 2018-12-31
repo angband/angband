@@ -1628,13 +1628,13 @@ bool build_circular(struct chunk *c, int y0, int x0, int rating)
 	/* Especially large circular rooms will have a middle chamber */
 	if (radius - 4 > 0 && randint0(4) < radius - 4) {
 		/* choose a random direction */
-		int cd, rd;
-		rand_dir(&rd, &cd);
+		struct loc offset;
+		rand_dir(&offset);
 
 		/* draw a room with a closed door on a random side */
 		draw_rectangle(c, y0 - 2, x0 - 2, y0 + 2, x0 + 2,
 					   FEAT_GRANITE, SQUARE_WALL_INNER);
-		place_closed_door(c, y0 + cd * 2, x0 + rd * 2);
+		place_closed_door(c, y0 + offset.y * 2, x0 + offset.x * 2);
 
 		/* Place a treasure in the vault */
 		vault_objects(c, y0, x0, c->depth, randint0(2));

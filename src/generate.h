@@ -310,15 +310,15 @@ bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 /* gen-util.c */
 extern byte get_angle_to_grid[41][41];
 
-int yx_to_i(int y, int x, int w);
-void i_to_yx(int i, int w, int *y, int *x);
+int grid_to_i(struct loc grid, int w);
+void i_to_grid(int i, int w, struct loc *grid);
 void shuffle(int *arr, int n);
 bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred);
 bool find_empty(struct chunk *c, int *y, int *x);
 bool find_empty_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1, int x2);
 bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, int xd);
-void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2);
-void rand_dir(int *rdir, int *cdir);
+void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2);
+void rand_dir(struct loc *offset);
 void new_player_spot(struct chunk *c, struct player *p);
 void place_object(struct chunk *c, int y, int x, int level, bool good,
 				  bool great, byte origin, int tval);
