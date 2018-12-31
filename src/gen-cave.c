@@ -121,7 +121,7 @@ static void build_streamer(struct chunk *c, int feat, int chance)
 			int d = dun->profile->str.rng;
 
 			/* Pick a nearby grid */
-			find_nearby_grid(c, &(change.y), grid.y, d, &(change.x), grid.x, d);
+			find_nearby_grid(c, &change, grid, d, d);
 
 			/* Only convert walls */
 			if (square_isrock(c, change)) {
@@ -321,7 +321,7 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 
 		/* Place a random door */
 		if (randint0(100) < dun->profile->tun.pen)
-			place_random_door(c, dun->wall[i].y, dun->wall[i].x);
+			place_random_door(c, dun->wall[i]);
     }
 }
 
@@ -395,7 +395,7 @@ static void try_door(struct chunk *c, struct loc grid)
     if (square_isdoor(c, grid)) return;
 
     if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, grid))
-		place_random_door(c, grid.y, grid.x);
+		place_random_door(c, grid);
     else if (randint0(500) < dun->profile->tun.jct && possible_doorway(c, grid))
 		place_trap(c, grid, -1, c->depth);
 }
@@ -763,12 +763,11 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
     for (i = n / 100; i > 0; i--) {
 		/* Try 10 times to find a useful place for a door, then place it */
 		for (j = 0; j < 10; j++) {
-			find_empty(c, &(grid.y), &(grid.x));
+			find_empty(c, &grid);
 			if (lab_is_tunnel(c, grid)) break;
 
 		}
-
-		place_closed_door(c, grid.y, grid.x);
+		place_closed_door(c, grid);
     }
 
     /* Unlit labyrinths will have some good items */
@@ -797,9 +796,9 @@ struct chunk *labyrinth_chunk(int depth, int h, int w, bool lit, bool soft)
  * labyrinths than others).
  */
 struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
-    int i, k, y, x;
+    int i, k;
 	struct chunk *c;
-
+	struct loc grid;
     /* Size of the actual labyrinth part must be odd. */
     /* NOTE: these are not the actual dungeon size, but rather the size of the
      * area we're generating a labyrinth in (which doesn't count the enclosing
@@ -832,11 +831,11 @@ struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width) {
     new_player_spot(c, p);
 
     /* Generate a single set of stairs up if necessary. */
-    if (!cave_find(c, &y, &x, square_isupstairs))
+    if (!cave_find(c, &grid, square_isupstairs))
 		alloc_stairs(c, FEAT_LESS, 1);
 
     /* Generate a single set of stairs down if necessary. */
-    if (!cave_find(c, &y, &x, square_isdownstairs))
+    if (!cave_find(c, &grid, square_isdownstairs))
 		alloc_stairs(c, FEAT_MORE, 1);
 
     /* General some rubble, traps and monsters */
@@ -1477,8 +1476,8 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		/* Find an empty place */
 		while (!enough_space) {
 			bool found_non_floor = false;
-			find_empty_range(c, &(grid.y), 3, z_info->town_hgt - 3, &(grid.x), 3,
-							 z_info->town_wid - 3);
+			find_empty_range(c, &grid, loc(3, 3),
+							 loc(z_info->town_wid - 3, z_info->town_hgt - 3));
 			for (y = grid.y - 2; y <= grid.y + 2; y++)
 				for (x = grid.x - 2; x <= grid.x + 2; x++)
 					if (!square_isfloor(c, loc(x, y)))
@@ -1499,8 +1498,8 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		/* Find an empty place */
 		while (!enough_space) {
 			bool found_non_floor = false;
-			find_empty_range(c, &(grid.y), 3, z_info->town_hgt - 3, &(grid.x), 3,
-							 z_info->town_wid - 3);
+			find_empty_range(c, &grid, loc(3, 3),
+							 loc(z_info->town_wid - 3, z_info->town_hgt - 3));
 			for (y = grid.y - 2; y <= grid.y + 2; y++)
 				for (x = grid.x - 2; x <= grid.x + 2; x++)
 					if (!square_isfloor(c, loc(x, y)))
@@ -2169,14 +2168,15 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 
 	/* Left */
 	chunk_copy(c, left_cavern, 0, 0, 0, false);
-	find_empty_range(c, &(grid.y), 0, z_info->dungeon_hgt - 1, &(grid.x), 0,
-					 side_cavern_wid - 1);
+	find_empty_range(c, &grid, loc(0, 0),
+					 loc(side_cavern_wid - 1, z_info->dungeon_hgt - 1));
 	floor[0] = grid;
 
 	/* Upper */
 	chunk_copy(c, upper_cavern, 0, side_cavern_wid, 0, false);
-	find_empty_range(c, &(grid.y), 0, centre_cavern_hgt - 1, &(grid.x), side_cavern_wid,
-					 side_cavern_wid + centre_cavern_wid - 1);
+	find_empty_range(c, &grid, loc(0, 0),
+					 loc(side_cavern_wid + centre_cavern_wid - 1,
+						 centre_cavern_hgt - 1));
 	floor[1] = grid;
 
 	/* Centre */
@@ -2184,16 +2184,16 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width)
 
 	/* Lower */
 	chunk_copy(c, lower_cavern, lower_cavern_ypos, side_cavern_wid, 0, false);
-	find_empty_range(c, &(grid.y), lower_cavern_ypos, z_info->dungeon_hgt - 1, &(grid.x),
-					 side_cavern_wid, side_cavern_wid + centre_cavern_wid - 1);
+	find_empty_range(c, &grid, loc(side_cavern_wid, lower_cavern_ypos),
+					 loc(side_cavern_wid + centre_cavern_wid - 1,
+						 z_info->dungeon_hgt - 1));
 	floor[3] = grid;
 
 	/* Right */
 	chunk_copy(c, right_cavern, 0, side_cavern_wid + centre_cavern_wid, 0,
 			   false);
-	find_empty_range(c, &(grid.y), 0, z_info->dungeon_hgt - 1, &(grid.x),
-					 side_cavern_wid + centre_cavern_wid,
-					 z_info->dungeon_wid - 1);
+	find_empty_range(c, &grid, loc(side_cavern_wid + centre_cavern_wid, 0),
+					 loc(z_info->dungeon_wid - 1, z_info->dungeon_hgt - 1));
 	floor[2] = grid;
 
 	/* Encase in perma-rock */

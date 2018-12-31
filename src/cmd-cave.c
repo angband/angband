@@ -522,7 +522,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			/* Place an object (except in town) */
 			if ((randint0(100) < 10) && player->depth) {
 				/* Create a simple object */
-				place_object(cave, grid.y, grid.x, player->depth, false, false,
+				place_object(cave, grid, player->depth, false, false,
 							 ORIGIN_RUBBLE, 0);
 
 				/* Observe the new object */
@@ -532,7 +532,7 @@ static bool do_cmd_tunnel_aux(struct loc grid)
 			} 
 		} else if (gold) {
 			/* Found treasure */
-			place_gold(cave, grid.y, grid.x, player->depth, ORIGIN_FLOOR);
+			place_gold(cave, grid, player->depth, ORIGIN_FLOOR);
 			msg("You have found something!");
 		} else {
 			msg("You have finished the tunnel.");

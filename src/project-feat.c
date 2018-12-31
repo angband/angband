@@ -115,7 +115,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 				msg("There was something buried in the rubble!");
 				context->obvious = true;
 			}
-			place_object(cave, grid.y, grid.x, player->depth, false, false,
+			place_object(cave, grid, player->depth, false, false,
 						 ORIGIN_RUBBLE, 0);
 		}
 	} else if (square_isdoor(cave, grid)) {
@@ -145,7 +145,7 @@ static void project_feature_handler_KILL_WALL(project_feature_handler_context_t 
 		square_destroy_wall(cave, grid);
 
 		/* Place some gold */
-		place_gold(cave, grid.y, grid.x, player->depth, ORIGIN_FLOOR);
+		place_gold(cave, grid, player->depth, ORIGIN_FLOOR);
 	} else if (square_ismagma(cave, grid) || square_isquartz(cave, grid)) {
 		/* Message */
 		if (square_isseen(cave, grid)) {
@@ -208,7 +208,7 @@ static void project_feature_handler_KILL_TRAP(project_feature_handler_context_t 
 
 	/* Reveal secret doors */
 	if (square_issecretdoor(cave, grid)) {
-		place_closed_door(cave, grid.y, grid.x);
+		place_closed_door(cave, grid);
 
 		/* Check line of sight */
 		if (square_isseen(cave, grid))

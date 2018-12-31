@@ -1013,7 +1013,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			switch (*t) {
 			case '%': set_marked_granite(c, grid.y, grid.x, SQUARE_WALL_OUTER); break;
 			case '#': set_marked_granite(c, grid.y, grid.x, SQUARE_WALL_SOLID); break;
-			case '+': place_closed_door(c, grid.y, grid.x); break;
+			case '+': place_closed_door(c, grid); break;
 			case '^': if (one_in_(4)) place_trap(c, grid, -1, c->depth); break;
 			case 'x': {
 
@@ -1026,13 +1026,13 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 
 				/* If optional walls are generated, put a door in this square */
 				if (rndwalls)
-					place_secret_door(c, grid.y, grid.x);
+					place_secret_door(c, grid);
 				break;
 			}
 			case ')': {
 				/* If no optional walls generated, put a door in this square */
 				if (!rndwalls)
-					place_secret_door(c, grid.y, grid.x);
+					place_secret_door(c, grid);
 				else
 					set_marked_granite(c, grid.y, grid.x, SQUARE_WALL_SOLID);
 				break;
@@ -1042,30 +1042,35 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 				/* Put something nice in this square
 				 * Object (80%) or Stairs (20%) */
 				if ((randint0(100) < 80) || OPT(player, birth_levels_persist))
-					place_object(c, grid.y, grid.x, c->depth, false, false, ORIGIN_SPECIAL, 0);
+					place_object(c, grid, c->depth, false, false,
+								 ORIGIN_SPECIAL, 0);
 				else
-					place_random_stairs(c, grid.y, grid.x);
+					place_random_stairs(c, grid);
 
 				/* Some monsters to guard it */
-				vault_monsters(c, grid.y, grid.x, c->depth + 2, randint0(2) + 3);
+				vault_monsters(c, grid, c->depth + 2, randint0(2) + 3);
 
 				break;
 			}
 			case '9': {
-
 				/* Create some interesting stuff nearby */
+				struct loc off2 = loc(2, -2);
+				struct loc off3 = loc(3, 3);
 
 				/* A few monsters */
-				vault_monsters(c, grid.y - 3, grid.x - 3, c->depth + randint0(2), randint1(2));
-				vault_monsters(c, grid.y + 3, grid.x + 3, c->depth + randint0(2), randint1(2));
+				vault_monsters(c, loc_diff(grid, off3), c->depth + randint0(2),
+							   randint1(2));
+				vault_monsters(c, loc_sum(grid, off3), c->depth + randint0(2),
+							   randint1(2));
 
 				/* And maybe a bit of treasure */
+				if (one_in_(2))
+					vault_objects(c, loc_sum(grid, off2), c->depth,
+								  1 + randint0(2));
 
 				if (one_in_(2))
-					vault_objects(c, grid.y - 2, grid.x + 2, c->depth, 1 + randint0(2));
-
-				if (one_in_(2))
-					vault_objects(c, grid.y + 2, grid.x - 2, c->depth, 1 + randint0(2));
+					vault_objects(c, loc_diff(grid, off2), c->depth,
+								  1 + randint0(2));
 
 				break;
 
@@ -1073,7 +1078,8 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 			case '[': {
 				
 				/* Place an object of the template's specified tval */
-				place_object(c, grid.y, grid.x, c->depth, false, false, ORIGIN_SPECIAL, tval);
+				place_object(c, grid, c->depth, false, false, ORIGIN_SPECIAL,
+							 tval);
 				break;
 			}
 			case '1':
@@ -1086,7 +1092,7 @@ static bool build_room_template(struct chunk *c, int y0, int x0, int ymax, int x
 				doorpos = (int) (*t - '0');
 
 				if (doorpos == rnddoors)
-					place_secret_door(c, grid.y, grid.x);
+					place_secret_door(c, grid);
 				else
 					set_marked_granite(c, grid.y, grid.x, SQUARE_WALL_SOLID);
 
@@ -1208,13 +1214,14 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				break;
 			}
 				/* Secret door */
-			case '+': place_secret_door(c, grid.y, grid.x); break;
+			case '+': place_secret_door(c, grid); break;
 				/* Trap */
 			case '^': if (one_in_(4)) place_trap(c, grid, -1, c->depth); break;
 				/* Treasure or a trap */
 			case '&': {
 				if (randint0(100) < 75) {
-					place_object(c, grid.y, grid.x, c->depth, false, false, ORIGIN_VAULT, 0);
+					place_object(c, grid, c->depth, false, false, ORIGIN_VAULT,
+								 0);
 				} else if (one_in_(4)) {
 					place_trap(c, grid, -1, c->depth);
 				}
@@ -1274,7 +1281,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 						pick_and_place_monster(c, grid.y, grid.x, c->depth , true, true,
 											   ORIGIN_DROP_VAULT);
 					} else if (one_in_(2)) {
-						place_object(c, grid.y, grid.x, c->depth,
+						place_object(c, grid, c->depth,
 									 one_in_(8) ? true : false, false,
 									 ORIGIN_VAULT, 0);
 					} else if (one_in_(4)) {
@@ -1285,7 +1292,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					/* Slightly out of depth monster. */
 				case '2': pick_and_place_monster(c, grid.y, grid.x, c->depth + 5, true, true, ORIGIN_DROP_VAULT); break;
 					/* Slightly out of depth object. */
-				case '3': place_object(c, grid.y, grid.x, c->depth + 3, false, false, 
+				case '3': place_object(c, grid, c->depth + 3, false, false, 
 									   ORIGIN_VAULT, 0); break;
 					/* Monster and/or object */
 				case '4': {
@@ -1293,17 +1300,17 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 						pick_and_place_monster(c, grid.y, grid.x, c->depth + 3, true, 
 											   true, ORIGIN_DROP_VAULT);
 					if (one_in_(2))
-						place_object(c, grid.y, grid.x, c->depth + 7, false, false,
+						place_object(c, grid, c->depth + 7, false, false,
 									 ORIGIN_VAULT, 0);
 					break;
 				}
 					/* Out of depth object. */
-				case '5': place_object(c, grid.y, grid.x, c->depth + 7, false, false,
+				case '5': place_object(c, grid, c->depth + 7, false, false,
 									   ORIGIN_VAULT, 0); break;
 					/* Out of depth monster. */
 				case '6': pick_and_place_monster(c, grid.y, grid.x, c->depth + 11, true, true, ORIGIN_DROP_VAULT); break;
 					/* Very out of depth object. */
-				case '7': place_object(c, grid.y, grid.x, c->depth + 15, false, false,
+				case '7': place_object(c, grid, c->depth + 15, false, false,
 									   ORIGIN_VAULT, 0); break;
 					/* Very out of depth monster. */
 				case '0': pick_and_place_monster(c, grid.y, grid.x, c->depth + 20, true, true, ORIGIN_DROP_VAULT); break;
@@ -1311,7 +1318,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				case '9': {
 					pick_and_place_monster(c, grid.y, grid.x, c->depth + 9, true, true,
 										   ORIGIN_DROP_VAULT);
-					place_object(c, grid.y, grid.x, c->depth + 7, true, false,
+					place_object(c, grid, c->depth + 7, true, false,
 								 ORIGIN_VAULT, 0);
 					break;
 				}
@@ -1319,15 +1326,15 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 				case '8': {
 					pick_and_place_monster(c, grid.y, grid.x, c->depth + 40, true, true,
 										   ORIGIN_DROP_VAULT);
-					place_object(c, grid.y, grid.x, c->depth + 20, true, true,
+					place_object(c, grid, c->depth + 20, true, true,
 								 ORIGIN_VAULT, 0);
 					break;
 				}
 					/* A chest. */
-				case '~': place_object(c, grid.y, grid.x, c->depth + 5, false, false,
+				case '~': place_object(c, grid, c->depth + 5, false, false,
 									   ORIGIN_VAULT, TV_CHEST); break;
 					/* Treasure. */
-				case '$': place_gold(c, grid.y, grid.x, c->depth, ORIGIN_VAULT);break;
+				case '$': place_gold(c, grid, c->depth, ORIGIN_VAULT);break;
 					/* Armour. */
 				case ']': {
 					int	tval = 0, temp = one_in_(3) ? randint1(9) : randint1(8);
@@ -1342,7 +1349,7 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					case 8: tval = TV_HARD_ARMOR; break;
 					case 9: tval = TV_DRAG_ARMOR; break;
 					}
-					place_object(c, grid.y, grid.x, c->depth + 3, true, false,
+					place_object(c, grid, c->depth + 3, true, false,
 								 ORIGIN_VAULT, tval);
 					break;
 				}
@@ -1355,31 +1362,31 @@ bool build_vault(struct chunk *c, int y0, int x0, struct vault *v)
 					case 3: tval = TV_HAFTED; break;
 					case 4: tval = TV_BOW; break;
 					}
-					place_object(c, grid.y, grid.x, c->depth + 3, true, false,
+					place_object(c, grid, c->depth + 3, true, false,
 								 ORIGIN_VAULT, tval);
 					break;
 				}
 					/* Ring. */
-				case '=': place_object(c, grid.y, grid.x, c->depth + 3, one_in_(4), false,
+				case '=': place_object(c, grid, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_RING); break;
 					/* Amulet. */
-				case '"': place_object(c, grid.y, grid.x, c->depth + 3, one_in_(4), false,
+				case '"': place_object(c, grid, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_AMULET); break;
 					/* Potion. */
-				case '!': place_object(c, grid.y, grid.x, c->depth + 3, one_in_(4), false,
+				case '!': place_object(c, grid, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_POTION); break;
 					/* Scroll. */
-				case '?': place_object(c, grid.y, grid.x, c->depth + 3, one_in_(4), false,
+				case '?': place_object(c, grid, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_SCROLL); break;
 					/* Staff. */
-				case '_': place_object(c, grid.y, grid.x, c->depth + 3, one_in_(4), false,
+				case '_': place_object(c, grid, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_STAFF); break;
 					/* Wand or rod. */
-				case '-': place_object(c, grid.y, grid.x, c->depth + 3, one_in_(4), false,
+				case '-': place_object(c, grid, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, one_in_(2) ? TV_WAND : TV_ROD);
 					break;
 					/* Food or mushroom. */
-				case ',': place_object(c, grid.y, grid.x, c->depth + 3, one_in_(4), false,
+				case ',': place_object(c, grid, c->depth + 3, one_in_(4), false,
 									   ORIGIN_VAULT, TV_FOOD); break;
 				}
 		}
@@ -1608,6 +1615,7 @@ bool build_staircase(struct chunk *c, int y0, int x0, int rating)
  */
 bool build_circular(struct chunk *c, int y0, int x0, int rating)
 {
+	struct loc grid0 = loc(x0, y0);
 	/* Pick a room size */
 	int radius = 2 + randint1(2) + randint1(3);
 
@@ -1634,13 +1642,13 @@ bool build_circular(struct chunk *c, int y0, int x0, int rating)
 		/* draw a room with a closed door on a random side */
 		draw_rectangle(c, y0 - 2, x0 - 2, y0 + 2, x0 + 2,
 					   FEAT_GRANITE, SQUARE_WALL_INNER);
-		place_closed_door(c, y0 + offset.y * 2, x0 + offset.x * 2);
+		place_closed_door(c, loc(x0 + offset.x * 2, y0 + offset.y * 2));
 
 		/* Place a treasure in the vault */
-		vault_objects(c, y0, x0, c->depth, randint0(2));
+		vault_objects(c, grid0, c->depth, randint0(2));
 
 		/* create some monsterss */
-		vault_monsters(c, y0, x0, c->depth + 1, randint0(3));
+		vault_monsters(c, grid0, c->depth + 1, randint0(3));
 	}
 
 	return true;
@@ -1799,6 +1807,7 @@ bool build_overlap(struct chunk *c, int y0, int x0, int rating)
  */
 bool build_crossed(struct chunk *c, int y0, int x0, int rating)
 {
+	struct loc grid0 = loc(x0, y0);
 	int y, x;
 	int height, width;
 
@@ -1894,13 +1903,13 @@ bool build_crossed(struct chunk *c, int y0, int x0, int rating)
 		generate_hole(c, y1b, x1a, y2b, x2a, FEAT_SECRET);
 
 		/* Place a treasure in the vault */
-		place_object(c, y0, x0, c->depth, false, false, ORIGIN_SPECIAL, 0);
+		place_object(c, grid0, c->depth, false, false, ORIGIN_SPECIAL, 0);
 
 		/* Let's guard the treasure well */
-		vault_monsters(c, y0, x0, c->depth + 2, randint0(2) + 3);
+		vault_monsters(c, grid0, c->depth + 2, randint0(2) + 3);
 
 		/* Traps naturally */
-		vault_traps(c, y0, x0, 4, 4, randint0(3) + 2);
+		vault_traps(c, grid0, 4, 4, randint0(3) + 2);
 
 		break;
 	}
@@ -1962,6 +1971,7 @@ bool build_crossed(struct chunk *c, int y0, int x0, int rating)
  */
 bool build_large(struct chunk *c, int y0, int x0, int rating)
 {
+	struct loc grid0 = loc(x0, y0);
 	int y, x, y1, x1, y2, x2;
 	int height = 9;
 	int width = 23;
@@ -2007,7 +2017,7 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 	case 1: {
 		/* Open the inner room with a door and place a monster */
 		generate_hole(c, y1 - 1, x1 - 1, y2 + 1, x2 + 1, FEAT_CLOSED);
-		vault_monsters(c, y0, x0, c->depth + 2, 1);
+		vault_monsters(c, grid0, c->depth + 2, 1);
 		break;
 	}
 
@@ -2033,16 +2043,16 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 		}
 
 		/* Monsters to guard the treasure */
-		vault_monsters(c, y0, x0, c->depth + 2, randint1(3) + 2);
+		vault_monsters(c, grid0, c->depth + 2, randint1(3) + 2);
 
 		/* Object (80%) or Stairs (20%) */
 		if ((randint0(100) < 80) || OPT(player, birth_levels_persist))
-			place_object(c, y0, x0, c->depth, false, false, ORIGIN_SPECIAL, 0);
+			place_object(c, grid0, c->depth, false, false, ORIGIN_SPECIAL, 0);
 		else
-			place_random_stairs(c, y0, x0);
+			place_random_stairs(c, grid0);
 
 		/* Traps to protect the treasure */
-		vault_traps(c, y0, x0, 4, 10, 2 + randint1(3));
+		vault_traps(c, grid0, 4, 10, 2 + randint1(3));
 
 		break;
 	}
@@ -2079,19 +2089,19 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 						   FEAT_GRANITE, SQUARE_WALL_INNER);
 
 			/* Secret doors (random top/bottom) */
-			place_secret_door(c, y0 - 3 + (randint1(2) * 2), x0 - 3);
-			place_secret_door(c, y0 - 3 + (randint1(2) * 2), x0 + 3);
+			place_secret_door(c, loc(x0 - 3, y0 - 3 + (randint1(2) * 2)));
+			place_secret_door(c, loc(x0 + 3, y0 - 3 + (randint1(2) * 2)));
 
 			/* Monsters */
-			vault_monsters(c, y0, x0 - 2, c->depth + 2, randint1(2));
-			vault_monsters(c, y0, x0 + 2, c->depth + 2, randint1(2));
+			vault_monsters(c, loc(x0 - 2, y0), c->depth + 2, randint1(2));
+			vault_monsters(c, loc(x0 + 2, y0), c->depth + 2, randint1(2));
 
 			/* Objects */
 			if (one_in_(3))
-				place_object(c, y0, x0 - 2, c->depth, false, false,
+				place_object(c, loc(x0 - 2, y0), c->depth, false, false,
 							 ORIGIN_SPECIAL, 0);
 			if (one_in_(3))
-				place_object(c, y0, x0 + 2, c->depth, false, false,
+				place_object(c, loc(x0 + 2, y0), c->depth, false, false,
 							 ORIGIN_SPECIAL, 0);
 		}
 
@@ -2111,15 +2121,15 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 					set_marked_granite(c, y, x, SQUARE_WALL_INNER);
 
 		/* Monsters just love mazes. */
-		vault_monsters(c, y0, x0 - 5, c->depth + 2, randint1(3));
-		vault_monsters(c, y0, x0 + 5, c->depth + 2, randint1(3));
+		vault_monsters(c, loc(x0 - 5, y0), c->depth + 2, randint1(3));
+		vault_monsters(c, loc(x0 + 5, y0), c->depth + 2, randint1(3));
 
 		/* Traps make them entertaining. */
-		vault_traps(c, y0, x0 - 3, 2, 8, randint1(3));
-		vault_traps(c, y0, x0 + 3, 2, 8, randint1(3));
+		vault_traps(c, loc(x0 - 3, y0), 2, 8, randint1(3));
+		vault_traps(c, loc(x0 + 3, y0), 2, 8, randint1(3));
 
 		/* Mazes should have some treasure too. */
-		vault_objects(c, y0, x0, c->depth, 3);
+		vault_objects(c, grid0, c->depth, 3);
 
 		break;
 	}
@@ -2133,26 +2143,26 @@ bool build_large(struct chunk *c, int y0, int x0, int rating)
 		/* Doors into the rooms */
 		if (randint0(100) < 50) {
 			int i = randint1(10);
-			place_closed_door(c, y1 - 1, x0 - i);
-			place_closed_door(c, y1 - 1, x0 + i);
-			place_closed_door(c, y2 + 1, x0 - i);
-			place_closed_door(c, y2 + 1, x0 + i);
+			place_closed_door(c, loc(x0 - i, y1 - 1));
+			place_closed_door(c, loc(x0 + i, y1 - 1));
+			place_closed_door(c, loc(x0 - i, y2 + 1));
+			place_closed_door(c, loc(x0 + i, y2 + 1));
 		} else {
 			int i = randint1(3);
-			place_closed_door(c, y0 + i, x1 - 1);
-			place_closed_door(c, y0 - i, x1 - 1);
-			place_closed_door(c, y0 + i, x2 + 1);
-			place_closed_door(c, y0 - i, x2 + 1);
+			place_closed_door(c, loc(x1 - 1, y0 + i));
+			place_closed_door(c, loc(x1 - 1, y0 - i));
+			place_closed_door(c, loc(x2 + 1, y0 + i));
+			place_closed_door(c, loc(x2 + 1, y0 - i));
 		}
 
 		/* Treasure, centered at the center of the cross */
-		vault_objects(c, y0, x0, c->depth, 2 + randint1(2));
+		vault_objects(c, grid0, c->depth, 2 + randint1(2));
 
 		/* Gotta have some monsters */
-		vault_monsters(c, y0 + 1, x0 - 4, c->depth + 2, randint1(4));
-		vault_monsters(c, y0 + 1, x0 + 4, c->depth + 2, randint1(4));
-		vault_monsters(c, y0 - 1, x0 - 4, c->depth + 2, randint1(4));
-		vault_monsters(c, y0 - 1, x0 + 4, c->depth + 2, randint1(4)); 
+		vault_monsters(c, loc(x0 - 4, y0 + 1), c->depth + 2, randint1(4));
+		vault_monsters(c, loc(x0 + 4, y0 + 1), c->depth + 2, randint1(4));
+		vault_monsters(c, loc(x0 - 4, y0 - 1), c->depth + 2, randint1(4));
+		vault_monsters(c, loc(x0 + 4, y0 - 1), c->depth + 2, randint1(4)); 
 
 		break;
 	}
@@ -2270,7 +2280,7 @@ bool build_nest(struct chunk *c, int y0, int x0, int rating)
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
-				place_object(c, y, x, c->depth + 10, one_in_(3), false,
+				place_object(c, loc(x, y), c->depth + 10, one_in_(3), false,
 							 ORIGIN_PIT, 0);
 		}
 	}
@@ -2461,7 +2471,7 @@ bool build_pit(struct chunk *c, int y0, int x0, int rating)
 		for (x = x0 - 9; x <= x0 + 9; x++) {
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
-				place_object(c, y, x, c->depth + 10, one_in_(3), false,
+				place_object(c, loc(x, y), c->depth + 10, one_in_(3), false,
 							 ORIGIN_PIT, 0);
 		}
 	}
@@ -2873,7 +2883,7 @@ bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating)
 			if (square(c, loc(x, y)).feat == FEAT_OPEN)
 				set_marked_granite(c, y, x, SQUARE_WALL_INNER);
 			else if (square(c, loc(x, y)).feat == FEAT_BROKEN)
-				place_random_door(c, y, x);
+				place_random_door(c, loc(x, y));
 		}
 	}
 

@@ -995,7 +995,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			int i2;
 			for (i2 = 1; i2 < z_info->r_max; i2++) {
 				struct monster_race *race = &r_info[i2];
-				int y2, x2;
+				struct loc grid;
 
 				/* The monster must be an unseen quest monster of this depth. */
 				if (race->cur_num > 0) continue;
@@ -1003,8 +1003,9 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 				if (race->level != chunk->depth) continue;
 	
 				/* Pick a location and place the monster */
-				find_empty(chunk, &y2, &x2);
-				place_new_monster(chunk, y2, x2, race, true, true, ORIGIN_DROP);
+				find_empty(chunk, &grid);
+				place_new_monster(chunk, grid.y, grid.x, race, true, true,
+								  ORIGIN_DROP);
 			}
 		}
 

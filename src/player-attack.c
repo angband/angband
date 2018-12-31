@@ -318,7 +318,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					square_destroy_wall(cave, grid);
 					monster_swap(mon->grid, grid);
 					if (square_hasgoldvein(cave, grid)) {
-						place_gold(cave, grid.y, grid.x, p->depth, ORIGIN_FLOOR);
+						place_gold(cave, grid, p->depth, ORIGIN_FLOOR);
 					}
 					if (randint0(20) < power) {
 						effect_simple(EF_EARTHQUAKE,
@@ -334,7 +334,7 @@ static bool blow_knock_back(struct player *p, struct monster *mon, int dmg,
 					square_destroy_wall(cave, grid);
 					monster_swap(mon->grid, grid);
 					if (square_hasgoldvein(cave, grid)) {
-						place_gold(cave, grid.y, grid.x, p->depth, ORIGIN_FLOOR);
+						place_gold(cave, grid, p->depth, ORIGIN_FLOOR);
 					}
 					if (randint0(20) < power) {
 						effect_simple(EF_EARTHQUAKE,

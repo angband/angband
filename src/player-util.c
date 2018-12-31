@@ -1237,7 +1237,7 @@ void search(struct player *p)
 			/* Secret doors */
 			if (square_issecretdoor(cave, grid)) {
 				msg("You have found a secret door.");
-				place_closed_door(cave, grid.y, grid.x);
+				place_closed_door(cave, grid);
 				disturb(p, 0);
 			}
 

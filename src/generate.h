@@ -313,24 +313,26 @@ extern byte get_angle_to_grid[41][41];
 int grid_to_i(struct loc grid, int w);
 void i_to_grid(int i, int w, struct loc *grid);
 void shuffle(int *arr, int n);
-bool cave_find(struct chunk *c, int *y, int *x, square_predicate pred);
-bool find_empty(struct chunk *c, int *y, int *x);
-bool find_empty_range(struct chunk *c, int *y, int y1, int y2, int *x, int x1, int x2);
-bool find_nearby_grid(struct chunk *c, int *y, int y0, int yd, int *x, int x0, int xd);
+bool cave_find(struct chunk *c, struct loc *grid, square_predicate pred);
+bool find_empty(struct chunk *c, struct loc *grid);
+bool find_empty_range(struct chunk *c, struct loc *grid, struct loc top_left,
+					  struct loc bottom_right);
+bool find_nearby_grid(struct chunk *c, struct loc *grid, struct loc centre,
+					  int yd, int xd);
 void correct_dir(struct loc *offset, struct loc grid1, struct loc grid2);
 void rand_dir(struct loc *offset);
 void new_player_spot(struct chunk *c, struct player *p);
-void place_object(struct chunk *c, int y, int x, int level, bool good,
+void place_object(struct chunk *c, struct loc grid, int level, bool good,
 				  bool great, byte origin, int tval);
-void place_gold(struct chunk *c, int y, int x, int level, byte origin);
-void place_secret_door(struct chunk *c, int y, int x);
-void place_closed_door(struct chunk *c, int y, int x);
-void place_random_door(struct chunk *c, int y, int x);
-void place_random_stairs(struct chunk *c, int y, int x);
+void place_gold(struct chunk *c, struct loc grid, int level, byte origin);
+void place_secret_door(struct chunk *c, struct loc grid);
+void place_closed_door(struct chunk *c, struct loc grid);
+void place_random_door(struct chunk *c, struct loc grid);
+void place_random_stairs(struct chunk *c, struct loc grid);
 void alloc_stairs(struct chunk *c, int feat, int num);
-void vault_objects(struct chunk *c, int y, int x, int depth, int num);
-void vault_traps(struct chunk *c, int y, int x, int yd, int xd, int num);
-void vault_monsters(struct chunk *c, int y1, int x1, int depth, int num);
+void vault_objects(struct chunk *c, struct loc grid, int depth, int num);
+void vault_traps(struct chunk *c, struct loc grid, int yd, int xd, int num);
+void vault_monsters(struct chunk *c, struct loc grid, int depth, int num);
 void alloc_objects(struct chunk *c, int set, int typ, int num, int depth, byte origin);
 bool alloc_object(struct chunk *c, int set, int typ, int depth, byte origin);
 

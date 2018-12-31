@@ -1702,7 +1702,7 @@ bool effect_handler_DETECT_DOORS(effect_handler_context_t *context)
 			/* Detect secret doors */
 			if (square_issecretdoor(cave, grid)) {
 				/* Put an actual door */
-				place_closed_door(cave, y, x);
+				place_closed_door(cave, grid);
 
 				/* Memorize */
 				square_memorize(cave, grid);
