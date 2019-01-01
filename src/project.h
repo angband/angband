@@ -102,7 +102,7 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect,
 			   int resist, bool actual);
 
 bool project_f(struct source, int r, struct loc grid, int dam, int typ);
-bool project_o(struct source, int r, int y, int x, int dam, int typ,
+bool project_o(struct source, int r, struct loc grid, int dam, int typ,
 			   const struct object *protected_obj);
 void project_m(struct source, int r, struct loc grid, int dam, int typ, int flg,
                bool *did_hit, bool *was_obvious);

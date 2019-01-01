@@ -270,22 +270,24 @@ static void do_cmd_keylog(void) {
  */
 static void do_cmd_wiz_bamf(void)
 {
-	int x = 0, y = 0;
+	struct loc grid = loc(0, 0);
 
 	/* Use the targeting function. */
 	if (!target_set_interactive(TARGET_LOOK, -1, -1))
 		return;
 
 	/* grab the target coords. */
-	target_get(&x, &y);
+	target_get(&grid);
 
 	/* Test for passable terrain. */
-	if (!square_ispassable(cave, loc(x, y)))
+	if (!square_ispassable(cave, grid)) {
 		msg("The square you are aiming for is impassable.");
 
-	/* Teleport to the target */
-	else
-		effect_simple(EF_TELEPORT_TO, source_player(), "0", 0, 0, 0, y, x,NULL);
+	} else {
+		/* Teleport to the target */
+		effect_simple(EF_TELEPORT_TO, source_player(), "0", 0, 0, 0, grid.y,
+					  grid.x, NULL);
+	}
 }
 
 
@@ -599,7 +601,7 @@ static void wiz_create_item_drop_object(struct object *obj)
 	obj->origin_depth = player->depth;
 
 	/* Drop the object from heaven */
-	drop_near(cave, &obj, 0, player->grid.y, player->grid.x, true);
+	drop_near(cave, &obj, 0, player->grid, true);
 }
 
 /**
@@ -1853,7 +1855,7 @@ static void wiz_test_kind(int tval)
 		obj->known = known_obj;
 
 		/* Drop the object from heaven */
-		drop_near(cave, &obj, 0, player->grid.y, player->grid.x, true);
+		drop_near(cave, &obj, 0, player->grid, true);
 	}
 
 	msg("Done.");
@@ -2100,7 +2102,7 @@ void get_debug_command(void)
 			n= get_quantity("How many good objects? ", 40);
 			screen_load();
 			if (n < 1) n = 1;
-			acquirement(player->grid.y, player->grid.x, player->depth, n, false);
+			acquirement(player->grid, player->depth, n, false);
 			break;
 		}
 
@@ -2340,7 +2342,7 @@ void get_debug_command(void)
 			n = get_quantity("How many great objects? ", 40);
 			screen_load();
 			if (n < 1) n = 1;
-			acquirement(player->grid.y, player->grid.x, player->depth, n, true);
+			acquirement(player->grid, player->depth, n, true);
 			break;
 		}
 

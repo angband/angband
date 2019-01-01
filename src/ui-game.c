@@ -368,9 +368,9 @@ void pre_turn_refresh(void)
 		handle_stuff(player);
 
 		if (OPT(player, show_target) && target_sighted()) {
-			int col, row;
-			target_get(&col, &row);
-			move_cursor_relative(row, col);
+			struct loc target;
+			target_get(&target);
+			move_cursor_relative(target.y, target.x);
 		} else {
 			move_cursor_relative(player->grid.y, player->grid.x);
 		}

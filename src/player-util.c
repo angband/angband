@@ -580,10 +580,9 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 /**
  * See how much damage the player will take from damaging terrain
  */
-int player_check_terrain_damage(struct player *p, int y, int x)
+int player_check_terrain_damage(struct player *p, struct loc grid)
 {
 	int dam_taken = 0;
-	struct loc grid = loc(x, y);
 
 	if (square_isfiery(cave, grid)) {
 		int base_dam = 100 + randint1(100);
@@ -604,10 +603,9 @@ int player_check_terrain_damage(struct player *p, int y, int x)
 /**
  * Terrain damages the player
  */
-void player_take_terrain_damage(struct player *p, int y, int x)
+void player_take_terrain_damage(struct player *p, struct loc grid)
 {
-	struct loc grid = loc(x, y);
-	int dam_taken = player_check_terrain_damage(p, y, x);
+	int dam_taken = player_check_terrain_damage(p, grid);
 
 	if (!dam_taken) {
 		return;
@@ -1160,9 +1158,8 @@ bool player_is_immune(struct player *p, int element)
 /**
  * Places the player at the given coordinates in the cave.
  */
-void player_place(struct chunk *c, struct player *p, int y, int x)
+void player_place(struct chunk *c, struct player *p, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	assert(!square_monster(c, grid));
 
 	/* Save player location */

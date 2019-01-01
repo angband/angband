@@ -43,7 +43,9 @@ struct hit_types {
  * keeping the core projectile tracking, monster cleanup, and display code
  * in common.
  */
-typedef struct attack_result (*ranged_attack) (struct player *p, struct object *obj, int y, int x);
+typedef struct attack_result (*ranged_attack) (struct player *p,
+											   struct object *obj,
+											   struct loc grid);
 
 extern void do_cmd_fire(struct command *cmd);
 extern void do_cmd_fire_at_nearest(void);

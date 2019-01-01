@@ -1310,7 +1310,7 @@ void prepare_next_level(struct chunk **c, struct player *p)
 				sanitize_player_loc(*c, p);
 
 				/* Place the player */
-				player_place(*c, p, p->grid.y, p->grid.x);
+				player_place(*c, p, p->grid);
 			}
 
 			/* Remove from the list */

@@ -359,7 +359,7 @@ void new_player_spot(struct chunk *c, struct player *p)
 	else if (p->upkeep->create_up_stair)
 		square_set_feat(c, grid, FEAT_LESS);
 
-    player_place(c, p, grid.y, grid.x);
+    player_place(c, p, grid);
 }
 
 
@@ -433,7 +433,7 @@ void place_object(struct chunk *c, struct loc grid, int level, bool good,
     new_obj->origin_depth = c->depth;
 
     /* Give it to the floor */
-    if (!floor_carry(c, grid.y, grid.x, new_obj, &dummy)) {
+    if (!floor_carry(c, grid, new_obj, &dummy)) {
 		if (new_obj->artifact) {
 			new_obj->artifact->created = false;
 		}
@@ -472,7 +472,7 @@ void place_gold(struct chunk *c, struct loc grid, int level, byte origin)
     money->origin = origin;
     money->origin_depth = level;
 
-    if (!floor_carry(c, grid.y, grid.x, money, &dummy)) {
+    if (!floor_carry(c, grid, money, &dummy)) {
 		object_delete(&money);
 	} else {
 		list_object(c, money);

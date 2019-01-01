@@ -1166,7 +1166,7 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 /**
  * Scatter some objects near the player
  */
-void acquirement(int y1, int x1, int level, int num, bool great)
+void acquirement(struct loc grid, int level, int num, bool great)
 {
 	struct object *nice_obj;
 
@@ -1180,7 +1180,7 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 		nice_obj->origin_depth = player->depth;
 
 		/* Drop the object */
-		drop_near(cave, &nice_obj, 0, y1, x1, true);
+		drop_near(cave, &nice_obj, 0, grid, true);
 	}
 }
 

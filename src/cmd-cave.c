@@ -966,7 +966,7 @@ void move_player(int dir, bool disarm)
 		/* Some terrain can damage the player */
 		bool step = true;
 		struct feature *feat = square_feat(cave, grid);
-		int dam_taken = player_check_terrain_damage(player, grid.y, grid.x);
+		int dam_taken = player_check_terrain_damage(player, grid);
 
 		/* Check if running, or going to cost more than a third of hp */
 		if (player->upkeep->running) {
@@ -1493,7 +1493,7 @@ void do_cmd_mon_command(struct command *cmd)
 			struct object *obj = get_random_monster_object(mon);
 			obj->held_m_idx = 0;
 			pile_excise(&mon->held_obj, obj);
-			drop_near(cave, &obj, 0, mon->grid.y, mon->grid.x, true);
+			drop_near(cave, &obj, 0, mon->grid, true);
 
 			break;
 		}

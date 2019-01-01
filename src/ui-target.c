@@ -577,7 +577,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			break;
 	
 		/* Scan all sensed objects in the grid */
-		floor_num = scan_distant_floor(floor_list, floor_max, y, x);
+		floor_num = scan_distant_floor(floor_list, floor_max, loc(x, y));
 		if ((floor_num > 0) &&
 		    (!(player->timed[TMD_BLIND]) || loc_eq(loc(x, y), player->grid))) {
 			/* Not boring */
@@ -756,16 +756,16 @@ void textui_target_closest(void)
 {
 	if (target_set_closest(TARGET_KILL, NULL)) {
 		bool visibility;
-		int x, y;
+		struct loc target;
 
-		target_get(&x, &y);
+		target_get(&target);
 
 		/* Visual cue */
 		Term_fresh();
 		Term_get_cursor(&visibility);
 		(void)Term_set_cursor(true);
-		move_cursor_relative(y, x);
-		Term_redraw_section(x, y, x, y);
+		move_cursor_relative(target.y, target.x);
+		Term_redraw_section(target.y, target.x, target.y, target.x);
 
 		/* TODO: what's an appropriate amount of time to spend highlighting */
 		Term_xtra(TERM_XTRA_DELAY, 150);

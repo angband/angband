@@ -1516,7 +1516,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	}
 
 	/* Place the player */
-	player_place(c, p, pgrid.y, pgrid.x);
+	player_place(c, p, pgrid);
 }
 
 
@@ -1564,7 +1564,7 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width)
 		}
 
 		/* Place the player */
-		player_place(c_new, p, grid.y, grid.x);
+		player_place(c_new, p, grid);
 	}
 
 	/* Apply illumination */
@@ -2604,7 +2604,7 @@ struct chunk *arena_gen(struct player *p, int min_height, int min_width) {
 				   SQUARE_NONE);
 
 	/* Place the player */
-	player_place(c, p, c->height - 2, 1);
+	player_place(c, p, loc(1, c->height - 2));
 
 	/* Place the monster */
 	memcpy(&c->monsters[mon->midx], mon, sizeof(*mon));

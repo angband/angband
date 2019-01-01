@@ -51,7 +51,7 @@ int cmp_distance(const void *a, const void *b);
 s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets);
 bool target_accept(int y, int x);
 void coords_desc(char *buf, int size, int y, int x);
-void target_get(int *x, int *y);
+void target_get(struct loc *grid);
 struct monster *target_get_monster(void);
 bool target_sighted(void);
 struct point_set *target_get_monsters(int mode, monster_predicate pred);

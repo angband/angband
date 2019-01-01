@@ -898,9 +898,8 @@ bool project(struct source origin, int rad, struct loc finish,
 	/* Affect objects on every relevant grid */
 	if (flg & (PROJECT_ITEM)) {
 		for (i = 0; i < num_grids; i++) {
-			if (project_o(origin, distance_to_grid[i], blast_grid[i].y,
-						  blast_grid[i].x, dam_at_dist[distance_to_grid[i]],
-						  typ, obj)) {
+			if (project_o(origin, distance_to_grid[i], blast_grid[i],
+						  dam_at_dist[distance_to_grid[i]], typ, obj)) {
 				notice = true;
 			}
 		}

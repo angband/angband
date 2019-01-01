@@ -795,9 +795,8 @@ struct object *floor_object_for_use(struct object *obj, int num, bool message,
 /**
  * Find and return the oldest object on the given grid marked as "ignore".
  */
-static struct object *floor_get_oldest_ignored(struct chunk *c, int y, int x)
+static struct object *floor_get_oldest_ignored(struct chunk *c, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	struct object *obj, *ignore = NULL;
 
 	for (obj = square_object(c, grid); obj; obj = obj->next)
@@ -814,11 +813,11 @@ static struct object *floor_get_oldest_ignored(struct chunk *c, int y, int x)
  *
  * Optionally put the object at the top or bottom of the pile
  */
-bool floor_carry(struct chunk *c, int y, int x, struct object *drop, bool *note)
+bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
+				 bool *note)
 {
 	int n = 0;
-	struct loc grid = loc(x, y);
-	struct object *obj, *ignore = floor_get_oldest_ignored(c, y, x);
+	struct object *obj, *ignore = floor_get_oldest_ignored(c, grid);
 
 	/* Fail if the square can't hold objects */
 	if (!square_isobjectholding(c, grid))
@@ -919,10 +918,10 @@ static void floor_carry_fail(struct object *drop, bool broke)
  *
  * If no appropriate grid is found, the given grid is unchanged
  */
-static void drop_find_grid(struct object *drop, int *y, int *x)
+static void drop_find_grid(struct object *drop, struct loc *grid)
 {
 	int best_score = -1;
-	struct loc start = loc(*x, *y);
+	struct loc start = *grid;
 	struct loc best = start;
 	int i, dy, dx;
 	struct object *obj;
@@ -963,7 +962,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 			/* Disallow if the stack size is too big */
 			if ((!OPT(player, birth_stacking) && (num_shown > 1)) ||
 				((num_shown + num_ignored) > z_info->floor_size &&
-				 !floor_get_oldest_ignored(cave, try.y, try.x)))
+				 !floor_get_oldest_ignored(cave, try)))
 				continue;
 
 			/* Score the location based on how close and how full the grid is */
@@ -979,8 +978,7 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 
 	/* Return if we have a score, otherwise fail or try harder for artifacts */
 	if (best_score >= 0) {
-		*y = best.y;
-		*x = best.x;
+		*grid = best;
 		return;
 	} else if (!drop->artifact) {
 		return;
@@ -988,16 +986,13 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
 	for (i = 0; i < 2000; i++) {
 		/* Start bouncing from grid to grid, stopping if we find an empty one */
 		if (i < 1000) {
-			best.y = rand_spread(best.y, 1);
-			best.x = rand_spread(best.x, 1);
+			best = rand_loc(best, 1, 1);
 		} else {
 			/* Now go to purely random locations */
-			best.y = randint0(cave->height);
-			best.x = randint0(cave->width);
+			best = loc(randint0(cave->width), randint0(cave->height));
 		}
 		if (square_canputitem(cave, best)) {
-			*y = best.y;
-			*x = best.x;
+			*grid = best;
 			return;
 		}
 	}
@@ -1018,12 +1013,11 @@ static void drop_find_grid(struct object *drop, int *y, int *x)
  * The calling function needs to deal with the consequences of the dropped
  * object being destroyed or absorbed into an existing pile.
  */
-void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
-			   int x, bool verbose)
+void drop_near(struct chunk *c, struct object **dropped, int chance,
+			   struct loc grid, bool verbose)
 {
 	char o_name[80];
-	int best_y = y;
-	int best_x = x;
+	struct loc best = grid;
 	bool dont_ignore = verbose && !ignore_item_ok(*dropped);
 
 	/* Only called in the current level */
@@ -1039,10 +1033,10 @@ void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
 	}
 
 	/* Find the best grid and drop the item, destroying if there's no space */
-	drop_find_grid(*dropped, &best_y, &best_x);
-	if (floor_carry(c, best_y, best_x, *dropped, &dont_ignore)) {
+	drop_find_grid(*dropped, &best);
+	if (floor_carry(c, best, *dropped, &dont_ignore)) {
 		sound(MSG_DROP);
-		if (dont_ignore && (square(c, loc(best_x, best_y)).mon < 0)) {
+		if (dont_ignore && (square(c, best).mon < 0)) {
 			msg("You feel something roll beneath your feet.");
 		}
 	} else {
@@ -1057,10 +1051,9 @@ void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
  * the previous square with a type that does not allow for objects. Drop the
  * objects. Last, put the square back to its original type.
  */
-void push_object(int y, int x)
+void push_object(struct loc grid)
 {
 	/* Save the original terrain feature */
-	struct loc grid = loc(x, y);
 	struct feature *feat_old = square_feat(cave, grid);
 	struct object *obj = square_object(cave, grid);
 	struct queue *queue = q_new(z_info->floor_size);
@@ -1093,7 +1086,7 @@ void push_object(int y, int x)
 		obj = q_pop_ptr(queue);
 
 		/* Drop the object */
-		drop_near(cave, &obj, 0, y, x, false);
+		drop_near(cave, &obj, 0, grid, false);
 	}
 
 	/* Reset cave feature, remove trap if needed */
@@ -1167,9 +1160,8 @@ int scan_floor(struct object **items, int max_size, object_floor_t mode,
  *
  * Return the number of objects acquired.
  */
-int scan_distant_floor(struct object **items, int max_size, int y, int x)
+int scan_distant_floor(struct object **items, int max_size, struct loc grid)
 {
-	struct loc grid = loc(x, y);
 	struct object *obj;
 	int num = 0;
 

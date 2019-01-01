@@ -347,13 +347,10 @@ void coords_desc(char *buf, int size, int y, int x)
 /**
  * Obtains the location the player currently targets.
  */
-void target_get(int *x, int *y)
+void target_get(struct loc *grid)
 {
-	assert(x);
-	assert(y);
-
-	*x = target.grid.x;
-	*y = target.grid.y;
+	assert(grid);
+	*grid = target.grid;
 }
 
 

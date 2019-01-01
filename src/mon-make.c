@@ -804,7 +804,7 @@ void mon_create_mimicked_object(struct chunk *c, struct monster *mon, int index)
 	mon->mimicked_obj = obj;
 
 	/* Put the object on the floor if it goes, otherwise no mimicry */
-	if (floor_carry(c, mon->grid.y, mon->grid.x, obj, &dummy)) {
+	if (floor_carry(c, mon->grid, obj, &dummy)) {
 		list_object(c, obj);
 	} else {
 		/* Clear the mimicry */

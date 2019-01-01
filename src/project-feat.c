@@ -250,7 +250,7 @@ static void project_feature_handler_MAKE_DOOR(project_feature_handler_context_t 
 
 	/* Push objects off the grid */
 	if (square_object(cave, grid))
-		push_object(grid.y, grid.x);
+		push_object(grid);
 
 	/* Create closed door */
 	square_add_door(cave, grid, true);
@@ -314,7 +314,7 @@ static void project_feature_handler_FIRE(project_feature_handler_context_t *cont
 		square_set_feat(cave, context->grid, FEAT_LAVA);
 
 		/* Objects that have survived should move */
-		push_object(context->grid.y, context->grid.x);
+		push_object(context->grid);
 	}
 }
 
@@ -502,7 +502,7 @@ static void project_feature_handler_PLASMA(project_feature_handler_context_t *co
 		square_set_feat(cave, context->grid, FEAT_LAVA);
 
 		/* Objects that have survived should move */
-		push_object(context->grid.y, context->grid.x);
+		push_object(context->grid);
 	}
 }
 

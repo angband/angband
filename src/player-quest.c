@@ -185,30 +185,29 @@ void player_quests_free(struct player *p)
 /**
  * Creates magical stairs after finishing a quest monster.
  */
-static void build_quest_stairs(int y, int x)
+static void build_quest_stairs(struct loc grid)
 {
 	struct loc new_grid = player->grid;
 
 	/* Stagger around */
-	while (!square_changeable(cave, loc(x, y)) &&
-		   !square_iswall(cave, loc(x, y)) &&
-		   !square_isdoor(cave, loc(x, y))) {
+	while (!square_changeable(cave, grid) &&
+		   !square_iswall(cave, grid) &&
+		   !square_isdoor(cave, grid)) {
 		/* Pick a location */
-		scatter(cave, &new_grid, loc(x, y), 1, false);
+		scatter(cave, &new_grid, grid, 1, false);
 
 		/* Stagger */
-		y = new_grid.y;
-		x = new_grid.x;
+		grid = new_grid;
 	}
 
 	/* Push any objects */
-	push_object(y, x);
+	push_object(grid);
 
 	/* Explain the staircase */
 	msg("A magical staircase appears...");
 
 	/* Create stairs down */
-	square_set_feat(cave, loc(x, y), FEAT_MORE);
+	square_set_feat(cave, grid, FEAT_MORE);
 
 	/* Update the visuals */
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -236,7 +235,7 @@ bool quest_check(const struct monster *m) {
 	}
 
 	/* Build magical stairs */
-	build_quest_stairs(m->grid.y, m->grid.x);
+	build_quest_stairs(m->grid);
 
 	/* Nothing left, game over... */
 	if (total == 0) {

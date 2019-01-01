@@ -152,7 +152,7 @@ static void get_target(struct source origin, int dir, struct loc *grid,
 
 		case SRC_PLAYER:
 			if (dir == DIR_TARGET && target_okay()) {
-				target_get(&((*grid).x), &((*grid).y));
+				target_get(grid);
 			} else {
 				/* Use the adjacent grid in the given direction as target */
 				*grid = loc_sum(player->grid, ddgrid[dir]);
@@ -1046,7 +1046,7 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 
 	/* Push objects off the grid */
 	if (square_object(cave, player->grid))
-		push_object(player->grid.y, player->grid.x);
+		push_object(player->grid);
 
 	return true;
 }
@@ -2141,7 +2141,7 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 
 	/* Push objects off the grid */
 	if (square_object(cave, player->grid))
-		push_object(player->grid.y, player->grid.x);
+		push_object(player->grid);
 
 	square_add_stairs(cave, player->grid, player->depth);
 
@@ -2414,7 +2414,7 @@ bool effect_handler_PROJECT_LOS_AWARE(effect_handler_context_t *context)
 bool effect_handler_ACQUIRE(effect_handler_context_t *context)
 {
 	int num = effect_calculate_value(context, false);
-	acquirement(player->grid.y, player->grid.x, player->depth, num, true);
+	acquirement(player->grid, player->depth, num, true);
 	context->ident = true;
 	return true;
 }
@@ -2900,7 +2900,7 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		/* Player choice */
 		get_aim_dir(&dir);
 		if ((dir == DIR_TARGET) && target_okay()) {
-			target_get(&(aim.x), &(aim.y));
+			target_get(&aim);
 		}
 
 		/* Randomise the landing a bit if it's a vault */
@@ -3222,7 +3222,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 		int dir = DIR_TARGET;
 		get_aim_dir(&dir);
 		if ((dir == DIR_TARGET) && target_okay()) {
-			target_get(&(centre.x), &(centre.y));
+			target_get(&centre);
 		}
 	}
 
@@ -3676,7 +3676,7 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			/* Ask for a target if no direction given */
 			if (context->dir == DIR_TARGET && target_okay()) {
 				flg &= ~(PROJECT_STOP | PROJECT_THRU);
-				target_get(&(target.x), &(target.y));
+				target_get(&target);
 			} else {
 				target = loc_sum(player->grid, ddgrid[context->dir]);
 			}
@@ -3751,7 +3751,7 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 
 		/* Ask for a target if no direction given */
 		if (context->dir == DIR_TARGET && target_okay()) {
-			target_get(&(target.x), &(target.y));
+			target_get(&target);
 		} else {
 			target = loc_sum(player->grid, ddgrid[context->dir]);
 		}
@@ -3825,7 +3825,7 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 	} else if (context->origin.what == SRC_PLAYER) {
 		/* Ask for a target if no direction given */
 		if (context->dir == DIR_TARGET && target_okay()) {
-			target_get(&(target.x), &(target.y));
+			target_get(&target);
 		} else {
 			target = loc_sum(player->grid, ddgrid[context->dir]);
 		}
@@ -3881,7 +3881,7 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 	} else if (context->origin.what == SRC_PLAYER) {
 		/* Ask for a target if no direction given */
 		if (context->dir == DIR_TARGET && target_okay()) {
-			target_get(&(target.x), &(target.y));
+			target_get(&target);
 		} else {
 			target = loc_sum(player->grid, ddgrid[context->dir]);
 		}
@@ -3920,7 +3920,7 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 	if ((context->dir == DIR_TARGET) && target_okay()) {
 		flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-		target_get(&(target.x), &(target.y));
+		target_get(&target);
 	}
 
 	while (num--) {
@@ -3949,7 +3949,7 @@ bool effect_handler_STRIKE(effect_handler_context_t *context)
 
 	/* Ask for a target; if no direction given, the player is struck  */
 	if ((context->dir == DIR_TARGET) && target_okay()) {
-		target_get(&(target.x), &(target.y));
+		target_get(&target);
 	}
 
 	/* Aim at the target.  Hurt items on floor. */
@@ -4447,7 +4447,7 @@ bool effect_handler_TAP_DEVICE(effect_handler_context_t *context)
 bool effect_handler_TAP_UNLIFE(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
-	int nx, ny;
+	struct loc target;
 	struct monster *mon = NULL;
 	char m_name[80];
 	int drain = 0;
@@ -4460,7 +4460,7 @@ bool effect_handler_TAP_UNLIFE(effect_handler_context_t *context)
 	if (!target_set_closest(TARGET_KILL, monster_is_undead)) {
 		return false;
 	}
-	target_get(&nx, &ny);
+	target_get(&target);
 	mon = target_get_monster();
 
 	/* Hurt the monster */
@@ -4600,7 +4600,7 @@ bool effect_handler_JUMP_AND_BITE(effect_handler_context_t *context)
 	if (!target_set_closest(TARGET_KILL, monster_is_living)) {
 		return false;
 	}
-	target_get(&(victim.x), &(victim.y));
+	target_get(&victim);
 	mon = target_get_monster();
 
 	/* Look next to the monster */
@@ -4766,7 +4766,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 			if ((context->dir == DIR_TARGET) && target_okay()) {
 				flg &= ~(PROJECT_STOP | PROJECT_THRU);
 
-				target_get(&(target.x), &(target.y));
+				target_get(&target);
 			}
 
 			/* Aim at the target, explode */
@@ -4786,7 +4786,7 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 
 			/* Use an actual target */
 			if ((context->dir == DIR_TARGET) && target_okay())
-				target_get(&(target.x), &(target.y));
+				target_get(&target);
 
 			/* Aim at the target, do NOT explode */
 			return project(source_player(), 0, target, 250, PROJ_MANA, flg, 0,

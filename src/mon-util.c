@@ -854,7 +854,7 @@ void monster_death(struct monster *mon, bool stats)
 		if (!visible && !stats)
 			obj->origin = ORIGIN_DROP_UNKNOWN;
 
-		drop_near(cave, &obj, 0, mon->grid.y, mon->grid.x, true);
+		drop_near(cave, &obj, 0, mon->grid, true);
 		obj = next;
 	}
 

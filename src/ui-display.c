@@ -2120,9 +2120,9 @@ static void refresh(game_event_type type, game_event_data *data, void *user)
 {
 	/* Place cursor on player/target */
 	if (OPT(player, show_target) && target_sighted()) {
-		int col, row;
-		target_get(&col, &row);
-		move_cursor_relative(row, col);
+		struct loc target;
+		target_get(&target);
+		move_cursor_relative(target.y, target.x);
 	}
 
 	Term_fresh();

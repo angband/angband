@@ -563,7 +563,7 @@ static void use_aux(struct command *cmd, struct object *obj, enum use use,
 	if (square_trap_specific(cave, player->grid, rune->tidx)) {
 		/* Push objects off the grid */
 		if (square_object(cave, player->grid))
-			push_object(player->grid.y, player->grid.x);
+			push_object(player->grid);
 	}
 }
 
@@ -837,7 +837,7 @@ static void refill_lamp(struct object *lamp, struct object *obj)
 			if (object_is_carried(player, obj))
 				inven_carry(player, used, true, true);
 			else
-				drop_near(cave, &used, 0, player->grid.y, player->grid.x, false);
+				drop_near(cave, &used, 0, player->grid, false);
 		} else
 			/* Empty a single lantern */
 			obj->timeout = 0;

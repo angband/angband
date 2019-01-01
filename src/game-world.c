@@ -787,7 +787,7 @@ static void process_player_cleanup(void)
 		player->total_energy += player->upkeep->energy_use;
 
 		/* Player can be damaged by terrain */
-		player_take_terrain_damage(player, player->grid.y, player->grid.x);
+		player_take_terrain_damage(player, player->grid);
 
 		/* Do nothing else if player has auto-dropped stuff */
 		if (!player->upkeep->dropping) {

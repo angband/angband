@@ -72,15 +72,15 @@ void object_copy_amt(struct object *dest, struct object *src, int amt);
 struct object *object_split(struct object *src, int amt);
 struct object *floor_object_for_use(struct object *obj, int num, bool message,
 									bool *none_left);
-bool floor_carry(struct chunk *c, int y, int x, struct object *drop,
+bool floor_carry(struct chunk *c, struct loc grid, struct object *drop,
 				 bool *note);
-void drop_near(struct chunk *c, struct object **dropped, int chance, int y,
-			   int x, bool verbose);
-void push_object(int y, int x);
+void drop_near(struct chunk *c, struct object **dropped, int chance,
+			   struct loc grid, bool verbose);
+void push_object(struct loc grid);
 void floor_item_charges(struct object *obj);
 int scan_floor(struct object **items, int max_size, object_floor_t mode,
 			   item_tester tester);
-int scan_distant_floor(struct object **items, int max_size, int y, int x);
+int scan_distant_floor(struct object **items, int max_size, struct loc grid);
 int scan_items(struct object **item_list, size_t item_list_max, int mode,
 			   item_tester tester);
 bool item_is_available(struct object *obj);
