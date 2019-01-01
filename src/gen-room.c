@@ -2515,7 +2515,6 @@ bool build_pit(struct chunk *c, struct loc centre, int rating)
 	place_new_monster(c, loc(centre.x - 1, centre.y), what[6], false, false,
 					  info, ORIGIN_DROP_PIT);
 
-
 	/* Place some objects */
 	for (y = centre.y - 2; y <= centre.y + 2; y++) {
 		for (x = centre.x - 9; x <= centre.x + 9; x++) {

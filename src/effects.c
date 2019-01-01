@@ -3946,7 +3946,7 @@ bool effect_handler_LASH(effect_handler_context_t *context)
 			target = t_mon->grid;
 		} else {
 			struct loc decoy = cave_find_decoy(cave);
-			if (decoy.y && decoy.x) {
+			if (!loc_is_zero(decoy)) {
 				target = decoy;
 			} else {
 				target = player->grid;

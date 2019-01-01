@@ -284,7 +284,7 @@ static bool get_move_bodyguard(struct chunk *c, struct monster *mon)
 {
 	int i;
 	struct monster *leader = monster_group_leader(c, mon);
-	int dist = distance(loc(mon->fx, mon->fy), loc(leader->fx, leader->fy));
+	int dist = distance(mon->grid, leader->grid);
 	struct loc best;
 	bool found = false;
 
@@ -294,29 +294,28 @@ static bool get_move_bodyguard(struct chunk *c, struct monster *mon)
 	/* Check nearby adjacent grids and assess */
 	for (i = 0; i < 8; i++) {
 		/* Get the location */
-		int y = mon->fy + ddy_ddd[i];
-		int x = mon->fx + ddx_ddd[i];
-		int new_dist = distance(loc(x, y), loc(leader->fx, leader->fy));
-		int char_dist = distance(loc(x, y), loc(player->px, player->py));
+		struct loc grid = loc_sum(mon->grid, ddgrid_ddd[i]);
+		int new_dist = distance(grid, leader->grid);
+		int char_dist = distance(grid, player->grid);
 
 		/* Bounds check */
-		if (!square_in_bounds(c, y, x)) {
+		if (!square_in_bounds(c, grid)) {
 			continue;
 		}
 
 		/* There's a monster blocking that we can't deal with */
-		if (!monster_can_kill(c, mon, y, x) && !monster_can_move(c, mon, y, x)){
+		if (!monster_can_kill(c, mon, grid) && !monster_can_move(c, mon, grid)){
 			continue;
 		}
 
 		/* There's damaging terrain */
-		if (monster_hates_grid(c, mon, y, x)) {
+		if (monster_hates_grid(c, mon, grid)) {
 			continue;
 		}
 
 		/* Closer to the leader is always better */
 		if (new_dist < dist) {
-			best = loc(x, y);
+			best = grid;
 			found = true;
 			/* If there's a grid that's also closer to the player, that wins */
 			if (char_dist < mon->cdis) {
@@ -368,7 +367,7 @@ static bool get_move_advance(struct chunk *c, struct monster *mon, bool *track)
 
 	struct loc best_grid;
 	struct loc backup_grid;
-	bool found_dir = false;
+	bool found = false;
 	bool found_backup = false;
 
 	/* Bodyguards are special */
@@ -419,7 +418,7 @@ static bool get_move_advance(struct chunk *c, struct monster *mon, bool *track)
 		/* If it's better than the current noise, choose this direction */
 		if (heard_noise > current_noise) {
 			best_grid = grid;
-			found_dir = true;
+			found = true;
 			break;
 		} else if (heard_noise == current_noise) {
 			/* Possible move if we can't actually get closer */
@@ -442,13 +441,13 @@ static bool get_move_advance(struct chunk *c, struct monster *mon, bool *track)
 				(c->scent.grids[grid.y][grid.x] != 0)) {
 				best_scent = smelled_scent;
 				best_grid = grid;
-				found_dir = true;
+				found = true;
 			}
 		}
 	}
 
 	/* Set the target */
-	if (found_dir) {
+	if (found) {
 		mon->target.grid = best_grid;
 		*track = true;
 		return true;

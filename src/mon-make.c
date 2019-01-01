@@ -159,7 +159,7 @@ void delete_monster_idx(int m_idx)
 
 	/* Monster is gone from square and group */
 	square_set_mon(cave, mon->grid, 0);
-	monster_remove_from_group(cave, mon);
+	monster_remove_from_groups(cave, mon);
 
 	/* Delete objects */
 	struct object *obj = mon->held_obj;
@@ -1149,8 +1149,7 @@ static bool place_new_monster_group(struct chunk *c, struct loc grid,
 			if (!square_isempty(c, try)) continue;
 
 			/* Attempt to place another monster */
-			if (place_new_monster_one(c, try, race, sleep, group_info,
-									  origin)) {
+			if (place_new_monster_one(c, try, race, sleep, group_info, origin)){
 				/* Add it to the "hack" set */
 				loc_list[loc_num] = try;
 				loc_num++;
@@ -1243,9 +1242,8 @@ bool place_friends(struct chunk *c, struct loc grid, struct monster_race *race,
 			bool success = place_new_monster_one(c, new, friends_race, sleep,
 												 group_info, origin);
 			if (total > 1)
-				success = place_new_monster_group(c, new, friends_race,
-												  sleep, group_info, total,
-												  origin);
+				success = place_new_monster_group(c, new, friends_race, sleep,
+												  group_info, total, origin);
 
 			return success;
 		}

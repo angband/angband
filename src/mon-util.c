@@ -621,7 +621,7 @@ void monster_wake(struct monster *mon, bool notify, int aware_chance)
  */
 bool monster_can_see(struct chunk *c, struct monster *mon, struct loc grid)
 {
-	return los(c, mon->fy, mon->fx, grid.y, grid.x);
+	return los(c, mon->grid, grid);
 }
 
 /**

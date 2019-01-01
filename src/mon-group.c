@@ -355,16 +355,15 @@ void monster_group_rouse(struct chunk *c, struct monster *mon)
 	int index = mon->group_info[PRIMARY_GROUP].index;
 	struct monster_group *group = c->monster_groups[index];
 	struct mon_group_list_entry *entry = group->member_list;
-	struct loc mon_grid = loc(mon->fx, mon->fy);
 
 	/* Not aware means don't rouse */
 	if (!mflag_has(mon->mflag, MFLAG_AWARE)) return;
 
 	while (entry) {
 		struct monster *friend = &c->monsters[entry->midx];
-		struct loc fgrid = loc(friend->fx, friend->fy);
+		struct loc fgrid = friend->grid;
 		if (friend->m_timed[MON_TMD_SLEEP] && monster_can_see(c, mon, fgrid)) {
-			int dist = distance(mon_grid, fgrid);
+			int dist = distance(mon->grid, fgrid);
 
 			/* Closer means more likely to be roused */
 			if (one_in_(dist * 20)) {
