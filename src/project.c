@@ -963,9 +963,10 @@ bool project(struct source origin, int rad, struct loc finish,
 
 	/* Look for the player, affect them when found */
 	if (flg & (PROJECT_PLAY)) {
+		bool powerful = (flg & PROJECT_POWER) ? true : false;
 		for (i = 0; i < num_grids; i++) {
 			if (project_p(origin, distance_to_grid[i], blast_grid[i],
-						  dam_at_dist[distance_to_grid[i]], typ)) {
+						  dam_at_dist[distance_to_grid[i]], typ, powerful)) {
 				notice = true;
 				if (player->is_dead)
 					return notice;

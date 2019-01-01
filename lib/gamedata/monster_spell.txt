@@ -333,6 +333,8 @@ lore-color-resist:Yellow
 lore-color-immune:Light Green
 message-vis:{name} casts a ball of fire.
 message-invis:Something mumbles.
+message-vis-strong:{name} conjures up a firestorm.
+message-invis-strong:Something murmurs deeply.
 
 name:BA_COLD
 hit:100
@@ -345,6 +347,8 @@ lore-color-resist:Yellow
 lore-color-immune:Light Green
 message-vis:{name} casts a ball of frost.
 message-invis:Something mumbles.
+message-vis-strong:{name} calls up a blizzard.
+message-invis-strong:Something chants coldly.
 
 name:BA_POIS
 hit:100
@@ -353,8 +357,10 @@ dice:12d2
 lore:produce poison balls
 lore-color-base:Orange
 lore-color-resist:Light Green
-message-vis:{name} creates a cloud of poison.
+message-vis:{name} casts a venomous cloud.
 message-invis:Something mumbles.
+message-vis-strong:{name} unleashes a storm of corrosive toxins.
+message-invis-strong:Something murmurs viciously.
 
 name:BA_NETH
 hit:100
@@ -366,6 +372,8 @@ lore-color-base:Orange
 lore-color-resist:Light Green
 message-vis:{name} casts a ball of nether.
 message-invis:Something mumbles.
+message-vis-strong:{name} creates a storm of nether magics.
+message-invis:Something chants ominously.
 
 name:BA_WATE
 hit:100

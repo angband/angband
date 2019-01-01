@@ -75,7 +75,7 @@ static void spell_message(struct monster *mon,
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
-	bool strong = mon->race->spell_power >= 60;
+	bool strong = mon->race->spell_power >= 80 || monster_is_powerful(mon);
 	struct monster *t_mon = NULL;
 
 	/* Get the target monster, if any */
