@@ -424,6 +424,7 @@ static void cleanup_projection(void)
 		string_free(projections[idx].name);
 		string_free(projections[idx].type);
 		string_free(projections[idx].desc);
+		string_free(projections[idx].lash_desc);
 		string_free(projections[idx].player_desc);
 		string_free(projections[idx].blind_desc);
 	}
@@ -1246,6 +1247,8 @@ static void cleanup_curse(void)
 		string_free(curses[idx].conflict);
 		mem_free(curses[idx].desc);
 		if (curses[idx].obj) {
+			mem_free(curses[idx].obj->known->effect_msg);
+			mem_free(curses[idx].obj->known);
 			free_effect(curses[idx].obj->effect);
 			mem_free(curses[idx].obj->effect_msg);
 			mem_free(curses[idx].obj);

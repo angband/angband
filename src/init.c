@@ -817,12 +817,13 @@ static void cleanup_world(void)
 {
 	struct level *level = world;
 	while (level) {
+		struct level *next = level->next;
 		string_free(level->name);
 		string_free(level->up);
 		string_free(level->down);
-		level = level->next;
+		mem_free(level);
+		level = next;
 	}
-	mem_free(world);
 }
 
 static struct file_parser world_parser = {

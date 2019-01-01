@@ -1707,6 +1707,7 @@ static void cleanup_monster(void)
 		struct monster_friends *f;
 		struct monster_friends_base *fb;
 		struct monster_mimic *m;
+		struct monster_shape *s;
 
 		d = r->drops;
 		while (d) {
@@ -1731,6 +1732,12 @@ static void cleanup_monster(void)
 			struct monster_mimic *mn = m->next;
 			mem_free(m);
 			m = mn;
+		}
+		s = r->shapes;
+		while (s) {
+			struct monster_shape *sn = s->next;
+			mem_free(s);
+			s = sn;
 		}
 		string_free(r->plural);
 		string_free(r->text);
