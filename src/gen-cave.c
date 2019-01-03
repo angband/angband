@@ -253,7 +253,7 @@ static void build_tunnel(struct chunk *c, struct loc grid1, struct loc grid2)
 			for (grid.y = grid1.y - 1; grid.y <= grid1.y + 1; grid.y++) {
 				for (grid.x = grid1.x - 1; grid.x <= grid1.x + 1; grid.x++) {
 					if (square_is_granite_with_flag(c, grid, SQUARE_WALL_OUTER))
-						set_marked_granite(c, grid.y, grid.x, SQUARE_WALL_SOLID);
+						set_marked_granite(c, grid, SQUARE_WALL_SOLID);
 				}
 			}
 
@@ -941,7 +941,7 @@ static void mutate_cavern(struct chunk *c) {
     for (grid.y = 1; grid.y < h - 1; grid.y++) {
 		for (grid.x = 1; grid.x < w - 1; grid.x++) {
 			if (temp[grid_to_i(grid, w)] == FEAT_GRANITE)
-				set_marked_granite(c, grid.y, grid.x, SQUARE_WALL_SOLID);
+				set_marked_granite(c, grid, SQUARE_WALL_SOLID);
 			else
 				square_set_feat(c, grid, temp[grid_to_i(grid, w)]);
 		}
@@ -1075,12 +1075,13 @@ static void clear_small_regions(struct chunk *c, int colors[], int counts[]) {
 
     for (y = 1; y < c->height - 1; y++) {
 		for (x = 1; x < c->width - 1; x++) {
-			i = grid_to_i(loc(x, y), w);
+			struct loc grid = loc(x, y);
+			i = grid_to_i(grid, w);
 
 			if (!deleted[colors[i]]) continue;
 
 			colors[i] = 0;
-			set_marked_granite(c, y, x, SQUARE_WALL_SOLID);
+			set_marked_granite(c, grid, SQUARE_WALL_SOLID);
 		}
     }
     mem_free(deleted);
@@ -2070,7 +2071,7 @@ struct chunk *vault_chunk(struct player *p)
 	c->depth = p->depth;
 
 	/* Build the vault in it */
-	build_vault(c, v->hgt / 2, v->wid / 2, v);
+	build_vault(c, loc(v->wid / 2, v->hgt / 2), v);
 
 	return c;
 }

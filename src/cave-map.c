@@ -423,7 +423,7 @@ void wiz_light(struct chunk *c, struct player *p, bool full)
 					struct loc a_grid = loc_sum(grid, ddgrid_ddd[i]);
 
 					/* Perma-light the grid */
-					sqinfo_on(square(cave, a_grid).info, SQUARE_GLOW);
+					sqinfo_on(square(c, a_grid).info, SQUARE_GLOW);
 
 					/* Memorize normal features */
 					if (!square_isfloor(c, a_grid) || 

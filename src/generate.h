@@ -179,7 +179,7 @@ struct cave_profile {
  * room_builder is a function pointer which builds rooms in the cave given
  * anchor coordinates.
  */
-typedef bool (*room_builder) (struct chunk *c, int y0, int x0, int rating);
+typedef bool (*room_builder) (struct chunk *c, struct loc centre, int rating);
 
 
 /**
@@ -277,32 +277,32 @@ void fill_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat,
 void generate_mark(struct chunk *c, int y1, int x1, int y2, int x2, int flag);
 void draw_rectangle(struct chunk *c, int y1, int x1, int y2, int x2, int feat, 
 					int flag);
-void set_marked_granite(struct chunk *c, int y, int x, int flag);
+void set_marked_granite(struct chunk *c, struct loc grid, int flag);
 extern bool generate_starburst_room(struct chunk *c, int y1, int x1, int y2, 
 									int x2, bool light, int feat, 
 									bool special_ok);
 
 struct vault *random_vault(int depth, const char *typ);
-bool build_vault(struct chunk *c, int y0, int x0, struct vault *v);
+bool build_vault(struct chunk *c, struct loc centre, struct vault *v);
 
-bool build_staircase(struct chunk *c, int y0, int x0, int rating);
-bool build_simple(struct chunk *c, int y0, int x0, int rating);
-bool build_circular(struct chunk *c, int y0, int x0, int rating);
-bool build_overlap(struct chunk *c, int y0, int x0, int rating);
-bool build_crossed(struct chunk *c, int y0, int x0, int rating);
-bool build_large(struct chunk *c, int y0, int x0, int rating);
+bool build_staircase(struct chunk *c, struct loc centre, int rating);
+bool build_simple(struct chunk *c, struct loc centre, int rating);
+bool build_circular(struct chunk *c, struct loc centre, int rating);
+bool build_overlap(struct chunk *c, struct loc centre, int rating);
+bool build_crossed(struct chunk *c, struct loc centre, int rating);
+bool build_large(struct chunk *c, struct loc centre, int rating);
 bool mon_pit_hook(struct monster_race *race);
 void set_pit_type(int depth, int type);
-bool build_nest(struct chunk *c, int y0, int x0, int rating);
-bool build_pit(struct chunk *c, int y0, int x0, int rating);
-bool build_template(struct chunk *c, int y0, int x0, int rating);
-bool build_interesting(struct chunk *c, int y0, int x0, int rating);
-bool build_lesser_vault(struct chunk *c, int y0, int x0, int rating);
-bool build_medium_vault(struct chunk *c, int y0, int x0, int rating);
-bool build_greater_vault(struct chunk *c, int y0, int x0, int rating);
-bool build_moria(struct chunk *c, int y0, int x0, int rating);
-bool build_room_of_chambers(struct chunk *c, int y0, int x0, int rating);
-bool build_huge(struct chunk *c, int y0, int x0, int rating);
+bool build_nest(struct chunk *c, struct loc centre, int rating);
+bool build_pit(struct chunk *c, struct loc centre, int rating);
+bool build_template(struct chunk *c, struct loc centre, int rating);
+bool build_interesting(struct chunk *c, struct loc centre, int rating);
+bool build_lesser_vault(struct chunk *c, struct loc centre, int rating);
+bool build_medium_vault(struct chunk *c, struct loc centre, int rating);
+bool build_greater_vault(struct chunk *c, struct loc centre, int rating);
+bool build_moria(struct chunk *c, struct loc centre, int rating);
+bool build_room_of_chambers(struct chunk *c, struct loc centre, int rating);
+bool build_huge(struct chunk *c, struct loc centre, int rating);
 bool room_build(struct chunk *c, int by0, int bx0, struct room_profile profile,
 	bool finds_own_space);
 
