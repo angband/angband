@@ -18,6 +18,8 @@
 #ifndef MON_GROUP_H
 #define MON_GROUP_H
 
+#include "monster.h"
+
 struct mon_group_list_entry {
 	int midx;
 	struct mon_group_list_entry *next;
@@ -27,9 +29,6 @@ struct monster_group {
 	int index;
 	int leader;
 	struct mon_group_list_entry *member_list;
-	struct loc home;
-	struct loc destination;
-	struct heatmap heatmap;
 };
 
 struct monster_group *monster_group_new(void);
@@ -39,6 +38,8 @@ int monster_group_index_new(struct chunk *c);
 void monster_add_to_group(struct chunk *c, struct monster *mon,
 						  struct monster_group *group);
 void monster_group_start(struct chunk *c, struct monster *mon, int which);
+void monster_group_assign(struct chunk *c, struct monster *mon,
+						  struct monster_group_info *info, bool loading);
 int monster_group_index(struct monster_group *group);
 struct monster_group *monster_group_by_index(struct chunk *c, int index);
 bool monster_group_change_index(struct chunk *c, int new, int old);
@@ -47,5 +48,6 @@ void monster_group_rouse(struct chunk *c, struct monster *mon);
 int monster_primary_group_size(struct chunk *c, const struct monster *mon);
 int monster_group_leader_idx(struct monster_group *group);
 struct monster *monster_group_leader(struct chunk *c, struct monster *mon);
+void monster_groups_verify(struct chunk *c);
 
 #endif /* !MON_GROUP_H */

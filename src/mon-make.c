@@ -232,6 +232,7 @@ static void compact_monsters_aux(int i1, int i2)
 	/* Update group */
 	if (!monster_group_change_index(cave, i2, i1)) {
 		quit("Bad monster group info!") ;
+		monster_groups_verify(cave);
 	}
 
 	/* Repair objects being carried by monster */
@@ -908,14 +909,21 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 {
 	s16b m_idx;
 	struct monster *new_mon;
-	struct monster_group *group;
+	struct monster_group_info *info = mon->group_info;
+	bool loading = mon->midx > 0;
 
 	assert(square_in_bounds(c, grid));
 	assert(!square_monster(c, grid));
 
-	/* Get a new record */
-	m_idx = mon_pop(c);
-	if (!m_idx) return 0;
+	/* Get a new record, or recycle the old one */
+	if (loading) {
+		m_idx = mon->midx;
+		c->mon_max++;
+		c->mon_cnt++;
+	} else {
+		m_idx = mon_pop(c);
+		if (!m_idx) return 0;
+	}
 
 	/* Copy the monster */
 	new_mon = cave_monster(c, m_idx);
@@ -929,13 +937,8 @@ s16b place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	new_mon->grid = grid;
 	assert(square_monster(c, grid) == new_mon);
 
-	/* Assign monster to its monster group, creating the group if necessary */
-	group = monster_group_by_index(c, new_mon->group_info[PRIMARY_GROUP].index);
-	if (group) {
-		monster_add_to_group(c, new_mon, group);
-	} else {
-		monster_group_start(c, new_mon, 0);
-	}
+	/* Assign monster to its monster group */
+	monster_group_assign(c, new_mon, info, loading);
 
 	update_mon(new_mon, c, true);
 

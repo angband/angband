@@ -1191,6 +1191,9 @@ static enum parser_error parse_monster_depth(struct parser *p) {
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->level = parser_getint(p, "level");
+
+	/* Level is default spell power */
+	r->spell_power = r->level;
 	return PARSE_ERROR_NONE;
 }
 

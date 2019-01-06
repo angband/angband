@@ -259,6 +259,8 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	size_t j;
 
 	/* Read the monster race */
+	rd_u16b(&tmp16u);
+	mon->midx = tmp16u;
 	rd_string(race_name, sizeof(race_name));
 	mon->race = lookup_monster(race_name);
 	if (!mon->race) {
@@ -1414,60 +1416,6 @@ static int rd_monsters_aux(struct chunk *c)
 	return 0;
 }
 
-/**
- * Read monster groups
- */
-static int rd_monster_groups_aux(struct chunk *c)
-{
-	int i;
-	u16b tmp16u;
-
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
-	/* Read the monster groups */
-	for (i = 0; i < z_info->level_monster_max; i++) {
-		struct mon_group_list_entry *list_entry;
-		int index;
-
-		/* Check if this index has a group */
-		rd_u16b(&tmp16u);
-		if (!tmp16u) continue;
-
-		/* Read group details */
-		index = tmp16u;
-		c->monster_groups[index] = monster_group_new();
-		c->monster_groups[index]->index = tmp16u;
-		rd_u16b(&tmp16u);
-		c->monster_groups[index]->leader = tmp16u;
-
-		/* Check this is an actual monster */
-		if (!cave_monster(c, tmp16u)->race) {
-			note(format("Cannot read monster %d", tmp16u));
-			return (-1);
-		}
-		
-		rd_u16b(&tmp16u);
-		while (tmp16u) {
-			list_entry = mem_zalloc(sizeof(struct mon_group_list_entry));
-			list_entry->midx = tmp16u;
-			list_entry->next = c->monster_groups[index]->member_list;
-			c->monster_groups[index]->member_list = list_entry;
-			rd_u16b(&tmp16u);
-		}
-		rd_u16b(&tmp16u);
-		c->monster_groups[index]->home.y = tmp16u;
-		rd_u16b(&tmp16u);
-		c->monster_groups[index]->home.x = tmp16u;
-		rd_u16b(&tmp16u);
-		c->monster_groups[index]->destination.y = tmp16u;
-		rd_u16b(&tmp16u);
-		c->monster_groups[index]->destination.x = tmp16u;
-	}
-	return 0;
-}
-
 static int rd_traps_aux(struct chunk *c)
 {
 	struct loc grid;
@@ -1591,22 +1539,6 @@ int rd_monsters(void)
 }
 
 /**
- * Read the monster group list
- */
-int rd_monster_groups(void)
-{
-	/* Only if the player's alive */
-	if (player->is_dead)
-		return 0;
-
-	if (rd_monster_groups_aux(cave))
-		return -1;
-
-	return 0;
-}
-
-
-/**
  * Read the traps - wrapper functions
  */
 int rd_traps(void)
@@ -1643,10 +1575,6 @@ int rd_chunks(void)
 
 		/* Read the monsters */
 		if (rd_monsters_aux(c))
-			return -1;
-
-		/* Read the monster groups */
-		if (rd_monster_groups_aux(c))
 			return -1;
 
 		/* Read traps */
