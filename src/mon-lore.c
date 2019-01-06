@@ -545,7 +545,8 @@ static const char *lore_describe_speed(byte speed)
 	} lore_speed_description[] = {
 		{130,	"incredibly quickly"},
 		{120,	"very quickly"},
-		{110,	"quickly"},
+		{115,	"quickly"},
+		{110,	"fairly quickly"},
 		{109,	"normal speed"}, /* 110 is normal speed */
 		{99,	"slowly"},
 		{89,	"very slowly"},
