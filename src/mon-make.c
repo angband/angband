@@ -110,6 +110,9 @@ static void init_race_allocs(void) {
 			/* Extract the base probability */
 			p = (100 / race->rarity);
 
+			/* Multiply by depth factor (experimental) */
+			p *= (1 + lev / 10);
+
 			/* Skip entries preceding this monster's level */
 			prev_lev_count = (lev > 0) ? num[lev - 1] : 0;
 
