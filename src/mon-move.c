@@ -921,7 +921,7 @@ static bool monster_turn_multiply(struct chunk *c, struct monster *mon)
 	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Too many breeders on the level already */
-	if (num_repro >= z_info->repro_monster_max) return false;
+	if (c->num_repro >= z_info->repro_monster_max) return false;
 
 	/* Count the adjacent monsters */
 	for (y = mon->grid.y - 1; y <= mon->grid.y + 1; y++)

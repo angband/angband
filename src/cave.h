@@ -202,6 +202,7 @@ struct chunk {
 	u16b mon_max;
 	u16b mon_cnt;
 	int mon_current;
+	int num_repro;
 
 	struct monster_group **monster_groups;
 

@@ -396,8 +396,6 @@ struct monster {
 
 /** Variables **/
 
-extern s16b num_repro;
-
 extern struct monster_pain *pain_messages;
 extern struct monster_spell *monster_spells;
 extern struct monster_base *rb_info;
