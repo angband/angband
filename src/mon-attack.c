@@ -112,6 +112,14 @@ static void remove_bad_spells(struct monster *mon, bitflag f[RSF_SIZE])
 		rsf_off(f2, RSF_TELE_TO);
 	}
 
+	/* Don't use the lash effect if the player is too far away */
+	if (mon->cdis > 2) {
+		rsf_off(f2, RSF_WHIP);
+	}
+	if (mon->cdis > 3) {
+		rsf_off(f2, RSF_SPIT);
+	}
+
 	/* Update acquired knowledge */
 	if (OPT(player, birth_ai_learn)) {
 		size_t i;

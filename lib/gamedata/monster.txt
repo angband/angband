@@ -2126,24 +2126,6 @@ flags:IM_POIS | GROUP_AI
 friends:100:2d7:Same
 desc:It scuttles towards you.
 
-name:manes
-plural:manes
-base:minor demon
-color:u
-speed:110
-hit-points:36
-hearing:20
-armor-class:48
-sleepiness:80
-depth:7
-rarity:2
-experience:16
-blow:HIT:HURT:1d8
-flags:OPEN_DOOR | BASH_DOOR
-flags:NO_FEAR
-friends:100:2d7:Same
-desc:It is a minor but aggressive demon.
-
 name:bloodshot eye
 base:eye
 color:r
@@ -2463,7 +2445,7 @@ blow:HIT:HURT:1d8
 flags:OPEN_DOOR | BASH_DOOR
 flags:NO_FEAR
 friends:100:2d7:Same
-desc:It is the larval form of a major demon.
+desc:It is a minor but aggressive demon.
 
 name:hill orc
 base:orc
@@ -4301,7 +4283,7 @@ flags:FORCE_SLEEP
 spell-freq:10
 spells:BLIND | BLINK | CONF | SCARE | TELE_LEVEL | TELE_TO
 spells:TPORT
-desc:The chaotic evil master's favourite pet.
+desc:A demon of small stature with an annoying bite.
 
 name:uruk
 base:orc
@@ -4388,7 +4370,7 @@ flags:FORCE_SLEEP
 spell-freq:10
 spells:BLIND | BLINK | CONF | SCARE | TELE_LEVEL | TELE_TO
 spells:TPORT
-desc:The lawful evil master's favourite pet.
+desc:A poisonous little mischief-maker.
 
 name:forest troll
 base:troll
@@ -5808,6 +5790,31 @@ desc: animal cunning, human intelligence and the great physical strength of the
 desc: bear makes for a dangerous enemy.
 
 ### Dungeon level 25 ###
+
+name:nruling
+base:minor demon
+color:R
+speed:120
+hit-points:50
+hearing:20
+armor-class:16
+sleepiness:8
+depth:25
+rarity:2
+experience:75
+blow:HIT:FIRE:1d8
+flags:FORCE_SLEEP | OPEN_DOOR
+flags:NO_FEAR
+flags:RAND_50 | ONLY_ITEM | DROP_60
+innate-freq:3
+spell-freq:2
+spell-power:10
+spells:BLINK | TELE_SELF_TO | BLIND | SLOW | CAUSE_1
+spells:WHIP | BO_FIRE
+friends:100:2d7:Same
+desc:Little sparks of flame that dance around you, lashing whips and cursing
+desc: horribly.
+
 
 name:hill giant
 base:giant

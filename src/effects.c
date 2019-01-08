@@ -2853,6 +2853,7 @@ bool effect_handler_TELEPORT(effect_handler_context_t *context)
 /**
  * Teleport player or target monster to a grid near the given location
  * Setting context->y and context->x treats them as y and x coordinates
+ * Setting context->subtype allows monsters to teleport toward the player.
  *
  * This function is slightly obsessive about correctness.
  * This function allows teleporting into vaults (!)
@@ -2877,6 +2878,9 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 	if (t_mon) {
 		/* Monster being teleported */
 		start = t_mon->grid;
+	} else if (context->subtype) {
+		/* Monster teleporting to the player */
+		start = mon->grid;
 	} else {
 		/* Targeted decoys get destroyed */
 		struct loc decoy = cave_find_decoy(cave);
@@ -2895,7 +2899,14 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		aim = loc(context->x, context->y);
 	} else if (mon) {
 		/* Spell cast by monster */
-		aim = mon->grid;
+		if (context->subtype) {
+			/* Monster teleporting to player */
+			aim = player->grid;
+			dis = 2;
+		} else {
+			/* Player being teleported to monster */
+			aim = mon->grid;
+		}
 	} else {
 		/* Player choice */
 		get_aim_dir(&dir);
@@ -5144,6 +5155,7 @@ int effect_subtype(int index, const char *type)
 			case EF_BREATH:
 			case EF_ARC:
 			case EF_SHORT_BEAM:
+			case EF_LASH:
 			case EF_SWARM:
 			case EF_STRIKE:
 			case EF_STAR:
@@ -5233,6 +5245,13 @@ int effect_subtype(int index, const char *type)
 				/* Allow teleport away */
 			case EF_TELEPORT: {
 				if (streq(type, "AWAY"))
+					val = 1;
+				break;
+			}
+
+				/* Allow monster teleport toward */
+			case EF_TELEPORT_TO: {
+				if (streq(type, "SELF"))
 					val = 1;
 				break;
 			}

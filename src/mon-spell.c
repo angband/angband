@@ -53,7 +53,7 @@ static spell_tag_t spell_tag_lookup(const char *tag)
 		return SPELL_TAG_TARGET;
 	else if (strncmp(tag, "type", 4) == 0)
 		return SPELL_TAG_TYPE;
-	else if (strncmp(tag, "of_type", 7) == 0)
+	else if (strncmp(tag, "oftype", 6) == 0)
 		return SPELL_TAG_OF_TYPE;
 	else
 		return SPELL_TAG_NONE;

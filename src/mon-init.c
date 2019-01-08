@@ -68,14 +68,6 @@ static const char *obj_flags[] =
     ""
 };
 
-static const char *effect_list[] = {
-	"NONE",
-	#define EFFECT(x, a, b, c, d, e)	#x,
-	#include "list-effects.h"
-	#undef EFFECT
-	"MAX"
-};
-
 /**
  * Return the index of a flag from its name.
  */
@@ -753,8 +745,6 @@ static enum parser_error parse_mon_spell_effect(struct parser *p) {
 	struct monster_spell *s = parser_priv(p);
 	struct effect *effect;
 	struct effect *new_effect = mem_zalloc(sizeof(*new_effect));
-	const char *type;
-	int val;
 
 	if (!s)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -768,29 +758,8 @@ static enum parser_error parse_mon_spell_effect(struct parser *p) {
 	} else
 		s->effect = new_effect;
 
-	if (grab_name("effect", parser_getsym(p, "eff"), effect_list,
-				  N_ELEMENTS(effect_list), &val))
-		return PARSE_ERROR_INVALID_EFFECT;
-	new_effect->index = val;
-
-	if (parser_hasval(p, "type")) {
-		type = parser_getsym(p, "type");
-
-		if (type == NULL)
-			return PARSE_ERROR_UNRECOGNISED_PARAMETER;
-
-		/* Check for a value */
-		val = effect_subtype(new_effect->index, type);
-		if (val < 0)
-			return PARSE_ERROR_INVALID_VALUE;
-		else
-			new_effect->subtype = val;
-	}
-
-	if (parser_hasval(p, "xtra"))
-		new_effect->radius = parser_getint(p, "xtra");
-
-	return PARSE_ERROR_NONE;
+	/* Fill in the detail */
+	return grab_effect_data(p, new_effect);
 }
 
 static enum parser_error parse_mon_spell_effect_yx(struct parser *p) {

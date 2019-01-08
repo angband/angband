@@ -38,17 +38,17 @@ message-invis:Something makes a high-pitched shriek.
 
 name:WHIP
 hit:100
-effect:LASH:2
+effect:LASH:MISSILE:2
 dice:$B
 expr:B:LASH_DAMAGE: + 0
 lore:lash you if nearby
 lore-color-base:Orange
-message-vis:{name} lashes at you with a whip{of_type}.
+message-vis:{name} lashes at you with a whip{oftype}.
 message-invis:You hear a crack.
 
 name:SPIT
 hit:100
-effect:LASH:3
+effect:LASH:MISSILE:3
 dice:$B
 expr:B:LASH_DAMAGE: + 0
 lore:spit at you from a distance
@@ -734,8 +734,17 @@ hit:100
 effect:TELEPORT_TO
 lore:teleport to
 lore-color-base:Yellow
-message-vis:{name} commands {target} to come hither.
-message-invis:Something commands you to come hither.
+message-vis:{name} commands {target} to return.
+message-invis:Something commands you to return.
+
+name:TELE_SELF_TO
+msgt:TELEPORT
+hit:100
+effect:TELEPORT_TO:SELF
+lore:teleport toward
+lore-color-base:Yellow
+message-vis:{name} blinks toward {target}.
+message-invis:Something mutters.
 
 name:TELE_AWAY
 msgt:TELEPORT
