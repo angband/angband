@@ -214,6 +214,49 @@ summon.txt
   hard-coded in src/list-mon-spells.h
 
 
+Making Graphical Tilesets
+=========================
+You can make new graphical tilesets for Angband or customize existing ones.
+In this section we'll dive into how tilesets are defined and describe how to
+set up a new one from scratch. First, we'll enumerate the steps required and
+then we'll break down each step in detail.
+
+1. Create a directory to contain the tileset's files: (ex. lib/tiles/mytileset)
+2. Register the tileset in lib/tiles/list.txt
+3. Create an empty bitmap image large enough to hold your tileset
+4. Store the empty bitmap image in your tileset folder
+5. Author one or more .prf files to inform Angband how to use your tileset 
+6. Create a Makefile in your tileset folder
+
+First you need to create a directory to contain your tileset's files. Put the
+directory in lib/tiles and choose a name for the directory that is lower-case
+and generally matches the naming convention of the other tilesets you see there.
+Once the directory has been created, the next step is to decide how big the
+tiles will be in pixels and then create a blank image large enough to hold all
+of the tiles you'll need to create. As an example, Shockbolt's tileset uses 64x64
+pixel tiles. It also uses the special alpha blending flag so it can use double-
+height tiles (64x128) for large or tall monsters. It's dimension's are
+8192x2048 but the tileset is not completely full. As Angband is improved and new
+types of objects, monsters, terrain, etc... are created, it should be possible
+to add new graphics to Shockbolt's tileset without have to increase the size of
+the image. This should be kept in mind as packing your tileset into the smallest
+possible image size may not be the most maintainable solution.
+
+The list of tilesets to load is registered in lib/tiles/list.txt. . The format used to register a tileset is
+documented in the header of that file. You will be defining the name of the
+tileset, which directory contains the tileset's files, how big the tiles are in
+pixels (i.e. 64x64), the name of the main preference file for the tileset and
+some additional flags which have to do with alpha blending. Not all tilesets
+need to use these extra flags.
+
+The first thing to understand is that everything that can be displayed in the
+game has a name, or in the case of flavors, an ID number. To inform Angband on
+which graphics to use for which things the correct name must be referenced. The
+names for each type of thing can be referenced from the data files as mentioned
+above. The table below is a quick reference for where to find names of things
+and how to form IDs correctly to reference them.
+
+
 Larger changes
 ==============
 If changing data files is not enough for you, you will need to change actual
