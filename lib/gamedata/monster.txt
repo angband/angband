@@ -9187,29 +9187,6 @@ spells:BO_NETH
 desc:A figure that seems made of void, its strangely human shape is cloaked in
 desc: shadow.  It reaches out at you.
 
-name:erinyes
-plural:erinyes
-base:major demon
-color:u
-speed:110
-hit-points:210
-hearing:20
-armor-class:75
-sleepiness:70
-depth:38
-rarity:2
-experience:1000
-blow:HIT:HURT:3d4
-blow:TOUCH:LOSE_STR:1d5
-flags:FEMALE
-flags:DROP_40
-flags:IM_FIRE | IM_POIS
-spell-freq:7
-spells:BLIND | CONF
-spells:BO_FIRE
-desc:It is a lesser demon of female form; however, she takes little time to show
-desc: her true colours.
-
 name:ettin
 base:troll
 color:b
@@ -9532,7 +9509,7 @@ blow:HIT:HURT:3d6
 flags:TROLL | REGENERATE
 flags:DROP_60
 flags:IM_ELEC
-desc:A weird ghostly troll-like being from the ethereal plane.
+desc:A weird ghostly troll-like being.
 
 name:9-headed hydra
 base:hydra
@@ -9977,27 +9954,6 @@ friends-base:80:1d3:zombie:servant
 friends-base:80:1d3:skeleton:servant
 desc:A skeletal form wrapped in robes.  Powerful magic crackles along its bony
 desc: fingers.
-
-name:hezrou
-base:major demon
-color:g
-speed:110
-hit-points:457
-hearing:20
-armor-class:60
-sleepiness:70
-depth:41
-rarity:3
-experience:2500
-blow:HIT:HURT:3d4
-blow:HIT:HURT:3d4
-flags:DROP_1
-flags:IM_FIRE
-spell-freq:9
-spells:BO_FIRE
-spells:S_DEMON
-friends:100:4d4:Same
-desc:It is a demon of lizard form with cruel-looking jaws.
 
 name:Gorlim, Betrayer of Barahir
 base:person
@@ -11064,9 +11020,8 @@ innate-freq:9
 spell-freq:10
 spells:BLIND | CONF
 spells:BR_DARK | BR_LIGHT
-desc:A huge dragon emanating from the ethereal plane, this terrible dragon is a
-desc: master of light and dark.  Its form disappears from sight as it cloaks
-desc: itself in unearthly shadows.
+desc:This terrible dragon is a master of light and dark.  Its form disappears
+desc: from sight as it cloaks itself in unearthly shadows.
 
 name:master mystic
 base:person
@@ -11360,6 +11315,31 @@ desc:A mighty ancient dragon, Itangast's form scorches your flesh.  Wisps of
 desc: smoke curl up from his nostrils as he regards you with disdain.
 
 ### Dungeon level 53 ###
+
+name:hezrou
+base:major demon
+color:g
+speed:100
+hit-points:1850
+hearing:20
+armor-class:60
+sleepiness:70
+depth:53
+rarity:3
+experience:7000
+blow:CLAW:HURT:3d4
+blow:BITE:ACID:3d10
+blow:BITE:BLIND:3d10
+flags:SMART | DROP_1
+flags:IM_FIRE IM_ACID | NO_FEAR
+spell-freq:3
+spells:BO_FIRE | BO_ACID
+spells:BR_FIRE | BR_ACID
+spells:S_DEMON
+friends:100:1d2:Same
+desc:A sluggish demon of lizard form, firing powerful missiles.  From the
+desc: terribly oversized jaws to the stumpy lashing tail, pools of burning
+desc: acid froth and sizzle.
 
 name:ancient multi-hued dragon
 base:ancient dragon
@@ -12698,7 +12678,7 @@ spells:BA_COLD
 spells:BO_ICEE
 spells:BR_COLD | BR_SHAR
 spells:S_HI_DEMON
-desc:This demon from the ice planes is a truly terrifying sight.  It has an
+desc:This demon from the icy regions is a truly terrifying sight.  It has an
 desc: extremely large, insect-like body towering a full twelve feet tall, with
 desc: great claws on its hands and pincers on its mouth, and its head bulges
 desc: with great multi-faceted eyes.  Its tail is covered with razor-sharp
@@ -13302,7 +13282,7 @@ spells:BA_FIRE
 spells:BR_CHAO | BR_FIRE | BR_POIS
 spells:S_HI_DEMON | S_HI_DRAGON
 desc:Appearing as a giant, clawed and winged humanoid with a scaly red body and
-desc: massive fangs dripping a foul green liquid, the Pit Fiend is a dreadful
+desc: massive fangs dripping a foul green liquid, the pit fiend is a dreadful
 desc: enemy from the lowest depths of the hells.  They are often the commanders
 desc: of vast demon armies.
 
@@ -13331,43 +13311,37 @@ desc:A gigantic seething mass of flesh, Qlzqqlzuup changes colours in front of
 desc: your eyes.  Pulsating first one colour then the next, it knows only it
 desc: must bring help to protect itself.
 
-name:greater Balrog
-base:major demon
-color:P
-speed:130
-hit-points:4400
-hearing:40
-armor-class:210
-sleepiness:20
-depth:79
-rarity:3
-experience:25000
-blow:HIT:FIRE:8d12
-blow:HIT:FIRE:8d12
-blow:CRUSH:HURT:7d12
-blow:TOUCH:DRAIN_CHARGES
-flags:POWERFUL | HAS_LIGHT | ATTR_FLICKER
-flags:DROP_4
-flags:MOVE_BODY
-flags:IM_ELEC | IM_FIRE | IM_POIS | IM_PLASMA
-innate-freq:6
-spell-freq:4
-spells:CONF | SCARE | WHIP
-spells:BA_FIRE
-spells:BO_PLAS
-spells:BR_FIRE | BR_PLAS
-spells:S_DEMON | S_HI_DEMON | S_UNDEAD
-desc:Originally of the semi-divine Maiar, this evil spirit swore allegiance to
-desc: Morgoth at the beginning of time and is now one of his most terrible
-desc: demonic servants.  With its flaming whip and sword it seeks to destroy
-desc: you.
-
 
 
 ########## DUNGEON LEVELS 80-89 ##########
 
 
 ### Dungeon level 80 ###
+
+name:fury
+plural:furies
+base:major demon
+color:i
+speed:130
+hit-points:4000
+hearing:30
+armor-class:120
+sleepiness:20
+depth:80
+rarity:2
+experience:23000
+blow:CLAW:HURT:6d8
+blow:CLAW:HURT:6d8
+blow:BITE:CONFUSE:5d10
+blow:ENGULF:HALLU:4d10
+flags:FEMALE
+flags:DROP_4 | PASS_WALL
+flags:IM_FIRE | IM_POIS | IM_COLD
+spell-freq:4
+spells:CAUSE_4 | SCARE | BRAIN_SMASH
+spells:BLINK | TELE_SELF_TO
+spells:S_HI_DEMON
+desc:A female embodiment of rage, intent on tearing your mond and body apart.
 
 name:great wyrm of annihilation
 plural:great wyrms of annihilation
@@ -13424,7 +13398,7 @@ spells:BR_ELEC | BR_LIGHT | BR_GRAV | BR_PLAS | BR_WALL
 spells:S_DRAGON | S_HI_DRAGON
 desc:A wrathful dragon, of a breed that even legends do not mention,
 desc: rushing towards you like a thunderbolt.  Few ever face the wyrms
-desc: of the ethereal planes; fewer live to tell the tale.
+desc: of the exotic airs; fewer live to tell the tale.
 
 name:The Witch-King of Angmar
 base:wraith
@@ -13570,8 +13544,8 @@ spells:BA_ELEC
 spells:BO_ELEC | BO_MANA
 spells:S_HI_DEMON
 friends:100:2d3:Giant roc:servant
-desc:A winged humanoid demon from the Planes of Hell, Pazuzu grins inhumanely at
-desc: you as he decides your fate.
+desc:A winged humanoid demon, Pazuzu grins inhumanely at you as he decides
+desc: your fate.
 
 ### Dungeon level 83 ###
 
@@ -13636,6 +13610,35 @@ desc: sorcerer.  His power is devastating and his speed unmatched in the
 desc: underworld.  Flee his wrath!
 
 ### Dungeon level 85 ###
+
+name:greater Balrog
+base:major demon
+color:P
+speed:130
+hit-points:4500
+hearing:40
+armor-class:210
+sleepiness:20
+depth:85
+rarity:3
+experience:25000
+blow:HIT:FIRE:8d12
+blow:HIT:FIRE:8d12
+blow:CRUSH:HURT:9d12
+blow:TOUCH:DRAIN_CHARGES
+flags:POWERFUL | HAS_LIGHT | ATTR_FLICKER
+flags:DROP_4
+flags:MOVE_BODY | KILL_WALL
+flags:IM_ELEC | IM_FIRE | IM_POIS | IM_PLASMA
+innate-freq:5
+spell-freq:4
+spells:CONF | BA_FIRE | BO_PLAS | BA_DARK
+spells:WHIP | BR_FIRE | BR_PLAS
+spells:S_HI_DEMON | S_UNDEAD
+desc:Originally of the semi-divine Maiar, this evil spirit swore allegiance to
+desc: Morgoth at the beginning of time and is now one of his most terrible
+desc: demonic servants.  With its flaming whip and sword it seeks to destroy
+desc: you.
 
 name:Ancalagon the Black
 base:ancient dragon
@@ -13752,7 +13755,7 @@ blow:CRUSH:HURT:8d12
 blow:TOUCH:DRAIN_CHARGES
 flags:UNIQUE | MALE | POWERFUL | HAS_LIGHT
 flags:DROP_4 | DROP_GOOD
-flags:MOVE_BODY
+flags:MOVE_BODY | KILL_WALL
 flags:IM_FIRE | IM_PLASMA
 innate-freq:12
 spell-freq:6
@@ -13886,7 +13889,7 @@ blow:CRUSH:HURT:8d12
 blow:TOUCH:DRAIN_CHARGES
 flags:UNIQUE | MALE | POWERFUL | HAS_LIGHT
 flags:DROP_4 | DROP_GOOD | DROP_GREAT
-flags:MOVE_BODY
+flags:MOVE_BODY | KILL_WALL
 flags:IM_ELEC | IM_FIRE | IM_PLASMA
 innate-freq:8
 spell-freq:4
