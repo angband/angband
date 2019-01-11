@@ -94,7 +94,7 @@ bool monster_is_unique(const struct monster *mon)
 }
 
 /**
- * Monster is 
+ * Monster is stupid
  */
 bool monster_is_stupid(const struct monster *mon)
 {
@@ -102,11 +102,40 @@ bool monster_is_stupid(const struct monster *mon)
 }
 
 /**
- * Monster is smart
+ * Monster is (or was) smart
  */
 bool monster_is_smart(const struct monster *mon)
 {
+	if (mon->original_race && rf_has(mon->original_race->flags, RF_SMART)) {
+		return true;
+	}
 	return rf_has(mon->race->flags, RF_SMART);
+}
+
+/**
+ * Monster is (or was) detectable by telepathy
+ *
+ * Note that weirdness may result if WEIRD_MIND monsters shapechange
+ */
+bool monster_is_esp_detectable(const struct monster *mon)
+{
+	bitflag flags[RF_SIZE];
+	rf_copy(flags, mon->race->flags);
+	if (mon->original_race) {
+		rf_inter(flags, mon->original_race->flags);
+	}
+	if (rf_has(flags, RF_EMPTY_MIND)) {
+		/* Empty mind, no telepathy */
+		return false;
+	} else if (rf_has(mon->race->flags, RF_WEIRD_MIND)) {
+		/* Weird mind, one in ten individuals are detectable */
+		if ((mon->midx % 10) != 5) {
+			/* Undetectable */
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /**

@@ -867,9 +867,9 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
 	dam = adjust_dam(player,
-						typ,
-						dam,
-						RANDOMISE,
+					 typ,
+					 dam,
+					 RANDOMISE,
 					 player->state.el_info[typ].res_level,
 					 true);
 	if (dam) {

@@ -410,6 +410,38 @@ message-invis:Something mumbles loudly.
 message-vis-strong:{name} invokes a storm of darkness.
 message-invis-strong:Something chants powerfully.
 
+name:BA_LIGHT
+hit:100
+effect:BALL:LIGHT:2
+dice:$B+8d8
+expr:B:SPELL_POWER:* 4
+lore:produce balls of light
+lore-strong:invoke starbursts
+lore-color-base:Light Red
+lore-color-resist:Light Green
+message-vis:{name} casts a ball of light.
+message-invis:Something mumbles.
+message-vis-strong:{name} invokes a starburst.
+message-invis-strong:Something chants powerfully.
+
+name:STORM
+hit:100
+effect:BALL:WATER:3
+dice:50+$Dd10
+expr:D:SPELL_POWER:/ 2
+effect:BALL:ELEC:3
+dice:20+$Dd5
+expr:D:SPELL_POWER:/ 2
+effect:BALL:ICE:3
+dice:20+$Dd5
+expr:D:SPELL_POWER:/ 2
+lore:create storms
+lore-color-base:Light Red
+lore-color-resist:Orange
+message-vis:{name} creates a little storm.
+message-invis:Something gurgles.
+message-vis-strong:{name} creates a tempest of wind and water.
+message-invis-strong:Something chants fluidly.
 
 name:DRAIN_MANA
 hit:100

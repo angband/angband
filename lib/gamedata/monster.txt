@@ -6124,32 +6124,6 @@ spell-freq:8
 spells:CAUSE_2 | DARKNESS | SCARE
 desc:It is a tangible but ghostly form made of white fog.
 
-name:lesser Maia
-plural:lesser Maiar
-base:ainu
-color:o
-color:o
-speed:110
-hit-points:264
-hearing:30
-armor-class:72
-sleepiness:255
-depth:26
-rarity:4
-experience:220
-blow:HIT:HURT:3d4
-blow:HIT:HURT:3d4
-blow:HIT:HURT:3d4
-blow:HIT:HURT:3d4
-flags:DROP_2
-flags:IM_ACID | HAS_LIGHT
-spell-freq:3
-spells:BLIND | CONF | SCARE
-desc:One of the first children of Eru, human-like in form but painfully
-desc: beautiful to look upon. You can think of no reason that a servant of Eru
-desc: might face you in combat; yet this one stands before you, and its eyes
-desc: are ablaze as it prepares its next volley of spells.
-
 name:disenchanter bat
 base:bat
 color:v
@@ -7809,13 +7783,15 @@ blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
-flags:SMART
 flags:DROP_2
-flags:IM_COLD | IM_FIRE | HAS_LIGHT
+flags:HAS_LIGHT
 spell-freq:3
 spells:BLIND | CONF | HASTE | HEAL | SCARE
-desc:One of the first children of Eru. Its body shines with glorious light, but
-desc: its face is stern as it looks down at you.
+desc:One of the first children of Eru, currently human-like in form, its body
+desc: shining with glorious light.  Whether this being has taken allegiance to
+desc: Morgoth or faces you in combat for some other reason is not clear; all
+desc: you know is that it stands before you, its eyes ablaze as it prepares its
+desc: next volley of spells.
 
 name:half-troll
 base:troll
@@ -9311,35 +9287,6 @@ friends:50:1d4:Baby green dragon
 friends:50:1d2:Young green dragon
 desc:A large dragon, scales tinted deep green.
 
-name:greater Maia
-plural:greater Maiar
-base:ainu
-color:G
-speed:120
-hit-points:880
-hearing:30
-armor-class:81
-sleepiness:155
-depth:39
-rarity:4
-experience:2500
-blow:HIT:HURT:4d3
-blow:HIT:HURT:3d8
-blow:HIT:HURT:4d3
-blow:HIT:HURT:3d8
-flags:SMART
-flags:DROP_2
-flags:MOVE_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | HAS_LIGHT
-spell-freq:3
-spells:BLIND | HASTE | HEAL | MIND_BLAST | SCARE
-spells:BO_FIRE
-spells:S_MONSTERS
-desc:A great Maia whose physical form looks overpowering next
-desc: to your own frail body. One of the first children of Eru,
-desc: human-like in form but god-like in power. The dungeon
-desc: shakes with each of its steps toward you.
-
 name:nether wraith
 base:wraith
 color:G
@@ -10128,6 +10075,58 @@ desc:A foul wind chills your bones as this ghastly figure approaches.
 
 ### Dungeon level 43 ###
 
+name:Maia of Nienna
+plural:Maiar of Nienna
+base:ainu
+color:W
+speed:120
+hit-points:1250
+hearing:30
+armor-class:81
+sleepiness:255
+depth:43
+rarity:4
+experience:1900
+blow:HIT:HURT:3d5
+blow:HIT:HURT:3d5
+blow:HIT:HURT:3d5
+blow:HIT:HURT:3d5
+flags:FEMALE | INVISIBLE | HAS_LIGHT
+flags:DROP_2
+spell-freq:3
+spells:BLIND | HASTE | HEAL | SCARE
+spells:BO_MANA
+spells:SHAPECHANGE
+shape:air elemental
+shape:nexus vortex
+desc:A servant of Nienna, who grieves for the hurts to the world caused by
+desc: Morgoth.
+
+name:Maia of Mandos
+plural:Maiar of Mandos
+base:ainu
+color:s
+speed:120
+hit-points:1250
+hearing:30
+armor-class:81
+sleepiness:255
+depth:43
+rarity:4
+experience:1900
+blow:HIT:HURT:4d5
+blow:HIT:HURT:4d5
+blow:HIT:HURT:4d5
+blow:HIT:HURT:4d5
+flags:MALE | INVISIBLE | HAS_LIGHT
+flags:DROP_2
+spell-freq:3
+spells:BLIND | HASTE | HOLD | CONF
+spells:SHAPECHANGE
+shape:will o' the wisp
+shape:time vortex
+desc:A servant of Mandos, the summoner of the spirits of the slain.
+
 name:mature multi-hued dragon
 base:dragon
 color:v
@@ -10445,32 +10444,6 @@ desc: weaved during its creation make it a fearsome adversary.  Its eyes show
 desc: little intelligence, but it has been instructed to destroy all it meets.
 
 ### Dungeon level 45 ###
-
-name:Blue Wizard
-base:ainu
-color:b
-speed:120
-hit-points:1320
-hearing:30
-armor-class:68
-sleepiness:255
-depth:45
-rarity:6
-experience:5000
-blow:HIT:HURT:4d6
-blow:HIT:HURT:5d5
-blow:HIT:HURT:5d5
-blow:HIT:HURT:4d6
-flags:SMART
-flags:DROP_2
-flags:MOVE_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | NO_FEAR | SMART | HAS_LIGHT
-spell-freq:6
-spells:CONF | HASTE | HEAL | TELE_AWAY
-spells:BO_MANA | BO_PLAS
-spells:S_AINU | S_MONSTERS
-desc:Members of a society of wizards founded by Alatar and Pallandro,
-desc: the blue wizards command powerful magics and make formidable opponents.
 
 name:rotting quylthulg
 base:quylthulg
@@ -11260,6 +11233,34 @@ desc: moves with blinding speed.  Check your pockets!
 
 ### Dungeon level 52 ###
 
+name:Maia of Oromë
+plural:Maiar of Oromë
+base:ainu
+color:w
+speed:120
+hit-points:2000
+hearing:30
+armor-class:96
+sleepiness:255
+depth:52
+rarity:4
+experience:2500
+blow:HIT:HURT:4d6
+blow:HIT:HURT:6d5
+blow:HIT:HURT:4d6
+blow:HIT:HURT:6d5
+flags:MALE | HAS_LIGHT
+flags:DROP_2
+innate-freq:3
+spell-freq:5
+spells:ARROW_3 | ARROW_4
+spells:SHAPECHANGE
+spells:S_HOUND
+shape:ranger chieftain
+shape:giant
+shape:Huan, Wolfhound of the Valar
+desc:A servant of Oromë, hunter of monsters and fell beasts.
+
 name:Ji Indur Dawndeath
 base:wraith
 color:p
@@ -11555,34 +11556,6 @@ desc:Shelob is an enormous bloated spider, the last daughter of Ungoliant the
 desc: Unlight.  Her poison is legendary, as is her ego.  She normally guards the
 desc: pass through Cirith Ungol, but occasionally goes out foraging for food to
 desc: feed her voracious appetite.
-
-name:Istar
-plural:Istari
-base:ainu
-color:y
-speed:130
-hit-points:1800
-hearing:30
-armor-class:140
-sleepiness:255
-depth:55
-rarity:5
-experience:10000
-blow:GAZE:TERRIFY:4d4
-blow:GAZE:TERRIFY:4d4
-blow:HIT:HURT:8d6
-blow:HIT:HURT:8d6
-flags:SMART | ATTR_FLICKER
-flags:DROP_4
-flags:MOVE_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | NO_FEAR | SMART | HAS_LIGHT
-spell-freq:3
-spells:BLIND | CAUSE_2 | CAUSE_4 | SCARE | TELE_TO | HEAL | MISSILE
-spells:BO_MANA
-spells:S_AINU
-desc:The Istari are an order of Maia who came to Middle-Earth in the third age.
-desc: They have taken the form of human wizards, and channel powerful magic to
-desc: crush their foes.
 
 name:dracolich
 plural:dracoliches
@@ -11972,6 +11945,83 @@ desc: strength and priestly wisdom are a true match for any adventurer.
 
 ### Dungeon level 60 ###
 
+name:Maia of Yavanna
+plural:Maiar of Yavanna
+base:ainu
+color:g
+speed:120
+hit-points:3500
+hearing:30
+armor-class:90
+sleepiness:255
+depth:60
+rarity:4
+experience:3600
+blow:HIT:HURT:4d6
+blow:HIT:HURT:6d5
+blow:HIT:HURT:4d6
+blow:HIT:HURT:6d5
+flags:FEMALE | HAS_LIGHT
+flags:DROP_3
+flags:IM_ACID
+spell-freq:3
+spells:BO_MANA | BO_WATE
+spells:S_AINU | S_ANIMAL
+spells:SHAPECHANGE
+#shape:ent
+desc:A servant of Yavanna Kementári, Queen of the Earth, the Giver of Fruits
+desc: and lover of all things that grow.
+
+name:Maia of Aulë
+plural:Maiar of Aulë
+base:ainu
+color:u
+speed:120
+hit-points:3500
+hearing:30
+armor-class:120
+sleepiness:255
+depth:60
+rarity:4
+experience:3600
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:HIT:SHATTER:10d10
+flags:MALE | HAS_LIGHT | PASS_WALL
+flags:DROP_3
+flags:IM_ELEC
+innate-freq:5
+spell-freq:5
+spells:BOULDER
+spells:SHAPECHANGE
+shape:shardstorm
+shape:great earth elemental
+shape:Quaker, Master of Earth
+desc:A servant of Aulë the Smith, lord of all the substances of Arda and friend
+desc: of the Noldor.
+
+name:great earth elemental
+base:elemental
+color:u
+speed:120
+hearing:10
+armor-class:145
+sleepiness:50
+depth:60
+rarity:0
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:HIT:SHATTER:10d10
+flags:COLD_BLOOD | POWERFUL
+flags:PASS_WALL | KILL_BODY | KILL_ITEM
+flags:HURT_ROCK | IM_ELEC
+innate-freq:6
+spells:BOULDER | BR_SHAR
+desc:Appearing as a giant of stone, this mighty elemental seems to draw its
+desc: power from the very fabric of the dungeon.
+
 name:aether vortex
 plural:aether vortices
 base:vortex
@@ -11999,7 +12049,7 @@ spells:BR_PLAS | BR_POIS | BR_SHAR | BR_SOUN | BR_TIME | BR_WALL
 desc:An awesome vortex of pure magic, power radiates from its frame.
 
 name:Saruman of Many Colours
-base:person
+base:ainu
 color:v
 speed:120
 hit-points:5000
@@ -12013,11 +12063,10 @@ blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
-flags:UNIQUE | MALE | EVIL | SMART | HAS_LIGHT
-flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
-flags:OPEN_DOOR
-flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
-flags:ATTR_MULTI | FORCE_SLEEP
+flags:UNIQUE | MALE | EVIL | HAS_LIGHT
+flags:DROP_4 | DROP_GOOD | DROP_GREAT
+flags:IM_ELEC
+flags:ATTR_MULTI
 spell-freq:2
 spells:BLIND | CAUSE_4 | FORGET | HASTE | HEAL | MIND_BLAST
 spells:SCARE | TELE_AWAY | TPORT | TRAPS
@@ -12062,37 +12111,6 @@ desc: as the nightwing reaches out to draw you into oblivion.  Your muscles sag
 desc: and your mind loses all will to fight as you stand in awe of this mighty
 desc: being.
 
-name:Arien, Maia of the Sun
-base:ainu
-color:R
-speed:130
-hit-points:5500
-hearing:40
-armor-class:192
-sleepiness:10
-depth:61
-rarity:3
-experience:25000
-blow:HIT:FIRE:4d12
-blow:HIT:FIRE:4d12
-blow:HIT:HURT:10d10
-blow:HIT:HURT:10d10
-flags:UNIQUE | FEMALE | SMART
-flags:DROP_4 | DROP_GOOD
-flags:MOVE_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_PLASMA | HAS_LIGHT
-innate-freq:8
-spell-freq:2
-spells:BLIND | TELE_TO
-spells:BA_FIRE
-spells:BO_FIRE | BO_MANA | BO_PLAS
-spells:BR_FIRE | BR_PLAS
-spells:S_AINU
-desc:The Maia who sails the Sun across the sky has descended into Angband to
-desc: kill you. She wears no mortal shell; her body is made of fiery golden
-desc: light, painfully bright even when you close your eyes, and hot enough to
-desc: melt armor and flesh alike.
-
 name:bile demon
 base:major demon
 color:R
@@ -12121,38 +12139,6 @@ desc: which go together to make the single most repulsive sight - and smell -
 desc: you have ever experienced.
 
 ### Dungeon level 62 ###
-
-name:Ossë, Herald of Ulmo
-base:ainu
-color:w
-speed:130
-hit-points:6000
-hearing:40
-armor-class:204
-sleepiness:10
-depth:62
-rarity:3
-experience:30000
-blow:HIT:EXP_80:10d5
-blow:HIT:EXP_80:10d5
-blow:HIT:HURT:10d10
-blow:HIT:HURT:10d10
-flags:UNIQUE | MALE | SMART
-flags:DROP_4 | DROP_GOOD
-flags:MOVE_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_WATER | IM_NETHER
-innate-freq:7
-spell-freq:2
-spells:BLIND | TELE_TO
-spells:BA_WATE
-spells:BO_MANA | BO_WATE
-spells:BR_NETH
-spells:S_AINU
-desc:Encrusted with barnacles, slimy and dripping, the Maia of the untamed
-desc: sea has dragged himself down into Angband to send you to a watery grave.
-desc: Ossë is the most powerful and heartless of Ulmo's servants and embodies
-desc: the untamed power of the ocean. Terror grows in your heart with each
-desc: squelching step of his approach.
 
 name:dreadlord
 base:ghost
@@ -12244,39 +12230,6 @@ spells:S_UNDEAD
 desc:A Ringwraith powerful in fell sorcery, he yearns for the life he has lost
 desc: for an unlife of everlasting torment.
 
-name:Radagast the Brown
-base:ainu
-color:u
-speed:130
-hit-points:7500
-hearing:40
-armor-class:216
-sleepiness:10
-depth:64
-rarity:3
-experience:35000
-blow:HIT:DISENCHANT:6d8
-blow:HIT:FIRE:6d8
-blow:HIT:BLIND:10d10
-blow:HIT:BLIND:10d10
-flags:UNIQUE | MALE | SMART
-flags:DROP_4 | DROP_GOOD
-flags:MOVE_BODY
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | HAS_LIGHT
-spell-freq:2
-spells:BLIND | TELE_TO
-spells:BO_MANA | BO_WATE | BO_FIRE | BO_ICEE
-spells:S_AINU | S_ANIMAL | S_SPIDER | S_HOUND
-friends:60:1d3:Maia
-friends:60:1d3:Greater Maia
-friends:60:1d3:Blue Wizard
-friends:80:1d3:Istar
-desc:A stocky, smiling man in brown robes, holding in his right hand a
-desc: gnarled walking stick. Sent to Middle-Earth by Yavanna, Radagast
-desc: has studied the plants and animals of Middle-Earth for many years
-desc: and considers himself their defender. His humble robes and demeanor
-desc: belie his inner strength.
-
 name:chaos hound
 base:zephyr hound
 color:v
@@ -12330,6 +12283,60 @@ desc:A lich who has reached its ultimate evolutionary stage: a completely
 desc: immaterial state.
 
 ### Dungeon level 65 ###
+
+name:Maia of Ulmo
+plural:Maiar of Ulmo
+base:ainu
+color:b
+speed:120
+hit-points:4700
+hearing:30
+armor-class:90
+sleepiness:255
+depth:60
+rarity:4
+experience:5000
+blow:TOUCH:TERRIFY:6d5
+blow:TOUCH:PARALYZE:6d5
+blow:ENGULF:ACID:6d10
+blow:ENGULF:ACID:6d10
+flags:MALE | HAS_LIGHT
+flags:DROP_4
+flags:IM_ACID | IM_ELEC | IM_WATER
+spell-freq:3
+spells:BA_WATE
+spells:BO_MANA | BO_WATE
+spells:S_AINU
+spells:SHAPECHANGE
+shape:great water elemental
+shape:water vortex
+shape:cold vortex
+desc:A servant of Ulmo, Lord of Waters, who speaks to those who dwell in
+desc: Middle-earth with voices that are heard only as the music of water.
+
+name:great water elemental
+base:elemental
+color:b
+speed:120
+hearing:12
+armor-class:120
+sleepiness:30
+depth:43
+rarity:0
+experience:4250
+blow:ENGULF:TERRIFY:6d5
+blow:ENGULF:PARALYZE:6d5
+blow:ENGULF:ACID:6d10
+blow:ENGULF:ACID:6d10
+flags:COLD_BLOOD | POWERFUL
+flags:BASH_DOOR | KILL_BODY | KILL_ITEM
+flags:IM_ACID | IM_WATER
+innate-freq:5
+spell-freq:5
+spells:BA_WATE | BO_WATE
+spells:BR_COLD
+desc:A mighty column of water, terrible as a mounting wave that strides to the
+desc: land.
 
 name:The Mouth of Sauron
 base:person
@@ -12622,35 +12629,6 @@ desc:  Its gaping maw is a void of blackness, acid drips from its steely hide.
 desc:  It is like nothing you have ever seen before, and a terrible chill runs
 desc: down your spine as you face it.
 
-name:Polyphemus, the Blind Cyclops
-base:giant
-color:g
-speed:130
-hit-points:5300
-hearing:40
-armor-class:210
-sleepiness:20
-depth:69
-rarity:3
-experience:29000
-blow:HIT:HURT:11d10
-blow:HIT:HURT:11d10
-blow:HIT:SHATTER:11d10
-flags:UNIQUE | MALE
-flags:DROP_3 | DROP_GOOD | ONLY_ITEM
-flags:RAND_25 | KILL_BODY | KILL_ITEM
-flags:IM_ACID | IM_COLD | IM_FIRE
-flags:FORCE_SLEEP
-innate-freq:20
-spell-freq:7
-spells:BA_ACID | BA_WATE
-spells:BO_ICEE | BO_WATE
-spells:BOULDER
-desc:No ordinary cyclops, but the son of a sea-god: he wields the powers of
-desc: elemental water as well as the considerable strength of a cyclops.  His
-desc: one eye was blinded long ago by the warrior Odysseus, but he has trained
-desc: himself to hear so well that it nearly makes up for his disability.
-
 ### Dungeon level 69 ###
 
 name:gelugon
@@ -12772,6 +12750,63 @@ desc: beast nearly make you vomit; and while you may try to hold your breath as
 desc: you fight it, it sees no reason to do likewise.
 
 ### Dungeon level 71 ###
+
+name:Maia of Manwë
+plural:Maiar of Manwë
+base:ainu
+color:B
+speed:130
+hit-points:5000
+hearing:30
+armor-class:120
+sleepiness:255
+depth:60
+rarity:4
+experience:7000
+blow:HIT:ELEC:10d12
+blow:HIT:ELEC:10d12
+blow:ENGULF:CONFUSE:8d10
+blow:ENGULF:CONFUSE:8d10
+flags:MALE | HAS_LIGHT
+flags:DROP_4
+flags:IM_ACID | IM_ELEC | IM_WATER
+spell-freq:3
+spells:STORM | BA_ELEC
+spells:S_AINU
+spells:SHAPECHANGE
+shape:elemental
+shape:vortex
+desc:A servant of Manwë Súlimo, the first of all Kings, lord of the realm of
+desc: Arda and ruler of all that dwell therein.
+
+name:Maia of Varda
+plural:Maiar of Varda
+base:ainu
+color:y
+speed:130
+hit-points:5000
+hearing:30
+armor-class:110
+sleepiness:255
+depth:60
+rarity:4
+experience:12000
+blow:TOUCH:TERRIFY:6d5
+blow:TOUCH:PARALYZE:6d5
+blow:ENGULF:ACID:6d10
+blow:ENGULF:ACID:6d10
+flags:FEMALE | HAS_LIGHT
+flags:DROP_4
+flags:IM_ACID | IM_ELEC
+spell-freq:3
+spells:BA_LIGHT
+spells:BO_MANA
+spells:S_AINU
+spells:SHAPECHANGE
+shape:elemental
+shape:vortex
+desc:A servant of Varda, Lady of the Stars, who the elves call Elbereth and
+desc: love above all the Valar.
 
 name:greater demonic quylthulg
 base:quylthulg
@@ -13196,9 +13231,9 @@ spells:S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS
 desc:A giant seething mass of flesh, overwhelming you with monster after
 desc: monster.
 
-name:Atlas, the Titan
-base:giant
-color:s
+name:Makar, the Warrior
+base:ainu
+color:D
 speed:120
 hit-points:6000
 hearing:30
@@ -13211,16 +13246,15 @@ blow:HIT:SHATTER:13d13
 blow:HIT:CONFUSE:13d13
 blow:HIT:SHATTER:13d13
 blow:HIT:CONFUSE:13d13
-flags:UNIQUE | MALE | SMART
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | KILL_WALL | KILL_BODY | TAKE_ITEM
-flags:HURT_ROCK | IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
+flags:UNIQUE | MALE
+flags:DROP_4 | DROP_GOOD
+flags:KILL_WALL | KILL_BODY
+flags:IM_ACID | IM_ELEC
 flags:FORCE_SLEEP
-innate-freq:5
-spells:BOULDER
-desc:The strongest of all the Titans.  Legend has it that he used to hold the
-desc: sky on his shoulders; and the mountain range that now does so is named
-desc: after him.
+desc:A battle-hungry spirit from amongst the Ainur, who built a grim hall in
+desc: the early days of Arda to host endless battles.  When not at home, he
+desc: and his sister Meássë would hunt and seek out the turmoils caused by
+desc: Morgoth.
 
 ### Dungeon level 77 ###
 
@@ -13321,7 +13355,7 @@ desc: must bring help to protect itself.
 name:fury
 plural:furies
 base:major demon
-color:i
+color:t
 speed:130
 hit-points:4000
 hearing:30
@@ -13702,9 +13736,9 @@ desc: immune to magic.  Fear its anger, for its devastation is unmatched!
 
 ### Dungeon level 87 ###
 
-name:Kronos, Lord of the Titans
-base:giant
-color:v
+name:Meássë, the Bloody
+base:ainu
+color:r
 speed:120
 hit-points:7000
 hearing:30
@@ -13717,24 +13751,28 @@ blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
 blow:HIT:CONFUSE:12d12
-flags:UNIQUE | MALE | SMART
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
+flags:UNIQUE | FEMALE
+flags:DROP_4 | DROP_GOOD
 flags:MOVE_BODY | TAKE_ITEM
-flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_STUN
+flags:IM_ACID | IM_ELEC | NO_STUN
 flags:FORCE_SLEEP
-innate-freq:5
-spell-freq:6
-spells:HEAL | TELE_TO | BOULDER
-spells:BR_COLD | BR_FIRE | BR_SHAR | BR_SOUN
+innate-freq:6
+spell-freq:5
+spells:HEAL | HEAL_KIN
+spells:BOULDER
+spells:BR_SHAR | BR_SOUN
 spells:S_KIN | S_MONSTERS
-friends:50:1d4:Cloud giant:servant
-friends:50:1d4:Storm giant:servant
+friends:50:1d4:Maia of Oromë:servant
+friends:50:1d4:Maia of Aulë:servant
 friends:50:1d3:Lesser titan:servant
 friends:50:1d2:Greater titan:servant
-friends:100:1d1:Polyphemus, the Blind Cyclops:servant
-friends:100:1d1:Atlas, the Titan:servant
-desc:The lord of the Titans, he has broken loose from his confinement in the
-desc: nether hells to seek revenge on the world.
+friends:100:1d1:Makar, the Warrior
+desc:Sister of Makar the Warrior, she would shout encouragement to the
+desc: warriors of their hall and heal their wounds so they could battle on,
+desc: until her arms were reddened to the elbow.  Meássë was delighted by
+desc: all violence, and would recruit any beings of like abilities to her
+desc: service.
+
 
 ### Dungeon level 88 ###
 
@@ -13911,7 +13949,7 @@ desc: awesome fiery breath he saved his master from Ungoliant's rage.
 ### Dungeon level 99 ###
 
 name:Sauron, the Sorcerer
-base:person
+base:ainu
 color:p
 speed:130
 hit-points:10500
@@ -13925,12 +13963,11 @@ blow:HIT:DISENCHANT:10d12
 blow:HIT:DISENCHANT:10d12
 blow:HIT:DRAIN_CHARGES:8d12
 blow:HIT:DRAIN_CHARGES:8d12
-flags:UNIQUE | QUESTOR | MALE | EVIL | SMART | REGENERATE
-flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
-flags:OPEN_DOOR | MOVE_BODY
-flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_FEAR | NO_CONF
-flags:NO_SLEEP | NO_HOLD
-flags:FORCE_DEPTH | FORCE_SLEEP
+flags:UNIQUE | QUESTOR | MALE | EVIL | REGENERATE
+flags:DROP_4 | DROP_GOOD | DROP_GREAT
+flags:MOVE_BODY
+flags:IM_ELEC | NO_FEAR
+flags:FORCE_DEPTH
 spell-freq:2
 spells:BLIND | BRAIN_SMASH | CAUSE_4 | SCARE | TELE_LEVEL | TPORT
 spells:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE

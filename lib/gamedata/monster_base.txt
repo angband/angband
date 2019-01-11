@@ -42,10 +42,10 @@ desc:Ancient Dragon/Wyrm
 name:ainu
 glyph:A
 pain:1
-flags:POWERFUL | SPIRIT
+flags:POWERFUL | SPIRIT | SMART
 flags:ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
-flags:IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
+flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Ainu/maia
 

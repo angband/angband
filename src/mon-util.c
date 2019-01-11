@@ -271,7 +271,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	bool easy = false;
 
 	/* ESP permitted */
-	bool telepathy_ok = true;
+	bool telepathy_ok = player_of_has(player, OF_TELEPATHY);
 
 	assert(mon != NULL);
 
@@ -304,32 +304,20 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* Detected */
 	if (mflag_has(mon->mflag, MFLAG_MARK)) flag = true;
 
-	/* Check if telepathy works */
-	if (square_isno_esp(c, mon->grid) || square_isno_esp(c, pgrid))
+	/* Check if telepathy works here */
+	if (square_isno_esp(c, mon->grid) || square_isno_esp(c, pgrid)) {
 		telepathy_ok = false;
+	}
 
 	/* Nearby */
 	if (d <= z_info->max_sight) {
 		/* Basic telepathy */
-		if (player_of_has(player, OF_TELEPATHY) && telepathy_ok) {
-			if (rf_has(mon->race->flags, RF_EMPTY_MIND)) {
-				/* Empty mind, no telepathy */
-			} else if (rf_has(mon->race->flags, RF_WEIRD_MIND)) {
-				/* Weird mind, one in ten individuals are detectable */
-				if ((mon->midx % 10) == 5) {
-					/* Detectable */
-					flag = true;
+		if (telepathy_ok && monster_is_esp_detectable(mon)) {
+			/* Detectable */
+			flag = true;
 
-					/* Check for LOS so that MFLAG_VIEW is set later */
-					if (square_isview(c, mon->grid)) easy = true;
-				}
-			} else {
-				/* Normal mind, allow telepathy */
-				flag = true;
-
-				/* Check for LOS to that MFLAG_VIEW is set later */
-				if (square_isview(c, mon->grid)) easy = true;
-			}
+			/* Check for LOS so that MFLAG_VIEW is set later */
+			if (square_isview(c, mon->grid)) easy = true;
 		}
 
 		/* Normal line of sight and player is not blind */
@@ -382,7 +370,7 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 	/* Is the monster is now visible? */
 	if (flag) {
 		/* Learn about the monster's mind */
-		if (player_of_has(player, OF_TELEPATHY)) {
+		if (telepathy_ok) {
 			flags_set(lore->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND,
 					  RF_SMART, RF_STUPID, FLAG_END);
 		}
@@ -1486,6 +1474,12 @@ bool monster_change_shape(struct monster *mon)
 		mon->race = race;
 	}
 
+	/* Emergency teleport if needed */
+	if (!monster_passes_walls(mon) && square_iswall(cave, mon->grid)) {
+		effect_simple(EF_TELEPORT, source_monster(mon->midx), "1", 0, 0, 0,
+					  mon->grid.y, mon->grid.x, NULL);
+	}
+
 	return mon->original_race != NULL;
 }
 
@@ -1497,6 +1491,13 @@ bool monster_revert_shape(struct monster *mon)
 	if (mon->original_race) {
 		mon->race = mon->original_race;
 		mon->original_race = NULL;
+
+		/* Emergency teleport if needed */
+		if (!monster_passes_walls(mon) && square_iswall(cave, mon->grid)) {
+			effect_simple(EF_TELEPORT, source_monster(mon->midx), "1", 0, 0, 0,
+						  mon->grid.y, mon->grid.x, NULL);
+		}
+
 		return true;
 	}
 
