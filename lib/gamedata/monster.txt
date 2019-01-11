@@ -8798,7 +8798,7 @@ flags:IM_ACID | IM_COLD | IM_ELEC | HURT_FIRE
 flags:FORCE_SLEEP
 spell-freq:5
 spells:BA_COLD
-spells:BO_ICEE
+spells:BO_ICE
 desc:It is a towering glacier of ice.
 
 name:mummified troll
@@ -9069,7 +9069,7 @@ flags:OPEN_DOOR | TAKE_ITEM
 flags:FORCE_SLEEP
 spell-freq:2
 spells:HEAL | TRAPS
-spells:BO_COLD | BO_ELEC | BO_FIRE | BO_ICEE
+spells:BO_COLD | BO_ELEC | BO_FIRE | BO_ICE
 desc:A Black Númenorean who usurped the throne of Gondor, he is treacherous and
 desc: evil.
 
@@ -9367,32 +9367,6 @@ desc: more than a hatred of all that lives.
 
 
 ### Dungeon level 40 ###
-
-name:storm giant
-base:giant
-color:B
-speed:120
-hit-points:700
-hearing:20
-armor-class:90
-sleepiness:30
-depth:40
-rarity:1
-experience:1000
-blow:HIT:ELEC:10d8
-blow:HIT:ELEC:10d8
-flags:HAS_LIGHT
-flags:DROP_1
-flags:OPEN_DOOR | TAKE_ITEM
-flags:IM_COLD | IM_ELEC
-flags:FORCE_SLEEP
-innate-freq:40
-spell-freq:8
-spells:BLINK | CONF | SCARE | TELE_TO
-spells:BA_ELEC | BO_ELEC | BOULDER
-friends:60:1d7:Energy hound
-friends:80:1d3:Same
-desc:It is a twenty-five foot tall giant wreathed in lightning.
 
 name:beholder
 base:eye
@@ -10199,7 +10173,7 @@ flags:IM_ACID | IM_COLD | IM_FIRE | IM_WATER
 flags:FORCE_SLEEP
 spell-freq:4
 spells:BA_COLD | BA_WATE
-spells:BO_ICEE | BO_WATE
+spells:BO_ICE | BO_WATE
 desc:A towering water elemental, Waldern is master of all things liquid.  Wave
 desc: after wave drowns your frail body.
 
@@ -10792,6 +10766,33 @@ desc: from a creature of an older world perhaps, bred by Sauron to be a winged
 desc: steed for his Ringwraiths.
 
 ### Dungeon level 49 ###
+
+name:storm giant
+base:giant
+color:B
+speed:120
+hit-points:1200
+hearing:20
+armor-class:110
+sleepiness:30
+depth:49
+rarity:1
+experience:1400
+blow:HIT:ELEC:10d8
+blow:HIT:ELEC:10d8
+blow:HIT:HURT:10d8
+flags:HAS_LIGHT
+flags:DROP_1
+flags:OPEN_DOOR | TAKE_ITEM
+flags:IM_COLD | IM_ELEC
+flags:FORCE_SLEEP
+innate-freq:40
+spell-freq:8
+spells:BLINK | CONF | SCARE | TELE_TO
+spells:BA_ELEC | BO_ELEC | STORM | BOULDER
+friends:60:1d7:Energy hound
+friends:80:1d3:Same
+desc:It is a twenty-five foot tall giant wreathed in lightning.
 
 name:lesser Balrog
 base:major demon
@@ -11945,6 +11946,33 @@ desc: strength and priestly wisdom are a true match for any adventurer.
 
 ### Dungeon level 60 ###
 
+name:Gilim, the Giant of Eruman
+base:giant
+color:w
+speed:120
+hit-points:4000
+hearing:30
+armor-class:96
+sleepiness:15
+depth:60
+rarity:3
+experience:6000
+blow:HIT:COLD:9d10
+blow:HIT:COLD:9d10
+blow:HIT:HURT:10d9
+blow:HIT:CONFUSE:10d9
+flags:MALE | SMART
+flags:DROP_4 | ONLY_ITEM
+flags:OPEN_DOOR | TAKE_ITEM
+flags:FORCE_SLEEP
+innate-freq:6
+spell-freq:3
+spells:BOULDER
+spells:BO_ICE | STORM
+spells:S_MONSTERS
+desc:Known as the giant of winter and the northern reaches,
+desc: he is tall even among giants, and his name is cursed in many lands.
+
 name:Maia of Yavanna
 plural:Maiar of Yavanna
 base:ainu
@@ -12071,7 +12099,7 @@ spell-freq:2
 spells:BLIND | CAUSE_4 | FORGET | HASTE | HEAL | MIND_BLAST
 spells:SCARE | TELE_AWAY | TPORT | TRAPS
 spells:BA_ACID | BA_COLD | BA_FIRE | BA_WATE
-spells:BO_ICEE
+spells:BO_ICE
 spells:S_ANIMAL | S_DEMON | S_HI_DRAGON | S_MONSTERS | S_UNDEAD
 friends:100:1d1:Wormtongue, Agent of Saruman:servant
 desc:Originally known as the White, Saruman fell prey to Sauron's wiles.  He
@@ -12293,7 +12321,7 @@ hit-points:4700
 hearing:30
 armor-class:90
 sleepiness:255
-depth:60
+depth:65
 rarity:4
 experience:5000
 blow:TOUCH:TERRIFY:6d5
@@ -12390,7 +12418,7 @@ flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 spell-freq:6
 spells:SCARE
 spells:BA_COLD | BA_ELEC
-spells:BO_ICEE
+spells:BO_ICE
 spells:S_DEMON
 desc:It is a demon made almost entirely out of bones.  It is humanoid, but with
 desc: a large tail similar to that of a giant scorpion, and emits a foul smell
@@ -12597,6 +12625,35 @@ desc: victims.
 
 ### Dungeon level 69 ###
 
+name:Nan, the Giant
+base:giant
+color:o
+speed:120
+hit-points:3344
+hearing:30
+armor-class:150
+sleepiness:15
+depth:66
+rarity:3
+experience:23500
+blow:HIT:HURT:12d12
+blow:HIT:HURT:12d12
+blow:HIT:CONFUSE:12d12
+blow:HIT:CONFUSE:12d12
+flags:SMART | ATTR_FLICKER
+flags:DROP_4 | ONLY_ITEM
+flags:TAKE_ITEM
+flags:FORCE_SLEEP
+innate-freq:6
+spell-freq:4
+spell-power:85
+spells:BOULDER
+spells:BO_PLAS | BA_FIRE
+spells:S_MONSTERS
+desc:Known as the giant of summer and the south, he towers above you
+desc: like a great elm. In his right hand, he holds the longest
+desc: sword you have ever beheld.
+
 name:nightcrawler
 base:wraith
 color:D
@@ -12629,8 +12686,6 @@ desc:  Its gaping maw is a void of blackness, acid drips from its steely hide.
 desc:  It is like nothing you have ever seen before, and a terrible chill runs
 desc: down your spine as you face it.
 
-### Dungeon level 69 ###
-
 name:gelugon
 base:major demon
 color:w
@@ -12653,7 +12708,7 @@ innate-freq:20
 spell-freq:8
 spells:HOLD | SCARE | SLOW
 spells:BA_COLD
-spells:BO_ICEE
+spells:BO_ICE
 spells:BR_COLD | BR_SHAR
 spells:S_HI_DEMON
 desc:This demon from the icy regions is a truly terrifying sight.  It has an
@@ -12760,7 +12815,7 @@ hit-points:5000
 hearing:30
 armor-class:120
 sleepiness:255
-depth:60
+depth:71
 rarity:4
 experience:7000
 blow:HIT:ELEC:10d12
@@ -12788,7 +12843,7 @@ hit-points:5000
 hearing:30
 armor-class:110
 sleepiness:255
-depth:60
+depth:71
 rarity:4
 experience:12000
 blow:TOUCH:TERRIFY:6d5
@@ -13253,8 +13308,7 @@ flags:IM_ACID | IM_ELEC
 flags:FORCE_SLEEP
 desc:A battle-hungry spirit from amongst the Ainur, who built a grim hall in
 desc: the early days of Arda to host endless battles.  When not at home, he
-desc: and his sister Meássë would hunt and seek out the turmoils caused by
-desc: Morgoth.
+desc: and his sister Meássë hunt and seek out the turmoils caused by Morgoth.
 
 ### Dungeon level 77 ###
 
@@ -13637,7 +13691,7 @@ flags:FORCE_SLEEP
 spell-freq:2
 spells:BRAIN_SMASH | CAUSE_4 | SCARE | SLOW | TELE_TO
 spells:BA_NETH | BA_WATE
-spells:BO_ICEE | BO_MANA
+spells:BO_ICE | BO_MANA
 spells:S_HI_UNDEAD
 desc:A legion of evil undead druj animating the skeleton of a once mighty
 desc: sorcerer.  His power is devastating and his speed unmatched in the
@@ -13769,9 +13823,8 @@ friends:50:1d2:Greater titan:servant
 friends:100:1d1:Makar, the Warrior
 desc:Sister of Makar the Warrior, she would shout encouragement to the
 desc: warriors of their hall and heal their wounds so they could battle on,
-desc: until her arms were reddened to the elbow.  Meássë was delighted by
-desc: all violence, and would recruit any beings of like abilities to her
-desc: service.
+desc: until her arms were reddened to the elbow.  Meássë is delighted by
+desc: all violence, and recruits any beings of like abilities to her service.
 
 
 ### Dungeon level 88 ###
@@ -13971,7 +14024,7 @@ flags:FORCE_DEPTH
 spell-freq:2
 spells:BLIND | BRAIN_SMASH | CAUSE_4 | SCARE | TELE_LEVEL | TPORT
 spells:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE
-spells:BO_ICEE | BO_MANA | BO_PLAS
+spells:BO_ICE | BO_MANA | BO_PLAS
 spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE | S_WRAITH
 friends:100:1d1:Khamûl, the Black Easterling:servant
 friends:100:1d1:The Witch-King of Angmar:servant

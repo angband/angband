@@ -635,7 +635,7 @@ lore-color-resist:Yellow
 message-vis:{name} casts a bolt of plasma.
 message-invis:Something screams.
 
-name:BO_ICEE
+name:BO_ICE
 hit:100
 effect:BOLT:ICE
 dice:$B+6d6
