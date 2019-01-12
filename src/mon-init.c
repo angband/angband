@@ -2318,6 +2318,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "flags ?str flags", parse_lore_flags);
 	parser_reg(p, "flags-off ?str flags", ignored);
 	parser_reg(p, "desc str desc", ignored);
+	parser_reg(p, "innate-freq int freq", ignored);
 	parser_reg(p, "spell-freq int freq", ignored);
 	parser_reg(p, "spell-power uint power", ignored);
 	parser_reg(p, "spells str spells", parse_lore_spells);
@@ -2327,6 +2328,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "friends uint chance rand number sym name ?sym role", parse_lore_friends);
 	parser_reg(p, "friends-base uint chance rand number sym name ?sym role", parse_lore_friends_base);
 	parser_reg(p, "mimic sym tval sym sval", parse_lore_mimic);
+	parser_reg(p, "shape str name", ignored);
 	return p;
 }
 
