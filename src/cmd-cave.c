@@ -1107,6 +1107,18 @@ void do_cmd_walk(struct command *cmd)
 	int dir;
 	bool trapsafe = player_is_trapsafe(player) ? true : false;
 
+	/* If we're in a web, deal with that */
+	if (square_iswebbed(cave, player->grid)) {
+		if (get_check("You are stuck in a web - do you want to clear it?")) {
+			/* Clear the web, finish turn */
+			(void) square_remove_all_traps(cave, player->grid);
+			player->upkeep->energy_use = z_info->move_energy;
+		} else {
+			/* Rethink */
+			return;
+		}
+	}
+
 	/* Get arguments */
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
 		return;
@@ -1135,6 +1147,18 @@ void do_cmd_jump(struct command *cmd)
 {
 	struct loc grid;
 	int dir;
+
+	/* If we're in a web, deal with that */
+	if (square_iswebbed(cave, player->grid)) {
+		if (get_check("You are stuck in a web - do you want to clear it?")) {
+			/* Clear the web, finish turn */
+			(void) square_remove_all_traps(cave, player->grid);
+			player->upkeep->energy_use = z_info->move_energy;
+		} else {
+			/* Rethink */
+			return;
+		}
+	}
 
 	/* Get arguments */
 	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)

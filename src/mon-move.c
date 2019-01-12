@@ -1301,6 +1301,38 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_HID);
 
+	/* If we're in a web, deal with that */
+	if (square_iswebbed(c, mon->grid)) {
+		/* Learn web behaviour */
+		if (monster_is_visible(mon)) {
+			rf_on(lore->flags, RF_CLEAR_WEB);
+			rf_on(lore->flags, RF_PASS_WEB);
+		}
+
+		/* If we can pass, no need to clear */
+		if (!rf_has(mon->race->flags, RF_PASS_WEB)) {
+			/* Learn wall behaviour */
+			if (monster_is_visible(mon)) {
+				rf_on(lore->flags, RF_PASS_WALL);
+				rf_on(lore->flags, RF_KILL_WALL);
+			}
+
+			/* Now several possibilities */
+			if (rf_has(mon->race->flags, RF_PASS_WALL)) {
+				/* Insubstantial monsters go right through */
+			} else if (rf_has(mon->race->flags, RF_KILL_WALL)) {
+				/* If you can destroy a wall, you can destroy a web */
+			} else if (rf_has(mon->race->flags, RF_CLEAR_WEB)) {
+				/* Clearing costs a turn (assume there are no other "traps") */
+				(void) square_remove_all_traps(c, mon->grid);
+				return;
+			} else {
+				/* Stuck */
+				return;
+			}
+		}
+	}
+
 	/* Let other group monsters know about the player */
 	monster_group_rouse(c, mon);
 

@@ -760,6 +760,12 @@ bool square_isdecoyed(struct chunk *c, struct loc grid)
 	return square_trap_specific(c, grid, glyph->tidx);
 }
 
+bool square_iswebbed(struct chunk *c, struct loc grid)
+{
+	struct trap_kind *web = lookup_trap("web");
+	return square_trap_specific(c, grid, web->tidx);
+}
+
 bool square_seemslikewall(struct chunk *c, struct loc grid)
 {
 	return tf_has(f_info[square(c, grid).feat].flags, TF_ROCK);

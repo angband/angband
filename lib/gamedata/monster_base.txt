@@ -34,7 +34,7 @@ glyph:D
 pain:1
 flags:DRAGON | EVIL | POWERFUL | SMART | SPIRIT
 flags:DROP_4
-flags:MOVE_BODY
+flags:MOVE_BODY | CLEAR_WEB
 flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Ancient Dragon/Wyrm
@@ -44,7 +44,7 @@ glyph:A
 pain:1
 flags:POWERFUL | SPIRIT | SMART
 flags:ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
+flags:OPEN_DOOR | BASH_DOOR | TAKE_ITEM | CLEAR_WEB
 flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Ainu/maia
@@ -65,13 +65,13 @@ desc:Bat
 name:bird
 glyph:B
 pain:8
-flags:ANIMAL
+flags:ANIMAL | CLEAR_WEB
 desc:Bird
 
 name:canine
 glyph:C
 pain:3
-flags:ANIMAL
+flags:ANIMAL | CLEAR_WEB
 desc:Canine (Dog)
 
 name:centipede
@@ -85,7 +85,7 @@ glyph:$
 pain:1
 flags:COLD_BLOOD | METAL | UNAWARE | EMPTY_MIND
 flags:ONLY_GOLD
-flags:BASH_DOOR
+flags:BASH_DOOR | CLEAR_WEB
 flags:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 flags:MIMIC_INV
 desc:Creeping Coins
@@ -108,12 +108,13 @@ desc:Dragon Fly
 name:eye
 glyph:e
 pain:1
+flags:CLEAR_WEB
 desc:Floating Eye
 
 name:elemental
 glyph:E
 pain:1
-flags:EMPTY_MIND
+flags:EMPTY_MIND | CLEAR_WEB
 flags:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 flags:NONLIVING
 desc:Elemental
@@ -121,7 +122,7 @@ desc:Elemental
 name:feline
 glyph:f
 pain:6
-flags:ANIMAL
+flags:ANIMAL | CLEAR_WEB
 desc:Feline (Cat)
 
 name:ghost
@@ -136,13 +137,13 @@ name:giant
 glyph:P
 pain:1
 flags:GIANT | EVIL | SPIRIT
-flags:BASH_DOOR
+flags:BASH_DOOR | CLEAR_WEB
 desc:Giant Humanoid
 
 name:golem
 glyph:g
 pain:1
-flags:EMPTY_MIND
+flags:EMPTY_MIND | CLEAR_WEB
 flags:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
 flags:NONLIVING
 desc:Golem
@@ -150,12 +151,13 @@ desc:Golem
 name:humanoid
 glyph:h
 pain:1
-flags:OPEN_DOOR | BASH_DOOR | SPIRIT
+flags:OPEN_DOOR | BASH_DOOR | SPIRIT | CLEAR_WEB
 desc:Hobbit/Elf/Dwarf
 
 name:hybrid
 glyph:H
 pain:1
+flags:CLEAR_WEB
 desc:Hybrid
 
 name:hydra
@@ -163,7 +165,7 @@ glyph:M
 pain:4
 flags:ANIMAL
 flags:ONLY_GOLD
-flags:BASH_DOOR
+flags:BASH_DOOR | CLEAR_WEB
 flags:FORCE_SLEEP | HURT_COLD
 desc:Hydra
 
@@ -183,7 +185,7 @@ desc:Insect
 name:jelly
 glyph:j
 pain:2
-flags:EMPTY_MIND | STUPID
+flags:EMPTY_MIND | STUPID | CLEAR_WEB
 flags:NO_FEAR
 desc:Jelly
 
@@ -198,7 +200,7 @@ name:kobold
 glyph:k
 pain:1
 flags:EVIL
-flags:OPEN_DOOR | BASH_DOOR | SPIRIT
+flags:OPEN_DOOR | BASH_DOOR | SPIRIT | CLEAR_WEB
 flags:IM_POIS
 desc:Kobold
 
@@ -206,7 +208,7 @@ name:lich
 glyph:L
 pain:1
 flags:UNDEAD | EVIL | COLD_BLOOD | SMART | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 flags:FORCE_SLEEP
 desc:Lich
@@ -232,7 +234,7 @@ glyph:U
 pain:1
 flags:DEMON | EVIL | SPIRIT
 flags:ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Major Demon
@@ -250,6 +252,7 @@ name:minor demon
 glyph:u
 pain:1
 flags:DEMON | EVIL | SPIRIT
+flags:CLEAR_WEB
 flags:IM_FIRE
 desc:Minor Demon
 
@@ -271,33 +274,33 @@ name:naga
 glyph:n
 pain:1
 flags:FEMALE | EVIL | HURT_COLD | SPIRIT
-flags:BASH_DOOR
+flags:BASH_DOOR | CLEAR_WEB
 desc:Naga
 
 name:ogre
 glyph:O
 pain:1
 flags:GIANT | EVIL | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 desc:Ogre
 
 name:orc
 glyph:o
 pain:1
 flags:MALE | ORC | EVIL | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 desc:Orc
 
 name:person
 glyph:p
 pain:1
-flags:BASH_DOOR | SPIRIT
+flags:BASH_DOOR | SPIRIT | CLEAR_WEB
 desc:Person/Human
 
 name:quadruped
 glyph:q
 pain:4
-flags:BASH_DOOR
+flags:BASH_DOOR | CLEAR_WEB
 desc:Quadruped
 
 name:quylthulg
@@ -312,19 +315,19 @@ desc:Quylthulg
 name:reptile
 glyph:R
 pain:5
-flags:ANIMAL | HURT_COLD
+flags:ANIMAL | HURT_COLD | CLEAR_WEB
 desc:Reptile/Amphibian
 
 name:rodent
 glyph:r
 pain:4
-flags:ANIMAL
+flags:ANIMAL | CLEAR_WEB
 desc:Rodent
 
 name:skeleton
 glyph:s
 pain:9
-flags:UNDEAD | EVIL | COLD_BLOOD
+flags:UNDEAD | EVIL | COLD_BLOOD | CLEAR_WEB
 flags:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NO_STUN
 desc:Skeleton
 
@@ -332,33 +335,33 @@ name:snake
 glyph:J
 pain:5
 flags:ANIMAL | HURT_COLD
-flags:BASH_DOOR
+flags:BASH_DOOR | CLEAR_WEB
 desc:Snake
 
 name:spider
 glyph:S
 pain:7
-flags:BASH_DOOR
+flags:BASH_DOOR | PASS_WEB
 desc:Spider/Scorpion/Tick
 
 name:townsfolk
 glyph:t
 pain:4
-flags:SPIRIT
+flags:SPIRIT | CLEAR_WEB
 desc:Townsfolk
 
 name:troll
 glyph:T
 pain:1
 flags:TROLL | EVIL | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 desc:Troll
 
 name:vampire
 glyph:V
 pain:1
 flags:UNDEAD | EVIL | COLD_BLOOD | REGENERATE | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:HURT_LIGHT | HURT_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
 flags:FORCE_SLEEP
 desc:Vampire
@@ -367,7 +370,7 @@ name:vortex
 glyph:v
 pain:11
 flags:EMPTY_MIND | POWERFUL
-flags:RAND_50 | BASH_DOOR
+flags:RAND_50 | BASH_DOOR | CLEAR_WEB
 flags:NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD | IM_POIS
 flags:FORCE_SLEEP
 flags:NONLIVING
@@ -382,14 +385,14 @@ desc:Worm/Worm Mass
 name:wraith
 glyph:W
 pain:1
-flags:UNDEAD | EVIL | COLD_BLOOD | SPIRIT
+flags:UNDEAD | EVIL | COLD_BLOOD | SPIRIT | CLEAR_WEB
 flags:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 desc:Wight/Wraith
 
 name:xorn
 glyph:X
 pain:4
-flags:COLD_BLOOD | EMPTY_MIND
+flags:COLD_BLOOD | EMPTY_MIND | CLEAR_WEB
 flags:HURT_ROCK | IM_POIS | NO_CONF | NO_SLEEP
 desc:Xorn/Xaren
 
@@ -397,7 +400,7 @@ name:yeek
 glyph:y
 pain:1
 flags:ANIMAL | SPIRIT
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_ACID
 desc:Yeek
 
@@ -405,21 +408,21 @@ name:yeti
 glyph:Y
 pain:1
 flags:ANIMAL
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_COLD
 desc:Yeti
 
 name:zephyr hound
 glyph:Z
 pain:3
-flags:ANIMAL | GROUP_AI
+flags:ANIMAL | GROUP_AI | CLEAR_WEB
 desc:Zephyr Hound
 
 name:zombie
 glyph:z
 pain:10
 flags:UNDEAD | EVIL | COLD_BLOOD
-flags:OPEN_DOOR | BASH_DOOR
+flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_COLD | IM_POIS | HURT_FIRE | NO_CONF | NO_SLEEP | NO_STUN
 desc:Zombie/Mummy
 
