@@ -4081,6 +4081,8 @@ blow:BITE:POISON:1d6
 blow:BITE:POISON:1d6
 flags:EVIL | ANIMAL | WEIRD_MIND
 flags:IM_POIS | GROUP_AI
+innate-freq:8
+spells:WEAVE
 friends:100:2d7:Same
 desc:A strong and powerful spider from Mirkwood forest.  Cunning and evil, it
 desc: seeks to taste your juicy insides.

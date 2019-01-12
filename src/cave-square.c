@@ -595,6 +595,7 @@ bool square_isopen(struct chunk *c, struct loc grid) {
  */
 bool square_isempty(struct chunk *c, struct loc grid) {
 	if (square_isplayertrap(c, grid)) return false;
+	if (square_iswebbed(c, grid)) return false;
 	return square_isopen(c, grid) && !square_object(c, grid);
 }
 
@@ -604,6 +605,7 @@ bool square_isempty(struct chunk *c, struct loc grid) {
 bool square_isarrivable(struct chunk *c, struct loc grid) {
 	if (square(c, grid).mon) return false;
 	if (square_isplayertrap(c, grid)) return false;
+	if (square_iswebbed(c, grid)) return false;
 	if (square_isfloor(c, grid)) return true;
 	if (square_isstairs(c, grid)) return true;
 	// maybe allow open doors or suchlike?
@@ -614,10 +616,8 @@ bool square_isarrivable(struct chunk *c, struct loc grid) {
  * True if the square is an untrapped floor square without items.
  */
 bool square_canputitem(struct chunk *c, struct loc grid) {
-	if (!square_isobjectholding(c, grid))
-		return false;
-	if (square_istrap(c, grid))
-		return false;
+	if (!square_isobjectholding(c, grid)) return false;
+	if (square_istrap(c, grid)) return false;
 	return !square_object(c, grid);
 }
 
@@ -628,6 +628,14 @@ bool square_isdiggable(struct chunk *c, struct loc grid) {
 	return (square_ismineral(c, grid) ||
 			square_issecretdoor(c, grid) || 
 			square_isrubble(c, grid));
+}
+
+/**
+ * True if the square is a floor with no traps.
+ */
+bool square_iswebbable(struct chunk *c, struct loc grid) {
+	if (square_trap(c, grid)) return false;
+	return square_isfloor(c, grid);
 }
 
 /**
@@ -1197,6 +1205,12 @@ void square_add_glyph(struct chunk *c, struct loc grid, int type)
 		}
 	}
 	place_trap(c, grid, glyph->tidx, 0);
+}
+
+void square_add_web(struct chunk *c, struct loc grid)
+{
+	struct trap_kind *web = lookup_trap("web");
+	place_trap(c, grid, web->tidx, 0);
 }
 
 void square_add_stairs(struct chunk *c, struct loc grid, int depth) {

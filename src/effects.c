@@ -1052,6 +1052,46 @@ bool effect_handler_GLYPH(effect_handler_context_t *context)
 }
 
 /**
+ * Create a web.
+ */
+bool effect_handler_WEB(effect_handler_context_t *context)
+{
+	int rad = 1;
+	struct monster *mon = NULL;
+	struct loc grid;
+
+	/* Get the monster creating */
+	if (cave->mon_current > 0) {
+		mon = cave_monster(cave, cave->mon_current);
+	} else {
+		/* Player can't currently create webs */
+		return false;
+	}
+
+	/* Always notice */
+	context->ident = true;
+
+	/* Increase the radius for higher spell power */
+	if (mon->race->spell_power > 40) rad++;
+	if (mon->race->spell_power > 80) rad++;
+
+	/* Check within the radius for clear floor */
+	for (grid.y = mon->grid.y - rad; grid.y <= mon->grid.y + rad; grid.y++) {  
+		for (grid.x = mon->grid.x - rad; grid.x <= mon->grid.x + rad; grid.x++){
+			if (distance(grid, mon->grid) > rad) continue;
+
+			/* Require a floor grid with no existing traps or glyphs */
+			if (!square_iswebbable(cave, grid)) continue;
+
+			/* Create a web */
+			square_add_web(cave, grid);
+		}
+	}
+
+	return true;
+}
+
+/**
  * Restore a stat; the stat index is context->subtype
  */
 bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)

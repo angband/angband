@@ -298,6 +298,15 @@ message-vis:{name} hurls a boulder.
 message-invis:You hear a grunt of exertion.
 message-miss:{name} hurls a boulder, but misses.
 
+name:WEAVE
+msgt:CREATE_TRAP
+hit:100
+effect:WEB
+lore:weave webs
+lore-color-base:Yellow
+message-vis:{name} weaves a web.
+message-invis:You hear soft rustling.
+
 name:BA_ACID
 hit:100
 effect:BALL:ACID:2

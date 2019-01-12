@@ -345,6 +345,7 @@ bool square_isempty(struct chunk *c, struct loc grid);
 bool square_isarrivable(struct chunk *c, struct loc grid);
 bool square_canputitem(struct chunk *c, struct loc grid);
 bool square_isdiggable(struct chunk *c, struct loc grid);
+bool square_iswebbable(struct chunk *c, struct loc grid);
 bool square_is_monster_walkable(struct chunk *c, struct loc grid);
 bool square_ispassable(struct chunk *c, struct loc grid);
 bool square_isprojectable(struct chunk *c, struct loc grid);
@@ -397,6 +398,7 @@ void square_set_obj(struct chunk *c, struct loc grid, struct object *obj);
 void square_set_trap(struct chunk *c, struct loc grid, struct trap *trap);
 void square_add_trap(struct chunk *c, struct loc grid);
 void square_add_glyph(struct chunk *c, struct loc grid, int type);
+void square_add_web(struct chunk *c, struct loc grid);
 void square_add_stairs(struct chunk *c, struct loc grid, int depth);
 void square_add_door(struct chunk *c, struct loc grid, bool closed);
 

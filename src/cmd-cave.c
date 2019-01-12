@@ -1107,21 +1107,22 @@ void do_cmd_walk(struct command *cmd)
 	int dir;
 	bool trapsafe = player_is_trapsafe(player) ? true : false;
 
+	/* Get arguments */
+	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
+		return;
+
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, player->grid)) {
-		if (get_check("You are stuck in a web - do you want to clear it?")) {
+		if (get_check("You are stuck in a web - do you want to clear it? ")) {
 			/* Clear the web, finish turn */
-			(void) square_remove_all_traps(cave, player->grid);
+			square_destroy_trap(cave, player->grid);
 			player->upkeep->energy_use = z_info->move_energy;
+			return;
 		} else {
 			/* Rethink */
 			return;
 		}
 	}
-
-	/* Get arguments */
-	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
-		return;
 
 	/* Apply confusion if necessary */
 	/* Confused movements use energy no matter what */
@@ -1148,21 +1149,22 @@ void do_cmd_jump(struct command *cmd)
 	struct loc grid;
 	int dir;
 
+	/* Get arguments */
+	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
+		return;
+
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, player->grid)) {
-		if (get_check("You are stuck in a web - do you want to clear it?")) {
+		if (get_check("You are stuck in a web - do you want to clear it? ")) {
 			/* Clear the web, finish turn */
-			(void) square_remove_all_traps(cave, player->grid);
+			square_destroy_trap(cave, player->grid);
 			player->upkeep->energy_use = z_info->move_energy;
+			return;
 		} else {
 			/* Rethink */
 			return;
 		}
 	}
-
-	/* Get arguments */
-	if (cmd_get_direction(cmd, "direction", &dir, false) != CMD_OK)
-		return;
 
 	/* Apply confusion if necessary */
 	if (player_confuse_dir(player, &dir, false))
