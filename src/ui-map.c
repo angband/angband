@@ -85,17 +85,21 @@ static void hallucinatory_object(int *a, wchar_t *c)
  *
  * We should probably have better handling of stacked traps, but that can
  * wait until we do, in fact, have stacked traps under normal conditions.
+ * Return true if it's a web
  */
-static void get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
+static bool get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
 							  wchar_t *w)
 {
     /* Trap is visible */
     if (trf_has(g->trap->flags, TRF_VISIBLE) ||
-		trf_has(g->trap->flags, TRF_GLYPH)) {
+		trf_has(g->trap->flags, TRF_GLYPH) ||
+		trf_has(g->trap->flags, TRF_WEB)) {
 		/* Get the graphics */
 		*a = trap_x_attr[g->lighting][g->trap->kind->tidx];
 		*w = trap_x_char[g->lighting][g->trap->kind->tidx];
     }
+
+	return trf_has(g->trap->flags, TRF_WEB);
 }
 
 /**
@@ -188,6 +192,7 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 
 	int a = feat_x_attr[g->lighting][feat->fidx];
 	wchar_t c = feat_x_char[g->lighting][feat->fidx];
+	bool skip_objects = false;
 
 	/* Get the colour for ASCII */
 	if (use_graphics == GRAPHICS_NONE)
@@ -198,35 +203,38 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 	(*tcp) = c;
 
 	/* There is a trap in this grid, and we are not hallucinating */
-	if (g->trap && (!g->hallucinate))
-	    /* Change graphics to indicate a trap (if visible) */
-	    get_trap_graphics(cave, g, &a, &c);
+	if (g->trap && (!g->hallucinate)) {
+	    /* Change graphics to indicate visible traps, skip objects if a web */
+	    skip_objects = get_trap_graphics(cave, g, &a, &c);
+	}
 
-	/* If there's an object, deal with that. */
-	if (g->unseen_money) {
-	
-		/* $$$ gets an orange star*/
-		a = object_kind_attr(unknown_gold_kind);
-		c = object_kind_char(unknown_gold_kind);
-		
-	} else if (g->unseen_object) {	
-	
-		/* Everything else gets a red star */    
-		a = object_kind_attr(unknown_item_kind);
-		c = object_kind_char(unknown_item_kind);
-		
-	} else if (g->first_kind) {
-		if (g->hallucinate) {
-			/* Just pick a random object to display. */
-			hallucinatory_object(&a, &c);
-		} else if (g->multiple_objects) {
-			/* Get the "pile" feature instead */
-			a = object_kind_attr(pile_kind);
-			c = object_kind_char(pile_kind);
-		} else {
-			/* Normal attr and char */
-			a = object_kind_attr(g->first_kind);
-			c = object_kind_char(g->first_kind);
+	if (!skip_objects) {
+		/* If there's an object, deal with that. */
+		if (g->unseen_money) {
+
+			/* $$$ gets an orange star*/
+			a = object_kind_attr(unknown_gold_kind);
+			c = object_kind_char(unknown_gold_kind);
+
+		} else if (g->unseen_object) {
+
+			/* Everything else gets a red star */
+			a = object_kind_attr(unknown_item_kind);
+			c = object_kind_char(unknown_item_kind);
+
+		} else if (g->first_kind) {
+			if (g->hallucinate) {
+				/* Just pick a random object to display. */
+				hallucinatory_object(&a, &c);
+			} else if (g->multiple_objects) {
+				/* Get the "pile" feature instead */
+				a = object_kind_attr(pile_kind);
+				c = object_kind_char(pile_kind);
+			} else {
+				/* Normal attr and char */
+				a = object_kind_attr(g->first_kind);
+				c = object_kind_char(g->first_kind);
+			}
 		}
 	}
 

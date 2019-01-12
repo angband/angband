@@ -128,13 +128,14 @@ void map_info(struct loc grid, struct grid_data *g)
 		g->f_idx = lookup_feat(f_info[g->f_idx].mimic);
 
     /* There is a trap in this square */
-    if (square_istrap(cave, grid) && square_isknown(cave, grid)) {
+    if (square_trap(cave, grid) && square_isknown(cave, grid)) {
 		struct trap *trap = square(cave, grid).trap;
 
 		/* Scan the square trap list */
 		while (trap) {
 			if (trf_has(trap->flags, TRF_TRAP) ||
-				trf_has(trap->flags, TRF_GLYPH)) {
+				trf_has(trap->flags, TRF_GLYPH) ||
+				trf_has(trap->flags, TRF_WEB)) {
 				/* Accept the trap - only if not disabled, maybe we need
 				 * a special graphic for this */
 				if (!trap->timeout) {
