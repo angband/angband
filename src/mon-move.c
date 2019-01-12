@@ -1119,7 +1119,7 @@ static bool monster_turn_attack_glyph(struct chunk *c, struct monster *mon,
 		}
 
 		/* Break the rune */
-		square_remove_all_traps(c, new);
+		square_destroy_trap(c, new);
 
 		return true;
 	}
@@ -1324,7 +1324,7 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 				/* If you can destroy a wall, you can destroy a web */
 			} else if (rf_has(mon->race->flags, RF_CLEAR_WEB)) {
 				/* Clearing costs a turn (assume there are no other "traps") */
-				(void) square_remove_all_traps(c, mon->grid);
+				square_destroy_trap(c, mon->grid);
 				return;
 			} else {
 				/* Stuck */
