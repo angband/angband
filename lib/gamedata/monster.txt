@@ -2831,6 +2831,8 @@ blow:BITE:POISON:1d6
 blow:BITE:HURT:1d10
 flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
+innate-freq:10
+spells:WEAVE
 desc:It is a vast black spider whose bulbous body is bloated with poison.
 
 name:dark elven mage
@@ -3547,27 +3549,6 @@ desc:A strange jelly thing, covered in discoloured blotches.
 
 ### Dungeon level 13 ###
 
-name:drider
-base:spider
-color:b
-speed:110
-hit-points:70
-hearing:8
-armor-class:36
-sleepiness:80
-depth:13
-rarity:2
-experience:55
-blow:HIT:HURT:1d12
-blow:HIT:HURT:1d12
-blow:BITE:POISON:1d6
-flags:EVIL | SPIRIT
-flags:IM_POIS
-flags:FORCE_SLEEP
-spell-freq:8
-spells:CAUSE_1 | CONF | DARKNESS
-desc:A dark elven torso merged with the bloated form of a giant spider.
-
 name:killer brown beetle
 base:killer beetle
 color:u
@@ -4044,7 +4025,7 @@ blow:BITE:POISON:1d6
 blow:BITE:POISON:1d6
 flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
-desc:A giant spider with hairy black and red legs.
+desc:A giant, fast-moving spider with hairy black and red legs.
 
 name:giant clear centipede
 base:centipede
@@ -4064,28 +4045,6 @@ flags:INVISIBLE
 flags:BASH_DOOR
 flags:ATTR_CLEAR
 desc:It is about four feet long and carnivorous.
-
-name:Mirkwood spider
-base:spider
-color:g
-speed:120
-hit-points:41
-hearing:15
-armor-class:30
-sleepiness:80
-depth:15
-rarity:2
-experience:25
-blow:BITE:HURT:1d8
-blow:BITE:POISON:1d6
-blow:BITE:POISON:1d6
-flags:EVIL | ANIMAL | WEIRD_MIND
-flags:IM_POIS | GROUP_AI
-innate-freq:8
-spells:WEAVE
-friends:100:2d7:Same
-desc:A strong and powerful spider from Mirkwood forest.  Cunning and evil, it
-desc: seeks to taste your juicy insides.
 
 name:griffon
 base:hybrid
@@ -4461,7 +4420,7 @@ desc:A whirlpool of sentient liquid.
 name:giant red scorpion
 base:spider
 color:r
-speed:110
+speed:115
 hit-points:50
 hearing:12
 armor-class:52
@@ -4469,7 +4428,8 @@ sleepiness:20
 depth:17
 rarity:1
 experience:62
-blow:BITE:HURT:2d4
+blow:CLAW:HURT:2d4
+blow:CLAW:HURT:2d4
 blow:STING:LOSE_STR:1d7
 flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
@@ -4814,6 +4774,28 @@ desc: heard for quite some distance, alerting other monsters to your presence.
 
 ### Dungeon level 20 ###
 
+name:Mirkwood spider
+base:spider
+color:g
+speed:120
+hit-points:41
+hearing:15
+armor-class:30
+sleepiness:80
+depth:20
+rarity:2
+experience:25
+blow:BITE:HURT:1d8
+blow:BITE:POISON:1d6
+blow:BITE:POISON:1d6
+flags:EVIL | ANIMAL | WEIRD_MIND
+flags:IM_POIS | GROUP_AI
+innate-freq:10
+spells:WEAVE
+friends:100:2d7:Same
+desc:A strong and powerful spider from Mirkwood forest.  Cunning and evil, it
+desc: seeks to taste your juicy insides.
+
 name:Bolg, Son of Azog
 base:orc
 color:P
@@ -4837,28 +4819,6 @@ friends:80:2d7:Warg
 friends:100:4d4:Uruk:bodyguard
 desc:A large and powerful orc, he looks just like his father.  He is tall and
 desc: fast, but fortunately blessed with orcish brains.
-
-name:phase spider
-base:spider
-color:B
-speed:120
-hit-points:27
-hearing:15
-armor-class:30
-sleepiness:80
-depth:20
-rarity:2
-experience:60
-blow:BITE:HURT:1d8
-blow:BITE:POISON:1d6
-blow:BITE:POISON:1d6
-flags:ANIMAL | WEIRD_MIND | ATTR_FLICKER
-flags:IM_POIS | GROUP_AI
-spell-freq:5
-spells:BLINK | TELE_TO
-friends:100:2d7:Same
-desc:A spider that never seems quite there.  Everywhere you look it is just
-desc: half-seen in the corner of one eye.
 
 name:3-headed hydra
 base:hydra
@@ -5381,7 +5341,8 @@ sleepiness:20
 depth:22
 rarity:1
 experience:60
-blow:BITE:HURT:1d8
+blow:CLAW:HURT:1d8
+blow:CLAW:HURT:1d8
 blow:STING:POISON:2d5
 flags:ANIMAL | WEIRD_MIND
 flags:IM_POIS
@@ -5408,6 +5369,28 @@ flags:IM_POIS
 desc:A fast-moving and deadly draconian animal.  Beware its poisonous sting!
 
 ### Dungeon level 23 ###
+
+name:phase spider
+base:spider
+color:B
+speed:120
+hit-points:27
+hearing:15
+armor-class:30
+sleepiness:80
+depth:23
+rarity:2
+experience:60
+blow:BITE:HURT:1d8
+blow:BITE:POISON:1d6
+blow:BITE:POISON:1d6
+flags:ANIMAL | WEIRD_MIND | ATTR_FLICKER
+flags:IM_POIS | GROUP_AI
+spell-freq:5
+spells:BLINK | TELE_TO | TELE_SELF_TO
+friends:100:2d7:Same
+desc:A spider that never seems quite there.  Everywhere you look it is just
+desc: half-seen in the corner of one eye.
 
 name:black ooze
 base:jelly
@@ -5966,23 +5949,6 @@ blow:BITE:HURT:4d4
 flags:RAND_25
 desc:It is a giant beetle with poisonous mandibles.
 
-name:giant brown tick
-base:spider
-color:u
-speed:100
-hit-points:81
-hearing:12
-armor-class:200
-sleepiness:20
-depth:25
-rarity:2
-experience:70
-blow:BITE:POISON:2d6
-blow:STING:BLIND:1d1
-flags:ANIMAL | WEIRD_MIND
-flags:IM_POIS
-desc:It is moving slowly towards you.
-
 ### Dungeon level 26 ###
 
 name:troll priest
@@ -6083,6 +6049,8 @@ blow:BITE:FIRE:3d6
 flags:ANIMAL | WEIRD_MIND | HAS_LIGHT
 flags:RAND_25
 flags:IM_FIRE
+innate-freq:20
+spells:SPIT
 desc:It is smoking and burning with great heat.
 
 name:cave ogre
@@ -6825,6 +6793,26 @@ desc: giant-size in wrath.  The roar of his voice is like drums, and no weapon
 desc: seems to bite upon him.
 
 ### Dungeon level 29 ###
+
+name:giant black scorpion
+base:spider
+color:s
+speed:120
+hit-points:189
+hearing:12
+armor-class:60
+sleepiness:20
+depth:29
+rarity:3
+experience:425
+blow:CLAW:HURT:1d11
+blow:CLAW:HURT:1d11
+blow:STING:POISON:3d4
+blow:STING:BLIND:3d4
+flags:ANIMAL | WEIRD_MIND
+flags:IM_POIS
+desc:A gleaming black scorpion as large as a lion, with a pulsating stinger
+desc: and two great deadly claws.
 
 name:purple worm
 base:worm
@@ -7998,23 +7986,6 @@ spells:SCARE | SLOW | TELE_AWAY | TELE_TO
 friends-base:70:1d3:skeleton
 desc:It is a skeletal form dressed in robes.  It radiates vastly evil power.
 
-name:giant grey scorpion
-base:spider
-color:s
-speed:120
-hit-points:189
-hearing:12
-armor-class:60
-sleepiness:40
-depth:34
-rarity:4
-experience:275
-blow:BITE:HURT:1d6
-blow:STING:POISON:1d4
-flags:ANIMAL | WEIRD_MIND
-flags:IM_POIS
-desc:It is a giant grey scorpion.  It looks poisonous.
-
 name:earth elemental
 base:elemental
 color:u
@@ -9186,10 +9157,10 @@ desc:A massive two-headed troll of huge strength, ettins are stupid but violent.
 desc:  They are also living proof that two heads are not more intelligent than
 desc: one...
 
-name:aranea
+name:abyss spider
 base:spider
-color:R
-speed:110
+color:G
+speed:120
 hit-points:264
 hearing:20
 armor-class:54
@@ -9197,20 +9168,19 @@ sleepiness:50
 depth:38
 rarity:3
 experience:250
-blow:CLAW:POISON:2d8
-blow:CLAW:POISON:2d8
-blow:BITE:POISON:2d6
-blow:BITE:POISON:2d6
-flags:EVIL | ANIMAL | SMART | SPIRIT
-flags:OPEN_DOOR | GROUP_AI
-flags:HURT_LIGHT | IM_POIS
-flags:FORCE_SLEEP
-spell-freq:6
-spells:CAUSE_3 | HOLD | MISSILE | SLOW
-spells:BO_FIRE
-friends:50:2d3:Mirkwood Spider
-friends:100:3d3:Same
-desc:An intelligent arachnid whose hairy legs weave spells in the air.
+blow:CLAW:HURT:2d8
+blow:STING:POISON:2d6
+blow:STING:POISON:2d6
+blow:BITE:CONFUSE:1d3
+flags:EVIL | ANIMAL
+flags:WEIRD_MIND | HURT_LIGHT | IM_POIS
+innate-freq:6
+spell-freq:5
+spells:WEAVE | CONF | SLOW | BLIND
+spells:BR_POIS | BR_DARK
+spell-power:10
+desc:A massive spider, heaving the bloated bag of its body between great
+desc: spined legs.
 
 ### Dungeon level 39 ###
 
@@ -10714,7 +10684,7 @@ desc:Ren was an insane eastern king who believed himself to be the son of a
 desc: volcano god.  At an early age his sanity was destroyed by a plague that
 desc: wiped out his family, and he never recovered.
 
-name:elder aranea
+name:ancient spider
 base:spider
 color:r
 speed:120
@@ -10731,18 +10701,15 @@ blow:BITE:POISON:5d6
 blow:BITE:POISON:5d6
 flags:EVIL | ANIMAL | SMART | SPIRIT
 flags:OPEN_DOOR
-flags:HURT_LIGHT | IM_FIRE | IM_POIS
+flags:HURT_LIGHT | IM_POIS
 flags:FORCE_SLEEP
+innate-freq:20
 spell-freq:6
-spells:CAUSE_3 | DRAIN_MANA | HEAL | HOLD | MIND_BLAST | SLOW
-spells:BA_FIRE
-spells:BO_FIRE
+spells:CAUSE_3 | DRAIN_MANA | HEAL | HOLD | SLOW
+spells:BR_DARK
 spells:S_KIN | S_SPIDER
-friends:50:3d3:Mirkwood Spider:servant
-friends:100:4d4:Aranea:servant
-desc:A vast, bloated arachnid, master of its brood: among the more terrible of
-desc: Ungoliant's descendants, this is a monster such as those who haunted the
-desc: dread valley of Nan Dungortheb long ago.
+friends:100:4d4:spider
+desc:A foul creature of spider form, older even than the pits of Angband.
 
 name:winged horror
 base:bird
@@ -11550,7 +11517,7 @@ flags:FORCE_SLEEP
 innate-freq:20
 spell-freq:4
 spells:BLIND | CAUSE_3 | CAUSE_4 | CONF | HEAL | SCARE
-spells:SLOW | TRAPS
+spells:SLOW | WEAVE
 spells:BR_DARK | BR_POIS
 spells:S_KIN
 friends:80:4d4:Black orc
@@ -12229,6 +12196,35 @@ desc: dragons and his dragonfire is what legends are made of; he is believed to
 desc: be the greatest dragon still surviving into the Third Age.
 
 ### Dungeon level 63 ###
+
+name:spider of Gorgoroth
+base:spider
+color:P
+speed:120
+hit-points:4000
+hearing:30
+armor-class:180
+sleepiness:20
+depth:63
+rarity:3
+experience:30000
+blow:CLAW:POISON:6d6
+blow:CLAW:POISON:6d6
+blow:BITE:PARALYZE:5d10
+blow:STING:LOSE_STR:5d4
+flags:FEMALE | EVIL | ANIMAL | SMART | SPIRIT
+flags:DROP_2 | DROP_GOOD | ONLY_ITEM
+flags:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
+flags:FORCE_SLEEP
+innate-freq:20
+spell-freq:5
+spells:BLIND | CAUSE_4 | CONF | HEAL | SCARE
+spells:SLOW | WEAVE
+spells:BR_DARK | BR_POIS
+spells:S_KIN
+friends:100:2d4:spider
+desc:One of the hideous brood of Ungoliant, spawned in the endless shadow of
+desc: Nan Dungortheb beneath the mountains of Ered Gorgoroth.
 
 ### Dungeon level 64 ###
 
@@ -13200,7 +13196,7 @@ flags:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 innate-freq:11
 spell-freq:4
-spells:BLIND | CONF | DARKNESS | HEAL | SCARE | SLOW
+spells:BLIND | CONF | HEAL | SCARE | WEAVE
 spells:BA_DARK
 spells:BR_DARK | BR_POIS
 spells:S_KIN
