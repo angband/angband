@@ -187,6 +187,19 @@ static bool mon_set_timed(struct monster *mon,
 		update = true;
 	}
 
+	/* Special case - deal with monster shapechanges */
+	if (effect_type == MON_TMD_CHANGED) {
+		if (timer > old_timer) {
+			if (!monster_change_shape(mon)) {
+				m_note = MON_MSG_SHAPE_FAIL;
+				mon->m_timed[effect_type] = old_timer;
+			}
+		} else if (timer == 0) {
+			if (!monster_revert_shape(mon))
+				quit ("Monster shapechange reversion failed!");
+		}
+	}
+
 	/* Print a message if there is one, if the effect allows for it, and if
 	 * either the monster is visible, or we're trying to ID something */
 	if (m_note &&
@@ -196,17 +209,6 @@ static bool mon_set_timed(struct monster *mon,
 			char m_name[80];
 			monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_HID);
 			add_monster_message(mon, m_note, true);
-	}
-
-	/* Special case - deal with monster shapechanges */
-	if (effect_type == MON_TMD_CHANGED) {
-		if (timer > old_timer) {
-			if (!monster_change_shape(mon))
-				quit ("Monster shapechange failed!");
-		} else if (timer == 0) {
-			if (!monster_revert_shape(mon))
-				quit ("Monster shapechange reversion failed!");
-		}
 	}
 
 	/* Update the visuals, as appropriate. */
