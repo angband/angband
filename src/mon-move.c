@@ -787,9 +787,19 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 	if (get_move_advance(c, mon, good)) {
 		/* We have a good move, use it */
 		grid = loc_diff(mon->target.grid, mon->grid);
+		mflag_on(mon->mflag, MFLAG_TRACKING);
 	} else {
-		/* Head blindly straight for the "player" if there's no better idea */
-		grid = loc_diff(target, mon->grid);
+		/* Try to follow someone who knows where they're going */
+		struct monster *tracker = group_monster_tracking(c, mon);
+		if (tracker && los(c, mon->grid, tracker->grid)) { /* Need los? */
+			grid = loc_diff(tracker->grid, mon->grid);
+		} else {
+			/* Head blindly straight for the "player" if no better idea */
+			grid = loc_diff(target, mon->grid);
+		}
+
+		/* No longer tracking */
+		mflag_off(mon->mflag, MFLAG_TRACKING);
 	}
 
 	/* Normal animal packs try to get the player out of corridors. */
@@ -813,6 +823,9 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 			if (get_move_find_hiding(c, mon)) {
 				done = true;
 				grid = loc_diff(mon->target.grid, mon->grid);
+
+				/* No longer tracking */
+				mflag_off(mon->mflag, MFLAG_TRACKING);
 			}
 		}
 	}
@@ -829,6 +842,8 @@ static bool get_move(struct chunk *c, struct monster *mon, int *dir, bool *good)
 			grid = loc_diff(loc(0, 0), grid);
 		}
 
+		/* No longer tracking */
+		mflag_off(mon->mflag, MFLAG_TRACKING);
 		done = true;
 	}
 

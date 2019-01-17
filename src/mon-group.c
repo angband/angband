@@ -476,6 +476,25 @@ int monster_primary_group_size(struct chunk *c, const struct monster *mon)
 }
 
 /**
+ * Find a group monster which is tracking
+ */
+struct monster *group_monster_tracking(struct chunk *c,
+									   const struct monster *mon)
+{
+	int index = mon->group_info[PRIMARY_GROUP].index;
+	struct monster_group *group = c->monster_groups[index];
+	struct mon_group_list_entry *entry = group->member_list;
+
+	while (entry) {
+		struct monster *tracker = cave_monster(c, entry->midx);
+		if (mflag_has(tracker->mflag, MFLAG_TRACKING)) return tracker;
+		entry = entry->next;
+	}
+
+	return NULL;
+}
+
+/**
  * Get the index of the leader of a monster group
  */
 int monster_group_leader_idx(struct monster_group *group)
