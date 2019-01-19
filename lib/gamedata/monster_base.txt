@@ -289,6 +289,8 @@ flags:FEMALE | EVIL | HURT_COLD | SPIRIT
 flags:BASH_DOOR | CLEAR_WEB
 desc:Naga
 
+# Ogres are like small giants, or large orcs.  Mostly straightforward melee
+# fighters who come in packs, with occaisonal lone spellcasters.
 name:ogre
 glyph:O
 pain:1
@@ -429,6 +431,8 @@ flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_COLD
 desc:Yeti
 
+# Zephyr hounds come in packs and (with a couple of exceptions) breathe a
+# single element, with melee that matches where possible.  Simple.
 name:zephyr hound
 glyph:Z
 pain:3

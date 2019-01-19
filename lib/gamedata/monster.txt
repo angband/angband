@@ -6323,32 +6323,6 @@ friends:100:2d7:Same
 desc:A locus of conflicting points coalesce to form the vague shape of a huge
 desc: hound. Or is it just your imagination?
 
-name:ogre mage
-base:ogre
-color:r
-speed:110
-hit-points:163
-hearing:20
-smell:20
-armor-class:60
-sleepiness:40
-depth:27
-rarity:2
-experience:300
-blow:HIT:HURT:3d8
-blow:HIT:HURT:3d8
-blow:HIT:HURT:3d8
-blow:HIT:HURT:3d8
-flags:DROP_1
-flags:FORCE_SLEEP
-spell-freq:4
-spells:HEAL | HOLD | TRAPS
-spells:BA_COLD
-spells:S_MONSTER
-drop-base:magic book:5:1:1
-drop-base:magic book:5:1:1
-desc:A hideous ogre wrapped in black sorcerous robes.
-
 name:vampire
 base:vampire
 color:W
@@ -7315,31 +7289,31 @@ desc: deepest red hue.  Heat radiates from its form.
 
 ### Dungeon level 32 ###
 
-name:Lokkak, the Ogre Chieftain
+name:ogre mage
 base:ogre
-color:v
-speed:120
-hit-points:1500
+color:r
+speed:115
+hit-points:220
 hearing:20
 smell:20
-armor-class:120
-sleepiness:20
+armor-class:60
+sleepiness:40
 depth:32
 rarity:2
-experience:1500
-blow:HIT:HURT:6d6
-blow:HIT:HURT:6d6
-blow:HIT:HURT:6d6
-flags:UNIQUE | MALE | MOVE_BODY
-flags:DROP_2 | DROP_GOOD | ONLY_ITEM
-friends:100:3d3:Ogre:servant
-friends:100:3d3:Black ogre:servant
-friends:100:3d3:Cave ogre:bodyguard
-friends:80:1d2:Ogre mage:servant
-friends:80:1d2:Ogre shaman:servant
-friends:50:1d2:Ogre chieftain:servant
-desc:An ogre renowned for acts of surpassing cruelty, Lokkak quickly became the
-desc: leader of a large band of violent ogres.
+experience:300
+blow:HIT:HURT:3d8
+blow:HIT:HURT:3d8
+blow:HIT:HURT:3d8
+blow:HIT:HURT:3d8
+flags:DROP_1
+flags:FORCE_SLEEP
+spell-freq:4
+spells:HEAL | HOLD | TRAPS
+spells:BA_COLD
+spells:S_MONSTER
+drop-base:magic book:5:1:1
+drop-base:magic book:5:1:1
+desc:A hideous ogre wrapped in black sorcerous robes.
 
 name:nexus quylthulg
 base:quylthulg
@@ -8075,6 +8049,32 @@ desc: all-too-familiar purpose.  Your magic surprisingly feels much less
 desc: powerful now.
 
 ### Dungeon level 35 ###
+
+name:Lokkak, the Ogre Chieftain
+base:ogre
+color:v
+speed:120
+hit-points:1500
+hearing:20
+smell:20
+armor-class:120
+sleepiness:20
+depth:35
+rarity:2
+experience:1500
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+flags:UNIQUE | MALE | MOVE_BODY
+flags:DROP_2 | DROP_GOOD | ONLY_ITEM
+friends:100:3d3:Ogre:servant
+friends:100:3d3:Black ogre:servant
+friends:100:3d3:Cave ogre:bodyguard
+friends:80:1d2:Ogre mage:servant
+friends:80:1d2:Ogre shaman:servant
+friends:50:1d2:Ogre chieftain:servant
+desc:An ogre renowned for acts of surpassing cruelty, Lokkak quickly became the
+desc: leader of a large band of violent ogres.
 
 name:water troll
 base:troll
@@ -11851,32 +11851,6 @@ desc: harmless.
 
 ### Dungeon level 59 ###
 
-name:ethereal hound
-base:zephyr hound
-color:G
-speed:120
-hit-points:480
-hearing:30
-smell:50
-armor-class:120
-sleepiness:0
-depth:59
-rarity:5
-experience:7000
-blow:CLAW:HURT:2d12
-blow:CLAW:HURT:2d12
-blow:BITE:HURT:2d12
-blow:BITE:HURT:2d12
-flags:INVISIBLE
-flags:PASS_WALL
-flags:NO_CONF | NO_SLEEP | NO_HOLD | IM_NETHER
-flags:FORCE_SLEEP
-innate-freq:5
-spells:BR_NETH
-friends:100:2d7:Same
-desc:A pale green hound.  Pulsing red lines and strange fluorescent light hints
-desc: at internal organs best left to the imagination.
-
 name:skull druj
 base:skeleton
 color:o
@@ -12644,6 +12618,33 @@ desc: victims.
 
 ### Dungeon level 69 ###
 
+name:hound of Tindalos
+plural:hounds of Tindalos
+base:zephyr hound
+color:t
+speed:130
+hit-points:480
+hearing:30
+smell:50
+armor-class:120
+sleepiness:0
+depth:69
+rarity:5
+experience:7000
+blow:CLAW:HURT:2d12
+blow:CLAW:HURT:2d12
+blow:BITE:HURT:2d12
+blow:BITE:HURT:2d12
+flags:INVISIBLE
+flags:PASS_WALL
+flags:NO_CONF | NO_SLEEP | NO_HOLD | IM_NETHER
+flags:FORCE_SLEEP
+innate-freq:5
+spells:BR_NETH | BR_DISE | BR_TIME
+friends:100:2d7:Same
+desc:Bodies of death, receptacles of all foulness, they emerge like smoke from
+desc: the angles of time, ravenous and snarling and unsatisfied.
+
 name:Nan, the Giant
 base:giant
 color:o
@@ -13167,7 +13168,7 @@ desc: the very rock of the dungeon cannot prevent it reaching you.
 name:aether hound
 base:zephyr hound
 color:v
-speed:120
+speed:130
 hit-points:1230
 hearing:30
 smell:50
