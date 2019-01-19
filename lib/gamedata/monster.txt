@@ -8076,9 +8076,9 @@ friends:50:1d2:Ogre chieftain:servant
 desc:An ogre renowned for acts of surpassing cruelty, Lokkak quickly became the
 desc: leader of a large band of violent ogres.
 
-name:water troll
+name:hill troll
 base:troll
-color:B
+color:m
 speed:110
 hit-points:316
 hearing:20
@@ -8094,10 +8094,10 @@ blow:BITE:HURT:2d2
 blow:BITE:HURT:2d2
 flags:MALE | REGENERATE
 flags:DROP_20
-flags:HURT_LIGHT | IM_COLD
-friends:50:1d5:Water hound
 friends:100:4d4:Same
-desc:He is a troll that reeks of brine.
+desc:Clad only in close-fitting mesh of horny scales (unless that is his skin)
+desc: this troll strides toward you roaring like a beast, wielding a heavy
+desc: hammer in his knotted hand.
 
 name:invisible stalker
 base:elemental
@@ -9729,7 +9729,7 @@ flags:NO_FEAR
 friends:60:2d3:Forest troll:servant
 friends:60:2d3:Stone troll:servant
 friends:60:2d3:Ice troll:servant
-friends:60:2d3:Water troll:servant
+friends:60:2d3:hill troll:servant
 friends:60:2d3:Half-troll:servant
 friends:60:2d3:Cave troll:servant
 friends:60:2d3:Olog:servant
@@ -10012,7 +10012,7 @@ friends:60:2d3:Half-troll:servant
 friends:60:2d3:Cave troll:servant
 friends:40:2d3:Olog:servant
 friends:30:1d2:Eldrak:servant
-friends:100:4d4:Water troll:bodyguard
+friends:100:4d4:hill troll:bodyguard
 desc:A massive and cruel troll of great power, drool slides caustically down his
 desc: muscular frame.  Despite his bulk, he strikes with stunning speed.
 

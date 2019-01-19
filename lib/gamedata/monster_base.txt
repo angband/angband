@@ -369,6 +369,9 @@ pain:4
 flags:SPIRIT | CLEAR_WEB
 desc:Townsfolk
 
+# Trolls are evil, larger than human-size humanoids. They have strong melee
+# combat, and many are hurt by light.  They fall roughly between ogres and
+# giants in Morgoth's humanoid soldiery.
 name:troll
 glyph:T
 pain:1
