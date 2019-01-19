@@ -1235,7 +1235,7 @@ desc:It is about four feet long and carnivorous.
 
 name:giant white louse
 plural:giant white lice
-base:louse
+base:insect
 color:w
 speed:120
 hit-points:1
@@ -1247,7 +1247,6 @@ depth:3
 rarity:1
 experience:1
 blow:BITE:HURT:1d1
-flags:RAND_25
 desc:It is six inches long.
 
 name:black naga
@@ -2507,6 +2506,21 @@ flags:NO_FEAR
 desc:Trained to hunt and kill without fear.
 
 ### Dungeon level 9 ###
+
+name:giant black louse
+plural:giant black lice
+base:insect
+color:D
+speed:120
+hit-points:2
+hearing:6
+armor-class:8
+sleepiness:10
+depth:9
+rarity:1
+experience:3
+blow:BITE:HURT:1d2
+desc:It makes you itch just to look at it.
 
 name:yeti
 plural:yeti
@@ -3825,21 +3839,6 @@ flags:RAND_25 | BASH_DOOR
 friends:100:2d7:Same
 desc:It is a large wolf with eyes full of cunning.
 
-name:giant black louse
-plural:giant black lice
-base:louse
-color:D
-speed:120
-hit-points:2
-hearing:6
-armor-class:8
-sleepiness:10
-depth:14
-rarity:1
-experience:3
-blow:BITE:HURT:1d2
-desc:It makes you itch just to look at it.
-
 name:lurker
 base:lurker
 color:w
@@ -4193,20 +4192,6 @@ desc: as it lines all four walls of the corridors it patrols.  Through its
 desc: transparent jelly structure you can see treasures it has engulfed, and a
 desc: few corpses as well.
 
-name:hummerhorn
-base:insect
-color:y
-speed:120
-hit-points:3
-hearing:8
-armor-class:16
-sleepiness:10
-depth:16
-rarity:4
-experience:4
-blow:BITE:CONFUSE:2d2
-desc:A giant buzzing wasp, its stinger drips venom.
-
 name:Ulfast, Son of Ulfang
 base:person
 color:U
@@ -4462,6 +4447,21 @@ flags:HURT_ROCK | IM_COLD | IM_ELEC | IM_FIRE
 desc:A whirling form of sentient rock.
 
 ### Dungeon level 18 ###
+
+name:hummerhorn
+base:insect
+color:y
+speed:120
+hit-points:3
+hearing:8
+armor-class:16
+sleepiness:10
+depth:18
+rarity:4
+experience:4
+blow:BITE:CONFUSE:2d2
+flags:MOVE_BODY
+desc:A giant buzzing wasp, its stinger drips venom.
 
 name:orc captain
 base:orc
@@ -4763,26 +4763,6 @@ flags:IM_FIRE
 flags-off:HURT_FIRE
 desc:It is a strange red growth on the dungeon floor; it seems to burn with
 desc: flame.
-
-name:neekerbreeker
-base:insect
-color:D
-speed:120
-hit-points:5
-hearing:8
-armor-class:21
-sleepiness:10
-depth:19
-rarity:4
-experience:4
-blow:BITE:POISON:2d2
-flags:EVIL
-innate-freq:12
-spells:SHRIEK
-desc:Believed to be an evil relative of the cricket, this creature gets its name
-desc: from its incessant squeaking, which can best be described as "neek-breek,
-desc: neek-breek".  The noise can drive people frantic, and worse still, can be
-desc: heard for quite some distance, alerting other monsters to your presence.
 
 
 ########## DUNGEON LEVELS 20-29 ##########
@@ -5286,6 +5266,26 @@ desc:It is an orcish figure covered in wrappings.
 
 ### Dungeon level 22 ###
 
+name:neekerbreeker
+base:insect
+color:U
+speed:120
+hit-points:5
+hearing:8
+armor-class:21
+sleepiness:10
+depth:22
+rarity:4
+experience:4
+blow:BITE:POISON:2d2
+flags:EVIL
+innate-freq:12
+spells:SHRIEK
+desc:Believed to be an evil relative of the cricket, this creature gets its name
+desc: from its incessant squeaking, which can best be described as "neek-breek,
+desc: neek-breek".  The noise can drive people frantic, and worse still, can be
+desc: heard for quite some distance, alerting other monsters to your presence.
+
 name:Uglúk, the Uruk
 base:orc
 color:b
@@ -5754,23 +5754,6 @@ spell-freq:15
 spells:DRAIN_MANA | TPORT
 desc:It is a ghostly woman's form that wails mournfully.
 
-name:giant firefly
-plural:giant fireflies
-base:insect
-color:r
-speed:120
-hit-points:5
-hearing:8
-armor-class:21
-sleepiness:10
-depth:24
-rarity:4
-experience:4
-blow:BITE:BLIND:1d2
-flags:HAS_LIGHT
-desc:Clouds of these monsters light up the dungeon - so brightly that you can
-desc: barely see through them.
-
 name:werebear
 base:quadruped
 color:D
@@ -5971,6 +5954,23 @@ flags:RAND_25
 desc:It is a giant beetle with poisonous mandibles.
 
 ### Dungeon level 26 ###
+
+name:giant firefly
+plural:giant fireflies
+base:insect
+color:r
+speed:120
+hit-points:5
+hearing:8
+armor-class:21
+sleepiness:10
+depth:26
+rarity:4
+experience:4
+blow:BITE:BLIND:1d2
+flags:HAS_LIGHT
+desc:Clouds of these monsters light up the dungeon - so brightly that you can
+desc: barely see through them.
 
 name:troll priest
 base:troll

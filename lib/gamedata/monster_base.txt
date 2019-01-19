@@ -183,11 +183,12 @@ pain:2
 flags:RAND_50
 desc:Icky Thing
 
+# Insects are small, weak breeders which bite for various effects
 name:insect
 glyph:I
 pain:7
 flags:ANIMAL | WEIRD_MIND | MULTIPLY
-flags:RAND_25 | RAND_50
+flags:RAND_50 | RAND_25
 desc:Insect
 
 name:jelly
@@ -220,13 +221,6 @@ flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 flags:FORCE_SLEEP
 desc:Lich
-
-name:louse
-glyph:l
-pain:7
-flags:ANIMAL | WEIRD_MIND | MULTIPLY
-flags:RAND_50
-desc:Louse
 
 name:lurker
 glyph:.

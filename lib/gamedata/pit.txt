@@ -350,7 +350,6 @@ room:3
 alloc:2:15
 mon-base:ant
 mon-base:centipede
-mon-base:louse
 mon-base:dragon fly
 mon-base:insect
 mon-base:killer beetle
