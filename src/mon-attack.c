@@ -288,7 +288,7 @@ static int monster_spell_failrate(struct monster *mon)
  * spells).  Because the check for spells is done first, actual innate attack
  * frequencies are affected by the spell frequency.
  */
-bool make_attack_spell(struct monster *mon)
+bool make_ranged_attack(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
 	int thrown_spell, failrate;

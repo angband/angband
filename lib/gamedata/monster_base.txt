@@ -20,15 +20,15 @@
 # 'desc' indicates the textual description of this template that is used by
 # the '/' command in-game.
 #
-# Note that some templates have references to other data files. In particular,
-# changing the name of the following templates will cause certain summon spells
-# to break:
-# ancient dragon, ainu, canine, hydra, lich, major demon, spider, vampire, 
-# wraith, zephyr hound.
-# Changing other characteristics of these monsters is fine.
+# Note that these templates have references in other data files. Changing
+# characteristics of monster bases is fine, but the names are referenced in
+# several other data files (notably monster.txt), so any name changes will
+# have to take this into account.
 
 ##### Normal monster templates #####
 
+# Dragons are the most important breathing monsters in Angband, and their
+# breaths are their most important quality.
 name:ancient dragon
 glyph:D
 pain:1
@@ -39,6 +39,9 @@ flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Ancient Dragon/Wyrm
 
+# Ainur were the founding spirits of Arda, and could take any form they wished.
+# Ainur in Angband typically have shapechanges and many possibe other spells,
+# but typically don't breathe
 name:ainu
 glyph:A
 pain:1
@@ -90,6 +93,8 @@ flags:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 flags:MIMIC_INV
 desc:Creeping Coins
 
+# Dragons are the most important breathing monsters in Angband, and their
+# breaths are their most important quality.
 name:dragon
 glyph:d
 pain:1
@@ -133,6 +138,9 @@ flags:PASS_WALL
 flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 desc:Ghost
 
+# Giants are big, strong humanoids which hit hard and throw boulders.  They
+# may be associated with an element and have some spells, but their focus is
+# powerful melee.
 name:giant
 glyph:P
 pain:1
@@ -229,6 +237,8 @@ flags:NO_FEAR | NO_CONF | NO_SLEEP
 flags:CHAR_CLEAR | ATTR_CLEAR
 desc:Lurker
 
+# Demons are evil and tend to be fire-based.  Major demons frequently summon,
+# have a few powerful spells and/or breaths, and often dangerous melee.
 name:major demon
 glyph:U
 pain:1
@@ -248,6 +258,8 @@ flags:NO_FEAR | NO_CONF | NO_SLEEP
 flags:FORCE_SLEEP | ATTR_CLEAR
 desc:Mimic
 
+# Demons are evil and tend to be fire-based.  Minor demons are mostly
+# annoying rather than dangerous.
 name:minor demon
 glyph:u
 pain:1
@@ -284,6 +296,8 @@ flags:GIANT | EVIL | SPIRIT
 flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 desc:Ogre
 
+# Orcs are the foot-soldiers of Morgoth.  They melee and use archery, but 
+# mostly don't use magic.  They tend to appear in groups.
 name:orc
 glyph:o
 pain:1
@@ -338,6 +352,9 @@ flags:ANIMAL | HURT_COLD
 flags:BASH_DOOR | CLEAR_WEB
 desc:Snake
 
+# Spiders are frequently poisonous and weave webs, and tend to have an
+# affinity with darkness.  Any spells they have tend to focus on disabling
+# their prey so they can be finished off in melee, but they may also breathe.
 name:spider
 glyph:S
 pain:7

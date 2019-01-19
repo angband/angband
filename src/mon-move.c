@@ -185,6 +185,9 @@ static bool monster_hates_grid(struct chunk *c, struct monster *mon,
  * Calculate minimum and desired combat ranges.  -BR-
  *
  * Afraid monsters will set this to their maximum flight distance.
+ * Currently this is recalculated every turn - if it becomes a significant
+ * overhead it could be calculated only when something has changed (monster HP,
+ * chance of escaping, etc)
  */
 static void get_move_find_range(struct monster *mon)
 {
@@ -1355,8 +1358,8 @@ static void monster_turn(struct chunk *c, struct monster *mon)
 	if (monster_turn_multiply(c, mon))
 		return;
 
-	/* Attempt to cast a spell */
-	if (make_attack_spell(mon)) return;
+	/* Attempt a ranged attack */
+	if (make_ranged_attack(mon)) return;
 
 	/* Work out what kind of movement to use - random movement or AI */
 	if (monster_turn_should_stagger(mon)) {

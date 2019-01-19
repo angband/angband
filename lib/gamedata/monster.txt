@@ -2027,6 +2027,8 @@ experience:15
 blow:HIT:HURT:1d8
 flags:DROP_20
 flags:HURT_LIGHT
+innate-freq:15
+spells:ARROW_1
 friends:30:1d3:Crow
 friends:100:2d9:Same
 desc:He is one of the many weaker 'slave' orcs, often mistakenly known as a
@@ -2104,7 +2106,9 @@ experience:20
 blow:HIT:HURT:1d8
 flags:DROP_20
 flags:HURT_LIGHT
-friends:50:1d8:Snaga
+innate-freq:13
+spells:ARROW_1
+friends:50:1d8:snaga
 friends:100:2d6:Same
 desc:He is often found in huge numbers in deep caves.
 
@@ -2358,7 +2362,7 @@ blow:HIT:HURT:1d9
 flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 friends:80:2d7:Wolf
-friends:100:5d4:Snaga:servant
+friends:100:5d4:snaga:servant
 desc:A captain of a regiment of weaker orcs, Lagduf keeps his troop in order
 desc: with displays of excessive violence.
 
@@ -2447,24 +2451,24 @@ flags:NO_FEAR
 friends:100:2d7:Same
 desc:It is a minor but aggressive demon.
 
-name:hill orc
+name:orc tracker
 base:orc
 color:u
 speed:110
-hit-points:65
-hearing:20
-smell:20
-armor-class:48
-sleepiness:70
+hit-points:55
+hearing:40
+smell:50
+armor-class:40
+sleepiness:20
 depth:8
 rarity:1
 experience:25
-blow:HIT:HURT:1d10
+blow:HIT:HURT:1d8
 flags:DROP_20
-friends:30:1d8:Crow
-friends:50:1d8:Wolf
-friends:100:2d6:Same
-desc:He is a hardy well-weathered survivor.
+flags:HURT_LIGHT
+innate-freq:12
+spells:ARROW_1
+desc:A small orc with wide and snuffling nostrils.
 
 name:bandit
 base:person
@@ -2941,7 +2945,7 @@ blow:HIT:HURT:1d12
 blow:HIT:HURT:1d10
 flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-friends:50:2d5:Snaga:servant
+friends:50:2d5:snaga:servant
 friends:80:2d7:Wolf
 friends:100:5d4:Hill orc:servant
 desc:He is a cunning and devious orc with a chaotic nature.
@@ -3315,7 +3319,7 @@ blow:HIT:HURT:1d10
 flags:UNIQUE
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
-friends:50:4d4:Snaga:servant
+friends:50:4d4:snaga:servant
 friends:80:2d7:Warg
 friends:100:5d4:Hill orc:servant
 friends:100:1d1:Bullroarer the Hobbit
@@ -3679,9 +3683,9 @@ drop-base:prayer book:8:1:1
 drop-base:prayer book:8:1:1
 desc:A priest devoted to Nature.
 
-name:black orc
+name:orc archer
 base:orc
-color:D
+color:m
 speed:110
 hit-points:66
 hearing:20
@@ -3691,16 +3695,14 @@ sleepiness:60
 depth:13
 rarity:1
 experience:45
-blow:HIT:HURT:3d4
-blow:HIT:HURT:3d4
+blow:HIT:HURT:2d4
+blow:HIT:HURT:2d4
 flags:DROP_20
 flags:HURT_LIGHT
-innate-freq:9
-spells:ARROW_2
-friends:20:1d2:Cave troll
-friends:70:2d4:Snaga
-friends:100:3d4:Same
-desc:He is a large orc with powerful arms and deep black skin.
+innate-freq:3
+spells:ARROW_1 | ARROW_2
+friends:100:1d3:Same
+desc:He has a bow of horn and a quiver full of black-feathered arrows.
 
 name:ochre jelly
 plural:ochre jellies
@@ -3759,8 +3761,9 @@ blow:HIT:HURT:3d4
 flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:IM_COLD
-friends:100:3d4:Cave orc
-friends:100:4d4:Black orc
+friends:50:2d2:orc archer
+friends:100:4d4:snaga
+friends:100:3d4:cave orc
 desc:A strong orc guarding the pass of Cirith Ungol.  He is mortally afraid of
 desc: spiders.
 
@@ -4003,7 +4006,10 @@ experience:50
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 flags:DROP_20
+innate-freq:10
+spells:ARROW_2
 friends:50:2d4:Warg
+friends:50:1d2:orc tracker
 friends:100:4d4:Same
 desc:He is a hideous deformed cross-breed with man and orc, combining man's
 desc: strength and cunning with orcish evil.  The traitorous wizard Saruman is
@@ -4262,9 +4268,11 @@ blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 flags:DROP_20
 innate-freq:9
-spells:ARROW_2
+spells:ARROW_2 | WHIP
 friends:40:1d4:Half-orc
 friends:80:2d5:Warg
+friends:50:1d2:orc tracker
+friends:50:1d2:orc archer
 friends:100:3d3:Same
 desc:A cunning orc of power, as tall as a man, and stronger.  It fears little.
 
@@ -4475,6 +4483,8 @@ innate-freq:9
 spells:ARROW_2
 friends:50:1d5:Wolf
 friends:50:1d5:Warg
+friends:80:1d2:orc tracker:servant
+friends:80:1d4:orc archer:servant
 friends-base:50:1d5:orc:servant
 friends-base:50:1d5:orc:servant
 friends-base:50:1d5:orc:servant
@@ -4684,8 +4694,11 @@ blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-friends:50:3d4:Snaga:servant
-friends:100:4d4:Black orc:servant
+friends:50:3d4:snaga:servant
+friends:80:2d4:cave orc:servant
+friends:80:1d2:orc tracker:servant
+friends:100:1d2:orc archer:servant
+friends:100:2d4:uruk:servant
 desc:He is an orc of power and great cunning, leader of the garrison at Cirith
 desc: Ungol.
 
@@ -4707,8 +4720,11 @@ blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 flags:UNIQUE
 flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-friends:50:3d4:Snaga:servant
-friends:100:4d4:Black orc:servant
+friends:50:3d4:snaga:servant
+friends:80:2d4:cave orc:servant
+friends:80:1d2:orc tracker:servant
+friends:100:1d2:orc archer:servant
+friends:100:2d4:uruk:servant
 desc:He is an orc of power and great cunning, leader of the garrison at Minas
 desc: Morgul.
 
@@ -4814,8 +4830,10 @@ blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 flags:UNIQUE | MOVE_BODY
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
-friends:50:3d4:Half-orc:servant
+friends:50:3d4:cave orc:servant
 friends:80:2d7:Warg
+friends:100:2d2:orc tracker
+friends:100:4d2:orc archer
 friends:100:4d4:Uruk:bodyguard
 desc:A large and powerful orc, he looks just like his father.  He is tall and
 desc: fast, but fortunately blessed with orcish brains.
@@ -5434,7 +5452,7 @@ friends:50:1d1:Mage
 friends:50:1d1:Paladin
 desc:A scarred warrior who moves with confidence.
 
-name:Azog, King of the Uruk-Hai
+name:Azog, Enemy of the Dwarves
 base:orc
 color:R
 speed:120
@@ -5451,13 +5469,16 @@ blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 flags:UNIQUE | MOVE_BODY
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
-friends:50:3d4:Half-orc:servant
+friends:50:3d4:cave orc:servant
 friends:80:2d7:Warg
+friends:100:2d2:orc tracker
+friends:100:4d2:orc archer
 friends:100:4d4:Uruk:bodyguard
 friends:50:1d3:Orc captain:servant
 friends:100:1d1:Bolg, son of Azog
-desc:He is also known as the King of Khazad-dûm.  His ego is renowned to be
-desc: bigger than his head.
+desc:A great orc with a huge iron-clad head, agile and strong.  He is notorious
+desc: for starting the War of the Dwarves and Orcs by killing Durin's heir,
+desc: Thrór.
 
 name:master rogue
 base:person
@@ -11021,8 +11042,8 @@ spell-freq:5
 spells:CONF | SCARE
 spells:BR_FIRE
 spells:S_DEMON | S_UNDEAD
-friends:100:4d4:Cave orc:servant
-friends:100:3d4:Cave troll:servant
+friends:100:4d4:cave orc:servant
+friends:100:3d4:cave troll:servant
 desc:A huge Balrog surrounded by raging pillars of fire, this is indeed a
 desc: terrible opponent.  Wielding a great whip of fire and a blazing sword,
 desc: his fury blisters your skin and melts your flesh!
@@ -11520,8 +11541,8 @@ spells:BLIND | CAUSE_3 | CAUSE_4 | CONF | HEAL | SCARE
 spells:SLOW | WEAVE
 spells:BR_DARK | BR_POIS
 spells:S_KIN
-friends:80:4d4:Black orc
-friends:100:3d7:Mirkwood spider
+friends:80:4d4:uruk
+friends:100:3d7:mirkwood spider
 desc:Shelob is an enormous bloated spider, the last daughter of Ungoliant the
 desc: Unlight.  Her poison is legendary, as is her ego.  She normally guards the
 desc: pass through Cirith Ungol, but occasionally goes out foraging for food to
