@@ -5318,7 +5318,7 @@ color:g
 speed:110
 hit-points:68
 hearing:12
-armor-class:76
+armor-class:86
 sleepiness:30
 depth:22
 rarity:1
@@ -5522,21 +5522,6 @@ flags:FORCE_SLEEP
 innate-freq:4
 spells:BR_FIRE
 desc:It is a sharp-tailed bat, wreathed in fire.
-
-name:killer white beetle
-base:killer beetle
-color:w
-speed:110
-hit-points:81
-hearing:14
-armor-class:66
-sleepiness:30
-depth:23
-rarity:0
-experience:85
-blow:BITE:HURT:4d5
-flags:RAND_25
-desc:It is looking for prey.
 
 name:giant silver ant
 base:ant
@@ -5943,7 +5928,7 @@ color:r
 speed:110
 hit-points:90
 hearing:14
-armor-class:60
+armor-class:90
 sleepiness:30
 depth:25
 rarity:1
@@ -6219,15 +6204,17 @@ color:R
 speed:110
 hit-points:99
 hearing:14
-armor-class:54
+armor-class:64
 sleepiness:30
 depth:27
 rarity:1
 experience:95
-blow:BITE:HURT:3d4
+blow:BITE:FIRE:3d4
 blow:SPIT:FIRE:4d5
 flags:HAS_LIGHT
 flags:IM_FIRE
+innate-freq:5
+spells:SPIT
 desc:It is a giant beetle wreathed in flames.
 
 name:creeping adamantite coins
@@ -7109,7 +7096,7 @@ color:y
 speed:110
 hit-points:138
 hearing:14
-armor-class:72
+armor-class:92
 sleepiness:30
 depth:30
 rarity:2
@@ -8907,6 +8894,8 @@ blow:CLAW:ELEC:2d12
 blow:GAZE:PARALYZE
 flags:IM_ELEC
 flags:ATTR_FLICKER
+innate-freq:6
+spells:SPIT
 desc:It is a giant beetle, whose carapace shimmers with vibrant energies.
 
 name:nexus vortex
@@ -10411,6 +10400,26 @@ desc: weaved during its creation make it a fearsome adversary.  Its eyes show
 desc: little intelligence, but it has been instructed to destroy all it meets.
 
 ### Dungeon level 45 ###
+
+name:killer white beetle
+base:killer beetle
+color:w
+speed:120
+hit-points:800
+hearing:14
+armor-class:106
+sleepiness:30
+depth:45
+rarity:2
+experience:850
+blow:BITE:COLD:8d5
+blow:BITE:HURT:8d5
+blow:SPIT:COLD:8d5
+flags:IM_COLD
+innate-freq:4
+spells:SPIT
+desc:A giant beetle with a gleaming white carapace.  The air condenses around
+desc: its mandibles as it scuttles toward you.
 
 name:rotting quylthulg
 base:quylthulg

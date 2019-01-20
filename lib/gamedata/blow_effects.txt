@@ -125,7 +125,7 @@ desc:freeze
 lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
-lash-type:COLD
+lash-type:ICE
 
 name:BLIND
 power:0

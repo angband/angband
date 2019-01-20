@@ -198,6 +198,8 @@ flags:EMPTY_MIND | STUPID | CLEAR_WEB
 flags:NO_FEAR
 desc:Jelly
 
+# Giant beetles with high armor class and fairly powerful bites, frequently
+# spitting.  No breaths or spells.
 name:killer beetle
 glyph:K
 pain:7
