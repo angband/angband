@@ -183,7 +183,7 @@ pain:2
 flags:RAND_50
 desc:Icky Thing
 
-# Insects are small, weak breeders which bite for various effects
+# Insects are small, a bit fast, weak breeders which bite for various effects
 name:insect
 glyph:I
 pain:7
@@ -343,6 +343,7 @@ flags:UNDEAD | EVIL | COLD_BLOOD | CLEAR_WEB
 flags:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NO_STUN
 desc:Skeleton
 
+# Snakes are typically slow, but have high armor class
 name:snake
 glyph:J
 pain:5

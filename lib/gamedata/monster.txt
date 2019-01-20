@@ -613,22 +613,6 @@ flags:MULTIPLY
 flags:RAND_50
 desc:It is about three feet long with large teeth.
 
-name:large brown snake
-base:snake
-color:u
-speed:100
-hit-points:14
-hearing:4
-armor-class:42
-sleepiness:99
-depth:1
-rarity:1
-experience:3
-blow:BITE:HURT:1d3
-blow:CRUSH:HURT:1d4
-flags:RAND_25
-desc:It is about eight feet long.
-
 name:large white snake
 base:snake
 color:w
@@ -1094,22 +1078,6 @@ flags:WEIRD_MIND | MULTIPLY | STUPID
 flags:RAND_25 | RAND_50
 flags:HURT_LIGHT | IM_ACID | NO_FEAR
 desc:It is a large slimy mass of worms.
-
-name:large yellow snake
-base:snake
-color:y
-speed:100
-hit-points:18
-hearing:5
-armor-class:45
-sleepiness:75
-depth:2
-rarity:1
-experience:9
-blow:BITE:HURT:1d4
-blow:CRUSH:HURT:1d6
-flags:RAND_25
-desc:It is about ten feet long.
 
 name:cave spider
 base:spider
@@ -3250,9 +3218,11 @@ sleepiness:10
 depth:12
 rarity:3
 experience:40
-blow:BITE:POISON:4d4
+blow:BITE:POISON:4d6
 flags:RAND_50
 flags:IM_POIS
+innate-freq:4
+spells:SPIT
 desc:It has glistening black skin, a sleek body and highly venomous fangs.
 
 name:white wolf
@@ -7275,6 +7245,27 @@ desc:It has a form that legends are made of.  Its still-tender scales are a
 desc: deepest red hue.  Heat radiates from its form.
 
 ### Dungeon level 32 ###
+
+name:serpent of the brownlands
+base:snake
+color:u
+speed:120
+hit-points:150
+hearing:10
+armor-class:90
+sleepiness:99
+depth:32
+rarity:2
+experience:300
+blow:SPIT:BLIND:1d6
+blow:BITE:ACID:2d12
+blow:BITE:POISON:2d12
+blow:CRUSH:HURT:4d4
+flags:RAND_25 | KILL_BODY
+spell-freq:8
+spells:HOLD | BLIND | CONF
+desc:A great serpent, with coils of steel, a lunge faster than the eye can see,
+desc: and fangs that drip with acidic poison.  Its eyes are mesmerizing.
 
 name:ogre mage
 base:ogre
@@ -12684,7 +12675,7 @@ desc: like a great elm. In his right hand, he holds the longest
 desc: sword you have ever beheld.
 
 name:nightcrawler
-base:wraith
+base:snake
 color:D
 speed:120
 hit-points:2440
@@ -12701,8 +12692,11 @@ blow:BITE:ACID:10d10
 flags:SMART | ATTR_FLICKER
 flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
-flags:IM_FIRE | IM_NETHER
+flags:UNDEAD | EVIL | COLD_BLOOD | SPIRIT
+flags:HURT_LIGHT| NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
+flags:IM_FIRE | IM_COLD | IM_POIS | IM_NETHER
 flags:FORCE_SLEEP
+flags-off:HURT_COLD
 innate-freq:25
 spell-freq:4
 spells:BLIND | BRAIN_SMASH | SCARE
@@ -13404,6 +13398,28 @@ desc: enemy from the lowest depths of the hells.  They are often the commanders
 desc: of vast demon armies.
 
 ### Dungeon level 78 ###
+
+name:serpent of chaos
+base:snake
+color:y
+speed:130
+hit-points:900
+hearing:5
+armor-class:145
+sleepiness:30
+depth:78
+rarity:3
+experience:17000
+blow:CRUSH:HURT:15d10
+blow:CRUSH:CONFUSE:15d10
+flags:ATTR_MULTI | RAND_25
+innate-freq:10
+spell-freq:6
+spells:BLINK | TELE_TO
+spells:BR_CHAO
+desc:Writhing coil upon coil, this mighty spawn of chaos constantly
+desc: disintegrates and reforms before your dazzled eyes.  It seeks to
+desc: obiterate you utterly; beware!
 
 ### Dungeon level 79 ###
 
