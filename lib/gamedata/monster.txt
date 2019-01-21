@@ -1322,6 +1322,7 @@ depth:3
 rarity:1
 experience:7
 blow:BITE:HURT:1d4
+friends:100:4d4:same
 desc:It is about two feet long and has sharp pincers.
 
 name:yellow mold
@@ -5506,7 +5507,10 @@ depth:23
 rarity:1
 experience:80
 blow:BITE:ACID:4d4
+blow:BITE:ACID:4d4
 flags:RAND_25
+innate-freq:6
+spells:SPIT
 desc:A giant silver ant with a caustic bite and hard scales.
 
 ### Dungeon level 24 ###
@@ -7017,6 +7021,8 @@ experience:80
 blow:BITE:ELEC:5d5
 flags:RAND_25
 flags:IM_ELEC | GROUP_AI
+innate-freq:6
+spells:SPIT
 friends:100:4d4:Same
 desc:It is a giant ant that crackles with energy.
 
@@ -8279,6 +8285,8 @@ blow:BITE:FIRE:3d12
 flags:HAS_LIGHT
 flags:KILL_BODY
 flags:IM_FIRE | GROUP_AI
+innate-freq:6
+spells:SPIT
 friends:100:4d4:Same
 desc:A giant ant covered in shaggy fur.  Its powerful jaws glow with heat.
 
@@ -8791,37 +8799,6 @@ flags:DROP_20
 flags:NO_FEAR
 desc:It is a massive figure clothed in wrappings.  You are wary of its massive
 desc: fists.
-
-name:The Queen Ant
-base:ant
-color:v
-speed:120
-hit-points:1500
-hearing:30
-smell:20
-armor-class:120
-sleepiness:10
-depth:37
-rarity:2
-experience:2000
-blow:BITE:HURT:2d12
-blow:BITE:HURT:2d12
-blow:BITE:HURT:2d8
-blow:BITE:HURT:2d8
-flags:UNIQUE | FEMALE
-flags:DROP_2 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR
-flags:NO_CONF | NO_SLEEP
-flags:FORCE_SLEEP | GROUP_AI
-spell-freq:2
-spells:S_KIN
-friends:100:2d6:Soldier ant:servant
-friends:60:2d3:Giant silver ant:servant
-friends:60:2d3:Giant grey ant:servant
-friends:60:2d3:Giant blue ant:servant
-friends:60:2d3:Giant fire ant:servant
-friends:100:3d3:Giant army ant:bodyguard
-desc:She's upset because you hurt her children.
 
 name:magma elemental
 base:elemental
@@ -9965,6 +9942,37 @@ innate-freq:5
 spells:BR_FIRE
 friends:100:2d5:Same
 desc:It is a giant wolf that glows with heat.  Flames pour from its nostrils.
+
+name:The Queen Ant
+base:ant
+color:v
+speed:120
+hit-points:1500
+hearing:30
+smell:20
+armor-class:120
+sleepiness:10
+depth:42
+rarity:2
+experience:2000
+blow:BITE:HURT:2d12
+blow:BITE:HURT:2d12
+blow:BITE:HURT:2d8
+blow:BITE:HURT:2d8
+flags:UNIQUE | FEMALE
+flags:DROP_2 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR
+flags:NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP | GROUP_AI
+spell-freq:2
+spells:S_KIN
+friends:100:2d6:Soldier ant:servant
+friends:60:2d3:Giant silver ant:servant
+friends:60:2d3:Giant grey ant:servant
+friends:60:2d3:Giant blue ant:servant
+friends:60:2d3:Giant fire ant:servant
+friends:100:3d3:Giant army ant:bodyguard
+desc:She's upset because you hurt her children.
 
 name:Rogrog the Black Troll
 base:troll
@@ -12219,7 +12227,7 @@ spells:S_HOUND
 friends:50:2d4:warg:servant
 friends:50:2d3:hellhound:servant
 friends:100:2d3:werewolf:servant
-desc:A massive wolf, appearing like a mighty shadow.  It's glowing red eyes
+desc:A massive wolf, appearing like a mighty shadow.  Its glowing red eyes
 desc: glare malevolently as it defends its evil master's fortress.
 
 name:spider of Gorgoroth

@@ -52,6 +52,8 @@ flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Ainu/maia
 
+# Ants have lowish HP but highish armor class, and powerful melee for their
+# depth
 name:ant
 glyph:a
 pain:7
