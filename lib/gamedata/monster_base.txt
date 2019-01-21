@@ -89,6 +89,8 @@ pain:5
 flags:ANIMAL | WEIRD_MIND
 desc:Centipede
 
+# Creeping coins are mimics which look like coins until they attack, hit to
+# poison, and drop the approriate type of treasure
 name:creeping coins
 glyph:$
 pain:1
@@ -108,6 +110,7 @@ flags:DRAGON | EVIL | SPIRIT
 flags:FORCE_SLEEP
 desc:Dragon
 
+# Early, weak breathers which move quickly and erratically
 name:dragon fly
 glyph:F
 pain:7
@@ -230,6 +233,7 @@ flags:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 flags:FORCE_SLEEP
 desc:Lich
 
+# Weird monsters tha look like floor.
 name:lurker
 glyph:.
 pain:1
@@ -251,6 +255,8 @@ flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 desc:Major Demon
 
+# Monsters which pretend to be objects.  They don't move but do cast spells,
+# and attack if the player steps next to them.
 name:mimic
 glyph:?
 pain:1
@@ -429,6 +435,7 @@ flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_ACID
 desc:Yeek
 
+# Yetis are a couple of niche monsters, big furry bear-like creatures
 name:yeti
 glyph:Y
 pain:1
