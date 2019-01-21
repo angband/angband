@@ -71,6 +71,8 @@ pain:8
 flags:ANIMAL | CLEAR_WEB
 desc:Bird
 
+# Wolves are animals which mostly come in packs, and are associated with evil
+# creatures, especially orcs and Sauron
 name:canine
 glyph:C
 pain:3

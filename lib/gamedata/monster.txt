@@ -693,7 +693,7 @@ experience:2
 blow:BITE:HURT:1d1
 desc:It is a small lizard with a hardened hide.
 
-name:jackal
+name:wild dog
 base:canine
 color:U
 speed:110
@@ -9964,7 +9964,7 @@ flags:FORCE_SLEEP
 innate-freq:5
 spells:BR_FIRE
 friends:100:2d5:Same
-desc:It is a giant dog that glows with heat.  Flames pour from its nostrils.
+desc:It is a giant wolf that glows with heat.  Flames pour from its nostrils.
 
 name:Rogrog the Black Troll
 base:troll
@@ -12191,6 +12191,36 @@ desc: dragons and his dragonfire is what legends are made of; he is believed to
 desc: be the greatest dragon still surviving into the Third Age.
 
 ### Dungeon level 63 ###
+
+name:werewolf of Sauron
+plural:werewolves of Sauron
+base:canine
+color:G
+speed:120
+hit-points:2200
+hearing:30
+smell:50
+armor-class:88
+sleepiness:5
+depth:63
+rarity:2
+experience:4000
+blow:BITE:EXP_20:2d4
+blow:CLAW:POISON:4d10
+blow:CLAW:POISON:4d10
+flags:FORCE_SLEEP | SMART | EVIL
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:IM_POIS | IM_COLD | IM_FIRE | IM_NETHER
+flags:NO_FEAR | NO_CONF | NO_SLEEP
+innate-freq:6
+spell-freq:7
+spells:BR_NETH | BR_DARK
+spells:S_HOUND
+friends:50:2d4:warg:servant
+friends:50:2d3:hellhound:servant
+friends:100:2d3:werewolf:servant
+desc:A massive wolf, appearing like a mighty shadow.  It's glowing red eyes
+desc: glare malevolently as it defends its evil master's fortress.
 
 name:spider of Gorgoroth
 base:spider
