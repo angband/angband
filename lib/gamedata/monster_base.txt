@@ -81,6 +81,8 @@ pain:3
 flags:ANIMAL | CLEAR_WEB
 desc:Canine (Dog)
 
+# Centipedes are mastly weak, sometimes quick, and their melee attacks are often
+# early examples of different blow effects
 name:centipede
 glyph:c
 pain:5
