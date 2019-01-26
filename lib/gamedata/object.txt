@@ -69,7 +69,7 @@
 # damage and pluses to-hit, to-dam and to-ac.  The latter three numbers
 # accept randomized values.
 
-# 'alloc' is for allocation - depth and rarity, in pairs. It is used to
+# 'alloc' is for allocation - frequency and range of levels found. It is used to
 # ensure that certain vital items such as food and recall scrolls
 # are found throughout the dungeon. The "allocation" depth need not
 # match the depth as specified in the "properties:" line.

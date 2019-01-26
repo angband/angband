@@ -4315,11 +4315,11 @@ experience:70
 blow:HIT:HURT:1d4
 blow:HIT:HURT:1d4
 blow:BITE:HURT:1d6
-flags:MALE | REGENERATE
+flags:MALE
 flags:DROP_20
 flags:HURT_LIGHT
 friends:100:4d4:Same
-desc:He is green skinned and ugly.
+desc:He is green skinned, ugly and stupid.
 
 name:Nár, the Dwarf
 base:humanoid
@@ -5852,12 +5852,12 @@ experience:85
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:BITE:HURT:3d4
-flags:MALE | REGENERATE
+flags:MALE
 flags:DROP_20
 flags:HURT_ROCK | HURT_LIGHT
 friends:50:1d5:Earth hound
 friends:100:3d3:Same
-desc:He is a giant troll with scabrous black skin.
+desc:He is a large, lumpish troll with scabrous black skin.
 
 name:wereworm
 base:worm
@@ -5933,31 +5933,6 @@ blow:BITE:BLIND:1d2
 flags:HAS_LIGHT
 desc:Clouds of these monsters light up the dungeon - so brightly that you can
 desc: barely see through them.
-
-name:troll priest
-base:troll
-color:G
-speed:110
-hit-points:165
-hearing:20
-smell:20
-armor-class:75
-sleepiness:60
-depth:26
-rarity:1
-experience:120
-blow:HIT:HURT:1d8
-blow:HIT:HURT:1d8
-blow:BITE:HURT:3d4
-flags:MALE | REGENERATE
-flags:DROP_60
-flags:HURT_LIGHT | NO_CONF | NO_SLEEP
-flags:FORCE_SLEEP
-spell-freq:5
-spells:BLINK | CAUSE_1 | DARKNESS | MISSILE | SCARE
-drop-base:prayer book:5:1:1
-drop-base:prayer book:5:1:1
-desc:A troll who is so bright he knows how to read.
 
 name:giant grey ant
 base:ant
@@ -6215,9 +6190,9 @@ desc:It appears to be a pile of coins made of precious adamant, slithering
 desc: toward you on lots of tiny legs.
 mimic:gold:adamantite
 
-name:algroth
+name:troll scavenger
 base:troll
-color:o
+color:G
 speed:110
 hit-points:137
 hearing:20
@@ -6230,12 +6205,12 @@ experience:150
 blow:CLAW:POISON:3d3
 blow:CLAW:POISON:3d3
 blow:BITE:HURT:1d6
-flags:REGENERATE
 flags:DROP_20
-flags:IM_POIS
+flags:IM_POIS | HURT_LIGHT
 friends:30:1d5:Forest Troll
 friends:100:3d3:Same
-desc:A powerful troll form.  Venom drips from its needlelike claws.
+desc:A powerful, man-eating troll, its claws foul with the traces of its last
+desc: kill.
 
 name:vibration hound
 base:zephyr hound
@@ -6628,7 +6603,7 @@ spells:BR_POIS
 desc:A vile reptile that preys on unsuspecting travellers.  Its eyes stare
 desc: deeply at you and your soul starts to wilt!
 
-name:ice troll
+name:snow troll
 base:troll
 color:w
 speed:110
@@ -6640,17 +6615,17 @@ sleepiness:50
 depth:28
 rarity:1
 experience:200
-blow:HIT:HURT:1d5
-blow:HIT:HURT:1d5
+blow:CLAW:HURT:1d5
+blow:CLAW:HURT:1d5
 blow:BITE:COLD:2d6
 blow:BITE:COLD:2d6
-flags:MALE | REGENERATE
+flags:MALE
 flags:DROP_20
 flags:HURT_LIGHT | IM_COLD
 friends:40:1d5:Cold hound
 friends:60:2d7:White wolf
 friends:100:4d4:Same
-desc:He is a white troll with powerfully clawed hands.
+desc:He is a white troll with shaggy fur and powerfully clawed hands.
 
 name:bat of Gorgoroth
 plural:bats of Gorgoroth
@@ -7141,6 +7116,84 @@ friends:100:4d4:Ghoul
 desc:This vile abomination is a relative of ghouls, and often leads packs of
 desc: them.  It smells foul, and its bite carries a rotting disease.
 
+name:Bert the Stone Troll
+base:troll
+color:s
+speed:120
+hit-points:1100
+hearing:20
+smell:20
+armor-class:84
+sleepiness:50
+depth:30
+rarity:7
+experience:2000
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:BITE:HURT:3d10
+flags:UNIQUE | MALE
+flags:DROP_1 | DROP_GOOD | ONLY_ITEM
+flags:MOVE_BODY | TAKE_ITEM
+flags:HURT_ROCK | HURT_LIGHT | IM_COLD
+innate-freq:7
+spells:BOULDER
+friends:100:1d1:Tom the Stone Troll
+friends:100:1d1:Bill the Stone Troll
+desc:Big, brawny, powerful and with a taste for hobbit.  He has friends called
+desc: Bill and Tom.
+
+name:Bill the Stone Troll
+base:troll
+color:s
+speed:120
+hit-points:1100
+hearing:20
+smell:20
+armor-class:84
+sleepiness:50
+depth:30
+rarity:7
+experience:2000
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:BITE:HURT:3d10
+flags:UNIQUE | MALE
+flags:DROP_1 | DROP_GOOD | ONLY_ITEM
+flags:MOVE_BODY | TAKE_ITEM
+flags:HURT_ROCK | HURT_LIGHT | IM_COLD
+innate-freq:7
+spells:BOULDER
+friends:100:1d1:Bert the Stone Troll
+friends:100:1d1:Tom the Stone Troll
+desc:Big, brawny, powerful and with a taste for hobbit.  He has friends called
+desc: Bert and Tom.
+
+name:Tom the Stone Troll
+base:troll
+color:s
+speed:120
+hit-points:1100
+hearing:20
+smell:20
+armor-class:84
+sleepiness:50
+depth:30
+rarity:7
+experience:2000
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:BITE:HURT:3d10
+flags:UNIQUE | MALE
+flags:DROP_1 | DROP_GOOD | ONLY_ITEM
+flags:MOVE_BODY | TAKE_ITEM
+flags:HURT_ROCK | HURT_LIGHT | IM_COLD
+innate-freq:7
+spells:BOULDER
+friends:100:1d1:Bert the Stone Troll
+friends:100:1d1:Bill the Stone Troll
+desc:Big, brawny, powerful and with a taste for hobbit.  He has friends called
+desc: Bert and Bill.
+
 ### Dungeon level 31 ###
 
 name:ghost
@@ -7471,11 +7524,11 @@ blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:BITE:HURT:1d8
 blow:BITE:HURT:1d8
-flags:MALE | REGENERATE
+flags:MALE
 flags:DROP_20
 flags:HURT_LIGHT
-friends:30:1d5:Stone troll
-friends:30:1d5:Algroth
+friends:30:1d5:stone troll
+friends:30:1d5:troll scavenger
 friends:100:3d3:Same
 desc:He is a vicious monster, feared for his ferocity.
 
@@ -7530,7 +7583,7 @@ spells:CAUSE_2 | DARKNESS | HOLD | SCARE
 friends:100:4d4:Same
 desc:It is a ghostly nightmare of an entity.
 
-name:skeleton ettin
+name:skeleton etten
 base:skeleton
 color:w
 speed:110
@@ -7739,6 +7792,32 @@ desc: your eyes with spectrums of colour.
 
 ### Dungeon level 34 ###
 
+name:troll priest
+base:troll
+color:o
+speed:110
+hit-points:340
+hearing:20
+smell:20
+armor-class:75
+sleepiness:60
+depth:34
+rarity:1
+experience:120
+blow:HIT:HURT:2d5
+blow:HIT:HURT:2d5
+blow:BITE:HURT:3d5
+blow:BITE:HURT:3d5
+flags:MALE
+flags:DROP_60
+flags:HURT_LIGHT | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP
+spell-freq:5
+spells:BLINK | CAUSE_1 | DARKNESS | MISSILE | SCARE
+drop-base:prayer book:5:1:1
+drop-base:prayer book:5:1:1
+desc:A troll who is so bright he knows how to read.
+
 name:Maia
 plural:Maiar
 base:ainu
@@ -7765,11 +7844,11 @@ desc: Morgoth or faces you in combat for some other reason is not clear; all
 desc: you know is that it stands before you, its eyes ablaze as it prepares its
 desc: next volley of spells.
 
-name:half-troll
+name:troll blackguard
 base:troll
 color:U
 speed:110
-hit-points:188
+hit-points:340
 hearing:20
 smell:20
 armor-class:60
@@ -7777,93 +7856,17 @@ sleepiness:50
 depth:34
 rarity:2
 experience:400
-blow:CLAW:HURT:1d5
-blow:CLAW:HURT:1d5
-blow:BITE:HURT:2d6
-blow:BITE:HURT:2d6
-flags:MALE | REGENERATE
+blow:CLAW:POISON:2d5
+blow:CLAW:POISON:2d5
+blow:BITE:HURT:2d8
+blow:BITE:HURT:2d8
+flags:MALE
 flags:DROP_20 | ONLY_ITEM
-friends:100:2d4:Stone Troll
-friends:100:4d4:Same
-desc:A huge, ugly, half-human in search of plunder.
-
-name:Bert the Stone Troll
-base:troll
-color:s
-speed:120
-hit-points:1100
-hearing:20
-smell:20
-armor-class:84
-sleepiness:50
-depth:34
-rarity:7
-experience:2000
-blow:HIT:HURT:6d6
-blow:HIT:HURT:6d6
-blow:BITE:HURT:3d10
-flags:UNIQUE | MALE | REGENERATE
-flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-flags:MOVE_BODY | TAKE_ITEM
-flags:HURT_ROCK | HURT_LIGHT | IM_COLD
-innate-freq:7
-spells:BOULDER
-friends:100:1d1:Tom the Stone Troll
-friends:100:1d1:Bill the Stone Troll
-desc:Big, brawny, powerful and with a taste for hobbit.  He has friends called
-desc: Bill and Tom.
-
-name:Bill the Stone Troll
-base:troll
-color:s
-speed:120
-hit-points:1100
-hearing:20
-smell:20
-armor-class:84
-sleepiness:50
-depth:34
-rarity:7
-experience:2000
-blow:HIT:HURT:6d6
-blow:HIT:HURT:6d6
-blow:BITE:HURT:3d10
-flags:UNIQUE | MALE | REGENERATE
-flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-flags:MOVE_BODY | TAKE_ITEM
-flags:HURT_ROCK | HURT_LIGHT | IM_COLD
-innate-freq:7
-spells:BOULDER
-friends:100:1d1:Bert the Stone Troll
-friends:100:1d1:Tom the Stone Troll
-desc:Big, brawny, powerful and with a taste for hobbit.  He has friends called
-desc: Bert and Tom.
-
-name:Tom the Stone Troll
-base:troll
-color:s
-speed:120
-hit-points:1100
-hearing:20
-smell:20
-armor-class:84
-sleepiness:50
-depth:34
-rarity:7
-experience:2000
-blow:HIT:HURT:6d6
-blow:HIT:HURT:6d6
-blow:BITE:HURT:3d10
-flags:UNIQUE | MALE | REGENERATE
-flags:DROP_1 | DROP_GOOD | ONLY_ITEM
-flags:MOVE_BODY | TAKE_ITEM
-flags:HURT_ROCK | HURT_LIGHT | IM_COLD
-innate-freq:7
-spells:BOULDER
-friends:100:1d1:Bert the Stone Troll
-friends:100:1d1:Bill the Stone Troll
-desc:Big, brawny, powerful and with a taste for hobbit.  He has friends called
-desc: Bert and Bill.
+spell-freq:6
+spells:HASTE | SCARE | DARKNESS
+friends-base:100:3d4:troll
+desc:A half-smart, vicious troll with some rudimentary magic and a love of
+desc: violence.
 
 name:spectre
 base:ghost
@@ -8075,11 +8078,11 @@ sleepiness:50
 depth:35
 rarity:1
 experience:420
-blow:HIT:HURT:1d9
-blow:HIT:HURT:1d9
-blow:BITE:HURT:2d2
-blow:BITE:HURT:2d2
-flags:MALE | REGENERATE
+blow:HIT:HURT:2d9
+blow:HIT:HURT:2d9
+blow:BITE:HURT:2d4
+blow:BITE:HURT:2d4
+flags:MALE
 flags:DROP_20
 friends:100:4d4:Same
 desc:Clad only in close-fitting mesh of horny scales (unless that is his skin)
@@ -8356,20 +8359,20 @@ desc: malevolent light.
 name:olog
 base:troll
 color:y
-speed:110
-hit-points:369
-hearing:20
-smell:20
+speed:115
+hit-points:440
+hearing:50
+smell:50
 armor-class:60
 sleepiness:50
 depth:36
 rarity:1
 experience:450
-blow:HIT:HURT:1d12
-blow:HIT:HURT:1d12
+blow:CLAW:HURT:2d9
+blow:CLAW:HURT:2d9
 blow:BITE:HURT:2d3
 blow:BITE:HURT:2d3
-flags:SMART | REGENERATE
+flags:SMART
 flags:DROP_20
 friends:100:4d4:Olog
 desc:It is a massive intelligent troll with needle-sharp fangs.
@@ -8909,7 +8912,7 @@ innate-freq:6
 spells:BR_PLAS
 desc:A whirlpool of intense flame, charring the stones at your feet.
 
-name:eldrak
+name:mountain troll
 base:troll
 color:r
 speed:110
@@ -8921,13 +8924,15 @@ sleepiness:40
 depth:37
 rarity:3
 experience:800
-blow:HIT:HURT:3d4
-blow:HIT:HURT:3d4
-blow:HIT:HURT:3d4
+blow:PUNCH:HURT:8d4
+blow:PUNCH:HURT:8d4
+blow:KICK:HURT:5d4
+blow:KICK:HURT:5d4
 flags:DROP_40
 flags:TAKE_ITEM
 flags:NO_CONF | NO_SLEEP
-desc:A massive troll, larger and stronger than many men together.
+desc:A massive troll, larger and stronger than many men together.  It needs no
+desc: weapons aside from its massive hands and feet.
 
 name:shardstorm
 base:vortex
@@ -9117,7 +9122,7 @@ spells:BO_NETH
 desc:A figure that seems made of void, its strangely human shape is cloaked in
 desc: shadow.  It reaches out at you.
 
-name:ettin
+name:etten
 base:troll
 color:b
 speed:110
@@ -9129,12 +9134,13 @@ sleepiness:30
 depth:38
 rarity:3
 experience:1000
-blow:HIT:HURT:3d6
-blow:HIT:HURT:3d6
-blow:HIT:HURT:3d6
+blow:HIT:HURT:4d6
+blow:HIT:HURT:4d6
+blow:HIT:HURT:4d6
+blow:HIT:HURT:4d6
 flags:DROP_1 | ONLY_ITEM
 flags:NO_CONF | NO_SLEEP
-desc:A massive two-headed troll of huge strength, ettins are stupid but violent.
+desc:A massive two-headed troll of huge strength, ettens are stupid but violent.
 desc:  They are also living proof that two heads are not more intelligent than
 desc: one...
 
@@ -9682,17 +9688,16 @@ blow:HIT:HURT:2d12
 blow:HIT:HURT:2d12
 blow:BITE:HURT:3d6
 blow:BITE:HURT:3d6
-flags:SMART | REGENERATE
+flags:SMART
 flags:DROP_1
 flags:MOVE_BODY | TAKE_ITEM
 flags:NO_FEAR
-friends:60:2d3:Forest troll:servant
-friends:60:2d3:Stone troll:servant
-friends:60:2d3:Ice troll:servant
+friends:60:2d3:forest troll:servant
+friends:60:2d3:stone troll:servant
+friends:60:2d3:snow troll:servant
 friends:60:2d3:hill troll:servant
-friends:60:2d3:Half-troll:servant
-friends:60:2d3:Cave troll:servant
-friends:60:2d3:Olog:servant
+friends:60:2d3:cave troll:servant
+friends:60:2d3:olog:servant
 desc:This troll's great strength and size have won it the place of chieftain of
 desc: its tribe.  It fears nothing.
 
@@ -9999,11 +10004,11 @@ flags:MOVE_BODY | TAKE_ITEM
 flags:IM_COLD
 innate-freq:7
 spells:BOULDER
-friends:60:2d3:Half-troll:servant
-friends:60:2d3:Cave troll:servant
-friends:40:2d3:Olog:servant
-friends:30:1d2:Eldrak:servant
-friends:100:4d4:hill troll:bodyguard
+friends:60:2d3:troll scavenger:servant
+friends:60:2d3:cave troll:servant
+friends:40:2d3:hill troll:servant
+friends:30:1d2:mountain troll:servant
+friends:100:4d4:olog:bodyguard
 desc:A massive and cruel troll of great power, drool slides caustically down his
 desc: muscular frame.  Despite his bulk, he strikes with stunning speed.
 
@@ -14035,7 +14040,7 @@ spells:BA_FIRE | BA_MANA | BA_NETH
 spells:BO_MANA
 spells:S_HI_DEMON | S_HI_UNDEAD | S_KIN | S_MONSTERS
 friends:50:1d3:Greater mummy:servant
-friends:50:1d3:Skeleton ettin:servant
+friends:50:1d3:Skeleton etten:servant
 friends:50:1d3:Night mare:servant
 friends:30:1d2:Dreadlord:servant
 friends:40:1d2:Archlich:servant
