@@ -1558,10 +1558,10 @@ static void calc_torch(struct player *p, struct player_state *state,
 		if (!obj) continue;
 
 		/* Light radius - innate plus modifier */
-		if (of_has(obj->flags, OF_LIGHT_1))
-			amt = 1;
-		else if (of_has(obj->flags, OF_LIGHT_2))
+		if (of_has(obj->flags, OF_LIGHT_2))
 			amt = 2;
+		else if (of_has(obj->flags, OF_LIGHT_3))
+			amt = 3;
 		amt += obj->modifiers[OBJ_MOD_LIGHT];
 
 		/* Examine actual lights */

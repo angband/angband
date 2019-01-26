@@ -158,6 +158,7 @@ struct grid_data {
 struct square {
 	byte feat;
 	bitflag *info;
+	int light;
 	s16b mon;
 	struct object *obj;
 	struct trap *trap;
@@ -379,6 +380,7 @@ bool square_suits_stairs_ok(struct chunk *c, struct loc grid);
 
 struct square square(struct chunk *c, struct loc grid);
 struct feature *square_feat(struct chunk *c, struct loc grid);
+int square_light(struct chunk *c, struct loc grid);
 struct monster *square_monster(struct chunk *c, struct loc grid);
 struct object *square_object(struct chunk *c, struct loc grid);
 struct trap *square_trap(struct chunk *c, struct loc grid);

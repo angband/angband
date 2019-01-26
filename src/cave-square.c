@@ -951,6 +951,12 @@ struct feature *square_feat(struct chunk *c, struct loc grid)
 	return &f_info[square(c, grid).feat];
 }
 
+int square_light(struct chunk *c, struct loc grid)
+{
+	assert(square_in_bounds(c, grid));
+	return square(c, grid).light;
+}
+
 /**
  * Get a monster on the current level by its position.
  */

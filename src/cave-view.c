@@ -632,7 +632,6 @@ static void update_view_one(struct chunk *c, struct loc grid, int radius,
 		}
 	}
 
-
 	if (los(c, p->grid, loc(xc, yc)))
 		become_viewable(c, grid, p, lit);
 }
@@ -655,9 +654,6 @@ void update_view(struct chunk *c, struct player *p)
 	if (!radius && player_has(p, PF_UNLIGHT)) {
 		radius = 2 + p->lev / 6;
 	}
-
-	/* Handle real light */
-	if (radius > 0) ++radius;
 
 	add_monster_lights(c, p->grid);
 

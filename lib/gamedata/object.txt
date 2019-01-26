@@ -156,7 +156,7 @@ graphics:~:u
 properties:1:22:2
 alloc:70:1 to 40
 combat:0:1d1:0:0:0
-flags:BURNS_OUT | LIGHT_1 | EASY_KNOW
+flags:BURNS_OUT | LIGHT_2 | EASY_KNOW
 
 name:& Lantern~
 type:light
@@ -164,7 +164,7 @@ graphics:~:U
 properties:3:50:35
 alloc:70:5 to 100
 combat:0:1d1:0:0:0
-flags:TAKES_FUEL | EASY_KNOW | LIGHT_2 | IGNORE_FIRE
+flags:TAKES_FUEL | EASY_KNOW | LIGHT_3 | IGNORE_FIRE
 
 name:& Flask~ of oil
 type:flask
