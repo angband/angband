@@ -3963,6 +3963,7 @@ base:zephyr hound
 color:D
 speed:110
 hit-points:21
+light:-1
 hearing:30
 smell:50
 armor-class:36
@@ -7519,6 +7520,7 @@ base:dragon
 color:G
 speed:110
 hit-points:264
+light:-1
 hearing:20
 armor-class:84
 sleepiness:70
@@ -7737,6 +7739,7 @@ base:ghost
 color:D
 speed:120
 hit-points:147
+light:-1
 hearing:20
 armor-class:36
 sleepiness:10
@@ -8527,6 +8530,7 @@ base:ghost
 color:D
 speed:120
 hit-points:105
+light:-1
 hearing:30
 armor-class:36
 sleepiness:20
@@ -10983,6 +10987,7 @@ base:ancient dragon
 color:G
 speed:120
 hit-points:1950
+light:-1
 hearing:25
 armor-class:120
 sleepiness:80
@@ -11035,6 +11040,7 @@ base:ancient dragon
 color:o
 speed:120
 hit-points:1950
+light:-1
 hearing:25
 armor-class:120
 sleepiness:80
@@ -11593,6 +11599,7 @@ base:spider
 color:D
 speed:120
 hit-points:3500
+light:-2
 hearing:30
 armor-class:180
 sleepiness:20
@@ -12304,6 +12311,7 @@ base:spider
 color:P
 speed:120
 hit-points:4000
+light:-2
 hearing:30
 armor-class:180
 sleepiness:20
@@ -13316,6 +13324,7 @@ base:spider
 color:D
 speed:130
 hit-points:13000
+light:-3
 hearing:40
 armor-class:240
 sleepiness:10
