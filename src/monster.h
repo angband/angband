@@ -317,6 +317,7 @@ struct monster_race {
 	int hearing;			/* Monster sense of hearing (1-100, standard 20) */
 	int smell;				/* Monster sense of smell (0-50, standard 20) */
 	int speed;				/* Speed (normally 110) */
+	int light;				/* Light intensity */
 
 	int mexp;				/* Exp value for kill */
 

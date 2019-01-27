@@ -1086,8 +1086,8 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	if (rf_has(race->flags, RF_FORCE_SLEEP))
 		mflag_on(mon->mflag, MFLAG_NICE);
 
-	/* Radiate light? */
-	if (rf_has(race->flags, RF_HAS_LIGHT))
+	/* Affect light? */
+	if (mon->race->light != 0)
 		player->upkeep->update |= PU_UPDATE_VIEW;
 
 	/* Is this obviously a monster? (Mimics etc. aren't) */

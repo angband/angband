@@ -336,9 +336,6 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 
 			/* Use illumination */
 			if (square_isseen(c, mon->grid)) {
-				/* Learn it emits light */
-				rf_on(lore->flags, RF_HAS_LIGHT);
-
 				/* Learn about invisibility */
 				rf_on(lore->flags, RF_INVISIBLE);
 
@@ -526,8 +523,8 @@ void monster_swap(struct loc grid1, struct loc grid2)
 		/* Update monster */
 		update_mon(mon, cave, true);
 
-		/* Radiate light? */
-		if (rf_has(mon->race->flags, RF_HAS_LIGHT))
+		/* Affect light? */
+		if (mon->race->light != 0)
 			player->upkeep->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
@@ -561,8 +558,8 @@ void monster_swap(struct loc grid1, struct loc grid2)
 		/* Update monster */
 		update_mon(mon, cave, true);
 
-		/* Radiate light? */
-		if (rf_has(mon->race->flags, RF_HAS_LIGHT))
+		/* Affect light? */
+		if (mon->race->light != 0)
 			player->upkeep->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
@@ -877,8 +874,8 @@ void monster_death(struct monster *mon, bool stats)
 	/* Update monster list window */
 	player->upkeep->redraw |= PR_MONLIST;
 
-	/* Radiate light? */
-	if (rf_has(mon->race->flags, RF_HAS_LIGHT))
+	/* Affect light? */
+	if (mon->race->light != 0)
 		player->upkeep->update |= PU_UPDATE_VIEW;
 
 	/* Check if we finished a quest */

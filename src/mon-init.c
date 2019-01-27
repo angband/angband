@@ -1116,6 +1116,15 @@ static enum parser_error parse_monster_hit_points(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_monster_light(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->light = parser_getint(p, "light");
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_monster_hearing(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
@@ -1529,6 +1538,7 @@ struct parser *init_parse_monster(void) {
 	parser_reg(p, "color sym color", parse_monster_color);
 	parser_reg(p, "speed int speed", parse_monster_speed);
 	parser_reg(p, "hit-points int hp", parse_monster_hit_points);
+	parser_reg(p, "light int light", parse_monster_light);
 	parser_reg(p, "hearing int hearing", parse_monster_hearing);
 	parser_reg(p, "smell int smell", parse_monster_smell);
 	parser_reg(p, "armor-class int ac", parse_monster_armor_class);

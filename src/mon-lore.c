@@ -1232,9 +1232,19 @@ void lore_append_abilities(textblock *tb, const struct monster_race *race,
 						   initial_pronoun);
 	if (rf_has(known_flags, RF_REGENERATE))
 		textblock_append(tb, "%s regenerates quickly.  ", initial_pronoun);
-	if (rf_has(known_flags, RF_HAS_LIGHT))
+
+	/* Describe light */
+	if (race->light > 1) {
 		textblock_append(tb, "%s illuminates %s surroundings.  ",
 						 initial_pronoun, lore_pronoun_possessive(msex, false));
+	} else if (race->light == 1) {
+		textblock_append(tb, "%s is illuminated.  ", initial_pronoun);
+	} else if (race->light == -1) {
+		textblock_append(tb, "%s is darkened.  ", initial_pronoun);
+	} else if (race->light < -1) {
+		textblock_append(tb, "%s shrouds %s surroundings in darkness.  ",
+						 initial_pronoun, lore_pronoun_possessive(msex, false));
+	}
 
 	/* Collect susceptibilities */
 	create_mon_flag_mask(current_flags, RFT_VULN, RFT_VULN_I, RFT_MAX);

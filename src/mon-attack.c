@@ -494,8 +494,7 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
 		struct loc pgrid = p->grid;
-		bool visible = monster_is_visible(mon) ||
-			rf_has(mon->race->flags, RF_HAS_LIGHT);
+		bool visible = monster_is_visible(mon) || (mon->race->light > 0);
 		bool obvious = false;
 
 		int damage = 0;
@@ -725,8 +724,7 @@ bool monster_attack_monster(struct monster *mon, struct monster *t_mon)
 	/* Scan through all blows */
 	for (ap_cnt = 0; ap_cnt < z_info->mon_blows_max; ap_cnt++) {
 		struct loc grid = t_mon->grid;
-		bool visible = monster_is_visible(mon) ||
-			rf_has(mon->race->flags, RF_HAS_LIGHT);
+		bool visible = monster_is_visible(mon) || (mon->race->light > 0);
 		bool obvious = false;
 
 		int damage = 0;
