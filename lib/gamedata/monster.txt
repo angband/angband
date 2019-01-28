@@ -13705,6 +13705,30 @@ desc: spells are lethal and his combat blows crushingly hard.  He moves at
 desc: speed, and commands legions of evil to do his bidding.  It is said that
 desc: he is fated never to die by the hand of mortal man.
 
+name:Wiruin, the Maelstrom
+base:vortex
+color:z
+speed:140
+hit-points:3500
+hearing:50
+armor-class:10
+sleepiness:10
+depth:80
+rarity:2
+experience:18000
+blow:ENGULF:COLD:3d6
+blow:ENGULF:CONFUSE:3d6
+blow:ENGULF:HURT:3d6
+flags:UNIQUE | NEVER_MOVE
+flags:IM_COLD | IM_FIRE | IM_ACID | IM_POIS
+innate-freq:3
+spell-freq:5
+spells:BR_COLD | BR_SOUN
+spells:S_KIN
+desc:A violent icy whirlpool, brought from the frozen wastes of the Helcaraxë
+desc: by Morgoth as guard and entertainment.  Smaller vortices arise on its
+desc: edges, and you feel as if you will never be free of its deafening roar.
+
 ### Dungeon level 81 ###
 
 name:Maeglin, the Traitor of Gondolin
@@ -14151,6 +14175,30 @@ desc:The greatest of all undead sorcerers, even the gods once feared him.  This
 desc: ancient shadow of death wilts every living thing it passes.
 
 ### Dungeon level 95 ###
+
+name:storm of Unmagic
+plural:storms of Unmagic
+base:vortex
+color:v
+speed:140
+hit-points:600
+hearing:50
+armor-class:48
+sleepiness:0
+depth:95
+rarity:3
+experience:17000
+blow:ENGULF:EXP_80:5d7
+blow:ENGULF:DRAIN_CHARGES:5d7
+blow:ENGULF:DISENCHANT:5d7
+blow:ENGULF:LOSE_ALL:5d7
+flags:KILL_WALL
+flags:IM_DISEN
+flags:ATTR_MULTI
+innate-freq:3
+spells:BR_CHAO | BR_DISE | BR_TIME
+desc:Howling through the disintegrating dungeon, this whirlpool of Unmagic rips
+desc: the enchantments from everything it touches.
 
 name:Gothmog, the High Captain of Balrogs
 base:major demon
