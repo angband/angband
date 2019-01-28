@@ -342,6 +342,7 @@ pain:5
 flags:ANIMAL | HURT_COLD | CLEAR_WEB
 desc:Reptile/Amphibian
 
+# Small, weak, early breeders, with one surprise non-breeder
 name:rodent
 glyph:r
 pain:4
@@ -372,6 +373,8 @@ pain:7
 flags:BASH_DOOR | PASS_WEB
 desc:Spider/Scorpion/Tick
 
+# Weak, except the odd one to surprise the unwary newcomer.  Always native to
+# level 0, never give experience
 name:townsfolk
 glyph:t
 pain:4
@@ -421,6 +424,7 @@ flags:UNDEAD | EVIL | COLD_BLOOD | SPIRIT | CLEAR_WEB
 flags:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN | NO_HOLD
 desc:Wight/Wraith
 
+# Strange part rock beings which can destroy or pass through walls
 name:xorn
 glyph:X
 pain:4
@@ -453,6 +457,8 @@ pain:3
 flags:ANIMAL | GROUP_AI | CLEAR_WEB
 desc:Zephyr Hound
 
+# Animated corpses, frequently with no mind of their own.  Mostly fairly weak
+# for their level
 name:zombie
 glyph:z
 pain:10

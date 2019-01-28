@@ -5247,7 +5247,7 @@ name:mummified orc
 base:zombie
 color:w
 speed:110
-hit-points:68
+hit-points:86
 hearing:20
 armor-class:33
 sleepiness:75
@@ -5638,7 +5638,7 @@ name:mummified human
 base:zombie
 color:w
 speed:110
-hit-points:85
+hit-points:105
 hearing:20
 armor-class:51
 sleepiness:70
@@ -8764,38 +8764,6 @@ friends-base:50:1d3:minor demon:servant
 friends:100:1d1:Quasit:servant
 desc:A figure twisted by evil standing in robes of deepest crimson.
 
-name:greater mummy
-plural:greater mummies
-base:zombie
-color:y
-speed:110
-hit-points:299
-hearing:30
-armor-class:102
-sleepiness:90
-depth:36
-rarity:5
-experience:800
-blow:CLAW:LOSE_CON:3d6
-blow:CLAW:LOSE_CON:3d6
-blow:GAZE:EXP_40:3d4
-blow:GAZE:TERRIFY:3d4
-flags:SMART | ATTR_FLICKER
-flags:DROP_2 | ONLY_ITEM
-flags:MOVE_BODY | TAKE_ITEM
-flags:IM_ACID | IM_ELEC | NO_FEAR
-flags:FORCE_SLEEP
-spell-freq:3
-spells:BLIND | CAUSE_3 | DARKNESS | DRAIN_MANA | FORGET | HASTE
-spells:HEAL | MIND_BLAST | SCARE
-spells:BA_COLD | BA_POIS
-spells:BO_NETH
-spells:S_UNDEAD
-friends:100:2d3:Mummified orc:servant
-friends:100:2d3:Mummified human:servant
-friends:100:2d3:Mummified troll:servant
-desc:Once a powerful ruler, now an even more powerful undead menace.
-
 name:gauth
 base:eye
 color:D
@@ -8850,7 +8818,7 @@ name:mummified troll
 base:zombie
 color:w
 speed:110
-hit-points:167
+hit-points:207
 hearing:20
 armor-class:75
 sleepiness:70
@@ -8859,7 +8827,7 @@ rarity:1
 experience:420
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
-flags:TROLL | EMPTY_MIND | REGENERATE
+flags:TROLL | EMPTY_MIND
 flags:DROP_20
 flags:NO_FEAR
 desc:It is a massive figure clothed in wrappings.  You are wary of its massive
@@ -9012,6 +8980,41 @@ desc:A howling blast of razor-sharp mountain fragments, kept intact by perilous
 desc: magics.
 
 ### Dungeon level 38 ###
+
+name:mummified chieftain
+base:zombie
+color:y
+speed:115
+hit-points:299
+hearing:30
+armor-class:102
+sleepiness:90
+depth:38
+rarity:3
+experience:800
+blow:CLAW:LOSE_CON:3d6
+blow:CLAW:LOSE_CON:3d6
+blow:GAZE:EXP_40:3d4
+blow:GAZE:TERRIFY:3d4
+flags:MALE | SMART | ATTR_FLICKER
+flags:DROP_2 | ONLY_ITEM
+flags:MOVE_BODY | TAKE_ITEM
+flags:IM_ACID | IM_ELEC | NO_FEAR
+flags:FORCE_SLEEP
+innate-freq:9
+spell-freq:3
+spells:SHRIEK
+spells:BLIND | CAUSE_3 | DARKNESS | DRAIN_MANA | FORGET | HASTE
+spells:HEAL | MIND_BLAST | SCARE
+spells:BA_COLD | BA_POIS
+spells:BO_NETH
+spells:S_UNDEAD
+friends:100:2d3:Mummified orc:servant
+friends:100:2d3:Mummified human:servant
+friends:100:2d3:Mummified troll:servant
+desc:A powerful ruler who refused the summons of Mandos on death, preferring
+desc: to re-occupy his now embalmed body.  He commands a legion of his former
+desc: subjects with unearthly shrieks.
 
 name:will o' the wisp
 base:elemental
@@ -13700,10 +13703,11 @@ spells:BA_NETH
 spells:BO_MANA
 spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_KIN | S_MONSTERS | S_WRAITH
 friends:50:1d1:Winged Horror
-desc:The Chief of the Ringwraiths.  A fell being of devastating power.  His
-desc: spells are lethal and his combat blows crushingly hard.  He moves at
-desc: speed, and commands legions of evil to do his bidding.  It is said that
-desc: he is fated never to die by the hand of mortal man.
+desc:The most fell of all Sauron's captains: King of Angmar, Sorcerer,
+desc: Ringwraith, Lord of the Nazgûl, a spear of terror in the hand of Sauron,
+desc: shadow of despair.  His spells are lethal and his combat blows crushingly
+desc: hard.  He moves at speed, and commands legions of evil to do his bidding.
+desc:  It is said that he is fated never to die by the hand of mortal man.
 
 name:Wiruin, the Maelstrom
 base:vortex
@@ -14161,7 +14165,7 @@ spells:BLIND | CAUSE_4 | SCARE | TPORT | BRAIN_SMASH
 spells:BA_FIRE | BA_MANA | BA_NETH
 spells:BO_MANA
 spells:S_HI_DEMON | S_HI_UNDEAD | S_KIN | S_MONSTERS
-friends:50:1d3:Greater mummy:servant
+friends:50:1d3:mummified chieftain:servant
 friends:50:1d3:Skeleton etten:servant
 friends:50:1d3:Night mare:servant
 friends:30:1d2:Dreadlord:servant
@@ -14266,9 +14270,11 @@ spells:BO_ICE | BO_MANA | BO_PLAS
 spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE | S_WRAITH
 friends:100:1d1:Khamûl, the Black Easterling:servant
 friends:100:1d1:The Witch-King of Angmar:servant
-desc:He is Morgoth's most powerful servant.  Mighty in spells and enchantments,
-desc: he created the One Ring.  His eyes glow with power and his gaze seeks to
-desc: destroy your soul.  He has many servants, and rarely fights without them.
+desc:Greatest and most terrible of the servants of Morgoth, creator of the One
+desc: Ring.  A sorcerer of dreadful powers, master of shadows and of phantoms,
+desc: foul in wisdom, cruel in strength, misshaping what he rules, lord of
+desc: werewolves; his dominion is torment.  He has many servants, and rarely
+desc: fights without them.
 
 ### Dungeon level 100 ###
 
