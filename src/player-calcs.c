@@ -1817,12 +1817,13 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* Analyze equipment */
 	for (i = 0; i < p->body.count; i++) {
-		int dig = 0;
 		int index = 0;
 		struct object *obj = slot_object(p, i);
 		struct curse_data *curse = obj ? obj->curses : NULL;
 
 		while (obj) {
+			int dig = 0;
+
 			/* Extract the item flags */
 			if (known_only) {
 				object_flags_known(obj, f);
