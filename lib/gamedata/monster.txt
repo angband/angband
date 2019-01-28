@@ -5885,26 +5885,6 @@ friends:50:1d5:Earth hound
 friends:100:3d3:Same
 desc:He is a large, lumpish troll with scabrous black skin.
 
-name:wereworm
-base:worm
-color:p
-speed:110
-hit-points:600
-hearing:15
-armor-class:105
-sleepiness:40
-depth:25
-rarity:3
-experience:300
-blow:GAZE:EXP_20
-blow:CRAWL:ACID:2d4
-blow:BITE:HURT:1d10
-blow:BITE:POISON:1d6
-flags:BASH_DOOR
-flags:IM_ACID
-desc:A huge wormlike shape dripping acid, twisted by evil sorcery into a foul
-desc: monster that breeds on death.
-
 name:carrion crawler
 base:centipede
 color:o
@@ -5942,6 +5922,25 @@ flags:RAND_25
 desc:It is a giant beetle with poisonous mandibles.
 
 ### Dungeon level 26 ###
+
+name:abyss worm mass
+base:worm
+color:D
+speed:100
+hit-points:35
+light:-1
+hearing:10
+armor-class:25
+sleepiness:10
+depth:26
+rarity:3
+experience:6
+blow:CRAWL:EXP_10:1d5
+flags:EVIL | WEIRD_MIND | MULTIPLY | STUPID
+flags:RAND_25 | RAND_50 | BASH_DOOR | KILL_WALL
+flags:HURT_LIGHT | NO_FEAR | COLD_BLOOD | INVISIBLE
+desc:A writhing wormlike shimmer of blackness, large as your arm. It squirms
+desc: through air and walls with equal facility, leaving void in its wake.
 
 name:giant firefly
 plural:giant fireflies
@@ -8075,6 +8074,26 @@ desc: all-too-familiar purpose.  Your magic surprisingly feels much less
 desc: powerful now.
 
 ### Dungeon level 35 ###
+
+name:wereworm
+base:worm
+color:p
+speed:100
+hit-points:200
+hearing:15
+armor-class:105
+sleepiness:40
+depth:35
+rarity:3
+experience:300
+blow:GAZE:EXP_20
+blow:CRAWL:ACID:2d4
+blow:BITE:HURT:1d10
+blow:BITE:POISON:1d6
+flags:BASH_DOOR
+flags:IM_ACID | MULTIPLY
+desc:A huge wormlike shape dripping acid, twisted by evil sorcery into a foul
+desc: monster that breeds on death.
 
 name:Lokkak, the Ogre Chieftain
 base:ogre

@@ -407,6 +407,7 @@ flags:FORCE_SLEEP
 flags:NONLIVING
 desc:Vortex
 
+# Worms are mostly low level slow breeders with crawl attacks for an effect
 name:worm
 glyph:w
 pain:1
