@@ -2316,6 +2316,7 @@ struct parser *init_parse_lore(void) {
 	parser_reg(p, "color sym color", ignored);
 	parser_reg(p, "speed int speed", ignored);
 	parser_reg(p, "hit-points int hp", ignored);
+	parser_reg(p, "light int light", ignored);
 	parser_reg(p, "hearing int hearing", ignored);
 	parser_reg(p, "smell int smell", ignored);
 	parser_reg(p, "armor-class int ac", ignored);
