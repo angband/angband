@@ -32,6 +32,7 @@ bool loc_is_zero(struct loc grid);
 struct loc loc_sum(struct loc grid1, struct loc grid2);
 struct loc loc_diff(struct loc grid1, struct loc grid2);
 struct loc rand_loc(struct loc grid, int x_spread, int y_spread);
+struct loc loc_offset(struct loc grid, int dx, int dy);
 
 
 /**

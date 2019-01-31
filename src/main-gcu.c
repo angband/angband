@@ -40,7 +40,8 @@
 # ifdef HAVE_STDbool_H
 #  define NCURSES_ENABLE_STDbool_H 0
 # endif
-
+/* Mac needs _XOPEN_SOURCE_EXTENDED to expose mvwaddnstr(). */
+# define _XOPEN_SOURCE_EXTENDED 1
 # include <ncurses.h>
 #else
 # include <curses.h>

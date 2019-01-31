@@ -2949,10 +2949,14 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		}
 	} else {
 		/* Player choice */
-		get_aim_dir(&dir);
-		if ((dir == DIR_TARGET) && target_okay()) {
+		do
+			get_aim_dir(&dir);
+		while (dir == DIR_TARGET && !target_okay());
+
+		if (dir == DIR_TARGET)
 			target_get(&aim);
-		}
+		else
+			aim = loc_offset(start, ddx[dir], ddy[dir]);
 
 		/* Randomise the landing a bit if it's a vault */
 		if (square_isvault(cave, aim)) dis = 10;
