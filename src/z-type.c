@@ -67,6 +67,11 @@ struct loc rand_loc(struct loc grid, int x_spread, int y_spread)
 	return loc(rand_spread(grid.x, x_spread), rand_spread(grid.y, y_spread));
 }
 
+struct loc loc_offset(struct loc grid, int dx, int dy)
+{
+	return loc(grid.x + dx, grid.y + dy);
+}
+
 /**
  * Utility functions to work with point_sets
  */
