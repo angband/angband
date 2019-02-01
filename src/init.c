@@ -749,11 +749,11 @@ static void cleanup_game_constants(void)
  * ------------------------------------------------------------------------ */
 static enum parser_error parse_world_level(struct parser *p) {
 	const int depth = parser_getint(p, "depth");
-    const char *name = parser_getsym(p, "name");
-    const char *up = parser_getsym(p, "up");
-    const char *down = parser_getsym(p, "down");
-    struct level *last = parser_priv(p);
-    struct level *lev = mem_zalloc(sizeof *lev);
+	const char *name = parser_getsym(p, "name");
+	const char *up = parser_getsym(p, "up");
+	const char *down = parser_getsym(p, "down");
+	struct level *last = parser_priv(p);
+	struct level *lev = mem_zalloc(sizeof *lev);
 
 	if (last) {
 		last->next = lev;
@@ -761,11 +761,11 @@ static enum parser_error parse_world_level(struct parser *p) {
 		world = lev;
 	}
 	lev->depth = depth;
-    lev->name = string_make(name);
+	lev->name = string_make(name);
 	lev->up = streq(up, "None") ? NULL : string_make(up);
 	lev->down = streq(down, "None") ? NULL : string_make(down);
-    parser_setpriv(p, lev);
-    return PARSE_ERROR_NONE;
+	parser_setpriv(p, lev);
+	return PARSE_ERROR_NONE;
 }
 
 struct parser *init_parse_world(void) {
@@ -817,12 +817,12 @@ static void cleanup_world(void)
 {
 	struct level *level = world;
 	while (level) {
-		struct level *next = level->next;
+		struct level *old = level;
 		string_free(level->name);
 		string_free(level->up);
 		string_free(level->down);
-		mem_free(level);
-		level = next;
+		level = level->next;
+		mem_free(old);
 	}
 }
 
@@ -2579,8 +2579,8 @@ static enum parser_error parse_shape_effect_msg(struct parser *p) {
 
 	while (effect->next) effect = effect->next;
 
-    effect->msg = string_append(effect->msg, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	effect->msg = string_append(effect->msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_shape_blow(struct parser *p) {
@@ -3148,8 +3148,8 @@ static enum parser_error parse_class_effect_msg(struct parser *p) {
 
 	while (effect->next) effect = effect->next;
 
-    effect->msg = string_append(effect->msg, parser_getstr(p, "text"));
-    return PARSE_ERROR_NONE;
+	effect->msg = string_append(effect->msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_class_desc(struct parser *p) {

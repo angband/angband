@@ -202,6 +202,7 @@ static void change_path(const char *info)
 			/* the directory may not exist and may need to be created. */
 			path_build(dirpath, sizeof(dirpath), dir, "");
 			if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
+			string_free(info_copy);
 			return;
 		}
 	}
