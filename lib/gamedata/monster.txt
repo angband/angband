@@ -6058,27 +6058,6 @@ friends:50:2d4:Black ogre
 friends:100:2d4:Same
 desc:A giant orc-like figure with an awesomely muscled frame.
 
-name:white wraith
-base:wraith
-color:w
-speed:110
-hit-points:68
-hearing:20
-armor-class:48
-sleepiness:10
-depth:26
-rarity:1
-experience:175
-blow:HIT:HURT:1d6
-blow:HIT:HURT:1d6
-blow:TOUCH:EXP_20
-flags:DROP_1
-flags:OPEN_DOOR | BASH_DOOR
-flags:FORCE_SLEEP
-spell-freq:8
-spells:CAUSE_2 | DARKNESS | SCARE
-desc:It is a tangible but ghostly form made of white fog.
-
 name:disenchanter bat
 base:bat
 color:v
@@ -8591,28 +8570,6 @@ spells:FORGET
 desc:An unholy creature of darkness, the aura emanating from this evil being
 desc: saps your very soul.
 
-name:grey wraith
-base:wraith
-color:s
-speed:110
-hit-points:167
-hearing:20
-armor-class:60
-sleepiness:10
-depth:36
-rarity:1
-experience:700
-blow:HIT:HURT:1d10
-blow:HIT:HURT:1d10
-blow:TOUCH:EXP_40
-flags:DROP_40 | DROP_60
-flags:OPEN_DOOR | BASH_DOOR
-flags:FORCE_SLEEP
-spell-freq:7
-spells:CAUSE_3 | DARKNESS | HOLD | SCARE
-desc:A tangible but ghostly form, made of grey fog.  The air around it feels
-desc: deathly cold.
-
 name:colossus
 plural:colossi
 base:golem
@@ -8979,6 +8936,31 @@ spells:BR_SHAR
 desc:A howling blast of razor-sharp mountain fragments, kept intact by perilous
 desc: magics.
 
+name:emperor wight
+base:wraith
+color:r
+speed:110
+hit-points:334
+hearing:20
+armor-class:48
+sleepiness:10
+depth:37
+rarity:2
+experience:1600
+blow:HIT:HURT:1d12
+blow:HIT:HURT:1d12
+blow:TOUCH:EXP_80
+blow:TOUCH:EXP_80
+flags:DROP_3 | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR
+flags:FORCE_SLEEP
+spell-freq:6
+spells:CAUSE_3 | HOLD | SCARE
+spells:BO_NETH
+friends-base:50:1d3:wraith
+desc:Your life force is torn from your body as this powerful unearthly being
+desc: approaches.
+
 ### Dungeon level 38 ###
 
 name:mummified chieftain
@@ -9139,54 +9121,27 @@ desc:A strange pillar of shining light that hurts your eyes.  Its shape changes
 desc: constantly as it cuts through the air towards you.  It is like a beacon,
 desc: waking monsters from their slumber.
 
-name:emperor wight
+name:white wraith
 base:wraith
-color:r
+color:w
 speed:120
-hit-points:334
+hit-points:450
 hearing:20
 armor-class:48
 sleepiness:10
-depth:38
-rarity:2
-experience:1600
-blow:HIT:HURT:1d12
-blow:HIT:HURT:1d12
-blow:TOUCH:EXP_80
-blow:TOUCH:EXP_80
-flags:DROP_3 | ONLY_ITEM
+depth:26
+rarity:1
+experience:355
+blow:HIT:HURT:1d9
+blow:HIT:HURT:1d9
+blow:TOUCH:EXP_20
+blow:TOUCH:EXP_20
+flags:DROP_1
 flags:OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
-spell-freq:6
-spells:CAUSE_3 | HOLD | SCARE
-spells:BO_NETH
-friends-base:50:1d3:wraith
-desc:Your life force is torn from your body as this powerful unearthly being
-desc: approaches.
-
-name:black wraith
-base:wraith
-color:D
-speed:120
-hit-points:440
-hearing:20
-armor-class:66
-sleepiness:10
-depth:38
-rarity:2
-experience:1700
-blow:HIT:HURT:1d12
-blow:HIT:HURT:1d12
-blow:TOUCH:EXP_40
-blow:TOUCH:EXP_40
-flags:DROP_2 | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR
-flags:FORCE_SLEEP
-spell-freq:7
-spells:BLIND | CAUSE_3 | HOLD | SCARE
-spells:BO_NETH
-desc:A figure that seems made of void, its strangely human shape is cloaked in
-desc: shadow.  It reaches out at you.
+spell-freq:8
+spells:CAUSE_2 | DARKNESS | SCARE
+desc:It is a tangible but ghostly form made of white fog.
 
 name:etten
 base:troll
@@ -9311,31 +9266,6 @@ spells:BR_POIS
 friends:50:1d4:Baby green dragon
 friends:50:1d2:Young green dragon
 desc:A large dragon, scales tinted deep green.
-
-name:nether wraith
-base:wraith
-color:G
-speed:120
-hit-points:420
-hearing:20
-armor-class:66
-sleepiness:10
-depth:39
-rarity:2
-experience:1700
-blow:HIT:HURT:1d12
-blow:HIT:HURT:1d12
-blow:TOUCH:EXP_80
-blow:TOUCH:EXP_80
-flags:INVISIBLE
-flags:DROP_3 | ONLY_ITEM
-flags:PASS_WALL
-flags:FORCE_SLEEP
-spell-freq:6
-spells:BLIND | CAUSE_3 | DARKNESS | MIND_BLAST | SCARE
-spells:BO_NETH
-desc:A form that hurts the eye, death permeates the air around it.  As it nears
-desc: you, a coldness saps your soul.
 
 name:7-headed hydra
 base:hydra
@@ -9588,28 +9518,6 @@ flags:IM_ELEC
 desc:A vast legendary bird, its iron talons rake the most impenetrable of
 desc: surfaces and its screech echoes through the many winding dungeon
 desc: corridors.
-
-name:Uvatha the Horseman
-base:wraith
-color:p
-speed:120
-hit-points:1800
-hearing:90
-smell:50
-armor-class:72
-sleepiness:10
-depth:40
-rarity:3
-experience:10000
-blow:HIT:HURT:6d6
-blow:HIT:HURT:6d6
-blow:HIT:EXP_80:4d6
-blow:HIT:EXP_80:4d6
-flags:UNIQUE | MALE
-flags:DROP_2 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-desc:A tall black cloaked Ringwraith, he is a master of horsemanship.  He longs
-desc: to taste your blood.
 
 name:minotaur
 base:hybrid
@@ -10239,33 +10147,6 @@ spells:BO_ICE | BO_WATE
 desc:A towering water elemental, Waldern is master of all things liquid.  Wave
 desc: after wave drowns your frail body.
 
-name:Adunaphel the Quiet
-base:wraith
-color:p
-speed:120
-hit-points:2100
-hearing:90
-smell:50
-armor-class:72
-sleepiness:10
-depth:43
-rarity:3
-experience:13000
-blow:HIT:HURT:6d6
-blow:HIT:HURT:6d6
-blow:TOUCH:EXP_80:5d6
-blow:TOUCH:EXP_80:5d6
-flags:UNIQUE | FEMALE | INVISIBLE
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:PASS_WALL | MOVE_BODY
-flags:FORCE_SLEEP
-spell-freq:3
-spells:BLIND | CAUSE_3 | FORGET | HOLD | SCARE
-spells:BO_ACID | BO_COLD | BO_FIRE | BO_NETH
-spells:S_MONSTER
-desc:A sorceress in life, Adunaphel quickly fell under Sauron's sway and the
-desc: power of the rings.
-
 name:glabrezu
 plural:glabrezu
 base:major demon
@@ -10517,34 +10398,6 @@ spells:BLINK | TPORT
 spells:S_UNDEAD
 desc:It is a pulsing flesh mound that reeks of death and putrefaction.
 
-name:Akhorahil the Blind
-base:wraith
-color:p
-speed:120
-hit-points:2400
-hearing:90
-smell:50
-armor-class:84
-sleepiness:10
-depth:45
-rarity:3
-experience:15000
-blow:HIT:HURT:7d6
-blow:HIT:HURT:7d6
-blow:GAZE:EXP_80:6d6
-blow:WAIL:TERRIFY:6d6
-flags:UNIQUE | MALE
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:FORCE_SLEEP
-spell-freq:3
-spells:BLIND | CAUSE_3 | DARKNESS | HOLD | SCARE
-spells:BO_COLD | BO_FIRE | BO_NETH
-spells:S_MONSTERS
-desc:A mighty sorcerer King, Akhorahil was blind in life.  With powerful
-desc: enchantments, he created jewelled eyes that enabled him to see better than
-desc: any ordinary man ever could.
-
 name:nalfeshnee
 base:major demon
 color:r
@@ -10714,6 +10567,29 @@ innate-freq:8
 spells:BOULDER
 desc:A gigantic ugly humanoid with but one eye and very thick skin.
 
+name:grey wraith
+base:wraith
+color:s
+speed:120
+hit-points:650
+hearing:20
+armor-class:60
+sleepiness:10
+depth:45
+rarity:1
+experience:1700
+blow:HIT:HURT:1d10
+blow:HIT:HURT:1d10
+blow:TOUCH:EXP_40
+flags:DROP_40 | DROP_60
+flags:OPEN_DOOR | BASH_DOOR
+flags:FORCE_SLEEP
+spell-freq:7
+spells:CAUSE_3 | DARKNESS | HOLD | SCARE
+spells:BO_COLD
+desc:A tangible but ghostly form, made of grey fog.  The air around it feels
+desc: deathly cold.
+
 ### Dungeon level 46 ###
 
 ### Dungeon level 47 ###
@@ -10765,36 +10641,6 @@ desc: power from sucking the souls of those that approach it, a nimbus of pure
 desc: evil surrounds it.  Luckily for you, it can't move.
 
 ### Dungeon level 48 ###
-
-name:Ren the Unclean
-base:wraith
-color:p
-speed:120
-hit-points:2700
-hearing:90
-smell:50
-armor-class:84
-sleepiness:10
-depth:48
-rarity:3
-experience:18000
-blow:HIT:HURT:7d7
-blow:HIT:HURT:7d7
-blow:TOUCH:EXP_80:6d7
-blow:WAIL:TERRIFY:6d7
-flags:UNIQUE | MALE | INVISIBLE
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:IM_FIRE
-flags:FORCE_SLEEP
-spell-freq:3
-spells:BLIND | CAUSE_3 | HOLD | SCARE
-spells:BA_FIRE
-spells:BO_FIRE | BO_NETH
-spells:S_MONSTER
-desc:Ren was an insane eastern king who believed himself to be the son of a
-desc: volcano god.  At an early age his sanity was destroyed by a plague that
-desc: wiped out his family, and he never recovered.
 
 name:ancient spider
 base:spider
@@ -10901,6 +10747,30 @@ spells:BLIND | CONF
 spells:BR_FIRE
 spells:S_DEMON
 desc:It is a massive humanoid demon wreathed in flames.
+
+name:black wraith
+base:wraith
+color:D
+speed:120
+hit-points:840
+hearing:20
+armor-class:66
+sleepiness:10
+depth:49
+rarity:2
+experience:2700
+blow:HIT:HURT:1d12
+blow:HIT:HURT:1d12
+blow:TOUCH:EXP_40
+blow:TOUCH:EXP_40
+flags:DROP_2 | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR
+flags:FORCE_SLEEP
+spell-freq:7
+spells:BLIND | CAUSE_3 | HOLD | SCARE
+spells:BO_NETH
+desc:A figure that seems made of void, its strangely human shape is cloaked in
+desc: shadow.  It reaches out at you.
 
 name:Eöl, the Dark Elf
 base:humanoid
@@ -11350,34 +11220,6 @@ shape:giant
 shape:Huan, Wolfhound of the Valar
 desc:A servant of Oromë, hunter of monsters and fell beasts.
 
-name:Ji Indur Dawndeath
-base:wraith
-color:p
-speed:120
-hit-points:3200
-hearing:90
-smell:50
-armor-class:84
-sleepiness:10
-depth:52
-rarity:3
-experience:22000
-blow:HIT:HURT:8d7
-blow:HIT:HURT:8d7
-blow:TOUCH:EXP_40:6d7
-blow:TOUCH:EXP_40:6d7
-flags:UNIQUE | MALE | INVISIBLE
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:IM_FIRE
-flags:FORCE_SLEEP
-spell-freq:3
-spells:BLIND | CAUSE_3 | HOLD | SCARE
-spells:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
-spells:S_UNDEAD
-desc:This Ringwraith was a weak-minded sorcerer-king who fell easily under
-desc: Sauron's power.
-
 name:Itangast the Fire Drake
 base:ancient dragon
 color:R
@@ -11614,6 +11456,31 @@ desc:A terrible robed undead figure, this creature has existed in its unlife for
 desc: many centuries by stealing the life of others.  It can summon the very
 desc: shades of its victims from beyond the grave to come enslaved to its aid.
 
+name:nether wraith
+base:wraith
+color:G
+speed:120
+hit-points:1000
+hearing:20
+armor-class:66
+sleepiness:10
+depth:54
+rarity:2
+experience:3900
+blow:HIT:HURT:1d12
+blow:HIT:HURT:1d12
+blow:TOUCH:EXP_80
+blow:TOUCH:EXP_80
+flags:INVISIBLE
+flags:DROP_3 | ONLY_ITEM
+flags:PASS_WALL
+flags:FORCE_SLEEP
+spell-freq:6
+spells:BLIND | CAUSE_3 | DARKNESS | MIND_BLAST | SCARE
+spells:BO_NETH | BE_NETH
+desc:A form that hurts the eye, death permeates the air around it.  As it nears
+desc: you, a coldness saps your soul.
+
 ### Dungeon level 55 ###
 
 name:Shelob, Spider of Darkness
@@ -11783,33 +11650,6 @@ spells:HEAL | TELE_TO | BOULDER
 spells:S_MONSTERS
 desc:It is a humanoid figure thirty feet tall that gives off an aura of power
 desc: and hate.
-
-name:Dwar, Dog Lord of Waw
-base:wraith
-color:p
-speed:120
-hit-points:4000
-hearing:90
-smell:50
-armor-class:108
-sleepiness:10
-depth:56
-rarity:3
-experience:25000
-blow:HIT:HURT:8d8
-blow:HIT:HURT:8d8
-blow:BITE:EXP_40:6d7
-blow:WAIL:TERRIFY:6d7
-flags:UNIQUE | MALE | SMART
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:FORCE_SLEEP
-spell-freq:3
-spells:BLIND | CAUSE_3 | HOLD | SCARE
-spells:BA_FIRE | BA_NETH
-spells:S_HOUND | S_MONSTERS | S_UNDEAD
-desc:Dwar had a special affinity for dogs in life, and can still command them at
-desc: will.  He howls maniacally as he reaches out to destroy you.
 
 ### Dungeon level 57 ###
 
@@ -12182,7 +12022,7 @@ name:nightwing
 base:wraith
 color:V
 speed:120
-hit-points:1830
+hit-points:1300
 hearing:20
 armor-class:144
 sleepiness:10
@@ -12359,34 +12199,6 @@ desc:One of the hideous brood of Ungoliant, spawned in the endless shadow of
 desc: Nan Dungortheb beneath the mountains of Ered Gorgoroth.
 
 ### Dungeon level 64 ###
-
-name:Hoarmurath of Dir
-base:wraith
-color:p
-speed:120
-hit-points:4500
-hearing:90
-smell:50
-armor-class:120
-sleepiness:10
-depth:64
-rarity:3
-experience:30000
-blow:HIT:HURT:9d9
-blow:HIT:HURT:9d9
-blow:TOUCH:EXP_80:6d7
-blow:WAIL:TERRIFY:6d7
-flags:UNIQUE | MALE | SMART
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:FORCE_SLEEP
-spell-freq:3
-spells:BLIND | CAUSE_3 | CAUSE_4 | HOLD | MIND_BLAST | SCARE
-spells:BA_COLD | BA_NETH
-spells:BO_COLD
-spells:S_UNDEAD
-desc:A Ringwraith powerful in fell sorcery, he yearns for the life he has lost
-desc: for an unlife of everlasting torment.
 
 name:chaos hound
 base:zephyr hound
@@ -12719,7 +12531,7 @@ flags:FORCE_SLEEP
 spell-freq:3
 spells:BLIND | CONF | HOLD
 spells:BA_DARK | BA_NETH
-spells:S_HI_UNDEAD | S_KIN | S_WRAITH
+spells:S_HI_UNDEAD | S_KIN
 desc:This huge affront to existence twists and tears at the fabric of space.  A
 desc: master of mighty magic, Tselakus hungers for your tender flesh.  Darkness
 desc: itself recoils from the touch of Tselakus as he leaves a trail of death
@@ -13081,35 +12893,6 @@ desc: throbs and writhes.
 
 ### Dungeon level 72 ###
 
-name:Khamûl, the Black Easterling
-base:wraith
-color:p
-speed:120
-hit-points:5000
-hearing:90
-smell:50
-armor-class:120
-sleepiness:10
-depth:72
-rarity:3
-experience:40000
-blow:HIT:HURT:9d10
-blow:HIT:HURT:9d10
-blow:TOUCH:EXP_40:7d7
-blow:TOUCH:EXP_40:7d7
-flags:UNIQUE | MALE | SMART
-flags:DROP_4 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:IM_ACID | IM_FIRE
-flags:FORCE_SLEEP
-spell-freq:2
-spells:BLIND | CAUSE_3 | CAUSE_4 | HOLD | SCARE | TELE_LEVEL
-spells:BA_COLD | BA_FIRE | BA_NETH
-spells:BO_MANA
-spells:S_HI_UNDEAD
-desc:A warrior-king of the East.  Khamûl is a powerful opponent, his skill in
-desc: combat awesome and his form twisted by evil cunning.
-
 name:horned reaper
 base:major demon
 color:B
@@ -13224,11 +13007,11 @@ desc: enough to defend yourself adequately.
 
 name:nightwalker
 base:wraith
-color:D
+color:v
 speed:130
-hit-points:1650
+hit-points:1400
 hearing:20
-armor-class:210
+armor-class:170
 sleepiness:10
 depth:73
 rarity:3
@@ -13247,8 +13030,7 @@ spells:BLIND | BRAIN_SMASH | SCARE
 spells:BA_NETH
 spells:BO_MANA | BO_NETH
 spells:S_UNDEAD
-desc:A huge giant garbed in black, more massive than a titan and stronger than a
-desc: dragon.  With terrible blows, it breaks your armour from your back,
+desc:A huge giant garbed in black, it breaks your armour from your back,
 desc: leaving you defenseless against its evil wrath.  It can smell your fear,
 desc: and you in turn smell the awful stench of death as this ghastly figure
 desc: strides towards you menacingly.
@@ -13541,6 +13323,32 @@ desc: massive fangs dripping a foul green liquid, the pit fiend is a dreadful
 desc: enemy from the lowest depths of the hells.  They are often the commanders
 desc: of vast demon armies.
 
+name:Uvatha the Horseman
+base:wraith
+color:p
+speed:120
+hit-points:4200
+hearing:90
+smell:50
+armor-class:72
+sleepiness:10
+depth:77
+rarity:3
+experience:33000
+blow:HIT:HURT:6d9
+blow:HIT:BLACK_BREATH:6d9
+blow:HIT:EXP_80:4d6
+blow:HIT:EXP_80:4d6
+flags:UNIQUE | MALE
+flags:DROP_2 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+spell-freq:3
+spells:BLIND | CAUSE_3 | FORGET | HOLD | SCARE
+spells:BO_COLD | BO_NETH
+spells:S_MONSTER | S_WRAITH
+desc:A tall black cloaked Ringwraith, he is a master of horsemanship.  He longs
+desc: to taste your blood.
+
 ### Dungeon level 78 ###
 
 name:serpent of chaos
@@ -13565,6 +13373,33 @@ desc:Writhing coil upon coil, this mighty spawn of chaos constantly
 desc: disintegrates and reforms before your dazzled eyes.  It seeks to
 desc: obiterate you utterly; beware!
 
+name:Adunaphel the Quiet
+base:wraith
+color:p
+speed:120
+hit-points:4300
+hearing:90
+smell:50
+armor-class:72
+sleepiness:10
+depth:78
+rarity:3
+experience:34000
+blow:HIT:HURT:6d9
+blow:HIT:BLACK_BREATH:6d9
+blow:TOUCH:EXP_80:5d6
+blow:TOUCH:EXP_80:5d6
+flags:UNIQUE | FEMALE
+flags:DROP_4 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:FORCE_SLEEP
+spell-freq:3
+spells:BLIND | CAUSE_3 | FORGET | HOLD | SCARE
+spells:BO_ACID | BO_COLD | BO_FIRE | BO_NETH
+spells:S_MONSTER | S_WRAITH
+desc:A sorceress in life, Adunaphel quickly fell under Sauron's sway and the
+desc: power of the rings.
+
 ### Dungeon level 79 ###
 
 name:Qlzqqlzuup, the Emperor Quylthulg
@@ -13583,11 +13418,38 @@ flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:ATTR_MULTI
 spell-freq:1
 spells:S_AINU | S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_HOUND
-spells:S_HYDRA | S_KIN | S_MONSTERS | S_SPIDER | S_UNIQUE | S_WRAITH
+spells:S_HYDRA | S_KIN | S_MONSTERS | S_SPIDER | S_UNIQUE
 desc:A gigantic seething mass of flesh, Qlzqqlzuup changes colours in front of
 desc: your eyes.  Pulsating first one colour then the next, it knows only it
 desc: must bring help to protect itself.
 
+name:Akhorahil the Blind
+base:wraith
+color:p
+speed:120
+hit-points:4400
+hearing:90
+smell:50
+armor-class:84
+sleepiness:10
+depth:79
+rarity:3
+experience:35000
+blow:HIT:HURT:7d9
+blow:HIT:BLACK_BREATH:7d9
+blow:GAZE:EXP_80:6d6
+blow:WAIL:TERRIFY:6d6
+flags:UNIQUE | MALE
+flags:DROP_4 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:FORCE_SLEEP
+spell-freq:3
+spells:BLIND | CAUSE_3 | DARKNESS | HOLD | SCARE
+spells:BO_COLD | BO_FIRE | BO_NETH
+spells:S_MONSTERS | S_WRAITH
+desc:A mighty sorcerer King, Akhorahil was blind in life.  With powerful
+desc: enchantments, he created jewelled eyes that enabled him to see better than
+desc: any ordinary man ever could.
 
 
 ########## DUNGEON LEVELS 80-89 ##########
@@ -13677,38 +13539,6 @@ desc:A wrathful dragon, of a breed that even legends do not mention,
 desc: rushing towards you like a thunderbolt.  Few ever face the wyrms
 desc: of the exotic airs; fewer live to tell the tale.
 
-name:The Witch-King of Angmar
-base:wraith
-color:p
-speed:130
-hit-points:6000
-hearing:90
-smell:50
-armor-class:144
-sleepiness:10
-depth:80
-rarity:3
-experience:60000
-blow:HIT:HURT:10d10
-blow:HIT:HURT:10d10
-blow:HIT:EXP_80:7d7
-blow:HIT:EXP_80:7d7
-flags:UNIQUE | MALE | SMART
-flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
-flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
-flags:FORCE_SLEEP
-spell-freq:2
-spells:BLIND | BRAIN_SMASH | CAUSE_3 | HOLD | SCARE | TELE_AWAY
-spells:BA_NETH
-spells:BO_MANA
-spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_KIN | S_MONSTERS | S_WRAITH
-friends:50:1d1:Winged Horror
-desc:The most fell of all Sauron's captains: King of Angmar, Sorcerer,
-desc: Ringwraith, Lord of the Nazgûl, a spear of terror in the hand of Sauron,
-desc: shadow of despair.  His spells are lethal and his combat blows crushingly
-desc: hard.  He moves at speed, and commands legions of evil to do his bidding.
-desc:  It is said that he is fated never to die by the hand of mortal man.
-
 name:Wiruin, the Maelstrom
 base:vortex
 color:z
@@ -13732,6 +13562,36 @@ spells:S_KIN
 desc:A violent icy whirlpool, brought from the frozen wastes of the Helcaraxë
 desc: by Morgoth as guard and entertainment.  Smaller vortices arise on its
 desc: edges, and you feel as if you will never be free of its deafening roar.
+
+name:Ren the Unclean
+base:wraith
+color:p
+speed:120
+hit-points:4500
+hearing:90
+smell:50
+armor-class:84
+sleepiness:10
+depth:80
+rarity:3
+experience:36000
+blow:HIT:HURT:7d9
+blow:HIT:BLACK_BREATH:7d9
+blow:TOUCH:EXP_80:6d7
+blow:WAIL:TERRIFY:6d7
+flags:UNIQUE | MALE | INVISIBLE
+flags:DROP_4 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:IM_FIRE
+flags:FORCE_SLEEP
+spell-freq:3
+spells:BLIND | CAUSE_3 | HOLD | SCARE
+spells:BA_FIRE
+spells:BO_FIRE | BO_NETH
+spells:S_MONSTER | S_WRAITH
+desc:Ren was an insane eastern king who believed himself to be the son of a
+desc: volcano god.  At an early age his sanity was destroyed by a plague that
+desc: wiped out his family, and he never recovered.
 
 ### Dungeon level 81 ###
 
@@ -13757,11 +13617,38 @@ flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:6
 spells:S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE
-spells:S_WRAITH
 desc:The son of Eöl the Dark Elf, Maeglin is every bit as evil as his father and
 desc: more.  His greed for gold led him to betray the Hidden Kingdom of
 desc: Gondolin to Morgoth's forces.  He is a mighty warrior himself, and some of
 desc: Morgoth's greatest servants answer to his call.
+
+name:Ji Indur Dawndeath
+base:wraith
+color:p
+speed:120
+hit-points:4600
+hearing:90
+smell:50
+armor-class:84
+sleepiness:10
+depth:81
+rarity:3
+experience:37000
+blow:HIT:HURT:8d9
+blow:HIT:BLACK_BREATH:8d9
+blow:TOUCH:EXP_40:6d7
+blow:TOUCH:EXP_40:6d7
+flags:UNIQUE | MALE | INVISIBLE
+flags:DROP_4 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:IM_FIRE
+flags:FORCE_SLEEP
+spell-freq:3
+spells:BLIND | CAUSE_3 | HOLD | SCARE
+spells:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
+spells:S_UNDEAD | S_WRAITH
+desc:This Ringwraith was a weak-minded sorcerer-king who fell easily under
+desc: Sauron's power.
 
 ### Dungeon level 82 ###
 
@@ -13849,7 +13736,62 @@ friends:100:2d3:Giant roc:servant
 desc:A winged humanoid demon, Pazuzu grins inhumanely at you as he decides
 desc: your fate.
 
+name:Dwar, Dog Lord of Waw
+base:wraith
+color:p
+speed:120
+hit-points:4700
+hearing:90
+smell:50
+armor-class:108
+sleepiness:10
+depth:82
+rarity:3
+experience:38000
+blow:HIT:HURT:9d9
+blow:HIT:BLACK_BREATH:8d9
+blow:BITE:EXP_40:6d7
+blow:WAIL:TERRIFY:6d7
+flags:UNIQUE | MALE | SMART
+flags:DROP_4 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:FORCE_SLEEP
+spell-freq:3
+spells:BLIND | CAUSE_3 | HOLD | SCARE
+spells:BA_FIRE | BA_NETH
+spells:S_HOUND | S_UNDEAD | S_WRAITH
+desc:Dwar had a special affinity for dogs in life, and can still command them at
+desc: will.  He howls maniacally as he reaches out to destroy you.
+
 ### Dungeon level 83 ###
+
+name:Hoarmurath of Dir
+base:wraith
+color:p
+speed:120
+hit-points:4800
+hearing:90
+smell:50
+armor-class:120
+sleepiness:10
+depth:83
+rarity:3
+experience:39000
+blow:HIT:HURT:9d9
+blow:HIT:BLACK_BREATH:9d9
+blow:TOUCH:EXP_80:6d7
+blow:WAIL:TERRIFY:6d7
+flags:UNIQUE | MALE | SMART
+flags:DROP_4 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:FORCE_SLEEP
+spell-freq:3
+spells:BLIND | CAUSE_3 | CAUSE_4 | HOLD | MIND_BLAST | SCARE
+spells:BA_COLD | BA_NETH
+spells:BE_NETH
+spells:S_UNDEAD | S_WRAITH
+desc:A Ringwraith powerful in fell sorcery, he yearns for the life he has lost
+desc: for an unlife of everlasting torment.
 
 name:Draugluin, Sire of All Werewolves
 base:canine
@@ -13881,6 +13823,35 @@ desc:Draugluin provides Sauron with a fearsome personal guard.  He is an
 desc: enormous wolf inhabited with a human spirit.  He is chief of all his kind.
 
 ### Dungeon level 84 ###
+
+name:Khamûl, the Black Easterling
+base:wraith
+color:p
+speed:120
+hit-points:4900
+hearing:90
+smell:50
+armor-class:120
+sleepiness:10
+depth:84
+rarity:3
+experience:40000
+blow:HIT:HURT:9d10
+blow:HIT:BLACK_BREATH:9d10
+blow:TOUCH:EXP_40:7d7
+blow:TOUCH:EXP_40:7d7
+flags:UNIQUE | MALE | SMART
+flags:DROP_4 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:IM_ACID | IM_FIRE
+flags:FORCE_SLEEP
+spell-freq:2
+spells:BLIND | CAUSE_3 | CAUSE_4 | HOLD | SCARE | TELE_LEVEL
+spells:BA_COLD | BA_FIRE | BA_NETH
+spells:BO_MANA
+spells:S_HI_UNDEAD | S_WRAITH
+desc:A warrior-king of the East.  Khamûl is a powerful opponent, his skill in
+desc: combat awesome and his form twisted by evil cunning.
 
 name:Cantoras, the Skeletal Lord
 base:skeleton
@@ -13942,6 +13913,38 @@ desc:Originally of the semi-divine Maiar, this evil spirit swore allegiance to
 desc: Morgoth at the beginning of time and is now one of his most terrible
 desc: demonic servants.  With its flaming whip and sword it seeks to destroy
 desc: you.
+
+name:The Witch-King of Angmar
+base:wraith
+color:p
+speed:130
+hit-points:5000
+hearing:90
+smell:50
+armor-class:144
+sleepiness:10
+depth:85
+rarity:3
+experience:60000
+blow:HIT:HURT:10d10
+blow:HIT:BLACK_BREATH:10d10
+blow:HIT:EXP_80:7d7
+blow:HIT:EXP_80:7d7
+flags:UNIQUE | MALE | SMART
+flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
+flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
+flags:FORCE_SLEEP
+spell-freq:2
+spells:BLIND | BRAIN_SMASH | CAUSE_3 | HOLD | SCARE | TELE_AWAY
+spells:BA_NETH
+spells:BO_MANA
+spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_KIN | S_MONSTERS | S_WRAITH
+friends:50:1d1:Winged Horror
+desc:The most fell of all Sauron's captains: King of Angmar, Sorcerer,
+desc: Ringwraith, Lord of the Nazgûl, a spear of terror in the hand of Sauron,
+desc: shadow of despair.  His spells are lethal and his combat blows crushingly
+desc: hard.  He moves at speed, and commands legions of evil to do his bidding.
+desc:  It is said that he is fated never to die by the hand of mortal man.
 
 name:Ancalagon the Black
 base:ancient dragon
@@ -14303,7 +14306,7 @@ spell-freq:3
 spells:BRAIN_SMASH
 spells:BA_MANA | BA_NETH
 spells:BO_MANA
-spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE | S_WRAITH
+spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE
 desc:He is the Master of the Pits of Angband.  His figure is like a black
 desc: mountain crowned with lightning.  He rages with everlasting anger, his
 desc: body scarred by Fingolfin's eight mighty wounds.  He can never rest from

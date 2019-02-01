@@ -655,6 +655,17 @@ lore-color-resist:Yellow
 message-vis:{name} shoots a spear of ice.
 message-invis:Something mumbles.
 
+name:BE_NETH
+hit:100
+effect:BEAM:NETHER
+dice:$B+5d5
+expr:B:SPELL_POWER:* 2 + 30
+lore:hurl lances of nether
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} hurls a lance of nether.
+message-invis:Something mumbles.
+
 name:MISSILE
 hit:100
 effect:BOLT:MISSILE

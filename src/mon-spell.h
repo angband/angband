@@ -30,7 +30,7 @@
 enum mon_spell_type {
 	RST_NONE		= 0x0000,
 	RST_BOLT		= 0x0001,
-	RST_BALL		= 0x0002,
+	RST_BALL		= 0x0002,	/* Ball spells, but also beams */
 	RST_BREATH		= 0x0004,
 	RST_DIRECT		= 0x0008,	/* Direct (non-projectable) attacks */
 	RST_ANNOY		= 0x0010,	/* Irritant spells, usually non-fatal */
