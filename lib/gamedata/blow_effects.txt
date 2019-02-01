@@ -282,3 +282,10 @@ lore-color-resist:Light Green
 effect-type:element
 resist:CHAOS
 lash-type:CHAOS
+
+name:BLACK_BREATH
+power:0
+eval:10
+desc:inflict Black Breath
+lore-color-base:Light Red
+lash-type:TIME
