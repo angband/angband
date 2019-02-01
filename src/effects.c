@@ -4989,6 +4989,7 @@ void free_effect(struct effect *source)
 	while (e) {
 		e_next = e->next;
 		dice_free(e->dice);
+		string_free(e->msg);
 		mem_free(e);
 		e = e_next;
 	}
