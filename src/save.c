@@ -246,19 +246,19 @@ static void wr_monster(const struct monster *mon)
  */
 static void wr_trap(struct trap *trap)
 {
-    size_t i;
+	size_t i;
 
 	if (trap->t_idx) {
 		wr_string(trap_info[trap->t_idx].desc);
 	} else {
 		wr_string("");
 	}
-    wr_byte(trap->grid.y);
-    wr_byte(trap->grid.x);
-    wr_byte(trap->power);
-    wr_byte(trap->timeout);
+	wr_byte(trap->grid.y);
+	wr_byte(trap->grid.x);
+	wr_byte(trap->power);
+	wr_byte(trap->timeout);
 
-    for (i = 0; i < TRF_SIZE; i++)
+	for (i = 0; i < TRF_SIZE; i++)
 		wr_byte(trap->flags[i]);
 }
 

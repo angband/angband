@@ -745,7 +745,7 @@ static bool do_cmd_disarm_aux(struct loc grid)
 		more = true;
 	} else {
 		msg("You set off the %s!", trap->kind->name);
-		hit_trap(grid);
+		hit_trap(grid, -1);
 	}
 
 	/* Result */
@@ -1029,10 +1029,10 @@ void move_player(int dir, bool disarm)
 		/* Discover invisible traps, set off visible ones */
 		if (square_issecrettrap(cave, grid)) {
 			disturb(player, 0);
-			hit_trap(grid);
+			hit_trap(grid, 0);
 		} else if (square_isdisarmabletrap(cave, grid) && !trapsafe) {
 			disturb(player, 0);
-			hit_trap(grid);
+			hit_trap(grid, 0);
 		}
 
 		/* Update view and search */

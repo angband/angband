@@ -357,36 +357,6 @@ bool square_reveal_trap(struct chunk *c, struct loc grid, bool always, bool doms
 }
 
 /**
- * Count the number of player traps in this location.
- *
- * Called with vis = 0 to accept any trap, = 1 to accept only visible
- * traps, and = -1 to accept only invisible traps.
- */
-int num_traps(struct chunk *c, struct loc grid, int vis)
-{
-    int num = 0;
-	struct trap *trap;
-
-	/* Look at the traps in this grid */
-	for (trap = square_trap(c, grid); trap; trap = trap->next) {
-		/* Require that trap be capable of affecting the character */
-		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
-	    
-		/* Require correct visibility */
-		if (vis >= 1) {
-			if (trf_has(trap->flags, TRF_VISIBLE)) num++;
-		} else if (vis <= -1) {
-			if (!trf_has(trap->flags, TRF_VISIBLE)) num++;
-		} else {
-			num++;
-		}
-	}
-
-    /* Return the number of traps */
-    return (num);
-}
-
-/**
  * Determine if a trap affects the player.
  * Always miss 5% of the time, Always hit 5% of the time.
  * Otherwise, match trap power against player armor.
@@ -400,22 +370,14 @@ bool trap_check_hit(int power)
 /**
  * Hit a trap. 
  */
-extern void hit_trap(struct loc grid)
+extern void hit_trap(struct loc grid, int delayed)
 {
 	bool ident = false;
 	struct trap *trap;
 	struct effect *effect;
 
-    /* Count the hidden traps here */
-    int num = num_traps(cave, grid, -1);
-
 	/* The player is safe from all traps */
 	if (player_is_trapsafe(player)) return;
-
-    /* Oops.  We've walked right into trouble. */
-    if      (num == 1) msg("You stumble upon a trap!");
-    else if (num >  1) msg("You stumble upon some traps!");
-
 
 	/* Look at the traps in this grid */
 	for (trap = square_trap(cave, grid); trap; trap = trap->next) {
@@ -425,6 +387,10 @@ extern void hit_trap(struct loc grid)
 		/* Require that trap be capable of affecting the character */
 		if (!trf_has(trap->kind->flags, TRF_TRAP)) continue;
 		if (trap->timeout) continue;
+
+		if (delayed != trf_has(trap->kind->flags, TRF_DELAY) &&
+		    delayed != -1)
+			continue;
 
 		/* Disturb the player */
 		disturb(player, 0);

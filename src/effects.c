@@ -3073,6 +3073,17 @@ bool effect_handler_RUBBLE(effect_handler_context_t *context)
 	return true;
 }
 
+bool effect_handler_GRANITE(effect_handler_context_t *context)
+{
+	struct trap *trap = context->origin.which.trap;
+	square_set_feat(cave, trap->grid, FEAT_GRANITE);
+
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	player->upkeep->redraw |= (PR_MONLIST | PR_ITEMLIST);
+
+	return true;
+}
+
 /**
  * The destruction effect
  *

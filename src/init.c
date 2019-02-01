@@ -1011,7 +1011,7 @@ static enum parser_error parse_trap_flags(struct parser *p) {
     s = strtok(flags, " |");
     while (s) {
 		if (grab_flag(t->flags, TRF_SIZE, trap_flags, s)) {
-			mem_free(s);
+			mem_free(flags);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
