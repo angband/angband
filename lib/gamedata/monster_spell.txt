@@ -58,45 +58,80 @@ lore-color-base:Orange
 message-vis:{name} spits {type} at you.
 message-invis:You hear a soft sound.
 
-name:ARROW_1
-hit:40
+name:SHOT
+hit:50
 effect:BOLT:ARROW
-dice:1d6
-lore:fire an arrow
+dice:$Dd5
+expr:D:SPELL_POWER:/ 8 + 1
+lore:fling pebbles
+lore-color-base:Yellow
+message-vis:{name} slings a pebble at {target}.
+message-invis:You hear something fly through the air.
+message-miss:{name} slings a pebble, but misses.
+power-cutoff:25
+lore:sling lead shots
+lore-color-base:Yellow
+message-vis:{name} slings a leaden pellet at {target}.
+message-invis:You hear something whirl through the air.
+message-miss:{name} slings a leaden pellet, but misses.
+power-cutoff:50
+lore:sling seeker shots
+lore-color-base:Yellow
+message-vis:{name} slings a seeker shot at {target}.
+message-invis:You hear something heavy whirl through the air.
+message-miss:{name} slings a seeker shot, but misses.
+
+name:ARROW
+hit:50
+effect:BOLT:ARROW
+dice:$Dd6
+expr:D:SPELL_POWER:/ 8 + 1
+lore:fire small arrows
 lore-color-base:Yellow
 message-vis:{name} fires a small arrow.
 message-invis:You hear a soft twang.
 message-miss:{name} fires a small arrow, but misses.
-
-name:ARROW_2
-hit:40
-effect:BOLT:ARROW
-dice:3d6
+power-cutoff:16
 lore:fire arrows
 lore-color-base:Yellow
 message-vis:{name} fires an arrow.
 message-invis:You hear a twang.
 message-miss:{name} fires an arrow, but misses.
-
-name:ARROW_3
-hit:50
-effect:BOLT:ARROW
-dice:5d6
-lore:fire a missile
+power-cutoff:32
+lore:fire large arrows
 lore-color-base:Yellow
 message-vis:{name} fires a large arrow.
 message-invis:You hear a loud twang.
 message-miss:{name} fires a large arrow, but misses.
-
-name:ARROW_4
-hit:50
-effect:BOLT:ARROW
-dice:7d6
-lore:fire missiles
+power-cutoff:48
+lore:fire seeker arrows
 lore-color-base:Yellow
 message-vis:{name} fires a seeker arrow.
 message-invis:You hear a loud thwang.
 message-miss:{name} fires a seeker arrow, but misses.
+
+name:BOLT
+hit:50
+effect:BOLT:ARROW
+dice:$Dd7
+expr:D:SPELL_POWER:/ 8 + 1
+lore:fire small bolts
+lore-color-base:Yellow
+message-vis:{name} fires a little bolt.
+message-invis:You hear a soft twung.
+message-miss:{name} fires a little bolt, but misses.
+power-cutoff:25
+lore:fire arrows
+lore-color-base:Yellow
+message-vis:{name} fires a crossbow bolt.
+message-invis:You hear a twung.
+message-miss:{name} fires a crossbow bolt, but misses.
+power-cutoff:50
+lore:fire seeker bolts
+lore-color-base:Yellow
+message-vis:{name} fires a seeker bolt.
+message-invis:You hear a loud thwung.
+message-miss:{name} fires a seeker bolt, but misses.
 
 name:BR_ACID
 msgt:BR_ACID

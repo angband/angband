@@ -211,8 +211,7 @@ mon-base:humanoid
 mon-base:orc
 mon-base:person
 spell-req:MISSILE
-spell-ban:ARROW_1
-spell-ban:ARROW_2
+spell-ban:ARROW
 
 name:Archers
 room:1
@@ -223,8 +222,7 @@ mon-base:orc
 mon-base:person
 color:W
 color:D
-spell-ban:BO_NETH
-spell-ban:HASTE
+spell-req:ARROW
 
 name:Naga
 room:1
