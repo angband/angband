@@ -224,6 +224,7 @@ flags:OPEN_DOOR | BASH_DOOR | SPIRIT | CLEAR_WEB
 flags:IM_POIS
 desc:Kobold
 
+# Powerful undead spellcasters, tending to drain dexterity and charges in melee
 name:lich
 glyph:L
 pain:1
@@ -391,6 +392,7 @@ flags:TROLL | EVIL | SPIRIT
 flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 desc:Troll
 
+# Powerful undead which drain experience
 name:vampire
 glyph:V
 pain:1
@@ -400,6 +402,7 @@ flags:HURT_LIGHT | HURT_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
 flags:FORCE_SLEEP
 desc:Vampire
 
+# Always awake, elemental objects which engulf and breathe their element(s)
 name:vortex
 glyph:v
 pain:11
@@ -417,6 +420,9 @@ pain:1
 flags:ANIMAL
 desc:Worm/Worm Mass
 
+# Undead which range from wights to wraiths to the Ringwraiths.  Experience
+# drainers and spellcasters; the Ringwraiths summon each other and are the
+# only monsters which get the Black Breath melee attack.
 name:wraith
 glyph:W
 pain:1

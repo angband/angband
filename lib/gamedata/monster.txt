@@ -10177,7 +10177,7 @@ flags:PASS_WALL | KILL_BODY | KILL_ITEM
 flags:HURT_ROCK | IM_COLD | IM_ELEC | IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:6
-spells:BA_ACID
+spells:BA_ACID | BA_SHAR
 spells:BO_ACID
 desc:A towering stone elemental stands before you.  The walls and ceiling are
 desc: reduced to rubble as Quaker advances.
@@ -11967,7 +11967,7 @@ flags:COLD_BLOOD | POWERFUL
 flags:PASS_WALL | KILL_BODY | KILL_ITEM
 flags:HURT_ROCK | IM_ELEC
 innate-freq:6
-spells:BOULDER | BR_SHAR
+spells:BOULDER | BR_SHAR | BA_SHAR
 desc:Appearing as a giant of stone, this mighty elemental seems to draw its
 desc: power from the very fabric of the dungeon.
 
@@ -14045,7 +14045,7 @@ innate-freq:6
 spell-freq:5
 spells:HEAL | HEAL_KIN
 spells:BOULDER
-spells:BR_SHAR | BR_SOUN
+spells:BA_SHAR | BR_SOUN
 spells:S_KIN | S_MONSTERS
 friends:50:1d4:Maia of Oromë:servant
 friends:50:1d4:Maia of Aulë:servant

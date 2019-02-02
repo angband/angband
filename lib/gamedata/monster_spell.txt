@@ -409,7 +409,8 @@ message-invis:Something chants coldly.
 name:BA_POIS
 hit:100
 effect:BALL:POIS:2
-dice:12d2
+dice:$Dd4
+expr:D:SPELL_POWER:/ 2 + 3
 lore:produce poison balls
 lore-color-base:Orange
 lore-color-resist:Light Green
@@ -422,6 +423,23 @@ lore-color-resist:Light Green
 message-vis:{name} unleashes a storm of corrosive toxins.
 message-invis:Something murmurs viciously.
 
+name:BA_SHAR
+hit:100
+effect:BALL:SHARD:2
+dice:10+1d$S
+expr:S:SPELL_POWER:* 3 / 2
+lore:produce shardstorms
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} calls up a whirlwind of shards.
+message-invis:Something mumbles.
+power-cutoff:70
+lore:invoke storms of knives
+lore-color-base:Light Red
+lore-color-resist:Light Green
+message-vis:{name} invokes a storm of knives!
+message-invis:Something chants powerfully.
+
 name:BA_NETH
 hit:100
 effect:BALL:NETHER:2
@@ -431,13 +449,13 @@ lore:produce nether balls
 lore-color-base:Orange
 lore-color-resist:Light Green
 message-vis:{name} casts a ball of nether.
-message-invis:Something mumbles.
+message-invis:Something whispers nastily.
 power-cutoff:80
 lore:produce nether storms
 lore-color-base:Orange
 lore-color-resist:Light Green
 message-vis:{name} creates a storm of nether magics.
-message-invis:Something chants ominously.
+message-invis:Something intones with deadly menace.
 
 name:BA_WATE
 hit:100
@@ -717,6 +735,16 @@ lore-color-resist:Yellow
 message-vis:{name} shoots a spear of ice.
 message-invis:Something mumbles.
 
+name:MISSILE
+hit:100
+effect:BOLT:MISSILE
+dice:$B+2d6
+expr:B:SPELL_POWER:/ 3
+lore:produce magic missiles
+lore-color-base:Yellow
+message-vis:{name} fires a magic missile.
+message-invis:Something mumbles.
+
 name:BE_NETH
 hit:100
 effect:BEAM:NETHER
@@ -726,16 +754,6 @@ lore:hurl lances of nether
 lore-color-base:Orange
 lore-color-resist:Light Green
 message-vis:{name} hurls a lance of nether.
-message-invis:Something mumbles.
-
-name:MISSILE
-hit:100
-effect:BOLT:MISSILE
-dice:$B+2d6
-expr:B:SPELL_POWER:/ 3
-lore:produce magic missiles
-lore-color-base:Yellow
-message-vis:{name} fires a magic missile.
 message-invis:Something mumbles.
 
 name:SCARE
