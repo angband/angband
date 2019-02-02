@@ -882,7 +882,7 @@ flags:DROP_40
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:12
-spells:CAUSE_1 | HEAL | SCARE
+spells:WOUND | HEAL | SCARE
 drop-base:prayer book:5:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
@@ -1437,7 +1437,7 @@ experience:15
 blow:HIT:HURT:1d8
 flags:DROP_40
 spell-freq:5
-spells:CAUSE_1 | CONF | HEAL | MISSILE
+spells:WOUND | CONF | HEAL | MISSILE
 drop-base:magic book:5:1:1
 drop-base:prayer book:5:1:1
 friends-base:30:1d2:kobold
@@ -1508,7 +1508,7 @@ flags:DROP_60
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:9
-spells:CAUSE_1 | SCARE
+spells:WOUND | SCARE
 drop-base:prayer book:3:1:1
 friends-base:20:1d3:person
 friends-base:40:1d3:person
@@ -2599,7 +2599,7 @@ flags:FORCE_SLEEP
 drop-base:magic book:5:1:1
 drop-base:prayer book:5:1:1
 spell-freq:8
-spells:BLINK | CAUSE_1 | MISSILE
+spells:BLINK | WOUND | MISSILE
 desc:An orc dressed in skins who gestures wildly.
 
 name:baby blue dragon
@@ -3370,7 +3370,7 @@ flags:DROP_60
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:3
-spells:CAUSE_2 | HEAL | SCARE
+spells:WOUND | HEAL | SCARE
 spells:S_MONSTER
 drop-base:prayer book:8:1:1
 drop-base:prayer book:8:1:1
@@ -3398,7 +3398,7 @@ flags:DROP_1 | ONLY_ITEM
 flags:HURT_LIGHT
 flags:FORCE_SLEEP
 spell-freq:5
-spells:BLIND | CAUSE_2 | CONF | DARKNESS | HEAL
+spells:BLIND | WOUND | CONF | DARKNESS | HEAL
 drop-base:prayer book:8:1:1
 drop-base:prayer book:8:1:1
 desc:A dark elven figure, dressed all in black, chanting curses and waiting to
@@ -3868,7 +3868,7 @@ flags:DROP_40 | ONLY_GOLD
 flags:OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:9
-spells:BLINK | CAUSE_2
+spells:BLINK | WOUND
 spells:BA_POIS
 spells:BO_COLD
 desc:A large rat with glowing red eyes.  The wererat is a disgusting creature,
@@ -4360,7 +4360,7 @@ flags:DROP_1 | DROP_GOOD | ONLY_ITEM
 flags:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:6
-spells:BLIND | CAUSE_2 | CONF | HEAL | MIND_BLAST
+spells:BLIND | WOUND | CONF | HEAL | MIND_BLAST
 desc:The friend and companion of the dwarven king Thrór, he went mad with grief
 desc: after Thrór's death at the hands of Azog the Orc.  With torn beard and
 desc: ragged clothes, he seems to have fixed on you as a convenient target to
@@ -4593,7 +4593,7 @@ blow:HIT:HURT:2d3
 flags:HURT_COLD
 spell-freq:6
 spells:BO_COLD
-spells:BLIND | CAUSE_2 | CONF | SCARE
+spells:BLIND | WOUND | CONF | SCARE
 desc:A strange creature that disguises itself as a discarded potion bottle to
 desc: lure unsuspecting adventurers within reach of its venomous claws.
 mimic:potion:Healing
@@ -5081,7 +5081,7 @@ flags:MALE
 flags:DROP_1
 flags:OPEN_DOOR | TAKE_ITEM
 spell-freq:4
-spells:BLIND | CAUSE_2 | HEAL | SCARE | SLOW
+spells:BLIND | WOUND | HEAL | SCARE | SLOW
 drop-base:prayer book:5:1:1
 drop-base:prayer book:5:1:1
 friends:50:1d1:Easterling champion
@@ -5158,7 +5158,7 @@ flags:HURT_FIRE
 spell-freq:5
 spells:BO_FIRE
 spells:S_MONSTER
-spells:BLIND | CAUSE_2 | CONF | SCARE
+spells:BLIND | WOUND | CONF | SCARE
 desc:A strange creature that disguises itself as a discarded scroll to lure
 desc: unsuspecting adventurers within reach of its venomous claws.
 mimic:scroll:Banishment
@@ -5786,7 +5786,7 @@ flags:RAND_50 | ONLY_ITEM | DROP_60
 innate-freq:3
 spell-freq:2
 spell-power:10
-spells:BLINK | TELE_SELF_TO | BLIND | SLOW | CAUSE_1
+spells:BLINK | TELE_SELF_TO | BLIND | SLOW | WOUND
 spells:WHIP | BO_FIRE
 friends:100:2d7:Same
 desc:Little sparks of flame that dance around you, lashing whips and cursing
@@ -6286,7 +6286,7 @@ blow:BITE:EXP_20:2d6
 blow:BITE:EXP_20:2d6
 flags:DROP_40 | DROP_1
 spell-freq:9
-spells:CAUSE_2 | DARKNESS | MIND_BLAST | TELE_TO
+spells:WOUND | DARKNESS | MIND_BLAST | TELE_TO
 spells:HOLD | SCARE
 desc:It is a humanoid with an aura of power.  You notice a sharp set of front
 desc: teeth.
@@ -6356,7 +6356,7 @@ blow:HIT:HURT:3d6
 flags:DROP_60 | ONLY_ITEM
 flags:FORCE_SLEEP
 spell-freq:5
-spells:CAUSE_2 | HOLD | SCARE | TPORT | TRAPS
+spells:WOUND | HOLD | SCARE | TPORT | TRAPS
 spells:BO_FIRE
 spells:S_MONSTER
 drop-base:prayer book:5:1:1
@@ -6475,7 +6475,7 @@ flags:DROP_1
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:8
-spells:BLIND | CAUSE_3 | DARKNESS | SCARE
+spells:BLIND | WOUND | DARKNESS | SCARE
 drop-base:prayer book:8:1:1
 drop-base:prayer book:8:1:1
 friends:50:1d1:Master rogue
@@ -6680,7 +6680,7 @@ blow:BITE:HURT:1d8
 flags:NO_FEAR | NO_CONF | NO_SLEEP
 flags:FORCE_SLEEP | SPIRIT
 spell-freq:6
-spells:CAUSE_2 | FORGET | HOLD | SLOW
+spells:WOUND | FORGET | HOLD | SLOW
 desc:A lesser relative of the beholder: a globular body with a large toothy
 desc: mouth, a large central eye, and four smaller eyes on stalks protruding
 desc: from the top of its body.
@@ -6819,7 +6819,7 @@ blow:HIT:POISON:3d4
 spell-freq:4
 spells:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 spells:S_MONSTER
-spells:BLIND | CAUSE_2 | CONF | SCARE
+spells:BLIND | WOUND | CONF | SCARE
 desc:A strange creature that disguises itself as a discarded ring to lure
 desc: unsuspecting adventurers within reach of its venomous claws.
 mimic:ring:Speed
@@ -7051,7 +7051,7 @@ flags:DROP_1 | ONLY_ITEM
 flags:RAND_25 | OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:8
-spells:CAUSE_3 | DARKNESS | SCARE
+spells:WOUND | DARKNESS | SCARE
 desc:It is a ghostly form with eyes that haunt you.
 
 name:killer slicer beetle
@@ -7591,7 +7591,7 @@ flags:DROP_40
 flags:OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:8
-spells:CAUSE_2 | DARKNESS | HOLD | SCARE
+spells:WOUND | DARKNESS | HOLD | SCARE
 friends:100:4d4:Same
 desc:It is a ghostly nightmare of an entity.
 
@@ -7826,7 +7826,7 @@ flags:DROP_60
 flags:HURT_LIGHT | NO_CONF | NO_SLEEP
 flags:FORCE_SLEEP
 spell-freq:5
-spells:BLINK | CAUSE_1 | DARKNESS | MISSILE | SCARE
+spells:BLINK | WOUND | DARKNESS | MISSILE | SCARE
 drop-base:prayer book:5:1:1
 drop-base:prayer book:5:1:1
 desc:A troll who is so bright he knows how to read.
@@ -7980,7 +7980,7 @@ blow:TOUCH:LOSE_DEX:2d8
 flags:DROP_1
 flags:HURT_LIGHT
 spell-freq:4
-spells:BLIND | BLINK | CAUSE_3 | DRAIN_MANA | HOLD | BRAIN_SMASH
+spells:BLIND | BLINK | WOUND | DRAIN_MANA | HOLD | BRAIN_SMASH
 spells:SCARE | SLOW | TELE_AWAY | TELE_TO
 friends-base:70:1d3:skeleton
 desc:It is a skeletal form dressed in robes.  It radiates vastly evil power.
@@ -8351,7 +8351,7 @@ flags:DROP_2
 spell-freq:5
 spells:BA_POIS
 spells:S_MONSTER
-spells:BLIND | CAUSE_2 | CONF | SCARE
+spells:BLIND | WOUND | CONF | SCARE
 desc:A strange creature that disguises itself as a chest to lure unsuspecting
 desc: adventurers within reach of its venomous claws.  The first that most
 desc: adventurers realise of the deception is when the seemingly invitingly open
@@ -8452,7 +8452,7 @@ blow:BITE:EXP_40:3d6
 blow:BITE:EXP_40:3d6
 flags:DROP_4
 spell-freq:6
-spells:CAUSE_3 | CONF | DARKNESS | MIND_BLAST
+spells:WOUND | CONF | DARKNESS | MIND_BLAST
 spells:TELE_TO
 spells:BO_NETH
 spells:HOLD | SCARE
@@ -8653,7 +8653,7 @@ flags:DROP_1 | ONLY_ITEM
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CAUSE_3 | HASTE | HOLD | SCARE | TELE_TO
+spells:BLIND | WOUND | HASTE | HOLD | SCARE | TELE_TO
 spells:TPORT
 spells:BO_NETH
 spells:S_UNDEAD
@@ -8740,7 +8740,7 @@ flags:EVIL | SPIRIT
 flags:BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:5
-spells:CAUSE_2 | DRAIN_MANA | HOLD | TELE_AWAY
+spells:WOUND | DRAIN_MANA | HOLD | TELE_AWAY
 spells:BA_COLD
 spells:BO_ELEC
 desc:Another lesser relative of the beholder, this six-eyed creature feeds on
@@ -8955,7 +8955,7 @@ flags:DROP_3 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:6
-spells:CAUSE_3 | HOLD | SCARE
+spells:WOUND | HOLD | SCARE
 spells:BO_NETH
 friends-base:50:1d3:wraith
 desc:Your life force is torn from your body as this powerful unearthly being
@@ -8986,7 +8986,7 @@ flags:FORCE_SLEEP
 innate-freq:9
 spell-freq:3
 spells:SHRIEK
-spells:BLIND | CAUSE_3 | DARKNESS | DRAIN_MANA | FORGET | HASTE
+spells:BLIND | WOUND | DARKNESS | DRAIN_MANA | FORGET | HASTE
 spells:HEAL | MIND_BLAST | SCARE
 spells:BA_COLD | BA_POIS
 spells:BO_NETH
@@ -9018,7 +9018,7 @@ flags:RAND_50 | PASS_WALL
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLINK | CAUSE_2 | CONF | TPORT
+spells:BLINK | WOUND | CONF | TPORT
 desc:A strange ball of glowing light.  It disappears and reappears and seems to
 desc: draw you to it.  You seem somehow compelled to stand still and watch its
 desc: strange dancing motion.
@@ -9043,7 +9043,7 @@ flags:OPEN_DOOR
 flags:IM_COLD
 flags:FORCE_SLEEP
 spell-freq:5
-spells:BLIND | CAUSE_3 | SCARE
+spells:BLIND | WOUND | SCARE
 spells:BO_NETH
 spells:S_MONSTERS
 drop-base:prayer book:8:1:1
@@ -9140,7 +9140,7 @@ flags:DROP_1
 flags:OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:8
-spells:CAUSE_2 | DARKNESS | SCARE
+spells:WOUND | DARKNESS | SCARE
 desc:It is a tangible but ghostly form made of white fog.
 
 name:etten
@@ -9465,7 +9465,7 @@ flags:OPEN_DOOR
 flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | BLINK | CAUSE_3 | CONF | TELE_TO | TRAPS
+spells:BLIND | BLINK | WOUND | CONF | TELE_TO | TRAPS
 spells:BA_COLD | BA_FIRE
 spells:BO_ACID
 spells:S_DRAGON | S_MONSTER | S_UNDEAD
@@ -9561,7 +9561,7 @@ flags:IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 flags-off:HURT_COLD
 spell-freq:2
-spells:CAUSE_3 | HOLD | SCARE
+spells:WOUND | HOLD | SCARE
 spells:BA_ACID
 spells:BO_FIRE | BO_PLAS
 spells:S_HYDRA | S_KIN
@@ -9610,7 +9610,7 @@ flags:PASS_WALL
 flags:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:10
-spells:BLIND | CAUSE_3 | CONF | SCARE
+spells:BLIND | WOUND | CONF | SCARE
 spells:S_DEMON
 desc:It is a demon of small stature, but its armoured frame moves with lightning
 desc: speed and its powers make it a tornado of death and destruction.
@@ -9636,7 +9636,7 @@ flags:OPEN_DOOR
 flags:NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | CAUSE_3 | CAUSE_4 | HEAL | HOLD
+spells:BLIND | WOUND | HEAL | HOLD
 spells:S_MONSTER | S_UNDEAD
 drop-base:prayer book:5:1:1
 drop-base:prayer book:10:1:1
@@ -9775,7 +9775,7 @@ flags:DROP_3 | ONLY_ITEM
 flags:HURT_LIGHT | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | BLINK | CAUSE_3 | CONF | DARKNESS | HEAL
+spells:BLIND | BLINK | WOUND | CONF | DARKNESS | HEAL
 spells:TELE_TO
 spells:BA_COLD | BA_FIRE
 spells:BO_ACID
@@ -9803,7 +9803,7 @@ blow:TOUCH:LOSE_DEX:2d12
 blow:TOUCH:LOSE_DEX:2d12
 flags:DROP_4 | ONLY_ITEM
 spell-freq:3
-spells:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF | BRAIN_SMASH
+spells:BLIND | BLINK | WOUND | CONF | BRAIN_SMASH
 spells:DRAIN_MANA | HOLD | SCARE | TELE_TO
 spells:S_UNDEAD
 friends-base:80:1d3:zombie:servant
@@ -9833,7 +9833,7 @@ flags:OPEN_DOOR
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:CAUSE_3
+spells:WOUND
 spells:BO_MANA | BO_WATE
 desc:This sad creature - once a mighty warrior - betrayed his former friends to
 desc: Morgoth's army in return for, he thought, safety for himself and his
@@ -10240,7 +10240,7 @@ flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR | TAKE_ITEM
 flags:NO_FEAR | NO_CONF | NO_SLEEP
 spell-freq:4
-spells:BLIND | CAUSE_3 | CAUSE_4 | HASTE | HEAL | SCARE
+spells:BLIND | WOUND | HASTE | HEAL | SCARE
 drop-base:prayer book:10:1:1
 drop-base:prayer book:10:1:1
 friends:30:1d1:Master thief
@@ -10302,7 +10302,7 @@ flags:DROP_4 | ONLY_ITEM
 flags:RAND_25 | TAKE_ITEM
 flags:FORCE_SLEEP
 spell-freq:9
-spells:BLIND | CAUSE_4 | CONF | DRAIN_MANA | HOLD | TELE_LEVEL
+spells:BLIND | WOUND | CONF | DRAIN_MANA | HOLD | TELE_LEVEL
 spells:BO_NETH
 spells:S_UNDEAD
 desc:It is an unlife of power almost unequaled.  An affront to existence, its
@@ -10421,7 +10421,7 @@ flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 flags:NO_SLEEP | NO_STUN
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BRAIN_SMASH | CAUSE_4 | CONF | DRAIN_MANA | FORGET | MIND_BLAST
+spells:BRAIN_SMASH | WOUND | CONF | DRAIN_MANA | FORGET | MIND_BLAST
 spells:SLOW
 spells:BA_COLD | BA_FIRE
 spells:BO_ACID | BO_MANA | BO_NETH
@@ -10561,7 +10561,7 @@ flags:DROP_40 | DROP_60
 flags:OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:7
-spells:CAUSE_3 | DARKNESS | HOLD | SCARE
+spells:WOUND | DARKNESS | HOLD | SCARE
 spells:BO_COLD
 desc:A tangible but ghostly form, made of grey fog.  The air around it feels
 desc: deathly cold.
@@ -10586,7 +10586,7 @@ blow:BITE:EXP_80:4d6
 blow:BITE:EXP_80:4d6
 flags:DROP_4
 spell-freq:7
-spells:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
+spells:BLIND | BRAIN_SMASH | WOUND | DARKNESS | DRAIN_MANA
 spells:BO_NETH
 spells:HOLD | SCARE
 friends:40:1d4:Vampire:servant
@@ -10613,7 +10613,7 @@ flags:FEMALE
 flags:DROP_1
 flags:IM_FIRE
 spell-freq:9
-spells:BLIND | CAUSE_2
+spells:BLIND | WOUND
 spells:S_DEMON
 desc:She is a demon of female form with many arms, each bearing deadly weapons.
 
@@ -10663,7 +10663,7 @@ flags:HURT_LIGHT | IM_POIS
 flags:FORCE_SLEEP
 innate-freq:20
 spell-freq:6
-spells:CAUSE_3 | DRAIN_MANA | HEAL | HOLD | SLOW
+spells:WOUND | DRAIN_MANA | HEAL | HOLD | SLOW
 spells:BR_DARK
 spells:S_KIN | S_SPIDER
 friends:100:4d4:spider
@@ -10767,7 +10767,7 @@ flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:7
-spells:BLIND | CAUSE_3 | HOLD | SCARE
+spells:BLIND | WOUND | HOLD | SCARE
 spells:BO_NETH
 desc:A figure that seems made of void, its strangely human shape is cloaked in
 desc: shadow.  It reaches out at you.
@@ -10791,7 +10791,7 @@ flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:HURT_LIGHT | IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | BLINK | CAUSE_4 | CONF | DARKNESS | HEAL
+spells:BLIND | BLINK | WOUND | CONF | DARKNESS | HEAL
 spells:TELE_TO
 spells:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
 spells:BO_MANA
@@ -11242,7 +11242,7 @@ flags:BASH_DOOR
 flags:IM_FIRE
 innate-freq:8
 spell-freq:8
-spells:CAUSE_3 | CONF
+spells:WOUND | CONF
 spells:BR_FIRE
 desc:A mighty ancient dragon, Itangast's form scorches your flesh.  Wisps of
 desc: smoke curl up from his nostrils as he regards you with disdain.
@@ -11364,7 +11364,7 @@ flags:BASH_DOOR
 flags:IM_COLD
 innate-freq:8
 spell-freq:8
-spells:CAUSE_3 | CONF
+spells:WOUND | CONF
 spells:BR_COLD
 desc:An ancient and wise Dragon.  Scatha has grown clever over the long years.
 desc:  His scales are covered with frost, and his breath sends a shower of ice
@@ -11421,7 +11421,7 @@ blow:TOUCH:LOSE_DEX:4d12
 blow:TOUCH:LOSE_DEX:4d12
 flags:DROP_3 | ONLY_ITEM
 spell-freq:3
-spells:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF | BRAIN_SMASH
+spells:BLIND | BLINK | WOUND | CONF | BRAIN_SMASH
 spells:DRAIN_MANA | FORGET | HEAL | HOLD | SCARE | TELE_TO
 spells:TPORT
 spells:S_DEMON | S_UNDEAD
@@ -11447,7 +11447,7 @@ flags:DROP_3 | ONLY_ITEM
 flags:PASS_WALL
 flags:FORCE_SLEEP
 spell-freq:6
-spells:BLIND | CAUSE_3 | DARKNESS | MIND_BLAST | SCARE
+spells:BLIND | WOUND | DARKNESS | MIND_BLAST | SCARE
 spells:BO_NETH | BE_NETH
 desc:A form that hurts the eye, death permeates the air around it.  As it nears
 desc: you, a coldness saps your soul.
@@ -11476,7 +11476,7 @@ flags:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 innate-freq:20
 spell-freq:4
-spells:BLIND | CAUSE_3 | CAUSE_4 | CONF | HEAL | SCARE
+spells:BLIND | WOUND | CONF | HEAL | SCARE
 spells:SLOW | WEAVE
 spells:BR_DARK | BR_POIS
 spells:S_KIN
@@ -11670,7 +11670,7 @@ flags:SMART | ATTR_FLICKER | SPIRIT
 flags:NEVER_BLOW | NEVER_MOVE
 flags:FORCE_SLEEP
 spell-freq:1
-spells:BLIND | CAUSE_3 | CONF | DARKNESS | FORGET | SCARE
+spells:BLIND | WOUND | CONF | DARKNESS | FORGET | SCARE
 spells:TELE_AWAY
 spells:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 desc:A skeletal hand floating in the air, motionless except for its flexing
@@ -11781,7 +11781,7 @@ flags:NEVER_BLOW | NEVER_MOVE
 flags:IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:1
-spells:BRAIN_SMASH | CAUSE_4 | MIND_BLAST | SLOW | TRAPS
+spells:BRAIN_SMASH | WOUND | MIND_BLAST | SLOW | TRAPS
 spells:BA_WATE
 spells:BO_NETH | BO_PLAS
 spells:S_UNDEAD
@@ -11808,7 +11808,7 @@ flags:INVISIBLE
 flags:DROP_4
 flags:PASS_WALL
 spell-freq:5
-spells:BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
+spells:BRAIN_SMASH | WOUND | DARKNESS | DRAIN_MANA
 spells:BO_NETH
 spells:S_UNDEAD
 spells:HOLD | SCARE
@@ -11838,7 +11838,7 @@ flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_CONF
 flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:4
-spells:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | CONF | HEAL
+spells:BLIND | BRAIN_SMASH | WOUND | CONF | HEAL
 spells:SCARE
 spells:S_ANIMAL | S_MONSTERS
 desc:He is one of the greatest dwarven priests to walk the earth.  Fundin has
@@ -12005,7 +12005,7 @@ flags:DROP_4 | DROP_GOOD | DROP_GREAT
 flags:IM_ELEC
 flags:ATTR_MULTI
 spell-freq:2
-spells:BLIND | CAUSE_4 | FORGET | HASTE | HEAL | MIND_BLAST
+spells:BLIND | WOUND | FORGET | HASTE | HEAL | MIND_BLAST
 spells:SCARE | TELE_AWAY | TPORT | TRAPS
 spells:BA_ACID | BA_COLD | BA_FIRE | BA_WATE
 spells:BO_ICE
@@ -12038,7 +12038,7 @@ flags:DROP_2 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
 flags:FORCE_SLEEP
 spell-freq:4
-spells:BLIND | BRAIN_SMASH | CAUSE_4 | SCARE
+spells:BLIND | BRAIN_SMASH | WOUND | SCARE
 spells:BA_NETH
 spells:BO_MANA | BO_NETH
 spells:S_UNDEAD
@@ -12129,7 +12129,7 @@ flags:BASH_DOOR
 flags:IM_FIRE
 innate-freq:5
 spell-freq:8
-spells:CAUSE_3 | CONF
+spells:WOUND | CONF
 spells:BR_FIRE
 desc:Smaug is one of the Urulóki that still survive, a fire-drake of immense
 desc: cunning and intelligence.  His speed through air is matched by few other
@@ -12190,7 +12190,7 @@ flags:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 innate-freq:20
 spell-freq:5
-spells:BLIND | CAUSE_4 | CONF | HEAL | SCARE
+spells:BLIND | WOUND | CONF | HEAL | SCARE
 spells:SLOW | WEAVE
 spells:BR_DARK | BR_POIS
 spells:S_KIN
@@ -12245,7 +12245,7 @@ blow:TOUCH:LOSE_DEX:8d12
 flags:DROP_4 | ONLY_ITEM
 flags:PASS_WALL
 spell-freq:3
-spells:BLINK | CAUSE_4 | DRAIN_MANA | FORGET | HEAL | BRAIN_SMASH
+spells:BLINK | WOUND | DRAIN_MANA | FORGET | HEAL | BRAIN_SMASH
 spells:HOLD | SCARE | TELE_TO | TPORT
 spells:BA_NETH
 spells:S_DEMON | S_HI_UNDEAD
@@ -12329,7 +12329,7 @@ flags:OPEN_DOOR
 flags:IM_COLD | IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
 spell-freq:2
-spells:CAUSE_3 | HOLD | TELE_TO | TRAPS
+spells:WOUND | HOLD | TELE_TO | TRAPS
 spells:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE
 spells:BO_PLAS
 spells:S_HI_DEMON | S_HI_UNDEAD
@@ -12446,7 +12446,7 @@ flags:UNIQUE | FEMALE | SMART
 flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags-off:HURT_FIRE
 spell-freq:3
-spells:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DRAIN_MANA
+spells:BLIND | BRAIN_SMASH | WOUND | DRAIN_MANA
 spells:BA_NETH
 spells:S_HI_UNDEAD | S_KIN
 spells:HOLD | SCARE
@@ -12505,7 +12505,7 @@ flags:BASH_DOOR
 flags:ATTR_MULTI | FORCE_SLEEP | NO_CONF
 innate-freq:9
 spell-freq:10
-spells:CAUSE_4
+spells:WOUND
 spells:BR_CHAO
 desc:"Beware the Jabberwock, my son!  The jaws that bite, the claws that catch!"
 desc: Run and run quickly, for death incarnate chases behind you!
@@ -12559,7 +12559,7 @@ flags:OPEN_DOOR | BASH_DOOR
 flags:IM_COLD | IM_FIRE | IM_POIS | NO_STUN
 flags:FORCE_SLEEP
 spell-freq:8
-spells:BRAIN_SMASH | CAUSE_4 | DRAIN_MANA | TELE_TO
+spells:BRAIN_SMASH | WOUND | DRAIN_MANA | TELE_TO
 spells:BA_NETH
 spells:S_UNDEAD
 desc:A skeletal form, black as night, constructed from the bones of its previous
@@ -13084,7 +13084,7 @@ flags:ATTR_FLICKER
 flags:DROP_2 | ONLY_ITEM
 flags:KILL_WALL
 spell-freq:3
-spells:BLIND | CAUSE_3 | CAUSE_4 | CONF | DRAIN_MANA | BRAIN_SMASH
+spells:BLIND | WOUND | CONF | DRAIN_MANA | BRAIN_SMASH
 spells:HOLD | TELE_TO
 spells:BA_MANA | BA_NETH
 spells:S_UNDEAD
@@ -13279,7 +13279,7 @@ blow:TOUCH:LOSE_DEX:6d12
 flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 spell-freq:2
-spells:BLIND | BLINK | CAUSE_4 | HOLD | SCARE | BRAIN_SMASH
+spells:BLIND | BLINK | WOUND | HOLD | SCARE | BRAIN_SMASH
 spells:TELE_TO | TRAPS
 spells:BA_MANA | BA_NETH
 spells:BO_MANA
@@ -13314,7 +13314,7 @@ flags:MOVE_BODY
 flags:IM_FIRE | IM_POIS
 innate-freq:12
 spell-freq:8
-spells:CAUSE_4 | SCARE
+spells:WOUND | SCARE
 spells:BA_FIRE
 spells:BR_CHAO | BR_FIRE | BR_POIS
 spells:S_HI_DEMON | S_HI_DRAGON
@@ -13343,7 +13343,7 @@ flags:UNIQUE | MALE
 flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 spell-freq:3
-spells:BLIND | CAUSE_3 | FORGET | HOLD | SCARE
+spells:BLIND | WOUND | FORGET | HOLD | SCARE
 spells:BO_COLD | BO_NETH
 spells:S_MONSTER | S_WRAITH
 desc:A tall black cloaked Ringwraith, he is a master of horsemanship.  He longs
@@ -13394,7 +13394,7 @@ flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CAUSE_3 | FORGET | HOLD | SCARE
+spells:BLIND | WOUND | FORGET | HOLD | SCARE
 spells:BO_ACID | BO_COLD | BO_FIRE | BO_NETH
 spells:S_MONSTER | S_WRAITH
 desc:A sorceress in life, Adunaphel quickly fell under Sauron's sway and the
@@ -13444,7 +13444,7 @@ flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CAUSE_3 | DARKNESS | HOLD | SCARE
+spells:BLIND | WOUND | DARKNESS | HOLD | SCARE
 spells:BO_COLD | BO_FIRE | BO_NETH
 spells:S_MONSTERS | S_WRAITH
 desc:A mighty sorcerer King, Akhorahil was blind in life.  With powerful
@@ -13477,7 +13477,7 @@ flags:FEMALE
 flags:DROP_4 | PASS_WALL
 flags:IM_FIRE | IM_POIS | IM_COLD
 spell-freq:4
-spells:CAUSE_4 | SCARE | BRAIN_SMASH
+spells:WOUND | SCARE | BRAIN_SMASH
 spells:BLINK | TELE_SELF_TO
 spells:S_HI_DEMON
 desc:A female embodiment of rage, intent on tearing your mond and body apart.
@@ -13585,7 +13585,7 @@ flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CAUSE_3 | HOLD | SCARE
+spells:BLIND | WOUND | HOLD | SCARE
 spells:BA_FIRE
 spells:BO_FIRE | BO_NETH
 spells:S_MONSTER | S_WRAITH
@@ -13644,7 +13644,7 @@ flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CAUSE_3 | HOLD | SCARE
+spells:BLIND | WOUND | HOLD | SCARE
 spells:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
 spells:S_UNDEAD | S_WRAITH
 desc:This Ringwraith was a weak-minded sorcerer-king who fell easily under
@@ -13757,7 +13757,7 @@ flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CAUSE_3 | HOLD | SCARE
+spells:BLIND | WOUND | HOLD | SCARE
 spells:BA_FIRE | BA_NETH
 spells:S_HOUND | S_UNDEAD | S_WRAITH
 desc:Dwar had a special affinity for dogs in life, and can still command them at
@@ -13786,7 +13786,7 @@ flags:DROP_4 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:FORCE_SLEEP
 spell-freq:3
-spells:BLIND | CAUSE_3 | CAUSE_4 | HOLD | MIND_BLAST | SCARE
+spells:BLIND | WOUND | HOLD | MIND_BLAST | SCARE
 spells:BA_COLD | BA_NETH
 spells:BE_NETH
 spells:S_UNDEAD | S_WRAITH
@@ -13846,7 +13846,7 @@ flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:IM_ACID | IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | CAUSE_3 | CAUSE_4 | HOLD | SCARE | TELE_LEVEL
+spells:BLIND | WOUND | HOLD | SCARE | TELE_LEVEL
 spells:BA_COLD | BA_FIRE | BA_NETH
 spells:BO_MANA
 spells:S_HI_UNDEAD | S_WRAITH
@@ -13874,7 +13874,7 @@ flags:OPEN_DOOR | BASH_DOOR
 flags:IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BRAIN_SMASH | CAUSE_4 | SCARE | SLOW | TELE_TO
+spells:BRAIN_SMASH | WOUND | SCARE | SLOW | TELE_TO
 spells:BA_NETH | BA_WATE
 spells:BO_ICE | BO_MANA
 spells:S_HI_UNDEAD
@@ -13935,7 +13935,7 @@ flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BLIND | BRAIN_SMASH | CAUSE_3 | HOLD | SCARE | TELE_AWAY
+spells:BLIND | BRAIN_SMASH | WOUND | HOLD | SCARE | TELE_AWAY
 spells:BA_NETH
 spells:BO_MANA
 spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_KIN | S_MONSTERS | S_WRAITH
@@ -14164,7 +14164,7 @@ flags:UNIQUE | MALE
 flags:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 flags:IM_ELEC | IM_FIRE
 spell-freq:2
-spells:BLIND | CAUSE_4 | SCARE | TPORT | BRAIN_SMASH
+spells:BLIND | WOUND | SCARE | TPORT | BRAIN_SMASH
 spells:BA_FIRE | BA_MANA | BA_NETH
 spells:BO_MANA
 spells:S_HI_DEMON | S_HI_UNDEAD | S_KIN | S_MONSTERS
@@ -14267,7 +14267,7 @@ flags:MOVE_BODY
 flags:IM_ELEC | NO_FEAR
 flags:FORCE_DEPTH
 spell-freq:2
-spells:BLIND | BRAIN_SMASH | CAUSE_4 | SCARE | TELE_LEVEL | TPORT
+spells:BLIND | BRAIN_SMASH | WOUND | SCARE | TELE_LEVEL | TPORT
 spells:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE
 spells:BO_ICE | BO_MANA | BO_PLAS
 spells:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE | S_WRAITH

@@ -71,45 +71,45 @@ static int spell_color(struct player *p, const struct monster_race *race,
 	}
 
 	/* Unresistable spells just use the default color */
-	if (!spell->lore_attr_resist && !spell->lore_attr_immune) {
-		return spell->level->lore_attr;
+	if (!level->lore_attr_resist && !level->lore_attr_immune) {
+		return level->lore_attr;
 	}
 
 	/* Spells with a save */
-	if (spell->save_message) {
+	if (level->save_message) {
 		/* Mixed results if the save may fail, perfect result if it can't */
 		if (p->known_state.skills[SKILL_SAVE] < 100) {
 			if (eff->index == EF_TELEPORT_LEVEL) {
 				/* Special case - teleport level */
 				if (p->known_state.el_info[ELEM_NEXUS].res_level > 0) {
-					return spell->lore_attr_resist;
+					return level->lore_attr_resist;
 				} else {
-					return spell->level->lore_attr;
+					return level->lore_attr;
 				}
 			} else if (eff->index == EF_TIMED_INC) {
 				/* Simple timed effects */
 				if (player_inc_check(p, eff->subtype, true)) {
-					return spell->level->lore_attr;
+					return level->lore_attr;
 				} else {
-					return spell->lore_attr_resist;
+					return level->lore_attr_resist;
 				}
-			} else if (spell->lore_attr_immune) {
+			} else if (level->lore_attr_immune) {
 				/* Multiple timed effects plus damage */
 				for (; eff; eff = eff->next) {
 					if (eff->index != EF_TIMED_INC) continue;
 					if (player_inc_check(p, eff->subtype, true)) {
-						return spell->level->lore_attr;
+						return level->lore_attr;
 					}
 				}
-				return spell->lore_attr_resist;
+				return level->lore_attr_resist;
 			} else {
 				/* Straight damage */
-				return spell->level->lore_attr;
+				return level->lore_attr;
 			}
-		} else if (spell->lore_attr_immune) {
-			return spell->lore_attr_immune;
+		} else if (level->lore_attr_immune) {
+			return level->lore_attr_immune;
 		} else {
-			return spell->lore_attr_resist;
+			return level->lore_attr_resist;
 		}
 	}
 
@@ -121,21 +121,21 @@ static int spell_color(struct player *p, const struct monster_race *race,
 			/* Special case - sound */
 			case ELEM_SOUND:
 				if (p->known_state.el_info[ELEM_SOUND].res_level > 0) {
-					return spell->lore_attr_immune;
+					return level->lore_attr_immune;
 				} else if (of_has(p->known_state.flags, OF_PROT_STUN)) {
-					return spell->lore_attr_resist;
+					return level->lore_attr_resist;
 				} else {
-					return spell->level->lore_attr;
+					return level->lore_attr;
 				}
 				break;
 			/* Special case - nexus */
 			case ELEM_NEXUS:
 				if (p->known_state.el_info[ELEM_NEXUS].res_level > 0) {
-					return spell->lore_attr_immune;
+					return level->lore_attr_immune;
 				} else if (p->known_state.skills[SKILL_SAVE] >= 100) {
-					return spell->lore_attr_resist;
+					return level->lore_attr_resist;
 				} else {
-					return spell->level->lore_attr;
+					return level->lore_attr;
 				}
 				break;
 			/* Elements that stun or confuse */
@@ -144,27 +144,27 @@ static int spell_color(struct player *p, const struct monster_race *race,
 			case ELEM_PLASMA:
 			case ELEM_WATER:
 				if (!of_has(p->known_state.flags, OF_PROT_STUN)) {
-					return spell->level->lore_attr;
+					return level->lore_attr;
 				} else if (!of_has(p->known_state.flags, OF_PROT_CONF) &&
 						   (eff->subtype == ELEM_WATER)){
-					return spell->level->lore_attr;
+					return level->lore_attr;
 				} else {
-					return spell->lore_attr_resist;
+					return level->lore_attr_resist;
 				}
 				break;
 			/* All other elements */
 			default:
 				if (p->known_state.el_info[eff->subtype].res_level == 3) {
-					return spell->lore_attr_immune;
+					return level->lore_attr_immune;
 				} else if (p->known_state.el_info[eff->subtype].res_level > 0) {
-					return spell->lore_attr_resist;
+					return level->lore_attr_resist;
 				} else {
-					return spell->level->lore_attr;
+					return level->lore_attr;
 				}
 		}
 	}
 
-	return spell->level->lore_attr;
+	return level->lore_attr;
 }
 
 /**

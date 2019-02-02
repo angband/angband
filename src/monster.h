@@ -172,8 +172,12 @@ struct monster_spell_level {
 	int power;				/* Spell power at which this level starts */
 	char *lore_desc;		/* Description of the attack used in lore text */
 	byte lore_attr;			/* Color of the attack used in lore text */
+	byte lore_attr_resist;	/* Color used in lore text when resisted */
+	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	char *message;			/* Description of the attack */
 	char *blind_message;	/* Description of the attack if unseen */
+	char *miss_message;		/* Description of a missed attack */
+	char *save_message;		/* Message on passing saving throw, if any */
 };
 
 /**
@@ -184,10 +188,6 @@ struct monster_spell {
 
 	u16b index;				/* Numerical index (RSF_FOO) */
 	int msgt;				/* Flag for message colouring */
-	char *miss_message;		/* Description of a missed attack */
-	char *save_message;		/* Message on passing saving throw, if any */
-	byte lore_attr_resist;	/* Color used in lore text when resisted */
-	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	int hit;				/* To-hit level for the attack */
 	struct effect *effect;	/* Effect(s) of the spell */
 	struct monster_spell_level *level;	/* Spell power dependent details */

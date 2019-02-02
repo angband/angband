@@ -93,12 +93,12 @@ static void spell_message(struct monster *mon,
 		if (t_mon) {
 			return;
 		} else {
-			in_cursor = spell->level->blind_message;
+			in_cursor = level->blind_message;
 		}
 	} else if (!hits) {
-		in_cursor = spell->miss_message;
+		in_cursor = level->miss_message;
 	} else {
-		in_cursor = spell->level->message;
+		in_cursor = level->message;
 	}
 
 	next = strchr(in_cursor, '{');
@@ -256,10 +256,17 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 	spell_message(mon, spell, seen, hits);
 
 	if (hits) {
+		struct monster_spell_level *level = spell->level;
+
+		/* Get the right level of save message */
+		while (level->next && mon->race->spell_power >= level->next->power) {
+			level = level->next;
+		}
+
 		/* Try a saving throw if available */
-		if (spell->save_message && (target_mon <= 0) &&
+		if (level->save_message && (target_mon <= 0) &&
 				randint0(100) < player->state.skills[SKILL_SAVE]) {
-			msg("%s", spell->save_message);
+			msg("%s", level->save_message);
 			spell_check_for_fail_rune(spell);
 		} else {
 			effect_do(spell->effect, source_monster(mon->midx), NULL, &ident, true, 0, 0, 0);
@@ -512,7 +519,7 @@ const char *mon_spell_lore_description(int index,
 		while (level->next && race->spell_power >= level->next->power) {
 			level = level->next;
 		}
-		return spell->level->lore_desc;
+		return level->lore_desc;
 	} else {
 		return "";
 	}
