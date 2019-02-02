@@ -9991,30 +9991,6 @@ friends:100:4d4:olog:bodyguard
 desc:A massive and cruel troll of great power, drool slides caustically down his
 desc: muscular frame.  Despite his bulk, he strikes with stunning speed.
 
-name:vampire lord
-base:vampire
-color:b
-speed:120
-hit-points:1400
-hearing:20
-smell:20
-armor-class:84
-sleepiness:10
-depth:42
-rarity:1
-experience:1800
-blow:HIT:HURT:3d6
-blow:HIT:HURT:3d6
-blow:BITE:EXP_80:4d6
-blow:BITE:EXP_80:4d6
-flags:DROP_4
-spell-freq:7
-spells:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
-spells:BO_NETH
-spells:HOLD | SCARE
-friends:40:1d4:Vampire:servant
-desc:A foul wind chills your bones as this ghastly figure approaches.
-
 ### Dungeon level 43 ###
 
 name:Maia of Nienna
@@ -10591,6 +10567,30 @@ desc:A tangible but ghostly form, made of grey fog.  The air around it feels
 desc: deathly cold.
 
 ### Dungeon level 46 ###
+
+name:vampire lord
+base:vampire
+color:b
+speed:120
+hit-points:1400
+hearing:20
+smell:20
+armor-class:84
+sleepiness:10
+depth:46
+rarity:1
+experience:1800
+blow:HIT:HURT:3d6
+blow:HIT:HURT:3d6
+blow:BITE:EXP_80:4d6
+blow:BITE:EXP_80:4d6
+flags:DROP_4
+spell-freq:7
+spells:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
+spells:BO_NETH
+spells:HOLD | SCARE
+friends:40:1d4:Vampire:servant
+desc:A foul wind chills your bones as this ghastly figure approaches.
 
 ### Dungeon level 47 ###
 
@@ -11427,35 +11427,6 @@ spells:TPORT
 spells:S_DEMON | S_UNDEAD
 desc:A lich who is partially immaterial, on its way to a new, ethereal form.
 
-name:elder vampire
-base:vampire
-color:r
-speed:120
-hit-points:2640
-hearing:20
-smell:20
-armor-class:108
-sleepiness:10
-depth:54
-rarity:3
-experience:4500
-blow:HIT:HURT:4d6
-blow:HIT:HURT:4d6
-blow:BITE:EXP_80:5d6
-blow:BITE:EXP_80:5d6
-flags:INVISIBLE
-flags:DROP_4
-flags:PASS_WALL
-spell-freq:5
-spells:BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
-spells:BO_NETH
-spells:S_UNDEAD
-spells:HOLD | SCARE
-friends-base:30:1d3:ghost
-desc:A terrible robed undead figure, this creature has existed in its unlife for
-desc: many centuries by stealing the life of others.  It can summon the very
-desc: shades of its victims from beyond the grave to come enslaved to its aid.
-
 name:nether wraith
 base:wraith
 color:G
@@ -11816,6 +11787,35 @@ spells:BO_NETH | BO_PLAS
 spells:S_UNDEAD
 desc:A glowing skull possessed by sorcerous power.  It need not move, but merely
 desc: blast you with mighty magic as it speaks the words of power.
+
+name:elder vampire
+base:vampire
+color:r
+speed:120
+hit-points:2640
+hearing:20
+smell:20
+armor-class:108
+sleepiness:10
+depth:59
+rarity:3
+experience:4500
+blow:HIT:HURT:4d6
+blow:HIT:HURT:4d6
+blow:BITE:EXP_80:5d6
+blow:BITE:EXP_80:5d6
+flags:INVISIBLE
+flags:DROP_4
+flags:PASS_WALL
+spell-freq:5
+spells:BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
+spells:BO_NETH
+spells:S_UNDEAD
+spells:HOLD | SCARE
+friends-base:30:1d3:ghost
+desc:A terrible robed undead figure, this creature has existed in its unlife for
+desc: many centuries by stealing the life of others.  It can summon the very
+desc: shades of its victims from beyond the grave to come enslaved to its aid.
 
 name:Fundin Bluecloak
 base:humanoid
