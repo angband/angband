@@ -3972,7 +3972,7 @@ base:zephyr hound
 color:D
 speed:110
 hit-points:21
-light:-1
+light:-2
 hearing:30
 smell:50
 armor-class:36
@@ -5941,7 +5941,7 @@ base:worm
 color:D
 speed:100
 hit-points:35
-light:-1
+light:-2
 hearing:10
 armor-class:25
 sleepiness:10
@@ -7511,7 +7511,7 @@ base:dragon
 color:G
 speed:110
 hit-points:264
-light:-1
+light:-2
 hearing:20
 armor-class:84
 sleepiness:70
@@ -7725,29 +7725,6 @@ spells:BR_DARK | BR_LIGHT
 desc:A dragon of great power, with control over light and dark, the ethereal
 desc: drake's eyes glare with white hatred from the shadows.
 
-name:shade
-base:ghost
-color:D
-speed:120
-hit-points:147
-light:-1
-hearing:20
-armor-class:36
-sleepiness:10
-depth:33
-rarity:3
-experience:350
-blow:WAIL:TERRIFY
-blow:TOUCH:EXP_40
-blow:CLAW:LOSE_INT:1d10
-flags:DROP_2 | ONLY_ITEM
-flags:RAND_25 | TAKE_ITEM
-flags:FORCE_SLEEP
-spell-freq:15
-spells:BLIND | DRAIN_MANA | HOLD
-desc:A shadowy form clutches at you from the darkness.  A powerful undead
-desc: creature with a deadly touch.
-
 name:fire elemental
 base:elemental
 color:r
@@ -7894,11 +7871,12 @@ friends-base:100:3d4:troll
 desc:A half-smart, vicious troll with some rudimentary magic and a love of
 desc: violence.
 
-name:spectre
+name:shade
 base:ghost
-color:U
+color:D
 speed:120
 hit-points:147
+light:-2
 hearing:20
 armor-class:36
 sleepiness:10
@@ -7907,16 +7885,14 @@ rarity:3
 experience:350
 blow:WAIL:TERRIFY
 blow:TOUCH:EXP_40
-blow:CLAW:LOSE_WIS:5d5
+blow:CLAW:LOSE_INT:1d10
 flags:DROP_2 | ONLY_ITEM
 flags:RAND_25 | TAKE_ITEM
 flags:FORCE_SLEEP
 spell-freq:15
 spells:BLIND | DRAIN_MANA | HOLD
-desc:A phantasmal shrieking spirit.  Its wail drives the intense cold of pure
-desc: evil deep within your body.
-
-### Dungeon level 34 ###
+desc:A shadowy form clutches at you from the darkness.  A powerful undead
+desc: creature with a deadly touch.
 
 name:master thief
 plural:master thieves
@@ -8277,31 +8253,6 @@ desc:A deep brown shape is visible before you, its canine form strikes you with
 desc: an almost physical force.  The dungeon floor buckles as if struck by a
 desc: powerful blow as it stalks towards you.
 
-name:dread
-base:ghost
-color:o
-speed:120
-hit-points:263
-hearing:20
-armor-class:36
-sleepiness:10
-depth:35
-rarity:2
-experience:600
-blow:HIT:HURT:6d6
-blow:HIT:HURT:6d6
-blow:HIT:LOSE_STR:3d4
-flags:DROP_2 | ONLY_ITEM
-flags:RAND_25 | TAKE_ITEM
-flags:FORCE_SLEEP
-spell-freq:15
-spells:BLIND | CONF | DRAIN_MANA | HOLD
-spells:BO_NETH
-friends:100:2d5:Same
-desc:It is a form that screams its presence against the eye.  Death incarnate,
-desc: its hideous black body seems to struggle against reality as the universe
-desc: itself struggles to banish it.
-
 name:mûmak
 plural:mûmakil
 base:quadruped
@@ -8536,53 +8487,6 @@ flags:IM_COLD | IM_ELEC | IM_FIRE
 desc:A huge creature of the element Earth.  Able to merge with its element, it
 desc: has four huge arms protruding from its enormous torso.
 
-name:shadow
-base:ghost
-color:D
-speed:120
-hit-points:105
-light:-1
-hearing:30
-armor-class:36
-sleepiness:20
-depth:36
-rarity:3
-experience:400
-blow:TOUCH:EXP_80
-blow:TOUCH:EXP_40
-blow:CLAW:LOSE_INT:1d10
-blow:CLAW:LOSE_WIS:1d10
-flags:DROP_1 | ONLY_ITEM
-flags:FORCE_SLEEP
-spell-freq:8
-spells:SLOW | TELE_TO
-spells:BO_NETH
-desc:A mighty spirit of darkness of vaguely humanoid form.  Razor-edged claws
-desc: reach out to end your life as it glides towards you, seeking to suck the
-desc: energy from your soul to feed its power.
-
-name:phantom
-base:ghost
-color:P
-speed:120
-hit-points:260
-hearing:30
-armor-class:36
-sleepiness:20
-depth:36
-rarity:3
-experience:400
-blow:TOUCH:EXP_80
-blow:TOUCH:EXP_40
-blow:CLAW:LOSE_INT:1d10
-blow:CLAW:LOSE_WIS:1d10
-flags:DROP_1 | ONLY_ITEM
-flags:FORCE_SLEEP
-spell-freq:5
-spells:FORGET
-desc:An unholy creature of darkness, the aura emanating from this evil being
-desc: saps your very soul.
-
 name:colossus
 plural:colossi
 base:golem
@@ -8802,6 +8706,28 @@ flags:DROP_20
 flags:NO_FEAR
 desc:It is a massive figure clothed in wrappings.  You are wary of its massive
 desc: fists.
+
+name:spectre
+base:ghost
+color:U
+speed:120
+hit-points:167
+hearing:20
+armor-class:36
+sleepiness:10
+depth:37
+rarity:3
+experience:380
+blow:WAIL:TERRIFY
+blow:TOUCH:EXP_40
+blow:CLAW:LOSE_WIS:5d5
+flags:DROP_2 | ONLY_ITEM
+flags:RAND_25 | TAKE_ITEM
+flags:FORCE_SLEEP
+spell-freq:15
+spells:BLIND | DRAIN_MANA | HOLD
+desc:A phantasmal shrieking spirit.  Its wail drives the intense cold of pure
+desc: evil deep within your body.
 
 name:magma elemental
 base:elemental
@@ -9399,6 +9325,28 @@ flags:TROLL | REGENERATE
 flags:DROP_60
 flags:IM_ELEC
 desc:A weird ghostly troll-like being.
+
+name:phantom
+base:ghost
+color:P
+speed:120
+hit-points:260
+hearing:30
+armor-class:36
+sleepiness:20
+depth:36
+rarity:3
+experience:400
+blow:TOUCH:EXP_80
+blow:TOUCH:EXP_40
+blow:CLAW:LOSE_INT:2d8
+blow:CLAW:LOSE_WIS:2d8
+flags:DROP_1 | ONLY_ITEM
+flags:FORCE_SLEEP
+spell-freq:5
+spells:FORGET
+desc:An unholy creature of darkness, the aura emanating from this evil being
+desc: saps your very soul.
 
 name:9-headed hydra
 base:hydra
@@ -10295,32 +10243,30 @@ spells:BO_FIRE | BO_PLAS
 spells:BR_FIRE
 desc:A strange reptilian hybrid with eleven smouldering heads.
 
-name:dreadmaster
+name:dread
 base:ghost
-color:y
+color:o
 speed:120
-hit-points:1056
+hit-points:263
 hearing:20
-armor-class:120
+armor-class:36
 sleepiness:10
 depth:44
 rarity:2
-experience:8000
+experience:600
 blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:LOSE_STR:3d4
-blow:HIT:LOSE_STR:3d4
-flags:SMART
-flags:DROP_4 | ONLY_ITEM
+flags:DROP_2 | ONLY_ITEM
 flags:RAND_25 | TAKE_ITEM
 flags:FORCE_SLEEP
-spell-freq:9
-spells:BLIND | WOUND | CONF | DRAIN_MANA | HOLD | TELE_LEVEL
+spell-freq:15
+spells:BLIND | CONF | DRAIN_MANA | HOLD
 spells:BO_NETH
-spells:S_UNDEAD
-desc:It is an unlife of power almost unequaled.  An affront to existence, its
-desc: very touch abuses and disrupts the flow of life, and its unearthly limbs,
-desc: of purest black, crush rock and flesh with ease.
+friends:100:2d5:Same
+desc:It is a form that screams its presence against the eye.  Death incarnate,
+desc: its hideous black body seems to struggle against reality as the universe
+desc: itself struggles to banish it.
 
 name:drolem
 base:golem
@@ -10892,7 +10838,7 @@ base:ancient dragon
 color:G
 speed:120
 hit-points:1950
-light:-1
+light:-2
 hearing:25
 armor-class:120
 sleepiness:80
@@ -10945,7 +10891,7 @@ base:ancient dragon
 color:o
 speed:120
 hit-points:1950
-light:-1
+light:-2
 hearing:25
 armor-class:120
 sleepiness:80
@@ -10995,6 +10941,31 @@ friends-base:50:2d4:spider
 desc:A lord of all that is natural, skilled in the mystic ways.  He is a master
 desc: of martial arts and is at one with nature, able to summon help from the
 desc: wild if need be.
+
+name:shadow
+base:ghost
+color:D
+speed:120
+hit-points:175
+light:-2
+hearing:30
+armor-class:36
+sleepiness:20
+depth:50
+rarity:3
+experience:800
+blow:TOUCH:EXP_80
+blow:TOUCH:EXP_40
+blow:CLAW:LOSE_INT:3d10
+blow:CLAW:LOSE_WIS:3d10
+flags:DROP_1 | ONLY_ITEM
+flags:FORCE_SLEEP
+spell-freq:8
+spells:SLOW | TELE_TO
+spells:BO_NETH
+desc:A mighty spirit of darkness of vaguely humanoid form.  Razor-edged claws
+desc: reach out to end your life as it glides towards you, seeking to suck the
+desc: energy from your soul to feed its power.
 
 name:The Balrog of Moria
 base:major demon
@@ -11440,6 +11411,33 @@ spells:TPORT
 spells:S_DEMON | S_UNDEAD
 desc:A lich who is partially immaterial, on its way to a new, ethereal form.
 
+name:dreadmaster
+base:ghost
+color:y
+speed:120
+hit-points:1056
+hearing:20
+armor-class:120
+sleepiness:10
+depth:54
+rarity:2
+experience:8000
+blow:HIT:HURT:6d6
+blow:HIT:HURT:6d6
+blow:HIT:LOSE_STR:3d4
+blow:HIT:LOSE_STR:3d4
+flags:SMART
+flags:DROP_4 | ONLY_ITEM
+flags:RAND_25 | TAKE_ITEM
+flags:FORCE_SLEEP
+spell-freq:9
+spells:BLIND | WOUND | CONF | DRAIN_MANA | HOLD | TELE_LEVEL
+spells:BO_NETH
+spells:S_UNDEAD
+desc:It is an unlife of power almost unequaled.  An affront to existence, its
+desc: very touch abuses and disrupts the flow of life, and its unearthly limbs,
+desc: of purest black, crush rock and flesh with ease.
+
 name:nether wraith
 base:wraith
 color:G
@@ -11472,7 +11470,7 @@ base:spider
 color:D
 speed:120
 hit-points:3500
-light:-2
+light:-3
 hearing:30
 armor-class:180
 sleepiness:20
@@ -12186,7 +12184,7 @@ base:spider
 color:P
 speed:120
 hit-points:4000
-light:-2
+light:-3
 hearing:30
 armor-class:180
 sleepiness:20
@@ -13141,7 +13139,7 @@ base:spider
 color:D
 speed:130
 hit-points:13000
-light:-3
+light:-4
 hearing:40
 armor-class:240
 sleepiness:10

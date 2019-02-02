@@ -139,6 +139,8 @@ pain:6
 flags:ANIMAL | CLEAR_WEB
 desc:Feline (Cat)
 
+# Wall-passing invisible spirits, frequently drain experience and/or stats.
+# Relatively weak to compensate for being hard to escape
 name:ghost
 glyph:G
 pain:1
