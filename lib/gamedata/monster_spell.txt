@@ -2,15 +2,8 @@
 
 # name - spell name
 # msgt - message type
-# lore - Description printed in monster recall after "It can",
-#        e.g. cause critical wounds
-# lore-color-base - base color for lore
 # lore-color-resist - color for lore when the spell is resisted
 # lore-color-immune - color for lore when the spell is resisted strongly
-# message-vis - Message printed when spell is cast by a visible monster,
-#               e.g. {name} points at you, incanting terribly!
-# message-invis - Message printed when spell is cast by an unseen monster,
-#                 e.g. Something utters a terrible incantation!
 # message-save - Message printed when player saves if the spell allows a save.
 #                Note that this message must be present for the player to get a 
 #                save.
@@ -20,6 +13,15 @@
 # effect - effect
 # dice - damage dice of effect, if any
 # expr - expression for dice, if needed
+# power-cutoff - monster spell power at which we move to a new set of lore,
+#                lore-color-base, message-vis and message-invis
+# lore - Description printed in monster recall after "It can",
+#        e.g. cause critical wounds
+# lore-color-base - base color for lore
+# message-vis - Message printed when spell is cast by a visible monster,
+#               e.g. {name} points at you, incanting terribly!
+# message-invis - Message printed when spell is cast by an unseen monster,
+#                 e.g. Something utters a terrible incantation!
 
 # {name} and {pronoun} are markers that will be replaced with the acting
 # monster's name and his/her/its when the message is displayed,
@@ -336,52 +338,62 @@ hit:100
 effect:BALL:FIRE:2
 dice:10+1d$S
 expr:S:SPELL_POWER:* 7 / 2
-lore:produce fire balls
-lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
+lore:produce fire balls
+lore-color-base:Orange
 message-vis:{name} casts a ball of fire.
 message-invis:Something mumbles.
-message-vis-strong:{name} conjures up a firestorm.
-message-invis-strong:Something murmurs deeply.
+power-cutoff:80
+lore:produce firestorms
+lore-color-base:Orange
+message-vis:{name} conjures up a firestorm.
+message-invis:Something murmurs deeply.
 
 name:BA_COLD
 hit:100
 effect:BALL:COLD:2
 dice:10+1d$S
 expr:S:SPELL_POWER:* 3 / 2
-lore:produce frost balls
-lore-color-base:Orange
 lore-color-resist:Yellow
 lore-color-immune:Light Green
 message-vis:{name} casts a ball of frost.
 message-invis:Something mumbles.
-message-vis-strong:{name} calls up a blizzard.
-message-invis-strong:Something chants coldly.
+power-cutoff:80
+lore:produce blizzards
+lore-color-base:Orange
+message-vis:{name} calls up a blizzard.
+message-invis:Something chants coldly.
 
 name:BA_POIS
 hit:100
 effect:BALL:POIS:2
 dice:12d2
+lore-color-resist:Light Green
 lore:produce poison balls
 lore-color-base:Orange
-lore-color-resist:Light Green
 message-vis:{name} casts a venomous cloud.
 message-invis:Something mumbles.
-message-vis-strong:{name} unleashes a storm of corrosive toxins.
-message-invis-strong:Something murmurs viciously.
+power-cutoff:60
+lore:produce storms of poison
+lore-color-base:Orange
+message-vis:{name} unleashes a storm of corrosive toxins.
+message-invis:Something murmurs viciously.
 
 name:BA_NETH
 hit:100
 effect:BALL:NETHER:2
 dice:$B+10d10
 expr:B:SPELL_POWER:+ 50
+lore-color-resist:Light Green
 lore:produce nether balls
 lore-color-base:Orange
-lore-color-resist:Light Green
 message-vis:{name} casts a ball of nether.
 message-invis:Something mumbles.
-message-vis-strong:{name} creates a storm of nether magics.
+power-cutoff:80
+lore:produce nether storms
+lore-color-base:Orange
+message-vis:{name} creates a storm of nether magics.
 message-invis:Something chants ominously.
 
 name:BA_WATE
@@ -410,28 +422,32 @@ hit:100
 effect:BALL:DARK:2
 dice:$B+10d10
 expr:B:SPELL_POWER:* 5
-lore:produce balls of darkness
-lore-strong:invoke darkness storms
-lore-color-base:Light Red
 lore-color-resist:Light Green
+lore:produce balls of darkness
+lore-color-base:Light Red
 message-vis:{name} casts a ball of darkness.
 message-invis:Something mumbles loudly.
-message-vis-strong:{name} invokes a storm of darkness.
-message-invis-strong:Something chants powerfully.
+power-cutoff:70
+lore:invoke darkness storms
+lore-color-base:Light Red
+message-vis:{name} invokes a storm of darkness.
+message-invis:Something chants powerfully.
 
 name:BA_LIGHT
 hit:100
 effect:BALL:LIGHT:2
 dice:$B+8d8
 expr:B:SPELL_POWER:* 4
-lore:produce balls of light
-lore-strong:invoke starbursts
-lore-color-base:Light Red
 lore-color-resist:Light Green
+lore:produce balls of light
+lore-color-base:Light Red
 message-vis:{name} casts a ball of light.
 message-invis:Something mumbles.
-message-vis-strong:{name} invokes a starburst.
-message-invis-strong:Something chants powerfully.
+power-cutoff:70
+lore:invoke starbursts
+lore-color-base:Light Red
+message-vis:{name} invokes a starburst.
+message-invis:Something chants powerfully.
 
 name:STORM
 hit:100
@@ -444,13 +460,16 @@ expr:D:SPELL_POWER:/ 2
 effect:BALL:ICE:3
 dice:20+$Dd5
 expr:D:SPELL_POWER:/ 2
+lore-color-resist:Orange
 lore:create storms
 lore-color-base:Light Red
-lore-color-resist:Orange
 message-vis:{name} creates a little storm.
 message-invis:Something gurgles.
-message-vis-strong:{name} creates a tempest of wind and water.
-message-invis-strong:Something chants fluidly.
+power-cutoff:80
+lore:create tempests
+lore-color-base:Light Red
+message-vis:{name} creates a tempest of wind and water.
+message-invis:Something chants fluidly.
 
 name:DRAIN_MANA
 hit:100

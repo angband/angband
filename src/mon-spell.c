@@ -75,8 +75,13 @@ static void spell_message(struct monster *mon,
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
-	bool strong = mon->race->spell_power >= 80 || monster_is_powerful(mon);
+	struct monster_spell_level *level = spell->level;
 	struct monster *t_mon = NULL;
+
+	/* Get the right level of message */
+	while (level->next && mon->race->spell_power >= level->next->power) {
+		level = level->next;
+	}
 
 	/* Get the target monster, if any */
 	if (mon->target.midx > 0) {
@@ -87,19 +92,13 @@ static void spell_message(struct monster *mon,
 	if (!seen) {
 		if (t_mon) {
 			return;
-		} else if (strong && spell->blind_message_strong) {
-			in_cursor = spell->blind_message_strong;
 		} else {
-			in_cursor = spell->blind_message;
+			in_cursor = spell->level->blind_message;
 		}
 	} else if (!hits) {
 		in_cursor = spell->miss_message;
 	} else {
-		if (strong && spell->message_strong) {
-			in_cursor = spell->message_strong;
-		} else {
-			in_cursor = spell->message;
-		}
+		in_cursor = spell->level->message;
 	}
 
 	next = strchr(in_cursor, '{');
@@ -507,10 +506,13 @@ const char *mon_spell_lore_description(int index,
 {
 	if (mon_spell_is_valid(index)) {
 		const struct monster_spell *spell = monster_spell_by_index(index);
-		bool strong = ((race->spell_power >= 80) ||
-					   rf_has(race->flags, RF_POWERFUL))
-			&& spell->lore_desc_strong;
-		return strong ? spell->lore_desc_strong : spell->lore_desc;
+
+		/* Get the right level of description */
+		struct monster_spell_level *level = spell->level;
+		while (level->next && race->spell_power >= level->next->power) {
+			level = level->next;
+		}
+		return spell->level->lore_desc;
 	} else {
 		return "";
 	}

@@ -91,7 +91,6 @@ enum
 	PROJECT_ARC   = 0x0400,
 	PROJECT_PLAY  = 0x0800,
 	PROJECT_INFO  = 0x1000,
-	PROJECT_POWER = 0x2000
 };
 
 /* Display attrs and chars */
@@ -109,7 +108,7 @@ bool project_o(struct source, int r, struct loc grid, int dam, int typ,
 void project_m(struct source, int r, struct loc grid, int dam, int typ, int flg,
                bool *did_hit, bool *was_obvious);
 bool project_p(struct source, int r, struct loc grid, int dam, int typ,
-			   bool powerful);
+			   int power);
 
 int project_path(struct loc *gp, int range, struct loc grid1, struct loc grid2,
 				 int flg);

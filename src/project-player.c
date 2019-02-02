@@ -164,7 +164,7 @@ typedef struct project_player_handler_context_s {
 	const struct loc grid;
 	const int dam;
 	const int type;
-	const bool powerful;
+	const int power;
 
 	/* Return values */
 	bool obvious;
@@ -192,7 +192,7 @@ static int project_player_handler_FIRE(project_player_handler_context_t *context
 	inven_damage(player, PROJ_FIRE, MIN(context->dam * 5, 300));
 
 	/* Occasional side-effects for powerful fire attacks */
-	if (context->powerful) {
+	if (context->power >= 80) {
 		if (randint0(context->dam > 500)) {
 			msg("The intense heat saps you.");
 			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0, 0,
@@ -220,7 +220,7 @@ static int project_player_handler_COLD(project_player_handler_context_t *context
 	inven_damage(player, PROJ_COLD, MIN(context->dam * 5, 300));
 
 	/* Occasional side-effects for powerful cold attacks */
-	if (context->powerful) {
+	if (context->power >= 80) {
 		if (randint0(context->dam > 500)) {
 			msg("The cold seeps into your bones.");
 			effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_DEX, 0, 0, 0,
@@ -248,7 +248,7 @@ static int project_player_handler_POIS(project_player_handler_context_t *context
 		msg("You resist the effect!");
 
 	/* Occasional side-effects for powerful poison attacks */
-	if (context->powerful) {
+	if (context->power >= 60) {
 		if (randint0(context->dam > 200)) {
 			if (!player_is_immune(player, ELEM_ACID)) {
 				int dam = context->dam / 5;
@@ -295,7 +295,7 @@ static int project_player_handler_DARK(project_player_handler_context_t *context
 	(void)player_inc_timed(player, TMD_BLIND, 2 + randint1(5), true, true);
 
 	/* Unresisted dark from powerful monsters is bad news */
-	if (context->powerful) {
+	if (context->power >= 70) {
 		/* Life draining */
 		if (randint0(context->dam) > 100) {
 			if (player_of_has(player, OF_HOLD_LIFE)) {
@@ -411,7 +411,7 @@ static int project_player_handler_NETHER(project_player_handler_context_t *conte
 	player_exp_lose(player, drain, false);
 
 	/* Powerful nether attacks have further side-effects */
-	if (context->powerful) {
+	if (context->power >= 80) {
 		/* Mana drain */
 		if ((randint0(context->dam) > 100) && player->msp) {
 			msg("Your mind is dulled.");
@@ -791,7 +791,7 @@ static const project_player_handler_f player_handlers[] = {
  * We assume the player is aware of some effect, and always return "true".
  */
 bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
-			   bool powerful)
+			   int power)
 {
 	bool blind = (player->timed[TMD_BLIND] ? true : false);
 	bool seen = !blind;
@@ -807,7 +807,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 		grid,
 		dam,
 		typ,
-		powerful,
+		power,
 		obvious
 	};
 

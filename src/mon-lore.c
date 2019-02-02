@@ -55,17 +55,24 @@ typedef enum monster_sex monster_sex_t;
  * dangerous the attack is to the player given current state. Spells may be
  * colored green (least dangerous), yellow, orange, or red (most dangerous).
  */
-int spell_color(struct player *p, int spell_index)
+static int spell_color(struct player *p, const struct monster_race *race,
+					   int spell_index)
 {
 	const struct monster_spell *spell = monster_spell_by_index(spell_index);
+	struct monster_spell_level *level = spell->level;
 	struct effect *eff = spell ? spell->effect : NULL;
 
 	/* No spell */
 	if (!spell) return COLOUR_DARK;
 
+	/* Get the right level */
+	while (level->next && race->spell_power >= level->next->power) {
+		level = level->next;
+	}
+
 	/* Unresistable spells just use the default color */
 	if (!spell->lore_attr_resist && !spell->lore_attr_immune) {
-		return spell->lore_attr;
+		return spell->level->lore_attr;
 	}
 
 	/* Spells with a save */
@@ -77,12 +84,12 @@ int spell_color(struct player *p, int spell_index)
 				if (p->known_state.el_info[ELEM_NEXUS].res_level > 0) {
 					return spell->lore_attr_resist;
 				} else {
-					return spell->lore_attr;
+					return spell->level->lore_attr;
 				}
 			} else if (eff->index == EF_TIMED_INC) {
 				/* Simple timed effects */
 				if (player_inc_check(p, eff->subtype, true)) {
-					return spell->lore_attr;
+					return spell->level->lore_attr;
 				} else {
 					return spell->lore_attr_resist;
 				}
@@ -91,13 +98,13 @@ int spell_color(struct player *p, int spell_index)
 				for (; eff; eff = eff->next) {
 					if (eff->index != EF_TIMED_INC) continue;
 					if (player_inc_check(p, eff->subtype, true)) {
-						return spell->lore_attr;
+						return spell->level->lore_attr;
 					}
 				}
 				return spell->lore_attr_resist;
 			} else {
 				/* Straight damage */
-				return spell->lore_attr;
+				return spell->level->lore_attr;
 			}
 		} else if (spell->lore_attr_immune) {
 			return spell->lore_attr_immune;
@@ -118,7 +125,7 @@ int spell_color(struct player *p, int spell_index)
 				} else if (of_has(p->known_state.flags, OF_PROT_STUN)) {
 					return spell->lore_attr_resist;
 				} else {
-					return spell->lore_attr;
+					return spell->level->lore_attr;
 				}
 				break;
 			/* Special case - nexus */
@@ -128,7 +135,7 @@ int spell_color(struct player *p, int spell_index)
 				} else if (p->known_state.skills[SKILL_SAVE] >= 100) {
 					return spell->lore_attr_resist;
 				} else {
-					return spell->lore_attr;
+					return spell->level->lore_attr;
 				}
 				break;
 			/* Elements that stun or confuse */
@@ -137,10 +144,10 @@ int spell_color(struct player *p, int spell_index)
 			case ELEM_PLASMA:
 			case ELEM_WATER:
 				if (!of_has(p->known_state.flags, OF_PROT_STUN)) {
-					return spell->lore_attr;
+					return spell->level->lore_attr;
 				} else if (!of_has(p->known_state.flags, OF_PROT_CONF) &&
 						   (eff->subtype == ELEM_WATER)){
-					return spell->lore_attr;
+					return spell->level->lore_attr;
 				} else {
 					return spell->lore_attr_resist;
 				}
@@ -152,12 +159,12 @@ int spell_color(struct player *p, int spell_index)
 				} else if (p->known_state.el_info[eff->subtype].res_level > 0) {
 					return spell->lore_attr_resist;
 				} else {
-					return spell->lore_attr;
+					return spell->level->lore_attr;
 				}
 		}
 	}
 
-	return spell->lore_attr;
+	return spell->level->lore_attr;
 }
 
 /**
@@ -764,7 +771,7 @@ static void lore_append_spell_clause(textblock *tb, bitflag *f, bool know_hp,
 		int spell;
 		for (spell = rsf_next(f, FLAG_START); spell;
 			 spell = rsf_next(f, spell + 1)) {
-			int color = spell_color(player, spell);
+			int color = spell_color(player, race, spell);
 			int damage = mon_spell_lore_damage(spell, race, know_hp);
 
 			/* First entry starts immediately */

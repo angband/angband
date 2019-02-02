@@ -963,10 +963,19 @@ bool project(struct source origin, int rad, struct loc finish,
 
 	/* Look for the player, affect them when found */
 	if (flg & (PROJECT_PLAY)) {
-		bool powerful = (flg & PROJECT_POWER) ? true : false;
+		/* Set power */
+		int power = 0;
+		if (origin.what == SRC_MONSTER) {
+			struct monster *mon = cave_monster(cave, origin.which.monster);
+			power = mon->race->spell_power;
+
+			/* Breaths from powerful monsters get power effects as well */
+			if (monster_is_powerful(mon) && (flg & (PROJECT_PLAY)))
+				power = 80;
+		}
 		for (i = 0; i < num_grids; i++) {
 			if (project_p(origin, distance_to_grid[i], blast_grid[i],
-						  dam_at_dist[distance_to_grid[i]], typ, powerful)) {
+						  dam_at_dist[distance_to_grid[i]], typ, power)) {
 				notice = true;
 				if (player->is_dead)
 					return notice;

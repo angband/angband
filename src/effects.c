@@ -3692,12 +3692,6 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 			/* Powerful monster */
 			if (monster_is_powerful(mon)) {
 				rad++;
-				flg |= PROJECT_POWER;
-			}
-
-			/* Monsters with high spell power also cast powerful ball spells */
-			if(mon->race->spell_power >= 80) {
-				flg |= PROJECT_POWER;
 			}
 
 			flg |= PROJECT_PLAY;
@@ -3804,9 +3798,6 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 			/* Breath is now full strength at 5 grids */
 			diameter_of_source *= 3;
 			diameter_of_source /= 2;
-
-			/* Mark for effects */
-			flg |= PROJECT_POWER;
 		}
 	} else if (context->origin.what == SRC_PLAYER) {
 		msgt(projections[type].msgt, "You breathe %s.", projections[type].desc);

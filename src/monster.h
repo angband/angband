@@ -164,6 +164,19 @@ struct monster_pain {
 
 
 /**
+ * Monster spell levels
+ */
+struct monster_spell_level {
+	struct monster_spell_level *next;
+
+	int power;				/* Spell power at which this level starts */
+	char *lore_desc;		/* Description of the attack used in lore text */
+	byte lore_attr;			/* Color of the attack used in lore text */
+	char *message;			/* Description of the attack */
+	char *blind_message;	/* Description of the attack if unseen */
+};
+
+/**
  * Monster spell types
  */
 struct monster_spell {
@@ -171,20 +184,13 @@ struct monster_spell {
 
 	u16b index;				/* Numerical index (RSF_FOO) */
 	int msgt;				/* Flag for message colouring */
-	char *message;			/* Description of the attack */
-	char *blind_message;	/* Description of the attack if unseen */
-	char *message_strong;   /* Description of the attack (strong version) */
-	char *blind_message_strong;/* Attack description if unseen (strong)*/
 	char *miss_message;		/* Description of a missed attack */
 	char *save_message;		/* Message on passing saving throw, if any */
-	char *lore_desc;		/* Description of the attack used in lore text */
-	char *lore_desc_strong; /* Attack description used in lore text (strong) */
-	byte lore_attr;			/* Color of the attack used in lore text */
 	byte lore_attr_resist;	/* Color used in lore text when resisted */
 	byte lore_attr_immune;	/* Color used in lore text when resisted strongly */
 	int hit;				/* To-hit level for the attack */
 	struct effect *effect;	/* Effect(s) of the spell */
-	random_value power;		/* Relative power of the spell */
+	struct monster_spell_level *level;	/* Spell power dependent details */
 };
 
 
