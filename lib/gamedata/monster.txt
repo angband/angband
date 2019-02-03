@@ -1667,21 +1667,6 @@ flags:RAND_50
 desc:It is about three feet long with large teeth.  As the light of your lamp
 desc: falls on it, it seems to grow stronger.
 
-name:raven
-base:bird
-color:D
-speed:120
-hit-points:12
-hearing:40
-armor-class:14
-sleepiness:0
-depth:4
-rarity:2
-experience:10
-blow:BITE:HURT:1d4
-blow:BITE:HURT:1d4
-desc:Larger than a crow, and pitch black.
-
 ### Dungeon level 5 ###
 
 name:Bullroarer the Hobbit
@@ -2075,6 +2060,25 @@ desc:Large beating wings support this dazzling insect.  A loud buzzing noise
 desc: pervades the air.
 
 ### Dungeon level 7 ###
+
+name:crow of Durthang
+base:bird
+color:D
+speed:120
+hit-points:12
+hearing:40
+armor-class:14
+sleepiness:0
+depth:7
+rarity:3
+experience:10
+blow:BITE:HURT:1d3
+blow:BITE:HURT:1d2
+spell-freq:9
+spell-power:4
+spells:WOUND
+desc:A crook-beaked bird with bedraggled black feathers.  It mocks you, and you
+desc: realise that its scorn can kill.
 
 name:cave orc
 base:orc
@@ -2475,23 +2479,6 @@ flags:OPEN_DOOR | TAKE_ITEM
 innate-freq:8
 spells:SHOT
 desc:He is after your cash!
-
-name:nighthawk
-base:bird
-color:u
-speed:120
-hit-points:36
-hearing:30
-armor-class:30
-sleepiness:10
-depth:8
-rarity:2
-experience:22
-blow:CLAW:HURT:1d3
-blow:CLAW:HURT:1d3
-blow:BITE:HURT:1d4
-flags:NO_FEAR
-desc:Trained to hunt and kill without fear.
 
 ### Dungeon level 9 ###
 
@@ -4774,6 +4761,25 @@ desc: flame.
 
 
 ### Dungeon level 20 ###
+
+name:blood falcon
+base:bird
+color:R
+speed:140
+hit-points:6
+hearing:50
+smell:20
+armor-class:2
+sleepiness:10
+depth:8
+rarity:2
+experience:50
+blow:CLAW:HURT:4d10
+blow:CLAW:HURT:4d10
+blow:BITE:HURT:6d8
+flags:NO_FEAR
+desc:A great bird of prey, with razor sharp beak and talons.  It lives to rip
+desc: and tear.
 
 name:Mirkwood spider
 base:spider
@@ -9336,7 +9342,7 @@ hit-points:260
 hearing:30
 armor-class:36
 sleepiness:20
-depth:36
+depth:40
 rarity:3
 experience:400
 blow:TOUCH:EXP_80
@@ -12236,7 +12242,7 @@ speed:120
 hearing:12
 armor-class:120
 sleepiness:30
-depth:43
+depth:65
 rarity:0
 experience:4250
 blow:ENGULF:TERRIFY:6d5

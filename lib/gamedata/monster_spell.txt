@@ -582,8 +582,8 @@ message-save:You shake off a splitting migraine.
 name:WOUND
 hit:100
 effect:DAMAGE
-dice:15d$S
-expr:S:SPELL_POWER:/ 8 + 1
+dice:$Dd5
+expr:D:SPELL_POWER:/ 3 * 2
 effect:TIMED_INC:CUT
 dice:$Dd10
 expr:D:SPELL_POWER:/ 5 - 10
