@@ -279,6 +279,7 @@ flags:CLEAR_WEB
 flags:IM_FIRE
 desc:Minor Demon
 
+# Non-moving growths which release spores when stepped next to
 name:mold
 glyph:m
 pain:2
@@ -293,6 +294,7 @@ flags:EMPTY_MIND | STUPID
 flags:HURT_FIRE | NO_FEAR | NO_CONF | NO_SLEEP
 desc:Mushroom
 
+# Female serpent-like monsters
 name:naga
 glyph:n
 pain:1

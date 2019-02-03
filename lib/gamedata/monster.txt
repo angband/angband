@@ -6443,8 +6443,7 @@ spell-freq:4
 spells:BLIND | DARKNESS | HEAL | MIND_BLAST
 drop-base:prayer book:8:1:1
 drop-base:prayer book:5:1:1
-desc:A wraithly snake-like form with the torso of a beautiful woman, it is the
-desc: most powerful of its kind.
+desc:A wraithly snake-like form with the torso of a beautiful woman.
 
 name:5-headed hydra
 base:hydra
@@ -9500,36 +9499,6 @@ flags:EVIL
 flags:BASH_DOOR
 desc:It is a cross between a human and a bull.
 
-name:Medusa, the Gorgon
-base:naga
-color:v
-speed:120
-hit-points:2400
-hearing:30
-armor-class:120
-sleepiness:5
-depth:40
-rarity:3
-experience:9000
-blow:GAZE:EXP_80
-blow:GAZE:PARALYZE
-blow:HIT:HURT:8d6
-blow:HIT:HURT:8d6
-flags:UNIQUE | SMART
-flags:DROP_2 | DROP_GOOD | ONLY_ITEM
-flags:OPEN_DOOR
-flags:IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
-flags:FORCE_SLEEP
-flags-off:HURT_COLD
-spell-freq:2
-spells:WOUND | HOLD | SCARE
-spells:BA_ACID
-spells:BO_FIRE | BO_PLAS
-spells:S_HYDRA | S_KIN
-desc:One of the original three ugly sisters.  Her face could sink a thousand
-desc: ships.  Her scales rattle as she slithers towards you, venom dripping
-desc: from her ghastly mouth.
-
 name:vrock
 base:major demon
 color:s
@@ -10650,6 +10619,36 @@ desc:A terrifying sight: a winged creature greater than any bird you have ever
 desc: seen, and with no feathers on its horrid black leathery wings.  Descended
 desc: from a creature of an older world perhaps, bred by Sauron to be a winged
 desc: steed for his Ringwraiths.
+
+name:gorgon
+base:naga
+color:G
+speed:120
+hit-points:1800
+hearing:30
+armor-class:120
+sleepiness:5
+depth:48
+rarity:2
+experience:7000
+blow:GAZE:EXP_80
+blow:GAZE:PARALYZE
+blow:HIT:HURT:8d6
+blow:BITE:POISON:8d6
+flags:SMART
+flags:DROP_2 | DROP_GOOD | ONLY_ITEM
+flags:OPEN_DOOR
+flags:IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_HOLD
+flags:FORCE_SLEEP
+flags-off:HURT_COLD
+spell-freq:2
+spells:WOUND | HOLD | SCARE
+spells:BA_ACID
+spells:BO_FIRE | BO_PLAS
+spells:S_HYDRA | S_KIN
+desc:This creature of legend has not just a serpent's body, but snakes for
+desc: hair.  Her scales rattle as she slithers towards you, eyes blazing,
+desc: venom dripping from her ghastly mouth.
 
 ### Dungeon level 49 ###
 
