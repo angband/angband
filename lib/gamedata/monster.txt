@@ -5194,7 +5194,7 @@ rarity:1
 experience:100
 blow:ENGULF:FIRE:3d3
 flags:IM_FIRE | HURT_COLD
-innate-freq:6
+innate-freq:4
 spells:BR_FIRE
 desc:A whirling maelstrom of fire.
 
@@ -5212,7 +5212,7 @@ rarity:1
 experience:100
 blow:ENGULF:ACID:3d3
 flags:IM_ACID | IM_WATER
-innate-freq:6
+innate-freq:4
 spells:BR_ACID
 desc:A caustic spinning whirlpool of water.
 
@@ -5230,29 +5230,9 @@ rarity:1
 experience:100
 blow:ENGULF:COLD:3d3
 flags:IM_COLD | HURT_FIRE
-innate-freq:6
+innate-freq:4
 spells:BR_COLD
 desc:A twisting whirlpool of frost.
-
-name:energy vortex
-plural:energy vortices
-base:vortex
-color:b
-speed:110
-hit-points:45
-light:1
-hearing:100
-armor-class:36
-sleepiness:0
-depth:21
-rarity:1
-experience:100
-blow:ENGULF:ELEC:3d3
-flags:ATTR_FLICKER
-flags:IM_ELEC
-innate-freq:6
-spells:BR_ELEC
-desc:A shimmering tornado of air, sparks crackle along its length.
 
 name:mummified orc
 base:zombie
@@ -6330,29 +6310,6 @@ desc:The result of evil experiments, this travesty of nature should never be
 desc: alive.  It has three heads - goat, dragon and gorgon - all attached to a
 desc: lion's body.
 
-name:colbran
-base:golem
-color:b
-speed:120
-hit-points:520
-light:1
-hearing:12
-armor-class:120
-sleepiness:20
-depth:27
-rarity:2
-experience:900
-blow:HIT:ELEC:3d8
-blow:HIT:ELEC:3d8
-flags:COLD_BLOOD
-flags:BASH_DOOR
-flags:IM_POIS
-flags:FORCE_SLEEP
-spell-freq:3
-spells:BO_ELEC
-desc:A man-shaped form of living lightning, sparks and shocks crackle all over
-desc: this madly capering figure, as it leaps and whirls around and about you.
-
 name:ogre shaman
 base:ogre
 color:G
@@ -6915,6 +6872,26 @@ spells:BR_POIS
 desc:It has a form that legends are made of.  Its still-tender scales are a deep
 desc: green in hue.  Foul gas seeps through its scales.
 
+name:energy vortex
+plural:energy vortices
+base:vortex
+color:b
+speed:110
+hit-points:65
+light:1
+hearing:100
+armor-class:36
+sleepiness:0
+depth:29
+rarity:1
+experience:140
+blow:ENGULF:ELEC:3d4
+flags:ATTR_FLICKER
+flags:IM_ELEC
+innate-freq:4
+spell-freq:5
+spells:BR_ELEC | BE_ELEC
+desc:A shimmering tornado of air, sparks crackle along its length.
 
 
 ########## DUNGEON LEVELS 30-39 ##########
@@ -8377,6 +8354,30 @@ flags:DROP_20
 friends:100:4d4:Olog
 desc:It is a massive intelligent troll with needle-sharp fangs.
 
+name:colbran
+base:golem
+color:b
+speed:120
+hit-points:520
+light:1
+hearing:12
+armor-class:120
+sleepiness:20
+depth:36
+rarity:2
+experience:900
+blow:HIT:ELEC:3d8
+blow:HIT:ELEC:3d8
+flags:COLD_BLOOD
+flags:BASH_DOOR
+flags:IM_POIS
+flags:FORCE_SLEEP
+spell-freq:3
+spell-power:20
+spells:BO_ELEC | BE_ELEC | TELE_SELF_TO
+desc:A man-shaped form of living lightning.  Sparks and shocks crackle all over
+desc: this madly capering figure, as it leaps and whirls around and about you.
+
 name:cloud giant
 base:giant
 color:b
@@ -8812,7 +8813,7 @@ experience:800
 blow:ENGULF:HURT:5d5
 flags:RAND_25
 flags:IM_NEXUS
-innate-freq:6
+innate-freq:4
 spells:BR_NEXU
 desc:A maelstrom of potent magical energy.
 
@@ -8833,7 +8834,7 @@ blow:ENGULF:FIRE:4d8
 blow:ENGULF:ELEC:4d8
 flags:RAND_25
 flags:IM_ELEC | IM_FIRE | IM_PLASMA
-innate-freq:6
+innate-freq:4
 spells:BR_PLAS
 desc:A whirlpool of intense flame, charring the stones at your feet.
 
@@ -9033,7 +9034,7 @@ rarity:4
 experience:800
 blow:ENGULF:EXP_20:5d5
 flags:RAND_25
-innate-freq:6
+innate-freq:4
 spells:BR_TIME
 desc:You haven't seen it yet.
 
@@ -10239,33 +10240,6 @@ desc:It is a form that screams its presence against the eye.  Death incarnate,
 desc: its hideous black body seems to struggle against reality as the universe
 desc: itself struggles to banish it.
 
-name:drolem
-base:golem
-color:g
-speed:120
-hit-points:2200
-hearing:25
-armor-class:195
-sleepiness:80
-depth:44
-rarity:3
-experience:12000
-blow:CLAW:HURT:3d10
-blow:CLAW:HURT:3d10
-blow:BITE:POISON:5d10
-blow:BITE:POISON:5d10
-flags:DRAGON | COLD_BLOOD
-flags:OPEN_DOOR | BASH_DOOR
-flags:IM_COLD | IM_FIRE | IM_POIS
-flags:FORCE_SLEEP
-innate-freq:8
-spell-freq:8
-spells:ARROW | BLIND | CONF | SLOW
-spells:BR_POIS
-desc:A constructed dragon, the drolem has massive strength.  Powerful spells
-desc: weaved during its creation make it a fearsome adversary.  Its eyes show
-desc: little intelligence, but it has been instructed to destroy all it meets.
-
 ### Dungeon level 45 ###
 
 name:killer white beetle
@@ -11302,31 +11276,9 @@ blow:ENGULF:CONFUSE:5d5
 blow:ENGULF:HALLU:5d5
 flags:RAND_25
 flags:ATTR_MULTI
-innate-freq:6
+innate-freq:4
 spells:BR_CHAO
 desc:Void, nothingness, spinning destructively.
-
-name:storm of Unmagic
-plural:storms of Unmagic
-base:vortex
-color:v
-speed:120
-hit-points:315
-hearing:50
-armor-class:48
-sleepiness:0
-depth:53
-rarity:3
-experience:4000
-blow:ENGULF:DRAIN_CHARGES:5d5
-blow:ENGULF:DISENCHANT:5d5
-flags:RAND_25
-flags:IM_DISEN
-flags:ATTR_MULTI
-innate-freq:6
-spells:BR_DISE
-desc:Howling through the disintegrating dungeon, this whirlpool of Unmagic rips
-desc: the enchantments from everything it touches.
 
 name:Scatha the Worm
 base:ancient dragon
@@ -11387,6 +11339,33 @@ spells:BR_FIRE | BR_LIGHT | BR_PLAS
 spells:S_KIN
 desc:A massive glowing eagle bathed in flames.  The searing heat chars your skin
 desc: and melts your armour.
+
+name:drolem
+base:golem
+color:g
+speed:120
+hit-points:2200
+hearing:25
+armor-class:195
+sleepiness:80
+depth:54
+rarity:3
+experience:12000
+blow:CLAW:HURT:3d10
+blow:CLAW:HURT:3d10
+blow:BITE:POISON:5d10
+blow:BITE:POISON:5d10
+flags:DRAGON | COLD_BLOOD
+flags:OPEN_DOOR | BASH_DOOR
+flags:IM_COLD | IM_FIRE | IM_POIS
+flags:FORCE_SLEEP
+innate-freq:8
+spell-freq:8
+spells:ARROW | BLIND | CONF | SLOW
+spells:BR_POIS
+desc:A constructed dragon, the drolem has massive strength.  Powerful spells
+desc: weaved during its creation make it a fearsome adversary.  Its eyes show
+desc: little intelligence, but it has been instructed to destroy all it meets.
 
 name:demilich
 plural:demiliches
@@ -11944,7 +11923,7 @@ flags:RAND_25
 flags:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | IM_NEXUS | IM_NETHER
 flags:IM_PLASMA | NO_SLOW | NO_STUN
 flags:ATTR_MULTI
-innate-freq:6
+innate-freq:4
 spells:BR_ACID | BR_CHAO | BR_COLD | BR_DARK | BR_ELEC
 spells:BR_FIRE | BR_GRAV | BR_INER | BR_LIGHT | BR_NETH | BR_NEXU
 spells:BR_PLAS | BR_POIS | BR_SHAR | BR_SOUN | BR_TIME | BR_WALL

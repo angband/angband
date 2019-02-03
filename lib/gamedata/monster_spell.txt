@@ -745,16 +745,33 @@ lore-color-base:Yellow
 message-vis:{name} fires a magic missile.
 message-invis:Something mumbles.
 
+name:BE_ELEC
+hit:100
+effect:SHORT_BEAM:ELEC:5
+dice:$B+5d5
+expr:B:SPELL_POWER:* 2 + 30
+lore:shoot sparks of lightning
+lore-color-base:Orange
+lore-color-resist:Light Green
+message-vis:{name} shoots a spark of lightning at {target}.
+message-invis:You feel a crackling in the air.
+
 name:BE_NETH
 hit:100
-effect:BEAM:NETHER
+effect:SHORT_BEAM:NETHER:10
 dice:$B+5d5
 expr:B:SPELL_POWER:* 2 + 30
 lore:hurl lances of nether
 lore-color-base:Orange
 lore-color-resist:Light Green
 message-vis:{name} hurls a lance of nether.
-message-invis:Something mumbles.
+message-invis:Something murmurs a deadly word.
+power-cutoff:80
+lore:shoot rays of death
+lore-color-base:Light Red
+lore-color-resist:Light Green
+message-vis:{name} unleashes a ray of death.
+message-invis:Something intones with deadly menace.
 
 name:SCARE
 msgt:CAST_FEAR
