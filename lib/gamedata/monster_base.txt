@@ -61,6 +61,7 @@ flags:ANIMAL | WEIRD_MIND
 flags:BASH_DOOR
 desc:Ant
 
+# Fast, not strong, annoying
 name:bat
 glyph:b
 pain:4
