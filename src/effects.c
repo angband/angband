@@ -1323,7 +1323,7 @@ bool effect_handler_DRAIN_MANA(effect_handler_context_t *context)
 		return true;
 	}
 
-	/* Drain the given amount if the player has that many, or all of them */
+	/* Drain the given amount if the player has that much, or all of it */
 	if (drain >= player->csp) {
 		drain = player->csp;
 		player->csp = 0;

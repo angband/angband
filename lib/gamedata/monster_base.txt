@@ -352,6 +352,10 @@ pain:4
 flags:ANIMAL | CLEAR_WEB
 desc:Rodent
 
+# The non-unique skeletons break into two (early and late) groups:
+# 1. Empty minded animated skeletons with movement and melee but no spells
+# 2. Smart drujs with no movement or melee, but which have high speed and
+#    cast spells every turn
 name:skeleton
 glyph:s
 pain:9

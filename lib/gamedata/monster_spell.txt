@@ -707,7 +707,7 @@ name:BO_MANA
 hit:100
 effect:BOLT:MANA
 dice:50+1d$S
-expr:S:SPELL_POWER:* 7 / 2
+expr:S:SPELL_POWER:* 5 / 2
 lore:produce mana bolts
 lore-color-base:Light Red
 message-vis:{name} casts a bolt of raw magic.

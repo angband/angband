@@ -412,10 +412,11 @@ static int project_player_handler_NETHER(project_player_handler_context_t *conte
 
 	/* Powerful nether attacks have further side-effects */
 	if (context->power >= 80) {
-		/* Mana drain */
+		/* Mana loss */
 		if ((randint0(context->dam) > 100) && player->msp) {
 			msg("Your mind is dulled.");
 			player->csp -= MIN(player->csp, context->dam / 10);
+			player->upkeep->redraw |= PR_MANA;
 		}
 
 		/* Loss of energy */

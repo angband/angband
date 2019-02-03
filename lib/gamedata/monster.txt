@@ -11751,53 +11751,7 @@ spells:BR_WALL
 desc:A fearsome bull-headed monster, Baphomet swings a mighty axe as he curses
 desc: all that defy him.
 
-name:eye druj
-base:skeleton
-color:r
-speed:130
-hit-points:880
-hearing:20
-armor-class:108
-sleepiness:10
-depth:58
-rarity:2
-experience:15000
-flags:SMART | ATTR_FLICKER | SPIRIT
-flags:NEVER_BLOW | NEVER_MOVE
-flags:IM_FIRE
-flags:FORCE_SLEEP
-spell-freq:1
-spells:BRAIN_SMASH
-spells:BA_NETH
-spells:BO_MANA | BO_NETH
-spells:S_UNDEAD
-desc:A bloodshot eyeball floating in the air, you'd be forgiven for assuming it
-desc: harmless.
-
 ### Dungeon level 59 ###
-
-name:skull druj
-base:skeleton
-color:o
-speed:130
-hit-points:1232
-hearing:20
-armor-class:144
-sleepiness:10
-depth:59
-rarity:2
-experience:18000
-flags:SMART | ATTR_FLICKER | SPIRIT
-flags:NEVER_BLOW | NEVER_MOVE
-flags:IM_FIRE
-flags:FORCE_SLEEP
-spell-freq:1
-spells:BRAIN_SMASH | WOUND | MIND_BLAST | SLOW | TRAPS
-spells:BA_WATE
-spells:BO_NETH | BO_PLAS
-spells:S_UNDEAD
-desc:A glowing skull possessed by sorcerous power.  It need not move, but merely
-desc: blast you with mighty magic as it speaks the words of power.
 
 name:elder vampire
 base:vampire
@@ -12378,6 +12332,29 @@ desc: a large tail similar to that of a giant scorpion, and emits a foul smell
 desc: of decay and rot.  They are despised even in the hells.
 
 ### Dungeon level 66 ###
+
+name:eye druj
+base:skeleton
+color:r
+speed:130
+hit-points:1080
+hearing:20
+armor-class:108
+sleepiness:10
+depth:66
+rarity:2
+experience:18000
+flags:SMART | ATTR_FLICKER | SPIRIT
+flags:NEVER_BLOW | NEVER_MOVE
+flags:IM_FIRE
+flags:FORCE_SLEEP
+spell-freq:1
+spells:BRAIN_SMASH
+spells:BA_NETH
+spells:BO_MANA | BO_NETH
+spells:S_UNDEAD
+desc:A bloodshot eyeball floating in the air, you'd be forgiven for assuming it
+desc: harmless.
 
 name:greater titan
 base:giant
@@ -13075,6 +13052,29 @@ desc: shred your soul and his spells crush your will.  He is ancient, his
 desc: history steeped in forgotten evils, his atrocities numerous and sickening.
 
 ### Dungeon level 74 ###
+
+name:skull druj
+base:skeleton
+color:o
+speed:130
+hit-points:1540
+hearing:20
+armor-class:144
+sleepiness:10
+depth:74
+rarity:2
+experience:23000
+flags:SMART | ATTR_FLICKER | SPIRIT
+flags:NEVER_BLOW | NEVER_MOVE
+flags:IM_FIRE
+flags:FORCE_SLEEP
+spell-freq:1
+spells:BRAIN_SMASH | WOUND | TRAPS
+spells:BA_WATE
+spells:BO_NETH | BO_PLAS
+spells:S_UNDEAD
+desc:A glowing skull possessed by sorcerous power.  It need not move, but merely
+desc: blast you with mighty magic as it speaks the words of power.
 
 name:black reaver
 base:lich
@@ -13885,7 +13885,8 @@ flags:OPEN_DOOR | BASH_DOOR
 flags:IM_FIRE
 flags:FORCE_SLEEP
 spell-freq:2
-spells:BRAIN_SMASH | WOUND | SCARE | SLOW | TELE_TO
+spell-power:110
+spells:BRAIN_SMASH | WOUND | SCARE | TELE_TO
 spells:BA_NETH | BA_WATE
 spells:BO_ICE | BO_MANA
 spells:S_HI_UNDEAD
